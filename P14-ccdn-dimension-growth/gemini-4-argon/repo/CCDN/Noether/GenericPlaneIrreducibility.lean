@@ -19,11 +19,6 @@ namespace CCDN
 noncomputable section
 open MvPolynomial
 
-/-- Exchange the fresh y parameter with the transverse slope variables. -/
-private def genericPlaneCoefficientEquiv (K σ : Type*) [Field K] :
-    MvPolynomial σ (MvPolynomial Unit K) ≃ₐ[K] Polynomial (MvPolynomial σ K) :=
-  (commAlgEquiv K σ Unit).trans ((uniqueAlgEquiv (MvPolynomial σ K) Unit).restrictScalars K)
-
 /-- Replace each transverse variable z_i with the polynomial z_i*y. -/
 def genericPlaneCoefficients (K σ : Type*) [Field K] :
     MvPolynomial σ K →ₐ[K] Polynomial (MvPolynomial σ K) :=
@@ -33,19 +28,6 @@ def genericPlaneCoefficients (K σ : Type*) [Field K] :
 def genericPlanePolynomial {K σ : Type*} [Field K]
     (f : MvPolynomial (Option σ) K) : Polynomial (Polynomial (MvPolynomial σ K)) :=
   Polynomial.map (genericPlaneCoefficients K σ).toRingHom (optionEquivLeft K σ f)
-
-private lemma genericPlaneCoefficientEquiv_stretch {K σ : Type*} [Field K]
-    (f : MvPolynomial (Option σ) K) :
-    Polynomial.map (genericPlaneCoefficientEquiv K σ).toRingHom (genericPlaneStretch f) =
-      genericPlanePolynomial f := by
-  have he : (genericPlaneCoefficientEquiv K σ).toRingHom.comp
-      (genericStretchCoefficients K σ).toRingHom = (genericPlaneCoefficients K σ).toRingHom := by
-    apply MvPolynomial.ringHom_ext
-    · intro a
-      simp [genericPlaneCoefficientEquiv, genericStretchCoefficients, genericPlaneCoefficients]
-    · intro i
-      simp [genericPlaneCoefficientEquiv, genericStretchCoefficients, genericPlaneCoefficients]
-  simp only [genericPlaneStretch, genericPlanePolynomial, Polynomial.map_map, he]
 
 /-- If `f` is monic in its distinguished variable, then so is the generic plane equation of `f`. -/
 lemma genericPlanePolynomial_monic {K σ : Type*} [Field K]
@@ -59,16 +41,6 @@ lemma genericPlanePolynomial_natDegree {K σ : Type*} [Field K]
     (genericPlanePolynomial f).natDegree = (optionEquivLeft K σ f).natDegree :=
   hf.natDegree_map _
 
-/-- The joint polynomial in x, y and all slope variables is irreducible. -/
-private theorem genericPlanePolynomial_irreducible {K σ : Type*} [Field K]
-    (f : MvPolynomial (Option σ) K) (hf : Irreducible f)
-    (hd : 0 < f.totalDegree) (hm : (optionEquivLeft K σ f).Monic) :
-    Irreducible (genericPlanePolynomial f) := by
-  rw [← genericPlaneCoefficientEquiv_stretch]
-  exact (MulEquiv.irreducible_iff
-    (f := Polynomial.mapAlgEquiv (genericPlaneCoefficientEquiv K σ))).mpr
-      (genericPlaneStretch_irreducible f hf hd hm)
-
 /-- Localizing the slope parameters preserves the ordinary irreducibility of
 the generic plane equation. -/
 theorem genericPlanePolynomial_irreducible_fraction_slopes
@@ -79,10 +51,20 @@ theorem genericPlanePolynomial_irreducible_fraction_slopes
     (hx : 0 < (optionEquivLeft K σ f).natDegree) :
     Irreducible (bivariateMap (algebraMap (MvPolynomial σ K) F) (genericPlanePolynomial f)) := by
   let R := MvPolynomial σ K
+  let coeffEquiv : MvPolynomial σ (MvPolynomial Unit K) ≃ₐ[K] Polynomial R :=
+    (commAlgEquiv K σ Unit).trans ((uniqueAlgEquiv R Unit).restrictScalars K)
+  have hstretch : Polynomial.map coeffEquiv.toRingHom (genericPlaneStretch f) =
+      genericPlanePolynomial f := by
+    have he : coeffEquiv.toRingHom.comp (genericStretchCoefficients K σ).toRingHom =
+        (genericPlaneCoefficients K σ).toRingHom := by
+      apply MvPolynomial.ringHom_ext <;> intro _ <;>
+        simp [coeffEquiv, genericStretchCoefficients, genericPlaneCoefficients]
+    simp only [genericPlaneStretch, genericPlanePolynomial, Polynomial.map_map, he]
   let g := (bivariatePolynomialEquiv R).symm (genericPlanePolynomial f)
   have hg : Irreducible g :=
     (MulEquiv.irreducible_iff (f := (bivariatePolynomialEquiv R).symm)).mpr
-      (genericPlanePolynomial_irreducible f hf hd hm)
+      (hstretch ▸ (MulEquiv.irreducible_iff (f := Polynomial.mapAlgEquiv coeffEquiv)).mpr
+        (genericPlaneStretch_irreducible f hf hd hm))
   have hgdeg : 0 < g.totalDegree := by
     have hh := bivariate_natDegree_le_totalDegree (genericPlanePolynomial f)
     rw [genericPlanePolynomial_natDegree f hm] at hh

@@ -39,31 +39,6 @@ lemma eulerPairCoordinates_basis_radial {R : Type*} [CommRing R] (k : ℕ) (i : 
         -(X 0 * monomial ((degreeEqEquivSym (Fin 2) k).symm i).val 1)) := by
   simp [eulerPairCoordinates, eulerPairBasis, Basis.prod_apply, eulerTopBasis_apply]
 
-private lemma eulerPairCoordinates_basis_map {R S : Type*} [CommRing R] [CommRing S]
-    (φ : R →+* S) (k : ℕ) (i : EulerColumns k) :
-    (map φ (eulerPairCoordinates R k (eulerPairBasis R k i)).1,
-      map φ (eulerPairCoordinates R k (eulerPairBasis R k i)).2) =
-      eulerPairCoordinates S k (eulerPairBasis S k i) := by
-  rcases i with i | i | i
-  · rw [eulerPairCoordinates_basis_left, eulerPairCoordinates_basis_left]
-    simp
-  · rw [eulerPairCoordinates_basis_right, eulerPairCoordinates_basis_right]
-    simp
-  · rw [eulerPairCoordinates_basis_radial, eulerPairCoordinates_basis_radial]
-    simp
-
-private lemma eulerBivariatePair_basis_map {R S : Type*} [CommRing R] [CommRing S]
-    (φ : R →+* S) (k : ℕ) (i : EulerColumns k) :
-    (bivariateMap φ (eulerBivariatePair R k (eulerPairBasis R k i)).1,
-      bivariateMap φ (eulerBivariatePair R k (eulerPairBasis R k i)).2) =
-      eulerBivariatePair S k (eulerPairBasis S k i) := by
-  simp only [eulerBivariatePair, LinearMap.comp_apply, LinearMap.prodMap_apply,
-    AlgEquiv.toLinearMap_apply, bivariatePolynomialEquiv_map]
-  have hh := eulerPairCoordinates_basis_map φ k i
-  apply Prod.ext
-  · exact congrArg (bivariatePolynomialEquiv S) (congrArg Prod.fst hh)
-  · exact congrArg (bivariatePolynomialEquiv S) (congrArg Prod.snd hh)
-
 /-- The exact-order coefficient matrix specializes entry by entry over any
 commutative coefficient ring. -/
 theorem eulerClosedFormCoefficientMatrix_map {R S : Type*} [CommRing R] [CommRing S]
@@ -71,9 +46,22 @@ theorem eulerClosedFormCoefficientMatrix_map {R S : Type*} [CommRing R] [CommRin
     (eulerClosedFormCoefficientMatrix k f).map φ =
       eulerClosedFormCoefficientMatrix k (bivariateMap φ f) := by
   ext i j
+  have hmap : (bivariateMap φ (eulerBivariatePair R k (eulerPairBasis R k j)).1,
+      bivariateMap φ (eulerBivariatePair R k (eulerPairBasis R k j)).2) =
+      eulerBivariatePair S k (eulerPairBasis S k j) := by
+    simp only [eulerBivariatePair, LinearMap.comp_apply, LinearMap.prodMap_apply,
+      AlgEquiv.toLinearMap_apply, bivariatePolynomialEquiv_map]
+    have hh : (map φ (eulerPairCoordinates R k (eulerPairBasis R k j)).1,
+        map φ (eulerPairCoordinates R k (eulerPairBasis R k j)).2) =
+        eulerPairCoordinates S k (eulerPairBasis S k j) := by
+      rcases j with j | j | j <;>
+        simp [eulerPairCoordinates_basis_left, eulerPairCoordinates_basis_right,
+          eulerPairCoordinates_basis_radial]
+    exact Prod.ext (congrArg (bivariatePolynomialEquiv S) (congrArg Prod.fst hh))
+      (congrArg (bivariatePolynomialEquiv S) (congrArg Prod.snd hh))
   change φ (((closedFormOperator f
     (eulerBivariatePair R k (eulerPairBasis R k j))).coeff i.1).coeff i.2) = _
-  rw [← bivariateMap_coeff, bivariateMap_closedFormOperator, eulerBivariatePair_basis_map]
+  rw [← bivariateMap_coeff, bivariateMap_closedFormOperator, hmap]
   rfl
 
 /-- Every minor of the Euler closed-form coefficient matrix commutes with applying a coefficient

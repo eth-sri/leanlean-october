@@ -16,41 +16,6 @@ filtration recurrence to be transcendental. -/
 namespace CCDN
 noncomputable section
 
-private lemma algebraic_parameter_recurrence_bounded {K A : Type*} [Field K]
-    [CommRing A] [Algebra K A] (u : A) (hu : IsAlgebraic K u)
-    (V : ℕ → Submodule K A) [∀ m, Module.Finite K (V m)]
-    (N : ℕ) (hrec : ∀ m ≥ N, V (m + 1) = V m ⊔ (V m).map (LinearMap.mulLeft K u)) :
-    ∃ D : ℕ, ∀ m : ℕ, Module.finrank K (V (N + m)) ≤ D := by
-  let S := Algebra.adjoin K {u}
-  let W := S.toSubmodule * V N
-  let : Module.Finite K W := Module.Finite.of_fg
-    (hu.isIntegral.fg_adjoin_singleton.mul (Submodule.FG.of_finite (N := V N)))
-  have hbase : V N ≤ W := by
-    intro x hx
-    have hh : (1 : A) * x ∈ S.toSubmodule * V N :=
-      Submodule.mul_mem_mul (show (1 : A) ∈ S.toSubmodule from S.one_mem) hx
-    simpa only [one_mul] using hh
-  have hstable : W.map (LinearMap.mulLeft K u) ≤ W := by
-    rintro _ ⟨x, hx, rfl⟩
-    change u * x ∈ W
-    change x ∈ S.toSubmodule * V N at hx
-    refine Submodule.mul_induction_on hx ?_ ?_
-    · intro s hs x hx
-      rw [← mul_assoc]
-      exact Submodule.mul_mem_mul
-        (show u * s ∈ S.toSubmodule from
-          S.mul_mem (Algebra.subset_adjoin (Set.mem_singleton u)) hs) hx
-    · intro x y hx hy
-      rw [mul_add]
-      exact W.add_mem hx hy
-  have hmem (m : ℕ) : V (N + m) ≤ W := by
-    induction m with
-    | zero => simpa only [Nat.add_zero] using hbase
-    | succ m hm =>
-      rw [Nat.add_succ, hrec (N + m) (by omega)]
-      exact sup_le hm ((Submodule.map_mono hm).trans hstable)
-  exact ⟨Module.finrank K W, fun m => Submodule.finrank_mono (hmem m)⟩
-
 /-- A parameter giving eventual filtered generation on a positive-degree
 curve cannot satisfy a polynomial over the ground field. -/
 theorem recurrence_parameter_transcendental {K σ : Type*} [Field K] [Fintype σ]
@@ -62,20 +27,39 @@ theorem recurrence_parameter_transcendental {K σ : Type*} [Field K] [Fintype σ
         (LinearMap.mulLeft K ((Ideal.Quotient.mk I) l))) :
     Transcendental K ((Ideal.Quotient.mk I) l) := by
   intro ha
-  obtain ⟨D, hD⟩ := algebraic_parameter_recurrence_bounded ((Ideal.Quotient.mk I) l)
-    ha (filteredCoordinateSpace I) N hrec
+  let u := (Ideal.Quotient.mk I) l
+  let S := Algebra.adjoin K {u}
+  let W := S.toSubmodule * filteredCoordinateSpace I N
+  let : Module.Finite K W := Module.Finite.of_fg
+    (ha.isIntegral.fg_adjoin_singleton.mul (Submodule.FG.of_finite (N := filteredCoordinateSpace I N)))
+  have hstable : W.map (LinearMap.mulLeft K u) ≤ W := by
+    rintro _ ⟨x, hx, rfl⟩
+    refine Submodule.mul_induction_on hx (fun s hs x hx => ?_) (fun x y hx hy => ?_)
+    · rw [show LinearMap.mulLeft K u (s * x) = (u * s) * x from (mul_assoc _ _ _).symm]
+      exact Submodule.mul_mem_mul
+        (S.mul_mem (Algebra.subset_adjoin (Set.mem_singleton u)) hs) hx
+    · rw [map_add]; exact W.add_mem hx hy
+  have hmem (m : ℕ) : filteredCoordinateSpace I (N + m) ≤ W := by
+    induction m with
+    | zero =>
+      intro x hx
+      simpa only [Nat.add_zero, one_mul] using
+        Submodule.mul_mem_mul (show (1 : MvPolynomial σ K ⧸ I) ∈ S.toSubmodule from S.one_mem) hx
+    | succ m hm =>
+      rw [Nat.add_succ, hrec (N + m) (by omega)]
+      exact sup_le hm ((Submodule.map_mono hm).trans hstable)
+  let D := Module.finrank K W
   obtain ⟨M, c, hM⟩ := hdegree
   let m := D + c.natAbs + M + 1
   have he := hM (N + m) (by dsimp [m]; omega)
   push_cast at he
   have hb : (d : ℤ) * (N + m) + c ≤ D := by
     rw [← he]
-    exact_mod_cast hD m
-  have hd1 : (1 : ℤ) ≤ d := by exact_mod_cast hd
+    exact_mod_cast Submodule.finrank_mono (hmem m)
+  have hd1 : (1 : ℤ) ≤ d := mod_cast hd
   have hc : -(c.natAbs : ℤ) ≤ c := by
     have hh : -c ≤ ((-c).natAbs : ℤ) := Int.le_natAbs
-    simp only [Int.natAbs_neg] at hh
-    omega
+    simp only [Int.natAbs_neg] at hh; omega
   have hm : (m : ℤ) = D + c.natAbs + M + 1 := by simp [m]
   nlinarith
 

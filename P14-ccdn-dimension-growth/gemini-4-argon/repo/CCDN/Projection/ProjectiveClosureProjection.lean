@@ -25,14 +25,8 @@ def closureProjectionCoordinates {K : Type*} [Field K] {m n : ℕ}
     Fin (m + 1) → MvPolynomial (Fin (n + 1)) K :=
   Fin.cons (X 0) (fun i => rename Fin.succ (a i))
 
-/-- If all the forms `a i` are homogeneous linear, then so are their closure projection coordinates.
+/- If all the forms `a i` are homogeneous linear, then so are their closure projection coordinates.
 -/
-lemma closureProjectionCoordinates_homogeneous {K : Type*} [Field K] {m n : ℕ}
-    (a : Fin m → MvPolynomial (Fin n) K)
-    (ha : ∀ i, (a i).IsHomogeneous 1) (i : Fin (m + 1)) :
-    (closureProjectionCoordinates a i).IsHomogeneous 1 := by
-  refine Fin.cases (isHomogeneous_X K _) (fun j => ?_) i
-  exact (ha j).rename_isHomogeneous
 
 /-- Dehomogenizing at `X 0 = 1` a polynomial not involving `X 0` recovers the original polynomial.
 -/
@@ -40,12 +34,8 @@ lemma affineChart_rename_succ {K : Type*} [Field K] {n : ℕ}
     (f : MvPolynomial (Fin n) K) :
     affineChart n (rename Fin.succ f) = f := by
   have h : (affineChart (K := K) n).comp
-      (rename (R := K) Fin.succ).toRingHom = RingHom.id _ := by
-    apply MvPolynomial.ringHom_ext
-    · intro c
-      simp [affineChart]
-    · intro i
-      simp [affineChart]
+      (rename (R := K) Fin.succ).toRingHom = RingHom.id _ :=
+    MvPolynomial.ringHom_ext (fun _ => by simp [affineChart]) (fun _ => by simp [affineChart])
   exact RingHom.congr_fun h f
 
 /-- Dehomogenization at `X 0 = 1` intertwines substitution of the closure projection coordinates
@@ -57,17 +47,13 @@ lemma affineChart_aeval_closureProjectionCoordinates
     affineChart n (aeval (closureProjectionCoordinates a) f) =
       aeval a (affineChart m f) := by
   have h : (affineChart (K := K) n).comp (aeval (closureProjectionCoordinates a)).toRingHom =
-      (aeval (R := K) a).toRingHom.comp (affineChart (K := K) m) := by
-    apply MvPolynomial.ringHom_ext
-    · intro c
-      simp [affineChart]
-    · intro i
-      refine Fin.cases ?_ (fun j => ?_) i
-      · simp [closureProjectionCoordinates, affineChart]
-      · simp only [RingHom.comp_apply, AlgHom.toRingHom_eq_coe, RingHom.coe_coe,
-          aeval_X, closureProjectionCoordinates, Fin.cons_succ,
-          affineChart_rename_succ]
-        simp [affineChart]
+      (aeval (R := K) a).toRingHom.comp (affineChart (K := K) m) :=
+    MvPolynomial.ringHom_ext (fun _ => by simp [affineChart]) fun i =>
+      Fin.cases (by simp [closureProjectionCoordinates, affineChart])
+        (fun j => by
+          simp only [RingHom.comp_apply, AlgHom.toRingHom_eq_coe, RingHom.coe_coe,
+            aeval_X, closureProjectionCoordinates, Fin.cons_succ, affineChart_rename_succ]
+          simp [affineChart]) i
   exact RingHom.congr_fun h f
 
 /-- For homogeneous linear forms `a`, the projective closure of the kernel of the projection of
@@ -84,8 +70,9 @@ theorem projectiveClosureIdeal_projection_kernel
   ext f
   rw [mem_projectionCoordinateMap_ker, mem_projectiveClosureIdeal_iff,
     mem_projectiveClosureIdeal_iff]
-  simp only [homogeneousComponent_aeval_linear _
-    (closureProjectionCoordinates_homogeneous a ha),
+  simp only [homogeneousComponent_aeval_linear (closureProjectionCoordinates a)
+    (fun i => Fin.cases (motive := fun i => (closureProjectionCoordinates a i).IsHomogeneous 1)
+      (isHomogeneous_X K _) (fun j => (ha j).rename_isHomogeneous) i),
     affineChart_aeval_closureProjectionCoordinates,
     mem_projectionCoordinateMap_ker]
 

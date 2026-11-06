@@ -22,33 +22,6 @@ namespace CCDN
 noncomputable section
 open MvPolynomial
 
-/-- At a nonsingular reduced point the translated equation has
-multiplicity one. -/
-private theorem smooth_hypersurface_origin_order {p : ℕ} [Fact p.Prime] {σ : Type*}
-    (f : MvPolynomial σ ℤ) (a : σ → ℤ)
-    (ha : eval₂ (Int.castRingHom (ZMod p)) (fun j => (a j : ZMod p)) f = 0)
-    (hs : ∃ j, eval (fun i => (a i : ZMod p))
-      (pderiv j (map (Int.castRingHom (ZMod p)) f)) ≠ 0) :
-    map (Int.castRingHom (ZMod p)) (originShift a f) ∈ idealOfVars σ (ZMod p) ^ 1 ∧
-    homogeneousComponent 1 (map (Int.castRingHom (ZMod p)) (originShift a f)) ≠ 0 := by
-  have hf : map (Int.castRingHom (ZMod p)) f ≠ 0 := by
-    intro hz
-    obtain ⟨j, hj⟩ := hs
-    exact hj (by simp [hz])
-  obtain ⟨μ, hμ, _, hpow, hcomp⟩ := exists_hypersurface_reduction_multiplicity f a hf ha
-  have he : μ = 1 := by
-    rw [originShift_map] at hpow
-    exact origin_order_eq_one_of_smooth _ _ hμ hpow hs
-  subst μ
-  exact ⟨hpow, hcomp⟩
-
-end
-end CCDN
-
-namespace CCDN
-noncomputable section
-open MvPolynomial
-
 /-- If integer zeros `z i` of a homogeneous `f` all have their `k`-th coordinate prime to `p` and
 reduce, in the affine chart `k`, to the same nonsingular point `a` of `f mod p`, then for forms `F
 j` of a common degree `M` the power `p ^ hypersurfaceMultiplicityExponent (n + 1) 1 s` divides the
@@ -66,12 +39,19 @@ theorem smooth_projective_hypersurface_congruence_minorGcd {p n s N d M : ℕ}
     (hz : ∀ i, eval (z i) f = 0) :
     (p : ℤ) ^ hypersurfaceMultiplicityExponent (n + 1) 1 s ∣
       Int.Matrix.minorGcd (Matrix.of fun i j => eval (z i) (F j)) := by
+  /- At a nonsingular reduced point the translated equation has
+  multiplicity one. -/
   classical
-  obtain ⟨hpow, hcomp⟩ := smooth_hypersurface_origin_order
-    (projectiveHypersurfaceChart k f) a ha hs
+  have hf' : map (Int.castRingHom (ZMod p)) (projectiveHypersurfaceChart k f) ≠ 0 :=
+    fun hz => by obtain ⟨j, hj⟩ := hs; exact hj (by simp [hz])
+  obtain ⟨μ, hμ, _, hpow, hcomp⟩ := exists_hypersurface_reduction_multiplicity
+    (projectiveHypersurfaceChart k f) a hf' ha
+  have he : μ = 1 := by
+    rw [originShift_map] at hpow
+    exact origin_order_eq_one_of_smooth _ _ hμ hpow hs
+  subst μ
   rw [minorGcd_eq_gcd_plucker]
-  apply Finset.dvd_gcd
-  intro S _
+  refine Finset.dvd_gcd fun S _ => ?_
   rw [Matrix.plucker_row_eq_det_submatrix]
   exact projective_hypersurface_local_det_divisibility f hf _
     (fun j => hF _) z k a hpow hcomp hunit hres hz

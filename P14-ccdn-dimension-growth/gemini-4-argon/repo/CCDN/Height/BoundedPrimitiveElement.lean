@@ -15,48 +15,8 @@ import Mathlib.FieldTheory.PrimitiveElement
 namespace CCDN
 noncomputable section
 
-/-- A finite separating coordinate tuple has a primitive integer linear
+/- A finite separating coordinate tuple has a primitive integer linear
 combination with coefficients (1,k,...), where k<=n*[F:R]^2. -/
-theorem exists_bounded_primitive_element {R F : Type*} [Field R] [CharZero R] [Field F]
-    [Algebra R F] [Module.Finite R F] {n : ℕ} (a : Fin n → F)
-    (hsep : Function.Injective (fun φ : F →ₐ[R] AlgebraicClosure R => fun j => φ (a j))) :
-    ∃ k : ℕ, k ≤ n * (Module.finrank R F) ^ 2 ∧
-      IntermediateField.adjoin R {∑ j : Fin n, a j * (k : F) ^ j.val} = ⊤ := by
-  classical
-  obtain ⟨k, hk, hinj⟩ := exists_bounded_moment_separation
-    (fun φ : F →ₐ[R] AlgebraicClosure R => fun j => φ (a j)) hsep
-  refine ⟨k, ?_, ?_⟩
-  · simpa only [AlgHom.card R F (AlgebraicClosure R)] using hk
-  · apply (Field.primitive_element_iff_algHom_eq_of_eval' R (AlgebraicClosure R)
-      (fun x => IsAlgClosed.splits _) _).mpr
-    intro φ ψ he
-    apply hinj
-    simpa only [map_sum, map_mul, map_pow, map_natCast] using he
-
-/-- Maps from a fraction field are determined by the images of the
-original affine coordinates, even when the scalar field contains a parameter. -/
-private theorem curve_coordinate_embeddings_injective {K R F L σ : Type*}
-    [Field K] [Field R] [Field F] [Field L]
-    [Algebra K R] [Algebra K F] [Algebra R F] [IsScalarTower K R F]
-    [Algebra K L] [Algebra R L] [IsScalarTower K R L]
-    (I : Ideal (MvPolynomial σ K)) [I.IsPrime]
-    [Algebra (MvPolynomial σ K ⧸ I) F] [IsScalarTower K (MvPolynomial σ K ⧸ I) F]
-    [IsFractionRing (MvPolynomial σ K ⧸ I) F] :
-    Function.Injective (fun φ : F →ₐ[R] L => fun j : σ =>
-      φ (algebraMap (MvPolynomial σ K ⧸ I) F ((Ideal.Quotient.mk I) (MvPolynomial.X j)))) := by
-  intro φ ψ he
-  let q := (IsScalarTower.toAlgHom K (MvPolynomial σ K ⧸ I) F).comp (Ideal.Quotient.mkₐ K I)
-  have hpoly : (φ.restrictScalars K).comp q = (ψ.restrictScalars K).comp q := by
-    apply MvPolynomial.algHom_ext
-    intro j
-    exact congrFun he j
-  have hfield : φ.toRingHom = ψ.toRingHom := by
-    apply IsFractionRing.ringHom_ext (A := MvPolynomial σ K ⧸ I)
-    intro a
-    obtain ⟨h, rfl⟩ := Ideal.Quotient.mk_surjective a
-    exact AlgHom.congr_fun hpoly h
-  ext x
-  exact RingHom.congr_fun hfield x
 
 /-- The quantitative primitive element applies to the original coordinates of
 a curve's function field, with no coordinate-generation hypothesis left over. -/
@@ -72,7 +32,25 @@ theorem exists_bounded_curve_primitive_element {K R F : Type*}
       IntermediateField.adjoin R
         {∑ j : Fin n, algebraMap (MvPolynomial (Fin n) K ⧸ I) F
           ((Ideal.Quotient.mk I) (MvPolynomial.X j)) * (k : F) ^ j.val} = ⊤ := by
-  exact exists_bounded_primitive_element _ (curve_coordinate_embeddings_injective I)
+  /- Maps from a fraction field are determined by the images of the
+  original affine coordinates, even when the scalar field contains a parameter. -/
+  classical
+  let a : Fin n → F := fun j => algebraMap (MvPolynomial (Fin n) K ⧸ I) F
+    ((Ideal.Quotient.mk I) (MvPolynomial.X j))
+  obtain ⟨k, hk, hinj⟩ := exists_bounded_moment_separation
+    (fun φ : F →ₐ[R] AlgebraicClosure R => fun j => φ (a j)) fun φ ψ he => by
+      let q := (IsScalarTower.toAlgHom K (MvPolynomial (Fin n) K ⧸ I) F).comp (Ideal.Quotient.mkₐ K I)
+      have hpoly : (φ.restrictScalars K).comp q = (ψ.restrictScalars K).comp q :=
+        MvPolynomial.algHom_ext (congrFun he)
+      have hfield : φ.toRingHom = ψ.toRingHom :=
+        IsFractionRing.ringHom_ext (A := MvPolynomial (Fin n) K ⧸ I) fun x => by
+          obtain ⟨h, rfl⟩ := Ideal.Quotient.mk_surjective x
+          exact AlgHom.congr_fun hpoly h
+      exact AlgHom.ext (RingHom.congr_fun hfield)
+  refine ⟨k, by simpa only [AlgHom.card R F (AlgebraicClosure R)] using hk,
+    (Field.primitive_element_iff_algHom_eq_of_eval' R (AlgebraicClosure R)
+      (fun _ => IsAlgClosed.splits _) _).mpr fun φ ψ he =>
+      hinj (by simpa only [map_sum, map_mul, map_pow, map_natCast] using he)⟩
 
 end
 end CCDN

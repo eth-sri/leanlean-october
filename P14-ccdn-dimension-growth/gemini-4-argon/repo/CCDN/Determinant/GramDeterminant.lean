@@ -35,25 +35,6 @@ theorem prod_row_factors_dvd_det {R : Type*} [CommRing R] {s : ℕ}
   rw [hA]
   exact ⟨(Matrix.of Q).det, Matrix.det_mul_column d (Matrix.of Q)⟩
 
-/-- Bound the Gram determinant by expanding its determinant and bounding each entry.
-For monomials of degree at most `M` in a radius-`B` box, take `H = B^M`. -/
-private theorem abs_gram_det_le {s N : ℕ} (A : Matrix (Fin s) (Fin N) ℝ) {H : ℝ}
-    (hH : 0 ≤ H) (hA : ∀ i j, |A i j| ≤ H) :
-    |(A * Aᵀ).det| ≤ (s.factorial : ℝ) * ((N : ℝ) * H ^ 2) ^ s := by
-  have hentry : ∀ i j, |(A * Aᵀ) i j| ≤ (N : ℝ) * H ^ 2 := by
-    intro i j
-    calc
-      |(A * Aᵀ) i j| = |∑ k, A i k * A j k| := rfl
-      _ ≤ ∑ k, |A i k * A j k| := Finset.abs_sum_le_sum_abs _ _
-      _ ≤ ∑ _k : Fin N, H ^ 2 := by
-        apply Finset.sum_le_sum
-        intro k _
-        rw [abs_mul, pow_two]
-        exact mul_le_mul (hA i k) (hA j k) (abs_nonneg _) hH
-      _ = _ := by simp
-  have h := Matrix.det_le (abv := AbsoluteValue.abs) hentry
-  simpa [nsmul_eq_mul] using h
-
 /-- Archimedean Gram determinant bound: if `A` is the real evaluation matrix of `N` monomials of
 degree at most `M` at `s` integer points in the box of radius `B ≥ 1`, then `|det (A Aᵀ)| ≤ s! · (N
 · B ^ (2 M)) ^ s`. -/
@@ -63,9 +44,19 @@ theorem evaluation_gram_det_le {n N s M : ℕ}
     (hdeg : ∀ j, (mon j).degree ≤ M) :
     let A := (evaluationMatrix mon points).map ((↑) : ℤ → ℝ)
     |(A * Aᵀ).det| ≤ (s.factorial : ℝ) * ((N : ℝ) * (B ^ M) ^ 2) ^ s := by
-  apply abs_gram_det_le
-  · positivity
-  · intro i j
-    exact abs_monomial_value_le (mon j) (points i) hB (hpoints i) (hdeg j)
+  /- Bound the Gram determinant by expanding its determinant and bounding each entry.
+  For monomials of degree at most `M` in a radius-`B` box, take `H = B^M`. -/
+  intro A
+  have hentry (i j : Fin s) : |(A * Aᵀ) i j| ≤ (N : ℝ) * (B ^ M) ^ 2 := by
+    calc
+      |(A * Aᵀ) i j| = |∑ k, A i k * A j k| := rfl
+      _ ≤ ∑ k, |A i k * A j k| := Finset.abs_sum_le_sum_abs _ _
+      _ ≤ ∑ _k : Fin N, (B ^ M) ^ 2 := Finset.sum_le_sum fun k _ => by
+        rw [abs_mul, pow_two]
+        exact mul_le_mul (abs_monomial_value_le (mon k) (points i) hB (hpoints i) (hdeg k))
+          (abs_monomial_value_le (mon k) (points j) hB (hpoints j) (hdeg k))
+          (abs_nonneg _) (by positivity)
+      _ = _ := by simp
+  simpa [nsmul_eq_mul] using Matrix.det_le (abv := AbsoluteValue.abs) hentry
 
 end CCDN

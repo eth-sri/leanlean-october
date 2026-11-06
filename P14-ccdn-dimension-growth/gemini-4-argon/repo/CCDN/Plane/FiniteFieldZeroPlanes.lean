@@ -35,25 +35,6 @@ lemma finite_field_polynomial_zeros_card {K τ : Type*} [Field K] [Fintype K]
 def ZeroPlaneParameters {K σ : Type*} [CommRing K] (f : MvPolynomial σ K) :=
   {v : PlaneParameters σ → K // universalPlaneSection f v = 0}
 
-/-- Sending a zero section to its three defining hypersurface points is
-injective. -/
-private theorem zero_plane_parameters_card_le_cube {K σ : Type*} [CommRing K]
-    [Fintype K] [Fintype σ] (f : MvPolynomial σ K) :
-    Nat.card (ZeroPlaneParameters f) ≤
-      (Nat.card {x : σ → K // eval x f = 0}) ^ 3 := by
-  classical
-  let Z := {x : σ → K // eval x f = 0}
-  let ψ : ZeroPlaneParameters f → (Fin 3 → Z) := fun v j =>
-    ⟨planeTriplePointsEquiv v.val j, zero_universalPlaneSection_three_points f v.val v.property j⟩
-  have hψ : Function.Injective ψ := by
-    intro x y h
-    apply Subtype.ext
-    apply planeTriplePointsEquiv.injective
-    funext j
-    exact congrArg Subtype.val (congrFun h j)
-  have h := Nat.card_le_card_of_injective ψ hψ
-  simpa only [Nat.card_eq_fintype_card, Fintype.card_fun, Fintype.card_fin] using h
-
 /-- In m ambient coordinates, zero restrictions have at most d^3*q^(3*m-3)
 parameter triples. This is substantially smaller than the general bad-plane
 bound and controls their q^2-point contribution to incidence averaging. -/
@@ -62,8 +43,19 @@ theorem finite_field_zero_plane_parameters_card
     (f : MvPolynomial (Option σ) K) (hf : f ≠ 0) :
     Nat.card (ZeroPlaneParameters f) ≤
       f.totalDegree ^ 3 * Fintype.card K ^ (3 * Fintype.card σ) := by
-  have h := (zero_plane_parameters_card_le_cube f).trans
-    (Nat.pow_le_pow_left (finite_field_polynomial_zeros_card f hf) 3)
+  /- Sending a zero section to its three defining hypersurface points is
+  injective. -/
+  classical
+  let Z := {x : Option σ → K // eval x f = 0}
+  let ψ : ZeroPlaneParameters f → (Fin 3 → Z) := fun v j =>
+    ⟨planeTriplePointsEquiv v.val j, zero_universalPlaneSection_three_points f v.val v.property j⟩
+  have hψ : Function.Injective ψ := fun x y h =>
+    Subtype.ext <| planeTriplePointsEquiv.injective <| funext fun j =>
+      congrArg Subtype.val (congrFun h j)
+  have hcube : Nat.card (ZeroPlaneParameters f) ≤ (Nat.card Z) ^ 3 := by
+    simpa only [Nat.card_eq_fintype_card, Fintype.card_fun, Fintype.card_fin] using
+      Nat.card_le_card_of_injective ψ hψ
+  have h := hcube.trans (Nat.pow_le_pow_left (finite_field_polynomial_zeros_card f hf) 3)
   simpa only [Fintype.card_option, Nat.add_sub_cancel, mul_pow, ← pow_mul, Nat.mul_comm] using h
 
 end

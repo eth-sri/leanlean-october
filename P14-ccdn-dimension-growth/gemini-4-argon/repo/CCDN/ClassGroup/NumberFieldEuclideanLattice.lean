@@ -71,19 +71,14 @@ lemma mem_euclidean_integerLattice_iff
     (x : mixedEmbedding.euclidean.mixedSpace K) :
     x ∈ mixedEmbedding.euclidean.integerLattice K ↔
       ∃ z : 𝓞 K, euclideanNumberFieldEmbedding K (z : K) = x := by
-  constructor
-  · rintro ⟨z, hz⟩
-    refine ⟨z, (mixedEmbedding.euclidean.toMixed K).injective ?_⟩
-    rw [toMixed_euclideanNumberFieldEmbedding]
-    exact hz
-  · rintro ⟨z, rfl⟩
-    exact euclideanNumberFieldEmbedding_mem_integerLattice K z
+  refine ⟨fun ⟨z, hz⟩ => ⟨z, (mixedEmbedding.euclidean.toMixed K).injective ?_⟩, ?_⟩
+  · rw [toMixed_euclideanNumberFieldEmbedding]; exact hz
+  · rintro ⟨z, rfl⟩; exact euclideanNumberFieldEmbedding_mem_integerLattice K z
 
 open Classical in
 private lemma infinitePlace_le_euclidean_norm (w : InfinitePlace K) (x : K) :
     w x ≤ ‖euclideanNumberFieldEmbedding K x‖ := by
-  rw [← mixedEmbedding.normAtPlace_apply w x,
-    ← toMixed_euclideanNumberFieldEmbedding]
+  rw [← mixedEmbedding.normAtPlace_apply w x, ← toMixed_euclideanNumberFieldEmbedding]
   rcases isReal_or_isComplex w with hw | hw
   · rw [mixedEmbedding.normAtPlace_apply_of_isReal hw]
     exact (PiLp.norm_apply_le (euclideanNumberFieldEmbedding K x).fst ⟨w, hw⟩).trans
@@ -97,15 +92,12 @@ private lemma euclideanNumberFieldEmbedding_norm_sq (x : K) :
     ‖euclideanNumberFieldEmbedding K x‖ ^ 2 =
       (∑ w : {w : InfinitePlace K // IsReal w}, (w.val x) ^ 2) +
       (∑ w : {w : InfinitePlace K // IsComplex w}, (w.val x) ^ 2) := by
-  rw [WithLp.prod_norm_sq_eq_of_L2, EuclideanSpace.norm_sq_eq,
-    EuclideanSpace.norm_sq_eq]
+  rw [WithLp.prod_norm_sq_eq_of_L2, EuclideanSpace.norm_sq_eq, EuclideanSpace.norm_sq_eq]
   congr 1
-  · apply Finset.sum_congr rfl
-    intro w _
+  · refine Finset.sum_congr rfl fun w _ => ?_
     change ‖(mixedEmbedding K x).1 w‖ ^ 2 = _
     rw [mixedEmbedding.mixedEmbedding_apply_isReal, norm_embedding_of_isReal]
-  · apply Finset.sum_congr rfl
-    intro w _
+  · refine Finset.sum_congr rfl fun w _ => ?_
     change ‖(mixedEmbedding K x).2 w‖ ^ 2 = _
     rw [mixedEmbedding.mixedEmbedding_apply_isComplex, norm_embedding_eq]
 
@@ -126,10 +118,7 @@ lemma one_le_euclidean_integerLattice_norm
     (hx : x ∈ mixedEmbedding.euclidean.integerLattice K) (hne : x ≠ 0) :
     1 ≤ ‖x‖ := by
   obtain ⟨z, rfl⟩ := (mem_euclidean_integerLattice_iff K x).mp hx
-  apply one_le_euclidean_norm_integer K
-  intro hz
-  apply hne
-  simp [hz]
+  exact one_le_euclidean_norm_integer K fun hz => hne (by simp [hz])
 
 open Classical in
 /-- If `w x ≤ B` at every infinite place `w`, then the Euclidean embedding of `x` has norm at most
@@ -139,16 +128,14 @@ lemma euclideanNumberFieldEmbedding_norm_le {B : ℝ} (hB : 0 ≤ B)
     ‖euclideanNumberFieldEmbedding K x‖ ≤ Real.sqrt (Module.finrank ℚ K) * B := by
   have hreal : (∑ w : {w : InfinitePlace K // IsReal w}, (w.val x) ^ 2) ≤
       nrRealPlaces K * B ^ 2 := by
-    simpa using Finset.sum_le_sum (fun (w : {w : InfinitePlace K // IsReal w})
-      (_ : w ∈ Finset.univ) ↦
-      (sq_le_sq₀ (apply_nonneg w.val x) hB).mpr (hx w.val))
+    simpa using Finset.sum_le_sum fun (w : {w : InfinitePlace K // IsReal w}) (_ : w ∈ Finset.univ) ↦
+      (sq_le_sq₀ (apply_nonneg w.val x) hB).mpr (hx w.val)
   have hcomplex : (∑ w : {w : InfinitePlace K // IsComplex w}, (w.val x) ^ 2) ≤
       nrComplexPlaces K * B ^ 2 := by
-    simpa using Finset.sum_le_sum (fun (w : {w : InfinitePlace K // IsComplex w})
-      (_ : w ∈ Finset.univ) ↦
-      (sq_le_sq₀ (apply_nonneg w.val x) hB).mpr (hx w.val))
-  have hrank : (nrRealPlaces K : ℝ) + 2 * nrComplexPlaces K = Module.finrank ℚ K := by
-    exact_mod_cast card_add_two_mul_card_eq_rank K
+    simpa using Finset.sum_le_sum fun (w : {w : InfinitePlace K // IsComplex w}) (_ : w ∈ Finset.univ) ↦
+      (sq_le_sq₀ (apply_nonneg w.val x) hB).mpr (hx w.val)
+  have hrank : (nrRealPlaces K : ℝ) + 2 * nrComplexPlaces K = Module.finrank ℚ K :=
+    mod_cast card_add_two_mul_card_eq_rank K
   apply (sq_le_sq₀ (norm_nonneg _) (mul_nonneg (Real.sqrt_nonneg _) hB)).mp
   rw [mul_pow, Real.sq_sqrt (Nat.cast_nonneg _), euclideanNumberFieldEmbedding_norm_sq]
   nlinarith [congrArg (fun r : ℝ ↦ r * B ^ 2) hrank,
@@ -158,8 +145,7 @@ open Classical in
 /-- The Euclidean embedding of `1` has norm at most `√[K : ℚ]`. -/
 lemma euclideanNumberFieldEmbedding_one_norm_le :
     ‖euclideanNumberFieldEmbedding K 1‖ ≤ Real.sqrt (Module.finrank ℚ K) := by
-  simpa using euclideanNumberFieldEmbedding_norm_le K (B := 1) zero_le_one 1
-    (fun w ↦ by simp)
+  simpa using euclideanNumberFieldEmbedding_norm_le K (B := 1) zero_le_one 1 fun _ ↦ by simp
 
 open Classical in
 /-- The Euclidean norm is submultiplicative on embedded field elements: the norm of the embedding of
@@ -173,10 +159,10 @@ lemma euclideanNumberFieldEmbedding_norm_mul_le (x y : K) :
     exact mul_le_mul_of_nonneg_left
       ((sq_le_sq₀ (apply_nonneg w y) (norm_nonneg _)).mpr
         (infinitePlace_le_euclidean_norm K w y)) (sq_nonneg _)
-  have hreal := Finset.sum_le_sum (fun w (_ : w ∈
-      (Finset.univ : Finset {w : InfinitePlace K // IsReal w})) ↦ hp w.val)
-  have hcomplex := Finset.sum_le_sum (fun w (_ : w ∈
-      (Finset.univ : Finset {w : InfinitePlace K // IsComplex w})) ↦ hp w.val)
+  have hreal := Finset.sum_le_sum fun w (_ : w ∈
+      (Finset.univ : Finset {w : InfinitePlace K // IsReal w})) ↦ hp w.val
+  have hcomplex := Finset.sum_le_sum fun w (_ : w ∈
+      (Finset.univ : Finset {w : InfinitePlace K // IsComplex w})) ↦ hp w.val
   rw [← Finset.sum_mul] at hreal hcomplex
   apply (sq_le_sq₀ (norm_nonneg _) (mul_nonneg (norm_nonneg _) (norm_nonneg _))).mp
   rw [mul_pow, euclideanNumberFieldEmbedding_norm_sq K (x * y),

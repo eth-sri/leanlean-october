@@ -23,24 +23,6 @@ namespace CCDN
 noncomputable section
 open MvPolynomial
 
-/-- Standard representatives describe precisely each filtered coordinate space. -/
-private theorem map_bounded_standard_eq {K σ : Type*} [Field K]
-    [LinearOrder σ] [WellFoundedGT σ] (I : Ideal (MvPolynomial σ K)) (N : ℕ) :
-    (restrictSupport K (Ideal.boundedStandardExponents I MonomialOrder.degLex N)).map
-        (Ideal.Quotient.mkₐ K I).toLinearMap = filteredCoordinateSpace I N := by
-  apply le_antisymm
-  · apply Submodule.map_mono
-    exact restrictSupport_mono K (fun _ ha => ha.2)
-  · rintro y ⟨f, hf, rfl⟩
-    obtain ⟨r, hr, hdegree, hI⟩ := Ideal.exists_standard_representative_degLex I f
-    refine Submodule.mem_map.mpr ⟨r, ?_, ?_⟩
-    · intro a ha
-      exact ⟨hr ha, (le_totalDegree ha).trans
-        (hdegree.trans ((mem_restrictTotalDegree σ N f).mp hf))⟩
-    · have hq := Ideal.Quotient.eq_zero_iff_mem.mpr hI
-      rw [map_sub, sub_eq_zero] at hq
-      exact hq.symm
-
 /-- The filtered Hilbert function counts the standard monomials of bounded degree. -/
 theorem filteredCoordinateSpace_finrank_eq_standard_card {K σ : Type*} [Field K]
     [LinearOrder σ] [WellFoundedGT σ] (I : Ideal (MvPolynomial σ K)) (N : ℕ) :
@@ -48,22 +30,26 @@ theorem filteredCoordinateSpace_finrank_eq_standard_card {K σ : Type*} [Field K
       Nat.card (Ideal.boundedStandardExponents I MonomialOrder.degLex N) := by
   let V := restrictSupport K (Ideal.boundedStandardExponents I MonomialOrder.degLex N)
   let φ := (Ideal.Quotient.mkₐ K I).toLinearMap.comp V.subtype
-  have hinj : Function.Injective φ := by
-    intro f g h
+  have hinj : Function.Injective φ := fun f g h => by
     apply Subtype.ext
     apply sub_eq_zero.mp
-    apply Ideal.eq_zero_of_mem_restrictSupport_standardExponents I MonomialOrder.degLex
-    · apply Submodule.sub_mem
-      · exact restrictSupport_mono K (fun _ ha => ha.1) f.property
-      · exact restrictSupport_mono K (fun _ ha => ha.1) g.property
-    · apply Ideal.Quotient.eq_zero_iff_mem.mp
-      change (Ideal.Quotient.mkₐ K I) (f.val - g.val) = 0
-      rw [map_sub, sub_eq_zero]
-      exact h
+    refine Ideal.eq_zero_of_mem_restrictSupport_standardExponents I MonomialOrder.degLex
+      (Submodule.sub_mem _ (restrictSupport_mono K (fun _ ha => ha.1) f.property)
+        (restrictSupport_mono K (fun _ ha => ha.1) g.property)) ?_
+    apply Ideal.Quotient.eq_zero_iff_mem.mp
+    change (Ideal.Quotient.mkₐ K I) (f.val - g.val) = 0
+    rwa [map_sub, sub_eq_zero]
+  /- Standard representatives describe precisely each filtered coordinate space. -/
   have hrange : φ.range = filteredCoordinateSpace I N := by
     rw [show φ = (Ideal.Quotient.mkₐ K I).toLinearMap.comp V.subtype from rfl,
       LinearMap.range_comp, Submodule.range_subtype]
-    exact map_bounded_standard_eq I N
+    refine le_antisymm (Submodule.map_mono (restrictSupport_mono K fun _ ha => ha.2)) ?_
+    rintro y ⟨f, hf, rfl⟩
+    obtain ⟨r, hr, hdegree, hI⟩ := Ideal.exists_standard_representative_degLex I f
+    refine Submodule.mem_map.mpr ⟨r, fun a ha =>
+      ⟨hr ha, (le_totalDegree ha).trans (hdegree.trans ((mem_restrictTotalDegree σ N f).mp hf))⟩, ?_⟩
+    have hq := Ideal.Quotient.eq_zero_iff_mem.mpr hI
+    rwa [map_sub, sub_eq_zero, eq_comm] at hq
   rw [← hrange, LinearMap.finrank_range_of_inj hinj]
   exact Module.finrank_eq_nat_card_basis (basisRestrictSupport K _)
 

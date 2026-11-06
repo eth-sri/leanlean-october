@@ -54,18 +54,6 @@ lemma integerCoefficientHeight_scaledHomogenize_one {n : ℕ} (d : ℕ)
         (homogenizedExponent d m)
   exact_mod_cast le_antisymm hupper hlower
 
-private lemma scaledHomogenize_one_integer_irreducible {n : ℕ}
-    (f : MvPolynomial (Fin n) ℤ) (hprim : PrimitiveIntegerPolynomial f)
-    (hir : Irreducible f) (hd : 0 < f.totalDegree) :
-    Irreducible (scaledHomogenize f.totalDegree 1 f) := by
-  apply (hprim.scaledHomogenize_one _).irreducible_of_rational_map
-  rw [scaledHomogenize_map]
-  have hdeg : (map (Int.castRingHom ℚ) f).totalDegree = f.totalDegree :=
-      totalDegree_map_of_injective Int.cast_injective _
-  rw [← hdeg]
-  exact scaledHomogenize_irreducible _ (rational_map_irreducible_of_integer f hir hd)
-    (by simp)
-
 /-- If a form `G` is not divisible by the ordinary homogenization of a nonzero primitive integer
 polynomial `f`, then its dehomogenization at `x₀ = 1` is not divisible by `f`. -/
 lemma unscaled_auxiliary_not_dvd {n M : ℕ}
@@ -91,14 +79,10 @@ private lemma unscaled_auxiliary_vanishes {n M : ℕ}
       eval x (homogeneousSlice n 1 G) = 0 := by
   intro x hx hxf
   let v : IntPoint (n + 1) := Fin.cons 1 x
-  have hv0 : v ≠ 0 := by
-    intro hz
-    have hh := congrFun hz 0
-    exact one_ne_zero hh
+  have hv0 : v ≠ 0 := fun hz => one_ne_zero (congrFun hz 0)
   let P := Projectivization.mk ℚ (rationalPoint v) (rationalPoint_ne_zero hv0)
-  have hvbox (j : Fin (n + 1)) : |(v j : ℝ)| ≤ B := by
-    refine Fin.cases ?_ (fun k => hx k) j
-    simpa only [v, Fin.cons_zero, Int.cast_one, abs_one] using hB
+  have hvbox (j : Fin (n + 1)) : |(v j : ℝ)| ≤ B :=
+    Fin.cases (by simpa only [v, Fin.cons_zero, Int.cast_one, abs_one] using hB) (fun k => hx k) j
   have hPB : P.mulHeight ≤ B := projective_integer_height_le v hv0 hvbox
   have hvF : eval v (scaledHomogenize f.totalDegree 1 f) = 0 := by
     rw [scaledHomogenize_eval _ _ le_rfl, hxf, mul_zero]
@@ -106,14 +90,12 @@ private lemma unscaled_auxiliary_vanishes {n M : ℕ}
       (map (Int.castRingHom ℚ) (scaledHomogenize f.totalDegree 1 f)) := by
     apply (mem_projectiveZeroLocus_mk ((scaledHomogenize_homogeneous 1 f le_rfl).map _) _ _).mpr
     have hh := congrArg (Int.castRingHom ℚ) hvF
-    rw [map_eval, map_zero] at hh
-    exact hh
+    rwa [map_eval, map_zero] at hh
   have hcast := (mem_projectiveZeroLocus_mk (hGhom.map _) _ _).mp (hGzero P hPB hPF)
   rw [homogeneousSlice_eval]
   apply Int.cast_injective (α := ℚ)
   change (Int.castRingHom ℚ) (eval v G) = (Int.castRingHom ℚ) 0
-  rw [map_eval, map_zero]
-  exact hcast
+  rwa [map_eval, map_zero]
 
 /-- Ordinary homogenization gives an auxiliary in every affine
 box, with the height and bad-prime factor of the unscaled model. -/
@@ -126,7 +108,12 @@ theorem unscaled_affine_auxiliary {n : ℕ}
         (integerCoefficientHeight f : ℝ) := by
   let F := scaledHomogenize f.totalDegree 1 f
   have hFhom : F.IsHomogeneous f.totalDegree := scaledHomogenize_homogeneous _ _ le_rfl
-  have hFir : Irreducible F := scaledHomogenize_one_integer_irreducible f hprim hir hd
+  have hFir : Irreducible F := by
+    apply (hprim.scaledHomogenize_one _).irreducible_of_rational_map
+    have hdeg : (map (Int.castRingHom ℚ) f).totalDegree = f.totalDegree :=
+      totalDegree_map_of_injective Int.cast_injective _
+    rw [scaledHomogenize_map, ← hdeg]
+    exact scaledHomogenize_irreducible _ (rational_map_irreducible_of_integer f hir hd) (by simp)
   obtain ⟨M, hM, G, _, hGhom, hGzero, hGnd⟩ := hypersurface_projective_auxiliary F hFhom hd hFir hB
   let g := homogeneousSlice (n + 2) 1 G
   have hgnd : ¬ f ∣ g := unscaled_auxiliary_not_dvd f hir.ne_zero hprim G hGhom hGnd

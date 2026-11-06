@@ -27,25 +27,6 @@ namespace CCDN
 noncomputable section
 open MvPolynomial
 
-private lemma planeLinearDeformation_eval_quotient {K τ : Type*} [Field K]
-    (I : Ideal (MvPolynomial τ K)) (a : Fin 2 → MvPolynomial τ K)
-    (l : MvPolynomial τ K) (t : K) (f : MvPolynomial (Fin 2) K) :
-    (planeLinearDeformation (fun i => (Ideal.Quotient.mk I) (a i)) 1
-      ((Ideal.Quotient.mk I) l) f).eval (algebraMap K (MvPolynomial τ K ⧸ I) t) =
-      projectionCoordinateMap I (![a 0, a 1 + t • l]) f := by
-  let E : Polynomial (MvPolynomial τ K ⧸ I) →ₐ[K] (MvPolynomial τ K ⧸ I) :=
-    (Polynomial.aeval (algebraMap K (MvPolynomial τ K ⧸ I) t)).restrictScalars K
-  have he : E.comp (planeLinearDeformation (fun i => (Ideal.Quotient.mk I) (a i)) 1
-      ((Ideal.Quotient.mk I) l)) = projectionCoordinateMap I (![a 0, a 1 + t • l]) := by
-    apply MvPolynomial.algHom_ext
-    intro i
-    fin_cases i <;>
-      simp [E, planeLinearDeformation, projectionCoordinateMap, Algebra.smul_def]
-    change (Ideal.Quotient.mk I) l * algebraMap K (MvPolynomial τ K ⧸ I) t =
-      algebraMap K (MvPolynomial τ K ⧸ I) t * (Ideal.Quotient.mk I) l
-    ring
-  exact congrArg (fun ψ => ψ f) he
-
 /-- Every bounded-degree linear displacement has a nonzero plane relation.
 The relations can be chosen polynomially in the displacement parameter and
 with a nonzero specialization at zero. -/
@@ -69,40 +50,36 @@ theorem exists_curve_projection_relation_family {K τ : Type*}
   let ψ := planeLinearDeformation (K := K) (fun i => (Ideal.Quotient.mk I) (a i)) 1
     ((Ideal.Quotient.mk I) l)
   let g := fun j => ψ (b j).val
-  apply polynomial_family_relation_nonzero_at_zero g
-  intro k
+  refine polynomial_family_relation_nonzero_at_zero g fun k => ?_
   let aT : Fin 2 → MvPolynomial τ K := ![a 0, a 1 + (k : K) • l]
   have hat (i : Fin 2) : (aT i).totalDegree ≤ 1 := by
     fin_cases i
     · exact ha 0
-    · change (a 1 + (k : K) • l).totalDegree ≤ 1
-      apply (totalDegree_add _ _).trans
-      apply max_le (ha 1)
-      exact (totalDegree_smul_le _ _).trans hl
+    · exact (totalDegree_add (a 1) ((k : K) • l)).trans
+        (max_le (ha 1) ((totalDegree_smul_le _ _).trans hl))
   obtain ⟨p, hp, _, hpd, hkernel⟩ := exists_plane_projection_equation_degree_le
     I aT hat d hdegree 0 hu
-  have hpzero : projectionCoordinateMap I aT p = 0 := by
-    change (Ideal.Quotient.mk I) (aeval aT p) = 0
-    exact Ideal.Quotient.eq_zero_iff_mem.mpr ((hkernel p).mpr (dvd_refl p))
+  have hpzero : projectionCoordinateMap I aT p = 0 :=
+    Ideal.Quotient.eq_zero_iff_mem.mpr ((hkernel p).mpr (dvd_refl p))
   let pV : V := ⟨p, (mem_restrictTotalDegree _ _ _).mpr hpd⟩
   let c := fun j => b.repr pV j
-  have hc : c ≠ 0 := by
-    intro hzero
-    have hpV : pV = 0 := by
-      apply b.repr.injective
-      ext j
-      simpa only [map_zero, Finsupp.zero_apply, Pi.zero_apply] using congrFun hzero j
-    exact hp.ne_zero (congrArg Subtype.val hpV)
+  have hc : c ≠ 0 := fun hzero => hp.ne_zero <| congrArg Subtype.val
+    (show pV = 0 from b.repr.injective <| Finsupp.ext fun j => by
+      simpa only [map_zero, Finsupp.zero_apply, Pi.zero_apply] using congrFun hzero j)
   have hs : ∑ j, c j • (b j).val = p := by
-    have hh := congrArg Subtype.val (b.sum_repr pV)
-    simpa only [Submodule.coe_sum, Submodule.coe_smul] using hh
+    simpa only [Submodule.coe_sum, Submodule.coe_smul] using congrArg Subtype.val (b.sum_repr pV)
   refine ⟨c, hc, ?_⟩
+  let E : Polynomial (MvPolynomial τ K ⧸ I) →ₐ[K] (MvPolynomial τ K ⧸ I) :=
+    (Polynomial.aeval (algebraMap K (MvPolynomial τ K ⧸ I) (k : K))).restrictScalars K
+  have he : E.comp ψ = projectionCoordinateMap I aT :=
+    MvPolynomial.algHom_ext fun i => by
+      fin_cases i
+      · simp [E, ψ, aT, planeLinearDeformation, projectionCoordinateMap]
+      · simp [E, ψ, aT, planeLinearDeformation, projectionCoordinateMap, Algebra.smul_def]; ring
   have hev (j : Fin (Module.finrank K V)) : (g j).eval (k : MvPolynomial τ K ⧸ I) =
       projectionCoordinateMap I aT (b j).val := by
-    simpa only [map_natCast] using planeLinearDeformation_eval_quotient I a l (k : K) (b j).val
-  simp only [hev]
-  simp_rw [← map_smul]
-  rw [← map_sum, hs, hpzero]
+    simpa [E, g, ψ, Polynomial.aeval_def] using congrArg (fun φ => φ (b j).val) he
+  simp only [hev, ← map_smul, ← map_sum, hs, hpzero]
 
 end
 end CCDN

@@ -37,27 +37,6 @@ lemma homogeneous_eq_sum_coeff {K : Type*} [CommSemiring K] {n M : ℕ}
     rw [← h]
     exact homogeneousMonomials_degree n M j
 
-private lemma homogeneous_coefficients_ne_zero {n M : ℕ}
-    (f : MvPolynomial (Fin (n + 1)) ℤ) (hf : f.IsHomogeneous M) (hf0 : f ≠ 0) :
-    (fun j => f.coeff (homogeneousMonomials n M j)) ≠ 0 := by
-  intro h
-  apply hf0
-  rw [homogeneous_eq_sum_coeff f hf]
-  have hz : ∀ j, f.coeff (homogeneousMonomials n M j) = 0 := fun j => congrFun h j
-  simp only [hz, monomial_zero, Finset.sum_const_zero]
-
-private lemma homogeneous_evaluation_kernel {n M t : ℕ}
-    (f : MvPolynomial (Fin (n + 1)) ℤ) (hf : f.IsHomogeneous M)
-    (points : Fin t → (Fin (n + 1) → ℤ)) (hzero : ∀ i, eval (points i) f = 0) :
-    evaluationMatrix (homogeneousMonomials n M) points *ᵥ
-      (fun j => f.coeff (homogeneousMonomials n M j)) = 0 := by
-  have he : polynomialOfCoefficients (homogeneousMonomials n M)
-      (fun j => f.coeff (homogeneousMonomials n M j)) = f :=
-    (homogeneous_eq_sum_coeff f hf).symm
-  ext i
-  rw [← eval_polynomialOfCoefficients, he]
-  exact hzero i
-
 /-- Select a spanning family of independent evaluation rows. The
 homogeneous equation, padded to degree `M`, proves strict rank deficiency. -/
 theorem homogeneous_independent_evaluation_rows {n d M t : ℕ}
@@ -71,27 +50,28 @@ theorem homogeneous_independent_evaluation_rows {n d M t : ℕ}
       Submodule.span ℚ (Set.range
         ((evaluationMatrix (homogeneousMonomials n M) points).map ((↑) : ℤ → ℚ)).row) ∧
       s < (n + M).choose M := by
-  let F := f * X (0 : Fin (n + 1)) ^ (M - d)
-  have hF : F.IsHomogeneous M := by
-    simpa only [Nat.add_sub_of_le hdM] using hf.mul (isHomogeneous_X_pow (0 : Fin (n + 1)) (M - d))
-  have hF0 : F ≠ 0 := mul_ne_zero hf0 (pow_ne_zero _ (X_ne_zero _))
-  have hFzero : ∀ i, eval (points i) F = 0 := by
-    intro i
-    simp only [F, eval_mul, hzero i, zero_mul]
+  have hpad : ∃ F : MvPolynomial (Fin (n + 1)) ℤ,
+      F.IsHomogeneous M ∧ F ≠ 0 ∧ ∀ i, eval (points i) F = 0 :=
+    ⟨f * X (0 : Fin (n + 1)) ^ (M - d),
+      by simpa only [Nat.add_sub_of_le hdM] using hf.mul (isHomogeneous_X_pow _ (M - d)),
+      mul_ne_zero hf0 (pow_ne_zero _ (X_ne_zero _)),
+      fun i => by simp [hzero i]⟩
+  obtain ⟨F, hF, hF0, hFzero⟩ := hpad
   let v := fun j => F.coeff (homogeneousMonomials n M j)
-  have hv : (fun j => (v j : ℚ)) ≠ 0 := by
-    intro h
-    apply homogeneous_coefficients_ne_zero F hF hF0
-    funext j
-    have hj := congrFun h j
-    change (v j : ℚ) = 0 at hj
-    change v j = 0
-    exact_mod_cast hj
-  have hk := homogeneous_evaluation_kernel F hF points hFzero
+  have hv : (fun j => (v j : ℚ)) ≠ 0 := fun h => hF0 (by
+    rw [homogeneous_eq_sum_coeff F hF]
+    have hz (j) : F.coeff (homogeneousMonomials n M j) = 0 := by
+      have hj := congrFun h j
+      change (v j : ℚ) = 0 at hj
+      exact_mod_cast hj
+    simp only [hz, monomial_zero, Finset.sum_const_zero])
+  have hk : evaluationMatrix (homogeneousMonomials n M) points *ᵥ v = 0 := by
+    have he : polynomialOfCoefficients (homogeneousMonomials n M) v = F :=
+      (homogeneous_eq_sum_coeff F hF).symm
+    ext i; rw [← eval_polynomialOfCoefficients, he]; exact hFzero i
   have hkQ : ((evaluationMatrix (homogeneousMonomials n M) points).map ((↑) : ℤ → ℚ)) *ᵥ
       (fun j => (v j : ℚ)) = 0 := by
-    ext i
-    have hi := congrFun hk i
+    ext i; have hi := congrFun hk i
     simp only [Matrix.mulVec, dotProduct, Matrix.map_apply, Pi.zero_apply] at hi ⊢
     dsimp only [v]
     exact_mod_cast hi

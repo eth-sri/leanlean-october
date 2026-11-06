@@ -51,81 +51,14 @@ private theorem projective_no_auxiliary_height_comparison
   have hs := (plane_homogeneous_rank_bounds (by omega : 0 < d) hdM hr).1
   refine ⟨s, hs, hr, plane_homogeneous_rank_identity hdM hr, ?_⟩
   let F := fun j => (monomial (homogeneousMonomials 2 M j) 1 : MvPolynomial (Fin 3) ℤ)
-  have hF : ∀ j, (F j).IsHomogeneous M := fun j =>
-    isHomogeneous_monomial _ (homogeneousMonomials_degree 2 M j)
   have he : (Matrix.of fun i j => eval ((z ∘ a) i) (F j)) =
       evaluationMatrix (homogeneousMonomials 2 M) (z ∘ a) := by
-    ext i j
-    simp [F, evaluationMatrix, eval_monomial]
-  have hi' : LinearIndependent ℚ
-      ((Matrix.of fun i j => eval ((z ∘ a) i) (F j)).map ((↑) : ℤ → ℚ)).row := by
-    rw [he]
-    exact hi
+    ext i j; simp [F, evaluationMatrix, eval_monomial]
   have hlower := projective_determinant_log_lower_height (z := z ∘ a) hs f hf hd hchart
-    ⟨hF, fun i => hzB.primitive (a i), fun i => hzB.eval_eq_zero (a i), hi'⟩
+    ⟨fun j => isHomogeneous_monomial _ (homogeneousMonomials_degree 2 M j),
+      fun i => hzB.primitive (a i), fun i => hzB.eval_eq_zero (a i), by rwa [he]⟩
   rw [he] at hlower
   exact hlower.trans hupper
-
-end
-end CCDN
-
-namespace CCDN
-noncomputable section
-
-private theorem projective_exists_auxiliary_small_height
-    {F : Type*} [Field F] [CharZero F] [IsAlgClosed F] {d M t : ℕ}
-    (order : MonomialOrder (Fin 3)) (f : MvPolynomial (Fin 3) ℤ)
-    (hf : f.IsHomogeneous d) (hf0 : f ≠ 0) (hd : 2 ≤ d) (hdM : d ≤ M)
-    {H : ℝ} (hchart : IsBoundedPlaneCurve F (affineChart 2 f) d H)
-    {B : ℝ} {z : Fin t → IntPoint 3} (hzB : IsPrimitiveBoxZeroFamily f B z)
-    (hML : Real.log B ≤ M)
-    (hheight : Real.log |((order.leadingCoeff f : ℤ) : ℝ)| ≤ 4 * d * Real.log B)
-    (hthreshold : 2 * Real.exp (heightDeterminantError projectivePlaneDeterminantConstant + 23) *
-      (d : ℝ) ^ 3 * (1 + Real.log H / (d : ℝ) ^ 2) * B ^ (2 / (d : ℝ)) /
-        |((order.leadingCoeff f : ℤ) : ℝ)| ^ (1 / (d : ℝ) ^ 2) < M) :
-    ∃ g, IsPointAuxiliary f g M z := by
-  classical
-  by_contra hnone
-  obtain ⟨s, _, _, hr, hc⟩ := projective_no_auxiliary_height_comparison
-    order f hf hf0 hd hdM hchart hzB (dvd_of_not_exists_isPointAuxiliary hnone)
-  have hH := hchart.one_le_height
-  have hB := hzB.one_le_radius
-  have hL : 1 ≤ |((order.leadingCoeff f : ℤ) : ℝ)| := by
-    exact_mod_cast Int.one_le_abs (order.leadingCoeff_ne_zero_iff.mpr hf0)
-  have hlog := plane_auxiliary_log_degree_bound (by omega : 0 < d) hdM hr hB hL hML hheight hc
-  have hA : 0 < 1 + Real.log H / (d : ℝ) ^ 2 := by
-    have := Real.log_nonneg hH
-    positivity
-  have hbound := plane_degree_bound_of_log_bound (by omega : 0 < d) (by omega : 0 < M)
-    (by linarith) (by linarith) hA hlog
-  exact (not_lt_of_ge hbound) hthreshold
-
-private theorem projective_exists_auxiliary_large_height
-    {F : Type*} [Field F] [CharZero F] [IsAlgClosed F] {d M t : ℕ}
-    (order : MonomialOrder (Fin 3)) (f : MvPolynomial (Fin 3) ℤ)
-    (hf : f.IsHomogeneous d) (hf0 : f ≠ 0) (hd : 2 ≤ d) (hMlarge : 32 * d ≤ M)
-    {H : ℝ} (hchart : IsBoundedPlaneCurve F (affineChart 2 f) d H)
-    {B : ℝ} {z : Fin t → IntPoint 3} (hzB : IsPrimitiveBoxZeroFamily f B z)
-    (T : ℝ) (hT : 0 ≤ T)
-    (hheight : 4 * d * Real.log B ≤ Real.log H)
-    (hposition : Real.log H ≤ Real.log |((order.leadingCoeff f : ℤ) : ℝ)| + T * (d : ℝ) ^ 2)
-    (hthreshold :
-      8 * Real.exp (heightDeterminantError projectivePlaneDeterminantConstant + 6 + T) *
-        (d : ℝ) ^ 3 < M) :
-    ∃ g, IsPointAuxiliary f g M z := by
-  classical
-  have hdM : d ≤ M := by omega
-  by_contra hnone
-  obtain ⟨s, _, _, hr, hc⟩ := projective_no_auxiliary_height_comparison
-    order f hf hf0 hd hdM hchart hzB (dvd_of_not_exists_isPointAuxiliary hnone)
-  have hH := hchart.one_le_height
-  have hB := hzB.one_le_radius
-  have hL : 1 ≤ |((order.leadingCoeff f : ℤ) : ℝ)| := by
-    exact_mod_cast Int.one_le_abs (order.leadingCoeff_ne_zero_iff.mpr hf0)
-  have hlog := plane_auxiliary_large_height_log_bound (by omega : 0 < d) hMlarge hr hB hL hH hT
-    hheight hposition hc
-  have hbound := plane_large_degree_bound_of_log_bound (by omega : 0 < d) (by omega : 0 < M) hlog
-  exact (not_lt_of_ge hbound) hthreshold
 
 /-- Small-height auxiliary form for a projective plane curve: if `f` is an integral ternary form of
 degree `d ≥ 2` whose affine chart is a bounded plane curve of height `H`, `z` is a family of
@@ -144,18 +77,25 @@ theorem projective_auxiliary_small_height_degree
         (1 + Real.log H / (d : ℝ) ^ 2) * B ^ (2 / (d : ℝ)) /
           |((order.leadingCoeff f : ℤ) : ℝ)| ^ (1 / (d : ℝ) ^ 2) + 2 ∧
       ∃ g, IsPointAuxiliary f g M z := by
+  classical
   let R := 2 * Real.exp (heightDeterminantError projectivePlaneDeterminantConstant + 23) *
     (d : ℝ) ^ 3 * (1 + Real.log H / (d : ℝ) ^ 2) * B ^ (2 / (d : ℝ)) /
       |((order.leadingCoeff f : ℤ) : ℝ)| ^ (1 / (d : ℝ) ^ 2)
   have hB := hzB.one_le_radius
-  have hR : 0 ≤ R := by
-    have := Real.log_nonneg hchart.one_le_height
-    have hB0 : 0 ≤ B := by linarith
-    dsimp only [R]
-    positivity
+  have hH := hchart.one_le_height
+  have hlogH := Real.log_nonneg hH
+  have hB0 : 0 ≤ B := by linarith
+  have hR : 0 ≤ R := by dsimp only [R]; positivity
   obtain ⟨M, hdM, hML, hth, hM⟩ := auxiliary_integer_degree_selection d (Real.log_nonneg hB) hR
   refine ⟨M, hM, ?_⟩
-  exact projective_exists_auxiliary_small_height order f hf hf0 hd hdM hchart hzB hML hheight hth
+  by_contra hnone
+  obtain ⟨s, _, _, hr, hc⟩ := projective_no_auxiliary_height_comparison
+    order f hf hf0 hd hdM hchart hzB (dvd_of_not_exists_isPointAuxiliary hnone)
+  have hL : 1 ≤ |((order.leadingCoeff f : ℤ) : ℝ)| :=
+    mod_cast Int.one_le_abs (order.leadingCoeff_ne_zero_iff.mpr hf0)
+  have hlog := plane_auxiliary_log_degree_bound (by omega : 0 < d) hdM hr hB hL hML hheight hc
+  exact (not_lt_of_ge (plane_degree_bound_of_log_bound (by omega : 0 < d) (by omega : 0 < M)
+    (by linarith) (by linarith) (by positivity) hlog)) hth
 
 /-- Large-height auxiliary form for a projective plane curve: if `f` is an integral ternary form of
 degree `d ≥ 2` whose affine chart is a bounded plane curve of height `H`, `z` is a family of
@@ -176,20 +116,25 @@ theorem projective_auxiliary_large_height_degree
         (34 + 8 * Real.exp (heightDeterminantError projectivePlaneDeterminantConstant + 6 + T)) *
           (d : ℝ) ^ 3 ∧
       ∃ g, IsPointAuxiliary f g M z := by
+  classical
   let R := 8 * Real.exp (heightDeterminantError projectivePlaneDeterminantConstant + 6 + T) *
       (d : ℝ) ^ 3
   have hR : 0 ≤ R := by dsimp only [R]; positivity
   obtain ⟨M, hMlarge, _, hth, hM⟩ := auxiliary_integer_degree_selection (32 * d)
     (show (0 : ℝ) ≤ 0 from le_rfl) hR
-  have hd1 : (1 : ℝ) ≤ d := by exact_mod_cast (show 1 ≤ d by omega)
-  have hd3 : (d : ℝ) ≤ (d : ℝ) ^ 3 := by nlinarith [sq_nonneg ((d : ℝ) - 1)]
-  have hd31 : (1 : ℝ) ≤ (d : ℝ) ^ 3 := le_trans hd1 hd3
+  have hd1 : (1 : ℝ) ≤ d := mod_cast (show 1 ≤ d by omega)
   refine ⟨M, ?_, ?_⟩
-  · dsimp only [R] at hM
-    push_cast at hM
-    nlinarith
-  · exact projective_exists_auxiliary_large_height order f hf hf0 hd hMlarge hchart hzB T hT
-      hheight hposition hth
+  · dsimp only [R] at hM; push_cast at hM
+    nlinarith [sq_nonneg ((d : ℝ) - 1)]
+  · by_contra hnone
+    obtain ⟨s, _, _, hr, hc⟩ := projective_no_auxiliary_height_comparison
+      order f hf hf0 hd (by omega) hchart hzB (dvd_of_not_exists_isPointAuxiliary hnone)
+    have hL : 1 ≤ |((order.leadingCoeff f : ℤ) : ℝ)| :=
+      mod_cast Int.one_le_abs (order.leadingCoeff_ne_zero_iff.mpr hf0)
+    have hlog := plane_auxiliary_large_height_log_bound (by omega : 0 < d) hMlarge hr
+      hzB.one_le_radius hL hchart.one_le_height hT hheight hposition hc
+    exact (not_lt_of_ge (plane_large_degree_bound_of_log_bound
+      (by omega : 0 < d) (by omega : 0 < M) hlog)) hth
 
 end
 end CCDN

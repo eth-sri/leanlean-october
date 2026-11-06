@@ -16,25 +16,6 @@ namespace CCDN
 noncomputable section
 open MvPolynomial
 
-private lemma aeval_closureProjectionCoordinates_rename {K : Type*} [Field K] {m n : ℕ}
-    (a : Fin m → MvPolynomial (Fin n) K) (f : MvPolynomial (Fin m) K) :
-    aeval (closureProjectionCoordinates a) (rename Fin.succ f) =
-      rename Fin.succ (aeval a f) := by
-  have h : (aeval (R := K) (closureProjectionCoordinates a)).comp (rename Fin.succ) =
-      (rename Fin.succ).comp (aeval a) := by
-    ext i
-    simp [closureProjectionCoordinates]
-  exact AlgHom.congr_fun h f
-
-private lemma closureProjectionCoordinates_comp {K : Type*} [Field K] {l m n : ℕ}
-    (a : Fin l → MvPolynomial (Fin m) K)
-    (b : Fin m → MvPolynomial (Fin n) K) (i : Fin (l + 1)) :
-    aeval (closureProjectionCoordinates b) (closureProjectionCoordinates a i) =
-      closureProjectionCoordinates (fun j => aeval b (a j)) i := by
-  refine Fin.cases ?_ (fun j => ?_) i
-  · simp [closureProjectionCoordinates]
-  · exact aeval_closureProjectionCoordinates_rename b (a j)
-
 /-- Integrality of projective closure projections is stable under composition: if the closure
 projection of `I` by homogeneous linear forms `b` is integral, and the closure projection of the
 kernel of `b` by `a` is integral, then the closure projection of `I` by the composite forms
@@ -54,9 +35,9 @@ theorem closure_projection_integral_comp
   rw [projectiveClosureIdeal_projection_kernel I b hb] at haintegral
   let ψ := projectionCoordinateMap (projectiveClosureIdeal I) (closureProjectionCoordinates b)
   let φ := Ideal.kerLiftAlg ψ
-  have hφ : φ.IsIntegral := hbintegral.kerLift
   let χ := projectionCoordinateMap (RingHom.ker ψ) (closureProjectionCoordinates a)
-  have hcomp := RingHom.IsIntegral.trans χ.toRingHom φ.toRingHom haintegral hφ
+  have hcomp : (φ.comp χ).IsIntegral :=
+    RingHom.IsIntegral.trans χ.toRingHom φ.toRingHom haintegral hbintegral.kerLift
   have heq : φ.comp χ = projectionCoordinateMap (projectiveClosureIdeal I)
       (closureProjectionCoordinates (fun j => aeval b (a j))) := by
     ext i
@@ -64,8 +45,12 @@ theorem closure_projection_integral_comp
       Ideal.Quotient.mkₐ_eq_mk]
     change (Ideal.Quotient.mk (projectiveClosureIdeal I))
       (aeval (closureProjectionCoordinates b) (closureProjectionCoordinates a i)) = _
-    rw [closureProjectionCoordinates_comp]
-  change (φ.comp χ).IsIntegral at hcomp
+    congr 1
+    refine Fin.cases (by simp [closureProjectionCoordinates]) (fun j => ?_) i
+    exact AlgHom.congr_fun
+      (by ext k; simp [closureProjectionCoordinates] :
+        (aeval (R := K) (closureProjectionCoordinates b)).comp (rename Fin.succ) =
+          (rename Fin.succ).comp (aeval b)) (a j)
   rwa [heq] at hcomp
 
 end

@@ -36,22 +36,8 @@ lemma filteredCoordinateSpace_mul_mem {K σ : Type*} [Field K]
   rw [mem_restrictTotalDegree] at hf hg ⊢
   exact (totalDegree_mul _ _).trans (Nat.add_le_add hf hg)
 
-/-- An exponent vector of positive degree at least `Fintype.card σ * N` has some coordinate
+/- An exponent vector of positive degree at least `Fintype.card σ * N` has some coordinate
 at least `N`. -/
-lemma large_exponent_of_degree {σ : Type*} [Fintype σ]
-    (e : σ →₀ ℕ) (N : ℕ) (hpos : 0 < e.degree)
-    (he : Fintype.card σ * N ≤ e.degree) : ∃ j, N ≤ e j := by
-  classical
-  by_contra! hn
-  have hs := Finsupp.degree_eq_sum e
-  have hnon : (Finset.univ : Finset σ).Nonempty := by
-    by_contra h
-    have hz : (Finset.univ : Finset σ) = ∅ := Finset.not_nonempty_iff_eq_empty.mp h
-    rw [hz, Finset.sum_empty] at hs
-    omega
-  have hlt := Finset.sum_lt_sum_of_nonempty hnon (fun j _ => hn j)
-  simp only [Finset.sum_const, Finset.card_univ, smul_eq_mul] at hlt
-  omega
 
 /-- Let `l` have total degree at most `1`. If each coordinate power `X j ^ N` is congruent
 modulo `I` to `r + l * s` with `r` and `s` of total degree at most `N - 1`, then for every
@@ -80,7 +66,14 @@ theorem eventual_generation_of_power_reductions {K σ : Type*} [Field K] [Fintyp
         exact ⟨monomial e c, (mem_restrictTotalDegree _ _ _).mpr
           ((totalDegree_monomial_le e c).trans hsmall), rfl⟩
       have heq : e.degree = n + 1 := by omega
-      obtain ⟨j, hj⟩ := large_exponent_of_degree e N (by omega) (by omega)
+      obtain ⟨j, hj⟩ : ∃ j, N ≤ e j := by
+        by_contra! hlt_all
+        have hs := Finsupp.degree_eq_sum e
+        have hnon : (Finset.univ : Finset σ).Nonempty := by
+          by_contra h
+          rw [Finset.not_nonempty_iff_eq_empty.mp h, Finset.sum_empty] at hs; omega
+        have hlt := Finset.sum_lt_sum_of_nonempty hnon (fun j _ => hlt_all j)
+        simp only [Finset.sum_const, Finset.card_univ, smul_eq_mul] at hlt; omega
       obtain ⟨r, s, hr, hs, hrel⟩ := hpow j
       let u := e - Finsupp.single j N
       have hu : u + Finsupp.single j N = e := tsub_add_cancel_of_le (Finsupp.single_le_iff.mpr hj)

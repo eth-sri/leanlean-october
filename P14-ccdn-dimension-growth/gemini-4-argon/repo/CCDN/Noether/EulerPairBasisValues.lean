@@ -45,18 +45,6 @@ lemma eulerTopBasis_apply {R : Type*} [CommRing R] (k : ℕ) (i : EulerTopIndex 
   simp only [eulerTopBasis, Basis.map_apply, Basis.reindex_apply]
   exact euler_restrict_basis_val _ _
 
-private theorem eulerClosedFormCoefficientMatrix_rank
-    {F : Type*} [Field F] [CharZero F] [IsAlgClosed F]
-    (k : ℕ) (f : Polynomial (Polynomial F)) (hf : Irreducible f)
-    (a : F) (ha : a ≠ 0) (hl : f.leadingCoeff = Polynomial.C a)
-    (hdeg : f.natDegree = k + 2) :
-    (eulerClosedFormCoefficientMatrix k f).rank = (k + 2) ^ 2 - 1 := by
-  have hi := eulerClosedFormCoefficientMatrix_columns_independent k f hf a ha hl hdeg
-  have hr : (eulerClosedFormCoefficientMatrix k f).rank = Fintype.card (EulerColumns k) := by
-    rw [Matrix.rank_eq_finrank_span_cols, linearIndependent_iff_card_eq_finrank_span.mp hi,
-      Set.finrank]
-  rw [hr, card_eulerColumns]
-
 /-- A nonzero maximal minor has precisely the universal Noether
 order d^2-1. -/
 theorem exists_eulerClosedForm_nonzero_minor
@@ -64,8 +52,12 @@ theorem exists_eulerClosedForm_nonzero_minor
     (k : ℕ) (f : Polynomial (Polynomial F)) (hf : Irreducible f)
     (a : F) (ha : a ≠ 0) (hl : f.leadingCoeff = Polynomial.C a)
     (hdeg : f.natDegree = k + 2) :
-    (eulerClosedFormCoefficientMatrix k f).HasNonzeroMinor ((k + 2) ^ 2 - 1) :=
-  Matrix.hasNonzeroMinor_of_le_rank _ (eulerClosedFormCoefficientMatrix_rank k f hf a ha hl hdeg).ge
+    (eulerClosedFormCoefficientMatrix k f).HasNonzeroMinor ((k + 2) ^ 2 - 1) := by
+  have hi := eulerClosedFormCoefficientMatrix_columns_independent k f hf a ha hl hdeg
+  have hr : (eulerClosedFormCoefficientMatrix k f).rank = Fintype.card (EulerColumns k) := by
+    rw [Matrix.rank_eq_finrank_span_cols, linearIndependent_iff_card_eq_finrank_span.mp hi,
+      Set.finrank]
+  exact Matrix.hasNonzeroMinor_of_le_rank _ (by rw [hr, card_eulerColumns])
 
 end
 end CCDN

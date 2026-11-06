@@ -40,24 +40,6 @@ theorem singular_plane_chart_det_divisibility_mod {p μ s : ℕ} [Fact p.Prime]
     (fun j => originShift a (F j))
   simpa only [he] using h
 
-/-- Exact integral zeros satisfy the finite-precision version at every precision. -/
-private theorem singular_plane_chart_det_divisibility {p μ s : ℕ} [Fact p.Prime]
-    (f : MvPolynomial (Fin 2) ℤ) (F : Fin s → MvPolynomial (Fin 2) ℤ)
-    (x : Fin s → Fin 2 → ℤ) (a : Fin 2 → ℤ)
-    (hf : map (Int.castRingHom (ZMod p)) (originShift a f) ∈
-      idealOfVars (Fin 2) (ZMod p) ^ μ)
-    (hμ : homogeneousComponent μ (map (Int.castRingHom (ZMod p)) (originShift a f)) ≠ 0)
-    (hx : ∀ i j, (p : ℤ) ∣ x i j - a j) (hfx : ∀ i, eval (x i) f = 0) :
-    (p : ℤ) ^ multiplicityExponent s μ ∣
-      (Matrix.of fun i j => eval (x i) (F j)).det := by
-  have he (i : Fin s) (u : MvPolynomial (Fin 2) ℤ) :
-      eval (fun j => x i j - a j) (originShift a u) = eval (x i) u := by
-    exact eval_sub_originShift a (x i) u
-  have h := singular_plane_pow_dvd_det (originShift a f) hf hμ
-    (fun i j => x i j - a j) hx (fun i => by rw [he]; exact hfx i)
-    (fun j => originShift a (F j))
-  simpa only [he] using h
-
 /-- Summed multiplicity exponents for arbitrary residue blocks, including
 singular blocks. Each local hypothesis describes the reduced equation. -/
 theorem singular_plane_residue_minorGcd {p c s N : ℕ} [Fact p.Prime]
@@ -72,14 +54,17 @@ theorem singular_plane_residue_minorGcd {p c s N : ℕ} [Fact p.Prime]
     (p : ℤ) ^ (∑ i : Fin c, multiplicityExponent
       (Fintype.card {k : Fin s // label k = i}) (μ i)) ∣
       Int.Matrix.minorGcd (Matrix.of fun i j => eval (x i) (F j)) := by
+  /- Exact integral zeros satisfy the finite-precision version at every precision. -/
   apply residue_prime_powers_dvd_minorGcd _ label
   intro i cols
-  apply singular_plane_chart_det_divisibility f (fun j => F (cols j))
-    (fun k => x (residueRows label i k)) (a i) (hf i) (hμ i)
-  · intro k j
-    simpa only [residueRows_label] using hx (residueRows label i k) j
-  · intro k
-    exact hfx _
+  rw [show ((Matrix.of fun i j => eval (x i) (F j)).submatrix (residueRows label i) cols) =
+      Matrix.of fun k j => eval (fun l => x (residueRows label i k) l - a i l)
+        (originShift (a i) (F (cols j))) by ext; simp [eval_sub_originShift]]
+  exact singular_plane_pow_dvd_det (originShift (a i) f) (hf i) (hμ i)
+    (fun k j => x (residueRows label i k) j - a i j)
+    (fun k j => by simpa only [residueRows_label] using hx (residueRows label i k) j)
+    (fun k => by rw [eval_sub_originShift]; exact hfx _)
+    (fun j => originShift (a i) (F (cols j)))
 
 end
 end CCDN

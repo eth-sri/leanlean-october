@@ -40,8 +40,7 @@ lemma bivariatePolynomialEquiv_coeff {R : Type*} [CommRing R]
 /-- Every exponent vector in two variables is `Finsupp.cons` of its two components. -/
 lemma bivariate_exponent_eq (m : Fin 2 →₀ ℕ) :
     m = Finsupp.cons (m 0) (Finsupp.single 0 (m 1)) := by
-  ext i
-  fin_cases i
+  ext i; fin_cases i
   · simp
   · change m 1 = (Finsupp.cons (m 0) (Finsupp.single 0 (m 1))) (Fin.succ (0 : Fin 1))
     rw [Finsupp.cons_succ, Finsupp.single_eq_same]
@@ -71,24 +70,18 @@ lemma bivariateTotalDegree_coeff_le {R : Type*} [CommRing R]
 lemma bivariateTotalDegree_le_iff {R : Type*} [CommRing R]
     (f : R[X][X]) (d : ℕ) :
     bivariateTotalDegree f ≤ d ↔ ∀ i j, (f.coeff i).coeff j ≠ 0 → i + j ≤ d := by
-  constructor
-  · intro h i j hij
-    exact (bivariateTotalDegree_coeff_le f i j hij).trans h
-  · intro h
-    apply Finset.sup_le
-    intro m hm
-    rw [bivariate_exponent_eq m] at hm ⊢
-    rw [bivariate_exponent_sum]
-    apply h
-    have hc := bivariatePolynomialEquiv_coeff ((bivariatePolynomialEquiv R).symm f) (m 0) (m 1)
-    rw [AlgEquiv.apply_symm_apply] at hc
-    exact hc.symm ▸ MvPolynomial.mem_support_iff.mp hm
+  refine ⟨fun h i j hij => (bivariateTotalDegree_coeff_le f i j hij).trans h,
+    fun h => Finset.sup_le fun m hm => ?_⟩
+  rw [bivariate_exponent_eq m] at hm ⊢
+  rw [bivariate_exponent_sum]
+  have hc := bivariatePolynomialEquiv_coeff ((bivariatePolynomialEquiv R).symm f) (m 0) (m 1)
+  rw [AlgEquiv.apply_symm_apply] at hc
+  exact h _ _ (hc.symm ▸ MvPolynomial.mem_support_iff.mp hm)
 
 private lemma bivariateTotalDegree_mul {R : Type*} [CommRing R] [IsDomain R]
     (f g : R[X][X]) (hf : f ≠ 0) (hg : g ≠ 0) :
     bivariateTotalDegree (f * g) = bivariateTotalDegree f + bivariateTotalDegree g := by
-  unfold bivariateTotalDegree
-  rw [map_mul]
+  unfold bivariateTotalDegree; rw [map_mul]
   exact MvPolynomial.totalDegree_mul_of_isDomain
     ((map_ne_zero_iff _ (bivariatePolynomialEquiv R).symm.injective).mpr hf)
     ((map_ne_zero_iff _ (bivariatePolynomialEquiv R).symm.injective).mpr hg)
@@ -96,20 +89,15 @@ private lemma bivariateTotalDegree_mul {R : Type*} [CommRing R] [IsDomain R]
 /-- The total degree of a product is at most the sum of the total degrees. -/
 lemma bivariateTotalDegree_mul_le {R : Type*} [CommRing R] (f g : R[X][X]) :
     bivariateTotalDegree (f * g) ≤ bivariateTotalDegree f + bivariateTotalDegree g := by
-  unfold bivariateTotalDegree
-  rw [map_mul]
-  exact MvPolynomial.totalDegree_mul _ _
+  unfold bivariateTotalDegree; rw [map_mul]; exact MvPolynomial.totalDegree_mul _ _
 
 /-- Differentiation in the outer variable lowers the total degree by at least one. -/
 lemma bivariateTotalDegree_outerDerivative_le {R : Type*} [CommRing R]
     (f : R[X][X]) : bivariateTotalDegree f.derivative ≤ bivariateTotalDegree f - 1 := by
   rw [bivariateTotalDegree_le_iff]
   intro i j hij
-  have hc : (f.coeff (i + 1)).coeff j ≠ 0 := by
-    intro hz
-    apply hij
-    rw [coeff_derivative, show (i : R[X]) + 1 = C ((i : R) + 1) by simp, coeff_mul_C, hz, zero_mul]
-  have h := bivariateTotalDegree_coeff_le f (i + 1) j hc
+  have h := bivariateTotalDegree_coeff_le f (i + 1) j fun hz => hij
+    (by rw [coeff_derivative, show (i : R[X]) + 1 = C ((i : R) + 1) by simp, coeff_mul_C, hz, zero_mul])
   omega
 
 /-- Differentiation in the inner variable lowers the total degree by at least one. -/
@@ -118,21 +106,15 @@ lemma bivariateTotalDegree_innerDerivative_le {R : Type*} [CommRing R]
     bivariateTotalDegree ((bivariateCoefficientDerivative R) f) ≤ bivariateTotalDegree f - 1 := by
   rw [bivariateTotalDegree_le_iff]
   intro i j hij
-  have hc : (f.coeff i).coeff (j + 1) ≠ 0 := by
-    intro hz
-    apply hij
-    rw [coeff_bivariateCoefficientDerivative, coeff_derivative, hz, zero_mul]
-  have h := bivariateTotalDegree_coeff_le f i (j + 1) hc
+  have h := bivariateTotalDegree_coeff_le f i (j + 1) fun hz => hij
+    (by rw [coeff_bivariateCoefficientDerivative, coeff_derivative, hz, zero_mul])
   omega
 
 /-- A bivariate polynomial of total degree less than `d` is supported in the grid of outer and inner
 exponents less than `d`. -/
 lemma inBivariateGrid_of_totalDegree_lt {R : Type*} [CommRing R]
-    (d : ℕ) (f : R[X][X]) (hd : bivariateTotalDegree f < d) : InBivariateGrid d f := by
-  intro i j hij
-  by_contra hc
-  have h := bivariateTotalDegree_coeff_le f i j hc
-  omega
+    (d : ℕ) (f : R[X][X]) (hd : bivariateTotalDegree f < d) : InBivariateGrid d f :=
+  fun i j hij => by_contra fun hc => by have := bivariateTotalDegree_coeff_le f i j hc; omega
 
 /-- The zero polynomial has total degree zero. -/
 @[simp]
@@ -143,12 +125,10 @@ lemma bivariateTotalDegree_zero {R : Type*} [CommRing R] :
 /-- The degree in the outer variable is at most the total degree. -/
 lemma bivariate_natDegree_le_totalDegree {R : Type*} [CommRing R]
     (f : R[X][X]) : f.natDegree ≤ bivariateTotalDegree f := by
-  by_cases hf : f = 0
-  · simp [hf]
-  have hc : f.coeff f.natDegree ≠ 0 := Polynomial.leadingCoeff_ne_zero.mpr hf
-  have hn : ((f.coeff f.natDegree).coeff (f.coeff f.natDegree).natDegree) ≠ 0 :=
-    Polynomial.leadingCoeff_ne_zero.mpr hc
-  have hh := bivariateTotalDegree_coeff_le f f.natDegree _ hn
+  rcases eq_or_ne f 0 with rfl | hf
+  · simp
+  have := bivariateTotalDegree_coeff_le f f.natDegree _
+    (Polynomial.leadingCoeff_ne_zero.mpr (Polynomial.leadingCoeff_ne_zero.mpr hf))
   omega
 
 /-- Both components of the gradient fit the grid for a positive total-degree
@@ -156,14 +136,11 @@ bound, in every characteristic. -/
 lemma bivariate_gradient_in_grid {R : Type*} [CommRing R]
     (d : ℕ) (hd : 0 < d) (f : R[X][X]) (hf : bivariateTotalDegree f ≤ d) :
     InBivariateGrid d f.derivative ∧
-      InBivariateGrid d ((bivariateCoefficientDerivative R) f) := by
-  constructor
-  · apply inBivariateGrid_of_totalDegree_lt
-    have h := bivariateTotalDegree_outerDerivative_le f
-    omega
-  · apply inBivariateGrid_of_totalDegree_lt
-    have h := bivariateTotalDegree_innerDerivative_le f
-    omega
+      InBivariateGrid d ((bivariateCoefficientDerivative R) f) :=
+  ⟨inBivariateGrid_of_totalDegree_lt d _
+    (by have := bivariateTotalDegree_outerDerivative_le f; omega),
+   inBivariateGrid_of_totalDegree_lt d _
+    (by have := bivariateTotalDegree_innerDerivative_le f; omega)⟩
 
 /-- The logarithmic form associated with a nonconstant factor has strictly
 smaller total degree than the product, so both numerators fit the matrix. -/
@@ -173,15 +150,12 @@ lemma bivariate_factor_form_in_grid {R : Type*} [CommRing R] [IsDomain R]
     InBivariateGrid d (h * g.derivative) ∧
       InBivariateGrid d (h * (bivariateCoefficientDerivative R) g) := by
   rw [bivariateTotalDegree_mul g h hg hh] at hdeg
-  constructor
-  · apply inBivariateGrid_of_totalDegree_lt
-    have h₁ := bivariateTotalDegree_mul_le h g.derivative
-    have h₂ := bivariateTotalDegree_outerDerivative_le g
-    omega
-  · apply inBivariateGrid_of_totalDegree_lt
-    have h₁ := bivariateTotalDegree_mul_le h ((bivariateCoefficientDerivative R) g)
-    have h₂ := bivariateTotalDegree_innerDerivative_le g
-    omega
+  exact ⟨inBivariateGrid_of_totalDegree_lt d _ (by
+      have := bivariateTotalDegree_mul_le h g.derivative
+      have := bivariateTotalDegree_outerDerivative_le g; omega),
+    inBivariateGrid_of_totalDegree_lt d _ (by
+      have := bivariateTotalDegree_mul_le h ((bivariateCoefficientDerivative R) g)
+      have := bivariateTotalDegree_innerDerivative_le g; omega)⟩
 
 /-- If `g` is nonconstant and `g ^ (k + 2) * h` has total degree at most `d`, then the products
 of `g ^ k * h` with both partial derivatives of `g` (the numerators of the higher-pole form) fit
@@ -192,23 +166,19 @@ lemma bivariate_power_factor_form_in_grid {R : Type*} [CommRing R] [IsDomain R]
     (hdeg : bivariateTotalDegree (g ^ (k + 2) * h) ≤ d) :
     InBivariateGrid d (g ^ k * h * g.derivative) ∧
       InBivariateGrid d (g ^ k * h * (bivariateCoefficientDerivative R) g) := by
-  have he : g ^ (k + 2) * h = g * (g * (g ^ k * h)) := by
-    rw [pow_add, pow_two]
-    ring
-  rw [he, bivariateTotalDegree_mul g _ hg (mul_ne_zero hg (mul_ne_zero (pow_ne_zero _ hg) hh)),
-    bivariateTotalDegree_mul g _ hg (mul_ne_zero (pow_ne_zero _ hg) hh)] at hdeg
-  apply bivariate_factor_form_in_grid d g (g ^ k * h) hg (mul_ne_zero (pow_ne_zero _ hg) hh) hgdeg
-  rw [bivariateTotalDegree_mul g _ hg (mul_ne_zero (pow_ne_zero _ hg) hh)]
-  omega
+  have hgk : g ^ k * h ≠ 0 := mul_ne_zero (pow_ne_zero _ hg) hh
+  rw [show g ^ (k + 2) * h = g * (g * (g ^ k * h)) by rw [pow_add, pow_two]; ring,
+    bivariateTotalDegree_mul g _ hg (mul_ne_zero hg hgk),
+    bivariateTotalDegree_mul g _ hg hgk] at hdeg
+  exact bivariate_factor_form_in_grid d g (g ^ k * h) hg hgk hgdeg
+    (by rw [bivariateTotalDegree_mul g _ hg hgk]; omega)
 
 /-- The inner degree of each outer coefficient is at most the total degree. -/
 lemma bivariate_coefficient_natDegree_le_totalDegree {R : Type*} [CommRing R]
     (f : R[X][X]) (i : ℕ) : (f.coeff i).natDegree ≤ bivariateTotalDegree f := by
-  by_cases hc : f.coeff i = 0
+  rcases eq_or_ne (f.coeff i) 0 with hc | hc
   · simp [hc]
-  have hn : (f.coeff i).coeff (f.coeff i).natDegree ≠ 0 :=
-    Polynomial.leadingCoeff_ne_zero.mpr hc
-  have hh := bivariateTotalDegree_coeff_le f i _ hn
+  have := bivariateTotalDegree_coeff_le f i _ (Polynomial.leadingCoeff_ne_zero.mpr hc)
   omega
 
 /-- Applying a coefficient ring homomorphism to both levels preserves monicity in the outer
@@ -227,13 +197,9 @@ lemma bivariateMap_natDegree_of_monic {R S : Type*} [CommRing R] [CommRing S] [N
 /-- Reduction of coefficients cannot increase the total degree. -/
 lemma bivariateTotalDegree_map_le {R S : Type*} [CommRing R] [CommRing S]
     (φ : R →+* S) (f : R[X][X]) :
-    bivariateTotalDegree (bivariateMap φ f) ≤ bivariateTotalDegree f := by
-  rw [bivariateTotalDegree_le_iff]
-  intro i j hij
-  apply bivariateTotalDegree_coeff_le
-  intro hz
-  apply hij
-  rw [bivariateMap_coeff, hz, map_zero]
+    bivariateTotalDegree (bivariateMap φ f) ≤ bivariateTotalDegree f :=
+  (bivariateTotalDegree_le_iff _ _).mpr fun i j hij =>
+    bivariateTotalDegree_coeff_le f i j fun hz => hij (by rw [bivariateMap_coeff, hz, map_zero])
 
 end
 end CCDN

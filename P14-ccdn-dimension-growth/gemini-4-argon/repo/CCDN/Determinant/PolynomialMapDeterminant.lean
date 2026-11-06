@@ -29,16 +29,6 @@ lemma eval_polynomial_coordinate_map {R : Type*} [CommRing R] {n m : ℕ}
   rw [← eval_assoc]
   rfl
 
-private lemma polynomial_coordinate_evaluation_matrix {M s : ℕ}
-    (τ : Fin 3 → MvPolynomial (Fin 2) ℤ) (z : Fin s → Fin 2 → ℤ) :
-    (Matrix.of fun i k => eval (z i) (aeval τ (monomial (homogeneousMonomials 2 M k) (1 : ℤ)))) =
-      evaluationMatrix (homogeneousMonomials 2 M) (fun i j => eval (z i) (τ j)) := by
-  ext i k
-  change eval (z i) (aeval τ (monomial (homogeneousMonomials 2 M k) (1 : ℤ))) =
-    (homogeneousMonomials 2 M k).prod (fun j e => eval (z i) (τ j) ^ e)
-  have h := eval_polynomial_coordinate_map τ (monomial (homogeneousMonomials 2 M k) (1 : ℤ)) (z i)
-  simpa only [eval_monomial, one_mul] using h
-
 /-- The complete comparison on the image of any polynomial coordinate map.
 The sharp finite-field count is an explicit hypothesis. -/
 theorem polynomial_map_no_auxiliary_height_comparison
@@ -64,18 +54,17 @@ theorem polynomial_map_no_auxiliary_height_comparison
   have hs := (plane_homogeneous_rank_bounds hd hdM hr).1
   refine ⟨s, hs, hr, plane_homogeneous_rank_identity hdM hr, ?_⟩
   let g := fun k => aeval τ (monomial (homogeneousMonomials 2 M k) (1 : ℤ))
-  have he := polynomial_coordinate_evaluation_matrix (M := M) τ (z ∘ a)
-  have hi' : LinearIndependent ℚ
-      ((Matrix.of fun i k => eval ((z ∘ a) i) (g k)).map ((↑) : ℤ → ℚ)).row := by
-    rw [show (Matrix.of fun i k => eval ((z ∘ a) i) (g k)) = _ from he]
-    exact hi
-  have hqdegree := hq.totalDegree_eq
-  have hqpos : 0 < q.totalDegree := by simpa only [hqdegree] using hd
-  have hcount' := hcount
-  rw [← hqdegree] at hcount'
-  have hlower := singular_determinant_log_lower_height hs q hqpos hq.irreducible H
-    hq.one_le_height hq.coeff_le g (z ∘ a) (fun i => hz (a i)) hi' hC hcount'
-  rw [hqdegree, show (Matrix.of fun i k => eval ((z ∘ a) i) (g k)) = _ from he] at hlower
+  have he : (Matrix.of fun i k => eval ((z ∘ a) i) (g k)) =
+      evaluationMatrix (homogeneousMonomials 2 M) (fun i j => eval ((z ∘ a) i) (τ j)) := by
+    ext i k
+    change eval ((z ∘ a) i) (g k) =
+      (homogeneousMonomials 2 M k).prod (fun j e => eval ((z ∘ a) i) (τ j) ^ e)
+    simpa only [g, eval_monomial, one_mul] using
+      eval_polynomial_coordinate_map τ (monomial (homogeneousMonomials 2 M k) (1 : ℤ)) ((z ∘ a) i)
+  have hlower := singular_determinant_log_lower_height hs q (hq.totalDegree_eq ▸ hd)
+    hq.irreducible H hq.one_le_height hq.coeff_le g (z ∘ a) (fun i => hz (a i))
+    (by rwa [he]) hC (hq.totalDegree_eq ▸ hcount)
+  rw [hq.totalDegree_eq, he] at hlower
   exact hlower.trans hupper
 
 end

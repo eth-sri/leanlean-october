@@ -27,28 +27,7 @@ noncomputable section
 open NumberField
 open scoped NumberField
 
-/-- A number field of degree one over `ℚ` has trivial two-torsion in its class group. -/
-theorem classGroupTwoTorsionCard_eq_one_of_degree_one
-    (K : Type*) [Field K] [NumberField K] (hd : Module.finrank ℚ K = 1) :
-    classGroupTwoTorsionCard K = 1 := by
-  obtain ⟨e⟩ := Module.nonempty_algEquiv_iff_finrank_eq_one.mpr hd
-  let eO : ℤ ≃+* 𝓞 K :=
-    Rat.ringOfIntegersEquiv.symm.trans (RingOfIntegers.mapRingEquiv e.toRingEquiv)
-  have : IsPrincipalIdealRing (𝓞 K) :=
-    IsPrincipalIdealRing.of_surjective eO eO.surjective
-  apply Nat.le_antisymm
-  · exact (classGroupTwoTorsionCard_le_classNumber K).trans
-      (NumberField.classNumber_eq_one_iff.mpr inferInstance).le
-  · exact Nat.one_le_iff_ne_zero.mpr
-      (Nat.card_pos (α := classGroupTwoTorsion K)).ne'
-
-end
-end CCDN
-
-namespace CCDN
-noncomputable section
-open NumberField
-open scoped NumberField
+/- A number field of degree one over `ℚ` has trivial two-torsion in its class group. -/
 
 /-- For a quadratic extension `K / F` of number fields,
 `h₂(K) ≤ (h₂(F) * 2 ^ ([K : ℚ] * ω(discr K) + [F : ℚ])) ^ 2`, where `ω` counts distinct prime
@@ -82,12 +61,17 @@ theorem quadratic_field_classGroupTwoTorsionCard_le
     (K : Type*) [Field K] [NumberField K] (hd : Module.finrank ℚ K = 2) :
     classGroupTwoTorsionCard K ≤
       2 ^ (4 * (NumberField.discr K).natAbs.primeFactors.card + 2) := by
+  have : IsPrincipalIdealRing (𝓞 ℚ) :=
+    IsPrincipalIdealRing.of_surjective Rat.ringOfIntegersEquiv.symm
+      Rat.ringOfIntegersEquiv.symm.surjective
+  have h1 : classGroupTwoTorsionCard ℚ = 1 :=
+    Nat.le_antisymm
+      ((classGroupTwoTorsionCard_le_classNumber ℚ).trans
+        (NumberField.classNumber_eq_one_iff.mpr inferInstance).le)
+      (Nat.one_le_iff_ne_zero.mpr (Nat.card_pos (α := classGroupTwoTorsion ℚ)).ne')
   have hh := quadratic_classGroupTwoTorsion_descent ℚ K hd
-  rw [classGroupTwoTorsionCard_eq_one_of_degree_one ℚ (by simp),
-    hd, Module.finrank_self, one_mul, ← pow_mul] at hh
-  convert hh using 1
-  congr 1
-  ring
+  rw [h1, hd, Module.finrank_self, one_mul, ← pow_mul] at hh
+  convert hh using 1; congr 1; ring
 
 end
 end CCDN

@@ -17,23 +17,26 @@ namespace CCDN
 noncomputable section
 open MvPolynomial
 
-private lemma optionEquivLeft_top_coefficient_constant {K σ : Type*} [Field K]
-    (f : MvPolynomial (Option σ) K) (d : ℕ) (hd : f.totalDegree ≤ d) :
-    (optionEquivLeft K σ f).coeff d = C (eval (0 : σ → K) ((optionEquivLeft K σ f).coeff d)) := by
-  by_cases h : d ≤ f.totalDegree
-  · have ht := totalDegree_coeff_optionEquivLeft_add_le K σ f d h
-    have hz : ((optionEquivLeft K σ f).coeff d).totalDegree = 0 := by omega
-    simpa only [eval_zero, constantCoeff_eq] using totalDegree_eq_zero_iff_eq_C.mp hz
-  · have hn : (optionEquivLeft K σ f).natDegree < d := by
-      rw [natDegree_optionEquivLeft]
-      exact (degreeOf_le_totalDegree f none).trans_lt (by omega)
-    rw [Polynomial.coeff_eq_zero_of_natDegree_lt hn, map_zero, map_zero]
-
-private lemma hypersurfaceAffineCoordinates_axis {K σ : Type*} [Field K]
+/-- The top outer coefficient is a constant polynomial, and its scalar is
+exactly the leading homogeneous form evaluated on the chosen direction. -/
+theorem hypersurfaceAffineCoordinates_top_coefficient {K σ : Type*} [Field K]
     (a b : Option σ → K) (hb : b none ≠ 0) (f : MvPolynomial (Option σ) K) :
-    Polynomial.map (eval (0 : σ → K))
-      (optionEquivLeft K σ (hypersurfaceAffineCoordinates a b hb f)) =
-      affineLinePolynomial a b f := by
+    (optionEquivLeft K σ (hypersurfaceAffineCoordinates a b hb f)).coeff f.totalDegree =
+      C (eval b (homogeneousComponent f.totalDegree f)) := by
+  let g := hypersurfaceAffineCoordinates a b hb f
+  have hd : g.totalDegree ≤ f.totalDegree := hypersurfaceAffineCoordinates_totalDegree_le a b hb f
+  have hconst : (optionEquivLeft K σ g).coeff f.totalDegree =
+      C (eval (0 : σ → K) ((optionEquivLeft K σ g).coeff f.totalDegree)) := by
+    by_cases h : f.totalDegree ≤ g.totalDegree
+    · have ht := totalDegree_coeff_optionEquivLeft_add_le K σ g f.totalDegree h
+      have hz : ((optionEquivLeft K σ g).coeff f.totalDegree).totalDegree = 0 := by omega
+      simpa only [eval_zero, constantCoeff_eq] using totalDegree_eq_zero_iff_eq_C.mp hz
+    · have hn : (optionEquivLeft K σ g).natDegree < f.totalDegree := by
+        rw [natDegree_optionEquivLeft]
+        exact (degreeOf_le_totalDegree g none).trans_lt (by omega)
+      rw [Polynomial.coeff_eq_zero_of_natDegree_lt hn, map_zero, map_zero]
+  rw [hconst]
+  congr 1
   let φ := (Polynomial.mapRingHom (eval (0 : σ → K))).comp
     ((optionEquivLeft K σ).toRingHom.comp (hypersurfaceAffineCoordinates a b hb).toRingHom)
   have he : φ = affineLinePolynomial a b := by
@@ -49,21 +52,9 @@ private lemma hypersurfaceAffineCoordinates_axis {K σ : Type*} [Field K]
         (optionEquivLeft K σ (hypersurfaceAffineCoordinates a b hb (X i))) = _
       rw [hypersurfaceAffineCoordinates_X]
       cases i <;> simp [affineLinePolynomial]
-  exact RingHom.congr_fun he f
-
-/-- The top outer coefficient is a constant polynomial, and its scalar is
-exactly the leading homogeneous form evaluated on the chosen direction. -/
-theorem hypersurfaceAffineCoordinates_top_coefficient {K σ : Type*} [Field K]
-    (a b : Option σ → K) (hb : b none ≠ 0) (f : MvPolynomial (Option σ) K) :
-    (optionEquivLeft K σ (hypersurfaceAffineCoordinates a b hb f)).coeff f.totalDegree =
-      C (eval b (homogeneousComponent f.totalDegree f)) := by
-  rw [optionEquivLeft_top_coefficient_constant _ _
-    (hypersurfaceAffineCoordinates_totalDegree_le a b hb f)]
-  congr 1
-  have h := congrArg (fun q : Polynomial K => q.coeff f.totalDegree)
-    (hypersurfaceAffineCoordinates_axis a b hb f)
-  rw [Polynomial.coeff_map, affineLinePolynomial_top_coefficient a b f _ le_rfl] at h
-  exact h
+  have h := congrArg (fun q : Polynomial K => q.coeff f.totalDegree) (RingHom.congr_fun he f)
+  change (Polynomial.map (eval (0 : σ → K)) (optionEquivLeft K σ g)).coeff f.totalDegree = _ at h
+  rwa [Polynomial.coeff_map, affineLinePolynomial_top_coefficient a b f _ le_rfl] at h
 
 /-- Nonvanishing in the direction forces the outer degree to be the original
 total degree, even after moving an arbitrary base point to the origin. -/

@@ -46,17 +46,6 @@ lemma homogeneous_eval_zero_iff_smul {K σ : Type*} [Field K]
   rw [homogeneous_eval_smul hf, mul_eq_zero]
   simp [pow_ne_zero _ ha]
 
-/-- A homogeneous polynomial vanishes at one nonzero vector exactly when it vanishes at any other
-nonzero vector spanning the same projective point. -/
-lemma homogeneous_eval_zero_iff_projective_eq {K : Type*} [Field K] {n d : ℕ}
-    {f : MvPolynomial (Fin (n + 1)) K} (hf : f.IsHomogeneous d)
-    {v w : Fin (n + 1) → K} (hv : v ≠ 0) (hw : w ≠ 0)
-    (he : Projectivization.mk K v hv = Projectivization.mk K w hw) :
-    eval v f = 0 ↔ eval w f = 0 := by
-  obtain ⟨a, ha⟩ := (Projectivization.mk_eq_mk_iff K v w hv hw).mp he
-  rw [← ha]
-  exact homogeneous_eval_zero_iff_smul hf a.ne_zero w
-
 /-- The projective points whose chosen representative is a zero of `f`; for homogeneous `f`
 this is the projective zero locus of `f`, independent of the representative. -/
 def projectiveZeroLocus {K : Type*} [Field K] {n : ℕ} (f : MvPolynomial (Fin (n + 1)) K) :
@@ -69,9 +58,13 @@ lemma mem_projectiveZeroLocus_mk {K : Type*} [Field K] {n d : ℕ}
     {f : MvPolynomial (Fin (n + 1)) K} (hf : f.IsHomogeneous d)
     (v : Fin (n + 1) → K) (hv : v ≠ 0) :
     Projectivization.mk K v hv ∈ projectiveZeroLocus f ↔ eval v f = 0 := by
-  exact homogeneous_eval_zero_iff_projective_eq hf
-    (Projectivization.mk K v hv).rep_nonzero hv
-    (Projectivization.mk K v hv).mk_rep
+  /- A homogeneous polynomial vanishes at one nonzero vector exactly when it vanishes at any other
+  nonzero vector spanning the same projective point. -/
+  obtain ⟨a, ha⟩ := (Projectivization.mk_eq_mk_iff K _ v
+    (Projectivization.mk K v hv).rep_nonzero hv).mp (Projectivization.mk K v hv).mk_rep
+  change eval (Projectivization.mk K v hv).rep f = 0 ↔ _
+  rw [← ha]
+  exact homogeneous_eval_zero_iff_smul hf a.ne_zero v
 
 /-- For homogeneous rational `f`, a rational projective point lies in the zero locus of `f` exactly
 when `f` vanishes at its primitive integer representative. -/

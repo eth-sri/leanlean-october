@@ -28,69 +28,6 @@ noncomputable section
 open Polynomial Differential
 open scoped Differential
 
-/-- A polynomial with zero derivative is constant when its degree is below the characteristic. -/
-private lemma polynomial_eq_C_of_derivative_eq_zero_of_degree_lt_char
-    {K : Type*} [Field K] (f : K[X]) (hchar : CharZeroOrGT K f.natDegree)
-    (hder : f.derivative = 0) :
-    f = C (f.coeff 0) := by
-  ext i
-  by_cases hi : i = 0
-  · subst i; simp
-  · rw [coeff_C, ite_eq_right hi]
-    by_cases hlarge : f.natDegree < i
-    · exact coeff_eq_zero_of_natDegree_lt hlarge
-    · obtain ⟨j, rfl⟩ := Nat.exists_eq_succ_of_ne_zero hi
-      have h := congrArg (fun q : K[X] => q.coeff j) hder
-      simp only [coeff_derivative, coeff_zero] at h
-      exact (mul_eq_zero.mp h).resolve_right (by
-        simpa only [Nat.cast_succ] using hchar.natCast_ne_zero hi (Nat.le_of_not_gt hlarge))
-
-end
-end CCDN
-
-namespace CCDN
-noncomputable section
-open Polynomial Differential
-open scoped Differential
-
-private theorem polynomial_eq_zero_of_differential_constant_coefficients
-    {L : Type*} [Field L] [Differential L]
-    (t : L) (ht : t′ = 1) (f : L[X]) (hchar : CharZeroOrGT L f.natDegree)
-    (hcoeff : Differential.mapCoeffs f = 0) (hroot : f.eval t = 0) :
-    f = 0 := by
-  induction hn : f.natDegree using Nat.strong_induction_on generalizing f with
-  | h n ih =>
-    by_cases hn0 : n = 0
-    · have he := eq_C_of_natDegree_eq_zero (hn.trans hn0)
-      rw [he, eval_C] at hroot
-      rw [he, hroot, C_0]
-    · have hderroot : f.derivative.eval t = 0 := by
-        have h := Differential.deriv_aeval_eq t f
-        simp only [aeval_def, Algebra.algebraMap_self, eval₂_id] at h
-        rw [hroot, map_zero, hcoeff, eval_zero, ht, mul_one, zero_add] at h
-        exact h.symm
-      have hdercoeff : Differential.mapCoeffs f.derivative = 0 := by
-        rw [← derivative_differential_mapCoeffs, hcoeff, derivative_zero]
-      have hlt : f.derivative.natDegree < n := by
-        rw [← hn]
-        exact natDegree_derivative_lt (by omega)
-      have hdz := ih f.derivative.natDegree hlt f.derivative
-        (hchar.mono (by omega)) hdercoeff hderroot rfl
-      have he := polynomial_eq_C_of_derivative_eq_zero_of_degree_lt_char f hchar hdz
-      rw [he, eval_C] at hroot
-      rw [he, hroot, C_0]
-
-private lemma differential_aeval_eq_zero_of_constants
-    {F L : Type*} [Field F] [Field L] [Algebra F L] [Differential L]
-    (hbase : ∀ a : F, (algebraMap F L a)′ = 0)
-    (x : L) (hx : x′ = 0) (f : F[X]) :
-    (aeval x f)′ = 0 := by
-  induction f using Polynomial.induction_on' with
-  | add f g hf hg => simp only [map_add, hf, hg, add_zero]
-  | monomial n a =>
-    rw [aeval_monomial]
-    simp [Derivation.leibniz, hbase, hx]
-
 /-- A differential constant satisfying a nonzero bivariate relation of
 t-degree below the characteristic (or in characteristic zero) lies in the algebraically closed base.
 The inner variable represents the constant; the outer variable represents t. -/
@@ -104,16 +41,46 @@ theorem differential_constant_mem_base_of_relation
     x ∈ (algebraMap F L).range := by
   have hmap : Differential.mapCoeffs (R.map (aeval x).toRingHom) = 0 := by
     ext i
-    simp only [Differential.coeff_mapCoeffs, coeff_map, coeff_zero]
-    exact differential_aeval_eq_zero_of_constants hbase x hx _
-  have hz := polynomial_eq_zero_of_differential_constant_coefficients t ht
-    (R.map (aeval x).toRingHom) (hchar.mono natDegree_map_le) hmap hroot
+    simp only [Differential.coeff_mapCoeffs, coeff_map, coeff_zero, AlgHom.toRingHom_eq_coe,
+      RingHom.coe_coe]
+    induction R.coeff i using Polynomial.induction_on' with
+    | add f g hf hg => simp only [map_add, hf, hg, add_zero]
+    | monomial n a => rw [aeval_monomial]; simp [Derivation.leibniz, hbase, hx]
+  have hz : R.map (aeval x).toRingHom = 0 := by
+    have hchar' : CharZeroOrGT L (R.map (aeval x).toRingHom).natDegree :=
+      hchar.mono natDegree_map_le
+    generalize R.map (aeval x).toRingHom = f at hchar' hmap hroot
+    induction hn : f.natDegree using Nat.strong_induction_on generalizing f with
+    | h n ih =>
+      have he : f = C (f.coeff 0) := by
+        by_cases hn0 : n = 0
+        · exact eq_C_of_natDegree_eq_zero (hn.trans hn0)
+        · have hderroot : f.derivative.eval t = 0 := by
+            have h := Differential.deriv_aeval_eq t f
+            simp only [aeval_def, Algebra.algebraMap_self, eval₂_id] at h
+            rw [hroot, map_zero, hmap, eval_zero, ht, mul_one, zero_add] at h
+            exact h.symm
+          have hdz := ih f.derivative.natDegree (hn ▸ natDegree_derivative_lt (by omega))
+            f.derivative (hchar'.mono ((natDegree_derivative_le f).trans (Nat.sub_le _ _)))
+            (by rw [← derivative_differential_mapCoeffs, hmap, derivative_zero]) hderroot rfl
+          ext i
+          by_cases hi : i = 0
+          · subst i; simp
+          · rw [coeff_C, ite_eq_right hi]
+            by_cases hlarge : f.natDegree < i
+            · exact coeff_eq_zero_of_natDegree_lt hlarge
+            · obtain ⟨j, rfl⟩ := Nat.exists_eq_succ_of_ne_zero hi
+              have h := congrArg (fun q : L[X] => q.coeff j) hdz
+              simp only [coeff_derivative, coeff_zero] at h
+              exact (mul_eq_zero.mp h).resolve_right (by
+                simpa only [Nat.cast_succ] using hchar'.natCast_ne_zero hi (Nat.le_of_not_gt hlarge))
+      rw [he, eval_C] at hroot
+      rw [he, hroot, C_0]
   let i := R.natDegree
   have hi : R.coeff i ≠ 0 := by simpa only [i, coeff_natDegree] using leadingCoeff_ne_zero.mpr hR
   have hiRoot : ((R.coeff i).map (algebraMap F L)).IsRoot x := by
-    have h := congrArg (fun f : L[X] => f.coeff i) hz
     simpa only [coeff_map, coeff_zero, AlgHom.toRingHom_eq_coe, RingHom.coe_coe,
-      IsRoot, eval_map, aeval_def] using h
+      IsRoot, eval_map, aeval_def] using congrArg (fun f : L[X] => f.coeff i) hz
   exact (IsAlgClosed.splits (R.coeff i)).mem_range_of_isRoot hi hiRoot
 
 end

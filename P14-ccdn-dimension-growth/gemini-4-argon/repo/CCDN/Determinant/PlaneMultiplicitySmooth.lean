@@ -15,25 +15,18 @@ namespace CCDN
 noncomputable section
 open MvPolynomial
 
-private lemma origin_power_pderiv_zero {K σ : Type*} [Field K]
-    {f : MvPolynomial σ K} {μ : ℕ} (hμ : 2 ≤ μ)
-    (hf : f ∈ idealOfVars σ K ^ μ) (j : σ) :
-    eval (0 : σ → K) (pderiv j f) = 0 := by
-  classical
-  rw [mem_pow_idealOfVars_iff'] at hf
-  have hc := hf (Finsupp.single j 1)
-    (by simp; omega)
-  simpa only [eval_zero, constantCoeff_eq, coeff_pderiv, zero_add,
-    Finsupp.coe_zero, Pi.zero_apply, Nat.cast_zero, zero_add, mul_one] using hc
-
 /-- Only singular points can have local order at least two. -/
 theorem singular_of_origin_order_ge_two {K σ : Type*} [Field K]
     (f : MvPolynomial σ K) (a : σ → K) {μ : ℕ} (hμ : 2 ≤ μ)
     (hf : originShift a f ∈ idealOfVars σ K ^ μ) :
     ∀ j, eval a (pderiv j f) = 0 := by
+  classical
   intro j
   rw [← eval_zero_originShift, ← pderiv_originShift]
-  exact origin_power_pderiv_zero hμ hf j
+  rw [mem_pow_idealOfVars_iff'] at hf
+  have hc := hf (Finsupp.single j 1) (by simp; omega)
+  simpa only [eval_zero, constantCoeff_eq, coeff_pderiv, zero_add,
+    Finsupp.coe_zero, Pi.zero_apply, Nat.cast_zero, zero_add, mul_one] using hc
 
 /-- In particular, every positive order at a smooth point is one. -/
 theorem origin_order_eq_one_of_smooth {K σ : Type*} [Field K]
@@ -43,19 +36,6 @@ theorem origin_order_eq_one_of_smooth {K σ : Type*} [Field K]
   by_contra h
   obtain ⟨j, hj⟩ := hs
   exact hj (singular_of_origin_order_ge_two f a (by omega) hf j)
-
-private lemma planeResidueMultiplicity_singular {p : ℕ} [Fact p.Prime]
-    (f : MvPolynomial (Fin 2) ℤ) (hf : map (Int.castRingHom (ZMod p)) f ≠ 0)
-    (a : PlaneResidue f p) (ha : 2 ≤ planeResidueMultiplicity f p hf a) :
-    ∀ j, eval a.val (pderiv j (map (Int.castRingHom (ZMod p)) f)) = 0 := by
-  have hp := (planeResidueMultiplicity_spec f p hf a).2.2.1
-  change map (Int.castRingHom (ZMod p)) (originShift (planeResidueLift a) f) ∈ _ at hp
-  rw [originShift_map] at hp
-  have he : (fun j => (Int.castRingHom (ZMod p)) (planeResidueLift a j)) = a.val := by
-    funext j
-    exact cast_planeResidueLift a j
-  rw [he] at hp
-  exact singular_of_origin_order_ge_two _ a.val ha hp
 
 /-- The multiplicity correction costs only a degree-dependent constant.
 The leading term remains the number of finite-field points. -/
@@ -77,8 +57,12 @@ theorem planeTotalMultiplicity_le_card_add_correction {p : ℕ} [Fact p.Prime]
       (fun a : S => a.val.val)
       (fun a b h => Subtype.ext (Subtype.ext h))
       (fun a => by rw [eval_map]; exact a.val.property)
-      (fun a j => planeResidueMultiplicity_singular f hf.ne_zero a.val
-        (Finset.mem_filter.mp a.property).2 j)
+      (fun a j => by
+        have hp := (planeResidueMultiplicity_spec f p hf.ne_zero a.val).2.2.1
+        change map (Int.castRingHom (ZMod p)) (originShift (planeResidueLift a.val) f) ∈ _ at hp
+        rw [originShift_map, show (fun k => (Int.castRingHom (ZMod p)) (planeResidueLift a.val k)) =
+          a.val.val from funext (cast_planeResidueLift a.val)] at hp
+        exact singular_of_origin_order_ge_two _ a.val.val (Finset.mem_filter.mp a.property).2 hp j)
     have hc' : S.card ≤ (map (Int.castRingHom (ZMod p)) f).totalDegree *
         ((map (Int.castRingHom (ZMod p)) f).totalDegree - 1) := by simpa using hc
     exact hc'.trans (Nat.mul_le_mul hd (Nat.sub_le_sub_right hd 1))

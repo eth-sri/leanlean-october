@@ -26,84 +26,10 @@ def eulerBivariatePair (R : Type*) [CommRing R] (k : ℕ) :
   ((bivariatePolynomialEquiv R).toLinearMap.prodMap
     (bivariatePolynomialEquiv R).toLinearMap).comp (eulerPairCoordinates R k)
 
-private lemma eulerBivariatePair_fst_degree {R : Type*} [CommRing R] (k : ℕ)
-    (u : EulerPairSpace R k) : bivariateTotalDegree (eulerBivariatePair R k u).1 ≤ k + 1 := by
-  change ((bivariatePolynomialEquiv R).symm
-    (bivariatePolynomialEquiv R (eulerPairCoordinates R k u).1)).totalDegree ≤ _
-  rw [AlgEquiv.symm_apply_apply]
-  exact eulerPairCoordinates_fst_degree k u
-
-private lemma eulerBivariatePair_snd_degree {R : Type*} [CommRing R] (k : ℕ)
-    (u : EulerPairSpace R k) : bivariateTotalDegree (eulerBivariatePair R k u).2 ≤ k + 1 := by
-  change ((bivariatePolynomialEquiv R).symm
-    (bivariatePolynomialEquiv R (eulerPairCoordinates R k u).2)).totalDegree ≤ _
-  rw [AlgEquiv.symm_apply_apply]
-  exact eulerPairCoordinates_snd_degree k u
-
-private lemma eulerBivariatePair_contraction_degree {R : Type*} [CommRing R] (k : ℕ)
-    (u : EulerPairSpace R k) :
-    bivariateTotalDegree (bivariateEulerContraction R (eulerBivariatePair R k u)) ≤ k + 1 := by
-  simp only [bivariateEulerContraction, eulerBivariatePair, LinearMap.comp_apply,
-    LinearMap.prodMap_apply, AlgEquiv.toLinearMap_apply, LinearMap.coe_mk, AddHom.coe_mk]
-  rw [← bivariatePolynomialEquiv_X_zero, ← bivariatePolynomialEquiv_X_one,
-    ← map_mul, ← map_mul, ← map_add]
-  change ((bivariatePolynomialEquiv R).symm (bivariatePolynomialEquiv R _)).totalDegree ≤ _
-  rw [AlgEquiv.symm_apply_apply]
-  exact eulerPairCoordinates_contraction_degree k u
-
-private lemma eulerBivariatePair_injective {F : Type*} [Field F] (k : ℕ) :
-    Function.Injective (eulerBivariatePair F k) := by
-  intro u v huv
-  apply eulerPairCoordinates_injective k
-  apply Prod.ext
-  · apply (bivariatePolynomialEquiv F).injective
-    exact congrArg Prod.fst huv
-  · apply (bivariatePolynomialEquiv F).injective
-    exact congrArg Prod.snd huv
-
 /-- Closed-form operator on exactly d^2-1 explicit polynomial parameters. -/
 def eulerClosedFormOperator {R : Type*} [CommRing R] (k : ℕ) (f : R[X][X]) :
     EulerPairSpace R k →ₗ[R] R[X][X] :=
   (closedFormOperator f).comp (eulerBivariatePair R k)
-
-/-- The Euler constraint removes the only characteristic-zero closed-form
-kernel, so the restricted operator is injective. -/
-private theorem eulerClosedFormOperator_injective {F : Type*} [Field F] [CharZero F] [IsAlgClosed F]
-    (k : ℕ) (f : F[X][X]) (hf : Irreducible f) (hm : f.Monic)
-    (hdeg : f.natDegree = k + 2) : Function.Injective (eulerClosedFormOperator k f) := by
-  have hzero : ∀ u, eulerClosedFormOperator k f u = 0 → u = 0 := by
-    intro u hu
-    let p := (eulerBivariatePair F k u).1
-    let q := (eulerBivariatePair F k u).2
-    have hp : p.degree < f.degree := by
-      rw [degree_eq_natDegree hf.ne_zero, hdeg]
-      apply degree_le_natDegree.trans_lt
-      have hh : p.natDegree < k + 2 := lt_of_le_of_lt
-        ((bivariate_natDegree_le_totalDegree p).trans (eulerBivariatePair_fst_degree k u))
-        (by omega)
-      exact_mod_cast hh
-    have hq : q.degree < f.degree := by
-      rw [degree_eq_natDegree hf.ne_zero, hdeg]
-      apply degree_le_natDegree.trans_lt
-      have hh : q.natDegree < k + 2 := lt_of_le_of_lt
-        ((bivariate_natDegree_le_totalDegree q).trans (eulerBivariatePair_snd_degree k u))
-        (by omega)
-      exact_mod_cast hh
-    have he : (bivariateEulerContraction F (p,q)).coeff f.natDegree = 0 := by
-      apply coeff_eq_zero_of_natDegree_lt
-      have hh := (bivariate_natDegree_le_totalDegree
-        (bivariateEulerContraction F (eulerBivariatePair F k u))).trans
-          (eulerBivariatePair_contraction_degree k u)
-      change (bivariateEulerContraction F (eulerBivariatePair F k u)).natDegree < _
-      omega
-    obtain ⟨hp0,hq0⟩ := bivariate_euler_closed_form_eq_zero f p q hf hm (by omega) hp hq hu he
-    apply eulerBivariatePair_injective k
-    rw [map_zero]
-    exact Prod.ext hp0 hq0
-  intro u v huv
-  apply sub_eq_zero.mp
-  apply hzero
-  rw [map_sub, huv, sub_self]
 
 /-- Over an algebraically closed field of characteristic zero, the Euler closed-form operator of
 an irreducible `f` of outer degree `k + 2` whose outer leading coefficient is a nonzero constant
@@ -113,16 +39,55 @@ theorem eulerClosedFormOperator_injective_of_constant_leading
     (k : ℕ) (f : F[X][X]) (hf : Irreducible f) (a : F) (ha : a ≠ 0)
     (hl : f.leadingCoeff = C a) (hdeg : f.natDegree = k + 2) :
     Function.Injective (eulerClosedFormOperator k f) := by
+  let g := a⁻¹ • f
   have hm := bivariate_monic_normalize a ha f hl
   have hi := (bivariate_irreducible_smul_iff a⁻¹ (inv_ne_zero ha) f).mpr hf
-  have hd : (a⁻¹ • f).natDegree = k + 2 := by
-    rw [natDegree_smul f (inv_ne_zero ha), hdeg]
+  have hd : g.natDegree = k + 2 := by rw [natDegree_smul f (inv_ne_zero ha), hdeg]
   intro u v huv
-  apply eulerClosedFormOperator_injective k (a⁻¹ • f) hi hm hd
-  change closedFormOperator (a⁻¹ • f) (eulerBivariatePair F k u) =
-    closedFormOperator (a⁻¹ • f) (eulerBivariatePair F k v)
-  rw [closedFormOperator_smul_equation, closedFormOperator_smul_equation]
-  exact congrArg (a⁻¹ • ·) huv
+  have hsub : eulerClosedFormOperator k g (u - v) = 0 := by
+    rw [map_sub, sub_eq_zero]
+    change closedFormOperator (a⁻¹ • f) (eulerBivariatePair F k u) =
+      closedFormOperator (a⁻¹ • f) (eulerBivariatePair F k v)
+    rw [closedFormOperator_smul_equation, closedFormOperator_smul_equation]
+    exact congrArg (a⁻¹ • ·) huv
+  let w := u - v
+  let p := (eulerBivariatePair F k w).1
+  let q := (eulerBivariatePair F k w).2
+  have hfst : bivariateTotalDegree p ≤ k + 1 := by
+    change ((bivariatePolynomialEquiv F).symm
+      (bivariatePolynomialEquiv F (eulerPairCoordinates F k w).1)).totalDegree ≤ _
+    rw [AlgEquiv.symm_apply_apply]; exact eulerPairCoordinates_fst_degree k w
+  have hsnd : bivariateTotalDegree q ≤ k + 1 := by
+    change ((bivariatePolynomialEquiv F).symm
+      (bivariatePolynomialEquiv F (eulerPairCoordinates F k w).2)).totalDegree ≤ _
+    rw [AlgEquiv.symm_apply_apply]; exact eulerPairCoordinates_snd_degree k w
+  have hp : p.degree < g.degree := by
+    rw [degree_eq_natDegree hi.ne_zero, hd]
+    exact degree_le_natDegree.trans_lt
+      (mod_cast ((bivariate_natDegree_le_totalDegree p).trans hfst).trans_lt (by omega))
+  have hq : q.degree < g.degree := by
+    rw [degree_eq_natDegree hi.ne_zero, hd]
+    exact degree_le_natDegree.trans_lt
+      (mod_cast ((bivariate_natDegree_le_totalDegree q).trans hsnd).trans_lt (by omega))
+  have hcontr : bivariateTotalDegree (bivariateEulerContraction F (eulerBivariatePair F k w)) ≤ k + 1 := by
+    simp only [bivariateEulerContraction, eulerBivariatePair, LinearMap.comp_apply,
+      LinearMap.prodMap_apply, AlgEquiv.toLinearMap_apply, LinearMap.coe_mk, AddHom.coe_mk]
+    rw [← bivariatePolynomialEquiv_X_zero, ← bivariatePolynomialEquiv_X_one,
+      ← map_mul, ← map_mul, ← map_add]
+    change ((bivariatePolynomialEquiv F).symm (bivariatePolynomialEquiv F _)).totalDegree ≤ _
+    rw [AlgEquiv.symm_apply_apply]; exact eulerPairCoordinates_contraction_degree k w
+  have he : (bivariateEulerContraction F (p, q)).coeff g.natDegree = 0 :=
+    coeff_eq_zero_of_natDegree_lt
+      (((bivariate_natDegree_le_totalDegree _).trans hcontr).trans_lt (by omega))
+  obtain ⟨hp0, hq0⟩ := bivariate_euler_closed_form_eq_zero g p q hi hm (by omega) hp hq hsub he
+  have hw0 : w = 0 := eulerPairCoordinates_injective k <| Prod.ext
+    ((bivariatePolynomialEquiv F).injective (by
+      simpa only [p, eulerBivariatePair, LinearMap.comp_apply, LinearMap.prodMap_apply,
+        AlgEquiv.toLinearMap_apply, Prod.fst_zero, map_zero] using hp0))
+    ((bivariatePolynomialEquiv F).injective (by
+      simpa only [q, eulerBivariatePair, LinearMap.comp_apply, LinearMap.prodMap_apply,
+        AlgEquiv.toLinearMap_apply, Prod.snd_zero, map_zero] using hq0))
+  exact sub_eq_zero.mp hw0
 
 end
 end CCDN

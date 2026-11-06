@@ -18,16 +18,6 @@ noncomputable section
 open NumberField
 open scoped NumberField
 
-private def integerParityIndex (e : ℤ) : Fin 2 :=
-  ⟨(e % 2).toNat, by omega⟩
-
-private theorem zpow_eq_parity_pow {G : Type*} [Group G] (x : G)
-    (hx : x ^ 2 = 1) (e : ℤ) :
-    x ^ e = x ^ (integerParityIndex e).val := by
-  rw [zpow_eq_zpow_emod' e hx, ← zpow_natCast]
-  congr 1
-  exact (Int.toNat_of_nonneg (Int.emod_nonneg e (by norm_num))).symm
-
 variable (K : Type*) [Field K] [NumberField K]
 
 /-- Every exponent-two quotient of the unit group has cardinality
@@ -38,6 +28,10 @@ theorem numberFieldUnit_exponent_two_quotient
     (hφ : Function.Surjective φ) (hG : ∀ x : G, x ^ 2 = 1) :
     Finite G ∧ Nat.card G ≤ 2 ^ (NumberField.Units.rank K + 1) := by
   classical
+  let p (e : ℤ) : Fin 2 := ⟨(e % 2).toNat, by omega⟩
+  have hp (x : G) (e : ℤ) : x ^ e = x ^ (p e).val := by
+    rw [zpow_eq_zpow_emod' e (hG x), ← zpow_natCast]
+    exact congrArg (x ^ ·) (Int.toNat_of_nonneg (Int.emod_nonneg e (by norm_num))).symm
   obtain ⟨ζ, hζ⟩ := exists_zpow_surjective (NumberField.Units.torsion K)
   let code : Fin 2 × (Fin (NumberField.Units.rank K) → Fin 2) → G :=
     fun e ↦ φ (ζ : (𝓞 K)ˣ) ^ e.1.val *
@@ -47,21 +41,17 @@ theorem numberFieldUnit_exponent_two_quotient
     obtain ⟨u, rfl⟩ := hφ y
     obtain ⟨⟨η, e⟩, hu, _⟩ := NumberField.Units.exist_unique_eq_mul_prod K u
     obtain ⟨k, hk⟩ := hζ η
-    refine ⟨(integerParityIndex k, fun i ↦ integerParityIndex (e i)), ?_⟩
-    change φ (ζ : (𝓞 K)ˣ) ^ (integerParityIndex k).val *
-      ∏ i, φ (NumberField.Units.fundSystem K i) ^ (integerParityIndex (e i)).val = φ u
+    refine ⟨(p k, fun i ↦ p (e i)), ?_⟩
+    change φ (ζ : (𝓞 K)ˣ) ^ (p k).val *
+      ∏ i, φ (NumberField.Units.fundSystem K i) ^ (p (e i)).val = φ u
     rw [hu, map_mul, map_prod]
     congr 1
-    · rw [← hk, Subgroup.coe_zpow, map_zpow]
-      exact (zpow_eq_parity_pow _ (hG _) k).symm
-    · apply Finset.prod_congr rfl
-      intro i _
-      rw [map_zpow]
-      exact (zpow_eq_parity_pow _ (hG _) (e i)).symm
+    · rw [← hk, Subgroup.coe_zpow, map_zpow]; exact (hp _ k).symm
+    · exact Finset.prod_congr rfl fun i _ => by rw [map_zpow]; exact (hp _ (e i)).symm
   refine ⟨Finite.of_surjective code hcode, ?_⟩
-  have hc := Nat.card_le_card_of_surjective code hcode
   simpa only [Nat.card_eq_fintype_card, Fintype.card_prod,
-    Fintype.card_fun, Fintype.card_fin, pow_succ, mul_comm] using hc
+    Fintype.card_fun, Fintype.card_fin, pow_succ, mul_comm] using
+    Nat.card_le_card_of_surjective code hcode
 
 /-- The unit rank of a number field plus one is at most its degree over `ℚ`. -/
 theorem numberField_unit_rank_add_one_le_degree :

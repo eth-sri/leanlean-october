@@ -16,22 +16,6 @@ noncomputable section
 open Polynomial Differential
 open scoped Differential
 
-private lemma polynomial_degree_C_mul_le {K : Type*} [Field K] (a : K) (p : K[X]) :
-    (C a * p).degree ≤ p.degree := by
-  simpa only [smul_eq_C_mul] using degree_smul_le a p
-
-/-- Coefficientwise differentiation strictly lowers the degree of a monic
-polynomial, since its leading coefficient differentiates to zero. -/
-private lemma differential_mapCoeffs_degree_lt {K : Type*} [Field K] [Differential K]
-    {p : K[X]} (hp : p.Monic) : (Differential.mapCoeffs p).degree < p.degree := by
-  rw [degree_eq_natDegree hp.ne_zero, degree_lt_iff_coeff_zero]
-  intro n hn
-  rw [Differential.coeff_mapCoeffs]
-  rcases eq_or_lt_of_le hn with h | h
-  · rw [← h, hp.coeff_natDegree]
-    exact Derivation.map_one_eq_zero _
-  · rw [coeff_eq_zero_of_natDegree_lt h, map_zero]
-
 /-- Coefficientwise differentiation commutes with the formal derivative of polynomials. -/
 lemma derivative_differential_mapCoeffs {K : Type*} [Field K] [Differential K]
     (f : K[X]) : (Differential.mapCoeffs f).derivative =
@@ -76,14 +60,6 @@ lemma differential_mapCoeffs_map {K L : Type*} [Field K] [Field L]
   ext n
   simp only [Differential.coeff_mapCoeffs, coeff_map, deriv_algebraMap]
 
-private lemma eq_zero_of_aeval_root_of_degree_lt {K L : Type*} [Field K] [Field L]
-    [Algebra K L] {f p : K[X]} (hf : Irreducible f) (hm : f.Monic)
-    {c : L} (hc : aeval c f = 0) (hp : aeval c p = 0) (hdeg : p.degree < f.degree) : p = 0 := by
-  have hdiv := minpoly.dvd K c hp
-  rw [← minpoly.eq_of_irreducible_of_monic hf hc hm] at hdiv
-  by_contra hn
-  exact (not_le_of_gt hdeg) (degree_le_of_dvd hdiv hn)
-
 /-- For a monic irreducible denominator, a closed form with a single
 base-field residue is a constant multiple of its logarithmic differential.
 Only the displayed residue must descend, not every differential constant
@@ -105,12 +81,17 @@ theorem closed_form_eq_constant_gradient_of_residue_mem_base
     simpa only [← IsScalarTower.algebraMap_apply] using ha
   have hpEval : aeval c p = algebraMap K L (algebraMap F K a) * aeval c f.derivative :=
     ((eq_div_iff hsimple).mp hres).symm
-  have hpzero : p - C (algebraMap F K a) * f.derivative = 0 := by
-    apply eq_zero_of_aeval_root_of_degree_lt hf hm hc
-    · simpa only [map_sub, map_mul, aeval_C, sub_eq_zero] using hpEval
-    · exact (degree_sub_le _ _).trans_lt (max_lt hpdeg
-        ((polynomial_degree_C_mul_le _ _).trans_lt (degree_derivative_lt hf.ne_zero)))
-  have hpEq := sub_eq_zero.mp hpzero
+  have heq0 {r : K[X]} (hr : aeval c r = 0) (hdeg : r.degree < f.degree) : r = 0 := by
+    have hdiv := minpoly.dvd K c hr
+    rw [← minpoly.eq_of_irreducible_of_monic hf hc hm] at hdiv
+    by_contra hn
+    exact (not_le_of_gt hdeg) (degree_le_of_dvd hdiv hn)
+  have hC_deg (r : K[X]) : (C (algebraMap F K a) * r).degree ≤ r.degree := by
+    simpa only [smul_eq_C_mul] using degree_smul_le (algebraMap F K a) r
+  have hpzero : p - C (algebraMap F K a) * f.derivative = 0 :=
+    heq0 (by simpa only [map_sub, map_mul, aeval_C, sub_eq_zero] using hpEval)
+      ((degree_sub_le _ _).trans_lt
+        (max_lt hpdeg ((hC_deg _).trans_lt (degree_derivative_lt hf.ne_zero))))
   have he := congrArg (aeval c) hclosed
   simp only [map_sub, map_mul, hc, mul_zero, zero_sub] at he
   have hqEval :
@@ -118,12 +99,18 @@ theorem closed_form_eq_constant_gradient_of_residue_mem_base
     apply mul_right_cancel₀ hsimple
     rw [hpEval] at he
     linear_combination he
-  have hqzero : q - C (algebraMap F K a) * Differential.mapCoeffs f = 0 := by
-    apply eq_zero_of_aeval_root_of_degree_lt hf hm hc
-    · simpa only [map_sub, map_mul, aeval_C, sub_eq_zero] using hqEval
-    · exact (degree_sub_le _ _).trans_lt (max_lt hqdeg
-        ((polynomial_degree_C_mul_le _ _).trans_lt (differential_mapCoeffs_degree_lt hm)))
-  exact ⟨a, hpEq, sub_eq_zero.mp hqzero⟩
+  have hmap_lt : (Differential.mapCoeffs f).degree < f.degree := by
+    rw [degree_eq_natDegree hm.ne_zero, degree_lt_iff_coeff_zero]
+    intro n hn
+    rw [Differential.coeff_mapCoeffs]
+    rcases eq_or_lt_of_le hn with h | h
+    · rw [← h, hm.coeff_natDegree]
+      exact Derivation.map_one_eq_zero _
+    · rw [coeff_eq_zero_of_natDegree_lt h, map_zero]
+  have hqzero : q - C (algebraMap F K a) * Differential.mapCoeffs f = 0 :=
+    heq0 (by simpa only [map_sub, map_mul, aeval_C, sub_eq_zero] using hqEval)
+      ((degree_sub_le _ _).trans_lt (max_lt hqdeg ((hC_deg _).trans_lt hmap_lt)))
+  exact ⟨a, sub_eq_zero.mp hpzero, sub_eq_zero.mp hqzero⟩
 
 end
 end CCDN

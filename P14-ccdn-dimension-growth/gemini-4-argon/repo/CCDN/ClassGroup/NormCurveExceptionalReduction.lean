@@ -19,70 +19,6 @@ open scoped IntermediateField
 
 variable (K : Type*) [Field K] [NumberField K]
 
-private theorem exists_norm_translate_cover (B : ℝ) :
-    ∃ β : (boundedSquareNormTranslationClasses K B) → 𝓞 K,
-      Function.Injective β ∧
-      (∀ q, ∀ w : InfinitePlace K, w (β q : K) ≤ B) ∧
-      ∀ α ∈ boundedSquareNormIntegers K B,
-        ∃ q, α ∈ squareNormTranslateFiber K (β q) B := by
-  let S := boundedSquareNormIntegers K B
-  let sf := (boundedSquareNormIntegers_finite K B).toFinset
-  let Q := boundedSquareNormTranslationClasses K B
-  have hex (q : Q) : ∃ r : 𝓞 K, r ∈ S ∧
-      (r : IntegerTranslationQuotient K) = q.val := by
-    obtain ⟨r, hr, hq⟩ := Finset.mem_image.mp q.property
-    exact ⟨r, (boundedSquareNormIntegers_finite K B).mem_toFinset.mp hr, hq⟩
-  choose r hr hq using hex
-  let β : Q → 𝓞 K := fun q ↦ -r q
-  have hinj : Function.Injective β := by
-    intro q t h
-    have he : r q = r t := neg_injective h
-    apply Subtype.ext
-    rw [← hq q, ← hq t, he]
-  have hb (q : Q) (w : InfinitePlace K) : w (β q : K) ≤ B := by
-    change w.val (-((r q : 𝓞 K) : K)) ≤ B
-    rw [AbsoluteValue.map_neg]
-    exact (hr q).2.1 w
-  refine ⟨β, hinj, hb, ?_⟩
-  intro α hα
-  have hαf : α ∈ sf := (boundedSquareNormIntegers_finite K B).mem_toFinset.mpr hα
-  let q : Q := ⟨(α : IntegerTranslationQuotient K),
-    Finset.mem_image.mpr ⟨α, hαf, rfl⟩⟩
-  have he : (α : IntegerTranslationQuotient K) = (r q : IntegerTranslationQuotient K) :=
-    (hq q).symm
-  obtain ⟨x, hx⟩ := AddSubgroup.mem_zmultiples_iff.mp
-    (QuotientAddGroup.eq_iff_sub_mem.mp he)
-  have hx' : (x : 𝓞 K) = α - r q := by simpa using hx
-  refine ⟨q, hα, x, ?_⟩
-  change α = algebraMap ℤ (𝓞 K) x - -r q
-  change (algebraMap ℤ (𝓞 K) x) = α - r q at hx'
-  rw [hx']
-  abel
-
-private lemma even_index_translate_mem_smallSubfield
-    (hnoTwo : ∀ L : IntermediateField ℚ K, Module.finrank L K ≠ 2)
-    (β : 𝓞 K) (hindex : ¬ Odd (Module.finrank ℚ⟮(β : K)⟯ K))
-    {B : ℝ} {α : 𝓞 K} (hα : α ∈ squareNormTranslateFiber K β B) :
-    α ∈ boundedSmallSubfieldIntegers K B := by
-  let L := ℚ⟮(β : K)⟯
-  have he : Even (Module.finrank L K) := by
-    rcases Nat.even_or_odd (Module.finrank L K) with he | ho
-    · exact he
-    · exact (hindex ho).elim
-  have hpos : 0 < Module.finrank L K := Module.finrank_pos
-  have hne := hnoTwo L
-  have hfour : 4 ≤ Module.finrank L K := by
-    obtain ⟨k, hk⟩ := he
-    omega
-  have hdim : 4 * Module.finrank ℚ L ≤ Module.finrank ℚ K := by
-    have ht := Module.finrank_mul_finrank ℚ L K
-    nlinarith
-  refine ⟨hα.1.2.1, L, hdim, ?_⟩
-  obtain ⟨x, hx⟩ := hα.2
-  rw [hx]
-  change algebraMap ℤ K x - (β : K) ∈ L
-  exact L.sub_mem (L.intCast_mem x) (IntermediateField.mem_adjoin_simple_self ℚ (β : K))
-
 /-- For a number field `K` without an intermediate field of index two, there is an injective family
 of algebraic integers `β q` bounded by `B`, indexed by the bounded square-norm translation
 classes, such that the number of bounded square-norm integers is at most the number of bounded
@@ -103,26 +39,55 @@ theorem exists_norm_curve_exception_split
               (max (2 * B) (Real.sqrt (B ^ Module.finrank ℚ K)))
           else 0 := by
   classical
-  obtain ⟨β, hi, hb, hcover⟩ := exists_norm_translate_cover K B
-  refine ⟨β, hi, hb, ?_⟩
-  let Q := boundedSquareNormTranslationClasses K B
+  let S := boundedSquareNormIntegers K B
   let sf := (boundedSquareNormIntegers_finite K B).toFinset
+  let Q := boundedSquareNormTranslationClasses K B
+  have hex (q : Q) : ∃ r : 𝓞 K, r ∈ S ∧ (r : IntegerTranslationQuotient K) = q.val := by
+    obtain ⟨r, hr, hq⟩ := Finset.mem_image.mp q.property
+    exact ⟨r, (boundedSquareNormIntegers_finite K B).mem_toFinset.mp hr, hq⟩
+  choose r hr hq using hex
+  let β : Q → 𝓞 K := fun q ↦ -r q
+  have hi : Function.Injective β := fun q t h => by
+    have he : r q = r t := neg_injective h
+    exact Subtype.ext (by rw [← hq q, ← hq t, he])
+  have hb (q : Q) (w : InfinitePlace K) : w (β q : K) ≤ B := by
+    change w.val (-((r q : 𝓞 K) : K)) ≤ B
+    rw [AbsoluteValue.map_neg]
+    exact (hr q).2.1 w
+  refine ⟨β, hi, hb, ?_⟩
   let ef := (boundedSmallSubfieldIntegers_finite K B).toFinset
   let tf (q : Q) :=
     if Odd (Module.finrank ℚ⟮(β q : K)⟯ K) then
       (squareNormTranslateFiber_finite K (β q) B).toFinset else ∅
   have hsub : sf ⊆ ef ∪ Finset.univ.biUnion tf := by
     intro α hα
-    obtain ⟨q, hq⟩ := hcover α ((boundedSquareNormIntegers_finite K B).mem_toFinset.mp hα)
+    have hαS := (boundedSquareNormIntegers_finite K B).mem_toFinset.mp hα
+    let q : Q := ⟨(α : IntegerTranslationQuotient K), Finset.mem_image.mpr ⟨α, hα, rfl⟩⟩
+    obtain ⟨x, hx⟩ := AddSubgroup.mem_zmultiples_iff.mp
+      (QuotientAddGroup.eq_iff_sub_mem.mp (hq q).symm)
+    have hq_mem : α ∈ squareNormTranslateFiber K (β q) B := by
+      refine ⟨hαS, x, ?_⟩
+      have hx' : (algebraMap ℤ (𝓞 K) x) = α - r q := by simpa using hx
+      change α = algebraMap ℤ (𝓞 K) x - -r q
+      rw [hx']; abel
     by_cases hodd : Odd (Module.finrank ℚ⟮(β q : K)⟯ K)
-    · apply Finset.mem_union_right
-      apply Finset.mem_biUnion.mpr
-      refine ⟨q, Finset.mem_univ _, ?_⟩
+    · refine Finset.mem_union_right _ (Finset.mem_biUnion.mpr ⟨q, Finset.mem_univ _, ?_⟩)
       simp only [tf, ite_eq_left hodd]
-      exact (squareNormTranslateFiber_finite K (β q) B).mem_toFinset.mpr hq
+      exact (squareNormTranslateFiber_finite K (β q) B).mem_toFinset.mpr hq_mem
     · apply Finset.mem_union_left
-      exact (boundedSmallSubfieldIntegers_finite K B).mem_toFinset.mpr
-        (even_index_translate_mem_smallSubfield K hnoTwo (β q) hodd hq)
+      refine (boundedSmallSubfieldIntegers_finite K B).mem_toFinset.mpr ⟨hq_mem.1.2.1, ℚ⟮(β q : K)⟯, ?_, ?_⟩
+      · let L := ℚ⟮(β q : K)⟯
+        have he : Even (Module.finrank L K) :=
+          (Nat.even_or_odd (Module.finrank L K)).resolve_right hodd
+        have hpos : 0 < Module.finrank L K := Module.finrank_pos
+        have hne := hnoTwo L
+        have hfour : 4 ≤ Module.finrank L K := by obtain ⟨k, hk⟩ := he; omega
+        nlinarith [Module.finrank_mul_finrank ℚ L K]
+      · obtain ⟨y, hy⟩ := hq_mem.2
+        rw [hy]
+        change algebraMap ℤ K y - (β q : K) ∈ ℚ⟮(β q : K)⟯
+        exact ℚ⟮(β q : K)⟯.sub_mem (ℚ⟮(β q : K)⟯.intCast_mem y)
+          (IntermediateField.mem_adjoin_simple_self ℚ (β q : K))
   calc
     _ = sf.card := Set.ncard_eq_toFinset_card _ _
     _ ≤ (ef ∪ Finset.univ.biUnion tf).card := Finset.card_le_card hsub

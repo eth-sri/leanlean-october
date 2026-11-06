@@ -22,14 +22,22 @@ namespace CCDN
 noncomputable section
 open MvPolynomial
 
-private theorem projective_integer_points_card_le_auxiliary_degree {d M t : ℕ}
-    (f g : MvPolynomial (Fin 3) ℤ) (hf : f.IsHomogeneous d)
-    (hprim : PrimitiveIntegerPolynomial f) (hir : Irreducible (map (Int.castRingHom ℚ) f))
+private theorem projective_integer_points_card_le_auxiliary_degree
+    {K : Type*} [Field K] [CharZero K] {d M t : ℕ}
+    (f g : MvPolynomial (Fin 3) ℤ) (hf : f.IsHomogeneous d) (hf0 : f ≠ 0)
+    (hprim : PrimitiveIntegerPolynomial f)
+    (hdeg : (affineChart 2 f).totalDegree = d)
+    (hir : Irreducible (map (Int.castRingHom K) (affineChart 2 f)))
     (z : Fin t → IntPoint 3) (hz0 : ∀ i, z i ≠ 0)
     (hinj : Function.Injective (fun i => Projectivization.mk ℚ (rationalPoint (z i))
       (rationalPoint_ne_zero (hz0 i))))
     (hzf : ∀ i, eval (z i) f = 0) (hg : IsPointAuxiliary f g M z) :
-    t ≤ d * M := by
+    (t : ℝ) ≤ d * (M : ℝ) := by
+  have hirQ : Irreducible (map (Int.castRingHom ℚ) f) :=
+    irreducible_of_affineChart_irreducible _
+      (by rw [affineChart_map, rational_map_totalDegree, rational_map_totalDegree,
+        hdeg, hf.totalDegree hf0])
+      (by rw [affineChart_map]; exact rational_irreducible_of_charZero_map _ hir)
   have hndQ : ¬ map (Int.castRingHom ℚ) f ∣ map (Int.castRingHom ℚ) g :=
     fun h => hg.not_dvd (hprim.rational_map_dvd_iff.mp h)
   have hzero (q : MvPolynomial (Fin 3) ℤ) {m : ℕ} (hq : q.IsHomogeneous m)
@@ -39,21 +47,11 @@ private theorem projective_integer_points_card_le_auxiliary_degree {d M t : ℕ}
     rw [mem_projectiveZeroLocus_mk (hq.map _)]
     change eval ((Int.castRingHom ℚ) ∘ z i) (map (Int.castRingHom ℚ) q) = 0
     rw [← map_eval, hzq i, map_zero]
-  simpa only [Fintype.card_fin] using projective_plane_common_zeros_card_le
-    _ _ (hf.map _) hir (hg.isHomogeneous.map _) hndQ _ hinj (hzero f hf hzf)
-    (hzero g hg.isHomogeneous hg.eval_eq_zero)
-
-private theorem projective_chart_rational_irreducible
-    {K : Type*} [Field K] [CharZero K] {d : ℕ}
-    (f : MvPolynomial (Fin 3) ℤ) (hf : f.IsHomogeneous d) (hf0 : f ≠ 0)
-    (hdeg : (affineChart 2 f).totalDegree = d)
-    (hir : Irreducible (map (Int.castRingHom K) (affineChart 2 f))) :
-    Irreducible (map (Int.castRingHom ℚ) f) := by
-  apply irreducible_of_affineChart_irreducible
-  · rw [affineChart_map, rational_map_totalDegree, rational_map_totalDegree,
-      hdeg, hf.totalDegree hf0]
-  · rw [affineChart_map]
-    exact rational_irreducible_of_charZero_map _ hir
+  have h : t ≤ d * M := by
+    simpa only [Fintype.card_fin] using projective_plane_common_zeros_card_le
+      _ _ (hf.map _) hirQ (hg.isHomogeneous.map _) hndQ _ hinj (hzero f hf hzf)
+      (hzero g hg.isHomogeneous hg.eval_eq_zero)
+  exact_mod_cast h
 
 /-- Small-height count of projective points on a plane curve: if `f` is a primitive integral
 ternary form of degree `d ≥ 2` whose affine chart is a bounded plane curve of height `H`, and
@@ -77,11 +75,9 @@ theorem projective_points_small_height_bound
           |((order.leadingCoeff f : ℤ) : ℝ)| ^ (1 / (d : ℝ) ^ 2) + 2) := by
   obtain ⟨M, hM, g, hg⟩ := projective_auxiliary_small_height_degree
     order f hf hf0 hd hchart hzB hheight
-  have h := projective_integer_points_card_le_auxiliary_degree f g hf hprim
-    (projective_chart_rational_irreducible f hf hf0 hchart.totalDegree_eq hchart.irreducible)
-    z hz0 hinj hzB.eval_eq_zero hg
-  have hR : (t : ℝ) ≤ d * (M : ℝ) := by exact_mod_cast h
-  exact hR.trans (mul_le_mul_of_nonneg_left hM (by positivity))
+  exact (projective_integer_points_card_le_auxiliary_degree f g hf hf0 hprim
+    hchart.totalDegree_eq hchart.irreducible z hz0 hinj hzB.eval_eq_zero hg).trans
+    (mul_le_mul_of_nonneg_left hM (by positivity))
 
 /-- Large-height count of projective points on a plane curve: if `f` is a primitive integral
 ternary form of degree `d ≥ 2` whose affine chart is a bounded plane curve of height `H`, with
@@ -106,16 +102,9 @@ theorem projective_points_large_height_bound
         (d : ℝ) ^ 4 := by
   obtain ⟨M, hM, g, hg⟩ := projective_auxiliary_large_height_degree
     order f hf hf0 hd hchart hzB T hT hheight hposition
-  have h := projective_integer_points_card_le_auxiliary_degree f g hf hprim
-    (projective_chart_rational_irreducible f hf hf0 hchart.totalDegree_eq hchart.irreducible)
-    z hz0 hinj hzB.eval_eq_zero hg
-  have hR : (t : ℝ) ≤ d * (M : ℝ) := by exact_mod_cast h
-  calc
-    _ ≤ d * ((34 + 8 *
-          Real.exp (heightDeterminantError projectivePlaneDeterminantConstant + 6 + T)) *
-        (d : ℝ) ^ 3) :=
-      hR.trans (mul_le_mul_of_nonneg_left hM (by positivity))
-    _ = _ := by ring
+  exact ((projective_integer_points_card_le_auxiliary_degree f g hf hf0 hprim
+    hchart.totalDegree_eq hchart.irreducible z hz0 hinj hzB.eval_eq_zero hg).trans
+    (mul_le_mul_of_nonneg_left hM (by positivity))).trans_eq (by ring)
 
 end
 end CCDN

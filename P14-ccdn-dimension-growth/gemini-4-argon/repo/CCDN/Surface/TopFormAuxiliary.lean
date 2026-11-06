@@ -33,41 +33,6 @@ lemma topFormAuxiliaryConstant_pos (n : ℕ) : 0 < topFormAuxiliaryConstant n :=
   unfold topFormAuxiliaryConstant
   positivity
 
-private theorem primitive_top_form_auxiliary {n : ℕ}
-    (f : MvPolynomial (Fin (n + 2)) ℤ) (hprim : PrimitiveIntegerPolynomial f)
-    (hir : HasAbsIrreducibleTopForm f)
-    {B : ℝ} (hB : 1 ≤ B) :
-    ∃ g, IsBoxAuxiliary f g B ∧
-      (g.totalDegree : ℝ) ≤ topFormAuxiliaryConstant n *
-        (f.totalDegree : ℝ) ^ (4 - 1 / (n + 1 : ℝ)) *
-          B ^ (1 / (f.totalDegree : ℝ) ^ (1 / (n + 1 : ℝ))) := by
-  have hfIr := hprim.irreducible_of_absolute_top hir
-  have habs := absolute_irreducible_of_top_homogeneousComponent_irreducible f hir
-  have hd := absolute_integer_polynomial_totalDegree_pos f habs
-  let d := f.totalDegree
-  let F := homogeneousComponent d f
-  have hF0 : F ≠ 0 := homogeneousComponent_totalDegree_ne_zero hfIr.ne_zero
-  have hFd : F.totalDegree = d := (homogeneousComponent_isHomogeneous d f).totalDegree hF0
-  let L := (integerCoefficientHeight F : ℝ)
-  let q := 1 / ((n + 1 : ℝ) * d * (d : ℝ) ^ (1 / (n + 1 : ℝ)))
-  let K := (n + 1 : ℝ) * Real.exp (2 * mertensError + 1) * hypersurfaceHeightConstant (n + 2)
-  have hL : 1 ≤ L := leading_height_one_le f hfIr.ne_zero
-  have hratio : hypersurfaceBadPrimeFactor f / L ^ q ≤ K := by
-    calc
-      _ ≤ hypersurfaceBadPrimeFactor F / L ^ q := div_le_div_of_nonneg_right
-        (hypersurfaceBadPrimeFactor_le_top_homogeneousComponent f hir) (by positivity)
-      _ ≤ _ := by
-        simpa only [Nat.cast_add, Nat.cast_one] using
-          hypersurface_badPrime_fractional_height_bound F hF0 hFd (r := n + 1) (by omega) hd
-  obtain ⟨g, hg, hgdeg⟩ := affine_hypersurface_auxiliary f hprim hfIr hd hB
-  refine ⟨g, hg, hgdeg.trans ?_⟩
-  have hh := mul_le_mul_of_nonneg_left
-    (affineAuxiliaryDegreeExpression_le_of_badPrime_ratio n hd hB hL hratio)
-    (affineHypersurfaceAuxiliaryConstant_pos n).le
-  unfold topFormAuxiliaryConstant
-  convert hh using 1
-  ring
-
 /-- Uniform auxiliary existence for every integer equation whose highest
 homogeneous component is absolutely irreducible. Integer content is removed
 inside the proof; the final constant depends only on ambient dimension. -/
@@ -81,19 +46,38 @@ theorem top_form_auxiliary_rational {n : ℕ}
         (f.totalDegree : ℝ) ^ (4 - 1 / (n + 1 : ℝ)) *
           B ^ (1 / (f.totalDegree : ℝ) ^ (1 / (n + 1 : ℝ))) ∧
       ∀ x : IntPoint (n + 2), InBox x B → eval x f = 0 → eval x g = 0 := by
-  have hf0 : f ≠ 0 := by intro hz; exact hir.ne_zero (by simp [hz])
+  have hf0 : f ≠ 0 := fun hz => hir.ne_zero (by simp [hz])
   obtain ⟨c, u, hc, huprim, he⟩ := exists_primitive_integer_factor f hf0
   obtain ⟨huDegree, huTop⟩ := absolute_top_irreducible_of_integer_scalar_factor hc he hir
-  obtain ⟨g, ⟨hg0, hgnd, hgz⟩, hgdeg⟩ := primitive_top_form_auxiliary u huprim huTop hB
+  have huIr := huprim.irreducible_of_absolute_top huTop
+  have habs := absolute_irreducible_of_top_homogeneousComponent_irreducible u huTop
+  have hd := absolute_integer_polynomial_totalDegree_pos u habs
+  let d := u.totalDegree
+  let F := homogeneousComponent d u
+  have hF0 : F ≠ 0 := homogeneousComponent_totalDegree_ne_zero huIr.ne_zero
+  have hFd : F.totalDegree = d := (homogeneousComponent_isHomogeneous d u).totalDegree hF0
+  let L := (integerCoefficientHeight F : ℝ)
+  let q := 1 / ((n + 1 : ℝ) * d * (d : ℝ) ^ (1 / (n + 1 : ℝ)))
+  let K := (n + 1 : ℝ) * Real.exp (2 * mertensError + 1) * hypersurfaceHeightConstant (n + 2)
+  have hL : 1 ≤ L := leading_height_one_le u huIr.ne_zero
+  have hratio : hypersurfaceBadPrimeFactor u / L ^ q ≤ K :=
+    (div_le_div_of_nonneg_right
+      (hypersurfaceBadPrimeFactor_le_top_homogeneousComponent u huTop) (by positivity)).trans
+      (by simpa only [Nat.cast_add, Nat.cast_one] using
+        hypersurface_badPrime_fractional_height_bound F hF0 hFd (r := n + 1) (by omega) hd)
+  obtain ⟨g, ⟨hg0, hgnd, hgz⟩, hgdeg⟩ := affine_hypersurface_auxiliary u huprim huIr hd hB
   have hudvd : u ∣ f := ⟨C c, by rw [he]; ring⟩
-  refine ⟨g, hg0, ?_, ?_, ?_⟩
-  · intro h
-    exact hgnd (huprim.rational_map_dvd_iff.mp ((map_dvd (map (Int.castRingHom ℚ)) hudvd).trans h))
-  · simpa only [huDegree] using hgdeg
-  · intro x hx hxf
-    apply hgz x hx
-    rw [he, eval_mul, eval_C] at hxf
-    exact (mul_eq_zero.mp hxf).resolve_left hc
+  refine ⟨g, hg0, fun h => hgnd (huprim.rational_map_dvd_iff.mp
+    ((map_dvd (map (Int.castRingHom ℚ)) hudvd).trans h)), ?_, fun x hx hxf =>
+      hgz x hx (by rw [he, eval_mul, eval_C] at hxf; exact (mul_eq_zero.mp hxf).resolve_left hc)⟩
+  rw [← huDegree]
+  refine hgdeg.trans ?_
+  have hh := mul_le_mul_of_nonneg_left
+    (affineAuxiliaryDegreeExpression_le_of_badPrime_ratio n hd hB hL hratio)
+    (affineHypersurfaceAuxiliaryConstant_pos n).le
+  unfold topFormAuxiliaryConstant
+  convert hh using 1
+  ring
 
 end
 end CCDN

@@ -52,13 +52,6 @@ abbrev projectivePlaneTotalMultiplicity {p d : ℕ} [Fact p.Prime]
     (hf0 : map (Int.castRingHom (ZMod p)) f ≠ 0) : ℕ :=
   projectiveHypersurfaceTotalMultiplicity f hf hf0
 
-private theorem projectivePlaneTotalMultiplicity_bounds {p d : ℕ} [Fact p.Prime]
-    (f : MvPolynomial (Fin 3) ℤ) (hf : f.IsHomogeneous d)
-    (hf0 : map (Int.castRingHom (ZMod p)) f ≠ 0) :
-    Fintype.card (ProjectivePlaneResidue f p) ≤ projectivePlaneTotalMultiplicity f hf hf0 ∧
-    projectivePlaneTotalMultiplicity f hf hf0 ≤ Fintype.card (ProjectivePlaneResidue f p) * d :=
-  projectiveHypersurfaceTotalMultiplicity_bounds f hf hf0
-
 /-- Primitive integer zeros determine the residue partition, unit chart
 coordinates and positive local multiplicities. The divisor's leading
 quadratic constant uses their total multiplicity. -/
@@ -88,30 +81,22 @@ theorem projective_reduction_minorGcd {s N p d M : ℕ} [Fact p.Prime] (hs : 0 <
   have hsum : ∑ i : Fin c, μ i = projectivePlaneTotalMultiplicity f hf hf0 :=
     E.symm.sum_comp (projectivePlaneResidueMultiplicity f hf hf0)
   have hsize : ∑ i : Fin c, n i = s := sum_residue_class_sizes label
-  have hc : 0 < c := Fintype.card_pos_iff.mpr ⟨red ⟨0, hs⟩⟩
   have hpos : 0 < projectivePlaneTotalMultiplicity f hf hf0 :=
-    hc.trans_le (projectivePlaneTotalMultiplicity_bounds f hf hf0).1
+    (Fintype.card_pos_iff.mpr ⟨red ⟨0, hs⟩⟩).trans_le
+      (projectiveHypersurfaceTotalMultiplicity_bounds f hf hf0).1
   refine ⟨hpos, e, ?_, ?_, ?_⟩
   · simpa only [hsum, hsize] using aggregate_multiplicity_exponents Finset.univ n μ
       (fun i _ => (hμ i).1)
-  · have h := aggregate_exponent_lower Finset.univ n μ
+  · simpa only [hsize] using aggregate_exponent_lower Finset.univ n μ
       (fun i => multiplicityExponent (n i) (μ i))
       (fun i _ => multiplicityExponent_lower_bound _ _ (hμ i).1)
-      (N := (projectivePlaneTotalMultiplicity f hf hf0 : ℝ)) (by exact_mod_cast hpos)
-      (by rw [hsum])
-    simpa only [hsize] using h
-  · apply projective_plane_residue_minorGcd f hf F hF z label k a μ
-    · intro i
-      exact (hμ i).2.2.1
-    · intro i
-      exact (hμ i).2.2.2
-    · intro i
-      have h := (primitiveProjectiveReduction_chart (z i) (hprim i) (red i).val rfl).1
-      simpa only [k, label, E.symm_apply_apply] using h
-    · intro i j
-      have h := (primitiveProjectiveReduction_chart (z i) (hprim i) (red i).val rfl).2 j
-      simpa only [k, a, label, E.symm_apply_apply] using h
-    · exact hz
+      (N := (projectivePlaneTotalMultiplicity f hf hf0 : ℝ)) (mod_cast hpos) (by rw [hsum])
+  · exact projective_plane_residue_minorGcd f hf F hF z label k a μ
+      (fun i => (hμ i).2.2.1) (fun i => (hμ i).2.2.2)
+      (fun i => by simpa only [k, label, E.symm_apply_apply] using
+        (primitiveProjectiveReduction_chart (z i) (hprim i) (red i).val rfl).1)
+      (fun i j => by simpa only [k, a, label, E.symm_apply_apply] using
+        (primitiveProjectiveReduction_chart (z i) (hprim i) (red i).val rfl).2 j) hz
 
 end
 end CCDN

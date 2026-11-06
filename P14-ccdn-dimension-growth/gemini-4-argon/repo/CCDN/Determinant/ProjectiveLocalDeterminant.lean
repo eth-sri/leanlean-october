@@ -28,131 +28,23 @@ lemma dvd_eval_sub_of_dvd_coordinates {σ : Type*} (q : ℤ)
     q ∣ eval x f - eval y f := by
   induction f using MvPolynomial.induction_on with
   | C c => simp
-  | add f g hf hg =>
-    simpa only [eval_add, add_sub_add_comm] using dvd_add hf hg
+  | add f g hf hg => simpa only [eval_add, add_sub_add_comm] using dvd_add hf hg
   | mul_X f j hf =>
-    rw [eval_mul, eval_mul, eval_X, eval_X]
-    have he : eval x f * x j - eval y f * y j =
-        (eval x f - eval y f) * x j + eval y f * (x j - y j) := by ring
-    rw [he]
+    rw [eval_mul, eval_mul, eval_X, eval_X,
+      show eval x f * x j - eval y f * y j =
+        (eval x f - eval y f) * x j + eval y f * (x j - y j) by ring]
     exact dvd_add (dvd_mul_of_dvd_left hf _) (dvd_mul_of_dvd_right (hxy j) _)
 
 /-- An integer `a` coprime to `q` has an inverse `u` modulo `q`, itself coprime to `q`. -/
 lemma exists_integer_inverse_of_isCoprime {q a : ℤ} (h : IsCoprime q a) :
     ∃ u : ℤ, q ∣ u * a - 1 ∧ IsCoprime q u := by
   obtain ⟨v, u, he⟩ := h
-  refine ⟨u, ⟨-v, by linear_combination he⟩, v, a, ?_⟩
-  simpa only [mul_comm a u] using he
-
-/-- Unit normalization in the first homogeneous coordinate preserves the
-evaluation of a degree-M form, up to the corresponding unit row factor. -/
-private lemma projective_chart_eval_congr {M : ℕ} {q u : ℤ}
-    (z : Fin 3 → ℤ) (hu : q ∣ u * z 0 - 1)
-    (F : MvPolynomial (Fin 3) ℤ) (hF : F.IsHomogeneous M) :
-    q ∣ eval (fun j : Fin 2 => u * z j.succ) (affineChart 2 F) -
-      u ^ M * eval z F := by
-  rw [affineChart_eval, ← homogeneous_eval_smul hF]
-  apply dvd_eval_sub_of_dvd_coordinates
-  intro j
-  refine Fin.cases ?_ (fun k => ?_) j
-  · simpa only [Fin.cons_zero, Pi.smul_apply, smul_eq_mul, neg_sub] using
-      (show q ∣ -(u * z 0 - 1) from dvd_neg.mpr hu)
-  · simp
-
-/-- Projective local determinant estimate in a chart whose first coordinate
-is a p-adic unit. The affine multiplicity belongs to the chart equation. -/
-private theorem projective_plane_chart_det_divisibility {p μ s d M : ℕ} [Fact p.Prime]
-    (f : MvPolynomial (Fin 3) ℤ) (hfhom : f.IsHomogeneous d)
-    (F : Fin s → MvPolynomial (Fin 3) ℤ) (hF : ∀ j, (F j).IsHomogeneous M)
-    (z : Fin s → Fin 3 → ℤ) (a : Fin 2 → ℤ)
-    (hf : map (Int.castRingHom (ZMod p)) (originShift a (affineChart 2 f)) ∈
-      idealOfVars (Fin 2) (ZMod p) ^ μ)
-    (hμ : homogeneousComponent μ
-      (map (Int.castRingHom (ZMod p)) (originShift a (affineChart 2 f))) ≠ 0)
-    (hunit : ∀ i, IsCoprime (p : ℤ) (z i 0))
-    (hres : ∀ i j, (p : ℤ) ∣ z i j.succ - a j * z i 0)
-    (hz : ∀ i, eval (z i) f = 0) :
-    (p : ℤ) ^ multiplicityExponent s μ ∣
-      (Matrix.of fun i j => eval (z i) (F j)).det := by
-  classical
-  let N := multiplicityExponent s μ
-  by_cases hN : N = 0
-  · change (p : ℤ) ^ N ∣ _
-    simp [hN]
-  have hNpos : 1 ≤ N := Nat.one_le_iff_ne_zero.mpr hN
-  let q : ℤ := (p : ℤ) ^ N
-  have hpq : (p : ℤ) ∣ q := by
-    simpa only [pow_one] using pow_dvd_pow (p : ℤ) hNpos
-  have hex (i : Fin s) := exists_integer_inverse_of_isCoprime
-    (show IsCoprime q (z i 0) from (hunit i).pow_left)
-  choose u hu huc using hex
-  let x : Fin s → Fin 2 → ℤ := fun i j => u i * z i j.succ
-  have hx (i : Fin s) (j : Fin 2) : (p : ℤ) ∣ x i j - a j := by
-    have he : x i j - a j =
-        u i * (z i j.succ - a j * z i 0) + a j * (u i * z i 0 - 1) := by
-      dsimp [x]
-      ring
-    rw [he]
-    exact dvd_add (dvd_mul_of_dvd_right (hres i j) _)
-      (dvd_mul_of_dvd_right (hpq.trans (hu i)) _)
-  have hxf (i : Fin s) : q ∣ eval (x i) (affineChart 2 f) := by
-    have h := projective_chart_eval_congr (z i) (hu i) f hfhom
-    simpa only [hz, mul_zero, sub_zero] using h
-  let A := Matrix.of fun i j : Fin s => eval (x i) (affineChart 2 (F j))
-  let D := Matrix.of fun i j : Fin s => u i ^ M * eval (z i) (F j)
-  have hA : q ∣ A.det :=
-    singular_plane_chart_det_divisibility_mod (affineChart 2 f)
-      (fun j => affineChart 2 (F j)) x a hf hμ hx hxf
-  have hAD : q ∣ A.det - D.det := by
-    apply Matrix.dvd_det_sub_det_of_dvd_sub
-    intro i j
-    exact projective_chart_eval_congr (z i) (hu i) (F j) (hF j)
-  have hD : q ∣ D.det := by
-    simpa only [sub_sub_cancel] using dvd_sub hA hAD
-  have hprod : IsCoprime q (∏ i, u i ^ M) :=
-    IsCoprime.prod_right fun i _ => (huc i).pow_right
-  have he : D.det = (∏ i, u i ^ M) *
-      (Matrix.of fun i j => eval (z i) (F j)).det :=
-    Matrix.det_mul_column _ _
-  rw [he] at hD
-  exact hprod.dvd_of_dvd_mul_left hD
+  exact ⟨u, ⟨-v, by linear_combination he⟩, v, a, by simpa only [mul_comm a u] using he⟩
 
 /-- Move coordinate `k` to the first position before taking the affine chart. -/
 def projectivePlaneChart (k : Fin 3) (f : MvPolynomial (Fin 3) ℤ) :
     MvPolynomial (Fin 2) ℤ :=
   affineChart 2 (rename (Equiv.swap 0 k) f)
-
-private lemma eval_swap_plane_coordinates (k : Fin 3) (z : Fin 3 → ℤ)
-    (f : MvPolynomial (Fin 3) ℤ) :
-    eval (z ∘ Equiv.swap 0 k) (rename (Equiv.swap 0 k) f) = eval z f := by
-  rw [eval_rename]
-  have he : (z ∘ Equiv.swap 0 k) ∘ Equiv.swap 0 k = z := by
-    funext j
-    simp
-  rw [he]
-
-/-- The local projective divisor is available in every coordinate chart. -/
-private theorem projective_plane_local_det_divisibility {p μ s d M : ℕ} [Fact p.Prime]
-    (f : MvPolynomial (Fin 3) ℤ) (hfhom : f.IsHomogeneous d)
-    (F : Fin s → MvPolynomial (Fin 3) ℤ) (hF : ∀ j, (F j).IsHomogeneous M)
-    (z : Fin s → Fin 3 → ℤ) (k : Fin 3) (a : Fin 2 → ℤ)
-    (hf : map (Int.castRingHom (ZMod p)) (originShift a (projectivePlaneChart k f)) ∈
-      idealOfVars (Fin 2) (ZMod p) ^ μ)
-    (hμ : homogeneousComponent μ
-      (map (Int.castRingHom (ZMod p)) (originShift a (projectivePlaneChart k f))) ≠ 0)
-    (hunit : ∀ i, IsCoprime (p : ℤ) (z i k))
-    (hres : ∀ i j, (p : ℤ) ∣ z i (Equiv.swap 0 k j.succ) - a j * z i k)
-    (hz : ∀ i, eval (z i) f = 0) :
-    (p : ℤ) ^ multiplicityExponent s μ ∣
-      (Matrix.of fun i j => eval (z i) (F j)).det := by
-  have h := projective_plane_chart_det_divisibility
-    (rename (Equiv.swap 0 k) f) hfhom.rename_isHomogeneous
-    (fun j => rename (Equiv.swap 0 k) (F j)) (fun j => (hF j).rename_isHomogeneous)
-    (fun i => z i ∘ Equiv.swap 0 k) a hf hμ
-    (fun i => by simpa using hunit i)
-    (fun i j => by simpa using hres i j)
-    (fun i => by rw [eval_swap_plane_coordinates]; exact hz i)
-  simpa only [eval_swap_plane_coordinates] using h
 
 /-- Assemble local projective residue classes in their own coordinate charts.
 Every maximal minor acquires the sum of their local multiplicity exponents. -/
@@ -173,17 +65,59 @@ theorem projective_plane_residue_minorGcd {p c s N d M : ℕ} [Fact p.Prime]
     (p : ℤ) ^ (∑ i : Fin c, multiplicityExponent
       (Fintype.card {j : Fin s // label j = i}) (μ i)) ∣
       Int.Matrix.minorGcd (Matrix.of fun i j => eval (z i) (F j)) := by
+  classical
+  have hcongr {D : ℕ} {q u : ℤ} (y : Fin 3 → ℤ) (hu : q ∣ u * y 0 - 1)
+      (G : MvPolynomial (Fin 3) ℤ) (hG : G.IsHomogeneous D) :
+      q ∣ eval (fun j : Fin 2 => u * y j.succ) (affineChart 2 G) - u ^ D * eval y G := by
+    rw [affineChart_eval, ← homogeneous_eval_smul hG]
+    refine dvd_eval_sub_of_dvd_coordinates _ _ _ (fun j => Fin.cases ?_ (fun _ => by simp) j) _
+    simpa only [Fin.cons_zero, Pi.smul_apply, smul_eq_mul, neg_sub] using dvd_neg.mpr hu
+  have hswap (r : Fin 3) (y : Fin 3 → ℤ) (G : MvPolynomial (Fin 3) ℤ) :
+      eval (y ∘ Equiv.swap 0 r) (rename (Equiv.swap 0 r) G) = eval y G := by
+    rw [eval_rename, show (y ∘ Equiv.swap 0 r) ∘ Equiv.swap 0 r = y by funext; simp]
   apply residue_prime_powers_dvd_minorGcd _ label
-  intro i cols
-  apply projective_plane_local_det_divisibility f hfhom
-    (fun j => F (cols j)) (fun j => hF (cols j))
-    (fun j => z (residueRows label i j)) (k i) (a i) (hf i) (hμ i)
-  · intro j
-    simpa only [residueRows_label] using hunit (residueRows label i j)
-  · intro j l
-    simpa only [residueRows_label] using hres (residueRows label i j) l
-  · intro j
-    exact hz _
+  intro l cols
+  let s' := Fintype.card {j : Fin s // label j = l}
+  let E := multiplicityExponent s' (μ l)
+  by_cases hE : E = 0
+  · change (p : ℤ) ^ E ∣ _; simp [hE]
+  let q : ℤ := (p : ℤ) ^ E
+  have hpq : (p : ℤ) ∣ q := by
+    simpa only [pow_one] using pow_dvd_pow (p : ℤ) (Nat.one_le_iff_ne_zero.mpr hE)
+  let w : Fin s' → Fin 3 → ℤ := fun i => z (residueRows label l i) ∘ Equiv.swap 0 (k l)
+  choose u hu huc using fun i : Fin s' => exists_integer_inverse_of_isCoprime
+    (show IsCoprime q (w i 0) from (by
+      simpa only [w, Function.comp_apply, Equiv.swap_apply_left, residueRows_label] using
+        hunit (residueRows label l i) : IsCoprime (p : ℤ) (w i 0)).pow_left)
+  let x : Fin s' → Fin 2 → ℤ := fun i j => u i * w i j.succ
+  have hx (i : Fin s') (j : Fin 2) : (p : ℤ) ∣ x i j - a l j := by
+    rw [show x i j - a l j = u i * (w i j.succ - a l j * w i 0) + a l j * (u i * w i 0 - 1) by
+      dsimp [x]; ring]
+    exact dvd_add (dvd_mul_of_dvd_right (by
+      simpa only [w, Function.comp_apply, Equiv.swap_apply_left, residueRows_label] using
+        hres (residueRows label l i) j) _)
+      (dvd_mul_of_dvd_right (hpq.trans (hu i)) _)
+  have hxf (i : Fin s') : q ∣ eval (x i) (projectivePlaneChart (k l) f) := by
+    have h := hcongr (w i) (hu i) (rename (Equiv.swap 0 (k l)) f) hfhom.rename_isHomogeneous
+    simpa only [projectivePlaneChart, w, hswap, hz, mul_zero, sub_zero] using h
+  let A := Matrix.of fun i j : Fin s' =>
+    eval (x i) (affineChart 2 (rename (Equiv.swap 0 (k l)) (F (cols j))))
+  let D := Matrix.of fun i j : Fin s' => u i ^ M * eval (z (residueRows label l i)) (F (cols j))
+  have hA : q ∣ A.det :=
+    singular_plane_chart_det_divisibility_mod (projectivePlaneChart (k l) f)
+      (fun j => affineChart 2 (rename (Equiv.swap 0 (k l)) (F (cols j)))) x (a l)
+      (hf l) (hμ l) hx hxf
+  have hAD : q ∣ A.det - D.det := by
+    apply Matrix.dvd_det_sub_det_of_dvd_sub
+    intro i j
+    dsimp only [A, D, x, Matrix.of_apply]
+    simpa only [w, hswap] using hcongr (w i) (hu i)
+      (rename (Equiv.swap 0 (k l)) (F (cols j))) (hF (cols j)).rename_isHomogeneous
+  have hD : q ∣ D.det := by simpa only [sub_sub_cancel] using dvd_sub hA hAD
+  rw [show D.det = (∏ i, u i ^ M) *
+    (Matrix.of fun i j => eval (z (residueRows label l i)) (F (cols j))).det from
+      Matrix.det_mul_column _ _] at hD
+  exact (IsCoprime.prod_right fun i _ => (huc i).pow_right).dvd_of_dvd_mul_left hD
 
 end
 end CCDN

@@ -42,16 +42,14 @@ def auxDegreeBound (n d : ℕ) (B b H : ℝ) : ℝ :=
   auxMainTerm n d B b H + (d : ℝ) ^ (1 - 1 / (n + 1 : ℝ)) * Real.log B +
     (d : ℝ) ^ (4 - 1 / (n + 1 : ℝ))
 
-private lemma one_le_four_sub_inv (n : ℕ) : (1 : ℝ) ≤ 4 - 1 / (n + 1 : ℝ) := by
-  have h := (div_le_one (by positivity : (0 : ℝ) < n + 1)).mpr
-    (show 1 ≤ (n + 1 : ℝ) by have := Nat.cast_nonneg (α := ℝ) n; linarith)
-  linarith
-
 /-- `d ≤ d ^ (4 - 1 / (n + 1))` for a positive degree. -/
 lemma le_rpow_four_sub_inv {n d : ℕ} (hd : 0 < d) :
     (d : ℝ) ≤ (d : ℝ) ^ (4 - 1 / (n + 1 : ℝ)) := by
-  have hd1 : (1 : ℝ) ≤ d := by exact_mod_cast hd
-  simpa only [Real.rpow_one] using Real.rpow_le_rpow_of_exponent_le hd1 (one_le_four_sub_inv n)
+  have h : 1 / (n + 1 : ℝ) ≤ 1 := (div_le_one (by positivity : (0 : ℝ) < n + 1)).mpr
+    (by linarith [Nat.cast_nonneg (α := ℝ) n])
+  simpa only [Real.rpow_one] using
+    Real.rpow_le_rpow_of_exponent_le (show (1 : ℝ) ≤ d from mod_cast hd)
+      (show (1 : ℝ) ≤ 4 - 1 / (n + 1 : ℝ) by linarith)
 
 end
 end CCDN

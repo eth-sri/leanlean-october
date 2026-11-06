@@ -15,11 +15,33 @@ namespace CCDN
 noncomputable section
 open MvPolynomial
 
-private lemma leadingInfinityIdeal_homogeneousComponent_mem {K σ : Type*} [Field K]
-    (I : Ideal (MvPolynomial σ K)) (f : MvPolynomial σ K)
-    (hf : f ∈ leadingInfinityIdeal I) (m : ℕ) :
-    homogeneousComponent m f ∈ leadingInfinityIdeal I := by
+/-- A homogeneous polynomial of degree `m` satisfies `f (c • z) = c ^ m * f z`. -/
+lemma homogeneous_aeval_scale {K L σ : Type*} [Field K] [Field L] [Algebra K L]
+    [Fintype σ] (f : MvPolynomial σ K) {m : ℕ} (hf : f.IsHomogeneous m)
+    (z : σ → L) (c : L) : aeval (fun j => c * z j) f = c ^ m * aeval z f := by
+  classical
+  conv_lhs => rw [f.as_sum, map_sum]
+  conv_rhs => rw [f.as_sum, map_sum, Finset.mul_sum]
+  refine Finset.sum_congr rfl fun e he => ?_
+  have hedeg : e.degree = m := by
+    rw [Finsupp.degree_eq_weight_one, ← Pi.one_def]
+    exact hf (mem_support_iff.mp he)
+  simp only [aeval_monomial]
+  rw [Finsupp.prod_fintype _ _ (by simp), Finsupp.prod_fintype _ _ (by simp)]
+  simp only [mul_pow, Finset.prod_mul_distrib, Finset.prod_pow_eq_pow_sum]
+  rw [(Finsupp.sum_fintype e (fun _ k => k) (by simp)).symm.trans hedeg]
+  ring
+
+/-- The zero locus of the ideal at infinity is a cone: it is stable under scaling by any `c`. -/
+lemma infinity_zeroLocus_scale {K L σ : Type*} [Field K] [Field L]
+    [Algebra K L] [Fintype σ] (I : Ideal (MvPolynomial σ K)) (z : σ → L)
+    (hz : z ∈ MvPolynomial.zeroLocus L (leadingInfinityIdeal I)) (c : L) :
+    (fun j => c * z j) ∈ MvPolynomial.zeroLocus L (leadingInfinityIdeal I) := by
+  intro f hf
+  rw [← sum_homogeneousComponent (φ := f), map_sum]
+  refine Finset.sum_eq_zero fun m _ => ?_
   have hhom := homogeneousComponent_isHomogeneous m f
+  rw [homogeneous_aeval_scale _ hhom, hz _ ?_, mul_zero]
   change Ideal.Quotient.mk (projectiveInfinityIdeal I)
     (quotientRadialMap I (homogeneousComponent m f)) = 0
   rw [quotientRadialMap_homogeneous I _ m hhom, Ideal.Quotient.eq_zero_iff_mem]
@@ -39,46 +61,12 @@ private lemma leadingInfinityIdeal_homogeneousComponent_mem {K σ : Type*} [Fiel
         Polynomial (MvPolynomial σ K ⧸ I)).coeff 0 =
         (Polynomial.X * (g : Polynomial (MvPolynomial σ K ⧸ I))).coeff 0 at he
     rw [quotientRadialMap_coeff, Polynomial.coeff_X_mul_zero] at he
-    have hz : projectiveMonomialMap I 0
+    have hz0 : projectiveMonomialMap I 0
         ⟨(Ideal.Quotient.mk I) (homogeneousComponent 0 f),
-          ⟨_, (mem_restrictTotalDegree _ _ _).mpr hhom.totalDegree_le, rfl⟩⟩ = 0 := by
-      apply Subtype.ext
-      simp only [projectiveMonomialMap_val, he, map_zero, ZeroMemClass.coe_zero]
-    rw [hz]
+          ⟨_, (mem_restrictTotalDegree _ _ _).mpr hhom.totalDegree_le, rfl⟩⟩ = 0 :=
+      Subtype.ext (by simp only [projectiveMonomialMap_val, he, map_zero, ZeroMemClass.coe_zero])
+    rw [hz0]
     exact (projectiveInfinityIdeal I).zero_mem
-
-/-- A homogeneous polynomial of degree `m` satisfies `f (c • z) = c ^ m * f z`. -/
-lemma homogeneous_aeval_scale {K L σ : Type*} [Field K] [Field L] [Algebra K L]
-    [Fintype σ] (f : MvPolynomial σ K) {m : ℕ} (hf : f.IsHomogeneous m)
-    (z : σ → L) (c : L) : aeval (fun j => c * z j) f = c ^ m * aeval z f := by
-  classical
-  conv_lhs => rw [f.as_sum, map_sum]
-  conv_rhs => rw [f.as_sum, map_sum, Finset.mul_sum]
-  apply Finset.sum_congr rfl
-  intro e he
-  have hedeg : e.degree = m := by
-    rw [Finsupp.degree_eq_weight_one, ← Pi.one_def]
-    exact hf (mem_support_iff.mp he)
-  simp only [aeval_monomial]
-  rw [Finsupp.prod_fintype _ _ (by simp), Finsupp.prod_fintype _ _ (by simp)]
-  simp only [mul_pow, Finset.prod_mul_distrib, Finset.prod_pow_eq_pow_sum]
-  have hesum : ∑ j : σ, e j = m := by
-    have hh := Finsupp.sum_fintype e (fun _ k => k) (by simp)
-    exact hh.symm.trans hedeg
-  rw [hesum]
-  ring
-
-/-- The zero locus of the ideal at infinity is a cone: it is stable under scaling by any `c`. -/
-lemma infinity_zeroLocus_scale {K L σ : Type*} [Field K] [Field L]
-    [Algebra K L] [Fintype σ] (I : Ideal (MvPolynomial σ K)) (z : σ → L)
-    (hz : z ∈ MvPolynomial.zeroLocus L (leadingInfinityIdeal I)) (c : L) :
-    (fun j => c * z j) ∈ MvPolynomial.zeroLocus L (leadingInfinityIdeal I) := by
-  intro f hf
-  rw [← sum_homogeneousComponent (φ := f), map_sum]
-  apply Finset.sum_eq_zero
-  intro m _
-  rw [homogeneous_aeval_scale _ (homogeneousComponent_isHomogeneous m f)]
-  rw [hz _ (leadingInfinityIdeal_homogeneousComponent_mem I f hf m), mul_zero]
 
 end
 end CCDN

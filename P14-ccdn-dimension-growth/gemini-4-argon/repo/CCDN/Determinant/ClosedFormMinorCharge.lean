@@ -17,15 +17,6 @@ namespace CCDN
 noncomputable section
 open Polynomial Matrix Real
 
-private lemma log_factorial_le_square (r : ℕ) : Real.log (r.factorial : ℝ) ≤ (r : ℝ) ^ 2 := by
-  by_cases hr : r = 0
-  · simp [hr]
-  have hr0 : (0 : ℝ) < r := by exact_mod_cast Nat.pos_of_ne_zero hr
-  have hh : (r.factorial : ℝ) ≤ (r : ℝ) ^ r := by exact_mod_cast Nat.factorial_le_pow r
-  have hl := Real.log_le_log (by positivity : (0 : ℝ) < r.factorial) hh
-  rw [Real.log_pow] at hl
-  exact hl.trans (by nlinarith [Real.log_le_self hr0.le])
-
 /-- The determinant height fits the cutoff L=27*d^4 with scaled
 height 1+log(H)/d². -/
 theorem closedForm_minor_log_height
@@ -51,7 +42,13 @@ theorem closedForm_minor_log_height
   rw [Real.log_mul (by positivity : (r.factorial : ℝ) ≠ 0) (pow_ne_zero _ hE0.ne'),
     Real.log_pow, Real.log_mul (by positivity : 2 * (d : ℝ) ≠ 0) hH0.ne',
     Real.log_mul (by norm_num : (2 : ℝ) ≠ 0) hd0.ne'] at hl
-  have hfac := log_factorial_le_square r
+  have hfac : Real.log (r.factorial : ℝ) ≤ (r : ℝ) ^ 2 := by
+    by_cases hrz : r = 0
+    · simp [hrz]
+    have hl_fac := Real.log_le_log (by positivity : (0 : ℝ) < r.factorial)
+      (by exact_mod_cast Nat.factorial_le_pow r : (r.factorial : ℝ) ≤ (r : ℝ) ^ r)
+    rw [Real.log_pow] at hl_fac
+    exact hl_fac.trans (by nlinarith [Real.log_le_self hr0])
   have hl2 := Real.log_le_self (by norm_num : (0 : ℝ) ≤ 2)
   have hld := Real.log_le_self hd0.le
   have hterm : (r : ℝ) * (Real.log 2 + Real.log d + Real.log H) ≤

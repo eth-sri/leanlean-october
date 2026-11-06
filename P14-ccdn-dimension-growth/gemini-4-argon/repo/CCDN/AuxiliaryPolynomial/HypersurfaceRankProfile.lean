@@ -20,34 +20,27 @@ namespace CCDN
 noncomputable section
 open Finset
 
-private lemma sum_shifted_choose_add (r k d : ℕ) :
-    (∑ i ∈ range d, (r + 1 + k + i).choose r) + (r + 1 + k).choose (r + 1) =
-      (r + 1 + k + d).choose (r + 1) := by
-  induction d with
-  | zero => simp
-  | succ d ih =>
-    rw [sum_range_succ]
-    have hp := Nat.choose_succ_succ' (r + 1 + k + d) r
-    rw [show r + 1 + k + (d + 1) = (r + 1 + k + d) + 1 by omega]
-    omega
-
-/-- The exact rank is a sum of d adjacent binomial layers. -/
-private theorem hypersurface_rank_eq_sum {r d M s : ℕ} (hdM : d ≤ M)
-    (hr : s + (r + 1 + (M - d)).choose (M - d) = (r + 1 + M).choose M) :
-    s = ∑ i ∈ range d, (r + 1 + (M - d) + i).choose r := by
-  have hh := sum_shifted_choose_add r (M - d) d
-  rw [show r + 1 + (M - d) + d = r + 1 + M by omega] at hh
-  rw [← Nat.choose_symm_add (a := r + 1) (b := M - d),
-    ← Nat.choose_symm_add (a := r + 1) (b := M)] at hr
-  omega
-
 /-- The Hilbert function `s` of a degree-`d` hypersurface in `r + 2` homogeneous variables,
 given by `s + C(r + 1 + (M - d), M - d) = C(r + 1 + M, M)`, satisfies
 `d * C(r + (M - d), r) ≤ s ≤ d * C(r + M, r)`. -/
 lemma hypersurface_rank_binomial_bounds {r d M s : ℕ} (hdM : d ≤ M)
     (hr : s + (r + 1 + (M - d)).choose (M - d) = (r + 1 + M).choose M) :
     d * (r + (M - d)).choose r ≤ s ∧ s ≤ d * (r + M).choose r := by
-  rw [hypersurface_rank_eq_sum hdM hr]
+  have hsum (k m : ℕ) :
+      (∑ i ∈ range m, (r + 1 + k + i).choose r) + (r + 1 + k).choose (r + 1) =
+        (r + 1 + k + m).choose (r + 1) := by
+    induction m with
+    | zero => simp
+    | succ m ih =>
+      rw [sum_range_succ]
+      have hp := Nat.choose_succ_succ' (r + 1 + k + m) r
+      rw [show r + 1 + k + (m + 1) = (r + 1 + k + m) + 1 by omega]
+      omega
+  have hh := hsum (M - d) d
+  rw [show r + 1 + (M - d) + d = r + 1 + M by omega] at hh
+  rw [← Nat.choose_symm_add (a := r + 1) (b := M - d),
+    ← Nat.choose_symm_add (a := r + 1) (b := M)] at hr
+  rw [show s = ∑ i ∈ range d, (r + 1 + (M - d) + i).choose r by omega]
   constructor
   · calc
       _ = ∑ _i ∈ range d, (r + (M - d)).choose r := by simp

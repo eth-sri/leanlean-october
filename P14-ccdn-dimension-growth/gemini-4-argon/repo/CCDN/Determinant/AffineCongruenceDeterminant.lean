@@ -20,12 +20,7 @@ namespace CCDN
 noncomputable section
 open MvPolynomial Finset
 
-/-- The homogeneous coordinates `(1, x)` of an integer point `x` are primitive: their gcd is `1`. -/
-lemma primitive_affine_integer_coordinates {n : ℕ} (x : Fin n → ℤ) :
-    Finset.univ.gcd (Fin.cons 1 x) = 1 := by
-  have he : insert (0 : Fin (n + 1)) univ = univ := insert_eq_of_mem (mem_univ _)
-  have hh := congrArg (fun S : Finset (Fin (n + 1)) => S.gcd (Fin.cons 1 x)) he
-  simpa only [Finset.gcd_insert, Fin.cons_zero, gcd_one_left] using hh.symm
+/- The homogeneous coordinates `(1, x)` of an integer point `x` are primitive: their gcd is `1`. -/
 
 /-- Homogenization transfers the proved global-plus-congruence estimate
 without changing a single affine evaluation. -/
@@ -54,25 +49,24 @@ theorem exists_affine_congruence_determinant_log_lower {n s N M : ℕ} (hs : 0 <
   let H := fun j => scaledHomogenize M 1 (G j)
   have hH : ∀ j, (H j).IsHomogeneous M := fun j => scaledHomogenize_homogeneous 1 _ (hG j)
   let z : Fin s → IntPoint (n + 3) := fun i => Fin.cons 1 (x i)
-  have hz : ∀ i, eval (z i) F = 0 := by
-    intro i
-    rw [← affineChart_eval, affineChart_scaledHomogenize_one]
-    exact hx i
+  have hz : ∀ i, eval (z i) F = 0 := fun i => by
+    rw [← affineChart_eval, affineChart_scaledHomogenize_one]; exact hx i
   have he : (Matrix.of fun i j => eval (z i) (H j)) =
       Matrix.of fun i j => eval (x i) (G j) := by
     ext i j
     change eval (Fin.cons 1 (x i)) (scaledHomogenize M 1 (G j)) = _
     rw [← affineChart_eval, affineChart_scaledHomogenize_one]
     rfl
-  have hrows' : LinearIndependent ℚ
-      ((Matrix.of fun i j => eval (z i) (H j)).map ((↑) : ℤ → ℚ)).row := by
-    rw [he]
-    exact hrows
   have hchart : projectiveHypersurfaceChart (0 : Fin (n + 3)) F = f := by
     simp only [projectiveHypersurfaceChart, Equiv.swap_self, Equiv.coe_refl, rename_id_apply, F,
       affineChart_scaledHomogenize_one]
   obtain ⟨bad, hbad, hbound⟩ := exists_smooth_congruence_determinant_log_lower hs F hF hd hFir
-    ⟨hH, fun i => primitive_affine_integer_coordinates (x i), hz, hrows'⟩ P hres.prime
+    ⟨hH, fun i => by
+      dsimp [z]
+      simpa only [Finset.gcd_insert, Fin.cons_zero, gcd_one_left] using
+        (congrArg (fun S : Finset (Fin (n + 3)) => S.gcd (Fin.cons 1 (x i)))
+          (insert_eq_of_mem (mem_univ (0 : Fin (n + 3))))).symm,
+      hz, by rwa [he]⟩ P hres.prime
     (fun _ => 0) a (by simpa only [hchart] using hres.eval_eq_zero)
     (by simpa only [hchart] using hres.smooth)
     (by intro p hp i; exact isCoprime_one_right)

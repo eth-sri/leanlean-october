@@ -37,8 +37,6 @@ structure SurfaceCongruenceFamily (f : MvPolynomial (Fin 3) ℤ) (B A : ℝ) whe
   `P`. -/
   auxiliary : (P : Finset ℕ) → (∀ p ∈ P, p.Prime) →
     SmoothAffineResidueFamily f P → MvPolynomial (Fin 3) ℤ
-  /-- Every auxiliary is nonzero. -/
-  nonzero : ∀ P hP r, auxiliary P hP r ≠ 0
   /-- No auxiliary is divisible by `f` over `ℚ`. -/
   proper : ∀ P hP r, ¬ map (Int.castRingHom ℚ) f ∣
     map (Int.castRingHom ℚ) (auxiliary P hP r)
@@ -73,8 +71,8 @@ theorem exists_surface_congruence_family
       (fun p hp => by
         let : NeZero p := ⟨(hP p hp).ne_zero⟩
         exact smoothResidueIntegerLift_smooth r p hp)
-  choose g hg0 hgproper hgdegree hgzero using hex
-  exact ⟨⟨g, hg0, hgproper, hgdegree, hgzero⟩⟩
+  choose g _ hgproper hgdegree hgzero using hex
+  exact ⟨⟨g, hgproper, hgdegree, hgzero⟩⟩
 
 /-- The auxiliary polynomial of a congruence family attached to the empty set of primes: it
 vanishes at every integer zero of `f` in the box. -/

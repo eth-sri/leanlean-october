@@ -38,95 +38,31 @@ instance projectivePermutedIdeal_isPrime {K : Type*} [Field K] {n : ℕ}
     (e : Equiv.Perm (Fin (n + 1))) : (projectivePermutedIdeal I e).IsPrime :=
   RingHom.ker_isPrime _
 
-private theorem projectiveHilbertFunction_permuted {K : Type*} [Field K] {n : ℕ}
-    (I : Ideal (MvPolynomial (Fin (n + 1)) K)) (e : Equiv.Perm (Fin (n + 1))) (M : ℕ) :
-    projectiveHilbertFunction (projectivePermutedIdeal I e) M = projectiveHilbertFunction I M := by
-  let ψ := (Ideal.Quotient.mkₐ K I).comp (renameEquiv K e).toAlgHom
-  let φ := Ideal.kerLiftAlg ψ
-  let V := homogeneousCoordinateSpace (RingHom.ker ψ) M
-  have he : V.map φ.toLinearMap = homogeneousCoordinateSpace I M := by
-    ext x
-    constructor
-    · intro hx
-      obtain ⟨u, hu, rfl⟩ := Submodule.mem_map.mp hx
-      obtain ⟨f, hf, rfl⟩ := Submodule.mem_map.mp hu
-      exact Submodule.mem_map.mpr ⟨rename e f, hf.rename_isHomogeneous, rfl⟩
-    · intro hx
-      obtain ⟨f, hf, rfl⟩ := Submodule.mem_map.mp hx
-      refine Submodule.mem_map.mpr
-        ⟨(Ideal.Quotient.mk (RingHom.ker ψ)) (rename e.symm f),
-          Submodule.mem_map.mpr ⟨rename e.symm f, hf.rename_isHomogeneous, rfl⟩, ?_⟩
-      change (Ideal.Quotient.mk I) (rename e (rename e.symm f)) = (Ideal.Quotient.mk I) f
-      exact congrArg (Ideal.Quotient.mk I) ((renameEquiv K e).apply_symm_apply f)
-  have h :=
-    (Submodule.equivMapOfInjective φ.toLinearMap (Ideal.kerLiftAlg_injective ψ) V).finrank_eq
-  rw [he] at h
-  exact h
-
 /-- Permuting the coordinates preserves the degree of a projective curve. -/
 theorem projectiveCurveDegree_permuted {K : Type*} [Field K] {n d : ℕ}
     (I : Ideal (MvPolynomial (Fin (n + 1)) K)) (e : Equiv.Perm (Fin (n + 1)))
     (hdegree : HasProjectiveCurveDegree I d) :
     HasProjectiveCurveDegree (projectivePermutedIdeal I e) d := by
   obtain ⟨N, c, hN⟩ := hdegree
-  exact ⟨N, c, fun M hM => by rw [projectiveHilbertFunction_permuted]; exact hN M hM⟩
-
-private def coordinatePermutation {K : Type*} [Field K] {n : ℕ} (e : Equiv.Perm (Fin (n + 1))) :
-    (Fin (n + 1) → K) →ₗ[K] (Fin (n + 1) → K) where
-  toFun v := v ∘ e
-  map_add' _ _ := rfl
-  map_smul' _ _ := rfl
-
-private lemma coordinatePermutation_injective {K : Type*} [Field K] {n : ℕ}
-    (e : Equiv.Perm (Fin (n + 1))) :
-    Function.Injective (coordinatePermutation (K := K) e) := by
-  intro v w he
-  funext j
-  simpa [coordinatePermutation] using congrFun he (e.symm j)
-
-private def projectivePermutation {K : Type*} [Field K] {n : ℕ} (e : Equiv.Perm (Fin (n + 1))) :
-    Projectivization K (Fin (n + 1) → K) → Projectivization K (Fin (n + 1) → K) :=
-  Projectivization.map (coordinatePermutation e) (coordinatePermutation_injective e)
-
-private lemma projectivePermutation_injective {K : Type*} [Field K] {n : ℕ}
-    (e : Equiv.Perm (Fin (n + 1))) : Function.Injective (projectivePermutation (K := K) e) :=
-  Projectivization.map_injective _ _
-
-private lemma projectivePermutation_height {n : ℕ} (e : Equiv.Perm (Fin (n + 1)))
-    (x : ProjectivePoint n) :
-    (projectivePermutation e x).mulHeight = x.mulHeight := by
-  conv_lhs => rw [← x.mk_rep]
-  rw [projectivePermutation, Projectivization.map_mk, Projectivization.mulHeight_mk]
-  change Height.mulHeight (x.rep ∘ e) = x.mulHeight
-  rw [Height.mulHeight_comp_equiv, projective_rep_height]
-
-private lemma projectivePermutation_zeroLocus {K : Type*} [Field K] {n : ℕ}
-    (I : Ideal (MvPolynomial (Fin (n + 1)) K)) (e : Equiv.Perm (Fin (n + 1)))
-    (x : Projectivization K (Fin (n + 1) → K)) (hx : x ∈ projectiveIdealZeroLocus I) :
-    projectivePermutation e x ∈ projectiveIdealZeroLocus (projectivePermutedIdeal I e) := by
-  intro v hv hvx f hf
-  have hxperm : coordinatePermutation e x.rep ≠ 0 := by
-    intro h
-    apply x.rep_nonzero
-    apply coordinatePermutation_injective (K := K) e
-    simpa only [map_zero] using h
-  have he : Projectivization.mk K v hv =
-      Projectivization.mk K (coordinatePermutation e x.rep) hxperm := by
-    change Projectivization.mk K v hv =
-      projectivePermutation e (Projectivization.mk K x.rep x.rep_nonzero)
-    rw [x.mk_rep]
-    exact hvx
-  obtain ⟨c, hc⟩ := (Projectivization.mk_eq_mk_iff K _ _ _ _).mp he
-  have hw : (c : K) • x.rep ≠ 0 := smul_ne_zero c.ne_zero x.rep_nonzero
-  have hwx : Projectivization.mk K ((c : K) • x.rep) hw = x := by
-    calc
-      _ = Projectivization.mk K x.rep x.rep_nonzero :=
-        (Projectivization.mk_eq_mk_iff' K _ _ _ _).mpr ⟨c, rfl⟩
-      _ = x := x.mk_rep
-  have h := hx ((c : K) • x.rep) hw hwx (rename e f) ((mem_projectivePermutedIdeal I e f).mp hf)
-  rw [eval_rename] at h
-  have hv' : ((c : K) • x.rep) ∘ e = v := hc
-  rwa [hv'] at h
+  refine ⟨N, c, fun M hM => ?_⟩
+  let ψ := (Ideal.Quotient.mkₐ K I).comp (renameEquiv K e).toAlgHom
+  let φ := Ideal.kerLiftAlg ψ
+  let V := homogeneousCoordinateSpace (RingHom.ker ψ) M
+  have he : V.map φ.toLinearMap = homogeneousCoordinateSpace I M := by
+    ext x
+    refine ⟨?_, ?_⟩
+    · rintro ⟨_, ⟨f, hf, rfl⟩, rfl⟩
+      exact Submodule.mem_map.mpr ⟨rename e f, hf.rename_isHomogeneous, rfl⟩
+    · rintro ⟨f, hf, rfl⟩
+      refine Submodule.mem_map.mpr ⟨(Ideal.Quotient.mk (RingHom.ker ψ)) (rename e.symm f),
+        Submodule.mem_map.mpr ⟨rename e.symm f, hf.rename_isHomogeneous, rfl⟩, ?_⟩
+      exact congrArg (Ideal.Quotient.mk I) ((renameEquiv K e).apply_symm_apply f)
+  have h := (Submodule.equivMapOfInjective φ.toLinearMap (Ideal.kerLiftAlg_injective ψ) V).finrank_eq
+  rw [he] at h
+  change (projectiveHilbertFunction (projectivePermutedIdeal I e) M : ℤ) = _
+  rw [show projectiveHilbertFunction (projectivePermutedIdeal I e) M =
+    projectiveHilbertFunction I M from h]
+  exact hN M hM
 
 /-- Permuting the coordinates does not decrease the number of rational projective points of
 height at most `B` on the zero locus of `I`. -/
@@ -134,12 +70,32 @@ theorem projectiveCount_le_permuted {n : ℕ}
     (I : Ideal (CoordinatePolynomial (n + 1))) (e : Equiv.Perm (Fin (n + 1))) (B : ℝ) :
     projectiveCount (projectiveIdealZeroLocus I) B ≤
       projectiveCount (projectiveIdealZeroLocus (projectivePermutedIdeal I e)) B := by
-  apply Finset.card_le_card_of_injOn (projectivePermutation e)
-  · intro x hx
-    obtain ⟨hxB, hxI⟩ := mem_projectivePoints.mp hx
-    exact mem_projectivePoints.mpr ⟨by rwa [projectivePermutation_height],
-      projectivePermutation_zeroLocus I e x hxI⟩
-  · exact (projectivePermutation_injective e).injOn
+  let L : (Fin (n + 1) → ℚ) →ₗ[ℚ] (Fin (n + 1) → ℚ) :=
+    { toFun := fun v => v ∘ e, map_add' := fun _ _ => rfl, map_smul' := fun _ _ => rfl }
+  have hLinj : Function.Injective L := fun _ _ he =>
+    funext fun j => by simpa [L] using congrFun he (e.symm j)
+  let P := Projectivization.map L hLinj
+  refine Finset.card_le_card_of_injOn P (fun x hx => ?_)
+    (Projectivization.map_injective _ _).injOn
+  obtain ⟨hxB, hxI⟩ := mem_projectivePoints.mp hx
+  have hht : (P x).mulHeight = x.mulHeight := by
+    conv_lhs => rw [← x.mk_rep]
+    dsimp only [P]
+    rw [Projectivization.map_mk, Projectivization.mulHeight_mk]
+    change Height.mulHeight (x.rep ∘ e) = x.mulHeight
+    rw [Height.mulHeight_comp_equiv, projective_rep_height]
+  refine mem_projectivePoints.mpr ⟨hht ▸ hxB, fun v hv hvx f hf => ?_⟩
+  have hxperm : L x.rep ≠ 0 := fun h =>
+    x.rep_nonzero (hLinj (by simpa only [map_zero] using h))
+  have he : Projectivization.mk ℚ v hv = Projectivization.mk ℚ (L x.rep) hxperm := by
+    change Projectivization.mk ℚ v hv = P (Projectivization.mk ℚ x.rep x.rep_nonzero)
+    rwa [x.mk_rep]
+  obtain ⟨c, hc⟩ := (Projectivization.mk_eq_mk_iff ℚ _ _ _ _).mp he
+  have hw : (c : ℚ) • x.rep ≠ 0 := smul_ne_zero c.ne_zero x.rep_nonzero
+  have hwx : Projectivization.mk ℚ ((c : ℚ) • x.rep) hw = x :=
+    ((Projectivization.mk_eq_mk_iff' ℚ _ _ _ _).mpr ⟨c, rfl⟩).trans x.mk_rep
+  have h := hxI ((c : ℚ) • x.rep) hw hwx (rename e f) ((mem_projectivePermutedIdeal I e f).mp hf)
+  rwa [eval_rename, show ((c : ℚ) • x.rep) ∘ e = v from hc] at h
 
 end
 end CCDN

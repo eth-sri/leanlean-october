@@ -34,133 +34,6 @@ def surfaceResidueCrossing {f : MvPolynomial (Fin 3) ℤ} {A B : ℝ}
   let h := map (Int.castRingHom ℚ) (F.auxiliary R hR r)
   ⋃ I ∈ S.filter (fun I => g ∈ I ∧ h ∉ I), idealZeroLocus I ∩ zeroLocus h
 
-private theorem surface_residue_crossing_count_le
-    {f : MvPolynomial (Fin 3) ℤ} {A B : ℝ}
-    (F : SurfaceCongruenceFamily f B A)
-    (hir : Irreducible (map (Int.castRingHom ℚ) f))
-    (S : Finset (Ideal (CoordinatePolynomial 3)))
-    (δ : Ideal (CoordinatePolynomial 3) → ℕ)
-    (hS : ∀ I ∈ S, IsSurfaceCurve (map (Int.castRingHom ℚ) f) I (δ I))
-    (R : Finset ℕ) (hR : ∀ p ∈ R, p.Prime) (p : ℕ)
-    (r : SmoothAffineResidueFamily f R) :
-    count (surfaceResidueCrossing F S R hR p r) B ≤
-      f.totalDegree *
-        (F.auxiliary (R.erase p) (fun q hq => hR q (mem_of_mem_erase hq))
-          (r.restrict (erase_subset p R))).totalDegree *
-        (F.auxiliary R hR r).totalDegree := by
-  classical
-  let g := map (Int.castRingHom ℚ)
-    (F.auxiliary (R.erase p) (fun q hq => hR q (mem_of_mem_erase hq))
-      (r.restrict (erase_subset p R)))
-  let h := map (Int.castRingHom ℚ) (F.auxiliary R hR r)
-  have hh := surface_curve_crossing_count_le (map (Int.castRingHom ℚ) f) g h hir
-    (F.proper _ _ _) (S.filter (fun I => g ∈ I)) δ
-    (fun I hI => ⟨hS I (mem_filter.mp hI).1, (mem_filter.mp hI).2⟩) B
-  have he : (S.filter (fun I => g ∈ I)).filter (fun I => h ∉ I) =
-      S.filter (fun I => g ∈ I ∧ h ∉ I) := by ext I; simp only [mem_filter]; tauto
-  rw [he] at hh
-  change count (surfaceResidueCrossing F S R hR p r) B ≤ _ at hh
-  simpa only [g, h, rational_map_totalDegree] using hh
-
-private lemma SurfaceCongruenceFamily.scaled_degree_le
-    {f : MvPolynomial (Fin 3) ℤ} {A B L X : ℝ}
-    (F : SurfaceCongruenceFamily f B A) (hA : 0 ≤ A) (hB : 1 ≤ B) (hL : 1 ≤ L)
-    (hX : B ^ (1 / Real.sqrt (f.totalDegree : ℝ)) ≤ X)
-    (R : Finset ℕ) (hRW : R ⊆ congruencePrimeWindow L)
-    (hR : ∀ p ∈ R, p.Prime) (r : SmoothAffineResidueFamily f R) :
-    ((F.auxiliary R hR r).totalDegree : ℝ) * (∏ p ∈ R, (p : ℝ)) ≤
-      A * (X + ∏ p ∈ R, (p : ℝ)) * surfaceResidueLogBudget B L := by
-  have hlogB := Real.log_nonneg hB
-  have hQ : 0 ≤ ∑ p ∈ R, Real.log p := sum_nonneg (fun p _ => Real.log_natCast_nonneg p)
-  have hlog : (∑ p ∈ R, Real.log p) ≤
-      (Real.log 4 + 4) * scalingPrimeRatio * L :=
-    (sum_le_sum_of_subset_of_nonneg hRW (fun p _ _ => Real.log_natCast_nonneg p)).trans
-      (congruencePrimeWindow_log_upper hL)
-  have hq : 0 < ∏ p ∈ R, (p : ℝ) :=
-    prod_pos (fun p hp => by exact_mod_cast (hR p hp).pos)
-  have hB0 : 0 < B := by linarith
-  have hX0 : 0 ≤ X := (Real.rpow_nonneg hB0.le _).trans hX
-  have hd := F.degree_le R hR r
-  rw [exp_sum_log_primes R hR] at hd
-  have hh := mul_le_mul_of_nonneg_right hd hq.le
-  have he : A * (B ^ (1 / Real.sqrt (f.totalDegree : ℝ)) /
-      (∏ p ∈ R, (p : ℝ)) + 1) *
-      (1 + Real.log B + ∑ p ∈ R, Real.log p) * (∏ p ∈ R, (p : ℝ)) =
-      A * (B ^ (1 / Real.sqrt (f.totalDegree : ℝ)) + (∏ p ∈ R, (p : ℝ))) *
-        (1 + Real.log B + ∑ p ∈ R, Real.log p) := by field_simp
-  rw [he] at hh
-  apply hh.trans
-  apply mul_le_mul
-  · exact mul_le_mul_of_nonneg_left (by linarith) hA
-  · dsimp only [surfaceResidueLogBudget]; linarith
-  · positivity
-  · positivity
-
-private theorem surface_residue_crossing_scaled_count
-    {f : MvPolynomial (Fin 3) ℤ} {A B L X : ℝ}
-    (F : SurfaceCongruenceFamily f B A) (hA : 0 ≤ A) (hB : 1 ≤ B) (hL : 1 ≤ L)
-    (hX0 : 0 ≤ X) (hX : B ^ (1 / Real.sqrt (f.totalDegree : ℝ)) ≤ X)
-    (hir : Irreducible (map (Int.castRingHom ℚ) f))
-    (S : Finset (Ideal (CoordinatePolynomial 3)))
-    (δ : Ideal (CoordinatePolynomial 3) → ℕ)
-    (hS : ∀ I ∈ S, IsSurfaceCurve (map (Int.castRingHom ℚ) f) I (δ I))
-    (R : Finset ℕ) (hRW : R ⊆ congruencePrimeWindow L)
-    (hR : ∀ p ∈ R, p.Prime) (p : ℕ) (hp : p ∈ R)
-    (hq : (∏ q ∈ R, (q : ℝ)) ≤ scalingPrimeRatio * L * X)
-    (r : SmoothAffineResidueFamily f R) :
-    (count (surfaceResidueCrossing F S R hR p r) B : ℝ) *
-        (∏ q ∈ R, (q : ℝ)) ^ 2 ≤
-      2 * f.totalDegree * A ^ 2 * (surfaceResidueLogBudget B L) ^ 2 *
-        (scalingPrimeRatio * L + 1) ^ 2 * X ^ 2 := by
-  let U := scalingPrimeRatio * L
-  let T := surfaceResidueLogBudget B L
-  let q : ℝ := ∏ t ∈ R, (t : ℝ)
-  let g := F.auxiliary (R.erase p) (fun t ht => hR t (mem_of_mem_erase ht))
-    (r.restrict (erase_subset p R))
-  let h := F.auxiliary R hR r
-  have hU : 0 ≤ U := by dsimp only [U]; have := scalingPrimeRatio_one_le; positivity
-  have hT : 0 ≤ T := by
-    dsimp only [T, surfaceResidueLogBudget]
-    have := scalingPrimeRatio_one_le
-    have := Real.log_nonneg hB
-    have := Real.log_nonneg (show (1 : ℝ) ≤ 4 by norm_num)
-    positivity
-  have hpU : (p : ℝ) ≤ U := ((mem_congruencePrimeWindow hL).mp (hRW hp)).2.2
-  have hqp : (∏ t ∈ R.erase p, (t : ℝ)) * p = q := prod_erase_mul R _ hp
-  have hpar := F.scaled_degree_le hA hB hL hX (R.erase p)
-    ((erase_subset p R).trans hRW) (fun t ht => hR t (mem_of_mem_erase ht))
-    (r.restrict (erase_subset p R))
-  have hchild := F.scaled_degree_le hA hB hL hX R hRW hR r
-  have hpar' : (g.totalDegree : ℝ) * q ≤ A * (X * p + q) * T := by
-    have hh := mul_le_mul_of_nonneg_right hpar (Nat.cast_nonneg (α := ℝ) p)
-    change (g.totalDegree : ℝ) * _ * p ≤ _ at hh
-    calc
-      _ = (g.totalDegree : ℝ) * (∏ t ∈ R.erase p, (t : ℝ)) * p := by rw [mul_assoc, hqp]
-      _ ≤ _ := hh
-      _ = _ := by dsimp only [T]; rw [← hqp]; ring
-  have hchild' : (h.totalDegree : ℝ) * q ≤ A * (X + q) * T := hchild
-  have hfirst : X * p + q ≤ 2 * (U + 1) * X := by
-    have hpX := mul_le_mul_of_nonneg_left hpU hX0
-    change q ≤ U * X at hq
-    nlinarith
-  have hsecond : X + q ≤ (U + 1) * X := by
-    change q ≤ U * X at hq
-    linarith
-  have hpar'' : (g.totalDegree : ℝ) * q ≤ A * (2 * (U + 1) * X) * T :=
-    hpar'.trans (mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left hfirst hA) hT)
-  have hchild'' : (h.totalDegree : ℝ) * q ≤ A * ((U + 1) * X) * T :=
-    hchild'.trans (mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left hsecond hA) hT)
-  have hpair := mul_le_mul hpar'' hchild'' (by dsimp only [q]; positivity)
-    (by positivity)
-  have hcount : (count (surfaceResidueCrossing F S R hR p r) B : ℝ) ≤
-      (f.totalDegree : ℝ) * g.totalDegree * h.totalDegree := by
-    exact_mod_cast surface_residue_crossing_count_le F hir S δ hS R hR p r
-  have hc := mul_le_mul_of_nonneg_right hcount (sq_nonneg q)
-  have hm := mul_le_mul_of_nonneg_left hpair (Nat.cast_nonneg (α := ℝ) f.totalDegree)
-  change _ ≤ 2 * f.totalDegree * A ^ 2 * T ^ 2 * (U + 1) ^ 2 * X ^ 2
-  dsimp only [q] at hc hm
-  nlinarith [hc, hm]
-
 /-- Summing all smooth residue tuples cancels the square of the
 modulus. Only d to the number of selected primes remains. -/
 theorem surface_residue_edge_count_le
@@ -178,51 +51,107 @@ theorem surface_residue_edge_count_le
       2 * (f.totalDegree : ℝ) ^ (R.card + 1) * A ^ 2 *
         (surfaceResidueLogBudget B L) ^ 2 * (scalingPrimeRatio * L + 1) ^ 2 * X ^ 2 := by
   classical
+  have hscaled (R' : Finset ℕ) (hR'W : R' ⊆ congruencePrimeWindow L)
+      (hR' : ∀ t ∈ R', t.Prime) (r' : SmoothAffineResidueFamily f R') :
+      ((F.auxiliary R' hR' r').totalDegree : ℝ) * (∏ t ∈ R', (t : ℝ)) ≤
+        A * (X + ∏ t ∈ R', (t : ℝ)) * surfaceResidueLogBudget B L := by
+    have hlog : (∑ t ∈ R', Real.log t) ≤ (Real.log 4 + 4) * scalingPrimeRatio * L :=
+      (sum_le_sum_of_subset_of_nonneg hR'W fun t _ _ => Real.log_natCast_nonneg t).trans
+        (congruencePrimeWindow_log_upper hL)
+    have hq' : 0 < ∏ t ∈ R', (t : ℝ) := prod_pos fun t ht => mod_cast (hR' t ht).pos
+    have hd := F.degree_le R' hR' r'
+    rw [exp_sum_log_primes R' hR'] at hd
+    have hh := mul_le_mul_of_nonneg_right hd hq'.le
+    rw [show A * (B ^ (1 / Real.sqrt (f.totalDegree : ℝ)) / (∏ t ∈ R', (t : ℝ)) + 1) *
+        (1 + Real.log B + ∑ t ∈ R', Real.log t) * (∏ t ∈ R', (t : ℝ)) =
+      A * (B ^ (1 / Real.sqrt (f.totalDegree : ℝ)) + ∏ t ∈ R', (t : ℝ)) *
+        (1 + Real.log B + ∑ t ∈ R', Real.log t) by field_simp] at hh
+    have hlogB := Real.log_nonneg hB
+    have hQ : 0 ≤ ∑ t ∈ R', Real.log t := sum_nonneg fun t _ => Real.log_natCast_nonneg t
+    exact hh.trans (mul_le_mul (mul_le_mul_of_nonneg_left (by linarith) hA)
+      (by dsimp only [surfaceResidueLogBudget]; linarith) (by positivity) (by positivity))
   let (p : R) : NeZero p.val := ⟨(hR p.val p.property).ne_zero⟩
   let : Fintype (SmoothAffineResidueFamily f R) := Pi.instFintype
+  let U := scalingPrimeRatio * L
+  let T := surfaceResidueLogBudget B L
   let q : ℝ := ∏ p ∈ R, (p : ℝ)
-  let C : ℝ := 2 * f.totalDegree * A ^ 2 * (surfaceResidueLogBudget B L) ^ 2 *
-    (scalingPrimeRatio * L + 1) ^ 2 * X ^ 2
-  have hqpos : 0 < q := prod_pos (fun p hp => by exact_mod_cast (hR p hp).pos)
-  have hC : 0 ≤ C := by dsimp only [C]; positivity
+  let C : ℝ := 2 * f.totalDegree * A ^ 2 * T ^ 2 * (U + 1) ^ 2 * X ^ 2
+  have hqpos : 0 < q := prod_pos fun p hp => mod_cast (hR p hp).pos
+  have hU : 0 ≤ U := by dsimp [U]; have := scalingPrimeRatio_one_le; positivity
+  have hT : 0 ≤ T := by
+    dsimp [T, surfaceResidueLogBudget]
+    have := scalingPrimeRatio_one_le
+    have := Real.log_nonneg hB
+    have := Real.log_nonneg (show (1 : ℝ) ≤ 4 by norm_num)
+    positivity
+  have hC : 0 ≤ C := by dsimp [C]; positivity
+  have hpU : (p : ℝ) ≤ U := ((mem_congruencePrimeWindow hL).mp (hRW hp)).2.2
+  have hqp : (∏ t ∈ R.erase p, (t : ℝ)) * p = q := prod_erase_mul R _ hp
+  have hpoint (r : SmoothAffineResidueFamily f R) :
+      (count (surfaceResidueCrossing F S R hR p r) B : ℝ) * q ^ 2 ≤ C := by
+    let g := F.auxiliary (R.erase p) (fun t ht => hR t (mem_of_mem_erase ht))
+      (r.restrict (erase_subset p R))
+    let h := F.auxiliary R hR r
+    have hpar := hscaled (R.erase p) ((erase_subset p R).trans hRW)
+      (fun t ht => hR t (mem_of_mem_erase ht)) (r.restrict (erase_subset p R))
+    have hchild : (h.totalDegree : ℝ) * q ≤ A * ((U + 1) * X) * T :=
+      (hscaled R hRW hR r).trans (mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left
+        (show X + q ≤ (U + 1) * X by change q ≤ U * X at hq; linarith) hA) hT)
+    have hpar' : (g.totalDegree : ℝ) * q ≤ A * (2 * (U + 1) * X) * T := by
+      have hh := mul_le_mul_of_nonneg_right hpar (Nat.cast_nonneg (α := ℝ) p)
+      have hh' : (g.totalDegree : ℝ) * q ≤ A * (X * p + q) * T := by
+        calc (g.totalDegree : ℝ) * q
+          _ = (g.totalDegree : ℝ) * (∏ t ∈ R.erase p, (t : ℝ)) * p := by rw [mul_assoc, hqp]
+          _ ≤ _ := hh
+          _ = A * (X * p + q) * T := by dsimp [T]; rw [← hqp]; ring
+      exact hh'.trans (mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left
+        (show X * p + q ≤ 2 * (U + 1) * X by
+          change q ≤ U * X at hq; nlinarith [mul_le_mul_of_nonneg_left hpU hX0]) hA) hT)
+    have hpair := mul_le_mul hpar' hchild (by positivity) (by positivity)
+    have hh := surface_curve_crossing_count_le (map (Int.castRingHom ℚ) f)
+      (map (Int.castRingHom ℚ) g) (map (Int.castRingHom ℚ) h) hir
+      (F.proper _ _ _) (S.filter fun I => map (Int.castRingHom ℚ) g ∈ I) δ
+      (fun I hI => ⟨hS I (mem_filter.mp hI).1, (mem_filter.mp hI).2⟩) B
+    rw [show (S.filter fun I => map (Int.castRingHom ℚ) g ∈ I).filter
+        (fun I => map (Int.castRingHom ℚ) h ∉ I) =
+      S.filter (fun I => map (Int.castRingHom ℚ) g ∈ I ∧ map (Int.castRingHom ℚ) h ∉ I) by
+        ext I; simp only [mem_filter]; tauto] at hh
+    change count (surfaceResidueCrossing F S R hR p r) B ≤ _ at hh
+    have hcount : (count (surfaceResidueCrossing F S R hR p r) B : ℝ) ≤
+        (f.totalDegree : ℝ) * g.totalDegree * h.totalDegree := by
+      exact_mod_cast (by simpa only [rational_map_totalDegree] using hh :
+        count (surfaceResidueCrossing F S R hR p r) B ≤
+          f.totalDegree * g.totalDegree * h.totalDegree)
+    nlinarith [mul_le_mul_of_nonneg_right hcount (sq_nonneg q),
+      mul_le_mul_of_nonneg_left hpair (Nat.cast_nonneg (α := ℝ) f.totalDegree)]
   have hcard : (Fintype.card (SmoothAffineResidueFamily f R) : ℝ) ≤
       (f.totalDegree : ℝ) ^ R.card * q ^ 2 := by
     have hh := smoothAffineResidueFamily_card_le (n := 2) f R hR
     rw [Nat.card_eq_fintype_card] at hh
-    have hhR : (Fintype.card (SmoothAffineResidueFamily f R) : ℝ) ≤
-        ((f.totalDegree ^ R.card * (∏ p ∈ R, p) ^ 2 : ℕ) : ℝ) := by exact_mod_cast hh
-    dsimp only [q]
-    simpa only [Nat.cast_mul, Nat.cast_pow, Nat.cast_prod] using hhR
-  have hpoint (r : SmoothAffineResidueFamily f R) :
-      (count (surfaceResidueCrossing F S R hR p r) B : ℝ) * q ^ 2 ≤ C :=
-    surface_residue_crossing_scaled_count F hA hB hL hX0 hX hir S δ hS R hRW hR p hp hq r
+    simpa only [q, Nat.cast_mul, Nat.cast_pow, Nat.cast_prod] using
+      (by exact_mod_cast hh : (Fintype.card (SmoothAffineResidueFamily f R) : ℝ) ≤
+        ((f.totalDegree ^ R.card * (∏ p ∈ R, p) ^ 2 : ℕ) : ℝ))
   have hunion : (count (⋃ r : SmoothAffineResidueFamily f R,
       surfaceResidueCrossing F S R hR p r) B : ℝ) ≤
       ∑ r : SmoothAffineResidueFamily f R, (count (surfaceResidueCrossing F S R hR p r) B : ℝ) := by
     have hh := count_biUnion_finset_le (univ : Finset (SmoothAffineResidueFamily f R))
       (fun r => surfaceResidueCrossing F S R hR p r) B
-    have hh' : count (⋃ r : SmoothAffineResidueFamily f R,
+    exact_mod_cast (show count (⋃ r : SmoothAffineResidueFamily f R,
         surfaceResidueCrossing F S R hR p r) B ≤
-        ∑ r : SmoothAffineResidueFamily f R, count (surfaceResidueCrossing F S R hR p r) B := by
-      simpa only [Finset.mem_univ, Set.iUnion_true] using hh
-    exact_mod_cast hh'
-  have hscaled :
-      (count (⋃ r : SmoothAffineResidueFamily f R, surfaceResidueCrossing F S R hR p r) B : ℝ) *
-        q ^ 2 ≤
-      (2 * (f.totalDegree : ℝ) ^ (R.card + 1) * A ^ 2 *
-        (surfaceResidueLogBudget B L) ^ 2 * (scalingPrimeRatio * L + 1) ^ 2 * X ^ 2) * q ^ 2 := by
-    calc
-      _ ≤ (∑ r : SmoothAffineResidueFamily f R,
-          (count (surfaceResidueCrossing F S R hR p r) B : ℝ)) * q ^ 2 :=
-        mul_le_mul_of_nonneg_right hunion (sq_nonneg q)
-      _ = ∑ r : SmoothAffineResidueFamily f R,
-          (count (surfaceResidueCrossing F S R hR p r) B : ℝ) * q ^ 2 := sum_mul _ _ _
-      _ ≤ ∑ _r : SmoothAffineResidueFamily f R, C := sum_le_sum (fun r _ => hpoint r)
-      _ = (Fintype.card (SmoothAffineResidueFamily f R) : ℝ) * C := by simp
-      _ ≤ ((f.totalDegree : ℝ) ^ R.card * q ^ 2) * C :=
-        mul_le_mul_of_nonneg_right hcard hC
-      _ = _ := by dsimp only [C]; rw [pow_succ]; ring
-  exact le_of_mul_le_mul_right hscaled (sq_pos_of_pos hqpos)
+        ∑ r : SmoothAffineResidueFamily f R, count (surfaceResidueCrossing F S R hR p r) B by
+      simpa only [Finset.mem_univ, Set.iUnion_true] using hh)
+  refine le_of_mul_le_mul_right ?_ (sq_pos_of_pos hqpos)
+  calc (count (⋃ r : SmoothAffineResidueFamily f R, surfaceResidueCrossing F S R hR p r) B : ℝ) *
+      q ^ 2
+    _ ≤ (∑ r : SmoothAffineResidueFamily f R,
+        (count (surfaceResidueCrossing F S R hR p r) B : ℝ)) * q ^ 2 :=
+      mul_le_mul_of_nonneg_right hunion (sq_nonneg q)
+    _ = ∑ r : SmoothAffineResidueFamily f R,
+        (count (surfaceResidueCrossing F S R hR p r) B : ℝ) * q ^ 2 := sum_mul _ _ _
+    _ ≤ ∑ _r : SmoothAffineResidueFamily f R, C := sum_le_sum fun r _ => hpoint r
+    _ = (Fintype.card (SmoothAffineResidueFamily f R) : ℝ) * C := by simp
+    _ ≤ ((f.totalDegree : ℝ) ^ R.card * q ^ 2) * C := mul_le_mul_of_nonneg_right hcard hC
+    _ = _ := by dsimp only [C, U, T]; rw [pow_succ]; ring
 
 end
 end CCDN

@@ -33,31 +33,6 @@ def hypersurfaceRankLowerBound (n s d : ℕ) (c : ℝ) : ℝ :=
   factorialRoot n / (n + 2 : ℝ) * (s : ℝ) ^ (1 + 1 / (n + 1 : ℝ)) *
     (Real.log s - (n + 1 : ℝ) * (4 * Real.log d + c) - hypersurfaceDeterminantError n)
 
-private lemma hypersurface_rank_prime_endpoint (n s : ℕ) (hs : 0 < s) :
-    1 ≤ (s : ℝ) ^ (1 / (n + 1 : ℝ)) := by
-  apply Real.one_le_rpow
-  · exact_mod_cast hs
-  · positivity
-
-private lemma hypersurface_determinant_rank_identity (n s d : ℕ) (hs : 0 < s) (charge : ℝ) :
-    hypersurfaceDeterminantMain n s *
-        (Real.log ((s : ℝ) ^ (1 / (n + 1 : ℝ))) - 4 * Real.log d - Real.log 27 -
-          2 * mertensError - charge - 2 * hypersurfaceCountConstant n * primeBlockMass) -
-        ((n + 2 : ℝ) * s) * ((Real.log 4 + 4) * (s : ℝ) ^ (1 / (n + 1 : ℝ))) =
-      hypersurfaceRankLowerBound n s d charge := by
-  have hs0 : (0 : ℝ) < s := by exact_mod_cast hs
-  have hn : (n + 1 : ℝ) ≠ 0 := by positivity
-  have hn2 : (n + 2 : ℝ) ≠ 0 := by positivity
-  have hfac : ((n + 1).factorial : ℝ) ^ (1 / (n + 1 : ℝ)) ≠ 0 := by positivity
-  have hp : (s : ℝ) ^ (1 + 1 / (n + 1 : ℝ)) =
-      (s : ℝ) * (s : ℝ) ^ (1 / (n + 1 : ℝ)) := by
-    rw [Real.rpow_add hs0, Real.rpow_one]
-  rw [Real.log_rpow hs0]
-  unfold hypersurfaceRankLowerBound hypersurfaceDeterminantMain hypersurfaceDeterminantError
-  rw [hp]
-  field_simp
-  ring
-
 /-- Prime aggregation at the rank endpoint `x = s ^ (1 / (n + 1))`. Local divisors of `D`
 with the hypersurface exponent at every good prime above `27 d ^ 4`, together with
 prescribed divisors at the primes of `P ⊆ bad`, give the rank form of
@@ -72,23 +47,20 @@ theorem hypersurface_log_lower_at_rank_of_local_divisors_congruence {n s d : ℕ
     (hcong : ∀ p ∈ P, (p : ℤ) ^ v p ∣ D) :
     hypersurfaceRankLowerBound n s d (∑ p ∈ bad, Real.log p / p) +
       (∑ p ∈ P, (v p : ℝ) * Real.log p) ≤ Real.log D := by
+  have hs0 : (0 : ℝ) < s := mod_cast hs
   have h := determinant_log_lower_of_local_divisors_degree_four
-    (hypersurface_rank_prime_endpoint n s hs) hd (hypersurfaceCountConstant_nonneg n)
-    (hypersurfaceDeterminantMain_nonneg n s) (by positivity) bad P hPbad hP v hD hlocal hcong
-  rwa [hypersurface_determinant_rank_identity n s d hs] at h
-
-/-- `hypersurface_log_lower_at_rank_of_local_divisors_congruence` without prescribed
-divisors. -/
-theorem hypersurface_log_lower_at_rank_of_local_divisors {n s d : ℕ}
-    (hs : 0 < s) (hd : 0 < d) (bad : Finset ℕ) {D : ℤ} (hD : 0 < D)
-    (hlocal : ∀ p ∈ ((Ioc 0 ⌊(s : ℝ) ^ (1 / (n + 1 : ℝ))⌋₊).filter Nat.Prime) \ bad,
-      stepanovThreshold (d : ℝ) < p → ∃ e : ℕ, hypersurfaceDeterminantMain n s /
-        (p + hypersurfaceCountConstant n * (d : ℝ) ^ 2 * Real.sqrt p) - (n + 2 : ℝ) * s ≤ e ∧
-        (p : ℤ) ^ e ∣ D) :
-    hypersurfaceRankLowerBound n s d (∑ p ∈ bad, Real.log p / p) ≤ Real.log D := by
-  have h := hypersurface_log_lower_at_rank_of_local_divisors_congruence hs hd bad ∅
-    (empty_subset bad) (by simp) 0 hD hlocal (by simp)
-  rwa [sum_empty, add_zero] at h
+    (Real.one_le_rpow (by exact_mod_cast hs : (1 : ℝ) ≤ s) (by positivity))
+    hd (hypersurfaceCountConstant_nonneg n) (hypersurfaceDeterminantMain_nonneg n s)
+    (by positivity) bad P hPbad hP v hD hlocal hcong
+  convert h using 2
+  have hn : (n + 1 : ℝ) ≠ 0 := by positivity
+  have hn2 : (n + 2 : ℝ) ≠ 0 := by positivity
+  have hfac : ((n + 1).factorial : ℝ) ^ (1 / (n + 1 : ℝ)) ≠ 0 := by positivity
+  rw [Real.log_rpow hs0]
+  unfold hypersurfaceRankLowerBound hypersurfaceDeterminantMain hypersurfaceDeterminantError
+  rw [Real.rpow_add hs0, Real.rpow_one]
+  field_simp
+  ring
 
 /-- The higher-dimensional rank-cutoff form of Proposition 3.2.6 for
 maximal minors and common-degree homogeneous evaluation columns. -/
@@ -106,12 +78,17 @@ theorem hypersurface_determinant_log_lower_at_rank {n s N d M : ℕ} (hs : 0 < s
       HasGoodReduction f p) :
     hypersurfaceRankLowerBound n s d (∑ p ∈ bad, Real.log p / p) ≤
       Real.log (Int.Matrix.minorGcd (Matrix.of fun i j => eval (z i) (F j))) := by
-  refine hypersurface_log_lower_at_rank_of_local_divisors hs hd bad
-    (one_pos.trans_le (Int.Matrix.one_le_minorGcd hrows)) fun p hp hcut => ?_
-  have : Fact p.Prime := ⟨(mem_filter.mp (mem_sdiff.mp hp).1).2⟩
-  obtain ⟨hf0, hir⟩ := hred p hp hcut
-  simpa only [hypersurfaceDeterminantMain_div] using
-    projective_hypersurface_minorGcd_dvd f hf hd hf0 hir hcut F hF z hprim hz
+  /- `hypersurface_log_lower_at_rank_of_local_divisors_congruence` without prescribed
+  divisors. -/
+  simpa only [sum_empty, add_zero] using
+    hypersurface_log_lower_at_rank_of_local_divisors_congruence hs hd bad ∅
+      (empty_subset bad) (by simp) 0 (one_pos.trans_le (Int.Matrix.one_le_minorGcd hrows))
+      (fun p hp hcut => by
+        have : Fact p.Prime := ⟨(mem_filter.mp (mem_sdiff.mp hp).1).2⟩
+        obtain ⟨hf0, hir⟩ := hred p hp hcut
+        simpa only [hypersurfaceDeterminantMain_div] using
+          projective_hypersurface_minorGcd_dvd f hf hd hf0 hir hcut F hF z hprim hz)
+      (by simp)
 
 end
 end CCDN

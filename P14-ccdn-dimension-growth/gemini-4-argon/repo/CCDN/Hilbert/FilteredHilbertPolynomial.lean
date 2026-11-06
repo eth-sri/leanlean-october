@@ -73,15 +73,6 @@ theorem filteredCoordinateSpace_eventually_polynomial {K σ : Type*} [Field K]
   rw [filteredCoordinateSpace_finrank_eq_vector_card]
   exact hN n hn
 
-/-- Two rational polynomials that agree at all sufficiently large natural numbers are equal. -/
-lemma polynomial_eq_of_eventual_nat_eval_eq (P Q : Polynomial ℚ)
-    (h : ∃ N : ℕ, ∀ n ≥ N, P.eval (n : ℚ) = Q.eval (n : ℚ)) : P = Q := by
-  obtain ⟨N, hN⟩ := h
-  apply Polynomial.eq_of_infinite_eval_eq
-  apply ((Set.Ici_infinite N).image (Nat.cast_injective (R := ℚ)).injOn).mono
-  rintro x ⟨n, hn, rfl⟩
-  exact hN n hn
-
 /-- The uniquely determined filtered Hilbert polynomial. -/
 def filteredHilbertPolynomial {K σ : Type*} [Field K] [Fintype σ] [LinearOrder σ]
     (I : Ideal (MvPolynomial σ K)) : Polynomial ℚ :=
@@ -118,11 +109,13 @@ theorem filteredHilbertPolynomial_eq_of_eventual {K σ : Type*} [Field K]
     (hP : ∃ N : ℕ, ∀ n ≥ N, P.eval (n : ℚ) =
       (Module.finrank K (filteredCoordinateSpace I n) : ℚ)) :
     filteredHilbertPolynomial I = P := by
+  /- Two rational polynomials that agree at all sufficiently large natural numbers are equal. -/
   obtain ⟨N, hN⟩ := filteredHilbertPolynomial_spec I
   obtain ⟨M, hM⟩ := hP
-  apply polynomial_eq_of_eventual_nat_eval_eq
-  refine ⟨max N M, fun n hn => ?_⟩
-  rw [hN n ((le_max_left _ _).trans hn), hM n ((le_max_right _ _).trans hn)]
+  apply Polynomial.eq_of_infinite_eval_eq
+  refine ((Set.Ici_infinite (max N M)).image (Nat.cast_injective (R := ℚ)).injOn).mono ?_
+  rintro x ⟨n, hn, rfl⟩
+  exact (hN n ((le_max_left _ _).trans hn)).trans (hM n ((le_max_right _ _).trans hn)).symm
 
 /-- Proper polynomial quotients have a positive integer factorial-normalized
 leading coefficient. -/

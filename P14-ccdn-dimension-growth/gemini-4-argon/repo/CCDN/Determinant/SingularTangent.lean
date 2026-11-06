@@ -75,23 +75,6 @@ theorem originLayer_eq_homogeneousCoordinateSpace {K σ : Type*} [Field K]
     obtain ⟨u, hu, rfl⟩ := Submodule.mem_map.mp hx
     exact Submodule.mem_map.mpr ⟨u, homogeneous_mem_origin_power hu, rfl⟩
 
-/-- The initial homogeneous equation vanishes in each origin-adic layer
-after multiplying by an allowed homogeneous polynomial. -/
-lemma initial_form_multiple_mem_truncation {K σ : Type*} [Field K]
-    {f : MvPolynomial σ K} {μ k : ℕ} (hf : f ∈ idealOfVars σ K ^ μ) (hk : μ ≤ k)
-    {u : MvPolynomial σ K} (hu : u.IsHomogeneous (k - μ)) :
-    homogeneousComponent μ f * u ∈ originTruncationIdeal f k := by
-  have hr := Ideal.mul_mem_mul (sub_homogeneousComponent_mem_origin_power hf)
-    (homogeneous_mem_origin_power hu)
-  rw [← pow_add, show μ + 1 + (k - μ) = k + 1 by omega] at hr
-  have hfu : f * u ∈ originTruncationIdeal f k :=
-    (show Ideal.span {f} ≤ originTruncationIdeal f k from le_sup_left)
-      (Ideal.mem_span_singleton.mpr (dvd_mul_right f u))
-  have hru : (f - homogeneousComponent μ f) * u ∈ originTruncationIdeal f k :=
-    (show idealOfVars σ K ^ (k + 1) ≤ originTruncationIdeal f k from le_sup_right) hr
-  convert (originTruncationIdeal f k).sub_mem hfu hru using 1
-  ring
-
 /-- The first nonzero homogeneous part gives the expected binomial upper bound
 for the local layer. -/
 theorem originLayer_hilbert_bound {K : Type*} [Field K] {n μ k : ℕ}
@@ -100,20 +83,30 @@ theorem originLayer_hilbert_bound {K : Type*} [Field K] {n μ k : ℕ}
     (hμ : homogeneousComponent μ f ≠ 0) (hk : μ ≤ k) :
     Module.finrank K (originLayer f k) + (n + (k - μ)).choose (k - μ) ≤
       (n + k).choose k := by
+  /- The initial homogeneous equation vanishes in each origin-adic layer
+  after multiplying by an allowed homogeneous polynomial. -/
   let g := homogeneousComponent μ f
   let V := homogeneousSubmodule (Fin (n + 1)) K k
   let U := homogeneousMultiples g μ k
   let φ := (Ideal.Quotient.mkₐ K (originTruncationIdeal f k)).toLinearMap
   let _ : Module.Finite K V := Module.Finite.of_fg (homogeneousSubmodule_fg _ _ _)
-  have hUV : U ≤ V := by
-    intro x hx
+  have hUV : U ≤ V := fun x hx => by
     obtain ⟨u, hu, rfl⟩ := Submodule.mem_map.mp hx
     change (g * u).IsHomogeneous k
     simpa only [Nat.add_sub_of_le hk] using (homogeneousComponent_isHomogeneous μ f).mul hu
-  have hker : U ≤ φ.ker := by
-    intro x hx
+  have hker : U ≤ φ.ker := fun x hx => by
     obtain ⟨u, hu, rfl⟩ := Submodule.mem_map.mp hx
-    exact Ideal.Quotient.eq_zero_iff_mem.mpr (initial_form_multiple_mem_truncation hf hk hu)
+    apply Ideal.Quotient.eq_zero_iff_mem.mpr
+    have hr := Ideal.mul_mem_mul (sub_homogeneousComponent_mem_origin_power hf)
+      (homogeneous_mem_origin_power hu)
+    rw [← pow_add, show μ + 1 + (k - μ) = k + 1 by omega] at hr
+    have hfu : f * u ∈ originTruncationIdeal f k :=
+      le_sup_left (a := Ideal.span {f}) (Ideal.mem_span_singleton.mpr (dvd_mul_right f u))
+    have hru : (f - g) * u ∈ originTruncationIdeal f k :=
+      le_sup_right (b := idealOfVars (Fin (n + 1)) K ^ (k + 1)) hr
+    rw [show (LinearMap.mulLeft K g) u = f * u - (f - g) * u by
+      change g * u = _; ring]
+    exact (originTruncationIdeal f k).sub_mem hfu hru
   have h := finrank_map_add_kernel_subspace_le φ V U hUV hker
   rw [homogeneousMultiples_finrank _ hμ, finrank_homogeneousSubmodule_fin,
     finrank_homogeneousSubmodule_fin] at h

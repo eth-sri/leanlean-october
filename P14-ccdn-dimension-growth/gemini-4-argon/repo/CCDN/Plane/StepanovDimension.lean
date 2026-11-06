@@ -18,26 +18,6 @@ for the constructed integer parameters. -/
 namespace CCDN
 noncomputable section
 
-private lemma principal_plane_hilbert_balance {K : Type*} [Field K]
-    (f : MvPolynomial (Fin 2) K) (hf : f ≠ 0) {M : ℕ} (hM : f.totalDegree ≤ M) :
-    Module.finrank K (filteredCoordinateSpace (Ideal.span {f}) M) + f.totalDegree.choose 2 =
-      f.totalDegree * M + f.totalDegree := by
-  have hh := principal_plane_hilbert_function f hf hM
-  have he : (Module.finrank K (filteredCoordinateSpace (Ideal.span {f}) M) : ℤ) +
-      f.totalDegree.choose 2 = (f.totalDegree : ℤ) * M + f.totalDegree := by omega
-  exact_mod_cast he
-
-private lemma principal_plane_hilbert_bounds {K : Type*} [Field K]
-    (f : MvPolynomial (Fin 2) K) (hf : f ≠ 0) {M : ℕ} (hM : f.totalDegree ≤ M) :
-    f.totalDegree * M - f.totalDegree ^ 2 ≤
-      Module.finrank K (filteredCoordinateSpace (Ideal.span {f}) M) ∧
-    Module.finrank K (filteredCoordinateSpace (Ideal.span {f}) M) ≤ f.totalDegree * (M + 1) := by
-  have hh := principal_plane_hilbert_balance f hf hM
-  have hc := Nat.choose_le_pow f.totalDegree 2
-  constructor
-  · omega
-  · nlinarith
-
 /-- The numerical inequality suffices for the exact filtered dimensions. -/
 theorem stepanov_hilbert_dimension_inequality {K : Type*} [Field K]
     (f : MvPolynomial (Fin 2) K) (hf : f ≠ 0) (p A D N : ℕ)
@@ -49,24 +29,29 @@ theorem stepanov_hilbert_dimension_inequality {K : Type*} [Field K]
       (filteredCoordinateSpace (Ideal.span {f}) (D + A + r.val * f.totalDegree))) <
       Module.finrank K (filteredCoordinateSpace (Ideal.span {f}) D) *
       Module.finrank K (filteredCoordinateSpace (Ideal.span {f}) A) := by
+  have hbds {M : ℕ} (hM : f.totalDegree ≤ M) :
+      f.totalDegree * M - f.totalDegree ^ 2 ≤
+        Module.finrank K (filteredCoordinateSpace (Ideal.span {f}) M) ∧
+      Module.finrank K (filteredCoordinateSpace (Ideal.span {f}) M) ≤ f.totalDegree * (M + 1) := by
+    have hh := principal_plane_hilbert_function f hf hM
+    have he : Module.finrank K (filteredCoordinateSpace (Ideal.span {f}) M) +
+        f.totalDegree.choose 2 = f.totalDegree * M + f.totalDegree := by
+      exact_mod_cast (show (Module.finrank K (filteredCoordinateSpace (Ideal.span {f}) M) : ℤ) +
+        f.totalDegree.choose 2 = (f.totalDegree : ℤ) * M + f.totalDegree by omega)
+    have hc := Nat.choose_le_pow f.totalDegree 2
+    exact ⟨by omega, by nlinarith⟩
   have hsum : (∑ r : Fin N, Module.finrank K
       (filteredCoordinateSpace (Ideal.span {f}) (D + A + r.val * f.totalDegree))) ≤
       N * (f.totalDegree * A + f.totalDegree * D + f.totalDegree + f.totalDegree ^ 2 * N) := by
     calc
-      _ ≤ ∑ _r : Fin N, f.totalDegree * (D + A + N * f.totalDegree + 1) := by
-        apply Finset.sum_le_sum
-        intro r _
-        apply (principal_plane_hilbert_bounds f hf
-          (by omega : f.totalDegree ≤ D + A + r.val * f.totalDegree)).2.trans
-        apply Nat.mul_le_mul_left
-        have hh := Nat.mul_le_mul_right f.totalDegree (Nat.le_of_lt r.isLt)
-        omega
+      _ ≤ ∑ _r : Fin N, f.totalDegree * (D + A + N * f.totalDegree + 1) :=
+        Finset.sum_le_sum fun r _ => (hbds (by omega)).2.trans (Nat.mul_le_mul_left _ (by
+          have := Nat.mul_le_mul_right f.totalDegree (Nat.le_of_lt r.isLt); omega))
       _ = _ := by
         simp only [Finset.sum_const, Finset.card_univ, Fintype.card_fin, smul_eq_mul]; ring
   have hn := stepanov_numeric_dimension f.totalDegree p (f.totalDegree * A)
     (f.totalDegree * D) N hd hp hx hy hN hNpos
-  have hprod := Nat.mul_le_mul (principal_plane_hilbert_bounds f hf hA).1
-    (principal_plane_hilbert_bounds f hf hD).1
+  have hprod := Nat.mul_le_mul (hbds hA).1 (hbds hD).1
   exact hsum.trans_lt (hn.trans_le (by nlinarith only [hprod]))
 
 end

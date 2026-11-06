@@ -20,11 +20,15 @@ namespace CCDN
 noncomputable section
 open scoped nonZeroDivisors
 
-variable (R S : Type*) [CommRing R] [IsDedekindDomain R]
-  [CommRing S] [IsDedekindDomain S] [Algebra R S]
-  [Module.Finite R S] [Module.IsTorsionFree R S]
+open NumberField
+open scoped NumberField
+
+variable (F K : Type*) [Field F] [Field K] [NumberField F] [NumberField K] [Algebra F K]
 
 private theorem ambiguous_ideal_scalar_relative_unit
+    (R S : Type*) [CommRing R] [IsDedekindDomain R]
+    [CommRing S] [IsDedekindDomain S] [Algebra R S]
+    [Module.Finite R S] [Module.IsTorsionFree R S]
     (σ : S ≃ₐ[R] S) (I : (Ideal S)⁰)
     (hI : ClassGroup.mulEquiv σ.toRingEquiv (ClassGroup.mk0 I) = ClassGroup.mk0 I) :
     ∃ x y : S, ∃ u : Rˣ, x ≠ 0 ∧ y ≠ 0 ∧
@@ -37,22 +41,12 @@ private theorem ambiguous_ideal_scalar_relative_unit
     Ideal.span {y} * (I : Ideal S) at hxy
   have hn := congrArg (Ideal.relNorm R) hxy
   simp only [map_mul, Ideal.relNorm_singleton] at hn
-  have hnmap : Ideal.relNorm R ((I : Ideal S).map σ.toRingHom) =
-      Ideal.relNorm R (I : Ideal S) := Ideal.relNorm_map_algEquiv σ I
-  rw [hnmap] at hn
-  have hnI : Ideal.relNorm R (I : Ideal S) ≠ 0 := by
-    intro h
-    exact (mem_nonZeroDivisors_iff_ne_zero.mp I.property)
-      (Ideal.relNorm_eq_bot_iff.mp h)
-  have hspan := mul_right_cancel₀ hnI hn
-  obtain ⟨u, hu⟩ := Ideal.span_singleton_eq_span_singleton.mp hspan
+  rw [show Ideal.relNorm R ((I : Ideal S).map σ.toRingHom) = Ideal.relNorm R (I : Ideal S) from
+    Ideal.relNorm_map_algEquiv σ I] at hn
+  have hnI : Ideal.relNorm R (I : Ideal S) ≠ 0 := fun h =>
+    (mem_nonZeroDivisors_iff_ne_zero.mp I.property) (Ideal.relNorm_eq_bot_iff.mp h)
+  obtain ⟨u, hu⟩ := Ideal.span_singleton_eq_span_singleton.mp (mul_right_cancel₀ hnI hn)
   exact ⟨x, y, u, hx, hy, hxy, hu⟩
-
-section NumberFields
-open NumberField
-open scoped NumberField
-
-variable (F K : Type*) [Field F] [Field K] [NumberField F] [NumberField K] [Algebra F K]
 
 /-- For number fields, the concrete scalar comparison has field norm
 equal to a base-field unit. -/
@@ -68,15 +62,13 @@ theorem ambiguous_numberField_ideal_norm_unit
   obtain ⟨x, y, u, hx, hy, hxy, hu⟩ :=
     ambiguous_ideal_scalar_relative_unit (𝓞 F) (𝓞 K) (RingOfIntegers.mapAlgEquiv σ) I hI
   refine ⟨x, y, u, hx, hy, hxy, ?_⟩
-  have hxK : (x : K) ≠ 0 := by exact_mod_cast hx
-  have hn := congrArg (algebraMap (𝓞 F) F) hu
+  have hxK : (x : K) ≠ 0 := mod_cast hx
+  have hn' := congrArg (algebraMap (𝓞 F) F) hu
   rw [map_mul, Algebra.algebraMap_intNorm (K := F) (L := K),
-    Algebra.algebraMap_intNorm (K := F) (L := K)] at hn
-  rw [div_eq_mul_inv, map_mul, Algebra.norm_inv, ← div_eq_mul_inv]
-  apply (div_eq_iff (Algebra.norm_ne_zero_iff.mpr hxK)).mpr
-  exact hn.symm.trans (mul_comm _ _)
-
-end NumberFields
+    Algebra.algebraMap_intNorm (K := F) (L := K)] at hn'
+  rw [div_eq_mul_inv, map_mul, Algebra.norm_inv, ← div_eq_mul_inv,
+    div_eq_iff (Algebra.norm_ne_zero_iff.mpr hxK)]
+  exact hn'.symm.trans (mul_comm _ _)
 
 end
 end CCDN

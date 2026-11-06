@@ -37,25 +37,20 @@ lemma affineCoordinateVector_ne_zero {n : ℕ} (a : Fin n → K) :
   have hh := congrFun h 0
   simp at hh
 
-private lemma projectiveAffineCoordinates_mk {n : ℕ}
-    (x : Projectivization K (Fin (n + 1) → K)) (hx : x.rep 0 ≠ 0) :
-    Projectivization.mk K (Fin.cons 1 (projectiveAffineCoordinates x))
-      (affineCoordinateVector_ne_zero _) = x := by
-  calc
-    _ = Projectivization.mk K x.rep x.rep_nonzero := by
-      rw [Projectivization.mk_eq_mk_iff']
-      exact ⟨_, (projectiveAffineCoordinates_normalization x hx).symm⟩
-    _ = x := x.mk_rep
-
 /-- Projective points with nonzero first coordinate are determined by their affine
 coordinates. -/
 theorem projectiveAffineCoordinates_injective {n : ℕ}
     {x y : Projectivization K (Fin (n + 1) → K)}
     (hx : x.rep 0 ≠ 0) (hy : y.rep 0 ≠ 0)
     (hxy : projectiveAffineCoordinates x = projectiveAffineCoordinates y) : x = y := by
+  have hmk (z : Projectivization K (Fin (n + 1) → K)) (hz : z.rep 0 ≠ 0) :
+      Projectivization.mk K (Fin.cons 1 (projectiveAffineCoordinates z))
+        (affineCoordinateVector_ne_zero _) = z :=
+    ((Projectivization.mk_eq_mk_iff' K _ _ _ z.rep_nonzero).mpr
+      ⟨_, (projectiveAffineCoordinates_normalization z hz).symm⟩).trans z.mk_rep
   have h := congrArg (fun a : Fin n → K => Projectivization.mk K (Fin.cons 1 a : Fin (n + 1) → K)
     (affineCoordinateVector_ne_zero a)) hxy
-  rwa [projectiveAffineCoordinates_mk x hx, projectiveAffineCoordinates_mk y hy] at h
+  rwa [hmk x hx, hmk y hy] at h
 
 /-- If a projective point `x` with nonzero first coordinate lies on the zero locus of a
 homogeneous polynomial `f`, then the dehomogenization of `f` vanishes at the affine coordinates

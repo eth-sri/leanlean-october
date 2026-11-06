@@ -42,37 +42,6 @@ lemma large_box_height_threshold {d : ℕ} (hd : 0 < d) {A B : ℝ} (hA : 1 ≤ 
   have ht := mul_le_mul_of_nonneg_right hslo hs
   nlinarith
 
-/-- On B<=S*d² the 2/d box power has an absolute bound depending only on S. -/
-private lemma small_box_log_bound {d : ℕ} (hd : 0 < d) {S B : ℝ} (hS : 1 ≤ S)
-    (hB : 1 ≤ B) (hBS : B ≤ S * (d : ℝ) ^ 2) :
-    Real.log (((d : ℝ) + 1) * B) ≤ Real.log S + 3 * d := by
-  have hd0 : (0 : ℝ) < d := by exact_mod_cast hd
-  have hS0 : 0 < S := by linarith
-  have hB0 : 0 < B := by linarith
-  have hdplus : (0 : ℝ) < d + 1 := by positivity
-  have hlogd : Real.log (d : ℝ) ≤ d := by
-    have h := Real.log_le_sub_one_of_pos hd0
-    linarith
-  have hlogplus : Real.log ((d : ℝ) + 1) ≤ d := Real.log_add_one_le_self d.cast_nonneg
-  have hlogB := Real.log_le_log hB0 hBS
-  rw [Real.log_mul hS0.ne' (by positivity), Real.log_pow] at hlogB
-  rw [Real.log_mul hdplus.ne' hB0.ne']
-  norm_num at hlogB
-  linarith
-
-private lemma small_box_power_bound {d : ℕ} (hd : 0 < d) {S B : ℝ} (hS : 1 ≤ S)
-    (hB : 1 ≤ B) (hBS : B ≤ S * (d : ℝ) ^ 2) :
-    (((d : ℝ) + 1) * B) ^ (2 / (d : ℝ)) ≤ Real.exp (2 * Real.log S + 6) := by
-  have hd1 : (1 : ℝ) ≤ d := by exact_mod_cast hd
-  have hd0 : (0 : ℝ) < d := by linarith
-  have hlogS := Real.log_nonneg hS
-  have hlog := small_box_log_bound hd hS hB hBS
-  rw [Real.rpow_def_of_pos (by positivity)]
-  apply Real.exp_le_exp.mpr
-  rw [← mul_div_assoc]
-  apply (div_le_iff₀ hd0).mpr
-  nlinarith
-
 /-- In the small-box range `1 ≤ B ≤ S * d ^ 2` (with `1 ≤ S`), the unscaled auxiliary degree bound
 `d * scaledPlaneAuxiliaryDegreeBound d C ((d + 1) * B) 1` is at most a constant depending only on
 `S` and `C`, times `d ^ 4`. -/
@@ -83,10 +52,23 @@ lemma small_box_unscaled_degree_bound {d : ℕ} (hd : 0 < d) {S B C : ℝ}
         Real.exp (2 * Real.log S + 6)) * (d : ℝ) ^ 4 := by
   have hd1 : (1 : ℝ) ≤ d := by exact_mod_cast hd
   have hd0 : (0 : ℝ) < d := by linarith
+  have hS0 : 0 < S := by linarith
+  have hB0 : 0 < B := by linarith
+  have hdplus : (0 : ℝ) < d + 1 := by positivity
   have hd3 : (d : ℝ) ≤ (d : ℝ) ^ 3 := by nlinarith [sq_nonneg ((d : ℝ) - 1)]
   have hlogS := Real.log_nonneg hS
-  have hlog := small_box_log_bound hd hS hB hBS
-  have hpow := small_box_power_bound hd hS hB hBS
+  have hlogd : Real.log (d : ℝ) ≤ d := by linarith [Real.log_le_sub_one_of_pos hd0]
+  have hlogplus : Real.log ((d : ℝ) + 1) ≤ d := Real.log_add_one_le_self d.cast_nonneg
+  have hlogB := Real.log_le_log hB0 hBS
+  rw [Real.log_mul hS0.ne' (by positivity), Real.log_pow] at hlogB
+  norm_num at hlogB
+  have hlog : Real.log (((d : ℝ) + 1) * B) ≤ Real.log S + 3 * d := by
+    rw [Real.log_mul hdplus.ne' hB0.ne']; linarith
+  have hpow : (((d : ℝ) + 1) * B) ^ (2 / (d : ℝ)) ≤ Real.exp (2 * Real.log S + 6) := by
+    rw [Real.rpow_def_of_pos (by positivity)]
+    apply Real.exp_le_exp.mpr
+    rw [← mul_div_assoc]
+    exact (div_le_iff₀ hd0).mpr (by nlinarith)
   have hrest : (d : ℝ) + Real.log (((d : ℝ) + 1) * B) + 2 ≤
       (Real.log S + 6) * (d : ℝ) ^ 3 := by nlinarith
   have hterm := mul_le_mul_of_nonneg_left hpow (show 0 ≤

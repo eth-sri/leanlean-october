@@ -30,11 +30,6 @@ namespace CoefficientwiseHomogeneous
 
 variable {R σ τ : Type*} [CommRing R]
 
-/-- The zero polynomial is coefficientwise homogeneous of every degree. -/
-lemma zero (d : ℕ) : CoefficientwiseHomogeneous (0 : MvPolynomial σ (MvPolynomial τ R)) d := by
-  intro m
-  simpa only [AddMonoidAlgebra.coeff_zero, Finsupp.zero_apply] using isHomogeneous_zero τ R d
-
 /-- The negation of a coefficientwise homogeneous polynomial of degree `d` is coefficientwise
 homogeneous of degree `d`. -/
 lemma neg {f : MvPolynomial σ (MvPolynomial τ R)} {d : ℕ}

@@ -18,45 +18,6 @@ noncomputable section
 open Polynomial NumberField IntermediateField Module
 open scoped IntermediateField
 
-private lemma powerBasis_norm_sub_gen {F E : Type*} [Field F] [Field E] [Algebra F E]
-    (b : PowerBasis F E) (a : F) :
-    Algebra.norm F (algebraMap F E a - b.gen) = (minpoly F b.gen).eval a := by
-  rw [Algebra.norm_eq_matrix_det b.basis, map_sub,
-    (Algebra.leftMulMatrix b.basis).commutes]
-  rw [← charpoly_leftMulMatrix b, Matrix.eval_charpoly]
-  rfl
-
-private lemma norm_sub_eq_minpoly_eval_pow {F E : Type*} [Field F] [Field E]
-    [Algebra F E] [FiniteDimensional F E] (β : E) (a : F) :
-    Algebra.norm F (algebraMap F E a - β) =
-      (minpoly F β).eval a ^ Module.finrank F⟮β⟯ E := by
-  let L := F⟮β⟯
-  let γ : L := AdjoinSimple.gen F β
-  have hβ : IsIntegral F β := IsIntegral.of_finite F β
-  let b := IntermediateField.adjoin.powerBasis hβ
-  have he : algebraMap L E (algebraMap F L a - γ) = algebraMap F E a - β := by
-    simp [γ, L]
-  rw [← he, ← Algebra.norm_norm (S := L),
-    Algebra.norm_algebraMap_of_basis (Module.Free.chooseBasis L E), map_pow,
-    ← Module.finrank_eq_card_chooseBasisIndex]
-  have hg : b.gen = γ := IntermediateField.adjoin.powerBasis_gen hβ
-  rw [← hg, powerBasis_norm_sub_gen, hg, IntermediateField.minpoly_gen]
-
-private theorem integerNormPolynomial_map_eq_minpoly_pow
-    (K : Type*) [Field K] [NumberField K] (β : 𝓞 K) :
-    (integerNormPolynomial K β).map (Int.castRingHom ℚ) =
-      minpoly ℚ (β : K) ^ Module.finrank ℚ⟮(β : K)⟯ K := by
-  apply Polynomial.eq_of_infinite_eval_eq
-  apply (Set.infinite_range_of_injective
-    (Int.cast_injective : Function.Injective (fun x : ℤ ↦ (x : ℚ)))).mono
-  rintro _ ⟨x, rfl⟩
-  change ((integerNormPolynomial K β).map (Int.castRingHom ℚ)).eval ((Int.castRingHom ℚ) x) =
-    (minpoly ℚ (β : K) ^ Module.finrank ℚ⟮(β : K)⟯ K).eval (x : ℚ)
-  rw [Polynomial.eval_map_apply, integerNormPolynomial_eval]
-  change (Algebra.norm ℤ (algebraMap ℤ (𝓞 K) x - β) : ℚ) = _
-  rw [Algebra.coe_norm_int, Polynomial.eval_pow]
-  simpa using norm_sub_eq_minpoly_eval_pow (β : K) (x : ℚ)
-
 /-- Over an algebraic closure of `ℚ`, the integer norm polynomial of `β` is the minimal
 polynomial of `β` over `ℚ` raised to the power `[K : ℚ(β)]`. -/
 theorem integerNormPolynomial_map_eq_minpoly_pow_algebraicClosure
@@ -64,12 +25,37 @@ theorem integerNormPolynomial_map_eq_minpoly_pow_algebraicClosure
     (integerNormPolynomial K β).map (Int.castRingHom (AlgebraicClosure ℚ)) =
       (minpoly ℚ (β : K)).map (algebraMap ℚ (AlgebraicClosure ℚ)) ^
         Module.finrank ℚ⟮(β : K)⟯ K := by
-  have he : Int.castRingHom (AlgebraicClosure ℚ) =
-      (algebraMap ℚ (AlgebraicClosure ℚ)).comp (Int.castRingHom ℚ) := by
-    ext x
-    simp
-  rw [he, ← Polynomial.map_map, integerNormPolynomial_map_eq_minpoly_pow,
-    Polynomial.map_pow]
+  have hQ : (integerNormPolynomial K β).map (Int.castRingHom ℚ) =
+      minpoly ℚ (β : K) ^ Module.finrank ℚ⟮(β : K)⟯ K := by
+    apply Polynomial.eq_of_infinite_eval_eq
+    refine (Set.infinite_range_of_injective
+      (Int.cast_injective : Function.Injective (fun x : ℤ ↦ (x : ℚ)))).mono ?_
+    rintro _ ⟨x, rfl⟩
+    change ((integerNormPolynomial K β).map (Int.castRingHom ℚ)).eval ((Int.castRingHom ℚ) x) =
+      (minpoly ℚ (β : K) ^ Module.finrank ℚ⟮(β : K)⟯ K).eval (x : ℚ)
+    rw [Polynomial.eval_map_apply, integerNormPolynomial_eval]
+    change (Algebra.norm ℤ (algebraMap ℤ (𝓞 K) x - β) : ℚ) = _
+    rw [Algebra.coe_norm_int, Polynomial.eval_pow]
+    let L := ℚ⟮(β : K)⟯
+    have hβ : IsIntegral ℚ (β : K) := IsIntegral.of_finite ℚ (β : K)
+    let b := IntermediateField.adjoin.powerBasis hβ
+    have he : algebraMap L K (algebraMap ℚ L (x : ℚ) - AdjoinSimple.gen ℚ (β : K)) =
+        algebraMap ℚ K (x : ℚ) - (β : K) := by
+      simp [L]
+    have hnorm : Algebra.norm ℚ (algebraMap ℚ K (x : ℚ) - (β : K)) =
+        (minpoly ℚ (β : K)).eval (x : ℚ) ^ Module.finrank L K := by
+      rw [← he, ← Algebra.norm_norm (S := L),
+        Algebra.norm_algebraMap_of_basis (Module.Free.chooseBasis L K), map_pow,
+        ← Module.finrank_eq_card_chooseBasisIndex]
+      have hg : b.gen = AdjoinSimple.gen ℚ (β : K) := IntermediateField.adjoin.powerBasis_gen hβ
+      rw [← hg, Algebra.norm_eq_matrix_det b.basis, map_sub,
+        (Algebra.leftMulMatrix b.basis).commutes, ← IntermediateField.minpoly_gen,
+        ← hg, ← charpoly_leftMulMatrix b, Matrix.eval_charpoly]
+      rfl
+    simpa using hnorm
+  rw [show Int.castRingHom (AlgebraicClosure ℚ) =
+      (algebraMap ℚ (AlgebraicClosure ℚ)).comp (Int.castRingHom ℚ) by ext; simp,
+    ← Polynomial.map_map, hQ, Polynomial.map_pow]
 
 end
 end CCDN

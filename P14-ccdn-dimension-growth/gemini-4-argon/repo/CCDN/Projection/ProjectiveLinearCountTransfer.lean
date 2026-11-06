@@ -20,17 +20,6 @@ namespace CCDN
 noncomputable section
 open MvPolynomial Matrix
 
-private def integerProjectiveLinearImage {m n : ℕ}
-    (P : Matrix (Fin (m + 1)) (Fin (n + 1)) ℤ) (x : ProjectivePoint n) :
-    ProjectivePoint m :=
-  if h : (P.map (Int.castRingHom ℚ)) *ᵥ x.rep ≠ 0 then
-    Projectivization.mk ℚ ((P.map (Int.castRingHom ℚ)) *ᵥ x.rep) h
-  else
-    Projectivization.mk ℚ (fun _ : Fin (m + 1) => 1) (by
-      intro hz
-      have hh := congrFun hz 0
-      exact one_ne_zero hh)
-
 /-- Let `P` be an integer matrix with entries of absolute value at most `H` whose linear forms
 satisfy the homogeneous relation `f` modulo `I`. If every affine fiber of the induced map on the
 zero locus of `I` has at most `M` points, then the projective rational points of height at most `B`
@@ -51,56 +40,42 @@ theorem projective_integer_linear_count_transfer
       M * projectiveCount (projectiveZeroLocus f) ((n + 1 : ℕ) * H * B) := by
   classical
   let L := (P.map (Int.castRingHom ℚ)).mulVecLin
-  let π := integerProjectiveLinearImage P
+  let π (x : ProjectivePoint n) : ProjectivePoint m :=
+    if h : L x.rep ≠ 0 then Projectivization.mk ℚ (L x.rep) h
+    else Projectivization.mk ℚ (fun _ : Fin (m + 1) => 1) fun hz => one_ne_zero (congrFun hz 0)
   let s := projectivePoints (projectiveIdealZeroLocus I) B
   let t := projectivePoints (projectiveZeroLocus f) ((n + 1 : ℕ) * H * B)
-  have hLapply (x : Fin (n + 1) → ℚ) (i) :
-      L x i = eval x (integerLinearForm (P i)) := by
+  have hLapply (x : Fin (n + 1) → ℚ) (i) : L x i = eval x (integerLinearForm (P i)) := by
     simp only [L, Matrix.mulVecLin_apply, Matrix.mulVec, dotProduct, Matrix.map_apply,
       Int.coe_castRingHom, eval_linearForm]
   have hfiniteL (z : Fin (m + 1) → ℚ) (u : Finset (Fin (n + 1) → ℚ))
-      (hu : ∀ x ∈ u, x ∈ idealZeroLocus I) (huz : ∀ x ∈ u, L x = z) :
-      u.card ≤ M := by
-    apply hfinite z u hu
-    intro x hx i
-    rw [← hLapply, huz x hx]
-  have hnon (x : ProjectivePoint n) (hx : x ∈ projectiveIdealZeroLocus I) :
-      L x.rep ≠ 0 :=
+      (hu : ∀ x ∈ u, x ∈ idealZeroLocus I) (huz : ∀ x ∈ u, L x = z) : u.card ≤ M :=
+    hfinite z u hu fun x hx i => by rw [← hLapply, huz x hx]
+  have hnon (x : ProjectivePoint n) (hx : x ∈ projectiveIdealZeroLocus I) : L x.rep ≠ 0 :=
     projective_linear_image_ne_zero_of_finite_zero_fiber I L M (hfiniteL 0) x hx
   have hπ (x : ProjectivePoint n) (hx : x ∈ projectiveIdealZeroLocus I) :
-      π x = Projectivization.mk ℚ (L x.rep) (hnon x hx) := by
-    exact dite_eq_left (hnon x hx)
-  have himage : s.image π ⊆ t := by
-    intro y hy
+      π x = Projectivization.mk ℚ (L x.rep) (hnon x hx) := dite_eq_left (hnon x hx)
+  have himage : s.image π ⊆ t := fun y hy => by
     obtain ⟨x, hx, rfl⟩ := Finset.mem_image.mp hy
     obtain ⟨hxB, hxI⟩ := mem_projectivePoints.mp hx
     rw [hπ x hxI]
-    apply mem_projectivePoints.mpr
-    constructor
-    · exact (projective_linear_map_height P hH hP x (hnon x hxI)).trans
-        (mul_le_mul_of_nonneg_left hxB (by positivity))
-    · rw [mem_projectiveZeroLocus_mk hf]
-      have hz := projectiveIdealZeroLocus_rep hxI _ hrelation
-      rw [eval_polynomial_coordinate_map] at hz
-      have hev : L x.rep = fun i => eval x.rep (integerLinearForm (P i)) :=
-        funext (hLapply x.rep)
-      rwa [hev]
-  have hfib (y : ProjectivePoint m) :
-      (s.filter (fun x => π x = y)).card ≤ M := by
+    refine mem_projectivePoints.mpr
+      ⟨(projective_linear_map_height P hH hP x (hnon x hxI)).trans
+        (mul_le_mul_of_nonneg_left hxB (by positivity)), ?_⟩
+    rw [mem_projectiveZeroLocus_mk hf, funext (hLapply x.rep)]
+    have hz := projectiveIdealZeroLocus_rep hxI _ hrelation
+    rwa [eval_polynomial_coordinate_map] at hz
+  have hfib (y : ProjectivePoint m) : (s.filter (fun x => π x = y)).card ≤ M := by
     let u := s.filter (fun x => π x = y)
     have hu (x) (hx : x ∈ u) : x ∈ projectiveIdealZeroLocus I :=
       (mem_projectivePoints.mp (Finset.mem_filter.mp hx).1).2
-    apply projective_linear_fiber_card_le I L u hu (fun x hx => hnon x (hu x hx))
-      y _ M (hfiniteL y.rep)
-    intro x hx
-    rw [← hπ x (hu x hx)]
-    exact (Finset.mem_filter.mp hx).2
+    exact projective_linear_fiber_card_le I L u hu (fun x hx => hnon x (hu x hx))
+      y (fun x hx => (hπ x (hu x hx)).symm.trans (Finset.mem_filter.mp hx).2) M (hfiniteL y.rep)
   change s.card ≤ M * t.card
   rw [Finset.card_eq_sum_card_image π s]
-  calc
-    _ ≤ ∑ _y ∈ s.image π, M := Finset.sum_le_sum (fun y _ => hfib y)
-    _ = M * (s.image π).card := by simp [Nat.mul_comm]
-    _ ≤ M * t.card := Nat.mul_le_mul_left M (Finset.card_le_card himage)
+  exact (Finset.sum_le_sum fun y _ => hfib y).trans
+    ((by simp [Nat.mul_comm] : (∑ _y ∈ s.image π, M) = M * (s.image π).card).trans_le
+      (Nat.mul_le_mul_left M (Finset.card_le_card himage)))
 
 end
 end CCDN

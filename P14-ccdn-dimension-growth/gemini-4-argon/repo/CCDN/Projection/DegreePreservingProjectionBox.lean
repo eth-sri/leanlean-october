@@ -27,13 +27,6 @@ lemma momentCoordinate_eval {K : Type*} [CommRing K] {n : ℕ}
     eval z (momentCoordinate K n k) = ∑ j : Fin n, (k : K) ^ j.val * z j := by
   simp only [momentCoordinate, map_sum, map_mul, eval_C, eval_X]
 
-end
-end CCDN
-
-namespace CCDN
-noncomputable section
-open MvPolynomial
-
 /-- The integer projection of `ℤⁿ` to `ℤ²` given by the two moment coordinates with parameters `k₀`
 and `k₁`. -/
 def degreeProjection (n k₀ k₁ : ℕ) (z : IntPoint n) : IntPoint 2 :=
@@ -49,70 +42,42 @@ lemma projectionBoxFactor_one_le (n d : ℕ) : 1 ≤ projectionBoxFactor n d := 
   unfold projectionBoxFactor
   have hn : (1 : ℝ) ≤ n + 1 := by linarith [Nat.cast_nonneg (α := ℝ) n]
   have hd : (1 : ℝ) ≤ d + 1 := by linarith [Nat.cast_nonneg (α := ℝ) d]
-  have hmul : (1 : ℝ) ≤ (n + 1) * (d + 1) := by nlinarith
   have hp : (1 : ℝ) ≤ ((((n : ℝ) + 1) * ((d : ℝ) + 1)) ^ 2) ^ n :=
-    one_le_pow₀ (one_le_pow₀ hmul)
+    one_le_pow₀ (one_le_pow₀ (by nlinarith))
   nlinarith
-
-private lemma momentCoordinate_height_of_le {n k : ℕ} {M B : ℝ}
-    (hM : 1 ≤ M) (hk : (k : ℝ) ≤ M)
-    (z : IntPoint n) (hz : InBox z B) :
-    |(eval z (momentCoordinate ℤ n k) : ℝ)| ≤ n * M ^ n * B := by
-  rw [momentCoordinate_eval, Int.cast_sum]
-  simp only [Int.cast_mul, Int.cast_pow, Int.cast_natCast]
-  calc
-    _ ≤ ∑ j : Fin n, |(k : ℝ) ^ j.val * (z j : ℝ)| := Finset.abs_sum_le_sum_abs _ _
-    _ ≤ ∑ _j : Fin n, M ^ n * B := by
-      apply Finset.sum_le_sum
-      intro j _
-      have hp : (k : ℝ) ^ j.val ≤ M ^ n := by
-        calc
-          _ ≤ M ^ j.val := by gcongr
-          _ ≤ _ := pow_le_pow_right₀ hM (Nat.le_of_lt j.isLt)
-      simp only [abs_mul, abs_pow, abs_of_nonneg (Nat.cast_nonneg k : (0 : ℝ) ≤ k)]
-      exact mul_le_mul hp (hz j) (abs_nonneg _) (by positivity)
-    _ = _ := by simp only [Finset.sum_const, Finset.card_univ, Fintype.card_fin, nsmul_eq_mul]; ring
 
 /-- For parameters `k₀ ≤ n ^ 2 * d` and `k₁ ≤ n * d ^ 2`, the moment projection maps the integer box
 of radius `B` into the integer box of radius `projectionBoxFactor n d * B`. -/
-lemma degreeProjection_box {n d k₀ k₁ : ℕ} (hk₀ : k₀ ≤ n ^ 2 * d)
+theorem degreeProjection_box {n d k₀ k₁ : ℕ} (hk₀ : k₀ ≤ n ^ 2 * d)
     (hk₁ : k₁ ≤ n * d ^ 2) {B : ℝ} (hB : 0 ≤ B)
     {z : IntPoint n} (hz : z ∈ integerBox n B) :
     degreeProjection n k₀ k₁ z ∈ integerBox 2 (projectionBoxFactor n d * B) := by
   let M : ℝ := (((n : ℝ) + 1) * ((d : ℝ) + 1)) ^ 2
   have hn : (0 : ℝ) ≤ n := by positivity
   have hd : (0 : ℝ) ≤ d := by positivity
-  have hM : 1 ≤ M := by
-    apply one_le_pow₀
-    nlinarith [mul_nonneg hn hd]
-  have hk₀M : (k₀ : ℝ) ≤ M := by
-    have hh : (k₀ : ℝ) ≤ (n : ℝ) ^ 2 * d := by exact_mod_cast hk₀
-    calc
-      _ ≤ (n : ℝ) ^ 2 * d := hh
-      _ ≤ ((n : ℝ) + 1) ^ 2 * ((d : ℝ) + 1) ^ 2 := by
-        gcongr
-        · linarith
-        · nlinarith [sq_nonneg (d : ℝ)]
-      _ = M := by dsimp [M]; ring
-  have hk₁M : (k₁ : ℝ) ≤ M := by
-    have hh : (k₁ : ℝ) ≤ (n : ℝ) * d ^ 2 := by exact_mod_cast hk₁
-    calc
-      _ ≤ (n : ℝ) * d ^ 2 := hh
-      _ ≤ ((n : ℝ) + 1) ^ 2 * ((d : ℝ) + 1) ^ 2 := by
-        gcongr
-        · nlinarith [sq_nonneg (n : ℝ)]
-        · linarith
-      _ = M := by dsimp [M]; ring
+  have hM : 1 ≤ M := one_le_pow₀ (by nlinarith [mul_nonneg hn hd])
   have hb := mem_integerBox.mp hz
-  have hc : (n : ℝ) * M ^ n * B ≤ projectionBoxFactor n d * B := by
-    unfold projectionBoxFactor
-    gcongr
-    norm_num
-  apply mem_integerBox.mpr
-  intro j
+  have hht {k : ℕ} (hk : (k : ℝ) ≤ M) :
+      |(eval z (momentCoordinate ℤ n k) : ℝ)| ≤ projectionBoxFactor n d * B := by
+    rw [momentCoordinate_eval, Int.cast_sum]
+    simp only [Int.cast_mul, Int.cast_pow, Int.cast_natCast]
+    refine ((Finset.abs_sum_le_sum_abs _ _).trans
+      ((Finset.sum_le_sum fun j _ => (?_ : _ ≤ M ^ n * B)).trans_eq
+        (show ∑ _j : Fin n, M ^ n * B = n * M ^ n * B by simp; ring))).trans
+      (by unfold projectionBoxFactor; gcongr; norm_num)
+    simp only [abs_mul, abs_pow, abs_of_nonneg (Nat.cast_nonneg k : (0 : ℝ) ≤ k)]
+    exact mul_le_mul ((pow_le_pow_left₀ (by positivity) hk j.val).trans
+      (pow_le_pow_right₀ hM (Nat.le_of_lt j.isLt))) (hb j) (abs_nonneg _) (by positivity)
+  refine mem_integerBox.mpr fun j => ?_
   fin_cases j
-  · exact (momentCoordinate_height_of_le hM hk₀M z hb).trans hc
-  · exact (momentCoordinate_height_of_le hM hk₁M z hb).trans hc
+  · exact hht ((show (k₀ : ℝ) ≤ (n : ℝ) ^ 2 * d from mod_cast hk₀).trans
+      ((mul_le_mul (pow_le_pow_left₀ hn (by linarith : (n : ℝ) ≤ (n : ℝ) + 1) 2)
+        (show (d : ℝ) ≤ ((d : ℝ) + 1) ^ 2 by nlinarith [sq_nonneg (d : ℝ)]) hd
+        (by positivity)).trans_eq (by dsimp [M]; ring)))
+  · exact hht ((show (k₁ : ℝ) ≤ (n : ℝ) * d ^ 2 from mod_cast hk₁).trans
+      ((mul_le_mul (show (n : ℝ) ≤ ((n : ℝ) + 1) ^ 2 by nlinarith [sq_nonneg (n : ℝ)])
+        (pow_le_pow_left₀ hd (by linarith : (d : ℝ) ≤ (d : ℝ) + 1) 2) (by positivity)
+        (by positivity)).trans_eq (by dsimp [M]; ring)))
 
 /-- Evaluating the integer moment coordinate at an integer point and casting to `ℚ` agrees with
 evaluating the rational moment coordinate at the corresponding rational point. -/

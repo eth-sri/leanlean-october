@@ -81,46 +81,20 @@ lemma clamp_orthantExpand {σ : Type*} {B : ℕ}
 
 /-- The total degree of a point of the orthant with pattern `b` is the base degree of `b`
 plus the total of the added free coordinates. -/
-lemma orthantExpand_sum {σ : Type*} [Fintype σ] {B : ℕ}
+private lemma orthantExpand_sum {σ : Type*} [Fintype σ] {B : ℕ}
     (b : σ → Fin (B + 1)) (c : orthantFree b → ℕ) :
     (∑ i, orthantExpand b c i) = orthantBaseDegree b + ∑ j, c j := by
   classical
   simp only [orthantExpand, Finset.sum_add_distrib, orthantBaseDegree]
   congr 1
-  have hh := Finset.sum_subtype (p := fun i => (b i).val = B) (F := inferInstance)
-      (Finset.univ.filter (fun i => (b i).val = B))
-      (by simp) (fun i => if h : (b i).val = B then c ⟨i, h⟩ else 0)
   calc
     _ = ∑ i ∈ Finset.univ.filter (fun i => (b i).val = B),
         if h : (b i).val = B then c ⟨i, h⟩ else 0 := by
       rw [Finset.sum_filter]
-      apply Finset.sum_congr rfl
-      intro i _
-      by_cases hi : (b i).val = B <;> simp [hi]
-    _ = _ := hh
-    _ = ∑ j, c j := Finset.sum_congr rfl (fun j _ => by simp [j.property])
-
-/-- Every cell of the truncation map is a coordinate orthant. -/
-def orthantExpandEquiv {σ : Type*} {B : ℕ} (b : σ → Fin (B + 1)) :
-    (orthantFree b → ℕ) ≃
-      {a : σ → ℕ // clampExponent B a = fun i => (b i).val} where
-  toFun c := ⟨orthantExpand b c, clamp_orthantExpand b c⟩
-  invFun a := fun i => a.val i.val - B
-  left_inv c := by
-    funext i
-    simp [orthantExpand, i.property]
-  right_inv a := by
-    apply Subtype.ext
-    funext i
-    have hi := congrFun a.property i
-    change min (a.val i) B = (b i).val at hi
-    simp only [orthantExpand]
-    split_ifs with h
-    · rw [h]
-      omega
-    · have hb := (b i).isLt
-      simp only [add_zero]
-      omega
+      exact Finset.sum_congr rfl fun i _ => by by_cases hi : (b i).val = B <;> simp [hi]
+    _ = _ := Finset.sum_subtype (p := fun i => (b i).val = B) (F := inferInstance)
+      (Finset.univ.filter (fun i => (b i).val = B)) (by simp) _
+    _ = ∑ j, c j := Finset.sum_congr rfl fun j _ => by simp [j.property]
 
 /-- Truncation gives the unique cell containing any exponent vector. -/
 def exponentPattern {σ : Type*} (B : ℕ) (a : σ → ℕ) : σ → Fin (B + 1) :=
@@ -132,27 +106,25 @@ def boundedOrthantEquiv {σ : Type*} [Fintype σ] {B N : ℕ}
     (b : σ → Fin (B + 1)) (hN : orthantBaseDegree b ≤ N) :
     {c : orthantFree b → ℕ // ∑ i, c i ≤ N - orthantBaseDegree b} ≃
       {a : σ → ℕ // clampExponent B a = (fun i => (b i).val) ∧ ∑ i, a i ≤ N} := by
-  let e := orthantExpandEquiv b
+  /- Every cell of the truncation map is a coordinate orthant. -/
   refine Equiv.ofBijective
-    (fun c => ⟨orthantExpand b c.val, clamp_orthantExpand b c.val, ?_⟩) ⟨?_, ?_⟩
-  · rw [orthantExpand_sum]
-    omega
+    (fun c => ⟨orthantExpand b c.val, clamp_orthantExpand b c.val,
+      by rw [orthantExpand_sum]; omega⟩) ⟨?_, ?_⟩
   · intro c d h
-    have hv : orthantExpand b c.val = orthantExpand b d.val :=
-      congrArg (fun a : {a : σ → ℕ //
-        clampExponent B a = (fun i => (b i).val) ∧ ∑ i, a i ≤ N} => a.val) h
-    apply Subtype.ext
-    apply e.injective
-    exact Subtype.ext hv
+    have hv := congrArg Subtype.val h
+    exact Subtype.ext (funext fun i => by
+      have hi := congrFun hv i.val
+      simp only [orthantExpand, i.property, ↓reduceDIte, Subtype.eta] at hi
+      omega)
   · intro a
-    let c := e.symm ⟨a.val, a.property.1⟩
-    have he : orthantExpand b c = a.val :=
-      congrArg Subtype.val (e.apply_symm_apply ⟨a.val, a.property.1⟩)
-    have hc : ∑ i, c i ≤ N - orthantBaseDegree b := by
-      have hs := orthantExpand_sum b c
-      rw [he] at hs
-      omega
-    exact ⟨⟨c, hc⟩, Subtype.ext he⟩
+    let c : orthantFree b → ℕ := fun i => a.val i.val - B
+    have he : orthantExpand b c = a.val := funext fun i => by
+      have hi : min (a.val i) B = (b i).val := congrFun a.property.1 i
+      have hb := (b i).isLt
+      simp only [orthantExpand, c]
+      split_ifs with h <;> omega
+    exact ⟨⟨c, by have hs := orthantExpand_sum b c; rw [he] at hs; have := a.property.2; omega⟩,
+      Subtype.ext he⟩
 
 end
 end CCDN

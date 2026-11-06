@@ -20,28 +20,6 @@ namespace CCDN
 noncomputable section
 open MvPolynomial
 
-private lemma sum_fin_zero_pad {A : Type*} [AddCommMonoid A] {r μ : ℕ}
-    (h : r ≤ μ) (f : Fin r → A) :
-    (∑ i : Fin μ, if hi : i.val < r then f ⟨i.val, hi⟩ else 0) = ∑ j, f j := by
-  classical
-  let J := Finset.univ.image (Fin.castLE h)
-  have hsum : (∑ i : Fin μ, if hi : i.val < r then f ⟨i.val, hi⟩ else 0) =
-      ∑ i ∈ J, if hi : i.val < r then f ⟨i.val, hi⟩ else 0 := by
-    symm
-    apply Finset.sum_subset (Finset.subset_univ J)
-    intro i _ hi
-    have hn : ¬ i.val < r := by
-      intro hit
-      apply hi
-      exact Finset.mem_image.mpr ⟨⟨i.val, hit⟩, Finset.mem_univ _, rfl⟩
-    simp only [dite_eq_right hn]
-  rw [hsum]
-  dsimp [J]
-  rw [Finset.sum_image (fun _ _ _ _ he => Fin.castLE_injective h he)]
-  apply Finset.sum_congr rfl
-  intro j _
-  simp only [Fin.val_castLE, dite_eq_left j.isLt]
-
 /-- Every square evaluation determinant of integral zeros in one singular
 residue class has the repeated-weight multiplicity exponent. The curve's
 multiplicity is determined by its reduction. -/
@@ -62,53 +40,41 @@ theorem singular_plane_pow_dvd_det_mod {p μ s : ℕ} [Fact p.Prime]
   let Cc (l : Fin s) (k : Fin N) (j : Fin μ) : ℤ :=
     if hj : j.val < r k.val then c l k ⟨j.val, hj⟩ else 0
   have hG (k : Fin N) (j : Fin μ) : (G k j).IsHomogeneous k.val := by
-    dsimp [G]
-    split
-    · exact hg _ _
-    · exact isHomogeneous_zero _ _ _
-  have hdiv (i : Fin s) (z : Fin (N * μ)) :
-      (p : ℤ) ^ (z.val / μ) ∣ eval (x i) (G z.divNat z.modNat) := by
-    exact origin_power_eval_dvd (p : ℤ) (x i) (hx i)
+    dsimp [G]; split <;> [exact hg _ _; exact isHomogeneous_zero _ _ _]
+  choose U₀ hU using fun (i : Fin s) (z : Fin (N * μ)) =>
+    origin_power_eval_dvd (p : ℤ) (x i) (hx i)
       (homogeneous_mem_origin_power (hG z.divNat z.modNat))
-  choose U₀ hU using hdiv
   let U : Matrix (Fin s) (Fin (N * μ)) ℤ := U₀
   let V : Matrix (Fin (N * μ)) (Fin s) ℤ :=
     fun z l => (p : ℤ) ^ (z.val / μ) * Cc l z.divNat z.modNat
   have hdet : (p : ℤ) ^ N ∣ (U * V).det :=
-    multiplicity_pow_dvd_det_of_factorization U V (p : ℤ) μ
-      (fun z l => dvd_mul_right _ _)
+    multiplicity_pow_dvd_det_of_factorization U V (p : ℤ) μ fun _ _ => dvd_mul_right _ _
   have hprod (i l : Fin s) : (U * V) i l =
       ∑ k : Fin N, ∑ j, c l k j * eval (x i) (g k.val j) := by
-    rw [Matrix.mul_apply]
-    have he : (∑ z : Fin (N * μ), U i z * V z l) =
-        ∑ z : Fin (N * μ), Cc l z.divNat z.modNat * eval (x i) (G z.divNat z.modNat) := by
-      apply Finset.sum_congr rfl
-      intro z _
-      rw [hU]
-      dsimp [V]
-      ring
-    rw [he, ← Equiv.sum_comp finProdFinEquiv]
-    rw [Fintype.sum_prod_type]
+    rw [Matrix.mul_apply, show (∑ z : Fin (N * μ), U i z * V z l) =
+        ∑ z : Fin (N * μ), Cc l z.divNat z.modNat * eval (x i) (G z.divNat z.modNat) from
+      Finset.sum_congr rfl fun z _ => by rw [hU]; dsimp [V]; ring,
+      ← Equiv.sum_comp finProdFinEquiv, Fintype.sum_prod_type]
     have hd (k : Fin N) (j : Fin μ) : (finProdFinEquiv (k, j)).divNat = k :=
       congrArg Prod.fst (finProdFinEquiv.symm_apply_apply (k, j))
     have hm (k : Fin N) (j : Fin μ) : (finProdFinEquiv (k, j)).modNat = j :=
       congrArg Prod.snd (finProdFinEquiv.symm_apply_apply (k, j))
     simp only [hd, hm]
-    apply Finset.sum_congr rfl
-    intro k _
-    have hp : (∑ j : Fin μ, Cc l k j * eval (x i) (G k j)) =
+    refine Finset.sum_congr rfl fun k _ => ?_
+    rw [show (∑ j : Fin μ, Cc l k j * eval (x i) (G k j)) =
         ∑ j : Fin μ, if hj : j.val < r k.val then
-          c l k ⟨j.val, hj⟩ * eval (x i) (g k.val ⟨j.val, hj⟩) else 0 := by
-      apply Finset.sum_congr rfl
-      intro j _
-      dsimp [Cc, G]
-      split <;> simp_all
-    rw [hp]
-    exact sum_fin_zero_pad (hr k.val) (fun j => c l k j * eval (x i) (g k.val j))
+          c l k ⟨j.val, hj⟩ * eval (x i) (g k.val ⟨j.val, hj⟩) else 0 from
+      Finset.sum_congr rfl fun j _ => by dsimp [Cc, G]; split <;> simp_all]
+    let J := Finset.univ.image (Fin.castLE (hr k.val))
+    rw [← Finset.sum_subset (Finset.subset_univ J) fun j _ hj => by
+      have hn : ¬ j.val < r k.val := fun hit =>
+        hj (Finset.mem_image.mpr ⟨⟨j.val, hit⟩, Finset.mem_univ _, rfl⟩)
+      simp only [dite_eq_right hn],
+      Finset.sum_image fun _ _ _ _ he => Fin.castLE_injective (hr k.val) he]
+    exact Finset.sum_congr rfl fun j _ => by simp only [Fin.val_castLE, dite_eq_left j.isLt]
   have hd := Matrix.dvd_det_sub_det_of_dvd_sub (Matrix.of fun i j => eval (x i) (F j))
-    (U * V) ((p : ℤ) ^ N) (fun i j => by
-      rw [Matrix.of_apply, hprod]
-      exact hc j (x i) (hfx i) (hx i))
+    (U * V) ((p : ℤ) ^ N) fun i j => by
+      rw [Matrix.of_apply, hprod]; exact hc j (x i) (hfx i) (hx i)
   simpa only [sub_add_cancel] using dvd_add hd hdet
 
 /-- The exact-zero form follows from finite-precision divisibility. -/

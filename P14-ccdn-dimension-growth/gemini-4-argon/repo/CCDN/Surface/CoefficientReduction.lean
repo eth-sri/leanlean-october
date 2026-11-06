@@ -25,49 +25,6 @@ namespace CCDN
 noncomputable section
 open MvPolynomial
 
-private theorem surface_section_count_le
-    (f g : CoordinatePolynomial 3) (hf : Irreducible f) (hfg : ¬ f ∣ g)
-    {B : ℝ} (hB : 0 ≤ B) :
-    (count (zeroLocus f ∩ zeroLocus g) B : ℝ) ≤
-      (f.totalDegree : ℝ) * g.totalDegree * (2 * B + 1) := by
-  obtain ⟨S, δ, hcurve, hcover, hbudget, _⟩ :=
-    exists_completeIntersection_curve_components f g hf hfg
-  rw [hcover]
-  have hsum : (∑ P ∈ S, (δ P : ℝ)) ≤
-      (f.totalDegree : ℝ) * g.totalDegree := by exact_mod_cast hbudget
-  exact (finite_curve_union_count_le_box_side S δ (fun P hP =>
-    ⟨(hcurve P hP).isPrime, (hcurve P hP).height_eq, (hcurve P hP).degree⟩) hB).trans
-      (mul_le_mul_of_nonneg_right hsum (by linarith))
-
-private theorem integer_surface_count_le_of_auxiliary
-    (f g : MvPolynomial (Fin 3) ℤ)
-    (hf : Irreducible (map (Int.castRingHom ℚ) f))
-    (hfg : ¬ map (Int.castRingHom ℚ) f ∣ map (Int.castRingHom ℚ) g)
-    {B : ℝ} (hB : 0 ≤ B)
-    (hzero : ∀ x : IntPoint 3, InBox x B →
-      eval x f = 0 → eval x g = 0) :
-    (count (zeroLocus (map (Int.castRingHom ℚ) f)) B : ℝ) ≤
-      (f.totalDegree : ℝ) * g.totalDegree * (2 * B + 1) := by
-  have hcount : count (zeroLocus (map (Int.castRingHom ℚ) f)) B ≤
-      count (zeroLocus (map (Int.castRingHom ℚ) f) ∩
-        zeroLocus (map (Int.castRingHom ℚ) g)) B := by
-    apply Finset.card_le_card
-    intro x hx
-    obtain ⟨hxB, hxf⟩ := mem_integralPoints.mp hx
-    have hf0 : eval x f = 0 := by
-      apply (show Function.Injective (Int.castRingHom ℚ) from Int.cast_injective)
-      rw [map_zero, map_eval]
-      exact hxf
-    have hg0 : eval (rationalPoint x) (map (Int.castRingHom ℚ) g) = 0 := by
-      have hh := congrArg (Int.castRingHom ℚ) (hzero x hxB hf0)
-      rw [map_eval, map_zero] at hh
-      exact hh
-    exact mem_integralPoints.mpr ⟨hxB, hxf, hg0⟩
-  have hbound := surface_section_count_le (map (Int.castRingHom ℚ) f)
-    (map (Int.castRingHom ℚ) g) hf hfg hB
-  rw [rational_map_totalDegree, rational_map_totalDegree] at hbound
-  exact le_trans (by exact_mod_cast hcount) hbound
-
 /-- The constant `N (log N + d) + 1`, where `N = binom(d + 3, d)` is the number of monomials of
 degree at most `d` in three variables, in the logarithmic coefficient-height bound for primitive
 surface equations of degree `d`. -/
@@ -91,7 +48,7 @@ theorem primitive_surface_coefficient_reduction
       surfaceCoefficientLogConstant f.totalDegree * (Real.log B + 1) ∨
     (count (zeroLocus (map (Int.castRingHom ℚ) f)) B : ℝ) ≤
       3 * (f.totalDegree : ℝ) ^ 2 * B := by
-  have hf0 : f ≠ 0 := by intro h; exact hf.ne_zero (by rw [h, map_zero])
+  have hf0 : f ≠ 0 := fun h => hf.ne_zero (by rw [h, map_zero])
   rcases affine_coefficient_height_dichotomy f hf0 hprim hB with
     hheight | ⟨g, ⟨_, hproper, hzero⟩, hdeg⟩
   · left
@@ -106,14 +63,38 @@ theorem primitive_surface_coefficient_reduction
   · right
     have hproperQ : ¬ map (Int.castRingHom ℚ) f ∣ map (Int.castRingHom ℚ) g :=
       fun h => hproper (hprim.rational_map_dvd_iff.mp h)
-    have hcount := integer_surface_count_le_of_auxiliary f g hf hproperQ
-      (show 0 ≤ B by linarith) hzero
-    have hdegR : (g.totalDegree : ℝ) ≤ f.totalDegree := by exact_mod_cast hdeg
+    have hsub : count (zeroLocus (map (Int.castRingHom ℚ) f)) B ≤
+        count (zeroLocus (map (Int.castRingHom ℚ) f) ∩
+          zeroLocus (map (Int.castRingHom ℚ) g)) B :=
+      Finset.card_le_card fun x hx => by
+        obtain ⟨hxB, hxf⟩ := mem_integralPoints.mp hx
+        have hf0 : eval x f = 0 := by
+          apply (show Function.Injective (Int.castRingHom ℚ) from Int.cast_injective)
+          rw [map_zero, map_eval]; exact hxf
+        have hg0 : eval (rationalPoint x) (map (Int.castRingHom ℚ) g) = 0 := by
+          have hh := congrArg (Int.castRingHom ℚ) (hzero x hxB hf0)
+          rw [map_eval, map_zero] at hh; exact hh
+        exact mem_integralPoints.mpr ⟨hxB, hxf, hg0⟩
+    obtain ⟨S, δ, hcurve, hcover, hbudget, _⟩ :=
+      exists_completeIntersection_curve_components _ _ hf hproperQ
+    have hsum : (∑ P ∈ S, (δ P : ℝ)) ≤ (f.totalDegree : ℝ) * g.totalDegree := by
+      simpa only [rational_map_totalDegree] using (by exact_mod_cast hbudget :
+        (∑ P ∈ S, (δ P : ℝ)) ≤ ((map (Int.castRingHom ℚ) f).totalDegree : ℝ) *
+          (map (Int.castRingHom ℚ) g).totalDegree)
+    have hsubR : (count (zeroLocus (map (Int.castRingHom ℚ) f)) B : ℝ) ≤
+        count (zeroLocus (map (Int.castRingHom ℚ) f) ∩
+          zeroLocus (map (Int.castRingHom ℚ) g)) B := by exact_mod_cast hsub
+    have hcount : (count (zeroLocus (map (Int.castRingHom ℚ) f)) B : ℝ) ≤
+        (f.totalDegree : ℝ) * g.totalDegree * (2 * B + 1) := by
+      refine hsubR.trans ?_
+      rw [hcover]
+      exact (finite_curve_union_count_le_box_side S δ (fun P hP =>
+        ⟨(hcurve P hP).isPrime, (hcurve P hP).height_eq, (hcurve P hP).degree⟩)
+        (by linarith)).trans (mul_le_mul_of_nonneg_right hsum (by linarith))
+    have hdegR : (g.totalDegree : ℝ) ≤ f.totalDegree := mod_cast hdeg
     calc
       _ ≤ (f.totalDegree : ℝ) * g.totalDegree * (2 * B + 1) := hcount
-      _ ≤ (f.totalDegree : ℝ) * f.totalDegree * (3 * B) := by
-        gcongr
-        linarith
+      _ ≤ (f.totalDegree : ℝ) * f.totalDegree * (3 * B) := by gcongr; linarith
       _ = _ := by ring
 
 end

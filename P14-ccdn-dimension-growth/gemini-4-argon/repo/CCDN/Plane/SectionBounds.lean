@@ -27,12 +27,9 @@ with evaluating `f` at `t`. -/
 lemma bivariateEval_equiv {K : Type*} [CommRing K]
     (f : MvPolynomial (Fin 2) K) (t : Fin 2 → K) :
     bivariateEval (t 0) (t 1) (bivariatePolynomialEquiv K f) = eval t f := by
-  have he : (bivariateEval (t 0) (t 1)).comp (bivariatePolynomialEquiv K).toRingHom = eval t := by
-    apply MvPolynomial.ringHom_ext
-    · intro r
-      simp [bivariateEval, bivariatePolynomialEquiv_C]
-    · intro i
-      fin_cases i <;> simp [bivariateEval,
+  have he : (bivariateEval (t 0) (t 1)).comp (bivariatePolynomialEquiv K).toRingHom = eval t :=
+    MvPolynomial.ringHom_ext (fun _ => by simp [bivariateEval, bivariatePolynomialEquiv_C])
+      fun i => by fin_cases i <;> simp [bivariateEval,
         bivariatePolynomialEquiv_X_zero, bivariatePolynomialEquiv_X_one]
   exact RingHom.congr_fun he f
 
@@ -55,30 +52,27 @@ private lemma planeSectionPoints_card_eq {K σ : Type*} [CommRing K]
   have he (t : Fin 2 → K) : eval t (planeSectionPolynomial f v) =
       bivariateEval (t 0) (t 1) (universalPlaneSection f v) := by
     rw [← bivariateEval_equiv, planeSectionPolynomial, AlgEquiv.apply_symm_apply]
-  apply Nat.card_congr
-  exact { toFun := fun t => ⟨t.val, by rw [he]; exact t.property⟩
-          invFun := fun t => ⟨t.val, by rw [← he]; exact t.property⟩
-          left_inv := fun _ => rfl
-          right_inv := fun _ => rfl }
+  exact Nat.card_congr
+    { toFun := fun t => ⟨t.val, by rw [he]; exact t.property⟩
+      invFun := fun t => ⟨t.val, by rw [← he]; exact t.property⟩
+      left_inv := fun _ => rfl
+      right_inv := fun _ => rfl }
 
 /-- The number of points of a plane section over a finite ring `K` is at most `|K| ^ 2`. -/
 lemma planeSectionPoints_card_le_square {K σ : Type*} [CommRing K] [Fintype K]
     (f : MvPolynomial σ K) (v : PlaneParameters σ → K) :
     Nat.card (PlaneSectionPoints f v) ≤ Fintype.card K ^ 2 := by
-  have h := Nat.card_le_card_of_injective (fun t : PlaneSectionPoints f v => t.val)
-    Subtype.val_injective
-  simpa only [Nat.card_eq_fintype_card, Fintype.card_fun, Fintype.card_fin] using h
+  simpa only [Nat.card_eq_fintype_card, Fintype.card_fun, Fintype.card_fin] using
+    Nat.card_le_card_of_injective (fun t : PlaneSectionPoints f v => t.val) Subtype.val_injective
 
 /-- A nonzero plane section of `f` over a finite field `K` has at most `deg f * |K|` points. -/
 lemma planeSectionPoints_card_le_degree_mul_card {K σ : Type*} [Field K] [Fintype K]
     (f : MvPolynomial σ K) (v : PlaneParameters σ → K)
     (hv : universalPlaneSection f v ≠ 0) :
     Nat.card (PlaneSectionPoints f v) ≤ f.totalDegree * Fintype.card K := by
-  have hg : planeSectionPolynomial f v ≠ 0 := by
-    intro hz
-    apply hv
-    have h := congrArg (bivariatePolynomialEquiv K) hz
-    simpa only [planeSectionPolynomial, AlgEquiv.apply_symm_apply, map_zero] using h
+  have hg : planeSectionPolynomial f v ≠ 0 := fun hz => hv (by
+    simpa only [planeSectionPolynomial, AlgEquiv.apply_symm_apply, map_zero] using
+      congrArg (bivariatePolynomialEquiv K) hz)
   rw [planeSectionPoints_card_eq]
   have h := finite_field_polynomial_zeros_card (planeSectionPolynomial f v) hg
   simp only [Fintype.card_fin, Nat.reduceSub, pow_one] at h
@@ -102,16 +96,12 @@ lemma planeSectionPoints_card_le_add_mul_sqrt {σ : Type*}
     rw [← bivariatePolynomialEquiv_map]
     simpa only [g, planeSectionPolynomial, AlgEquiv.apply_symm_apply] using hir
   have hd : g.totalDegree ≤ f.totalDegree := planeSectionPolynomial_totalDegree f v
-  have hs : stepanovThreshold (g.totalDegree : ℝ) < p := by
-    apply lt_of_le_of_lt _ hsize
-    gcongr
+  have hs : stepanovThreshold (g.totalDegree : ℝ) < p := lt_of_le_of_lt (by gcongr) hsize
   let S := {t : Fin 2 → ZMod p // eval t g = 0}
   have h := plane_finite_field_card_bound p g hg hs (fun t : S => t.val)
     Subtype.val_injective (fun t => t.property)
   rw [planeSectionPoints_card_eq, Nat.card_eq_fintype_card]
-  apply h.trans
-  gcongr
-  exact planeResidueConstant_pos.le
+  exact h.trans (by have := planeResidueConstant_pos.le; gcongr)
 
 end
 end CCDN

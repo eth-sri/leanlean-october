@@ -33,25 +33,6 @@ lemma projectiveCurveConstant_pos (n : ℕ) : 0 < projectiveCurveConstant n := b
   have := projectivePlaneAbsoluteConstant_pos
   positivity
 
-private theorem projectiveCurveEstimate_scale (n : ℕ) {d : ℕ} (hd : 0 < d)
-    {B : ℝ} (hB : 1 ≤ B) :
-    projectiveCurveEstimate d (projectionBoxFactor n d * B) ≤
-      Real.exp (2 * projectionLogConstant n) * projectiveCurveEstimate d B := by
-  have hd0 : (0 : ℝ) < d := by exact_mod_cast hd
-  have hA : 0 < projectionBoxFactor n d :=
-    lt_of_lt_of_le (by norm_num) (projectionBoxFactor_one_le n d)
-  have hpow : (projectionBoxFactor n d) ^ (2 / (d : ℝ)) ≤
-      Real.exp (2 * projectionLogConstant n) := by
-    rw [Real.rpow_def_of_pos hA, Real.exp_le_exp, ← mul_div_assoc]
-    apply (div_le_iff₀ hd0).mpr
-    have hlog := projectionBoxFactor_log_le n hd
-    linarith
-  unfold projectiveCurveEstimate
-  rw [Real.mul_rpow hA.le (by linarith)]
-  have h := mul_le_mul_of_nonneg_left hpow
-    (show 0 ≤ (d : ℝ) ^ 4 * B ^ (2 / (d : ℝ)) by positivity)
-  convert h using 1 <;> ring
-
 /-- Let `I` be the homogeneous prime ideal of a projective curve of degree `d > 0` in `ℙⁿ` that is
 not contained in the hyperplane `X 0 = 0` (that is, `X 0 ∉ I`). For `B ≥ 1`, the number of rational
 points of height at most `B` on the curve is at most `projectiveCurveConstant n * d⁴ B^(2/d)`. -/
@@ -64,12 +45,25 @@ theorem projective_curve_count_of_proper_chart {n d : ℕ}
   have hAB := one_le_mul_of_one_le_of_one_le (projectionBoxFactor_one_le n d) hB
   have hplane := projective_plane_equation_bound f hf hd hir hAB
   have hR : (projectiveCount (projectiveIdealZeroLocus I) B : ℝ) ≤
-      projectiveCount (projectiveZeroLocus f) (projectionBoxFactor n d * B) + (d : ℝ) ^ 2 := by
-    exact_mod_cast hreduce B hB
-  have hd1 : (1 : ℝ) ≤ d := by exact_mod_cast hd
+      projectiveCount (projectiveZeroLocus f) (projectionBoxFactor n d * B) + (d : ℝ) ^ 2 :=
+    mod_cast hreduce B hB
+  have hd0 : (0 : ℝ) < d := mod_cast hd
+  have hd1 : (1 : ℝ) ≤ d := mod_cast hd
   have hQ : 1 ≤ B ^ (2 / (d : ℝ)) := Real.one_le_rpow hB (by positivity)
   have herr : (d : ℝ) ^ 2 ≤ projectiveCurveEstimate d B :=
     (pow_le_pow_right₀ hd1 (by norm_num)).trans (le_mul_of_one_le_right (by positivity) hQ)
+  have hscale : projectiveCurveEstimate d (projectionBoxFactor n d * B) ≤
+      Real.exp (2 * projectionLogConstant n) * projectiveCurveEstimate d B := by
+    have hA : 0 < projectionBoxFactor n d :=
+      lt_of_lt_of_le (by norm_num) (projectionBoxFactor_one_le n d)
+    have hpow : (projectionBoxFactor n d) ^ (2 / (d : ℝ)) ≤
+        Real.exp (2 * projectionLogConstant n) := by
+      rw [Real.rpow_def_of_pos hA, Real.exp_le_exp, ← mul_div_assoc]
+      exact (div_le_iff₀ hd0).mpr (by linarith [projectionBoxFactor_log_le n hd])
+    unfold projectiveCurveEstimate
+    rw [Real.mul_rpow hA.le (by linarith)]
+    convert mul_le_mul_of_nonneg_left hpow
+      (show 0 ≤ (d : ℝ) ^ 4 * B ^ (2 / (d : ℝ)) by positivity) using 1 <;> ring
   calc
     _ ≤ projectiveCount (projectiveZeroLocus f) (projectionBoxFactor n d * B) +
         (d : ℝ) ^ 2 := hR
@@ -81,11 +75,9 @@ theorem projective_curve_count_of_proper_chart {n d : ℕ}
     _ ≤ projectivePlaneAbsoluteConstant *
           (Real.exp (2 * projectionLogConstant n) * projectiveCurveEstimate d B) +
         projectiveCurveEstimate d B := by
-      gcongr
-      exacts [projectivePlaneAbsoluteConstant_pos.le, projectiveCurveEstimate_scale n hd hB]
+      gcongr; exact projectivePlaneAbsoluteConstant_pos.le
     _ = projectiveCurveConstant n * projectiveCurveEstimate d B := by
-      unfold projectiveCurveConstant
-      ring
+      unfold projectiveCurveConstant; ring
 
 /-- Let `I` be the homogeneous prime ideal of a projective curve of degree `d > 0` in `ℙⁿ`. For
 `B ≥ 1`, the number of rational points of height at most `B` on the curve is at most
@@ -100,24 +92,16 @@ theorem projective_curve_count {n d : ℕ}
   · obtain ⟨x, hx⟩ := hS
     have hxI := (mem_projectivePoints.mp hx).2
     obtain ⟨j, hj⟩ := Function.ne_iff.mp x.rep_nonzero
-    change x.rep j ≠ 0 at hj
     let e := Equiv.swap (0 : Fin (n + 1)) j
     let J := projectivePermutedIdeal I e
-    have hX : X 0 ∉ J := by
-      intro h
-      have hh := (mem_projectivePermutedIdeal I e (X 0)).mp h
-      have hXj : X j ∈ I := by simpa [e] using hh
-      have hz := projectiveIdealZeroLocus_rep hxI (X j) hXj
-      exact hj (by simpa using hz)
-    have hJ := projectiveCurveDegree_permuted I e hdegree
-    have h := projective_curve_count_of_proper_chart J hX hd hJ hB
-    have hc : (projectiveCount (projectiveIdealZeroLocus I) B : ℝ) ≤
-        projectiveCount (projectiveIdealZeroLocus J) B := by
-      exact_mod_cast projectiveCount_le_permuted I e B
-    exact hc.trans h
-  · have he := Finset.not_nonempty_iff_eq_empty.mp hS
-    unfold projectiveCount
-    rw [he, Finset.card_empty, Nat.cast_zero]
+    have hX : X 0 ∉ J := fun h => hj (by
+      have hXj : X j ∈ I := by simpa [e] using (mem_projectivePermutedIdeal I e (X 0)).mp h
+      simpa using projectiveIdealZeroLocus_rep hxI (X j) hXj)
+    exact (Nat.cast_le.mpr (projectiveCount_le_permuted I e B)).trans
+      (projective_curve_count_of_proper_chart J hX hd
+        (projectiveCurveDegree_permuted I e hdegree) hB)
+  · unfold projectiveCount
+    rw [Finset.not_nonempty_iff_eq_empty.mp hS, Finset.card_empty, Nat.cast_zero]
     exact mul_nonneg (projectiveCurveConstant_pos n).le
       (by unfold projectiveCurveEstimate; positivity)
 

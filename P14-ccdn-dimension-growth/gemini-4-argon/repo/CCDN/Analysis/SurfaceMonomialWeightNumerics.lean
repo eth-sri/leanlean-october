@@ -18,39 +18,28 @@ namespace CCDN
 noncomputable section
 open Finset
 
-private lemma sum_successor_squares_lower (M : ℕ) :
-    (M : ℝ) ^ 3 / 3 ≤ ∑ i ∈ range M, ((i : ℝ) + 1) ^ 2 := by
-  induction M with
-  | zero => simp
-  | succ M ih =>
-    rw [sum_range_succ]
-    push_cast
-    nlinarith [sq_nonneg (M : ℝ), Nat.cast_nonneg (α := ℝ) M]
-
 /-- If `H k ≥ d * (k - d + 1) ^ 2 / 2` for all `k ≥ d`, then for `M ≥ d` the prefix sum
 `∑ k < M, H k` is at least `d * (M - d) ^ 3 / 6`. -/
 theorem surface_rank_prefix_sum_lower (H : ℕ → ℕ) {d M : ℕ} (hdM : d ≤ M)
     (hlower : ∀ k, d ≤ k →
       (d : ℝ) * ((k : ℝ) - d + 1) ^ 2 / 2 ≤ H k) :
     (d : ℝ) * ((M : ℝ) - d) ^ 3 / 6 ≤ ∑ k ∈ range M, (H k : ℝ) := by
+  have hsq (N : ℕ) : (N : ℝ) ^ 3 / 3 ≤ ∑ i ∈ range N, ((i : ℝ) + 1) ^ 2 := by
+    induction N with
+    | zero => simp
+    | succ N ih => rw [sum_range_succ]; push_cast; nlinarith [sq_nonneg (N : ℝ), Nat.cast_nonneg (α := ℝ) N]
   have hsum : (d : ℝ) / 2 * ∑ i ∈ range (M - d), ((i : ℝ) + 1) ^ 2 ≤
       ∑ i ∈ range (M - d), (H (d + i) : ℝ) := by
     rw [mul_sum]
-    apply sum_le_sum
-    intro i _
-    have h := hlower (d + i) (by omega)
-    push_cast at h
-    convert h using 1
-    ring
-  have hnum := mul_le_mul_of_nonneg_left (sum_successor_squares_lower (M - d))
-    (show 0 ≤ (d : ℝ) / 2 by positivity)
+    exact sum_le_sum fun i _ => by
+      simpa [add_sub_cancel_left, div_eq_mul_inv, mul_assoc, mul_left_comm, mul_comm] using
+        hlower (d + i) (by omega)
+  have hnum := mul_le_mul_of_nonneg_left (hsq (M - d)) (show 0 ≤ (d : ℝ) / 2 by positivity)
   rw [Nat.cast_sub hdM] at hnum
-  have hprefix : (∑ i ∈ range (M - d), (H (d + i) : ℝ)) ≤
-      ∑ k ∈ range M, (H k : ℝ) := by
+  have hprefix : (∑ i ∈ range (M - d), (H (d + i) : ℝ)) ≤ ∑ k ∈ range M, (H k : ℝ) := by
     conv_rhs => rw [show M = d + (M - d) by omega, sum_range_add]
-    exact le_add_of_nonneg_left (sum_nonneg (fun _ _ => Nat.cast_nonneg _))
-  convert (hnum.trans hsum).trans hprefix using 1
-  ring
+    exact le_add_of_nonneg_left (sum_nonneg fun _ _ => Nat.cast_nonneg _)
+  linarith
 
 /-- Let `R ≥ 0` satisfy `d * R ^ 2 = 2 * s` and `M - d ≤ R ≤ M + 2`, where `0 < d ≤ M` and
 `s ≥ 0`. If `W + d * (M - d) ^ 3 / 6 ≤ M * s`, then `W ≤ (2 / 3) * s * R + (2 * d + 2) * s`. -/
@@ -60,27 +49,14 @@ theorem surface_weight_root_bound {d M s W : ℝ}
     (hlo : M - d ≤ R) (hhi : R ≤ M + 2)
     (hweight : W + d * (M - d) ^ 3 / 6 ≤ M * s) :
     W ≤ (2 / 3 : ℝ) * s * R + (2 * d + 2) * s := by
-  have ht : 0 ≤ M - d := sub_nonneg.mpr hM
-  have htR : (M - d) ^ 2 ≤ R ^ 2 := pow_le_pow_left₀ ht hlo 2
-  have hprod : R * (M - d) ≤ R ^ 2 := by nlinarith
-  have hdiff : 0 ≤ R - (M - d) := sub_nonneg.mpr hlo
-  have hfactor : R ^ 2 + R * (M - d) + (M - d) ^ 2 ≤ 3 * R ^ 2 := by
-    linarith
-  have hcube : R ^ 3 - (M - d) ^ 3 ≤ 3 * (d + 2) * R ^ 2 := by
-    calc
-      _ = (R - (M - d)) * (R ^ 2 + R * (M - d) + (M - d) ^ 2) := by ring
-      _ ≤ (R - (M - d)) * (3 * R ^ 2) :=
-        mul_le_mul_of_nonneg_left hfactor hdiff
-      _ ≤ (d + 2) * (3 * R ^ 2) :=
-        mul_le_mul_of_nonneg_right (by linarith) (by positivity)
-      _ = _ := by ring
-  have hc := mul_le_mul_of_nonneg_left hcube hd.le
-  have hr3 : d * R ^ 3 = 2 * s * R := by nlinarith [congrArg (fun x : ℝ => x * R) hroot]
-  have hr2 : 3 * d * (d + 2) * R ^ 2 = 6 * (d + 2) * s := by
-    nlinarith [congrArg (fun x : ℝ => 3 * (d + 2) * x) hroot]
-  have hMs : M * s ≤ (R + d) * s :=
-    mul_le_mul_of_nonneg_right (by linarith) hs
-  nlinarith
+  have hcube : R ^ 3 - (M - d) ^ 3 ≤ 3 * (d + 2) * R ^ 2 := calc
+    R ^ 3 - (M - d) ^ 3 = (R - (M - d)) * (R ^ 2 + R * (M - d) + (M - d) ^ 2) := by ring
+    _ ≤ (d + 2) * (3 * R ^ 2) := mul_le_mul (by linarith)
+      (by nlinarith [pow_le_pow_left₀ (sub_nonneg.mpr hM) hlo 2])
+      (by nlinarith) (by linarith)
+    _ = 3 * (d + 2) * R ^ 2 := by ring
+  nlinarith [mul_le_mul_of_nonneg_left hcube hd.le,
+    congrArg (· * R) hroot, congrArg ((d + 2) * ·) hroot]
 
 end
 end CCDN

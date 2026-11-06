@@ -51,13 +51,14 @@ theorem homogeneousMultiples_finrank {K σ : Type*} [Field K]
   (Submodule.equivMapOfInjective (LinearMap.mulLeft K f)
     (fun _ _ h => mul_left_cancel₀ hf h) _).finrank_eq.symm
 
-private theorem principal_homogeneous_finrank {K σ : Type*} [Field K] [Finite σ]
-    (f : MvPolynomial σ K) {d M : ℕ} (hf : f.IsHomogeneous d) (hf0 : f ≠ 0) (hM : d ≤ M) :
+/-- Exact projective hypersurface Hilbert count, with no geometric hypothesis. -/
+theorem principal_homogeneous_hilbert_count {K : Type*} [Field K]
+    {n d M : ℕ} (f : MvPolynomial (Fin (n + 1)) K)
+    (hf : f.IsHomogeneous d) (hf0 : f ≠ 0) (hM : d ≤ M) :
     Module.finrank K (homogeneousCoordinateSpace (Ideal.span {f}) M) +
-      Module.finrank K (homogeneousSubmodule σ K (M - d)) =
-      Module.finrank K (homogeneousSubmodule σ K M) := by
+      (n + (M - d)).choose (M - d) = (n + M).choose M := by
   let φ := (Ideal.Quotient.mkₐ K (Ideal.span {f})).toLinearMap
-  let V := homogeneousSubmodule σ K M
+  let V := homogeneousSubmodule (Fin (n + 1)) K M
   have hk : V ⊓ φ.ker = homogeneousMultiples f d M := by
     ext x
     constructor
@@ -70,18 +71,11 @@ private theorem principal_homogeneous_finrank {K σ : Type*} [Field K] [Finite �
         (Ideal.mem_span_singleton.mpr (dvd_mul_right f u))⟩
       change (f * u).IsHomogeneous M
       simpa only [Nat.add_sub_of_le hM] using hf.mul hu
-  let _ : Module.Finite K V := Module.Finite.of_fg (homogeneousSubmodule_fg σ K M)
+  let _ : Module.Finite K V := Module.Finite.of_fg (homogeneousSubmodule_fg _ K M)
   have h := φ.finrank_map_add_finrank_inf_ker V
-  rw [hk, homogeneousMultiples_finrank f hf0] at h
+  rw [hk, homogeneousMultiples_finrank f hf0, finrank_homogeneousSubmodule_fin,
+    finrank_homogeneousSubmodule_fin] at h
   exact h
-
-/-- Exact projective hypersurface Hilbert count, with no geometric hypothesis. -/
-theorem principal_homogeneous_hilbert_count {K : Type*} [Field K]
-    {n d M : ℕ} (f : MvPolynomial (Fin (n + 1)) K)
-    (hf : f.IsHomogeneous d) (hf0 : f ≠ 0) (hM : d ≤ M) :
-    Module.finrank K (homogeneousCoordinateSpace (Ideal.span {f}) M) +
-      (n + (M - d)).choose (M - d) = (n + M).choose M := by
-  simpa only [finrank_homogeneousSubmodule_fin] using principal_homogeneous_finrank f hf hf0 hM
 
 end
 end CCDN

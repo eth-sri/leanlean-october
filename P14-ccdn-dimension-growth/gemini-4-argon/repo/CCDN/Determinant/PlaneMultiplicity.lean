@@ -15,37 +15,7 @@ namespace CCDN
 noncomputable section
 open MvPolynomial
 
-/-- The first nonzero homogeneous component realizes the order at the origin. -/
-theorem exists_origin_multiplicity {K σ : Type*} [Field K]
-    (f : MvPolynomial σ K) (hf : f ≠ 0) (hz : eval (0 : σ → K) f = 0) :
-    ∃ μ : ℕ, 0 < μ ∧ μ ≤ f.totalDegree ∧
-      f ∈ idealOfVars σ K ^ μ ∧ homogeneousComponent μ f ≠ 0 := by
-  classical
-  have hex : ∃ n, homogeneousComponent n f ≠ 0 := by
-    by_contra h
-    push Not at h
-    apply hf
-    rw [← sum_homogeneousComponent f]
-    simp only [h, Finset.sum_const_zero]
-  let μ := Nat.find hex
-  have hμ : homogeneousComponent μ f ≠ 0 := Nat.find_spec hex
-  have hpow : f ∈ idealOfVars σ K ^ μ := by
-    rw [mem_pow_idealOfVars_iff']
-    intro e he
-    have hzero : homogeneousComponent e.degree f = 0 :=
-      not_not.mp (Nat.find_min hex he)
-    have hc := congrArg (fun u : MvPolynomial σ K => u.coeff e) hzero
-    simpa [coeff_homogeneousComponent] using hc
-  have hpos : 0 < μ := by
-    by_contra h
-    have he : μ = 0 := by omega
-    have hconst : f.coeff 0 = 0 := by simpa only [eval_zero, constantCoeff_eq] using hz
-    apply hμ
-    rw [he, homogeneousComponent_zero, hconst, map_zero]
-  have hdeg : μ ≤ f.totalDegree := by
-    by_contra h
-    exact hμ (homogeneousComponent_eq_zero μ f (by omega))
-  exact ⟨μ, hpos, hdeg, hpow, hμ⟩
+/- The first nonzero homogeneous component realizes the order at the origin. -/
 
 /-- Substituting affine linear polynomials does not increase total degree. -/
 theorem linear_eval₂_totalDegree_le {R S σ τ : Type*} [CommRing R] [CommRing S]
@@ -76,26 +46,32 @@ theorem exists_hypersurface_reduction_multiplicity {p : ℕ} [Fact p.Prime] {σ 
     ∃ μ : ℕ, 0 < μ ∧ μ ≤ f.totalDegree ∧
       map (Int.castRingHom (ZMod p)) (originShift a f) ∈ idealOfVars σ (ZMod p) ^ μ ∧
       homogeneousComponent μ (map (Int.castRingHom (ZMod p)) (originShift a f)) ≠ 0 := by
+  classical
   let φ := Int.castRingHom (ZMod p)
+  let g := map φ (originShift a f)
   have hshift := originShift_map φ a f
-  have hn : map φ (originShift a f) ≠ 0 := by
-    rw [hshift]
-    exact originShift_ne_zero _ hf
-  have hz : eval (0 : σ → ZMod p) (map φ (originShift a f)) = 0 := by
-    rw [hshift, eval_zero_originShift, eval_map]
-    exact ha
-  have he : map φ (originShift a f) =
-      eval₂Hom (C.comp φ) (fun j => X j + C (φ (a j))) f := by
-    rw [hshift]
-    exact eval₂Hom_map_hom φ _ C f
-  have hdeg : (map φ (originShift a f)).totalDegree ≤ f.totalDegree := by
-    rw [he]
-    apply linear_eval₂_totalDegree_le
-    intro j
-    exact (totalDegree_add _ _).trans
-      (max_le (le_of_eq (totalDegree_X _)) (by rw [totalDegree_C]; omega))
-  obtain ⟨μ, hpos, hμdeg, hpow, hμ⟩ := exists_origin_multiplicity _ hn hz
-  exact ⟨μ, hpos, hμdeg.trans hdeg, hpow, hμ⟩
+  have hn : g ≠ 0 := by dsimp [g]; rw [hshift]; exact originShift_ne_zero _ hf
+  have hz : eval (0 : σ → ZMod p) g = 0 := by
+    rw [show g = _ from hshift, eval_zero_originShift, eval_map]; exact ha
+  have hdeg : g.totalDegree ≤ f.totalDegree := by
+    rw [show g = eval₂Hom (C.comp φ) (fun j => X j + C (φ (a j))) f from
+      hshift.trans (eval₂Hom_map_hom φ _ C f)]
+    exact linear_eval₂_totalDegree_le φ _ (fun j => (totalDegree_add _ _).trans
+      (max_le (le_of_eq (totalDegree_X _)) (by rw [totalDegree_C]; omega))) f
+  have hex : ∃ n, homogeneousComponent n g ≠ 0 := by
+    by_contra! h
+    exact hn (by rw [← sum_homogeneousComponent g]; simp only [h, Finset.sum_const_zero])
+  let μ := Nat.find hex
+  have hμ : homogeneousComponent μ g ≠ 0 := Nat.find_spec hex
+  refine ⟨μ, ?_, (show μ ≤ g.totalDegree by
+      by_contra h; exact hμ (homogeneousComponent_eq_zero μ g (by omega))).trans hdeg,
+    (mem_pow_idealOfVars_iff' _ _).mpr fun e he => by
+      simpa [coeff_homogeneousComponent] using
+        congrArg (fun u : MvPolynomial σ (ZMod p) => u.coeff e) (not_not.mp (Nat.find_min hex he)),
+    hμ⟩
+  by_contra h
+  have hconst : g.coeff 0 = 0 := by simpa only [eval_zero, constantCoeff_eq] using hz
+  exact hμ (by rw [show μ = 0 by omega, homogeneousComponent_zero, hconst, map_zero])
 
 end
 end CCDN

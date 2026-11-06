@@ -21,12 +21,6 @@ namespace CCDN
 noncomputable section
 open MvPolynomial Module
 
-private lemma eulerLowBasis_repr_apply {R : Type*} [CommRing R] (d : ℕ)
-    (f : restrictTotalDegree (Fin 2) R d) (i : EulerLowIndex d) :
-    (eulerLowBasis R d).repr f i =
-      f.val.coeff ((Finsupp.degreeLeEquivSym (Fin 2) d).symm i).val := by
-  exact Basis.repr_reindex_apply _ _ _ _
-
 /-- The bivariate monomial with coefficient one indexed by `i`, of total degree at most `d`. -/
 def eulerCoefficientMonomial (R : Type*) [CommRing R] (d : ℕ) (i : EulerLowIndex d) :
     Polynomial (Polynomial R) :=
@@ -46,8 +40,11 @@ theorem eulerCoefficientData_reconstruct {R : Type*} [CommRing R] (d : ℕ)
     ⟨(bivariatePolynomialEquiv R).symm f, (mem_restrictTotalDegree _ _ _).mpr hf⟩
   have hh := congrArg (fun v : restrictTotalDegree (Fin 2) R d =>
     bivariatePolynomialEquiv R v.val) ((eulerLowBasis R d).sum_repr u)
+  have hrepr (i : EulerLowIndex d) : (eulerLowBasis R d).repr u i =
+      u.val.coeff ((Finsupp.degreeLeEquivSym (Fin 2) d).symm i).val :=
+    Basis.repr_reindex_apply _ _ _ _
   simpa only [Submodule.coe_sum, SetLike.val_smul, map_sum, map_smul,
-    eulerLowBasis_repr_apply, eulerLowBasis_apply, AlgEquiv.apply_symm_apply,
+    hrepr, eulerLowBasis_apply, AlgEquiv.apply_symm_apply,
     eulerCoefficientData, eulerCoefficientMonomial, u] using hh
 
 /-- Applying a coefficient ring homomorphism fixes the monomials `eulerCoefficientMonomial`. -/
@@ -74,21 +71,6 @@ def eulerCoefficientEntryLinear {R : Type*} [CommRing R] (k : ℕ)
   (LinearMap.proj row).comp ((bivariateCoefficients R).comp
     (closedFormEquationLinear (eulerBivariatePair R k (eulerPairBasis R k col))))
 
-private lemma eulerCoefficientEntryLinear_apply {R : Type*} [CommRing R] (k : ℕ)
-    (row : ℕ × ℕ) (col : EulerColumns k) (f : Polynomial (Polynomial R)) :
-    eulerCoefficientEntryLinear k row col f = eulerClosedFormCoefficientMatrix k f row col := rfl
-
-private lemma eulerCoefficientMatrix_expand {R : Type*} [CommRing R] (k : ℕ)
-    (f : Polynomial (Polynomial R)) (hf : bivariateTotalDegree f ≤ k + 2)
-    (row : ℕ × ℕ) (col : EulerColumns k) :
-    ∑ i, eulerCoefficientData (k + 2) f i *
-      eulerClosedFormCoefficientMatrix k (eulerCoefficientMonomial R (k + 2) i) row col =
-      eulerClosedFormCoefficientMatrix k f row col := by
-  have hh := congrArg (eulerCoefficientEntryLinear k row col)
-    (eulerCoefficientData_reconstruct (k + 2) f hf)
-  rw [map_sum] at hh
-  simpa only [map_smul, smul_eq_mul, eulerCoefficientEntryLinear_apply] using hh
-
 /-- Integer universal matrix in all coefficients of a degree-at-most-d equation. -/
 def universalEulerMatrix (k : ℕ) : Matrix (ℕ × ℕ) (EulerColumns k)
     (MvPolynomial (EulerLowIndex (k + 2)) ℤ) :=
@@ -103,13 +85,20 @@ theorem universalEulerMatrix_specialize {R : Type*} [CommRing R]
       eulerClosedFormCoefficientMatrix k f := by
   classical
   ext row col
-  simp only [Matrix.map_apply, universalEulerMatrix]
-  simp only [map_sum, map_mul, eval₂Hom_C, Int.coe_castRingHom]
+  simp only [Matrix.map_apply, universalEulerMatrix, map_sum, map_mul, eval₂Hom_C,
+    Int.coe_castRingHom]
   have hX (i : EulerLowIndex (k + 2)) :
       eval₂Hom (Int.castRingHom R) (eulerCoefficientData (k + 2) f) (X i) =
         eulerCoefficientData (k + 2) f i := eval₂_X _ _ _
   simp only [hX]
-  rw [← eulerCoefficientMatrix_expand k f hf row col]
+  have hexp : ∑ i, eulerCoefficientData (k + 2) f i *
+      eulerClosedFormCoefficientMatrix k (eulerCoefficientMonomial R (k + 2) i) row col =
+      eulerClosedFormCoefficientMatrix k f row col := by
+    have hh := congrArg (eulerCoefficientEntryLinear k row col)
+      (eulerCoefficientData_reconstruct (k + 2) f hf)
+    simp only [map_sum, map_smul, smul_eq_mul] at hh
+    exact hh
+  rw [← hexp]
   apply Finset.sum_congr rfl
   intro i _
   have he := congrFun (congrFun (eulerClosedFormCoefficientMatrix_map (Int.castRingHom R) k

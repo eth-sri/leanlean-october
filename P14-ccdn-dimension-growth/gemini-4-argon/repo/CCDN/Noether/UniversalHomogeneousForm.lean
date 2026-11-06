@@ -29,10 +29,6 @@ lemma homogeneousCoefficientExponent_degree (σ : Type*) [Fintype σ] [Decidable
     (d : ℕ) (i : Sym σ d) : (homogeneousCoefficientExponent σ d i).degree = d :=
   ((degreeEqEquivSym σ d).symm i).property
 
-private lemma homogeneousCoefficientExponent_injective (σ : Type*) [Fintype σ] [DecidableEq σ]
-    (d : ℕ) : Function.Injective (homogeneousCoefficientExponent σ d) :=
-  Subtype.val_injective.comp (degreeEqEquivSym σ d).symm.injective
-
 /-- The universal homogeneous form of degree `d` in the variables `σ`: the sum of all monomials of
 degree `d`, each with its own independent integer coefficient variable. -/
 def universalHomogeneousForm (σ : Type*) [Fintype σ] [DecidableEq σ] (d : ℕ) :
@@ -56,22 +52,20 @@ theorem homogeneousCoefficientData_reconstruct {R σ : Type*} [CommRing R]
   rw [coeff_sum]
   by_cases hm : m.degree = d
   · let i : Sym σ d := degreeEqEquivSym σ d ⟨m, hm⟩
-    have hi : homogeneousCoefficientExponent σ d i = m := by
-      exact congrArg Subtype.val ((degreeEqEquivSym σ d).symm_apply_apply ⟨m, hm⟩)
+    have hi : homogeneousCoefficientExponent σ d i = m :=
+      congrArg Subtype.val ((degreeEqEquivSym σ d).symm_apply_apply ⟨m, hm⟩)
     rw [Finset.sum_eq_single i]
     · rw [coeff_monomial, hi, ite_eq_left rfl]
       exact congrArg f.coeff hi
     · intro j _ hji
       rw [coeff_monomial, ite_eq_right]
-      intro hj
-      exact hji (homogeneousCoefficientExponent_injective σ d (hj.trans hi.symm))
+      exact fun hj => hji ((Subtype.val_injective.comp (degreeEqEquivSym σ d).symm.injective)
+        (hj.trans hi.symm))
     · simp
   · rw [hf.coeff_eq_zero hm]
-    apply Finset.sum_eq_zero
-    intro i _
-    rw [coeff_monomial, ite_eq_right]
-    intro hi
-    exact hm (hi ▸ homogeneousCoefficientExponent_degree σ d i)
+    exact Finset.sum_eq_zero fun i _ => by
+      rw [coeff_monomial, ite_eq_right]
+      exact fun hi => hm (hi ▸ homogeneousCoefficientExponent_degree σ d i)
 
 /-- The ring homomorphism from the integer polynomials in the coefficient variables to `R` that
 sends each coefficient variable to the corresponding coefficient of `f`. -/

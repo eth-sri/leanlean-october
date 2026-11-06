@@ -63,25 +63,6 @@ theorem proper_intersection_count_le_box {n d : ℕ}
   exact hcard.trans (mul_le_mul_of_nonneg_left
     (pow_le_pow_left₀ (Nat.cast_nonneg _) hScard n) (by positivity))
 
-/-- Rationally irreducible full equations which split over an
-extension satisfy affine dimension growth with quadratic degree
-dependence. The dimension-only factor here is not asserted to be the
-sharp constant one in CCDN Corollary 4.1.4. -/
-private theorem nonabsolute_hypersurface_count_le {K : Type*}
-    [Field K] [Algebra ℚ K] {n : ℕ}
-    (f : CoordinatePolynomial (n + 2)) (hir : Irreducible f)
-    (hred : ¬ Irreducible (map (algebraMap ℚ K) f))
-    {B : ℝ} (hB : 0 ≤ B) :
-    (count (zeroLocus f) B : ℝ) ≤
-      (n + 2 : ℝ) ^ n * (f.totalDegree : ℝ) ^ 2 * (2 * B + 1) ^ n := by
-  obtain ⟨g, _, hgd, hfg, hzero⟩ := nonabsolute_affine_auxiliary f hir hred
-  have hsubset : zeroLocus f ⊆ zeroLocus f ∩ zeroLocus g :=
-    fun x hx => ⟨hx, hzero x hx⟩
-  have hcount : (count (zeroLocus f) B : ℝ) ≤
-      (count (zeroLocus f ∩ zeroLocus g) B : ℝ) := by
-    exact_mod_cast count_mono hsubset (le_refl B)
-  exact hcount.trans (proper_intersection_count_le_box f g hir.prime hfg le_rfl hgd hB)
-
 /-- An irreducible rational polynomial `f` in `n + 2` variables that becomes reducible over some
 extension field has at most `(3 * (n + 2)) ^ n * deg f ^ 2 * B ^ n` integral zeros of height
 at most `B`, for every `B ≥ 1`. -/
@@ -92,12 +73,13 @@ theorem nonabsolute_hypersurface_dimension_growth {K : Type*}
     {B : ℝ} (hB : 1 ≤ B) :
     (count (zeroLocus f) B : ℝ) ≤
       (3 * (n + 2) : ℝ) ^ n * (f.totalDegree : ℝ) ^ 2 * B ^ n := by
-  have hh := nonabsolute_hypersurface_count_le f hir hred (show 0 ≤ B by linarith)
+  obtain ⟨g, _, hgd, hfg, hzero⟩ := nonabsolute_affine_auxiliary f hir hred
+  have hsub : zeroLocus f ⊆ zeroLocus f ∩ zeroLocus g := fun x hx => ⟨hx, hzero x hx⟩
+  have hh := (Nat.cast_le.mpr (count_mono hsub le_rfl)).trans
+    (proper_intersection_count_le_box f g hir.prime hfg le_rfl hgd (by linarith))
   calc
     _ ≤ (n + 2 : ℝ) ^ n * (f.totalDegree : ℝ) ^ 2 * (2 * B + 1) ^ n := hh
-    _ ≤ (n + 2 : ℝ) ^ n * (f.totalDegree : ℝ) ^ 2 * (3 * B) ^ n := by
-      gcongr
-      linarith
+    _ ≤ (n + 2 : ℝ) ^ n * (f.totalDegree : ℝ) ^ 2 * (3 * B) ^ n := by gcongr; linarith
     _ = _ := by simp only [mul_pow]; ring
 
 end

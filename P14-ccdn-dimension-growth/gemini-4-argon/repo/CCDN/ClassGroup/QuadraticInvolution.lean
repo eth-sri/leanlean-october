@@ -19,46 +19,6 @@ noncomputable section
 open NumberField
 open scoped NumberField
 
-private theorem two_torsion_card_le_involution_fixed_square
-    {G : Type*} [CommGroup G] [Finite G]
-    (σ : G →* G) (hσ : Function.Involutive σ) (hG : ∀ x : G, x ^ 2 = 1) :
-    Nat.card G ≤ Nat.card (σ.eqLocus (MonoidHom.id G)) ^ 2 := by
-  let τ : G →* G := (MonoidHom.id G) * σ
-  have hker : τ.ker ≤ σ.eqLocus (MonoidHom.id G) := by
-    intro x hx
-    change x * σ x = 1 at hx
-    change σ x = x
-    apply mul_left_cancel (a := x)
-    exact hx.trans (by simpa only [pow_two] using (hG x).symm)
-  have hrange : τ.range ≤ σ.eqLocus (MonoidHom.id G) := by
-    rintro x ⟨y, rfl⟩
-    change σ (y * σ y) = y * σ y
-    rw [map_mul, hσ, mul_comm]
-  have hk := Nat.card_le_card_of_injective (Subgroup.inclusion hker)
-    (Subgroup.inclusion_injective hker)
-  have hr := Nat.card_le_card_of_injective (Subgroup.inclusion hrange)
-    (Subgroup.inclusion_injective hrange)
-  calc
-    Nat.card G = Nat.card τ.ker * Nat.card τ.range :=
-      (Subgroup.card_ker_mul_card_range τ).symm
-    _ ≤ Nat.card (σ.eqLocus (MonoidHom.id G)) *
-        Nat.card (σ.eqLocus (MonoidHom.id G)) := Nat.mul_le_mul hk hr
-    _ = Nat.card (σ.eqLocus (MonoidHom.id G)) ^ 2 := (pow_two _).symm
-
-private theorem classGroup_mulEquiv_involutive
-    {R : Type*} [CommRing R] [IsDomain R]
-    (σ : R ≃+* R) (hσ : Function.Involutive σ) :
-    Function.Involutive (ClassGroup.mulEquiv σ) := by
-  intro c
-  change ClassGroup.map (σ : R →+* R)
-    (show Function.Injective (σ : R →+* R) from σ.injective)
-    (ClassGroup.map (σ : R →+* R)
-      (show Function.Injective (σ : R →+* R) from σ.injective) c) = c
-  rw [ClassGroup.map_map]
-  have hh : (σ : R →+* R).comp (σ : R →+* R) = RingHom.id R :=
-    RingHom.ext hσ
-  simpa only [hh] using ClassGroup.map_id c
-
 variable (K : Type*) [Field K]
 
 /-- The action of a field automorphism on two-torsion ideal classes. -/
@@ -69,16 +29,6 @@ def classGroupTwoTorsionAction (σ : K ≃+* K) :
     rw [← map_pow, show c.val ^ 2 = 1 from c.property, map_one]⟩
   map_one' := Subtype.ext (map_one _)
   map_mul' c d := Subtype.ext (map_mul _ _ _)
-
-private theorem classGroupTwoTorsionAction_involutive (σ : K ≃+* K)
-    (hσ : Function.Involutive σ) :
-    Function.Involutive (classGroupTwoTorsionAction K σ) := by
-  have hσO : Function.Involutive (RingOfIntegers.mapRingEquiv σ) := by
-    intro x
-    exact RingOfIntegers.ext (hσ x)
-  intro c
-  apply Subtype.ext
-  exact classGroup_mulEquiv_involutive _ hσO c
 
 /-- Two-torsion classes fixed by the specified field automorphism. -/
 def fixedClassGroupTwoTorsion (σ : K ≃+* K) : Subgroup (classGroupTwoTorsion K) :=
@@ -99,10 +49,37 @@ group is at most the square of the order of its `σ`-fixed subgroup. -/
 theorem classGroupTwoTorsionCard_le_fixed_square (σ : K ≃+* K)
     (hσ : Function.Involutive σ) :
     classGroupTwoTorsionCard K ≤ Nat.card (fixedClassGroupTwoTorsion K σ) ^ 2 := by
-  apply two_torsion_card_le_involution_fixed_square
-    (classGroupTwoTorsionAction K σ) (classGroupTwoTorsionAction_involutive K σ hσ)
-  intro c
-  exact Subtype.ext c.property
+  let G := classGroupTwoTorsion K
+  let α := classGroupTwoTorsionAction K σ
+  have hα : Function.Involutive α := by
+    intro c
+    apply Subtype.ext
+    let ρ := RingOfIntegers.mapRingEquiv σ
+    change ClassGroup.map (ρ : 𝓞 K →+* 𝓞 K)
+      (show Function.Injective (ρ : 𝓞 K →+* 𝓞 K) from ρ.injective)
+      (ClassGroup.map (ρ : 𝓞 K →+* 𝓞 K)
+        (show Function.Injective (ρ : 𝓞 K →+* 𝓞 K) from ρ.injective) c.val) = c.val
+    rw [ClassGroup.map_map]
+    have hh : (ρ : 𝓞 K →+* 𝓞 K).comp (ρ : 𝓞 K →+* 𝓞 K) = RingHom.id (𝓞 K) :=
+      RingHom.ext fun x => RingOfIntegers.ext (hσ x)
+    simpa only [hh] using ClassGroup.map_id c.val
+  let τ : G →* G := (MonoidHom.id G) * α
+  have hker : τ.ker ≤ fixedClassGroupTwoTorsion K σ := fun x hx => by
+    change x * α x = 1 at hx
+    change α x = x
+    apply mul_left_cancel (a := x)
+    exact hx.trans (by simpa only [pow_two] using (Subtype.ext x.property : x ^ 2 = 1).symm)
+  have hrange : τ.range ≤ fixedClassGroupTwoTorsion K σ := by
+    rintro x ⟨y, rfl⟩
+    change α (y * α y) = y * α y
+    rw [map_mul, hα, mul_comm]
+  calc
+    classGroupTwoTorsionCard K = Nat.card τ.ker * Nat.card τ.range :=
+      (Subgroup.card_ker_mul_card_range τ).symm
+    _ ≤ Nat.card (fixedClassGroupTwoTorsion K σ) * Nat.card (fixedClassGroupTwoTorsion K σ) :=
+      Nat.mul_le_mul (Nat.card_le_card_of_injective _ (Subgroup.inclusion_injective hker))
+        (Nat.card_le_card_of_injective _ (Subgroup.inclusion_injective hrange))
+    _ = Nat.card (fixedClassGroupTwoTorsion K σ) ^ 2 := (pow_two _).symm
 
 end
 end CCDN

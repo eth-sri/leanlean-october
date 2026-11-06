@@ -79,16 +79,6 @@ def projectivePieceToInfinity {K σ : Type*} [Field K]
   (Ideal.Quotient.mkₐ K (projectiveInfinityIdeal I)).toLinearMap.comp
     (projectiveMonomialMap I (n + 1))
 
-private lemma projectivePieceToInfinity_ker {K σ : Type*} [Field K]
-    (I : Ideal (MvPolynomial σ K)) (n : ℕ) :
-    (projectivePieceToInfinity I n).ker =
-      (filteredCoordinateSpace I n).comap (filteredCoordinateSpace I (n + 1)).subtype := by
-  ext a
-  change Ideal.Quotient.mk (projectiveInfinityIdeal I)
-    (projectiveMonomialMap I (n + 1) a) = 0 ↔ _
-  rw [Ideal.Quotient.eq_zero_iff_mem, projectiveMonomial_mem_infinityIdeal]
-  rfl
-
 /-- Degree-`n+1` elements of the infinity quotient ring. -/
 def infinityGradedSpace {K σ : Type*} [Field K]
     (I : Ideal (MvPolynomial σ K)) (n : ℕ) :
@@ -100,21 +90,6 @@ instance infinityGradedSpace_finite {K σ : Type*} [Field K] [Finite σ]
   unfold infinityGradedSpace
   infer_instance
 
-/-- The exact Hilbert difference for the homogeneous infinity quotient. -/
-private theorem infinityGradedSpace_finrank {K σ : Type*} [Field K] [Finite σ]
-    (I : Ideal (MvPolynomial σ K)) (n : ℕ) :
-    Module.finrank K (infinityGradedSpace I n) +
-      Module.finrank K (filteredCoordinateSpace I n) =
-      Module.finrank K (filteredCoordinateSpace I (n + 1)) := by
-  have h := LinearMap.finrank_range_add_finrank_ker (projectivePieceToInfinity I n)
-  rw [projectivePieceToInfinity_ker] at h
-  have hk := Submodule.finrank_map_subtype_eq (filteredCoordinateSpace I (n + 1))
-    ((filteredCoordinateSpace I n).comap (filteredCoordinateSpace I (n + 1)).subtype)
-  rw [Submodule.map_comap_subtype,
-    inf_eq_right.mpr (filteredCoordinateSpace_mono I (by omega))] at hk
-  rw [← hk] at h
-  exact h
-
 /-- Every certified affine Hilbert degree is the eventual graded dimension of the
 quotient by the infinity coordinate. -/
 theorem infinityGradedSpace_eventually_degree {K σ : Type*} [Field K] [Finite σ]
@@ -125,7 +100,19 @@ theorem infinityGradedSpace_eventually_degree {K σ : Type*} [Field K] [Finite �
   intro n hn
   have h0 := hdegree n hn
   have h1 := hdegree (n + 1) (by omega)
-  have hs := infinityGradedSpace_finrank I n
+  have hker : (projectivePieceToInfinity I n).ker =
+      (filteredCoordinateSpace I n).comap (filteredCoordinateSpace I (n + 1)).subtype := by
+    ext a
+    change Ideal.Quotient.mk (projectiveInfinityIdeal I)
+      (projectiveMonomialMap I (n + 1) a) = 0 ↔ _
+    rw [Ideal.Quotient.eq_zero_iff_mem, projectiveMonomial_mem_infinityIdeal]; rfl
+  have hs := LinearMap.finrank_range_add_finrank_ker (projectivePieceToInfinity I n)
+  have hk := Submodule.finrank_map_subtype_eq (filteredCoordinateSpace I (n + 1))
+    ((filteredCoordinateSpace I n).comap (filteredCoordinateSpace I (n + 1)).subtype)
+  rw [Submodule.map_comap_subtype,
+    inf_eq_right.mpr (filteredCoordinateSpace_mono I (by omega))] at hk
+  rw [hker, ← hk] at hs
+  change Module.finrank K (infinityGradedSpace I n) + _ = _ at hs
   push_cast at h1
   nlinarith
 

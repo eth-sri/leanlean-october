@@ -7,7 +7,7 @@ module
 
 public import CCDN.Algebra.MonomialEvaluationMatrix
 public import Mathlib.RingTheory.MvPolynomial.Homogeneous
-import Mathlib.Data.Sym.Card
+public import Mathlib.Data.Sym.Card
 
 /-! Complete homogeneous monomial lists, their exact cardinalities, and the
 corresponding polynomial-space dimensions. -/
@@ -23,23 +23,18 @@ def degreeEqEquivSym (σ : Type*) [Fintype σ] [DecidableEq σ] (M : ℕ) :
   (Finsupp.equivFunOnFinite.subtypeEquiv (fun p => by simp [Finsupp.degree_eq_sum])).trans
     (Sym.equivNatSumOfFintype σ M).symm
 
-/-- There are exactly `(n + M).choose M` exponent vectors of total degree `M` in `n + 1`
+/- There are exactly `(n + M).choose M` exponent vectors of total degree `M` in `n + 1`
 variables. -/
-theorem card_degree_eq (n M : ℕ) :
-    Nat.card {p : Fin (n + 1) →₀ ℕ // p.degree = M} = (n + M).choose M := by
-  rw [Nat.card_congr (degreeEqEquivSym (Fin (n + 1)) M), Nat.card_eq_fintype_card,
-    Sym.card_sym_eq_choose]
-  simp only [Fintype.card_fin]
-  congr 1
-  omega
 
 /-- A canonical finite indexing of all degree-`M` monomials in `n+1` variables. -/
 def homogeneousExponentEquiv (n M : ℕ) :
     Fin ((n + M).choose M) ≃ {p : Fin (n + 1) →₀ ℕ // p.degree = M} := by
   let e := degreeEqEquivSym (Fin (n + 1)) M
   let _ := Fintype.ofEquiv (Sym (Fin (n + 1)) M) e.symm
-  have hc : Fintype.card {p : Fin (n + 1) →₀ ℕ // p.degree = M} =
-      (n + M).choose M := by rw [← Nat.card_eq_fintype_card, card_degree_eq]
+  have hc : Fintype.card {p : Fin (n + 1) →₀ ℕ // p.degree = M} = (n + M).choose M := by
+    rw [← Nat.card_eq_fintype_card, Nat.card_congr e, Nat.card_eq_fintype_card,
+      Sym.card_sym_eq_choose, Fintype.card_fin]
+    congr 1; omega
   exact (finCongr hc.symm).trans (Fintype.equivFin _).symm
 
 /-- The list of all exponent vectors of total degree `M` in `n + 1` variables, indexed by

@@ -26,41 +26,28 @@ lemma projective_rep_height {n : ℕ} (x : ProjectivePoint n) :
     Height.mulHeight x.rep = x.mulHeight := by
   rw [← Projectivization.mulHeight_mk x.rep_nonzero, x.mk_rep]
 
-/-- Every coordinate ratio has height bounded by the projective height. -/
-private lemma projective_coordinate_ratio_height {n : ℕ} (x : ProjectivePoint n)
-    (i j : Fin (n + 1)) :
-    Height.mulHeight₁ (x.rep j / x.rep i) ≤ x.mulHeight := by
-  rw [Height.mulHeight₁_div_eq_mulHeight]
-  have h := Height.mulHeight_comp_le (![j, i] : Fin 2 → Fin (n + 1)) x.rep
-  have he : x.rep ∘ ![j, i] = ![x.rep j, x.rep i] := by
-    funext k
-    fin_cases k <;> rfl
-  rw [he, projective_rep_height] at h
-  exact h
-
 /-- Northcott finiteness in rational projective space, proved using affine charts. -/
 theorem projective_height_finite (n : ℕ) (B : ℝ) :
     {x : ProjectivePoint n | x.mulHeight ≤ B}.Finite := by
   classical
-  have hv : {v : Fin (n + 1) → ℚ | ∀ j, Height.mulHeight₁ (v j) ≤ B}.Finite := by
-    exact Set.Finite.pi' fun _ => Northcott.finite_le B
+  have hv : {v : Fin (n + 1) → ℚ | ∀ j, Height.mulHeight₁ (v j) ≤ B}.Finite :=
+    Set.Finite.pi' fun _ => Northcott.finite_le B
   have hs : {v : {v : Fin (n + 1) → ℚ // v ≠ 0} |
       ∀ j, Height.mulHeight₁ (v.val j) ≤ B}.Finite :=
     hv.preimage Subtype.val_injective.injOn
-  apply (hs.image (Projectivization.mk' ℚ)).subset
-  intro x hx
+  refine (hs.image (Projectivization.mk' ℚ)).subset fun x hx => ?_
   obtain ⟨i, hi⟩ := Function.ne_iff.mp x.rep_nonzero
-  change x.rep i ≠ 0 at hi
   let v : Fin (n + 1) → ℚ := fun j => x.rep j / x.rep i
-  have hv0 : v ≠ 0 := by
-    intro h
-    have := congrFun h i
-    simp [v, hi] at this
-  refine ⟨⟨v, hv0⟩, fun j => (projective_coordinate_ratio_height x i j).trans hx, ?_⟩
-  rw [Projectivization.mk'_eq_mk, ← x.mk_rep, Projectivization.mk_eq_mk_iff']
-  refine ⟨(x.rep i)⁻¹, ?_⟩
-  funext j
-  simp [v, div_eq_mul_inv, mul_comm]
+  have hv0 : v ≠ 0 := fun h => hi (by simpa [v] using congrFun h i)
+  refine ⟨⟨v, hv0⟩, fun j => ?_, ?_⟩
+  · change Height.mulHeight₁ (x.rep j / x.rep i) ≤ B
+    rw [Height.mulHeight₁_div_eq_mulHeight]
+    have h := Height.mulHeight_comp_le (![j, i] : Fin 2 → Fin (n + 1)) x.rep
+    rw [show x.rep ∘ ![j, i] = ![x.rep j, x.rep i] from funext fun k => by fin_cases k <;> rfl,
+      projective_rep_height] at h
+    exact h.trans hx
+  · rw [Projectivization.mk'_eq_mk, ← x.mk_rep, Projectivization.mk_eq_mk_iff']
+    exact ⟨(x.rep i)⁻¹, funext fun j => by simp [v, div_eq_mul_inv, mul_comm]⟩
 
 /-- Projective points, counted once per rational line. -/
 def projectivePoints {n : ℕ} (X : Set (ProjectivePoint n)) (B : ℝ) :

@@ -22,30 +22,19 @@ def firstCoordinateScaleHom (R : Type*) [CommRing R] {n : ℕ} (h : R) :
     MvPolynomial (Fin (n + 1)) R →ₐ[R] MvPolynomial (Fin (n + 1)) R :=
   aeval (Fin.cons (C h * X 0) (fun j => X j.succ))
 
-/-- Composing the scalings of the first variable by `h` and by `k` gives the scaling by `k * h`. -/
-lemma firstCoordinateScaleHom_comp {R : Type*} [CommRing R] {n : ℕ} (h k : R) :
-    (firstCoordinateScaleHom R (n := n) h).comp (firstCoordinateScaleHom R k) =
-      firstCoordinateScaleHom R (k * h) := by
-  apply MvPolynomial.algHom_ext
-  intro i
-  refine Fin.cases ?_ (fun j => ?_) i
-  · simp [firstCoordinateScaleHom, mul_assoc]
-  · simp [firstCoordinateScaleHom]
-
-/-- Scaling the first variable by `1` is the identity. -/
-@[simp] lemma firstCoordinateScaleHom_one (R : Type*) [CommRing R] (n : ℕ) :
-    firstCoordinateScaleHom R (n := n) 1 = AlgHom.id R _ := by
-  apply MvPolynomial.algHom_ext
-  intro i
-  refine Fin.cases ?_ (fun j => ?_) i <;> simp [firstCoordinateScaleHom]
-
 /-- For nonzero `h` in a field `K`, the `K`-algebra automorphism of `MvPolynomial (Fin (n + 1)) K`
 substituting `C h * X 0` for the first variable; its inverse scales by `h⁻¹`. -/
 def firstCoordinateScale (K : Type*) [Field K] {n : ℕ} (h : K) (hh : h ≠ 0) :
     MvPolynomial (Fin (n + 1)) K ≃ₐ[K] MvPolynomial (Fin (n + 1)) K :=
+  /- Composing the scalings of the first variable by `h` and by `k` gives the scaling by `k * h`. -/
+  /- Scaling the first variable by `1` is the identity. -/
   AlgEquiv.ofAlgHom (firstCoordinateScaleHom K h) (firstCoordinateScaleHom K h⁻¹)
-    (by rw [firstCoordinateScaleHom_comp, inv_mul_cancel₀ hh, firstCoordinateScaleHom_one])
-    (by rw [firstCoordinateScaleHom_comp, mul_inv_cancel₀ hh, firstCoordinateScaleHom_one])
+    (MvPolynomial.algHom_ext fun i => Fin.cases
+      (by simp [firstCoordinateScaleHom, ← mul_assoc, ← C_mul, inv_mul_cancel₀ hh])
+      (fun _ => by simp [firstCoordinateScaleHom]) i)
+    (MvPolynomial.algHom_ext fun i => Fin.cases
+      (by simp [firstCoordinateScaleHom, ← mul_assoc, ← C_mul, mul_inv_cancel₀ hh])
+      (fun _ => by simp [firstCoordinateScaleHom]) i)
 
 /-- Scaling the first variable preserves homogeneity of degree `d`. -/
 lemma firstCoordinateScaleHom_homogeneous {R : Type*} [CommRing R] {n d : ℕ}
@@ -53,13 +42,9 @@ lemma firstCoordinateScaleHom_homogeneous {R : Type*} [CommRing R] {n d : ℕ}
     (firstCoordinateScaleHom R h f).IsHomogeneous d := by
   let v : Fin (n + 1) → MvPolynomial (Fin (n + 1)) R :=
     Fin.cons (C h * X 0) (fun j => X j.succ)
-  have hv : ∀ i, (v i).IsHomogeneous 1 := by
-    intro i
-    refine Fin.cases ?_ (fun j => ?_) i
-    · exact (isHomogeneous_X R (0 : Fin (n + 1))).C_mul h
-    · exact isHomogeneous_X R j.succ
   change (aeval v f).IsHomogeneous d
-  simpa only [one_mul] using hf.aeval v hv
+  simpa only [one_mul] using hf.aeval v fun i =>
+    Fin.cases ((isHomogeneous_X R (0 : Fin (n + 1))).C_mul h) (fun j => isHomogeneous_X R j.succ) i
 
 /-- Restriction of a polynomial in `n + 1` variables to the slice `x₀ = h`: the ring homomorphism
 sending `X 0` to `C h` and `X i.succ` to `X i`. -/
@@ -73,13 +58,10 @@ lemma homogeneousSlice_eq_chart_scale {R : Type*} [CommRing R] {n : ℕ}
     (h : R) (f : MvPolynomial (Fin (n + 1)) R) :
     homogeneousSlice n h f = affineChart n (firstCoordinateScaleHom R h f) := by
   have he : homogeneousSlice n h =
-      (affineChart n).comp (firstCoordinateScaleHom R h).toRingHom := by
-    apply MvPolynomial.ringHom_ext
-    · intro c
-      simp [homogeneousSlice, affineChart, firstCoordinateScaleHom]
-    · intro i
-      refine Fin.cases ?_ (fun j => ?_) i <;>
-        simp [homogeneousSlice, affineChart, firstCoordinateScaleHom]
+      (affineChart n).comp (firstCoordinateScaleHom R h).toRingHom :=
+    MvPolynomial.ringHom_ext (fun _ => by simp [homogeneousSlice, affineChart, firstCoordinateScaleHom])
+      (fun i => Fin.cases (by simp [homogeneousSlice, affineChart, firstCoordinateScaleHom])
+        (fun _ => by simp [homogeneousSlice, affineChart, firstCoordinateScaleHom]) i)
   exact RingHom.congr_fun he f
 
 /-- Evaluating the restriction of `f` to the slice `x₀ = h` at `x` is evaluating `f` at the point
@@ -89,9 +71,7 @@ lemma homogeneousSlice_eval {R : Type*} [CommRing R] {n : ℕ}
     eval x (homogeneousSlice n h f) = eval (Fin.cons h x) f := by
   change eval x (eval₂ C (Fin.cons (C h) X) f) = _
   rw [← eval_assoc]
-  congr 2
-  funext i
-  refine Fin.cases ?_ (fun j => ?_) i <;> simp
+  congr 2; funext i; refine Fin.cases ?_ (fun j => ?_) i <;> simp
 
 /-- The restriction of a homogeneous polynomial of degree `d` to the slice `x₀ = h` has total degree
 at most `d`. -/
@@ -121,45 +101,13 @@ lemma homogeneousSlice_scaledHomogenize {R : Type*} [CommRing R] {n d : ℕ}
   classical
   rw [scaledHomogenize, map_sum]
   conv_rhs => rw [f.as_sum, Finset.mul_sum]
-  apply Finset.sum_congr rfl
-  intro m hm
+  refine Finset.sum_congr rfl fun m hm => ?_
   rw [homogeneousSlice_monomial, chartExponent_homogenizedExponent, C_mul_monomial]
   congr 1
   change (h ^ m.sum (fun _ e => e) * f.coeff m) * h ^ (d - m.sum (fun _ e => e)) = h ^ d * f.coeff m
-  calc
-    _ = (h ^ m.sum (fun _ e => e) * h ^ (d - m.sum (fun _ e => e))) * f.coeff m := by ring
-    _ = _ := by rw [← pow_add, Nat.add_sub_of_le ((le_totalDegree hm).trans hf)]
-
-/-- Nonzero constant slices reflect divisibility when the equation's degree
-is preserved. This is the proper-section transfer for the scaled models. -/
-private theorem homogeneous_dvd_of_slice_dvd {K : Type*} [Field K] {n d M : ℕ}
-    {f g : MvPolynomial (Fin (n + 1)) K} {h : K} (hh : h ≠ 0)
-    (hf : f.IsHomogeneous d) (hf0 : f ≠ 0) (hg : g.IsHomogeneous M)
-    (hd : (homogeneousSlice n h f).totalDegree = d)
-    (hdiv : homogeneousSlice n h f ∣ homogeneousSlice n h g) : f ∣ g := by
-  rw [homogeneousSlice_eq_chart_scale, homogeneousSlice_eq_chart_scale] at hdiv
-  rw [homogeneousSlice_eq_chart_scale] at hd
-  have hf0' : firstCoordinateScaleHom K h f ≠ 0 := by
-    exact (map_ne_zero_iff _ (firstCoordinateScale K h hh).injective).mpr hf0
-  have hdiv' := homogeneous_dvd_of_affineChart_dvd (firstCoordinateScaleHom_homogeneous h hf) hf0'
-    (firstCoordinateScaleHom_homogeneous h hg) hd hdiv
-  have he := map_dvd (firstCoordinateScale K h hh).symm.toRingHom hdiv'
-  change (firstCoordinateScale K h hh).symm (firstCoordinateScale K h hh f) ∣
-    (firstCoordinateScale K h hh).symm (firstCoordinateScale K h hh g) at he
-  simpa only [AlgEquiv.symm_apply_apply] using he
-
-private lemma homogeneousSlice_map {R S : Type*} [CommRing R] [CommRing S] {n : ℕ}
-    (φ : R →+* S) (h : R) (f : MvPolynomial (Fin (n + 1)) R) :
-    MvPolynomial.map φ (homogeneousSlice n h f) =
-      homogeneousSlice n (φ h) (MvPolynomial.map φ f) := by
-  have he : (MvPolynomial.map φ).comp (homogeneousSlice n h) =
-      (homogeneousSlice n (φ h)).comp (MvPolynomial.map φ) := by
-    apply MvPolynomial.ringHom_ext
-    · intro c
-      simp [homogeneousSlice]
-    · intro i
-      refine Fin.cases ?_ (fun j => ?_) i <;> simp [homogeneousSlice]
-  exact RingHom.congr_fun he f
+  rw [show (h ^ m.sum (fun _ e => e) * f.coeff m) * h ^ (d - m.sum (fun _ e => e)) =
+    (h ^ m.sum (fun _ e => e) * h ^ (d - m.sum (fun _ e => e))) * f.coeff m by ring,
+    ← pow_add, Nat.add_sub_of_le ((le_totalDegree hm).trans hf)]
 
 /-- Integer nonmultiples of a primitive homogeneous equation stay proper on
 a nonzero rational slice preserving the degree. -/
@@ -171,18 +119,36 @@ theorem rational_homogeneousSlice_not_dvd {n d M : ℕ}
     ¬ MvPolynomial.map (Int.castRingHom ℚ) (homogeneousSlice n h f) ∣
       MvPolynomial.map (Int.castRingHom ℚ) (homogeneousSlice n h g) := by
   intro hdiv
-  rw [homogeneousSlice_map, homogeneousSlice_map] at hdiv
-  apply hnd
-  apply hprim.rational_map_dvd_iff.mp
-  have hhQ : (h : ℚ) ≠ 0 := by exact_mod_cast hh
-  apply homogeneous_dvd_of_slice_dvd hhQ (hf.map _) ?_ (hg.map _) ?_ hdiv
-  · exact fun he => hf0 ((map_injective (Int.castRingHom ℚ) Int.cast_injective) (by simpa using he))
-  · change (homogeneousSlice n ((Int.castRingHom ℚ) h)
+  have hmap (p : MvPolynomial (Fin (n + 1)) ℤ) :
+      MvPolynomial.map (Int.castRingHom ℚ) (homogeneousSlice n h p) =
+        homogeneousSlice n ((Int.castRingHom ℚ) h) (MvPolynomial.map (Int.castRingHom ℚ) p) := by
+    have he : (MvPolynomial.map (Int.castRingHom ℚ)).comp (homogeneousSlice n h) =
+        (homogeneousSlice n ((Int.castRingHom ℚ) h)).comp (MvPolynomial.map (Int.castRingHom ℚ)) :=
+      MvPolynomial.ringHom_ext (fun _ => by simp [homogeneousSlice])
+        (fun i => Fin.cases (by simp [homogeneousSlice]) (fun _ => by simp [homogeneousSlice]) i)
+    exact RingHom.congr_fun he p
+  rw [hmap, hmap, homogeneousSlice_eq_chart_scale, homogeneousSlice_eq_chart_scale] at hdiv
+  have hhQ : (h : ℚ) ≠ 0 := mod_cast hh
+  have hfQ0 : MvPolynomial.map (Int.castRingHom ℚ) f ≠ 0 := fun he =>
+    hf0 ((map_injective (Int.castRingHom ℚ) Int.cast_injective) (by simpa using he))
+  have hdQ : (affineChart n (firstCoordinateScaleHom ℚ (h : ℚ)
+      (MvPolynomial.map (Int.castRingHom ℚ) f))).totalDegree = d := by
+    rw [← homogeneousSlice_eq_chart_scale]
+    change (homogeneousSlice n ((Int.castRingHom ℚ) h)
       (MvPolynomial.map (Int.castRingHom ℚ) f)).totalDegree = d
-    rw [← homogeneousSlice_map]
-    have he : (MvPolynomial.map (Int.castRingHom ℚ) (homogeneousSlice n h f)).totalDegree =
-        (homogeneousSlice n h f).totalDegree := totalDegree_map_of_injective Int.cast_injective _
-    exact he.trans hd
+    rw [← hmap]
+    exact (totalDegree_map_of_injective Int.cast_injective _).trans hd
+  have hdiv' := homogeneous_dvd_of_affineChart_dvd
+    (firstCoordinateScaleHom_homogeneous (h : ℚ) (hf.map _))
+    ((map_ne_zero_iff _ (firstCoordinateScale ℚ (h : ℚ) hhQ).injective).mpr hfQ0)
+    (firstCoordinateScaleHom_homogeneous (h : ℚ) (hg.map _)) hdQ hdiv
+  have he := map_dvd (firstCoordinateScale ℚ (h : ℚ) hhQ).symm.toRingHom hdiv'
+  change (firstCoordinateScale ℚ (h : ℚ) hhQ).symm
+      (firstCoordinateScale ℚ (h : ℚ) hhQ (MvPolynomial.map (Int.castRingHom ℚ) f)) ∣
+    (firstCoordinateScale ℚ (h : ℚ) hhQ).symm
+      (firstCoordinateScale ℚ (h : ℚ) hhQ (MvPolynomial.map (Int.castRingHom ℚ) g)) at he
+  simp only [AlgEquiv.symm_apply_apply] at he
+  exact hnd (hprim.rational_map_dvd_iff.mp he)
 
 end
 end CCDN

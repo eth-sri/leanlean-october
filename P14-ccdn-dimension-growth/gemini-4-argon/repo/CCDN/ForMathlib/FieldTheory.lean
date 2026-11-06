@@ -36,40 +36,6 @@ section
 
 open Module Polynomial IntermediateField
 
-namespace Polynomial
-
-/-- A nonzero polynomial over a field has at most `2 ^ natDegree` monic divisors. -/
-theorem card_monic_dvd_le_two_pow_natDegree
-    {K : Type*} [Field K] (f : K[X]) (hf : f ≠ 0) :
-    Nat.card {g : K[X] // g.Monic ∧ g ∣ f} ≤ 2 ^ f.natDegree := by
-  classical
-  let L := AlgebraicClosure K
-  let ι := algebraMap K L
-  let P := ((f.map ι).roots.powerset).toFinset
-  let e : {g : K[X] // g.Monic ∧ g ∣ f} → ↥P := fun g =>
-    ⟨(g.1.map ι).roots, by
-      apply Multiset.mem_toFinset.mpr
-      apply Multiset.mem_powerset.mpr
-      exact Polynomial.roots.le_of_dvd (Polynomial.map_ne_zero hf)
-        (Polynomial.map_dvd ι g.2.2)⟩
-  have he : Function.Injective e := by
-    intro g h hgh
-    have hr : (g.1.map ι).roots = (h.1.map ι).roots := congrArg Subtype.val hgh
-    apply Subtype.ext
-    apply Polynomial.map_injective ι ι.injective
-    rw [(IsAlgClosed.splits (g.1.map ι)).eq_prod_roots_of_monic (g.2.1.map ι),
-      (IsAlgClosed.splits (h.1.map ι)).eq_prod_roots_of_monic (h.2.1.map ι), hr]
-  calc
-    Nat.card {g : K[X] // g.Monic ∧ g ∣ f} ≤ Nat.card ↥P :=
-      Nat.card_le_card_of_injective e he
-    _ = P.card := by simp
-    _ ≤ (f.map ι).roots.powerset.card := Multiset.toFinset_card_le _
-    _ = 2 ^ (f.map ι).roots.card := Multiset.card_powerset _
-    _ ≤ 2 ^ f.natDegree :=
-      Nat.pow_le_pow_right (by omega) (Polynomial.card_roots_map_le_natDegree _)
-
-end Polynomial
-
 namespace IntermediateField
 
 /-- The number of intermediate fields depends only on the extension
@@ -78,29 +44,43 @@ theorem card_le_two_pow_finrank
     (F E : Type*) [Field F] [Field E] [Algebra F E]
     [FiniteDimensional F E] [Algebra.IsSeparable F E] :
     Nat.card (IntermediateField F E) ≤ 2 ^ Module.finrank F E := by
+  /- A nonzero polynomial over a field has at most `2 ^ natDegree` monic divisors. -/
   classical
   obtain ⟨α, hα⟩ := Field.exists_primitive_element F E
   let f : E[X] := (minpoly F α).map (algebraMap F E)
-  let G := {g : E[X] // g.Monic ∧ g ∣ f}
-  let : Fintype G := fintypeSubtypeMonicDvd f
-    (Polynomial.map_ne_zero (minpoly.ne_zero_of_finite F α))
-  let g : IntermediateField F E → G := fun K =>
-    ⟨(minpoly K α).map (algebraMap K E), (minpoly.monic (.of_finite K α)).map _, by
+  have hf : f ≠ 0 := Polynomial.map_ne_zero (minpoly.ne_zero_of_finite F α)
+  let L := AlgebraicClosure E
+  let ι := algebraMap E L
+  let P := ((f.map ι).roots.powerset).toFinset
+  let g : IntermediateField F E → ↥P := fun K =>
+    ⟨(((minpoly K α).map (algebraMap K E)).map ι).roots, by
+      apply Multiset.mem_toFinset.mpr
+      apply Multiset.mem_powerset.mpr
+      apply Polynomial.roots.le_of_dvd (Polynomial.map_ne_zero hf)
+      apply Polynomial.map_dvd ι
       convert Polynomial.map_dvd (algebraMap K E) (minpoly.dvd_map_of_isScalarTower F K α)
       rw [Polynomial.map_map]
       rfl⟩
-  have hg : Function.Injective g := by
-    intro K K' heq
-    have heq' := congrArg Subtype.val heq
-    dsimp [g] at heq'
-    apply_fun fun p : E[X] => adjoin F (p.coeffs : Set E) at heq'
-    simpa only [adjoin_minpoly_coeff_of_exists_primitive_element F hα] using heq'
-  have hdeg : f.natDegree = Module.finrank F E := by
-    rw [Polynomial.natDegree_map]
-    exact (Field.primitive_element_iff_minpoly_natDegree_eq F α).mp hα
-  exact (Nat.card_le_card_of_injective g hg).trans
-    (hdeg ▸ Polynomial.card_monic_dvd_le_two_pow_natDegree f
-      (Polynomial.map_ne_zero (minpoly.ne_zero_of_finite F α)))
+  have hg : Function.Injective g := fun K K' heq => by
+    have hmon (M : IntermediateField F E) : ((minpoly M α).map (algebraMap M E)).Monic :=
+      (minpoly.monic (.of_finite M α)).map _
+    have hr : (((minpoly K α).map (algebraMap K E)).map ι).roots =
+        (((minpoly K' α).map (algebraMap K' E)).map ι).roots := congrArg Subtype.val heq
+    have hp : (minpoly K α).map (algebraMap K E) = (minpoly K' α).map (algebraMap K' E) := by
+      apply Polynomial.map_injective ι ι.injective
+      rw [(IsAlgClosed.splits _).eq_prod_roots_of_monic ((hmon K).map ι),
+        (IsAlgClosed.splits _).eq_prod_roots_of_monic ((hmon K').map ι), hr]
+    simpa only [adjoin_minpoly_coeff_of_exists_primitive_element F hα] using
+      congrArg (fun p : E[X] => adjoin F (p.coeffs : Set E)) hp
+  have hdeg : f.natDegree = Module.finrank F E :=
+    (Polynomial.natDegree_map _).trans ((Field.primitive_element_iff_minpoly_natDegree_eq F α).mp hα)
+  calc
+    Nat.card (IntermediateField F E) ≤ Nat.card ↥P := Nat.card_le_card_of_injective g hg
+    _ = P.card := by simp
+    _ ≤ (f.map ι).roots.powerset.card := Multiset.toFinset_card_le _
+    _ = 2 ^ (f.map ι).roots.card := Multiset.card_powerset _
+    _ ≤ 2 ^ Module.finrank F E :=
+      hdeg ▸ Nat.pow_le_pow_right (by omega) (Polynomial.card_roots_map_le_natDegree _)
 
 end IntermediateField
 
@@ -109,34 +89,6 @@ end
 namespace RingEquiv
 
 variable {K : Type*} [Field K]
-
-/-- A norm-one scalar for a nontrivial involution is a multiplicative
-coboundary. The explicit construction also works in characteristic two. -/
-theorem hilbert90_of_involutive (σ : K ≃+* K) (hσ : Function.Involutive σ)
-    (hσne : σ ≠ RingEquiv.refl K) {a : K} (ha : a * σ a = 1) :
-    ∃ b : K, b ≠ 0 ∧ a * σ b = b := by
-  by_cases h : 1 + a = 0
-  · have ha' : a = -1 := by linear_combination h
-    obtain ⟨z, hz⟩ : ∃ z : K, σ z ≠ z := by
-      by_contra hn
-      push Not at hn
-      exact hσne (RingEquiv.ext hn)
-    refine ⟨z - σ z, sub_ne_zero.mpr hz.symm, ?_⟩
-    rw [ha', map_sub]
-    change -1 * (σ z - σ (σ z)) = z - σ z
-    rw [hσ]
-    ring
-  · refine ⟨1 + a, h, ?_⟩
-    rw [map_add, map_one, mul_add, mul_one, ha, add_comm]
-
-/-- Hilbert 90 for a nontrivial involution, in the unit group: a unit `a` with
-`a σ(a) = 1` has the form `b / σ(b)` for some unit `b`. -/
-theorem hilbert90_units_of_involutive (σ : K ≃+* K) (hσ : Function.Involutive σ)
-    (hσne : σ ≠ RingEquiv.refl K) (a : Kˣ)
-    (ha : (a : K) * σ (a : K) = 1) :
-    ∃ b : Kˣ, a * Units.map σ.toMonoidHom b = b := by
-  obtain ⟨b, hb, hab⟩ := hilbert90_of_involutive σ hσ hσne ha
-  exact ⟨Units.mk0 b hb, Units.ext hab⟩
 
 /-- If the scalar comparison of an element with its conjugate has norm
 one, multiplication by a principal element produces an invariant
@@ -149,8 +101,20 @@ theorem exists_invariant_of_involutive
     (I : A) (a : Kˣ) (hI : τ I = P a * I)
     (ha : (a : K) * σ (a : K) = 1) :
     ∃ b : Kˣ, τ (P b * I) = P b * I := by
-  obtain ⟨b, hb⟩ := hilbert90_units_of_involutive σ hσ hσne a ha
-  refine ⟨b, ?_⟩
-  rw [map_mul, hcompat, hI, ← mul_assoc, mul_comm (P _), ← map_mul, hb]
+  /- A norm-one scalar for a nontrivial involution is a multiplicative
+  coboundary. The explicit construction also works in characteristic two. -/
+  /- Hilbert 90 for a nontrivial involution, in the unit group: a unit `a` with
+  `a σ(a) = 1` has the form `b / σ(b)` for some unit `b`. -/
+  obtain ⟨b, hb, hab⟩ : ∃ b : K, b ≠ 0 ∧ (a : K) * σ b = b := by
+    by_cases h : 1 + (a : K) = 0
+    · have ha' : (a : K) = -1 := by linear_combination h
+      obtain ⟨z, hz⟩ : ∃ z : K, σ z ≠ z := by
+        by_contra! hn; exact hσne (RingEquiv.ext hn)
+      refine ⟨z - σ z, sub_ne_zero.mpr hz.symm, ?_⟩
+      rw [ha', map_sub]; change -1 * (σ z - σ (σ z)) = z - σ z; rw [hσ]; ring
+    · exact ⟨1 + a, h, by rw [map_add, map_one, mul_add, mul_one, ha, add_comm]⟩
+  have hb' : a * Units.map σ.toMonoidHom (Units.mk0 b hb) = Units.mk0 b hb := Units.ext hab
+  refine ⟨Units.mk0 b hb, ?_⟩
+  rw [map_mul, hcompat, hI, ← mul_assoc, mul_comm (P _), ← map_mul, hb']
 
 end RingEquiv

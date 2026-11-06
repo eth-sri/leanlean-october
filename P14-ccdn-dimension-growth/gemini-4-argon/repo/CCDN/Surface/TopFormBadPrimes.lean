@@ -20,22 +20,6 @@ namespace CCDN
 noncomputable section
 open MvPolynomial
 
-/-- If the top form has good geometric reduction, the original affine
- equation keeps its degree and has good geometric reduction as well. -/
-private theorem hypersurfaceBadReduction_imp_top_homogeneousComponent {σ : Type*}
-    (f : MvPolynomial σ ℤ) (p : ℕ) :
-    HypersurfaceBadReduction f p →
-      HypersurfaceBadReduction (homogeneousComponent f.totalDegree f) p := by
-  intro hbad
-  let : Fact p.Prime := ⟨hbad.1⟩
-  by_contra hgood
-  have hir : Irreducible (map (Int.castRingHom (AlgebraicClosure (ZMod p)))
-      (homogeneousComponent f.totalDegree f)) := by
-    by_contra h
-    exact hgood ⟨hbad.1, Or.inr h⟩
-  obtain ⟨hdegree, hfull⟩ := map_degree_and_irreducible_of_top_irreducible _ f hir
-  exact hbad.2.elim (fun h => h hdegree) (fun h => h hfull)
-
 /-- Absolute irreducibility of the highest homogeneous component implies
  absolute irreducibility of the original integer equation. -/
 theorem absolute_irreducible_of_top_homogeneousComponent_irreducible {σ : Type*}
@@ -51,13 +35,17 @@ theorem hypersurfaceBadPrimeFactor_le_top_homogeneousComponent {n : ℕ}
     (hir : HasAbsIrreducibleTopForm f) :
     hypersurfaceBadPrimeFactor f ≤
       hypersurfaceBadPrimeFactor (homogeneousComponent f.totalDegree f) := by
-  have htop : homogeneousComponent f.totalDegree f ≠ 0 := by
-    intro hz
-    exact hir.ne_zero (by rw [hz, map_zero])
-  apply hypersurfaceBadPrimeFactor_mono_of_badReduction_imp
-  · exact ((homogeneousComponent_isHomogeneous _ _).totalDegree htop).symm
-  · exact fun _ => hir
-  · exact hypersurfaceBadReduction_imp_top_homogeneousComponent f
+  /- If the top form has good geometric reduction, the original affine
+   equation keeps its degree and has good geometric reduction as well. -/
+  have htop : homogeneousComponent f.totalDegree f ≠ 0 :=
+    fun hz => hir.ne_zero (by rw [hz, map_zero])
+  refine hypersurfaceBadPrimeFactor_mono_of_badReduction_imp _ _
+    ((homogeneousComponent_isHomogeneous _ _).totalDegree htop).symm (fun _ => hir) fun p hbad => ?_
+  let : Fact p.Prime := ⟨hbad.1⟩
+  by_contra hgood
+  obtain ⟨hdegree, hfull⟩ := map_degree_and_irreducible_of_top_irreducible _ f
+    (by by_contra h; exact hgood ⟨hbad.1, Or.inr h⟩)
+  exact hbad.2.elim (· hdegree) (· hfull)
 
 /-- Primitivity reflects the irreducibility supplied by the absolute top form
  back to the integer polynomial ring. -/

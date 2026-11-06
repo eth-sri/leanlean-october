@@ -12,7 +12,6 @@ public import CCDN.Algebra.AffineTranslation
 public import CCDN.Algebra.BinaryHomogeneousIrreducibility
 public import CCDN.Algebra.BinomialSectionBound
 public import CCDN.Algebra.BoundedLinearSeparation
-public import CCDN.Algebra.BoundedRowSeparation
 public import CCDN.Algebra.CharZeroOrGT
 public import CCDN.Algebra.CoefficientwiseHomogeneous
 public import CCDN.Algebra.CoordinatePowerGeneration
@@ -23,11 +22,9 @@ public import CCDN.Algebra.HomogeneousChartIrreducible
 public import CCDN.Algebra.HomogeneousEvaluation
 public import CCDN.Algebra.HomogeneousLinearDescent
 public import CCDN.Algebra.HomogeneousMonomials
-public import CCDN.Algebra.HomogeneousRank
 public import CCDN.Algebra.HomogeneousRankDichotomy
 public import CCDN.Algebra.HomogeneousSlice
 public import CCDN.Algebra.HomogeneousTranslation
-public import CCDN.Algebra.IdealScalarDescent
 public import CCDN.Algebra.IdealZeroLocus
 public import CCDN.Algebra.IntegerLinearForms
 public import CCDN.Algebra.IntegerPolynomialAvoidance
@@ -54,7 +51,6 @@ public import CCDN.Algebra.ProjectionScalarExtension
 public import CCDN.Algebra.ProjectiveAffineChart
 public import CCDN.Algebra.ProjectiveChartDegree
 public import CCDN.Algebra.ProjectiveChartIdeal
-public import CCDN.Algebra.ProjectiveChartScalarExtension
 public import CCDN.Algebra.ProjectiveClosureIdeal
 public import CCDN.Algebra.ProjectiveFiltration
 public import CCDN.Algebra.ProjectiveFiniteFibers
@@ -83,7 +79,6 @@ public import CCDN.AuxiliaryPolynomial.AffineHypersurfaceAuxiliary
 public import CCDN.AuxiliaryPolynomial.AffineLeadingTranslation
 public import CCDN.AuxiliaryPolynomial.AffineTranslationCount
 public import CCDN.AuxiliaryPolynomial.BadPrimeCharge
-public import CCDN.AuxiliaryPolynomial.CoefficientBound
 public import CCDN.AuxiliaryPolynomial.CongruenceBadPrimeCharge
 public import CCDN.AuxiliaryPolynomial.ConstantLeadingBadReduction
 public import CCDN.AuxiliaryPolynomial.DegreeBound
@@ -262,7 +257,6 @@ public import CCDN.ForMathlib.StandardExponents
 public import CCDN.ForMathlib.ZLattice
 public import CCDN.Height.BoundedPrimitiveElement
 public import CCDN.Height.Box
-public import CCDN.Height.ComplexGridInterpolation
 public import CCDN.Height.CountingHypotheses
 public import CCDN.Height.FiniteFieldSectionCount
 public import CCDN.Height.IntegerCoefficientHeight
@@ -292,7 +286,6 @@ public import CCDN.Hilbert.FilteredPrimeDecomposition
 public import CCDN.Hilbert.FullDimension
 public import CCDN.Hilbert.FunctionFieldRank
 public import CCDN.Hilbert.HomogeneousHilbert
-public import CCDN.Hilbert.HomogeneousPrimeComponents
 public import CCDN.Hilbert.InfinitySection
 public import CCDN.Hilbert.LinearCoordinates
 public import CCDN.Hilbert.LinearProjectionFiltration
@@ -307,7 +300,6 @@ public import CCDN.Hilbert.PrincipalStandardMonomials
 public import CCDN.Hilbert.ProperHilbertDimension
 public import CCDN.Hilbert.ProperSectionHilbert
 public import CCDN.Hilbert.RecurrenceParameterTranscendence
-public import CCDN.Hilbert.ScalarExtension
 public import CCDN.Hilbert.ScaledHilbertBlockComparison
 public import CCDN.Hilbert.StandardMonomials
 public import CCDN.Hilbert.TranscendenceBasis

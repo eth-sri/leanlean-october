@@ -43,12 +43,21 @@ lemma projectionBoxFactor_log_le (n : ℕ) {d : ℕ} (hd : 0 < d) :
   norm_num only [Nat.cast_ofNat]
   nlinarith
 
-private lemma curveBound_scale_of_log_le {d : ℕ} (hd : 0 < d) {A B C : ℝ}
-    (hA : 1 ≤ A) (hB : 1 ≤ B) (hC : 0 ≤ C) (hlog : Real.log A ≤ C * d) :
-    curveBound d (A * B) ≤ Real.exp C * (C + 1) * curveBound d B := by
-  have hd0 : (0 : ℝ) < d := by exact_mod_cast hd
+/-- Scaling the radius by the projection box factor multiplies the curve bound by at most a
+constant depending only on `n`: with `c = projectionLogConstant n`, for `d > 0` and `B ≥ 1`,
+`curveBound d (projectionBoxFactor n d * B) ≤ exp c * (c + 1) * curveBound d B`. -/
+theorem projection_curveBound_scale (n : ℕ) {d : ℕ} (hd : 0 < d)
+    {B : ℝ} (hB : 1 ≤ B) :
+    curveBound d (projectionBoxFactor n d * B) ≤
+      (Real.exp (projectionLogConstant n) * (projectionLogConstant n + 1)) * curveBound d B := by
+  let A := projectionBoxFactor n d
+  let C := projectionLogConstant n
+  have hd0 : (0 : ℝ) < d := mod_cast hd
+  have hA : 1 ≤ A := projectionBoxFactor_one_le n d
   have hA0 : 0 < A := by linarith
   have hB0 : 0 < B := by linarith
+  have hC : 0 ≤ C := projectionLogConstant_nonneg n
+  have hlog : Real.log A ≤ C * d := projectionBoxFactor_log_le n hd
   have hlogB := Real.log_nonneg hB
   have hlogA := Real.log_nonneg hA
   have hpow : A ^ (1 / (d : ℝ)) ≤ Real.exp C := by
@@ -62,16 +71,6 @@ private lemma curveBound_scale_of_log_le {d : ℕ} (hd : 0 < d) {A B C : ℝ}
     _ ≤ (d : ℝ) ^ 3 * (Real.exp C * B ^ (1 / (d : ℝ))) *
         ((C + 1) * (Real.log B + d)) := by gcongr
     _ = _ := by ring
-
-/-- Scaling the radius by the projection box factor multiplies the curve bound by at most a
-constant depending only on `n`: with `c = projectionLogConstant n`, for `d > 0` and `B ≥ 1`,
-`curveBound d (projectionBoxFactor n d * B) ≤ exp c * (c + 1) * curveBound d B`. -/
-theorem projection_curveBound_scale (n : ℕ) {d : ℕ} (hd : 0 < d)
-    {B : ℝ} (hB : 1 ≤ B) :
-    curveBound d (projectionBoxFactor n d * B) ≤
-      (Real.exp (projectionLogConstant n) * (projectionLogConstant n + 1)) * curveBound d B :=
-  curveBound_scale_of_log_le hd (projectionBoxFactor_one_le n d) hB
-    (projectionLogConstant_nonneg n) (projectionBoxFactor_log_le n hd)
 
 end
 end CCDN

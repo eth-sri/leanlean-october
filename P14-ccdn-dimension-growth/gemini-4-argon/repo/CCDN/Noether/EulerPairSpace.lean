@@ -62,20 +62,15 @@ lemma eulerPairCoordinates_snd_degree {R : Type*} [CommRing R] (k : ℕ)
       have hx := (isHomogeneous_X R (0 : Fin 2)).totalDegree_le
       omega)
 
-private lemma eulerPairCoordinates_contraction {R : Type*} [CommRing R] (k : ℕ)
-    (u : EulerPairSpace R k) :
-    X 0 * (eulerPairCoordinates R k u).1 + X 1 * (eulerPairCoordinates R k u).2 =
-      X 0 * u.1.val + X 1 * u.2.1.val := by
-  change X 0 * (u.1.val + X 1 * u.2.2.val) + X 1 * (u.2.1.val - X 0 * u.2.2.val) = _
-  ring
-
 /-- The radial contraction `x * P + y * Q` of the pair `(P, Q)` attached to an element of
 `EulerPairSpace R k` has total degree at most `k + 1`. -/
 lemma eulerPairCoordinates_contraction_degree {R : Type*} [CommRing R] (k : ℕ)
     (u : EulerPairSpace R k) :
     (X 0 * (eulerPairCoordinates R k u).1 + X 1 * (eulerPairCoordinates R k u).2).totalDegree ≤
       k + 1 := by
-  rw [eulerPairCoordinates_contraction]
+  rw [show X 0 * (eulerPairCoordinates R k u).1 + X 1 * (eulerPairCoordinates R k u).2 =
+      X 0 * u.1.val + X 1 * u.2.1.val by
+    change X 0 * (u.1.val + X 1 * u.2.2.val) + X 1 * (u.2.1.val - X 0 * u.2.2.val) = _; ring]
   apply (totalDegree_add _ _).trans
   apply max_le
   · have ha := (mem_restrictTotalDegree _ _ _).mp u.1.property
@@ -85,31 +80,25 @@ lemma eulerPairCoordinates_contraction_degree {R : Type*} [CommRing R] (k : ℕ)
     have hx := (isHomogeneous_X R (1 : Fin 2)).totalDegree_le
     exact (totalDegree_mul _ _).trans (by omega)
 
-private lemma eulerPairCoordinates_eq_zero {F : Type*} [Field F] (k : ℕ)
-    (u : EulerPairSpace F k) (hu : eulerPairCoordinates F k u = 0) : u = 0 := by
-  have hp := congrArg Prod.fst hu
-  have hq := congrArg Prod.snd hu
-  change u.1.val + X 1 * u.2.2.val = 0 at hp
-  change u.2.1.val - X 0 * u.2.2.val = 0 at hq
-  have hA : homogeneousComponent (k + 1) u.1.val = 0 :=
-    homogeneousComponent_eq_zero _ _ (by
-      have hh := (mem_restrictTotalDegree _ _ _).mp u.1.property
-      omega)
-  have hYQ : (X (1 : Fin 2) * u.2.2.val).IsHomogeneous (k + 1) := by
-    simpa only [Nat.add_comm 1 k] using (isHomogeneous_X F (1 : Fin 2)).mul u.2.2.property
-  have hh := congrArg (homogeneousComponent (k + 1)) hp
-  rw [map_add, hA, homogeneousComponent_of_mem hYQ, ite_eq_left rfl, map_zero, zero_add] at hh
-  have hQ0 : u.2.2.val = 0 := (mul_eq_zero.mp hh).resolve_left (X_ne_zero _)
-  rw [hQ0, mul_zero, add_zero] at hp
-  rw [hQ0, mul_zero, sub_zero] at hq
-  exact Prod.ext (Subtype.ext hp) (Prod.ext (Subtype.ext hq) (Subtype.ext hQ0))
-
 /-- Over a field, the map `(A, B, Q) ↦ (A + y * Q, B - x * Q)` is injective. -/
 theorem eulerPairCoordinates_injective {F : Type*} [Field F] (k : ℕ) :
     Function.Injective (eulerPairCoordinates F k) := by
   intro u v huv
-  have hh : eulerPairCoordinates F k (u - v) = 0 := by rw [map_sub, huv, sub_self]
-  exact sub_eq_zero.mp (eulerPairCoordinates_eq_zero k (u - v) hh)
+  let w := u - v
+  have hw : eulerPairCoordinates F k w = 0 := by rw [map_sub, huv, sub_self]
+  have hp : w.1.val + X 1 * w.2.2.val = 0 := congrArg Prod.fst hw
+  have hq : w.2.1.val - X 0 * w.2.2.val = 0 := congrArg Prod.snd hw
+  have hA : homogeneousComponent (k + 1) w.1.val = 0 :=
+    homogeneousComponent_eq_zero _ _ (by
+      have := (mem_restrictTotalDegree _ _ _).mp w.1.property; omega)
+  have hYQ : (X (1 : Fin 2) * w.2.2.val).IsHomogeneous (k + 1) := by
+    simpa only [Nat.add_comm 1 k] using (isHomogeneous_X F (1 : Fin 2)).mul w.2.2.property
+  have hh := congrArg (homogeneousComponent (k + 1)) hp
+  rw [map_add, hA, homogeneousComponent_of_mem hYQ, ite_eq_left rfl, map_zero, zero_add] at hh
+  have hQ0 : w.2.2.val = 0 := (mul_eq_zero.mp hh).resolve_left (X_ne_zero _)
+  rw [hQ0, mul_zero, add_zero] at hp
+  rw [hQ0, mul_zero, sub_zero] at hq
+  exact sub_eq_zero.mp (Prod.ext (Subtype.ext hp) (Prod.ext (Subtype.ext hq) (Subtype.ext hQ0)))
 
 /-- The number of unknowns is exactly the desired Noether-form degree. -/
 theorem finrank_eulerPairSpace {F : Type*} [Field F] (k : ℕ) :

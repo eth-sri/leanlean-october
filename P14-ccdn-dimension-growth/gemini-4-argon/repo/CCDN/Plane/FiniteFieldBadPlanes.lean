@@ -37,50 +37,6 @@ lemma bivariateMap_comp_apply {R S T : Type*} [CommRing R] [CommRing S] [CommRin
   ext i j
   simp only [bivariateMap_coeff, RingHom.comp_apply]
 
-private lemma badPlaneParameters_witness_zero {K σ : Type*} [Field K] {p : ℕ} [CharP K p]
-    (f : MvPolynomial σ K) (hpos : 0 < f.totalDegree) (hchar : f.totalDegree < p)
-    (rows : Fin (2 * f.totalDegree ^ 2 - 1) → ℕ × ℕ)
-    (cols : Fin (2 * f.totalDegree ^ 2 - 1) → ClosedFormColumns f.totalDegree)
-    (v : BadPlaneParameters f) : eval v.val (universalPlaneBadWitness f rows cols) = 0 := by
-  by_contra h
-  have hbase := universalPlaneBadWitness_good_specialization f hpos (.of_charP hchar) rows cols
-    (eval v.val) h
-  rcases v.property with hdeg | hir
-  · exact hdeg hbase.2.1
-  · let L := AlgebraicClosure K
-    let φ : K →+* L := algebraMap K L
-    have hw : (φ.comp (eval v.val)) (universalPlaneBadWitness f rows cols) ≠ 0 :=
-      (map_ne_zero_iff φ φ.injective).mpr h
-    have hh := universalPlaneBadWitness_good_specialization f hpos
-      ((CharZeroOrGT.of_charP hchar).map φ) rows cols _ hw
-    apply hir
-    simpa only [bivariateMap_comp_apply, universalPlaneSection, φ] using hh.2.2
-
-/-- The proportion of geometrically bad plane parameters is at most 2*d^3/q. -/
-private theorem finite_field_bad_plane_parameters_mul_card
-    {K σ : Type*} [Field K] [Fintype K] [Fintype σ] {p : ℕ} [CharP K p]
-    (f : MvPolynomial (Option σ) K)
-    (hf : Irreducible (MvPolynomial.map (algebraMap K (AlgebraicClosure K)) f))
-    (hpos : 0 < f.totalDegree) (hchar : 2 * f.totalDegree ^ 2 < p) :
-    Nat.card (BadPlaneParameters f) * Fintype.card K ≤
-      (2 * f.totalDegree ^ 3) * Fintype.card K ^ Fintype.card (PlaneParameters (Option σ)) := by
-  classical
-  obtain ⟨rows, cols, hw, hdeg⟩ := exists_universalPlane_badWitness f hf hpos
-    (.of_charP hchar)
-  let W := universalPlaneBadWitness f rows cols
-  have hdp : f.totalDegree < p := by nlinarith
-  let ψ : BadPlaneParameters f → {v : PlaneParameters (Option σ) → K // eval v W = 0} :=
-    fun v => ⟨v.val, badPlaneParameters_witness_zero f hpos hdp rows cols v⟩
-  have hψ : Function.Injective ψ := by
-    intro x y h
-    apply Subtype.ext
-    change (ψ x).val = (ψ y).val
-    exact congrArg Subtype.val h
-  have hcard := Nat.card_le_card_of_injective ψ hψ
-  have hb := finite_field_polynomial_zeros_mul_card W hw
-  exact ((Nat.mul_le_mul_right (Fintype.card K) hcard).trans hb).trans
-    (Nat.mul_le_mul_right _ hdeg)
-
 /-- In m ambient coordinates, at most 2*d^3*q^(3*m-1) parameter choices
 are bad. This counts triples (base point, first direction, second direction). -/
 theorem finite_field_bad_plane_parameters_card
@@ -90,7 +46,27 @@ theorem finite_field_bad_plane_parameters_card
     (hpos : 0 < f.totalDegree) (hchar : 2 * f.totalDegree ^ 2 < p) :
     Nat.card (BadPlaneParameters f) ≤
       (2 * f.totalDegree ^ 3) * Fintype.card K ^ (3 * (Fintype.card σ + 1) - 1) := by
-  have h := finite_field_bad_plane_parameters_mul_card f hf hpos hchar
+  classical
+  obtain ⟨rows, cols, hw, hdeg⟩ := exists_universalPlane_badWitness f hf hpos (.of_charP hchar)
+  let W := universalPlaneBadWitness f rows cols
+  have hdp : f.totalDegree < p := by nlinarith
+  let ψ : BadPlaneParameters f → {v : PlaneParameters (Option σ) → K // eval v W = 0} :=
+    fun v => ⟨v.val, by
+      by_contra h
+      have hbase := universalPlaneBadWitness_good_specialization f hpos (.of_charP hdp) rows cols
+        (eval v.val) h
+      rcases v.property with hdeg' | hir
+      · exact hdeg' hbase.2.1
+      · let φ : K →+* AlgebraicClosure K := algebraMap K (AlgebraicClosure K)
+        have hw' : (φ.comp (eval v.val)) W ≠ 0 := (map_ne_zero_iff φ φ.injective).mpr h
+        have hh := universalPlaneBadWitness_good_specialization f hpos
+          ((CharZeroOrGT.of_charP hdp).map φ) rows cols _ hw'
+        exact hir (by simpa only [bivariateMap_comp_apply, universalPlaneSection, φ] using hh.2.2)⟩
+  have hψ : Function.Injective ψ := fun x y h =>
+    Subtype.ext (congrArg (fun z : {v : PlaneParameters (Option σ) → K // eval v W = 0} => z.val) h)
+  have h := ((Nat.mul_le_mul_right (Fintype.card K)
+    (Nat.card_le_card_of_injective ψ hψ)).trans (finite_field_polynomial_zeros_mul_card W hw)).trans
+    (Nat.mul_le_mul_right _ hdeg)
   have hN : 1 ≤ Fintype.card (PlaneParameters (Option σ)) := Fintype.card_pos
   have he : Fintype.card K ^ Fintype.card (PlaneParameters (Option σ)) =
       Fintype.card K ^ (Fintype.card (PlaneParameters (Option σ)) - 1) * Fintype.card K := by

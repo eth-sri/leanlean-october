@@ -21,74 +21,7 @@ l1 norm at most d^(3d²−3).
 @[expose] public section
 namespace CCDN
 noncomputable section
-
-private lemma factorial_mul_degree_pow_le (d r : ℕ) (hr : r ≤ d ^ 2) :
-    r.factorial * d ^ r ≤ d ^ (3 * r) := by
-  calc
-    r.factorial * d ^ r ≤ r ^ r * d ^ r :=
-      Nat.mul_le_mul_right _ (Nat.factorial_le_pow r)
-    _ ≤ (d ^ 2) ^ r * d ^ r :=
-      Nat.mul_le_mul_right _ (Nat.pow_le_pow_left hr r)
-    _ = d ^ (3 * r) := by
-      rw [← pow_mul, ← pow_add]
-      congr 1
-      omega
-
-end
-end CCDN
-
-namespace CCDN
-noncomputable section
 open MvPolynomial
-
-private lemma ambientEulerEntry_flatten_l1_le (σ : Type*) [Fintype σ] [DecidableEq σ]
-    (k : ℕ) (row : ℕ × ℕ) (col : EulerColumns k) :
-    l1Norm ((sumAlgEquiv ℤ (PlaneParameters σ) (Sym σ (k + 2))).symm
-      (ambientEulerEntryLinear _ σ k row col (universalHomogeneousForm σ (k + 2)))) ≤
-      Fintype.card (Sym σ (k + 2)) * ((k + 2) * 3 ^ (k + 2)) := by
-  classical
-  rw [universalHomogeneousForm_linear_expansion, map_sum, map_sum]
-  apply (l1Norm_sum_le _ _).trans
-  calc
-    _ ≤ ∑ _i : Sym σ (k + 2), (k + 2) * 3 ^ (k + 2) := by
-      apply Finset.sum_le_sum
-      intro i _
-      rw [map_smul, ambientEulerEntryLinear_map, smul_eq_C_mul]
-      exact (l1Norm_sumAlgEquiv_symm_C_X_mul_map_C_le _ i).trans
-        (ambientEulerEntry_monomial_l1_le k _ (homogeneousCoefficientExponent_degree _ _ _) row col)
-    _ = _ := by simp
-
-private theorem ambientNoetherParameterMinor_flatten_l1_le
-    (σ : Type*) [Fintype σ] [DecidableEq σ]
-    (k : ℕ) (rows : Fin ((k + 2) ^ 2 - 1) → ℕ × ℕ)
-    (cols : Fin ((k + 2) ^ 2 - 1) → EulerColumns k) :
-    l1Norm ((sumAlgEquiv ℤ (PlaneParameters σ) (Sym σ (k + 2))).symm
-      (ambientNoetherParameterMinor σ k rows cols)) ≤
-      (k + 2) ^ (3 * (k + 2) ^ 2 - 3) *
-        (Fintype.card (Sym σ (k + 2)) * 3 ^ (k + 2)) ^ ((k + 2) ^ 2 - 1) := by
-  classical
-  let r := (k + 2) ^ 2 - 1
-  let N := Fintype.card (Sym σ (k + 2))
-  let φ := (sumAlgEquiv ℤ (PlaneParameters σ) (Sym σ (k + 2))).symm.toRingHom
-  change l1Norm (φ
-    (((eulerClosedFormCoefficientMatrix k
-      (universalPlanePolynomial (universalHomogeneousForm σ (k + 2))))).submatrix
-        rows cols).det) ≤ _
-  rw [RingHom.map_det]
-  have hdet := l1Norm_det_le _ (N * ((k + 2) * 3 ^ (k + 2)))
-    (fun i j => ambientEulerEntry_flatten_l1_le σ k (rows i) (cols j))
-  rw [Fintype.card_fin] at hdet
-  apply hdet.trans
-  have he : 3 * r = 3 * (k + 2) ^ 2 - 3 := by dsimp [r]; omega
-  calc
-    r.factorial * (N * ((k + 2) * 3 ^ (k + 2))) ^ r =
-        (r.factorial * (k + 2) ^ r) * (N * 3 ^ (k + 2)) ^ r := by
-      rw [show N * ((k + 2) * 3 ^ (k + 2)) = (k + 2) * (N * 3 ^ (k + 2)) by ring,
-        mul_pow]
-      ring
-    _ ≤ (k + 2) ^ (3 * r) * (N * 3 ^ (k + 2)) ^ r :=
-      Nat.mul_le_mul_right _ (factorial_mul_degree_pow_le (k + 2) r (by dsimp [r]; omega))
-    _ = _ := by rw [he]
 
 /-- The exact coefficient-sum bound, in terms of the number of original
 degree-d homogeneous monomials. -/
@@ -99,9 +32,41 @@ theorem ambientNoetherForm_coefficientL1_le
     (m : PlaneParameters σ →₀ ℕ) :
     l1Norm (ambientNoetherForm σ k rows cols m) ≤
       (k + 2) ^ (3 * (k + 2) ^ 2 - 3) *
-        (Fintype.card (Sym σ (k + 2)) * 3 ^ (k + 2)) ^ ((k + 2) ^ 2 - 1) :=
-  (l1Norm_coeff_le_l1Norm_sumAlgEquiv_symm _ _).trans
-    (ambientNoetherParameterMinor_flatten_l1_le σ k rows cols)
+        (Fintype.card (Sym σ (k + 2)) * 3 ^ (k + 2)) ^ ((k + 2) ^ 2 - 1) := by
+  classical
+  refine (l1Norm_coeff_le_l1Norm_sumAlgEquiv_symm _ _).trans ?_
+  let r := (k + 2) ^ 2 - 1
+  let N := Fintype.card (Sym σ (k + 2))
+  let φ := (sumAlgEquiv ℤ (PlaneParameters σ) (Sym σ (k + 2))).symm.toRingHom
+  change l1Norm (φ
+    (((eulerClosedFormCoefficientMatrix k
+      (universalPlanePolynomial (universalHomogeneousForm σ (k + 2))))).submatrix
+        rows cols).det) ≤ _
+  rw [RingHom.map_det]
+  have hentry (row : ℕ × ℕ) (col : EulerColumns k) :
+      l1Norm (φ (ambientEulerEntryLinear _ σ k row col (universalHomogeneousForm σ (k + 2)))) ≤
+        N * ((k + 2) * 3 ^ (k + 2)) := by
+    change l1Norm ((sumAlgEquiv ℤ (PlaneParameters σ) (Sym σ (k + 2))).symm _) ≤ _
+    rw [universalHomogeneousForm_linear_expansion, map_sum, map_sum]
+    refine (l1Norm_sum_le _ _).trans
+      ((Finset.sum_le_sum fun i _ => (?_ : _ ≤ (k + 2) * 3 ^ (k + 2))).trans_eq (by simp [N]))
+    rw [map_smul, ambientEulerEntryLinear_map, smul_eq_C_mul]
+    exact (l1Norm_sumAlgEquiv_symm_C_X_mul_map_C_le _ i).trans
+      (ambientEulerEntry_monomial_l1_le k _ (homogeneousCoefficientExponent_degree _ _ _) row col)
+  have hdet := l1Norm_det_le _ (N * ((k + 2) * 3 ^ (k + 2)))
+    (fun i j => hentry (rows i) (cols j))
+  rw [Fintype.card_fin] at hdet
+  refine hdet.trans ?_
+  have hfac : r.factorial * (k + 2) ^ r ≤ (k + 2) ^ (3 * r) :=
+    ((Nat.mul_le_mul_right _ (Nat.factorial_le_pow r)).trans
+      (Nat.mul_le_mul_right _ (Nat.pow_le_pow_left (by dsimp [r]; omega : r ≤ (k + 2) ^ 2) r))).trans_eq
+      (by rw [← pow_mul, ← pow_add]; congr 1; omega)
+  calc
+    r.factorial * (N * ((k + 2) * 3 ^ (k + 2))) ^ r =
+        (r.factorial * (k + 2) ^ r) * (N * 3 ^ (k + 2)) ^ r := by
+      rw [show N * ((k + 2) * 3 ^ (k + 2)) = (k + 2) * (N * 3 ^ (k + 2)) by ring, mul_pow]; ring
+    _ ≤ (k + 2) ^ (3 * r) * (N * 3 ^ (k + 2)) ^ r := Nat.mul_le_mul_right _ hfac
+    _ = _ := by rw [show 3 * r = 3 * (k + 2) ^ 2 - 3 by dsimp [r]; omega]
 
 end
 end CCDN

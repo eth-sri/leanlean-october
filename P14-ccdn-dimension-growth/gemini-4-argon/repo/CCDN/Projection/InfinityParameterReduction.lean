@@ -51,35 +51,6 @@ lemma leadingInfinityIdeal_component_mem {K σ : Type*} [Field K]
   rw [he]
   exact g.property n
 
-/-- A coordinate-power certificate at infinity gives a balanced reduction in
-the original affine quotient. -/
-private theorem power_reduction_of_infinity_certificate {K σ : Type*} [Field K]
-    (I : Ideal (MvPolynomial σ K)) (l : MvPolynomial σ K) (hl : l.IsHomogeneous 1)
-    (j : σ) (N : ℕ) (hN : 0 < N)
-    (hpow : X j ^ N ∈ leadingInfinityIdeal I ⊔ Ideal.span {l}) :
-    ∃ r s : MvPolynomial σ K, r.totalDegree ≤ N - 1 ∧ s.totalDegree ≤ N - 1 ∧
-      (Ideal.Quotient.mk I) (X j ^ N) = (Ideal.Quotient.mk I) r +
-        (Ideal.Quotient.mk I) l * (Ideal.Quotient.mk I) s := by
-  cases N with
-  | zero => omega
-  | succ n =>
-    obtain ⟨g, hg, t, ht, he⟩ := Submodule.mem_sup.mp hpow
-    obtain ⟨s, hs⟩ := Ideal.mem_span_singleton.mp ht
-    have hrel : X j ^ (n + 1) - l * s ∈ leadingInfinityIdeal I := by
-      rw [← he, hs]
-      simpa only [add_sub_cancel_right] using hg
-    have hm := leadingInfinityIdeal_component_mem I _ hrel n
-    rw [map_sub, homogeneousComponent_eq_self (isHomogeneous_X_pow j (n + 1)),
-      show n + 1 = 1 + n by omega, homogeneousComponent_mul_of_isHomogeneous_left hl] at hm
-    obtain ⟨r, hr, heq⟩ := Submodule.mem_map.mp hm
-    refine ⟨r, homogeneousComponent n s, (mem_restrictTotalDegree _ _ _).mp hr,
-      (homogeneousComponent_isHomogeneous n s).totalDegree_le, ?_⟩
-    change (Ideal.Quotient.mk I) r =
-      (Ideal.Quotient.mk I) (X j ^ (1 + n) - l * homogeneousComponent n s) at heq
-    rw [map_sub, map_mul] at heq
-    rw [show n + 1 = 1 + n by omega]
-    exact eq_add_of_sub_eq (heq.symm)
-
 /-- Avoiding every nonzero infinity direction supplies all coordinate-power
 reductions with a single positive exponent. -/
 theorem exists_power_reductions_of_infinity_avoidance {K L σ : Type*}
@@ -93,21 +64,30 @@ theorem exists_power_reductions_of_infinity_avoidance {K L σ : Type*}
   classical
   let J := leadingInfinityIdeal I ⊔ Ideal.span {l}
   have hp (j : σ) : ∃ m : ℕ, X j ^ m ∈ J := by
-    have hm : X j ∈ vanishingIdeal K (MvPolynomial.zeroLocus L J) := by
-      intro z hz
-      rw [hzero z hz]
-      simp
-    rw [vanishingIdeal_zeroLocus_eq_radical] at hm
-    exact hm
+    have hm : X j ∈ vanishingIdeal K (MvPolynomial.zeroLocus L J) := fun z hz => by
+      rw [hzero z hz]; simp
+    rwa [vanishingIdeal_zeroLocus_eq_radical] at hm
   choose m hm using hp
-  let N := Finset.univ.sup m + 1
-  have hN : 0 < N := by dsimp [N]; omega
-  refine ⟨N, hN, ?_⟩
-  intro j
-  apply power_reduction_of_infinity_certificate I l hl j N hN
-  have hj : m j ≤ N := (Finset.le_sup (f := m) (Finset.mem_univ j)).trans (Nat.le_succ _)
-  have hh := J.mul_mem_left (X j ^ (N - m j)) (hm j)
-  simpa only [← pow_add, Nat.sub_add_cancel hj] using hh
+  let n := Finset.univ.sup m
+  refine ⟨n + 1, Nat.succ_pos _, fun j => ?_⟩
+  have hj : m j ≤ n + 1 := (Finset.le_sup (f := m) (Finset.mem_univ j)).trans (Nat.le_succ _)
+  have hpow : X j ^ (n + 1) ∈ J := by
+    simpa only [← pow_add, Nat.sub_add_cancel hj] using J.mul_mem_left (X j ^ (n + 1 - m j)) (hm j)
+  obtain ⟨g, hg, t, ht, he⟩ := Submodule.mem_sup.mp hpow
+  obtain ⟨s, hs⟩ := Ideal.mem_span_singleton.mp ht
+  have hrel : X j ^ (n + 1) - l * s ∈ leadingInfinityIdeal I := by
+    rw [← he, hs]; simpa only [add_sub_cancel_right] using hg
+  have hmem := leadingInfinityIdeal_component_mem I _ hrel n
+  rw [map_sub, homogeneousComponent_eq_self (isHomogeneous_X_pow j (n + 1)),
+    show n + 1 = 1 + n by omega, homogeneousComponent_mul_of_isHomogeneous_left hl] at hmem
+  obtain ⟨r, hr, heq⟩ := Submodule.mem_map.mp hmem
+  refine ⟨r, homogeneousComponent n s, (mem_restrictTotalDegree _ _ _).mp hr,
+    (homogeneousComponent_isHomogeneous n s).totalDegree_le, ?_⟩
+  change (Ideal.Quotient.mk I) r =
+    (Ideal.Quotient.mk I) (X j ^ (1 + n) - l * homogeneousComponent n s) at heq
+  rw [map_sub, map_mul] at heq
+  rw [show n + 1 = 1 + n by omega]
+  exact eq_add_of_sub_eq heq.symm
 
 end
 end CCDN

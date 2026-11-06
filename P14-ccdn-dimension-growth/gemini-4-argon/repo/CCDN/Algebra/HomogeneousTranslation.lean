@@ -23,34 +23,19 @@ def homogeneousTranslationHom (R : Type*) [CommRing R] {n : ℕ} (a : Fin n → 
     MvPolynomial (Fin (n + 1)) R →ₐ[R] MvPolynomial (Fin (n + 1)) R :=
   aeval (Fin.cons (X 0) (fun j => X j.succ + C (a j) * X 0))
 
-/-- Composing the homogeneous translations by `a` and by `b` gives the homogeneous translation
-by `a + b`. -/
-lemma homogeneousTranslationHom_comp {R : Type*} [CommRing R] {n : ℕ} (a b : Fin n → R) :
-    (homogeneousTranslationHom R a).comp (homogeneousTranslationHom R b) =
-      homogeneousTranslationHom R (a + b) := by
-  apply MvPolynomial.algHom_ext
-  intro i
-  refine Fin.cases ?_ (fun j => ?_) i
-  · simp [homogeneousTranslationHom]
-  · simp only [homogeneousTranslationHom, AlgHom.comp_apply, aeval_X, Fin.cons_succ,
-      map_add, map_mul, aeval_C, Fin.cons_zero, Pi.add_apply, algebraMap_eq]
-    ring
-
-/-- The homogeneous translation by zero is the identity. -/
-@[simp] lemma homogeneousTranslationHom_zero (R : Type*) [CommRing R] (n : ℕ) :
-    homogeneousTranslationHom R (0 : Fin n → R) = AlgHom.id R _ := by
-  apply MvPolynomial.algHom_ext
-  intro i
-  refine Fin.cases ?_ (fun j => ?_) i <;> simp [homogeneousTranslationHom]
-
 /-- The homogeneous translation by `a` (fixing `X 0` and sending `X (j + 1)` to
 `X (j + 1) + a j * X 0`) as an algebra automorphism, with inverse the homogeneous translation
 by `-a`. -/
 def homogeneousTranslation (R : Type*) [CommRing R] {n : ℕ} (a : Fin n → R) :
     MvPolynomial (Fin (n + 1)) R ≃ₐ[R] MvPolynomial (Fin (n + 1)) R :=
+  /- Composing the homogeneous translations by `a` and by `b` gives the homogeneous translation
+  by `a + b`. -/
+  /- The homogeneous translation by zero is the identity. -/
   AlgEquiv.ofAlgHom (homogeneousTranslationHom R a) (homogeneousTranslationHom R (-a))
-    (by rw [homogeneousTranslationHom_comp, add_neg_cancel, homogeneousTranslationHom_zero])
-    (by rw [homogeneousTranslationHom_comp, neg_add_cancel, homogeneousTranslationHom_zero])
+    (MvPolynomial.algHom_ext fun i => Fin.cases (by simp [homogeneousTranslationHom])
+      (fun j => by simp [homogeneousTranslationHom, algebraMap_eq]) i)
+    (MvPolynomial.algHom_ext fun i => Fin.cases (by simp [homogeneousTranslationHom])
+      (fun j => by simp [homogeneousTranslationHom, algebraMap_eq]) i)
 
 /-- The homogeneous translation of a homogeneous polynomial of degree `d` is homogeneous of
 degree `d`. -/

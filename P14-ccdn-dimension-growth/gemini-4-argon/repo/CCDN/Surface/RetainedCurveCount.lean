@@ -20,19 +20,6 @@ namespace CCDN
 noncomputable section
 open MvPolynomial Finset
 
-private theorem surface_curve_number_weight {d : ℕ} (hd : 5 ≤ d) {B : ℝ} (hB : 1 ≤ B) :
-    B ^ (1 / Real.sqrt (d : ℝ)) * (Real.log B + 1) ≤
-      (20 * Real.exp (1 / 20 : ℝ)) * B := by
-  calc
-    _ ≤ B ^ (1 / Real.sqrt (d : ℝ) + 1 / 2) * (Real.log B + 1) := by
-      apply mul_le_mul_of_nonneg_right
-      · exact Real.rpow_le_rpow_of_exponent_le hB (by linarith)
-      · linarith [Real.log_nonneg hB]
-    _ ≤ _ := by
-      have hh := surface_nonlinear_polylog_weight hd 1 hB
-      norm_num only [Nat.factorial, Nat.cast_one, pow_one, div_one] at hh
-      convert hh using 1
-
 /-- There is an absolute constant `C` such that, for an integer surface equation `f` of degree
 `d ≥ 5` with absolutely irreducible top-degree form and a finite family `S` of curves of
 positive degree on the surface, each of degree at most `D (log B + 1)` and of total degree at
@@ -58,8 +45,7 @@ theorem retained_surface_curve_union_bound :
   have hCcard : 0 < Ccard := by dsimp only [Ccard]; positivity
   let C := Cline + Ccurve + Ccard
   have hC : 0 < C := by dsimp only [C]; positivity
-  refine ⟨C, hC, ?_⟩
-  intro f hir hd S δ A D B hA hD hB hS hcap hbudget
+  refine ⟨C, hC, fun f hir hd S δ A D B hA hD hB hS hcap hbudget => ?_⟩
   let lines := S.filter (fun I => δ I = 1)
   let curves := S.filter (fun I => 2 ≤ δ I)
   have hlineCount := hline f hir (by omega) B (by linarith) lines
@@ -76,14 +62,19 @@ theorem retained_surface_curve_union_bound :
       obtain ⟨hIS, hδ⟩ := mem_filter.mp hI
       exact ⟨(hS I hIS).1.isPrime, hδ, (hS I hIS).1.degree⟩)
     (fun I hI => hcap I (mem_filter.mp hI).1) hcurveBudget
-  have hcard : (lines.card : ℝ) ≤ ∑ I ∈ S, (δ I : ℝ) := by
-    calc
-      _ ≤ (S.card : ℝ) := by exact_mod_cast card_le_card (filter_subset (fun I => δ I = 1) S)
-      _ = ∑ _I ∈ S, (1 : ℝ) := by simp
-      _ ≤ _ := sum_le_sum (fun I hI => by exact_mod_cast (hS I hI).2)
-  have hcardBound : (lines.card : ℝ) ≤ A * Ccard * B := by
-    have hh := mul_le_mul_of_nonneg_left (surface_curve_number_weight hd hB) hA
-    exact (hcard.trans hbudget).trans (by simpa only [mul_assoc, Ccard] using hh)
+  have hcard : (lines.card : ℝ) ≤ ∑ I ∈ S, (δ I : ℝ) :=
+    (by exact_mod_cast card_le_card (filter_subset (fun I => δ I = 1) S) : (lines.card : ℝ) ≤ S.card).trans
+      ((by simp : (S.card : ℝ) = ∑ _I ∈ S, (1 : ℝ)).trans_le
+        (sum_le_sum fun I hI => mod_cast (hS I hI).2))
+  have hweight : B ^ (1 / Real.sqrt (f.totalDegree : ℝ)) * (Real.log B + 1) ≤ Ccard * B := by
+    have hh := surface_nonlinear_polylog_weight hd 1 hB
+    norm_num only [Nat.factorial, Nat.cast_one, pow_one, div_one] at hh
+    exact (mul_le_mul_of_nonneg_right
+      (Real.rpow_le_rpow_of_exponent_le hB (by linarith))
+      (by linarith [Real.log_nonneg hB])).trans hh
+  have hcardBound : (lines.card : ℝ) ≤ A * Ccard * B :=
+    (hcard.trans hbudget).trans
+      (by simpa only [mul_assoc] using mul_le_mul_of_nonneg_left hweight hA)
   have hsub : (⋃ I ∈ S, idealZeroLocus I) ⊆
       (⋃ I ∈ lines, idealZeroLocus I) ∪ ⋃ I ∈ curves, idealZeroLocus I := by
     intro x hx

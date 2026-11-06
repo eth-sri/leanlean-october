@@ -20,11 +20,6 @@ namespace CCDN
 noncomputable section
 open MvPolynomial
 
-private lemma polynomial_isUnit_of_nonzero_degree_zero {K σ : Type*} [Field K]
-    (f : MvPolynomial σ K) (hf : f ≠ 0) (hd : f.totalDegree = 0) : IsUnit f := by
-  by_contra hu
-  exact (totalDegree_pos_of_ne_zero_of_not_isUnit hf hu).ne' hd
-
 /-- A degree-nonincreasing polynomial ring homomorphism reflects irreducibility
 at every equation whose full degree is retained. -/
 theorem irreducible_of_full_degree_map {K σ τ : Type*} [Field K]
@@ -32,13 +27,12 @@ theorem irreducible_of_full_degree_map {K σ τ : Type*} [Field K]
     (hψ : ∀ g, (ψ g).totalDegree ≤ g.totalDegree)
     (f : MvPolynomial σ K) (hir : Irreducible (ψ f))
     (hdeg : (ψ f).totalDegree = f.totalDegree) : Irreducible f := by
-  refine ⟨fun hu => hir.not_isUnit (hu.map ψ), ?_⟩
-  intro a b he
+  refine ⟨fun hu => hir.not_isUnit (hu.map ψ), fun a b he => ?_⟩
   have he' : ψ f = ψ a * ψ b := by rw [he, map_mul]
   have ha : ψ a ≠ 0 := left_ne_zero_of_mul (he' ▸ hir.ne_zero)
   have hb : ψ b ≠ 0 := right_ne_zero_of_mul (he' ▸ hir.ne_zero)
-  have ha0 : a ≠ 0 := by intro hz; exact ha (by rw [hz, map_zero])
-  have hb0 : b ≠ 0 := by intro hz; exact hb (by rw [hz, map_zero])
+  have ha0 : a ≠ 0 := fun hz => ha (by rw [hz, map_zero])
+  have hb0 : b ≠ 0 := fun hz => hb (by rw [hz, map_zero])
   have ht := totalDegree_mul_of_isDomain ha0 hb0
   have ht' := totalDegree_mul_of_isDomain ha hb
   rw [← he] at ht
@@ -48,10 +42,12 @@ theorem irreducible_of_full_degree_map {K σ τ : Type*} [Field K]
   rcases hir.isUnit_or_isUnit he' with hu | hu
   · left
     have hz := (isUnit_iff_totalDegree_of_isReduced.mp hu).2
-    exact polynomial_isUnit_of_nonzero_degree_zero a ha0 (by omega)
+    by_contra hau
+    exact (totalDegree_pos_of_ne_zero_of_not_isUnit ha0 hau).ne' (by omega)
   · right
     have hz := (isUnit_iff_totalDegree_of_isReduced.mp hu).2
-    exact polynomial_isUnit_of_nonzero_degree_zero b hb0 (by omega)
+    by_contra hbu
+    exact (totalDegree_pos_of_ne_zero_of_not_isUnit hb0 hbu).ne' (by omega)
 
 /-- The ring homomorphism restricting a polynomial in the coordinates `σ` to the affine plane
 `a + s • b + t • c` whose base point and directions are given by the parameters `v`, as a

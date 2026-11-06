@@ -44,23 +44,6 @@ theorem exists_field_basis_of_euclidean_lattice_basis
     congrFun (coe_basisOfLinearIndependentOfCardEqFinrank' _ hi hcard) i
   exact ⟨v, q, hq, fun i => (congrArg (euclideanNumberFieldEmbedding K) (hq i)).trans (hv i)⟩
 
-private theorem euclidean_field_basis_repr
-    {ι : Type*} [Fintype ι]
-    (b : Basis ι ℝ (mixedEmbedding.euclidean.mixedSpace K)) (q : Basis ι ℚ K)
-    (hmap : ∀ i, euclideanNumberFieldEmbedding K (q i) = b i) (x : K) (i : ι) :
-    b.repr (euclideanNumberFieldEmbedding K x) i = (q.repr x i : ℝ) := by
-  classical
-  have hmaps :
-      ((b.coord i).restrictScalars ℚ).comp (euclideanNumberFieldLinearMap K) =
-        (Algebra.linearMap ℚ ℝ).comp (q.coord i) := by
-    apply q.ext
-    intro j
-    simp only [LinearMap.comp_apply, LinearMap.restrictScalars_apply,
-      euclideanNumberFieldLinearMap_apply, hmap, Basis.coord_apply, Basis.repr_self]
-    simp only [Finsupp.single_apply]
-    split_ifs <;> norm_num
-  exact congrArg (fun f => f x) hmaps
-
 /-- If the real basis `b` is the image of the rational basis `q` and the `i`-th `q`-coordinate of
 `x : K` is nonzero, then the embedding of `x` does not lie in the real span of `b '' S` for any
 `S` not containing `i`. -/
@@ -71,12 +54,19 @@ theorem euclidean_notMem_basis_span_of_coordinate_ne_zero
     {x : K} {i : ι} (hi : q.repr x i ≠ 0)
     {S : Set ι} (hiS : i ∉ S) :
     euclideanNumberFieldEmbedding K x ∉ Submodule.span ℝ (b '' S) := by
+  classical
   intro h
-  have hs := b.repr_support_subset_of_mem_span S h
-  apply hiS
-  apply hs
-  apply Finsupp.mem_support_iff.mpr
-  rw [euclidean_field_basis_repr K b q hmap]
+  apply hiS (b.repr_support_subset_of_mem_span S h (Finsupp.mem_support_iff.mpr ?_))
+  have hmaps :
+      ((b.coord i).restrictScalars ℚ).comp (euclideanNumberFieldLinearMap K) =
+        (Algebra.linearMap ℚ ℝ).comp (q.coord i) := by
+    refine q.ext fun j => ?_
+    simp only [LinearMap.comp_apply, LinearMap.restrictScalars_apply,
+      euclideanNumberFieldLinearMap_apply, hmap, Basis.coord_apply, Basis.repr_self,
+      Finsupp.single_apply]
+    split_ifs <;> norm_num
+  rw [show b.repr (euclideanNumberFieldEmbedding K x) i = (q.repr x i : ℝ) from
+    congrArg (· x) hmaps]
   exact_mod_cast hi
 
 end

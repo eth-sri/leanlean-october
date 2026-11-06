@@ -26,31 +26,6 @@ def genericTransverseDirection (K F σ : Type*) [Field K] [Field F]
     [Algebra (MvPolynomial σ K) F] : Option σ → F :=
   fun i => Option.elim i 0 (fun j => algebraMap (MvPolynomial σ K) F (X j))
 
-private lemma genericPlaneMap_affineCoordinates {K F σ : Type*} [Field K] [Field F]
-    [Algebra K F] [Algebra (MvPolynomial σ K) F]
-    (a b : Option σ → K) (hb : b none ≠ 0) (f : MvPolynomial (Option σ) K) :
-    genericPlaneMap K F σ (hypersurfaceAffineCoordinates a b hb f) =
-      MvPolynomial.map (planeParameterEval (algebraMap K F)
-        (algebraMap K F ∘ a) (algebraMap K F ∘ b) (genericTransverseDirection K F σ))
-        (universalPlaneMap K (Option σ) f) := by
-  rw [universalPlaneMap_specialize]
-  have he : (genericPlaneMap K F σ).toRingHom.comp
-      (hypersurfaceAffineCoordinates a b hb).toRingHom =
-      eval₂Hom (C.comp (algebraMap K F))
-        (fun i => C (algebraMap K F (a i)) + C (algebraMap K F (b i)) * X 0 +
-          C (genericTransverseDirection K F σ i) * X 1) := by
-    apply MvPolynomial.ringHom_ext
-    · intro r
-      change genericPlaneMap K F σ (hypersurfaceAffineCoordinates a b hb (C r)) = _
-      rw [show hypersurfaceAffineCoordinates a b hb (C r) = C r from
-        (hypersurfaceAffineCoordinates a b hb).commutes r]
-      simp [genericPlaneMap]
-    · intro i
-      change genericPlaneMap K F σ (hypersurfaceAffineCoordinates a b hb (X i)) = _
-      rw [hypersurfaceAffineCoordinates_X]
-      cases i <;> simp [genericPlaneMap, genericTransverseDirection]
-  exact RingHom.congr_fun he f
-
 /-- Monic normalization changes the specialized equation only by a scalar. -/
 lemma normalized_genericPlane_universal_specialization
     {K F σ : Type*} [Field K] [Field F]
@@ -63,9 +38,29 @@ lemma normalized_genericPlane_universal_specialization
         bivariateMap (planeParameterEval (algebraMap K F)
           (algebraMap K F ∘ a) (algebraMap K F ∘ b) (genericTransverseDirection K F σ))
           (universalPlanePolynomial f) := by
+  have he : (genericPlaneMap K F σ).toRingHom.comp
+      (hypersurfaceAffineCoordinates a b hb).toRingHom =
+      eval₂Hom (C.comp (algebraMap K F))
+        (fun i => C (algebraMap K F (a i)) + C (algebraMap K F (b i)) * X 0 +
+          C (genericTransverseDirection K F σ i) * X 1) :=
+    MvPolynomial.ringHom_ext
+      (fun r => by
+        change genericPlaneMap K F σ (hypersurfaceAffineCoordinates a b hb (C r)) = _
+        rw [show hypersurfaceAffineCoordinates a b hb (C r) = C r from
+          (hypersurfaceAffineCoordinates a b hb).commutes r]
+        simp [genericPlaneMap])
+      fun i => by
+        change genericPlaneMap K F σ (hypersurfaceAffineCoordinates a b hb (X i)) = _
+        rw [hypersurfaceAffineCoordinates_X]
+        cases i <;> simp [genericPlaneMap, genericTransverseDirection]
+  have haff : genericPlaneMap K F σ (hypersurfaceAffineCoordinates a b hb f) =
+      MvPolynomial.map (planeParameterEval (algebraMap K F)
+        (algebraMap K F ∘ a) (algebraMap K F ∘ b) (genericTransverseDirection K F σ))
+        (universalPlaneMap K (Option σ) f) := by
+    rw [universalPlaneMap_specialize]; exact RingHom.congr_fun he f
   rw [← genericPlaneMap_bivariate, normalizedHypersurfaceCoordinates, map_mul,
-    genericPlaneMap_affineCoordinates, map_mul]
-  rw [bivariate_smul_eq_constant_mul, universalPlanePolynomial, bivariatePolynomialEquiv_map]
+    haff, map_mul, bivariate_smul_eq_constant_mul, universalPlanePolynomial,
+    bivariatePolynomialEquiv_map]
   congr 1
   simp [genericPlaneMap, bivariatePolynomialEquiv_C]
 
@@ -89,9 +84,7 @@ theorem exists_universalPlane_minor
     (map_ne_zero_iff _ (IsFractionRing.injective R F)).mpr hdet
   rw [closedForm_minor_map, normalized_genericPlane_universal_specialization,
     closedForm_minor_smul, ← closedForm_minor_map] at hne
-  refine ⟨rows, cols, ?_⟩
-  intro he
-  exact hne (by rw [he, map_zero, mul_zero])
+  exact ⟨rows, cols, fun he => hne (by rw [he, map_zero, mul_zero])⟩
 
 end
 end CCDN

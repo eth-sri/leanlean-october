@@ -39,22 +39,10 @@ lemma eulerPolynomialFromCoefficients_degree {R : Type*} [CommRing R]
   rw [AlgEquiv.symm_apply_apply]
   exact (MvPolynomial.mem_restrictTotalDegree _ _ _).mp u.property
 
-private lemma eulerPolynomialFromCoefficients_data {R : Type*} [CommRing R]
-    (d : ℕ) (f : R[X][X]) (hf : bivariateTotalDegree f ≤ d) :
-    eulerPolynomialFromCoefficients d (eulerCoefficientData d f) = f :=
-  eulerCoefficientData_reconstruct d f hf
-
 private lemma bivariateMap_smul {R S : Type*} [CommRing R] [CommRing S]
     (φ : R →+* S) (a : R) (f : R[X][X]) :
     bivariateMap φ (a • f) = φ a • bivariateMap φ f := by
   simp [bivariate_smul_eq_constant_mul, bivariateMap]
-
-private lemma eulerPolynomialFromCoefficients_map {R S : Type*} [CommRing R] [CommRing S]
-    (φ : R →+* S) (d : ℕ) (c : EulerLowIndex d → R) :
-    bivariateMap φ (eulerPolynomialFromCoefficients d c) =
-      eulerPolynomialFromCoefficients d (φ ∘ c) := by
-  simp only [eulerPolynomialFromCoefficients, map_sum, bivariateMap_smul,
-    eulerCoefficientMonomial_map, Function.comp_apply]
 
 /-- Index set of the coefficient parameters of a pair of generic factors of total degrees at most
 `a` and `b`. -/
@@ -83,25 +71,19 @@ def genericEulerFactorSpecialization {R : Type*} [CommRing R] (a b : ℕ)
 lemma genericEulerFactorLeft_specialize {R : Type*} [CommRing R]
     (a b : ℕ) (g h : R[X][X]) (hg : bivariateTotalDegree g ≤ a) :
     bivariateMap (genericEulerFactorSpecialization a b g h) (genericEulerFactorLeft a b) = g := by
-  rw [genericEulerFactorLeft, eulerPolynomialFromCoefficients_map]
-  have he : (genericEulerFactorSpecialization a b g h) ∘
-      (fun i : EulerLowIndex a => MvPolynomial.X (Sum.inl i)) = eulerCoefficientData a g := by
-    funext i
-    exact MvPolynomial.eval₂_X _ _ _
-  rw [he]
-  exact eulerPolynomialFromCoefficients_data a g hg
+  simp only [genericEulerFactorLeft, eulerPolynomialFromCoefficients, map_sum,
+    bivariateMap_smul, eulerCoefficientMonomial_map, genericEulerFactorSpecialization,
+    MvPolynomial.coe_eval₂Hom, MvPolynomial.eval₂_X, Sum.elim_inl]
+  exact eulerCoefficientData_reconstruct a g hg
 
 /-- If `h` has total degree at most `b`, then `genericEulerFactorRight a b` specializes to `h`. -/
 lemma genericEulerFactorRight_specialize {R : Type*} [CommRing R]
     (a b : ℕ) (g h : R[X][X]) (hh : bivariateTotalDegree h ≤ b) :
     bivariateMap (genericEulerFactorSpecialization a b g h) (genericEulerFactorRight a b) = h := by
-  rw [genericEulerFactorRight, eulerPolynomialFromCoefficients_map]
-  have he : (genericEulerFactorSpecialization a b g h) ∘
-      (fun i : EulerLowIndex b => MvPolynomial.X (Sum.inr i)) = eulerCoefficientData b h := by
-    funext i
-    exact MvPolynomial.eval₂_X _ _ _
-  rw [he]
-  exact eulerPolynomialFromCoefficients_data b h hh
+  simp only [genericEulerFactorRight, eulerPolynomialFromCoefficients, map_sum,
+    bivariateMap_smul, eulerCoefficientMonomial_map, genericEulerFactorSpecialization,
+    MvPolynomial.coe_eval₂Hom, MvPolynomial.eval₂_X, Sum.elim_inr]
+  exact eulerCoefficientData_reconstruct b h hh
 
 /-- The logarithmic factor pair commutes with applying a coefficient ring homomorphism to both
 factors. -/
@@ -113,27 +95,6 @@ lemma eulerFactorPair_map {R S : Type*} [CommRing R] [CommRing S]
   simp only [eulerFactorPair, map_sub, bivariateMap_smul, map_natCast, map_mul,
     bivariateMap_derivative, bivariateMap_coefficientDerivative]
 
-private lemma bivariateTotalDegree_outer_X_pow {R : Type*} [CommRing R] [Nontrivial R] (a : ℕ) :
-    bivariateTotalDegree (X ^ a : R[X][X]) = a := by
-  have he := bivariatePolynomialEquiv_X_zero (R := R)
-  rw [← he, ← map_pow]
-  change ((bivariatePolynomialEquiv R).symm
-    (bivariatePolynomialEquiv R (MvPolynomial.X 0 ^ a))).totalDegree = _
-  rw [AlgEquiv.symm_apply_apply, MvPolynomial.totalDegree_X_pow]
-
-private lemma eulerFactorPair_outer_power_one_ne_zero (a b : ℕ) (ha : 0 < a) (hb : 0 < b) :
-    eulerFactorPair a b (X ^ a : ℚ[X][X]) 1 ≠ 0 := by
-  intro hh
-  have hfst := congrArg Prod.fst hh
-  change (b : ℚ) • (1 * (X ^ a : ℚ[X][X]).derivative) -
-    (a : ℚ) • (X ^ a * (1 : ℚ[X][X]).derivative) = 0 at hfst
-  simp only [one_mul, derivative_one, mul_zero, smul_zero, sub_zero] at hfst
-  have hb0 : (b : ℚ) ≠ 0 := Nat.cast_ne_zero.mpr (by omega)
-  have hd0 : (X ^ a : ℚ[X][X]).derivative ≠ 0 := by
-    apply Polynomial.derivative_ne_zero.mpr
-    simpa only [natDegree_X_pow] using (Nat.ne_of_gt ha)
-  exact (smul_ne_zero hb0 hd0) hfst
-
 /-- The generic logarithmic pair is nonzero over its integral coefficient
 ring, proved by a rational specialization. -/
 theorem genericEulerFactorPair_ne_zero (a b : ℕ) (ha : 0 < a) (hb : 0 < b) :
@@ -141,16 +102,23 @@ theorem genericEulerFactorPair_ne_zero (a b : ℕ) (ha : 0 < a) (hb : 0 < b) :
   intro hz
   let φ := genericEulerFactorSpecialization a b (X ^ a : ℚ[X][X]) 1
   have he := eulerFactorPair_map φ a b (genericEulerFactorLeft a b) (genericEulerFactorRight a b)
-  have hg : bivariateTotalDegree (X ^ a : ℚ[X][X]) ≤ a :=
-    (bivariateTotalDegree_outer_X_pow a).le
+  have hg : bivariateTotalDegree (X ^ a : ℚ[X][X]) ≤ a := by
+    rw [← bivariatePolynomialEquiv_X_zero (R := ℚ), ← map_pow]
+    change ((bivariatePolynomialEquiv ℚ).symm
+      (bivariatePolynomialEquiv ℚ (MvPolynomial.X 0 ^ a))).totalDegree ≤ _
+    rw [AlgEquiv.symm_apply_apply, MvPolynomial.totalDegree_X_pow]
   have hh : bivariateTotalDegree (1 : ℚ[X][X]) ≤ b := by
-    simp only [bivariateTotalDegree, map_one, MvPolynomial.totalDegree_one]
-    omega
+    simp only [bivariateTotalDegree, map_one, MvPolynomial.totalDegree_one]; omega
   rw [genericEulerFactorLeft_specialize a b _ _ hg,
-    genericEulerFactorRight_specialize a b _ _ hh] at he
-  rw [hz] at he
+    genericEulerFactorRight_specialize a b _ _ hh, hz] at he
   simp only [Prod.fst_zero, Prod.snd_zero, map_zero] at he
-  exact eulerFactorPair_outer_power_one_ne_zero a b ha hb he.symm
+  have hfst := congrArg Prod.fst he.symm
+  change (b : ℚ) • (1 * (X ^ a : ℚ[X][X]).derivative) -
+    (a : ℚ) • (X ^ a * (1 : ℚ[X][X]).derivative) = 0 at hfst
+  simp only [one_mul, derivative_one, mul_zero, smul_zero, sub_zero] at hfst
+  exact smul_ne_zero (Nat.cast_ne_zero.mpr (by omega))
+    (Polynomial.derivative_ne_zero.mpr (by simpa only [natDegree_X_pow] using Nat.ne_of_gt ha))
+    hfst
 
 end
 end CCDN

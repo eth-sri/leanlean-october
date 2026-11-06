@@ -40,19 +40,10 @@ private lemma plane_deformation_relation_coefficients {K A ι : Type*}
   simp only [Polynomial.finsetSum_coeff, Polynomial.mul_coeff_one, Polynomial.coeff_map,
     planeLinearDeformation_coeff_zero, planeLinearDeformation_coeff_one,
     Polynomial.coeff_zero, Finset.sum_add_distrib] at h1
-  constructor
-  · simp only [map_sum, map_smul]
-    simpa only [Algebra.smul_def] using h0
-  · simp only [map_sum, Derivation.map_smul, map_smul]
-    simp only [Algebra.smul_def, Finset.sum_mul]
-    simpa only [mul_assoc, add_comm] using h1
-
-end
-end CCDN
-
-namespace CCDN
-noncomputable section
-open MvPolynomial
+  refine ⟨by simp only [map_sum, map_smul]; simpa only [Algebra.smul_def] using h0, ?_⟩
+  simp only [map_sum, Derivation.map_smul, map_smul]
+  simp only [Algebra.smul_def, Finset.sum_mul]
+  simpa only [mul_assoc, add_comm] using h1
 
 /-- Differentiate a family of degree-d plane equations to reconstruct
 any linear source function using the same derivative denominator. -/
@@ -74,14 +65,11 @@ theorem exists_derivative_reconstruction {K τ : Type*}
   let r := fun i => (b i).val
   let f₀ := ∑ i, (v i).coeff 0 • r i
   let f₁ := ∑ i, (v i).coeff 1 • r i
-  have hmem (m : ℕ) : (∑ i, (v i).coeff m • r i) ∈ V := by
-    apply V.sum_mem
-    intro i _
-    exact V.smul_mem _ (b i).property
+  have hmem (m : ℕ) : (∑ i, (v i).coeff m • r i) ∈ V :=
+    V.sum_mem fun i _ => V.smul_mem _ (b i).property
   have hd₀ : f₀.totalDegree ≤ d := (mem_restrictTotalDegree _ _ _).mp (hmem 0)
   have hd₁ : f₁.totalDegree ≤ d := (mem_restrictTotalDegree _ _ _).mp (hmem 1)
-  have hn₀ : f₀ ≠ 0 := by
-    intro hz
+  have hn₀ : f₀ ≠ 0 := fun hz => by
     have hi : LinearIndependent K r := b.linearIndependent.map' V.subtype
       (LinearMap.ker_eq_bot.mpr Subtype.val_injective)
     have hh := Fintype.linearIndependent_iff.mp hi (fun i => (v i).coeff 0) hz j
@@ -97,17 +85,15 @@ theorem exists_derivative_reconstruction {K τ : Type*}
   have hz₀ : aeval a f₀ ∈ I := Ideal.Quotient.eq_zero_iff_mem.mp ((hψ f₀).trans h₀)
   obtain ⟨c, hc⟩ :=
     plane_projection_relation_space I a f hf hker f₀ (by simpa only [hfd] using hd₀) hz₀
-  have hcn : c ≠ 0 := by intro hz; apply hn₀; rw [hc, hz, zero_smul]
+  have hcn : c ≠ 0 := fun hz => hn₀ (by rw [hc, hz, zero_smul])
   rw [hc, Derivation.map_smul, map_smul, smul_mul_assoc] at h₁
   have hs := congrArg (fun x : MvPolynomial τ K ⧸ I => c⁻¹ • x) h₁
   simp only [smul_add, smul_smul, inv_mul_cancel₀ hcn, one_smul, smul_zero] at hs
-  let P := -(c⁻¹ • f₁)
-  refine ⟨P, ?_, ?_⟩
-  · exact (totalDegree_neg _).le.trans ((totalDegree_smul_le _ _).trans hd₁)
-  · apply Ideal.Quotient.eq_zero_iff_mem.mp
-    rw [map_sub, map_mul, hψ, hψ]
-    simp only [P, map_neg, map_smul, sub_neg_eq_add]
-    exact (add_comm _ _).trans hs
+  refine ⟨-(c⁻¹ • f₁), (totalDegree_neg _).le.trans ((totalDegree_smul_le _ _).trans hd₁),
+    Ideal.Quotient.eq_zero_iff_mem.mp ?_⟩
+  rw [map_sub, map_mul, hψ, hψ]
+  simp only [map_neg, map_smul, sub_neg_eq_add]
+  exact (add_comm _ _).trans hs
 
 end
 end CCDN

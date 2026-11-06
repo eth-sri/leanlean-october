@@ -15,38 +15,6 @@ namespace CCDN
 noncomputable section
 open Polynomial
 
-/-- The evaluation `F[u][t] → L` at `u` and `t`, for elements `t, u` of an `F`-algebra `L`. -/
-def residueParameterEval {F L : Type*} [Field F] [Field L] [Algebra F L]
-    (t u : L) : F[X][X] →+* L := eval₂RingHom (aeval u).toRingHom t
-
-/-- Evaluating the lift of a polynomial `a ∈ F[t]` at `(t, u)` gives `a(t)`. -/
-@[simp] lemma residueParameterEval_lift {F L : Type*} [Field F] [Field L] [Algebra F L]
-    (t u : L) (a : F[X]) :
-    residueParameterEval t u (residueParameterLift a) = aeval t a := by
-  induction a using Polynomial.induction_on' with
-  | add a b ha hb => simp only [map_add, ha, hb]
-  | monomial n c => simp [residueParameterEval, residueParameterLift]
-
-/-- The parameter `u ∈ F[u][t]` evaluates to `u`. -/
-@[simp] lemma residueParameterEval_C_X {F L : Type*} [Field F] [Field L] [Algebra F L]
-    (t u : L) : residueParameterEval (F := F) t u (C X) = u := by
-  simp [residueParameterEval]
-
-/-- Applying `residueParameterLift` and then evaluation at `(t, u)` to the coefficients of a
-polynomial over `F[t]` is evaluating its coefficients at `t`. -/
-@[simp] lemma residueParameterEval_map_lift {F L : Type*} [Field F] [Field L] [Algebra F L]
-    (t u : L) (f : F[X][X]) :
-    (f.map residueParameterLift).map (residueParameterEval t u) = f.map (aeval t).toRingHom := by
-  ext i
-  simp
-
-private lemma residueEliminationEquation_map_eval {F L : Type*} [Field F] [Field L] [Algebra F L]
-    (t u : L) (f g : F[X][X]) :
-    (residueEliminationEquation f g).map (residueParameterEval t u) =
-      C u * (f.map (aeval t).toRingHom).derivative - g.map (aeval t).toRingHom := by
-  simp only [residueEliminationEquation, Polynomial.map_sub, Polynomial.map_mul,
-    Polynomial.map_C, residueParameterEval_C_X, ← derivative_map, residueParameterEval_map_lift]
-
 /-- If `β` is a simple root of `f(t, ·)` and `g` has smaller `z`-degree than `f`, then the residue
 eliminant vanishes at `t` and `u = g(t, β) / f'(t, β)`. -/
 theorem residueEliminant_eval_ratio_eq_zero
@@ -57,15 +25,27 @@ theorem residueEliminant_eval_ratio_eq_zero
     let u := (g.map (aeval t).toRingHom).eval β /
       (f.map (aeval t).toRingHom).derivative.eval β
     ((residueEliminant f g).map (aeval u).toRingHom).eval t = 0 := by
+  /- The evaluation `F[u][t] → L` at `u` and `t`, for elements `t, u` of an `F`-algebra `L`. -/
+  /- Evaluating the lift of a polynomial `a ∈ F[t]` at `(t, u)` gives `a(t)`. -/
+  /- The parameter `u ∈ F[u][t]` evaluates to `u`. -/
+  /- Applying `residueParameterLift` and then evaluation at `(t, u)` to the coefficients of a
+  polynomial over `F[t]` is evaluating its coefficients at `t`. -/
   dsimp only
   let u := (g.map (aeval t).toRingHom).eval β /
     (f.map (aeval t).toRingHom).derivative.eval β
-  let ψ := residueParameterEval (F := F) t u
+  let ψ : F[X][X] →+* L := eval₂RingHom (aeval u).toRingHom t
+  have hlift (P : F[X][X]) : (P.map residueParameterLift).map ψ = P.map (aeval t).toRingHom := by
+    ext i
+    simp only [coeff_map]
+    induction P.coeff i using Polynomial.induction_on' with
+    | add a b ha hb => simp only [map_add, ha, hb]
+    | monomial n c => simp [ψ, residueParameterLift]
   have hF : ((f.map residueParameterLift).map ψ).eval β = 0 := by
-    simpa only [ψ, residueParameterEval_map_lift] using hroot
+    simpa only [hlift] using hroot
   have hG : ((residueEliminationEquation f g).map ψ).eval β = 0 := by
-    rw [show ψ = residueParameterEval t u from rfl, residueEliminationEquation_map_eval]
-    simp only [eval_sub, eval_mul, eval_C]
+    have hCX : ψ (C X) = u := by simp [ψ]
+    simp only [residueEliminationEquation, Polynomial.map_sub, Polynomial.map_mul,
+      Polynomial.map_C, hCX, ← derivative_map, hlift, eval_sub, eval_mul, eval_C]
     exact sub_eq_zero.mpr (div_mul_cancel₀ _ hsimple)
   obtain ⟨a, b, _, _, hab⟩ := exists_mul_add_mul_eq_C_resultant
     (m := f.natDegree) (n := f.natDegree - 1)

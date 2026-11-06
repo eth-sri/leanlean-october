@@ -22,31 +22,6 @@ noncomputable section
 open MvPolynomial
 universe u
 
-private lemma hyperplaneNoether_specialize {K σ : Type*}
-    [CommRing K] [Fintype σ] [DecidableEq σ]
-    (d : ℕ) (f : MvPolynomial (Option σ) ℤ) (A : Option σ → K)
-    (Φ : MvPolynomial (Sym σ d) ℤ) :
-    eval₂Hom (Int.castRingHom K) A
-        (homogeneousCoefficientSpecialization d (universalHyperplaneRestriction f) Φ) =
-      homogeneousCoefficientSpecialization d
-        (scaledHyperplaneRestriction A (map (Int.castRingHom K) f)) Φ := by
-  rw [homogeneousCoefficientSpecialization_map, universalHyperplaneRestriction_specialize]
-
-private lemma scaledHyperplaneRestriction_not_absolutely_irreducible {K σ : Type*}
-    [Field K] [Fintype σ] (A : Option σ → K) (hA : A none ≠ 0)
-    {d : ℕ} {f : MvPolynomial (Option σ) K} (hf : f.IsHomogeneous d)
-    (hbad : ¬Irreducible (map (algebraMap K (AlgebraicClosure K))
-      (graphHyperplaneRestriction (fun i => -A (some i) / A none) f))) :
-    ¬Irreducible (map (algebraMap K (AlgebraicClosure K))
-      (scaledHyperplaneRestriction A f)) := by
-  rw [scaledHyperplaneRestriction_eq_graph A hA hf, map_mul, map_C]
-  have hu : IsUnit (C ((algebraMap K (AlgebraicClosure K)) (A none ^ d)) :
-      MvPolynomial σ (AlgebraicClosure K)) :=
-    (isUnit_iff_ne_zero.mpr
-      (by simpa only [map_zero] using
-        (algebraMap K (AlgebraicClosure K)).injective.ne (pow_ne_zero d hA))).map C
-  exact fun hi => hbad ((irreducible_isUnit_mul hu).mp hi)
-
 /-- A corrected form of CCDN Lemma 4.3.7 for degree `d ≥ 2`, in explicit hyperplane coordinates:
 for an absolutely irreducible integer form `f` of degree `d`, there is a nonzero integer form `G`
 in the hyperplane coefficients, homogeneous of degree `d * (d ^ 2 - 1) + 1` and of total degree at
@@ -68,9 +43,7 @@ theorem exists_effective_hyperplane_avoidance {n : ℕ}
         eval₂ (Int.castRingHom K) A G = 0 := by
   classical
   obtain ⟨k, rfl⟩ : ∃ k, d = k + 2 := ⟨d - 2, by omega⟩
-  have hf0 : f ≠ 0 := by
-    intro hz
-    exact hir.ne_zero (by rw [hz, map_zero])
+  have hf0 : f ≠ 0 := fun hz => hir.ne_zero (by rw [hz, map_zero])
   have hdegree : f.totalDegree = k + 2 := hf.totalDegree hf0
   obtain ⟨a,ha⟩ := exists_geometrically_good_graph_reindexed f hir (by omega)
   let q := graphHyperplaneRestriction a (map (Int.castRingHom ℚ) f)
@@ -83,11 +56,9 @@ theorem exists_effective_hyperplane_avoidance {n : ℕ}
   have hvalue : eval₂Hom (Int.castRingHom ℚ) A H =
       homogeneousCoefficientSpecialization (k + 2) q Φ := by
     dsimp only [H, A]
-    rw [hyperplaneNoether_specialize, scaledHyperplaneRestriction_normalized]
-  have hH : H ≠ 0 := by
-    intro hz
-    apply hn
-    rw [← hvalue, hz, map_zero]
+    rw [homogeneousCoefficientSpecialization_map, universalHyperplaneRestriction_specialize,
+      scaledHyperplaneRestriction_normalized]
+  have hH : H ≠ 0 := fun hz => hn (by rw [← hvalue, hz, map_zero])
   have hHhom : H.IsHomogeneous ((k + 2) * ((k + 2) ^ 2 - 1)) :=
     homogeneousCoefficientSpecialization_homogeneous _ _ _ _
       (universalHyperplaneRestriction_coefficientwiseHomogeneous hf) Φ
@@ -105,19 +76,24 @@ theorem exists_effective_hyperplane_avoidance {n : ℕ}
     nlinarith
   · intro K _ A hbad
     change (eval₂Hom (Int.castRingHom K) A) (X none * H) = 0
-    rw [map_mul]
-    have hx : eval₂Hom (Int.castRingHom K) A (X none) = A none := eval₂_X _ _ _
-    rw [hx]
+    rw [map_mul, show eval₂Hom (Int.castRingHom K) A (X none) = A none from eval₂_X _ _ _]
     by_cases hA : A none = 0
     · rw [hA, zero_mul]
-    · have hh := scaledHyperplaneRestriction_not_absolutely_irreducible A hA
-        (hf.map (Int.castRingHom K)) (hbad hA)
+    · have hh : ¬Irreducible (map (algebraMap K (AlgebraicClosure K))
+          (scaledHyperplaneRestriction A (map (Int.castRingHom K) f))) := by
+        rw [scaledHyperplaneRestriction_eq_graph A hA (hf.map (Int.castRingHom K)), map_mul, map_C]
+        have hu : IsUnit (C ((algebraMap K (AlgebraicClosure K)) (A none ^ (k + 2))) :
+            MvPolynomial (Option (Fin (2 + n))) (AlgebraicClosure K)) :=
+          (isUnit_iff_ne_zero.mpr (by simpa only [map_zero] using
+            (algebraMap K (AlgebraicClosure K)).injective.ne (pow_ne_zero _ hA))).map C
+        exact fun hi => hbad hA ((irreducible_isUnit_mul hu).mp hi)
       have hz := universalNoetherForms_vanish k
         (scaledHyperplaneRestriction A (map (Int.castRingHom K) f))
         (scaledHyperplaneRestriction_homogeneous A (hf.map (Int.castRingHom K))) hh Φ hΦ
       change A none * eval₂Hom (Int.castRingHom K) A
         (homogeneousCoefficientSpecialization (k + 2) (universalHyperplaneRestriction f) Φ) = 0
-      rw [hyperplaneNoether_specialize, hz, mul_zero]
+      rw [homogeneousCoefficientSpecialization_map, universalHyperplaneRestriction_specialize,
+        hz, mul_zero]
 
 end
 end CCDN

@@ -30,13 +30,6 @@ def originShift {R σ : Type*} [CommRing R] (a : σ → R) :
     originShift a (X j) = X j + C (a j) := by
   simp [originShift]
 
-private lemma originShift_neg {R σ : Type*} [CommRing R] (a : σ → R) (f : MvPolynomial σ R) :
-    originShift (-a) (originShift a f) = f := by
-  induction f using MvPolynomial.induction_on with
-  | C c => simp
-  | add f g hf hg => simp only [map_add, hf, hg]
-  | mul_X f j hf => simp [hf]
-
 /-- The substitution `X j ↦ X j + a j` as an algebra automorphism, with inverse the
 substitution `X j ↦ X j - a j`. -/
 def originShiftEquiv {R σ : Type*} [CommRing R] (a : σ → R) :
@@ -58,7 +51,7 @@ def originShiftEquiv {R σ : Type*} [CommRing R] (a : σ → R) :
 /-- The origin shift is injective. -/
 lemma originShift_injective {R σ : Type*} [CommRing R] (a : σ → R) :
     Function.Injective (originShift a) :=
-  Function.LeftInverse.injective (originShift_neg a)
+  (originShiftEquiv a).injective
 
 /-- The origin shift of a nonzero polynomial is nonzero. -/
 lemma originShift_ne_zero {R σ : Type*} [CommRing R] (a : σ → R)

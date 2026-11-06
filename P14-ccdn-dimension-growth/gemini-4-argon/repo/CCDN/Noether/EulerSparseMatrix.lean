@@ -18,164 +18,6 @@ namespace CCDN
 noncomputable section
 open Polynomial
 
-private def eulerLowExponent (k : ℕ) (i : EulerLowIndex k) : Fin 2 →₀ ℕ :=
-  ((Finsupp.degreeLeEquivSym (Fin 2) k).symm i).val
-
-private def eulerTopExponent (k : ℕ) (i : EulerTopIndex k) : Fin 2 →₀ ℕ :=
-  ((degreeEqEquivSym (Fin 2) k).symm i).val
-
-private lemma eulerLowExponent_degree (k : ℕ) (i : EulerLowIndex k) :
-    eulerLowExponent k i 0 + eulerLowExponent k i 1 ≤ k := by
-  have hh := ((Finsupp.degreeLeEquivSym (Fin 2) k).symm i).property
-  change (eulerLowExponent k i).sum (fun _ e => e) ≤ k at hh
-  rw [bivariate_exponent_eq (eulerLowExponent k i), bivariate_exponent_sum] at hh
-  exact hh
-
-private lemma eulerTopExponent_degree (k : ℕ) (i : EulerTopIndex k) :
-    eulerTopExponent k i 0 + eulerTopExponent k i 1 = k := by
-  have hh := ((degreeEqEquivSym (Fin 2) k).symm i).property
-  change (eulerTopExponent k i).sum (fun _ e => e) = k at hh
-  rw [bivariate_exponent_eq (eulerTopExponent k i), bivariate_exponent_sum] at hh
-  exact hh
-
-private lemma eulerLowExponent_injective (k : ℕ) : Function.Injective (eulerLowExponent k) :=
-  Subtype.val_injective.comp (Finsupp.degreeLeEquivSym (Fin 2) k).symm.injective
-
-private def eulerMonomialOutput (k : ℕ) (col : EulerColumns k)
-    (i : EulerLowIndex (k + 2)) : ℕ × ℕ :=
-  let s := eulerLowExponent (k + 2) i 0
-  let t := eulerLowExponent (k + 2) i 1
-  match col with
-  | .inl j => (eulerLowExponent k j 0 + s, eulerLowExponent k j 1 + t - 1)
-  | .inr (.inl j) => (eulerLowExponent k j 0 + s - 1, eulerLowExponent k j 1 + t)
-  | .inr (.inr j) => (eulerTopExponent k j 0 + s, eulerTopExponent k j 1 + t)
-
-private def eulerMonomialWeight (k : ℕ) (col : EulerColumns k) (i : EulerLowIndex (k + 2)) : ℤ :=
-  let s := eulerLowExponent (k + 2) i 0
-  let t := eulerLowExponent (k + 2) i 1
-  match col with
-  | .inl j => (eulerLowExponent k j 1 : ℤ) - t
-  | .inr (.inl j) => (s : ℤ) - eulerLowExponent k j 0
-  | .inr (.inr _) => (k + 2 : ℕ) - (s : ℤ) - t
-
-private lemma eulerBivariatePair_basis_left {R : Type*} [CommRing R] (k : ℕ) (i : EulerLowIndex k) :
-    eulerBivariatePair R k (eulerPairBasis R k (.inl i)) =
-      (monomial (eulerLowExponent k i 0) (monomial (eulerLowExponent k i 1) (1 : R)), 0) := by
-  simp only [eulerBivariatePair, LinearMap.comp_apply, LinearMap.prodMap_apply,
-    AlgEquiv.toLinearMap_apply, eulerPairCoordinates_basis_left, bivariatePolynomialEquiv_monomial,
-    map_zero, eulerLowExponent]
-
-private lemma eulerBivariatePair_basis_right {R : Type*} [CommRing R] (k : ℕ)
-    (i : EulerLowIndex k) :
-    eulerBivariatePair R k (eulerPairBasis R k (.inr (.inl i))) =
-      (0, monomial (eulerLowExponent k i 0) (monomial (eulerLowExponent k i 1) (1 : R))) := by
-  simp only [eulerBivariatePair, LinearMap.comp_apply, LinearMap.prodMap_apply,
-    AlgEquiv.toLinearMap_apply, eulerPairCoordinates_basis_right, bivariatePolynomialEquiv_monomial,
-    map_zero, eulerLowExponent]
-
-private lemma eulerBivariatePair_basis_radial {R : Type*} [CommRing R] (k : ℕ)
-    (i : EulerTopIndex k) :
-    eulerBivariatePair R k (eulerPairBasis R k (.inr (.inr i))) =
-      (monomial (eulerTopExponent k i 0) (monomial (eulerTopExponent k i 1 + 1) (1 : R)),
-       -(monomial (eulerTopExponent k i 0 + 1) (monomial (eulerTopExponent k i 1) (1 : R)))) := by
-  simp only [eulerBivariatePair, LinearMap.comp_apply, LinearMap.prodMap_apply,
-    AlgEquiv.toLinearMap_apply, eulerPairCoordinates_basis_radial, map_mul, map_neg,
-    bivariatePolynomialEquiv_monomial, bivariatePolynomialEquiv_X_zero,
-    bivariatePolynomialEquiv_X_one, C_mul_monomial, X_mul_monomial, eulerTopExponent]
-
-private lemma eulerCoefficientMonomial_eq {R : Type*} [CommRing R] (k : ℕ) (i : EulerLowIndex k) :
-    eulerCoefficientMonomial R k i =
-      monomial (eulerLowExponent k i 0) (monomial (eulerLowExponent k i 1) (1 : R)) :=
-  bivariatePolynomialEquiv_monomial _ _
-
-private lemma eulerMonomialWeight_abs_le (k : ℕ) (col : EulerColumns k)
-    (i : EulerLowIndex (k + 2)) :
-    |eulerMonomialWeight k col i| ≤ (k + 2 : ℕ) := by
-  have hi := eulerLowExponent_degree (k + 2) i
-  rcases col with j | j | j
-  · have hj := eulerLowExponent_degree k j
-    change |(eulerLowExponent k j 1 : ℤ) - eulerLowExponent (k + 2) i 1| ≤ _
-    rw [abs_le]
-    constructor <;> omega
-  · have hj := eulerLowExponent_degree k j
-    change |(eulerLowExponent (k + 2) i 0 : ℤ) - eulerLowExponent k j 0| ≤ _
-    rw [abs_le]
-    constructor <;> omega
-  · change |((k + 2 : ℕ) : ℤ) - eulerLowExponent (k + 2) i 0 - eulerLowExponent (k + 2) i 1| ≤ _
-    rw [abs_le]
-    constructor <;> omega
-
-private theorem eulerClosedForm_monomial_output (k : ℕ) (col : EulerColumns k)
-    (i : EulerLowIndex (k + 2)) :
-    eulerClosedFormOperator k (eulerCoefficientMonomial ℤ (k + 2) i)
-      (eulerPairBasis ℤ k col) =
-      monomial (eulerMonomialOutput k col i).1
-        (monomial (eulerMonomialOutput k col i).2 (eulerMonomialWeight k col i)) := by
-  change closedFormOperator _ (eulerBivariatePair ℤ k (eulerPairBasis ℤ k col)) = _
-  rw [eulerCoefficientMonomial_eq]
-  rcases col with j | j | j
-  · rw [eulerBivariatePair_basis_left, closedFormOperator_monomial_left]
-    rfl
-  · rw [eulerBivariatePair_basis_right, closedFormOperator_monomial_right]
-    rfl
-  · rw [eulerBivariatePair_basis_radial, closedFormOperator_monomial_radial,
-      eulerTopExponent_degree]
-    rfl
-
-private theorem eulerClosedForm_monomial_entry (k : ℕ) (row : ℕ × ℕ)
-    (col : EulerColumns k) (i : EulerLowIndex (k + 2)) :
-    eulerClosedFormCoefficientMatrix k (eulerCoefficientMonomial ℤ (k + 2) i) row col =
-      if eulerMonomialOutput k col i = row then eulerMonomialWeight k col i else 0 := by
-  change ((eulerClosedFormOperator k (eulerCoefficientMonomial ℤ (k + 2) i)
-    (eulerPairBasis ℤ k col)).coeff row.1).coeff row.2 = _
-  rw [eulerClosedForm_monomial_output]
-  by_cases h₀ : (eulerMonomialOutput k col i).1 = row.1 <;>
-    by_cases h₁ : (eulerMonomialOutput k col i).2 = row.2 <;>
-    simp [coeff_monomial, Prod.ext_iff, h₀, h₁]
-
-/-- Distinct input monomials cannot contribute to the same entry, unless
-their contribution is zero. -/
-private theorem eulerMonomialOutput_injective_on_nonzero (k : ℕ) (col : EulerColumns k)
-    (i j : EulerLowIndex (k + 2))
-    (hi : eulerMonomialWeight k col i ≠ 0) (hj : eulerMonomialWeight k col j ≠ 0)
-    (he : eulerMonomialOutput k col i = eulerMonomialOutput k col j) : i = j := by
-  apply eulerLowExponent_injective (k + 2)
-  have h₀ := congrArg Prod.fst he
-  have h₁ := congrArg Prod.snd he
-  ext t
-  rcases col with c | c | c
-  · change (eulerLowExponent k c 1 : ℤ) - eulerLowExponent (k + 2) i 1 ≠ 0 at hi
-    change (eulerLowExponent k c 1 : ℤ) - eulerLowExponent (k + 2) j 1 ≠ 0 at hj
-    change eulerLowExponent k c 0 + eulerLowExponent (k + 2) i 0 =
-      eulerLowExponent k c 0 + eulerLowExponent (k + 2) j 0 at h₀
-    change eulerLowExponent k c 1 + eulerLowExponent (k + 2) i 1 - 1 =
-      eulerLowExponent k c 1 + eulerLowExponent (k + 2) j 1 - 1 at h₁
-    fin_cases t
-    · change eulerLowExponent (k + 2) i 0 = eulerLowExponent (k + 2) j 0
-      omega
-    · change eulerLowExponent (k + 2) i 1 = eulerLowExponent (k + 2) j 1
-      omega
-  · change (eulerLowExponent (k + 2) i 0 : ℤ) - eulerLowExponent k c 0 ≠ 0 at hi
-    change (eulerLowExponent (k + 2) j 0 : ℤ) - eulerLowExponent k c 0 ≠ 0 at hj
-    change eulerLowExponent k c 0 + eulerLowExponent (k + 2) i 0 - 1 =
-      eulerLowExponent k c 0 + eulerLowExponent (k + 2) j 0 - 1 at h₀
-    change eulerLowExponent k c 1 + eulerLowExponent (k + 2) i 1 =
-      eulerLowExponent k c 1 + eulerLowExponent (k + 2) j 1 at h₁
-    fin_cases t
-    · change eulerLowExponent (k + 2) i 0 = eulerLowExponent (k + 2) j 0
-      omega
-    · change eulerLowExponent (k + 2) i 1 = eulerLowExponent (k + 2) j 1
-      omega
-  · change eulerTopExponent k c 0 + eulerLowExponent (k + 2) i 0 =
-      eulerTopExponent k c 0 + eulerLowExponent (k + 2) j 0 at h₀
-    change eulerTopExponent k c 1 + eulerLowExponent (k + 2) i 1 =
-      eulerTopExponent k c 1 + eulerLowExponent (k + 2) j 1 at h₁
-    fin_cases t
-    · change eulerLowExponent (k + 2) i 0 = eulerLowExponent (k + 2) j 0
-      omega
-    · change eulerLowExponent (k + 2) i 1 = eulerLowExponent (k + 2) j 1
-      omega
-
 /-- An entry is zero or a single coefficient variable with multiplier
 of absolute value at most the defining equation's degree. -/
 theorem universalEulerMatrix_sparse (k : ℕ) (row : ℕ × ℕ) (col : EulerColumns k) :
@@ -183,36 +25,106 @@ theorem universalEulerMatrix_sparse (k : ℕ) (row : ℕ × ℕ) (col : EulerCol
       ∃ (i : EulerLowIndex (k + 2)) (c : ℤ), |c| ≤ (k + 2 : ℕ) ∧
         universalEulerMatrix k row col = MvPolynomial.C c * MvPolynomial.X i := by
   classical
-  by_cases hex : ∃ i, eulerMonomialWeight k col i ≠ 0 ∧ eulerMonomialOutput k col i = row
+  let low (m : ℕ) (i : EulerLowIndex m) : Fin 2 →₀ ℕ :=
+    ((Finsupp.degreeLeEquivSym (Fin 2) m).symm i).val
+  let top (i : EulerTopIndex k) : Fin 2 →₀ ℕ :=
+    ((degreeEqEquivSym (Fin 2) k).symm i).val
+  have hlow (m : ℕ) (i : EulerLowIndex m) : low m i 0 + low m i 1 ≤ m := by
+    have hh := ((Finsupp.degreeLeEquivSym (Fin 2) m).symm i).property
+    change (low m i).sum (fun _ e => e) ≤ m at hh
+    rwa [bivariate_exponent_eq (low m i), bivariate_exponent_sum] at hh
+  have htop (i : EulerTopIndex k) : top i 0 + top i 1 = k := by
+    have hh := ((degreeEqEquivSym (Fin 2) k).symm i).property
+    change (top i).sum (fun _ e => e) = k at hh
+    rwa [bivariate_exponent_eq (top i), bivariate_exponent_sum] at hh
+  let out (i : EulerLowIndex (k + 2)) : ℕ × ℕ :=
+    let s := low (k + 2) i 0
+    let t := low (k + 2) i 1
+    match col with
+    | .inl j => (low k j 0 + s, low k j 1 + t - 1)
+    | .inr (.inl j) => (low k j 0 + s - 1, low k j 1 + t)
+    | .inr (.inr j) => (top j 0 + s, top j 1 + t)
+  let wt (i : EulerLowIndex (k + 2)) : ℤ :=
+    let s := low (k + 2) i 0
+    let t := low (k + 2) i 1
+    match col with
+    | .inl j => (low k j 1 : ℤ) - t
+    | .inr (.inl j) => (s : ℤ) - low k j 0
+    | .inr (.inr _) => (k + 2 : ℕ) - (s : ℤ) - t
+  have hentry (i : EulerLowIndex (k + 2)) :
+      eulerClosedFormCoefficientMatrix k (eulerCoefficientMonomial ℤ (k + 2) i) row col =
+        if out i = row then wt i else 0 := by
+    have hout : eulerClosedFormOperator k (eulerCoefficientMonomial ℤ (k + 2) i)
+        (eulerPairBasis ℤ k col) =
+        monomial (out i).1 (monomial (out i).2 (wt i)) := by
+      change closedFormOperator _ (eulerBivariatePair ℤ k (eulerPairBasis ℤ k col)) = _
+      rw [show eulerCoefficientMonomial ℤ (k + 2) i =
+          monomial (low (k + 2) i 0) (monomial (low (k + 2) i 1) (1 : ℤ)) from
+        bivariatePolynomialEquiv_monomial _ _]
+      rcases col with j | j | j
+      · simp only [eulerBivariatePair, LinearMap.comp_apply, LinearMap.prodMap_apply,
+          AlgEquiv.toLinearMap_apply, eulerPairCoordinates_basis_left,
+          bivariatePolynomialEquiv_monomial, map_zero]
+        exact closedFormOperator_monomial_left _ _ _ _
+      · simp only [eulerBivariatePair, LinearMap.comp_apply, LinearMap.prodMap_apply,
+          AlgEquiv.toLinearMap_apply, eulerPairCoordinates_basis_right,
+          bivariatePolynomialEquiv_monomial, map_zero]
+        exact closedFormOperator_monomial_right _ _ _ _
+      · simp only [eulerBivariatePair, LinearMap.comp_apply, LinearMap.prodMap_apply,
+          AlgEquiv.toLinearMap_apply, eulerPairCoordinates_basis_radial, map_mul, map_neg,
+          bivariatePolynomialEquiv_monomial, bivariatePolynomialEquiv_X_zero,
+          bivariatePolynomialEquiv_X_one, C_mul_monomial, X_mul_monomial]
+        change closedFormOperator _
+          (monomial (top j 0) (monomial (top j 1 + 1) (1 : ℤ)),
+           -(monomial (top j 0 + 1) (monomial (top j 1) (1 : ℤ)))) = _
+        rw [closedFormOperator_monomial_radial, htop]
+    change ((eulerClosedFormOperator k (eulerCoefficientMonomial ℤ (k + 2) i)
+      (eulerPairBasis ℤ k col)).coeff row.1).coeff row.2 = _
+    rw [hout]
+    by_cases h₀ : (out i).1 = row.1 <;>
+      by_cases h₁ : (out i).2 = row.2 <;>
+      simp [coeff_monomial, Prod.ext_iff, h₀, h₁]
+  have hinj_exp : Function.Injective (low (k + 2)) :=
+    Subtype.val_injective.comp (Finsupp.degreeLeEquivSym (Fin 2) (k + 2)).symm.injective
+  have hinj (i j : EulerLowIndex (k + 2))
+      (hi : wt i ≠ 0) (hj : wt j ≠ 0) (he : out i = out j) : i = j := by
+    apply hinj_exp
+    have h₀ := congrArg Prod.fst he
+    have h₁ := congrArg Prod.snd he
+    ext t
+    rcases col with c | c | c <;>
+      dsimp only [wt, out] at hi hj h₀ h₁ <;>
+      (fin_cases t <;> dsimp only [Fin.zero_eta, Fin.mk_one] <;> omega)
+  by_cases hex : ∃ i, wt i ≠ 0 ∧ out i = row
   · obtain ⟨i, hi, hrow⟩ := hex
-    right
-    refine ⟨i, eulerMonomialWeight k col i, eulerMonomialWeight_abs_le k col i, ?_⟩
+    have habs : |wt i| ≤ (k + 2 : ℕ) := by
+      have hid := hlow (k + 2) i
+      rcases col with j | j | j
+      · have := hlow k j
+        change |(low k j 1 : ℤ) - low (k + 2) i 1| ≤ _
+        rw [abs_le]; constructor <;> omega
+      · have := hlow k j
+        change |(low (k + 2) i 0 : ℤ) - low k j 0| ≤ _
+        rw [abs_le]; constructor <;> omega
+      · change |((k + 2 : ℕ) : ℤ) - low (k + 2) i 0 - low (k + 2) i 1| ≤ _
+        rw [abs_le]; constructor <;> omega
+    refine Or.inr ⟨i, wt i, habs, ?_⟩
     unfold universalEulerMatrix
     rw [Finset.sum_eq_single i]
-    · rw [eulerClosedForm_monomial_entry, ite_eq_left hrow]
+    · rw [hentry, ite_eq_left hrow]
     · intro j _ hji
-      rw [eulerClosedForm_monomial_entry]
-      by_cases hout : eulerMonomialOutput k col j = row
-      · rw [ite_eq_left hout]
-        have hz : eulerMonomialWeight k col j = 0 := by
-          by_contra hj
-          exact hji (eulerMonomialOutput_injective_on_nonzero k col j i hj hi
-            (hout.trans hrow.symm))
-        rw [hz, map_zero, zero_mul]
-      · rw [ite_eq_right hout, map_zero, zero_mul]
+      rw [hentry]
+      split_ifs with hout
+      · rw [show wt j = 0 by
+          by_contra hj; exact hji (hinj j i hj hi (hout.trans hrow.symm)), map_zero, zero_mul]
+      · simp
     · simp
-  · left
-    unfold universalEulerMatrix
-    apply Finset.sum_eq_zero
-    intro i _
-    rw [eulerClosedForm_monomial_entry]
-    by_cases hout : eulerMonomialOutput k col i = row
-    · rw [ite_eq_left hout]
-      have hz : eulerMonomialWeight k col i = 0 := by
-        by_contra hi
-        exact hex ⟨i, hi, hout⟩
-      rw [hz, map_zero, zero_mul]
-    · rw [ite_eq_right hout, map_zero, zero_mul]
+  · refine Or.inl (Finset.sum_eq_zero fun i _ => ?_)
+    rw [hentry]
+    split_ifs with hout
+    · rw [show wt i = 0 by by_contra hi; exact hex ⟨i, hi, hout⟩,
+        map_zero, zero_mul]
+    · simp
 
 end
 end CCDN

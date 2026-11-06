@@ -21,26 +21,8 @@ def radialMap {K σ : Type*} [CommRing K] :
   MvPolynomial.eval₂Hom (Polynomial.C.comp MvPolynomial.C)
     (fun j => Polynomial.C (MvPolynomial.X j) * Polynomial.X)
 
-/-- The radial map sends a constant `C c` to the constant polynomial `C (C c)`. -/
-@[simp] lemma radialMap_C {K σ : Type*} [CommRing K] (c : K) :
-    radialMap (MvPolynomial.C c : MvPolynomial σ K) = Polynomial.C (MvPolynomial.C c) := by
-  simp [radialMap]
-
-/-- The radial map sends the variable `X j` to `X j * T`. -/
-@[simp] lemma radialMap_X {K σ : Type*} [CommRing K] (j : σ) :
-    radialMap (MvPolynomial.X j : MvPolynomial σ K) =
-      Polynomial.C (MvPolynomial.X j) * Polynomial.X := by simp [radialMap]
-
-private lemma radialMap_monomial {K σ : Type*} [CommRing K] (e : σ →₀ ℕ) (c : K) :
-    radialMap (monomial e c) = Polynomial.C (monomial e c) * Polynomial.X ^ e.degree := by
-  classical
-  rw [monomial_eq, map_mul, radialMap_C, map_finsuppProd]
-  simp only [map_pow, radialMap_X, mul_pow]
-  rw [Finsupp.prod_mul]
-  simp only [← map_pow, Finsupp.prod]
-  rw [← map_prod, Finset.prod_pow_eq_pow_sum]
-  rw [← mul_assoc, ← Polynomial.C_mul]
-  rfl
+/- The radial map sends a constant `C c` to the constant polynomial `C (C c)`. -/
+/- The radial map sends the variable `X j` to `X j * T`. -/
 
 /-- The coefficient of `T ^ n` in the radial image of `f` is the homogeneous component of
 `f` of degree `n`. -/
@@ -50,8 +32,17 @@ lemma radialMap_coeff {K σ : Type*} [CommRing K] (f : MvPolynomial σ K) (n : �
   induction f using MvPolynomial.induction_on' with
   | add f g hf hg => simp only [map_add, Polynomial.coeff_add, hf, hg]
   | monomial e c =>
-    rw [radialMap_monomial, Polynomial.coeff_C_mul, Polynomial.coeff_X_pow]
-    rw [homogeneousComponent_of_mem (isHomogeneous_monomial c rfl)]
+    have hm : radialMap (monomial e c) = Polynomial.C (monomial e c) * Polynomial.X ^ e.degree := by
+      rw [monomial_eq, map_mul, show radialMap (MvPolynomial.C c : MvPolynomial σ K) =
+        Polynomial.C (MvPolynomial.C c) by simp [radialMap], map_finsuppProd]
+      simp only [map_pow, show ∀ j : σ, radialMap (MvPolynomial.X j : MvPolynomial σ K) =
+        Polynomial.C (MvPolynomial.X j) * Polynomial.X from fun _ => by simp [radialMap], mul_pow]
+      rw [Finsupp.prod_mul]
+      simp only [← map_pow, Finsupp.prod, ← map_prod, Finset.prod_pow_eq_pow_sum, ← mul_assoc,
+        ← Polynomial.C_mul]
+      rfl
+    rw [hm, Polynomial.coeff_C_mul, Polynomial.coeff_X_pow,
+      homogeneousComponent_of_mem (isHomogeneous_monomial c rfl)]
     split_ifs <;> simp_all
 
 end

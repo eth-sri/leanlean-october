@@ -24,25 +24,6 @@ namespace CCDN
 noncomputable section
 open MvPolynomial
 
-/-- A strict dimension inequality gives the smooth prime-field point count. -/
-private theorem plane_stepanov_smooth_bound {ι : Type*} [Fintype ι] [DecidableEq ι]
-    (p : ℕ) [Fact p.Prime] (f : MvPolynomial (Fin 2) (ZMod p)) (hf : Irreducible f)
-    (z : ι → Fin 2 → ZMod p) (hz : Function.Injective z)
-    (hzero : ∀ i, eval (z i) f = 0) (j : Fin 2)
-    (hsmooth : ∀ i, eval (z i) (pderiv j.rev f) ≠ 0)
-    {D A N : ℕ} (hD : f.totalDegree * D < p) (hN : N ≤ p)
-    (hdim : (∑ r : Fin N, Module.finrank (ZMod p)
-      (filteredCoordinateSpace (Ideal.span {f}) (D + A + r.val * f.totalDegree))) <
-      Module.finrank (ZMod p) (filteredCoordinateSpace (Ideal.span {f}) D) *
-      Module.finrank (ZMod p) (filteredCoordinateSpace (Ideal.span {f}) A)) :
-    Fintype.card ι * N ≤ f.totalDegree * (D + p * A) := by
-  classical
-  obtain ⟨h, hd, hi⟩ := exists_filtered_polynomial_basis (Ideal.span {f}) D
-  obtain ⟨b, hb, hbi⟩ := exists_filtered_polynomial_basis (Ideal.span {f}) A
-  obtain ⟨a, ha, hne, hdiv⟩ := exists_planeFrobenius_coefficients f j h b hd hb hbi
-    (by simpa only [Fintype.card_fin] using hdim)
-  exact planeFrobeniusAuxiliary_point_bound p f hf z hz hzero j hsmooth h a hD hN hd ha hi hne hdiv
-
 /-- Include the points where the selected partial derivative vanishes.
 Their number is bounded by d(d-1) using the proper derivative section. -/
 theorem plane_stepanov_bound {ι : Type*} [Fintype ι] [DecidableEq ι]
@@ -60,18 +41,22 @@ theorem plane_stepanov_bound {ι : Type*} [Fintype ι] [DecidableEq ι]
   classical
   obtain ⟨k, hk⟩ := exists_pderiv_ne_zero hpos (CharZeroOrGT.of_charP hchar)
   let P (i : ι) := eval (z i) (pderiv k f) = 0
-  have hgood := plane_stepanov_smooth_bound p f hf
+  obtain ⟨h, hd, hi⟩ := exists_filtered_polynomial_basis (Ideal.span {f}) D
+  obtain ⟨b, hb, hbi⟩ := exists_filtered_polynomial_basis (Ideal.span {f}) A
+  obtain ⟨a, ha, hne, hdiv⟩ := exists_planeFrobenius_coefficients f k.rev h b hd hb hbi
+    (by simpa only [Fintype.card_fin] using hdim)
+  /- A strict dimension inequality gives the smooth prime-field point count. -/
+  have hgood := planeFrobeniusAuxiliary_point_bound p f hf
     (fun i : {i // ¬ P i} => z i.val) (hz.comp Subtype.val_injective)
     (fun i => hzero i.val) k.rev
     (by simpa only [Fin.rev_rev] using fun i : {i // ¬ P i} => i.property)
-    hD hN hdim
+    h a hD hN hd ha hi hne hdiv
   have hnd : ¬ f ∣ pderiv k f := by
     rintro ⟨u, hu⟩
-    have hun : u ≠ 0 := by intro h; apply hk; simp [hu, h]
+    have hun : u ≠ 0 := fun h => hk (by simp [hu, h])
     have he := totalDegree_mul_of_isDomain hf.ne_zero hun
-    rw [← hu] at he
-    have hd := pderiv_totalDegree_le f k
-    omega
+    have hd' := pderiv_totalDegree_le f k
+    rw [← hu] at he; omega
   have hbad := (plane_common_zeros_card_le f (pderiv k f) hf hnd
     (fun i : {i // P i} => z i.val) (hz.comp Subtype.val_injective)
     (fun i => hzero i.val) (fun i => i.property)).trans

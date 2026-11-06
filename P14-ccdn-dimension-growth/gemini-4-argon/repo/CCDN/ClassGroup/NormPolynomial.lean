@@ -52,12 +52,6 @@ def signedNormCurvePolynomial (β : 𝓞 K) (ε : ℤ) : MvPolynomial (Fin 2) �
   (bivariatePolynomialEquiv ℤ).symm
     (X ^ 2 - C (C ε * integerNormPolynomial K β))
 
-private lemma signedNormCurvePolynomial_eval (β : 𝓞 K) (ε x y : ℤ) :
-    MvPolynomial.eval ![y, x] (signedNormCurvePolynomial K β ε) =
-      y ^ 2 - ε * Algebra.norm ℤ (algebraMap ℤ (𝓞 K) x - β) := by
-  rw [← bivariatePolynomialEquiv_eval _ y x]
-  simp [signedNormCurvePolynomial, integerNormPolynomial_eval]
-
 /-- If `|N(x - β)| = m ^ 2`, then `(m, x)` is an integral point on one of the two signed norm curves
 `y ^ 2 = N(x - β)` or `y ^ 2 = -N(x - β)`. -/
 lemma square_norm_yields_signedNormCurve_point
@@ -66,15 +60,14 @@ lemma square_norm_yields_signedNormCurve_point
     MvPolynomial.eval ![(m : ℤ), x] (signedNormCurvePolynomial K β 1) = 0 ∨
       MvPolynomial.eval ![(m : ℤ), x] (signedNormCurvePolynomial K β (-1)) = 0 := by
   have ha : |Algebra.norm ℤ (algebraMap ℤ (𝓞 K) x - β)| = (m : ℤ) ^ 2 := by
-    simpa only [Int.natCast_natAbs, Nat.cast_pow]
-      using congrArg (Nat.cast : ℕ → ℤ) h
+    simpa only [Int.natCast_natAbs, Nat.cast_pow] using congrArg (Nat.cast : ℕ → ℤ) h
   rcases (abs_eq (by positivity)).mp ha with hp | hn
   · left
-    rw [signedNormCurvePolynomial_eval, hp]
-    ring
+    rw [← bivariatePolynomialEquiv_eval _ (m : ℤ) x]
+    simp [signedNormCurvePolynomial, integerNormPolynomial_eval] at hp ⊢; linarith
   · right
-    rw [signedNormCurvePolynomial_eval, hn]
-    ring
+    rw [← bivariatePolynomialEquiv_eval _ (m : ℤ) x]
+    simp [signedNormCurvePolynomial, integerNormPolynomial_eval] at hn ⊢; linarith
 
 end
 end CCDN

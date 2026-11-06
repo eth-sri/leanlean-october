@@ -48,26 +48,21 @@ lemma PrimitiveIntegerPolynomial.translate_affine {n : ℕ} (a : Fin n → ℤ)
   rw [hC, AlgEquiv.symm_apply_apply] at he
   exact hf c ((C_dvd_iff_dvd_coeff c f).mp he)
 
-/-- Translation of the residue zero set, over ZMod p for every p. -/
-private def affineTranslationResidueEquiv (a : Fin 2 → ℤ) (f : MvPolynomial (Fin 2) ℤ) (p : ℕ) :
-    PlaneResidue (affineTranslation ℤ a f) p ≃ PlaneResidue f p where
-  toFun x := ⟨x.val + fun j => (a j : ZMod p), by
-    have h := x.property
-    rw [← eval_map] at h
-    rw [affineTranslation_map, affineTranslation_eval] at h
-    simpa only [eval_map, Function.comp_def, Int.coe_castRingHom] using h⟩
-  invFun x := ⟨x.val - fun j => (a j : ZMod p), by
-    rw [← eval_map]
-    rw [affineTranslation_map, affineTranslation_eval]
-    simpa only [Function.comp_def, Int.coe_castRingHom, sub_add_cancel, eval_map] using x.property⟩
-  left_inv x := by apply Subtype.ext; exact add_sub_cancel_right _ _
-  right_inv x := by apply Subtype.ext; exact sub_add_cancel _ _
-
 /-- An integral affine translation of a plane polynomial preserves the number of its zeros
 modulo `p` in the affine plane over `ZMod p`. -/
 lemma affineTranslation_residue_card (a : Fin 2 → ℤ) (f : MvPolynomial (Fin 2) ℤ) (p : ℕ) :
     Nat.card (PlaneResidue (affineTranslation ℤ a f) p) = Nat.card (PlaneResidue f p) :=
-  Nat.card_congr (affineTranslationResidueEquiv a f p)
+  /- Translation of the residue zero set, over ZMod p for every p. -/
+  Nat.card_congr
+    { toFun x := ⟨x.val + fun j => (a j : ZMod p), by
+        have h := x.property
+        rw [← eval_map, affineTranslation_map, affineTranslation_eval] at h
+        simpa only [eval_map, Function.comp_def, Int.coe_castRingHom] using h⟩
+      invFun x := ⟨x.val - fun j => (a j : ZMod p), by
+        rw [← eval_map, affineTranslation_map, affineTranslation_eval]
+        simpa only [Function.comp_def, Int.coe_castRingHom, sub_add_cancel, eval_map] using x.property⟩
+      left_inv x := Subtype.ext (add_sub_cancel_right _ _)
+      right_inv x := Subtype.ext (sub_add_cancel _ _) }
 
 /-- A nonzero integral plane polynomial `f` has an integral translate with nonzero constant
 coefficient by a vector whose entries lie in `[0, deg f]`. -/

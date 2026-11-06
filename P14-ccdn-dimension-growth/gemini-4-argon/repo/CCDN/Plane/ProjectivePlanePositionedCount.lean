@@ -22,21 +22,6 @@ namespace CCDN
 noncomputable section
 open MvPolynomial
 
-private theorem homogeneous_absolute_chart_data
-    {K : Type*} [Field K] [CharZero K] {d : ℕ}
-    (f : MvPolynomial (Fin 3) ℤ) (hf : f.IsHomogeneous d) (hd : 2 ≤ d)
-    (hir : Irreducible (map (Int.castRingHom K) f)) :
-    (affineChart 2 f).totalDegree = d ∧
-      Irreducible (map (Int.castRingHom K) (affineChart 2 f)) := by
-  have hirQ := rational_irreducible_of_charZero_map f hir
-  have hQ := affineChart_degree_of_not_variable_dvd _ (hf.map _)
-    (variable_not_dvd_irreducible_homogeneous _ (hf.map _) hirQ hd 0)
-  rw [affineChart_map, rational_map_totalDegree] at hQ
-  refine ⟨hQ, ?_⟩
-  rw [← affineChart_map]
-  exact affineChart_irreducible_of_not_variable_dvd _ (hf.map _) hir
-    (variable_not_dvd_irreducible_homogeneous _ (hf.map _) hir hd 0)
-
 /-- Coefficient-uniform projective plane count: for a primitive ternary integer form `f` of degree
 `d ≥ 2`, absolutely irreducible over an algebraically closed field of characteristic zero, the
 number of distinct projective points with primitive integer coordinates in the box of size `B` on
@@ -59,28 +44,32 @@ theorem projective_plane_finite_count_positioned
           (d : ℝ) ^ 4) := by
   obtain ⟨⟨hB, hz, hbox⟩, hzprim⟩ := hzB
   have hdpos : 0 < d := by omega
-  have hf0 : f ≠ 0 := by intro h; exact hir.ne_zero (by simp [h])
+  have hf0 : f ≠ 0 := fun h => hir.ne_zero (by simp [h])
   obtain ⟨a, H, ha, hH, hc, hlo, hhi⟩ := exists_translated_coefficient_position hdpos f hf hf0
   let model := homogeneousTranslation ℤ a f
   have hmhom : model.IsHomogeneous d := homogeneousTranslation_homogeneous a hf
-  have hm0 : model ≠ 0 := by
-    exact (homogeneousTranslation ℤ a).injective.ne (by simpa using hf0)
+  have hm0 : model ≠ 0 := (homogeneousTranslation ℤ a).injective.ne (by simpa using hf0)
   have hmir : Irreducible (map (Int.castRingHom K) model) := by
-    dsimp only [model]
-    rw [homogeneousTranslation_map]
+    dsimp only [model]; rw [homogeneousTranslation_map]
     exact (MulEquiv.irreducible_iff
       (f := homogeneousTranslation K ((Int.castRingHom K) ∘ a))).mpr hir
-  obtain ⟨hmdeg, hmchart⟩ := homogeneous_absolute_chart_data model hmhom hd hmir
+  have hmdeg : (affineChart 2 model).totalDegree = d := by
+    have hirQ := rational_irreducible_of_charZero_map model hmir
+    have hQ := affineChart_degree_of_not_variable_dvd _ (hmhom.map _)
+      (variable_not_dvd_irreducible_homogeneous _ (hmhom.map _) hirQ hd 0)
+    rwa [affineChart_map, rational_map_totalDegree] at hQ
+  have hmchart : Irreducible (map (Int.castRingHom K) (affineChart 2 model)) := by
+    rw [← affineChart_map]
+    exact affineChart_irreducible_of_not_variable_dvd _ (hmhom.map _) hmir
+      (variable_not_dvd_irreducible_homogeneous _ (hmhom.map _) hmir hd 0)
   let w := fun i => homogeneousPointTranslation (-a) (z i)
   have hw0 : ∀ i, w i ≠ 0 := fun i => homogeneousPointTranslation_ne_zero (-a) (hz0 i)
   have hwi : Function.Injective (fun i => Projectivization.mk ℚ (rationalPoint (w i))
       (rationalPoint_ne_zero (hw0 i))) :=
     homogeneousPointTranslation_projective_injective (-a) z hz0 hinj
-  have hwp : ∀ i, Finset.univ.gcd (w i) = 1 := by
-    intro i
-    exact (homogeneousPointTranslation_gcd (-a) (z i)).trans (hzprim i)
-  have hwz : ∀ i, eval (w i) model = 0 := by
-    intro i
+  have hwp : ∀ i, Finset.univ.gcd (w i) = 1 :=
+    fun i => (homogeneousPointTranslation_gcd (-a) (z i)).trans (hzprim i)
+  have hwz : ∀ i, eval (w i) model = 0 := fun i => by
     rw [homogeneousTranslation_eval]
     change eval (homogeneousPointTranslation a (homogeneousPointTranslation (-a) (z i))) f = 0
     have he := homogeneousPointTranslation_inverse (-a) (z i)

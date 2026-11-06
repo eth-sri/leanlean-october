@@ -18,17 +18,8 @@ namespace CCDN
 noncomputable section
 open MvPolynomial
 
-/-- Applying a linear map `φ : K → k` to the coefficients of a homogeneous polynomial of
+/- Applying a linear map `φ : K → k` to the coefficients of a homogeneous polynomial of
 degree `d` gives a homogeneous polynomial of degree `d`. -/
-lemma polynomialCoefficientLinear_homogeneous {k K : Type*}
-    [Field k] [Field K] [Algebra k K] {n d : ℕ}
-    (φ : K →ₗ[k] k) (f : MvPolynomial (Fin n) K) (hf : f.IsHomogeneous d) :
-    (polynomialCoefficientLinear φ f).IsHomogeneous d := by
-  intro m hm
-  apply hf
-  intro hzero
-  apply hm
-  rw [polynomialCoefficientLinear_coeff, hzero, map_zero]
 
 /-- A nonzero homogeneous polynomial `f` of degree `d` over an extension field `K` of `k` yields
 a nonzero homogeneous polynomial `g` of degree `d` over `k` that vanishes at every `k`-point
@@ -40,14 +31,10 @@ theorem exists_nonzero_homogeneous_linear_descent {k K : Type*}
       ∀ x : Fin n → k, eval (algebraMap k K ∘ x) f = 0 → eval x g = 0 := by
   obtain ⟨m, hm⟩ := exists_coeff_ne_zero hf
   obtain ⟨φ, hφ⟩ := Module.Projective.exists_dual_ne_zero k hm
-  refine ⟨polynomialCoefficientLinear φ f, ?_,
-    polynomialCoefficientLinear_homogeneous φ f hhom, ?_⟩
-  · intro he
-    have hh := polynomialCoefficientLinear_coeff φ f m
-    have hz : φ (f.coeff m) = 0 := by simpa [he] using hh.symm
-    exact hφ hz
-  · intro x hx
-    rw [polynomialCoefficientLinear_eval, hx, map_zero]
+  refine ⟨polynomialCoefficientLinear φ f,
+    fun he => hφ (by simpa [he] using (polynomialCoefficientLinear_coeff φ f m).symm),
+    fun m hm => hhom fun hz => hm (by rw [polynomialCoefficientLinear_coeff, hz, map_zero]),
+    fun x hx => by rw [polynomialCoefficientLinear_eval, hx, map_zero]⟩
 
 /-- The homogeneous component of `g * h` in degree `g.totalDegree + h.totalDegree` is the
 product of the top-degree homogeneous components of `g` and `h`. -/

@@ -23,20 +23,6 @@ noncomputable section
 open MvPolynomial
 attribute [local instance] MvPolynomial.algebraMvPolynomial
 
-/-- A nonconstant polynomial over a domain cannot divide a nonzero constant. -/
-private theorem mvPolynomial_not_dvd_nonzero_constant
-    {R σ : Type*} [CommRing R] [IsDomain R]
-    (f : MvPolynomial σ R) (hf : f ≠ 0) (hd : 0 < f.totalDegree)
-    (a : R) (ha : a ≠ 0) : ¬ f ∣ C a := by
-  rintro ⟨g, hg⟩
-  have hg0 : g ≠ 0 := by
-    intro h
-    rw [h, mul_zero] at hg
-    exact ha ((C_injective σ R) (by simpa using hg))
-  have hdeg := totalDegree_mul_of_isDomain hf hg0
-  rw [← hg, totalDegree_C] at hdeg
-  omega
-
 /-- Prime polynomials of positive variable degree survive coefficient
 localization at nonzero elements. -/
 theorem prime_mvPolynomial_map_localization
@@ -48,12 +34,16 @@ theorem prime_mvPolynomial_map_localization
   let N : Submonoid (MvPolynomial σ R) := M.map C
   let I : Ideal (MvPolynomial σ R) := Ideal.span {f}
   have hI : I.IsPrime := Ideal.isPrime_span_singleton_of_prime hf
+  /- A nonconstant polynomial over a domain cannot divide a nonzero constant. -/
   have hdis : Disjoint (N : Set (MvPolynomial σ R)) (I : Set (MvPolynomial σ R)) := by
     rw [Set.disjoint_left]
-    intro q hq hqi
-    obtain ⟨a, ha, rfl⟩ := hq
-    exact mvPolynomial_not_dvd_nonzero_constant f hf.ne_zero hd a
-      (mem_nonZeroDivisors_iff_ne_zero.mp (hM ha)) (Ideal.mem_span_singleton.mp hqi)
+    rintro _ ⟨a, ha, rfl⟩ hqi
+    obtain ⟨g, hg⟩ := Ideal.mem_span_singleton.mp hqi
+    have hg0 : g ≠ 0 := fun h => mem_nonZeroDivisors_iff_ne_zero.mp (hM ha)
+      ((C_injective σ R) (by simpa [h] using hg))
+    have hdeg := totalDegree_mul_of_isDomain hf.ne_zero hg0
+    rw [← hg, totalDegree_C] at hdeg
+    omega
   have hp := IsLocalization.isPrime_of_isPrime_disjoint N (MvPolynomial σ S) I hI hdis
   have hinj : Function.Injective (algebraMap R S) := IsLocalization.injective S hM
   have hne : MvPolynomial.map (algebraMap R S) f ≠ 0 :=

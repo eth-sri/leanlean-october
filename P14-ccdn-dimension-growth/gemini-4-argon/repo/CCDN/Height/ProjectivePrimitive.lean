@@ -22,49 +22,26 @@ theorem exists_primitive_projective_rep {n : ℕ} (x : ProjectivePoint n) :
   obtain ⟨b, hb⟩ := IsLocalization.exist_integer_multiples_of_finite
     (nonZeroDivisors ℤ) x.rep
   choose u hu using hb
-  have hb0 : (b.val : ℚ) ≠ 0 := by
-    exact_mod_cast (mem_nonZeroDivisors_iff_ne_zero.mp b.property)
+  have hb0 : (b.val : ℚ) ≠ 0 := mod_cast (mem_nonZeroDivisors_iff_ne_zero.mp b.property)
   have huQ (i : Fin (n + 1)) : (u i : ℚ) = (b.val : ℚ) * x.rep i := by
     simpa only [Algebra.smul_def, algebraMap_int_eq, Int.coe_castRingHom] using hu i
-  have hu0 : u ≠ 0 := by
-    intro h
-    apply x.rep_nonzero
-    funext i
+  have hu0 : u ≠ 0 := fun h => x.rep_nonzero <| funext fun i => by
     have hi := huQ i
     simp only [h, Pi.zero_apply, Int.cast_zero] at hi
     exact (mul_eq_zero.mp hi.symm).resolve_left hb0
-  obtain ⟨z, hz, hprim⟩ := Finset.extract_gcd u
-    (show (Finset.univ : Finset (Fin (n + 1))).Nonempty from Finset.univ_nonempty)
-  have hzg (i : Fin (n + 1)) : u i = Finset.univ.gcd u * z i :=
-    hz i (Finset.mem_univ i)
-  have hg0 : Finset.univ.gcd u ≠ 0 := by
-    intro h
-    apply hu0
-    funext i
-    simp [h] at hzg
-    exact hzg i
-  have hz0 : z ≠ 0 := by
-    intro h
-    apply hu0
-    funext i
-    simp [h] at hzg
-    exact hzg i
+  obtain ⟨z, hz, hprim⟩ := Finset.extract_gcd u Finset.univ_nonempty
+  have hzg (i : Fin (n + 1)) : u i = Finset.univ.gcd u * z i := hz i (Finset.mem_univ i)
+  have hg0 : Finset.univ.gcd u ≠ 0 := fun h => hu0 <| funext fun i => by simp [h] at hzg; exact hzg i
+  have hz0 : z ≠ 0 := fun h => hu0 <| funext fun i => by simp [h] at hzg; exact hzg i
   refine ⟨z, hz0, hprim, ?_⟩
-  have hgQ : ((Finset.univ.gcd u : ℤ) : ℚ) ≠ 0 := by exact_mod_cast hg0
-  have he : rationalPoint z =
-      ((b.val : ℚ) / (Finset.univ.gcd u : ℤ)) • x.rep := by
+  have hgQ : ((Finset.univ.gcd u : ℤ) : ℚ) ≠ 0 := mod_cast hg0
+  have he : rationalPoint z = ((b.val : ℚ) / (Finset.univ.gcd u : ℤ)) • x.rep := by
     funext i
-    have hi := huQ i
-    rw [hzg i, Int.cast_mul] at hi
+    have hi := huQ i; rw [hzg i, Int.cast_mul] at hi
     change (z i : ℚ) = ((b.val : ℚ) / (Finset.univ.gcd u : ℤ)) * x.rep i
-    apply (mul_left_cancel₀ hgQ)
-    rw [hi]
-    field_simp
-  calc
-    _ = Projectivization.mk ℚ x.rep x.rep_nonzero := by
-      rw [Projectivization.mk_eq_mk_iff']
-      exact ⟨_, he.symm⟩
-    _ = x := x.mk_rep
+    apply mul_left_cancel₀ hgQ
+    rw [hi]; field_simp
+  exact ((Projectivization.mk_eq_mk_iff' ℚ _ _ _ _).mpr ⟨_, he.symm⟩).trans x.mk_rep
 
 /-- A chosen primitive integer representative of the projective point `x`: a nonzero integer
 vector with coprime coordinates spanning `x`. -/
@@ -97,23 +74,19 @@ theorem primitiveProjectiveRep_injective {n : ℕ} :
       (rationalPoint_ne_zero (primitiveProjectiveRep_ne_zero x)) :=
         (primitiveProjectiveRep_mk x).symm
     _ = Projectivization.mk ℚ (rationalPoint (primitiveProjectiveRep y))
-      (rationalPoint_ne_zero (primitiveProjectiveRep_ne_zero y)) := by
-        congr 1
+      (rationalPoint_ne_zero (primitiveProjectiveRep_ne_zero y)) := by congr 1
     _ = y := primitiveProjectiveRep_mk y
-
-private theorem primitiveProjectiveRep_height {n : ℕ} (x : ProjectivePoint n) :
-    x.mulHeight = ((⨆ i, |primitiveProjectiveRep x i| : ℤ) : ℝ) := by
-  have h := projective_height_primitive _ (primitiveProjectiveRep_ne_zero x)
-    (primitiveProjectiveRep_gcd x)
-  rwa [primitiveProjectiveRep_mk] at h
 
 /-- Every coordinate of the primitive integer representative of `x` has absolute value at most the
 multiplicative height of `x`. -/
 theorem primitiveProjectiveRep_bound {n : ℕ} (x : ProjectivePoint n)
     (i : Fin (n + 1)) :
     |(primitiveProjectiveRep x i : ℝ)| ≤ x.mulHeight := by
-  rw [primitiveProjectiveRep_height, ← Int.cast_abs]
-  exact_mod_cast (le_ciSup (Finite.bddAbove_range (fun j => |primitiveProjectiveRep x j|)) i)
+  have h := projective_height_primitive _ (primitiveProjectiveRep_ne_zero x)
+    (primitiveProjectiveRep_gcd x)
+  rw [primitiveProjectiveRep_mk] at h
+  rw [h, ← Int.cast_abs]
+  exact_mod_cast le_ciSup (Finite.bddAbove_range (fun j => |primitiveProjectiveRep x j|)) i
 
 end
 end CCDN

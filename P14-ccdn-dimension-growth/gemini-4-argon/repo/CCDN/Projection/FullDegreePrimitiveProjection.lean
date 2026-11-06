@@ -27,43 +27,6 @@ forces the function-field extension to have the full Hilbert degree.
 @[expose] public section
 namespace CCDN
 noncomputable section
-
-/-- A linear parameter generating the filtration in large degrees gives a
-function-field extension of degree exactly d. -/
-private theorem curve_parameter_full_degree_of_recurrence {K F σ : Type*}
-    [Field K] [Field F] [Fintype σ] [Algebra K F]
-    [Algebra (RatFunc K) F] [IsScalarTower K (RatFunc K) F]
-    (I : Ideal (MvPolynomial σ K)) [I.IsPrime]
-    [Algebra (MvPolynomial σ K ⧸ I) F] [IsScalarTower K (MvPolynomial σ K ⧸ I) F]
-    [IsFractionRing (MvPolynomial σ K ⧸ I) F]
-    (d : ℕ) (hdegree : HasFilteredCurveDegree I d)
-    (l : MvPolynomial σ K) (hl : l.totalDegree ≤ 1)
-    (he : algebraMap (MvPolynomial σ K ⧸ I) F ((Ideal.Quotient.mk I) l) =
-      algebraMap (RatFunc K) F RatFunc.X)
-    (N : ℕ) (hrec : ∀ n ≥ N, filteredCoordinateSpace I (n + 1) =
-      filteredCoordinateSpace I n ⊔ (filteredCoordinateSpace I n).map
-        (LinearMap.mulLeft K ((Ideal.Quotient.mk I) l))) :
-    Module.Finite (RatFunc K) F ∧ Module.finrank (RatFunc K) F = d := by
-  obtain ⟨hfinite, hupper⟩ := curve_functionField_finite_rank_le I d hdegree l hl
-    RatFunc.X RatFunc.transcendental_X he
-  let : Module.Finite (RatFunc K) F := hfinite
-  let φ := IsScalarTower.toAlgHom K (MvPolynomial σ K ⧸ I) F
-  have hcomm (x : MvPolynomial σ K ⧸ I) :
-      φ.toLinearMap ((LinearMap.mulLeft K ((Ideal.Quotient.mk I) l)) x) =
-        algebraMap (RatFunc K) F RatFunc.X * φ.toLinearMap x := by
-    change φ (((Ideal.Quotient.mk I) l) * x) = _
-    rw [map_mul]
-    exact congrArg (fun y => y * φ x) he
-  have hlower := parameter_recurrence_slope_le (filteredCoordinateSpace I)
-    (LinearMap.mulLeft K ((Ideal.Quotient.mk I) l)) φ.toLinearMap
-    (IsFractionRing.injective _ _) hcomm N hrec d hdegree
-  exact ⟨hfinite, Nat.le_antisymm hupper hlower⟩
-
-end
-end CCDN
-
-namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- Build the bounded second projection coordinate and a plane equation of
@@ -85,11 +48,17 @@ theorem exists_full_degree_primitive_projection {K F : Type*}
     ∃ (k : ℕ) (f : MvPolynomial (Fin 2) K), k ≤ n * d ^ 2 ∧
       Irreducible f ∧ f.totalDegree = d ∧
       ∀ g, aeval (![l, momentCoordinate K n k]) g ∈ I ↔ f ∣ g := by
-  obtain ⟨hfinite, hfull⟩ := curve_parameter_full_degree_of_recurrence I d hdegree l hl he N hrec
+  obtain ⟨hfinite, hupper⟩ := curve_functionField_finite_rank_le I d hdegree l hl
+    RatFunc.X RatFunc.transcendental_X he
   let : Module.Finite (RatFunc K) F := hfinite
   let φ := IsScalarTower.toAlgHom K (MvPolynomial (Fin n) K ⧸ I) F
-  have hu : Transcendental K ((Ideal.Quotient.mk I) l) := by
-    intro h
+  have hlower := parameter_recurrence_slope_le (filteredCoordinateSpace I)
+    (LinearMap.mulLeft K ((Ideal.Quotient.mk I) l)) φ.toLinearMap
+    (IsFractionRing.injective _ _)
+    (fun x => by change φ (((Ideal.Quotient.mk I) l) * x) = _; rw [map_mul]; exact congrArg (· * φ x) he)
+    N hrec d hdegree
+  have hfull : Module.finrank (RatFunc K) F = d := Nat.le_antisymm hupper hlower
+  have hu : Transcendental K ((Ideal.Quotient.mk I) l) := fun h => by
     have hh := (isAlgebraic_algHom_iff φ (IsFractionRing.injective _ _)).mpr h
     change IsAlgebraic K (algebraMap (MvPolynomial (Fin n) K ⧸ I) F ((Ideal.Quotient.mk I) l)) at hh
     rw [he] at hh
@@ -109,12 +78,9 @@ theorem exists_full_degree_primitive_projection {K F : Type*}
     rwa [momentCoordinate_fraction]
   have hfd := plane_projection_degree_eq_of_full_parameter I a ha d hdegree φ f hf.ne_zero hker
     0 1 RatFunc.X RatFunc.transcendental_X he hp hfull
-  refine ⟨k, f, by simpa only [hfull] using hk, hf, hfd, ?_⟩
-  intro g
-  have hg : aeval a g ∈ I ↔ g ∈ RingHom.ker (projectionCoordinateMap I a) := by
-    change _ ↔ (Ideal.Quotient.mk I) (aeval a g) = 0
-    exact Ideal.Quotient.eq_zero_iff_mem.symm
-  rw [hg, hker, Ideal.mem_span_singleton]
+  refine ⟨k, f, by simpa only [hfull] using hk, hf, hfd, fun g => ?_⟩
+  rw [show aeval a g ∈ I ↔ g ∈ RingHom.ker (projectionCoordinateMap I a) from
+    Ideal.Quotient.eq_zero_iff_mem.symm, hker, Ideal.mem_span_singleton]
 
 end
 end CCDN

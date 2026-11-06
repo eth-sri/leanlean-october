@@ -29,55 +29,29 @@ lemma boundedIntegersInSubfield_finite (L : IntermediateField ℚ K) (B : ℝ) :
     (boundedIntegersInSubfield K L B).Finite :=
   (boundedArchimedeanIntegers_finite K B).subset (fun _ h ↦ h.1)
 
-/-- The map sending a bounded algebraic integer of `K` lying in `L` to the same element viewed as a
-bounded algebraic integer of `L`; every infinite place of `L` is restricted from one of `K`. -/
-def boundedIntegerToSubfield (L : IntermediateField ℚ K) (B : ℝ) :
-    boundedIntegersInSubfield K L B → boundedArchimedeanIntegers L B := fun β ↦ by
-  let γ : L := ⟨(β.val : K), β.property.2⟩
-  have hγ : γ ∈ integralClosure ℤ L := by
-    change IsIntegral ℤ γ
-    apply (isIntegral_algebraMap_iff (R := ℤ) (A := L) (B := K)).mp
-    exact β.val.isIntegral_coe
-  let z : 𝓞 L := ⟨γ, hγ⟩
-  refine ⟨z, ?_⟩
-  intro w
-  obtain ⟨v, rfl⟩ := InfinitePlace.comap_surjective (K := K) w
-  rw [comap_apply]
-  change v (algebraMap L K (z : L)) ≤ B
-  rw [show (z : L) = γ from RingOfIntegers.coe_mk hγ]
-  exact β.property.1 v
-
-/-- The map `boundedIntegerToSubfield` does not change the underlying element of `K`. -/
-@[simp] lemma boundedIntegerToSubfield_coe (L : IntermediateField ℚ K) (B : ℝ)
-    (β : boundedIntegersInSubfield K L B) :
-    (((boundedIntegerToSubfield K L B β).val : L) : K) = (β.val : K) := by
-  rfl
-
-private lemma boundedIntegerToSubfield_injective (L : IntermediateField ℚ K) (B : ℝ) :
-    Function.Injective (boundedIntegerToSubfield K L B) := by
-  intro x y h
-  apply Subtype.ext
-  apply RingOfIntegers.coe_injective
-  simpa only [boundedIntegerToSubfield_coe] using
-    congrArg (fun z : boundedArchimedeanIntegers L B ↦ ((z.val : L) : K)) h
-
-private theorem boundedIntegersInSubfield_ncard_le (L : IntermediateField ℚ K) (B : ℝ) :
-    (boundedIntegersInSubfield K L B).ncard ≤
-      (boundedArchimedeanIntegers L B).ncard := by
-  let := (boundedIntegersInSubfield_finite K L B).fintype
-  let := (boundedArchimedeanIntegers_finite L B).fintype
-  simpa only [Set.fintypeCard_eq_ncard] using
-    Fintype.card_le_of_injective (boundedIntegerToSubfield K L B)
-      (boundedIntegerToSubfield_injective K L B)
-
 /-- For `B ≥ 0`, the number of algebraic integers of `K` bounded by `B` at every infinite place and
 lying in `L` is at most `(2 * √m * B + 1) ^ m`, where `m = [L : ℚ]`. -/
 theorem boundedIntegersInSubfield_count (L : IntermediateField ℚ K)
     {B : ℝ} (hB : 0 ≤ B) :
     ((boundedIntegersInSubfield K L B).ncard : ℝ) ≤
-      (2 * Real.sqrt (Module.finrank ℚ L) * B + 1) ^ Module.finrank ℚ L :=
-  (Nat.cast_le.mpr (boundedIntegersInSubfield_ncard_le K L B)).trans
-    (boundedArchimedeanIntegers_separated_count L hB)
+      (2 * Real.sqrt (Module.finrank ℚ L) * B + 1) ^ Module.finrank ℚ L := by
+  /- The map sending a bounded algebraic integer of `K` lying in `L` to the same element viewed as a
+  bounded algebraic integer of `L`; every infinite place of `L` is restricted from one of `K`. -/
+  /- The map `boundedIntegerToSubfield` does not change the underlying element of `K`. -/
+  let := (boundedIntegersInSubfield_finite K L B).fintype
+  let := (boundedArchimedeanIntegers_finite L B).fintype
+  let toSub : boundedIntegersInSubfield K L B → boundedArchimedeanIntegers L B := fun β ↦
+    ⟨⟨⟨(β.val : K), β.property.2⟩,
+      (isIntegral_algebraMap_iff (R := ℤ) (A := L) (B := K)).mp β.val.isIntegral_coe⟩, fun w ↦ by
+      obtain ⟨v, rfl⟩ := InfinitePlace.comap_surjective (K := K) w
+      exact β.property.1 v⟩
+  have hle : (boundedIntegersInSubfield K L B).ncard ≤
+      (boundedArchimedeanIntegers L B).ncard := by
+    simpa only [Set.fintypeCard_eq_ncard] using
+      Fintype.card_le_of_injective toSub fun x y h =>
+        Subtype.ext (RingOfIntegers.coe_injective
+          (congrArg (fun z : boundedArchimedeanIntegers L B ↦ ((z.val : L) : K)) h))
+  exact (Nat.cast_le.mpr hle).trans (boundedArchimedeanIntegers_separated_count L hB)
 
 end
 end CCDN

@@ -33,7 +33,7 @@ def quotientRadialMap {K σ : Type*} [Field K] (I : Ideal (MvPolynomial σ K)) :
   map_mul' f g := by apply Subtype.ext; simp
   commutes' c := by
     apply Subtype.ext
-    simp
+    simp [radialMap]
     exact (Ideal.Quotient.mkₐ K I).commutes c
 
 /-- The coefficient of `T ^ n` in the radial image of `f` is the class modulo `I` of the

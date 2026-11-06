@@ -18,14 +18,6 @@ open MvPolynomial Finsupp
 
 namespace CoefficientwiseHomogeneous
 
-private lemma pow {R σ τ : Type*} [CommRing R]
-    {f : MvPolynomial σ (MvPolynomial τ R)} {d : ℕ}
-    (hf : CoefficientwiseHomogeneous f d) (n : ℕ) :
-    CoefficientwiseHomogeneous (f ^ n) (d * n) := by
-  induction n with
-  | zero => simpa only [pow_zero, Nat.mul_zero] using one (R := R) (σ := σ) (τ := τ)
-  | succ n ih => simpa only [pow_succ, Nat.mul_succ] using ih.mul hf
-
 /-- Substituting coefficientwise homogeneous forms of degree `n` into a homogeneous polynomial `φ`
 of degree `m`, with constant coefficients mapped to coefficientwise degree `0`, gives a
 coefficientwise homogeneous polynomial of degree `n * m`. -/
@@ -36,16 +28,17 @@ lemma eval₂ {R S σ τ υ : Type*} [CommRing R] [CommRing S]
     (hf : ∀ r, CoefficientwiseHomogeneous (f r) 0)
     (hg : ∀ i, CoefficientwiseHomogeneous (g i) n) :
     CoefficientwiseHomogeneous (MvPolynomial.eval₂ f g φ) (n * m) := by
-  apply CoefficientwiseHomogeneous.sum
-  intro i hi
+  refine CoefficientwiseHomogeneous.sum _ _ _ fun i hi => ?_
   rw [← zero_add (n * m)]
-  apply CoefficientwiseHomogeneous.mul (hf _) _
+  refine CoefficientwiseHomogeneous.mul (hf _) ?_
   convert! CoefficientwiseHomogeneous.prod _ _ (fun k => n * i k) _
   · rw [Finsupp.mem_support_iff] at hi
     rw [← Finset.mul_sum, ← hφ hi, weight_apply]
     simp_rw [smul_eq_mul, Finsupp.sum, Pi.one_apply, mul_one]
   · intro k _
-    exact (hg k).pow _
+    induction i k with
+    | zero => simpa only [pow_zero, Nat.mul_zero] using one (R := S) (σ := τ) (τ := υ)
+    | succ l ih => simpa only [pow_succ, Nat.mul_succ] using ih.mul (hg k)
 
 end CoefficientwiseHomogeneous
 

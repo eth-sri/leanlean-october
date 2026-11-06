@@ -21,30 +21,6 @@ namespace CCDN
 noncomputable section
 open MvPolynomial Finset
 
-private theorem homogeneous_irreducible_reduction_of_not_hypersurfaceBadReduction
-    {d p : ℕ} [Fact p.Prime] (f : MvPolynomial (Fin 3) ℤ)
-    (hf : f.IsHomogeneous d) (hdeg : (affineChart 2 f).totalDegree = d)
-    (hgood : ¬HypersurfaceBadReduction (affineChart 2 f) p) :
-    Irreducible (map (Int.castRingHom (ZMod p)) f) := by
-  let K := AlgebraicClosure (ZMod p)
-  obtain ⟨hdegree, hir⟩ := (not_hypersurfaceBadReduction_iff (affineChart 2 f) p).mp hgood
-  have hc : affineChart 2 (map (Int.castRingHom K) f) =
-      map (Int.castRingHom K) (affineChart 2 f) := affineChart_map _ f
-  have hf0 : map (Int.castRingHom K) f ≠ 0 := by
-    intro h
-    apply hir.ne_zero
-    rw [← hc, h, map_zero]
-  have hhom := hf.map (Int.castRingHom K)
-  have hi : Irreducible (map (Int.castRingHom K) f) := by
-    apply irreducible_of_affineChart_irreducible
-    · rw [hc, hdegree, hdeg, hhom.totalDegree hf0]
-    · rw [hc]
-      exact hir
-  apply mvPolynomial_irreducible_of_field_map (algebraMap (ZMod p) K)
-  have he : (algebraMap (ZMod p) K).comp (Int.castRingHom (ZMod p)) =
-      Int.castRingHom K := by ext; simp
-  simpa only [MvPolynomial.map_map, he] using hi
-
 /-- The global projective determinant lower bound, with the bad-prime charge
 controlled by the coefficient height `H` of the affine chart. -/
 theorem projective_determinant_log_lower_height
@@ -66,9 +42,20 @@ theorem projective_determinant_log_lower_height
       (hlo : stepanovThreshold (d : ℝ) < p) :
       Irreducible (map (Int.castRingHom (ZMod p)) f) := by
     let : Fact p.Prime := ⟨(mem_filter.mp (mem_sdiff.mp hp).1).2⟩
-    apply homogeneous_irreducible_reduction_of_not_hypersurfaceBadReduction f hf hdeg
-    intro hbad
-    exact (mem_sdiff.mp hp).2 ((hmem p).mpr ⟨hlo, hbad⟩)
+    let L := AlgebraicClosure (ZMod p)
+    obtain ⟨hdegree, hir⟩ := (not_hypersurfaceBadReduction_iff (affineChart 2 f) p).mp
+      fun hbad => (mem_sdiff.mp hp).2 ((hmem p).mpr ⟨hlo, hbad⟩)
+    have hc : affineChart 2 (map (Int.castRingHom L) f) =
+        map (Int.castRingHom L) (affineChart 2 f) := affineChart_map _ f
+    have hf0 : map (Int.castRingHom L) f ≠ 0 :=
+      fun h => hir.ne_zero (by rw [← hc, h, map_zero])
+    have hi : Irreducible (map (Int.castRingHom L) f) :=
+      irreducible_of_affineChart_irreducible _
+        (by rw [hc, hdegree, hdeg, (hf.map (Int.castRingHom L)).totalDegree hf0]) (hc ▸ hir)
+    apply mvPolynomial_irreducible_of_field_map (algebraMap (ZMod p) L)
+    simpa only [MvPolynomial.map_map,
+      show (algebraMap (ZMod p) L).comp (Int.castRingHom (ZMod p)) = Int.castRingHom L by ext; simp]
+      using hi
   have hlower := projective_determinant_log_lower_at_rank hs f hf hd hev bad hred
   have hh := mul_le_mul_of_nonneg_left hcharge (show 0 ≤ (s : ℝ) ^ 2 / 2 by positivity)
   dsimp only [heightDeterminantError]

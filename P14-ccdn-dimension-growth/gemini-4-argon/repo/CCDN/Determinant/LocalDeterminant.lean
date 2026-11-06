@@ -43,23 +43,6 @@ theorem pow_dvd_det_of_weighted_factorization {R : Type*} [CommRing R] {s N : �
   rw [Finset.prod_pow_eq_pow_sum] at hminor
   exact dvd_mul_of_dvd_right ((pow_dvd_pow p (he t)).trans hminor) _
 
-private theorem orderEmbedding_value_ge {s N : ℕ} (t : Fin s ↪o Fin N) (i : Fin s) :
-    i.val ≤ (t i).val := by
-  have hpoint : ∀ j : ℕ, ∀ hj : j < s, j ≤ (t ⟨j, hj⟩).val := by
-    intro j
-    induction j with
-    | zero => intro hj; omega
-    | succ j ih =>
-      intro hj
-      have hj' : j < s := by omega
-      have hprev := ih hj'
-      have hlt := t.strictMono (show (⟨j, hj'⟩ : Fin s) < ⟨j + 1, hj⟩ from by
-        change j < j + 1
-        omega)
-      change (t ⟨j, hj'⟩).val < (t ⟨j + 1, hj⟩).val at hlt
-      omega
-  exact hpoint i i.isLt
-
 /-- The sum `∑_{i < s} ⌊i / μ⌋` of the first `s` terms of the weight sequence in which each
 nonnegative integer occurs `μ` times. -/
 def multiplicityExponent (s μ : ℕ) : ℕ := ∑ i : Fin s, i.val / μ
@@ -70,9 +53,17 @@ theorem multiplicity_pow_dvd_det_of_factorization {R : Type*} [CommRing R] {s N 
     (U : Matrix (Fin s) (Fin N) R) (V : Matrix (Fin N) (Fin s) R)
     (p : R) (μ : ℕ) (hV : ∀ i j, p ^ (i.val / μ) ∣ V i j) :
     p ^ multiplicityExponent s μ ∣ (U * V).det := by
-  apply pow_dvd_det_of_weighted_factorization U V p (fun i => i.val / μ) _ hV
-  intro t
-  exact Finset.sum_le_sum fun i _ => Nat.div_le_div_right (orderEmbedding_value_ge t i)
+  refine pow_dvd_det_of_weighted_factorization U V p (fun i => i.val / μ) _ hV fun t =>
+    Finset.sum_le_sum fun i _ => Nat.div_le_div_right ?_
+  have hpoint (j : ℕ) (hj : j < s) : j ≤ (t ⟨j, hj⟩).val := by
+    induction j with
+    | zero => omega
+    | succ j ih =>
+      have := ih (by omega)
+      have : (t ⟨j, by omega⟩).val < (t ⟨j + 1, hj⟩).val :=
+        t.strictMono (by change j < j + 1; omega)
+      omega
+  exact hpoint i i.isLt
 
 /-- An explicit quadratic lower estimate for the repeated-weight exponent. -/
 theorem multiplicityExponent_lower_bound (s μ : ℕ) (hμ : 0 < μ) :

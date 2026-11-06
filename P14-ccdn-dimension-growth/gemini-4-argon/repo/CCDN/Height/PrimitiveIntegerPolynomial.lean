@@ -25,32 +25,21 @@ open MvPolynomial
 def PrimitiveIntegerPolynomial {σ : Type*} (f : MvPolynomial σ ℤ) : Prop :=
   ∀ c : ℤ, (∀ m, c ∣ f.coeff m) → IsUnit c
 
-private lemma PrimitiveIntegerPolynomial.of_dvd {σ : Type*} {f g : MvPolynomial σ ℤ}
-    (hf : PrimitiveIntegerPolynomial f) (hg : g ∣ f) : PrimitiveIntegerPolynomial g := by
-  intro c hc
-  exact hf c ((C_dvd_iff_dvd_coeff c f).mp (((C_dvd_iff_dvd_coeff c g).mpr hc).trans hg))
-
-private lemma PrimitiveIntegerPolynomial.isUnit_of_rational_map {σ : Type*}
-    {f : MvPolynomial σ ℤ} (hf : PrimitiveIntegerPolynomial f)
-    (hu : IsUnit (MvPolynomial.map (Int.castRingHom ℚ) f)) : IsUnit f := by
-  have hd := (isUnit_iff_totalDegree_of_isReduced.mp hu).2
-  have he : (MvPolynomial.map (Int.castRingHom ℚ) f).totalDegree = f.totalDegree :=
-      totalDegree_map_of_injective Int.cast_injective _
-  have hc := totalDegree_eq_zero_iff_eq_C.mp (he ▸ hd)
-  have hunit : IsUnit (f.coeff 0) := hf _ ((C_dvd_iff_dvd_coeff _ f).mp (hc ▸ dvd_rfl))
-  rw [hc]
-  exact hunit.map C
-
 /-- A primitive integer polynomial whose image over `ℚ` is irreducible is irreducible over `ℤ`. -/
 lemma PrimitiveIntegerPolynomial.irreducible_of_rational_map {σ : Type*}
     {f : MvPolynomial σ ℤ} (hf : PrimitiveIntegerPolynomial f)
     (hir : Irreducible (MvPolynomial.map (Int.castRingHom ℚ) f)) : Irreducible f := by
-  refine ⟨fun hu => hir.not_isUnit (hu.map (MvPolynomial.map (Int.castRingHom ℚ))), ?_⟩
-  intro g h he
-  have hh := hir.isUnit_or_isUnit (by rw [he, map_mul])
-  exact hh.imp
-    ((hf.of_dvd ⟨h, he⟩).isUnit_of_rational_map)
-    ((hf.of_dvd ⟨g, by rw [he, mul_comm]⟩).isUnit_of_rational_map)
+  have hunit {g : MvPolynomial σ ℤ} (hg : g ∣ f)
+      (hu : IsUnit (MvPolynomial.map (Int.castRingHom ℚ) g)) : IsUnit g := by
+    have hd := (totalDegree_map_of_injective Int.cast_injective g).symm.trans
+      (isUnit_iff_totalDegree_of_isReduced.mp hu).2
+    have hc := totalDegree_eq_zero_iff_eq_C.mp hd
+    have hdvd : C (g.coeff 0) ∣ g := by rw [← hc]
+    have hu0 : IsUnit (g.coeff 0) := hf _ ((C_dvd_iff_dvd_coeff _ f).mp (hdvd.trans hg))
+    exact hc ▸ hu0.map C
+  refine ⟨fun hu => hir.not_isUnit (hu.map (MvPolynomial.map (Int.castRingHom ℚ))), fun g h he => ?_⟩
+  exact (hir.isUnit_or_isUnit (by rw [he, map_mul])).imp
+    (hunit ⟨h, he⟩) (hunit ⟨g, by rw [he, mul_comm]⟩)
 
 /-- Clearing denominators: every rational multivariate polynomial has a nonzero integer multiple
 `b • f` with integer coefficients. -/
@@ -71,13 +60,6 @@ theorem mvPolynomial_integer_multiple {σ : Type*} (f : MvPolynomial σ ℚ) :
   congr 1
   simpa [Algebra.smul_def] using hv i
 
-private lemma PrimitiveIntegerPolynomial.isRelPrime_constant {σ : Type*}
-    {f : MvPolynomial σ ℤ} (hf : PrimitiveIntegerPolynomial f) {c : ℤ} (hc : c ≠ 0) :
-    IsRelPrime f (C c) := by
-  intro q hqf hqc
-  obtain ⟨a, _, rfl⟩ := (dvd_C_iff_exists hc).mp hqc
-  exact (hf a ((C_dvd_iff_dvd_coeff a f).mp hqf)).map C
-
 /-- For any primitive equation, integer divisibility is exactly rational
 coefficient divisibility. -/
 theorem PrimitiveIntegerPolynomial.rational_map_dvd_iff {σ : Type*}
@@ -91,7 +73,10 @@ theorem PrimitiveIntegerPolynomial.rational_map_dvd_iff {σ : Type*}
       rw [map_mul, map_mul, map_C, hu, hq]
       simp only [Int.coe_castRingHom]
       ring
-    exact (hf.isRelPrime_constant hb).dvd_of_dvd_mul_left ⟨u, he⟩
+    have hrel : IsRelPrime f (C b) := fun r hrf hrb => by
+      obtain ⟨a, _, rfl⟩ := (dvd_C_iff_exists hb).mp hrb
+      exact (hf a ((C_dvd_iff_dvd_coeff a f).mp hrf)).map C
+    exact hrel.dvd_of_dvd_mul_left ⟨u, he⟩
   · exact map_dvd (MvPolynomial.map (Int.castRingHom ℚ))
 
 /-- Extract a primitive integer equation by the gcd of its nonzero

@@ -16,62 +16,10 @@ coordinate chart. The other coordinate is the parameter X plus its base value. -
 namespace CCDN
 noncomputable section
 
-/-- Turn coordinate j into a polynomial variable and the other coordinate
-into the formal parameter X+a. -/
-def formalPlanePolynomial {K : Type*} [CommRing K] (j : Fin 2) (a : K) :
-    MvPolynomial (Fin 2) K →+* Polynomial (PowerSeries K) :=
-  MvPolynomial.eval₂Hom (Polynomial.C.comp PowerSeries.C)
-    (fun k => if k = j then Polynomial.X else Polynomial.C (PowerSeries.X + PowerSeries.C a))
-
-/-- `formalPlanePolynomial j a` sends variable `j` to the polynomial variable and the other
-variable to the constant polynomial with value the power series `X + a`. -/
-@[simp] lemma formalPlanePolynomial_X {K : Type*} [CommRing K]
-    (j k : Fin 2) (a : K) :
-    formalPlanePolynomial j a (MvPolynomial.X k) =
-      if k = j then Polynomial.X else Polynomial.C (PowerSeries.X + PowerSeries.C a) := by
-  simp [formalPlanePolynomial]
-
-private lemma formalPlanePolynomial_derivative {K : Type*} [CommRing K]
-    (j : Fin 2) (a : K) (f : MvPolynomial (Fin 2) K) :
-    (formalPlanePolynomial j a f).derivative =
-      formalPlanePolynomial j a (MvPolynomial.pderiv j f) := by
-  induction f using MvPolynomial.induction_on with
-  | C c => simp [formalPlanePolynomial]
-  | add f g hf hg => simp [map_add, hf, hg]
-  | mul_X f k hf =>
-    by_cases h : k = j
-    · subst k
-      simp [map_mul, Polynomial.derivative_mul, formalPlanePolynomial_X, hf]
-      ring
-    · simp [map_mul, Polynomial.derivative_mul, formalPlanePolynomial_X, hf, h]
-      ring
-
-private lemma formalPlanePolynomial_eval {K : Type*} [CommRing K]
-    (j : Fin 2) (a : K) (f : MvPolynomial (Fin 2) K) (g : PowerSeries K) :
-    (formalPlanePolynomial j a f).eval g =
-      MvPolynomial.eval₂ PowerSeries.C
-        (fun k => if k = j then g else PowerSeries.X + PowerSeries.C a) f := by
-  induction f using MvPolynomial.induction_on with
-  | C c => simp [formalPlanePolynomial]
-  | add f h hf hh => simp [map_add, hf, hh]
-  | mul_X f k hf =>
-    by_cases h : k = j <;> simp [map_mul, formalPlanePolynomial_X, hf, h]
-
-private lemma formalPlanePolynomial_constant_eval {K : Type*} [CommRing K]
-    (j : Fin 2) (a b : K) (f : MvPolynomial (Fin 2) K) :
-    ((formalPlanePolynomial j a f).map PowerSeries.constantCoeff).eval b =
-      MvPolynomial.eval (fun k => if k = j then b else a) f := by
-  induction f using MvPolynomial.induction_on with
-  | C c => simp [formalPlanePolynomial]
-  | add f h hf hh => simp [map_add, hf, hh]
-  | mul_X f k hf =>
-    by_cases h : k = j <;> simp [map_mul, formalPlanePolynomial_X, hf, h]
-
 /-- A point of the plane is recovered from its coordinate `j` and its other coordinate `j.rev`. -/
 lemma plane_coordinate_cases {K : Type*} (z : Fin 2 → K) (j : Fin 2) :
     (fun k => if k = j then z j else z j.rev) = z := by
-  funext k
-  fin_cases j <;> fin_cases k <;> simp
+  funext k; fin_cases j <;> fin_cases k <;> simp
 
 /-- A nonzero chosen partial derivative supplies a unique formal branch
 through the given point. This works in arbitrary characteristic. -/
@@ -81,23 +29,46 @@ theorem exists_unique_formal_plane_branch {K : Type*} [Field K]
     ∃! g : PowerSeries K, PowerSeries.constantCoeff g = z j ∧
       MvPolynomial.eval₂ PowerSeries.C
         (fun k => if k = j then g else PowerSeries.X + PowerSeries.C (z j.rev)) f = 0 := by
-  let F := formalPlanePolynomial j (z j.rev) f
-  have hroot : (F.map PowerSeries.constantCoeff).eval (z j) = 0 := by
-    rw [formalPlanePolynomial_constant_eval, plane_coordinate_cases]
-    exact hz
+  /- Turn coordinate j into a polynomial variable and the other coordinate
+  into the formal parameter X+a. -/
+  /- `formalPlanePolynomial j a` sends variable `j` to the polynomial variable and the other
+  variable to the constant polynomial with value the power series `X + a`. -/
+  let φ : MvPolynomial (Fin 2) K →+* Polynomial (PowerSeries K) :=
+    MvPolynomial.eval₂Hom (Polynomial.C.comp PowerSeries.C)
+      (fun k => if k = j then Polynomial.X else Polynomial.C (PowerSeries.X + PowerSeries.C (z j.rev)))
+  have hX (k : Fin 2) : φ (MvPolynomial.X k) =
+      if k = j then Polynomial.X else Polynomial.C (PowerSeries.X + PowerSeries.C (z j.rev)) := by
+    simp [φ]
+  have hconst_eval (p : MvPolynomial (Fin 2) K) :
+      ((φ p).map PowerSeries.constantCoeff).eval (z j) = MvPolynomial.eval z p := by
+    conv_rhs => rw [← plane_coordinate_cases z j]
+    induction p using MvPolynomial.induction_on with
+    | C c => simp [φ]
+    | add p h hp hh => simp [map_add, hp, hh]
+    | mul_X p k hp => by_cases h : k = j <;> simp [map_mul, hX, hp, h]
+  have hder_eq (p : MvPolynomial (Fin 2) K) :
+      (φ p).derivative = φ (MvPolynomial.pderiv j p) := by
+    induction p using MvPolynomial.induction_on with
+    | C c => simp [φ]
+    | add p g hp hg => simp [map_add, hp, hg]
+    | mul_X p k hp =>
+      by_cases h : k = j
+      · subst k; simp [map_mul, Polynomial.derivative_mul, hX, hp]; ring
+      · simp [map_mul, Polynomial.derivative_mul, hX, hp, h]; ring
+  have heval (p : MvPolynomial (Fin 2) K) (g : PowerSeries K) :
+      (φ p).eval g = MvPolynomial.eval₂ PowerSeries.C
+        (fun k => if k = j then g else PowerSeries.X + PowerSeries.C (z j.rev)) p := by
+    induction p using MvPolynomial.induction_on with
+    | C c => simp [φ]
+    | add p h hp hh => simp [map_add, hp, hh]
+    | mul_X p k hp => by_cases h : k = j <;> simp [map_mul, hX, hp, h]
+  let F := φ f
+  have hroot : (F.map PowerSeries.constantCoeff).eval (z j) = 0 := (hconst_eval f).trans hz
   have hder : (F.derivative.map PowerSeries.constantCoeff).eval (z j) ≠ 0 := by
-    dsimp only [F]
-    rw [formalPlanePolynomial_derivative, formalPlanePolynomial_constant_eval,
-      plane_coordinate_cases]
-    exact hj
+    dsimp only [F]; rwa [hder_eq f, hconst_eval]
   obtain ⟨g, hg, hfg⟩ := exists_formal_simple_root F (z j) hroot hder
-  refine ⟨g, ⟨hg, ?_⟩, ?_⟩
-  · rwa [formalPlanePolynomial_eval] at hfg
-  · intro h hh
-    apply formal_simple_root_unique F (z j) hder hh.1 hg
-    · rw [formalPlanePolynomial_eval]
-      exact hh.2
-    · exact hfg
+  exact ⟨g, ⟨hg, (heval f g).symm.trans hfg⟩, fun h hh =>
+    formal_simple_root_unique F (z j) hder hh.1 hg ((heval f h).trans hh.2) hfg⟩
 
 end
 end CCDN

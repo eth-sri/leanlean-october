@@ -50,11 +50,10 @@ lemma stepanovThreshold_le_stepanovThreshold {R : Type*} [Semiring R] [PartialOr
 `p ≤ 32 N √p` and `1 ≤ √p`, giving `t ≤ p + (5 · 32 + 1) d² √p`. -/
 def planeResidueConstant : ℝ := 161
 
-/-- The constant `162 = 161 + 1` of the projective plane-curve count
+/- The constant `162 = 161 + 1` of the projective plane-curve count
 (`projective_plane_finite_field_card_bound`): the affine chart contributes
 `p + 161 d² √p` and the line at infinity at most `d ≤ d² √p` further points
 (`projectivePlaneResidueConstant_eq_add`). -/
-def projectivePlaneResidueConstant : ℝ := 162
 
 /-- The constant `C = 164 = 162 + 2` for which the projective plane total multiplicity is
 at most `p + (C + 1) d² √p` (`projectivePlaneTotalMultiplicity_le`). The singular
@@ -78,8 +77,7 @@ def projectiveHypersurfaceResidueConstant : ℝ := 330
 /-- The value of `planeResidueConstant` is `161`. -/
 lemma planeResidueConstant_eq : planeResidueConstant = 161 := rfl
 
-/-- The value of `projectivePlaneResidueConstant` is `162`. -/
-lemma projectivePlaneResidueConstant_eq : projectivePlaneResidueConstant = 162 := rfl
+/- The value of `projectivePlaneResidueConstant` is `162`. -/
 
 /-- The value of `projectivePlaneDeterminantConstant` is `164`. -/
 lemma projectivePlaneDeterminantConstant_eq : projectivePlaneDeterminantConstant = 164 := rfl

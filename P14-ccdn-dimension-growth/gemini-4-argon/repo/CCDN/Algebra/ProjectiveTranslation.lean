@@ -31,38 +31,15 @@ lemma homogeneousPointTranslation_inverse {R : Type*} [CommRing R] {n : ℕ}
   · rfl
   · simp [homogeneousPointTranslation]
 
-private lemma homogeneousPointTranslation_injective {R : Type*} [CommRing R] {n : ℕ}
-    (a : Fin n → R) : Function.Injective (homogeneousPointTranslation a) :=
-  Function.LeftInverse.injective (homogeneousPointTranslation_inverse a)
-
 /-- The shear of a nonzero point is nonzero. -/
 lemma homogeneousPointTranslation_ne_zero {R : Type*} [CommRing R] {n : ℕ}
     (a : Fin n → R) {x : Fin (n + 1) → R} (hx : x ≠ 0) :
     homogeneousPointTranslation a x ≠ 0 := by
   intro h
   apply hx
-  apply homogeneousPointTranslation_injective a
-  have hzero : homogeneousPointTranslation a 0 = 0 := by
-    funext i
-    refine Fin.cases ?_ (fun j => ?_) i <;> simp [homogeneousPointTranslation]
-  exact h.trans hzero.symm
-
-private lemma homogeneousPointTranslation_smul {K : Type*} [Field K] {n : ℕ}
-    (a : Fin n → K) (c : K) (x : Fin (n + 1) → K) :
-    homogeneousPointTranslation a (c • x) = c • homogeneousPointTranslation a x := by
-  funext i
-  refine Fin.cases ?_ (fun j => ?_) i
-  · rfl
-  · simp only [homogeneousPointTranslation, Fin.cons_succ, Pi.smul_apply, smul_eq_mul]
-    ring
-
-private lemma homogeneousPointTranslation_map {R S : Type*} [CommRing R] [CommRing S]
-    {n : ℕ} (φ : R →+* S) (a : Fin n → R) (x : Fin (n + 1) → R) :
-    φ ∘ homogeneousPointTranslation a x = homogeneousPointTranslation (φ ∘ a) (φ ∘ x) := by
-  funext i
-  refine Fin.cases ?_ (fun j => ?_) i
-  · rfl
-  · simp [homogeneousPointTranslation]
+  apply Function.LeftInverse.injective (homogeneousPointTranslation_inverse a)
+  exact h.trans (funext fun i => Fin.cases (by simp [homogeneousPointTranslation])
+    (fun j => by simp [homogeneousPointTranslation]) i).symm
 
 /-- An integral shear preserves the greatest common divisor of the coordinates of an integer
 point; in particular it preserves primitivity. -/
@@ -95,12 +72,20 @@ lemma homogeneousPointTranslation_projective_injective {n t : ℕ}
   apply hinj
   obtain ⟨c, hc⟩ := (Projectivization.mk_eq_mk_iff ℚ _ _ _ _).mp he
   apply (Projectivization.mk_eq_mk_iff ℚ _ _ _ _).mpr
-  refine ⟨c, ?_⟩
+  refine ⟨c, Function.LeftInverse.injective
+    (homogeneousPointTranslation_inverse ((Int.castRingHom ℚ) ∘ a)) ?_⟩
+  have hmap (x : Fin (n + 1) → ℤ) :
+      (Int.castRingHom ℚ) ∘ homogeneousPointTranslation a x =
+        homogeneousPointTranslation ((Int.castRingHom ℚ) ∘ a) ((Int.castRingHom ℚ) ∘ x) :=
+    funext fun k => Fin.cases rfl (fun l => by simp [homogeneousPointTranslation]) k
+  have hsmul : homogeneousPointTranslation ((Int.castRingHom ℚ) ∘ a)
+      ((c : ℚ) • ((Int.castRingHom ℚ) ∘ z j)) =
+      (c : ℚ) • homogeneousPointTranslation ((Int.castRingHom ℚ) ∘ a) ((Int.castRingHom ℚ) ∘ z j) :=
+    funext fun k => Fin.cases rfl (fun l => by
+      simp only [homogeneousPointTranslation, Fin.cons_succ, Pi.smul_apply, smul_eq_mul]; ring) k
   change (c : ℚ) • ((Int.castRingHom ℚ) ∘ homogeneousPointTranslation a (z j)) =
     (Int.castRingHom ℚ) ∘ homogeneousPointTranslation a (z i) at hc
-  rw [homogeneousPointTranslation_map, homogeneousPointTranslation_map,
-    ← homogeneousPointTranslation_smul] at hc
-  exact homogeneousPointTranslation_injective _ hc
+  rwa [hmap, hmap, ← hsmul] at hc
 
 /-- If `z` lies in the box of radius `B ≥ 1` and every coordinate of `a` lies in `[0, d]`, then
 the shear of `z` by `-a` lies in the box of radius `(d + 1) * B`. -/

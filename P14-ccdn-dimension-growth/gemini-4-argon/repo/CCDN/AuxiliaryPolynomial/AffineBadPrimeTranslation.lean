@@ -18,17 +18,6 @@ namespace CCDN
 noncomputable section
 open MvPolynomial
 
-private lemma hypersurfaceBadReduction_affineTranslation {n : ℕ}
-    (a : Fin n → ℤ) (f : MvPolynomial (Fin n) ℤ) (p : ℕ) :
-    HypersurfaceBadReduction (affineTranslation ℤ a f) p ↔ HypersurfaceBadReduction f p := by
-  unfold HypersurfaceBadReduction
-  apply exists_congr
-  intro hp
-  let : Fact p.Prime := ⟨hp⟩
-  dsimp only
-  rw [affineTranslation_map, affineTranslation_totalDegree, affineTranslation_totalDegree,
-    affineTranslation_irreducible_iff]
-
 /-- The bad-prime factor of an integral polynomial is invariant under integral affine
 translation of the variables. -/
 theorem hypersurfaceBadPrimeFactor_affineTranslation {n : ℕ}
@@ -45,8 +34,14 @@ theorem hypersurfaceBadPrimeFactor_affineTranslation {n : ℕ}
         HypersurfaceBadReduction f p := by
       simp only [bad, Set.Finite.mem_toFinset, Set.mem_ofPred_eq]
     rw [hypersurfaceBadPrimeFactor_eq_exp f hf rfl bad hbad]
-    exact hypersurfaceBadPrimeFactor_eq_exp _ (hir.mpr hf) (affineTranslation_totalDegree a f)
-      bad (by intro p; rw [hbad, hypersurfaceBadReduction_affineTranslation])
+    refine hypersurfaceBadPrimeFactor_eq_exp _ (hir.mpr hf) (affineTranslation_totalDegree a f)
+      bad fun p => ?_
+    rw [hbad]
+    refine and_congr_right' (exists_congr fun hp => ?_)
+    let : Fact p.Prime := ⟨hp⟩
+    dsimp only
+    rw [affineTranslation_map, affineTranslation_totalDegree, affineTranslation_totalDegree,
+      affineTranslation_irreducible_iff]
   · rw [hypersurfaceBadPrimeFactor_eq_zero f hf,
       hypersurfaceBadPrimeFactor_eq_zero _ (fun h => hf (hir.mp h))]
 

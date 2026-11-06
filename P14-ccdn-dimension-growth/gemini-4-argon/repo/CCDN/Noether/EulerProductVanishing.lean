@@ -21,85 +21,7 @@ coefficient minor to vanish after specialization.
 @[expose] public section
 namespace CCDN
 noncomputable section
-open MvPolynomial Module
-
-private theorem eulerClosedForm_minor_eq_zero_of_kernel
-    {F : Type*} [Field F] (k : ℕ) (f : Polynomial (Polynomial F))
-    (u : EulerPairSpace F k) (hu : u ≠ 0)
-    (hker : eulerClosedFormOperator k f u = 0)
-    (rows : Fin ((k + 2) ^ 2 - 1) → ℕ × ℕ)
-    (cols : Fin ((k + 2) ^ 2 - 1) → EulerColumns k) :
-    ((eulerClosedFormCoefficientMatrix k f).submatrix rows cols).det = 0 := by
-  classical
-  by_contra hdet
-  let A := eulerClosedFormCoefficientMatrix k f
-  have hlo : (k + 2) ^ 2 - 1 ≤ A.rank := A.le_rank_of_det_submatrix_ne_zero rows cols hdet
-  have hr : A.rank = Fintype.card (EulerColumns k) := by
-    apply le_antisymm (Matrix.rank_le_card_width _)
-    simpa only [card_eulerColumns] using hlo
-  have hi : LinearIndependent F A.col := by
-    rw [linearIndependent_iff_card_eq_finrank_span, Set.finrank,
-      ← Matrix.rank_eq_finrank_span_cols, hr]
-  let T := (bivariateCoefficients F).comp (eulerClosedFormOperator k f)
-  have hsum : ∑ i, (eulerPairBasis F k).repr u i • A.col i = 0 := by
-    have hh := congrArg T ((eulerPairBasis F k).sum_repr u)
-    rw [map_sum] at hh
-    simp only [map_smul] at hh
-    change (∑ i, (eulerPairBasis F k).repr u i • A.col i) =
-      bivariateCoefficients F (eulerClosedFormOperator k f u) at hh
-    rw [hker, map_zero] at hh
-    exact hh
-  have hz := Fintype.linearIndependent_iff.mp hi _ hsum
-  apply hu
-  apply (eulerPairBasis F k).repr.injective
-  ext i
-  simpa only [map_zero, Finsupp.zero_apply] using hz i
-
-end
-end CCDN
-
-namespace CCDN
-noncomputable section
-open Polynomial
-
-private lemma bivariateMap_injective {R S : Type*} [CommRing R] [CommRing S]
-    (φ : R →+* S) (hφ : Function.Injective φ) :
-    Function.Injective (bivariateMap φ) :=
-  Polynomial.map_injective _ (Polynomial.map_injective φ hφ)
-
-private theorem genericEulerProduct_minor_eq_zero
-    (k a b : ℕ) (ha : 0 < a) (hb : 0 < b) (hab : a + b = k + 2)
-    (rows : Fin ((k + 2) ^ 2 - 1) → ℕ × ℕ)
-    (cols : Fin ((k + 2) ^ 2 - 1) → EulerColumns k) :
-    ((eulerClosedFormCoefficientMatrix k
-      (genericEulerFactorLeft a b * genericEulerFactorRight a b)).submatrix rows cols).det = 0 := by
-  let R := MvPolynomial (EulerFactorParameters a b) ℤ
-  let F := FractionRing R
-  let φ := algebraMap R F
-  let G := genericEulerFactorLeft a b
-  let H := genericEulerFactorRight a b
-  have hφ := IsFractionRing.injective R F
-  have hmap := bivariateMap_injective φ hφ
-  have hg : bivariateTotalDegree (bivariateMap φ G) ≤ a :=
-    (bivariateTotalDegree_map_le φ G).trans (eulerPolynomialFromCoefficients_degree a _)
-  have hh : bivariateTotalDegree (bivariateMap φ H) ≤ b :=
-    (bivariateTotalDegree_map_le φ H).trans (eulerPolynomialFromCoefficients_degree b _)
-  have hne : eulerFactorPair a b (bivariateMap φ G) (bivariateMap φ H) ≠ 0 := by
-    intro hz
-    have he := eulerFactorPair_map φ a b G H
-    rw [hz] at he
-    apply genericEulerFactorPair_ne_zero a b ha hb
-    apply Prod.ext
-    · apply hmap
-      simpa only [Prod.fst_zero, map_zero] using congrArg Prod.fst he
-    · apply hmap
-      simpa only [Prod.snd_zero, map_zero] using congrArg Prod.snd he
-  obtain ⟨u, hu, hk⟩ := exists_eulerFactorKernel k a b ha hb hab
-    (bivariateMap φ G) (bivariateMap φ H) hg hh hne
-  have hz := eulerClosedForm_minor_eq_zero_of_kernel k _ u hu hk rows cols
-  apply hφ
-  rw [map_zero, eulerClosedForm_minor_map, map_mul]
-  exact hz
+open MvPolynomial Polynomial Module
 
 /-- Every maximal Euler minor vanishes on a product with two positive
 degree budgets, over an arbitrary commutative coefficient ring. -/
@@ -111,12 +33,52 @@ theorem eulerClosedForm_minor_eq_zero_of_product
     (rows : Fin ((k + 2) ^ 2 - 1) → ℕ × ℕ)
     (cols : Fin ((k + 2) ^ 2 - 1) → EulerColumns k) :
     ((eulerClosedFormCoefficientMatrix k (g * h)).submatrix rows cols).det = 0 := by
-  let φ := genericEulerFactorSpecialization a b g h
-  have hz := congrArg φ (genericEulerProduct_minor_eq_zero k a b ha hb hab rows cols)
-  rw [map_zero, eulerClosedForm_minor_map, map_mul,
+  classical
+  let P := MvPolynomial (EulerFactorParameters a b) ℤ
+  let F := FractionRing P
+  let φ := algebraMap P F
+  let G := genericEulerFactorLeft a b
+  let H := genericEulerFactorRight a b
+  have hφ := IsFractionRing.injective P F
+  have hmap : Function.Injective (bivariateMap φ) :=
+    Polynomial.map_injective _ (Polynomial.map_injective φ hφ)
+  have hne : eulerFactorPair a b (bivariateMap φ G) (bivariateMap φ H) ≠ 0 := fun hz => by
+    have he := eulerFactorPair_map φ a b G H
+    rw [hz] at he
+    exact genericEulerFactorPair_ne_zero a b ha hb <| Prod.ext
+      (hmap (by simpa only [Prod.fst_zero, map_zero] using congrArg Prod.fst he))
+      (hmap (by simpa only [Prod.snd_zero, map_zero] using congrArg Prod.snd he))
+  obtain ⟨u, hu, hk⟩ := exists_eulerFactorKernel k a b ha hb hab
+    (bivariateMap φ G) (bivariateMap φ H)
+    ((bivariateTotalDegree_map_le φ G).trans (eulerPolynomialFromCoefficients_degree a _))
+    ((bivariateTotalDegree_map_le φ H).trans (eulerPolynomialFromCoefficients_degree b _)) hne
+  have hgen : ((eulerClosedFormCoefficientMatrix k (G * H)).submatrix rows cols).det = 0 := by
+    apply hφ
+    rw [map_zero, eulerClosedForm_minor_map, map_mul]
+    by_contra hdet
+    let A := eulerClosedFormCoefficientMatrix k (bivariateMap φ G * bivariateMap φ H)
+    have hlo : (k + 2) ^ 2 - 1 ≤ A.rank := A.le_rank_of_det_submatrix_ne_zero rows cols hdet
+    have hr : A.rank = Fintype.card (EulerColumns k) :=
+      le_antisymm (Matrix.rank_le_card_width _) (by simpa only [card_eulerColumns] using hlo)
+    have hi : LinearIndependent F A.col := by
+      rw [linearIndependent_iff_card_eq_finrank_span, Set.finrank,
+        ← Matrix.rank_eq_finrank_span_cols, hr]
+    let T := (bivariateCoefficients F).comp
+      (eulerClosedFormOperator k (bivariateMap φ G * bivariateMap φ H))
+    have hsum : ∑ i, (eulerPairBasis F k).repr u i • A.col i = 0 := by
+      have hh := congrArg T ((eulerPairBasis F k).sum_repr u)
+      rw [map_sum] at hh
+      simp only [map_smul] at hh
+      change (∑ i, (eulerPairBasis F k).repr u i • A.col i) =
+        bivariateCoefficients F (eulerClosedFormOperator k _ u) at hh
+      rwa [hk, map_zero] at hh
+    have hz := Fintype.linearIndependent_iff.mp hi _ hsum
+    exact hu ((eulerPairBasis F k).repr.injective <| Finsupp.ext fun i => by
+      simpa only [map_zero, Finsupp.zero_apply] using hz i)
+  have hz := congrArg (genericEulerFactorSpecialization a b g h) hgen
+  rwa [map_zero, eulerClosedForm_minor_map, map_mul,
     genericEulerFactorLeft_specialize a b g h hg,
     genericEulerFactorRight_specialize a b g h hh] at hz
-  exact hz
 
 end
 end CCDN

@@ -20,11 +20,6 @@ namespace CCDN
 noncomputable section
 open MvPolynomial
 
-private lemma universalPlanePolynomial_mul {R σ : Type*} [CommRing R]
-    (g h : MvPolynomial σ R) :
-    universalPlanePolynomial (g * h) = universalPlanePolynomial g * universalPlanePolynomial h := by
-  simp only [universalPlanePolynomial, map_mul]
-
 /-- The universal plane restriction of `f` has bivariate total degree at most the total degree of
 `f`. -/
 lemma universalPlanePolynomial_totalDegree_le {R σ : Type*} [CommRing R]
@@ -42,41 +37,12 @@ theorem ambientEuler_minor_eq_zero_of_product {R σ : Type*} [CommRing R]
     (cols : Fin ((k + 2) ^ 2 - 1) → EulerColumns k) :
     ((eulerClosedFormCoefficientMatrix k (universalPlanePolynomial (g * h))).submatrix
       rows cols).det = 0 := by
-  rw [universalPlanePolynomial_mul]
+  rw [show universalPlanePolynomial (g * h) =
+    universalPlanePolynomial g * universalPlanePolynomial h by
+      simp only [universalPlanePolynomial, map_mul]]
   exact eulerClosedForm_minor_eq_zero_of_product k a b ha hb hab _ _
     ((universalPlanePolynomial_totalDegree_le g).trans hg)
     ((universalPlanePolynomial_totalDegree_le h).trans hh) rows cols
-
-/-- Reducibility forces the entire parameter determinant to vanish,
-including the zero homogeneous equation. -/
-private theorem ambientEuler_minor_eq_zero_of_not_irreducible {K σ : Type*} [Field K]
-    (k : ℕ) (f : MvPolynomial σ K) (hf : f.IsHomogeneous (k + 2))
-    (hred : ¬Irreducible f)
-    (rows : Fin ((k + 2) ^ 2 - 1) → ℕ × ℕ)
-    (cols : Fin ((k + 2) ^ 2 - 1) → EulerColumns k) :
-    ((eulerClosedFormCoefficientMatrix k (universalPlanePolynomial f)).submatrix
-      rows cols).det = 0 := by
-  by_cases hf0 : f = 0
-  · subst f
-    simpa only [zero_mul] using ambientEuler_minor_eq_zero_of_product
-      (σ := σ) k 1 (k + 1) (by omega) (by omega) (by omega)
-      (0 : MvPolynomial σ K) 0 (by simp) (by simp) rows cols
-  have hd : f.totalDegree = k + 2 := hf.totalDegree hf0
-  have hfu : ¬IsUnit f := by
-    intro hu
-    have hh := (isUnit_iff_totalDegree_of_isReduced.mp hu).2
-    omega
-  obtain ⟨g, h, hgu, hhu, he⟩ := (irreducible_or_factor hfu).resolve_left hred
-  have hgh0 : g * h ≠ 0 := he ▸ hf0
-  have hg0 := (mul_ne_zero_iff.mp hgh0).1
-  have hh0 := (mul_ne_zero_iff.mp hgh0).2
-  have hgpos := totalDegree_pos_of_ne_zero_of_not_isUnit hg0 hgu
-  have hhpos := totalDegree_pos_of_ne_zero_of_not_isUnit hh0 hhu
-  have hsum : g.totalDegree + h.totalDegree = k + 2 := by
-    rw [he, totalDegree_mul_of_isDomain hg0 hh0] at hd
-    exact hd
-  rw [he]
-  exact ambientEuler_minor_eq_zero_of_product k _ _ hgpos hhpos hsum g h le_rfl le_rfl rows cols
 
 /-- Minors of the Euler closed-form coefficient matrix of the universal plane restriction commute
 with applying a coefficient ring homomorphism `φ` to the polynomial. -/
@@ -102,8 +68,29 @@ theorem ambientNoetherForm_eq_zero_of_not_absolutely_irreducible
     (m : PlaneParameters σ →₀ ℕ) :
     homogeneousCoefficientSpecialization (k + 2) f (ambientNoetherForm σ k rows cols m) = 0 := by
   let φ := algebraMap K (AlgebraicClosure K)
-  have hz := ambientEuler_minor_eq_zero_of_not_irreducible k (MvPolynomial.map φ f)
-    (hf.map φ) hred rows cols
+  let F := MvPolynomial.map φ f
+  have hF : F.IsHomogeneous (k + 2) := hf.map φ
+  have hz : ((eulerClosedFormCoefficientMatrix k (universalPlanePolynomial F)).submatrix
+      rows cols).det = 0 := by
+    by_cases hF0 : F = 0
+    · rw [hF0]
+      simpa only [zero_mul] using ambientEuler_minor_eq_zero_of_product
+        (σ := σ) k 1 (k + 1) (by omega) (by omega) (by omega)
+        (0 : MvPolynomial σ (AlgebraicClosure K)) 0 (by simp) (by simp) rows cols
+    have hd : F.totalDegree = k + 2 := hF.totalDegree hF0
+    have hFu : ¬IsUnit F := fun hu => by
+      have := (isUnit_iff_totalDegree_of_isReduced.mp hu).2; omega
+    obtain ⟨g, h, hgu, hhu, he⟩ := (irreducible_or_factor hFu).resolve_left hred
+    have hgh0 : g * h ≠ 0 := he ▸ hF0
+    have hg0 := (mul_ne_zero_iff.mp hgh0).1
+    have hh0 := (mul_ne_zero_iff.mp hgh0).2
+    have hsum : g.totalDegree + h.totalDegree = k + 2 := by
+      rwa [he, totalDegree_mul_of_isDomain hg0 hh0] at hd
+    rw [he]
+    exact ambientEuler_minor_eq_zero_of_product k _ _
+      (totalDegree_pos_of_ne_zero_of_not_isUnit hg0 hgu)
+      (totalDegree_pos_of_ne_zero_of_not_isUnit hh0 hhu)
+      hsum g h le_rfl le_rfl rows cols
   apply φ.injective
   rw [map_zero, ambientNoetherForm_specialize k f hf rows cols m,
     ← coeff_map, ambientEuler_minor_map, hz]

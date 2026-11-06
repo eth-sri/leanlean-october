@@ -22,36 +22,6 @@ namespace CCDN
 noncomputable section
 open MvPolynomial
 
-/-- A nonzero relation cannot omit the coordinate complementary to a
-transcendental coordinate. -/
-private theorem plane_relation_pderiv_ne_zero {K A : Type*} [Field K] [CharZero K]
-    [CommRing A] [Algebra K A] (ψ : MvPolynomial (Fin 2) K →ₐ[K] A)
-    (f : MvPolynomial (Fin 2) K) (hf : f ≠ 0) (hzero : ψ f = 0)
-    (j k : Fin 2) (hjk : j ≠ k) (hj : Transcendental K (ψ (X j))) :
-    pderiv k f ≠ 0 := by
-  classical
-  intro hz
-  have hk := notMem_vars_of_pderiv_eq_zero hz fun n hn _ ↦ Nat.cast_ne_zero.mpr hn.ne'
-  have hvars : (f.vars : Set (Fin 2)) ⊆ Set.range (fun _ : Unit => j) := by
-    intro t ht
-    have htk : t ≠ k := fun h => hk (h ▸ ht)
-    have htj : t = j := by omega
-    exact ⟨(), htj.symm⟩
-  obtain ⟨g, hg⟩ := exists_rename_eq_of_vars_subset_range f (fun _ : Unit => j)
-    (Function.injective_of_subsingleton _) hvars
-  have he : ψ.comp (rename (fun _ : Unit => j)) = aeval (fun _ : Unit => ψ (X j)) := by
-    apply MvPolynomial.algHom_ext
-    intro t
-    simp
-  have hi : Function.Injective (aeval (R := K) (fun _ : Unit => ψ (X j))) :=
-    (algebraicIndependent_unique_type_iff (R := K) (x := fun _ : Unit => ψ (X j))).mpr hj
-  have hz : aeval (fun _ : Unit => ψ (X j)) g = 0 := by
-    rw [← he]
-    change ψ (rename (fun _ : Unit => j) g) = 0
-    rwa [hg]
-  have hg0 : g = 0 := hi (by simpa only [map_zero] using hz)
-  exact hf (by rw [← hg, hg0, map_zero])
-
 /-- The derivative is a proper degree-(d-1) section when f generates the
 projection kernel. This is the proposed common reconstruction cut. -/
 theorem projection_derivative_proper {K τ : Type*} [Field K] [CharZero K] [Fintype τ]
@@ -63,14 +33,28 @@ theorem projection_derivative_proper {K τ : Type*} [Field K] [CharZero K] [Fint
     (hj : Transcendental K ((Ideal.Quotient.mk I) (a j))) :
     aeval a (pderiv k f) ∉ I ∧
       (aeval a (pderiv k f)).totalDegree ≤ f.totalDegree - 1 := by
+  /- A nonzero relation cannot omit the coordinate complementary to a
+  transcendental coordinate. -/
+  classical
   let ψ := projectionCoordinateMap I a
-  have hz : ψ f = 0 := by
-    change (Ideal.Quotient.mk I) (aeval a f) = 0
-    exact Ideal.Quotient.eq_zero_iff_mem.mpr ((hker f).mpr (dvd_refl f))
+  have hz : ψ f = 0 := Ideal.Quotient.eq_zero_iff_mem.mpr ((hker f).mpr (dvd_refl f))
   have ht : Transcendental K (ψ (X j)) := by
     change Transcendental K ((Ideal.Quotient.mk I) (aeval a (X j)))
     rwa [aeval_X]
-  have hp := plane_relation_pderiv_ne_zero ψ f hf hz j k hjk ht
+  have hp : pderiv k f ≠ 0 := fun h0 => by
+    have hk := notMem_vars_of_pderiv_eq_zero h0 fun n hn _ ↦ Nat.cast_ne_zero.mpr hn.ne'
+    obtain ⟨g, hg⟩ := exists_rename_eq_of_vars_subset_range f (fun _ : Unit => j)
+      (Function.injective_of_subsingleton _) fun t ht => by
+        have htk : t ≠ k := fun h => hk (h ▸ ht)
+        exact ⟨(), by dsimp; omega⟩
+    have he : ψ.comp (rename (fun _ : Unit => j)) = aeval (fun _ : Unit => ψ (X j)) :=
+      MvPolynomial.algHom_ext fun _ => by simp
+    have hi : Function.Injective (aeval (R := K) (fun _ : Unit => ψ (X j))) :=
+      (algebraicIndependent_unique_type_iff (R := K) (x := fun _ : Unit => ψ (X j))).mpr ht
+    have hzg : aeval (fun _ : Unit => ψ (X j)) g = 0 := by
+      rw [← he]; change ψ (rename (fun _ : Unit => j) g) = 0; rwa [hg]
+    have hg0 : g = 0 := hi (by simpa only [map_zero] using hzg)
+    exact hf (by rw [← hg, hg0, map_zero])
   refine ⟨fun hbad => not_dvd_pderiv_of_pderiv_ne_zero hf hp ((hker _).mp hbad),
     (aeval_totalDegree_le a ha _).trans ?_⟩
   simpa only [one_mul] using pderiv_totalDegree_le f k

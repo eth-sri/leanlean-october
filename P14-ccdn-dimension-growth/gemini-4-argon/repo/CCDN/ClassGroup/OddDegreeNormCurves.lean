@@ -18,24 +18,6 @@ noncomputable section
 open scoped NumberField
 open Polynomial NumberField
 
-private lemma odd_degree_polynomial_not_square_ratFunc {F : Type*} [Field F]
-    (p : F[X]) (hp : Odd p.natDegree) (b : RatFunc F) :
-    b ^ 2 ≠ algebraMap F[X] (RatFunc F) p := by
-  intro he
-  have hp0 : p ≠ 0 := by
-    intro h
-    simp [h] at hp
-  have hb : b ≠ 0 := by
-    intro h
-    have hz : algebraMap F[X] (RatFunc F) p = 0 := by simpa [h] using he.symm
-    exact hp0 ((IsFractionRing.injective F[X] (RatFunc F)) (by simpa using hz))
-  have hd := congrArg RatFunc.intDegree he
-  rw [sq, RatFunc.intDegree_mul hb hb, RatFunc.intDegree_polynomial] at hd
-  obtain ⟨k, hk⟩ := hp
-  have hk' := congrArg (Nat.cast : ℕ → ℤ) hk
-  push_cast at hk'
-  omega
-
 /-- For a polynomial `p` of odd degree over a field `F`, the double-cover polynomial `Y ^ 2 - p` is
 irreducible in `F[X][Y]`. -/
 lemma odd_degree_double_cover_irreducible {F : Type*} [Field F]
@@ -44,8 +26,15 @@ lemma odd_degree_double_cover_irreducible {F : Type*} [Field F]
   apply (Polynomial.Monic.irreducible_iff_irreducible_map_fraction_map
     (K := RatFunc F) (monic_X_pow_sub_C p (by decide : (2 : ℕ) ≠ 0))).mpr
   simp only [Polynomial.map_sub, Polynomial.map_pow, Polynomial.map_X, Polynomial.map_C]
-  exact X_pow_sub_C_irreducible_of_prime Nat.prime_two
-    (odd_degree_polynomial_not_square_ratFunc p hp)
+  refine X_pow_sub_C_irreducible_of_prime Nat.prime_two fun b he => ?_
+  have hp0 : p ≠ 0 := fun h => by simp [h] at hp
+  have hb : b ≠ 0 := fun h => hp0 <| IsFractionRing.injective F[X] (RatFunc F)
+    (by simpa using (by simpa [h] using he.symm : algebraMap F[X] (RatFunc F) p = 0))
+  have hd := congrArg RatFunc.intDegree he
+  rw [sq, RatFunc.intDegree_mul hb hb, RatFunc.intDegree_polynomial] at hd
+  obtain ⟨k, hk⟩ := hp
+  have hk' := congrArg (Nat.cast : ℕ → ℤ) hk
+  push_cast at hk'; omega
 
 /-- For a polynomial `p` of degree at least `2`, the double-cover polynomial `Y ^ 2 - p` has total
 degree `deg p`. -/

@@ -47,11 +47,9 @@ private theorem bounded_degree_normalization_fiber_card_le_of_fractionField
   let R := IntermediateField.adjoin K (Set.range v)
   let u : Fin (m + 1) → R := fun i =>
     ⟨v i, IntermediateField.subset_adjoin K _ ⟨i, rfl⟩⟩
-  have hiA : AlgebraicIndependent K (fun i => (Ideal.Quotient.mk I) (l i)) :=
-    injective_projectionCoordinateMap_iff.mp hi
-  have hiE : AlgebraicIndependent K v := hiA.map' (IsFractionRing.injective A E)
   have hiR : AlgebraicIndependent K u :=
-    AlgebraicIndependent.of_comp (x := u) R.val hiE
+    AlgebraicIndependent.of_comp (x := u) R.val
+      ((injective_projectionCoordinateMap_iff.mp hi).map' (IsFractionRing.injective A E))
   obtain ⟨hfinite, hrank⟩ :=
     bounded_degree_hilbert_functionField_finite_rank_le (R := R) (F := E) I d q hq
       (by simpa only [Fintype.card_fin] using hdimdeg) l hl u hiR (fun _ => rfl)
@@ -77,13 +75,11 @@ private theorem bounded_degree_normalization_fiber_card_le_of_fractionField
   let : IsFractionRing P R := isFractionRing_of_generating_tuple ρ hiR
     (fun i => X i) (by
       convert hgen using 2
-      congr 1
-      funext i
+      congr 1; funext i
       change (aeval u) (X i) = u i
       rw [aeval_X])
-  have hbound := integral_projection_fiber_card_le_finrank I l rfl R E hint z s hzero hproj
   simpa only [Fintype.card_fin] using
-    hbound.trans hrank
+    (integral_projection_fiber_card_le_finrank I l rfl R E hint z s hzero hproj).trans hrank
 
 /-- The fiber bound for the given normalization, with the function field
 and degree estimates obtained from the coordinate ring. -/

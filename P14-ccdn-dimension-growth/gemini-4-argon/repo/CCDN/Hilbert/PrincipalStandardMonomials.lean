@@ -42,38 +42,6 @@ theorem standardMonomialPrefix_card {K σ : Type*} [Field K] [Fintype σ]
   rw [filteredCoordinateSpace_finrank_eq_standard_card]
   exact (Set.ncard_eq_toFinset_card _).symm
 
-private theorem standardMonomialPrefix_filter {K σ : Type*} [Field K] [Fintype σ]
-    (I : Ideal (MvPolynomial σ K)) (m : MonomialOrder σ) {N k : ℕ} (hk : k ≤ N) :
-    (standardMonomialPrefix I m N).filter (fun a => Finsupp.degree a ≤ k) =
-      standardMonomialPrefix I m k := by
-  classical
-  ext a
-  simp only [mem_filter, mem_standardMonomialPrefix]
-  exact ⟨fun h => ⟨h.1.1, h.2⟩, fun h => ⟨⟨h.1, h.2.trans hk⟩, h.2⟩⟩
-
-/-- Summation by parts for a finite set of nonnegative weights. -/
-private theorem sum_weights_add_prefix_counts {α : Type*} (S : Finset α) (w : α → ℕ)
-    (N : ℕ) (hN : ∀ a ∈ S, w a ≤ N) :
-    (∑ a ∈ S, w a) + ∑ k ∈ range N, (S.filter (fun a => w a ≤ k)).card =
-      N * S.card := by
-  classical
-  have hcount : ∑ k ∈ range N, (S.filter (fun a => w a ≤ k)).card =
-      ∑ a ∈ S, (N - w a) := by
-    simp only [card_filter]
-    rw [sum_comm]
-    apply sum_congr rfl
-    intro a ha
-    have he : (range N).filter (fun k => w a ≤ k) = Ico (w a) N := by
-      ext k
-      simp only [mem_filter, mem_range, mem_Ico]
-      omega
-    rw [← card_filter, he, Nat.card_Ico]
-  rw [hcount, ← sum_add_distrib]
-  have he : ∑ a ∈ S, (w a + (N - w a)) = ∑ _a ∈ S, N :=
-    sum_congr rfl (fun a ha => Nat.add_sub_of_le (hN a ha))
-  rw [he]
-  simp [Nat.mul_comm]
-
 /-- The total degree of a standard prefix is exactly the rank-weighted
 cutoff minus the preceding filtered Hilbert ranks. -/
 theorem standardMonomialPrefix_weight_identity {K σ : Type*} [Field K] [Fintype σ]
@@ -81,15 +49,30 @@ theorem standardMonomialPrefix_weight_identity {K σ : Type*} [Field K] [Fintype
     (∑ a ∈ standardMonomialPrefix I MonomialOrder.degLex N, Finsupp.degree a) +
         ∑ k ∈ range N, Module.finrank K (filteredCoordinateSpace I k) =
       N * Module.finrank K (filteredCoordinateSpace I N) := by
-  have h := sum_weights_add_prefix_counts
-    (standardMonomialPrefix I MonomialOrder.degLex N) Finsupp.degree N
-    (fun a ha => (mem_standardMonomialPrefix I _ N a).mp ha |>.2)
-  rw [standardMonomialPrefix_card] at h
-  convert h using 2
-  apply sum_congr rfl
-  intro k hk
-  rw [standardMonomialPrefix_filter I _ (by have := mem_range.mp hk; omega),
-    standardMonomialPrefix_card]
+  classical
+  let S := standardMonomialPrefix I MonomialOrder.degLex N
+  have hfilt {k : ℕ} (hk : k ≤ N) :
+      S.filter (fun a => Finsupp.degree a ≤ k) = standardMonomialPrefix I MonomialOrder.degLex k := by
+    ext a
+    simp only [S, mem_filter, mem_standardMonomialPrefix]
+    exact ⟨fun h => ⟨h.1.1, h.2⟩, fun h => ⟨⟨h.1, h.2.trans hk⟩, h.2⟩⟩
+  have hcount : ∑ k ∈ range N, Module.finrank K (filteredCoordinateSpace I k) =
+      ∑ a ∈ S, (N - Finsupp.degree a) := by
+    have hsum : ∑ k ∈ range N, Module.finrank K (filteredCoordinateSpace I k) =
+        ∑ k ∈ range N, (S.filter (fun a => Finsupp.degree a ≤ k)).card :=
+      sum_congr rfl fun k hk => by
+        rw [hfilt (by have := mem_range.mp hk; omega), standardMonomialPrefix_card]
+    rw [hsum]
+    simp only [card_filter]
+    rw [sum_comm]
+    refine sum_congr rfl fun a _ => ?_
+    rw [← card_filter, show (range N).filter (fun k => Finsupp.degree a ≤ k) =
+      Ico (Finsupp.degree a) N by ext k; simp only [mem_filter, mem_range, mem_Ico]; omega,
+      Nat.card_Ico]
+  rw [hcount, ← sum_add_distrib, ← standardMonomialPrefix_card]
+  have he : ∑ a ∈ S, (Finsupp.degree a + (N - Finsupp.degree a)) = ∑ _a ∈ S, N :=
+    sum_congr rfl fun a ha => Nat.add_sub_of_le ((mem_standardMonomialPrefix I _ N a).mp ha).2
+  rw [he]; simp [S, Nat.mul_comm]
 
 /-- The exact principal Hilbert rank is the same binomial difference used
 for homogeneous hypersurfaces with one extra variable. -/

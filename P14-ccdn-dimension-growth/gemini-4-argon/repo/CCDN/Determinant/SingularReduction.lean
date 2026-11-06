@@ -19,12 +19,6 @@ namespace CCDN
 noncomputable section
 open MvPolynomial
 
-private lemma cast_plane_eval {p : ℕ} (f : MvPolynomial (Fin 2) ℤ) (z : Fin 2 → ℤ) :
-    (MvPolynomial.eval z f : ZMod p) =
-      MvPolynomial.eval₂ (Int.castRingHom (ZMod p)) (fun j => (z j : ZMod p)) f := by
-  simpa only [MvPolynomial.eval₂_id, RingHom.comp_id, Function.comp_def, Int.coe_castRingHom] using
-    MvPolynomial.eval₂_comp_left (Int.castRingHom (ZMod p)) (RingHom.id ℤ) z f
-
 /-- All affine rational points of the reduced plane equation. -/
 def PlaneResidue (f : MvPolynomial (Fin 2) ℤ) (p : ℕ) :=
   {a : Fin 2 → ZMod p // eval₂ (Int.castRingHom (ZMod p)) a f = 0}
@@ -88,17 +82,6 @@ def planeTotalMultiplicity (f : MvPolynomial (Fin 2) ℤ) (p : ℕ) [Fact p.Prim
     (hf : map (Int.castRingHom (ZMod p)) f ≠ 0) : ℕ :=
   ∑ a : PlaneResidue f p, planeResidueMultiplicity f p hf a
 
-private lemma planeTotalMultiplicity_bounds (f : MvPolynomial (Fin 2) ℤ) (p : ℕ) [Fact p.Prime]
-    (hf : map (Int.castRingHom (ZMod p)) f ≠ 0) :
-    Fintype.card (PlaneResidue f p) ≤ planeTotalMultiplicity f p hf ∧
-      planeTotalMultiplicity f p hf ≤ Fintype.card (PlaneResidue f p) * f.totalDegree := by
-  constructor
-  · calc _ = ∑ _a : PlaneResidue f p, 1 := by simp
-         _ ≤ _ := Finset.sum_le_sum fun a _ => (planeResidueMultiplicity_spec f p hf a).1
-  · calc _ ≤ ∑ _a : PlaneResidue f p, f.totalDegree :=
-           Finset.sum_le_sum fun a _ => (planeResidueMultiplicity_spec f p hf a).2.1
-         _ = _ := by simp
-
 /-- Integral zeros supply all residue labels and multiplicities. The
 sum of the local exponents has the full quadratic leading coefficient.
 Singular points are allowed. -/
@@ -113,7 +96,10 @@ theorem singular_reduction_minorGcd {s N p : ℕ} [Fact p.Prime] (hs : 0 < s)
       (p : ℤ) ^ e ∣ Int.Matrix.minorGcd (Matrix.of fun i k => eval (z i) (g k)) := by
   classical
   let red : Fin s → PlaneResidue f p := fun i =>
-    ⟨(fun k => (z i k : ZMod p)), by rw [← cast_plane_eval, hz i]; simp⟩
+    ⟨fun k => (z i k : ZMod p), by
+      have hc := MvPolynomial.eval₂_comp_left (Int.castRingHom (ZMod p)) (RingHom.id ℤ) (z i) f
+      simpa only [MvPolynomial.eval₂_id, RingHom.comp_id, Function.comp_def,
+        Int.coe_castRingHom, hz i, Int.cast_zero] using hc.symm⟩
   let c := Fintype.card (PlaneResidue f p)
   let E := Fintype.equivFin (PlaneResidue f p)
   let label : Fin s → Fin c := fun i => E (red i)
@@ -122,12 +108,14 @@ theorem singular_reduction_minorGcd {s N p : ℕ} [Fact p.Prime] (hs : 0 < s)
   let n : Fin c → ℕ := fun i => Fintype.card {k : Fin s // label k = i}
   let e := ∑ i : Fin c, multiplicityExponent (n i) (μ i)
   have hμ (i : Fin c) := planeResidueMultiplicity_spec f p hf (E.symm i)
-  have hsum : ∑ i : Fin c, μ i = planeTotalMultiplicity f p hf := by
-    exact E.symm.sum_comp (planeResidueMultiplicity f p hf)
+  have hsum : ∑ i : Fin c, μ i = planeTotalMultiplicity f p hf :=
+    E.symm.sum_comp (planeResidueMultiplicity f p hf)
   have hsize : ∑ i : Fin c, n i = s := sum_residue_class_sizes label
   have hc : 0 < c := Fintype.card_pos_iff.mpr ⟨red ⟨0, hs⟩⟩
-  have hpos : 0 < planeTotalMultiplicity f p hf :=
-    hc.trans_le (planeTotalMultiplicity_bounds f p hf).1
+  have hpos : 0 < planeTotalMultiplicity f p hf := by
+    refine hc.trans_le ?_
+    calc c = ∑ _a : PlaneResidue f p, 1 := by simp [c]
+      _ ≤ _ := Finset.sum_le_sum fun a _ => (planeResidueMultiplicity_spec f p hf a).1
   refine ⟨hpos, e, ?_, ?_, ?_⟩
   · simpa only [hsize, hsum] using aggregate_multiplicity_exponents Finset.univ n μ
       (fun i _ => (hμ i).1)
