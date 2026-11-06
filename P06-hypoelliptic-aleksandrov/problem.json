@@ -1,0 +1,134 @@
+{
+  "problem_idx": 6,
+  "id": "PALOMAR-2026-10-11-000001-v1",
+  "title": "Kinetic Aleksandrov estimates",
+  "abstract": "A Lean 4 / Mathlib formalisation of Aleksandrov maximum principles for kinetic equations d_t u + v.grad_x u - A : D_v^2 u = f in non-divergence form, with measurable, uniformly elliptic diffusion acting only in the velocity. For coefficients A(t,v) the estimate holds for every source exponent p > 2d+1; for autonomous coefficients a(x,v) in one space dimension for every p above a threshold 1 + beta_*(Lambda/lambda) < 4, where no exponent below 4 works uniformly in the ellipticity ratio; and for general measurable coefficients A(t,x,v) for every p >= 1 + 128 d^2 (Lambda/lambda)^2 / 3. In each case the estimate implies interior Hölder continuity of solutions; for coefficients A(t,x,v) this is the kinetic Krylov–Safonov theorem. The library also proves the parabolic Aleksandrov estimate of Krylov, the parabolic Harnack inequality of Krylov and Safonov, the terminal solution operators of the kinetic equation, and classical Dirichlet solvability on ellipsoidal cylinders. Hörmander's hypoellipticity theorem is taken from the formalisation hoermander-rothschild-stein.",
+  "authors": [
+    "Amélie Loher"
+  ],
+  "repository": "amelieloher/hypoelliptic-aleksandrov",
+  "repository_url": "https://github.com/amelieloher/hypoelliptic-aleksandrov",
+  "commit": "d7e0125892d7bbd013c86c9c5d6a04e39e0168a6",
+  "license": "Apache-2.0",
+  "lean_toolchain": "leanprover/lean4:v4.35.0-rc2",
+  "lake_root": "",
+  "mathlib": true,
+  "size_category": "XL",
+  "baseline_tokens": 2642100,
+  "lean_files": 2365,
+  "protected_theorem_names": [
+    "KineticAleksandrovChallenge.kinetic_aleksandrov_timeVelocity",
+    "KineticAleksandrovChallenge.kinetic_aleksandrov_timeVelocity_localised",
+    "KineticAleksandrovChallenge.kinetic_holder_timeVelocity",
+    "KineticAleksandrovChallenge.kinetic_aleksandrov_autonomous",
+    "KineticAleksandrovChallenge.kinetic_aleksandrov_autonomous_localised",
+    "KineticAleksandrovChallenge.kinetic_holder_autonomous",
+    "KineticAleksandrovChallenge.kinetic_aleksandrov_autonomous_counterexample",
+    "KineticAleksandrovChallenge.existsUnique_bellmanAdjointExponent",
+    "KineticAleksandrovChallenge.bellmanAdjointExponent_characterization",
+    "KineticAleksandrovChallenge.parabolic_aleksandrov",
+    "KineticAleksandrovChallenge.parabolic_harnack_unit_cylinder"
+  ],
+  "definition_names": [],
+  "permitted_axioms": [
+    "propext",
+    "Quot.sound",
+    "Classical.choice"
+  ],
+  "challenge_module": "AleksandrovComparators.KineticAleksandrov.Challenge",
+  "challenge_path": "AleksandrovComparators/KineticAleksandrov/Challenge.lean",
+  "solution_module": "AleksandrovComparators.KineticAleksandrov.Solution",
+  "solution_path": "AleksandrovComparators/KineticAleksandrov/Solution.lean",
+  "comparator_path": "AleksandrovComparators/KineticAleksandrov/comparator.json",
+  "arxiv_tags": [
+    "math.AP",
+    "math.PR"
+  ],
+  "msc2020": [
+    "35K70",
+    "35B50",
+    "35B65",
+    "35Q84",
+    "35H10"
+  ],
+  "mathematical_sources": [
+    {
+      "title": "From Döblin to Aleksandrov",
+      "authors": [
+        "Amélie Loher",
+        "Connor Mooney",
+        "Clément Mouhot"
+      ],
+      "type": "paper",
+      "identifier": null,
+      "location": "https://amelieloher.github.io/DF-visual-paper/pdf/doeblin-fourier-companion.pdf (long version, 2 October 2026)",
+      "relationship": "formalizes"
+    },
+    {
+      "title": "Döblin–Fourier cancellation and kinetic Aleksandrov estimates",
+      "authors": [
+        "Amélie Loher",
+        "Connor Mooney",
+        "Clément Mouhot"
+      ],
+      "type": "paper",
+      "identifier": null,
+      "location": "arXiv:2610.03083",
+      "relationship": "formalizes"
+    },
+    {
+      "title": "We need ABP",
+      "authors": [],
+      "type": "other",
+      "identifier": null,
+      "location": "https://weneedabp.github.io/kinetic.html",
+      "relationship": "formalizes"
+    },
+    {
+      "title": "Hypoelliptic second order differential equations",
+      "authors": [
+        "Lars Hörmander"
+      ],
+      "type": "paper",
+      "identifier": null,
+      "location": "Acta Mathematica 119 (1967), 147-171",
+      "relationship": "background"
+    },
+    {
+      "title": "Sequences of convex functions and estimates of the maximum of the solution of a parabolic equation",
+      "authors": [
+        "N. V. Krylov"
+      ],
+      "type": "paper",
+      "identifier": null,
+      "location": "Sibirsk. Mat. Zh. 17 (1976), no. 2, 290-303",
+      "relationship": "formalizes"
+    },
+    {
+      "title": "A certain property of solutions of parabolic equations with measurable coefficients",
+      "authors": [
+        "N. V. Krylov",
+        "M. V. Safonov"
+      ],
+      "type": "paper",
+      "identifier": null,
+      "location": "Izv. Akad. Nauk SSSR Ser. Mat. 44 (1980), no. 1, 161-175",
+      "relationship": "formalizes"
+    },
+    {
+      "title": "Second Order Parabolic Differential Equations",
+      "authors": [
+        "Gary M. Lieberman"
+      ],
+      "type": "book",
+      "identifier": null,
+      "location": "World Scientific, 1996",
+      "relationship": "formalizes"
+    }
+  ],
+  "dependency_graph_nodes": 12633,
+  "dependency_graph_edges": 129460,
+  "project_path": "repos/PALOMAR-2026-10-11-000001-v1/project",
+  "dependency_graph_path": "repos/PALOMAR-2026-10-11-000001-v1/dependency-graph.json",
+  "license_path": "repos/PALOMAR-2026-10-11-000001-v1/LICENSE"
+}

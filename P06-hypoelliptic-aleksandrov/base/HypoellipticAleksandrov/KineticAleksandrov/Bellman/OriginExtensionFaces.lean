@@ -1,0 +1,3 @@
+module
+public import HypoellipticAleksandrov.KineticAleksandrov.Bellman.OriginExtensionWeak
+import Mathlib.MeasureTheory.Integral.IntervalIntegral.Basic

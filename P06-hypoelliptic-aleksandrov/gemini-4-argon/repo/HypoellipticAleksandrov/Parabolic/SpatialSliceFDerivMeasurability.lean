@@ -1,0 +1,5 @@
+module
+public import HypoellipticAleksandrov.Parabolic.Dirichlet.SpatialCoordinateShiftCarrierGeometry
+public import HypoellipticAleksandrov.Parabolic.SpatialTranslationWeakDerivatives
+public import HypoellipticAleksandrov.Parabolic.WeakDerivatives
+public import Mathlib.Analysis.Calculus.Deriv.Slope
