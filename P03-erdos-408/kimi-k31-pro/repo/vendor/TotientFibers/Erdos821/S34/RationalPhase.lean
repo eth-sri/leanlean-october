@@ -5,7 +5,6 @@ public import Erdos821.P5.Basic
 
 @[expose] public section
 
-set_option autoImplicit false
 
 namespace Erdos821.S34Core
 noncomputable section

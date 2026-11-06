@@ -6,7 +6,6 @@ public import Mathlib.Algebra.Order.Star.Real
 
 @[expose] public section
 
-set_option autoImplicit false
 open scoped BigOperators Classical
 
 namespace Erdos821.P4Probe

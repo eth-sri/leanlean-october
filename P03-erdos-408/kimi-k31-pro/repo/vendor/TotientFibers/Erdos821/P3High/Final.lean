@@ -7,7 +7,6 @@ public import Erdos821.S2Empty.Final
 
 @[expose] public section
 
-set_option autoImplicit false
 
 open Erdos821.Blueprint.Graph
 

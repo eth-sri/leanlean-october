@@ -10,13 +10,11 @@ noncomputable section
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
-open scoped Classical
 open scoped Classical
 
 namespace TraceLambdaPhase
@@ -51,24 +49,10 @@ theorem exp_minus_four_pi_div_three :
 
 end TraceLambdaPhase
 
-namespace ActualEisensteinCubic
 
-open EisensteinEmbedding ConcreteTraceCRT ConcreteBreveE TraceLambdaPhase
-
-end ActualEisensteinCubic
-
-namespace PoissonFirstLocal
-open scoped Classical
-
-end PoissonFirstLocal
 
 namespace ActualEisensteinCubic
 
-section
-
-open EisensteinEmbedding ConcreteTraceCRT ConcreteBreveE TraceLambdaPhase
-
-end
 
 noncomputable def finiteSquarefreeRow
     {ι : Type*} (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
@@ -127,15 +111,7 @@ theorem finiteSquarefreeRow_difference_norm
 
 end ActualEisensteinCubic
 
-namespace AnalyticBridge
 
-end AnalyticBridge
-
-namespace ShortDraftCusp
-
-variable {R : Type*} [CommRing R]
-
-end ShortDraftCusp
 
 namespace ActualEisensteinCubic
 

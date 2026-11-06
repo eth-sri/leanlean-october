@@ -71,10 +71,5 @@ abbrev BirthAddress (P : PrimeGroups) (M n B : ℕ) :=
   (P.BigGroup × Fin M) ⊕ ((Fin n × P.BigGroup × Fin M) ⊕
     (Fin (n + 1) × P.BigGroup × Fin B))
 
-namespace MemoryHistory
-
-variable {A : Model F P J m} {n : ℕ} (H : MemoryHistory A n)
-
-end MemoryHistory
 
 end Erdos821.Blueprint.Graph

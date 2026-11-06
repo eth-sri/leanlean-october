@@ -8,13 +8,9 @@ namespace OAI
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 
-namespace ShortDraftMellin
-
-end ShortDraftMellin
 
 namespace FiniteRingSieve
 

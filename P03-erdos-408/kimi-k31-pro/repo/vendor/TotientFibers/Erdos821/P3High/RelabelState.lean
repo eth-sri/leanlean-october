@@ -7,7 +7,6 @@ public import Erdos821.P3High.Relabel
 
 @[expose] public section
 
-set_option autoImplicit false
 
 noncomputable section
 open scoped BigOperators

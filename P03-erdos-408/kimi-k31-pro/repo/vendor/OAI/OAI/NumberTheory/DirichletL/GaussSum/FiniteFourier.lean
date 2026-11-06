@@ -11,7 +11,6 @@ noncomputable section
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
@@ -56,17 +55,7 @@ theorem product_gauss_transform
 
 end ShortDraftFiniteGaussFourier
 
-namespace PoissonChildCRT
-open scoped Classical
 
-variable (n : ℕ) (χ : MulChar (ZMod n) ℂ)
-
-end PoissonChildCRT
-
-namespace PoissonFirstLocal
-open scoped Classical
-
-end PoissonFirstLocal
 
 open Finset Complex
 

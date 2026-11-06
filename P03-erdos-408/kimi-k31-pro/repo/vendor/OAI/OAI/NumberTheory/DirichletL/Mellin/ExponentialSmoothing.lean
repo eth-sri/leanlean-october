@@ -9,7 +9,6 @@ namespace OAI
 open scoped BigOperators
 open MulChar AddChar
 
-open scoped BigOperators
 
 namespace AnalyticBridge
 
@@ -35,12 +34,6 @@ end AnalyticBridge
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 
-namespace ExpBound
 
-end ExpBound
-
-namespace ShortDraftMellin
-
-end ShortDraftMellin
 
 end OAI

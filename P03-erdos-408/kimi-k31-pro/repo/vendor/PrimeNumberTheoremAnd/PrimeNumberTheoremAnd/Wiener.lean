@@ -285,8 +285,7 @@ theorem limiting_fourier_aux (hG' : Set.EqOn G (fun s ↦ LSeries f s - A / (s -
     fun_prop
   have l5 : Integrable fun a ↦ A * ↑(x ^ (1 - σ')) * (↑(x ^ (σ' - 1)) *
       (1 / (σ' + a * I - 1) * ψ a * x ^ (a * I))) := by
-    apply l7.integrable_of_hasCompactSupport
-    exact ψ.h2.mul_left.mul_right.mul_left.mul_left
+    exact l7.integrable_of_hasCompactSupport ψ.h2.mul_left.mul_right.mul_left.mul_left
   simp_rw [l1 σ' hσ', l2 σ' hσ', ← integral_const_mul, ← integral_sub l4 l5]
   apply integral_congr_ae
   apply Eventually.of_forall

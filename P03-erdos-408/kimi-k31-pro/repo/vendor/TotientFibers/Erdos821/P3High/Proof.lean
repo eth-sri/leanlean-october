@@ -8,7 +8,6 @@ ghost/edge choices, the analytic ghost parameters, and the empty boundary mass. 
 
 @[expose] public section
 
-set_option autoImplicit false
 
 noncomputable section
 open scoped BigOperators

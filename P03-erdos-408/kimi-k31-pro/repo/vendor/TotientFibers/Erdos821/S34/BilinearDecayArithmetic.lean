@@ -6,7 +6,6 @@ public import Mathlib.Tactic.NormNum.RealSqrt
 
 @[expose] public section
 
-set_option autoImplicit false
 
 namespace Erdos821.S34Core
 

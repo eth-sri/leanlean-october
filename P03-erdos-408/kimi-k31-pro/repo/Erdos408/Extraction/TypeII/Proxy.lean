@@ -3,6 +3,7 @@ module
 public import Erdos408.Extraction.TypeII.Euler
 public import Erdos408.Extraction.TypeII.PrimeSums
 
+public import Erdos408.Extraction.Allocation.Strip
 /-!
 # The damped weight is completely multiplicative
 
@@ -34,22 +35,14 @@ theorem stripPrimes_eq_prod (n : ℕ) :
   rw [Finsupp.prod_filter_index, Finsupp.support_filter, Nat.support_factorization]
   rfl
 
-theorem factorization_stripPrimes (n : ℕ) :
-    (stripPrimes P n).factorization = n.factorization.filter (· ∉ P) := by
-  rw [stripPrimes_eq_prod]
-  refine Nat.prod_pow_factorization_eq_self fun p hp => ?_
-  rw [Finsupp.support_filter, mem_filter, Nat.support_factorization] at hp
-  exact Nat.prime_of_mem_primeFactors hp.1
+alias _root_.Erdos408.TypeII.factorization_stripPrimes := _root_.Erdos408.factorization_stripPrimes
 
 theorem primeFactors_stripPrimes (n : ℕ) :
     (stripPrimes P n).primeFactors = n.primeFactors.filter (· ∉ P) := by
   rw [← Nat.support_factorization, factorization_stripPrimes, Finsupp.support_filter,
     Nat.support_factorization]
 
-theorem stripPrimes_ne_zero (n : ℕ) : stripPrimes P n ≠ 0 := by
-  unfold stripPrimes
-  exact prod_ne_zero_iff.2 fun p hp =>
-    pow_ne_zero _ (Nat.prime_of_mem_primeFactors (mem_filter.1 hp).1).ne_zero
+alias _root_.Erdos408.TypeII.stripPrimes_ne_zero := _root_.Erdos408.stripPrimes_ne_zero
 
 theorem partPrimes_ne_zero (n : ℕ) : partPrimes P n ≠ 0 := by
   unfold partPrimes

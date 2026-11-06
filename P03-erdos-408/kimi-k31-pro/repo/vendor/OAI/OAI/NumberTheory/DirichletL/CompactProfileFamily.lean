@@ -29,13 +29,7 @@ theorem section_iteratedDeriv_smooth (F : E → ℝ → ℂ)
     simpa only [iteratedDeriv_succ] using
       section_deriv_smooth (fun σ => iteratedDeriv j (F σ)) ih
 
-theorem tsupport_iteratedDeriv_subset (f : ℝ → ℂ) (j : ℕ) :
-    tsupport (iteratedDeriv j f) ⊆ tsupport f := by
-  induction j with
-  | zero => simp
-  | succ j ih =>
-    rw [iteratedDeriv_succ]
-    exact tsupport_deriv_subset.trans ih
+alias _root_.OAI.SevenEighths.CompactProfileFamily.tsupport_iteratedDeriv_subset := _root_.OAI.CubicReflectionKernel.tsupport_iteratedDeriv_subset
 
 theorem compact_family_deriv_integrable (F : E → ℝ → ℂ)
     (hF : ContDiff ℝ ∞ (Function.uncurry F)) (K : Set ℝ) (hK : IsCompact K)

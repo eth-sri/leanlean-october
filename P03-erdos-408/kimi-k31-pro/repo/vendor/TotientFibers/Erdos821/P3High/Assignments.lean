@@ -8,7 +8,6 @@ moment per block, hence `(C / Pstar) ^ rank`. -/
 
 @[expose] public section
 
-set_option autoImplicit false
 
 noncomputable section
 open scoped BigOperators

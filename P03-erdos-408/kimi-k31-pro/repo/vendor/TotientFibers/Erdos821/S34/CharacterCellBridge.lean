@@ -6,7 +6,6 @@ public import Erdos821.S34.EventualFrame
 
 @[expose] public section
 
-set_option autoImplicit false
 open Filter
 
 namespace Erdos821.S34Core

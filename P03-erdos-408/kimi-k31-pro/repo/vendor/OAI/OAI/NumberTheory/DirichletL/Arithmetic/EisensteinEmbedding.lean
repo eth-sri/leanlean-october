@@ -12,13 +12,11 @@ noncomputable section
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
-open scoped Classical
 open scoped Classical
 
 namespace EisensteinEmbedding
@@ -348,7 +346,6 @@ theorem cubicGauss_normalized_cube_eis (P : Ideal O) [P.IsMaximal]
 
 open AddChar MulChar
 
-open AddChar MulChar
 
 noncomputable def canonicalSextic (P : Ideal O) [P.IsMaximal]
     (hgood : lambda ∉ P) : MulChar (O ⧸ P) ℂ :=
@@ -473,8 +470,7 @@ private theorem complex_exp_trace_integer {t : ℂ}
 private theorem phase_integer {z : ℂ}
     (hz : ShortDraftTrace.breveE (z / eisLam) = 1) :
     ∃ n : ℤ, z / eisLam + conj (z / eisLam) = n := by
-  apply complex_exp_trace_integer
-  exact hz
+  exact complex_exp_trace_integer hz
 
 private theorem omega_conj : conj omega3 = omega3 ^ 2 := by
   have hs : omega3 ^ 2 = -omega3 - 1 := by

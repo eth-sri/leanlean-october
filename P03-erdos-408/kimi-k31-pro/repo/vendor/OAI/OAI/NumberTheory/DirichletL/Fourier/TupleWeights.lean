@@ -11,75 +11,30 @@ noncomputable section
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
 open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
 open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
 open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
 open scoped BigOperators Classical
 open scoped BigOperators Classical SchwartzMap ContDiff
 open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
 open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
 
 open MeasureTheory
 open scoped BigOperators Classical SchwartzMap FourierTransform
-namespace JointLogSeparation
-
-end JointLogSeparation
 
 namespace SecondPassIntegration
 
@@ -112,28 +67,17 @@ end SecondPassIntegration
 
 section
 
-open MeasureTheory
 open scoped BigOperators Classical SchwartzMap FourierTransform ContDiff
 namespace JointLogSeparation
 
-lemma sqrt_exp_half (s : ℝ) : Real.sqrt (Real.exp s) = Real.exp (s / 2) := by
-  apply (Real.sqrt_eq_iff_mul_self_eq (Real.exp_pos s).le (Real.exp_pos (s / 2)).le).mpr
-  rw [← Real.exp_add]
-  congr 1
-  ring
+alias _root_.OAI.JointLogSeparation.sqrt_exp_half := _root_.OAI.EisensteinSchwartzPoisson.sqrt_exp_half
 
 end JointLogSeparation
 
-namespace SecondPassIntegration
-open ActualEisensteinCubic JointLogSeparation FirstPassCubeLabels
-
-end SecondPassIntegration
 end
 
-open scoped BigOperators Classical
 namespace CanonicalQuadraticSieve
 
-open ActualEisensteinCubic
 
 lemma lambdaIdeal_maximal : (Ideal.span {lambda} : Ideal O).IsMaximal :=
   PrincipalIdealRing.isMaximal_of_irreducible PrimaryIdealUnitReindex.lambda_prime_actual.irreducible
@@ -153,15 +97,13 @@ theorem supported_span_iff (z : O) :
     · intro hz
       have hm : (Ideal.span {lambda} : Ideal O) ∈
           UniqueFactorizationMonoid.normalizedFactors (Ideal.span {z}) := by
-        apply (Ideal.mem_normalizedFactors_iff h.1).mpr
-        exact ⟨lambdaIdeal_maximal.isPrime,
+        exact (Ideal.mem_normalizedFactors_iff h.1).mpr ⟨lambdaIdeal_maximal.isPrime,
           (Ideal.span_singleton_le_iff_mem _).mpr (Ideal.mem_span_singleton.mpr hz)⟩
       exact (h.2 _ hm).1 (Ideal.subset_span (by simp))
     · intro hz
       have hm : (Ideal.span {(2 : O)} : Ideal O) ∈
           UniqueFactorizationMonoid.normalizedFactors (Ideal.span {z}) := by
-        apply (Ideal.mem_normalizedFactors_iff h.1).mpr
-        exact ⟨twoIdeal_maximal.isPrime,
+        exact (Ideal.mem_normalizedFactors_iff h.1).mpr ⟨twoIdeal_maximal.isPrime,
           (Ideal.span_singleton_le_iff_mem _).mpr (Ideal.mem_span_singleton.mpr hz)⟩
       exact (h.2 _ hm).2 twoIdeal_characteristic
   · rintro ⟨hLam, htwo⟩

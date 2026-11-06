@@ -8,7 +8,6 @@ namespace OAI
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
@@ -54,9 +53,6 @@ variable {R : Type*} [CommRing R]
 
 end ShortDraftCRT
 
-namespace ShortDraftDescent
-
-end ShortDraftDescent
 
 namespace ShortDraftTrace
 

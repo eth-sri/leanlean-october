@@ -8,7 +8,6 @@ public import Erdos821.P3Live.Conservation
 
 @[expose] public section
 
-set_option autoImplicit false
 
 open scoped BigOperators
 

@@ -37,11 +37,7 @@ theorem cube_whole_support_norm (b : CubeCoordinates ι) :
   simpa only [primeProduct_add,map_mul,norm_mul,mul_pow] using hh
 
 include hp in
-theorem cube_whole_support_dyad (b : CubeCoordinates ι) (B : ℝ) (hB : 0≤B)
-    (hl : ‖eisEmbedding (primeProduct p b.support b.leftExponent)‖^2≤B)
-    (hr : ‖eisEmbedding (primeProduct p b.support b.rightExponent)‖^2≤B) :
-    primeProductNorm p b.support≤B^2 :=
-  (cube_whole_support_norm p hp b).trans ((mul_le_mul hl hr (sq_nonneg _) hB).trans_eq (pow_two B).symm)
+alias _root_.OAI.SevenEighths.InverseMoment.cube_whole_support_dyad := _root_.OAI.SecondPassArithmetic.cubeCoordinates_radical_bound
 
 end SevenEighths.InverseMoment
 

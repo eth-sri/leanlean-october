@@ -4,7 +4,6 @@ public import Erdos821.P3Rare.Sectors
 
 @[expose] public section
 
-set_option autoImplicit false
 
 /-! The exact rare-transfer task `Erdos821.S2Core.MemoryRareTask`. -/
 
@@ -277,6 +276,4 @@ theorem memoryRareTask_holds (F : FixedData) (r : MemoryParameters F) :
 end Erdos821.P3Rare
 
 open Erdos821.Blueprint.Graph Erdos821.S2Core in
-theorem Erdos821.S2Core.MemoryRareTask_proof (F : FixedData) (r : MemoryParameters F) :
-    Erdos821.S2Core.MemoryRareTask F r :=
-  Erdos821.P3Rare.memoryRareTask_holds F r
+alias _root_.Erdos821.S2Core.MemoryRareTask_proof := _root_.Erdos821.P3Rare.memoryRareTask_holds

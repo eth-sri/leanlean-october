@@ -10,73 +10,30 @@ noncomputable section
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
 open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
 open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
 open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
 open scoped BigOperators Classical
 open scoped BigOperators Classical SchwartzMap ContDiff
 open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
 open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
 
 namespace CubicEisenstein
 open MeasureTheory Set Filter
-open scoped BigOperators Classical
 
 section
 open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal UniqueFactorizationMonoid
@@ -97,9 +54,7 @@ lemma multiset_cube_remainder {α : Type*} [DecidableEq α] (s : Multiset α) (p
   · simp only [hq,ite_false,mul_zero,zero_add]
     exact (Nat.mul_div_cancel' (hdiv q hq)).symm
 
-lemma residue_lambda_prime : Prime lambda := by
-  let : Fact (Nat.Prime 3) := ⟨Nat.prime_three⟩
-  exact (IsCyclotomicExtension.zeta_spec 3 ℚ K).zeta_sub_one_prime'
+alias _root_.OAI.CubicEisenstein.residue_lambda_prime := _root_.OAI.PrimaryIdealUnitReindex.lambda_prime_actual
 
 lemma constant_coefficient_unramified_count [NormalizationMonoid O]
     (c : O) (hc : c ≠ 0) (hlevel : (3:O) ∣ c) (hA : arithmeticResidueSum 0 c ≠ 0)
@@ -249,7 +204,6 @@ theorem arithmeticResidueSum_ne_zero_iff_cube (c : O) (hc : c ≠ 0) (hlevel : (
 
 end CubicEisenstein
 
-open scoped BigOperators Classical
 namespace CanonicalQuadraticSieve
 
 section
@@ -398,7 +352,6 @@ theorem canonical_same_ray_pair_poisson
     A B hd hr W M hM
   simpa only [hn, hrowI, hrowJ] using ht
 
-open ActualEisensteinCubic ConcreteTraceCRT CompletedGauss ConcretePrimeRowBridge ActualEisensteinCoordinates
 open EisensteinSchwartzPoisson GaussGeneratorTransport QuadraticUnitInvariance PrimaryIdealUnitReindex
 
 theorem canonical_pair_unit_invariant (I J : Ideal O) (hI : Admissible I) (hJ : Admissible J)

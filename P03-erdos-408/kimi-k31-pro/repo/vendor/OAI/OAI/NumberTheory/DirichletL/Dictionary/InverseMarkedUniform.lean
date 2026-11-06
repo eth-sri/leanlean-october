@@ -52,11 +52,7 @@ theorem moving_finite_energy (J : ℕ) :
       (pow_le_pow_left₀ (integral_nonneg (fun _=>by positivity)) hm 2) hE
     _= _:=by rw [mul_pow,←pow_mul];ring_nf
 
-theorem logTest_eq_iterate (W : ℝ→ℂ) (n : ℕ) :
-    logTest W n=(HeckeDetectorRowwisePolynomial.logProfile^[n]) W := by
-  induction n with
-  | zero=>rfl
-  | succ n ih=>rw [logTest,Function.iterate_succ_apply',←ih]
+alias _root_.OAI.SevenEighths.DetectorDictionaryInverseMarkedUniform.logTest_eq_iterate := _root_.OAI.SevenEighths.CenteredMomentDetectorDictionary.logTest_eq_iterate
 
 section Fiber
 variable {M : Ideal O} {H : Subgroup (O⧸M)ˣ} {Label Slot : Type*}

@@ -9,7 +9,6 @@ namespace OAI
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
@@ -26,10 +25,6 @@ def E : Matrix (Fin 2) (Fin 2) R := !![0,-1;1,0]
 
 end ShortDraftCusp
 
-namespace ShortDraftConcretePhase
-open ShortDraftTrace
-
-end ShortDraftConcretePhase
 
 namespace ShortDraftGauss
 
@@ -94,12 +89,6 @@ theorem sextic_power_is_unit_mask (χ : MulChar R ℂ)
 
 end ShortDraftSextic
 
-namespace ShortDraftGaussJacobi
-open Finset
-
-variable {F : Type*} [Field F] [Fintype F]
-
-end ShortDraftGaussJacobi
 
 namespace ShortDraftQuadraticGauss
 open Finset
@@ -135,10 +124,6 @@ theorem quadratic_gauss_as_square_phase (ψ : AddChar F ℂ)
 
 end ShortDraftQuadraticGauss
 
-namespace ShortDraftQuotientPhase
-variable {A B : Type*} [CommGroup A] [CommGroup B]
-
-end ShortDraftQuotientPhase
 
 namespace EisensteinEPrimaryPhase
 
@@ -174,9 +159,6 @@ theorem odd_mul (x y : Coord) (hx : odd x) (hy : odd y) : odd (mul x y) := by
 
 end EisensteinEPrimaryPhase
 
-namespace ShortDraftGaussianPhaseTable
-
-end ShortDraftGaussianPhaseTable
 
 namespace ActualEisensteinCoordinates
 abbrev K := CyclotomicField 3 ℚ

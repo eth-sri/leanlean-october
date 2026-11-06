@@ -10,89 +10,34 @@ noncomputable section
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
 open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
 open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
 open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
 open scoped BigOperators Classical
 open scoped BigOperators Classical SchwartzMap ContDiff
 open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
 open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
 open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
 
 open scoped BigOperators Classical ContDiff Topology
-namespace CanonicalRowCompletion
-open ActualEisensteinCubic
-open ConcretePrimeRowBridge hiding O
-open ShortDraftHeckeBridge
-open CanonicalQuadraticSieve hiding O
-open SecondPassArithmetic hiding O
-open SixthPowerAverage CompactMellinBridge InitialMeanSquare
 
-end CanonicalRowCompletion
-
-open scoped BigOperators Classical
 namespace QuadraticAllOddCRT
 
 section
-open ActualEisensteinCubic
 open QuadraticGaussRay hiding O
 open ActualEisensteinCoordinates hiding O omega
 open CanonicalQuadraticSieve hiding O
@@ -158,7 +103,6 @@ theorem character_lambda_eq_ray (p : ActualEisensteinCubic.O) (hp : p≠0) [(Ide
 
 end
 
-open ActualEisensteinCubic
 open QuadraticGaussRay hiding O
 open ActualEisensteinCoordinates hiding O omega
 
@@ -220,9 +164,7 @@ lemma lambdaQuadraticCharacter_periodic (x y : ActualEisensteinCubic.O) (h : (4:
 
 end QuadraticAllOddCRT
 
-open scoped BigOperators Classical
 namespace CanonicalRowCompletion
-open ActualEisensteinCubic
 open CompletedGauss hiding O
 open CubicJacobiGlobal hiding O
 open QuadraticAllOddCRT
@@ -414,7 +356,6 @@ lemma cuspRemainder_row_scaled_deriv_aux_bound (a b : ℝ) (hab : a<b) (s : ℂ)
 
 end
 
-open Filter
 open scoped BigOperators Classical Topology ContDiff
 
 def weightedHeightProfile (F : ℝ→ℂ) (r : CuspCosets) (p : SpatialCoordinates) : ℂ :=

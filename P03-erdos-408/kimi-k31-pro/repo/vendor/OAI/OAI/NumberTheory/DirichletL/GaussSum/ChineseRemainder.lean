@@ -8,7 +8,6 @@ namespace OAI
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
@@ -18,11 +17,7 @@ open Finset Complex
 
 open scoped Classical
 
-namespace GaussCRT
 
-end GaussCRT
-
-open scoped Classical
 
 namespace IdealGaussCRT
 

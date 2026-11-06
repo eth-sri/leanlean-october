@@ -29,10 +29,7 @@ def nestedMellinPhysicalProbe (η : HeckeFamily.Character) (C : CalibrationData)
             (elementNorm C.generator*qs*X) ξ t p.1 p.2))
     else 0
 
-lemma verticalIntegral_mul_const (σ : ℝ) (F : ℂ→ℂ) (c : ℂ) :
-    verticalIntegral σ (fun s=>F s*c)=verticalIntegral σ F*c := by
-  unfold verticalIntegral
-  rw [integral_mul_const,mul_assoc]
+alias _root_.OAI.SevenEighths.ProbePhysical.verticalIntegral_mul_const := _root_.OAI.SevenEighths.PrincipalMellinResidues.verticalIntegral_mul_const
 
 theorem markedPhysicalProbe_eq_nested_mellin (η : HeckeFamily.Character)
     (S : Finset (Ideal O)) (hS : ∀P∈S,P.IsMaximal) (hSne : S.Nonempty)

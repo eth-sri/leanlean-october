@@ -18,19 +18,8 @@ lemma supported_one_ideal : Supported (1 : Ideal O) := by
   intro P hP
   simp only [UniqueFactorizationMonoid.normalizedFactors_one,Multiset.notMem_zero] at hP
 
-lemma G_one : G (1:O)=1 := by
-  have hs : Supported (Ideal.span {(1:O)}) := by
-    rw [Ideal.span_singleton_one,←Ideal.one_eq_top]
-    exact supported_one_ideal
-  have ho := supported_residue_odd (1:O) hs
-  have hn : G (1:O)≠0 := by
-    intro hz
-    have hh := G_norm_one_of_odd (1:O) ho
-    rw [hz,norm_zero] at hh
-    norm_num at hh
-  have he := G_mul (1:O) 1 ho ho
-  rw [one_mul,reciprocitySign_one_left (1:O) ho,mul_one] at he
-  exact mul_left_cancel₀ hn (by simpa only [mul_one] using he.symm)
+lemma G_one : G (1:O)=1 :=
+  _root_.OAI.SevenEighths.ProbePhase.G_one
 
 lemma angularFactor_one : FiniteGaussPhase.angularFactor (1:O)=1 := by
   simp only [FiniteGaussPhase.angularFactor,map_one,norm_one,Complex.ofReal_one,div_one]

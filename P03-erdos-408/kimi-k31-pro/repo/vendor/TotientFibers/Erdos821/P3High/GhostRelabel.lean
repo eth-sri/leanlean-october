@@ -8,7 +8,6 @@ prescribed value keeps the factorial divisor and replaces its tilted mass by a p
 
 @[expose] public section
 
-set_option autoImplicit false
 
 noncomputable section
 open scoped BigOperators
@@ -65,9 +64,7 @@ def gtEnc {M B : ℕ} (s t : P.MemoryState M) (ht : P.memorySize t ≤ B) (c : G
   fun g => (c.1 g, ⟨⟨(c.2.1 g).val, Nat.lt_succ_of_le
     ((Nat.le_of_lt_succ (c.2.1 g).isLt).trans ((card_le_memorySize t g).trans ht))⟩, c.2.2 g⟩)
 
-theorem zeroBirthBatch_card' {g : P.Group} {b : ℕ} (p : Fin b → P.Prime g) :
-    (zeroBirthBatch p).card = b := by
-  simp [zeroBirthBatch]
+alias _root_.Erdos821.P3High.zeroBirthBatch_card' := _root_.Erdos821.S2Core.zeroBirthBatch_card
 
 theorem gtTarget_card {M B : ℕ} (s : P.MemoryState M) (tr : GT P s B) (g : P.BigGroup) :
     ((gtTarget s tr).2.2 g).card = (s.2.2 g).card - (tr g).1.card + (tr g).2.1.val := by

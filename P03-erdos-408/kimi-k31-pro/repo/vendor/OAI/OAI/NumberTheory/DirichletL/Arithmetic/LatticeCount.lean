@@ -10,13 +10,11 @@ noncomputable section
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
-open scoped Classical
 open scoped Classical
 
 namespace ShortDraftLatticeCount
@@ -114,11 +112,6 @@ theorem A3_cubicChar_neg_one
 
 end ActualEisensteinCubic
 
-namespace ShortDraftCusp
-
-variable {R : Type*} [CommRing R]
-
-end ShortDraftCusp
 
 namespace ShortDraftLatticeCount
 
@@ -189,9 +182,6 @@ theorem finite_multiples_count
 
 end ShortDraftLatticeCount
 
-namespace AnalyticBridge
-
-end AnalyticBridge
 
 namespace ShortDraftLatticeCount
 
@@ -229,10 +219,6 @@ theorem finite_divisible_count
 
 end ShortDraftLatticeCount
 
-namespace IdealGaussCRT
-open AddChar MulChar
-
-end IdealGaussCRT
 
 namespace ActualEisensteinCubic
 

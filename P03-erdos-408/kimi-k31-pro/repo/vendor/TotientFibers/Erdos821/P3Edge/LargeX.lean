@@ -65,15 +65,8 @@ lemma Nx_add_one_le (hx : 1 ≤ L x) : ((N x + 1 : ℕ) : ℝ) ≤ 5 * L x := by
 
 /-- Exponential of a positive power dominates: single Taylor term. -/
 lemma exp_ge_pow_div (y : ℝ) (hy : 0 ≤ y) (k : ℕ) :
-    y ^ k / (k.factorial : ℝ) ≤ Real.exp y := by
-  have hnn : ∀ i ∈ Finset.range (k + 1), (0:ℝ) ≤ y ^ i / (i.factorial : ℝ) := by
-    intro i _
-    apply div_nonneg (pow_nonneg hy _)
-    positivity
-  calc y ^ k / (k.factorial : ℝ)
-      ≤ ∑ i ∈ Finset.range (k + 1), y ^ i / (i.factorial : ℝ) :=
-        Finset.single_le_sum hnn (Finset.mem_range.mpr (Nat.lt_succ_self k))
-    _ ≤ Real.exp y := Real.sum_le_exp_of_nonneg hy (k + 1)
+    y ^ k / (k.factorial : ℝ) ≤ Real.exp y :=
+  Real.pow_div_factorial_le_exp y hy k
 
 /-- Fixed-data constant: how many Taylor terms dominate `L x`. -/
 def taylorTerms (F : FixedData) : ℕ := ⌈2 / F.c⌉₊ + 1

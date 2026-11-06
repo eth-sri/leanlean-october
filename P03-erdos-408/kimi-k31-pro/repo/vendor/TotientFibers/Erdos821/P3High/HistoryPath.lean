@@ -8,7 +8,6 @@ public import Erdos821.P3High.PathSum
 
 @[expose] public section
 
-set_option autoImplicit false
 
 noncomputable section
 open scoped BigOperators

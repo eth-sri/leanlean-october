@@ -6,7 +6,6 @@ public import Mathlib.NumberTheory.DirichletCharacter.Bounds
 
 @[expose] public section
 
-set_option autoImplicit false
 
 open Filter
 

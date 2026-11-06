@@ -10,13 +10,11 @@ noncomputable section
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
-open scoped Classical
 open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
@@ -157,7 +155,6 @@ end
 
 section
 
-open scoped Topology
 open Filter EisensteinEmbedding ConcreteTraceCRT Complex
 
 theorem original_abel_gamma_limit (c : O) (hc : c ≠ 0) :
@@ -309,7 +306,6 @@ end ActualEisensteinCubic
 
 namespace GaussianMoment
 
-open scoped Topology
 open Filter
 
 noncomputable def realGauss (t : ℝ) (z : ℤ × ℤ) : ℝ :=
@@ -490,7 +486,6 @@ theorem prefactor_eq_real_sqrt {η a b : ℝ} (hη : 0 < η) (hq : 0 < q a b) :
   push_cast
   field_simp [hqS, hrS]
 
-open scoped Topology
 open Filter
 
 theorem prefactor_tendsto {a b : ℝ} (hq : 0 < q a b) :
@@ -525,7 +520,6 @@ end OscSpecial
 
 namespace GaussianMoment
 
-open scoped Topology
 open Filter
 
 private theorem eisQ_nonneg (z : ℤ × ℤ) : 0 ≤ RankTwoPoisson.eisQ z := by

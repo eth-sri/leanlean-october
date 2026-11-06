@@ -6,7 +6,6 @@ public import Mathlib.Data.Nat.Factorization.Defs
 
 @[expose] public section
 
-set_option autoImplicit false
 
 open scoped BigOperators Classical
 

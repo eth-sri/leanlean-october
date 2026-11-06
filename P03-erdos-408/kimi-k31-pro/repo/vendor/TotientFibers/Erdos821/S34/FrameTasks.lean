@@ -4,7 +4,6 @@ public import Mathlib.Analysis.Complex.Norm
 
 @[expose] public section
 
-set_option autoImplicit false
 
 open scoped BigOperators Classical
 

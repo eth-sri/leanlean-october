@@ -8,7 +8,6 @@ public import Erdos821.P4Proj.Invariance
 
 @[expose] public section
 
-set_option autoImplicit false
 
 namespace Erdos821.S34Core
 

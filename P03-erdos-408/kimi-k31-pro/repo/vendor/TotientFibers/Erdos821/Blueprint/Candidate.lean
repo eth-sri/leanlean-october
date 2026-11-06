@@ -24,13 +24,6 @@ structure BandData where
   ratio : ℝ
   last : ℝ → ℕ
 
-namespace BandData
-variable (D : BandData)
 
-end BandData
-
-namespace CandidateData
-
-end CandidateData
 
 end Erdos821.Blueprint

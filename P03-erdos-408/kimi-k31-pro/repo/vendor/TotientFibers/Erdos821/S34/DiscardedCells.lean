@@ -5,7 +5,6 @@ public import Erdos821.S34.BilinearBlocks
 
 @[expose] public section
 
-set_option autoImplicit false
 
 open scoped BigOperators Classical
 

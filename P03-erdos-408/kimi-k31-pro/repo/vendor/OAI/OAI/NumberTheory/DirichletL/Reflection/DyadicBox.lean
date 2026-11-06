@@ -11,13 +11,7 @@ open scoped Classical BigOperators
 open CompletedGauss CompletedDyadic CanonicalQuadraticSieve
 noncomputable section
 
-lemma ramifiedScale_one_cube (m : ℕ) : (ramifiedScale 1 completedRamifiedStep m)^3=(3:ℝ)^m := by
-  have hs : completedRamifiedStep^3=(3:ℝ) := by
-    unfold completedRamifiedStep
-    rw [← Real.rpow_mul_natCast (by norm_num)]
-    norm_num
-  simp only [ramifiedScale,one_mul]
-  rw [← pow_mul,Nat.mul_comm m 3,pow_mul,hs]
+alias _root_.OAI.SevenEighths.InverseReflectedPhase.ramifiedScale_one_cube := _root_.OAI.CubicEisenstein.thetaRamifiedScale_cube
 
 lemma rawDyadicCenter_pow_lower (scale : ℝ) (hs : 0≤scale) (i : ℕ×ℕ×ℕ) :
     scale*(2:ℝ)^(i.1+i.2.2+3*i.2.1)≤rawDyadicCenter scale i := by

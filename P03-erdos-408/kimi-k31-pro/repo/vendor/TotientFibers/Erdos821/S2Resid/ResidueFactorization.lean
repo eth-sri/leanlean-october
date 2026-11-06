@@ -696,8 +696,7 @@ theorem smallResiduePathFactor_eq_zero_of_not_compatible {F : FixedData}
     simp [hactive, hhit]
   unfold smallResiduePathFactor
   apply Finset.prod_eq_zero (Finset.mem_univ g)
-  apply Finset.prod_eq_zero (Finset.mem_univ p)
-  exact hlocal
+  exact Finset.prod_eq_zero (Finset.mem_univ p) hlocal
 
 theorem smallResiduePathFactor_eq_compatible_edgeDamping {F : FixedData}
     {J m n : ℕ} {A : Model F P J m} (Q : Erdos821.S2Core.ResiduePath A n)

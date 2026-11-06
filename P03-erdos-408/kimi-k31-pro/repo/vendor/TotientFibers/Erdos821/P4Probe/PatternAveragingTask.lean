@@ -4,7 +4,6 @@ public import Erdos821.P4Probe.PatternBridgeTasks
 
 @[expose] public section
 
-set_option autoImplicit false
 
 namespace Erdos821.P4Probe
 open Blueprint.Graph

@@ -5,7 +5,6 @@ public import Mathlib.Algebra.BigOperators.Group.Finset.Powerset
 
 @[expose] public section
 
-set_option autoImplicit false
 open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 

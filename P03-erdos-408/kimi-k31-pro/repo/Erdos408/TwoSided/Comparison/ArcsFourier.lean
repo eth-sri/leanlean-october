@@ -97,9 +97,7 @@ theorem integral_star_mul_mul_sum {Λ : Type*} (Ls : Finset Λ) (c : Λ → ℂ)
 
 /-- `|e(t)| = 1`. -/
 theorem norm_e (t : ℝ) : ‖e t‖ = 1 := by
-  rw [e, show 2 * (Real.pi : ℂ) * t * Complex.I = ((2 * Real.pi * t : ℝ) : ℂ) * Complex.I by
-    push_cast; ring]
-  exact Complex.norm_exp_ofReal_mul_I _
+  apply _root_.Erdos821.P5Energy.norm_e <;> assumption
 
 /-- `star(n^{it}) = n^{-it}` for `n ≥ 1`. -/
 private theorem star_natCast_cpow {n : ℕ} (hn : n ≠ 0) (t : ℝ) :

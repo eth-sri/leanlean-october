@@ -10,13 +10,11 @@ noncomputable section
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
-open scoped Classical
 open scoped Classical
 
 namespace ActualEisensteinCubic
@@ -36,11 +34,6 @@ def q (a b : ℂ) : ℂ := a*a-a*b+b*b
 
 end OscillatoryDeterminant
 
-namespace ActualEisensteinCubic
-
-open EisensteinEmbedding ConcreteTraceCRT Complex
-
-end ActualEisensteinCubic
 namespace EisensteinFiberShift
 
 def Q (x y : ℝ) : ℝ := x*x-x*y+y*y
@@ -199,9 +192,6 @@ theorem complex_eta_times_prefactor (η q : ℝ) (hη : 0 < η) (hq : 0 < q) :
 
 end EisensteinGaussianPrefactor
 
-namespace ActualEisensteinCubic
-
-end ActualEisensteinCubic
 namespace OscillatoryDeterminant
 
 open Complex
@@ -215,7 +205,6 @@ namespace RankTwoLimit
 
 section
 
-open scoped Topology
 
 open RankTwoPoisson RankTwoEisShift Filter
 
@@ -312,7 +301,6 @@ theorem dual_sum_tendsto_one (x y : ℝ) :
 
 end
 
-open scoped Topology
 open Filter
 
 theorem dual_sum_tendsto_one_small_t (x y : ℝ) :

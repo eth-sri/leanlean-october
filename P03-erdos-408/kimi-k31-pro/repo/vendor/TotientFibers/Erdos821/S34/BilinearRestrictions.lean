@@ -4,7 +4,6 @@ public import Erdos821.S34.ProbabilityBilinear
 
 @[expose] public section
 
-set_option autoImplicit false
 open scoped BigOperators Classical
 
 namespace Erdos821.S34Core

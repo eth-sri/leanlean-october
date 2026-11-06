@@ -10,13 +10,11 @@ noncomputable section
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
-open scoped Classical
 open scoped Classical
 open Filter Real Asymptotics
 
@@ -88,9 +86,6 @@ theorem prefactor_product {a : ℂ} {r : ℝ} (ha : 0 < a.re) (hr : 0 < r) :
 
 end SqrtBranch
 
-namespace PowerExtraction
-
-end PowerExtraction
 
 namespace ActualEisensteinCubic
 
@@ -137,7 +132,6 @@ end ActualEisensteinCubic
 
 namespace EisensteinAbelFiber
 
-open scoped Topology
 open Filter
 
 theorem shifted_gaussian_mass (x y : ℝ) :
@@ -210,7 +204,6 @@ namespace ActualEisensteinCubic
 
 section
 
-open scoped Topology
 open Filter EisensteinEmbedding ConcreteTraceCRT Complex
 
 theorem actual_fiber_gaussian_mass (a b x y : ℤ)
@@ -346,7 +339,6 @@ end GaussianPhasePointwise
 
 namespace ActualEisensteinCubic
 
-open scoped Topology
 open Filter EisensteinEmbedding ConcreteTraceCRT Complex
 
 theorem actual_O_fiber_gaussian_mass (c r : O) (hc : c ≠ 0) :

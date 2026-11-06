@@ -10,70 +10,28 @@ noncomputable section
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
 open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
 open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
 open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
 open scoped BigOperators Classical
 open scoped BigOperators Classical SchwartzMap ContDiff
 open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
 open ActualEisensteinCubic UniqueFactorizationMonoid
 
-open scoped BigOperators Classical
 
 namespace MixedCrossSeparation
 open ActualEisensteinCubic ConcreteTraceCRT FiniteGaussPhase MixedGaussConversion
@@ -210,12 +168,7 @@ theorem coefficient_cancel_univ_true {ι : Type*} [Fintype ι] [DecidableEq ι]
       exact Finset.prod_congr rfl (fun i _ => (local_coefficient_cancel (p i) (hp i) (hg i) (hc i) (hpr i)).2)
     _ = _ := by rw [Finset.prod_mul_distrib]; ring
 
-theorem columnPrimeCoprime {ι : Type*} (p : ι → O)
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-    (S : Finset ι) :
-    Pairwise (Function.onFun IsCoprime (fun i : S => Ideal.span {p i.val})) := by
-  intro i j hij
-  exact hcop (fun h => hij (Subtype.ext h))
+alias _root_.OAI.MixedCrossSeparation.columnPrimeCoprime := _root_.OAI.MixedCrossSeparation.restricted_prime_coprime
 
 def columnCoefficient {ι : Type*} [DecidableEq ι]
     (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
@@ -276,7 +229,6 @@ theorem columnCoefficient_cancel_true {ι : Type*} [DecidableEq ι]
 
 end MixedCrossSeparation
 
-open scoped BigOperators Classical SchwartzMap ContDiff
 namespace FirstCauchyArithmetic
 open ActualEisensteinCubic ConcreteTraceCRT FiniteGaussPhase MixedGaussConversion
 open MixedCrossSeparation GaussGeneratorTransport ConcretePrimeRowBridge EisensteinSchwartzPoisson
@@ -376,14 +328,7 @@ theorem pv_lattice_bound (W : 𝓢(ℝ, ℂ)) (t : ℝ) (ht : 0 < t) :
   (Classical.choose_spec
     (Classical.choose_spec paperRadialFourier_nonzero_lattice_uniform)).2 W t ht
 
-theorem norm_finite_character_le_one {R : Type*} [CommRing R] [Fintype R]
-    (χ : MulChar R ℂ) (r : R) : ‖χ r‖ ≤ 1 := by
-  by_cases hr : IsUnit r
-  · obtain ⟨u, rfl⟩ := hr
-    simpa only [MulChar.coe_equivToUnitHom] using
-      (Complex.norm_eq_one_of_mem_rootsOfUnity (χ.apply_mem_rootsOfUnity u)).le
-  · rw [MulChar.map_nonunit χ hr, norm_zero]
-    exact zero_le_one
+alias _root_.OAI.QuadraticInitialBound.norm_finite_character_le_one := _root_.OAI.FiniteRayExpansion.norm_char_le_one
 
 theorem finiteSexticRow_norm_le_one {ι : Type*} [Fintype ι]
     (P : ι → Ideal O) [∀ i, (P i).IsMaximal]

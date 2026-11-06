@@ -8,7 +8,6 @@ public import Erdos821.P3Edge.SmallFresh
 
 @[expose] public section
 
-set_option autoImplicit false
 
 /-! Final assembly of the rare-transfer estimate `MemoryRareTask`
 (source §2, `lem:memory-rare`): the promotion sector is sparse in source

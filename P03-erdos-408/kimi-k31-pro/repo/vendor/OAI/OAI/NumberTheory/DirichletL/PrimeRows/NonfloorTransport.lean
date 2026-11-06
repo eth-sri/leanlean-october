@@ -20,9 +20,7 @@ local instance : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZ
 variable (H : Subgroup (O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
 
 omit [NeZero M] in
-theorem nonfloorTransportPoolOutside (S : Finset (Ideal O)) (K : ℕ) (a b : ℝ) (Y : Fin K→ℝ) :
-    ∀j P,P∈pool (RayQuotient.identityClass M H) S a b (Y j) → P.val∉S :=
-  fun j P hP=>(mem_pool _ S a b (Y j) P).mp hP |>.2.2.2
+alias _root_.OAI.SevenEighths.ProbeHighRowFamily.nonfloorTransportPoolOutside := _root_.OAI.SevenEighths.ProbeHighRowFamily.poolOutside
 
 theorem actual_nonfloor_probe_transport (K : ℕ) (e δ a b B ζ saving τ ellMin nu : ℝ)
     (he : 0<e) (he' : e<1/1000) (hδ : 0<δ) (hδ' : δ≤1/2) (hζ : 0<ζ) (hζ' : ζ≤1/48) (hτ : 0<τ)

@@ -18,9 +18,7 @@ open scoped Topology ContDiff
 
 open Asymptotics
 
-open Asymptotics
 
-open Asymptotics
 
 open scoped Classical
 

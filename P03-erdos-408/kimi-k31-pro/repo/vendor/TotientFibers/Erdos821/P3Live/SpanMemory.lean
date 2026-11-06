@@ -6,7 +6,6 @@ public import Erdos821.S2.HistoryProjection
 
 @[expose] public section
 
-set_option autoImplicit false
 
 open scoped BigOperators
 

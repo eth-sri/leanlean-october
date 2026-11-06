@@ -20,6 +20,7 @@ public import Mathlib.Algebra.Order.Floor.Semifield
 public import Mathlib.Algebra.Order.Star.Real
 public import Mathlib.Analysis.CStarAlgebra.Classes
 
+public import PrimeNumberTheoremAnd.IEANTN.Mertens
 @[expose] public section
 
 namespace Erdos970
@@ -31,9 +32,7 @@ namespace Real
 open _root_.Real _root_.Filter _root_.Asymptotics
 
 theorem inv_log_eq_o_one : (fun x ↦ 1 / log x) =o[atTop] (fun _ ↦ (1:ℝ)) := by
-    rw [isLittleO_one_iff]
-    convert tendsto_log_atTop.inv_tendsto_atTop using 1
-    ext; simp
+  apply _root_.Real.inv_log_eq_o_one <;> assumption
 
 end Real
 
@@ -136,8 +135,7 @@ private theorem mul_integ_log_log_eq_aux (s : ℝ) (hs : 1 < s) :
     linarith
                           
   have hft : Tendsto f atTop atTop := by
-    apply Filter.Tendsto.const_mul_atTop hs0
-    exact Real.tendsto_log_atTop
+    exact Filter.Tendsto.const_mul_atTop hs0 Real.tendsto_log_atTop
                                                       
   have hff' : ∀ x ∈ Ioi (1:ℝ), HasDerivWithinAt f (f' x) (Ioi x) x := by
     intro x hx
@@ -292,61 +290,19 @@ lemma sum_Ioc_one_eq_sum_Ioc_zero {f : ℕ → ℝ} {x : ℕ} (hx : 1 ≤ x) (hf
 
 theorem sum_log_le {x : ℝ} (hx : 1 ≤ x) :
     ∑ n ∈ Ioc 0 ⌊ x ⌋₊, log n ≤ x * log x := by
-  calc
-  _ ≤ ∑ n ∈ Ioc 0 ⌊ x ⌋₊, log x := by
-    refine sum_le_sum fun n hn ↦ ?_
-    simp only [mem_Ioc] at hn
-    exact log_le_log (by exact_mod_cast hn.1) (Nat.le_floor_iff (by linarith)|>.mp hn.2)
-  _ = ⌊x⌋₊ * log x := by simp
-  _ ≤ _ := by
-    gcongr
-    · exact log_nonneg hx
-    · exact Nat.floor_le (by linarith)
+  apply _root_.Mertens.sum_log_le <;> assumption
 
 lemma integral_log_le {a b : ℝ} (ha : 1 ≤ a) (hab : a ≤ b) :
     ∫ t in a..b, log t ≤ log b * (b - a) := by
-  apply le_of_abs_le
-  have : ∀ t ∈ Set.uIoc a b, ‖log t‖ ≤ log b := by
-    intro t ht
-    rw [Set.uIoc_of_le hab, Set.mem_Ioc] at ht
-    rw [norm_of_nonneg <| log_nonneg (by linarith)]
-    gcongr <;> linarith
-  grw [← norm_eq_abs, intervalIntegral.norm_integral_le_of_norm_le_const this,
-    abs_of_nonneg (by linarith)]
+  apply _root_.Mertens.integral_log_le <;> assumption
 
 theorem sum_log_ge {x : ℝ} (hx : 1 ≤ x) :
     ∑ n ∈ Ioc 0 ⌊ x ⌋₊, log n ≥ x * log x - 2 * x := by
-  have one_le_floor : 1 ≤ ⌊x⌋₊ := by simpa
-  calc
-  _ = ∑ n ∈ Icc 1 ⌊ x ⌋₊, log n := by rfl
-  _ = ∑ n ∈ Ico (1 + 1) (⌊ x ⌋₊ + 1), log n := by
-    rw [← add_sum_Ioc_eq_sum_Icc one_le_floor]
-    simp
-    rfl
-  _ = ∑ n ∈ Ico 1 ⌊ x ⌋₊, log ((n + 1 : ℕ)) := by
-    rw [← Finset.sum_Ico_add']
-  _ ≥ ∫ t in 1..⌊x⌋₊, log t := by
-    convert MonotoneOn.integral_le_sum_Ico one_le_floor ?_|>.ge
-    · norm_cast
-    · exact StrictMonoOn.monotoneOn (strictMonoOn_log.mono fun y hy ↦ (by simp_all; linarith))
-  _ = (∫ t in 1..x, log t) - ∫ t in ⌊x⌋₊..x, log t := by
-    nth_rw 3 [intervalIntegral.integral_symm]
-    rw [sub_neg_eq_add, intervalIntegral.integral_add_adjacent_intervals] <;> exact intervalIntegral.intervalIntegrable_log'
-  _ ≥ (∫ t in 1..x, log t) - log x := by
-    gcongr
-    grw [integral_log_le (by simpa) (Nat.floor_le (by linarith))]
-    nth_rw 2 [← mul_one (log x)]
-    gcongr
-    · exact log_nonneg hx
-    · linarith [Nat.lt_floor_add_one x]
-  _ ≥ x * log x - x - log x := by simp only [integral_log, log_one, mul_zero, sub_zero, ge_iff_le,
-    tsub_le_iff_right, sub_add_cancel, le_add_iff_nonneg_right, zero_le_one]
-  _ ≥ _ := by linarith [log_le_self (by linarith : 0 ≤ x)]
+  apply _root_.Mertens.sum_log_ge <;> assumption
 
 theorem sum_log_eq_sum_mangoldt {x : ℝ} :
     ∑ n ∈ Ioc 0 ⌊x⌋₊, log n = ∑ d ∈ Ioc 0 ⌊x⌋₊, Λ d * ⌊x / d⌋₊ := by
-  have : ∀ n : ℕ, log n = (Λ * zeta) n := by simp [vonMangoldt_mul_zeta]
-  simp_rw [this, sum_Ioc_mul_zeta_eq_sum, ← Nat.floor_div_natCast]
+  apply _root_.Mertens.sum_log_eq_sum_mangoldt <;> assumption
 
 noncomputable abbrev E₁Λ (x : ℝ) : ℝ := ∑ d ∈ Ioc 0 ⌊ x ⌋₊, (Λ d) / d - log x
 
@@ -418,35 +374,10 @@ theorem E₁p.le {x : ℝ} (hx : 1 ≤ x) :
 noncomputable abbrev E₁ : ℝ := ∑' p : ℕ, if p.Prime then (log p) / (p*(p-1)) else 0
 
 lemma E₁.summand_nonneg (p : ℕ) : 0 ≤ if p.Prime then (log p) / (p*(p-1)) else 0 := by
-  split_ifs with h
-  · refine div_nonneg (log_natCast_nonneg _) (mul_nonneg (Nat.cast_nonneg _) ?_)
-    suffices 1 ≤ (p : ℝ) by linarith
-    exact_mod_cast h.one_le
-  · rfl
+  apply _root_.Mertens.E₁.summand_nonneg <;> assumption
 
 theorem E₁.summable : Summable (fun p : ℕ ↦ if p.Prime then (log p) / (p*(p-1)) else 0) := by
-  refine (Real.summable_one_div_nat_rpow.mpr (by norm_num: 1 < (3 : ℝ) / 2)|>.const_div
-    4).of_nonneg_of_le E₁.summand_nonneg fun n ↦ ?_
-  split_ifs with h
-  · grw [Real.log_le_rpow_div (Nat.cast_nonneg _) (by norm_num : 0 < (1 : ℝ) / 2)]
-    · have denom : (n : ℝ) * ((n : ℝ) - 1) ≥ n ^ 2/ 2 := by
-        rw [sq, mul_div_assoc]
-        gcongr
-        suffices (n : ℝ) ≥ 2 by linarith
-        exact_mod_cast h.two_le
-      grw [denom]
-      · apply le_of_eq
-        rw [← Real.rpow_natCast]
-        field_simp
-        rw [mul_div_assoc, ← Real.rpow_sub (mod_cast h.pos)]
-        norm_num
-        rw [Real.rpow_neg (Nat.cast_nonneg _)]
-        field
-      · exact div_pos (pow_pos (mod_cast h.pos) _) (by norm_num)
-    · apply mul_nonneg (Nat.cast_nonneg _)
-      suffices 1 ≤ (n : ℝ) by linarith
-      exact_mod_cast h.one_le
-  · positivity
+  apply _root_.Mertens.E₁.summable <;> assumption
 
 private lemma antitoneOn_log_div_sq :
     AntitoneOn (fun t ↦ log (t + 2) / (t + 2) ^ 2) (Set.Ici 0) := by
@@ -608,11 +539,7 @@ theorem E₁p.ge {x : ℝ} (hx : 1 ≤ x) :
 
 theorem sum_log_prime_div_eq_log {x : ℝ} (hx : 1 ≤ x) :
     |∑ p ∈ Ioc 0 ⌊ x ⌋₊ with p.Prime, (log p) / p - log x| ≤ log 4 + 4 := by
-    rw [abs_le']
-    refine ⟨ E₁p.le hx, ?_ ⟩
-    have : log 2 > 0 := by apply log_pos; norm_num
-    have : log 4 = 2 * log 2 := by rw [←Real.log_rpow (by norm_num)]; norm_num
-    grind [E₁p.ge hx, E₁.le]
+  apply _root_.Mertens.sum_log_prime_div_eq_log <;> assumption
 
 theorem E₁p.bounded : ∃ c > 0, ∀ x ≥ 1, |E₁p x| ≤ c := by
   exact ⟨log 4 + 4, (by positivity), fun _ hx ↦ sum_log_prime_div_eq_log  hx⟩
@@ -623,8 +550,7 @@ noncomputable abbrev E₂Λ (x : ℝ) : ℝ := ∑ d ∈ Ioc 0 ⌊ x ⌋₊, (Λ
 
 lemma sum_Ioc_one_eq_sum_Icc_zero {f : ℕ → ℝ} {x : ℕ} (hx : 1 ≤ x) (hf1 : f 1 = 0) (hf0 : f 0 = 0) :
     ∑ n ∈ Ioc 1 x, f n = ∑ n ∈ Icc 0 x, f n := by
-  rw [sum_Ioc_one_eq_sum_Ioc_zero hx hf1, ← add_sum_Ioc_eq_sum_Icc (by linarith)]
-  simpa
+  apply _root_.Mertens.sum_Ioc_one_eq_sum_Icc_zero <;> assumption
 
 private theorem sum_div_log_eq {x : ℝ} (hx : 2 ≤ x) (f : ℕ → ℝ) :
     ∑ n ∈ Ioc 1 ⌊ x ⌋₊, f n / log n =
@@ -709,36 +635,15 @@ private theorem integrable_E₁p_div_mul_log_sq {x : ℝ} (hx : 2 ≤ x) :
 
 lemma deriv_log_log {x : ℝ} (hx : 1 < x) :
     deriv (fun t ↦ log (log t)) x = 1 / (x * log x) := by
-  rw [deriv.log (differentiableAt_log (by linarith)) (by simp; grind), deriv_log]
-  field
+  apply _root_.Mertens.deriv_log_log <;> assumption
 
 lemma integral_one_div_mul_log {x : ℝ} (hx : 2 ≤ x) :
     ∫ t in 2..x, 1 / (t * log t) = log (log x) - log (log 2) := by
-  rw [← intervalIntegral.integral_deriv_eq_sub (f := fun t ↦ log (log t))]
-  · refine intervalIntegral.integral_congr fun t ht ↦ ?_
-    rw [deriv_log_log]
-    rw [Set.uIcc_of_le hx, Set.mem_Icc] at ht
-    linarith
-  · intro t ht
-    rw [Set.uIcc_of_le hx, Set.mem_Icc] at ht
-    have : log t ≠ 0 := by simp; grind
-    fun_prop (disch := grind)
-  · refine ContinuousOn.intervalIntegrable ?_
-    apply ContinuousOn.congr (f := (fun t ↦ 1 / (t * log t)))
-    · refine fun t ht ↦ ContinuousAt.continuousWithinAt ?_
-      rw [Set.uIcc_of_le hx, Set.mem_Icc] at ht
-      have : log t ≠ 0 := by simp; grind
-      fun_prop (disch := grind)
-    · intro t ht
-      rw [Set.uIcc_of_le hx, Set.mem_Icc] at ht
-      exact deriv_log_log (by linarith)
+  apply _root_.Mertens.integral_one_div_mul_log <;> assumption
 
 lemma intervalIntegrable_one_div_mul_log {x : ℝ} (hx : 2 ≤ x) :
     IntervalIntegrable (fun t ↦ 1 / (t * log t)) MeasureTheory.volume 2 x := by
-  refine ContinuousOn.intervalIntegrable fun t ht ↦ ContinuousAt.continuousWithinAt ?_
-  rw [Set.uIcc_of_le hx, Set.mem_Icc] at ht
-  have : log t ≠ 0 := by simp; grind
-  fun_prop (disch := grind)
+  apply _root_.Mertens.intervalIntegrable_one_div_mul_log <;> assumption
 
 theorem E₂Λ.eq {x : ℝ} (hx : 2 ≤ x) :
     E₂Λ x = E₁Λ x / log x - ∫ t in Set.Ioi x, E₁Λ t / (t * log t^2) := by
@@ -815,127 +720,11 @@ theorem E₂Λ.bound : E₂Λ =O[atTop] (fun x ↦ 1 / log x) := by
     have : 0 < log x := by apply log_pos; linarith
     grind [abs_of_pos this]
 
-theorem E₂Λ.bound' : E₂Λ =o[atTop] (fun _ ↦ (1:ℝ)) := E₂Λ.bound.trans_isLittleO inv_log_eq_o_one
+theorem E₂Λ.bound' : E₂Λ =o[atTop] (fun _ ↦ (1:ℝ)) := E₂Λ.bound.trans_isLittleO Erdos970.Real.inv_log_eq_o_one
 
 theorem log_zeta_eq_sum (s : ℝ) (hs : 1 < s) :
     log (riemannZeta (s:ℂ)).re = ∑' n, Λ n / (n^s * log n) := by
-  have hsc : (1 : ℝ) < ((s : ℂ)).re := by simpa using hs
-                           
-  have hep := riemannZeta_eulerProduct_exp_log (s := (s : ℂ)) hsc
-  set S : ℂ := ∑' p : Nat.Primes, -Complex.log (1 - (p : ℂ) ^ (-(s : ℂ))) with hS
-                                        
-  have hcpow : ∀ p : Nat.Primes, (p : ℂ) ^ (-(s : ℂ)) = (((p : ℝ) ^ (-s) : ℝ) : ℂ) := by
-    intro p
-    rw [Complex.ofReal_cpow (by positivity)]
-    push_cast; ring_nf
-                                      
-  set z : Nat.Primes → ℝ := fun p => (p : ℝ) ^ (-s) with hz
-                
-  have hz_pos : ∀ p : Nat.Primes, 0 < z p := fun p => by
-    have : (0 : ℝ) < (p : ℝ) := by exact_mod_cast p.prop.pos
-    positivity
-  have hz_lt_one : ∀ p : Nat.Primes, z p < 1 := by
-    intro p
-    have hp1 : (1 : ℝ) < (p : ℝ) := by exact_mod_cast p.prop.one_lt
-    change (p : ℝ) ^ (-s) < 1
-    rw [Real.rpow_neg (by positivity), inv_lt_one_iff₀]
-    right
-    exact (Real.one_lt_rpow_iff_of_pos (by positivity)).mpr (Or.inl ⟨hp1, by linarith⟩)
-                                                
-  have hterm : ∀ p : Nat.Primes,
-      -Complex.log (1 - (p : ℂ) ^ (-(s : ℂ))) = ((-Real.log (1 - z p) : ℝ) : ℂ) := by
-    intro p
-    rw [hcpow p]
-    have h1z : (0 : ℝ) < 1 - z p := by have := hz_lt_one p; linarith
-    rw [show (1 : ℂ) - ((z p : ℝ) : ℂ) = (((1 - z p : ℝ)) : ℂ) by push_cast; ring]
-    rw [← Complex.ofReal_log h1z.le]
-    push_cast; ring
-                                                       
-  set Sr : ℝ := ∑' p : Nat.Primes, -Real.log (1 - z p) with hSr
-  have hSeq : S = (Sr : ℂ) := by
-    rw [hS, hSr, Complex.ofReal_tsum]
-    exact tsum_congr hterm
-  have hSim : S.im = 0 := by rw [hSeq]; exact Complex.ofReal_im _
-  have hSre : S.re = Sr := by rw [hSeq]; exact Complex.ofReal_re _
-                               
-  have hlog_zeta : Complex.log (riemannZeta (s : ℂ)) = S := by
-    rw [← hep, Complex.log_exp (by rw [hSim]; exact neg_lt_zero.mpr Real.pi_pos)
-      (by rw [hSim]; exact Real.pi_pos.le)]
-                                      
-  have hkey : Real.log (riemannZeta (s : ℂ)).re = Sr := by
-    have hζim : (riemannZeta (s : ℂ)).im = 0 := riemannZeta_im_eq_zero_of_one_lt hs
-    have hζeq : riemannZeta (s : ℂ) = ((riemannZeta (s : ℂ)).re : ℂ) := by
-      apply Complex.ext <;> simp [hζim]
-    have : Real.log (riemannZeta (s : ℂ)).re
-        = (Complex.log (riemannZeta (s : ℂ))).re := by
-      conv_rhs => rw [hζeq]
-      rw [Complex.log_ofReal_re]
-    rw [this, hlog_zeta, hSre]
-  rw [hkey]
-
-  have habs : ∀ p : Nat.Primes, |z p| < 1 := by
-    intro p
-    rw [abs_of_pos (hz_pos p)]; exact hz_lt_one p
-  have htaylor : ∀ p : Nat.Primes,
-      HasSum (fun n : ℕ => (z p) ^ (n + 1) / (n + 1)) (-Real.log (1 - z p)) :=
-    fun p => hasSum_pow_div_log_of_abs_lt_one (habs p)
-  have hSr_double : Sr = ∑' (p : Nat.Primes) (n : ℕ), (z p) ^ (n + 1) / (n + 1) := by
-    rw [hSr]
-    exact tsum_congr fun p => ((htaylor p).tsum_eq).symm
-                                       
-  have hsummable_z : Summable z := Nat.Primes.summable_rpow.mpr (by linarith)
-                                      
-  have hsummable_prime : Summable (fun p : Nat.Primes => -Real.log (1 - z p)) := by
-    have := Real.summable_log_one_add_of_summable hsummable_z.neg
-    convert! this.neg using 1
-                                      
-  have hg_nonneg : ∀ pk : Nat.Primes × ℕ, 0 ≤ (z pk.1) ^ (pk.2 + 1) / (pk.2 + 1) := by
-    intro pk; positivity [hz_pos pk.1]
-  have hsummable_g : Summable (fun pk : Nat.Primes × ℕ => (z pk.1) ^ (pk.2 + 1) / (pk.2 + 1)) := by
-    rw [summable_prod_of_nonneg hg_nonneg]
-    refine ⟨fun p => (htaylor p).summable, ?_⟩
-    refine hsummable_prime.congr (fun p => ?_)
-    exact ((htaylor p).tsum_eq).symm
-                                      
-  have hpoint : ∀ (p : Nat.Primes) (n : ℕ),
-      Λ ((p : ℕ) ^ (n + 1)) /
-        ((((p : ℕ) ^ (n + 1) : ℕ) : ℝ) ^ s * Real.log (((p : ℕ) ^ (n + 1) : ℕ) : ℝ))
-      = (z p) ^ (n + 1) / (n + 1) := by
-    intro p n
-    have hp1 : (1 : ℝ) < (p : ℝ) := by exact_mod_cast p.prop.one_lt
-    have hlogp : 0 < Real.log (p : ℝ) := Real.log_pos hp1
-    rw [vonMangoldt_apply_pow (Nat.succ_ne_zero n), vonMangoldt_apply_prime p.prop]
-    have hcast : (((p : ℕ) ^ (n + 1) : ℕ) : ℝ) = (p : ℝ) ^ (n + 1) := by push_cast; ring
-    rw [hcast, Real.log_pow]
-    rw [show (z p) ^ (n + 1) = ((p : ℝ) ^ (n + 1)) ^ (-s) by
-      rw [hz]; rw [← Real.rpow_natCast ((p : ℝ) ^ (-s)) (n + 1),
-        ← Real.rpow_natCast ((p : ℝ)) (n + 1), ← Real.rpow_mul (by positivity),
-        ← Real.rpow_mul (by positivity)]; ring_nf]
-    rw [Real.rpow_neg (by positivity)]
-    field_simp
-    push_cast
-    ring
-                                                 
-  set F : ℕ → ℝ := fun n => Λ n / ((n : ℝ) ^ s * Real.log n) with hF
-                                              
-  have hsupp : Function.support F ⊆ {n : ℕ | IsPrimePow n} := by
-    intro n hn
-    rw [Function.mem_support] at hn
-    simp only [Set.mem_ofPred_eq]
-    by_contra hpp
-    apply hn
-    simp only [hF, vonMangoldt_eq_zero_iff.mpr hpp, zero_div]
-                                           
-  have hprod_eq : (∑' pk : Nat.Primes × ℕ, (z pk.1) ^ (pk.2 + 1) / (pk.2 + 1))
-      = ∑' m : {n : ℕ // IsPrimePow n}, F m.val := by
-    rw [← Equiv.tsum_eq Nat.Primes.prodNatEquiv (fun m : {n : ℕ // IsPrimePow n} => F m.val)]
-    apply tsum_congr
-    intro pk
-    rw [Nat.Primes.coe_prodNatEquiv_apply, hF]
-    exact (hpoint pk.1 pk.2).symm
-             
-  rw [hSr_double, ← hsummable_g.tsum_prod' (fun p => (htaylor p).summable), hprod_eq]
-  exact tsum_subtype_eq_of_support_subset hsupp
+  apply _root_.log_riemannZeta_eq <;> assumption
 
 section
 open MeasureTheory Set
@@ -1606,30 +1395,13 @@ theorem E₂p.bound : E₂p =O[atTop] (fun x ↦ 1 / log x) := by
     have : 0 < log x := by apply log_pos; linarith
     grind [abs_of_pos this]
 
-theorem E₂p.bound' : E₂p =o[atTop] (fun _ ↦ (1:ℝ)) := E₂p.bound.trans_isLittleO inv_log_eq_o_one
+theorem E₂p.bound' : E₂p =o[atTop] (fun _ ↦ (1:ℝ)) := E₂p.bound.trans_isLittleO Erdos970.Real.inv_log_eq_o_one
 
-theorem sum_prime_div_eq_log_log : ∃ C, ∀ x, 2 ≤ x →
-    |∑ p ∈ Ioc 0 ⌊x⌋₊ with p.Prime, (1:ℝ) / p - log (log x)| ≤ C := by
-    use |M| + (log 4 + 6 + E₁) / log 2
-    intro x hx
-    rw [sum_prime_div_eq]
-    calc
-      _ = |M + E₂p x| := by ring_nf
-      _ ≤ |M| + (log 4 + 6 + E₁) / log x := by grw [abs_add_le, E₂p.abs_le hx]
-      _ ≤ _ := by
-        gcongr
-        have : 0 < log 4 := by apply log_pos; norm_num
-        linarith [E₁.nonneg]
+alias _root_.Erdos970.Mertens.sum_prime_div_eq_log_log := _root_.Mertens.sum_prime_div_eq_log_log
 
 lemma HasSum_log_one_sub_one_div_prime {p : ℕ} (hp : p.Prime) :
     HasSum (fun n : ℕ ↦ (-1 : ℝ) / (( n + 1) * p ^ (n + 1))) (log (1 - 1 / p)) := by
-  convert! Real.hasSum_pow_div_log_of_abs_lt_one (x := 1 / p) _|>.neg using 1
-  · ext
-    rw [div_pow, one_pow, div_div]
-    ring
-  · ring
-  · simp only [one_div, abs_inv, Nat.abs_cast]
-    exact inv_lt_one_of_one_lt₀ (mod_cast hp.one_lt)
+  apply _root_.Mertens.HasSum_log_one_sub_one_div_prime <;> assumption
 
 lemma E₂Λ_sub_E₂p_tendsto :
     Tendsto (E₂Λ - E₂p) atTop (nhds 0) := by
@@ -1683,10 +1455,7 @@ lemma M_eq_f.sum_primes :
 
 lemma tsum_primes_eq_tsum_ite (f : ℕ → ℝ) :
     ∑' (n : Nat.Primes), f n = ∑' (n : ℕ), if n.Prime then f n else 0 := by
-  convert! _root_.tsum_subtype Nat.Prime f using 2
-  ext
-  simp [Set.indicator]
-  congr
+  apply _root_.Mertens.tsum_primes_eq_tsum_ite <;> assumption
 
 lemma tsum_M_eq_f_eq_tsum :
     -∑' (n : ℕ), M_eq_f n = ∑' p : ℕ, if p.Prime then log (1 - 1 / p) + 1 / p else 0 := by
@@ -1762,30 +1531,7 @@ lemma tsum_M_eq_summand_eq :
 
 lemma sum_one_div_sq_le {N : ℝ} (hN : 1 ≤ N) :
     ∑' (n : ℕ), (1 : ℝ) / (n + N) ^ 2 ≤ 2 / N := by
-  grw [AntitoneOn.tsum_le_integral (f := (fun t ↦ 1 / (t + N) ^ 2))]
-  · have hd : ∀ x ∈ Set.Ici 0, HasDerivAt (fun t ↦ -1 / (t + N)) (1 / (x + N) ^ 2) x := by
-      intro t ht
-      convert! HasDerivAt.fun_div (d' := (1 : ℝ)) (hasDerivAt_const ..) _ _ using 1
-      · ring
-      · simpa using hasDerivAt_id' t
-      · simp at ht
-        linarith
-    have lim : Tendsto (fun t ↦ -1 / (t + N)) atTop (nhds 0) := by
-      exact (tendsto_atTop_add_const_right atTop N tendsto_id).const_div_atTop _
-    rw [MeasureTheory.integral_Ioi_of_hasDerivAt_of_nonneg' hd (fun _ _ ↦ (by positivity)) lim]
-    ring_nf
-    rw [mul_two]
-    gcongr
-    field_simp
-    exact hN
-  · unfold AntitoneOn
-    intro a ha b hb h
-    beta_reduce
-    simp at ha hb
-    gcongr
-  · convert! integrableOn_add_rpow_Ioi_of_lt (by norm_num : (-2 : ℝ) < -1) (by linarith : -N < 0) using 2
-    simp
-  · exact fun _ _ ↦ (by positivity)
+  apply _root_.Mertens.sum_one_div_sq_le <;> assumption
 
 lemma sum_M_eq_summand_le {N : ℕ} (hN : 0 < N) :
     |∑ n ∈ range N, M_eq_summand n - (M - γ)| ≤ 4 / N := by
@@ -1845,7 +1591,7 @@ theorem E₃.bound : E₃ =O[atTop] (fun x ↦ 1 / log x) := by
     have : 0 < 1 / log x := by positivity
     grind [abs_of_pos this]
 
-theorem E₃.bound' : E₃ =o[atTop] (fun _ ↦ (1:ℝ)) := E₃.bound.trans_isLittleO inv_log_eq_o_one
+theorem E₃.bound' : E₃ =o[atTop] (fun _ ↦ (1:ℝ)) := E₃.bound.trans_isLittleO Erdos970.Real.inv_log_eq_o_one
 
 theorem E₃.bound'' : (fun x ↦ ∏ p ∈ Ioc 0 ⌊ x ⌋₊ with p.Prime, (1 - (1:ℝ) / p)) ~[atTop] (fun x ↦ exp (-eulerMascheroniConstant) / log x) := by
    rw [isEquivalent_iff_tendsto_one]

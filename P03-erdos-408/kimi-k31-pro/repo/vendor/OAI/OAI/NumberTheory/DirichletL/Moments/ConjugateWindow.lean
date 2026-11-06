@@ -12,12 +12,7 @@ open scoped BigOperators Classical SchwartzMap ContDiff
 namespace SevenEighths.CenteredMomentConjugateWindow
 open FourierBridge CenteredMomentSmooth
 
-theorem star_logPhase (t u : ℝ) : star (logPhase t u)=logPhase (-t) u := by
-  simp only [logPhase,Complex.star_def,← Complex.exp_conj,map_mul,
-    Complex.conj_ofReal,Complex.conj_I]
-  congr 1
-  push_cast
-  ring
+alias _root_.OAI.SevenEighths.CenteredMomentConjugateWindow.star_logPhase := _root_.OAI.SecondPassIntegration.logPhase_conjugate
 
 theorem star_columnPhase (V : ℝ → ℂ) (u t : ℝ) :
     star (columnPhase V u t)=columnPhase (fun x => star (V x)) u (-t) := by

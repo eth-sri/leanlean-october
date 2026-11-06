@@ -6,7 +6,6 @@ public import Erdos821.S34.RationalCharacterTasks
 
 @[expose] public section
 
-set_option autoImplicit false
 
 namespace Erdos821.S34Core
 

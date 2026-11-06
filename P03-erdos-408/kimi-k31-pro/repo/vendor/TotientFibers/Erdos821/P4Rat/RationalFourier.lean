@@ -5,7 +5,6 @@ public import OAI.NumberTheory.PrimeGaps.MultiplicativeSieve
 
 @[expose] public section
 
-set_option autoImplicit false
 set_option maxHeartbeats 1000000
 
 open scoped BigOperators Classical ComplexConjugate

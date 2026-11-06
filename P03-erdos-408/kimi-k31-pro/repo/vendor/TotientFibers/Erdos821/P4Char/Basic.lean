@@ -7,7 +7,6 @@ public import Mathlib.RingTheory.RootsOfUnity.AlgebraicallyClosed
 
 @[expose] public section
 
-set_option autoImplicit false
 
 open scoped BigOperators
 

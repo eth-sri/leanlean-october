@@ -11,7 +11,6 @@ pattern supremum (the majorant model has the same pattern mass). -/
 
 @[expose] public section
 
-set_option autoImplicit false
 
 noncomputable section
 open scoped BigOperators

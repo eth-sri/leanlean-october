@@ -11,13 +11,11 @@ noncomputable section
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
-open scoped Classical
 open scoped Classical
 
 namespace ActualEisensteinCubic
@@ -37,17 +35,9 @@ theorem canonicalSextic_inverse_eq_conj_on_units (P : Ideal O)
 
 end ActualEisensteinCubic
 
-namespace FourierBridge
-open scoped ContDiff FourierTransform SchwartzMap
 
-end FourierBridge
-
-namespace AnalyticBridge
-
-end AnalyticBridge
 
 namespace FourierBridge
-open scoped FourierTransform SchwartzMap
 
 theorem logPhase_norm (t y : ℝ) : ‖logPhase t y‖ = 1 := by
   simpa [logPhase] using
@@ -60,14 +50,7 @@ theorem logPhase_continuous_left (y : ℝ) :
 
 end FourierBridge
 
-namespace AnalyticBridge
-open scoped FourierTransform SchwartzMap
 
-end AnalyticBridge
-
-namespace PowerExtraction
-
-end PowerExtraction
 
 namespace ActualEisensteinCubic
 
@@ -105,9 +88,6 @@ theorem canonicalSextic_sixth_power_mask (P : Ideal O) [P.IsMaximal]
 
 end ActualEisensteinCubic
 
-namespace PoissonFirstLocal
-
-end PoissonFirstLocal
 
 end
 

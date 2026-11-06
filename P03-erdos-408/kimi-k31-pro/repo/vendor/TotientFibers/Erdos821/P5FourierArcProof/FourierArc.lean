@@ -7,7 +7,6 @@ public import Mathlib.Algebra.Order.Star.Real
 
 @[expose] public section
 
-set_option autoImplicit false
 
 noncomputable section
 open scoped BigOperators Classical ComplexConjugate

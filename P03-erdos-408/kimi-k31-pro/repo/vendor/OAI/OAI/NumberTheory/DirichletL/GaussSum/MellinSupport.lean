@@ -10,74 +10,29 @@ noncomputable section
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
 open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
 open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
 open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
 open scoped BigOperators Classical
 open scoped BigOperators Classical SchwartzMap ContDiff
 open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
 open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
 open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
 
-open scoped BigOperators Classical
 
 namespace CompletedGauss
 local notation "Eis" => ActualEisensteinCubic.O
@@ -364,12 +319,7 @@ def signedOmegaEquiv : (Bool×Fin 3)≃Eisˣ := Equiv.ofBijective
       simpa only [Nat.card_eq_fintype_card] using PrimaryIdealUnitReindex.card_units_eq_six
     simp [hc]⟩)
 
-lemma cubicSymbol_norm_one (c n:Eis) (hn:lambda^2∣n-1) (hc:IsCoprime c n) :
-    ‖eisEmbedding (symbol c n)‖=1 := by
-  have hcube:(eisEmbedding (symbol c n))^3=1:=by
-    rw [←map_pow,symbol_cube_of_isCoprime c n hn hc,map_one]
-  apply (pow_left_inj₀ (norm_nonneg _) zero_le_one (by decide : (3:ℕ)≠0)).mp
-  simpa only [norm_pow,norm_one,one_pow] using congrArg norm hcube
+alias _root_.OAI.CubicEisenstein.cubicSymbol_norm_one := _root_.OAI.ShortDraftCusp.norm_embedded_cubic_symbol
 
 lemma arithmeticResidueSum_norm_mul_primary (h n:Eis) (hn:lambda^2∣n-1)
     (u:Eisˣ) (r:ℕ) (hr:2≤r) :
@@ -542,8 +492,6 @@ lemma lowRamifiedSupport_of_ne_zero (a r:Fin 3) (s:Bool) (j:Fin 3) (n:Fin 5)
 
 end CubicEisenstein
 
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups
 
 namespace CubicEisenstein
 open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal

@@ -4,7 +4,6 @@ public import Mathlib.Analysis.SpecialFunctions.Trigonometric.Basic
 
 @[expose] public section
 
-set_option autoImplicit false
 
 open scoped BigOperators Classical
 

@@ -36,13 +36,7 @@ theorem horizontal_join_bound (χ : Character) (inverse : Bool) (W : ℝ → ℂ
         (hs x hx') (norm_nonneg _) (by positivity)
     _ = _ := by ring
 
-theorem profile_strip_decay (a b : ℝ) (ha : 0<a) (l r : ℝ) (n : ℕ) :
-    ∃ (S : Finset (ℕ×ℕ)) (C : ℝ), 0<C ∧
-      ∀ W : SchwartzMap ℝ ℂ, Function.support (W : ℝ → ℂ)⊆Icc a b →
-      ∀ x ∈ Icc l r, ∀ y : ℝ,
-      (1+|y|)^n*‖mellin W ((x : ℂ)+y*I)‖≤
-        C*S.sup (schwartzSeminormFamily ℝ ℝ ℂ) W :=
-  CubicReflectionKernel.mellin_strip_source_bound a b ha l r n
+alias _root_.OAI.SevenEighths.HeckeDyadic.profile_strip_decay := _root_.OAI.CubicReflectionKernel.mellin_strip_source_bound
 
 end SevenEighths.HeckeDyadic
 

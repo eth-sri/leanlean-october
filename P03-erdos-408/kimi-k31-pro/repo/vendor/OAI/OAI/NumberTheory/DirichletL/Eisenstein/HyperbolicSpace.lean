@@ -12,67 +12,26 @@ namespace CubicEisenstein
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
 open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
 open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
 open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
 open scoped BigOperators Classical
 open scoped BigOperators Classical SchwartzMap ContDiff
 open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
 open ActualEisensteinCubic UniqueFactorizationMonoid
 
 section
@@ -248,22 +207,8 @@ lemma upperTranslation_section (a : O) (z : ℂ) (v : ℝ) (hv : 0 < v) :
 end
 
 open MeasureTheory Set Filter
-open scoped BigOperators Classical
 
-lemma integral_radial_sq (f : ℝ → ℂ) :
-    (∫ z : ℂ, f (‖z‖ ^ 2)) = (Real.pi : ℂ) * ∫ t : ℝ in Set.Ioi 0, f t := by
-  have hball : (volume : Measure ℂ).real (Metric.ball 0 1) = Real.pi := by
-    simp [Measure.real, Complex.volume_ball]
-  have hpolar := integral_fun_norm_addHaar (volume : Measure ℂ) (fun r : ℝ => f (r^2))
-  have hsub := integral_comp_rpow_Ioi (E := ℂ) f (p := 2) (by norm_num)
-  norm_num [Real.rpow_two, Real.rpow_one] at hsub
-  simp only [Complex.finrank_real_complex, hball, Nat.reduceSub, pow_one,
-    nsmul_eq_mul, Complex.real_smul, ] at hpolar hsub
-  rw [hpolar]
-  rw [← hsub]
-  rw [show (fun x : ℝ => (2:ℂ)*x*f (x^2)) =
-      (fun x : ℝ => (2:ℂ)*(x*f (x^2))) by funext x; ring, integral_const_mul]
-  ring
+alias _root_.OAI.CubicEisenstein.integral_radial_sq := _root_.OAI.EisensteinSchwartzPoisson.complex_radial_norm_sq_integral
 
 lemma integrable_radial_sq_iff (f : ℝ → ℂ) :
     Integrable (fun z : ℂ => f (‖z‖ ^ 2)) ↔ IntegrableOn f (Set.Ioi 0) := by
@@ -326,7 +271,6 @@ theorem integral_hyperbolicKernel (s : ℂ) (hs : 1 < s.re) :
   simp only [div_eq_mul_inv, hn]
   ring
 
-open MeasureTheory Set Filter
 open scoped BigOperators Classical FourierTransform RealInnerProductSpace
 
 lemma breveE_norm (z : ℂ) : ‖ShortDraftTrace.breveE z‖ = 1 := by
@@ -467,8 +411,6 @@ theorem gaussianMixture_integrable (s freq : ℂ) (hs : 1 < s.re) :
     congr 2
     ring_nf
 
-open MeasureTheory Set Filter
-open scoped BigOperators Classical FourierTransform RealInnerProductSpace
 
 lemma gaussianMixture_laplace_form (s freq : ℂ) (t : ℝ) (z : ℂ) :
     gaussianMixture s freq t z =

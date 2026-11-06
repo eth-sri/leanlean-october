@@ -11,6 +11,3 @@ open MeasureTheory intervalIntegral
 
 attribute [local instance] Classical.propDecidable
 
-namespace Erdos821.Blueprint.Graph
-
-end Erdos821.Blueprint.Graph

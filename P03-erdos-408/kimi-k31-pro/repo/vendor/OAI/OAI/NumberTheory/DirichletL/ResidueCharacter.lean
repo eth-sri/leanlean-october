@@ -111,11 +111,6 @@ theorem product_global_units (I J : Ideal A) (χ : MulChar (A ⧸ I) ℂ)
   intro u
   rw [product_mk, hχ, hψ, one_mul]
 
-section PrimitiveProduct
-
-variable [IsDedekindDomain A] [Infinite A]
-
-end PrimitiveProduct
 
 end
 

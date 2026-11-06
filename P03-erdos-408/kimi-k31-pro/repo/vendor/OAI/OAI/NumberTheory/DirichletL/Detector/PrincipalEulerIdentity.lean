@@ -36,10 +36,7 @@ lemma coordK_eq_geometric (Q : ℝ) (hQ : 0<Q) (eta x w : ℂ) :
   ring
 
 lemma one_sub_ne_zero_of_norm_lt_one (a : ℂ) (ha : ‖a‖<1) : 1-a ≠ 0 := by
-  intro h
-  have he : a=1 := by linear_combination -h
-  rw [he, norm_one] at ha
-  exact lt_irrefl _ ha
+  apply _root_.OAI.SmoothMobiusCorrection.one_sub_ne_zero <;> assumption
 
 variable (p : O) (hp : Prime p) [(Ideal.span {p} : Ideal O).IsMaximal]
   (hg : goodLambda ∉ Ideal.span {p}) (hc : ringChar (O ⧸ Ideal.span {p}) ≠ 2)

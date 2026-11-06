@@ -4,7 +4,6 @@ public import Erdos821.Blueprint.Ideal
 
 @[expose] public section
 
-set_option autoImplicit false
 
 namespace Erdos821.S34Core
 

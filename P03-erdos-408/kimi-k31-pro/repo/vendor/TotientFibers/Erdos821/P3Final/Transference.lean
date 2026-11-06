@@ -16,7 +16,6 @@ public import Erdos821.S2Ltrans.TransferenceAssembly
 
 @[expose] public section
 
-set_option autoImplicit false
 
 namespace Erdos821.P3Final
 

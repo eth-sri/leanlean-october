@@ -10,13 +10,11 @@ noncomputable section
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
-open scoped Classical
 open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
@@ -327,8 +325,6 @@ theorem normalized_dual_phase_sum_error {η a b : ℝ}
       dsimp [t]
       ring
 
-open scoped Topology
-open Filter
 
 private theorem dual_moment_reindex (t : ℝ) :
     (∑' z : ℤ × ℤ, dualQ z * dualRealGauss t z) =
@@ -463,8 +459,6 @@ theorem two_coordinate_norm_four :
 
 end ActualEisensteinCubic
 
-open Filter
-open scoped Topology
 
 theorem abel_transfer (P V W : ℝ → ℂ) (p w : ℂ)
     (hP : Tendsto P (𝓝[>] (0 : ℝ)) (𝓝 p))
@@ -510,7 +504,6 @@ theorem fixedDualPhase_norm_one (c y : O) :
 
 end
 
-open scoped Topology
 open Filter EisensteinEmbedding ConcreteTraceCRT Complex
 
 theorem variableDualPhase_abel_limit (a b : ℤ)

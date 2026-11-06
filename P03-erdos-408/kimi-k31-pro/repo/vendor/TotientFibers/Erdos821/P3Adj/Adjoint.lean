@@ -224,8 +224,7 @@ theorem GhostAdjointTask_proof : Erdos821.S2Core.GhostAdjointTask := by
 
 end Erdos821.P3Adj
 
-theorem Erdos821.S2Core.GhostAdjointTask_proof : Erdos821.S2Core.GhostAdjointTask :=
-  Erdos821.P3Adj.GhostAdjointTask_proof
+alias _root_.Erdos821.S2Core.GhostAdjointTask_proof := _root_.Erdos821.P3Adj.GhostAdjointTask_proof
 
 
 

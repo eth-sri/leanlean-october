@@ -11,59 +11,24 @@ noncomputable section
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
 open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
 open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
 open scoped ContDiff FourierTransform SchwartzMap
 open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
 open scoped BigOperators Classical SchwartzMap ContDiff
 
 namespace ActualEisensteinCubic
@@ -187,11 +152,6 @@ noncomputable def idealPairPoissonZeroMode
 
 end ConcretePrimeRowBridge
 
-open scoped BigOperators Classical SchwartzMap ContDiff
-namespace ActualEisensteinCubic
-open ConcreteTraceCRT EisensteinSchwartzPoisson
-
-end ActualEisensteinCubic
 
 namespace ConcretePrimeRowBridge
 open ActualEisensteinCubic ShortDraftHeckeBridge ConcreteTraceCRT EisensteinSchwartzPoisson
@@ -207,16 +167,9 @@ theorem idealPrimeDensity_mem_Icc
 
 end ConcretePrimeRowBridge
 
-namespace ShortDraftHeckeBridge
-
-end ShortDraftHeckeBridge
 
 namespace ConcretePrimeRowBridge
 
-section
-open ActualEisensteinCubic ShortDraftHeckeBridge EisensteinSchwartzPoisson
-
-end
 
 open ActualEisensteinCubic ShortDraftHeckeBridge
 
@@ -280,10 +233,6 @@ theorem activePrimeModulus_norm_sq
 
 end ActualEisensteinCubic
 
-namespace ConcretePrimeRowBridge
-open ActualEisensteinCubic ShortDraftHeckeBridge
-
-end ConcretePrimeRowBridge
 
 end
 

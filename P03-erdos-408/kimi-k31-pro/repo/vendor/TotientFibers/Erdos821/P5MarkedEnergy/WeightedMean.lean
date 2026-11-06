@@ -39,9 +39,7 @@ theorem wt_le_of_le_abs (h t d : ℝ) (hd : 0 ≤ d) (hdt : d ≤ |h * t|) :
   have : 1 + d ≤ 1 + |h * t| := by linarith
   nlinarith
 
-theorem integrable_inv_one_add_sq_mul {h : ℝ} (hh : h ≠ 0) :
-    Integrable (fun t : ℝ => (1 + (h * t) ^ 2)⁻¹) :=
-  integrable_inv_one_add_sq.comp_mul_left' hh
+alias _root_.Erdos821.P5Marked.integrable_inv_one_add_sq_mul := _root_.integrable_inv_one_add_mul_sq
 
 theorem integral_inv_one_add_sq_mul {h : ℝ} (hh : 0 < h) :
     ∫ t : ℝ, (1 + (h * t) ^ 2)⁻¹ = Real.pi / h := by

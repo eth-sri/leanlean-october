@@ -10,78 +10,33 @@ noncomputable section
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
 open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
 open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
 open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
 open scoped BigOperators Classical
 open scoped BigOperators Classical SchwartzMap ContDiff
 open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
 open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
 open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
 
 section
 
 open scoped BigOperators Classical MatrixGroups
 namespace CubicKubota
-open ActualEisensteinCubic
 open CubicJacobiGlobal hiding O
 
 def rationalEmbedding : SL(2,ℤ)→*SL(2,ActualEisensteinCubic.O) :=
@@ -141,7 +96,6 @@ theorem value_conjugate_S (M : levelThree) :
 end CubicKubota
 
 namespace CubicJacobiGlobal
-open ActualEisensteinCubic
 
 theorem symbol_shift_by_self (c a : ActualEisensteinCubic.O) (ha : lambda^2∣a-1) (hc : (3:ActualEisensteinCubic.O)∣c) :
     symbol c (a+c)=symbol c a := by
@@ -162,7 +116,6 @@ theorem symbol_shift_by_self (c a : ActualEisensteinCubic.O) (ha : lambda^2∣a-
 end CubicJacobiGlobal
 
 namespace CubicKubota
-open ActualEisensteinCubic
 open CubicJacobiGlobal hiding O
 
 theorem value_conjugate_T (M : levelThree) :
@@ -213,9 +166,7 @@ theorem complexCharacter_conjugate_rational (g : SL(2,ℤ)) (M : levelThree) :
 end CubicKubota
 end
 
-open scoped BigOperators Classical
 namespace CubicJacobiGlobal
-open ActualEisensteinCubic
 open CubicRamified
 open CompletedGauss hiding O
 
@@ -340,7 +291,6 @@ section
 
 open scoped BigOperators Classical MatrixGroups
 namespace CubicJacobiGlobal
-open ActualEisensteinCubic
 
 lemma primary_int_natAbs_not_three (a : ℤ) (ha : lambda^2∣(a:ActualEisensteinCubic.O)-1) : ¬3∣a.natAbs := by
   intro h
@@ -384,7 +334,6 @@ end CubicJacobiGlobal
 namespace CubicKubota
 
 section
-open ActualEisensteinCubic
 open CubicJacobiGlobal hiding O
 
 theorem value_rational_intersection (g : SL(2,ℤ)) (hg : rationalEmbedding g∈levelThree) :
@@ -406,7 +355,6 @@ theorem complexCharacter_rational_intersection (g : SL(2,ℤ)) (hg : rationalEmb
 
 end
 
-open ActualEisensteinCubic
 
 def levelTwo : Subgroup (SL(2,ActualEisensteinCubic.O)) where
   carrier g := ∃n : levelThree,∃r : SL(2,ℤ),(n:SL(2,ActualEisensteinCubic.O))*rationalEmbedding r=g
@@ -493,7 +441,6 @@ end
 namespace CubicKubota
 
 open scoped Classical MatrixGroups
-open ActualEisensteinCubic
 open CubicEisenstein
 
 theorem globalKubotaKernel_conjugate (g : levelTwo) (k : SL(2,ActualEisensteinCubic.O))

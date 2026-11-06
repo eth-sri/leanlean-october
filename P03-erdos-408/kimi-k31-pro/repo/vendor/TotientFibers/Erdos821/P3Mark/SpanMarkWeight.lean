@@ -605,18 +605,7 @@ theorem initialCharge_product_eq {F : FixedData} {P : PrimeGroups} {J m n : ℕ}
 
 theorem exists_fin_succ_eq {n : ℕ} (b : Fin (n + 1)) (hb : b ≠ 0) :
     ∃ i : Fin n, i.succ = b := by
-  have hbval : 0 < b.val := by
-    by_contra h
-    have hz : b.val = 0 := by omega
-    apply hb
-    apply Fin.ext
-    exact hz
-  let i : Fin n := ⟨b.val - 1, by omega⟩
-  refine ⟨i, ?_⟩
-  apply Fin.ext
-  simp only [Fin.val_succ]
-  simp [i]
-  omega
+  apply _root_.Fin.exists_succ_eq_of_ne_zero <;> assumption
 
 theorem freshBirthIndicator_product {F : FixedData} {P : PrimeGroups} {J m n : ℕ}
     {A : Model F P J m} (Q : ResiduePath A n) (S : LifespanAssignment P n)

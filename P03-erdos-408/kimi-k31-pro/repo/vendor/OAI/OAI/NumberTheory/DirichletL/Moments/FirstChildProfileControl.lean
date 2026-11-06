@@ -39,9 +39,7 @@ lemma child_mass (s : Input ι) (C R : Ideal O) (B : actualAllocations s.pools C
     (fun i _=>zero_le_one.trans (s.M_ge_one i)) (fun i _ _=>s.M_ge_one i)
 
 omit [DecidableEq ι] in
-lemma child_card (B : CenteredMomentAddedZeroUniform.Tuple ι) :
-    Fintype.card (liveIndices B)≤Fintype.card ι := by
-  simpa using Finset.card_le_card (Finset.subset_univ (liveIndices B))
+alias _root_.OAI.SevenEighths.CenteredMomentFirstChildProfileControl.child_card := _root_.OAI.SevenEighths.CenteredMomentAmplificationChildSourceCaps.live_card_le
 
 omit [DecidableEq ι] in
 lemma slot_control_bound (s : Input ι) (b : ℝ) (hb : 1≤b) (hu : s.upper≤b) :

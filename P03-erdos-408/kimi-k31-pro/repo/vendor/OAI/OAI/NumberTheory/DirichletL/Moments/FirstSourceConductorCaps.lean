@@ -23,8 +23,7 @@ local notation "O"=>ActualEisensteinCubic.O
 
 lemma divisor_norm_le (I C : Ideal O) (hC : C≠0) (h : I∣C) :
     (I.absNorm:ℝ)≤C.absNorm := by
-  exact_mod_cast Nat.le_of_dvd (Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hC))
-    (map_dvd Ideal.absNorm h)
+  apply _root_.OAI.SevenEighths.CenteredExceptionalCount.norm_le_of_dvd <;> assumption
 
 lemma original_factor_caps (C D : Ideal O) (hC : Supported C)
     (E : Finset (CommonIndex C D)) :

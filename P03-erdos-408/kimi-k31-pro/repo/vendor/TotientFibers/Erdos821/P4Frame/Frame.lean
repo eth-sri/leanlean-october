@@ -4,7 +4,6 @@ public import OAI.NumberTheory.PrimeGaps.AdditiveSieve
 
 @[expose] public section
 
-set_option autoImplicit false
 
 open scoped BigOperators Classical ComplexConjugate
 

@@ -12,76 +12,32 @@ namespace SecondPassArithmetic
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
 open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
 open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
 open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
 open scoped BigOperators Classical
 open scoped BigOperators Classical SchwartzMap ContDiff
 open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
 open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
 
 section
 
-open scoped BigOperators Classical
 
 section
-open ActualEisensteinCubic
 open SecondPassFiber (OldTuple newLabel newRow Valid)
 local instance : Fintype Oˣ := @Fintype.ofFinite _ PrimaryIdealUnitReindex.finite_units
 
@@ -93,7 +49,6 @@ variable {ι : Type*} [DecidableEq ι]
 end
 
 section
-open ActualEisensteinCubic
 open FirstCauchyArithmetic (supportMobius supportConjugateSum)
 
 variable {ι : Type*} [DecidableEq ι]
@@ -193,7 +148,6 @@ theorem inputConjugateRow_sq_overlap
 end
 
 section
-open ActualEisensteinCubic
 
 variable {ι : Type*} [DecidableEq ι]
   (p : ι → O) [∀ i, (Ideal.span {p i}).IsMaximal]
@@ -270,7 +224,6 @@ theorem inputConjugateRow_fixed_pool
 end
 
 section
-open ActualEisensteinCubic
 open FirstCauchyArithmetic (supportMobius)
 
 variable {ι : Type*} [DecidableEq ι]
@@ -351,7 +304,6 @@ theorem secondMaskQuotient_spec (E G : Finset ι) (hEG : E ⊆ G) :
 
 end
 
-open ActualEisensteinCubic
 
 theorem secondMaskQuotient_span {ι : Type*} [DecidableEq ι]
     (p : ι → O) [∀ i, (Ideal.span {p i}).IsMaximal]
@@ -376,8 +328,6 @@ end
 
 section
 
-open scoped BigOperators Classical SchwartzMap ContDiff
-open ActualEisensteinCubic
 open ConcreteTraceCRT (eisEmbedding)
 open FirstCauchyArithmetic (supportMobius)
 open EisensteinSchwartzPoisson (paperRadialFourier)
@@ -504,8 +454,6 @@ theorem inputConjugateRow_smoothed_second_poisson (hp : ∀ i, p i ≠ 0)
 
 end
 
-open scoped BigOperators Classical
-open ActualEisensteinCubic
 open FirstPassCubeLabels (cubeCoreCoefficient cubeOddSupport coreRayCoefficient coreRayTwist
   coreRayCharacter dilatedCoreRow dilatedRayColumn afterDilationLabel b0Label jLabel)
 open FirstCauchyArithmetic (supportMobius supportRay supportConjugateSum)

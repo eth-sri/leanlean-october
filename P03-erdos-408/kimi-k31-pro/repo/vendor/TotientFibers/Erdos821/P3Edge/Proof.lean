@@ -65,7 +65,5 @@ theorem memoryEdgeAbsoluteTask_holds (F : FixedData) (r : MemoryParameters F) :
 end Erdos821.P3Edge
 
 open Erdos821.Blueprint.Graph Erdos821.S2Core Erdos821.P3Edge in
-theorem Erdos821.S2Core.MemoryEdgeAbsoluteTask_proof (F : FixedData) (r : MemoryParameters F) :
-    Erdos821.S2Core.MemoryEdgeAbsoluteTask F r :=
-  memoryEdgeAbsoluteTask_holds F r
+alias _root_.Erdos821.S2Core.MemoryEdgeAbsoluteTask_proof := _root_.Erdos821.P3Edge.memoryEdgeAbsoluteTask_holds
 

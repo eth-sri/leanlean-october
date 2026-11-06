@@ -72,10 +72,6 @@ structure Pattern (P : PrimeGroups) (J ell m : ℕ) where
   coefficient_aux_ext : ∀ a b u v,
     (∀ g i, i ∈ changed g.val → u g i = v g i) → coefficient a b u = coefficient a b v
 
-namespace Pattern
-variable {P : PrimeGroups} {J ell m : ℕ} (ν : Pattern P J ell m)
-
-end Pattern
 
 /-- Finite family; supremum is a finite maximum including zero. -/
 structure Model (F : FixedData) (P : PrimeGroups) (J m : ℕ) where
@@ -84,21 +80,8 @@ structure Model (F : FixedData) (P : PrimeGroups) (J m : ℕ) where
   k : ℤ
   zeta : ℝ
 
-namespace Model
-variable {F : FixedData} {P : PrimeGroups} {J m : ℕ} (A : Model F P J m)
 
--- The maximum does not require a nonempty label space when evaluated via `sSup`.
-end Model
 
-namespace Model
-variable {F : FixedData} {P : PrimeGroups} {J m : ℕ} (A : Model F P J m)
-
-end Model
-
-namespace PrimeGroups
-variable (P : PrimeGroups)
-
-end PrimeGroups
 
 namespace PrimeGroups
 variable (P : PrimeGroups)

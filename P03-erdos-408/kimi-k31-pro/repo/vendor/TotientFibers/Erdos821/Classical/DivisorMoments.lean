@@ -211,11 +211,6 @@ theorem divisorMoments : DivisorMoments := by
 
 end Erdos821.Classical
 
-namespace Erdos821.DivisorHarmonic
-
-open Erdos821.Classical
-
-end Erdos821.DivisorHarmonic
 
 theorem Erdos821.Blueprint.DivisorMoments_proof :
     Erdos821.Blueprint.DivisorMoments := Erdos821.Classical.divisorMoments

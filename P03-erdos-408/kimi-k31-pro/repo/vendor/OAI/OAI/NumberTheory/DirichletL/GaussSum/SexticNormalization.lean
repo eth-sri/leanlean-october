@@ -10,13 +10,11 @@ noncomputable section
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
-open scoped Classical
 open scoped Classical
 
 namespace ActualEisensteinCubic
@@ -115,11 +113,6 @@ theorem breveGamma1_gamma2_relation (P : Ideal O) [P.IsMaximal]
 
 end
 
-section
-
-open EisensteinEmbedding ConcreteTraceCRT IdealGaussCRT
-
-end
 
 section
 
@@ -162,15 +155,7 @@ noncomputable def normalizedTraceGauss
 
 end ConcreteBreveE
 
-namespace FixedRayActiveSet
 
-open scoped BigOperators
-
-end FixedRayActiveSet
-
-namespace CubeInversion
-
-end CubeInversion
 
 namespace ActualEisensteinCubic
 
@@ -242,9 +227,6 @@ theorem breveGamma1_gammaMinus1 (P : Ideal O) [P.IsMaximal]
 
 end ActualEisensteinCubic
 
-namespace PowerExtraction
-
-end PowerExtraction
 
 end
 

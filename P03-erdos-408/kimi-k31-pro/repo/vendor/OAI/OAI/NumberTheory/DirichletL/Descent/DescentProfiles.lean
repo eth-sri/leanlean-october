@@ -11,16 +11,7 @@ open scoped BigOperators Classical SchwartzMap FourierTransform ContDiff
 open MeasureTheory FourierBridge EisensteinSchwartzPoisson JointLogSeparation
 noncomputable section
 
-lemma schwartz_logPhase_inversion (g : 𝓢(ℝ, ℂ)) (x : ℝ) :
-    g x = ∫ t : ℝ, logPhase t x * (𝓕 g) t := by
-  convert schwartz_log_inversion g x using 1
-  apply integral_congr_ae
-  filter_upwards with t
-  congr 1
-  simp only [logPhase, Real.inner_apply]
-  congr 1
-  push_cast
-  ring
+alias _root_.OAI.SevenEighths.InverseMoment.schwartz_logPhase_inversion := _root_.OAI.JointLogSeparation.schwartz_phase_inversion
 
 theorem descent_profile_identity {ι : Type*} [Fintype ι]
     (g₁ g₂ W : 𝓢(ℝ, ℂ)) (V : ι → ℝ → ℂ) (a₁ a₂ ak : ι → ℝ)

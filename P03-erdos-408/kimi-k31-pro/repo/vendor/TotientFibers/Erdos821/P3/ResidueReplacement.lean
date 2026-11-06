@@ -2685,18 +2685,14 @@ lemma active_inactive_miss_product_average_error {P : PrimeGroups}
   have htail0 : 0 ≤ lambdaTot ^ (H + 1) / ((H + 1).factorial : ℝ) := by positivity
   have hXupper (z : ℤ) :
       ∏ p ∈ U, (1 - X p z) ≤ inclusionTruncation (Xz z) U H := by
-    apply (inclusionTruncation_bonferroni (Xz z) U (fun p hp => hX p hp z) H).1
-    exact hHeven
+    exact (inclusionTruncation_bonferroni (Xz z) U (fun p hp => hX p hp z) H).1 hHeven
   have hXlower (z : ℤ) :
       inclusionTruncation (Xz z) U (H + 1) ≤ ∏ p ∈ U, (1 - X p z) := by
-    apply (inclusionTruncation_bonferroni (Xz z) U (fun p hp => hX p hp z) (H + 1)).2
-    exact hHsuccEven
+    exact (inclusionTruncation_bonferroni (Xz z) U (fun p hp => hX p hp z) (H + 1)).2 hHsuccEven
   have hμupper : ∏ p ∈ U, (1 - μ p) ≤ inclusionTruncation μ U H := by
-    apply (inclusionTruncation_bonferroni μ U hμ' H).1
-    exact hHeven
+    exact (inclusionTruncation_bonferroni μ U hμ' H).1 hHeven
   have hμlower : inclusionTruncation μ U (H + 1) ≤ ∏ p ∈ U, (1 - μ p) := by
-    apply (inclusionTruncation_bonferroni μ U hμ' (H + 1)).2
-    exact hHsuccEven
+    exact (inclusionTruncation_bonferroni μ U hμ' (H + 1)).2 hHsuccEven
   let avgProd : ℝ := M⁻¹ * ∑ z ∈ I, ind z * ∏ p ∈ U, (1 - X p z)
   let avgHigh : ℝ := M⁻¹ * ∑ z ∈ I, ind z * inclusionTruncation (Xz z) U H
   let avgLow : ℝ := M⁻¹ * ∑ z ∈ I, ind z * inclusionTruncation (Xz z) U (H + 1)

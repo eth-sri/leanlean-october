@@ -19,7 +19,6 @@ open scoped Topology ContDiff
 
 open Asymptotics
 
-open Asymptotics
 
 noncomputable def frequencyW (u : ℝ) : ℂ := 1+Complex.I*(u:ℂ)
 

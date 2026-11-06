@@ -11,7 +11,6 @@ public import Mathlib.Analysis.SpecialFunctions.Pow.Asymptotics
 
 @[expose] public section
 
-set_option autoImplicit false
 
 noncomputable section
 open scoped BigOperators
@@ -1464,11 +1463,7 @@ theorem translateMemory_cancel {P : PrimeGroups} {g : P.Group}
       exact translateParticle_cancel delta x
     _ = z := Multiset.map_id z
 
-theorem translateSmallResidues_cancel {P : PrimeGroups}
-    (delta : ℤ) (y : P.SmallResidues) :
-    translateSmallResidues (-delta) (translateSmallResidues delta y) = y := by
-  funext g p
-  simp [translateSmallResidues, add_assoc]
+alias _root_.Erdos821.P3Rare.translateSmallResidues_cancel := _root_.Erdos821.P3Edge.translateSmallResidues_neg_cancel
 
 /-- The signed translation increment changes sign under reversal of a valid
 compatible edge. -/
@@ -3336,24 +3331,18 @@ theorem promotionOmissionAverageKernel_nonneg {F : FixedData} {P : PrimeGroups}
     (s t : P.MemoryState (J + F.ell)) :
     0 ≤ promotionOmissionAverageKernel A rho theta i s t := by
   unfold promotionOmissionAverageKernel
-  apply mul_nonneg
-  · exact inv_nonneg.mpr (Nat.cast_nonneg _)
-  · apply Finset.sum_nonneg
-    intro O hO
-    exact omissionRestrictedAbsoluteKernel_nonneg A rho theta i .dirty true O
-      (fun _ _ c => edgeHasPromotion c) s t
+  exact mul_nonneg (inv_nonneg.mpr (Nat.cast_nonneg _))
+    (Finset.sum_nonneg fun O _ => omissionRestrictedAbsoluteKernel_nonneg A rho theta i
+      .dirty true O (fun _ _ c => edgeHasPromotion c) s t)
 
 theorem storeOnlyOmissionAverageKernel_nonneg {F : FixedData} {P : PrimeGroups}
     {J m n : ℕ} (A : Model F P J m) (rho theta : ℝ) (i : Fin n)
     (s t : P.MemoryState (J + F.ell)) :
     0 ≤ storeOnlyOmissionAverageKernel A rho theta i s t := by
   unfold storeOnlyOmissionAverageKernel
-  apply mul_nonneg
-  · exact inv_nonneg.mpr (Nat.cast_nonneg _)
-  · apply Finset.sum_nonneg
-    intro O hO
-    exact omissionRestrictedAbsoluteKernel_nonneg A rho theta i .dirty false O
-      (fun _ _ c => edgeHasStoreOnly c) s t
+  exact mul_nonneg (inv_nonneg.mpr (Nat.cast_nonneg _))
+    (Finset.sum_nonneg fun O _ => omissionRestrictedAbsoluteKernel_nonneg A rho theta i
+      .dirty false O (fun _ _ c => edgeHasStoreOnly c) s t)
 
 /-- The signed dirty kernel is pointwise dominated by its two omission averages. -/
 theorem memoryEdgeKernel_dirty_omission_domination {F : FixedData} {P : PrimeGroups}
@@ -3723,18 +3712,6 @@ theorem normBound_fintype_sum {α κ : Type*} [Fintype κ]
     NormBound mass (fun a b => ∑ j, K j a b) (∑ j, C j) := by
   classical
   intro s t f g
-  have hentry (a b : α) :
-      (mass a : ℂ) * star (f a) * (∑ j, K j a b) * g b =
-        ∑ j, (mass a : ℂ) * star (f a) * K j a b * g b := by
-    calc
-      _ = (mass a : ℂ) * star (f a) * ((∑ j, K j a b) * g b) := by ring
-      _ = (mass a : ℂ) * star (f a) * (∑ j, K j a b * g b) := by rw [Finset.sum_mul]
-      _ = ∑ j, (mass a : ℂ) * star (f a) * (K j a b * g b) := by
-        rw [Finset.mul_sum]
-      _ = ∑ j, (mass a : ℂ) * star (f a) * K j a b * g b := by
-        apply Finset.sum_congr rfl
-        intro j hj
-        ring
   have hsum :
       (∑ a ∈ s, ∑ b ∈ t,
         (mass a : ℂ) * star (f a) * (∑ j, K j a b) * g b) =
@@ -3742,19 +3719,12 @@ theorem normBound_fintype_sum {α κ : Type*} [Fintype κ]
           (mass a : ℂ) * star (f a) * K j a b * g b := by
     calc
       _ = ∑ a ∈ s, ∑ b ∈ t, ∑ j,
-            (mass a : ℂ) * star (f a) * K j a b * g b := by
-          apply Finset.sum_congr rfl
-          intro a ha
-          apply Finset.sum_congr rfl
-          intro b hb
-          exact hentry a b
+          (mass a : ℂ) * star (f a) * K j a b * g b := by
+        simp only [Finset.sum_mul, Finset.mul_sum]
       _ = ∑ a ∈ s, ∑ j, ∑ b ∈ t,
-            (mass a : ℂ) * star (f a) * K j a b * g b := by
-          apply Finset.sum_congr rfl
-          intro a ha
-          exact Finset.sum_comm
-      _ = ∑ j, ∑ a ∈ s, ∑ b ∈ t,
-            (mass a : ℂ) * star (f a) * K j a b * g b := Finset.sum_comm
+          (mass a : ℂ) * star (f a) * K j a b * g b := by
+        exact Finset.sum_congr rfl fun _ _ => Finset.sum_comm
+      _ = _ := Finset.sum_comm
   calc
     _ = ‖∑ j, ∑ a ∈ s, ∑ b ∈ t,
           (mass a : ℂ) * star (f a) * K j a b * g b‖ := by rw [hsum]
@@ -3762,20 +3732,8 @@ theorem normBound_fintype_sum {α κ : Type*} [Fintype κ]
           (mass a : ℂ) * star (f a) * K j a b * g b‖ := norm_sum_le _ _
     _ ≤ ∑ j, C j * Real.sqrt (∑ a ∈ s, mass a * ‖f a‖ ^ 2) *
           Real.sqrt (∑ b ∈ t, mass b * ‖g b‖ ^ 2) :=
-      Finset.sum_le_sum (fun j hj => hK j s t f g)
-    _ = (∑ j, C j) * Real.sqrt (∑ a ∈ s, mass a * ‖f a‖ ^ 2) *
-          Real.sqrt (∑ b ∈ t, mass b * ‖g b‖ ^ 2) := by
-      calc
-        _ = ∑ j, C j * (Real.sqrt (∑ a ∈ s, mass a * ‖f a‖ ^ 2) *
-              Real.sqrt (∑ b ∈ t, mass b * ‖g b‖ ^ 2)) := by
-          apply Finset.sum_congr rfl
-          intro j hj
-          ring
-        _ = (∑ j, C j) *
-              (Real.sqrt (∑ a ∈ s, mass a * ‖f a‖ ^ 2) *
-                Real.sqrt (∑ b ∈ t, mass b * ‖g b‖ ^ 2)) := by
-          rw [← Finset.sum_mul]
-        _ = _ := by ring
+      Finset.sum_le_sum (fun j _ => hK j s t f g)
+    _ = _ := by rw [← Finset.sum_mul, ← Finset.sum_mul]
 
 /-- Contextwise sparse-row gains survive summation over a finite family of edge contexts. -/
 theorem normBound_sum_contexts_sparseRows {α Ω κ : Type*} [Fintype Ω] [Fintype κ]
@@ -4883,18 +4841,9 @@ theorem promotionOmissionAverageKernel_context_sum {F : FixedData} {P : PrimeGro
             promotionContextKernel A r theta i ctx O s t := by
   classical
   unfold promotionOmissionAverageKernel
-  calc
-    _ = ((Fintype.card (OmissionChoices P (J + F.ell) F.ell) : ℝ)⁻¹) *
-        ∑ O : OmissionChoices P (J + F.ell) F.ell,
-          ∑ ctx : EdgeTransferContext A,
-            promotionContextKernel A r theta i ctx O s t := by
-      congr 1
-      apply Finset.sum_congr rfl
-      intro O hO
-      exact (promotionContextKernel_sum A r theta i O s t).symm
-    _ = _ := by
-      congr 1
-      exact Finset.sum_comm
+  rw [Finset.sum_comm]
+  congr 1
+  exact Finset.sum_congr rfl fun O _ => (promotionContextKernel_sum A r theta i O s t).symm
 
 theorem storeOnlyOmissionAverageKernel_context_sum {F : FixedData} {P : PrimeGroups}
     {J m n : ℕ} (A : Model F P J m) (r : MemoryParameters F)
@@ -4906,17 +4855,8 @@ theorem storeOnlyOmissionAverageKernel_context_sum {F : FixedData} {P : PrimeGro
             storeOnlyContextKernel A r theta i ctx O s t := by
   classical
   unfold storeOnlyOmissionAverageKernel
-  calc
-    _ = ((Fintype.card (OmissionChoices P (J + F.ell) F.ell) : ℝ)⁻¹) *
-        ∑ O : OmissionChoices P (J + F.ell) F.ell,
-          ∑ ctx : EdgeTransferContext A,
-            storeOnlyContextKernel A r theta i ctx O s t := by
-      congr 1
-      apply Finset.sum_congr rfl
-      intro O hO
-      exact (storeOnlyContextKernel_sum A r theta i O s t).symm
-    _ = _ := by
-      congr 1
-      exact Finset.sum_comm
+  rw [Finset.sum_comm]
+  congr 1
+  exact Finset.sum_congr rfl fun O _ => (storeOnlyContextKernel_sum A r theta i O s t).symm
 
 end Erdos821.P3Rare

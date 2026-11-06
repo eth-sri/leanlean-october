@@ -10,49 +10,22 @@ noncomputable section
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
 open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
 open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
 open scoped ContDiff FourierTransform SchwartzMap
 open scoped BigOperators Classical
 
@@ -398,7 +371,6 @@ theorem actual_eisenstein_periodic_fourier (f : 𝓢(ℂ, ℂ)) (c : O) (hc : c 
 
 end
 
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
 open scoped FourierTransform SchwartzMap RealInnerProductSpace
 
 theorem dualMap_trans (A B : ℂ ≃L[ℝ] ℂ) (z : ℂ) :
@@ -467,7 +439,6 @@ theorem actual_eisenstein_poisson_explicit (f : 𝓢(ℂ, ℂ)) (c : O) (hc : c 
   simpa only [eisensteinDualFrequency_explicit, explicitDualFrequency] using
     actual_eisenstein_periodic_fourier f c hc P
 
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
 open scoped FourierTransform SchwartzMap RealInnerProductSpace ContDiff
 
 def radialTest (W : 𝓢(ℝ, ℂ)) : 𝓢(ℂ, ℂ) :=
@@ -489,7 +460,6 @@ def compactRadialTest (W : ℝ → ℂ) (hWc : HasCompactSupport W)
 
 end EisensteinSchwartzPoisson
 
-open scoped BigOperators Classical
 
 namespace IdealGaussCRT
 

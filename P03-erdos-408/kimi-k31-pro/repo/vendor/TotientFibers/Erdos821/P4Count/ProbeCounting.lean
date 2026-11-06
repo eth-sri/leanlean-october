@@ -6,7 +6,6 @@ public import Mathlib.Logic.Equiv.Fintype
 
 @[expose] public section
 
-set_option autoImplicit false
 
 open scoped BigOperators
 attribute [local instance] Classical.propDecidable
@@ -395,8 +394,7 @@ noncomputable def selectedFiberEquiv {s J ell : ℕ} (block : Finset (Fin s))
   invFun B := ⟨fun i => (B i).val, by
     constructor
     · funext i
-      apply Fin.ext
-      exact (Finset.mem_powersetCard.mp
+      exact Fin.ext (Finset.mem_powersetCard.mp
         (Finset.mem_filter.mp (B i).property).1).2
     · intro i
       exact (Finset.mem_filter.mp (B i).property).2

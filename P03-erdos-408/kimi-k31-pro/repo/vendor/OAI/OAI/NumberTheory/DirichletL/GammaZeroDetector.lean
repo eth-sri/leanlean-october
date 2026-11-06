@@ -80,11 +80,7 @@ theorem gamma_rapid_bound (a b : ℝ) (ha : 0 < a) (n : ℕ) :
 
 theorem gamma_differentiableAt_right {z : ℂ} (hz : 0 < z.re) :
     DifferentiableAt ℂ Gamma z := by
-  apply Complex.differentiableAt_Gamma
-  intro n hn
-  have h := congrArg Complex.re hn
-  simp only [neg_re, natCast_re] at h
-  linarith [Nat.cast_nonneg (α := ℝ) n]
+  apply _root_.OAI.CubicReflectionKernel.Gamma_differentiableAt_of_re_pos <;> assumption
 
 def cancelledKernel (f g : ℂ → ℂ) (Y : ℝ) (z : ℂ) : ℂ :=
   (Y : ℂ) ^ z * Gamma (z + 1) * dslope f 0 z * g z

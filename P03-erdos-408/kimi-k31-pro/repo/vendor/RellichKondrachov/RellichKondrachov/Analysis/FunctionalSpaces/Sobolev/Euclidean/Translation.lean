@@ -39,11 +39,6 @@ namespace Euclidean
 open scoped ENNReal MeasureTheory Topology
 open MeasureTheory
 
-section Topology
-
-variable {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E] [CompleteSpace E]
-
-end Topology
 
 section Measure
 

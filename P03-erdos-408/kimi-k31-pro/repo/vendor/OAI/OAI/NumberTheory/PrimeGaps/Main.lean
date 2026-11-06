@@ -16,19 +16,12 @@ open Complex Filter Topology MeasureTheory
 
 open scoped FourierTransform
 
-open Complex Real Set MeasureTheory Filter Topology
 
-open Complex Real Set MeasureTheory Filter Topology
 
-open Complex Real Set MeasureTheory Filter Topology
 
-open scoped FourierTransform
 
-open Complex Real Set MeasureTheory Filter Topology
 
-open Complex Real Set MeasureTheory Filter Topology
 
-open Complex Real Set MeasureTheory Filter Topology
 
 lemma primeCharacterError_log_bound (A B : ℝ) (hA : 0<A) (hB : 0<B) :
     ∃ M : ℝ, 0<M ∧ ∀ (q : ℕ) [NeZero q] (χ : DirichletCharacter ℂ q), χ.IsPrimitive →
@@ -53,8 +46,7 @@ lemma primeCharacterError_log_bound (A B : ℝ) (hA : 0<A) (hB : 0<B) :
   have hK1 : 1≤L^K := Real.one_le_rpow hL hK.le
   have hhx : h≤x := (div_le_self hx0.le hK1)
   have hKh : L^K≤x := by
-    apply (Real.rpow_le_rpow_of_exponent_le hL (show K≤2*A+2 by dsimp [K]; linarith)).trans
-    exact hpower
+    exact (Real.rpow_le_rpow_of_exponent_le hL (show K≤2*A+2 by dsimp [K]; linarith)).trans hpower
   have hh1 : 1≤h := (le_div_iff₀ hpK).mpr (by simpa using hKh)
   have hyx : x≤x+h := by linarith
   have hy : 1<x+h := by linarith
