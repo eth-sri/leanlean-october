@@ -1,0 +1,131 @@
+{
+  "problem_idx": 5,
+  "id": "PALOMAR-2026-10-11-000008-v1",
+  "title": "Integrability of Liouville theory: the Kupiainen–Rhodes–Vargas proof of the DOZZ formula",
+  "abstract": "A Lean 4 / Mathlib formalization of the theorem of A. Kupiainen, R. Rhodes and V. Vargas (Annals of Mathematics, 2020) that the three-point structure constants of Liouville conformal field theory on the Riemann sphere are given by the DOZZ formula of Dorn–Otto and Zamolodchikov–Zamolodchikov. The structure constants are defined probabilistically: for 0 < gamma < 2, cosmological constant mu > 0 and charges satisfying the extended Seiberg bounds, C_gamma(alpha_1, alpha_2, alpha_3) = 2 mu^(-s) gamma^(-1) Gamma(s) E[rho^(-s)], where rho integrates explicit power weights against the Gaussian multiplicative chaos of the Gaussian free field pinned on the equator. The formalization proves C_gamma = C_gamma^DOZZ, expressed through the Zamolodchikov function Upsilon_{gamma/2}, at every point of the domain where Gamma(s) is finite, and at every point including the poles for the unit-volume constant; and it proves that the probabilistic reflection coefficient, built from Brownian motion conditioned to stay negative and lateral chaos, equals R^DOZZ (Theorem 3.5). The theorems hold for every model of the field and chaos, and models are constructed. All prerequisites are proved: the construction, uniqueness and moment theory of Gaussian multiplicative chaos and the extended Seiberg bounds (David, Kupiainen, Rhodes and Vargas, 2016); the BPZ equations for degenerate four-point functions and the classification of their real single-valued solutions by the Gauss hypergeometric function (Kupiainen, Rhodes and Vargas, 2019); analytic continuation of correlation functions, tail estimates for multiplicative chaos, fusion asymptotics, the shift equations and the quotient argument. Errata found in the three papers, and the places where the Lean statements differ from them, are recorded in docs/ERRATA-AND-DEVIATIONS.md.",
+  "authors": [
+    "Scott Armstrong",
+    "Amélie Loher"
+  ],
+  "repository": "scottnarmstrong/DOZZ",
+  "repository_url": "https://github.com/scottnarmstrong/DOZZ",
+  "commit": "5d770d1a6d69fac6dbb63060e8a89861bf3ee330",
+  "license": "Apache-2.0",
+  "lean_toolchain": "leanprover/lean4:v4.35.0-rc2",
+  "lake_root": "",
+  "mathlib": true,
+  "size_category": "XL",
+  "baseline_tokens": 2992942,
+  "lean_files": 1957,
+  "protected_theorem_names": [
+    "DOZZChallenge.dozz_formula",
+    "DOZZChallenge.dozz_unitVolume",
+    "DOZZChallenge.dozz_existence",
+    "DOZZChallenge.IsUpsilon.unique",
+    "DOZZChallenge.isCircleAverage_law",
+    "DOZZChallenge.equatorGFF_GMC_unique_ae",
+    "DOZZChallenge.equatorGFF_GMC_nontrivial",
+    "DOZZChallenge.equatorGFF_GMC_law_transport",
+    "DOZZChallenge.equatorGFF_extendedSeiberg_rho_moment"
+  ],
+  "definition_names": [],
+  "permitted_axioms": [
+    "propext",
+    "Quot.sound",
+    "Classical.choice"
+  ],
+  "challenge_module": "comparators.DOZZ.Challenge",
+  "challenge_path": "comparators/DOZZ/Challenge.lean",
+  "solution_module": "comparators.DOZZ.Solution",
+  "solution_path": "comparators/DOZZ/Solution.lean",
+  "comparator_path": "comparators/DOZZ/comparator.json",
+  "arxiv_tags": [
+    "math.PR",
+    "math-ph",
+    "math.MP",
+    "hep-th"
+  ],
+  "msc2020": [
+    "60G60",
+    "60G57",
+    "81T40",
+    "60J65",
+    "33C05",
+    "33B15"
+  ],
+  "mathematical_sources": [
+    {
+      "title": "Integrability of Liouville theory: proof of the DOZZ formula",
+      "authors": [
+        "Antti Kupiainen",
+        "Rémi Rhodes",
+        "Vincent Vargas"
+      ],
+      "type": "article",
+      "identifier": null,
+      "location": "Annals of Mathematics 191 (2020), 81-166; arXiv:1707.08785",
+      "relationship": "formalizes"
+    },
+    {
+      "title": "Liouville quantum gravity on the Riemann sphere",
+      "authors": [
+        "François David",
+        "Antti Kupiainen",
+        "Rémi Rhodes",
+        "Vincent Vargas"
+      ],
+      "type": "article",
+      "identifier": null,
+      "location": "Communications in Mathematical Physics 342 (2016), 869-907; arXiv:1410.7318",
+      "relationship": "formalizes"
+    },
+    {
+      "title": "Local conformal structure of Liouville quantum gravity",
+      "authors": [
+        "Antti Kupiainen",
+        "Rémi Rhodes",
+        "Vincent Vargas"
+      ],
+      "type": "article",
+      "identifier": null,
+      "location": "Communications in Mathematical Physics 371 (2019), 1005-1069; arXiv:1512.01802",
+      "relationship": "formalizes"
+    },
+    {
+      "title": "An elementary approach to Gaussian multiplicative chaos",
+      "authors": [
+        "Nathanaël Berestycki"
+      ],
+      "type": "article",
+      "identifier": null,
+      "location": "Electronic Communications in Probability 22 (2017), paper 27",
+      "relationship": "adapts"
+    },
+    {
+      "title": "Gaussian multiplicative chaos and applications: a review",
+      "authors": [
+        "Rémi Rhodes",
+        "Vincent Vargas"
+      ],
+      "type": "article",
+      "identifier": null,
+      "location": "Probability Surveys 11 (2014), 315-392",
+      "relationship": "background"
+    },
+    {
+      "title": "Brownian motion in Lean",
+      "authors": [
+        "Rémy Degenne"
+      ],
+      "type": "software",
+      "identifier": null,
+      "location": "https://github.com/RemyDegenne/brownian-motion",
+      "relationship": "adapts"
+    }
+  ],
+  "dependency_graph_nodes": 10452,
+  "dependency_graph_edges": 55477,
+  "project_path": "repos/PALOMAR-2026-10-11-000008-v1/project",
+  "dependency_graph_path": "repos/PALOMAR-2026-10-11-000008-v1/dependency-graph.json",
+  "license_path": "repos/PALOMAR-2026-10-11-000008-v1/LICENSE"
+}

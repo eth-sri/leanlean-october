@@ -1,0 +1,4 @@
+module
+public import DOZZ.Correlations.Tails.FirstOrderSingularError
+public import DOZZ.Correlations.Tails.CompleteCopiedEnvelope
+public import DOZZ.Correlations.Tails.CopiedWeightTestLimit
