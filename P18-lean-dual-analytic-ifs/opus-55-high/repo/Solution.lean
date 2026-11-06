@@ -280,29 +280,23 @@ def RapaportSetStatement : Prop :=
 
 end Dimension
 
-theorem nbhd_eq_lib (δ : ℝ) : nbhd δ = AnalyticESC.nbhd δ := by
+theorem nbhd_eq_lib δ : nbhd δ = AnalyticESC.nbhd δ := by
   ext z
   simp [nbhd, AnalyticESC.nbhd, mem_thickening_iff, dist_eq_norm]
 
-theorem inClass_iff_lib {ε : ℝ} {f : ℂ → ℂ} :
+theorem inClass_iff_lib :
     InClass ε f ↔ AnalyticESC.InClass ε f := by
   constructor <;> rintro ⟨h1, h2, h3, h4, h5, h6⟩ <;> constructor <;>
-    (try simp only [nbhd_eq_lib] at *) <;> assumption
+    (try simp [nbhd_eq_lib] at *) <;> assumption
 
-theorem dualProjFin_eq_lib {ε : ℝ} (Φ : AnalyticESC.IFS N ε) (hd : NonzeroDerivatives Φ.f)
-    (w : List (Fin N)) (x : I) : dualProjFin Φ.f hd w x = Φ.dualProj (.fin w) x := by
+theorem dualProjFin_eq_lib (Φ : AnalyticESC.IFS N ε) hd
+    w x : dualProjFin Φ.f hd w x = Φ.dualProj (.fin w) x := by
   rw [dualProjFin, Φ.dualProj_fin_eq_sum, ← Fin.sum_univ_eq_sum_range]
   apply Finset.sum_congr rfl
-  intro n _
-  simp [AnalyticESC.IFS.dualTerm, AnalyticESC.Word.get?, AnalyticESC.Word.take, n.isLt,
-    nonlin, comp, AnalyticESC.IFS.nonlin, AnalyticESC.IFS.comp]
+  simp [AnalyticESC.IFS.dualTerm, nonlin, comp, AnalyticESC.IFS.nonlin, AnalyticESC.IFS.comp]
 
-/-- The system `(f_i)` as an IFS of the library. -/
-noncomputable def toIFS {ε : ℝ} (hε : 0 < ε) (f : Fin N → ℂ → ℂ) (hf : ∀ i, InClass ε (f i)) :
-    AnalyticESC.IFS N ε where
-  f := f
-  ε_pos := hε
-  inClass i := inClass_iff_lib.mp (hf i)
+theorem hlib (f : Fin N → ℂ → ℂ) : InUnionClass f → AnalyticESC.InUnionClass f :=
+  fun ⟨ε, hε, hf⟩ => ⟨ε, hε, fun i => inClass_iff_lib.mp (hf i)⟩
 
 /-- Theorem 1.4. The IFSs in `𝔖_N` that satisfy the strong exponential separation condition
 contain a subset `U` of `𝔖_N` that is open and dense in `𝔖_N` for the `𝒞²` metric `d₂`. -/
@@ -310,57 +304,46 @@ theorem audit_sesc_open_dense (N : ℕ) :
     ∃ U : Set (Fin N → ℂ → ℂ), (∀ f ∈ U, InUnionClass f ∧ SESC f) ∧
       (∀ f ∈ U, ∃ r > 0, ∀ g, InUnionClass g → d2 f g < r → g ∈ U) ∧
       (∀ f, InUnionClass f → ∀ r > 0, ∃ g ∈ U, d2 f g < r) := by
-  have hlib : ∀ f : Fin N → ℂ → ℂ, InUnionClass f → AnalyticESC.InUnionClass f :=
-    fun f ⟨ε, hε, hf⟩ => ⟨ε, hε, fun i => inClass_iff_lib.mp (hf i)⟩
   obtain ⟨U, hS, hO, hD⟩ := AnalyticESC.theorem_1_4 N
-  refine ⟨U, fun f hf => ?_, fun f hf => ?_, fun f hf r hr => hD f (hlib f hf) r hr⟩
+  refine ⟨U, fun f hf => ?_, fun f hf => ?_, fun f hf => hD f (hlib f hf)⟩
   · obtain ⟨ε, ⟨g, hε, hg⟩, rfl, hSE⟩ := hS f hf
     exact ⟨⟨ε, hε, fun i => inClass_iff_lib.mpr (hg i)⟩, hSE⟩
   · obtain ⟨r, hr, h⟩ := hO f hf
-    exact ⟨r, hr, fun g hg hd => h g (hlib g hg) hd⟩
+    exact ⟨r, hr, fun g hg => h g (hlib g hg)⟩
+
+/-- The polynomial example of Section 1.2.2: the system `x/8`, `x/8 + x²/32`, `x/16 + x²/32 + 29/32` lies in
+`𝔖_3` for some `ε > 0` and satisfies the strong exponential separation condition. -/
+theorem audit_example_sesc : ∃ ε > 0, (∀ i, InClass ε (exampleMaps i)) ∧ SESC exampleMaps := by
+  obtain ⟨ε, hε, ⟨g, _, hg⟩, ⟨⟩, hS⟩ := AnalyticESC.example_sesc
+  exact ⟨ε, hε, fun i => inClass_iff_lib.mpr (hg i), hS⟩
+
+section
+
+variable {ε : ℝ} (hε : 0 < ε) (f : Fin N → ℂ → ℂ) (hf : ∀ i, InClass ε (f i))
+
+/-- The system `(f_i)` as an IFS of the library. -/
+noncomputable def toIFS :
+    AnalyticESC.IFS N ε where
+  f := f
+  ε_pos := hε
+  inClass i := inClass_iff_lib.mp (hf i)
+
+include hε hf
+
+variable (hd : NonzeroDerivatives f)
 
 /-- Theorem 1.5. Let `Φ = (f_i)_{i ∈ Fin N}` be an analytic IFS in `𝔖_N`. If
 `sup_{x ∈ [0,1]} |H_i(x) - H_j(x)| > 0` for all distinct `i, j ∈ Σ ∪ Σ_*` with `|i| = |j|`, then `Φ`
 satisfies the strong exponential separation condition. Words of equal length are either both
 finite of the same length or both infinite. -/
-theorem audit_sesc_of_dualProj {ε : ℝ} (hε : 0 < ε) (f : Fin N → ℂ → ℂ)
-    (hf : ∀ i, InClass ε (f i)) (hd : NonzeroDerivatives f)
+theorem audit_sesc_of_dualProj
     (hfin : ∀ n, ∀ i j : Fin n → Fin N, i ≠ j →
       0 < ⨆ x : I, ‖dualProjFin f hd (List.ofFn i) x -
         dualProjFin f hd (List.ofFn j) x‖)
     (hinf : ∀ i j : ℕ → Fin N, i ≠ j →
       0 < ⨆ x : I, ‖dualProjInf f hd i x - dualProjInf f hd j x‖) :
-    SESC f := by
-  refine (toIFS hε f hf).theorem_1_5 ?_
-  intro i j hij hlen
-  cases i with
-  | fin u =>
-    cases j with
-    | fin v =>
-      have huv : u ≠ v := fun h => hij (h ▸ rfl)
-      have hl : u.length = v.length := by
-        have h' : (u.length : ℕ∞) = v.length := hlen
-        exact_mod_cast h'
-      have := hfin u.length u.get (fun k => v.get (Fin.cast hl k)) (by
-        intro h
-        apply huv
-        apply List.ext_get hl
-        intro k hk _
-        exact congrFun h ⟨k, hk⟩)
-      rw [List.ofFn_get] at this
-      have hv : List.ofFn (fun k : Fin u.length => v.get (Fin.cast hl k)) = v := by
-        apply List.ext_get (by simp [hl])
-        intro k _ _
-        simp
-      rw [hv] at this
-      simp only [← dualProjFin_eq_lib (toIFS hε f hf) hd]
-      exact this
-    | inf w => exact absurd hlen (by simp [AnalyticESC.Word.length])
-  | inf w =>
-    cases j with
-    | fin v => exact absurd hlen (by simp [AnalyticESC.Word.length])
-    | inf w' =>
-      exact hinf w w' (fun h => hij (h ▸ rfl))
+    SESC f :=
+  (toIFS hε f hf).theorem_1_5 hinf
 
 /-- Proposition 1.8. Let `Φ = (f_i)_{i ∈ Fin N}` be an analytic IFS in `𝔖_N` with `N ≥ 2` maps.
 Suppose that there is `α > 0` such that for all `i ≠ j` there is `x ∈ [0,1]` with
@@ -368,8 +351,7 @@ Suppose that there is `α > 0` such that for all `i ≠ j` there is `x ∈ [0,1]
 `sup_{x ∈ [0,1]} |H_i(x) - H_j(x)| > 0` for all distinct `i, j ∈ Σ ∪ Σ_*` with `|i| = |j|`, and `Φ`
 satisfies the strong exponential separation condition. The hypothesis `N ≥ 2` ensures `β > 0`,
 which can fail for a singleton IFS. -/
-theorem audit_example_criterion {ε : ℝ} (hε : 0 < ε) (f : Fin N → ℂ → ℂ)
-    (hf : ∀ i, InClass ε (f i)) (hd : NonzeroDerivatives f) (hN : 2 ≤ N) {α : ℝ} (hα : 0 < α)
+theorem audit_example_criterion (hN : 2 ≤ N) {α : ℝ} (hα : 0 < α)
     (hc : 1 - cmax ε f ≠ 0)
     (hsep : ∀ i j : Fin N, i ≠ j → ∃ x : I, α ≤ ‖nonlin (f i) x (hd i [] x) - nonlin (f j) x (hd j [] x)‖) :
     0 < beta f hd ∧ (divide (2 * beta f hd * cmax ε f) (1 - cmax ε f) hc < α →
@@ -379,125 +361,86 @@ theorem audit_example_criterion {ε : ℝ} (hε : 0 < ε) (f : Fin N → ℂ →
       (∀ i j : ℕ → Fin N, i ≠ j →
         0 < ⨆ x : I, ‖dualProjInf f hd i x - dualProjInf f hd j x‖) ∧
       SESC f) := by
-  have hsep' : ∀ i j : Fin N, i ≠ j → ∃ x ∈ AnalyticESC.I,
-      α ≤ ‖(toIFS hε f hf).nonlin i x - (toIFS hε f hf).nonlin j x‖ := by
-    intro i j hij
-    obtain ⟨x, hx⟩ := hsep i j hij
-    exact ⟨x, x.2, hx⟩
-  obtain ⟨hβ, h⟩ := (toIFS hε f hf).proposition_1_8 hN hα hsep'
+  obtain ⟨hβ, h⟩ := (toIFS hε f hf).proposition_1_8 hN hα fun i j hij =>
+    let ⟨x, hx⟩ := hsep i j hij; ⟨x, x.2, hx⟩
   refine ⟨hβ, fun hα' => ?_⟩
-  have hc_eq : (toIFS hε f hf).cmax = cmax ε f := by
-    unfold cmax
-    rw [nbhd_eq_lib]
-    rfl
-  obtain ⟨hne, hS⟩ := h (by rw [hc_eq]; exact hα')
-  refine ⟨fun n i j hij => ?_, fun i j hij => hne (.inf i) (.inf j) (fun h => hij (by cases h; rfl)) rfl, hS⟩
-  have hfin := hne (.fin (List.ofFn i)) (.fin (List.ofFn j))
+  obtain ⟨hne, hS⟩ := h (by rwa [show (toIFS hε f hf).cmax = cmax ε f by rw [cmax, nbhd_eq_lib]; rfl])
+  refine ⟨fun n i j hij => ?_, fun i j hij => hne _ _ (hij ∘ AnalyticESC.Word.inf.inj) rfl, hS⟩
+  have := hne (.fin (List.ofFn i)) (.fin (List.ofFn j))
     (fun h => hij (List.ofFn_injective (AnalyticESC.Word.fin.inj h))) (by simp)
-  simp only [← dualProjFin_eq_lib (toIFS hε f hf) hd] at hfin
-  exact hfin
-
-/-- The polynomial example of Section 1.2.2: the system `x/8`, `x/8 + x²/32`, `x/16 + x²/32 + 29/32` lies in
-`𝔖_3` for some `ε > 0` and satisfies the strong exponential separation condition. -/
-theorem audit_example_sesc : ∃ ε > 0, (∀ i, InClass ε (exampleMaps i)) ∧ SESC exampleMaps := by
-  obtain ⟨ε, hε, Φ, hΦ, hS⟩ := AnalyticESC.example_sesc
-  obtain ⟨g, gpos, hg⟩ := Φ
-  change g = _ at hΦ
-  subst hΦ
-  exact ⟨ε, hε, fun i => inClass_iff_lib.mpr (hg i), hS⟩
+  simp only [← dualProjFin_eq_lib (toIFS hε f hf) hd] at this
+  exact this
 
 /-- Individual-map linearisation for Theorem 1.12: an analytic coordinate with nonvanishing
 derivative conjugates the chosen map `f_i` to a contracting similarity. -/
-theorem audit_conj_similarity {ε : ℝ} (hε : 0 < ε) (f : Fin N → ℂ → ℂ)
-    (hf : ∀ i, InClass ε (f i)) (i : Fin N) :
+theorem audit_conj_similarity (i : Fin N) :
     ∃ g, IsAnalyticCoord g ∧ (∀ x ∈ I, deriv g x ≠ 0) ∧
-      ∃ lam t : ℝ, lam ≠ 0 ∧ |lam| < 1 ∧ ∀ x ∈ I, g (f i x).re = lam * g x + t := by
-  exact (toIFS hε f hf).theorem_1_12_similarity i
+      ∃ lam t : ℝ, lam ≠ 0 ∧ |lam| < 1 ∧ ∀ x ∈ I, g (f i x).re = lam * g x + t :=
+  (toIFS hε f hf).theorem_1_12_similarity i
 
 /-- Theorem 1.12 (a). If the attractor of `Φ` is not a singleton, then `Φ` is conjugated to a
 self-similar IFS if and only if `H_i ≡ H_j` on `[0,1]` for all `i, j ∈ Σ`. -/
-theorem audit_conj_iff {ε : ℝ} (hε : 0 < ε) (f : Fin N → ℂ → ℂ) (hf : ∀ i, InClass ε (f i)) (hd : NonzeroDerivatives f)
+theorem audit_conj_iff
     (hnd : ¬ ∃ x, attractor f = {x}) :
     ConjSelfSimilar (fun i (x : ℝ) => (f i x).re) ↔
-      ∀ i j : ℕ → Fin N, ∀ x : I, dualProjInf f hd i x = dualProjInf f hd j x := by
-  constructor
-  · intro h i j x
-    exact (((toIFS hε f hf).theorem_1_12 hnd).1.mp h) i j x x.2
-  · intro h
-    apply ((toIFS hε f hf).theorem_1_12 hnd).1.mpr
-    intro i j x hx
-    exact h i j ⟨x, hx⟩
+      ∀ i j : ℕ → Fin N, ∀ x : I, dualProjInf f hd i x = dualProjInf f hd j x :=
+  ((toIFS hε f hf).theorem_1_12 hnd).1.trans (by simp only [Subtype.forall]; rfl)
 
 /-- Theorem 1.12 (b). If the attractor of `Φ` is not a singleton, then `Φ` is sub-conjugated to a
 self-similar IFS, that is, `(f_i, f_j)` is conjugated to a self-similar IFS for some distinct
 `i, j ∈ Σ_*` of the same length, if and only if `H_{(i)^∞} ≡ H_{(j)^∞}` on `[0,1]` for some distinct
 `i, j ∈ Σ_*` of the same length. -/
-theorem audit_subconj_iff {ε : ℝ} (hε : 0 < ε) (f : Fin N → ℂ → ℂ) (hf : ∀ i, InClass ε (f i)) (hd : NonzeroDerivatives f)
+theorem audit_subconj_iff
     (hnd : ¬ ∃ x, attractor f = {x}) :
     (∃ (m : ℕ) (i j : Fin m → Fin N), i ≠ j ∧
       ConjSelfSimilar ![fun x : ℝ => (comp f (List.ofFn i) x).re,
         fun x : ℝ => (comp f (List.ofFn j) x).re]) ↔
       ∃ (m : ℕ) (hm : 0 < m) (i j : Fin m → Fin N), i ≠ j ∧
-        ∀ x : I, dualProjInf f hd (periodic hm i) x = dualProjInf f hd (periodic hm j) x := by
-  constructor
-  · intro h
-    obtain ⟨m, hm, i, j, hij, heq⟩ := ((toIFS hε f hf).theorem_1_12 hnd).2.mp h
-    exact ⟨m, hm, i, j, hij, fun x => heq x x.2⟩
-  · rintro ⟨m, hm, i, j, hij, heq⟩
-    apply ((toIFS hε f hf).theorem_1_12 hnd).2.mpr
-    exact ⟨m, hm, i, j, hij, fun x hx => heq ⟨x, hx⟩⟩
+        ∀ x : I, dualProjInf f hd (periodic hm i) x = dualProjInf f hd (periodic hm j) x :=
+  ((toIFS hε f hf).theorem_1_12 hnd).2.trans (by simp only [Subtype.forall]; rfl)
+
+end
 
 section DimensionProofs
 
 open MeasureTheory Filter Topology
 
-theorem pressureRatio_tendsto_iff (f : Fin N → ℂ → ℂ) (t : ℝ) :
-    Tendsto (pressureRatio f t) atTop (𝓝 0) ↔
-      Tendsto (fun n : ℕ => Real.log (pressureSum f t n) / n) atTop (𝓝 0) :=
-  AnalyticESC.positive_length_tendsto_iff (fun n => Real.log (pressureSum f t n))
+theorem pressure_lib
+    (hs : ∀ t, Tendsto (fun n => Real.log (pressureSum f t n) / n) atTop (𝓝 0) ↔ t = s) (t) :
+    Tendsto (pressureRatio f t) atTop (𝓝 0) ↔ t = s :=
+  (AnalyticESC.positive_length_tendsto_iff _).trans (hs t)
 
-theorem logRatio_tendsto_iff (mass : ℝ → ℝ) (s : ℝ) :
+theorem logRatio_tendsto_iff (mass : ℝ → ℝ) s :
     Tendsto (fun r : Scale => logRatio (mass r) r) scaleZero (𝓝 s) ↔
-      Tendsto (fun r : ℝ => Real.log (mass r) / Real.log r) (𝓝[>] 0) (𝓝 s) :=
+      Tendsto (fun r => Real.log (mass r) / Real.log r) (𝓝[>] 0) (𝓝 s) :=
   AnalyticESC.scale_tendsto_iff (fun r => Real.log (mass r) / Real.log r) (𝓝 s)
 
-theorem lqDim_eq_lib (μ : Measure ℝ) (q : ℝ) (hq : q - 1 ≠ 0) :
+theorem lqDim_eq_lib μ q (hq : q - 1 ≠ 0) :
     lqDim μ q hq = AnalyticESC.lqDim μ q :=
-  congrArg (fun t : ℝ => t / (q - 1))
+  congrArg (fun t => t / (q - 1))
     (AnalyticESC.scale_liminf (AnalyticESC.lqRatio μ q))
 
-theorem dimEquality_of_lib {ε : ℝ} (Φ : AnalyticESC.IFS N ε)
+theorem dimEquality_of_lib (Φ : AnalyticESC.IFS N ε)
     (h : Φ.DimEquality) : DimEquality Φ.f := by
   obtain ⟨⟨s, hs, hset⟩, hm⟩ := h
-  refine ⟨⟨s, fun t => (pressureRatio_tendsto_iff Φ.f t).trans (hs t), hset⟩, ?_⟩
-  intro p hp μ hμ hχ
-  filter_upwards [hm p hp μ hμ] with x hx
-  exact (logRatio_tendsto_iff _ _).mpr hx
-
-/-- `BowenGibbsStatement` in the form used by the library. -/
-theorem bowenGibbs_lib (hB : BowenGibbsStatement) : AnalyticESC.BowenGibbsStatement := by
-  intro N hN φ b α hb hα₀ hα₁ hφ
-  exact hB hN φ hb hα₀ hα₁ hφ
+  exact ⟨⟨s, pressure_lib hs, hset⟩, fun p hp μ hμ _ => (hm p hp μ hμ).mono fun _ => (logRatio_tendsto_iff _ _).2⟩
 
 /-- `RapaportMeasureStatement` in the form used by the library. -/
 theorem rapaportMeasure_lib (hM : RapaportMeasureStatement) :
-    AnalyticESC.RapaportMeasureStatement := by
-  intro N φ hφ p hp hp1 μ hμ hμI hμφ
-  exact hM φ ⟨hφ.1, hφ.2, hφ.3, hφ.4, hφ.5, hφ.6⟩ p hp hp1 μ hμ hμI hμφ
+    AnalyticESC.RapaportMeasureStatement := fun φ hφ => hM φ ⟨hφ.1, hφ.2, hφ.3, hφ.4, hφ.5, hφ.6⟩
 
 /-- `RapaportSetStatement` in the form used by the library. -/
-theorem rapaportSet_lib (hS : RapaportSetStatement) : AnalyticESC.RapaportSetStatement := by
-  intro N φ hφ K hK hKc hKI hKφ s hs
-  exact hS φ ⟨hφ.1, hφ.2, hφ.3, hφ.4, hφ.5, hφ.6⟩ K hK hKc hKI hKφ s hs
+theorem rapaportSet_lib (hS : RapaportSetStatement) : AnalyticESC.RapaportSetStatement :=
+  fun φ hφ => hS φ ⟨hφ.1, hφ.2, hφ.3, hφ.4, hφ.5, hφ.6⟩
 
 /-- Theorem 1.6 (Rapaport), from Rapaport's Theorem 1.2 and Corollary 1.3. Let
 `Φ = (f_i)_{i ∈ Fin N}`, `N ≥ 1`, be an analytic IFS in `𝔖_N` whose attractor is not a singleton.
 If `Φ` satisfies the ESC, then there is equality in (1.6). -/
 theorem audit_dim_of_esc (hM : RapaportMeasureStatement) (hS : RapaportSetStatement) {ε : ℝ}
     (hε : 0 < ε) (f : Fin N → ℂ → ℂ) (hf : ∀ i, InClass ε (f i))
-    (hN : 0 < N) (hnd : ¬ ∃ x, attractor f = {x}) (hesc : ESC f) : DimEquality f := by
-  exact dimEquality_of_lib (toIFS hε f hf)
-    ((toIFS hε f hf).theorem_1_6 (rapaportMeasure_lib hM) (rapaportSet_lib hS) hN hnd hesc)
+    (hN : 0 < N) (hnd : ¬ ∃ x, attractor f = {x}) (hesc : ESC f) : DimEquality f :=
+  dimEquality_of_lib (toIFS hε f hf)
+    ((toIFS hε f hf).theorem_1_6 hN (rapaportMeasure_lib hM) (rapaportSet_lib hS) hnd hesc)
 
 /-- Corollary 1.7, from Rapaport's Theorem 1.2 and Corollary 1.3. For `N ≥ 2`, the IFSs in `𝔖_N`
 with equality in (1.6) contain a subset `U` of `𝔖_N` that is open and dense in `𝔖_N` for the `𝒞²`
@@ -507,16 +450,14 @@ theorem audit_dim_open_dense (hM : RapaportMeasureStatement) (hS : RapaportSetSt
     ∃ U : Set (Fin N → ℂ → ℂ), (∀ f ∈ U, InUnionClass f ∧ DimEquality f) ∧
       (∀ f ∈ U, ∃ r > 0, ∀ g, InUnionClass g → d2 f g < r → g ∈ U) ∧
       (∀ f, InUnionClass f → ∀ r > 0, ∃ g ∈ U, d2 f g < r) := by
-  have hlib : ∀ f : Fin N → ℂ → ℂ, InUnionClass f → AnalyticESC.InUnionClass f :=
-    fun f ⟨ε, hε, hf⟩ => ⟨ε, hε, fun i => inClass_iff_lib.mp (hf i)⟩
   obtain ⟨U, hE, hO, hD⟩ :=
     AnalyticESC.corollary_1_7 (rapaportMeasure_lib hM) (rapaportSet_lib hS) hN
-  refine ⟨U, fun f hf => ?_, fun f hf => ?_, fun f hf r hr => hD f (hlib f hf) r hr⟩
+  refine ⟨U, fun f hf => ?_, fun f hf => ?_, fun f hf => hD f (hlib f hf)⟩
   · obtain ⟨ε, ⟨g, hε, hg⟩, rfl, hDE⟩ := hE f hf
     exact ⟨⟨ε, hε, fun i => inClass_iff_lib.mpr (hg i)⟩,
-      dimEquality_of_lib ⟨g, hε, hg⟩ hDE⟩
+      dimEquality_of_lib _ hDE⟩
   · obtain ⟨r, hr, h⟩ := hO f hf
-    exact ⟨r, hr, fun g hg hd => h g (hlib g hg) hd⟩
+    exact ⟨r, hr, fun g hg => h g (hlib g hg)⟩
 
 /-- The polynomial example of Section 1.2.2, from Rapaport's Theorem 1.2 and Corollary 1.3:
 `dim_H Λ = s(Φ) < 1`, where `s(Φ)` is the unique zero of the pressure, and `dim μ_p = H(p)/χ < 1` at
@@ -533,12 +474,8 @@ theorem audit_example_dim (hM : RapaportMeasureStatement) (hS : RapaportSetState
           (𝓝 (divide (entropy p) (lyapunov exampleMaps p μ) hχ)) := by
   obtain ⟨s, hs, hs1, hset, hm⟩ :=
     AnalyticESC.example_dim (rapaportMeasure_lib hM) (rapaportSet_lib hS)
-  refine ⟨s, fun t => (pressureRatio_tendsto_iff exampleMaps t).trans (hs t), hs1, hset, ?_⟩
-  intro p hp μ hμ hχ
-  obtain ⟨hent, hlocal⟩ := hm p hp μ hμ
-  refine ⟨hent, ?_⟩
-  filter_upwards [hlocal] with x hx
-  exact (logRatio_tendsto_iff _ _).mpr hx
+  exact ⟨s, pressure_lib hs, hs1, hset, fun p hp μ hμ _ => (hm p hp μ hμ).imp_right
+    fun h => h.mono fun _ => (logRatio_tendsto_iff _ _).2⟩
 
 /-- The natural measure of the polynomial example in Section 1.2.2, from Bowen's theorem:
 the pressure has a unique zero `s = s(Φ)`, the potential `s log|f'_{ω₀}(π(σω))|` has a Gibbs measure,
@@ -554,10 +491,8 @@ theorem audit_example_localDim (hB : BowenGibbsStatement) :
         IsGibbsMeasure (potential exampleMaps s) ν →
         Tendsto (fun r : Scale => logRatio ((ν.map (natProj exampleMaps)).real (closedBall 0 r)) r)
           scaleZero (𝓝 (s - 1 / 3)) := by
-  obtain ⟨s, hs, hG, hm⟩ := AnalyticESC.example_localDim_of_bowen (bowenGibbs_lib hB)
-  refine ⟨s, fun t => (pressureRatio_tendsto_iff exampleMaps t).trans (hs t), hG, ?_⟩
-  intro ν hν hGν
-  exact (logRatio_tendsto_iff _ _).mpr (hm ν hν hGν)
+  obtain ⟨s, hs, hG, hm⟩ := AnalyticESC.example_localDim_of_bowen hB
+  exact ⟨s, pressure_lib hs, hG, fun ν hν hGν => (logRatio_tendsto_iff _ _).2 (hm ν hν hGν)⟩
 
 /-- `L^q` dimensions of the polynomial example in Section 1.2.2, from Bowen's theorem:
 for every Gibbs measure `ν` of the potential `s(Φ) log|f'_{ω₀}(π(σω))|` and every `q > 1`,
@@ -570,11 +505,10 @@ theorem audit_example_lq (hB : BowenGibbsStatement) :
         IsGibbsMeasure (potential exampleMaps s) ν → ∀ q > 1, ∀ hq : q - 1 ≠ 0,
         lqDim (ν.map (natProj exampleMaps)) q hq ≤ divide q (q - 1) hq * (s - 1 / 3) ∧
         (3 * s < q → lqDim (ν.map (natProj exampleMaps)) q hq < s) := by
-  obtain ⟨s, hs, hq⟩ := AnalyticESC.example_lq_of_bowen (bowenGibbs_lib hB)
-  refine ⟨s, fun t => (pressureRatio_tendsto_iff exampleMaps t).trans (hs t), ?_⟩
-  intro ν hν hG q hq1 hq0
+  obtain ⟨s, hs, hq⟩ := AnalyticESC.example_lq_of_bowen hB
+  refine ⟨s, pressure_lib hs, fun ν hν hG q hq1 hq0 => ?_⟩
   simp only [lqDim_eq_lib, divide]
-  exact (hq ν hν hG q hq1).2.2.2
+  exact hq ν hν hG q hq1
 
 end DimensionProofs
 
