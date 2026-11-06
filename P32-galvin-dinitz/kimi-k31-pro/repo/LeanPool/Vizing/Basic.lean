@@ -64,71 +64,28 @@ def updFun (f : V → V → Option C) (x y : V) (o : Option C) : V → V → Opt
 @[simp] lemma updFun_left {f : V → V → Option C} {x y : V} (o : Option C) :
     updFun f x y o x y = o := ite_eq_left (Or.inl ⟨rfl, rfl⟩)
 
-@[simp] lemma updFun_right {f : V → V → Option C} {x y : V} (o : Option C) :
-    updFun f x y o y x = o := ite_eq_left (Or.inr ⟨rfl, rfl⟩)
-
 /-- Colour the (possibly already coloured) edge `x y` with a colour free at both endpoints. -/
 def setEdge (c : PEC G C) {x y : V} (γ : C) (hadj : G.Adj x y)
     (hx : c.IsFree x γ) (hy : c.IsFree y γ) : PEC G C where
   col := updFun c.col x y (some γ)
   col_symm := by
     intro u v
-    unfold updFun
-    by_cases h : (u = x ∧ v = y) ∨ (u = y ∧ v = x)
-    · rw [ite_eq_left h, ite_eq_left (by tauto)]
-    · rw [ite_eq_right h, ite_eq_right (by tauto)]
-      exact c.col_symm u v
+    simp only [updFun]
+    split_ifs <;> grind [c.col_symm]
   col_adj := by
     intro u v δ h
-    unfold updFun at h
-    by_cases hc : (u = x ∧ v = y) ∨ (u = y ∧ v = x)
-    · rcases hc with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
-      · exact hadj
-      · exact hadj.symm
-    · rw [ite_eq_right hc] at h
-      exact c.col_adj h
+    simp only [updFun] at h
+    split_ifs at h with hc <;> grind [hadj.symm, c.col_adj]
   col_proper := by
-    have key : ∀ u v δ, updFun c.col x y (some γ) u v = some δ →
-        ((u = x ∧ v = y) ∨ (u = y ∧ v = x)) ∨ c.col u v = some δ := by
-      intro u v δ h
-      unfold updFun at h
-      by_cases hc : (u = x ∧ v = y) ∨ (u = y ∧ v = x)
-      · exact Or.inl hc
-      · rw [ite_eq_right hc] at h
-        exact Or.inr h
-    have hcol : ∀ u v δ, updFun c.col x y (some γ) u v = some δ →
-        (((u = x ∧ v = y) ∨ (u = y ∧ v = x)) → δ = γ) := by
-      intro u v δ h hc
-      unfold updFun at h
-      rw [ite_eq_left hc] at h
-      exact (Option.some_injective _ h).symm
     intro u v w δ h1 h2
-    rcases key u v δ h1 with hc1 | hc1 <;> rcases key u w δ h2 with hc2 | hc2
-    · rcases hc1 with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ <;> rcases hc2 with ⟨h3, h4⟩ | ⟨h3, h4⟩ <;>
-        subst_vars <;> rfl
-    · have hd1 := hcol u v δ h1 hc1
-      subst hd1
-      rcases hc1 with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
-      · exact absurd hc2 (hx w)
-      · exact absurd hc2 (hy w)
-    · have hd2 := hcol u w δ h2 hc2
-      subst hd2
-      rcases hc2 with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
-      · exact absurd hc1 (hx v)
-      · exact absurd hc1 (hy v)
-    · exact c.col_proper hc1 hc2
-
-@[simp] lemma setEdge_col (c : PEC G C) {x y : V} (γ : C) (hadj : G.Adj x y)
-    (hx : c.IsFree x γ) (hy : c.IsFree y γ) :
-    (c.setEdge γ hadj hx hy).col = updFun c.col x y (some γ) := rfl
+    simp only [updFun] at h1 h2
+    split_ifs at h1 h2 <;> grind [c.col_proper, IsFree]
 
 lemma extends_setEdge (c : PEC G C) {x y : V} (γ : C) (hadj : G.Adj x y)
     (hx : c.IsFree x γ) (hy : c.IsFree y γ) : Extends c (c.setEdge γ hadj hx hy) := by
   intro u v h
-  simp only [setEdge_col, updFun]
-  split
-  · exact Option.some_ne_none _
-  · exact h
+  simp only [setEdge, updFun]
+  split <;> simp_all
 
 end PEC
 

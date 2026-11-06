@@ -1,0 +1,1071 @@
+diff --git a/GalvinLib/GaleShapley.lean b/GalvinLib/GaleShapley.lean
+index f5e3a0d6d..ff9c10ee7 100644
+--- a/GalvinLib/GaleShapley.lean
++++ b/GalvinLib/GaleShapley.lean
+@@ -33,42 +33,13 @@ def IsStable {M W : Type*} (E : M → W → Prop) (rm : M → W → ℕ) (rw : W
+       ∀ m w, E m w → ¬ μ m w →
+         (∃ w', μ m w' ∧ rm m w' < rm m w) ∨ (∃ m', μ m' w ∧ rw w m' < rw w m)
+ 
+-theorem exists_isTop {M W : Type*} (E : M → W → Prop) (rm : M → W → ℕ) (m : M) (w : W)
+-    (h : E m w) : ∃ w', IsTop E rm m w' := by
+-  classical
+-  have hex : ∃ k, ∃ w, E m w ∧ rm m w = k := ⟨_, w, h, rfl⟩
+-  obtain ⟨w', hw', hk⟩ := Nat.find_spec hex
+-  refine ⟨w', hw', fun v hv => ?_⟩
+-  rw [hk]
+-  exact Nat.find_min' hex ⟨v, hv, rfl⟩
+-
+-theorem isStable_of_removal {M W : Type*} (E : M → W → Prop)
+-    (rm : M → W → ℕ) (rw : W → M → ℕ)
+-    {m₁ m₂ : M} {w : W} (h₁ : IsTop E rm m₁ w) (hlt : rw w m₁ < rw w m₂)
+-    (μ : M → W → Prop)
+-    (hμ : IsStable (fun m v => E m v ∧ ¬ (m = m₂ ∧ v = w)) rm rw μ) (hne : m₁ ≠ m₂) :
+-    IsStable E rm rw μ := by
+-  obtain ⟨hsub, hm, hw, hst⟩ := hμ
+-  refine ⟨fun m v h => (hsub m v h).1, hm, hw, fun m v hE hnot => ?_⟩
+-  by_cases hrem : m = m₂ ∧ v = w
+-  · obtain ⟨rfl, rfl⟩ := hrem
+-    right
+-    by_cases hμ₁ : μ m₁ v
+-    · exact ⟨m₁, hμ₁, hlt⟩
+-    · rcases hst m₁ v ⟨h₁.1, fun h => hne h.1⟩ hμ₁ with ⟨w', hw', hr⟩ | ⟨m', hm', hr⟩
+-      · exact absurd (h₁.2 w' (hsub _ _ hw').1) (not_le.mpr hr)
+-      · exact ⟨m', hm', hr.trans hlt⟩
+-  · exact hst m v ⟨hE, hrem⟩ hnot
+-
+-theorem exists_isStable {M W : Type*} [Finite M] [Finite W]
++theorem exists_isStable {M W : Type*} [Finite M] [Finite W] (E : M → W → Prop)
+     (rm : M → W → ℕ) (rw : W → M → ℕ) (hrm : ∀ m, Function.Injective (rm m))
+-    (hrw : ∀ w, Function.Injective (rw w)) :
+-    ∀ (n : ℕ) (E : M → W → Prop), {p : M × W | E p.1 p.2}.ncard = n →
+-      ∃ μ, IsStable E rm rw μ := by
+-  intro n
+-  induction n using Nat.strong_induction_on with
++    (hrw : ∀ w, Function.Injective (rw w)) : ∃ μ, IsStable E rm rw μ := by
++  classical
++  generalize hn : {p : M × W | E p.1 p.2}.ncard = n
++  induction n using Nat.strong_induction_on generalizing E with
+   | _ n ih =>
+-  intro E hn
+   by_cases hsh : ∃ m₁ m₂ w, m₁ ≠ m₂ ∧ IsTop E rm m₁ w ∧ IsTop E rm m₂ w
+   · obtain ⟨m₁, m₂, w, hne, h₁, h₂⟩ := hsh
+     have key : ∀ a b : M, a ≠ b → IsTop E rm a w → IsTop E rm b w → rw w a < rw w b →
+@@ -80,22 +51,24 @@ theorem exists_isStable {M W : Type*} [Finite M] [Finite W]
+         apply Set.ncard_lt_ncard _ (Set.toFinite _)
+         refine ⟨fun p hp => hp.1, fun h => ?_⟩
+         have := h (show (b, w) ∈ {p : M × W | E p.1 p.2} from hb.1)
+-        exact this.2 ⟨rfl, rfl⟩
++        grind
+       obtain ⟨μ, hμ⟩ := ih _ hlt' E' rfl
+-      exact ⟨μ, isStable_of_removal E rm rw ha hlt μ hμ hab⟩
++      refine ⟨μ, ?_⟩
++      unfold IsStable at hμ ⊢
++      grind [IsTop]
+     rcases lt_or_gt_of_ne (fun h => hne (hrw w h)) with h | h
+     · exact key m₁ m₂ hne h₁ h₂ h
+     · exact key m₂ m₁ (Ne.symm hne) h₂ h₁ h
+   · push Not at hsh
+-    refine ⟨IsTop E rm, fun m w h => h.1, fun m w w' h h' => ?_, fun m m' w h h' => ?_,
+-      fun m w hE hnot => ?_⟩
+-    · exact hrm m (le_antisymm (h.2 _ h'.1) (h'.2 _ h.1))
+-    · by_contra hc
+-      exact hsh m m' w hc h h'
+-    · obtain ⟨w', hw'⟩ := exists_isTop E rm m w hE
+-      left
+-      refine ⟨w', hw', lt_of_le_of_ne (hw'.2 w hE) fun heq => ?_⟩
+-      rw [hrm m heq] at hw'
+-      exact hnot hw'
++    have ht : ∀ m w, E m w → ∃ w', IsTop E rm m w' := by
++      intro m w h
++      have hex : ∃ k, ∃ w, E m w ∧ rm m w = k := ⟨_, w, h, rfl⟩
++      obtain ⟨w', hw', hk⟩ := Nat.find_spec hex
++      refine ⟨w', hw', fun v hv => ?_⟩
++      rw [hk]
++      exact Nat.find_min' hex ⟨v, hv, rfl⟩
++    refine ⟨IsTop E rm, ?_⟩
++    unfold IsStable
++    grind [IsTop]
+ 
+ end Galvin
+diff --git a/GalvinLib/Galvin.lean b/GalvinLib/Galvin.lean
+index e035e9d4a..166721698 100644
+--- a/GalvinLib/Galvin.lean
++++ b/GalvinLib/Galvin.lean
+@@ -39,8 +39,8 @@ theorem gale_shapley {M W : Type*} [Finite M] [Finite W] (E : M → W → Prop)
+     ∃ μ : M → W → Prop, (∀ m w, μ m w → E m w) ∧
+       (∀ m w w', μ m w → μ m w' → w = w') ∧ (∀ m m' w, μ m w → μ m' w → m = m') ∧
+       ∀ m w, E m w → ¬ μ m w →
+-        (∃ w', μ m w' ∧ rm m w' < rm m w) ∨ (∃ m', μ m' w ∧ rw w m' < rw w m) := by
+-  exact exists_isStable rm rw hrm hrw _ E rfl
++        (∃ w', μ m w' ∧ rm m w' < rm m w) ∨ (∃ m', μ m' w ∧ rw w m' < rw w m) :=
++  exists_isStable E rm rw hrm hrw
+ 
+ /-- **Galvin's theorem (1995).** If every edge of a finite bipartite graph `G` has a list of at
+ least `Δ(G)` colours, then `G` has a proper edge colouring choosing every colour from the list of
+@@ -64,23 +64,18 @@ theorem dinitz {Symbol : Type*} (n : ℕ) (lists : Fin n → Fin n → Finset Sy
+       (∀ i j j', j ≠ j' → f i j ≠ f i j') ∧ (∀ i i' j, i ≠ i' → f i j ≠ f i' j) := by
+   classical
+   let G := completeBipartiteGraph (Fin n) (Fin n)
+-  have hG : G.Colorable 2 :=
+-    ⟨SimpleGraph.Coloring.mk (fun v => Sum.elim (fun _ => 0) (fun _ => 1) v) (by
+-      rintro (i | i) (j | j) h <;> simp [G] at h ⊢)⟩
++  have hG : G.Colorable 2 := SimpleGraph.IsBipartite.completeBipartiteGraph _ _
+   have hdeg : G.maxDegree ≤ n := by
+-    refine G.maxDegree_le_of_forall_degree_le n fun v => ?_
+-    rw [← SimpleGraph.card_neighborFinset_eq_degree]
+-    rcases v with i | i
+-    · calc (G.neighborFinset (Sum.inl i)).card
+-            ≤ (Finset.univ.image (Sum.inr : Fin n → _)).card :=
+-            Finset.card_le_card fun w hw => by
+-              rcases w with j | j <;> simp [G] at hw ⊢
+-        _ ≤ n := Finset.card_image_le.trans (by simp)
+-    · calc (G.neighborFinset (Sum.inr i)).card
+-            ≤ (Finset.univ.image (Sum.inl : Fin n → _)).card :=
+-            Finset.card_le_card fun w hw => by
+-              rcases w with j | j <;> simp [G] at hw ⊢
+-        _ ≤ n := Finset.card_image_le.trans (by simp)
++    let s : Finset (Fin n ⊕ Fin n) := Finset.univ.image Sum.inl
++    let t : Finset (Fin n ⊕ Fin n) := Finset.univ.image Sum.inr
++    have hb : G.IsBipartiteWith s t := by
++      simpa [G, s, t] using SimpleGraph.IsBipartiteWith.completeBipartiteGraph (Fin n) (Fin n)
++    apply G.maxDegree_le_of_forall_degree_le
++    rintro (i | i)
++    · refine (SimpleGraph.isBipartiteWith_degree_le (v := Sum.inl i) hb (by simp [s])).trans ?_
++      exact Finset.card_image_le.trans (by simp)
++    · refine (SimpleGraph.isBipartiteWith_degree_le' (w := Sum.inr i) hb (by simp [t])).trans ?_
++      exact Finset.card_image_le.trans (by simp)
+   let cell : Fin n ⊕ Fin n → Fin n ⊕ Fin n → Finset Symbol := fun a b =>
+     match a, b with
+     | Sum.inl i, Sum.inr j => lists i j
+@@ -97,17 +92,16 @@ theorem dinitz {Symbol : Type*} (n : ℕ) (lists : Fin n → Fin n → Finset Sy
+     rcases a with i | i <;> rcases b with j | j <;>
+       simp [G, L, cell, Sym2.lift_mk, hLists] at he ⊢
+   obtain ⟨col, hcol⟩ := galvin G hG L hL
+-  have hadj : ∀ i j, G.Adj (Sum.inl i) (Sum.inr j) := fun i j => by simp [G]
+-  let edge : Fin n → Fin n → G.edgeSet := fun i j => ⟨s(Sum.inl i, Sum.inr j), hadj i j⟩
++  let edge : Fin n → Fin n → G.edgeSet := fun i j => ⟨s(Sum.inl i, Sum.inr j), by simp [G]⟩
+   refine ⟨fun i j => col (edge i j), fun i j => ?_, fun i j j' hjj => ?_, fun i i' j hii => ?_⟩
+   · simpa [L, edge, cell, Sym2.lift_mk] using hcol (edge i j)
+   · refine col.valid ?_
+     rw [SimpleGraph.lineGraph_adj_iff_exists]
+-    refine ⟨fun h => hjj ?_, Sum.inl i, by simp [edge], by simp [edge]⟩
+-    simpa [edge] using congrArg Subtype.val h
++    refine ⟨?_, Sum.inl i, by simp [edge], by simp [edge]⟩
++    grind
+   · refine col.valid ?_
+     rw [SimpleGraph.lineGraph_adj_iff_exists]
+-    refine ⟨fun h => hii ?_, Sum.inr j, by simp [edge], by simp [edge]⟩
+-    simpa [edge] using congrArg Subtype.val h
++    refine ⟨?_, Sum.inr j, by simp [edge], by simp [edge]⟩
++    grind
+ 
+ end Galvin
+diff --git a/GalvinLib/Kernel.lean b/GalvinLib/Kernel.lean
+index 657ab0cf6..3b76d17d8 100644
+--- a/GalvinLib/Kernel.lean
++++ b/GalvinLib/Kernel.lean
+@@ -40,8 +40,7 @@ theorem exists_listColoring_on {α Color : Type*} [Nonempty Color]
+   intro U hn L hL
+   rcases U.eq_empty_or_nonempty with rfl | ⟨x₀, hx₀⟩
+   · exact ⟨fun _ => Classical.arbitrary _, by simp, by simp⟩
+-  obtain ⟨κ, hκ⟩ : (L x₀).Nonempty :=
+-    Finset.card_pos.mp (lt_of_le_of_lt (Nat.zero_le _) (hL x₀ hx₀))
++  obtain ⟨κ, hκ⟩ : (L x₀).Nonempty := Finset.card_pos.mp (Nat.zero_lt_of_lt (hL x₀ hx₀))
+   set S := U.filter (κ ∈ L ·) with hS
+   obtain ⟨K, hKS, hKind, hKabs⟩ := hK S
+   have hx₀S : x₀ ∈ S := by simp [hS, hx₀, hκ]
+@@ -49,10 +48,8 @@ theorem exists_listColoring_on {α Color : Type*} [Nonempty Color]
+   have hKne : K.Nonempty := by
+     by_contra h
+     rw [Finset.not_nonempty_iff_eq_empty] at h
+-    by_cases hx : x₀ ∈ K
+-    · simp [h] at hx
+-    · obtain ⟨y, hy, -⟩ := hKabs x₀ hx₀S hx
+-      simp [h] at hy
++    have ha := hKabs x₀ hx₀S (by simp [h])
++    simp [h] at ha
+   have hlt : (U \ K).card < n := by
+     rw [← hn]
+     exact Finset.card_lt_card (Finset.sdiff_ssubset hKU hKne)
+@@ -64,38 +61,24 @@ theorem exists_listColoring_on {α Color : Type*} [Nonempty Color]
+       obtain ⟨y, hy, hD⟩ := hKabs x (by simp [hS, hx.1, hκx]) hx.2
+       have hsub : insert y ((U \ K).filter (D x ·)) ⊆ U.filter (D x ·) := by
+         intro z hz
+-        rw [Finset.mem_insert] at hz
+-        rcases hz with rfl | hz
+-        · simp [hKU hy, hD]
+-        · simp only [Finset.mem_filter, Finset.mem_sdiff] at hz ⊢
+-          exact ⟨hz.1.1, hz.2⟩
+-      have hyn : y ∉ (U \ K).filter (D x ·) := by simp [hy]
+-      have := Finset.card_le_card hsub
+-      rw [Finset.card_insert_of_notMem hyn] at this
++        simp only [Finset.mem_insert, Finset.mem_filter, Finset.mem_sdiff] at hz ⊢
++        grind [hKU hy]
++      have hc := Finset.card_le_card hsub
++      rw [Finset.card_insert_of_notMem (by simp [hy])] at hc
+       have := hL x hx.1
+       omega
+     · rw [Finset.erase_eq_of_notMem hκx]
+-      refine lt_of_le_of_lt (Finset.card_le_card ?_) (hL x hx.1)
+-      exact Finset.filter_subset_filter _ Finset.sdiff_subset)
++      exact (Finset.card_le_card (Finset.filter_subset_filter _ Finset.sdiff_subset)).trans_lt
++        (hL x hx.1))
++  simp only [Finset.mem_erase] at hc'L
+   refine ⟨fun x => if x ∈ K then κ else c' x, fun x hx => ?_, fun x hx y hy hxy => ?_⟩
+   · by_cases hxK : x ∈ K
+     · simp only [hxK, ite_true]
+-      have := hKS hxK
+-      simp only [hS, Finset.mem_filter] at this
+-      exact this.2
++      exact (Finset.mem_filter.1 (hKS hxK)).2
+     · simp only [hxK, ite_false]
+-      exact Finset.mem_of_mem_erase (hc'L x (by simp [hx, hxK]))
+-  · by_cases hxK : x ∈ K <;> by_cases hyK : y ∈ K <;> simp only [hxK, hyK, ite_true, ite_false]
+-    · exact (hKind x hxK y hyK hxy).elim
+-    · intro h
+-      have := hc'L y (by simp [hy, hyK])
+-      rw [← h] at this
+-      simp at this
+-    · intro h
+-      have := hc'L x (by simp [hx, hxK])
+-      rw [h] at this
+-      simp at this
+-    · exact hc'p x (by simp [hx, hxK]) y (by simp [hy, hyK]) hxy
++      exact (hc'L x (by simp [hx, hxK])).2
++  · by_cases hxK : x ∈ K <;> by_cases hyK : y ∈ K <;> simp only [hxK, hyK, ite_true, ite_false] <;>
++      grind
+ 
+ /-- **Kernel lemma.** If every finite set of vertices has a kernel and every list is longer than
+ the out-degree of its vertex, there is a proper list colouring. -/
+@@ -106,12 +89,11 @@ theorem exists_listColoring {α Color : Type*} [Fintype α]
+     ∃ c : G.Coloring Color, ∀ x, c x ∈ L x := by
+   classical
+   cases isEmpty_or_nonempty α with
+-  | inl _ => exact ⟨SimpleGraph.Coloring.mk (fun x => isEmptyElim x) fun {x} => isEmptyElim x,
+-      fun x => isEmptyElim x⟩
++  | inl _ => exact ⟨.ofIsEmpty, isEmptyElim⟩
+   | inr hα => ?_
+   have : Nonempty Color := by
+     obtain ⟨x⟩ := hα
+-    obtain ⟨k, -⟩ := Finset.card_pos.mp (lt_of_le_of_lt (Nat.zero_le _) (hL x))
++    obtain ⟨k, -⟩ := Finset.card_pos.mp (Nat.zero_lt_of_lt (hL x))
+     exact ⟨k⟩
+   obtain ⟨c, hcL, hcp⟩ := exists_listColoring_on G D hK _ Finset.univ rfl L
+     (fun x _ => hL x)
+diff --git a/GalvinLib/Orientation.lean b/GalvinLib/Orientation.lean
+index b328c8d60..3dd1a4ee3 100644
+--- a/GalvinLib/Orientation.lean
++++ b/GalvinLib/Orientation.lean
+@@ -57,17 +57,11 @@ theorem colour_endA (c : G.Coloring (Fin 2)) (e : G.edgeSet) : c (endA c e) = 0
+   (exists_ends c e).choose_spec.choose_spec.2
+ 
+ theorem adj_ends (c : G.Coloring (Fin 2)) (e : G.edgeSet) : G.Adj (endA c e) (endB c e) := by
+-  have := e.2
+-  rw [edge_eq_ends c e] at this
+-  exact this
++  simpa only [edge_eq_ends c e, SimpleGraph.mem_edgeSet] using e.2
+ 
+ theorem colour_endB (c : G.Coloring (Fin 2)) (e : G.edgeSet) : c (endB c e) = 1 := by
+-  have h1 := c.valid (adj_ends c e)
+-  rw [colour_endA] at h1
+-  revert h1
+-  generalize c (endB c e) = i
+-  revert i
+-  decide
++  exact Fin.eq_one_of_ne_zero _ fun h =>
++    c.valid (adj_ends c e) ((colour_endA c e).trans h.symm)
+ 
+ theorem eq_of_ends (c : G.Coloring (Fin 2)) {e f : G.edgeSet} (hA : endA c e = endA c f)
+     (hB : endB c e = endB c f) : e = f := by
+@@ -84,15 +78,7 @@ theorem lineGraph_adj_iff_ends (c : G.Coloring (Fin 2)) {e f : G.edgeSet} :
+   refine and_congr_right fun _ => ⟨?_, ?_⟩
+   · rintro ⟨v, hve, hvf⟩
+     rw [mem_edge_iff c] at hve hvf
+-    have hA := colour_endA c e
+-    have hA' := colour_endA c f
+-    have hB := colour_endB c e
+-    have hB' := colour_endB c f
+-    rcases hve with rfl | rfl <;> rcases hvf with h | h
+-    · exact Or.inl h
+-    · rw [h, hB'] at hA; exact absurd hA (by decide)
+-    · rw [h, hA'] at hB; exact absurd hB (by decide)
+-    · exact Or.inr h
++    rcases hve with rfl | rfl <;> rcases hvf with h | h <;> grind [colour_endA, colour_endB]
+   · rintro (h | h)
+     · exact ⟨endA c e, (mem_edge_iff c e _).2 (Or.inl rfl), (mem_edge_iff c f _).2 (Or.inl h)⟩
+     · exact ⟨endB c e, (mem_edge_iff c e _).2 (Or.inr rfl), (mem_edge_iff c f _).2 (Or.inr h)⟩
+@@ -117,22 +103,17 @@ theorem card_arc_lt [Fintype G.edgeSet] (c : G.Coloring (Fin 2)) {Δ : ℕ}
+       univ.filter (fun f => endA c e = endA c f ∧ φ f < φ e) ∪
+         univ.filter (fun f => endB c e = endB c f ∧ φ e < φ f) := by
+     intro f hf
+-    simp only [arc, mem_filter, mem_univ, true_and, mem_union] at hf ⊢
+-    exact hf
++    simpa only [arc, mem_filter, mem_univ, true_and, mem_union] using hf
+   have h1 : (univ.filter (fun f => endA c e = endA c f ∧ φ f < φ e)).card ≤
+       (Iio (φ e)).card := by
+-    refine card_le_card_of_injOn (fun f => φ f) (fun f hf => ?_) (fun f hf f' hf' h => ?_)
+-    · simp only [coe_filter, mem_univ, true_and, Set.mem_ofPred_eq] at hf
+-      simpa using hf.2
+-    · simp only [coe_filter, mem_univ, true_and, Set.mem_ofPred_eq] at hf hf'
+-      exact eq_of_colour_eq c φ h (Or.inl (hf.1.symm.trans hf'.1))
++    refine card_le_card_of_injOn (fun f => φ f) (by simp [Set.MapsTo]) (fun f hf f' hf' h => ?_)
++    simp only [coe_filter, mem_univ, true_and, Set.mem_ofPred_eq] at hf hf'
++    exact eq_of_colour_eq c φ h (Or.inl (hf.1.symm.trans hf'.1))
+   have h2 : (univ.filter (fun f => endB c e = endB c f ∧ φ e < φ f)).card ≤
+       (Ioi (φ e)).card := by
+-    refine card_le_card_of_injOn (fun f => φ f) (fun f hf => ?_) (fun f hf f' hf' h => ?_)
+-    · simp only [coe_filter, mem_univ, true_and, Set.mem_ofPred_eq] at hf
+-      simpa using hf.2
+-    · simp only [coe_filter, mem_univ, true_and, Set.mem_ofPred_eq] at hf hf'
+-      exact eq_of_colour_eq c φ h (Or.inr (hf.1.symm.trans hf'.1))
++    refine card_le_card_of_injOn (fun f => φ f) (by simp [Set.MapsTo]) (fun f hf f' hf' h => ?_)
++    simp only [coe_filter, mem_univ, true_and, Set.mem_ofPred_eq] at hf hf'
++    exact eq_of_colour_eq c φ h (Or.inr (hf.1.symm.trans hf'.1))
+   rw [Fin.card_Iio] at h1
+   rw [Fin.card_Ioi] at h2
+   have h3 := (card_le_card hsub).trans (card_union_le _ _)
+@@ -153,52 +134,6 @@ noncomputable def rankB (c : G.Coloring (Fin 2)) {Δ : ℕ} (φ : G.lineGraph.Co
+   if h : ∃ e : G.edgeSet, endA c e = m ∧ endB c e = w then Δ - (φ h.choose : ℕ)
+   else Δ + 1 + idx m
+ 
+-theorem choose_ends_eq (c : G.Coloring (Fin 2)) (e : G.edgeSet)
+-    (h : ∃ f : G.edgeSet, endA c f = endA c e ∧ endB c f = endB c e) : h.choose = e :=
+-  eq_of_ends c h.choose_spec.1 h.choose_spec.2
+-
+-theorem rankA_ends (c : G.Coloring (Fin 2)) {Δ : ℕ} (φ : G.lineGraph.Coloring (Fin Δ))
+-    (idx : V → ℕ) (e : G.edgeSet) : rankA c φ idx (endA c e) (endB c e) = φ e := by
+-  have h : ∃ f : G.edgeSet, endA c f = endA c e ∧ endB c f = endB c e := ⟨e, rfl, rfl⟩
+-  rw [rankA]
+-  split_ifs
+-  rw [choose_ends_eq c e h]
+-
+-theorem rankB_ends (c : G.Coloring (Fin 2)) {Δ : ℕ} (φ : G.lineGraph.Coloring (Fin Δ))
+-    (idx : V → ℕ) (e : G.edgeSet) : rankB c φ idx (endB c e) (endA c e) = Δ - φ e := by
+-  have h : ∃ f : G.edgeSet, endA c f = endA c e ∧ endB c f = endB c e := ⟨e, rfl, rfl⟩
+-  rw [rankB]
+-  split_ifs
+-  rw [choose_ends_eq c e h]
+-
+-theorem rankA_injective (c : G.Coloring (Fin 2)) {Δ : ℕ} (φ : G.lineGraph.Coloring (Fin Δ))
+-    {idx : V → ℕ} (hidx : Function.Injective idx) (m : V) :
+-    Function.Injective (rankA c φ idx m) := by
+-  intro w w' hww
+-  unfold rankA at hww
+-  split_ifs at hww with h h'
+-  · have := eq_of_colour_eq c φ (Fin.ext hww)
+-      (Or.inl (h.choose_spec.1.trans h'.choose_spec.1.symm))
+-    rw [← h.choose_spec.2, ← h'.choose_spec.2, this]
+-  · have := (φ h.choose).isLt; omega
+-  · rename_i h₂; have := (φ h₂.choose).isLt; omega
+-  · exact hidx (by omega)
+-
+-theorem rankB_injective (c : G.Coloring (Fin 2)) {Δ : ℕ} (φ : G.lineGraph.Coloring (Fin Δ))
+-    {idx : V → ℕ} (hidx : Function.Injective idx) (w : V) :
+-    Function.Injective (rankB c φ idx w) := by
+-  intro m m' hmm
+-  unfold rankB at hmm
+-  split_ifs at hmm with h h'
+-  · have h1 := (φ h.choose).isLt
+-    have h2 := (φ h'.choose).isLt
+-    have := eq_of_colour_eq c φ (Fin.ext (by omega))
+-      (Or.inr (h.choose_spec.2.trans h'.choose_spec.2.symm))
+-    rw [← h.choose_spec.1, ← h'.choose_spec.1, this]
+-  · omega
+-  · omega
+-  · exact hidx (by omega)
+-
+ /-- Every set of edges has a kernel for Galvin's orientation: a stable matching. -/
+ theorem hasKernels_arc [Finite V] (c : G.Coloring (Fin 2)) {Δ : ℕ}
+     (φ : G.lineGraph.Coloring (Fin Δ)) : HasKernels G.lineGraph (arc c φ) := by
+@@ -207,34 +142,34 @@ theorem hasKernels_arc [Finite V] (c : G.Coloring (Fin 2)) {Δ : ℕ}
+   obtain ⟨N, ⟨eqv⟩⟩ := Finite.exists_equiv_fin V
+   let idx : V → ℕ := fun v => (eqv v : ℕ)
+   have hidx : Function.Injective idx := fun a b h => eqv.injective (Fin.ext h)
++  unfold Function.Injective at hidx
+   let E : V → V → Prop := fun m w => ∃ e ∈ S, endA c e = m ∧ endB c e = w
+-  obtain ⟨μ, hsub, hm, hw, hst⟩ := exists_isStable (rankA c φ idx) (rankB c φ idx)
+-    (rankA_injective c φ hidx) (rankB_injective c φ hidx) _ E rfl
++  have rAe (e : G.edgeSet) : rankA c φ idx (endA c e) (endB c e) = φ e := by
++    unfold rankA
++    split_ifs with h <;> grind [eq_of_ends]
++  have rBe (e : G.edgeSet) : rankB c φ idx (endB c e) (endA c e) = Δ - φ e := by
++    unfold rankB
++    split_ifs with h <;> grind [eq_of_ends]
++  have rAi (m : V) : Function.Injective (rankA c φ idx m) := by
++    intro w w' hww
++    unfold rankA at hww
++    split_ifs at hww with h h' <;> grind [eq_of_colour_eq]
++  have rBi (w : V) : Function.Injective (rankB c φ idx w) := by
++    intro m m' hmm
++    unfold rankB at hmm
++    split_ifs at hmm with h h' <;> grind [eq_of_colour_eq]
++  obtain ⟨μ, hsub, hm, hw, hst⟩ := exists_isStable E (rankA c φ idx) (rankB c φ idx) rAi rBi
+   refine ⟨S.filter (fun e => μ (endA c e) (endB c e)), filter_subset _ _, ?_, ?_⟩
+   · intro x hx y hy hxy
+     simp only [mem_filter] at hx hy
+-    obtain ⟨hne, h | h⟩ := (lineGraph_adj_iff_ends c).1 hxy
+-    · rw [h] at hx
+-      exact hne (eq_of_ends c h (hm _ _ _ hx.2 hy.2))
+-    · rw [h] at hx
+-      exact hne (eq_of_ends c (hw _ _ _ hx.2 hy.2) h)
++    rw [lineGraph_adj_iff_ends c] at hxy
++    grind [eq_of_ends]
+   · intro x hxS hxK
+     simp only [mem_filter, hxS, true_and] at hxK
+     rcases hst _ _ ⟨x, hxS, rfl, rfl⟩ hxK with ⟨w', hμ, hlt⟩ | ⟨m', hμ, hlt⟩
+     · obtain ⟨f, hfS, hfA, hfB⟩ := hsub _ _ hμ
+-      subst hfB
+-      rw [← hfA] at hμ hlt
+-      refine ⟨f, mem_filter.2 ⟨hfS, hμ⟩, Or.inl ⟨hfA.symm, ?_⟩⟩
+-      rw [rankA_ends, hfA, rankA_ends] at hlt
+-      exact hlt
++      refine ⟨f, mem_filter.2 ⟨hfS, ?_⟩, Or.inl ⟨hfA.symm, ?_⟩⟩ <;> grind
+     · obtain ⟨f, hfS, hfA, hfB⟩ := hsub _ _ hμ
+-      subst hfA
+-      rw [← hfB] at hμ hlt
+-      refine ⟨f, mem_filter.2 ⟨hfS, hμ⟩, Or.inr ⟨hfB.symm, ?_⟩⟩
+-      rw [rankB_ends, hfB, rankB_ends] at hlt
+-      have := (φ f).isLt
+-      have := (φ x).isLt
+-      change (φ x : ℕ) < φ f
+-      omega
++      refine ⟨f, mem_filter.2 ⟨hfS, ?_⟩, Or.inr ⟨hfB.symm, ?_⟩⟩ <;> grind
+ 
+ end Galvin
+diff --git a/Konig/Basic.lean b/Konig/Basic.lean
+index 9f3326925..16387f461 100644
+--- a/Konig/Basic.lean
++++ b/Konig/Basic.lean
+@@ -6,6 +6,7 @@ Authors: Juan Pablo Traverso Gianini
+ module
+ 
+ public import LeanPool.Vizing.Main
++public import Mathlib.Combinatorics.SimpleGraph.Coloring.Constructions
+ 
+ /-!
+ # Kőnig's edge-colouring theorem
+@@ -43,14 +44,10 @@ theorem exists_free_of_none [Fintype V] [Fintype C] [DecidableRel G.Adj] (c : PE
+   choose g hg using hcon
+   have hginj : Set.InjOn g (univ : Finset C) := by
+     intro γ₁ _ γ₂ _ h
+-    have : (some γ₁ : Option C) = some γ₂ := by rw [← hg γ₁, ← hg γ₂, h]
+-    exact Option.some_injective _ this
++    grind
+   have hmem : ∀ γ ∈ (univ : Finset C), g γ ∈ (G.neighborFinset x).erase y := by
+-    intro γ _
+-    refine Finset.mem_erase.2 ⟨fun h => ?_, (mem_neighborFinset _ _ _).2 (c.col_adj (hg γ))⟩
+-    have := hg γ
+-    rw [h, hnone] at this
+-    simp at this
++    simp only [mem_erase, mem_neighborFinset]
++    grind [c.col_adj]
+   have hcards := Finset.card_le_card_of_injOn g hmem hginj
+   rw [card_univ, Finset.card_erase_of_mem ((mem_neighborFinset _ _ _).2 hadj),
+     card_neighborFinset_eq_degree] at hcards
+@@ -58,18 +55,6 @@ theorem exists_free_of_none [Fintype V] [Fintype C] [DecidableRel G.Adj] (c : PE
+   have hpos : 0 < G.degree x := G.degree_pos_iff_exists_adj x |>.2 ⟨y, hadj⟩
+   omega
+ 
+-/-- Along a walk of a graph contained in `G`, a proper 2-colouring of `G` changes at every step. -/
+-theorem colour_walk {H : SimpleGraph V} (hHG : H ≤ G) (s : G.Coloring (Fin 2)) {u v : V}
+-    (p : H.Walk u v) : (s v : ℕ) % 2 = ((s u : ℕ) + p.length) % 2 := by
+-  induction p with
+-  | nil => simp
+-  | @cons u w v h p ih =>
+-    rw [Walk.length_cons, ih]
+-    have hne : (s u : ℕ) ≠ (s w : ℕ) := fun he => s.valid (hHG h) (Fin.ext he)
+-    have hu := (s u).isLt
+-    have hw := (s w).isLt
+-    omega
+-
+ /-- **Alternation along a Kempe path.** If `b` is free at `y`, then on every path of the `a/b`
+ Kempe graph ending at `y`, the first edge has colour `a` if the length is odd and `b` if it is
+ even (and positive). -/
+@@ -88,129 +73,81 @@ theorem col_snd_of_kempe_path (c : PEC G C) {a b : C} {y : V}
+       have hwy : w = y := Walk.eq_of_length_eq_zero h0
+       subst hwy
+       rw [Walk.length_cons, h0, zero_add]
+-      rcases hcol with hcol | hcol
+-      · simpa using hcol
+-      · exact absurd ((c.col_symm w u).trans hcol) (hy u)
++      rcases hcol with hcol | hcol <;> grind [c.col_symm, IsFree]
+     · have hih := ih hy hp.1 hpos
+       have hne : u ≠ r.snd := by
+         intro he
+         exact hp.2 (by rw [he]; exact r.getVert_mem_support 1)
+       rw [Walk.length_cons]
+       -- the colours of `w u` and `w r.snd` differ
+-      have hdiff : c.col w u ≠ c.col w r.snd := by
+-        intro he
+-        rw [hih] at he
+-        exact hne (c.col_proper he hih)
++      have hdiff : c.col w u ≠ c.col w r.snd := by grind [c.col_proper]
+       rw [c.col_symm w u] at hdiff
+-      rcases Nat.mod_two_eq_zero_or_one r.length with hr | hr
+-      · have h1 : (r.length + 1) % 2 = 1 := by omega
+-        rw [hr] at hih
+-        simp only [zero_ne_one, ite_false] at hih
+-        rw [hih] at hdiff
+-        simp only [h1, ite_true]
+-        rcases hcol with hcol | hcol
+-        · exact hcol
+-        · exact absurd hcol hdiff
+-      · have h1 : (r.length + 1) % 2 = 0 := by omega
+-        rw [hr] at hih
+-        simp only [ite_true] at hih
+-        rw [hih] at hdiff
+-        simp only [h1, zero_ne_one, ite_false]
+-        rcases hcol with hcol | hcol
+-        · exact absurd hcol hdiff
+-        · exact hcol
+-
+-/-- The Kempe graph is a subgraph of `G`. -/
+-theorem kempeGraph_le (c : PEC G C) (a b : C) : c.kempeGraph a b ≤ G := by
+-  intro u v h
+-  rcases h.2 with h | h <;> exact c.col_adj h
+-
+-/-- **Kőnig's extension step.** In a bipartite graph with at least `Δ(G)` colours, any uncoloured
+-edge can be coloured after recolouring. -/
+-theorem konig_step [Fintype V] [Fintype C] [DecidableRel G.Adj]
+-    (s : G.Coloring (Fin 2)) (c : PEC G C)
+-    (hcard : G.maxDegree ≤ Fintype.card C) {x y : V} (hadj : G.Adj x y)
+-    (hnone : c.col x y = none) :
+-    ∃ c' : PEC G C, Extends c c' ∧ c'.col x y ≠ none := by
+-  classical
+-  obtain ⟨a, ha⟩ := exists_free_of_none c hcard hadj hnone
+-  obtain ⟨b, hb⟩ := exists_free_of_none c hcard hadj.symm (by rw [c.col_symm]; exact hnone)
+-  by_cases hay : c.IsFree y a
+-  · exact ⟨c.setEdge a hadj ha hay, extends_setEdge c a hadj ha hay, by
+-      simp [setEdge]⟩
+-  have hab : a ≠ b := fun h => hay (h ▸ hb)
+-  -- `x` is not in the `a/b` Kempe component of `y`
+-  have hxy : ¬ (c.kempeGraph a b).Reachable y x := by
+-    rintro ⟨q⟩
+-    set p := q.toPath.1.reverse with hpdef
+-    have hp : p.IsPath := q.toPath.2.reverse
+-    have hpar := colour_walk (kempeGraph_le c a b) s p
+-    have hsx : s x ≠ s y := s.valid hadj
+-    have hodd : p.length % 2 = 1 := by
+-      have hx := (s x).isLt
+-      have hy' := (s y).isLt
+-      have : (s x : ℕ) ≠ (s y : ℕ) := fun h => hsx (Fin.ext h)
+-      omega
+-    have hlen : 0 < p.length := by omega
+-    have := col_snd_of_kempe_path c hb p hp hlen
+-    simp only [hodd, ↓reduceIte] at this
+-    exact ha _ this
+-  set c1 := c.kempeSwap a b y
+-  have ha1 : c1.IsFree x a := (isFree_kempeSwap_of_not_reachable c a b hxy a).2 ha
+-  have hay1 : c1.IsFree y a := by
+-    rw [isFree_kempeSwap_of_reachable c a b (Reachable.refl y) a, Equiv.swap_apply_left]
+-    exact hb
+-  refine ⟨c1.setEdge a hadj ha1 hay1, (extends_kempeSwap c a b y).trans
+-    (extends_setEdge c1 a hadj ha1 hay1), by simp [setEdge]⟩
++      rcases Nat.mod_two_eq_zero_or_one r.length with hr | hr <;>
++        simp [Nat.add_mod, hr] at hih ⊢
++      all_goals rw [hih] at hdiff
++      all_goals rcases hcol with hcol | hcol <;> simp_all
+ 
+-/-- **Kőnig's theorem.** A finite bipartite graph has a total proper partial edge colouring with
+-any colour type of size at least `Δ(G)`. -/
+-theorem exists_total_of_bipartite [Fintype V] [Fintype C] [DecidableRel G.Adj]
+-    (s : G.Coloring (Fin 2))
+-    (hcard : G.maxDegree ≤ Fintype.card C) :
+-    ∃ c : PEC G C, ∀ u v, G.Adj u v → c.col u v ≠ none := by
++/-- **Kőnig's edge-colouring theorem.** The line graph of a finite bipartite graph is
++`Δ(G)`-colourable. -/
++theorem lineGraph_colorable_of_colorable_two [Fintype V] (G : SimpleGraph V) [DecidableRel G.Adj]
++    (h : G.Colorable 2) : G.lineGraph.Colorable G.maxDegree := by
+   classical
+-  suffices H : ∀ (k : ℕ) (c : PEC G C), c.uncoloured.card ≤ k →
+-      ∃ c' : PEC G C, ∀ u v, G.Adj u v → c'.col u v ≠ none by
+-    exact H (empty G C).uncoloured.card (empty G C) le_rfl
+-  intro k
+-  induction k with
+-  | zero =>
+-    intro c hk
+-    refine ⟨c, fun u v huv hcol => ?_⟩
+-    have hmem : (u, v) ∈ c.uncoloured := (c.mem_uncoloured (u, v)).2 ⟨huv, hcol⟩
+-    have := Finset.card_pos.2 ⟨_, hmem⟩
+-    omega
+-  | succ k ih =>
+-    intro c hk
+-    by_cases hall : ∀ u v, G.Adj u v → c.col u v ≠ none
+-    · exact ⟨c, hall⟩
+-    · push Not at hall
++  obtain ⟨s⟩ := h
++  obtain ⟨c, hc⟩ : ∃ c : PEC G (Fin G.maxDegree), ∀ u v, G.Adj u v → c.col u v ≠ none := by
++    suffices H : ∀ (k : ℕ) (c : PEC G (Fin G.maxDegree)), c.uncoloured.card = k →
++        ∃ c' : PEC G (Fin G.maxDegree), ∀ u v, G.Adj u v → c'.col u v ≠ none by
++      exact H _ (empty G _) rfl
++    intro k
++    induction k using Nat.strong_induction_on with
++    | _ k ih =>
++      intro c hk
++      by_cases hall : ∀ u v, G.Adj u v → c.col u v ≠ none
++      · exact ⟨c, hall⟩
++      push Not at hall
+       obtain ⟨x, y, hadj, hnone⟩ := hall
+-      obtain ⟨c1, hext, hc1⟩ := konig_step s c hcard hadj hnone
+-      refine ih c1 ?_
++      obtain ⟨c1, hext, hc1⟩ : ∃ c' : PEC G (Fin G.maxDegree),
++          Extends c c' ∧ c'.col x y ≠ none := by
++        have hcard : G.maxDegree ≤ Fintype.card (Fin G.maxDegree) := by simp
++        obtain ⟨a, ha⟩ := exists_free_of_none c hcard hadj hnone
++        obtain ⟨b, hb⟩ := exists_free_of_none c hcard hadj.symm (by rw [c.col_symm]; exact hnone)
++        by_cases hay : c.IsFree y a
++        · exact ⟨c.setEdge a hadj ha hay, extends_setEdge c a hadj ha hay, by simp [setEdge]⟩
++        have hxy : ¬ (c.kempeGraph a b).Reachable y x := by
++          rintro ⟨q⟩
++          set p := q.toPath.1.reverse
++          have hp : p.IsPath := q.toPath.2.reverse
++          have hsx : s x ≠ s y := s.valid hadj
++          have hodd : p.length % 2 = 1 := by
++            let sB : G.Coloring Bool := G.recolorOfEquiv finTwoEquiv s
++            have hsB : sB x ≠ sB y := fun h => hsx (finTwoEquiv.injective h)
++            have hb : (¬ sB x ↔ sB y) := by
++              cases hx : sB x <;> cases hy : sB y <;> simp_all
++            have ho := sB.odd_length_iff_not_congr (p.mapLe (by
++              rintro _ _ ⟨_, h | h⟩ <;> exact c.col_adj h))
++            rw [Walk.length_mapLe] at ho
++            exact Nat.odd_iff.mp (ho.mpr hb)
++          have hlen : 0 < p.length := by omega
++          have := col_snd_of_kempe_path c hb p hp hlen
++          simp only [hodd, ↓reduceIte] at this
++          exact ha _ this
++        set c1 := c.kempeSwap a b y
++        have ha1 : c1.IsFree x a := (isFree_kempeSwap_of_not_reachable c a b hxy a).2 ha
++        have hay1 : c1.IsFree y a := by
++          rw [isFree_kempeSwap_of_reachable c a b (Reachable.refl y) a, Equiv.swap_apply_left]
++          exact hb
++        refine ⟨c1.setEdge a hadj ha1 hay1, (extends_kempeSwap c a b y).trans
++          (extends_setEdge c1 a hadj ha1 hay1), by simp [setEdge]⟩
+       have hsub : c1.uncoloured ⊆ c.uncoloured := by
+         intro p hp
+         rw [mem_uncoloured] at hp ⊢
+-        refine ⟨hp.1, ?_⟩
+-        by_contra hcon
+-        exact (hext p.1 p.2 hcon) hp.2
++        exact ⟨hp.1, by grind [hext p.1 p.2]⟩
+       have hxy : (x, y) ∈ c.uncoloured := (c.mem_uncoloured (x, y)).2 ⟨hadj, hnone⟩
+       have hxy' : (x, y) ∉ c1.uncoloured := by
+         rw [mem_uncoloured]
+-        rintro ⟨-, h⟩
+-        exact hc1 h
++        grind
+       have hlt : c1.uncoloured.card < c.uncoloured.card :=
+-        Finset.card_lt_card ⟨hsub, fun hcon => hxy' (hcon hxy)⟩
+-      omega
+-
+-/-- **Kőnig's edge-colouring theorem.** The line graph of a finite bipartite graph is
+-`Δ(G)`-colourable. -/
+-theorem lineGraph_colorable_of_colorable_two [Fintype V] (G : SimpleGraph V) [DecidableRel G.Adj]
+-    (h : G.Colorable 2) : G.lineGraph.Colorable G.maxDegree := by
+-  classical
+-  obtain ⟨s⟩ := h
+-  obtain ⟨c, hc⟩ := exists_total_of_bipartite (C := Fin G.maxDegree) s (by simp)
++        Finset.card_lt_card ⟨hsub, fun h => hxy' (h hxy)⟩
++      exact ih _ (by omega) c1 rfl
+   exact ⟨c.lineGraphColoring hc⟩
+ 
+ end Konig
+diff --git a/LeanPool/Vizing/Basic.lean b/LeanPool/Vizing/Basic.lean
+index b84286d7e..9ea8867c9 100644
+--- a/LeanPool/Vizing/Basic.lean
++++ b/LeanPool/Vizing/Basic.lean
+@@ -64,71 +64,28 @@ def updFun (f : V → V → Option C) (x y : V) (o : Option C) : V → V → Opt
+ @[simp] lemma updFun_left {f : V → V → Option C} {x y : V} (o : Option C) :
+     updFun f x y o x y = o := ite_eq_left (Or.inl ⟨rfl, rfl⟩)
+ 
+-@[simp] lemma updFun_right {f : V → V → Option C} {x y : V} (o : Option C) :
+-    updFun f x y o y x = o := ite_eq_left (Or.inr ⟨rfl, rfl⟩)
+-
+ /-- Colour the (possibly already coloured) edge `x y` with a colour free at both endpoints. -/
+ def setEdge (c : PEC G C) {x y : V} (γ : C) (hadj : G.Adj x y)
+     (hx : c.IsFree x γ) (hy : c.IsFree y γ) : PEC G C where
+   col := updFun c.col x y (some γ)
+   col_symm := by
+     intro u v
+-    unfold updFun
+-    by_cases h : (u = x ∧ v = y) ∨ (u = y ∧ v = x)
+-    · rw [ite_eq_left h, ite_eq_left (by tauto)]
+-    · rw [ite_eq_right h, ite_eq_right (by tauto)]
+-      exact c.col_symm u v
++    simp only [updFun]
++    split_ifs <;> grind [c.col_symm]
+   col_adj := by
+     intro u v δ h
+-    unfold updFun at h
+-    by_cases hc : (u = x ∧ v = y) ∨ (u = y ∧ v = x)
+-    · rcases hc with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
+-      · exact hadj
+-      · exact hadj.symm
+-    · rw [ite_eq_right hc] at h
+-      exact c.col_adj h
++    simp only [updFun] at h
++    split_ifs at h with hc <;> grind [hadj.symm, c.col_adj]
+   col_proper := by
+-    have key : ∀ u v δ, updFun c.col x y (some γ) u v = some δ →
+-        ((u = x ∧ v = y) ∨ (u = y ∧ v = x)) ∨ c.col u v = some δ := by
+-      intro u v δ h
+-      unfold updFun at h
+-      by_cases hc : (u = x ∧ v = y) ∨ (u = y ∧ v = x)
+-      · exact Or.inl hc
+-      · rw [ite_eq_right hc] at h
+-        exact Or.inr h
+-    have hcol : ∀ u v δ, updFun c.col x y (some γ) u v = some δ →
+-        (((u = x ∧ v = y) ∨ (u = y ∧ v = x)) → δ = γ) := by
+-      intro u v δ h hc
+-      unfold updFun at h
+-      rw [ite_eq_left hc] at h
+-      exact (Option.some_injective _ h).symm
+     intro u v w δ h1 h2
+-    rcases key u v δ h1 with hc1 | hc1 <;> rcases key u w δ h2 with hc2 | hc2
+-    · rcases hc1 with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ <;> rcases hc2 with ⟨h3, h4⟩ | ⟨h3, h4⟩ <;>
+-        subst_vars <;> rfl
+-    · have hd1 := hcol u v δ h1 hc1
+-      subst hd1
+-      rcases hc1 with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
+-      · exact absurd hc2 (hx w)
+-      · exact absurd hc2 (hy w)
+-    · have hd2 := hcol u w δ h2 hc2
+-      subst hd2
+-      rcases hc2 with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
+-      · exact absurd hc1 (hx v)
+-      · exact absurd hc1 (hy v)
+-    · exact c.col_proper hc1 hc2
+-
+-@[simp] lemma setEdge_col (c : PEC G C) {x y : V} (γ : C) (hadj : G.Adj x y)
+-    (hx : c.IsFree x γ) (hy : c.IsFree y γ) :
+-    (c.setEdge γ hadj hx hy).col = updFun c.col x y (some γ) := rfl
++    simp only [updFun] at h1 h2
++    split_ifs at h1 h2 <;> grind [c.col_proper, IsFree]
+ 
+ lemma extends_setEdge (c : PEC G C) {x y : V} (γ : C) (hadj : G.Adj x y)
+     (hx : c.IsFree x γ) (hy : c.IsFree y γ) : Extends c (c.setEdge γ hadj hx hy) := by
+   intro u v h
+-  simp only [setEdge_col, updFun]
+-  split
+-  · exact Option.some_ne_none _
+-  · exact h
++  simp only [setEdge, updFun]
++  split <;> simp_all
+ 
+ end PEC
+ 
+diff --git a/LeanPool/Vizing/Endpoints.lean b/LeanPool/Vizing/Endpoints.lean
+deleted file mode 100644
+index f2e1b2e83..000000000
+--- a/LeanPool/Vizing/Endpoints.lean
++++ /dev/null
+@@ -1,3 +0,0 @@
+-module
+-public import LeanPool.Vizing.Basic
+-public import Mathlib.Combinatorics.SimpleGraph.Acyclic
+diff --git a/LeanPool/Vizing/Fan.lean b/LeanPool/Vizing/Fan.lean
+deleted file mode 100644
+index c55effe5e..000000000
+--- a/LeanPool/Vizing/Fan.lean
++++ /dev/null
+@@ -1,2 +0,0 @@
+-module
+-public import LeanPool.Vizing.Kempe
+diff --git a/LeanPool/Vizing/Kempe.lean b/LeanPool/Vizing/Kempe.lean
+index 495218ba4..7e71c4f43 100644
+--- a/LeanPool/Vizing/Kempe.lean
++++ b/LeanPool/Vizing/Kempe.lean
+@@ -5,7 +5,8 @@ Authors: Juan Pablo Traverso Gianini
+ -/
+ module
+ 
+-public import LeanPool.Vizing.Endpoints
++public import LeanPool.Vizing.Basic
++public import Mathlib.Combinatorics.SimpleGraph.Acyclic
+ 
+ /-!
+ # Kempe chains for partial edge colourings
+@@ -31,8 +32,7 @@ def kempeGraph (c : PEC G C) (a b : C) : SimpleGraph V where
+   Adj u v := u ≠ v ∧ (c.col u v = some a ∨ c.col u v = some b)
+   symm.symm := by
+     rintro u v ⟨h1, h2⟩
+-    refine ⟨h1.symm, ?_⟩
+-    rwa [c.col_symm v u]
++    grind [c.col_symm]
+   loopless := ⟨fun v h => h.1 rfl⟩
+ 
+ omit [Fintype V] [DecidableEq V] [DecidableEq C] in
+@@ -62,17 +62,13 @@ lemma kempeSwapFun_of_reachable (c : PEC G C) (a b : C) {x u : V}
+   unfold kempeSwapFun
+   by_cases hv : (c.kempeGraph a b).Reachable x v
+   · rw [ite_eq_left ⟨hu, hv⟩]
+-  · rw [ite_eq_right (by tauto)]
++  · rw [ite_eq_right (by grind)]
+     cases h : c.col u v with
+     | none => simp
+     | some γ =>
+-      have hγa : γ ≠ a := by
+-        rintro rfl
+-        exact hv (reachable_of_col hu (Or.inl h))
+-      have hγb : γ ≠ b := by
+-        rintro rfl
+-        exact hv (reachable_of_col hu (Or.inr h))
+-      simp [Equiv.swap_apply_of_ne_of_ne hγa hγb]
++      have hγ : γ ≠ a ∧ γ ≠ b := by
++        constructor <;> rintro rfl <;> exact hv (reachable_of_col hu (by simp [h]))
++      simp [Equiv.swap_apply_of_ne_of_ne hγ.1 hγ.2]
+ 
+ omit [Fintype V] [DecidableEq V] in
+ lemma kempeSwapFun_of_not_reachable (c : PEC G C) (a b : C) {x u : V}
+@@ -86,93 +82,54 @@ omit [Fintype V] [DecidableEq V] in
+ lemma kempeSwapFun_isSome (c : PEC G C) (a b : C) (x u v : V) :
+     (c.kempeSwapFun a b x u v = none) ↔ (c.col u v = none) := by
+   classical
+-  by_cases hu : (c.kempeGraph a b).Reachable x u
+-  · rw [kempeSwapFun_of_reachable c a b hu v]
+-    cases c.col u v <;> simp
+-  · rw [kempeSwapFun_of_not_reachable c a b hu v]
++  unfold kempeSwapFun
++  split_ifs <;> simp
+ 
+ /-- Swapping the colours `a` and `b` on the Kempe component of `x`. -/
+ noncomputable def kempeSwap (c : PEC G C) (a b : C) (x : V) : PEC G C where
+   col := c.kempeSwapFun a b x
+   col_symm := by
+-    classical
+     intro u v
+-    unfold kempeSwapFun
+-    by_cases h : (c.kempeGraph a b).Reachable x u ∧ (c.kempeGraph a b).Reachable x v
+-    · rw [ite_eq_left h, ite_eq_left ⟨h.2, h.1⟩, c.col_symm u v]
+-    · rw [ite_eq_right h, ite_eq_right (fun hh => h ⟨hh.2, hh.1⟩), c.col_symm u v]
++    simp only [kempeSwapFun]
++    split_ifs <;> grind [c.col_symm]
+   col_adj := by
+     intro u v γ h
+-    by_cases hu : (c.kempeGraph a b).Reachable x u
+-    · rw [kempeSwapFun_of_reachable c a b hu v] at h
+-      cases hc : c.col u v with
+-      | none => rw [hc] at h; simp at h
+-      | some δ => exact c.col_adj hc
+-    · rw [kempeSwapFun_of_not_reachable c a b hu v] at h
+-      exact c.col_adj h
++    unfold kempeSwapFun at h
++    split_ifs at h
++    · cases hc : c.col u v <;> grind [c.col_adj]
++    · exact c.col_adj h
+   col_proper := by
+     intro u v w γ h1 h2
+     by_cases hu : (c.kempeGraph a b).Reachable x u
+-    · rw [kempeSwapFun_of_reachable c a b hu v] at h1
+-      rw [kempeSwapFun_of_reachable c a b hu w] at h2
+-      cases hcv : c.col u v with
+-      | none => rw [hcv] at h1; simp at h1
+-      | some δ =>
+-        cases hcw : c.col u w with
+-        | none => rw [hcw] at h2; simp at h2
+-        | some ε =>
+-          rw [hcv] at h1
+-          rw [hcw] at h2
+-          simp only [Option.map_some] at h1 h2
+-          have : δ = ε := (Equiv.swap a b).injective (by
+-            rw [Option.some_injective _ h1, Option.some_injective _ h2])
+-          exact c.col_proper hcv (this ▸ hcw)
+-    · rw [kempeSwapFun_of_not_reachable c a b hu v] at h1
+-      rw [kempeSwapFun_of_not_reachable c a b hu w] at h2
++    · simp only [kempeSwapFun_of_reachable c a b hu] at h1 h2
++      have hc : c.col u v = c.col u w :=
++        Option.map_injective (Equiv.swap a b).injective (h1.trans h2.symm)
++      obtain ⟨δ, hcv⟩ := Option.ne_none_iff_exists'.mp
++        (fun (hn : c.col u v = none) => by simp [hn] at h1)
++      exact c.col_proper hcv (hc ▸ hcv)
++    · simp only [kempeSwapFun_of_not_reachable c a b hu] at h1 h2
+       exact c.col_proper h1 h2
+ 
+-omit [Fintype V] [DecidableEq V] in
+-@[simp] lemma kempeSwap_col (c : PEC G C) (a b : C) (x : V) :
+-    (c.kempeSwap a b x).col = c.kempeSwapFun a b x := rfl
+-
+ omit [Fintype V] [DecidableEq V] in
+ lemma extends_kempeSwap (c : PEC G C) (a b : C) (x : V) : Extends c (c.kempeSwap a b x) := by
+   intro u v h
+-  rw [kempeSwap_col, ne_eq, kempeSwapFun_isSome]
+-  exact h
++  change c.kempeSwapFun a b x u v ≠ none
++  rwa [ne_eq, kempeSwapFun_isSome]
+ 
+ omit [Fintype V] [DecidableEq V] in
+ /-- On the Kempe component the free colours get swapped. -/
+ lemma isFree_kempeSwap_of_reachable (c : PEC G C) (a b : C) {x v : V}
+     (hv : (c.kempeGraph a b).Reachable x v) (γ : C) :
+     (c.kempeSwap a b x).IsFree v γ ↔ c.IsFree v (Equiv.swap a b γ) := by
+-  constructor
+-  · intro h u hu
+-    refine h u ?_
+-    rw [kempeSwap_col, kempeSwapFun_of_reachable c a b hv u, hu]
+-    simp
+-  · intro h u hu
+-    rw [kempeSwap_col, kempeSwapFun_of_reachable c a b hv u] at hu
+-    cases hc : c.col v u with
+-    | none => rw [hc] at hu; simp at hu
+-    | some δ =>
+-      rw [hc] at hu
+-      simp only [Option.map_some, Option.some.injEq] at hu
+-      refine h u ?_
+-      rw [hc, ← hu]
+-      simp
++  simp [IsFree, kempeSwap, kempeSwapFun_of_reachable c a b hv,
++    Option.map_eq_some_iff, Equiv.swap_apply_eq_iff]
+ 
+ omit [Fintype V] [DecidableEq V] in
+ /-- Off the Kempe component the free colours are unchanged. -/
+ lemma isFree_kempeSwap_of_not_reachable (c : PEC G C) (a b : C) {x v : V}
+     (hv : ¬ (c.kempeGraph a b).Reachable x v) (γ : C) :
+     (c.kempeSwap a b x).IsFree v γ ↔ c.IsFree v γ := by
+-  constructor
+-  · intro h u hu
+-    exact h u (by rw [kempeSwap_col, kempeSwapFun_of_not_reachable c a b hv u]; exact hu)
+-  · intro h u hu
+-    rw [kempeSwap_col, kempeSwapFun_of_not_reachable c a b hv u] at hu
+-    exact h u hu
++  simp [IsFree, kempeSwap, kempeSwapFun_of_not_reachable c a b hv]
+ 
+ /-! ### Degrees in the Kempe graph -/
+ 
+diff --git a/LeanPool/Vizing/Main.lean b/LeanPool/Vizing/Main.lean
+index a33393276..742af2912 100644
+--- a/LeanPool/Vizing/Main.lean
++++ b/LeanPool/Vizing/Main.lean
+@@ -5,7 +5,7 @@ Authors: Juan Pablo Traverso Gianini
+ -/
+ module
+ 
+-public import LeanPool.Vizing.Step
++public import LeanPool.Vizing.Kempe
+ public import Mathlib.Combinatorics.SimpleGraph.Coloring.Vertex
+ public import Mathlib.Combinatorics.SimpleGraph.LineGraph
+ 
+@@ -31,8 +31,8 @@ variable {V : Type*} [Fintype V] [DecidableEq V] {C : Type*} [Fintype C] [Decida
+ def empty (G : SimpleGraph V) (C : Type*) : PEC G C where
+   col := fun _ _ => none
+   col_symm := fun _ _ => rfl
+-  col_adj := by intro u v γ h; exact absurd h (by simp)
+-  col_proper := by intro u v w γ h; exact absurd h (by simp)
++  col_adj := by simp
++  col_proper := by simp
+ 
+ /-- The set of (ordered) uncoloured edges. -/
+ noncomputable def uncoloured [DecidableRel G.Adj] (c : PEC G C) : Finset (V × V) :=
+@@ -50,54 +50,28 @@ lemma mem_uncoloured [DecidableRel G.Adj] (c : PEC G C) (p : V × V) :
+ def edgeOption (c : PEC G C) (e : Sym2 V) : Option C :=
+   Sym2.lift ⟨c.col, c.col_symm⟩ e
+ 
+-omit [Fintype V] [DecidableEq V] [Fintype C] [DecidableEq C] in
+-@[simp] lemma edgeOption_mk (c : PEC G C) (u v : V) :
+-    c.edgeOption s(u, v) = c.col u v := rfl
+-
+-omit [Fintype V] [DecidableEq V] [Fintype C] [DecidableEq C] in
+-/-- Totality supplies a colour on every actual edge, even for an empty palette. -/
+-lemma edgeOption_ne_none (c : PEC G C)
+-    (htot : ∀ u v, G.Adj u v → c.col u v ≠ none) (e : G.edgeSet) :
+-    c.edgeOption e.1 ≠ none := by
+-  obtain ⟨e, he⟩ := e
+-  induction e using Sym2.inductionOn with
+-  | hf u v =>
+-    rw [SimpleGraph.mem_edgeSet] at he
+-    exact htot u v he
+-
+-/-- The colour of an actual edge, extracted from totality without a default colour. -/
+-noncomputable def edgeColor (c : PEC G C)
+-    (htot : ∀ u v, G.Adj u v → c.col u v ≠ none) (e : G.edgeSet) : C :=
+-  Classical.choose (Option.ne_none_iff_exists'.mp (c.edgeOption_ne_none htot e))
+-
+-omit [Fintype V] [DecidableEq V] [Fintype C] [DecidableEq C] in
+-lemma edgeOption_eq_some_edgeColor (c : PEC G C)
+-    (htot : ∀ u v, G.Adj u v → c.col u v ≠ none) (e : G.edgeSet) :
+-    c.edgeOption e.1 = some (c.edgeColor htot e) :=
+-  Classical.choose_spec (Option.ne_none_iff_exists'.mp (c.edgeOption_ne_none htot e))
+-
+ /-- A total proper partial colouring gives a colouring of the line graph. -/
+ noncomputable def lineGraphColoring (c : PEC G C)
+-    (htot : ∀ u v, G.Adj u v → c.col u v ≠ none) : (G.lineGraph).Coloring C :=
+-  Coloring.mk (c.edgeColor htot) (by
++    (htot : ∀ u v, G.Adj u v → c.col u v ≠ none) : (G.lineGraph).Coloring C := by
++  have hex (e : G.edgeSet) : ∃ γ, c.edgeOption e.1 = some γ :=
++    Option.ne_none_iff_exists'.mp (by
++      obtain ⟨e, he⟩ := e
++      induction e using Sym2.inductionOn with
++      | hf u v => exact htot u v he)
++  let color (e : G.edgeSet) : C := (hex e).choose
++  have spec (e : G.edgeSet) : c.edgeOption e.1 = some (color e) := (hex e).choose_spec
++  exact Coloring.mk color (by
+     rintro ⟨e₁, he₁⟩ ⟨e₂, he₂⟩ hadj
+     rw [lineGraph_adj_iff_exists] at hadj
+     obtain ⟨hne, v, hv₁, hv₂⟩ := hadj
+     obtain ⟨u, rfl⟩ := Sym2.mem_iff_exists.1 hv₁
+     obtain ⟨w, rfl⟩ := Sym2.mem_iff_exists.1 hv₂
+     intro hcol
+-    have hγ := c.edgeOption_eq_some_edgeColor htot ⟨s(v, u), he₁⟩
+-    have hδ := c.edgeOption_eq_some_edgeColor htot ⟨s(v, w), he₂⟩
+-    simp only [edgeOption_mk] at hγ hδ
+-    rw [← hcol] at hδ
+-    have huw : u = w := c.col_proper hγ hδ
+-    subst huw
+-    exact hne (Subtype.ext rfl))
++    have hγ := spec ⟨s(v, u), he₁⟩
++    have hδ := spec ⟨s(v, w), he₂⟩
++    simp only [edgeOption, Sym2.lift_mk] at hγ hδ
++    grind [c.col_proper])
+ 
+ end PEC
+ 
+ end LeanPool.Vizing
+-
+-namespace SimpleGraph
+-
+-end SimpleGraph
+diff --git a/LeanPool/Vizing/Step.lean b/LeanPool/Vizing/Step.lean
+deleted file mode 100644
+index 5ddbca939..000000000
+--- a/LeanPool/Vizing/Step.lean
++++ /dev/null
+@@ -1,2 +0,0 @@
+-module
+-public import LeanPool.Vizing.Fan
+diff --git a/Solution.lean b/Solution.lean
+index 0b8636e3c..12f39c001 100644
+--- a/Solution.lean
++++ b/Solution.lean
+@@ -29,31 +29,16 @@ namespace ListEdgeColouring
+ /-- **Gale–Shapley (1962).** For a bipartite acceptability relation `E` between finite sets `M`
+ and `W`, with strict preferences given by injective rank functions (`rm m w < rm m w'` means that
+ `m` prefers `w` to `w'`), there is a stable matching. -/
+-theorem gale_shapley {M W : Type*} [Finite M] [Finite W] (E : M → W → Prop)
+-    (rm : M → W → ℕ) (rw : W → M → ℕ) (hrm : ∀ m, Function.Injective (rm m))
+-    (hrw : ∀ w, Function.Injective (rw w)) :
+-    ∃ μ : M → W → Prop, (∀ m w, μ m w → E m w) ∧
+-      (∀ m w w', μ m w → μ m w' → w = w') ∧ (∀ m m' w, μ m w → μ m' w → m = m') ∧
+-      ∀ m w, E m w → ¬ μ m w →
+-        (∃ w', μ m w' ∧ rm m w' < rm m w) ∨ (∃ m', μ m' w ∧ rw w m' < rw w m) :=
+-  Galvin.gale_shapley E rm rw hrm hrw
++alias gale_shapley := Galvin.gale_shapley
+ 
+ /-- **Galvin's theorem (1995).** If every edge of a finite bipartite graph `G` has a list of at
+ least `Δ(G)` colours, then `G` has a proper edge colouring choosing every colour from the list of
+ its edge. -/
+-theorem galvin {V Color : Type*} [Fintype V] (G : SimpleGraph V) [DecidableRel G.Adj]
+-    (hG : G.Colorable 2) (lists : G.edgeSet → Finset Color)
+-    (hLists : ∀ e, G.maxDegree ≤ (lists e).card) :
+-    ∃ coloring : G.lineGraph.Coloring Color, ∀ e, coloring e ∈ lists e :=
+-  Galvin.galvin G hG lists hLists
++alias galvin := Galvin.galvin
+ 
+ /-- **The Dinitz problem** (Galvin 1995). If every cell of an `n × n` array has a list of at least
+ `n` symbols, there is a choice of one symbol from each list with all symbols in each row distinct
+ and all symbols in each column distinct. -/
+-theorem dinitz {Symbol : Type*} (n : ℕ) (lists : Fin n → Fin n → Finset Symbol)
+-    (hLists : ∀ i j, n ≤ (lists i j).card) :
+-    ∃ f : Fin n → Fin n → Symbol, (∀ i j, f i j ∈ lists i j) ∧
+-      (∀ i j j', j ≠ j' → f i j ≠ f i j') ∧ (∀ i i' j, i ≠ i' → f i j ≠ f i' j) :=
+-  Galvin.dinitz n lists hLists
++alias dinitz := Galvin.dinitz
+ 
+ end ListEdgeColouring

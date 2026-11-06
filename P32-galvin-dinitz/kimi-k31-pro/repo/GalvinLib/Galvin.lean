@@ -39,8 +39,8 @@ theorem gale_shapley {M W : Type*} [Finite M] [Finite W] (E : M → W → Prop)
     ∃ μ : M → W → Prop, (∀ m w, μ m w → E m w) ∧
       (∀ m w w', μ m w → μ m w' → w = w') ∧ (∀ m m' w, μ m w → μ m' w → m = m') ∧
       ∀ m w, E m w → ¬ μ m w →
-        (∃ w', μ m w' ∧ rm m w' < rm m w) ∨ (∃ m', μ m' w ∧ rw w m' < rw w m) := by
-  exact exists_isStable rm rw hrm hrw _ E rfl
+        (∃ w', μ m w' ∧ rm m w' < rm m w) ∨ (∃ m', μ m' w ∧ rw w m' < rw w m) :=
+  exists_isStable E rm rw hrm hrw
 
 /-- **Galvin's theorem (1995).** If every edge of a finite bipartite graph `G` has a list of at
 least `Δ(G)` colours, then `G` has a proper edge colouring choosing every colour from the list of
@@ -64,23 +64,18 @@ theorem dinitz {Symbol : Type*} (n : ℕ) (lists : Fin n → Fin n → Finset Sy
       (∀ i j j', j ≠ j' → f i j ≠ f i j') ∧ (∀ i i' j, i ≠ i' → f i j ≠ f i' j) := by
   classical
   let G := completeBipartiteGraph (Fin n) (Fin n)
-  have hG : G.Colorable 2 :=
-    ⟨SimpleGraph.Coloring.mk (fun v => Sum.elim (fun _ => 0) (fun _ => 1) v) (by
-      rintro (i | i) (j | j) h <;> simp [G] at h ⊢)⟩
+  have hG : G.Colorable 2 := SimpleGraph.IsBipartite.completeBipartiteGraph _ _
   have hdeg : G.maxDegree ≤ n := by
-    refine G.maxDegree_le_of_forall_degree_le n fun v => ?_
-    rw [← SimpleGraph.card_neighborFinset_eq_degree]
-    rcases v with i | i
-    · calc (G.neighborFinset (Sum.inl i)).card
-            ≤ (Finset.univ.image (Sum.inr : Fin n → _)).card :=
-            Finset.card_le_card fun w hw => by
-              rcases w with j | j <;> simp [G] at hw ⊢
-        _ ≤ n := Finset.card_image_le.trans (by simp)
-    · calc (G.neighborFinset (Sum.inr i)).card
-            ≤ (Finset.univ.image (Sum.inl : Fin n → _)).card :=
-            Finset.card_le_card fun w hw => by
-              rcases w with j | j <;> simp [G] at hw ⊢
-        _ ≤ n := Finset.card_image_le.trans (by simp)
+    let s : Finset (Fin n ⊕ Fin n) := Finset.univ.image Sum.inl
+    let t : Finset (Fin n ⊕ Fin n) := Finset.univ.image Sum.inr
+    have hb : G.IsBipartiteWith s t := by
+      simpa [G, s, t] using SimpleGraph.IsBipartiteWith.completeBipartiteGraph (Fin n) (Fin n)
+    apply G.maxDegree_le_of_forall_degree_le
+    rintro (i | i)
+    · refine (SimpleGraph.isBipartiteWith_degree_le (v := Sum.inl i) hb (by simp [s])).trans ?_
+      exact Finset.card_image_le.trans (by simp)
+    · refine (SimpleGraph.isBipartiteWith_degree_le' (w := Sum.inr i) hb (by simp [t])).trans ?_
+      exact Finset.card_image_le.trans (by simp)
   let cell : Fin n ⊕ Fin n → Fin n ⊕ Fin n → Finset Symbol := fun a b =>
     match a, b with
     | Sum.inl i, Sum.inr j => lists i j
@@ -97,17 +92,16 @@ theorem dinitz {Symbol : Type*} (n : ℕ) (lists : Fin n → Fin n → Finset Sy
     rcases a with i | i <;> rcases b with j | j <;>
       simp [G, L, cell, Sym2.lift_mk, hLists] at he ⊢
   obtain ⟨col, hcol⟩ := galvin G hG L hL
-  have hadj : ∀ i j, G.Adj (Sum.inl i) (Sum.inr j) := fun i j => by simp [G]
-  let edge : Fin n → Fin n → G.edgeSet := fun i j => ⟨s(Sum.inl i, Sum.inr j), hadj i j⟩
+  let edge : Fin n → Fin n → G.edgeSet := fun i j => ⟨s(Sum.inl i, Sum.inr j), by simp [G]⟩
   refine ⟨fun i j => col (edge i j), fun i j => ?_, fun i j j' hjj => ?_, fun i i' j hii => ?_⟩
   · simpa [L, edge, cell, Sym2.lift_mk] using hcol (edge i j)
   · refine col.valid ?_
     rw [SimpleGraph.lineGraph_adj_iff_exists]
-    refine ⟨fun h => hjj ?_, Sum.inl i, by simp [edge], by simp [edge]⟩
-    simpa [edge] using congrArg Subtype.val h
+    refine ⟨?_, Sum.inl i, by simp [edge], by simp [edge]⟩
+    grind
   · refine col.valid ?_
     rw [SimpleGraph.lineGraph_adj_iff_exists]
-    refine ⟨fun h => hii ?_, Sum.inr j, by simp [edge], by simp [edge]⟩
-    simpa [edge] using congrArg Subtype.val h
+    refine ⟨?_, Sum.inr j, by simp [edge], by simp [edge]⟩
+    grind
 
 end Galvin

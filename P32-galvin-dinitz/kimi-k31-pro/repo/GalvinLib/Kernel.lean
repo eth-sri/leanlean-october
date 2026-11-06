@@ -40,8 +40,7 @@ theorem exists_listColoring_on {α Color : Type*} [Nonempty Color]
   intro U hn L hL
   rcases U.eq_empty_or_nonempty with rfl | ⟨x₀, hx₀⟩
   · exact ⟨fun _ => Classical.arbitrary _, by simp, by simp⟩
-  obtain ⟨κ, hκ⟩ : (L x₀).Nonempty :=
-    Finset.card_pos.mp (lt_of_le_of_lt (Nat.zero_le _) (hL x₀ hx₀))
+  obtain ⟨κ, hκ⟩ : (L x₀).Nonempty := Finset.card_pos.mp (Nat.zero_lt_of_lt (hL x₀ hx₀))
   set S := U.filter (κ ∈ L ·) with hS
   obtain ⟨K, hKS, hKind, hKabs⟩ := hK S
   have hx₀S : x₀ ∈ S := by simp [hS, hx₀, hκ]
@@ -49,10 +48,8 @@ theorem exists_listColoring_on {α Color : Type*} [Nonempty Color]
   have hKne : K.Nonempty := by
     by_contra h
     rw [Finset.not_nonempty_iff_eq_empty] at h
-    by_cases hx : x₀ ∈ K
-    · simp [h] at hx
-    · obtain ⟨y, hy, -⟩ := hKabs x₀ hx₀S hx
-      simp [h] at hy
+    have ha := hKabs x₀ hx₀S (by simp [h])
+    simp [h] at ha
   have hlt : (U \ K).card < n := by
     rw [← hn]
     exact Finset.card_lt_card (Finset.sdiff_ssubset hKU hKne)
@@ -64,38 +61,24 @@ theorem exists_listColoring_on {α Color : Type*} [Nonempty Color]
       obtain ⟨y, hy, hD⟩ := hKabs x (by simp [hS, hx.1, hκx]) hx.2
       have hsub : insert y ((U \ K).filter (D x ·)) ⊆ U.filter (D x ·) := by
         intro z hz
-        rw [Finset.mem_insert] at hz
-        rcases hz with rfl | hz
-        · simp [hKU hy, hD]
-        · simp only [Finset.mem_filter, Finset.mem_sdiff] at hz ⊢
-          exact ⟨hz.1.1, hz.2⟩
-      have hyn : y ∉ (U \ K).filter (D x ·) := by simp [hy]
-      have := Finset.card_le_card hsub
-      rw [Finset.card_insert_of_notMem hyn] at this
+        simp only [Finset.mem_insert, Finset.mem_filter, Finset.mem_sdiff] at hz ⊢
+        grind [hKU hy]
+      have hc := Finset.card_le_card hsub
+      rw [Finset.card_insert_of_notMem (by simp [hy])] at hc
       have := hL x hx.1
       omega
     · rw [Finset.erase_eq_of_notMem hκx]
-      refine lt_of_le_of_lt (Finset.card_le_card ?_) (hL x hx.1)
-      exact Finset.filter_subset_filter _ Finset.sdiff_subset)
+      exact (Finset.card_le_card (Finset.filter_subset_filter _ Finset.sdiff_subset)).trans_lt
+        (hL x hx.1))
+  simp only [Finset.mem_erase] at hc'L
   refine ⟨fun x => if x ∈ K then κ else c' x, fun x hx => ?_, fun x hx y hy hxy => ?_⟩
   · by_cases hxK : x ∈ K
     · simp only [hxK, ite_true]
-      have := hKS hxK
-      simp only [hS, Finset.mem_filter] at this
-      exact this.2
+      exact (Finset.mem_filter.1 (hKS hxK)).2
     · simp only [hxK, ite_false]
-      exact Finset.mem_of_mem_erase (hc'L x (by simp [hx, hxK]))
-  · by_cases hxK : x ∈ K <;> by_cases hyK : y ∈ K <;> simp only [hxK, hyK, ite_true, ite_false]
-    · exact (hKind x hxK y hyK hxy).elim
-    · intro h
-      have := hc'L y (by simp [hy, hyK])
-      rw [← h] at this
-      simp at this
-    · intro h
-      have := hc'L x (by simp [hx, hxK])
-      rw [h] at this
-      simp at this
-    · exact hc'p x (by simp [hx, hxK]) y (by simp [hy, hyK]) hxy
+      exact (hc'L x (by simp [hx, hxK])).2
+  · by_cases hxK : x ∈ K <;> by_cases hyK : y ∈ K <;> simp only [hxK, hyK, ite_true, ite_false] <;>
+      grind
 
 /-- **Kernel lemma.** If every finite set of vertices has a kernel and every list is longer than
 the out-degree of its vertex, there is a proper list colouring. -/
@@ -106,12 +89,11 @@ theorem exists_listColoring {α Color : Type*} [Fintype α]
     ∃ c : G.Coloring Color, ∀ x, c x ∈ L x := by
   classical
   cases isEmpty_or_nonempty α with
-  | inl _ => exact ⟨SimpleGraph.Coloring.mk (fun x => isEmptyElim x) fun {x} => isEmptyElim x,
-      fun x => isEmptyElim x⟩
+  | inl _ => exact ⟨.ofIsEmpty, isEmptyElim⟩
   | inr hα => ?_
   have : Nonempty Color := by
     obtain ⟨x⟩ := hα
-    obtain ⟨k, -⟩ := Finset.card_pos.mp (lt_of_le_of_lt (Nat.zero_le _) (hL x))
+    obtain ⟨k, -⟩ := Finset.card_pos.mp (Nat.zero_lt_of_lt (hL x))
     exact ⟨k⟩
   obtain ⟨c, hcL, hcp⟩ := exists_listColoring_on G D hK _ Finset.univ rfl L
     (fun x _ => hL x)

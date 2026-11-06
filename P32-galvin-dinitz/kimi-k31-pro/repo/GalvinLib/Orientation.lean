@@ -57,17 +57,11 @@ theorem colour_endA (c : G.Coloring (Fin 2)) (e : G.edgeSet) : c (endA c e) = 0 
   (exists_ends c e).choose_spec.choose_spec.2
 
 theorem adj_ends (c : G.Coloring (Fin 2)) (e : G.edgeSet) : G.Adj (endA c e) (endB c e) := by
-  have := e.2
-  rw [edge_eq_ends c e] at this
-  exact this
+  simpa only [edge_eq_ends c e, SimpleGraph.mem_edgeSet] using e.2
 
 theorem colour_endB (c : G.Coloring (Fin 2)) (e : G.edgeSet) : c (endB c e) = 1 := by
-  have h1 := c.valid (adj_ends c e)
-  rw [colour_endA] at h1
-  revert h1
-  generalize c (endB c e) = i
-  revert i
-  decide
+  exact Fin.eq_one_of_ne_zero _ fun h =>
+    c.valid (adj_ends c e) ((colour_endA c e).trans h.symm)
 
 theorem eq_of_ends (c : G.Coloring (Fin 2)) {e f : G.edgeSet} (hA : endA c e = endA c f)
     (hB : endB c e = endB c f) : e = f := by
@@ -84,15 +78,7 @@ theorem lineGraph_adj_iff_ends (c : G.Coloring (Fin 2)) {e f : G.edgeSet} :
   refine and_congr_right fun _ => ⟨?_, ?_⟩
   · rintro ⟨v, hve, hvf⟩
     rw [mem_edge_iff c] at hve hvf
-    have hA := colour_endA c e
-    have hA' := colour_endA c f
-    have hB := colour_endB c e
-    have hB' := colour_endB c f
-    rcases hve with rfl | rfl <;> rcases hvf with h | h
-    · exact Or.inl h
-    · rw [h, hB'] at hA; exact absurd hA (by decide)
-    · rw [h, hA'] at hB; exact absurd hB (by decide)
-    · exact Or.inr h
+    rcases hve with rfl | rfl <;> rcases hvf with h | h <;> grind [colour_endA, colour_endB]
   · rintro (h | h)
     · exact ⟨endA c e, (mem_edge_iff c e _).2 (Or.inl rfl), (mem_edge_iff c f _).2 (Or.inl h)⟩
     · exact ⟨endB c e, (mem_edge_iff c e _).2 (Or.inr rfl), (mem_edge_iff c f _).2 (Or.inr h)⟩
@@ -117,22 +103,17 @@ theorem card_arc_lt [Fintype G.edgeSet] (c : G.Coloring (Fin 2)) {Δ : ℕ}
       univ.filter (fun f => endA c e = endA c f ∧ φ f < φ e) ∪
         univ.filter (fun f => endB c e = endB c f ∧ φ e < φ f) := by
     intro f hf
-    simp only [arc, mem_filter, mem_univ, true_and, mem_union] at hf ⊢
-    exact hf
+    simpa only [arc, mem_filter, mem_univ, true_and, mem_union] using hf
   have h1 : (univ.filter (fun f => endA c e = endA c f ∧ φ f < φ e)).card ≤
       (Iio (φ e)).card := by
-    refine card_le_card_of_injOn (fun f => φ f) (fun f hf => ?_) (fun f hf f' hf' h => ?_)
-    · simp only [coe_filter, mem_univ, true_and, Set.mem_ofPred_eq] at hf
-      simpa using hf.2
-    · simp only [coe_filter, mem_univ, true_and, Set.mem_ofPred_eq] at hf hf'
-      exact eq_of_colour_eq c φ h (Or.inl (hf.1.symm.trans hf'.1))
+    refine card_le_card_of_injOn (fun f => φ f) (by simp [Set.MapsTo]) (fun f hf f' hf' h => ?_)
+    simp only [coe_filter, mem_univ, true_and, Set.mem_ofPred_eq] at hf hf'
+    exact eq_of_colour_eq c φ h (Or.inl (hf.1.symm.trans hf'.1))
   have h2 : (univ.filter (fun f => endB c e = endB c f ∧ φ e < φ f)).card ≤
       (Ioi (φ e)).card := by
-    refine card_le_card_of_injOn (fun f => φ f) (fun f hf => ?_) (fun f hf f' hf' h => ?_)
-    · simp only [coe_filter, mem_univ, true_and, Set.mem_ofPred_eq] at hf
-      simpa using hf.2
-    · simp only [coe_filter, mem_univ, true_and, Set.mem_ofPred_eq] at hf hf'
-      exact eq_of_colour_eq c φ h (Or.inr (hf.1.symm.trans hf'.1))
+    refine card_le_card_of_injOn (fun f => φ f) (by simp [Set.MapsTo]) (fun f hf f' hf' h => ?_)
+    simp only [coe_filter, mem_univ, true_and, Set.mem_ofPred_eq] at hf hf'
+    exact eq_of_colour_eq c φ h (Or.inr (hf.1.symm.trans hf'.1))
   rw [Fin.card_Iio] at h1
   rw [Fin.card_Ioi] at h2
   have h3 := (card_le_card hsub).trans (card_union_le _ _)
@@ -153,52 +134,6 @@ noncomputable def rankB (c : G.Coloring (Fin 2)) {Δ : ℕ} (φ : G.lineGraph.Co
   if h : ∃ e : G.edgeSet, endA c e = m ∧ endB c e = w then Δ - (φ h.choose : ℕ)
   else Δ + 1 + idx m
 
-theorem choose_ends_eq (c : G.Coloring (Fin 2)) (e : G.edgeSet)
-    (h : ∃ f : G.edgeSet, endA c f = endA c e ∧ endB c f = endB c e) : h.choose = e :=
-  eq_of_ends c h.choose_spec.1 h.choose_spec.2
-
-theorem rankA_ends (c : G.Coloring (Fin 2)) {Δ : ℕ} (φ : G.lineGraph.Coloring (Fin Δ))
-    (idx : V → ℕ) (e : G.edgeSet) : rankA c φ idx (endA c e) (endB c e) = φ e := by
-  have h : ∃ f : G.edgeSet, endA c f = endA c e ∧ endB c f = endB c e := ⟨e, rfl, rfl⟩
-  rw [rankA]
-  split_ifs
-  rw [choose_ends_eq c e h]
-
-theorem rankB_ends (c : G.Coloring (Fin 2)) {Δ : ℕ} (φ : G.lineGraph.Coloring (Fin Δ))
-    (idx : V → ℕ) (e : G.edgeSet) : rankB c φ idx (endB c e) (endA c e) = Δ - φ e := by
-  have h : ∃ f : G.edgeSet, endA c f = endA c e ∧ endB c f = endB c e := ⟨e, rfl, rfl⟩
-  rw [rankB]
-  split_ifs
-  rw [choose_ends_eq c e h]
-
-theorem rankA_injective (c : G.Coloring (Fin 2)) {Δ : ℕ} (φ : G.lineGraph.Coloring (Fin Δ))
-    {idx : V → ℕ} (hidx : Function.Injective idx) (m : V) :
-    Function.Injective (rankA c φ idx m) := by
-  intro w w' hww
-  unfold rankA at hww
-  split_ifs at hww with h h'
-  · have := eq_of_colour_eq c φ (Fin.ext hww)
-      (Or.inl (h.choose_spec.1.trans h'.choose_spec.1.symm))
-    rw [← h.choose_spec.2, ← h'.choose_spec.2, this]
-  · have := (φ h.choose).isLt; omega
-  · rename_i h₂; have := (φ h₂.choose).isLt; omega
-  · exact hidx (by omega)
-
-theorem rankB_injective (c : G.Coloring (Fin 2)) {Δ : ℕ} (φ : G.lineGraph.Coloring (Fin Δ))
-    {idx : V → ℕ} (hidx : Function.Injective idx) (w : V) :
-    Function.Injective (rankB c φ idx w) := by
-  intro m m' hmm
-  unfold rankB at hmm
-  split_ifs at hmm with h h'
-  · have h1 := (φ h.choose).isLt
-    have h2 := (φ h'.choose).isLt
-    have := eq_of_colour_eq c φ (Fin.ext (by omega))
-      (Or.inr (h.choose_spec.2.trans h'.choose_spec.2.symm))
-    rw [← h.choose_spec.1, ← h'.choose_spec.1, this]
-  · omega
-  · omega
-  · exact hidx (by omega)
-
 /-- Every set of edges has a kernel for Galvin's orientation: a stable matching. -/
 theorem hasKernels_arc [Finite V] (c : G.Coloring (Fin 2)) {Δ : ℕ}
     (φ : G.lineGraph.Coloring (Fin Δ)) : HasKernels G.lineGraph (arc c φ) := by
@@ -207,34 +142,34 @@ theorem hasKernels_arc [Finite V] (c : G.Coloring (Fin 2)) {Δ : ℕ}
   obtain ⟨N, ⟨eqv⟩⟩ := Finite.exists_equiv_fin V
   let idx : V → ℕ := fun v => (eqv v : ℕ)
   have hidx : Function.Injective idx := fun a b h => eqv.injective (Fin.ext h)
+  unfold Function.Injective at hidx
   let E : V → V → Prop := fun m w => ∃ e ∈ S, endA c e = m ∧ endB c e = w
-  obtain ⟨μ, hsub, hm, hw, hst⟩ := exists_isStable (rankA c φ idx) (rankB c φ idx)
-    (rankA_injective c φ hidx) (rankB_injective c φ hidx) _ E rfl
+  have rAe (e : G.edgeSet) : rankA c φ idx (endA c e) (endB c e) = φ e := by
+    unfold rankA
+    split_ifs with h <;> grind [eq_of_ends]
+  have rBe (e : G.edgeSet) : rankB c φ idx (endB c e) (endA c e) = Δ - φ e := by
+    unfold rankB
+    split_ifs with h <;> grind [eq_of_ends]
+  have rAi (m : V) : Function.Injective (rankA c φ idx m) := by
+    intro w w' hww
+    unfold rankA at hww
+    split_ifs at hww with h h' <;> grind [eq_of_colour_eq]
+  have rBi (w : V) : Function.Injective (rankB c φ idx w) := by
+    intro m m' hmm
+    unfold rankB at hmm
+    split_ifs at hmm with h h' <;> grind [eq_of_colour_eq]
+  obtain ⟨μ, hsub, hm, hw, hst⟩ := exists_isStable E (rankA c φ idx) (rankB c φ idx) rAi rBi
   refine ⟨S.filter (fun e => μ (endA c e) (endB c e)), filter_subset _ _, ?_, ?_⟩
   · intro x hx y hy hxy
     simp only [mem_filter] at hx hy
-    obtain ⟨hne, h | h⟩ := (lineGraph_adj_iff_ends c).1 hxy
-    · rw [h] at hx
-      exact hne (eq_of_ends c h (hm _ _ _ hx.2 hy.2))
-    · rw [h] at hx
-      exact hne (eq_of_ends c (hw _ _ _ hx.2 hy.2) h)
+    rw [lineGraph_adj_iff_ends c] at hxy
+    grind [eq_of_ends]
   · intro x hxS hxK
     simp only [mem_filter, hxS, true_and] at hxK
     rcases hst _ _ ⟨x, hxS, rfl, rfl⟩ hxK with ⟨w', hμ, hlt⟩ | ⟨m', hμ, hlt⟩
     · obtain ⟨f, hfS, hfA, hfB⟩ := hsub _ _ hμ
-      subst hfB
-      rw [← hfA] at hμ hlt
-      refine ⟨f, mem_filter.2 ⟨hfS, hμ⟩, Or.inl ⟨hfA.symm, ?_⟩⟩
-      rw [rankA_ends, hfA, rankA_ends] at hlt
-      exact hlt
+      refine ⟨f, mem_filter.2 ⟨hfS, ?_⟩, Or.inl ⟨hfA.symm, ?_⟩⟩ <;> grind
     · obtain ⟨f, hfS, hfA, hfB⟩ := hsub _ _ hμ
-      subst hfA
-      rw [← hfB] at hμ hlt
-      refine ⟨f, mem_filter.2 ⟨hfS, hμ⟩, Or.inr ⟨hfB.symm, ?_⟩⟩
-      rw [rankB_ends, hfB, rankB_ends] at hlt
-      have := (φ f).isLt
-      have := (φ x).isLt
-      change (φ x : ℕ) < φ f
-      omega
+      refine ⟨f, mem_filter.2 ⟨hfS, ?_⟩, Or.inr ⟨hfB.symm, ?_⟩⟩ <;> grind
 
 end Galvin
