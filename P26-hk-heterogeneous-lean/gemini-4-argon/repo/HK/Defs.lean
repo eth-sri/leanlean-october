@@ -10,11 +10,11 @@ The definitions of `Challenge.lean`, restated character for character with the s
 comparator judges the elaborated constants. `scripts/check_definitions.py` compares the two files.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
 namespace HK
 
-open Filter Topology
+open Filter Topology Lean.Parser.Command Lean.Quote
 
 /-! ### The models (Mirtabatabaei–Bullo §2) -/
 
@@ -23,44 +23,52 @@ inductive Model
   | sbc
   | sbi
 
+set_option hygiene false
+notation:max "%" x:max => (x : ℝ)
+notation "V" n => Fin n → ℝ
+local macro d:docComment "v" i:ident x:term,* : command =>
+  `($d:docComment def $i : V $(quote x.getElems.size) := ![$x,*])
+
+variable (m : Model) {n} (r y z : V n) (x : ℕ → V n) (w : V 3) (ρ δ : ℝ)
+
 /-- The bound deciding whether `j` is an out-neighbour of `i`: `r i` (SBC) or `r j` (SBI). -/
-def Model.bound (m : Model) {n : ℕ} (r : Fin n → ℝ) (i j : Fin n) : ℝ :=
+def Model.bound (i j : Fin n) :=
   match m with
-  | .sbc => r i
-  | .sbi => r j
+  | Model.sbc => r i
+  | Model.sbi => r j
 
 /-- `N_i(y)`: the out-neighbours of `i` at the opinion vector `y`, `{j : |y_i − y_j| ≤ r_i}` in the
 SBC model and `{j : |y_i − y_j| ≤ r_j}` in the SBI model. -/
-noncomputable def neighbors (m : Model) {n : ℕ} (r y : Fin n → ℝ) (i : Fin n) : Finset (Fin n) :=
-  Finset.univ.filter (fun j => |y i - y j| ≤ m.bound r i j)
+def neighbors i :=
+  Finset.univ.filter fun j => |y i - y j| ≤ Model.bound m r i j
 
 /-- The proximity digraph `G_r(y)`: an arc from `i` to `j` iff `j ∈ N_i(y)`. -/
-noncomputable def proximityDigraph (m : Model) {n : ℕ} (r y : Fin n → ℝ) : Digraph (Fin n) :=
-  ⟨fun i j => j ∈ neighbors m r y i⟩
+def proximityDigraph :=
+  Digraph.mk fun i j => j ∈ neighbors m r y i
 
 /-- The adjacency matrix `A(y)`: `a_ij = 1/|N_i(y)|` if `j ∈ N_i(y)`, else `0`. -/
-noncomputable def adjMatrix (m : Model) {n : ℕ} (r y : Fin n → ℝ) : Matrix (Fin n) (Fin n) ℝ :=
-  Matrix.of fun i j => if j ∈ neighbors m r y i then 1 / ((neighbors m r y i).card : ℝ) else 0
+def adjMatrix :=
+  Matrix.of fun i j => if j ∈ neighbors m r y i then 1 / %(neighbors m r y i).card else 0
 
 /-- One synchronous update, (2.1): `y ↦ A(y) y`. -/
-noncomputable def step (m : Model) {n : ℕ} (r y : Fin n → ℝ) : Fin n → ℝ :=
+def step :=
   (adjMatrix m r y).mulVec y
 
 /-- The trajectory from the initial opinion vector `x₀`: `x(t) = stepᵗ x₀`. -/
-noncomputable def traj (m : Model) {n : ℕ} (r x₀ : Fin n → ℝ) (t : ℕ) : Fin n → ℝ :=
-  (step m r)^[t] x₀
+def traj t :=
+  (step m r)^[t] y
 
 /-- `x` is in a fixed state from `τ` on: `x(t) = x(τ)` for every `t ≥ τ`. -/
-def FixedFrom {n : ℕ} (x : ℕ → Fin n → ℝ) (τ : ℕ) : Prop :=
+def FixedFrom τ :=
   ∀ t, τ ≤ t → x t = x τ
 
 /-- Pseudo-stable behaviour after `τ` towards `xinf` (Mirtabatabaei–Bullo (2.2)): `x` converges to
 `xinf`, and the agents split into two non-empty classes `F` and `C` such that for every `t ≥ τ` the
 agents of `F` sit at their limits and each agent of `C` moves strictly towards its limit from one
 side: `x_i(t) < x_i(t+1) < xinf_i` or `x_i(t) > x_i(t+1) > xinf_i`. -/
-def PseudoStableAfter {n : ℕ} (x : ℕ → Fin n → ℝ) (xinf : Fin n → ℝ) (τ : ℕ) : Prop :=
+def PseudoStableAfter xinf τ :=
   Tendsto x atTop (𝓝 xinf) ∧
-    ∃ F C : Finset (Fin n), F.Nonempty ∧ C.Nonempty ∧ Disjoint F C ∧ F ∪ C = Finset.univ ∧
+    ∃ F C, F.Nonempty ∧ C.Nonempty ∧ Disjoint F C ∧ F ∪ C = Finset.univ ∧
       ∀ t, τ ≤ t →
         (∀ i ∈ F, x t i = xinf i) ∧
         ∀ i ∈ C, (x t i < x (t + 1) i ∧ x (t + 1) i < xinf i) ∨
@@ -68,200 +76,189 @@ def PseudoStableAfter {n : ℕ} (x : ℕ → Fin n → ℝ) (xinf : Fin n → �
 
 /-! ### The conjectures and the theorem, as statements about one model and about both -/
 
+local notation "tr" => traj m r x₀
+local notation "D" τ =>
+  ∀ t, τ ≤ t → proximityDigraph m r (tr t) = proximityDigraph m r (tr τ)
+local notation "Q" p => fun n => ∀ r x₀ : V n, (∀ i, 0 < r i) → p
+local notation "FP" τ =>
+  FixedFrom tr τ ∨ ∃ xinf, PseudoStableAfter tr xinf τ
+local notation "T64" p => Q ∀ τ, (D τ) → ∃ t₂, τ ≤ t₂ ∧ p
+local notation "A" f => ∀ n, f m n
+local notation "M" f => ∀ m, f m
+
 /-- Conjecture 2.2 (constant topology in finite time) for the model `m` and `n` agents: for every
 positive bounds vector and every initial opinion vector there is a finite time after which the
 proximity digraph is constant. -/
-def Conjecture22ForAgents (m : Model) (n : ℕ) : Prop :=
-  ∀ (r x₀ : Fin n → ℝ), (∀ i, 0 < r i) →
-    ∃ τ, ∀ t, τ ≤ t →
-      proximityDigraph m r (traj m r x₀ t) = proximityDigraph m r (traj m r x₀ τ)
+def Conjecture22ForAgents := Q ∃ τ, D τ
 
 /-- Conjecture 2.2 for the model `m` and every number of agents. -/
-def Conjecture22For (m : Model) : Prop := ∀ n : ℕ, Conjecture22ForAgents m n
+def Conjecture22For := A Conjecture22ForAgents
 
 /-- Conjecture 2.2 for any SBC or SBI system. -/
-def Conjecture22 : Prop := ∀ m : Model, Conjecture22For m
+def Conjecture22 := M Conjecture22For
 
 /-- Conjecture 2.3 (pseudo-stable behaviour) for the model `m` and `n` agents: every trajectory
 reaches a fixed state in finite time or is pseudo-stable after some finite time. -/
-def Conjecture23ForAgents (m : Model) (n : ℕ) : Prop :=
-  ∀ (r x₀ : Fin n → ℝ), (∀ i, 0 < r i) →
-    ∃ τ, FixedFrom (traj m r x₀) τ ∨ ∃ xinf, PseudoStableAfter (traj m r x₀) xinf τ
+def Conjecture23ForAgents := Q ∃ τ, FP τ
 
 /-- Conjecture 2.3 for the model `m` and every number of agents. -/
-def Conjecture23For (m : Model) : Prop := ∀ n : ℕ, Conjecture23ForAgents m n
+def Conjecture23For := A Conjecture23ForAgents
 
 /-- Conjecture 2.3 for any SBC or SBI system. -/
-def Conjecture23 : Prop := ∀ m : Model, Conjecture23For m
+def Conjecture23 := M Conjecture23For
 
 /-- Theorem 6.4(iv) for the model `m` and `n` agents, read literally: if the proximity digraph of a
 trajectory is constant from `τ` on, the trajectory is pseudo-stable from some `t₂ ≥ τ` on (already
 false for a trajectory frozen from the start, since both classes of (2.2) must be non-empty). -/
-def Theorem64ivLiteralForAgents (m : Model) (n : ℕ) : Prop :=
-  ∀ (r x₀ : Fin n → ℝ), (∀ i, 0 < r i) →
-    ∀ τ, (∀ t, τ ≤ t →
-        proximityDigraph m r (traj m r x₀ t) = proximityDigraph m r (traj m r x₀ τ)) →
-      ∃ t₂, τ ≤ t₂ ∧ ∃ xinf, PseudoStableAfter (traj m r x₀) xinf t₂
+def Theorem64ivLiteralForAgents :=
+  T64 ∃ xinf, PseudoStableAfter tr xinf t₂
 
 /-- Theorem 6.4(iv) for the model `m` and every number of agents, read literally. -/
-def Theorem64ivLiteralFor (m : Model) : Prop := ∀ n : ℕ, Theorem64ivLiteralForAgents m n
+def Theorem64ivLiteralFor := A Theorem64ivLiteralForAgents
 
 /-- Theorem 6.4(iv) for the model `m` and `n` agents, the reading that also admits a trajectory in a
 fixed state from `t₂` on. -/
-def Theorem64ivForAgents (m : Model) (n : ℕ) : Prop :=
-  ∀ (r x₀ : Fin n → ℝ), (∀ i, 0 < r i) →
-    ∀ τ, (∀ t, τ ≤ t →
-        proximityDigraph m r (traj m r x₀ t) = proximityDigraph m r (traj m r x₀ τ)) →
-      ∃ t₂, τ ≤ t₂ ∧
-        (FixedFrom (traj m r x₀) t₂ ∨ ∃ xinf, PseudoStableAfter (traj m r x₀) xinf t₂)
+def Theorem64ivForAgents := T64 (FP t₂)
 
 /-- Theorem 6.4(iv) for the model `m` and every number of agents, the reading admitting fixed states. -/
-def Theorem64ivFor (m : Model) : Prop := ∀ n : ℕ, Theorem64ivForAgents m n
+def Theorem64ivFor := A Theorem64ivForAgents
 
 /-- Theorem 6.4(iv), literal reading, for any SBC or SBI system. -/
-def Theorem64ivLiteral : Prop := ∀ m : Model, Theorem64ivLiteralFor m
+def Theorem64ivLiteral := M Theorem64ivLiteralFor
 
 /-- Theorem 6.4(iv), the reading admitting fixed states, for any SBC or SBI system. -/
-def Theorem64iv : Prop := ∀ m : Model, Theorem64ivFor m
+def Theorem64iv := M Theorem64ivFor
 
 /-! ### Final value, per-step factor, equi-topology distance (Definitions 3.1, 6.1, 4.1) -/
 
 /-- Definition 3.1: the final value at constant topology, `fvct(y) = lim_{t→∞} A(y)ᵗ y` (the limit
 of the trajectory from `y` whose topology is held fixed; `limUnder` is that limit when it exists). -/
-noncomputable def fvct (m : Model) {n : ℕ} (r y : Fin n → ℝ) : Fin n → ℝ :=
-  limUnder atTop (fun t : ℕ => (adjMatrix m r y ^ t).mulVec y)
+def fvct :=
+  limUnder atTop fun t => (adjMatrix m r y ^ t).mulVec y
 
 /-- Definition 6.1: the per-step convergence factor of agent `i` at time `t` along `x`,
 `(x_i(t+1) − fvct_i(x(t))) / (x_i(t) − fvct_i(x(t)))`. -/
-noncomputable def perStepFactor (m : Model) {n : ℕ} (r : Fin n → ℝ) (x : ℕ → Fin n → ℝ)
-    (i : Fin n) (t : ℕ) : ℝ :=
+def perStepFactor i t :=
   (x (t + 1) i - fvct m r (x t) i) / (x t i - fvct m r (x t) i)
 
 /-- Definition 4.1(i): the equi-topology distance
 `ε_i(z) = ½ · min {||z_i − z_j| − R| : j ≠ i, R ∈ {r_i, r_j}}` (for `n = 1` the set is empty and
 `sInf ∅ = 0` on `ℝ`). -/
-noncomputable def equiTopologyDistance {n : ℕ} (r z : Fin n → ℝ) (i : Fin n) : ℝ :=
-  (1 / 2) * sInf {d : ℝ | ∃ j, j ≠ i ∧ (d = |(|z i - z j|) - r i| ∨ d = |(|z i - z j|) - r j|)}
+def equiTopologyDistance i :=
+  1 / 2 * sInf {d | ∃ j, j ≠ i ∧ (d = |(|z i - z j|) - r i| ∨ d = |(|z i - z j|) - r j|)}
+
+local notation "E" => equiTopologyDistance r y i
 
 /-- `y` lies in the equi-topology neighbourhood of `z` (Definition 4.1(i)): `|y_i − z_i| < ε_i(z)`
 where `ε_i(z) > 0`, and `|y_i − z_i| = ε_i(z)` where `ε_i(z) = 0`. -/
-def EquiTopologyNbhd {n : ℕ} (r z y : Fin n → ℝ) : Prop :=
-  ∀ i, (0 < equiTopologyDistance r z i → |y i - z i| < equiTopologyDistance r z i) ∧
-    (equiTopologyDistance r z i = 0 → |y i - z i| = equiTopologyDistance r z i)
+def EquiTopologyNbhd :=
+  ∀ i, (0 < E → |z i - y i| < E) ∧ (E = 0 → |z i - y i| = E)
 
 /-! ### The four systems of Hegarty–Ognissanti–Wedin (their §2–§5) -/
 
 /-- Their §2, SBC, seven agents: the initial opinions. -/
-noncomputable def sbc7_x0 : Fin 7 → ℝ := ![0, 38, 69, 84, 99, 130, 168]
+v sbc7_x0 0, 38, 69, 84, 99, 130, 168
 /-- Their §2: the confidence bounds. -/
-noncomputable def sbc7_r : Fin 7 → ℝ := ![18, 42, 48, 12, 48, 42, 18]
+v sbc7_r 18, 42, 48, 12, 48, 42, 18
 /-- Their §2: the limit. -/
-noncomputable def sbc7_lim : Fin 7 → ℝ := ![0, 36, 72, 84, 96, 132, 168]
+v sbc7_lim 0, 36, 72, 84, 96, 132, 168
 /-- Their §2: the offset direction, `x(t) = x_∞ + (−1/6)ᵗ v`. -/
-noncomputable def sbc7_v : Fin 7 → ℝ := ![0, 2, -3, 0, 3, -2, 0]
+v sbc7_v 0, 2, -3, 0, 3, -2, 0
 
 /-- Their §3: `λ = (1 − √5)/8`, the rate of the two SBI systems. -/
-noncomputable def sbiRate : ℝ := (1 - Real.sqrt 5) / 8
+def sbiRate := (1 - Real.sqrt 5) / 8
 
 /-- Their §3, SBI, seven agents: the initial opinions, with `φ = (1 + √5)/2`. -/
-noncomputable def sbi7_x0 : Fin 7 → ℝ :=
-  ![0, 15 / 2, 10 - Real.goldenRatio / 2, 11, 12 + Real.goldenRatio / 2, 29 / 2, 22]
+v sbi7_x0 0, 15 / 2, 10 - Real.goldenRatio / 2, 11, 12 + Real.goldenRatio / 2, 29 / 2, 22
 /-- Their §3: the influence bounds. -/
-noncomputable def sbi7_r : Fin 7 → ℝ := ![8, 4, 4, 8, 4, 4, 8]
+v sbi7_r 8, 4, 4, 8, 4, 4, 8
 /-- Their §3: the limit. -/
-noncomputable def sbi7_lim : Fin 7 → ℝ := ![0, 7, 10, 11, 12, 15, 22]
+v sbi7_lim 0, 7, 10, 11, 12, 15, 22
 /-- Their §3 and §5: the offset direction, `x(t) = x_∞ + (λᵗ/2) v` in §3 and `x_∞ + λᵗ v` in §5. -/
-noncomputable def sbi_v : Fin 7 → ℝ :=
-  ![0, 1, -Real.goldenRatio, 0, Real.goldenRatio, -1, 0]
+v sbi_v 0, 1, -Real.goldenRatio, 0, Real.goldenRatio, -1, 0
 
 /-- Their §4, SBC, six agents: the initial opinions. -/
-noncomputable def sbc6_x0 : Fin 6 → ℝ := ![0, 22, 37, 103, 118, 140]
+v sbc6_x0 0, 22, 37, 103, 118, 140
 /-- Their §4: the confidence bounds. -/
-noncomputable def sbc6_r : Fin 6 → ℝ := ![10, 70, 70, 70, 70, 10]
+v sbc6_r 10, 70, 70, 70, 70, 10
 /-- Their §4: the limit. -/
-noncomputable def sbc6_lim : Fin 6 → ℝ := ![0, 20, 40, 100, 120, 140]
+v sbc6_lim 0, 20, 40, 100, 120, 140
 /-- Their §4: the offset direction, `x(t) = x_∞ + (−1/6)ᵗ v`. -/
-noncomputable def sbc6_v : Fin 6 → ℝ := ![0, 2, -3, 3, -2, 0]
+v sbc6_v 0, 2, -3, 3, -2, 0
 
 /-- Their §5, SBI, seven agents: the initial opinions. -/
-noncomputable def sbi7b_x0 : Fin 7 → ℝ :=
-  ![0, 71, 100 - Real.goldenRatio, 110, 120 + Real.goldenRatio, 149, 220]
+v sbi7b_x0 0, 71, 100 - Real.goldenRatio, 110, 120 + Real.goldenRatio, 149, 220
 /-- Their §5: the influence bounds. -/
-noncomputable def sbi7b_r : Fin 7 → ℝ := ![85, 35, 35, 75, 35, 35, 85]
+v sbi7b_r 85, 35, 35, 75, 35, 35, 85
 /-- Their §5: the limit. -/
-noncomputable def sbi7b_lim : Fin 7 → ℝ := ![0, 70, 100, 110, 120, 150, 220]
+v sbi7b_lim 0, 70, 100, 110, 120, 150, 220
 
 /-! ### Two smaller constant-digraph systems (this development) -/
 
 /-- Five SBC agents: the rate `(1 − √2)/3`. -/
-noncomputable def sbc5Rate : ℝ := (1 - Real.sqrt 2) / 3
+def sbc5Rate := (1 - Real.sqrt 2) / 3
 /-- Five SBC agents: the initial opinions `(0, 7, 12 − √2, 19, 24)`. -/
-noncomputable def sbc5_x0 : Fin 5 → ℝ := ![0, 7, 12 - Real.sqrt 2, 19, 24]
+v sbc5_x0 0, 7, 12 - Real.sqrt 2, 19, 24
 /-- Five SBC agents: the confidence bounds. -/
-noncomputable def sbc5_r : Fin 5 → ℝ := ![3, 9, 9, 9, 3]
+v sbc5_r 3, 9, 9, 9, 3
 /-- Five SBC agents: the limit. -/
-noncomputable def sbc5_lim : Fin 5 → ℝ := ![0, 6, 12, 18, 24]
+v sbc5_lim 0, 6, 12, 18, 24
 /-- Five SBC agents: the offset direction, `x(t) = x_∞ + ((1 − √2)/3)ᵗ v`. -/
-noncomputable def sbc5_v : Fin 5 → ℝ := ![0, 1, -Real.sqrt 2, 1, 0]
+v sbc5_v 0, 1, -Real.sqrt 2, 1, 0
 
 /-- Six SBI agents: the rate `(13 − √249)/40`. -/
-noncomputable def sbi6Rate : ℝ := (13 - Real.sqrt 249) / 40
+def sbi6Rate := (13 - Real.sqrt 249) / 40
 /-- Six SBI agents: the initial opinions `x_∞ + v`. -/
-noncomputable def sbi6_x0 : Fin 6 → ℝ :=
-  ![0, 25 + 10 / 16, 31 + (-5 - Real.sqrt 249) / 16, 44 + 8 / 16, 55 + 10 / 16, 90]
+v sbi6_x0 0, 25 + 10 / 16, 31 + (-5 - Real.sqrt 249) / 16, 44 + 8 / 16, 55 + 10 / 16, 90
 /-- Six SBI agents: the influence bounds. -/
-noncomputable def sbi6_r : Fin 6 → ℝ := ![45, 18, 27, 45 / 2, 27, 54]
+v sbi6_r 45, 18, 27, 45 / 2, 27, 54
 /-- Six SBI agents: the limit. -/
-noncomputable def sbi6_lim : Fin 6 → ℝ := ![0, 25, 31, 44, 55, 90]
+v sbi6_lim 0, 25, 31, 44, 55, 90
 /-- Six SBI agents: the offset direction, `x(t) = x_∞ + ((13 − √249)/40)ᵗ v`. -/
-noncomputable def sbi6_v : Fin 6 → ℝ := ![0, 10 / 16, (-5 - Real.sqrt 249) / 16, 8 / 16, 10 / 16, 0]
+v sbi6_v 0, 10 / 16, (-5 - Real.sqrt 249) / 16, 8 / 16, 10 / 16, 0
 
 /-! ### The two spectator systems (their §4 and §5, against Theorem 6.4(iii)(b)) -/
 
 /-- Their §4 with a spectator at `210` (`r = 100`) and two beacons at `280`, `300` (`r = 10`): the
 initial opinions. -/
-noncomputable def sbc9_x0 : Fin 9 → ℝ := ![0, 22, 37, 103, 118, 140, 210, 280, 300]
+v sbc9_x0 0, 22, 37, 103, 118, 140, 210, 280, 300
 /-- Their §4 with the spectator and the beacons: the confidence bounds. -/
-noncomputable def sbc9_r : Fin 9 → ℝ := ![10, 70, 70, 70, 70, 10, 100, 10, 10]
+v sbc9_r 10, 70, 70, 70, 70, 10, 100, 10, 10
 /-- Their §5 with a spectator at `60` (`r = 1`), which is index `1` when the opinions are listed
 increasingly: the initial opinions. -/
-noncomputable def sbi8_x0 : Fin 8 → ℝ :=
-  ![0, 60, 71, 100 - Real.goldenRatio, 110, 120 + Real.goldenRatio, 149, 220]
+v sbi8_x0 0, 60, 71, 100 - Real.goldenRatio, 110, 120 + Real.goldenRatio, 149, 220
 /-- Their §5 with the spectator: the influence bounds. -/
-noncomputable def sbi8_r : Fin 8 → ℝ := ![85, 1, 35, 35, 75, 35, 35, 85]
+v sbi8_r 85, 1, 35, 35, 75, 35, 35, 85
 
 /-! ### Five SBI agents with complex modes; the near-homogeneous SBC family (this development) -/
 
 /-- Five SBI agents: the influence bounds. -/
-noncomputable def sbi5_r : Fin 5 → ℝ := ![31, 9, 5, 15, 28]
+v sbi5_r 31, 9, 5, 15, 28
 
 /-- Five SBI agents: the limit. -/
-noncomputable def sbi5_lim : Fin 5 → ℝ := ![0, 10, 18, 20, 42]
+v sbi5_lim 0, 10, 18, 20, 42
 
 /-- Five SBI agents: the averaging map on the offsets of agents `1, 2, 3` under the table
 `{0}, {0, 1, 3}, {0, 1, 2, 3, 4}, {0, 2, 3, 4}, {4}` (agents `0` and `4` have offset `0`). -/
-noncomputable def sbi5LinearStep (z : Fin 3 → ℝ) : Fin 3 → ℝ :=
-  ![(z 0 + z 2) / 3, (z 0 + z 1 + z 2) / 5, (z 1 + z 2) / 4]
+v sbi5LinearStep (w 0 + w 2) / 3, (w 0 + w 1 + w 2) / 5, (w 1 + w 2) / 4
 
 /-- Five SBI agents: the offsets of agents `1, 2, 3` after `t` steps of `sbi5LinearStep` from
 `(1/3 − ρ, 1/5, 0)`. -/
-noncomputable def sbi5Offset (ρ : ℝ) (t : ℕ) : Fin 3 → ℝ :=
+def sbi5Offset t :=
   sbi5LinearStep^[t] ![1 / 3 - ρ, 1 / 5, 0]
 
 /-- Five SBI agents: the offsets of agents `1, 2, 3` placed between the zero offsets of agents `0`
 and `4`. -/
-noncomputable def sbi5Lift (z : Fin 3 → ℝ) : Fin 5 → ℝ := ![0, z 0, z 1, z 2, 0]
+v sbi5Lift 0, w 0, w 1, w 2, 0
 
 /-- Five SBI agents: the initial opinions `(0, 31/3 − ρ, 91/5, 20, 42)`; the construction takes `ρ`
 to be the real root of `60ρ³ − 47ρ² + 9ρ − 1`, which lies in `(57/100, 29/50)`. -/
-noncomputable def sbi5_x0 (ρ : ℝ) : Fin 5 → ℝ := sbi5_lim + sbi5Lift (sbi5Offset ρ 0)
+def sbi5_x0 := sbi5_lim + sbi5Lift (sbi5Offset ρ 0)
 
 /-- The five-agent SBC family: the bounds `(6 − 3δ, 6 + 3δ, 6 + 3δ, 6 + 3δ, 6 − 3δ)`. -/
-noncomputable def sbc5Family_r (δ : ℝ) : Fin 5 → ℝ :=
-  ![6 - 3 * δ, 6 + 3 * δ, 6 + 3 * δ, 6 + 3 * δ, 6 - 3 * δ]
+v sbc5Family_r 6 - 3 * δ, 6 + 3 * δ, 6 + 3 * δ, 6 + 3 * δ, 6 - 3 * δ
 
 /-- The five-agent SBC family: the initial opinions `sbc5_lim + δ sbc5_v`; `δ = 1` is `sbc5_x0`. -/
-noncomputable def sbc5Family_x0 (δ : ℝ) : Fin 5 → ℝ :=
-  fun i => sbc5_lim i + δ * sbc5_v i
+def sbc5Family_x0 i := sbc5_lim i + δ * sbc5_v i
 
 end HK
