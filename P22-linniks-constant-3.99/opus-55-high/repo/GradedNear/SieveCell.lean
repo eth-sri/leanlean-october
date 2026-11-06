@@ -26,79 +26,12 @@ namespace GradedNear
 
 variable {q : ℕ} {ι : Type*} [Fintype ι]
 
-/-- `‖Y_n‖ ≤ Σ_j a_j` for `a ≥ 0` and `δ ≥ 0`, `t_n ≥ 0`. -/
-lemma norm_Yn_le (E : Entries q ι) (a : ι → ℝ) (ha : ∀ j, 0 ≤ a j) (hδ : ∀ j, 0 ≤ E.δ j)
-    {n : ℕ} (hq : 2 ≤ q) : ‖Yn E a n‖ ≤ ∑ j, a j := by
-  unfold Yn
-  refine (norm_sum_le _ _).trans (Finset.sum_le_sum fun j _ => ?_)
-  rw [norm_mul, norm_mul, norm_mul, Complex.norm_real, Real.norm_of_nonneg (ha j),
-    Complex.norm_real, Real.norm_of_nonneg (Real.exp_pos _).le]
-  have h1 : Real.exp (-(E.δ j) * tn q n) ≤ 1 := by
-    rw [Real.exp_le_one_iff]
-    have := tn_nonneg q n hq
-    nlinarith [hδ j]
-  have h2 : ‖E.χ j n‖ ≤ 1 := DirichletCharacter.norm_le_one _ _
-  have h3 : ‖cexp (-((E.γ j * Real.log n : ℝ) : ℂ) * I)‖ = 1 := by
-    rw [← Complex.ofReal_neg, Complex.norm_exp_ofReal_mul_I]
-  rw [h3, mul_one]
-  have := mul_le_mul h1 h2 (norm_nonneg _) zero_le_one
-  nlinarith [ha j]
-
 omit [Fintype ι] in
-/-- The sieve summand identity: `(log n/n) Re(ycomp_j conj ycomp_{j'})` equals
-`a_j a_{j'} Re(ψ(n) log n · n^{-((1+β) + iτ)})` with `β = (δ_j + δ_{j'})/𝓛`, `τ = γ_j - γ_{j'}`. -/
-lemma sieve_term {n : ℕ} (hn : 1 ≤ n) (hq : 2 ≤ q) (E : Entries q ι) (a : ι → ℝ) (j j' : ι) :
-    Real.log n / n * (ycomp E a j n * (starRingEnd ℂ) (ycomp E a j' n)).re =
-      a j * a j' * ((E.χ j * (E.χ j')⁻¹) n * (Real.log n : ℂ) *
-        (n : ℂ) ^ (-(((1 + (E.δ j + E.δ j') / Real.log q : ℝ) : ℂ) +
-          ((E.γ j - E.γ j' : ℝ) : ℂ) * I))).re := by
-  have hn0 : n ≠ 0 := by omega
-  have hnpos : (0 : ℝ) < n := by exact_mod_cast (show 0 < n by omega)
-  have hℓ := log_q_pos hq
-  rw [ycomp_mul_conj, natCast_cpow_neg hn0]
-  have hexp : Real.exp (-(1 + (E.δ j + E.δ j') / Real.log q) * Real.log n) =
-      (1 / n) * Real.exp (-(E.δ j + E.δ j') * tn q n) := by
-    rw [one_div, ← Real.exp_log hnpos, ← Real.exp_neg, Real.exp_log hnpos, ← Real.exp_add]
-    congr 1; unfold tn; field_simp; ring
-  rw [hexp]
-  have e1 : cexp (-(((E.γ j - E.γ j') * Real.log n : ℝ) : ℂ) * I) =
-      cexp (-((((E.γ j - E.γ j' : ℝ)) * Real.log n : ℝ) : ℂ) * I) := rfl
-  rw [Complex.re_ofReal_mul]
-  have : (E.χ j * (E.χ j')⁻¹) n * (Real.log n : ℂ) *
-      (((1 / n * Real.exp (-(E.δ j + E.δ j') * tn q n) : ℝ) : ℂ) *
-        cexp (-(((E.γ j - E.γ j') * Real.log n : ℝ) : ℂ) * I)) =
-      ((Real.log n * (1 / n * Real.exp (-(E.δ j + E.δ j') * tn q n)) : ℝ) : ℂ) *
-        ((E.χ j * (E.χ j')⁻¹) n * cexp (-(((E.γ j - E.γ j') * Real.log n : ℝ) : ℂ) * I)) := by
-    push_cast; ring
-  rw [this, Complex.re_ofReal_mul]
-  ring
-
-omit [Fintype ι] in
-/-- `‖ycomp_j‖² ≤ a_j² e^{-2 δ_j t_n}` as the real part of `ycomp_j · conj ycomp_j`. -/
-lemma ycomp_self_le (E : Entries q ι) (a : ι → ℝ) (ha : ∀ j, 0 ≤ a j) (j : ι) (n : ℕ) :
-    (ycomp E a j n * (starRingEnd ℂ) (ycomp E a j n)).re ≤
-      a j ^ 2 * Real.exp (-2 * E.δ j * tn q n) := by
-  rw [Complex.mul_conj, Complex.ofReal_re, Complex.normSq_eq_norm_sq]
-  unfold ycomp
-  rw [norm_mul, norm_mul, norm_mul, Complex.norm_real, Real.norm_of_nonneg (ha j),
-    Complex.norm_real, Real.norm_of_nonneg (Real.exp_pos _).le]
-  have h2 : ‖E.χ j n‖ ≤ 1 := DirichletCharacter.norm_le_one _ _
-  have h3 : ‖cexp (-((E.γ j * Real.log n : ℝ) : ℂ) * I)‖ = 1 := by
-    rw [← Complex.ofReal_neg, Complex.norm_exp_ofReal_mul_I]
-  rw [h3, mul_one]
-  have he : Real.exp (-2 * E.δ j * tn q n) = Real.exp (-(E.δ j) * tn q n) ^ 2 := by
-    rw [← Real.exp_nat_mul]; congr 1; push_cast; ring
-  rw [he]
-  have hx : 0 ≤ Real.exp (-(E.δ j) * tn q n) := (Real.exp_pos _).le
-  have h4 : Real.exp (-(E.δ j) * tn q n) * ‖E.χ j n‖ ≤ Real.exp (-(E.δ j) * tn q n) := by
-    nlinarith [norm_nonneg (E.χ j n)]
-  have h5 : 0 ≤ Real.exp (-(E.δ j) * tn q n) * ‖E.χ j n‖ := mul_nonneg hx (norm_nonneg _)
-  have h6 : (a j * (Real.exp (-(E.δ j) * tn q n) * ‖E.χ j n‖)) ^ 2 ≤
-      (a j * Real.exp (-(E.δ j) * tn q n)) ^ 2 :=
-    pow_le_pow_left₀ (mul_nonneg (ha j) h5) (mul_le_mul_of_nonneg_left h4 (ha j)) 2
-  calc (a j * (Real.exp (-(E.δ j) * tn q n) * ‖E.χ j n‖)) ^ 2
-      ≤ (a j * Real.exp (-(E.δ j) * tn q n)) ^ 2 := h6
-    _ = a j ^ 2 * Real.exp (-(E.δ j) * tn q n) ^ 2 := by ring
+lemma norm_ycomp_le (E : Entries q ι) (a : ι → ℝ) (ha : ∀ j, 0 ≤ a j) (j : ι) (n : ℕ) :
+    ‖ycomp E a j n‖ ≤ a j * Real.exp (-(E.δ j) * tn q n) := by
+  have := ha j
+  simp [ycomp, abs_of_nonneg this, Complex.norm_exp, -Complex.natCast_log]
+  grw [DirichletCharacter.norm_le_one, mul_one]
 
 /-- **Bound for one sieve cell.** -/
 lemma cell_bound (E : Entries q ι) (a : ι → ℝ) (ha : ∀ j, 0 ≤ a j) (hδ : ∀ j, 0 ≤ E.δ j)
@@ -113,112 +46,51 @@ lemma cell_bound (E : Entries q ι) (a : ι → ℝ) (ha : ∀ j, 0 ≤ a j) (h�
     ∑ n ∈ C, Λ n / n * ‖Yn E a n‖ ^ 2 ≤
       ∑ j, Real.exp (-2 * E.δ j * t₀) * Dk * a j ^ 2 + (Ok + Pk) * (∑ j, a j) ^ 2 := by
   classical
-  have hY : ∀ n, ‖Yn E a n‖ ^ 2 ≤ (∑ j, a j) ^ 2 := fun n =>
-    pow_le_pow_left₀ (norm_nonneg _) (norm_Yn_le E a ha hδ hq) 2
-  have hsumA : 0 ≤ ∑ j, a j := Finset.sum_nonneg fun j _ => ha j
-  -- majorant
-  have step1 : ∑ n ∈ C, Λ n / n * ‖Yn E a n‖ ^ 2 ≤
-      ∑ n ∈ C, Real.log n / n * sieveNu V n * ‖Yn E a n‖ ^ 2 +
-        ∑ n ∈ C, pp n / n * ‖Yn E a n‖ ^ 2 := by
-    rw [← Finset.sum_add_distrib]
-    refine Finset.sum_le_sum fun n hn => ?_
-    have hnpos : (0 : ℝ) < n := by exact_mod_cast (hC1 n hn)
-    have hm := hmaj n hn
-    have hY0 := sq_nonneg ‖Yn E a n‖
-    have key : Λ n / n * ‖Yn E a n‖ ^ 2 ≤
-        (Real.log n * sieveNu V n + pp n) / n * ‖Yn E a n‖ ^ 2 :=
-      mul_le_mul_of_nonneg_right (div_le_div_of_nonneg_right hm hnpos.le) hY0
-    calc Λ n / n * ‖Yn E a n‖ ^ 2 ≤ (Real.log n * sieveNu V n + pp n) / n * ‖Yn E a n‖ ^ 2 :=
-          key
-      _ = Real.log n / n * sieveNu V n * ‖Yn E a n‖ ^ 2 + pp n / n * ‖Yn E a n‖ ^ 2 := by
-          ring
-  -- small prime powers
-  have step2 : ∑ n ∈ C, pp n / n * ‖Yn E a n‖ ^ 2 ≤ Pk * (∑ j, a j) ^ 2 := by
-    calc ∑ n ∈ C, pp n / n * ‖Yn E a n‖ ^ 2 ≤ ∑ n ∈ C, pp n / n * (∑ j, a j) ^ 2 :=
-          Finset.sum_le_sum fun n hn => mul_le_mul_of_nonneg_left (hY n)
-            (div_nonneg (hpp0 n) (Nat.cast_nonneg n))
-      _ = (∑ n ∈ C, pp n / n) * (∑ j, a j) ^ 2 := by rw [Finset.sum_mul]
-      _ ≤ Pk * (∑ j, a j) ^ 2 := mul_le_mul_of_nonneg_right hppsum (sq_nonneg _)
-  -- expand the Selberg part
-  have hexpand : ∑ n ∈ C, Real.log n / n * sieveNu V n * ‖Yn E a n‖ ^ 2 =
-      ∑ j, ∑ j', ∑ n ∈ C, sieveNu V n *
-        (Real.log n / n * (ycomp E a j n * (starRingEnd ℂ) (ycomp E a j' n)).re) := by
-    simp_rw [norm_Yn_sq, Finset.mul_sum]
-    rw [Finset.sum_comm]
-    refine Finset.sum_congr rfl fun j _ => ?_
-    rw [Finset.sum_comm]
-    refine Finset.sum_congr rfl fun j' _ => Finset.sum_congr rfl fun n _ => ?_
-    ring
-  have hν : ∀ n, 0 ≤ sieveNu V n := sieveNu_nonneg V
-  have hdiagj : ∀ j, ∑ n ∈ C, sieveNu V n *
-      (Real.log n / n * (ycomp E a j n * (starRingEnd ℂ) (ycomp E a j n)).re) ≤
-      Real.exp (-2 * E.δ j * t₀) * Dk * a j ^ 2 := by
-    intro j
-    calc ∑ n ∈ C, sieveNu V n *
-          (Real.log n / n * (ycomp E a j n * (starRingEnd ℂ) (ycomp E a j n)).re)
-        ≤ ∑ n ∈ C, (Real.log n / n * sieveNu V n) * (a j ^ 2 * Real.exp (-2 * E.δ j * t₀)) := by
-          refine Finset.sum_le_sum fun n hn => ?_
-          have hlog : 0 ≤ Real.log n / n :=
-            div_nonneg (Real.log_natCast_nonneg n) (Nat.cast_nonneg n)
-          have h1 := ycomp_self_le E a ha j n
-          have h2 : Real.exp (-2 * E.δ j * tn q n) ≤ Real.exp (-2 * E.δ j * t₀) := by
-            apply Real.exp_le_exp.2
-            nlinarith [hδ j, hCt n hn]
-          have h3 : a j ^ 2 * Real.exp (-2 * E.δ j * tn q n) ≤
-              a j ^ 2 * Real.exp (-2 * E.δ j * t₀) :=
-            mul_le_mul_of_nonneg_left h2 (sq_nonneg _)
-          have := mul_le_mul_of_nonneg_left (h1.trans h3) (mul_nonneg hlog (hν n))
-          nlinarith [hν n]
-      _ = (∑ n ∈ C, Real.log n / n * sieveNu V n) * (a j ^ 2 * Real.exp (-2 * E.δ j * t₀)) := by
-          rw [Finset.sum_mul]
-      _ ≤ Dk * (a j ^ 2 * Real.exp (-2 * E.δ j * t₀)) :=
-          mul_le_mul_of_nonneg_right hdiag (mul_nonneg (sq_nonneg _) (Real.exp_pos _).le)
-      _ = _ := by ring
-  have hoffj : ∀ j j', j ≠ j' → ∑ n ∈ C, sieveNu V n *
-      (Real.log n / n * (ycomp E a j n * (starRingEnd ℂ) (ycomp E a j' n)).re) ≤
-      a j * a j' * Ok := by
-    intro j j' hjj'
-    have hrw : ∀ n ∈ C, sieveNu V n *
-        (Real.log n / n * (ycomp E a j n * (starRingEnd ℂ) (ycomp E a j' n)).re) =
-        a j * a j' * ((sieveNu V n : ℂ) * ((E.χ j * (E.χ j')⁻¹) n * (Real.log n : ℂ) *
-          (n : ℂ) ^ (-(((1 + (E.δ j + E.δ j') / Real.log q : ℝ) : ℂ) +
-            ((E.γ j - E.γ j' : ℝ) : ℂ) * I)))).re := by
-      intro n hn
-      rw [sieve_term (hC1 n hn) hq, Complex.re_ofReal_mul]
+  have hY : ∀ n, ‖Yn E a n‖ ≤ ∑ j, a j := fun n => (norm_sum_le ..).trans
+    (Finset.sum_le_sum fun j _ => (norm_ycomp_le E a ha j n).trans (mul_le_of_le_one_right (ha j)
+      (Real.exp_le_one_iff.2 (by nlinarith [hδ j, tn_nonneg q n hq]))))
+  have key : ∀ j j', ∑ n ∈ C, Real.log n / n * sieveNu V n *
+      (ycomp E a j n * (starRingEnd ℂ) (ycomp E a j' n)).re ≤
+      (if j = j' then Real.exp (-2 * E.δ j * t₀) * Dk * a j ^ 2 else 0) + a j * a j' * Ok := by
+    intro j j'
+    split_ifs with h
+    · subst h
+      refine le_add_of_le_of_nonneg ?_ (by nlinarith)
+      calc _ ≤ ∑ n ∈ C, Real.log n / n * sieveNu V n * (a j ^ 2 * Real.exp (-2 * E.δ j * t₀)) := by
+            gcongr with n hn
+            · have := sieveNu_nonneg V n; positivity
+            rw [Complex.mul_conj, Complex.ofReal_re, Complex.normSq_eq_norm_sq]
+            grw [norm_ycomp_le E a ha j n, mul_pow, ← Real.exp_nat_mul]
+            gcongr _ * Real.exp ?_; push_cast; nlinarith [hδ j, hCt n hn]
+        _ ≤ _ := by grw [← Finset.sum_mul, hdiag]; exact (by ring : _ = _).le
+    · rw [zero_add]
+      refine le_of_eq_of_le ?_ (mul_le_mul_of_nonneg_left ((re_le_norm _).trans
+        (hoff j j' h)) (mul_nonneg (ha j) (ha j')))
+      rw [re_sum, Finset.mul_sum]
+      refine Finset.sum_congr rfl fun n hn => ?_
+      have := hC1 n hn
+      rw [ycomp_mul_conj, natCast_cpow_neg (by omega), show -(1 + (E.δ j + E.δ j') / Real.log q) *
+        Real.log n = -(E.δ j + E.δ j') * tn q n - Real.log n by grind [tn], Real.exp_sub,
+        Real.exp_log (by positivity), ← re_ofReal_mul, ← re_ofReal_mul]
+      push_cast
       ring
-    rw [Finset.sum_congr rfl hrw, ← Finset.mul_sum, ← Complex.re_sum]
-    exact mul_le_mul_of_nonneg_left ((Complex.re_le_norm _).trans (hoff j j' hjj'))
-      (mul_nonneg (ha j) (ha j'))
-  have step3 : ∑ n ∈ C, Real.log n / n * sieveNu V n * ‖Yn E a n‖ ^ 2 ≤
-      ∑ j, Real.exp (-2 * E.δ j * t₀) * Dk * a j ^ 2 + Ok * (∑ j, a j) ^ 2 := by
-    rw [hexpand]
-    calc ∑ j, ∑ j', ∑ n ∈ C, sieveNu V n *
-          (Real.log n / n * (ycomp E a j n * (starRingEnd ℂ) (ycomp E a j' n)).re)
-        ≤ ∑ j, ∑ j', (if j' = j then Real.exp (-2 * E.δ j * t₀) * Dk * a j ^ 2
-            else a j * a j' * Ok) := by
-          refine Finset.sum_le_sum fun j _ => Finset.sum_le_sum fun j' _ => ?_
-          by_cases h : j' = j
-          · subst h; rw [ite_eq_left_iff.2 (fun hh => absurd rfl hh)]; exact hdiagj j'
-          · rw [ite_eq_right_iff.2 (fun hh => absurd hh h)]; exact hoffj j j' (fun e => h e.symm)
-      _ ≤ ∑ j, ∑ j', (if j' = j then Real.exp (-2 * E.δ j * t₀) * Dk * a j ^ 2 else 0) +
-            ∑ j, ∑ j', a j * a j' * Ok := by
-          rw [← Finset.sum_add_distrib]
-          refine Finset.sum_le_sum fun j _ => ?_
-          rw [← Finset.sum_add_distrib]
-          refine Finset.sum_le_sum fun j' _ => ?_
-          split_ifs
-          · nlinarith [mul_nonneg (ha j) (ha j')]
-          · linarith
-      _ = ∑ j, Real.exp (-2 * E.δ j * t₀) * Dk * a j ^ 2 + Ok * (∑ j, a j) ^ 2 := by
-          congr 1
-          · refine Finset.sum_congr rfl fun j _ => ?_
-            rw [Finset.sum_ite_eq' Finset.univ j]
-            simp
-          · rw [sq, Finset.sum_mul_sum, Finset.mul_sum]
-            refine Finset.sum_congr rfl fun j _ => ?_
-            rw [Finset.mul_sum]
-            refine Finset.sum_congr rfl fun j' _ => ?_
-            ring
-  linarith [step1, step2, step3]
+  calc ∑ n ∈ C, Λ n / n * ‖Yn E a n‖ ^ 2
+      ≤ ∑ n ∈ C, (Real.log n * sieveNu V n / n * ‖Yn E a n‖ ^ 2 + pp n / n * (∑ j, a j) ^ 2) :=
+        Finset.sum_le_sum fun n hn => by
+          have := hpp0 n
+          grw [hmaj n hn, add_div, add_mul]
+          gcongr; exact hY n
+    _ ≤ ∑ j, ∑ j', ((if j = j' then Real.exp (-2 * E.δ j * t₀) * Dk * a j ^ 2 else 0) +
+        a j * a j' * Ok) + Pk * (∑ j, a j) ^ 2 := by
+      rw [Finset.sum_add_distrib, ← Finset.sum_mul]
+      simp only [norm_Yn_sq, Finset.mul_sum]
+      rw [Finset.sum_comm]
+      gcongr with j
+      rw [Finset.sum_comm]
+      gcongr with j'
+      grind
+    _ = _ := by
+      simp [Finset.sum_add_distrib, ← Finset.sum_mul, ← Finset.mul_sum]
+      ring
 
 end GradedNear

@@ -24,7 +24,7 @@ theorem LFunction_zeros_finite {q : ℕ} [NeZero q] {χ : DirichletCharacter ℂ
     DirichletCharacter.LFunction_ne_zero_of_one_le_re χ (.inl hχ) (by norm_num)
   -- Identity theorem: either `L ≡ 0`, or its non-zeros are codiscrete in `ℂ`.
   rcases ha.eqOn_zero_or_eventually_ne_zero_of_preconnected isPreconnected_univ with h | h
-  · exact absurd (h (Set.mem_univ 2)) h2
+  · simp_all
   -- Restrict to the compact disc, where a codiscrete set has finite complement.
   have hK : IsCompact (Metric.closedBall c r) := isCompact_closedBall c r
   have hfin := hK.finite_sdiff_of_mem_codiscreteWithin
@@ -33,6 +33,6 @@ theorem LFunction_zeros_finite {q : ℕ} [NeZero q] {χ : DirichletCharacter ℂ
   rintro ρ ⟨hρ, hL⟩
   refine ⟨?_, ?_⟩
   · rwa [Metric.mem_closedBall, dist_comm, dist_eq_norm]
-  · simp [hL]
+  · grind
 
 end GradedNear
