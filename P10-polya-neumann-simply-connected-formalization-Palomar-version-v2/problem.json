@@ -1,0 +1,75 @@
+{
+  "problem_idx": 10,
+  "id": "PALOMAR-2026-10-09-000007-v1",
+  "title": "Strict Neumann Polya inequality on simply connected planar domains",
+  "abstract": "A Lean 4 / Mathlib formalization of the strict Neumann Pólya inequality for bounded simply connected Lipschitz domains in the plane. The plane is identified with ℂ; the Neumann eigenvalues μ_0 ≤ μ_1 ≤ ... are defined by the Courant–Fischer min–max formula for the form ∫|∇u|² on H¹(Ω) (weak gradients in L²), indexed from 0 and repeated according to multiplicity, and N_N(E) = #{j ≥ 0 : μ_j < E}. The principal results are: for every bounded simply connected Lipschitz domain Ω and every integer j ≥ 1, |Ω| μ_j(Ω) < 4πj; and, equivalently, N_N(E) > |Ω| E / (4π) for every E > 0. The proof development (about 100,000 lines, namespace PolyaNeumann) also identifies the variational eigenvalues with the spectrum of the constructed self-adjoint Neumann operator, proves a quantitative smooth-domain estimate via boundary transport, Cayley/monodromy rank bounds and a Herglotz-wave reduction, and passes to Lipschitz domains by smooth approximation.",
+  "authors": [
+    "Quanyu Tang",
+    "Zuoqin Wang"
+  ],
+  "repository": "QuanyuTang/polya-neumann-simply-connected-formalization-Palomar-version-v2",
+  "repository_url": "https://github.com/QuanyuTang/polya-neumann-simply-connected-formalization-Palomar-version-v2",
+  "commit": "f07f1c7051862ba146429db6eda5dc4e8b020f74",
+  "license": "Apache-2.0",
+  "lean_toolchain": "leanprover/lean4:v4.35.0-rc2",
+  "lake_root": "",
+  "mathlib": true,
+  "size_category": "L",
+  "baseline_tokens": 903891,
+  "lean_files": 300,
+  "protected_theorem_names": [
+    "PalomarPolyaNeumann.strict_neumann_polya",
+    "PalomarPolyaNeumann.strict_neumann_polya_count"
+  ],
+  "definition_names": [],
+  "permitted_axioms": [
+    "propext",
+    "Quot.sound",
+    "Classical.choice"
+  ],
+  "challenge_module": "Challenge",
+  "challenge_path": "Challenge.lean",
+  "solution_module": "Solution",
+  "solution_path": "Solution.lean",
+  "comparator_path": "comparator.json",
+  "arxiv_tags": [
+    "math.SP",
+    "math.AP"
+  ],
+  "msc2020": [
+    "35P15",
+    "35P20",
+    "35J05"
+  ],
+  "mathematical_sources": [
+    {
+      "title": "The Neumann Pólya inequality on simply connected planar domains",
+      "authors": [
+        "Quanyu Tang",
+        "Zuoqin Wang"
+      ],
+      "type": "paper",
+      "identifier": "https://github.com/QuanyuTang/polya-neumann-simply-connected-formalization-Palomar-version-v2/blob/99037f07a1a3a8eb475133eee1934a2fbb77c35d/paper/N_simply_connected_strict_v3.tex",
+      "location": "Theorem 1 (thm:main) and the counting formulation following it",
+      "relationship": "formalizes"
+    },
+    {
+      "title": "Pólya's conjecture for Euclidean balls",
+      "authors": [
+        "N. Filonov",
+        "M. Levitin",
+        "I. Polterovich",
+        "D. A. Sher"
+      ],
+      "type": "paper",
+      "identifier": null,
+      "location": "Invent. Math. 234 (2023), 129–169",
+      "relationship": "background"
+    }
+  ],
+  "dependency_graph_nodes": 5066,
+  "dependency_graph_edges": 33642,
+  "project_path": "repos/PALOMAR-2026-10-09-000007-v1/project",
+  "dependency_graph_path": "repos/PALOMAR-2026-10-09-000007-v1/dependency-graph.json",
+  "license_path": "repos/PALOMAR-2026-10-09-000007-v1/LICENSE"
+}
