@@ -1,2 +1,1 @@
-module
-public import GradedNear.Functions
+import GradedNear.Functions

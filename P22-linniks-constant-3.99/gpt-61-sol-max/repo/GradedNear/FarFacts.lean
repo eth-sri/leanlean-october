@@ -1,2 +1,1 @@
-module
-public import GradedNear.Far
+import GradedNear.Far

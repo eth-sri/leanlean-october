@@ -1,2 +1,1 @@
-module
-public import GradedNear.LaplaceDecay
+import GradedNear.LaplaceDecay

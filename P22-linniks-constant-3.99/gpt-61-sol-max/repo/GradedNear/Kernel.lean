@@ -1,2 +1,1 @@
-module
-public import GradedNear.Prime
+import GradedNear.Prime
