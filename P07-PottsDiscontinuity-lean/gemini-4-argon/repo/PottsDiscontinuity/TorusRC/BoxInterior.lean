@@ -26,11 +26,9 @@ theorem liftedBox_edge_rightHalfInterior (hNp : 0 < N) (hMp : 0 < M)
   have hvx := abs_le.mp v.property.1
   have huy := abs_le.mp u.property.2
   have hvy := abs_le.mp v.property.2
-  have hdist : |u.val.val.1 - v.val.val.1| = 1 := huv.1
-  have hne : u.val.val.1 ≠ v.val.val.1 := by
-    intro heq
-    rw [heq, sub_self, abs_zero] at hdist
-    norm_num at hdist
+  have hne : u.val.val.1 ≠ v.val.val.1 := fun heq => by
+    have hdist : |u.val.val.1 - v.val.val.1| = 1 := huv.1
+    simp [heq] at hdist
   have hxlo : (N / 2 : ℤ) < max u.val.val.1 v.val.val.1 := by omega
   have hxhi : max u.val.val.1 v.val.val.1 ≤ (N : ℤ) := by omega
   have hylo : 0 < max u.val.val.2 v.val.val.2 := by omega
@@ -45,8 +43,7 @@ theorem liftedBox_edge_rightHalfInterior (hNp : 0 < N) (hMp : 0 < M)
     have hxval := periodicCoordinate_val hNp (max u.val.val.1 v.val.val.1)
     rw [hxN, Int.emod_self] at hxval
     change (periodicCoordinate hNp _).val = 0
-    rw [hxN]
-    exact_mod_cast hxval
+    rw [hxN]; exact_mod_cast hxval
   · right
     have hxval := periodicCoordinate_val hNp (max u.val.val.1 v.val.val.1)
     rw [Int.emod_eq_of_lt (by omega) (by omega)] at hxval
@@ -70,24 +67,16 @@ theorem liftedBoxGraph_map_projection_le_rightHalf (hN : Even N) (hM : Even M)
   change ((fullDiamondGraph hN hM).deleteEdges
     (FK.openEdges (fullDiamondGraph hN hM) (rightHalfFrozenEdges hN hM hN4 hM4))).Adj _ _
   rw [SimpleGraph.deleteEdges_adj]
-  refine ⟨hfull, ?_⟩
+  refine ⟨hfull, fun hopen => ?_⟩
   let idx := liftedEdgeIndex hNp hMp u.val v.val
   let e := torusIndexedEdgeEquiv hN hM hN4 hM4 idx
-  have hsite : rightHalfInteriorSite idx :=
-    liftedBox_edge_rightHalfInterior hNp hMp c R hleft hright hbottom htop huv
-  have hnot : e ∉ rightHalfFrozenEdges hN hM hN4 hM4 := by
-    intro he
-    exact ((mem_rightHalfFrozenEdges hN hM hN4 hM4 idx).mp he) hsite
   have hpair : e.val = s(liftedFaceVertex hN hM hNp hMp u.val,
-      liftedFaceVertex hN hM hNp hMp v.val) := by
-    change s(faceEndpoint hN hM true idx false, faceEndpoint hN hM true idx true) = _
-    exact (liftedFaceEndpoints_eq hN hM hNp hMp u.val v.val huv).symm
-  intro hopen
-  apply hnot
-  apply (FK.coe_mem_openEdges_iff (fullDiamondGraph hN hM)
-    (rightHalfFrozenEdges hN hM hN4 hM4) e).mp
-  rw [hpair]
-  exact hopen
+      liftedFaceVertex hN hM hNp hMp v.val) :=
+    (liftedFaceEndpoints_eq hN hM hNp hMp u.val v.val huv).symm
+  exact (mem_rightHalfFrozenEdges hN hM hN4 hM4 idx).mp
+    ((FK.coe_mem_openEdges_iff (fullDiamondGraph hN hM) (rightHalfFrozenEdges hN hM hN4 hM4) e).mp
+      (hpair.symm ▸ hopen))
+    (liftedBox_edge_rightHalfInterior hNp hMp c R hleft hright hbottom htop huv)
 
 noncomputable section
 
@@ -141,38 +130,26 @@ theorem embeddedBox_connection_lifts (hN : Even N) (hM : Even M)
   let F : FK.openGraph (liftedBoxGraph c R) Cbox →g
       liftedStripGraph hNp hMp (rightHalfRestore hN hM hN4 hM4 H A)
         (N / 2 : ℤ) (N : ℤ) :=
-    { toFun := fun z => z.val
+    { toFun z := z.val
       map_rel' := by
         intro u w huw
         have hlat : rotatedLattice.Adj u.val w.val :=
           FK.openGraph_le (liftedBoxGraph c R) Cbox huw
-        rw [FK.openGraph_adj] at huw
-        obtain ⟨e, he, heuw⟩ := huw
-        have heC := (FK.mem_embeddedConfigurationRestriction (liftedBoxGraph c R) D f hGH C e).mp he
+        obtain ⟨e, he, heuw⟩ := (FK.openGraph_adj (liftedBoxGraph c R) Cbox u w).mp huw
         let idx := liftedEdgeIndex hNp hMp u.val w.val
-        have heq : FK.edgeRestrictionEdgeEmbedding (fullDiamondGraph hN hM)
-            (rightHalfFrozenEdges hN hM hN4 hM4)
-            (FK.embeddedEdgeEmbedding (liftedBoxGraph c R) D f hGH e) =
-            torusIndexedEdgeEquiv hN hM hN4 hM4 idx := by
-          apply Subtype.ext
-          rw [FK.edgeRestrictionEdgeEmbedding_coe, FK.embeddedEdgeEmbedding_coe, heuw]
-          change s(liftedFaceVertex hN hM hNp hMp u.val,
-            liftedFaceVertex hN hM hNp hMp w.val) =
-            s(faceEndpoint hN hM true idx false, faceEndpoint hN hM true idx true)
-          exact liftedFaceEndpoints_eq hN hM hNp hMp u.val w.val hlat
         have heA : torusIndexedEdgeEquiv hN hM hN4 hM4 idx ∈ A.val := by
           rw [FK.edgeRestrictionConfigurationEquiv_val]
-          exact Finset.mem_map.mpr ⟨_, heC, heq⟩
+          refine Finset.mem_map.mpr ⟨_, (FK.mem_embeddedConfigurationRestriction (liftedBoxGraph c R) D f hGH C e).mp he, ?_⟩
+          apply Subtype.ext
+          rw [FK.edgeRestrictionEdgeEmbedding_coe, FK.embeddedEdgeEmbedding_coe, heuw]
+          exact liftedFaceEndpoints_eq hN hM hNp hMp u.val w.val hlat
         have hu := abs_le.mp u.property.1
         have hw := abs_le.mp w.property.1
         exact ⟨hlat, (rightHalfRestore_true_iff hN hM hN4 hM4 H A idx).mpr (Or.inl heA),
           ⟨by omega, by omega⟩, ⟨by omega, by omega⟩⟩ }
-  obtain ⟨hc, hv, p⟩ := hconn
-  obtain ⟨p⟩ := p
-  refine ⟨p.map F, ?_⟩
-  intro z hz
-  rw [SimpleGraph.Walk.support_map] at hz
-  obtain ⟨z', _, rfl⟩ := List.mem_map.mp hz
+  obtain ⟨_, _, ⟨p⟩⟩ := hconn
+  refine ⟨p.map F, fun z hz => ?_⟩
+  obtain ⟨z', _, rfl⟩ := List.mem_map.mp (SimpleGraph.Walk.support_map F p ▸ hz)
   exact z'.property
 
 /-- On every right-half fiber, a local box away from the seam has connection
@@ -199,39 +176,26 @@ theorem liftedBoxFreeConnectionProbability_le_free_remaining (hN : Even N) (hM :
   let f := liftedBoxProjection hN hM hNp hMp c R hRN hRM
   have hGH := liftedBoxGraph_map_projection_le_rightHalf hN hM hN4 hM4 hNp hMp
     c R hRN hRM hleft hright hbottom htop
-  let E : Set (FK.RemainingConfiguration G R₀) :=
-    {A | liftedBoxConnection hNp hMp (rightHalfRestore hN hM hN4 hM4 H A)
-      (N / 2 : ℤ) (N : ℤ) R c v}
   let S := liftedBoxFreeConnectionEvent c R c v
   let ind : FK.Configuration (liftedBoxGraph c R) → ℝ := S.indicator (fun _ => 1)
-  have hind0 : ∀ A, 0 ≤ ind A := by
-    intro A
-    by_cases hA : A ∈ S <;> simp [ind, hA]
-  have hind : Monotone ind := by
-    intro A B hAB
+  have hind0 (A) : 0 ≤ ind A := by by_cases hA : A ∈ S <;> simp [ind, hA]
+  have hind : Monotone ind := fun A B hAB => by
     by_cases hA : A ∈ S
     · have hB : B ∈ S := liftedBoxFreeConnectionEvent_upper c R c v hAB hA
       simp [ind, hA, hB]
     · simpa [ind, Set.indicator, hA] using hind0 B
-  have hcmp := FK.embedded_free_expectation_le (liftedBoxGraph c R) D f hGH
-    (torusRCBridgeParameters q) ∅ ∅ ind hind0 hind
-  have hdom : FK.FiniteProbability.expectation (FK.law D (torusRCBridgeParameters q)
-      (FK.BoundaryCondition.free ∅))
-      (fun C => ind (FK.embeddedConfigurationRestriction (liftedBoxGraph c R) D f hGH C)) ≤
-      FK.FiniteProbability.expectation (FK.remainingLaw G (torusRCBridgeParameters q)
-        (FK.BoundaryCondition.free ∅) R₀) (E.indicator (fun _ => (1 : ℝ))) := by
-    rw [← FK.law_edgeRestriction_map, FK.FiniteProbability.expectation_map]
-    apply FK.FiniteProbability.expectation_mono
-    intro C
-    by_cases hc : FK.embeddedConfigurationRestriction (liftedBoxGraph c R) D f hGH C ∈ S
-    · have he := embeddedBox_connection_lifts hN hM hN4 hM4 hNp hMp c R hRN hRM
-        hleft hright hGH H C v hc
-      have heE : FK.edgeRestrictionConfigurationEquiv G R₀ C ∈ E := he
-      simp only [ind, Set.indicator_of_mem hc, Set.indicator_of_mem heE, le_refl]
-    · simp only [ind, Set.indicator_of_notMem hc]
-      by_cases he : FK.edgeRestrictionConfigurationEquiv G R₀ C ∈ E <;>
-        simp [Set.indicator, he]
-  exact hcmp.trans hdom
+  refine (FK.embedded_free_expectation_le (liftedBoxGraph c R) D f hGH
+    (torusRCBridgeParameters q) ∅ ∅ ind hind0 hind).trans ?_
+  unfold torusRCFiberEventProbability
+  rw [← FK.law_edgeRestriction_map, FK.FiniteProbability.expectation_map]
+  apply FK.FiniteProbability.expectation_mono; intro C
+  dsimp only [ind]
+  by_cases hc : FK.embeddedConfigurationRestriction (liftedBoxGraph c R) D f hGH C ∈ S
+  · rw [Set.indicator_of_mem hc, Set.indicator_of_mem
+      (s := {A | liftedBoxConnection hNp hMp (rightHalfRestore hN hM hN4 hM4 H A) (N / 2 : ℤ) (N : ℤ) R c v})
+      (embeddedBox_connection_lifts hN hM hN4 hM4 hNp hMp c R hRN hRM hleft hright hGH H C v hc)]
+  · rw [Set.indicator_of_notMem hc]
+    exact Set.indicator_nonneg (fun _ _ => zero_le_one) _
 
 end
 

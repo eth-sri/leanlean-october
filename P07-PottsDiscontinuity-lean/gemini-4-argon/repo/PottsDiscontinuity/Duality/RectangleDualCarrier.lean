@@ -69,20 +69,10 @@ noncomputable def rectanglePrimalEdgeToSquareEdge (a : LatticeVertex) (w h : ℕ
     (e : rectanglePrimalEdgeCarrier a w h) : squareLattice.edgeSet := by
   let p := e.1.out
   have hrepr : s(p.1, p.2) = e.1 := Quot.out_eq _
-  have hadj : (rectangleGraph a w h).Adj p.1 p.2 := by
-    have hm : s(p.1, p.2) ∈ (rectangleGraph a w h).edgeSet := by
-      rw [hrepr]
-      exact e.2
-    exact hm
-  have hsq : squareLattice.Adj p.1.val p.2.val :=
-    (rectangleGraph_adj_iff a w h p.1 p.2).mp hadj
-  refine ⟨Sym2.map (fun z : RectangleVertex a w h => z.val) e.1, ?_⟩
-  have heq : Sym2.map (fun z : RectangleVertex a w h => z.val) e.1 =
-      s(p.1.val, p.2.val) := by
-    rw [← hrepr]
-    rfl
-  rw [heq]
-  exact squareLattice.mem_edgeSet.mpr hsq
+  have hadj : s(p.1, p.2) ∈ (rectangleGraph a w h).edgeSet := hrepr.symm ▸ e.2
+  refine ⟨Sym2.map Subtype.val e.1, ?_⟩
+  rw [← hrepr]
+  exact squareLattice.mem_edgeSet.mpr ((rectangleGraph_adj_iff a w h p.1 p.2).mp hadj)
 
 noncomputable def rectanglePrimalEdgeBond (a : LatticeVertex) (w h : ℕ)
     (e : rectanglePrimalEdgeCarrier a w h) : LatticeBond :=
@@ -91,36 +81,21 @@ noncomputable def rectanglePrimalEdgeBond (a : LatticeVertex) (w h : ℕ)
 private theorem rectanglePrimalEdgeBond_edge (a : LatticeVertex) (w h : ℕ)
     (e : rectanglePrimalEdgeCarrier a w h) :
     latticeBondEdge (rectanglePrimalEdgeBond a w h e) =
-      rectanglePrimalEdgeToSquareEdge a w h e := by
-  exact Equiv.apply_symm_apply wholePlaneBondEdgeEquiv
-    (rectanglePrimalEdgeToSquareEdge a w h e)
-
-private theorem rectanglePrimalEdgeBond_toSym2 (a : LatticeVertex) (w h : ℕ)
-    (e : rectanglePrimalEdgeCarrier a w h) :
-    (rectanglePrimalEdgeBond a w h e).toSym2 =
-      Sym2.map (fun z : RectangleVertex a w h => z.val) e.1 := by
-  have heq := congrArg Subtype.val (rectanglePrimalEdgeBond_edge a w h e)
-  change (rectanglePrimalEdgeBond a w h e).toSym2 = _ at heq
-  exact heq
+      rectanglePrimalEdgeToSquareEdge a w h e :=
+  wholePlaneBondEdgeEquiv.apply_symm_apply _
 
 private theorem rectanglePrimalEdgeBond_endpoints_mem (a : LatticeVertex) (w h : ℕ)
     (e : rectanglePrimalEdgeCarrier a w h) :
     (rectanglePrimalEdgeBond a w h e).source ∈ latticeRectangle a w h ∧
     (rectanglePrimalEdgeBond a w h e).target ∈ latticeRectangle a w h := by
   let p := e.1.out
-  have hrepr : s(p.1, p.2) = e.1 := Quot.out_eq _
-  have hb := rectanglePrimalEdgeBond_toSym2 a w h e
-  have hm : Sym2.map (fun z : RectangleVertex a w h => z.val) e.1 =
-      s(p.1.val, p.2.val) := by
-    rw [← hrepr]
-    rfl
   have heq : s((rectanglePrimalEdgeBond a w h e).source,
       (rectanglePrimalEdgeBond a w h e).target) = s(p.1.val, p.2.val) := by
-    simpa [LatticeBond.toSym2] using hb.trans hm
-  rcases Sym2.eq_iff.mp heq with ⟨hs, ht⟩ | ⟨hs, ht⟩
-  · exact ⟨by simp [hs], by simp [ht]⟩
-  · rw [hs, ht]
-    exact ⟨p.2.property, p.1.property⟩
+    have hb := congrArg Subtype.val (rectanglePrimalEdgeBond_edge a w h e)
+    change (rectanglePrimalEdgeBond a w h e).toSym2 = Sym2.map Subtype.val e.1 at hb
+    rw [← Quot.out_eq e.1] at hb
+    exact hb
+  rcases Sym2.eq_iff.mp heq with ⟨hs, ht⟩ | ⟨hs, ht⟩ <;> [exact ⟨hs ▸ p.1.2, ht ▸ p.2.2⟩; exact ⟨hs ▸ p.2.2, ht ▸ p.1.2⟩]
 
 /-- The true dual bond crossing a rectangle edge, indexed by that original edge. -/
 noncomputable def rectangleCrossingDualBond (a : LatticeVertex) (w h : ℕ)
@@ -133,24 +108,16 @@ private theorem dualBondOfPrimal_endpoints_expanded
     (ht : b.target ∈ latticeRectangle a w h) :
     (dualBondOfPrimal b).source ∈ rectangleDualExpanded a w h ∧
     (dualBondOfPrimal b).target ∈ rectangleDualExpanded a w h := by
-  rcases b with ⟨⟨x,y⟩, ax⟩
-  cases ax
-  · have hs' := (mem_latticeRectangle a (x,y) w h).mp hs
-    have ht' := (mem_latticeRectangle a (x+1,y) w h).mp ht
-    simp only [dualBondOfPrimal, LatticeBond.source, LatticeBond.target,
-      rectangleDualExpanded]
-    constructor <;> rw [mem_latticeRectangle] <;> norm_num <;> omega
-  · have hs' := (mem_latticeRectangle a (x,y) w h).mp hs
-    have ht' := (mem_latticeRectangle a (x,y+1) w h).mp ht
-    simp only [dualBondOfPrimal, LatticeBond.source, LatticeBond.target,
-      rectangleDualExpanded]
-    constructor <;> rw [mem_latticeRectangle] <;> norm_num <;> omega
+  rcases b with ⟨⟨x, y⟩, ax⟩
+  rw [mem_latticeRectangle] at hs ht
+  cases ax <;> simp only [dualBondOfPrimal, LatticeBond.source, LatticeBond.target,
+    rectangleDualExpanded, mem_latticeRectangle] at hs ht ⊢ <;> omega
 
- theorem rectangleCrossingDualBond_endpoints_expanded
+theorem rectangleCrossingDualBond_endpoints_expanded
     (a : LatticeVertex) (w h : ℕ) (e : rectanglePrimalEdgeCarrier a w h) :
     (rectangleCrossingDualBond a w h e).source ∈ rectangleDualExpanded a w h ∧
-    (rectangleCrossingDualBond a w h e).target ∈ rectangleDualExpanded a w h := by
-  exact dualBondOfPrimal_endpoints_expanded a w h
+    (rectangleCrossingDualBond a w h e).target ∈ rectangleDualExpanded a w h :=
+  dualBondOfPrimal_endpoints_expanded a w h
     (rectanglePrimalEdgeBond a w h e)
     (rectanglePrimalEdgeBond_endpoints_mem a w h e).1
     (rectanglePrimalEdgeBond_endpoints_mem a w h e).2
@@ -165,12 +132,8 @@ structure RectangleDualEdgeCarrier (a : LatticeVertex) (w h : ℕ) where
 
 instance rectanglePrimalEdgeCarrierFintype (a : LatticeVertex) (w h : ℕ) :
     Fintype (rectanglePrimalEdgeCarrier a w h) := by
-  classical
-  letI : Fintype (RectangleVertex a w h) := Fintype.ofFinite _
-  letI : Fintype (Sym2 (RectangleVertex a w h)) := inferInstance
   letI : Finite (rectanglePrimalEdgeCarrier a w h) :=
-    Finite.of_injective (fun e : rectanglePrimalEdgeCarrier a w h => e.1)
-      Subtype.val_injective
+    Finite.of_injective (fun e : rectanglePrimalEdgeCarrier a w h => e.1) Subtype.val_injective
   exact Fintype.ofFinite _
 
 /-- Every original edge gives its unique crossing dual edge, retaining the
@@ -180,11 +143,7 @@ def rectanglePrimalDualEdgeEquiv (a : LatticeVertex) (w h : ℕ) :
   toFun e := ⟨e, rectangleCrossingDualBond a w h e, rfl⟩
   invFun d := d.primalEdge
   left_inv _ := rfl
-  right_inv d := by
-    cases d with
-    | mk primal crossing hc =>
-      subst crossing
-      rfl
+  right_inv := fun ⟨_, _, rfl⟩ => rfl
 
 instance rectangleDualEdgeCarrierFintype (a : LatticeVertex) (w h : ℕ) :
     Fintype (RectangleDualEdgeCarrier a w h) :=
@@ -194,8 +153,7 @@ instance rectangleDualEdgeCarrierFintype (a : LatticeVertex) (w h : ℕ) :
 @[simp] theorem rectangleDualEdge_crossedPrimalBond (a : LatticeVertex) (w h : ℕ)
     (e : RectangleDualEdgeCarrier a w h) :
     primalBondOfDual e.crossingBond = rectanglePrimalEdgeBond a w h e.primalEdge := by
-  rw [e.crossingBond_eq]
-  simp [rectangleCrossingDualBond]
+  simp [e.crossingBond_eq, rectangleCrossingDualBond]
 
 @[simp] theorem rectangleDualEdge_crossing_originalEdge (a : LatticeVertex) (w h : ℕ)
     (e : RectangleDualEdgeCarrier a w h) :
@@ -208,17 +166,13 @@ instance rectangleDualEdgeCarrierFintype (a : LatticeVertex) (w h : ℕ) :
 vertices are wired together. -/
 def rectangleDualEdgeSource (a : LatticeVertex) (w h : ℕ)
     (e : RectangleDualEdgeCarrier a w h) :
-    {z // z ∈ rectangleDualExpanded a w h} := by
-  refine ⟨e.crossingBond.source, ?_⟩
-  rw [e.crossingBond_eq]
-  exact (rectangleCrossingDualBond_endpoints_expanded a w h e.primalEdge).1
+    {z // z ∈ rectangleDualExpanded a w h} :=
+  ⟨e.crossingBond.source, e.crossingBond_eq ▸ (rectangleCrossingDualBond_endpoints_expanded a w h e.primalEdge).1⟩
 
 def rectangleDualEdgeTarget (a : LatticeVertex) (w h : ℕ)
     (e : RectangleDualEdgeCarrier a w h) :
-    {z // z ∈ rectangleDualExpanded a w h} := by
-  refine ⟨e.crossingBond.target, ?_⟩
-  rw [e.crossingBond_eq]
-  exact (rectangleCrossingDualBond_endpoints_expanded a w h e.primalEdge).2
+    {z // z ∈ rectangleDualExpanded a w h} :=
+  ⟨e.crossingBond.target, e.crossingBond_eq ▸ (rectangleCrossingDualBond_endpoints_expanded a w h e.primalEdge).2⟩
 
 @[simp] theorem rectangleDualEdgeSource_val (a : LatticeVertex) (w h : ℕ)
     (e : RectangleDualEdgeCarrier a w h) :
@@ -232,36 +186,28 @@ theorem rectangleDualEdgeSource_faceBase (a : LatticeVertex) (w h : ℕ)
     (e : RectangleDualEdgeCarrier a w h) :
     (rectangleDualEdgeSource a w h e).val =
       (rectanglePrimalEdgeBond a w h e.primalEdge).faceBase false := by
-  rw [rectangleDualEdgeSource_val, e.crossingBond_eq]
-  simp [rectangleCrossingDualBond, PottsDiscontinuity.FK.Medial.dualBondOfPrimal_source]
+  simp [rectangleDualEdgeSource_val, e.crossingBond_eq, rectangleCrossingDualBond,
+    PottsDiscontinuity.FK.Medial.dualBondOfPrimal_source]
 
 theorem rectangleDualEdgeTarget_faceBase (a : LatticeVertex) (w h : ℕ)
     (e : RectangleDualEdgeCarrier a w h) :
     (rectangleDualEdgeTarget a w h e).val =
       (rectanglePrimalEdgeBond a w h e.primalEdge).faceBase true := by
-  rw [rectangleDualEdgeTarget_val, e.crossingBond_eq]
-  simp [rectangleCrossingDualBond, PottsDiscontinuity.FK.Medial.dualBondOfPrimal_target]
+  simp [rectangleDualEdgeTarget_val, e.crossingBond_eq, rectangleCrossingDualBond,
+    PottsDiscontinuity.FK.Medial.dualBondOfPrimal_target]
 
 /-- The open primal subset `A` determines the open dual complement. -/
-
 def finsetComplementEquiv (α : Type*) [Fintype α] [DecidableEq α] :
     Finset α ≃ Finset α where
   toFun s := Finset.univ \ s
   invFun s := Finset.univ \ s
-  left_inv := by
-    intro s
-    ext x
-    simp
-  right_inv := by
-    intro s
-    ext x
-    simp
+  left_inv s := by ext; simp
+  right_inv s := by ext; simp
 
 noncomputable def rectangleDualComplementEquiv (a : LatticeVertex) (w h : ℕ) :
     Finset (rectanglePrimalEdgeCarrier a w h) ≃
       Finset (RectangleDualEdgeCarrier a w h) := by
   classical
-  letI : Fintype (RectangleDualEdgeCarrier a w h) := inferInstance
   exact (finsetComplementEquiv _).trans
     (Equiv.finsetCongr (rectanglePrimalDualEdgeEquiv a w h))
 
@@ -279,17 +225,8 @@ theorem rectangleDualComplement_card_add (a : LatticeVertex) (w h : ℕ)
     A.card + (rectangleDualComplementEquiv a w h A).card =
       Fintype.card (rectanglePrimalEdgeCarrier a w h) := by
   classical
-  let : Fintype (RectangleDualEdgeCarrier a w h) := inferInstance
-  have hcard := Finset.card_sdiff_add_card_eq_card (Finset.subset_univ A)
-  have hmap : (rectangleDualComplementEquiv a w h A).card =
-      (Finset.univ \ A).card := by
-    simp [rectangleDualComplementEquiv, finsetComplementEquiv,
-      Equiv.finsetCongr_apply, Finset.card_map]
-  rw [hmap]
-  calc
-    A.card + (Finset.univ \ A).card = (Finset.univ \ A).card + A.card := Nat.add_comm _ _
-    _ = Fintype.card (rectanglePrimalEdgeCarrier a w h) := by
-      simpa [Finset.card_univ] using hcard
+  simpa [rectangleDualComplementEquiv, finsetComplementEquiv, Equiv.finsetCongr_apply,
+    Nat.add_comm] using Finset.card_sdiff_add_card_eq_card (Finset.subset_univ A)
 
 /-- The expanded dual vertex type, before the boundary is wired. -/
 abbrev RectangleDualVertex (a : LatticeVertex) (w h : ℕ) :=
@@ -300,40 +237,19 @@ def rectangleDualCarrierPair (a : LatticeVertex) (w h : ℕ)
     (e : RectangleDualEdgeCarrier a w h) : Sym2 (RectangleDualVertex a w h) :=
   s(rectangleDualEdgeSource a w h e, rectangleDualEdgeTarget a w h e)
 
-private theorem rectangleDualCarrierPair_map_val (a : LatticeVertex) (w h : ℕ)
-    (e : RectangleDualEdgeCarrier a w h) :
-    Sym2.map (fun z : RectangleDualVertex a w h => z.1)
-      (rectangleDualCarrierPair a w h e) = e.crossingBond.toSym2 := by
-  simp [rectangleDualCarrierPair, LatticeBond.toSym2,
-    rectangleDualEdgeSource_val, rectangleDualEdgeTarget_val]
-
- theorem rectangleDualCarrierPair_injective (a : LatticeVertex) (w h : ℕ) :
+theorem rectangleDualCarrierPair_injective (a : LatticeVertex) (w h : ℕ) :
     Function.Injective (rectangleDualCarrierPair a w h) := by
-  intro e f hef
+  rintro ⟨pe, cb, hcb⟩ ⟨pf, cf, hcf⟩ hef
   have hmap := congrArg (Sym2.map (fun z : RectangleDualVertex a w h => z.1)) hef
-  rw [rectangleDualCarrierPair_map_val, rectangleDualCarrierPair_map_val] at hmap
-  have hcross : e.crossingBond = f.crossingBond := LatticeBond.toSym2_injective hmap
-  have hprimal : rectanglePrimalEdgeBond a w h e.primalEdge =
-      rectanglePrimalEdgeBond a w h f.primalEdge := by
-    simpa only [rectangleDualEdge_crossedPrimalBond] using
-      congrArg primalBondOfDual hcross
-  have hedge : rectanglePrimalEdgeToSquareEdge a w h e.primalEdge =
-      rectanglePrimalEdgeToSquareEdge a w h f.primalEdge := by
-    have hb := congrArg latticeBondEdge hprimal
-    simpa only [rectanglePrimalEdgeBond_edge] using hb
-  have hsym : Sym2.map (fun z : RectangleVertex a w h => z.1) e.primalEdge.1 =
-      Sym2.map (fun z : RectangleVertex a w h => z.1) f.primalEdge.1 := by
-    exact congrArg Subtype.val hedge
-  have hsub : e.primalEdge.1 = f.primalEdge.1 :=
-    (Sym2.map.injective Subtype.val_injective) hsym
-  have he : e.primalEdge = f.primalEdge := Subtype.ext hsub
-  cases e with
-  | mk pe cb hcb =>
-    cases f with
-    | mk pf cf hcf =>
-      cases he
-      cases hcross
-      rfl
+  change cb.toSym2 = cf.toSym2 at hmap
+  have hcross : cb = cf := LatticeBond.toSym2_injective hmap
+  subst hcross
+  have hprimal := congrArg (fun b => (latticeBondEdge (primalBondOfDual b)).val)
+    (hcb.symm.trans hcf)
+  simp only [rectangleCrossingDualBond, primalBondOfDual_dualBondOfPrimal,
+    rectanglePrimalEdgeBond_edge, rectanglePrimalEdgeToSquareEdge] at hprimal
+  cases Subtype.ext ((Sym2.map.injective Subtype.val_injective) hprimal)
+  rfl
 
 /-- The actual finite simple dual graph on expanded face bases. Its edges are
 exactly the crossing pairs indexed by original rectangle edges. -/
@@ -345,23 +261,8 @@ private theorem rectangleDualCarrierPair_not_diag (a : LatticeVertex) (w h : ℕ
     (e : RectangleDualEdgeCarrier a w h) :
     ¬ (rectangleDualCarrierPair a w h e).IsDiag := by
   intro hd
-  have hd' : (s(rectangleDualEdgeSource a w h e,
-      rectangleDualEdgeTarget a w h e)).IsDiag := by
-    simpa [rectangleDualCarrierPair] using hd
-  have hst := Sym2.mk_isDiag_iff.mp hd'
-  have hs : e.crossingBond.source = e.crossingBond.target := by
-    have hv := congrArg Subtype.val hst
-    simpa [rectangleDualEdgeSource_val, rectangleDualEdgeTarget_val] using hv
-  exact e.crossingBond.source_ne_target hs
-
-private theorem rectangleDualCarrierPair_ne (a : LatticeVertex) (w h : ℕ)
-    (e : RectangleDualEdgeCarrier a w h) (u : RectangleDualVertex a w h) :
-    rectangleDualCarrierPair a w h e ≠ s(u,u) := by
-  intro he
-  have hdiag : (rectangleDualCarrierPair a w h e).IsDiag := by
-    rw [he]
-    exact Sym2.diag_isDiag u
-  exact rectangleDualCarrierPair_not_diag a w h e hdiag
+  exact e.crossingBond.source_ne_target <|
+    congrArg Subtype.val (Sym2.mk_isDiag_iff.mp hd)
 
 @[simp] theorem rectangleDualGraph_adj_iff (a : LatticeVertex) (w h : ℕ)
     (u v : RectangleDualVertex a w h) :
@@ -369,47 +270,28 @@ private theorem rectangleDualCarrierPair_ne (a : LatticeVertex) (w h : ℕ)
       ∃ e : RectangleDualEdgeCarrier a w h,
         s(u, v) = rectangleDualCarrierPair a w h e := by
   rw [rectangleDualGraph, SimpleGraph.fromEdgeSet_adj]
-  constructor
-  · rintro ⟨⟨e, he⟩, hne⟩
-    refine ⟨e, he.symm⟩
-  · rintro ⟨e, he⟩
-    refine ⟨⟨e, he.symm⟩, ?_⟩
-    intro huv
-    apply rectangleDualCarrierPair_ne a w h e u
-    calc
-      rectangleDualCarrierPair a w h e = s(u, v) := he.symm
-      _ = s(u, u) := by rw [huv]
+  exact ⟨fun ⟨⟨e, he⟩, _⟩ => ⟨e, he.symm⟩, fun ⟨e, he⟩ =>
+    ⟨⟨e, he.symm⟩, fun huv => rectangleDualCarrierPair_not_diag a w h e
+      (he ▸ huv ▸ Sym2.diag_isDiag u)⟩⟩
 
 theorem rectangleDualGraph_edgeSet_eq_range (a : LatticeVertex) (w h : ℕ) :
     (rectangleDualGraph a w h).edgeSet = Set.range (rectangleDualCarrierPair a w h) := by
   rw [rectangleDualGraph, SimpleGraph.edgeSet_fromEdgeSet]
   ext pair
-  constructor
-  · rintro ⟨⟨e, he⟩, hdiag⟩
-    exact ⟨e, he⟩
-  · rintro ⟨e, rfl⟩
-    exact ⟨⟨e, rfl⟩, rectangleDualCarrierPair_not_diag a w h e⟩
+  exact ⟨fun ⟨h, _⟩ => h, fun ⟨e, he⟩ => ⟨⟨e, he⟩, he ▸ rectangleDualCarrierPair_not_diag a w h e⟩⟩
 
 /-- Every graph edge has exactly one original crossing-edge label, prior to
 boundary wiring. -/
 noncomputable def rectangleDualGraphEdgeEquiv (a : LatticeVertex) (w h : ℕ) :
-    RectangleDualEdgeCarrier a w h ≃ (rectangleDualGraph a w h).edgeSet := by
-  classical
-  apply Equiv.ofBijective
+    RectangleDualEdgeCarrier a w h ≃ (rectangleDualGraph a w h).edgeSet :=
+  Equiv.ofBijective
     (fun e => ⟨rectangleDualCarrierPair a w h e, by
-      rw [rectangleDualGraph_edgeSet_eq_range]
-      exact ⟨e, rfl⟩⟩)
-  constructor
-  · intro e f hef
-    exact rectangleDualCarrierPair_injective a w h (congrArg Subtype.val hef)
-  · intro f
-    have hf : f.1 ∈ Set.range (rectangleDualCarrierPair a w h) := by
-      rw [← rectangleDualGraph_edgeSet_eq_range]
-      exact f.2
-    rcases hf with ⟨e, he⟩
-    refine ⟨e, ?_⟩
-    apply Subtype.ext
-    exact he
+      rw [rectangleDualGraph_edgeSet_eq_range]; exact ⟨e, rfl⟩⟩)
+    ⟨fun _ _ hef => rectangleDualCarrierPair_injective a w h (congrArg Subtype.val hef),
+      fun f => by
+        obtain ⟨e, he⟩ : f.1 ∈ Set.range (rectangleDualCarrierPair a w h) := by
+          rw [← rectangleDualGraph_edgeSet_eq_range]; exact f.2
+        exact ⟨e, Subtype.ext he⟩⟩
 
 /-- The wired boundary condition on the expanded dual vertex rectangle. -/
 def rectangleDualBoundaryCondition (a : LatticeVertex) (w h : ℕ) :
@@ -420,8 +302,7 @@ def rectangleDualBoundaryCondition (a : LatticeVertex) (w h : ℕ) :
     (u v : RectangleDualVertex a w h) :
     (rectangleDualBoundaryCondition a w h).partition.r u v ↔
       u = v ∨ u.1 ∈ rectangleDualBoundary a w h ∧
-        v.1 ∈ rectangleDualBoundary a w h := by
-  rfl
+        v.1 ∈ rectangleDualBoundary a w h := Iff.rfl
 
 end
 end PottsDiscontinuity.FK

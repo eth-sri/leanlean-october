@@ -33,8 +33,7 @@ theorem leftStepLift_eq_endpointLift (x : Finset (Fin N))
     (d : Fin (defects x).card → Bool) :
     leftStepLift (orderedDefectLift x) d = fun a => choiceEndpointLift x d a + a.val := by
   funext a
-  simp only [leftStepLift, orderedDefectLift, defectCoordinate, choiceEndpointLift,
-    Nat.cast_add]
+  simp only [leftStepLift, orderedDefectLift, defectCoordinate, choiceEndpointLift, Nat.cast_add]
   ring
 
 theorem choiceEndpoint_eq_motion (x : Finset (Fin N)) (d : Fin (defects x).card → Bool)
@@ -51,41 +50,32 @@ theorem admissible_indexed_succ (x : Finset (Fin N)) (d : Fin (defects x).card �
     (ha : AdmissibleDefectChoice x (indexedDefectChoice x d))
     (a b : Fin (defects x).card)
     (hab : nxt ((defects x).orderEmbOfFin rfl a) = (defects x).orderEmbOfFin rfl b) :
-    d a = false → d b = false := by
-  intro hh
-  have hmem : nxt ((defects x).orderEmbOfFin rfl a) ∈ defects x := by
-    rw [hab]
-    exact (defects x).orderEmbOfFin_mem rfl b
-  have hh' : indexedDefectChoice x d
-      ⟨(defects x).orderEmbOfFin rfl a, (defects x).orderEmbOfFin_mem rfl a⟩ = false := by
-    rw [indexedDefectChoice_ordered]
-    exact hh
-  have hc := ha ⟨(defects x).orderEmbOfFin rfl a, (defects x).orderEmbOfFin_mem rfl a⟩ hmem hh'
-  have he : (⟨nxt ((defects x).orderEmbOfFin rfl a), hmem⟩ : DefectSite x) =
-      ⟨(defects x).orderEmbOfFin rfl b, (defects x).orderEmbOfFin_mem rfl b⟩ := Subtype.ext hab
-  rw [he, indexedDefectChoice_ordered] at hc
-  exact hc
+    d a = false → d b = false := fun hh => by
+  have hmem : nxt ((defects x).orderEmbOfFin rfl a) ∈ defects x :=
+    hab ▸ (defects x).orderEmbOfFin_mem rfl b
+  have hc := ha ⟨(defects x).orderEmbOfFin rfl a, (defects x).orderEmbOfFin_mem rfl a⟩ hmem
+    (by rwa [indexedDefectChoice_ordered])
+  rwa [show (⟨nxt ((defects x).orderEmbOfFin rfl a), hmem⟩ : DefectSite x) =
+      ⟨(defects x).orderEmbOfFin rfl b, (defects x).orderEmbOfFin_mem rfl b⟩ from Subtype.ext hab,
+    indexedDefectChoice_ordered] at hc
 
 /-- Actual finite endpoints are injective for every admissible choice. -/
 theorem choiceEndpoint_injective {x : Finset (Fin N)} (hx : NoConsecutiveUp x)
     (d : Fin (defects x).card → Bool) (ha : AdmissibleDefectChoice x (indexedDefectChoice x d)) :
-    Function.Injective (choiceEndpoint x d) := by
-  have hf := flux_horizontalOfDefectChoice hx (indexedDefectChoice x d) ha
-  have hd := disjoint_upperOfDefectChoice hx (indexedDefectChoice x d)
-  intro a b hab
-  apply (defects x).orderEmbOfFin rfl |>.injective
-  apply hf.defectMotion_injective hd ((defects x).orderEmbOfFin_mem rfl a)
-    ((defects x).orderEmbOfFin_mem rfl b)
-  simpa only [← choiceEndpoint_eq_motion] using hab
+    Function.Injective (choiceEndpoint x d) := fun a b hab =>
+  ((defects x).orderEmbOfFin rfl).injective <|
+    (flux_horizontalOfDefectChoice hx (indexedDefectChoice x d) ha).defectMotion_injective
+      (disjoint_upperOfDefectChoice hx (indexedDefectChoice x d))
+      ((defects x).orderEmbOfFin_mem rfl a) ((defects x).orderEmbOfFin_mem rfl b)
+      (by simpa only [← choiceEndpoint_eq_motion] using hab)
 
 /-- Endpoint membership in the actual upper defect set. -/
 theorem choiceEndpoint_mem {x : Finset (Fin N)} (hx : NoConsecutiveUp x)
     (d : Fin (defects x).card → Bool) (ha : AdmissibleDefectChoice x (indexedDefectChoice x d))
     (a : Fin (defects x).card) :
     choiceEndpoint x d a ∈ defects (upperOfHorizontal (horizontalOfDefectChoice x (indexedDefectChoice x d))) := by
-  have hf := flux_horizontalOfDefectChoice hx (indexedDefectChoice x d) ha
-  have hd := disjoint_upperOfDefectChoice hx (indexedDefectChoice x d)
-  rw [hf.defects_eq_image hd]
+  rw [(flux_horizontalOfDefectChoice hx (indexedDefectChoice x d) ha).defects_eq_image
+    (disjoint_upperOfDefectChoice hx (indexedDefectChoice x d))]
   exact mem_image.mpr ⟨_, (defects x).orderEmbOfFin_mem rfl a, (choiceEndpoint_eq_motion x d a).symm⟩
 
 theorem card_upper_defects_choice {x : Finset (Fin N)} (hx : NoConsecutiveUp x)
@@ -100,10 +90,7 @@ theorem card_upper_defects_choice {x : Finset (Fin N)} (hx : NoConsecutiveUp x)
 theorem prv_val_zero (i : Fin N) (hi : i.val = 0) : (prv i).val + 1 = N := by
   cases N with
   | zero => exact Fin.elim0 i
-  | succ k =>
-    have he : i = 0 := Fin.ext hi
-    rw [he, prv_zero]
-    simp
+  | succ k => rw [(Fin.ext hi : i = 0), prv_zero]; simp
 
 theorem choiceEndpointLift_bounds (x : Finset (Fin N)) (d : Fin (defects x).card → Bool)
     (a : Fin (defects x).card) : -1 ≤ choiceEndpointLift x d a ∧ choiceEndpointLift x d a ≤ N := by
@@ -124,58 +111,41 @@ theorem choiceEndpoint_val (x : Finset (Fin N)) (d : Fin (defects x).card → Bo
   · by_cases hn : i.val + 1 < N
     · have hn' := nxt_val_of_lt i hn
       simp only [choiceEndpoint, choiceEndpointLift, hd, Bool.false_eq_true, ↓reduceIte]
-      change ((nxt i).val : ℤ) = _
-      rw [hn']
-      split_ifs <;> omega
+      change ((nxt i).val : ℤ) = _; rw [hn']; split_ifs <;> omega
     · have hn' := nxt_val_wrap i (by omega)
       simp only [choiceEndpoint, choiceEndpointLift, hd, Bool.false_eq_true, ↓reduceIte]
-      change ((nxt i).val : ℤ) = _
-      rw [hn']
-      split_ifs <;> omega
+      change ((nxt i).val : ℤ) = _; rw [hn']; split_ifs <;> omega
   · by_cases hz : i.val = 0
     · have hp := prv_val_zero i hz
       simp only [choiceEndpoint, choiceEndpointLift, hd, ↓reduceIte]
-      change ((prv i).val : ℤ) = _
-      split_ifs <;> omega
+      change ((prv i).val : ℤ) = _; split_ifs <;> omega
     · have hp := prv_val_of_pos i (by omega)
       simp only [choiceEndpoint, choiceEndpointLift, hd, ↓reduceIte]
-      change ((prv i).val : ℤ) = _
-      rw [hp]
-      split_ifs <;> omega
+      change ((prv i).val : ℤ) = _; rw [hp]; split_ifs <;> omega
 
 theorem choiceEndpointLift_injective {x : Finset (Fin N)} (hx : NoConsecutiveUp x)
     (d : Fin (defects x).card → Bool) (ha : AdmissibleDefectChoice x (indexedDefectChoice x d)) :
-    Function.Injective (choiceEndpointLift x d) := by
-  intro a b hab
+    Function.Injective (choiceEndpointLift x d) := fun a b hab => by
   have h1 := choiceEndpoint_val x d a
-  have h2 := choiceEndpoint_val x d b
-  rw [hab] at h1
-  have h3 : ((choiceEndpoint x d a).val : ℤ) = (choiceEndpoint x d b).val := h1.trans h2.symm
-  apply choiceEndpoint_injective hx d ha
-  apply Fin.ext
-  exact_mod_cast h3
+  rw [hab, ← choiceEndpoint_val x d b] at h1
+  exact choiceEndpoint_injective hx d ha (Fin.ext (by exact_mod_cast h1))
 
 /-- Valid integer endpoint lifts preserve the strict linear order before reducing modulo N. -/
 theorem choiceEndpointLift_strictMono {x : Finset (Fin N)} (hx : NoConsecutiveUp x)
     (d : Fin (defects x).card → Bool) (ha : AdmissibleDefectChoice x (indexedDefectChoice x d)) :
     StrictMono (choiceEndpointLift x d) := by
   intro a b hab
-  have hsite := (defects x).orderEmbOfFin rfl |>.strictMono hab
-  change ((defects x).orderEmbOfFin rfl a).val <
-    ((defects x).orderEmbOfFin rfl b).val at hsite
+  have hsite : ((defects x).orderEmbOfFin rfl a).val < ((defects x).orderEmbOfFin rfl b).val :=
+    ((defects x).orderEmbOfFin rfl).strictMono hab
   have hne : choiceEndpointLift x d a ≠ choiceEndpointLift x d b :=
     (choiceEndpointLift_injective hx d ha).ne (ne_of_lt hab)
   have hnoswap : ¬ (((defects x).orderEmbOfFin rfl b).val =
       ((defects x).orderEmbOfFin rfl a).val + 1 ∧ d a = false ∧ d b = true) := by
     rintro ⟨hv, hda, hdb⟩
-    have hnext : nxt ((defects x).orderEmbOfFin rfl a) = (defects x).orderEmbOfFin rfl b := by
-      apply Fin.ext
-      have hb := ((defects x).orderEmbOfFin rfl b).isLt
-      rw [nxt_val_of_lt _ (by omega)]
-      exact hv.symm
-    have hh := admissible_indexed_succ x d ha a b hnext hda
-    rw [hdb] at hh
-    contradiction
+    have hb := ((defects x).orderEmbOfFin rfl b).isLt
+    have hh := admissible_indexed_succ x d ha a b
+      (Fin.ext (by rw [nxt_val_of_lt _ (by omega), hv])) hda
+    simp [hdb] at hh
   cases hda : d a <;> cases hdb : d b <;>
     simp only [choiceEndpointLift, hda, hdb, Bool.false_eq_true, ↓reduceIte, and_true] at hne hnoswap ⊢ <;> omega
 
@@ -187,27 +157,13 @@ private theorem choiceEndpointLift_no_extremes {x : Finset (Fin N)}
   have hba := ((defects x).orderEmbOfFin rfl a).isLt
   have hbb := ((defects x).orderEmbOfFin rfl b).isLt
   have hda : d a = true := by
-    cases hh : d a
-    · simp only [choiceEndpointLift, hh, Bool.false_eq_true, ↓reduceIte] at ha0
-      omega
-    · rfl
+    cases hh : d a <;> [ (simp only [choiceEndpointLift, hh, Bool.false_eq_true, ↓reduceIte] at ha0; omega); rfl ]
   have hdb : d b = false := by
-    cases hh : d b
-    · rfl
-    · simp only [choiceEndpointLift, hh, ↓reduceIte] at hbN
-      omega
-  have hval0 : ((defects x).orderEmbOfFin rfl a).val = 0 := by
-    simp only [choiceEndpointLift, hda, ↓reduceIte] at ha0
-    omega
-  have hvalN : ((defects x).orderEmbOfFin rfl b).val + 1 = N := by
-    simp only [choiceEndpointLift, hdb, Bool.false_eq_true, ↓reduceIte] at hbN
-    omega
-  have hnext : nxt ((defects x).orderEmbOfFin rfl b) = (defects x).orderEmbOfFin rfl a := by
-    apply Fin.ext
-    rw [nxt_val_wrap _ hvalN, hval0]
-  have hh := admissible_indexed_succ x d ha b a hnext hdb
-  rw [hda] at hh
-  contradiction
+    cases hh : d b <;> [ rfl; (simp only [choiceEndpointLift, hh, ↓reduceIte] at hbN; omega) ]
+  simp only [choiceEndpointLift, hda, hdb, Bool.false_eq_true, ↓reduceIte] at ha0 hbN
+  have hh := admissible_indexed_succ x d ha b a
+    (Fin.ext (by rw [nxt_val_wrap _ (by omega)]; omega)) hdb
+  simp [hda] at hh
 
 /-- All endpoints remain in a cyclic interval of length strictly less than N. -/
 theorem choiceEndpointLift_span {x : Finset (Fin N)} (hN : 0 < N) (hx : NoConsecutiveUp x)
@@ -216,14 +172,12 @@ theorem choiceEndpointLift_span {x : Finset (Fin N)} (hN : 0 < N) (hx : NoConsec
   have h1 := choiceEndpointLift_bounds x d a
   have h2 := choiceEndpointLift_bounds x d b
   have hnot := choiceEndpointLift_no_extremes d ha a b
-  have hne : choiceEndpointLift x d b - choiceEndpointLift x d a ≠ N := by
-    intro he
+  have hne : choiceEndpointLift x d b - choiceEndpointLift x d a ≠ N := fun he => by
     have hfa := choiceEndpoint_val x d a
     have hfb := choiceEndpoint_val x d b
     have hvals : ((choiceEndpoint x d a).val : ℤ) = (choiceEndpoint x d b).val := by
       split_ifs at hfa hfb <;> omega
-    have hab : a = b := choiceEndpoint_injective hx d ha (Fin.ext (by exact_mod_cast hvals))
-    subst b
+    cases choiceEndpoint_injective hx d ha (Fin.ext (by exact_mod_cast hvals))
     omega
   omega
 

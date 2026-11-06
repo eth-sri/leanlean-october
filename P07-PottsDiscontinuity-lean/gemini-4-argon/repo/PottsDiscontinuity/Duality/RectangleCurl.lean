@@ -114,7 +114,7 @@ private theorem rectangleCurlCandidate_faces_boundary
       mem_latticeRectangle, LatticeBond.source, LatticeBond.target,
       LatticeBond.faceBase] at * <;> omega
 
-private theorem rectangleCurlCandidate_flow_zero_of_not_inside
+theorem rectangleCurlCandidate_flow_zero_of_not_inside
     (a : LatticeVertex) (w h : ℕ) (φ : RectangleExteriorPotential a w h)
     (v : LatticeVertex) (i : Fin 4)
     (hv : v ∈ latticeRectangle a w h)
@@ -184,18 +184,6 @@ noncomputable def rectangleActualIncidentCandidateEquiv
           LatticeBond.source, LatticeBond.target]))).1
     exact hj
 
-private theorem rectangleActualIncidentCandidateEquiv_apply
-    (a : LatticeVertex) (w h : ℕ) (v : LatticeVertex)
-    (b : rectangleActualIncidentBonds a w h v) :
-    rectangleCurlIncidentCandidate v
-      (rectangleActualIncidentCandidateEquiv a w h v b).1 = b.1.1 := by
-  let i := Classical.choose
-    (rectangleCurlIncidentBond_exists_unique v b.1.1 b.2)
-  have hi := (Classical.choose_spec
-    (rectangleCurlIncidentBond_exists_unique v b.1.1 b.2)).1
-  change rectangleCurlIncidentCandidate v i = b.1.1
-  exact hi
-
 noncomputable instance rectangleActualIncidentBondsFintype
     (a : LatticeVertex) (w h : ℕ) (v : LatticeVertex) :
     Fintype (rectangleActualIncidentBonds a w h v) := by
@@ -207,150 +195,5 @@ noncomputable instance rectangleCurlCandidateFintype
     (a : LatticeVertex) (w h : ℕ) (v : LatticeVertex) :
     Fintype {i : Fin 4 // rectangleCurlCandidateInside a w h v i} :=
   by classical exact Fintype.ofFinite _
-
-/-- Actual incidence divergence over all and only rectangle edges incident to
-`v`, with the normalized bond orientation source-to-target. -/
-noncomputable def rectanglePrimalCurlDivergence (a : LatticeVertex) (w h : ℕ)
-    (φ : RectangleExteriorPotential a w h) (v : LatticeVertex) : ℝ :=
-  ∑ b : rectangleActualIncidentBonds a w h v,
-    if b.1.1.source = v then rectangleCurlFlow a w h φ b.1.1
-    else -rectangleCurlFlow a w h φ b.1.1
-
-/-- Four-neighbor discrete divergence stencil, for comparison with actual
-finite-edge incidence. -/
-def rectangleCurlStencil (a : LatticeVertex) (w h : ℕ)
-    (φ : RectangleExteriorPotential a w h) (v : LatticeVertex) : ℝ :=
-  rectangleCurlFlow a w h φ ⟨(v.1, v.2), LatticeAxis.horizontal⟩ -
-    rectangleCurlFlow a w h φ ⟨(v.1 - 1, v.2), LatticeAxis.horizontal⟩ +
-    rectangleCurlFlow a w h φ ⟨(v.1, v.2), LatticeAxis.vertical⟩ -
-    rectangleCurlFlow a w h φ ⟨(v.1, v.2 - 1), LatticeAxis.vertical⟩
-
-theorem rectangleCurlStencil_eq_zero (a : LatticeVertex) (w h : ℕ)
-    (φ : RectangleExteriorPotential a w h) (v : LatticeVertex) :
-    rectangleCurlStencil a w h φ v = 0 := by
-  simp [rectangleCurlStencil, rectangleCurlFlow, LatticeBond.faceBase]
-  ring
-
-def rectangleCurlSignedCandidate (a : LatticeVertex) (w h : ℕ)
-    (φ : RectangleExteriorPotential a w h) (v : LatticeVertex) (i : Fin 4) : ℝ :=
-  if (rectangleCurlIncidentCandidate v i).source = v then
-    rectangleCurlFlow a w h φ (rectangleCurlIncidentCandidate v i)
-  else -rectangleCurlFlow a w h φ (rectangleCurlIncidentCandidate v i)
-
-private theorem rectangleCurlSignedCandidate_eq_term
-    (a : LatticeVertex) (w h : ℕ) (φ : RectangleExteriorPotential a w h)
-    (v : LatticeVertex) (i : Fin 4)
-    (hi : rectangleCurlCandidateInside a w h v i) :
-    rectangleCurlSignedCandidate a w h φ v i =
-      match i.val with
-      | 0 => rectangleCurlFlow a w h φ ⟨v, .horizontal⟩
-      | 1 => -rectangleCurlFlow a w h φ ⟨(v.1 - 1, v.2), .horizontal⟩
-      | 2 => rectangleCurlFlow a w h φ ⟨v, .vertical⟩
-      | _ => -rectangleCurlFlow a w h φ ⟨(v.1, v.2 - 1), .vertical⟩ := by
-  rcases v with ⟨x, y⟩
-  fin_cases i
-  · simp [rectangleCurlSignedCandidate, rectangleCurlIncidentCandidate,
-      LatticeBond.source]
-  · have hn : (x - 1, y) ≠ (x, y) := by
-      intro hh
-      have hx := congrArg Prod.fst hh
-      omega
-    simp [rectangleCurlSignedCandidate, rectangleCurlIncidentCandidate,
-      LatticeBond.source, hn]
-  · simp [rectangleCurlSignedCandidate, rectangleCurlIncidentCandidate,
-      LatticeBond.source]
-  · have hn : (x, y - 1) ≠ (x, y) := by
-      intro hh
-      have hy := congrArg Prod.snd hh
-      omega
-    simp [rectangleCurlSignedCandidate, rectangleCurlIncidentCandidate,
-      LatticeBond.source, hn]
-
-private theorem rectangleCurlFilteredSum_eq_stencil
-    (a : LatticeVertex) (w h : ℕ) (φ : RectangleExteriorPotential a w h)
-    (v : LatticeVertex) (hv : v ∈ latticeRectangle a w h) :
-    (∑ i : {i : Fin 4 // rectangleCurlCandidateInside a w h v i},
-      rectangleCurlSignedCandidate a w h φ v i.1) = rectangleCurlStencil a w h φ v := by
-  classical
-  let p : Fin 4 → Prop := rectangleCurlCandidateInside a w h v
-  let : DecidablePred p := Classical.decPred p
-  have hsub :
-      (∑ i ∈ Finset.univ.filter p,
-        rectangleCurlSignedCandidate a w h φ v i) =
-      (∑ i : {i : Fin 4 // p i},
-        rectangleCurlSignedCandidate a w h φ v i.1) := by
-    exact Finset.sum_subtype (p := p) (Finset.univ.filter p)
-      (by intro i; simp [p])
-      (fun i => rectangleCurlSignedCandidate a w h φ v i)
-  rw [← hsub]
-  have hterm (i : Fin 4) :
-      (if p i then rectangleCurlSignedCandidate a w h φ v i else 0) =
-        match i.val with
-        | 0 => rectangleCurlFlow a w h φ ⟨v, .horizontal⟩
-        | 1 => -rectangleCurlFlow a w h φ ⟨(v.1 - 1, v.2), .horizontal⟩
-        | 2 => rectangleCurlFlow a w h φ ⟨v, .vertical⟩
-        | _ => -rectangleCurlFlow a w h φ ⟨(v.1, v.2 - 1), .vertical⟩ := by
-    fin_cases i
-    · by_cases hp : p 0
-      · have ht := rectangleCurlSignedCandidate_eq_term a w h φ v 0 hp
-        simpa [hp] using ht
-      · have hz := rectangleCurlCandidate_flow_zero_of_not_inside a w h φ v 0 hv hp
-        simpa [hp, rectangleCurlSignedCandidate, rectangleCurlIncidentCandidate,
-          LatticeBond.source] using hz.symm
-    · by_cases hp : p 1
-      · have ht := rectangleCurlSignedCandidate_eq_term a w h φ v 1 hp
-        simpa [hp] using ht
-      · have hz := rectangleCurlCandidate_flow_zero_of_not_inside a w h φ v 1 hv hp
-        simpa [hp, rectangleCurlSignedCandidate, rectangleCurlIncidentCandidate,
-          LatticeBond.source] using hz
-    · by_cases hp : p 2
-      · have ht := rectangleCurlSignedCandidate_eq_term a w h φ v 2 hp
-        simpa [hp] using ht
-      · have hz := rectangleCurlCandidate_flow_zero_of_not_inside a w h φ v 2 hv hp
-        simpa [hp, rectangleCurlSignedCandidate, rectangleCurlIncidentCandidate,
-          LatticeBond.source] using hz.symm
-    · by_cases hp : p 3
-      · have ht := rectangleCurlSignedCandidate_eq_term a w h φ v 3 hp
-        simpa [hp] using ht
-      · have hz := rectangleCurlCandidate_flow_zero_of_not_inside a w h φ v 3 hv hp
-        have hn := congrArg Neg.neg hz
-        simpa [hp, rectangleCurlSignedCandidate, rectangleCurlIncidentCandidate,
-          LatticeBond.source] using hn
-  rw [Finset.sum_filter]
-  change (∑ i : Fin 4, if p i then rectangleCurlSignedCandidate a w h φ v i else 0) = _
-  simp_rw [hterm]
-  simp [Fin.sum_univ_succ, rectangleCurlStencil]
-  ring
-
-theorem rectanglePrimalCurlDivergence_eq_stencil
-    (a : LatticeVertex) (w h : ℕ) (φ : RectangleExteriorPotential a w h)
-    (v : LatticeVertex) (hv : v ∈ latticeRectangle a w h) :
-    rectanglePrimalCurlDivergence a w h φ v = rectangleCurlStencil a w h φ v := by
-  classical
-  let e := rectangleActualIncidentCandidateEquiv a w h v
-  calc
-    rectanglePrimalCurlDivergence a w h φ v =
-        ∑ b : rectangleActualIncidentBonds a w h v,
-          rectangleCurlSignedCandidate a w h φ v (e b).1 := by
-      change (∑ b : rectangleActualIncidentBonds a w h v,
-        if b.1.1.source = v then rectangleCurlFlow a w h φ b.1.1
-        else -rectangleCurlFlow a w h φ b.1.1) = _
-      apply Finset.sum_congr rfl
-      intro b hb
-      have hmap := rectangleActualIncidentCandidateEquiv_apply a w h v b
-      change rectangleCurlIncidentCandidate v (e b).1 = b.1.1 at hmap
-      simp [rectangleCurlSignedCandidate, hmap]
-    _ = ∑ i : {i : Fin 4 // rectangleCurlCandidateInside a w h v i},
-          rectangleCurlSignedCandidate a w h φ v i.1 :=
-            Equiv.sum_comp e (fun i => rectangleCurlSignedCandidate a w h φ v i.1)
-    _ = rectangleCurlStencil a w h φ v :=
-      rectangleCurlFilteredSum_eq_stencil a w h φ v hv
-
-theorem rectanglePrimalCurlDivergence_eq_zero
-    (a : LatticeVertex) (w h : ℕ) (φ : RectangleExteriorPotential a w h)
-    (v : LatticeVertex) (hv : v ∈ latticeRectangle a w h) :
-    rectanglePrimalCurlDivergence a w h φ v = 0 := by
-  rw [rectanglePrimalCurlDivergence_eq_stencil a w h φ v hv]
-  exact rectangleCurlStencil_eq_zero a w h φ v
 
 end PottsDiscontinuity.FK

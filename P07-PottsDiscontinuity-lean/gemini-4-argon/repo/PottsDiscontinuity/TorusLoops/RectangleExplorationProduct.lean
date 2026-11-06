@@ -22,7 +22,6 @@ open scoped Classical
 
 variable {N M : ℕ}
 
-/-- All listed roots cross to the right in distinct actual open clusters. -/
 def rectangleDistinctRootCrossingEvent (hN : Even N) (hM : Even M)
     (roots : List (FaceVertex N M true)) :
     Set (Configuration (rectangleBaseGraph hN hM)) :=
@@ -31,13 +30,11 @@ def rectangleDistinctRootCrossingEvent (hN : Even N) (hM : Even M)
     (∀ x ∈ roots, ∀ y ∈ roots, x ≠ y →
       ¬ ActualConnected (rectangleBaseGraph hN hM) A x y)}
 
-/-- The union of the actual open clusters of a finite list of roots. -/
 def rectangleRootClusterUnion (hN : Even N) (hM : Even M)
     (roots : List (FaceVertex N M true))
     (A : Configuration (rectangleBaseGraph hN hM)) : Set (FaceVertex N M true) :=
   {v | ∃ x ∈ roots, ActualConnected (rectangleBaseGraph hN hM) A x v}
 
-/-- The exact finite vertex set in the open cluster of one root. -/
 noncomputable def rectangleRootClusterFinset (hN : Even N) (hM : Even M)
     (A : Configuration (rectangleBaseGraph hN hM)) (root : FaceVertex N M true) :
     Finset (FaceVertex N M true) :=
@@ -49,8 +46,6 @@ noncomputable def rectangleRootClusterFinset (hN : Even N) (hM : Even M)
       ActualConnected (rectangleBaseGraph hN hM) A root v := by
   simp [rectangleRootClusterFinset]
 
-/-- The explored observation with root labels retained, so repeated roots are
-still represented by the source tuple's set of labels. -/
 noncomputable def rectangleLabeledRootClusterObservation
     (hN : Even N) (hM : Even M) (roots : List (FaceVertex N M true))
     (A : Configuration (rectangleBaseGraph hN hM)) :
@@ -58,7 +53,6 @@ noncomputable def rectangleLabeledRootClusterObservation
   roots.toFinset.image fun root =>
     (root, rectangleRootClusterFinset hN hM A root)
 
-/-- The vertex set represented by a root-labeled observation. -/
 def rectangleLabeledObservationVertexSet
     (O : Finset (FaceVertex N M true × Finset (FaceVertex N M true))) :
     Set (FaceVertex N M true) :=
@@ -83,90 +77,59 @@ theorem rectangleRootClusterFinset_eq_of_labeledObservation_eq
     {root : FaceVertex N M true} (hroot : root ∈ roots) :
     rectangleRootClusterFinset hN hM A root =
       rectangleRootClusterFinset hN hM B root := by
-  have hmemA : (root, rectangleRootClusterFinset hN hM A root) ∈
-      rectangleLabeledRootClusterObservation hN hM roots A := by
-    apply Finset.mem_image.mpr
-    exact ⟨root, by simpa using hroot, rfl⟩
   have hmemB : (root, rectangleRootClusterFinset hN hM A root) ∈
-      rectangleLabeledRootClusterObservation hN hM roots B := by
-    rw [← hobs]
-    exact hmemA
-  rcases Finset.mem_image.mp hmemB with ⟨other, hother, heq⟩
-  have hfirst : other = root := congrArg Prod.fst heq
-  subst other
+      rectangleLabeledRootClusterObservation hN hM roots B :=
+    hobs ▸ Finset.mem_image.mpr ⟨root, by simpa using hroot, rfl⟩
+  rcases Finset.mem_image.mp hmemB with ⟨other, _, heq⟩
+  cases congrArg Prod.fst heq
   exact (congrArg Prod.snd heq).symm
 
-/-- The source distinct-root crossing event is determined by the exact
-root-labeled cluster observation. -/
+private theorem rectangleDistinctRootCrossingEvent_labeledObservation_imp
+    (hN : Even N) (hM : Even M) (roots : List (FaceVertex N M true))
+    {A B : Configuration (rectangleBaseGraph hN hM)}
+    (hobs : rectangleLabeledRootClusterObservation hN hM roots A =
+      rectangleLabeledRootClusterObservation hN hM roots B)
+    (hA : A ∈ rectangleDistinctRootCrossingEvent hN hM roots) :
+    B ∈ rectangleDistinctRootCrossingEvent hN hM roots := by
+  have hclusters (root : FaceVertex N M true) (hr : root ∈ roots) :=
+    rectangleRootClusterFinset_eq_of_labeledObservation_eq hN hM roots A B hobs hr
+  rcases hA with ⟨hcross, hnodup, hdistinct⟩
+  refine ⟨fun root hroot => ?_, hnodup, fun x hx y hy hxy hconnB => hdistinct x hx y hy hxy ?_⟩
+  · rcases hcross root hroot with ⟨v, hv, hconn⟩
+    have hmem : v ∈ rectangleRootClusterFinset hN hM B root := by
+      rw [← hclusters root hroot, mem_rectangleRootClusterFinset]; exact hconn
+    exact ⟨v, hv, (mem_rectangleRootClusterFinset hN hM B root v).1 hmem⟩
+  · have hmemA : y ∈ rectangleRootClusterFinset hN hM A x := by
+      rw [hclusters x hx, mem_rectangleRootClusterFinset]; exact hconnB
+    exact (mem_rectangleRootClusterFinset hN hM A x y).1 hmemA
+
 theorem rectangleDistinctRootCrossingEvent_labeledObservation_invariant
     (hN : Even N) (hM : Even M) (roots : List (FaceVertex N M true))
     (A B : Configuration (rectangleBaseGraph hN hM))
     (hobs : rectangleLabeledRootClusterObservation hN hM roots A =
       rectangleLabeledRootClusterObservation hN hM roots B) :
     (A ∈ rectangleDistinctRootCrossingEvent hN hM roots ↔
-      B ∈ rectangleDistinctRootCrossingEvent hN hM roots) := by
-  have hclusters : ∀ root, root ∈ roots →
-      rectangleRootClusterFinset hN hM A root =
-        rectangleRootClusterFinset hN hM B root := by
-    intro root hr
-    exact rectangleRootClusterFinset_eq_of_labeledObservation_eq
-      hN hM roots A B hobs hr
-  constructor
-  · intro hA
-    rcases hA with ⟨hcross, hnodup, hdistinct⟩
-    refine ⟨?_, hnodup, ?_⟩
-    · intro root hroot
-      rcases hcross root hroot with ⟨v, hv, hconn⟩
-      have hmem : v ∈ rectangleRootClusterFinset hN hM A root :=
-        (mem_rectangleRootClusterFinset hN hM A root v).2 hconn
-      rw [hclusters root hroot] at hmem
-      exact ⟨v, hv, (mem_rectangleRootClusterFinset hN hM B root v).1 hmem⟩
-    · intro x hx y hy hxy hconnB
-      apply hdistinct x hx y hy hxy
-      have hmemB : y ∈ rectangleRootClusterFinset hN hM B x :=
-        (mem_rectangleRootClusterFinset hN hM B x y).2 hconnB
-      rw [← hclusters x hx] at hmemB
-      exact (mem_rectangleRootClusterFinset hN hM A x y).1 hmemB
-  · intro hB
-    rcases hB with ⟨hcross, hnodup, hdistinct⟩
-    refine ⟨?_, hnodup, ?_⟩
-    · intro root hroot
-      rcases hcross root hroot with ⟨v, hv, hconn⟩
-      have hmem : v ∈ rectangleRootClusterFinset hN hM B root :=
-        (mem_rectangleRootClusterFinset hN hM B root v).2 hconn
-      rw [← hclusters root hroot] at hmem
-      exact ⟨v, hv, (mem_rectangleRootClusterFinset hN hM A root v).1 hmem⟩
-    · intro x hx y hy hxy hconnA
-      apply hdistinct x hx y hy hxy
-      have hmemA : y ∈ rectangleRootClusterFinset hN hM A x :=
-        (mem_rectangleRootClusterFinset hN hM A x y).2 hconnA
-      rw [hclusters x hx] at hmemA
-      exact (mem_rectangleRootClusterFinset hN hM B x y).1 hmemA
+      B ∈ rectangleDistinctRootCrossingEvent hN hM roots) :=
+  ⟨rectangleDistinctRootCrossingEvent_labeledObservation_imp hN hM roots hobs,
+   rectangleDistinctRootCrossingEvent_labeledObservation_imp hN hM roots hobs.symm⟩
 
-/-- Finite set of actually occurring root-cluster observations. Restricting the
-index to the range makes every fiber nonempty. -/
 def rectangleRootObservationIndex (hN : Even N) (hM : Even M)
     (roots : List (FaceVertex N M true)) :=
   {O : Finset (FaceVertex N M true × Finset (FaceVertex N M true)) //
     O ∈ Set.range (rectangleLabeledRootClusterObservation hN hM roots)}
 
-/-- The observation index of one rectangle configuration. -/
 noncomputable def rectangleRootObservationIndexOf
     (hN : Even N) (hM : Even M) (roots : List (FaceVertex N M true))
     (A : Configuration (rectangleBaseGraph hN hM)) :
     rectangleRootObservationIndex hN hM roots :=
-  ⟨rectangleLabeledRootClusterObservation hN hM roots A,
-    Set.mem_range_self A⟩
+  ⟨rectangleLabeledRootClusterObservation hN hM roots A, Set.mem_range_self A⟩
 
-/-- The observation indices on which the listed roots cross distinctly. -/
 def rectangleGoodRootObservation (hN : Even N) (hM : Even M)
     (roots : List (FaceVertex N M true)) :
     Set (rectangleRootObservationIndex hN hM roots) :=
   {b | ∃ A, rectangleRootObservationIndexOf hN hM roots A = b ∧
     A ∈ rectangleDistinctRootCrossingEvent hN hM roots}
 
-/-- Frozen states consistent with an observation: they keep each old root's
-recorded cluster and every open edge lies inside the explored vertex set. -/
 def rectangleObservationRemovedStateEvent
     (hN : Even N) (hM : Even M) (roots : List (FaceVertex N M true))
     (O : Finset (FaceVertex N M true × Finset (FaceVertex N M true))) :
@@ -185,13 +148,10 @@ theorem rectangleDistinctRootCrossingEvent_iff_good_observation
     (A : Configuration (rectangleBaseGraph hN hM)) :
     A ∈ rectangleDistinctRootCrossingEvent hN hM roots ↔
       rectangleRootObservationIndexOf hN hM roots A ∈
-        rectangleGoodRootObservation hN hM roots := by
-  constructor
-  · intro hA
-    exact ⟨A, rfl, hA⟩
-  · rintro ⟨B, hB, hgood⟩
-    apply (rectangleDistinctRootCrossingEvent_labeledObservation_invariant
-      hN hM roots B A (congrArg Subtype.val hB)).mp hgood
+        rectangleGoodRootObservation hN hM roots :=
+  ⟨fun hA => ⟨A, rfl, hA⟩, fun ⟨B, hB, hgood⟩ =>
+    (rectangleDistinctRootCrossingEvent_labeledObservation_invariant
+      hN hM roots B A (congrArg Subtype.val hB)).mp hgood⟩
 
 theorem rectangleRootObservationIndex_fiber_has_law_support
     (hN : Even N) (hM : Even M) (q : Set.Ici (1 : ℝ))
@@ -201,13 +161,8 @@ theorem rectangleRootObservationIndex_fiber_has_law_support
       A ∈ (law (rectangleBaseGraph hN hM) (rectangleFKParameters q)
         (BoundaryCondition.free ∅)).support := by
   rcases b.property with ⟨A, hA⟩
-  refine ⟨A, ?_, ?_⟩
-  · apply Subtype.ext
-    exact hA
-  · rw [law_support]
-    simp
+  exact ⟨A, Subtype.ext hA, by rw [law_support]; simp⟩
 
-/-- The root-cluster union is closed under open rectangle adjacency. -/
 theorem rectangleRootClusterUnion_open_adj (hN : Even N) (hM : Even M)
     (roots : List (FaceVertex N M true))
     (A : Configuration (rectangleBaseGraph hN hM))
@@ -226,16 +181,10 @@ private theorem rectangleRemovedEdge_of_endpoint_mem
       (rectangleBaseGraph hN hM).edgeSet) ∈ rectangleComplementRemovedEdges hN hM U := by
   rw [rectangleComplementRemovedEdges, mem_subgraphRemovedEdges]
   intro he
-  have hmap : (rectangleComplementGraph hN hM U).map
-      (rectangleComplementEmbedding U) |>.Adj x y :=
-    ((rectangleComplementGraph hN hM U).map
-      (rectangleComplementEmbedding U)).mem_edgeSet.mp he
-  obtain ⟨a, b, hab, hax, hby⟩ :=
-    (SimpleGraph.map_adj (rectangleComplementEmbedding U)
-      (rectangleComplementGraph hN hM U) x y).mp hmap
-  have hax' : a.val = x := by simpa [rectangleComplementEmbedding] using hax
-  have haU : a.val ∉ U := a.property
-  exact haU (hax' ▸ hx)
+  obtain ⟨a, _, _, hax, _⟩ := (SimpleGraph.map_adj (rectangleComplementEmbedding U)
+    (rectangleComplementGraph hN hM U) x y).mp
+    (((rectangleComplementGraph hN hM U).map (rectangleComplementEmbedding U)).mem_edgeSet.mp he)
+  exact a.property ((by simpa [rectangleComplementEmbedding] using hax : a.val = x) ▸ hx)
 
 private theorem rectangleRemovedEdge_touches_U
     (hN : Even N) (hM : Even M) (U : Set (FaceVertex N M true))
@@ -244,32 +193,17 @@ private theorem rectangleRemovedEdge_touches_U
     (a b : FaceVertex N M true) (heq : e.val = s(a, b)) :
     a ∈ U ∨ b ∈ U := by
   by_contra hn
-  have haU : a ∉ U := by
-    intro ha
-    exact hn (Or.inl ha)
-  have hbU : b ∉ U := by
-    intro hb
-    exact hn (Or.inr hb)
-  have hbase : (rectangleBaseGraph hN hM).Adj a b := by
-    apply (rectangleBaseGraph hN hM).mem_edgeSet.mp
-    rw [← heq]
-    exact e.property
-  have hIAdj : (rectangleComplementGraph hN hM U).Adj
-      ⟨a, haU⟩ ⟨b, hbU⟩ := by
-    simpa [rectangleComplementGraph] using hbase
-  have hmapAdj : ((rectangleComplementGraph hN hM U).map
-      (rectangleComplementEmbedding U)).Adj a b := by
-    apply (SimpleGraph.map_adj (rectangleComplementEmbedding U)
-      (rectangleComplementGraph hN hM U) a b).mpr
-    exact ⟨⟨a, haU⟩, ⟨b, hbU⟩, hIAdj, rfl, rfl⟩
+  have hbase : (rectangleBaseGraph hN hM).Adj a b :=
+    (rectangleBaseGraph hN hM).mem_edgeSet.mp (heq ▸ e.property)
   have hnot : e.val ∉ ((rectangleComplementGraph hN hM U).map
-      (rectangleComplementEmbedding U)).edgeSet := by
-    apply (mem_subgraphRemovedEdges e).mp
-    simpa [rectangleComplementRemovedEdges] using he
-  apply hnot
-  rw [heq]
-  exact ((rectangleComplementGraph hN hM U).map
-    (rectangleComplementEmbedding U)).mem_edgeSet.mpr hmapAdj
+      (rectangleComplementEmbedding U)).edgeSet :=
+    (mem_subgraphRemovedEdges e).mp (by simpa [rectangleComplementRemovedEdges] using he)
+  exact hnot (heq.symm ▸ ((rectangleComplementGraph hN hM U).map
+    (rectangleComplementEmbedding U)).mem_edgeSet.mpr
+    ((SimpleGraph.map_adj (rectangleComplementEmbedding U)
+      (rectangleComplementGraph hN hM U) a b).mpr
+      ⟨⟨a, fun ha => hn (Or.inl ha)⟩, ⟨b, fun hb => hn (Or.inr hb)⟩,
+        by simpa [rectangleComplementGraph] using hbase, rfl, rfl⟩))
 
 private theorem rectangleRemovedState_open_adj_of_mem
     (hN : Even N) (hM : Even M) (U : Set (FaceVertex N M true))
@@ -280,33 +214,15 @@ private theorem rectangleRemovedState_open_adj_of_mem
       (rectangleComplementRemovedState hN hM U A).val).Adj x y := by
   have hbase : (rectangleBaseGraph hN hM).Adj x y :=
     openGraph_le (rectangleBaseGraph hN hM) A hxy
-  have hopen : s(x, y) ∈ openEdges (rectangleBaseGraph hN hM) A :=
-    (openGraph_adj (rectangleBaseGraph hN hM) A x y).mp hxy
-  change s(x, y) ∈ Subtype.val '' (↑A : Set (rectangleBaseGraph hN hM).edgeSet) at hopen
-  simp only [Set.mem_image] at hopen
-  rcases hopen with ⟨e, heA, hexy⟩
-  have heR : e ∈ rectangleComplementRemovedEdges hN hM U := by
-    have heEq : e = ⟨s(x, y), (rectangleBaseGraph hN hM).mem_edgeSet.mpr hbase⟩ :=
-      Subtype.ext hexy
-    rw [heEq]
-    exact rectangleRemovedEdge_of_endpoint_mem hN hM U hbase hx
+  rcases (openGraph_adj (rectangleBaseGraph hN hM) A x y).mp hxy with ⟨e, heA, hexy⟩
+  have heR : e ∈ rectangleComplementRemovedEdges hN hM U :=
+    (Subtype.ext hexy : e = ⟨s(x, y), (rectangleBaseGraph hN hM).mem_edgeSet.mpr hbase⟩).symm ▸
+      rectangleRemovedEdge_of_endpoint_mem hN hM U hbase hx
   have heK : e ∈ (rectangleComplementRemovedState hN hM U A).val := by
-    have hs : e ∈ (rectangleComplementRemovedState hN hM U A).val ↔
-        e ∈ A ∧ e ∈ rectangleComplementRemovedEdges hN hM U := by
-      simp [rectangleComplementRemovedState, configurationSplitEquiv]
-    exact hs.mpr ⟨heA, heR⟩
-  have hKopen : s(x, y) ∈ openEdges (rectangleBaseGraph hN hM)
-      (rectangleComplementRemovedState hN hM U A).val := by
-    change s(x, y) ∈ Subtype.val ''
-      (↑(rectangleComplementRemovedState hN hM U A).val :
-        Set (rectangleBaseGraph hN hM).edgeSet)
-    simp only [Set.mem_image]
-    exact ⟨e, heK, hexy⟩
+    simpa [rectangleComplementRemovedState, configurationSplitEquiv, heR] using heA
   exact (openGraph_adj (rectangleBaseGraph hN hM)
-    (rectangleComplementRemovedState hN hM U A).val x y).mpr hKopen
+    (rectangleComplementRemovedState hN hM U A).val x y).mpr ⟨e, heK, hexy⟩
 
-/-- Every open edge in the exact state associated with an observation stays
-inside that observation's union of old root clusters. -/
 theorem rectangleRemovedState_open_edges_inside_of_observation
     (hN : Even N) (hM : Even M) (roots : List (FaceVertex N M true))
     (A : Configuration (rectangleBaseGraph hN hM))
@@ -323,36 +239,17 @@ theorem rectangleRemovedState_open_edges_inside_of_observation
     (rectangleLabeledRootClusterObservation hN hM roots A)
   let K := rectangleComplementRemovedState hN hM U A
   let G := rectangleBaseGraph hN hM
-  have hKsub : K.val ⊆ A := by
-    intro e he
-    have hs : e ∈ K.val ↔ e ∈ A ∧ e ∈ rectangleComplementRemovedEdges hN hM U := by
-      simp [K, rectangleComplementRemovedState, configurationSplitEquiv]
-    exact (hs.mp he).1
-  have hopenK : s(x, y) ∈ openEdges G K.val := (openGraph_adj G K.val x y).mp hxy
-  change s(x, y) ∈ Subtype.val '' (↑K.val : Set G.edgeSet) at hopenK
-  simp only [Set.mem_image] at hopenK
-  rcases hopenK with ⟨e, heK, hexy⟩
-  have htouch := rectangleRemovedEdge_touches_U hN hM U (K.property heK) x y hexy
-  have hopenA : s(x, y) ∈ Subtype.val '' (↑A : Set G.edgeSet) :=
-    ⟨e, hKsub heK, hexy⟩
-  have hxyA : (openGraph G A).Adj x y := by
-    apply (openGraph_adj G A x y).mpr
-    exact hopenA
-  have hUeq : U = rectangleRootClusterUnion hN hM roots A := by
-    exact rectangleLabeledObservationVertexSet_eq_rootClusterUnion hN hM roots A
-  rcases htouch with hx | hy
-  · refine ⟨hx, ?_⟩
-    have hyUnion := rectangleRootClusterUnion_open_adj hN hM roots A hxyA (hUeq ▸ hx)
-    change y ∈ U
-    exact hUeq.symm ▸ hyUnion
-  · refine ⟨?_, hy⟩
-    have hxUnion := rectangleRootClusterUnion_open_adj hN hM roots A hxyA.symm (hUeq ▸ hy)
-    change x ∈ U
-    exact hUeq.symm ▸ hxUnion
+  have hKsub : K.val ⊆ A := fun e he => by
+    have : e ∈ A ∧ e ∈ rectangleComplementRemovedEdges hN hM U := by
+      simpa [K, rectangleComplementRemovedState, configurationSplitEquiv] using he
+    exact this.1
+  rcases (openGraph_adj G K.val x y).mp hxy with ⟨e, heK, hexy⟩
+  have hxyA : (openGraph G A).Adj x y := (openGraph_adj G A x y).mpr ⟨e, hKsub heK, hexy⟩
+  have hUeq := rectangleLabeledObservationVertexSet_eq_rootClusterUnion hN hM roots A
+  rcases rectangleRemovedEdge_touches_U hN hM U (K.property heK) x y hexy with hx | hy
+  · exact ⟨hx, hUeq.symm ▸ rectangleRootClusterUnion_open_adj hN hM roots A hxyA (hUeq ▸ hx)⟩
+  · exact ⟨hUeq.symm ▸ rectangleRootClusterUnion_open_adj hN hM roots A hxyA.symm (hUeq ▸ hy), hy⟩
 
-/-- Under the explicit condition that the removed state has no open edge
-leaving `U`, the exact removed-state configuration and the full configuration
-have identical root clusters for roots in `U`. -/
 theorem rectangleRemovedState_clusterFinset_eq_of_open_edges_inside
     (hN : Even N) (hM : Even M) (U : Set (FaceVertex N M true))
     (A : Configuration (rectangleBaseGraph hN hM)) (root : FaceVertex N M true)
@@ -364,35 +261,23 @@ theorem rectangleRemovedState_clusterFinset_eq_of_open_edges_inside
         (rectangleComplementRemovedState hN hM U A).val root =
       rectangleRootClusterFinset hN hM A root := by
   let K := (rectangleComplementRemovedState hN hM U A).val
-  have hKsub : K ⊆ A := by
-    intro e he
-    have hs : e ∈ (rectangleComplementRemovedState hN hM U A).val ↔
-        e ∈ A ∧ e ∈ rectangleComplementRemovedEdges hN hM U := by
-      simp [rectangleComplementRemovedState, configurationSplitEquiv]
-    exact (hs.mp he).1
+  have hKsub : K ⊆ A := fun e he => by
+    have : e ∈ A ∧ e ∈ rectangleComplementRemovedEdges hN hM U := by
+      simpa [K, rectangleComplementRemovedState, configurationSplitEquiv] using he
+    exact this.1
   have htransfer : ∀ {x y : FaceVertex N M true},
       (openGraph (rectangleBaseGraph hN hM) A).Reachable x y → x ∈ U →
       (openGraph (rectangleBaseGraph hN hM) K).Reachable x y ∧ y ∈ U := by
-    intro x y hxy hx
-    rcases hxy with ⟨w⟩
+    rintro x y ⟨w⟩ hx
     induction w with
     | nil => exact ⟨SimpleGraph.Reachable.rfl, hx⟩
     | @cons x y z hxy w ih =>
-        have hxyK := rectangleRemovedState_open_adj_of_mem hN hM U A hx hxy
-        have hy := (hclosed hxyK).2
-        have htail := ih hy
-        exact ⟨hxyK.reachable.trans htail.1, htail.2⟩
-  apply Finset.ext
-  intro v
+      have hxyK := rectangleRemovedState_open_adj_of_mem hN hM U A hx hxy
+      exact ⟨hxyK.reachable.trans (ih (hclosed hxyK).2).1, (ih (hclosed hxyK).2).2⟩
+  ext v
   simp only [mem_rectangleRootClusterFinset]
-  constructor
-  · intro hreach
-    exact actualConnected_mono hKsub hreach
-  · intro hreach
-    exact (htransfer hreach hroot).1
+  exact ⟨actualConnected_mono hKsub, fun hreach => (htransfer hreach hroot).1⟩
 
-/-- A configuration's exact removed-edge state is consistent with its
-root-labeled cluster observation. -/
 theorem rectangleRemovedState_mem_observationRemovedStateEvent
     (hN : Even N) (hM : Even M) (roots : List (FaceVertex N M true))
     (A : Configuration (rectangleBaseGraph hN hM)) :
@@ -406,20 +291,14 @@ theorem rectangleRemovedState_mem_observationRemovedStateEvent
   have hclosed : ∀ ⦃x y : FaceVertex N M true⦄,
       (openGraph (rectangleBaseGraph hN hM)
         (rectangleComplementRemovedState hN hM U A).val).Adj x y →
-        x ∈ U ∧ y ∈ U := by
-    intro x y hxy
-    exact rectangleRemovedState_open_edges_inside_of_observation hN hM roots A hxy
-  have hUeq : U = rectangleRootClusterUnion hN hM roots A := by
-    exact rectangleLabeledObservationVertexSet_eq_rootClusterUnion hN hM roots A
-  refine ⟨?_, hclosed⟩
-  intro root hroot
-  have hrootU : root ∈ U := by
-    exact hUeq.symm ▸ ⟨root, hroot, SimpleGraph.Reachable.rfl⟩
-  have hclusterEq := rectangleRemovedState_clusterFinset_eq_of_open_edges_inside
-    hN hM U A root hrootU hclosed
-  rw [hclusterEq]
-  apply Finset.mem_image.mpr
-  exact ⟨root, by simpa using hroot, rfl⟩
+        x ∈ U ∧ y ∈ U :=
+    fun _ _ => rectangleRemovedState_open_edges_inside_of_observation hN hM roots A
+  have hUeq : U = rectangleRootClusterUnion hN hM roots A :=
+    rectangleLabeledObservationVertexSet_eq_rootClusterUnion hN hM roots A
+  refine ⟨fun root hroot => ?_, hclosed⟩
+  rw [rectangleRemovedState_clusterFinset_eq_of_open_edges_inside hN hM U A root
+    (hUeq.symm ▸ ⟨root, hroot, SimpleGraph.Reachable.rfl⟩) hclosed]
+  exact Finset.mem_image.mpr ⟨root, by simpa using hroot, rfl⟩
 
 private theorem rectangleComplementOpenAdj_of_openAdj
     (hN : Even N) (hM : Even M) (U : Set (FaceVertex N M true))
@@ -435,29 +314,15 @@ private theorem rectangleComplementOpenAdj_of_openAdj
   let I := rectangleComplementGraph hN hM U
   let f := rectangleComplementEmbedding U
   let hIG := rectangleComplementGraph_map_le hN hM U
-  let C := embeddedConfigurationRestriction I G f hIG A
-  have hbase : G.Adj x y := openGraph_le G A hxy
   have hI : I.Adj ⟨x, hx⟩ ⟨y, hy⟩ := by
-    simpa [I, rectangleComplementGraph] using hbase
+    simpa [I, rectangleComplementGraph] using openGraph_le G A hxy
   let eI : I.edgeSet := ⟨s(⟨x, hx⟩, ⟨y, hy⟩), I.mem_edgeSet.mpr hI⟩
-  have hopenG : s(x, y) ∈ openEdges G A := (openGraph_adj G A x y).mp hxy
-  change s(x, y) ∈ Subtype.val '' (↑A : Set G.edgeSet) at hopenG
-  simp only [Set.mem_image] at hopenG
-  rcases hopenG with ⟨eG, heG, heqG⟩
-  have heMap : embeddedEdgeEmbedding I G f hIG eI = eG := by
-    apply Subtype.ext
-    rw [embeddedEdgeEmbedding_coe]
-    calc
-      f.sym2Map (s(⟨x, hx⟩, ⟨y, hy⟩)) = s(x, y) := by
-        simp [f, rectangleComplementEmbedding]
-      _ = eG.val := heqG.symm
-  have heC : eI ∈ C := by
-    rw [mem_embeddedConfigurationRestriction]
-    rw [heMap]
+  rcases (openGraph_adj G A x y).mp hxy with ⟨eG, heG, heqG⟩
+  have heC : eI ∈ embeddedConfigurationRestriction I G f hIG A := by
+    rw [mem_embeddedConfigurationRestriction, show embeddedEdgeEmbedding I G f hIG eI = eG from
+      Subtype.ext (by simp [embeddedEdgeEmbedding_coe, eI, f, rectangleComplementEmbedding, heqG])]
     exact heG
-  apply (openGraph_adj I C ⟨x, hx⟩ ⟨y, hy⟩).mpr
-  change s(⟨x, hx⟩, ⟨y, hy⟩) ∈ Subtype.val '' (↑C : Set I.edgeSet)
-  exact ⟨eI, heC, rfl⟩
+  exact (openGraph_adj I _ ⟨x, hx⟩ ⟨y, hy⟩).mpr ⟨eI, heC, rfl⟩
 
 private theorem rectangleComplementActualConnected_of_component_disjoint
     (hN : Even N) (hM : Even M) (U : Set (FaceVertex N M true))
@@ -465,7 +330,7 @@ private theorem rectangleComplementActualConnected_of_component_disjoint
     (hdisjoint : ∀ z, ActualConnected (rectangleBaseGraph hN hM) A root z → z ∉ U)
     (hreach : ActualConnected (rectangleBaseGraph hN hM) A root v) :
     ActualConnected (rectangleComplementGraph hN hM U)
-      (embeddedConfigurationRestriction (rectangleComplementGraph hN hM U)
+       (embeddedConfigurationRestriction (rectangleComplementGraph hN hM U)
         (rectangleBaseGraph hN hM) (rectangleComplementEmbedding U)
         (rectangleComplementGraph_map_le hN hM U) A)
       ⟨root, hdisjoint root SimpleGraph.Reachable.rfl⟩
@@ -476,24 +341,19 @@ private theorem rectangleComplementActualConnected_of_component_disjoint
   let hIG := rectangleComplementGraph_map_le hN hM U
   let C := embeddedConfigurationRestriction I G f hIG A
   have hwalk : ∀ {x y : FaceVertex N M true}
-      (w : (openGraph G A).Walk x y)
-      (hroot : ActualConnected G A root x),
+      (w : (openGraph G A).Walk x y) (hroot : ActualConnected G A root x),
       ActualConnected I C ⟨x, hdisjoint x hroot⟩
         ⟨y, hdisjoint y (hroot.trans w.reachable)⟩ := by
     intro x y w hroot
     induction w with
-    | nil =>
-        exact SimpleGraph.Reachable.rfl
+    | nil => exact SimpleGraph.Reachable.rfl
     | @cons x y z hxy w ih =>
-        have hrootY := hroot.trans hxy.reachable
-        have hxyI := rectangleComplementOpenAdj_of_openAdj hN hM U A
-          (hdisjoint x hroot) (hdisjoint y hrootY) hxy
-        exact hxyI.reachable.trans (ih hrootY)
+      exact (rectangleComplementOpenAdj_of_openAdj hN hM U A
+        (hdisjoint x hroot) (hdisjoint y (hroot.trans hxy.reachable)) hxy).reachable.trans
+        (ih (hroot.trans hxy.reachable))
   rcases hreach with ⟨w⟩
   exact hwalk w SimpleGraph.Reachable.rfl
 
-/-- If the new root's cluster is distinct from every old root cluster, its
-left-to-right crossing is already visible in the induced complement. -/
 theorem rectangleRootCrossing_complement_of_distinct_roots
     (hN : Even N) (hM : Even M) (roots : List (FaceVertex N M true))
     (A : Configuration (rectangleBaseGraph hN hM)) (u : FaceVertex N M true)
@@ -502,23 +362,17 @@ theorem rectangleRootCrossing_complement_of_distinct_roots
     (hcross : A ∈ rectangleRootCrossingEvent hN hM u) :
     rectangleComplementRootCrossingEvent hN hM
       (rectangleRootClusterUnion hN hM roots A) u
-      (by
-        intro hu
-        rcases hu with ⟨x, hx, hxu⟩
-        exact hseparate x hx hxu)
+      (fun ⟨x, hx, hxu⟩ => hseparate x hx hxu)
       (embeddedConfigurationRestriction (rectangleComplementGraph hN hM
         (rectangleRootClusterUnion hN hM roots A)) (rectangleBaseGraph hN hM)
         (rectangleComplementEmbedding (rectangleRootClusterUnion hN hM roots A))
         (rectangleComplementGraph_map_le hN hM
           (rectangleRootClusterUnion hN hM roots A)) A) := by
-  let U := rectangleRootClusterUnion hN hM roots A
-  have hdisjoint : ∀ z, ActualConnected (rectangleBaseGraph hN hM) A u z → z ∉ U := by
-    intro z huz hzU
-    rcases hzU with ⟨x, hx, hxz⟩
-    exact hseparate x hx (huz.trans hxz.symm).symm
+  have hdisjoint : ∀ z, ActualConnected (rectangleBaseGraph hN hM) A u z →
+      z ∉ rectangleRootClusterUnion hN hM roots A :=
+    fun _ huz ⟨x, hx, hxz⟩ => hseparate x hx (huz.trans hxz.symm).symm
   rcases hcross with ⟨v, hv, hreach⟩
-  refine ⟨⟨v, hdisjoint v hreach⟩, hv, ?_⟩
-  exact rectangleComplementActualConnected_of_component_disjoint
-    hN hM U A u v hdisjoint hreach
+  exact ⟨⟨v, hdisjoint v hreach⟩, hv,
+    rectangleComplementActualConnected_of_component_disjoint hN hM _ A u v hdisjoint hreach⟩
 
 end PottsDiscontinuity.TorusLoops

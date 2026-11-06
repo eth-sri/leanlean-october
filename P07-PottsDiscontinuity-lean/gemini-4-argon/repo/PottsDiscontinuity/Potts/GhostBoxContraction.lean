@@ -28,14 +28,11 @@ theorem restoreGhostBonds_piece (n : ℕ) (hn : 0 < n) (ω : LiteralBond (box n)
     (fun c => c.elim (fun _ => false) η)) = _
   rw [Equiv.symm_apply_apply]
 
-theorem collapseOuterBox_surjective (n : ℕ) : Function.Surjective (collapseOuterBox n) := by
-  intro x
-  cases x with
-  | some x => exact ⟨⟨x.val, box_subset_box_succ n x.property⟩, collapseOuterBox_inner n x⟩
+theorem collapseOuterBox_surjective (n : ℕ) : Function.Surjective (collapseOuterBox n)
+  | some x => ⟨⟨x.val, box_subset_box_succ n x.property⟩, collapseOuterBox_inner n x⟩
   | none =>
-      have hm : ((n : ℤ) + 1, 0) ∈ box (n + 1) := by rw [mem_box_iff]; dsimp; omega
-      have hnot : ((n : ℤ) + 1, 0) ∉ box n := by rw [mem_box_iff]; dsimp; omega
-      exact ⟨⟨((n : ℤ) + 1, 0), hm⟩, by simp [collapseOuterBox, hnot]⟩
+      ⟨⟨((n : ℤ) + 1, 0), show ((n : ℤ) + 1, 0) ∈ box (n + 1) by rw [mem_box_iff]; dsimp; omega⟩,
+        by simp [collapseOuterBox, show ((n : ℤ) + 1, 0) ∉ box n by rw [mem_box_iff]; dsimp; omega]⟩
 
 theorem collapseOuterBox_ker (n : ℕ) :
     Setoid.ker (collapseOuterBox n) = (outerBoxWiring n).partition := by
@@ -45,89 +42,44 @@ theorem collapseOuterBox_ker (n : ℕ) :
     u = v ∨ u.val ∈ vertexBoundary (box (n + 1)) ∧ v.val ∈ vertexBoundary (box (n + 1))
   rw [← outer_shell_iff_boundary n u.val u.property,
     ← outer_shell_iff_boundary n v.val v.property]
-  by_cases hu : u.val ∈ box n
-  · by_cases hv : v.val ∈ box n
-    · constructor
-      · intro h
-        have hs : (some ⟨u.val, hu⟩ : Option ↥(box n : Set (ℤ × ℤ))) = some ⟨v.val, hv⟩ := by
-          simpa only [collapseOuterBox, dite_eq_left hu, dite_eq_left hv] using h
-        exact Or.inl (Subtype.ext (congrArg
-          (fun z : ↥(box n : Set (ℤ × ℤ)) => z.val) (Option.some.inj hs)))
-      · rintro (rfl | ⟨hnu, _⟩)
-        · rfl
-        · exact (hnu hu).elim
-    · constructor
-      · intro h
-        have hs : (some ⟨u.val, hu⟩ : Option ↥(box n : Set (ℤ × ℤ))) = none := by
-          simpa only [collapseOuterBox, dite_eq_left hu, dite_eq_right hv] using h
-        cases hs
-      · rintro (h | ⟨hnu, _⟩)
-        · exact (hv (h ▸ hu)).elim
-        · exact (hnu hu).elim
-  · by_cases hv : v.val ∈ box n
-    · constructor
-      · intro h
-        have hs : (none : Option ↥(box n : Set (ℤ × ℤ))) = some ⟨v.val, hv⟩ := by
-          simpa only [collapseOuterBox, dite_eq_right hu, dite_eq_left hv] using h
-        cases hs
-      · rintro (h | ⟨_, hnv⟩)
-        · exact (hu (h.symm ▸ hv)).elim
-        · exact (hnv hv).elim
-    · simp only [collapseOuterBox, dite_eq_right hu, dite_eq_right hv]
-      exact iff_of_true trivial (Or.inr ⟨hu, hv⟩)
+  by_cases hu : u.val ∈ box n <;> by_cases hv : v.val ∈ box n <;>
+    simp [collapseOuterBox, hu, hv] <;> rintro rfl <;> contradiction
 
 @[simp] theorem collapseOuterBox_embedding (n : ℕ) (x : ↥(box n : Set (ℤ × ℤ))) :
-    collapseOuterBox n (innerBoxGraphEmbedding n x) = some x := by
-  exact collapseOuterBox_inner n x
+    collapseOuterBox n (innerBoxGraphEmbedding n x) = some x :=
+  collapseOuterBox_inner n x
 
 theorem openGraph_bool_adj_iff {V : Type*} [Finite V] (G : SimpleGraph V)
     (ω : G.edgeSet → Bool) (u v : V) :
     (FK.openGraph G (FK.boolConfigurationEquiv G ω)).Adj u v ↔
       ∃ h : G.Adj u v, ω ⟨s(u, v), G.mem_edgeSet.mpr h⟩ = true := by
   rw [FK.openGraph_adj, FK.openEdges_boolConfigurationEquiv]
-  constructor
-  · rintro ⟨h, hh⟩
-    exact ⟨G.mem_edgeSet.mp h, hh⟩
-  · rintro ⟨h, hh⟩
-    exact ⟨G.mem_edgeSet.mpr h, hh⟩
+  exact ⟨fun ⟨h, hh⟩ => ⟨G.mem_edgeSet.mp h, hh⟩, fun ⟨h, hh⟩ => ⟨G.mem_edgeSet.mpr h, hh⟩⟩
 
 private theorem restored_edge_maps_reachable (n : ℕ) (hn : 0 < n)
     (ω : LiteralBond (box n) → Bool) (η : OuterShellEdge n → Bool)
     (e : OuterBoxEdge n) (he : restoreGhostBonds n hn ω η e = true)
     (u v : ↥(box (n + 1) : Set (ℤ × ℤ))) (huv : s(u, v) = e.val) :
     (ghostOpenGraph (box n) ω).Reachable (collapseOuterBox n u) (collapseOuterBox n v) := by
-  obtain ⟨b, rfl⟩ := outerEdgeFromPiece_surjective n hn e
-  rw [restoreGhostBonds_piece] at he
-  cases b with
-  | inl b =>
-      cases b with
-      | inl e =>
-          rcases e with ⟨e, heG⟩
-          induction e using Sym2.inductionOn with
-          | _ a b =>
-              have hab : (squareLattice.induce (box n : Set (ℤ × ℤ))).Adj a b :=
-                (squareLattice.induce _).mem_edgeSet.mp heG
-              have hadj : (ghostOpenGraph (box n) ω).Adj (some a) (some b) :=
-                (openGraph_bool_adj_iff _ _ a b).mpr ⟨hab, he⟩
-              change s(u, v) = s(innerBoxGraphEmbedding n a, innerBoxGraphEmbedding n b) at huv
-              rcases Sym2.eq_iff.mp huv with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
-              · simpa only [collapseOuterBox_embedding] using hadj.reachable
-              · simpa only [collapseOuterBox_embedding] using hadj.symm.reachable
-      | inr x =>
-          have hadj : (ghostOpenGraph (box n) ω).Adj (some x.val) none := ⟨x.property, he⟩
-          change s(u, v) = s(⟨x.val.val, _⟩, ⟨ghostOutwardNeighbor n x, _⟩) at huv
-          rcases Sym2.eq_iff.mp huv with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
-          · simpa only [collapseOuterBox_inner, collapseOuterBox_outward] using hadj.reachable
-          · simpa only [collapseOuterBox_inner, collapseOuterBox_outward] using hadj.symm.reachable
-  | inr b =>
-      cases b with
-      | inl b => exact Bool.noConfusion he
-      | inr e =>
-          have hu : u.val ∉ box n := e.property u (huv ▸ Sym2.mem_mk_left u v)
-          have hv : v.val ∉ box n := e.property v (huv ▸ Sym2.mem_mk_right u v)
-          have hu' : collapseOuterBox n u = none := by simp [collapseOuterBox, hu]
-          have hv' : collapseOuterBox n v = none := by simp [collapseOuterBox, hv]
-          rw [hu', hv']
+  obtain ⟨(⟨e, heG⟩ | x) | (b | e), rfl⟩ := outerEdgeFromPiece_surjective n hn e <;>
+    rw [restoreGhostBonds_piece] at he
+  · induction e using Sym2.inductionOn with
+    | _ a b =>
+        have hadj : (ghostOpenGraph (box n) ω).Adj (some a) (some b) :=
+          (openGraph_bool_adj_iff _ _ a b).mpr ⟨(squareLattice.induce _).mem_edgeSet.mp heG, he⟩
+        change s(u, v) = s(innerBoxGraphEmbedding n a, innerBoxGraphEmbedding n b) at huv
+        rcases Sym2.eq_iff.mp huv with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ <;>
+          [simpa only [collapseOuterBox_embedding] using hadj.reachable;
+           simpa only [collapseOuterBox_embedding] using hadj.symm.reachable]
+  · have hadj : (ghostOpenGraph (box n) ω).Adj (some x.val) none := ⟨x.property, he⟩
+    change s(u, v) = s(⟨x.val.val, _⟩, ⟨ghostOutwardNeighbor n x, _⟩) at huv
+    rcases Sym2.eq_iff.mp huv with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ <;>
+      [simpa only [collapseOuterBox_inner, collapseOuterBox_outward] using hadj.reachable;
+       simpa only [collapseOuterBox_inner, collapseOuterBox_outward] using hadj.symm.reachable]
+  · exact Bool.noConfusion he
+  · have hu : u.val ∉ box n := e.property u (huv ▸ Sym2.mem_mk_left u v)
+    have hv : v.val ∉ box n := e.property v (huv ▸ Sym2.mem_mk_right u v)
+    simp [collapseOuterBox, hu, hv]
 
 /-- The outer wired partition is exactly the pullback of the literal ghost
 connection partition. Shell bonds have no effect on this partition. -/
@@ -142,22 +94,17 @@ theorem outer_componentSetoid_eq_ghost_comap (n : ℕ) (hn : 0 < n)
   have hker : Setoid.ker f ≤ R := by
     rw [show Setoid.ker f = (outerBoxWiring n).partition from collapseOuterBox_ker n]
     exact le_sup_right
-  apply le_antisymm
-  · apply sup_le
-    · apply FK.reachableSetoid_le_of_adj
-      intro u v h
-      obtain ⟨huv, hh⟩ := (openGraph_bool_adj_iff G (restoreGhostBonds n hn ω η) u v).mp h
-      exact restored_edge_maps_reachable n hn ω η ⟨s(u, v), G.mem_edgeSet.mpr huv⟩ hh u v rfl
-    · rw [← collapseOuterBox_ker n]
-      intro u v h
-      change f u = f v at h
-      change (ghostOpenGraph (box n) ω).reachableSetoid (f u) (f v)
-      rw [h]
+  refine le_antisymm (sup_le ?_ ?_) ?_
+  · apply FK.reachableSetoid_le_of_adj; intro u v h
+    obtain ⟨huv, hh⟩ := (openGraph_bool_adj_iff G (restoreGhostBonds n hn ω η) u v).mp h
+    exact restored_edge_maps_reachable n hn ω η ⟨s(u, v), G.mem_edgeSet.mpr huv⟩ hh u v rfl
+  · rw [← collapseOuterBox_ker n]
+    intro u v (h : f u = f v)
+    change (ghostOpenGraph (box n) ω).reachableSetoid (f u) (f v)
+    rw [h]
   · have hmap : (ghostOpenGraph (box n) ω).reachableSetoid ≤ R.map f := by
-      apply FK.reachableSetoid_le_of_adj
-      intro u v h
-      have hgen {a b : ↥(box (n + 1) : Set (ℤ × ℤ))} (hab : R a b) :
-          (R.map f) (f a) (f b) :=
+      apply FK.reachableSetoid_le_of_adj; intro u v h
+      have hgen {a b : ↥(box (n + 1) : Set (ℤ × ℤ))} (hab : R a b) : (R.map f) (f a) (f b) :=
         Relation.EqvGen.rel _ _ ⟨a, b, hab, rfl, rfl⟩
       have hcross (x : ↥(box n : Set (ℤ × ℤ)))
           (hx : x.val ∈ vertexBoundary (box n)) (hh : ω (.inr ⟨x, hx⟩) = true) :
@@ -167,36 +114,27 @@ theorem outer_componentSetoid_eq_ghost_comap (n : ℕ) (hn : 0 < n)
           ⟨ghostOutwardNeighbor n ⟨x, hx⟩, ghostOutwardNeighbor_mem_outer n ⟨x, hx⟩⟩
         have hb : restoreGhostBonds n hn ω η (ghostOutwardEdge n ⟨x, hx⟩) = true := by
           rw [show ghostOutwardEdge n ⟨x, hx⟩ = outerEdgeFromPiece n (.inl (.inr ⟨x, hx⟩)) from rfl,
-            restoreGhostBonds_piece]
-          exact hh
+            restoreGhostBonds_piece]; exact hh
         have hadj : (FK.openGraph G C).Adj a b :=
           (openGraph_bool_adj_iff G _ a b).mpr ⟨ghostOutwardNeighbor_adj n ⟨x, hx⟩, hb⟩
-        have hr : R a b := FK.actualConnected_component G (outerBoxWiring n) C hadj.reachable
-        simpa only [f, a, b, collapseOuterBox_inner, collapseOuterBox_outward] using hgen hr
-      cases u with
-      | none =>
-          cases v with
-          | none => exact h.elim
-          | some x => obtain ⟨hx, hh⟩ := h; exact (hcross x hx hh).symm
-      | some x =>
-          cases v with
-          | none => obtain ⟨hx, hh⟩ := h; exact hcross x hx hh
-          | some y =>
-              obtain ⟨hxy, hh⟩ := (openGraph_bool_adj_iff _ (fun e => ω (.inl e)) x y).mp h
-              let a := innerBoxGraphEmbedding n x
-              let b := innerBoxGraphEmbedding n y
-              have hb : restoreGhostBonds n hn ω η
-                  (innerBoxEdgeEmbedding n ⟨s(x, y), (squareLattice.induce _).mem_edgeSet.mpr hxy⟩) = true := by
-                rw [show innerBoxEdgeEmbedding n ⟨s(x, y), _⟩ =
-                  outerEdgeFromPiece n (.inl (.inl ⟨s(x, y), _⟩)) from rfl, restoreGhostBonds_piece]
-                exact hh
-              have hadj : (FK.openGraph G C).Adj a b :=
-                (openGraph_bool_adj_iff G _ a b).mpr ⟨hxy, hb⟩
-              have hr : R a b := FK.actualConnected_component G (outerBoxWiring n) C hadj.reachable
-              simpa only [f, a, b, collapseOuterBox_embedding] using hgen hr
-    have hcomap := Setoid.comap_map_of_ker_le f R hker
+        simpa only [f, a, b, collapseOuterBox_inner, collapseOuterBox_outward] using
+          hgen (FK.actualConnected_component G (outerBoxWiring n) C hadj.reachable)
+      cases u <;> cases v
+      · exact h.elim
+      · exact (hcross _ h.1 h.2).symm
+      · exact hcross _ h.1 h.2
+      · obtain ⟨hxy, hh⟩ := (openGraph_bool_adj_iff _ (fun e => ω (.inl e)) _ _).mp h
+        have hb : restoreGhostBonds n hn ω η
+            (innerBoxEdgeEmbedding n ⟨s(_, _), (squareLattice.induce _).mem_edgeSet.mpr hxy⟩) = true := by
+          rw [show innerBoxEdgeEmbedding n ⟨s(_, _), _⟩ =
+            outerEdgeFromPiece n (.inl (.inl ⟨s(_, _), _⟩)) from rfl, restoreGhostBonds_piece]
+          exact hh
+        have hadj : (FK.openGraph G C).Adj (innerBoxGraphEmbedding n _) (innerBoxGraphEmbedding n _) :=
+          (openGraph_bool_adj_iff G _ _ _).mpr ⟨hxy, hb⟩
+        simpa only [f, collapseOuterBox_embedding] using
+          hgen (FK.actualConnected_component G (outerBoxWiring n) C hadj.reachable)
     intro u v h
-    exact (Setoid.ext_iff.mp hcomap u v).mp (hmap h)
+    exact (Setoid.ext_iff.mp (Setoid.comap_map_of_ker_le f R hker) u v).mp (hmap h)
 
 theorem outer_componentCount_eq_ghost (n : ℕ) (hn : 0 < n)
     (ω : LiteralBond (box n) → Bool) (η : OuterShellEdge n → Bool) :

@@ -1,7 +1,6 @@
 module
 
 public import Mathlib.Analysis.Convex.Segment
-public import FixedPointTheorems.brouwer
 public import Mathlib
 
 /-! # Straight-segment interpolation of lifted walks -/

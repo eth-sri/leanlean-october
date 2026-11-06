@@ -1,5 +1,3 @@
-/- Adapted from an earlier, unpublished formalization of the planar FK model by the same author.
-Namespaces/imports adapted to the shared FK library. -/
 module
 
 public import PottsDiscontinuity.Duality.RectangleFlowIntegration
@@ -11,170 +9,102 @@ namespace PottsDiscontinuity.FK
 
 open PottsDiscontinuity.FK PottsDiscontinuity.FK.Medial
 
-/-- Zero-exterior dual potentials as an actual linear subspace of all
-expanded-face functions. -/
 def rectangleExteriorPotentialSubmodule (a : LatticeVertex) (w h : ℕ) :
     Submodule ℝ (RectangleDualVertex a w h → ℝ) where
   carrier := {φ | ∀ z, z.1 ∈ rectangleDualBoundary a w h → φ z = 0}
   zero_mem' := by simp
-  add_mem' := by
-    intro φ ψ hφ hψ z hz
-    simp [hφ z hz, hψ z hz]
-  smul_mem' := by
-    intro c φ hφ z hz
-    simp [hφ z hz]
+  add_mem' := by intro φ ψ hφ hψ z hz; simp [hφ z hz, hψ z hz]
+  smul_mem' := by intro c φ hφ z hz; simp [hφ z hz]
 
 private def rectanglePotentialAsExterior (a : LatticeVertex) (w h : ℕ)
     (φ : rectangleExteriorPotentialSubmodule a w h) : RectangleExteriorPotential a w h :=
   ⟨φ.1, φ.2⟩
 
-private theorem rectanglePrimalFlowDivergence_add
-    (a : LatticeVertex) (w h : ℕ) (F G : RectanglePrimalBond a w h → ℝ)
-    (v : LatticeVertex) :
-    rectanglePrimalFlowDivergence a w h (F + G) v =
-      rectanglePrimalFlowDivergence a w h F v + rectanglePrimalFlowDivergence a w h G v := by
-  classical
-  unfold rectanglePrimalFlowDivergence
-  simp only [Pi.add_apply]
-  rw [← Finset.sum_add_distrib]
-  apply Finset.sum_congr rfl
-  intro b hb
-  by_cases hs : b.1.1.source = v <;> simp [hs]; ring
-
-private theorem rectanglePrimalFlowDivergence_smul
-    (a : LatticeVertex) (w h : ℕ) (c : ℝ) (F : RectanglePrimalBond a w h → ℝ)
-    (v : LatticeVertex) :
-    rectanglePrimalFlowDivergence a w h (c • F) v =
-      c * rectanglePrimalFlowDivergence a w h F v := by
-  classical
-  unfold rectanglePrimalFlowDivergence
-  simp only [Pi.smul_apply, smul_eq_mul]
-  calc
-    (∑ b : rectangleActualIncidentBonds a w h v,
-      if b.1.1.source = v then c * F b.1 else -(c * F b.1)) =
-        ∑ b : rectangleActualIncidentBonds a w h v,
-          c * (if b.1.1.source = v then F b.1 else -F b.1) := by
-            apply Finset.sum_congr rfl
-            intro b hb
-            by_cases hs : b.1.1.source = v <;> simp [hs]
-    _ = c * ∑ b : rectangleActualIncidentBonds a w h v,
-          (if b.1.1.source = v then F b.1 else -F b.1) := by
-            rw [Finset.mul_sum]
-
-/-- Actual rectangle flows whose incidence divergence vanishes at every
-primal rectangle vertex. -/
 def rectangleDivergenceFreeFlowSubmodule (a : LatticeVertex) (w h : ℕ) :
     Submodule ℝ (RectanglePrimalBond a w h → ℝ) where
   carrier := {F | ∀ v, v ∈ latticeRectangle a w h →
     rectanglePrimalFlowDivergence a w h F v = 0}
-  zero_mem' := by
-    intro v hv
-    simp [rectanglePrimalFlowDivergence]
+  zero_mem' := by intro v _; simp [rectanglePrimalFlowDivergence]
   add_mem' := by
     intro F G hF hG v hv
-    rw [rectanglePrimalFlowDivergence_add, hF v hv, hG v hv]
-    ring
+    classical
+    have : rectanglePrimalFlowDivergence a w h (F + G) v =
+        rectanglePrimalFlowDivergence a w h F v + rectanglePrimalFlowDivergence a w h G v := by
+      unfold rectanglePrimalFlowDivergence
+      rw [← Finset.sum_add_distrib]
+      refine Finset.sum_congr rfl fun b _ => ?_
+      by_cases hs : b.1.1.source = v <;> simp [hs]; ring
+    rw [this, hF v hv, hG v hv, add_zero]
   smul_mem' := by
     intro c F hF v hv
-    rw [rectanglePrimalFlowDivergence_smul, hF v hv]
-    ring
+    classical
+    have : rectanglePrimalFlowDivergence a w h (c • F) v =
+        c * rectanglePrimalFlowDivergence a w h F v := by
+      unfold rectanglePrimalFlowDivergence
+      rw [Finset.mul_sum]
+      refine Finset.sum_congr rfl fun b _ => ?_
+      by_cases hs : b.1.1.source = v <;> simp [hs]
+    rw [this, hF v hv, mul_zero]
 
-def rectanglePotentialExtendedLinear (a : LatticeVertex) (w h : ℕ)
-    (φ : rectangleExteriorPotentialSubmodule a w h) (z : LatticeVertex) : ℝ :=
-  if hz : z ∈ rectangleDualExpanded a w h then φ.1 ⟨z, hz⟩ else 0
-
-private theorem rectanglePotentialExtendedLinear_add (a : LatticeVertex) (w h : ℕ)
+private theorem rectangleExtendedPotential_add (a : LatticeVertex) (w h : ℕ)
     (φ ψ : rectangleExteriorPotentialSubmodule a w h) (z : LatticeVertex) :
-    rectanglePotentialExtendedLinear a w h (φ + ψ) z =
-      rectanglePotentialExtendedLinear a w h φ z +
-        rectanglePotentialExtendedLinear a w h ψ z := by
+    rectangleExtendedPotential a w h ⟨(φ + ψ).1, (φ + ψ).2⟩ z =
+      rectangleExtendedPotential a w h ⟨φ.1, φ.2⟩ z +
+        rectangleExtendedPotential a w h ⟨ψ.1, ψ.2⟩ z := by
   by_cases hz : z ∈ rectangleDualExpanded a w h <;>
-    simp [rectanglePotentialExtendedLinear, hz]
+    simp [rectangleExtendedPotential, hz]
 
-private theorem rectanglePotentialExtendedLinear_smul (a : LatticeVertex) (w h : ℕ)
+private theorem rectangleExtendedPotential_smul (a : LatticeVertex) (w h : ℕ)
     (c : ℝ) (φ : rectangleExteriorPotentialSubmodule a w h) (z : LatticeVertex) :
-    rectanglePotentialExtendedLinear a w h (c • φ) z =
-      c * rectanglePotentialExtendedLinear a w h φ z := by
+    rectangleExtendedPotential a w h ⟨(c • φ).1, (c • φ).2⟩ z =
+      c * rectangleExtendedPotential a w h ⟨φ.1, φ.2⟩ z := by
   by_cases hz : z ∈ rectangleDualExpanded a w h <;>
-    simp [rectanglePotentialExtendedLinear, hz]
+    simp [rectangleExtendedPotential, hz]
 
-def rectanglePotentialCurlValue (a : LatticeVertex) (w h : ℕ)
-    (φ : rectangleExteriorPotentialSubmodule a w h) (b : LatticeBond) : ℝ :=
-  match b.axis with
-  | .horizontal => rectanglePotentialExtendedLinear a w h φ (b.faceBase true) -
-      rectanglePotentialExtendedLinear a w h φ (b.faceBase false)
-  | .vertical => rectanglePotentialExtendedLinear a w h φ (b.faceBase false) -
-      rectanglePotentialExtendedLinear a w h φ (b.faceBase true)
-
-private theorem rectanglePotentialCurlValue_eq_flow (a : LatticeVertex) (w h : ℕ)
-    (φ : rectangleExteriorPotentialSubmodule a w h) (b : LatticeBond) :
-    rectanglePotentialCurlValue a w h φ b =
-      rectangleCurlFlow a w h (rectanglePotentialAsExterior a w h φ) b := by
-  cases b.axis <;> rfl
-
-/-- Curl as a linear map from zero-exterior potentials into all actual
-rectangle-edge flows. -/
 def rectanglePotentialCurlMap (a : LatticeVertex) (w h : ℕ) :
     rectangleExteriorPotentialSubmodule a w h →ₗ[ℝ]
       (RectanglePrimalBond a w h → ℝ) where
-  toFun φ b := rectanglePotentialCurlValue a w h φ b.1
+  toFun φ b := rectangleCurlFlow a w h ⟨φ.1, φ.2⟩ b.1
   map_add' φ ψ := by
     funext b
-    cases hax : b.1.axis
-    · simp only [rectanglePotentialCurlValue, hax, Pi.add_apply]
-      rw [rectanglePotentialExtendedLinear_add, rectanglePotentialExtendedLinear_add]
-      abel
-    · simp only [rectanglePotentialCurlValue, hax, Pi.add_apply]
-      rw [rectanglePotentialExtendedLinear_add, rectanglePotentialExtendedLinear_add]
-      abel
+    cases hax : b.1.axis <;>
+      simp only [rectangleCurlFlow, hax, Pi.add_apply, rectangleExtendedPotential_add] <;> abel
   map_smul' c φ := by
     funext b
-    cases hax : b.1.axis
-    · simp only [rectanglePotentialCurlValue, hax,
-        Pi.smul_apply, smul_eq_mul]
-      rw [rectanglePotentialExtendedLinear_smul, rectanglePotentialExtendedLinear_smul]
-      simp only [RingHom.id_apply]
-      ring
-    · simp only [rectanglePotentialCurlValue, hax,
-        Pi.smul_apply, smul_eq_mul]
-      rw [rectanglePotentialExtendedLinear_smul, rectanglePotentialExtendedLinear_smul]
-      simp only [RingHom.id_apply]
-      ring
+    cases hax : b.1.axis <;>
+      simp only [rectangleCurlFlow, hax, Pi.smul_apply, smul_eq_mul,
+        rectangleExtendedPotential_smul, RingHom.id_apply] <;> ring
 
- theorem rectanglePotentialCurlMap_mem_divergenceFree
+theorem rectanglePotentialCurlMap_mem_divergenceFree
     (a : LatticeVertex) (w h : ℕ)
     (φ : rectangleExteriorPotentialSubmodule a w h) :
     rectanglePotentialCurlMap a w h φ ∈ rectangleDivergenceFreeFlowSubmodule a w h := by
   intro v hv
-  have hfun : rectanglePotentialCurlMap a w h φ =
-      fun b => rectangleCurlFlow a w h (rectanglePotentialAsExterior a w h φ) b.1 := by
-    funext b
-    exact rectanglePotentialCurlValue_eq_flow a w h φ b.1
-  rw [hfun]
-  change rectanglePrimalCurlDivergence a w h
-      (rectanglePotentialAsExterior a w h φ) v = 0
-  exact rectanglePrimalCurlDivergence_eq_zero a w h
-    (rectanglePotentialAsExterior a w h φ) v hv
+  rw [rectanglePrimalFlowDivergence_eq_stencil]
+  have hcand (i : Fin 4) :
+      rectangleExtendedPrimalFlow a w h (rectanglePotentialCurlMap a w h φ)
+        (rectangleCurlIncidentCandidate v i) =
+      rectangleCurlFlow a w h (rectanglePotentialAsExterior a w h φ)
+        (rectangleCurlIncidentCandidate v i) := by
+    unfold rectangleExtendedPrimalFlow
+    split_ifs with hb
+    · rfl
+    · exact (rectangleCurlCandidate_flow_zero_of_not_inside a w h
+        (rectanglePotentialAsExterior a w h φ) v i hv hb).symm
+  have h0 := hcand 0; have h1 := hcand 1; have h2 := hcand 2; have h3 := hcand 3
+  dsimp [rectangleCurlIncidentCandidate] at h0 h1 h2 h3
+  unfold rectangleFlowDivergenceStencil
+  rw [h0, h1, h2, h3]
+  simp [rectangleCurlFlow, LatticeBond.faceBase]
+  ring
 
-/-- The actual curl map with its mathematically proved divergence-free range. -/
 def rectanglePotentialCurlIntoDivergenceFree (a : LatticeVertex) (w h : ℕ) :
     rectangleExteriorPotentialSubmodule a w h →ₗ[ℝ]
       rectangleDivergenceFreeFlowSubmodule a w h where
   toFun φ := ⟨rectanglePotentialCurlMap a w h φ,
     rectanglePotentialCurlMap_mem_divergenceFree a w h φ⟩
-  map_add' φ ψ := by
-    apply Subtype.ext
-    exact map_add (rectanglePotentialCurlMap a w h) φ ψ
-  map_smul' c φ := by
-    apply Subtype.ext
-    exact map_smul (rectanglePotentialCurlMap a w h) c φ
-
-private theorem rectanglePotential_bottomFace_boundary
-    (a : LatticeVertex) (w h n : ℕ) (hn : n < w) :
-    rectangleFlowVertex a (n : ℤ) (-1) ∈ rectangleDualBoundary a w h := by
-  simp [rectangleDualBoundary, rectangleDualInterior, rectangleDualExpanded,
-    latticeRectangle, Finset.mem_filter, Finset.mem_product, Finset.mem_Icc,
-    rectangleFlowVertex, rectangleFlowX, rectangleFlowY]; omega
+  map_add' φ ψ := Subtype.ext (map_add (rectanglePotentialCurlMap a w h) φ ψ)
+  map_smul' c φ := Subtype.ext (map_smul (rectanglePotentialCurlMap a w h) c φ)
 
 private theorem rectangleExtendedPotential_zero_of_boundary
     (a : LatticeVertex) (w h : ℕ) (φ : RectangleExteriorPotential a w h)
@@ -199,135 +129,55 @@ private theorem rectangleExteriorPotential_ext_atInterior
     constructor <;> rw [mem_latticeRectangle] <;>
       simp [rectangleFlowVertex, rectangleFlowX, rectangleFlowY,
         LatticeBond.source, LatticeBond.target] <;> omega
-  have hrow (j : ℕ) (hj : j < h) :
-      rectangleExtendedPotential a w h φ (rectangleFlowVertex a (n : ℤ) (j : ℤ)) =
-        rectangleExtendedPotential a w h ψ (rectangleFlowVertex a (n : ℤ) (j : ℤ)) := by
-    induction j with
-    | zero =>
-        have hc := hcurl ⟨⟨rectangleFlowVertex a (n : ℤ) (0 : ℤ), .horizontal⟩,
-          hedgeMem 0 hj⟩
-        simp [rectangleCurlFlow, LatticeBond.faceBase, rectangleFlowVertex,
-          rectangleFlowX, rectangleFlowY] at hc
-        have hface : (a.1 + (n : ℤ), a.2 - 1) =
-            rectangleFlowVertex a (n : ℤ) (-1) := by
-          ext <;> simp [rectangleFlowVertex, rectangleFlowX, rectangleFlowY]; ring
-        have hbd := rectanglePotential_bottomFace_boundary a w h n hn
-        have hbd' : (a.1 + (n : ℤ), a.2 - 1) ∈ rectangleDualBoundary a w h := by
-          rw [hface]
-          exact hbd
-        have hφbot := rectangleExtendedPotential_zero_of_boundary a w h φ _ hbd'
-        have hψbot := rectangleExtendedPotential_zero_of_boundary a w h ψ _ hbd'
-        rw [hφbot, hψbot] at hc
-        simpa [rectangleFlowVertex, rectangleFlowX, rectangleFlowY] using hc
-    | succ j ih =>
-        have hc := hcurl ⟨⟨rectangleFlowVertex a (n : ℤ) (j.succ : ℤ), .horizontal⟩,
-          hedgeMem j.succ hj⟩
-        simp [rectangleCurlFlow, LatticeBond.faceBase, rectangleFlowVertex,
-          rectangleFlowX, rectangleFlowY] at hc
-        have htop : (a.1 + (n : ℤ), a.2 + ((j : ℤ) + 1)) =
-            rectangleFlowVertex a (n : ℤ) (j.succ : ℤ) := by
-          ext <;> simp [rectangleFlowVertex, rectangleFlowX, rectangleFlowY]
-        have hbottom : (a.1 + (n : ℤ), a.2 + ((j : ℤ) + 1) - 1) =
-            rectangleFlowVertex a (n : ℤ) (j : ℤ) := by
-          ext <;> simp [rectangleFlowVertex, rectangleFlowX, rectangleFlowY]; omega
-        rw [htop, hbottom] at hc
-        have hprev := ih (by omega)
-        rw [hprev] at hc
-        linarith
-  exact hrow m hm
+  induction m with
+  | zero =>
+      have hc := hcurl ⟨⟨rectangleFlowVertex a (n : ℤ) (0 : ℤ), .horizontal⟩, hedgeMem 0 hm⟩
+      simp [rectangleCurlFlow, LatticeBond.faceBase, rectangleFlowVertex,
+        rectangleFlowX, rectangleFlowY] at hc
+      have hbd' : (a.1 + (n : ℤ), a.2 - 1) ∈ rectangleDualBoundary a w h := by
+        simp [rectangleDualBoundary, rectangleDualInterior, rectangleDualExpanded,
+          latticeRectangle, Finset.mem_filter, Finset.mem_product, Finset.mem_Icc]
+        omega
+      rw [rectangleExtendedPotential_zero_of_boundary a w h φ _ hbd',
+        rectangleExtendedPotential_zero_of_boundary a w h ψ _ hbd'] at hc
+      simpa [rectangleFlowVertex, rectangleFlowX, rectangleFlowY] using hc
+  | succ j ih =>
+      have hc := hcurl ⟨⟨rectangleFlowVertex a (n : ℤ) (j.succ : ℤ), .horizontal⟩,
+        hedgeMem j.succ hm⟩
+      simp [rectangleCurlFlow, LatticeBond.faceBase, rectangleFlowVertex,
+        rectangleFlowX, rectangleFlowY] at hc
+      have hprev := ih (by omega)
+      simp only [rectangleFlowVertex, rectangleFlowX, rectangleFlowY] at hprev ⊢
+      push_cast
+      rw [show a.2 + ((j : ℤ) + 1) - 1 = a.2 + (j : ℤ) by ring, hprev] at hc
+      linarith
 
-private theorem rectangleExteriorPotential_ext_of_curl_eq
-    (a : LatticeVertex) (w h : ℕ)
-    (φ ψ : RectangleExteriorPotential a w h)
-    (hcurl : ∀ b : RectanglePrimalBond a w h,
-      rectangleCurlFlow a w h φ b.1 = rectangleCurlFlow a w h ψ b.1) :
-    φ = ψ := by
-  apply Subtype.ext
-  funext z
+theorem rectanglePotentialCurlMap_injective (a : LatticeVertex) (w h : ℕ) :
+    Function.Injective (rectanglePotentialCurlMap a w h) := by
+  intro φ ψ hφψ
+  ext z
   by_cases hI : z.1 ∈ rectangleDualInterior a w h
   · have hprop := (Finset.mem_filter.mp hI).2
     let n : ℕ := (z.1.1 - a.1).toNat
     let m : ℕ := (z.1.2 - a.2).toNat
-    have hxn : 0 ≤ z.1.1 - a.1 := by omega
-    have hym : 0 ≤ z.1.2 - a.2 := by omega
-    have hx : z.1.1 = a.1 + (n : ℤ) := by
-      dsimp [n]
-      rw [Int.toNat_of_nonneg hxn]
-      omega
-    have hy : z.1.2 = a.2 + (m : ℤ) := by
-      dsimp [m]
-      rw [Int.toNat_of_nonneg hym]
-      omega
-    have hn : n < w := by omega
-    have hm : m < h := by omega
     have hcoords : z.1 = rectangleFlowVertex a (n : ℤ) (m : ℤ) := by
-      ext <;> simp [rectangleFlowVertex, rectangleFlowX, rectangleFlowY, hx, hy]
-    have hp := rectangleExteriorPotential_ext_atInterior a w h φ ψ hcurl n m hn hm
-    have hex : z.1 ∈ rectangleDualExpanded a w h := (Finset.mem_filter.mp hI).1
-    have hexV : rectangleFlowVertex a (n : ℤ) (m : ℤ) ∈ rectangleDualExpanded a w h := by
-      simpa [hcoords] using hex
-    have hsub : z = ⟨rectangleFlowVertex a (n : ℤ) (m : ℤ), hexV⟩ := by
-      apply Subtype.ext
-      exact hcoords
-    rw [rectangleExtendedPotential_of_mem a w h φ _ hexV,
-      rectangleExtendedPotential_of_mem a w h ψ _ hexV] at hp
-    rw [hsub]
+      ext <;> simp [rectangleFlowVertex, rectangleFlowX, rectangleFlowY, n, m] <;> omega
+    have hp := rectangleExteriorPotential_ext_atInterior a w h ⟨φ.1, φ.2⟩ ⟨ψ.1, ψ.2⟩
+      (fun b => congrFun hφψ b) n m (by omega) (by omega)
+    rw [ ← hcoords, rectangleExtendedPotential_of_mem a w h _ _ z.2,
+      rectangleExtendedPotential_of_mem a w h _ _ z.2] at hp
     exact hp
-  · have hb : z.1 ∈ rectangleDualBoundary a w h := by
-      apply Finset.mem_filter.mpr
-      refine ⟨z.2, ?_⟩
-      exact hI
+  · have hb : z.1 ∈ rectangleDualBoundary a w h := Finset.mem_filter.mpr ⟨z.2, hI⟩
     rw [φ.2 z hb, ψ.2 z hb]
 
-/-- Curl determines a zero-exterior potential uniquely by row-wise recurrence
-from the lower wired boundary. -/
-theorem rectanglePotentialCurlMap_injective (a : LatticeVertex) (w h : ℕ) :
-    Function.Injective (rectanglePotentialCurlMap a w h) := by
-  intro φ ψ hφψ
-  have heq := rectangleExteriorPotential_ext_of_curl_eq a w h
-    (rectanglePotentialAsExterior a w h φ) (rectanglePotentialAsExterior a w h ψ) (by
-      intro b
-      have hb := congrFun hφψ b
-      change rectanglePotentialCurlValue a w h φ b.1 =
-        rectanglePotentialCurlValue a w h ψ b.1 at hb
-      rw [rectanglePotentialCurlValue_eq_flow, rectanglePotentialCurlValue_eq_flow] at hb
-      exact hb)
-  apply Subtype.ext
-  exact congrArg Subtype.val heq
-
- theorem rectanglePotentialCurlInto_injective
-    (a : LatticeVertex) (w h : ℕ) :
-    Function.Injective (rectanglePotentialCurlIntoDivergenceFree a w h) := by
-  intro φ ψ hφψ
-  apply rectanglePotentialCurlMap_injective a w h
-  exact congrArg Subtype.val hφψ
-
- theorem rectanglePotentialCurlInto_surjective
-    (a : LatticeVertex) (w h : ℕ) :
-    Function.Surjective (rectanglePotentialCurlIntoDivergenceFree a w h) := by
-  intro F
-  let actualF : RectangleDivergenceFreeFlow a w h := ⟨F.1, F.2⟩
-  let extPot := rectangleFlowExteriorPotential a w h actualF
-  let φ : rectangleExteriorPotentialSubmodule a w h := ⟨extPot.1, extPot.2⟩
-  refine ⟨φ, ?_⟩
-  apply Subtype.ext
-  funext b
-  calc
-    rectanglePotentialCurlMap a w h φ b =
-        rectangleCurlFlow a w h (rectanglePotentialAsExterior a w h φ) b.1 := by
-          exact rectanglePotentialCurlValue_eq_flow a w h φ b.1
-    _ = F.1 b := by
-      simpa [actualF, extPot, φ, rectanglePotentialAsExterior] using
-        rectangleFlowExteriorPotential_curl_eq_flow a w h actualF b
-
-/-- The finite discrete-curl map is a genuine linear equivalence between
-zero-exterior dual potentials and divergence-free flows on actual rectangle
-edges. -/
 noncomputable def rectanglePotentialCurlLinearEquiv (a : LatticeVertex) (w h : ℕ) :
     rectangleExteriorPotentialSubmodule a w h ≃ₗ[ℝ]
       rectangleDivergenceFreeFlowSubmodule a w h :=
   LinearEquiv.ofBijective (rectanglePotentialCurlIntoDivergenceFree a w h)
-    ⟨rectanglePotentialCurlInto_injective a w h,
-      rectanglePotentialCurlInto_surjective a w h⟩
+    ⟨fun _ _ hxy => rectanglePotentialCurlMap_injective a w h (congrArg Subtype.val hxy),
+      fun F => ⟨⟨(rectangleFlowExteriorPotential a w h ⟨F.1, F.2⟩).1,
+        (rectangleFlowExteriorPotential a w h ⟨F.1, F.2⟩).2⟩,
+        Subtype.ext (funext fun b =>
+          rectangleFlowExteriorPotential_curl_eq_flow a w h ⟨F.1, F.2⟩ b)⟩⟩
 
 end PottsDiscontinuity.FK

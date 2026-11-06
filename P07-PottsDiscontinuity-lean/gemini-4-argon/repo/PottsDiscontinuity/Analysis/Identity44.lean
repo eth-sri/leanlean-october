@@ -33,16 +33,11 @@ theorem alt_partial_sum_bounds : ∀ (N : ℕ) (u : ℕ → ℝ), Antitone u →
     have ih := alt_partial_sum_bounds N (fun i => u (i + 1))
       (fun a b hab => hu (by omega)) (fun i => h0 _)
     have h01 : u 1 ≤ u 0 := hu (by omega)
-    rw [Finset.sum_range_succ']
-    have e : ∑ i ∈ Finset.range N, (-1 : ℝ) ^ (i + 1) * u (i + 1) =
-        -∑ i ∈ Finset.range N, (-1 : ℝ) ^ i * u (i + 1) := by
-      rw [← Finset.sum_neg_distrib]
-      refine Finset.sum_congr rfl fun i _ => ?_
-      rw [pow_succ]
-      ring
-    rw [e]
+    rw [Finset.sum_range_succ', show ∑ i ∈ Finset.range N, (-1 : ℝ) ^ (i + 1) * u (i + 1) =
+        -∑ i ∈ Finset.range N, (-1 : ℝ) ^ i * u (i + 1) by
+      rw [← Finset.sum_neg_distrib]; exact Finset.sum_congr rfl fun i _ => by rw [pow_succ]; ring]
     simp only [pow_zero, one_mul]
-    constructor <;> linarith [ih.1, ih.2]
+    exact ⟨by linarith [ih.2], by linarith [ih.1]⟩
 
 theorem sum_Icc_one_eq_sum_range (g : ℕ → ℝ) (N : ℕ) :
     ∑ k ∈ Finset.Icc 1 N, g k = ∑ n ∈ Finset.range N, g (n + 1) := by
@@ -55,31 +50,17 @@ theorem sum_Icc_one_eq_sum_range (g : ℕ → ℝ) (N : ℕ) :
 theorem hasSum_odd_inv_sq : HasSum (fun j : ℕ => 1 / (2 * (j : ℝ) + 1) ^ 2) (π ^ 2 / 8) := by
   have hz := hasSum_zeta_two
   have hev : HasSum (fun k : ℕ => 1 / ((2 * k : ℕ) : ℝ) ^ 2) (π ^ 2 / 6 / 4) := by
-    have h := hz.div_const 4
-    convert h using 1
-    funext k
-    rcases Nat.eq_zero_or_pos k with rfl | hk
-    · simp
-    · push_cast
-      have : (k : ℝ) ≠ 0 := by positivity
-      field_simp
-      norm_num
+    convert hz.div_const 4 using 1; funext k
+    rcases Nat.eq_zero_or_pos k with rfl | hk <;> [simp; (push_cast; field_simp; norm_num)]
   have hodd : Summable (fun j : ℕ => 1 / ((2 * j + 1 : ℕ) : ℝ) ^ 2) :=
     hz.summable.comp_injective (i := fun k : ℕ => 2 * k + 1) (fun x y h => by simp only at h; omega)
-  have h2 := HasSum.even_add_odd (f := fun n : ℕ => 1 / (n : ℝ) ^ 2) hev hodd.hasSum
-  have h3 := hz.unique h2
-  have e : ∑' j : ℕ, 1 / ((2 * j + 1 : ℕ) : ℝ) ^ 2 = π ^ 2 / 8 := by linarith
-  rw [← e]
-  convert hodd.hasSum using 1
-  funext j
-  push_cast
-  rfl
+  have h3 := hz.unique (HasSum.even_add_odd (f := fun n : ℕ => 1 / (n : ℝ) ^ 2) hev hodd.hasSum)
+  rw [show π ^ 2 / 8 = ∑' j : ℕ, 1 / ((2 * j + 1 : ℕ) : ℝ) ^ 2 by linarith]
+  convert hodd.hasSum using 1; funext; push_cast; rfl
 
 theorem hasSum_odd_inv_sq_mul (c : ℝ) :
     HasSum (fun j : ℕ => c / (2 * (j : ℝ) + 1) ^ 2) (c * (π ^ 2 / 8)) := by
-  convert hasSum_odd_inv_sq.mul_left c using 1
-  funext j
-  rw [mul_one_div]
+  convert hasSum_odd_inv_sq.mul_left c using 1; funext; rw [mul_one_div]
 
 /-! ### The partial-fraction terms -/
 
@@ -93,24 +74,16 @@ noncomputable def dTerm (lam : ℝ) (j : ℕ) : ℝ :=
     4 * lam / ((2 * (j : ℝ) + 1) ^ 2 * π ^ 2)
 
 theorem cTerm_pos {lam : ℝ} (hlam : 0 < lam) (j : ℕ) (m : ℝ) : 0 < cTerm lam j m := by
-  unfold cTerm
-  positivity
+  unfold cTerm; positivity
 
 theorem hasSum_cTerm_tanh {lam : ℝ} (hlam : 0 < lam) {m : ℝ} (hm : 0 < m) :
     HasSum (fun j : ℕ => cTerm lam j m) (Real.tanh (m * lam) / m) := by
-  have ha : 0 < 2 * m * lam / π := by positivity
-  have h := (hasSum_inv_sq_add_odd_sq ha).mul_left (8 * lam / π ^ 2)
   have hpi : π ≠ 0 := Real.pi_ne_zero
   have hm0 : m ≠ 0 := hm.ne'
   have hl0 : lam ≠ 0 := hlam.ne'
-  convert h using 1
-  · funext j
-    unfold cTerm
-    field_simp
-    ring
-  · rw [show π * (2 * m * lam / π) / 2 = m * lam by field_simp]
-    field_simp
-    ring
+  convert (hasSum_inv_sq_add_odd_sq (by positivity : 0 < 2 * m * lam / π)).mul_left (8 * lam / π ^ 2) using 1
+  · funext j; unfold cTerm; field_simp; ring
+  · rw [show π * (2 * m * lam / π) / 2 = m * lam by field_simp]; field_simp; ring
 
 theorem hasSum_alt_cTerm {lam : ℝ} (hlam : 0 < lam) (j : ℕ) :
     HasSum (fun n : ℕ => (-1 : ℝ) ^ (n + 1) * cTerm lam j ((n : ℝ) + 1)) (dTerm lam j) := by
@@ -118,97 +91,68 @@ theorem hasSum_alt_cTerm {lam : ℝ} (hlam : 0 < lam) (j : ℕ) :
   have hbpos : 0 < b := by positivity
   have h := (hasSum_nat_add_iff' (f := fun n : ℕ => (-1 : ℝ) ^ n / (b ^ 2 + (n : ℝ) ^ 2)) 1
     (g := π / (2 * b * Real.sinh (π * b)) + 1 / (2 * b ^ 2))).2 (hasSum_alt_inv_sq_add_sq hbpos)
-  have h2 := h.mul_left (2 / lam)
   have hpi : π ≠ 0 := Real.pi_ne_zero
   have hl0 : lam ≠ 0 := hlam.ne'
   have hb0 : b ≠ 0 := hbpos.ne'
   have hj : (2 * (j : ℝ) + 1) ≠ 0 := by positivity
-  convert h2 using 1
-  · funext n
-    unfold cTerm
-    simp only [hb]
-    push_cast
+  convert h.mul_left (2 / lam) using 1
+  · funext n; unfold cTerm; simp only [hb]; push_cast
     have : ((n : ℝ) + 1) ^ 2 * (4 * lam ^ 2) + (2 * (j : ℝ) + 1) ^ 2 * π ^ 2 ≠ 0 := by positivity
-    field_simp
-    ring
+    field_simp; ring
   · unfold dTerm
-    simp only [Finset.sum_range_one, Nat.cast_zero, pow_zero, zero_pow two_ne_zero, add_zero,
-      one_div]
-    have e : π * b = π ^ 2 * (2 * (j : ℝ) + 1) / (2 * lam) := by
-      simp only [hb]
-      field_simp
-    rw [e]
+    simp only [Finset.sum_range_one, Nat.cast_zero, pow_zero, zero_pow two_ne_zero, add_zero, one_div]
+    rw [show π * b = π ^ 2 * (2 * (j : ℝ) + 1) / (2 * lam) by simp only [hb]; field_simp]
     simp only [hb]
-    have hs : Real.sinh (π ^ 2 * (2 * (j : ℝ) + 1) / (2 * lam)) ≠ 0 :=
+    have : Real.sinh (π ^ 2 * (2 * (j : ℝ) + 1) / (2 * lam)) ≠ 0 :=
       (Real.sinh_pos_iff.2 (by positivity)).ne'
-    field_simp
-    ring
+    field_simp; ring
 
 /-! ### Bounds -/
 
 theorem cTerm_antitone {lam : ℝ} (hlam : 0 < lam) (j : ℕ) :
-    Antitone (fun n : ℕ => cTerm lam j ((n : ℝ) + 1)) := by
-  intro a b hab
+    Antitone (fun n : ℕ => cTerm lam j ((n : ℝ) + 1)) := fun a b hab => by
   unfold cTerm
   have hab' : ((a : ℝ) + 1) ≤ (b : ℝ) + 1 := by exact_mod_cast Nat.succ_le_succ hab
-  have hpos : 0 < (2 * (j : ℝ) + 1) ^ 2 * π ^ 2 + 4 * ((a : ℝ) + 1) ^ 2 * lam ^ 2 := by positivity
-  apply div_le_div_of_nonneg_left (by positivity) hpos
-  have h0 : (0 : ℝ) ≤ (a : ℝ) + 1 := by positivity
-  nlinarith [sq_nonneg lam, mul_le_mul hab' hab' h0 (by positivity)]
+  refine div_le_div_of_nonneg_left (by positivity) (by positivity) ?_
+  nlinarith [sq_nonneg lam, mul_le_mul hab' hab' (by positivity : (0 : ℝ) ≤ (a : ℝ) + 1) (by positivity)]
 
 theorem cTerm_one_le {lam : ℝ} (hlam : 0 < lam) (j : ℕ) :
-    cTerm lam j (((0 : ℕ) : ℝ) + 1) ≤ 8 * lam / ((2 * (j : ℝ) + 1) ^ 2 * π ^ 2) := by
-  unfold cTerm
-  apply div_le_div_of_nonneg_left (by positivity) (by positivity)
-  nlinarith [sq_nonneg lam]
+    cTerm lam j (((0 : ℕ) : ℝ) + 1) ≤ 8 * lam / ((2 * (j : ℝ) + 1) ^ 2 * π ^ 2) :=
+  div_le_div_of_nonneg_left (by positivity) (by positivity) (by nlinarith [sq_nonneg lam])
 
 /-- The partial sums of the inner alternating series are dominated by `c_j(1)`. -/
 theorem norm_partial_cTerm_le {lam : ℝ} (hlam : 0 < lam) (j N : ℕ) :
     ‖∑ n ∈ Finset.range N, (-1 : ℝ) ^ (n + 1) * cTerm lam j ((n : ℝ) + 1)‖ ≤
       8 * lam / ((2 * (j : ℝ) + 1) ^ 2 * π ^ 2) := by
   have hb := alt_partial_sum_bounds N (fun n : ℕ => cTerm lam j ((n : ℝ) + 1))
-    (cTerm_antitone hlam j) (fun i => (cTerm_pos hlam j _).le)
-  have e : ∑ n ∈ Finset.range N, (-1 : ℝ) ^ (n + 1) * cTerm lam j ((n : ℝ) + 1) =
-      -∑ n ∈ Finset.range N, (-1 : ℝ) ^ n * cTerm lam j ((n : ℝ) + 1) := by
-    rw [← Finset.sum_neg_distrib]
-    refine Finset.sum_congr rfl fun i _ => ?_
-    rw [pow_succ]
-    ring
-  rw [e, norm_neg, Real.norm_eq_abs, abs_of_nonneg hb.1]
+    (cTerm_antitone hlam j) (fun _ => (cTerm_pos hlam j _).le)
+  rw [show ∑ n ∈ Finset.range N, (-1 : ℝ) ^ (n + 1) * cTerm lam j ((n : ℝ) + 1) =
+        -∑ n ∈ Finset.range N, (-1 : ℝ) ^ n * cTerm lam j ((n : ℝ) + 1) by
+      rw [← Finset.sum_neg_distrib]; exact Finset.sum_congr rfl fun _ _ => by rw [pow_succ]; ring,
+    norm_neg, Real.norm_eq_abs, abs_of_nonneg hb.1]
   exact hb.2.trans (cTerm_one_le hlam j)
 
 theorem summable_bound {lam : ℝ} (hlam : 0 < lam) :
-    HasSum (fun j : ℕ => 8 * lam / ((2 * (j : ℝ) + 1) ^ 2 * π ^ 2)) (lam) := by
-  have h := hasSum_odd_inv_sq_mul (8 * lam / π ^ 2)
+    HasSum (fun j : ℕ => 8 * lam / ((2 * (j : ℝ) + 1) ^ 2 * π ^ 2)) lam := by
   have hpi : π ≠ 0 := Real.pi_ne_zero
-  convert h using 1
-  · funext j
-    have : (2 * (j : ℝ) + 1) ≠ 0 := by positivity
-    field_simp
+  convert hasSum_odd_inv_sq_mul (8 * lam / π ^ 2) using 1
+  · funext j; rw [div_div, mul_comm (π ^ 2)]
   · field_simp
 
 /-! ### The terms `4 / ((2k+1) sinh (π² (2k+1) / (2 lam)))` -/
 
 theorem tTerm_pos {lam : ℝ} (hlam : 0 < lam) (k : ℕ) :
     0 < 4 / ((2 * (k : ℝ) + 1) * Real.sinh (π ^ 2 * (2 * (k : ℝ) + 1) / (2 * lam))) := by
-  have : 0 < Real.sinh (π ^ 2 * (2 * (k : ℝ) + 1) / (2 * lam)) :=
-    Real.sinh_pos_iff.2 (by positivity)
+  have : 0 < Real.sinh (π ^ 2 * (2 * (k : ℝ) + 1) / (2 * lam)) := Real.sinh_pos_iff.2 (by positivity)
   positivity
 
 theorem tTerm_le {lam : ℝ} (hlam : 0 < lam) (k : ℕ) :
     4 / ((2 * (k : ℝ) + 1) * Real.sinh (π ^ 2 * (2 * (k : ℝ) + 1) / (2 * lam))) ≤
       8 * lam / ((2 * (k : ℝ) + 1) ^ 2 * π ^ 2) := by
   have hy : 0 < π ^ 2 * (2 * (k : ℝ) + 1) / (2 * lam) := by positivity
-  have hs : π ^ 2 * (2 * (k : ℝ) + 1) / (2 * lam) ≤
-      Real.sinh (π ^ 2 * (2 * (k : ℝ) + 1) / (2 * lam)) := Real.self_le_sinh_iff.2 hy.le
-  have hk : 0 < 2 * (k : ℝ) + 1 := by positivity
-  calc 4 / ((2 * (k : ℝ) + 1) * Real.sinh (π ^ 2 * (2 * (k : ℝ) + 1) / (2 * lam)))
-      ≤ 4 / ((2 * (k : ℝ) + 1) * (π ^ 2 * (2 * (k : ℝ) + 1) / (2 * lam))) := by
-        apply div_le_div_of_nonneg_left (by norm_num) (by positivity)
-        exact mul_le_mul_of_nonneg_left hs hk.le
-    _ = 8 * lam / ((2 * (k : ℝ) + 1) ^ 2 * π ^ 2) := by
-        field_simp
-        norm_num
+  refine (div_le_div_of_nonneg_left (by norm_num) (by positivity)
+    (mul_le_mul_of_nonneg_left (Real.self_le_sinh_iff.2 hy.le) (by positivity))).trans_eq ?_
+  field_simp; norm_num
 
 theorem summable_tTerm {lam : ℝ} (hlam : 0 < lam) :
     Summable (fun k : ℕ =>
@@ -216,17 +160,11 @@ theorem summable_tTerm {lam : ℝ} (hlam : 0 < lam) :
   Summable.of_nonneg_of_le (fun k => (tTerm_pos hlam k).le) (fun k => tTerm_le hlam k)
     (summable_bound hlam).summable
 
-theorem dTerm_eq {lam : ℝ} (hlam : 0 < lam) (j : ℕ) :
+theorem dTerm_eq {lam : ℝ} (_hlam : 0 < lam) (j : ℕ) :
     dTerm lam j =
       (4 / ((2 * (j : ℝ) + 1) * Real.sinh (π ^ 2 * (2 * (j : ℝ) + 1) / (2 * lam)))) / 2 -
         4 * lam / ((2 * (j : ℝ) + 1) ^ 2 * π ^ 2) := by
-  unfold dTerm
-  have hs : Real.sinh (π ^ 2 * (2 * (j : ℝ) + 1) / (2 * lam)) ≠ 0 :=
-    (Real.sinh_pos_iff.2 (by positivity)).ne'
-  have : (2 * (j : ℝ) + 1) ≠ 0 := by positivity
-  generalize Real.sinh (π ^ 2 * (2 * (j : ℝ) + 1) / (2 * lam)) = s at hs ⊢
-  field_simp
-  ring
+  unfold dTerm; ring
 
 /-! ### The main identity -/
 
@@ -241,35 +179,23 @@ theorem identity44 (lam : ℝ) (hlam : 0 < lam) :
       0 < lam + 2 * S ∧ lam + 2 * S = T := by
   have hT := (summable_tTerm hlam).hasSum
   set T := ∑' k : ℕ, 4 / ((2 * (k : ℝ) + 1) * Real.sinh (π ^ 2 * (2 * (k : ℝ) + 1) / (2 * lam)))
-    with hTdef
-  have hTpos : 0 < T := (summable_tTerm hlam).tsum_pos (fun k => (tTerm_pos hlam k).le) 0
-    (tTerm_pos hlam 0)
+  have hTpos : 0 < T := (summable_tTerm hlam).tsum_pos (fun k => (tTerm_pos hlam k).le) 0 (tTerm_pos hlam 0)
+  have hpi : π ≠ 0 := Real.pi_ne_zero
   have hd : HasSum (fun j : ℕ => dTerm lam j) (T / 2 - lam / 2) := by
-    have h := (hT.div_const 2).sub ((hasSum_odd_inv_sq_mul (4 * lam / π ^ 2)))
-    have hpi : π ≠ 0 := Real.pi_ne_zero
-    convert h using 1
-    · funext j
-      rw [dTerm_eq hlam j]
-      have : (2 * (j : ℝ) + 1) ≠ 0 := by positivity
-      field_simp
-    · field_simp
-      ring
-  set S := ∑' j : ℕ, dTerm lam j with hSdef
+    convert (hT.div_const 2).sub (hasSum_odd_inv_sq_mul (4 * lam / π ^ 2)) using 1
+    · funext j; rw [dTerm_eq hlam j]; congr 1; rw [div_div, mul_comm (π ^ 2)]
+    · field_simp; ring
+  set S := ∑' j : ℕ, dTerm lam j
   have hS : S = T / 2 - lam / 2 := hd.tsum_eq
   refine ⟨S, T, ?_, hT, by rw [hS]; linarith, by rw [hS]; ring⟩
-  -- Tannery
-  have hf : ∀ N : ℕ, ∑ k ∈ Finset.Icc 1 N, (-1 : ℝ) ^ k / k * Real.tanh (k * lam) =
+  have hf (N : ℕ) : ∑ k ∈ Finset.Icc 1 N, (-1 : ℝ) ^ k / k * Real.tanh (k * lam) =
       ∑' j : ℕ, ∑ n ∈ Finset.range N, (-1 : ℝ) ^ (n + 1) * cTerm lam j ((n : ℝ) + 1) := by
-    intro N
-    rw [Summable.tsum_finsetSum, sum_Icc_one_eq_sum_range]
-    · refine Finset.sum_congr rfl fun n _ => ?_
-      have hm : (0 : ℝ) < (n : ℝ) + 1 := by positivity
-      rw [(hasSum_cTerm_tanh hlam hm).mul_left ((-1 : ℝ) ^ (n + 1)) |>.tsum_eq]
-      push_cast
-      ring
-    · intro n _
-      have hm : (0 : ℝ) < (n : ℝ) + 1 := by positivity
-      exact ((hasSum_cTerm_tanh hlam hm).mul_left ((-1 : ℝ) ^ (n + 1))).summable
+    rw [Summable.tsum_finsetSum fun (n : ℕ) _ =>
+      ((hasSum_cTerm_tanh hlam (by positivity : (0 : ℝ) < (n : ℝ) + 1)).mul_left _).summable,
+      sum_Icc_one_eq_sum_range]
+    refine Finset.sum_congr rfl fun n _ => ?_
+    rw [((hasSum_cTerm_tanh hlam (by positivity : (0 : ℝ) < (n : ℝ) + 1)).mul_left ((-1 : ℝ) ^ (n + 1))).tsum_eq]
+    push_cast; ring
   simp_rw [hf]
   exact tendsto_tsum_of_dominated_convergence (summable_bound hlam).summable
     (fun j => (hasSum_alt_cTerm hlam j).tendsto_sum_nat)

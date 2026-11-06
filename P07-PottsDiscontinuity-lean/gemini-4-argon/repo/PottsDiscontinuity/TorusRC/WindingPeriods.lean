@@ -1,6 +1,6 @@
 module
 
-public import FixedPointTheorems.brouwer
+public import Mathlib
 public import PottsDiscontinuity.TorusRC.BoundedChain
 
 /-! # Repeating a genuine lifted vertical period -/

@@ -1,6 +1,6 @@
 module
 
-public import FixedPointTheorems.brouwer
+public import Mathlib
 public import PottsDiscontinuity.Torus.DiamondDualTranslation
 public import PottsDiscontinuity.TorusRC.DiagonalIntersection
 public import PottsDiscontinuity.TorusTopology.LiftedEdgeCover

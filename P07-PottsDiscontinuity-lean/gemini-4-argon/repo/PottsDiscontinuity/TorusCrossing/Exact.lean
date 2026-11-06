@@ -41,40 +41,27 @@ theorem rowSum_succ (x0 : ℤ) (f : Cell → ZMod 2) (j i : ℤ) (h : x0 ≤ i) 
     rowSum x0 f j (i + 1) = rowSum x0 f j i + f (i + 1, j) := by
   unfold rowSum
   rw [show Finset.Icc (x0 + 1) (i + 1) = insert (i + 1) (Finset.Icc (x0 + 1) i) by
-    ext a; simp only [Finset.mem_Icc, Finset.mem_insert]; omega]
-  rw [Finset.sum_insert (by simp)]
-  ring
+    ext a; simp only [Finset.mem_Icc, Finset.mem_insert]; omega,
+    Finset.sum_insert (by simp), add_comm]
 
 theorem rowSum_of_le (x0 : ℤ) (f : Cell → ZMod 2) (j i : ℤ) (h : i ≤ x0) :
     rowSum x0 f j i = 0 := by
-  unfold rowSum
-  rw [Finset.Icc_eq_empty (by omega)]
-  simp
+  unfold rowSum; rw [Finset.Icc_eq_empty (by omega)]; simp
 
-/-- The two-step recursion for the sum of two consecutive row sums. -/
 theorem rowSum_pair_step (x0 : ℤ) (f : Cell → ZMod 2) (b X : ℤ) (hX : x0 ≤ X - 2) :
     rowSum x0 f b X + rowSum x0 f (b - 1) X =
       rowSum x0 f b (X - 2) + rowSum x0 f (b - 1) (X - 2) + cdeg f (X - 1, b - 1) := by
-  have h1 : rowSum x0 f b X = rowSum x0 f b (X - 2) + f (X - 1, b) + f (X, b) := by
-    have := rowSum_succ x0 f b (X - 2) hX
-    have h2 := rowSum_succ x0 f b (X - 1) (by omega)
-    rw [show X - 2 + 1 = X - 1 by ring] at this
+  have hstep (r : ℤ) : rowSum x0 f r X = rowSum x0 f r (X - 2) + f (X - 1, r) + f (X, r) := by
+    have h1 := rowSum_succ x0 f r (X - 2) hX
+    have h2 := rowSum_succ x0 f r (X - 1) (by omega)
+    rw [show X - 2 + 1 = X - 1 by ring] at h1
     rw [show X - 1 + 1 = X by ring] at h2
-    rw [h2, this]
-  have h2 : rowSum x0 f (b - 1) X =
-      rowSum x0 f (b - 1) (X - 2) + f (X - 1, b - 1) + f (X, b - 1) := by
-    have := rowSum_succ x0 f (b - 1) (X - 2) hX
-    have h2 := rowSum_succ x0 f (b - 1) (X - 1) (by omega)
-    rw [show X - 2 + 1 = X - 1 by ring] at this
-    rw [show X - 1 + 1 = X by ring] at h2
-    rw [h2, this]
-  rw [h1, h2]
+    rw [h2, h1]
+  rw [hstep b, hstep (b - 1)]
   unfold cdeg
   rw [show X - 1 + 1 = X by ring, show b - 1 + 1 = b by ring]
   ring
 
-/-- Core identity: with left defects absorbed, consecutive row sums add up to the defect of the
-left line. -/
 theorem rowSum_pair (x0 : ℤ) (w : ℤ) (f : Cell → ZMod 2)
     (hx0 : ∀ m : Cell, m.1 ≤ x0 → f m = 0)
     (hdeg : ∀ c : Cell, IsPrimal c → x0 < c.1 → c.1 < x0 + w → cdeg f c = 0)
@@ -84,46 +71,25 @@ theorem rowSum_pair (x0 : ℤ) (w : ℤ) (f : Cell → ZMod 2)
   induction n using Nat.strong_induction_on with
   | _ n ih =>
     intro hn hpar
-    have hnotprim : n % 2 = 0 → ¬ IsPrimal (x0, b - 1) := by
-      intro h; unfold IsPrimal; dsimp only; omega
     rcases Nat.lt_or_ge n 2 with hlt | hge
     · interval_cases n
-      · -- n = 0
-        have : leftDefect x0 f (b - 1) = 0 := by
-          unfold leftDefect; split_ifs with hh
-          · exact absurd hh (hnotprim rfl)
-          · rfl
-        rw [this, rowSum_of_le x0 f b (x0 + ((0 : ℕ) : ℤ)) (by simp),
-          rowSum_of_le x0 f (b - 1) (x0 + ((0 : ℕ) : ℤ)) (by simp)]
-        simp
-      · -- n = 1
-        have hprim : IsPrimal (x0, b - 1) := by
-          unfold IsPrimal; dsimp only; push_cast at hpar; omega
-        unfold leftDefect; simp only [hprim, ite_true]
-        unfold cdeg
-        have e1 : rowSum x0 f b (x0 + ((1 : ℕ) : ℤ)) = f (x0 + 1, b) := by
-          push_cast
-          rw [rowSum_succ x0 f b x0 le_rfl, rowSum_of_le x0 f b x0 le_rfl]; simp
-        have e2 : rowSum x0 f (b - 1) (x0 + ((1 : ℕ) : ℤ)) = f (x0 + 1, b - 1) := by
-          push_cast
-          rw [rowSum_succ x0 f (b - 1) x0 le_rfl, rowSum_of_le x0 f (b - 1) x0 le_rfl]; simp
-        rw [e1, e2, hx0 (x0, b - 1) (by dsimp only; omega), hx0 (x0, b - 1 + 1) (by dsimp only; omega)]
-        simp only [zero_add]
+      · rw [show leftDefect x0 f (b - 1) = 0 from ite_eq_right (by unfold IsPrimal; dsimp; omega),
+          rowSum_of_le x0 f b _ (by simp), rowSum_of_le x0 f (b - 1) _ (by simp), add_zero]
+      · have hprim : IsPrimal (x0, b - 1) := by unfold IsPrimal; dsimp; push_cast at hpar; omega
+        have e (r : ℤ) : rowSum x0 f r (x0 + ((1 : ℕ) : ℤ)) = f (x0 + 1, r) := by
+          push_cast; rw [rowSum_succ x0 f r x0 le_rfl, rowSum_of_le x0 f r x0 le_rfl, zero_add]
+        unfold leftDefect cdeg
+        rw [ite_eq_left hprim, e b, e (b - 1), hx0 (x0, b - 1) (by dsimp; omega),
+          hx0 (x0, b - 1 + 1) (by dsimp; omega)]
         ring_nf
-    · -- n ≥ 2
-      obtain ⟨k, rfl⟩ : ∃ k : ℕ, n = k + 2 := ⟨n - 2, by omega⟩
+    · obtain ⟨k, rfl⟩ : ∃ k : ℕ, n = k + 2 := ⟨n - 2, by omega⟩
       have hprim : IsPrimal (x0 + ((k + 2 : ℕ) : ℤ) - 1, b - 1) := by
-        unfold IsPrimal; dsimp only; push_cast at hpar ⊢; omega
-      have hstep := rowSum_pair_step x0 f b (x0 + ((k + 2 : ℕ) : ℤ)) (by push_cast; omega)
-      have hih := ih k (by omega) (by push_cast at hn ⊢; omega) (by push_cast at hpar ⊢; omega)
-      have hd := hdeg (x0 + ((k + 2 : ℕ) : ℤ) - 1, b - 1) hprim (by push_cast; omega)
-        (by push_cast at hn ⊢; omega)
-      rw [hstep, hd, add_zero]
-      rw [show x0 + ((k + 2 : ℕ) : ℤ) - 2 = x0 + (k : ℤ) by push_cast; ring]
-      exact hih
+        unfold IsPrimal; dsimp; push_cast at hpar ⊢; omega
+      rw [rowSum_pair_step x0 f b (x0 + ((k + 2 : ℕ) : ℤ)) (by push_cast; omega),
+        hdeg _ hprim (by push_cast; omega) (by push_cast at hn ⊢; omega), add_zero,
+        show x0 + ((k + 2 : ℕ) : ℤ) - 2 = x0 + (k : ℤ) by push_cast; ring]
+      exact ih k (by omega) (by push_cast at hn ⊢; omega) (by push_cast at hpar ⊢; omega)
 
-
-/-- Integer-indexed version of `rowSum_pair`. -/
 theorem rowSum_pair' (x0 w : ℤ) (f : Cell → ZMod 2)
     (hx0 : ∀ m : Cell, m.1 ≤ x0 → f m = 0)
     (hdeg : ∀ c : Cell, IsPrimal c → x0 < c.1 → c.1 < x0 + w → cdeg f c = 0)
@@ -135,31 +101,21 @@ theorem rowSum_pair' (x0 w : ℤ) (f : Cell → ZMod 2)
 theorem leftCorr_succ (x0 y0 : ℤ) (f : Cell → ZMod 2)
     (hy0 : ∀ m : Cell, m.2 ≤ y0 → f m = 0) (b : ℤ) :
     leftCorr x0 y0 f b + leftCorr x0 y0 f (b - 1) = leftDefect x0 f (b - 1) := by
+  unfold leftCorr
   by_cases h : y0 ≤ b - 1
-  · unfold leftCorr
-    rw [show Finset.Ico y0 b = insert (b - 1) (Finset.Ico y0 (b - 1)) by
+  · rw [show Finset.Ico y0 b = insert (b - 1) (Finset.Ico y0 (b - 1)) by
       ext a; simp only [Finset.mem_Ico, Finset.mem_insert]; omega,
       Finset.sum_insert (by simp)]
-    have two : ∀ z : ZMod 2, z + z = 0 := fun z => by fin_cases z <;> decide
     generalize ∑ k ∈ Finset.Ico y0 (b - 1), leftDefect x0 f k = S
     generalize leftDefect x0 f (b - 1) = d
-    calc d + S + S = d + (S + S) := by ring
-      _ = d := by rw [two S, add_zero]
-  · unfold leftCorr
-    rw [Finset.Ico_eq_empty (by omega), Finset.Ico_eq_empty (by omega)]
-    have hd : leftDefect x0 f (b - 1) = 0 := by
-      unfold leftDefect cdeg
-      split_ifs
-      · rw [hy0 (x0, b - 1) (by dsimp only; omega), hy0 (x0 + 1, b - 1) (by dsimp only; omega),
-          hy0 (x0, b - 1 + 1) (by dsimp only; omega), hy0 (x0 + 1, b - 1 + 1) (by dsimp only; omega)]
-        simp
-      · rfl
-    rw [hd]; simp
+    revert S d; decide
+  · rw [Finset.Ico_eq_empty (by omega), Finset.Ico_eq_empty (by omega)]
+    unfold leftDefect cdeg
+    split_ifs
+    · simp [hy0 (x0, b - 1) (by dsimp; omega), hy0 (x0 + 1, b - 1) (by dsimp; omega),
+        hy0 (x0, b) (by dsimp; omega), hy0 (x0 + 1, b) (by dsimp; omega)]
+    · rfl
 
-/-- **Planar Poincare lemma** (relative to the left line).  If the cochain `f` vanishes on and
-to the left of the line `x0`, on and below the row `y0`, and has vanishing degree at every
-primal cell strictly between the lines `x0` and `x0 + w`, then the left-ray potential is a
-primitive of `f` at every medial vertex with abscissa in `(x0, x0 + w]`. -/
 theorem zmod2_aux1 (R1' R1 R2 C1 C2 D F : ZMod 2) (h1 : R1 + R2 = D) (hcc : C1 + C2 = D)
     (h2 : R1 = R1' + F) : (R1' + C1) + (R2 + C2) = F := by
   subst h2; revert R1' R2 C1 C2 D F; decide
@@ -177,68 +133,46 @@ theorem leftPotential_primitive (x0 y0 w : ℤ) (f : Cell → ZMod 2)
   obtain ⟨a, b⟩ := m
   dsimp only at hm1 hm2
   have hcc := leftCorr_succ x0 y0 f hy0 b
+  have h2 := rowSum_succ x0 f b (a - 1) (by omega)
+  rw [show a - 1 + 1 = a by ring] at h2
   unfold dualEnds leftPotential
-  split_ifs with hpar
-  · dsimp only
-    have h1 := rowSum_pair' x0 w f hx0 hdeg b a (by omega) (by omega) (by omega)
-    have h2 := rowSum_succ x0 f b (a - 1) (by omega)
-    rw [show a - 1 + 1 = a by ring] at h2
-    exact zmod2_aux1 _ _ _ _ _ _ _ h1 hcc h2
-  · dsimp only
-    have h1 := rowSum_pair' x0 w f hx0 hdeg b (a - 1) (by omega) (by omega) (by omega)
-    have h2 := rowSum_succ x0 f b (a - 1) (by omega)
-    rw [show a - 1 + 1 = a by ring] at h2
-    rw [h2]
-    exact zmod2_aux2 _ _ _ _ _ _ h1 hcc
+  split_ifs with hpar <;> dsimp only
+  · exact zmod2_aux1 _ _ _ _ _ _ _
+      (rowSum_pair' x0 w f hx0 hdeg b a (by omega) (by omega) (by omega)) hcc h2
+  · rw [h2]
+    exact zmod2_aux2 _ _ _ _ _ _
+      (rowSum_pair' x0 w f hx0 hdeg b (a - 1) (by omega) (by omega) (by omega)) hcc
 
-
-/-- Full row sums vanish for a cochain that is closed at every primal cell of the strip
-`x0 ≤ x ≤ x0 + w` and supported in `x0 < a ≤ x0 + w`, `b > y0`. -/
 theorem rowSum_full_zero (x0 y0 w : ℤ) (f : Cell → ZMod 2)
     (hx0 : ∀ m : Cell, m.1 ≤ x0 → f m = 0)
     (hxw : ∀ m : Cell, x0 + w < m.1 → f m = 0)
     (hy0 : ∀ m : Cell, m.2 ≤ y0 → f m = 0)
     (hclosed : ∀ c : Cell, IsPrimal c → x0 ≤ c.1 → c.1 ≤ x0 + w → cdeg f c = 0)
     (hw : 0 ≤ w) (j : ℤ) : rowSum x0 f j (x0 + w) = 0 := by
-  have hld : ∀ k, leftDefect x0 f k = 0 := by
-    intro k; unfold leftDefect; split_ifs with hk
-    · exact hclosed _ hk le_rfl (by simpa using hw)
-    · rfl
-  -- consecutive full row sums agree
-  have hpair : ∀ b : ℤ, rowSum x0 f b (x0 + w) + rowSum x0 f (b - 1) (x0 + w) = 0 := by
-    intro b
-    have hdeg' : ∀ c : Cell, IsPrimal c → x0 < c.1 → c.1 < x0 + (w + 1) → cdeg f c = 0 :=
-      fun c hc h1 h2 => hclosed c hc h1.le (by omega)
+  have hld (k : ℤ) : leftDefect x0 f k = 0 := by
+    unfold leftDefect; split_ifs with hk <;> [exact hclosed _ hk le_rfl (by simpa using hw); rfl]
+  have hpair (b : ℤ) : rowSum x0 f b (x0 + w) + rowSum x0 f (b - 1) (x0 + w) = 0 := by
     by_cases hpar : (x0 + w + b) % 2 = 0
     · have := rowSum_pair' x0 w f hx0 (fun c hc h1 h2 => hclosed c hc h1.le h2.le) b (x0 + w)
         (by omega) le_rfl hpar
       rwa [hld] at this
-    · have := rowSum_pair' x0 (w + 1) f hx0 hdeg' b (x0 + w + 1) (by omega) (by omega) (by omega)
+    · have := rowSum_pair' x0 (w + 1) f hx0
+        (fun c hc h1 h2 => hclosed c hc h1.le (by omega)) b (x0 + w + 1)
+        (by omega) (by omega) (by omega)
       rw [hld, rowSum_succ x0 f b (x0 + w) (by omega), rowSum_succ x0 f (b - 1) (x0 + w) (by omega),
-        hxw (x0 + w + 1, b) (by dsimp only; omega), hxw (x0 + w + 1, b - 1) (by dsimp only; omega)]
-        at this
+        hxw (x0 + w + 1, b) (by dsimp; omega), hxw (x0 + w + 1, b - 1) (by dsimp; omega)] at this
       simpa using this
-  have two : ∀ z : ZMod 2, z + z = 0 := fun z => by fin_cases z <;> decide
-  -- induction upward from the row y0
-  have hup : ∀ n : ℕ, rowSum x0 f (y0 + n) (x0 + w) = 0 := by
-    intro n
+  have hup (n : ℕ) : rowSum x0 f (y0 + n) (x0 + w) = 0 := by
     induction n with
-    | zero =>
-      unfold rowSum
-      apply Finset.sum_eq_zero
-      intro a _; exact hy0 _ (by dsimp only; omega)
+    | zero => exact Finset.sum_eq_zero fun a _ => hy0 _ (by dsimp; omega)
     | succ n ih =>
       have := hpair (y0 + ((n + 1 : ℕ) : ℤ))
-      rw [show y0 + ((n + 1 : ℕ) : ℤ) - 1 = y0 + (n : ℤ) by push_cast; ring, ih, add_zero] at this
-      exact this
+      rwa [show y0 + ((n + 1 : ℕ) : ℤ) - 1 = y0 + (n : ℤ) by push_cast; ring, ih, add_zero] at this
   by_cases hj : y0 ≤ j
   · have := hup (j - y0).toNat
     rwa [show y0 + ((j - y0).toNat : ℤ) = j by omega] at this
-  · unfold rowSum
-    apply Finset.sum_eq_zero
-    intro a _; exact hy0 _ (by dsimp only; omega)
+  · exact Finset.sum_eq_zero fun a _ => hy0 _ (by dsimp; omega)
 
-/-- **Boundary behaviour of the primitive of a globally closed cochain.** -/
 theorem leftPotential_zero_of_closed (x0 y0 w : ℤ) (f : Cell → ZMod 2)
     (hx0 : ∀ m : Cell, m.1 ≤ x0 → f m = 0)
     (hxw : ∀ m : Cell, x0 + w < m.1 → f m = 0)
@@ -246,27 +180,14 @@ theorem leftPotential_zero_of_closed (x0 y0 w : ℤ) (f : Cell → ZMod 2)
     (hclosed : ∀ c : Cell, IsPrimal c → x0 ≤ c.1 → c.1 ≤ x0 + w → cdeg f c = 0)
     (hw : 0 ≤ w) (z : Cell) (hz : z.1 ≤ x0 ∨ x0 + w ≤ z.1) :
     leftPotential x0 y0 f z = 0 := by
-  have hld : ∀ k, leftDefect x0 f k = 0 := by
-    intro k; unfold leftDefect; split_ifs with hk
-    · exact hclosed _ hk le_rfl (by simpa using hw)
-    · rfl
-  have hcorr : leftCorr x0 y0 f z.2 = 0 := by
-    unfold leftCorr; exact Finset.sum_eq_zero (fun k _ => hld k)
+  have hcorr : leftCorr x0 y0 f z.2 = 0 := Finset.sum_eq_zero fun k _ => by
+    unfold leftDefect; split_ifs with hk <;> [exact hclosed _ hk le_rfl (by simpa using hw); rfl]
   unfold leftPotential
   rw [hcorr, add_zero]
   rcases hz with hz | hz
   · exact rowSum_of_le x0 f _ _ hz
-  · have h0 := rowSum_full_zero x0 y0 w f hx0 hxw hy0 hclosed hw z.2
-    by_cases hzw : z.1 = x0 + w
-    · rw [hzw]; exact h0
-    · have : z.1 = x0 + w + (z.1 - (x0 + w)) := by ring
-      -- extend by zeros beyond the strip
-      unfold rowSum at h0 ⊢
-      rw [← h0]
-      symm
-      apply Finset.sum_subset
-      · intro a ha; simp only [Finset.mem_Icc] at ha ⊢; omega
-      · intro a ha hna
-        simp only [Finset.mem_Icc] at ha hna
-        exact hxw _ (by dsimp only; omega)
+  · rw [← rowSum_full_zero x0 y0 w f hx0 hxw hy0 hclosed hw z.2]
+    exact (Finset.sum_subset (fun a ha => by simp only [Finset.mem_Icc] at ha ⊢; omega)
+      fun a ha hna => by simp only [Finset.mem_Icc] at ha hna; exact hxw _ (by dsimp; omega)).symm
+
 end PottsDiscontinuity.TorusCrossing

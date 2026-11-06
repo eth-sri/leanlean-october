@@ -21,26 +21,16 @@ theorem fin_centered_discrete_gronwall {n N : ℕ} (hn : 0 < n)
       (∀ j (hj : j + 1 < n),
         |u ⟨j + 1, hj⟩ - u ⟨j, by omega⟩| ≤ C * (2 * Real.exp C + 1) / N) := by
   let v : ℕ → ℝ := fun j => u ⟨min j (n - 1), by omega⟩
-  have hv (j : ℕ) (hj : j < n) : v j = u ⟨j, hj⟩ := by
-    dsimp [v]
-    congr 1
-    exact Fin.ext (min_eq_left (by omega))
-  have hs (j : ℕ) (hj : j ≤ n - 1) : v (n - 1 - j) = -v j := by
-    rw [hv _ (by omega), hv _ (by omega)]
-    convert hsym ⟨j, by omega⟩ using 1
-    congr 1
-    apply Fin.ext
-    simp only [Fin.val_rev]
-    omega
-  have hd (j : ℕ) (hj : j < n - 1) :
-      |v (j + 1) - v j| ≤ C / N * (|v j| + 1) := by
-    simpa only [hv _ (by omega : j + 1 < n), hv _ (by omega : j < n)] using hstep j (by omega)
-  obtain ⟨hb, hi⟩ := centered_discrete_gronwall hN (show n - 1 ≤ N by omega) hC hsmall hs hd
-  constructor
-  · intro j
-    simpa only [hv j.val j.isLt] using hb j.val (by omega)
-  · intro j hj
-    simpa only [hv _ hj, hv _ (by omega : j < n)] using hi j (by omega)
+  have hv (j : ℕ) (hj : j < n) : v j = u ⟨j, hj⟩ := congrArg u (Fin.ext (min_eq_left (by omega)))
+  obtain ⟨hb, hi⟩ := centered_discrete_gronwall hN (show n - 1 ≤ N by omega) hC hsmall (u := v)
+    (fun j hj => by
+      rw [hv _ (by omega), hv _ (by omega)]
+      convert hsym ⟨j, by omega⟩ using 2
+      exact Fin.ext (by simp [Fin.val_rev]; omega))
+    (fun j hj => by
+      simpa only [hv _ (by omega : j + 1 < n), hv _ (by omega : j < n)] using hstep j (by omega))
+  exact ⟨fun j => by simpa only [hv j.val j.isLt] using hb j.val (by omega),
+    fun j hj => by simpa only [hv _ hj, hv _ (by omega : j < n)] using hi j (by omega)⟩
 
 /-- Finite uniform alignment and increment bounds for both parity clauses of
 (2.13). The premises here are spacing estimates, and are proved from the
@@ -66,20 +56,15 @@ theorem offset_alignment_of_spacing {N r : ℕ} (h4 : 4 ∣ N)
         |offsetDisplacement N r h4 hr p q ⟨j + 1, hj⟩ -
           offsetDisplacement N r h4 hr p q ⟨j, by omega⟩| ≤
           C * (2 * Real.exp C + 1) / N) := by
-  let C := A + (L : ℝ) * D + B + L
-  have hC : 0 ≤ C := by dsimp [C]; positivity
+  intro C
   have hNp : (0 : ℝ) < N := Nat.cast_pos.mpr hN
-  apply fin_centered_discrete_gronwall hn hN (by omega) hC hsmall
-    (offsetDisplacement N r h4 hr p q) (offsetDisplacement_rev h4 hr hp hq)
-  intro j hj
-  have hi := offsetDisplacement_increment h4 hr hN hp hq hD hL hpSpacing hqSpacing hpGap j hj
-  apply hi.trans
-  have h₁ : A + (L : ℝ) * D + B ≤ C := by dsimp [C]; linarith [L.coe_nonneg]
-  have h₂ : (L : ℝ) ≤ C := by dsimp [C]; linarith [mul_nonneg L.coe_nonneg hD]
+  refine fin_centered_discrete_gronwall hn hN (by omega) (by positivity) hsmall
+    (offsetDisplacement N r h4 hr p q) (offsetDisplacement_rev h4 hr hp hq) fun j hj =>
+    (offsetDisplacement_increment h4 hr hN hp hq hD hL hpSpacing hqSpacing hpGap j hj).trans ?_
   have he := mul_le_mul_of_nonneg_right
-    ((div_le_div_iff_of_pos_right hNp).mpr h₂)
+    ((div_le_div_iff_of_pos_right hNp).mpr (show (L : ℝ) ≤ C by dsimp [C]; linarith [mul_nonneg L.coe_nonneg hD]))
     (abs_nonneg (offsetDisplacement N r h4 hr p q ⟨j, by omega⟩))
-  have hd := (div_le_div_iff_of_pos_right hNp).mpr h₁
+  have hd := (div_le_div_iff_of_pos_right hNp).mpr (show A + (L : ℝ) * D + B ≤ C by dsimp [C]; linarith [L.coe_nonneg])
   dsimp [C] at *
   nlinarith only [he, hd]
 
@@ -107,35 +92,28 @@ theorem offset_alignment_of_density_error {Δ m K : ℝ} (hΔ : Δ < -1)
   obtain ⟨L, hL⟩ := exists_lipschitzOnWith_inv_rho hΔ
   let A := 2 * K / m ^ 2
   let D := 1 / m + A
-  let C := A + (L : ℝ) * D + A + L
   have hA : 0 ≤ A := by dsimp [A]; positivity
   have hD : 0 ≤ D := by dsimp [D]; positivity
-  have hC : 0 ≤ C := by dsimp [C]; positivity
-  refine ⟨C, hC, ?_⟩
-  intro N r h4 hr hN hn p q hp hq hlarge hsmall hpError hqError
+  refine ⟨A + (L : ℝ) * D + A + L, by positivity,
+    fun N r h4 hr hN hn p q hp hq hlarge hsmall hpError hqError => ?_⟩
   have hNp : (0 : ℝ) < N := Nat.cast_pos.mpr hN
   have hN1 : (1 : ℝ) ≤ N := by exact_mod_cast hN
   have hAdiv : A / N ≤ A := (div_le_iff₀ hNp).mpr (by nlinarith)
   have hpSpacing (j : ℕ) (hj : j + 1 < N / 2) :
       |(N : ℝ) * (p ⟨j + 1, hj⟩ - p ⟨j, by omega⟩) -
         (rho Δ (p ⟨j, by omega⟩))⁻¹| ≤ A / N := by
-    have hi := root_spacing_error_at hp (by omega) (by omega) hm hsmall hlower hpError j hj
-    convert hi using 1; dsimp [A]; ring
-  have hqSpacing (j : ℕ) (hj : j + 1 < N / 2 - r) :
-      |(N : ℝ) * (q ⟨j + 1, hj⟩ - q ⟨j, by omega⟩) -
-        (rho Δ (q ⟨j, by omega⟩))⁻¹| ≤ A / N := by
-    have hi := root_spacing_error_at hq hn (by omega) hm hsmall hlower hqError j hj
-    convert hi using 1; dsimp [A]; ring
-  have hpGap (j : ℕ) (hj : j + 1 < N / 2) :
-      p ⟨j + 1, hj⟩ - p ⟨j, by omega⟩ ≤ D / N := by
-    have he := (abs_le.mp (hpSpacing j hj)).2
-    have hρ := hlower (p ⟨j, by omega⟩) ⟨(hp.1 _).1.le, (hp.1 _).2.le⟩
-    have hi : (rho Δ (p ⟨j, by omega⟩))⁻¹ ≤ 1 / m := by
-      simpa only [one_div] using one_div_le_one_div_of_le hm hρ
-    apply (le_div_iff₀ hNp).mpr
-    dsimp [D]
-    nlinarith only [he, hi, hAdiv]
-  exact offset_alignment_of_spacing h4 hr hN hn hp hq hA hA hD hL hlarge
-    hpSpacing hqSpacing hpGap
+    convert root_spacing_error_at hp _ _ hm hsmall hlower hpError j hj using 1
+    dsimp [A]; ring
+  exact offset_alignment_of_spacing h4 hr hN hn hp hq hA hA hD hL hlarge hpSpacing
+    (fun j hj => by
+      convert root_spacing_error_at hq hn _ hm hsmall hlower hqError j hj using 1
+      dsimp [A]; ring)
+    (fun j hj => by
+      have he := (abs_le.mp (hpSpacing j hj)).2
+      have hi : (rho Δ (p ⟨j, by omega⟩))⁻¹ ≤ 1 / m := by
+        simpa only [one_div] using one_div_le_one_div_of_le hm
+          (hlower (p ⟨j, by omega⟩) ⟨(hp.1 _).1.le, (hp.1 _).2.le⟩)
+      apply (le_div_iff₀ hNp).mpr
+      dsimp [D]; nlinarith only [he, hi, hAdiv])
 
 end PottsDiscontinuity.Bethe

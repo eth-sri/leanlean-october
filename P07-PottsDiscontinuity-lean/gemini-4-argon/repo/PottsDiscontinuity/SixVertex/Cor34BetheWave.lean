@@ -57,79 +57,14 @@ theorem cor34_normalizedAmplitude_eq_scaled_amplitude {n : ℕ} (ε : ℝ) (p : 
   have hfactor (x y : ℝ) :
       cor34_amplitudeFactor ε x y =
         q * (BetheAnsatz.z x * BetheAnsatz.scattering (1 / ε) x y) := by
-    have hInv : BetheAnsatz.z x * Complex.exp (-(I * (x : ℂ))) = 1 := by
-      rw [BetheAnsatz.z, ← Complex.exp_add]
-      have harg : I * (x : ℂ) + -(I * (x : ℂ)) = 0 := by ring
-      rw [harg, Complex.exp_zero]
     have hscale : q * (-2 * ((1 / ε : ℝ) : ℂ)) = 1 := by
-      dsimp [q]
-      push_cast
-      field_simp [hε]
-    have hcancel : q *
-        (BetheAnsatz.z x * (-2 * ((1 / ε : ℝ) : ℂ))) = BetheAnsatz.z x := by
-      calc
-        q * (BetheAnsatz.z x * (-2 * ((1 / ε : ℝ) : ℂ))) =
-            (q * (-2 * ((1 / ε : ℝ) : ℂ))) * BetheAnsatz.z x := by ring
-        _ = BetheAnsatz.z x := by rw [hscale, one_mul]
-    change BetheAnsatz.z x *
-      (1 + q * (Complex.exp (-(I * (x : ℂ))) + BetheAnsatz.z y)) =
-      q * (BetheAnsatz.z x *
-        (Complex.exp (-(I * (x : ℂ))) + BetheAnsatz.z y -
-          2 * ((1 / ε : ℝ) : ℂ)))
-    have hRhs : q * (BetheAnsatz.z x *
-        (Complex.exp (-(I * (x : ℂ))) + BetheAnsatz.z y -
-          2 * ((1 / ε : ℝ) : ℂ))) =
-        BetheAnsatz.z x + q + q * (BetheAnsatz.z x * BetheAnsatz.z y) := by
-      calc
-        _ = q * (BetheAnsatz.z x * Complex.exp (-(I * (x : ℂ)))) +
-              q * (BetheAnsatz.z x * BetheAnsatz.z y) +
-              q * (BetheAnsatz.z x * (-2 * ((1 / ε : ℝ) : ℂ))) := by ring
-        _ = _ := by rw [hInv, hcancel]; ring
-    calc
-      _ = BetheAnsatz.z x + q *
-          (BetheAnsatz.z x * Complex.exp (-(I * (x : ℂ)))) +
-            q * (BetheAnsatz.z x * BetheAnsatz.z y) := by ring
-      _ = BetheAnsatz.z x + q + q *
-          (BetheAnsatz.z x * BetheAnsatz.z y) := by rw [hInv]; ring
-      _ = _ := hRhs.symm
-  have hinner (k : Fin n) :
-      (∏ l ∈ Finset.Ioi k, q *
-        (BetheAnsatz.z (p (σ k)) *
-          BetheAnsatz.scattering (1 / ε) (p (σ k)) (p (σ l)))) =
-      q ^ (Finset.Ioi k).card *
-        ∏ l ∈ Finset.Ioi k,
-          (BetheAnsatz.z (p (σ k)) *
-            BetheAnsatz.scattering (1 / ε) (p (σ k)) (p (σ l))) := by
-    rw [Finset.prod_mul_distrib]
-    simp [Finset.prod_const]
-  have houter :
-      (∏ k : Fin n, ∏ l ∈ Finset.Ioi k, q *
-        (BetheAnsatz.z (p (σ k)) *
-          BetheAnsatz.scattering (1 / ε) (p (σ k)) (p (σ l)))) =
-      ∏ k : Fin n, (q ^ (Finset.Ioi k).card *
-        ∏ l ∈ Finset.Ioi k,
-          (BetheAnsatz.z (p (σ k)) *
-            BetheAnsatz.scattering (1 / ε) (p (σ k)) (p (σ l)))) := by
-    apply Finset.prod_congr rfl
-    intro k hk
-    exact hinner k
-  calc
-    cor34_normalizedAmplitude ε p σ =
-        (Equiv.Perm.sign σ : ℤ) *
-          ∏ k : Fin n, ∏ l ∈ Finset.Ioi k, q *
-            (BetheAnsatz.z (p (σ k)) *
-              BetheAnsatz.scattering (1 / ε) (p (σ k)) (p (σ l))) := by
-      unfold cor34_normalizedAmplitude
-      simp_rw [hfactor]
-    _ = q ^ cor34_pairCount n *
-          ((Equiv.Perm.sign σ : ℤ) *
-            ∏ k : Fin n, ∏ l ∈ Finset.Ioi k,
-              (BetheAnsatz.z (p (σ k)) *
-                BetheAnsatz.scattering (1 / ε) (p (σ k)) (p (σ l)))) := by
-      simp only [cor34_pairCount]
-      rw [houter, Finset.prod_mul_distrib, Finset.prod_pow_eq_pow_sum]
-      ring
-    _ = _ := by simp [q, BetheAnsatz.amplitude]
+      dsimp [q]; push_cast; field_simp [hε]
+    change BetheAnsatz.z x * (1 + q * (Complex.exp (-(I * (x : ℂ))) + BetheAnsatz.z y)) =
+      q * (BetheAnsatz.z x * (Complex.exp (-(I * (x : ℂ))) + BetheAnsatz.z y - 2 * ((1 / ε : ℝ) : ℂ)))
+    linear_combination -BetheAnsatz.z x * hscale
+  unfold cor34_normalizedAmplitude BetheAnsatz.amplitude cor34_pairCount
+  simp_rw [hfactor, Finset.prod_mul_distrib, Finset.prod_const, Finset.prod_pow_eq_pow_sum]
+  ring
 
 /-- The source coordinate tuple `(2,4,...,2n)` as an integer-position function. -/
 def cor34_sourceEvenPositions {n : ℕ} : Fin n → ℤ :=
@@ -147,42 +82,17 @@ theorem cor34_normalizedCoordinate_tendsto {n : ℕ} {p : ℝ → Fin n → ℝ}
     (hp : ContinuousAt p 0) (x : Fin n → ℤ) :
     Tendsto (fun ε => cor34_normalizedCoordinate ε (p ε) x) (𝓝 0)
       (𝓝 (cor34_normalizedCoordinate 0 (p 0) x)) := by
-  have hF : ContinuousAt (fun q : ℝ × (Fin n → ℝ) =>
-      cor34_normalizedCoordinate q.1 q.2 x) (0, p 0) := by
-    have hAmp (σ : Equiv.Perm (Fin n)) : Continuous (fun q : ℝ × (Fin n → ℝ) =>
-        cor34_normalizedAmplitude q.1 q.2 σ) := by
-      have hprod : Continuous (fun q : ℝ × (Fin n → ℝ) =>
-          ∏ k : Fin n, ∏ l ∈ Finset.Ioi k,
-            cor34_amplitudeFactor q.1 (q.2 (σ k)) (q.2 (σ l))) := by
-        apply continuous_finsetProd Finset.univ
-        intro k hk
-        apply continuous_finsetProd (Finset.Ioi k)
-        intro l hl
-        dsimp [cor34_amplitudeFactor, BetheAnsatz.z]
-        fun_prop
-      have hfun : (fun q : ℝ × (Fin n → ℝ) =>
-          cor34_normalizedAmplitude q.1 q.2 σ) =
-          (fun _ : ℝ × (Fin n → ℝ) => ((Equiv.Perm.sign σ : ℤ) : ℂ)) *
-            (fun q : ℝ × (Fin n → ℝ) => ∏ k : Fin n, ∏ l ∈ Finset.Ioi k,
-              cor34_amplitudeFactor q.1 (q.2 (σ k)) (q.2 (σ l))) := by
-        funext q
-        rfl
-      rw [hfun]
-      exact continuous_const.mul hprod
-    have hsum : Continuous (fun q : ℝ × (Fin n → ℝ) =>
-        ∑ σ : Equiv.Perm (Fin n),
-          cor34_normalizedAmplitude q.1 q.2 σ *
-            BetheAnsatz.planeWave q.2 σ x) := by
-      apply continuous_finsetSum Finset.univ
-      intro σ hσ
-      exact (hAmp σ).mul (by
-        dsimp [BetheAnsatz.planeWave, BetheAnsatz.z]
-        fun_prop)
-    exact hsum.continuousAt
-  have hpair : Tendsto (fun ε => (ε, p ε)) (𝓝 0) (𝓝 (0, p 0)) :=
-    continuousAt_id.tendsto.prodMk_nhds hp
-  have hlim := hF.tendsto.comp hpair
-  simpa only [Function.comp_def] using hlim
+  have hsum : Continuous (fun q : ℝ × (Fin n → ℝ) =>
+      ∑ σ : Equiv.Perm (Fin n),
+        cor34_normalizedAmplitude q.1 q.2 σ * BetheAnsatz.planeWave q.2 σ x) := by
+    refine continuous_finsetSum Finset.univ fun σ _ => ?_
+    unfold cor34_normalizedAmplitude
+    exact (continuous_const.mul <| continuous_finsetProd Finset.univ fun k _ =>
+      continuous_finsetProd (Finset.Ioi k) fun l _ => by
+        dsimp [cor34_amplitudeFactor, BetheAnsatz.z]; fun_prop).mul
+      (by dsimp [BetheAnsatz.planeWave, BetheAnsatz.z]; fun_prop)
+  simpa only [Function.comp_def, cor34_normalizedCoordinate, id_eq] using
+    hsum.continuousAt.tendsto.comp (continuousAt_id.tendsto.prodMk_nhds hp)
 
 /-- Away from `ε=0`, the regularized coordinate is exactly the source coordinate wave multiplied
 by `(-ε/2)^(n(n-1)/2)`. -/
@@ -192,30 +102,14 @@ theorem cor34_normalizedCoordinate_eq_scaled_coordinateWave {n : ℕ} (ε : ℝ)
       (((-ε / 2 : ℝ) : ℂ) ^ cor34_pairCount n) *
         BetheAnsatz.coordinateWave (1 / ε) p x := by
   unfold cor34_normalizedCoordinate BetheAnsatz.coordinateWave
-  simp_rw [cor34_normalizedAmplitude_eq_scaled_amplitude ε p _ hε]
-  calc
-    (∑ σ : Equiv.Perm (Fin n),
-        (((-ε / 2 : ℝ) : ℂ) ^ cor34_pairCount n *
-          BetheAnsatz.amplitude (1 / ε) p σ) * BetheAnsatz.planeWave p σ x) =
-      ∑ σ : Equiv.Perm (Fin n),
-        (((-ε / 2 : ℝ) : ℂ) ^ cor34_pairCount n) *
-          (BetheAnsatz.amplitude (1 / ε) p σ * BetheAnsatz.planeWave p σ x) := by
-        apply Finset.sum_congr rfl
-        intro σ hσ
-        ring
-    _ = _ := by rw [Finset.mul_sum]
+  simp_rw [cor34_normalizedAmplitude_eq_scaled_amplitude ε p _ hε, mul_assoc, ← Finset.mul_sum]
 
 /-- The zero-based state corresponding to the paper's one-based sites `(2,4,...,2n)`. -/
 noncomputable def cor34_evenCoordinateState {N n : ℕ} (hN : 2 * n ≤ N) : State N n := by
   let f : Fin n → Fin N := fun k => ⟨2 * k.val + 1, by omega⟩
-  have hf : Function.Injective f := by
-    intro i j hij
-    apply Fin.ext
-    have := congrArg Fin.val hij
-    dsimp [f] at this
-    omega
   refine ⟨Finset.univ.image f, ?_⟩
-  rw [Finset.card_image_of_injective _ hf]
+  rw [Finset.card_image_of_injective _ fun i j hij =>
+    Fin.ext (by have := congrArg Fin.val hij; dsimp [f] at this; omega)]
   simp
 
 /-- The state sites are exactly the zero-based indices one less than the source's even tuple. -/
@@ -231,15 +125,9 @@ theorem cor34_evenCoordinateState_positions {N n : ℕ} (hN : 2 * n ≤ N) :
   classical
   let x := cor34_evenCoordinateState hN
   let f : Fin n → Fin N := fun k => ⟨2 * k.val + 1, by omega⟩
-  have hfmem : ∀ k, f k ∈ x.1 := by
-    intro k
-    simpa [x] using cor34_evenCoordinateState_mem hN k
-  have hfmono : StrictMono f := by
-    intro i j hij
-    change 2 * i.val + 1 < 2 * j.val + 1
-    omega
   have horder : f = x.1.orderEmbOfFin x.2 :=
-    Finset.orderEmbOfFin_unique x.2 hfmem hfmono
+    Finset.orderEmbOfFin_unique x.2 (fun k => cor34_evenCoordinateState_mem hN k)
+      fun i j hij => by change 2 * i.val + 1 < 2 * j.val + 1; omega
   funext k
   change ((x.1.orderEmbOfFin x.2 k).val : ℤ) = ((2 * k.val + 1 : ℕ) : ℤ)
   rw [← horder]

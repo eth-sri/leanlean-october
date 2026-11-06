@@ -18,19 +18,11 @@ attribute [local instance] configurationMeasurableSpace
 
 private theorem wiredBoxConfiguration_mono (c : LatticeVertex) (r : ℕ)
     {A B : Configuration (boxGraph c r)} (hAB : A ≤ B) :
-    wiredBoxConfiguration c r A ≤ wiredBoxConfiguration c r B := by
-  intro e
+    wiredBoxConfiguration c r A ≤ wiredBoxConfiguration c r B := fun e => by
   by_cases hA : wiredBoxConfiguration c r A e = true
-  · have hprop := (wiredBoxConfiguration_open_iff c r A e).mp hA
-    have hpropB : ∀ f, boxEdgeEmbedding c r f = e → f ∈ B := by
-      intro f hf
-      exact hAB (hprop f hf)
-    have hB : wiredBoxConfiguration c r B e = true :=
-      (wiredBoxConfiguration_open_iff c r B e).mpr hpropB
-    simp [hA, hB]
-  · have hAfalse : wiredBoxConfiguration c r A e = false := by
-      cases h : wiredBoxConfiguration c r A e <;> simp_all
-    simp [hAfalse]
+  · simp [hA, (wiredBoxConfiguration_open_iff c r B e).mpr fun f hf =>
+      hAB ((wiredBoxConfiguration_open_iff c r A e).mp hA f hf)]
+  · simp [Bool.eq_false_of_ne_true hA]
 
 private theorem wiredBoxProbabilityMeasure_apply_preimage
     (θ : Parameters) (c : LatticeVertex) (r : ℕ) (s : Set LatticeConfiguration)
@@ -50,77 +42,32 @@ private theorem wiredBoxProbabilityMeasure_finite_positive_association
     (wiredBoxProbabilityMeasure θ c r : Measure LatticeConfiguration).real s *
       (wiredBoxProbabilityMeasure θ c r : Measure LatticeConfiguration).real t ≤
         (wiredBoxProbabilityMeasure θ c r : Measure LatticeConfiguration).real (s ∩ t) := by
-  let sbox : Set (Configuration (boxGraph c r)) :=
-    {A | wiredBoxConfiguration c r A ∈ s}
-  let tbox : Set (Configuration (boxGraph c r)) :=
-    {A | wiredBoxConfiguration c r A ∈ t}
-  have hsbox : IsUpperSet sbox := by
-    intro A B hAB hA
-    exact hsUpper (wiredBoxConfiguration_mono c r hAB) hA
-  have htbox : IsUpperSet tbox := by
-    intro A B hAB hA
-    exact htUpper (wiredBoxConfiguration_mono c r hAB) hA
-  have h := measure_positive_association θ
-    (BoundaryCondition.wired (boxVertexBoundary c r)) sbox tbox hsbox htbox
-  have hS := wiredBoxProbabilityMeasure_apply_preimage θ c r s hsMeas
-  have hT := wiredBoxProbabilityMeasure_apply_preimage θ c r t htMeas
-  have hST := wiredBoxProbabilityMeasure_apply_preimage θ c r (s ∩ t)
-    (hsMeas.inter htMeas)
-  have hsets : sbox ∩ tbox =
-      {A | wiredBoxConfiguration c r A ∈ s ∩ t} := by
-    ext A
-    simp [sbox, tbox]
-  rw [Measure.real_def, Measure.real_def, Measure.real_def]
-  rw [hS, hT, hST]
-  rw [hsets] at h
-  exact h
+  rw [Measure.real_def, Measure.real_def, Measure.real_def,
+    wiredBoxProbabilityMeasure_apply_preimage θ c r s hsMeas,
+    wiredBoxProbabilityMeasure_apply_preimage θ c r t htMeas,
+    wiredBoxProbabilityMeasure_apply_preimage θ c r (s ∩ t) (hsMeas.inter htMeas)]
+  exact measure_positive_association θ
+    (BoundaryCondition.wired (boxVertexBoundary c r))
+    {A | wiredBoxConfiguration c r A ∈ s} {A | wiredBoxConfiguration c r A ∈ t}
+    (fun _ _ hAB hA => hsUpper (wiredBoxConfiguration_mono c r hAB) hA)
+    (fun _ _ hAB hA => htUpper (wiredBoxConfiguration_mono c r hAB) hA)
 
-/-- Positive association for increasing clopen events under every actual wired
-infinite-volume limit. -/
 theorem wired_clopen_positive_association (θ : Parameters)
     (φ : ProbabilityMeasure LatticeConfiguration)
     (hφ : Tendsto (fun n => wiredBoxProbabilityMeasure θ (0, 0) n) atTop (𝓝 φ))
     (s t : Set LatticeConfiguration) (hsClopen : IsClopen s)
     (htClopen : IsClopen t) (hsUpper : IsUpperSet s) (htUpper : IsUpperSet t) :
     φ.toMeasure.real s * φ.toMeasure.real t ≤ φ.toMeasure.real (s ∩ t) := by
-  have hS : Tendsto (fun n => wiredBoxProbabilityMeasure θ (0, 0) n s) atTop
-      (𝓝 (φ s)) := ProbabilityMeasure.tendsto_measure_of_isClopen_of_tendsto hφ hsClopen
-  have hT : Tendsto (fun n => wiredBoxProbabilityMeasure θ (0, 0) n t) atTop
-      (𝓝 (φ t)) := ProbabilityMeasure.tendsto_measure_of_isClopen_of_tendsto hφ htClopen
-  have hST : Tendsto (fun n => wiredBoxProbabilityMeasure θ (0, 0) n (s ∩ t)) atTop
-      (𝓝 (φ (s ∩ t))) := ProbabilityMeasure.tendsto_measure_of_isClopen_of_tendsto hφ
-        (hsClopen.inter htClopen)
-  have hSreal : Tendsto (fun n =>
-      (((wiredBoxProbabilityMeasure θ (0, 0) n s : NNReal) : ℝ))) atTop
-      (𝓝 ((φ s : NNReal) : ℝ)) :=
-    (NNReal.continuous_coe.continuousAt.tendsto).comp hS
-  have hTreal : Tendsto (fun n =>
-      (((wiredBoxProbabilityMeasure θ (0, 0) n t : NNReal) : ℝ))) atTop
-      (𝓝 ((φ t : NNReal) : ℝ)) :=
-    (NNReal.continuous_coe.continuousAt.tendsto).comp hT
-  have hSTreal : Tendsto (fun n =>
-      (((wiredBoxProbabilityMeasure θ (0, 0) n (s ∩ t) : NNReal) : ℝ))) atTop
-      (𝓝 ((φ (s ∩ t) : NNReal) : ℝ)) :=
-    (NNReal.continuous_coe.continuousAt.tendsto).comp hST
-  have hprod : Tendsto (fun n =>
-      (((wiredBoxProbabilityMeasure θ (0, 0) n s : NNReal) : ℝ) *
-        ((wiredBoxProbabilityMeasure θ (0, 0) n t : NNReal) : ℝ))) atTop
-      (𝓝 (((φ s : NNReal) : ℝ) * ((φ t : NNReal) : ℝ))) := hSreal.mul hTreal
-  have hfinite (n : ℕ) :
-      (((wiredBoxProbabilityMeasure θ (0, 0) n s : NNReal) : ℝ) *
-        ((wiredBoxProbabilityMeasure θ (0, 0) n t : NNReal) : ℝ)) ≤
-        ((wiredBoxProbabilityMeasure θ (0, 0) n (s ∩ t) : NNReal) : ℝ) := by
-    have h := wiredBoxProbabilityMeasure_finite_positive_association θ (0, 0) n s t
-      hsUpper htUpper hsClopen.2.measurableSet htClopen.2.measurableSet
-    simpa [ProbabilityMeasure.measureReal_eq_coe_coeFn] using h
-  have hlim := le_of_tendsto_of_tendsto' hprod hSTreal hfinite
-  have hrealS : φ.toMeasure.real s = (φ s : ℝ) := by
-    exact ProbabilityMeasure.measureReal_eq_coe_coeFn φ s
-  have hrealT : φ.toMeasure.real t = (φ t : ℝ) := by
-    exact ProbabilityMeasure.measureReal_eq_coe_coeFn φ t
-  have hrealST : φ.toMeasure.real (s ∩ t) = (φ (s ∩ t) : ℝ) := by
-    exact ProbabilityMeasure.measureReal_eq_coe_coeFn φ (s ∩ t)
-  simpa only [hrealS, hrealT, hrealST] using hlim
+  have hreal (u : Set LatticeConfiguration) (hu : IsClopen u) :
+      Tendsto (fun n => (wiredBoxProbabilityMeasure θ (0, 0) n : Measure LatticeConfiguration).real u)
+        atTop (𝓝 (φ.toMeasure.real u)) := by
+    simp_rw [ProbabilityMeasure.measureReal_eq_coe_coeFn]
+    exact NNReal.continuous_coe.continuousAt.tendsto.comp
+      (ProbabilityMeasure.tendsto_measure_of_isClopen_of_tendsto hφ hu)
+  exact le_of_tendsto_of_tendsto' ((hreal s hsClopen).mul (hreal t htClopen))
+    (hreal (s ∩ t) (hsClopen.inter htClopen)) fun n =>
+      wiredBoxProbabilityMeasure_finite_positive_association θ (0, 0) n s t
+        hsUpper htUpper hsClopen.2.measurableSet htClopen.2.measurableSet
 
 end
 end PottsDiscontinuity.PottsThm

@@ -39,10 +39,7 @@ def upperCoverHom (k : ℤ) :
       dsimp at hh ⊢
       omega
     · change (0 : ℤ) = 0 + Planar.parafermionicCoverSheetShift _ _
-      simp only [Planar.parafermionicCoverSheetShift]
-      have hu := u.property
-      dsimp at hu ⊢
-      simp [show ¬ u.val.2+k < 0 by omega]
+      simp [Planar.parafermionicCoverSheetShift]
 
 private lemma upperCoverHom_injective (k : ℤ) : Function.Injective (upperCoverHom k) := by
   intro u v h
@@ -69,9 +66,8 @@ private lemma upperCoverHom_direction (k : ℤ)
     all_goals
       simp only [parafermionicCoverCompassBaseNeighbor]
       split_ifs <;> apply Prod.ext <;> dsimp only at * <;> omega
-  · have hu : 0 ≤ u.val.2+k := u.property
-    change 0 + Planar.parafermionicCoverSheetShift (u.val.1,u.val.2+k) _ = 0
-    simp [Planar.parafermionicCoverSheetShift,show ¬u.val.2+k < 0 by omega]
+  · change 0 + Planar.parafermionicCoverSheetShift (u.val.1,u.val.2+k) _ = 0
+    simp [Planar.parafermionicCoverSheetShift]
 
 private lemma upperCoverHom_walkDirections (k : ℤ)
     {u v : {v : ℤ × ℤ | 0 ≤ v.2+k}}

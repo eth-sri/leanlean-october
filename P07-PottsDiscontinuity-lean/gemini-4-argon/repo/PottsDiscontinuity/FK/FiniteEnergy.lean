@@ -28,17 +28,8 @@ def edgeRemovedBoolEquiv (e : G.edgeSet) :
     RemovedConfiguration G ({e} : Configuration G) ≃ Bool where
   toFun B := decide (e ∈ B.val)
   invFun b := if b then ⟨{e}, by simp⟩ else ⟨∅, by simp⟩
-  left_inv B := by
-    apply Subtype.ext
-    by_cases he : e ∈ B.val
-    · have hB : B.val = {e} := Finset.eq_singleton_iff_unique_mem.mpr
-        ⟨he, fun x hx => by simpa using B.property hx⟩
-      simp [hB]
-    · have hB : B.val = ∅ := by
-        rcases Finset.subset_singleton_iff.mp B.property with hEmpty | hSingle
-        · exact hEmpty
-        · exact (he (by simp [hSingle])).elim
-      simp [hB]
+  left_inv B := Subtype.ext <| by
+    rcases Finset.subset_singleton_iff.mp B.property with h | h <;> simp [h]
   right_inv b := by cases b <;> simp
 
 def configurationEdgeStateEquiv (e : G.edgeSet) :
@@ -70,9 +61,7 @@ private theorem configurationProbability_edgeState_sum (q : Parameters)
   rw [← (configurationEdgeStateEquiv e).symm.sum_comp, Fintype.sum_prod_type]
   simp only [configurationEdgeStateEquiv_symm_apply_false,
     configurationEdgeStateEquiv_symm_apply_true, Fintype.sum_bool]
-  apply Finset.sum_congr rfl
-  intro A hA
-  ring
+  exact Finset.sum_congr rfl fun _ _ => by ring
 
 /-- For an event invariant under toggling one original edge, its open-edge mass
 lies between the FK single-edge conditional weights times its total mass. -/
@@ -87,90 +76,34 @@ theorem configurationProbability_edge_finite_energy
   classical
   let e : G.edgeSet := ⟨s(u, v), G.mem_edgeSet.mpr huv⟩
   let P : Configuration G → ℝ := configurationProbability G q ξ
-  let eventIndicator (t : Set (Configuration G)) : Configuration G → ℝ :=
-    t.indicator (fun _ => (1 : ℝ))
-  have habsent (A : RemainingConfiguration G {e}) : e ∉ A.val := by
-    intro heA
-    exact (Finset.disjoint_left.mp A.property heA) (by simp)
+  have habsent (A : RemainingConfiguration G {e}) : e ∉ A.val :=
+    fun heA => (Finset.disjoint_left.mp A.property heA) (by simp)
   have hstableInsert (A : RemainingConfiguration G {e}) :
       insert e A.val ∈ s ↔ A.val ∈ s := by
-    have hh := hstable (insert e A.val)
-    simpa [e, habsent A] using hh
-  have hbaseIndicator (A : RemainingConfiguration G {e}) :
-      eventIndicator s A.val = if A.val ∈ s then 1 else 0 := by
-    simp [eventIndicator, Set.indicator]
-  have hinsertIndicator (A : RemainingConfiguration G {e}) :
-      eventIndicator s (insert e A.val) = if A.val ∈ s then 1 else 0 := by
-    simp [eventIndicator, Set.indicator, hstableInsert A]
+    simpa [e, habsent A] using hstable (insert e A.val)
   have hmass : (measure G q ξ s).toReal =
       ∑ A : RemainingConfiguration G {e},
         if A.val ∈ s then P A.val + P (insert e A.val) else 0 := by
-    rw [measure_toReal_eq_indicator_sum]
-    rw [configurationProbability_edgeState_sum q ξ e (eventIndicator s)]
-    apply Finset.sum_congr rfl
-    intro A hA
-    by_cases hsA : A.val ∈ s <;> simp [P, eventIndicator, hstableInsert, hsA]
+    rw [measure_toReal_eq_indicator_sum,
+      configurationProbability_edgeState_sum q ξ e (s.indicator fun _ => (1 : ℝ))]
+    exact Finset.sum_congr rfl fun A _ => by
+      by_cases hsA : A.val ∈ s <;> simp [P, hstableInsert, hsA]
   have hopen :
       (measure G q ξ (s ∩ {A | e ∈ A})).toReal =
         ∑ A : RemainingConfiguration G {e},
           if A.val ∈ s then P (insert e A.val) else 0 := by
-    rw [measure_toReal_eq_indicator_sum]
-    rw [configurationProbability_edgeState_sum q ξ e (eventIndicator (s ∩ {A | e ∈ A}))]
-    simp [P, eventIndicator, Set.indicator, habsent, hstableInsert]
-  have htermLower (A : RemainingConfiguration G {e}) :
-      (edgeParameter q / (edgeParameter q + (1 - edgeParameter q) * q.val)) *
-          (if A.val ∈ s then P A.val + P (insert e A.val) else 0) ≤
-        (if A.val ∈ s then P (insert e A.val) else 0) := by
-    by_cases hA : A.val ∈ s
-    · simp only [ite_eq_left hA]
-      have hr := configurationProbability_pair_ratio_bounds q ξ A.val huv
-        (by simpa [e] using habsent A)
-      have hden : 0 < P A.val + P (insert e A.val) := by
-        exact add_pos (configurationProbability_pos G q ξ A.val)
-          (configurationProbability_pos G q ξ (insert e A.val))
-      have h := (le_div_iff₀ hden).mp hr.1
-      simpa [P] using h
-    · simp [hA]
-  have htermUpper (A : RemainingConfiguration G {e}) :
-      (if A.val ∈ s then P (insert e A.val) else 0) ≤
-        edgeParameter q *
-          (if A.val ∈ s then P A.val + P (insert e A.val) else 0) := by
-    by_cases hA : A.val ∈ s
-    · simp only [ite_eq_left hA]
-      have hr := configurationProbability_pair_ratio_bounds q ξ A.val huv
-        (by simpa [e] using habsent A)
-      have hden : 0 < P A.val + P (insert e A.val) := by
-        exact add_pos (configurationProbability_pos G q ξ A.val)
-          (configurationProbability_pos G q ξ (insert e A.val))
-      have h := (div_le_iff₀ hden).mp hr.2
-      simpa [P] using h
-    · simp [hA]
-  constructor
-  · rw [hmass, hopen]
-    calc
-      (edgeParameter q / (edgeParameter q + (1 - edgeParameter q) * q.val)) *
-          (∑ A : RemainingConfiguration G {e},
-            if A.val ∈ s then P A.val + P (insert e A.val) else 0) =
-        ∑ A : RemainingConfiguration G {e},
-          (edgeParameter q / (edgeParameter q + (1 - edgeParameter q) * q.val)) *
-            (if A.val ∈ s then P A.val + P (insert e A.val) else 0) := by
-              rw [Finset.mul_sum]
-      _ ≤ ∑ A : RemainingConfiguration G {e},
-          (if A.val ∈ s then P (insert e A.val) else 0) :=
-        Finset.sum_le_sum (fun A _ => htermLower A)
-  · rw [hmass, hopen]
-    calc
-      (∑ A : RemainingConfiguration G {e},
-          (if A.val ∈ s then P (insert e A.val) else 0) ) ≤
-        ∑ A : RemainingConfiguration G {e},
-          edgeParameter q *
-            (if A.val ∈ s then P A.val + P (insert e A.val) else 0) :=
-        Finset.sum_le_sum (fun A _ => htermUpper A)
-      _ = edgeParameter q *
-          (∑ A : RemainingConfiguration G {e},
-            if A.val ∈ s then P A.val + P (insert e A.val) else 0) := by
-              rw [Finset.mul_sum]
-
+    rw [measure_toReal_eq_indicator_sum,
+      configurationProbability_edgeState_sum q ξ e ((s ∩ {A | e ∈ A}).indicator fun _ => (1 : ℝ))]
+    simp [P, Set.indicator, habsent, hstableInsert]
+  rw [hmass, hopen, Finset.mul_sum, Finset.mul_sum]
+  refine ⟨Finset.sum_le_sum fun A _ => ?_, Finset.sum_le_sum fun A _ => ?_⟩ <;>
+    by_cases hA : A.val ∈ s <;> simp only [hA, ↓reduceIte, mul_zero, le_refl]
+  · exact (le_div_iff₀ (add_pos (configurationProbability_pos G q ξ A.val)
+      (configurationProbability_pos G q ξ (insert e A.val)))).mp
+      (configurationProbability_pair_ratio_bounds q ξ A.val huv (habsent A)).1
+  · exact (div_le_iff₀ (add_pos (configurationProbability_pos G q ξ A.val)
+      (configurationProbability_pos G q ξ (insert e A.val)))).mp
+      (configurationProbability_pair_ratio_bounds q ξ A.val huv (habsent A)).2
 
 /-- For an event invariant under toggling one original edge, its closed-edge mass
 lies between the FK single-edge conditional weights times its total mass. -/
@@ -190,23 +123,10 @@ theorem configurationProbability_edge_finite_energy_closed
       (measure G q ξ (s ∩ opened)).toReal +
         (measure G q ξ (s ∩ {A | e ∉ A})).toReal =
           (measure G q ξ s).toReal := by
-    have h := MeasureTheory.measureReal_inter_add_sdiff (μ := measure G q ξ) (s := s)
+    rw [show s ∩ {A | e ∉ A} = s \ opened by ext; simp [opened]]
+    exact MeasureTheory.measureReal_inter_add_sdiff (μ := measure G q ξ) (s := s)
       (t := opened) (by simp [opened])
-    have hset : s \ opened = s ∩ {A | e ∉ A} := by
-      ext A
-      simp [opened]
-    change ((measure G q ξ (s ∩ opened)).toReal) +
-      ((measure G q ξ (s ∩ {A | e ∉ A})).toReal) =
-        ((measure G q ξ s).toReal)
-    rw [← hset]
-    exact h
-  have hopen' :
-      (edgeParameter q / (edgeParameter q + (1 - edgeParameter q) * q.val)) * (measure G q ξ s).toReal ≤
-        (measure G q ξ (s ∩ opened)).toReal ∧
-      (measure G q ξ (s ∩ opened)).toReal ≤
-        edgeParameter q * (measure G q ξ s).toReal := by
-    simpa [e, opened] using hopen
-  constructor <;> nlinarith [hpartition, hopen'.1, hopen'.2]
+  constructor <;> nlinarith [hpartition, hopen.1, hopen.2]
 
 end
 end PottsDiscontinuity.FK

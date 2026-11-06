@@ -30,8 +30,7 @@ theorem periodicCoordinate_succ (hp : 0 < N) (z : ℤ) :
     ((finRotate (N' + 1) (periodicCoordinate hp z)).val : ℤ)
   rw [finRotate_apply, periodicCoordinate_val, Fin.val_add]
   push_cast
-  rw [periodicCoordinate_val]
-  rw [Int.add_emod z 1]
+  rw [periodicCoordinate_val, Int.add_emod z 1]
   push_cast
   rfl
 
@@ -39,8 +38,7 @@ theorem translatedDual_at (A : RCConfig N M) (hNp : 0 < N) (hMp : 0 < M) (i j : 
     translatedDualConfig A (periodicCoordinate hNp (i + 1), periodicCoordinate hMp j) =
       !(A (periodicCoordinate hNp i, periodicCoordinate hMp j)) := by
   rw [periodicCoordinate_succ]
-  have := shiftRCConfig_nxt (dualConfig A) (periodicCoordinate hNp i, periodicCoordinate hMp j)
-  exact this
+  exact shiftRCConfig_nxt (dualConfig A) (periodicCoordinate hNp i, periodicCoordinate hMp j)
 
 theorem dualEnds_fst_row (m : Cell) : (dualEnds m).1.2 = m.2 := by
   unfold dualEnds; split_ifs <;> rfl
@@ -48,33 +46,24 @@ theorem dualEnds_fst_row (m : Cell) : (dualEnds m).1.2 = m.2 := by
 theorem dualEnds_snd_row (m : Cell) : (dualEnds m).2.2 = m.2 - 1 := by
   unfold dualEnds; split_ifs <;> rfl
 
-/-- The primal-coloured vertex obtained from a dual cell by the unit horizontal translation. -/
 def toRVd (z : Cell) (hz : ¬ IsPrimal z) : RotatedVertex :=
-  ⟨(z.1 + 1, z.2), by
-    unfold IsPrimal at hz
-    exact Int.even_iff.2 (by dsimp only; omega)⟩
+  ⟨(z.1 + 1, z.2), Int.even_iff.2 (by unfold IsPrimal at hz; dsimp only; omega)⟩
 
 theorem rotAdj_dualEnds (m : Cell) :
     rotatedLattice.Adj (toRVd (dualEnds m).1 (dualEnds_fst_not_primal m))
       (toRVd (dualEnds m).2 (dualEnds_snd_not_primal m)) := by
   unfold toRVd dualEnds
   change |_| = 1 ∧ |_| = 1
-  by_cases h : (m.1 + m.2) % 2 = 0
-  · simp only [h, ite_true]
-    constructor <;> rw [abs_eq (by norm_num)] <;> omega
-  · simp only [h, ite_false]
-    constructor <;> rw [abs_eq (by norm_num)] <;> omega
+  split_ifs <;> refine ⟨?_, ?_⟩ <;> (dsimp; rw [abs_eq (by norm_num)]; omega)
 
 theorem liftedEdgeIndex_dualEnds (hNp : 0 < N) (hMp : 0 < M) (m : Cell) :
     liftedEdgeIndex hNp hMp (toRVd (dualEnds m).1 (dualEnds_fst_not_primal m))
       (toRVd (dualEnds m).2 (dualEnds_snd_not_primal m)) =
       (periodicCoordinate hNp (m.1 + 1), periodicCoordinate hMp m.2) := by
   unfold liftedEdgeIndex toRVd dualEnds
-  by_cases h : (m.1 + m.2) % 2 = 0
-  · simp only [h, ite_true]
-    rw [max_eq_right (by omega), max_eq_left (by omega)]
-  · simp only [h, ite_false]
-    rw [max_eq_left (by omega), max_eq_left (by omega)]
+  by_cases h : (m.1 + m.2) % 2 = 0 <;> simp only [h, ite_true, ite_false]
+  · rw [max_eq_right (by omega), max_eq_left (by omega)]
+  · rw [max_eq_left (by omega), max_eq_left (by omega)]
 
 theorem dual_adj_oriented (hNp : 0 < N) (hMp : 0 < M) (Q : Rect) (A : RCConfig N M) (a b : ℤ)
     (hcol : a ≤ Q.x0 + 1 ∧ Q.x0 + Q.w + 1 ≤ b) {m : Cell} (hmin : m ∈ Q.inner)
@@ -85,16 +74,11 @@ theorem dual_adj_oriented (hNp : 0 < N) (hMp : 0 < M) (Q : Rect) (A : RCConfig N
   have hd := Q.dData.mem m hmin
   have h1 := Rect.mem_cells.1 (Rect.mem_dcells.1 hd.1).1
   have h2 := Rect.mem_cells.1 (Rect.mem_dcells.1 hd.2).1
-  have hAm : A (periodicCoordinate hNp m.1, periodicCoordinate hMp m.2) = false := by
-    by_contra hne
-    apply hmA
-    exact Finset.mem_filter.2 ⟨hmin, by simpa [toFin] using hne⟩
-  refine ⟨rotAdj_dualEnds m, ?_, ⟨?_, ?_⟩, ⟨?_, ?_⟩⟩
-  · rw [liftedEdgeIndex_dualEnds, translatedDual_at, hAm]; rfl
-  · change a ≤ (dualEnds m).1.1 + 1; omega
-  · change (dualEnds m).1.1 + 1 ≤ b; omega
-  · change a ≤ (dualEnds m).2.1 + 1; omega
-  · change (dualEnds m).2.1 + 1 ≤ b; omega
+  have hAm : A (periodicCoordinate hNp m.1, periodicCoordinate hMp m.2) = false :=
+    Bool.eq_false_iff.2 fun hne => hmA (Finset.mem_filter.2 ⟨hmin, by simpa [toFin] using hne⟩)
+  refine ⟨rotAdj_dualEnds m, by rw [liftedEdgeIndex_dualEnds, translatedDual_at, hAm]; rfl,
+    ⟨by change a ≤ (dualEnds m).1.1 + 1; omega, by change (dualEnds m).1.1 + 1 ≤ b; omega⟩,
+    ⟨by change a ≤ (dualEnds m).2.1 + 1; omega, by change (dualEnds m).2.1 + 1 ≤ b; omega⟩⟩
 
 theorem rtg_to_walk_map {α β : Type*} (G : SimpleGraph β) (φ : α → β) (P : β → Prop)
     (S : α → α → Prop) (hS : ∀ p q, S p q → G.Adj (φ p) (φ q) ∧ P (φ p) ∧ P (φ q)) {x y : α}
@@ -104,35 +88,23 @@ theorem rtg_to_walk_map {α β : Type*} (G : SimpleGraph β) (φ : α → β) (P
   | refl => exact ⟨SimpleGraph.Walk.nil, by simpa using hx⟩
   | @tail b c _ hbc ih =>
     obtain ⟨w, hw⟩ := ih
-    obtain ⟨hadj, hPb, hPc⟩ := hS b c hbc
-    refine ⟨w.concat hadj, ?_⟩
-    intro z hz
+    obtain ⟨hadj, _, hPc⟩ := hS b c hbc
+    refine ⟨w.concat hadj, fun z hz => ?_⟩
     rw [SimpleGraph.Walk.support_concat] at hz
-    rcases List.mem_append.1 hz with h | h
-    · exact hw z h
-    · rw [List.mem_singleton.1 h]; exact hPc
+    exact (List.mem_append.1 hz).elim (hw z) fun h => List.mem_singleton.1 h ▸ hPc
 
 theorem dual_step_row {S : Finset Cell} {p q : Cell} (h : StepRel dualEnds S p q) :
     q.2 ≤ p.2 + 1 ∧ p.2 ≤ q.2 + 1 := by
-  obtain ⟨m, _, h⟩ := h
-  rcases h with h | h
-  · have h1 := congrArg (fun z : Cell × Cell => z.1.2) h
-    have h2 := congrArg (fun z : Cell × Cell => z.2.2) h
-    simp only [dualEnds_fst_row, dualEnds_snd_row] at h1 h2
-    omega
-  · have h1 := congrArg (fun z : Cell × Cell => z.1.2) h
-    have h2 := congrArg (fun z : Cell × Cell => z.2.2) h
-    simp only [dualEnds_fst_row, dualEnds_snd_row] at h1 h2
-    omega
+  obtain ⟨m, _, h | h⟩ := h <;>
+    have h1 := congrArg (fun z : Cell × Cell => z.1.2) h <;>
+    have h2 := congrArg (fun z : Cell × Cell => z.2.2) h <;>
+    simp only [dualEnds_fst_row, dualEnds_snd_row] at h1 h2 <;> omega
 
 theorem notPrimal_of_dstep {S : Finset Cell} {x c : Cell} (h : StepRel dualEnds S x c) :
     ¬ IsPrimal x := by
-  obtain ⟨m, _, h⟩ := h
-  rcases h with h | h
-  · have h2 : x = (dualEnds m).1 := (congrArg Prod.fst h).symm
-    rw [h2]; exact dualEnds_fst_not_primal m
-  · have h2 : x = (dualEnds m).2 := (congrArg Prod.snd h).symm
-    rw [h2]; exact dualEnds_snd_not_primal m
+  obtain ⟨m, _, h | h⟩ := h
+  · simpa [h] using dualEnds_fst_not_primal m
+  · simpa [h] using dualEnds_snd_not_primal m
 
 theorem rtg_lift_dual {S : Finset Cell} (Φ : Cell → Prop) {x y : Cell}
     (h : Relation.ReflTransGen (fun p q => StepRel dualEnds S p q ∧ Φ p ∧ Φ q) x y)
@@ -144,14 +116,11 @@ theorem rtg_lift_dual {S : Finset Cell} (Φ : Cell → Prop) {x y : Cell}
   | refl => exact ⟨hx, Relation.ReflTransGen.refl⟩
   | @tail b c _ hbc ih =>
     obtain ⟨hb, hr⟩ := ih
-    obtain ⟨hstep, hΦb, hΦc⟩ := hbc
-    obtain ⟨m, hm, hmeq⟩ := hstep
+    obtain ⟨⟨m, hm, hmeq⟩, hΦb, hΦc⟩ := hbc
     have hc : ¬ IsPrimal c := by
       rcases hmeq with h | h
-      · have h2 : c = (dualEnds m).2 := (congrArg Prod.snd h).symm
-        rw [h2]; exact dualEnds_snd_not_primal m
-      · have h2 : c = (dualEnds m).1 := (congrArg Prod.fst h).symm
-        rw [h2]; exact dualEnds_fst_not_primal m
+      · simpa [h] using dualEnds_snd_not_primal m
+      · simpa [h] using dualEnds_fst_not_primal m
     exact ⟨hc, hr.tail ⟨⟨m, hm, hmeq⟩, hΦb, hΦc⟩⟩
 
 theorem dual_lifted_adj_of_step (hNp : 0 < N) (hMp : 0 < M) (Q : Rect) (A : RCConfig N M)
@@ -159,27 +128,18 @@ theorem dual_lifted_adj_of_step (hNp : 0 < N) (hMp : 0 < M) (Q : Rect) (A : RCCo
     (hS : S ⊆ Q.inner) (hSA : ∀ m ∈ S, m ∉ boardOf Q hNp hMp A)
     {u v : {z : Cell // ¬ IsPrimal z}} (h : StepRel dualEnds S u.1 v.1) :
     (liftedStripGraph hNp hMp (translatedDualConfig A) a b).Adj (toRVd u.1 u.2) (toRVd v.1 v.2) := by
-  obtain ⟨m, hm, hmeq⟩ := h
-  rcases hmeq with h | h
-  · have hu : toRVd u.1 u.2 = toRVd (dualEnds m).1 (dualEnds_fst_not_primal m) := by
-      congr 1
-      exact (congrArg Prod.fst h).symm
-    have hv : toRVd v.1 v.2 = toRVd (dualEnds m).2 (dualEnds_snd_not_primal m) := by
-      congr 1
-      exact (congrArg Prod.snd h).symm
-    rw [hu, hv]
+  obtain ⟨m, hm, h | h⟩ := h
+  · rw [show toRVd u.1 u.2 = toRVd (dualEnds m).1 (dualEnds_fst_not_primal m) by
+        congr 1; exact (congrArg Prod.fst h).symm,
+      show toRVd v.1 v.2 = toRVd (dualEnds m).2 (dualEnds_snd_not_primal m) by
+        congr 1; exact (congrArg Prod.snd h).symm]
     exact dual_adj_oriented hNp hMp Q A a b hcol (hS hm) (hSA m hm)
-  · have hu : toRVd u.1 u.2 = toRVd (dualEnds m).2 (dualEnds_snd_not_primal m) := by
-      congr 1
-      exact (congrArg Prod.snd h).symm
-    have hv : toRVd v.1 v.2 = toRVd (dualEnds m).1 (dualEnds_fst_not_primal m) := by
-      congr 1
-      exact (congrArg Prod.fst h).symm
-    rw [hu, hv]
+  · rw [show toRVd u.1 u.2 = toRVd (dualEnds m).2 (dualEnds_snd_not_primal m) by
+        congr 1; exact (congrArg Prod.snd h).symm,
+      show toRVd v.1 v.2 = toRVd (dualEnds m).1 (dualEnds_fst_not_primal m) by
+        congr 1; exact (congrArg Prod.fst h).symm]
     exact (dual_adj_oriented hNp hMp Q A a b hcol (hS hm) (hSA m hm)).symm
 
-/-- A dual-open path (avoiding the open edges of the board) joining a low face to a high face
-gives a lifted vertical crossing of the translated complementary configuration. -/
 theorem dual_to_vCross (hNp : 0 < N) (hMp : 0 < M) (Q : Rect) (A : RCConfig N M) (n : ℕ)
     (hn : 0 < n) (a ρ : ℤ) (hcol : a ≤ Q.x0 + 1 ∧ Q.x0 + Q.w + 1 ≤ a + 3 * (n : ℤ))
     {S : Finset Cell} (hS : S ⊆ Q.inner) (hSA : ∀ m ∈ S, m ∉ boardOf Q hNp hMp A) {p t : Cell}
@@ -191,10 +151,8 @@ theorem dual_to_vCross (hNp : 0 < N) (hMp : 0 < M) (Q : Rect) (A : RCConfig N M)
       (fun p q => StepRel dualEnds S p q ∧ (ρ ≤ p.2 ∧ p.2 ≤ ρ + n) ∧ (ρ ≤ q.2 ∧ q.2 ≤ ρ + n)) x y :=
     Relation.ReflTransGen.mono (fun p q h => ⟨h.1, ⟨h.2.1, h.2.2.1⟩, ⟨h.2.2.2.1, h.2.2.2.2⟩⟩) x y hxy
   have hxp : ¬ IsPrimal x := by
-    rcases Relation.ReflTransGen.cases_head hxy' with h | ⟨c, hc, _⟩
-    · exfalso
-      subst h
-      omega
+    rcases Relation.ReflTransGen.cases_head hxy' with rfl | ⟨c, hc, _⟩
+    · omega
     · exact notPrimal_of_dstep hc.1
   obtain ⟨hyp, hlift⟩ := rtg_lift_dual (S := S) (fun c : Cell => ρ ≤ c.2 ∧ c.2 ≤ ρ + n) hxy' hxp
   obtain ⟨w, hw⟩ := rtg_to_walk_map (liftedStripGraph hNp hMp (translatedDualConfig A) a
@@ -219,31 +177,27 @@ theorem notBarB_to_vCross (hNp : 0 < N) (hMp : 0 < M) (Q : Rect) (A : RCConfig N
     (hcol : a ≤ Q.x0 + 1 ∧ Q.x0 + Q.w + 1 ≤ a + 3 * (n : ℤ))
     (hρ1 : Q.y0 ≤ ρ) (hρ2 : ρ + n ≤ Q.y0 + bB)
     (hbar : ¬ Q.barB bB (boardOf Q hNp hMp A)) : vCross hNp hMp n a ρ (translatedDualConfig A) := by
-  unfold Rect.barB at hbar
-  push Not at hbar
+  unfold Rect.barB at hbar; push Not at hbar
   obtain ⟨t, ht, htD⟩ := hbar
   obtain ⟨_, p, hp, hpath⟩ := (Q.botB bB).mem_expD.1 htD
-  have hp2 : p.2 = Q.y0 := ((Q.botB bB).faceRow_mem.1 hp).2
-  have ht2 : t.2 = Q.y0 + bB := ((Q.botB bB).faceRow_mem.1 ht).2
-  refine dual_to_vCross hNp hMp Q A n hn a ρ hcol (S := (Q.botB bB).inner \ boardOf Q hNp hMp A)
-    ?_ ?_ hpath (by omega) (by omega)
-  · exact Finset.sdiff_subset.trans (Rect.botB_inner_subset Q bB (by have := hg.hgap; omega))
-  · intro m hm; exact (Finset.mem_sdiff.1 hm).2
+  have := ((Q.botB bB).faceRow_mem.1 hp).2
+  have := ((Q.botB bB).faceRow_mem.1 ht).2
+  exact dual_to_vCross hNp hMp Q A n hn a ρ hcol
+    (Finset.sdiff_subset.trans (Rect.botB_inner_subset Q bB (by have := hg.hgap; omega)))
+    (fun _ hm => (Finset.mem_sdiff.1 hm).2) hpath (by omega) (by omega)
 
 theorem notBarT_to_vCross (hNp : 0 < N) (hMp : 0 < M) (Q : Rect) (A : RCConfig N M) {bB bT : ℕ}
     (hg : Q.Geo bB bT) (n : ℕ) (hn : 0 < n) (a ρ : ℤ)
     (hcol : a ≤ Q.x0 + 1 ∧ Q.x0 + Q.w + 1 ≤ a + 3 * (n : ℤ))
     (hρ1 : Q.y0 + Q.h - bT ≤ ρ) (hρ2 : ρ + n ≤ Q.y0 + Q.h)
     (hbar : ¬ Q.barT bT (boardOf Q hNp hMp A)) : vCross hNp hMp n a ρ (translatedDualConfig A) := by
-  unfold Rect.barT at hbar
-  push Not at hbar
+  unfold Rect.barT at hbar; push Not at hbar
   obtain ⟨t, ht, htD⟩ := hbar
   obtain ⟨_, p, hp, hpath⟩ := (Q.topT bT).mem_expD.1 htD
-  have hp2 : p.2 = Q.y0 + Q.h := ((Q.topT bT).faceRow_mem.1 hp).2
-  have ht2 : t.2 = Q.y0 + Q.h - bT := ((Q.topT bT).faceRow_mem.1 ht).2
-  refine dual_to_vCross hNp hMp Q A n hn a ρ hcol (S := (Q.topT bT).inner \ boardOf Q hNp hMp A)
-    ?_ ?_ (rtg_stepRel_symm hpath) (by omega) (by omega)
-  · exact Finset.sdiff_subset.trans (Rect.topT_inner_subset Q bT (by have := hg.hgap; omega))
-  · intro m hm; exact (Finset.mem_sdiff.1 hm).2
+  have := ((Q.topT bT).faceRow_mem.1 hp).2
+  have := ((Q.topT bT).faceRow_mem.1 ht).2
+  exact dual_to_vCross hNp hMp Q A n hn a ρ hcol
+    (Finset.sdiff_subset.trans (Rect.topT_inner_subset Q bT (by have := hg.hgap; omega)))
+    (fun _ hm => (Finset.mem_sdiff.1 hm).2) (rtg_stepRel_symm hpath) (by omega) (by omega)
 
 end PottsDiscontinuity.TorusCrossing

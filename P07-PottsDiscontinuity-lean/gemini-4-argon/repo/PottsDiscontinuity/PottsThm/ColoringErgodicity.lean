@@ -35,44 +35,21 @@ theorem mixingProduct_factor_translationErgodic {C : Type*} [MeasurableSpace C]
   classical
   let Q : Vertex → LatticeConfiguration × (Vertex → C) →
       LatticeConfiguration × (Vertex → C) := productShift T S
-  have hQmeas (a : Vertex) : Measurable (Q a) := by
-    dsimp [Q, productShift]
-    exact ((hTpres a).measurable.comp measurable_fst).prodMk
-      ((hSpres a).measurable.comp measurable_snd)
-  have hQpres (a : Vertex) : MeasurePreserving (Q a) (μ.prod ν) (μ.prod ν) := by
-    change MeasurePreserving (Prod.map (T a) (S a)) (μ.prod ν) (μ.prod ν)
-    exact (hTpres a).prod (hSpres a)
-  have hτmeas (a : Vertex) : Measurable (fun σ : Vertex → C => fun x => σ (x + a)) :=
-    measurable_pi_iff.mpr fun x => measurable_pi_apply (x + a)
-  constructor
-  · intro a
-    rw [Measure.map_map (hτmeas a) hF]
-    have hcomp : (fun σ : Vertex → C => fun x => σ (x + a)) ∘ F = F ∘ Q (-a) := by
-      funext z x
-      simpa [Function.comp_apply, sub_neg_eq_add] using (hFshift (-a) z x).symm
-    rw [hcomp, ← Measure.map_map hF (hQmeas (-a)), (hQpres (-a)).map_eq]
-  · intro A hA hAinv
-    let E : Set (LatticeConfiguration × (Vertex → C)) := F ⁻¹' A
-    have hE : MeasurableSet E := hF hA
-    have hEinv : ∀ a, (Q a) ⁻¹' E = E := by
-      intro a
+  have hQpres (a : Vertex) : MeasurePreserving (Q a) (μ.prod ν) (μ.prod ν) :=
+    (hTpres a).prod (hSpres a)
+  refine ⟨fun a => ?_, fun A hA hAinv => ?_⟩
+  · rw [Measure.map_map (measurable_pi_iff.mpr fun x => measurable_pi_apply (x + a)) hF,
+      show (fun σ : Vertex → C => fun x => σ (x + a)) ∘ F = F ∘ Q (-a) by
+        funext z x; simpa [Function.comp_apply, sub_neg_eq_add] using (hFshift (-a) z x).symm,
+      ← Measure.map_map hF (hQpres (-a)).measurable, (hQpres (-a)).map_eq]
+  · have hEinv (a : Vertex) : Q a ⁻¹' (F ⁻¹' A) = F ⁻¹' A := by
       ext z
       change F (Q a z) ∈ A ↔ F z ∈ A
-      have hspin : F (Q a z) = fun x => F z (x - a) := funext (hFshift a z)
-      rw [hspin]
-      have hinv := Set.ext_iff.mp (hAinv (-a)) (F z)
-      have hshiftEq : (fun x => F z (x - a)) = (fun x => F z (x + -a)) := by
-        funext x
-        simp [sub_eq_add_neg]
-      rw [hshiftEq]
-      exact hinv
-    rcases mixingProduct_invariant_event μ ν T S hTpres hSpres hTmix hSmix hE hEinv with h | h
-    · left
-      rw [Measure.map_apply hF hA]
-      exact h
-    · right
-      rw [Measure.map_apply hF hA.compl]
-      simpa only [E, Set.preimage_compl] using h
+      rw [show F (Q a z) = fun x => F z (x + -a) by
+        funext x; simpa [sub_eq_add_neg] using hFshift a z x]
+      exact Set.ext_iff.mp (hAinv (-a)) (F z)
+    simpa [Measure.map_apply hF hA, Measure.map_apply hF hA.compl] using
+      mixingProduct_invariant_event μ ν T S hTpres hSpres hTmix hSmix (hF hA) hEinv
 
 end
 end PottsDiscontinuity.PottsThm

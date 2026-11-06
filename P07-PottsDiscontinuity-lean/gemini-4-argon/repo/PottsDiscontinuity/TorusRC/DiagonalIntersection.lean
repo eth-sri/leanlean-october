@@ -1,6 +1,5 @@
 module
 
-public import FixedPointTheorems.brouwer
 public import Mathlib
 public import PottsDiscontinuity.TorusRC.LiftedInterpolation
 

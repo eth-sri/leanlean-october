@@ -33,19 +33,13 @@ theorem actualMultiClusterReveal_mem_iff (S : Finset V) (A : Configuration G)
     (e : G.edgeSet) :
     e ∈ actualMultiClusterReveal G S A ↔
       ∃ u : V, u ∈ e.1 ∧ ∃ s, s ∈ S ∧ ActualConnected G A s u := by
-  classical
-  change (e ∈ Finset.univ.filter fun e : G.edgeSet =>
-    ∃ u : V, u ∈ e.1 ∧ actualMultiClusterConnected G S A u) ↔ _
-  simp only [Finset.mem_filter, Finset.mem_univ, true_and]
-  exact Iff.rfl
+  classical rw [actualMultiClusterReveal, Finset.mem_filter_univ]; rfl
 
 theorem actualClusterReveal_subset_multi (S : Finset V) (A : Configuration G)
     {s : V} (hs : s ∈ S) :
-    actualClusterReveal G s A ⊆ actualMultiClusterReveal G S A := by
-  intro e he
-  rw [actualMultiClusterReveal_mem_iff]
+    actualClusterReveal G s A ⊆ actualMultiClusterReveal G S A := fun e he => by
   rcases (actualClusterReveal_mem_iff G s A e).mp he with ⟨u, hu, hconn⟩
-  exact ⟨u, hu, s, hs, hconn⟩
+  exact (actualMultiClusterReveal_mem_iff S A e).mpr ⟨u, hu, s, hs, hconn⟩
 
 private theorem single_reveal_agreement_of_multi
     (S : Finset V) (A B : Configuration G)
@@ -53,31 +47,20 @@ private theorem single_reveal_agreement_of_multi
     {s : V} (hs : s ∈ S) :
     B ∩ actualClusterReveal G s A = A ∩ actualClusterReveal G s A := by
   classical
-  apply Finset.ext
-  intro e
-  simp only [Finset.mem_inter]
+  ext e
   have heq := Finset.ext_iff.mp hagree e
-  simp only [Finset.mem_inter] at heq
-  constructor
-  · rintro ⟨heB, heSingle⟩
-    have heMulti := actualClusterReveal_subset_multi S A hs heSingle
-    exact ⟨(heq.mp ⟨heB, heMulti⟩).1, heSingle⟩
-  · rintro ⟨heA, heSingle⟩
-    have heMulti := actualClusterReveal_subset_multi S A hs heSingle
-    exact ⟨(heq.mpr ⟨heA, heMulti⟩).1, heSingle⟩
+  simp only [Finset.mem_inter] at heq ⊢
+  exact ⟨fun ⟨heB, heS⟩ => ⟨(heq.mp ⟨heB, actualClusterReveal_subset_multi S A hs heS⟩).1, heS⟩,
+    fun ⟨heA, heS⟩ => ⟨(heq.mpr ⟨heA, actualClusterReveal_subset_multi S A hs heS⟩).1, heS⟩⟩
 
 theorem actualMultiClusterConnected_iff_of_reveal_agreement
     (S : Finset V) (A B : Configuration G)
     (hagree : B ∩ actualMultiClusterReveal G S A = A ∩ actualMultiClusterReveal G S A)
     (u : V) :
-    actualMultiClusterConnected G S B u ↔ actualMultiClusterConnected G S A u := by
-  constructor
-  · rintro ⟨s, hs, hconn⟩
-    exact ⟨s, hs, (actualConnected_iff_of_reveal_agreement G s A B
-      (single_reveal_agreement_of_multi S A B hagree hs) u).mp hconn⟩
-  · rintro ⟨s, hs, hconn⟩
-    exact ⟨s, hs, (actualConnected_iff_of_reveal_agreement G s A B
-      (single_reveal_agreement_of_multi S A B hagree hs) u).mpr hconn⟩
+    actualMultiClusterConnected G S B u ↔ actualMultiClusterConnected G S A u :=
+  exists_congr fun s => and_congr_right fun hs =>
+    actualConnected_iff_of_reveal_agreement G s A B
+      (single_reveal_agreement_of_multi S A B hagree hs) u
 
 theorem actualMultiClusterReveal_consistent
     (S : Finset V) (A B : Configuration G)
@@ -85,13 +68,8 @@ theorem actualMultiClusterReveal_consistent
     actualMultiClusterReveal G S B = actualMultiClusterReveal G S A := by
   ext e
   rw [actualMultiClusterReveal_mem_iff, actualMultiClusterReveal_mem_iff]
-  constructor
-  · rintro ⟨u, hu, s, hs, hconn⟩
-    exact ⟨u, hu, s, hs, (actualConnected_iff_of_reveal_agreement G s A B
-      (single_reveal_agreement_of_multi S A B hagree hs) u).mp hconn⟩
-  · rintro ⟨u, hu, s, hs, hconn⟩
-    exact ⟨u, hu, s, hs, (actualConnected_iff_of_reveal_agreement G s A B
-      (single_reveal_agreement_of_multi S A B hagree hs) u).mpr hconn⟩
+  exact exists_congr fun u => and_congr_right fun _ =>
+    actualMultiClusterConnected_iff_of_reveal_agreement S A B hagree u
 
 def actualMultiClusterComplementSet (G : SimpleGraph V) (S : Finset V)
     (A : Configuration G) : Set V :=
@@ -107,61 +85,20 @@ theorem edgeRestriction_actualMultiClusterReveal_eq_induced_complement
       (G.induce (actualMultiClusterComplementSet G S A)).map
         (actualMultiClusterComplementEmbedding G S A) := by
   ext x y
-  constructor
-  · intro hxy
-    have hxy' : G.Adj x y ∧ s(x,y) ∉ openEdges G (actualMultiClusterReveal G S A) := by
-      simpa [edgeRestriction] using hxy
-    rcases hxy' with ⟨hAdj, hNot⟩
-    have hnotConn :
-        ¬ actualMultiClusterConnected G S A x ∧
-        ¬ actualMultiClusterConnected G S A y := by
-      constructor
-      · intro hx
-        apply hNot
-        rcases hx with ⟨s, hs, hconn⟩
-        have hR : (⟨s(x,y), G.mem_edgeSet.mpr hAdj⟩ : G.edgeSet) ∈
-            actualMultiClusterReveal G S A := by
-          rw [actualMultiClusterReveal_mem_iff]
-          exact ⟨x, (Sym2.mem_iff').2 (Or.inl rfl), s, hs, hconn⟩
-        have hOpen := (coe_mem_openEdges_iff G (actualMultiClusterReveal G S A)
-          ⟨s(x,y), G.mem_edgeSet.mpr hAdj⟩).mpr hR
-        simpa using hOpen
-      · intro hy
-        apply hNot
-        rcases hy with ⟨s, hs, hconn⟩
-        have hR : (⟨s(x,y), G.mem_edgeSet.mpr hAdj⟩ : G.edgeSet) ∈
-            actualMultiClusterReveal G S A := by
-          rw [actualMultiClusterReveal_mem_iff]
-          exact ⟨y, (Sym2.mem_iff').2 (Or.inr rfl), s, hs, hconn⟩
-        have hOpen := (coe_mem_openEdges_iff G (actualMultiClusterReveal G S A)
-          ⟨s(x,y), G.mem_edgeSet.mpr hAdj⟩).mpr hR
-        simpa using hOpen
-    apply (SimpleGraph.map_adj (actualMultiClusterComplementEmbedding G S A)
-      (G.induce (actualMultiClusterComplementSet G S A)) x y).2
-    refine ⟨⟨x, hnotConn.1⟩, ⟨y, hnotConn.2⟩, ?_, rfl, rfl⟩
-    exact SimpleGraph.induce_adj.mpr hAdj
-  · intro hxy
-    rcases (SimpleGraph.map_adj (actualMultiClusterComplementEmbedding G S A)
-      (G.induce (actualMultiClusterComplementSet G S A)) x y).1 hxy with
-      ⟨u, w, hAdjInduced, hux, hwy⟩
-    have hAdj : G.Adj u.val w.val := SimpleGraph.induce_adj.mp hAdjInduced
-    have hux' : u.val = x := hux
-    have hwy' : w.val = y := hwy
-    subst x
-    subst y
-    rw [edgeRestriction, SimpleGraph.deleteEdges_adj]
-    refine ⟨hAdj, ?_⟩
-    intro hmem
-    have hR : (⟨s(u,w), G.mem_edgeSet.mpr hAdj⟩ : G.edgeSet) ∈
-        actualMultiClusterReveal G S A := by
-      apply (coe_mem_openEdges_iff G (actualMultiClusterReveal G S A)
-        ⟨s(u,w), G.mem_edgeSet.mpr hAdj⟩).mp
-      simpa [actualMultiClusterComplementEmbedding] using hmem
-    rcases (actualMultiClusterReveal_mem_iff S A _).mp hR with
-      ⟨z, hz, s, hs, hconn⟩
-    rcases (Sym2.mem_iff').mp hz with hzu | hzw
-    · exact u.2 ⟨s, hs, hzu ▸ hconn⟩
-    · exact w.2 ⟨s, hs, hzw ▸ hconn⟩
+  rw [edgeRestriction, SimpleGraph.deleteEdges_adj, SimpleGraph.map_adj]
+  refine ⟨fun ⟨hAdj, hNot⟩ => ?_, ?_⟩
+  · refine ⟨⟨x, fun ⟨s, hs, hconn⟩ => hNot ?_⟩, ⟨y, fun ⟨s, hs, hconn⟩ => hNot ?_⟩, hAdj, rfl, rfl⟩
+    · exact (coe_mem_openEdges_iff G (actualMultiClusterReveal G S A) ⟨s(x, y), G.mem_edgeSet.mpr hAdj⟩).mpr
+        ((actualMultiClusterReveal_mem_iff S A _).mpr ⟨x, Sym2.mem_mk_left _ _, s, hs, hconn⟩)
+    · exact (coe_mem_openEdges_iff G (actualMultiClusterReveal G S A) ⟨s(x, y), G.mem_edgeSet.mpr hAdj⟩).mpr
+        ((actualMultiClusterReveal_mem_iff S A _).mpr ⟨y, Sym2.mem_mk_right _ _, s, hs, hconn⟩)
+  · rintro ⟨u, w, hAdj, rfl, rfl⟩
+    refine ⟨hAdj, fun hmem => ?_⟩
+    rcases (actualMultiClusterReveal_mem_iff S A ⟨s(u.val, w.val), G.mem_edgeSet.mpr hAdj⟩).mp
+      ((coe_mem_openEdges_iff G (actualMultiClusterReveal G S A) _).mp hmem) with ⟨z, hz, s, hs, hconn⟩
+    rcases Sym2.mem_iff.mp hz with rfl | rfl
+    · exact u.2 ⟨s, hs, hconn⟩
+    · exact w.2 ⟨s, hs, hconn⟩
 
 theorem actualMultiClusterComplementGraph_le
     (S : Finset V) (A : Configuration G) :
@@ -176,15 +113,9 @@ theorem actualMultiClusterReveal_eq_subgraphRemovedEdges
       subgraphRemovedEdges
         ((G.induce (actualMultiClusterComplementSet G S A)).map
           (actualMultiClusterComplementEmbedding G S A)) G := by
-  apply Finset.ext
-  intro e
-  rw [mem_subgraphRemovedEdges]
-  have hgraph := congrArg SimpleGraph.edgeSet
-    (edgeRestriction_actualMultiClusterReveal_eq_induced_complement (G := G) S A)
-  rw [edgeRestriction_edgeSet] at hgraph
-  rw [← hgraph]
-  simp only [Set.mem_sdiff]
-  simp [e.property, coe_mem_openEdges_iff]
+  ext e
+  rw [mem_subgraphRemovedEdges, ← edgeRestriction_actualMultiClusterReveal_eq_induced_complement]
+  simp [edgeRestriction_edgeSet, e.property, coe_mem_openEdges_iff]
 
 /-- Conditioning on the union of actual clusters rooted at a finite seed set
 leaves the exact FK law on the induced complement graph. -/
@@ -211,25 +142,10 @@ theorem law_filter_actualMultiClusterRecord_map_complement
   let H := (G.induce C).map f
   let R := actualMultiClusterReveal G S A₀
   let K := revealRecordConfiguration G (actualMultiClusterReveal G S) A₀
-  have hR : R = subgraphRemovedEdges H G := by
-    simpa [R, H, C, f] using
-      (actualMultiClusterReveal_eq_subgraphRemovedEdges (G := G) S A₀)
-  let K' : RemovedConfiguration G (subgraphRemovedEdges H G) := by
-    refine ⟨K.val, ?_⟩
-    rw [← hR]
-    exact K.property
-  have hHG : H ≤ G := by
-    change (G.induce (actualMultiClusterComplementSet G S A₀)).map
-      (actualMultiClusterComplementEmbedding G S A₀) ≤ G
-    exact actualMultiClusterComplementGraph_le (G := G) S A₀
-  have hconditional := law_filter_frozen_map_embeddedRestriction
-    (G.induce C) G f hHG q ξ K'
-  have hevent : revealRecordEvent G (actualMultiClusterReveal G S) A₀ =
-      frozenStateEvent (subgraphRemovedEdges H G) K' := by
-    rw [revealRecordEvent_eq_frozenStateEvent G (actualMultiClusterReveal G S)
-      (actualMultiClusterReveal_consistent S) A₀]
-    ext C'
-    simp [frozenStateEvent, K', K, R, hR]
+  have hR : R = subgraphRemovedEdges H G :=
+    actualMultiClusterReveal_eq_subgraphRemovedEdges (G := G) S A₀
+  let K' : RemovedConfiguration G (subgraphRemovedEdges H G) := ⟨K.val, hR ▸ K.property⟩
+  have hHG : H ≤ G := actualMultiClusterComplementGraph_le (G := G) S A₀
   have hfiltered :
       (law G q ξ).filter (revealRecordEvent G (actualMultiClusterReveal G S) A₀)
         (by
@@ -240,12 +156,14 @@ theorem law_filter_actualMultiClusterRecord_map_complement
       (law G q ξ).filter (frozenStateEvent (subgraphRemovedEdges H G) K')
         (frozenStateEvent_support q ξ (subgraphRemovedEdges H G) K') := by
     ext C'
-    rw [PMF.filter_apply, PMF.filter_apply, hevent]
-  have hfilter := congrArg
-    (fun P : PMF (Configuration G) =>
-      PMF.map (embeddedConfigurationRestriction (G.induce C) G f hHG) P) hfiltered
+    have hEv : frozenStateEvent (actualMultiClusterReveal G S A₀) K =
+        frozenStateEvent (subgraphRemovedEdges H G) K' := by
+      ext A; simp [frozenStateEvent, K', K, R, hR]
+    simp [PMF.filter_apply, revealRecordEvent_eq_frozenStateEvent G (actualMultiClusterReveal G S)
+      (actualMultiClusterReveal_consistent S) A₀, K, hEv]
   simpa [H, f, K, R, C, K', isolatedExtensionPullbackBoundary, hR] using
-    hfilter.trans hconditional
+    (congrArg (PMF.map (embeddedConfigurationRestriction (G.induce C) G f hHG)) hfiltered).trans
+      (law_filter_frozen_map_embeddedRestriction (G.induce C) G f hHG q ξ K')
 
 end
 end PottsDiscontinuity.FK

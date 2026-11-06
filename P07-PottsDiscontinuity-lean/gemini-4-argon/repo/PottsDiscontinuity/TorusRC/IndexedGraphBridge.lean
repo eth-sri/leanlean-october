@@ -16,49 +16,28 @@ open Torus PottsDiscontinuity.SixVertex
 variable {N M : ℕ}
 
 private theorem prv_ne_self_of_two_le {n : ℕ} (hn : 2 ≤ n) (i : Fin n) :
-    prv i ≠ i := by
-  intro h
+    prv i ≠ i := fun h => by
+  have hv := congrArg Fin.val h
   by_cases hi : i.val = 0
-  · have hp := PottsDiscontinuity.SixVertex.prv_val_zero i hi
-    have hv := congrArg Fin.val h
-    rw [hi] at hv
-    omega
-  · have hp := PottsDiscontinuity.SixVertex.prv_val_of_pos i
-      (Nat.pos_of_ne_zero hi)
-    have hv := congrArg Fin.val h
-    rw [hp] at hv
-    omega
+  · have := PottsDiscontinuity.SixVertex.prv_val_zero i hi; omega
+  · have := PottsDiscontinuity.SixVertex.prv_val_of_pos i (Nat.pos_of_ne_zero hi); omega
 
 private theorem prv_prv_ne_self_of_three_le {n : ℕ} (hn : 3 ≤ n) (i : Fin n) :
-    prv (prv i) ≠ i := by
-  intro h
+    prv (prv i) ≠ i := fun h => by
+  have hv := congrArg Fin.val h
   by_cases hi0 : i.val = 0
   · have hprev := PottsDiscontinuity.SixVertex.prv_val_zero i hi0
-    have hprevpos : 0 < (prv i).val := by omega
-    have hprevprev := PottsDiscontinuity.SixVertex.prv_val_of_pos
-      (prv i) hprevpos
-    have hv := congrArg Fin.val h
-    rw [hprevprev] at hv
+    have := PottsDiscontinuity.SixVertex.prv_val_of_pos (prv i) (by omega)
     omega
-  · have hprev := PottsDiscontinuity.SixVertex.prv_val_of_pos i
-      (Nat.pos_of_ne_zero hi0)
+  · have hprev := PottsDiscontinuity.SixVertex.prv_val_of_pos i (Nat.pos_of_ne_zero hi0)
     by_cases hi1 : i.val = 1
-    · have hprevzero : (prv i).val = 0 := by omega
-      have hprevprev := PottsDiscontinuity.SixVertex.prv_val_zero
-        (prv i) hprevzero
-      have hv := congrArg Fin.val h
+    · have := PottsDiscontinuity.SixVertex.prv_val_zero (prv i) (by omega)
       omega
-    · have hprevpos : 0 < (prv i).val := by rw [hprev]; omega
-      have hprevprev := PottsDiscontinuity.SixVertex.prv_val_of_pos
-        (prv i) hprevpos
-      have hv := congrArg Fin.val h
-      rw [hprevprev] at hv
-      rw [hprev] at hv
+    · have := PottsDiscontinuity.SixVertex.prv_val_of_pos (prv i) (by omega)
       omega
 
 private theorem prv_injective {n : ℕ} (i j : Fin n) (h : prv i = prv j) : i = j := by
-  have hn := congrArg nxt h
-  simpa only [nxt, prv, Equiv.apply_symm_apply] using hn
+  simpa only [nxt, prv, Equiv.apply_symm_apply] using congrArg nxt h
 
 private theorem torusEndpointX0 (hN : Even N) (hM : Even M)
     (v : Fin N × Fin M) :
@@ -84,13 +63,12 @@ private theorem torusEndpointY1 (hN : Even N) (hM : Even M)
 
 private theorem torusEndpoints_ne (hN : Even N) (hM : Even M)
     (hN4 : 4 ≤ N) (v : Fin N × Fin M) :
-    faceEndpoint hN hM true v false ≠ faceEndpoint hN hM true v true := by
-  intro h
+    faceEndpoint hN hM true v false ≠ faceEndpoint hN hM true v true := fun h => by
   have hx := congrArg (fun z : FaceVertex N M true => z.val.1) h
   rw [torusEndpointX0, torusEndpointX1] at hx
   cases hc : checker v <;> simp only [hc, Bool.false_eq_true, ite_true, ite_false] at hx
-  · exact (prv_ne_self_of_two_le (by omega) v.1) hx
-  · exact (prv_ne_self_of_two_le (by omega) v.1) hx.symm
+  · exact prv_ne_self_of_two_le (by omega) v.1 hx
+  · exact prv_ne_self_of_two_le (by omega) v.1 hx.symm
 
 private theorem torusEndpointPair_injective (hN : Even N) (hM : Even M)
     (hN4 : 4 ≤ N) (hM4 : 4 ≤ M) (v w : Fin N × Fin M)
@@ -102,51 +80,24 @@ private theorem torusEndpointPair_injective (hN : Even N) (hM : Even M)
   · have h00x := congrArg (fun z : FaceVertex N M true => z.val.1) h00
     have h11x := congrArg (fun z : FaceVertex N M true => z.val.1) h11
     have h00y := congrArg (fun z : FaceVertex N M true => z.val.2) h00
-    have h11y := congrArg (fun z : FaceVertex N M true => z.val.2) h11
-    simp only [torusEndpointX0, torusEndpointX1, torusEndpointY0,
-      torusEndpointY1] at h00x h11x h00y h11y
+    simp only [torusEndpointX0, torusEndpointX1, torusEndpointY0] at h00x h11x h00y
     cases hv : checker v <;> cases hw : checker w <;>
-      simp only [hv, hw, Bool.false_eq_true, ite_true, ite_false] at h00x h11x h00y h11y
+      simp only [hv, hw, Bool.false_eq_true, ite_true, ite_false] at h00x h11x
     · exact Prod.ext (prv_injective v.1 w.1 h00x) h00y
-    · have hcycle : prv (prv v.1) = v.1 := by
-        calc
-          prv (prv v.1) = prv w.1 := congrArg prv h00x
-          _ = v.1 := h11x.symm
-      exact (prv_prv_ne_self_of_three_le (by omega) v.1 hcycle).elim
-    · have hcycle : prv (prv v.1) = v.1 := by
-        calc
-          prv (prv v.1) = prv w.1 := congrArg prv h11x
-          _ = v.1 := h00x.symm
-      exact (prv_prv_ne_self_of_three_le (by omega) v.1 hcycle).elim
+    · exact (prv_prv_ne_self_of_three_le (by omega) v.1 ((congrArg prv h00x).trans h11x.symm)).elim
+    · exact (prv_prv_ne_self_of_three_le (by omega) v.1 ((congrArg prv h11x).trans h00x.symm)).elim
     · exact Prod.ext h00x h00y
   · have h01x := congrArg (fun z : FaceVertex N M true => z.val.1) h01
     have h10x := congrArg (fun z : FaceVertex N M true => z.val.1) h10
     have h01y := congrArg (fun z : FaceVertex N M true => z.val.2) h01
     have h10y := congrArg (fun z : FaceVertex N M true => z.val.2) h10
-    simp only [torusEndpointX0, torusEndpointX1, torusEndpointY0,
-      torusEndpointY1] at h01x h10x h01y h10y
+    simp only [torusEndpointX0, torusEndpointX1, torusEndpointY0, torusEndpointY1] at h01x h10x h01y h10y
     cases hv : checker v <;> cases hw : checker w <;>
       simp only [hv, hw, Bool.false_eq_true, ite_true, ite_false] at h01x h10x h01y h10y
-    · have hcycle : prv (prv v.1) = v.1 := by
-        calc
-          prv (prv v.1) = prv w.1 := congrArg prv h01x
-          _ = v.1 := h10x.symm
-      exact (prv_prv_ne_self_of_three_le (by omega) v.1 hcycle).elim
-    · have hcycle : prv (prv v.2) = v.2 := by
-        calc
-          prv (prv v.2) = prv w.2 := congrArg prv h10y
-          _ = v.2 := h01y.symm
-      exact (prv_prv_ne_self_of_three_le (by omega) v.2 hcycle).elim
-    · have hcycle : prv (prv v.2) = v.2 := by
-        calc
-          prv (prv v.2) = prv w.2 := congrArg prv h10y
-          _ = v.2 := h01y.symm
-      exact (prv_prv_ne_self_of_three_le (by omega) v.2 hcycle).elim
-    · have hcycle : prv (prv v.1) = v.1 := by
-        calc
-          prv (prv v.1) = prv w.1 := congrArg prv h10x
-          _ = v.1 := h01x.symm
-      exact (prv_prv_ne_self_of_three_le (by omega) v.1 hcycle).elim
+    · exact (prv_prv_ne_self_of_three_le (by omega) v.1 ((congrArg prv h01x).trans h10x.symm)).elim
+    · exact (prv_prv_ne_self_of_three_le (by omega) v.2 ((congrArg prv h10y).trans h01y.symm)).elim
+    · exact (prv_prv_ne_self_of_three_le (by omega) v.2 ((congrArg prv h10y).trans h01y.symm)).elim
+    · exact (prv_prv_ne_self_of_three_le (by omega) v.1 ((congrArg prv h10x).trans h01x.symm)).elim
 
 /-- The indexed medial site embeds as a simple edge of the primal diamond graph. -/
 def torusIndexedEdgeEmbedding (hN : Even N) (hM : Even M)
@@ -155,29 +106,21 @@ def torusIndexedEdgeEmbedding (hN : Even N) (hM : Even M)
   toFun v := ⟨Sym2.mk (faceEndpoint hN hM true v false)
       (faceEndpoint hN hM true v true), by
     rw [fullDiamondGraph, diamondOpenGraph, SimpleGraph.edgeSet_fromEdgeSet]
-    refine ⟨⟨v, rfl, rfl⟩, ?_⟩
-    intro hd
-    simp only [Sym2.mem_diagSet, Sym2.mk_isDiag_iff] at hd
-    exact torusEndpoints_ne hN hM hN4 v hd
-  ⟩
+    exact ⟨⟨v, rfl, rfl⟩, fun hd => torusEndpoints_ne hN hM hN4 v (Sym2.mk_isDiag_iff.mp hd)⟩⟩
   inj' := by
     intro v w hvw
-    exact torusEndpointPair_injective hN hM hN4 hM4 v w
-      (congrArg Subtype.val hvw)
+    exact torusEndpointPair_injective hN hM hN4 hM4 v w (congrArg Subtype.val hvw)
 
 /-- On periods at least four, every simple primal diamond edge has a unique
 indexed medial site. -/
 noncomputable def torusIndexedEdgeEquiv (hN : Even N) (hM : Even M)
     (hN4 : 4 ≤ N) (hM4 : 4 ≤ M) :
     (Fin N × Fin M) ≃ (fullDiamondGraph hN hM).edgeSet :=
-  Equiv.ofBijective (torusIndexedEdgeEmbedding hN hM hN4 hM4) ⟨
-    (torusIndexedEdgeEmbedding hN hM hN4 hM4).injective,
-    by
-      intro e
+  Equiv.ofBijective (torusIndexedEdgeEmbedding hN hM hN4 hM4)
+    ⟨(torusIndexedEdgeEmbedding hN hM hN4 hM4).injective, fun e => by
       have he := e.property
-      simp only [fullDiamondGraph, diamondOpenGraph,
-        SimpleGraph.edgeSet_fromEdgeSet] at he
-      rcases he.1 with ⟨v, hv, hpair⟩
+      simp only [fullDiamondGraph, diamondOpenGraph, SimpleGraph.edgeSet_fromEdgeSet] at he
+      rcases he.1 with ⟨v, _, hpair⟩
       exact ⟨v, Subtype.ext hpair.symm⟩⟩
 
 def indexOpenSet (A : RCConfig N M) : Finset (Fin N × Fin M) :=
@@ -186,27 +129,15 @@ def indexOpenSet (A : RCConfig N M) : Finset (Fin N × Fin M) :=
 def indexConfigurationEquiv (N M : ℕ) :
     RCConfig N M ≃ Finset (Fin N × Fin M) where
   toFun := indexOpenSet
-  invFun := fun s v => decide (v ∈ s)
-  left_inv := by
-    intro A
-    funext v
-    simp [indexOpenSet]
-  right_inv := by
-    intro s
-    ext v
-    simp [indexOpenSet]
+  invFun s v := decide (v ∈ s)
+  left_inv A := by funext v; simp [indexOpenSet]
+  right_inv s := by ext v; simp [indexOpenSet]
 
 def finsetEquivOfEquiv {α β : Type*} (e : α ≃ β) : Finset α ≃ Finset β where
-  toFun := fun s => s.map e.toEmbedding
-  invFun := fun s => s.map e.symm.toEmbedding
-  left_inv := by
-    intro s
-    ext a
-    simp
-  right_inv := by
-    intro s
-    ext b
-    simp
+  toFun s := s.map e.toEmbedding
+  invFun s := s.map e.symm.toEmbedding
+  left_inv s := by ext; simp
+  right_inv s := by ext; simp
 
 /-- The full indexed torus configuration is exactly a finite-graph edge set
 once both periods are at least four. -/
@@ -242,18 +173,9 @@ theorem simpleConfiguration_eq_torusRCConfigurationEquiv
       Sym2.mk (faceEndpoint hN hM true w false) (faceEndpoint hN hM true w true)) ↔
     e ∈ torusRCConfigurationEquiv hN hM hN4 hM4 A
   rw [← hev]
-  constructor
-  · rintro ⟨w, hw, hpair⟩
-    have hwe : torusIndexedEdgeEmbedding hN hM hN4 hM4 w =
-        torusIndexedEdgeEmbedding hN hM hN4 hM4 v := by
-      apply Subtype.ext
-      exact hpair.symm
-    have : w = v := (torusIndexedEdgeEmbedding hN hM hN4 hM4).injective hwe
-    subst w
-    exact (mem_torusRCConfigurationEquiv hN hM hN4 hM4 A v).2 hw
-  · intro he
-    have hv := (mem_torusRCConfigurationEquiv hN hM hN4 hM4 A v).1 he
-    exact ⟨v, hv, rfl⟩
+  refine ⟨fun ⟨w, hw, hpair⟩ => ?_, fun he => ⟨v, (mem_torusRCConfigurationEquiv hN hM hN4 hM4 A v).1 he, rfl⟩⟩
+  cases (torusIndexedEdgeEmbedding hN hM hN4 hM4).injective (Subtype.ext hpair.symm)
+  exact (mem_torusRCConfigurationEquiv hN hM hN4 hM4 A v).2 hw
 
 noncomputable def torusRCFKParameters (q : Set.Ici (1 : ℝ)) : FK.Parameters :=
   ⟨q.val, q.property,
@@ -284,26 +206,13 @@ theorem torusRCWeight_eq_fk_weight (hN : Even N) (hM : Even M)
       FK.weight (fullDiamondGraph hN hM) (torusRCFKParameters q)
         (FK.BoundaryCondition.free ∅)
         (torusRCConfigurationEquiv hN hM hN4 hM4 A) := by
-  rw [Torus.torusRCWeight, FK.weight]
-  have hcomp : clusterCount hN hM true A =
-      FK.componentCount (fullDiamondGraph hN hM) (FK.BoundaryCondition.free ∅)
-        (torusRCConfigurationEquiv hN hM hN4 hM4 A) := by
-    rw [clusterCount_eq_componentCount,
-      simpleConfiguration_eq_torusRCConfigurationEquiv hN hM hN4 hM4 A]
-  have hopen := torusRCConfigurationEquiv_card hN hM hN4 hM4 A
-  have htotal := torusIndexedEdge_card hN hM hN4 hM4
-  have hclosed :
-      Nat.card (fullDiamondGraph hN hM).edgeSet -
-          (torusRCConfigurationEquiv hN hM hN4 hM4 A).card = closedCount A := by
-    rw [Nat.card_eq_fintype_card, htotal, hopen]
-    have hsplit := openCount_add_closedCount A
-    omega
-  have hclosed' : Nat.card (fullDiamondGraph hN hM).edgeSet - openCount A =
-      closedCount A := by
-    rw [Nat.card_eq_fintype_card, htotal]
-    have hsplit := openCount_add_closedCount A
-    omega
-  rw [hcomp, hopen, hclosed']
+  rw [Torus.torusRCWeight, FK.weight,
+    clusterCount_eq_componentCount,
+    simpleConfiguration_eq_torusRCConfigurationEquiv hN hM hN4 hM4 A,
+    torusRCConfigurationEquiv_card hN hM hN4 hM4 A,
+    show Nat.card (fullDiamondGraph hN hM).edgeSet - openCount A = closedCount A by
+      rw [Nat.card_eq_fintype_card, torusIndexedEdge_card hN hM hN4 hM4]
+      have := openCount_add_closedCount A; omega]
   simp [torusRCFKParameters, FK.edgeParameter]
 
 end PottsDiscontinuity.TorusRC

@@ -93,13 +93,10 @@ private theorem fkLaw_measure_toReal_eq_expectation
       FiniteProbability.expectation (law G q ξ)
         (S.indicator (fun _ => (1 : ℝ))) := by
   rw [measure_toReal_eq_indicator_sum]
-  unfold FiniteProbability.expectation
-  apply Finset.sum_congr rfl
-  intro A hA
-  by_cases h : A ∈ S
-  · simp [Set.indicator, h, law_apply,
+  refine Finset.sum_congr rfl fun A _ => ?_
+  by_cases h : A ∈ S <;>
+    simp [Set.indicator, h, law_apply,
       ENNReal.toReal_ofReal (configurationProbability_pos G q ξ A).le]
-  · simp [Set.indicator, h]
 
 private theorem rectangleFKEventProbability_eq_measure
     (hN : Even N) (hM : Even M) (q : Set.Ici (1 : ℝ))
@@ -107,13 +104,10 @@ private theorem rectangleFKEventProbability_eq_measure
     rectangleFKEventProbability hN hM q E =
       (measure (rectangleBaseGraph hN hM) (rectangleFKParameters q)
         (BoundaryCondition.free ∅) E).toReal := by
-  rw [measure_toReal_eq_indicator_sum]
-  unfold rectangleFKEventProbability rectangleFKEventWeight
-  rw [Finset.sum_div]
-  apply Finset.sum_congr rfl
-  intro C hC
-  by_cases h : C ∈ E <;> simp [Set.indicator, h, configurationProbability,
-    mul_comm]
+  rw [measure_toReal_eq_indicator_sum, rectangleFKEventProbability, rectangleFKEventWeight,
+    Finset.sum_div]
+  refine Finset.sum_congr rfl fun C _ => ?_
+  by_cases h : C ∈ E <;> simp [Set.indicator, h, configurationProbability, mul_comm]
 
 /-- Conditional one-step exploration bound. The exact outside state `K` may
 have arbitrary closed edges; its open edges must stay inside the explored set
@@ -155,65 +149,35 @@ theorem rectangleConditionalRootCrossing_le_freeOneArm
   let θ := rectangleFKParameters q
   let E := rectangleComplementRootCrossingEvent hN hM U u huU
   let T := rectangleRootCrossingEvent hN hM u
-  let R := subgraphRemovedEdges (I.map f) G
-  have hE : IsUpperSet E := by
-    exact rectangleComplementRootCrossingEvent_isUpperSet hN hM U u huU
-  have hpart :
-      (isolatedExtensionPullbackBoundary f (frozenBoundary
-        (BoundaryCondition.free ∅) K.val)).partition ≤
-        (BoundaryCondition.free ∅).partition := by
-    exact isolatedExtensionPullbackFrozenFree_of_openEdges_inside
-      f hIG K U hK (fun x => x.property)
+  have hE : IsUpperSet E := rectangleComplementRootCrossingEvent_isUpperSet hN hM U u huU
   have hconditional := filteredConditionalEmbeddedEvent_measure_le_boundary
     I G f hIG θ (BoundaryCondition.free ∅) K (BoundaryCondition.free ∅)
-    hpart E hE
+    (isolatedExtensionPullbackFrozenFree_of_openEdges_inside f hIG K U hK (fun x => x.property))
+    E hE
   have hTcontains (A : Configuration G) :
       embeddedConfigurationRestriction I G f hIG A ∈ E → A ∈ T := by
-    intro hA
-    rcases hA with ⟨v, hv, hconn⟩
-    let D := embeddedConfigurationEmbedding I G f hIG
-      (embeddedConfigurationRestriction I G f hIG A)
-    have hDA : D ⊆ A := embeddedConfigurationEmbedding_restriction_subset I G f hIG A
-    have hconnG : ActualConnected G D (f ⟨u, huU⟩) (f v) :=
-      actualConnected_embeddedConfigurationEmbedding I G f hIG _ _ _ hconn
-    have hconnA : ActualConnected G A (f ⟨u, huU⟩) (f v) :=
-      actualConnected_mono hDA hconnG
-    have hfu : f ⟨u, huU⟩ = u := rfl
-    have hconnA' : ActualConnected G A u (f v) := by
-      rw [← hfu]
-      exact hconnA
-    exact ⟨f v, hv, hconnA'⟩
+    rintro ⟨v, hv, hconn⟩
+    exact ⟨f v, hv, actualConnected_mono (embeddedConfigurationEmbedding_restriction_subset I G f hIG A)
+      (actualConnected_embeddedConfigurationEmbedding I G f hIG _ _ _ hconn)⟩
   have hfreeCompare : (measure I θ (BoundaryCondition.free ∅) E).toReal ≤
       (measure G θ (BoundaryCondition.free ∅) T).toReal := by
     rw [fkLaw_measure_toReal_eq_expectation (G := I) θ (BoundaryCondition.free ∅) E,
       fkLaw_measure_toReal_eq_expectation (G := G) θ (BoundaryCondition.free ∅) T]
     let ind := E.indicator (fun _ => (1 : ℝ))
-    have hind0 : ∀ A, 0 ≤ ind A := by
-      intro A
-      by_cases hA : A ∈ E <;> simp [ind, hA]
-    have hind : Monotone ind := by
-      intro A B hAB
+    have hind0 (A) : 0 ≤ ind A := by by_cases hA : A ∈ E <;> simp [ind, hA]
+    have hind : Monotone ind := fun A B hAB => by
       by_cases hA : A ∈ E
-      · have hB := hE hAB hA
-        simp [ind, hA, hB]
-      · simp only [ind, Set.indicator_of_notMem hA]
-        exact hind0 B
+      · simp [ind, hA, hE hAB hA]
+      · simp [ind, hA, hind0 B]
     have hcmp := embedded_free_marginal_comparison I G f hIG θ ∅ ∅ ind hind0 hind
     rw [FiniteProbability.expectation_map] at hcmp
-    have hpoint (A : Configuration G) :
-        ind (embeddedConfigurationRestriction I G f hIG A) ≤
-          T.indicator (fun _ => (1 : ℝ)) A := by
-      by_cases hA : embeddedConfigurationRestriction I G f hIG A ∈ E
-      · have hTA := hTcontains A hA
-        simp [ind, Set.indicator, hA, hTA]
-      · by_cases hTA : A ∈ T <;> simp [ind, Set.indicator, hA, hTA]
-    exact hcmp.trans (FiniteProbability.expectation_mono _ _ _ hpoint)
-  have hroot : (measure G θ (BoundaryCondition.free ∅) T).toReal ≤
-      (((Classical.choose (freeBoxLimit_existsUnique θ))
-        (oneArmEvent (N / 2 - 1)) : NNReal) : ℝ) := by
-    rw [← rectangleFKEventProbability_eq_measure hN hM q T]
-    exact rectangleFKProbability_rootCrossing_le_freeOneArm hN hM u hu q
-  simpa [G, I, f, hIG, θ, E, T, R] using hconditional.trans (hfreeCompare.trans hroot)
+    refine hcmp.trans <| FiniteProbability.expectation_mono _ _ _ fun A => ?_
+    by_cases hA : embeddedConfigurationRestriction I G f hIG A ∈ E
+    · simp [ind, Set.indicator, hA, hTcontains A hA]
+    · by_cases hTA : A ∈ T <;> simp [ind, Set.indicator, hA, hTA]
+  have hroot := rectangleFKProbability_rootCrossing_le_freeOneArm hN hM u hu q
+  rw [rectangleFKEventProbability_eq_measure hN hM q T] at hroot
+  simpa [G, I, f, hIG, θ, E, T] using hconditional.trans (hfreeCompare.trans hroot)
 
 end
 end PottsDiscontinuity.TorusLoops

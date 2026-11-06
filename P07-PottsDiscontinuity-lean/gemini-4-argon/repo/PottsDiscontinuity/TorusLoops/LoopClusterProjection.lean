@@ -96,38 +96,30 @@ private theorem loopSum_add (ω : ArrowConfig N M) (s : Smoothing N M)
     (h : CompatibleConfig ω s) (f g : Dart N M → ℤ) (q : DirectedLoop ω s h) :
     loopSum ω s h (fun d => f d + g d) q =
       loopSum ω s h f q + loopSum ω s h g q := by
-  classical
-  unfold loopSum
-  rw [Finset.sum_add_distrib]
+  unfold loopSum; rw [Finset.sum_add_distrib]
 
 theorem loop_horizontal_arrivingRibbon (hN : Even N) (hM : Even M)
     (A : RCConfig N M) (q : Loop hN hM (rcSmoothing A)) :
     loopSum _ _ (checkerArrows_compatible hN hM (rcSmoothing A)) horizontalIncrement q =
       loopSum _ _ (checkerArrows_compatible hN hM (rcSmoothing A)) (arrivingRibbonX A) q := by
-  have he : loopSum _ _ (checkerArrows_compatible hN hM (rcSmoothing A))
-      horizontalIncrement q =
+  rw [show loopSum _ _ (checkerArrows_compatible hN hM (rcSmoothing A)) horizontalIncrement q =
       loopSum _ _ (checkerArrows_compatible hN hM (rcSmoothing A))
         (fun d => arrivingRibbonX A (stepPerm (rcSmoothing A) d) +
-          primalCornerOffsetX d - primalCornerOffsetX (stepPerm (rcSmoothing A) d)) q := by
-    classical
-    unfold loopSum
-    exact Finset.sum_congr rfl (fun d _ => horizontalIncrement_ribbon hN hM A d)
-  rw [he, loopSum_sub, loopSum_add, loopSum_step, loopSum_step]
+          primalCornerOffsetX d - primalCornerOffsetX (stepPerm (rcSmoothing A) d)) q from
+    Finset.sum_congr rfl fun d _ => horizontalIncrement_ribbon hN hM A d,
+    loopSum_sub, loopSum_add, loopSum_step, loopSum_step]
   omega
 
 theorem loop_vertical_arrivingRibbon (hN : Even N) (hM : Even M)
     (A : RCConfig N M) (q : Loop hN hM (rcSmoothing A)) :
     loopSum _ _ (checkerArrows_compatible hN hM (rcSmoothing A)) verticalIncrement q =
       loopSum _ _ (checkerArrows_compatible hN hM (rcSmoothing A)) (arrivingRibbonY A) q := by
-  have he : loopSum _ _ (checkerArrows_compatible hN hM (rcSmoothing A))
-      verticalIncrement q =
+  rw [show loopSum _ _ (checkerArrows_compatible hN hM (rcSmoothing A)) verticalIncrement q =
       loopSum _ _ (checkerArrows_compatible hN hM (rcSmoothing A))
         (fun d => arrivingRibbonY A (stepPerm (rcSmoothing A) d) +
-          primalCornerOffsetY d - primalCornerOffsetY (stepPerm (rcSmoothing A) d)) q := by
-    classical
-    unfold loopSum
-    exact Finset.sum_congr rfl (fun d _ => verticalIncrement_ribbon hN hM A d)
-  rw [he, loopSum_sub, loopSum_add, loopSum_step, loopSum_step]
+          primalCornerOffsetY d - primalCornerOffsetY (stepPerm (rcSmoothing A) d)) q from
+    Finset.sum_congr rfl fun d _ => verticalIncrement_ribbon hN hM A d,
+    loopSum_sub, loopSum_add, loopSum_step, loopSum_step]
   omega
 
 /-- Characteristic function of a specified medial loop on the ribbon boundaries. -/
@@ -136,13 +128,10 @@ noncomputable def loopBoundaryFunction (hN : Even N) (hM : Even M)
     RibbonBoundaryComponent hN hM A → ℚ := by
   classical
   refine Quotient.lift (fun d => if directedLoopOf _ _
-      (checkerArrows_compatible hN hM (rcSmoothing A)) d = q then 1 else 0) ?_
-  intro d e h
-  have he : directedLoopOf _ _ (checkerArrows_compatible hN hM (rcSmoothing A)) d =
-      directedLoopOf _ _ (checkerArrows_compatible hN hM (rcSmoothing A)) e := by
-    apply Quotient.sound
-    rwa [ribbonBoundary_eq_directedStep] at h
-  rw [he]
+      (checkerArrows_compatible hN hM (rcSmoothing A)) d = q then 1 else 0) fun d e h => ?_
+  rw [show directedLoopOf _ _ (checkerArrows_compatible hN hM (rcSmoothing A)) d =
+      directedLoopOf _ _ (checkerArrows_compatible hN hM (rcSmoothing A)) e from
+    Quotient.sound (by rwa [ribbonBoundary_eq_directedStep] at h)]
 
 open scoped Classical in
 @[simp] theorem loopBoundaryFunction_corner (hN : Even N) (hM : Even M)
@@ -177,15 +166,13 @@ private theorem sum_arrivingRibbonX (hN : Even N) (hM : Even M) (A : RCConfig N 
         f (ribbonEndEquiv hN hM (e.val, false)))) =
       ∑ d : DirectedDart (checkerArrows N M), f d * (arrivingRibbonX A d.val : ℚ) := by
   classical
-  rw [← Finset.sum_subtype (univ.filter fun v => A v = true)
-    (by intro v; simp) (fun v => (if checker v then (-1 : ℚ) else 1) *
-      (f (ribbonEndEquiv hN hM (v, true)) - f (ribbonEndEquiv hN hM (v, false)))),
+  rw [← Finset.sum_subtype (univ.filter fun v => A v = true) (by simp)
+      (fun v => (if checker v then (-1 : ℚ) else 1) *
+        (f (ribbonEndEquiv hN hM (v, true)) - f (ribbonEndEquiv hN hM (v, false)))),
     Finset.sum_filter, ← (ribbonEndEquiv hN hM).sum_comp]
   conv_rhs => rw [Fintype.sum_prod_type]
-  apply Finset.sum_congr rfl
-  intro v _
-  cases ha : A v <;> cases hc : checker v <;>
-    simp [arrivingRibbonX_end, ha, hc] <;> ring
+  refine Finset.sum_congr rfl fun v _ => ?_
+  cases ha : A v <;> cases hc : checker v <;> simp [arrivingRibbonX_end, ha, hc] <;> ring
 
 private theorem sum_arrivingRibbonY (hN : Even N) (hM : Even M) (A : RCConfig N M)
     (f : DirectedDart (checkerArrows N M) → ℚ) :
@@ -194,15 +181,13 @@ private theorem sum_arrivingRibbonY (hN : Even N) (hM : Even M) (A : RCConfig N 
         f (ribbonEndEquiv hN hM (e.val, false)))) =
       ∑ d : DirectedDart (checkerArrows N M), f d * (arrivingRibbonY A d.val : ℚ) := by
   classical
-  rw [← Finset.sum_subtype (univ.filter fun v => A v = true)
-    (by intro v; simp) (fun v => (-1 : ℚ) *
-      (f (ribbonEndEquiv hN hM (v, true)) - f (ribbonEndEquiv hN hM (v, false)))),
+  rw [← Finset.sum_subtype (univ.filter fun v => A v = true) (by simp)
+      (fun v => (-1 : ℚ) *
+        (f (ribbonEndEquiv hN hM (v, true)) - f (ribbonEndEquiv hN hM (v, false)))),
     Finset.sum_filter, ← (ribbonEndEquiv hN hM).sum_comp]
   conv_rhs => rw [Fintype.sum_prod_type]
-  apply Finset.sum_congr rfl
-  intro v _
-  cases ha : A v <;>
-    simp [arrivingRibbonY_end, ha]; ring
+  refine Finset.sum_congr rfl fun v _ => ?_
+  cases ha : A v <;> simp [arrivingRibbonY_end, ha]; ring
 
 private theorem sum_loopBoundaryFunction (hN : Even N) (hM : Even M)
     (A : RCConfig N M) (q : Loop hN hM (rcSmoothing A)) (g : Dart N M → ℤ) :
@@ -212,22 +197,14 @@ private theorem sum_loopBoundaryFunction (hN : Even N) (hM : Even M)
   classical
   unfold loopSum
   rw [Int.cast_sum, Finset.sum_filter]
-  apply Finset.sum_congr rfl
-  intro d _
-  by_cases hd : directedLoopOf _ _ (checkerArrows_compatible hN hM (rcSmoothing A)) d = q
-  · simp [hd]
-  · simp [hd]
+  refine Finset.sum_congr rfl fun d _ => ?_
+  by_cases hd : directedLoopOf _ _ (checkerArrows_compatible hN hM (rcSmoothing A)) d = q <;> simp [hd]
 
 /-- The projected conserved primal chain carries exactly the horizontal medial displacement. -/
 theorem loopBoundaryCycle_displacement_x (hN : Even N) (hM : Even M)
     (A : RCConfig N M) (q : Loop hN hM (rcSmoothing A)) :
     diamondHorizontalDisplacement A (loopBoundaryCycle hN hM A q).val =
       (loopSum _ _ (checkerArrows_compatible hN hM (rcSmoothing A)) horizontalIncrement q : ℚ) := by
-  change (∑ e : OpenDiamondEdge A, (if checker e.val then (-1 : ℚ) else 1) *
-    (loopBoundaryFunction hN hM A q (ribbonBoundaryOf hN hM A
-        (ribbonEndEquiv hN hM (e.val, true))) -
-      loopBoundaryFunction hN hM A q (ribbonBoundaryOf hN hM A
-        (ribbonEndEquiv hN hM (e.val, false))))) = _
   rw [loop_horizontal_arrivingRibbon]
   exact (sum_arrivingRibbonX hN hM A
     (fun d => loopBoundaryFunction hN hM A q (ribbonBoundaryOf hN hM A d))).trans
@@ -238,16 +215,8 @@ theorem loopBoundaryCycle_displacement_y (hN : Even N) (hM : Even M)
     (A : RCConfig N M) (q : Loop hN hM (rcSmoothing A)) :
     diamondVerticalDisplacement A (loopBoundaryCycle hN hM A q).val =
       (loopSum _ _ (checkerArrows_compatible hN hM (rcSmoothing A)) verticalIncrement q : ℚ) := by
-  change -(∑ e : OpenDiamondEdge A,
-    (loopBoundaryFunction hN hM A q (ribbonBoundaryOf hN hM A
-        (ribbonEndEquiv hN hM (e.val, true))) -
-      loopBoundaryFunction hN hM A q (ribbonBoundaryOf hN hM A
-        (ribbonEndEquiv hN hM (e.val, false))))) = _
-  rw [loop_vertical_arrivingRibbon]
-  simpa only [neg_one_mul, Finset.sum_neg_distrib] using
-    (sum_arrivingRibbonY hN hM A
-      (fun d => loopBoundaryFunction hN hM A q (ribbonBoundaryOf hN hM A d))).trans
-        (sum_loopBoundaryFunction hN hM A q (arrivingRibbonY A))
+  rw [loop_vertical_arrivingRibbon, ← sum_loopBoundaryFunction, ← sum_arrivingRibbonY hN hM]
+  simp [diamondVerticalDisplacement, loopBoundaryCycle, ribbonFaceBoundary]
 
 theorem loopPrimalCluster_end (hN : Even N) (hM : Even M) (A : RCConfig N M)
     (e : OpenDiamondEdge A) (b : Bool) :
@@ -265,10 +234,8 @@ theorem loopBoundaryCycle_supported (hN : Even N) (hM : Even M)
   intro e he
   have hn (b : Bool) : directedLoopOf _ _
       (checkerArrows_compatible hN hM (rcSmoothing A))
-      (ribbonEndEquiv hN hM (e.val, b)) ≠ q := by
-    intro hq
-    apply he
-    rw [← loopPrimalCluster_end hN hM A e b, hq]
+      (ribbonEndEquiv hN hM (e.val, b)) ≠ q :=
+    fun hq => he (by rw [← loopPrimalCluster_end hN hM A e b, hq])
   change loopBoundaryFunction hN hM A q
       (ribbonBoundaryOf hN hM A (ribbonEndEquiv hN hM (e.val, true))) -
     loopBoundaryFunction hN hM A q

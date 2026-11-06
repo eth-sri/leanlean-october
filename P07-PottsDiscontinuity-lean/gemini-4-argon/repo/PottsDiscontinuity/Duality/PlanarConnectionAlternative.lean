@@ -4,7 +4,8 @@ public import Mathlib.Analysis.SpecialFunctions.Complex.Circle
 public import Mathlib.Topology.Homotopy.Lifting
 public import Mathlib.Topology.Homotopy.Path
 public import PottsDiscontinuity.Duality.ConnectionEvents
-public import PottsDiscontinuity.Duality.CrossingDuality
+public import PottsDiscontinuity.Duality.FiniteDuality
+public import PottsDiscontinuity.Duality.RectangleDualCrossing
 public import PottsDiscontinuity.Duality.DualConfigurationBridge
 
 /-! The rectangle crossing alternative on the actual whole-plane configuration
@@ -127,7 +128,7 @@ theorem planar_long_connection_alternative (ω : LatticeConfiguration)
         (fun e he => (mem_rectangleRestriction a n n ω e).1 he)
       exact hconn.map f
   · right
-    obtain ⟨b, hb, t, ht, hconn⟩ := (rectangle_crossing_duality a n n A).1 hc
+    obtain ⟨b, hb, t, ht, hconn⟩ := rectangleDualBottomTop_of_no_primal_horizontal_crossing a n n A hc
     refine ⟨b.val, b.property, t.val, t.property, ?_, ?_⟩
     · obtain ⟨i, hi, rfl⟩ := Finset.mem_image.1 hb
       obtain ⟨j, hj, rfl⟩ := Finset.mem_image.1 ht
@@ -139,12 +140,14 @@ theorem planar_long_connection_alternative (ω : LatticeConfiguration)
         (a.1 + ((min i n : ℕ) : ℤ)))
       omega
     · let B := rectanglePrimalDualConfigurationEquiv a n n A
+      have hB : B = rectangleDualConfiguration a n n A := rfl
       let f := sampledOpenGraphHom (rectangleDualGraph a n n)
         (rectangleDualEdgeToSquareEdge a n n) (fun _ => rfl) B
         (wholePlaneDualConfigurationHomeomorph ω) (by
           intro e he
           rw [dual_rectangleRestriction_at a n n ω e, decide_eq_true_eq]
           exact he)
+      rw [← hB] at hconn
       exact hconn.map f
 
 end

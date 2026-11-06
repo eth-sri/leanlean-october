@@ -36,20 +36,8 @@ def ghostOpenGraph (V : Finset (ℤ × ℤ)) (ω : LiteralBond V → Bool) :
           (FK.boolConfigurationEquiv _ (fun e => ω (.inl e)))).Adj x y
     | some x, none => ∃ hx : x.val ∈ vertexBoundary V, ω (.inr ⟨x, hx⟩) = true
     | none, some x => ∃ hx : x.val ∈ vertexBoundary V, ω (.inr ⟨x, hx⟩) = true
-  symm := by
-    constructor
-    intro x y h
-    cases x <;> cases y
-    · exact h
-    · exact h
-    · exact h
-    · exact h.symm
-  loopless := by
-    constructor
-    intro x h
-    cases x
-    · exact h
-    · exact SimpleGraph.irrefl _ h
+  symm := ⟨fun x y h => by cases x <;> cases y <;> first | exact h | exact h.symm⟩
+  loopless := ⟨fun x h => by cases x <;> [exact h; exact SimpleGraph.irrefl _ h]⟩
 
 /-- The positive boundary index as an allowed Potts colour. -/
 def boundaryColor (q : ℕ) (i : Fin (q + 1)) (hi : 1 ≤ (i : ℕ)) : Set.Icc 1 q :=
@@ -71,38 +59,20 @@ theorem literalAgreement_iff_ghost (q : ℕ) (V : Finset (ℤ × ℤ))
   · intro h
     have hI := (bool_edgeAgreement_iff (squareLattice.induce (V : Set (ℤ × ℤ)))
       σ (fun e => ω (.inl e))).mp (fun e he => h (.inl e) he)
-    apply FK.reachableSetoid_le_of_adj
-    intro x y hxy
-    cases x with
-    | none =>
-      cases y with
-      | none => exact hxy.elim
-      | some y =>
-        obtain ⟨hy, he⟩ := hxy
-        apply Subtype.ext
-        exact (h (.inr ⟨y, hy⟩) he).symm
-    | some x =>
-      cases y with
-      | none =>
-        obtain ⟨hx, he⟩ := hxy
-        apply Subtype.ext
-        exact h (.inr ⟨x, hx⟩) he
-      | some y =>
-        exact hI (show (FK.openGraph (squareLattice.induce (V : Set (ℤ × ℤ)))
-          (FK.boolConfigurationEquiv _ (fun e => ω (.inl e)))).Adj x y from hxy).reachable
-  · intro h
-    have hI : (FK.openGraph (squareLattice.induce (V : Set (ℤ × ℤ)))
-        (FK.boolConfigurationEquiv _ (fun e => ω (.inl e)))).reachableSetoid ≤
-          Setoid.ker σ := by
-      apply FK.reachableSetoid_le_of_adj
-      intro x y hxy
-      exact h (show (ghostOpenGraph V ω).Adj (some x) (some y) from hxy).reachable
-    intro e he
+    apply FK.reachableSetoid_le_of_adj; intro x y hxy
+    cases x <;> cases y
+    · exact hxy.elim
+    · exact Subtype.ext (h (.inr ⟨_, hxy.1⟩) hxy.2).symm
+    · exact Subtype.ext (h (.inr ⟨_, hxy.1⟩) hxy.2)
+    · exact hI (SimpleGraph.Adj.reachable hxy)
+  · intro h e he
     cases e with
-    | inl e => exact (bool_edgeAgreement_iff _ σ (fun e => ω (.inl e))).mpr hI e he
+    | inl e =>
+      refine (bool_edgeAgreement_iff _ σ (fun e => ω (.inl e))).mpr ?_ e he
+      apply FK.reachableSetoid_le_of_adj; intro x y hxy
+      exact h (show (ghostOpenGraph V ω).Adj (some x) (some y) from hxy).reachable
     | inr x =>
-      have ha : (ghostOpenGraph V ω).Adj (some x.val) none := ⟨x.property, he⟩
-      exact congrArg Subtype.val (h ha.reachable)
+      exact congrArg Subtype.val (h (show (ghostOpenGraph V ω).Adj (some x.val) none from ⟨x.property, he⟩).reachable)
 
 /-- Compatible literal spins are exactly ghost-pinned component colourings. -/
 def literalColoringEquiv (q : ℕ) (V : Finset (ℤ × ℤ))
@@ -111,24 +81,14 @@ def literalColoringEquiv (q : ℕ) (V : Finset (ℤ × ℤ))
       PinnedClusterColoring (ghostOpenGraph V ω).reachableSetoid none (boundaryColor q i hi) where
   toFun σ := ⟨⟨ghostExtension (boundaryColor q i hi) σ.val,
     (literalAgreement_iff_ghost q V i hi σ.val ω).mp σ.property⟩, rfl⟩
-  invFun τ := ⟨fun x => τ.val.val (some x), by
-    apply (literalAgreement_iff_ghost q V i hi _ ω).mpr
-    have he : ghostExtension (boundaryColor q i hi) (fun x => τ.val.val (some x)) =
-        τ.val.val := by
-      funext x
-      cases x with
-      | none => exact τ.property.symm
-      | some x => rfl
-    rw [he]
+  invFun τ := ⟨fun x => τ.val.val (some x), (literalAgreement_iff_ghost q V i hi _ ω).mpr <| by
+    rw [show ghostExtension (boundaryColor q i hi) (fun x => τ.val.val (some x)) = τ.val.val by
+      funext x; cases x <;> [exact τ.property.symm; rfl]]
     exact τ.val.property⟩
-  left_inv σ := rfl
-  right_inv τ := by
-    apply Subtype.ext
-    apply Subtype.ext
-    funext x
-    cases x with
-    | none => exact τ.property.symm
-    | some x => rfl
+  left_inv _ := rfl
+  right_inv τ := Subtype.ext <| Subtype.ext <| funext fun
+    | none => τ.property.symm
+    | some _ => rfl
 
 /-- The ghost class is the only class whose colour is fixed. -/
 theorem card_literalAgreement (q : ℕ) (V : Finset (ℤ × ℤ))
@@ -170,8 +130,7 @@ theorem sum_literalJointWeight_spins (q : ℕ) (V : Finset (ℤ × ℤ))
     (β : ℝ) (i : Fin (q + 1)) (hi : 1 ≤ (i : ℕ)) (ω : LiteralBond V → Bool) :
     (∑ σ : SpinConfiguration q V, constraintJointWeight β (literalAgreement q V i) σ ω) =
       ghostRCWeight q V β ω := by
-  rw [sum_constraintJointWeight_spins, card_literalAgreement q V i hi, Nat.cast_pow]
-  rfl
+  rw [sum_constraintJointWeight_spins, card_literalAgreement q V i hi, Nat.cast_pow]; rfl
 
 theorem literalJointPartition_eq_ghost (q : ℕ) (V : Finset (ℤ × ℤ))
     (β : ℝ) (i : Fin (q + 1)) (hi : 1 ≤ (i : ℕ)) :
@@ -183,20 +142,15 @@ theorem literalJointPartition_eq_ghost (q : ℕ) (V : Finset (ℤ × ℤ))
 theorem ghostRCPartition_pos (q : ℕ) (hq : 2 ≤ q) (V : Finset (ℤ × ℤ)) (β : ℝ) :
     0 < ghostRCPartition q V β := by
   let : Nonempty (Set.Icc 1 q) := ⟨⟨1, le_rfl, by omega⟩⟩
-  let i : Fin (q + 1) := ⟨1, by omega⟩
-  rw [← literalJointPartition_eq_ghost q V β i (by exact le_rfl)]
+  rw [← literalJointPartition_eq_ghost q V β ⟨1, by omega⟩ le_rfl]
   exact constraintJointPartition_pos β _
 
 theorem ghostRCProbability_nonneg (q : ℕ) (hq : 2 ≤ q) (V : Finset (ℤ × ℤ))
     (β : ℝ) (hβ : 0 < β) (ω : LiteralBond V → Bool) :
-    0 ≤ ghostRCProbability q V β ω := by
-  apply div_nonneg _ (ghostRCPartition_pos q hq V β).le
-  apply mul_nonneg _ (by positivity)
-  apply Finset.prod_nonneg
-  intro e _
-  split_ifs
-  · exact (bondProbability_pos hβ).le
-  · exact (Real.exp_pos _).le
+    0 ≤ ghostRCProbability q V β ω :=
+  div_nonneg (mul_nonneg (Finset.prod_nonneg fun _ _ => by
+    split_ifs <;> [exact (bondProbability_pos hβ).le; exact (Real.exp_pos _).le]) (by positivity))
+    (ghostRCPartition_pos q hq V β).le
 
 theorem sum_ghostRCProbability (q : ℕ) (hq : 2 ≤ q) (V : Finset (ℤ × ℤ)) (β : ℝ) :
     ∑ ω : LiteralBond V → Bool, ghostRCProbability q V β ω = 1 := by
@@ -233,10 +187,7 @@ theorem literalJointProbability_eq_ghost_mul_coloring (q : ℕ) (hq : 2 ≤ q)
     literalJointPartition_eq_ghost q V β i hi, ghostRCProbability, ghostRCWeight,
     ghostColoringProbability]
   simp only [literalAgreement_iff_ghost q V i hi]
-  split_ifs
-  · simp only [mul_one]
-    field_simp
-  · simp
+  split_ifs <;> [ (simp only [mul_one]; field_simp); simp]
 
 /-- The frozen Potts probability is the ghost RC mixture of pinned cluster colours. -/
 theorem pottsProb_eq_ghostMixture (q : ℕ) (hq : 2 ≤ q) (V : Finset (ℤ × ℤ))
@@ -245,9 +196,8 @@ theorem pottsProb_eq_ghostMixture (q : ℕ) (hq : 2 ≤ q) (V : Finset (ℤ × �
       ∑ ω : LiteralBond V → Bool,
         ghostRCProbability q V β ω * ghostColoringProbability q V i hi ω σ := by
   rw [← literalJointProbability_spin_marginal q hq V β i σ]
-  apply Finset.sum_congr rfl
-  intro ω _
-  exact literalJointProbability_eq_ghost_mul_coloring q hq V β i hi σ ω
+  exact Finset.sum_congr rfl fun ω _ =>
+    literalJointProbability_eq_ghost_mul_coloring q hq V β i hi σ ω
 
 /-- Every spin event, including each prescribed finite cylinder, has the ghost
 cluster-colouring mixture formula for the exact frozen Hamiltonian. -/
@@ -259,14 +209,12 @@ theorem pottsProb_event_eq_ghostMixture (q : ℕ) (hq : 2 ≤ q)
         ∑ σ : SpinConfiguration q V,
           if σ ∈ s then ghostColoringProbability q V i hi ω σ else 0 := by
   simp_rw [pottsProb_eq_ghostMixture q hq V β i hi]
-  calc
-    _ = ∑ σ : SpinConfiguration q V, ∑ ω : LiteralBond V → Bool,
-        ghostRCProbability q V β ω *
-          (if σ ∈ s then ghostColoringProbability q V i hi ω σ else 0) := by
-      apply Finset.sum_congr rfl
-      intro σ _
-      by_cases hs : σ ∈ s <;> simp only [hs, ↓reduceIte, mul_zero, Finset.sum_const_zero]
-    _ = _ := by rw [Finset.sum_comm]; simp only [Finset.mul_sum]
+  rw [show (∑ σ : SpinConfiguration q V,
+      if σ ∈ s then ∑ ω, ghostRCProbability q V β ω * ghostColoringProbability q V i hi ω σ else 0) =
+    ∑ σ, ∑ ω, ghostRCProbability q V β ω * (if σ ∈ s then ghostColoringProbability q V i hi ω σ else 0) from
+    Finset.sum_congr rfl fun σ _ => by by_cases hs : σ ∈ s <;> simp [hs],
+    Finset.sum_comm]
+  simp only [Finset.mul_sum]
 
 @[simp] theorem literalJointLaw_apply (q : ℕ) (hq : 2 ≤ q) (V : Finset (ℤ × ℤ))
     (β : ℝ) (hβ : 0 < β) (i : Fin (q + 1))

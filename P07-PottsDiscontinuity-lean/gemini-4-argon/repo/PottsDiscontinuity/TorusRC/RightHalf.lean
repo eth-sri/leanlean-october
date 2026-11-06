@@ -26,17 +26,11 @@ theorem leftStrip_edge_index_range (hN : 0 < N) (hM : 0 < M)
     (huv : (liftedStripGraph hN hM A 0 (K : ℤ)).Adj u v) :
     1 ≤ (liftedEdgeIndex hN hM u v).1.val ∧
       (liftedEdgeIndex hN hM u v).1.val ≤ K := by
-  have hdist : |u.val.1 - v.val.1| = 1 := huv.1.1
-  have hne : u.val.1 ≠ v.val.1 := by
-    intro heq
-    rw [heq, sub_self, abs_zero] at hdist
-    norm_num at hdist
-  have hmax1 : 1 ≤ max u.val.1 v.val.1 := by
-    have hu := huv.2.2.1.1
-    have hv := huv.2.2.2.1
-    omega
-  have hmaxK : max u.val.1 v.val.1 ≤ (K : ℤ) :=
-    max_le huv.2.2.1.2 huv.2.2.2.2
+  have hne : u.val.1 ≠ v.val.1 := fun heq => by
+    have hdist : |u.val.1 - v.val.1| = 1 := huv.1.1
+    simp [heq] at hdist
+  have hu := huv.2.2.1
+  have hv := huv.2.2.2
   have hval : ((liftedEdgeIndex hN hM u v).1.val : ℤ) = max u.val.1 v.val.1 := by
     change ((periodicCoordinate hN (max u.val.1 v.val.1)).val : ℤ) = _
     rw [periodicCoordinate_val, Int.emod_eq_of_lt (by omega) (by omega)]
@@ -48,9 +42,7 @@ theorem leftStripGraph_le_of_agree (hN : 0 < N) (hM : 0 < M)
     liftedStripGraph hN hM A 0 (K : ℤ) ≤ liftedStripGraph hN hM B 0 (K : ℤ) := by
   intro u v huv
   have hi := leftStrip_edge_index_range hN hM A K hK huv
-  refine ⟨huv.1, ?_, huv.2.2⟩
-  rw [← hAB (liftedEdgeIndex hN hM u v) hi.1 hi.2]
-  exact huv.2.1
+  exact ⟨huv.1, hAB (liftedEdgeIndex hN hM u v) hi.1 hi.2 ▸ huv.2.1, huv.2.2⟩
 
 /-- The left annular crossing depends only on indices `1,...,3n` and does
 not inspect the right-half interior edges. -/
@@ -58,13 +50,9 @@ theorem leftStripCrossing_congr (hN : 0 < N) (hM : 0 < M)
     (A B : RCConfig N M) (n : ℕ) (hn : 3 * n < N)
     (hAB : ∀ e : Fin N × Fin M, 1 ≤ e.1.val → e.1.val ≤ 3 * n → A e = B e) :
     torusRCLeftStripCrossing hN hM A n ↔ torusRCLeftStripCrossing hN hM B n := by
-  have hg : liftedStripGraph hN hM A 0 ((3 * n : ℕ) : ℤ) =
-      liftedStripGraph hN hM B 0 ((3 * n : ℕ) : ℤ) :=
-    le_antisymm (leftStripGraph_le_of_agree hN hM A B (3 * n) hn hAB)
-      (leftStripGraph_le_of_agree hN hM B A (3 * n) hn
-        (fun e hi1 hin => (hAB e hi1 hin).symm))
   unfold torusRCLeftStripCrossing
-  rw [hg]
+  rw [le_antisymm (leftStripGraph_le_of_agree hN hM A B (3 * n) hn hAB)
+    (leftStripGraph_le_of_agree hN hM B A (3 * n) hn fun e hi1 hin => (hAB e hi1 hin).symm)]
 
 /-- The source barrier event is determined by the configuration outside the
 right-half interior (including all seam-edge states). -/
@@ -73,17 +61,11 @@ theorem barrier_congr_outside_rightHalf (hN : 0 < N) (hM : 0 < M)
     (hAB : ∀ e : Fin N × Fin M, ¬ rightHalfInteriorSite e → A e = B e) :
     A ∈ torusRCBarrier hN hM n ↔ B ∈ torusRCBarrier hN hM n := by
   have hcross := leftStripCrossing_congr hN hM A B n (by omega)
-    (fun e hi1 hin => hAB e (by
-      intro he
-      rcases he.1 with he | he <;> omega))
+    fun e hi1 hin => hAB e fun ⟨he, _⟩ => by rcases he with he | he <;> omega
   have hseam : torusRCSeamAllButOneOpen hM A ↔ torusRCSeamAllButOneOpen hM B := by
-    have heq (i : Fin N) : A (i, ⟨0, hM⟩) = B (i, ⟨0, hM⟩) :=
-      hAB (i, ⟨0, hM⟩) (by simp [rightHalfInteriorSite])
     unfold torusRCSeamAllButOneOpen
-    simp_rw [heq]
-  change (¬ torusRCLeftStripCrossing hN hM A n ∧ torusRCSeamAllButOneOpen hM A) ↔
-    (¬ torusRCLeftStripCrossing hN hM B n ∧ torusRCSeamAllButOneOpen hM B)
-  rw [hcross, hseam]
+    simp_rw [fun i => hAB (i, ⟨0, hM⟩) (by simp [rightHalfInteriorSite])]
+  exact and_congr (not_congr hcross) hseam
 
 noncomputable section
 
@@ -121,10 +103,10 @@ private theorem configurationEquiv_symm_true (hN : Even N) (hM : Even M)
     (C : FK.Configuration (fullDiamondGraph hN hM)) (v : Fin N × Fin M) :
     (torusRCConfigurationEquiv hN hM hN4 hM4).symm C v = true ↔
       torusIndexedEdgeEquiv hN hM hN4 hM4 v ∈ C := by
-  have h := mem_torusRCConfigurationEquiv hN hM hN4 hM4
-    ((torusRCConfigurationEquiv hN hM hN4 hM4).symm C) v
   change _ ↔ torusIndexedEdgeEmbedding hN hM hN4 hM4 v ∈ C
-  simpa only [Equiv.apply_symm_apply] using h.symm
+  simpa only [Equiv.apply_symm_apply] using
+    (mem_torusRCConfigurationEquiv hN hM hN4 hM4
+      ((torusRCConfigurationEquiv hN hM hN4 hM4).symm C) v).symm
 
 theorem rightHalfRestore_true_iff (hN : Even N) (hM : Even M)
     (hN4 : 4 ≤ N) (hM4 : 4 ≤ M)
@@ -148,10 +130,8 @@ theorem rightHalfRestore_mono (hN : Even N) (hM : Even M)
   intro v
   cases ha : rightHalfRestore hN hM hN4 hM4 H A v
   · exact Bool.false_le _
-  · have hmem := (rightHalfRestore_true_iff hN hM hN4 hM4 H A v).mp ha
-    have hb := (rightHalfRestore_true_iff hN hM hN4 hM4 H B v).mpr
-      (hmem.imp (fun h => hAB h) id)
-    rw [hb]
+  · rw [(rightHalfRestore_true_iff hN hM hN4 hM4 H B v).mpr
+      (((rightHalfRestore_true_iff hN hM hN4 hM4 H A v).mp ha).imp (fun h => hAB h) id)]
 
 theorem rightHalfRestore_agree_outside (hN : Even N) (hM : Even M)
     (hN4 : 4 ≤ N) (hM4 : 4 ≤ M)
@@ -167,13 +147,8 @@ theorem rightHalfRestore_agree_outside (hN : Even N) (hM : Even M)
     fun h => Finset.disjoint_left.mp A.property h hvR
   have hnotB : torusIndexedEdgeEquiv hN hM hN4 hM4 v ∉ B.val :=
     fun h => Finset.disjoint_left.mp B.property h hvR
-  have htrue : rightHalfRestore hN hM hN4 hM4 H A v = true ↔
-      rightHalfRestore hN hM hN4 hM4 H B v = true := by
-    unfold rightHalfRestore
-    rw [configurationEquiv_symm_true, configurationEquiv_symm_true]
-    simp only [Finset.mem_union, hnotA, hnotB, false_or]
-  cases ha : rightHalfRestore hN hM hN4 hM4 H A v <;>
-    cases hb : rightHalfRestore hN hM hN4 hM4 H B v <;> simp_all
+  exact Bool.eq_iff_iff.mpr <| by
+    simp [rightHalfRestore_true_iff, hnotA, hnotB]
 
 /-- Membership in B is constant on every right-half conditional fiber. -/
 theorem barrier_rightHalfRestore_iff (hN : Even N) (hM : Even M)
@@ -207,8 +182,7 @@ theorem barrier_iff_rightHalfExterior (hN : Even N) (hM : Even M)
         (torusRCConfigurationEquiv hN hM hN4 hM4 A)).2 ∈
           rightHalfBarrierExterior hN hM hN4 hM4 hNp hMp n := by
   let P := FK.configurationSplitEquiv (fullDiamondGraph hN hM)
-    (rightHalfFrozenEdges hN hM hN4 hM4)
-    (torusRCConfigurationEquiv hN hM hN4 hM4 A)
+    (rightHalfFrozenEdges hN hM hN4 hM4) (torusRCConfigurationEquiv hN hM hN4 hM4 A)
   have hrestore : rightHalfRestore hN hM hN4 hM4 P.2 P.1 = A := by
     unfold rightHalfRestore
     have hsplit := (FK.configurationSplitEquiv (fullDiamondGraph hN hM)

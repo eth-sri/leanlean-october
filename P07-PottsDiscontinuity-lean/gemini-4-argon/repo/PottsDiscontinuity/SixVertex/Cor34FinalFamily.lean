@@ -4,8 +4,6 @@ public import Mathlib
 public import PottsDiscontinuity.SixVertex.Cor34FinalNormalization
 public import PottsDiscontinuity.SixVertex.Cor34FinalWave
 
-/-! # Corollary 3.4: discharge the conditional Bethe branch premise -/
-
 @[expose] public section
 
 open Filter Topology
@@ -14,9 +12,26 @@ open PottsDiscontinuity.PerronFrobenius
 
 namespace PottsDiscontinuity.SixVertex
 
-/-- The even Theorem 2.3 family satisfies the normalized block eigenvector premise of
-`cor34_even_bethe_branch_eventually_physical_pfRoot` (the Bethe side of Corollary 3.4) and hence
-agrees eventually with the physical Perron root. -/
+private theorem cor34_final_eventually_S_n_and_BE {N n : ℕ}
+    {d₀ : ℝ} {p P : ℝ → Fin n → ℝ}
+    (hd₀ : d₀ < -1) (hp : ∀ d ≤ d₀, p d ∈ Bethe.S_n n)
+    (hBE : ∀ d ≤ d₀, Bethe.DiscreteBetheEquation d N n (p d))
+    (hformula : ∀ d ≤ d₀, p d = P (1 / d))
+    (hPcont : ContinuousAt P 0) (hP0 : P 0 = Bethe.discreteBaseSolution N n)
+    (hNpos : 0 < N) (hbound : 2 * n ≤ N) :
+    ∀ᶠ ε in 𝓝[<] (0 : ℝ),
+      cor34_normalizedBlockWave (N := N) ε (P ε) ≠ 0 ∧
+      ε < 0 ∧ 1 / ε < -1 ∧ P ε ∈ Bethe.S_n n ∧
+      Bethe.DiscreteBetheEquation (1 / ε) N n (P ε) := by
+  have hInv : ∀ᶠ ε in 𝓝[<] (0 : ℝ), 1 / ε ≤ d₀ := by
+    simpa only [one_div] using tendsto_inv_nhdsLT_zero.eventually (Iic_mem_atBot d₀)
+  filter_upwards [cor34_final_eventually_normalizedBlockWave_ne_zero hPcont hP0 hNpos hbound,
+    hInv, self_mem_nhdsWithin] with ε hw hΔ hε
+  have hε' : ε < 0 := hε
+  have hrecip : 1 / (1 / ε) = ε := one_div_one_div ε
+  have hPEq : P ε = p (1 / ε) := by rw [hformula (1 / ε) hΔ, hrecip]
+  exact ⟨hw, hε', lt_of_le_of_lt hΔ hd₀, hPEq ▸ hp (1 / ε) hΔ, hPEq ▸ hBE (1 / ε) hΔ⟩
+
 theorem cor34_final_even_family_eventually_physical_pfRoot {N n r : ℕ}
     {d₀ : ℝ} {p P : ℝ → Fin n → ℝ}
     (hd₀ : d₀ < -1) (hp : ∀ d ≤ d₀, p d ∈ Bethe.S_n n)
@@ -28,34 +43,13 @@ theorem cor34_final_even_family_eventually_physical_pfRoot {N n r : ℕ}
     (hn : Even n) (hN : N = 2 * (n + r)) (hr : 0 ≤ r) :
     ∀ᶠ ε in 𝓝[<] (0 : ℝ),
       BetheAnsatz.eigenvalueRegular (Real.sqrt (2 - 2 / ε)) (P ε) =
-        (pfRoot (transferBlock N (Real.sqrt (2 - 2 / ε)) n) : ℂ) := by
-  have hPcont : ContinuousAt P 0 := hPanalytic.continuousAt
-  have hInv : ∀ᶠ ε in 𝓝[<] (0 : ℝ), 1 / ε ≤ d₀ := by
-    simpa only [one_div] using tendsto_inv_nhdsLT_zero.eventually (Iic_mem_atBot d₀)
-  have hnonzero := cor34_final_eventually_normalizedBlockWave_ne_zero
-    hPcont hP0 hNpos hbound
-  have hEig : ∀ᶠ ε in 𝓝[<] (0 : ℝ),
-      cor34_normalizedBlockWave (N := N) ε (P ε) ≠ 0 ∧
-        (cor34_normalizedTransferBlock N n ε).map (algebraMap ℝ ℂ) *ᵥ
-            cor34_normalizedBlockWave (N := N) ε (P ε) =
-          cor34_normalizedRegularEigenvalue ε (P ε) •
-            cor34_normalizedBlockWave (N := N) ε (P ε) := by
-    filter_upwards [hnonzero, hInv, self_mem_nhdsWithin] with ε hw hΔ hε
-    have hε' : ε < 0 := by simpa only [Set.mem_Iio] using hε
-    have hrecip : 1 / (1 / ε) = ε := by field_simp [ne_of_lt hε']
-    have hS : P ε ∈ Bethe.S_n n := by
-      rw [← hrecip, ← hformula (1 / ε) hΔ]
-      exact hp (1 / ε) hΔ
-    have hBEε := hBE (1 / ε) hΔ
-    rw [hformula (1 / ε) hΔ, hrecip] at hBEε
-    exact ⟨hw, cor34_final_even_normalized_eigen hε
-      (lt_of_le_of_lt hΔ hd₀) (P ε) hS hn hBEε⟩
-  exact cor34_even_bethe_branch_eventually_physical_pfRoot
-    hPcont hP0 hNpos hbound hnpos hn hN hr hEig
+        (pfRoot (transferBlock N (Real.sqrt (2 - 2 / ε)) n) : ℂ) :=
+  cor34_even_bethe_branch_eventually_physical_pfRoot
+    hPanalytic.continuousAt hP0 hNpos hbound hnpos hn hN hr
+    ((cor34_final_eventually_S_n_and_BE hd₀ hp hBE hformula
+      hPanalytic.continuousAt hP0 hNpos hbound).mono fun _ ⟨hw, hε, hInv, hS, hBEε⟩ =>
+      ⟨hw, cor34_final_even_normalized_eigen hε hInv _ hS hn hBEε⟩)
 
-/-- The odd Theorem 2.3 family satisfies the centered normalized block eigenvector premise of
-`cor34_odd_bethe_branch_eventually_physical_pfRoot` (the Bethe side of Corollary 3.4)
-and hence agrees eventually with the physical Perron root. -/
 theorem cor34_final_odd_family_eventually_physical_pfRoot {N n q r : ℕ}
     {d₀ : ℝ} {p P : ℝ → Fin n → ℝ}
     (hd₀ : d₀ < -1) (hp : ∀ d ≤ d₀, p d ∈ Bethe.S_n n)
@@ -68,30 +62,11 @@ theorem cor34_final_odd_family_eventually_physical_pfRoot {N n q r : ℕ}
     ∀ᶠ ε in 𝓝[<] (0 : ℝ),
       BetheAnsatz.eigenvalueZero N (Real.sqrt (2 - 2 / ε)) (P ε)
           (⟨q - 1, by omega⟩ : Fin n) =
-        (pfRoot (transferBlock N (Real.sqrt (2 - 2 / ε)) n) : ℂ) := by
-  have hPcont : ContinuousAt P 0 := hPanalytic.continuousAt
-  have hInv : ∀ᶠ ε in 𝓝[<] (0 : ℝ), 1 / ε ≤ d₀ := by
-    simpa only [one_div] using tendsto_inv_nhdsLT_zero.eventually (Iic_mem_atBot d₀)
-  have hnonzero := cor34_final_eventually_normalizedBlockWave_ne_zero
-    hPcont hP0 hNpos hbound
-  have hEig : ∀ᶠ ε in 𝓝[<] (0 : ℝ),
-      cor34_normalizedBlockWave (N := N) ε (P ε) ≠ 0 ∧
-        (cor34_normalizedTransferBlock N n ε).map (algebraMap ℝ ℂ) *ᵥ
-            cor34_normalizedBlockWave (N := N) ε (P ε) =
-          cor34_normalizedZeroEigenvalue (N := N) ε (P ε)
-              (⟨q - 1, by omega⟩ : Fin n) •
-            cor34_normalizedBlockWave (N := N) ε (P ε) := by
-    filter_upwards [hnonzero, hInv, self_mem_nhdsWithin] with ε hw hΔ hε
-    have hε' : ε < 0 := by simpa only [Set.mem_Iio] using hε
-    have hrecip : 1 / (1 / ε) = ε := by field_simp [ne_of_lt hε']
-    have hS : P ε ∈ Bethe.S_n n := by
-      rw [← hrecip, ← hformula (1 / ε) hΔ]
-      exact hp (1 / ε) hΔ
-    have hBEε := hBE (1 / ε) hΔ
-    rw [hformula (1 / ε) hΔ, hrecip] at hBEε
-    exact ⟨hw, cor34_final_odd_normalized_eigen hε
-      (lt_of_le_of_lt hΔ hd₀) (P ε) hS hnq hBEε⟩
-  exact cor34_odd_bethe_branch_eventually_physical_pfRoot
-    hPcont hP0 hNpos hbound hnpos hnq hN hr hEig
+        (pfRoot (transferBlock N (Real.sqrt (2 - 2 / ε)) n) : ℂ) :=
+  cor34_odd_bethe_branch_eventually_physical_pfRoot
+    hPanalytic.continuousAt hP0 hNpos hbound hnpos hnq hN hr
+    ((cor34_final_eventually_S_n_and_BE hd₀ hp hBE hformula
+      hPanalytic.continuousAt hP0 hNpos hbound).mono fun _ ⟨hw, hε, hInv, hS, hBEε⟩ =>
+      ⟨hw, cor34_final_odd_normalized_eigen hε hInv _ hS hnq hBEε⟩)
 
 end PottsDiscontinuity.SixVertex

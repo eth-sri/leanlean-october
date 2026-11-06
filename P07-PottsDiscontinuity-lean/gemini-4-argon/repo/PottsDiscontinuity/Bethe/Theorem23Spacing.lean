@@ -32,8 +32,8 @@ theorem densityNorm_rootStepDensity_pointwise {Δ₀ Δ : ℝ} (hΔ₀ : Δ₀ <
       (fun x => rootStepDensity N n p hp hn hs x - rho Δ x) hbdd ≤ E)
     {x : ℝ} (hx : x ∈ Icc (-Real.pi) Real.pi) :
     |rootStepDensity N n p hp hn hs x - rho Δ x| ≤
-      E / mXi := by
-  exact densityNorm_x_pointwise_le hΔ₀ hΔ
+      E / mXi :=
+  densityNorm_x_pointwise_le hΔ₀ hΔ
     (fun y => rootStepDensity N n p hp hn hs y - rho Δ y)
     hbdd E mXi hmXi (hXi Δ hΔ) hE hx
 
@@ -55,19 +55,11 @@ theorem rootStepDensity_lower_of_densityNorm {Δ₀ Δ : ℝ} (hΔ₀ : Δ₀ < 
       ∀ x ∈ Icc (-Real.pi) Real.pi, mρ ≤ rho Δ' x)
     (hsmall : E / mXi ≤ mρ / 2) :
     ∀ x ∈ Icc (-Real.pi) Real.pi,
-      mρ / 2 ≤ rootStepDensity N n p hp hn hs x := by
-  have herr (x : ℝ) (hx : x ∈ Icc (-Real.pi) Real.pi) :
-      |rootStepDensity N n p hp hn hs x - rho Δ x| ≤ E / mXi :=
-    densityNorm_x_pointwise_le hΔ₀ hΔ
-      (fun y => rootStepDensity N n p hp hn hs y - rho Δ y)
-      hbdd E mXi hmXi (hXi Δ hΔ) hE hx
-  have hsmall' : E / mXi ≤ mρ / 2 := hsmall
-  intro x hx
-  have hρx := hρ Δ hΔ x hx
-  have hxerr := herr x hx
-  rw [abs_sub_comm] at hxerr
-  have hupper := (abs_le.mp hxerr).2
-  linarith
+      mρ / 2 ≤ rootStepDensity N n p hp hn hs x := fun x hx => by
+  have hxerr := densityNorm_x_pointwise_le hΔ₀ hΔ
+    (fun y => rootStepDensity N n p hp hn hs y - rho Δ y)
+    hbdd E mXi hmXi (hXi Δ hΔ) hE hx
+  linarith [hρ Δ hΔ x hx, (abs_le.mp hxerr).1]
 
 /-- A norm error small compared with the uniform density lower bound forces
 an upper bound on every cyclic root gap. -/
@@ -88,13 +80,9 @@ theorem rootPartition_gap_upper_of_densityNorm {Δ₀ Δ : ℝ}
     (hsmall : E / mXi ≤ mρ / 2)
     (j : Fin (n + 1)) :
     rootPartitionPoint n p hn j.succ - rootPartitionPoint n p hn j.castSucc ≤
-      2 * rootGapMultiplicity N n hs j / (mρ * (N : ℝ)) := by
-  have hlower : ∀ x ∈ Icc (-Real.pi) Real.pi,
-      mρ / 2 ≤ rootStepDensity N n p hp hn hs x := by
-    apply rootStepDensity_lower_of_densityNorm hΔ₀ hΔ p hp hn hs hmXi hXi hbdd hE
-      mρ hmρ hρ
-    exact hsmall
-  exact rootPartition_gap_le_of_density_lower hp hn hs hmρ hlower j
+      2 * rootGapMultiplicity N n hs j / (mρ * (N : ℝ)) :=
+  rootPartition_gap_le_of_density_lower hp hn hs hmρ
+    (rootStepDensity_lower_of_densityNorm hΔ₀ hΔ p hp hn hs hmXi hXi hbdd hE mρ hmρ hρ hsmall) j
 
 /-- The source's upper root-gap estimate, derived from a `K/N` density error.
 The explicit smallness condition is the finite-`N` requirement that the
@@ -117,16 +105,9 @@ theorem rootPartition_gap_upper_of_norm_le {Δ₀ Δ : ℝ}
     (hsmall : K / ((N : ℝ) * mXi) ≤ mρ / 2)
     (j : Fin (n + 1)) :
     rootPartitionPoint n p hn j.succ - rootPartitionPoint n p hn j.castSucc ≤
-      2 * rootGapMultiplicity N n hs j / (mρ * (N : ℝ)) := by
-  have hNnat : 0 < N := by omega
-  have hN : (0 : ℝ) < N := by exact_mod_cast hNnat
-  have hsmall' : (K / (N : ℝ)) / mXi ≤ mρ / 2 := by
-    have heq : (K / (N : ℝ)) / mXi = K / ((N : ℝ) * mXi) := by
-      field_simp
-    rw [heq]
-    exact hsmall
-  exact rootPartition_gap_upper_of_densityNorm hΔ₀ hΔ p hp hn hs
-    hmXi hXi hbdd hNorm mρ hmρ hρ hsmall' j
+      2 * rootGapMultiplicity N n hs j / (mρ * (N : ℝ)) :=
+  rootPartition_gap_upper_of_densityNorm hΔ₀ hΔ p hp hn hs hmXi hXi hbdd hNorm mρ hmρ hρ
+    (by rwa [div_div]) j
 
 /-- The same pointwise estimate gives an upper bound for the step density when
 the continuous density has a uniform upper bound. -/
@@ -144,12 +125,8 @@ theorem rootStepDensity_upper_of_densityNorm {Δ₀ Δ : ℝ}
     (hρ : ∀ Δ' : ℝ, Δ' ≤ Δ₀ → ∀ x : ℝ, rho Δ' x ≤ M)
     {x : ℝ} (hx : x ∈ Icc (-Real.pi) Real.pi) :
     rootStepDensity N n p hp hn hs x ≤ M + E / mXi := by
-  have herr : |rootStepDensity N n p hp hn hs x - rho Δ x| ≤ E / mXi :=
-    densityNorm_rootStepDensity_pointwise hΔ₀ hΔ p hp hn hs hmXi hXi
-      hbdd hE hx
-  have hupper := (abs_le.mp herr).2
-  have hρx := hρ Δ hΔ x
-  linarith
+  have herr := densityNorm_rootStepDensity_pointwise hΔ₀ hΔ p hp hn hs hmXi hXi hbdd hE hx
+  linarith [(abs_le.mp herr).2, hρ Δ hΔ x]
 
 /-- An upper bound on `ρ_p` gives a lower bound for each cyclic root gap. -/
 theorem rootPartition_gap_lower_of_densityNorm {Δ₀ Δ : ℝ}
@@ -168,25 +145,11 @@ theorem rootPartition_gap_lower_of_densityNorm {Δ₀ Δ : ℝ}
     rootGapMultiplicity N n hs j /
         ((N : ℝ) * (M + E / mXi)) ≤
       rootPartitionPoint n p hn j.succ - rootPartitionPoint n p hn j.castSucc := by
-  have hNnat : 0 < N := by omega
-  have hN : (0 : ℝ) < N := by exact_mod_cast hNnat
-  have hgap : 0 < rootPartitionPoint n p hn j.succ -
-      rootPartitionPoint n p hn j.castSucc :=
-    rootPartition_gap_pos hp hn j
+  have hN : (0 : ℝ) < N := by exact_mod_cast (show 0 < N by omega)
   obtain ⟨x, hx, hcell⟩ := rootPartition_cell_meets_Icc hp hn j
-  have hρp := rootStepDensity_upper_of_densityNorm hΔ₀ hΔ p hp hn hs
-    hmXi hXi hbdd hE hρ hx
-  rw [rootStepDensity_on_cell hp hn hs j hcell] at hρp
-  have hden : 0 < (N : ℝ) *
-      (rootPartitionPoint n p hn j.succ - rootPartitionPoint n p hn j.castSucc) :=
-    mul_pos hN hgap
-  have hmul := (div_le_iff₀ hden).mp hρp
-  apply (div_le_iff₀ (mul_pos hN hbound)).2
-  calc
-    rootGapMultiplicity N n hs j ≤
-        (M + E / mXi) * ((N : ℝ) *
-          (rootPartitionPoint n p hn j.succ - rootPartitionPoint n p hn j.castSucc)) := hmul
-    _ = (rootPartitionPoint n p hn j.succ - rootPartitionPoint n p hn j.castSucc) *
-        ((N : ℝ) * (M + E / mXi)) := by ring
+  have hρp := rootStepDensity_upper_of_densityNorm hΔ₀ hΔ p hp hn hs hmXi hXi hbdd hE hρ hx
+  rw [rootStepDensity_on_cell hp hn hs j hcell,
+    div_le_iff₀ (mul_pos hN (rootPartition_gap_pos hp hn j))] at hρp
+  exact (div_le_iff₀ (mul_pos hN hbound)).2 (hρp.trans_eq (by ring))
 
 end PottsDiscontinuity.Bethe

@@ -60,57 +60,27 @@ private theorem dartEdge_eq_fixed_horizontal {ω : ArrowConfig N M} {i : Fin N}
 theorem verticalCutDarts_card_le (ω : ArrowConfig N M) (j : Fin M) :
     (verticalCutDarts ω j).card ≤ N := by
   classical
-  let C := verticalCutDarts ω j
-  have hinj : (C : Set (DirectedDart ω)).InjOn
-      (fun d => d.val.1.1) := by
-    intro d hd e he hcoord
-    change d.val.1.1 = e.val.1.1 at hcoord
-    have hd' : verticalCross j d.val ≠ 0 := (Finset.mem_filter.mp hd).2
-    have he' : verticalCross j e.val ≠ 0 := (Finset.mem_filter.mp he).2
-    have hEdge : dartEdge d.val = dartEdge e.val := by
-      rw [dartEdge_eq_fixed_vertical d hd', dartEdge_eq_fixed_vertical e he', hcoord]
-    have htransport := congrArg (edgeDirectedEquiv ω) hEdge
-    have hdInv : edgeDirectedEquiv ω (dartEdge d.val) = d := by
-      apply Subtype.ext
-      exact arrowDart_dartEdge ω d
-    have heInv : edgeDirectedEquiv ω (dartEdge e.val) = e := by
-      apply Subtype.ext
-      exact arrowDart_dartEdge ω e
-    rw [hdInv, heInv] at htransport
-    exact htransport
-  calc
-    C.card ≤ (Finset.univ : Finset (Fin N)).card :=
-      Finset.card_le_card_of_injOn (s := C) (t := Finset.univ)
-        (fun d => d.val.1.1) (by intro d hd; simp) hinj
-    _ = N := by simp
+  refine (Finset.card_le_card_of_injOn (t := Finset.univ) (fun d => d.val.1.1) (by simp) ?_).trans_eq
+    (by simp)
+  intro d hd e he (hcoord : d.val.1.1 = e.val.1.1)
+  have hEdge : dartEdge d.val = dartEdge e.val := by
+    rw [dartEdge_eq_fixed_vertical d (Finset.mem_filter.mp hd).2,
+      dartEdge_eq_fixed_vertical e (Finset.mem_filter.mp he).2, hcoord]
+  exact Subtype.ext <| (arrowDart_dartEdge ω d).symm.trans <|
+    (congrArg (fun x => (edgeDirectedEquiv ω x).val) hEdge).trans (arrowDart_dartEdge ω e)
 
 /-- A fixed vertical seam has at most one directed dart per indexed edge. -/
 theorem horizontalCutDarts_card_le (ω : ArrowConfig N M) (i : Fin N) :
     (horizontalCutDarts ω i).card ≤ M := by
   classical
-  let C := horizontalCutDarts ω i
-  have hinj : (C : Set (DirectedDart ω)).InjOn
-      (fun d => d.val.1.2) := by
-    intro d hd e he hcoord
-    change d.val.1.2 = e.val.1.2 at hcoord
-    have hd' : horizontalCross i d.val ≠ 0 := (Finset.mem_filter.mp hd).2
-    have he' : horizontalCross i e.val ≠ 0 := (Finset.mem_filter.mp he).2
-    have hEdge : dartEdge d.val = dartEdge e.val := by
-      rw [dartEdge_eq_fixed_horizontal d hd', dartEdge_eq_fixed_horizontal e he', hcoord]
-    have htransport := congrArg (edgeDirectedEquiv ω) hEdge
-    have hdInv : edgeDirectedEquiv ω (dartEdge d.val) = d := by
-      apply Subtype.ext
-      exact arrowDart_dartEdge ω d
-    have heInv : edgeDirectedEquiv ω (dartEdge e.val) = e := by
-      apply Subtype.ext
-      exact arrowDart_dartEdge ω e
-    rw [hdInv, heInv] at htransport
-    exact htransport
-  calc
-    C.card ≤ (Finset.univ : Finset (Fin M)).card :=
-      Finset.card_le_card_of_injOn (s := C) (t := Finset.univ)
-        (fun d => d.val.1.2) (by intro d hd; simp) hinj
-    _ = M := by simp
+  refine (Finset.card_le_card_of_injOn (t := Finset.univ) (fun d => d.val.1.2) (by simp) ?_).trans_eq
+    (by simp)
+  intro d hd e he (hcoord : d.val.1.2 = e.val.1.2)
+  have hEdge : dartEdge d.val = dartEdge e.val := by
+    rw [dartEdge_eq_fixed_horizontal d (Finset.mem_filter.mp hd).2,
+      dartEdge_eq_fixed_horizontal e (Finset.mem_filter.mp he).2, hcoord]
+  exact Subtype.ext <| (arrowDart_dartEdge ω d).symm.trans <|
+    (congrArg (fun x => (edgeDirectedEquiv ω x).val) hEdge).trans (arrowDart_dartEdge ω e)
 
 /-- Loops with nonzero winding in either coordinate, measured at reference seams. -/
 noncomputable def windingLoopSet (hN : Even N) (hM : Even M)
@@ -146,30 +116,15 @@ theorem windingLoopSet_subset_cutImages (hN : Even N) (hM : Even M)
     windingLoopSet hN hM i j A ⊆ loopCutImages hN hM i j A := by
   classical
   intro q hq
-  have hq' := (Finset.mem_filter.mp hq).2
-  rcases hq' with hv | hh
+  rcases (Finset.mem_filter.mp hq).2 with hv | hh
   · obtain ⟨d, hloop, hcross⟩ := exists_dart_of_loopSum_ne_zero
-      (checkerArrows N M) (rcSmoothing A)
-      (checkerArrows_compatible hN hM (rcSmoothing A))
+      (checkerArrows N M) (rcSmoothing A) (checkerArrows_compatible hN hM (rcSmoothing A))
       (verticalCross j) q (by simpa [loopVertical] using hv)
-    have hdmem : d ∈ verticalCutDarts (checkerArrows N M) j := by
-      simp [verticalCutDarts, hcross]
-    change _ ∈
-      Finset.image (directedLoopOf (checkerArrows N M) (rcSmoothing A)
-        (checkerArrows_compatible hN hM (rcSmoothing A)))
-        (verticalCutDarts (checkerArrows N M) j) ∪ _
-    exact Finset.mem_union.mpr (Or.inl (Finset.mem_image.mpr ⟨d, hdmem, hloop⟩))
+    exact Finset.mem_union.mpr <| Or.inl <| Finset.mem_image.mpr ⟨d, by simp [verticalCutDarts, hcross], hloop⟩
   · obtain ⟨d, hloop, hcross⟩ := exists_dart_of_loopSum_ne_zero
-      (checkerArrows N M) (rcSmoothing A)
-      (checkerArrows_compatible hN hM (rcSmoothing A))
+      (checkerArrows N M) (rcSmoothing A) (checkerArrows_compatible hN hM (rcSmoothing A))
       (horizontalCross i) q hh
-    have hdmem : d ∈ horizontalCutDarts (checkerArrows N M) i := by
-      simp [horizontalCutDarts, hcross]
-    change _ ∈
-      _ ∪ Finset.image (directedLoopOf (checkerArrows N M) (rcSmoothing A)
-        (checkerArrows_compatible hN hM (rcSmoothing A)))
-        (horizontalCutDarts (checkerArrows N M) i)
-    exact Finset.mem_union.mpr (Or.inr (Finset.mem_image.mpr ⟨d, hdmem, hloop⟩))
+    exact Finset.mem_union.mpr <| Or.inr <| Finset.mem_image.mpr ⟨d, by simp [horizontalCutDarts, hcross], hloop⟩
 
 /-- The number of loops with nonzero coordinate winding is at most `N + M`.
 
@@ -180,27 +135,9 @@ theorem windingLoopCount_le (hN : Even N) (hM : Even M)
     (i : Fin N) (j : Fin M) (A : RCConfig N M) :
     windingLoopCount hN hM i j A ≤ N + M := by
   classical
-  unfold windingLoopCount
-  calc
-    (windingLoopSet hN hM i j A).card ≤
-        (loopCutImages hN hM i j A).card := by
-      exact Finset.card_le_card (windingLoopSet_subset_cutImages hN hM i j A)
-    _ ≤ (verticalCutDarts (checkerArrows N M) j).card +
-        (horizontalCutDarts (checkerArrows N M) i).card := by
-      calc
-        (loopCutImages hN hM i j A).card ≤
-            (Finset.image (directedLoopOf (checkerArrows N M) (rcSmoothing A)
-              (checkerArrows_compatible hN hM (rcSmoothing A)))
-              (verticalCutDarts (checkerArrows N M) j)).card +
-            (Finset.image (directedLoopOf (checkerArrows N M) (rcSmoothing A)
-              (checkerArrows_compatible hN hM (rcSmoothing A)))
-              (horizontalCutDarts (checkerArrows N M) i)).card := by
-          simp only [loopCutImages]
-          exact Finset.card_union_le _ _
-        _ ≤ (verticalCutDarts (checkerArrows N M) j).card +
-            (horizontalCutDarts (checkerArrows N M) i).card :=
-          Nat.add_le_add Finset.card_image_le Finset.card_image_le
-    _ ≤ N + M := Nat.add_le_add
-      (verticalCutDarts_card_le _ _) (horizontalCutDarts_card_le _ _)
+  exact (Finset.card_le_card (windingLoopSet_subset_cutImages hN hM i j A)).trans <|
+    (Finset.card_union_le _ _).trans <|
+      (Nat.add_le_add Finset.card_image_le Finset.card_image_le).trans
+        (Nat.add_le_add (verticalCutDarts_card_le _ _) (horizontalCutDarts_card_le _ _))
 
 end PottsDiscontinuity.TorusLoops
