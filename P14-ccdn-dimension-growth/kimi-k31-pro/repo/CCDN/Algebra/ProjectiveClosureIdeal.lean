@@ -20,9 +20,11 @@ namespace CCDN
 noncomputable section
 open MvPolynomial
 
+variable {K : Type*} [Field K] {n : ℕ}
+
 /-- Send the homogenizing coordinate to t and every affine coordinate to
 its quotient class times t. -/
-def projectiveClosureMap {K : Type*} [Field K] {n : ℕ}
+def projectiveClosureMap  
     (I : Ideal (MvPolynomial (Fin n) K)) :
     MvPolynomial (Fin (n + 1)) K →ₐ[K] Polynomial (MvPolynomial (Fin n) K ⧸ I) where
   toRingHom := (Polynomial.mapRingHom (Ideal.Quotient.mk I)).comp
@@ -36,7 +38,7 @@ def projectiveClosureMap {K : Type*} [Field K] {n : ℕ}
 
 /-- The coefficient of `t ^ M` in `projectiveClosureMap I f` is the class modulo `I` of the
 dehomogenization of the degree-`M` homogeneous component of `f`. -/
-lemma projectiveClosureMap_coeff {K : Type*} [Field K] {n : ℕ}
+lemma projectiveClosureMap_coeff  
     (I : Ideal (MvPolynomial (Fin n) K)) (f : MvPolynomial (Fin (n + 1)) K) (M : ℕ) :
     (projectiveClosureMap I f).coeff M =
       Ideal.Quotient.mk I (affineChart n (homogeneousComponent M f)) := by
@@ -47,17 +49,13 @@ lemma projectiveClosureMap_coeff {K : Type*} [Field K] {n : ℕ}
 /-- The projective closure of the affine coordinate ideal `I`: the homogeneous ideal of
 polynomials in `n + 1` variables all of whose homogeneous components dehomogenize (by setting
 `X 0 = 1`) into `I`, defined as the kernel of `projectiveClosureMap I`. -/
-def projectiveClosureIdeal {K : Type*} [Field K] {n : ℕ}
+def projectiveClosureIdeal  
     (I : Ideal (MvPolynomial (Fin n) K)) : Ideal (MvPolynomial (Fin (n + 1)) K) :=
   RingHom.ker (projectiveClosureMap I)
 
-instance projectiveClosureIdeal_isPrime {K : Type*} [Field K] {n : ℕ}
-    (I : Ideal (MvPolynomial (Fin n) K)) [I.IsPrime] :
-    (projectiveClosureIdeal I).IsPrime := RingHom.ker_isPrime _
-
 /-- A polynomial lies in the projective closure ideal of `I` if and only if the dehomogenization
 of each of its homogeneous components lies in `I`. -/
-lemma mem_projectiveClosureIdeal_iff {K : Type*} [Field K] {n : ℕ}
+lemma mem_projectiveClosureIdeal_iff  
     (I : Ideal (MvPolynomial (Fin n) K)) (f : MvPolynomial (Fin (n + 1)) K) :
     f ∈ projectiveClosureIdeal I ↔
       ∀ M, affineChart n (homogeneousComponent M f) ∈ I := by
@@ -67,7 +65,7 @@ lemma mem_projectiveClosureIdeal_iff {K : Type*} [Field K] {n : ℕ}
 
 /-- A homogeneous polynomial lies in the projective closure ideal of `I` if and only if its
 dehomogenization lies in `I`. -/
-lemma homogeneous_mem_projectiveClosureIdeal_iff {K : Type*} [Field K] {n M : ℕ}
+lemma homogeneous_mem_projectiveClosureIdeal_iff  {n M : ℕ}
     (I : Ideal (MvPolynomial (Fin n) K)) (f : MvPolynomial (Fin (n + 1)) K)
     (hf : f.IsHomogeneous M) :
     f ∈ projectiveClosureIdeal I ↔ affineChart n f ∈ I := by

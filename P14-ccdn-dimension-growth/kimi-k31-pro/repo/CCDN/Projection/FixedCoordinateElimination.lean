@@ -27,6 +27,8 @@ namespace CCDN
 noncomputable section
 open MvPolynomial
 
+variable {n : ℕ}
+
 /-- For `f` of total degree at most `D`, the degree-`D` homogenization of `f`, restricted to the
 hyperplane at infinity `X₀ = 0`, is the degree-`D` homogeneous component of `f`. -/
 theorem scaledHomogenize_one_eval_at_infinity {K : Type*} [Field K] {n D : ℕ}
@@ -55,13 +57,15 @@ namespace CCDN
 noncomputable section
 open MvPolynomial
 
+variable {n : ℕ}
+
 /-- The integer matrix whose `i`-th row is the linear form `b none * X (i + 1) - b (some i) * X 0`,
 eliminating the coordinate `X 0` along the direction `b`. -/
-def finEliminationMatrix {n : ℕ} (b : Option (Fin n) → ℤ) :
+def finEliminationMatrix  (b : Option (Fin n) → ℤ) :
     Fin n → Fin (n + 1) → ℤ :=
   fun i => Fin.cases (-b (some i)) (fun j => if j = i then b none else 0)
 
-private lemma integerLinearForm_finEliminationMatrix {n : ℕ}
+private lemma integerLinearForm_finEliminationMatrix 
     (b : Option (Fin n) → ℤ) (i : Fin n) :
     integerLinearForm (finEliminationMatrix b i) =
       C (b none : ℚ) * X i.succ - C (b (some i) : ℚ) * X 0 := by
@@ -89,6 +93,8 @@ namespace CCDN
 noncomputable section
 open MvPolynomial
 
+variable {n : ℕ}
+
 /-- The reindexing of `Fin (n + 2)` that sends coordinate `1` to `none` and the remaining
 coordinates, in order, to `some 0, some 1, …`; it makes the homogenizing coordinate `0` the first
 retained coordinate. -/
@@ -104,7 +110,7 @@ def closurePivotEquiv (n : ℕ) : Fin (n + 2) ≃ Option (Fin (n + 1)) :=
   simp [closurePivotEquiv]
 
 /-- The pivot reindexing sends coordinate `i + 2` to `some (i + 1)`. -/
-@[simp] lemma closurePivotEquiv_succ_succ {n : ℕ} (i : Fin n) :
+@[simp] lemma closurePivotEquiv_succ_succ  (i : Fin n) :
     closurePivotEquiv n i.succ.succ = some i.succ := by
   have h0 : i.succ.succ ≠ (0 : Fin (n + 2)) := Fin.succ_ne_zero _
   have h1 : i.succ.succ ≠ (Fin.succ 0 : Fin (n + 2)) := by
@@ -115,24 +121,21 @@ def closurePivotEquiv (n : ℕ) : Fin (n + 2) ≃ Option (Fin (n + 1)) :=
 
 /-- The inverse pivot reindexing sends `none` to coordinate `1`. -/
 @[simp] lemma closurePivotEquiv_symm_none (n : ℕ) :
-    (closurePivotEquiv n).symm none = Fin.succ 0 := by
-  exact (closurePivotEquiv n).symm_apply_eq.mpr (closurePivotEquiv_one n).symm
+    (closurePivotEquiv n).symm none = Fin.succ 0 := (closurePivotEquiv n).symm_apply_eq.mpr (closurePivotEquiv_one n).symm
 
 /-- The inverse pivot reindexing sends `some 0` to coordinate `0`. -/
 @[simp] lemma closurePivotEquiv_symm_some_zero (n : ℕ) :
-    (closurePivotEquiv n).symm (some 0) = 0 := by
-  exact (closurePivotEquiv n).symm_apply_eq.mpr (closurePivotEquiv_zero n).symm
+    (closurePivotEquiv n).symm (some 0) = 0 := (closurePivotEquiv n).symm_apply_eq.mpr (closurePivotEquiv_zero n).symm
 
 /-- The inverse pivot reindexing sends `some (i + 1)` to coordinate `i + 2`. -/
-@[simp] lemma closurePivotEquiv_symm_some_succ {n : ℕ} (i : Fin n) :
-    (closurePivotEquiv n).symm (some i.succ) = i.succ.succ := by
-  exact (closurePivotEquiv n).symm_apply_eq.mpr (closurePivotEquiv_succ_succ i).symm
+@[simp] lemma closurePivotEquiv_symm_some_succ  (i : Fin n) :
+    (closurePivotEquiv n).symm (some i.succ) = i.succ.succ := (closurePivotEquiv n).symm_apply_eq.mpr (closurePivotEquiv_succ_succ i).symm
 
-private def closureEliminationDirection {n : ℕ} (b : Option (Fin n) → ℤ) :
+private def closureEliminationDirection  (b : Option (Fin n) → ℤ) :
     Option (Fin (n + 1)) → ℤ :=
   Option.elim' (b none) (Fin.cons 0 (fun i => b (some i)))
 
-private lemma closureEliminationDirection_comp {n : ℕ} (b : Option (Fin n) → ℤ) :
+private lemma closureEliminationDirection_comp  (b : Option (Fin n) → ℤ) :
     (fun i => (closureEliminationDirection b (closurePivotEquiv n i) : ℚ)) =
       Fin.cons 0 (Fin.cons (b none : ℚ) (fun i => (b (some i) : ℚ))) := by
   funext i
@@ -144,7 +147,7 @@ private lemma closureEliminationDirection_comp {n : ℕ} (b : Option (Fin n) →
     · rw [closurePivotEquiv_succ_succ]
       rfl
 
-private lemma closureEliminationDirection_eval {n : ℕ} (b : Option (Fin n) → ℤ)
+private lemma closureEliminationDirection_eval  (b : Option (Fin n) → ℤ)
     (f : MvPolynomial (Fin (n + 1)) ℚ) :
     eval (fun i => (closureEliminationDirection b i : ℚ))
         (rename (closurePivotEquiv n) (scaledHomogenize f.totalDegree 1 f)) =
@@ -157,7 +160,7 @@ private lemma closureEliminationDirection_eval {n : ℕ} (b : Option (Fin n) →
 
 /-- A full-degree direction for an affine ideal equation gives an
 integral map of projective closures whose first coordinate remains X₀. -/
-theorem fixedCoordinateElimination_isIntegral {n : ℕ}
+theorem fixedCoordinateElimination_isIntegral 
     (I : Ideal (MvPolynomial (Fin (n + 1)) ℚ))
     (f : MvPolynomial (Fin (n + 1)) ℚ) (hf : f ≠ 0) (hfi : f ∈ I)
     (b : Option (Fin n) → ℤ) (hb : (b none : ℚ) ≠ 0)

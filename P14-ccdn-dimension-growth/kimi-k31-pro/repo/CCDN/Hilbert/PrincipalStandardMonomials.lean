@@ -18,15 +18,17 @@ namespace CCDN
 noncomputable section
 open MvPolynomial Finset
 
+variable {K σ : Type*} [Field K]
+
 /-- The finite set of standard exponents of `I`, for the monomial order `m`, of total degree at most
 `N`. -/
-def standardMonomialPrefix {K σ : Type*} [Field K] [Fintype σ]
+def standardMonomialPrefix  [Fintype σ]
     (I : Ideal (MvPolynomial σ K)) (m : MonomialOrder σ) (N : ℕ) :
     Finset (σ →₀ ℕ) := (Set.toFinite (Ideal.boundedStandardExponents I m N)).toFinset
 
 /-- An exponent lies in `standardMonomialPrefix I m N` exactly when it is a standard exponent of `I`
 of degree at most `N`. -/
-@[simp] lemma mem_standardMonomialPrefix {K σ : Type*} [Field K] [Fintype σ]
+@[simp] lemma mem_standardMonomialPrefix  [Fintype σ]
     (I : Ideal (MvPolynomial σ K)) (m : MonomialOrder σ) (N : ℕ) (a : σ →₀ ℕ) :
     a ∈ standardMonomialPrefix I m N ↔
       a ∈ Ideal.standardExponents I m ∧ Finsupp.degree a ≤ N := by
@@ -35,14 +37,14 @@ of degree at most `N`. -/
 
 /-- The number of degree-lexicographic standard exponents of `I` of degree at most `N` equals the
 affine Hilbert function of `I` at `N`. -/
-theorem standardMonomialPrefix_card {K σ : Type*} [Field K] [Fintype σ]
+theorem standardMonomialPrefix_card  [Fintype σ]
     [LinearOrder σ] (I : Ideal (MvPolynomial σ K)) (N : ℕ) :
     (standardMonomialPrefix I MonomialOrder.degLex N).card =
       Module.finrank K (filteredCoordinateSpace I N) := by
   rw [filteredCoordinateSpace_finrank_eq_standard_card]
   exact (Set.ncard_eq_toFinset_card _).symm
 
-private theorem standardMonomialPrefix_filter {K σ : Type*} [Field K] [Fintype σ]
+private theorem standardMonomialPrefix_filter  [Fintype σ]
     (I : Ideal (MvPolynomial σ K)) (m : MonomialOrder σ) {N k : ℕ} (hk : k ≤ N) :
     (standardMonomialPrefix I m N).filter (fun a => Finsupp.degree a ≤ k) =
       standardMonomialPrefix I m k := by
@@ -76,7 +78,7 @@ private theorem sum_weights_add_prefix_counts {α : Type*} (S : Finset α) (w : 
 
 /-- The total degree of a standard prefix is exactly the rank-weighted
 cutoff minus the preceding filtered Hilbert ranks. -/
-theorem standardMonomialPrefix_weight_identity {K σ : Type*} [Field K] [Fintype σ]
+theorem standardMonomialPrefix_weight_identity  [Fintype σ]
     [LinearOrder σ] (I : Ideal (MvPolynomial σ K)) (N : ℕ) :
     (∑ a ∈ standardMonomialPrefix I MonomialOrder.degLex N, Finsupp.degree a) +
         ∑ k ∈ range N, Module.finrank K (filteredCoordinateSpace I k) =

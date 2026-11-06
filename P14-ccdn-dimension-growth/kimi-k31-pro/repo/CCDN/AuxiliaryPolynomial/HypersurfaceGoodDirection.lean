@@ -17,31 +17,32 @@ namespace CCDN
 noncomputable section
 open MvPolynomial
 
+variable {K σ : Type*} [Field K]
+
 /-- The linear form evaluating a differential on a direction. -/
-private def tangentDirectionPolynomial {K σ : Type*} [Field K] [Fintype σ]
+private def tangentDirectionPolynomial  [Fintype σ]
     (f : MvPolynomial σ K) (z : σ → K) : MvPolynomial σ K :=
   ∑ i, C (eval z (pderiv i f)) * X i
 
-private lemma tangentDirectionPolynomial_coeff {K σ : Type*} [Field K] [Fintype σ]
+private lemma tangentDirectionPolynomial_coeff  [Fintype σ]
     (f : MvPolynomial σ K) (z : σ → K) (j : σ) :
     (tangentDirectionPolynomial f z).coeff (Finsupp.single j 1) = eval z (pderiv j f) := by
   classical
   simp [tangentDirectionPolynomial, coeff_C_mul, coeff_X, Finsupp.single_eq_single_iff]
 
-private lemma tangentDirectionPolynomial_eval {K σ : Type*} [Field K] [Fintype σ]
+private lemma tangentDirectionPolynomial_eval  [Fintype σ]
     (f : MvPolynomial σ K) (z b : σ → K) :
     eval b (tangentDirectionPolynomial f z) = ∑ i, eval z (pderiv i f) * b i := by
   simp [tangentDirectionPolynomial]
 
-private lemma tangentDirectionPolynomial_isHomogeneous {K σ : Type*} [Field K] [Fintype σ]
+private lemma tangentDirectionPolynomial_isHomogeneous  [Fintype σ]
     (f : MvPolynomial σ K) (z : σ → K) :
-    (tangentDirectionPolynomial f z).IsHomogeneous 1 := by
-  exact IsHomogeneous.sum _ _ _ (fun i _ => isHomogeneous_C_mul_X _ i)
+    (tangentDirectionPolynomial f z).IsHomogeneous 1 := IsHomogeneous.sum _ _ _ (fun i _ => isHomogeneous_C_mul_X _ i)
 
 /-- Over an infinite field, a smooth point admits a direction with nonzero
 leading form, nonzero directional derivative, and nonzero selected coordinate. -/
 theorem exists_good_hypersurface_direction_with_coordinate
-    {K σ : Type*} [Field K] [Infinite K] [Fintype σ]
+     [Infinite K] [Fintype σ]
     (f : MvPolynomial σ K) (hf : f ≠ 0) (z : σ → K)
     (j : σ) (hj : eval z (pderiv j f) ≠ 0) (k : σ) :
     ∃ b : σ → K, b k ≠ 0 ∧

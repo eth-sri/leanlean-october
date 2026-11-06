@@ -17,6 +17,8 @@ namespace CCDN
 noncomputable section
 open MvPolynomial
 
+variable {K σ : Type*} [Field K]
+
 /-- The bivariate restriction at a point of the full parameter space. -/
 def universalPlaneSection {K σ : Type*} [CommRing K]
     (f : MvPolynomial σ K) (v : PlaneParameters σ → K) : Polynomial (Polynomial K) :=
@@ -24,7 +26,7 @@ def universalPlaneSection {K σ : Type*} [CommRing K]
 
 /-- The plane parameters (possibly degenerate) at which the plane section of `f` drops total degree
 or is not geometrically irreducible. -/
-def BadPlaneParameters {K σ : Type*} [Field K] (f : MvPolynomial σ K) :=
+def BadPlaneParameters  (f : MvPolynomial σ K) :=
   {v : PlaneParameters σ → K //
     bivariateTotalDegree (universalPlaneSection f v) ≠ f.totalDegree ∨
       ¬Irreducible (bivariateMap (algebraMap K (AlgebraicClosure K)) (universalPlaneSection f v))}
@@ -37,7 +39,7 @@ lemma bivariateMap_comp_apply {R S T : Type*} [CommRing R] [CommRing S] [CommRin
   ext i j
   simp only [bivariateMap_coeff, RingHom.comp_apply]
 
-private lemma badPlaneParameters_witness_zero {K σ : Type*} [Field K] {p : ℕ} [CharP K p]
+private lemma badPlaneParameters_witness_zero  {p : ℕ} [CharP K p]
     (f : MvPolynomial σ K) (hpos : 0 < f.totalDegree) (hchar : f.totalDegree < p)
     (rows : Fin (2 * f.totalDegree ^ 2 - 1) → ℕ × ℕ)
     (cols : Fin (2 * f.totalDegree ^ 2 - 1) → ClosedFormColumns f.totalDegree)
@@ -58,7 +60,7 @@ private lemma badPlaneParameters_witness_zero {K σ : Type*} [Field K] {p : ℕ}
 
 /-- The proportion of geometrically bad plane parameters is at most 2*d^3/q. -/
 private theorem finite_field_bad_plane_parameters_mul_card
-    {K σ : Type*} [Field K] [Fintype K] [Fintype σ] {p : ℕ} [CharP K p]
+     [Fintype K] [Fintype σ] {p : ℕ} [CharP K p]
     (f : MvPolynomial (Option σ) K)
     (hf : Irreducible (MvPolynomial.map (algebraMap K (AlgebraicClosure K)) f))
     (hpos : 0 < f.totalDegree) (hchar : 2 * f.totalDegree ^ 2 < p) :
@@ -84,7 +86,7 @@ private theorem finite_field_bad_plane_parameters_mul_card
 /-- In m ambient coordinates, at most 2*d^3*q^(3*m-1) parameter choices
 are bad. This counts triples (base point, first direction, second direction). -/
 theorem finite_field_bad_plane_parameters_card
-    {K σ : Type*} [Field K] [Fintype K] [Fintype σ] {p : ℕ} [CharP K p]
+     [Fintype K] [Fintype σ] {p : ℕ} [CharP K p]
     (f : MvPolynomial (Option σ) K)
     (hf : Irreducible (MvPolynomial.map (algebraMap K (AlgebraicClosure K)) f))
     (hpos : 0 < f.totalDegree) (hchar : 2 * f.totalDegree ^ 2 < p) :

@@ -87,8 +87,7 @@ theorem ambientNoetherForm_homogeneous (σ : Type*) [Fintype σ] [DecidableEq σ
     (k : ℕ) (rows : Fin ((k + 2) ^ 2 - 1) → ℕ × ℕ)
     (cols : Fin ((k + 2) ^ 2 - 1) → EulerColumns k)
     (m : PlaneParameters σ →₀ ℕ) :
-    (ambientNoetherForm σ k rows cols m).IsHomogeneous ((k + 2) ^ 2 - 1) := by
-  exact CoefficientwiseHomogeneous.det _ (fun i j =>
+    (ambientNoetherForm σ k rows cols m).IsHomogeneous ((k + 2) ^ 2 - 1) := CoefficientwiseHomogeneous.det _ (fun i j =>
     ambientEulerEntryLinear_coefficientwiseHomogeneous σ k (rows i) (cols j)) m
 
 private lemma ambientNoetherParameterMinor_specialize {R σ : Type*} [CommRing R]

@@ -23,7 +23,8 @@ open MvPolynomial
 /-- The affine curve counting bound `AffineCurveBound` of CCDN Theorem 3: the plane bound, after
 a degree-preserving bounded projection to the plane. -/
 theorem affine_curve_count : AffineCurveBound := by
-  obtain ⟨C, hC, hplane⟩ := planeCurveBound
+  obtain ⟨C, hC, hplane⟩ :=
+    planeCurveBound_of_residue_bound planeResidueConstant_pos.le planeResidueBound
   intro n _hn
   let K := Real.exp (projectionLogConstant n) * (projectionLogConstant n + 1)
   have hK : 0 < K := by

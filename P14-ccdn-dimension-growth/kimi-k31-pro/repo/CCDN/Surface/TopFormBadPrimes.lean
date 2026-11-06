@@ -46,7 +46,7 @@ theorem absolute_irreducible_of_top_homogeneousComponent_irreducible {σ : Type*
 
 /-- The affine bad-prime factor is no greater than that of the top
  form when the latter is absolutely irreducible. -/
-theorem hypersurfaceBadPrimeFactor_le_top_homogeneousComponent {n : ℕ}
+theorem badPrimeFactor_le_top_homogeneousComponent {n : ℕ}
     (f : MvPolynomial (Fin (n + 1)) ℤ)
     (hir : HasAbsIrreducibleTopForm f) :
     hypersurfaceBadPrimeFactor f ≤
@@ -54,7 +54,7 @@ theorem hypersurfaceBadPrimeFactor_le_top_homogeneousComponent {n : ℕ}
   have htop : homogeneousComponent f.totalDegree f ≠ 0 := by
     intro hz
     exact hir.ne_zero (by rw [hz, map_zero])
-  apply hypersurfaceBadPrimeFactor_mono_of_badReduction_imp
+  apply badPrimeFactor_mono_of_badReduction_imp
   · exact ((homogeneousComponent_isHomogeneous _ _).totalDegree htop).symm
   · exact fun _ => hir
   · exact hypersurfaceBadReduction_imp_top_homogeneousComponent f

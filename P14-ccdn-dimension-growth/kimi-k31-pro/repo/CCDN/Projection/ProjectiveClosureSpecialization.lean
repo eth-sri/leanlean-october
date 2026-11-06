@@ -17,6 +17,8 @@ namespace CCDN
 noncomputable section
 open MvPolynomial
 
+variable {K : Type*} [Field K] {n : ℕ}
+
 /-- Dehomogenization at `X 0 = 1`, as a `K`-algebra homomorphism from polynomials in `n + 1`
 variables to polynomials in `n` variables. -/
 def affineChartAlgHom (K : Type*) [Field K] (n : ℕ) :
@@ -26,7 +28,7 @@ def affineChartAlgHom (K : Type*) [Field K] (n : ℕ) :
 
 /-- Dehomogenizing at `X 0 = 1` an element of the projective closure of `I` gives an element of `I`.
 -/
-lemma projectiveClosureIdeal_affineChart_mem {K : Type*} [Field K] {n : ℕ}
+lemma projectiveClosureIdeal_affineChart_mem  
     (I : Ideal (MvPolynomial (Fin n) K)) (f : MvPolynomial (Fin (n + 1)) K)
     (hf : f ∈ projectiveClosureIdeal I) : affineChart n f ∈ I := by
   have h : affineChart n
@@ -37,7 +39,7 @@ lemma projectiveClosureIdeal_affineChart_mem {K : Type*} [Field K] {n : ℕ}
 
 /-- The specialization `X 0 = 1` from the homogeneous coordinate ring of the projective closure of
 `I` to the affine coordinate ring of `I`. -/
-def projectiveClosureSpecialization {K : Type*} [Field K] {n : ℕ}
+def projectiveClosureSpecialization  
     (I : Ideal (MvPolynomial (Fin n) K)) :
     (MvPolynomial (Fin (n + 1)) K ⧸ projectiveClosureIdeal I) →ₐ[K]
       (MvPolynomial (Fin n) K ⧸ I) :=
@@ -47,12 +49,12 @@ def projectiveClosureSpecialization {K : Type*} [Field K] {n : ℕ}
       (projectiveClosureIdeal_affineChart_mem I f hf))
 
 /-- The specialization `X 0 = 1` sends the class of `f` to the class of its dehomogenization. -/
-@[simp] lemma projectiveClosureSpecialization_mk {K : Type*} [Field K] {n : ℕ}
+@[simp] lemma projectiveClosureSpecialization_mk  
     (I : Ideal (MvPolynomial (Fin n) K)) (f : MvPolynomial (Fin (n + 1)) K) :
     projectiveClosureSpecialization I (Ideal.Quotient.mk (projectiveClosureIdeal I) f) =
       Ideal.Quotient.mk I (affineChart n f) := rfl
 
-private theorem projectiveClosureSpecialization_surjective {K : Type*} [Field K] {n : ℕ}
+private theorem projectiveClosureSpecialization_surjective  
     (I : Ideal (MvPolynomial (Fin n) K)) :
     Function.Surjective (projectiveClosureSpecialization I) := by
   intro x
@@ -63,7 +65,7 @@ private theorem projectiveClosureSpecialization_surjective {K : Type*} [Field K]
 /-- If the projection of the projective closure of `I` by the closure coordinates `X 0, a 0, a 1, …`
 is integral, then the affine projection of `I` by the forms `a` is integral. -/
 theorem affine_projection_integral_of_closure_integral
-    {K : Type*} [Field K] {m n : ℕ}
+     {m n : ℕ}
     (I : Ideal (MvPolynomial (Fin n) K)) (a : Fin m → MvPolynomial (Fin n) K)
     (hint : (projectionCoordinateMap (projectiveClosureIdeal I)
       (closureProjectionCoordinates a)).IsIntegral) :

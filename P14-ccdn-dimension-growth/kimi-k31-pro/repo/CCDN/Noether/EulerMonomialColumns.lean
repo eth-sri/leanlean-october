@@ -15,9 +15,11 @@ namespace CCDN
 noncomputable section
 open Polynomial
 
+variable {R : Type*} [CommRing R]
+
 /-- The nested polynomial associated with a monomial in two variables is the nested monomial with
 outer exponent `m 0` and inner exponent `m 1`. -/
-lemma bivariatePolynomialEquiv_monomial {R : Type*} [CommRing R]
+lemma bivariatePolynomialEquiv_monomial 
     (m : Fin 2 →₀ ℕ) (a : R) :
     bivariatePolynomialEquiv R (MvPolynomial.monomial m a) =
       monomial (m 0) (monomial (m 1) a) := by
@@ -32,7 +34,7 @@ lemma bivariatePolynomialEquiv_monomial {R : Type*} [CommRing R]
 /-- For the monomial equation with outer and inner exponents `s` and `t`, the closed-form operator
 sends the pair `(monomial, 0)` with exponents `m`, `n` to a single monomial with coefficient
 `n - t`. -/
-lemma closedFormOperator_monomial_left {R : Type*} [CommRing R]
+lemma closedFormOperator_monomial_left 
     (m n s t : ℕ) :
     closedFormOperator (monomial s (monomial t (1 : R)))
       (monomial m (monomial n 1), 0) =
@@ -55,7 +57,7 @@ lemma closedFormOperator_monomial_left {R : Type*} [CommRing R]
 /-- For the monomial equation with outer and inner exponents `s` and `t`, the closed-form operator
 sends the pair `(0, monomial)` with exponents `m`, `n` to a single monomial with coefficient
 `s - m`. -/
-lemma closedFormOperator_monomial_right {R : Type*} [CommRing R]
+lemma closedFormOperator_monomial_right 
     (m n s t : ℕ) :
     closedFormOperator (monomial s (monomial t (1 : R)))
       (0, monomial m (monomial n 1)) =
@@ -79,7 +81,7 @@ lemma closedFormOperator_monomial_right {R : Type*} [CommRing R]
 /-- The closed-form operator of a monomial equation applied to a radial monomial pair is a single
 monomial, whose coefficient is the degree of the radial pair's homogeneous factor plus two minus
 the total degree of the equation. -/
-lemma closedFormOperator_monomial_radial {R : Type*} [CommRing R]
+lemma closedFormOperator_monomial_radial 
     (m n s t : ℕ) :
     closedFormOperator (monomial s (monomial t (1 : R)))
       (monomial m (monomial (n + 1) (1 : R)), -(monomial (m + 1) (monomial n (1 : R)))) =

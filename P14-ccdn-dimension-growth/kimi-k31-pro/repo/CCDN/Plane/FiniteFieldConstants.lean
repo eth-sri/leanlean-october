@@ -75,22 +75,6 @@ def hypersurfaceResidueConstant : ℝ := 164
 `2 (H + 1) p^(m-2)`, and `1 ≤ d² √p` (`projectiveHypersurfaceResidueConstant_eq_add`). -/
 def projectiveHypersurfaceResidueConstant : ℝ := 330
 
-/-- The value of `planeResidueConstant` is `161`. -/
-lemma planeResidueConstant_eq : planeResidueConstant = 161 := rfl
-
-/-- The value of `projectivePlaneResidueConstant` is `162`. -/
-lemma projectivePlaneResidueConstant_eq : projectivePlaneResidueConstant = 162 := rfl
-
-/-- The value of `projectivePlaneDeterminantConstant` is `164`. -/
-lemma projectivePlaneDeterminantConstant_eq : projectivePlaneDeterminantConstant = 164 := rfl
-
-/-- The value of `hypersurfaceResidueConstant` is `164`. -/
-lemma hypersurfaceResidueConstant_eq : hypersurfaceResidueConstant = 164 := rfl
-
-/-- The value of `projectiveHypersurfaceResidueConstant` is `330`. -/
-lemma projectiveHypersurfaceResidueConstant_eq : projectiveHypersurfaceResidueConstant = 330 :=
-  rfl
-
 /-- The plane constant `planeResidueConstant` is positive. -/
 lemma planeResidueConstant_pos : 0 < planeResidueConstant := by
   norm_num [planeResidueConstant]

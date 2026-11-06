@@ -22,7 +22,9 @@ namespace CCDN
 noncomputable section
 open MvPolynomial
 
-private lemma affineChart_not_variable_dvd_of_full_degree {K : Type*} [Field K] {n : ℕ}
+variable {n : ℕ}
+
+private lemma affineChart_not_variable_dvd_of_full_degree {K : Type*} [Field K] 
     (f : MvPolynomial (Fin (n + 1)) K) (hf : f ≠ 0)
     (hd : (affineChart n f).totalDegree = f.totalDegree) : ¬ X 0 ∣ f := by
   rintro ⟨g, he⟩
@@ -37,7 +39,7 @@ private lemma affineChart_not_variable_dvd_of_full_degree {K : Type*} [Field K] 
 
 /-- A nonzero integer polynomial is absolutely irreducible if and only if its ordinary
 homogenization is. -/
-lemma unscaledHomogenize_absolute_irreducible_iff {n : ℕ}
+lemma unscaledHomogenize_absolute_irreducible_iff 
     (f : MvPolynomial (Fin n) ℤ) (hf : f ≠ 0) :
     AbsolutelyIrreducible (scaledHomogenize f.totalDegree 1 f) ↔ AbsolutelyIrreducible f := by
   let φ := Int.castRingHom (AlgebraicClosure ℚ)
@@ -61,7 +63,7 @@ lemma unscaledHomogenize_absolute_irreducible_iff {n : ℕ}
     rw [← hd]
     exact scaledHomogenize_irreducible _ hir one_ne_zero
 
-private lemma hypersurfaceBadReduction_unscaledHomogenize_imp {n : ℕ}
+private lemma hypersurfaceBadReduction_unscaledHomogenize_imp 
     (f : MvPolynomial (Fin n) ℤ) (hf : f ≠ 0) (p : ℕ) :
     HypersurfaceBadReduction (scaledHomogenize f.totalDegree 1 f) p →
       HypersurfaceBadReduction f p := by
@@ -81,7 +83,7 @@ private lemma hypersurfaceBadReduction_unscaledHomogenize_imp {n : ℕ}
 
 /-- Inclusion of the geometric bad-prime sets gives monotonicity of
  the corresponding factors, even across different numbers of variables. -/
-theorem hypersurfaceBadPrimeFactor_mono_of_badReduction_imp {n m : ℕ}
+theorem badPrimeFactor_mono_of_badReduction_imp {n m : ℕ}
     (f : MvPolynomial (Fin (n + 1)) ℤ) (g : MvPolynomial (Fin (m + 1)) ℤ)
     (hd : f.totalDegree = g.totalDegree)
     (habs : AbsolutelyIrreducible f → AbsolutelyIrreducible g)
@@ -103,23 +105,23 @@ theorem hypersurfaceBadPrimeFactor_mono_of_badReduction_imp {n m : ℕ}
     have hsub : S ⊆ T := by
       intro q hq
       exact (hT q).mpr ⟨hd ▸ ((hS q).mp hq).1, hbad q ((hS q).mp hq).2⟩
-    rw [hypersurfaceBadPrimeFactor_eq_exp f hf rfl S hS,
-      hypersurfaceBadPrimeFactor_eq_exp g hg rfl T hT]
+    rw [hypersurfaceBadPrimeFactor_eq_exp (f := f) hf rfl S hS,
+      hypersurfaceBadPrimeFactor_eq_exp (f := g) hg rfl T hT]
     apply Real.exp_le_exp.mpr
     apply Finset.sum_le_sum_of_subset_of_nonneg hsub
     intro q hq _
     have hprime := ((hT q).mp hq).2.1
     exact div_nonneg (Real.log_nonneg (by exact_mod_cast hprime.one_le)) (Nat.cast_nonneg q)
-  · rw [hypersurfaceBadPrimeFactor_eq_zero f hf]
-    exact hypersurfaceBadPrimeFactor_nonneg g
+  · rw [hypersurfaceBadPrimeFactor_eq_zero (f := f) hf]
+    exact badPrimeFactor_nonneg g
 
 /-- Homogenization never enlarges the affine factor based on the repository's
  degree-loss-inclusive bad-reduction predicate. This holds also in degree one. -/
-theorem hypersurfaceBadPrimeFactor_unscaledHomogenize_le {n : ℕ}
+theorem badPrimeFactor_unscaledHomogenize_le 
     (f : MvPolynomial (Fin (n + 1)) ℤ) (hf : f ≠ 0) :
     hypersurfaceBadPrimeFactor (scaledHomogenize f.totalDegree 1 f) ≤
       hypersurfaceBadPrimeFactor f := by
-  apply hypersurfaceBadPrimeFactor_mono_of_badReduction_imp
+  apply badPrimeFactor_mono_of_badReduction_imp
   · exact (scaledHomogenize_homogeneous 1 f le_rfl).totalDegree
       (scaledHomogenize_ne_zero _ one_ne_zero hf)
   · exact (unscaledHomogenize_absolute_irreducible_iff f hf).mp

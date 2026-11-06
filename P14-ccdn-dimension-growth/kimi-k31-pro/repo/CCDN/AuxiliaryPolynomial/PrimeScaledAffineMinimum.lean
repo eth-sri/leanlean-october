@@ -119,9 +119,9 @@ private theorem scaled_hypersurface_auxiliary_badPrime_bound {n : ℕ}
                   (f.totalDegree : ℝ) ^ (1 / (n + 1 : ℝ)))) +
           (f.totalDegree : ℝ) ^ (1 - 1 / (n + 1 : ℝ)) * Real.log B +
             (f.totalDegree : ℝ) ^ (4 - 1 / (n + 1 : ℝ))) := by
-  have hbad := hypersurfaceBadPrimeFactor_scaledHomogenize_le f hf hp
+  have hbad := badPrimeFactor_scaledHomogenize_le f hf hp
   exact scaled_hypersurface_auxiliary_bound_of_badPrime_le f hf hd hp hA hB hBp
-    (hypersurfaceBadPrimeFactor_nonneg _) (hypersurfaceBadPrimeFactor_nonneg _) hbad
+    (badPrimeFactor_nonneg _) (badPrimeFactor_nonneg _) hbad
 
 /-- The auxiliary degree bound of the `p`-scaled homogenization is at most
 `affineMinimumAuxiliaryBound`, the minimum of the two coefficient estimates, so the auxiliary
@@ -145,7 +145,7 @@ private theorem scaled_hypersurface_auxiliary_minimum_bound {n : ℕ}
   have hT : 0 ≤ T := add_nonneg
     (add_nonneg (Real.log_nonneg hL) (mul_nonneg (Nat.cast_nonneg d) (Real.log_nonneg hB)))
     (sq_nonneg _)
-  have hb : 0 ≤ b := hypersurfaceBadPrimeFactor_nonneg _
+  have hb : 0 ≤ b := badPrimeFactor_nonneg _
   have hA0 : 0 ≤ A := zero_le_one.trans hA
   by_cases hmin : T ≤ (d : ℝ) ^ 2 * b
   · apply (scaled_hypersurface_auxiliary_bound f hf hd

@@ -101,7 +101,7 @@ theorem affine_hypersurface_auxiliary {n : ℕ}
   let A := affineAuxiliaryComparisonConstant n
   have hA : 0 ≤ A := zero_le_one.trans (affineAuxiliaryComparisonConstant_one_le n)
   have hL : 1 ≤ L := leading_height_one_le f hir.ne_zero
-  have hb : 0 ≤ b := hypersurfaceBadPrimeFactor_nonneg f
+  have hb : 0 ≤ b := badPrimeFactor_nonneg f
   obtain ⟨a, ha, hc⟩ := exists_bounded_affine_translation_nonzero_constant f hir.ne_zero
   let t := affineTranslation ℤ a f
   have htprim : PrimitiveIntegerPolynomial t := hprim.translate_affine a
@@ -121,7 +121,7 @@ theorem affine_hypersurface_auxiliary {n : ℕ}
     have htop : homogeneousComponent t.totalDegree t = homogeneousComponent d f :=
       affineTranslation_leading_homogeneousComponent a f
     rw [htop, htd] at hgdeg
-    simpa only [t, hypersurfaceBadPrimeFactor_affineTranslation] using hgdeg
+    simpa only [t, badPrimeFactor_affineTranslation] using hgdeg
   rw [hGdeg]
   apply (htle.trans (affineMinimumAuxiliaryBound_translation hd hA hB hL hb)).trans
   have hh := mul_le_mul_of_nonneg_left

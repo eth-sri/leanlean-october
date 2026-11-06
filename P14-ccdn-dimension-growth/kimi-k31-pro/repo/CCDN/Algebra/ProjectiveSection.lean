@@ -25,8 +25,7 @@ variable {K : Type*} [Field K]
 
 instance homogeneousCoordinateSpace_finite {n : ℕ}
     (I : Ideal (MvPolynomial (Fin (n + 1)) K)) (M : ℕ) :
-    Module.Finite K (homogeneousCoordinateSpace I M) := by
-  exact Module.Finite.of_fg
+    Module.Finite K (homogeneousCoordinateSpace I M) := Module.Finite.of_fg
     ((homogeneousSubmodule_fg _ _ _).map (Ideal.Quotient.mkₐ K I).toLinearMap)
 
 /-- The graded Hilbert function of `I`: the dimension of the degree-`M` part of the coordinate

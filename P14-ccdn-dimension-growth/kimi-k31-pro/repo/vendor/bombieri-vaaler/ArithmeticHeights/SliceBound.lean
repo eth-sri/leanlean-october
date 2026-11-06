@@ -240,14 +240,6 @@ theorem hasSliceBound_closedBall [NormedAddCommGroup E] [NormedSpace ℝ E]
     _ = μ (A ∩ closedBall (0 : E) ρ) := by
         rw [lintegral_indicator (hA.inter measurableSet_closedBall), setLIntegral_one]
 
-/-- **Bombieri–Gubler's Lemma C.3.7 for a single block**: the Gauss measure of a measurable convex
-symmetric set is at most its volume inside the ball of volume one. -/
-theorem hasSliceBound_unitVolumeBall [NormedAddCommGroup E] [InnerProductSpace ℝ E]
-    [MeasurableSpace E] [BorelSpace E] [FiniteDimensional ℝ E] :
-    HasSliceBound (volume : Measure E) gaussDensity (closedBall (0 : E) (unitVolumeRadius E)) :=
-  hasSliceBound_closedBall volume unitVolumeRadius_pos volume_closedBall_unitVolumeRadius
-    lintegral_gaussDensity_eq_one
-
 /-- **The induction step of Bombieri–Gubler's Lemma C.3.7.** If the slice bound holds in each
 factor, for densities that are log-concave and even, then it holds for the product measure, the
 product density and the product of the two sets. -/

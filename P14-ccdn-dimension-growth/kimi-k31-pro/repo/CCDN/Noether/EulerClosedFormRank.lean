@@ -19,6 +19,8 @@ namespace CCDN
 noncomputable section
 open Polynomial
 
+variable {R : Type*} [CommRing R]
+
 /-- The explicit Euler pair, in the nested polynomial ring used by the
 closed-form classification. -/
 def eulerBivariatePair (R : Type*) [CommRing R] (k : ℕ) :
@@ -26,21 +28,21 @@ def eulerBivariatePair (R : Type*) [CommRing R] (k : ℕ) :
   ((bivariatePolynomialEquiv R).toLinearMap.prodMap
     (bivariatePolynomialEquiv R).toLinearMap).comp (eulerPairCoordinates R k)
 
-private lemma eulerBivariatePair_fst_degree {R : Type*} [CommRing R] (k : ℕ)
+private lemma eulerBivariatePair_fst_degree  (k : ℕ)
     (u : EulerPairSpace R k) : bivariateTotalDegree (eulerBivariatePair R k u).1 ≤ k + 1 := by
   change ((bivariatePolynomialEquiv R).symm
     (bivariatePolynomialEquiv R (eulerPairCoordinates R k u).1)).totalDegree ≤ _
   rw [AlgEquiv.symm_apply_apply]
   exact eulerPairCoordinates_fst_degree k u
 
-private lemma eulerBivariatePair_snd_degree {R : Type*} [CommRing R] (k : ℕ)
+private lemma eulerBivariatePair_snd_degree  (k : ℕ)
     (u : EulerPairSpace R k) : bivariateTotalDegree (eulerBivariatePair R k u).2 ≤ k + 1 := by
   change ((bivariatePolynomialEquiv R).symm
     (bivariatePolynomialEquiv R (eulerPairCoordinates R k u).2)).totalDegree ≤ _
   rw [AlgEquiv.symm_apply_apply]
   exact eulerPairCoordinates_snd_degree k u
 
-private lemma eulerBivariatePair_contraction_degree {R : Type*} [CommRing R] (k : ℕ)
+private lemma eulerBivariatePair_contraction_degree  (k : ℕ)
     (u : EulerPairSpace R k) :
     bivariateTotalDegree (bivariateEulerContraction R (eulerBivariatePair R k u)) ≤ k + 1 := by
   simp only [bivariateEulerContraction, eulerBivariatePair, LinearMap.comp_apply,
@@ -62,7 +64,7 @@ private lemma eulerBivariatePair_injective {F : Type*} [Field F] (k : ℕ) :
     exact congrArg Prod.snd huv
 
 /-- Closed-form operator on exactly d^2-1 explicit polynomial parameters. -/
-def eulerClosedFormOperator {R : Type*} [CommRing R] (k : ℕ) (f : R[X][X]) :
+def eulerClosedFormOperator  (k : ℕ) (f : R[X][X]) :
     EulerPairSpace R k →ₗ[R] R[X][X] :=
   (closedFormOperator f).comp (eulerBivariatePair R k)
 

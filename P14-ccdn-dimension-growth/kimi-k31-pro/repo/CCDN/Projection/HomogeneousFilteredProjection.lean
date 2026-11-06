@@ -18,16 +18,18 @@ namespace CCDN
 noncomputable section
 open MvPolynomial
 
-private def degreeTruncation {K σ : Type*} [Field K] (N : ℕ) :
+variable {K σ : Type*} [Field K]
+
+private def degreeTruncation  (N : ℕ) :
     MvPolynomial σ K →ₗ[K] MvPolynomial σ K :=
   ∑ i ∈ Finset.range (N + 1), homogeneousComponent i
 
-private lemma degreeTruncation_apply {K σ : Type*} [Field K] (N : ℕ)
+private lemma degreeTruncation_apply  (N : ℕ)
     (p : MvPolynomial σ K) :
     degreeTruncation N p = ∑ i ∈ Finset.range (N + 1), homogeneousComponent i p := by
   simp [degreeTruncation]
 
-private lemma degreeTruncation_degree {K σ : Type*} [Field K] (N : ℕ)
+private lemma degreeTruncation_degree  (N : ℕ)
     (p : MvPolynomial σ K) : (degreeTruncation N p).totalDegree ≤ N := by
   rw [degreeTruncation_apply]
   apply totalDegree_finsetSum_le
@@ -35,7 +37,7 @@ private lemma degreeTruncation_degree {K σ : Type*} [Field K] (N : ℕ)
   exact (homogeneousComponent_isHomogeneous i p).totalDegree_le.trans
     (Nat.le_of_lt_succ (Finset.mem_range.mp hi))
 
-private lemma degreeTruncation_eq_self {K σ : Type*} [Field K] (N : ℕ)
+private lemma degreeTruncation_eq_self  (N : ℕ)
     (p : MvPolynomial σ K) (hp : p.totalDegree ≤ N) : degreeTruncation N p = p := by
   rw [degreeTruncation_apply]
   conv_rhs => rw [← sum_homogeneousComponent (φ := p)]

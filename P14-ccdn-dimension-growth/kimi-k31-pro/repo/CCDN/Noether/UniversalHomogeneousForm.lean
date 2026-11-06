@@ -18,6 +18,8 @@ namespace CCDN
 noncomputable section
 open MvPolynomial
 
+variable {R σ : Type*} [CommRing R]
+
 /-- The exponent vector of degree `d` in the variables `σ` corresponding to a multiset `i` of size
 `d`. -/
 def homogeneousCoefficientExponent (σ : Type*) [Fintype σ] [DecidableEq σ]
@@ -40,13 +42,13 @@ def universalHomogeneousForm (σ : Type*) [Fintype σ] [DecidableEq σ] (d : ℕ
   ∑ i, monomial (homogeneousCoefficientExponent σ d i) (X i)
 
 /-- The coefficient of `f` at the degree-`d` monomial indexed by `i`. -/
-def homogeneousCoefficientData {R σ : Type*} [CommRing R] [Fintype σ] [DecidableEq σ]
+def homogeneousCoefficientData  [Fintype σ] [DecidableEq σ]
     (d : ℕ) (f : MvPolynomial σ R) (i : Sym σ d) : R :=
   f.coeff (homogeneousCoefficientExponent σ d i)
 
 /-- A homogeneous polynomial `f` of degree `d` is the sum of its degree-`d` monomials weighted by
 `homogeneousCoefficientData d f`. -/
-theorem homogeneousCoefficientData_reconstruct {R σ : Type*} [CommRing R]
+theorem homogeneousCoefficientData_reconstruct 
     [Fintype σ] [DecidableEq σ] (d : ℕ)
     (f : MvPolynomial σ R) (hf : f.IsHomogeneous d) :
     ∑ i : Sym σ d, monomial (homogeneousCoefficientExponent σ d i)
@@ -75,13 +77,13 @@ theorem homogeneousCoefficientData_reconstruct {R σ : Type*} [CommRing R]
 
 /-- The ring homomorphism from the integer polynomials in the coefficient variables to `R` that
 sends each coefficient variable to the corresponding coefficient of `f`. -/
-def homogeneousCoefficientSpecialization {R σ : Type*} [CommRing R] [Fintype σ] [DecidableEq σ]
+def homogeneousCoefficientSpecialization  [Fintype σ] [DecidableEq σ]
     (d : ℕ) (f : MvPolynomial σ R) : MvPolynomial (Sym σ d) ℤ →+* R :=
   eval₂Hom (Int.castRingHom R) (homogeneousCoefficientData d f)
 
 /-- The coefficient variables specialize to the homogeneous equation,
 over every commutative coefficient ring. -/
-theorem universalHomogeneousForm_specialize {R σ : Type*} [CommRing R]
+theorem universalHomogeneousForm_specialize 
     [Fintype σ] [DecidableEq σ] (d : ℕ)
     (f : MvPolynomial σ R) (hf : f.IsHomogeneous d) :
     MvPolynomial.map (homogeneousCoefficientSpecialization d f) (universalHomogeneousForm σ d) =

@@ -97,8 +97,7 @@ theorem originLayer_cumulative_le {K : Type*} [Field K] {n μ : ℕ}
     (hf : f ∈ idealOfVars (Fin (n + 2)) K ^ μ)
     (hμ : homogeneousComponent μ f ≠ 0) (k : ℕ) :
     (∑ j : Fin (k + 1), Module.finrank K (originLayer f j.val)) ≤
-      μ * (n + k + 1).choose (n + 1) := by
-  exact (Finset.sum_le_sum (fun j _ =>
+      μ * (n + k + 1).choose (n + 1) := (Finset.sum_le_sum (fun _ _ =>
     originLayer_finrank_le_hypersurfaceLayerBound f hf hμ)).trans
       (sum_hypersurfaceLayerBound_le n μ k)
 

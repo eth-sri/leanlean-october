@@ -16,6 +16,8 @@ namespace CCDN
 noncomputable section
 open MvPolynomial
 
+variable {R : Type*} [CommRing R]
+
 /-- The `R`-algebra endomorphism of `MvPolynomial (Fin (n + 1)) R` that substitutes `C h * X 0` for
 the first variable and fixes the other variables. -/
 def firstCoordinateScaleHom (R : Type*) [CommRing R] {n : ℕ} (h : R) :
@@ -23,7 +25,7 @@ def firstCoordinateScaleHom (R : Type*) [CommRing R] {n : ℕ} (h : R) :
   aeval (Fin.cons (C h * X 0) (fun j => X j.succ))
 
 /-- Composing the scalings of the first variable by `h` and by `k` gives the scaling by `k * h`. -/
-lemma firstCoordinateScaleHom_comp {R : Type*} [CommRing R] {n : ℕ} (h k : R) :
+lemma firstCoordinateScaleHom_comp  {n : ℕ} (h k : R) :
     (firstCoordinateScaleHom R (n := n) h).comp (firstCoordinateScaleHom R k) =
       firstCoordinateScaleHom R (k * h) := by
   apply MvPolynomial.algHom_ext
@@ -48,7 +50,7 @@ def firstCoordinateScale (K : Type*) [Field K] {n : ℕ} (h : K) (hh : h ≠ 0) 
     (by rw [firstCoordinateScaleHom_comp, mul_inv_cancel₀ hh, firstCoordinateScaleHom_one])
 
 /-- Scaling the first variable preserves homogeneity of degree `d`. -/
-lemma firstCoordinateScaleHom_homogeneous {R : Type*} [CommRing R] {n d : ℕ}
+lemma firstCoordinateScaleHom_homogeneous  {n d : ℕ}
     (h : R) {f : MvPolynomial (Fin (n + 1)) R} (hf : f.IsHomogeneous d) :
     (firstCoordinateScaleHom R h f).IsHomogeneous d := by
   let v : Fin (n + 1) → MvPolynomial (Fin (n + 1)) R :=
@@ -63,13 +65,13 @@ lemma firstCoordinateScaleHom_homogeneous {R : Type*} [CommRing R] {n d : ℕ}
 
 /-- Restriction of a polynomial in `n + 1` variables to the slice `x₀ = h`: the ring homomorphism
 sending `X 0` to `C h` and `X i.succ` to `X i`. -/
-def homogeneousSlice {R : Type*} [CommRing R] (n : ℕ) (h : R) :
+def homogeneousSlice  (n : ℕ) (h : R) :
     MvPolynomial (Fin (n + 1)) R →+* MvPolynomial (Fin n) R :=
   eval₂Hom C (Fin.cons (C h) X)
 
 /-- The restriction of `f` to the slice `x₀ = h` is the affine chart `x₀ = 1` of `f` with its first
 variable scaled by `h`. -/
-lemma homogeneousSlice_eq_chart_scale {R : Type*} [CommRing R] {n : ℕ}
+lemma homogeneousSlice_eq_chart_scale  {n : ℕ}
     (h : R) (f : MvPolynomial (Fin (n + 1)) R) :
     homogeneousSlice n h f = affineChart n (firstCoordinateScaleHom R h f) := by
   have he : homogeneousSlice n h =
@@ -84,7 +86,7 @@ lemma homogeneousSlice_eq_chart_scale {R : Type*} [CommRing R] {n : ℕ}
 
 /-- Evaluating the restriction of `f` to the slice `x₀ = h` at `x` is evaluating `f` at the point
 `Fin.cons h x`. -/
-lemma homogeneousSlice_eval {R : Type*} [CommRing R] {n : ℕ}
+lemma homogeneousSlice_eval  {n : ℕ}
     (h : R) (f : MvPolynomial (Fin (n + 1)) R) (x : Fin n → R) :
     eval x (homogeneousSlice n h f) = eval (Fin.cons h x) f := by
   change eval x (eval₂ C (Fin.cons (C h) X) f) = _
@@ -95,7 +97,7 @@ lemma homogeneousSlice_eval {R : Type*} [CommRing R] {n : ℕ}
 
 /-- The restriction of a homogeneous polynomial of degree `d` to the slice `x₀ = h` has total degree
 at most `d`. -/
-lemma homogeneousSlice_degree_le {R : Type*} [CommRing R] {n d : ℕ}
+lemma homogeneousSlice_degree_le  {n d : ℕ}
     (h : R) {f : MvPolynomial (Fin (n + 1)) R} (hf : f.IsHomogeneous d) :
     (homogeneousSlice n h f).totalDegree ≤ d := by
   rw [homogeneousSlice_eq_chart_scale]
@@ -104,7 +106,7 @@ lemma homogeneousSlice_degree_le {R : Type*} [CommRing R] {n d : ℕ}
 
 /-- The restriction of the monomial `monomial m c` to the slice `x₀ = h` is the monomial with
 exponent `chartExponent m` and coefficient `c * h ^ m 0`. -/
-lemma homogeneousSlice_monomial {R : Type*} [CommRing R] {n : ℕ}
+lemma homogeneousSlice_monomial  {n : ℕ}
     (h : R) (m : Fin (n + 1) →₀ ℕ) (c : R) :
     homogeneousSlice n h (monomial m c) = monomial (chartExponent m) (c * h ^ m 0) := by
   change eval₂ C (Fin.cons (C h) X) (monomial m c) = _
@@ -115,7 +117,7 @@ lemma homogeneousSlice_monomial {R : Type*} [CommRing R] {n : ℕ}
 
 /-- If `f` has total degree at most `d`, then restricting the scaled homogenization
 `scaledHomogenize d h f` to the slice `x₀ = h` gives `C (h ^ d) * f`. -/
-lemma homogeneousSlice_scaledHomogenize {R : Type*} [CommRing R] {n d : ℕ}
+lemma homogeneousSlice_scaledHomogenize  {n d : ℕ}
     (h : R) (f : MvPolynomial (Fin n) R) (hf : f.totalDegree ≤ d) :
     homogeneousSlice n h (scaledHomogenize d h f) = C (h ^ d) * f := by
   classical

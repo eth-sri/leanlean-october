@@ -17,7 +17,9 @@ namespace CCDN
 noncomputable section
 open MvPolynomial
 
-private lemma optionEquivLeft_top_coefficient_constant {K σ : Type*} [Field K]
+variable {K σ : Type*} [Field K]
+
+private lemma optionEquivLeft_top_coefficient_constant 
     (f : MvPolynomial (Option σ) K) (d : ℕ) (hd : f.totalDegree ≤ d) :
     (optionEquivLeft K σ f).coeff d = C (eval (0 : σ → K) ((optionEquivLeft K σ f).coeff d)) := by
   by_cases h : d ≤ f.totalDegree
@@ -29,7 +31,7 @@ private lemma optionEquivLeft_top_coefficient_constant {K σ : Type*} [Field K]
       exact (degreeOf_le_totalDegree f none).trans_lt (by omega)
     rw [Polynomial.coeff_eq_zero_of_natDegree_lt hn, map_zero, map_zero]
 
-private lemma hypersurfaceAffineCoordinates_axis {K σ : Type*} [Field K]
+private lemma hypersurfaceAffineCoordinates_axis 
     (a b : Option σ → K) (hb : b none ≠ 0) (f : MvPolynomial (Option σ) K) :
     Polynomial.map (eval (0 : σ → K))
       (optionEquivLeft K σ (hypersurfaceAffineCoordinates a b hb f)) =
@@ -53,7 +55,7 @@ private lemma hypersurfaceAffineCoordinates_axis {K σ : Type*} [Field K]
 
 /-- The top outer coefficient is a constant polynomial, and its scalar is
 exactly the leading homogeneous form evaluated on the chosen direction. -/
-theorem hypersurfaceAffineCoordinates_top_coefficient {K σ : Type*} [Field K]
+theorem hypersurfaceAffineCoordinates_top_coefficient 
     (a b : Option σ → K) (hb : b none ≠ 0) (f : MvPolynomial (Option σ) K) :
     (optionEquivLeft K σ (hypersurfaceAffineCoordinates a b hb f)).coeff f.totalDegree =
       C (eval b (homogeneousComponent f.totalDegree f)) := by
@@ -67,7 +69,7 @@ theorem hypersurfaceAffineCoordinates_top_coefficient {K σ : Type*} [Field K]
 
 /-- Nonvanishing in the direction forces the outer degree to be the original
 total degree, even after moving an arbitrary base point to the origin. -/
-theorem hypersurfaceAffineCoordinates_full_outer_degree {K σ : Type*} [Field K]
+theorem hypersurfaceAffineCoordinates_full_outer_degree 
     (a b : Option σ → K) (hb : b none ≠ 0) (f : MvPolynomial (Option σ) K)
     (hdir : eval b (homogeneousComponent f.totalDegree f) ≠ 0) :
     (optionEquivLeft K σ (hypersurfaceAffineCoordinates a b hb f)).natDegree = f.totalDegree := by

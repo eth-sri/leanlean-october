@@ -70,8 +70,7 @@ private lemma formalPlanePolynomial_constant_eval {K : Type*} [CommRing K]
 /-- A point of the plane is recovered from its coordinate `j` and its other coordinate `j.rev`. -/
 lemma plane_coordinate_cases {K : Type*} (z : Fin 2 → K) (j : Fin 2) :
     (fun k => if k = j then z j else z j.rev) = z := by
-  funext k
-  fin_cases j <;> fin_cases k <;> simp
+  grind
 
 /-- A nonzero chosen partial derivative supplies a unique formal branch
 through the given point. This works in arbitrary characteristic. -/

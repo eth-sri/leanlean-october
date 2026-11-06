@@ -38,7 +38,7 @@ theorem projective_plane_finite_field_card_bound {p d : ℕ} [Fact p.Prime]
     (Fintype.card (ProjectivePlaneResidue f p) : ℝ) ≤
       p + projectivePlaneResidueConstant * (d : ℝ) ^ 2 * Real.sqrt p := by
   classical
-  rw [projectivePlaneResidueConstant_eq]
+  rw [projectivePlaneResidueConstant]
   let q := map (Int.castRingHom (ZMod p)) f
   have hX := variable_not_dvd_irreducible_homogeneous q (hf.map _) hir hd 0
   have hchart := affineChart_irreducible_of_not_variable_dvd q (hf.map _) hir hX
@@ -52,7 +52,7 @@ theorem projective_plane_finite_field_card_bound {p d : ℕ} [Fact p.Prime]
   have ha := plane_finite_field_card_bound p (affineChart 2 q) hchart
     (by rwa [hdeg]) (fun a : PlaneResidue (affineChart 2 f) p => a.val)
     Subtype.val_injective hz
-  rw [hdeg, planeResidueConstant_eq] at ha
+  rw [hdeg, planeResidueConstant] at ha
   have hcardR : (Fintype.card (ProjectivePlaneResidue f p) : ℝ) ≤
       Fintype.card (PlaneResidue (affineChart 2 f) p) + d := by exact_mod_cast hcard
   have hdR : (1 : ℝ) ≤ d := by exact_mod_cast (show 1 ≤ d by omega)
@@ -79,7 +79,7 @@ theorem projectivePlaneTotalMultiplicity_le {p d : ℕ} [Fact p.Prime]
     (hsize : stepanovThreshold (d : ℝ) < p) :
     (projectivePlaneTotalMultiplicity f hf hir.ne_zero : ℝ) ≤
       p + (projectivePlaneDeterminantConstant + 1) * (d : ℝ) ^ 2 * Real.sqrt p := by
-  rw [projectivePlaneDeterminantConstant_eq]
+  rw [projectivePlaneDeterminantConstant]
   have hp : 27 * d ^ 4 < p := by exact_mod_cast hsize
   have hchar : d < p := by
     have h1 := Nat.le_mul_self d
@@ -90,7 +90,7 @@ theorem projectivePlaneTotalMultiplicity_le {p d : ℕ} [Fact p.Prime]
       Fintype.card (ProjectivePlaneResidue f p) + (3 * d ^ 2 * (d - 1) : ℕ) := by
     exact_mod_cast hmass
   have hc := projective_plane_finite_field_card_bound f hf hd hir hsize
-  rw [projectivePlaneResidueConstant_eq] at hc
+  rw [projectivePlaneResidueConstant] at hc
   have hcorr := singular_correction_absorb (show 0 < d by omega)
     (L := 27 * (d : ℝ) ^ 4)
     (show (d : ℝ) ^ 4 ≤ 27 * (d : ℝ) ^ 4 by nlinarith [sq_nonneg ((d : ℝ) ^ 2)])

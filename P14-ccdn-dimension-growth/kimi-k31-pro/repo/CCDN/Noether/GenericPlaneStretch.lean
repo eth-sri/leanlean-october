@@ -21,6 +21,8 @@ namespace CCDN
 noncomputable section
 open MvPolynomial
 
+variable {K σ : Type*} [Field K]
+
 private lemma optionEquivLeft_map_coefficients {R S σ : Type*} [CommRing R] [CommRing S]
     (φ : R →+* S) (f : MvPolynomial (Option σ) R) :
     optionEquivLeft S σ (MvPolynomial.map φ f) =
@@ -53,7 +55,7 @@ def variableScaleEquiv (K σ : Type*) [Field K] (a : K) (ha : a ≠ 0) :
       rw [← mul_assoc, ← map_mul, mul_inv_cancel₀ ha, map_one, one_mul])
 
 /-- The scaling automorphism by `a` sends each variable `X i` to `a * X i`. -/
-@[simp] lemma variableScaleEquiv_X {K σ : Type*} [Field K]
+@[simp] lemma variableScaleEquiv_X 
     (a : K) (ha : a ≠ 0) (i : σ) :
     variableScaleEquiv K σ a ha (X i) = C a * X i := by
   simp [variableScaleEquiv]
@@ -67,18 +69,18 @@ def genericStretchCoefficients (K σ : Type*) [Field K] :
 /-- The generic stretch `f(x, z) ↦ f(x, y * z)` of `f`, viewed as a polynomial in the distinguished
 outer variable `x` whose coefficients involve the transverse variables `z` and the fresh
 parameter `y`. -/
-def genericPlaneStretch {K σ : Type*} [Field K]
+def genericPlaneStretch 
     (f : MvPolynomial (Option σ) K) :
     Polynomial (MvPolynomial σ (MvPolynomial Unit K)) :=
   Polynomial.map (genericStretchCoefficients K σ).toRingHom (optionEquivLeft K σ f)
 
-private lemma genericPlaneStretch_monic {K σ : Type*} [Field K]
+private lemma genericPlaneStretch_monic 
     (f : MvPolynomial (Option σ) K) (hf : (optionEquivLeft K σ f).Monic) :
     (genericPlaneStretch f).Monic := hf.map _
 
 /-- The generic stretch is ordinarily irreducible before any slope parameters
 are specialized or localized. -/
-theorem genericPlaneStretch_irreducible {K σ : Type*} [Field K]
+theorem genericPlaneStretch_irreducible 
     (f : MvPolynomial (Option σ) K) (hf : Irreducible f)
     (hd : 0 < f.totalDegree) (hm : (optionEquivLeft K σ f).Monic) :
     Irreducible (genericPlaneStretch f) := by

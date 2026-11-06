@@ -21,9 +21,7 @@ open MvPolynomial
 
 private lemma integer_scalar_factor_ne_zero {σ : Type*} {f g : MvPolynomial σ ℤ} {c : ℤ}
     (hf : f ≠ 0) (he : f = C c * g) : g ≠ 0 := by
-  intro hg
-  apply hf
-  rw [he, hg, mul_zero]
+  grind
 
 /-- If a nonzero integer polynomial factors as `f = C c * g` with `c ≠ 0`, then `g` has the
 same total degree as `f`. -/

@@ -19,6 +19,8 @@ namespace CCDN
 noncomputable section
 open MvPolynomial
 
+variable {K : Type*} [Field K]
+
 /-- Evaluate the first `n` coordinates, leaving all later coordinates free. -/
 def partialCoordinateEval {K : Type*} [CommRing K] (c : Fin 3 → K) (n : ℕ) :
     MvPolynomial (Fin 3) K →+* MvPolynomial (Fin 3) K :=
@@ -46,7 +48,7 @@ private lemma partialCoordinateEval_comp {K : Type*} [CommRing K] (c : Fin 3 →
       simp [hj, hn]
     · simp [hj]
 
-private lemma partialCoordinateEval_ker_lt {K : Type*} [Field K] (c : Fin 3 → K)
+private lemma partialCoordinateEval_ker_lt  (c : Fin 3 → K)
     {n : ℕ} (hn : n < 3) :
     RingHom.ker (partialCoordinateEval c n) < RingHom.ker (partialCoordinateEval c (n + 1)) := by
   have hle : RingHom.ker (partialCoordinateEval c n) ≤
@@ -74,7 +76,7 @@ private lemma partialCoordinateEval_ker_lt {K : Type*} [Field K] (c : Fin 3 → 
   simp [hsingle] at hc
 
 /-- Fixing all three coordinates gives a prime ideal of height at least three. -/
-private lemma three_le_height_coordinate_kernel {K : Type*} [Field K] (c : Fin 3 → K) :
+private lemma three_le_height_coordinate_kernel  (c : Fin 3 → K) :
     3 ≤ (RingHom.ker (partialCoordinateEval c 3)).height := by
   let inst (n : ℕ) : (RingHom.ker (partialCoordinateEval c n)).IsPrime := RingHom.ker_isPrime _
   have h0 := Ideal.height_add_one_le_of_lt_of_isPrime
@@ -132,7 +134,7 @@ def coordinatePoint {K σ : Type*} [Field K]
 
 /-- A height-two prime in three variables containing a rational point retains a
 transcendental coordinate over its base field. -/
-theorem height_two_transcendental_coordinate_of_point {K : Type*} [Field K]
+theorem height_two_transcendental_coordinate_of_point 
     (p : Ideal (MvPolynomial (Fin 3) K)) [p.IsPrime] (hp : p.height = 2)
     (z : Fin 3 → K) (hz : z ∈ idealZeroLocus p) :
     ∃ j : Fin 3, Transcendental K ((Ideal.Quotient.mk p) (X j)) := by
@@ -164,7 +166,7 @@ theorem height_two_transcendental_coordinate_of_point {K : Type*} [Field K]
 
 /-- A height-two component with a base-field point has positive slope in
  any eventual linear Hilbert formula, independently of its cutoff. -/
-theorem height_two_eventual_slope_pos_of_point {K : Type*} [Field K]
+theorem height_two_eventual_slope_pos_of_point 
     (p : Ideal (MvPolynomial (Fin 3) K)) [p.IsPrime] (hp : p.height = 2)
     (z : Fin 3 → K) (hz : z ∈ idealZeroLocus p) {d : ℕ}
     (hlinear : HasFilteredCurveDegree p d) :

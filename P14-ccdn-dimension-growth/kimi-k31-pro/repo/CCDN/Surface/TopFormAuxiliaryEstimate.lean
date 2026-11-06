@@ -33,7 +33,7 @@ theorem hypersurface_badPrime_fractional_height_bound {m r d : ℕ}
   have hK : 0 ≤ K := mul_nonneg (Real.exp_pos _).le
     (zero_le_one.trans (hypersurfaceHeightConstant_one_le _))
   have hb : hypersurfaceBadPrimeFactor f ≤ K * (1 + Real.log H / (d : ℝ) ^ 2) := by
-    simpa only [hdegree] using hypersurfaceBadPrimeFactor_le_height f H hH
+    simpa only [hdegree] using badPrimeFactor_le_height f H hH
       (coefficient_abs_le_integerCoefficientHeight f)
   have hratio : (Real.log H + (d : ℝ) ^ 2) / H ^ q ≤ r * (d : ℝ) ^ 2 := by
     simpa only [Real.log_one, zero_add, Real.one_rpow, div_one] using

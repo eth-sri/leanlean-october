@@ -21,11 +21,12 @@ namespace CCDN
 noncomputable section
 open MvPolynomial Module
 
-private lemma eulerLowBasis_repr_apply {R : Type*} [CommRing R] (d : ℕ)
+variable {R : Type*} [CommRing R]
+
+private lemma eulerLowBasis_repr_apply  (d : ℕ)
     (f : restrictTotalDegree (Fin 2) R d) (i : EulerLowIndex d) :
     (eulerLowBasis R d).repr f i =
-      f.val.coeff ((Finsupp.degreeLeEquivSym (Fin 2) d).symm i).val := by
-  exact Basis.repr_reindex_apply _ _ _ _
+      f.val.coeff ((Finsupp.degreeLeEquivSym (Fin 2) d).symm i).val := Basis.repr_reindex_apply _ _ _ _
 
 /-- The bivariate monomial with coefficient one indexed by `i`, of total degree at most `d`. -/
 def eulerCoefficientMonomial (R : Type*) [CommRing R] (d : ℕ) (i : EulerLowIndex d) :
@@ -33,13 +34,13 @@ def eulerCoefficientMonomial (R : Type*) [CommRing R] (d : ℕ) (i : EulerLowInd
   bivariatePolynomialEquiv R (monomial ((Finsupp.degreeLeEquivSym (Fin 2) d).symm i).val 1)
 
 /-- The coefficient of `f` at the bivariate monomial of total degree at most `d` indexed by `i`. -/
-def eulerCoefficientData {R : Type*} [CommRing R] (d : ℕ)
+def eulerCoefficientData  (d : ℕ)
     (f : Polynomial (Polynomial R)) (i : EulerLowIndex d) : R :=
   ((bivariatePolynomialEquiv R).symm f).coeff ((Finsupp.degreeLeEquivSym (Fin 2) d).symm i).val
 
 /-- A bivariate polynomial of total degree at most `d` is the sum of the monomials
 `eulerCoefficientMonomial R d i` weighted by its coefficients `eulerCoefficientData d f i`. -/
-theorem eulerCoefficientData_reconstruct {R : Type*} [CommRing R] (d : ℕ)
+theorem eulerCoefficientData_reconstruct  (d : ℕ)
     (f : Polynomial (Polynomial R)) (hf : bivariateTotalDegree f ≤ d) :
     ∑ i, eulerCoefficientData d f i • eulerCoefficientMonomial R d i = f := by
   let u : restrictTotalDegree (Fin 2) R d :=
@@ -58,7 +59,7 @@ lemma eulerCoefficientMonomial_map {R S : Type*} [CommRing R] [CommRing S]
 
 /-- The differential operator is linear in the defining equation as well
 as in its pair of unknowns. -/
-def closedFormEquationLinear {R : Type*} [CommRing R]
+def closedFormEquationLinear 
     (u : Polynomial (Polynomial R) × Polynomial (Polynomial R)) :
     Polynomial (Polynomial R) →ₗ[R] Polynomial (Polynomial R) where
   toFun f := closedFormOperator f u
@@ -69,16 +70,16 @@ def closedFormEquationLinear {R : Type*} [CommRing R]
 
 /-- The `(row, col)` entry of the Euler closed-form coefficient matrix, as a linear function of the
 equation. -/
-def eulerCoefficientEntryLinear {R : Type*} [CommRing R] (k : ℕ)
+def eulerCoefficientEntryLinear  (k : ℕ)
     (row : ℕ × ℕ) (col : EulerColumns k) : Polynomial (Polynomial R) →ₗ[R] R :=
   (LinearMap.proj row).comp ((bivariateCoefficients R).comp
     (closedFormEquationLinear (eulerBivariatePair R k (eulerPairBasis R k col))))
 
-private lemma eulerCoefficientEntryLinear_apply {R : Type*} [CommRing R] (k : ℕ)
+private lemma eulerCoefficientEntryLinear_apply  (k : ℕ)
     (row : ℕ × ℕ) (col : EulerColumns k) (f : Polynomial (Polynomial R)) :
     eulerCoefficientEntryLinear k row col f = eulerClosedFormCoefficientMatrix k f row col := rfl
 
-private lemma eulerCoefficientMatrix_expand {R : Type*} [CommRing R] (k : ℕ)
+private lemma eulerCoefficientMatrix_expand  (k : ℕ)
     (f : Polynomial (Polynomial R)) (hf : bivariateTotalDegree f ≤ k + 2)
     (row : ℕ × ℕ) (col : EulerColumns k) :
     ∑ i, eulerCoefficientData (k + 2) f i *
@@ -97,7 +98,7 @@ def universalEulerMatrix (k : ℕ) : Matrix (ℕ × ℕ) (EulerColumns k)
 
 /-- Every universal matrix entry specializes to the differential
 coefficient matrix, with no characteristic restriction. -/
-theorem universalEulerMatrix_specialize {R : Type*} [CommRing R]
+theorem universalEulerMatrix_specialize 
     (k : ℕ) (f : Polynomial (Polynomial R)) (hf : bivariateTotalDegree f ≤ k + 2) :
     (universalEulerMatrix k).map (eval₂Hom (Int.castRingHom R) (eulerCoefficientData (k + 2) f)) =
       eulerClosedFormCoefficientMatrix k f := by

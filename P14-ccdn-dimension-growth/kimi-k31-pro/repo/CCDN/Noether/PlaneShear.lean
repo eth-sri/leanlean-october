@@ -17,6 +17,8 @@ namespace CCDN
 noncomputable section
 open MvPolynomial
 
+variable {R : Type*} [CommRing R]
+
 /-- Fix variable zero and replace variable one by x₁+a*x₀. -/
 def planeShearHom (R : Type*) [CommRing R] (a : R) :
     MvPolynomial (Fin 2) R →ₐ[R] MvPolynomial (Fin 2) R :=
@@ -24,7 +26,7 @@ def planeShearHom (R : Type*) [CommRing R] (a : R) :
 
 /-- Composing the plane shears with parameters `a` and `b` gives the shear with parameter
 `a + b`. -/
-lemma planeShearHom_comp {R : Type*} [CommRing R] (a b : R) :
+lemma planeShearHom_comp  (a b : R) :
     (planeShearHom R a).comp (planeShearHom R b) = planeShearHom R (a + b) := by
   apply MvPolynomial.algHom_ext
   intro i
@@ -48,7 +50,7 @@ def planeShear (R : Type*) [CommRing R] (a : R) :
     (by rw [planeShearHom_comp, add_neg_cancel, planeShearHom_zero])
     (by rw [planeShearHom_comp, neg_add_cancel, planeShearHom_zero])
 
-private lemma planeShear_monomial {R : Type*} [CommRing R] (a : R)
+private lemma planeShear_monomial  (a : R)
     (m : Fin 2 →₀ ℕ) (c : R) :
     planeShear R a (monomial m c) =
       C c * (X 0) ^ m 0 * (X 1 + C a * X 0) ^ m 1 := by
@@ -58,7 +60,7 @@ private lemma planeShear_monomial {R : Type*} [CommRing R] (a : R)
     Matrix.cons_val_fin_one]
   ring
 
-private lemma planeShear_monomial_totalDegree_le {R : Type*} [CommRing R] [Nontrivial R]
+private lemma planeShear_monomial_totalDegree_le  [Nontrivial R]
     (a : R) (m : Fin 2 →₀ ℕ) (c : R) :
     (planeShear R a (monomial m c)).totalDegree ≤ m.sum (fun _ e => e) := by
   have hx : (X 1 + C a * X 0 : MvPolynomial (Fin 2) R).totalDegree ≤ 1 := by
@@ -79,7 +81,7 @@ private lemma planeShear_monomial_totalDegree_le {R : Type*} [CommRing R] [Nontr
     h₃.trans (by simpa using Nat.mul_le_mul_left (m 1) hx)
   omega
 
-private lemma planeShear_totalDegree_le {R : Type*} [CommRing R] [Nontrivial R]
+private lemma planeShear_totalDegree_le  [Nontrivial R]
     (a : R) (f : MvPolynomial (Fin 2) R) :
     (planeShear R a f).totalDegree ≤ f.totalDegree := by
   classical
@@ -90,7 +92,7 @@ private lemma planeShear_totalDegree_le {R : Type*} [CommRing R] [Nontrivial R]
   exact (planeShear_monomial_totalDegree_le a m (f.coeff m)).trans (le_totalDegree hm)
 
 /-- A plane shear preserves the total degree; the inverse shear gives the reverse inequality. -/
-lemma planeShear_totalDegree {R : Type*} [CommRing R] [Nontrivial R]
+lemma planeShear_totalDegree  [Nontrivial R]
     (a : R) (f : MvPolynomial (Fin 2) R) :
     (planeShear R a f).totalDegree = f.totalDegree := by
   apply le_antisymm (planeShear_totalDegree_le a f)

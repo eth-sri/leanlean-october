@@ -133,11 +133,6 @@ section Span
 variable {R : Type*} [CommRing R] {ι : Type*} {m : ℕ}
 variable {n : Type*} [Fintype n] [DecidableEq n]
 
-@[simp]
-theorem span_range_row_one : span R (Set.range (1 : Matrix (Fin m) (Fin m) R).row) = ⊤ := by
-  rw [row_one_eq_basisFun]
-  exact (Pi.basisFun R (Fin m)).span_eq
-
 end Span
 
 /-!

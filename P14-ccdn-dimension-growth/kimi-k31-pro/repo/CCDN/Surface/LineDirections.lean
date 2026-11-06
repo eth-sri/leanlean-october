@@ -22,6 +22,8 @@ namespace CCDN
 noncomputable section
 open MvPolynomial
 
+variable {n : ℕ}
+
 /-- Evaluating the restriction `affineLinePolynomial a v f` of `f` to the line through `a` with
 direction `v` at `t` gives the value of `f` at `a + t • v`. -/
 lemma eval_affineLinePolynomial {K σ : Type*} [Field K]
@@ -37,7 +39,7 @@ lemma eval_affineLinePolynomial {K σ : Type*} [Field K]
       ring
   exact RingHom.congr_fun he f
 
-private theorem affineLinePolynomial_eq_zero_of_contained {n : ℕ}
+private theorem affineLinePolynomial_eq_zero_of_contained 
     (a v : RatPoint n) (f : CoordinatePolynomial n)
     (hline : rationalAffineLine a v ⊆ zeroLocus f) :
     affineLinePolynomial a v f = 0 := by
@@ -46,7 +48,7 @@ private theorem affineLinePolynomial_eq_zero_of_contained {n : ℕ}
   rw [eval_affineLinePolynomial]
   exact hline ⟨t, rfl⟩
 
-private theorem rationalAffineLine_direction_top_zero {n : ℕ}
+private theorem rationalAffineLine_direction_top_zero 
     (a v : RatPoint n) (f : MvPolynomial (Fin n) ℤ)
     (hline : rationalAffineLine a v ⊆ zeroLocus (map (Int.castRingHom ℚ) f)) :
     eval v (map (Int.castRingHom ℚ) (homogeneousComponent f.totalDegree f)) = 0 := by
@@ -57,7 +59,7 @@ private theorem rationalAffineLine_direction_top_zero {n : ℕ}
   rw [hpoly, Polynomial.coeff_zero, ← map_homogeneousComponent] at hc
   exact hc.symm
 
-private lemma rationalAffineLine_eq_projective_rep {n : ℕ}
+private lemma rationalAffineLine_eq_projective_rep 
     (a v : RatPoint (n + 1)) (hv : v ≠ 0) (p : ProjectivePoint n)
     (hp : Projectivization.mk ℚ v hv = p) :
     rationalAffineLine a v = rationalAffineLine a p.rep := by
@@ -71,7 +73,7 @@ private lemma rationalAffineLine_eq_projective_rep {n : ℕ}
 /-- A line with more than one bounded integer point has a projective
 direction on the leading form. Its integer point count is bounded using the
 height of that projective point, independently of all chosen representatives. -/
-theorem surface_line_projective_direction {n : ℕ}
+theorem surface_line_projective_direction 
     (f : MvPolynomial (Fin (n + 1)) ℤ) (L : Set (RatPoint (n + 1)))
     (hL : ∃ a v, L = rationalAffineLine a v)
     (hLf : L ⊆ zeroLocus (map (Int.castRingHom ℚ) f))

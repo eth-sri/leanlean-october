@@ -26,14 +26,16 @@ namespace CCDN
 noncomputable section
 open Polynomial Matrix Submodule
 
-private lemma bivariateGridPolynomial_natDegree_lt {R : Type*} [CommRing R] {d : ℕ}
+variable {R : Type*} [CommRing R]
+
+private lemma bivariateGridPolynomial_natDegree_lt  {d : ℕ}
     (hd : 0 < d) (v : BivariateGrid d → R) :
     (bivariateGridPolynomial R d v).natDegree < d := by
   by_cases h : bivariateGridPolynomial R d v = 0
   · simpa only [h, natDegree_zero] using hd
   · exact (natDegree_lt_iff_degree_lt h).mpr (bivariateGridPolynomial_degree_lt v)
 
-private lemma bivariateGridPolynomial_coefficient_natDegree_le {R : Type*} [CommRing R] {d : ℕ}
+private lemma bivariateGridPolynomial_coefficient_natDegree_le  {d : ℕ}
     (v : BivariateGrid d → R) (i : ℕ) :
     ((bivariateGridPolynomial R d v).coeff i).natDegree ≤ d := by
   apply natDegree_le_of_degree_le
@@ -123,9 +125,11 @@ namespace CCDN
 noncomputable section
 open Polynomial Matrix
 
+variable {R : Type*} [CommRing R]
+
 /-- The closed-form operator is linear in the equation: scaling the equation by `a` scales the
 operator by `a`. -/
-lemma closedFormOperator_smul_equation {R : Type*} [CommRing R]
+lemma closedFormOperator_smul_equation 
     (a : R) (f : R[X][X]) (u : R[X][X] × R[X][X]) :
     closedFormOperator (a • f) u = a • closedFormOperator f u := by
   change _ * (a • f) - _ * (bivariateCoefficientDerivative R) (a • f) -
@@ -134,7 +138,7 @@ lemma closedFormOperator_smul_equation {R : Type*} [CommRing R]
   simp only [mul_smul_comm, smul_sub, smul_add]
 
 /-- Scaling the equation by `a` scales its closed-form coefficient matrix by `a`. -/
-lemma closedFormCoefficientMatrix_smul {R : Type*} [CommRing R]
+lemma closedFormCoefficientMatrix_smul 
     (a : R) (d : ℕ) (f : R[X][X]) :
     closedFormCoefficientMatrix d (a • f) = a • closedFormCoefficientMatrix d f := by
   classical
@@ -154,7 +158,7 @@ private lemma closedForm_rank_smul {F : Type*} [Field F] (a : F) (ha : a ≠ 0)
 
 /-- Scalar multiplication of a bivariate polynomial by `a` is multiplication by the constant
 polynomial `a`. -/
-lemma bivariate_smul_eq_constant_mul {R : Type*} [CommRing R] (a : R) (f : R[X][X]) :
+lemma bivariate_smul_eq_constant_mul  (a : R) (f : R[X][X]) :
     a • f = C (C a) * f := by
   simp only [Algebra.smul_def, Polynomial.algebraMap_apply, Algebra.algebraMap_self,
     RingHom.id_apply]
@@ -168,7 +172,7 @@ lemma bivariate_irreducible_smul_iff {F : Type*} [Field F]
   exact (associated_unit_mul_left f (C (C a)) hu).irreducible_iff
 
 /-- Scalar multiplication does not increase the total degree. -/
-lemma bivariateTotalDegree_smul_le {R : Type*} [CommRing R] (a : R) (f : R[X][X]) :
+lemma bivariateTotalDegree_smul_le  (a : R) (f : R[X][X]) :
     bivariateTotalDegree (a • f) ≤ bivariateTotalDegree f := by
   unfold bivariateTotalDegree
   rw [map_smul]

@@ -22,6 +22,8 @@ namespace CCDN
 noncomputable section
 open MvPolynomial
 
+variable {R : Type*} [CommRing R]
+
 /-- The parameter space of Euler-constrained pairs: triples `(A, B, Q)` with `A` and `B` bivariate
 polynomials of total degree at most `k` and `Q` homogeneous of degree `k`. -/
 abbrev EulerPairSpace (R : Type*) [CommRing R] (k : ℕ) :=
@@ -39,7 +41,7 @@ def eulerPairCoordinates (R : Type*) [CommRing R] (k : ℕ) :
       mul_smul_comm, smul_add, smul_sub, RingHom.id_apply]
 
 /-- The first polynomial `A + y * Q` of an Euler pair has total degree at most `k + 1`. -/
-lemma eulerPairCoordinates_fst_degree {R : Type*} [CommRing R] (k : ℕ)
+lemma eulerPairCoordinates_fst_degree  (k : ℕ)
     (u : EulerPairSpace R k) : (eulerPairCoordinates R k u).1.totalDegree ≤ k + 1 := by
   have hA := (mem_restrictTotalDegree _ _ _).mp u.1.property
   have hQ := u.2.2.property.totalDegree_le
@@ -51,7 +53,7 @@ lemma eulerPairCoordinates_fst_degree {R : Type*} [CommRing R] (k : ℕ)
       omega)
 
 /-- The second polynomial `B - x * Q` of an Euler pair has total degree at most `k + 1`. -/
-lemma eulerPairCoordinates_snd_degree {R : Type*} [CommRing R] (k : ℕ)
+lemma eulerPairCoordinates_snd_degree  (k : ℕ)
     (u : EulerPairSpace R k) : (eulerPairCoordinates R k u).2.totalDegree ≤ k + 1 := by
   have hB := (mem_restrictTotalDegree _ _ _).mp u.2.1.property
   have hQ := u.2.2.property.totalDegree_le
@@ -62,7 +64,7 @@ lemma eulerPairCoordinates_snd_degree {R : Type*} [CommRing R] (k : ℕ)
       have hx := (isHomogeneous_X R (0 : Fin 2)).totalDegree_le
       omega)
 
-private lemma eulerPairCoordinates_contraction {R : Type*} [CommRing R] (k : ℕ)
+private lemma eulerPairCoordinates_contraction  (k : ℕ)
     (u : EulerPairSpace R k) :
     X 0 * (eulerPairCoordinates R k u).1 + X 1 * (eulerPairCoordinates R k u).2 =
       X 0 * u.1.val + X 1 * u.2.1.val := by
@@ -71,7 +73,7 @@ private lemma eulerPairCoordinates_contraction {R : Type*} [CommRing R] (k : ℕ
 
 /-- The radial contraction `x * P + y * Q` of the pair `(P, Q)` attached to an element of
 `EulerPairSpace R k` has total degree at most `k + 1`. -/
-lemma eulerPairCoordinates_contraction_degree {R : Type*} [CommRing R] (k : ℕ)
+lemma eulerPairCoordinates_contraction_degree  (k : ℕ)
     (u : EulerPairSpace R k) :
     (X 0 * (eulerPairCoordinates R k u).1 + X 1 * (eulerPairCoordinates R k u).2).totalDegree ≤
       k + 1 := by

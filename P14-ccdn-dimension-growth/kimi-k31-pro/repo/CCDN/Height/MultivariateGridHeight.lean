@@ -22,9 +22,11 @@ namespace CCDN
 noncomputable section
 open MvPolynomial
 
+variable {n : ℕ}
+
 /-- Iterated one-variable interpolation controls every coefficient of a complex polynomial
 from its values on the full grid {0,...,d}^n, with the exact factor 3^(nd). -/
-private theorem complex_multivariate_coefficient_bound_of_integer_grid {n : ℕ}
+private theorem complex_multivariate_coefficient_bound_of_integer_grid 
     (f : MvPolynomial (Fin n) ℂ) {d : ℕ} (hd : f.totalDegree ≤ d)
     {H : ℝ} (hH : 0 ≤ H)
     (heval : ∀ a : Fin n → ℕ, (∀ i, a i ≤ d) → ‖eval (fun i => (a i : ℂ)) f‖ ≤ H)
@@ -67,7 +69,7 @@ private theorem complex_multivariate_coefficient_bound_of_integer_grid {n : ℕ}
 
 /-- A complex polynomial of total degree at most `d` has a grid point `a ∈ [0, d]ⁿ` at which
 its value bounds every coefficient: `‖coeff m‖ ≤ 3^(n d) ‖f(a)‖`. -/
-theorem exists_complex_multivariate_grid_height_witness {n : ℕ}
+theorem exists_complex_multivariate_grid_height_witness 
     (f : MvPolynomial (Fin n) ℂ) {d : ℕ} (hd : f.totalDegree ≤ d) :
     ∃ a : Fin n → ℕ, (∀ i, a i ≤ d) ∧ ∀ m,
       ‖f.coeff m‖ ≤ (3 : ℝ) ^ (n * d) * ‖eval (fun i => (a i : ℂ)) f‖ := by
@@ -95,7 +97,7 @@ private lemma three_pow_mul_le (n d : ℕ) :
 
 /-- Transfer of the complex grid bound along a ring homomorphism into ℂ. -/
 private lemma coefficient_bound_of_integer_grid_of_ringHom {R : Type*} [CommRing R]
-    (φ : R →+* ℂ) {n : ℕ} (f : MvPolynomial (Fin n) R) {d : ℕ} (hd : f.totalDegree ≤ d)
+    (φ : R →+* ℂ)  (f : MvPolynomial (Fin n) R) {d : ℕ} (hd : f.totalDegree ≤ d)
     {H : ℝ} (hH : 0 ≤ H)
     (heval : ∀ a : Fin n → ℕ, (∀ i, a i ≤ d) → ‖φ (eval (fun i => (a i : R)) f)‖ ≤ H)
     (m : Fin n →₀ ℕ) :
@@ -108,7 +110,7 @@ private lemma coefficient_bound_of_integer_grid_of_ringHom {R : Type*} [CommRing
 
 /-- Iterated one-variable interpolation controls every coefficient from the
 values on the full grid, with a constant depending only on degree and dimension. -/
-theorem multivariate_coefficient_bound_of_integer_grid {n : ℕ}
+theorem multivariate_coefficient_bound_of_integer_grid 
     (f : MvPolynomial (Fin n) ℝ) {d : ℕ} (hd : f.totalDegree ≤ d)
     {H : ℝ} (hH : 0 ≤ H)
     (heval : ∀ a : Fin n → ℕ, (∀ i, a i ≤ d) → |eval (fun i => (a i : ℝ)) f| ≤ H)
@@ -120,7 +122,7 @@ theorem multivariate_coefficient_bound_of_integer_grid {n : ℕ}
 /-- If an integer polynomial of total degree at most `d` has values of absolute value at most
 `H` on the grid `{0, …, d}ⁿ`, then every coefficient has absolute value at most
 `(d + 1) ^ (n * (d + 1)) * H`. -/
-theorem integer_multivariate_coefficient_bound_of_grid {n : ℕ}
+theorem integer_multivariate_coefficient_bound_of_grid 
     (f : MvPolynomial (Fin n) ℤ) {d : ℕ} (hd : f.totalDegree ≤ d)
     {H : ℝ} (hH : 0 ≤ H)
     (heval : ∀ a : Fin n → ℕ, (∀ i, a i ≤ d) →
@@ -133,7 +135,7 @@ theorem integer_multivariate_coefficient_bound_of_grid {n : ℕ}
 /-- A nonzero integer polynomial of total degree at most `d` has a point `a` of the grid
 `{0, …, d}ⁿ` with `f(a) ≠ 0` such that every coefficient has absolute value at most
 `(d + 1) ^ (n * (d + 1)) * |f(a)|`. -/
-theorem exists_integer_multivariate_grid_height_witness {n : ℕ}
+theorem exists_integer_multivariate_grid_height_witness 
     (f : MvPolynomial (Fin n) ℤ) (hf : f ≠ 0) {d : ℕ} (hd : f.totalDegree ≤ d) :
     ∃ a : Fin n → ℤ, (∀ i, 0 ≤ a i ∧ a i ≤ d) ∧ eval a f ≠ 0 ∧ ∀ m,
       |(f.coeff m : ℝ)| ≤ ((d : ℝ) + 1) ^ (n * (d + 1)) * |(eval a f : ℝ)| := by

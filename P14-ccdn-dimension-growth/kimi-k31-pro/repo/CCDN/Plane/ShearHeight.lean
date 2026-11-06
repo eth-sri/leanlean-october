@@ -14,24 +14,26 @@ namespace CCDN
 noncomputable section
 open Polynomial
 
-private lemma bivariateShear_outerX {R : Type*} [CommRing R] (a : R) :
+variable {R : Type*} [CommRing R]
+
+private lemma bivariateShear_outerX  (a : R) :
     bivariateShear R a (X : R[X][X]) = X := by
   rw [← bivariatePolynomialEquiv_X_zero, bivariateShear_equiv]
   change bivariatePolynomialEquiv R (MvPolynomial.aeval _ (MvPolynomial.X 0)) = _
   simp only [MvPolynomial.aeval_X, Matrix.cons_val_zero, bivariatePolynomialEquiv_X_zero]
 
-private lemma bivariateShear_innerX {R : Type*} [CommRing R] (a : R) :
+private lemma bivariateShear_innerX  (a : R) :
     bivariateShear R a (C X : R[X][X]) = C X + C (C a) * X := by
   rw [← bivariatePolynomialEquiv_X_one, bivariateShear_equiv]
   change bivariatePolynomialEquiv R (MvPolynomial.aeval _ (MvPolynomial.X 1)) = _
   simp only [MvPolynomial.aeval_X, Matrix.cons_val_one, Matrix.cons_val_fin_one, map_add, map_mul,
     bivariatePolynomialEquiv_X_one, bivariatePolynomialEquiv_X_zero, bivariatePolynomialEquiv_C]
 
-private lemma bivariateShear_constant {R : Type*} [CommRing R] (a c : R) :
+private lemma bivariateShear_constant  (a c : R) :
     bivariateShear R a (C (C c)) = C (C c) :=
   (bivariateShear R a).commutes c
 
-private lemma bivariateShear_monomial {R : Type*} [CommRing R]
+private lemma bivariateShear_monomial 
     (a c : R) (i j : ℕ) :
     bivariateShear R a (monomial i (monomial j c)) =
       monomial i (monomial 0 c) * (C X + C (C a) * X) ^ j := by

@@ -93,7 +93,7 @@ theorem polynomialSection_minimalPrime_degrees_exist
       (le_minimalPrimeComponents P.property (polynomialSectionIdeal_second_mem f g))
     exact ⟨d, h⟩
   choose d hd using hex
-  exact ⟨d, hd, polynomialSection_minimalPrime_curveDegree_sum_le f g hf hfg d hd⟩
+  exact ⟨d, hd, polynomialSection_minimalPrime_slope_sum_le f g hf.prime hfg d hd⟩
 
 /-- A proper section in affine three-space is covered exactly by a finite
 set of rational prime curves. Their positive Hilbert degrees sum to

@@ -66,7 +66,7 @@ lemma badPrimeFactor_eq_zero {f : MvPolynomial σ ℤ}
 
 /-- For an absolutely irreducible equation of degree `d`, the bad-prime factor is the
 `primeSetFactor` of any finite set listing exactly the bad primes above `27 d⁴`. -/
-lemma badPrimeFactor_eq_primeSetFactor {d : ℕ} {f : MvPolynomial σ ℤ}
+lemma badPrimeFactor_eq_exp {d : ℕ} {f : MvPolynomial σ ℤ}
     (hf : AbsolutelyIrreducible f)
     (hdegree : f.totalDegree = d) (bad : Finset ℕ)
     (hbad : ∀ p, p ∈ bad ↔ stepanovThreshold d < p ∧ P f p) :
@@ -82,36 +82,24 @@ end BadPrimeFactor
 
 /-- The geometric bad-prime factor: `badPrimeFactor` for `HypersurfaceBadReduction`, which
 counts both failure of absolute irreducibility and degree loss modulo `p`. -/
-def hypersurfaceBadPrimeFactor {n : ℕ} (f : MvPolynomial (Fin (n + 1)) ℤ) : ℝ :=
+abbrev hypersurfaceBadPrimeFactor {n : ℕ} (f : MvPolynomial (Fin (n + 1)) ℤ) : ℝ :=
   badPrimeFactor HypersurfaceBadReduction
     (fun f h => finite_fin_hypersurface_bad_primes f h
       (absolute_integer_polynomial_totalDegree_pos f h)) f
 
-/-- The geometric bad-prime factor `hypersurfaceBadPrimeFactor f` is nonnegative. -/
-lemma hypersurfaceBadPrimeFactor_nonneg {n : ℕ} (f : MvPolynomial (Fin (n + 1)) ℤ) :
-    0 ≤ hypersurfaceBadPrimeFactor f :=
-  badPrimeFactor_nonneg f
-
-/-- The geometric bad-prime factor of an integral polynomial that is not absolutely
-irreducible is zero. -/
 lemma hypersurfaceBadPrimeFactor_eq_zero {n : ℕ} (f : MvPolynomial (Fin (n + 1)) ℤ)
-    (hf : ¬ AbsolutelyIrreducible f) :
-    hypersurfaceBadPrimeFactor f = 0 :=
+    (hf : ¬ AbsolutelyIrreducible f) : hypersurfaceBadPrimeFactor f = 0 :=
   badPrimeFactor_eq_zero hf
 
-/-- For an absolutely irreducible integral polynomial of degree `d`, the geometric bad-prime
-factor is the `primeSetFactor` of any finite set listing exactly the primes above
-`stepanovThreshold d` at which `f` has geometric bad reduction. -/
 lemma hypersurfaceBadPrimeFactor_eq_exp {n d : ℕ} (f : MvPolynomial (Fin (n + 1)) ℤ)
-    (hf : AbsolutelyIrreducible f)
-    (hdegree : f.totalDegree = d) (bad : Finset ℕ)
+    (hf : AbsolutelyIrreducible f) (hdegree : f.totalDegree = d) (bad : Finset ℕ)
     (hbad : ∀ p, p ∈ bad ↔ stepanovThreshold d < p ∧ HypersurfaceBadReduction f p) :
     hypersurfaceBadPrimeFactor f = primeSetFactor bad :=
-  badPrimeFactor_eq_primeSetFactor hf hdegree bad hbad
+  badPrimeFactor_eq_exp hf hdegree bad hbad
 
 /-- The bad-prime factor satisfies the coefficient-height bound also
 for nonabsolute equations, where the factor is zero by definition. -/
-theorem hypersurfaceBadPrimeFactor_le_height {n : ℕ}
+theorem badPrimeFactor_le_height {n : ℕ}
     (f : MvPolynomial (Fin (n + 1)) ℤ) (H : ℝ) (hH : 1 ≤ H)
     (hcoeff : CoefficientHeightLE f H) :
     hypersurfaceBadPrimeFactor f ≤
@@ -123,7 +111,7 @@ theorem hypersurfaceBadPrimeFactor_le_height {n : ℕ}
   by_cases hf : AbsolutelyIrreducible f
   · obtain ⟨bad, hbad, hcharge⟩ := exists_fin_hypersurface_bad_prime_charge f hf
       (absolute_integer_polynomial_totalDegree_pos f hf) H hH hcoeff
-    rw [hypersurfaceBadPrimeFactor_eq_exp f hf rfl bad hbad]
+    rw [hypersurfaceBadPrimeFactor_eq_exp (f := f) hf rfl bad hbad]
     calc
       _ ≤ Real.exp (Real.log (hypersurfaceHeightConstant (n + 1) *
           (1 + Real.log H / (f.totalDegree : ℝ) ^ 2)) + 2 * mertensError + 1) :=
@@ -135,7 +123,7 @@ theorem hypersurfaceBadPrimeFactor_le_height {n : ℕ}
             (1 + Real.log H / (f.totalDegree : ℝ) ^ 2)) + (2 * mertensError + 1) by ring,
           Real.exp_add, Real.exp_log (by positivity)]
         ring
-  · rw [hypersurfaceBadPrimeFactor_eq_zero f hf]
+  · rw [hypersurfaceBadPrimeFactor_eq_zero (f := f) hf]
     positivity
 
 end

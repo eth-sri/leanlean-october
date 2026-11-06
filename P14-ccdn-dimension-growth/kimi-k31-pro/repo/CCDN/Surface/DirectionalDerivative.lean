@@ -24,8 +24,10 @@ namespace CCDN
 noncomputable section
 open MvPolynomial
 
+variable {R σ : Type*} [CommRing R]
+
 /-- The derivative `∑ i, v i * ∂f/∂xᵢ` of the polynomial `f` in the direction `v`. -/
-def directionalDerivative {R σ : Type*} [CommRing R] [Fintype σ]
+def directionalDerivative  [Fintype σ]
     (v : σ → R) (f : MvPolynomial σ R) : MvPolynomial σ R :=
   ∑ i, C (v i) * pderiv i f
 
@@ -44,7 +46,7 @@ private lemma directionalDerivative_map {R S σ : Type*} [CommRing R] [CommRing 
   classical
   simp [directionalDerivative, pderiv_map]
 
-private lemma pderiv_homogeneousComponent {R σ : Type*} [CommRing R]
+private lemma pderiv_homogeneousComponent 
     (i : σ) (f : MvPolynomial σ R) {d : ℕ} (hd : 0 < d) :
     pderiv i (homogeneousComponent d f) = homogeneousComponent (d - 1) (pderiv i f) := by
   classical
@@ -60,7 +62,7 @@ private lemma pderiv_homogeneousComponent {R σ : Type*} [CommRing R]
   · have hn : m.degree + 1 ≠ d := by omega
     simp [hm, hn]
 
-private lemma directionalDerivative_homogeneousComponent {R σ : Type*} [CommRing R] [Fintype σ]
+private lemma directionalDerivative_homogeneousComponent  [Fintype σ]
     (v : σ → R) (f : MvPolynomial σ R) {d : ℕ} (hd : 0 < d) :
     directionalDerivative v (homogeneousComponent d f) =
       homogeneousComponent (d - 1) (directionalDerivative v f) := by
@@ -209,22 +211,22 @@ theorem surface_directionalDerivative_ne_zero
   congr 1
 
 /-- Every directional derivative of a constant polynomial is zero. -/
-@[simp] lemma directionalDerivative_C {R σ : Type*} [CommRing R] [Fintype σ]
+@[simp] lemma directionalDerivative_C  [Fintype σ]
     (v : σ → R) (a : R) : directionalDerivative v (C a) = 0 := by
   simp [directionalDerivative]
 
 /-- The derivative of the coordinate `X j` in the direction `v` is the constant `v j`. -/
-@[simp] lemma directionalDerivative_X {R σ : Type*} [CommRing R] [Fintype σ]
+@[simp] lemma directionalDerivative_X  [Fintype σ]
     (v : σ → R) (j : σ) : directionalDerivative v (X j) = C (v j) := by
   classical
   simp [directionalDerivative, pderiv_X, Pi.single_apply]
 
-private lemma directionalDerivative_add {R σ : Type*} [CommRing R] [Fintype σ]
+private lemma directionalDerivative_add  [Fintype σ]
     (v : σ → R) (f g : MvPolynomial σ R) :
     directionalDerivative v (f + g) = directionalDerivative v f + directionalDerivative v g := by
   simp [directionalDerivative, mul_add, Finset.sum_add_distrib]
 
-private lemma directionalDerivative_mul {R σ : Type*} [CommRing R] [Fintype σ]
+private lemma directionalDerivative_mul  [Fintype σ]
     (v : σ → R) (f g : MvPolynomial σ R) :
     directionalDerivative v (f * g) =
       directionalDerivative v f * g + f * directionalDerivative v g := by
@@ -233,7 +235,7 @@ private lemma directionalDerivative_mul {R σ : Type*} [CommRing R] [Fintype σ]
     Finset.sum_mul, Finset.mul_sum]
   congr 1 <;> apply Finset.sum_congr rfl <;> intro i _ <;> ring
 
-private lemma derivative_affineLinePolynomial {R σ : Type*} [CommRing R] [Fintype σ]
+private lemma derivative_affineLinePolynomial  [Fintype σ]
     (a v : σ → R) (f : MvPolynomial σ R) :
     Polynomial.derivative (affineLinePolynomial a v f) =
       affineLinePolynomial a v (directionalDerivative v f) := by

@@ -33,7 +33,7 @@ private theorem exists_proper_partial_derivative {K σ : Type*}
     (f : MvPolynomial σ K) (hir : Irreducible f) :
     ∃ j, pderiv j f ≠ 0 ∧ ¬ f ∣ pderiv j f ∧
       (pderiv j f).totalDegree < f.totalDegree := by
-  have hd := MvPolynomial.totalDegree_pos_of_irreducible hir
+  have hd := MvPolynomial.totalDegree_pos_of_ne_zero_of_not_isUnit hir.ne_zero hir.not_isUnit
   obtain ⟨j, hj⟩ := exists_pderiv_ne_zero hd fun n hn _ ↦ Nat.cast_ne_zero.mpr hn.ne'
   have hdeg : (pderiv j f).totalDegree < f.totalDegree := by
     have := pderiv_totalDegree_le f j

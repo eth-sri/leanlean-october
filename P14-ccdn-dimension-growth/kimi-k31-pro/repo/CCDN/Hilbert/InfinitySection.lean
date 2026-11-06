@@ -23,8 +23,10 @@ quotient ring.
 namespace CCDN
 noncomputable section
 
+variable {K σ : Type*} [Field K]
+
 /-- A homogeneous element with coefficient in the prescribed filtered space. -/
-def projectiveMonomialMap {K σ : Type*} [Field K]
+def projectiveMonomialMap 
     (I : Ideal (MvPolynomial σ K)) (n : ℕ) :
     filteredCoordinateSpace I n →ₗ[K] projectiveCoordinateAlgebra I where
   toFun a := ⟨Polynomial.monomial n (a : MvPolynomial σ K ⧸ I),
@@ -33,17 +35,17 @@ def projectiveMonomialMap {K σ : Type*} [Field K]
   map_smul' c a := by apply Subtype.ext; simp
 
 /-- `projectiveMonomialMap I n a` is the monomial `a · Tⁿ` in the homogeneous coordinate algebra. -/
-@[simp] lemma projectiveMonomialMap_val {K σ : Type*} [Field K]
+@[simp] lemma projectiveMonomialMap_val 
     (I : Ideal (MvPolynomial σ K)) (n : ℕ) (a : filteredCoordinateSpace I n) :
     (projectiveMonomialMap I n a : Polynomial (MvPolynomial σ K ⧸ I)) =
       Polynomial.monomial n (a : MvPolynomial σ K ⧸ I) := rfl
 
 /-- The ideal cutting out the infinity section in the homogeneous coordinate ring. -/
-def projectiveInfinityIdeal {K σ : Type*} [Field K]
+def projectiveInfinityIdeal 
     (I : Ideal (MvPolynomial σ K)) : Ideal (projectiveCoordinateAlgebra I) :=
   Ideal.span {projectiveInfinityCoordinate I}
 
-instance projectiveInfinityIdeal_twoSided {K σ : Type*} [Field K]
+instance projectiveInfinityIdeal_twoSided 
     (I : Ideal (MvPolynomial σ K)) : (projectiveInfinityIdeal I).IsTwoSided := by
   constructor
   intro a b ha
@@ -51,7 +53,7 @@ instance projectiveInfinityIdeal_twoSided {K σ : Type*} [Field K]
 
 /-- Divisibility by the new coordinate is exactly membership one step lower in
 the affine degree filtration. -/
-theorem projectiveMonomial_mem_infinityIdeal {K σ : Type*} [Field K]
+theorem projectiveMonomial_mem_infinityIdeal 
     (I : Ideal (MvPolynomial σ K)) (n : ℕ) (a : filteredCoordinateSpace I (n + 1)) :
     projectiveMonomialMap I (n + 1) a ∈ projectiveInfinityIdeal I ↔
       (a : MvPolynomial σ K ⧸ I) ∈ filteredCoordinateSpace I n := by
@@ -72,14 +74,14 @@ theorem projectiveMonomial_mem_infinityIdeal {K σ : Type*} [Field K]
     exact (Polynomial.X_mul_monomial n (a : MvPolynomial σ K ⧸ I)).symm
 
 /-- Map a homogeneous piece to the quotient by the infinity coordinate. -/
-def projectivePieceToInfinity {K σ : Type*} [Field K]
+def projectivePieceToInfinity 
     (I : Ideal (MvPolynomial σ K)) (n : ℕ) :
     filteredCoordinateSpace I (n + 1) →ₗ[K]
       projectiveCoordinateAlgebra I ⧸ projectiveInfinityIdeal I :=
   (Ideal.Quotient.mkₐ K (projectiveInfinityIdeal I)).toLinearMap.comp
     (projectiveMonomialMap I (n + 1))
 
-private lemma projectivePieceToInfinity_ker {K σ : Type*} [Field K]
+private lemma projectivePieceToInfinity_ker 
     (I : Ideal (MvPolynomial σ K)) (n : ℕ) :
     (projectivePieceToInfinity I n).ker =
       (filteredCoordinateSpace I n).comap (filteredCoordinateSpace I (n + 1)).subtype := by
@@ -90,18 +92,18 @@ private lemma projectivePieceToInfinity_ker {K σ : Type*} [Field K]
   rfl
 
 /-- Degree-`n+1` elements of the infinity quotient ring. -/
-def infinityGradedSpace {K σ : Type*} [Field K]
+def infinityGradedSpace 
     (I : Ideal (MvPolynomial σ K)) (n : ℕ) :
     Submodule K (projectiveCoordinateAlgebra I ⧸ projectiveInfinityIdeal I) :=
   (projectivePieceToInfinity I n).range
 
-instance infinityGradedSpace_finite {K σ : Type*} [Field K] [Finite σ]
+instance infinityGradedSpace_finite  [Finite σ]
     (I : Ideal (MvPolynomial σ K)) (n : ℕ) : Module.Finite K (infinityGradedSpace I n) := by
   unfold infinityGradedSpace
   infer_instance
 
 /-- The exact Hilbert difference for the homogeneous infinity quotient. -/
-private theorem infinityGradedSpace_finrank {K σ : Type*} [Field K] [Finite σ]
+private theorem infinityGradedSpace_finrank  [Finite σ]
     (I : Ideal (MvPolynomial σ K)) (n : ℕ) :
     Module.finrank K (infinityGradedSpace I n) +
       Module.finrank K (filteredCoordinateSpace I n) =
@@ -117,7 +119,7 @@ private theorem infinityGradedSpace_finrank {K σ : Type*} [Field K] [Finite σ]
 
 /-- Every certified affine Hilbert degree is the eventual graded dimension of the
 quotient by the infinity coordinate. -/
-theorem infinityGradedSpace_eventually_degree {K σ : Type*} [Field K] [Finite σ]
+theorem infinityGradedSpace_eventually_degree  [Finite σ]
     (I : Ideal (MvPolynomial σ K)) {d N : ℕ} {b : ℤ}
     (hdegree : ∀ n ≥ N,
       (Module.finrank K (filteredCoordinateSpace I n) : ℤ) = (d : ℤ) * n + b) :

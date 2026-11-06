@@ -17,15 +17,17 @@ namespace CCDN
 noncomputable section
 open MvPolynomial
 
+variable {R : Type*} [CommRing R] {n : ℕ}
+
 /-- The homogeneous linear substitution fixing `X 0` and sending `X (j + 1)` to
 `X (j + 1) + a j * X 0`; on the affine chart `X 0 = 1` it is the translation by `a`. -/
-def homogeneousTranslationHom (R : Type*) [CommRing R] {n : ℕ} (a : Fin n → R) :
+def homogeneousTranslationHom (R : Type*) [CommRing R]  (a : Fin n → R) :
     MvPolynomial (Fin (n + 1)) R →ₐ[R] MvPolynomial (Fin (n + 1)) R :=
   aeval (Fin.cons (X 0) (fun j => X j.succ + C (a j) * X 0))
 
 /-- Composing the homogeneous translations by `a` and by `b` gives the homogeneous translation
 by `a + b`. -/
-lemma homogeneousTranslationHom_comp {R : Type*} [CommRing R] {n : ℕ} (a b : Fin n → R) :
+lemma homogeneousTranslationHom_comp   (a b : Fin n → R) :
     (homogeneousTranslationHom R a).comp (homogeneousTranslationHom R b) =
       homogeneousTranslationHom R (a + b) := by
   apply MvPolynomial.algHom_ext
@@ -46,7 +48,7 @@ lemma homogeneousTranslationHom_comp {R : Type*} [CommRing R] {n : ℕ} (a b : F
 /-- The homogeneous translation by `a` (fixing `X 0` and sending `X (j + 1)` to
 `X (j + 1) + a j * X 0`) as an algebra automorphism, with inverse the homogeneous translation
 by `-a`. -/
-def homogeneousTranslation (R : Type*) [CommRing R] {n : ℕ} (a : Fin n → R) :
+def homogeneousTranslation (R : Type*) [CommRing R]  (a : Fin n → R) :
     MvPolynomial (Fin (n + 1)) R ≃ₐ[R] MvPolynomial (Fin (n + 1)) R :=
   AlgEquiv.ofAlgHom (homogeneousTranslationHom R a) (homogeneousTranslationHom R (-a))
     (by rw [homogeneousTranslationHom_comp, add_neg_cancel, homogeneousTranslationHom_zero])
@@ -54,7 +56,7 @@ def homogeneousTranslation (R : Type*) [CommRing R] {n : ℕ} (a : Fin n → R) 
 
 /-- The homogeneous translation of a homogeneous polynomial of degree `d` is homogeneous of
 degree `d`. -/
-lemma homogeneousTranslation_homogeneous {R : Type*} [CommRing R] {n d : ℕ}
+lemma homogeneousTranslation_homogeneous  {n d : ℕ}
     (a : Fin n → R) {f : MvPolynomial (Fin (n + 1)) R} (hf : f.IsHomogeneous d) :
     (homogeneousTranslation R a f).IsHomogeneous d := by
   change (aeval (Fin.cons (X 0) (fun j => X j.succ + C (a j) * X 0)) f).IsHomogeneous d
@@ -70,7 +72,7 @@ lemma homogeneousTranslation_homogeneous {R : Type*} [CommRing R] {n d : ℕ}
 
 /-- The homogeneous translation by an integer vector of a primitive integer polynomial is
 primitive. -/
-lemma PrimitiveIntegerPolynomial.translate_homogeneous {n : ℕ} (a : Fin n → ℤ)
+lemma PrimitiveIntegerPolynomial.translate_homogeneous  (a : Fin n → ℤ)
     {f : MvPolynomial (Fin (n + 1)) ℤ} (hf : PrimitiveIntegerPolynomial f) :
     PrimitiveIntegerPolynomial (homogeneousTranslation ℤ a f) := by
   intro c hc
@@ -85,7 +87,7 @@ lemma PrimitiveIntegerPolynomial.translate_homogeneous {n : ℕ} (a : Fin n → 
 
 /-- The homogeneous translation of `f` by `a` evaluates at `x` to the value of `f` at the point
 with coordinates `x 0` and `x (j + 1) + a j * x 0`. -/
-lemma homogeneousTranslation_eval {R : Type*} [CommRing R] {n : ℕ}
+lemma homogeneousTranslation_eval  
     (a : Fin n → R) (f : MvPolynomial (Fin (n + 1)) R) (x : Fin (n + 1) → R) :
     eval x (homogeneousTranslation R a f) =
       eval (Fin.cons (x 0) (fun j => x j.succ + a j * x 0)) f := by
@@ -97,7 +99,7 @@ lemma homogeneousTranslation_eval {R : Type*} [CommRing R] {n : ℕ}
 
 /-- On the affine chart `X 0 = 1`, the homogeneous translation of `f` by `a` evaluates at the
 point `(1, z)` to the value of `f` at `(1, z + a)`. -/
-lemma homogeneousTranslation_eval_chart {R : Type*} [CommRing R] {n : ℕ}
+lemma homogeneousTranslation_eval_chart  
     (a z : Fin n → R) (f : MvPolynomial (Fin (n + 1)) R) :
     eval (Fin.cons 1 z) (homogeneousTranslation R a f) = eval (Fin.cons 1 (z + a)) f := by
   rw [homogeneousTranslation_eval]
@@ -106,7 +108,7 @@ lemma homogeneousTranslation_eval_chart {R : Type*} [CommRing R] {n : ℕ}
 
 /-- If `z` lies in the box of radius `B ≥ 1` and every coordinate of `a` lies in `[0, d]`, then
 every coordinate of `z - a` has absolute value at most `(d + 1) * B`. -/
-lemma homogeneousTranslation_integer_point_box {n : ℕ} {B : ℝ} {d : ℕ}
+lemma homogeneousTranslation_integer_point_box  {B : ℝ} {d : ℕ}
     (hB : 1 ≤ B) (a z : Fin n → ℤ) (ha : ∀ j, 0 ≤ a j ∧ a j ≤ d)
     (hz : InBox z B) (j : Fin n) :
     |((z j - a j : ℤ) : ℝ)| ≤ ((d : ℝ) + 1) * B := by

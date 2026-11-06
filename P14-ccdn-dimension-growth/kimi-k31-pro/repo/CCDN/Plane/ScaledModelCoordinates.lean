@@ -18,13 +18,15 @@ namespace CCDN
 noncomputable section
 open MvPolynomial
 
+variable {n : ℕ}
+
 /-- The integer polynomial coordinate change `(h, x₁ - a₁ h, …, xₙ - aₙ h)` from affine
 coordinates to the coordinates of the translated scaled projective model. -/
-def scaledModelCoordinates {n : ℕ} (h : ℤ) (a : Fin n → ℤ) :
+def scaledModelCoordinates  (h : ℤ) (a : Fin n → ℤ) :
     Fin (n + 1) → MvPolynomial (Fin n) ℤ :=
   Fin.cons (C h) (fun j => X j - C (a j * h))
 
-private lemma scaledModelCoordinates_eval {n : ℕ} (h : ℤ) (a z : Fin n → ℤ) :
+private lemma scaledModelCoordinates_eval  (h : ℤ) (a z : Fin n → ℤ) :
     (fun j => eval z (scaledModelCoordinates h a j)) =
       Fin.cons h (fun j => z j - a j * h) := by
   funext i
@@ -32,7 +34,7 @@ private lemma scaledModelCoordinates_eval {n : ℕ} (h : ℤ) (a z : Fin n → �
 
 /-- The translated scaled homogenization of `f`, evaluated at the scaled model coordinates of `z`,
 equals `h ^ deg f * f(z)`. -/
-lemma scaledModelCoordinates_model_eval {n : ℕ} (h : ℤ) (a z : Fin n → ℤ)
+lemma scaledModelCoordinates_model_eval  (h : ℤ) (a z : Fin n → ℤ)
     (f : MvPolynomial (Fin n) ℤ) :
     eval (fun j => eval z (scaledModelCoordinates h a j))
       (homogeneousTranslation ℤ a (scaledHomogenize f.totalDegree h f)) =
@@ -43,7 +45,7 @@ lemma scaledModelCoordinates_model_eval {n : ℕ} (h : ℤ) (a z : Fin n → ℤ
 
 /-- For `0 ≤ h ≤ B`, translation parameters `0 ≤ a j ≤ d` and `z` in the box of size `B ≥ 1`, all
 scaled model coordinates of `z` have absolute value at most `(d + 1) * B`. -/
-lemma scaledModelCoordinates_box {n : ℕ} {B : ℝ} {d : ℕ} {h : ℤ}
+lemma scaledModelCoordinates_box  {B : ℝ} {d : ℕ} {h : ℤ}
     (hB : 1 ≤ B) (hh : 0 ≤ h) (hhB : (h : ℝ) ≤ B)
     (a z : Fin n → ℤ) (ha : ∀ j, 0 ≤ a j ∧ a j ≤ d)
     (hz : InBox z B) (j : Fin (n + 1)) :

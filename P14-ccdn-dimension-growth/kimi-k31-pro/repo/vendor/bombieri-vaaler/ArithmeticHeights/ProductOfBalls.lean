@@ -125,7 +125,8 @@ theorem hasSliceBound_ballPi (α : Type*) [Fintype α] :
   have h := HasSliceBound.of_measurePreserving (WithLp.linearEquiv 2 ℝ (α → ℝ)).symm
     (PiLp.volume_preserving_toLp α) (PiLp.volume_preserving_ofLp α).measurable
     measurable_gaussDensity measurableSet_closedBall
-    (hasSliceBound_unitVolumeBall (E := EuclideanSpace ℝ α))
+    (hasSliceBound_closedBall volume unitVolumeRadius_pos volume_closedBall_unitVolumeRadius
+      lintegral_gaussDensity_eq_one)
   have hdens : (fun x : α → ℝ =>
       gaussDensity ((WithLp.linearEquiv 2 ℝ (α → ℝ)).symm x)) = gaussPi :=
     funext fun x => (gaussPi_eq_gaussDensity x).symm
@@ -170,10 +171,7 @@ theorem measurableSet_setOf_sum_sq_le {ι S : Type*} [Fintype S] (f : S → ι) 
 theorem neg_mem_setOf_sum_sq_le {ι S : Type*} [Fintype S] (f : S → ι) (c : ℝ)
     {x : ι → ℝ} (hx : x ∈ {x : ι → ℝ | ∑ j : S, (x (f j)) ^ 2 ≤ c}) :
     -x ∈ {x : ι → ℝ | ∑ j : S, (x (f j)) ^ 2 ≤ c} := by
-  have h : ∑ j : S, ((-x) (f j)) ^ 2 = ∑ j : S, (x (f j)) ^ 2 :=
-    Finset.sum_congr rfl fun j _ => by simp
-  change ∑ j : S, ((-x) (f j)) ^ 2 ≤ c
-  rw [h]; exact hx
+  simpa using hx
 
 /-- The product over the blocks of `blk` of the euclidean ball of volume one in that block's
 coordinates: Bombieri–Gubler's `Q_N = B_{ρ(n₁)} × ⋯ × B_{ρ(n_r)}`. -/

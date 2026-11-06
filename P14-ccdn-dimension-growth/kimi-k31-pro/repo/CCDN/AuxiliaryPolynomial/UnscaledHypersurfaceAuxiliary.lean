@@ -24,9 +24,11 @@ namespace CCDN
 noncomputable section
 open MvPolynomial
 
+variable {n : ℕ}
+
 /-- The ordinary homogenization (scaling factor one) of an integer polynomial has the same
 coefficient height as the polynomial. -/
-lemma integerCoefficientHeight_scaledHomogenize_one {n : ℕ} (d : ℕ)
+lemma integerCoefficientHeight_scaledHomogenize_one  (d : ℕ)
     (f : MvPolynomial (Fin n) ℤ) :
     integerCoefficientHeight (scaledHomogenize d 1 f) = integerCoefficientHeight f := by
   classical
@@ -54,7 +56,7 @@ lemma integerCoefficientHeight_scaledHomogenize_one {n : ℕ} (d : ℕ)
         (homogenizedExponent d m)
   exact_mod_cast le_antisymm hupper hlower
 
-private lemma scaledHomogenize_one_integer_irreducible {n : ℕ}
+private lemma scaledHomogenize_one_integer_irreducible 
     (f : MvPolynomial (Fin n) ℤ) (hprim : PrimitiveIntegerPolynomial f)
     (hir : Irreducible f) (hd : 0 < f.totalDegree) :
     Irreducible (scaledHomogenize f.totalDegree 1 f) := by
@@ -117,7 +119,7 @@ private lemma unscaled_auxiliary_vanishes {n M : ℕ}
 
 /-- Ordinary homogenization gives an auxiliary in every affine
 box, with the height and bad-prime factor of the unscaled model. -/
-theorem unscaled_affine_auxiliary {n : ℕ}
+theorem unscaled_affine_auxiliary 
     (f : MvPolynomial (Fin (n + 2)) ℤ) (hprim : PrimitiveIntegerPolynomial f)
     (hir : Irreducible f) (hd : 0 < f.totalDegree) {B : ℝ} (hB : 1 ≤ B) :
     ∃ g, IsBoxAuxiliary f g B ∧
@@ -140,7 +142,7 @@ theorem unscaled_affine_auxiliary {n : ℕ}
 
 /-- Either the affine equation has controlled coefficient height, or a
 degree-at-most-d nonmultiple vanishes on every bounded integer zero. -/
-theorem affine_coefficient_height_dichotomy {n : ℕ}
+theorem affine_coefficient_height_dichotomy 
     (f : MvPolynomial (Fin n) ℤ) (hf0 : f ≠ 0) (hprim : PrimitiveIntegerPolynomial f)
     {B : ℝ} (hB : 1 ≤ B) :
     Real.log (integerCoefficientHeight f : ℝ) ≤

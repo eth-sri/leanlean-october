@@ -16,13 +16,15 @@ namespace CCDN
 noncomputable section
 open Polynomial
 
+variable {R : Type*} [CommRing R]
+
 /-- Variable zero corresponds to the outer variable of the nested polynomial ring. -/
-lemma bivariatePolynomialEquiv_X_zero {R : Type*} [CommRing R] :
+lemma bivariatePolynomialEquiv_X_zero  :
     bivariatePolynomialEquiv R (MvPolynomial.X 0) = (X : R[X][X]) := by
   simp [bivariatePolynomialEquiv, MvPolynomial.finSuccEquiv_X_zero]
 
 /-- Variable one corresponds to the inner variable of the nested polynomial ring. -/
-lemma bivariatePolynomialEquiv_X_one {R : Type*} [CommRing R] :
+lemma bivariatePolynomialEquiv_X_one  :
     bivariatePolynomialEquiv R (MvPolynomial.X 1) = (C X : R[X][X]) := by
   change Polynomial.map (MvPolynomial.uniqueAlgEquiv R (Fin 1)).toRingHom
     (MvPolynomial.finSuccEquiv R 1 (MvPolynomial.X (Fin.succ (0 : Fin 1)))) = _
@@ -30,9 +32,8 @@ lemma bivariatePolynomialEquiv_X_one {R : Type*} [CommRing R] :
   simp
 
 /-- Constants correspond to constants of the nested polynomial ring. -/
-lemma bivariatePolynomialEquiv_C {R : Type*} [CommRing R] (a : R) :
-    bivariatePolynomialEquiv R (MvPolynomial.C a) = C (C a) := by
-  exact (bivariatePolynomialEquiv R).commutes a
+lemma bivariatePolynomialEquiv_C  (a : R) :
+    bivariatePolynomialEquiv R (MvPolynomial.C a) = C (C a) := (bivariatePolynomialEquiv R).commutes a
 
 /-- The integral shear in nested polynomial coordinates. -/
 def bivariateShear (R : Type*) [CommRing R] (a : R) : R[X][X] ≃ₐ[R] R[X][X] :=
@@ -43,7 +44,7 @@ private def directionAxisHom (R : Type*) [CommRing R] (a : R) :
     MvPolynomial (Fin 2) R →+* R[X] :=
   MvPolynomial.eval₂Hom C ![X, C a * X]
 
-private lemma directionAxisHom_eq_shear_axis {R : Type*} [CommRing R] (a : R)
+private lemma directionAxisHom_eq_shear_axis  (a : R)
     (f : MvPolynomial (Fin 2) R) :
     directionAxisHom R a f =
       Polynomial.map (Polynomial.evalRingHom 0)
@@ -60,7 +61,7 @@ private lemma directionAxisHom_eq_shear_axis {R : Type*} [CommRing R] (a : R)
       simp [directionAxisHom, planeShear, planeShearHom,
         bivariatePolynomialEquiv_X_zero, bivariatePolynomialEquiv_X_one, bivariatePolynomialEquiv_C]
 
-private lemma directionAxisHom_monomial {R : Type*} [CommRing R]
+private lemma directionAxisHom_monomial 
     (a : R) (m : Fin 2 →₀ ℕ) (c : R) :
     directionAxisHom R a (MvPolynomial.monomial m c) = monomial (m 0 + m 1) (c * a ^ m 1) := by
   change MvPolynomial.eval₂Hom C ![X, C a * X] (MvPolynomial.monomial m c) = _
@@ -83,7 +84,7 @@ lemma bivariate_exponent_eq_iff (m : Fin 2 →₀ ℕ) (i j : ℕ) :
   · rintro ⟨h₀,h₁⟩
     rw [← h₀, ← h₁, ← bivariate_exponent_eq m]
 
-private lemma leadingDirectionPolynomial_monomial {R : Type*} [CommRing R]
+private lemma leadingDirectionPolynomial_monomial 
     (m : Fin 2 →₀ ℕ) (c : R) (d : ℕ) :
     leadingDirectionPolynomial (bivariatePolynomialEquiv R (MvPolynomial.monomial m c)) d =
       if m 0 + m 1 = d then monomial (m 1) c else 0 := by
@@ -111,14 +112,14 @@ private lemma leadingDirectionPolynomial_monomial {R : Type*} [CommRing R]
       simp [MvPolynomial.coeff_monomial, hj, he]
     · simp [hj]
 
-private lemma leadingDirectionPolynomial_add {R : Type*} [CommRing R]
+private lemma leadingDirectionPolynomial_add 
     (f g : R[X][X]) (d : ℕ) :
     leadingDirectionPolynomial (f + g) d =
       leadingDirectionPolynomial f d + leadingDirectionPolynomial g d := by
   simp [leadingDirectionPolynomial, Finset.sum_add_distrib]
 
 /-- The direction polynomial computes the leading axis coefficient. -/
-private theorem directionAxisHom_coeff {R : Type*} [CommRing R]
+private theorem directionAxisHom_coeff 
     (a : R) (f : MvPolynomial (Fin 2) R) (d : ℕ) :
     (directionAxisHom R a f).coeff d =
       (leadingDirectionPolynomial (bivariatePolynomialEquiv R f) d).eval a := by
@@ -129,7 +130,7 @@ private theorem directionAxisHom_coeff {R : Type*} [CommRing R]
     rw [directionAxisHom_monomial, leadingDirectionPolynomial_monomial, coeff_monomial]
     split_ifs <;> simp [eval_monomial]
 
-private lemma bivariateShear_totalDegree {R : Type*} [CommRing R] [Nontrivial R]
+private lemma bivariateShear_totalDegree  [Nontrivial R]
     (a : R) (f : R[X][X]) :
     bivariateTotalDegree (bivariateShear R a f) = bivariateTotalDegree f := by
   unfold bivariateTotalDegree bivariateShear
@@ -137,11 +138,11 @@ private lemma bivariateShear_totalDegree {R : Type*} [CommRing R] [Nontrivial R]
   exact planeShear_totalDegree _ _
 
 /-- A plane shear preserves irreducibility of bivariate polynomials. -/
-lemma bivariateShear_irreducible_iff {R : Type*} [CommRing R]
+lemma bivariateShear_irreducible_iff 
     (a : R) (f : R[X][X]) : Irreducible (bivariateShear R a f) ↔ Irreducible f :=
   MulEquiv.irreducible_iff (f := bivariateShear R a)
 
-private lemma bivariateShear_axis_coeff {R : Type*} [CommRing R]
+private lemma bivariateShear_axis_coeff 
     (a : R) (f : R[X][X]) (d : ℕ) :
     ((bivariateShear R a f).coeff d).coeff 0 = (leadingDirectionPolynomial f d).eval a := by
   have h := congrArg (fun q : R[X] => q.coeff d)
@@ -181,7 +182,7 @@ lemma bivariatePolynomialEquiv_map {R S : Type*} [CommRing R] [CommRing S]
   simp only [bivariateMap_coeff, bivariatePolynomialEquiv_coeff, MvPolynomial.coeff_map]
 
 /-- The nested plane shear corresponds to the plane shear of two-variable polynomials. -/
-lemma bivariateShear_equiv {R : Type*} [CommRing R]
+lemma bivariateShear_equiv 
     (a : R) (f : MvPolynomial (Fin 2) R) :
     bivariateShear R a (bivariatePolynomialEquiv R f) =
       bivariatePolynomialEquiv R (planeShear R a f) := by

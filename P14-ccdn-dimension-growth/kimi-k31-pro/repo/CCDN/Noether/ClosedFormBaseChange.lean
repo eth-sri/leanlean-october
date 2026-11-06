@@ -22,6 +22,8 @@ namespace CCDN
 noncomputable section
 open Polynomial Matrix
 
+variable {R : Type*} [CommRing R]
+
 /-- Apply a ring map to both levels of bivariate coefficients. -/
 def bivariateMap {R S : Type*} [CommRing R] [CommRing S] (φ : R →+* S) :
     R[X][X] →+* S[X][X] := Polynomial.mapRingHom (Polynomial.mapRingHom φ)
@@ -36,8 +38,7 @@ lemma bivariateMap_coeff {R S : Type*} [CommRing R] [CommRing S]
 /-- Applying a coefficient ring homomorphism commutes with the outer derivative. -/
 lemma bivariateMap_derivative {R S : Type*} [CommRing R] [CommRing S]
     (φ : R →+* S) (f : R[X][X]) :
-    bivariateMap φ f.derivative = (bivariateMap φ f).derivative := by
-  exact (Polynomial.derivative_map _ _).symm
+    bivariateMap φ f.derivative = (bivariateMap φ f).derivative := (Polynomial.derivative_map _ _).symm
 
 /-- Applying a coefficient ring homomorphism commutes with the inner derivative. -/
 lemma bivariateMap_coefficientDerivative {R S : Type*} [CommRing R] [CommRing S]
@@ -100,13 +101,15 @@ namespace CCDN
 noncomputable section
 open Polynomial Matrix
 
+variable {R : Type*} [CommRing R]
+
 /-- All coefficients outside the strict rectangular grid vanish. -/
-def InBivariateGrid {R : Type*} [CommRing R] (d : ℕ) (f : R[X][X]) : Prop :=
+def InBivariateGrid  (d : ℕ) (f : R[X][X]) : Prop :=
   ∀ i j, d ≤ i ∨ d ≤ j → (f.coeff i).coeff j = 0
 
 /-- The polynomial with coefficients on the grid `BivariateGrid d` has zero coefficient at every
 monomial with outer exponent `i` and inner exponent `j` such that `d ≤ i` or `d ≤ j`. -/
-lemma bivariateGridPolynomial_coeff_zero {R : Type*} [CommRing R] (d : ℕ)
+lemma bivariateGridPolynomial_coeff_zero  (d : ℕ)
     (v : BivariateGrid d → R) (i j : ℕ) (h : d ≤ i ∨ d ≤ j) :
     ((bivariateGridPolynomial R d v).coeff i).coeff j = 0 := by
   classical
@@ -123,7 +126,7 @@ lemma bivariateGridPolynomial_coeff_zero {R : Type*} [CommRing R] (d : ℕ)
 
 /-- Coefficient extraction followed by decoding recovers every polynomial
 supported on the grid. -/
-theorem bivariateGridPolynomial_reconstruct {R : Type*} [CommRing R]
+theorem bivariateGridPolynomial_reconstruct 
     (d : ℕ) (f : R[X][X]) (hf : InBivariateGrid d f) :
     bivariateGridPolynomial R d (fun i => (f.coeff i.1.val).coeff i.2.val) = f := by
   ext i j
@@ -135,7 +138,7 @@ theorem bivariateGridPolynomial_reconstruct {R : Type*} [CommRing R]
   · rw [bivariateGridPolynomial_coeff_zero d _ i j (Or.inl (by omega)), hf i j (Or.inl (by omega))]
 
 /-- Every pair supported on the grid comes from a coefficient vector. -/
-private theorem exists_closedFormPair_of_grid {R : Type*} [CommRing R]
+private theorem exists_closedFormPair_of_grid 
     (d : ℕ) (u : R[X][X] × R[X][X]) (hp : InBivariateGrid d u.1)
     (hq : InBivariateGrid d u.2) :
     ∃ v, closedFormPair R d v = u := by

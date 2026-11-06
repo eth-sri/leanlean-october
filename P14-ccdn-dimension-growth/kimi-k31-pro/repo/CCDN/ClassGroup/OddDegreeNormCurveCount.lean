@@ -64,7 +64,7 @@ private theorem signedNormCurvePolynomial_bad_prime_factor
     simp only [Finset.notMem_empty, false_iff, not_and]
     intro _
     exact signedNormCurvePolynomial_no_bad_reduction K β hε hn hodd p
-  rw [hypersurfaceBadPrimeFactor_eq_exp (signedNormCurvePolynomial K β ε) hir rfl ∅ hbad]
+  rw [hypersurfaceBadPrimeFactor_eq_exp (f := signedNormCurvePolynomial K β ε) hir rfl ∅ hbad]
   simp
 
 /-- The constant is absolute and the degree dependence polynomial.

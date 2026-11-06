@@ -16,13 +16,15 @@ namespace CCDN
 noncomputable section
 open Polynomial Matrix
 
+variable {R : Type*} [CommRing R]
+
 /-- Every coefficient of the integer bivariate polynomial `f` has absolute value at most `H`. -/
 def BivariateCoefficientBound (f : ℤ[X][X]) (H : ℝ) : Prop :=
   ∀ i j, |(((f.coeff i).coeff j : ℤ) : ℝ)| ≤ H
 
 /-- The `k`-th coefficient of `monomial n a * f` is `a * f.coeff (k - n)` if `n ≤ k` and zero
 otherwise. -/
-lemma coeff_monomial_mul_at {R : Type*} [CommRing R]
+lemma coeff_monomial_mul_at 
     (f : R[X]) (a : R) (n k : ℕ) :
     (monomial n a * f).coeff k = if n ≤ k then a * f.coeff (k - n) else 0 := by
   rw [← C_mul_X_pow_eq_monomial, mul_assoc, coeff_C_mul, coeff_X_pow_mul']
@@ -56,7 +58,7 @@ lemma bivariateCoefficientBound_mono {f : ℤ[X][X]} {H K : ℝ}
     (hf : BivariateCoefficientBound f H) (h : H ≤ K) :
     BivariateCoefficientBound f K := fun i j => (hf i j).trans h
 
-private lemma bivariateGridPolynomial_single {R : Type*} [CommRing R] (d : ℕ)
+private lemma bivariateGridPolynomial_single  (d : ℕ)
     (i : BivariateGrid d) (a : R) :
     bivariateGridPolynomial R d (Pi.single i a) =
       monomial i.1.val (monomial i.2.val a) := by
@@ -65,7 +67,7 @@ private lemma bivariateGridPolynomial_single {R : Type*} [CommRing R] (d : ℕ)
 
 /-- The standard basis vector of the first block decodes to the pair `(monomial, 0)` with the
 corresponding grid monomial. -/
-lemma closedFormPair_single_inl {R : Type*} [CommRing R] (d : ℕ)
+lemma closedFormPair_single_inl  (d : ℕ)
     (i : BivariateGrid d) :
     closedFormPair R d (Pi.single (.inl i) 1) =
       (monomial i.1.val (monomial i.2.val 1), 0) := by
@@ -82,7 +84,7 @@ lemma closedFormPair_single_inl {R : Type*} [CommRing R] (d : ℕ)
 
 /-- The standard basis vector of the second block decodes to the pair `(0, monomial)` with the
 corresponding grid monomial. -/
-lemma closedFormPair_single_inr {R : Type*} [CommRing R] (d : ℕ)
+lemma closedFormPair_single_inr  (d : ℕ)
     (i : BivariateGrid d) :
     closedFormPair R d (Pi.single (.inr i) 1) =
       (0, monomial i.1.val (monomial i.2.val 1)) := by

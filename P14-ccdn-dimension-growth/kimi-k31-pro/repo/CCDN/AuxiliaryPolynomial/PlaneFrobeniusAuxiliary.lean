@@ -109,7 +109,7 @@ private theorem planeFrobeniusAuxiliary_not_dvd {K ι : Type*} [Field K]
 private lemma derivation_prime_power_zero {K : Type*} [Field K] (p : ℕ) [CharP K p]
     (D : Derivation K (MvPolynomial (Fin 2) K) (MvPolynomial (Fin 2) K))
     (g : MvPolynomial (Fin 2) K) : D (g ^ p) = 0 := by
-  rw [Derivation.leibniz_pow, nsmul_eq_mul, CharP.cast_eq_zero, zero_mul]
+  simp [Derivation.leibniz_pow]
 
 private lemma planeFrobeniusAuxiliary_iterate {K ι : Type*} [Field K] [Fintype ι]
     (p : ℕ) [CharP K p]

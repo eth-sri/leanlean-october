@@ -20,6 +20,8 @@ namespace CCDN
 noncomputable section
 open MvPolynomial Finset
 
+variable {K : Type*} [Field K] {n : ℕ}
+
 private lemma principal_binomial_layer_sum (n d N : ℕ) (hN : d ≤ N) :
     (∑ i ∈ range d, (N + n - i).choose n) +
       (N - d + (n + 1)).choose (n + 1) = (N + (n + 1)).choose (n + 1) := by
@@ -36,7 +38,7 @@ private lemma principal_binomial_layer_sum (n d N : ℕ) (hN : d ≤ N) :
 
 /-- Exact filtered Hilbert polynomial of any nonzero principal equation
 in n+1 variables, including the constant case. -/
-private theorem principal_filteredHilbertPolynomial {K : Type*} [Field K] {n : ℕ}
+private theorem principal_filteredHilbertPolynomial  
     (f : MvPolynomial (Fin (n + 1)) K) (hf : f ≠ 0) :
     filteredHilbertPolynomial (Ideal.span {f}) =
       ∑ i ∈ range f.totalDegree, Polynomial.preHilbertPoly ℚ n i := by
@@ -71,7 +73,7 @@ private lemma principal_preHilbert_sum_top_coeff (n d : ℕ) :
 /-- A nonconstant principal equation in n+1 variables has filtered
 Hilbert dimension n and multiplicity equal to its total degree. -/
 theorem principal_filteredHilbertPolynomial_degree_leadingCoeff
-    {K : Type*} [Field K] {n : ℕ}
+     
     (f : MvPolynomial (Fin (n + 1)) K) (hf : f ≠ 0) (hd : 0 < f.totalDegree) :
     HasAffineDimensionDegree (Ideal.span {f}) n f.totalDegree := by
   have hP := principal_filteredHilbertPolynomial f hf
@@ -86,7 +88,7 @@ theorem principal_filteredHilbertPolynomial_degree_leadingCoeff
 /-- The filtered Hilbert polynomial of a nonconstant principal ideal `(f)` in `n + 1` variables has
 degree `n`. -/
 theorem principal_filteredHilbertPolynomial_natDegree
-    {K : Type*} [Field K] {n : ℕ}
+     
     (f : MvPolynomial (Fin (n + 1)) K) (hf : f ≠ 0) (hd : 0 < f.totalDegree) :
     (filteredHilbertPolynomial (Ideal.span {f})).natDegree = n :=
   (principal_filteredHilbertPolynomial_degree_leadingCoeff f hf hd).natDegree_eq
@@ -94,7 +96,7 @@ theorem principal_filteredHilbertPolynomial_natDegree
 /-- The filtered Hilbert polynomial of a nonconstant principal ideal `(f)` in `n + 1` variables has
 leading coefficient `deg f / n!`, so the hypersurface has degree `deg f`. -/
 theorem principal_filteredHilbertPolynomial_leadingCoeff
-    {K : Type*} [Field K] {n : ℕ}
+     
     (f : MvPolynomial (Fin (n + 1)) K) (hf : f ≠ 0) (hd : 0 < f.totalDegree) :
     (filteredHilbertPolynomial (Ideal.span {f})).leadingCoeff =
       (f.totalDegree : ℚ) / n.factorial :=

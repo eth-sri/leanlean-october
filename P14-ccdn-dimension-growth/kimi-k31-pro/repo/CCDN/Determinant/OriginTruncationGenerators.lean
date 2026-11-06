@@ -26,9 +26,11 @@ namespace CCDN
 noncomputable section
 open MvPolynomial Module
 
+variable {K : Type*} [Field K]
+
 /-- A basis of the graded layer lifts to homogeneous polynomials and
 reduces every element of the ideal power modulo the equation and the next power. -/
-private theorem exists_originLayer_generators {K : Type*} [Field K] {n : ℕ}
+private theorem exists_originLayer_generators  {n : ℕ}
     (f : MvPolynomial (Fin (n + 1)) K) (k : ℕ) :
     ∃ (r : ℕ) (g : Fin r → MvPolynomial (Fin (n + 1)) K),
       r = Module.finrank K (originLayer f k) ∧
@@ -60,7 +62,7 @@ private theorem exists_originLayer_generators {K : Type*} [Field K] {n : ℕ}
 
 /-- The singular multiplicity gives homogeneous local generators at
 all weights, with at most μ generators at each weight. -/
-private theorem exists_plane_origin_generators {K : Type*} [Field K] {μ : ℕ}
+private theorem exists_plane_origin_generators  {μ : ℕ}
     (f : MvPolynomial (Fin 2) K) (hf : f ∈ idealOfVars (Fin 2) K ^ μ)
     (hμ : homogeneousComponent μ f ≠ 0) :
     ∃ (r : ℕ → ℕ) (g : (k : ℕ) → Fin (r k) → MvPolynomial (Fin 2) K),
@@ -80,6 +82,8 @@ end CCDN
 namespace CCDN
 noncomputable section
 open MvPolynomial
+
+variable {K : Type*} [Field K]
 
 /-- Successive layer reductions assemble into a finite-precision
 polynomial representation, modulo the defining equation and the Nth origin power. -/
@@ -110,7 +114,7 @@ private lemma origin_layers_generate_truncation {K σ : Type*} [Field K]
 
 /-- In every ambient dimension, the numbers of homogeneous generators are
 exactly the dimensions of the origin-adic layers. -/
-theorem exists_origin_truncation_generators {K : Type*} [Field K] {n : ℕ}
+theorem exists_origin_truncation_generators  {n : ℕ}
     (f : MvPolynomial (Fin (n + 1)) K) :
     ∃ (r : ℕ → ℕ) (g : (k : ℕ) → Fin (r k) → MvPolynomial (Fin (n + 1)) K),
       (∀ k, r k = Module.finrank K (originLayer f k)) ∧
@@ -124,7 +128,7 @@ theorem exists_origin_truncation_generators {K : Type*} [Field K] {n : ℕ}
 
 /-- Finite-precision weighted generators for any plane equation of
 multiplicity μ. -/
-theorem exists_plane_truncation_generators {K : Type*} [Field K] {μ : ℕ}
+theorem exists_plane_truncation_generators  {μ : ℕ}
     (f : MvPolynomial (Fin 2) K) (hf : f ∈ idealOfVars (Fin 2) K ^ μ)
     (hμ : homogeneousComponent μ f ≠ 0) :
     ∃ (r : ℕ → ℕ) (g : (k : ℕ) → Fin (r k) → MvPolynomial (Fin 2) K),

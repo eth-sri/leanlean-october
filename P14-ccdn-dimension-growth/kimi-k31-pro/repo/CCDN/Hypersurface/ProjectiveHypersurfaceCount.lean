@@ -31,11 +31,11 @@ theorem projective_hypersurface_finite_field_bound {n d : ℕ}
     (hsize : stepanovThreshold (d : ℝ) < p) :
     (Nat.card (projectiveZeroLocus f) : ℝ) ≤ (p : ℝ) ^ (n + 1) +
       projectiveHypersurfaceResidueConstant * (d : ℝ) ^ 2 * (p : ℝ) ^ n * Real.sqrt p := by
-  rw [projectiveHypersurfaceResidueConstant_eq]
+  rw [projectiveHypersurfaceResidueConstant]
   have hi := mvPolynomial_irreducible_of_field_map _ f hir
   have hdeg : f.totalDegree = d := hf.totalDegree hi.ne_zero
   have hcone := affine_hypersurface_finite_field_bound p f hir (hdeg ▸ hsize)
-  rw [hdeg, hypersurfaceResidueConstant_eq] at hcone
+  rw [hdeg, hypersurfaceResidueConstant] at hcone
   have h := homogeneous_projective_count_of_cone_bound f hf hd
     (H := 164 * (d : ℝ) ^ 2 * Real.sqrt p) (by positivity) (by
       simpa only [ZMod.card, mul_assoc, mul_left_comm, mul_comm] using hcone)

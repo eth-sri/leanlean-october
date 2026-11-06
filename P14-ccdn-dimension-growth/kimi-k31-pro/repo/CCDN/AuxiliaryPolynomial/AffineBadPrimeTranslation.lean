@@ -31,7 +31,7 @@ private lemma hypersurfaceBadReduction_affineTranslation {n : ℕ}
 
 /-- The bad-prime factor of an integral polynomial is invariant under integral affine
 translation of the variables. -/
-theorem hypersurfaceBadPrimeFactor_affineTranslation {n : ℕ}
+theorem badPrimeFactor_affineTranslation {n : ℕ}
     (a : Fin (n + 1) → ℤ) (f : MvPolynomial (Fin (n + 1)) ℤ) :
     hypersurfaceBadPrimeFactor (affineTranslation ℤ a f) = hypersurfaceBadPrimeFactor f := by
   classical
@@ -44,11 +44,11 @@ theorem hypersurfaceBadPrimeFactor_affineTranslation {n : ℕ}
     have hbad (p) : p ∈ bad ↔ stepanovThreshold f.totalDegree < p ∧
         HypersurfaceBadReduction f p := by
       simp only [bad, Set.Finite.mem_toFinset, Set.mem_ofPred_eq]
-    rw [hypersurfaceBadPrimeFactor_eq_exp f hf rfl bad hbad]
-    exact hypersurfaceBadPrimeFactor_eq_exp _ (hir.mpr hf) (affineTranslation_totalDegree a f)
+    rw [hypersurfaceBadPrimeFactor_eq_exp (f := f) hf rfl bad hbad]
+    exact hypersurfaceBadPrimeFactor_eq_exp (f := _) (hir.mpr hf) (affineTranslation_totalDegree a f)
       bad (by intro p; rw [hbad, hypersurfaceBadReduction_affineTranslation])
-  · rw [hypersurfaceBadPrimeFactor_eq_zero f hf,
-      hypersurfaceBadPrimeFactor_eq_zero _ (fun h => hf (hir.mp h))]
+  · rw [hypersurfaceBadPrimeFactor_eq_zero (f := f) hf,
+      hypersurfaceBadPrimeFactor_eq_zero (f := _) (fun h => hf (hir.mp h))]
 
 /-- Pull an auxiliary equation back through a bounded translation. -/
 theorem affine_auxiliary_translation_transport {n : ℕ}

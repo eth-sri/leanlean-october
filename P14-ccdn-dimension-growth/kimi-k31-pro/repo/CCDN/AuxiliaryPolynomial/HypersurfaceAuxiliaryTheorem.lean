@@ -55,7 +55,7 @@ theorem hypersurface_projective_auxiliary
   by_cases habs : AbsolutelyIrreducible f
   · obtain ⟨bad, M, hbad, hdegree, hg⟩ := hypersurface_absolute_projective_auxiliary f hf hd habs hB
     refine ⟨M, hdegree.trans_eq ?_, hg⟩
-    rw [hypersurfaceBadPrimeFactor_eq_exp f habs (hf.totalDegree hir.ne_zero) bad hbad]
+    rw [hypersurfaceBadPrimeFactor_eq_exp (f := f) habs (hf.totalDegree hir.ne_zero) bad hbad]
   · have hQ := rational_map_irreducible_of_integer f hir
       (by rw [hf.totalDegree hir.ne_zero]; exact hd)
     have hred : ¬ AbsolutelyIrreducibleRat (map (Int.castRingHom ℚ) f) :=
@@ -63,7 +63,7 @@ theorem hypersurface_projective_auxiliary
     obtain ⟨g, hg0, hgh, hgnd, hzeros⟩ := nonabsolute_projective_auxiliary f hf hd hQ hred
     refine ⟨d, ?_, g, hg0, hgh, fun x _ hx => hzeros hx, hgnd⟩
     unfold hypersurfaceAuxiliaryDegreeBound auxDegreeBound auxMainTerm
-    rw [hypersurfaceBadPrimeFactor_eq_zero f habs, mul_zero, zero_mul, zero_div, zero_add]
+    rw [hypersurfaceBadPrimeFactor_eq_zero (f := f) habs, mul_zero, zero_mul, zero_div, zero_add]
     have hdD : (d : ℝ) ≤ (d : ℝ) ^ (4 - 1 / (n + 1 : ℝ)) := le_rpow_four_sub_inv hd
     have hl : 0 ≤ (d : ℝ) ^ (1 - 1 / (n + 1 : ℝ)) * Real.log B :=
       mul_nonneg (Real.rpow_nonneg (by positivity) _) (Real.log_nonneg hB)

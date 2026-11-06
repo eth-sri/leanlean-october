@@ -21,29 +21,30 @@ namespace CCDN
 noncomputable section
 open MvPolynomial
 
+variable {R : Type*} [CommRing R]
+
 /-- The finite set of minimal primes over an ideal `I` of a Noetherian ring. -/
-def minimalPrimeComponents {R : Type*} [CommRing R] [IsNoetherianRing R]
+def minimalPrimeComponents  [IsNoetherianRing R]
     (I : Ideal R) : Finset (Ideal R) :=
   (Ideal.finite_minimalPrimes_of_isNoetherianRing R I).toFinset
 
-/-- `P` belongs to `minimalPrimeComponents I` exactly when it is a minimal prime over `I`. -/
 @[simp]
-lemma mem_minimalPrimeComponents {R : Type*} [CommRing R] [IsNoetherianRing R]
+lemma mem_minimalPrimeComponents  [IsNoetherianRing R]
     {I P : Ideal R} : P ∈ minimalPrimeComponents I ↔ I.IsMinimalPrime P :=
   Set.Finite.mem_toFinset _
 
 /-- Every member of `minimalPrimeComponents I` is a prime ideal. -/
-lemma minimalPrimeComponents_isPrime {R : Type*} [CommRing R] [IsNoetherianRing R]
+lemma minimalPrimeComponents_isPrime  [IsNoetherianRing R]
     {I P : Ideal R} (hP : P ∈ minimalPrimeComponents I) : P.IsPrime :=
   (mem_minimalPrimeComponents.mp hP).isPrime
 
 /-- Every member of `minimalPrimeComponents I` contains `I`. -/
-lemma le_minimalPrimeComponents {R : Type*} [CommRing R] [IsNoetherianRing R]
+lemma le_minimalPrimeComponents  [IsNoetherianRing R]
     {I P : Ideal R} (hP : P ∈ minimalPrimeComponents I) : I ≤ P :=
   (mem_minimalPrimeComponents.mp hP).le
 
 /-- Two members of `minimalPrimeComponents I` that are comparable are equal. -/
-lemma minimalPrimeComponents_eq_of_le {R : Type*} [CommRing R] [IsNoetherianRing R]
+lemma minimalPrimeComponents_eq_of_le  [IsNoetherianRing R]
     {I P Q : Ideal R} (hP : P ∈ minimalPrimeComponents I)
     (hQ : Q ∈ minimalPrimeComponents I) (hPQ : P ≤ Q) : P = Q :=
   (mem_minimalPrimeComponents.mp hQ).eq_of_le

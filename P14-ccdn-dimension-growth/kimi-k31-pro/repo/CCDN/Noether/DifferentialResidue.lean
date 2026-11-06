@@ -16,13 +16,15 @@ noncomputable section
 open Polynomial Differential
 open scoped Differential
 
-private lemma polynomial_degree_C_mul_le {K : Type*} [Field K] (a : K) (p : K[X]) :
+variable {K : Type*} [Field K]
+
+private lemma polynomial_degree_C_mul_le  (a : K) (p : K[X]) :
     (C a * p).degree ≤ p.degree := by
   simpa only [smul_eq_C_mul] using degree_smul_le a p
 
 /-- Coefficientwise differentiation strictly lowers the degree of a monic
 polynomial, since its leading coefficient differentiates to zero. -/
-private lemma differential_mapCoeffs_degree_lt {K : Type*} [Field K] [Differential K]
+private lemma differential_mapCoeffs_degree_lt  [Differential K]
     {p : K[X]} (hp : p.Monic) : (Differential.mapCoeffs p).degree < p.degree := by
   rw [degree_eq_natDegree hp.ne_zero, degree_lt_iff_coeff_zero]
   intro n hn
@@ -33,7 +35,7 @@ private lemma differential_mapCoeffs_degree_lt {K : Type*} [Field K] [Differenti
   · rw [coeff_eq_zero_of_natDegree_lt h, map_zero]
 
 /-- Coefficientwise differentiation commutes with the formal derivative of polynomials. -/
-lemma derivative_differential_mapCoeffs {K : Type*} [Field K] [Differential K]
+lemma derivative_differential_mapCoeffs  [Differential K]
     (f : K[X]) : (Differential.mapCoeffs f).derivative =
       Differential.mapCoeffs f.derivative := by
   ext n
@@ -42,7 +44,7 @@ lemma derivative_differential_mapCoeffs {K : Type*} [Field K] [Differential K]
 /-- A closed rational one-form has differentially constant residue at every
 simple root of its denominator. The equation is written after clearing f². -/
 theorem closed_form_residue_deriv_eq_zero
-    {K : Type*} [Field K] [Differential K] (f p q : K[X]) (c : K)
+     [Differential K] (f p q : K[X]) (c : K)
     (hroot : aeval c f = 0) (hsimple : aeval c f.derivative ≠ 0)
     (hclosed : Differential.mapCoeffs p * f - p * Differential.mapCoeffs f =
       q.derivative * f - q * f.derivative) :

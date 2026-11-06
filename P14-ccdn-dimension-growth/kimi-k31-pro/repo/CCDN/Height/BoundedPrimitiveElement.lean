@@ -71,8 +71,7 @@ theorem exists_bounded_curve_primitive_element {K R F : Type*}
     ∃ k : ℕ, k ≤ n * (Module.finrank R F) ^ 2 ∧
       IntermediateField.adjoin R
         {∑ j : Fin n, algebraMap (MvPolynomial (Fin n) K ⧸ I) F
-          ((Ideal.Quotient.mk I) (MvPolynomial.X j)) * (k : F) ^ j.val} = ⊤ := by
-  exact exists_bounded_primitive_element _ (curve_coordinate_embeddings_injective I)
+          ((Ideal.Quotient.mk I) (MvPolynomial.X j)) * (k : F) ^ j.val} = ⊤ := exists_bounded_primitive_element _ (curve_coordinate_embeddings_injective I)
 
 end
 end CCDN

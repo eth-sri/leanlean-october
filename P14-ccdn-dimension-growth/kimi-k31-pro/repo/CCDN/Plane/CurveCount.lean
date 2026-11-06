@@ -119,7 +119,7 @@ private theorem count_nonabsolute_plane_le {F : Type*} [Field F] [CharZero F]
 
 /-- The exact PlaneCurveBound target follows from the sharp finite-field
 estimate. The rational nonabsolute case is covered by the d² bound. -/
-private theorem planeCurveBound_of_residue_bound {C : ℝ}
+theorem planeCurveBound_of_residue_bound {C : ℝ}
     (hC : 0 ≤ C) (hres : PlaneResidueBound C) : PlaneCurveBound := by
   let K := 2 * Real.exp 1 * affineNonzeroConstantBound C
   have hK : 0 < K := mul_pos (by positivity) (affineNonzeroConstantBound_pos C)
@@ -184,10 +184,6 @@ theorem planeResidueBound : PlaneResidueBound planeResidueConstant := by
   apply hh.trans
   gcongr
   exact planeResidueConstant_pos.le
-
-/-- The full coefficient-uniform rational-plane integral-point bound. -/
-theorem planeCurveBound : PlaneCurveBound :=
-  planeCurveBound_of_residue_bound planeResidueConstant_pos.le planeResidueBound
 
 end
 end CCDN

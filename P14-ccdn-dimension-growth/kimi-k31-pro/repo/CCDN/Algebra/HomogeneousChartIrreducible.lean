@@ -18,9 +18,11 @@ namespace CCDN
 noncomputable section
 open MvPolynomial
 
+variable {K : Type*} [Field K]
+
 /-- A full-degree affine chart detects irreducibility of the original
 equation; a factor lost on the chart would force a degree drop. -/
-theorem irreducible_of_affineChart_irreducible {K : Type*} [Field K] {n : ℕ}
+theorem irreducible_of_affineChart_irreducible  {n : ℕ}
     (f : MvPolynomial (Fin (n + 1)) K)
     (hdeg : (affineChart n f).totalDegree = f.totalDegree)
     (hir : Irreducible (affineChart n f)) : Irreducible f := by
@@ -56,7 +58,7 @@ theorem irreducible_of_affineChart_irreducible {K : Type*} [Field K] {n : ℕ}
   · exact Or.inr (hunit b hb (by omega) hbu)
 
 /-- No variable `X j` divides an irreducible homogeneous polynomial of degree at least `2`. -/
-theorem variable_not_dvd_irreducible_homogeneous {K : Type*} [Field K] {n d : ℕ}
+theorem variable_not_dvd_irreducible_homogeneous  {n d : ℕ}
     (f : MvPolynomial (Fin (n + 1)) K) (hf : f.IsHomogeneous d)
     (hir : Irreducible f) (hd : 2 ≤ d) (j : Fin (n + 1)) : ¬ X j ∣ f := by
   rintro ⟨g, hg⟩
@@ -71,7 +73,7 @@ theorem variable_not_dvd_irreducible_homogeneous {K : Type*} [Field K] {n d : �
   omega
 
 /-- An irreducible homogeneous polynomial of degree at least `2` divides no variable `X j`. -/
-theorem irreducible_homogeneous_not_dvd_variable {K : Type*} [Field K] {n d : ℕ}
+theorem irreducible_homogeneous_not_dvd_variable  {n d : ℕ}
     (f : MvPolynomial (Fin (n + 1)) K) (hf : f.IsHomogeneous d)
     (hir : Irreducible f) (hd : 2 ≤ d) (j : Fin (n + 1)) : ¬ f ∣ X j := by
   rintro ⟨g, hg⟩
@@ -85,7 +87,7 @@ theorem irreducible_homogeneous_not_dvd_variable {K : Type*} [Field K] {n d : �
 
 /-- If `X 0` does not divide the homogeneous polynomial `f` of degree `d`, then the affine chart
 `x₀ = 1` of `f` has total degree exactly `d`. -/
-theorem affineChart_degree_of_not_variable_dvd {K : Type*} [Field K] {n d : ℕ}
+theorem affineChart_degree_of_not_variable_dvd  {n d : ℕ}
     (f : MvPolynomial (Fin (n + 1)) K) (hf : f.IsHomogeneous d)
     (hX : ¬ X 0 ∣ f) : (affineChart n f).totalDegree = d := by
   have hle := (affineChart_totalDegree_le f).trans hf.totalDegree_le
@@ -105,14 +107,14 @@ theorem affineChart_degree_of_not_variable_dvd {K : Type*} [Field K] {n d : ℕ}
 
 /-- If `X 0` does not divide the irreducible homogeneous polynomial `f`, then the affine chart
 `x₀ = 1` of `f` is irreducible. -/
-theorem affineChart_irreducible_of_not_variable_dvd {K : Type*} [Field K] {n d : ℕ}
+theorem affineChart_irreducible_of_not_variable_dvd  {n d : ℕ}
     (f : MvPolynomial (Fin (n + 1)) K) (hf : f.IsHomogeneous d)
     (hir : Irreducible f) (hX : ¬ X 0 ∣ f) :
     Irreducible (affineChart n f) := by
   have hdeg := affineChart_degree_of_not_variable_dvd f hf hX
   have hd : 0 < d := by
     rw [← hf.totalDegree hir.ne_zero]
-    exact MvPolynomial.totalDegree_pos_of_irreducible hir
+    exact MvPolynomial.totalDegree_pos_of_ne_zero_of_not_isUnit hir.ne_zero hir.not_isUnit
   have hc0 : affineChart n f ≠ 0 := by
     intro he
     have hh := hdeg

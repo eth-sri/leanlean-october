@@ -17,17 +17,19 @@ the paper's maximum-coordinate height. -/
 namespace CCDN
 noncomputable section
 
+variable {n : ℕ}
+
 /-- Rational points of projective `n`-space, as lines in `ℚ^(n+1)`. -/
 abbrev ProjectivePoint (n : ℕ) := Projectivization ℚ (Fin (n + 1) → ℚ)
 
 /-- The multiplicative height of the chosen representative of a projective point equals the
 height of the point. -/
-lemma projective_rep_height {n : ℕ} (x : ProjectivePoint n) :
+lemma projective_rep_height  (x : ProjectivePoint n) :
     Height.mulHeight x.rep = x.mulHeight := by
   rw [← Projectivization.mulHeight_mk x.rep_nonzero, x.mk_rep]
 
 /-- Every coordinate ratio has height bounded by the projective height. -/
-private lemma projective_coordinate_ratio_height {n : ℕ} (x : ProjectivePoint n)
+private lemma projective_coordinate_ratio_height  (x : ProjectivePoint n)
     (i j : Fin (n + 1)) :
     Height.mulHeight₁ (x.rep j / x.rep i) ≤ x.mulHeight := by
   rw [Height.mulHeight₁_div_eq_mulHeight]
@@ -63,25 +65,25 @@ theorem projective_height_finite (n : ℕ) (B : ℝ) :
   simp [v, div_eq_mul_inv, mul_comm]
 
 /-- Projective points, counted once per rational line. -/
-def projectivePoints {n : ℕ} (X : Set (ProjectivePoint n)) (B : ℝ) :
+def projectivePoints  (X : Set (ProjectivePoint n)) (B : ℝ) :
     Finset (ProjectivePoint n) := by
   classical
   exact (projective_height_finite n B).toFinset.filter fun x => x ∈ X
 
 /-- The number of points of `X` of multiplicative height at most `B`. -/
-def projectiveCount {n : ℕ} (X : Set (ProjectivePoint n)) (B : ℝ) : ℕ :=
+def projectiveCount  (X : Set (ProjectivePoint n)) (B : ℝ) : ℕ :=
   (projectivePoints X B).card
 
 /-- A projective point belongs to `projectivePoints X B` exactly when it lies in `X` and has
 height at most `B`. -/
-lemma mem_projectivePoints {n : ℕ} {X : Set (ProjectivePoint n)} {B : ℝ}
+lemma mem_projectivePoints  {X : Set (ProjectivePoint n)} {B : ℝ}
     {x : ProjectivePoint n} :
     x ∈ projectivePoints X B ↔ x.mulHeight ≤ B ∧ x ∈ X := by
   classical
   simp [projectivePoints]
 
 /-- The projective point count is monotone in both the set and the height bound. -/
-theorem projectiveCount_mono {n : ℕ} {X Y : Set (ProjectivePoint n)} {B C : ℝ}
+theorem projectiveCount_mono  {X Y : Set (ProjectivePoint n)} {B C : ℝ}
     (hXY : X ⊆ Y) (hBC : B ≤ C) : projectiveCount X B ≤ projectiveCount Y C := by
   apply Finset.card_le_card
   intro x hx
@@ -89,7 +91,7 @@ theorem projectiveCount_mono {n : ℕ} {X Y : Set (ProjectivePoint n)} {B C : �
   exact mem_projectivePoints.mpr ⟨hB.trans hBC, hXY hX⟩
 
 /-- A nonzero integer point remains nonzero as a rational point. -/
-lemma rationalPoint_ne_zero {n : ℕ} {x : IntPoint n} (hx : x ≠ 0) :
+lemma rationalPoint_ne_zero  {x : IntPoint n} (hx : x ≠ 0) :
     rationalPoint x ≠ 0 := by
   intro h
   apply hx
@@ -99,7 +101,7 @@ lemma rationalPoint_ne_zero {n : ℕ} {x : IntPoint n} (hx : x ≠ 0) :
   exact_mod_cast hi
 
 /-- The chosen projective height is exactly CCDN's height on primitive coordinates. -/
-theorem projective_height_primitive {n : ℕ} (x : IntPoint (n + 1)) (hx : x ≠ 0)
+theorem projective_height_primitive  (x : IntPoint (n + 1)) (hx : x ≠ 0)
     (hprimitive : Finset.univ.gcd x = 1) :
     (Projectivization.mk ℚ (rationalPoint x) (rationalPoint_ne_zero hx)).mulHeight =
       ((⨆ i, |x i| : ℤ) : ℝ) := by

@@ -118,8 +118,7 @@ theorem singular_plane_pow_dvd_det {p μ s : ℕ} [Fact p.Prime]
     (hμ : homogeneousComponent μ (map (Int.castRingHom (ZMod p)) f) ≠ 0)
     (x : Fin s → Fin 2 → ℤ) (hx : ∀ i j, (p : ℤ) ∣ x i j)
     (hfx : ∀ i, eval (x i) f = 0) (F : Fin s → MvPolynomial (Fin 2) ℤ) :
-    (p : ℤ) ^ multiplicityExponent s μ ∣ (Matrix.of fun i j => eval (x i) (F j)).det := by
-  exact singular_plane_pow_dvd_det_mod f hf hμ x hx
+    (p : ℤ) ^ multiplicityExponent s μ ∣ (Matrix.of fun i j => eval (x i) (F j)).det := singular_plane_pow_dvd_det_mod f hf hμ x hx
     (fun i => by rw [hfx]; exact dvd_zero _) F
 
 end

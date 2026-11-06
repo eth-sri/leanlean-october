@@ -22,8 +22,10 @@ filtered space inside the next piece.
 namespace CCDN
 noncomputable section
 
+variable {K σ : Type*} [Field K]
+
 /-- Constants lie in every piece of the degree filtration of the coordinate ring. -/
-lemma filteredCoordinateSpace_algebraMap_mem {K σ : Type*} [Field K]
+lemma filteredCoordinateSpace_algebraMap_mem 
     (I : Ideal (MvPolynomial σ K)) (n : ℕ) (c : K) :
     algebraMap K (MvPolynomial σ K ⧸ I) c ∈ filteredCoordinateSpace I n := by
   apply Submodule.mem_map.mpr
@@ -31,7 +33,7 @@ lemma filteredCoordinateSpace_algebraMap_mem {K σ : Type*} [Field K]
   simp [MvPolynomial.mem_restrictTotalDegree]
 
 /-- Homogeneous coordinate algebra of the filtered affine coordinate ring. -/
-def projectiveCoordinateAlgebra {K σ : Type*} [Field K]
+def projectiveCoordinateAlgebra 
     (I : Ideal (MvPolynomial σ K)) : Subalgebra K (Polynomial (MvPolynomial σ K ⧸ I)) where
   carrier := {f | ∀ n, f.coeff n ∈ filteredCoordinateSpace I n}
   mul_mem' hf hg n := by
@@ -57,7 +59,7 @@ def projectiveCoordinateAlgebra {K σ : Type*} [Field K]
 
 /-- The monomial `a * w ^ n` lies in the homogeneous coordinate algebra if and only if `a` lies
 in the degree-`n` piece of the filtered coordinate ring. -/
-lemma projective_monomial_mem {K σ : Type*} [Field K]
+lemma projective_monomial_mem 
     (I : Ideal (MvPolynomial σ K)) (n : ℕ) (a : MvPolynomial σ K ⧸ I) :
     Polynomial.monomial n a ∈ projectiveCoordinateAlgebra I ↔
       a ∈ filteredCoordinateSpace I n := by
@@ -71,7 +73,7 @@ lemma projective_monomial_mem {K σ : Type*} [Field K]
     · simp [Polynomial.coeff_monomial, hi]
 
 /-- The homogenizing coordinate `w` in the homogeneous coordinate algebra. -/
-def projectiveInfinityCoordinate {K σ : Type*} [Field K]
+def projectiveInfinityCoordinate 
     (I : Ideal (MvPolynomial σ K)) : projectiveCoordinateAlgebra I :=
   ⟨Polynomial.X, by
     rw [← Polynomial.monomial_one_one_eq_X, projective_monomial_mem]

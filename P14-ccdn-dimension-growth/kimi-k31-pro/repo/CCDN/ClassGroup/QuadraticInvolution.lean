@@ -84,14 +84,6 @@ private theorem classGroupTwoTorsionAction_involutive (σ : K ≃+* K)
 def fixedClassGroupTwoTorsion (σ : K ≃+* K) : Subgroup (classGroupTwoTorsion K) :=
   (classGroupTwoTorsionAction K σ).eqLocus (MonoidHom.id _)
 
-/-- A two-torsion class lies in the `σ`-fixed subgroup if and only if `σ` maps its underlying ideal
-class to itself. -/
-@[simp]
-theorem mem_fixedClassGroupTwoTorsion (σ : K ≃+* K) (c : classGroupTwoTorsion K) :
-    c ∈ fixedClassGroupTwoTorsion K σ ↔
-      ClassGroup.mulEquiv (RingOfIntegers.mapRingEquiv σ) c.val = c.val :=
-  Subtype.ext_iff
-
 variable [NumberField K]
 
 /-- For an involutive automorphism `σ` of `K`, the order of the two-torsion subgroup of the class

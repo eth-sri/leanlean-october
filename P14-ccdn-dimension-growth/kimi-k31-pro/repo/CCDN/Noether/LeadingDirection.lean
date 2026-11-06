@@ -15,27 +15,29 @@ namespace CCDN
 noncomputable section
 open Polynomial
 
+variable {R : Type*} [CommRing R]
+
 /-- Highest homogeneous part, evaluated at outer coordinate one and inner
 coordinate the polynomial variable. -/
-def leadingDirectionPolynomial {R : Type*} [CommRing R] (f : R[X][X]) (d : ℕ) : R[X] :=
+def leadingDirectionPolynomial  (f : R[X][X]) (d : ℕ) : R[X] :=
   ∑ j ∈ Finset.range (d + 1), monomial j ((f.coeff (d - j)).coeff j)
 
 /-- The `j`-th coefficient of the leading direction polynomial of degree `d` is the coefficient of
 `f` with outer exponent `d - j` and inner exponent `j` when `j ≤ d`, and zero otherwise. -/
-lemma leadingDirectionPolynomial_coeff {R : Type*} [CommRing R]
+lemma leadingDirectionPolynomial_coeff 
     (f : R[X][X]) (d j : ℕ) :
     (leadingDirectionPolynomial f d).coeff j =
       if j ≤ d then (f.coeff (d - j)).coeff j else 0 := by
   classical
   simp [leadingDirectionPolynomial, coeff_monomial]
 
-private lemma leadingDirectionPolynomial_natDegree_le {R : Type*} [CommRing R]
+private lemma leadingDirectionPolynomial_natDegree_le 
     (f : R[X][X]) (d : ℕ) : (leadingDirectionPolynomial f d).natDegree ≤ d := by
   apply natDegree_sum_le_of_forall_le
   intro j hj
   exact (natDegree_monomial_le _).trans (by simpa only [Finset.mem_range, Nat.lt_succ_iff] using hj)
 
-private lemma exists_bivariate_top_coefficient {R : Type*} [CommRing R]
+private lemma exists_bivariate_top_coefficient 
     (f : R[X][X]) (hf : f ≠ 0) :
     ∃ i j : ℕ, i + j = bivariateTotalDegree f ∧ (f.coeff i).coeff j ≠ 0 := by
   let g := (bivariatePolynomialEquiv R).symm f
@@ -54,7 +56,7 @@ private lemma exists_bivariate_top_coefficient {R : Type*} [CommRing R]
     rw [AlgEquiv.apply_symm_apply, ← bivariate_exponent_eq m] at hc
     exact hc.symm ▸ MvPolynomial.mem_support_iff.mp hm
 
-private lemma leadingDirectionPolynomial_ne_zero {R : Type*} [CommRing R]
+private lemma leadingDirectionPolynomial_ne_zero 
     (f : R[X][X]) (hf : f ≠ 0) :
     leadingDirectionPolynomial f (bivariateTotalDegree f) ≠ 0 := by
   obtain ⟨i, j, hdeg, hc⟩ := exists_bivariate_top_coefficient f hf

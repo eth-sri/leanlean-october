@@ -30,7 +30,7 @@ theorem singular_reduction_minorGcd_card_bound {s N p : ℕ} [Fact p.Prime] (hs 
   dsimp only
   obtain ⟨hM, e, _, he, hdiv⟩ := singular_reduction_minorGcd hs f g z hf.ne_zero hz
   have hbound := planeTotalMultiplicity_le_card_add_correction f hf
-    (MvPolynomial.totalDegree_pos_of_irreducible hf) hchar
+    (MvPolynomial.totalDegree_pos_of_ne_zero_of_not_isUnit hf.ne_zero hf.not_isUnit) hchar
   rw [← Nat.card_eq_fintype_card] at hbound
   refine ⟨hM.trans_le hbound, e, ?_, hdiv⟩
   apply le_trans (sub_le_sub_right ?_ (s : ℝ)) he

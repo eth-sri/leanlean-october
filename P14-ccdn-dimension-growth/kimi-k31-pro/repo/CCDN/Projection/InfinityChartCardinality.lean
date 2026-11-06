@@ -72,8 +72,7 @@ private theorem infinity_evaluation_span_finrank_le_degree {K L σ ι : Type*} [
       (Module.finrank K (filteredCoordinateSpace I m) : ℤ) = (d : ℤ) * m + b)
     (m : ℕ) (hm : N ≤ m) :
     Module.finrank L
-        (Submodule.span L (Set.range (homogeneousPointEvaluation (K := K) z (m + 1)))) ≤ d := by
-  exact (infinity_evaluation_span_finrank_le I z hz m).trans_eq
+        (Submodule.span L (Set.range (homogeneousPointEvaluation (K := K) z (m + 1)))) ≤ d := (infinity_evaluation_span_finrank_le I z hz m).trans_eq
     (infinityGradedSpace_eventually_degree I hdegree m hm)
 
 end

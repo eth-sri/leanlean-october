@@ -18,6 +18,8 @@ namespace CCDN
 noncomputable section
 open Polynomial
 
+variable {R : Type*} [CommRing R]
+
 private def eulerLowExponent (k : ℕ) (i : EulerLowIndex k) : Fin 2 →₀ ℕ :=
   ((Finsupp.degreeLeEquivSym (Fin 2) k).symm i).val
 
@@ -58,14 +60,14 @@ private def eulerMonomialWeight (k : ℕ) (col : EulerColumns k) (i : EulerLowIn
   | .inr (.inl j) => (s : ℤ) - eulerLowExponent k j 0
   | .inr (.inr _) => (k + 2 : ℕ) - (s : ℤ) - t
 
-private lemma eulerBivariatePair_basis_left {R : Type*} [CommRing R] (k : ℕ) (i : EulerLowIndex k) :
+private lemma eulerBivariatePair_basis_left  (k : ℕ) (i : EulerLowIndex k) :
     eulerBivariatePair R k (eulerPairBasis R k (.inl i)) =
       (monomial (eulerLowExponent k i 0) (monomial (eulerLowExponent k i 1) (1 : R)), 0) := by
   simp only [eulerBivariatePair, LinearMap.comp_apply, LinearMap.prodMap_apply,
     AlgEquiv.toLinearMap_apply, eulerPairCoordinates_basis_left, bivariatePolynomialEquiv_monomial,
     map_zero, eulerLowExponent]
 
-private lemma eulerBivariatePair_basis_right {R : Type*} [CommRing R] (k : ℕ)
+private lemma eulerBivariatePair_basis_right  (k : ℕ)
     (i : EulerLowIndex k) :
     eulerBivariatePair R k (eulerPairBasis R k (.inr (.inl i))) =
       (0, monomial (eulerLowExponent k i 0) (monomial (eulerLowExponent k i 1) (1 : R))) := by
@@ -73,7 +75,7 @@ private lemma eulerBivariatePair_basis_right {R : Type*} [CommRing R] (k : ℕ)
     AlgEquiv.toLinearMap_apply, eulerPairCoordinates_basis_right, bivariatePolynomialEquiv_monomial,
     map_zero, eulerLowExponent]
 
-private lemma eulerBivariatePair_basis_radial {R : Type*} [CommRing R] (k : ℕ)
+private lemma eulerBivariatePair_basis_radial  (k : ℕ)
     (i : EulerTopIndex k) :
     eulerBivariatePair R k (eulerPairBasis R k (.inr (.inr i))) =
       (monomial (eulerTopExponent k i 0) (monomial (eulerTopExponent k i 1 + 1) (1 : R)),
@@ -83,7 +85,7 @@ private lemma eulerBivariatePair_basis_radial {R : Type*} [CommRing R] (k : ℕ)
     bivariatePolynomialEquiv_monomial, bivariatePolynomialEquiv_X_zero,
     bivariatePolynomialEquiv_X_one, C_mul_monomial, X_mul_monomial, eulerTopExponent]
 
-private lemma eulerCoefficientMonomial_eq {R : Type*} [CommRing R] (k : ℕ) (i : EulerLowIndex k) :
+private lemma eulerCoefficientMonomial_eq  (k : ℕ) (i : EulerLowIndex k) :
     eulerCoefficientMonomial R k i =
       monomial (eulerLowExponent k i 0) (monomial (eulerLowExponent k i 1) (1 : R)) :=
   bivariatePolynomialEquiv_monomial _ _

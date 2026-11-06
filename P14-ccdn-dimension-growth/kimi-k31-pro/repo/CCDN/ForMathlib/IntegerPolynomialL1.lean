@@ -68,8 +68,7 @@ lemma natAbs_coeff_le_l1Norm (f : MvPolynomial σ ℤ) (m : σ →₀ ℕ) :
 
 /-- The `ℓ¹`-norm of the constant polynomial `C c` is the absolute value of `c`. -/
 @[simp] lemma l1Norm_C (c : ℤ) :
-    l1Norm (C c : MvPolynomial σ ℤ) = c.natAbs := by
-  exact l1Norm_monomial 0 c
+    l1Norm (C c : MvPolynomial σ ℤ) = c.natAbs := l1Norm_monomial 0 c
 
 /-- The constant polynomial `1` has `ℓ¹`-norm one. -/
 @[simp] lemma l1Norm_one : l1Norm (1 : MvPolynomial σ ℤ) = 1 := by

@@ -78,7 +78,7 @@ private lemma projectivePlaneResidueMultiplicity_singular {p d : ℕ} [Fact p.Pr
     ∀ j, eval (fun i => (projectiveResidueChartLift r.val i : ZMod p))
       (pderiv j (map (Int.castRingHom (ZMod p))
         (projectivePlaneChart (projectiveResiduePivot r.val) f))) = 0 := by
-  have hp := (projectivePlaneResidueMultiplicity_spec f hf hf0 r).2.2.1
+  have hp := (projectiveHypersurfaceResidueMultiplicity_spec f hf hf0 r).2.2.1
   change map (Int.castRingHom (ZMod p)) (originShift (projectiveResidueChartLift r.val)
     (projectivePlaneChart (projectiveResiduePivot r.val) f)) ∈ _ at hp
   rw [originShift_map] at hp
@@ -139,7 +139,8 @@ theorem projectivePlaneTotalMultiplicity_le_card_add_correction {p d : ℕ} [Fac
     projective_singular_residue_card_le f hf hd hir hchar
   have hpoint (r : ProjectivePlaneResidue f p) :
       projectivePlaneResidueMultiplicity f hf hir.ne_zero r ≤ 1 + if r ∈ S then d else 0 := by
-    have h := (projectivePlaneResidueMultiplicity_spec f hf hir.ne_zero r).2.1
+    have h : projectivePlaneResidueMultiplicity f hf hir.ne_zero r ≤ d :=
+      (projectiveHypersurfaceResidueMultiplicity_spec f hf hir.ne_zero r).2.1
     by_cases hr : r ∈ S
     · rw [ite_eq_left hr]; omega
     · rw [ite_eq_right hr]

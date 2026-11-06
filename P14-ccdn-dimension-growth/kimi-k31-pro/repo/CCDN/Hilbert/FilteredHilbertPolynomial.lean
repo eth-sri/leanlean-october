@@ -20,21 +20,23 @@ namespace CCDN
 noncomputable section
 open MvPolynomial
 
+variable {K σ : Type*} [Field K]
+
 /-- The exponent vectors, as functions `σ → ℕ`, of the standard monomials of `I` with respect to the
 monomial order `m`: those that are not leading monomials of elements of `I`. -/
-def standardExponentVectors {K σ : Type*} [Field K] [Fintype σ]
+def standardExponentVectors  [Fintype σ]
     (I : Ideal (MvPolynomial σ K)) (m : MonomialOrder σ) : Set (σ → ℕ) :=
   {a | Finsupp.equivFunOnFinite.symm a ∈ Ideal.standardExponents I m}
 
 /-- The standard exponent vectors of an ideal form a lower set. -/
-lemma standardExponentVectors_lower {K σ : Type*} [Field K] [Fintype σ]
+lemma standardExponentVectors_lower  [Fintype σ]
     (I : Ideal (MvPolynomial σ K)) (m : MonomialOrder σ) :
     IsLowerSet (standardExponentVectors I m) := by
   intro a b hab hb
   exact Ideal.isLowerSet_standardExponents I m (fun i => hab i) hb
 
 /-- A proper ideal has a standard exponent vector for the degree-lexicographic order. -/
-lemma standardExponentVectors_nonempty {K σ : Type*} [Field K] [Fintype σ]
+lemma standardExponentVectors_nonempty  [Fintype σ]
     [LinearOrder σ] (I : Ideal (MvPolynomial σ K)) (hI : I ≠ ⊤) :
     (standardExponentVectors I MonomialOrder.degLex).Nonempty := by
   obtain ⟨r, hr, _, hmem⟩ := Ideal.exists_standard_representative_degLex I 1
@@ -51,7 +53,7 @@ lemma standardExponentVectors_nonempty {K σ : Type*} [Field K] [Fintype σ]
 
 /-- The affine Hilbert function of `I` at `N` equals the number of standard exponent vectors of `I`,
 for the degree-lexicographic order, of total degree at most `N`. -/
-lemma filteredCoordinateSpace_finrank_eq_vector_card {K σ : Type*} [Field K]
+lemma filteredCoordinateSpace_finrank_eq_vector_card 
     [Fintype σ] [LinearOrder σ] (I : Ideal (MvPolynomial σ K)) (N : ℕ) :
     Module.finrank K (filteredCoordinateSpace I N) =
       Nat.card {a : σ → ℕ //
@@ -62,7 +64,7 @@ lemma filteredCoordinateSpace_finrank_eq_vector_card {K σ : Type*} [Field K]
     simp [Ideal.boundedStandardExponents, standardExponentVectors, Finsupp.degree_eq_sum])
 
 /-- Eventual polynomiality of the filtered coordinate-space dimension. -/
-theorem filteredCoordinateSpace_eventually_polynomial {K σ : Type*} [Field K]
+theorem filteredCoordinateSpace_eventually_polynomial 
     [Fintype σ] [LinearOrder σ] (I : Ideal (MvPolynomial σ K)) :
     ∃ P : Polynomial ℚ, ∃ N : ℕ, ∀ n ≥ N,
       P.eval (n : ℚ) = (Module.finrank K (filteredCoordinateSpace I n) : ℚ) := by
@@ -83,13 +85,13 @@ lemma polynomial_eq_of_eventual_nat_eval_eq (P Q : Polynomial ℚ)
   exact hN n hn
 
 /-- The uniquely determined filtered Hilbert polynomial. -/
-def filteredHilbertPolynomial {K σ : Type*} [Field K] [Fintype σ] [LinearOrder σ]
+def filteredHilbertPolynomial  [Fintype σ] [LinearOrder σ]
     (I : Ideal (MvPolynomial σ K)) : Polynomial ℚ :=
   (filteredCoordinateSpace_eventually_polynomial I).choose
 
 /-- The filtered Hilbert polynomial of `I` has degree `m` and leading coefficient `d / m!`:
 the affine variety cut out by `I` has dimension `m` and degree `d`. -/
-structure HasAffineDimensionDegree {K σ : Type*} [Field K] [Fintype σ] [LinearOrder σ]
+structure HasAffineDimensionDegree  [Fintype σ] [LinearOrder σ]
     (I : Ideal (MvPolynomial σ K)) (m d : ℕ) : Prop where
   /-- The filtered Hilbert polynomial has degree `m`. -/
   natDegree_eq : (filteredHilbertPolynomial I).natDegree = m
@@ -99,13 +101,13 @@ structure HasAffineDimensionDegree {K σ : Type*} [Field K] [Fintype σ] [Linear
 /-- The cone over `I` has filtered Hilbert polynomial of degree `m + 1` and leading coefficient
 `d / (m + 1)!`. For a homogeneous ideal `I` this says that the projective variety cut out by `I`
 has dimension `m` and degree `d`; it is the affine dimension and degree of the cone. -/
-abbrev HasProjectiveDimensionDegree {K σ : Type*} [Field K] [Fintype σ] [LinearOrder σ]
+abbrev HasProjectiveDimensionDegree  [Fintype σ] [LinearOrder σ]
     (I : Ideal (MvPolynomial σ K)) (m d : ℕ) : Prop :=
   HasAffineDimensionDegree I (m + 1) d
 
 /-- The filtered Hilbert polynomial of `I` agrees at every sufficiently large `n` with the dimension
 of the image in `K[X] ⧸ I` of the polynomials of total degree at most `n`. -/
-theorem filteredHilbertPolynomial_spec {K σ : Type*} [Field K] [Fintype σ]
+theorem filteredHilbertPolynomial_spec  [Fintype σ]
     [LinearOrder σ] (I : Ideal (MvPolynomial σ K)) :
     ∃ N : ℕ, ∀ n ≥ N, (filteredHilbertPolynomial I).eval (n : ℚ) =
       (Module.finrank K (filteredCoordinateSpace I n) : ℚ) :=
@@ -113,7 +115,7 @@ theorem filteredHilbertPolynomial_spec {K σ : Type*} [Field K] [Fintype σ]
 
 /-- Any rational polynomial that eventually agrees with the affine Hilbert function of `I` is the
 filtered Hilbert polynomial of `I`. -/
-theorem filteredHilbertPolynomial_eq_of_eventual {K σ : Type*} [Field K]
+theorem filteredHilbertPolynomial_eq_of_eventual 
     [Fintype σ] [LinearOrder σ] (I : Ideal (MvPolynomial σ K)) (P : Polynomial ℚ)
     (hP : ∃ N : ℕ, ∀ n ≥ N, P.eval (n : ℚ) =
       (Module.finrank K (filteredCoordinateSpace I n) : ℚ)) :
@@ -126,7 +128,7 @@ theorem filteredHilbertPolynomial_eq_of_eventual {K σ : Type*} [Field K]
 
 /-- Proper polynomial quotients have a positive integer factorial-normalized
 leading coefficient. -/
-theorem filteredHilbertPolynomial_positive_multiplicity {K σ : Type*} [Field K]
+theorem filteredHilbertPolynomial_positive_multiplicity 
     [Fintype σ] [LinearOrder σ] (I : Ideal (MvPolynomial σ K)) (hI : I ≠ ⊤) :
     ∃ d : ℕ, 0 < d ∧
       (filteredHilbertPolynomial I).natDegree ≤ Fintype.card σ ∧

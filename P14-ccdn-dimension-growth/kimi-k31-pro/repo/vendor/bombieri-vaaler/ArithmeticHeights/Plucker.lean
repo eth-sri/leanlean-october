@@ -145,11 +145,6 @@ theorem plucker_apply (k : ℕ) (v : Fin k → (ι → R)) (s : Set.powersetCard
   rw [plucker, Basis.equivFun_apply, basis_repr_apply, ιMultiDual_apply_ιMulti]
   simp
 
-/-- The empty wedge: in rank `0` there is one Plücker coordinate and it is `1`. -/
-@[simp] theorem plucker_zero (v : Fin 0 → (ι → R)) : plucker 0 v = 1 := by
-  funext s
-  rw [plucker_apply, Matrix.det_fin_zero, Pi.one_apply]
-
 /-- In top rank there is one Plücker coordinate and it is the determinant. -/
 theorem plucker_fin_eq_det {n : ℕ} (v : Fin n → (Fin n → R)) (s : Set.powersetCard (Fin n) n) :
     plucker n v s = (Matrix.of v).det := by

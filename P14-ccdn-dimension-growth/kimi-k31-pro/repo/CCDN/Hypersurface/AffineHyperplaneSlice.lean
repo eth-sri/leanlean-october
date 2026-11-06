@@ -18,13 +18,15 @@ namespace CCDN
 noncomputable section
 open MvPolynomial
 
+variable {n : ℕ}
+
 /-- The `K`-algebra automorphism of `K[x_none, x_0, …, x_{n-1}]` translating the distinguished
 coordinate `x_none` by the constant `c` and fixing the other coordinates. -/
-def optionCoordinateShift {K : Type*} [CommRing K] {n : ℕ} (c : K) :
+def optionCoordinateShift {K : Type*} [CommRing K]  (c : K) :
     MvPolynomial (Option (Fin n)) K →ₐ[K] MvPolynomial (Option (Fin n)) K :=
   aeval (fun i => Option.elim i (X none + C c) (fun j => X (some j)))
 
-private lemma optionCoordinateShift_rename {K : Type*} [CommRing K] {n : ℕ}
+private lemma optionCoordinateShift_rename {K : Type*} [CommRing K] 
     (c : K) (f : MvPolynomial (Option (Fin n)) K) :
     rename (finSuccEquiv n).symm (optionCoordinateShift c f) =
       affineTranslation K (Fin.cons c (fun _ => 0)) (rename (finSuccEquiv n).symm f) := by
@@ -38,13 +40,13 @@ private lemma optionCoordinateShift_rename {K : Type*} [CommRing K] {n : ℕ}
       cases i <;> simp [optionCoordinateShift, affineTranslation]
   exact RingHom.congr_fun he f
 
-private lemma optionCoordinateShift_degree {K : Type*} [CommRing K] [Nontrivial K] {n : ℕ}
+private lemma optionCoordinateShift_degree {K : Type*} [CommRing K] [Nontrivial K] 
     (c : K) (f : MvPolynomial (Option (Fin n)) K) :
     (optionCoordinateShift c f).totalDegree = f.totalDegree := by
   have hh := congrArg totalDegree (optionCoordinateShift_rename c f)
   simpa only [← renameEquiv_apply, totalDegree_renameEquiv, affineTranslation_totalDegree] using hh
 
-private lemma optionCoordinateShift_top {K : Type*} [CommRing K] [Nontrivial K] {n : ℕ}
+private lemma optionCoordinateShift_top {K : Type*} [CommRing K] [Nontrivial K] 
     (c : K) (f : MvPolynomial (Option (Fin n)) K) :
     homogeneousComponent f.totalDegree (optionCoordinateShift c f) =
       homogeneousComponent f.totalDegree f := by
@@ -54,7 +56,7 @@ private lemma optionCoordinateShift_top {K : Type*} [CommRing K] [Nontrivial K] 
     affineTranslation_leading_homogeneousComponent (Fin.cons c (fun _ : Fin n => 0))
       (rename (finSuccEquiv n).symm f)
 
-private lemma optionCoordinateShift_eval {K : Type*} [CommRing K] {n : ℕ}
+private lemma optionCoordinateShift_eval {K : Type*} [CommRing K] 
     (c : K) (x : Option (Fin n) → K) (f : MvPolynomial (Option (Fin n)) K) :
     eval x (optionCoordinateShift c f) =
       eval (fun i => Option.elim i (x none + c) (fun j => x (some j))) f := by
@@ -69,14 +71,14 @@ private lemma optionCoordinateShift_eval {K : Type*} [CommRing K] {n : ℕ}
 
 /-- The restriction of `f` to the affine hyperplane `x_none = ∑ a j * x j + c`, written as a
 polynomial in the remaining coordinates `x j`. -/
-def affineGraphHyperplaneSlice {K : Type*} [CommRing K] {n : ℕ}
+def affineGraphHyperplaneSlice {K : Type*} [CommRing K] 
     (a : Fin n → K) (c : K) (f : MvPolynomial (Option (Fin n)) K) :
     MvPolynomial (Fin n) K :=
   graphHyperplaneRestriction a (optionCoordinateShift c f)
 
 /-- Evaluating the affine slice `affineGraphHyperplaneSlice a c f` at `x` is evaluating `f` at the
 point of the hyperplane `x_none = ∑ a j * x j + c` lying over `x`. -/
-lemma affineGraphHyperplaneSlice_eval {K : Type*} [CommRing K] {n : ℕ}
+lemma affineGraphHyperplaneSlice_eval {K : Type*} [CommRing K] 
     (a : Fin n → K) (c : K) (f : MvPolynomial (Option (Fin n)) K) (x : Fin n → K) :
     eval x (affineGraphHyperplaneSlice a c f) =
       eval (fun i => Option.elim i ((∑ j, a j * x j) + c) x) f := by
@@ -85,7 +87,7 @@ lemma affineGraphHyperplaneSlice_eval {K : Type*} [CommRing K] {n : ℕ}
 
 /-- The degree-`f.totalDegree` component of an affine slice of `f` is the restriction of the top
 form of `f` to the parallel linear hyperplane `x_none = ∑ a j * x j`. -/
-lemma affineGraphHyperplaneSlice_top {K : Type*} [CommRing K] [Nontrivial K] {n : ℕ}
+lemma affineGraphHyperplaneSlice_top {K : Type*} [CommRing K] [Nontrivial K] 
     (a : Fin n → K) (c : K) (f : MvPolynomial (Option (Fin n)) K) :
     homogeneousComponent f.totalDegree (affineGraphHyperplaneSlice a c f) =
       graphHyperplaneRestriction a (homogeneousComponent f.totalDegree f) := by
@@ -94,7 +96,7 @@ lemma affineGraphHyperplaneSlice_top {K : Type*} [CommRing K] [Nontrivial K] {n 
 
 /-- A nonzero restriction of the top form prevents degree loss at every
 parallel affine level. -/
-theorem affineGraphHyperplaneSlice_degree {K : Type*} [Field K] {n : ℕ}
+theorem affineGraphHyperplaneSlice_degree {K : Type*} [Field K] 
     (a : Fin n → K) (c : K) (f : MvPolynomial (Option (Fin n)) K)
     (htop : graphHyperplaneRestriction a (homogeneousComponent f.totalDegree f) ≠ 0) :
     (affineGraphHyperplaneSlice a c f).totalDegree = f.totalDegree := by

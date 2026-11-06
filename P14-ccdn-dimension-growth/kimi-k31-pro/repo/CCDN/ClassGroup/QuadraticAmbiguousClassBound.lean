@@ -83,7 +83,7 @@ private def chosenAmbiguousClassWitness (σ : K ≃ₐ[F] K)
     (c : fixedClassGroupTwoTorsion K σ.toRingEquiv) :
     AmbiguousClassWitness F K σ c.val.val :=
   Classical.choice (nonempty_ambiguousClassWitness F K σ c.val.val
-    ((mem_fixedClassGroupTwoTorsion K σ.toRingEquiv c.val).mp c.property))
+    (Subtype.ext_iff.mp c.property))
 
 /-- A fixed choice of the unit-norm obstruction on fixed
 two-torsion classes. The cardinal argument only uses equality of values. -/
@@ -146,8 +146,7 @@ ambiguous subgroup, with a proved degree-only unit factor. -/
 theorem classGroupTwoTorsionCard_le_stronglyAmbiguous
     (hd : Module.finrank F K = 2) (σ : K ≃ₐ[F] K) (hσ : σ ≠ 1) :
     classGroupTwoTorsionCard K ≤
-      (Nat.card (stronglyAmbiguousTwoTorsion F K σ) * 2 ^ Module.finrank ℚ F) ^ 2 := by
-  exact (classGroupTwoTorsionCard_le_fixed_square K σ.toRingEquiv
+      (Nat.card (stronglyAmbiguousTwoTorsion F K σ) * 2 ^ Module.finrank ℚ F) ^ 2 := (classGroupTwoTorsionCard_le_fixed_square K σ.toRingEquiv
     (quadratic_automorphism_involutive F K hd σ)).trans
       (Nat.pow_le_pow_left (fixedClassGroupTwoTorsion_card_le_degree F K hd σ hσ) 2)
 

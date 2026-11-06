@@ -16,14 +16,16 @@ namespace CCDN
 noncomputable section
 open MvPolynomial
 
+variable {R : Type*} [CommRing R] {n : ℕ}
+
 /-- The shear of a point `x` by `a`, keeping `x 0` and sending `x (j + 1)` to
 `x (j + 1) + a j * x 0`; on the affine chart `x 0 = 1` it is the translation by `a`. -/
-def homogeneousPointTranslation {R : Type*} [CommRing R] {n : ℕ}
+def homogeneousPointTranslation  
     (a : Fin n → R) (x : Fin (n + 1) → R) : Fin (n + 1) → R :=
   Fin.cons (x 0) (fun j => x j.succ + a j * x 0)
 
 /-- The shear by `-a` undoes the shear by `a`. -/
-lemma homogeneousPointTranslation_inverse {R : Type*} [CommRing R] {n : ℕ}
+lemma homogeneousPointTranslation_inverse  
     (a : Fin n → R) (x : Fin (n + 1) → R) :
     homogeneousPointTranslation (-a) (homogeneousPointTranslation a x) = x := by
   funext i
@@ -31,12 +33,12 @@ lemma homogeneousPointTranslation_inverse {R : Type*} [CommRing R] {n : ℕ}
   · rfl
   · simp [homogeneousPointTranslation]
 
-private lemma homogeneousPointTranslation_injective {R : Type*} [CommRing R] {n : ℕ}
+private lemma homogeneousPointTranslation_injective  
     (a : Fin n → R) : Function.Injective (homogeneousPointTranslation a) :=
   Function.LeftInverse.injective (homogeneousPointTranslation_inverse a)
 
 /-- The shear of a nonzero point is nonzero. -/
-lemma homogeneousPointTranslation_ne_zero {R : Type*} [CommRing R] {n : ℕ}
+lemma homogeneousPointTranslation_ne_zero  
     (a : Fin n → R) {x : Fin (n + 1) → R} (hx : x ≠ 0) :
     homogeneousPointTranslation a x ≠ 0 := by
   intro h
@@ -47,7 +49,7 @@ lemma homogeneousPointTranslation_ne_zero {R : Type*} [CommRing R] {n : ℕ}
     refine Fin.cases ?_ (fun j => ?_) i <;> simp [homogeneousPointTranslation]
   exact h.trans hzero.symm
 
-private lemma homogeneousPointTranslation_smul {K : Type*} [Field K] {n : ℕ}
+private lemma homogeneousPointTranslation_smul {K : Type*} [Field K] 
     (a : Fin n → K) (c : K) (x : Fin (n + 1) → K) :
     homogeneousPointTranslation a (c • x) = c • homogeneousPointTranslation a x := by
   funext i
@@ -57,7 +59,7 @@ private lemma homogeneousPointTranslation_smul {K : Type*} [Field K] {n : ℕ}
     ring
 
 private lemma homogeneousPointTranslation_map {R S : Type*} [CommRing R] [CommRing S]
-    {n : ℕ} (φ : R →+* S) (a : Fin n → R) (x : Fin (n + 1) → R) :
+     (φ : R →+* S) (a : Fin n → R) (x : Fin (n + 1) → R) :
     φ ∘ homogeneousPointTranslation a x = homogeneousPointTranslation (φ ∘ a) (φ ∘ x) := by
   funext i
   refine Fin.cases ?_ (fun j => ?_) i
@@ -66,7 +68,7 @@ private lemma homogeneousPointTranslation_map {R S : Type*} [CommRing R] [CommRi
 
 /-- An integral shear preserves the greatest common divisor of the coordinates of an integer
 point; in particular it preserves primitivity. -/
-lemma homogeneousPointTranslation_gcd {n : ℕ} (a : Fin n → ℤ)
+lemma homogeneousPointTranslation_gcd  (a : Fin n → ℤ)
     (x : Fin (n + 1) → ℤ) :
     Finset.univ.gcd (homogeneousPointTranslation a x) = Finset.univ.gcd x := by
   have hdiv (b : Fin n → ℤ) (y : Fin (n + 1) → ℤ) :
@@ -126,7 +128,7 @@ lemma homogeneousPointTranslation_box {n d : ℕ} {B : ℝ} (hB : 1 ≤ B)
 /-- The homogeneous translation commutes with coefficient maps: mapping the coefficients of the
 homogeneous translation of `f` by `a` along `φ` gives the homogeneous translation of the mapped
 polynomial by `φ ∘ a`. -/
-lemma homogeneousTranslation_map {R S : Type*} [CommRing R] [CommRing S] {n : ℕ}
+lemma homogeneousTranslation_map {R S : Type*} [CommRing R] [CommRing S] 
     (φ : R →+* S) (a : Fin n → R) (f : MvPolynomial (Fin (n + 1)) R) :
     map φ (homogeneousTranslation R a f) =
       homogeneousTranslation S (φ ∘ a) (map φ f) := by

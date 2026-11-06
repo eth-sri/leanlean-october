@@ -72,7 +72,7 @@ private lemma hypersurfaceBadReduction_scaledHomogenize {n d : ℕ}
 
 /-- Enlarging the bad-prime set at one prime costs at most `exp 1`. The
 nonabsolute case is included, using the paper's zero convention. -/
-private theorem hypersurfaceBadPrimeFactor_le_of_badReduction_imp {n : ℕ}
+private theorem badPrimeFactor_le_of_badReduction_imp {n : ℕ}
     (f g : MvPolynomial (Fin (n + 1)) ℤ) {p : ℕ} (hp : 0 < p)
     (hd : f.totalDegree = g.totalDegree)
     (habs : AbsolutelyIrreducible f → AbsolutelyIrreducible g)
@@ -117,22 +117,22 @@ private theorem hypersurfaceBadPrimeFactor_le_of_badReduction_imp {n : ℕ}
         apply (div_le_one hpR).mpr
         linarith [Real.log_le_sub_one_of_pos hpR]
       linarith
-    rw [hypersurfaceBadPrimeFactor_eq_exp f hf rfl S hS,
-      hypersurfaceBadPrimeFactor_eq_exp g hg rfl T hT,
+    rw [hypersurfaceBadPrimeFactor_eq_exp (f := f) hf rfl S hS,
+      hypersurfaceBadPrimeFactor_eq_exp (f := g) hg rfl T hT,
       ← Real.exp_add]
     apply Real.exp_le_exp.mpr
     linarith
-  · rw [hypersurfaceBadPrimeFactor_eq_zero f hf]
-    exact mul_nonneg (Real.exp_pos _).le (hypersurfaceBadPrimeFactor_nonneg g)
+  · rw [hypersurfaceBadPrimeFactor_eq_zero (f := f) hf]
+    exact mul_nonneg (Real.exp_pos _).le (badPrimeFactor_nonneg g)
 
 /-- Prime scaling preserves all geometric bad primes away from the scaling
 prime, and therefore multiplies the paper's bad-prime factor by at most `e`. -/
-theorem hypersurfaceBadPrimeFactor_scaledHomogenize_le {n : ℕ}
+theorem badPrimeFactor_scaledHomogenize_le {n : ℕ}
     (f : MvPolynomial (Fin n) ℤ) (hf : f ≠ 0) {p : ℕ} (hp : p.Prime) :
     hypersurfaceBadPrimeFactor (scaledHomogenize f.totalDegree (p : ℤ) f) ≤
       Real.exp 1 * hypersurfaceBadPrimeFactor (scaledHomogenize f.totalDegree 1 f) := by
   have hpZ : (p : ℤ) ≠ 0 := by exact_mod_cast hp.ne_zero
-  apply hypersurfaceBadPrimeFactor_le_of_badReduction_imp _ _ hp.pos
+  apply badPrimeFactor_le_of_badReduction_imp _ _ hp.pos
   · rw [(scaledHomogenize_homogeneous (p : ℤ) f le_rfl).totalDegree
         (scaledHomogenize_ne_zero f.totalDegree hpZ hf),
       (scaledHomogenize_homogeneous (1 : ℤ) f le_rfl).totalDegree

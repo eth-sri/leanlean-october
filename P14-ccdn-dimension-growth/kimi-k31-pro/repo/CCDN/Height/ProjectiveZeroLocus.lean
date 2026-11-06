@@ -68,8 +68,7 @@ projective zero locus of `f` exactly when `f` vanishes at `v`. -/
 lemma mem_projectiveZeroLocus_mk {K : Type*} [Field K] {n d : ℕ}
     {f : MvPolynomial (Fin (n + 1)) K} (hf : f.IsHomogeneous d)
     (v : Fin (n + 1) → K) (hv : v ≠ 0) :
-    Projectivization.mk K v hv ∈ projectiveZeroLocus f ↔ eval v f = 0 := by
-  exact homogeneous_eval_zero_iff_projective_eq hf
+    Projectivization.mk K v hv ∈ projectiveZeroLocus f ↔ eval v f = 0 := homogeneous_eval_zero_iff_projective_eq hf
     (Projectivization.mk K v hv).rep_nonzero hv
     (Projectivization.mk K v hv).mk_rep
 

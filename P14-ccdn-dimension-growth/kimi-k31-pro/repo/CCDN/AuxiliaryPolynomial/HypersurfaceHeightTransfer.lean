@@ -106,7 +106,7 @@ theorem hypersurface_badPrime_height_transfer {n d : ℕ}
   have hC : 0 ≤ C := mul_nonneg (Real.exp_pos _).le
     (zero_le_one.trans (hypersurfaceHeightConstant_one_le _))
   have hbad : hypersurfaceBadPrimeFactor f ≤ C * (1 + Real.log H / (d : ℝ) ^ 2) := by
-    simpa only [hdegree] using hypersurfaceBadPrimeFactor_le_height f H hH
+    simpa only [hdegree] using badPrimeFactor_le_height f H hH
       (coefficient_abs_le_integerCoefficientHeight f)
   have hratio : (Real.log H + (d : ℝ) ^ 2) / H ^ q ≤
       (n + 1 : ℝ) * ((Real.log Y + (d : ℝ) ^ 2) / Y ^ q) := by

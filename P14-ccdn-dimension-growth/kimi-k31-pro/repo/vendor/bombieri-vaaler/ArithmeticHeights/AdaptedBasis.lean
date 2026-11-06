@@ -113,11 +113,6 @@ theorem finrank_int_eq_finrank_real [FiniteDimensional ℝ E] {L N : Submodule �
 
 /-! ### The flag of an independent family -/
 
-/-- The part of a lattice `L` inside the `ℝ`-span of the first `j` members of a family `v`: the
-`j`-th step of the flag along which an adapted basis is built. -/
-@[expose] def flagPart {n : ℕ} (L : Submodule ℤ E) (v : Fin n → E) (j : ℕ) : Submodule ℤ E :=
-  L ⊓ (span ℝ (v '' {i : Fin n | (i : ℕ) < j})).restrictScalars ℤ
-
 /-! ### The induction step -/
 
 /-! ### The adapted basis -/

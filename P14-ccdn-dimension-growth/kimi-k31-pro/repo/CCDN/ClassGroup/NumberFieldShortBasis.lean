@@ -29,8 +29,10 @@ discriminant-root scale for its largest minimum.
 namespace CCDN
 noncomputable section
 
+variable {n : ℕ}
+
 private theorem largest_minimum_le_discriminant_root
-    {n : ℕ} (hn : 0 < n) {M P D : ℝ} (hP : 0 ≤ P) (hD : 0 ≤ D)
+     (hn : 0 < n) {M P D : ℝ} (hP : 0 ≤ P) (hD : 0 ≤ D)
     (hminimum : M ^ n ≤ P ^ 2)
     (hproduct : P ≤ Real.sqrt n * (n : ℝ) ^ n * Real.sqrt D) :
     M ≤ (n : ℝ) ^ 3 * D ^ (1 / (n : ℝ)) := by
@@ -51,7 +53,7 @@ private theorem largest_minimum_le_discriminant_root
   exact hminimum.trans (hsq'.trans (mul_le_mul_of_nonneg_right hdegrees hD))
 
 private theorem sqrt_degree_le_discriminant_root
-    {n : ℕ} (hn : 0 < n) {D : ℝ} (hD : 1 ≤ D) :
+     (hn : 0 < n) {D : ℝ} (hD : 1 ≤ D) :
     Real.sqrt n ≤ (n : ℝ) ^ 3 * D ^ (1 / (n : ℝ)) := by
   have hn1 : (1 : ℝ) ≤ n := by exact_mod_cast hn
   have hsqrt : Real.sqrt n ≤ (n : ℝ) := by
@@ -69,6 +71,7 @@ end CCDN
 
 namespace CCDN
 noncomputable section
+variable {n : ℕ}
 open Module MeasureTheory
 
 variable {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E]
@@ -79,7 +82,7 @@ lattice basis with first vector `w` satisfies
 `∏ i, ‖b i‖ ≤ (‖w‖ / δ) * (n + 1) ^ (n + 1) * covol(L)`. -/
 theorem prescribed_greedy_lattice_basis_product_le
     (L : Submodule ℤ E) [DiscreteTopology L] [IsZLattice ℝ L]
-    {n : ℕ} {w : E} (b : Basis (Fin (n + 1)) ℝ E)
+     {w : E} (b : Basis (Fin (n + 1)) ℝ E)
     (hb : IsPrescribedGreedyLatticeFamily L w b)
     {δ : ℝ} (hδ : 0 < δ) (hlower : ∀ x, x ∈ L → x ≠ 0 → δ ≤ ‖x‖) :
     (∏ i, ‖b i‖) ≤ (‖w‖ / δ) * (n + 1 : ℝ) ^ (n + 1) * ZLattice.covolume L := by
@@ -96,6 +99,7 @@ end CCDN
 
 namespace CCDN
 noncomputable section
+variable {n : ℕ}
 open Module NumberField
 open scoped NumberField
 
@@ -103,7 +107,7 @@ variable (K : Type*) [Field K] [NumberField K]
 
 open Classical in
 private theorem euclidean_prescribed_basis_last_minimum_pow
-    {n : ℕ} (b : Basis (Fin (n + 2)) ℝ (mixedEmbedding.euclidean.mixedSpace K))
+     (b : Basis (Fin (n + 2)) ℝ (mixedEmbedding.euclidean.mixedSpace K))
     (hb : IsPrescribedGreedyLatticeFamily (mixedEmbedding.euclidean.integerLattice K)
       (euclideanNumberFieldEmbedding K 1) b) :
     ‖b (Fin.last (n + 1))‖ ^ (n + 2) ≤ (∏ i, ‖b i‖) ^ 2 := by

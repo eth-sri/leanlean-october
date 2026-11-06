@@ -116,9 +116,9 @@ theorem affine_auxiliary_minimum_nonzero_constant {n : ℕ}
   let L := (integerCoefficientHeight (homogeneousComponent d f) : ℝ)
   let b := hypersurfaceBadPrimeFactor (scaledHomogenize d 1 f)
   have hL : 1 ≤ L := leading_height_one_le f hir.ne_zero
-  have hb : 0 ≤ b := hypersurfaceBadPrimeFactor_nonneg _
+  have hb : 0 ≤ b := badPrimeFactor_nonneg _
   have hb' : b ≤ hypersurfaceBadPrimeFactor f :=
-    hypersurfaceBadPrimeFactor_unscaledHomogenize_le f hir.ne_zero
+    badPrimeFactor_unscaledHomogenize_le f hir.ne_zero
   have hA : 1 ≤ affineAuxiliaryComparisonConstant n := affineAuxiliaryComparisonConstant_one_le n
   by_cases hsmall : B ≤ affineAuxiliaryBoxScale * ((d : ℝ) + 1) ^ affineAuxiliaryBoxExponent n
   · obtain ⟨g, hg, hgdeg⟩ := unscaled_affine_auxiliary_minimum f hprim hir hd
@@ -152,7 +152,7 @@ theorem affine_auxiliary_minimum_nonzero_constant {n : ℕ}
         refine ⟨g, hg, ?_⟩
         have hgR : (g.totalDegree : ℝ) ≤ d := by exact_mod_cast hgdeg
         exact hgR.trans (degree_le_affineMinimumAuxiliaryBound n hd (zero_le_one.trans hA) hB hL
-          (hypersurfaceBadPrimeFactor_nonneg f))
+          (badPrimeFactor_nonneg f))
 
 end
 end CCDN

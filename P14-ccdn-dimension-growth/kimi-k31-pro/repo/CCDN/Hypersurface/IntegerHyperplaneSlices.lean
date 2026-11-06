@@ -16,33 +16,35 @@ on each level and preserves the box radius. -/
 namespace CCDN
 noncomputable section
 
+variable {n : ℕ}
+
 /-- The value `∑ a i * x i` of the integer linear form with coefficients `a` at the point `x`. -/
-def integerLinearLevel {n : ℕ} (a x : IntPoint n) : ℤ := ∑ i, a i * x i
+def integerLinearLevel  (a x : IntPoint n) : ℤ := ∑ i, a i * x i
 
 /-- The projection of an integer point in `n + 1` coordinates to `n` coordinates by deleting
 coordinate `j`. -/
-def deleteIntegerCoordinate {n : ℕ} (j : Fin (n + 1))
+def deleteIntegerCoordinate  (j : Fin (n + 1))
     (x : IntPoint (n + 1)) : IntPoint n := fun i => x (j.succAbove i)
 
 /-- The integral points of `X` of height at most `B` on the level set `∑ a i * x i = k` of the
 integer linear form with coefficients `a`. -/
-noncomputable def integerSlicePoints {n : ℕ} (X : Set (RatPoint n))
+noncomputable def integerSlicePoints  (X : Set (RatPoint n))
     (B : ℝ) (a : IntPoint n) (k : ℤ) : Finset (IntPoint n) := by
   classical
   exact (integralPoints X B).filter fun x => integerLinearLevel a x = k
 
-private noncomputable def integerSliceLevels {n : ℕ} (X : Set (RatPoint n))
+private noncomputable def integerSliceLevels  (X : Set (RatPoint n))
     (B : ℝ) (a : IntPoint n) : Finset ℤ := by
   classical
   exact (integralPoints X B).image (integerLinearLevel a)
 
-private theorem count_eq_sum_integerSlicePoints {n : ℕ} (X : Set (RatPoint n))
+private theorem count_eq_sum_integerSlicePoints  (X : Set (RatPoint n))
     (B : ℝ) (a : IntPoint n) :
     count X B = ∑ k ∈ integerSliceLevels X B a, (integerSlicePoints X B a k).card := by
   classical
   exact Finset.card_eq_sum_card_image (integerLinearLevel a) (integralPoints X B)
 
-private theorem integerLinearLevel_abs_le {n : ℕ} (a x : IntPoint n) {H B : ℝ}
+private theorem integerLinearLevel_abs_le  (a x : IntPoint n) {H B : ℝ}
     (hH : 0 ≤ H) (ha : InBox a H)
     (hx : InBox x B) :
     |(integerLinearLevel a x : ℝ)| ≤ (n : ℝ) * H * B := by
@@ -57,7 +59,7 @@ private theorem integerLinearLevel_abs_le {n : ℕ} (a x : IntPoint n) {H B : �
       exact mul_le_mul (ha i) (hx i) (abs_nonneg _) hH
     _ = _ := by simp [mul_assoc]
 
-private theorem integerSliceLevels_card_le {n : ℕ} (X : Set (RatPoint n))
+private theorem integerSliceLevels_card_le  (X : Set (RatPoint n))
     (a : IntPoint n) {H B : ℝ} (hH : 0 ≤ H) (hB : 0 ≤ B)
     (ha : InBox a H) :
     ((integerSliceLevels X B a).card : ℝ) ≤ 2 * (n : ℝ) * H * B + 1 := by
@@ -87,7 +89,7 @@ private theorem integerSliceLevels_card_le {n : ℕ} (X : Set (RatPoint n))
     _ ≤ 2 * R + 1 := by linarith [Int.floor_le R]
     _ = _ := by dsimp [R]; ring
 
-private theorem deleteIntegerCoordinate_injective_on_level {n : ℕ}
+private theorem deleteIntegerCoordinate_injective_on_level 
     (a : IntPoint (n + 1)) (j : Fin (n + 1)) (hj : a j ≠ 0)
     {x y : IntPoint (n + 1)}
     (hlevel : integerLinearLevel a x = integerLinearLevel a y)
@@ -108,7 +110,7 @@ private theorem deleteIntegerCoordinate_injective_on_level {n : ℕ}
   · obtain ⟨k, rfl⟩ := Fin.exists_succAbove_eq hi
     exact congrFun hdelete k
 
-private theorem integerSlicePoints_card_le_count {n : ℕ}
+private theorem integerSlicePoints_card_le_count 
     (X : Set (RatPoint (n + 1))) (Y : Set (RatPoint n)) (B : ℝ)
     (a : IntPoint (n + 1)) (j : Fin (n + 1)) (hj : a j ≠ 0) (k : ℤ)
     (hmap : ∀ x ∈ integerSlicePoints X B a k,
@@ -126,7 +128,7 @@ private theorem integerSlicePoints_card_le_count {n : ℕ}
 
 /-- Assembly over the levels of the integral point set. The sets
 `Y k` can be the zero loci of the constructed hyperplane restrictions. -/
-theorem count_le_of_integer_hyperplane_slices {n : ℕ}
+theorem count_le_of_integer_hyperplane_slices 
     (X : Set (RatPoint (n + 1))) (a : IntPoint (n + 1))
     (j : Fin (n + 1)) (hj : a j ≠ 0) (Y : ℤ → Set (RatPoint n))
     {H B K : ℝ} (hH : 0 ≤ H) (hB : 0 ≤ B) (hK : 0 ≤ K)

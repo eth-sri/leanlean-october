@@ -30,8 +30,7 @@ def rationalPrimeIdealFiber (p : ℕ) : Finset (Ideal (𝓞 K)) :=
 
 private theorem mem_rationalPrimeIdealFiber (p : ℕ) (Q : Ideal (𝓞 K)) :
     Q ∈ rationalPrimeIdealFiber K p ↔
-      Q.IsPrime ∧ Q.LiesOver (Ideal.span {(p : ℤ)}) := by
-  exact Set.Finite.mem_toFinset _
+      Q.IsPrime ∧ Q.LiesOver (Ideal.span {(p : ℤ)}) := Set.Finite.mem_toFinset _
 
 private theorem rationalPrimeIdealFiber_card_le (p : ℕ) (hp : p.Prime) :
     (rationalPrimeIdealFiber K p).card ≤ Module.finrank ℚ K := by

@@ -53,7 +53,6 @@ def euclideanNumberFieldLinearMap :
   ((mixedEmbedding.euclidean.toMixed K).symm.toLinearMap.restrictScalars ℚ).comp
     (mixedEmbedding K).toRatAlgHom.toLinearMap
 
-/-- The `ℚ`-linear Euclidean embedding agrees with `euclideanNumberFieldEmbedding`. -/
 @[simp] lemma euclideanNumberFieldLinearMap_apply (x : K) :
     euclideanNumberFieldLinearMap K x = euclideanNumberFieldEmbedding K x := rfl
 

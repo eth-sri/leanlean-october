@@ -55,7 +55,7 @@ private theorem primitive_top_form_auxiliary {n : ℕ}
   have hratio : hypersurfaceBadPrimeFactor f / L ^ q ≤ K := by
     calc
       _ ≤ hypersurfaceBadPrimeFactor F / L ^ q := div_le_div_of_nonneg_right
-        (hypersurfaceBadPrimeFactor_le_top_homogeneousComponent f hir) (by positivity)
+        (badPrimeFactor_le_top_homogeneousComponent f hir) (by positivity)
       _ ≤ _ := by
         simpa only [Nat.cast_add, Nat.cast_one] using
           hypersurface_badPrime_fractional_height_bound F hF0 hFd (r := n + 1) (by omega) hd

@@ -14,16 +14,18 @@ directions make the line parameter integral, giving a spacing bound. -/
 namespace CCDN
 noncomputable section
 
+variable {n : ℕ}
+
 /-- The rational affine line `{a + t • v | t ∈ ℚ}` through `a` with direction `v`. -/
-def rationalAffineLine {n : ℕ} (a v : RatPoint n) : Set (RatPoint n) :=
+def rationalAffineLine  (a v : RatPoint n) : Set (RatPoint n) :=
   {x | ∃ t : ℚ, x = a + t • v}
 
 /-- The height `max_j |v j|` of an integer vector `v`. -/
-def integerDirectionHeight {n : ℕ} (v : IntPoint n) : ℕ :=
+def integerDirectionHeight  (v : IntPoint n) : ℕ :=
   Finset.univ.sup (fun j => (v j).natAbs)
 
 /-- Scaling the direction by a nonzero rational does not change the affine line. -/
-lemma rationalAffineLine_smul_direction {n : ℕ} (a v : RatPoint n) {c : ℚ} (hc : c ≠ 0) :
+lemma rationalAffineLine_smul_direction  (a v : RatPoint n) {c : ℚ} (hc : c ≠ 0) :
     rationalAffineLine a (c • v) = rationalAffineLine a v := by
   ext x
   constructor
@@ -34,7 +36,7 @@ lemma rationalAffineLine_smul_direction {n : ℕ} (a v : RatPoint n) {c : ℚ} (
     simpa only [smul_smul, div_mul_cancel₀ t hc] using ht
 
 /-- Moving the base point along the direction does not change the affine line. -/
-lemma rationalAffineLine_shift_base {n : ℕ} (a v : RatPoint n) (s : ℚ) :
+lemma rationalAffineLine_shift_base  (a v : RatPoint n) (s : ℚ) :
     rationalAffineLine (a + s • v) v = rationalAffineLine a v := by
   ext x
   constructor
@@ -47,7 +49,7 @@ lemma rationalAffineLine_shift_base {n : ℕ} (a v : RatPoint n) (s : ℚ) :
     ring
 
 /-- Any two distinct points determine the entire parameterized rational line. -/
-private lemma rationalAffineLine_eq_of_distinct_points {n : ℕ} {a v x y : RatPoint n}
+private lemma rationalAffineLine_eq_of_distinct_points  {a v x y : RatPoint n}
     (hx : x ∈ rationalAffineLine a v) (hy : y ∈ rationalAffineLine a v) (hxy : x ≠ y) :
     rationalAffineLine x (y - x) = rationalAffineLine a v := by
   obtain ⟨s, rfl⟩ := hx
@@ -63,13 +65,13 @@ private lemma rationalAffineLine_eq_of_distinct_points {n : ℕ} {a v x y : RatP
   rw [he, rationalAffineLine_smul_direction _ _ hts, rationalAffineLine_shift_base]
 
 /-- A nonzero integer vector has positive height. -/
-lemma integerDirectionHeight_pos {n : ℕ} {v : IntPoint n} (hv : v ≠ 0) :
+lemma integerDirectionHeight_pos  {v : IntPoint n} (hv : v ≠ 0) :
     0 < integerDirectionHeight v := by
   obtain ⟨j, hj⟩ := Function.ne_iff.mp hv
   exact (Int.natAbs_pos.mpr hj).trans_le
     (Finset.le_sup (f := fun j => (v j).natAbs) (Finset.mem_univ j))
 
-private lemma exists_coordinate_integerDirectionHeight {n : ℕ} {v : IntPoint n} (hv : v ≠ 0) :
+private lemma exists_coordinate_integerDirectionHeight  {v : IntPoint n} (hv : v ≠ 0) :
     ∃ j, |(v j : ℝ)| = integerDirectionHeight v := by
   obtain ⟨j, _⟩ := Function.ne_iff.mp hv
   obtain ⟨k, _, hk⟩ := Finset.exists_mem_eq_sup (Finset.univ : Finset (Fin n))
@@ -80,7 +82,7 @@ private lemma exists_coordinate_integerDirectionHeight {n : ℕ} {v : IntPoint n
 
 /-- Bezout's identity for a primitive direction forces a rational integral
 multiple of that direction to have an integer multiplier. -/
-private theorem rational_scalar_integral_of_primitive {n : ℕ} (v : IntPoint n)
+private theorem rational_scalar_integral_of_primitive  (v : IntPoint n)
     (hprim : Finset.univ.gcd v = 1) {t : ℚ} (w : IntPoint n)
     (hw : ∀ j, (w j : ℚ) = t * v j) :
     ∃ k : ℤ, (k : ℚ) = t := by
@@ -92,7 +94,7 @@ private theorem rational_scalar_integral_of_primitive {n : ℕ} (v : IntPoint n)
   rw [show (∑ j, t * (v j : ℚ) * c j) = t * ∑ j, (v j : ℚ) * c j by
     rw [Finset.mul_sum]; apply Finset.sum_congr rfl; intro j _; ring, hcQ, mul_one]
 
-private theorem integer_mem_rationalAffineLine_iff {n : ℕ} (a v x : IntPoint n)
+private theorem integer_mem_rationalAffineLine_iff  (a v x : IntPoint n)
     (hprim : Finset.univ.gcd v = 1) :
     rationalPoint x ∈ rationalAffineLine (rationalPoint a) (rationalPoint v) ↔
       ∃ k : ℤ, ∀ j, x j = a j + k * v j := by
@@ -134,7 +136,7 @@ private lemma int_finset_card_le_span (T : Finset ℤ) (hT : T.Nonempty) :
 
 /-- Integer points on a primitive line are spaced by its largest direction
 coordinate. This counts the line's intersection with the integer box. -/
-private theorem integral_rationalAffineLine_count {n : ℕ} (a v : IntPoint n)
+private theorem integral_rationalAffineLine_count  (a v : IntPoint n)
     (hv : v ≠ 0) (hprim : Finset.univ.gcd v = 1) {B : ℝ} (hB : 0 ≤ B) :
     (count (rationalAffineLine (rationalPoint a) (rationalPoint v)) B : ℝ) ≤
       1 + 2 * B / integerDirectionHeight v := by
@@ -187,7 +189,7 @@ private theorem integral_rationalAffineLine_count {n : ℕ} (a v : IntPoint n)
 
 /-- Divide an integer direction by the gcd of its coordinates. This gives
 a primitive direction of no greater height on the same rational line. -/
-private theorem exists_primitive_integer_direction {n : ℕ} (w : IntPoint n) (hw : w ≠ 0) :
+private theorem exists_primitive_integer_direction  (w : IntPoint n) (hw : w ≠ 0) :
     ∃ v : IntPoint n, v ≠ 0 ∧ Finset.univ.gcd v = 1 ∧
       (∀ j, |(v j : ℝ)| ≤ |(w j : ℝ)|) ∧
       ∀ a : RatPoint n, rationalAffineLine a (rationalPoint w) =
@@ -222,7 +224,7 @@ private theorem exists_primitive_integer_direction {n : ℕ} (w : IntPoint n) (h
 
 /-- Two bounded integer points give a primitive integer direction of
 height at most twice the box radius, representing their full rational line. -/
-private theorem exists_primitive_direction_of_two_integer_points {n : ℕ}
+private theorem exists_primitive_direction_of_two_integer_points 
     (a b : IntPoint n) (hab : a ≠ b) {B : ℝ}
     (ha : InBox a B) (hb : InBox b B) :
     ∃ v : IntPoint n, v ≠ 0 ∧ Finset.univ.gcd v = 1 ∧
@@ -246,7 +248,7 @@ private theorem exists_primitive_direction_of_two_integer_points {n : ℕ}
 
 /-- For a nonzero primitive integer vector `v`, the multiplicative height of the projective point
 `[v]` equals `max_j |v j|`. -/
-theorem projective_direction_height {n : ℕ} (v : IntPoint (n + 1))
+theorem projective_direction_height  (v : IntPoint (n + 1))
     (hv : v ≠ 0) (hprim : Finset.univ.gcd v = 1) :
     (Projectivization.mk ℚ (rationalPoint v) (rationalPoint_ne_zero hv)).mulHeight =
       (integerDirectionHeight v : ℝ) := by
@@ -268,7 +270,7 @@ theorem projective_direction_height {n : ℕ} (v : IntPoint (n + 1))
 /-- Any rational affine line containing two bounded integer points has an
 integer base point and primitive integer direction, with the exact spacing
 estimate and the direction-height cutoff needed for summing line contributions. -/
-theorem rationalAffineLine_integer_rep_and_count {n : ℕ}
+theorem rationalAffineLine_integer_rep_and_count 
     (a v : RatPoint n) {B : ℝ} (hB : 0 ≤ B)
     (hcount : 1 < count (rationalAffineLine a v) B) :
     ∃ (z w : IntPoint n), w ≠ 0 ∧ Finset.univ.gcd w = 1 ∧

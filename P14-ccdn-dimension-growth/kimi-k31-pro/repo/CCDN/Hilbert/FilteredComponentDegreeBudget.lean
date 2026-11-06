@@ -66,7 +66,7 @@ private theorem minimalPrimeComponents_slope_sum_le {K σ : Type*} [Field K] [Fi
 
 /-- The product-of-degrees budget holds for the prime components.
 Only their eventual Hilbert formulas are inputs to this intermediate lemma. -/
-private theorem polynomialSection_minimalPrime_slope_sum_le {K : Type*} [Field K]
+theorem polynomialSection_minimalPrime_slope_sum_le {K : Type*} [Field K]
     (f g : MvPolynomial (Fin 3) K) (hf : Prime f) (hfg : ¬ f ∣ g)
     (d : minimalPrimeComponents (polynomialSectionIdeal f g) → ℕ)
     (hdegree : ∀ P, HasFilteredCurveDegree P.val (d P)) :
@@ -78,14 +78,6 @@ private theorem polynomialSection_minimalPrime_slope_sum_le {K : Type*} [Field K
     (polynomialSectionIdeal f g) (polynomialSectionIdeal_first_mem f g)
     (polynomialSectionIdeal_second_mem f g) hN
   simpa only [Nat.choose_one_right, Nat.add_comm 1] using hh
-
-/-- The additive degree inequality in the rational curve-degree interface. -/
-theorem polynomialSection_minimalPrime_curveDegree_sum_le
-    (f g : CoordinatePolynomial 3) (hf : Irreducible f) (hfg : ¬ f ∣ g)
-    (d : minimalPrimeComponents (polynomialSectionIdeal f g) → ℕ)
-    (hdegree : ∀ P, HasAffineCurveDegree P.val (d P)) :
-    ∑ P, d P ≤ f.totalDegree * g.totalDegree :=
-  polynomialSection_minimalPrime_slope_sum_le f g hf.prime hfg d hdegree
 
 end
 end CCDN

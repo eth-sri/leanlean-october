@@ -18,12 +18,14 @@ series root. Newton iteration and coefficient stabilization prove existence. -/
 namespace CCDN
 noncomputable section
 
-private def formalNewtonSequence {K : Type*} [Field K]
+variable {K : Type*} [Field K]
+
+private def formalNewtonSequence 
     (f : Polynomial (PowerSeries K)) (b u : K) : ℕ → PowerSeries K
   | 0 => PowerSeries.C b
   | n + 1 => formalNewtonSequence f b u n - PowerSeries.C u * f.eval (formalNewtonSequence f b u n)
 
-private lemma formalNewton_step {K : Type*} [Field K]
+private lemma formalNewton_step 
     (f : Polynomial (PowerSeries K)) (b u : K)
     (hu : u * (f.derivative.map PowerSeries.constantCoeff).eval b = 1)
     (g : PowerSeries K) (hg : PowerSeries.constantCoeff g = b)
@@ -53,7 +55,7 @@ private lemma formalNewton_step {K : Type*} [Field K]
   rw [heq, pow_succ]
   exact mul_dvd_mul hfg hbracket
 
-private lemma formalNewton_precision {K : Type*} [Field K]
+private lemma formalNewton_precision 
     (f : Polynomial (PowerSeries K)) (b u : K)
     (hroot : (f.map PowerSeries.constantCoeff).eval b = 0)
     (hu : u * (f.derivative.map PowerSeries.constantCoeff).eval b = 1) (n : ℕ) :
@@ -71,7 +73,7 @@ private lemma formalNewton_precision {K : Type*} [Field K]
       simp only [formalNewtonSequence, map_sub, map_mul, PowerSeries.constantCoeff_C,
         ← Polynomial.eval_map_apply, ih.1, hroot, mul_zero, sub_zero]
 
-private lemma formalNewton_stabilizes {K : Type*} [Field K]
+private lemma formalNewton_stabilizes 
     (f : Polynomial (PowerSeries K)) (b u : K)
     (hroot : (f.map PowerSeries.constantCoeff).eval b = 0)
     (hu : u * (f.derivative.map PowerSeries.constantCoeff).eval b = 1)
@@ -89,7 +91,7 @@ private lemma formalNewton_stabilizes {K : Type*} [Field K]
       ring
 
 /-- Every simple root of the constant polynomial lifts to a formal root. -/
-theorem exists_formal_simple_root {K : Type*} [Field K]
+theorem exists_formal_simple_root 
     (f : Polynomial (PowerSeries K)) (b : K)
     (hroot : (f.map PowerSeries.constantCoeff).eval b = 0)
     (hder : (f.derivative.map PowerSeries.constantCoeff).eval b ≠ 0) :
@@ -122,7 +124,7 @@ theorem exists_formal_simple_root {K : Type*} [Field K]
     simpa only [map_zero] using hc
 
 /-- The simple formal branch is unique among roots with the chosen constant. -/
-theorem formal_simple_root_unique {K : Type*} [Field K]
+theorem formal_simple_root_unique 
     (f : Polynomial (PowerSeries K)) (b : K)
     (hder : (f.derivative.map PowerSeries.constantCoeff).eval b ≠ 0)
     {g h : PowerSeries K} (hg : PowerSeries.constantCoeff g = b)

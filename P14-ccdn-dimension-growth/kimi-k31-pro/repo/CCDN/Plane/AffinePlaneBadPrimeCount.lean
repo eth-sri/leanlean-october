@@ -70,7 +70,7 @@ theorem affine_plane_count_bad_prime
   have hf0 : f ≠ 0 := ne_zero_of_irreducible_map hir
   have hdegree := hgdeg.trans (mul_le_mul_of_nonneg_left
     (affine_plane_expression_le_bad_prime hd hB (leading_height_one_le f hf0)
-      (hypersurfaceBadPrimeFactor_nonneg f)) (affineHypersurfaceAuxiliaryConstant_pos 0).le)
+      (badPrimeFactor_nonneg f)) (affineHypersurfaceAuxiliaryConstant_pos 0).le)
   have hfgQ : ¬ map (Int.castRingHom ℚ) f ∣ map (Int.castRingHom ℚ) g :=
     fun h => hfg (hprim.rational_map_dvd_iff.mp h)
   apply integer_zero_count_le_of_family_bound

@@ -21,6 +21,8 @@ namespace CCDN
 noncomputable section
 open MvPolynomial
 
+variable {K σ : Type*} [Field K]
+
 /-- A homogeneous polynomial of degree `k` lies in the `k`-th power of the ideal of the origin. -/
 lemma homogeneous_mem_origin_power {K σ : Type*} [CommRing K]
     {f : MvPolynomial σ K} {k : ℕ} (hf : f.IsHomogeneous k) :
@@ -44,19 +46,19 @@ lemma sub_homogeneousComponent_mem_origin_power {K σ : Type*} [CommRing K]
 
 /-- The ideal `(f) + 𝔪₀ ^ (k + 1)`, where `𝔪₀` is the ideal of the origin; the quotient by it is the
 coordinate ring of `f = 0` truncated at the origin. -/
-def originTruncationIdeal {K σ : Type*} [Field K] (f : MvPolynomial σ K) (k : ℕ) :
+def originTruncationIdeal  (f : MvPolynomial σ K) (k : ℕ) :
     Ideal (MvPolynomial σ K) := Ideal.span {f} ⊔ idealOfVars σ K ^ (k + 1)
 
 /-- The degree-`k` layer of the ideal of the origin on the hypersurface `f = 0`: the image of
 the `k`-th power of the ideal of the origin in the quotient by `(f)` and the `(k + 1)`-th power.
 This is the image of the ideal power, not a tangent-cone model. -/
-def originLayer {K σ : Type*} [Field K] (f : MvPolynomial σ K) (k : ℕ) :
+def originLayer  (f : MvPolynomial σ K) (k : ℕ) :
     Submodule K (MvPolynomial σ K ⧸ originTruncationIdeal f k) :=
   ((idealOfVars σ K ^ k).restrictScalars K).map
     (Ideal.Quotient.mkₐ K (originTruncationIdeal f k)).toLinearMap
 
 /-- Homogeneous degree-k polynomials generate the degree-k layer. -/
-theorem originLayer_eq_homogeneousCoordinateSpace {K σ : Type*} [Field K]
+theorem originLayer_eq_homogeneousCoordinateSpace 
     (f : MvPolynomial σ K) (k : ℕ) :
     originLayer f k = homogeneousCoordinateSpace (originTruncationIdeal f k) k := by
   ext x
@@ -77,7 +79,7 @@ theorem originLayer_eq_homogeneousCoordinateSpace {K σ : Type*} [Field K]
 
 /-- The initial homogeneous equation vanishes in each origin-adic layer
 after multiplying by an allowed homogeneous polynomial. -/
-lemma initial_form_multiple_mem_truncation {K σ : Type*} [Field K]
+lemma initial_form_multiple_mem_truncation 
     {f : MvPolynomial σ K} {μ k : ℕ} (hf : f ∈ idealOfVars σ K ^ μ) (hk : μ ≤ k)
     {u : MvPolynomial σ K} (hu : u.IsHomogeneous (k - μ)) :
     homogeneousComponent μ f * u ∈ originTruncationIdeal f k := by
@@ -119,7 +121,7 @@ theorem originLayer_hilbert_bound {K : Type*} [Field K] {n μ k : ℕ}
     finrank_homogeneousSubmodule_fin] at h
   rwa [originLayer_eq_homogeneousCoordinateSpace]
 
-instance originLayer_finite {K σ : Type*} [Field K] [Finite σ]
+instance originLayer_finite  [Finite σ]
     (f : MvPolynomial σ K) (k : ℕ) : Module.Finite K (originLayer f k) := by
   rw [originLayer_eq_homogeneousCoordinateSpace]
   let _ : Module.Finite K (homogeneousSubmodule σ K k) :=

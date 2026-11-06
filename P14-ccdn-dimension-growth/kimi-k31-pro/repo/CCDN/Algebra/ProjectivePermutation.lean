@@ -17,28 +17,30 @@ namespace CCDN
 noncomputable section
 open MvPolynomial
 
+variable {K : Type*} [Field K] {n : ℕ}
+
 /-- The ideal obtained from `I` by permuting the coordinates by `e`: the polynomials `f` with
 `rename e f ∈ I`. -/
-def projectivePermutedIdeal {K : Type*} [Field K] {n : ℕ}
+def projectivePermutedIdeal  
     (I : Ideal (MvPolynomial (Fin (n + 1)) K)) (e : Equiv.Perm (Fin (n + 1))) :
     Ideal (MvPolynomial (Fin (n + 1)) K) :=
   RingHom.ker ((Ideal.Quotient.mkₐ K I).comp (renameEquiv K e).toAlgHom)
 
 /-- A polynomial `f` lies in the permuted ideal `projectivePermutedIdeal I e` if and only if
 `rename e f` lies in `I`. -/
-lemma mem_projectivePermutedIdeal {K : Type*} [Field K] {n : ℕ}
+lemma mem_projectivePermutedIdeal  
     (I : Ideal (MvPolynomial (Fin (n + 1)) K)) (e : Equiv.Perm (Fin (n + 1)))
     (f : MvPolynomial (Fin (n + 1)) K) :
     f ∈ projectivePermutedIdeal I e ↔ rename e f ∈ I := by
   change (Ideal.Quotient.mk I) (rename e f) = 0 ↔ _
   exact Ideal.Quotient.eq_zero_iff_mem
 
-instance projectivePermutedIdeal_isPrime {K : Type*} [Field K] {n : ℕ}
+instance projectivePermutedIdeal_isPrime  
     (I : Ideal (MvPolynomial (Fin (n + 1)) K)) [I.IsPrime]
     (e : Equiv.Perm (Fin (n + 1))) : (projectivePermutedIdeal I e).IsPrime :=
   RingHom.ker_isPrime _
 
-private theorem projectiveHilbertFunction_permuted {K : Type*} [Field K] {n : ℕ}
+private theorem projectiveHilbertFunction_permuted  
     (I : Ideal (MvPolynomial (Fin (n + 1)) K)) (e : Equiv.Perm (Fin (n + 1))) (M : ℕ) :
     projectiveHilbertFunction (projectivePermutedIdeal I e) M = projectiveHilbertFunction I M := by
   let ψ := (Ideal.Quotient.mkₐ K I).comp (renameEquiv K e).toAlgHom
@@ -64,35 +66,35 @@ private theorem projectiveHilbertFunction_permuted {K : Type*} [Field K] {n : �
   exact h
 
 /-- Permuting the coordinates preserves the degree of a projective curve. -/
-theorem projectiveCurveDegree_permuted {K : Type*} [Field K] {n d : ℕ}
+theorem projectiveCurveDegree_permuted  {n d : ℕ}
     (I : Ideal (MvPolynomial (Fin (n + 1)) K)) (e : Equiv.Perm (Fin (n + 1)))
     (hdegree : HasProjectiveCurveDegree I d) :
     HasProjectiveCurveDegree (projectivePermutedIdeal I e) d := by
   obtain ⟨N, c, hN⟩ := hdegree
   exact ⟨N, c, fun M hM => by rw [projectiveHilbertFunction_permuted]; exact hN M hM⟩
 
-private def coordinatePermutation {K : Type*} [Field K] {n : ℕ} (e : Equiv.Perm (Fin (n + 1))) :
+private def coordinatePermutation   (e : Equiv.Perm (Fin (n + 1))) :
     (Fin (n + 1) → K) →ₗ[K] (Fin (n + 1) → K) where
   toFun v := v ∘ e
   map_add' _ _ := rfl
   map_smul' _ _ := rfl
 
-private lemma coordinatePermutation_injective {K : Type*} [Field K] {n : ℕ}
+private lemma coordinatePermutation_injective  
     (e : Equiv.Perm (Fin (n + 1))) :
     Function.Injective (coordinatePermutation (K := K) e) := by
   intro v w he
   funext j
   simpa [coordinatePermutation] using congrFun he (e.symm j)
 
-private def projectivePermutation {K : Type*} [Field K] {n : ℕ} (e : Equiv.Perm (Fin (n + 1))) :
+private def projectivePermutation   (e : Equiv.Perm (Fin (n + 1))) :
     Projectivization K (Fin (n + 1) → K) → Projectivization K (Fin (n + 1) → K) :=
   Projectivization.map (coordinatePermutation e) (coordinatePermutation_injective e)
 
-private lemma projectivePermutation_injective {K : Type*} [Field K] {n : ℕ}
+private lemma projectivePermutation_injective  
     (e : Equiv.Perm (Fin (n + 1))) : Function.Injective (projectivePermutation (K := K) e) :=
   Projectivization.map_injective _ _
 
-private lemma projectivePermutation_height {n : ℕ} (e : Equiv.Perm (Fin (n + 1)))
+private lemma projectivePermutation_height  (e : Equiv.Perm (Fin (n + 1)))
     (x : ProjectivePoint n) :
     (projectivePermutation e x).mulHeight = x.mulHeight := by
   conv_lhs => rw [← x.mk_rep]
@@ -100,7 +102,7 @@ private lemma projectivePermutation_height {n : ℕ} (e : Equiv.Perm (Fin (n + 1
   change Height.mulHeight (x.rep ∘ e) = x.mulHeight
   rw [Height.mulHeight_comp_equiv, projective_rep_height]
 
-private lemma projectivePermutation_zeroLocus {K : Type*} [Field K] {n : ℕ}
+private lemma projectivePermutation_zeroLocus  
     (I : Ideal (MvPolynomial (Fin (n + 1)) K)) (e : Equiv.Perm (Fin (n + 1)))
     (x : Projectivization K (Fin (n + 1) → K)) (hx : x ∈ projectiveIdealZeroLocus I) :
     projectivePermutation e x ∈ projectiveIdealZeroLocus (projectivePermutedIdeal I e) := by
@@ -130,7 +132,7 @@ private lemma projectivePermutation_zeroLocus {K : Type*} [Field K] {n : ℕ}
 
 /-- Permuting the coordinates does not decrease the number of rational projective points of
 height at most `B` on the zero locus of `I`. -/
-theorem projectiveCount_le_permuted {n : ℕ}
+theorem projectiveCount_le_permuted 
     (I : Ideal (CoordinatePolynomial (n + 1))) (e : Equiv.Perm (Fin (n + 1))) (B : ℝ) :
     projectiveCount (projectiveIdealZeroLocus I) B ≤
       projectiveCount (projectiveIdealZeroLocus (projectivePermutedIdeal I e)) B := by

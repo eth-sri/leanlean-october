@@ -50,8 +50,8 @@ private theorem hypersurface_count_of_incidence_bound (n : ℕ) {d p N : ℝ}
       p ^ (3 * n + 9) * (p + planeResidueConstant * d ^ 2 * Real.sqrt p) +
       2 * d ^ 4 * p ^ (3 * n + 9) + d ^ 3 * p ^ (3 * n + 8)) :
     N ≤ p ^ (n + 2) + hypersurfaceResidueConstant * d ^ 2 * p ^ (n + 1) * Real.sqrt p := by
-  rw [planeResidueConstant_eq] at hcount
-  rw [hypersurfaceResidueConstant_eq]
+  rw [planeResidueConstant] at hcount
+  rw [hypersurfaceResidueConstant]
   have herr := hypersurface_bad_section_error hd hp
   unfold stepanovThreshold at hp
   have hp0 : 0 < p := lt_of_le_of_lt (by positivity) hp

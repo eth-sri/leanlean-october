@@ -147,8 +147,7 @@ def universalNoetherForms (σ : Type*) [Fintype σ] [DecidableEq σ] (k : ℕ) :
 
 private lemma mem_universalNoetherForms {σ : Type*} [Fintype σ] [DecidableEq σ]
     (k : ℕ) (f : MvPolynomial (Sym σ (k + 2)) ℤ) :
-    f ∈ universalNoetherForms σ k ↔ ∃ rows cols m, f = ambientNoetherForm σ k rows cols m := by
-  exact Set.Finite.mem_toFinset _
+    f ∈ universalNoetherForms σ k ↔ ∃ rows cols m, f = ambientNoetherForm σ k rows cols m := Set.Finite.mem_toFinset _
 
 /-- Every universal Noether form is homogeneous of degree `(k + 2) ^ 2 - 1`. -/
 theorem universalNoetherForms_homogeneous {σ : Type*} [Fintype σ] [DecidableEq σ]

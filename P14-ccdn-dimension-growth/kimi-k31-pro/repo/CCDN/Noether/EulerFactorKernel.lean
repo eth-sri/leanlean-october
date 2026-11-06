@@ -18,13 +18,15 @@ namespace CCDN
 noncomputable section
 open Polynomial
 
-private lemma bivariateTotalDegree_sub_le {R : Type*} [CommRing R] (f g : R[X][X]) :
+variable {R : Type*} [CommRing R]
+
+private lemma bivariateTotalDegree_sub_le  (f g : R[X][X]) :
     bivariateTotalDegree (f - g) ≤ max (bivariateTotalDegree f) (bivariateTotalDegree g) := by
   unfold bivariateTotalDegree
   rw [map_sub]
   exact MvPolynomial.totalDegree_sub _ _
 
-private lemma bivariateEuler_gradient_coeff {R : Type*} [CommRing R]
+private lemma bivariateEuler_gradient_coeff 
     (f : R[X][X]) (i j : ℕ) :
     (((bivariateEulerContraction R
       (f.derivative, (bivariateCoefficientDerivative R) f)).coeff i).coeff j) =
@@ -51,7 +53,7 @@ private lemma bivariateEuler_gradient_coeff {R : Type*} [CommRing R]
       push_cast
       ring
 
-private lemma bivariateEuler_defect_degree {R : Type*} [CommRing R]
+private lemma bivariateEuler_defect_degree 
     (d : ℕ) (hd : 0 < d) (f : R[X][X]) (hf : bivariateTotalDegree f ≤ d) :
     bivariateTotalDegree
       (bivariateEulerContraction R (f.derivative, (bivariateCoefficientDerivative R) f) -
@@ -73,13 +75,13 @@ private lemma bivariateEuler_defect_degree {R : Type*} [CommRing R]
 /-- The logarithmic factor pair of `g` and `h` with weights `a` and `b`: the pair `(P, Q)` with
 `(P dx + Q dy) / (g * h) = b • dg / g - a • dh / h`, so `P = b • h * ∂ₓg - a • g * ∂ₓh` for the
 outer derivative `∂ₓ` and `Q = b • h * ∂ᵧg - a • g * ∂ᵧh` for the inner derivative `∂ᵧ`. -/
-def eulerFactorPair {R : Type*} [CommRing R] (a b : ℕ)
+def eulerFactorPair  (a b : ℕ)
     (g h : R[X][X]) : R[X][X] × R[X][X] :=
   ((b : R) • (h * g.derivative) - (a : R) • (g * h.derivative),
    (b : R) • (h * (bivariateCoefficientDerivative R) g) -
      (a : R) • (g * (bivariateCoefficientDerivative R) h))
 
-private lemma eulerFactorPair_contraction {R : Type*} [CommRing R] (a b : ℕ)
+private lemma eulerFactorPair_contraction  (a b : ℕ)
     (g h : R[X][X]) :
     bivariateEulerContraction R (eulerFactorPair a b g h) =
       (b : R) • (h * (bivariateEulerContraction R

@@ -59,7 +59,7 @@ private theorem unscaled_hypersurface_minimum_height_bound {n : ℕ}
   have hLH : L ≤ H := leading_height_le_coefficient_height f
   have hL0 : 0 < L := by linarith
   have hH0 : 0 < H := by linarith
-  have hb : 0 ≤ b := hypersurfaceBadPrimeFactor_nonneg F
+  have hb : 0 ≤ b := badPrimeFactor_nonneg F
   have hF0 : F ≠ 0 := scaledHomogenize_ne_zero d one_ne_zero hf
   have hFdegree : F.totalDegree = d :=
     (scaledHomogenize_homogeneous (1 : ℤ) f le_rfl).totalDegree hF0
@@ -145,7 +145,7 @@ private theorem unscaled_hypersurface_auxiliary_minimum_bound {n k : ℕ}
   have hpower : B ^ α ≤ E * B ^ β := by
     have hh := polynomial_box_projective_power_bound (r := n + 1) (by omega) hd hS hB hbound
     simpa only [Nat.cast_add, Nat.cast_one, show (n : ℝ) + 1 + 1 = n + 2 by ring] using hh
-  have hb : 0 ≤ b := hypersurfaceBadPrimeFactor_nonneg _
+  have hb : 0 ≤ b := badPrimeFactor_nonneg _
   have hcoefficient : 0 ≤ (d : ℝ) ^ (4 - 1 / (n + 1 : ℝ)) * b / H ^ q :=
     div_nonneg (mul_nonneg (Real.rpow_nonneg (Nat.cast_nonneg d) _) hb)
       (Real.rpow_nonneg (Nat.cast_nonneg _) _)

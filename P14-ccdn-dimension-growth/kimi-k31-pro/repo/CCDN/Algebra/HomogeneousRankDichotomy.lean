@@ -18,7 +18,9 @@ namespace CCDN
 noncomputable section
 open MvPolynomial Matrix
 
-private lemma homogeneousCoefficientMap_injective {K : Type*} [Field K] (n M : ℕ) :
+variable {K : Type*} [Field K]
+
+private lemma homogeneousCoefficientMap_injective  (n M : ℕ) :
     Function.Injective ((homogeneousCoefficientMap K n M).domRestrict
       (homogeneousSubmodule (Fin (n + 1)) K M)) := by
   intro u v huv
@@ -28,7 +30,7 @@ private lemma homogeneousCoefficientMap_injective {K : Type*} [Field K] (n M : �
   rw [homogeneous_eq_sum_coeff u.val u.property, homogeneous_eq_sum_coeff v.val v.property]
   simp only [he]
 
-private lemma homogeneousCoefficientMap_surjective {K : Type*} [Field K] (n M : ℕ) :
+private lemma homogeneousCoefficientMap_surjective  (n M : ℕ) :
     Function.Surjective ((homogeneousCoefficientMap K n M).domRestrict
       (homogeneousSubmodule (Fin (n + 1)) K M)) := by
   classical
@@ -45,7 +47,7 @@ private lemma homogeneousCoefficientMap_surjective {K : Type*} [Field K] (n M : 
 
 /-- When all degree-M relations are multiples of f, the evaluation
 kernel is exactly the image of the degree-allowed multiples. -/
-private theorem homogeneous_evaluation_kernel_eq_multiples {K : Type*} [Field K]
+private theorem homogeneous_evaluation_kernel_eq_multiples 
     {n d M t : ℕ} (f : MvPolynomial (Fin (n + 1)) K)
     (hf : f.IsHomogeneous d) (hf0 : f ≠ 0) (hdM : d ≤ M)
     (points : Fin t → Fin (n + 1) → K) (hzero : ∀ i, eval (points i) f = 0)
@@ -79,7 +81,7 @@ private theorem homogeneous_evaluation_kernel_eq_multiples {K : Type*} [Field K]
     simp only [eval_mul, hzero i, zero_mul, Pi.zero_apply]
 
 /-- The exact Hilbert rank in the absence of an auxiliary polynomial. -/
-private theorem homogeneous_evaluation_rank_eq {K : Type*} [Field K]
+private theorem homogeneous_evaluation_rank_eq 
     {n d M t : ℕ} (f : MvPolynomial (Fin (n + 1)) K)
     (hf : f.IsHomogeneous d) (hf0 : f ≠ 0) (hdM : d ≤ M)
     (points : Fin t → Fin (n + 1) → K) (hzero : ∀ i, eval (points i) f = 0)

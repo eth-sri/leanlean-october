@@ -44,8 +44,7 @@ private lemma integralIdealClass_eq (I : Ideal R) (hI : I ≠ 0) :
   exact map_one ClassGroup.mk0
 
 private lemma integralIdealClass_mk0 (I : (Ideal R)⁰) :
-    integralIdealClass (I : Ideal R) = ClassGroup.mk0 I := by
-  exact integralIdealClass_eq _ (mem_nonZeroDivisors_iff_ne_zero.mp I.property)
+    integralIdealClass (I : Ideal R) = ClassGroup.mk0 I := integralIdealClass_eq _ (mem_nonZeroDivisors_iff_ne_zero.mp I.property)
 
 private lemma integralIdealClass_mul {I J : Ideal R} (hI : I ≠ 0) (hJ : J ≠ 0) :
     integralIdealClass (I * J) = integralIdealClass I * integralIdealClass J := by
