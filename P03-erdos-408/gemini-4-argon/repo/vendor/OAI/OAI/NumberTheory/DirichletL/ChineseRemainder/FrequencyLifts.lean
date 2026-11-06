@@ -8,79 +8,15 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
+open MulChar AddChar Filter Asymptotics MeasureTheory Finset Complex Real Set
 open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
-
-open scoped Classical BigOperators
+open EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
+open CubicEisenstein CompletedGauss CanonicalQuadraticSieve QuadraticAllOddCRT CanonicalUnitEuler
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical
+open scoped LSeries.notation ArithmeticFunction.Moebius ContDiff
 
 namespace ShortDraftCRT
-open ActualEisensteinCubic FiniteGaussPhase ConcreteTraceCRT CubicEisenstein
+open FiniteGaussPhase
 local notation "Eis" => ActualEisensteinCubic.O
 variable {ι:Type*} [Fintype ι]
 
@@ -90,20 +26,11 @@ theorem exists_strong_unit_frequency_lifts (M:Eis) (p:ι→Eis)
     ∃h:ι→Eis,(∀i,M^2∣h i) ∧
       (∀i,Ideal.Quotient.mk (Ideal.span {p i}) (h i)=(x i:Eis⧸Ideal.span {p i})) ∧
       ∀i,IsCoprime (h i) (p i) := by
-  have hx (i:ι) := exists_frequency_lift (M^2) (p i)
+  choose h hh hd using fun i ↦ exists_frequency_lift (M^2) (p i)
     (Quotient.out (x i:Eis⧸Ideal.span {p i})) (hM i).pow_left
-  choose h hh hd using hx
-  have he (i:ι):Ideal.Quotient.mk (Ideal.span {p i}) (h i)=(x i:Eis⧸Ideal.span {p i}) := by
-    calc
-      _=Ideal.Quotient.mk (Ideal.span {p i}) (Quotient.out (x i:Eis⧸Ideal.span {p i})) :=
-        Ideal.Quotient.eq.mpr (Ideal.mem_span_singleton.mpr (hd i))
-      _=x i:=Ideal.Quotient.mk_out _
-  refine ⟨h,hh,he,?_⟩
-  intro i
-  apply IsCoprime.symm
-  apply (isUnit_quotient_span_iff (p i) (h i)).mp
-  rw [he]
-  exact (x i).isUnit
+  have he (i:ι):Ideal.Quotient.mk (Ideal.span {p i}) (h i)=(x i:Eis⧸Ideal.span {p i}) :=
+    (Ideal.Quotient.eq.mpr (Ideal.mem_span_singleton.mpr (hd i))).trans (Ideal.Quotient.mk_out _)
+  exact ⟨h, hh, he, fun i ↦ ((isUnit_quotient_span_iff (p i) (h i)).mp (he i ▸ (x i).isUnit)).symm⟩
 
 theorem finiteCrossNumerator_fraction (a c l:Eis) (p h:ι→Eis)
     (hc:c≠0) (hp:∀i,p i≠0) :
@@ -116,44 +43,26 @@ theorem finiteCrossNumerator_fraction (a c l:Eis) (p h:ι→Eis)
   have hs:eisEmbedding (∑i,h i*cofactor p i)/eisEmbedding (∏i,p i)=
       ∑i,eisEmbedding (h i)/eisEmbedding (p i) := by
     rw [map_sum,Finset.sum_div]
-    apply Finset.sum_congr rfl
-    intro i hi
-    have hpi:=eisEmbedding_ne_zero (hp i)
+    refine Finset.sum_congr rfl fun i _ ↦ ?_
     have hr:eisEmbedding (p i)*eisEmbedding (cofactor p i)=eisEmbedding (∏i,p i) := by
       rw [←map_mul,prime_mul_cofactor]
-    rw [map_mul]
-    apply (div_eq_div_iff hRC hpi).mpr
+    rw [map_mul, div_eq_div_iff hRC (eisEmbedding_ne_zero (hp i))]
     linear_combination eisEmbedding (h i)*hr
-  simp only [finiteCrossNumerator,map_add,map_mul,map_pow]
-  rw [←hs]
+  simp only [finiteCrossNumerator,map_add,map_mul,map_pow, ←hs]
   field_simp [hcC,hRC]
 
 end ShortDraftCRT
 
-open scoped BigOperators Classical
-
-namespace IdealGaussCRT
-open CubicEisenstein
-
-end IdealGaussCRT
-
 namespace FiniteGaussPhase
-open ActualEisensteinCubic CubicEisenstein IdealGaussCRT
 local notation "Eis" => ActualEisensteinCubic.O
-
 end FiniteGaussPhase
 
 namespace FixedRayActiveSet
 
 lemma sum_nonzero_ite {F : Type*} [Field F] [Fintype F] (f:F→ℂ) :
     (∑x:F,if x≠0 then f x else 0)=∑u:Fˣ,f (u:F) := by
-  calc
-    _ = ∑x∈(Finset.univ:Finset F).filter (fun x=>x≠0),f x := by rw [Finset.sum_filter]
-    _ = ∑x:{x:F//x≠0},f x := by
-      apply Finset.sum_subtype
-      intro x
-      simp
-    _ = _ := (Equiv.sum_comp unitsEquivNeZero (fun x:{x:F//x≠0}=>f x)).symm
+  rw [← Finset.sum_filter, Finset.sum_subtype _ (p := (· ≠ 0)) (by simp)]
+  exact (Equiv.sum_comp unitsEquivNeZero (fun x:{x:F//x≠0}=>f x)).symm
 
 def activeStratum {ι : Type*} [Fintype ι]
     (F : ι→Type*) [∀i,Field (F i)] [∀i,Fintype (F i)] (A:Finset ι) :
@@ -169,22 +78,14 @@ theorem sum_active_stratum {ι : Type*} [Fintype ι]
   let g:=fun i (x:F i)=>if (x≠0↔i∈A) then f i x else 0
   have hs : (∑h∈activeStratum F A,∏i,f i (h i))=
       ∏i,∑x:F i,g i x := by
-    rw [activeStratum,Finset.sum_filter]
-    calc
-      _ = ∑h:∀i,F i,∏i,g i (h i) := by
-        apply Finset.sum_congr rfl
-        intro h hh
-        exact (Fintype.prod_ite_zero (p:=fun i=>h i≠0↔i∈A) (f:=fun i=>f i (h i))).symm
-      _ = _ := (Fintype.prod_sum g).symm
+    rw [activeStratum,Finset.sum_filter, Fintype.prod_sum g]
+    exact Finset.sum_congr rfl fun h _ ↦ (Fintype.prod_ite_zero (p:=fun i=>h i≠0↔i∈A) (f:=fun i=>f i (h i))).symm
   have hg (i:ι) : (∑x:F i,g i x)=if i∈A then ∑u:(F i)ˣ,f i (u:F i) else f i 0 := by
     by_cases hi:i∈A
     · simpa only [g,hi,iff_true,ite_true] using sum_nonzero_ite (f i)
     · simp [g,hi]
-  rw [hs]
-  simp only [hg,Finset.prod_ite]
-  have ha : (Finset.univ:Finset ι).filter (fun i=>i∈A)=A := by ext i;simp
-  have hn : (Finset.univ:Finset ι).filter (fun i=>i∉A)=(Finset.univ:Finset ι)\A := by ext i;simp
-  rw [ha,hn]
+  simp only [hs, hg, Finset.prod_ite]
+  congr 2 <;> ext i <;> simp
 
 theorem sum_by_active_strata {ι : Type*} [Fintype ι]
     (F : ι→Type*) [∀i,Field (F i)] [∀i,Fintype (F i)]
@@ -195,36 +96,25 @@ theorem sum_by_active_strata {ι : Type*} [Fintype ι]
   symm
   simp only [activeStratum,Finset.sum_filter]
   rw [Finset.sum_comm]
-  apply Finset.sum_congr rfl
-  intro h hh
-  let A:Finset ι:=Finset.univ.filter (fun i=>h i≠0)
-  have he : ∀i,h i≠0↔i∈A := by intro i;simp [A]
-  rw [Finset.sum_eq_single A]
-  · simp only [he,implies_true,ite_true]
-  · intro B hB hBA
-    have hbad : ¬(∀i,h i≠0↔i∈B) := by
-      intro hgood
-      apply hBA
-      ext i
-      simpa only [A,Finset.mem_filter,Finset.mem_univ,true_and] using (hgood i).symm
-    simp only [hbad,ite_false]
-  · intro hnot
-    exact (hnot (Finset.mem_powerset.mpr (Finset.filter_subset _ _))).elim
+  refine Finset.sum_congr rfl fun h _ ↦ ?_
+  rw [Finset.sum_eq_single (Finset.univ.filter fun i ↦ h i ≠ 0)]
+  · simp
+  · intro B _ hBA
+    rw [ite_eq_right_iff]
+    exact fun hg ↦ (hBA (by ext i; simp [hg i])).elim
+  · simp
 
 end FixedRayActiveSet
 
 namespace LocalReflectionBrackets
-open ActualEisensteinCubic CubicEisenstein CompletedGauss
 local notation "Eis" => ActualEisensteinCubic.O
 noncomputable local instance stratumField (P : Ideal Eis) [P.IsMaximal] :
     Field (Eis⧸P) := Ideal.Quotient.field P
 noncomputable local instance stratumFintype (P : Ideal Eis) [P.IsMaximal] :
     Fintype (Eis⧸P) := Fintype.ofFinite _
-
 end LocalReflectionBrackets
 
 namespace CubicEisenstein
-open ActualEisensteinCubic ConcreteTraceCRT CompletedGauss
 local notation "Eis" => ActualEisensteinCubic.O
 
 lemma ramifiedTraceLambda_dvd_of_lambda_dvd (h:Eis) (hh:lambda∣h) :
@@ -300,8 +190,6 @@ end CubicEisenstein
 namespace CanonicalRowCompletion
 
 section
-open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve QuadraticAllOddCRT
-open ConcreteTraceCRT UniqueFactorizationMonoid
 local notation "Eis" => ActualEisensteinCubic.O
 
 def cubicTwoSupplement : Eis→*ℂ where
@@ -314,27 +202,20 @@ def quadraticTwoSupplement : Eis→*ℂ :=
 
 def twoSupplement : Eis→*ℂ := cubicTwoSupplement^2*quadraticTwoSupplement
 
-lemma cubicTwoSupplement_norm (n:Eis) : ‖cubicTwoSupplement n‖≤1 := by
-  change ‖(actualSextic cubicTwoIdeal cubicTwoIdeal_good ^ 2)
-    (Ideal.Quotient.mk cubicTwoIdeal n)‖≤1
-  exact FiniteRayExpansion.norm_char_le_one _ _
+lemma cubicTwoSupplement_norm (n:Eis) : ‖cubicTwoSupplement n‖≤1 :=
+  FiniteRayExpansion.norm_char_le_one (actualSextic cubicTwoIdeal cubicTwoIdeal_good ^ 2) _
 
 lemma twoSupplement_norm (n:Eis) : ‖twoSupplement n‖≤1 := by
   change ‖cubicTwoSupplement n^2*quadraticTwoSupplement n‖≤1
   rw [norm_mul,norm_pow]
-  apply (mul_le_of_le_one_left (norm_nonneg _)
-    _).trans (InitialMeanSquare.normCharacter_norm_le_one _ n)
-  exact pow_le_one₀ (norm_nonneg _) (cubicTwoSupplement_norm n)
+  exact (mul_le_of_le_one_left (norm_nonneg _)
+    (pow_le_one₀ (norm_nonneg _) (cubicTwoSupplement_norm n))).trans
+    (InitialMeanSquare.normCharacter_norm_le_one _ n)
 
 lemma cubicTwoSupplement_periodic (x y:Eis) (hxy:x-y∈Ideal.span {(8:Eis)}) :
     cubicTwoSupplement x=cubicTwoSupplement y := by
-  have h2:x-y∈cubicTwoIdeal:=by
-    obtain ⟨k,hk⟩:=Ideal.mem_span_singleton.mp hxy
-    apply Ideal.mem_span_singleton.mpr
-    refine ⟨-4*k,?_⟩
-    change x-y=(-2:Eis)*(-4*k)
-    rw [hk]
-    ring
+  obtain ⟨k,hk⟩:=Ideal.mem_span_singleton.mp hxy
+  have h2:x-y∈cubicTwoIdeal:=Ideal.mem_span_singleton.mpr ⟨-4*k, by change x-y=(-2:Eis)*(-4*k); rw [hk]; ring⟩
   change (actualSextic cubicTwoIdeal cubicTwoIdeal_good ^ 2) (Ideal.Quotient.mk cubicTwoIdeal x)=
     (actualSextic cubicTwoIdeal cubicTwoIdeal_good ^ 2) (Ideal.Quotient.mk cubicTwoIdeal y)
   rw [Ideal.Quotient.eq.mpr h2]
@@ -345,8 +226,7 @@ lemma twoSupplement_periodic :
   change cubicTwoSupplement x^2*quadraticTwoSupplement x=
     cubicTwoSupplement y^2*quadraticTwoSupplement y
   rw [cubicTwoSupplement_periodic x y hxy]
-  congr 1
-  exact CanonicalCoefficientClass.normCharacter_factorsModulo _ x y hxy
+  exact congrArg _ (CanonicalCoefficientClass.normCharacter_factorsModulo _ x y hxy)
 
 lemma idealRowHom_two_prime (p:Eis) (hp:Prime p) (hprimary:lambda^2∣p-1)
     (hs:Supported (Ideal.span {p})) :
@@ -363,8 +243,7 @@ lemma idealRowHom_two_prime (p:Eis) (hp:Prime p) (hprimary:lambda^2∣p-1)
     rw [hfour,map_pow] at he
     change (actualSextic (Ideal.span {p}) hg) (Ideal.Quotient.mk _ 2)^2=
       (actualSextic cubicTwoIdeal cubicTwoIdeal_good ^ 2) (Ideal.Quotient.mk cubicTwoIdeal p)
-    rw [canonicalSextic_pow_two]
-    exact he
+    rwa [canonicalSextic_pow_two]
   have h3:idealRowHom (2:Eis) (Ideal.span {p})^3=quadraticTwoSupplement p:=by
     rw [idealRowHom_prime _ _ hg,←MulChar.pow_apply' _ (by decide : (3:ℕ)≠0),actualSextic_cube_quadratic]
     change ((quadraticChar (Eis⧸Ideal.span {p}) (Ideal.Quotient.mk _ (2:Eis)):ℤ):ℂ)=_
@@ -375,11 +254,8 @@ lemma idealRowHom_two_prime (p:Eis) (hp:Prime p) (hprimary:lambda^2∣p-1)
     change ((ZMod.χ₈ (Fintype.card (Eis⧸Ideal.span {p})):ℤ):ℂ)=
       ((ZMod.χ₈ (Ideal.absNorm (Ideal.span {p})):ℤ):ℂ)
     rw [hn]
-  have hn2:(2:Eis)∉Ideal.span {p}:=by
-    intro hz
-    have he: (2:Eis⧸Ideal.span {p})=0:=by
-      simpa only [map_ofNat] using Ideal.Quotient.eq_zero_iff_mem.mpr hz
-    exact Ring.two_ne_zero hc he
+  have hn2:(2:Eis)∉Ideal.span {p}:=fun hz ↦ Ring.two_ne_zero hc
+    (by simpa only [map_ofNat] using Ideal.Quotient.eq_zero_iff_mem.mpr hz)
   have h6:idealRowHom (2:Eis) (Ideal.span {p})^6=1:=by
     rw [idealRowHom_prime _ _ hg]
     have he:=canonicalSextic_sixth_power_mask (Ideal.span {p}) hg (2:Eis)
@@ -404,17 +280,15 @@ theorem idealRowHom_two_formula (n:Eis) (hn:lambda^2∣n-1)
   | empty=>simp only [Multiset.prod_zero,Ideal.span_singleton_one,←Ideal.one_eq_top,map_one]
   | @cons p s ih=>
     have hp:=hfactors p (Multiset.mem_cons_self _ _)
-    have htail:∀q∈s,Prime q ∧ lambda^2∣q-1:=fun q hq=>hfactors q (Multiset.mem_cons_of_mem hq)
     have hsplit:Supported (Ideal.span {p}) ∧ Supported (Ideal.span {s.prod}):=by
       simpa only [Multiset.prod_cons,←Ideal.span_singleton_mul_span_singleton,supported_mul_iff] using hs
     rw [Multiset.prod_cons,←Ideal.span_singleton_mul_span_singleton,map_mul,
-      idealRowHom_two_prime p hp.1 hp.2 hsplit.1,ih hsplit.2 htail,map_mul]
+      idealRowHom_two_prime p hp.1 hp.2 hsplit.1,
+      ih hsplit.2 (fun q hq=>hfactors q (Multiset.mem_cons_of_mem hq)),map_mul]
 
 end
 
 section
-open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve
-open UniqueFactorizationMonoid
 local notation "Eis" => ActualEisensteinCubic.O
 
 def supportedIdealRow (a:Eis) : Eis→*ℂ where
@@ -438,15 +312,9 @@ lemma supportedIdealRow_norm (a n:Eis) : ‖supportedIdealRow a n‖≤1 := by
 
 lemma exists_supported_primary_unit (x:Eis) (hx:Supported (Ideal.span {x})) :
     ∃u:Eisˣ,lambda^2∣u.val*x-1 := by
-  have hg:=supported_primaryGenerator_ne_zero (Ideal.span {x}) hx
-  have hp:=primaryGenerator_spec (Ideal.span {x}) hg
-  have ha:Associated x (primaryGenerator (Ideal.span {x})):=
-    Ideal.span_singleton_eq_span_singleton.mp hp.1.symm
-  obtain ⟨u,hu⟩:=ha
-  refine ⟨u,?_⟩
-  have he:u.val*x=primaryGenerator (Ideal.span {x}):=by simpa only [mul_comm] using hu
-  rw [he]
-  exact hp.2
+  have hp:=primaryGenerator_spec (Ideal.span {x}) (supported_primaryGenerator_ne_zero (Ideal.span {x}) hx)
+  obtain ⟨u,hu⟩:=Ideal.span_singleton_eq_span_singleton.mp hp.1.symm
+  exact ⟨u, by simpa only [mul_comm, hu] using hp.2⟩
 
 theorem supportedIdealRow_lambda_periodic :
     CanonicalCoefficientClass.FactorsModulo (Ideal.span {(36:Eis)}) (supportedIdealRow lambda) := by
@@ -466,62 +334,44 @@ theorem supportedIdealRow_lambda_periodic :
       convert dvd_sub hux hl using 1 ; ring
     have hsp (z:Eis) : Ideal.span {u.val*z}=Ideal.span {z}:=
       Ideal.span_singleton_mul_left_unit u.isUnit z
-    have he:=idealRowHom_lambda_mod_thirty_six (u.val*x) (u.val*y) hux huy
+    simpa only [hsp] using idealRowHom_lambda_mod_thirty_six (u.val*x) (u.val*y) hux huy
       (by rwa [hsp]) (by rwa [hsp]) h36
-    simpa only [hsp] using he
   · rw [ite_eq_right hx,ite_eq_right (fun hy=>hx (hs.mpr hy))]
 
 lemma supportedIdealRow_lambda_primary (n:Eis) (hs:Supported (Ideal.span {n})) :
-    supportedIdealRow lambda n=idealRowHom lambda (Ideal.span {n}) := by
-  change (if Supported (Ideal.span {n}) then _ else _)=_
-  rw [ite_eq_left hs]
+    supportedIdealRow lambda n=idealRowHom lambda (Ideal.span {n}) :=
+  ite_eq_left hs
 
 end
 section
-
-open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve
 local notation "Eis" => ActualEisensteinCubic.O
 
 lemma negative_two_prime : Prime (-2:Eis) :=
-  (Ideal.span_singleton_prime (by norm_num : (-2:Eis)≠0)).mp
-    (show (Ideal.span {(-2:Eis)}).IsPrime from cubicTwoIdeal_isMaximal.isPrime)
+  (Ideal.span_singleton_prime (by norm_num : (-2:Eis)≠0)).mp cubicTwoIdeal_isMaximal.isPrime
 
 theorem exists_supported_numerator_factorization (x:Eis) (hx:x≠0) :
     ∃u:Eisˣ,∃a b:ℕ,∃r:Eis,Supported (Ideal.span {r}) ∧ lambda^2∣r-1 ∧
       x=u.val*lambda^a*(2:Eis)^b*r := by
   obtain ⟨n,u,a,hn,hxform⟩:=CubicEisenstein.exists_primary_unit_lambda_factor x hx
-  have hn0:n≠0:=by
-    intro hz
-    exact hx (by rw [hxform,hz,zero_mul])
+  have hn0:n≠0:=fun hz ↦ hx (by rw [hxform,hz,zero_mul])
   obtain ⟨r,hr,hrnot⟩:=(FiniteMultiplicity.of_prime_left negative_two_prime hn0).exists_eq_pow_mul_and_not_dvd
   let b:ℕ:=multiplicity (-2:Eis) n
   change n=(-2:Eis)^b*r at hr
   have hp:lambda^2∣(-2:Eis)^b-1:=neg_two_primary.trans (sub_one_dvd_pow_sub_one (-2:Eis) b)
   have hprimary:lambda^2∣r-1:=by
     have hh:=dvd_sub hn (dvd_mul_of_dvd_left hp r)
-    have he:n-1-(((-2:Eis)^b-1)*r)=r-1:=by rw [hr];ring
-    rwa [he] at hh
-  have hnot2:¬(2:Eis)∣r:=by
-    intro h2
-    exact hrnot (by simpa only [neg_dvd] using h2)
-  have hnotlambda:¬lambda∣r:=by
-    intro hLam
-    have hsub:lambda∣r-1:=(dvd_pow_self lambda (by decide : (2:ℕ)≠0)).trans hprimary
-    have hone:lambda∣(1:Eis):=by
-      convert dvd_sub hLam hsub using 1 ; ring
-    exact PrimaryIdealUnitReindex.lambda_prime_actual.not_isUnit (isUnit_of_dvd_one hone)
-  let v:Eisˣ:=u*(-1:Eisˣ)^b
-  refine ⟨v,a,b,r,(supported_span_iff r).mpr ⟨hnotlambda,hnot2⟩,hprimary,?_⟩
-  have hp2:(-2:Eis)^b=(-1:Eis)^b*(2:Eis)^b:=by
-    rw [show (-2:Eis)=(-1)*2 by ring,mul_pow]
-  rw [hxform,hr,hp2]
-  dsimp only [v]
+    rwa [show n-1-(((-2:Eis)^b-1)*r)=r-1 by rw [hr];ring] at hh
+  have hnot2:¬(2:Eis)∣r:=fun h2 ↦ hrnot (by simpa only [neg_dvd] using h2)
+  have hnotlambda:¬lambda∣r:=fun hLam ↦ PrimaryIdealUnitReindex.lambda_prime_actual.not_isUnit <|
+    isUnit_of_dvd_one <| by
+      convert dvd_sub hLam ((dvd_pow_self lambda (by decide : (2:ℕ)≠0)).trans hprimary) using 1 ; ring
+  refine ⟨u*(-1:Eisˣ)^b,a,b,r,(supported_span_iff r).mpr ⟨hnotlambda,hnot2⟩,hprimary,?_⟩
+  rw [hxform,hr,show (-2:Eis)^b=(-1:Eis)^b*(2:Eis)^b by rw [show (-2:Eis)=(-1)*2 by ring,mul_pow]]
   simp only [Units.val_mul,Units.val_pow_eq_pow_val,Units.coe_neg_one]
   ring
 
 end
 
-open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve CanonicalUnitEuler
 local notation "Eis" => ActualEisensteinCubic.O
 
 lemma idealRowHom_argument_pow (a:Eis) (k:ℕ) (I:Ideal Eis) (hI:Supported I) :
@@ -543,15 +393,11 @@ lemma numeratorBadTwist_norm (u:Eisˣ) (a b:ℕ) (r:Eis)
   change ‖((unitSupplement u n * (supportedIdealRow lambda n)^a) * (twoSupplement n)^b) *
     sexticReciprocityPhase r n‖≤1
   simp only [norm_mul,norm_pow]
-  have hu:=unitSupplement_norm u n
-  have ha:‖supportedIdealRow lambda n‖^a≤1:=
-    pow_le_one₀ (norm_nonneg _) (supportedIdealRow_norm lambda n)
-  have hb:‖twoSupplement n‖^b≤1:=
-    pow_le_one₀ (norm_nonneg _) (twoSupplement_norm n)
-  have hrn:=sexticReciprocityPhase_norm r n
   exact (mul_le_of_le_one_left (norm_nonneg _)
     ((mul_le_of_le_one_left (pow_nonneg (norm_nonneg _) _)
-    ((mul_le_of_le_one_left (pow_nonneg (norm_nonneg _) _) hu).trans ha)).trans hb)).trans hrn
+    ((mul_le_of_le_one_left (pow_nonneg (norm_nonneg _) _) (unitSupplement_norm u n)).trans
+      (pow_le_one₀ (norm_nonneg _) (supportedIdealRow_norm lambda n)))).trans
+      (pow_le_one₀ (norm_nonneg _) (twoSupplement_norm n)))).trans (sexticReciprocityPhase_norm r n)
 
 lemma numeratorBadTwist_periodic (u:Eisˣ) (a b:ℕ) (r:Eis)
     (hr:Supported (Ideal.span {r})) :
@@ -587,9 +433,7 @@ theorem idealRowHom_factor_numerator (u:Eisˣ) (a b:ℕ) (r n:Eis)
     (hn:Supported (Ideal.span {n})) (hpn:lambda^2∣n-1) :
     idealRowHom (u.val*lambda^a*(2:Eis)^b*r) (Ideal.span {n})=
       numeratorBadTwist u a b r hr n * movingNumeratorRow r hr n := by
-  have hu:unitSupplement u n=idealRowHom u.val (Ideal.span {n}):=by
-    change (if Supported (Ideal.span {n}) then _ else 0)=_
-    rw [ite_eq_left hn]
+  have hu:unitSupplement u n=idealRowHom u.val (Ideal.span {n}):=ite_eq_left hn
   have hrec:=reciprocalRow_eq_idealRowHom r n hr hn hpr hpn
   change sexticReciprocityPhase r n*idealRowHom n (Ideal.span {r})=
     idealRowHom r (Ideal.span {n}) at hrec
