@@ -138,8 +138,7 @@ theorem integral_haar1D_mul_haar1D_same_scale_cell (j k : ℤ)
       (a := dyadicPower j) (b := -(k : ℝ))
       (dyadicPower_ne_zero j) f
       (integrable_haarAtom1D_mul_haarAtom1D signature₁ signature₂)
-    have hpos : 0 < dyadicPower j := dyadicPower_pos j
-    simpa [sub_eq_add_neg, abs_of_pos (inv_pos.mpr hpos), f] using h
+    simpa [sub_eq_add_neg, abs_of_pos (inv_pos.mpr (dyadicPower_pos j)), f] using h
   calc
     ∫ x : ℝ, haar1D j k signature₁ x * haar1D j k signature₂ x ∂volume =
         ∫ x : ℝ, dyadicPower j * f (dyadicPower j * x - (k : ℝ)) ∂volume := by
@@ -389,8 +388,7 @@ theorem integral_haar1D_mul_left_child_mother (j k : ℤ) :
     have h := integral_comp_mul_add_volume
       (a := dyadicPower j) (b := -(k : ℝ))
       (dyadicPower_ne_zero j) f integrable_haarMother1D_mul_left_child
-    have hpos : 0 < dyadicPower j := dyadicPower_pos j
-    simpa [sub_eq_add_neg, abs_of_pos (inv_pos.mpr hpos), f] using h
+    simpa [sub_eq_add_neg, abs_of_pos (inv_pos.mpr (dyadicPower_pos j)), f] using h
   calc
     ∫ x : ℝ, haar1D j k true x * haar1D (j + 1) ((2 : ℤ) * k) true x ∂volume =
         ∫ x : ℝ, (haarScaleFactor j * haarScaleFactor (j + 1)) *
@@ -419,8 +417,7 @@ theorem integral_haar1D_mul_right_child_mother (j k : ℤ) :
     have h := integral_comp_mul_add_volume
       (a := dyadicPower j) (b := -(k : ℝ))
       (dyadicPower_ne_zero j) f integrable_haarMother1D_mul_right_child
-    have hpos : 0 < dyadicPower j := dyadicPower_pos j
-    simpa [sub_eq_add_neg, abs_of_pos (inv_pos.mpr hpos), f] using h
+    simpa [sub_eq_add_neg, abs_of_pos (inv_pos.mpr (dyadicPower_pos j)), f] using h
   calc
     ∫ x : ℝ, haar1D j k true x * haar1D (j + 1) ((2 : ℤ) * k + 1) true x ∂volume =
         ∫ x : ℝ, (haarScaleFactor j * haarScaleFactor (j + 1)) *
@@ -449,8 +446,7 @@ theorem integral_haar1D_mul_left_child_mother_any_signature (j k : ℤ) (signatu
       have h := integral_comp_mul_add_volume
         (a := dyadicPower j) (b := -(k : ℝ))
         (dyadicPower_ne_zero j) f integrable_haarFather1D_mul_left_child_mother
-      have hpos : 0 < dyadicPower j := dyadicPower_pos j
-      simpa [sub_eq_add_neg, abs_of_pos (inv_pos.mpr hpos), f] using h
+      simpa [sub_eq_add_neg, abs_of_pos (inv_pos.mpr (dyadicPower_pos j)), f] using h
     calc
       ∫ x : ℝ, haar1D j k false x * haar1D (j + 1) ((2 : ℤ) * k) true x ∂volume =
           ∫ x : ℝ, (haarScaleFactor j * haarScaleFactor (j + 1)) *
@@ -479,8 +475,7 @@ theorem integral_haar1D_mul_right_child_mother_any_signature (j k : ℤ) (signat
       have h := integral_comp_mul_add_volume
         (a := dyadicPower j) (b := -(k : ℝ))
         (dyadicPower_ne_zero j) f integrable_haarFather1D_mul_right_child_mother
-      have hpos : 0 < dyadicPower j := dyadicPower_pos j
-      simpa [sub_eq_add_neg, abs_of_pos (inv_pos.mpr hpos), f] using h
+      simpa [sub_eq_add_neg, abs_of_pos (inv_pos.mpr (dyadicPower_pos j)), f] using h
     calc
       ∫ x : ℝ, haar1D j k false x * haar1D (j + 1) ((2 : ℤ) * k + 1) true x ∂volume =
           ∫ x : ℝ, (haarScaleFactor j * haarScaleFactor (j + 1)) *
@@ -643,10 +638,9 @@ theorem haar1DFatherSubmodule_le_add_nat (j : ℤ) (n : ℕ) :
       simpa using hv
   | succ n ih =>
       intro v hv
-      have hvn : v ∈ haar1DFatherSubmodule (j + (n : ℤ)) := ih hv
       have hvnext :
           v ∈ haar1DFatherSubmodule ((j + (n : ℤ)) + 1) :=
-        haar1DFatherSubmodule_le_succ (j + (n : ℤ)) hvn
+        haar1DFatherSubmodule_le_succ (j + (n : ℤ)) (ih hv)
       simpa only [Int.ofNat_eq_natCast, Nat.cast_add, Nat.cast_one, add_assoc] using hvnext
 
 theorem haar1DLp_mem_fatherSubmodule_add_nat_succ (j k : ℤ)

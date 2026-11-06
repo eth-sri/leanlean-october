@@ -92,12 +92,11 @@ theorem ordinaryHypergeometric_hasDerivAt_unitDisk (a b c z : ℂ)
   have hz' : z ∈ Metric.eball (0 : ℂ) 1 := by
     simpa [Metric.mem_eball, edist_eq_enorm_sub, enorm_eq_nnnorm, dist_zero_right] using
       (ENNReal.coe_lt_coe.mpr hznorm)
-  have hpos : 0 < S.radius := ordinaryHypergeometricSeries_radius_pos a b c hc
   have hle : (1 : ENNReal) ≤ S.radius := by exact_mod_cast hrad
   have hpower : HasFPowerSeriesOnBall (ordinaryHypergeometric a b c) S 0 1 := by
     have hsum : ordinaryHypergeometric a b c = S.sum := rfl
     rw [hsum]
-    exact S.hasFPowerSeriesOnBall hpos |>.mono (by norm_num) hle
+    exact S.hasFPowerSeriesOnBall (ordinaryHypergeometricSeries_radius_pos a b c hc) |>.mono (by norm_num) hle
   have hdf := hpower.fderiv
   let evalOne : (ℂ →L[ℂ] ℂ) →L[ℂ] ℂ := ContinuousLinearMap.apply ℂ ℂ 1
   have hprimeComp := evalOne.comp_hasFPowerSeriesOnBall hdf

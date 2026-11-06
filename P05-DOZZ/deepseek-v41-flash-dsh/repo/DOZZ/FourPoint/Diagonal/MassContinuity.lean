@@ -23,7 +23,6 @@ theorem diagonal_bpz_weight_bound
     ENNReal.ofReal (bpzSoftWeight γ χ a b c 0 z x) ≤
       ENNReal.ofReal (4 ^ |γ * χ / 2|) *
         ENNReal.ofReal (bpzSoftWeight γ χ a b c 1 (1 / 2) x) := by
-  have he : 0 ≤ γ * χ / 2 := div_nonneg hγχ (by norm_num)
   have hzz : ‖(1 / 2 : ℂ) - z‖ ≤ 1 := by
     have h := norm_sub_le (1 / 2 : ℂ) z
     norm_num at h
@@ -32,7 +31,7 @@ theorem diagonal_bpz_weight_bound
     unfold bpzSoftWeight
     apply mul_le_mul_of_nonneg_right _ (bpzBaseWeight_nonneg x)
     simp only [zero_pow (by norm_num : (2 : ℕ) ≠ 0), one_pow, add_zero]
-    exact Real.rpow_le_rpow (Complex.normSq_nonneg _) (by linarith) he
+    exact Real.rpow_le_rpow (Complex.normSq_nonneg _) (by linarith) (div_nonneg hγχ (by norm_num))
   have hcmp := bpzSoft_rpow_le_of_norm_le_one (ε := 1) (by norm_num)
     (γ * χ / 2) hzz x
   have hcomp : bpzSoftWeight γ χ a b c 1 z x ≤

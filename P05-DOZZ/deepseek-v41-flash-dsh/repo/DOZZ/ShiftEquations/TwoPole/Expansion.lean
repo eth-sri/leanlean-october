@@ -3,6 +3,7 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
+public import DOZZ.SharedHyp
 
 public import DOZZ.ShiftEquations.TwoPole.MellinLocal
 public import DOZZ.ShiftEquations.TwoPole.Coefficients
@@ -43,28 +44,7 @@ theorem structureConstant_two_pole_expansion_of_tail
     (hγ : 0 < γ) (hγ2 : γ < 2) (hX : IsEquatorGFF P X)
     (hM : IsGMCOf P X γ M)
     (hWindow : TwoPoleWindow γ η δ)
-    (hTail : ∀ (K2 K3 : Set ℂ) (_ : IsCompact K2) (_ : IsCompact K3)
-      (_ : ∀ z ∈ K2, 2 ≤ ‖z‖) (_ : ∀ z ∈ K3, 2 ≤ ‖z‖)
-      (_ : ∀ z2 ∈ K2, ∀ z3 ∈ K3, 3 ≤ ‖z2 - z3‖)
-      (A2 A3 : Set ℝ) (_ : IsCompact A2) (_ : IsCompact A3)
-      (_ : ∀ α ∈ A2, γ / 2 < α ∧ α < Q γ)
-      (_ : ∀ α ∈ A3, γ / 2 < α ∧ α < Q γ)
-      (F2s F3s : ℂ → Set (ℂ → ℝ)) (radius supBound derivBound lowerBound : ℝ)
-      (_ : UniformPositiveC1Family K2 F2s radius supBound derivBound lowerBound)
-      (_ : UniformPositiveC1Family K3 F3s radius supBound derivBound lowerBound),
-      ∃ B : ℝ → Ω → BrownianPath × BrownianPath, ∃ Z : Ω → Measure ℝ,
-        IsSourceLateralProjection P X γ M Z ∧
-          (∀ α, (α ∈ A2 ∨ α ∈ A3) → IsReflectionData P γ α (B α) Z) ∧
-          ∀ θ : ℝ, 0 < θ → ∃ C : ℝ, 0 ≤ C ∧
-            ∀ z2 ∈ K2, ∀ z3 ∈ K3, ∀ α2 ∈ A2, ∀ α3 ∈ A3,
-              ∀ F2 ∈ F2s z2, ∀ F3 ∈ F3s z3, ∀ x : ℝ, 1 ≤ x →
-                |(P {ω | ENNReal.ofReal x <
-                    localSingularMass M F2 z2 γ α2 ω + localSingularMass M F3 z3 γ α3 ω}).toReal -
-                  (oneInsertionTailCoefficient γ α2 z2 (F2 z2) (reflectionBarR P γ α2 (B α2) Z) *
-                      Real.rpow x (-reflectionExponent γ α2) +
-                    oneInsertionTailCoefficient γ α3 z3 (F3 z3) (reflectionBarR P γ α3 (B α3) Z) *
-                      Real.rpow x (-reflectionExponent γ α3))| ≤
-                  C * Real.rpow x (-(twoInsertionTailCeiling γ α2 α3 - θ))) :
+    (hTail : TailHyp P X M γ) :
     ∃ B : ℝ → Ω → BrownianPath ×
         BrownianPath,
       ∃ Z : Ω → Measure ℝ,
@@ -261,7 +241,6 @@ theorem structureConstant_two_pole_expansion_of_tail
   · -- the real identity
     rintro x ⟨hx₁, hx₂⟩
     have hxI : -2 * η - δ < x := by linarith
-    have hLnn : ∀ ω, 0 ≤ localMassReal M γ η ω := fun ω => ENNReal.toReal_nonneg
     have hws : (1 - (x : ℂ) / (γ : ℂ)) = ((1 - x / γ : ℝ) : ℂ) := by push_cast; ring
     have hwre : ((1 - x / γ : ℝ) : ℂ).re < 1 - 2 * η / γ := by
       rw [Complex.ofReal_re]
@@ -272,7 +251,7 @@ theorem structureConstant_two_pole_expansion_of_tail
     obtain ⟨hLint_c, hLeq⟩ := hmellin _ hwre
     have hfun : (fun ω => ((localMassReal M γ η ω : ℝ) : ℂ) ^ (((1 - x / γ : ℝ)) : ℂ)) =
         fun ω => ((localMassReal M γ η ω ^ (1 - x / γ) : ℝ) : ℂ) :=
-      funext fun ω => (Complex.ofReal_cpow (hLnn ω) _).symm
+      funext fun ω => (Complex.ofReal_cpow ((fun ω => ENNReal.toReal_nonneg) ω) _).symm
     have hLint : Integrable (fun ω => localMassReal M γ η ω ^ (1 - x / γ)) P := by
       rw [hfun] at hLint_c
       exact hLint_c.re
@@ -303,7 +282,6 @@ theorem structureConstant_two_pole_expansion_of_tail
       _ ∈ codiscrete ℂ)] with z hz _
     have hz1 : z ≠ 2 * η := fun h => hz (by simp [h])
     have hz2 : z ≠ -(2 * η) := fun h => hz (by simp [h])
-    have h1 : z - 2 * η ≠ 0 := sub_ne_zero.mpr hz1
     have h2 : z + 2 * η ≠ 0 := fun h => hz2 (eq_neg_of_add_eq_zero_left h)
     have hγ0 : (γ : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hγ.ne'
     have hhz : h z = G z * (1 - z / (γ : ℂ)) := by rw [hh]

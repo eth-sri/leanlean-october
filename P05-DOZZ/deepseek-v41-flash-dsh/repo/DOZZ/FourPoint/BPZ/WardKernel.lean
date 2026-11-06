@@ -62,8 +62,7 @@ theorem bpzLam_eq_interval (r : ℝ) (w : ℂ) :
 /-- Translating the averaging circle translates the argument. -/
 theorem bpz_integral_circleMeasure_sub (x u : ℂ) (r : ℝ) (f : ℂ → ℝ) (hf : Measurable f) :
     (∫ a, f (a - u) ∂circleMeasure x r) = ∫ a, f a ∂circleMeasure (x - u) r := by
-  have hfu : Measurable fun a : ℂ => f (a - u) := hf.comp (measurable_id.sub_const u)
-  rw [bpz_integral_circleMeasure_eq x r (fun a => f (a - u)) hfu,
+  rw [bpz_integral_circleMeasure_eq x r (fun a => f (a - u)) (hf.comp (measurable_id.sub_const u)),
     bpz_integral_circleMeasure_eq (x - u) r f hf]
   congr 2
   funext θ
@@ -161,10 +160,9 @@ theorem bpz_circle_covariance {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
   simp_rw [bpz_integral_gffKernel_circle _ u r]
   have h1 := integrable_bpzTruncLog_comp x u r
   have h2 := integrable_log_normPlus_circleMeasure x r
-  have h3 : Integrable (fun _ : ℂ => bpzPin r u) (circleMeasure x r) := integrable_const _
   have h12 : Integrable (fun a : ℂ => bpzTruncLog r (a - u) + Real.log (normPlus a))
       (circleMeasure x r) := h1.add h2
-  rw [integral_add h12 h3, integral_add h1 h2,
+  rw [integral_add h12 (integrable_const _), integral_add h1 h2,
     bpz_integral_circleMeasure_sub x u r _ (measurable_bpzTruncLog r), integral_const,
     probReal_univ, one_smul]
   rfl
@@ -282,7 +280,6 @@ theorem norm_bpzTruncLogDeriv_le (r : ℝ) (v : ℂ) :
 theorem countable_bpz_truncation_hits (ρ : ℝ) {w : ℂ} (hw : w ≠ 0) :
     {θ : ℝ | ‖w + ρ * Complex.exp (θ * Complex.I)‖ = ρ}.Countable := by
   set S := {θ : ℝ | ‖w + ρ * Complex.exp (θ * Complex.I)‖ = ρ} with hS
-  have hwn : 0 < ‖w‖ := norm_pos_iff.mpr hw
   have hkey : ∀ θ : ℝ, ‖w + ρ * Complex.exp (θ * Complex.I)‖ ^ 2 =
       ‖w‖ ^ 2 + ρ ^ 2 + 2 * ρ * ‖w‖ * Real.cos (θ - Complex.arg w) := by
     intro θ
@@ -301,7 +298,7 @@ theorem countable_bpz_truncation_hits (ρ : ℝ) {w : ℂ} (hw : w ≠ 0) :
     have hρ : ρ ≠ 0 := by
       intro h0
       rw [h0, Complex.ofReal_zero, zero_mul, add_zero] at hθ₀'
-      exact hwn.ne' hθ₀'
+      exact (norm_pos_iff.mpr hw).ne' hθ₀'
     have hsub : S ⊆ Set.range (fun k : ℤ => θ₀ + 2 * k * π) ∪
         Set.range (fun k : ℤ => 2 * Complex.arg w - θ₀ + 2 * k * π) := by
       intro θ hθ
@@ -373,7 +370,6 @@ theorem hasFDerivAt_bpzLam (r : ℝ) {w : ℂ} (hw : w ≠ 0) :
 theorem norm_bpzLamDeriv_le (r : ℝ) {w : ℂ} (hw : w ≠ 0) : ‖bpzLamDeriv r w‖ ≤ 2 / ‖w‖ := by
   set ρ : ℝ := Real.exp (-r) with hρdef
   have hρ : 0 < ρ := Real.exp_pos _
-  have hwn : 0 < ‖w‖ := norm_pos_iff.mpr hw
   have hpt : ∀ θ : ℝ, ‖bpzTruncLogDeriv r (w + ρ * Complex.exp (θ * Complex.I))‖ ≤ 2 / ‖w‖ := by
     intro θ
     set v := w + ρ * Complex.exp (θ * Complex.I)
@@ -392,7 +388,7 @@ theorem norm_bpzLamDeriv_le (r : ℝ) {w : ℂ} (hw : w ≠ 0) : ‖bpzLamDeriv 
           _ = 2 / ‖w‖ := by field_simp
       · refine hb1.trans ?_
         have : Real.exp r = ρ⁻¹ := by rw [hρdef, Real.exp_neg, inv_inv]
-        rw [this, le_div_iff₀ hwn]
+        rw [this, le_div_iff₀ (norm_pos_iff.mpr hw)]
         calc ρ⁻¹ * ‖w‖ ≤ ρ⁻¹ * (2 * ρ) := by gcongr
           _ = 2 := by field_simp
     · have hv' : ¬ Real.exp (-r) < ‖v‖ := hv

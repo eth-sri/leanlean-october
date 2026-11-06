@@ -35,10 +35,6 @@ private theorem measurable_rpow_of_nonneg_local {f : ℂ → ℝ} (hf : Measurab
 /-- Exact integrability criterion for the Wirtinger derivative kernel. -/
 theorem integrable_planarWirtingerKernel_iff (k β : ℝ) (hk : 0 < k) (z : ℂ) (hz : z ≠ 0) :
     Integrable (DOZZ.planarWirtingerKernel k β z) volume ↔ k < β ∧ β < 2 := by
-  have hnum : Measurable (fun u : ℂ => ‖u - z‖ ^ k) :=
-    measurable_rpow_of_nonneg_local (by fun_prop) (fun u => norm_nonneg (u - z)) k
-  have hden : Measurable (fun u : ℂ => ‖u‖ ^ β) :=
-    measurable_rpow_of_nonneg_local (by fun_prop) (fun u => norm_nonneg u) β
   have hmeas : Measurable (DOZZ.planarWirtingerKernel k β z) := by
     change Measurable (fun u : ℂ =>
       ((‖u - z‖ ^ k : ℝ) : ℂ) / ((z - u) ^ 2 * ((‖u‖ ^ β : ℝ) : ℂ)))
@@ -50,12 +46,11 @@ theorem integrable_planarWirtingerKernel_iff (k β : ℝ) (hk : 0 < k) (z : ℂ)
       (fun u => ‖u‖ ^ (-β) * ‖u - z‖ ^ (k - 2)) := by
     filter_upwards [Measure.ae_ne volume (0 : ℂ), Measure.ae_ne volume z] with u hu0 huz
     have hnorm := norm_planarWirtingerKernel_eq k β z u hu0 huz
-    have hnorm0 : 0 ≤ ‖u‖ := norm_nonneg u
     calc
       ‖DOZZ.planarWirtingerKernel k β z u‖ =
           ‖u - z‖ ^ (k - 2) / ‖u‖ ^ β := hnorm
       _ = ‖u‖ ^ (-β) * ‖u - z‖ ^ (k - 2) := by
-        rw [div_eq_mul_inv, Real.rpow_neg hnorm0]
+        rw [div_eq_mul_inv, Real.rpow_neg (norm_nonneg u)]
         ring
   rw [integrable_congr heq]
   rw [integrableOn_two_point_rpow_iff (-β) (k - 2) z hz]

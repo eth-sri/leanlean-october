@@ -34,8 +34,6 @@ theorem regularizedGMC_openBall_root_bound_compact_gamma_small_chart
   let Csmall : ℝ≥0∞ := 1 + Cref
   let A : ℝ≥0∞ := Csmall
   have hCsmall : Csmall < ⊤ := ENNReal.add_lt_top.mpr ⟨ENNReal.one_lt_top, hCref⟩
-  have hCsmallOne : 1 ≤ Csmall := le_add_of_nonneg_right (by positivity)
-  have hCsmallA : Csmall ≤ A := le_rfl
   refine ⟨A, hCsmall, ?_⟩
   intro γ hγ p hp hpq z R δ hR hRsmall hδ hδR hchart
   have hp0 : 0 < p := lt_of_lt_of_le zero_lt_one hp
@@ -68,13 +66,12 @@ theorem regularizedGMC_openBall_root_bound_compact_gamma_small_chart
         mul_le_mul_of_nonneg_right hδR (le_of_lt hR₀pos)
       have hR₀le : R * R₀ ≤ R := by nlinarith [hRsmall]
       simpa using hδR₀.trans hR₀le
-    have hlog : 0 ≤ Real.log (R / (δ * R₀)) := Real.log_nonneg hquot
     have hlogmul : Real.log (R / (δ * R₀)) = t + Real.log (R / R₀) := by
       have hmul : (1 / δ) * (R / R₀) = R / (δ * R₀) := by
         field_simp [ne_of_gt hδ, ne_of_gt hR₀pos]
       rw [← hmul, Real.log_mul (by positivity) (by positivity)]
     rw [← hlogmul]
-    exact hlog
+    exact (Real.log_nonneg hquot)
   let massQ : Ω → ℝ≥0∞ := fun ω =>
     regularizedGMC P Xc γ (t + Real.log (R / R₀)) ω (Metric.ball 0 R₀)
   have hmassQ : AEMeasurable massQ P := by
@@ -123,7 +120,7 @@ theorem regularizedGMC_openBall_root_bound_compact_gamma_small_chart
   have hCroot : Csmall ^ (1 / p) ≤ Csmall := by
     calc
       Csmall ^ (1 / p) ≤ Csmall ^ (1 : ℝ) :=
-        ENNReal.rpow_le_rpow_of_exponent_le hCsmallOne
+        ENNReal.rpow_le_rpow_of_exponent_le (le_add_of_nonneg_right (by positivity))
           ((div_le_iff₀ hp0).2 (by linarith [hp]))
       _ = Csmall := by rw [ENNReal.rpow_one]
   have hroot :
@@ -142,7 +139,7 @@ theorem regularizedGMC_openBall_root_bound_compact_gamma_small_chart
   calc
     _ ≤ Csmall * ENNReal.ofReal ((R / R₀) ^ beta) := hroot
     _ ≤ A * ENNReal.ofReal ((R / R₀) ^ beta) :=
-      mul_le_mul_of_nonneg_right hCsmallA (by positivity)
+      mul_le_mul_of_nonneg_right (le_rfl) (by positivity)
     _ = _ := by rfl
 
 end DOZZ.Proofs

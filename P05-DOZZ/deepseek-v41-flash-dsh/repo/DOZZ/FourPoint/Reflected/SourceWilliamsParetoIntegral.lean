@@ -52,8 +52,7 @@ theorem reflected_source_williams_pareto_integral
   have hbm : AEMeasurable b P := by
     dsimp only [b,reflected_radial_scale]
     exact ((hcoord.const_mul γ).sub aemeasurable_const).sub aemeasurable_const |>.exp
-  have hbp : ∀ᵐ ω ∂P, 0 ≤ b ω := ae_of_all P fun _ => (Real.exp_pos _).le
   exact reflected_williams_pareto_integral P P B₀ hB₀ γ ν p hγ (sub_pos.mpr hα₁) hp
-    A b S hAp hbp hS hAm hbm hSm hInv
+    A b S hAp (ae_of_all P fun _ => (Real.exp_pos _).le) hS hAm hbm hSm hInv
 
 end DOZZ.Proofs

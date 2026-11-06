@@ -30,8 +30,7 @@ theorem reflected_global_reinsertionWeight_continuousOn (γ : ℝ) (a : TwoSided
       (continuousAt_const.mul hl.abs)).rexp
   apply hc.continuousWithinAt.congr
   · intro y hy
-    have hy0 : ‖y‖ ≠ 0 := norm_ne_zero_iff.mpr (by simpa using hy)
-    simp only [reflected_global_reinsertionWeight, ite_eq_right hy0]
+    simp only [reflected_global_reinsertionWeight, ite_eq_right (norm_ne_zero_iff.mpr (by simpa using hy))]
   · simp only [reflected_global_reinsertionWeight, ite_eq_right hx0]
 
 /-- A nonnegative compact real radial test is exactly the extended-real lateral mass. -/

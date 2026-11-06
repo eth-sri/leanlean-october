@@ -3,6 +3,7 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
+public import DOZZ.SharedHyp
 
 public import DOZZ.GMC.FieldChaosNegativePower
 public import DOZZ.GMC.KahaneNegativeMellin
@@ -27,7 +28,7 @@ theorem kahane_limit_field_laplace
     (hΦ : ∀ r, DOZZ.IsCenteredGaussianField PX (Φ r))
     (hΨ : ∀ r, DOZZ.IsCenteredGaussianField PY (Ψ r))
     (ν : Measure S) [IsFiniteMeasure ν] (h : S → ℝ≥0) (hh : Measurable h)
-    (hhb : ∃ c : ℝ≥0, ∀ x, h x ≤ c) (γ t : ℝ) (ht : 0 ≤ t)
+    (hhb : BoundedWeight h) (γ t : ℝ) (ht : 0 ≤ t)
     (hcov : ∀ r, ∀ᵐ xy ∂ν.prod ν,
       ∫ ω, Φ r ω xy.1 * Φ r ω xy.2 ∂PX ≤ ∫ ω, Ψ r ω xy.1 * Ψ r ω xy.2 ∂PY)
     (hdiag : ∀ r, ∀ᵐ x ∂ν,
@@ -71,8 +72,7 @@ theorem kahane_limit_field_laplace
         simp [DOZZ.fieldChaosMass, hνzero]
       simp [fX, fY, hmassX, hmassY]
     · have hS : Nonempty S := by
-        have hUniv : ν Set.univ ≠ 0 := Measure.measure_univ_ne_zero.mpr hνzero
-        obtain ⟨x, _⟩ := nonempty_of_measure_ne_zero hUniv
+        obtain ⟨x, _⟩ := nonempty_of_measure_ne_zero (Measure.measure_univ_ne_zero.mpr hνzero)
         exact ⟨x⟩
       let : Nonempty S := hS
       have hcov' : ∀ᵐ xy ∂(νf : Measure S).prod νf,
@@ -159,7 +159,7 @@ theorem kahane_limit_field_negative_power
     (hΦ : ∀ r, DOZZ.IsCenteredGaussianField PX (Φ r))
     (hΨ : ∀ r, DOZZ.IsCenteredGaussianField PY (Ψ r))
     (ν : Measure S) [IsFiniteMeasure ν] (h : S → ℝ≥0) (hh : Measurable h)
-    (hhb : ∃ c : ℝ≥0, ∀ x, h x ≤ c) (γ q : ℝ) (hq : 0 < q)
+    (hhb : BoundedWeight h) (γ q : ℝ) (hq : 0 < q)
     (hcov : ∀ r, ∀ᵐ xy ∂ν.prod ν,
       ∫ ω, Φ r ω xy.1 * Φ r ω xy.2 ∂PX ≤ ∫ ω, Ψ r ω xy.1 * Ψ r ω xy.2 ∂PY)
     (hdiag : ∀ r, ∀ᵐ x ∂ν,
@@ -188,8 +188,6 @@ theorem kahane_limit_field_negative_power
   have hfYmeas (r : ℝ) : AEMeasurable (fY r) PY :=
     (centeredGaussianField_fieldChaosMass_measurable PY (Ψ r) (hΨ r) ν h hh γ)
       |>.ennreal_toReal.aemeasurable
-  have hZXae : AEMeasurable ZX PX := hXconv.aemeasurable hfXmeas
-  have hZYae : AEMeasurable ZY PY := hYconv.aemeasurable hfYmeas
   have hXnat : TendstoInMeasure PX (fun n : ℕ => fX n) atTop ZX :=
     hXconv.comp tendsto_natCast_atTop_atTop
   obtain ⟨ns, hns, hXae⟩ := hXnat.exists_seq_tendsto_ae
@@ -214,12 +212,10 @@ theorem kahane_limit_field_negative_power
       (Filter.Eventually.of_forall fun n => ENNReal.toReal_nonneg)
   let mX : ΩX → ℝ := fun ω => max (ZX ω) 0
   let mY : ΩY → ℝ := fun ω => max (ZY ω) 0
-  have hmX : ∀ ω, 0 ≤ mX ω := fun ω => le_max_right _ _
-  have hmY : ∀ ω, 0 ≤ mY ω := fun ω => le_max_right _ _
   have hmXae : AEMeasurable mX PX := by
-    exact hZXae.max measurable_const.aemeasurable
+    exact (hXconv.aemeasurable hfXmeas).max measurable_const.aemeasurable
   have hmYae : AEMeasurable mY PY := by
-    exact hZYae.max measurable_const.aemeasurable
+    exact (hYconv.aemeasurable hfYmeas).max measurable_const.aemeasurable
   have hmXeq : mX =ᵐ[PX] ZX := by
     filter_upwards [hZXnonneg] with ω hω
     simp [mX, max_eq_left hω]
@@ -247,9 +243,9 @@ theorem kahane_limit_field_negative_power
             rw [hω]
             ring
   have hMellinX := nonneg_rpow_neg_lintegral_eq_weighted_laplace
-    PX mX hmX hmXae q hq
+    PX mX (fun ω => le_max_right _ _) hmXae q hq
   have hMellinY := nonneg_rpow_neg_lintegral_eq_weighted_laplace
-    PY mY hmY hmYae q hq
+    PY mY (fun ω => le_max_right _ _) hmYae q hq
   have hweighted :
       ∫⁻ t in Set.Ioi (0 : ℝ), ENNReal.ofReal (t ^ (q - 1)) *
           (∫⁻ ω, ENNReal.ofReal (Real.exp (-(mX ω * t))) ∂PX) ∂volume ≤

@@ -54,7 +54,6 @@ theorem equatorGFF_GMC_uniform_L1
   obtain ⟨ρ, hρ⟩ : ∃ ρ, K ⊆ Metric.closedBall (0 : ℂ) ρ := hK.isBounded.subset_closedBall 0
   set Lb' : ℝ := max Lb 0 with hLb'def
   set K' : Set ℂ := Metric.closedBall (0 : ℂ) (ρ + 1) with hK'def
-  have hK' : IsCompact K' := isCompact_closedBall _ _
   let ι := {p : ℝ × (ℂ → ℝ) // p.1 ∈ I ∧ Continuous p.2 ∧ (∀ x, |p.2 x| ≤ Lb') ∧
     ∀ x, ρ + 1 < ‖x‖ → p.2 x = 0}
   let bcf : ι → BoundedContinuousFunction ℂ ℝ := fun i => BoundedContinuousFunction.ofNormedAddCommGroup i.1.2
@@ -68,7 +67,7 @@ theorem equatorGFF_GMC_uniform_L1
   have hCauchy : ∀ ε : ℝ, 0 < ε → ∃ R : ℝ, ∀ r ≥ R, ∀ s ≥ R, ∀ i,
       ∫⁻ ω, ENNReal.ofReal |F r i ω - F s i ω| ∂P < ENNReal.ofReal ε := by
     intro ε hε
-    obtain ⟨R, hR⟩ := regularizedGMC_integral_L1_uniform_cauchy P X hX Xc hXc I hI hI2 K' hK'
+    obtain ⟨R, hR⟩ := regularizedGMC_integral_L1_uniform_cauchy P X hX Xc hXc I hI hI2 K' (isCompact_closedBall _ _)
       Lb' ε hε
     refine ⟨R, fun r hr s hs i => hR r s hr hs i.1.1 i.2.1 i.1.2 i.2.2.1.measurable i.2.2.2.1
       (fun x hx => i.2.2.2.2 x ?_)⟩
@@ -211,7 +210,6 @@ theorem admissible_wick_weight_L1_continuous
           Real.exp (γ₀ * Y ω ε x - γ₀ ^ 2 / 2 * ∫ ω', Y ω' ε x ^ 2 ∂P)| ∂P)
       (𝓝 γ₀) (𝓝 0) := by
   set v : ℝ := ∫ ω', Y ω' ε x ^ 2 ∂P with hvdef
-  have hv : 0 ≤ v := integral_nonneg fun ω => sq_nonneg _
   set c : ℝ := |γ₀| + 1 with hcdef
   have hZ : Measurable (fun ω => Y ω ε x) := admissible_field_measurable_sample P U dens ε₀ Y hY ε x
   let bound : Ω → ℝ≥0∞ := fun ω => 2 * (ENNReal.ofReal (Real.exp (c * Y ω ε x)) +

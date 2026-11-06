@@ -33,11 +33,10 @@ noncomputable def affineDefect (a b : ℂ) (y : ℂ) : ℝ :=
 theorem gffKernel_affine (a b : ℂ) (ha : a ≠ 0) {y y' : ℂ} (hyy : y ≠ y') :
     gffKernel (a * y + b) (a * y' + b) =
       gffKernel y y' + affineDefect a b y + affineDefect a b y' := by
-  have hna : ‖a‖ ≠ 0 := norm_ne_zero_iff.mpr ha
   have hny : ‖y - y'‖ ≠ 0 := norm_ne_zero_iff.mpr (sub_ne_zero.mpr hyy)
   have hsub : (a * y + b) - (a * y' + b) = a * (y - y') := by ring
   unfold gffKernel affineDefect
-  rw [hsub, norm_mul, Real.log_mul hna hny]
+  rw [hsub, norm_mul, Real.log_mul (norm_ne_zero_iff.mpr ha) hny]
   ring
 
 /-- The affine metric defect is continuous. -/
@@ -122,7 +121,6 @@ theorem map_restrict_Ioc_add_periodic {β : Type*} [MeasurableSpace β] {g : ℝ
   refine Measure.ext fun s hs => ?_
   rw [Measure.map_apply hgφ hs, Measure.map_apply hg hs, Measure.restrict_apply (hgφ hs),
     Measure.restrict_apply (hg hs)]
-  have hA : MeasurableSet (g ⁻¹' s) := hg hs
   have hinv : ∀ k : AddSubgroup.zmultiples (2 * Real.pi),
       (fun x => k +ᵥ x) ⁻¹' (g ⁻¹' s) = g ⁻¹' s := by
     intro k
@@ -137,7 +135,7 @@ theorem map_restrict_Ioc_add_periodic {β : Type*} [MeasurableSpace β] {g : ℝ
     constructor <;> rintro ⟨h1, h2, h3⟩ <;> exact ⟨h1, by linarith, by linarith⟩
   rw [hset, measure_preimage_add_right]
   have h := (isAddFundamentalDomain_Ioc hT φ).measure_set_eq
-    (isAddFundamentalDomain_Ioc hT 0) hA hinv
+    (isAddFundamentalDomain_Ioc hT 0) (hg hs) hinv
   rw [zero_add] at h
   exact h
 
@@ -147,9 +145,8 @@ end AffineKernel
 theorem circleMeasure_map_affine (a b : ℂ) (ha : a ≠ 0) (y : ℂ) (r : ℝ) :
     (circleMeasure y r).map (fun u => a * u + b) =
       circleMeasure (a * y + b) (r - Real.log ‖a‖) := by
-  have hna : 0 < ‖a‖ := norm_pos_iff.mpr ha
   have hR : Real.exp (-(r - Real.log ‖a‖)) = ‖a‖ * Real.exp (-r) := by
-    rw [neg_sub, sub_eq_add_neg, Real.exp_add, Real.exp_log hna]
+    rw [neg_sub, sub_eq_add_neg, Real.exp_add, Real.exp_log (norm_pos_iff.mpr ha)]
   have hmeas : Measurable (fun u : ℂ => a * u + b) := by fun_prop
   rw [circleMeasure, circleMeasure, Measure.map_smul _ hmeas.aemeasurable,
     Measure.map_map hmeas (measurable_circleMap _ _), hR]

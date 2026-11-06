@@ -64,7 +64,6 @@ theorem weightedDyadicSum_lintegral_tsum_rpow_lt_top_of_one_lt
     ∫⁻ ω, (∑' n, f n ω) ^ p ∂P < ⊤ := by
   have hp0 : 0 < p := zero_lt_one.trans hp
   have hinv : 0 < 1 / p := one_div_pos.2 hp0
-  have hqroot : q ^ (1 / p) < 1 := ENNReal.rpow_lt_one hq hinv
   have hroot (n : ℕ) :
       (∫⁻ ω, f n ω ^ p ∂P) ^ (1 / p) ≤ K ^ (1 / p) * (q ^ (1 / p)) ^ n :=
     calc
@@ -72,8 +71,7 @@ theorem weightedDyadicSum_lintegral_tsum_rpow_lt_top_of_one_lt
         ENNReal.rpow_le_rpow (hbound n) hinv.le
       _ = K ^ (1 / p) * (q ^ n) ^ (1 / p) := ENNReal.mul_rpow_of_nonneg _ _ hinv.le
       _ = K ^ (1 / p) * (q ^ (1 / p)) ^ n := by rw [weightedDyadicSum_pow_rpow_comm]
-  have hrootK : K ^ (1 / p) ≠ ⊤ := (ENNReal.rpow_lt_top_of_nonneg hinv.le hK).ne
-  have hgeom : (1 - q ^ (1 / p))⁻¹ < ⊤ := ENNReal.inv_lt_top.2 (tsub_pos_of_lt hqroot)
+  have hgeom : (1 - q ^ (1 / p))⁻¹ < ⊤ := ENNReal.inv_lt_top.2 (tsub_pos_of_lt (ENNReal.rpow_lt_one hq hinv))
   calc
     ∫⁻ ω, (∑' n, f n ω) ^ p ∂P ≤ (∑' n, (∫⁻ ω, f n ω ^ p ∂P) ^ (1 / p)) ^ p :=
       ennreal_lintegral_rpow_tsum_le_of_roots_summable f p hp.le hf
@@ -81,7 +79,7 @@ theorem weightedDyadicSum_lintegral_tsum_rpow_lt_top_of_one_lt
       ENNReal.rpow_le_rpow (ENNReal.tsum_le_tsum hroot) hp0.le
     _ = (K ^ (1 / p) * (1 - q ^ (1 / p))⁻¹) ^ p := by
       rw [ENNReal.tsum_mul_left, ENNReal.tsum_geometric]
-    _ < ⊤ := ENNReal.rpow_lt_top_of_nonneg hp0.le (ENNReal.mul_lt_top hrootK.lt_top hgeom).ne
+    _ < ⊤ := ENNReal.rpow_lt_top_of_nonneg hp0.le (ENNReal.mul_lt_top ((ENNReal.rpow_lt_top_of_nonneg hinv.le hK).ne).lt_top hgeom).ne
 
 /-- A series of nonnegative terms whose `p`th moments, for `p > 0`, are dominated by a finite
 geometric sequence has a finite `p`th moment. -/
@@ -178,7 +176,6 @@ theorem weightedGmcBallMoment_lt_top_of_ball_upper
     ENNReal.rpow (ENNReal.ofReal (R / (2 : ℝ) ^ (n + 1))) (-γ * α) *
       M ω (Metric.ball z (R / (2 : ℝ) ^ n))
   have hqNonneg : 0 ≤ qReal := Real.rpow_nonneg (by norm_num) _
-  have hqLt : qReal < 1 := Real.rpow_lt_one (by norm_num) (by norm_num) he
   have hshellMeas (n : ℕ) : AEMeasurable (shell n) P :=
     aemeasurable_const.mul (hM _ Metric.isOpen_ball.measurableSet)
   have hshellBound (n : ℕ) : ∫⁻ ω, shell n ω ^ p ∂P ≤
@@ -188,7 +185,7 @@ theorem weightedGmcBallMoment_lt_top_of_ball_upper
       ENNReal.ofReal_pow hqNonneg]
   have hsum : ∫⁻ ω, (∑' n, shell n ω) ^ p ∂P < ⊤ :=
     weightedDyadicSum_lintegral_tsum_rpow_lt_top shell hshellMeas hp ENNReal.ofReal_ne_top
-      (ENNReal.ofReal_lt_one.2 hqLt) hshellBound
+      (ENNReal.ofReal_lt_one.2 (Real.rpow_lt_one (by norm_num) (by norm_num) he)) hshellBound
   calc
     weightedGmcBallMoment P M γ α z R p
         ≤ ∫⁻ ω, (∑' n, shell n ω) ^ p ∂P :=

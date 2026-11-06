@@ -3,6 +3,7 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
+public import DOZZ.SharedHyp
 
 public import DOZZ.Brownian.Lateral.WickReinsertion
 public import DOZZ.GMC.CompatibleAdmissibleGMCUnique
@@ -164,7 +165,6 @@ theorem uniform_exp_approx_on_compact
   intro η hη
   obtain ⟨δ, hδ, hclose⟩ := (Metric.uniformContinuousOn_iff.mp huc) η hη
   filter_upwards [hFG (min δ 1) (lt_min hδ zero_lt_one)] with r hr x hx
-  have hdiff : |F r x - G x| < δ := (hr x hx).trans_le (min_le_left _ _)
   have hFbound : |F r x| ≤ B := by
     calc |F r x| = |(F r x - G x) + G x| := by congr 1; ring
       _ ≤ |F r x - G x| + |G x| := abs_add_le _ _
@@ -172,7 +172,7 @@ theorem uniform_exp_approx_on_compact
       _ = B := by dsimp [B]; ring
   have hFmem : F r x ∈ Icc (-B) B := abs_le.mp hFbound
   have hGmem : G x ∈ Icc (-B) B := abs_le.mp ((hGB x hx).trans (by dsimp [B]; linarith))
-  have h := hclose (F r x) hFmem (G x) hGmem (by simpa only [Real.dist_eq] using hdiff)
+  have h := hclose (F r x) hFmem (G x) hGmem (by simpa only [Real.dist_eq] using ((hr x hx).trans_le (min_le_left _ _)))
   simpa only [Real.dist_eq] using h
 
 /-- For every fixed continuous radial path the finite radial factor converges uniformly
@@ -304,8 +304,7 @@ noncomputable def originRadialCutoffWeightedTest
   let F : ℂ → ℝ := fun x => f x * originRadialCutoffReinsertionWeight hc ρ γ r A x
   have hF : Continuous F := f.continuous.mul
     (continuous_originRadialCutoffReinsertionWeight P X Xc hX hc ρ γ r hρ A)
-  have hFc : HasCompactSupport F := hfc.mul_right
-  have hb := hF.bounded_above_of_compact_support hFc
+  have hb := hF.bounded_above_of_compact_support (hfc.mul_right)
   exact BoundedContinuousFunction.ofNormedAddCommGroup F hF hb.choose hb.choose_spec
 
 /-- Both weighted tests have the same fixed compact support, with uniform error tending
@@ -485,8 +484,8 @@ theorem exists_originLateralChartGMC_cutoff_weighted_limit
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
     (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
-    (hcont : ∀ᵐ ω ∂P, Continuous (fun p : ℂ × ℝ => Xc ω p.1 p.2))
+    (hm : MeasurableCircleAvg Xc)
+    (hcont : ContinuousCircleAvg P Xc)
     (ρ : ℝ) (hρ : 0 < ρ) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) :
     ∃ N : Ω → Measure ℂ,
       IsAdmissibleGMCVersion P (originLateralChart ρ) originLateralPlaneDensity
@@ -507,7 +506,6 @@ theorem exists_originLateralChartGMC_cutoff_weighted_limit
   have hπ : π =ᵐ[P] originLateralCutoffPath Xc ρ := hpath.ae_eq_mk.symm
   have hAm := originRadialPath_aemeasurable P X Xc hc hcont
   let A := hAm.mk (originRadialPath Xc)
-  have hAm' : Measurable A := hAm.measurable_mk
   have hA : A =ᵐ[P] originRadialPath Xc := hAm.ae_eq_mk.symm
   have hi : IndepFun A π P :=
     (originRadialPath_lateralCutoffPath_indepFun P X Xc hX hc hm hcont ρ hρ).congr
@@ -525,7 +523,7 @@ theorem exists_originLateralChartGMC_cutoff_weighted_limit
   · exact (hi.congr hA EventuallyEq.rfl).comp measurable_id hN.1
   · intro f hfc hfU
     have ht := originRadialCutoffWeightedTest_independent_tendstoInMeasure P X Xc hX hc
-      A π hAm' hπm hi _ (originLateralUniversalRegularization ρ hρ) ρ γ hρ hγ.ne' hY N hN f hfc hfU
+      A π (hAm.measurable_mk) hπm hi _ (originLateralUniversalRegularization ρ hρ) ρ γ hρ hγ.ne' hY N hN f hfc hfU
     have hleft : ∀ᶠ r : ℝ in atTop,
         (fun ω => regularizedLogChaosTestMass (P.map π) (originLateralChart ρ)
           originLateralPlaneDensity (originLateralUniversalRegularization ρ hρ) γ r (π ω)

@@ -69,9 +69,8 @@ theorem continuousCircleCutoffMeasure_ae_eq_regularizedGMC
     have hpair : Measurable (fun p : Ω × ℂ => (Z p.1, p.2)) :=
       Measurable.prodMk (hZ.comp measurable_fst) measurable_snd
     exact (continuous_eval.measurable).comp hpair
-  have hRawEval : Measurable (fun p : Ω × ℂ => Xc p.1 p.2 r) := hXc.1 r
   have hEqSet : MeasurableSet {p : Ω × ℂ | Z p.1 p.2 = Xc p.1 p.2 r} :=
-    measurableSet_eq_fun hProfileEval hRawEval
+    measurableSet_eq_fun hProfileEval (hXc.1 r)
   have hEach : ∀ᵐ x ∂volume, ∀ᵐ ω ∂P, Z ω x = Xc ω x r :=
     ae_of_all volume hZae
   have hCurr : ∀ᵐ ω ∂P, ∀ᵐ x ∂volume, Z ω x = Xc ω x r :=
@@ -167,9 +166,6 @@ theorem continuousCircleCutoffMeasure_shift_ae_eq_regularizedGMC_withDensity
     change Measurable (fun x => ∫ ω', q x ω' ∂P)
     exact hq.stronglyMeasurable.integral_prod_right.measurable
   have hrawMeas (ω : Ω) : Measurable (fun x : ℂ => rawDensity (ω, x)) := by
-    have hfield : Measurable (fun x : ℂ => Xc ω x r) :=
-      (hXc.1 r).comp (Measurable.prodMk measurable_const measurable_id)
-    have hvariance : Measurable (fun x : ℂ => V x) := hV
     have hnorm : Measurable (fun x : ℂ => normPlus x) := by
       unfold normPlus
       exact measurable_const.max measurable_norm
@@ -298,10 +294,6 @@ theorem equatorGFF_tilted_test_continuousCircle_pair_law
     rw [measurable_pi_iff]
     intro c
     exact ((measurable_pi_iff.mp hEvalOrig c).add measurable_const)
-  have hEvalProfile : Measurable evalProfile := by
-    exact measurable_rootedPairPath.comp hpairLeft
-  have hEvalProfileShift : Measurable evalProfileShift := by
-    exact measurable_rootedPairPath.comp hpairRight
   have hLaw : Measure.map evalOrig (P.withDensity density) = Measure.map evalShift P := by
     simpa [evalOrig, evalShift, density] using
       equatorGFF_tilted_test_circle_law P X hX Xc hXc r t L hL

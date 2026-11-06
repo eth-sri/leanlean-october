@@ -67,9 +67,8 @@ theorem negativeConditionedLaw_finitePast_state_compProd
   have horder : StrictMono (Fin.append ss future) :=
     strictMono_finAppend_of_cross ss future hmono (Subsingleton.strictMono future)
       (fun i _ => (hmono.monotone (Fin.le_last i)).trans_lt hu)
-  have hu0 : 0 < (u : ℝ) := (hs (Fin.last k)).trans (NNReal.coe_lt_coe.mpr hu)
   have hj := negativeConditionedLaw_finitePastFuture_compProd hP ss future hs
-    (fun _ => hu0) horder
+    (fun _ => ((hs (Fin.last k)).trans (NNReal.coe_lt_coe.mpr hu))) horder
   let e : (Fin 1 → ℝ) ≃ᵐ ℝ := MeasurableEquiv.piUnique fun _ => ℝ
   have hmapKernel : κ.map e =
       conditionedPastStateKernel ν ((u : ℝ)-(ss (Fin.last k) : ℝ)) k := by

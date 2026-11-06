@@ -182,9 +182,8 @@ theorem lintegral_ennDist_sq_le
     simpa [pow_two] using h
   have hint := lintegral_mono (μ := P) hpt
   have hABm : Measurable (fun ω => A ω * B ω) := hA.mul hB
-  have h2ABm : Measurable (fun ω => 2 * (A ω * B ω)) := hABm.const_mul 2
   have hAAm : Measurable (fun ω => A ω * A ω) := hA.mul hA
-  rw [lintegral_add_right _ h2ABm, lintegral_add_left hAAm, lintegral_const_mul 2 hABm] at hint
+  rw [lintegral_add_right _ (hABm.const_mul 2), lintegral_add_left hAAm, lintegral_const_mul 2 hABm] at hint
   have hsum : ∫⁻ ω, ennDist (A ω) (B ω) ^ 2 ∂P + 2 * ∫⁻ ω, A ω * B ω ∂P ≤
       (D₁ + D₂) + 2 * ∫⁻ ω, A ω * B ω ∂P := by
     calc _ ≤ ∫⁻ ω, A ω * A ω ∂P + ∫⁻ ω, B ω * B ω ∂P := hint
@@ -201,8 +200,7 @@ theorem lintegral_le_rpow_lintegral_sq
     (aemeasurable_const (b := (1 : ℝ≥0∞)))
   simp only [Pi.mul_apply, mul_one, ENNReal.one_rpow, lintegral_const, measure_univ,
     ENNReal.one_rpow] at h
-  have hsq : ∀ ω, X ω ^ (2 : ℝ) = X ω ^ 2 := fun ω => ENNReal.rpow_two (X ω)
-  simp only [hsq] at h
+  simp only [(fun ω => ENNReal.rpow_two (X ω))] at h
   simpa using h
 
 /-- The barrier-good cutoff mass of a test on the compact chart `K`. -/
@@ -311,9 +309,6 @@ theorem goodMass_L1_uniform_cauchy
   have h₂ := hcompare s s r s
   rw [← hmom, ← hmom] at h₁
   rw [← hmom, ← hmom] at h₂
-  have hsym : ∫⁻ ω, goodMass P U dens K Y g a k₀ s f ω *
-      goodMass P U dens K Y g a k₀ s f ω ∂P = ∫⁻ ω, goodMass P U dens K Y g a k₀ s f ω *
-      goodMass P U dens K Y g a k₀ s f ω ∂P := rfl
   have hsq := lintegral_ennDist_sq_le P _ _ (hmeasJ r) (hmeasJ s) hABfin _ _ h₁ h₂
   have hD₁ := hR₁ r r r s hR₁r hR₁r hR₁r hR₁s g hg
   have hD₂ := hR₁ s s r s hR₁s hR₁s hR₁r hR₁s g hg
@@ -330,7 +325,6 @@ theorem goodMass_L1_uniform_cauchy
           ring
       _ < ENNReal.ofReal (ε ^ 2) := by
           rw [ENNReal.ofReal_lt_ofReal_iff (by positivity), hε'def]
-          have hden : 0 < 2 * (L ^ 2 + 1) := by positivity
           rw [show L ^ 2 * (2 * (ε ^ 2 / (2 * (L ^ 2 + 1)))) = ε ^ 2 * (L ^ 2 / (L ^ 2 + 1)) by
             field_simp]
           have hfrac : L ^ 2 / (L ^ 2 + 1) < 1 := by
@@ -459,10 +453,8 @@ theorem wick_root_barrier_violation_le
   obtain ⟨C, hC, htail⟩ := admissible_coarse_barrier_tail_rate P U dens ε₀ Y hY K hK hKU
   refine ⟨C, hC, ?_⟩
   intro gLo gHi a hgLo hga k₀ hk₀cut hk₀C hk₀gap g hg r x hx
-  have hgpos : 0 < g := lt_of_lt_of_le hgLo hg.1
   have hga' : g < a := lt_of_le_of_lt hg.2 hga
   let w : Ω → ℝ≥0∞ := fun ω => admissibleLogWickWeight P Y g (Real.exp (-r)) x ω
-  have hw : Measurable w := admissibleLogWickWeight_measurable_sample P U dens ε₀ Y hY g _ x
   let bad : ℕ → Ω → Prop := fun k ω =>
     k₀ ≤ k ∧ (k : ℝ) ≤ r ∧ a * (k : ℝ) < Y ω (Real.exp (-(k : ℝ))) x
   have hset (k : ℕ) : MeasurableSet {ω | bad k ω} := by
@@ -476,7 +468,7 @@ theorem wick_root_barrier_violation_le
         Set.eq_empty_of_forall_notMem fun ω h => hk ⟨h.1, h.2.1⟩
       rw [hEq]; exact MeasurableSet.empty
   have hunion := lintegral_mul_indicator_exists_le_tsum P w bad
-    (fun k => (hw.mul (measurable_const.indicator (hset k))).aemeasurable)
+    (fun k => ((admissibleLogWickWeight_measurable_sample P U dens ε₀ Y hY g _ x).mul (measurable_const.indicator (hset k))).aemeasurable)
   have hevent (ω : Ω) : Set.indicator (admissibleGrowingBarrierSet Y a k₀ r)ᶜ
       (fun _ => (1 : ℝ≥0∞)) (ω, x) = Set.indicator {ω | ∃ k, bad k ω}
       (fun _ => (1 : ℝ≥0∞)) ω := by
@@ -524,13 +516,12 @@ theorem wick_root_barrier_violation_le
           have h2 : (a - gHi) * (k₀ : ℝ) ≤ (a - g) * (k : ℝ) := by
             apply mul_le_mul (by linarith [hg.2]) hk₀k (Nat.cast_nonneg _) (by linarith)
           linarith
-        refine (htail k hkcut hkC x hx (Real.exp (-r)) (Real.exp_pos _) hrk g a hgpos hga'
+        refine (htail k hkcut hkC x hx (Real.exp (-r)) (Real.exp_pos _) hrk g a (lt_of_lt_of_le hgLo hg.1) hga'
           hgapk).trans ?_
         apply ENNReal.ofReal_le_ofReal
         apply Real.exp_le_exp.mpr
-        have h1 : 0 ≤ a - gHi := (sub_pos.mpr hga).le
         have h2 : a - gHi ≤ a - g := by linarith [hg.2]
-        have hsq : (a - gHi) ^ 2 ≤ (a - g) ^ 2 := pow_le_pow_left₀ h1 h2 2
+        have hsq : (a - gHi) ^ 2 ≤ (a - g) ^ 2 := pow_le_pow_left₀ ((sub_pos.mpr hga).le) h2 2
         have hn : (0 : ℝ) ≤ (k : ℝ) := Nat.cast_nonneg _
         have := mul_le_mul_of_nonneg_right hsq hn
         linarith
@@ -623,7 +614,6 @@ theorem chartMass_L1_uniform_cauchy_interval
   have hev : ∀ᶠ k₀ : ℕ in atTop, Real.exp (-(k₀ : ℝ)) ≤ ε₀ ∧ Cb < (k₀ : ℝ) ∧
       gHi * Cb ≤ (a - gHi) * (k₀ : ℝ) / 2 ∧ Cv + 1 ≤ (k₀ : ℝ) ∧
       ENNReal.ofReal L * logRegularizationReference U dens K * τ k₀ < ENNReal.ofReal (ε / 3) := by
-    have hpos : 0 < a - gHi := sub_pos.mpr hga
     obtain ⟨N, hN⟩ := exists_natural_scale_after_covariance_errors (max Cb Cv + 1) 1 1 1 ε₀
       (by positivity) one_pos one_pos one_pos hY.cutoffPositive
     obtain ⟨N₂, hN₂⟩ := exists_nat_gt (2 * (gHi * Cb) / (a - gHi))
@@ -635,7 +625,7 @@ theorem chartMass_L1_uniform_cauchy_interval
     · have := hN.2.1
       have : Cb ≤ max Cb Cv := le_max_left _ _
       linarith
-    · have h := (div_lt_iff₀ hpos).mp (lt_of_lt_of_le hN₂ hN₂k)
+    · have h := (div_lt_iff₀ (sub_pos.mpr hga)).mp (lt_of_lt_of_le hN₂ hN₂k)
       linarith
     · have := hN.2.1
       have : Cv ≤ max Cb Cv := le_max_right _ _
@@ -645,8 +635,7 @@ theorem chartMass_L1_uniform_cauchy_interval
       1 ≤ gaussianVariance P (fun ω => Y ω (Real.exp (-(k : ℝ))) x) := by
     intro k hk x hx
     have hkk : (k₀ : ℝ) ≤ k := by exact_mod_cast hk
-    have hkcut : Real.exp (-(k : ℝ)) ≤ ε₀ := le_trans (Real.exp_le_exp.mpr (by linarith)) hk₀cut
-    have h := (abs_le.mp (hvarB k hkcut x hx)).1
+    have h := (abs_le.mp (hvarB k (le_trans (Real.exp_le_exp.mpr (by linarith)) hk₀cut) x hx)).1
     linarith
   obtain ⟨R, hR⟩ := goodMass_L1_uniform_cauchy P U dens ε₀ Y hY K hK hKU gLo gHi a η κ hgLo
     hgLoHi hga ha2 hη hη1 hκ hκ2 hκexp k₀ hk₀cut hvar L hL (ε / 3) (by linarith)

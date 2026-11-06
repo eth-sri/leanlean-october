@@ -3,6 +3,7 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
+public import DOZZ.SharedHyp
 
 public import DOZZ.GMC.KahaneSpatialL1
 public import DOZZ.GMC.FieldChaosFiniteness
@@ -37,7 +38,7 @@ theorem fieldWickDensity_integrable_mean
     {Ω S : Type*} [MeasurableSpace Ω] [MeasurableSpace S] [Nonempty S]
     (P : Measure Ω) (Φ : Ω → S → ℝ) (hΦ : DOZZ.IsCenteredGaussianField P Φ)
     (ν : FiniteMeasure S) (h : S → ℝ≥0) (hh : Measurable h)
-    (hhb : ∃ c : ℝ≥0, ∀ x, h x ≤ c) (γ : ℝ) :
+    (hhb : BoundedWeight h) (γ : ℝ) :
     Integrable (fun p : Ω × S => fieldWickDensity P Φ h γ p.1 p.2)
       (P.prod (ν.normalize : Measure S)) ∧
     (∫ p : Ω × S, fieldWickDensity P Φ h γ p.1 p.2

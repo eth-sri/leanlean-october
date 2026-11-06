@@ -49,7 +49,6 @@ theorem fusion_pureSpatial_expectation_split {Ω : Type*} [MeasurableSpace Ω]
   have hiL : Integrable (fun ω => I ω * (∫ x in B, f x ∂M ω)) P := by
     simpa only [integral_indicator (show MeasurableSet B from Metric.isOpen_ball.measurableSet)] using hiLocal
   obtain ⟨C, _, hb⟩ := fusion_exteriorR1_expectation_bound P X hX γ hγ hγ2 M hM α₁ α₂ α₃ hα₁ hα₂ hα₃ p hp
-  have hiR : Integrable (fun ω => I ω * (∫ x in Bᶜ, f x ∂M ω)) P := (hb z hz hz4).1
   have heq : (fun ω => I ω * (∫ x, f x ∂M ω)) =ᵐ[P]
       (fun ω => I ω * (∫ x in B, f x ∂M ω) + I ω * (∫ x in Bᶜ, f x ∂M ω)) := by
     filter_upwards [hfLocal, hm,
@@ -67,6 +66,6 @@ theorem fusion_pureSpatial_expectation_split {Ω : Type*} [MeasurableSpace Ω]
     rw [← integral_add_compl (show MeasurableSet B from Metric.isOpen_ball.measurableSet) hfull, mul_add]
   calc
     _ = ∫ ω, (I ω * (∫ x in B, f x ∂M ω) + I ω * (∫ x in Bᶜ, f x ∂M ω)) ∂P := integral_congr_ae heq
-    _ = _ := integral_add hiL hiR
+    _ = _ := integral_add hiL ((hb z hz hz4).1)
 
 end DOZZ.Proofs

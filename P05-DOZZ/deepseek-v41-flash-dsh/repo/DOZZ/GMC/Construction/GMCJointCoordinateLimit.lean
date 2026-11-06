@@ -166,9 +166,8 @@ theorem equatorGFF_GMC_fullCoordinate_limit_law
   obtain ⟨leftProxy, hleftProxyMeas, hleftProxyAE⟩ :=
     exists_measurable_unweighted_fullPath_proxy P X hX γ M hM
   have hdenAEMeas : AEMeasurable density P := by
-    have hLmeas : AEMeasurable L P := hL.1.aestronglyMeasurable.aemeasurable
     have hExpArg : AEMeasurable (fun ω => L ω - gaussianVariance P L / 2) P :=
-      hLmeas.sub_const _
+      (hL.1.aestronglyMeasurable.aemeasurable).sub_const _
     exact ENNReal.measurable_ofReal.comp_aemeasurable
       (Real.measurable_exp.comp_aemeasurable hExpArg)
   have hdenNe : ∀ᵐ ω ∂P, density ω ≠ 0 := by
@@ -259,8 +258,6 @@ theorem equatorGFF_GMC_fullCoordinate_limit_law
       _ = rightMeasure (MeasureTheory.cylinder s S) := by
         dsimp [rightMeasure]
         rw [Measure.map_apply_of_aemeasurable hrightAEMeas hS.cylinder]
-  have hUnivC : Set.univ ∈ C :=
-    MeasureTheory.univ_mem_measurableCylinders (fun _ : gmcTiltCoordinateIndex => ℝ)
   have hLeftUniv : leftMeasure Set.univ = 1 := by
     dsimp [leftMeasure]
     rw [Measure.map_apply_of_aemeasurable hleftAEMeas MeasurableSet.univ]
@@ -269,13 +266,12 @@ theorem equatorGFF_GMC_fullCoordinate_limit_law
     dsimp [rightMeasure]
     rw [Measure.map_apply_of_aemeasurable hrightAEMeas MeasurableSet.univ]
     exact hX.1.measure_univ
-  have hFiniteLeft : IsFiniteMeasure leftMeasure := ⟨by rw [hLeftUniv]; simp⟩
   have hUnivEq : leftMeasure Set.univ = rightMeasure Set.univ := by
     rw [hLeftUniv, hRightUniv]
   exact @ext_of_generate_finite (gmcTiltCoordinateIndex → ℝ) _ leftMeasure rightMeasure C
     (by simpa [C] using
       (MeasureTheory.generateFrom_measurableCylinders
         (α := fun _ : gmcTiltCoordinateIndex => ℝ)).symm)
-    MeasureTheory.isPiSystem_measurableCylinders hFiniteLeft hCylinder hUnivEq
+    MeasureTheory.isPiSystem_measurableCylinders (⟨by rw [hLeftUniv]; simp⟩) hCylinder hUnivEq
 
 end DOZZ.Proofs

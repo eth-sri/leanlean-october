@@ -54,8 +54,6 @@ private theorem summable_intOneDimWeight : Summable intOneDimWeight := by
 private theorem pair_weight_le_product (m n : ℤ) :
     (1 + (m : ℝ) ^ 2 + (n : ℝ) ^ 2)⁻¹ ≤
       2 * (1 + |(m : ℝ)|)⁻¹ * (1 + |(n : ℝ)|)⁻¹ := by
-  have hm : 0 ≤ |(m : ℝ)| := abs_nonneg _
-  have hn : 0 ≤ |(n : ℝ)| := abs_nonneg _
   have hcore : (1 + |(m : ℝ)|) * (1 + |(n : ℝ)|) ≤
       2 * (1 + (m : ℝ) ^ 2 + (n : ℝ) ^ 2) := by
     have hma : |(m : ℝ)| ^ 2 = (m : ℝ) ^ 2 := sq_abs _

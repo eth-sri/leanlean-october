@@ -126,8 +126,6 @@ theorem tendsto_measureReal_dyadicPositiveLastExitRationalEvent_zero_eval_ge
     Tendsto
       (fun n => P.real (dyadicPositiveLastExitRationalEvent n (c : ℝ)
         {y | δ ≤ y 0})) atTop (𝓝 0) := by
-  have hC : MeasurableSet {y : ℚ → ℝ | δ ≤ y 0} :=
-    measurableSet_le measurable_const (measurable_pi_apply 0)
   have hset (n : ℕ) :
       dyadicPositiveLastExitRationalEvent n (c : ℝ) {y | δ ≤ y 0} =
         {p | δ ≤ dyadicLastExitEndpointExcess n c p} := by

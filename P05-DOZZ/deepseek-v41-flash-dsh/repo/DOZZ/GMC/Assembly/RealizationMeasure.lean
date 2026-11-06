@@ -147,7 +147,6 @@ theorem realizationLimit_add
     (union_subset hf₁U hf₂U)
   obtain ⟨L₁, hL₁⟩ := hf₁.bounded_above_of_compact_support hf₁c
   obtain ⟨L₂, hL₂⟩ := hf₂.bounded_above_of_compact_support hf₂c
-  have hsumc : HasCompactSupport (fun x => f₁ x + f₂ x) := hf₁c.add hf₂c
   have hsumU : tsupport (fun x => f₁ x + f₂ x) ⊆ U :=
     (tsupport_add f₁ f₂).trans (union_subset hf₁U hf₂U)
   have hlin (j : ℕ) : admissibleCutoffIntegral P U dens Y γ (fastCutoff R e c j)
@@ -162,7 +161,7 @@ theorem realizationLimit_add
   have h₁ := tendsto_realizationLimit P U dens ε₀ Y hY T γ R e he c ω hω f₁ hf₁ hf₁c hf₁U
   have h₂ := tendsto_realizationLimit P U dens ε₀ Y hY T γ R e he c ω hω f₂ hf₂ hf₂c hf₂U
   have hsum := tendsto_realizationLimit P U dens ε₀ Y hY T γ R e he c ω hω
-    (fun x => f₁ x + f₂ x) (hf₁.add hf₂) hsumc hsumU
+    (fun x => f₁ x + f₂ x) (hf₁.add hf₂) (hf₁c.add hf₂c) hsumU
   have hfun : (fun j => admissibleCutoffIntegral P U dens Y γ (fastCutoff R e c j)
       (fun x => f₁ x + f₂ x) ω) = fun j =>
         admissibleCutoffIntegral P U dens Y γ (fastCutoff R e c j) f₁ ω +
@@ -183,11 +182,10 @@ theorem realizationLimit_smul
     realizationLimit P U dens Y γ R e c ω (fun x => a * f x) =
       a * realizationLimit P U dens Y γ R e c ω f := by
   have h := tendsto_realizationLimit P U dens ε₀ Y hY T γ R e he c ω hω f hf hfc hfU
-  have hc : HasCompactSupport (fun x => a * f x) := hfc.mul_left
   have hU' : tsupport (fun x => a * f x) ⊆ U :=
     (tsupport_mul_subset_right (f := fun _ => a)).trans hfU
   have hsmul := tendsto_realizationLimit P U dens ε₀ Y hY T γ R e he c ω hω
-    (fun x => a * f x) (continuous_const.mul hf) hc hU'
+    (fun x => a * f x) (continuous_const.mul hf) (hfc.mul_left) hU'
   simp only [admissibleCutoffIntegral_smul] at hsmul
   exact tendsto_nhds_unique hsmul (h.const_mul a)
 
@@ -445,7 +443,6 @@ theorem lintegral_realizationMeasure (ω : Ω) (hω : ω ∈ realizationGoodSet 
 theorem measurable_realizationMeasure_isOpen (n : ℕ) (V : Set ℂ) (hV : IsOpen V)
     (hVK : closure V ⊆ T.K n) :
     Measurable (fun ω => realizationMeasure P U hU dens ε₀ Y hY T γ R e he c ω V) := by
-  have hG := realizationGoodSet_measurable P U dens ε₀ Y hY T γ R e c
   have hVc : Vᶜ.Nonempty := by
     by_contra h
     rw [Set.not_nonempty_iff_eq_empty, Set.compl_empty_iff] at h

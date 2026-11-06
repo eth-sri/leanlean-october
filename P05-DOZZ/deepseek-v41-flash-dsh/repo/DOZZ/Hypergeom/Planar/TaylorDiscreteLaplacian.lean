@@ -138,8 +138,6 @@ theorem integral_planarTaylorDiscreteQuotient (k β : ℝ) (hk : 0 < k)
   have hf₃ : Integrable f₃ volume := by simpa [f₃] using h₃
   have hf₄ : Integrable f₄ volume := by simpa [f₄] using h₄
   have hf₀ : Integrable f₀ volume := by simpa [f₀] using h₀
-  have hN : Integrable N volume := integrable_planarTaylorDiscreteNumerator
-    k β hk hβ hβ₂ hβlin t
   have h₁₂ : (∫ u : ℂ, f₁ u + f₂ u) = (∫ u : ℂ, f₁ u) + (∫ u : ℂ, f₂ u) :=
     integral_add hf₁ hf₂
   have h₁₂₃ : (∫ u : ℂ, (f₁ u + f₂ u) + f₃ u) =
@@ -227,9 +225,8 @@ theorem planarTaylorDiscreteQuotient_tendsto (k β : ℝ) (u : ℂ) (hu : u ≠ 
     Tendsto (fun t : ℝ => planarTaylorDiscreteQuotient k β t u)
       (𝓝[≠] (0 : ℝ))
       (𝓝 (k ^ 2 * (‖u‖ ^ (-β) * ‖u - 1‖ ^ (k - 2)))) := by
-  have hx : u - 1 ≠ 0 := sub_ne_zero.mpr hu
   let w : ℝ := ‖u‖ ^ (-β)
-  have hLap := norm_rpow_discrete_laplacian_tendsto k (u - 1) hx
+  have hLap := norm_rpow_discrete_laplacian_tendsto k (u - 1) (sub_ne_zero.mpr hu)
   have hmul : Tendsto (fun t : ℝ => w * normPowerDiscreteLaplacian k t (u - 1))
       (𝓝[≠] (0 : ℝ)) (𝓝 (w * (k ^ 2 * ‖u - 1‖ ^ (k - 2)))) :=
     tendsto_const_nhds.mul hLap
@@ -252,9 +249,8 @@ theorem planarTaylorDiscreteQuotient_norm_le (k β : ℝ) (hk : 0 < k)
   let C : ℝ := 2 * (2 * (k * (1 + (15 / 4) * ((1 - k / 2) *
     (1 / 4 : ℝ) ^ (k / 2 - 2)))) +
     2 * (3 ^ k + 2 ^ k) * 2 ^ (2 - k))
-  have hx : u - 1 ≠ 0 := sub_ne_zero.mpr hu
   have hLap := norm_rpow_discrete_laplacian_le k hk (by linarith [hβ, hk₂])
-    (u - 1) t hx ht
+    (u - 1) t (sub_ne_zero.mpr hu) ht
   have hw : 0 ≤ ‖u‖ ^ (-β) := Real.rpow_nonneg (norm_nonneg u) _
   have hkernel := planarTaylorDiscreteQuotient_eq_kernel k β t u
   rw [hkernel, Real.norm_eq_abs, abs_mul, abs_of_nonneg hw]
@@ -275,10 +271,6 @@ theorem planarTaylorDiscreteQuotient_integral_tendsto (k β : ℝ) (hk : 0 < k)
   let K : ℝ := 2 * (2 * (k * (1 + (15 / 4) * ((1 - k / 2) *
     (1 / 4 : ℝ) ^ (k / 2 - 2)))) + 2 * (3 ^ k + 2 ^ k) * 2 ^ (2 - k))
   let bound : ℂ → ℝ := fun u => K * (‖u‖ ^ (-β) * ‖u - 1‖ ^ (k - 2))
-  have hK : 0 ≤ K := by
-    dsimp [K]
-    have hk₂ : 0 < 1 - k / 2 := by linarith [hβ, hβ₂]
-    positivity
   have hRiesz := positive_riesz_convolution_integrable k β hk hβ hβ₂ 1 (by norm_num)
   have hboundInt : Integrable bound volume := by
     simpa [bound, K, mul_assoc] using hRiesz.const_mul K

@@ -36,13 +36,12 @@ theorem integrable_densityEnergy {f g : ℂ → ℝ}
     Integrable (fun p : ℂ × ℂ => f p.1 * gffKernel p.1 p.2 * g p.2)
       (volume : Measure (ℂ × ℂ)) := by
   have hraw := (DOZZ.integral_complexLogKernelPair_eq_vec f g hf hg hsf hsg).1
-  have hfint : Integrable f (volume : Measure ℂ) := hf.integrable_of_hasCompactSupport hsf
   have hgint : Integrable g (volume : Measure ℂ) := hg.integrable_of_hasCompactSupport hsg
   have hfp : Integrable (fun z => f z * Real.log (normPlus z)) :=
     (hf.mul continuous_log_normPlus).integrable_of_hasCompactSupport hsf.mul_right
   have hgp : Integrable (fun z => g z * Real.log (normPlus z)) :=
     (hg.mul continuous_log_normPlus).integrable_of_hasCompactSupport hsg.mul_right
-  convert (hraw.add (hfp.mul_prod hgint)).add (hfint.mul_prod hgp) using 1
+  convert (hraw.add (hfp.mul_prod hgint)).add ((hf.integrable_of_hasCompactSupport hsf).mul_prod hgp) using 1
   ext p
   simp only [gffKernel, Pi.add_apply]
   ring
@@ -225,7 +224,6 @@ theorem densityEnergy_eq_raw {f g : ℂ → ℝ}
       (∫ z, f z * Real.log (normPlus z)) * (∫ z, g z) +
       (∫ z, f z) * (∫ z, g z * Real.log (normPlus z)) := by
   have hr := (DOZZ.integral_complexLogKernelPair_eq_vec f g hf hg hsf hsg).1
-  have hfi : Integrable f (volume : Measure ℂ) := hf.integrable_of_hasCompactSupport hsf
   have hgi : Integrable g (volume : Measure ℂ) := hg.integrable_of_hasCompactSupport hsg
   have hfp : Integrable (fun z => f z * Real.log (normPlus z)) :=
     (hf.mul continuous_log_normPlus).integrable_of_hasCompactSupport hsf.mul_right
@@ -240,7 +238,7 @@ theorem densityEnergy_eq_raw {f g : ℂ → ℝ}
   unfold densityEnergy rawDensityEnergy
   simp_rw [heq]
   rw [Measure.volume_eq_prod]
-  have hsum := integral_add (hr.add (hfp.mul_prod hgi)) (hfi.mul_prod hgp)
+  have hsum := integral_add (hr.add (hfp.mul_prod hgi)) ((hf.integrable_of_hasCompactSupport hsf).mul_prod hgp)
   simp only [Pi.add_apply] at hsum
   rw [hsum, integral_add hr (hfp.mul_prod hgi),
     integral_prod_mul (fun z => f z * Real.log (normPlus z)) g,
@@ -683,9 +681,8 @@ theorem annularProfileMass_lower (n : ℕ) :
     have hd : ‖z - 1‖ < δ := by simpa only [mem_ball, dist_eq_norm] using hz
     have hn := abs_norm_sub_norm_le z (1 : ℂ)
     rw [norm_one] at hn
-    have hd' : |‖z‖ - 1| ≤ δ := (hn.trans hd.le)
     have hmul : ((n : ℝ) + 2) * δ = 1 / 2 := by dsimp [δ]; field_simp
-    have hnear := mul_le_mul_of_nonneg_left hd' (by positivity : 0 ≤ (n : ℝ) + 2)
+    have hnear := mul_le_mul_of_nonneg_left ((hn.trans hd.le)) (by positivity : 0 ≤ (n : ℝ) + 2)
     rw [hmul] at hnear
     unfold DOZZ.annularProfileOnPlane DOZZ.annularProfile
     exact le_trans (by linarith : (1 / 2 : ℝ) ≤ 1 - ((n : ℝ) + 2) * |‖z‖ - 1|)

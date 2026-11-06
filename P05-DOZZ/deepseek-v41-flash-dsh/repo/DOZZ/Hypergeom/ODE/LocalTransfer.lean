@@ -60,10 +60,9 @@ theorem localPicardTransfer_comp_eq
       Dd.bounded (z := z) (Metric.ball_subset_ball (by linarith) hz)
   have hstart : F d = G d := by
     simp [F, G, localPicardTransfer, holomorphicPicardSolution_apply_center]
-  have he : e ∈ Metric.ball d (r / 2) := Metric.mem_ball.mpr hde
   have hEq := holomorphic_linear_system_solution_unique_of_eq_at
     d (r / 2) M H hM hboundHalf hF hG
-    (Metric.mem_ball_self (by linarith)) he hstart
+    (Metric.mem_ball_self (by linarith)) (Metric.mem_ball.mpr hde) hstart
   simpa [F, G] using hEq.symm
 
 theorem localPicardTransfer_square_commutes

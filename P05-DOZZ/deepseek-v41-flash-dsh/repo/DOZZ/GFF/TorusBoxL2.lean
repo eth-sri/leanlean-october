@@ -83,7 +83,6 @@ theorem integral_sq_eq_torusBox (L : ℝ) (hL : 0 < L) (g : ℂ → ℝ)
     (hsupp : Function.support g ⊆ ball (0 : ℂ) (L / 2)) :
     (∫ z : ℂ, g z ^ 2) = L ^ 2 *
       ∫ t : GFFUnitTorus2, g (torusBoxPoint L t) ^ 2 := by
-  let H : ℂ → ℝ := fun z => g z ^ 2
   let Hpi : (Fin 2 → ℝ) → ℝ := fun x =>
     g (L • Complex.measurableEquivPi.symm x) ^ 2
   have hsuppPi : Function.support Hpi ⊆ centeredUnitBox := by
@@ -139,8 +138,7 @@ theorem integral_sq_eq_torusBox (L : ℝ) (hL : 0 < L) (g : ℂ → ℝ)
       change g (L • Complex.measurableEquivPi.symm x) ^ 2 = 0
       rw [hgzero]
       norm_num
-    have hmem : z ∈ ball (0 : ℂ) (L / 2) := hsupp hg_ne
-    exact hnot hmem
+    exact hnot (hsupp hg_ne)
   have hscaled : (∫ z : ℂ, g (L • z) ^ 2) =
       (L ^ 2)⁻¹ * ∫ z : ℂ, g z ^ 2 := by
     have h := MeasureTheory.Measure.integral_comp_smul

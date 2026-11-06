@@ -47,13 +47,12 @@ theorem fusionRootedR1_split {Ω : Type*} [MeasurableSpace Ω]
   have hsplit : ∀ᵐ t : ℝ ∂volume.restrict (Icc 0 1), F ((t : ℂ) * z) = L ((t : ℂ) * z) + E ((t : ℂ) * z) := by
     filter_upwards [ae_restrict_mem measurableSet_Icc,
       ae_restrict_of_ae (Measure.ae_ne volume (0 : ℝ))] with t ht ht0
-    have htz : (t : ℂ) * z ≠ 0 := mul_ne_zero (Complex.ofReal_ne_zero.mpr ht0) hz
     have htz4 : ‖(t : ℂ) * z‖ ≤ 1 / 4 := by
       rw [norm_mul, Complex.norm_real, Real.norm_of_nonneg ht.1]
       exact (mul_le_of_le_one_left (norm_nonneg _) ht.2).trans hz4
     simpa only [F, L, E, fusionPureSpatial, Measure.restrict_univ] using
       fusion_pureSpatial_expectation_split P X hX γ hγ hγ2 M hM α₁ α₂ α₃
-        (by nlinarith [mul_lt_mul_of_pos_left hlo hγ]) hα₁ hα₂ hα₃ p hp ((t : ℂ) * z) htz htz4
+        (by nlinarith [mul_lt_mul_of_pos_left hlo hγ]) hα₁ hα₂ hα₃ p hp ((t : ℂ) * z) (mul_ne_zero (Complex.ofReal_ne_zero.mpr ht0) hz) htz4
   have h := fusion_time_split F L E z hL hE hsplit
   have hc := congrArg (fun q : ℂ => (((-p * (γ ^ 2 / 4) * (γ ^ 2 / 4 - 1) : ℝ) : ℂ) * z ^ 2) * q) h
   simpa only [gammaHalfRootedR1, fusionLocalR1, F, L, E, B, fusionPureSpatial,
@@ -91,13 +90,12 @@ theorem fusionRootedR2_split {Ω : Type*} [MeasurableSpace Ω]
   have hsplit : ∀ᵐ t : ℝ ∂volume.restrict (Icc 0 1), F ((t : ℂ) * z) = L ((t : ℂ) * z) + E ((t : ℂ) * z) := by
     filter_upwards [ae_restrict_mem measurableSet_Icc,
       ae_restrict_of_ae (Measure.ae_ne volume (0 : ℝ))] with t ht ht0
-    have htz : (t : ℂ) * z ≠ 0 := mul_ne_zero (Complex.ofReal_ne_zero.mpr ht0) hz
     have htz4 : ‖(t : ℂ) * z‖ ≤ 1 / 4 := by
       rw [norm_mul, Complex.norm_real, Real.norm_of_nonneg ht.1]
       exact (mul_le_of_le_one_left (norm_nonneg _) ht.2).trans hz4
     simpa only [F, L, E, fusionMixedSpatial, Measure.restrict_univ] using
       fusion_mixedSpatial_expectation_split P X hX γ hγ hγ2 M hM α₁ α₂ α₃
-        (by nlinarith [mul_lt_mul_of_pos_left hlo hγ]) hα₁ hα₂ hα₃ p hp ((t : ℂ) * z) htz htz4
+        (by nlinarith [mul_lt_mul_of_pos_left hlo hγ]) hα₁ hα₂ hα₃ p hp ((t : ℂ) * z) (mul_ne_zero (Complex.ofReal_ne_zero.mpr ht0) hz) htz4
   have h := fusion_time_split F L E z hL hE hsplit
   have hc := congrArg (fun q : ℂ => (((-2 * p * (γ ^ 2 / 4) ^ 2 : ℝ) : ℂ) * z * star z) * q) h
   simpa only [gammaHalfRootedR2, fusionLocalR2, F, L, E, B, fusionMixedSpatial,

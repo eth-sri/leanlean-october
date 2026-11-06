@@ -81,14 +81,13 @@ theorem offCenter_circle_pin_copy_law
   let k : Option localCircle → ℂ × ℝ := fun j =>
     j.elim (z, 0) (fun p => (z + p.val.1, p.val.2))
   let Z : Option localCircle → Ω → ℝ := fun j ω => Xc ω (k j).1 (k j).2
-  have hZ : IsGaussianProcess Z P := (circleAverage_isGaussianProcess P X Xc hX hc).1.comp_right k
   have hZm : Measurable (fun ω j => Z j ω) := by
     apply measurable_pi_iff.mpr
     intro j
     exact hm.comp (measurable_id.prodMk measurable_const)
   have hvar : covariance (Z none) (Z none) P = 2 * Real.log ‖z‖ :=
     offCenter_origin_variance X Xc hX hc z hz
-  have he := gaussian_pin_copy_law P Z hZ hZm (2 * Real.log ‖z‖)
+  have he := gaussian_pin_copy_law P Z ((circleAverage_isGaussianProcess P X Xc hX hc).1.comp_right k) hZm (2 * Real.log ‖z‖)
     (offCenter_pin_variance_pos z hz).ne' hvar
   have hsource : (fun ω j => Z j ω) =
       (fun ω (j : Option localCircle) => j.elim (Xc ω z 0)

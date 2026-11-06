@@ -22,9 +22,8 @@ theorem lastone_ennreal_add_rpow_le (a b : ℝ≥0∞) (p q : ℝ)
       (1 + 2 * b ^ (2 * q) + a ^ (-2 * q)) := by
   have hq : 0 < q := hp.trans_le hpq
   have hAp : a ^ p ≠ ⊤ := ENNReal.rpow_ne_top_of_nonneg hp.le haT
-  have hBp : b ^ (2 * q) ≠ ⊤ := ENNReal.rpow_ne_top_of_nonneg (by positivity) hbT
   have hAi : a ^ (-2 * q) ≠ ⊤ := ENNReal.rpow_ne_top_of_ne_zero ha0 haT
-  have h2B : (2 : ℝ≥0∞) * b ^ (2 * q) ≠ ⊤ := ENNReal.mul_ne_top (by norm_num) hBp
+  have h2B : (2 : ℝ≥0∞) * b ^ (2 * q) ≠ ⊤ := ENNReal.mul_ne_top (by norm_num) (ENNReal.rpow_ne_top_of_nonneg (by positivity) hbT)
   have hK : 1 + 2 * b ^ (2 * q) + a ^ (-2 * q) ≠ ⊤ :=
     ENNReal.add_ne_top.mpr ⟨ENNReal.add_ne_top.mpr ⟨ENNReal.one_ne_top, h2B⟩, hAi⟩
   have hE : ENNReal.ofReal (p / q) * (1 + 2 * b ^ (2 * q) + a ^ (-2 * q)) ≠ ⊤ :=

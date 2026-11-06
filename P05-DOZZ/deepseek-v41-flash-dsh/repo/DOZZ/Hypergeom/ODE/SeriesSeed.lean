@@ -3,6 +3,7 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
+public import DOZZ.SharedHyp
 
 public import DOZZ.Hypergeom.ODE.CutPlaneTopology
 public import DOZZ.Hypergeom.ODE.DiskContinuation
@@ -22,12 +23,11 @@ noncomputable def ordinaryHypergeometricState (a b c : ℂ) (z : ℂ) : ℂ × �
   (ordinaryHypergeometric a b c z, deriv (ordinaryHypergeometric a b c) z)
 
 private theorem ordinaryHypergeometric_state_hasDerivAt (a b c : ℂ)
-    (hc : ∀ n : ℕ, c ≠ -(n : ℂ)) {z : ℂ} (hz : ‖z‖ < 1) :
+    (hc : NotNegPole c) {z : ℂ} (hz : ‖z‖ < 1) :
     HasDerivAt (ordinaryHypergeometricState a b c)
       (deriv (ordinaryHypergeometric a b c) z,
         deriv (deriv (ordinaryHypergeometric a b c)) z) z := by
   let p : FormalMultilinearSeries ℂ ℂ ℂ := ordinaryHypergeometricSeries ℂ a b c
-  have hpPos : 0 < p.radius := ordinaryHypergeometricSeries_radius_pos a b c hc
   have hpLe : (1 : ENNReal) ≤ p.radius := ordinaryHypergeometricSeries_one_le_radius a b c hc
   have hsum : ordinaryHypergeometric a b c = p.sum := by
     funext z
@@ -35,7 +35,7 @@ private theorem ordinaryHypergeometric_state_hasDerivAt (a b c : ℂ)
     exact (ordinaryHypergeometric_sum_eq a b c z).symm
   have hseries : HasFPowerSeriesOnBall (ordinaryHypergeometric a b c) p 0 1 := by
     rw [hsum]
-    exact p.hasFPowerSeriesOnBall hpPos |>.mono (by norm_num) hpLe
+    exact p.hasFPowerSeriesOnBall (ordinaryHypergeometricSeries_radius_pos a b c hc) |>.mono (by norm_num) hpLe
   have hznorm : ‖z‖₊ < 1 := by exact_mod_cast hz
   have hzball : z ∈ Metric.eball (0 : ℂ) 1 := by
     simpa [Metric.mem_eball, edist_eq_enorm_sub, enorm_eq_nnnorm, dist_zero_right] using
@@ -61,7 +61,7 @@ private theorem ordinaryHypergeometric_state_hasDerivAt (a b c : ℂ)
 
 /-- On the punctured unit disk, the ordinary-series state solves the explicit first-order system. -/
 theorem ordinaryHypergeometricState_solves_gaussSystem_on_unitDisk
-    (a b c : ℂ) (hc : ∀ n : ℕ, c ≠ -(n : ℂ)) {z : ℂ}
+    (a b c : ℂ) (hc : NotNegPole c) {z : ℂ}
     (hz0 : z ≠ 0) (hz : ‖z‖ < 1) :
     HasDerivAt (ordinaryHypergeometricState a b c)
       (gaussSystemOperator a b c z (ordinaryHypergeometricState a b c z)) z := by
@@ -72,7 +72,7 @@ theorem ordinaryHypergeometricState_solves_gaussSystem_on_unitDisk
 /-- A uniform local Picard disk at `1/2` agrees with the ordinary-series state. This is the
 regular-domain initial patch for path continuation from the origin series germ. -/
 theorem exists_gauss_ordinary_seed_disk (a b c : ℂ)
-    (hc : ∀ n : ℕ, c ≠ -(n : ℂ)) :
+    (hc : NotNegPole c) :
     ∃ r M : ℝ, 0 < r ∧ r ≤ 1 / 4 ∧ 0 ≤ M ∧
       ∃ D : HolomorphicDiskSolution (gaussSystemOperator a b c) r,
         D.center = (1 / 2 : ℂ) ∧
@@ -138,7 +138,7 @@ theorem exists_gauss_ordinary_seed_disk (a b c : ℂ)
 /-- A uniform local Picard disk at `-1/2` agrees with the ordinary-series state. This is the
 regular-domain initial patch for path continuation from the origin series germ. -/
 theorem exists_gauss_ordinary_seed_disk_negative (a b c : ℂ)
-    (hc : ∀ n : ℕ, c ≠ -(n : ℂ)) :
+    (hc : NotNegPole c) :
     ∃ r M : ℝ, 0 < r ∧ r ≤ 1 / 4 ∧ 0 ≤ M ∧
       ∃ D : HolomorphicDiskSolution (gaussSystemOperator a b c) r,
         D.center = (-1 / 2 : ℂ) ∧

@@ -44,12 +44,10 @@ theorem exists_fixed_charge_robust_barrier_parameters
       η * (3 * b ^ 2 / 2) ≤ (gap / (3 * b ^ 2)) * (3 * b ^ 2 / 2) :=
         mul_le_mul_of_nonneg_right hηgap (by positivity)
       _ = gap / 2 := by
-        have hb2 : b ^ 2 ≠ 0 := ne_of_gt (sq_pos_of_pos hb)
         field_simp
   have hidentity : γ ^ 2 -
       ((1 - η) ^ 2 * b ^ 2 / (2 * (1 + η))) =
         κ₀ + b ^ 2 * ((3 * η - η ^ 2) / (2 * (1 + η))) := by
-    have hden : 1 + η ≠ 0 := ne_of_gt (by positivity)
     rw [hκeq]
     dsimp [b]
     field_simp
@@ -87,8 +85,6 @@ theorem exists_natural_scale_after_covariance_errors
     le_trans (le_max_left _ _) hT₃
   have hlog : Real.log (1 / cutoff) ≤ T :=
     le_trans (le_max_right _ _) (le_trans (le_max_right _ _) hT₃)
-  have hTnonneg : 0 ≤ T := by
-    exact le_trans (le_max_left _ _) (le_trans (le_max_right _ _) hT₃)
   have hkreal : T < (k₀ : ℝ) := hk₀
   have hkC : C < (k₀ : ℝ) := by linarith
   have hkCrate : C / η < (k₀ : ℝ) := by linarith
@@ -98,8 +94,6 @@ theorem exists_natural_scale_after_covariance_errors
     · have hdiv : 1 < 1 / cutoff := by
         rw [one_lt_div₀ hcutoff]
         exact hcutoff1
-      have hlogpos : 0 < Real.log (1 / cutoff) := Real.log_pos hdiv
-      have hklog : Real.log (1 / cutoff) < (k₀ : ℝ) := lt_of_le_of_lt hlog hkreal
       have hexp : Real.exp (-Real.log (1 / cutoff)) = cutoff := by
         rw [Real.exp_neg, Real.exp_log (by positivity : 0 < (1 / cutoff : ℝ))]
         field_simp

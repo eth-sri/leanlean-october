@@ -259,8 +259,7 @@ theorem gmc_reference_ball_intensity_pos {R : ℝ} (hR : 0 < R) (hR1 : R ≤ 1) 
   have hv := congrArg (fun μ : Measure ℂ => μ Set.univ) he
   simp only [Measure.restrict_apply_univ] at hv
   rw [hv, Complex.volume_ball]
-  have hr : 0 < ENNReal.ofReal R := ENNReal.ofReal_pos.mpr hR
-  exact ENNReal.mul_pos (pow_ne_zero 2 hr.ne') (ENNReal.coe_pos.mpr NNReal.pi_pos).ne'
+  exact ENNReal.mul_pos (pow_ne_zero 2 (ENNReal.ofReal_pos.mpr hR).ne') (ENNReal.coe_pos.mpr NNReal.pi_pos).ne'
 
 /-- Every positive power of a reference ball has positive expectation. The argument requires
 positive mean, rather than an unproved almost-sure positivity claim. -/

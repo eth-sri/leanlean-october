@@ -92,7 +92,6 @@ theorem twoSidedReflectionMoment_pos_of_lateralIntensity
   have hVm : Measurable Vm := hV.measurable_mk
   have hVtoVm : V =ᵐ[P] Vm := hV.ae_eq_mk
   let S : Set Ω := {ω | 0 < Vm ω}
-  have hSmeas : MeasurableSet S := measurableSet_lt measurable_const hVm
   have hVint : 0 < ∫⁻ ω, Vm ω ∂P := by
     rw [← lintegral_congr_ae hVtoVm]
     exact hIntensity
@@ -107,7 +106,6 @@ theorem twoSidedReflectionMoment_pos_of_lateralIntensity
   have hF : AEMeasurable F P := by
     exact ENNReal.continuous_rpow_const.measurable.comp_aemeasurable hMassMeas
   let Fm : Ω → ℝ≥0∞ := hF.mk F
-  have hFm : Measurable Fm := hF.measurable_mk
   have hFtoFm : F =ᵐ[P] Fm := hF.ae_eq_mk
   have hSsupport : ∀ᵐ ω ∂P, ω ∈ S → ω ∈ Function.support Fm := by
     filter_upwards [hVtoVm, hFtoFm] with ω hVω hFω
@@ -123,7 +121,7 @@ theorem twoSidedReflectionMoment_pos_of_lateralIntensity
   have hFsupportPositive : 0 < P (Function.support Fm) :=
     lt_of_lt_of_le hSpos (measure_mono_ae hSsupport)
   have hFmint : 0 < ∫⁻ ω, Fm ω ∂P :=
-    (lintegral_pos_iff_support hFm).2 hFsupportPositive
+    (lintegral_pos_iff_support (hF.measurable_mk)).2 hFsupportPositive
   calc
     0 < ∫⁻ ω, Fm ω ∂P := hFmint
     _ = ∫⁻ ω, F ω ∂P := (lintegral_congr_ae hFtoFm).symm
@@ -145,8 +143,7 @@ theorem reflectionBarR_pos_of_reflectionData_of_moment_finite
   rcases hBrownian with ⟨⟨hB₁, _hLaw₁⟩, ⟨hB₂, _hLaw₂⟩, _hIndependentSides⟩
   rcases hLateral with ⟨_hγpos, _hγlt, _hP, hZ, hZlocal, _hTranslation,
     _hReflection, hIntensity, _hSource⟩
-  have hB : AEMeasurable B P := hB₁.prodMk hB₂
-  have hPair : AEMeasurable (fun ω => (B ω, Z ω)) P := hB.prodMk hZ
+  have hPair : AEMeasurable (fun ω => (B ω, Z ω)) P := (hB₁.prodMk hB₂).prodMk hZ
   have hLocal : ∀ᵐ ω ∂P, LocallyFiniteOnTranslationWindows (Z ω) := by
     filter_upwards [hZlocal] with ω hω
     intro n

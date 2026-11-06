@@ -35,7 +35,6 @@ theorem bpz_single_grid_error (m : Measure ℂ) [IsFiniteMeasure m] (G G₀ : �
   rw [← integral_bpzGrid_step h S (fun i => G₀ (bpzGridCorner h i))]
   set st : ℂ → ℝ := fun x =>
     if bpzGridIdx h x ∈ S then G₀ (bpzGridCorner h (bpzGridIdx h x)) else 0 with hst
-  have hstm : Measurable st := measurable_bpzGrid_step h S (fun i => G₀ (bpzGridCorner h i))
   have hstb : ∀ x, |st x| ≤ V := by
     intro x
     simp only [hst]
@@ -66,7 +65,7 @@ theorem bpz_single_grid_error (m : Measure ℂ) [IsFiniteMeasure m] (G G₀ : �
       rw [hGs x hx, hst', sub_zero, abs_zero]
       exact mul_nonneg (by positivity) (Set.indicator_nonneg (fun _ _ => zero_le_one) x)
   have hIG : Integrable G m := integrable_of_bdd_finite hGm hGb
-  have hIst : Integrable st m := integrable_of_bdd_finite hstm hstb
+  have hIst : Integrable st m := integrable_of_bdd_finite (measurable_bpzGrid_step h S (fun i => G₀ (bpzGridCorner h i))) hstb
   rw [← integral_sub hIG hIst, ← Real.norm_eq_abs]
   calc ‖∫ x, (G x - st x) ∂m‖ ≤ ∫ x, 2 * ε₁ * V * B₂.indicator 1 x ∂m := by
         refine norm_integral_le_of_norm_le

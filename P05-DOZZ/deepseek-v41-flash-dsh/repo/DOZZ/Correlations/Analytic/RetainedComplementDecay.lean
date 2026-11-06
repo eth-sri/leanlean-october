@@ -40,7 +40,6 @@ theorem retained_complement_moment_decay
   refine ⟨(∑ i, C i) + D, ENNReal.add_lt_top.mpr
     ⟨ENNReal.sum_lt_top.mpr (fun i _ => hC i), hD⟩, ?_⟩
   intro α αinf hα hinf hαup hinfup r hsmall hlarge hz
-  have hrho : 0 < 2 * Real.exp (-r) := mul_pos (by norm_num) (Real.exp_pos _)
   have hrecip : 1 / (Real.exp r / 2) = 2 * Real.exp (-r) := by
     rw [Real.exp_neg]
     field_simp
@@ -55,7 +54,7 @@ theorem retained_complement_moment_decay
     _ ≤ (∑ i, ENNReal.ofReal ((2 * Real.exp (-r)) ^ (γ * gap * m)) * C i) +
         ENNReal.ofReal ((2 * Real.exp (-r)) ^ (γ * gap * m)) * D :=
       add_le_add (Finset.sum_le_sum (fun i _ =>
-        hroot i α αinf hα hinf (hαup i) _ hrho hsmall)) hi
+        hroot i α αinf hα hinf (hαup i) _ (mul_pos (by norm_num) (Real.exp_pos _)) hsmall)) hi
     _ = _ := by rw [← Finset.mul_sum, mul_add]
 
 end DOZZ.Proofs

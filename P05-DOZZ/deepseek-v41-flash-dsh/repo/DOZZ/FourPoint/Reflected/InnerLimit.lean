@@ -3,6 +3,7 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
+public import DOZZ.SharedHyp
 public import DOZZ.FourPoint.Reflected.SourceInnerAsymptotic
 public import DOZZ.FourPoint.Reflected.SourceLateralWitness
 public import DOZZ.FourPoint.Reflected.Normalization
@@ -18,7 +19,7 @@ theorem gammaHalf_reflected_inner_limit {Ω : Type*} [MeasurableSpace Ω]
     (γ μ α₁ α₂ α₃ ξ : ℝ)
     (hγ : 0 < γ) (hγ₂ : γ < 2) (hμ : 0 < μ)
     (hα₁ : α₁ < Q γ) (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ)
-    (hs : 2 * Q γ + γ / 2 < α₁ + α₂ + α₃)
+    (hs : SeibergSlack γ α₁ α₂ α₃)
     (hξ : 0 < ξ) (hξ₂ : ξ < 1)
     (hreflect : Q γ - α₁ < γ / 2)
     (hnear : γ * (Q γ - α₁) < min 1 ξ)
@@ -81,9 +82,8 @@ theorem gammaHalf_reflected_inner_limit {Ω : Type*} [MeasurableSpace Ω]
         (𝓝[≠] 0) (𝓝 0) := by simpa only [sub_self] using hs
     apply hs0.congr'
     filter_upwards [self_mem_nhdsWithin] with z hz
-    have hn : ‖z‖^κ ≠ 0 := (Real.rpow_pos_of_pos (norm_pos_iff.mpr hz) κ).ne'
     dsimp only [rReal]
-    simp only [sub_div,mul_div_cancel_right₀ C hn]
+    simp only [sub_div,mul_div_cancel_right₀ C ((Real.rpow_pos_of_pos (norm_pos_iff.mpr hz) κ).ne')]
   refine ⟨B,Z,hSource,hData,fun z => (rReal z : ℂ),?_,?_⟩
   · intro z
     dsimp only [rReal,C]

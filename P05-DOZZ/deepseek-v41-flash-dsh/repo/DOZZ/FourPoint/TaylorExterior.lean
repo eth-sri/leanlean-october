@@ -40,11 +40,10 @@ theorem twoRooted_exterior_numerator_bound {Ω : Type*}
       have hdist : 1 / 4 ≤ ‖x - z‖ := by
         have hh := norm_sub_norm_le x z
         linarith only [hxnorm, hz, hh]
-      have hdistpos : 0 < ‖x - z‖ := lt_of_lt_of_le (by norm_num) hdist
       have hk := gammaHalfKernel_nonneg γ α₁ α₂ α₃ z x
       rw [← ENNReal.ofReal_mul (by norm_num : (0 : ℝ) ≤ 4)]
       apply ENNReal.ofReal_le_ofReal
-      apply (div_le_iff₀ hdistpos).mpr
+      apply (div_le_iff₀ (lt_of_lt_of_le (by norm_num) hdist)).mpr
       have hh := mul_le_mul_of_nonneg_left (show 1 ≤ 4 * ‖x - z‖ by linarith only [hdist]) hk
       nlinarith only [hh]
     _ ≤ ∫⁻ x, ENNReal.ofReal 4 * ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ z x) ∂M ω :=

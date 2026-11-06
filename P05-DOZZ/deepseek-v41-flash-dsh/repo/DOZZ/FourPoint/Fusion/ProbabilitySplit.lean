@@ -26,8 +26,6 @@ theorem fusion_probability_split_bound {Ω : Type*} [MeasurableSpace Ω] (P : Me
       P {ω | ENNReal.ofReal (e / 3) ≤ badl ω} +
       P {ω | ENNReal.ofReal (e / 3) ≤ ENNReal.ofReal |(goodr ω).toReal - (goodl ω).toReal|} := by
   set a : ℝ≥0∞ := ENNReal.ofReal (e / 3) with ha
-  have ha0 : a ≠ 0 := (ENNReal.ofReal_pos.mpr (by positivity)).ne'
-  have hat : a ≠ ⊤ := ENNReal.ofReal_ne_top
   set B1 : Set Ω := {ω | a ≤ badr ω} with hB1
   set B2 : Set Ω := {ω | a ≤ badl ω} with hB2
   set B3 : Set Ω := {ω | a ≤ ENNReal.ofReal |(goodr ω).toReal - (goodl ω).toReal|} with hB3

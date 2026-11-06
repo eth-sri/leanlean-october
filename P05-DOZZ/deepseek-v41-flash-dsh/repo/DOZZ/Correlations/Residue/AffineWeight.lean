@@ -28,7 +28,6 @@ theorem residue_coulombWeight_affine {N : ℕ} (γ : ℝ) (α : Fin N → ℝ)
         coulombWeight γ α z αinf y := by
   have hy := normPlus_pos' y
   have hψ := normPlus_pos' (a * y + b)
-  have hapos : 0 < ‖a‖ := norm_pos_iff.mpr ha
   have hinf : ENNReal.rpow (ENNReal.ofReal (normPlus (a * y + b))) (γ * αinf) =
       ENNReal.ofReal (Real.exp (γ * αinf * (affineDefect a b y + Real.log ‖a‖ / 2))) *
         ENNReal.rpow (ENNReal.ofReal (normPlus y)) (γ * αinf) := by
@@ -66,8 +65,6 @@ theorem residue_lintegral_coulombWeight_repinChaos {Ω : Type*} (M : Ω → Meas
   unfold repinChaos
   have hcw : Measurable fun x => coulombWeight γ α z αinf (affineInv a b x) :=
     (measurable_coulombWeight γ α z αinf).comp (continuous_affineInv a b).measurable
-  have hD : Measurable fun x => ENNReal.ofReal (Real.exp (γ ^ 2 * repinPotential a b x) *
-      repinWeight a b x) := ENNReal.measurable_ofReal.comp (by fun_prop)
   rw [lintegral_map (measurable_coulombWeight γ α z αinf) (continuous_affineInv a b).measurable,
     lintegral_withDensity_eq_lintegral_mul _ (by fun_prop) hcw,
     ← lintegral_const_mul' _ _ ENNReal.ofReal_ne_top]
@@ -89,19 +86,17 @@ theorem residue_coulombWeight_repin_identity {N : ℕ} (γ : ℝ) (hγ : 0 < γ)
         coulombWeight γ α (fun k => a * z k + b) αinf x := by
   set y := affineInv a b x with hydef
   have hxy : x = a * y + b := (affine_affineInv a b ha x).symm
-  have hyz : ∀ k, y ≠ z k := fun k h => hx k (by rw [hxy, h])
-  have hapos : 0 < ‖a‖ := norm_pos_iff.mpr ha
   have hexp : γ ^ 2 * (1 + residueTotalSExp γ α αinf) + 4 =
       γ * ((∑ k, α k) + αinf) := by
     unfold residueTotalSExp Q
     field_simp [hγ.ne']
     ring
-  rw [hxy, residue_coulombWeight_affine γ α z αinf a b ha hyz,
+  rw [hxy, residue_coulombWeight_affine γ α z αinf a b ha (fun k h => hx k (by rw [hxy, h])),
     repinPotential_affine a b ha y, repinWeight_affine a b ha y,
     ← mul_assoc, ← ENNReal.ofReal_mul (by positivity),
     mul_comm (ENNReal.ofReal _) (coulombWeight _ _ _ _ _)]
   congr 2
-  rw [Real.rpow_def_of_pos hapos, ← Real.exp_add, ← Real.exp_add, ← Real.exp_add]
+  rw [Real.rpow_def_of_pos (norm_pos_iff.mpr ha), ← Real.exp_add, ← Real.exp_add, ← Real.exp_add]
   congr 1
   linear_combination (affineDefect a b y) * hexp
 

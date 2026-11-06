@@ -75,23 +75,18 @@ theorem negativeLastExitTime_mem_Ico_iff_deterministic_visits
     negativeLastExitTime p c ∈ Set.Ico a b ↔
       (∃ u : ℝ≥0, a ≤ u ∧ p u = -c) ∧
         ∀ u : ℝ≥0, b ≤ u → p u ≠ -c := by
-  let A : Set ℝ≥0 := {u | p u = -c}
   have hlast : p (negativeLastExitTime p c) = -c :=
     negativeLastExitTime_mem_of_nonempty_bddAbove p c hnonempty hbounded
   constructor
   · intro h
-    have hleft : a ≤ negativeLastExitTime p c := h.1
-    have hright : negativeLastExitTime p c < b := h.2
-    refine ⟨⟨negativeLastExitTime p c, hleft, hlast⟩, ?_⟩
+    refine ⟨⟨negativeLastExitTime p c, (h.1), hlast⟩, ?_⟩
     intro u hu hhit
-    have huL : u ≤ negativeLastExitTime p c := le_csSup hbounded hhit
-    exact (not_le_of_gt hright) (le_trans hu huL)
+    exact (not_le_of_gt (h.2)) (le_trans hu (le_csSup hbounded hhit))
   · rintro ⟨⟨u, hau, hhit⟩, havoid⟩
     constructor
     · exact hau.trans (le_csSup hbounded hhit)
     · by_contra hnot
-      have hbL : b ≤ negativeLastExitTime p c := le_of_not_gt hnot
-      exact havoid (negativeLastExitTime p c) hbL hlast
+      exact havoid (negativeLastExitTime p c) (le_of_not_gt hnot) hlast
 
 end DOZZ.Proofs
 

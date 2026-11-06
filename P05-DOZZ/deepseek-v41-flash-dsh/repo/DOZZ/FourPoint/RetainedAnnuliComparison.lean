@@ -3,6 +3,7 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
+public import DOZZ.SharedHyp
 
 public import DOZZ.FourPoint.RetainedAnnuliScalar
 
@@ -20,7 +21,7 @@ theorem fieldChaosMass_finite_ae
     {Ω S : Type*} [MeasurableSpace Ω] [MeasurableSpace S]
     (P : Measure Ω) (Φ : Ω → S → ℝ) (hΦ : IsCenteredGaussianField P Φ)
     (ν : Measure S) [IsFiniteMeasure ν] (h : S → ℝ≥0) (hh : Measurable h)
-    (hhb : ∃ c : ℝ≥0, ∀ x, h x ≤ c) (γ : ℝ) :
+    (hhb : BoundedWeight h) (γ : ℝ) :
     ∀ᵐ ω ∂P, fieldChaosMass P Φ ν h γ ω ≠ ⊤ := by
   by_cases hν : ν = 0
   · filter_upwards [] with ω

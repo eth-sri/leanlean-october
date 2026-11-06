@@ -65,18 +65,16 @@ private theorem brownianHeatDensity_eq_gaussianPDFReal {t : ℝ} (ht : 0 < t) :
 private theorem integrable_sq_mul_brownianHeatDensity {t : ℝ} (ht : 0 < t) :
     Integrable (fun x : ℝ => x ^ 2 * brownianHeatDensity t x) (volume : Measure ℝ) := by
   let v : ℝ≥0 := ⟨t, le_of_lt ht⟩
-  have hv : v ≠ 0 := ne_of_gt (show 0 < v from ht)
   have hsq : Integrable (fun x : ℝ => x ^ 2) (gaussianReal 0 v) :=
     (memLp_id_gaussianReal 2).integrable_sq
-  have hpdf : Measurable (gaussianPDF 0 v) := measurable_gaussianPDF _ _
   have hpdf_top : ∀ᵐ x ∂(volume : Measure ℝ), gaussianPDF 0 v x < ∞ := by
     filter_upwards [] with x
     simp [gaussianPDF]
   have hsq' : Integrable (fun x : ℝ => x ^ 2)
       ((volume : Measure ℝ).withDensity (gaussianPDF 0 v)) := by
-    rw [← gaussianReal_of_var_ne_zero 0 hv]
+    rw [← gaussianReal_of_var_ne_zero 0 (ne_of_gt (show 0 < v from ht))]
     exact hsq
-  have hmul := (integrable_withDensity_iff hpdf hpdf_top).mp hsq'
+  have hmul := (integrable_withDensity_iff (measurable_gaussianPDF _ _) hpdf_top).mp hsq'
   apply hmul.congr
   filter_upwards [] with x
   rw [toReal_gaussianPDF, ← brownianHeatDensity_eq_gaussianPDFReal ht]
@@ -84,21 +82,19 @@ private theorem integrable_sq_mul_brownianHeatDensity {t : ℝ} (ht : 0 < t) :
 private theorem integral_sq_mul_brownianHeatDensity {t : ℝ} (ht : 0 < t) :
     ∫ x : ℝ, x ^ 2 * brownianHeatDensity t x = t := by
   let v : ℝ≥0 := ⟨t, le_of_lt ht⟩
-  have hv : v ≠ 0 := ne_of_gt (show 0 < v from ht)
   have hmoment : ∫ x : ℝ, x ^ 2 ∂gaussianReal 0 v = t := by
     have hvariance := variance_eq_integral
       (μ := gaussianReal 0 v) (measurable_id'.aemeasurable : AEMeasurable id _)
     rw [variance_fun_id_gaussianReal, integral_id_gaussianReal] at hvariance
     norm_num [v] at hvariance ⊢
     exact hvariance.symm
-  have hpdf : Measurable (gaussianPDF 0 v) := measurable_gaussianPDF _ _
   have hpdf_top : ∀ᵐ x ∂(volume : Measure ℝ), gaussianPDF 0 v x < ∞ := by
     filter_upwards [] with x
     simp [gaussianPDF]
   have hmoment' : ∫ x : ℝ, x ^ 2 ∂((volume : Measure ℝ).withDensity (gaussianPDF 0 v)) = t := by
-    rw [← gaussianReal_of_var_ne_zero 0 hv]
+    rw [← gaussianReal_of_var_ne_zero 0 (ne_of_gt (show 0 < v from ht))]
     exact hmoment
-  rw [integral_withDensity_eq_integral_toReal_smul hpdf hpdf_top (fun x : ℝ => x ^ 2)] at hmoment'
+  rw [integral_withDensity_eq_integral_toReal_smul (measurable_gaussianPDF _ _) hpdf_top (fun x : ℝ => x ^ 2)] at hmoment'
   have hEq : (∫ x : ℝ, (gaussianPDF 0 v x).toReal • x ^ 2) =
       ∫ x : ℝ, x ^ 2 * brownianHeatDensity t x := by
     apply integral_congr_ae
@@ -135,7 +131,6 @@ theorem conditionedPositiveEntranceDensity_eq_zeroDriftTransition
     {ν t y : ℝ} (hν : 0 < ν) (ht : 0 < t) (hy : 0 < y) :
     conditionedPositiveEntranceDensity ν t y =
       conditionedPositiveTransitionDensity 0 t (ν * t) y := by
-  have hx : 0 < ν * t := mul_pos hν ht
   have hdiff : brownianHeatDensity t (y - ν * t) -
       brownianHeatDensity t (y + ν * t) =
         Real.exp (-(y ^ 2) / (2 * t) - ν ^ 2 * t / 2) *
@@ -151,7 +146,7 @@ theorem conditionedPositiveEntranceDensity_eq_zeroDriftTransition
   have htransition : conditionedPositiveTransitionDensity 0 t (ν * t) y =
       (y / (ν * t)) *
         (brownianHeatDensity t (y - ν * t) - brownianHeatDensity t (y + ν * t)) := by
-    simp [conditionedPositiveTransitionDensity, conditionedH, ht, hx, hy]
+    simp [conditionedPositiveTransitionDensity, conditionedH, ht, (mul_pos hν ht), hy]
     ring
   rw [htransition, hdiff, conditionedPositiveEntranceDensity]
   simp only [hν.le, ht, hy, and_self, ite_true, hν.ne']
@@ -248,9 +243,8 @@ theorem integrable_conditionedPositiveEntranceDensity
       rw [Set.indicator_of_notMem hnot]
       rw [conditionedPositiveEntranceDensity_eq_zero_of_nonpos (by norm_num) ht hy']
   · have hνpos : 0 < ν := lt_of_le_of_ne hν (Ne.symm hνzero)
-    have hx : 0 < ν * t := mul_pos hνpos ht
     have htransition := integrable_conditionedPositiveTransitionDensity
-      (ν := 0) (t := t) (x := ν * t) (by norm_num) ht hx
+      (ν := 0) (t := t) (x := ν * t) (by norm_num) ht (mul_pos hνpos ht)
     exact htransition.congr (Eventually.of_forall fun y =>
       (conditionedPositiveEntranceDensity_eq_zeroDriftTransition_all hνpos ht y).symm)
 
@@ -292,14 +286,13 @@ theorem conditionedPositiveEntranceDensity_integral_eq_one
               simpa [Set.compl_Iic] using hsplit.symm
       _ = 1 := by rw [hIic, hIoi]; norm_num
   · have hνpos : 0 < ν := lt_of_le_of_ne hν (Ne.symm hνzero)
-    have hx : 0 < ν * t := mul_pos hνpos ht
     have hEq := conditionedPositiveEntranceDensity_eq_zeroDriftTransition_all hνpos ht
     calc
       ∫ y : ℝ, conditionedPositiveEntranceDensity ν t y =
           ∫ y : ℝ, conditionedPositiveTransitionDensity 0 t (ν * t) y := by
             apply integral_congr_ae
             exact Eventually.of_forall hEq
-      _ = 1 := conditionedPositiveTransitionDensity_integral_eq_one (by norm_num) ht hx
+      _ = 1 := conditionedPositiveTransitionDensity_integral_eq_one (by norm_num) ht (mul_pos hνpos ht)
 
 /-- The probability measure of the explicit conditioned entrance density. -/
 noncomputable def conditionedPositiveEntranceMeasure (ν t : ℝ) : Measure ℝ :=
@@ -457,8 +450,7 @@ private theorem entrance_cdf_superlevel_bddBelow
   intro x hx
   change u ≤ ProbabilityTheory.cdf μ x at hx
   by_contra hxlt
-  have hxnonpos : x ≤ 0 := le_of_lt (lt_of_not_ge hxlt)
-  rw [hzero x hxnonpos] at hx
+  rw [hzero x (le_of_lt (lt_of_not_ge hxlt))] at hx
   linarith
 
 private theorem conditionedPositiveEntranceMeasure_cdf_eq_zero_of_nonpos

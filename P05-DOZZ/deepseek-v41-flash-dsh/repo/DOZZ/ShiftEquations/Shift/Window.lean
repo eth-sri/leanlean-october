@@ -51,7 +51,6 @@ theorem oneInsertionErrorCeiling_ge {γ α : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2)
     rw [hM]
     exact min_le_min le_rfl (by linarith)
   have hk0 : 0 ≤ min (2 / γ ^ 2) (4 / γ ^ 2 - 1) := le_min h2.le (by linarith)
-  have hMpos : 0 < min (p + 2 / γ ^ 2) (4 / γ ^ 2) := lt_min (by linarith) (by linarith)
   exact div_le_div₀ (hk0.trans hk) hk (by linarith)
     (by linarith [min_le_right (p + 2 / γ ^ 2) (4 / γ ^ 2)])
 
@@ -122,7 +121,6 @@ theorem exists_twoPoleWindow {γ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2) :
   have hhalf : 0 < 1 / 2 - η / γ := by
     rw [sub_pos, div_lt_iff₀ hγ]
     linarith
-  have hsd0 : 0 < sd := mul_pos hγ (lt_min hE₃ hhalf)
   set δ := min (min sa sb) (min sc sd) / 2 with hδ
   have hδ0 : 0 < δ := by positivity
   have hδa : δ < sa := by

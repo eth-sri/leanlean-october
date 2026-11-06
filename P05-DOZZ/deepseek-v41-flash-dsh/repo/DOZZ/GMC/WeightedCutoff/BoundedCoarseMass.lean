@@ -19,7 +19,6 @@ theorem regularizedGMC_bounded_ball_moment_coarse_uniform_gamma
       (∫⁻ ω, (regularizedGMC P Xc γ (Real.log (1 / δ)) ω (Metric.ball 0 B)) ^ q ∂P) ≤ D := by
   let V : ℝ := Real.log 8 + 2 * Real.log (1 + B + r₀)
   have hV : 0 ≤ V := by
-    have h1 := Real.log_nonneg (by norm_num : (1 : ℝ) ≤ 8)
     have h2 := Real.log_nonneg (show 1 ≤ 1 + B + r₀ by linarith)
     dsimp [V]
     positivity
@@ -44,9 +43,8 @@ theorem regularizedGMC_bounded_ball_moment_coarse_uniform_gamma
     field_simp
   have hvar : ∀ x ∈ Metric.ball (0 : ℂ) B, gaussianVariance P (fun ω => Xc ω x r) ≤ V := by
     intro x hx
-    have hx' : ‖x‖ ≤ B := le_of_lt (by simpa using hx)
     exact gmcCircle_variance_le_bounded_radius P X hX Xc hXc B r₀ (Real.log 8) r
-      hB hr₀.le hrT (by rw [hcut]; exact hδr) x hx'
+      hB hr₀.le hrT (by rw [hcut]; exact hδr) x (le_of_lt (by simpa using hx))
   have h := regularizedGMC_moment_upper_of_variance_bound P X hX Xc hXc γ r q V hq.le
     (Metric.ball 0 B) Metric.isOpen_ball.measurableSet hvar
   have hexp : γ ^ 2 * (q ^ 2 - q) / 2 * V ≤ 4 * (q ^ 2 - q) / 2 * V := by

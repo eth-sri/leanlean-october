@@ -23,7 +23,6 @@ theorem coulomb_shrinking_root_piece_le
     (∫⁻ x in Metric.ball (z k) ρ, coulombWeight γ α z αinf x ∂μ) ≤
       ENNReal.ofReal (((2 + 2 * ∑ j, ‖z j‖) / δ) ^ (∑ j, |γ * α j| + |γ * αinf|)) *
         weightedGmcBallMass γ μ (α k) (z k) ρ := by
-  have hB : MeasurableSet (Metric.ball (z k) ρ) := Metric.isOpen_ball.measurableSet
   have hw : Measurable (fun x : ℂ => ENNReal.ofReal ‖x - z k‖ ^ (-γ * α k)) :=
     (ENNReal.measurable_ofReal.comp (measurable_id.sub_const _).norm).pow_const _
   have hne : ∀ᵐ x ∂μ.restrict (Metric.ball (z k) ρ), x ≠ z k :=
@@ -32,7 +31,7 @@ theorem coulomb_shrinking_root_piece_le
   simp only [ENNReal.rpow_eq_pow]
   rw [← lintegral_const_mul _ hw]
   apply lintegral_mono_ae
-  filter_upwards [hne, ae_restrict_mem hB] with x hxk hx
+  filter_upwards [hne, ae_restrict_mem (Metric.isOpen_ball.measurableSet)] with x hxk hx
   exact coulombWeight_le_root γ α z αinf k hδ hδ1 hsep
     (Metric.ball_subset_ball hρδ hx) hxk
 

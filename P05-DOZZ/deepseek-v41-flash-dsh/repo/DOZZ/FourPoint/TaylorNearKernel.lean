@@ -28,7 +28,6 @@ theorem gammaHalf_near_kernel_bound
   have hxhigh : ‖x‖ ≤ 2 * ‖z‖ := by
     have hh := norm_sub_norm_le x z
     linarith only [hh, hnear, hzpos]
-  have hxpos : 0 < ‖x‖ := (by positivity : 0 < ‖z‖ / 2).trans_le hxlow
   have hxhalf : ‖x‖ ≤ 1 / 2 := by linarith only [hxhigh, hz4]
   have hn : normPlus x = 1 := max_eq_left (by linarith only [hxhalf])
   have hlow1 : 1 / 2 ≤ ‖x - 1‖ := by
@@ -48,7 +47,7 @@ theorem gammaHalf_near_kernel_bound
       ‖x - z‖ ^ (γ ^ 2 / 2 - 2) * ‖x‖ ^ (-γ * α₁) * ‖x - 1‖ ^ (-γ * α₂) := by
     unfold gammaHalfKernel
     rw [hn, Real.one_rpow, mul_one, Real.rpow_sub hdpos, Real.rpow_two,
-      neg_mul γ α₁, neg_mul γ α₂, Real.rpow_neg hxpos.le, Real.rpow_neg hx1.le]
+      neg_mul γ α₁, neg_mul γ α₂, Real.rpow_neg ((by positivity : 0 < ‖z‖ / 2).trans_le hxlow).le, Real.rpow_neg hx1.le]
     field_simp
   have hweight := rpow_distance_comparison ‖x‖ ‖z‖ 2 (-γ * α₁) |γ * α₁|
     hzpos (by norm_num) hxlow hxhigh (by simpa only [neg_mul] using neg_le_neg (le_abs_self (γ * α₁)))

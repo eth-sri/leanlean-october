@@ -32,7 +32,6 @@ theorem reflected_three_region_kernel_partition (μ : Measure ℂ) (s r : ℝ)
     have hn : 0 < ‖x‖ := norm_pos_iff.mpr (by simpa only [mem_singleton_iff] using hx0)
     have hxne : ‖x‖ ≠ r := by simpa only [Metric.mem_sphere,dist_zero_right] using hxr
     have hx1' : x ≠ 1 := by simpa only [mem_singleton_iff] using hx1
-    have hx0' : x ≠ 0 := norm_pos_iff.mp hn
     by_cases hxs : ‖x‖ < s
     · have hUx : x ∈ U := ⟨hn,hxs⟩
       have hVx : x ∉ V := fun hx => (not_le.mpr hxs) hx.1
@@ -45,7 +44,7 @@ theorem reflected_three_region_kernel_partition (μ : Measure ℂ) (s r : ℝ)
         simp only [indicator_of_notMem hUx,indicator_of_mem hVx,indicator_of_notMem hWx,zero_add,add_zero]
       · have hrx : r < ‖x‖ := lt_of_le_of_ne (le_of_not_gt hxr') hxne.symm
         have hVx : x ∉ V := fun hx => hxr' hx.2
-        have hWx : x ∈ W := ⟨hrx,by simp [hx0',hx1']⟩
+        have hWx : x ∈ W := ⟨hrx,by simp [(norm_pos_iff.mp hn),hx1']⟩
         simp only [indicator_of_notMem hUx,indicator_of_notMem hVx,indicator_of_mem hWx,zero_add]
   have hab : Measurable (fun x => U.indicator K x+V.indicator K x) :=
     (hK.indicator hU).add (hK.indicator hV)

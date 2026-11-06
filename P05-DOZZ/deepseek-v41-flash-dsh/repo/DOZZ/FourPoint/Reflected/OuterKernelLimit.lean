@@ -39,13 +39,12 @@ theorem reflected_outer_kernel_integral_tendsto (γ α₁ α₂ α₃ ξ : ℝ) 
   let G : ℂ → ℝ≥0∞ := fun x => C * ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ 0 x)
   have hnorm : Tendsto (fun z : ℂ => ‖z‖) l (nhds 0) := by
     simpa only [norm_zero] using (continuous_norm.tendsto (0 : ℂ)).mono_left nhdsWithin_le_nhds
-  have hsmall : ∀ᶠ z in l, ‖z‖ < 1 := hnorm.eventually (gt_mem_nhds zero_lt_one)
   have hmeas : ∀ z, Measurable (F z) := by
     intro z
     exact (ENNReal.measurable_ofReal.comp (reflected_gammaHalfKernel_measurable γ α₁ α₂ α₃ z)).indicator
       (isClosed_le continuous_const continuous_norm).measurableSet
   have hbound : ∀ᶠ z in l, ∀ᵐ x ∂μ, F z x ≤ G x := by
-    filter_upwards [hsmall, self_mem_nhdsWithin] with z hz hz0
+    filter_upwards [(hnorm.eventually (gt_mem_nhds zero_lt_one)), self_mem_nhdsWithin] with z hz hz0
     apply Filter.Eventually.of_forall
     intro x
     by_cases hx : ‖z‖ ^ (1 - ξ) ≤ ‖x‖

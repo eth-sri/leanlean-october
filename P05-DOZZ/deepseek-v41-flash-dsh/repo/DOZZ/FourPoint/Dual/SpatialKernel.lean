@@ -15,10 +15,8 @@ insertion has a nonnegative exponent and does not need to be excluded. -/
 theorem dual_kernel_continuousOn (γ α₁ α₂ α₃ : ℝ) (z : ℂ) :
     ContinuousOn (dualFusionKernel γ α₁ α₂ α₃ z) ({0, 1} : Set ℂ)ᶜ := by
   intro x hx
-  have hx0 : x ≠ 0 := fun h => hx (by simp [h])
-  have hx1 : x ≠ 1 := fun h => hx (by simp [h])
-  have h0 : 0 < ‖x‖ := norm_pos_iff.mpr hx0
-  have h1 : 0 < ‖x-1‖ := norm_pos_iff.mpr (sub_ne_zero.mpr hx1)
+  have h0 : 0 < ‖x‖ := norm_pos_iff.mpr (fun h => hx (by simp [h]))
+  have h1 : 0 < ‖x-1‖ := norm_pos_iff.mpr (sub_ne_zero.mpr (fun h => hx (by simp [h])))
   have hplus : Continuous normPlus := by unfold normPlus; fun_prop
   have hpp : 0 < normPlus x := by unfold normPlus; positivity
   have hn : ContinuousAt (fun x : ℂ => ‖x-z‖^((2 : ℝ))) x :=

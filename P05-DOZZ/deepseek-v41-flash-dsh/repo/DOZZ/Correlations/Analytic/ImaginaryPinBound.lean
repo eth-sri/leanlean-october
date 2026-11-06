@@ -29,8 +29,6 @@ theorem imaginary_pin_le {N : ℕ} (b : Fin (N + 1) → ℝ) (A : Fin N → ℝ)
       B * (N + 1 : ℕ) * ∑ i, b i ^ 2 := by
   classical
   let S := ∑ i, |b i|
-  have hS : 0 ≤ S := Finset.sum_nonneg (fun i _ => abs_nonneg _)
-  have hsum : |∑ i, b i| ≤ S := Finset.abs_sum_le_sum_abs _ _
   have hsub : ∑ i : Fin N, |b i.castSucc| ≤ S := by
     dsimp only [S]
     rw [Fin.sum_univ_castSucc]
@@ -49,7 +47,7 @@ theorem imaginary_pin_le {N : ℕ} (b : Fin (N + 1) → ℝ) (A : Fin N → ℝ)
   calc
     _ ≤ |-(∑ i, b i) * (∑ i, b i.castSucc * A i)| := le_abs_self _
     _ = |∑ i, b i| * |∑ i, b i.castSucc * A i| := by rw [abs_mul, abs_neg]
-    _ ≤ S * (S * B) := mul_le_mul hsum hpin (abs_nonneg _) hS
+    _ ≤ S * (S * B) := mul_le_mul (Finset.abs_sum_le_sum_abs _ _) hpin (abs_nonneg _) (Finset.sum_nonneg (fun i _ => abs_nonneg _))
     _ = B * S ^ 2 := by ring
     _ ≤ B * ((N + 1 : ℕ) * ∑ i, b i ^ 2) := mul_le_mul_of_nonneg_left hsq hB
     _ = _ := by ring

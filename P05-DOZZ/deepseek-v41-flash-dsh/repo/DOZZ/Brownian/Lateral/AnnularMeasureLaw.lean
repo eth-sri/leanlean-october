@@ -3,6 +3,7 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
+public import DOZZ.SharedHyp
 public import DOZZ.Brownian.Lateral.DilationLaw
 public import DOZZ.GMC.Moments.InversionMeasureLaw
 public import DOZZ.Brownian.LateralLocalFiniteness
@@ -51,16 +52,14 @@ theorem lateralLawAnnulus_exhaustion :
   constructor
   · intro hx
     obtain ⟨n, hn⟩ := mem_iUnion.mp hx
-    have hpos : 0 < ‖x‖ := lt_trans (by positivity) hn.1
-    simpa only [mem_compl_iff, mem_singleton_iff] using norm_pos_iff.mp hpos
+    simpa only [mem_compl_iff, mem_singleton_iff] using norm_pos_iff.mp (lt_trans (by positivity) hn.1)
   · intro hx
-    have hxpos : 0 < ‖x‖ := norm_pos_iff.mpr hx
     obtain ⟨n, hn⟩ := exists_nat_gt (max ‖x‖ (1 / ‖x‖))
     apply mem_iUnion.mpr
     refine ⟨n, ?_, ?_⟩
     · have ht : 1 / ‖x‖ < (n : ℝ) + 2 := (le_max_right _ _).trans_lt hn |>.trans (by linarith)
       exact (div_lt_iff₀ (by positivity)).mpr
-        (by simpa only [one_mul, mul_comm] using (div_lt_iff₀ hxpos).mp ht)
+        (by simpa only [one_mul, mul_comm] using (div_lt_iff₀ (norm_pos_iff.mpr hx)).mp ht)
     · exact (le_max_left _ _).trans_lt hn |>.trans (by linarith)
 
 private abbrev LateralAnnularOpen :=
@@ -208,12 +207,11 @@ theorem originRadialRemovedGMC_compact_lt_top
   obtain ⟨b, hb⟩ := (hK.image_of_continuousOn hr).bddAbove
   have hsub : K ⊆ r ⁻¹' Icc a b := fun x hx =>
     ⟨ha ⟨x, hx, rfl⟩, hb ⟨x, hx, rfl⟩⟩
-  have hrm : Measurable r := measurable_neg.comp (Real.measurable_log.comp measurable_norm)
   calc
     M.withDensity (lateralRadialWeight γ A) K ≤
         M.withDensity (lateralRadialWeight γ A) (r ⁻¹' Icc a b) := measure_mono hsub
     _ = lateralProjectedGMC γ A M (Icc a b) :=
-      (Measure.map_apply hrm measurableSet_Icc).symm
+      (Measure.map_apply (measurable_neg.comp (Real.measurable_log.comp measurable_norm)) measurableSet_Icc).symm
     _ < ⊤ := lateralProjectedGMC_Icc_ne_top γ A M a b
 
 /-- Bounded continuous integrals of finite random measures are measurable up to null sets. -/
@@ -421,8 +419,8 @@ theorem originRadialRemovedGMC_dilation_annular_test_vector_law
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
     (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
-    (hcont : ∀ᵐ ω ∂P, Continuous (fun p : ℂ × ℝ => Xc ω p.1 p.2))
+    (hm : MeasurableCircleAvg Xc)
+    (hcont : ContinuousCircleAvg P Xc)
     (c γ : ℝ) (hcpos : 0 < c) (hγ : 0 < γ) (hγ2 : γ < 2)
     (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
     {m : ℕ} (f : Fin m → BoundedContinuousFunction ℂ ℝ)
@@ -435,11 +433,10 @@ theorem originRadialRemovedGMC_dilation_annular_test_vector_law
   have hc0 : (c : ℂ) ≠ 0 := by exact_mod_cast hcpos.ne'
   let e := Homeomorph.mulLeft₀ (c : ℂ) hc0
   let T := ⋃ j, tsupport (f j : ℂ → ℝ)
-  have hT : IsCompact T := isCompact_iUnion hfc
   have hTzero : (0 : ℂ) ∉ T := by
     intro h; obtain ⟨j, hj⟩ := mem_iUnion.mp h; exact hfzero j hj
   let K := e ⁻¹' T
-  have hK : IsCompact K := e.isCompact_preimage.mpr hT
+  have hK : IsCompact K := e.isCompact_preimage.mpr (isCompact_iUnion hfc)
   have hKzero : (0 : ℂ) ∉ K := by simpa only [K, mem_preimage, e,
     Homeomorph.coe_mulLeft₀, mul_zero] using hTzero
   obtain ⟨ρ, hρ, hKU⟩ := exists_originLateralChart_of_compact K hK hKzero
@@ -470,8 +467,8 @@ theorem originRadialRemovedGMC_dilation_law
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
     (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
-    (hcont : ∀ᵐ ω ∂P, Continuous (fun p : ℂ × ℝ => Xc ω p.1 p.2))
+    (hm : MeasurableCircleAvg Xc)
+    (hcont : ContinuousCircleAvg P Xc)
     (c γ : ℝ) (hcpos : 0 < c) (hγ : 0 < γ) (hγ2 : γ < 2)
     (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) :
     P.map (fun ω => ((M ω).withDensity (lateralRadialWeight γ (originRadialPath Xc ω))).map
@@ -507,8 +504,8 @@ theorem lateralProjectedGMC_translation_law
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
     (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
-    (hcont : ∀ᵐ ω ∂P, Continuous (fun p : ℂ × ℝ => Xc ω p.1 p.2))
+    (hm : MeasurableCircleAvg Xc)
+    (hcont : ContinuousCircleAvg P Xc)
     (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
     (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) (t : ℝ) :
     P.map (fun ω => (lateralProjectedGMC γ (originRadialPath Xc ω) (M ω)).map

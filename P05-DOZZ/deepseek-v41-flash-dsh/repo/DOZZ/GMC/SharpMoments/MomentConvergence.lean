@@ -51,12 +51,11 @@ theorem momentConv_lintegral_rpow_limit_le
     (hconv : TendstoInMeasure P (fun n ω => (f n ω).toReal) atTop (fun ω => (g ω).toReal))
     (r : ℝ) (C : ℝ≥0∞) (hbound : ∀ n, ∫⁻ ω, f n ω ^ r ∂P ≤ C) :
     ∫⁻ ω, g ω ^ r ∂P ≤ C := by
-  have hmax : ∀ x : ℝ≥0∞, max x.toReal 0 = x.toReal := fun x => max_eq_left ENNReal.toReal_nonneg
   have hae : ∀ n, (fun ω => ENNReal.rpow (ENNReal.ofReal (max (f n ω).toReal 0)) r) =ᵐ[P]
       fun ω => f n ω ^ r := by
     intro n
     filter_upwards [hfin n] with ω hω
-    simp only [hmax, ENNReal.ofReal_toReal hω, ENNReal.rpow_eq_pow]
+    simp only [(fun x => max_eq_left ENNReal.toReal_nonneg), ENNReal.ofReal_toReal hω, ENNReal.rpow_eq_pow]
   have hfmeas : ∀ n, AEMeasurable
       (fun ω => ENNReal.rpow (ENNReal.ofReal (max (f n ω).toReal 0)) r) P :=
     fun n => ((hf n).pow_const r).congr (hae n).symm

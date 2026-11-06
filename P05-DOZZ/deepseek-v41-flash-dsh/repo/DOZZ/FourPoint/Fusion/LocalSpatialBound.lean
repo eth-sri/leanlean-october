@@ -25,9 +25,8 @@ theorem fusion_localR1_expectation_bound {Ω : Type*} [MeasurableSpace Ω]
   have hk : 0 < γ ^ 2 / 2 := by positivity
   have hβ : γ ^ 2 / 2 < γ * α₁ := by nlinarith [mul_lt_mul_of_pos_left hlo hγ]
   have hβ2 : γ * α₁ < 2 := by have h := (lt_div_iff₀ hγ).mp hα₁; nlinarith
-  have hK : Integrable (planarWirtingerKernel (γ ^ 2 / 2) (γ * α₁) 1) volume := (planar_wirtinger_integral (γ ^ 2 / 2) (γ * α₁) hk hβ hβ2 1 (by norm_num)).1
   obtain ⟨C, hC, hb⟩ := fusionScaledIntegral_bound P X hX γ hγ hγ2 M hM α₁ α₂ α₃
-    (-p - 1) (by linarith) _ hK
+    (-p - 1) (by linarith) _ ((planar_wirtinger_integral (γ ^ 2 / 2) (γ * α₁) hk hβ hβ2 1 (by norm_num)).1)
   refine ⟨C, hC, ?_⟩
   intro z hz hz4
   rw [fusion_localR1_rooting P X hX γ hγ hγ2 M hM α₁ α₂ α₃ hβ hα₁ hα₂ hα₃
@@ -59,15 +58,13 @@ theorem fusion_localR2_expectation_bound {Ω : Type*} [MeasurableSpace Ω]
   have hk : 0 < γ ^ 2 / 2 := by positivity
   have hβ : γ ^ 2 / 2 < γ * α₁ := by nlinarith [mul_lt_mul_of_pos_left hlo hγ]
   have hβ2 : γ * α₁ < 2 := by have h := (lt_div_iff₀ hγ).mp hα₁; nlinarith
-  have hK : Integrable ((fun y : ℂ => (planarMixedKernel (γ ^ 2 / 2) (γ * α₁) 1 y : ℂ))) volume := (planar_mixed_integral (γ ^ 2 / 2) (γ * α₁) hk hβ hβ2 1 (by norm_num)).1.ofReal
   obtain ⟨C, hC, hb⟩ := fusionScaledIntegral_bound P X hX γ hγ hγ2 M hM α₁ α₂ α₃
-    (-p - 1) (by linarith) _ hK
+    (-p - 1) (by linarith) _ ((planar_mixed_integral (γ ^ 2 / 2) (γ * α₁) hk hβ hβ2 1 (by norm_num)).1.ofReal)
   refine ⟨C, hC, ?_⟩
   intro z hz hz4
   rw [fusion_localR2_rooting P X hX γ hγ hγ2 M hM α₁ α₂ α₃ hβ hα₁ hα₂ hα₃
     (-p - 1) (by linarith) z hz hz4,
     fusion_localR2_reference_scaled P X hX γ hγ hγ2 M hM α₁ α₂ α₃ (-p - 1) z hz]
-  have hn : 0 < ‖z‖ := norm_pos_iff.mpr hz
   rw [norm_mul, Complex.norm_real, Real.norm_of_nonneg (Real.rpow_nonneg (norm_nonneg _) _)]
   calc
     _ ≤ ‖z‖ ^ (γ ^ 2 / 2 - γ * α₁) * C :=

@@ -32,7 +32,6 @@ theorem reflected_buffer_weight_bound {Ω : Type*} [MeasurableSpace Ω]
   let q : ℝ := (α₁+α₂+α₃-γ/2-2*Q γ)/γ+1
   let e : ℝ := γ*(Q γ-α₁)+(α₁+γ/2-Q γ)^2/2
   let c : ℝ := (1+R)^(γ^2/2)*(1/4 : ℝ)^(-q)
-  have hq : 0 < q := (reflected_freezing_margins γ α₁ α₂ α₃ hγ hα₁ hreflect hs).2.1
   have hc : 0 < c := by dsimp only [c]; positivity
   obtain ⟨C, ε₀, hC, hε₀, hb⟩ := reflected_deleted_disk_weight_bound
     P X M γ α₁ α₂ α₃ hγ hγ₂ hα₁ hreflect hs hX hM
@@ -50,7 +49,7 @@ theorem reflected_buffer_weight_bound {Ω : Type*} [MeasurableSpace Ω]
     have hi := reflected_buffer_mass_upper γ α₁ α₂ α₃ R r hR z (M ω) U hU hball hsep
     have ht := ennreal_rpow_antitone_of_nonpos
       (reflected_outerMass_relative_comparison γ α₁ α₂ α₃ ξ hγ hγ₂ z (M ω) hr hz h0 h1).1
-        (neg_nonpos.mpr hq.le)
+        (neg_nonpos.mpr ((reflected_freezing_margins γ α₁ α₂ α₃ hγ hα₁ hreflect hs).2.1).le)
     rw [ennreal_mul_rpow_of_ne_zero_ne_top _ _ (by norm_num : ENNReal.ofReal (1/4 : ℝ) ≠ 0)
       ENNReal.ofReal_ne_top, ENNReal.ofReal_rpow_of_pos (by norm_num : (0 : ℝ) < 1/4)] at ht
     have hh := mul_le_mul' hi ht

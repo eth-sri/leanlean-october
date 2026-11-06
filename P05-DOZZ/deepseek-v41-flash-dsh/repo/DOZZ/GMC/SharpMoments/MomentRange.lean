@@ -102,7 +102,6 @@ theorem gmc_ball_moment_eq_top_of_critical_le
     intro ω
     exact ENNReal.rpow_le_rpow (measure_mono (gmcOpenSquare_subset_ball ρ')) (by linarith)
   by_contra hne
-  have hA : gmcMassMoment P M (Metric.ball z ρ') pc < ⊤ := lt_top_iff_ne_top.mpr hne
   -- subcritical orders increasing to `pc`
   set y : ℕ → ℝ := fun n => pc - (pc - 1) / ((n : ℝ) + 2) with hydef
   have hy1 : ∀ n, 1 ≤ y n := by
@@ -196,7 +195,7 @@ theorem gmc_ball_moment_eq_top_of_critical_le
             exact hn.trans (hbound n))
   rw [href] at hfatou
   exact (ENNReal.mul_lt_top (lt_top_iff_ne_top.mpr hTstartop)
-    (ENNReal.add_lt_top.mpr ⟨ENNReal.one_lt_top, hA⟩)).not_ge hfatou
+    (ENNReal.add_lt_top.mpr ⟨ENNReal.one_lt_top, (lt_top_iff_ne_top.mpr hne)⟩)).not_ge hfatou
 
 /-- On each bounded nonempty open set the moment is finite exactly for `p < 4/γ²`, including all
 negative `p`; at and above the endpoint it diverges. See [KRV, (condmom)]. -/

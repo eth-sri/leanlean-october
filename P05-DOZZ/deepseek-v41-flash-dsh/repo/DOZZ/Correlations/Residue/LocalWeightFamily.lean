@@ -30,7 +30,6 @@ theorem residue_localWeight_uniform_family (γ S α d₀ : ℝ) (hγ : 0 ≤ γ)
     constructor
     · intro hh; rw [hh, zero_sub, norm_neg] at hd; linarith only [hz, hd]
     · intro hh; rw [hh, norm_sub_rev] at hd; linarith only [hzw, hd]
-  have hU : IsOpen U := isOpen_univ.prod Metric.isOpen_ball
   have hH : ContDiffOn ℝ 1 H U := by
     intro t ht
     exact (residue_localDensity_contDiffAt γ S α w t (hgeo t.2 ht.2).1
@@ -43,7 +42,7 @@ theorem residue_localWeight_uniform_family (γ S α d₀ : ℝ) (hγ : 0 ≤ γ)
     have hd : dist t.2 z ≤ 1 / 2 := ht.2
     exact lt_of_le_of_lt hd (by norm_num)
   obtain ⟨D, hD⟩ := hK.exists_bound_of_continuousOn
-    ((hH.continuousOn_fderiv_of_isOpen hU le_rfl).mono hKU)
+    ((hH.continuousOn_fderiv_of_isOpen (isOpen_univ.prod Metric.isOpen_ball) le_rfl).mono hKU)
   let L : ℝ := ‖z‖ ^ (γ * S) / ‖z - w‖ ^ (γ * α)
   have hL : 0 < L := div_pos
     (Real.rpow_pos_of_pos (lt_of_lt_of_le (by norm_num : (0:ℝ) < 2) hz) _)
@@ -51,7 +50,6 @@ theorem residue_localWeight_uniform_family (γ S α d₀ : ℝ) (hγ : 0 ≤ γ)
   refine ⟨(10 : ℝ) ^ (γ * (S + d₀)), max D 0, L, by norm_num, by positivity,
     le_max_right _ _, hL, ?_⟩
   intro z' hz' F hF
-  have hzz : z' = z := hz'
   subst z'
   obtain ⟨ε, hε, rfl⟩ := hF
   have heq (x : ℂ) (hx : x ∈ Metric.ball z 1) :

@@ -63,7 +63,6 @@ theorem conditionedPositiveTransitionDensity_radial_tilt {a t x : ℝ}
       Real.exp_zero, radialAngularFactor_zero, mul_one, div_one]
   · by_cases hy : 0 < y
     · have hap : 0 < a := lt_of_le_of_ne ha (Ne.symm h0)
-      have hsx : Real.sinh (a * x) ≠ 0 := (Real.sinh_pos_iff.mpr (mul_pos hap hx)).ne'
       have hroot : Real.sqrt (2 * Real.pi * t) ≠ 0 := by positivity
       rw [conditionedPositiveTransitionDensity_eq_sinh_gaussian_factor hap ht hx hy,
         conditionedPositiveTransitionDensity_zero_eq_sinh_gaussian_factor ht hx hy,
@@ -73,7 +72,7 @@ theorem conditionedPositiveTransitionDensity_radial_tilt {a t x : ℝ}
           (-a ^ 2 * t / 2) + (-x ^ 2 / (2 * t)) by ring, Real.exp_add]
       have harg : x / t * y = x * y / t := by ring
       rw [harg]
-      field_simp [hroot, hsx, h0, hx.ne', hy.ne']
+      field_simp [hroot, ((Real.sinh_pos_iff.mpr (mul_pos hap hx)).ne'), h0, hx.ne', hy.ne']
     · simp only [conditionedPositiveTransitionDensity, ha, ht, hx, hy, and_false, ite_false,
         zero_mul, zero_div]
 
@@ -184,8 +183,7 @@ theorem finiteRealVector_measure_eq_of_product_tests (n : ℕ)
       obtain ⟨i, hi⟩ := not_forall.mp hx
       exact Finset.prod_eq_zero (Finset.mem_univ i) (indicator_of_notMem hi _)
   simp_rw [hind] at htest
-  have hmS : MeasurableSet (univ.pi s) := MeasurableSet.pi (to_countable _) (fun i _ => hms i)
-  simpa only [lintegral_indicator hmS, setLIntegral_one] using htest
+  simpa only [lintegral_indicator (MeasurableSet.pi (to_countable _) (fun i _ => hms i)), setLIntegral_one] using htest
 
 /-- Every full actual radial skeleton has the literal positive density at every drift. -/
 theorem rogersPitman_radial_fdd_positive (n : ℕ) (a : ℝ) (ha : 0 ≤ a)
@@ -215,9 +213,8 @@ theorem rogersPitman_radial_fdd_positive (n : ℕ) (a : ℝ) (ha : 0 ≤ a)
   apply lintegral_congr
   intro x
   dsimp only [Pi.mul_apply]
-  have hrealMono : StrictMono (fun i => (times i : ℝ)) := fun i j hij => hmono hij
   have hd := conditionedPositiveFDDVectorDensity_radial_tilt n a (fun i => (times i : ℝ)) x ha
-    (fun i => show 0 < (times i : ℝ) from hpos i) hrealMono
+    (fun i => show 0 < (times i : ℝ) from hpos i) (fun i j hij => hmono hij)
   rw [hd]
   ac_rfl
 

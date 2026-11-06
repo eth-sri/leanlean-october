@@ -45,7 +45,6 @@ theorem measurable_brownianGaussianLikelihood (a : ℝ) (v : ℝ≥0) :
 /-- Completing the square identifies the scalar Gaussian tilted density pointwise. -/
 theorem brownianGaussianLikelihood_mul_pdf (a : ℝ) (v : ℝ≥0) (hv : v ≠ 0) (x : ℝ) :
     gaussianPDF 0 v x*brownianGaussianLikelihood a v x = gaussianPDF (a*(v : ℝ)) v x := by
-  have hvR : (v : ℝ) ≠ 0 := by exact_mod_cast hv
   rw [gaussianPDF,gaussianPDF,brownianGaussianLikelihood,
     ← ENNReal.ofReal_mul (gaussianPDFReal_nonneg _ _ _)]
   congr 1
@@ -194,7 +193,6 @@ theorem brownianBridgeReconstruct_shift (a : ℝ) (T : ℝ≥0) (hT : T ≠ 0) (
   intro t
   change (p (min t T)-((min t T : ℝ≥0) : ℝ)/(T : ℝ)*p T)+
     ((min t T : ℝ≥0) : ℝ)/(T : ℝ)*(p T+a*(T : ℝ)) = p (min t T)+a*((min t T : ℝ≥0) : ℝ)
-  have hTR : (T : ℝ) ≠ 0 := by exact_mod_cast hT
   field_simp
   ring
 

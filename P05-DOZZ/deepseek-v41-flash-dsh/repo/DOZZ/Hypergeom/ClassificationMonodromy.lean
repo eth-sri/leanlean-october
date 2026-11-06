@@ -29,8 +29,7 @@ theorem realMonodromyPhase_ne_one_of_not_int (t : ℝ)
       (2 * (Real.pi : ℂ) * Complex.I) * (t : ℂ) =
           (n : ℂ) * (2 * (Real.pi : ℂ) * Complex.I) := hn
       _ = (2 * (Real.pi : ℂ) * Complex.I) * (n : ℂ) := by ring
-  have htn : (t : ℂ) = (n : ℂ) := mul_left_cancel₀ hbase harg
-  exact ht n (by exact_mod_cast htn)
+  exact ht n (by exact_mod_cast (mul_left_cancel₀ hbase harg))
 
 /-- The local power `z^(1-c)` has nontrivial monodromy whenever `c` is nonintegral. -/
 theorem gaussZeroMonodromyPhase_ne_one

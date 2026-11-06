@@ -60,7 +60,6 @@ theorem source_williams_tail_uniform
   let Kν := (fun α => Q γ-α) '' Kα
   let Kp := (fun α => reflectionExponent γ α) '' Kα
   have hKν : IsCompact Kν := hKα.image (continuous_const.sub continuous_id)
-  have hKp : IsCompact Kp := hKα.image (by unfold reflectionExponent; fun_prop)
   let Bs := fun ν => B (Q γ-ν)
   have hBs (ν : ℝ) (hνk : ν ∈ Kν) :
       0 < ν ∧ IsTwoSidedConditionedBrownianProcess P (Bs ν) ν := by
@@ -73,7 +72,7 @@ theorem source_williams_tail_uniform
   have hpK (p : ℝ) (hpk : p ∈ Kp) : 0 < p ∧ p < 4/γ^2 := by
     rcases hpk with ⟨α,hαk,rfl⟩
     exact residue_critical_order_bounds γ α hγ (hα α hαk).1 (hα α hαk).2
-  obtain ⟨D,hD,hgap⟩ := reflectionMass_lastCut_bound P γ hγ hγ2 Kν Kp hKν hKp Bs hBs Z hZ hInd hpK
+  obtain ⟨D,hD,hgap⟩ := reflectionMass_lastCut_bound P γ hγ hγ2 Kν Kp hKν (hKα.image (by unfold reflectionExponent; fun_prop)) Bs hBs Z hZ hInd hpK
   obtain ⟨L,hL,hPin⟩ := actual_prefactor_moment_uniform P X Xc hX hc Kz hKz hz γ b R hb hR
   obtain ⟨T,hT,hMass⟩ := prefactored_reflection_moment_uniform P X Xc hX hc
     Kz hKz hz γ b R ν₁ ν₂ hγ hb hR hRbulk hν₁ Z hZ
@@ -115,7 +114,6 @@ theorem source_williams_tail_uniform
   have hMom (s : ℝ) (hs : 0 < s) (hsR : s ≤ R) : (∫⁻ q, J q^s ∂P.prod P) ≤ T :=
     hMass z hzk f hf.le hfb ν (hνrange α hαk).1 (hνrange α hαk).2 s hs hsR
       (B α) (hData α hαk).1 (hData α hαk).2.2
-  have hJp : (∫⁻ q, J q^p ∂P.prod P) < ⊤ := (hMom p hp hpR).trans_lt hT
   have hJr : (∫⁻ q, J q^(r α) ∂P.prod P) < ⊤ := (hMom _ hrα (hr α hαk).2).trans_lt hT
   have hupper : ∀ᵐ q ∂(brownianMaximumReferenceLaw ν).prod (P.prod P), A q ≤ J q.2 :=
     ae_of_all _ fun q => hJcle q.1 q.2
@@ -144,7 +142,7 @@ theorem source_williams_tail_uniform
       hS.aemeasurable p L.toReal D γ c hp.le hD hSbound hG
   have hmodel := williams_ennreal_model_tail_bound (P.prod P) A J Jc hJ hJc hJcle
     ν γ η a (r α) (L.toReal*D) T.toReal hν hγ hη ha hrα (hpr α hαk)
-    (mul_nonneg ENNReal.toReal_nonneg hD) ENNReal.toReal_nonneg hJp hJr
+    (mul_nonneg ENNReal.toReal_nonneg hD) ENNReal.toReal_nonneg ((hMom p hp hpR).trans_lt hT) hJr
     (ENNReal.toReal_mono hT.ne (hMom _ hrα (hr α hαk).2)) hupper hlower hGap x hx
   have hCoefficient : (∫⁻ q, J q^p ∂P.prod P).toReal =
       oneInsertionTailCoefficient γ α z f (reflectionBarR P γ α (B α) Z) := by

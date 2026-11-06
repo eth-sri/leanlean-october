@@ -58,8 +58,7 @@ theorem twoRooted_intermediate_physical_bound
   let T : ℝ := (2 : ℝ) ^ (|γ * α₂| * s + (γ ^ 2 / 2) * s)
   let C : ℝ := T * Cmix
   have hT : 0 < T := by dsimp only [T]; positivity
-  have hC : 0 < C := mul_pos hT hCmix
-  refine ⟨C, hC, ?_⟩
+  refine ⟨C, (mul_pos hT hCmix), ?_⟩
   intro ρ hρ hρ4 z hz d hd
   have hρ2 : ρ ≤ 1 / 2 := hρ4.trans (by norm_num)
   let S : Set ℂ := Metric.ball 0 ρ \ Metric.ball z d
@@ -82,7 +81,6 @@ theorem twoRooted_intermediate_physical_bound
       (lintegral_mono_set Set.sdiff_subset).trans
         (gammaHalf_local_mass_bound γ α₁ α₂ α₃ z ρ hρ hρ2 hz (M ω) h0)
     exact intermediate_scalar_bound _ (L ω) (I ω) (W ω) d w p s hd hw hp hs hs2 hA hLI hLW
-  have hconst : 0 ≤ (d⁻¹) ^ 2 * w ^ s := mul_nonneg (sq_nonneg _) (Real.rpow_nonneg hw.le _)
   have hbound := (lintegral_mono_ae hpoint).trans_eq
     (lintegral_const_mul' _ _ ENNReal.ofReal_ne_top)
   have htotal := hbound.trans (mul_le_mul' le_rfl (hmixed z (hz.trans hρ4) ρ hρ hρ2))
@@ -95,7 +93,7 @@ theorem twoRooted_intermediate_physical_bound
   calc
     _ ≤ ENNReal.ofReal ((d⁻¹) ^ 2 * w ^ s) * ENNReal.ofReal (Cmix * ρ ^ (E / q)) := htotal
     _ = _ := by
-      rw [← ENNReal.ofReal_mul hconst, hwscale]
+      rw [← ENNReal.ofReal_mul (mul_nonneg (sq_nonneg _) (Real.rpow_nonneg hw.le _)), hwscale]
       congr 1
       rw [Real.rpow_add hρ]
       dsimp only [C]

@@ -126,10 +126,7 @@ private theorem innerPot_abs_le (y : ℂ) (s : ℝ) (x : ℂ) :
   have hb : 0 < b := by positivity
   have hm : 0 < m := lt_of_lt_of_le hb (le_max_right _ _)
   have hq : 0 < q := normPlus_pos x
-  have hA : 0 < A := lt_of_lt_of_le (by positivity) (le_max_left _ _)
-  have hD : 0 < D := lt_of_lt_of_le (by positivity) (le_max_left _ _)
   have hm_b : b ≤ m := le_max_right _ _
-  have hm_d : ‖x - y‖ ≤ m := le_max_left _ _
   have hq_le : q ≤ A * m := by
     have h1 : 1 ≤ b⁻¹ * m := by
       calc
@@ -143,7 +140,7 @@ private theorem innerPot_abs_le (y : ℂ) (s : ℝ) (x : ℂ) :
       calc
         ‖x‖ = ‖(x - y) + y‖ := by congr 1; abel
         _ ≤ ‖x - y‖ + ‖y‖ := norm_add_le _ _
-        _ ≤ m + (‖y‖ / b) * m := add_le_add hm_d hy
+        _ ≤ m + (‖y‖ / b) * m := add_le_add (le_max_left _ _) hy
         _ = (1 + ‖y‖ / b) * m := by ring
     exact max_le
       (le_trans h1 (mul_le_mul_of_nonneg_right (le_max_left _ _) hm.le))
@@ -165,11 +162,11 @@ private theorem innerPot_abs_le (y : ℂ) (s : ℝ) (x : ℂ) :
       (le_trans hbq (mul_le_mul_of_nonneg_right (le_max_right _ _) hq.le))
   have hupper : Real.log q - Real.log m ≤ Real.log A := by
     have h := Real.log_le_log hq hq_le
-    rw [Real.log_mul hA.ne' hm.ne'] at h
+    rw [Real.log_mul (lt_of_lt_of_le (by positivity) (le_max_left _ _)).ne' hm.ne'] at h
     linarith
   have hlower : -Real.log D ≤ Real.log q - Real.log m := by
     have h := Real.log_le_log hm hm_q
-    rw [Real.log_mul hD.ne' hq.ne'] at h
+    rw [Real.log_mul (lt_of_lt_of_le (by positivity) (le_max_left _ _)).ne' hq.ne'] at h
     linarith
   have hdiff : |Real.log q - Real.log m| ≤ max |Real.log A| |Real.log D| := by
     rw [abs_le]
@@ -245,14 +242,9 @@ private theorem gaussianCovariance_vertex_sum
   let _ : IsProbabilityMeasure P := hX.1
   let Y : Ω → ℝ := fun ω => Xc ω x s
   have hmean := (circleAverage_isGaussianProcess P X Xc hX hXc).2
-  have hYmem : MemLp Y 2 P := hXc.2.1 x s
   have hmeanY : (∫ ω, Y ω ∂P) = 0 := hmean x s
   have htermMem (k : Fin N) : MemLp (fun ω => α k * Xc ω (z k) r) 2 P :=
     (hXc.2.1 (z k) r).const_mul (α k)
-  have hsumMem : MemLp (fun ω => ∑ k, α k * Xc ω (z k) r) 2 P := by
-    have h := memLp_finsetSum (Finset.univ : Finset (Fin N))
-      (fun k hk => htermMem k)
-    simpa using h
   have hsumMean : (∫ ω, (∑ k, α k * Xc ω (z k) r) ∂P) = 0 := by
     rw [integral_finsetSum]
     · simp only [integral_const_mul, hmean, mul_zero, Finset.sum_const_zero]
@@ -265,7 +257,7 @@ private theorem gaussianCovariance_vertex_sum
       ∑ k, ProbabilityTheory.covariance Y
         (fun ω => α k * Xc ω (z k) r) P := by
     exact ProbabilityTheory.covariance_fun_sum_right
-      (fun k => htermMem k) hYmem
+      (fun k => htermMem k) (hXc.2.1 x s)
   calc
     gaussianCovariance P Y (fun ω => ∑ k, α k * Xc ω (z k) r) =
         ProbabilityTheory.covariance Y
@@ -294,14 +286,9 @@ theorem circleAverage_sum_test_covariance
   let _ : IsProbabilityMeasure P := hX.1
   let Y : Ω → ℝ := fun ω => X ω f
   have hmean := (circleAverage_isGaussianProcess P X Xc hX hXc).2
-  have hYmem : MemLp Y 2 P := equatorGFF_test_memLp X hX f
   have hmeanY : (∫ ω, Y ω ∂P) = 0 := equatorGFF_test_integral X hX f
   have htermMem (k : Fin N) : MemLp (fun ω => α k * Xc ω (z k) r) 2 P :=
     (hXc.2.1 (z k) r).const_mul (α k)
-  have hsumMem : MemLp (fun ω => ∑ k, α k * Xc ω (z k) r) 2 P := by
-    have h := memLp_finsetSum (Finset.univ : Finset (Fin N))
-      (fun k hk => htermMem k)
-    simpa using h
   have hsumMean : (∫ ω, (∑ k, α k * Xc ω (z k) r) ∂P) = 0 := by
     rw [integral_finsetSum]
     · simp only [integral_const_mul, hmean, mul_zero, Finset.sum_const_zero]
@@ -314,7 +301,7 @@ theorem circleAverage_sum_test_covariance
       ∑ k, ProbabilityTheory.covariance Y
         (fun ω => α k * Xc ω (z k) r) P := by
     exact ProbabilityTheory.covariance_fun_sum_right
-      (fun k => htermMem k) hYmem
+      (fun k => htermMem k) (equatorGFF_test_memLp X hX f)
   calc
     gaussianCovariance P Y (fun ω => ∑ k, α k * Xc ω (z k) r) =
         ProbabilityTheory.covariance Y

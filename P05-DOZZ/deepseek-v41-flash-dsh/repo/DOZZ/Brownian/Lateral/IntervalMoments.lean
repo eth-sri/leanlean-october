@@ -30,11 +30,10 @@ namespace DOZZ.Proofs
 theorem lateralGMC_bind_eq_volume {Ω : Type*} [MeasurableSpace Ω]
     (P : Measure Ω) (γ : ℝ) (Z : Ω → Measure ℝ) (hZ : IsLateralGMCOf P γ Z) :
     P.bind Z = ENNReal.ofReal (2 * Real.pi) • (volume : Measure ℝ) := by
-  have hZm : AEMeasurable Z P := hZ.2.2.2.1
   have hI : ∀ a b : ℝ, a < b →
       (P.bind Z) (Ioc a b) = ENNReal.ofReal (2 * Real.pi * (b - a)) := by
     intro a b hab
-    rw [Measure.bind_apply measurableSet_Ioc hZm]
+    rw [Measure.bind_apply measurableSet_Ioc (hZ.2.2.2.1)]
     exact lateralGMC_interval_first_moment P γ Z hZ a b hab
   apply Measure.ext_of_Ioc'
   · intro a b hab
@@ -98,9 +97,8 @@ theorem lateralGMC_interval_moment_translation_eq {Ω : Type*} [MeasurableSpace 
   have hF : Measurable F :=
     ENNReal.continuous_rpow_const.measurable.comp (Measure.measurable_coe measurableSet_Ioc)
   let T : Measure ℝ → Measure ℝ := fun μ => μ.map (fun s : ℝ => s + (-t))
-  have hT : Measurable T := Measure.measurable_map _ (by fun_prop)
   have hTZ : AEMeasurable (fun ω => T (Z ω)) P :=
-    hT.comp_aemeasurable hZ.2.2.2.1
+    (Measure.measurable_map _ (by fun_prop)).comp_aemeasurable hZ.2.2.2.1
   have hstat : P.map (fun ω => T (Z ω)) = P.map Z := hZ.2.2.2.2.2.1 (-t)
   have hpre : (fun s : ℝ => s + (-t)) ⁻¹' Ioc a b = Ioc (a + t) (b + t) := by
     ext s
@@ -145,8 +143,7 @@ theorem lateralGMC_compact_moment_margin
     exact (continuousOn_const.div (continuous_fst.pow 2).continuousOn
       (fun p hp => pow_ne_zero 2 (hγ p.1 hp.1).ne')).sub continuous_snd.continuousOn
   obtain ⟨p, hp, hmin⟩ := (hKγ.prod hKq).exists_isMinOn (hγne.prod hqne) hc
-  have hd : 0 < D p := sub_pos.mpr (hq p.1 hp.1 p.2 hp.2)
-  refine ⟨D p, hd, ?_⟩
+  refine ⟨D p, (sub_pos.mpr (hq p.1 hp.1 p.2 hp.2)), ?_⟩
   intro γ hγm q hqm
   have h := hmin (show (γ, q) ∈ Kγ ×ˢ Kq from ⟨hγm, hqm⟩)
   change D p ≤ 4 / γ ^ 2 - q at h

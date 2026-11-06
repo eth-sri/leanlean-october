@@ -177,7 +177,6 @@ theorem negativeConditionedDyadicLastExitEvent_measure_eq_tsum
             (conditionedPositiveStateAt (dyadicLastExitCellEndTime n k) p - c)).real C
           ∂P := by
   let E : ℕ → Set BrownianPath := dyadicLastExitCellEvent n c C
-  have hdisj : Pairwise (Disjoint on E) := pairwiseDisjoint_dyadicLastExitCellEvent n c C
   have hmeas : ∀ k, MeasurableSet (E k) :=
     fun k => measurableSet_dyadicLastExitCellEvent n c C hC k
   have hunion : (⋃ k, E k) = dyadicPositiveLastExitRationalEvent n (c : ℝ) C :=
@@ -186,7 +185,7 @@ theorem negativeConditionedDyadicLastExitEvent_measure_eq_tsum
     P.real (dyadicPositiveLastExitRationalEvent n (c : ℝ) C) =
         (P (⋃ k, E k)).toReal := by
       rw [← hunion, measureReal_def]
-    _ = (∑' k, P (E k)).toReal := by rw [measure_iUnion hdisj hmeas]
+    _ = (∑' k, P (E k)).toReal := by rw [measure_iUnion (pairwiseDisjoint_dyadicLastExitCellEvent n c C) hmeas]
     _ = ∑' k, P.real (E k) :=
       ENNReal.tsum_toReal_eq (fun k => measure_ne_top P (E k))
     _ = ∑' k, ∫ p in conditionedPositiveHistoryHitsOnInterval

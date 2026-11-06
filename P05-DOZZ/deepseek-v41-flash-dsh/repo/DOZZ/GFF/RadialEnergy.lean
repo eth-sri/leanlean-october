@@ -59,7 +59,6 @@ theorem support_annularProfileOnPlane_subset (n : ℕ) :
     rw [lt_div_iff₀ hfactor]
     nlinarith
   have hn : 2 ≤ (n : ℝ) + 2 := by
-    have hn0 : (0 : ℝ) ≤ (n : ℝ) := Nat.cast_nonneg n
     linarith
   have hfrac : 1 / ((n : ℝ) + 2) ≤ 1 / 2 := by
     exact one_div_le_one_div_of_le (by norm_num) hn
@@ -294,8 +293,6 @@ theorem integrable_compactLogKernelPair (u v : GaussianFields.Vec 2 → ℝ)
   rcases exists_ball_of_hasCompactSupport huc with ⟨Ru, hRu, huball⟩
   rcases exists_ball_of_hasCompactSupport hvc with ⟨Rv, hRv, hvball⟩
   let R := max Ru Rv
-  have hR : 0 ≤ R := le_max_of_le_left hRu
-  have hRuR : Ru ≤ R := le_max_left _ _
   have hRvR : Rv ≤ R := le_max_right _ _
   let a : GaussianFields.Vec 2 := GaussianFields.abkRadialPoint 2 (R + 2)
   have ha_norm : GaussianFields.euclideanNorm a = R + 2 := by
@@ -319,7 +316,7 @@ theorem integrable_compactLogKernelPair (u v : GaussianFields.Vec 2 → ℝ)
     exact huS.prod hvS
   have hψeq {x : GaussianFields.Vec 2} (hx : u x ≠ 0) : ψ x = u x := by
     have hxmem : x ∈ Function.support u := by simpa [Function.mem_support] using hx
-    have hxR : GaussianFields.euclideanNorm x ≤ R := (huball hxmem).trans hRuR
+    have hxR : GaussianFields.euclideanNorm x ≤ R := (huball hxmem).trans (le_max_left _ _)
     dsimp [ψ]
     exact centeredCompactFunctionAt_eq_of_bump_zero u hu huc a x
       (abkUnitMassBumpAt_eq_zero_of_norm_le x a hxR ha)
@@ -586,9 +583,8 @@ theorem integrable_polarSecondIntegrand (F : ℂ × ℂ → ℝ)
             apply lintegral_congr_ae
             filter_upwards [ae_restrict_mem Complex.polarCoord.open_target.measurableSet]
               with p hp
-            have hp' : 0 < p.1 := hp.1
             simp only [polarSecondIntegrand, enorm_mul,
-              Real.enorm_eq_ofReal hp'.le]
+              Real.enorm_eq_ofReal (hp.1).le]
       _ = ∫⁻ y : ℂ, ‖F (x, y)‖ₑ := by
         exact Complex.lintegral_comp_polarCoord_symm
           (fun y : ℂ => ‖F (x, y)‖ₑ)

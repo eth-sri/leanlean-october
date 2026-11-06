@@ -67,7 +67,6 @@ theorem dual_source_williams_cut_increment_tendsto
   let J₁ := ∫ ω, (twoSidedReflectionMass γ B Z ω).toReal ∂P
   let Err := fun c z => p*Real.exp (γ*c)*F z*J₁
   have hp : 0 < p := div_pos (by linarith only [hs]) hγ
-  have ha : 0 < a := div_pos (mul_pos (by norm_num) (sub_pos.mpr hα₁)) hγ
   have ha1 : a < 1 := by
     dsimp only [a, ν]
     rw [div_lt_one hγ]
@@ -82,7 +81,7 @@ theorem dual_source_williams_cut_increment_tendsto
     dual_source_cut_maximum_increment_tendsto P X hX γ hγ hγ₂ M hM Xc hc
       α₁ α₂ α₃ ξ h c hα₁ hreflect hα₂ hα₃ hh hs hshifted hslack hξ hξ1 B Z hData
   have hCoeff : Tendsto Cc atTop (𝓝 L) :=
-    (dual_reflection_cut_moment_tendsto P γ α₁ a hγ hγ₂ B Z hα₁ hData ha (ha1.trans h4)).const_mul C
+    (dual_reflection_cut_moment_tendsto P γ α₁ a hγ hγ₂ B Z hα₁ hData (div_pos (mul_pos (by norm_num) (sub_pos.mpr hα₁)) hγ) (ha1.trans h4)).const_mul C
   have hn : Tendsto (fun z : ℂ => ‖z‖) (𝓝[≠] (0 : ℂ)) (𝓝 ‖(0 : ℂ)‖) :=
     (continuous_norm.tendsto (0 : ℂ)).mono_left nhdsWithin_le_nhds
   have hF : Tendsto (fun z => F z/‖z‖^κ) (𝓝[≠] (0 : ℂ)) (𝓝 0) := by

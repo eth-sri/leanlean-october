@@ -113,11 +113,10 @@ theorem exists_equatorGFF_inversion_circle_joint_version
   let Z : Ω → ℂ → ℝ → ℝ := fun ω x r => G r ω x
   have hmap : Measurable[mΩ] (fun ω => fun g : TestFn => X ω g) :=
     measurable_pi_iff.mpr (fun g => (hX.2 g).1)
-  have hm0 : equatorGFFRawDistributionSigma X ≤ mΩ := hmap.comap_le
   have hprod : (equatorGFFRawDistributionSigma X).prod (borel ℂ) ≤
       mΩ.prod (borel ℂ) := by
     rw [MeasurableSpace.prod, MeasurableSpace.prod]
-    exact sup_le_sup (MeasurableSpace.comap_mono hm0) le_rfl
+    exact sup_le_sup (MeasurableSpace.comap_mono (hmap.comap_le)) le_rfl
   have hZae (p : ℂ × ℝ) : (fun ω => Z ω p.1 p.2) =ᵐ[P] Y p := by
     filter_upwards [hGae p.2, hVeq p.2 p.1] with ω hG hV
     exact (hG p.1).trans hV

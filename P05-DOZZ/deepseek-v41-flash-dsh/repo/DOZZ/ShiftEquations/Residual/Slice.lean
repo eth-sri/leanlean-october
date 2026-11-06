@@ -3,6 +3,7 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
+public import DOZZ.SharedHyp
 
 public import DOZZ.ShiftEquations.Residual.Joint
 public import DOZZ.Statements.Defs.DozzFormula
@@ -41,7 +42,7 @@ theorem periods_irrational {γ : ℝ} (hγ : 0 < γ) (hγirr : Irrational (γ ^ 
 /-- **The quotient is constant on a slice.** -/
 theorem slice_constant_of_joint {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
     (M : Ω → Measure ℂ) {γ μ η α₂ α₃ : ℝ} {U : ℂ → ℂ} (hγ : 0 < γ) (hγ2 : γ < 2)
-    (hγirr : Irrational (γ ^ 2)) (hμ : 0 < μ) (hη : 0 < η ∧ Q γ - 2 * η > γ)
+    (hγirr : Irrational (γ ^ 2)) (hμ : 0 < μ) (hη : DriftWindow γ η)
     (hα₂ : Q γ - η < α₂ ∧ α₂ < Q γ) (hα₃ : Q γ - η < α₃ ∧ α₃ < Q γ) (hU : IsUpsilon γ U)
     (hjoint : ∃ h : ℝ, 0 < h ∧ ∃ C : ℂ → ℂ, MeromorphicOn C (horizontalStrip h) ∧
       (∀ α : ℝ, 2 * η < α → α < Q γ → C (α : ℂ) = (structureConstant P M γ μ α α₂ α₃ : ℂ)) ∧

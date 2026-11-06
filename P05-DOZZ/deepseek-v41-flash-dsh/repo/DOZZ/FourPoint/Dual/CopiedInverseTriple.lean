@@ -3,6 +3,7 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
+public import DOZZ.SharedHyp
 public import DOZZ.FourPoint.Dual.CopyOrdering
 public import DOZZ.FourPoint.Dual.SourceDecouplingBound
 import Mathlib.Tactic
@@ -18,7 +19,7 @@ theorem dual_copied_inverse_moment_triple
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) [IsProbabilityMeasure P]
     (Xc : Ω → ℂ → ℝ → ℝ) (hA : AEMeasurable (originRadialPath Xc) P)
     (N : Ω → Measure ℂ) (hN : Measurable N)
-    (hfin : ∀ ω K, IsCompact K → K ⊆ ({0} : Set ℂ)ᶜ → N ω K < ⊤)
+    (hfin : FiniteOffOrigin N)
     (γ α₁ α₂ α₃ p s r : ℝ) (z : ℂ) :
     dualCopiedSeparatedInverseMoment P Xc N γ α₁ α₂ α₃ p z s r =
       ∫⁻ v : (Ω × Ω) × Ω,
@@ -44,15 +45,13 @@ theorem dual_copied_inverse_moment_triple
     apply hm _ ((isOpen_lt continuous_const continuous_norm).inter
       (isOpen_lt continuous_norm continuous_const))
     intro x hx hx0
-    have he : x = 0 := mem_singleton_iff.mp hx0
     have hxpos : 0 < ‖x‖ := hx.1
-    simp only [he, norm_zero, lt_self_iff_false] at hxpos
+    simp only [(mem_singleton_iff.mp hx0), norm_zero, lt_self_iff_false] at hxpos
   have ho : Measurable (fun v : TwoSidedPath × Ω => J (reflected_outerRegion r) v.1 v.2) := by
     apply hm _ ((isOpen_lt continuous_const continuous_norm).inter
       (Set.toFinite ({0,1} : Set ℂ)).isClosed.isOpen_compl)
     intro x hx hx0
-    have he : x = 0 := mem_singleton_iff.mp hx0
-    exact hx.2 (by simp [he])
+    exact hx.2 (by simp [(mem_singleton_iff.mp hx0)])
   let F : TwoSidedPath × (Ω × Ω) → ℝ≥0∞ := fun v =>
     (J (reflected_innerRegion s) v.1 v.2.1+J (reflected_outerRegion r) v.1 v.2.2)^(-p)
   have hF : Measurable F :=

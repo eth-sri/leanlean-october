@@ -163,7 +163,6 @@ theorem localTorusCosTest_integral_sq_le_volume (R L : ℝ) (hR : 0 < R)
   have hf : MemLp (localTorusCosTest R L hR k) 2 μ := by
     exact (localTorusCosTest R L hR k).continuous.memLp_of_hasCompactSupport
       (localTorusCosTest R L hR k).hasCompactSupport |>.mono_measure Measure.restrict_le_self
-  have hfint : Integrable (fun z => (localTorusCosTest R L hR k z) ^ 2) μ := hf.integrable_sq
   have hconst : Integrable (fun _ : ℂ => (1 : ℝ)) μ :=
     (integrable_const_iff_isFiniteMeasure (by norm_num)).2 hμfin
   have hle : (fun z => (localTorusCosTest R L hR k z) ^ 2) ≤ᵐ[μ] fun _ => 1 :=
@@ -171,7 +170,7 @@ theorem localTorusCosTest_integral_sq_le_volume (R L : ℝ) (hR : 0 < R)
       have habs := localTorusCosTest_abs_le_one R L hR k z
       rw [sq_le_one_iff_abs_le_one]
       exact habs
-  have h := integral_mono_ae hfint hconst hle
+  have h := integral_mono_ae (hf.integrable_sq) hconst hle
   calc
     ∫ z in B, ‖localTorusCosTest R L hR k z‖ ^ 2 ∂volume =
         ∫ z, (localTorusCosTest R L hR k z) ^ 2 ∂μ := by
@@ -197,7 +196,6 @@ theorem localTorusSinTest_integral_sq_le_volume (R L : ℝ) (hR : 0 < R)
   have hf : MemLp (localTorusSinTest R L hR k) 2 μ := by
     exact (localTorusSinTest R L hR k).continuous.memLp_of_hasCompactSupport
       (localTorusSinTest R L hR k).hasCompactSupport |>.mono_measure Measure.restrict_le_self
-  have hfint : Integrable (fun z => (localTorusSinTest R L hR k z) ^ 2) μ := hf.integrable_sq
   have hconst : Integrable (fun _ : ℂ => (1 : ℝ)) μ :=
     (integrable_const_iff_isFiniteMeasure (by norm_num)).2 hμfin
   have hle : (fun z => (localTorusSinTest R L hR k z) ^ 2) ≤ᵐ[μ] fun _ => 1 :=
@@ -205,7 +203,7 @@ theorem localTorusSinTest_integral_sq_le_volume (R L : ℝ) (hR : 0 < R)
       have habs := localTorusSinTest_abs_le_one R L hR k z
       rw [sq_le_one_iff_abs_le_one]
       exact habs
-  have h := integral_mono_ae hfint hconst hle
+  have h := integral_mono_ae (hf.integrable_sq) hconst hle
   calc
     ∫ z in B, ‖localTorusSinTest R L hR k z‖ ^ 2 ∂volume =
         ∫ z, (localTorusSinTest R L hR k z) ^ 2 ∂μ := by

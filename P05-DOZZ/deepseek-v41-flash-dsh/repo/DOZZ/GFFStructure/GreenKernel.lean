@@ -54,11 +54,10 @@ theorem one_lt_diskGreen_ratio (c z w : ℂ) (ρ : ℝ) (hρ : 0 < ρ)
   have hgap := mul_pos (poissonNumerator_pos c z ρ hρ hz) (poissonNumerator_pos c w ρ hρ hw)
   have he : (z-c)-(w-c) = z-w := by ring
   rw [he] at hi
-  have hn : 0 < ‖z-w‖ := norm_pos_iff.mpr (sub_ne_zero.mpr hzw)
   have hnum : ρ*‖z-w‖ < ‖(ρ : ℂ)^2-(z-c)*star (w-c)‖ := by
     exact lt_of_pow_lt_pow_left₀ 2 (norm_nonneg _) (by linarith only [hi, hgap])
   rw [norm_div, norm_mul, Complex.norm_real, Real.norm_eq_abs, abs_of_pos hρ]
-  exact (one_lt_div (mul_pos hρ hn)).mpr hnum
+  exact (one_lt_div (mul_pos hρ (norm_pos_iff.mpr (sub_ne_zero.mpr hzw)))).mpr hnum
 
 /-- The literal zero-extended disk Green kernel is nonnegative everywhere. -/
 theorem diskGreenKernel_nonneg (c : ℂ) (ρ : ℝ) (hρ : 0 < ρ) (z w : ℂ) :
@@ -73,24 +72,22 @@ theorem diskGreenKernel_nonneg (c : ℂ) (ρ : ℝ) (hρ : 0 < ρ) (z w : ℂ) :
 theorem diskGreen_numerator_norm_le (c z w : ℂ) (ρ : ℝ) (hρ : 0 < ρ)
     (hz : z ∈ ball c ρ) (hw : w ∈ ball c ρ) :
     ‖(ρ : ℂ)^2-(z-c)*star (w-c)‖ ≤ 2*ρ^2 := by
-  have hz' : ‖z-c‖ ≤ ρ := (mem_ball_iff_norm.mp hz).le
   have hw' : ‖w-c‖ ≤ ρ := (mem_ball_iff_norm.mp hw).le
   calc
     _ ≤ ‖(ρ : ℂ)^2‖+‖(z-c)*star (w-c)‖ := norm_sub_le _ _
     _ = ρ^2+‖z-c‖*‖w-c‖ := by
       rw [norm_pow, Complex.norm_real, Real.norm_eq_abs, abs_of_pos hρ, norm_mul, norm_star]
-    _ ≤ 2*ρ^2 := by linarith only [mul_le_mul hz' hw' (norm_nonneg _) hρ.le]
+    _ ≤ 2*ρ^2 := by linarith only [mul_le_mul ((mem_ball_iff_norm.mp hz).le) hw' (norm_nonneg _) hρ.le]
 
 /-- The disk Green ratio is controlled by the planar diagonal singularity. -/
 theorem diskGreen_ratio_le (c z w : ℂ) (ρ : ℝ) (hρ : 0 < ρ)
     (hz : z ∈ ball c ρ) (hw : w ∈ ball c ρ) (hzw : z ≠ w) :
     ‖((ρ : ℂ)^2-(z-c)*star (w-c))/((ρ : ℂ)*(z-w))‖ ≤ 2*ρ/‖z-w‖ := by
-  have hd : 0 < ‖z-w‖ := norm_pos_iff.mpr (sub_ne_zero.mpr hzw)
   rw [norm_div, norm_mul, Complex.norm_real, Real.norm_eq_abs, abs_of_pos hρ]
   calc
     _ ≤ (2*ρ^2)/(ρ*‖z-w‖) :=
       div_le_div_of_nonneg_right (diskGreen_numerator_norm_le c z w ρ hρ hz hw) (by positivity)
-    _ = 2*ρ/‖z-w‖ := by field_simp [hρ.ne', hd.ne']
+    _ = 2*ρ/‖z-w‖ := by field_simp [hρ.ne', (norm_pos_iff.mpr (sub_ne_zero.mpr hzw)).ne']
 
 /-- The logarithmic Green kernel is bounded by an explicit diagonal logarithm. -/
 theorem diskGreenKernel_le_log_sub (c z w : ℂ) (ρ : ℝ) (hρ : 0 < ρ)
@@ -120,8 +117,6 @@ theorem diskGreenKernel_sq_le (c : ℂ) (ρ : ℝ) (hρ : 0 < ρ) (z w : ℂ) :
   have h := abs_diskGreenKernel_le c ρ hρ z w
   have hn := diskGreenKernel_nonneg c ρ hρ z w
   rw [abs_of_nonneg hn] at h
-  have ha := abs_nonneg (Real.log (2*ρ))
-  have hb := abs_nonneg (Real.log ‖z-w‖)
   have hsq := pow_le_pow_left₀ hn h 2
   linarith only [hsq, sq_nonneg (|Real.log (2*ρ)|-|Real.log ‖z-w‖|), sq_abs (Real.log (2*ρ)),
     sq_abs (Real.log ‖z-w‖)]
@@ -248,14 +243,12 @@ theorem abs_diskGreenCovariance_le_diskL2 (c : ℂ) (ρ : ℝ) (hρ : 0 < ρ) (f
 theorem diskGreen_numerator_ne_on_closedBall (c z w : ℂ) (ρ : ℝ) (hρ : 0 < ρ)
     (hz : z ∈ closedBall c ρ) (hw : w ∈ ball c ρ) :
     (ρ : ℂ)^2-(z-c)*star (w-c) ≠ 0 := by
-  have hz' : ‖z-c‖ ≤ ρ := mem_closedBall_iff_norm.mp hz
   have hw' : ‖w-c‖ < ρ := mem_ball_iff_norm.mp hw
   intro hzero
-  have he : (ρ : ℂ)^2 = (z-c)*star (w-c) := sub_eq_zero.mp hzero
-  have hn := congrArg norm he
+  have hn := congrArg norm (sub_eq_zero.mp hzero)
   simp only [norm_pow, Complex.norm_real, Real.norm_eq_abs, abs_of_pos hρ,
     norm_mul, norm_star] at hn
-  have hp := mul_le_mul_of_nonneg_right hz' (norm_nonneg (w-c))
+  have hp := mul_le_mul_of_nonneg_right (mem_closedBall_iff_norm.mp hz) (norm_nonneg (w-c))
   linarith only [hn, hp, mul_lt_mul_of_pos_left hw' hρ]
 
 /-- The regular logarithmic numerator is harmonic on a neighborhood of the closed disk. -/
@@ -303,8 +296,7 @@ theorem diskGreen_ratio_eq_one_on_sphere (c z w : ℂ) (ρ : ℝ) (hρ : 0 < ρ)
     (hz : z ∈ sphere c ρ) (hw : w ∈ ball c ρ) :
     ‖((ρ : ℂ)^2-(z-c)*star (w-c))/((ρ : ℂ)*(z-w))‖ = 1 := by
   have hz' : ‖z-c‖ = ρ := mem_sphere_iff_norm.mp hz
-  have hw' : ‖w-c‖ < ρ := mem_ball_iff_norm.mp hw
-  have hzw : z ≠ w := by intro h; subst w; exact hw'.ne hz'
+  have hzw : z ≠ w := by intro h; subst w; exact (mem_ball_iff_norm.mp hw).ne hz'
   have hn : 0 < ‖z-w‖ := norm_pos_iff.mpr (sub_ne_zero.mpr hzw)
   have hi := diskGreen_norm_identity ρ (z-c) (w-c)
   rw [hz', sub_self, zero_mul, show (z-c)-(w-c) = z-w by ring] at hi
@@ -324,10 +316,9 @@ theorem abs_diskGreenCovariance_self_le_diskL2 (c : ℂ) (ρ : ℝ) (hρ : 0 < �
         ∂((volume.restrict (ball c ρ)).prod (volume.restrict (ball c ρ)))) ^ (1/2 : ℝ) *
           (∫ z in ball c ρ, ‖f z‖^2) := by
   have h := abs_diskGreenCovariance_le_diskL2 c ρ hρ f f
-  have ha : 0 ≤ ∫ z in ball c ρ, ‖f z‖^2 := integral_nonneg (fun _ => sq_nonneg _)
   have he : ((∫ z in ball c ρ, ‖f z‖^2)*(∫ z in ball c ρ, ‖f z‖^2)) ^ (1/2 : ℝ) =
       (∫ z in ball c ρ, ‖f z‖^2) := by
-    rw [← Real.sqrt_eq_rpow, ← sq, Real.sqrt_sq_eq_abs, abs_of_nonneg ha]
+    rw [← Real.sqrt_eq_rpow, ← sq, Real.sqrt_sq_eq_abs, abs_of_nonneg (integral_nonneg (fun _ => sq_nonneg _))]
   rwa [he] at h
 
 

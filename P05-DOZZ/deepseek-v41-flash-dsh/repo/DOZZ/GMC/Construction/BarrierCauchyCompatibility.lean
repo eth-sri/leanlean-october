@@ -429,22 +429,19 @@ theorem compatible_mixed_off_diagonal_wick_factor_tendsto_uniformly
   have hHsub : S ⊆ U ×ˢ U := by
     intro p hp
     exact Set.mem_prod.mpr ⟨hKU (hSxy p hp).1, hKU (hSxy p hp).2.1⟩
-  have hH' : ContinuousOn (fun p : ℂ × ℂ => H p.1 p.2) S := hH.mono hHsub
-  have hlim : ContinuousOn lim S := by exact hlog.add hH'
+  have hlim : ContinuousOn lim S := by exact hlog.add (hH.mono hHsub)
   have habs : ContinuousOn (fun p => |lim p|) S := hlim.abs
   obtain ⟨R₀, hR₀⟩ := hS.bddAbove_image habs
   let R : ℝ := max 0 R₀
   have hR : 0 ≤ R := le_max_left _ _
   have hlimBound (p : ℂ × ℂ) (hp : p ∈ S) : |lim p| ≤ R := by
-    have hmem : |lim p| ∈ (fun p : ℂ × ℂ => |lim p|) '' S := ⟨p, hp, rfl⟩
-    exact (hR₀ hmem).trans (le_max_right _ _)
+    exact (hR₀ (⟨p, hp, rfl⟩)).trans (le_max_right _ _)
   let D : Set ℝ := Set.Icc (-B) B
   let T : Set ℝ := Set.Icc (-(R + 1)) (R + 1)
-  have hD : IsCompact D := isCompact_Icc
   have hT : IsCompact T := isCompact_Icc
   let E : ℝ × ℝ → ℝ := fun z => Real.exp (z.1 ^ 2 * z.2)
   have hE : Continuous E := by fun_prop
-  have hET : IsCompact (D ×ˢ T) := hD.prod hT
+  have hET : IsCompact (D ×ˢ T) := (isCompact_Icc).prod hT
   have hUC : UniformContinuousOn E (D ×ˢ T) := hET.uniformContinuousOn_of_continuous hE.continuousOn
   obtain ⟨δE, hδE, hmod⟩ := Metric.uniformContinuousOn_iff.mp hUC η hη
   let ηcov : ℝ := min δE 1

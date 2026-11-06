@@ -36,7 +36,6 @@ theorem gauss_physical_parameter_range (γ χ α₁ α₂ α₃ : ℝ)
   let A := gaussParameterA γ χ α₁ α₂ α₃
   let B := gaussParameterB γ χ α₁ α₂ α₃
   let C := gaussParameterC γ χ α₁
-  have hhalf_lt_one : γ / 2 < 1 := by linarith
   have hχpos : 0 < χ := by
     rcases hχ with hχ | hχ
     · rw [hχ]
@@ -94,16 +93,10 @@ theorem gauss_physical_parameter_range (γ χ α₁ α₂ α₃ : ℝ)
   have hCpos : 0 < C := by linarith
   have hCApos : 0 < C - A := by linarith
   have hCBpos : 0 < C - B := by linarith
-  have hCA1 : C - A < 1 := by linarith
-  have hCB1 : C - B < 1 := by linarith
   change 0 < A ∧ A < B ∧ B < C ∧ C < 1 ∧ 0 < C - A - B ∧
     C - A - B < 1 ∧ 0 < gaussK₁ A B C ∧ 0 < gaussK₂ A B C
   refine ⟨hA, hAB, hBC, hC1, hδpos, hδlt, ?_, ?_⟩
   · unfold gaussK₁
-    have hgC := Real.Gamma_pos_of_pos hCpos
-    have hgCA := Real.Gamma_pos_of_pos hCApos
-    have hgCB := Real.Gamma_pos_of_pos hCBpos
-    have hgA := Real.Gamma_pos_of_pos hA
     have hgB := Real.Gamma_pos_of_pos (lt_trans hA hAB)
     positivity
   · unfold gaussK₂

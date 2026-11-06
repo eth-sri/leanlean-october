@@ -214,7 +214,6 @@ theorem poleSubtractedObservable_holomorphic
         apply mul_le_mul (Finset.single_le_sum (fun j _ => hKb j) hi) _ (Real.exp_pos _).le
           (Finset.sum_nonneg fun j _ => hKb j)
         apply Real.exp_le_exp.2
-        have hn : (0 : ℝ) ≤ n := Nat.cast_nonneg n
         nlinarith
 
 end DOZZ.Proofs

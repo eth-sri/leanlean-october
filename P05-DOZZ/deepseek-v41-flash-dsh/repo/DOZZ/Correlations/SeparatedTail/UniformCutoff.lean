@@ -49,9 +49,8 @@ theorem separatedTail_cutoff_mixed_moment_uniform
     · exact ⟨(hα3 α h).1,(hα3 α h).2,hε3 α h⟩
   let params : ℝ → ℝ × ℝ := fun α => (α, q*(reflectionExponent γ α-ε))
   have hparams : Continuous params := by unfold params reflectionExponent; fun_prop
-  have hpc : IsCompact (params '' (A2 ∪ A3)) := (hA2.union hA3).image hparams
   obtain ⟨C0,hC0,hC0b⟩ := DOZZ.equatorGFF_GMC_weighted_cutoff_bound P X hX γ hγ hγ2 Xc hc
-    (params '' (A2 ∪ A3)) hpc (by
+    (params '' (A2 ∪ A3)) ((hA2.union hA3).image hparams) (by
       rintro _ ⟨α,hα,rfl⟩
       obtain ⟨hαlo,hαhi,hαε⟩ := hadm α hα
       obtain ⟨ht,hti,htb⟩ := hqs α hαlo hαε

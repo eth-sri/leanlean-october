@@ -46,10 +46,9 @@ theorem gmc_open_mass_aemeasurable
     exact gmcOpenApprox_integral_tendsto (M ω) U hU
   have hreal : AEMeasurable (fun ω => (M ω U).toReal) P := by
     simpa [f] using aemeasurable_of_tendsto_metrizable_ae atTop hf hlim
-  have hfiniteU : ∀ ω, M ω U ≠ ∞ := fun ω => measure_ne_top (M ω) U
   have hEq : (fun ω => M ω U) = fun ω => ENNReal.ofReal (M ω U).toReal := by
     funext ω
-    exact (ENNReal.ofReal_toReal (hfiniteU ω)).symm
+    exact (ENNReal.ofReal_toReal ((fun ω => measure_ne_top (M ω) U) ω)).symm
   rw [hEq]
   exact ENNReal.measurable_ofReal.aemeasurable.comp_aemeasurable hreal
 
@@ -175,15 +174,13 @@ theorem equatorGFF_GMC_law_transport
   have hN : IsGMCOf P X γ N := by
     rcases hM with ⟨_, Xc, hXc, hconv⟩
     refine ⟨hNfinite, Xc, hXc, fun f => ?_⟩
-    have hNM' : ∀ᵐ ω ∂P, N ω = M ω := hNM.mono fun _ h => h.symm
     exact tendstoInMeasure_integral_after_ae_measure_change
-      (fun r ω => ∫ x, f x ∂regularizedGMC P Xc γ r ω) M N f hNM' (hconv f)
+      (fun r ω => ∫ x, f x ∂regularizedGMC P Xc γ r ω) M N f (hNM.mono fun _ h => h.symm) (hconv f)
   have hN' : IsGMCOf P' X' γ N' := by
     rcases hM' with ⟨_, Xc, hXc, hconv⟩
     refine ⟨hN'finite, Xc, hXc, fun f => ?_⟩
-    have hN'M'' : ∀ᵐ ω ∂P', N' ω = M' ω := hN'M'.mono fun _ h => h.symm
     exact tendstoInMeasure_integral_after_ae_measure_change
-      (fun r ω => ∫ x, f x ∂regularizedGMC P' Xc γ r ω) M' N' f hN'M'' (hconv f)
+      (fun r ω => ∫ x, f x ∂regularizedGMC P' Xc γ r ω) M' N' f (hN'M'.mono fun _ h => h.symm) (hconv f)
   let Cfield : Set (Set (TestFn → ℝ)) :=
     measurableCylinders (fun _ : TestFn => ℝ)
   let Cmass : Set (Set (GMCOpen → ℝ≥0∞)) :=

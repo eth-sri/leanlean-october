@@ -56,13 +56,11 @@ theorem fourier_complexDirectionalDerivative {f : ℂ → ℂ}
     𝓕 (complexDirectionalDerivative f v) w =
       (2 * Real.pi * Complex.I * ((innerSL ℝ) w v : ℂ)) * 𝓕 f w := by
   let df : ℂ → ℂ →L[ℝ] ℂ := fun z => fderiv ℝ f z
-  have hfOn : ContDiffOn ℝ (↑(⊤ : ENat)) f Set.univ := contDiffOn_univ.mpr hf
   have hdfOn : ContDiffOn ℝ (↑(⊤ : ENat)) (fderiv ℝ f) Set.univ :=
-    hfOn.fderiv_of_isOpen isOpen_univ (by simp)
+    (contDiffOn_univ.mpr hf).fderiv_of_isOpen isOpen_univ (by simp)
   have hdf : ContDiff ℝ (↑(⊤ : ENat)) (fderiv ℝ f) := contDiffOn_univ.mp hdfOn
-  have hdfcont : Continuous df := hdf.continuous
   have hdfcompact : HasCompactSupport df := hcompact.fderiv (𝕜 := ℝ)
-  have hdfint : Integrable df := hdfcont.integrable_of_hasCompactSupport hdfcompact
+  have hdfint : Integrable df := (hdf.continuous).integrable_of_hasCompactSupport hdfcompact
   have hfint : Integrable f := complexFourier_integrable hf hcompact
   have hdiff : Differentiable ℝ f := hf.differentiable (by simp)
   have htransform := Real.fourier_fderiv (E := ℂ) hfint hdiff hdfint
@@ -164,8 +162,7 @@ theorem support_unitBoxDirectionalDerivativeTest_subset (L R : ℝ) (f : TestFn)
       simpa [Function.mem_support] using hn
     apply hz
     simp [unitBoxDirectionalDerivativeTest, hzero]
-  have hzball : z ∈ closedBall (0 : ℂ) R := htsupp (hderiv hz')
-  exact closedBall_subset_ball (by linarith) hzball
+  exact closedBall_subset_ball (by linarith) (htsupp (hderiv hz'))
 
 theorem gffUnitBoxComplexFunction_unitBoxDirectionalDerivativeTest
     (L : ℝ) (hL : L ≠ 0) (f : TestFn) (v z : ℂ) :
@@ -197,9 +194,8 @@ theorem gffUnitBoxComplexFunction_support_subset_centeredBox
   have hscaled : L • z ∈ Function.support f := by
     change f (L • z) ≠ 0
     exact_mod_cast hval
-  have hzball : L • z ∈ ball (0 : ℂ) R := hf hscaled
   have hnorm : ‖L • z‖ < R := by
-    simpa [Metric.mem_ball, dist_zero_right] using hzball
+    simpa [Metric.mem_ball, dist_zero_right] using (hf hscaled)
   have hnormz : ‖z‖ < R / L := by
     rw [norm_smul, Real.norm_eq_abs, abs_of_pos hL] at hnorm
     apply (lt_div_iff₀ hL).2

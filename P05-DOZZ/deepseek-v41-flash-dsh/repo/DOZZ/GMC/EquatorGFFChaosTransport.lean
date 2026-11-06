@@ -384,10 +384,6 @@ theorem equatorGFF_regularized_test_vector_law
     simpa [V, V', FX, FY] using
       (equatorGFF_test_circle_fdd_law P X hX P' X' hX' Xc hXc Xc' hXc'
         tests xs (fun _ => r))
-  have hvarianceXJoint : Measurable (fun p : Ω × ℂ => variance p.2) :=
-    hvariance.comp measurable_snd
-  have hvarianceYJoint : Measurable (fun p : Ω' × ℂ => variance p.2) :=
-    hvariance.comp measurable_snd
   have hWickXmeas (i : Fin N) : Measurable
       (fun ω => ∫ x, weight i x * Real.exp
         (γ * FX ω x - γ ^ 2 / 2 * (variance x : ℝ)) ∂(ν : Measure ℂ)) := by
@@ -551,14 +547,6 @@ theorem regularizedGMC_test_integral_aemeasurable_EquatorGFFChaosTransport
   have hμ : Measurable μ := regularizedGMC_measurable P X hX Xc hXc γ r
   let pos : Ω → ℝ≥0∞ := fun ω => ∫⁻ x, (f.nnrealPart x : ℝ≥0∞) ∂μ ω
   let neg : Ω → ℝ≥0∞ := fun ω => ∫⁻ x, ((-f).nnrealPart x : ℝ≥0∞) ∂μ ω
-  have hpos : Measurable pos := by
-    dsimp [pos]
-    exact (Measure.measurable_lintegral
-      (BoundedContinuousFunction.measurable_coe_ennreal_comp f.nnrealPart)).comp hμ
-  have hneg : Measurable neg := by
-    dsimp [neg]
-    exact (Measure.measurable_lintegral
-      (BoundedContinuousFunction.measurable_coe_ennreal_comp (-f).nnrealPart)).comp hμ
   have hproxy : Measurable (fun ω => (pos ω).toReal - (neg ω).toReal) := by
     fun_prop
   have hfinite := regularizedGMC_finite_ae P X hX Xc hXc γ r
@@ -776,10 +764,9 @@ theorem gmcOpenApprox_tendsto (U : Set ℂ) (hU : IsOpen U) (x : ℂ) :
   · simp [gmcOpenApprox, h]
   · have hcomp : (Uᶜ : Set ℂ).Nonempty := by
       by_contra hn
-      have he : Uᶜ = ∅ := Set.not_nonempty_iff_eq_empty.mp hn
       have heq : U = Set.univ := by
         ext y
-        have hy : y ∉ Uᶜ := by simp [he]
+        have hy : y ∉ Uᶜ := by simp [(Set.not_nonempty_iff_eq_empty.mp hn)]
         simpa using hy
       exact h heq
     by_cases hx : x ∈ U
@@ -990,11 +977,10 @@ theorem equatorGFF_GMC_open_mass_test_vector_law
         exact gmcOpenApprox_integral_tendsto (M' ω) (U j) (hU j)
       exact tendstoInMeasure_of_tendsto_ae
         (fun n => ((hcutAEY n).snd.eval j).aestronglyMeasurable) hpt
-  have hvecX : TendstoInMeasure P FX atTop LX := tendstoInMeasure_pi_finite P FX LX hcoordX
   have hvecY : TendstoInMeasure P' FY atTop LY := tendstoInMeasure_pi_finite P' FY LY hcoordY
   have hlaw : Measure.map LX P = Measure.map LY P' :=
     map_eq_of_seq_map_eq_of_tendstoInMeasure FX FY LX LY hFXae hFYae hLXae hLYae
-      hcutLaw hvecX hvecY
+      hcutLaw (tendstoInMeasure_pi_finite P FX LX hcoordX) hvecY
   have hpackUnpackX : unpack ∘ LX = limitX := by
     funext ω
     apply Prod.ext <;> funext i <;> simp [LX, pack, unpack]

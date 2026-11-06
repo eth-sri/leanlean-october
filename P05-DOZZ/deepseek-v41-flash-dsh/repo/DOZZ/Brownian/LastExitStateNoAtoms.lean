@@ -33,14 +33,13 @@ theorem ae_conditionedPositiveStateAt_ne
   let X : BrownianPath → Fin 1 → ℝ := fun p _ => -(p t)
   let f : (Fin 1 → ℝ) → ℝ≥0∞ := fun z => ENNReal.ofReal
     (max 0 (conditionedPositiveFDDDensity ν [t] [z 0]))
-  have htimes : ∀ i, 0 < (times i : ℝ) := fun _ => ht
   have hmono : StrictMono times := by
     intro i j hij
     fin_cases i
     fin_cases j
     exact False.elim (by simp at hij)
   have hfdd := negativeConditionedLaw_positiveFDD hP 1 (by norm_num)
-    times htimes hmono
+    times (fun _ => ht) hmono
   have hfd : P.map X =
       (volume : Measure (Fin 1 → ℝ)).withDensity f := by
     simpa [X, times, f] using hfdd

@@ -40,9 +40,8 @@ theorem roots_dozzFormula_gamma_continuousAt (U : ℝ → ℂ → ℂ)
     ContinuousAt (fun g => dozzFormula g μ (U g) a b c) γ := by
   have hUg := hU γ ⟨hγ, hγ2⟩
   have hUc (w : ℝ → ℂ) (hw : ContinuousAt w γ) : ContinuousAt (fun g => U g (w g)) γ := by
-    have hm : ContinuousAt (fun g : ℝ => (g, w g)) γ := continuousAt_id.prodMk hw
     simpa only [Function.comp_def, Function.uncurry_apply_pair] using
-      (roots_upsilon_family_continuousAt U hU γ hγ hγ2 (w γ)).comp (f := fun g : ℝ => (g, w g)) hm
+      (roots_upsilon_family_continuousAt U hU γ hγ hγ2 (w γ)).comp (f := fun g : ℝ => (g, w g)) (continuousAt_id.prodMk hw)
   have hder : ContinuousAt (fun g => deriv (U g) 0) γ := by
     have hval := hUc (fun g => ((g / 2 : ℝ) : ℂ)) (by fun_prop)
     apply hval.congr_of_eventuallyEq

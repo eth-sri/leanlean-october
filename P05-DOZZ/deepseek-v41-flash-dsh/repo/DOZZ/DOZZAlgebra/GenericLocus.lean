@@ -24,9 +24,8 @@ private lemma closedEmbedding_affine_nat {c d : ℂ} (hc : c ≠ 0) :
     IsClosedEmbedding (fun n : ℕ => c * (n : ℂ) + d) := by
   apply Metric.isClosedEmbedding_of_pairwise_le_dist (norm_pos_iff.mpr hc)
   intro m n hmn
-  have hnat : (1 : ℝ) ≤ dist m n := Nat.pairwise_one_le_dist hmn
   have hnat' : (1 : ℝ) ≤ |(m : ℝ) - n| := by
-    simpa only [Nat.dist_eq] using hnat
+    simpa only [Nat.dist_eq] using (Nat.pairwise_one_le_dist hmn)
   have hnorm : ‖(m : ℂ) - n‖ = |(m : ℝ) - n| := by
     have hcast : (m : ℂ) - (n : ℂ) = (((m : ℝ) - n : ℝ) : ℂ) := by
       push_cast

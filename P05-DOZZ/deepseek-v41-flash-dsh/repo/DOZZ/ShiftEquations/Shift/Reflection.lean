@@ -3,6 +3,7 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
+public import DOZZ.SharedHyp
 
 public import DOZZ.ShiftEquations.Shift.Continuation3
 public import DOZZ.Statements.Correlations.BridgeMultiplicity
@@ -114,11 +115,7 @@ theorem differentiableAt_crossingMultiplier3Reg_slice {γ η δ : ℝ} (hγ : 0 
 /-- **Agreement of the two regularized sides on `(-2η, 1/γ)`.** -/
 theorem slice_regularized_agreement {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
     (M : Ω → Measure ℂ) {γ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2)
-    (hCross : ∀ μ α' ε α : ℝ, 0 < μ → γ / 2 < ε → ε < 2 / γ → α < Q γ → α' < Q γ →
-      2 * Q γ < α + α' + ε - γ / 2 →
-      unitVolumeStructureConstant P M γ (α' - γ / 2) ε α =
-        gammaHalfUnitCrossingMultiplier γ μ α' ε α *
-          unitVolumeStructureConstant P M γ α' (ε + γ / 2) α)
+    (hCross : CrossingHyp P M γ)
     {V₃ : Set (Fin 3 → ℂ)} (hV₃ : IsOpen V₃)
     (hV₃mem : ∀ α : Fin 3 → ℝ, ExtendedSeiberg3 γ (α 0) (α 1) (α 2) →
       complexifyNCharges α ∈ V₃)
@@ -169,11 +166,10 @@ theorem slice_regularized_agreement {Ω : Type*} [MeasurableSpace Ω] (P : Measu
       (z - 2 * η) * r z) D := by
     intro z hz
     apply DifferentiableAt.differentiableWithinAt
-    have hrz : DifferentiableAt ℂ r z := hr.differentiableAt (hV.mem_nhds hz.1.1)
     have hz0 : z + 2 * η ≠ 0 := hz.1.2
     have h1 : DifferentiableAt ℂ (fun z : ℂ => z - 2 * (η : ℂ)) z := by fun_prop
     have h2 : DifferentiableAt ℂ (fun z : ℂ => z + 2 * (η : ℂ)) z := by fun_prop
-    exact ((differentiableAt_const R₁).add ((h1.mul_const R₂).div h2 hz0)).add (h1.mul hrz)
+    exact ((differentiableAt_const R₁).add ((h1.mul_const R₂).div h2 hz0)).add (h1.mul (hr.differentiableAt (hV.mem_nhds hz.1.1)))
   have hg₂ : DifferentiableOn ℂ (fun z => crossingMultiplier3Reg γ u₂ z w *
       f₃ (tripleSecond u₂ ((γ / 2 : ℝ) : ℂ) w z)) D := by
     intro z hz
@@ -198,12 +194,8 @@ theorem slice_regularized_agreement {Ω : Type*} [MeasurableSpace Ω] (P : Measu
         f₃ (tripleSecond u₂ ((γ / 2 : ℝ) : ℂ) w t) := by
     filter_upwards [hE, hI] with t hEt hIt
     have ht2 : t < 2 / γ := by linarith [hIt.2]
-    have htV : (t : ℂ) ∈ V := hVx t ⟨by linarith [hIt.1], hIt.2⟩
     have hne : (t : ℂ) - 2 * η ≠ 0 := by
       exact_mod_cast (show t - 2 * η ≠ 0 by intro h; linarith [hIt.1])
-    have hne' : (t : ℂ) + 2 * η ≠ 0 := by
-      exact_mod_cast (show t + 2 * η ≠ 0 by intro h; linarith [hIt.1])
-    have hne'' : (t : ℂ) ≠ 2 * η := fun h => hne (by rw [h]; ring)
     have hcr := unitVolume_crossing_slice P M hγ hγ2 hCross hV₃ hV₃mem hf₃ hf₃eq hη hη4 hηγ
       hIt.1 ht2
     have hR : f₃ (tripleSecond u₂ ((γ / 2 : ℝ) : ℂ) w t) =
@@ -214,12 +206,12 @@ theorem slice_regularized_agreement {Ω : Type*} [MeasurableSpace Ω] (P : Measu
     calc R₁ + ((t : ℂ) - 2 * η) * R₂ / ((t : ℂ) + 2 * η) + ((t : ℂ) - 2 * η) * r t
         = ((t : ℂ) - 2 * η) * (R₁ / ((t : ℂ) - 2 * η) + R₂ / ((t : ℂ) + 2 * η) + r t) := by
           field_simp
-      _ = ((t : ℂ) - 2 * η) * F t := by rw [hEt htV]
+      _ = ((t : ℂ) - 2 * η) * F t := by rw [hEt (hVx t ⟨by linarith [hIt.1], hIt.2⟩)]
       _ = ((t : ℂ) - 2 * η) * (crossingMultiplier3 γ u₂ t w *
             (unitVolumeStructureConstant P M γ (Q γ - η) (t + γ / 2) (2 / γ + η) : ℂ)) := by
           rw [hFx t hIt, hcr, Complex.ofReal_mul, hu₂, hw, crossingMultiplier3_ofReal hγ]
       _ = _ := by
-          rw [hR, crossingMultiplier3Reg_slice hγ hne'']
+          rw [hR, crossingMultiplier3Reg_slice hγ (fun h => hne (by rw [h]; ring))]
           ring
   exact eq_of_real_interval_of_frequently hDo hg₁ hg₂ hJD (by linarith) (by linarith)
     ((tendsto_ofReal_nhdsNE_slice x₀).frequently hev.frequently) hx₁ hx₂
@@ -229,11 +221,7 @@ theorem slice_regularized_agreement {Ω : Type*} [MeasurableSpace Ω] (P : Measu
 theorem secondResidue_eq_of_bridge {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
     (X : Ω → Distr) (M : Ω → Measure ℂ) {γ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2)
     (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M)
-    (hCross : ∀ μ α' ε α : ℝ, 0 < μ → γ / 2 < ε → ε < 2 / γ → α < Q γ → α' < Q γ →
-      2 * Q γ < α + α' + ε - γ / 2 →
-      unitVolumeStructureConstant P M γ (α' - γ / 2) ε α =
-        gammaHalfUnitCrossingMultiplier γ μ α' ε α *
-          unitVolumeStructureConstant P M γ α' (ε + γ / 2) α)
+    (hCross : CrossingHyp P M γ)
     (hBridge : ∀ α2 α3 : ℝ, 0 < α2 ∧ α2 ≤ α3 ∧ γ / 2 < α3 ∧ α3 < Q γ →
       ∃ B : ℝ → Ω → BrownianPath × BrownianPath, ∃ Z : Ω → Measure ℝ,
         IsSourceLateralProjection P X γ M Z ∧ IsReflectionData P γ α3 (B α3) Z ∧

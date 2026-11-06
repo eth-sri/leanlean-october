@@ -20,13 +20,12 @@ namespace DOZZ.Proofs
 theorem inversion_log_norm_bound_on_annulus {u : ℂ} {m R : ℝ}
     (hm : 0 < m) (hR : 0 ≤ R) (hlo : m ≤ ‖u‖) (hhi : ‖u‖ ≤ R + 1) :
     |Real.log ‖u‖| ≤ |Real.log m| + Real.log (R + 1) := by
-  have hloglo : Real.log m ≤ Real.log ‖u‖ := Real.log_le_log hm hlo
   have hloghi : Real.log ‖u‖ ≤ Real.log (R + 1) :=
     Real.log_le_log (hm.trans_le hlo) hhi
   have hRp : 0 ≤ Real.log (R + 1) := Real.log_nonneg (by linarith only [hR])
   apply abs_le.mpr
   constructor
-  · linarith only [hloglo, neg_abs_le (Real.log m), hRp]
+  · linarith only [(Real.log_le_log hm hlo), neg_abs_le (Real.log m), hRp]
   · linarith only [hloghi, abs_nonneg (Real.log m)]
 
 /-- Fine target and pulled-source circles obey one common logarithmic covariance estimate
@@ -40,11 +39,10 @@ theorem inversion_mixed_log_bound_on_annulus
       Real.log (1 / max ‖x - y‖ (max (Real.exp (-r)) (Real.exp (-s))))| ≤
       (2 * (|Real.log m| + Real.log (R + 1)) + 2) +
         (Real.log 3 + 2 * Real.log (1 + R)) := by
-  have hy : y ≠ 0 := norm_pos_iff.mp (by linarith only [hm, hylo])
   have hylog := inversion_log_norm_bound_on_annulus hm hR
     (show m ≤ ‖y‖ by linarith only [hm, hylo])
     (hyhi.trans (le_add_of_nonneg_right zero_le_one))
-  apply inversion_circleAverage_mixed_log_bound hR hxhi hyhi hr hs hy hylog
+  apply inversion_circleAverage_mixed_log_bound hR hxhi hyhi hr hs (norm_pos_iff.mp (by linarith only [hm, hylo])) hylog
   intro u hu
   have hux : ‖u - x‖ = Real.exp (-r) := by
     simpa only [mem_sphere_iff_norm] using hu

@@ -37,14 +37,6 @@ private theorem regularized_testIntegral_aemeasurable
     ∫⁻ x, (f.nnrealPart x : ℝ≥0∞) ∂μ ω
   let neg : Ω → ℝ≥0∞ := fun ω =>
     ∫⁻ x, ((-f).nnrealPart x : ℝ≥0∞) ∂μ ω
-  have hpos : Measurable pos := by
-    dsimp [pos]
-    exact (Measure.measurable_lintegral
-      (BoundedContinuousFunction.measurable_coe_ennreal_comp f.nnrealPart)).comp hμ
-  have hneg : Measurable neg := by
-    dsimp [neg]
-    exact (Measure.measurable_lintegral
-      (BoundedContinuousFunction.measurable_coe_ennreal_comp (-f).nnrealPart)).comp hμ
   have hproxy : Measurable (fun ω => (pos ω).toReal - (neg ω).toReal) := by
     fun_prop
   have hfinite := regularizedGMC_finite_ae P X hX Xc hXc γ r
@@ -200,12 +192,10 @@ private theorem lowerApprox_tendsto (q : ℚ) (x : ℝ) :
       intro n
       have harg : 1 ≤ 1 - (n : ℝ) * (x - q) := by
         have hn : 0 ≤ (n : ℝ) := Nat.cast_nonneg n
-        have hxq : x - (q : ℝ) ≤ 0 := sub_nonpos.mpr hx
-        nlinarith [mul_nonpos_of_nonneg_of_nonpos hn hxq]
+        nlinarith [mul_nonpos_of_nonneg_of_nonpos hn (sub_nonpos.mpr hx)]
       simp [lowerApprox, min_eq_left harg]
     simp [hx, heq]
   · have hpos : 0 < x - (q : ℝ) := sub_pos.mpr (lt_of_not_ge hx)
-    have hqx : (q : ℝ) < x := lt_of_not_ge hx
     obtain ⟨N, hN⟩ := exists_nat_gt (1 / (x - (q : ℝ)))
     have heventually : (fun _ : ℕ => (0 : ℝ)) =ᶠ[atTop]
         fun n => lowerApprox q n x := by
@@ -222,7 +212,7 @@ private theorem lowerApprox_tendsto (q : ℚ) (x : ℝ) :
     have hT : Tendsto (fun n : ℕ => lowerApprox q n x) atTop (𝓝 0) :=
       Tendsto.congr' heventually tendsto_const_nhds
     convert hT using 1
-    simp [not_le_of_gt hqx]
+    simp [not_le_of_gt (lt_of_not_ge hx)]
 
 private def lowerBoxApproxFun (i : ℚ × ℚ) (n : ℕ) (z : ℂ) : ℝ :=
   lowerApprox i.1 n z.re * lowerApprox i.2 n z.im
@@ -273,7 +263,6 @@ private theorem lowerBoxApprox_integral_tendsto (i : ℚ × ℚ)
     (μ : Measure ℂ) [IsFiniteMeasure μ] :
     Tendsto (fun n : ℕ => ∫ z, lowerBoxApprox i n z ∂μ) atTop
       (𝓝 (μ.real (lowerBox i))) := by
-  have hbound : Integrable (fun _ : ℂ => (1 : ℝ)) μ := integrable_const 1
   have hdom : ∀ n, ∀ᵐ z ∂μ, ‖lowerBoxApprox i n z‖ ≤ (1 : ℝ) := by
     intro n
     filter_upwards [] with z
@@ -290,7 +279,7 @@ private theorem lowerBoxApprox_integral_tendsto (i : ℚ × ℚ)
   have hdomconv := tendsto_integral_of_dominated_convergence
     (fun _ : ℂ => (1 : ℝ))
     (fun n => (lowerBoxApprox i n).continuous.measurable.aestronglyMeasurable)
-    hbound hdom hlim
+    (integrable_const 1) hdom hlim
   rw [← integral_indicator_one hs]
   exact hdomconv
 
@@ -370,7 +359,6 @@ theorem equatorGFF_GMC_measurable_version
   obtain ⟨badMeas, hbadSub, hbadMeasurable, hbadZero⟩ :=
     exists_measurable_superset_of_null hbad
   let good : Set Ω := badMeasᶜ
-  have hgoodMeasurable : MeasurableSet good := hbadMeasurable.compl
   have hgood : ∀ᵐ ω ∂P, ω ∈ good := by
     rw [ae_iff]
     simpa [good] using hbadZero
@@ -403,7 +391,7 @@ theorem equatorGFF_GMC_measurable_version
           _ = ENNReal.ofReal (coordinateMeas i ω) := by rw [← hcoord]
       · simp [N, hω]
     rw [hEval]
-    exact Measurable.ite hgoodMeasurable
+    exact Measurable.ite (hbadMeasurable.compl)
       (ENNReal.measurable_ofReal.comp (hcoordinateMeas i)) measurable_const
   have hNmeasurable : Measurable N := by
     have hbasic : ∀ s ∈ basisFamily, Measurable (fun ω => N ω s) := by

@@ -49,8 +49,7 @@ theorem fusionRootOnlyMass_tendstoInMeasure_seq {Ω : Type*} [MeasurableSpace Ω
     have hr : Tendsto (fun δ : ℝ => δ ^ ξ) (nhdsWithin 0 (Set.Ioi 0)) (nhds 0) := by
       have h : Tendsto (fun δ : ℝ => δ ^ ξ) (nhdsWithin 0 (Set.Ioi 0)) (nhds ((0 : ℝ) ^ ξ)) :=
         (Real.continuousAt_rpow_const 0 ξ (Or.inr hξ.le)).tendsto.mono_left nhdsWithin_le_nhds
-      have hzpow : (0 : ℝ) ^ ξ = 0 := Real.zero_rpow (show ξ ≠ 0 from hξ.ne')
-      rw [hzpow] at h
+      rw [(Real.zero_rpow (show ξ ≠ 0 from hξ.ne'))] at h
       exact h
     have h := ENNReal.continuous_ofReal.continuousAt.tendsto.comp hr
     have h' := ENNReal.Tendsto.const_mul h (Or.inr (ENNReal.add_ne_top.mpr ⟨hCy.ne, hC0.ne⟩))

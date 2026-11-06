@@ -33,8 +33,6 @@ theorem testMass_add (f g : TestFn) :
 
 theorem testMass_smul (a : ℝ) (f : TestFn) :
     testMass (a • f) = a * testMass f := by
-  have hf : Integrable f (volume : Measure ℂ) :=
-    f.continuous.integrable_of_hasCompactSupport f.hasCompactSupport
   change (∫ z : ℂ, a * f z) = a * (∫ z : ℂ, f z)
   exact integral_const_mul a f
 

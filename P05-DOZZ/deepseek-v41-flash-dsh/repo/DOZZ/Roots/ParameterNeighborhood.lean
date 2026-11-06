@@ -41,7 +41,6 @@ theorem roots_unitVolume_gamma_continuousAt {Ω : Type*} [MeasurableSpace Ω]
   let A := fun g : ℝ => (g, (![a, b, c] : Fin 3 → ℝ))
   let K := A '' J
   have hAc : Continuous A := continuous_id.prodMk continuous_const
-  have hK : IsCompact K := isCompact_Icc.image hAc
   have hJdom : ∀ g ∈ J, 0 < g ∧ g < 2 ∧ ExtendedSeiberg3 g a b c := by
     intro g hg
     apply hball
@@ -50,7 +49,7 @@ theorem roots_unitVolume_gamma_continuousAt {Ω : Type*} [MeasurableSpace Ω]
   have hKdom : ∀ q ∈ K, 0 < q.1 ∧ q.1 < 2 ∧ ExtendedSeiberg3 q.1 (q.2 0) (q.2 1) (q.2 2) := by
     rintro q ⟨g, hg, rfl⟩
     exact hJdom g hg
-  have hc := continuousOn_unitVolumeStructureConstant P X M hX hM K hK hKdom
+  have hc := continuousOn_unitVolumeStructureConstant P X M hX hM K (isCompact_Icc.image hAc) hKdom
   have hcomp : ContinuousOn (fun g => unitVolumeStructureConstant P (M g) g a b c) J :=
     hc.comp hAc.continuousOn (fun g hg => mem_image_of_mem A hg)
   exact hcomp.continuousAt (Icc_mem_nhds (by linarith only [hR])

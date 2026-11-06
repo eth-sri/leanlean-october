@@ -203,12 +203,10 @@ theorem equatorGFF_extendedSeiberg_moment
     gmc_set_mass_aemeasurable_of_isGMCOf P X hX γ hγ hγ2 M hM B Metric.isOpen_ball.measurableSet
   -- almost surely the Coulomb mass is positive and finite
   have h4 : (0 : ℝ) < 4 / γ ^ 2 := by positivity
-  have hinf0 : 0 < 2 / γ * (Q γ - αinf) := mul_pos (by positivity) (sub_pos.mpr hαinf)
-  have hk0 : ∀ k, 0 < 2 / γ * (Q γ - α k) := fun k => mul_pos (by positivity) (sub_pos.mpr (hαQ k))
   have e1 : ∀ᶠ t in 𝓝[>] (0 : ℝ), t ∈ Set.Ioo 0 (4 / γ ^ 2) := Ioo_mem_nhdsGT h4
-  have e2 : ∀ᶠ t in 𝓝[>] (0 : ℝ), t ∈ Set.Ioo 0 (2 / γ * (Q γ - αinf)) := Ioo_mem_nhdsGT hinf0
+  have e2 : ∀ᶠ t in 𝓝[>] (0 : ℝ), t ∈ Set.Ioo 0 (2 / γ * (Q γ - αinf)) := Ioo_mem_nhdsGT (mul_pos (by positivity) (sub_pos.mpr hαinf))
   have e3 : ∀ᶠ t in 𝓝[>] (0 : ℝ), ∀ k, t ∈ Set.Ioo 0 (2 / γ * (Q γ - α k)) :=
-    eventually_all.mpr fun k => Ioo_mem_nhdsGT (hk0 k)
+    eventually_all.mpr fun k => Ioo_mem_nhdsGT ((fun k => mul_pos (by positivity) (sub_pos.mpr (hαQ k))) k)
   obtain ⟨t, ht⟩ := (e1.and (e2.and e3)).exists
   have htfin := coulombMass_moment_lt_top_of_pos P X hX γ hγ hγ2 M hM z hz α αinf t ht.1.1
     ht.1.2 (fun k => (ht.2.2 k).2) ht.2.1.2

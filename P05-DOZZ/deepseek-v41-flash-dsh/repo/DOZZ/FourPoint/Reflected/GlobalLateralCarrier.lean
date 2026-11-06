@@ -3,6 +3,7 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
+public import DOZZ.SharedHyp
 public import DOZZ.FourPoint.Reflected.ChartMassMeasurable
 public import DOZZ.FourPoint.Reflected.ConditionalCompactLimit
 /-! One actual measurable lateral carrier on the entire punctured plane. -/
@@ -20,9 +21,8 @@ theorem reflected_removed_mass_compact_finite (γ : ℝ) (A : TwoSidedPath)
   let f : ℂ → ℝ := fun x => Real.exp (-γ*A (-Real.log ‖x‖)+γ*Q γ*|Real.log ‖x‖|)
   have hc : ContinuousOn f K := by
     intro x hx
-    have hx0 : ‖x‖ ≠ 0 := norm_ne_zero_iff.mpr (by simpa using hK0 hx)
     have hl : ContinuousAt (fun x : ℂ => Real.log ‖x‖) x :=
-      continuous_norm.continuousAt.log hx0
+      continuous_norm.continuousAt.log (norm_ne_zero_iff.mpr (by simpa using hK0 hx))
     exact ((continuousAt_const.mul (A.continuous.continuousAt.comp hl.neg)).add
       (continuousAt_const.mul hl.abs)).rexp.continuousWithinAt
   have hi := ContinuousOn.integrableOn_compact hK hc (μ := μ)
@@ -30,8 +30,7 @@ theorem reflected_removed_mass_compact_finite (γ : ℝ) (A : TwoSidedPath)
       ∫⁻ x in K, ENNReal.ofReal (f x) ∂μ := by
     apply setLIntegral_congr_fun hK.measurableSet
     intro x hx
-    have hx0 : ‖x‖ ≠ 0 := norm_ne_zero_iff.mpr (by simpa using hK0 hx)
-    simp only [lateralRadialWeight, ite_eq_right hx0]
+    simp only [lateralRadialWeight, ite_eq_right (norm_ne_zero_iff.mpr (by simpa using hK0 hx))]
     rfl
   rw [withDensity_apply _ hK.measurableSet, he,
     ← ofReal_integral_eq_lintegral_ofReal hi (ae_of_all _ (fun x => (Real.exp_pos _).le))]
@@ -42,8 +41,8 @@ GMC and is locally finite on the entire punctured plane, on every sample. -/
 theorem reflected_global_lateral_carrier
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
     (Xc : Ω → ℂ → ℝ → ℝ) (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
-    (hcont : ∀ᵐ ω ∂P, Continuous (fun p : ℂ × ℝ => Xc ω p.1 p.2))
+    (hm : MeasurableCircleAvg Xc)
+    (hcont : ContinuousCircleAvg P Xc)
     (γ : ℝ) (hγ : 0 < γ) (hγ₂ : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) :
     ∃ N : Ω → Measure ℂ, Measurable N ∧
       IndepFun (originRadialPath Xc) N P ∧
@@ -54,11 +53,10 @@ theorem reflected_global_lateral_carrier
   have hA : AEMeasurable A P := originRadialPath_aemeasurable P X Xc hc hcont
   obtain ⟨M', hM', hMf, hMeq⟩ := equatorGFF_GMC_measurable_version P X hX γ hγ hγ₂ M hM
   let MF : Ω → FiniteMeasure ℂ := fun ω => ⟨M' ω, hMf ω⟩
-  have hMF : Measurable MF := Measurable.subtype_mk hM'
   let N : Ω → Measure ℂ := fun ω => (M' ω).withDensity
     (lateralRadialWeight γ (hA.mk A ω))
   have harg : Measurable (fun ω : Ω => ((γ, hA.mk A ω), MF ω)) :=
-    ((measurable_const.prodMk hA.measurable_mk).prodMk hMF)
+    ((measurable_const.prodMk hA.measurable_mk).prodMk (Measurable.subtype_mk hM'))
   have hN : Measurable N := by
     change Measurable ((fun p : (ℝ × TwoSidedPath) × FiniteMeasure ℂ =>
       (p.2 : Measure ℂ).withDensity (lateralRadialWeight p.1.1 p.1.2)) ∘

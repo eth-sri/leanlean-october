@@ -97,8 +97,7 @@ theorem complexVolume_map_affine_restrict
   have hf : Measurable f := by fun_prop
   have hinj : Function.Injective f := by
     intro x y hxy
-    have hsmul : c • x = c • y := add_left_cancel hxy
-    exact (smul_right_injective ℂ hc) hsmul
+    exact (smul_right_injective ℂ hc) (add_left_cancel hxy)
   calc
     Measure.map f (volume.restrict K) = (Measure.map f volume).restrict (f '' K) := by
       rw [Measure.restrict_map hf himage, Set.preimage_image_eq _ hinj]

@@ -42,7 +42,6 @@ theorem bpz_three_frac_mul_le_one {S K V : ℝ} (hS : 0 ≤ S) (hK : 0 ≤ K) (h
     S * K * V / ((S + 1) * (K + 1) * (V + 1)) ≤ 1 := by
   rw [div_le_one (by positivity)]
   have h1 : S * K ≤ (S + 1) * (K + 1) := by nlinarith
-  have h2 : S * K * V ≤ (S + 1) * (K + 1) * V := mul_le_mul_of_nonneg_right h1 hV
   nlinarith [mul_nonneg (mul_nonneg hS hK) hV]
 
 /-- The antisymmetrized limit kernel is uniformly continuous in the first variable away from
@@ -72,8 +71,6 @@ theorem bpz_antisym_kern_cont {a b : ℂ → ℝ} (ha : Continuous a) (hac : Has
   set δk : ℝ := ε * (η / 2) ^ 2 / (6 * ((A * B + 1) * (V + 1))) with hδk
   have hδkp : 0 < δk := by positivity
   refine ⟨min (min δa δb) (min (η / 2) δk), by positivity, fun x x' y hxy hxx' => ?_⟩
-  have h1 : ‖x - x'‖ ≤ δa := hxx'.trans ((min_le_left _ _).trans (min_le_left _ _))
-  have h2 : ‖x - x'‖ ≤ δb := hxx'.trans ((min_le_left _ _).trans (min_le_right _ _))
   have h3 : ‖x - x'‖ ≤ η / 2 := hxx'.trans ((min_le_right _ _).trans (min_le_left _ _))
   have h4 : ‖x - x'‖ ≤ δk := hxx'.trans ((min_le_right _ _).trans (min_le_right _ _))
   have hη2 : 0 < η / 2 := by positivity
@@ -98,9 +95,9 @@ theorem bpz_antisym_kern_cont {a b : ℂ → ℝ} (ha : Continuous a) (hac : Has
         ((a x - a x') * b y - a y * (b x - b x')) / 2 := by ring
     rw [this, abs_div, abs_two]
     have e1 : |(a x - a x') * b y| ≤ e₀ * B := by
-      rw [abs_mul]; exact mul_le_mul (hua x x' h1) (hBx y) (abs_nonneg _) he₀p.le
+      rw [abs_mul]; exact mul_le_mul (hua x x' (hxx'.trans ((min_le_left _ _).trans (min_le_left _ _)))) (hBx y) (abs_nonneg _) he₀p.le
     have e2 : |a y * (b x - b x')| ≤ A * e₀ := by
-      rw [abs_mul]; exact mul_le_mul (hAx y) (hub x x' h2) (abs_nonneg _) hA0
+      rw [abs_mul]; exact mul_le_mul (hAx y) (hub x x' (hxx'.trans ((min_le_left _ _).trans (min_le_right _ _)))) (abs_nonneg _) hA0
     have := (abs_sub _ _).trans (add_le_add e1 e2)
     linarith
   have hKd : |bpzKern v (x - y) - bpzKern v (x' - y)| ≤ 3 * V * ‖x - x'‖ / (η / 2) ^ 2 := by
@@ -175,7 +172,6 @@ theorem symKer_unif (hd : BPZLimitData γ q δ ρ kt k₂ φ D) (v : ℂ) :
   obtain ⟨K, hK0, hK⟩ := hd.cutWeight_bound
   obtain ⟨B, hB0, hB⟩ := hd.phi_bdd
   set V : ℝ := ‖v‖ with hVdef
-  have hV0 : 0 ≤ V := norm_nonneg v
   set ε' : ℝ := ε * η / (2 * ((B + 1) * (K + 1) * (V + 1))) with hε'
   have hε'0 : 0 < ε' := by positivity
   have htail : ∀ᶠ n : ℕ in atTop, 2 * Real.exp (-(n : ℝ)) < η := by
@@ -235,7 +231,7 @@ theorem symKer_unif (hd : BPZLimitData γ q δ ρ kt k₂ φ D) (v : ℂ) :
     (abs_bpzKern_le v _).trans (div_le_div_of_nonneg_left (norm_nonneg v) hη hxy)
   rw [abs_div, abs_two, abs_mul, abs_mul]
   have hfin : 2 * B * (2 * (K * ε')) * (V / η) / 2 ≤ ε := by
-    have := bpz_three_frac_mul_le_one hB0 hK0 hV0
+    have := bpz_three_frac_mul_le_one hB0 hK0 (norm_nonneg v)
     have hrw : 2 * B * (2 * (K * ε')) * (V / η) / 2 =
         ε * (B * K * V / ((B + 1) * (K + 1) * (V + 1))) := by
       rw [hε']; field_simp

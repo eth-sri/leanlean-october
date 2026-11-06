@@ -122,9 +122,6 @@ theorem realGaussEulerBinomialTerm_integral (a b c x : ℝ) (n : ℕ)
   let s : Set ℝ := Ioc 0 1
   let w : ℝ → ℝ := fun t => t ^ (b + n - 1) * (1 - t) ^ (c - b - 1)
   let C : ℝ := Ring.choose (a + n - 1) n * x ^ n
-  have hchoose : 0 < Ring.choose (a + n - 1) n := by
-    rw [realBinomialCoefficient_eq_ascPochhammer]
-    exact div_pos (realAscPochhammer_eval_pos ha n) (by positivity)
   have hweight : IntegrableOn w s := by
     simpa [w, s] using
       (realEulerBetaWeight_integrable (b + n) (c - b) (by positivity) hcb)
@@ -133,11 +130,9 @@ theorem realGaussEulerBinomialTerm_integral (a b c x : ℝ) (n : ℕ)
         fun t => C * w t := by
     filter_upwards [ae_restrict_mem (by simp [s]),
       ae_restrict_of_ae (volume.ae_ne (0 : ℝ))] with t ht ht0
-    have htpos : 0 < t := ht.1
-    have hpow : (x * t) ^ n = x ^ n * t ^ n := mul_pow x t n
     have hrpowNat : t ^ n = t ^ (n : ℝ) := (Real.rpow_natCast t n).symm
     have hrpowAdd : t ^ (b - 1) * t ^ (n : ℝ) = t ^ (b + n - 1) := by
-      rw [← Real.rpow_add htpos]
+      rw [← Real.rpow_add (ht.1)]
       congr 1
       ring
     dsimp [realGaussEulerBinomialTerm, C, w]
@@ -146,14 +141,10 @@ theorem realGaussEulerBinomialTerm_integral (a b c x : ℝ) (n : ℕ)
           t ^ (b - 1) * (1 - t) ^ (c - b - 1) =
           Ring.choose (a + n - 1) n * x ^ n *
             ((t ^ (b - 1) * t ^ (n : ℝ)) * (1 - t) ^ (c - b - 1)) := by
-              rw [hpow, hrpowNat]
+              rw [(mul_pow x t n), hrpowNat]
               ring
       _ = Ring.choose (a + n - 1) n * x ^ n *
             (t ^ (b + n - 1) * (1 - t) ^ (c - b - 1)) := by rw [hrpowAdd]
-  have hterm_int : IntegrableOn
-      (realGaussEulerBinomialTerm a b c x n) s := by
-    have hC : IntegrableOn (fun t => C * w t) s := hweight.const_mul C
-    exact hC.congr_fun_ae hpowEq.symm
   have hterm_integral :
       (∫ t : ℝ in s, realGaussEulerBinomialTerm a b c x n t) =
         C * (∫ t : ℝ in s, w t) := by
@@ -192,11 +183,9 @@ theorem realGaussEulerBinomialTerm_integrableOn (a b c x : ℝ) (n : ℕ)
         fun t => C * w t := by
     filter_upwards [ae_restrict_mem (by simp [s]),
       ae_restrict_of_ae (volume.ae_ne (0 : ℝ))] with t ht ht0
-    have htpos : 0 < t := ht.1
-    have hpow : (x * t) ^ n = x ^ n * t ^ n := mul_pow x t n
     have hrpowNat : t ^ n = t ^ (n : ℝ) := (Real.rpow_natCast t n).symm
     have hrpowAdd : t ^ (b - 1) * t ^ (n : ℝ) = t ^ (b + n - 1) := by
-      rw [← Real.rpow_add htpos]
+      rw [← Real.rpow_add (ht.1)]
       congr 1
       ring
     dsimp [realGaussEulerBinomialTerm, C, w]
@@ -205,7 +194,7 @@ theorem realGaussEulerBinomialTerm_integrableOn (a b c x : ℝ) (n : ℕ)
           t ^ (b - 1) * (1 - t) ^ (c - b - 1) =
           Ring.choose (a + n - 1) n * x ^ n *
             ((t ^ (b - 1) * t ^ (n : ℝ)) * (1 - t) ^ (c - b - 1)) := by
-              rw [hpow, hrpowNat]
+              rw [(mul_pow x t n), hrpowNat]
               ring
       _ = Ring.choose (a + n - 1) n * x ^ n *
             (t ^ (b + n - 1) * (1 - t) ^ (c - b - 1)) := by rw [hrpowAdd]
@@ -219,12 +208,10 @@ theorem realGaussEulerBinomialTerm_nonneg (a b c x : ℝ) (n : ℕ) (t : ℝ)
   have hchoose : 0 ≤ Ring.choose (a + n - 1) n := by
     rw [realBinomialCoefficient_eq_ascPochhammer]
     exact le_of_lt (div_pos (realAscPochhammer_eval_pos ha n) (by positivity))
-  have hxt : 0 ≤ x * t := mul_nonneg hx.le ht.1.le
   have htPow : 0 ≤ t ^ (b - 1) := Real.rpow_nonneg ht.1.le _
-  have h1t : 0 ≤ 1 - t := sub_nonneg.mpr ht.2
-  have h1tPow : 0 ≤ (1 - t) ^ (c - b - 1) := Real.rpow_nonneg h1t _
+  have h1tPow : 0 ≤ (1 - t) ^ (c - b - 1) := Real.rpow_nonneg (sub_nonneg.mpr ht.2) _
   dsimp [realGaussEulerBinomialTerm]
-  exact mul_nonneg (mul_nonneg (mul_nonneg hchoose (pow_nonneg hxt _)) htPow) h1tPow
+  exact mul_nonneg (mul_nonneg (mul_nonneg hchoose (pow_nonneg (mul_nonneg hx.le ht.1.le) _)) htPow) h1tPow
 
 /-- Pointwise, the real Euler kernel is the integral of the binomial expansion against its beta
 weight. -/
@@ -232,9 +219,8 @@ theorem realGaussEulerBinomialTerm_hasSum (a b c x t : ℝ)
     (hx : 0 < x) (hx1 : x < 1) (ht : t ∈ Ioc 0 1) :
     HasSum (fun n => realGaussEulerBinomialTerm a b c x n t)
       (t ^ (b - 1) * (1 - t) ^ (c - b - 1) * (1 - x * t) ^ (-a)) := by
-  have ht0 : 0 < t := ht.1
   have ht1 : t ≤ 1 := ht.2
-  have hu0 : 0 ≤ x * t := mul_nonneg hx.le ht0.le
+  have hu0 : 0 ≤ x * t := mul_nonneg hx.le (ht.1).le
   have hu1 : x * t < 1 := by nlinarith [mul_le_mul_of_nonneg_left ht1 hx.le]
   have huNorm : ‖x * t‖ < 1 := by
     rw [Real.norm_eq_abs, abs_of_nonneg hu0]
@@ -387,7 +373,6 @@ theorem realGaussEulerIntegral_eq_family
           t ^ (b - 1) * (1 - t) ^ (c - b - 1) * (1 - x * t) ^ (-a)) =
       H (a : ℂ) (b : ℂ) (c : ℂ) (x : ℂ) := by
   let N : ℝ := Real.Gamma c / (Real.Gamma b * Real.Gamma (c - b))
-  have hc : 0 < c := by linarith
   have hcC : ∀ n : ℕ, (c : ℂ) ≠ -(n : ℂ) := by
     intro n hn
     have hreal : c = -(n : ℝ) := by exact_mod_cast hn

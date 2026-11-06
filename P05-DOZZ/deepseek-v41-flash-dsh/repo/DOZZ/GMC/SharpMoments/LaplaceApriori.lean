@@ -93,16 +93,14 @@ theorem cutoffLaplace_apriori
   refine ⟨π₀, hπ₀, fun r hr x => ?_⟩
   set h : ℝ := (1 / 2) * (gmcReferenceMeasure D).toReal with hhdef
   let m : Ω → ℝ := fun ω => (regularizedGMC P Xc γ r ω D).toReal
-  have hm : Measurable m := measurable_regularizedGMC_apply_toReal P X hX Xc hXc γ r D hD
   let E : Set Ω := {ω | h < m ω}
-  have hE : MeasurableSet E := measurableSet_lt measurable_const hm
+  have hE : MeasurableSet E := measurableSet_lt measurable_const (measurable_regularizedGMC_apply_toReal P X hX Xc hXc γ r D hD)
   -- the ENNReal event is contained in `E` up to the null set where the mass is infinite
   have hfin := regularizedGMC_finite_ae P X hX Xc hXc γ r
   have hsubset : {ω | ENNReal.ofReal h < regularizedGMC P Xc γ r ω D} ≤ᵐ[P] E := by
     filter_upwards [hfin] with ω hω hlt
-    have hne : regularizedGMC P Xc γ r ω D ≠ ⊤ := measure_ne_top _ _
     change h < (regularizedGMC P Xc γ r ω D).toReal
-    have := (ENNReal.ofReal_lt_iff_lt_toReal (by positivity) hne).mp hlt
+    have := (ENNReal.ofReal_lt_iff_lt_toReal (by positivity) (measure_ne_top _ _)).mp hlt
     exact this
   have hPE : ENNReal.ofReal π₀ ≤ P E :=
     (hprob r (hCbound r hr)).trans (measure_mono_ae hsubset)

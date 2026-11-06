@@ -71,15 +71,13 @@ theorem actual_copied_multiplier_error_uniform
     positivity
   have hpin : Measurable (fun ω => Xc ω z 0) :=
     (hc.1 0).comp (measurable_id.prodMk measurable_const)
-  have hA : Measurable A := hpin.comp measurable_fst
   have hB : Measurable B := hpin.comp measurable_snd
   have hD : Measurable (fun q => pinCorrectionEnvelope z γ (A q) (B q)) := by
     unfold pinCorrectionEnvelope
-    exact ((continuous_abs.measurable.comp (hB.sub hA)).const_mul _).add_const _
+    exact ((continuous_abs.measurable.comp (hB.sub (hpin.comp measurable_fst))).const_mul _).add_const _
   have hCm : Measurable C := (((hD.add_const 4).const_mul supBound).const_add derivBound).mul
     (hD.add_const 4).exp
   have hSm : Measurable S := ((hB.const_mul γ).sub_const _).exp
-  have hE : Measurable E := (hSm.mul hCm).ennreal_ofReal
   have hpinL := offCenter_pin_law P X Xc hX hc z hzn
   have hAL := hpinL.comp hfst.hasLaw
   have hBL := hpinL.comp (measurePreserving_snd (μ := P) (ν := P)).hasLaw
@@ -99,7 +97,7 @@ theorem actual_copied_multiplier_error_uniform
   have hY := translated_field_isEquatorGFF P X Xc hX hc z
   have hY' := isEquatorGFF_measurePreserving P (P.prod P) Prod.fst hfst _ hY
   have hN' := isGMCOf_measurePreserving P (P.prod P) Prod.fst hfst _ hY γ _ hN
-  have hm := hMass _ (N ∘ Prod.fst) hY' hN' α r hα hr hbulk hins E hE.aemeasurable hEm
+  have hm := hMass _ (N ∘ Prod.fst) hY' hN' α r hα hr hbulk hins E ((hSm.mul hCm).ennreal_ofReal).aemeasurable hEm
   apply le_trans (lintegral_mono fun u => ?_) hm
   apply ENNReal.rpow_le_rpow _ hr.le
   have he := copied_multiplier_error_mass_le K Family radius supBound derivBound

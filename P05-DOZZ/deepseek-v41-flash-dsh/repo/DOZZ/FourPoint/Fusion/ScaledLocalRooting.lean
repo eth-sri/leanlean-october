@@ -60,10 +60,9 @@ theorem fusion_localR1_reference_scaled {Ω : Type*} [MeasurableSpace Ω]
         (planarWirtingerKernel (γ ^ 2 / 2) (γ * α₁) 1 y *
           (fusionScaledFactor P M γ α₁ α₂ α₃ s y z : ℂ)) := funext hpoint
   rw [heq, integral_const_mul] at hscale
-  have hr : 0 < ‖z‖ := norm_pos_iff.mpr hz
   have hp : ‖z‖ ^ (2 : ℕ) * ‖z‖ ^ (γ ^ 2 / 2 - γ * α₁) =
       ‖z‖ ^ (2 + γ ^ 2 / 2 - γ * α₁) := by
-    rw [← Real.rpow_natCast, ← Real.rpow_add hr]
+    rw [← Real.rpow_natCast, ← Real.rpow_add (norm_pos_iff.mpr hz)]
     congr 1
     ring
   calc

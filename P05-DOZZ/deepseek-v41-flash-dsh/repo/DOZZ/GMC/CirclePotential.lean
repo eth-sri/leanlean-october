@@ -49,8 +49,7 @@ theorem abs_log_sub_log_le {p q b : ℝ} (hb : 0 < b) (hp : b ≤ p) (hq : b ≤
     exact this hq hp (le_of_not_ge hpq)
   have hq0 : 0 < q := lt_of_lt_of_le hb hq
   have hp0 : 0 < p := lt_of_lt_of_le hb hp
-  have h1 : 0 ≤ Real.log p - Real.log q := sub_nonneg.2 (Real.log_le_log hq0 hpq)
-  rw [abs_of_nonneg h1, abs_of_nonneg (sub_nonneg.2 hpq), ← Real.log_div hp0.ne' hq0.ne']
+  rw [abs_of_nonneg (sub_nonneg.2 (Real.log_le_log hq0 hpq)), abs_of_nonneg (sub_nonneg.2 hpq), ← Real.log_div hp0.ne' hq0.ne']
   calc Real.log (p / q) ≤ p / q - 1 := Real.log_le_sub_one_of_pos (div_pos hp0 hq0)
     _ = (p - q) / q := by field_simp
     _ ≤ (p - q) / b := div_le_div_of_nonneg_left (sub_nonneg.2 hpq) hb hq
@@ -230,7 +229,6 @@ theorem abs_circleKernel_sub_log_le : ∀ R : ℝ, 0 ≤ R → ∀ x y : ℂ, �
   intro R hR x y hx hy r s hr hs
   have ha : 0 < Real.exp (-r) := Real.exp_pos _
   have hb : 0 < Real.exp (-s) := Real.exp_pos _
-  have ha1 : Real.exp (-r) ≤ 1 := Real.exp_le_one_iff.2 (by linarith)
   have hb1 : Real.exp (-s) ≤ 1 := Real.exp_le_one_iff.2 (by linarith)
   have hMa : Real.exp (-r) ≤ max ‖x - y‖ (max (Real.exp (-r)) (Real.exp (-s))) :=
     le_trans (le_max_left _ _) (le_max_right _ _)
@@ -271,10 +269,8 @@ theorem abs_circleKernel_sub_log_le : ∀ R : ℝ, 0 ≤ R → ∀ x y : ℂ, �
     · rw [max_eq_left h]
       exact hxy_le
   -- the regular parts
-  have hhx := circleAverage_log_normPlus_bounds hR hx ha ha1
+  have hhx := circleAverage_log_normPlus_bounds hR hx ha (Real.exp_le_one_iff.2 (by linarith))
   have hhy := circleAverage_log_normPlus_bounds hR hy hb hb1
-  have hlog3 : 0 ≤ Real.log 3 := Real.log_nonneg (by norm_num)
-  have hlogR : 0 ≤ Real.log (1 + R) := Real.log_nonneg (by linarith)
   rw [circleKernel_eq, circleAverage_innerPot, one_div, Real.log_inv]
   unfold regAvg
   rw [abs_le]
@@ -318,11 +314,10 @@ theorem abs_circleKernel_sub_integral_gffKernel_le : ∀ x y : ℂ, ∀ r s : �
       (Real.exp s + 1) * Real.exp (-r) := by
   intro x y r s
   rw [circleKernel_eq, integral_gffKernel_circleMeasure]
-  have ha : 0 < Real.exp (-r) := Real.exp_pos _
   have hb : 0 < Real.exp (-s) := Real.exp_pos _
   refine abs_circleAverage_sub_le (continuous_innerPot y s).continuousOn.circleIntegrable'
     (fun u hu => ?_)
-  rw [mem_sphere_iff_norm, abs_of_pos ha] at hu
+  rw [mem_sphere_iff_norm, abs_of_pos (Real.exp_pos _)] at hu
   have h1 := abs_log_max_sub_le u x y hb
   have h2 := abs_log_normPlus_sub_le u x
   have heq : innerPot y s u - innerPot y s x =

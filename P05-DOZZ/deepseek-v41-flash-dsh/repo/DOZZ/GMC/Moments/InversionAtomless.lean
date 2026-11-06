@@ -48,8 +48,7 @@ theorem gmc_atomless_at_zero_of_isGMCOf
       simp only [Set.mem_singleton_iff] at hx
       subst x
       exact Metric.mem_ball_self (show 0 < c / 2 by positivity)
-    have hmass : M ω {0} ≤ M ω (Metric.ball 0 (c / 2)) := measure_mono hsubset
-    exact hmass.trans_eq (ENNReal.rpow_one _).symm
+    exact (measure_mono hsubset).trans_eq (ENNReal.rpow_one _).symm
   have hscale (c : ℝ) (hc : 0 < c) (hc1 : c ≤ 1) :
       gmcMassMoment P M (Metric.ball 0 (c / 2)) 1 = ENNReal.ofReal (c ^ 2) * B := by
     have h := gmc_affine_openBall_moment_scale P X hX γ hγ hγ2 M hM
@@ -88,7 +87,6 @@ theorem gmc_atomless_at_zero_of_isGMCOf
     have hratio : B.toReal / (B.toReal + 1) ≤ 1 := by
       rw [div_le_one (by linarith : 0 < B.toReal + 1)]
       linarith
-    have hratio0 : 0 ≤ B.toReal / (B.toReal + 1) := by positivity
     have hcb : c * B.toReal ≤ A.toReal / 2 := by
       rw [show c = A.toReal / (2 * (B.toReal + 1)) by rfl]
       calc
@@ -100,9 +98,8 @@ theorem gmc_atomless_at_zero_of_isGMCOf
     have hcSq : c ^ 2 * B.toReal ≤ c * B.toReal :=
       mul_le_mul_of_nonneg_right hcSqBase hb
     linarith
-  have hzero : A = 0 := hAeq
   have hmassZero : (fun ω => M ω {0}) =ᵐ[P] (fun _ => (0 : ℝ≥0∞)) :=
-    (lintegral_eq_zero_iff' hAmeas).mp (by simpa [A] using hzero)
+    (lintegral_eq_zero_iff' hAmeas).mp (by simpa [A] using (hAeq))
   filter_upwards [hmassZero] with ω hω
   exact hω
 

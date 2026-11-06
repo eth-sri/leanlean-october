@@ -88,9 +88,8 @@ theorem negativeConditionedDyadicLastExitCell_test_measure
   let b := dyadicLastExitCellEndTime n k
   let L := negativeConditionedLastExitTimeCell a b c
   let E := dyadicLastExitCellFutureEvent n k c C
-  have hb : 0 < (b : ℝ) := dyadicLastExitCellEndTime_pos n k
   have hcell := negativeConditionedLastExitCell_avoidance_shift_setIntegral
-    hP hB a b c hb hν hc C hC
+    hP hB a b c (dyadicLastExitCellEndTime_pos n k) hν hc C hC
   have hE : MeasurableSet E := measurableSet_dyadicLastExitCellFutureEvent n k c C hC
   have hL : MeasurableSet L := measurableSet_negativeConditionedLastExitTimeCell a b c
   have hprob : P.real (L ∩ E) = ∫ p in L ∩ E, (1 : ℝ) ∂P := by

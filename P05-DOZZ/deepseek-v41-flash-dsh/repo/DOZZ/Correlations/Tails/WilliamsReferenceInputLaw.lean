@@ -31,13 +31,12 @@ theorem williams_reference_input_law
   have hmark : Measurable mark := measurable_fst.prodMk measurable_lastExitSegment_joint
   let H : Raw → ((ℝ × StoppedBrownianPath) × BrownianPath) × Measure ℝ :=
     Prod.map (Prod.map mark id) id
-  have hH : Measurable H := (hmark.prodMap measurable_id).prodMap measurable_id
   have hMarked : (((μ.prod Qν).map mark).prod Qν).prod L = R.map H := by
     rw [← Measure.map_id (μ := Qν), Measure.map_prod_map _ _ hmark measurable_id,
       ← Measure.map_id (μ := L), Measure.map_prod_map _ _ (hmark.prodMap measurable_id) measurable_id]
     simp only [Measure.map_id]
     rfl
-  rw [hMarked,Measure.map_map (measurable_williamsMassFunctional γ) hH]
+  rw [hMarked,Measure.map_map (measurable_williamsMassFunctional γ) ((hmark.prodMap measurable_id).prodMap measurable_id)]
   let T : Raw → ℝ × ((BrownianPath × BrownianPath) × Measure ℝ) :=
     fun w => (w.1.1.1,((w.1.2,w.1.1.2),w.2))
   have hT : MeasurePreserving T R (μ.prod ((Qν.prod Qν).prod L)) := by

@@ -51,7 +51,6 @@ theorem bpz_real_bound_of_lintegral {Ω : Type*} [MeasurableSpace Ω] (P : Measu
       ∀ᵐ ω ∂P, Integrable f (M ω) := by
   have hIm : Measurable fun ω => bpzSoftI γ χ α₁ α₂ α₃ ε (M ω) z :=
     (measurable_integral_measure (measurable_bpzSoftWeight ε z)).comp hMm
-  have hJm : Measurable fun ω => ∫ x, f x ∂M ω := (measurable_integral_measure hf).comp hMm
   have hmeasL : AEMeasurable (fun ω => bpzMass γ χ α₁ α₂ α₃ ε (M ω) z ^ (-p) *
       ∫⁻ x, ENNReal.ofReal (f x) ∂M ω) P :=
     ((gmc_lintegral_aemeasurable P X hX γ hγ hγ2 M hM _
@@ -63,11 +62,10 @@ theorem bpz_real_bound_of_lintegral {Ω : Type*} [MeasurableSpace Ω] (P : Measu
         bpzMass γ χ α₁ α₂ α₃ ε (M ω) z ^ (-p) * ∫⁻ x, ENNReal.ofReal (f x) ∂M ω := by
     filter_upwards [hfinL, bpzMass_pos_ae P X hX hγ hγ2 M hM ε hε0 hε1 z,
       bpzMass_lt_top_ae P X hX hγ hγ2 M hM hχ hα₁ hα₂ hα₃ ε z hz0 hz1] with ω h1 h2 h3
-    have hpow : bpzMass γ χ α₁ α₂ α₃ ε (M ω) z ^ (-p) ≠ 0 := (ENNReal.rpow_pos h2 h3.ne).ne'
     have hJfin : ∫⁻ x, ENNReal.ofReal (f x) ∂M ω < ⊤ := by
       by_contra hinf
       rw [not_lt, top_le_iff] at hinf
-      rw [hinf, ENNReal.mul_top hpow] at h1
+      rw [hinf, ENNReal.mul_top ((ENNReal.rpow_pos h2 h3.ne).ne')] at h1
       exact lt_irrefl _ h1
     have hfi : Integrable f (M ω) := ⟨hf.aestronglyMeasurable, by
       rw [hasFiniteIntegral_iff_ofReal (Eventually.of_forall hf0)]; exact hJfin⟩
@@ -85,7 +83,7 @@ theorem bpz_real_bound_of_lintegral {Ω : Type*} [MeasurableSpace Ω] (P : Measu
     filter_upwards [hgood] with ω hω
     exact hω.2
   have hint : Integrable (fun ω => bpzSoftI γ χ α₁ α₂ α₃ ε (M ω) z ^ (-p) * ∫ x, f x ∂M ω) P :=
-    ⟨((hIm.pow_const _).mul hJm).aestronglyMeasurable,
+    ⟨((hIm.pow_const _).mul ((measurable_integral_measure hf).comp hMm)).aestronglyMeasurable,
       (hasFiniteIntegral_iff_ofReal (Eventually.of_forall hnn)).mpr
         (lt_of_le_of_lt hlin ENNReal.ofReal_lt_top)⟩
   refine ⟨hint, ?_, hgood.mono fun ω h => h.1⟩

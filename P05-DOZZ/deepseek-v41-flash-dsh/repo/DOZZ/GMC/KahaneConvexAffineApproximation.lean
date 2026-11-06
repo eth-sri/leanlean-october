@@ -65,8 +65,7 @@ theorem convex_positive_countable_affine_minorants
   obtain ⟨A', hsub, hcount, hlub⟩ := exists_countable_lowerSemicontinuous_isLUB hAcont hAlub
   have hnonempty : A'.Nonempty := by
     by_contra hempty
-    have heq : A' = ∅ := Set.not_nonempty_iff_eq_empty.mp hempty
-    have hbound : (fun x : S => G x - 1) ∈ upperBounds A' := by simp [heq]
+    have hbound : (fun x : S => G x - 1) ∈ upperBounds A' := by simp [(Set.not_nonempty_iff_eq_empty.mp hempty)]
     have h := hlub.2 hbound (⟨1, by change (0 : ℝ) < 1; norm_num⟩ : S)
     linarith
   obtain ⟨f, hf⟩ := hcount.exists_eq_range hnonempty

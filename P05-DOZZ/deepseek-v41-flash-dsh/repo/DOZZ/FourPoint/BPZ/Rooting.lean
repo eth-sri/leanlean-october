@@ -28,7 +28,6 @@ theorem gffKernel_ge_neg_log_two (u x : ℂ) : -Real.log 2 ≤ gffKernel u x := 
   unfold gffKernel
   have hu := bpz_one_le_normPlus u
   have hx := bpz_one_le_normPlus x
-  have hu0 : 0 < normPlus u := bpz_normPlus_pos u
   have hx0 : 0 < normPlus x := bpz_normPlus_pos x
   rcases eq_or_ne u x with h | h
   · subst h
@@ -43,7 +42,7 @@ theorem gffKernel_ge_neg_log_two (u x : ℂ) : -Real.log 2 ≤ gffKernel u x := 
       have h3 := norm_sub_le u x
       nlinarith
     have hlog := Real.log_le_log hpos hle
-    rw [Real.log_mul (by norm_num) (by positivity), Real.log_mul hu0.ne' hx0.ne'] at hlog
+    rw [Real.log_mul (by norm_num) (by positivity), Real.log_mul (bpz_normPlus_pos u).ne' hx0.ne'] at hlog
     linarith
 
 /-- The density of the rooted measure is measurable. -/

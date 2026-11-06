@@ -301,10 +301,6 @@ theorem equatorGFF_GMC_tilt
       _ = K (rightPath ω) := rfl
   have hObsLeftAEMeas : AEMeasurable (fun ω => K (leftPath ω)) P :=
     hK.aemeasurable.comp_aemeasurable hleftAEMeasP
-  have hObsRightAEMeas : AEMeasurable (fun ω => K (rightPath ω)) P :=
-    hK.aemeasurable.comp_aemeasurable hrightAEMeasP
-  have hObsLeftAEMeasQ : AEMeasurable (fun ω => K (leftPath ω)) Q :=
-    hK.aemeasurable.comp_aemeasurable hleftAEMeasQ
   calc
     (∫⁻ ω, density ω * H (eval ω) (M ω) ∂P) =
         ∫⁻ ω, density ω * K (leftPath ω) ∂P := by

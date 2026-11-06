@@ -41,9 +41,8 @@ theorem separatedTail_joint_tail_le_of_mixed_moment
     simp only [T, ENNReal.toReal_mul, ← ENNReal.toReal_rpow, ENNReal.toReal_ofReal hu.le,
       ENNReal.toReal_ofReal hv.le]
   rw [hTr] at hreal
-  have hpos : 0 < u ^ a2 * v ^ a3 := mul_pos (Real.rpow_pos_of_pos hu _) (Real.rpow_pos_of_pos hv _)
   have hr : (P {ω | ENNReal.ofReal u < W2 ω ∧ ENNReal.ofReal v < W3 ω}).toReal ≤
-      B.toReal / (u ^ a2 * v ^ a3) := (le_div_iff₀ hpos).mpr (by
+      B.toReal / (u ^ a2 * v ^ a3) := (le_div_iff₀ (mul_pos (Real.rpow_pos_of_pos hu _) (Real.rpow_pos_of_pos hv _))).mpr (by
     simpa only [mul_comm] using hreal)
   convert hr using 1
   rw [Real.rpow_neg hu.le, Real.rpow_neg hv.le]

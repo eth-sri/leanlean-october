@@ -33,7 +33,6 @@ theorem weightedGmcBallMoment_le_transfer
         weightedGmcBallMoment P M γ α z₂ ρ p := by
   set T : ℝ≥0∞ := ENNReal.ofReal (Real.exp (γ ^ 2 * (2 * (Real.log 3 +
       2 * Real.log (1 + R))) / 2 * |p ^ 2 - p|)) * ENNReal.ofReal ((1 + R) ^ 4) ^ |p| with hT
-  have hB : MeasurableSet (Metric.ball z₁ ρ) := Metric.isOpen_ball.measurableSet
   -- the bounded-weight transfer, uniformly in the truncation height
   have hN : ∀ N : ℕ, ∫⁻ ω, (∫⁻ x in Metric.ball z₁ ρ,
       (insertionTruncWeight γ α N (x - z₁) : ℝ≥0∞) ∂M ω) ^ p ∂P ≤
@@ -55,7 +54,7 @@ theorem weightedGmcBallMoment_le_transfer
       (insertionTruncWeight γ α N (x - z₁) : ℝ≥0∞) ∂M ω) ^ p) P := fun N =>
     (gmc_setLIntegral_aemeasurable P X hX γ hγ hγ2 M hM _
       (measurable_coe_nnreal_ennreal.comp ((measurable_insertionTruncWeight γ α N).comp
-        (measurable_id.sub_const z₁))) _ hB).pow_const p
+        (measurable_id.sub_const z₁))) _ (Metric.isOpen_ball.measurableSet)).pow_const p
   have hmono : ∀ᵐ ω ∂P, Monotone fun N : ℕ => (∫⁻ x in Metric.ball z₁ ρ,
       (insertionTruncWeight γ α N (x - z₁) : ℝ≥0∞) ∂M ω) ^ p := by
     refine Eventually.of_forall fun ω m n hmn => ENNReal.rpow_le_rpow ?_ hp.le

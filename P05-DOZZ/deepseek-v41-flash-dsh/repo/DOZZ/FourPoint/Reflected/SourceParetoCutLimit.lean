@@ -53,11 +53,6 @@ theorem reflected_source_pareto_cut_increment_tendsto
       reflected_radial_scale γ ν h Xc z v.1*(twoSidedReflectionCutMass γ H B Z v.2).toReal*w)^(-p)-
       (gammaHalfOuterMass γ α₁ α₂ α₃ (M v.1) z ξ).toReal ^(-p)) ∂paretoMeasure 1 a) ∂P.prod P
   have hν : 0 < ν := sub_pos.mpr hα₁
-  have ha : 0 < a := div_pos (mul_pos (by norm_num) hν) hγ
-  have ha1 : a < 1 := by
-    dsimp only [a]
-    rw [div_lt_one hγ]
-    linarith only [hreflect]
   have hp : 0 < p := div_pos (by linarith only [hs]) hγ
   have hshift : α₁+2*ν-γ/2 < Q γ := by dsimp only [ν]; linarith only [hreflect]
   have hcharge : α₁+2*ν-γ/2 = 2*Q γ-α₁-γ/2 := by dsimp only [ν]; ring
@@ -65,7 +60,7 @@ theorem reflected_source_pareto_cut_increment_tendsto
   have hL : Tendsto (fun z : ℂ => L z/‖z‖^κ) (𝓝[≠] (0 : ℂ)) (𝓝 Λ) := by
     simpa only [L,κ,a,hcharge,Λ] using reflected_leading_radial_moment_toReal_tendsto
       P X hX γ hγ hγ₂ M hM Xc hc ν α₁ α₂ α₃ ξ (p+a) h hh hξ hξ1
-        (add_pos hp ha).le hshift hα₂ hα₃
+        (add_pos hp (div_pos (mul_pos (by norm_num) hν) hγ)).le hshift hα₂ hα₃
   have hF : Tendsto (fun z : ℂ => F z/‖z‖^κ) (𝓝[≠] (0 : ℂ)) (𝓝 0) := by
     have ht := (isComplexLittleOAtZero_ofReal_iff (γ*(Q γ-α₁)) _).mp
       (reflected_first_order_radial_error_littleO P X hX γ hγ hγ₂ M hM Xc hc

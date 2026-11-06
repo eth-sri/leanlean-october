@@ -137,12 +137,11 @@ private theorem band_affine_path (ν ε : ℝ) (hε : 0 < ε)
       ENNReal.ofReal ε*(∫⁻ u in Ico (0 : ℝ) 1, brownianWilliamsAverageTest ν ε F G (u,p)) := by
   have ht : Measurable (fun m => brownianWilliamsLevelTest ν F G (m,p)) :=
     (measurable_levelTest ν F G hF hG).comp (measurable_id.prodMk measurable_const)
-  have hplus : Measurable (fun m : ℝ => m+ε) := measurable_id.add measurable_const
   have hs : MeasurableSet {m : ℝ | 0 < m ∧ m ≤ driftedBrownianMaximum ν p ∧
       driftedBrownianMaximum ν p < m+ε} :=
     (measurableSet_lt measurable_const measurable_id).inter
       ((measurableSet_le measurable_id measurable_const).inter
-        (measurableSet_lt measurable_const hplus))
+        (measurableSet_lt measurable_const (measurable_id.add measurable_const)))
   have hh : Measurable (fun m => brownianWilliamsBandTest ν ε F G (m,p)) := ht.indicator hs
   rw [affine_lintegral (driftedBrownianMaximum ν p) ε hε _ hh]
   congr 1

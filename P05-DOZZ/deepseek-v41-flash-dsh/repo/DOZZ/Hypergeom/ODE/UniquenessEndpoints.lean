@@ -33,19 +33,17 @@ theorem holomorphic_linear_system_solution_unique_of_eq_at
   let K : ℝ≥0 := ‖z - z₀‖₊ * M.toNNReal
   have hK : (K : ℝ) = ‖z - z₀‖ * M := by
     simp [K, hM, mul_comm]
-  have hr : 0 < r := lt_of_le_of_lt dist_nonneg (Metric.mem_ball.mp hz)
   have hseg : MapsTo path (Icc (0 : ℝ) 1) (Metric.ball c r) :=
     (convex_ball c r).mapsTo_lineMap hz₀ hz
   have hv : ∀ t ∈ Ico (0 : ℝ) 1, LipschitzWith K (v t) := by
     intro t ht
     apply LipschitzWith.of_dist_le_mul
     intro x y
-    have hw : path t ∈ Metric.ball c r := hseg (Ico_subset_Icc_self ht)
     have hHxy : ‖H (path t) x - H (path t) y‖ ≤ M * ‖x - y‖ := by
       calc
         ‖H (path t) x - H (path t) y‖ = ‖H (path t) (x - y)‖ := by rw [map_sub]
         _ ≤ ‖H (path t)‖ * ‖x - y‖ := (H (path t)).le_opNorm _
-        _ ≤ M * ‖x - y‖ := mul_le_mul_of_nonneg_right (hHbound _ hw) (norm_nonneg _)
+        _ ≤ M * ‖x - y‖ := mul_le_mul_of_nonneg_right (hHbound _ (hseg (Ico_subset_Icc_self ht))) (norm_nonneg _)
     have hvxy : v t x - v t y = (z - z₀) • (H (path t) x - H (path t) y) := by
       dsimp [v]
       rw [← smul_sub]

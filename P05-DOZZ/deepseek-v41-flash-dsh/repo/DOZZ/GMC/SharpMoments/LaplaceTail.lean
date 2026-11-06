@@ -152,11 +152,10 @@ theorem measure_le_exp_neg_of_negMoment
   have hmarkov := mul_meas_ge_le_lintegral₀ hYq (ENNReal.ofReal (Real.exp (q * t)))
   have hpos : ENNReal.ofReal (Real.exp (q * t)) ≠ 0 :=
     (ENNReal.ofReal_pos.mpr (Real.exp_pos _)).ne'
-  have hfin : ENNReal.ofReal (Real.exp (q * t)) ≠ ⊤ := ENNReal.ofReal_ne_top
   calc P {ω | Y ω ≤ ENNReal.ofReal (Real.exp (-t))}
       ≤ P {ω | ENNReal.ofReal (Real.exp (q * t)) ≤ Y ω ^ (-q)} := measure_mono hsub
     _ ≤ (∫⁻ ω, Y ω ^ (-q) ∂P) / ENNReal.ofReal (Real.exp (q * t)) := by
-        rw [ENNReal.le_div_iff_mul_le (Or.inl hpos) (Or.inl hfin), mul_comm]
+        rw [ENNReal.le_div_iff_mul_le (Or.inl hpos) (Or.inl (ENNReal.ofReal_ne_top)), mul_comm]
         exact hmarkov
     _ ≤ ENNReal.ofReal (Real.exp (a * q + b * q ^ 2)) / ENNReal.ofReal (Real.exp (q * t)) := by
         gcongr

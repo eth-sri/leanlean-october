@@ -3,6 +3,7 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
+public import DOZZ.SharedHyp
 
 public import DOZZ.FourPoint.ReflectedOuter.DeletedDisk
 public import DOZZ.FourPoint.ReflectedOuter.ZeroMassRelations
@@ -22,7 +23,7 @@ freezing power `κ+δ`, uniformly as the retained radius tends to zero. -/
 theorem reflected_retainedZero_deleted_moment_bound {Ω : Type*} [MeasurableSpace Ω]
     (P : Measure Ω) (X : Ω → Distr) (M : Ω → Measure ℂ) (γ α₁ α₂ α₃ : ℝ)
     (hγ : 0 < γ) (hγ₂ : γ < 2) (hα₁ : α₁ < Q γ) (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ)
-    (hreflect : Q γ - α₁ < γ / 2) (hs : 2 * Q γ + γ / 2 < α₁ + α₂ + α₃)
+    (hreflect : Q γ - α₁ < γ / 2) (hs : SeibergSlack γ α₁ α₂ α₃)
     (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M) :
     ∃ C ε₀ : ℝ, 0 < C ∧ 0 < ε₀ ∧ ∀ r : ℝ, 0 < r → r < ε₀ →
       |(∫⁻ ω, (reflectedRetainedZeroMass γ α₁ α₂ α₃ r (M ω)) ^
@@ -39,7 +40,6 @@ theorem reflected_retainedZero_deleted_moment_bound {Ω : Type*} [MeasurableSpac
     P X hX γ hγ hγ₂ M hM α₁ α₂ α₃ p hp.le
   refine ⟨p * Cd, min εd 1, mul_pos hp hCd, lt_min hεd zero_lt_one, ?_⟩
   intro r hr hr₀
-  have hrd : r < εd := (lt_min_iff.mp hr₀).1
   have hr₁ : r ≤ 1 := (lt_min_iff.mp hr₀).2.le
   let S : Ω → ℝ≥0∞ := fun ω => reflectedRetainedZeroMass γ α₁ α₂ α₃ r (M ω)
   let F : Ω → ℝ≥0∞ := fun ω => coulombMass γ (M ω) ![-γ / 2, α₁, α₂] ![0, 0, 1] α₃
@@ -60,7 +60,7 @@ theorem reflected_retainedZero_deleted_moment_bound {Ω : Type*} [MeasurableSpac
     dsimp only [R]
     rw [lintegral_const_mul' _ _ ENNReal.ofReal_ne_top]
     calc
-      _ ≤ ENNReal.ofReal p * ENNReal.ofReal (Cd * r ^ e) := mul_le_mul' le_rfl (hdb r hr hrd)
+      _ ≤ ENNReal.ofReal p * ENNReal.ofReal (Cd * r ^ e) := mul_le_mul' le_rfl (hdb r hr ((lt_min_iff.mp hr₀).1))
       _ = _ := by rw [← ENNReal.ofReal_mul hp.le]; congr 1; ring
   have hRt := ne_top_of_le_ne_top ENNReal.ofReal_ne_top hRb
   have hSF : ∀ᵐ ω ∂P, S ω ^ (-p) ≤ F ω ^ (-p) + R ω := by

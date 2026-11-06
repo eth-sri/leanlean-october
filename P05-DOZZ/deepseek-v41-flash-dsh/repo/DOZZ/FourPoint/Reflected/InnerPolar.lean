@@ -35,8 +35,7 @@ theorem reflected_inner_radial_polar (γ α : ℝ) (A : TwoSidedPath)
     intro s
     by_cases hs : (T : ℝ) < s
     · rw [indicator_of_mem (show s ∈ Ioi (T : ℝ) from hs)]
-      have hsp : 0 ≤ s := T.coe_nonneg.trans hs.le
-      simp only [f, ite_eq_left hs, lateralForwardWeight, abs_of_nonneg hsp]
+      simp only [f, ite_eq_left hs, lateralForwardWeight, abs_of_nonneg (T.coe_nonneg.trans hs.le)]
       rw [← ENNReal.ofReal_mul (Real.exp_pos _).le, ← Real.exp_add]
       congr 2
       ring
@@ -106,7 +105,6 @@ theorem reflected_inner_polar_restart (γ ν : ℝ) (A : TwoSidedPath)
     congr 2
     ring
   · rw [indicator_of_notMem (show s ∉ Ioi (T : ℝ) from hs)]
-    have hu : ¬0 < s - (T : ℝ) := fun h => hs (sub_pos.mp h)
-    simp only [f, ite_eq_right hu, mul_zero]
+    simp only [f, ite_eq_right (fun h => hs (sub_pos.mp h)), mul_zero]
 
 end DOZZ.Proofs

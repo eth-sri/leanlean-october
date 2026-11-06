@@ -92,12 +92,10 @@ theorem cutoffIncrement_le {γ η a a₁ a₂ : ℝ} (hγ : 0 < γ) (hη : 0 ≤
     have hsc : -(max a₂ 0 / γ) ≤ -a / γ := by
       rw [neg_div, neg_le_neg_iff]
       exact div_le_div_of_nonneg_right (le_max_of_le_left ha.2) hγ.le
-    have hLT' : L ≤ T' := localMass_le_cutoffTiltedMass γ η a (n + 1) μ
-    have hLT : L ≤ T := localMass_le_cutoffTiltedMass γ η a n μ
     have hT'0 : T' ^ (-a / γ) ≤ 1 + L ^ (-(max a₂ 0 / γ)) :=
-      (ennrpow_le_of_le_of_nonpos hLT' hs0).trans (ennrpow_le_one_add_rpow_neg hs0 hsc)
+      (ennrpow_le_of_le_of_nonpos (localMass_le_cutoffTiltedMass γ η a (n + 1) μ) hs0).trans (ennrpow_le_one_add_rpow_neg hs0 hsc)
     have hT0 : T ^ (-a / γ) ≤ 1 + L ^ (-(max a₂ 0 / γ)) :=
-      (ennrpow_le_of_le_of_nonpos hLT hs0).trans (ennrpow_le_one_add_rpow_neg hs0 hsc)
+      (ennrpow_le_of_le_of_nonpos (localMass_le_cutoffTiltedMass γ η a n μ) hs0).trans (ennrpow_le_one_add_rpow_neg hs0 hsc)
     have hexp : ENNReal.ofReal (Real.exp (γ * max a 0 * (n + 1))) ≤
         ENNReal.ofReal (Real.exp (γ * max a₂ 0 * (n + 1))) := by
       apply ENNReal.ofReal_le_ofReal
@@ -216,8 +214,7 @@ theorem exists_lintegral_cutoffIncrement_le {Ω : Type*} [MeasurableSpace Ω] (P
   have hV2r : ∫⁻ ω, (1 + poleLocalMass γ (2 / γ + η) (2 / γ - η) (M ω) ^ (-(b₂ / γ))) ^
       (r₂ / (r₂ - 1)) ∂P < ⊤ := by
     refine lintegral_one_add_rpow_lt_top hq₂ ?_
-    have hs : 0 ≤ b₂ / γ := div_nonneg hb₂0 hγ.le
-    rcases eq_or_lt_of_le hs with h0 | h0
+    rcases eq_or_lt_of_le (div_nonneg hb₂0 hγ.le) with h0 | h0
     · rw [← h0, neg_zero, zero_mul]
       simp
     · have hq : 0 < b₂ / γ * (r₂ / (r₂ - 1)) := mul_pos h0 (by linarith)

@@ -34,14 +34,6 @@ private theorem regularized_testIntegral_raw_measurable_proxy
     ∫⁻ x, (f.nnrealPart x : ℝ≥0∞) ∂μ ω
   let neg : Ω → ℝ≥0∞ := fun ω =>
     ∫⁻ x, ((-f).nnrealPart x : ℝ≥0∞) ∂μ ω
-  have hpos : Measurable[equatorGFFRawDistributionSigma X] pos := by
-    dsimp [pos]
-    exact (Measure.measurable_lintegral
-      (BoundedContinuousFunction.measurable_coe_ennreal_comp f.nnrealPart)).comp hμ
-  have hneg : Measurable[equatorGFFRawDistributionSigma X] neg := by
-    dsimp [neg]
-    exact (Measure.measurable_lintegral
-      (BoundedContinuousFunction.measurable_coe_ennreal_comp (-f).nnrealPart)).comp hμ
   have hproxy : Measurable[equatorGFFRawDistributionSigma X]
       (fun ω => (pos ω).toReal - (neg ω).toReal) := by
     fun_prop

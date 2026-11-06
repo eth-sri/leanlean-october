@@ -18,14 +18,11 @@ theorem rpow_between_mass_envelope (L x U lo p hi : ℝ)
     (hlo : lo ≤ 0) (hhi : 0 ≤ hi) (hlop : lo ≤ p) (hphi : p ≤ hi) :
     x ^ p ≤ L ^ lo + U ^ hi := by
   have hx : 0 < x := hL.trans_le hLx
-  have hU : 0 < U := hx.trans_le hxU
   rcases le_total x 1 with hx1 | hx1
   · have hp : x ^ p ≤ x ^ lo := Real.rpow_le_rpow_of_exponent_ge hx hx1 hlop
-    have hm : x ^ lo ≤ L ^ lo := Real.rpow_le_rpow_of_nonpos hL hLx hlo
-    exact (hp.trans hm).trans (le_add_of_nonneg_right (Real.rpow_nonneg hU.le _))
+    exact (hp.trans (Real.rpow_le_rpow_of_nonpos hL hLx hlo)).trans (le_add_of_nonneg_right (Real.rpow_nonneg (hx.trans_le hxU).le _))
   · have hp : x ^ p ≤ x ^ hi := Real.rpow_le_rpow_of_exponent_le hx1 hphi
-    have hm : x ^ hi ≤ U ^ hi := Real.rpow_le_rpow hx.le hxU hhi
-    exact (hp.trans hm).trans (le_add_of_nonneg_left (Real.rpow_nonneg hL.le _))
+    exact (hp.trans (Real.rpow_le_rpow hx.le hxU hhi)).trans (le_add_of_nonneg_left (Real.rpow_nonneg hL.le _))
 
 /-- A single mass envelope controls both the derivative and the absolute value bounds of a
 complex-power increment, uniformly over the given exponent range. -/
@@ -36,7 +33,6 @@ theorem cpow_common_envelope (L Z Y U lo hi : ℝ) (p : ℂ)
       (2 * ‖p‖ * (L ^ lo + U ^ hi)) * Y ∧
     ‖((Z + Y : ℝ) : ℂ) ^ p - (Z : ℂ) ^ p‖ ≤ 2 * (L ^ lo + U ^ hi) := by
   have hZ : 0 < Z := hL.trans_le hLZ
-  have hZY : 0 < Z + Y := add_pos_of_pos_of_nonneg hZ hY
   have hZU' : Z ≤ U := (le_add_of_nonneg_right hY).trans hZU
   have hLZY : L ≤ Z + Y := hLZ.trans (le_add_of_nonneg_right hY)
   have hzder := rpow_between_mass_envelope L Z U lo (p.re - 1) hi
@@ -55,7 +51,7 @@ theorem cpow_common_envelope (L Z Y U lo hi : ℝ) (p : ℂ)
   · calc
       _ ≤ ‖((Z + Y : ℝ) : ℂ) ^ p‖ + ‖(Z : ℂ) ^ p‖ := norm_sub_le _ _
       _ = (Z + Y) ^ p.re + Z ^ p.re := by
-        rw [Complex.norm_cpow_eq_rpow_re_of_pos hZY, Complex.norm_cpow_eq_rpow_re_of_pos hZ]
+        rw [Complex.norm_cpow_eq_rpow_re_of_pos (add_pos_of_pos_of_nonneg hZ hY), Complex.norm_cpow_eq_rpow_re_of_pos hZ]
       _ ≤ _ := by linarith
 
 end DOZZ.Proofs

@@ -3,6 +3,7 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
+public import DOZZ.SharedHyp
 
 public import DOZZ.ShiftEquations.Gluing.Coefficient
 public import DOZZ.ShiftEquations.Gluing.CoefficientAlgebra
@@ -46,9 +47,6 @@ theorem gaussParameterC_half_mem {γ α₁ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2)
     (h1 : Q γ - γ / 16 < α₁) (h2 : α₁ < Q γ) :
     0 < gaussParameterC γ (γ / 2) α₁ ∧ gaussParameterC γ (γ / 2) α₁ < 1 := by
   unfold gaussParameterC
-  have hpos : 0 < γ / 2 * (Q γ - α₁) := mul_pos (by positivity) (by linarith)
-  have hlt : γ / 2 * (Q γ - α₁) < γ / 2 * (γ / 16) :=
-    mul_lt_mul_of_pos_left (by linarith) (by positivity)
   constructor <;> nlinarith
 
 /-- **The reflected coefficient at real charges near `Q`**
@@ -88,7 +86,7 @@ theorem reflected_coefficient_real {Ω : Type*} [MeasurableSpace Ω] (P : Measur
     {B : ℝ → Ω → BrownianPath × BrownianPath} {Z : Ω → Measure ℝ}
     (hRD : ∀ α : ℝ, γ / 2 < α → α < Q γ → IsReflectionData P γ α (B α) Z)
     {α₁ : ℝ} (h1 : Q γ - γ / 16 < α₁) (h2 : α₁ < Q γ)
-    (hs : 2 * Q γ + γ / 2 < α₁ + α₂ + α₃) :
+    (hs : SeibergSlack γ α₁ α₂ α₃) :
     reflectionR P γ μ α₁ (B α₁) Z * structureConstant P M γ μ (2 * Q γ - α₁ - γ / 2) α₂ α₃ =
       gaussCoefficientRatio (gaussParameterA γ (γ / 2) α₁ α₂ α₃)
           (gaussParameterB γ (γ / 2) α₁ α₂ α₃) (gaussParameterC γ (γ / 2) α₁) *

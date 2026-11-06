@@ -69,7 +69,6 @@ theorem abs_integral_mul_le_l2 {α : Type*} [MeasurableSpace α] (μ : Measure �
     |∫ x, K x * F x ∂μ| ≤
       (∫ x, ‖K x‖ ^ 2 ∂μ) ^ (1 / 2 : ℝ) *
         (∫ x, ‖F x‖ ^ 2 ∂μ) ^ (1 / 2 : ℝ) := by
-  have hconj : (2 : ℝ).HolderConjugate 2 := Real.HolderConjugate.two_two
   have hK' : MemLp K (ENNReal.ofReal 2) μ := by simpa using hK
   have hF' : MemLp F (ENNReal.ofReal 2) μ := by simpa using hF
   calc
@@ -80,7 +79,7 @@ theorem abs_integral_mul_le_l2 {α : Type*} [MeasurableSpace α] (μ : Measure �
       apply integral_congr_ae
       filter_upwards with x
       rw [norm_mul]
-    _ ≤ _ := by simpa using integral_mul_norm_le_Lp_mul_Lq hconj hK' hF'
+    _ ≤ _ := by simpa using integral_mul_norm_le_Lp_mul_Lq (Real.HolderConjugate.two_two) hK' hF'
 
 /-- Tensor products of two test functions lie in `L²` on a finite product ball. -/
 theorem memLp_testFnTensor_two_on_ball (R : ℝ) (f g : TestFn) :

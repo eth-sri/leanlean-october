@@ -76,9 +76,8 @@ theorem tsupport_poissonCollarDensity_subset (ε : ℝ) (hε : 0 < ε) (k : ℕ)
 /-- Radial normalization maps every nonzero displacement to the boundary circle. -/
 theorem norm_poissonBoundaryDirection (c w : ℂ) (ρ : ℝ) (hρ : 0 < ρ) (hw : w ≠ c) :
     ‖(ρ : ℂ)*(w-c)/(‖w-c‖ : ℂ)‖ = ρ := by
-  have hn : ‖w-c‖ ≠ 0 := norm_ne_zero_iff.mpr (sub_ne_zero.mpr hw)
   rw [norm_div, norm_mul, Complex.norm_real, Real.norm_eq_abs, abs_of_pos hρ,
-    Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg (norm_nonneg _), mul_div_cancel_right₀ _ hn]
+    Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg (norm_nonneg _), mul_div_cancel_right₀ _ (norm_ne_zero_iff.mpr (sub_ne_zero.mpr hw))]
 
 /-- An interior point is separated from every radially normalized boundary point. -/
 theorem poissonBoundary_ne (c z w : ℂ) (ρ : ℝ) (hρ : 0 < ρ)
@@ -302,10 +301,9 @@ theorem poissonBoundaryWeight_le (c z w : ℂ) (ρ a : ℝ) (hρ : 0 < ρ)
     (ρ^2-‖z-c‖^2) / ‖c+(ρ : ℂ)*(w-c)/(‖w-c‖ : ℂ)-z‖^2 ≤
       ρ^2/(ρ-a)^2 := by
   have hden := poissonBoundary_norm_sq_lower c z w ρ a hρ haρ hz hw
-  have hn : ρ^2-‖z-c‖^2 ≤ ρ^2 := sub_le_self _ (sq_nonneg _)
   calc
     _ ≤ ρ^2/‖c+(ρ : ℂ)*(w-c)/(‖w-c‖ : ℂ)-z‖^2 :=
-      div_le_div_of_nonneg_right hn (sq_nonneg _)
+      div_le_div_of_nonneg_right (sub_le_self _ (sq_nonneg _)) (sq_nonneg _)
     _ ≤ ρ^2/(ρ-a)^2 :=
       div_le_div_of_nonneg_left (sq_nonneg _) hden.1 hden.2
 

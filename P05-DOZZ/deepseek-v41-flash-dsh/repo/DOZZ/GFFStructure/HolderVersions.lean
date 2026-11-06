@@ -92,8 +92,7 @@ lemma exists_modification_holder'' (hT : HasBoundedCoveringNumber U c d)
     suffices ∃ C, HolderOnWith C (β n) (fun x ↦ Z 0 x ω) U by
       obtain ⟨C, hC⟩ := this
       refine HolderOnWith.mono_right' hC hn.le (C' := (Metric.ediam U).toNNReal) ?_
-      have h_diam : Metric.ediam U < ∞ := hT.ediam_lt_top
-      rw [ENNReal.coe_toNNReal h_diam.ne]
+      rw [ENNReal.coe_toNNReal (hT.ediam_lt_top).ne]
       exact fun x hx y hy ↦ Metric.edist_le_ediam_of_mem hx hy
     simp only [Set.mem_ofPred_eq, A] at hω
     obtain ⟨C, hC⟩ := hZ_holder n ω

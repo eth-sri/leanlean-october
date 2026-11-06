@@ -94,12 +94,11 @@ theorem conditionedPositiveHistory_condExp_rationalFuture_avoidance
       by_cases hq : 0 < (q : ℝ)
       · simpa [hq] using h q hq
       · simp [hq]
-  have hSeqG : StronglyMeasurable (A.indicator G) := hG.indicator hA
   have hPathG : Integrable (fun p => (A.indicator G)
       (conditionedPositiveFutureRationalEvals t p)) P := by
     exact hGint.indicator (hA.preimage (measurable_conditionedPositiveFutureRationalEvals t))
   have hcond := conditionedPositiveHistory_condExp_rationalFuture hP t ht
-    (A.indicator G) hSeqG hPathG
+    (A.indicator G) (hG.indicator hA) hPathG
   have hpath : (conditionedPositiveFutureRationalAvoidance t c).indicator
       (fun p => G (conditionedPositiveFutureRationalEvals t p)) =
       fun p => A.indicator G (conditionedPositiveFutureRationalEvals t p) := by

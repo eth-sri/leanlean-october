@@ -3,6 +3,7 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
+public import DOZZ.SharedHyp
 public import DOZZ.GFFStructure.FiniteGaussian
 public import Mathlib.Analysis.Convex.Integral
 public import Mathlib.Analysis.Convex.SpecificFunctions.Basic
@@ -234,8 +235,7 @@ theorem gaussian_product_lintegral_exp_abs_le {Ω : Type*} [MeasurableSpace Ω]
 theorem measurable_ofReal_exp_mul_abs {E : Type*} [MeasurableSpace E]
     (U : E → ℝ) (hU : Measurable U) (l : ℝ) :
     Measurable (fun x => ENNReal.ofReal (Real.exp (l*|U x|))) := by
-  have ha : Measurable (fun x => |U x|) := continuous_abs.measurable.comp hU
-  have hm : Measurable (fun x => l*|U x|) := measurable_const.mul ha
+  have hm : Measurable (fun x => l*|U x|) := measurable_const.mul (continuous_abs.measurable.comp hU)
   have he : Measurable (fun x => Real.exp (l*|U x|)) := Real.continuous_exp.measurable.comp hm
   exact he.ennreal_ofReal
 
@@ -343,10 +343,8 @@ theorem equatorRestorationScalar_gaussian_mean_variance {Ω : Type*} [Measurable
 /-- The exact closed harmonic covariance gives one variance on every concentric boundary circle. -/
 theorem poisson_harmonic_boundary_variance {Ω : Type*} [MeasurableSpace Ω]
     (P : Measure Ω) (c : ℂ) (R ρ b : ℝ) (hρ : 0 < ρ) (hb : 0 < b) (hbρ : b < ρ)
-    (V : Ω → ℂ → ℝ) (hV : ∀ z ∈ ball c ρ, MemLp (fun ω => V ω z) 2 P)
-    (hcov : ∀ z w, z ∈ ball c ρ → w ∈ ball c ρ →
-      covariance (fun ω => V ω z) (fun ω => V ω w) P = Real.log R+Real.log ρ-
-        Real.log ‖(ρ : ℂ)^2-(z-c)*star (w-c)‖)
+    (V : Ω → ℂ → ℝ) (hV : MemLpBall P V c ρ)
+    (hcov : CovarianceBall P V c ρ R)
     (w : ℂ) (hw : ‖w‖ = 1) :
     variance (fun ω => V ω (c+b • w)) P = Real.log R+Real.log ρ-Real.log (ρ^2-b^2) := by
   have hn : ‖c+b • w-c‖ = b := by
@@ -361,13 +359,12 @@ noncomputable def harmonicMomentRadius (ρ a : ℝ) : ℝ := (max a 0+ρ)/2
 /-- The chosen inner radius is positive and lies strictly between the target and the disk boundary. -/
 theorem harmonicMomentRadius_bounds (ρ a : ℝ) (hρ : 0 < ρ) (haρ : a < ρ) :
     0 < harmonicMomentRadius ρ a ∧ a < harmonicMomentRadius ρ a ∧ harmonicMomentRadius ρ a < ρ := by
-  have hm : max a 0 < ρ := max_lt haρ hρ
   have hma : a ≤ max a 0 := le_max_left _ _
   have hm0 : 0 ≤ max a 0 := le_max_right _ _
   unfold harmonicMomentRadius
   constructor
   · linarith only [hρ,hm0]
-  constructor <;> linarith only [hm,hma]
+  constructor <;> linarith only [(max_lt haρ hρ),hma]
 
 /-- A moment bound preceding all realizations and disk-center choices. -/
 noncomputable def exteriorPinnedHarmonicMomentBound (R ρ a l : ℝ) : ℝ :=
@@ -389,11 +386,9 @@ theorem exteriorPinned_harmonic_uniform_moments {Ω : Type*} [MeasurableSpace Ω
     (V : Ω → ℂ → ℝ) (hVm : Measurable (fun p : Ω × ℂ => V p.1 p.2))
     (hVh : ∀ᵐ ω ∂P, InnerProductSpace.HarmonicOnNhd (V ω) (ball c ρ) ∧ ContDiffOn ℝ (⊤ : ℕ∞) (V ω) (ball c ρ))
     (hG : IsGaussianProcess (fun z : {z : ℂ // z ∈ ball c ρ} => fun ω => V ω z.1) P)
-    (hV : ∀ z ∈ ball c ρ, MemLp (fun ω => V ω z) 2 P)
-    (hmean : ∀ z ∈ ball c ρ, (∫ ω, V ω z ∂P) = 0)
-    (hcov : ∀ z w, z ∈ ball c ρ → w ∈ ball c ρ →
-      covariance (fun ω => V ω z) (fun ω => V ω w) P = Real.log R+Real.log ρ-
-        Real.log ‖(ρ : ℂ)^2-(z-c)*star (w-c)‖)
+    (hV : MemLpBall P V c ρ)
+    (hmean : MeanZeroBall P V c ρ)
+    (hcov : CovarianceBall P V c ρ R)
     (l : ℝ) (hl : 0 < l) :
     (∫⁻ ω, ENNReal.ofReal (Real.exp (l*|equatorRestorationScalar Xc R (by linarith) ω|))*
       ⨆ z ∈ closedBall c a, ENNReal.ofReal (Real.exp (l*|V ω z|)) ∂P) ≤

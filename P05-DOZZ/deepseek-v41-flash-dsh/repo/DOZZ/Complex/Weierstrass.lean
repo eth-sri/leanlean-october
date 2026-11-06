@@ -176,7 +176,6 @@ theorem torusIntegral_productCauchyKernel {N : ℕ} (U : Set (Fin N → ℂ)) (h
         dsimp only
         let V := (Fin.cons (α := fun _ => ℂ) w) ⁻¹' U
         have hwclosed := Metric.sphere_subset_closedBall hw
-        have hV : IsOpen V := hU.preimage (differentiable_cons_tail w).continuous
         have hfV : DifferentiableOn ℂ (f ∘ Fin.cons (α := fun _ => ℂ) w) V :=
           hf.comp (differentiable_cons_tail w).differentiableOn (fun _ ht => ht)
         have hCV : Set.pi Set.univ
@@ -185,7 +184,7 @@ theorem torusIntegral_productCauchyKernel {N : ℕ} (U : Set (Fin N → ℂ)) (h
           exact hclosed ((mem_closed_pi_cons a R w v).mpr ⟨hwclosed, hv⟩)
         have hzV : (z ∘ Fin.succ) ∈ complexPolydisc (a ∘ Fin.succ) (R ∘ Fin.succ) :=
           fun i => hz i.succ
-        have hih := ih V hV (f ∘ Fin.cons (α := fun _ => ℂ) w) hfV (a ∘ Fin.succ) (R ∘ Fin.succ)
+        have hih := ih V (hU.preimage (differentiable_cons_tail w).continuous) (f ∘ Fin.cons (α := fun _ => ℂ) w) hfV (a ∘ Fin.succ) (R ∘ Fin.succ)
           (fun i => hR i.succ) hCV (z ∘ Fin.succ) hzV
         have hfun : (fun v => f (Fin.cons (α := fun _ => ℂ) w v) * productCauchyKernel z (Fin.cons (α := fun _ => ℂ) w v)) =
             (fun v => (w - z 0)⁻¹ * (f (Fin.cons (α := fun _ => ℂ) w v) * productCauchyKernel (z ∘ Fin.succ) v)) := by
@@ -393,7 +392,6 @@ theorem hasFDerivAt_polydiscCauchy {N : ℕ} (f : (Fin N → ℂ) → ℂ)
   have hbase : Integrable (F a) μ := by
     exact (hF a (mem_complexPolydisc_center a _ (fun i => half_pos (hR i)))).continuousOn.integrableOn_compact
       isCompact_Icc
-  have hb : ∀ i, 0 ≤ b i := fun i => inv_nonneg.mpr (half_pos (hR i)).le
   have hdom : ∀ θ v, v ∈ complexPolydisc a (fun i => R i / 2) → ‖F' v θ‖ ≤ B := by
     intro θ v hv
     dsimp [F', B]
@@ -402,7 +400,7 @@ theorem hasFDerivAt_polydiscCauchy {N : ℕ} (f : (Fin N → ℂ) → ℂ)
       _ ≤ (∏ i, |R i|) * (M * productCauchyDerivBound b) := by
         apply mul_le_mul_of_nonneg_left _ (Finset.prod_nonneg fun i _ => abs_nonneg _)
         exact mul_le_mul (hbound θ)
-          (norm_productCauchyKernelDeriv_le v (torusMap a R θ) b hb
+          (norm_productCauchyKernelDeriv_le v (torusMap a R θ) b (fun i => inv_nonneg.mpr (half_pos (hR i)).le)
             (inverse_coordinate_bound_on_torus a R hR v hv θ))
           (norm_nonneg _) hM
       _ = _ := (mul_assoc _ _ _).symm

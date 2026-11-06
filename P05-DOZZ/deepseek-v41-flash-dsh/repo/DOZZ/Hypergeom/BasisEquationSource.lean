@@ -3,6 +3,7 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
+public import DOZZ.SharedHyp
 
 public import DOZZ.Hypergeom.BasisRegularity
 public import DOZZ.Hypergeom.ODE.SeriesEquation
@@ -31,7 +32,7 @@ private theorem gaussCutPlane_isPreconnected : IsPreconnected gaussCutPlane := b
 principal cut plane. The local series equation is extended by analytic uniqueness. -/
 theorem gauss_family_holomorphicOperator_eq_zero
     {H : ℂ → ℂ → ℂ → ℂ → ℂ} (hH : IsGaussHypergeometricFamily H)
-    (a b c : ℂ) (hc : ∀ n : ℕ, c ≠ -(n : ℂ)) :
+    (a b c : ℂ) (hc : NotNegPole c) :
     ∀ z ∈ gaussCutPlane, gaussHolomorphicOperator a b c (H a b c) z = 0 := by
   let f : ℂ → ℂ := H a b c
   let g : ℂ → ℂ := ordinaryHypergeometric a b c
@@ -39,14 +40,11 @@ theorem gauss_family_holomorphicOperator_eq_zero
     simpa [f] using hH a b c hc
   have hF : AnalyticOnNhd ℂ f gaussSlitPlane := hchar.1.analyticOnNhd gaussSlitPlane_isOpen
   have hF' : AnalyticOnNhd ℂ (deriv f) gaussSlitPlane := hF.deriv
-  have hF'' : AnalyticOnNhd ℂ (deriv (deriv f)) gaussSlitPlane := hF'.deriv
   have hresAnalytic : AnalyticOnNhd ℂ
       (fun z => gaussHolomorphicOperator a b c f z) gaussCutPlane := by
     intro z hz
     have hzslit : z ∈ gaussSlitPlane := gaussCutPlane_subset_gaussSlitPlane hz
     have hfz := hF z hzslit
-    have hf'z := hF' z hzslit
-    have hf''z := hF'' z hzslit
     dsimp [gaussHolomorphicOperator]
     fun_prop
   have hEq : (Metric.ball (0 : ℂ) 1).EqOn f g := by
@@ -64,9 +62,6 @@ theorem gauss_family_holomorphicOperator_eq_zero
     have h := ordinaryHypergeometric_gaussEquation_on_unitDisk a b c hc z ?_
     · simpa [f, g, gaussHolomorphicOperator, hEq hz, hEq' hz, hEq'' hz] using h
     · simpa [Metric.mem_ball, dist_zero_right] using hz
-  have hzeroBase : (1 / 2 : ℂ) ∈ Metric.ball (0 : ℂ) 1 := by
-    rw [Metric.mem_ball, dist_zero_right]
-    norm_num
   have hcutBase : (1 / 2 : ℂ) ∈ gaussCutPlane := by norm_num [gaussCutPlane]
   have hzeroNear : (fun z => gaussHolomorphicOperator a b c f z) =ᶠ[𝓝 (1 / 2 : ℂ)]
       (fun _ => (0 : ℂ)) := by

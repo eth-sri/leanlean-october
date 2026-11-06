@@ -116,7 +116,6 @@ theorem rooted_local_moment_of_ball_upper
     ENNReal.rpow (ENNReal.ofReal (R / (2 : ℝ) ^ (n + 1))) (-γ * α) *
       M ω (Metric.ball z (R / (2 : ℝ) ^ n))
   have hqNonneg : 0 ≤ qReal := Real.rpow_nonneg (by norm_num) _
-  have hqLt : qReal < 1 := Real.rpow_lt_one (by norm_num) (by norm_num) he
   have hshellMeas (n : ℕ) : AEMeasurable (shell n) P :=
     aemeasurable_const.mul (hM _ Metric.isOpen_ball.measurableSet)
   have hshellBound (n : ℕ) : ∫⁻ ω, shell n ω ^ p ∂P ≤
@@ -126,7 +125,7 @@ theorem rooted_local_moment_of_ball_upper
       ENNReal.ofReal_pow hqNonneg]
   have hsum : ∫⁻ ω, (∑' n, shell n ω) ^ p ∂P < ⊤ :=
     rooted_subunit_shell_sum shell hshellMeas hp hp1 ENNReal.ofReal_ne_top
-      (ENNReal.ofReal_lt_one.2 hqLt) hshellBound
+      (ENNReal.ofReal_lt_one.2 (Real.rpow_lt_one (by norm_num) (by norm_num) he)) hshellBound
   calc
     weightedGmcBallMoment P M γ α z R p
         ≤ ∫⁻ ω, (∑' n, shell n ω) ^ p ∂P :=

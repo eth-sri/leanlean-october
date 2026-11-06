@@ -3,6 +3,7 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
+public import DOZZ.SharedHyp
 
 public import DOZZ.FourPoint.ReflectedEnd.InnerClassificationReduction
 public import DOZZ.Statements.FourPoint.GammaHalfReflectedInnerLimit
@@ -24,7 +25,7 @@ theorem gammaHalf_reflected_formula {Ω : Type*} [MeasurableSpace Ω]
     (γ μ α₁ α₂ α₃ : ℝ)
     (hγ : 0 < γ) (hγ₂ : γ < 2) (hμ : 0 < μ)
     (hα₁ : α₁ < Q γ) (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ)
-    (hs : 2 * Q γ + γ / 2 < α₁ + α₂ + α₃)
+    (hs : SeibergSlack γ α₁ α₂ α₃)
     (hreflect : Q γ - α₁ < γ / 2)
     (hnear : ∃ ξ : ℝ, 0 < ξ ∧ ξ < 1 ∧ γ * (Q γ - α₁) < ξ ∧
       γ * (Q γ - α₁) < (1 - ξ) * (γ * (Q γ - α₁) + (α₁ + γ / 2 - Q γ) ^ 2 / 2))

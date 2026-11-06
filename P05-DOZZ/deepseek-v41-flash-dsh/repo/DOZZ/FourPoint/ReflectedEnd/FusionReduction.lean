@@ -3,6 +3,7 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
+public import DOZZ.SharedHyp
 
 public import DOZZ.Statements.FourPoint.GammaHalfReflectedOuterLittleO
 public import DOZZ.Statements.FourPoint.FourPointTZeroEqStructureConstant
@@ -44,7 +45,7 @@ theorem gammaHalf_reflected_fusion_asymptotic_of_inner_limit {Ω : Type*} [Measu
     (γ μ α₁ α₂ α₃ ξ : ℝ)
     (hγ : 0 < γ) (hγ₂ : γ < 2) (hμ : 0 < μ)
     (hα₁ : α₁ < Q γ) (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ)
-    (hs : 2 * Q γ + γ / 2 < α₁ + α₂ + α₃)
+    (hs : SeibergSlack γ α₁ α₂ α₃)
     (hreflect : Q γ - α₁ < γ / 2)
     (hξ : 0 < ξ) (hξ₂ : ξ < 1) (hslack : γ * (Q γ - α₁) < ξ)
     (hfreeze : γ * (Q γ - α₁) <
@@ -87,7 +88,6 @@ theorem gammaHalf_reflected_fusion_asymptotic_of_inner_limit {Ω : Type*} [Measu
     structureConstant P M γ μ (2 * Q γ - α₁ - γ / 2) α₂ α₃
   let C₀ : ℝ := structureConstant P M γ μ (α₁ - γ / 2) α₂ α₃
   let r : ℂ → ℝ := fun z => fourPointT P M γ μ (-γ / 2) α₁ α₂ α₃ z - C₀ - D * ‖z‖ ^ κ
-  have hp : 0 < p := div_pos (by linarith only [hs]) hγ
   have hT (z : ℂ) : fourPointT P M γ μ (-γ / 2) α₁ α₂ α₃ z =
       N * gammaHalfMoment P M γ α₁ α₂ α₃ p z := by
     simpa only [neg_div] using fourPointT_eq_gammaHalfMoment P M γ μ α₁ α₂ α₃ z
@@ -97,7 +97,7 @@ theorem gammaHalf_reflected_fusion_asymptotic_of_inner_limit {Ω : Type*} [Measu
       hγ hγ₂ hμ (by linarith only [hα₁, hγ]) hα₂ hα₃ (by linarith only [hs]) hX hM
   have hcancel := reflected_prefactor_cancel γ μ p
     (reflectionR P γ μ α₁ (B α₁) Z)
-    (structureConstant P M γ μ (2 * Q γ - α₁ - γ / 2) α₂ α₃) hγ hμ hp
+    (structureConstant P M γ μ (2 * Q γ - α₁ - γ / 2) α₂ α₃) hγ hμ (div_pos (by linarith only [hs]) hγ)
   have hr (z : ℂ) : r z = N *
       (gammaHalfOuterMoment P M γ α₁ α₂ α₃ p z ξ -
         gammaHalfMoment P M γ α₁ α₂ α₃ p 0 + (rI z).re) := by

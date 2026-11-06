@@ -3,6 +3,7 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
+public import DOZZ.SharedHyp
 public import DOZZ.FourPoint.Reflected.CopiedTestLimit
 public import DOZZ.FourPoint.Reflected.LateralCompactComparison
 import Mathlib.Tactic
@@ -17,7 +18,7 @@ Both cutoff convergence hypotheses are proved from its admissible-version carrie
 theorem reflected_lateral_compact_chaos_comparison
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
     (Xc : Ω → ℂ → ℝ → ℝ) (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
+    (hm : MeasurableCircleAvg Xc)
     (ρ : ℝ) (hρ : 0 < ρ) (γ : ℝ) (N : Ω → Measure ℂ)
     (hN : IsAdmissibleGMCVersion P (originLateralChart ρ) originLateralPlaneDensity
       (originLateralCircleRegularization Xc ρ) γ N)
@@ -40,9 +41,8 @@ theorem reflected_lateral_compact_chaos_comparison
   let _ : IsProbabilityMeasure P := hX.1
   let Y := originLateralCircleRegularization Xc ρ
   have hY := originLateralCircleRegularization_admissible P X Xc hX hc hm ρ hρ
-  have hs : 0 < (1-R)*r := mul_pos (by linarith) hr
   obtain ⟨d, hd, hb⟩ := reflected_lateral_cutoff_cross_bound P X Xc hX hc hm
-    ρ hρ K hK hKU R ((1-R)*r) η hR hs hη
+    ρ hρ K hK hKU R ((1-R)*r) η hR (mul_pos (by linarith) hr) hη
   let δ := min d (min ρ 1)
   have hδ : 0 < δ := lt_min hd (lt_min hρ (by norm_num))
   let R₀ := -Real.log δ
@@ -74,11 +74,10 @@ theorem reflected_lateral_compact_chaos_comparison
       |gaussianCovariance P (fun ω => Φ a ω x) (fun ω => Φ a ω y)| ≤ 2*R+η := by
     have hxo := houter x hxK hx
     have hyi := hinner y hyK hy
-    have hrel : ‖y‖ ≤ R*‖x‖ := hyi.trans (mul_le_mul_of_nonneg_left hxo hR0)
     have hdist : (1-R)*r ≤ ‖x-y‖ := by
       have hh := norm_sub_norm_le x y
       linarith only [hxo, hyi, hh]
-    exact hb _ _ (Real.exp_pos _) (hcut a) (Real.exp_pos _) (hcut a) x hxK y hyK hdist hrel
+    exact hb _ _ (Real.exp_pos _) (hcut a) (Real.exp_pos _) (hcut a) x hxK y hyK hdist (hyi.trans (mul_le_mul_of_nonneg_left hxo hR0))
   have hbill : 0 ≤ 2*R+η := by linarith
   have hcross (a : ℝ) : ∀ᵐ xy ∂ν.prod ν, ¬(xy.1 ∈ A ↔ xy.2 ∈ A) →
       |gaussianCovariance P (fun ω => Φ a ω xy.1) (fun ω => Φ a ω xy.2)| ≤
@@ -100,11 +99,10 @@ theorem reflected_lateral_compact_chaos_comparison
         by_contra hh
         exact hne ⟨fun h => False.elim (hx h), fun h => False.elim (hh h)⟩
       exact ho a xy.1 xy.2 hxK hyK hx hy
-  have hh : Measurable (fun x => (f x).toNNReal) := f.continuous.measurable.real_toNNReal
   have hbound : ∃ b : ℝ≥0, ∀ x, (f x).toNNReal ≤ b :=
     ⟨‖f‖.toNNReal, fun x => Real.toNNReal_mono ((le_abs_self _).trans (f.norm_coe_le_norm x))⟩
   have hc' := reflected_kahane_decoupling_limit P Φ hΦ A hA ν (fun x => (f x).toNNReal)
-    hh hbound γ q (Real.sqrt (2*R+η)) hq hcross _ _ hXc hYc
+    (f.continuous.measurable.real_toNNReal) hbound γ q (Real.sqrt (2*R+η)) hq hcross _ _ hXc hYc
   simpa only [Real.sq_sqrt hbill] using hc'
 
 end DOZZ.Proofs

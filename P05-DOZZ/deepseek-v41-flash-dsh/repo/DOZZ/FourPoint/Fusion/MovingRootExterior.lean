@@ -33,12 +33,11 @@ theorem fusion_rootDensity_formula (γ : ℝ) (u x : ℂ) (hxu : x ≠ u) :
 theorem fusion_exterior_power_bound (a b c k : ℝ) (ha : 0 < a) (hb : 0 < b)
     (hc : 0 ≤ c) (hk : 0 ≤ k) (hca : c ≤ 2 * a) (hab : a / 2 ≤ b) :
     c ^ k * b ^ (-(2 * k)) ≤ (2 : ℝ) ^ (3 * k) * a ^ (-k) := by
-  have hc' : c ^ k ≤ (2 * a) ^ k := Real.rpow_le_rpow hc hca hk
   have hb' : b ^ (-(2 * k)) ≤ (a / 2) ^ (-(2 * k)) :=
     Real.rpow_le_rpow_of_nonpos (by positivity) hab (by linarith)
   calc
     _ ≤ (2 * a) ^ k * (a / 2) ^ (-(2 * k)) :=
-      mul_le_mul hc' hb' (Real.rpow_nonneg hb.le _) (Real.rpow_nonneg (by positivity) _)
+      mul_le_mul (Real.rpow_le_rpow hc hca hk) hb' (Real.rpow_nonneg hb.le _) (Real.rpow_nonneg (by positivity) _)
     _ = _ := by
       rw [Real.mul_rpow (by norm_num : (0 : ℝ) ≤ 2) ha.le,
         Real.div_rpow ha.le (by norm_num : (0 : ℝ) ≤ 2),
@@ -84,8 +83,7 @@ theorem fusion_rootedKernel_exterior_bound (γ α₁ α₂ α₃ : ℝ) (z u x :
   have hf : 0 ≤ normPlus x ^ (γ * (α₁ + α₂ + α₃ - γ / 2)) * normPlus x ^ (γ ^ 2) /
       (‖x‖ ^ (γ * α₁) * ‖x - 1‖ ^ (γ * α₂)) := by positivity
   have h := mul_le_mul_of_nonneg_right hm hf
-  have heq : ‖x‖ ^ (-(γ ^ 2 / 2)) = ‖x‖ ^ (γ ^ 2 / 2) * ‖x‖ ^ (-γ ^ 2) := hpow.symm
-  rw [heq] at h
+  rw [(hpow.symm)] at h
   unfold normPlus at h
   convert h using 1 <;> ring
 
@@ -135,9 +133,8 @@ theorem fusion_rootedKernel_exterior_tendsto (γ α₁ α₂ α₃ : ℝ) (y : �
     exact (ENNReal.mul_lt_top ENNReal.ofReal_lt_top
       (lt_of_le_of_lt (setLIntegral_le_lintegral _ _) hfin)).ne
   · filter_upwards [ae_restrict_mem (measurableSet_le measurable_const measurable_norm)] with x hx
-    have hx0 : x ≠ 0 := norm_ne_zero_iff.mp (ne_of_gt (lt_of_lt_of_le hδ hx))
     exact ENNReal.continuous_ofReal.continuousAt.tendsto.comp
-      (fusion_rootedKernel_tendsto γ α₁ α₂ α₃ y x hx0)
+      (fusion_rootedKernel_tendsto γ α₁ α₂ α₃ y x (norm_ne_zero_iff.mp (ne_of_gt (lt_of_lt_of_le hδ hx))))
 
 /-- The exterior part of the moving rooted GMC mass converges almost surely. -/
 theorem fusion_movingRoot_exterior_real_tendsto_ae {Ω : Type*} [MeasurableSpace Ω]

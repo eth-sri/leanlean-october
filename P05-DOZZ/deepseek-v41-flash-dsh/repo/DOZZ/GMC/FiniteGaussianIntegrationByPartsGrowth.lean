@@ -43,9 +43,6 @@ theorem finite_gaussian_integration_by_parts_of_absExp_bound
   let enlargedExp : Ω → ℝ := fun ω => Real.exp (∑ j, c' j * |Z ω j|)
   have hbaseExp : Integrable baseExp P := by
     simpa [baseExp] using centeredJointlyGaussian_abs_linear_exp_integrable P Z hZ c
-  have hcoordBaseExp : Integrable (fun ω => Z ω i * baseExp ω) P := by
-    simpa [baseExp] using
-      centeredJointlyGaussian_coordinate_mul_abs_linear_exp_integrable P Z hZ c i
   have hlargeExp : Integrable enlargedExp P := by
     simpa [enlargedExp, c'] using
       centeredJointlyGaussian_abs_linear_exp_integrable P Z hZ c'
@@ -87,7 +84,6 @@ theorem finite_gaussian_integration_by_parts_of_absExp_bound
         Real.exp_le_exp.mpr (hshiftBound ω t)
       _ = _ := by rw [Real.exp_add]
   let shiftFactor : ℝ := Real.exp (∑ j, c j * |shift j|)
-  have hshiftFactor : 0 ≤ shiftFactor := by positivity
   have hGint : Integrable (fun ω => G (Z ω)) P := by
     apply (hbaseExp.const_mul M).mono'
     · exact hGmeas.aestronglyMeasurable.comp_aemeasurable
@@ -146,18 +142,15 @@ theorem finite_gaussian_integration_by_parts_of_absExp_bound
         Real.exp (0 * Z ω i - 0 ^ 2 / 2 * var) * G (Z ω)) P := by
     have hbase := (hZ.2.1 i).aestronglyMeasurable.mul hGint.aestronglyMeasurable
     exact hbase.congr (ae_of_all P fun ω => by simp)
-  have hLenv : Integrable enlargedExp P := hlargeExp
-  have hLcoordenv : Integrable (fun ω => Z ω i * enlargedExp ω) P := hcoordLargeExp
   let tiltConst : ℝ := Real.exp (|var| / 2)
-  have htiltConst : 0 ≤ tiltConst := by positivity
   let bL : Ω → ℝ := fun ω => M * tiltConst *
     (|Z ω i| + |var|) * enlargedExp ω
   have hbL : Integrable bL P := by
     have hcoordAbs : Integrable (fun ω => |Z ω i| * enlargedExp ω) P := by
       simpa [Real.norm_eq_abs, abs_mul, abs_of_nonneg (Real.exp_nonneg _), enlargedExp] using
-        hLcoordenv.norm
+        (hcoordLargeExp).norm
     have hsum := (hcoordAbs.const_mul (M * tiltConst)).add
-      (hLenv.const_mul (M * tiltConst * |var|))
+      ((hlargeExp).const_mul (M * tiltConst * |var|))
     convert hsum using 1; ext ω; simp [bL]; ring
   have hLbound : ∀ᵐ ω ∂P, ∀ t ∈ Metric.ball 0 (1 : ℝ),
       ‖(Z ω i - t * var) * Real.exp (t * Z ω i - t ^ 2 / 2 * var) * G (Z ω)‖ ≤ bL ω := by
@@ -197,7 +190,6 @@ theorem finite_gaussian_integration_by_parts_of_absExp_bound
         rw [Finset.sum_eq_single i]
         · simp
         · intro j hj hne
-          have hij : i ≠ j := fun h => hne h.symm
           simp [hne]
         · simp
       rw [hdelta]

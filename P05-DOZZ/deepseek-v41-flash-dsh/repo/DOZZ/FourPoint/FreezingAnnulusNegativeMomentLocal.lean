@@ -28,12 +28,10 @@ theorem freezing_annulus_negative_moment_local {Ω : Type*} [MeasurableSpace Ω]
       ∀ z ∈ K, ∀ ε : ℝ, 0 < ε → ε < ε₀ →
         (∫⁻ ω, ENNReal.rpow (freezingAnnulusMassLocal γ α (M ω) z ε R) (-p) ∂P) ≤
           ENNReal.ofReal (C * ε ^ ((α - Q γ) ^ 2 / 2)) := by
-  have _hPositiveOrder := hp
   let a : ℝ := (α - Q γ) / γ
   let b : ℝ := p - a
   have ha : 0 < a := div_pos (sub_pos.mpr hα) hγ
-  have hap : a < p := (div_lt_iff₀ hγ).mpr (by simpa only [mul_comm] using hthreshold)
-  have hb : 0 < b := sub_pos.mpr hap
+  have hb : 0 < b := sub_pos.mpr ((div_lt_iff₀ hγ).mpr (by simpa only [mul_comm] using hthreshold))
   have hab : a + b = p := by dsimp only [b]; ring
   have hQ : 0 < Q γ := by
     unfold Q
@@ -60,7 +58,6 @@ theorem freezing_annulus_negative_moment_local {Ω : Type*} [MeasurableSpace Ω]
       ((a + b) ^ 2 + a + b))
   let C : ℝ := 4 ^ (γ * α * a) * (2 * t) ^ (γ * α * b) * k *
     Ca * (1 / 2 : ℝ) ^ ξa * Cb * (t / 8) ^ ξb
-  have hk : 0 < k := Real.exp_pos _
   have hC : 0 < C := by dsimp only [C]; positivity
   refine ⟨C, t / 32, hC, by positivity, ?_⟩
   intro z hz ε hε hεt

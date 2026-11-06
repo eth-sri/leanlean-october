@@ -112,11 +112,10 @@ theorem measurable_translateFiniteMeasure :
         ((μ : Measure ℝ).map (fun s => s + t)) A =
           ∫⁻ s, A.indicator (fun _ => 1) (s + t) ∂(μ : Measure ℝ) := by
       rw [Measure.map_apply (by fun_prop : Measurable (fun s : ℝ => s + t)) hA]
-      have hs : MeasurableSet ((fun s : ℝ => s + t) ⁻¹' A) := hA.preimage (by fun_prop)
       calc
         (μ : Measure ℝ) ((fun s : ℝ => s + t) ⁻¹' A) =
             ∫⁻ s, ((fun s : ℝ => s + t) ⁻¹' A).indicator (fun _ => 1) s ∂(μ : Measure ℝ) :=
-          (lintegral_indicator_one hs).symm
+          (lintegral_indicator_one (hA.preimage (by fun_prop))).symm
         _ = ∫⁻ s, A.indicator (fun _ => 1) (s + t) ∂(μ : Measure ℝ) := by
           apply lintegral_congr
           intro s
@@ -171,8 +170,7 @@ theorem translationShell_iUnion : (⋃ n, translationShell n) = Set.univ := by
   simp only [Set.mem_iUnion, Set.mem_univ, iff_true]
   obtain ⟨n, hn⟩ := exists_nat_gt |x|
   refine ⟨n, ?_⟩
-  have hbound : |x| ≤ (n : ℝ) := le_of_lt (by exact_mod_cast hn)
-  exact abs_le.mp hbound
+  exact abs_le.mp (le_of_lt (by exact_mod_cast hn))
 
 theorem measurableSet_translationShell (n : ℕ) : MeasurableSet (translationShell n) := by
   change MeasurableSet (disjointed translationWindow n)
@@ -196,14 +194,6 @@ theorem measurable_finiteRestrictionOnSet (A : Set ℝ) (hA : MeasurableSet A) :
   have hgood : MeasurableSet {μ : Measure ℝ | μ A < ⊤} :=
     (measurableSet_Iio : MeasurableSet (Set.Iio (⊤ : ℝ≥0∞))).preimage
       (Measure.measurable_coe hA)
-  have hrestricted : Measurable (fun μ : Measure ℝ => μ.restrict A) := by
-    apply Measure.measurable_of_measurable_coe
-    intro s hs
-    have heq : (fun μ : Measure ℝ => μ.restrict A s) = fun μ => μ (s ∩ A) := by
-      funext μ
-      exact Measure.restrict_apply hs
-    rw [heq]
-    exact Measure.measurable_coe (hs.inter hA)
   have hbase : Measurable (fun μ : Measure ℝ => (finiteRestrictionOnSet A μ : Measure ℝ)) := by
     apply Measure.measurable_of_measurable_coe
     intro s hs
@@ -253,14 +243,13 @@ theorem locallyFiniteTranslation_eq_map
     locallyFiniteTranslation (t, μ) = μ.map (fun s => s + t) := by
   classical
   let D : ℕ → Set ℝ := translationShell
-  have hDmeas : ∀ n, MeasurableSet (D n) := fun n => measurableSet_translationShell n
   have hDdisj : Pairwise (Disjoint on D) := translationShell_pairwise_disjoint
   have hDunion : (⋃ n, D n) = Set.univ := translationShell_iUnion
   have hfinite (n : ℕ) : μ (D n) < ⊤ := by
     apply lt_of_le_of_lt (measure_mono (translationShell_subset_window n))
     exact hμ n
   have hrestrict : Measure.sum (fun n => μ.restrict (D n)) = μ := by
-    rw [← Measure.restrict_iUnion hDdisj hDmeas, hDunion, Measure.restrict_univ]
+    rw [← Measure.restrict_iUnion hDdisj (fun n => measurableSet_translationShell n), hDunion, Measure.restrict_univ]
   have hterm (n : ℕ) :
       ((finiteRestrictionOnSet (D n) μ).map (fun s => s + t) : Measure ℝ) =
         (μ.restrict (D n)).map (fun s => s + t) := by

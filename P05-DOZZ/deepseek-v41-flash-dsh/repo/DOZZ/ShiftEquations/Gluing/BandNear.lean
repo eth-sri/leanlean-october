@@ -3,6 +3,7 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
+public import DOZZ.SharedHyp
 
 public import DOZZ.ShiftEquations.Gluing.BandLine
 public import DOZZ.ShiftEquations.Gluing.Meromorphy
@@ -55,7 +56,7 @@ theorem eq_of_eventuallyEq_nhdsNE_of_continuousAt {f g : ℂ → ℂ} {z : ℂ}
 of the continued slice there.** -/
 theorem eventuallyEq_structureConstantH_of_physical {Ω : Type*} [MeasurableSpace Ω]
     (P : Measure Ω) (M : Ω → Measure ℂ) {γ μ η b c : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2)
-    (hμ : 0 < μ) (hη : 0 < η ∧ Q γ - 2 * η > γ) (hb : Q γ - η < b ∧ b < Q γ)
+    (hμ : 0 < μ) (hη : DriftWindow γ η) (hb : Q γ - η < b ∧ b < Q γ)
     (hc : Q γ - η < c ∧ c < Q γ)
     {V₃ : Set (Fin 3 → ℂ)} (hV₃ : IsOpen V₃)
     (hV₃mem : ∀ α : Fin 3 → ℝ, ExtendedSeiberg3 γ (α 0) (α 1) (α 2) → complexifyNCharges α ∈ V₃)
@@ -93,7 +94,6 @@ theorem eventuallyEq_structureConstantH_of_physical {Ω : Type*} [MeasurableSpac
     meromorphicOn_structureConstantH_comp hV₃ hf₃ hμ (differentiable_tripleFirst _ _) z hz.2
   have hCm' : MeromorphicOn C D := fun z hz => hCm z hz.1
   set W := connectedComponentIn D (x : ℂ) with hW
-  have hWo : IsOpen W := hDo.connectedComponentIn
   have hWsub : W ⊆ D := connectedComponentIn_subset D _
   have hxW : (x : ℂ) ∈ W := mem_connectedComponentIn (hDmem x hx₁ hx₂)
   have hev : ∀ᶠ t : ℝ in 𝓝[≠] x, C t = g t :=
@@ -106,7 +106,7 @@ theorem eventuallyEq_structureConstantH_of_physical {Ω : Type*} [MeasurableSpac
 
 /-- The continued slice is analytic at real points of `(2η, Q)` (there `s > 0`). -/
 theorem analyticAt_structureConstantH_slice {γ μ η b c : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2)
-    (hμ : 0 < μ) (hη : 0 < η ∧ Q γ - 2 * η > γ) (hb : Q γ - η < b ∧ b < Q γ)
+    (hμ : 0 < μ) (hη : DriftWindow γ η) (hb : Q γ - η < b ∧ b < Q γ)
     (hc : Q γ - η < c ∧ c < Q γ)
     {V₃ : Set (Fin 3 → ℂ)} (hV₃ : IsOpen V₃)
     (hV₃mem : ∀ α : Fin 3 → ℝ, ExtendedSeiberg3 γ (α 0) (α 1) (α 2) → complexifyNCharges α ∈ V₃)
@@ -135,7 +135,7 @@ theorem analyticAt_structureConstantH_slice {γ μ η b c : ℝ} (hγ : 0 < γ) 
 `DOZZ.structureConstant_first_shift_strip`. -/
 theorem firstShift_exact_of_strip {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
     (M : Ω → Measure ℂ) {γ μ η b c : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2) (hμ : 0 < μ)
-    (hη : 0 < η ∧ Q γ - 2 * η > γ) (hb : Q γ - η < b ∧ b < Q γ)
+    (hη : DriftWindow γ η) (hb : Q γ - η < b ∧ b < Q γ)
     (hc : Q γ - η < c ∧ c < Q γ)
     {V₃ : Set (Fin 3 → ℂ)} (hV₃ : IsOpen V₃)
     (hV₃mem : ∀ α : Fin 3 → ℝ, ExtendedSeiberg3 γ (α 0) (α 1) (α 2) → complexifyNCharges α ∈ V₃)
@@ -206,7 +206,7 @@ theorem firstShift_exact_of_strip {Ω : Type*} [MeasurableSpace Ω] (P : Measure
 `DOZZ.structureConstant_reflected_shift_and_gluing` and a reference reflection germ `R`. -/
 theorem reflectedShift_exact_of_strip {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
     (M : Ω → Measure ℂ) {γ μ η b c : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2) (hμ : 0 < μ)
-    (hη : 0 < η ∧ Q γ - 2 * η > γ) (hb : Q γ - η < b ∧ b < Q γ)
+    (hη : DriftWindow γ η) (hb : Q γ - η < b ∧ b < Q γ)
     (hc : Q γ - η < c ∧ c < Q γ)
     {V₃ : Set (Fin 3 → ℂ)} (hV₃ : IsOpen V₃)
     (hV₃mem : ∀ α : Fin 3 → ℝ, ExtendedSeiberg3 γ (α 0) (α 1) (α 2) → complexifyNCharges α ∈ V₃)
@@ -226,7 +226,6 @@ theorem reflectedShift_exact_of_strip {Ω : Type*} [MeasurableSpace Ω] (P : Mea
       -(1 / (Real.pi * μ)) * shiftCoeffA γ (γ / 2) ((α : ℂ) - γ / 2) (b : ℂ) (c : ℂ) *
         (structureConstant P M γ μ (α - γ) b c : ℂ) := by
   obtain ⟨hη0, hηγ⟩ := hη
-  have hQ : Q γ = 2 / γ + γ / 2 := rfl
   have hγh : γ / 2 < 2 / γ := by
     rw [div_lt_div_iff₀ (by norm_num) hγ]
     nlinarith

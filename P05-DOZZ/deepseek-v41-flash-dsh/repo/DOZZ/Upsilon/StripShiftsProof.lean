@@ -43,9 +43,8 @@ private lemma b_nonzero {γ : ℝ} (hγ : 0 < γ) : γ / 2 ≠ 0 := by
 
 private lemma Q_eq_b_add_inv_b {γ : ℝ} (hγ : 0 < γ) :
     Q γ = γ / 2 + (γ / 2)⁻¹ := by
-  have hg : γ ≠ 0 := ne_of_gt hγ
   unfold Q
-  field_simp [hg]
+  field_simp [(ne_of_gt hγ)]
   ring
 
 private lemma real_sinh_quotient_normalized {γ z t : ℝ} (hγ : 0 < γ) (ht : 0 < t) :
@@ -137,8 +136,6 @@ private lemma real_sinh_quotient_normalized {γ z t : ℝ} (hγ : 0 < γ) (ht : 
           Real.exp (-((Q γ / 2 - z) * (t / 2))) *
             Real.exp (-((Q γ / 2 - z) * (t / 2))) by ring,
           hmul, hmul']
-        have hab : Real.exp ((Q γ / 2 - z) * (t / 2)) *
-            Real.exp (-((Q γ / 2 - z) * (t / 2))) = 1 := hcross₁
         have hmul₂ : 2 * Real.exp ((Q γ / 2 - z) * (t / 2)) *
             Real.exp (-((Q γ / 2 - z) * (t / 2))) = 2 := by nlinarith
         rw [hmul₂]
@@ -212,7 +209,6 @@ private lemma realKernel_shift_b {γ z t : ℝ} (hγ : 0 < γ) (ht : 0 < t) :
         (1 - Real.exp (-t / (γ / 2))) := by
   let b : ℝ := γ / 2
   have hb : 0 < b := by dsimp [b]; positivity
-  have hbne : b ≠ 0 := ne_of_gt hb
   have hQ : Q γ = b + b⁻¹ := by
     dsimp [b]
     exact Q_eq_b_add_inv_b hγ
@@ -251,7 +247,7 @@ private lemma realKernel_shift_b {γ z t : ℝ} (hγ : 0 < γ) (ht : 0 < t) :
       (1 - Real.exp (-b * t)) *
         (Real.exp (-(b⁻¹ - z) * t) - Real.exp (-z * t)) := by ring
   have hExp : -(b⁻¹ - z) * t = -(t * (1 - b * z) / b) := by
-    field_simp [hbne]
+    field_simp [(ne_of_gt hb)]
   rw [div_sub_div_same, hnum]
   rw [hExp]
   rw [mul_div_mul_left _ _ hP₁]
@@ -268,12 +264,11 @@ private lemma upsilonRealIntegrand_shift_b_pointwise {γ z t : ℝ}
       ((2 * (γ / 2) * z - 1) * Real.exp (-t) +
         (Real.exp (-z * t) - Real.exp (-((γ / 2)⁻¹ - z) * t)) /
           (1 - Real.exp (-t / (γ / 2)))) / t := by
-  have hb : γ / 2 ≠ 0 := b_nonzero hγ
   have hQ :
       (Q γ / 2 - (z + γ / 2)) ^ 2 - (Q γ / 2 - z) ^ 2 =
         2 * (γ / 2) * z - 1 := by
     rw [Q_eq_b_add_inv_b hγ]
-    field_simp [hb]
+    field_simp [(b_nonzero hγ)]
     ring
   rw [upsilonRealIntegrand_eq_kernel (γ := γ) (z := z + γ / 2) (t := t) hγ ht,
     upsilonRealIntegrand_eq_kernel (γ := γ) (z := z) (t := t) hγ ht]
@@ -420,16 +415,9 @@ private lemma upsilonRealIntegral_shift_b {γ z : ℝ}
       field_simp [hγ.ne']
     rw [hrecip] at hzQ
     exact hzQ
-  have hzQstrip : z < Q γ := by rw [hQ]; linarith
-  have hzShift0 : 0 < z + b := by positivity
-  have hzShiftQ : z + b < Q γ := by
-    rw [hQ]
-    linarith
-  have hx0 : 0 < b * z := mul_pos hb hz0
   have hx1 : 0 < 1 - b * z := by
     have hmul := mul_lt_mul_of_pos_left hzQb hb
-    have hcancel : b * b⁻¹ = 1 := mul_inv_cancel₀ (ne_of_gt hb)
-    rw [hcancel] at hmul
+    rw [(mul_inv_cancel₀ (ne_of_gt hb))] at hmul
     linarith
   have hscaled :
       (∫ t in Ioi (0 : ℝ),
@@ -458,7 +446,7 @@ private lemma upsilonRealIntegral_shift_b {γ z : ℝ}
         (∫ t in Ioi (0 : ℝ), upsilonRealIntegrand γ (z + γ / 2) t ∂volume) -
           ∫ t in Ioi (0 : ℝ), upsilonRealIntegrand γ z t ∂volume := by
     rw [integral_sub hI₁ hI₀]
-  have hxI := malmstenRealIntegrand_integrableOn hx0
+  have hxI := malmstenRealIntegrand_integrableOn (mul_pos hb hz0)
   have hyI := malmstenRealIntegrand_integrableOn hx1
   have hfrI := exp_frullani_integrableOn hb
   have hkernel :
@@ -630,7 +618,6 @@ theorem exp_upsilonLog_shift_b_of_integrable {γ : ℝ} (hγ : 0 < γ)
   have hQ : Q γ = γ / 2 + (γ / 2)⁻¹ := Q_eq_b_add_inv_b hγ
   have hupper : 2 / γ < Q γ := by
     rw [hQ, hrecip]
-    have hi : 0 < (γ / 2)⁻¹ := inv_pos.mpr hb
     linarith
   have hOOpen : IsOpen O := by
     change IsOpen ((Complex.re ⁻¹' Ioi (0 : ℝ)) ∩
@@ -641,7 +628,6 @@ theorem exp_upsilonLog_shift_b_of_integrable {γ : ℝ} (hγ : 0 < γ)
       (Complex.re ⁻¹' Iio (2 / γ)))
     exact (convex_halfSpace_re_gt 0).inter
       (convex_halfSpace_re_lt (2 / γ))
-  have hOConn : IsPreconnected O := hOConvex.isPreconnected
   have hOsubT : O ⊆ T := by
     intro w hw
     exact ⟨hw.1, lt_trans hw.2 hupper⟩
@@ -654,10 +640,6 @@ theorem exp_upsilonLog_shift_b_of_integrable {γ : ℝ} (hγ : 0 < γ)
     constructor
     · linarith
     · rw [hQ]
-      have hw' : w.re < (γ / 2)⁻¹ := by
-        calc
-          w.re < 2 / γ := hw.2
-          _ = (γ / 2)⁻¹ := hrecip
       linarith
   have htrans : DifferentiableOn ℂ (fun w : ℂ => w + bC) O := by
     intro w hw
@@ -690,16 +672,11 @@ theorem exp_upsilonLog_shift_b_of_integrable {γ : ℝ} (hγ : 0 < γ)
     exact ⟨hx₀, hx₀upper⟩
   have hrealEq : ∀ r : ℝ, 0 < r → r < 2 / γ → f (r : ℂ) = g (r : ℂ) := by
     intro r hr0 hrUpper
-    have hrQ : r < Q γ := lt_trans hrUpper hupper
     have hrShift0 : 0 < r + γ / 2 := by positivity
     have hrShiftQ : r + γ / 2 < Q γ := by
       rw [hQ]
-      have hrUpper' : r < (γ / 2)⁻¹ := by
-        calc
-          r < 2 / γ := hrUpper
-          _ = (γ / 2)⁻¹ := hrecip
       linarith
-    have hI₀ := upsilonRealIntegrand_integrableOn_of_complex (hInt r hr0 hrQ)
+    have hI₀ := upsilonRealIntegrand_integrableOn_of_complex (hInt r hr0 (lt_trans hrUpper hupper))
     have hI₁ := upsilonRealIntegrand_integrableOn_of_complex
       (hInt (r + γ / 2) hrShift0 hrShiftQ)
     have h := exp_upsilonLog_shift_b_real hγ hr0 hrUpper hI₀ hI₁
@@ -738,7 +715,7 @@ theorem exp_upsilonLog_shift_b_of_integrable {γ : ℝ} (hγ : 0 < γ)
   have hfA : AnalyticOnNhd ℂ f O := hf.analyticOnNhd hOOpen
   have hgA : AnalyticOnNhd ℂ g O := hg.analyticOnNhd hOOpen
   have hEqOn := AnalyticOnNhd.eqOn_of_preconnected_of_mem_closure
-    hfA hgA hOConn hw₀ hclosure
+    hfA hgA (hOConvex.isPreconnected) hw₀ hclosure
   have hz : z ∈ O := ⟨hz0, hzQ⟩
   simpa [f, g, upsilonBForwardFactor, bC] using hEqOn hz
 

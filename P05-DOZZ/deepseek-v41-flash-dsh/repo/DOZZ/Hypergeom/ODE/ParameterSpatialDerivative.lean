@@ -3,6 +3,7 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
+public import DOZZ.SharedHyp
 
 public import DOZZ.Hypergeom.ODE.ParameterSeriesFamily
 public import DOZZ.Hypergeom.ODE.ParameterSeriesUniformFDeriv
@@ -33,7 +34,7 @@ global continuation. -/
 theorem IsGaussHypergeometricFamily.hasDerivAt_unitDisk
     {H : ℂ → ℂ → ℂ → ℂ → ℂ}
     (hH : IsGaussHypergeometricFamily H) (a b c z : ℂ)
-    (hc : ∀ n : ℕ, c ≠ -(n : ℂ)) (hz : ‖z‖ < 1) :
+    (hc : NotNegPole c) (hz : ‖z‖ < 1) :
     HasDerivAt (H a b c)
       (a * b / c * H (a + 1) (b + 1) (c + 1) z) z := by
   have hchar := hH a b c hc

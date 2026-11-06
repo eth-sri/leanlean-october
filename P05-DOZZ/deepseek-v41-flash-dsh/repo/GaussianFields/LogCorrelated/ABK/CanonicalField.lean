@@ -196,8 +196,7 @@ theorem integrable_sq_abkLogKernelProd_of_weighted_spatial_bounds {d : Nat}
       simpa [abkScaleMajorant, hsmallMem, hlargeNot] using hsmall r hrpos hrle
     · have hrlarge : 1 < r := lt_of_not_ge hrle
       have hsmallNot : r ∉ Set.Ioc (0 : ℝ) 1 := fun hr => hrle hr.2
-      have hlargeMem : r ∈ Set.Ioi (1 : ℝ) := hrlarge
-      simpa [abkScaleMajorant, hsmallNot, hlargeMem] using hlarge r hrlarge
+      simpa [abkScaleMajorant, hsmallNot, (hrlarge)] using hlarge r hrlarge
   · have hrnonpos : r ≤ 0 := le_of_not_gt hrpos
     have hsmallNot : r ∉ Set.Ioc (0 : ℝ) 1 := fun hr => hrpos hr.1
     have hlargeNot : r ∉ Set.Ioi (1 : ℝ) :=

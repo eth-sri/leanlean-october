@@ -32,8 +32,7 @@ theorem bpz_analyticAt_complex_Gamma {s : ℂ} (hs : ∀ m : ℕ, s ≠ -(m : �
     AnalyticAt ℂ Complex.Gamma s := by
   have h1 : AnalyticAt ℂ (fun z : ℂ => (Complex.Gamma z)⁻¹) s :=
     Complex.differentiable_one_div_Gamma.analyticAt s
-  have h2 : (Complex.Gamma s)⁻¹ ≠ 0 := inv_ne_zero (Complex.Gamma_ne_zero hs)
-  simpa only [inv_inv] using h1.fun_inv h2
+  simpa only [inv_inv] using h1.fun_inv (inv_ne_zero (Complex.Gamma_ne_zero hs))
 
 /-- The real Gamma function is real analytic away from the poles `-m`, `m : ℕ`. -/
 theorem bpz_analyticAt_real_Gamma {x : ℝ} (hx : ∀ m : ℕ, x ≠ -(m : ℝ)) :

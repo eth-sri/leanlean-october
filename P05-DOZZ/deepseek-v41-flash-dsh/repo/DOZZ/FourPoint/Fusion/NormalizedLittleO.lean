@@ -25,10 +25,9 @@ theorem fusion_littleO_of_normalized_tendsto (κ : ℝ) (F : ℂ → ℂ) (C : �
     filter_upwards [self_mem_nhdsWithin] with z hz
     have hz0 : z ≠ 0 := by simpa only [mem_compl_iff, mem_singleton_iff] using hz
     have hr : 0 < ‖z‖ ^ κ := Real.rpow_pos_of_pos (norm_pos_iff.mpr hz0) κ
-    have hrC : ((‖z‖ ^ κ : ℝ) : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hr.ne'
     have halg (a b c : ℂ) (hb : b ≠ 0) : a / b - c = (a - c * b) / b := by
       rw [sub_div, mul_div_cancel_right₀ _ hb]
-    rw [halg _ _ _ hrC, norm_div, Complex.norm_real, Real.norm_of_nonneg hr.le]
+    rw [halg _ _ _ (Complex.ofReal_ne_zero.mpr hr.ne'), norm_div, Complex.norm_real, Real.norm_of_nonneg hr.le]
   have hs : ({z : ℂ | z ≠ 0}) = {0}ᶜ := by ext z; simp
   unfold IsComplexLittleOAtZero
   rw [hs]

@@ -77,21 +77,19 @@ private theorem rational_strict_below_implies_weak_all_times
     congr 1
     exact Subtype.ext (max_eq_left hr)
   let U : Set ℝ := {r | 0 < r ∧ a < F r}
-  have hU : IsOpen U := isOpen_Ioi.inter (isOpen_Ioi.preimage hF)
   have htU : (t : ℝ) ∈ U := by
     change 0 < (t : ℝ) ∧ a < F (t : ℝ)
     refine ⟨htpos, ?_⟩
     rw [hF_eval (t : ℝ) t.2]
     exact hgt
-  obtain ⟨r, hrU⟩ := Rat.denseRange_cast.exists_mem_open hU ⟨t, htU⟩
+  obtain ⟨r, hrU⟩ := Rat.denseRange_cast.exists_mem_open (isOpen_Ioi.inter (isOpen_Ioi.preimage hF)) ⟨t, htU⟩
   have hr : 0 < (r : ℝ) ∧ a < F (r : ℝ) := by
     change (r : ℝ) ∈ U at hrU
     exact hrU
   have hr0 : 0 ≤ (r : ℝ) := hr.1.le
   have hrat := hq r hr.1
-  have heval : F (r : ℝ) = q ⟨(r : ℝ), hr0⟩ := hF_eval (r : ℝ) hr0
   have hsub : (⟨(r : ℝ), hr0⟩ : ℝ≥0) = ⟨(r : ℝ), hr.1.le⟩ := Subtype.ext rfl
-  have heval' : F (r : ℝ) = q ⟨(r : ℝ), hr.1.le⟩ := heval.trans (congrArg q hsub)
+  have heval' : F (r : ℝ) = q ⟨(r : ℝ), hr.1.le⟩ := (hF_eval (r : ℝ) hr0).trans (congrArg q hsub)
   linarith [hrat, hr.2, heval']
 
 /-- The rational and real-time strict survival events agree under the upper-conditioned reference
@@ -145,7 +143,6 @@ theorem brownianBelowConditionedLaw_rational_below_ae
       apply hp.2
       intro t
       exact lt_of_not_ge (fun h => hn ⟨t, h⟩)
-    have hEq : D p t = a := le_antisymm (hweak t) ht
     have hbound : BddAbove (Set.range (fun t : ℝ≥0 => D p t)) :=
       ⟨a, fun z hz => by
         rcases hz with ⟨u, rfl⟩
@@ -169,7 +166,7 @@ theorem brownianBelowConditionedLaw_rational_below_ae
         exact hweak u)
     have hge : a ≤ driftedBrownianMaximum ν p := by
       calc
-        a = D p t := hEq.symm
+        a = D p t := (le_antisymm (hweak t) ht).symm
         _ ≤ sSup (Set.range (fun u : ℝ≥0 => D p u)) := le_csSup hbound (Set.mem_range_self t)
         _ = driftedBrownianMaximum ν p := hsup.symm
     exact hmax (le_antisymm hle hge)
@@ -187,15 +184,6 @@ theorem brownianBelowConditionedLaw_rational_below_ae
       measure_mono_null (Set.inter_subset_left) hraw
     rw [hsmall]
     simp
-  have hSR : S ⊆ R := by
-    intro q hq
-    simp only [R, brownianPositiveRationalBelow, Set.mem_iInter]
-    simp only [S, brownianPathStrictlyBelow, Set.mem_ofPred_eq] at hq
-    intro r
-    by_cases hr : 0 < (r : ℝ)
-    · simp only [hr, dite_eq_left, Set.mem_ofPred_eq]
-      exact hq ⟨(r : ℝ), hr.le⟩
-    · simp [hr]
   have hsetNot : {q | ¬ q ∉ R \ S} = R \ S := by
     ext q
     simp

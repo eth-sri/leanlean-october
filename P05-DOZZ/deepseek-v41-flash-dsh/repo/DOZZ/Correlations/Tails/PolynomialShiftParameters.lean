@@ -37,13 +37,12 @@ theorem polynomial_shift_relative (x a s : ℝ) (hx : 1 ≤ x) (ha : 0 ≤ a)
     ring
   have hd : |(x+s*(x^(1-a)/4))/x-1| = |s| *(x^(-a)/4) := by
     rw [hidentity,abs_mul,hsize.2.2,abs_of_nonneg (div_nonneg (Real.rpow_nonneg hx0.le (-a)) (by norm_num : (0 : ℝ) ≤ 4))]
-  have hpow1 : x^(-a) ≤ 1 := Real.rpow_le_one_of_one_le_of_nonpos hx (neg_nonpos.mpr ha)
   have hbound : |(x+s*(x^(1-a)/4))/x-1| ≤ x^(-a)/2 := by
     rw [hd]
     have hb := mul_le_mul_of_nonneg_right hs (by positivity : 0 ≤ x^(-a)/4)
     linarith only [hb]
   have hhalf : |(x+s*(x^(1-a)/4))/x-1| ≤ 1/2 :=
-    hbound.trans (div_le_div_of_nonneg_right hpow1 (by norm_num))
+    hbound.trans (div_le_div_of_nonneg_right (Real.rpow_le_one_of_one_le_of_nonpos hx (neg_nonpos.mpr ha)) (by norm_num))
   refine ⟨?_,hbound.trans (by have hp := Real.rpow_nonneg hx0.le (-a); linarith only [hp])⟩
   obtain ⟨hl,hu⟩ := abs_le.mp hhalf
   constructor <;> linarith only [hl,hu]

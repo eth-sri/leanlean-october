@@ -25,7 +25,6 @@ theorem threshold_finite_constants (D B C : ℝ≥0∞)
   let τ := rate / (2 * m)
   let h := 1 / (q / (q - 1))
   have hτ : 0 < τ := div_pos hrate (mul_pos (by norm_num) hm)
-  have hh : 0 < h := one_div_pos.mpr (div_pos (by linarith) (by linarith))
   have hres : rate - τ * m = rate / 2 := by
     dsimp only [τ]
     field_simp
@@ -37,7 +36,7 @@ theorem threshold_finite_constants (D B C : ℝ≥0∞)
     (mul_nonneg ENNReal.toReal_nonneg (Real.rpow_nonneg ENNReal.toReal_nonneg _))
   refine ⟨K, κ, hK, hκ, fun r hr => ?_⟩
   have hb := threshold_ennreal_bound D.toReal B.toReal C.toReal rate τ m h r
-    ENNReal.toReal_nonneg ENNReal.toReal_nonneg ENNReal.toReal_nonneg hh.le hr
+    ENNReal.toReal_nonneg ENNReal.toReal_nonneg ENNReal.toReal_nonneg (one_div_pos.mpr (div_pos (by linarith) (by linarith))).le hr
   simpa only [ENNReal.ofReal_toReal hD, ENNReal.ofReal_toReal hB,
     ENNReal.ofReal_toReal hC] using hb
 

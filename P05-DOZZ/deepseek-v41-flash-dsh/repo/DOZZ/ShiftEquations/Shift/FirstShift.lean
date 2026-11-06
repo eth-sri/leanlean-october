@@ -3,6 +3,7 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
+public import DOZZ.SharedHyp
 
 public import DOZZ.ShiftEquations.Shift.FullShift
 public import DOZZ.ShiftEquations.Shift.ShiftGluing
@@ -49,8 +50,6 @@ theorem rbarShiftMultiplier_analyticAt_ne_zero {γ : ℝ} (hγ : 0 < γ) (hγ2 :
   rw [rbarShiftMultiplier_ofReal, Complex.ofReal_ne_zero]
   unfold rbarShiftMultiplierReal
   have hγQ' : γ * Q γ = 2 + γ ^ 2 / 2 := by rw [hQ]; field_simp
-  have hu1 : γ * γ < γ * a₁ := mul_lt_mul_of_pos_left ha₁1 hγ
-  have hu2 : γ * a₁ < γ * Q γ := mul_lt_mul_of_pos_left ha₁2 hγ
   have hγsq : γ ^ 2 < 4 := by nlinarith
   refine div_ne_zero (mul_ne_zero (div_ne_zero (mul_ne_zero two_ne_zero (by linarith))
     hγ.ne') Real.pi_ne_zero) (mul_ne_zero (mul_ne_zero ?_ ?_) ?_)
@@ -74,11 +73,7 @@ theorem reflectionR_first_shift_meromorphic_of_deps
     (M : Ω → Measure ℂ) (γ μ : ℝ)
     (hγ : 0 < γ) (hγ2 : γ < 2) (hμ : 0 < μ)
     (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M)
-    (hCross : ∀ μ α' ε α : ℝ, 0 < μ → γ / 2 < ε → ε < 2 / γ → α < Q γ → α' < Q γ →
-      2 * Q γ < α + α' + ε - γ / 2 →
-      unitVolumeStructureConstant P M γ (α' - γ / 2) ε α =
-        gammaHalfUnitCrossingMultiplier γ μ α' ε α *
-          unitVolumeStructureConstant P M γ α' (ε + γ / 2) α)
+    (hCross : CrossingHyp P M γ)
     (hBridge : ∀ α2 α3 : ℝ, 0 < α2 ∧ α2 ≤ α3 ∧ γ / 2 < α3 ∧ α3 < Q γ →
       ∃ B : ℝ → Ω → BrownianPath × BrownianPath, ∃ Z : Ω → Measure ℝ,
         IsSourceLateralProjection P X γ M Z ∧ IsReflectionData P γ α3 (B α3) Z ∧
@@ -86,28 +81,7 @@ theorem reflectionR_first_shift_meromorphic_of_deps
             (α3 - α2 + ε) α2 α3) (𝓝[>] 0)
           (𝓝 (bridgeMultiplicity α2 α3 * reflectionExponent γ α3 *
             reflectionBarR P γ α3 (B α3) Z)))
-    (hTail : ∀ (K2 K3 : Set ℂ) (_ : IsCompact K2) (_ : IsCompact K3)
-      (_ : ∀ z ∈ K2, 2 ≤ ‖z‖) (_ : ∀ z ∈ K3, 2 ≤ ‖z‖)
-      (_ : ∀ z2 ∈ K2, ∀ z3 ∈ K3, 3 ≤ ‖z2 - z3‖)
-      (A2 A3 : Set ℝ) (_ : IsCompact A2) (_ : IsCompact A3)
-      (_ : ∀ α ∈ A2, γ / 2 < α ∧ α < Q γ)
-      (_ : ∀ α ∈ A3, γ / 2 < α ∧ α < Q γ)
-      (F2s F3s : ℂ → Set (ℂ → ℝ)) (radius supBound derivBound lowerBound : ℝ)
-      (_ : UniformPositiveC1Family K2 F2s radius supBound derivBound lowerBound)
-      (_ : UniformPositiveC1Family K3 F3s radius supBound derivBound lowerBound),
-      ∃ B : ℝ → Ω → BrownianPath × BrownianPath, ∃ Z : Ω → Measure ℝ,
-        IsSourceLateralProjection P X γ M Z ∧
-          (∀ α, (α ∈ A2 ∨ α ∈ A3) → IsReflectionData P γ α (B α) Z) ∧
-          ∀ θ : ℝ, 0 < θ → ∃ C : ℝ, 0 ≤ C ∧
-            ∀ z2 ∈ K2, ∀ z3 ∈ K3, ∀ α2 ∈ A2, ∀ α3 ∈ A3,
-              ∀ F2 ∈ F2s z2, ∀ F3 ∈ F3s z3, ∀ x : ℝ, 1 ≤ x →
-                |(P {ω | ENNReal.ofReal x <
-                    localSingularMass M F2 z2 γ α2 ω + localSingularMass M F3 z3 γ α3 ω}).toReal -
-                  (oneInsertionTailCoefficient γ α2 z2 (F2 z2) (reflectionBarR P γ α2 (B α2) Z) *
-                      Real.rpow x (-reflectionExponent γ α2) +
-                    oneInsertionTailCoefficient γ α3 z3 (F3 z3) (reflectionBarR P γ α3 (B α3) Z) *
-                      Real.rpow x (-reflectionExponent γ α3))| ≤
-                  C * Real.rpow x (-(twoInsertionTailCeiling γ α2 α3 - θ)))
+    (hTail : TailHyp P X M γ)
     (hHolo : ∃ V : Set (Fin 3 → ℂ), IsOpen V ∧
       (∀ α : Fin 3 → ℝ, ExtendedSeiberg3 γ (α 0) (α 1) (α 2) → complexifyNCharges α ∈ V) ∧
       ∃ f : (Fin 3 → ℂ) → ℂ, DifferentiableOn ℂ f V ∧
@@ -148,7 +122,6 @@ theorem reflectionR_first_shift_meromorphic_of_deps
     intro x hx1 hx2
     obtain ⟨δ, hW⟩ := hwin (Q γ - x) (by linarith)
       (by have := min_le_left η₀ (2 / γ - γ / 2); linarith)
-    have hx3 : γ < x := by linarith
     have hshift := reflectionBarR_shift_of_window P X M hγ hγ2 hX hM hCross hBridge hTail hV₃
       hV₃mem hf₃ hf₃eq hW (B (x - γ / 2)) Z
       (by rw [sub_sub_cancel]; exact hRD _ ⟨by linarith, by linarith⟩) (B x) Z

@@ -25,9 +25,8 @@ theorem meas_ge_le_lintegral_rpow_div {Ω : Type*} [MeasurableSpace Ω] {P : Mea
     {f : Ω → ℝ≥0∞} (hf : AEMeasurable f P) {a : ℝ≥0∞} (ha : a ≠ 0) (ha' : a ≠ ⊤) {t : ℝ}
     (ht : 0 < t) :
     P {ω | a ≤ f ω} ≤ (∫⁻ ω, f ω ^ t ∂P) / a ^ t := by
-  have hat0 : a ^ t ≠ 0 := (ENNReal.rpow_pos (pos_iff_ne_zero.mpr ha) ha').ne'
   have hat : a ^ t ≠ ⊤ := ENNReal.rpow_ne_top_of_nonneg ht.le ha'
-  refine le_trans (measure_mono fun ω hω => ?_) (meas_ge_le_lintegral_div (hf.pow_const t) hat0
+  refine le_trans (measure_mono fun ω hω => ?_) (meas_ge_le_lintegral_div (hf.pow_const t) ((ENNReal.rpow_pos (pos_iff_ne_zero.mpr ha) ha').ne')
     hat)
   exact ENNReal.rpow_le_rpow hω ht.le
 

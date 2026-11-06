@@ -111,18 +111,16 @@ theorem coulombWeight_repin_identity_inf {N : ℕ} (γ : ℝ) (hγ : 0 < γ) (α
         coulombWeight γ α (fun k => a * z k + b) αinf x := by
   set y := affineInv a b x with hydef
   have hxy : x = a * y + b := (affine_affineInv a b ha x).symm
-  have hyz : ∀ k, y ≠ z k := fun k h => hx k (by rw [hxy, h])
-  have hapos : 0 < ‖a‖ := norm_pos_iff.mpr ha
   have hγne : γ ≠ 0 := hγ.ne'
   have hexp : γ ^ 2 * (1 + infSExp γ α αinf) + 4 = γ * ((∑ k, α k) + αinf) := by
     unfold infSExp Q
     field_simp
     ring
-  rw [hxy, coulombWeight_affine_inf γ α z αinf a b ha hyz, repinPotential_affine a b ha y,
+  rw [hxy, coulombWeight_affine_inf γ α z αinf a b ha (fun k h => hx k (by rw [hxy, h])), repinPotential_affine a b ha y,
     repinWeight_affine a b ha y, ← mul_assoc, ← ENNReal.ofReal_mul (by positivity),
     mul_comm (ENNReal.ofReal _) (coulombWeight _ _ _ _ _)]
   congr 2
-  rw [Real.rpow_def_of_pos hapos, ← Real.exp_add, ← Real.exp_add, ← Real.exp_add]
+  rw [Real.rpow_def_of_pos (norm_pos_iff.mpr ha), ← Real.exp_add, ← Real.exp_add, ← Real.exp_add]
   congr 1
   linear_combination (affineDefect a b y) * hexp
 
@@ -144,8 +142,6 @@ theorem coulombMass_affine_moment_inf {Ω : Type*} [MeasurableSpace Ω] (P : Mea
   set VL : ℝ := ∫ ω, L ω ^ 2 ∂P with hVLdef
   set κ := repinKappa a b with hκ
   have hapos : 0 < ‖a‖ := norm_pos_iff.mpr ha
-  have hLmeas : Measurable L :=
-    (hXc.1 (-Real.log ‖a‖)).comp (measurable_id.prodMk measurable_const)
   have hVL : VL = 2 * κ := by
     have h := isCircleAverage_covariance P X hX Xc hXc b b (-Real.log ‖a‖) (-Real.log ‖a‖)
     rw [repin_selfEnergy a b ha] at h
@@ -250,8 +246,7 @@ theorem coulombMass_affine_moment_inf {Ω : Type*} [MeasurableSpace Ω] (P : Mea
     rw [lintegral_withDensity_eq_lintegral_mul _ hD hI,
       coulombMass_eq_lintegral_coulombWeight, ← lintegral_const_mul' _ _ ENNReal.ofReal_ne_top]
     apply lintegral_congr_ae
-    have hnull : M ω (⋃ k, {a * z k + b}) = 0 := measure_iUnion_null hω
-    filter_upwards [measure_eq_zero_iff_ae_notMem.1 hnull] with x hx
+    filter_upwards [measure_eq_zero_iff_ae_notMem.1 (measure_iUnion_null hω)] with x hx
     have hxk : ∀ k, x ≠ a * z k + b := fun k h => hx (Set.mem_iUnion.2 ⟨k, h⟩)
     rw [hKdef, ← coulombWeight_repin_identity_inf γ hγ α z αinf a b ha hxk]
     simp only [Pi.mul_apply, hc2x]

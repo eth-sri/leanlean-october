@@ -22,7 +22,6 @@ theorem reflected_reflection_mass_moment_lt_top
     {γ} {Q γ - α} {q} isCompact_singleton isCompact_singleton isCompact_singleton
     (fun _ => B) (fun _ => Z) (by
       intro g hg ν hν
-      have heg : g = γ := mem_singleton_iff.mp hg
       have heν : ν = Q γ - α := mem_singleton_iff.mp hν
       subst g
       subst ν

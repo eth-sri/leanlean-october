@@ -26,12 +26,11 @@ theorem reflected_moment_comparison_error (a b : ℝ≥0∞) (m : ℝ) (hm : 1 �
   have hm1 : 0 ≤ m-1 := sub_nonneg.mpr hm
   have hbound := mul_le_mul_of_nonneg_left hba' hm1
   have ha0 := ENNReal.toReal_nonneg (a := a)
-  have hma : a.toReal ≤ m*a.toReal := le_mul_of_one_le_left ha0 hm
   refine ⟨hb, abs_sub_le_iff.mpr ⟨?_, ?_⟩⟩
   · calc a.toReal-b.toReal ≤ (m-1)*b.toReal := by linarith only [hab']
          _ ≤ (m-1)*m*a.toReal := by simpa only [mul_assoc] using hbound
   · calc b.toReal-a.toReal ≤ (m-1)*a.toReal := by linarith only [hba']
          _ ≤ (m-1)*m*a.toReal := by
-           simpa only [mul_assoc] using mul_le_mul_of_nonneg_left hma hm1
+           simpa only [mul_assoc] using mul_le_mul_of_nonneg_left (le_mul_of_one_le_left ha0 hm) hm1
 
 end DOZZ.Proofs

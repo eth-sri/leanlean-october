@@ -24,8 +24,7 @@ theorem dual_inverse_increment_concave (p A : ℝ) (hp : 0 < p) (hA : 0 < A) :
   have hm : AntitoneOn (deriv g) (interior (Ici 0)) := by
     intro x hx y hy hxy
     have hx0 : 0 ≤ x := interior_subset hx
-    have hy0 : 0 ≤ y := interior_subset hy
-    rw [(hd x hx0).deriv, (hd y hy0).deriv]
+    rw [(hd x hx0).deriv, (hd y (interior_subset hy)).deriv]
     apply mul_le_mul_of_nonneg_left _ hp.le
     exact Real.rpow_le_rpow_of_nonpos (by linarith only [hA, hx0])
       (add_le_add le_rfl hxy) (by linarith only [hp])
@@ -48,8 +47,6 @@ theorem dual_negative_increment_relative_scale (p A t θ : ℝ) (hp : 0 < p)
     (hA : 0 < A) (ht : 0 ≤ t) (hθ : 0 ≤ θ) :
     |((A+θ*t)^(-p)-A^(-p))-((A+t)^(-p)-A^(-p))| ≤
       |θ-1| *(A^(-p)-(A+t)^(-p)) := by
-  have hpos : 0 ≤ A^(-p)-(A+t)^(-p) := sub_nonneg.mpr
-    (Real.rpow_le_rpow_of_nonpos hA (by linarith only [ht]) (neg_nonpos.mpr hp.le))
   by_cases hθ1 : θ ≤ 1
   · have hlow := dual_inverse_increment_scale_lower p A t θ hp hA ht hθ hθ1
     have hmono : (A+t)^(-p) ≤ (A+θ*t)^(-p) :=
@@ -78,12 +75,11 @@ theorem dual_negative_increment_kernel_squeeze (p A t u θlo θhi : ℝ)
     (hu : θlo*t ≤ u) (hv : u ≤ θhi*t) :
     |((A+u)^(-p)-A^(-p))-((A+t)^(-p)-A^(-p))| ≤
       max |θlo-1| |θhi-1| * (A^(-p)-(A+t)^(-p)) := by
-  have hu0 : 0 ≤ u := (mul_nonneg hlo ht).trans hu
   have hLoss : 0 ≤ A^(-p)-(A+t)^(-p) := sub_nonneg.mpr
     (Real.rpow_le_rpow_of_nonpos hA (by linarith only [ht]) (neg_nonpos.mpr hp.le))
   have hLower : (A+θhi*t)^(-p)-A^(-p) ≤ (A+u)^(-p)-A^(-p) := by
     simpa only [one_mul] using
-      dual_negative_increment_antitone p A 1 u (θhi*t) hp.le hA zero_le_one hu0 hv
+      dual_negative_increment_antitone p A 1 u (θhi*t) hp.le hA zero_le_one ((mul_nonneg hlo ht).trans hu) hv
   have hUpper : (A+u)^(-p)-A^(-p) ≤ (A+θlo*t)^(-p)-A^(-p) := by
     simpa only [one_mul] using
       dual_negative_increment_antitone p A 1 (θlo*t) u hp.le hA zero_le_one (mul_nonneg hlo ht) hu

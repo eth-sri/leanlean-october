@@ -56,8 +56,7 @@ theorem dual_window_margins (γ α η ξ : ℝ)
     have hm := mul_le_mul_of_nonneg_right (le_of_not_gt hn) hγ.le
     have hp : 0 < (4 - γ ^ 2) * (γ / 2 - (Q γ - α)) :=
       mul_pos (sub_pos.mpr hγsq) (sub_pos.mpr hνb)
-    have hd : (4 / γ) * γ = 4 := div_mul_cancel₀ 4 hγ.ne'
-    rw [mul_right_comm (4 / γ) (Q γ - α) γ, hd] at hm
+    rw [mul_right_comm (4 / γ) (Q γ - α) γ, (div_mul_cancel₀ 4 hγ.ne')] at hm
     nlinarith only [hp, hm]
   exact ⟨hν, hνb, hκ, hslack₁.trans hξ₂, houter, hαmul, hαmul₂,
     by linarith only [hαmul₂, hγsq], by linarith only [hνmul, hγsq], hfirst⟩

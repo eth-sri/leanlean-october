@@ -108,7 +108,6 @@ theorem radialGaussianVectorMeasure_axis_add_map (x : ℝ) (t : ℝ≥0) :
     (radialGaussianVectorMeasure t).map (fun w => radialAxisVector x + w) =
       (Measure.pi (fun i : Fin 3 => gaussianReal (if i = 0 then x else 0) t)).map (WithLp.toLp 2) := by
   let shift := fun z : Fin 3 → ℝ => fun i => z i + (if i = 0 then x else 0)
-  have hshift : Measurable shift := measurable_pi_iff.mpr fun i => (measurable_pi_apply i).add_const _
   have hpi : (Measure.pi (fun _ : Fin 3 => gaussianReal 0 t)).map shift =
       Measure.pi (fun i : Fin 3 => gaussianReal (if i = 0 then x else 0) t) := by
     change (Measure.pi (fun _ : Fin 3 => gaussianReal 0 t)).map
@@ -119,7 +118,7 @@ theorem radialGaussianVectorMeasure_axis_add_map (x : ℝ) (t : ℝ≥0) :
     funext i
     simpa using gaussianReal_map_add_const (μ := 0) (v := t) (if i = 0 then x else 0)
   rw [← hpi, radialGaussianVectorMeasure,
-    Measure.map_map (PiLp.continuous_toLp 2 _).measurable hshift,
+    Measure.map_map (PiLp.continuous_toLp 2 _).measurable (measurable_pi_iff.mpr fun i => (measurable_pi_apply i).add_const _),
     Measure.map_map (show Measurable (fun w : EuclideanSpace ℝ (Fin 3) => radialAxisVector x + w) from
       (continuous_const.add continuous_id).measurable) (PiLp.continuous_toLp 2 _).measurable]
   congr 1

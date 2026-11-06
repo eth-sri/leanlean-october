@@ -95,16 +95,14 @@ theorem sumtail_real_sum_error
     exact herr.trans (mul_le_mul_of_nonneg_right (le_add_of_nonneg_left hCs) hpow)
   · have hβT : β ≤ T+1 := by linarith only [hβs2,hp2T]
     have hsmall := sumtail_small_power_absorption (T+1) β θ x (by positivity) hβT hθ hx (le_of_not_ge hx4)
-    have hp2one : x^(-p2) ≤ 1 := Real.rpow_le_one_of_one_le_of_nonpos hx (by linarith only [hp2])
-    have hp3one : x^(-p3) ≤ 1 := Real.rpow_le_one_of_one_le_of_nonpos hx (by linarith only [hp3])
     have hcoef2 : |c2*x^(-p2)| ≤ H := by
       rw [abs_mul, abs_of_nonneg (Real.rpow_nonneg hx0.le _)]
       exact (mul_le_mul_of_nonneg_right hc2 (Real.rpow_nonneg hx0.le _)).trans
-        (by simpa only [mul_one] using mul_le_mul_of_nonneg_left hp2one hH)
+        (by simpa only [mul_one] using mul_le_mul_of_nonneg_left (Real.rpow_le_one_of_one_le_of_nonpos hx (by linarith only [hp2])) hH)
     have hcoef3 : |c3*x^(-p3)| ≤ H := by
       rw [abs_mul, abs_of_nonneg (Real.rpow_nonneg hx0.le _)]
       exact (mul_le_mul_of_nonneg_right hc3 (Real.rpow_nonneg hx0.le _)).trans
-        (by simpa only [mul_one] using mul_le_mul_of_nonneg_left hp3one hH)
+        (by simpa only [mul_one] using mul_le_mul_of_nonneg_left (Real.rpow_le_one_of_one_le_of_nonpos hx (by linarith only [hp3])) hH)
     calc
       _ ≤ |P.real {ω | x < A ω+B ω}|+|c2*x^(-p2)+c3*x^(-p3)| := abs_sub _ _
       _ ≤ 1+(H+H) := add_le_add

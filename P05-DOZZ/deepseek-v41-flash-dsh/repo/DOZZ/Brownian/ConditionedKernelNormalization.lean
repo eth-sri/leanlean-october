@@ -24,10 +24,6 @@ namespace DOZZ.Proofs
 theorem brownianHeatDensity_tilt {t ν z : ℝ} (ht : 0 < t) :
     Real.exp (ν * z - ν ^ 2 * t / 2) * brownianHeatDensity t z =
       brownianHeatDensity t (z - ν * t) := by
-  have he : ν * z - ν ^ 2 * t / 2 - z ^ 2 / (2 * t) =
-      -(z - ν * t) ^ 2 / (2 * t) := by
-    field_simp [ht.ne']
-    ring
   have hden : Real.sqrt (2 * Real.pi * t) ≠ 0 := by positivity
   simp only [brownianHeatDensity, ht, ite_true]
   field_simp [hden]
@@ -38,10 +34,6 @@ theorem brownianHeatDensity_tilt {t ν z : ℝ} (ht : 0 < t) :
 private theorem brownianHeatDensity_shift_exp {t ν z : ℝ} (ht : 0 < t) :
     Real.exp (-2 * ν * z) * brownianHeatDensity t (z - ν * t) =
       brownianHeatDensity t (z + ν * t) := by
-  have he : -2 * ν * z - (z - ν * t) ^ 2 / (2 * t) =
-      -(z + ν * t) ^ 2 / (2 * t) := by
-    field_simp [ht.ne']
-    ring
   have hden : Real.sqrt (2 * Real.pi * t) ≠ 0 := by positivity
   simp only [brownianHeatDensity, ht, ite_true]
   field_simp [hden]
@@ -198,12 +190,6 @@ theorem conditionedPositiveTransitionDensity_integral_eq_one_pos
       (∫ y in Set.Ioi 0, brownianHeatDensity t (y - (x - ν * t)) ∂(volume : Measure ℝ)) +
         ∫ y in Set.Ioi 0, brownianHeatDensity t (y + (x - ν * t)) ∂(volume : Measure ℝ) = 1 :=
     integral_brownianHeatDensity_halfline_pair ht (a := x - ν * t)
-  have hB' : IntegrableOn (fun y : ℝ => Real.exp (-2 * ν * x) *
-      brownianHeatDensity t (y + (x - ν * t))) (Set.Ioi 0) (volume : Measure ℝ) :=
-    hB.const_mul _
-  have hC' : IntegrableOn (fun y : ℝ => Real.exp (-2 * ν * x) *
-      brownianHeatDensity t (y - (x - ν * t))) (Set.Ioi 0) (volume : Measure ℝ) :=
-    hC.const_mul _
   have hsum'' :
       (∫ y in Set.Ioi 0, brownianHeatDensity t (y + (x - ν * t)) ∂(volume : Measure ℝ)) +
         ∫ y in Set.Ioi 0, brownianHeatDensity t (y - (x - ν * t)) ∂(volume : Measure ℝ) = 1 := by
@@ -266,14 +252,6 @@ theorem conditionedPositiveTransitionDensity_integral_eq_one_pos
           conditionedH ν x := by
     simp_rw [div_eq_mul_inv]
     rw [integral_mul_const]
-  have hHpos : 0 < conditionedH ν x := by
-    rw [hH]
-    apply sub_pos.mpr
-    apply Real.exp_lt_one_iff.mpr
-    have hmul : 0 < 2 * ν * x := mul_pos (mul_pos (by norm_num : (0 : ℝ) < 2) hν) hx
-    have harg : -2 * ν * x = -(2 * ν * x) := by ring
-    rw [harg]
-    exact neg_lt_zero.mpr hmul
   have hHpos' : 0 < 1 - Real.exp (-(2 * ν * x)) := by
     apply sub_pos.mpr
     apply Real.exp_lt_one_iff.mpr

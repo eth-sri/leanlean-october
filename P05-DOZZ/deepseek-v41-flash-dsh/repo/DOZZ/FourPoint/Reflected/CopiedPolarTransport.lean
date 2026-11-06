@@ -31,9 +31,8 @@ theorem reflected_copied_polar_law_congr
         (γ*(D ω.1 (Real.toNNReal t)-ν*t))) else 0) ∂Z ω.2)) := by
   let F := reflectedInwardPolarMassCode γ ν
   let H : (ζ × BrownianPath) × Measure ℝ → ζ × ℝ≥0∞ := fun p => (p.1.1, F (p.1.2,p.2))
-  have hF : Measurable F := reflected_measurable_inwardPolarMassCode γ ν
   have hH : Measurable H := (measurable_fst.comp measurable_fst).prodMk
-    (hF.comp ((measurable_snd.comp measurable_fst).prodMk measurable_snd))
+    ((reflected_measurable_inwardPolarMassCode γ ν).comp ((measurable_snd.comp measurable_fst).prodMk measurable_snd))
   have hp (W : Ω → Measure ℝ) (hW : AEMeasurable W P)
       (hf : ∀ᵐ ω ∂P, ∀ a b : ℝ, W ω (Icc a b) < ⊤) :
       (P.prod P).map (fun ω : Ω × Ω => (Y ω.1, ∫⁻ t,

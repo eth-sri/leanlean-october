@@ -38,9 +38,8 @@ private theorem tendsto_real_positive_cpow_zero (c : ℝ) (hc : c < 1) :
   have hreal : Tendsto (fun x : ℝ => x ^ e) F (nhds 0) := by
     have hid : Tendsto (fun x : ℝ => x) F (nhds 0) :=
       tendsto_id.mono_left nhdsWithin_le_nhds
-    have hconst : Tendsto (fun _ : ℝ => e) F (nhds e) := tendsto_const_nhds
     have h := (Real.continuousAt_rpow (0, e) (Or.inr he)).tendsto.comp
-      (hid.prodMk_nhds hconst)
+      (hid.prodMk_nhds (tendsto_const_nhds))
     simpa [Function.comp_def, Real.zero_rpow he.ne'] using h
   have hnorm : (fun x : ℝ => ‖(x : ℂ) ^ (1 - (c : ℂ))‖) =ᶠ[F]
       (fun x : ℝ => x ^ e) := by
@@ -159,12 +158,11 @@ theorem real_gauss_solution_physical_normalization
   have hFne : NeBot F := by
     dsimp [F]
     exact (isGLB_Ioi : IsGLB (Ioi (0 : ℝ)) 0).nhdsWithin_neBot ⟨1, by norm_num⟩
-  have hcoeff0 : coeff = T 0 := tendsto_nhds_unique' hFne hRHS hRHS'
   intro z hz
   change T z = T 0 * (‖gaussFMinus H (a : ℂ) (b : ℂ) (c : ℂ) z‖ ^ 2 +
     gaussCoefficientRatio a b c *
       ‖gaussFPlus H (a : ℂ) (b : ℂ) (c : ℂ) z‖ ^ 2)
-  rw [← hcoeff0]
+  rw [← (tendsto_nhds_unique' hFne hRHS hRHS')]
   exact hcoeff z hz
 
 end DOZZ.Proofs

@@ -3,6 +3,7 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
+public import DOZZ.SharedHyp
 public import DOZZ.FourPoint.Reflected.CopiedCarrierRegroup
 public import DOZZ.FourPoint.Reflected.ReinsertedRegionCode
 /-! Exact regrouping of the literal reinserted inner and exterior masses. -/
@@ -15,7 +16,7 @@ theorem reflected_copied_reinserted_regions_regroup
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) [IsProbabilityMeasure P]
     (A : Ω → TwoSidedPath) (N : Ω → Measure ℂ)
     (hA : AEMeasurable A P) (hN : Measurable N) (hi : IndepFun A N P)
-    (hfin : ∀ ω K, IsCompact K → K ⊆ ({0} : Set ℂ)ᶜ → N ω K < ⊤)
+    (hfin : FiniteOffOrigin N)
     (γ : ℝ) (U V : Set ℂ) (hU : MeasurableSet U) (hV : MeasurableSet V)
     (hU0 : U ⊆ ({0} : Set ℂ)ᶜ) (hV0 : V ⊆ ({0} : Set ℂ)ᶜ)
     (K : ℂ → ℝ≥0∞) (hK : Measurable K)
@@ -43,7 +44,7 @@ theorem reflected_copied_reinserted_regions_regroup
 theorem reflected_copied_region_mass_aemeasurable
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) [IsProbabilityMeasure P]
     (A : Ω → TwoSidedPath) (N : Ω → Measure ℂ) (hA : AEMeasurable A P) (hN : Measurable N)
-    (hfin : ∀ ω K, IsCompact K → K ⊆ ({0} : Set ℂ)ᶜ → N ω K < ⊤)
+    (hfin : FiniteOffOrigin N)
     (γ : ℝ) (U : Set ℂ) (hU : MeasurableSet U) (hU0 : U ⊆ ({0} : Set ℂ)ᶜ)
     (K : ℂ → ℝ≥0∞) (hK : Measurable K) :
     AEMeasurable (fun ω : Ω × Ω => ∫⁻ x in U,

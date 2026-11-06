@@ -487,15 +487,12 @@ theorem exists_nat_succ_scale_gap {j₁ j₂ : ℤ} (h : j₁ < j₂) :
   have hm_cast : (m : ℤ) = j₂ - j₁ := by
     exact Int.toNat_sub_of_le (show j₁ ≤ j₂ from le_of_lt h)
   have hm_pos : 0 < m := by
-    have hdiff_pos : 0 < j₂ - j₁ := sub_pos.mpr h
     have hdiff_cast_pos : 0 < (m : ℤ) := by
-      simpa [hm_cast] using hdiff_pos
+      simpa [hm_cast] using (sub_pos.mpr h)
     exact_mod_cast hdiff_cast_pos
   obtain ⟨n, hn⟩ := Nat.exists_eq_succ_of_ne_zero (ne_of_gt hm_pos)
   refine ⟨n, ?_⟩
   have hm_eq : m = n + 1 := by omega
-  have hgap : (j₂ - j₁ : ℤ) = ((n + 1 : ℕ) : ℤ) := by
-    rw [← hm_cast, hm_eq]
   omega
 
 theorem inner_haarWaveletPacketLp_of_scale_lt {d : Nat}

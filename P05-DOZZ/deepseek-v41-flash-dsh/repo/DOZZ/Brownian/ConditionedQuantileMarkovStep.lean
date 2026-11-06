@@ -35,8 +35,7 @@ theorem map_prod_graph_apply_rect
   let F : X × U → X × Y := fun z => (z.1, f z)
   have hF : Measurable F := measurable_fst.prodMk hf
   have hRect : MeasurableSet (A ×ˢ B) := hA.prod hB
-  have hPre : MeasurableSet (F ⁻¹' (A ×ˢ B)) := hRect.preimage hF
-  rw [Measure.map_apply hF hRect, Measure.prod_apply hPre]
+  rw [Measure.map_apply hF hRect, Measure.prod_apply (hRect.preimage hF)]
   rw [← lintegral_indicator hA]
   apply lintegral_congr
   intro x

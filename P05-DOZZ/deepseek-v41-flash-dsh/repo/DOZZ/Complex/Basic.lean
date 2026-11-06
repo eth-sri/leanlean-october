@@ -157,7 +157,6 @@ theorem exists_meromorphicOn_strip_gluing {ι : Type*}
       (∀ G : ℂ → ℂ, MeromorphicOn G (horizontalStrip h) →
         (∀ i z, z ∈ U i → G =ᶠ[𝓝[≠] z] f i) →
         ∀ z ∈ horizontalStrip h, F =ᶠ[𝓝[≠] z] G) := by
-  have _positive_width : 0 < h := hh
   obtain ⟨F, hF, hpiece⟩ := exists_meromorphicOn_iUnion_gluing U hU f hf hcompat
   refine ⟨F, hcover ▸ hF, hpiece, ?_⟩
   intro G _ hG z hz
@@ -281,7 +280,6 @@ theorem meromorphicOn_strip_constant_of_dense_periods
     (hp₂ : ∀ z ∈ horizontalStrip h,
       (fun w => f (w + (T₂ : ℂ))) =ᶠ[𝓝[≠] z] f) :
     ∃! c : ℂ, ∀ z ∈ horizontalStrip h, f =ᶠ[𝓝[≠] z] (fun _ => c) := by
-  have _positive_periods := And.intro hT₁ hT₂
   let g := toMeromorphicNFOn f (horizontalStrip h)
   have hn : MeromorphicNFOn g (horizontalStrip h) :=
     meromorphicNFOn_toMeromorphicNFOn f (horizontalStrip h)
@@ -335,7 +333,6 @@ theorem pole_product_eventuallyEq (p q c d : ℂ) (r : ℂ → ℂ) :
     (fun s => -c * s + (s - p) * (d * s / (q - s) + r s)) := by
   filter_upwards [self_mem_nhdsWithin] with s hs
   have hsp : s ≠ p := by simpa using hs
-  have hps : p - s ≠ 0 := sub_ne_zero.mpr hsp.symm
   calc
     (s - p) * (c * s / (p - s) + d * s / (q - s) + r s) =
         (s - p) * (c * s / (p - s)) +
@@ -495,9 +492,8 @@ theorem realMoment_tail_error {Ω : Type*} [MeasurableSpace Ω]
     (integrableOn_Ioi_rpow_of_lt (by linarith : p - 1 - β < -1) zero_lt_one).const_mul c
   have hdecomp : EqOn (fun t => E t + M t) T (Ioi 1) := by
     intro t ht
-    have ht0 : 0 < t := zero_lt_one.trans ht
     have hpow : t ^ (-β) * t ^ (p - 1) = t ^ (p - 1 - β) := by
-      rw [← Real.rpow_add ht0]
+      rw [← Real.rpow_add (zero_lt_one.trans ht)]
       congr 1
       ring
     dsimp [E, M, T]
@@ -572,7 +568,6 @@ theorem complexMoment_uniform_tail_bridge {Ω : Type*} [MeasurableSpace Ω]
       (𝓝[>] 0) (𝓝 ((γ * β * c₀ : ℝ) : ℂ)) := by
   let p : ℝ → ℝ := fun d => β - d / γ
   let m : ℝ → ℝ := fun d => ∫ ω, Y d ω ^ p d ∂P
-  have hmin : 0 < min d₀ (γ * β) := lt_min hd₀ (mul_pos hγ hβ)
   have hexp (d : ℝ) (hd : 0 < d) (hd' : d < min d₀ (γ * β)) :
       0 < p d ∧ p d < β := by
     have hdiv : d / γ < β := (div_lt_iff₀ hγ).mpr (by simpa [mul_comm] using (lt_min_iff.mp hd').2)
@@ -591,7 +586,7 @@ theorem complexMoment_uniform_tail_bridge {Ω : Type*} [MeasurableSpace Ω]
     (hpos d hd hd').mono fun ω hω => (Complex.ofReal_cpow hω (p d)).symm
   have hnear : ∀ᶠ d : ℝ in 𝓝[>] 0, 0 < d ∧ d < min d₀ (γ * β) := by
     filter_upwards [self_mem_nhdsWithin,
-      (Filter.eventually_of_mem (Iio_mem_nhds hmin) fun d hd => hd).filter_mono nhdsWithin_le_nhds]
+      (Filter.eventually_of_mem (Iio_mem_nhds (lt_min hd₀ (mul_pos hγ hβ))) fun d hd => hd).filter_mono nhdsWithin_le_nhds]
       with d hd hd' using ⟨hd, hd'⟩
   have herrBound : ∀ᶠ d : ℝ in 𝓝[>] 0,
       ‖d * m d - γ * p d * c d‖ ≤ d * (1 + C * β / η) := by

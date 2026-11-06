@@ -34,10 +34,9 @@ theorem williams_shifted_lateral_joint_law
     (fun s => s - (driftedBrownianMaximumTime ν (D ω) : ℝ))
   obtain ⟨hY, hYlaw, hDY⟩ := maximum_shift_lateral_law P D hD hB γ Z hZ hInd ν hν
   have hW := williamsReversedMark_aemeasurable (P.map D) hB ν hν
-  have hWD : AEMeasurable ((williamsReversedMark ν) ∘ D) P := hW.comp_aemeasurable hD
   have hWY : IndepFun ((williamsReversedMark ν) ∘ D) Y P :=
     hDY.comp₀ hD hY hW measurable_id.aemeasurable
-  have hmap := (indepFun_iff_map_prod_eq_prod_map_map hWD hY).mp hWY
+  have hmap := (indepFun_iff_map_prod_eq_prod_map_map (hW.comp_aemeasurable hD) hY).mp hWY
   change P.map (fun ω => (williamsReversedMark ν (D ω), Y ω)) =
     (P.map ((williamsReversedMark ν) ∘ D)).prod (P.map Y) at hmap
   rw [hmap, hYlaw, ← AEMeasurable.map_map_of_aemeasurable hW hD]

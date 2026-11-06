@@ -34,10 +34,6 @@ theorem lateralProjectedGMC_Icc_ne_top
     let K : ℝ := |A s₀|
     let R : ℝ := max |a| |b|
     let C : ℝ := |γ| * K + |γ * Q γ| * R
-    have hK_nonneg : 0 ≤ K := abs_nonneg _
-    have hC_nonneg : 0 ≤ C := by
-      dsimp [C]
-      positivity
     have hweight (x : ℂ)
         (hx : -Real.log ‖x‖ ∈ Set.Icc a b) :
         ENNReal.ofReal (if ‖x‖ = 0 then 0 else
@@ -50,17 +46,15 @@ theorem lateralProjectedGMC_Icc_ne_top
           have h := (isMaxOn_iff.mp hmax) (-Real.log ‖x‖) hs
           simpa [K, Function.comp_apply] using h
         have hlog : |Real.log ‖x‖| ≤ R := by
-          have hleft : a ≤ -Real.log ‖x‖ := hs.1
-          have hright : -Real.log ‖x‖ ≤ b := hs.2
           have hlowR : -R ≤ -Real.log ‖x‖ := by
             dsimp [R]
             calc
               -max |a| |b| ≤ -|a| := neg_le_neg (le_max_left _ _)
               _ ≤ a := neg_abs_le a
-              _ ≤ -Real.log ‖x‖ := hleft
+              _ ≤ -Real.log ‖x‖ := (hs.1)
           have hupR : -Real.log ‖x‖ ≤ R := by
             dsimp [R]
-            exact hright.trans ((le_abs_self b).trans (le_max_right _ _))
+            exact (hs.2).trans ((le_abs_self b).trans (le_max_right _ _))
           have habs : abs (-Real.log ‖x‖) ≤ R := abs_le.mpr ⟨hlowR, hupR⟩
           simpa [abs_neg] using habs
         have hexp : -γ * A (-Real.log ‖x‖) +

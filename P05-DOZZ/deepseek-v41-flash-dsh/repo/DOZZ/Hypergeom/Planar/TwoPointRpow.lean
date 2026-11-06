@@ -103,7 +103,6 @@ private theorem norm_sub_bounds_on_ball_zero {z : ℂ} {R : ℝ}
   have hsum : (z - u) + u = z := by abel
   have htriangle := norm_add_le (z - u) u
   rw [hsum] at htriangle
-  have hrev : ‖z‖ - ‖u‖ ≤ ‖z - u‖ := by linarith
   have heq : ‖z - u‖ = ‖u - z‖ := by rw [← norm_neg, neg_sub]
   constructor
   · rw [← heq]
@@ -122,7 +121,6 @@ private theorem norm_center_bounds_on_ball {z : ℂ} {R : ℝ} {u : ℂ}
   have htriangle' : ‖u - (u - z)‖ ≤ ‖u‖ + ‖u - z‖ := by
     simpa only [sub_eq_add_neg, norm_neg] using htriangle
   rw [hzrep] at htriangle'
-  have hrev : ‖z‖ - ‖u - z‖ ≤ ‖u‖ := by linarith
   constructor
   · linarith
   · calc
@@ -177,7 +175,6 @@ private theorem norm_sub_ratio_bounds_on_tail {z : ℂ} {R : ℝ}
     have hzHalf : ‖z‖ ≤ ‖u‖ / 2 := by nlinarith
     nlinarith
   · apply (div_le_iff₀ huPos).2
-    have hzHalf : ‖z‖ ≤ ‖u‖ / 2 := by nlinarith
     nlinarith
 
 private theorem integrableOn_two_point_rpow_tail_iff (a b : ℝ) (z : ℂ)
@@ -190,7 +187,6 @@ private theorem integrableOn_two_point_rpow_tail_iff (a b : ℝ) (z : ℂ)
   have hR : 0 < R := by dsimp [R]; positivity
   have hqmeas : Measurable q := by dsimp [q]; fun_prop
   have hqnonneg : ∀ u, 0 ≤ q u := fun u => div_nonneg (norm_nonneg _) (norm_nonneg _)
-  have hqpowmeas : Measurable (fun u => q u ^ b) := measurable_rpow_of_nonneg hqmeas hqnonneg b
   obtain ⟨c, C, hc, hC, hbounds⟩ :=
     exists_rpow_interval_bounds (A := (1 / 2 : ℝ)) (B := (3 / 2 : ℝ)) (s := b)
       (by norm_num) (by norm_num)
@@ -226,7 +222,7 @@ private theorem integrableOn_two_point_rpow_tail_iff (a b : ℝ) (z : ℂ)
     (MeasurableSet.compl Metric.isOpen_ball.measurableSet)
   have hlocal := integrableOn_mul_factor_iff
     (MeasurableSet.compl Metric.isOpen_ball.measurableSet)
-    (measurable_norm_rpow (a + b)) hqpowmeas
+    (measurable_norm_rpow (a + b)) (measurable_rpow_of_nonneg hqmeas hqnonneg b)
     (fun u => Real.rpow_nonneg (norm_nonneg u) (a + b)) hc
     (fun u hu => (hfactorBounds u hu).1) (fun u hu => (hfactorBounds u hu).2)
   rw [hcongr, hlocal, integrableOn_norm_rpow_ball_compl_iff (a + b) R hR]
@@ -234,7 +230,6 @@ private theorem integrableOn_two_point_rpow_tail_iff (a b : ℝ) (z : ℂ)
 theorem integrableOn_two_point_rpow_ball_zero_iff (a b : ℝ) (z : ℂ) (hz : z ≠ 0)
     (R : ℝ) (hR : 0 < R) (hRz : R < ‖z‖) :
     IntegrableOn (fun u : ℂ => ‖u‖ ^ a * ‖u - z‖ ^ b) (ball 0 R) volume ↔ -2 < a := by
-  have hzpos : 0 < ‖z‖ := norm_pos_iff.mpr hz
   have hAB : ‖z‖ - R ≤ ‖z‖ + R := by linarith
   obtain ⟨c, C, hc, hC, hbounds⟩ :=
     exists_rpow_interval_bounds (s := b) (sub_pos.mpr hRz) hAB
@@ -252,7 +247,6 @@ theorem integrableOn_two_point_rpow_ball_zero_iff (a b : ℝ) (z : ℂ) (hz : z 
 theorem integrableOn_two_point_rpow_ball_z_iff (a b : ℝ) (z : ℂ) (hz : z ≠ 0)
     (R : ℝ) (hR : 0 < R) (hRz : R < ‖z‖) :
     IntegrableOn (fun u : ℂ => ‖u‖ ^ a * ‖u - z‖ ^ b) (ball z R) volume ↔ -2 < b := by
-  have hzpos : 0 < ‖z‖ := norm_pos_iff.mpr hz
   have hAB : ‖z‖ - R ≤ ‖z‖ + R := by linarith
   obtain ⟨c, C, hc, hC, hbounds⟩ :=
     exists_rpow_interval_bounds (s := a) (sub_pos.mpr hRz) hAB
@@ -280,7 +274,6 @@ theorem integrableOn_two_point_rpow_iff (a b : ℝ) (z : ℂ) (hz : z ≠ 0) :
   let st := (ball (0 : ℂ) R)ᶜ
   have hδ : 0 < δ := by dsimp [δ]; positivity
   have hδz : δ < ‖z‖ := by dsimp [δ]; linarith
-  have hR : 0 < R := by dsimp [R]; positivity
   have h0 := integrableOn_two_point_rpow_ball_zero_iff a b z hz δ hδ hδz
   have hzLocal := integrableOn_two_point_rpow_ball_z_iff a b z hz δ hδ hδz
   have htail := integrableOn_two_point_rpow_tail_iff a b z hz

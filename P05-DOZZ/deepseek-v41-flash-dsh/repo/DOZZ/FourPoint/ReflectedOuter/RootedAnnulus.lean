@@ -57,7 +57,6 @@ theorem reflected_retainedZero_rooted_freezing_lower (γ α₁ α₂ α₃ r : �
     ((1 / 2 : ℝ) ^ (γ ^ 2 / 2) * (2 : ℝ) ^ (-|γ * α₂|))
   have hE : MeasurableSet E := (measurableSet_lt measurable_const measurable_norm).inter
     (measurableSet_lt measurable_norm measurable_const)
-  have hD : MeasurableSet D := (isClosed_le continuous_const continuous_norm).measurableSet
   have hd : Measurable d := ENNReal.measurable_ofReal.comp
     ((measurable_const.mul (measurable_pointRootPotential.comp
       (measurable_const.prodMk measurable_id))).exp)
@@ -104,7 +103,7 @@ theorem reflected_retainedZero_rooted_freezing_lower (γ α₁ α₂ α₃ r : �
       lintegral_mono' (Measure.restrict_mono (fun _ hx => hx.1.le) le_rfl) (fun _ => le_rfl)
     _ = _ := by
       unfold reflectedRetainedZeroMass gmcRootedMeasure
-      rw [restrict_withDensity hD, coulombMass_eq_lintegral_coulombWeight,
+      rw [restrict_withDensity ((isClosed_le continuous_const continuous_norm).measurableSet), coulombMass_eq_lintegral_coulombWeight,
         lintegral_withDensity_eq_lintegral_mul _ hd (measurable_coulombWeight _ _ _ _)]
       rfl
 

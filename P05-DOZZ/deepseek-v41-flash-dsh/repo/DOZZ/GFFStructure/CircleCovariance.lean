@@ -3,6 +3,7 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
+public import DOZZ.SharedHyp
 
 public import DOZZ.GFFStructure.GaussianClosure
 public import DOZZ.GFFStructure.CircleLogSeries
@@ -104,8 +105,7 @@ theorem integrable_test_circleKernel (x : ℂ) (r : ℝ) (f : TestFn) :
   apply (integrable_prod_iff hm.aestronglyMeasurable).mpr
   refine ⟨Filter.Eventually.of_forall (fun z =>
     (integrable_gffKernel_circleMeasure x z r).const_mul (f z)), ?_⟩
-  have hfi : Integrable f (volume : Measure ℂ) := f.continuous.integrable_of_hasCompactSupport f.hasCompactSupport
-  apply (hfi.norm.mul_const |C|).mono' hm.norm.aestronglyMeasurable.integral_prod_right'
+  apply ((f.continuous.integrable_of_hasCompactSupport f.hasCompactSupport).norm.mul_const |C|).mono' hm.norm.aestronglyMeasurable.integral_prod_right'
   filter_upwards with z
   have hnon : 0 ≤ ∫ w, ‖f z * gffKernel z w‖ ∂circleMeasure x r :=
     integral_nonneg (fun _ => norm_nonneg _)
@@ -206,8 +206,7 @@ theorem circleCross_origin_exterior_eq_zero {r : ℝ} (hr : 0 ≤ r) (f : TestFn
   by_cases hz : f z = 0
   · simp [hz]
   · have hn : 1 ≤ ‖z‖ := hs (subset_tsupport f hz)
-    have he : Real.exp (-r) ≤ ‖z‖ := (exp_neg_le_one hr).trans hn
-    simp only [zero_sub, norm_neg, Pi.zero_apply, max_eq_right he, normPlus, max_eq_right hn, neg_add_cancel,
+    simp only [zero_sub, norm_neg, Pi.zero_apply, max_eq_right ((exp_neg_le_one hr).trans hn), normPlus, max_eq_right hn, neg_add_cancel,
       add_zero, mul_zero]
 
 /-- Two independent radial finite-dimensional Brownian laws for every witness, and the inner path
@@ -271,7 +270,7 @@ theorem circleAverage_origin_preBrownian {Ω : Type*} [MeasurableSpace Ω]
 theorem circleAverage_origin_brownian {Ω : Type*} [MeasurableSpace Ω]
     (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (hcont : ∀ᵐ ω ∂P, Continuous (fun p : ℂ × ℝ => Xc ω p.1 p.2)) :
+    (hcont : ContinuousCircleAvg P Xc) :
     IsBrownianReal (fun t : ℝ≥0 => fun ω => Xc ω 0 t) P ∧
     IsBrownianReal (fun t : ℝ≥0 => fun ω => Xc ω 0 (-(t : ℝ))) P := by
   have hpre := circleAverage_origin_preBrownian P X Xc hX hc

@@ -3,6 +3,7 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
+public import DOZZ.SharedHyp
 
 public import DOZZ.GFFStructure.CircleVersion
 public import DOZZ.GMC.Construction.GMCMeasurableVersion
@@ -41,7 +42,7 @@ noncomputable def originRadialPath {Ω : Type*} (Xc : Ω → ℂ → ℝ → ℝ
 /-- One common continuity event identifies the packed path at every real radius. -/
 theorem originRadialPath_eval_ae {Ω : Type*} [MeasurableSpace Ω]
     {P : Measure Ω} {Xc : Ω → ℂ → ℝ → ℝ}
-    (hcont : ∀ᵐ ω ∂P, Continuous (fun p : ℂ × ℝ => Xc ω p.1 p.2)) :
+    (hcont : ContinuousCircleAvg P Xc) :
     ∀ᵐ ω ∂P, ∀ s : ℝ, originRadialPath Xc ω s = Xc ω 0 s := by
   filter_upwards [hcont] with ω hω s
   apply ContinuousMap.mkD_apply_of_continuous
@@ -67,7 +68,7 @@ theorem aemeasurable_twoSidedPath_of_eval {Ω : Type*} [MeasurableSpace Ω]
 theorem originRadialPath_aemeasurable {Ω : Type*} [MeasurableSpace Ω]
     (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
     (hc : IsCircleAverage P X Xc)
-    (hcont : ∀ᵐ ω ∂P, Continuous (fun p : ℂ × ℝ => Xc ω p.1 p.2)) :
+    (hcont : ContinuousCircleAvg P Xc) :
     AEMeasurable (originRadialPath Xc) P := by
   apply aemeasurable_twoSidedPath_of_eval
   intro s
@@ -78,7 +79,7 @@ theorem originRadialPath_aemeasurable {Ω : Type*} [MeasurableSpace Ω]
 theorem originRadialPath_zero_ae {Ω : Type*} [MeasurableSpace Ω]
     (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
     (hc : IsCircleAverage P X Xc)
-    (hcont : ∀ᵐ ω ∂P, Continuous (fun p : ℂ × ℝ => Xc ω p.1 p.2)) :
+    (hcont : ContinuousCircleAvg P Xc) :
     ∀ᵐ ω ∂P, originRadialPath Xc ω 0 = 0 := by
   filter_upwards [originRadialPath_eval_ae hcont,
     circleAverage_equator_ae_eq_zero X Xc hc] with ω hω hzero
@@ -88,7 +89,7 @@ theorem originRadialPath_zero_ae {Ω : Type*} [MeasurableSpace Ω]
 theorem originRadialPath_isBrownian {Ω : Type*} [MeasurableSpace Ω]
     (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (hcont : ∀ᵐ ω ∂P, Continuous (fun p : ℂ × ℝ => Xc ω p.1 p.2)) :
+    (hcont : ContinuousCircleAvg P Xc) :
     IsBrownianReal (fun t ω => originRadialPath Xc ω (t : ℝ)) P ∧
       IsBrownianReal (fun t ω => originRadialPath Xc ω (-(t : ℝ))) P := by
   have hpre := circleAverage_origin_preBrownian P X Xc hX hc
@@ -104,7 +105,7 @@ theorem originRadialPath_isBrownian {Ω : Type*} [MeasurableSpace Ω]
 theorem originRadialPath_halves_indep {Ω : Type*} [MeasurableSpace Ω]
     (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (hcont : ∀ᵐ ω ∂P, Continuous (fun p : ℂ × ℝ => Xc ω p.1 p.2)) :
+    (hcont : ContinuousCircleAvg P Xc) :
     IndepFun (fun ω => fun t : ℝ≥0 => originRadialPath Xc ω (t : ℝ))
       (fun ω => fun t : ℝ≥0 => originRadialPath Xc ω (-(t : ℝ))) P := by
   apply (circleAverage_origin_preBrownian P X Xc hX hc).2.2.1.congr
@@ -183,8 +184,7 @@ theorem lateralProjectedGMC_aemeasurable {Ω : Type*} [MeasurableSpace Ω]
     exact @AEMeasurable.subtype_mk Ω (Measure ℂ) _ _ M P hMm
       {μ | IsFiniteMeasure μ} hMf
   have hγa : AEMeasurable (fun _ : Ω => γ) P := aemeasurable_const
-  have hpair : AEMeasurable (fun ω => (γ, A ω)) P := hγa.prodMk hA
-  have hp : AEMeasurable (fun ω => ((γ, A ω), N ω)) P := hpair.prodMk hN
+  have hp : AEMeasurable (fun ω => ((γ, A ω), N ω)) P := (hγa.prodMk hA).prodMk hN
   have hr := measurable_lateralProjectedGMC_finite.comp_aemeasurable hp
   change AEMeasurable (fun ω => lateralProjectedGMC γ (A ω) (M ω)) P at hr
   exact hr

@@ -28,11 +28,7 @@ theorem normPlus_inv_mul_jacobian {u : ℂ} (hu : u ≠ 0) :
   have hnpu : 0 < normPlus u := by
     unfold normPlus
     exact lt_of_lt_of_le zero_lt_one (le_max_left 1 ‖u‖)
-  have hnpinv : 0 < normPlus u⁻¹ := by
-    unfold normPlus
-    exact lt_of_lt_of_le zero_lt_one (le_max_left 1 ‖u⁻¹‖)
-  have hinv : normPlus u⁻¹ = normPlus u / ‖u‖ := normPlus_inv_identity hu
-  rw [hinv, Real.div_rpow hnpu.le hρ.le (-4)]
+  rw [(normPlus_inv_identity hu), Real.div_rpow hnpu.le hρ.le (-4)]
   exact div_mul_cancel₀ _ (ne_of_gt (Real.rpow_pos_of_pos hρ (-4)))
 
 /-- A finite root distance in the original chart becomes the corresponding linear factor after
@@ -48,7 +44,6 @@ theorem gffKernel_inv {u v : ℂ} (hu : u ≠ 0) (hv : v ≠ 0) (huv : u ≠ v) 
     gffKernel u⁻¹ v⁻¹ = gffKernel u v := by
   have hρu : 0 < ‖u‖ := norm_pos_iff.mpr hu
   have hρv : 0 < ‖v‖ := norm_pos_iff.mpr hv
-  have hd : 0 < ‖u - v‖ := norm_pos_iff.mpr (sub_ne_zero.mpr huv)
   have hρ : 0 < ‖u‖ * ‖v‖ := mul_pos hρu hρv
   have hdiff : u⁻¹ - v⁻¹ = (v - u) / (u * v) := by
     field_simp [hu, hv]
@@ -56,7 +51,7 @@ theorem gffKernel_inv {u v : ℂ} (hu : u ≠ 0) (hv : v ≠ 0) (huv : u ≠ v) 
     rw [hdiff, norm_div, norm_mul, norm_sub_rev]
   have hlogdist : Real.log (‖u - v‖ / (‖u‖ * ‖v‖)) =
       Real.log ‖u - v‖ - Real.log ‖u‖ - Real.log ‖v‖ := by
-    rw [Real.log_div (ne_of_gt hd) (ne_of_gt hρ), Real.log_mul
+    rw [Real.log_div (ne_of_gt (norm_pos_iff.mpr (sub_ne_zero.mpr huv))) (ne_of_gt hρ), Real.log_mul
       (ne_of_gt hρu) (ne_of_gt hρv)]
     ring
   have hlogu : Real.log (normPlus u / ‖u‖) =

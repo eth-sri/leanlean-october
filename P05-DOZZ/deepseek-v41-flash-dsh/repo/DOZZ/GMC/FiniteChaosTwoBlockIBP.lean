@@ -82,7 +82,6 @@ theorem finiteChaos_laplace_X_block_ibp_on_product
           ∂((standardGaussianFinMeasure n).prod (standardGaussianFinMeasure n)) := by
   classical
   let μ := standardGaussianFinMeasure n
-  let V := finiteChaosTwoBlockField A c t
   let W := finiteChaosTwoBlockLaplaceScore A c a v γ s t i
   let D := finiteChaosTwoBlockLaplaceScoreDerivative A c a v γ s t i
   have hconditional (y : Fin (n + 1) → ℝ) :
@@ -167,9 +166,8 @@ theorem finiteChaos_laplace_X_block_ibp_on_product_of_measurable_shift
   have hlinearProd : Integrable
       (fun z : (Fin (n + 1) → ℝ) × (Fin (n + 1) → ℝ) =>
         ∑ k, A i k * z.2 k) (μ.prod μ) := by
-    have hsnd : MeasurePreserving Prod.snd (μ.prod μ) μ := measurePreserving_snd
     simpa only [Function.comp_def] using
-      hsnd.integrable_comp_of_integrable hlinear
+      (measurePreserving_snd).integrable_comp_of_integrable hlinear
   have hVmeas : Measurable
       (fun z : (Fin (n + 1) → ℝ) × (Fin (n + 1) → ℝ) =>
         V z.2 z.1) := by

@@ -45,7 +45,6 @@ theorem gmc_compact_small_ball_twoSided_bound
       · exact ENNReal.ofReal_ne_top h.1
   let t := T.toReal
   have ht : 0 < t := ENNReal.toReal_pos hTpos.ne' hTtop
-  have hT : T = ENNReal.ofReal t := (ENNReal.ofReal_toReal hTtop).symm
   obtain ⟨C, hC, hlocal⟩ := (gmc_local_twoSided_ball_scaling_iff
     P X hX γ hγ hγ2 M hM (1/8) p (by norm_num) (by norm_num)).mp
       ⟨gmc_reference_ball_moment_pos P X hX γ hγ hγ2 M hM (by norm_num) le_rfl p,
@@ -58,7 +57,7 @@ theorem gmc_compact_small_ball_twoSided_bound
   have hz0 := gmc_ball_moment_transfer P X hX γ hγ hγ2 M hM z 0 r R hr hr8 hR hzR hzeroR p hp
   have h0z := gmc_ball_moment_transfer P X hX γ hγ hγ2 M hM 0 z r R hr hr8 hR hzeroR hzR p hp
   change _ ≤ T * _ at hz0 h0z
-  rw [hT] at hz0 h0z
+  rw [((ENNReal.ofReal_toReal hTtop).symm)] at hz0 h0z
   have href := hlocal 0 r hr hr8 (by simp only [norm_zero, zero_add]; linarith)
   constructor
   · have he : ENNReal.ofReal t⁻¹ * ENNReal.ofReal t = 1 := by

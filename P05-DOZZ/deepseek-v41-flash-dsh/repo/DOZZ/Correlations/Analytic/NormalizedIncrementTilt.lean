@@ -53,7 +53,6 @@ theorem normalized_vertex_increment_tilt_norm
   let A := γ * ∑ i, a i.castSucc * equatorCircleMean (z i) r
   let D := (normalizedVertexPolynomial P Xc γ z r β).re + gaussianVariance P L / 2
   let H (μ : Measure ℂ) := ENNReal.ofReal ‖((μ O₁).toReal : ℂ) ^ p - ((μ O₀).toReal : ℂ) ^ p‖
-  have hH : Measurable H := measurable_complex_mass_difference O₁ O₀ h₁ h₀ p
   have he (ω : Ω) :
       ENNReal.ofReal ‖Complex.exp (normalizedVertexPolynomial P Xc γ z r β +
         ∑ i, β i * (Xc ω (mixedVertexCenters z i) (mixedVertexTimes N r i) : ℂ)) *
@@ -78,7 +77,7 @@ theorem normalized_vertex_increment_tilt_norm
     rw [he]
   rw [lintegral_const_mul' _ _ ENNReal.ofReal_ne_top,
     mixed_vertex_tilt_functional P X hX γ hγ hγ2 M hM Xc hXc a
-      (mixedVertexCenters z) (mixedVertexTimes N r) H hH]
+      (mixedVertexCenters z) (mixedVertexTimes N r) H (measurable_complex_mass_difference O₁ O₀ h₁ h₀ p)]
   have hs (μ : Measure ℂ) :
       H (μ.withDensity (fun x => ENNReal.ofReal (Real.exp (γ * ∑ i, a i *
         ∫ v, gffKernel x v ∂circleMeasure (mixedVertexCenters z i)

@@ -3,6 +3,7 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
+public import DOZZ.SharedHyp
 
 public import DOZZ.ShiftEquations.DualR.Limits
 public import DOZZ.Statements.Brownian.ReflectionR
@@ -43,7 +44,6 @@ theorem reflectionExponent_gamma_ne {γ : ℝ} (hγ : 0 < γ) (hγirr : Irration
     ring
   apply hγirr
   refine ⟨4 / ((m : ℚ) + 1), ?_⟩
-  have hm : (0 : ℝ) < (m : ℝ) + 1 := by positivity
   push_cast
   field_simp at h4 ⊢
   linarith
@@ -63,7 +63,7 @@ theorem tendsto_reflectionR_gamma {Ω : Type*} [MeasurableSpace Ω] (P : Measure
               (∀ α ∈ I, rbarCoefficient γ (α : ℂ) * f (α : ℂ) =
                 (reflectionBarR P γ α (B α) Z : ℂ)))
     {BR : ℝ → Ω → BrownianPath × BrownianPath} {ZR : Ω → Measure ℝ}
-    (hBR : ∀ α : ℝ, γ / 2 < α → α < Q γ → IsReflectionData P γ α (BR α) ZR) :
+    (hBR : ReflectionDataFamily P γ BR ZR) :
     Tendsto (fun α : ℝ => reflectionR P γ μ α (BR α) ZR) (𝓝 γ)
       (𝓝 (reflectionR P γ μ γ (BR γ) ZR)) := by
   have hQ : Q γ = 2 / γ + γ / 2 := rfl
@@ -79,7 +79,6 @@ theorem tendsto_reflectionR_gamma {Ω : Type*} [MeasurableSpace Ω] (P : Measure
     ⟨by linarith [hα.1], by linarith [hα.2]⟩
   obtain ⟨B, Z, -, hBd, V, hV, hIV, f, -, -, hgd, hgv⟩ := hBarRRepresentation I isCompact_Icc hIdom
   have hγI : γ ∈ I := ⟨by linarith, by linarith⟩
-  have hInhds : I ∈ 𝓝 γ := Icc_mem_nhds (by linarith) (by linarith)
   -- continuity of `R̄`
   have hgc : ContinuousAt (fun z => rbarCoefficient γ z * f z) (γ : ℂ) :=
     (hgd.differentiableAt (hV.mem_nhds (hIV γ hγI))).continuousAt
@@ -95,7 +94,7 @@ theorem tendsto_reflectionR_gamma {Ω : Type*} [MeasurableSpace Ω] (P : Measure
       exact reflectionBarR_eq_of_isReflectionData P P γ α (BR α) ZR (B α) Z
         (hBR α (hIdom α hα).1 (hIdom α hα).2) (hBd α hα)
     rw [hval γ hγI]
-    exact h1.congr' (Filter.eventually_of_mem hInhds fun α hα => (hval α hα).symm)
+    exact h1.congr' (Filter.eventually_of_mem (Icc_mem_nhds (by linarith) (by linarith)) fun α hα => (hval α hα).symm)
   -- continuity of the remaining factors
   have hp : Continuous fun α : ℝ => reflectionExponent γ α := by
     unfold reflectionExponent
@@ -124,8 +123,8 @@ theorem analyticAt_reflection_gamma {Ω : Type*} [MeasurableSpace Ω] (P : Measu
                 (reflectionBarR P γ α (B α) Z : ℂ)))
     {hR : ℝ} (hhR : 0 < hR) {R : ℂ → ℂ} (hRm : MeromorphicOn R (horizontalStrip hR))
     {BR : ℝ → Ω → BrownianPath × BrownianPath} {ZR : Ω → Measure ℝ}
-    (hBR : ∀ α : ℝ, γ / 2 < α → α < Q γ → IsReflectionData P γ α (BR α) ZR)
-    (hRv : ∀ α : ℝ, γ / 2 < α → α < Q γ → R (α : ℂ) = (reflectionR P γ μ α (BR α) ZR : ℂ)) :
+    (hBR : ReflectionDataFamily P γ BR ZR)
+    (hRv : ReflectionFamily P γ μ R BR ZR) :
     AnalyticAt ℂ R (γ : ℂ) := by
   have hQ : Q γ = 2 / γ + γ / 2 := rfl
   have hγh : γ / 2 < 2 / γ := by

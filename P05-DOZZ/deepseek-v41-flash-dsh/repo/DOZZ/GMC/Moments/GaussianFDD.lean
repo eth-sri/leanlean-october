@@ -29,16 +29,14 @@ theorem isCenteredJointlyGaussian_add_independent_scalar
   let : IsProbabilityMeasure P := hX.1
   refine ⟨inferInstance, ?_, ?_⟩
   · intro i
-    have hfst : Measure.map Prod.fst (P.prod Q) = P := measurePreserving_fst.map_eq
-    have hsnd : Measure.map Prod.snd (P.prod Q) = Q := measurePreserving_snd.map_eq
     have hXi : AEMeasurable (fun p : Ω × Λ => X p.1 i) (P.prod Q) := by
       have hm : AEMeasurable (fun ω => X ω i) (Measure.map Prod.fst (P.prod Q)) := by
-        rw [hfst]
+        rw [(measurePreserving_fst.map_eq)]
         exact hX.2.1 i
       exact hm.comp_measurable measurable_fst
     have hWi : AEMeasurable (fun p : Ω × Λ => W p.2) (P.prod Q) := by
       have hm : AEMeasurable W (Measure.map Prod.snd (P.prod Q)) := by
-        rw [hsnd]
+        rw [(measurePreserving_snd.map_eq)]
         exact hW.aemeasurable
       exact hm.comp_measurable measurable_snd
     exact hXi.add hWi

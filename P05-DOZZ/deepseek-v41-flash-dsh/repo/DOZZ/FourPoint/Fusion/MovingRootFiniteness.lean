@@ -24,13 +24,12 @@ theorem fusion_coulombMass_finite_ae {Ω : Type*} [MeasurableSpace Ω]
     (αinf : ℝ) (hα : ∀ j, α j < Q γ) (hαinf : αinf < Q γ) :
     ∀ᵐ ω ∂P, coulombMass γ (M ω) α z αinf < ⊤ := by
   have h4 : (0 : ℝ) < 4 / γ ^ 2 := by positivity
-  have hi : 0 < 2 / γ * (Q γ - αinf) := mul_pos (by positivity) (sub_pos.mpr hαinf)
   have hj : ∀ j, 0 < 2 / γ * (Q γ - α j) := fun j =>
     mul_pos (by positivity) (sub_pos.mpr (hα j))
   have e1 : ∀ᶠ t in nhdsWithin (0 : ℝ) (Set.Ioi 0), t ∈ Set.Ioo 0 (4 / γ ^ 2) :=
     Ioo_mem_nhdsGT h4
   have e2 : ∀ᶠ t in nhdsWithin (0 : ℝ) (Set.Ioi 0), t ∈ Set.Ioo 0 (2 / γ * (Q γ - αinf)) :=
-    Ioo_mem_nhdsGT hi
+    Ioo_mem_nhdsGT (mul_pos (by positivity) (sub_pos.mpr hαinf))
   have e3 : ∀ᶠ t in nhdsWithin (0 : ℝ) (Set.Ioi 0), ∀ j, t ∈ Set.Ioo 0 (2 / γ * (Q γ - α j)) :=
     eventually_all.mpr fun j => Ioo_mem_nhdsGT (hj j)
   obtain ⟨t, ht⟩ := (e1.and (e2.and e3)).exists
@@ -82,9 +81,8 @@ theorem fusion_limitingRootedKernel_finite_ae {Ω : Type*} [MeasurableSpace Ω]
     gmc_singleton_mass_eq_zero_ae P X hX γ hγ hγ2 M hM 0,
     gmc_singleton_mass_eq_zero_ae P X hX γ hγ hγ2 M hM 1] with ω hf h0 h1
   have hr0 : gmcRootedMeasure γ 0 (M ω) {0} = 0 := withDensity_absolutelyContinuous _ _ h0
-  have hr1 : gmcRootedMeasure γ 0 (M ω) {1} = 0 := withDensity_absolutelyContinuous _ _ h1
   rw [gammaHalfRootedMass,
-    fusion_gammaHalfMass_kernel γ α₁ α₂ α₃ 0 _ hr0 hr0 hr1,
+    fusion_gammaHalfMass_kernel γ α₁ α₂ α₃ 0 _ hr0 hr0 (withDensity_absolutelyContinuous _ _ h1),
     gmcRootedMeasure, lintegral_withDensity_eq_lintegral_mul _ hd hk] at hf
   have he : (∫⁻ x, ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ 0 x *
       Real.exp (γ ^ 2 * gffKernel 0 x)) ∂M ω) =

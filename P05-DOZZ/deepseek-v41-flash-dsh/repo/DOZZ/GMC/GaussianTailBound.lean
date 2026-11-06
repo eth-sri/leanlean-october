@@ -27,7 +27,6 @@ theorem gaussianReal_upper_tail_bound (v : ℝ≥0) (b : ℝ)
   let s : ℝ := b / (v : ℝ)
   let f : ℝ → ℝ≥0∞ := fun x => ENNReal.ofReal (Real.exp (s * x))
   let ε : ℝ≥0∞ := ENNReal.ofReal (Real.exp (s * b))
-  have hvR : 0 < (v : ℝ) := hv
   have hs : 0 ≤ s := by dsimp [s]; positivity
   have hε0 : ε ≠ 0 := by simp [ε, Real.exp_pos]
   have hεtop : ε ≠ ∞ := by simp [ε]
@@ -119,7 +118,6 @@ theorem finite_gaussian_tilt_barrier_tail_bound
   have hZi : AEMeasurable Zi P := hZ.2.1 j
   have hvR : 0 < (v : ℝ) := by rw [← hvar]; exact hv
   have hvNN : 0 < v := by exact_mod_cast hvR
-  have hgap' : 0 < b - m := sub_pos.mpr hgap
   have hevent : Measurable event := by
     refine Measurable.ite (measurableSet_lt measurable_const (measurable_pi_apply j)) ?_ ?_
     · exact measurable_const
@@ -161,7 +159,7 @@ theorem finite_gaussian_tilt_barrier_tail_bound
                 _ = P.map Zi (Set.Ioi (b - m)) :=
                   (Measure.map_apply_of_aemeasurable hZi measurableSet_Ioi).symm
         _ = gaussianReal 0 v (Set.Ioi (b - m)) := by rw [hmap]
-    have hgauss := gaussianReal_upper_tail_bound v (b - m) hvNN hgap'.le
+    have hgauss := gaussianReal_upper_tail_bound v (b - m) hvNN (sub_pos.mpr hgap).le
     rw [hpre]
     simpa only [← hvar] using hgauss
   calc
@@ -206,7 +204,6 @@ theorem finite_gaussian_tilt_barrier_lower_tail_bound
   have hZi : AEMeasurable Zi P := hZ.2.1 j
   have hvR : 0 < (v : ℝ) := by rw [← hvar]; exact hv
   have hvNN : 0 < v := by exact_mod_cast hvR
-  have hgap' : b - m < 0 := sub_neg.mpr hgap
   have hevent : Measurable event := by
     refine Measurable.ite (measurableSet_lt (measurable_pi_apply j) measurable_const) ?_ ?_
     · exact measurable_const
@@ -248,7 +245,7 @@ theorem finite_gaussian_tilt_barrier_lower_tail_bound
                 _ = P.map Zi (Set.Iio (b - m)) :=
                   (Measure.map_apply_of_aemeasurable hZi measurableSet_Iio).symm
         _ = gaussianReal 0 v (Set.Iio (b - m)) := by rw [hmap]
-    have hgauss := gaussianReal_lower_tail_bound v (b - m) hvNN hgap'.le
+    have hgauss := gaussianReal_lower_tail_bound v (b - m) hvNN (sub_neg.mpr hgap).le
     rw [hpre]
     have hsq : -(b - m) ^ 2 = -(m - b) ^ 2 := by ring
     rw [← hvar, hsq] at hgauss
@@ -478,7 +475,6 @@ theorem finite_gaussian_tilt_double_root_good_barrier_rate_of_small_error
     have h₁ := mul_le_mul_of_nonneg_left hcov₁lower hg.le
     have h₂ := mul_le_mul_of_nonneg_left hcov₂lower hg.le
     linarith only [h₁, h₂]
-  have hbpos : 0 < 2 * g - a := sub_pos.mpr hga
   have hvarLower : k - C ≤ gaussianVariance P (fun ω => Z ω coarse) := by
     linarith [(abs_le.mp hvar).1]
   have hvarUpper : gaussianVariance P (fun ω => Z ω coarse) ≤ (1 + η) * k := by
@@ -701,12 +697,11 @@ theorem finite_gaussian_tilt_coarse_barrier_tail_rate
     linarith only [hvarLower, hCk]
   have hvarianceUpper : gaussianVariance P (fun ω => Z ω coarse) ≤ 2 * k := by
     linarith only [hvarUpper, hCk]
-  have hgapRate : g * C ≤ (a - g) * k / 2 := hgapScale
   have hmeanRate : g * gaussianCovariance P (fun ω => Z ω coarse)
       (fun ω => Z ω fine) ≤ g * k + g * C := hmean
   have hrate := gaussian_barrier_tail_rate a g (g * C)
     (g * gaussianCovariance P (fun ω => Z ω coarse) (fun ω => Z ω fine))
-    (gaussianVariance P (fun ω => Z ω coarse)) k hga hk hgapRate hmeanRate
+    (gaussianVariance P (fun ω => Z ω coarse)) k hga hk (hgapScale) hmeanRate
     hvariancePos hvarianceUpper
   calc
     _ ≤ ENNReal.ofReal (Real.exp
@@ -724,11 +719,10 @@ theorem finite_gaussian_tilt_coarse_barrier_tail_rate
 integer scale whenever its rate is positive. -/
 theorem summable_gaussian_barrier_tail (c : ℝ) (hc : 0 < c) :
     Summable (fun k : ℕ => Real.exp (-c * (k : ℝ))) := by
-  have hratio0 : 0 ≤ Real.exp (-c) := Real.exp_nonneg _
   have hratio1 : Real.exp (-c) < 1 := by
     rw [← Real.exp_zero]
     exact Real.exp_lt_exp.mpr (by linarith only [hc])
-  have hgeom := summable_geometric_of_lt_one hratio0 hratio1
+  have hgeom := summable_geometric_of_lt_one (Real.exp_nonneg _) hratio1
   have hfun : (fun k : ℕ => Real.exp (-c * (k : ℝ))) =
       fun k => Real.exp (-c) ^ k := by
     funext k

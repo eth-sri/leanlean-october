@@ -28,7 +28,6 @@ noncomputable def euclideanInv : ℂ → ℂ := EuclideanGeometry.inversion 0 1
 theorem euclideanInv_eq_star_inv (z : ℂ) : euclideanInv z = star (z⁻¹) := by
   by_cases hz : z = 0
   · simp [euclideanInv, hz, EuclideanGeometry.inversion]
-  have hn : ‖z‖ ≠ 0 := (norm_pos_iff.mpr hz).ne'
   rw [euclideanInv, EuclideanGeometry.inversion, dist_eq_norm]
   simp only [sub_zero, vadd_eq_add, add_zero]
   rw [Complex.inv_def, Complex.normSq_eq_norm_sq]
@@ -149,14 +148,13 @@ theorem refWeight_integral_euclideanInv_preimage_punctured (A : Set ℂ)
       (∫⁻ x in A ∩ {x | x ≠ 0}, refWeight x ∂volume) := by
   let S : Set ℂ := A ∩ {x | x ≠ 0}
   have hS : MeasurableSet S := hA.inter (measurableSet_singleton 0).compl
-  have hInj : Set.InjOn euclideanInv S := euclideanInv_involutive.injective.injOn
   have hderiv : ∀ x ∈ S,
       HasFDerivWithinAt euclideanInv (fderiv ℝ euclideanInv x) S x := by
     intro x hx
     exact euclideanInv_derivWithin_punctured S x hx.2
   have hImage := euclideanInv_preimage_image_away A
   have hchange := MeasureTheory.lintegral_image_eq_lintegral_abs_det_fderiv_mul
-    (μ := volume) hS hderiv hInj refWeight
+    (μ := volume) hS hderiv (euclideanInv_involutive.injective.injOn) refWeight
   rw [hImage] at hchange
   have hchange' :
       (∫⁻ x in euclideanInv ⁻¹' A ∩ {x | x ≠ 0}, refWeight x ∂volume) =

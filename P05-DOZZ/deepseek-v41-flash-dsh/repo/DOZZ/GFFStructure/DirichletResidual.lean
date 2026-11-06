@@ -3,6 +3,7 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
+public import DOZZ.SharedHyp
 public import DOZZ.GFFStructure.PoissonMixed
 /-!
 # Interior Dirichlet residuals
@@ -42,14 +43,14 @@ theorem integrable_testFn_smul_on_disk {E : Type*} [NormedAddCommGroup E] [Norme
 
 /-- Zero extension of the original harmonic coordinates into their probability-space L². -/
 noncomputable def poissonFamilyL2 {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (c : ℂ) (ρ : ℝ) (V : Ω → ℂ → ℝ) (hV : ∀ z ∈ ball c ρ, MemLp (fun ω => V ω z) 2 P)
+    (c : ℂ) (ρ : ℝ) (V : Ω → ℂ → ℝ) (hV : MemLpBall P V c ρ)
     (z : ℂ) : Lp ℝ 2 P := by
   classical
   exact if hz : z ∈ ball c ρ then (hV z hz).toLp (fun ω => V ω z) else 0
 
 /-- Interior L² representatives retain the literal harmonic coordinates. -/
 theorem poissonFamilyL2_ae_eq {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (c : ℂ) (ρ : ℝ) (V : Ω → ℂ → ℝ) (hV : ∀ z ∈ ball c ρ, MemLp (fun ω => V ω z) 2 P)
+    (c : ℂ) (ρ : ℝ) (V : Ω → ℂ → ℝ) (hV : MemLpBall P V c ρ)
     (z : ℂ) (hz : z ∈ ball c ρ) : poissonFamilyL2 P c ρ V hV z =ᵐ[P] fun ω => V ω z := by
   simp only [poissonFamilyL2,dite_eq_left hz]
   exact MemLp.coeFn_toLp _
@@ -57,14 +58,14 @@ theorem poissonFamilyL2_ae_eq {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
 
 /-- The centered harmonic test average is defined in the original L² carrier. -/
 noncomputable def poissonTestIntegralL2 {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (c : ℂ) (ρ : ℝ) (V : Ω → ℂ → ℝ) (hV : ∀ z ∈ ball c ρ, MemLp (fun ω => V ω z) 2 P)
+    (c : ℂ) (ρ : ℝ) (V : Ω → ℂ → ℝ) (hV : MemLpBall P V c ρ)
     (f : TestFn) : Lp ℝ 2 P := ∫ z, f z • poissonFamilyL2 P c ρ V hV z
 
 /-- Samplewise Fubini retains the literal harmonic test integral. -/
 theorem poissonTestIntegralL2_ae_eq {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
     [IsProbabilityMeasure P] (c : ℂ) (ρ : ℝ)
     (V : Ω → ℂ → ℝ) (hm : Measurable (fun p : Ω × ℂ => V p.1 p.2))
-    (hV : ∀ z ∈ ball c ρ, MemLp (fun ω => V ω z) 2 P)
+    (hV : MemLpBall P V c ρ)
     (hU : ContinuousOn (poissonFamilyL2 P c ρ V hV) (ball c ρ))
     (f : TestFn) (hf : tsupport f ⊆ ball c ρ) :
     poissonTestIntegralL2 P c ρ V hV f =ᵐ[P] fun ω => ∫ z, f z*V ω z := by
@@ -85,8 +86,8 @@ theorem poissonTestIntegralL2_ae_eq {Ω : Type*} [MeasurableSpace Ω] (P : Measu
 
 /-- All zero-extended harmonic L² coordinates are centered. -/
 theorem poissonFamilyL2_integral_zero {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (c : ℂ) (ρ : ℝ) (V : Ω → ℂ → ℝ) (hV : ∀ z ∈ ball c ρ, MemLp (fun ω => V ω z) 2 P)
-    (hmean : ∀ z ∈ ball c ρ, (∫ ω, V ω z ∂P) = 0) (z : ℂ) :
+    (c : ℂ) (ρ : ℝ) (V : Ω → ℂ → ℝ) (hV : MemLpBall P V c ρ)
+    (hmean : MeanZeroBall P V c ρ) (z : ℂ) :
     (∫ ω, poissonFamilyL2 P c ρ V hV z ω ∂P) = 0 := by
   by_cases hz : z ∈ ball c ρ
   · rw [integral_congr_ae (poissonFamilyL2_ae_eq P c ρ V hV z hz)]
@@ -98,8 +99,8 @@ theorem poissonFamilyL2_integral_zero {Ω : Type*} [MeasurableSpace Ω] (P : Mea
 /-- The harmonic test averages are centered. -/
 theorem poissonTestIntegralL2_integral_zero {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
     [IsProbabilityMeasure P] (c : ℂ) (ρ : ℝ)
-    (V : Ω → ℂ → ℝ) (hV : ∀ z ∈ ball c ρ, MemLp (fun ω => V ω z) 2 P)
-    (hmean : ∀ z ∈ ball c ρ, (∫ ω, V ω z ∂P) = 0)
+    (V : Ω → ℂ → ℝ) (hV : MemLpBall P V c ρ)
+    (hmean : MeanZeroBall P V c ρ)
     (hU : ContinuousOn (poissonFamilyL2 P c ρ V hV) (ball c ρ))
     (f : TestFn) (hf : tsupport f ⊆ ball c ρ) :
     (∫ ω, poissonTestIntegralL2 P c ρ V hV f ω ∂P) = 0 := by
@@ -111,8 +112,8 @@ theorem poissonTestIntegralL2_integral_zero {Ω : Type*} [MeasurableSpace Ω] (P
 /-- Covariance of harmonic test averages is a genuine Bochner integral of coordinate covariances. -/
 theorem poissonTestIntegralL2_covariance {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
     [IsProbabilityMeasure P] (c : ℂ) (ρ : ℝ)
-    (V : Ω → ℂ → ℝ) (hV : ∀ z ∈ ball c ρ, MemLp (fun ω => V ω z) 2 P)
-    (hmean : ∀ z ∈ ball c ρ, (∫ ω, V ω z ∂P) = 0)
+    (V : Ω → ℂ → ℝ) (hV : MemLpBall P V c ρ)
+    (hmean : MeanZeroBall P V c ρ)
     (hU : ContinuousOn (poissonFamilyL2 P c ρ V hV) (ball c ρ))
     (f : TestFn) (hf : tsupport f ⊆ ball c ρ) (W : Lp ℝ 2 P) :
     covariance (poissonTestIntegralL2 P c ρ V hV f) W P =
@@ -172,8 +173,8 @@ theorem poissonTestIntegralL2_test_covariance {Ω : Type*} [MeasurableSpace Ω]
     (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
     (c : ℂ) (R ρ ε : ℝ) (hR : 1 < R) (hρ : 0 < ρ) (hε : 0 < ε) (hpin : ‖c‖+ρ ≤ R)
-    (V : Ω → ℂ → ℝ) (hV : ∀ z ∈ ball c ρ, MemLp (fun ω => V ω z) 2 P)
-    (hmean : ∀ z ∈ ball c ρ, (∫ ω, V ω z ∂P) = 0)
+    (V : Ω → ℂ → ℝ) (hV : MemLpBall P V c ρ)
+    (hmean : MeanZeroBall P V c ρ)
     (hU : ContinuousOn (poissonFamilyL2 P c ρ V hV) (ball c ρ))
     (hlim : ∀ z (hz : z ∈ ball c ρ), Tendsto (fun k => eLpNorm
       (fun ω => exteriorPinnedEvaluation X Xc R (by linarith) ω
@@ -213,7 +214,7 @@ noncomputable def dirichletResidualL2 {Ω : Type*} [MeasurableSpace Ω]
     (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
     (c : ℂ) (R ρ : ℝ) (hR : 0 < R) (V : Ω → ℂ → ℝ)
-    (hV : ∀ z ∈ ball c ρ, MemLp (fun ω => V ω z) 2 P) (f : TestFn) : Lp ℝ 2 P :=
+    (hV : MemLpBall P V c ρ) (f : TestFn) : Lp ℝ 2 P :=
     exteriorPinnedTestL2 P X Xc hX hc R hR f-poissonTestIntegralL2 P c ρ V hV f
 
 /-- Interior residuals have the exact Green covariance with every global original test. -/
@@ -221,8 +222,8 @@ theorem dirichletResidualL2_test_covariance {Ω : Type*} [MeasurableSpace Ω]
     (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
     (c : ℂ) (R ρ ε : ℝ) (hR : 1 < R) (hρ : 0 < ρ) (hε : 0 < ε) (hpin : ‖c‖+ρ ≤ R)
-    (V : Ω → ℂ → ℝ) (hV : ∀ z ∈ ball c ρ, MemLp (fun ω => V ω z) 2 P)
-    (hmean : ∀ z ∈ ball c ρ, (∫ ω, V ω z ∂P) = 0)
+    (V : Ω → ℂ → ℝ) (hV : MemLpBall P V c ρ)
+    (hmean : MeanZeroBall P V c ρ)
     (hU : ContinuousOn (poissonFamilyL2 P c ρ V hV) (ball c ρ))
     (hlim : ∀ z (hz : z ∈ ball c ρ), Tendsto (fun k => eLpNorm
       (fun ω => exteriorPinnedEvaluation X Xc R (by linarith) ω
@@ -255,12 +256,10 @@ theorem poissonFamilyL2_covariance_test_eq_integral {Ω : Type*} [MeasurableSpac
     (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
     (c z : ℂ) (R ρ ε : ℝ) (hR : 1 < R) (hρ : 0 < ρ) (hε : 0 < ε) (hpin : ‖c‖+ρ ≤ R)
-    (V : Ω → ℂ → ℝ) (hV : ∀ z ∈ ball c ρ, MemLp (fun ω => V ω z) 2 P)
-    (hmean : ∀ z ∈ ball c ρ, (∫ ω, V ω z ∂P) = 0)
+    (V : Ω → ℂ → ℝ) (hV : MemLpBall P V c ρ)
+    (hmean : MeanZeroBall P V c ρ)
     (hU : ContinuousOn (poissonFamilyL2 P c ρ V hV) (ball c ρ))
-    (hcov : ∀ z w, z ∈ ball c ρ → w ∈ ball c ρ →
-      covariance (fun ω => V ω z) (fun ω => V ω w) P = Real.log R+Real.log ρ-
-        Real.log ‖(ρ : ℂ)^2-(z-c)*star (w-c)‖)
+    (hcov : CovarianceBall P V c ρ R)
     (hlim : ∀ z (hz : z ∈ ball c ρ), Tendsto (fun k => eLpNorm
       (fun ω => exteriorPinnedEvaluation X Xc R (by linarith) ω
         (canonicalPoissonCollarTest c z ρ ε hρ hε hz k)-V ω z) 2 P) atTop (𝓝 0))
@@ -293,12 +292,10 @@ theorem poissonTestIntegralL2_covariance_integral_eq_test {Ω : Type*} [Measurab
     (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
     (c : ℂ) (R ρ ε : ℝ) (hR : 1 < R) (hρ : 0 < ρ) (hε : 0 < ε) (hpin : ‖c‖+ρ ≤ R)
-    (V : Ω → ℂ → ℝ) (hV : ∀ z ∈ ball c ρ, MemLp (fun ω => V ω z) 2 P)
-    (hmean : ∀ z ∈ ball c ρ, (∫ ω, V ω z ∂P) = 0)
+    (V : Ω → ℂ → ℝ) (hV : MemLpBall P V c ρ)
+    (hmean : MeanZeroBall P V c ρ)
     (hU : ContinuousOn (poissonFamilyL2 P c ρ V hV) (ball c ρ))
-    (hcov : ∀ z w, z ∈ ball c ρ → w ∈ ball c ρ →
-      covariance (fun ω => V ω z) (fun ω => V ω w) P = Real.log R+Real.log ρ-
-        Real.log ‖(ρ : ℂ)^2-(z-c)*star (w-c)‖)
+    (hcov : CovarianceBall P V c ρ R)
     (hlim : ∀ z (hz : z ∈ ball c ρ), Tendsto (fun k => eLpNorm
       (fun ω => exteriorPinnedEvaluation X Xc R (by linarith) ω
         (canonicalPoissonCollarTest c z ρ ε hρ hε hz k)-V ω z) 2 P) atTop (𝓝 0))
@@ -331,7 +328,7 @@ theorem dirichletResidualL2_ae_eq {Ω : Type*} [MeasurableSpace Ω]
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
     (c : ℂ) (R ρ : ℝ) (hR : 0 < R) (V : Ω → ℂ → ℝ)
     (hm : Measurable (fun p : Ω × ℂ => V p.1 p.2))
-    (hV : ∀ z ∈ ball c ρ, MemLp (fun ω => V ω z) 2 P)
+    (hV : MemLpBall P V c ρ)
     (hU : ContinuousOn (poissonFamilyL2 P c ρ V hV) (ball c ρ))
     (f : TestFn) (hf : tsupport f ⊆ ball c ρ) :
     dirichletResidualL2 P X Xc hX hc c R ρ hR V hV f =ᵐ[P]
@@ -347,12 +344,10 @@ theorem dirichletResidualL2_harmonic_covariance_zero {Ω : Type*} [MeasurableSpa
     (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
     (c : ℂ) (R ρ ε : ℝ) (hR : 1 < R) (hρ : 0 < ρ) (hε : 0 < ε) (hpin : ‖c‖+ρ ≤ R)
-    (V : Ω → ℂ → ℝ) (hV : ∀ z ∈ ball c ρ, MemLp (fun ω => V ω z) 2 P)
-    (hmean : ∀ z ∈ ball c ρ, (∫ ω, V ω z ∂P) = 0)
+    (V : Ω → ℂ → ℝ) (hV : MemLpBall P V c ρ)
+    (hmean : MeanZeroBall P V c ρ)
     (hU : ContinuousOn (poissonFamilyL2 P c ρ V hV) (ball c ρ))
-    (hcov : ∀ z w, z ∈ ball c ρ → w ∈ ball c ρ →
-      covariance (fun ω => V ω z) (fun ω => V ω w) P = Real.log R+Real.log ρ-
-        Real.log ‖(ρ : ℂ)^2-(z-c)*star (w-c)‖)
+    (hcov : CovarianceBall P V c ρ R)
     (hlim : ∀ z (hz : z ∈ ball c ρ), Tendsto (fun k => eLpNorm
       (fun ω => exteriorPinnedEvaluation X Xc R (by linarith) ω
         (canonicalPoissonCollarTest c z ρ ε hρ hε hz k)-V ω z) 2 P) atTop (𝓝 0))
@@ -372,12 +367,10 @@ theorem dirichletResidualL2_covariance {Ω : Type*} [MeasurableSpace Ω]
     (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
     (c : ℂ) (R ρ ε : ℝ) (hR : 1 < R) (hρ : 0 < ρ) (hε : 0 < ε) (hpin : ‖c‖+ρ ≤ R)
-    (V : Ω → ℂ → ℝ) (hV : ∀ z ∈ ball c ρ, MemLp (fun ω => V ω z) 2 P)
-    (hmean : ∀ z ∈ ball c ρ, (∫ ω, V ω z ∂P) = 0)
+    (V : Ω → ℂ → ℝ) (hV : MemLpBall P V c ρ)
+    (hmean : MeanZeroBall P V c ρ)
     (hU : ContinuousOn (poissonFamilyL2 P c ρ V hV) (ball c ρ))
-    (hcov : ∀ z w, z ∈ ball c ρ → w ∈ ball c ρ →
-      covariance (fun ω => V ω z) (fun ω => V ω w) P = Real.log R+Real.log ρ-
-        Real.log ‖(ρ : ℂ)^2-(z-c)*star (w-c)‖)
+    (hcov : CovarianceBall P V c ρ R)
     (hlim : ∀ z (hz : z ∈ ball c ρ), Tendsto (fun k => eLpNorm
       (fun ω => exteriorPinnedEvaluation X Xc R (by linarith) ω
         (canonicalPoissonCollarTest c z ρ ε hρ hε hz k)-V ω z) 2 P) atTop (𝓝 0))
@@ -397,8 +390,8 @@ theorem dirichletResidualL2_integral_zero {Ω : Type*} [MeasurableSpace Ω]
     (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
     (c : ℂ) (R ρ : ℝ) (hR : 0 < R) (V : Ω → ℂ → ℝ)
-    (hV : ∀ z ∈ ball c ρ, MemLp (fun ω => V ω z) 2 P)
-    (hmean : ∀ z ∈ ball c ρ, (∫ ω, V ω z ∂P) = 0)
+    (hV : MemLpBall P V c ρ)
+    (hmean : MeanZeroBall P V c ρ)
     (hU : ContinuousOn (poissonFamilyL2 P c ρ V hV) (ball c ρ))
     (f : TestFn) (hf : tsupport f ⊆ ball c ρ) :
     (∫ ω, dirichletResidualL2 P X Xc hX hc c R ρ hR V hV f ω ∂P) = 0 := by
@@ -413,7 +406,7 @@ noncomputable def poissonTestFamilyL2 {Ω : Type*} [MeasurableSpace Ω]
     (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
     (c : ℂ) (R ρ : ℝ) (hR : 0 < R) (V : Ω → ℂ → ℝ)
-    (hV : ∀ z ∈ ball c ρ, MemLp (fun ω => V ω z) 2 P) :
+    (hV : MemLpBall P V c ρ) :
     ({z : ℂ // z ∈ ball c ρ} ⊕ TestFn) → Lp ℝ 2 P :=
   Sum.elim (fun z => poissonFamilyL2 P c ρ V hV z.1)
     (exteriorPinnedTestL2 P X Xc hX hc R hR)
@@ -423,7 +416,7 @@ theorem poissonTestFamilyL2_isGaussianProcess {Ω : Type*} [MeasurableSpace Ω]
     (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
     (c : ℂ) (R ρ ε : ℝ) (hR : 0 < R) (hρ : 0 < ρ) (hε : 0 < ε)
-    (V : Ω → ℂ → ℝ) (hV : ∀ z ∈ ball c ρ, MemLp (fun ω => V ω z) 2 P)
+    (V : Ω → ℂ → ℝ) (hV : MemLpBall P V c ρ)
     (hlim : ∀ z (hz : z ∈ ball c ρ), Tendsto (fun k => eLpNorm
       (fun ω => exteriorPinnedEvaluation X Xc R hR ω
         (canonicalPoissonCollarTest c z ρ ε hρ hε hz k)-V ω z) 2 P) atTop (𝓝 0)) :
@@ -439,7 +432,7 @@ theorem poissonTestIntegralL2_mem_gaussianHilbertSpan {Ω : Type*} [MeasurableSp
     (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
     (c : ℂ) (R ρ : ℝ) (hR : 0 < R) (V : Ω → ℂ → ℝ)
-    (hV : ∀ z ∈ ball c ρ, MemLp (fun ω => V ω z) 2 P)
+    (hV : MemLpBall P V c ρ)
     (hU : ContinuousOn (poissonFamilyL2 P c ρ V hV) (ball c ρ))
     (f : TestFn) (hf : tsupport f ⊆ ball c ρ) :
     poissonTestIntegralL2 P c ρ V hV f ∈ gaussianHilbertSpan
@@ -460,7 +453,7 @@ theorem dirichletResidualL2_mem_gaussianHilbertSpan {Ω : Type*} [MeasurableSpac
     (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
     (c : ℂ) (R ρ : ℝ) (hR : 0 < R) (V : Ω → ℂ → ℝ)
-    (hV : ∀ z ∈ ball c ρ, MemLp (fun ω => V ω z) 2 P)
+    (hV : MemLpBall P V c ρ)
     (hU : ContinuousOn (poissonFamilyL2 P c ρ V hV) (ball c ρ))
     (f : TestFn) (hf : tsupport f ⊆ ball c ρ) :
     dirichletResidualL2 P X Xc hX hc c R ρ hR V hV f ∈ gaussianHilbertSpan
@@ -474,12 +467,10 @@ theorem dirichletResidualL2_norm_sq {Ω : Type*} [MeasurableSpace Ω]
     (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
     (c : ℂ) (R ρ ε : ℝ) (hR : 1 < R) (hρ : 0 < ρ) (hε : 0 < ε) (hpin : ‖c‖+ρ ≤ R)
-    (V : Ω → ℂ → ℝ) (hV : ∀ z ∈ ball c ρ, MemLp (fun ω => V ω z) 2 P)
-    (hmean : ∀ z ∈ ball c ρ, (∫ ω, V ω z ∂P) = 0)
+    (V : Ω → ℂ → ℝ) (hV : MemLpBall P V c ρ)
+    (hmean : MeanZeroBall P V c ρ)
     (hU : ContinuousOn (poissonFamilyL2 P c ρ V hV) (ball c ρ))
-    (hcov : ∀ z w, z ∈ ball c ρ → w ∈ ball c ρ →
-      covariance (fun ω => V ω z) (fun ω => V ω w) P = Real.log R+Real.log ρ-
-        Real.log ‖(ρ : ℂ)^2-(z-c)*star (w-c)‖)
+    (hcov : CovarianceBall P V c ρ R)
     (hlim : ∀ z (hz : z ∈ ball c ρ), Tendsto (fun k => eLpNorm
       (fun ω => exteriorPinnedEvaluation X Xc R (by linarith) ω
         (canonicalPoissonCollarTest c z ρ ε hρ hε hz k)-V ω z) 2 P) atTop (𝓝 0))
@@ -496,12 +487,10 @@ theorem dirichletResidualL2_norm_sq_le {Ω : Type*} [MeasurableSpace Ω]
     (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
     (c : ℂ) (R ρ ε : ℝ) (hR : 1 < R) (hρ : 0 < ρ) (hε : 0 < ε) (hpin : ‖c‖+ρ ≤ R)
-    (V : Ω → ℂ → ℝ) (hV : ∀ z ∈ ball c ρ, MemLp (fun ω => V ω z) 2 P)
-    (hmean : ∀ z ∈ ball c ρ, (∫ ω, V ω z ∂P) = 0)
+    (V : Ω → ℂ → ℝ) (hV : MemLpBall P V c ρ)
+    (hmean : MeanZeroBall P V c ρ)
     (hU : ContinuousOn (poissonFamilyL2 P c ρ V hV) (ball c ρ))
-    (hcov : ∀ z w, z ∈ ball c ρ → w ∈ ball c ρ →
-      covariance (fun ω => V ω z) (fun ω => V ω w) P = Real.log R+Real.log ρ-
-        Real.log ‖(ρ : ℂ)^2-(z-c)*star (w-c)‖)
+    (hcov : CovarianceBall P V c ρ R)
     (hlim : ∀ z (hz : z ∈ ball c ρ), Tendsto (fun k => eLpNorm
       (fun ω => exteriorPinnedEvaluation X Xc R (by linarith) ω
         (canonicalPoissonCollarTest c z ρ ε hρ hε hz k)-V ω z) 2 P) atTop (𝓝 0))

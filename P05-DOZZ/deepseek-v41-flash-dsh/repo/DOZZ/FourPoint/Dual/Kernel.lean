@@ -73,9 +73,6 @@ theorem dual_zero_kernel_weight (γ α₁ α₂ α₃ : ℝ) (hγ : γ ≠ 0) (x
   unfold dualFusionKernel
   rw [sub_zero, hprod,
     show α₁ + α₂ + α₃ - 2 / γ = (α₁ - 2 / γ) + α₂ + α₃ by ring]
-  have h0 := (Real.rpow_pos_of_pos hxpos 2).ne'
-  have h1 := (Real.rpow_pos_of_pos hxpos (γ * (α₁ - 2 / γ))).ne'
-  have h2 := (Real.rpow_pos_of_pos hx1pos (γ * α₂)).ne'
   field_simp
 
 /-- Measurability of the literal dual density, including its root values. -/

@@ -3,6 +3,7 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
+public import DOZZ.SharedHyp
 
 public import DOZZ.FourPoint.ReflectedOuter.DeletedMoment
 public import DOZZ.FourPoint.ReflectedOuter.MovingMoment
@@ -26,7 +27,7 @@ theorem gammaHalf_reflected_outer_littleO {Ω : Type*} [MeasurableSpace Ω]
     (P : Measure Ω) (X : Ω → Distr) (M : Ω → Measure ℂ) (γ α₁ α₂ α₃ ξ : ℝ)
     (hγ : 0 < γ) (hγ₂ : γ < 2) (hξ : 0 < ξ) (hξ₂ : ξ < 1)
     (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ)
-    (hs : 2 * Q γ + γ / 2 < α₁ + α₂ + α₃)
+    (hs : SeibergSlack γ α₁ α₂ α₃)
     (hα₁ : α₁ < Q γ) (hreflect : Q γ - α₁ < γ / 2)
     (hslack : γ * (Q γ - α₁) < ξ)
     (hfreeze : γ * (Q γ - α₁) <
@@ -40,20 +41,18 @@ theorem gammaHalf_reflected_outer_littleO {Ω : Type*} [MeasurableSpace Ω]
             ((α₁ + α₂ + α₃ - γ / 2 - 2 * Q γ) / γ) 0 : ℝ) : ℂ)) := by
   let p : ℝ := (α₁ + α₂ + α₃ - γ / 2 - 2 * Q γ) / γ
   let e : ℝ := γ * (Q γ - α₁) + (α₁ + γ / 2 - Q γ) ^ 2 / 2
-  have hp : 0 < p := div_pos (by linarith only [hs]) hγ
   obtain ⟨Cd, εd, _, hεd, hdb⟩ := reflected_retainedZero_deleted_moment_bound
     P X M γ α₁ α₂ α₃ hγ hγ₂ hα₁ hα₂ hα₃ hreflect hs hX hM
   obtain ⟨Cm, _, hmb⟩ := reflected_outer_moving_moment_bound
-    P X M γ α₁ α₂ α₃ p hγ hγ₂ hp (by linarith only [hα₁, hγ]) hα₂ hα₃ hX hM
+    P X M γ α₁ α₂ α₃ p hγ hγ₂ (div_pos (by linarith only [hs]) hγ) (by linarith only [hα₁, hγ]) hα₂ hα₃ hX hM
   apply reflected_outer_rate_littleO (γ * (Q γ - α₁)) ξ e Cm Cd _ hslack hfreeze
   filter_upwards [reflected_outer_cutoff_geometry ξ εd hξ hξ₂ hεd,
     self_mem_nhdsWithin] with z hz hz0
   obtain ⟨hr, hr₁, hz₁, hsep, hrε⟩ := hz
   have hdel := hdb (‖z‖ ^ (1 - ξ)) hr hrε
   have hmov := hmb z ξ hr hr₁ hz₁ hsep
-  have hnz : 0 < ‖z‖ := norm_pos_iff.mpr hz0
   have he : ‖z‖ / ‖z‖ ^ (1 - ξ) = ‖z‖ ^ ξ := by
-    have hh := Real.rpow_sub hnz 1 (1 - ξ)
+    have hh := Real.rpow_sub (norm_pos_iff.mpr hz0) 1 (1 - ξ)
     rw [Real.rpow_one, show (1 : ℝ) - (1 - ξ) = ξ by ring] at hh
     exact hh.symm
   rw [he] at hmov

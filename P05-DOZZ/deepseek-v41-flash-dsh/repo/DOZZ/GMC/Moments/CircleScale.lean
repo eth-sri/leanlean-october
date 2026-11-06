@@ -69,9 +69,6 @@ theorem circleLogPotential_scale {c : ℝ} (hc : 0 < c) (x y : ℂ) (r s : ℝ) 
     have hdist : Continuous (fun w : ℂ => ‖w - y‖) := by fun_prop
     exact (continuous_const.max hdist).log
       (fun _ => ne_of_gt ((Real.exp_pos _).trans_le (le_max_left _ _)))
-  have hfint : Integrable f (circleMeasure (c * x) (r - Real.log c)) :=
-    integrable_circleMeasure_of_circleIntegrable _ _ hfcont.measurable
-      hfcont.continuousOn.circleIntegrable'
   have hgint : Integrable g (circleMeasure x r) :=
     integrable_circleMeasure_of_circleIntegrable _ _ hgcont.measurable
       hgcont.continuousOn.circleIntegrable'

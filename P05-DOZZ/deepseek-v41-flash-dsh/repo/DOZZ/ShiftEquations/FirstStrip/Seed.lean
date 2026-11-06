@@ -3,6 +3,7 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
+public import DOZZ.SharedHyp
 
 public import DOZZ.ShiftEquations.Gluing.Coefficient
 public import DOZZ.ShiftEquations.Gluing.CoefficientAlgebra
@@ -62,7 +63,7 @@ theorem unreflected_coefficient_real {Ω : Type*} [MeasurableSpace Ω] (P : Meas
               structureConstant P M γ μ (α₁ + γ / 2) α₂ α₃ *
                 ‖gaussFPlus H a b c z‖ ^ 2)
     (h1 : γ / 2 < α₁) (h2 : α₁ < 2 / γ) (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ)
-    (hs : 2 * Q γ + γ / 2 < α₁ + α₂ + α₃) :
+    (hs : SeibergSlack γ α₁ α₂ α₃) :
     (-μ * (planarGaussConstant (γ ^ 2 / 2) (γ * α₁)).re) *
         structureConstant P M γ μ (α₁ + γ / 2) α₂ α₃ =
       gaussCoefficientRatio (gaussParameterA γ (γ / 2) α₁ α₂ α₃)
@@ -105,11 +106,10 @@ theorem firstShift_real_of_unreflected {Ω : Type*} [MeasurableSpace Ω] (P : Me
               structureConstant P M γ μ (α₁ + γ / 2) α₂ α₃ *
                 ‖gaussFPlus H a b c z‖ ^ 2)
     (h1 : γ / 2 < α₁) (h2 : α₁ < 2 / γ) (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ)
-    (hs : 2 * Q γ + γ / 2 < α₁ + α₂ + α₃) :
+    (hs : SeibergSlack γ α₁ α₂ α₃) :
     (structureConstant P M γ μ (α₁ + γ / 2) α₂ α₃ : ℂ) =
       -(1 / (Real.pi * μ)) * shiftCoeffA γ (γ / 2) (α₁ : ℂ) (α₂ : ℂ) (α₃ : ℂ) *
         (structureConstant P M γ μ (α₁ - γ / 2) α₂ α₃ : ℂ) := by
-  have hQ : Q γ = 2 / γ + γ / 2 := rfl
   have hc := gaussParameterC_half_mem_window hγ h1 h2
   have hK := unreflected_coefficient_real P X M hγ hγ2 hμ hX hM hUnreflectedFormula h1 h2 hα₂ hα₃ hs
   -- the three `l`-factors are real, finite and nonzero

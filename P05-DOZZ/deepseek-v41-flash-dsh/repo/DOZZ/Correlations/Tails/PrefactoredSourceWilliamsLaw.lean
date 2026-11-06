@@ -3,6 +3,7 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
+public import DOZZ.SharedHyp
 
 public import DOZZ.Correlations.Tails.CanonicalSourceWilliamsLaw
 public import DOZZ.Correlations.Tails.IndependentProductLaw
@@ -45,8 +46,8 @@ theorem prefactored_source_williams_mass_aemeasurable
 theorem prefactored_canonical_source_williams_law
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
     (Xc : Ω → ℂ → ℝ → ℝ) (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
-    (hcont : ∀ᵐ ω ∂P, Continuous (fun p : ℂ × ℝ => Xc ω p.1 p.2))
+    (hm : MeasurableCircleAvg Xc)
+    (hcont : ContinuousCircleAvg P Xc)
     (z : ℂ) (γ α : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (hα : α < Q γ)
     (N : Ω → Measure ℂ) (hN : IsGMCOf P (translatedField X Xc z) γ N)
     (B : Ω → BrownianPath × BrownianPath) (Z : Ω → Measure ℝ)

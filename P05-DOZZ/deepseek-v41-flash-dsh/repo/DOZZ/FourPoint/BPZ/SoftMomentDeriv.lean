@@ -114,8 +114,7 @@ theorem norm_bpzMomentField2_le {s J Y A B : ℝ} {D : ℂ →L[ℝ] ℝ} {DD : 
       (s * (s + 1) * A ^ 2 + s * B) * Y ^ (-s) := by
   have hJ : 0 < J := hY.trans_le hYJ
   have h1 : 0 ≤ J ^ (-s - 1) := Real.rpow_nonneg hJ.le _
-  have h2 : 0 ≤ J ^ (-s - 2) := Real.rpow_nonneg hJ.le _
-  have hk : 0 ≤ s * (s + 1) * J ^ (-s - 2) := mul_nonneg (mul_nonneg hs (by linarith)) h2
+  have hk : 0 ≤ s * (s + 1) * J ^ (-s - 2) := mul_nonneg (mul_nonneg hs (by linarith)) (Real.rpow_nonneg hJ.le _)
   have hT1 : ‖(s * (s + 1) * J ^ (-s - 2)) • D.smulRight D‖ ≤ s * (s + 1) * A ^ 2 * J ^ (-s) := by
     rw [norm_smul, Real.norm_of_nonneg hk, ContinuousLinearMap.norm_smulRight_apply]
     have hDD2 : ‖D‖ * ‖D‖ ≤ (A * J) * (A * J) :=

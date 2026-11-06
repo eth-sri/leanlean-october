@@ -183,8 +183,6 @@ theorem cutoff_dilated_mass_eq_fieldChaosMass
       rw [Set.indicator_of_mem hxS, Set.indicator_of_mem hx, hcx, hE]
       simp only []
       rw [hn, Real.mul_rpow hc0.le hnx, hW]
-      have he : 0 ≤ Real.exp (γ * Xc ω ((c : ℂ) * x) r -
-          γ ^ 2 / 2 * ∫ ω', Xc ω' ((c : ℂ) * x) r ^ 2 ∂P) := (Real.exp_pos _).le
       rw [show Real.exp (γ * Xc ω ((c : ℂ) * x) r -
           γ ^ 2 / 2 * ∫ ω', Xc ω' ((c : ℂ) * x) r ^ 2 ∂P) *
             (c ^ (-4 : ℝ) * normPlus x ^ (-4 : ℝ)) =

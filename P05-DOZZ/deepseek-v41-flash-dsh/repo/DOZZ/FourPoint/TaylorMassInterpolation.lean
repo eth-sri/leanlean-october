@@ -29,9 +29,8 @@ theorem mass_interpolation_bound (A I : ℝ≥0∞) (p r : ℝ)
     have hnegr : -p - r < 0 := by linarith only [hp, hr]
     simp only [hItop, ENNReal.top_rpow_of_neg hneg2, ENNReal.top_rpow_of_neg hnegr, mul_zero]
     exact le_rfl
-  have hAtop : A ≠ ⊤ := ne_top_of_le_ne_top hItop hA
   have hsplit : A ^ 2 = A ^ r * A ^ (2 - r) := by
-    rw [← ENNReal.rpow_two, ← ENNReal.rpow_add r (2 - r) hA0 hAtop]
+    rw [← ENNReal.rpow_two, ← ENNReal.rpow_add r (2 - r) hA0 (ne_top_of_le_ne_top hItop hA)]
     congr 1
     ring
   have hcombine : I ^ (2 - r) * I ^ (-p - 2) = I ^ (-p - r) := by

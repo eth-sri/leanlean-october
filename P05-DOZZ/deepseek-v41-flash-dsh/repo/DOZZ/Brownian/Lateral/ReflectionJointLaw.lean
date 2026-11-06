@@ -3,6 +3,7 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
+public import DOZZ.SharedHyp
 public import DOZZ.Brownian.Lateral.ConcentricInversion
 public import DOZZ.Brownian.Lateral.LawUniqueness
 public import DOZZ.GMC.Moments.InversionAnnularTestLaw
@@ -184,7 +185,6 @@ theorem finite_random_radial_measure_law_of_open_fdd
   let Cr := measurableCylinders (fun _ : ℚ => ℝ)
   let Cm := measurableCylinders (fun _ : RadialReflectionOpen => ℝ≥0∞)
   let Crect := Set.image2 (· ×ˢ ·) Cr Cm
-  have hrgen : MeasurableSpace.generateFrom Cr = MeasurableSpace.pi := generateFrom_measurableCylinders
   have hmgen : MeasurableSpace.generateFrom Cm = MeasurableSpace.pi := generateFrom_measurableCylinders
   have hrspan : IsCountablySpanning Cr := by
     refine ⟨fun _ => univ, fun _ => univ_mem_measurableCylinders _, ?_⟩
@@ -193,7 +193,7 @@ theorem finite_random_radial_measure_law_of_open_fdd
     refine ⟨fun _ => univ, fun _ => univ_mem_measurableCylinders _, ?_⟩
     ext x; simp
   have hrectgen : MeasurableSpace.generateFrom Crect = mTarget :=
-    generateFrom_eq_prod hrgen hmgen hrspan hmspan
+    generateFrom_eq_prod (generateFrom_measurableCylinders) hmgen hrspan hmspan
   have hrectpi : IsPiSystem Crect := isPiSystem_measurableCylinders.prod isPiSystem_measurableCylinders
   let Cout := Set.preimage radialReflectionOutputCode '' Crect
   have hgen : mOutput = MeasurableSpace.generateFrom Cout := by
@@ -364,7 +364,7 @@ theorem originRadialGMC_inversion_joint_law
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
     (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (hcont : ∀ᵐ ω ∂P, Continuous (fun p : ℂ × ℝ => Xc ω p.1 p.2))
+    (hcont : ContinuousCircleAvg P Xc)
     (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
     (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) :
     P.map (β := TwoSidedPath × FiniteMeasure ℂ) (fun ω => (originReversedRadialPath (originRadialPath Xc ω),
@@ -374,13 +374,12 @@ theorem originRadialGMC_inversion_joint_law
   let A := originRadialPath Xc
   let N := fun ω => (M ω).map (fun x : ℂ => x⁻¹)
   have hMm := equatorGFF_GMC_aemeasurable P X hX γ hγ hγ2 M hM
-  have hNm : AEMeasurable N P := (Measure.measurable_map _ measurable_inv).comp_aemeasurable hMm
   have hNf : ∀ ω, IsFiniteMeasure (N ω) := fun ω =>
     (FiniteMeasure.map (⟨M ω, hM.1 ω⟩ : FiniteMeasure ℂ) (fun x : ℂ => x⁻¹)).2
   have hA := originRadialPath_aemeasurable P X Xc hc hcont
   have hAr := originReversedRadialPath_aemeasurable P A hA
   apply finite_random_radial_measure_law_of_open_fdd P
-    (fun ω => originReversedRadialPath (A ω)) A hAr hA N M hNm hMm hNf hM.1
+    (fun ω => originReversedRadialPath (A ω)) A hAr hA N M ((Measure.measurable_map _ measurable_inv).comp_aemeasurable hMm) hMm hNf hM.1
   intro ι κ _ _ s U hU
   have hlaw := gmc_inversion_joint_open_mass_fintype_law P X hX Xc hc γ hγ hγ2 M hM
     (fun i => (s i : ℝ)) U hU
@@ -408,7 +407,7 @@ theorem lateralProjectedGMC_reflection_law
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
     (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (hcont : ∀ᵐ ω ∂P, Continuous (fun p : ℂ × ℝ => Xc ω p.1 p.2))
+    (hcont : ContinuousCircleAvg P Xc)
     (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
     (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) :
     P.map (fun ω => (lateralProjectedGMC γ (originRadialPath Xc ω) (M ω)).map

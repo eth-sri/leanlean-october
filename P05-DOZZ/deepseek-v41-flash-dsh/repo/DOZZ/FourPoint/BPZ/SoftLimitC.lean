@@ -105,8 +105,6 @@ theorem bpz_near_cauchySchwarz {a : ℝ} {w : ℂ → ℝ} (hw : Measurable w) (
     integral_nonneg fun x => mul_nonneg (hw0 x) (Real.rpow_nonneg (norm_nonneg _) _)
   have hB : 0 ≤ ∫ x, w x * ‖x - z‖ ^ (2 * a - 2) ∂m :=
     integral_nonneg fun x => mul_nonneg (hw0 x) (Real.rpow_nonneg (norm_nonneg _) _)
-  have hfg0 : 0 ≤ ∫ x, f x * g x ∂m :=
-    integral_nonneg fun x => mul_nonneg (Real.sqrt_nonneg _) (Real.sqrt_nonneg _)
   calc (∫ x, f x * g x ∂m) ^ 2
       ≤ ((∫ x, w x * ‖x - z‖ ^ (2 * a) ∂m) ^ (1 / 2 : ℝ) *
           (∫ x, w x * ‖x - z‖ ^ (2 * a - 2) ∂m) ^ (1 / 2 : ℝ)) ^ 2 := by gcongr

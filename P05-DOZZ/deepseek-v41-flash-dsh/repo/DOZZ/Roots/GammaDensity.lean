@@ -19,8 +19,7 @@ theorem roots_frequently_irrational_sq (γ : ℝ) (hγ : 0 < γ) :
   intro V hV
   have ht : Tendsto Real.sqrt (nhds (γ ^ 2)) (nhds γ) := by
     have ht := Real.continuous_sqrt.tendsto (γ ^ 2)
-    have he : Real.sqrt (γ ^ 2) = γ := Real.sqrt_sq hγ.le
-    rw [he] at ht
+    rw [(Real.sqrt_sq hγ.le)] at ht
     exact ht
   have hq : ∀ᶠ q : ℝ in nhds (γ ^ 2), Real.sqrt q ∈ V ∧ 0 ≤ q := by
     filter_upwards [ht.eventually hV, ((continuousAt_const.eventually_lt (show ContinuousAt (fun q : ℝ => q) (γ ^ 2) from continuousAt_id) (by positivity : (0 : ℝ) < γ ^ 2)))] with q hq hpos

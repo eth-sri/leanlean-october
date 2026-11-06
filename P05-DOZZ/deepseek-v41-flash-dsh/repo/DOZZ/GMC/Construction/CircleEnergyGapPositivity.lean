@@ -104,8 +104,7 @@ theorem densityEnergy_self_nonneg {f : ℂ → ℝ} (hf : Continuous f)
   have hts : tsupport f ⊆ closedBall (0 : ℂ) R := by
     have hsupp : Function.support f ⊆ closedBall (0 : ℂ) R := by
       intro z hz
-      have hz' : z ∈ tsupport f := subset_tsupport f hz
-      simpa only [Metric.mem_closedBall, dist_zero_right] using hRsup z hz'
+      simpa only [Metric.mem_closedBall, dist_zero_right] using hRsup z (subset_tsupport f hz)
     exact closure_minimal hsupp isClosed_closedBall
   let ε : ℕ → ℝ := fun n => 1 / ((n : ℝ) + 2)
   have hε n : 0 < ε n := by dsimp [ε]; positivity
@@ -278,8 +277,6 @@ theorem circleCross_smul (x : ℂ) (r a : ℝ) (f : TestFn) :
     circleCross x r (a • f) = a * circleCross x r f := by
   let k : ℂ → ℝ := fun z => ∫ w, gffKernel z w ∂circleMeasure x r
   have hk : Continuous k := continuous_circleKernelPotential x r
-  have hfi : Integrable (fun z => f z * k z) :=
-    (f.continuous.mul hk).integrable_of_hasCompactSupport f.hasCompactSupport.mul_right
   unfold circleCross
   have heq : (fun z => (a • f) z * k z) = fun z => a * (f z * k z) := by
     funext z
@@ -374,13 +371,11 @@ theorem equatorGFF_testL2_cauchy_of_circleEnergyGap
   have hqn := hN n hn
   have hnorm := equatorGFF_testL2_sub_norm_sq X hX (f m) (f n)
   have hbound := gffCov_sub_le_circleEnergyGaps x r (f m) (f n)
-  have hnonm := circleEnergyGap_nonneg x r (f m)
   have hnon n := circleEnergyGap_nonneg x r (f n)
   have hsquare : ‖U m - U n‖ ^ 2 < ε ^ 2 := by
     dsimp [U, δ] at *
     rw [hnorm]
     nlinarith
-  have hnormpos : 0 ≤ ‖U m - U n‖ := norm_nonneg _
   have hnormlt : ‖U m - U n‖ < ε := by nlinarith
   simpa only [dist_eq_norm] using hnormlt
 

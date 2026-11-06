@@ -52,12 +52,8 @@ theorem complex_norm_sub_neg_rpow_lintegral_uniform_compacts
   obtain ⟨R₁, hR₁, hLnorm⟩ := hL.isBounded.exists_pos_norm_lt
   obtain ⟨R₂, hR₂, hKnorm⟩ := hK.isBounded.exists_pos_norm_lt
   let R : ℝ := R₁ + R₂
-  have hR : 0 < R := by dsimp [R]; linarith
   let B : Set ℂ := Metric.closedBall 0 R
   let f : ℂ → ℝ≥0∞ := fun z => ENNReal.ofReal (‖z‖ ^ (-α))
-  have hf : Measurable f := by
-    dsimp [f]
-    fun_prop
   have hbase := complex_norm_neg_rpow_locallyIntegrable α hαpos hα
   have hballReal : IntegrableOn (fun z : ℂ => ‖z‖ ^ (-α)) B volume :=
     hbase.integrableOn_isCompact (isCompact_closedBall 0 R)
@@ -87,9 +83,8 @@ theorem complex_norm_sub_neg_rpow_lintegral_uniform_compacts
             intro z hz
             simp [f]
   have hsubset (z : ℂ) (hz : z ∈ e ⁻¹' L) : z ∈ B := by
-    have hzu : z + u ∈ L := hz
     have hnorm : ‖z‖ = ‖(z + u) - u‖ := by rw [add_sub_cancel_right]
-    have h1 := hLnorm (z + u) hzu
+    have h1 := hLnorm (z + u) (hz)
     have h2 := hKnorm u hu
     have hbound : ‖z‖ ≤ R₁ + R₂ := by
       rw [hnorm]

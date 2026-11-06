@@ -37,8 +37,7 @@ theorem residue_integral_toReal_rpow
     (hY : AEMeasurable Y P) (hfinite : ∀ᵐ ω ∂P, Y ω ≠ ⊤)
     (q : ℝ) (hq : 0 ≤ q) :
     (∫ ω, (Y ω).toReal ^ q ∂P) = (∫⁻ ω, ENNReal.rpow (Y ω) q ∂P).toReal := by
-  have hf : ∀ᵐ ω ∂P, Y ω ^ q < ⊤ := hfinite.mono fun ω hω => ENNReal.rpow_lt_top_of_nonneg hq hω
-  simpa only [ENNReal.rpow_eq_pow, ENNReal.toReal_rpow] using integral_toReal (hY.pow_const q) hf
+  simpa only [ENNReal.rpow_eq_pow, ENNReal.toReal_rpow] using integral_toReal (hY.pow_const q) (hfinite.mono fun ω hω => ENNReal.rpow_lt_top_of_nonneg hq hω)
 
 /-- Tail-derived integrability inside the convergent moment strip. -/
 theorem residue_real_power_integrable_of_extended_tail

@@ -42,8 +42,6 @@ theorem holomorphicPicardTerm_norm_le (c : ℂ) (r M : ℝ)
   have hdist0 : ‖z - c‖ ≤ r := by
     simpa [dist_eq_norm] using (Metric.mem_ball.mp hz).le
   have hdist : ‖z - c‖ ≤ max r 0 := hdist0.trans (le_max_left r 0)
-  have hpow : (M * ‖z - c‖) ^ n ≤ (M * max r 0) ^ n := by
-    gcongr
   calc
     ‖holomorphicPicardTerm c r H hH y n z‖ ≤
         ‖y‖ * (M * ‖z - c‖) ^ n / (n.factorial : ℝ) := hlocal

@@ -87,7 +87,6 @@ theorem translated_cutoff_mass_eq_fieldChaosMass
     exact ENNReal.measurable_ofReal.comp ((Real.measurable_exp.comp
       ((hX1.const_mul γ).sub (hV.const_mul _))).mul (measurable_normPlus.pow_const _))
   have hball : MeasurableSet (Metric.ball z ρ) := Metric.isOpen_ball.measurableSet
-  have hball0 : MeasurableSet (Metric.ball (0 : ℂ) ρ) := Metric.isOpen_ball.measurableSet
   have hwz : Measurable (fun x : ℂ => (w (x - z) : ℝ≥0∞)) :=
     (hw.comp (measurable_id.sub_const z)).coe_nnreal_ennreal
   -- unfold the cutoff measure as a density against Lebesgue measure
@@ -99,7 +98,7 @@ theorem translated_cutoff_mass_eq_fieldChaosMass
       funext x
       exact mul_comm (E x) (w (x - z) : ℝ≥0∞)
     rw [hfun]
-  rw [hlhs, ← lintegral_add_right_eq_self _ z, fieldChaosMass, ← lintegral_indicator hball0]
+  rw [hlhs, ← lintegral_add_right_eq_self _ z, fieldChaosMass, ← lintegral_indicator (Metric.isOpen_ball.measurableSet)]
   apply lintegral_congr
   intro y
   have hmem : y + z ∈ Metric.ball z ρ ↔ y ∈ Metric.ball (0 : ℂ) ρ := by
@@ -184,13 +183,11 @@ theorem translatedWeight_le_mul (w : ℂ → ℝ≥0) (z z₀ y : ℂ) {R : ℝ}
     (hy : ‖y + z₀‖ ≤ R) :
     (translatedWeight w z y : ℝ≥0∞) ≤ ENNReal.ofReal ((1 + R) ^ 4) * translatedWeight w z₀ y := by
   unfold translatedWeight
-  have hn : 1 ≤ normPlus (y + z₀) := one_le_normPlus _
-  have hnR : normPlus (y + z₀) ≤ 1 + R := normPlus_le_one_add _ hR hy
-  have hpos : 0 < normPlus (y + z₀) := lt_of_lt_of_le zero_lt_one hn
+  have hpos : 0 < normPlus (y + z₀) := lt_of_lt_of_le zero_lt_one (one_le_normPlus _)
   have hlow : 1 ≤ (1 + R) ^ 4 * normPlus (y + z₀) ^ (-4 : ℝ) := by
     rw [Real.rpow_neg hpos.le, show (4 : ℝ) = ((4 : ℕ) : ℝ) by norm_num, Real.rpow_natCast,
       ← div_eq_mul_inv, le_div_iff₀ (by positivity), one_mul]
-    exact pow_le_pow_left₀ hpos.le hnR 4
+    exact pow_le_pow_left₀ hpos.le (normPlus_le_one_add _ hR hy) 4
   have hz : normPlus (y + z) ^ (-4 : ℝ) ≤ 1 := normPlus_rpow_neg_four_le_one _
   rw [ENNReal.coe_mul, ENNReal.coe_mul, ← mul_assoc, mul_comm (ENNReal.ofReal _) (w y : ℝ≥0∞),
     mul_assoc]
@@ -217,7 +214,6 @@ theorem cutoff_translate_moment_le
   let _ := hX.1
   set C : ℝ := 2 * (Real.log 3 + 2 * Real.log (1 + R)) with hCdef
   have hC : 0 ≤ C := by
-    have h3 : 0 ≤ Real.log 3 := Real.log_nonneg (by norm_num)
     have hR1 : 0 ≤ Real.log (1 + R) := Real.log_nonneg (by linarith)
     rw [hCdef]
     positivity

@@ -161,8 +161,7 @@ theorem ae_fst_ne_snd_volume_prod {d : Nat} (hd : 0 < d) :
   rw [Measure.ae_prod_iff_ae_ae hmeas]
   refine Filter.Eventually.of_forall ?_
   intro x
-  have hnull : μ {x} = 0 := measure_singleton (μ := μ) x
-  filter_upwards [compl_mem_ae_iff.mpr hnull] with y hy
+  filter_upwards [compl_mem_ae_iff.mpr (measure_singleton (μ := μ) x)] with y hy
   exact fun hxy => hy hxy.symm
 
 /-- A.e. pointwise limit of the centered Riesz slope kernel pairing integrand. -/

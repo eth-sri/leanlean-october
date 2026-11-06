@@ -66,18 +66,14 @@ theorem regularizedGMC_inverse_moment_le_of_gamma_le
       ∫⁻ ω, (regularizedGMC P Xc g r ω A) ^ (-q) ∂P := by
   have hg : 0 < g := lt_of_lt_of_le hγ hγg
   set c : ℝ := γ / g with hc
-  have hc0 : 0 ≤ c := div_nonneg hγ.le hg.le
   have hc1 : c ≤ 1 := (div_le_one hg).mpr hγg
-  have hc2 : c ^ 2 ≤ 1 := pow_le_one₀ hc0 hc1
+  have hc2 : c ^ 2 ≤ 1 := pow_le_one₀ (div_nonneg hγ.le hg.le) hc1
   set ν : Measure ℂ := gmcReferenceMeasure.restrict A with hν
   have hνfin : IsFiniteMeasure ν := by
     rw [hν]
     exact isFiniteMeasure_restrict.mpr hAtop
   have hΦ := circleAverage_smul_isCenteredGaussianField P X hX Xc hXc r c
   have hΨ := circleAverage_isCenteredGaussianField P X hX Xc hXc r
-  have hmemA : ∀ᵐ x ∂ν, x ∈ A := by
-    rw [hν]
-    exact ae_restrict_mem hA
   have hcov : ∀ᵐ q ∂ν.prod ν,
       ∫ ω, c * Xc ω q.1 r * (c * Xc ω q.2 r) ∂P ≤ ∫ ω, Xc ω q.1 r * Xc ω q.2 r ∂P := by
     have hprod : ν.prod ν = (gmcReferenceMeasure.prod gmcReferenceMeasure).restrict (A ×ˢ A) := by
@@ -98,8 +94,7 @@ theorem regularizedGMC_inverse_moment_le_of_gamma_le
       funext ω
       ring
     rw [hfun, integral_const_mul]
-    have h0 : 0 ≤ ∫ ω, Xc ω x r ^ 2 ∂P := integral_nonneg fun ω => sq_nonneg _
-    exact mul_le_of_le_one_left h0 hc2
+    exact mul_le_of_le_one_left (integral_nonneg fun ω => sq_nonneg _) hc2
   have hk := kahane_field_power_convex P P (fun ω x => c * Xc ω x r) (fun ω x => Xc ω x r)
     hΦ hΨ ν (fun _ => 1) measurable_const ⟨1, fun _ => le_rfl⟩ g (-q) (Or.inl (by linarith))
     hcov hdiag
@@ -237,13 +232,6 @@ theorem regularizedGMC_ball_inverse_moment_uniform_gamma
     have hexp7 : Real.exp (-t) ≤ 7 * ρ := by
       have h := Real.exp_le_exp.mpr (neg_le_neg htlog)
       rwa [Real.exp_neg (Real.log _), Real.exp_log (by positivity), one_div, inv_inv] at h
-    have hexp1 : Real.exp (-t) ≤ 1 / 2 := by
-      have h1 : Real.exp (-t) ≤ Real.exp (-1) := Real.exp_le_exp.mpr (by linarith)
-      have h2 : Real.exp (-1) ≤ 1 / 2 := by
-        rw [Real.exp_neg, inv_le_comm₀ (Real.exp_pos 1) (by norm_num)]
-        have := Real.add_one_le_exp (1 : ℝ)
-        linarith
-      linarith
     have hscale := regularizedGMC_local_ball_moment_scale P X hX γ Xc hXc 0 (s := ρ) (R := 1 / 8)
       (t := t) hρ hρ8 (by norm_num) (by norm_num) (by simp; linarith)
       (by
@@ -305,7 +293,6 @@ theorem equatorGFF_regularizedGMC_inverse_moment_uniform
   set ρ : ℝ := min ρ₀ (1 / 8) with hρdef
   have hρ : 0 < ρ := lt_min hρ₀ (by norm_num)
   have hρ8 : ρ ≤ 1 / 8 := min_le_right _ _
-  have hsub : Metric.ball z ρ ⊆ O := (Metric.ball_subset_ball (min_le_left _ _)).trans hballO
   obtain ⟨K, hK⟩ := regularizedGMC_ball_inverse_moment_uniform_gamma P X hX Xc hXc Γ hΓ hΓ2 q hq
     ρ hρ hρ8
   set R : ℝ := ‖z‖ + ρ with hRdef
@@ -323,7 +310,7 @@ theorem equatorGFF_regularizedGMC_inverse_moment_uniform
       ∫⁻ ω, (regularizedGMC P Xc γ r ω (Metric.ball z ρ)) ^ (-q) ∂P := by
     apply lintegral_mono
     intro ω
-    exact ennreal_rpow_antitone_of_nonpos (measure_mono hsub) (by linarith)
+    exact ennreal_rpow_antitone_of_nonpos (measure_mono ((Metric.ball_subset_ball (min_le_left _ _)).trans hballO)) (by linarith)
   -- transfer the ball to the origin
   have htr := cutoff_translate_moment_le P X hX Xc hXc γ r hr z 0 ρ R hR le_rfl (by simp [hRdef])
     (fun _ => 1) measurable_const 1 (fun _ => le_rfl) (-q)

@@ -32,11 +32,10 @@ theorem reverseJensen_measure_univ_le_holder
     ν Set.univ ≤
       (∫⁻ x, f x ∂ν) ^ (q / (q + 1)) * (∫⁻ x, (f x) ^ (-q) ∂ν) ^ (1 / (q + 1)) := by
   have hq1 : 0 < q + 1 := by linarith
-  have ha : 0 ≤ q / (q + 1) := div_nonneg hq.le hq1.le
   have hb : 0 ≤ 1 / (q + 1) := div_nonneg zero_le_one hq1.le
   have hab : q / (q + 1) + 1 / (q + 1) = 1 := by
     rw [← add_div, div_self hq1.ne']
-  have hH := ENNReal.lintegral_mul_norm_pow_le hf (hf.pow_const (-q)) ha hb hab
+  have hH := ENNReal.lintegral_mul_norm_pow_le hf (hf.pow_const (-q)) (div_nonneg hq.le hq1.le) hb hab
   have hone : ∀ᵐ x ∂ν, f x ^ (q / (q + 1)) * (f x ^ (-q)) ^ (1 / (q + 1)) = 1 := by
     filter_upwards [h0, htop] with x hx0 hxt
     rw [← ENNReal.rpow_mul, ← ENNReal.rpow_add _ _ hx0 hxt]
@@ -63,16 +62,14 @@ theorem reverseJensen_rearrange (N J I : ℝ≥0∞) (q : ℝ) (hq : 0 < q)
     rintro rfl
     rw [ENNReal.zero_rpow_of_pos (div_pos hq hq1), zero_mul] at h
     exact hN0 (le_zero_iff.mp h)
-  have hNq : N ^ (q + 1) ≠ 0 := (ENNReal.rpow_pos (pos_iff_ne_zero.mpr hN0) hNt).ne'
   have hNqt : N ^ (q + 1) ≠ ⊤ := ENNReal.rpow_ne_top_of_nonneg hq1.le hNt
-  have hJq : J ^ q ≠ 0 := (ENNReal.rpow_pos (pos_iff_ne_zero.mpr hJ0) hJt).ne'
   have hJqt : J ^ q ≠ ⊤ := ENNReal.rpow_ne_top_of_nonneg hq.le hJt
   rw [show -q - 1 = -(q + 1) by ring, ENNReal.rpow_neg, ENNReal.rpow_neg]
   calc (J ^ q)⁻¹ = (N ^ (q + 1))⁻¹ * N ^ (q + 1) * (J ^ q)⁻¹ := by
-        rw [ENNReal.inv_mul_cancel hNq hNqt, one_mul]
+        rw [ENNReal.inv_mul_cancel ((ENNReal.rpow_pos (pos_iff_ne_zero.mpr hN0) hNt).ne') hNqt, one_mul]
     _ ≤ (N ^ (q + 1))⁻¹ * (J ^ q * I) * (J ^ q)⁻¹ := by gcongr
     _ = (N ^ (q + 1))⁻¹ * I * (J ^ q * (J ^ q)⁻¹) := by ring
-    _ = (N ^ (q + 1))⁻¹ * I := by rw [ENNReal.mul_inv_cancel hJq hJqt, mul_one]
+    _ = (N ^ (q + 1))⁻¹ * I := by rw [ENNReal.mul_inv_cancel ((ENNReal.rpow_pos (pos_iff_ne_zero.mpr hJ0) hJt).ne') hJqt, mul_one]
 
 /-- Reverse Jensen for negative powers: for a finite nonzero measure, the `(-q)`-th power of the
 integral is at most `ν univ ^ (-q-1)` times the integral of the `(-q)`-th power. -/

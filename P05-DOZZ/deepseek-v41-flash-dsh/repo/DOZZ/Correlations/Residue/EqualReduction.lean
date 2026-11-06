@@ -44,7 +44,6 @@ theorem residue_unit_equal_of_twoInsertion_estimate
   let d₀ := min dT (min dR (γ * p))
   have hd₀ : 0 < d₀ := lt_min hdT (lt_min hdR (mul_pos hγ hp))
   have hdT' : d₀ ≤ dT := min_le_left _ _
-  have hdR' : d₀ ≤ dR := (min_le_right _ _).trans (min_le_left _ _)
   have hdβ : d₀ ≤ γ * p := (min_le_right _ _).trans (min_le_right _ _)
   let A : ℝ → Ω → ℝ≥0∞ := fun ε ω =>
     localSingularMass M (residueLocalWeight γ (2 * α + ε) α 7) 3 γ α ω +
@@ -94,7 +93,7 @@ theorem residue_unit_equal_of_twoInsertion_estimate
   have hsum := residue_extended_addition_preserves_limit P A R p γ d₀ (p + ρ)
     (2 * γ * p * (4 : ℝ) ^ (-(γ * α * p)) * Rbar) K hp hγ hd₀ hdβ
     (lt_add_of_pos_right _ hρ) hK (fun ε _ _ => hA ε) (fun ε _ _ => hR ε)
-    hAfin hiA (fun ε hε hεd => hKb ε hε (hεd.trans_le hdR')) hlimA
+    hAfin hiA (fun ε hε hεd => hKb ε hε (hεd.trans_le ((min_le_right _ _).trans (min_le_left _ _)))) hlimA
   have hatoms : ∀ᵐ ω ∂P, M ω {3} = 0 ∧ M ω {7} = 0 :=
     (gmc_atomless_at_root_of_isGMCOf P X hX γ hγ hγ2 M hM 3).and
       (gmc_atomless_at_root_of_isGMCOf P X hX γ hγ hγ2 M hM 7)

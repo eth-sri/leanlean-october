@@ -3,6 +3,7 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
+public import DOZZ.SharedHyp
 public import DOZZ.FourPoint.Dual.SourceRestartWilliams
 public import DOZZ.FourPoint.Dual.PolarFinitenessTransport
 import Mathlib.Tactic
@@ -17,8 +18,8 @@ real representative, follows from the supplied source chaos and reflection witne
 theorem dual_source_restarted_polar_finite_ae
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
     (Xc : Ω → ℂ → ℝ → ℝ) (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
-    (hcont : ∀ᵐ ω ∂P, Continuous (fun p : ℂ × ℝ => Xc ω p.1 p.2))
+    (hm : MeasurableCircleAvg Xc)
+    (hcont : ContinuousCircleAvg P Xc)
     (γ : ℝ) (hγ : 0 < γ) (hγ₂ : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
     (h α₁ α₂ α₃ ξ : ℝ) (hα₁ : α₁ < Q γ) (z : ℂ) (hz0 : z ≠ 0)
     (hz : ‖z‖ < ‖z‖^(1-ξ)) (T : ℝ≥0) (hT : (T : ℝ) = -Real.log ‖z‖+h)
@@ -42,8 +43,6 @@ theorem dual_source_restarted_polar_finite_ae
   have hs : Measurable (fun a => brownianShiftPath T (radialPositiveHalf a)) :=
     continuous_brownianShiftPath.measurable.comp
       (measurable_const.prodMk continuous_radialPositiveHalf.measurable)
-  have hDm : AEMeasurable D P := hs.comp_aemeasurable hA
-  have hDZ : IndepFun D Z P := hiZ.comp₀ hA hZ.2.2.2.1 hs.aemeasurable measurable_id.aemeasurable
   let Y := fun ω => (dual_radial_scale γ ν h Xc z ω,
     (dualOuterMass γ α₁ α₂ α₃ (M ω) z ξ).toReal)
   have hcoord := (hc.2.1 0 (-Real.log ‖z‖+h)).aemeasurable
@@ -56,7 +55,7 @@ theorem dual_source_restarted_polar_finite_ae
     (if 0 < t then ENNReal.ofReal (Real.exp (γ*(D ω.1 (Real.toNNReal t)-ν*t))) else 0)
       ∂(Z ω.2).map (fun s => s-(T : ℝ))
   have hVm : AEMeasurable V (P.prod P) :=
-    dual_translated_polar_mass_aemeasurable P D hDm γ ν Z hZ hDZ T
+    dual_translated_polar_mass_aemeasurable P D (hs.comp_aemeasurable hA) γ ν Z hZ (hiZ.comp₀ hA hZ.2.2.2.1 hs.aemeasurable measurable_id.aemeasurable) T
   let J := fun q : ℝ × Ω => ENNReal.ofReal (Real.exp (γ*q.1))*twoSidedReflectionCutMass γ q.1 B Z₀ q.2
   have hJm : AEMeasurable J R :=
     (measurable_fst.aemeasurable.const_mul γ).exp.ennreal_ofReal.mul

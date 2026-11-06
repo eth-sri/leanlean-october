@@ -126,8 +126,7 @@ theorem exists_wienerRadial_endpoint_profile : ∀ (n : ℕ)
     have haxis : Measurable (radialAxisVector : ℝ → EuclideanSpace ℝ (Fin 3)) := by
       apply (PiLp.continuous_toLp 2 _).measurable.comp
       exact measurable_pi_iff.mpr fun i => by split_ifs <;> fun_prop
-    have hv : Measurable v := (hf _).mul ((measurable_radialHeatConvolution dt u hu).comp haxis)
-    refine ⟨v, hv, ?_⟩
+    refine ⟨v, ((hf _).mul ((measurable_radialHeatConvolution dt u hu).comp haxis)), ?_⟩
     intro H hH
     let G := fun p : BrownianTriple × EuclideanSpace ℝ (Fin 3) =>
       (∏ i, fp i ‖wienerVectorEval (past i) p.1‖) * (f (Fin.last (n + 1)) ‖p.2‖ * H p.2)
@@ -194,8 +193,7 @@ theorem radialAngularFactor_nonneg (a r : ℝ) (hr : 0 ≤ r) : 0 ≤ radialAngu
   by_cases har : a * r = 0
   · simp only [radialAngularFactor, har, ite_true]; exact zero_le_one
   · have ha : a ≠ 0 := left_ne_zero_of_mul har
-    have hr' : r ≠ 0 := right_ne_zero_of_mul har
-    rw [radialAngularFactor_of_ne_zero a r ha hr', div_mul_eq_div_div]
+    rw [radialAngularFactor_of_ne_zero a r ha (right_ne_zero_of_mul har), div_mul_eq_div_div]
     exact div_nonneg (sinh_div_nonneg_longitudinal a r ha hr) hr
 
 /-- Cylindrical integration averages the longitudinal likelihood of any radial endpoint density. -/
@@ -222,9 +220,8 @@ theorem lintegral_radial_profile_angular (u : ℝ → ℝ≥0∞) (hu : Measurab
     congr 1
     apply setLIntegral_congr_fun measurableSet_Ioi
     intro r hr
-    have hrad : 0 ≤ radialAngularFactor a r := radialAngularFactor_nonneg a r hr.le
     dsimp only
-    rw [mul_assoc, ← ENNReal.ofReal_mul hrad]
+    rw [mul_assoc, ← ENNReal.ofReal_mul (radialAngularFactor_nonneg a r hr.le)]
     congr 2
     rw [radialAngularFactor_of_ne_zero a r ha hr.ne']
     field_simp
@@ -294,9 +291,8 @@ theorem wienerTriple_drift_stopped_lintegral (a : ℝ) (T : ℝ≥0) (hT : T ≠
   intro W
   let tail := fun i : Fin 2 => stopBrownianPath (W i) T
   let G := fun p : BrownianPath => F (e.symm (p, tail))
-  have hG : Measurable G := hF.comp (e.symm.measurable.comp (measurable_id.prodMk measurable_const))
   have hscalar := brownianFiniteTilt_stoppedPath_lintegral wienerPathMeasure
-    wienerPathMeasure_isBrownian.toIsPreBrownianReal a T hT G hG
+    wienerPathMeasure_isBrownian.toIsPreBrownianReal a T hT G (hF.comp (e.symm.measurable.comp (measurable_id.prodMk measurable_const)))
   have hstop (p : BrownianPath) : wienerTripleStop T (e.symm (p, W)) =
       e.symm (stopBrownianPath p T, tail) := by
     funext i

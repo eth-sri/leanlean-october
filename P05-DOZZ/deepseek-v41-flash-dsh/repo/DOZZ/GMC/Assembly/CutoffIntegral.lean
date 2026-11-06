@@ -288,8 +288,7 @@ theorem admissibleCutoffIntegral_L1_uniform_cauchy
       ∫⁻ ω, ENNReal.ofReal |admissibleCutoffIntegral P U dens Y g r f ω -
         admissibleCutoffIntegral P U dens Y g s f ω| ∂P < ENNReal.ofReal ε := by
   set L' := max L 0 with hL'def
-  have hL' : 0 ≤ L' := le_max_right _ _
-  obtain ⟨R₁, hR₁⟩ := chartMass_L1_uniform_cauchy P U dens ε₀ Y hY K hK hKU I hI hI2 L' hL'
+  obtain ⟨R₁, hR₁⟩ := chartMass_L1_uniform_cauchy P U dens ε₀ Y hY K hK hKU I hI hI2 L' (le_max_right _ _)
     (ε / 2) (by linarith)
   refine ⟨max R₁ (-Real.log ε₀), ?_⟩
   intro r s hr hs g hg f hf hfL hfK
@@ -408,7 +407,6 @@ theorem cutoffIntegrand_integrable
   refine ⟨(admissibleCutoff_integrand_measurable P U dens ε₀ Y hY g r f hf ω).aestronglyMeasurable,
     ?_⟩
   unfold HasFiniteIntegral
-  have hL : 0 ≤ L := (abs_nonneg _).trans (hfL 0)
   have hnorm : (fun x => ‖cutoffIntegrand P Y g r f ω x‖ₑ) = fun x => ENNReal.ofReal (|f x| *
       Real.exp (g * Y ω (Real.exp (-r)) x - g ^ 2 / 2 *
         ∫ ω', Y ω' (Real.exp (-r)) x ^ 2 ∂P)) := by

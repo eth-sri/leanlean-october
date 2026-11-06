@@ -81,9 +81,8 @@ theorem cdfGeneralizedQuantile_le_iff
         exact (not_lt_of_ge hy) (lt_of_le_of_lt hmono hlt)
       have he : 0 < 1 / ((n : ℝ) + 1) := by positivity
       linarith
-    have hclosed : IsClosed (Set.Ici u) := isClosed_Ici
     have hlimit : F x ∈ Set.Ici u :=
-      hclosed.mem_of_tendsto hFseq (Filter.Eventually.of_forall hvalues)
+      (isClosed_Ici).mem_of_tendsto hFseq (Filter.Eventually.of_forall hvalues)
     exact hlimit
   · intro hux
     exact csInf_le hbounded hux

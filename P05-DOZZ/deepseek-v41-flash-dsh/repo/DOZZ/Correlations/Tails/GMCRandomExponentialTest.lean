@@ -63,14 +63,12 @@ theorem gmc_correlated_exponential_test_limit
   obtain ⟨R, hRs⟩ : ∃ R : ℝ, tsupport (f : ℂ → ℝ) ⊆ Metric.closedBall (0 : ℂ) R :=
     hfc.isBounded.subset_closedBall 0
   let R' := max R 0
-  have hR' : 0 ≤ R' := le_max_right _ _
   let K := Metric.closedBall (0 : ℂ) R'
-  have hK : IsCompact K := isCompact_closedBall _ _
   have hFK (t : ℝ) : tsupport (exponentialParameterTest f c t : ℂ → ℝ) ⊆ K :=
     (exponential_parameter_test_support f c t).trans
       (hRs.trans (Metric.closedBall_subset_closedBall (le_max_left _ _)))
   obtain ⟨C, hC, hcut, hlim⟩ := regularized_mass_envelope_uniform
-    P X hX Xc hc γ R' hγ hγ2 hR' M hM E hE.aemeasurable p q hpq hqc hEp
+    P X hX Xc hc γ R' hγ hγ2 (le_max_right _ _) M hM E hE.aemeasurable p q hpq hqc hEp
   obtain ⟨M', hM'm, hM'f, hM'e⟩ := equatorGFF_GMC_measurable_version P X hX γ hγ hγ2 M hM
   have hversions (n : ℕ) := exists_everywhere_finite_measure_version P
     (regularizedGMC P Xc γ n) (regularizedGMC_measurable P X hX Xc hc γ n)
@@ -111,7 +109,7 @@ theorem gmc_correlated_exponential_test_limit
       rw [hω]
     rw [lintegral_congr_ae heq]
     exact hlim
-  have h := tendstoInMeasure_parameter_integral P N M' hNm hM'm K hK hNmK hM'mK
+  have h := tendstoInMeasure_parameter_integral P N M' hNm hM'm K (isCompact_closedBall _ _) hNmK hM'mK
     (exponentialParameterTest f c) (exponential_parameter_test_measurable f c)
       hFK θ hθ hconv Lcoef (fun t => by dsimp [Lcoef]; positivity)
         (fun t u htu x _ => exponential_parameter_test_lipschitz f c t u htu x)

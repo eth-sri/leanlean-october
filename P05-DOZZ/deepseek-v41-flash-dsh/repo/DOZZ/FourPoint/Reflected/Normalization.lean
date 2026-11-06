@@ -3,6 +3,7 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
+public import DOZZ.SharedHyp
 
 public import DOZZ.Statements.FourPoint.FourPointT
 public import DOZZ.Statements.FourPoint.GammaHalfMoment
@@ -59,7 +60,7 @@ theorem reflected_prefactor_cancel (γ μ p R C : ℝ) (hγ : 0 < γ)
 theorem reflected_inner_coefficient_eq {Ω : Type*} [MeasurableSpace Ω]
     (P : Measure Ω) (M : Ω → Measure ℂ) (B : Ω → BrownianPath × BrownianPath)
     (Z : Ω → Measure ℝ) (γ μ α₁ α₂ α₃ : ℝ) (hγ : 0 < γ) (hμ : 0 < μ)
-    (hs : 2 * Q γ + γ / 2 < α₁ + α₂ + α₃) :
+    (hs : SeibergSlack γ α₁ α₂ α₃) :
     let p := (α₁ + α₂ + α₃ - γ / 2 - 2 * Q γ) / γ
     let a := reflectionExponent γ α₁
     (a * Real.Gamma (-a) * Real.Gamma (p + a) / Real.Gamma p) *
@@ -70,7 +71,6 @@ theorem reflected_inner_coefficient_eq {Ω : Type*} [MeasurableSpace Ω]
   dsimp only
   let p := (α₁ + α₂ + α₃ - γ / 2 - 2 * Q γ) / γ
   let a := reflectionExponent γ α₁
-  have hp : 0 < p := div_pos (by linarith only [hs]) hγ
   have horder : sExp γ (2 * Q γ - α₁ - γ / 2) α₂ α₃ = p + a := by
     unfold sExp
     exact reflected_zero_mode_order γ α₁ α₂ α₃
@@ -90,7 +90,7 @@ theorem reflected_inner_coefficient_eq {Ω : Type*} [MeasurableSpace Ω]
         (∫⁻ ω, rho γ (M ω) (2 * Q γ - α₁ - γ / 2) α₂ α₃ ^ (-(p + a)) ∂P).toReal)
   have hpow : μ ^ p * μ ^ a * μ ^ (-(p + a)) = 1 := by
     rw [← Real.rpow_add hμ, ← Real.rpow_add hμ, add_neg_cancel, Real.rpow_zero]
-  have hΓ : Real.Gamma p ≠ 0 := (Real.Gamma_pos_of_pos hp).ne'
+  have hΓ : Real.Gamma p ≠ 0 := (Real.Gamma_pos_of_pos (div_pos (by linarith only [hs]) hγ)).ne'
   have hγne : γ ≠ 0 := hγ.ne'
   field_simp
   linear_combination -(a * Real.Gamma (-a) * Real.Gamma (p + a) *

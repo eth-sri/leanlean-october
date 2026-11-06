@@ -46,9 +46,8 @@ theorem integral_poissonCollarTest_mul_polar (c z : ℂ) (ρ ε : ℝ) (hρ : 0 
         (∫ v, unitPoissonWeight c ρ z v*h (c+u • v) ∂circleMeasure 0 0) := by
   let p := poissonCollarTest c z ρ ε hρ hz q hq hqs
   let F (w : ℂ) := p (c+w)*h (c+w)
-  have hFm : Measurable F := (p.continuous.measurable.mul hh).comp (by fun_prop)
   have hFi : Integrable F := hi.comp_add_left c
-  have hp := integrable_polarJacobian hFm hFi
+  have hp := integrable_polarJacobian ((p.continuous.measurable.mul hh).comp (by fun_prop)) hFi
   have ht : (volume : Measure (ℝ × ℝ)).restrict Complex.polarCoord.target =
       (volume.restrict (Ioi (0 : ℝ))).prod (volume.restrict (Ioo (-Real.pi) Real.pi)) := by
     rw [Complex.polarCoord_target, Measure.prod_restrict, Measure.volume_eq_prod]

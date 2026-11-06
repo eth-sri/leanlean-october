@@ -54,13 +54,12 @@ theorem mixed_coulomb_holomorphic
     exact ⟨S, hS, he.1, he.2⟩
   choose S hS hd hlim using hlocal
   let V := ⋃ α : D, complexPolydisc (fun i => (α.val i : ℂ)) (S α)
-  have hV : IsOpen V := isOpen_iUnion (fun α => isOpen_complexPolydisc _ _)
   have hmem (α : Fin (N + 1) → ℝ) (ha : ∀ i, α i < Q γ)
       (hp : (2 * Q γ - ∑ i, α i) / γ < 4 / γ ^ 2)
       (hpi : ∀ i, (2 * Q γ - ∑ j, α j) / γ < 2 / γ * (Q γ - α i)) :
       (fun i => (α i : ℂ)) ∈ V :=
     mem_iUnion.mpr ⟨⟨α, ha, hp, hpi⟩, mem_complexPolydisc_center _ _ (hS _)⟩
-  refine ⟨V, hV, hmem, f, ?_, ?_⟩
+  refine ⟨V, (isOpen_iUnion (fun α => isOpen_complexPolydisc _ _)), hmem, f, ?_, ?_⟩
   · intro β hβ
     obtain ⟨α, hα⟩ := mem_iUnion.mp hβ
     exact ((hd α).differentiableAt ((isOpen_complexPolydisc _ _).mem_nhds hα)).differentiableWithinAt

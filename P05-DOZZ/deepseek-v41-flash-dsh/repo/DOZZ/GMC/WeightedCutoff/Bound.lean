@@ -26,13 +26,11 @@ theorem equatorGFF_GMC_weighted_cutoff_bound
           (γ * (Q γ - t.1) * t.2 - γ ^ 2 * t.2 ^ 2 / 2)) := by
   have hΓ2 : {γ} ⊆ Set.Ioo (0 : ℝ) 2 := by
     intro g hg
-    have hg' : g = γ := Set.mem_singleton_iff.mp hg
     subst g
     exact ⟨hγ, hγ2⟩
   have hadm : ∀ g ∈ ({γ} : Set ℝ), ∀ t ∈ T, t.1 < Q g ∧ 0 < t.2 ∧
       t.2 < min (4 / g ^ 2) (2 / g * (Q g - t.1)) := by
     intro g hg
-    have hg' : g = γ := Set.mem_singleton_iff.mp hg
     subst g
     exact hTadm
   obtain ⟨C, hC, hbound⟩ := equatorGFF_GMC_weighted_cutoff_bound_uniform_gamma

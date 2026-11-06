@@ -39,11 +39,10 @@ theorem exists_uniform_holomorphic_disks_along_path
     Metric.exists_isOpen_isBounded_image_of_isCompact_of_continuousOn
       hK hU hKU hH.continuousOn
   let W := V ∩ U
-  have hWopen : IsOpen W := hVopen.inter hU
   have hKW : K ⊆ W := by
     intro z hz
     exact ⟨hKV hz, hKU hz⟩
-  obtain ⟨δ, hδ, hδW⟩ := hK.exists_cthickening_subset_open hWopen hKW
+  obtain ⟨δ, hδ, hδW⟩ := hK.exists_cthickening_subset_open (hVopen.inter hU) hKW
   let r := δ / 2
   obtain ⟨B, hB⟩ := hVbounded.subset_closedBall (H (γ 0))
   let M := max 0 (B + ‖H (γ 0)‖)
@@ -57,9 +56,8 @@ theorem exists_uniform_holomorphic_disks_along_path
     have hdist : dist z (γ t) < r := Metric.mem_ball.mp hz
     have hrδ : r ≤ δ := by dsimp [r]; linarith
     exact hdist.le.trans hrδ
-  have hballU : Metric.ball (γ t) r ⊆ U := fun _ hz => (hballW hz).2
   have hballV : Metric.ball (γ t) r ⊆ V := fun _ hz => (hballW hz).1
-  refine ⟨hH.mono hballU, ?_⟩
+  refine ⟨hH.mono (fun _ hz => (hballW hz).2), ?_⟩
   intro z hz
   have hzV := hballV hz
   have hdist := hB ⟨z, hzV, rfl⟩

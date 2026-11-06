@@ -92,14 +92,13 @@ theorem bpz_momField1_near {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω}
         s * (2 * a) * N ω := by
     filter_upwards [hgood, hnear] with ω hω hn
     obtain ⟨hzm, hY, hYI, hintz⟩ := hω
-    have hJ : 0 < bpzSoftMassReal a ε w (M ω) z := hY.trans_le hYI
     have hDf : ‖bpzSoftMassDeriv a ε far (M ω) z‖ ≤ 4 * a / r * bpzSoftMassReal a ε w (M ω) z :=
       norm_bpzSoftMassDeriv_far_le ha hw0 hr hz hintz
     refine ⟨norm_bpzMomentField_le hs hY hYI (by positivity) hDf, ?_⟩
     have hdec := bpzSoftMassDeriv_eq_near_add_far (ε := ε) ha ha1 hw hw0 hr hz hzm hintz hn
     have hDn := norm_bpzSoftMassDeriv_le_near (ε := ε) ha ha1 (bpz_nearPart_nonneg hw0 z₀ r)
       hzm hn
-    have h := bpz_mom1_sub_le hs hJ hdec hDn
+    have h := bpz_mom1_sub_le hs (hY.trans_le hYI) hdec hDn
     unfold bpzMomField1
     refine h.trans (le_of_eq ?_)
     simp only [hN]
@@ -174,7 +173,6 @@ theorem bpz_momField2_near {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω}
         (4 * a ^ 2 * s * (s + 1) + s * K₂) * N₂ ω + 16 * a ^ 2 * s * (s + 1) / r * N₁ ω := by
     filter_upwards [hgood, hnear1, hnear2] with ω hω hn1 hn2
     obtain ⟨hzm, hY, hYI, hintz⟩ := hω
-    have hJ : 0 < bpzSoftMassReal a ε w (M ω) z := hY.trans_le hYI
     have hDf : ‖bpzSoftMassDeriv a ε far (M ω) z‖ ≤ 4 * a / r * bpzSoftMassReal a ε w (M ω) z :=
       norm_bpzSoftMassDeriv_far_le ha hw0 hr hz hintz
     have hD2f : ‖bpzSoftMassDeriv2 a ε far (M ω) z‖ ≤
@@ -202,7 +200,7 @@ theorem bpz_momField2_near {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω}
             mul_le_mul_of_nonneg_left hCS (by positivity)
         _ ≤ 4 * a ^ 2 * (bpzSoftMassReal a ε w (M ω) z * n₂) := by gcongr
         _ = bpzSoftMassReal a ε w (M ω) z * (4 * a ^ 2 * n₂) := by ring
-    have h := bpz_mom2_sub_le hs hJ hdec hdec2 hDn hDf hut hD2n
+    have h := bpz_mom2_sub_le hs (hY.trans_le hYI) hdec hdec2 hDn hDf hut hD2n
     unfold bpzMomField2
     refine h.trans (le_of_eq ?_)
     simp only [hN₁, hN₂, hK₂]
@@ -228,8 +226,6 @@ theorem bpz_momField2_near {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω}
       _ ≤ _ := norm_add_le _ _
       _ ≤ _ := add_le_add h.2 h.1
   refine ⟨hFint, hGint, ?_, hpath.mono fun ω h => h.1⟩
-  have hc1 : 0 ≤ 4 * a ^ 2 * s * (s + 1) + s * K₂ := by positivity
-  have hc2 : 0 ≤ 16 * a ^ 2 * s * (s + 1) / r := by positivity
   calc ∫ ω, ‖bpzMomField2 a s ε w w (M ω) z - bpzMomField2 a s ε w far (M ω) z‖ ∂P
       ≤ ∫ ω, ((4 * a ^ 2 * s * (s + 1) + s * K₂) * N₂ ω +
           16 * a ^ 2 * s * (s + 1) / r * N₁ ω) ∂P :=

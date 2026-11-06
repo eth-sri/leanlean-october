@@ -61,8 +61,6 @@ theorem goodPart_ofReal_abs_le (μr μ : Measure ℂ) [IsFiniteMeasure μr] [IsF
           ∫ x, Good.indicator (fun x => (F x).toReal) x ∂μ| := by
   have hGr := goodPart_lintegral_toReal_eq μr Good hGood G hG L (fun x hx hx0 =>
     (hbound x hx hx0).1) h0r
-  have hFr := goodPart_lintegral_toReal_eq μr Good hGood F hF L (fun x hx hx0 =>
-    (hbound x hx hx0).2.1) h0r
   have hF0 := goodPart_lintegral_toReal_eq μ Good hGood F hF L (fun x hx hx0 =>
     (hbound x hx hx0).2.1) h0
   have hGi := goodPart_integrableOn μr Good hGood G hG L (fun x hx hx0 => (hbound x hx hx0).1) h0r

@@ -174,7 +174,6 @@ theorem weightedGmcBallMoment_le_of_cutoff
       ∫⁻ ω, ENNReal.rpow (cutoffWeightedGmcBallMass P Xc γ α z ρ δ ω) t ∂P ≤ C) :
     weightedGmcBallMoment P M γ α z ρ t ≤ C := by
   have he : -γ * α ≤ 0 := by linarith [mul_nonneg hγ.le hα]
-  have hB : MeasurableSet (Metric.ball z ρ) := Metric.isOpen_ball.measurableSet
   set ε : ℕ → ℝ := fun m => ρ * (1 / ((m : ℝ) + 1)) with hεdef
   have hεpos : ∀ m, 0 < ε m := fun m => mul_pos hρ (by positivity)
   have hεle : ∀ m, ε m ≤ ρ := fun m => by
@@ -200,7 +199,7 @@ theorem weightedGmcBallMoment_le_of_cutoff
     refine lintegral_tendsto_of_tendsto_of_monotone (fun m => ?_)
       (Eventually.of_forall fun ω m m' hmm' => ?_) (Eventually.of_forall fun ω => ?_)
     · exact (gmc_setLIntegral_aemeasurable P X hX γ hγ hγ2 M hM _
-        (limitWeightedFatou_ofReal_weight_measurable z _ _) _ hB).pow_const t
+        (limitWeightedFatou_ofReal_weight_measurable z _ _) _ (Metric.isOpen_ball.measurableSet)).pow_const t
     · exact ENNReal.rpow_le_rpow (limitWeightedFatou_mass_mono (M ω) z ρ _ he (hεpos m')
         (hεanti hmm')) ht.le
     · exact (limitWeightedFatou_mass_tendsto (M ω) γ α hγ hα z ρ hεpos hεanti hε0).ennrpow_const t

@@ -3,6 +3,7 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
+public import DOZZ.SharedHyp
 public import DOZZ.GFFStructure.DirichletResidual
 public import Mathlib.Analysis.Normed.Lp.SmoothApprox
 public import Mathlib.Analysis.Normed.Operator.Extend
@@ -66,8 +67,7 @@ theorem exists_interior_test_restriction_approx (c : ℂ) (ρ : ℝ) (hρ : 0 < 
     simpa only [d,sub_zero] using (tendsto_const_nhds.sub hr :
       Tendsto (fun j : ℕ => ρ-ρ/((j : ℝ)+2)) atTop (𝓝 (ρ-0)))
   let μ := volume.restrict (ball c ρ)
-  have hfi : MemLp (f : ℂ → ℝ) 2 μ := f.continuous.memLp_of_hasCompactSupport f.hasCompactSupport
-  have hib : Integrable (fun z => (f z)^2) μ := hfi.integrable_sq
+  have hib : Integrable (fun z => (f z)^2) μ := (f.continuous.memLp_of_hasCompactSupport f.hasCompactSupport).integrable_sq
   have hv : Tendsto (fun j => ∫ z, (g j z-f z)^2 ∂μ) atTop (𝓝 0) := by
     have heq : (∫ z, (0 : ℝ) ∂μ) = 0 := by simp only [integral_zero]
     rw [← heq]
@@ -84,9 +84,8 @@ theorem exists_interior_test_restriction_approx (c : ℂ) (ρ : ℝ) (hρ : 0 < 
       change (B j z*f z-f z)^2 ≤ (f z)^2
       nlinarith [hh]
     · filter_upwards [ae_restrict_mem measurableSet_ball] with z hz
-      have he : ∀ᶠ j in atTop, ‖z-c‖ < d j := hlim.eventually (Ioi_mem_nhds (mem_ball_iff_norm.mp hz))
       apply tendsto_const_nhds.congr'
-      filter_upwards [he] with j hj
+      filter_upwards [(hlim.eventually (Ioi_mem_nhds (mem_ball_iff_norm.mp hz)))] with j hj
       have hB : B j z = 1 := (B j).one_of_mem_closedBall (mem_closedBall_iff_norm.mpr hj.le)
       change (0 : ℝ) = (B j z*f z-f z)^2
       rw [hB,one_mul,sub_self,zero_pow (by norm_num : (2 : ℕ) ≠ 0)]
@@ -202,7 +201,7 @@ noncomputable def exteriorPinnedTestL2LinearMap {Ω : Type*} [MeasurableSpace Ω
 /-- Harmonic test integration is linear on the interior test subspace. -/
 noncomputable def poissonInteriorTestIntegralLinearMap {Ω : Type*} [MeasurableSpace Ω]
     (P : Measure Ω) (c : ℂ) (ρ : ℝ) (V : Ω → ℂ → ℝ)
-    (hV : ∀ z ∈ ball c ρ, MemLp (fun ω => V ω z) 2 P)
+    (hV : MemLpBall P V c ρ)
     (hU : ContinuousOn (poissonFamilyL2 P c ρ V hV) (ball c ρ)) :
     diskInteriorTestSpace c ρ →ₗ[ℝ] Lp ℝ 2 P where
   toFun := fun f => poissonTestIntegralL2 P c ρ V hV f.1
@@ -220,7 +219,7 @@ noncomputable def dirichletInteriorResidualLinearMap {Ω : Type*} [MeasurableSpa
     (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
     (c : ℂ) (R ρ : ℝ) (hR : 0 < R) (V : Ω → ℂ → ℝ)
-    (hV : ∀ z ∈ ball c ρ, MemLp (fun ω => V ω z) 2 P)
+    (hV : MemLpBall P V c ρ)
     (hU : ContinuousOn (poissonFamilyL2 P c ρ V hV) (ball c ρ)) :
     diskInteriorTestSpace c ρ →ₗ[ℝ] Lp ℝ 2 P :=
   (exteriorPinnedTestL2LinearMap P X Xc hX hc R hR).comp (diskInteriorTestSpace c ρ).subtype-
@@ -231,7 +230,7 @@ noncomputable def dirichletCompletedL2Map {Ω : Type*} [MeasurableSpace Ω]
     (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
     (c : ℂ) (R ρ : ℝ) (hR : 0 < R) (V : Ω → ℂ → ℝ)
-    (hV : ∀ z ∈ ball c ρ, MemLp (fun ω => V ω z) 2 P)
+    (hV : MemLpBall P V c ρ)
     (hU : ContinuousOn (poissonFamilyL2 P c ρ V hV) (ball c ρ)) :
     Lp ℝ 2 (volume.restrict (ball c ρ)) →L[ℝ] Lp ℝ 2 P :=
   (dirichletInteriorResidualLinearMap P X Xc hX hc c R ρ hR V hV hU).extendOfNorm
@@ -247,12 +246,10 @@ theorem dirichletInteriorResidualLinearMap_bound {Ω : Type*} [MeasurableSpace �
     (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
     (c : ℂ) (R ρ ε : ℝ) (hR : 1 < R) (hρ : 0 < ρ) (hε : 0 < ε) (hpin : ‖c‖+ρ ≤ R)
-    (V : Ω → ℂ → ℝ) (hV : ∀ z ∈ ball c ρ, MemLp (fun ω => V ω z) 2 P)
-    (hmean : ∀ z ∈ ball c ρ, (∫ ω, V ω z ∂P) = 0)
+    (V : Ω → ℂ → ℝ) (hV : MemLpBall P V c ρ)
+    (hmean : MeanZeroBall P V c ρ)
     (hU : ContinuousOn (poissonFamilyL2 P c ρ V hV) (ball c ρ))
-    (hcov : ∀ z w, z ∈ ball c ρ → w ∈ ball c ρ →
-      covariance (fun ω => V ω z) (fun ω => V ω w) P = Real.log R+Real.log ρ-
-        Real.log ‖(ρ : ℂ)^2-(z-c)*star (w-c)‖)
+    (hcov : CovarianceBall P V c ρ R)
     (hlim : ∀ z (hz : z ∈ ball c ρ), Tendsto (fun k => eLpNorm
       (fun ω => exteriorPinnedEvaluation X Xc R (by linarith) ω
         (canonicalPoissonCollarTest c z ρ ε hρ hε hz k)-V ω z) 2 P) atTop (𝓝 0))
@@ -261,7 +258,6 @@ theorem dirichletInteriorResidualLinearMap_bound {Ω : Type*} [MeasurableSpace �
       diskGreenCompletionConstant c ρ hρ*‖diskTestRestrictionL2 c ρ f.1‖ := by
   let K := (∫ p : ℂ × ℂ, ‖diskGreenKernel c ρ hρ p.1 p.2‖^2
     ∂((volume.restrict (ball c ρ)).prod (volume.restrict (ball c ρ))))^(1/2 : ℝ)
-  have hK : 0 ≤ K := Real.rpow_nonneg (integral_nonneg (fun _ => sq_nonneg _)) _
   have h := dirichletResidualL2_norm_sq_le P X Xc hX hc c R ρ ε hR hρ hε hpin V hV hmean hU hcov hlim f.1 f.2
   have hfNorm : (∫ z in ball c ρ, ‖f.1 z‖^2) = ‖diskTestRestrictionL2 c ρ f.1‖^2 := by
     rw [diskTestRestrictionL2_norm_sq]
@@ -270,7 +266,7 @@ theorem dirichletInteriorResidualLinearMap_bound {Ω : Type*} [MeasurableSpace �
   change ‖dirichletResidualL2 P X Xc hX hc c R ρ (by linarith) V hV f.1‖ ≤
     Real.sqrt K*‖diskTestRestrictionL2 c ρ f.1‖
   apply (sq_le_sq₀ (norm_nonneg _) (mul_nonneg (Real.sqrt_nonneg K) (norm_nonneg _))).mp
-  rw [mul_pow,Real.sq_sqrt hK]
+  rw [mul_pow,Real.sq_sqrt (Real.rpow_nonneg (integral_nonneg (fun _ => sq_nonneg _)) _)]
   exact h
 
 /-- The bounded completion equals the actual residual on every compact interior test. -/
@@ -278,12 +274,10 @@ theorem dirichletCompletedL2Map_apply_interior {Ω : Type*} [MeasurableSpace Ω]
     (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
     (c : ℂ) (R ρ ε : ℝ) (hR : 1 < R) (hρ : 0 < ρ) (hε : 0 < ε) (hpin : ‖c‖+ρ ≤ R)
-    (V : Ω → ℂ → ℝ) (hV : ∀ z ∈ ball c ρ, MemLp (fun ω => V ω z) 2 P)
-    (hmean : ∀ z ∈ ball c ρ, (∫ ω, V ω z ∂P) = 0)
+    (V : Ω → ℂ → ℝ) (hV : MemLpBall P V c ρ)
+    (hmean : MeanZeroBall P V c ρ)
     (hU : ContinuousOn (poissonFamilyL2 P c ρ V hV) (ball c ρ))
-    (hcov : ∀ z w, z ∈ ball c ρ → w ∈ ball c ρ →
-      covariance (fun ω => V ω z) (fun ω => V ω w) P = Real.log R+Real.log ρ-
-        Real.log ‖(ρ : ℂ)^2-(z-c)*star (w-c)‖)
+    (hcov : CovarianceBall P V c ρ R)
     (hlim : ∀ z (hz : z ∈ ball c ρ), Tendsto (fun k => eLpNorm
       (fun ω => exteriorPinnedEvaluation X Xc R (by linarith) ω
         (canonicalPoissonCollarTest c z ρ ε hρ hε hz k)-V ω z) 2 P) atTop (𝓝 0))
@@ -312,12 +306,10 @@ theorem dirichletCompletedL2Map_mem_gaussianHilbertSpan {Ω : Type*} [Measurable
     (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
     (c : ℂ) (R ρ ε : ℝ) (hR : 1 < R) (hρ : 0 < ρ) (hε : 0 < ε) (hpin : ‖c‖+ρ ≤ R)
-    (V : Ω → ℂ → ℝ) (hV : ∀ z ∈ ball c ρ, MemLp (fun ω => V ω z) 2 P)
-    (hmean : ∀ z ∈ ball c ρ, (∫ ω, V ω z ∂P) = 0)
+    (V : Ω → ℂ → ℝ) (hV : MemLpBall P V c ρ)
+    (hmean : MeanZeroBall P V c ρ)
     (hU : ContinuousOn (poissonFamilyL2 P c ρ V hV) (ball c ρ))
-    (hcov : ∀ z w, z ∈ ball c ρ → w ∈ ball c ρ →
-      covariance (fun ω => V ω z) (fun ω => V ω w) P = Real.log R+Real.log ρ-
-        Real.log ‖(ρ : ℂ)^2-(z-c)*star (w-c)‖)
+    (hcov : CovarianceBall P V c ρ R)
     (hlim : ∀ z (hz : z ∈ ball c ρ), Tendsto (fun k => eLpNorm
       (fun ω => exteriorPinnedEvaluation X Xc R (by linarith) ω
         (canonicalPoissonCollarTest c z ρ ε hρ hε hz k)-V ω z) 2 P) atTop (𝓝 0))
@@ -340,12 +332,10 @@ theorem dirichletCompletedL2Map_isGaussianProcess {Ω : Type*} [MeasurableSpace 
     (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
     (c : ℂ) (R ρ ε : ℝ) (hR : 1 < R) (hρ : 0 < ρ) (hε : 0 < ε) (hpin : ‖c‖+ρ ≤ R)
-    (V : Ω → ℂ → ℝ) (hV : ∀ z ∈ ball c ρ, MemLp (fun ω => V ω z) 2 P)
-    (hmean : ∀ z ∈ ball c ρ, (∫ ω, V ω z ∂P) = 0)
+    (V : Ω → ℂ → ℝ) (hV : MemLpBall P V c ρ)
+    (hmean : MeanZeroBall P V c ρ)
     (hU : ContinuousOn (poissonFamilyL2 P c ρ V hV) (ball c ρ))
-    (hcov : ∀ z w, z ∈ ball c ρ → w ∈ ball c ρ →
-      covariance (fun ω => V ω z) (fun ω => V ω w) P = Real.log R+Real.log ρ-
-        Real.log ‖(ρ : ℂ)^2-(z-c)*star (w-c)‖)
+    (hcov : CovarianceBall P V c ρ R)
     (hlim : ∀ z (hz : z ∈ ball c ρ), Tendsto (fun k => eLpNorm
       (fun ω => exteriorPinnedEvaluation X Xc R (by linarith) ω
         (canonicalPoissonCollarTest c z ρ ε hρ hε hz k)-V ω z) 2 P) atTop (𝓝 0)) :

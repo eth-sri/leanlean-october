@@ -51,7 +51,6 @@ theorem equatorGFF_GMC_bounded_mass_l1_of_uniform_L1
     intro η hη
     have hη' : η = γ := by simpa [I] using hη
     simpa [hη'] using ⟨hγ, hγ2⟩
-  have hK : IsCompact K := isCompact_closedBall _ _
   have hMfam : ∀ η ∈ Set.Ioo (0 : ℝ) 2, IsGMCOf P X η (Mfam η) := by
     intro η hη
     dsimp [Mfam]
@@ -62,7 +61,6 @@ theorem equatorGFF_GMC_bounded_mass_l1_of_uniform_L1
   have hUnique : ∀ᵐ ω ∂P, M ω = Mfam γ ω :=
     equatorGFF_GMC_unique_ae P X hX γ M (Mfam γ) hM (hMfam γ hγinterval)
   let fA : ℂ → ℝ := A.indicator (fun _ => (1 : ℝ))
-  have hfA : Measurable fA := measurable_const.indicator hA
   have hfBound : ∀ x, |fA x| ≤ 1 := by
     intro x
     by_cases hx : x ∈ A <;> simp [fA, hx]
@@ -86,7 +84,7 @@ theorem equatorGFF_GMC_bounded_mass_l1_of_uniform_L1
         |∫ x, f x ∂regularizedGMC P Xc η r ω - ∫ x, f x ∂Mfam η ω| ∂P
   have hS : Tendsto S atTop (𝓝 0) := by
     simpa [S, I, K] using equatorGFF_GMC_uniform_L1 P X hX Xc hXc Mfam hMfam
-      I hI hI2 K hK 1
+      I hI hI2 K (isCompact_closedBall _ _) 1
   have hbound (r : ℝ) :
       ∫⁻ ω, ENNReal.ofReal
         |(regularizedGMC P Xc γ r ω A).toReal - (M ω A).toReal| ∂P ≤ S r := by
@@ -109,7 +107,7 @@ theorem equatorGFF_GMC_bounded_mass_l1_of_uniform_L1
     refine le_iSup_of_le γ ?_
     refine le_iSup_of_le (show γ ∈ I by simp [I]) ?_
     refine le_iSup_of_le fA ?_
-    refine le_iSup_of_le hfA ?_
+    refine le_iSup_of_le (measurable_const.indicator hA) ?_
     refine le_iSup_of_le hfBound ?_
     exact le_iSup_of_le hfSupport le_rfl
   exact tendsto_of_tendsto_of_tendsto_of_le_of_le tendsto_const_nhds hS

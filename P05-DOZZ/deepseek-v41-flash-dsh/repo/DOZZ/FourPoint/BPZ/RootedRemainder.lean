@@ -216,15 +216,13 @@ theorem bpzRR_majorant_bound {Ω : Type*} [MeasurableSpace Ω]
   obtain ⟨C₁, hC₁, hball⟩ := bpzRR_planar_ball_bound γ α₁ α₂ α₃ hγ hlo hα₁
   refine ⟨64 * (Ce + C₀ * C₁), by positivity, ?_⟩
   intro w hw hw4
-  have hn : 0 < ‖w‖ := norm_pos_iff.mpr hw
   have hexp : γ ^ 2 / 2 - γ * α₁ ≤ 0 := by
     have h := mul_lt_mul_of_pos_left hlo hγ
     linarith only [h]
   have hpow : 1 ≤ ‖w‖ ^ (γ ^ 2 / 2 - γ * α₁) := by
     simpa only [Real.rpow_zero] using
-      Real.rpow_le_rpow_of_exponent_ge hn (hw4.trans (by norm_num)) hexp
+      Real.rpow_le_rpow_of_exponent_ge (norm_pos_iff.mpr hw) (hw4.trans (by norm_num)) hexp
   let Y : ℝ := (Ce + C₀ * C₁) * ‖w‖ ^ (γ ^ 2 / 2 - γ * α₁)
-  have hY : 0 ≤ Y := by positivity
   have h0 : gammaHalfTwoRootedMajorantOn P M γ α₁ α₂ α₃ p w
       (Metric.ball (0 : ℂ) (1 / 2))ᶜ ≤ ENNReal.ofReal Y := by
     refine (hext w hw4).trans (ENNReal.ofReal_le_ofReal ?_)
@@ -363,13 +361,12 @@ theorem bpzRR_oneRooted_pure_time_integrable {Ω : Type*} [MeasurableSpace Ω]
       F ((t : ℂ) * z) = L ((t : ℂ) * z) + E ((t : ℂ) * z) := by
     filter_upwards [ae_restrict_mem measurableSet_Icc,
       ae_restrict_of_ae (Measure.ae_ne volume (0 : ℝ))] with t ht ht0
-    have htz : (t : ℂ) * z ≠ 0 := mul_ne_zero (Complex.ofReal_ne_zero.mpr ht0) hz
     have htz4 : ‖(t : ℂ) * z‖ ≤ 1 / 4 := by
       rw [norm_mul, Complex.norm_real, Real.norm_of_nonneg ht.1]
       exact (mul_le_of_le_one_left (norm_nonneg _) ht.2).trans hz4
     simpa only [F, L, E, fusionPureSpatial, Measure.restrict_univ] using
       fusion_pureSpatial_expectation_split P X hX γ hγ hγ2 M hM α₁ α₂ α₃ hβ hα₁ hα₂ hα₃ p hp
-        ((t : ℂ) * z) htz htz4
+        ((t : ℂ) * z) (mul_ne_zero (Complex.ofReal_ne_zero.mpr ht0) hz) htz4
   refine (hL.add hE).congr ?_
   filter_upwards [hsplit] with t ht
   show ((1 - t : ℝ) : ℂ) * L ((t : ℂ) * z) + ((1 - t : ℝ) : ℂ) * E ((t : ℂ) * z) =
@@ -410,13 +407,12 @@ theorem bpzRR_oneRooted_mixed_time_integrable {Ω : Type*} [MeasurableSpace Ω]
       F ((t : ℂ) * z) = L ((t : ℂ) * z) + E ((t : ℂ) * z) := by
     filter_upwards [ae_restrict_mem measurableSet_Icc,
       ae_restrict_of_ae (Measure.ae_ne volume (0 : ℝ))] with t ht ht0
-    have htz : (t : ℂ) * z ≠ 0 := mul_ne_zero (Complex.ofReal_ne_zero.mpr ht0) hz
     have htz4 : ‖(t : ℂ) * z‖ ≤ 1 / 4 := by
       rw [norm_mul, Complex.norm_real, Real.norm_of_nonneg ht.1]
       exact (mul_le_of_le_one_left (norm_nonneg _) ht.2).trans hz4
     simpa only [F, L, E, fusionMixedSpatial, Measure.restrict_univ] using
       fusion_mixedSpatial_expectation_split P X hX γ hγ hγ2 M hM α₁ α₂ α₃ hβ hα₁ hα₂ hα₃ p hp
-        ((t : ℂ) * z) htz htz4
+        ((t : ℂ) * z) (mul_ne_zero (Complex.ofReal_ne_zero.mpr ht0) hz) htz4
   refine (hL.add hE).congr ?_
   filter_upwards [hsplit] with t ht
   show ((1 - t : ℝ) : ℂ) * L ((t : ℂ) * z) + ((1 - t : ℝ) : ℂ) * E ((t : ℂ) * z) =
@@ -587,11 +583,9 @@ theorem bpz_rootedTerms_eq_integral {Ω : Type*} [MeasurableSpace Ω] (P : Measu
                 gammaHalfRootKernelZ M γ α₁ α₂ α₃ ω ((s : ℂ) * (t : ℂ)) ^ 2 ∂P))) := by
     apply setIntegral_congr_ae measurableSet_Icc
     filter_upwards [Measure.ae_ne volume (0 : ℝ)] with s hs0 hs
-    have hspos : 0 < s := lt_of_le_of_ne hs.1 (Ne.symm hs0)
-    have h := hpt (s * t) (mul_pos hspos ht0) (mul_le_of_le_one_left ht0.le hs.2)
+    have h := hpt (s * t) (mul_pos (lt_of_le_of_ne hs.1 (Ne.symm hs0)) ht0) (mul_le_of_le_one_left ht0.le hs.2)
     rw [show ((s * t : ℝ) : ℂ) = (s : ℂ) * (t : ℂ) from Complex.ofReal_mul s t] at h
     rw [h]
-  have hT1 : (t : ℂ) ^ 2 = ((t ^ 2 : ℝ) : ℂ) := (Complex.ofReal_pow t 2).symm
   have hT2 : (t : ℂ) * star (t : ℂ) = ((t ^ 2 : ℝ) : ℂ) := by
     rw [Complex.star_def, Complex.conj_ofReal, ← Complex.ofReal_mul, sq]
   rw [bpzRR_remainder_eq ht0 g2, hae, hsix]
@@ -602,7 +596,7 @@ theorem bpz_rootedTerms_eq_integral {Ω : Type*} [MeasurableSpace Ω] (P : Measu
   have hm : ∀ c I : ℂ, c * (t : ℂ) * star (t : ℂ) * I = c * ((t ^ 2 : ℝ) : ℂ) * I := by
     intro c I
     rw [mul_assoc c, hT2]
-  rw [hm, hm, hT1, bpzRR_star_cast_mul, bpzRR_star_cast_mul]
+  rw [hm, hm, ((Complex.ofReal_pow t 2).symm), bpzRR_star_cast_mul, bpzRR_star_cast_mul]
   ring
 
 end DOZZ.Proofs

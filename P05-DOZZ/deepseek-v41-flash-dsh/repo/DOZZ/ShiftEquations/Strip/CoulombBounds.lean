@@ -34,13 +34,12 @@ theorem lastone_coulombWeight_lower (γ a b c : ℝ) (hγb : 0 ≤ γ * b)
         coulombWeight γ ![a, b] ![0, 1] c x := by
   have hnp : normPlus x = 1 := max_eq_left hx.le
   have hx1 : x ≠ 1 := by intro he; simp [he] at hx
-  have hs : 0 < ‖x - 1‖ := norm_pos_iff.mpr (sub_ne_zero.mpr hx1)
   have hs2 : ‖x - 1‖ ≤ 2 := by
     have h := norm_sub_le x 1
     norm_num at h
     linarith
   have hratio : (1 / 2 : ℝ) ≤ normPlus x / ‖x - 1‖ := by
-    rw [hnp, le_div_iff₀ hs]
+    rw [hnp, le_div_iff₀ (norm_pos_iff.mpr (sub_ne_zero.mpr hx1))]
     linarith
   have hfac := ENNReal.rpow_le_rpow (ENNReal.ofReal_le_ofReal hratio) hγb
   unfold coulombWeight

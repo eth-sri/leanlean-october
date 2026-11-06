@@ -3,6 +3,7 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
+public import DOZZ.SharedHyp
 
 public import DOZZ.FourPoint.ReflectedEnd.FormulaReduction
 import Mathlib.Tactic
@@ -27,7 +28,7 @@ theorem gammaHalf_reflected_formula_of_inner_limit {Ω : Type*} [MeasurableSpace
     (γ μ α₁ α₂ α₃ ξ : ℝ)
     (hγ : 0 < γ) (hγ₂ : γ < 2) (hμ : 0 < μ)
     (hα₁ : α₁ < Q γ) (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ)
-    (hs : 2 * Q γ + γ / 2 < α₁ + α₂ + α₃)
+    (hs : SeibergSlack γ α₁ α₂ α₃)
     (hreflect : Q γ - α₁ < γ / 2)
     (hξ : 0 < ξ) (hξ₂ : ξ < 1) (hslack : γ * (Q γ - α₁) < ξ)
     (hfreeze : γ * (Q γ - α₁) <

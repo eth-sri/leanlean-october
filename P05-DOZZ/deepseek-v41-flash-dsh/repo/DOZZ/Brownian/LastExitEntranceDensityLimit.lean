@@ -45,7 +45,6 @@ theorem tendsto_lintegral_probabilityDensity_test
     exact tendsto_lintegral_of_dominated_convergence g hA
       (fun n => ae_of_all _ (fun x => min_le_right _ _))
       (hgm ▸ ENNReal.one_ne_top) (ae_of_all _ hAlim)
-  have hKg : Measurable (fun x => K * g x) := measurable_const.mul hg
   have hKgfin : (∫⁻ x, K * g x ∂μ) ≠ ∞ := by
     rw [lintegral_const_mul K hg, hgm, mul_one]
     exact hK
@@ -84,11 +83,6 @@ theorem tendsto_lintegral_probabilityDensity_test
         rw [lintegral_const_mul K hm,
           lintegral_sub (hA n) (hAm n)
             (ae_of_all _ (fun x => min_le_left _ _)), hfm n]
-  have hI : (∫⁻ x, g x * F x ∂μ) ≤ K := by
-    calc
-      _ ≤ ∫⁻ x, K * g x ∂μ := lintegral_mono (fun x =>
-        (mul_le_mul' le_rfl (hbound x)).trans_eq (mul_comm _ _))
-      _ = K := by rw [lintegral_const_mul K hg, hgm, mul_one]
   have htop : Tendsto
       (fun n => (∫⁻ x, A n x * F x ∂μ) + K * (1 - ∫⁻ x, A n x ∂μ))
       atTop (𝓝 (∫⁻ x, g x * F x ∂μ)) := by

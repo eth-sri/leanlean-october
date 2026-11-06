@@ -34,10 +34,9 @@ noncomputable def bpzMixTest (φ ρ k k₂ L : ℂ → ℝ) (m : Measure ℂ) (x
 theorem measurable_bpzSymKer {φ ρ k L : ℂ → ℝ} (hφ : Measurable φ) (hρ : Measurable ρ)
     (hk : Measurable k) (hL : Measurable L) : Measurable (Function.uncurry (bpzSymKer φ ρ k L)) := by
   unfold bpzSymKer
-  have hd : Measurable (fun p : ℂ × ℂ => p.1 - p.2) := measurable_fst.sub measurable_snd
   exact (((((hφ.comp measurable_fst).mul (hρ.comp measurable_snd)).sub
     ((hφ.comp measurable_snd).mul (hρ.comp measurable_fst))).mul
-      ((hk.comp measurable_fst).mul (hk.comp measurable_snd))).mul (hL.comp hd)).div_const _
+      ((hk.comp measurable_fst).mul (hk.comp measurable_snd))).mul (hL.comp (measurable_fst.sub measurable_snd))).div_const _
 
 /-- Antisymmetrization of a double integral. -/
 theorem bpz_integral_integral_symm {m : Measure ℂ} [SFinite m] {F : ℂ → ℂ → ℝ}

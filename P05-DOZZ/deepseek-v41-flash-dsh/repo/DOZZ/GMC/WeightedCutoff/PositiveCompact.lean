@@ -31,7 +31,6 @@ theorem cutoffWeightedGmcBallMoment_positive_compact_gamma_chart
   obtain ⟨Aroot, hAroot, hballRoot⟩ := regularizedGMC_openBall_root_bound_compact_gamma_chart
     P X hX Xc hXc Γ hΓ (fun γ hγ => (hΓ2 hγ).1) q hq hcrit
   let U : Set (ℝ × (ℝ × ℝ)) := Γ ×ˢ T
-  have hU : IsCompact U := hΓ.prod hT
   have hQcont : ContinuousOn (fun γ : ℝ => Q γ) Γ := by
     dsimp [Q]
     apply ContinuousOn.add
@@ -48,7 +47,7 @@ theorem cutoffWeightedGmcBallMoment_positive_compact_gamma_chart
     have hadm := hTadm u.1 hu.1 u.2 hu.2
     exact weightedGmcMomentExponent_pos_of_sharp_range (hΓ2 hu.1).1
       (lt_of_lt_of_le zero_lt_one hadm.1) hadm.2
-  obtain ⟨ε₀, hε₀, hε₀lower⟩ := hU.exists_forall_le' hetaCont hetaPos
+  obtain ⟨ε₀, hε₀, hε₀lower⟩ := (hΓ.prod hT).exists_forall_le' hetaCont hetaPos
   let ε : ℝ := ε₀ / q
   have hε : 0 < ε := by dsimp [ε]; exact div_pos hε₀ hq0
   let halfRatio : ℝ≥0∞ := ENNReal.ofReal ((1 / 2 : ℝ) ^ ε)
@@ -92,13 +91,12 @@ theorem cutoffWeightedGmcBallMoment_positive_compact_gamma_chart
     have hsecond := div_le_div_of_nonneg_right hetaLower hp0.le
     dsimp [ε]
     exact hfirst.trans hsecond
-  have hpbulk : t.2 < 4 / γ ^ 2 := lt_of_lt_of_le hadm.2 (min_le_left _ _)
   have hβeq :
       (2 * t.2 + γ ^ 2 * t.2 / 2 - γ ^ 2 * t.2 ^ 2 / 2) / t.2 =
         2 + γ ^ 2 / 2 - γ ^ 2 * t.2 / 2 := by
     field_simp [ne_of_gt hp0]
   have hγsqP : γ ^ 2 * t.2 < 4 := by
-    have h := (lt_div_iff₀ (sq_pos_of_pos hγ)).mp hpbulk
+    have h := (lt_div_iff₀ (sq_pos_of_pos hγ)).mp (lt_of_lt_of_le hadm.2 (min_le_left _ _))
     nlinarith [h]
   have hγsq : γ ^ 2 < 4 := by
     have hle : γ ^ 2 ≤ γ ^ 2 * t.2 := by

@@ -35,8 +35,7 @@ theorem gaussian_pin_copy_law
     apply measurable_pi_iff.mpr
     intro i
     exact ((measurable_pi_apply (some i)).comp hZm).sub (hN.const_mul (a i))
-  have hi : IndepFun (Z none) R P := gaussian_regression_indep P Z hZ v hv hvar
-  have hNR := hi.map_prod_eq_prod_map_map hN.aemeasurable hR.aemeasurable
+  have hNR := (gaussian_regression_indep P Z hZ v hv hvar).map_prod_eq_prod_map_map hN.aemeasurable hR.aemeasurable
   have hRc : Measurable (fun q : Ω × Ω => R q.1) := hR.comp measurable_fst
   have hNc : Measurable (fun q : Ω × Ω => Z none q.2) := hN.comp measurable_snd
   have hcopy := (indepFun_prod (μ := P) (ν := P) hR hN).symm.map_prod_eq_prod_map_map

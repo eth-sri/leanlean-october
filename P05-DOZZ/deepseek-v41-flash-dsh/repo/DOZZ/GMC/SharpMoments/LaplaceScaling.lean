@@ -58,12 +58,11 @@ theorem cutoffLaplace_affine_ball_scaling
   have hLaw := regularizedGMC_affine_openBall_mass_law_CutoffScale P X hX γ Xc hXc
     (a := a) (c := c) (R := R) hc hc1 hR hRsmall hTsmall hsourceCut htargetCut
   change Measure.map t P = Measure.map s (P.prod G) at hLaw
-  have hball : MeasurableSet (Metric.ball a (c * R)) := Metric.isOpen_ball.measurableSet
   have hball0 : MeasurableSet (Metric.ball (0 : ℂ) R) := Metric.isOpen_ball.measurableSet
   have htm : Measurable t := by
     rw [measurable_pi_iff]
     intro _
-    exact measurable_regularizedGMC_apply_toReal P X hX Xc hXc γ _ _ hball
+    exact measurable_regularizedGMC_apply_toReal P X hX Xc hXc γ _ _ (Metric.isOpen_ball.measurableSet)
   have hsm : Measurable s := by
     rw [measurable_pi_iff]
     intro _

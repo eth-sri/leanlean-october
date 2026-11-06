@@ -30,7 +30,6 @@ theorem rho_moment_swap12
   let E := ENNReal.ofReal (Real.exp (-A))
   have hY : IsEquatorGFF P Y := isEquatorGFF_symmetryRepinnedField P X hX Xc hXc
   have hN : IsGMCOf P Y γ N := isGMCOf_symmetryRepinnedChaos P X hX Xc hXc γ M hM
-  have hZ : IsCircleAverage P Y Z := isCircleAverage_symmetryRepinned P X hX Xc hXc
   have hL : IsGaussianL2Limit P Y (fun ω => t * L ω) :=
     IsGaussianL2Limit_const_mul_symmetry P Y L
       (reflection_normalization_in_repinned_closure P X hX Xc hXc) t
@@ -43,7 +42,7 @@ theorem rho_moment_swap12
     simpa only [ENNReal.rpow_eq_pow, Function.comp_def] using
       (ENNReal.continuous_rpow_const.measurable.comp
         ((symmetryCorrectedRho_measurable γ a b c).comp measurable_snd))
-  have htilt := DOZZ.equatorGFF_GMC_tilt P Y hY γ hγ hγ2 N hN Z hZ
+  have htilt := DOZZ.equatorGFF_GMC_tilt P Y hY γ hγ hγ2 N hN Z (isCircleAverage_symmetryRepinned P X hX Xc hXc)
     (fun ω => t * L ω) hL (symmetryTiltPotential t)
     (symmetryTiltPotential_uniform P X hX Xc hXc t) H hHm
   have hleft (ω : Ω) : ENNReal.ofReal
@@ -78,11 +77,10 @@ theorem rho_moment_swap12
         lintegral_congr_ae (ae_of_all _ (fun ω => (hleft ω).symm))
       _ = _ := htilt
       _ = _ := lintegral_congr_ae (ae_of_all _ hright)
-  have hE0 : E ≠ 0 := (ENNReal.ofReal_pos.mpr (Real.exp_pos _)).ne'
   have hEt : E ≠ ∞ := ENNReal.ofReal_ne_top
   have hcancel := congrArg (fun v : ℝ≥0∞ => E⁻¹ * v) ht
   rw [lintegral_const_mul' _ _ hEt, lintegral_const_mul' _ _ hEt,
-    ← mul_assoc, ← mul_assoc, ENNReal.inv_mul_cancel hE0 hEt, one_mul, one_mul] at hcancel
+    ← mul_assoc, ← mul_assoc, ENNReal.inv_mul_cancel ((ENNReal.ofReal_pos.mpr (Real.exp_pos _)).ne') hEt, one_mul, one_mul] at hcancel
   have hRmeas : Measurable (fun μ : Measure ℂ => rho γ μ b a c ^ (-s)) := by
     simpa only [ENNReal.rpow_eq_pow, Function.comp_def] using
       ENNReal.continuous_rpow_const.measurable.comp (rho_measure_measurable γ b a c)

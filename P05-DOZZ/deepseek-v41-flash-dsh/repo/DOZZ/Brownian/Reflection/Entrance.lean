@@ -88,13 +88,12 @@ theorem conditionedPositiveEntranceDensity_le_gaussian (ν t y : ℝ) (hν : 0 �
         ring
       generalize Real.sqrt (2 / Real.pi) = K at *
       generalize t ^ (-(3 / 2 : ℝ)) = T at *
-      have hE : 0 ≤ Real.exp (-y ^ 2 / (2 * t) - ν ^ 2 * t / 2) := Real.exp_nonneg _
       calc K * T * (y * Real.sinh (ν * y) / ν) * Real.exp (-y ^ 2 / (2 * t) - ν ^ 2 * t / 2)
           = K * T * y * (Real.sinh (ν * y) / ν) *
               Real.exp (-y ^ 2 / (2 * t) - ν ^ 2 * t / 2) := by ring
         _ ≤ K * T * y * (y * Real.exp (ν * y)) *
               Real.exp (-y ^ 2 / (2 * t) - ν ^ 2 * t / 2) := by
-          apply mul_le_mul_of_nonneg_right _ hE
+          apply mul_le_mul_of_nonneg_right _ (Real.exp_nonneg _)
           exact mul_le_mul_of_nonneg_left hsinh (by positivity)
         _ = K * T * y ^ 2 *
               (Real.exp (ν * y) * Real.exp (-y ^ 2 / (2 * t) - ν ^ 2 * t / 2)) := by
@@ -105,8 +104,6 @@ theorem conditionedPositiveEntranceDensity_le_gaussian (ν t y : ℝ) (hν : 0 �
 theorem conditionedPositiveEntranceDensity_le_maxwell (ν t y : ℝ) (ht : 0 < t) :
     conditionedPositiveEntranceDensity ν t y ≤
       Real.sqrt (2 / Real.pi) * t ^ (-(3 / 2 : ℝ)) * y ^ 2 := by
-  have hK : 0 ≤ Real.sqrt (2 / Real.pi) := Real.sqrt_nonneg _
-  have hT : 0 < t ^ (-(3 / 2 : ℝ)) := Real.rpow_pos_of_pos ht _
   by_cases h : 0 ≤ ν ∧ 0 < y
   · have hg := conditionedPositiveEntranceDensity_le_gaussian ν t y h.1 ht h.2.le
     have hexp : Real.exp (-(y - ν * t) ^ 2 / (2 * t)) ≤ 1 := by
@@ -182,8 +179,6 @@ theorem isNegativeConditionedBrownianLaw_exp_eval_le {ν a : ℝ} (ha : 0 < a)
     (∫⁻ p, ENNReal.ofReal (Real.exp (a * p t)) ∂Q) ≤
       ENNReal.ofReal (Real.sqrt (2 / Real.pi) * (2 / a ^ 3) * (t : ℝ) ^ (-(3 / 2 : ℝ))) := by
   have htr : (0 : ℝ) < t := ht
-  have hK : 0 ≤ Real.sqrt (2 / Real.pi) := Real.sqrt_nonneg _
-  have hT : 0 < (t : ℝ) ^ (-(3 / 2 : ℝ)) := Real.rpow_pos_of_pos htr _
   rw [entranceExp_lintegral_eq_entrance hQ t ht]
   calc _ ≤ ∫⁻ y in Ioi (0 : ℝ), ENNReal.ofReal
         (Real.sqrt (2 / Real.pi) * (t : ℝ) ^ (-(3 / 2 : ℝ)) * (y ^ 2 * Real.exp (-(a * y)))) := by
@@ -224,13 +219,10 @@ theorem entranceExp_mul_density_le_of_le_half {ν a t y : ℝ} (hν : 0 ≤ ν) 
     Real.exp (-(a * y)) * conditionedPositiveEntranceDensity ν t y ≤
       Real.sqrt (2 / Real.pi) * (ν * t / 2) ^ 2 * Real.exp (-(ν ^ 2 * t / 8)) := by
   have ht0 : 0 < t := by linarith
-  have hK : 0 ≤ Real.sqrt (2 / Real.pi) := Real.sqrt_nonneg _
-  have hT0 : 0 ≤ t ^ (-(3 / 2 : ℝ)) := (Real.rpow_pos_of_pos ht0 _).le
   have hg := conditionedPositiveEntranceDensity_le_gaussian ν t y hν ht0 hy.le
   have h1 : Real.exp (-(a * y)) ≤ 1 :=
     Real.exp_le_one_iff.mpr (by have := mul_nonneg ha hy.le; linarith)
   have h2 : t ^ (-(3 / 2 : ℝ)) ≤ 1 := Real.rpow_le_one_of_one_le_of_nonpos ht (by norm_num)
-  have h3 : y ^ 2 ≤ (ν * t / 2) ^ 2 := pow_le_pow_left₀ hy.le hyM 2
   have h4 : Real.exp (-(y - ν * t) ^ 2 / (2 * t)) ≤ Real.exp (-(ν ^ 2 * t / 8)) := by
     apply Real.exp_le_exp.mpr
     have hsq : (ν * t / 2) ^ 2 ≤ (y - ν * t) ^ 2 := by
@@ -261,7 +253,6 @@ theorem entranceExp_mul_density_le_of_ge_half {ν a t y : ℝ} (ha : 0 ≤ a)
       Real.sqrt (2 / Real.pi) * Real.exp (-(a * ν * t / 4)) *
         (y ^ 2 * Real.exp (-((a / 2) * y))) := by
   have ht0 : 0 < t := by linarith
-  have hK : 0 ≤ Real.sqrt (2 / Real.pi) := Real.sqrt_nonneg _
   have h2 : t ^ (-(3 / 2 : ℝ)) ≤ 1 := Real.rpow_le_one_of_one_le_of_nonpos ht (by norm_num)
   have hM := conditionedPositiveEntranceDensity_le_maxwell ν t y ht0
   have h1 : Real.exp (-(a * y)) ≤ Real.exp (-(a * ν * t / 4)) * Real.exp (-((a / 2) * y)) := by
@@ -293,7 +284,6 @@ theorem entranceExp_exp_eval_le_split {ν a : ℝ} (hν : 0 < ν) (ha : 0 < a)
   have htpos : 0 < t := by
     have h : (0 : ℝ) < t := by linarith
     exact_mod_cast h
-  have hK : 0 ≤ Real.sqrt (2 / Real.pi) := Real.sqrt_nonneg _
   have hMpos : 0 < ν * (t : ℝ) / 2 := by positivity
   rw [entranceExp_lintegral_eq_entrance hQ t htpos,
     ← Ioc_union_Ioi_eq_Ioi hMpos.le,
@@ -379,7 +369,6 @@ theorem entranceExp_split_terms_le {K ν₁ ν₂ ν a n ε ρ : ℝ} (hK : 0 �
       have h : ν ≤ |ν₂| := h2.trans (le_abs_self ν₂)
       have := mul_le_mul_of_nonneg_right h hn0
       linarith
-    have e2 : (ν * n / 2) ^ 3 ≤ (|ν₂| * n / 2) ^ 3 := pow_le_pow_left₀ (by positivity) e1 3
     have e3 : Real.exp (-(ν ^ 2 * n / 8)) ≤ Real.exp (-(2 * ε * n)) := by
       apply Real.exp_le_exp.mpr
       have h : ν₁ ^ 2 ≤ ν ^ 2 := pow_le_pow_left₀ hν₁.le h1 2
@@ -508,13 +497,12 @@ theorem brownianUnitNorm_shift_negativeRogersPitmanPath_le (ν : ℝ) (hν : 0 �
     rogersPitmanVectorAt_shift_sub_apply_of_ne_zero ν V n u (by decide : (1 : Fin 3) ≠ 0),
     rogersPitmanVectorAt_shift_sub_apply_of_ne_zero ν V n u (by decide : (2 : Fin 3) ≠ 0)]
   have hu' : (u : ℝ) ≤ 1 := by exact_mod_cast hu
-  have hd : ν * (u : ℝ) ≤ ν := mul_le_of_le_one_right hν hu'
   have h0 := abs_apply_le_brownianUnitNorm (brownianShiftPath n (V 0)) hu
   have h1 := abs_apply_le_brownianUnitNorm (brownianShiftPath n (V 1)) hu
   have h2 := abs_apply_le_brownianUnitNorm (brownianShiftPath n (V 2)) hu
   have ha := abs_add_le (brownianShiftPath n (V 0) u) (ν * (u : ℝ))
   rw [abs_of_nonneg (mul_nonneg hν u.coe_nonneg)] at ha
-  linarith only [h0, h1, h2, ha, hd]
+  linarith only [h0, h1, h2, ha, (mul_le_of_le_one_right hν hu')]
 
 /-- Three-term AM--GM in the weak form `a b c ≤ a ^ 3 + b ^ 3 + c ^ 3` for nonnegative reals. -/
 theorem mul_mul_le_pow_three_add {a b c : ℝ} (ha : 0 ≤ a) (hb : 0 ≤ b) (hc : 0 ≤ c) :

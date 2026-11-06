@@ -28,12 +28,11 @@ theorem weighted_ball_coulomb_mixed_bound
         (coulombMass γ (M ω) ![-γ / 2, α₁, α₂] ![z, 0, 1] α₃) ^ (-p - s) ∂P) ≤
           ENNReal.ofReal (C * ρ ^ ((γ * (Q γ - α₁) * (q * s) -
             γ ^ 2 * (q * s) ^ 2 / 2) / q)) := by
-  have hqpos : 0 < q := zero_lt_one.trans hq
   let q' : ℝ := q.conjExponent
   have hHolder : Real.HolderConjugate q q' := Real.HolderConjugate.conjExponent hq
   have hq' : 0 < q' := hHolder.symm.pos
   obtain ⟨CA, hCA, hA⟩ := weighted_ball_moment_small_radius_bound P X hX γ hγ hγ2 M hM
-    α₁ (q * s) hα₁ (mul_pos hqpos hs) hrange
+    α₁ (q * s) hα₁ (mul_pos (zero_lt_one.trans hq) hs) hrange
   obtain ⟨CB, hCB, hB⟩ := coulomb_inverse_moment_uniform_roots P X hX γ hγ hγ2 M hM
     ![-γ / 2, α₁, α₂] α₃ (q' * (p + s)) (mul_nonneg hq'.le (by linarith only [hp, hs]))
   let C : ℝ := CA ^ (1 / q) * CB ^ (1 / q')

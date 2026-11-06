@@ -76,7 +76,6 @@ theorem brownian_firstHit_reversal_finite_marked_law
   have hu : ss (Fin.last n) < u := by
     apply NNReal.coe_lt_coe.mp
     simpa only [u, Real.coe_toNNReal _ ha0] using ha
-  have huv : u ≤ v := Real.toNNReal_mono hab.le
   have hcN : 0 < (cN : ℝ) := by simpa only [cN, Real.coe_toNNReal _ hc.le] using hc
   have htimes (i : Fin (n+1)) : 0 < (ss i : ℝ) :=
     NNReal.coe_pos.mpr (hs0.trans_le (hss.monotone (Fin.zero_le i)))
@@ -89,9 +88,8 @@ theorem brownian_firstHit_reversal_finite_marked_law
         {p | ss (Fin.last n) < L p} =
         {p : BrownianPath | (fun i => -(p (ss i))) ∈ A ∧ negativeLastExitTime p c ∈ Ioc u v} := by
       ext p
-      have hau : (u : ℝ) = a := Real.coe_toNNReal _ ha0
       have hbv : (v : ℝ) = b := Real.coe_toNNReal _ hb0
-      rw [← hau, ← hbv]
+      rw [← (Real.coe_toNNReal _ ha0), ← hbv]
       simp only [mem_inter_iff, mem_preimage, mem_prod, mem_Ioc,
         conditionedLastExitMarkedObservation, mem_ofPred_eq, NNReal.coe_lt_coe,
         NNReal.coe_le_coe, L]
@@ -104,7 +102,7 @@ theorem brownian_firstHit_reversal_finite_marked_law
     change ((Q.restrict {p | ss (Fin.last n) < L p}).map
       (conditionedLastExitMarkedObservation c n ss) (A ×ˢ Ioc a b)).toReal = _
     rw [Measure.map_apply hmη (hA.prod measurableSet_Ioc), Measure.restrict_apply hE, he]
-  have hlast := negativeConditionedLaw_finitePast_lastExit_Ioc hQ hB hν cN hcN n ss htimes hss u v hu huv A hA
+  have hlast := negativeConditionedLaw_finitePast_lastExit_Ioc hQ hB hν cN hcN n ss htimes hss u v hu (Real.toNNReal_mono hab.le) A hA
   simp only [cN, Real.coe_toNNReal _ hc.le, u, v, Real.coe_toNNReal _ ha0,
     Real.coe_toNNReal _ hb0] at hlast
   have hreal : μ.real (A ×ˢ Ioc a b) = η.real (A ×ˢ Ioc a b) := by

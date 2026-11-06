@@ -61,8 +61,7 @@ theorem exists_measurable_continuousCircleProfile
   let Z0 : Ω → ℂ → ℝ := fun ω x => Z x ω
   have hZ0cont (ω : Ω) : Continuous (Z0 ω) := hZcont ω
   let Zc : Ω → C(ℂ, ℝ) := fun ω => ⟨Z0 ω, hZ0cont ω⟩
-  have hZc : Measurable Zc := measurable_circleContinuousMap Z0 hZm hZ0cont
-  refine ⟨Zc, ?_, ?_, hZc⟩
+  refine ⟨Zc, ?_, ?_, (measurable_circleContinuousMap Z0 hZm hZ0cont)⟩
   · intro x
     exact hZm x
   · intro x
@@ -80,14 +79,8 @@ theorem continuousCircleCutoffMeasure_measurable
   have hnorm : Measurable (fun x : ℂ => normPlus x) := by
     unfold normPlus
     exact measurable_const.max measurable_norm
-  have heval : Measurable (fun q : C(ℂ, ℝ) × ℂ => q.1 q.2) :=
-    (continuous_eval : Continuous fun q : C(ℂ, ℝ) × ℂ => q.1 q.2).measurable
   have hdensity : Measurable density := by
     dsimp [density]
-    have hvariance : Measurable (fun q : C(ℂ, ℝ) × ℂ => V q.2) :=
-      hV.comp measurable_snd
-    have hnorm' : Measurable (fun q : C(ℂ, ℝ) × ℂ => normPlus q.2) :=
-      hnorm.comp measurable_snd
     fun_prop
   apply Measure.measurable_of_measurable_coe
   intro A hA

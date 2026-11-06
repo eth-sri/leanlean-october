@@ -59,7 +59,6 @@ theorem reflected_source_pareto_cut_increment_error
     nlinarith only [hγ,hγ₂]
   have hS1 := reflected_reflection_cut_real_moment P γ α₁ H 1 B Z hα₁ hData zero_le_one h4
   have hSa := reflected_reflection_cut_real_moment P γ α₁ H a B Z hα₁ hData ha.le (ha1.trans h4)
-  have hSp : ∀ᵐ ω ∂P, 0 ≤ S ω := ae_of_all P fun _ => ENNReal.toReal_nonneg
   have hSm : AEMeasurable S P :=
     (twoSidedReflectionCutMass_aemeasurable P γ H B Z
       (conditionedPair_aemeasurable P B ν hData.1)
@@ -94,7 +93,7 @@ theorem reflected_source_pareto_cut_increment_error
       (reflected_pareto_parameter_weights p a (A ω) (b ω) hω (hbp ω).le).2)]
     simpa only [Real.rpow_one,show -(p+1) = -p-1 by ring] using hsource1.2
   have hhpareto := reflected_pareto_product_increment_error_nonneg P P p a hp ha ha1 A b S
-    hAp (ae_of_all P hbp) hSp hF0 hF1 hSa.1 (by simpa only [Real.rpow_one] using hS1.1)
+    hAp (ae_of_all P hbp) (ae_of_all P fun _ => ENNReal.toReal_nonneg) hF0 hF1 hSa.1 (by simpa only [Real.rpow_one] using hS1.1)
     hAm hbm hSm
   rw [he0,he1,hSa.2] at hhpareto
   have hS1eq : (∫ ω, S ω ∂P) = (∫⁻ ω, twoSidedReflectionCutMass γ H B Z ω ∂P).toReal := by

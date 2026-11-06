@@ -23,7 +23,6 @@ theorem pin_difference_exp_abs_moment
     (hmU : (∫ ω, U ω ∂P) = 0) (hmV : (∫ ω, V ω ∂P) = 0) (l : ℝ) :
     (∫⁻ ω, ENNReal.ofReal (Real.exp (l*|U ω-V ω|)) ∂P) < ⊤ := by
   let a := max l 0
-  have ha : 0 ≤ a := le_max_right _ _
   have hpoint (ω : Ω) : ENNReal.ofReal (Real.exp (l*|U ω-V ω|)) ≤
       ENNReal.ofReal (Real.exp (a*|U ω|)) * ENNReal.ofReal (Real.exp (a*|V ω|)) := by
     rw [← ENNReal.ofReal_mul (Real.exp_nonneg _), ← Real.exp_add]
@@ -31,7 +30,7 @@ theorem pin_difference_exp_abs_moment
     apply Real.exp_le_exp.mpr
     calc
       _ ≤ a * |U ω-V ω| := mul_le_mul_of_nonneg_right (le_max_left _ _) (abs_nonneg _)
-      _ ≤ a * (|U ω|+|V ω|) := mul_le_mul_of_nonneg_left (abs_sub _ _) ha
+      _ ≤ a * (|U ω|+|V ω|) := mul_le_mul_of_nonneg_left (abs_sub _ _) (le_max_right _ _)
       _ = _ := by ring
   exact ((lintegral_mono hpoint).trans
     (gaussian_product_lintegral_exp_abs_le P U V hU hV hmU hmV

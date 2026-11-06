@@ -52,17 +52,15 @@ theorem bpzWM_w1_le {a : ℝ} {w k : ℂ → ℝ} {z : ℂ} (hw0 : ∀ x, 0 ≤ 
     rw [Real.rpow_sub_one ht.ne', div_eq_mul_inv]
   have h2 : ‖x - z‖ ^ (-2 : ℝ) = (‖x - z‖⁻¹) ^ 2 := by
     rw [Real.rpow_neg ht.le, Real.rpow_two, inv_pow]
-  have hu : 0 ≤ ‖x - z‖ ^ (2 * a) * w x := mul_nonneg (Real.rpow_nonneg ht.le _) (hw0 x)
   rw [hk x, h1, h2]
   calc w x * (‖x - z‖ ^ (2 * a) * ‖x - z‖⁻¹)
       = (‖x - z‖ ^ (2 * a) * w x) * ‖x - z‖⁻¹ := by ring
-    _ ≤ _ := bpzWM_aux_ineq hu
+    _ ≤ _ := bpzWM_aux_ineq (mul_nonneg (Real.rpow_nonneg ht.le _) (hw0 x))
 
 /-- Off the root, `w |x − z|^{2a−2} = |x − z|^{-2} k` for `k = |x − z|^{2a} w`. -/
 theorem bpzWM_w2_eq {a : ℝ} {w k : ℂ → ℝ} {z : ℂ} (hk : ∀ x, k x = ‖x - z‖ ^ (2 * a) * w x)
     {x : ℂ} (hx : x ≠ z) : w x * ‖x - z‖ ^ (2 * a - 2) = ‖x - z‖ ^ (-2 : ℝ) * k x := by
-  have ht : 0 < ‖x - z‖ := norm_pos_iff.mpr (sub_ne_zero.mpr hx)
-  rw [hk x, show 2 * a - 2 = 2 * a + (-2 : ℝ) by ring, Real.rpow_add ht]
+  rw [hk x, show 2 * a - 2 = 2 * a + (-2 : ℝ) by ring, Real.rpow_add (norm_pos_iff.mpr (sub_ne_zero.mpr hx))]
   ring
 
 /-- The root weight `k = |x − z|^{2a} w` is nonnegative. -/
@@ -110,8 +108,7 @@ theorem bpzWM_integrable_w2 (H : BPZWMData a w k m z) :
 
 /-- The root weight `k = |x − z|^{2a} w` is measurable. -/
 theorem bpzWM_measurable_k (H : BPZWMData a w k m z) : Measurable k := by
-  have h : k = fun x => ‖x - z‖ ^ (2 * a) * w x := funext H.hk
-  rw [h]
+  rw [(funext H.hk)]
   exact ((measurable_id.sub measurable_const).norm.pow_const _).mul H.hw
 
 /-- `k = w |x − z|^{2a}` is integrable. -/
@@ -218,10 +215,9 @@ theorem bpzWM_norm_momField1_le (H : BPZWMData a w k m z) {s : ℝ} (hs : 0 ≤ 
   have ha := H.ha
   have hD := (bpzWM_norm_deriv_le H).trans
     (mul_le_mul_of_nonneg_left (bpzWM_n1_le H) (by positivity))
-  have h1 : 0 ≤ (∫ x, k x ∂m) ^ (-s - 1) := Real.rpow_nonneg hI.le _
   calc s * (∫ x, k x ∂m) ^ (-s - 1) * ‖bpzSoftMassDeriv a 0 w m z‖
       ≤ s * (∫ x, k x ∂m) ^ (-s - 1) * (2 * a * ∫ x, (1 + ‖x - z‖ ^ (-2 : ℝ)) * k x ∂m) :=
-        mul_le_mul_of_nonneg_left hD (mul_nonneg hs h1)
+        mul_le_mul_of_nonneg_left hD (mul_nonneg hs (Real.rpow_nonneg hI.le _))
     _ = _ := by ring
 
 /-- The second moment field is bounded by `C · I^{-(s+1)} ∫ (1 + t^{-2}) k`. -/
@@ -242,8 +238,7 @@ theorem bpzWM_norm_momField2_le (H : BPZWMData a w k m z) {s : ℝ} (hs : 0 ≤ 
     have := bpzRpow_pred_mul hI (-s - 1)
     rwa [show -s - 1 - 1 = -s - 2 by ring] at this
   have h1 : 0 ≤ I ^ (-s - 1) := Real.rpow_nonneg hI.le _
-  have h2 : 0 ≤ I ^ (-s - 2) := Real.rpow_nonneg hI.le _
-  have hc : 0 ≤ s * (s + 1) * I ^ (-s - 2) := mul_nonneg (mul_nonneg hs (by linarith)) h2
+  have hc : 0 ≤ s * (s + 1) * I ^ (-s - 2) := mul_nonneg (mul_nonneg hs (by linarith)) (Real.rpow_nonneg hI.le _)
   have hDD' : ‖D‖ * ‖D‖ ≤ 4 * a ^ 2 * (I * G) := by rw [← sq]; exact hDD
   rw [show -(s + 1) = -s - 1 by ring]
   refine (norm_add_le _ _).trans ?_

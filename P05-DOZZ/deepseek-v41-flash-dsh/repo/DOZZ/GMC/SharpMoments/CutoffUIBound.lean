@@ -50,7 +50,6 @@ theorem geometric_factor_le {ζ ζ0 t tm : ℝ} (hζ0 : 0 < ζ0) (hζ : ζ0 ≤ 
   set m : ℝ := max 1 t with hm
   set mm : ℝ := max 1 tm with hmm
   have hm1 : 1 ≤ m := le_max_left _ _
-  have hmm1 : 1 ≤ mm := le_max_left _ _
   have hmmm : m ≤ mm := max_le_max le_rfl htm
   have hqq0 : q ≤ q0 := ENNReal.ofReal_le_ofReal
     (Real.rpow_le_rpow_of_exponent_ge (by norm_num) (by norm_num) hζ)
@@ -60,16 +59,14 @@ theorem geometric_factor_le {ζ ζ0 t tm : ℝ} (hζ0 : 0 < ζ0) (hζ : ζ0 ≤ 
   have hroot : q ^ (1 / m) ≤ q0 ^ (1 / mm) :=
     (ENNReal.rpow_le_rpow hqq0 (by positivity)).trans
       (ENNReal.rpow_le_rpow_of_exponent_ge hq01 hexp)
-  have hd : 1 - q0 ^ (1 / mm) ≤ 1 - q ^ (1 / m) := tsub_le_tsub_left hroot 1
   have hd1 : 1 - q0 ^ (1 / mm) ≤ 1 := tsub_le_self
   refine ENNReal.inv_le_inv.mpr ?_
   calc (1 - q0 ^ (1 / mm)) ^ mm ≤ (1 - q0 ^ (1 / mm)) ^ m :=
         ENNReal.rpow_le_rpow_of_exponent_ge hd1 hmmm
-    _ ≤ (1 - q ^ (1 / m)) ^ m := ENNReal.rpow_le_rpow hd (by linarith)
+    _ ≤ (1 - q ^ (1 / m)) ^ m := ENNReal.rpow_le_rpow (tsub_le_tsub_left hroot 1) (by linarith)
 
 theorem geometric_factor_lt_top {ζ0 tm : ℝ} (hζ0 : 0 < ζ0) :
     ((1 - ENNReal.ofReal ((1 / 2 : ℝ) ^ ζ0) ^ (1 / max 1 tm)) ^ (max 1 tm))⁻¹ < ⊤ := by
-  have hmm : 0 < max 1 tm := lt_of_lt_of_le one_pos (le_max_left _ _)
   have hq0 : ENNReal.ofReal ((1 / 2 : ℝ) ^ ζ0) < 1 :=
     ENNReal.ofReal_lt_one.mpr (Real.rpow_lt_one (by norm_num) (by norm_num) hζ0)
   have hroot : ENNReal.ofReal ((1 / 2 : ℝ) ^ ζ0) ^ (1 / max 1 tm) < 1 :=
@@ -136,7 +133,6 @@ theorem regularizedCoulombMass_moment_uniform_pos
   set tm : ℝ := max tm0 0 with htmdef
   have hZs : 0 ≤ Zs := le_max_right _ _
   have hE : 0 ≤ E := le_max_right _ _
-  have htm : 0 ≤ tm := le_max_right _ _
   have hZc : ∀ c ∈ S, ∑ j, ‖c.2.1 j‖ ≤ Zs := fun c hc => by
     have h := hZs0 c hc
     rw [Real.norm_eq_abs, abs_of_nonneg (Finset.sum_nonneg fun j _ => norm_nonneg _)] at h
@@ -192,7 +188,6 @@ theorem regularizedCoulombMass_moment_uniform_pos
   obtain ⟨Rf, Ri, hRf, hRi, hsuppf, hsuppi⟩ := partition_support_bounds partition
   set R0 : ℝ := max (2 * Zs + 2) Rf with hR0def
   have hR0Z : 2 * Zs + 2 ≤ R0 := le_max_left _ _
-  have hR02 : 2 ≤ R0 := le_trans (by linarith) hR0Z
   have hsuppf' : ∀ x, partition.finiteWeight x ≠ 0 → ‖x‖ < R0 := fun x hx =>
     lt_of_lt_of_le (hsuppf x hx) (le_max_right _ _)
   -- pointwise bounds for the weight
@@ -253,11 +248,10 @@ theorem regularizedCoulombMass_moment_uniform_pos
     have hexp : c.1 * (Q c.1 - 0) * τ c - c.1 ^ 2 * τ c ^ 2 / 2 ≤ 4 * tm := by
       have hQ : c.1 * Q c.1 = 2 + c.1 ^ 2 / 2 := by rw [Q]; field_simp
       have hγsq : c.1 ^ 2 < 2 ^ 2 := pow_lt_pow_left₀ hγ2 hγ0.le two_ne_zero
-      have htt : τ c ≤ tm := hτle c hc
       have hQt : c.1 * (Q c.1 - 0) * τ c = (2 + c.1 ^ 2 / 2) * τ c := by rw [sub_zero, hQ]
       have h1 : c.1 ^ 2 * τ c < 2 ^ 2 * τ c := mul_lt_mul_of_pos_right hγsq ht0
       have h2 : 0 ≤ c.1 ^ 2 * τ c ^ 2 := by positivity
-      linarith only [hQt, h1, h2, htt]
+      linarith only [hQt, h1, h2, (hτle c hc)]
     calc Real.rpow R (c.1 * (Q c.1 - 0) * τ c - c.1 ^ 2 * τ c ^ 2 / 2)
         ≤ R ^ (4 * tm) := Real.rpow_le_rpow_of_exponent_le hR1 hexp
       _ ≤ (2 * R0 + 1) ^ (4 * tm) := Real.rpow_le_rpow (by linarith) hR (by positivity)
@@ -272,7 +266,7 @@ theorem regularizedCoulombMass_moment_uniform_pos
   set Gm : ℝ≥0∞ := ((1 - ENNReal.ofReal ((1 / 2 : ℝ) ^ ζ0) ^ (1 / max 1 tm)) ^ (max 1 tm))⁻¹
     with hGm
   set Vm : ℝ≥0∞ := ENNReal.ofReal ((2 * R0) ^ (E * tm)) * K0 * Gm with hVm
-  have hfin : ∀ x : ℝ≥0∞, x ≠ ⊤ → x ^ tm < ⊤ := fun x hx => ENNReal.rpow_lt_top_of_nonneg htm hx
+  have hfin : ∀ x : ℝ≥0∞, x ≠ ⊤ → x ^ tm < ⊤ := fun x hx => ENNReal.rpow_lt_top_of_nonneg (le_max_right _ _) hx
   have hmax : ∀ x : ℝ≥0∞, x ≠ ⊤ → max 1 x ≠ ⊤ := fun x hx => max_ne_top ENNReal.one_ne_top hx
   refine ⟨two * (two * (Nm * ∑ k, CRm * ENNReal.ofReal (Ck k) + CBm * K0) + CEm * Vm), ?_, ?_⟩
   · have hGmt : Gm < ⊤ := geometric_factor_lt_top hζ0pos
@@ -345,7 +339,7 @@ theorem regularizedCoulombMass_moment_uniform_pos
       have := hx.2
       simp only [zero_add, pow_one] at this
       linarith
-    refine (cutoff_exterior_power_moment_le P X hX Xc hXc c.1 hR02 (le_max_right _ _) ht0 hK0b
+    refine (cutoff_exterior_power_moment_le P X hX Xc hXc c.1 (le_trans (by linarith) hR0Z) (le_max_right _ _) ht0 hK0b
       hr).trans ?_
     have hβ : max (c.1 * c.2.2.2) 0 * τ c ≤ E * tm := by
       have h1 : max (c.1 * c.2.2.2) 0 ≤ E :=

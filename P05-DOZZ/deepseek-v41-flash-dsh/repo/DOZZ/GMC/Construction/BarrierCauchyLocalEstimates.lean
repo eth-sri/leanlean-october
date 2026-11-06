@@ -196,9 +196,8 @@ theorem compatible_two_root_wick_pair_good_barrier_power_bound_BarrierCauchyLoca
     have hupper := (abs_le.mp h').2
     linarith
   intro η g a hη hη1 hg hag hCk hCeta hgap hκ hκexp
-  have hkpos : 0 < (k : ℝ) := lt_of_le_of_lt hC₀nonneg hCk
   have hpair := finite_gaussian_wick_pair_good_barrier_power_bound P V hV
-    1 2 0 (by decide) g a C₀ η (k : ℝ) ‖x - y‖ ρ κ hg hag hkpos hη hη1
+    1 2 0 (by decide) g a C₀ η (k : ℝ) ‖x - y‖ ρ κ hg hag (lt_of_le_of_lt hC₀nonneg hCk) hη hη1
     hCeta hgap hvarV hcovV₁ hcovV₂ hrhoPos hrhoLeOne hxypos hdistLeRho hcovRoot hfloor
     hκ hκexp
   cases b₁ <;> cases b₂ <;> simpa [V, q, r] using hpair

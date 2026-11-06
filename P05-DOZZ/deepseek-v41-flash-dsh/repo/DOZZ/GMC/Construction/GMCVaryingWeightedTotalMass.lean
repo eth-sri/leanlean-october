@@ -37,10 +37,9 @@ private theorem weightedTotal_eq_integral_local
         rw [lintegral_const]
         exact ENNReal.mul_lt_top ENNReal.ofReal_lt_top
           (lt_top_iff_ne_top.mpr (@measure_ne_top ℂ _ μ hμ Set.univ))
-  have hWfinite : IsFiniteMeasure (μ.withDensity W) := isFiniteMeasure_withDensity hWint
   have hconst : ∫ z, (1 : BoundedContinuousFunction ℂ ℝ) z ∂μ.withDensity W =
       ((μ.withDensity W) Set.univ).toReal := by
-    let _ : IsFiniteMeasure (μ.withDensity W) := hWfinite
+    let _ : IsFiniteMeasure (μ.withDensity W) := (isFiniteMeasure_withDensity hWint)
     rw [← Measure.real_def]
     simp [integral_const]
   have hWlt : ∀ᵐ z ∂μ, W z < ∞ := ae_of_all _ (fun z => ENNReal.ofReal_lt_top)
@@ -104,8 +103,7 @@ theorem regularizedGMC_varyingWithDensity_univ_mass_diff_tendstoInMeasure
         simpa [Real.dist_eq, abs_sub_comm] using hz
       exact le_of_lt hz'
     have hstrict : ε / 2 < ε := by linarith
-    have hle' : ‖u r - v‖ < ε := lt_of_le_of_lt hle hstrict
-    simpa [Real.dist_eq, abs_of_nonneg (norm_nonneg _)] using hle'
+    simpa [Real.dist_eq, abs_of_nonneg (norm_nonneg _)] using (lt_of_le_of_lt hle hstrict)
   have hgapExpectation (r : ℝ) :
       ∫⁻ ω, gap r ω ∂P = ∫⁻ z, ENNReal.ofReal (diff r z) ∂gmcReferenceMeasure := by
     dsimp [gap, diff, μ]
@@ -125,7 +123,6 @@ theorem regularizedGMC_varyingWithDensity_univ_mass_diff_tendstoInMeasure
   intro ε hε
   let den : ℝ≥0∞ := ENNReal.ofReal ε
   have hden0 : den ≠ 0 := (ENNReal.ofReal_pos.mpr hε).ne'
-  have hdenTop : den ≠ ∞ := ENNReal.ofReal_ne_top
   have hrefTop : refMass ≠ ∞ := by simpa [refMass] using gmcReferenceMeasure_univ_ne_top
   have hprobT : Tendsto (fun r : ℝ =>
       (ENNReal.ofReal ‖u r - v‖ * refMass) / den) atTop (𝓝 0) := by
@@ -153,8 +150,7 @@ theorem regularizedGMC_varyingWithDensity_univ_mass_diff_tendstoInMeasure
           (fun _ : ℂ => (1 : ℝ≥0∞)) measurable_const
       have htotalMeas : Measurable (fun ω => (μ r ω) Set.univ) :=
         (Measure.measurable_coe MeasurableSet.univ).comp (hμMeas r)
-      have href : gmcReferenceMeasure Set.univ ≠ ∞ := gmcReferenceMeasure_univ_ne_top
-      filter_upwards [ae_lt_top htotalMeas (by rw [hmass]; exact href)] with ω hω
+      filter_upwards [ae_lt_top htotalMeas (by rw [hmass]; exact (gmcReferenceMeasure_univ_ne_top))] with ω hω
       exact ⟨hω⟩
     have hsub : ∀ᵐ ω ∂P,
         ε ≤ |(((μ r ω).withDensity (fun z => ENNReal.ofReal (u r z))) Set.univ).toReal -
@@ -208,7 +204,7 @@ theorem regularizedGMC_varyingWithDensity_univ_mass_diff_tendstoInMeasure
         (∫⁻ ω, gap r ω ∂P) / den := by
       apply meas_ge_le_lintegral_div (hgapMeas r).aemeasurable
       · exact hden0
-      · exact hdenTop
+      · exact (ENNReal.ofReal_ne_top)
     calc
       P {ω | ε ≤ |(
           (((μ r ω).withDensity (fun z => ENNReal.ofReal (u r z))) Set.univ).toReal -

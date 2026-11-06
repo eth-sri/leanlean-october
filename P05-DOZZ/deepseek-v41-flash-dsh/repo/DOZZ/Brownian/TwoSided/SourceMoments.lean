@@ -94,10 +94,9 @@ theorem twosided_reference_moment_le_of_fine_cutoffs
   let A : Set ℂ := Metric.ball 0 (1 / 8)
   let f : ℕ → Ω → ℝ := fun n ω => (regularizedGMC P Xc γ (n + 1 : ℕ) ω A).toReal
   let g : Ω → ℝ := fun ω => (M ω A).toReal
-  have hseq : Tendsto (fun n : ℕ => n + 1) atTop atTop := tendsto_add_atTop_nat 1
   have hconv : TendstoInMeasure P f atTop g :=
     (regularizedGMC_mass_toReal_tendstoInMeasure P X hX γ hγ hγ2 M hM Xc hXc A
-      Metric.isOpen_ball.measurableSet (1 / 8) Metric.ball_subset_closedBall).comp hseq
+      Metric.isOpen_ball.measurableSet (1 / 8) Metric.ball_subset_closedBall).comp (tendsto_add_atTop_nat 1)
   have hfmeas (n : ℕ) : Measurable (f n) :=
     measurable_regularizedGMC_apply_toReal P X hX Xc hXc γ _ A Metric.isOpen_ball.measurableSet
   have hpow (n : ℕ) : AEMeasurable

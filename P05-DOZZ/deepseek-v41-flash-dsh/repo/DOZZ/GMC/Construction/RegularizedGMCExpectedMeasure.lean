@@ -50,9 +50,6 @@ theorem regularizedGMC_measurable
     (Real.exp (γ * Xc p.1 p.2 r - γ ^ 2 / 2 * V p.2) * normPlus p.2 ^ (-4 : ℝ))
   have hdensity : Measurable density := by
     have hfield : Measurable (fun p : Ω × ℂ => Xc p.1 p.2 r) := hXc.1 r
-    have hnorm : Measurable (fun p : Ω × ℂ => normPlus p.2) :=
-      hnormPlus.comp measurable_snd
-    have hvariance : Measurable (fun p : Ω × ℂ => V p.2) := hVmeas.comp measurable_snd
     dsimp [density]
     fun_prop
   apply Measure.measurable_of_measurable_coe

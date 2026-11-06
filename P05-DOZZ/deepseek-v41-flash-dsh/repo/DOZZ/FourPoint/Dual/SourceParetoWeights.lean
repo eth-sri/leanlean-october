@@ -32,7 +32,6 @@ theorem dual_source_pareto_weights_integrable
   let A := fun ω => (dualOuterMass γ α₁ α₂ α₃ (M ω) z ξ).toReal
   let b := dual_radial_scale γ ν h Xc z
   let a := 2*ν/γ
-  have ha : 0 < a := div_pos (mul_pos (by norm_num) hν) hγ
   have hr : ‖z‖^(1-ξ) ≤ 1 := by
     simpa only [Real.one_rpow] using Real.rpow_le_rpow (norm_nonneg z) hz (sub_nonneg.mpr hξ1.le)
   have hpos : ∀ᵐ ω ∂P, 0 < A ω :=
@@ -43,7 +42,7 @@ theorem dual_source_pareto_weights_integrable
     dsimp only [b,dual_radial_scale]
     exact (Real.exp_pos _).le
   have h0 := (dual_radial_scale_real_expectation P X hX γ hγ hγ₂ M hM Xc hc
-    ν h a α₁ α₂ α₃ ξ (p+a) hh hξ hξ1 (add_pos hp ha).le z hz0 hz).1
+    ν h a α₁ α₂ α₃ ξ (p+a) hh hξ hξ1 (add_pos hp (div_pos (mul_pos (by norm_num) hν) hγ)).le z hz0 hz).1
   have h1 := (dual_radial_scale_real_expectation P X hX γ hγ hγ₂ M hM Xc hc
     ν h 1 α₁ α₂ α₃ ξ (p+1) hh hξ hξ1 (by linarith only [hp]) z hz0 hz).1
   have he0 : -(p+a) = -p-a := by ring

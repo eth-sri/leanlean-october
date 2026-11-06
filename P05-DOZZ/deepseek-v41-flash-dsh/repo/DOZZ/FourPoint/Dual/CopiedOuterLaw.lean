@@ -3,6 +3,7 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
+public import DOZZ.SharedHyp
 public import DOZZ.FourPoint.Dual.PastObservable
 import Mathlib.Tactic
 /-! Joint-law transport of exterior mass under independent radial reinsertion. -/
@@ -17,7 +18,7 @@ theorem dual_copied_radial_weighted_mass_joint_law
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) [IsProbabilityMeasure P]
     (A : Ω → TwoSidedPath) (hA : AEMeasurable A P)
     (M N : Ω → Measure ℂ) (hN : Measurable N)
-    (hfin : ∀ ω K, IsCompact K → K ⊆ ({0} : Set ℂ)ᶜ → N ω K < ⊤)
+    (hfin : FiniteOffOrigin N)
     (γ : ℝ) (f : ℂ → ℝ≥0∞) (hf : Measurable f)
     (hmass : AEMeasurable (fun ω => ∫⁻ x in ({0} : Set ℂ)ᶜ, f x ∂M ω) P)
     (hwhole : ∀ G : TwoSidedPath × ℝ≥0∞ → ℝ≥0∞, Measurable G →

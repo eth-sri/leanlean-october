@@ -34,7 +34,6 @@ theorem isGMCOf_inversion_chart_transport
           (Real.log (1 / ε))) γ N ∧
       ∀ᵐ ω ∂P, (M ω).map complexInvOpenPartialHomeomorph = N ω := by
   classical
-  have hP : IsProbabilityMeasure P := hX.1
   let U : Set ℂ := inversionChart
   let dens : ℂ → ℝ := fun x => normPlus x ^ (-4 : ℝ)
   let Y : Ω → ℝ → ℂ → ℝ := fun ω ε x => Xc ω x (Real.log (1 / ε))
@@ -44,10 +43,6 @@ theorem isGMCOf_inversion_chart_transport
     fun_prop
   have hY : IsAdmissibleLogRegularization P U dens 1 Y :=
     isCircleAverage_admissible P X hX Xc hXc U isOpen_compl_singleton
-  have hYinv : IsAdmissibleLogRegularization P U dens 1
-      (fun ω ε x => Y ω ε (φ x)) := by
-    simpa [Y, φ, U, dens, complexInvOpenPartialHomeomorph] using
-      isAdmissibleLogRegularization_complexInv P dens 1 Y hY
   obtain ⟨Mchart, hMchart, hMchartFinite, hMrestrict⟩ :=
     isGMCOf_restrict_admissible_version P X hX γ hγ hγ2 M hM Xc hXc U
       isOpen_compl_singleton
@@ -98,7 +93,7 @@ theorem isGMCOf_inversion_chart_transport
           (fun ω ε x => Y ω ε (φ x)) γ r ω f) atTop
         (fun ω => ∫ x, f x ∂N ω) := by
     obtain ⟨g, hgcompact, hgU, hgOn, _hgOff, hmass⟩ :=
-      @regularizedLogChaosTestMass_inversion_coordinate_change Ω _ P hP Y hY γ f
+      @regularizedLogChaosTestMass_inversion_coordinate_change Ω _ P (hX.1) Y hY γ f
         hfcompact hfU
     have hMlim := hMchart.2.2.2 g hgcompact hgU
     have hMapTest (ω : Ω) :

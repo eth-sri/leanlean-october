@@ -259,8 +259,7 @@ theorem compatibleAdmissibleSelectedMixedGrowingBarrierPairKernel_le_finiteBarri
     by_cases hgood : (ω, z) ∈ admissibleGrowingBarrierSet Y a k₀ t
     · have hsmall : (ω, z) ∈ admissibleGrowingBarrierSet Y a k₀ (m : ℝ) := by
         intro k hk₀ hkm
-        have hkt : (k : ℝ) ≤ t := le_trans hkm hmt
-        exact hgood k hk₀ hkt
+        exact hgood k hk₀ (le_trans hkm hmt)
       simp [Set.indicator, hgood, hsmall]
     · simp [Set.indicator, hgood]
   unfold compatibleAdmissibleSelectedMixedGrowingBarrierPairKernel

@@ -76,7 +76,6 @@ theorem lastExitReflectedMeasure_law_independent
   let Y : Ω → Measure ℝ := fun ω => (Z ω).map (fun s => s + T (D ω))
   let R : Measure ℝ → Measure ℝ := fun μ => μ.map (fun s : ℝ => -s)
   let M : Ω → Measure ℝ := fun ω => R (Y ω)
-  have hD : AEMeasurable D P := hB
   have hτ : Measurable (fun p : BrownianPath => negativeLastExitTime p c) :=
     measurable_negativeLastExitTime_joint.comp (measurable_const.prodMk measurable_id)
   have hT : Measurable T := by
@@ -84,10 +83,8 @@ theorem lastExitReflectedMeasure_law_independent
       (negativeLastExitTime p c : ℝ))
     exact NNReal.continuous_coe.measurable.comp hτ
   have hDZ : IndepFun D Z P := hInd
-  have hY := lateralGMC_random_translation P γ Z hZ D hD hDZ T hT
+  have hY := lateralGMC_random_translation P γ Z hZ D (hB) hDZ T hT
   have hR : Measurable R := Measure.measurable_map _ (by fun_prop)
-  have hM : AEMeasurable M P := hR.comp_aemeasurable hY.1
-  have hIndM : IndepFun D M P := hY.2.2.comp measurable_id hR
   have hcomp (ω : Ω) : M ω = lastExitReflectedMeasure c B Z ω := by
     dsimp [M, R, Y, D, T, lastExitReflectedMeasure]
     rw [Measure.map_map (by fun_prop) (by fun_prop)]
@@ -95,11 +92,10 @@ theorem lastExitReflectedMeasure_law_independent
     funext s
     simp only [Function.comp_apply]
     ring_nf
-  have hZA : AEMeasurable Z P := hZ.2.2.2.1
   have hsymm : (P.map Z).map R = P.map Z := by
     calc
       (P.map Z).map R = P.map (R ∘ Z) := by
-        exact AEMeasurable.map_map_of_aemeasurable hR.aemeasurable hZA
+        exact AEMeasurable.map_map_of_aemeasurable hR.aemeasurable (hZ.2.2.2.1)
       _ = P.map Z := by
         change P.map (fun ω => (Z ω).map (fun s => -s)) = P.map Z
         exact hZ.2.2.2.2.2.2.1
@@ -109,13 +105,13 @@ theorem lastExitReflectedMeasure_law_independent
         (AEMeasurable.map_map_of_aemeasurable hR.aemeasurable hY.1).symm
       _ = (P.map Z).map R := by rw [hY.2.1]
       _ = P.map Z := hsymm
-  refine ⟨hM.congr (Filter.Eventually.of_forall hcomp), ?_, ?_⟩
+  refine ⟨(hR.comp_aemeasurable hY.1).congr (Filter.Eventually.of_forall hcomp), ?_, ?_⟩
   · calc
       P.map (fun ω => lastExitReflectedMeasure c B Z ω) = P.map M :=
         Measure.map_congr (Filter.Eventually.of_forall fun ω => (hcomp ω).symm)
       _ = P.map Z := hMlaw
   · have hInd' : IndepFun D (fun ω => lastExitReflectedMeasure c B Z ω) P := by
-      exact hIndM.congr (Filter.Eventually.of_forall fun _ => rfl)
+      exact (hY.2.2.comp measurable_id hR).congr (Filter.Eventually.of_forall fun _ => rfl)
         (Filter.Eventually.of_forall hcomp)
     exact hInd'
 
@@ -150,11 +146,10 @@ theorem postLastExit_reflectedJointLaw_eq
       _ = P.map D := hPathShift.2
   have hIndDZ : IndepFun D Z P := hInd.comp measurable_snd measurable_id
   have hTrans := lastExitReflectedMeasure_law_independent P γ c B Z hD hZ hIndDZ
-  have hM : AEMeasurable M P := hTrans.1
   have hUIndM : IndepFun U M P :=
     hTrans.2.2.comp (measurable_negativeConditionedPostLastExitPath c) measurable_id
   have hPairUM : P.map (fun ω => (U ω, M ω)) = (P.map U).prod (P.map M) :=
-    (indepFun_iff_map_prod_eq_prod_map_map hU hM).1 hUIndM
+    (indepFun_iff_map_prod_eq_prod_map_map hU (hTrans.1)).1 hUIndM
   have hPairDZ : P.map (fun ω => (D ω, Z ω)) = (P.map D).prod (P.map Z) :=
     (indepFun_iff_map_prod_eq_prod_map_map hD hZ.2.2.2.1).1 hIndDZ
   calc
@@ -198,8 +193,7 @@ theorem twoSidedReflectionTailMass_eq_postLastExit_entranceMass {Ω : Type*}
     have hpre_mem : s ∈ g ⁻¹' Ioi (0 : ℝ) := by rw [hpre]; exact hs
     have hgpos : 0 < g s := by simpa [mem_preimage, mem_Ioi] using hpre_mem
     have htime : τ + Real.toNNReal (g s) = -s := by
-      have hcoe : (Real.toNNReal (g s) : ℝ) = g s := Real.coe_toNNReal _ hgpos.le
-      rw [hcoe]
+      rw [(Real.coe_toNNReal _ hgpos.le)]
       dsimp [g]
       ring
     have harg : negativeLastExitTime (B ω).2 c + Real.toNNReal (g s) =
@@ -294,7 +288,6 @@ theorem real_rpow_add_increment_le_superunit (x d p : ℝ)
   let y := x + d
   let t := d / y
   have hy : 0 < y := by dsimp [y]; linarith
-  have ht0 : 0 ≤ t := div_nonneg hd hy.le
   have htx : t ≤ 1 := by
     dsimp [t, y]
     rw [div_le_one hy]

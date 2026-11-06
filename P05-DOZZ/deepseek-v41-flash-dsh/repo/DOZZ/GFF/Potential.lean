@@ -118,7 +118,6 @@ theorem integral_gffKernel_circleMeasure (x : ℂ) :
   have hconst : Integrable (fun _ : ℂ => Real.log (normPlus x)) (circleMeasure 0 0) :=
     integrable_const _
   have hplus := integrable_log_normPlus_circleMeasure
-  have hprob := circleMeasure_zero_isProbability
   have hconstInt :
       ∫ z : ℂ, Real.log (normPlus x) ∂circleMeasure 0 0 = Real.log (normPlus x) := by
     rw [integral_const]

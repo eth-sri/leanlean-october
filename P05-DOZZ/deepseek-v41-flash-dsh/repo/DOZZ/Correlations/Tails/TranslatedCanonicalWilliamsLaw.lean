@@ -3,6 +3,7 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
+public import DOZZ.SharedHyp
 
 public import DOZZ.Correlations.Tails.OriginPolarMass
 public import DOZZ.Correlations.Tails.TranslatedLateralLaw
@@ -23,8 +24,8 @@ conditioned copies and lateral law are independent. -/
 theorem translated_canonical_williams_mass_law
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
     (Xc : Ω → ℂ → ℝ → ℝ) (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
-    (hcont : ∀ᵐ ω ∂P, Continuous (fun p : ℂ × ℝ => Xc ω p.1 p.2))
+    (hm : MeasurableCircleAvg Xc)
+    (hcont : ContinuousCircleAvg P Xc)
     (z : ℂ) (γ α : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (hα : α < Q γ)
     (N : Ω → Measure ℂ) (hN : IsGMCOf P (translatedField X Xc z) γ N)
     (Qν : Measure BrownianPath) (hQν : IsNegativeConditionedBrownianLaw (Q γ - α) Qν) :
@@ -42,13 +43,11 @@ theorem translated_canonical_williams_mass_law
   have hcU := translated_field_circleAverage P X Xc hX hc z
   have hcontU := translated_circle_continuous P Xc hcont z
   have hA := originRadialPath_aemeasurable P _ Uc hcU hcontU
-  have hD : AEMeasurable D P := continuous_radialPositiveHalf.measurable.comp_aemeasurable hA
   have hBp := (originRadialPath_isBrownian P _ Uc hU hcU hcontU).1
   have hDB := radialPositiveHalf_map_isBrownian P A hA hBp
   have hZ := translated_lateral_isLateralGMCOf P X Xc hX hc hm hcont z γ hγ hγ2 N hN
   have hAZ := lateralProjectedGMC_indep P _ Uc hU hcU
     (translated_circle_jointMeasurable Xc hm z) hcontU γ hγ hγ2 N hN
-  have hDZ : IndepFun D Z P := hAZ.comp continuous_radialPositiveHalf.measurable measurable_id
   have hmass : (localSingularMass N (fun _ => 1) 0 γ α) =ᵐ[P]
       (fun ω => ∫⁻ t, (if 0 < t then ENNReal.ofReal
         (Real.exp (γ * (D ω (Real.toNNReal t) - (Q γ - α) * t))) else 0) ∂Z ω) := by
@@ -65,7 +64,7 @@ theorem translated_canonical_williams_mass_law
       rw [he]
     · rw [ite_eq_right ht, ite_eq_right ht]
   rw [Measure.map_congr hmass]
-  exact williams_polar_mass_law P D hD hDB γ Z hZ hDZ (Q γ - α)
+  exact williams_polar_mass_law P D (continuous_radialPositiveHalf.measurable.comp_aemeasurable hA) hDB γ Z hZ (hAZ.comp continuous_radialPositiveHalf.measurable measurable_id) (Q γ - α)
     (sub_pos.mpr hα) Qν hQν
 
 

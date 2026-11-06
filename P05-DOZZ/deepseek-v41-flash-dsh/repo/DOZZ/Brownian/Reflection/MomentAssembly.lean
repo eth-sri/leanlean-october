@@ -70,7 +70,6 @@ theorem lastone_brownian_smallPower_limit
     Tendsto (fun ν : ℝ =>
       (∫⁻ ω, ENNReal.rpow (twoSidedReflectionMass γ (B ν) Z ω) (ν / γ) ∂P).toReal)
       (𝓝[>] 0) (𝓝 1) := by
-  have _consumed := hγ2
   exact lastone_brownian_smallPower_limit_of_ne_zero P γ hγ Z B hB hZ hInd
     (lateralGMC_ne_zero_ae P γ Z hZ)
 
@@ -83,7 +82,6 @@ theorem reflectionR_tendsto_Q
     (hData : ∀ α, γ / 2 < α → α < Q γ → IsReflectionData P γ α (B α) Z) :
     Tendsto (fun α : ℝ => reflectionR P γ μ α (B α) Z)
       (𝓝[<] (Q γ)) (𝓝 (-1)) := by
-  have _consumed := hγ2
   have hQ : γ / 2 < Q γ := by
     unfold Q
     have h2 : 0 < 2 / γ := div_pos two_pos hγ

@@ -39,7 +39,6 @@ theorem reflected_inner_kernel_squeeze (γ α₁ α₂ α₃ R η : ℝ) (z x : 
     rw [← one_div]
     apply (le_div_iff₀ hηp).mpr
     nlinarith [sq_nonneg η]
-  have hbase : 0 < ‖x - 1‖ := hηp.trans_le hd1
   have hlo := coulombWeight_le_rpow hL (by simpa only [inv_inv] using hd1) hd2
     (-(γ * α₂))
   have hup := coulombWeight_rpow_le hL (by simpa only [inv_inv] using hd1) hd2
@@ -60,7 +59,7 @@ theorem reflected_inner_kernel_squeeze (γ α₁ α₂ α₃ R η : ℝ) (z x : 
       ‖x-z‖ ^ (γ^2/2) * ‖x‖ ^ (-(γ*α₁)) * ‖x-1‖ ^ (-(γ*α₂)) := by
     unfold gammaHalfKernel normPlus
     rw [max_eq_left (hsmall.trans hη₁.le), Real.one_rpow, mul_one,
-      Real.rpow_neg hx.le, Real.rpow_neg hbase.le]
+      Real.rpow_neg hx.le, Real.rpow_neg (hηp.trans_le hd1).le]
     ring
   rw [heq]
   constructor

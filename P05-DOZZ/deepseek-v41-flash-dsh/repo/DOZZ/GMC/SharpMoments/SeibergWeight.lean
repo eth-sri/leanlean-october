@@ -65,7 +65,6 @@ theorem coulombWeight_rpow_le {L y : ℝ} (hL : 1 ≤ L) (hy1 : L⁻¹ ≤ y) (h
 theorem coulombWeight_le_rpow {L y : ℝ} (hL : 1 ≤ L) (hy1 : L⁻¹ ≤ y) (hy2 : y ≤ L) (e : ℝ) :
     L ^ (-|e|) ≤ y ^ e := by
   have hLpos : 0 < L := lt_of_lt_of_le one_pos hL
-  have hypos : 0 < y := lt_of_lt_of_le (inv_pos.mpr hLpos) hy1
   rcases le_total 0 e with he | he
   · rw [abs_of_nonneg he]
     have h1 : L ^ (-e) = L⁻¹ ^ e := by
@@ -73,7 +72,7 @@ theorem coulombWeight_le_rpow {L y : ℝ} (hL : 1 ≤ L) (hy1 : L⁻¹ ≤ y) (h
     rw [h1]
     exact Real.rpow_le_rpow (inv_nonneg.mpr hLpos.le) hy1 he
   · rw [abs_of_nonpos he, neg_neg]
-    exact Real.rpow_le_rpow_of_nonpos hypos hy2 he
+    exact Real.rpow_le_rpow_of_nonpos (lt_of_lt_of_le (inv_pos.mpr hLpos) hy1) hy2 he
 
 /-- `ENNReal.rpow` of `ENNReal.ofReal` of a positive real. -/
 theorem coulombWeight_rpow_ofReal {y : ℝ} (hy : 0 < y) (e : ℝ) :
@@ -83,15 +82,13 @@ theorem coulombWeight_rpow_ofReal {y : ℝ} (hy : 0 < y) (e : ℝ) :
 /-- On a positive interval `[L⁻¹, L]`, real powers are bounded above by `L ^ |e|`. -/
 theorem ennreal_rpow_ofReal_le_of_mem_Icc {L y : ℝ} (hL : 1 ≤ L) (hy1 : L⁻¹ ≤ y) (hy2 : y ≤ L)
     (e : ℝ) : ENNReal.rpow (ENNReal.ofReal y) e ≤ ENNReal.ofReal (L ^ |e|) := by
-  have hypos : 0 < y := lt_of_lt_of_le (inv_pos.mpr (lt_of_lt_of_le one_pos hL)) hy1
-  rw [coulombWeight_rpow_ofReal hypos]
+  rw [coulombWeight_rpow_ofReal (lt_of_lt_of_le (inv_pos.mpr (lt_of_lt_of_le one_pos hL)) hy1)]
   exact ENNReal.ofReal_le_ofReal (coulombWeight_rpow_le hL hy1 hy2 e)
 
 /-- On a positive interval `[L⁻¹, L]`, real powers are bounded below by `L ^ (-|e|)`. -/
 theorem ennreal_ofReal_le_rpow_ofReal_of_mem_Icc {L y : ℝ} (hL : 1 ≤ L) (hy1 : L⁻¹ ≤ y)
     (hy2 : y ≤ L) (e : ℝ) : ENNReal.ofReal (L ^ (-|e|)) ≤ ENNReal.rpow (ENNReal.ofReal y) e := by
-  have hypos : 0 < y := lt_of_lt_of_le (inv_pos.mpr (lt_of_lt_of_le one_pos hL)) hy1
-  rw [coulombWeight_rpow_ofReal hypos]
+  rw [coulombWeight_rpow_ofReal (lt_of_lt_of_le (inv_pos.mpr (lt_of_lt_of_le one_pos hL)) hy1)]
   exact ENNReal.ofReal_le_ofReal (coulombWeight_le_rpow hL hy1 hy2 e)
 
 /-- The singular factor splits off the distance to a root. -/
@@ -142,12 +139,11 @@ theorem coulombWeight_prod_ge {ι : Type*} (s : Finset ι) (a e : ι → ℝ) {L
 /-- Bounds `1 ≤ a ≤ A ≤ L δ` with `δ ≤ 1` put `a` in `[L⁻¹, L]`. -/
 theorem coulombWeight_base_bounds {a A L δ : ℝ} (hδ : 0 < δ) (hδ1 : δ ≤ 1) (ha1 : 1 ≤ a)
     (haA : a ≤ A) (hAL : A ≤ L * δ) : 1 ≤ L ∧ L⁻¹ ≤ a ∧ a ≤ L := by
-  have h1 : 1 ≤ L * δ := ha1.trans (haA.trans hAL)
   have hL0 : 0 < L := by
     by_contra hneg
     nlinarith [mul_nonneg (neg_nonneg.mpr (not_lt.mp hneg)) hδ.le]
   have hLδ : L * δ ≤ L := mul_le_of_le_one_right hL0.le hδ1
-  have hL1 : 1 ≤ L := h1.trans hLδ
+  have hL1 : 1 ≤ L := (ha1.trans (haA.trans hAL)).trans hLδ
   exact ⟨hL1, (inv_le_one_of_one_le₀ hL1).trans ha1, haA.trans (hAL.trans hLδ)⟩
 
 /-- Quotient `a / b` with `1 ≤ a ≤ A ≤ L δ` and `δ ≤ b ≤ B ≤ L` lies in `[L⁻¹, L]`. -/
@@ -193,7 +189,6 @@ theorem coulombWeight_le_root {N : ℕ} (γ : ℝ) (α : Fin N → ℝ) (z : Fin
   have hS : 0 ≤ S := Finset.sum_nonneg fun j _ => norm_nonneg (z j)
   have hzS : ∀ j, ‖z j‖ ≤ S := fun j =>
     Finset.single_le_sum (f := fun i => ‖z i‖) (fun i _ => norm_nonneg (z i)) (Finset.mem_univ j)
-  have hr0 : 0 < ‖x - z k‖ := norm_pos_iff.mpr (sub_ne_zero.mpr hxk)
   have hrδ : ‖x - z k‖ < δ := by rwa [Metric.mem_ball, dist_eq_norm] at hx
   have hxn : ‖x‖ ≤ 1 + S := by
     have h1 := norm_sub_norm_le x (z k)
@@ -233,7 +228,7 @@ theorem coulombWeight_le_root {N : ℕ} (γ : ℝ) (α : Fin N → ℝ) (z : Fin
   have hTk : ENNReal.rpow (ENNReal.ofReal (normPlus x / ‖x - z k‖)) (γ * α k) =
       ENNReal.rpow (ENNReal.ofReal (normPlus x)) (γ * α k) *
         ENNReal.rpow (ENNReal.ofReal ‖x - z k‖) (-γ * α k) := by
-    rw [coulombWeight_rpow_ofReal_div (lt_of_lt_of_le one_pos ha1) hr0, neg_mul]
+    rw [coulombWeight_rpow_ofReal_div (lt_of_lt_of_le one_pos ha1) (norm_pos_iff.mpr (sub_ne_zero.mpr hxk)), neg_mul]
   have hexp : ∑ j, |γ * α j| + |γ * αinf| =
       |γ * α k| + ∑ j ∈ Finset.univ.erase k, |γ * α j| + |γ * αinf| := by
     rw [Finset.add_sum_erase Finset.univ (fun j => |γ * α j|) (Finset.mem_univ k)]
@@ -270,7 +265,6 @@ theorem coulombWeight_le_bulk {N : ℕ} (γ : ℝ) (α : Fin N → ℝ) (z : Fin
     rw [hL_def, le_div_iff₀ hδ]
     nlinarith
   obtain ⟨hL1, hLa1, hLa2⟩ := coulombWeight_base_bounds hδ hδ1 ha1 haA hAL
-  have hL0 : 0 < L := lt_of_lt_of_le one_pos hL1
   have hP : ∏ j, ENNReal.rpow (ENNReal.ofReal (normPlus x / ‖x - z j‖)) (γ * α j) ≤
       ENNReal.ofReal (L ^ ∑ j, |γ * α j|) := by
     refine coulombWeight_prod_le Finset.univ (fun j => normPlus x / ‖x - z j‖)
@@ -287,7 +281,7 @@ theorem coulombWeight_le_bulk {N : ℕ} (γ : ℝ) (α : Fin N → ℝ) (z : Fin
       ≤ ENNReal.ofReal (L ^ ∑ j, |γ * α j|) * ENNReal.ofReal (L ^ |γ * αinf|) :=
         mul_le_mul' hP hI
     _ = ENNReal.ofReal (L ^ (∑ j, |γ * α j| + |γ * αinf|)) :=
-        coulombWeight_ofReal_rpow_mul hL0 _ _
+        coulombWeight_ofReal_rpow_mul (lt_of_lt_of_le one_pos hL1) _ _
 
 /-- Far out the Coulomb weight is comparable to the power at infinity: upper bound. -/
 theorem coulombWeight_le_exterior {N : ℕ} (γ : ℝ) (α : Fin N → ℝ) (z : Fin N → ℂ) (αinf : ℝ)

@@ -39,9 +39,8 @@ theorem bpzWCR_inv_le (u : ℝ) : u⁻¹ ≤ 1 + (u ^ 2)⁻¹ := by
 /-- `‖t/(z - x)‖ ≤ (1 + ‖x - z‖^{-2}) t` for `t ≥ 0`. -/
 theorem bpzWCR_norm_div_le {z x : ℂ} (hx : x ≠ z) {t : ℝ} (ht : 0 ≤ t) :
     ‖(t : ℂ) / (z - x)‖ ≤ (1 + ‖x - z‖ ^ (-2 : ℝ)) * t := by
-  have hu : 0 < ‖x - z‖ := norm_pos_iff.mpr (sub_ne_zero.mpr hx)
   rw [norm_div, Complex.norm_real, Real.norm_of_nonneg ht, norm_sub_rev z x,
-    Real.rpow_neg hu.le, Real.rpow_two]
+    Real.rpow_neg (norm_pos_iff.mpr (sub_ne_zero.mpr hx)).le, Real.rpow_two]
   calc t / ‖x - z‖ = ‖x - z‖⁻¹ * t := by ring
     _ ≤ (1 + (‖x - z‖ ^ 2)⁻¹) * t :=
         mul_le_mul_of_nonneg_right (bpzWCR_inv_le _) ht
@@ -50,8 +49,6 @@ theorem bpzWCR_norm_div_le {z x : ℂ} (hx : x ≠ z) {t : ℝ} (ht : 0 ≤ t) :
 theorem bpzWCR_alg_bound {A r s a b : ℝ} (hA : 0 ≤ A) (ha : 0 ≤ a) (hb : 0 ≤ b) :
     A * (1 + r + s) * (a * b) / 2 ≤ A / 2 * ((1 + r) * a * b + a * ((1 + s) * b)) := by
   have h : 0 ≤ A * (a * b) := mul_nonneg hA (mul_nonneg ha hb)
-  have e : A / 2 * ((1 + r) * a * b + a * ((1 + s) * b)) - A * (1 + r + s) * (a * b) / 2 =
-      A * (a * b) / 2 := by ring
   linarith
 
 /-! ### The pointwise combination -/
@@ -88,9 +85,6 @@ theorem bpzWCR_pointwise {z x y : ℂ} (k : ℂ → ℝ) (hxy : x ≠ y) (hx : x
       -(bpzG z x - bpzG z y) / (2 * (x - y)) := bpz_g_kern_combination hxy
   have h2 : (bpzG z x - bpzG z y) / (x - y) =
       -1 + z * (z - 1) / ((z - x) * (z - y)) := bpz_g_diff_quot hxy hx hy
-  have hxy' : x - y ≠ 0 := sub_ne_zero.mpr hxy
-  have hzx : z - x ≠ 0 := sub_ne_zero.mpr hx.symm
-  have hzy : z - y ≠ 0 := sub_ne_zero.mpr hy.symm
   rw [bpzWCR_H_eq, bpzWCR_H_eq, bpzWCR_H_eq, bpzWCR_H_eq, bpzWCR_alg]
   simp only [Complex.reCLM_apply, Complex.imCLM_apply]
   rw [h1, show -(bpzG z x - bpzG z y) / (2 * (x - y)) =

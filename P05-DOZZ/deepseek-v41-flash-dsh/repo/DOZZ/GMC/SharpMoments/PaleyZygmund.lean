@@ -82,9 +82,8 @@ theorem paleyZygmund_sub_le {θ m : ℝ} (hθ1 : θ < 1) (hθ0 : 0 ≤ θ) (hm :
 theorem paleyZygmund_rpow_step {p a K : ℝ} (hp : 1 < p) (ha : 0 ≤ a) (hK : 0 ≤ K) {y : ℝ≥0∞}
     (h : ENNReal.ofReal a ≤ (ENNReal.ofReal K) ^ (1 / p) * y ^ (1 / (p / (p - 1)))) :
     ENNReal.ofReal (a ^ (p / (p - 1))) ≤ ENNReal.ofReal (K ^ (1 / (p - 1))) * y := by
-  have hp0 : 0 < p := lt_trans zero_lt_one hp
   have hp1 : 0 < p - 1 := sub_pos.2 hp
-  have hq : 0 < p / (p - 1) := div_pos hp0 hp1
+  have hq : 0 < p / (p - 1) := div_pos (lt_trans zero_lt_one hp) hp1
   have e1 : 1 / p * (p / (p - 1)) = 1 / (p - 1) := by
     field_simp
   have e2 : 1 / (p / (p - 1)) * (p / (p - 1)) = 1 := by
@@ -105,7 +104,6 @@ theorem paley_zygmund_lintegral
     (hKZ : ∫⁻ ω, Z ω ^ p ∂P ≤ ENNReal.ofReal K) :
     ENNReal.ofReal (((1 - θ) * m) ^ (p / (p - 1)) / K ^ (1 / (p - 1))) ≤
       P {ω | ENNReal.ofReal (θ * m) < Z ω} := by
-  have hp0 : 0 < p := lt_trans zero_lt_one hp
   have hpq : p.HolderConjugate (p / (p - 1)) :=
     (Real.holderConjugate_iff_eq_conjExponent hp).2 rfl
   have h3 : ENNReal.ofReal m ≤ ENNReal.ofReal (θ * m) +
@@ -115,10 +113,9 @@ theorem paley_zygmund_lintegral
   have h5 : ENNReal.ofReal ((1 - θ) * m) ≤ (ENNReal.ofReal K) ^ (1 / p) *
       (P {ω | ENNReal.ofReal (θ * m) < Z ω}) ^ (1 / (p / (p - 1))) := by
     refine h4.trans ((paleyZygmund_holder P Z hZ hpq (ENNReal.ofReal (θ * m))).trans ?_)
-    exact mul_le_mul_left (ENNReal.rpow_le_rpow hKZ (one_div_nonneg.2 hp0.le)) _
+    exact mul_le_mul_left (ENNReal.rpow_le_rpow hKZ (one_div_nonneg.2 (lt_trans zero_lt_one hp).le)) _
   have h6 := paleyZygmund_rpow_step hp (mul_nonneg (sub_nonneg.2 hθ1.le) hm.le) hK.le h5
-  have hKpos : 0 < K ^ (1 / (p - 1)) := Real.rpow_pos_of_pos hK _
-  rw [ENNReal.ofReal_div_of_pos hKpos]
+  rw [ENNReal.ofReal_div_of_pos (Real.rpow_pos_of_pos hK _)]
   exact ENNReal.div_le_of_le_mul' h6
 
 end DOZZ.Proofs

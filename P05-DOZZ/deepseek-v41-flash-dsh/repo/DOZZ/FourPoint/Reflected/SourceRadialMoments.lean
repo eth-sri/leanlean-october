@@ -32,7 +32,6 @@ theorem reflected_radial_scale_moment_finite
     have hl := Real.log_nonpos hn.le hz
     dsimp only [m,t]
     linarith only [hl,hh]
-  have hr0 : 0 < ‖z‖^(1-ξ) := Real.rpow_pos_of_pos hn _
   have hr1 : ‖z‖^(1-ξ) ≤ 1 := by
     simpa only [Real.one_rpow] using Real.rpow_le_rpow hn.le hz (sub_nonneg.mpr hξ1.le)
   have hr : ‖z‖ ≤ ‖z‖^(1-ξ) := by
@@ -50,7 +49,7 @@ theorem reflected_radial_scale_moment_finite
     congr 1
     ring
   have hshift := reflected_outerMass_circle_tilt P X hX γ hγ hγ₂ M hM Xc hc
-    aTilt m α₁ α₂ α₃ ξ q hm z hr0 hout
+    aTilt m α₁ α₂ α₃ ξ q hm z (Real.rpow_pos_of_pos hn _) hout
   obtain ⟨C, _, hb⟩ := reflected_outerMass_inverse_moment_uniform P X hX γ hγ hγ₂ M hM
     (α₁+aTilt) α₂ α₃ q hq
   have hf : (∫⁻ ω, gammaHalfOuterMass γ (α₁+aTilt) α₂ α₃ (M ω) z ξ ^(-q) ∂P) < ⊤ :=

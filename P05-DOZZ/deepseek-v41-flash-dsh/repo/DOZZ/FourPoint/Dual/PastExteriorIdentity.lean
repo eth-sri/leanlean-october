@@ -3,6 +3,7 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
+public import DOZZ.SharedHyp
 public import DOZZ.FourPoint.Dual.SourceCopiedOuterLaw
 import Mathlib.Tactic
 /-! The stopped-past exterior observable is the actual retained source mass. -/
@@ -43,7 +44,7 @@ theorem dual_source_past_exterior_mass_eq
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
     (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ₂ : γ < 2)
     (M N : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) (A : Ω → TwoSidedPath)
-    (hfin : ∀ ω K, IsCompact K → K ⊆ ({0} : Set ℂ)ᶜ → N ω K < ⊤)
+    (hfin : FiniteOffOrigin N)
     (heq : N =ᵐ[P] (fun ω => (M ω).withDensity (lateralRadialWeight γ (A ω))))
     (α₁ α₂ α₃ ξ : ℝ) (z : ℂ) (hz : ‖z‖ < ‖z‖^(1-ξ))
     (T : ℝ≥0) (hT : Real.exp (-(T : ℝ)) ≤ ‖z‖^(1-ξ)) :

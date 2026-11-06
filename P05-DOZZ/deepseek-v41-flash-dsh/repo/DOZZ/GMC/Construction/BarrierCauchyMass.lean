@@ -79,9 +79,8 @@ theorem admissibleLogRegularization_variance_measurable
     (Y : Ω → ℝ → ℂ → ℝ)
     (hY : IsAdmissibleLogRegularization P U dens ε₀ Y) (ε : ℝ) :
     Measurable (fun x => gaussianVariance P (fun ω => Y ω ε x)) := by
-  have hfield : Measurable (fun q : Ω × ℂ => Y q.1 ε q.2) := hY.measurableAtScale ε
   have hswap : Measurable (fun q : ℂ × Ω => Y q.2 ε q.1) :=
-    hfield.comp measurable_swap
+    (hY.measurableAtScale ε).comp measurable_swap
   have hsquare : Measurable (fun q : ℂ × Ω => Y q.2 ε q.1 ^ 2) := hswap.pow_const 2
   have hvar : Measurable (fun x : ℂ => ∫ ω, Y ω ε x ^ 2 ∂P) :=
     hsquare.stronglyMeasurable.integral_prod_right.measurable

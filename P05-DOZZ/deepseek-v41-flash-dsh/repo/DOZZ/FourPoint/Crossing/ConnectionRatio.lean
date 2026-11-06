@@ -37,7 +37,6 @@ theorem crossing_connection_first_ratio (a b c : ℝ)
     (real_ne_neg_nat_of_frac (k := -1) (by push_cast; dsimp [δ]; linarith only [hδ1])
       (by push_cast; dsimp [δ]; linarith only [hδ]))
   have hcm : c - 1 ≠ 0 := by linarith only [hc1]
-  have hdm : δ ≠ 0 := hδ.ne'
   have hab : a + b - c = -δ := by dsimp [δ]; ring
   rw [hab]
   calc
@@ -48,7 +47,7 @@ theorem crossing_connection_first_ratio (a b c : ℝ)
           (Real.Gamma (1 - a))⁻¹ * (Real.Gamma (1 - b))⁻¹) /
         ((Real.Gamma c * Real.Gamma (-δ) * (Real.Gamma a)⁻¹ * (Real.Gamma b)⁻¹) *
           ((c - 1) / δ)) = _
-      field_simp [hΓa, hΓb, hΓ1a, hΓ1b, hΓc, hΓδ, hcm, hdm]
+      field_simp [hΓa, hΓb, hΓ1a, hΓ1b, hΓc, hΓδ, hcm, (hδ.ne')]
     _ = _ := dual_connection_first_multiplier a b c δ hc hc1 hδ hδ1
 
 end DOZZ.Proofs

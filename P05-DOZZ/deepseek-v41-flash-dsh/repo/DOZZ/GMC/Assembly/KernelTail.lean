@@ -89,9 +89,8 @@ theorem admissible_separated_double_root_tail_uniform
   have hCv' : Cv ≤ C := le_max_left _ _
   have hCm' : Cm ≤ C := le_trans (le_max_left _ _) (le_max_right _ _)
   have hCc' : Cc ≤ C := le_trans (le_max_right _ _) (le_max_right _ _)
-  have hC0 : 0 ≤ C := le_trans hCv hCv'
   have hεcut : ε ≤ ε₀ := hεk.trans hkcut
-  have hkpos : 0 < (k : ℝ) := lt_of_le_of_lt hC0 hkC
+  have hkpos : 0 < (k : ℝ) := lt_of_le_of_lt (le_trans hCv hCv') hkC
   let q : Fin 3 → ℝ × ℂ := fun i =>
     if i = 0 then (Real.exp (-(k : ℝ)), x) else if i = 1 then (ε, x) else (δ, y)
   let V : Ω → Fin 3 → ℝ := fun ω i => Y ω (q i).1 (q i).2
@@ -150,8 +149,7 @@ theorem admissible_separated_double_root_tail_uniform
     rw [hmean]
     have h1 := mul_le_mul_of_nonneg_left hcov01 hg.le
     have h2 := mul_le_mul_of_nonneg_left hcov02 hg.le
-    have hLabs : L ≤ |L| := le_abs_self L
-    have h3 : g * L ≤ g * |L| := mul_le_mul_of_nonneg_left hLabs hg.le
+    have h3 : g * L ≤ g * |L| := mul_le_mul_of_nonneg_left (le_abs_self L) hg.le
     linarith only [h1, h2, h3]
   have hgapStrict : (∑ j : Fin 3, gaussianCovariance P (fun ω => V ω 0)
       (fun ω => V ω j) * tilt j) < a * (k : ℝ) := by
@@ -385,8 +383,7 @@ theorem finiteBarrierPairKernel_le_growing_add_tail
         g * (|L| + 2 * C) ≤ (a - g) * (k : ℝ) / 2 := by
     have hkm : (m : ℝ) ≤ k := by exact_mod_cast hk.le
     refine ⟨lt_of_lt_of_le hmC hkm, le_trans (Real.exp_le_exp.mpr (by linarith)) hmcut, ?_⟩
-    have hag : 0 ≤ a - g := (sub_pos.mpr hga).le
-    linarith only [hgap, mul_le_mul_of_nonneg_left hkm hag]
+    linarith only [hgap, mul_le_mul_of_nonneg_left hkm ((sub_pos.mpr hga).le)]
   have hlogyx : Real.log (1 / ‖y - x‖) ≤ L := by rwa [norm_sub_rev]
   have hxy' : 0 < ‖y - x‖ := by rwa [norm_sub_rev]
   -- the omitted-barrier sums at both roots

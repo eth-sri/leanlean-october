@@ -85,7 +85,6 @@ theorem dualShift_of_product {γ μ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2) (hγir
           have : (0 : ℝ) < 1 + 4 / γ ^ 2 := by positivity
           linarith))
     rwa [show (1 : ℂ) - -4 / (γ : ℂ) ^ 2 = 1 + 4 / (γ : ℂ) ^ 2 by ring] at h
-  have hX0 : X ≠ 0 := left_ne_zero_of_mul_eq_one hXA
   -- `l(2(ε - Q)/γ) l(2 + 4/γ² - 2ε/γ) = 1`
   set Y : ℂ := lFun (2 + 4 / (γ : ℂ) ^ 2 - 2 * ε / γ) with hY
   have hY1 : 1 - dualArg₁ γ ε = 2 + 4 / (γ : ℂ) ^ 2 - 2 * ε / γ := by
@@ -105,10 +104,8 @@ theorem dualShift_of_product {γ μ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2) (hγir
         have : (0 : ℝ) ≤ n := Nat.cast_nonneg n
         linarith)
     rwa [hY1] at h
-  have hY0 : Y ≠ 0 := right_ne_zero_of_mul_eq_one hl₁Y
   -- `l(γ²/4) l(-γ²/4) = -16/γ⁴`
   have hPQ : lFun (-((γ : ℂ) ^ 2) / 4) * lFun ((γ : ℂ) ^ 2 / 4) = -16 / (γ : ℂ) ^ 4 := by
-    have hq : ((γ : ℂ) ^ 2 / 4) ≠ 0 := div_ne_zero (pow_ne_zero 2 hγc) (by norm_num)
     have hΓ1 : Complex.Gamma ((γ : ℂ) ^ 2 / 4) ≠ 0 := by
       rw [show (γ : ℂ) ^ 2 / 4 = ((γ ^ 2 / 4 : ℝ) : ℂ) by push_cast; ring]
       refine Complex.Gamma_ne_zero fun n hn => ?_
@@ -121,7 +118,7 @@ theorem dualShift_of_product {γ μ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2) (hγir
       exact Complex.Gamma_ne_zero (ofReal_ne_neg_nat_of_mem (Or.inl ⟨by nlinarith, by
         have : (0 : ℝ) < γ ^ 2 / 4 := by positivity
         linarith⟩))
-    have h := lFun_mul_neg hq hΓ1 hΓ2
+    have h := lFun_mul_neg (div_ne_zero (pow_ne_zero 2 hγc) (by norm_num)) hΓ1 hΓ2
     rw [show -((γ : ℂ) ^ 2) / 4 = -((γ : ℂ) ^ 2 / 4) by ring, mul_comm, h]
     field_simp
     ring
@@ -131,24 +128,13 @@ theorem dualShift_of_product {γ μ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2) (hγir
     rw [hε]
     push_cast
     field_simp
-  have hB0 : lFun (2 * ε / γ) ≠ 0 := by
-    rw [← hB, show (1 : ℂ) - 2 * θ / γ = ((1 - 2 * θ / γ : ℝ) : ℂ) by push_cast; ring]
-    have hθγ : 2 * θ / γ < 1 / 2 := by
-      rw [div_lt_iff₀ hγ]
-      linarith
-    have hθγ' : 0 < 2 * θ / γ := by positivity
-    refine lFun_ne_zero (ofReal_ne_neg_nat_of_mem (Or.inr (Or.inl ⟨by linarith, by linarith⟩)))
-      ?_
-    rw [show (1 : ℂ) - ((1 - 2 * θ / γ : ℝ) : ℂ) = ((2 * θ / γ : ℝ) : ℂ) by push_cast; ring]
-    exact ofReal_ne_neg_nat_of_mem (Or.inr (Or.inl ⟨hθγ', by linarith⟩))
   -- assemble
   have hR : R ε = R ε * R ((Q γ + θ : ℝ) : ℂ) * R ((Q γ - θ : ℝ) : ℂ) := by
     rw [mul_assoc, hinv, mul_one]
   rw [hR, show R ε * R ((Q γ + θ : ℝ) : ℂ) = (R ε * R ((Q γ + θ : ℝ) : ℂ) * 2) / 2 by ring, hprod,
     hshift, ← hB]
-  have hA : lFun (1 + 4 / (γ : ℂ) ^ 2) = X⁻¹ := eq_inv_of_mul_eq_one_right hXA
   have hl₁ : lFun (dualArg₁ γ ε) = Y⁻¹ := eq_inv_of_mul_eq_one_left hl₁Y
-  rw [hA, hl₁, hPQ, hB]
+  rw [(eq_inv_of_mul_eq_one_right hXA), hl₁, hPQ, hB]
   field_simp
   ring
 

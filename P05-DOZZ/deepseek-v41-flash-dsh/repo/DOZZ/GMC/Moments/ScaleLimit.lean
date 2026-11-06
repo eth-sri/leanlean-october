@@ -74,12 +74,11 @@ theorem tendstoInMeasure_mul_snd_of_tendstoInMeasure
     have hnotB : ¬ ε / K ≤ ‖f n p.1 - g p.1‖ := by
       intro h
       exact hnot (Or.inr ⟨h, Set.mem_univ _⟩)
-    have hW : |W p.2| ≤ K := le_of_not_gt hnotT
     have hdiff : ‖f n p.1 - g p.1‖ < ε / K := lt_of_not_ge hnotB
     have hmul : |W p.2| * ‖f n p.1 - g p.1‖ < ε := by
       calc
         |W p.2| * ‖f n p.1 - g p.1‖ ≤ K * ‖f n p.1 - g p.1‖ :=
-          mul_le_mul_of_nonneg_right hW (norm_nonneg _)
+          mul_le_mul_of_nonneg_right (le_of_not_gt hnotT) (norm_nonneg _)
         _ < K * (ε / K) := mul_lt_mul_of_pos_left hdiff hK
         _ = ε := by field_simp
     change ε ≤ ‖W p.2 * f n p.1 - W p.2 * g p.1‖ at hp

@@ -48,9 +48,7 @@ theorem IsUpsilon.unique {U V : ℂ → ℂ} (hγ : 0 < γ) (hU : IsUpsilon γ U
     filter_upwards [hS] with z hz
     dsimp [S] at hz
     exact (hU.2 z hz.1 hz.2).trans (hV.2 z hz.1 hz.2).symm
-  have hUA : AnalyticOnNhd ℂ U Set.univ := fun z _ => hU.1.analyticAt z
-  have hVA : AnalyticOnNhd ℂ V Set.univ := fun z _ => hV.1.analyticAt z
-  exact AnalyticOnNhd.eq_of_eventuallyEq hUA hVA hEq
+  exact AnalyticOnNhd.eq_of_eventuallyEq (fun z _ => hU.1.analyticAt z) (fun z _ => hV.1.analyticAt z) hEq
 
 /-- Reflection symmetry `Υ(Q - z) = Υ(z)`. -/
 theorem IsUpsilon.reflect {U : ℂ → ℂ} (hγ : 0 < γ) (hγ2 : γ < 2)
@@ -83,13 +81,12 @@ theorem IsUpsilon.reflect {U : ℂ → ℂ} (hγ : 0 < γ) (hγ2 : γ < 2)
       _ = Complex.exp (upsilonLog γ w) := by
         rw [upsilonLog_reflect γ w hw.1 hw.2]
       _ = U w := (hU.2 w hw.1 hw.2).symm
-  have hUanalytic : AnalyticOnNhd ℂ U Set.univ := fun w _ => hU.1.analyticAt w
   have hVdiff : Differentiable ℂ (fun w : ℂ => U ((Q γ : ℂ) - w)) := by
     apply hU.1.comp
     fun_prop
   have hVanalytic : AnalyticOnNhd ℂ (fun w : ℂ => U ((Q γ : ℂ) - w)) Set.univ :=
     fun w _ => hVdiff.analyticAt w
-  have hFunext := AnalyticOnNhd.eq_of_eventuallyEq hVanalytic hUanalytic hEq
+  have hFunext := AnalyticOnNhd.eq_of_eventuallyEq hVanalytic (fun w _ => hU.1.analyticAt w) hEq
   exact congrFun hFunext z
 
 end DOZZ.Proofs

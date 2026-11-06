@@ -3,6 +3,7 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
+public import DOZZ.SharedHyp
 
 public import DOZZ.FourPoint.ReflectedEnd.FusionReduction
 public import DOZZ.FourPoint.Dual.DiagonalReduction
@@ -28,7 +29,7 @@ theorem gammaHalf_reflected_formula_of_fusion_and_classification {Ω : Type*} [M
     (γ μ α₁ α₂ α₃ : ℝ)
     (hγ : 0 < γ) (hγ₂ : γ < 2)
     (hα₁ : α₁ < Q γ) (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ)
-    (hs : 2 * Q γ + γ / 2 < α₁ + α₂ + α₃)
+    (hs : SeibergSlack γ α₁ α₂ α₃)
     (hnear : ∃ ξ : ℝ, 0 < ξ ∧ ξ < 1 ∧ γ * (Q γ - α₁) < ξ ∧
       γ * (Q γ - α₁) < (1 - ξ) * (γ * (Q γ - α₁) + (α₁ + γ / 2 - Q γ) ^ 2 / 2))
     (hfusion :
@@ -106,7 +107,6 @@ theorem gammaHalf_reflected_formula_of_fusion_and_classification {Ω : Type*} [M
   dsimp only at hclassification ⊢
   obtain ⟨hA, hAB, hBC, hC, _, _, _, _⟩ := DOZZ.gauss_physical_parameter_range
     γ (γ / 2) α₁ α₂ α₃ hγ hγ₂ (Or.inl rfl) hs hα₁ hα₂ hα₃
-  have hc : 0 < gaussParameterC γ (γ / 2) α₁ := hA.trans (hAB.trans hBC)
   have he : 2 * (1 - gaussParameterC γ (γ / 2) α₁) = κ := by
     unfold gaussParameterC
     dsimp only [κ]
@@ -117,7 +117,7 @@ theorem gammaHalf_reflected_formula_of_fusion_and_classification {Ω : Type*} [M
     (gaussParameterC γ (γ / 2) α₁) C₀
     (gaussCoefficientRatio (gaussParameterA γ (γ / 2) α₁ α₂ α₃)
       (gaussParameterB γ (γ / 2) α₁ α₂ α₃) (gaussParameterC γ (γ / 2) α₁)) D
-    hc hC (he ▸ hκ) (fourPointT P M γ μ (-γ / 2) α₁ α₂ α₃)
+    (hA.trans (hAB.trans hBC)) hC (he ▸ hκ) (fourPointT P M γ μ (-γ / 2) α₁ α₂ α₃)
     (by simpa only [neg_div] using hclassification) (by simpa only [he] using hray)
   refine ⟨B, Z, hZ, hB, ?_⟩
   intro z hz

@@ -29,8 +29,6 @@ theorem laplaceBase_exp_neg_exp_half_le {x : ℝ} (hx : 0 ≤ x) :
     Real.exp (-Real.exp (x / 2)) ≤ Real.exp (-(x ^ 2 / 8)) := by
   refine Real.exp_le_exp.mpr ?_
   have h := Real.quadratic_le_exp_of_nonneg (show 0 ≤ x / 2 by linarith)
-  have e : (x / 2) ^ 2 / 2 = x ^ 2 / 8 := by ring
-  have h2 : 0 ≤ x / 2 := by linarith
   linarith
 
 /-- A shifted Gaussian is bounded by a constant multiple of a Gaussian of smaller variance. -/
@@ -123,9 +121,8 @@ theorem laplaceBase_integral_le_measureReal_add
       linarith
     · rw [Set.indicator_of_notMem (show ω ∉ {ω | m ω ≤ Real.exp (-(x / 2))} from hω), zero_add]
       refine Real.exp_le_exp.mpr ?_
-      have hlt : Real.exp (-(x / 2)) < m ω := not_le.mp hω
       have hmul : Real.exp x * Real.exp (-(x / 2)) < Real.exp x * m ω :=
-        mul_lt_mul_of_pos_left hlt (Real.exp_pos x)
+        mul_lt_mul_of_pos_left (not_le.mp hω) (Real.exp_pos x)
       rw [← Real.exp_add, show x + -(x / 2) = x / 2 by ring] at hmul
       linarith
   calc ∫ ω, Real.exp (-(Real.exp x) * m ω) ∂P

@@ -113,12 +113,6 @@ theorem equatorGFF_inversion_testL2_tendsto_to_circle_limit
     rw [equatorGFF_inversion_testL2_dist X hX, dist_eq_norm]
     have heq := equatorGFF_testL2_sub_norm_sq X hX (f n) (f₀ m)
     have hbound := gffCov_sub_le_circleEnergyGaps x r (f n) (f₀ m)
-    have hqm := hm.1
-    have hnon := circleEnergyGap_nonneg x r (f n)
-    have hnon0 := circleEnergyGap_nonneg x r (f₀ m)
-    have hn0 := norm_nonneg
-      ((equatorGFF_test_memLp X hX (f n)).toLp (fun ω => X ω (f n)) -
-        (equatorGFF_test_memLp X hX (f₀ m)).toLp (fun ω => X ω (f₀ m)))
     nlinarith
   have htriangle : dist (U n) W ≤ dist (U n) (V m) + dist (V m) W :=
     dist_triangle _ _ _

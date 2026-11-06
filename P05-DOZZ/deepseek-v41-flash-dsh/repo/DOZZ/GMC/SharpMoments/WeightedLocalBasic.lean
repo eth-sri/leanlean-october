@@ -55,7 +55,6 @@ theorem weightedGmcBallMass_ge_offcenter (μ : Measure ℂ) (γ α : ℝ) (z : �
         μ (Metric.ball (z + ((r / 2 : ℝ) : ℂ)) (r / 4)) ≤
       weightedGmcBallMass γ μ α z r := by
   set B : Set ℂ := Metric.ball (z + ((r / 2 : ℝ) : ℂ)) (r / 4) with hB
-  have hBm : MeasurableSet B := Metric.isOpen_ball.measurableSet
   unfold weightedGmcBallMass
   calc min (ENNReal.rpow (ENNReal.ofReal (r / 4)) (-γ * α))
           (ENNReal.rpow (ENNReal.ofReal (3 * r / 4)) (-γ * α)) * μ B
@@ -63,7 +62,7 @@ theorem weightedGmcBallMass_ge_offcenter (μ : Measure ℂ) (γ α : ℝ) (z : �
           (ENNReal.rpow (ENNReal.ofReal (3 * r / 4)) (-γ * α)) ∂μ := by
         rw [setLIntegral_const]
     _ ≤ ∫⁻ x in B, ENNReal.rpow (ENNReal.ofReal ‖x - z‖) (-γ * α) ∂μ := by
-        apply setLIntegral_mono' hBm
+        apply setLIntegral_mono' (Metric.isOpen_ball.measurableSet)
         intro x hx
         obtain ⟨h1, h2⟩ := offcenter_dist_bounds z hr hx
         rcases le_or_gt 0 (-γ * α) with hs | hs
@@ -121,7 +120,6 @@ theorem weightedGmcBallMoment_lt_top_of_nonpos_charge
     weightedGmcBallMoment P M γ α z r p < ⊤ := by
   have hs : 0 ≤ -γ * α := by nlinarith
   set c : ℝ≥0∞ := ENNReal.rpow (ENNReal.ofReal r) (-γ * α) with hc
-  have hctop : c ≠ ⊤ := ENNReal.rpow_ne_top_of_nonneg hs ENNReal.ofReal_ne_top
   have hbound : ∀ ω, weightedGmcBallMass γ (M ω) α z r ≤ c * M ω (Metric.ball z r) := by
     intro ω
     unfold weightedGmcBallMass
@@ -146,6 +144,6 @@ theorem weightedGmcBallMoment_lt_top_of_nonpos_charge
         rw [lintegral_congr (fun ω => ENNReal.mul_rpow_of_nonneg c (M ω (Metric.ball z r))
           hp0.le), lintegral_const_mul'' _ hmeas]
         rfl
-    _ < ⊤ := ENNReal.mul_lt_top (ENNReal.rpow_lt_top_of_nonneg hp0.le hctop) hfin
+    _ < ⊤ := ENNReal.mul_lt_top (ENNReal.rpow_lt_top_of_nonneg hp0.le (ENNReal.rpow_ne_top_of_nonneg hs ENNReal.ofReal_ne_top)) hfin
 
 end DOZZ.Proofs

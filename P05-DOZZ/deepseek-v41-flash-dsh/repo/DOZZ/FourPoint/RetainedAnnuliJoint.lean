@@ -39,9 +39,8 @@ theorem circle_cross_covariance_bound
       max 0 (Real.log (1 / d) + gmcCircleChartRemainder L) := by
   have hb := circleField_covariance_le_log P X hX Xc hXc L r hL hr x y hx hy
   have hmax : d ≤ max ‖x - y‖ (Real.exp (-r)) := hxy.trans (le_max_left _ _)
-  have hp : 0 < max ‖x - y‖ (Real.exp (-r)) := lt_of_lt_of_le hd hmax
   have hl : Real.log (1 / max ‖x - y‖ (Real.exp (-r))) ≤ Real.log (1 / d) :=
-    Real.log_le_log (one_div_pos.mpr hp) (one_div_le_one_div_of_le hd hmax)
+    Real.log_le_log (one_div_pos.mpr (lt_of_lt_of_le hd hmax)) (one_div_le_one_div_of_le hd hmax)
   have hsum := add_le_add hl (le_refl (Real.log 3 + 2 * Real.log (1 + L)))
   exact (hb.trans (by simpa only [gmcCircleChartRemainder] using hsum)).trans
     (le_max_right _ _)

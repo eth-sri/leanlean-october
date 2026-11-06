@@ -51,11 +51,10 @@ theorem weightedScale_map_iSup_eq
     (hamono : ∀ ω, Monotone fun n => a n ω) (hbmono : ∀ q, Monotone fun n => b n q)
     (hlaw : ∀ n, Measure.map (a n) P = Measure.map (b n) Q) :
     Measure.map (fun ω => ⨆ n, a n ω) P = Measure.map (fun q => ⨆ n, b n q) Q := by
-  have haS : AEMeasurable (fun ω => ⨆ n, a n ω) P := AEMeasurable.iSup ha
   have hbS : AEMeasurable (fun q => ⨆ n, b n q) Q := AEMeasurable.iSup hb
   have hIoi (t : ℝ≥0∞) : Measure.map (fun ω => ⨆ n, a n ω) P (Ioi t) =
       Measure.map (fun q => ⨆ n, b n q) Q (Ioi t) := by
-    rw [Measure.map_apply_of_aemeasurable haS measurableSet_Ioi,
+    rw [Measure.map_apply_of_aemeasurable (AEMeasurable.iSup ha) measurableSet_Ioi,
       Measure.map_apply_of_aemeasurable hbS measurableSet_Ioi,
       weightedScale_measure_iSup a hamono, weightedScale_measure_iSup b hbmono]
     refine iSup_congr fun n => ?_
@@ -369,16 +368,14 @@ theorem weightedScale_map_ofReal_eq
       Measure.map (fun q => ENNReal.ofReal (y q)) Q := by
   have hΦ : Measurable (fun v : Fin 1 → ℝ => ENNReal.ofReal (v 0)) :=
     ENNReal.measurable_ofReal.comp (measurable_pi_apply 0)
-  have hx' : AEMeasurable (fun ω (_ : Fin 1) => x ω) P := aemeasurable_pi_iff.2 fun _ => hx
-  have hy' : AEMeasurable (fun q (_ : Fin 1) => y q) Q := aemeasurable_pi_iff.2 fun _ => hy
   calc Measure.map (fun ω => ENNReal.ofReal (x ω)) P
       = Measure.map (fun v : Fin 1 → ℝ => ENNReal.ofReal (v 0))
           (Measure.map (fun ω (_ : Fin 1) => x ω) P) :=
-        (AEMeasurable.map_map_of_aemeasurable hΦ.aemeasurable hx').symm
+        (AEMeasurable.map_map_of_aemeasurable hΦ.aemeasurable (aemeasurable_pi_iff.2 fun _ => hx)).symm
     _ = Measure.map (fun v : Fin 1 → ℝ => ENNReal.ofReal (v 0))
           (Measure.map (fun q (_ : Fin 1) => y q) Q) := by rw [h]
     _ = Measure.map (fun q => ENNReal.ofReal (y q)) Q :=
-        AEMeasurable.map_map_of_aemeasurable hΦ.aemeasurable hy'
+        AEMeasurable.map_map_of_aemeasurable hΦ.aemeasurable (aemeasurable_pi_iff.2 fun _ => hy)
 
 /-! ### The law of the weighted mass -/
 
@@ -558,14 +555,13 @@ theorem gmc_weighted_ball_moment_scale
   have : IsProbabilityMeasure (gaussianReal 0 ⟨-Real.log c,
       neg_nonneg.mpr (Real.log_nonpos hc.le hc1)⟩) :=
     instIsProbabilityMeasureGaussianReal 0 _
-  have hcR : c * R ≤ R := mul_le_of_le_one_left hR.le hc1
   have hκ0 : ENNReal.ofReal (c ^ (-γ * α)) ≠ 0 :=
     (ENNReal.ofReal_pos.2 (Real.rpow_pos_of_pos hc _)).ne'
   have hmom := weightedScale_moment_transfer
     (A := fun w => ENNReal.ofReal (c ^ 2 * Real.exp (γ * w - γ ^ 2 / 2 * (-Real.log c))))
     (by fun_prop) (fun w => (ENNReal.ofReal_pos.2 (by positivity)).ne')
     (fun w => ENNReal.ofReal_ne_top) hκ0 ENNReal.ofReal_ne_top
-    (weightedScale_mass_aemeasurable P X hX γ M hM α (hcR.trans hRsmall.le))
+    (weightedScale_mass_aemeasurable P X hX γ M hM α ((mul_le_of_le_one_left hR.le hc1).trans hRsmall.le))
     (weightedScale_mass_aemeasurable P X hX γ M hM α hRsmall.le)
     (weightedScale_mass_law P X hX γ M hM α hc hc1 hR hRsmall) p
   have hgauss := gaussianScaleFactor_rpow_integral γ c p hc hc1

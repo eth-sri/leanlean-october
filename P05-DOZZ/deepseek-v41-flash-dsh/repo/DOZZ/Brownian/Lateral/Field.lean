@@ -66,11 +66,10 @@ end
 /-- The equator pin terms are the positive parts of the logarithmic radius. -/
 theorem log_normPlus_eq_max_log {w : ℂ} (hw : w ≠ 0) :
     Real.log (normPlus w) = max 0 (Real.log ‖w‖) := by
-  have hnorm : 0 < ‖w‖ := norm_pos_iff.mpr hw
   unfold normPlus
   rcases le_total 1 ‖w‖ with hn | hn
   · rw [max_eq_right hn, max_eq_right (Real.log_nonneg hn)]
-  · rw [max_eq_left hn, Real.log_one, max_eq_left (Real.log_nonpos hnorm.le hn)]
+  · rw [max_eq_left hn, Real.log_one, max_eq_left (Real.log_nonpos (norm_pos_iff.mpr hw).le hn)]
 
 /-- The radial covariance at two geometric radii, including radii outside the unit circle. -/
 theorem originRadialCovariance_log_radius {w v : ℂ} (hw : w ≠ 0) (hv : v ≠ 0) :

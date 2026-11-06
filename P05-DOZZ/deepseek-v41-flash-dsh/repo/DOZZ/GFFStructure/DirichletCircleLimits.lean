@@ -140,8 +140,7 @@ theorem exists_circleAnnular_testFn_eventually_interior (c x : ℂ) (ρ r : ℝ)
   classical
   obtain ⟨b,hxb,hbρ⟩ := exists_between hx
   obtain ⟨d,hbd,hdρ⟩ := exists_between hbρ
-  have hb : 0 < b := (add_pos_of_nonneg_of_pos (norm_nonneg _) (Real.exp_pos _)).trans hxb
-  let φ : ContDiffBump c := ⟨b,d,hb,hbd⟩
+  let φ : ContDiffBump c := ⟨b,d,((add_pos_of_nonneg_of_pos (norm_nonneg _) (Real.exp_pos _)).trans hxb),hbd⟩
   obtain ⟨g,hg⟩ := exists_testFn_circleAnnular_approx x r (fun n => 1/((n : ℝ)+2)^3)
     (fun n => by positivity)
   let A : TestFn →L[ℝ] TestFn := TestFunction.bilinLeftCLM (ContinuousLinearMap.lsmul ℝ ℝ) φ.contDiff

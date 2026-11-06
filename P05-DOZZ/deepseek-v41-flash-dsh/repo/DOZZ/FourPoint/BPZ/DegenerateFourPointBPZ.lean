@@ -112,11 +112,10 @@ theorem degenerateFourPoint_BPZ {Ω : Type*} [MeasurableSpace Ω]
       (fun z => fourPointT P M γ μ (-χ) α₁ α₂ α₃ z) := by
   let _ := hμ
   obtain ⟨N, hNm, hNfin, hMN⟩ := equatorGFF_GMC_measurable_version P X hX γ hγ hγ₂ M hM
-  have hN : IsGMCOf P X γ N := bpz_isGMCOf_congr hM hNfin hMN
   have hT : (fun z => fourPointT P M γ μ (-χ) α₁ α₂ α₃ z) =
       fun z => fourPointT P N γ μ (-χ) α₁ α₂ α₃ z :=
     funext fun z => bpz_fourPointT_congr P hMN μ (-χ) z
   rw [hT]
-  exact bpz_gauss_of_measurable P X N γ μ χ α₁ α₂ α₃ hγ hγ₂ hχ hα₁ hα₂ hα₃ hs hX hN hNm
+  exact bpz_gauss_of_measurable P X N γ μ χ α₁ α₂ α₃ hγ hγ₂ hχ hα₁ hα₂ hα₃ hs hX (bpz_isGMCOf_congr hM hNfin hMN) hNm
 
 end DOZZ.Proofs

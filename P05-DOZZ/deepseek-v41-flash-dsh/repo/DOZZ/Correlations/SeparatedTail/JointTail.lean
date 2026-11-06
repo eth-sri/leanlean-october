@@ -47,7 +47,6 @@ theorem separatedSingularMass_joint_tail
   obtain ⟨B,hB,hbound⟩ := separatedTail_singular_mixed_moment_uniform P X hX γ hγ hγ2 M hM
     K2 K3 hK2 hK3 hsep A2 A3 hA2 hA3 hα2 hα3 ε hε hε2 hε3
   let T : ℝ := 4/γ^2
-  have hT : 0 < T := by dsimp [T]; positivity
   let S : ℝ≥0∞ := ENNReal.ofReal (max supBound 1)
   have hS : S ≠ ⊤ := ENNReal.ofReal_ne_top
   have hS1 : 1 ≤ S := by

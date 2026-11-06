@@ -62,9 +62,7 @@ private theorem cdfGeneralizedQuantile_lt_iff_exists_rat
       linarith
     exact ⟨q, hqhi, hqF⟩
   · rintro ⟨q, hqa, hqF⟩
-    have hqmem : (q : ℝ) ∈ S := hqF
-    have hq : sInf S ≤ (q : ℝ) := csInf_le hbounded hqmem
-    exact hq.trans_lt hqa
+    exact (csInf_le hbounded (hqF)).trans_lt hqa
 
 private theorem measurable_conditionedTransitionCDF_start
     {ν t : ℝ} (hν : 0 ≤ ν) (ht : 0 < t) (z : ℝ) :

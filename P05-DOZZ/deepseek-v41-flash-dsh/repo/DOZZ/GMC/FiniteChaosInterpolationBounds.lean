@@ -149,7 +149,6 @@ theorem kahaneInterpolatedTestDerivative_norm_le_absExp
   let E := Real.exp (|γ| * ∑ i, (|X ω.1 i| + |Y ω.2 i|))
   let D := |γ| / (2 * Real.sqrt ε) * (∑ i, (|X ω.1 i| + |Y ω.2 i|)) +
     γ ^ 2 / 2 * ∑ i, |vX i - vY i|
-  have htI : t ∈ Icc (0 : ℝ) 1 := ⟨hε.le.trans ht, by linarith⟩
   unfold kahaneInterpolatedTestDerivative
   rw [norm_mul]
   calc
@@ -163,7 +162,7 @@ theorem kahaneInterpolatedTestDerivative_norm_le_absExp
         abs_of_nonneg (Real.exp_nonneg _)]
       exact mul_le_mul
         (mul_le_mul_of_nonneg_left
-          (kahaneInterpolatedWick_le_absExp (X ω.1) (Y ω.2) vX vY hvX hvY γ t htI i) (ha i))
+          (kahaneInterpolatedWick_le_absExp (X ω.1) (Y ω.2) vX vY hvX hvY γ t (⟨hε.le.trans ht, by linarith⟩) i) (ha i))
         (kahaneInterpolatedScore_abs_le (X ω.1) (Y ω.2) vX vY γ ε t hε ht ht' i)
         (abs_nonneg _) (mul_nonneg (ha i) (Real.exp_nonneg _))
     _ = _ := by rw [← Finset.sum_mul, ← Finset.sum_mul]; ring

@@ -35,9 +35,8 @@ theorem uniform_family_local_variation
     exact hdiff.differentiableAt (Metric.isOpen_ball.mem_nhds hw')
   have hx' : z + x ∈ Metric.closedBall z radius := by
     simpa only [Metric.mem_closedBall, dist_eq_norm, add_sub_cancel_left] using hx
-  have hz' : z ∈ Metric.closedBall z radius := Metric.mem_closedBall_self hr.le
   have hb := Convex.norm_image_sub_le_of_norm_fderiv_le hdiffAt hd
-    (convex_closedBall z radius) hz' hx'
+    (convex_closedBall z radius) (Metric.mem_closedBall_self hr.le) hx'
   simpa only [Real.norm_eq_abs, add_sub_cancel_left] using hb
 
 /-- Combining a linear multiplier bound with a first-order exponential correction retains
@@ -46,9 +45,7 @@ theorem multiplier_exponential_variation
     (f f0 t L S D d : ℝ) (hf : |f - f0| ≤ L * d) (hf0 : |f0| ≤ S)
     (ht : |t| ≤ D * d) (hL : 0 ≤ L) (hd : 0 ≤ d) (hd1 : d ≤ 1) (hD : 0 ≤ D) :
     |f * Real.exp t - f0| ≤ (L + S * D) * Real.exp D * d := by
-  have hS : 0 ≤ S := (abs_nonneg _).trans hf0
   have htD := ht.trans (mul_le_of_le_one_right hD hd1)
-  have he : Real.exp t ≤ Real.exp D := Real.exp_le_exp.mpr ((le_abs_self t).trans htD)
   have hexp : |Real.exp t - 1| ≤ D * Real.exp D * d := by
     calc
       _ ≤ |t| * Real.exp |t| := exp_sub_one_bound t
@@ -61,8 +58,8 @@ theorem multiplier_exponential_variation
     _ = |f - f0| * Real.exp t + |f0| * |Real.exp t - 1| := by
       rw [abs_mul, abs_mul, abs_of_pos (Real.exp_pos _)]
     _ ≤ (L*d) * Real.exp D + S * (D * Real.exp D * d) := add_le_add
-      (mul_le_mul hf he (Real.exp_nonneg _) (mul_nonneg hL hd))
-      (mul_le_mul hf0 hexp (abs_nonneg _) hS)
+      (mul_le_mul hf (Real.exp_le_exp.mpr ((le_abs_self t).trans htD)) (Real.exp_nonneg _) (mul_nonneg hL hd))
+      (mul_le_mul hf0 hexp (abs_nonneg _) ((abs_nonneg _).trans hf0))
     _ = _ := by ring
 
 end DOZZ.Proofs

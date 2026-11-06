@@ -41,7 +41,6 @@ theorem conditionedPositiveFutureAvoidance_hit_implies_touch
   have hsreal : 0 < (u : ℝ) - (t : ℝ) :=
     sub_pos.mpr (by exact_mod_cast htu)
   let s : ℝ≥0 := ⟨(u : ℝ) - (t : ℝ), hsreal.le⟩
-  have hs : 0 < (s : ℝ) := hsreal
   have hts : t + s = u := by
     apply Subtype.ext
     change (t : ℝ) + ((u : ℝ) - (t : ℝ)) = (u : ℝ)
@@ -74,24 +73,22 @@ theorem conditionedPositiveFutureAvoidance_hit_implies_touch
       simp only [lastExitRationalShift]
       exact sub_pos.mpr (havoid r hr)
     · intro n
-      have hF : Continuous F := hFcont
       have hFs : F (s : ℝ) = (c : ℝ) := by
         rw [hFval (s : ℝ) s.property]
         exact hpathHit
       let U : Set ℝ := Set.Ioi 0 ∩ F ⁻¹' Set.Iio ((c : ℝ) + 1 / ((n : ℝ) + 1))
-      have hU : IsOpen U := isOpen_Ioi.inter (isOpen_Iio.preimage hF)
+      have hU : IsOpen U := isOpen_Ioi.inter (isOpen_Iio.preimage (hFcont))
       have hsU : (s : ℝ) ∈ U := by
-        refine ⟨hs, ?_⟩
+        refine ⟨(hsreal), ?_⟩
         change F (s : ℝ) < (c : ℝ) + 1 / ((n : ℝ) + 1)
         rw [hFs]
         have : 0 < 1 / ((n : ℝ) + 1) := by positivity
         exact lt_add_of_pos_right (c : ℝ) this
       obtain ⟨r, hrU⟩ := Rat.denseRange_cast.exists_mem_open hU ⟨(s : ℝ), hsU⟩
-      have hr : 0 < (r : ℝ) := hrU.1
       have hFr : F (r : ℝ) < (c : ℝ) + 1 / ((n : ℝ) + 1) := hrU.2
       have hEval : conditionedPositiveFutureRationalEvals t p r = F (r : ℝ) := by
         rfl
-      refine ⟨r, hr, ?_⟩
+      refine ⟨r, (hrU.1), ?_⟩
       simp only [lastExitRationalShift, hEval]
       linarith
   exact ⟨hp, htouch⟩

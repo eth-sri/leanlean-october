@@ -34,10 +34,9 @@ theorem rooted_GMC_identity_of_ae_root_finite_measurable
   have hB (n : ℕ) : MeasurableSet (B n) := measurableSet_closedBall
   have hmono : Monotone B := fun i j hij => Metric.closedBall_subset_closedBall (by exact_mod_cast hij)
   have hcover : ⋃ n, B n = Set.univ := Metric.iUnion_closedBall_nat _
-  have hfield : Measurable (fun ω f => X ω f) := measurable_pi_iff.mpr fun f => (hX.2 f).1
   have hobs : Measurable (fun q : Ω × ℂ => H q.2 (fun f => X q.1 f) (M q.1)) :=
     hH.comp (measurable_snd.prodMk
-      ((hfield.comp measurable_fst).prodMk (hMmeas.comp measurable_fst)))
+      (((measurable_pi_iff.mpr fun f => (hX.2 f).1).comp measurable_fst).prodMk (hMmeas.comp measurable_fst)))
   have hmeas (n : ℕ) : Measurable (fun ω => ∫⁻ u in B n, H u (fun f => X ω f) (M ω) ∂M ω) := by
     have heq : (fun ω => ∫⁻ u in B n, H u (fun f => X ω f) (M ω) ∂M ω) =
         fun ω => ∫⁻ u, (B n).indicator (fun u => H u (fun f => X ω f) (M ω)) u ∂M ω := by

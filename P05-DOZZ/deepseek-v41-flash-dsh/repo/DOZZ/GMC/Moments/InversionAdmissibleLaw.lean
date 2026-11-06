@@ -101,8 +101,7 @@ theorem admissibleLogChaos_limit_vector_law_of_fdd
   have hT : Tendsto (fun n : ℕ => (n : ℝ)) atTop atTop := tendsto_natCast_atTop_atTop
   have heps : Tendsto (fun n : ℕ => Real.exp (-(n : ℝ))) atTop (𝓝 (0 : ℝ)) :=
     Real.tendsto_exp_neg_atTop_nhds_zero.comp hT
-  have hmin : 0 < min ε₀ ε₁ := lt_min hY.cutoffPositive hZ.cutoffPositive
-  obtain ⟨L, hL⟩ := eventually_atTop.mp (heps.eventually (gt_mem_nhds hmin))
+  obtain ⟨L, hL⟩ := eventually_atTop.mp (heps.eventually (gt_mem_nhds (lt_min hY.cutoffPositive hZ.cutoffPositive)))
   let t : ℕ → ℝ := fun n => ((L + n : ℕ) : ℝ)
   have ht : Tendsto t atTop atTop := by
     simpa only [t, Nat.add_comm, Function.comp_def] using hT.comp (tendsto_add_atTop_nat L)

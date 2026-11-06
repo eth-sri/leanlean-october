@@ -23,10 +23,9 @@ theorem last_exit_le_of_post_nonpos (p : BrownianPath) (c d : ℝ) (hcd : c ≤ 
   rcases lt_or_eq_of_le hcd with hlt | heq
   · have hhit (u : ℝ≥0) (hu : p u = -c) : u ≤ negativeLastExitTime p d := by
       by_contra hnot
-      have hu' : negativeLastExitTime p d < u := lt_of_not_ge hnot
       have h := hp (u-negativeLastExitTime p d)
       change p (negativeLastExitTime p d+(u-negativeLastExitTime p d))+d ≤ 0 at h
-      rw [add_tsub_cancel_of_le hu'.le, hu] at h
+      rw [add_tsub_cancel_of_le (lt_of_not_ge hnot).le, hu] at h
       linarith
     apply (negativeLastExitTime_le_iff_no_future_visit p c (negativeLastExitTime p d)
       ⟨negativeLastExitTime p d, hhit⟩).mpr

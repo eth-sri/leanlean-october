@@ -322,7 +322,6 @@ theorem integral_geometric_circleLog_arc {d a θ : ℝ} (hd : 0 < d) (ha : 0 < a
     (∫ t in 0..θ, Real.log ‖(d : ℂ)+(a : ℂ)*Complex.exp ((t : ℂ)*Complex.I)‖) =
       θ*Real.log (max d a) + ∑' k, circleLogSeriesTerm (min d a / max d a) θ k := by
   have hu := circleLog_ratio_mem_Icc hd ha
-  have hc : 0 < max d a := hd.trans_le (le_max_left _ _)
   have heq : EqOn (fun t : ℝ => Real.log
       ‖(d : ℂ)+(a : ℂ)*Complex.exp ((t : ℂ)*Complex.I)‖)
       (fun t => Real.log (max d a) + Real.log
@@ -330,7 +329,7 @@ theorem integral_geometric_circleLog_arc {d a θ : ℝ} (hd : 0 < d) (ha : 0 < a
     intro t ht
     rw [uIcc_of_le hθ.1] at ht
     dsimp only
-    rw [norm_circleLogSection_factor hd ha t, Real.log_mul hc.ne'
+    rw [norm_circleLogSection_factor hd ha t, Real.log_mul (hd.trans_le (le_max_left _ _)).ne'
       (norm_ne_zero_iff.mpr (circleLogSection_ne_zero hu ⟨ht.1, ht.2.trans_lt hθ.2⟩))]
   rw [intervalIntegral.integral_congr heq,
     intervalIntegral.integral_add intervalIntegrable_const (intervalIntegrable_circleLogSection hu hθ),

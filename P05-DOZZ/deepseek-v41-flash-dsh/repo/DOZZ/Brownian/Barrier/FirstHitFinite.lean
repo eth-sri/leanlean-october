@@ -175,8 +175,7 @@ theorem brownianFirstHit_observation_split_ae (P : Measure BrownianPath)
     simp only [hc,NNReal.coe_add]
   · have hg : ¬ brownianFirstHitHorizon (n+1) ds < firstPassageTime (driftedBrownianPath a p) c := by
       intro hg
-      have hh : ds 0 ≤ brownianFirstHitHorizon (n+1) ds := le_add_of_nonneg_right (show 0 ≤ brownianFirstHitHorizon n (Fin.tail ds) from zero_le)
-      exact hpre (hh.trans_lt hg)
+      exact hpre ((le_add_of_nonneg_right (show 0 ≤ brownianFirstHitHorizon n (Fin.tail ds) from zero_le)).trans_lt hg)
     simp only [ite_eq_right hpre,ite_eq_right hg]
 
 /-- Every actual finite pre-hit sample tuple together with the absolute first-hit lifetime has the full iterated killed/hitting density law. -/
@@ -208,7 +207,6 @@ theorem brownianPath_firstHit_finite_lintegral (P : Measure BrownianPath)
         if brownianFirstHitHorizon n (Fin.tail ds) < firstPassageTime (driftedBrownianPath a z.2) z.1 then
           H (Fin.cons z.1 (brownianFirstHitSamples n (Fin.tail ds) a z.1 z.2),
             (ds 0 : ℝ)+(firstPassageTime (driftedBrownianPath a z.2) z.1 : ℝ)) else 0
-      have hJ : Measurable J := measurable_brownianFirstHit_future_test n (Fin.tail ds) a (ds 0) H hH
       have hmτ : Measurable (fun p : BrownianPath => firstPassageTime (driftedBrownianPath a p) c) :=
         (measurable_firstPassageTime c).comp
           (continuous_driftedBrownianPath.measurable.comp (measurable_const.prodMk measurable_id))
@@ -222,7 +220,7 @@ theorem brownianPath_firstHit_finite_lintegral (P : Measure BrownianPath)
             J (c-(p (ds 0)+a*(ds 0 : ℝ)),brownianShiftPath (ds 0) p) ∂P := by
         rw [← lintegral_indicator hA,← lintegral_indicator hS]
         exact lintegral_congr_ae (brownianFirstHit_observation_split_ae P hB a c ha n ds H)
-      rw [hsplit,brownianPath_firstHit_state_future_lintegral P hB a c ha hc (ds 0) (ne_of_gt (hds 0)) J hJ]
+      rw [hsplit,brownianPath_firstHit_state_future_lintegral P hB a c ha hc (ds 0) (ne_of_gt (hds 0)) J (measurable_brownianFirstHit_future_test n (Fin.tail ds) a (ds 0) H hH)]
       change (∫⁻ y, ENNReal.ofReal (brownianKilledTransitionPDF (-a) (ds 0) c y)*∫⁻ q, J (y,q) ∂P) =
         ∫⁻ y, ENNReal.ofReal (brownianKilledTransitionPDF (-a) (ds 0) c y)*
           brownianFirstHitFiniteIntegral a n (Fin.tail ds) y (fun z => H (Fin.cons y z.1,(ds 0 : ℝ)+z.2))

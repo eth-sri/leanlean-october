@@ -3,6 +3,7 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
+public import DOZZ.SharedHyp
 
 public import DOZZ.Correlations.Tails.LocalizedFamilyTest
 
@@ -18,7 +19,7 @@ theorem localized_copied_singular_law
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
     (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
+    (hm : MeasurableCircleAvg Xc)
     (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
     (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
     (K : Set ℂ) (Family : ℂ → Set (ℂ → ℝ))
@@ -45,7 +46,6 @@ theorem localized_copied_singular_law
   let B := fun q : Ω × Ω => ENNReal.ofReal (Real.exp (γ*Xc q.2 z 0-γ^2*Real.log ‖z‖)) *
     ∫⁻ x, ENNReal.ofReal (χ x*copiedMultiplier z γ (Xc q.1 z 0) (Xc q.2 z 0) F x) *
       (ENNReal.ofReal ‖x‖)^(-β) ∂N q.1
-  have hFn := (hFamily.2.2.2.2 z hzk F hF).2.1
   have hFm := (hFamily.2.2.2.2 z hzk F hF).1
   have hsrc (y : ℂ) : g (y-z)*Real.exp ((γ^2+4)*Real.log (normPlus y)) = χ (y-z)*F y := by
     rw [hgeq, add_sub_cancel, mul_assoc, ← Real.exp_add]

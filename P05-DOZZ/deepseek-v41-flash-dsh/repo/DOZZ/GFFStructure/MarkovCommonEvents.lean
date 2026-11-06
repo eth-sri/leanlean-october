@@ -3,6 +3,7 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
+public import DOZZ.SharedHyp
 public import DOZZ.GFFStructure.DirichletDistribution
 public import Mathlib.Topology.ContinuousMap.SecondCountableSpace
 public import Mathlib.LinearAlgebra.Multilinear.FiniteDimensional
@@ -138,8 +139,7 @@ theorem interiorDiskTestToGlobalCLM_apply (c : ℂ) (ρ : ℝ) (f : InteriorDisk
 /-- The global inclusion retains strict interior support. -/
 theorem interiorDiskTestToGlobalCLM_tsupport (c : ℂ) (ρ : ℝ) (f : InteriorDiskTest c ρ) :
     tsupport (interiorDiskTestToGlobalCLM c ρ f) ⊆ ball c ρ := by
-  have he : (interiorDiskTestToGlobalCLM c ρ f : ℂ → ℝ) = f := funext (interiorDiskTestToGlobalCLM_apply c ρ f)
-  rw [he]
+  rw [(funext (interiorDiskTestToGlobalCLM_apply c ρ f))]
   exact f.tsupport_subset
 
 /-- Every global interior test is the inclusion of an actual disk test. -/
@@ -249,12 +249,10 @@ theorem dirichletDistribution_interior_apply_ae_eq {Ω : Type*} [MeasurableSpace
     (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
     (c : ℂ) (R ρ ε : ℝ) (hR : 1 < R) (hρ : 0 < ρ) (hε : 0 < ε) (hpin : ‖c‖+ρ ≤ R)
-    (V : Ω → ℂ → ℝ) (hV : ∀ z ∈ ball c ρ, MemLp (fun ω => V ω z) 2 P)
-    (hmean : ∀ z ∈ ball c ρ, (∫ ω, V ω z ∂P) = 0)
+    (V : Ω → ℂ → ℝ) (hV : MemLpBall P V c ρ)
+    (hmean : MeanZeroBall P V c ρ)
     (hU : ContinuousOn (poissonFamilyL2 P c ρ V hV) (ball c ρ))
-    (hcov : ∀ z w, z ∈ ball c ρ → w ∈ ball c ρ →
-      covariance (fun ω => V ω z) (fun ω => V ω w) P = Real.log R+Real.log ρ-
-        Real.log ‖(ρ : ℂ)^2-(z-c)*star (w-c)‖)
+    (hcov : CovarianceBall P V c ρ R)
     (hlim : ∀ z (hz : z ∈ ball c ρ), Tendsto (fun k => eLpNorm
       (fun ω => exteriorPinnedEvaluation X Xc R (by linarith) ω
         (canonicalPoissonCollarTest c z ρ ε hρ hε hz k)-V ω z) 2 P) atTop (𝓝 0))
@@ -271,12 +269,10 @@ theorem ae_dirichletDistribution_interior_harmonic_agreement {Ω : Type*} [Measu
     (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
     (c : ℂ) (R ρ ε : ℝ) (hR : 1 < R) (hρ : 0 < ρ) (hε : 0 < ε) (hpin : ‖c‖+ρ ≤ R)
-    (V : Ω → ℂ → ℝ) (hV : ∀ z ∈ ball c ρ, MemLp (fun ω => V ω z) 2 P)
-    (hmean : ∀ z ∈ ball c ρ, (∫ ω, V ω z ∂P) = 0)
+    (V : Ω → ℂ → ℝ) (hV : MemLpBall P V c ρ)
+    (hmean : MeanZeroBall P V c ρ)
     (hU : ContinuousOn (poissonFamilyL2 P c ρ V hV) (ball c ρ))
-    (hcov : ∀ z w, z ∈ ball c ρ → w ∈ ball c ρ →
-      covariance (fun ω => V ω z) (fun ω => V ω w) P = Real.log R+Real.log ρ-
-        Real.log ‖(ρ : ℂ)^2-(z-c)*star (w-c)‖)
+    (hcov : CovarianceBall P V c ρ R)
     (hlim : ∀ z (hz : z ∈ ball c ρ), Tendsto (fun k => eLpNorm
       (fun ω => exteriorPinnedEvaluation X Xc R (by linarith) ω
         (canonicalPoissonCollarTest c z ρ ε hρ hε hz k)-V ω z) 2 P) atTop (𝓝 0))

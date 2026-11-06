@@ -107,7 +107,6 @@ theorem openBallApprox_integral_tendsto (z : ℂ) (R : ℝ) (μ : Measure ℂ)
     [IsFiniteMeasure μ] :
     Tendsto (fun n : ℕ => ∫ x, openBallApprox z R n x ∂μ) atTop
       (𝓝 (μ.real (Metric.ball z R))) := by
-  have hbound : Integrable (fun _ : ℂ => (1 : ℝ)) μ := integrable_const 1
   have hdom : ∀ n, ∀ᵐ x ∂μ, ‖openBallApprox z R n x‖ ≤ (1 : ℝ) := by
     intro n
     filter_upwards [] with x
@@ -122,7 +121,7 @@ theorem openBallApprox_integral_tendsto (z : ℂ) (R : ℝ) (μ : Measure ℂ)
   have hdomconv := tendsto_integral_of_dominated_convergence
     (fun _ : ℂ => (1 : ℝ))
     (fun n => (openBallApprox z R n).continuous.measurable.aestronglyMeasurable)
-    hbound hdom hlim
+    (integrable_const 1) hdom hlim
   rw [← integral_indicator_one hs]
   exact hdomconv
 
@@ -182,7 +181,6 @@ theorem openBallAffineApprox_integral_tendsto {a : ℂ} {c R : ℝ} (hc : 0 < c)
     (μ : Measure ℂ) [IsFiniteMeasure μ] :
     Tendsto (fun n : ℕ => ∫ y, openBallAffineApprox a c R n y ∂μ) atTop
       (𝓝 (μ.real (Metric.ball a (c * R)))) := by
-  have hbound : Integrable (fun _ : ℂ => (1 : ℝ)) μ := integrable_const 1
   have hdom : ∀ n, ∀ᵐ y ∂μ, ‖openBallAffineApprox a c R n y‖ ≤ (1 : ℝ) := by
     intro n
     have hEq : (openBallAffineApprox a c R n : ℂ → ℝ) =ᵐ[μ]
@@ -226,7 +224,7 @@ theorem openBallAffineApprox_integral_tendsto {a : ℂ} {c R : ℝ} (hc : 0 < c)
   have hdomconv := tendsto_integral_of_dominated_convergence
     (fun _ : ℂ => (1 : ℝ))
     (fun n => (openBallAffineApprox a c R n).continuous.measurable.aestronglyMeasurable)
-    hbound hdom hlim
+    (integrable_const 1) hdom hlim
   rw [← integral_indicator_one hs]
   exact hdomconv
 

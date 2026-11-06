@@ -3,6 +3,7 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
+public import DOZZ.SharedHyp
 
 public import DOZZ.Brownian.Lateral.Field
 public import DOZZ.GMC.Assembly.AdmissibleGMC
@@ -136,7 +137,7 @@ theorem originCircleRadialL2_ae_eq
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
     (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
+    (hm : MeasurableCircleAvg Xc)
     (ρ : ℝ) (hρ : 0 < ρ) (x : ℂ) (r : ℝ) :
     (⇑(originCircleRadialL2 hc ρ x r)) =ᵐ[P]
       fun ω => ∫ z : ℂ, Xc ω 0 (clampedLogRadius ρ z) ∂circleMeasure x r := by
@@ -154,7 +155,7 @@ theorem originCircleRadialL2_ae_eq_unclamped
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
     (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
+    (hm : MeasurableCircleAvg Xc)
     (ρ : ℝ) (hρ : 0 < ρ) (x : ℂ) (r : ℝ)
     (hbound : ρ ≤ ‖x‖ - Real.exp (-r)) :
     (⇑(originCircleRadialL2 hc ρ x r)) =ᵐ[P]
@@ -302,7 +303,7 @@ theorem originCircleLateralL2_ae_eq
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
     (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
+    (hm : MeasurableCircleAvg Xc)
     (ρ : ℝ) (hρ : 0 < ρ) (x : ℂ) (r : ℝ)
     (hbound : ρ ≤ ‖x‖ - Real.exp (-r)) :
     (⇑(originCircleLateralL2 hc ρ x r)) =ᵐ[P]
@@ -419,7 +420,7 @@ theorem originCircleLateralCutoff_ae_eq
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
     (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
+    (hm : MeasurableCircleAvg Xc)
     (p : OriginCircleCutoff) :
     (⇑(originCircleLateralL2 hc p.val.1 p.val.2.1 p.val.2.2)) =ᵐ[P]
       originCircleLateralCutoff Xc p :=
@@ -432,7 +433,7 @@ theorem originRadialLateralCutoff_isGaussianProcess
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
     (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2)) :
+    (hm : MeasurableCircleAvg Xc) :
     IsGaussianProcess (Sum.elim (fun s ω => Xc ω 0 s)
       (originCircleLateralCutoff Xc)) P := by
   apply (originRadialLateralCircleL2Family_isGaussianProcess P X Xc hX hc).congr
@@ -447,7 +448,7 @@ theorem originCircleLateralCutoff_radial_indepFun
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
     (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2)) :
+    (hm : MeasurableCircleAvg Xc) :
     IndepFun (fun ω => fun s : ℝ => Xc ω 0 s)
       (fun ω => fun p : OriginCircleCutoff => originCircleLateralCutoff Xc p ω) P := by
   apply (originRadialLateralCutoff_isGaussianProcess P X Xc hX hc hm).indepFun_of_covariance_eq_zero
@@ -468,8 +469,8 @@ theorem originRadialPath_circleLateralCutoff_indepFun
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
     (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
-    (hcont : ∀ᵐ ω ∂P, Continuous (fun p : ℂ × ℝ => Xc ω p.1 p.2)) :
+    (hm : MeasurableCircleAvg Xc)
+    (hcont : ContinuousCircleAvg P Xc) :
     IndepFun (originRadialPath Xc)
       (fun ω => fun p : OriginCircleCutoff => originCircleLateralCutoff Xc p ω) P := by
   have hcoords : IndepFun (fun ω => fun s : ℝ => originRadialPath Xc ω s)
@@ -512,7 +513,7 @@ theorem clampedCircleLateralSample_ae_eq
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
     (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
+    (hm : MeasurableCircleAvg Xc)
     (ρ : ℝ) (hρ : 0 < ρ) (x : ℂ) (r : ℝ) :
     (⇑(originCircleLateralL2 hc ρ x r)) =ᵐ[P]
       fun ω => clampedCircleLateralSample Xc ρ ω x r := by
@@ -531,7 +532,7 @@ theorem clampedCircleLateralSample_centeredJointlyGaussian
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
     (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
+    (hm : MeasurableCircleAvg Xc)
     (ρ : ℝ) (hρ : 0 < ρ) (n : ℕ) (p : Fin n → ℂ × ℝ) :
     IsCenteredJointlyGaussian P
       (fun ω i => clampedCircleLateralSample Xc ρ ω (p i).1 (p i).2) := by
@@ -554,7 +555,7 @@ theorem clampedCircleLateralSample_centeredJointlyGaussian
 measure for all centers and radii. -/
 theorem measurable_clampedCircleRadialSample
     {Ω : Type*} [MeasurableSpace Ω] (Xc : Ω → ℂ → ℝ → ℝ)
-    (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
+    (hm : MeasurableCircleAvg Xc)
     (ρ : ℝ) (hρ : 0 < ρ) :
     Measurable (fun p : Ω × (ℂ × ℝ) => clampedCircleRadialSample Xc ρ p.1 p.2.1 p.2.2) := by
   let f : (Ω × (ℂ × ℝ)) × ℝ → ℝ := fun q =>
@@ -584,7 +585,7 @@ theorem measurable_clampedCircleRadialSample
 logarithmic radius, as required by the admissible-GMC construction. -/
 theorem measurable_clampedCircleLateralSample
     {Ω : Type*} [MeasurableSpace Ω] (Xc : Ω → ℂ → ℝ → ℝ)
-    (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
+    (hm : MeasurableCircleAvg Xc)
     (ρ : ℝ) (hρ : 0 < ρ) :
     Measurable (fun p : Ω × (ℂ × ℝ) => clampedCircleLateralSample Xc ρ p.1 p.2.1 p.2.2) :=
   hm.sub (measurable_clampedCircleRadialSample Xc hm ρ hρ)

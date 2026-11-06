@@ -54,7 +54,6 @@ theorem gaussParameterSeriesRatio_norm_le
     (hRatio : ‖z‖ * ((n : ℝ) + R) ^ 2 /
         (((n : ℝ) + 1) * ((n : ℝ) - R)) ≤ q) :
     ‖gaussParameterSeriesRatio p z n‖ ≤ q := by
-  have hn0 : 0 < (n : ℝ) := lt_of_le_of_lt hR hRn
   have hAnorm : ‖(n : ℂ) + p.1‖ ≤ (n : ℝ) + R := by
     calc
       ‖(n : ℂ) + p.1‖ ≤ ‖(n : ℂ)‖ + ‖p.1‖ := norm_add_le _ _
@@ -197,8 +196,7 @@ theorem exists_summable_uniform_gaussParameterSeriesTerm_fderiv_bound
         simpa using hb
     | succ k ih =>
         intro p hp
-        have hNk : N ≤ N + k := Nat.le_add_right N k
-        rcases hN (N + k) hNk with ⟨hRn, h3R, hRatio⟩
+        rcases hN (N + k) (Nat.le_add_right N k) with ⟨hRn, h3R, hRatio⟩
         rcases hparams p hp with ⟨hAparam, hBparam, hCparam⟩
         have hstep := gaussParameterSeriesTerm_fderiv_norm_succ_le
           p z (N + k) R q hR hRn h3R hAparam hBparam hCparam hRatio (hc p hp)
@@ -238,8 +236,7 @@ theorem exists_summable_uniform_gaussParameterSeriesTerm_fderiv_bound
     convert (hgeom.mul_left D).add (hpoly.mul_left A) using 1
     funext k
     simp [u, mul_comm, mul_left_comm, mul_assoc, add_comm]
-  have hu : Summable u := (summable_nat_add_iff N).1 htail
-  refine ⟨u, hu, ?_⟩
+  refine ⟨u, ((summable_nat_add_iff N).1 htail), ?_⟩
   intro n p hp
   by_cases hn : N ≤ n
   · have hrepr : n = N + (n - N) := by omega
@@ -247,8 +244,7 @@ theorem exists_summable_uniform_gaussParameterSeriesTerm_fderiv_bound
     simpa [u] using htailDeriv (n - N) p hp
   · have hle : n ≤ N := le_of_not_ge hn
     have hb := hderivBase n hle p hp
-    have hsub : n - N = 0 := Nat.sub_eq_zero_of_le hle
-    simpa [u, hsub, hqnonneg, hAnonneg] using hb
+    simpa [u, (Nat.sub_eq_zero_of_le hle), hqnonneg, hAnonneg] using hb
 
 /-- Each finite Gauss-series term is smooth in parameters on the pole-free domain. -/
 theorem gaussParameterSeriesTerm_contDiffOn
@@ -424,13 +420,12 @@ theorem gaussParameterSeriesTerm_summable
   have hmem : z ∈ Metric.eball (0 : ℂ) S.radius := by
     rw [mem_eball_zero_iff]
     exact hzrad
-  have hseries : Summable (fun n : ℕ => S n fun _ => z) := S.summable hmem
   have hterms : ∀ n : ℕ, S n (fun _ => z) = gaussParameterSeriesTerm p z n := by
     intro n
     change ordinaryHypergeometricSeries ℂ p.1 p.2.1 p.2.2 n (fun _ => z) = _
     rw [ordinaryHypergeometricSeries_apply_eq]
     simp [gaussParameterSeriesTerm, smul_eq_mul, mul_assoc]
-  exact hseries.congr fun n => hterms n
+  exact (S.summable hmem).congr fun n => hterms n
 
 /-- Inside the unit disk, the ordinary Gauss function is Fréchet differentiable in all three
 parameters at every tuple away from denominator poles. -/
@@ -439,9 +434,8 @@ theorem ordinaryHypergeometric_differentiableAt_params
     (hc : ∀ k : ℕ, p.2.2 ≠ -(k : ℂ)) (hz : ‖z‖ < 1) :
     DifferentiableAt ℂ (fun q : ℂ × ℂ × ℂ =>
       ordinaryHypergeometric q.1 q.2.1 q.2.2 z) p := by
-  have hp : p ∈ gaussParameterPoleFreeDomain := hc
   obtain ⟨ε, hε, hball⟩ :=
-    Metric.isOpen_iff.mp gaussParameterPoleFreeDomain_isOpen p hp
+    Metric.isOpen_iff.mp gaussParameterPoleFreeDomain_isOpen p (hc)
   let r : ℝ := ε / 2
   have hr : 0 < r := by dsimp [r]; linarith
   have hrε : r < ε := by dsimp [r]; linarith
@@ -450,21 +444,17 @@ theorem ordinaryHypergeometric_differentiableAt_params
     exact isCompact_closedBall p r
   have hKpole : ∀ q ∈ K, ∀ k : ℕ, q.2.2 ≠ -(k : ℂ) := by
     intro q hq k
-    have hqball : q ∈ Metric.ball p ε := Metric.closedBall_subset_ball hrε hq
-    have hqdomain : q ∈ gaussParameterPoleFreeDomain := hball hqball
+    have hqdomain : q ∈ gaussParameterPoleFreeDomain := hball (Metric.closedBall_subset_ball hrε hq)
     exact hqdomain k
   obtain ⟨u, hu, huBound⟩ :=
     exists_summable_uniform_gaussParameterSeriesTerm_fderiv_bound_of_isCompact
       hKcompact hKpole z hz
-  have hpK : p ∈ K := by
-    exact Metric.mem_closedBall_self (le_of_lt hr)
   have hsum0 := gaussParameterSeriesTerm_summable p z hc hz
   have htermsDiff : ∀ n : ℕ, ∀ q ∈ Metric.ball p r,
       HasFDerivAt (fun x => gaussParameterSeriesTerm x z n)
         (fderiv ℂ (fun x => gaussParameterSeriesTerm x z n) q) q := by
     intro n q hq
-    have hqK : q ∈ K := Metric.ball_subset_closedBall hq
-    have hqPole := hKpole q hqK
+    have hqPole := hKpole q (Metric.ball_subset_closedBall hq)
     exact (gaussParameterSeriesTerm_differentiableAt q z n hqPole).hasFDerivAt
   have htermsBound : ∀ n : ℕ, ∀ q ∈ Metric.ball p r,
       ‖fderiv ℂ (fun x => gaussParameterSeriesTerm x z n) q‖ ≤ u n := by

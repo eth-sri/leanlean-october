@@ -66,14 +66,13 @@ theorem cylindricalRadius_image_Ioi (x : ℝ) : cylindricalRadius x '' Ioi 0 = I
     exact abs_lt_cylindricalRadius x hρ
   · intro hy
     change |x| < y at hy
-    have hypos : 0 < y := (abs_nonneg x).trans_lt hy
     have hsq : 0 < y ^ 2 - x ^ 2 := by
       nlinarith only [hy, abs_nonneg x, sq_abs x]
     refine ⟨Real.sqrt (y ^ 2 - x ^ 2), Real.sqrt_pos.2 hsq, ?_⟩
     unfold cylindricalRadius
     rw [Real.sq_sqrt hsq.le]
     have heq : x ^ 2 + (y ^ 2 - x ^ 2) = y ^ 2 := by ring
-    rw [heq, Real.sqrt_sq hypos.le]
+    rw [heq, Real.sqrt_sq ((abs_nonneg x).trans_lt hy).le]
 
 /-- The cylindrical radial substitution has derivative `ρ / sqrt(x²+ρ²)`. -/
 theorem hasDerivAt_cylindricalRadius (x : ℝ) {ρ : ℝ} (hρ : 0 < ρ) :
@@ -188,8 +187,7 @@ theorem lintegral_cylindrical_tails (F H : ℝ → ℝ≥0∞)
       apply setLIntegral_eq_of_support_subset
       intro y hy
       by_contra hpos
-      have hy0 : y ≤ 0 := le_of_not_gt hpos
-      have hempty : Ioo (-y) y = ∅ := Ioo_eq_empty_of_le (by linarith only [hy0])
+      have hempty : Ioo (-y) y = ∅ := Ioo_eq_empty_of_le (by linarith only [(le_of_not_gt hpos)])
       apply hy
       simp only [hempty, Measure.restrict_empty, lintegral_zero_measure, mul_zero]
 
@@ -269,7 +267,6 @@ theorem lintegral_radial_exp (F : ℝ → ℝ≥0∞) (hF : Measurable F)
     intro y hy
     dsimp only
     rw [lintegral_exp_longitudinal c y hc hy.le]
-    have hn := sinh_div_nonneg_longitudinal c y hc hy.le
     have heq : 2 * Real.sinh (c * y) / c = 2 * (Real.sinh (c * y) / c) := by ring
     have heq' : y * Real.sinh (c * y) / c = y * (Real.sinh (c * y) / c) := by ring
     rw [heq, heq', ENNReal.ofReal_mul (by norm_num : (0 : ℝ) ≤ 2),

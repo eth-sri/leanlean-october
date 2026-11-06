@@ -53,10 +53,8 @@ theorem dual_copied_joint_law_integral
     (G : ζ × ℝ≥0∞ → ℝ) (hG : Measurable G) :
     (∫ ω : Ω × Ω, G (Y ω.1,V ω) ∂P.prod P) =
       ∫ ω : Ω × Λ, G (Y ω.1,J ω.2) ∂P.prod R := by
-  have hs : AEMeasurable (fun ω : Ω × Ω => (Y ω.1,V ω)) (P.prod P) := hY.comp_fst.prodMk hV
-  have hr : AEMeasurable (fun ω : Ω × Λ => (Y ω.1,J ω.2)) (P.prod R) := hY.comp_fst.prodMk hJ.comp_snd
   rw [← dual_independent_copy_map_law P R Y J hY hJ] at hLaw
-  rw [← integral_map hs hG.aestronglyMeasurable,
-    ← integral_map hr hG.aestronglyMeasurable, hLaw]
+  rw [← integral_map (hY.comp_fst.prodMk hV) hG.aestronglyMeasurable,
+    ← integral_map (hY.comp_fst.prodMk hJ.comp_snd) hG.aestronglyMeasurable, hLaw]
 
 end DOZZ.Proofs

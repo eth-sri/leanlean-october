@@ -3,6 +3,7 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
+public import DOZZ.SharedHyp
 
 public import DOZZ.FourPoint.BPZ.HypergeomNearZero
 public import DOZZ.FourPoint.Fusion.KRVRestrictedFusion
@@ -47,7 +48,6 @@ theorem bpz_gaussParameterC_half_mem {γ α₁ : ℝ} (hγ : 0 < γ) (hαlo : γ
   have h1 : γ / 2 * (2 / γ + γ / 2 - α₁) = 1 + γ / 2 * (γ / 2 - α₁) := by
     field_simp
     ring
-  have h2 : γ / 2 * (2 / γ + γ / 2 - α₁) = γ / 2 * (2 / γ - α₁) + γ ^ 2 / 4 := by ring
   constructor
   · have : γ / 2 * (γ / 2 - α₁) < 0 :=
       mul_neg_of_pos_of_neg (by positivity) (by linarith)
@@ -67,14 +67,7 @@ theorem bpz_ne_neg_nat_of_pos {c : ℝ} (hc : 0 < c) : ∀ n : ℕ, (c : ℂ) �
 formula. -/
 theorem bpz_unreflected_of_shift {Ω : Type*} [MeasurableSpace Ω] {H : ℂ → ℂ → ℂ → ℂ → ℂ}
     (P : Measure Ω) (M : Ω → Measure ℂ) (γ μ α₁ α₂ α₃ : ℝ)
-    (hdiag : ∀ z ∈ gaussCutPlane, fourPointT P M γ μ (-(γ / 2)) α₁ α₂ α₃ z =
-      structureConstant P M γ μ (α₁ - γ / 2) α₂ α₃ *
-        (‖gaussFMinus H (gaussParameterA γ (γ / 2) α₁ α₂ α₃) (gaussParameterB γ (γ / 2) α₁ α₂ α₃)
-            (gaussParameterC γ (γ / 2) α₁) z‖ ^ 2 +
-          gaussCoefficientRatio (gaussParameterA γ (γ / 2) α₁ α₂ α₃)
-              (gaussParameterB γ (γ / 2) α₁ α₂ α₃) (gaussParameterC γ (γ / 2) α₁) *
-            ‖gaussFPlus H (gaussParameterA γ (γ / 2) α₁ α₂ α₃)
-              (gaussParameterB γ (γ / 2) α₁ α₂ α₃) (gaussParameterC γ (γ / 2) α₁) z‖ ^ 2))
+    (hdiag : FourPointDiagonal P M γ μ α₁ α₂ α₃ H)
     (hshift : gaussCoefficientRatio (gaussParameterA γ (γ / 2) α₁ α₂ α₃)
         (gaussParameterB γ (γ / 2) α₁ α₂ α₃) (gaussParameterC γ (γ / 2) α₁) *
           structureConstant P M γ μ (α₁ - γ / 2) α₂ α₃ =
@@ -110,7 +103,6 @@ theorem bpz_tendsto_sub_div_rpow {φ : ℝ → ℝ} {κ : ℝ} (hκ : κ < 1) (h
   filter_upwards [self_mem_nhdsWithin] with t (ht : 0 < t)
   have hk : t ^ (1 - κ) * t ^ κ = t := by
     rw [← Real.rpow_add ht, sub_add_cancel, Real.rpow_one]
-  have htk : 0 < t ^ κ := Real.rpow_pos_of_pos ht κ
   field_simp
   rw [mul_assoc, hk]
 
@@ -119,15 +111,8 @@ theorem bpz_shift_restricted {Ω : Type*} [MeasurableSpace Ω] {H : ℂ → ℂ 
     (hH : IsGaussHypergeometricFamily H) (P : Measure Ω) (X : Ω → Distr) (M : Ω → Measure ℂ)
     (γ μ α₁ α₂ α₃ : ℝ) (hγ : 0 < γ) (hγsq : γ ^ 2 < 2) (hμ : 0 < μ)
     (hαlo : γ / 2 + 1 / γ < α₁) (hαhi : α₁ < 2 / γ) (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ)
-    (hs : 2 * Q γ + γ / 2 < α₁ + α₂ + α₃) (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M)
-    (hdiag : ∀ z ∈ gaussCutPlane, fourPointT P M γ μ (-(γ / 2)) α₁ α₂ α₃ z =
-      structureConstant P M γ μ (α₁ - γ / 2) α₂ α₃ *
-        (‖gaussFMinus H (gaussParameterA γ (γ / 2) α₁ α₂ α₃) (gaussParameterB γ (γ / 2) α₁ α₂ α₃)
-            (gaussParameterC γ (γ / 2) α₁) z‖ ^ 2 +
-          gaussCoefficientRatio (gaussParameterA γ (γ / 2) α₁ α₂ α₃)
-              (gaussParameterB γ (γ / 2) α₁ α₂ α₃) (gaussParameterC γ (γ / 2) α₁) *
-            ‖gaussFPlus H (gaussParameterA γ (γ / 2) α₁ α₂ α₃)
-              (gaussParameterB γ (γ / 2) α₁ α₂ α₃) (gaussParameterC γ (γ / 2) α₁) z‖ ^ 2)) :
+    (hs : SeibergSlack γ α₁ α₂ α₃) (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M)
+    (hdiag : FourPointDiagonal P M γ μ α₁ α₂ α₃ H) :
     gaussCoefficientRatio (gaussParameterA γ (γ / 2) α₁ α₂ α₃)
         (gaussParameterB γ (γ / 2) α₁ α₂ α₃) (gaussParameterC γ (γ / 2) α₁) *
           structureConstant P M γ μ (α₁ - γ / 2) α₂ α₃ =
@@ -151,7 +136,6 @@ theorem bpz_shift_restricted {Ω : Type*} [MeasurableSpace Ω] {H : ℂ → ℂ 
     have : 0 < 1 / γ := by positivity
     linarith
   obtain ⟨hc0, hc1⟩ := bpz_gaussParameterC_half_mem hγ hlo hαhi
-  have h2c : 2 * (1 - c) = κ := bpz_gaussParameterC_half γ α₁
   -- the functions near zero
   set φ : ℝ → ℝ := fun t => Complex.normSq (H (a : ℂ) (b : ℂ) (c : ℂ) (t : ℂ)) with hφ
   set ψ : ℝ → ℝ := fun t => Complex.normSq (H ((a : ℂ) - c + 1) ((b : ℂ) - c + 1)
@@ -187,13 +171,11 @@ theorem bpz_shift_restricted {Ω : Type*} [MeasurableSpace Ω] {H : ℂ → ℂ 
     rw [neg_div] at h2
     rw [h1] at h2
     rw [bpzHG_norm_sq_eq_normSq, bpzHG_norm_sq_eq_normSq, bpzHG_normSq_gaussFMinus,
-      bpzHG_normSq_gaussFPlus H a b c ht0, h2c, Complex.norm_real, Real.norm_of_nonneg ht0.le]
+      bpzHG_normSq_gaussFPlus H a b c ht0, (bpz_gaussParameterC_half γ α₁), Complex.norm_real, Real.norm_of_nonneg ht0.le]
       at h2
-    have htk : 0 < t ^ κ := Real.rpow_pos_of_pos ht0 κ
     rw [hφ0]
     field_simp
-    have e : Cm * (φ t + ρ * (t ^ κ * ψ t)) = Cm + B * t ^ κ + r t := h2
-    linear_combination e
+    linear_combination (h2)
   -- limits along `t ↓ 0`
   have hlimL : Tendsto (fun t => ρ * Cm * ψ t) (𝓝[>] 0) (𝓝 (ρ * Cm)) := by
     have : Tendsto ψ (𝓝[>] 0) (𝓝 1) := by

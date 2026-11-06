@@ -33,9 +33,8 @@ theorem bpz_rpow_neg_mul_le {I A q : ℝ} (hI : 0 < I) (hAI : A ≤ I) :
 
 theorem bpz_rpow_neg_sub_one_mul_le {I A B q : ℝ} (hI : 0 < I) (hAI : A ≤ I) (hB0 : 0 ≤ B)
     (hBI : B ≤ I) : I ^ (-q - 1) * (A * B) ≤ I ^ (1 - q) := by
-  have h0 : 0 ≤ I ^ (-q - 1) := Real.rpow_nonneg hI.le _
   calc I ^ (-q - 1) * (A * B) ≤ I ^ (-q - 1) * (I * I) :=
-        mul_le_mul_of_nonneg_left (mul_le_mul hAI hBI hB0 hI.le) h0
+        mul_le_mul_of_nonneg_left (mul_le_mul hAI hBI hB0 hI.le) (Real.rpow_nonneg hI.le _)
     _ = I ^ (-q - 1 + 1 + 1) := by
         rw [Real.rpow_add_one hI.ne', Real.rpow_add_one hI.ne']; ring
     _ = I ^ (1 - q) := by ring_nf
@@ -96,10 +95,6 @@ theorem abs_leftInt_le (hd : BPZLimitData γ q δ ρ kt k₂ φ D) (v : ℂ) :
       rw [bpz_fderiv_mul_zero_of_notMem v hx]
       simp only [zero_mul, abs_zero]
       exact mul_nonneg (by positivity) (mul_nonneg (hd.ρ_nonneg x) (hd.cutWeight_nonneg n x))
-  have hwm : Measurable (bpzWardLeftWeight γ q n kt φ v) := by
-    unfold bpzWardLeftWeight
-    exact (hf'c.measurable.mul (bpz_measurable_normPlus.pow_const _)).mul
-      (Real.measurable_exp.comp ((continuous_bpzPin _).measurable.const_mul _))
   have hρk : ∀ x, |ρ x * bpzWardCutWeight γ q n kt x| ≤ K := fun x => by
     rw [abs_mul, abs_of_nonneg (hd.ρ_nonneg x)]
     exact (hd.rho_abs_cutWeight_le hK hK0 n x).1
@@ -127,7 +122,6 @@ theorem abs_symInt_le (hd : BPZLimitData γ q δ ρ kt k₂ φ D) (v : ℂ) :
     rw [abs_of_nonneg (hw0 x)]
     have := (hd.rho_abs_cutWeight_le hK hK0 n x).1
     rwa [abs_of_nonneg (hd.cutWeight_nonneg n x)] at this
-  have hwm : Measurable w := hd.ρ_meas.mul (hd.measurable_cutWeight n)
   have hLm : Measurable fun w' => bpzLamDeriv n w' v :=
     (ContinuousLinearMap.apply ℝ ℝ v).continuous.measurable.comp (measurable_bpzLamDeriv n)
   have hHm := measurable_bpzSymKer hd.phi_cont.measurable hd.ρ_meas (hd.measurable_cutWeight n)
@@ -144,7 +138,7 @@ theorem abs_symInt_le (hd : BPZLimitData γ q δ ρ kt k₂ φ D) (v : ℂ) :
       ≤ C * (K * K) := fun x y =>
     (hpt x y).trans (mul_le_mul_of_nonneg_left (mul_le_mul ((le_abs_self _).trans (hwb x))
       ((le_abs_self _).trans (hwb y)) (hw0 y) hK0) (by positivity))
-  have hIw : Integrable w m := integrable_of_bdd_finite hwm hwb
+  have hIw : Integrable w m := integrable_of_bdd_finite (hd.ρ_meas.mul (hd.measurable_cutWeight n)) hwb
   rw [← Real.norm_eq_abs]
   refine (norm_integral_le_integral_norm _).trans ?_
   calc ∫ x, ‖∫ y, bpzSymKer φ ρ (bpzWardCutWeight γ q n kt) (fun w' => bpzLamDeriv n w' v) x y ∂m‖

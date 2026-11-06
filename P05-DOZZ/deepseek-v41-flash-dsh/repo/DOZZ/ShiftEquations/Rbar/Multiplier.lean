@@ -124,7 +124,6 @@ theorem cross_bounds {γ ε : ℝ} (hγ : 0 < γ) (hε₁ : γ / 2 < ε)
     (-1 < γ * ε / 2 - γ ^ 2 / 4 - 1 ∧ γ * ε / 2 - γ ^ 2 / 4 - 1 < 0) ∧
       (0 < γ * ε / 2 ∧ γ * ε / 2 < 1) ∧ (-1 < -(γ ^ 2) / 4 ∧ -(γ ^ 2) / 4 < 0) ∧
       (0 < γ / 4 * (ε - γ / 2) ∧ γ / 4 * (ε - γ / 2) < 1) := by
-  have h1 : γ * (γ / 2) < γ * ε := mul_lt_mul_of_pos_left hε₁ hγ
   have h2 : γ * ε / 2 < 1 := by
     have := mul_lt_mul_of_pos_left hε₂ hγ
     rw [mul_div_assoc', mul_div_cancel_left₀ _ hγ.ne'] at this

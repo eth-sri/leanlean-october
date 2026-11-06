@@ -3,6 +3,7 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
+public import DOZZ.SharedHyp
 
 public import DOZZ.ShiftEquations.Residual.Slice
 public import DOZZ.Statements.Defs.UnitVolumeStructureConstant
@@ -94,11 +95,10 @@ theorem unitVolume_eq_normalized {Ω : Type*} [MeasurableSpace Ω] (P : Measure 
 
 /-- The slice `(t, α₂, α₃)` lies in the extended domain for `|α₂ - α₃| < t < Q`. -/
 theorem extendedSeiberg3_slice {γ η α₂ α₃ t : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2)
-    (hη : 0 < η ∧ Q γ - 2 * η > γ) (hα₂ : Q γ - η < α₂ ∧ α₂ < Q γ)
+    (hη : DriftWindow γ η) (hα₂ : Q γ - η < α₂ ∧ α₂ < Q γ)
     (hα₃ : Q γ - η < α₃ ∧ α₃ < Q γ) (ht₁ : max (α₂ - α₃) (α₃ - α₂) < t) (ht₂ : t < Q γ) :
     ExtendedSeiberg3 γ t α₂ α₃ := by
   have hQ : Q γ = 2 / γ + γ / 2 := rfl
-  have hQ2 : 2 * Q γ = 4 / γ + γ := by rw [hQ]; ring
   have hγh : γ / 2 < 2 / γ := by
     rw [div_lt_div_iff₀ (by norm_num) hγ]
     nlinarith
@@ -113,7 +113,7 @@ equals the normalized companion `μ^s Γ(s)⁻¹ D` at every point of that inter
 theorem slice_identity_calibrated {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
     (X : Ω → Distr) (M : Ω → Measure ℂ) {γ μ η α₂ α₃ : ℝ} {U : ℂ → ℂ} (hγ : 0 < γ)
     (hγ2 : γ < 2) (hμ : 0 < μ) (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M)
-    (hU : IsUpsilon γ U) (hη : 0 < η ∧ Q γ - 2 * η > γ) (hα₂ : Q γ - η < α₂ ∧ α₂ < Q γ)
+    (hU : IsUpsilon γ U) (hη : DriftWindow γ η) (hα₂ : Q γ - η < α₂ ∧ α₂ < Q γ)
     (hα₃ : Q γ - η < α₃ ∧ α₃ < Q γ) {c : ℂ}
     (hslice : ∀ x : ℝ, 2 * η < x → x < Q γ → ∀ᶠ t : ℝ in 𝓝[≠] x,
       (structureConstant P M γ μ t α₂ α₃ : ℂ) = c * dozzFormula γ μ U t α₂ α₃) :
@@ -161,7 +161,6 @@ theorem slice_identity_calibrated {Ω : Type*} [MeasurableSpace Ω] (P : Measure
   set N : ℂ → ℂ := fun z => ((μ : ℂ) ^ ((A 0 z + A 1 z + A 2 z - 2 * Q γ) / γ) /
       Complex.Gamma ((A 0 z + A 1 z + A 2 z - 2 * Q γ) / γ)) *
         dozzFormula γ μ U (A 0 z) (A 1 z) (A 2 z) with hN
-  have hNm : MeromorphicOn N univ := roots_formula_line_meromorphic hγ hγ2 hμ hU A hAd
   have hNval : ∀ t : ℝ, N t = ((μ : ℂ) ^ (sExp γ t α₂ α₃ : ℂ) /
       Complex.Gamma (sExp γ t α₂ α₃)) * dozzFormula γ μ U t α₂ α₃ := fun t => by
     have hexp : ((t : ℂ) + (α₂ : ℂ) + (α₃ : ℂ) - 2 * Q γ) / γ = (sExp γ t α₂ α₃ : ℂ) := by
@@ -186,12 +185,10 @@ theorem slice_identity_calibrated {Ω : Type*} [MeasurableSpace Ω] (P : Measure
     ring
   -- the identity theorem along the connected component through the slice
   set W := connectedComponentIn D₀ (x₁ : ℂ) with hW
-  have hWo : IsOpen W := hD₀o.connectedComponentIn
-  have hWsub : W ⊆ D₀ := connectedComponentIn_subset D₀ _
   have hx₁W : (x₁ : ℂ) ∈ W := mem_connectedComponentIn (hD₀mem x₁ (by linarith) hx₁2)
-  have hgm : MeromorphicOn g W := fun z hz => (hgan z (hWsub hz)).meromorphicAt
+  have hgm : MeromorphicOn g W := fun z hz => (hgan z ((connectedComponentIn_subset D₀ _) hz)).meromorphicAt
   have hNcm : MeromorphicOn (fun z => c * N z) W := fun z _ =>
-    (MeromorphicAt.const c z).mul (hNm z (mem_univ z))
+    (MeromorphicAt.const c z).mul ((roots_formula_line_meromorphic hγ hγ2 hμ hU A hAd) z (mem_univ z))
   have hEq : ∀ w ∈ W, g =ᶠ[𝓝[≠] w] (fun z => c * N z) := fun w hw =>
     ShiftGluing.meromorphicOn_eventuallyEq_of_frequently hgm hNcm
       isPreconnected_connectedComponentIn hx₁W hw

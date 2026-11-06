@@ -75,7 +75,6 @@ theorem sym_add_mix_eq (hd : BPZLimitData γ q δ ρ kt k₂ φ D) (v : ℂ) {m 
     (((((hφm.comp measurable_fst).sub (hφm.comp measurable_snd)).mul
       ((hk₂m.comp measurable_fst).mul (hk₂m.comp measurable_snd))).mul
         (hKm.comp (measurable_fst.sub measurable_snd))).div_const _)
-  have hprod : Integrable (fun p : ℂ × ℂ => k₂ p.1 * k₂ p.2) (m.prod m) := hk₂.mul_prod hk₂
   -- integrability on the product
   have hSi : Integrable (fun p : ℂ × ℂ => S p.1 p.2) (m.prod m) := by
     have hb : ∀ x y, |S x y| ≤ 2 * ‖v‖ * ((Lφ : ℝ) + B / δ) * (K * K) := by
@@ -99,7 +98,7 @@ theorem sym_add_mix_eq (hd : BPZLimitData γ q δ ρ kt k₂ φ D) (v : ℂ) {m 
           mul_le_mul_of_nonneg_left hw (by positivity)
       _ = 1 * ‖v‖ / (2 * δ) * B * K * (1 * k₂ p.2) := by ring
   have hGi : Integrable (fun p : ℂ × ℂ => G p.1 p.2) (m.prod m) :=
-    (hprod.const_mul ((Lφ : ℝ) * ‖v‖ / 2)).mono' hGm.aestronglyMeasurable
+    ((hk₂.mul_prod hk₂).const_mul ((Lφ : ℝ) * ‖v‖ / 2)).mono' hGm.aestronglyMeasurable
       (Eventually.of_forall fun p => by
         rw [Real.norm_eq_abs]; exact hd.abs_diffKer_le hLφ v p.1 p.2)
   -- the mixed term as a double integral and its antisymmetrization

@@ -53,12 +53,11 @@ theorem tendstoInMeasure_mul_same_space
     intro ω hω
     by_contra hnot
     have hnot' := not_or.mp hnot
-    have hW' : |W ω| ≤ K := le_of_not_gt hnot'.1
     have hd : ‖f i ω - g ω‖ < ε / K := lt_of_not_ge hnot'.2
     have hh : ‖W ω * f i ω - W ω * g ω‖ < ε := by
       rw [← mul_sub, norm_mul, Real.norm_eq_abs]
       calc
-        _ ≤ K * ‖f i ω - g ω‖ := mul_le_mul_of_nonneg_right hW' (norm_nonneg _)
+        _ ≤ K * ‖f i ω - g ω‖ := mul_le_mul_of_nonneg_right (le_of_not_gt hnot'.1) (norm_nonneg _)
         _ < K * (ε / K) := mul_lt_mul_of_pos_left hd hK
         _ = ε := mul_div_cancel₀ ε hK.ne'
     exact (not_le_of_gt hh) hω

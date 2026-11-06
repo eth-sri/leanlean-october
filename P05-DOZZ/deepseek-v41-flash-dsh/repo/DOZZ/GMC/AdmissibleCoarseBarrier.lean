@@ -59,9 +59,8 @@ theorem admissible_coarse_barrier_tail_rate
         (fun ω => Z ω 1) - (k : ℝ)| ≤ max Cv Cm := by
       simpa [Z, p] using h.trans (le_max_right Cv Cm)
     simpa [C] using h'
-  have hk : 0 < (k : ℝ) := lt_of_le_of_lt hCnonneg hCk
   have hbound := finite_gaussian_tilt_coarse_barrier_tail_rate P Z hZ
-    1 0 (k : ℝ) g a C hg hga hk
+    1 0 (k : ℝ) g a C hg hga (lt_of_le_of_lt hCnonneg hCk)
     hCk hvarZ hcovZ hgap
   simpa [Z, p] using hbound
 

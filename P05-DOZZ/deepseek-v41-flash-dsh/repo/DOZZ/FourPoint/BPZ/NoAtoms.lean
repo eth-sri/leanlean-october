@@ -46,11 +46,10 @@ theorem bpzDyadic_cell_subset_ball (k : ℕ) (x : ℂ) :
   rw [Metric.mem_closedBall, dist_eq_norm]
   set c := bpzGridCorner h (bpzGridIdx h x)
   have h1 := norm_sub_bpzGridCorner_le hh y
-  have h2 : ‖x - c‖ ≤ 2 * h := norm_sub_bpzGridCorner_le hh x
   rw [hy] at h1
   calc ‖y - x‖ = ‖(y - c) - (x - c)‖ := by ring_nf
     _ ≤ ‖y - c‖ + ‖x - c‖ := norm_sub_le _ _
-    _ ≤ 2 * h + 2 * h := add_le_add h1 h2
+    _ ≤ 2 * h + 2 * h := add_le_add h1 (norm_sub_bpzGridCorner_le hh x)
     _ = 4 * h := by ring
 
 theorem le_bpzDyadicMass (k : ℕ) (m : Measure ℂ) (x : ℂ) : m {x} ≤ bpzDyadicMass k m x :=

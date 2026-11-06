@@ -68,7 +68,6 @@ theorem regularizedGMC_test_integral_eq_local_wick
     have hnormpos : 0 < normPlus x := by
       unfold normPlus
       exact lt_of_lt_of_le zero_lt_one (le_max_left 1 ‖x‖)
-    have hpowpos : 0 < normPlus x ^ (-4 : ℝ) := Real.rpow_pos_of_pos hnormpos _
     have hnonneg : 0 ≤ Real.exp (γ * Xc ω x r - γ ^ 2 / 2 * V x) *
         normPlus x ^ (-4 : ℝ) := by positivity
     rw [ENNReal.toReal_ofReal hnonneg, smul_eq_mul]
@@ -122,13 +121,12 @@ theorem regularizedGMC_test_integral_aemeasurable
   have hvar : Measurable (fun x : ℂ =>
       gaussianVariance P (fun ω => Xc ω x r)) :=
     circleAverage_variance_measurable (P := P) Xc hXc.1 r
-  have hfield : Measurable (fun p : Ω × ℂ => Xc p.1 p.2 r) := hXc.1 r
   let H : Ω × ℂ → ℝ := fun p => f p.2 * Real.exp
     (γ * Xc p.1 p.2 r - γ ^ 2 / 2 * gaussianVariance P (fun ω => Xc ω p.2 r))
   have hH : Measurable H := by
     dsimp [H]
     exact (hf.comp measurable_snd).mul <| Real.measurable_exp.comp
-      ((measurable_const.mul hfield).sub (measurable_const.mul (hvar.comp measurable_snd)))
+      ((measurable_const.mul (hXc.1 r)).sub (measurable_const.mul (hvar.comp measurable_snd)))
   let G : Ω × ℂ → ℝ := fun p => if p.2 ∈ K then H p else 0
   have hG : Measurable G := by
     exact Measurable.ite (hK.preimage measurable_snd) hH measurable_const
@@ -175,11 +173,10 @@ theorem localBallProbability_integral_mul_area
       Metric.isClosed_closedBall.measurableSet.nullMeasurableSet, Complex.volume_closedBall]
   have hm_ne : m ≠ 0 := by
     rw [hm]
-    have hR' : ENNReal.ofReal R ≠ 0 := ENNReal.ofReal_ne_zero_iff.mpr hR
     have hπ : (NNReal.pi : ℝ≥0∞) ≠ 0 := by
       rw [ENNReal.coe_ne_zero]
       exact ne_of_gt NNReal.pi_pos
-    exact ne_of_gt (ENNReal.mul_pos (pow_ne_zero 2 hR') hπ)
+    exact ne_of_gt (ENNReal.mul_pos (pow_ne_zero 2 (ENNReal.ofReal_ne_zero_iff.mpr hR)) hπ)
   have hm_top : m ≠ ∞ := by
     rw [hm]
     exact ENNReal.mul_ne_top (by simp) (by simp)
@@ -269,8 +266,7 @@ theorem regularizedGMC_affine_cutoff_test_vector_law
       Metric.closedBall a (c * R) := complex_affine_image_closedBall hc
   have hmapInj : Function.Injective (fun x : ℂ => a + c • x) := by
     intro x y hxy
-    have hsmul : c • x = c • y := add_left_cancel hxy
-    exact (smul_right_injective ℂ hc.ne') hsmul
+    exact (smul_right_injective ℂ hc.ne') (add_left_cancel hxy)
   have hfzeroTarget (j : Fin m) : ∀ x, x ∉ Metric.closedBall a (c * R) → f j x = 0 :=
     boundedContinuousFunction_eq_zero_off_tsupport_subset (f j)
       (Metric.closedBall a (c * R)) (hf_support j)
@@ -282,8 +278,7 @@ theorem regularizedGMC_affine_cutoff_test_vector_law
     have hy' : a + c • x ∈ (fun y : ℂ => a + c • y) ''
         Metric.closedBall (0 : ℂ) R := by rw [himage]; exact hy
     obtain ⟨y, hyball, hyEq⟩ := hy'
-    have hxy : x = y := hmapInj (by simpa using hyEq.symm)
-    exact hx (hxy ▸ hyball)
+    exact hx ((hmapInj (by simpa using hyEq.symm)) ▸ hyball)
   have hweightMeas : ∀ j, Measurable (weight j) := by
     intro j
     dsimp [weight]
@@ -345,9 +340,6 @@ theorem regularizedGMC_affine_cutoff_test_vector_law
         (γ * Xc p.1 p.2.1 r - γ ^ 2 / 2 * (varianceBase p.2 : ℝ))) := by
       exact ((hweightMeas j).comp measurable_snd).mul hwickBaseMeas
     exact hIntMeas.stronglyMeasurable.integral_prod_right'.measurable
-  have hfactorMeas : Measurable factor := by
-    dsimp [factor]
-    fun_prop
   have hAmeas : Measurable A := by
     dsimp [A]
     fun_prop
@@ -414,8 +406,7 @@ theorem regularizedGMC_affine_cutoff_test_vector_law
               γ ^ 2 / 2 * (varianceTotal x : ℝ))
         rw [← htotalVar x]
     have hjac : (|(c ^ 2)⁻¹|)⁻¹ = c ^ 2 := by
-      have hc2 : 0 < c ^ 2 := sq_pos_of_ne_zero hc.ne'
-      rw [abs_of_pos (inv_pos.mpr hc2)]
+      rw [abs_of_pos (inv_pos.mpr (sq_pos_of_ne_zero hc.ne'))]
       field_simp
     change (∫ x, f j x ∂regularizedGMC P Xc γ (r - Real.log c) ω) =
       A (targetWick ω) j
@@ -442,9 +433,6 @@ theorem regularizedGMC_affine_cutoff_test_vector_law
     have hnormed := localBallProbability_integral_mul_area hR
       (fun x => f j (a + c • x) * Real.exp
         (γ * Xc ω x r - γ ^ 2 / 2 * gaussianVariance P (fun ω' => Xc ω' x r)))
-    have hwickEq : (∫ x : S, weight j x * Real.exp
-        (γ * Xc ω x.1 r - γ ^ 2 / 2 * (varianceBase x : ℝ)) ∂ν) = baseWick ω j := by
-      rfl
     have hrawWickEq : (∫ x : S, f j (a + c • x.1) * Real.exp
         (γ * Xc ω x.1 r - γ ^ 2 / 2 *
           gaussianVariance P (fun ω' => Xc ω' x.1 r)) ∂ν) = baseWick ω j := by

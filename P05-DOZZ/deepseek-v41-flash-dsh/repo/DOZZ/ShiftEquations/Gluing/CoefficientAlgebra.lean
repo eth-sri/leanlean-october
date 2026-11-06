@@ -107,13 +107,11 @@ theorem gaussRatio_l_sub (b c : ℝ) :
 /-- The key scalar identity `-(Γ(c) / Γ(2-c))² · l(2-c) = l(c)` for `c ≠ 1`. -/
 theorem gaussRatio_key {c : ℝ} (hc : c ≠ 1) :
     -(Real.Gamma c / Real.Gamma (2 - c)) ^ 2 * gaussRatio_l (2 - c) = gaussRatio_l c := by
-  have hc1 : c - 1 ≠ 0 := sub_ne_zero.mpr hc
-  have hc2 : 1 - c ≠ 0 := sub_ne_zero.mpr hc.symm
   have h1 : Real.Gamma c = (c - 1) * Real.Gamma (c - 1) := by
-    have := Real.Gamma_add_one hc1
+    have := Real.Gamma_add_one (sub_ne_zero.mpr hc)
     rwa [sub_add_cancel] at this
   have h2 : Real.Gamma (2 - c) = (1 - c) * Real.Gamma (1 - c) := by
-    have := Real.Gamma_add_one hc2
+    have := Real.Gamma_add_one (sub_ne_zero.mpr hc.symm)
     rwa [show 1 - c + 1 = 2 - c by ring] at this
   have h3 : gaussRatio_l (2 - c) = Real.Gamma (2 - c) / Real.Gamma (c - 1) := by
     unfold gaussRatio_l

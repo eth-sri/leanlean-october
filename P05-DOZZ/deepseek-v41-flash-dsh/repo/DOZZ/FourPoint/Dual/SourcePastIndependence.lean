@@ -3,6 +3,7 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
+public import DOZZ.SharedHyp
 public import DOZZ.FourPoint.Dual.PastExteriorIdentity
 public import DOZZ.FourPoint.Dual.PathLikelihood
 import Mathlib.Tactic
@@ -17,8 +18,8 @@ past and lateral carrier, so are independent of the future inward Brownian path.
 theorem dual_source_future_indep_outer_restart
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
     (Xc : Ω → ℂ → ℝ → ℝ) (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
-    (hcont : ∀ᵐ ω ∂P, Continuous (fun p : ℂ × ℝ => Xc ω p.1 p.2))
+    (hm : MeasurableCircleAvg Xc)
+    (hcont : ContinuousCircleAvg P Xc)
     (γ : ℝ) (hγ : 0 < γ) (hγ₂ : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
     (ν h α₁ α₂ α₃ ξ : ℝ) (z : ℂ) (hz0 : z ≠ 0) (hz : ‖z‖ < ‖z‖^(1-ξ))
     (T : ℝ≥0) (hT : (T : ℝ) = -Real.log ‖z‖+h)
@@ -31,12 +32,10 @@ theorem dual_source_future_indep_outer_restart
   obtain ⟨N, hNm, hi, hfin, heq, _, _⟩ := reflected_copied_radial_plane_observable
     P X Xc hX hc hm hcont γ hγ hγ₂ M hM
   let NL : Ω → DualLocalPlaneMeasure := fun ω => ⟨N ω, hfin ω⟩
-  have hNL : Measurable NL := hNm.subtype_mk
-  have hiL : IndepFun A NL P := dual_indepFun_subtype_lift P A N _ hfin hi
   have hB := (originRadialPath_isBrownian P X Xc hX hc hcont).1
   have hhalves := originRadialPath_halves_indep P X Xc hX hc hcont
-  have hip := dual_radial_future_indep_restart_exterior P A hA hB hhalves NL hNL.aemeasurable
-    hiL T γ ν α₁ α₂ α₃ z (‖z‖^(1-ξ))
+  have hip := dual_radial_future_indep_restart_exterior P A hA hB hhalves NL (hNm.subtype_mk).aemeasurable
+    (dual_indepFun_subtype_lift P A N _ hfin hi) T γ ν α₁ α₂ α₃ z (‖z‖^(1-ξ))
   have hconv : Measurable (fun p : ℝ × ℝ≥0∞ => (p.1,p.2.toReal)) :=
     measurable_fst.prodMk measurable_snd.ennreal_toReal
   have hir := hip.comp measurable_id hconv

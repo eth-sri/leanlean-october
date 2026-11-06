@@ -60,10 +60,9 @@ theorem meromorphicOn_structureConstantH_comp {f : (Fin 3 → ℂ) → ℂ} {V :
     {ℓ : ℂ → Fin 3 → ℂ} (hℓ : Differentiable ℂ ℓ) :
     MeromorphicOn (fun t => structureConstantH f γ μ (ℓ t)) (ℓ ⁻¹' V) := by
   intro t ht
-  have hUo : IsOpen (ℓ ⁻¹' V) := hV.preimage hℓ.continuous
   have hfℓ : DifferentiableOn ℂ (fun t => f (ℓ t)) (ℓ ⁻¹' V) :=
     hf.comp hℓ.differentiableOn fun _ hx => hx
-  have hfa : AnalyticAt ℂ (fun t => f (ℓ t)) t := hfℓ.analyticAt (hUo.mem_nhds ht)
+  have hfa : AnalyticAt ℂ (fun t => f (ℓ t)) t := hfℓ.analyticAt ((hV.preimage hℓ.continuous).mem_nhds ht)
   have hs : AnalyticAt ℂ (fun t => sExpC γ (ℓ t)) t := by
     unfold sExpC
     have h0 : AnalyticAt ℂ (fun t => ℓ t 0) t :=
@@ -87,10 +86,9 @@ theorem analyticAt_structureConstantH_comp {f : (Fin 3 → ℂ) → ℂ} {V : Se
     {ℓ : ℂ → Fin 3 → ℂ} (hℓ : Differentiable ℂ ℓ) {t : ℂ} (ht : ℓ t ∈ V)
     (hs : ∀ n : ℕ, sExpC γ (ℓ t) ≠ -(n : ℂ)) :
     AnalyticAt ℂ (fun t => structureConstantH f γ μ (ℓ t)) t := by
-  have hUo : IsOpen (ℓ ⁻¹' V) := hV.preimage hℓ.continuous
   have hfℓ : DifferentiableOn ℂ (fun t => f (ℓ t)) (ℓ ⁻¹' V) :=
     hf.comp hℓ.differentiableOn fun _ hx => hx
-  have hfa : AnalyticAt ℂ (fun t => f (ℓ t)) t := hfℓ.analyticAt (hUo.mem_nhds ht)
+  have hfa : AnalyticAt ℂ (fun t => f (ℓ t)) t := hfℓ.analyticAt ((hV.preimage hℓ.continuous).mem_nhds ht)
   have hsa : AnalyticAt ℂ (fun t => sExpC γ (ℓ t)) t := by
     unfold sExpC
     have h0 : AnalyticAt ℂ (fun t => ℓ t 0) t :=

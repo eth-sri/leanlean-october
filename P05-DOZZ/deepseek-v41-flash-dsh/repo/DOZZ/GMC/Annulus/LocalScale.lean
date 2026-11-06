@@ -106,12 +106,10 @@ theorem gmc_local_twoSided_ball_scaling_iff
   let ξ := gmcScaleExponent γ p
   constructor
   · rintro ⟨hBp, hBf⟩
-    have hBreal : 0 < B.toReal := ENNReal.toReal_pos hBp.ne' hBf.ne
     let D : ℝ := R ^ (-ξ) * B.toReal
-    have hD : 0 < D := mul_pos (Real.rpow_pos_of_pos hR _) hBreal
+    have hD : 0 < D := mul_pos (Real.rpow_pos_of_pos hR _) (ENNReal.toReal_pos hBp.ne' hBf.ne)
     let C : ℝ := max D D⁻¹
     have hC : 0 < C := hD.trans_le (le_max_left _ _)
-    have hDC : D ≤ C := le_max_left _ _
     have hCD : C⁻¹ ≤ D := by
       have hi := (inv_le_inv₀ hC (inv_pos.mpr hD)).mpr
         (show D⁻¹ ≤ C from le_max_right _ _)
@@ -131,7 +129,7 @@ theorem gmc_local_twoSided_ball_scaling_iff
     rw [he]
     exact ⟨ENNReal.ofReal_le_ofReal (mul_le_mul_of_nonneg_right hCD
         (Real.rpow_nonneg hr.le ξ)),
-      ENNReal.ofReal_le_ofReal (mul_le_mul_of_nonneg_right hDC
+      ENNReal.ofReal_le_ofReal (mul_le_mul_of_nonneg_right (le_max_left _ _)
         (Real.rpow_nonneg hr.le ξ))⟩
   · rintro ⟨C, hC, hBound⟩
     have hb := hBound 0 R hR le_rfl (by simpa only [norm_zero, zero_add] using hR1)

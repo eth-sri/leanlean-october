@@ -25,11 +25,10 @@ theorem coulomb_mass_pos_finite_ae
       coulombMass γ (M ω) α z αinf ≠ ⊤ := by
   let := hX.1
   have h4 : (0 : ℝ) < 4 / γ ^ 2 := by positivity
-  have hi0 : 0 < 2 / γ * (Q γ - αinf) := mul_pos (by positivity) (sub_pos.mpr hi)
   have hk0 : ∀ k, 0 < 2 / γ * (Q γ - α k) :=
     fun k => mul_pos (by positivity) (sub_pos.mpr (ha k))
   have e1 : ∀ᶠ t in 𝓝[>] (0 : ℝ), t ∈ Ioo 0 (4 / γ ^ 2) := Ioo_mem_nhdsGT h4
-  have e2 : ∀ᶠ t in 𝓝[>] (0 : ℝ), t ∈ Ioo 0 (2 / γ * (Q γ - αinf)) := Ioo_mem_nhdsGT hi0
+  have e2 : ∀ᶠ t in 𝓝[>] (0 : ℝ), t ∈ Ioo 0 (2 / γ * (Q γ - αinf)) := Ioo_mem_nhdsGT (mul_pos (by positivity) (sub_pos.mpr hi))
   have e3 : ∀ᶠ t in 𝓝[>] (0 : ℝ), ∀ k, t ∈ Ioo 0 (2 / γ * (Q γ - α k)) :=
     eventually_all.mpr fun k => Ioo_mem_nhdsGT (hk0 k)
   obtain ⟨t, ht⟩ := (e1.and (e2.and e3)).exists
@@ -40,7 +39,6 @@ theorem coulomb_mass_pos_finite_ae
   let c : ℝ≥0∞ := ENNReal.ofReal ((2 : ℝ) ^ (-∑ j, |γ * α j|)) *
     ENNReal.ofReal ((1 + 2 * ∑ j, ‖z j‖ + 2) ^ (-|γ * αinf|))
   have hc : c ≠ 0 := by
-    have hs : 0 ≤ ∑ j, ‖z j‖ := Finset.sum_nonneg fun j _ => norm_nonneg _
     exact mul_ne_zero
       (ENNReal.ofReal_pos.mpr (Real.rpow_pos_of_pos (by norm_num) _)).ne'
       (ENNReal.ofReal_pos.mpr (Real.rpow_pos_of_pos (by linarith) _)).ne'

@@ -98,9 +98,8 @@ private theorem lintegral_norm_rpow_ball_eq (s R : ℝ) :
       exact hpow
     · have hnotball : Complex.polarCoord.symm p ∉ Metric.ball (0 : ℂ) R :=
         fun hm => hlt (hball.mp hm)
-      have hnotradial : p.1 ∉ Ioo (0 : ℝ) R := fun hm => hlt hm.2
       dsimp [F, radialLocal]
-      rw [Set.indicator_of_notMem hnotball, Set.indicator_of_notMem hnotradial]
+      rw [Set.indicator_of_notMem hnotball, Set.indicator_of_notMem (fun hm => hlt hm.2)]
       simp
 
   have hconst (c : ℝ≥0∞) :
@@ -181,10 +180,9 @@ private theorem lintegral_norm_rpow_tail_eq (s R : ℝ) (hR : 0 < R) :
       rw [Set.indicator_of_mem hmemcomp, hnorm]
       exact hpow
     · have hlt : p.1 < R := lt_of_not_ge hle
-      have hballMem : Complex.polarCoord.symm p ∈ Metric.ball (0 : ℂ) R := hball.mpr hlt
       have hnotradial : p.1 ∉ Ici R := hle
       have hnotcomp : Complex.polarCoord.symm p ∉ (Metric.ball (0 : ℂ) R)ᶜ := by
-        simpa using hballMem
+        simpa using (hball.mpr hlt)
       dsimp [F, radialTail]
       rw [Set.indicator_of_notMem hnotcomp,
         Set.indicator_of_notMem hnotradial]

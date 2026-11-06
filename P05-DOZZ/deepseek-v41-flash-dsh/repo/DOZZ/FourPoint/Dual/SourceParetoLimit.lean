@@ -56,11 +56,6 @@ theorem dual_source_pareto_increment_tendsto
       dual_radial_scale γ ν h Xc z v.1*(twoSidedReflectionMass γ B Z v.2).toReal*w)^(-p)-
       (dualOuterMass γ α₁ α₂ α₃ (M v.1) z ξ).toReal ^(-p)) ∂paretoMeasure 1 a) ∂P.prod P
   have hν : 0 < ν := sub_pos.mpr hα₁
-  have ha : 0 < a := div_pos (mul_pos (by norm_num) hν) hγ
-  have ha1 : a < 1 := by
-    dsimp only [a]
-    rw [div_lt_one hγ]
-    linarith only [hreflect]
   have hp : 0 < p := div_pos (by linarith only [hs]) hγ
   have hshift : α₁+2*ν-2/γ < Q γ := by dsimp only [ν]; linarith only [hshifted]
   have hcharge : α₁+2*ν-2/γ = 2*Q γ-α₁-2/γ := by dsimp only [ν]; ring
@@ -68,7 +63,7 @@ theorem dual_source_pareto_increment_tendsto
   have hL : Tendsto (fun z : ℂ => L z/‖z‖^κ) (𝓝[≠] (0 : ℂ)) (𝓝 Λ) := by
     simpa only [L,κ,a,hcharge,Λ] using dual_leading_radial_moment_toReal_tendsto
       P X hX γ hγ hγ₂ M hM Xc hc ν α₁ α₂ α₃ ξ (p+a) h hh hξ hξ1
-        (add_pos hp ha).le hshift hα₂ hα₃
+        (add_pos hp (div_pos (mul_pos (by norm_num) hν) hγ)).le hshift hα₂ hα₃
   have hF : Tendsto (fun z : ℂ => F z/‖z‖^κ) (𝓝[≠] (0 : ℂ)) (𝓝 0) := by
     have ht := dual_radial_first_order_littleO P X hX γ hγ hγ₂ M hM Xc hc
       α₁ α₂ α₃ ξ (p+1) h κ hh hξ hξ1 (by linarith only [hp]) hslack

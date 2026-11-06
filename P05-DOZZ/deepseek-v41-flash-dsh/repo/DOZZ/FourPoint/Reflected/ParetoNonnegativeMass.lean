@@ -48,9 +48,8 @@ theorem reflected_pareto_product_increment_error_nonneg
     by_cases hzero : S v.2 = 0
     · simp only [E,L,hzero,mul_zero,add_zero,sub_self,integral_zero,
         Real.zero_rpow ha.ne',zero_mul,norm_zero,le_refl]
-    have hSpos : 0 < S v.2 := lt_of_le_of_ne hSv (Ne.symm hzero)
     have hi := reflected_pareto_increment_error p a (A v.1) (b v.1*S v.2)
-      hp ha ha1 hAv (mul_pos hbv hSpos)
+      hp ha ha1 hAv (mul_pos hbv (lt_of_le_of_ne hSv (Ne.symm hzero)))
     have hr : (b v.1*S v.2)/A v.1 = (b v.1/A v.1)*S v.2 := by ring
     rw [hr, Real.mul_rpow (div_pos hbv hAv).le hSv] at hi
     change |E v-L v| ≤ _

@@ -47,7 +47,6 @@ theorem twosided_lateral_unit_inverse_uniform
   obtain ⟨C', hC', hb⟩ := lateralGMC_uniform_interval_moments_of_all_source_annular
     P Kγ {p} isCompact_singleton Z hZ 0 1 C hC (by
       intro γ hγ q hq X M hS
-      have hqp : q = p := mem_singleton_iff.mp hq
       subst q
       exact (twosided_source_annulus_inverse_le_reference P X γ p M (Z γ) hS
         (hZ γ hγ).1 (hZ γ hγ).2.1 hp.le).trans (hRef γ hγ X M hS.1 hS.2.1))
@@ -70,7 +69,6 @@ theorem twosided_lateral_unit_positive_uniform
   obtain ⟨C', hC', hb⟩ := lateralGMC_uniform_interval_moments_of_all_source_annular
     P Kγ {p} isCompact_singleton Z hZ (Real.log 8) (1 + Real.log 8) C hC (by
       intro γ hγ q hq X M hS
-      have hqp : q = p := mem_singleton_iff.mp hq
       subst q
       apply le_trans _ (hRef γ hγ X M hS.1 hS.2.1)
       exact lintegral_mono fun ω => ENNReal.rpow_le_rpow (measure_mono hsub) hp)

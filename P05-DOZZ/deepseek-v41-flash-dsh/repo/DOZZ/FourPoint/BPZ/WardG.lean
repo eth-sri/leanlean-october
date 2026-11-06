@@ -127,7 +127,6 @@ theorem bpzWardG_abs_fderiv_le {z x : ℂ} (hx : x ∈ bpzRegular z) (ℓ : ℂ 
     have h2 := (fderiv ℝ F x).le_opNorm v
     rw [Real.norm_eq_abs] at h1
     exact h1.trans (mul_le_mul_of_nonneg_left h2 (norm_nonneg _))
-  have hLt : ‖L‖ ≤ t * S := hLn
   calc |ℓ (F x) * L v + t * ℓ (fderiv ℝ F x v)|
       ≤ |ℓ (F x) * L v| + |t * ℓ (fderiv ℝ F x v)| := abs_add_le _ _
     _ = |ℓ (F x)| * |L v| + t * |ℓ (fderiv ℝ F x v)| := by
@@ -223,8 +222,6 @@ theorem bpzWardG_kern_bound_trunc {z : ℂ} (hz0 : z ≠ 0) (hz1 : z ≠ 1) (ℓ
         A * (1 + ‖x - z‖ ^ (-2 : ℝ) + ‖y - z‖ ^ (-2 : ℝ)) := by
   obtain ⟨A, hA0, hA⟩ := norm_bpzG_mul_cutoff_sub_le hz0 hz1
   refine ⟨‖ℓ‖ * ‖v‖ * A, by positivity, fun n x hx y hy => ?_⟩
-  have hs : 0 ≤ ‖x - z‖ ^ (-2 : ℝ) := bpz_rpow_neg_two_nonneg (norm_nonneg _)
-  have ht : 0 ≤ ‖y - z‖ ^ (-2 : ℝ) := bpz_rpow_neg_two_nonneg (norm_nonneg _)
   have h := bpzWardG_abs_sub_mul_kern_le ℓ v (x := x) (y := y)
     (B := A * (1 + ‖x - z‖ ^ (-2 : ℝ) + ‖y - z‖ ^ (-2 : ℝ)))
     (by positivity) (hA n x y hx.2.2 hy.2.2)

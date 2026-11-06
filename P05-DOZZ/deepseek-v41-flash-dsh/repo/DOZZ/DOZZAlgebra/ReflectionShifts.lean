@@ -23,9 +23,8 @@ private lemma closedEmbedding_affine_nat {c d : ℂ} (hc : c ≠ 0) :
     IsClosedEmbedding (fun n : ℕ => c * (n : ℂ) + d) := by
   apply Metric.isClosedEmbedding_of_pairwise_le_dist (norm_pos_iff.mpr hc)
   intro m n hmn
-  have hnat : (1 : ℝ) ≤ dist m n := Nat.pairwise_one_le_dist hmn
   have hnat' : (1 : ℝ) ≤ |(m : ℝ) - n| := by
-    simpa only [Nat.dist_eq] using hnat
+    simpa only [Nat.dist_eq] using (Nat.pairwise_one_le_dist hmn)
   have hnorm : ‖(m : ℂ) - n‖ = |(m : ℝ) - n| := by
     have hcast : (m : ℂ) - (n : ℂ) = (((m : ℝ) - n : ℝ) : ℂ) := by
       push_cast
@@ -324,12 +323,6 @@ theorem reflectionDOZZ_shift_b (hγ : 0 < γ) (hγ2 : γ < 2) {μ : ℝ} (hμ : 
     dsimp [t, p, A, b, c, q]
     field_simp [hγc]
     ring
-  have htne : t ≠ 0 := by
-    intro h
-    simp [h] at hΓt
-  have htqne : t + q ≠ 0 := by
-    intro h
-    simp [h] at hΓtq
   have hL1 : lFun (1 - t) ≠ 0 := by
     unfold lFun
     have hden : 1 - (1 - t) = t := by ring
@@ -624,15 +617,10 @@ theorem reflectionDOZZ_shift_binv (hγ : 0 < γ) (hγ2 : γ < 2)
     field_simp [hγc]
     ring
   have hLarg1 : 2 * α / (γ : ℂ) = 1 + N - p := by rw [hpFormula]; ring
-  have hLarg2 : 2 + N - 2 * α / (γ : ℂ) = 1 + p := by rw [hpFormula]; ring
   have hExp' : 2 * ((Q γ : ℂ) - α) / (γ : ℂ) = p := by
     simpa [A, Qc] using hExp
   have hTarg' : (γ : ℂ) * ((Q γ : ℂ) - α) / 2 = t := by
     simpa [A, Qc] using hTarg
-  have hcCast : ((2 / γ : ℝ) : ℂ) = c := by
-    dsimp [c]
-    push_cast
-    field_simp [hγc]
   have hExpShift' :
       2 * ((Q γ : ℂ) - (α + (2 : ℂ) / (γ : ℂ))) / (γ : ℂ) = p - N := by
     simpa [Qc, c] using hExpShift

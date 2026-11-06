@@ -3,6 +3,7 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
+public import DOZZ.SharedHyp
 
 public import DOZZ.FourPoint.Reflected.LateralSeparation
 public import DOZZ.Brownian.Lateral.CircleRegularization
@@ -40,7 +41,7 @@ theorem reflected_clamped_point_covariance_eq
 theorem reflected_lateral_cutoff_uniform
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
     (Xc : Ω → ℂ → ℝ → ℝ) (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
+    (hm : MeasurableCircleAvg Xc)
     (ρ : ℝ) (hρ : 0 < ρ) (K : Set ℂ) (hK : IsCompact K)
     (hKU : K ⊆ originLateralChart ρ) (s η : ℝ) (hs : 0 < s) (hη : 0 < η) :
     ∃ d : ℝ, 0 < d ∧ ∀ ε ε', 0 < ε → ε ≤ min d ρ →
@@ -92,7 +93,7 @@ theorem reflected_lateral_cutoff_uniform
 theorem reflected_lateral_cutoff_cross_bound
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
     (Xc : Ω → ℂ → ℝ → ℝ) (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
+    (hm : MeasurableCircleAvg Xc)
     (ρ : ℝ) (hρ : 0 < ρ) (K : Set ℂ) (hK : IsCompact K)
     (hKU : K ⊆ originLateralChart ρ) (R s η : ℝ) (hR : R ≤ 1 / 2)
     (hs : 0 < s) (hη : 0 < η) :

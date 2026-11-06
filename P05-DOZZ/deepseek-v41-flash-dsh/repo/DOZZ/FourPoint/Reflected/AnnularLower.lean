@@ -33,7 +33,6 @@ theorem reflected_outer_annular_kernel_lower (γ α₁ α₂ α₃ : ℝ) (z x :
     rw [norm_one] at hh
     linarith only [hh, hxh]
   have hb := coulombWeight_le_rpow (L := 2) (y := ‖x - 1‖) (by norm_num) hd1 hd2 (-γ * α₂)
-  have hbase : 0 < ‖x - 1‖ := lt_of_lt_of_le (by norm_num : (0 : ℝ) < 2⁻¹) hd1
   have hpow := Real.rpow_le_rpow (by positivity : 0 ≤ ‖x‖ / 2) hd hk
   rw [div_eq_mul_inv, mul_comm ‖x‖, Real.mul_rpow (by norm_num : (0 : ℝ) ≤ 2⁻¹)
     hx.le] at hpow
@@ -46,7 +45,7 @@ theorem reflected_outer_annular_kernel_lower (γ α₁ α₂ α₃ : ℝ) (z x :
       ‖x - z‖ ^ (γ ^ 2 / 2) * ‖x‖ ^ (-(γ * α₁)) * ‖x - 1‖ ^ (-(γ * α₂)) := by
     unfold gammaHalfKernel normPlus
     rw [max_eq_left (by linarith only [hxh] : ‖x‖ ≤ 1), Real.one_rpow, mul_one,
-      Real.rpow_neg hx.le, Real.rpow_neg hbase.le]
+      Real.rpow_neg hx.le, Real.rpow_neg (lt_of_lt_of_le (by norm_num : (0 : ℝ) < 2⁻¹) hd1).le]
     ring
   rw [hkernel, ← hp]
   have hb' : (2 : ℝ) ^ (-|γ * α₂|) ≤ ‖x - 1‖ ^ (-(γ * α₂)) := by
@@ -72,7 +71,6 @@ theorem reflected_outerMass_freezing_lower (γ α₁ α₂ α₃ ξ : ℝ) (μ :
   let D : Set ℂ := {x | ‖z‖ ^ (1 - ξ) ≤ ‖x‖}
   have hE : MeasurableSet E := (measurableSet_lt measurable_const measurable_norm).inter
     (measurableSet_lt measurable_norm measurable_const)
-  have hsub : E ⊆ D := fun _ hx => hx.1.le
   have hc : 0 ≤ (1 / 2 : ℝ) ^ (γ ^ 2 / 2) * (2 : ℝ) ^ (-|γ * α₂|) := by positivity
   have hpoint (x : ℂ) (hx : x ∈ E) :
       ENNReal.ofReal ((1 / 2 : ℝ) ^ (γ ^ 2 / 2) * (2 : ℝ) ^ (-|γ * α₂|)) *
@@ -80,7 +78,6 @@ theorem reflected_outerMass_freezing_lower (γ α₁ α₂ α₃ ξ : ℝ) (μ :
           coulombWeight γ ![-γ / 2, α₁, α₂] ![z, 0, 1] α₃ x := by
     have hn : 0 < ‖x‖ := he.trans hx.1
     have hsep : ‖z‖ ≤ ‖x‖ / 2 := hz.trans (div_le_div_of_nonneg_right hx.1.le (by norm_num))
-    have hx0 : x ≠ 0 := norm_pos_iff.mp hn
     have hx1 : x ≠ 1 := by
       intro hh
       have hhx := hx.2
@@ -90,7 +87,7 @@ theorem reflected_outerMass_freezing_lower (γ α₁ α₂ α₃ ξ : ℝ) (μ :
       intro hh
       rw [hh] at hsep hn
       linarith only [hsep, hn]
-    rw [gammaHalfKernel_coulombWeight γ α₁ α₂ α₃ z x hxz hx0 hx1,
+    rw [gammaHalfKernel_coulombWeight γ α₁ α₂ α₃ z x hxz (norm_pos_iff.mp hn) hx1,
       ← ENNReal.ofReal_mul hc]
     exact ENNReal.ofReal_le_ofReal
       (reflected_outer_annular_kernel_lower γ α₁ α₂ α₃ z x hn hx.2 hsep)
@@ -102,7 +99,7 @@ theorem reflected_outerMass_freezing_lower (γ α₁ α₂ α₃ ξ : ℝ) (μ :
     _ ≤ ∫⁻ x in E, coulombWeight γ ![-γ / 2, α₁, α₂] ![z, 0, 1] α₃ x ∂μ :=
       setLIntegral_mono' hE hpoint
     _ ≤ ∫⁻ x in D, coulombWeight γ ![-γ / 2, α₁, α₂] ![z, 0, 1] α₃ x ∂μ :=
-      lintegral_mono' (Measure.restrict_mono hsub le_rfl) (fun _ => le_rfl)
+      lintegral_mono' (Measure.restrict_mono (fun _ hx => hx.1.le) le_rfl) (fun _ => le_rfl)
     _ = _ := rfl
 
 end DOZZ.Proofs

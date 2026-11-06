@@ -3,6 +3,7 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
+public import DOZZ.SharedHyp
 
 public import DOZZ.Hypergeom.ODE.CutPlaneHolomorphic
 public import DOZZ.Hypergeom.ODE.SeriesEquation
@@ -19,7 +20,7 @@ namespace DOZZ.Proofs
 
 /-- The selected continuation at `1/2` has its prescribed ordinary-series initial value. -/
 theorem gaussCutPlaneContinuationState_midpoint_eq_seriesState
-    (a b c : ℂ) (hc : ∀ n : ℕ, c ≠ -(n : ℂ)) :
+    (a b c : ℂ) (hc : NotNegPole c) :
     gaussCutPlaneContinuationState a b c gaussCutPlaneMidpoint =
       ordinaryHypergeometricState a b c (1 / 2 : ℂ) := by
   obtain ⟨r, M, hr, _, hM, D, hcenter, hbound, hseries⟩ :=
@@ -55,7 +56,7 @@ theorem gaussCutPlaneContinuationState_midpoint_eq_seriesState
 
 /-- Near `1/2`, the cut-plane endpoint's scalar component is the ordinary Gauss series. -/
 theorem gaussCutPlaneScalarState_eq_ordinary_eventually
-    (a b c : ℂ) (hc : ∀ n : ℕ, c ≠ -(n : ℂ)) :
+    (a b c : ℂ) (hc : NotNegPole c) :
     gaussCutPlaneScalarState a b c =ᶠ[𝓝 (gaussCutPlaneMidpoint : ℂ)]
       ordinaryHypergeometric a b c := by
   obtain ⟨r₀, M₀, hr₀, _, hM₀, D₀, hD₀center, hD₀bound, hD₀series⟩ :=
@@ -162,7 +163,7 @@ theorem gaussCutPlaneScalarState_eq_ordinary_eventually
 /-- On the cut plane, the endpoint continuation recovers the ordinary series throughout the unit
 disk. -/
 theorem gaussCutPlaneScalarState_eq_ordinary_on_unitDisk
-    (a b c : ℂ) (hc : ∀ n : ℕ, c ≠ -(n : ℂ))
+    (a b c : ℂ) (hc : NotNegPole c)
     {z : ℂ} (hz : z ∈ gaussCutPlane) (hznorm : ‖z‖ < 1) :
     gaussCutPlaneScalarState a b c z = ordinaryHypergeometric a b c z := by
   let V := gaussCutPlane ∩ Metric.ball (0 : ℂ) 1

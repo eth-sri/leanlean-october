@@ -43,19 +43,17 @@ theorem real_center_cutoff_estimates
   obtain ⟨δ, hδ, hδ8, hsep⟩ := separated_geometry z hz
   let Zs := ∑ i, ‖z i‖
   let R := 1 + 2 * Zs
-  have hZs : 0 ≤ Zs := Finset.sum_nonneg (fun i _ => norm_nonneg _)
   obtain ⟨hR, hzR⟩ := coulomb_exterior_radius_bounds z
   obtain ⟨radius, hradius, hbox⟩ := complex_charge_budget_neighborhood γ α
     A a lo hi b hA haa hlop hphi hb
   obtain ⟨K, κ, d, hK, hκ, hd, hdec⟩ := normalized_cutoff_exponential_polydisc
-    P X hX γ hγ hγ2 M hM Xc hc z hz δ R Zs A a gap m g lo hi q b hδ hδ8 hR hZs
+    P X hX γ hγ hγ2 M hM Xc hc z hz δ R Zs A a gap m g lo hi q b hδ hδ8 hR (Finset.sum_nonneg (fun i _ => norm_nonneg _))
       hsep le_rfl hzR hgap hgapQ hm hm1 hms hg hlo hhi hq hbulk hroot
         α radius hradius hbox
   obtain ⟨S, hS, hsub, hthin⟩ := polydisc_thin_imaginary α radius hradius d hd
   refine ⟨S, hS, K, κ, hK, hκ, ?_⟩
   filter_upwards [hdec, retained_cutoff_geometry_eventually z δ R hδ] with n hn hgeo
-  have hr : (0 : ℝ) ≤ (n : ℝ) := Nat.cast_nonneg _
-  have hball := exterior_ball_subset_retainedRegion z R hR hzR (n : ℝ) hr hgeo.2.2.2
+  have hball := exterior_ball_subset_retainedRegion z R hR hzR (n : ℝ) (Nat.cast_nonneg _) hgeo.2.2.2
   have hne : (retainedRegion z (n : ℝ)).Nonempty :=
     (Metric.nonempty_ball.mpr (by norm_num : (0 : ℝ) < 1 / 8)).mono hball
   constructor

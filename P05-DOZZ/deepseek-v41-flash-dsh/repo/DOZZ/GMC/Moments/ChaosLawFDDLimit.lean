@@ -41,7 +41,6 @@ theorem map_eq_of_seq_map_eq_of_tendstoInMeasure
     obtain ⟨ms, hms, hgae⟩ := hgsub.exists_seq_tendsto_ae
     let fs : ℕ → Ω → E := fun n => f (ns (ms n))
     let gs : ℕ → Ω' → E := fun n => g (ns (ms n))
-    have hfs : ∀ n, AEMeasurable (fs n) P := fun n => hf _
     have hgs : ∀ n, AEMeasurable (gs n) P' := fun n => hg _
     have hmaps : ∀ n, Measure.map (fs n) P = Measure.map (gs n) P' := by
       intro n
@@ -56,7 +55,7 @@ theorem map_eq_of_seq_map_eq_of_tendstoInMeasure
       change Tendsto (fun n => g (ns (ms n)) ω) atTop (𝓝 (gLimit ω)) at hω
       exact hω
     exact integral_bcf_eq_of_map_eq_of_ae_tendsto fs gs fLimit gLimit
-      hfs hgs hmaps hfseq hgseq φ
+      (fun n => hf _) hgs hmaps hfseq hgseq φ
   apply ext_of_forall_integral_eq_of_IsFiniteMeasure
   intro φ
   calc

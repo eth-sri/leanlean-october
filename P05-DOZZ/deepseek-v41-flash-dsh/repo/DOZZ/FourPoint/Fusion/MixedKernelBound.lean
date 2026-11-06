@@ -29,14 +29,13 @@ theorem fusion_mixed_power_bound (a b c L k β : ℝ) (ha : 0 < a) (hb : 0 < b)
       exact Real.rpow_le_rpow hc (by simpa [max_eq_right hab] using hcb) hk
     have hb2 : b ^ (2 * k) = b ^ k * b ^ k := by
       rw [show 2 * k = k + k by ring, Real.rpow_add hb]
-    have hbk' : a ^ k ≤ b ^ k := Real.rpow_le_rpow ha.le hab hk
     have hs : b ^ k / (a ^ β * b ^ (2 * k)) ≤ a ^ (-(β + k)) := by
       rw [hb2, Real.rpow_neg ha.le, Real.rpow_add ha]
       apply (div_le_iff₀ (mul_pos haβ (mul_pos hbk hbk))).mpr
       rw [inv_mul_eq_div]
       apply (le_div_iff₀ (mul_pos haβ hak)).mpr
       simpa only [mul_assoc, mul_comm, mul_left_comm] using
-        mul_le_mul_of_nonneg_left hbk' (mul_nonneg haβ.le hbk.le)
+        mul_le_mul_of_nonneg_left (Real.rpow_le_rpow ha.le hab hk) (mul_nonneg haβ.le hbk.le)
     calc
       _ ≤ (L ^ k * b ^ k) / (a ^ β * b ^ (2 * k)) :=
         div_le_div_of_nonneg_right hc' (by positivity)
@@ -74,7 +73,6 @@ theorem fusion_mixed_power_bound (a b c L k β : ℝ) (ha : 0 < a) (hb : 0 < b)
 /-- When the root moves as `y*z`, the numerator is bounded by the larger root distance. -/
 theorem fusion_movingRoot_distance_bound (y z x : ℂ) (hy : y ≠ 0) :
     ‖x - z‖ ≤ (1 + 2 / ‖y‖) * max ‖x‖ ‖x - y * z‖ := by
-  have hypos : 0 < ‖y‖ := norm_pos_iff.mpr hy
   have ha : ‖x‖ ≤ max ‖x‖ ‖x - y * z‖ := le_max_left _ _
   have hb : ‖x - y * z‖ ≤ max ‖x‖ ‖x - y * z‖ := le_max_right _ _
   have hu : ‖y * z‖ ≤ ‖x‖ + ‖x - y * z‖ := by
@@ -83,7 +81,7 @@ theorem fusion_movingRoot_distance_bound (y z x : ℂ) (hy : y ≠ 0) :
   rw [norm_mul] at hu
   have hz : ‖z‖ ≤ 2 / ‖y‖ * max ‖x‖ ‖x - y * z‖ := by
     rw [div_mul_eq_mul_div]
-    apply (le_div_iff₀ hypos).mpr
+    apply (le_div_iff₀ (norm_pos_iff.mpr hy)).mpr
     nlinarith only [hu, ha, hb]
   have h := norm_sub_le x z
   nlinarith only [ha, hz, h]

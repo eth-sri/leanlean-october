@@ -58,10 +58,9 @@ theorem reflected_leading_radial_moment_tendsto
   filter_upwards [self_mem_nhdsWithin] with z hz
   have hz0 : z ≠ 0 := hz
   rw [reflected_leading_radial_moment_identity P γ ν h hγ.ne' Xc _ z hz0]
-  have hp : 0 < ‖z‖^(γ*ν) := Real.rpow_pos_of_pos (norm_pos_iff.mpr hz0) _
   symm
   rw [mul_comm (ENNReal.ofReal (‖z‖^(γ*ν)))]
-  exact ENNReal.mul_div_cancel_right (ENNReal.ofReal_pos.mpr hp).ne' ENNReal.ofReal_ne_top
+  exact ENNReal.mul_div_cancel_right (ENNReal.ofReal_pos.mpr (Real.rpow_pos_of_pos (norm_pos_iff.mpr hz0) _)).ne' ENNReal.ofReal_ne_top
 
 /-- A fixed exterior disk makes every nonnegative inverse order of rho integrable, without
 a total-charge hypothesis. -/

@@ -82,10 +82,6 @@ theorem gaussNegativeCrossingSecond_analyticOnNhd
     (a b c : ℂ) (hc : ∀ n : ℤ, c ≠ (n : ℂ)) :
     AnalyticOnNhd ℂ (gaussNegativeCrossingSecond H a b c)
       gaussNegativeCrossingDisk := by
-  have hcNat : ∀ n : ℕ, c ≠ -(n : ℂ) := by
-    intro n heq
-    apply hc (-(n : ℤ))
-    exact heq.trans (by simp)
   have hCNat : ∀ n : ℕ, (2 - c) ≠ -(n : ℂ) :=
     two_sub_parameter_ne_nat_neg hc
   have hchar := hH (a - c + 1) (b - c + 1) (2 - c) hCNat
@@ -211,11 +207,6 @@ theorem gaussNegativeCrossing_wronskian_identity
       gaussNegativeCrossingWronskianModel a b c z
     rw [hEqOn hz, hEq₁]
     have hWr := (hzero.2.2.1 z (Or.inl (ne_of_gt hz.2))).2.2
-    have hz0 : z ≠ 0 := by
-      intro h
-      have him : 0 < z.im := hz.2
-      rw [h] at him
-      norm_num at him
     have hw0 : 1 - z ≠ 0 := by
       intro h
       have hre := congrArg Complex.re h

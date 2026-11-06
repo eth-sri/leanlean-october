@@ -37,10 +37,9 @@ theorem coulombMass_fixed_disk_lower {N : ℕ} (γ : ℝ) (μ : Measure ℂ)
       (Rr := 2) (by norm_num) (fun i => by linarith only [hy i]) hlow
     have hinf := ennreal_ofReal_le_rpow_ofReal_of_mem_Icc
       (L := 4) (y := ‖x‖) (by norm_num) (by linarith only [hlow]) hupp (γ * αinf)
-    have hpos : 0 ≤ (2 : ℝ) ^ (-∑ i, |γ * α i|) := Real.rpow_nonneg (by norm_num) _
     calc
       ENNReal.ofReal w = ENNReal.ofReal ((2 : ℝ) ^ (-∑ i, |γ * α i|)) *
-          ENNReal.ofReal ((4 : ℝ) ^ (-|γ * αinf|)) := ENNReal.ofReal_mul hpos
+          ENNReal.ofReal ((4 : ℝ) ^ (-|γ * αinf|)) := ENNReal.ofReal_mul (Real.rpow_nonneg (by norm_num) _)
       _ ≤ _ := (mul_le_mul' le_rfl hinf).trans hweight
   calc
     ENNReal.ofReal w * μ (Metric.ball (3 : ℂ) (1 / 8)) =
@@ -61,9 +60,8 @@ theorem coulomb_inverse_moment_uniform_roots
       (∫⁻ ω, (coulombMass γ (M ω) α y αinf) ^ (-q) ∂P) ≤ ENNReal.ofReal C := by
   let w : ℝ := (2 : ℝ) ^ (-∑ i, |γ * α i|) * (4 : ℝ) ^ (-|γ * αinf|)
   have hw : 0 < w := by dsimp only [w]; positivity
-  have hp : -q < 4 / γ ^ 2 := lt_of_le_of_lt (neg_nonpos.mpr hq) (by positivity)
   obtain ⟨Cb, hCb, hball⟩ := equatorGFF_GMC_ball_moment_bound P X hX γ hγ hγ2 M hM
-    (-q) hp {(3 : ℂ)} isCompact_singleton
+    (-q) (lt_of_le_of_lt (neg_nonpos.mpr hq) (by positivity)) {(3 : ℂ)} isCompact_singleton
   let ξ : ℝ := γ * Q γ * (-q) - γ ^ 2 * (-q) ^ 2 / 2
   let C : ℝ := w ^ (-q) * (Cb * (1 / 8 : ℝ) ^ ξ)
   have hC : 0 < C := by dsimp only [C]; positivity

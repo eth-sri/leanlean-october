@@ -27,14 +27,12 @@ private theorem conditionedPositiveFutureAvoidance_implies_state_ge
     (hp : p ∈ conditionedPositiveFutureRationalAvoidance t c) :
     (c : ℝ) ≤ conditionedPositiveStateAt t p := by
   by_contra hnot
-  have hxc : conditionedPositiveStateAt t p < (c : ℝ) := lt_of_not_ge hnot
   let F : ℝ → ℝ := fun s => conditionedPositiveFuturePath t p
     ⟨max s 0, le_max_right s 0⟩
   have htime : Continuous (fun s : ℝ =>
       (⟨max s 0, le_max_right s 0⟩ : ℝ≥0)) := by
     exact (continuous_max.comp (continuous_id.prodMk continuous_const)).subtype_mk
       (fun s => le_max_right s 0)
-  have hF : Continuous F := (conditionedPositiveFuturePath t p).continuous.comp htime
   have hFzero : F 0 = conditionedPositiveStateAt t p := by
     have hs0 : (⟨max (0 : ℝ) 0, le_max_right 0 0⟩ : ℝ≥0) = 0 := by
       apply Subtype.ext
@@ -42,10 +40,10 @@ private theorem conditionedPositiveFutureAvoidance_implies_state_ge
     change -(p (t + ⟨max (0 : ℝ) 0, le_max_right 0 0⟩)) = -(p t)
     rw [hs0]
     exact congrArg (fun s : ℝ≥0 => -(p s)) (add_zero t)
-  have hopen : IsOpen (F ⁻¹' Set.Iio (c : ℝ)) := isOpen_Iio.preimage hF
+  have hopen : IsOpen (F ⁻¹' Set.Iio (c : ℝ)) := isOpen_Iio.preimage ((conditionedPositiveFuturePath t p).continuous.comp htime)
   have hmem : (0 : ℝ) ∈ F ⁻¹' Set.Iio (c : ℝ) := by
     rw [Set.mem_preimage, hFzero]
-    exact hxc
+    exact (lt_of_not_ge hnot)
   obtain ⟨δ, hδ, hball⟩ := Metric.mem_nhds_iff.mp (hopen.mem_nhds hmem)
   obtain ⟨q, hq0, hqδ⟩ := exists_rat_btwn (show (0 : ℝ) < δ by positivity)
   have hdist : dist (q : ℝ) 0 < δ := by
@@ -93,7 +91,6 @@ theorem conditionedPositiveHistory_condExp_rationalFuture_avoidance_shift_on_bel
     intro r
     exact (measurable_pi_apply r).sub measurable_const
   have heval : Measurable eval := measurable_conditionedPositiveFutureRationalEvals t
-  have hpath : MeasurableSet (shiftedEval ⁻¹' C) := hC.preimage (hshift.comp heval)
   have havoid : MeasurableSet avoid := by
     change MeasurableSet (⋂ q : ℚ,
       conditionedPositiveFutureAvoidanceCoordinate t c q)
@@ -104,7 +101,7 @@ theorem conditionedPositiveHistory_condExp_rationalFuture_avoidance_shift_on_bel
       exact measurableSet_lt measurable_const
         ((measurable_pi_apply q).comp heval)
     · simp [conditionedPositiveFutureAvoidanceCoordinate, hq]
-  have hA : MeasurableSet (avoid ∩ shiftedEval ⁻¹' C) := havoid.inter hpath
+  have hA : MeasurableSet (avoid ∩ shiftedEval ⁻¹' C) := havoid.inter (hC.preimage (hshift.comp heval))
   have hf_eq : f = (avoid ∩ shiftedEval ⁻¹' C).indicator (fun _ => (1 : ℝ)) := by
     funext p
     by_cases hp : p ∈ avoid
@@ -214,8 +211,7 @@ theorem conditionedPositiveHistory_condExp_rationalFuture_avoidance_shift
   by_cases hcx : (c : ℝ) < conditionedPositiveStateAt t p
   · exact hpabove hcx
   · have hle : conditionedPositiveStateAt t p ≤ (c : ℝ) := le_of_not_gt hcx
-    have hlt : conditionedPositiveStateAt t p < (c : ℝ) := lt_of_le_of_ne hle hpneq
-    rw [hpbelow hlt]
+    rw [hpbelow (lt_of_le_of_ne hle hpneq)]
     simp [lastExitAvoidanceFactor, hcx]
 
 /-- The conditional probability of avoiding the level after a deterministic time is exactly the

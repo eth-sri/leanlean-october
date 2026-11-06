@@ -445,7 +445,6 @@ theorem exists_exteriorPinned_canonicalPoissonCollar_rawLimit
   obtain ⟨H,hH⟩ := exists_exteriorPinned_canonicalPoissonCollar_L2limit
     P X Xc hX hc c z R ρ ε δ hR hρ hε hεδ hpin hz
   let f := (Lp.memLp H).aestronglyMeasurable.mk (fun ω => H ω)
-  have hf : Measurable f := (Lp.memLp H).aestronglyMeasurable.measurable_mk
   have heq : (fun ω => H ω) =ᵐ[P] f := (Lp.memLp H).aestronglyMeasurable.ae_eq_mk
   have hfL : MemLp f 2 P := MemLp.ae_eq heq (Lp.memLp H)
   have hto : hfL.toLp f = H := by
@@ -456,7 +455,7 @@ theorem exists_exteriorPinned_canonicalPoissonCollar_rawLimit
   have hZ (k : ℕ) : MemLp (Z k) 2 P := exteriorPinnedEvaluation_memLp X Xc hX hc R _ _
   have hraw : Tendsto (fun k => eLpNorm (fun ω => Z k ω-f ω) 2 P) atTop (𝓝 0) :=
     (Lp.tendsto_Lp_iff_tendsto_eLpNorm'' Z hZ f hfL).1 (by simpa only [hto, exteriorPinnedTestL2, Z] using hH)
-  refine ⟨f,hf,hfL,?_,hraw⟩
+  refine ⟨f,((Lp.memLp H).aestronglyMeasurable.measurable_mk),hfL,?_,hraw⟩
   have hm := tendsto_integral_of_eLpNorm_sub hZ hfL hraw
   have hzero : (fun k => ∫ ω, Z k ω ∂P) = fun _ => (0 : ℝ) := by
     funext k

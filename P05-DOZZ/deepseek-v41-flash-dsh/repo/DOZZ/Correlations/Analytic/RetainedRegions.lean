@@ -51,9 +51,8 @@ theorem eventually_mem_retainedRegion {N : ℕ} (z : Fin N → ℂ) (x : ℂ)
   have hin : ∀ᶠ n : ℕ in atTop, ∀ i, Real.exp (-(n : ℝ)) < ‖x - z i‖ := by
     rw [eventually_all]
     intro i
-    have hpos : 0 < ‖x - z i‖ := norm_pos_iff.mpr (sub_ne_zero.mpr (hx i))
     exact (Real.tendsto_exp_neg_atTop_nhds_zero.comp tendsto_natCast_atTop_atTop).eventually
-      (gt_mem_nhds hpos)
+      (gt_mem_nhds (norm_pos_iff.mpr (sub_ne_zero.mpr (hx i))))
   filter_upwards [hout, hin] with n ho hi
   exact ⟨ho, hi⟩
 

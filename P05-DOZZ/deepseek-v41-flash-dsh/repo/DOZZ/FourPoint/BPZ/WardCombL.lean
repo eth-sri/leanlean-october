@@ -205,9 +205,8 @@ theorem bpzWCL_integral_three {α : Type*} [MeasurableSpace α] {μ : Measure α
       c₀ * ∫ t, f t ∂μ + c₁ * ∫ t, g t ∂μ + c₂ * ∫ t, h t ∂μ := by
   have h0 : Integrable (fun t => c₀ * f t) μ := hf.const_mul c₀
   have h1 : Integrable (fun t => c₁ * g t) μ := hg.const_mul c₁
-  have h2 : Integrable (fun t => c₂ * h t) μ := hh.const_mul c₂
   have h01 : Integrable (fun t => c₀ * f t + c₁ * g t) μ := h0.add h1
-  rw [integral_add h01 h2, integral_add h0 h1, integral_const_mul, integral_const_mul,
+  rw [integral_add h01 (hh.const_mul c₂), integral_add h0 h1, integral_const_mul, integral_const_mul,
     integral_const_mul]
 
 /-- For a measure charging only the regular region and integrating `g`, the combination of the four

@@ -243,10 +243,6 @@ theorem equatorGFF_tilted_test_circle_law
     rw [measurable_pi_iff]
     intro c
     exact (measurable_pi_iff.mp hEval c).add measurable_const
-  have hDensity : AEMeasurable density P := by
-    have hlog : AEMeasurable (fun ω => t * L ω - t ^ 2 / 2 * gaussianVariance P L) P := by
-      exact (hL.1.aemeasurable.const_mul t).sub (measurable_const.aemeasurable)
-    exact (Real.measurable_exp.comp_aemeasurable hlog).ennreal_ofReal
   have hCylinder (s : Finset (ℂ ⊕ TestFn)) (S : Set (∀ i : s, ℝ))
       (hS : MeasurableSet S) :
       μ (MeasureTheory.cylinder s S) = ν (MeasureTheory.cylinder s S) := by

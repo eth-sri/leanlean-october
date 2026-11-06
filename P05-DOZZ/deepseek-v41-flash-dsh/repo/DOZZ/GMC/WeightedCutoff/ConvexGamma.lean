@@ -32,9 +32,6 @@ theorem regularizedGMC_convex_moment_le_of_gamma_le
     exact isFiniteMeasure_restrict.mpr hAtop
   have hΦ := circleAverage_smul_isCenteredGaussianField P X hX Xc hXc r c
   have hΨ := circleAverage_isCenteredGaussianField P X hX Xc hXc r
-  have hmemA : ∀ᵐ x ∂ν, x ∈ A := by
-    rw [hν]
-    exact ae_restrict_mem hA
   have hcov : ∀ᵐ q ∂ν.prod ν,
       ∫ ω, c * Xc ω q.1 r * (c * Xc ω q.2 r) ∂P ≤ ∫ ω, Xc ω q.1 r * Xc ω q.2 r ∂P := by
     have hprod : ν.prod ν = (gmcReferenceMeasure.prod gmcReferenceMeasure).restrict (A ×ˢ A) := by

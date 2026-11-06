@@ -54,9 +54,6 @@ theorem regularizedGMC_lintegral_eq_reference
   have hnormPlus : Measurable (fun x : ℂ => normPlus x) := by
     unfold normPlus
     exact measurable_const.max measurable_norm
-  have hnormProduct : Measurable (fun p : Ω × ℂ => normPlus p.2) :=
-    hnormPlus.comp measurable_snd
-  have hVproduct : Measurable (fun p : Ω × ℂ => V p.2) := hVmeas.comp measurable_snd
   have hdensity : Measurable density := by
     dsimp [density]
     fun_prop

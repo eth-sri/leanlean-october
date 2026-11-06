@@ -33,8 +33,6 @@ theorem residue_coulombMass_affine_moment {Ω : Type*} [MeasurableSpace Ω] (P :
   set VL : ℝ := ∫ ω, L ω ^ 2 ∂P with hVLdef
   set κ := repinKappa a b with hκ
   have hapos : 0 < ‖a‖ := norm_pos_iff.mpr ha
-  have hLmeas : Measurable L :=
-    (hXc.1 (-Real.log ‖a‖)).comp (measurable_id.prodMk measurable_const)
   have hVL : VL = 2 * κ := by
     have h := isCircleAverage_covariance P X hX Xc hXc b b (-Real.log ‖a‖) (-Real.log ‖a‖)
     rw [repin_selfEnergy a b ha] at h
@@ -139,8 +137,7 @@ theorem residue_coulombMass_affine_moment {Ω : Type*} [MeasurableSpace Ω] (P :
     rw [lintegral_withDensity_eq_lintegral_mul _ hD hI,
       coulombMass_eq_lintegral_coulombWeight, ← lintegral_const_mul' _ _ ENNReal.ofReal_ne_top]
     apply lintegral_congr_ae
-    have hnull : M ω (⋃ k, {a * z k + b}) = 0 := measure_iUnion_null hω
-    filter_upwards [measure_eq_zero_iff_ae_notMem.1 hnull] with x hx
+    filter_upwards [measure_eq_zero_iff_ae_notMem.1 (measure_iUnion_null hω)] with x hx
     have hxk : ∀ k, x ≠ a * z k + b := fun k h => hx (Set.mem_iUnion.2 ⟨k, h⟩)
     rw [hKdef, ← residue_coulombWeight_repin_identity γ hγ α z αinf a b ha hxk]
     simp only [Pi.mul_apply, hc2x]

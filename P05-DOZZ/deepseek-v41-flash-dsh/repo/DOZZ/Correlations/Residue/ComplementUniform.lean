@@ -57,9 +57,7 @@ theorem residue_equal_complement_moment_uniform
   let t := reflectionExponent γ α + ρ
   let A := ∏ k : Fin 2, ENNReal.ofReal ((‖(![3, 7] : Fin 2 → ℂ) k‖ + 2) ^ (γ * α))
   have ht : 0 ≤ t := (add_pos (residue_critical_order_bounds γ α hγ hα hαQ).1 hρ).le
-  have hAtop : A ≠ ⊤ := (ENNReal.prod_lt_top (fun _ _ => ENNReal.ofReal_lt_top)).ne
-  have hcoef : A ^ t < ⊤ := ENNReal.rpow_lt_top_of_nonneg ht hAtop
-  refine ⟨d₀, ρ, hd₀, hρ, A ^ t * K, ENNReal.mul_lt_top hcoef hK, ?_⟩
+  refine ⟨d₀, ρ, hd₀, hρ, A ^ t * K, ENNReal.mul_lt_top (ENNReal.rpow_lt_top_of_nonneg ht ((ENNReal.prod_lt_top (fun _ _ => ENNReal.ofReal_lt_top)).ne)) hK, ?_⟩
   intro ε hε hεd
   have hαpos : 0 < α := lt_trans (by positivity) hα
   have hh := residue_all_complement_moment_le P M γ ε t ![α, α]

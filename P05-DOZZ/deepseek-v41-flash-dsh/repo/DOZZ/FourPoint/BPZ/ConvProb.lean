@@ -145,9 +145,8 @@ theorem bpz_eventually_measure_le_of_le_tendstoInMeasure {E B : ℕ → Ω → �
     (hB : TendstoInMeasure P B atTop B₀) (hEB : ∀ n, ∀ᵐ ω ∂P, |E n ω| ≤ B n ω) {ε : ℝ}
     (hε : 0 < ε) (hB₀ : P {ω | ε / 2 ≤ B₀ ω} < ENNReal.ofReal ε) :
     ∀ᶠ n in atTop, P {ω | ε ≤ |E n ω|} ≤ ENNReal.ofReal ε := by
-  have hg : 0 < ENNReal.ofReal ε - P {ω | ε / 2 ≤ B₀ ω} := tsub_pos_of_lt hB₀
   have hBc := ENNReal.tendsto_nhds_zero.1 ((tendstoInMeasure_iff_norm.1 hB) (ε / 2) (half_pos hε))
-    _ hg
+    _ (tsub_pos_of_lt hB₀)
   filter_upwards [hBc] with n hn
   have hsub : {ω | ε ≤ |E n ω|} ≤ᵐ[P]
       ({ω | ε / 2 ≤ B₀ ω} ∪ {ω | ε / 2 ≤ ‖B n ω - B₀ ω‖} : Set Ω) := by

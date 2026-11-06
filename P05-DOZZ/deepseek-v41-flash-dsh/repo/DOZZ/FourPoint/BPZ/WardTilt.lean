@@ -117,13 +117,12 @@ theorem bpz_cutoff_deroot (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF
           ((M ω).withDensity (bpzLimRootDensity γ r x)) ∂P := by
   let _ : IsProbabilityMeasure P := hX.1
   set V : ℂ → ℝ := fun x => ∫ ω, Xc ω x r ^ 2 ∂P with hV
-  have hVm : Measurable V := measurable_bpz_circle_variance P Xc hXc.1 r
   set dens : Ω → ℂ → ℝ≥0∞ := fun ω x => ENNReal.ofReal
     (Real.exp (γ * Xc ω x r - γ ^ 2 / 2 * V x) * normPlus x ^ (-4 : ℝ)) with hdens
   have hdensm : Measurable (fun p : Ω × ℂ => dens p.1 p.2) := by
     refine ENNReal.measurable_ofReal.comp (Measurable.mul ?_ ?_)
     · exact Real.measurable_exp.comp (((hXc.1 r).const_mul γ).sub
-        ((hVm.comp measurable_snd).const_mul _))
+        (((measurable_bpz_circle_variance P Xc hXc.1 r).comp measurable_snd).const_mul _))
     · exact (bpz_measurable_normPlus.comp measurable_snd).pow_const _
   have hstep1 : ∀ ω, ∫⁻ x, H x (regularizedGMC P Xc γ r ω) (M ω) ∂regularizedGMC P Xc γ r ω =
       ∫⁻ x, dens ω x * H x (regularizedGMC P Xc γ r ω) (M ω) := by

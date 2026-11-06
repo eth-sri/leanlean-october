@@ -43,9 +43,8 @@ theorem fusionMovingGoodMass_le (γ α₁ α₂ α₃ : ℝ) (y z : ℂ) (δ : �
   rw [← lintegral_const_mul _ (fusionMovingKernel_measurable γ α₁ α₂ α₃ y 0)]
   apply lintegral_mono_ae
   filter_upwards [ae_restrict_mem (measurableSet_le measurable_const measurable_norm)] with x hx
-  have hx0 : x ≠ 0 := norm_ne_zero_iff.mp (ne_of_gt (lt_of_lt_of_le hδ hx))
   have h := ENNReal.ofReal_le_ofReal
-    (fusion_rootedKernel_exterior_bound γ α₁ α₂ α₃ z (y * z) x hx0 (hz.trans hx)
+    (fusion_rootedKernel_exterior_bound γ α₁ α₂ α₃ z (y * z) x (norm_ne_zero_iff.mp (ne_of_gt (lt_of_lt_of_le hδ hx))) (hz.trans hx)
       (by linarith) hu1)
   rw [ENNReal.ofReal_mul (Real.rpow_nonneg (by norm_num) _)] at h
   simpa only [fusionMovingKernel, mul_zero] using h

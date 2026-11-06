@@ -40,25 +40,21 @@ theorem exists_uniform_holomorphic_disks_on_compact
     Metric.exists_isOpen_isBounded_image_of_isCompact_of_continuousOn
       hS hU hSU hH.continuousOn
   let W := V ∩ U
-  have hWopen : IsOpen W := hVopen.inter hU
-  have hSW : S ⊆ W := fun z hz => ⟨hSV hz, hSU hz⟩
-  obtain ⟨δ, hδ, hδW⟩ := hS.exists_cthickening_subset_open hWopen hSW
+  obtain ⟨δ, hδ, hδW⟩ := hS.exists_cthickening_subset_open (hVopen.inter hU) (fun z hz => ⟨hSV hz, hSU hz⟩)
   let r := δ / 2
   obtain ⟨B, hB⟩ := hVbounded.subset_closedBall (H 0)
   let M := max 0 (B + ‖H 0‖)
   refine ⟨r, M, by dsimp [r]; linarith, le_max_left _ _, ?_⟩
   intro x hx
-  have hfxS : f x ∈ S := ⟨x, hx, rfl⟩
   have hballW : Metric.ball (f x) r ⊆ W := by
     intro z hz
     apply hδW
-    apply Metric.mem_cthickening_of_dist_le z (f x) δ S hfxS
+    apply Metric.mem_cthickening_of_dist_le z (f x) δ S (⟨x, hx, rfl⟩)
     have hdist : dist z (f x) < r := Metric.mem_ball.mp hz
     have hrδ : r ≤ δ := by dsimp [r]; linarith
     exact hdist.le.trans hrδ
-  have hballU : Metric.ball (f x) r ⊆ U := fun _ hz => (hballW hz).2
   have hballV : Metric.ball (f x) r ⊆ V := fun _ hz => (hballW hz).1
-  refine ⟨hH.mono hballU, ?_⟩
+  refine ⟨hH.mono (fun _ hz => (hballW hz).2), ?_⟩
   intro z hz
   have hdist := hB ⟨z, hballV hz, rfl⟩
   have hnorm : ‖H z - H 0‖ ≤ B := by simpa [dist_eq_norm] using hdist

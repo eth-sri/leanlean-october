@@ -35,9 +35,8 @@ theorem measurableSet_negativeConditionedLastExitTimeCell
   have hτ : Measurable τ :=
     measurable_negativeLastExitTime_joint.comp
       ((measurable_const (a := (c : ℝ))).prodMk measurable_id)
-  have hI : MeasurableSet (Set.Ico a b) := measurableSet_Ico
   change MeasurableSet (τ ⁻¹' Set.Ico a b)
-  exact hI.preimage hτ
+  exact (measurableSet_Ico).preimage hτ
 
 /-- Almost surely, a last-exit cell is exactly a deterministic-time history hit followed by
 strict rational avoidance of the future. -/
@@ -84,12 +83,11 @@ theorem negativeConditionedLastExitTimeCell_ae_eq_historyAvoidance
         let qTime : ℝ≥0 := ⟨(q : ℝ), hq.le⟩
         let t : ℝ≥0 := b + qTime
         have hLt : negativeLastExitTime p (c : ℝ) < t := by
-          have hLb : negativeLastExitTime p (c : ℝ) < b := hcell.2
           have hqpos : 0 < qTime := by
             change (0 : ℝ) < (q : ℝ)
             exact hq
           have hbt : b < t := lt_add_of_pos_right b hqpos
-          exact hLb.trans hbt
+          exact (hcell.2).trans hbt
         have hstate := hafter t hLt
         have heval : conditionedPositiveFutureRationalEvals b p q =
             conditionedPositiveStateAt t p := by

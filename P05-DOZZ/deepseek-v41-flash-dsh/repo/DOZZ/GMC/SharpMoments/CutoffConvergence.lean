@@ -33,7 +33,6 @@ theorem regularizedGMC_lintegral_tendstoInMeasure
     (hfR : ∀ x ∉ closedBall (0 : ℂ) R, f x = 0) :
     TendstoInMeasure P (fun (n : ℕ) ω => (∫⁻ x, (f x : ℝ≥0∞) ∂regularizedGMC P Xc γ n ω).toReal)
       atTop (fun ω => (∫⁻ x, (f x : ℝ≥0∞) ∂M ω).toReal) := by
-  have hfr : Measurable fun x => (f x : ℝ) := measurable_coe_nnreal_real.comp hf
   have hfm : Measurable fun x => (f x : ℝ≥0∞) := measurable_coe_nnreal_ennreal.comp hf
   have hid : ∀ μ : Measure ℂ, (∫⁻ x, (f x : ℝ≥0∞) ∂μ).toReal = ∫ x, (f x : ℝ) ∂μ := by
     intro μ
@@ -42,7 +41,7 @@ theorem regularizedGMC_lintegral_tendstoInMeasure
     rw [← h]
     simp only [ENNReal.coe_toReal]
   have hL1 := regularizedGMC_integral_l1_tendsto P X hX γ hγ hγ2 M hM Xc hXc (fun x => (f x : ℝ))
-    hfr b (fun x => by rw [NNReal.abs_eq]; exact_mod_cast hfb x) R
+    (measurable_coe_nnreal_real.comp hf) b (fun x => by rw [NNReal.abs_eq]; exact_mod_cast hfb x) R
     (fun x hx => by simp [hfR x hx])
   have hF : ∀ n : ℕ, AEStronglyMeasurable (fun ω => (∫⁻ x, (f x : ℝ≥0∞)
       ∂regularizedGMC P Xc γ n ω).toReal) P := fun n =>

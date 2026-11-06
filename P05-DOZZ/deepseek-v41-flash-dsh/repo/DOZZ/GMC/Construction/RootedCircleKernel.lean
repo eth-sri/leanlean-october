@@ -32,9 +32,8 @@ theorem circleRootPotential_tendsto (u x : ℂ) (hxu : x ≠ u) :
         (𝓝 (Real.circleAverage k u 0)) :=
       (Real.Continuous.circleAverage hk).continuousAt.tendsto.comp hexp
     simpa only [← haverage, Real.circleAverage_zero] using h
-  have hd : 0 < ‖u - x‖ := norm_pos_iff.mpr (sub_ne_zero.mpr hxu.symm)
   have hevent : ∀ᶠ r : ℝ in atTop, Real.exp (-r) ≤ ‖u - x‖ :=
-    (hexp.eventually (Iio_mem_nhds hd)).mono fun _ h => h.le
+    (hexp.eventually (Iio_mem_nhds (norm_pos_iff.mpr (sub_ne_zero.mpr hxu.symm)))).mono fun _ h => h.le
   have hlim := (tendsto_const_nhds : Tendsto
     (fun _ : ℝ => -Real.log ‖u - x‖ + Real.log (normPlus x)) atTop
       (𝓝 (-Real.log ‖u - x‖ + Real.log (normPlus x)))).add havg

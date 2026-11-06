@@ -3,6 +3,7 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
+public import DOZZ.SharedHyp
 
 public import DOZZ.FourPoint.BPZ.UnreflectedB
 public import DOZZ.FourPoint.BPZ.BPZAssemblyA
@@ -66,16 +67,9 @@ theorem bpz_shift_large_gamma_meas {Ω : Type*} [MeasurableSpace Ω] {H : ℂ �
     (hH : IsGaussHypergeometricFamily H) (P : Measure Ω) (X : Ω → Distr) (M : Ω → Measure ℂ)
     (γ μ α₁ α₂ α₃ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (hγsq : 2 < γ ^ 2) (hμ : 0 < μ)
     (hαlo : γ / 2 < α₁) (hαhi : α₁ < 2 / γ) (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ)
-    (hs : 2 * Q γ + γ / 2 < α₁ + α₂ + α₃) (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M)
+    (hs : SeibergSlack γ α₁ α₂ α₃) (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M)
     (hMm : Measurable M)
-    (hdiag : ∀ z ∈ gaussCutPlane, fourPointT P M γ μ (-(γ / 2)) α₁ α₂ α₃ z =
-      structureConstant P M γ μ (α₁ - γ / 2) α₂ α₃ *
-        (‖gaussFMinus H (gaussParameterA γ (γ / 2) α₁ α₂ α₃) (gaussParameterB γ (γ / 2) α₁ α₂ α₃)
-            (gaussParameterC γ (γ / 2) α₁) z‖ ^ 2 +
-          gaussCoefficientRatio (gaussParameterA γ (γ / 2) α₁ α₂ α₃)
-              (gaussParameterB γ (γ / 2) α₁ α₂ α₃) (gaussParameterC γ (γ / 2) α₁) *
-            ‖gaussFPlus H (gaussParameterA γ (γ / 2) α₁ α₂ α₃)
-              (gaussParameterB γ (γ / 2) α₁ α₂ α₃) (gaussParameterC γ (γ / 2) α₁) z‖ ^ 2)) :
+    (hdiag : FourPointDiagonal P M γ μ α₁ α₂ α₃ H) :
     gaussCoefficientRatio (gaussParameterA γ (γ / 2) α₁ α₂ α₃)
         (gaussParameterB γ (γ / 2) α₁ α₂ α₃) (gaussParameterC γ (γ / 2) α₁) *
           structureConstant P M γ μ (α₁ - γ / 2) α₂ α₃ =
@@ -107,7 +101,6 @@ theorem bpz_shift_large_gamma_meas {Ω : Type*} [MeasurableSpace Ω] {H : ℂ �
   set ρ := gaussCoefficientRatio a' b' c' with hρ
   set Cm := structureConstant P M γ μ (α₁ - γ / 2) α₂ α₃ with hCm
   obtain ⟨hc0, hc1⟩ := bpz_gaussParameterC_half_mem hγ hαlo hαhi
-  have h2c : 2 * (1 - c') = κ := bpz_gaussParameterC_half γ α₁
   set φ : ℝ → ℝ := fun u => Complex.normSq (H (a' : ℂ) (b' : ℂ) (c' : ℂ) (u : ℂ)) with hφ
   set ψ : ℝ → ℝ := fun u => Complex.normSq (H ((a' : ℂ) - c' + 1) ((b' : ℂ) - c' + 1)
     (2 - (c' : ℂ)) (u : ℂ)) with hψ
@@ -163,7 +156,7 @@ theorem bpz_shift_large_gamma_meas {Ω : Type*} [MeasurableSpace Ω] {H : ℂ �
     rw [hsp] at h1
     have h2 := hdiag (u : ℂ) hz
     rw [h1, bpzHG_norm_sq_eq_normSq, bpzHG_norm_sq_eq_normSq, bpzHG_normSq_gaussFMinus,
-      bpzHG_normSq_gaussFPlus H a' b' c' hu0, h2c] at h2
+      bpzHG_normSq_gaussFPlus H a' b' c' hu0, (bpz_gaussParameterC_half γ α₁)] at h2
     have e : K * F0 u = Cm * (φ u + ρ * (u ^ κ * ψ u)) := h2
     rw [hA₀, div_mul_eq_mul_div, eq_div_iff hKpos.ne', ← e]
     ring
@@ -244,18 +237,16 @@ theorem bpz_shift_large_gamma_meas {Ω : Type*} [MeasurableSpace Ω] {H : ℂ �
     have e1 : -(p * A) * t ^ κ + (r₁ t).re + (gammaHalfTwoRootedTerm P M γ α₁ α₂ α₃ p t).re =
         A₀ * (φ t + ρ * (t ^ κ * ψ t)) - (A₀ * 1 + A₀ * deriv φ 0 * t) := by
       linarith only [hT', hRre]
-    have htk : 0 < t ^ κ := Real.rpow_pos_of_pos ht0 κ
     have hR12 : (r₁ t).re + (gammaHalfTwoRootedTerm P M γ α₁ α₂ α₃ p t).re =
         A₀ * (φ t - 1 - deriv φ 0 * t) + (A₀ * ρ * ψ t + p * A) * t ^ κ := by
       linear_combination e1
-    rw [hφ0, hR12, add_div, mul_div_cancel_right₀ _ htk.ne', mul_div_assoc]
+    rw [hφ0, hR12, add_div, mul_div_cancel_right₀ _ (Real.rpow_pos_of_pos ht0 κ).ne', mul_div_assoc]
     ring
   -- limits
   have hlimL : Tendsto (fun t : ℝ => A₀ * ρ * ψ t) (𝓝[>] 0) (𝓝 (A₀ * ρ)) := by
-    have hmem : Ioo (-1 : ℝ) 1 ∈ 𝓝 (0 : ℝ) := Ioo_mem_nhds (by norm_num) (by norm_num)
     have hψc : Tendsto ψ (𝓝[>] 0) (𝓝 1) := by
       rw [← hψ0]
-      exact ((bpzEP_continuousOn hψd).1.continuousAt hmem).tendsto.mono_left nhdsWithin_le_nhds
+      exact ((bpzEP_continuousOn hψd).1.continuousAt (Ioo_mem_nhds (by norm_num) (by norm_num))).tendsto.mono_left nhdsWithin_le_nhds
     simpa using hψc.const_mul (A₀ * ρ)
   have hre : ∀ {f : ℂ → ℂ}, IsComplexLittleOAtZero κ f →
       Tendsto (fun t : ℝ => (f t).re / t ^ κ) (𝓝[>] 0) (𝓝 0) := by
@@ -293,25 +284,17 @@ theorem bpz_shift_large_gamma {Ω : Type*} [MeasurableSpace Ω] {H : ℂ → ℂ
     (hH : IsGaussHypergeometricFamily H) (P : Measure Ω) (X : Ω → Distr) (M : Ω → Measure ℂ)
     (γ μ α₁ α₂ α₃ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (hγsq : 2 < γ ^ 2) (hμ : 0 < μ)
     (hαlo : γ / 2 < α₁) (hαhi : α₁ < 2 / γ) (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ)
-    (hs : 2 * Q γ + γ / 2 < α₁ + α₂ + α₃) (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M)
-    (hdiag : ∀ z ∈ gaussCutPlane, fourPointT P M γ μ (-(γ / 2)) α₁ α₂ α₃ z =
-      structureConstant P M γ μ (α₁ - γ / 2) α₂ α₃ *
-        (‖gaussFMinus H (gaussParameterA γ (γ / 2) α₁ α₂ α₃) (gaussParameterB γ (γ / 2) α₁ α₂ α₃)
-            (gaussParameterC γ (γ / 2) α₁) z‖ ^ 2 +
-          gaussCoefficientRatio (gaussParameterA γ (γ / 2) α₁ α₂ α₃)
-              (gaussParameterB γ (γ / 2) α₁ α₂ α₃) (gaussParameterC γ (γ / 2) α₁) *
-            ‖gaussFPlus H (gaussParameterA γ (γ / 2) α₁ α₂ α₃)
-              (gaussParameterB γ (γ / 2) α₁ α₂ α₃) (gaussParameterC γ (γ / 2) α₁) z‖ ^ 2)) :
+    (hs : SeibergSlack γ α₁ α₂ α₃) (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M)
+    (hdiag : FourPointDiagonal P M γ μ α₁ α₂ α₃ H) :
     gaussCoefficientRatio (gaussParameterA γ (γ / 2) α₁ α₂ α₃)
         (gaussParameterB γ (γ / 2) α₁ α₂ α₃) (gaussParameterC γ (γ / 2) α₁) *
           structureConstant P M γ μ (α₁ - γ / 2) α₂ α₃ =
         -μ * (planarGaussConstant (γ ^ 2 / 2) (γ * α₁)).re *
           structureConstant P M γ μ (α₁ + γ / 2) α₂ α₃ := by
   obtain ⟨N, hNm, hNfin, hMN⟩ := equatorGFF_GMC_measurable_version P X hX γ hγ hγ2 M hM
-  have hN : IsGMCOf P X γ N := bpz_isGMCOf_congr hM hNfin hMN
   rw [bpz_structureConstant_congr P hMN, bpz_structureConstant_congr P hMN]
   refine bpz_shift_large_gamma_meas hH P X N γ μ α₁ α₂ α₃ hγ hγ2 hγsq hμ hαlo hαhi hα₂ hα₃ hs hX
-    hN hNm fun z hz => ?_
+    (bpz_isGMCOf_congr hM hNfin hMN) hNm fun z hz => ?_
   rw [← bpz_fourPointT_congr P hMN, ← bpz_structureConstant_congr P hMN]
   exact hdiag z hz
 

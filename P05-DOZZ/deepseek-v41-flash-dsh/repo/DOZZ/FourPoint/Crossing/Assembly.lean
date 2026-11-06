@@ -80,7 +80,6 @@ theorem gammaHalf_crossing_of_diagonal_and_unreflected {Ω : Type*} [MeasurableS
       hsum hα' hεQ hα
   obtain ⟨hcn, hδn, _⟩ := crossing_gammaHalf_parameter_guards γ α' ε α hγ hγ2 hεhi hα' hα hs
   have hb : 0 < b := lt_trans ha hab
-  have hc : 0 < c := lt_trans hb hbc
   have ha1 : a < 1 := lt_trans (lt_trans hab hbc) hc1
   have hb1 : b < 1 := lt_trans hbc hc1
   have hratio := gaussCoefficientRatio_mul_K₂_add_K₁_eq_zero a b c hK₂.ne'
@@ -112,7 +111,7 @@ theorem gammaHalf_crossing_of_diagonal_and_unreflected {Ω : Type*} [MeasurableS
   have hE := (crossing_one_channel_coefficients_unique hH a b c
     (d₀ * u ^ 2 + d₁ * w ^ 2) (d₀ * v ^ 2 + d₁ * x ^ 2) e₀ e₁ hδn he).2.symm
   have hex := crossing_diagonal_coefficient_extraction a b c d₀ d₁ e₁
-    ha ha1 hb hb1 hc hc1 hδ hδ1 hcn hδn hcross hE
+    ha ha1 hb hb1 (lt_trans hb hbc) hc1 hδ hδ1 hcn hδn hcross hE
   have hswap : structureConstant P M γ μ (ε + γ / 2) α' α =
       structureConstant P M γ μ α' (ε + γ / 2) α := by
     rw [residue_structureConstant_eq_unitVolume, residue_structureConstant_eq_unitVolume]

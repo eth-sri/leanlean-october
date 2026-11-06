@@ -41,8 +41,7 @@ theorem equatorPartitionCLM_support_subset_localBall (n : ℕ) (f : TestFn) :
   have hstrict : (n : ℝ) + 3 < gffLocalModeRadius (n + 5) - 1 := by
     rw [hrad]
     linarith
-  have hnorm' : ‖z‖ < gffLocalModeRadius (n + 5) - 1 := lt_of_le_of_lt hnorm hstrict
-  simpa [mem_ball, dist_eq_norm] using hnorm'
+  simpa [mem_ball, dist_eq_norm] using (lt_of_le_of_lt hnorm hstrict)
 
 
 theorem exists_nat_equatorPartition_reconstruction_radius (f : TestFn) :
@@ -71,9 +70,8 @@ theorem sum_equatorPartitionCLM_range_eq_self_of_cutoff_eq_one
       by_cases hz : z ∈ tsupport f
       · simp [hcut z hz]
       · have hfz : f z = 0 := by
-          have hnot : z ∉ Function.support f := fun hs => hz (subset_tsupport f hs)
           by_contra hne
-          exact hnot (Function.mem_support.mpr hne)
+          exact (fun hs => hz (subset_tsupport f hs)) (Function.mem_support.mpr hne)
         simp [hfz]
 
 /-- Every global test evaluation of the measurable distribution is almost everywhere the G4

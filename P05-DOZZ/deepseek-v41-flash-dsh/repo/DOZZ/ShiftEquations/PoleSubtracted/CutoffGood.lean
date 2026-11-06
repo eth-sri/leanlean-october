@@ -88,12 +88,11 @@ theorem ofReal_sub_mul_rpow_add_rpow {T L : ℝ≥0∞} (hL : 0 < L) (hLT : L �
     ENNReal.ofReal ((T.toReal - L.toReal) * (T.toReal ^ s + L.toReal ^ s)) =
       (T - L) * (T ^ s + L ^ s) := by
   have hL' : L ≠ ⊤ := ne_top_of_le_ne_top hT hLT
-  have hLr : 0 < L.toReal := ENNReal.toReal_pos hL.ne' hL'
   have hTr : 0 < T.toReal := ENNReal.toReal_pos (hL.trans_le hLT).ne' hT
   rw [ENNReal.ofReal_mul (sub_nonneg.2 (ENNReal.toReal_mono hT hLT)),
     ENNReal.ofReal_sub _ ENNReal.toReal_nonneg, ENNReal.ofReal_toReal hT,
     ENNReal.ofReal_toReal hL', ENNReal.ofReal_add (by positivity) (by positivity),
-    ← ENNReal.ofReal_rpow_of_pos hTr, ← ENNReal.ofReal_rpow_of_pos hLr,
+    ← ENNReal.ofReal_rpow_of_pos hTr, ← ENNReal.ofReal_rpow_of_pos (ENNReal.toReal_pos hL.ne' hL'),
     ENNReal.ofReal_toReal hT, ENNReal.ofReal_toReal hL']
 
 /-! ### Measurability -/

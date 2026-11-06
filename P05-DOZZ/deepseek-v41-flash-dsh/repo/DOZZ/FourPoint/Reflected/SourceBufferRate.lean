@@ -23,7 +23,6 @@ theorem reflected_source_buffer_inverse_littleO {Ω : Type*} [MeasurableSpace Ω
       ((gammaHalfMoment P M γ α₁ α₂ α₃ p z-
         (reflected_source_separatedMoment P M γ α₁ α₂ α₃ z (Real.exp (-h)*‖z‖) (‖z‖^(1-ξ)) p).toReal : ℝ) : ℂ)) := by
   let p := (α₁+α₂+α₃-γ/2-2*Q γ)/γ
-  have hp : 0 < p := div_pos (by linarith only [hs]) hγ
   let E := fun z : ℂ => (∫⁻ ω, (∫⁻ x in {x : ℂ | Real.exp (-h)*‖z‖ ≤ ‖x‖ ∧ ‖x‖ < ‖z‖^(1-ξ)},
     ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ z x) ∂M ω)*
       gammaHalfOuterMass γ α₁ α₂ α₃ (M ω) z ξ^(-(p+1)) ∂P).toReal
@@ -41,11 +40,10 @@ theorem reflected_source_buffer_inverse_littleO {Ω : Type*} [MeasurableSpace Ω
     have hzr : ‖z‖ < ‖z‖^(1-ξ) := by linarith only [hr,hz.2.2.2.1]
     have hzn : ‖z‖ < 1 := hzr.trans_le hr1
     have hz1 : z ≠ 1 := by intro he; simp [he] at hzn
-    have hss : 0 < Real.exp (-h)*‖z‖ := mul_pos (Real.exp_pos _) (norm_pos_iff.mpr hz0)
     have hsr : Real.exp (-h)*‖z‖ ≤ ‖z‖^(1-ξ) :=
       (mul_le_of_le_one_left (norm_nonneg z) (Real.exp_le_one_iff.mpr (neg_nonpos.mpr hh))).trans hzr.le
     exact reflected_source_buffer_inverse_error P X hX γ hγ hγ₂ M hM α₁ α₂ α₃ ξ
-      (Real.exp (-h)*‖z‖) p hp hα₁ hα₂ hα₃ z hz0 hz1 hzn.le hr1 hzr hss hsr hfin
+      (Real.exp (-h)*‖z‖) p (div_pos (by linarith only [hs]) hγ) hα₁ hα₂ hα₃ z hz0 hz1 hzn.le hr1 hzr (mul_pos (Real.exp_pos _) (norm_pos_iff.mpr hz0)) hsr hfin
   unfold IsComplexLittleOAtZero at hE ⊢
   simp only [Complex.norm_real,Real.norm_eq_abs,abs_of_nonneg ENNReal.toReal_nonneg] at hE
   simp only [Complex.norm_real,Real.norm_eq_abs]

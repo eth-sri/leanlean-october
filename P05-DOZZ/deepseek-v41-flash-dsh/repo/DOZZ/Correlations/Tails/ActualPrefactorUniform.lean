@@ -45,15 +45,13 @@ theorem actual_prefactor_moment_uniform
     unfold pinCorrectionEnvelope
     simp only [sub_self,abs_zero,mul_zero,zero_add]
   simp only [zero_mul,add_zero,hD]
-  have he : 1 ≤ Real.exp (γ^2+4) := Real.one_le_exp_iff.mpr (by positivity)
   have hfb' : f*‖z‖^(-4 : ℝ) ≤ b :=
     (mul_le_of_le_one_right hf hn).trans hfb
-  have hbb : b ≤ b*Real.exp (γ^2+4) := le_mul_of_one_le_right hb he
   calc
     _ ≤ b*Real.exp (γ*Xc ω z 0-γ^2*Real.log ‖z‖) :=
       mul_le_mul_of_nonneg_right hfb' (Real.exp_nonneg _)
     _ ≤ (b*Real.exp (γ^2+4))*Real.exp (γ*Xc ω z 0-γ^2*Real.log ‖z‖) :=
-      mul_le_mul_of_nonneg_right hbb (Real.exp_nonneg _)
+      mul_le_mul_of_nonneg_right (le_mul_of_one_le_right hb (Real.one_le_exp_iff.mpr (by positivity))) (Real.exp_nonneg _)
     _ = _ := mul_comm _ _
 
 

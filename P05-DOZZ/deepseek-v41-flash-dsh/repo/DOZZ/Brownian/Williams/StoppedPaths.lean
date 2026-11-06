@@ -67,8 +67,7 @@ theorem measurableSet_brownianPath_joint_hit :
 /-- A nonempty upper hitting set contains the literal first-passage time. -/
 theorem firstPassageTime_mem (p : BrownianPath) (c : ℝ)
     (h : ∃ u : ℝ≥0, c ≤ p u) : c ≤ p (firstPassageTime p c) := by
-  have hc : IsClosed {u : ℝ≥0 | c ≤ p u} := isClosed_le continuous_const p.continuous
-  exact hc.csInf_mem h (OrderBot.bddBelow _)
+  exact (isClosed_le continuous_const p.continuous).csInf_mem h (OrderBot.bddBelow _)
 
 /-- The infimum convention adds the no-hit event to every finite sublevel. -/
 theorem firstPassageTime_le_iff (p : BrownianPath) (c : ℝ) (s : ℝ≥0) :
@@ -85,8 +84,7 @@ theorem firstPassageTime_le_iff (p : BrownianPath) (c : ℝ) (s : ℝ≥0) :
       intro u hu
       exact hh ⟨u,hu⟩
     rw [firstPassageTime,he]
-    have hempty : sInf (∅ : Set ℝ≥0) = 0 := NNReal.sInf_empty
-    rw [hempty]
+    rw [(NNReal.sInf_empty)]
     exact ⟨fun _ => Or.inl hh,fun _ => zero_le⟩
 
 /-- The literal first-passage time is jointly measurable, including its no-hit value zero. -/
@@ -186,14 +184,13 @@ theorem brownianPath_compact_levelHit_iff (p : BrownianPath) (c : ℝ) (s T : �
     (∃ u ∈ Icc s (s+T), p u = -c) ↔
       (⨆ u : Iic T, brownianLevelDistancePath c (brownianTranslatePath s p) u) = 0 := by
   let q := brownianLevelDistancePath c (brownianTranslatePath s p)
-  have hnonpos : (⨆ u : Iic T, q u) ≤ 0 := ciSup_le (fun u => neg_nonpos.mpr (abs_nonneg _))
   constructor
   · rintro ⟨u,hu,hpu⟩
     have hut : u-s ≤ T := (tsub_le_iff_right).mpr (by simpa only [add_comm] using hu.2)
     have hqu : q (u-s) = 0 := by
       change -|p (s+(u-s))+c| = 0
       rw [add_tsub_cancel_of_le hu.1,hpu,neg_add_cancel,abs_zero,neg_zero]
-    apply le_antisymm hnonpos
+    apply le_antisymm (ciSup_le (fun u => neg_nonpos.mpr (abs_nonneg _)))
     rw [← hqu]
     exact le_ciSup (brownianPath_Iic_bddAbove q T) ⟨u-s,hut⟩
   · intro hM
@@ -322,7 +319,6 @@ equal. -/
 theorem firstPassageTime_eq_capped_of_hit (p : BrownianPath) (c : ℝ) (T : ℝ≥0)
     (h : ∃ u ≤ T, c ≤ p u) : firstPassageTime p c = cappedBrownianFirstPassage c T p := by
   obtain ⟨u,hu,hcu⟩ := h
-  have hh : ∃ u : ℝ≥0, c ≤ p u := ⟨u,hcu⟩
   have hτu : firstPassageTime p c ≤ u :=
     csInf_le (s := {u : ℝ≥0 | c ≤ p u}) (OrderBot.bddBelow _) hcu
   have hτT := hτu.trans hu
@@ -332,7 +328,7 @@ theorem firstPassageTime_eq_capped_of_hit (p : BrownianPath) (c : ℝ) (T : ℝ�
     · rw [he]
       exact hτT
   · exact csInf_le (s := {u : ℝ≥0 | u ≤ T ∧ c ≤ p u} ∪ {T})
-      (OrderBot.bddBelow _) (Or.inl ⟨hτT,firstPassageTime_mem p c hh⟩)
+      (OrderBot.bddBelow _) (Or.inl ⟨hτT,firstPassageTime_mem p c (⟨u,hcu⟩)⟩)
 
 
 /-- The literal lifetime-marked first-hit kernel is measurable for every nonnegative measurable test. -/

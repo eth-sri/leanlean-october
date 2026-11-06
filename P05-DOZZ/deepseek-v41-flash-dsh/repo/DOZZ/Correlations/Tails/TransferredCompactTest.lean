@@ -36,8 +36,7 @@ theorem transferred_compact_test (z : ℂ) (γ : ℝ)
     have h := hf.comp_homeomorph (Homeomorph.addRight (-z))
     change HasCompactSupport (fun w => f (w + -z)) at h
     simpa only [sub_eq_add_neg] using h
-  have hg : HasCompactSupport g := hs.mul_right
-  let gc : C_c(ℂ, ℝ) := ⟨⟨g, hc⟩, hg⟩
+  let gc : C_c(ℂ, ℝ) := ⟨⟨g, hc⟩, (hs.mul_right)⟩
   exact ⟨gc.toBoundedContinuousFunction, gc.hasCompactSupport, fun w => rfl⟩
 
 

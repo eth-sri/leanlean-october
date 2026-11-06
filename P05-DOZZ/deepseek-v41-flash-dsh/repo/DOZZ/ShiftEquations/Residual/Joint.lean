@@ -81,8 +81,7 @@ theorem meromorphicOn_cutoffStrip {F : ℂ → ℂ} {h : ℝ} (hF : MeromorphicO
   intro z hz
   have hz' : |z.im| < k := hz
   refine (hF z (lt_of_lt_of_le hz' hk)).congr ?_
-  have hopen : IsOpen {w : ℂ | |w.im| < k} := isOpen_horizontalStrip k
-  filter_upwards [nhdsWithin_le_nhds (hopen.mem_nhds hz')] with w hw
+  filter_upwards [nhdsWithin_le_nhds ((isOpen_horizontalStrip k).mem_nhds hz')] with w hw
   exact (cutoffStrip_of_lt hw).symm
 
 /-- **The joint representative**: from a γ/2-shift function and a 2/γ-shift function, both equal to

@@ -25,9 +25,8 @@ theorem sumtail_rpow_half_bound (T t x r : ℝ) (hT : 0 ≤ T) (hr : r ≤ T)
       _ ≤ _ := mul_le_mul_of_nonneg_right
         (Real.rpow_le_rpow_of_exponent_le (by norm_num) hr) (Real.rpow_nonneg hx.le _)
   · have he : 0 ≤ -r := by linarith only [h]
-    have h2 : 1 ≤ (2:ℝ)^T := Real.one_le_rpow (by norm_num) hT
     exact (Real.rpow_le_rpow (by linarith only [hx,ht]) htx he).trans
-      (le_mul_of_one_le_left (Real.rpow_nonneg hx.le _) h2)
+      (le_mul_of_one_le_left (Real.rpow_nonneg hx.le _) (Real.one_le_rpow (by norm_num) hT))
 
 /-- The square-root shift stays inside the positive half-scale chart. -/
 theorem sumtail_sqrt_shift_bounds (x : ℝ) (hx : 4 ≤ x) :

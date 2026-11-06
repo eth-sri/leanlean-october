@@ -20,7 +20,6 @@ theorem fusion_localDifference_time_integrable {Ω : Type*} [MeasurableSpace Ω]
         (∫ x in Metric.ball (0 : ℂ) (1 / 2), fusionDifferenceKernel γ α₁ α₂ α₃ z x ∂M ω) ∂P) (Icc 0 1) volume := by
   let K := planarDifferenceKernel (γ ^ 2 / 2) (γ * α₁) 1
   obtain ⟨hk, hβ, hβ2, _, _⟩ := fusion_difference_parameters γ α₁ hγ hlo hα₁
-  have hK : Integrable K volume := (planar_difference_integral _ _ hk hβ hβ2 1).1
   obtain ⟨B, _, hb⟩ := fusionInterpolatedFactor_uniform_bound P X hX γ hγ hγ2 M hM α₁ α₂ α₃ (-p - 1) (by linarith)
   have hf : Measurable (fusionDifferenceKernel γ α₁ α₂ α₃ z) := by
     have hm : Measurable (fun x : ℂ => (z, x)) := measurable_const.prodMk measurable_id
@@ -34,7 +33,7 @@ theorem fusion_localDifference_time_integrable {Ω : Type*} [MeasurableSpace Ω]
   rw [fusion_localDifference_rooting_scaled P X hX γ hγ hγ2 M hM α₁ α₂ α₃ hlo hα₁ hα₂ hα₃ p hp t ht z hz hz4,
     norm_mul, Real.norm_of_nonneg (Real.rpow_nonneg (norm_nonneg z) _)]
   apply mul_le_mul_of_nonneg_left _ (Real.rpow_nonneg (norm_nonneg z) _)
-  apply norm_integral_le_of_norm_le (hK.norm.mul_const B)
+  apply norm_integral_le_of_norm_le (((planar_difference_integral _ _ hk hβ hβ2 1).1).norm.mul_const B)
   exact ae_of_all _ fun y => by
     rw [norm_mul, Real.norm_eq_abs]
     simpa only [Real.norm_eq_abs] using

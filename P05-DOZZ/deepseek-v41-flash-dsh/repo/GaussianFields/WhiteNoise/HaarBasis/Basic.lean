@@ -289,8 +289,7 @@ theorem haarPacketLp_father_mem_haarBasisSubmodule_of_nonnegative
     {d : Nat} {j : ℤ} (hj : 0 ≤ j) (cell : Fin d → ℤ) :
     haarPacketLp { scale := j, cell := cell, signature := fun _ => false } ∈
       haarBasisSubmodule d := by
-  have hjcast : j = (j.toNat : ℤ) := (Int.eq_natCast_toNat).2 hj
-  rw [hjcast]
+  rw [((Int.eq_natCast_toNat).2 hj)]
   exact haarPacketLp_father_mem_haarBasisSubmodule_nat_scale j.toNat cell
 
 end GaussianFields

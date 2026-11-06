@@ -85,9 +85,8 @@ theorem inversionCircle_origin_ae_eq
     (fun _ : Fin 1 => (0, s)) (fun _ => Z) (fun _ => hZ)
     (fun _ => f) (fun _ => hf) (fun _ => hgap) (fun _ => hlim)
   have hs := congrArg (fun μ : Measure (Fin 1 → ℝ) => ∫ v, (v 0) ^ 2 ∂μ) hlaw
-  have hZm : AEMeasurable (fun ω (_ : Fin 1) => Z ω) P := AEMeasurable.of_eval fun _ => hZ.aemeasurable
   have hVm : AEMeasurable (fun ω (_ : Fin 1) => V ω) P := AEMeasurable.of_eval fun _ => hV.aemeasurable
-  rw [integral_map hZm ((measurable_pi_apply 0).pow_const 2).aestronglyMeasurable,
+  rw [integral_map (AEMeasurable.of_eval fun _ => hZ.aemeasurable) ((measurable_pi_apply 0).pow_const 2).aestronglyMeasurable,
     integral_map hVm ((measurable_pi_apply 0).pow_const 2).aestronglyMeasurable] at hs
   have hselfZ : covariance Z Z P = |s| := by
     simpa only [covariance, hmeanZ, hmean, sub_zero, ← pow_two, V] using hs.trans
@@ -289,8 +288,7 @@ theorem admissibleLogChaos_limit_joint_vector_law_of_fdd
   have hT : Tendsto (fun n : ℕ => (n : ℝ)) atTop atTop := tendsto_natCast_atTop_atTop
   have heps : Tendsto (fun n : ℕ => Real.exp (-(n : ℝ))) atTop (𝓝 (0 : ℝ)) :=
     Real.tendsto_exp_neg_atTop_nhds_zero.comp hT
-  have hmin : 0 < min ε₀ ε₁ := lt_min hY.cutoffPositive hZ.cutoffPositive
-  obtain ⟨L, hL⟩ := eventually_atTop.mp (heps.eventually (gt_mem_nhds hmin))
+  obtain ⟨L, hL⟩ := eventually_atTop.mp (heps.eventually (gt_mem_nhds (lt_min hY.cutoffPositive hZ.cutoffPositive)))
   let t : ℕ → ℝ := fun n => ((L + n : ℕ) : ℝ)
   have ht : Tendsto t atTop atTop := by
     simpa only [t, Nat.add_comm, Function.comp_def] using hT.comp (tendsto_add_atTop_nat L)

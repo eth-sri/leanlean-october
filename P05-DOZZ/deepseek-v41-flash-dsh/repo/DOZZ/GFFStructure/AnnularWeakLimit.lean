@@ -219,8 +219,7 @@ theorem tendsto_integral_circleAnnular_mul (x : ℂ) (r : ℝ)
   let b : ContDiffBump (0 : ℂ) := ⟨R, R + 1, hR, lt_add_one R⟩
   let g : ℂ → ℝ := fun z => b z * h z
   have hg : Continuous g := b.continuous.mul hh
-  have hgc : HasCompactSupport g := b.hasCompactSupport.mul_right
-  obtain ⟨M, hM⟩ := hgc.exists_bound_of_continuous hg
+  obtain ⟨M, hM⟩ := (b.hasCompactSupport.mul_right).exists_bound_of_continuous hg
   have hlim := tendsto_integral_circleAnnular_mul_bounded x r g hg hM
   have heq n : (fun z => circleAnnularDensity x r n z * g z) =
       fun z => circleAnnularDensity x r n z * h z := by
@@ -378,8 +377,7 @@ theorem continuous_testKernelPotential (f : TestFn) :
     simp only [Pi.add_apply] at hfirst hsecond
     rw [hsecond, hfirst, integral_const_mul]
   simp_rw [heq]
-  have hrawc' : Continuous (fun z : ℂ => ∫ w, f w * (-Real.log ‖z - w‖)) := hrawc
-  exact (hrawc'.add (continuous_log_normPlus.mul_const (∫ w, f w))).add continuous_const
+  exact ((hrawc).add (continuous_log_normPlus.mul_const (∫ w, f w))).add continuous_const
 
 /-- Every section of the pinned kernel weighted by a smooth compact test is integrable. -/
 theorem integrable_testKernel_section (f : TestFn) (z : ℂ) :
@@ -388,10 +386,9 @@ theorem integrable_testKernel_section (f : TestFn) (z : ℂ) :
   have hloc := locallyIntegrable_logNorm.neg
   have hraw : Integrable (fun w => f w * (-Real.log ‖z - w‖)) :=
     f.hasCompactSupport.convolutionExists_left (L := L) f.continuous hloc z
-  have hfi : Integrable f (volume : Measure ℂ) := f.continuous.integrable_of_hasCompactSupport f.hasCompactSupport
   have hpin : Integrable (fun w => f w * Real.log (normPlus w)) :=
     (f.continuous.mul continuous_log_normPlus).integrable_of_hasCompactSupport f.hasCompactSupport.mul_right
-  convert ((hraw.add (hfi.const_mul (Real.log (normPlus z)))).add hpin) using 1
+  convert ((hraw.add ((f.continuous.integrable_of_hasCompactSupport f.hasCompactSupport).const_mul (Real.log (normPlus z)))).add hpin) using 1
   ext w
   simp only [Pi.add_apply, gffKernel]
   ring

@@ -72,7 +72,6 @@ theorem continuous_repinWeight (a b : ℂ) (ha : a ≠ 0) : Continuous (repinWei
 /-- The background ratio is bounded. -/
 theorem repinWeight_le (a b : ℂ) (ha : a ≠ 0) (x : ℂ) :
     repinWeight a b x ≤ (‖a‖ + ‖b‖ + 1) ^ (4 : ℝ) / ‖a‖ ^ 2 := by
-  have hapos : 0 < ‖a‖ := norm_pos_iff.mpr ha
   have hy := normPlus_pos' (affineInv a b x)
   have hx := normPlus_pos' x
   have hcmp : normPlus x ≤ (‖a‖ + ‖b‖ + 1) * normPlus (affineInv a b x) := by
@@ -127,7 +126,6 @@ theorem integral_regularizedGMC_eq {Ω : Type*} [MeasurableSpace Ω] (P : Measur
     ∫ x, f x ∂regularizedGMC P Xc γ r ω =
       ∫ x, Real.exp (γ * Xc ω x r - γ ^ 2 / 2 * ∫ ω', Xc ω' x r ^ 2 ∂P) *
         normPlus x ^ (-4 : ℝ) * f x := by
-  have hsec : Measurable fun x => Xc ω x r := hmeas.comp (measurable_const.prodMk measurable_id)
   have hV := measurable_integral_sq_section P (fun ω x => Xc ω x r) hmeas
   have hn : Measurable normPlus := continuous_normPlus'.measurable
   unfold regularizedGMC
@@ -172,7 +170,6 @@ theorem integral_regularizedGMC_repinCircle {Ω : Type*} [MeasurableSpace Ω] (P
   unfold repinWeight
   rw [affineInv_affine a b ha y]
   have hp1 : 0 < normPlus (a * y + b) ^ (-4 : ℝ) := Real.rpow_pos_of_pos (normPlus_pos' _) _
-  have ha2 : 0 < ‖a‖ ^ 2 := by have := norm_pos_iff.mpr ha; positivity
   set V := ∫ ω', Xc ω' (a * y + b) (r - Real.log ‖a‖) ^ 2 ∂P
   set C := ∫ ω', Xc ω' (a * y + b) (r - Real.log ‖a‖) * L ω' ∂P
   set VL := ∫ ω', L ω' ^ 2 ∂P

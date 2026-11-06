@@ -3,6 +3,7 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
+public import DOZZ.SharedHyp
 public import DOZZ.GFFStructure.DirichletCircleLimits
 /-!
 # Actual Dirichlet circle versions
@@ -30,13 +31,12 @@ theorem poissonFamilyL2_circleAverage_eq {Ω : Type*} [MeasurableSpace Ω]
     (P : Measure Ω) [IsProbabilityMeasure P] (c x : ℂ) (ρ r : ℝ)
     (hx : ‖x-c‖+Real.exp (-r) < ρ)
     (V : Ω → ℂ → ℝ) (hVm : Measurable (fun p : Ω × ℂ => V p.1 p.2))
-    (hV : ∀ z ∈ ball c ρ, MemLp (fun ω => V ω z) 2 P)
+    (hV : MemLpBall P V c ρ)
     (hU : ContinuousOn (poissonFamilyL2 P c ρ V hV) (ball c ρ))
     (hVh : ∀ᵐ ω ∂P, InnerProductSpace.HarmonicOnNhd (V ω) (ball c ρ)) :
     Real.circleAverage (poissonFamilyL2 P c ρ V hV) x (Real.exp (-r)) =
       poissonFamilyL2 P c ρ V hV x := by
   have hsub := interior_circle_closedBall_subset c x ρ r hx
-  have hxs : x ∈ ball c ρ := mem_ball_iff_norm.mpr (by linarith [Real.exp_pos (-r)])
   have hcircle : CircleIntegrable (poissonFamilyL2 P c ρ V hV) x (Real.exp (-r)) :=
     (hU.mono (sphere_subset_closedBall.trans hsub)).circleIntegrable'
   have hae := circleAverage_L2_ae_eq P x (Real.exp (-r)) (Real.exp_pos _).le _ hcircle
@@ -44,7 +44,7 @@ theorem poissonFamilyL2_circleAverage_eq {Ω : Type*} [MeasurableSpace Ω]
     (fun z hz => poissonFamilyL2_ae_eq P c ρ V hV z
       (hsub (by simpa only [abs_of_pos (Real.exp_pos _)] using sphere_subset_closedBall hz)))
   apply Lp.ext
-  filter_upwards [hae,poissonFamilyL2_ae_eq P c ρ V hV x hxs,hVh] with ω hav hxv hω
+  filter_upwards [hae,poissonFamilyL2_ae_eq P c ρ V hV x (mem_ball_iff_norm.mpr (by linarith [Real.exp_pos (-r)])),hVh] with ω hav hxv hω
   rw [hav,hxv]
   exact (hω.mono hsub).circleAverage_eq
 
@@ -53,7 +53,7 @@ theorem exists_interior_circle_testFn_poisson_integral_limit {Ω : Type*} [Measu
     (P : Measure Ω) [IsProbabilityMeasure P] (c x : ℂ) (ρ r : ℝ)
     (hx : ‖x-c‖+Real.exp (-r) < ρ)
     (V : Ω → ℂ → ℝ) (hVm : Measurable (fun p : Ω × ℂ => V p.1 p.2))
-    (hV : ∀ z ∈ ball c ρ, MemLp (fun ω => V ω z) 2 P)
+    (hV : MemLpBall P V c ρ)
     (hU : ContinuousOn (poissonFamilyL2 P c ρ V hV) (ball c ρ))
     (hVh : ∀ᵐ ω ∂P, InnerProductSpace.HarmonicOnNhd (V ω) (ball c ρ)) :
     ∃ f : ℕ → TestFn, (∀ᶠ n in atTop, tsupport (f n) ⊆ ball c ρ) ∧
@@ -70,8 +70,7 @@ theorem exists_interior_circle_testFn_poisson_integral_limit {Ω : Type*} [Measu
   let U := poissonFamilyL2 P c ρ V hV
   let W : ℂ → Lp ℝ 2 P := fun z => ψ z • U z
   have hW : Continuous W := continuous_testFn_smul_on_disk c ρ U hU ψ hψ
-  have hWcs : HasCompactSupport W := ψ.hasCompactSupport.smul_right
-  obtain ⟨M,hM⟩ := hWcs.exists_bound_of_continuous hW
+  obtain ⟨M,hM⟩ := (ψ.hasCompactSupport.smul_right).exists_bound_of_continuous hW
   obtain ⟨f,hs,he,hinner⟩ := exists_circleAnnular_testFn_eventually_interior c x b r hxb
   have hδ : Tendsto (fun n : ℕ => 1/((n : ℝ)+2)) atTop (𝓝 (0 : ℝ)) := by
     convert (tendsto_const_div_atTop_nhds_zero_nat (1 : ℝ)).comp (tendsto_add_atTop_nat 2) using 1
@@ -118,7 +117,7 @@ theorem exists_interior_circle_testFn_poisson_integral_limit {Ω : Type*} [Measu
 noncomputable def dirichletCircleResidualL2 {Ω : Type*} [MeasurableSpace Ω]
     (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
     (hc : IsCircleAverage P X Xc) (c : ℂ) (R ρ : ℝ)
-    (V : Ω → ℂ → ℝ) (hV : ∀ z ∈ ball c ρ, MemLp (fun ω => V ω z) 2 P)
+    (V : Ω → ℂ → ℝ) (hV : MemLpBall P V c ρ)
     (x : ℂ) (r : ℝ) : Lp ℝ 2 P :=
   circleAverageL2 hc (x,r)-poissonFamilyL2 P c ρ V hV x-circleAverageL2 hc (0,-Real.log R)
 
@@ -126,7 +125,7 @@ noncomputable def dirichletCircleResidualL2 {Ω : Type*} [MeasurableSpace Ω]
 theorem dirichletCircleResidualL2_ae_eq {Ω : Type*} [MeasurableSpace Ω]
     (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
     (hc : IsCircleAverage P X Xc) (c : ℂ) (R ρ : ℝ) (hR : 0 < R)
-    (V : Ω → ℂ → ℝ) (hV : ∀ z ∈ ball c ρ, MemLp (fun ω => V ω z) 2 P)
+    (V : Ω → ℂ → ℝ) (hV : MemLpBall P V c ρ)
     (x : ℂ) (r : ℝ) (hx : x ∈ ball c ρ) :
     (⇑(dirichletCircleResidualL2 P X Xc hc c R ρ V hV x r)) =ᵐ[P]
       fun ω => Xc ω x r-V ω x+equatorRestorationScalar Xc R hR ω := by
@@ -172,12 +171,10 @@ theorem exists_dirichletCompletedL2Map_circle_limit {Ω : Type*} [MeasurableSpac
     (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
     (c : ℂ) (R ρ ε : ℝ) (hR : 1 < R) (hρ : 0 < ρ) (hε : 0 < ε) (hpin : ‖c‖+ρ ≤ R)
-    (V : Ω → ℂ → ℝ) (hV : ∀ z ∈ ball c ρ, MemLp (fun ω => V ω z) 2 P)
-    (hmean : ∀ z ∈ ball c ρ, (∫ ω, V ω z ∂P) = 0)
+    (V : Ω → ℂ → ℝ) (hV : MemLpBall P V c ρ)
+    (hmean : MeanZeroBall P V c ρ)
     (hU : ContinuousOn (poissonFamilyL2 P c ρ V hV) (ball c ρ))
-    (hcov : ∀ z w, z ∈ ball c ρ → w ∈ ball c ρ →
-      covariance (fun ω => V ω z) (fun ω => V ω w) P = Real.log R+Real.log ρ-
-        Real.log ‖(ρ : ℂ)^2-(z-c)*star (w-c)‖)
+    (hcov : CovarianceBall P V c ρ R)
     (hlim : ∀ z (hz : z ∈ ball c ρ), Tendsto (fun k => eLpNorm
       (fun ω => exteriorPinnedEvaluation X Xc R (by linarith) ω
         (canonicalPoissonCollarTest c z ρ ε hρ hε hz k)-V ω z) 2 P) atTop (𝓝 0))
@@ -226,12 +223,10 @@ theorem exists_dirichletDistribution_raw_circle_version {Ω : Type*} [mΩ : Meas
     (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
     (c : ℂ) (R ρ ε : ℝ) (hR : 1 < R) (hρ : 0 < ρ) (hε : 0 < ε) (hpin : ‖c‖+ρ ≤ R)
-    (V : Ω → ℂ → ℝ) (hV : ∀ z ∈ ball c ρ, MemLp (fun ω => V ω z) 2 P)
-    (hmean : ∀ z ∈ ball c ρ, (∫ ω, V ω z ∂P) = 0)
+    (V : Ω → ℂ → ℝ) (hV : MemLpBall P V c ρ)
+    (hmean : MeanZeroBall P V c ρ)
     (hU : ContinuousOn (poissonFamilyL2 P c ρ V hV) (ball c ρ))
-    (hcov : ∀ z w, z ∈ ball c ρ → w ∈ ball c ρ →
-      covariance (fun ω => V ω z) (fun ω => V ω w) P = Real.log R+Real.log ρ-
-        Real.log ‖(ρ : ℂ)^2-(z-c)*star (w-c)‖)
+    (hcov : CovarianceBall P V c ρ R)
     (hlim : ∀ z (hz : z ∈ ball c ρ), Tendsto (fun k => eLpNorm
       (fun ω => exteriorPinnedEvaluation X Xc R (by linarith) ω
         (canonicalPoissonCollarTest c z ρ ε hρ hε hz k)-V ω z) 2 P) atTop (𝓝 0))
@@ -258,8 +253,7 @@ theorem exists_dirichletDistribution_raw_circle_version {Ω : Type*} [mΩ : Meas
   let : MeasurableSpace Ω := mΩ
   have hFae (x : ℂ) (r : ℝ) (hx : ‖x-c‖+Real.exp (-r) < ρ) :
       (fun ω => F ω x r) =ᵐ[P] ⇑(dirichletCircleResidualL2 P X Xc hc c R ρ V hV x r) := by
-    have hx' : x ∈ ball c ρ := mem_ball_iff_norm.mpr (by linarith [Real.exp_pos (-r)])
-    filter_upwards [hye x r,dirichletCircleResidualL2_ae_eq P X Xc hc c R ρ (by linarith) V hV x r hx']
+    filter_upwards [hye x r,dirichletCircleResidualL2_ae_eq P X Xc hc c R ρ (by linarith) V hV x r (mem_ball_iff_norm.mpr (by linarith [Real.exp_pos (-r)]))]
       with ω hY hC
     change Y ω x r-V ω x+equatorRestorationScalar Xc R (by linarith) ω = _
     rw [hY,hC]
@@ -284,8 +278,8 @@ theorem exists_dirichletDistribution_raw_circle_version {Ω : Type*} [mΩ : Meas
 theorem dirichletCircleResidualL2_integral_zero {Ω : Type*} [MeasurableSpace Ω]
     (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc) (c : ℂ) (R ρ : ℝ)
-    (V : Ω → ℂ → ℝ) (hV : ∀ z ∈ ball c ρ, MemLp (fun ω => V ω z) 2 P)
-    (hmean : ∀ z ∈ ball c ρ, (∫ ω, V ω z ∂P) = 0)
+    (V : Ω → ℂ → ℝ) (hV : MemLpBall P V c ρ)
+    (hmean : MeanZeroBall P V c ρ)
     (x : ℂ) (r : ℝ) (hx : x ∈ ball c ρ) :
     (∫ ω, dirichletCircleResidualL2 P X Xc hc c R ρ V hV x r ω ∂P) = 0 := by
   let _ := hX.1
@@ -305,7 +299,7 @@ theorem dirichletCircleResidualL2_mem_original_gaussianHilbertSpan {Ω : Type*} 
     (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
     (c : ℂ) (R ρ ε : ℝ) (hR : 0 < R) (hρ : 0 < ρ) (hε : 0 < ε)
-    (V : Ω → ℂ → ℝ) (hV : ∀ z ∈ ball c ρ, MemLp (fun ω => V ω z) 2 P)
+    (V : Ω → ℂ → ℝ) (hV : MemLpBall P V c ρ)
     (hlim : ∀ z (hz : z ∈ ball c ρ), Tendsto (fun k => eLpNorm
       (fun ω => exteriorPinnedEvaluation X Xc R hR ω
         (canonicalPoissonCollarTest c z ρ ε hρ hε hz k)-V ω z) 2 P) atTop (𝓝 0))
@@ -323,7 +317,7 @@ theorem dirichletCircleResidualL2_isGaussianProcess {Ω : Type*} [MeasurableSpac
     (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
     (c : ℂ) (R ρ ε : ℝ) (hR : 0 < R) (hρ : 0 < ρ) (hε : 0 < ε)
-    (V : Ω → ℂ → ℝ) (hV : ∀ z ∈ ball c ρ, MemLp (fun ω => V ω z) 2 P)
+    (V : Ω → ℂ → ℝ) (hV : MemLpBall P V c ρ)
     (hlim : ∀ z (hz : z ∈ ball c ρ), Tendsto (fun k => eLpNorm
       (fun ω => exteriorPinnedEvaluation X Xc R hR ω
         (canonicalPoissonCollarTest c z ρ ε hρ hε hz k)-V ω z) 2 P) atTop (𝓝 0)) :
@@ -339,12 +333,10 @@ theorem exists_dirichletDistribution_circle_gaussian_split {Ω : Type*} [Measura
     (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
     (c : ℂ) (R ρ ε : ℝ) (hR : 1 < R) (hρ : 0 < ρ) (hε : 0 < ε) (hpin : ‖c‖+ρ ≤ R)
-    (V : Ω → ℂ → ℝ) (hV : ∀ z ∈ ball c ρ, MemLp (fun ω => V ω z) 2 P)
-    (hmean : ∀ z ∈ ball c ρ, (∫ ω, V ω z ∂P) = 0)
+    (V : Ω → ℂ → ℝ) (hV : MemLpBall P V c ρ)
+    (hmean : MeanZeroBall P V c ρ)
     (hU : ContinuousOn (poissonFamilyL2 P c ρ V hV) (ball c ρ))
-    (hcov : ∀ z w, z ∈ ball c ρ → w ∈ ball c ρ →
-      covariance (fun ω => V ω z) (fun ω => V ω w) P = Real.log R+Real.log ρ-
-        Real.log ‖(ρ : ℂ)^2-(z-c)*star (w-c)‖)
+    (hcov : CovarianceBall P V c ρ R)
     (hlim : ∀ z (hz : z ∈ ball c ρ), Tendsto (fun k => eLpNorm
       (fun ω => exteriorPinnedEvaluation X Xc R (by linarith) ω
         (canonicalPoissonCollarTest c z ρ ε hρ hε hz k)-V ω z) 2 P) atTop (𝓝 0))
@@ -380,12 +372,10 @@ theorem dirichletCompletedL2Map_poisson_covariance_zero {Ω : Type*} [Measurable
     (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
     (c : ℂ) (R ρ ε : ℝ) (hR : 1 < R) (hρ : 0 < ρ) (hε : 0 < ε) (hpin : ‖c‖+ρ ≤ R)
-    (V : Ω → ℂ → ℝ) (hV : ∀ z ∈ ball c ρ, MemLp (fun ω => V ω z) 2 P)
-    (hmean : ∀ z ∈ ball c ρ, (∫ ω, V ω z ∂P) = 0)
+    (V : Ω → ℂ → ℝ) (hV : MemLpBall P V c ρ)
+    (hmean : MeanZeroBall P V c ρ)
     (hU : ContinuousOn (poissonFamilyL2 P c ρ V hV) (ball c ρ))
-    (hcov : ∀ z w, z ∈ ball c ρ → w ∈ ball c ρ →
-      covariance (fun ω => V ω z) (fun ω => V ω w) P = Real.log R+Real.log ρ-
-        Real.log ‖(ρ : ℂ)^2-(z-c)*star (w-c)‖)
+    (hcov : CovarianceBall P V c ρ R)
     (hlim : ∀ z (hz : z ∈ ball c ρ), Tendsto (fun k => eLpNorm
       (fun ω => exteriorPinnedEvaluation X Xc R (by linarith) ω
         (canonicalPoissonCollarTest c z ρ ε hρ hε hz k)-V ω z) 2 P) atTop (𝓝 0))
@@ -412,12 +402,10 @@ theorem dirichletCircleResidualL2_poisson_covariance_zero {Ω : Type*} [Measurab
     (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
     (c : ℂ) (R ρ ε : ℝ) (hR : 1 < R) (hρ : 0 < ρ) (hε : 0 < ε) (hpin : ‖c‖+ρ ≤ R)
-    (V : Ω → ℂ → ℝ) (hV : ∀ z ∈ ball c ρ, MemLp (fun ω => V ω z) 2 P)
-    (hmean : ∀ z ∈ ball c ρ, (∫ ω, V ω z ∂P) = 0)
+    (V : Ω → ℂ → ℝ) (hV : MemLpBall P V c ρ)
+    (hmean : MeanZeroBall P V c ρ)
     (hU : ContinuousOn (poissonFamilyL2 P c ρ V hV) (ball c ρ))
-    (hcov : ∀ z w, z ∈ ball c ρ → w ∈ ball c ρ →
-      covariance (fun ω => V ω z) (fun ω => V ω w) P = Real.log R+Real.log ρ-
-        Real.log ‖(ρ : ℂ)^2-(z-c)*star (w-c)‖)
+    (hcov : CovarianceBall P V c ρ R)
     (hlim : ∀ z (hz : z ∈ ball c ρ), Tendsto (fun k => eLpNorm
       (fun ω => exteriorPinnedEvaluation X Xc R (by linarith) ω
         (canonicalPoissonCollarTest c z ρ ε hρ hε hz k)-V ω z) 2 P) atTop (𝓝 0))

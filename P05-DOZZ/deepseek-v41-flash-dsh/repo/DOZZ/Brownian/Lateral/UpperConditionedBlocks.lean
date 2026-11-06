@@ -66,10 +66,9 @@ theorem positiveLateralBlock_le_envelope (γ : ℝ) (hγ : 0 ≤ γ) (n : ℝ≥
   have ht : t ∈ Icc 0 (1 : ℝ≥0) := ⟨bot_le, by exact_mod_cast (by
     change s - (n : ℝ) ≤ 1
     linarith [hs.2])⟩
-  have hspos : 0 ≤ s := n.coe_nonneg.trans hs.1.le
   have he : Real.toNNReal s = n + t := by
     apply NNReal.eq_iff.mpr
-    rw [Real.coe_toNNReal s hspos, NNReal.coe_add]
+    rw [Real.coe_toNNReal s (n.coe_nonneg.trans hs.1.le), NNReal.coe_add]
     change s = (n : ℝ) + (s - (n : ℝ))
     ring
   have hn := ((brownianShiftPath n p).restrict (Icc 0 (1 : ℝ≥0))).norm_coe_le_norm ⟨t, ht⟩
@@ -81,7 +80,6 @@ theorem positiveLateralBlock_le_envelope (γ : ℝ) (hγ : 0 ≤ γ) (n : ℝ≥
   apply ENNReal.ofReal_le_ofReal
   apply Real.exp_le_exp.mpr
   rw [abs_of_nonneg hγ]
-  have h := mul_le_mul_of_nonneg_left hex hγ
   nlinarith
 
 /-- Independent radial and lateral inputs factor the arbitrary given-chaos block estimate. -/
@@ -120,9 +118,8 @@ theorem positive_unit_intervals_union :
     obtain ⟨n, hn⟩ := mem_iUnion.mp hs
     exact lt_of_le_of_lt (Nat.cast_nonneg _) hn.1
   · intro hs
-    have hceil : 1 ≤ Nat.ceil s := Nat.one_le_ceil_iff.mpr hs
     let n : ℕ := Nat.ceil s - 1
-    have hn : n + 1 = Nat.ceil s := Nat.sub_add_cancel hceil
+    have hn : n + 1 = Nat.ceil s := Nat.sub_add_cancel (Nat.one_le_ceil_iff.mpr hs)
     have he : (n : ℝ) + 1 = (Nat.ceil s : ℝ) := by exact_mod_cast hn
     apply mem_iUnion.mpr
     refine ⟨n, ?_, ?_⟩

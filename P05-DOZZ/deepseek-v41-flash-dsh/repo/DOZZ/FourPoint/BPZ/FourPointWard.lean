@@ -54,15 +54,11 @@ theorem bpzTildeWeight_pos {z x : ℂ} (hx : x ∈ bpzRegular z) :
   obtain ⟨h0, h1, hz⟩ := hx
   unfold bpzTildeWeight
   have a := Real.rpow_pos_of_pos (norm_pos_iff.mpr (sub_ne_zero.mpr hz)) (γ * χ)
-  have b := Real.rpow_pos_of_pos (norm_pos_iff.mpr h0) (-(γ * α₁))
   have c := Real.rpow_pos_of_pos (norm_pos_iff.mpr (sub_ne_zero.mpr h1)) (-(γ * α₂))
   positivity
 
 theorem bpzTildeWeight_nonneg (z x : ℂ) : 0 ≤ bpzTildeWeight γ χ α₁ α₂ z x := by
   unfold bpzTildeWeight
-  have a := Real.rpow_nonneg (norm_nonneg (x - z)) (γ * χ)
-  have b := Real.rpow_nonneg (norm_nonneg x) (-(γ * α₁))
-  have c := Real.rpow_nonneg (norm_nonneg (x - 1)) (-(γ * α₂))
   positivity
 
 theorem measurable_bpzTildeWeight (z : ℂ) : Measurable (bpzTildeWeight γ χ α₁ α₂ z) := by

@@ -66,9 +66,6 @@ theorem realSecondDifferenceLimit_integral_eq (k β α A : ℝ)
     have hplus := hFint (1 + (t : ℂ))
     have hminus := hFint (1 - (t : ℂ))
     have hzero := hFint 1
-    have hN : Integrable N volume := by
-      dsimp [N]
-      exact (hplus.add hminus).sub (hzero.const_mul 2)
     have hpointAE : planarRealSecondDifferenceQuotient k β t =ᵐ[volume]
         fun u => (N u) / t ^ 2 := by
       filter_upwards [Measure.ae_ne volume (0 : ℂ)] with u hu
@@ -153,7 +150,6 @@ private theorem planarTaylorRealSecondDifference_pointwise (k β t : ℝ) (u : �
     rw [h₁, h₂]
     linear_combination (k / 2 * ‖u‖ ^ k) * hlinear
   rw [h₁, h₂] at hnum
-  have hden : 0 < ‖u‖ ^ β := Real.rpow_pos_of_pos (norm_pos_iff.mpr hu) β
   have hparent :
       DOZZ.planarTaylorRemainder k β (1 + (t : ℂ)) u +
         DOZZ.planarTaylorRemainder k β (1 - (t : ℂ)) u -
@@ -177,7 +173,7 @@ private theorem planarTaylorRealSecondDifference_pointwise (k β t : ℝ) (u : �
         2 * ‖u - 1‖ ^ k) / t ^ 2) = _
   rw [Real.rpow_neg (norm_nonneg u) β]
   rw [hparent]
-  field_simp [hden.ne', ht]
+  field_simp [(Real.rpow_pos_of_pos (norm_pos_iff.mpr hu) β).ne', ht]
 
 theorem planarTaylor_real_second_derivative_relation (k β : ℝ) (hk : 0 < k)
     (hβ : k < β) (hβ₂ : β < 2) (hβlin : β < k + 1) :
@@ -231,14 +227,13 @@ theorem planarDifference_real_second_derivative_relation (k β : ℝ) (hk : 0 < 
     intro t ht u hu
     have h₁ : u - (1 + (t : ℂ)) = (u - 1) - (t : ℂ) := by ring
     have h₂ : u - (1 - (t : ℂ)) = (u - 1) + (t : ℂ) := by ring
-    have hden : 0 < ‖u‖ ^ β := Real.rpow_pos_of_pos (norm_pos_iff.mpr hu) β
     change ‖u‖ ^ (-β) *
         ((‖u - 1 + (t : ℂ)‖ ^ k + ‖u - 1 - (t : ℂ)‖ ^ k -
           2 * ‖u - 1‖ ^ k) / t ^ 2) = _
     rw [Real.rpow_neg (norm_nonneg u) β]
     simp only [DOZZ.planarDifferenceKernel]
     rw [h₁, h₂]
-    field_simp [hden.ne', ht]
+    field_simp [(Real.rpow_pos_of_pos (norm_pos_iff.mpr hu) β).ne', ht]
     ring
   have hresult := realSecondDifferenceLimit_integral_eq k β α A hk hβ hβ₂
     (DOZZ.planarDifferenceKernel k β) hFint hFscale hpoint

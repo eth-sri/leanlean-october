@@ -59,12 +59,10 @@ theorem twosided_inverse_moment_uniform_from_lateral
     (measurable_const.mul (continuous_brownianUnitNorm.comp hshift).measurable))
   have hg : Measurable g := ENNReal.continuous_rpow_const.measurable.comp
     (Measure.measurable_coe measurableSet_Icc)
-  have hiX : IndepFun X (Z γ) P := hi.comp measurable_fst measurable_id
   have hprod := lintegral_mul_eq_lintegral_mul_lintegral_of_indepFun''
-    (hf.comp_aemeasurable hX.1) (hg.comp_aemeasurable hZ.2.2.2.1) (hiX.comp hf hg)
+    (hf.comp_aemeasurable hX.1) (hg.comp_aemeasurable hZ.2.2.2.1) ((hi.comp measurable_fst measurable_id).comp hf hg)
   change (∫⁻ ω, f (X ω) * g (Z γ ω) ∂P) =
     (∫⁻ ω, f (X ω) ∂P) * (∫⁻ ω, g (Z γ ω) ∂P) at hprod
-  have hzero : ∀ᵐ ω ∂P, X ω 0 = 0 := ae_of_ae_map hX.1 hX.2.2.2.1
   have hfX : (∫⁻ ω, f (X ω) ∂P) ≤ C := by
     rw [← lintegral_map' hf.aemeasurable hX.1]
     exact hOsc ν (hνN ν hν) _ hX.2 0
@@ -75,7 +73,7 @@ theorem twosided_inverse_moment_uniform_from_lateral
   calc (∫⁻ ω, ENNReal.rpow (twoSidedReflectionMass γ (B ν) (Z γ) ω) p ∂P)
       ≤ ∫⁻ ω, f (X ω) * g (Z γ ω) ∂P := by
         apply lintegral_mono_ae
-        filter_upwards [hzero, hZ.2.2.2.2.1] with ω h0 hfin
+        filter_upwards [(ae_of_ae_map hX.1 hX.2.2.2.1), hZ.2.2.2.2.1] with ω h0 hfin
         have hlow := (initialUnitBlockMass_ge γ hZ.1.le (X ω) (Z γ ω)).trans
           (twosided_initial_block_le_mass γ (B ν) (Z γ) ω)
         rw [h0, zero_sub] at hlow

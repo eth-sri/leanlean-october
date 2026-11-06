@@ -36,12 +36,11 @@ theorem nat_rpow_neg_three_halves_le (n : ℕ) (hn : 1 ≤ n) :
   have hn1 : (1 : ℝ) ≤ n := by exact_mod_cast hn
   have hle : (n : ℝ) + 1 ≤ 2 * n := by linarith
   rw [Real.rpow_neg hn0.le, Real.rpow_neg (by linarith)]
-  have hpos1 : 0 < ((n : ℝ) + 1) ^ (3 / 2 : ℝ) := Real.rpow_pos_of_pos (by linarith) _
   have hpos2 : 0 < (n : ℝ) ^ (3 / 2 : ℝ) := Real.rpow_pos_of_pos hn0 _
   have hmono : ((n : ℝ) + 1) ^ (3 / 2 : ℝ) ≤ 2 ^ (3 / 2 : ℝ) * (n : ℝ) ^ (3 / 2 : ℝ) := by
     rw [← Real.mul_rpow (by norm_num) hn0.le]
     exact Real.rpow_le_rpow (by linarith) hle (by norm_num)
-  rw [← div_eq_mul_inv, le_div_iff₀ hpos1, inv_mul_eq_div, div_le_iff₀ hpos2]
+  rw [← div_eq_mul_inv, le_div_iff₀ (Real.rpow_pos_of_pos (by linarith) _), inv_mul_eq_div, div_le_iff₀ hpos2]
   linarith [hmono]
 
 /-- One-time exponential moments of a conditioned entrance law along integer times, in the shifted
@@ -160,8 +159,7 @@ theorem ennreal_tsum_exp_envelope_lt_top (K c : ℝ) (hK : 0 ≤ K) (hc : 0 < c)
 theorem exp_envelope_rpow_eq (K c r e q : ℝ) (C : ℝ≥0∞) (hr : 0 < r) (hq : 0 < q) (n : ℕ) :
     (ENNReal.ofReal (K * Real.exp (-c * (n : ℝ))) ^ (1 / r) * C ^ e) ^ (1 / q) =
       ENNReal.ofReal (K * Real.exp (-c * (n : ℝ))) ^ (1 / (r * q)) * C ^ (e / q) := by
-  have hq' : 0 ≤ 1 / q := one_div_nonneg.mpr hq.le
-  rw [ENNReal.mul_rpow_of_nonneg _ _ hq', ← ENNReal.rpow_mul, ← ENNReal.rpow_mul]
+  rw [ENNReal.mul_rpow_of_nonneg _ _ (one_div_nonneg.mpr hq.le), ← ENNReal.rpow_mul, ← ENNReal.rpow_mul]
   congr 2
   · field_simp
   · field_simp
@@ -209,9 +207,8 @@ theorem twoSidedReflectionMass_rpow_lintegral_lt_top
     rw [lintegral_positiveBlockEnvelope_comp P _ _ _ hB.2.1.1]
     exact henv ν le_rfl le_rfl _ hB.2.1.2 n
   let L : ℝ≥0∞ := ∫⁻ ω, (Z ω (Ioc 0 1)) ^ q ∂P
-  have hL : L < ⊤ := lateralGMC_interval_nonnegative_moment_finite P γ Z hZ 0 1 q hq0.le hq
   have hS : halfLineBlockBound q L g < ⊤ := by
-    refine halfLineBlockBound_lt_top hq0 hL (fun _ => ?_) (fun _ => ?_)
+    refine halfLineBlockBound_lt_top hq0 (lateralGMC_interval_nonnegative_moment_finite P γ Z hZ 0 1 q hq0.le hq) (fun _ => ?_) (fun _ => ?_)
     · exact ennreal_tsum_exp_envelope_lt_top K c hK hc C hC hr0 he
     · simp_rw [g, exp_envelope_rpow_eq K c r ((r - 1) / r) q C hr0 hq0]
       exact ennreal_tsum_exp_envelope_lt_top K c hK hc C hC (mul_pos hr0 hq0)
@@ -311,9 +308,8 @@ theorem twoSidedReflectionMass_rpow_lintegral_le_compact
   let g : ℕ → ℝ≥0∞ := fun n =>
     ENNReal.ofReal (K * Real.exp (-c * (n : ℝ))) ^ (1 / r) * C ^ ((r - 1) / r)
   let L : ℝ≥0∞ := ∫⁻ ω, (Z ω (Ioc 0 1)) ^ q ∂P
-  have hL : L < ⊤ := lateralGMC_interval_nonnegative_moment_finite P γ Z hZ 0 1 q hq0.le hq
   have hS : halfLineBlockBound q L g < ⊤ := by
-    refine halfLineBlockBound_lt_top hq0 hL (fun _ => ?_) (fun _ => ?_)
+    refine halfLineBlockBound_lt_top hq0 (lateralGMC_interval_nonnegative_moment_finite P γ Z hZ 0 1 q hq0.le hq) (fun _ => ?_) (fun _ => ?_)
     · exact ennreal_tsum_exp_envelope_lt_top K c hK hc C hC hr0 he
     · simp_rw [g, exp_envelope_rpow_eq K c r ((r - 1) / r) q C hr0 hq0]
       exact ennreal_tsum_exp_envelope_lt_top K c hK hc C hC (mul_pos hr0 hq0)
@@ -348,10 +344,9 @@ theorem lateralGMC_Icc_unit_moment_le_intensity {Ω : Type*} [MeasurableSpace Ω
     (γ q : ℝ) (Z : Ω → Measure ℝ) (hZ : IsLateralGMCOf P γ Z) (hq0 : 0 ≤ q) (hq1 : q ≤ 1)
     (a : ℝ) :
     (∫⁻ ω, (Z ω (Icc a (a + 1))) ^ q ∂P) ≤ ENNReal.ofReal (2 * Real.pi) ^ q := by
-  have hP : IsProbabilityMeasure P := hZ.2.2.1
   have hm : AEMeasurable (fun ω => Z ω (Icc a (a + 1))) P :=
     (Measure.measurable_coe measurableSet_Icc).comp_aemeasurable hZ.2.2.2.1
-  refine (lintegral_rpow_le_mean_rpow P hP _ hm q hq0 hq1).trans ?_
+  refine (lintegral_rpow_le_mean_rpow P (hZ.2.2.1) _ hm q hq0 hq1).trans ?_
   apply ENNReal.rpow_le_rpow _ hq0
   have he : (∫⁻ ω, Z ω (Icc a (a + 1)) ∂P) = ∫⁻ ω, Z ω (Ioc a (a + 1)) ∂P := by
     apply lintegral_congr_ae
@@ -499,13 +494,12 @@ theorem reflectionR_tendsto_Q_of_ne_zero
   have hdata : ∀ ν : ℝ, 0 < ν → ν < Q γ - γ / 2 →
       IsReflectionData P γ (Q γ - ν) (B (Q γ - ν)) Z := fun ν hν hν₁ =>
     hData (Q γ - ν) (by linarith) (by linarith)
-  have hZ : IsLateralGMCOf P γ Z := (hdata _ (half_pos hν₁) (half_lt_self hν₁)).2.1
   have he : Tendsto (fun ν : ℝ => 2 * ν / γ) (𝓝[>] 0) (𝓝 0) := by
     have hc : Continuous (fun ν : ℝ => 2 * ν / γ) := by fun_prop
     simpa using (hc.tendsto 0).mono_left (nhdsWithin_le_nhds (s := Ioi (0 : ℝ)))
   have hMoment := twoSidedReflectionMass_rpow_tendsto_one_of_ne_zero P γ (Q γ - γ / 2) hγ hν₁ Z
     (fun ν => B (Q γ - ν))
-    (fun ν hν hν₁' => by simpa using (hdata ν hν hν₁').1) hZ
+    (fun ν hν hν₁' => by simpa using (hdata ν hν hν₁').1) ((hdata _ (half_pos hν₁) (half_lt_self hν₁)).2.1)
     (fun ν hν hν₁' => (hdata ν hν hν₁').2.2) hZpos _ he
     (fun ν hν => (div_pos (mul_pos two_pos hν) hγ).le)
   exact reflectionR_tendsto_Q_of_zeroDriftMoment P γ μ hγ hμ B Z hMoment

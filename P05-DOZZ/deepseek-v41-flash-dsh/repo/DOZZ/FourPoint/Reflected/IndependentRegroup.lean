@@ -19,9 +19,8 @@ theorem reflected_independence_regroup
     (hF : AEMeasurable F P) (hH : AEMeasurable H P) (hN : AEMeasurable N P)
     (hFH : IndepFun F H P) (hpair : IndepFun (fun ω => (F ω, H ω)) N P) :
     IndepFun F (fun ω => (H ω, N ω)) P := by
-  have hHN : IndepFun H N P := hpair.comp measurable_snd measurable_id
   have hFHlaw := (indepFun_iff_map_prod_eq_prod_map_map hF hH).mp hFH
-  have hHNlaw := (indepFun_iff_map_prod_eq_prod_map_map hH hN).mp hHN
+  have hHNlaw := (indepFun_iff_map_prod_eq_prod_map_map hH hN).mp (hpair.comp measurable_snd measurable_id)
   have hpairlaw := (indepFun_iff_map_prod_eq_prod_map_map (hF.prodMk hH) hN).mp hpair
   apply (indepFun_iff_map_prod_eq_prod_map_map hF (hH.prodMk hN)).mpr
   have he := (AEMeasurable.map_map_of_aemeasurable

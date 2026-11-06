@@ -29,7 +29,6 @@ theorem lintegral_abs_sub_limit_le_of_uniform_l1_cauchy
   obtain ⟨ns, hnsTop, hseqMeasure⟩ := hFG.exists_seq_tendstoInMeasure_atTop
   obtain ⟨nsub, hnsub, hae⟩ := hseqMeasure.exists_seq_tendsto_ae
   let ms : ℕ → ℝ := ns ∘ nsub
-  have hmsTop : Tendsto ms atTop atTop := hnsTop.comp hnsub.tendsto_atTop
   let Q : ℕ → Ω → ℝ≥0∞ := fun n ω =>
     ENNReal.ofReal |F r ω - F (ms n) ω|
   have hQmeas : ∀ n, Measurable (Q n) := by
@@ -49,7 +48,7 @@ theorem lintegral_abs_sub_limit_le_of_uniform_l1_cauchy
     filter_upwards [hQlim] with ω hω
     exact hω.liminf_eq
   have hEventual : ∀ᶠ n : ℕ in atTop, R ≤ ms n :=
-    hmsTop.eventually (eventually_ge_atTop R)
+    (hnsTop.comp hnsub.tendsto_atTop).eventually (eventually_ge_atTop R)
   have hIntegralBound : ∀ᶠ n : ℕ in atTop,
       ∫⁻ ω, Q n ω ∂P ≤ ENNReal.ofReal C := by
     filter_upwards [hEventual] with n hn

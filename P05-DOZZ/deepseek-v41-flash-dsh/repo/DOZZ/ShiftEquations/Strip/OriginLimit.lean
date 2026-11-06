@@ -37,7 +37,6 @@ theorem lastone_origin_williams_law
   let : IsProbabilityMeasure (brownianMaximumReferenceLaw ν) :=
     isProbabilityMeasure_brownianMaximumReferenceLaw hν
   let D : Ω → BrownianPath := fun ω => radialPositiveHalf (A ω)
-  have hD : AEMeasurable D P := continuous_radialPositiveHalf.measurable.comp_aemeasurable hA
   have hDB := radialPositiveHalf_map_isBrownian P A hA hBp
   have hDZ : IndepFun D Z P := hAZ.comp continuous_radialPositiveHalf.measurable measurable_id
   have hmass : (localSingularMass M (fun _ => 1) 0 γ (Q γ - ν)) =ᵐ[P]
@@ -59,7 +58,7 @@ theorem lastone_origin_williams_law
     · rw [ite_eq_right ht, ite_eq_right ht]
   let Qν := P.map (fun ω => (B ω).1)
   have hQν : IsNegativeConditionedBrownianLaw ν Qν := hB.1.2
-  have hW := williams_polar_mass_law P D hD hDB γ Z hZ hDZ ν hν Qν hQν
+  have hW := williams_polar_mass_law P D (continuous_radialPositiveHalf.measurable.comp_aemeasurable hA) hDB γ Z hZ hDZ ν hν Qν hQν
   have hInput := lastone_williamsInput_law_on_given_space P
     (brownianMaximumReferenceLaw ν) ν Qν hQν B Z hB hZ.2.2.2.1 hInd
   have hsnd := (measurePreserving_snd (μ := brownianMaximumReferenceLaw ν) (ν := P)).quasiMeasurePreserving

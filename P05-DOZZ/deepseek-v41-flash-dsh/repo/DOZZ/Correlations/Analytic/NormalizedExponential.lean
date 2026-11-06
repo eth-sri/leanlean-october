@@ -51,7 +51,6 @@ theorem normalized_cutoff_exponential_polydisc
       hgap ha hm hm1 hms hg hlo hhi hq hbulk hroot
   obtain ⟨E, hE, hgrowth⟩ := normalized_imaginary_growth P X Xc hX hc γ hγ.ne' z
   let d := κ / (2 * E)
-  have hd : 0 < d := div_pos hκ (mul_pos (by norm_num) hE)
   have hEd : E * d = κ / 2 := by dsimp only [d]; field_simp
   have hbulkβ : ∀ β ∈ complexPolydisc (fun i => (center i : ℂ)) radius,
       (complexMomentPower γ β).re < 4 / γ ^ 2 := by
@@ -59,7 +58,7 @@ theorem normalized_cutoff_exponential_polydisc
     have hb := (hbox β hβ).2.2.2.1
     have hhiq : hi ≤ hi * q := by nlinarith
     linarith
-  refine ⟨K * Real.exp κ, κ / 2, d, by positivity, half_pos hκ, hd, ?_⟩
+  refine ⟨K * Real.exp κ, κ / 2, d, by positivity, half_pos hκ, (div_pos hκ (mul_pos (by norm_num) hE)), ?_⟩
   filter_upwards [hdec, retained_cutoff_geometry_eventually z δ R hδ] with n hn hgeo
   intro β hβ him
   have hpars := hbox β hβ

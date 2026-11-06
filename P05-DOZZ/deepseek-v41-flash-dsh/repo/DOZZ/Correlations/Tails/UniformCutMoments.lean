@@ -46,8 +46,7 @@ theorem uniform_oneInsertion_cut_moments
   obtain ⟨a,hηa,hat₀⟩ := exists_between (hηt α₀ hα₀)
   have hat (α : ℝ) (hαk : α ∈ K) : a < t α := hat₀.trans_le (hmin hαk)
   have ha1 : a < 1 := by
-    have ht1 : t α₀ < 1 := (div_lt_one (hβ α₀ hα₀)).mpr (by linarith only [hp α₀ hα₀,hη])
-    exact hat₀.trans ht1
+    exact hat₀.trans ((div_lt_one (hβ α₀ hα₀)).mpr (by linarith only [hp α₀ hα₀,hη]))
   have hden : 0 < 1-a := sub_pos.mpr ha1
   let low := fun α => (p α+η)/(1-a)
   have hlow (α : ℝ) (hαk : α ∈ K) : 0 < low α ∧ low α < β α := by
@@ -73,9 +72,8 @@ theorem uniform_oneInsertion_cut_moments
   have hM : 0 < M := (hr αM hαM).1
   have hrM (α : ℝ) (hαk : α ∈ K) : r α ≤ M := hMmax hαk
   let qH := 1+δ/(4*(M+1))
-  have hqH : 1 < qH := lt_add_of_pos_right 1 (div_pos hδ (by positivity))
   let pH := Real.conjExponent qH
-  have hpq : pH.HolderConjugate qH := (Real.HolderConjugate.conjExponent hqH).symm
+  have hpq : pH.HolderConjugate qH := (Real.HolderConjugate.conjExponent (lt_add_of_pos_right 1 (div_pos hδ (by positivity)))).symm
   let g := δ/4
   let R := 4/γ^2-δ/2
   have hrR (α : ℝ) (hαk : α ∈ K) : r α ≤ R := by

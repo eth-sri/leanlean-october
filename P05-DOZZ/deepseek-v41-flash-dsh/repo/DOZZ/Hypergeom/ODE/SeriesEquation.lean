@@ -3,6 +3,7 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
+public import DOZZ.SharedHyp
 
 public import DOZZ.Hypergeom.ODE.SeriesRecurrence
 public import DOZZ.Hypergeom.ODE.GaussSystem
@@ -134,7 +135,7 @@ private theorem gaussEquationResidualSeries_coeff (a b c : ℂ) (n : ℕ) :
   ring
 
 private theorem gaussEquationResidualSeries_eq_zero (a b c : ℂ)
-    (hc : ∀ n : ℕ, c ≠ -(n : ℂ)) : gaussEquationResidualSeries a b c = 0 := by
+    (hc : NotNegPole c) : gaussEquationResidualSeries a b c = 0 := by
   apply FormalMultilinearSeries.ext
   intro n
   apply FormalMultilinearSeries.coeff_eq_zero.mp
@@ -142,7 +143,7 @@ private theorem gaussEquationResidualSeries_eq_zero (a b c : ℂ)
   exact sub_eq_zero.mpr (ordinaryHypergeometricCoefficient_gauss_recurrence a b c n hc)
 
 private theorem hasFPowerSeriesOnBall_ordinaryHypergeometric (a b c : ℂ)
-    (hc : ∀ n : ℕ, c ≠ -(n : ℂ)) :
+    (hc : NotNegPole c) :
     HasFPowerSeriesOnBall (ordinaryHypergeometric a b c)
       (gaussSeriesAtZero a b c) 0 1 := by
   let p := gaussSeriesAtZero a b c
@@ -160,7 +161,7 @@ private theorem hasFPowerSeriesOnBall_ordinaryHypergeometric (a b c : ℂ)
 /-- The ordinary Gauss series is analytic throughout its open unit disk when its denominator
 parameter avoids nonpositive integers. -/
 theorem ordinaryHypergeometric_analyticOnNhd_unitDisk (a b c : ℂ)
-    (hc : ∀ n : ℕ, c ≠ -(n : ℂ)) :
+    (hc : NotNegPole c) :
     AnalyticOnNhd ℂ (ordinaryHypergeometric a b c) (Metric.ball (0 : ℂ) 1) := by
   intro z hz
   have hzNorm : ‖z‖ < 1 := by
@@ -181,7 +182,7 @@ private theorem fderiv_apply_eq_mul_deriv (f : ℂ → ℂ) (z : ℂ) :
 /-- On the open unit disk, the ordinary series solves the scalar Gauss equation. This is
 the origin seed for the first-order continuation system; it includes terminating numerator cases. -/
 theorem ordinaryHypergeometric_gaussEquation_on_unitDisk (a b c : ℂ)
-    (hc : ∀ n : ℕ, c ≠ -(n : ℂ)) :
+    (hc : NotNegPole c) :
     ∀ z : ℂ, ‖z‖ < 1 →
       gaussHolomorphicOperator a b c (ordinaryHypergeometric a b c) z = 0 := by
   let f : ℂ → ℂ := ordinaryHypergeometric a b c
@@ -239,7 +240,6 @@ theorem ordinaryHypergeometric_gaussEquation_on_unitDisk (a b c : ℂ)
   have hres : z * deriv g z - (a + b) • (z * deriv f z) +
       c • deriv f z - (a * b) • f z = 0 := by
     simpa [FormalMultilinearSeries.sum] using hsum
-  have hfAnalytic := hf.analyticAt_of_mem hzball
   have hfprimeAnalytic := hfprime.analyticAt_of_mem hzball
   have hfprimeDiff : DifferentiableAt ℂ (deriv f) z :=
     hfprimeAnalytic.differentiableAt
@@ -251,9 +251,6 @@ theorem ordinaryHypergeometric_gaussEquation_on_unitDisk (a b c : ℂ)
       rfl
     simpa only [one_mul, id_def] using
       hprodRaw.congr_of_eventuallyEq (Filter.Eventually.of_forall fun w => congrFun hfun w)
-  have hgdiff : DifferentiableAt ℂ g z := by
-    apply DifferentiableAt.sub hfprimeDiff
-      (hprod.differentiableAt)
   have hgderiv : deriv g z =
       deriv (deriv f) z - (deriv f z + z * deriv (deriv f) z) := by
     change deriv (deriv f - fun w => w * deriv f w) z = _
@@ -270,7 +267,7 @@ theorem ordinaryHypergeometric_gaussEquation_on_unitDisk (a b c : ℂ)
 /-- Away from the singular origin, the ordinary-series state `(f, f')` solves the explicit
 first-order Gauss system. -/
 theorem ordinaryHypergeometric_state_solves_gaussSystem (a b c : ℂ)
-    (hc : ∀ n : ℕ, c ≠ -(n : ℂ)) {z : ℂ} (hz0 : z ≠ 0) (hz : ‖z‖ < 1) :
+    (hc : NotNegPole c) {z : ℂ} (hz0 : z ≠ 0) (hz : ‖z‖ < 1) :
     gaussSystemOperator a b c z
         (ordinaryHypergeometric a b c z, deriv (ordinaryHypergeometric a b c) z) =
       (deriv (ordinaryHypergeometric a b c) z,

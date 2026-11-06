@@ -45,9 +45,7 @@ theorem residue_localWeight_eq (γ S α : ℝ) (z w x : ℂ)
 /-- A local weight is positive, including its globally truncated values. -/
 theorem residue_localWeight_pos (γ S α : ℝ) (w x : ℂ) :
     0 < residueLocalWeight γ S α w x := by
-  have hn : 0 < min (max 1 ‖x‖) (10 : ℝ) := lt_min (lt_of_lt_of_le zero_lt_one (le_max_left _ _)) (by norm_num)
-  have hd : 0 < max (1 : ℝ) ‖x - w‖ := lt_of_lt_of_le zero_lt_one (le_max_left _ _)
-  exact div_pos (Real.rpow_pos_of_pos hn _) (Real.rpow_pos_of_pos hd _)
+  exact div_pos (Real.rpow_pos_of_pos (lt_min (lt_of_lt_of_le zero_lt_one (le_max_left _ _)) (by norm_num)) _) (Real.rpow_pos_of_pos (lt_of_lt_of_le zero_lt_one (le_max_left _ _)) _)
 
 /-- Uniform global bound over a bounded nonnegative total-charge interval. -/
 theorem residue_localWeight_le (γ S α Smax : ℝ) (hγ : 0 ≤ γ) (hS : 0 ≤ S)

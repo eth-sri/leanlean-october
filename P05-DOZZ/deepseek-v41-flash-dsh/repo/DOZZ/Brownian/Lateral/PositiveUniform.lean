@@ -48,7 +48,6 @@ theorem lateralGMC_compact_moment_endpoints_across_one
   let K := Kq ∪ ({0, 1} : Set ℝ)
   have hK : IsCompact K := hKq.union (Set.toFinite _).isCompact
   have h0 : (0 : ℝ) ∈ K := Or.inr (by simp)
-  have h1 : (1 : ℝ) ∈ K := Or.inr (by simp)
   have hsub : ∀ γ ∈ Kγ, ∀ q ∈ K, q < 4 / γ ^ 2 := by
     intro γ hγ q hqm
     have hγp := (hZ γ hγ).1
@@ -63,7 +62,7 @@ theorem lateralGMC_compact_moment_endpoints_across_one
         nlinarith
   obtain ⟨l, u, δ, hδ, hend, hmargin⟩ := lateralGMC_compact_moment_endpoints
     Kγ K hKγ hK hγne ⟨0, h0⟩ (fun γ hγ => (hZ γ hγ).1) hsub
-  exact ⟨l, u, δ, (hend 0 h0).1, (hend 1 h1).2, hδ,
+  exact ⟨l, u, δ, (hend 0 h0).1, (hend 1 (Or.inr (by simp))).2, hδ,
     fun q hqm => hend q (Or.inl hqm), hmargin⟩
 
 end DOZZ.Proofs

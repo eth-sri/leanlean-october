@@ -64,7 +64,6 @@ theorem cutoffWeightedGmcBallMass_le_outer_scale
     by_cases hx : x ∈ B
     · have hdist : ‖x - z‖ < R := by
         simpa [B, Metric.mem_ball, dist_eq_norm] using hx
-      have hbase : 0 < ‖x - z‖ + δ := by positivity
       have htop : ‖x - z‖ + δ ≤ 2 * R := by linarith
       have hpow : (‖x - z‖ + δ) ^ (-γ * α) ≤ (2 * R) ^ (-γ * α) :=
         Real.rpow_le_rpow (by positivity) htop hk

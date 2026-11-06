@@ -61,12 +61,10 @@ theorem gaussNegativeCutPlaneScalarState_differentiableOn
   have hDmem : z ∈ Metric.ball D.center R := by
     rw [hcenter]
     exact Metric.mem_ball_self hR
-  have hDAt : DifferentiableAt ℂ D.solution z := (D.derivative z hDmem).differentiableAt
-  have hDat : DifferentiableAt ℂ (fun w => (D.solution w).1) z := hDAt.fst
   have hnear : gaussNegativeCutPlaneScalarState a b c =ᶠ[𝓝 z]
       (fun w => (D.solution w).1) := by
     filter_upwards [Metric.ball_mem_nhds z hr] with w hw
     exact hEq w hw
-  exact (hDat.congr_of_eventuallyEq hnear).differentiableWithinAt
+  exact ((((D.derivative z hDmem).differentiableAt).fst).congr_of_eventuallyEq hnear).differentiableWithinAt
 
 end DOZZ.Proofs

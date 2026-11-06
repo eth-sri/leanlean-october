@@ -48,7 +48,6 @@ theorem coulomb_root_piece_le {N : ℕ} (μ : Measure ℂ) (γ : ℝ) (α : Fin 
     ∫⁻ x in Metric.ball (z k) δ, coulombWeight γ α z αinf x ∂μ ≤
       ENNReal.ofReal (((2 + 2 * ∑ j, ‖z j‖) / δ) ^ (∑ j, |γ * α j| + |γ * αinf|)) *
         weightedGmcBallMass γ μ (α k) (z k) δ := by
-  have hB : MeasurableSet (Metric.ball (z k) δ) := Metric.isOpen_ball.measurableSet
   have hw : Measurable fun x : ℂ => ENNReal.rpow (ENNReal.ofReal ‖x - z k‖) (-γ * α k) :=
     (ENNReal.continuous_rpow_const (y := -γ * α k)).measurable.comp
       (ENNReal.measurable_ofReal.comp (measurable_id.sub_const _).norm)
@@ -57,7 +56,7 @@ theorem coulomb_root_piece_le {N : ℕ} (μ : Measure ℂ) (γ : ℝ) (α : Fin 
   unfold weightedGmcBallMass
   rw [← lintegral_const_mul _ hw]
   apply lintegral_mono_ae
-  filter_upwards [hne, ae_restrict_mem hB] with x hxk hx
+  filter_upwards [hne, ae_restrict_mem (Metric.isOpen_ball.measurableSet)] with x hxk hx
   exact coulombWeight_le_root γ α z αinf k hδ hδ1 hsep hx hxk
 
 theorem measurableSet_coulombBulk {N : ℕ} (z : Fin N → ℂ) (δ Rr : ℝ) :
@@ -97,8 +96,6 @@ theorem coulombMass_le_pieces {N : ℕ} (μ : Measure ℂ) (γ : ℝ) (α : Fin 
   have hFm : Measurable F := measurable_coulombWeight γ α z αinf
   set K : Set ℂ := {y : ℂ | ‖y‖ ≤ Rr ∧ ∀ k, δ ≤ ‖y - z k‖} with hK
   set E : Set ℂ := {y : ℂ | Rr < ‖y‖} with hE
-  have hKm : MeasurableSet K := measurableSet_coulombBulk z δ Rr
-  have hEm : MeasurableSet E := measurableSet_lt measurable_const measurable_norm
   have hBm : ∀ k, MeasurableSet (Metric.ball (z k) δ) := fun k =>
     Metric.isOpen_ball.measurableSet
   have hg : Measurable fun x : ℂ => ENNReal.rpow (ENNReal.ofReal ‖x‖) (γ * αinf) :=
@@ -113,7 +110,7 @@ theorem coulombMass_le_pieces {N : ℕ} (μ : Measure ℂ) (γ : ℝ) (α : Fin 
         have hS : Measurable fun x => ∑ k, (Metric.ball (z k) δ).indicator F x :=
           Finset.measurable_fun_sum _ fun k _ => hFm.indicator (hBm k)
         have hSK : Measurable fun x => ∑ k, (Metric.ball (z k) δ).indicator F x +
-            K.indicator F x := hS.add (hFm.indicator hKm)
+            K.indicator F x := hS.add (hFm.indicator (measurableSet_coulombBulk z δ Rr))
         rw [lintegral_add_left hSK, lintegral_add_left hS,
           lintegral_finsetSum _ fun k _ => hFm.indicator (hBm k)]
         simp only [lintegral_indicator (hBm _)]
@@ -131,7 +128,7 @@ theorem coulombMass_le_pieces {N : ℕ} (μ : Measure ℂ) (γ : ℝ) (α : Fin 
             exact coulombWeight_le_bulk γ α z αinf hδ hδ1 (by linarith) hx.1 hx.2
           · rw [Set.indicator_of_notMem hx]
             exact zero_le
-        · rw [← lintegral_const_mul _ hg, ← lintegral_indicator hEm]
+        · rw [← lintegral_const_mul _ hg, ← lintegral_indicator (measurableSet_lt measurable_const measurable_norm)]
           apply lintegral_mono
           intro x
           by_cases hx : x ∈ E
@@ -147,7 +144,6 @@ theorem coulombMass_ge_exterior_ball {N : ℕ} (μ : Measure ℂ) (γ : ℝ) (α
         μ (Metric.ball (((Rr + 1 : ℝ)) : ℂ) (1 / 8)) ≤
       coulombMass γ μ α z αinf := by
   set B : Set ℂ := Metric.ball (((Rr + 1 : ℝ)) : ℂ) (1 / 8) with hB
-  have hBm : MeasurableSet B := Metric.isOpen_ball.measurableSet
   have hnorm : ∀ x ∈ B, Rr + 7 / 8 < ‖x‖ ∧ ‖x‖ < Rr + 9 / 8 := by
     intro x hx
     rw [hB, Metric.mem_ball, dist_eq_norm] at hx
@@ -164,7 +160,7 @@ theorem coulombMass_ge_exterior_ball {N : ℕ} (μ : Measure ℂ) (γ : ℝ) (α
       = ∫⁻ _x in B, ENNReal.ofReal ((2 : ℝ) ^ (-∑ j, |γ * α j|)) *
           ENNReal.ofReal ((Rr + 2) ^ (-|γ * αinf|)) ∂μ := (setLIntegral_const _ _).symm
     _ ≤ ∫⁻ x in B, coulombWeight γ α z αinf x ∂μ := by
-        apply setLIntegral_mono' hBm
+        apply setLIntegral_mono' (Metric.isOpen_ball.measurableSet)
         intro x hx
         obtain ⟨h1, h2⟩ := hnorm x hx
         refine le_trans ?_ (coulombWeight_ge_exterior γ α z αinf hRr1 hzRr

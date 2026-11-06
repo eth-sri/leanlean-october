@@ -3,6 +3,7 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
+public import DOZZ.SharedHyp
 public import DOZZ.FourPoint.Reflected.CopiedInnerPolar
 public import DOZZ.FourPoint.Reflected.LeadingRadialMoment
 /-! The actual copied radial inner mass has precisely the source restart scale. -/
@@ -14,7 +15,7 @@ namespace DOZZ.Proofs
 theorem reflected_source_copied_radial_restart
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) [IsProbabilityMeasure P]
     (Xc : Ω → ℂ → ℝ → ℝ)
-    (hcont : ∀ᵐ ω ∂P, Continuous (fun p : ℂ × ℝ => Xc ω p.1 p.2))
+    (hcont : ContinuousCircleAvg P Xc)
     (γ α h : ℝ) (M N : Ω → Measure ℂ)
     (heq : N =ᵐ[P] (fun ω => (M ω).withDensity (lateralRadialWeight γ (originRadialPath Xc ω))))
     (z : ℂ) (hz : z ≠ 0) (T : ℝ≥0) (hcoord : (T : ℝ) = -Real.log ‖z‖+h) :

@@ -95,7 +95,6 @@ theorem tendstoInMeasure_regularizedGMC_integral_sub {Ω : Type*} [MeasurableSpa
       ∫ x, v x ∂regularizedGMC P Xc γ (s r) ω) atTop (fun _ => 0) := by
   have _ := hX.1
   set R : ℝ≥0∞ := gmcReferenceMeasure univ with hRdef
-  have hRfin : R ≠ ⊤ := gmcReferenceMeasure_univ_ne_top
   rw [tendstoInMeasure_iff_norm]
   intro ε hε
   rw [ENNReal.tendsto_nhds_zero]
@@ -109,7 +108,7 @@ theorem tendstoInMeasure_regularizedGMC_integral_sub {Ω : Type*} [MeasurableSpa
     rw [hηdef, mul_div_cancel_left₀ _ hε.ne']
     calc R * ENNReal.ofReal (τ.toReal / (R.toReal + 1))
         = ENNReal.ofReal (R.toReal * (τ.toReal / (R.toReal + 1))) := by
-          rw [ENNReal.ofReal_mul ENNReal.toReal_nonneg, ENNReal.ofReal_toReal hRfin]
+          rw [ENNReal.ofReal_mul ENNReal.toReal_nonneg, ENNReal.ofReal_toReal (gmcReferenceMeasure_univ_ne_top)]
       _ ≤ ENNReal.ofReal τ.toReal := by
           apply ENNReal.ofReal_le_ofReal
           rw [← mul_div_assoc, div_le_iff₀ (by positivity)]
@@ -138,11 +137,10 @@ theorem tendstoInMeasure_regularizedGMC_integral_sub {Ω : Type*} [MeasurableSpa
               integral_mono (hiu.sub hiv).abs (integrable_const η) fun x => hr x
           _ = η * (μ ω univ).toReal := by
               rw [integral_const, smul_eq_mul, mul_comm, measureReal_def]
-      have hm : μ ω univ ≠ ⊤ := measure_ne_top _ _
       have hω' : ε ≤ |∫ x, u r x ∂μ ω - ∫ x, v x ∂μ ω| := by
         simpa only [mem_ofPred_eq, sub_zero, Real.norm_eq_abs] using hω
       change ENNReal.ofReal (ε / η) ≤ μ ω univ
-      rw [ENNReal.ofReal_le_iff_le_toReal hm, div_le_iff₀ hη]
+      rw [ENNReal.ofReal_le_iff_le_toReal (measure_ne_top _ _), div_le_iff₀ hη]
       linarith
     · left
       exact hF

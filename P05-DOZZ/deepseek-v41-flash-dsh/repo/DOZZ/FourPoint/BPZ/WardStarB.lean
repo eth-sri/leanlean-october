@@ -125,11 +125,10 @@ theorem bpzWard_left_weight_bound (hd : BPZWardData γ q r δ ρ kt k₂ φ D) (
     ∃ C : ℝ, 0 ≤ C ∧ ∀ x, |bpzWardLeftWeight γ q r kt φ v x| ≤
       C * (ρ x * bpzWardCutWeight γ q r kt x) := by
   set f : ℂ → ℝ := fun x => φ x * kt x with hf
-  have hfc : HasCompactSupport f := hd.φ_compact.mul_right
   have hcont : Continuous fun x => fderiv ℝ f x v :=
     (hd.f_C1.continuous_fderiv one_ne_zero).clm_apply continuous_const
   have hsupp : HasCompactSupport fun x => fderiv ℝ f x v :=
-    (hfc.fderiv (𝕜 := ℝ)).comp_left (g := fun L : ℂ →L[ℝ] ℝ => L v) (by simp)
+    ((hd.φ_compact.mul_right).fderiv (𝕜 := ℝ)).comp_left (g := fun L : ℂ →L[ℝ] ℝ => L v) (by simp)
   obtain ⟨Cf, hCf⟩ := hcont.bounded_above_of_compact_support hsupp
   obtain ⟨c, hc, hck⟩ := hd.kt_pos
   refine ⟨max Cf 0 / c, by positivity, fun x => ?_⟩
@@ -140,7 +139,6 @@ theorem bpzWard_left_weight_bound (hd : BPZWardData γ q r δ ρ kt k₂ φ D) (
       rw [sub_self, norm_zero] at h
       linarith [hd.δ_pos]
     have hkx := hck x hx
-    have hkpos : 0 < kt x := lt_of_lt_of_le hc hkx
     unfold bpzWardLeftWeight bpzWardCutWeight
     rw [hρx, one_mul]
     have hn : 0 ≤ normPlus x ^ (4 : ℝ) * Real.exp (γ ^ 2 * q * bpzPin r x) :=
@@ -217,7 +215,6 @@ theorem bpzWard_left_deroot (hd : BPZWardData γ q r δ ρ kt k₂ φ D)
   set k₁ := bpzWardCutWeight γ q r kt with hk₁def
   have hk₁m : Measurable k₁ := measurable_bpzWardCutWeight hd
   have hk₁0 : ∀ y, 0 ≤ k₁ y := bpzWardCutWeight_nonneg hd
-  have hq0 : 0 ≤ q := le_trans zero_le_one hd.q_ge
   set wL : ℂ → ℝ := bpzWardLeftWeight γ q r kt φ v with hwL
   have hwLc : Continuous wL := by
     have h1 : Continuous fun x => fderiv ℝ (fun x => φ x * kt x) x v :=
@@ -246,7 +243,6 @@ theorem bpzWard_left_deroot (hd : BPZWardData γ q r δ ρ kt k₂ φ D)
   obtain ⟨cI, hcI, hlowI⟩ := bpzWard_mixed_lower hd hp k₁ hk₁0 (P := P) (Xc := Xc) (r := r)
   have hInt1 := bpzWard_integrable_rpow_neg hp hd.D_meas hImeas.aestronglyMeasurable hcI hlowI
     (p := q - 1) (by linarith [hd.q_ge])
-  have hcut := bpzWard_cut_integrable hd hp
   have hcut' := bpzWard_cut_integrable' hd hp
   have hint : ∫⁻ ω, ∫⁻ x, ENNReal.ofReal |F x (regularizedGMC P Xc γ r ω) (M ω)|
       ∂regularizedGMC P Xc γ r ω ∂P < ⊤ := by
@@ -325,7 +321,6 @@ theorem abs_bpzMixedDerivReal_le {γ r : ℝ} {ρ k₁ k₂ : ℂ → ℝ} (hρ0
     |bpzMixedDerivReal γ r ρ k₁ k₂ x v m₁ m₂| ≤
       γ ^ 2 * Real.exp r * ‖v‖ * bpzMixedReal ρ k₁ k₂ m₁ m₂ := by
   set K : ℝ := γ ^ 2 * Real.exp r * ‖v‖ with hK
-  have hK0 : 0 ≤ K := by positivity
   unfold bpzMixedDerivReal bpzMixedReal
   rw [mul_add]
   refine (abs_add_le _ _).trans (add_le_add ?_ ?_)
@@ -504,8 +499,7 @@ theorem bpzWard_right_deroot (hd : BPZWardData γ q r δ ρ kt k₂ φ D)
       (((measurable_bpzMixedReal hd.ρ_meas hk₁m hd.k₂_meas).pow_const _).mul
         (measurable_bpzMixedDerivReal hd.ρ_meas hk₁m hd.k₂_meas x v))
   -- the weight `φ k₁` is dominated by the cutoff weight
-  have hgc : Continuous fun x => φ x * kt x := hd.f_C1.continuous
-  obtain ⟨B, hB⟩ := hgc.bounded_above_of_compact_support hd.φ_compact.mul_right
+  obtain ⟨B, hB⟩ := (hd.f_C1.continuous).bounded_above_of_compact_support hd.φ_compact.mul_right
   obtain ⟨C, hC0, hC⟩ := bpzWard_weight_bound_of hd (g := fun x => φ x * kt x) (B := B)
     (fun x => by rw [← Real.norm_eq_abs]; exact hB x)
     (fun x hx => by rw [image_eq_zero_of_notMem_tsupport hx, zero_mul])
@@ -525,13 +519,12 @@ theorem bpzWard_right_deroot (hd : BPZWardData γ q r δ ρ kt k₂ φ D)
         ω hρk hlow hpos hk₂i
       set I := bpzMixedReal ρ k₁ k₂ (regularizedGMC P Xc γ r ω) (M ω) with hIdef
       have hIpos : 0 < I := lt_of_lt_of_le (mul_pos hcI hpos) hlow
-      have hIq : 0 ≤ I ^ (-q) := Real.rpow_nonneg hIpos.le _
       have hIq1 : 0 ≤ I ^ (-q - 1) := Real.rpow_nonneg hIpos.le _
       have hY := abs_bpzMixedDerivReal_le (γ := γ) (r := r) hd.ρ_nonneg hd.ρ_le_one hk₁0
         hd.k₂_nonneg hρk hk₂i
       have hle := bpz_lintegral_ofReal_abs_le (m := regularizedGMC P Xc γ r ω)
         (F := fun x => F x (regularizedGMC P Xc γ r ω) (M ω)) (w := fun y => ρ y * k₁ y)
-        (C := C * K * I ^ (-q)) (mul_nonneg (mul_nonneg hC0 hK0) hIq) hρk
+        (C := C * K * I ^ (-q)) (mul_nonneg (mul_nonneg hC0 hK0) (Real.rpow_nonneg hIpos.le _)) hρk
         (fun y => mul_nonneg (hd.ρ_nonneg y) (hk₁0 y)) (fun x => by
           simp only [hF]
           have hIY : |I ^ (-q - 1) * bpzMixedDerivReal γ r ρ k₁ k₂ x v

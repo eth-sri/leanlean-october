@@ -3,6 +3,7 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
+public import DOZZ.SharedHyp
 
 public import DOZZ.GMC.FiniteChaosNegativePower
 public import DOZZ.GMC.FiniteChaosMean
@@ -31,9 +32,8 @@ theorem centeredGaussianField_variance_measurable
   let f : S × Ω → ℝ := fun q => Φ q.2 q.1
   have hf : Measurable f := by
     exact hΦ.1.comp (by fun_prop : Measurable fun q : S × Ω => (q.2, q.1))
-  have hf2 : Measurable (fun q : S × Ω => f q * f q) := hf.mul hf
   have hint : Measurable (fun x => ∫ ω, f (x, ω) * f (x, ω) ∂P) := by
-    exact hf2.stronglyMeasurable.integral_prod_right.measurable
+    exact (hf.mul hf).stronglyMeasurable.integral_prod_right.measurable
   have heq : (fun x => DOZZ.gaussianVariance P (fun ω => Φ ω x)) =
       fun x => ∫ ω, f (x, ω) * f (x, ω) ∂P := by
     funext x
@@ -88,7 +88,7 @@ finite reference measure. -/
 theorem centeredGaussianField_bounded_weight_integrable
     {S : Type*} [MeasurableSpace S] [Nonempty S] (ν : FiniteMeasure S)
     (h : S → ℝ≥0) (hh : Measurable h)
-    (hhb : ∃ c : ℝ≥0, ∀ x, h x ≤ c) :
+    (hhb : BoundedWeight h) :
     Integrable (fun x => (h x : ℝ)) (ν.normalize : Measure S) := by
   obtain ⟨c, hc⟩ := hhb
   refine (integrable_const (c : ℝ)).mono'
@@ -104,7 +104,7 @@ theorem centeredGaussianField_ae_integrable_weighted_wick
     (P : Measure Ω) (Φ : Ω → S → ℝ)
     (hΦ : DOZZ.IsCenteredGaussianField P Φ)
     (ν : FiniteMeasure S) (h : S → ℝ≥0) (hh : Measurable h)
-    (hhb : ∃ c : ℝ≥0, ∀ x, h x ≤ c) (γ : ℝ) :
+    (hhb : BoundedWeight h) (γ : ℝ) :
     ∀ᵐ ω ∂P, Integrable (fun x => (h x : ℝ) *
       Real.exp (γ * Φ ω x - γ ^ 2 / 2 *
         DOZZ.gaussianVariance P (fun ω => Φ ω x))) (ν.normalize : Measure S) := by
@@ -178,7 +178,6 @@ theorem ae_empirical_average_tendsto
       Tendsto (fun n : ℕ => (n : ℝ)⁻¹ * ∑ i : Fin n, f ω (q i.val))
         atTop (𝓝 (∫ x, f ω x ∂ν)) := by
   let Q : Measure (ℕ → S) := Measure.infinitePi (fun _ : ℕ => ν)
-  have hQ : IsProbabilityMeasure Q := by infer_instance
   have hEvalIdent (i : ℕ) : IdentDistrib (fun q : ℕ → S => q i) id Q ν := by
     refine ⟨(measurable_pi_apply i).aemeasurable, aemeasurable_id, ?_⟩
     simpa [Q] using (Measure.infinitePi_map_eval (fun _ : ℕ => ν) i)
@@ -298,7 +297,6 @@ theorem centeredGaussianField_covariance_order_samples
       DOZZ.gaussianVariance PX (fun ω => Φ ω x) ≤
         DOZZ.gaussianVariance PY (fun ω => Ψ ω x) := hρν.ae_le hdiag
   let Q : Measure (ℕ → S) := Measure.infinitePi (fun _ : ℕ => (ν.normalize : Measure S))
-  have hQ : IsProbabilityMeasure Q := by infer_instance
   have hpair (i j : ℕ) (hij : i ≠ j) :
       Q.map (fun u : ℕ → S => (u i, u j)) =
         (ν.normalize : Measure S).prod (ν.normalize : Measure S) := by
@@ -396,7 +394,7 @@ private theorem kahane_field_laplace_of_nonzero_finite_measure
     (hΦ : DOZZ.IsCenteredGaussianField PX Φ)
     (hΨ : DOZZ.IsCenteredGaussianField PY Ψ)
     (ν : FiniteMeasure S) (hν : ν ≠ 0) (h : S → ℝ≥0)
-    (hh : Measurable h) (hhb : ∃ c : ℝ≥0, ∀ x, h x ≤ c)
+    (hh : Measurable h) (hhb : BoundedWeight h)
     (γ s : ℝ) (hs : 0 ≤ s)
     (hcov : ∀ᵐ xy ∂(ν : Measure S).prod ν,
       DOZZ.gaussianCovariance PX (fun ω => Φ ω xy.1) (fun ω => Φ ω xy.2) ≤
@@ -427,7 +425,6 @@ private theorem kahane_field_laplace_of_nonzero_finite_measure
     have hvar := centeredGaussianField_variance_measurable PX Φ hΦ
     have hvar' : Measurable (fun p : ΩX × S =>
         DOZZ.gaussianVariance PX (fun ω => Φ ω p.2)) := hvar.comp measurable_snd
-    have hfield : Measurable (fun p : ΩX × S => Φ p.1 p.2) := hΦ.1
     have hweight : Measurable (fun p : ΩX × S => (h p.2 : ℝ)) :=
       (measurable_coe_nnreal_real.comp hh).comp measurable_snd
     have hlog : Measurable (fun p : ΩX × S => γ * Φ p.1 p.2 - γ ^ 2 / 2 *
@@ -438,7 +435,6 @@ private theorem kahane_field_laplace_of_nonzero_finite_measure
     have hvar := centeredGaussianField_variance_measurable PY Ψ hΨ
     have hvar' : Measurable (fun p : ΩY × S =>
         DOZZ.gaussianVariance PY (fun ω => Ψ ω p.2)) := hvar.comp measurable_snd
-    have hfield : Measurable (fun p : ΩY × S => Ψ p.1 p.2) := hΨ.1
     have hweight : Measurable (fun p : ΩY × S => (h p.2 : ℝ)) :=
       (measurable_coe_nnreal_real.comp hh).comp measurable_snd
     have hlog : Measurable (fun p : ΩY × S => γ * Ψ p.1 p.2 - γ ^ 2 / 2 *
@@ -553,13 +549,12 @@ private theorem kahane_field_laplace_of_nonzero_finite_measure
     filter_upwards [hsampleN] with u hu
     let Xn : ΩX → Fin n → ℝ := fun ω i => Φ ω (u i.val)
     let Yn : ΩY → Fin n → ℝ := fun ω i => Ψ ω (u i.val)
-    have hXn : DOZZ.IsCenteredJointlyGaussian PX Xn := hΦ.2 n (fun i => u i.val)
     have hYn : DOZZ.IsCenteredJointlyGaussian PY Yn := hΨ.2 n (fun i => u i.val)
     have ha : ∀ i : Fin n, 0 ≤ c * (n : ℝ)⁻¹ * (h (u i.val) : ℝ) := by
       intro i
       exact mul_nonneg (mul_nonneg (by dsimp [c]; positivity)
         (inv_nonneg.mpr (Nat.cast_nonneg n))) (NNReal.coe_nonneg _)
-    have hfin := kahane_finite_laplace_lintegral_fintype PX PY Xn Yn hXn hYn
+    have hfin := kahane_finite_laplace_lintegral_fintype PX PY Xn Yn (hΦ.2 n (fun i => u i.val)) hYn
       (fun i => c * (n : ℝ)⁻¹ * (h (u i.val) : ℝ)) ha γ s hs
       (fun i j => hu i j)
     calc
@@ -659,14 +654,12 @@ private theorem kahane_field_laplace_of_nonzero_finite_measure
     exact ENNReal.continuous_ofReal.measurable.comp
       (Real.measurable_exp.comp (measurable_const.mul
         ((measurable_const.mul hρmeasY).comp measurable_fst)))
-  have hseqMeasX : ∀ n, Measurable (fun p : ΩX × (ℕ → S) => FX n p) := hFXmeas
-  have hseqMeasY : ∀ n, Measurable (fun p : ΩY × (ℕ → S) => FY n p) := hFYmeas
   have hsetX : MeasurableSet {p : ΩX × (ℕ → S) |
       Tendsto (fun n => FX n p) atTop (𝓝 (ENNReal.ofReal (Real.exp (-s * limitX p.1))))} := by
-    exact measurableSet_tendsto_fun (l := atTop) hseqMeasX hlimitMeasX
+    exact measurableSet_tendsto_fun (l := atTop) (hFXmeas) hlimitMeasX
   have hsetY : MeasurableSet {p : ΩY × (ℕ → S) |
       Tendsto (fun n => FY n p) atTop (𝓝 (ENNReal.ofReal (Real.exp (-s * limitY p.1))))} := by
-    exact measurableSet_tendsto_fun (l := atTop) hseqMeasY hlimitMeasY
+    exact measurableSet_tendsto_fun (l := atTop) (hFYmeas) hlimitMeasY
   have hlimitX : ∀ᵐ p ∂PX.prod Q,
       Tendsto (fun n => FX n p) atTop (𝓝 (ENNReal.ofReal (Real.exp (-s * limitX p.1)))) :=
     Measure.ae_prod_iff_ae_ae hsetX |>.2 hlimitXNested
@@ -727,7 +720,7 @@ theorem centeredGaussianField_fieldChaosMass_eq_zero_of_zero_weight_integral
     {Ω S : Type*} [MeasurableSpace Ω] [MeasurableSpace S] [Nonempty S]
     (P : Measure Ω) (Φ : Ω → S → ℝ)
     (ν : FiniteMeasure S) (h : S → ℝ≥0)
-    (hh : Measurable h) (hhb : ∃ c : ℝ≥0, ∀ x, h x ≤ c) (γ : ℝ)
+    (hh : Measurable h) (hhb : BoundedWeight h) (γ : ℝ)
     (hzero : ∫ x, (h x : ℝ) ∂(ν.normalize : Measure S) = 0) :
     ∀ ω, DOZZ.fieldChaosMass P Φ (ν : Measure S) h γ ω = 0 := by
   have hbaseInt : Integrable (fun x => (h x : ℝ)) (ν.normalize : Measure S) :=
@@ -755,7 +748,7 @@ theorem centeredGaussianField_fieldChaosMass_pos_ae_of_pos_weight_integral
     (P : Measure Ω) (Φ : Ω → S → ℝ)
     (hΦ : DOZZ.IsCenteredGaussianField P Φ)
     (ν : FiniteMeasure S) (hν : ν ≠ 0) (h : S → ℝ≥0)
-    (hh : Measurable h) (hhb : ∃ c : ℝ≥0, ∀ x, h x ≤ c) (γ : ℝ)
+    (hh : Measurable h) (hhb : BoundedWeight h) (γ : ℝ)
     (hpos : 0 < ∫ x, (h x : ℝ) ∂(ν.normalize : Measure S)) :
     ∀ᵐ ω ∂P, 0 < DOZZ.fieldChaosMass P Φ (ν : Measure S) h γ ω := by
   have hbaseInt : Integrable (fun x => (h x : ℝ)) (ν.normalize : Measure S) :=
@@ -789,8 +782,7 @@ theorem centeredGaussianField_fieldChaosMass_pos_ae_of_pos_weight_integral
   have hrepresentation := fieldChaosMass_eq_ofReal_normalized_integral
     P Φ ν h γ ω (by simpa [f] using hω)
   have hmasspos : 0 < (ν.mass : ℝ) := by
-    have hmassne : ν.mass ≠ 0 := ν.mass_nonzero_iff.mpr hν
-    exact_mod_cast (pos_iff_ne_zero.mpr hmassne : 0 < ν.mass)
+    exact_mod_cast (pos_iff_ne_zero.mpr (ν.mass_nonzero_iff.mpr hν) : 0 < ν.mass)
   rw [hrepresentation]
   exact ENNReal.ofReal_pos.mpr (mul_pos hmasspos hfpos)
 
@@ -799,7 +791,7 @@ theorem fieldChaosMass_eq_ofReal_modified_toReal_ae
     (P : Measure Ω) (Φ : Ω → S → ℝ)
     (hΦ : DOZZ.IsCenteredGaussianField P Φ)
     (ν : FiniteMeasure S) (hν : ν ≠ 0) (h : S → ℝ≥0)
-    (hh : Measurable h) (hhb : ∃ c : ℝ≥0, ∀ x, h x ≤ c) (γ : ℝ)
+    (hh : Measurable h) (hhb : BoundedWeight h) (γ : ℝ)
     (hpos : 0 < ∫ x, (h x : ℝ) ∂(ν.normalize : Measure S)) :
     let M := fun ω => DOZZ.fieldChaosMass P Φ (ν : Measure S) h γ ω
     let m := fun ω => if (M ω).toReal = 0 then 1 else (M ω).toReal
@@ -827,7 +819,7 @@ theorem kahane_field_laplace_of_nonzero_finite_measure_eq
     (hΦ : DOZZ.IsCenteredGaussianField PX Φ)
     (hΨ : DOZZ.IsCenteredGaussianField PY Ψ)
     (ν : FiniteMeasure S) (hν : ν ≠ 0) (h : S → ℝ≥0)
-    (hh : Measurable h) (hhb : ∃ c : ℝ≥0, ∀ x, h x ≤ c)
+    (hh : Measurable h) (hhb : BoundedWeight h)
     (γ s : ℝ) (hs : 0 ≤ s)
     (hcov : ∀ᵐ xy ∂(ν : Measure S).prod ν,
       DOZZ.gaussianCovariance PX (fun ω => Φ ω xy.1) (fun ω => Φ ω xy.2) ≤
@@ -848,7 +840,7 @@ theorem kahane_field_power_nonpos
     (PX : Measure ΩX) (PY : Measure ΩY) (Φ : ΩX → S → ℝ) (Ψ : ΩY → S → ℝ)
     (hΦ : DOZZ.IsCenteredGaussianField PX Φ) (hΨ : DOZZ.IsCenteredGaussianField PY Ψ)
     (ν : Measure S) [IsFiniteMeasure ν] (h : S → ℝ≥0) (hh : Measurable h)
-    (hhb : ∃ c : ℝ≥0, ∀ x, h x ≤ c) (γ p : ℝ) (hp : p ≤ 0)
+    (hhb : BoundedWeight h) (γ p : ℝ) (hp : p ≤ 0)
     (hcov : ∀ᵐ xy ∂ν.prod ν,
       ∫ ω, Φ ω xy.1 * Φ ω xy.2 ∂PX ≤ ∫ ω, Ψ ω xy.1 * Ψ ω xy.2 ∂PY)
     (hdiag : ∀ᵐ x ∂ν,
@@ -892,8 +884,7 @@ theorem kahane_field_power_nonpos
     have hcoerce := congrArg (fun μ : FiniteMeasure S => (μ : Measure S)) hzero
     simpa [νf] using hcoerce
   have hS : Nonempty S := by
-    have hUniv : ν Set.univ ≠ 0 := Measure.measure_univ_ne_zero.mpr hνzero
-    obtain ⟨x, _⟩ := nonempty_of_measure_ne_zero hUniv
+    obtain ⟨x, _⟩ := nonempty_of_measure_ne_zero (Measure.measure_univ_ne_zero.mpr hνzero)
     exact ⟨x⟩
   have : Nonempty S := hS
   let ρ : Measure S := νf.normalize
@@ -966,12 +957,6 @@ theorem kahane_field_power_nonpos
     split_ifs with hzero
     · norm_num
     · exact lt_of_le_of_ne ENNReal.toReal_nonneg (Ne.symm hzero)
-  have hintX := centeredGaussianField_ae_integrable_weighted_wick PX Φ hΦ νf h hh hhb γ
-  have hintY := centeredGaussianField_ae_integrable_weighted_wick PY Ψ hΨ νf h hh hhb γ
-  have hmassPosX := centeredGaussianField_fieldChaosMass_pos_ae_of_pos_weight_integral
-    PX Φ hΦ νf hνf h hh hhb γ (by simpa [ρ, α] using hαpos)
-  have hmassPosY := centeredGaussianField_fieldChaosMass_pos_ae_of_pos_weight_integral
-    PY Ψ hΨ νf hνf h hh hhb γ (by simpa [ρ, α] using hαpos)
   have hmassEqX : ∀ᵐ ω ∂PX, MX ω = ENNReal.ofReal (mX ω) := by
     change ∀ᵐ ω ∂PX,
       DOZZ.fieldChaosMass PX Φ ν h γ ω = ENNReal.ofReal
@@ -1024,7 +1009,6 @@ theorem kahane_field_power_nonpos
           (∫⁻ ω, ENNReal.ofReal (Real.exp (-(mY ω * t))) ∂PY) ∂volume := by
     apply lintegral_mono_ae
     filter_upwards [ae_restrict_mem measurableSet_Ioi] with t ht
-    have ht0 : 0 < t := ht
     have hXexp : (fun ω => ENNReal.ofReal (Real.exp (-t * mX ω))) =
         fun ω => ENNReal.ofReal (Real.exp (-(mX ω * t))) := by
       funext ω
@@ -1037,7 +1021,7 @@ theorem kahane_field_power_nonpos
       ring
     gcongr
     rw [← hXexp, ← hYexp]
-    exact hLaplace t ht0.le
+    exact hLaplace t (ht).le
   have hMomentX :
       ∫⁻ ω, MX ω ^ p ∂PX = ∫⁻ ω, ENNReal.rpow (ENNReal.ofReal (mX ω)) p ∂PX := by
     apply lintegral_congr_ae

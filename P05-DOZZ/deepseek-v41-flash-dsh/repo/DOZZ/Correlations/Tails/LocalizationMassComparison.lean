@@ -66,14 +66,13 @@ theorem copied_mass_comparison
   have hb := (Metric.isOpen_ball (x := (0 : ℂ)) (ε := (1 : ℝ))).measurableSet
   have hρm := (Metric.isOpen_ball (x := (0 : ℂ)) (ε := ρ)).measurableSet
   have hd := hb.diff ((Metric.isOpen_ball (x := (0 : ℂ)) (ε := δ)).measurableSet)
-  have hsub : Metric.ball (0 : ℂ) ρ ⊆ Metric.ball 0 1 := Metric.ball_subset_ball hρ1
   constructor
   · rw [← lintegral_indicator hb,← lintegral_indicator hρm,← lintegral_add_left (hv.indicator hb)]
     apply lintegral_mono
     intro x
     dsimp only
     by_cases hx : x ∈ Metric.ball (0 : ℂ) ρ
-    · rw [indicator_of_mem hx,indicator_of_mem (hsub hx)]
+    · rw [indicator_of_mem hx,indicator_of_mem ((Metric.ball_subset_ball hρ1) hx)]
       exact (mul_le_of_le_one_left' (ENNReal.ofReal_le_one.mpr (hχ x).2)).trans (huv x hx).1
     · rw [hχzero x hx,ENNReal.ofReal_zero,zero_mul]
       exact zero_le

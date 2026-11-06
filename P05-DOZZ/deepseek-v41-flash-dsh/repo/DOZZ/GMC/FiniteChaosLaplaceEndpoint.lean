@@ -140,10 +140,9 @@ theorem finiteChaosMatrixLaplaceInterpolationExpectation_endpoint_le
       apply one_div_le_one_div_of_le (by norm_num)
       simpa [u] using hkReal
     have huPos : 0 < u k := by dsimp [u]; positivity
-    have huLtOne : u k < 1 := lt_of_le_of_lt huHalf (by norm_num)
     have hupperPos : 0 < 1 - u k := by linarith
     have hupperLtOne : 1 - u k < 1 := by linarith
-    have hleft : u k ∈ Set.Ioo 0 1 := ⟨huPos, huLtOne⟩
+    have hleft : u k ∈ Set.Ioo 0 1 := ⟨huPos, (lt_of_le_of_lt huHalf (by norm_num))⟩
     have hright : 1 - u k ∈ Set.Ioo 0 1 := ⟨hupperPos, hupperLtOne⟩
     have horder : u k ≤ 1 - u k := by linarith
     exact finiteChaosMatrixLaplaceInterpolationExpectation_antitoneOn

@@ -105,9 +105,8 @@ theorem dualFirstCase_coefficient_product_codiscrete (γ : ℝ) (a₂ a₃ : ℂ
       dualFirstCase_crossingProduct γ a₂ a₃ z * shiftCoeffA γ (2 / γ) z a₂ a₃ =
         lFun (-((4 / γ ^ 2 : ℝ) : ℂ)) * lFun (2 * z / γ) *
           lFun (2 + (4 / γ ^ 2 : ℝ) - 2 * z / γ) := by
-  have hg : (γ : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hγ
   let χ : ℂ := 2 / γ
-  have hχ : χ ≠ 0 := div_ne_zero (by norm_num) hg
+  have hχ : χ ≠ 0 := div_ne_zero (by norm_num) (Complex.ofReal_ne_zero.mpr hγ)
   have hχh : χ / 2 ≠ 0 := div_ne_zero hχ (by norm_num)
   have hA := dualFirstCase_affine_lFun (χ / 2) (χ / 2 * (a₂ + a₃ - χ - 2 * Q γ)) hχh
   have hB := dualFirstCase_affine_lFun (χ / 2) (χ / 2 * (a₂ - a₃ - χ)) hχh

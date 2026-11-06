@@ -34,12 +34,10 @@ theorem separatedTail_mixed_moment_le_of_tendstoInMeasure
     (∫⁻ ω, g2 ω ^ a2 * g3 ω ^ a3 ∂P) ≤ C := by
   obtain ⟨ns, hns, h2⟩ := hconv2.exists_seq_tendsto_ae
   obtain ⟨ms, _hms, h3⟩ := (hconv3.comp hns.tendsto_atTop).exists_seq_tendsto_ae
-  have hfinite2 : ∀ᵐ ω ∂P, ∀ n, f2 n ω ≠ ⊤ := ae_all_iff.mpr hfin2
-  have hfinite3 : ∀ᵐ ω ∂P, ∀ n, f3 n ω ≠ ⊤ := ae_all_iff.mpr hfin3
   have hlim : ∀ᵐ ω ∂P, Tendsto
       (fun n => f2 (ns (ms n)) ω ^ a2 * f3 (ns (ms n)) ω ^ a3) atTop
       (𝓝 (g2 ω ^ a2 * g3 ω ^ a3)) := by
-    filter_upwards [h2, h3, hfinite2, hfinite3, hgfin2, hgfin3]
+    filter_upwards [h2, h3, (ae_all_iff.mpr hfin2), (ae_all_iff.mpr hfin3), hgfin2, hgfin3]
       with ω h2ω h3ω hf2ω hf3ω hg2ω hg3ω
     have hp2 := ((Real.continuousAt_rpow_const (g2 ω).toReal a2 (Or.inr ha2)).tendsto.comp
       (h2ω.comp _hms.tendsto_atTop))

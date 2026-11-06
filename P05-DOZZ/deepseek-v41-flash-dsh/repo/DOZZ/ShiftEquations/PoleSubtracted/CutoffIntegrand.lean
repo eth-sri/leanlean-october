@@ -125,7 +125,6 @@ theorem norm_cutoffIntegrand_le_endpoints (Xc : Ω → ℂ → ℝ → ℝ) (M :
   set B := baseMassReal M γ η n ω
   set L := localMassReal M γ η ω
   have hB : 0 < B := hL.trans_le hLB
-  have hBL : 0 ≤ B - L := sub_nonneg.2 hLB
   refine (norm_cutoffIntegrand_le Xc M η m n z ω hL hLB).trans ?_
   have him : Real.exp (m * z.im ^ 2 / 2) ≤ Real.exp (m * b₀ ^ 2 / 2) := by
     apply Real.exp_le_exp.2
@@ -149,7 +148,7 @@ theorem norm_cutoffIntegrand_le_endpoints (Xc : Ω → ℂ → ℝ → ℝ) (M :
       _ = (B - L) * cutoffWeight γ (Xc ω 0 m) B L z.re := by
           unfold cutoffWeight
           ring
-      _ ≤ _ := mul_le_mul_of_nonneg_left hweight hBL
+      _ ≤ _ := mul_le_mul_of_nonneg_left hweight (sub_nonneg.2 hLB)
   have hW0 : ‖1 - z / γ‖ ≤ W := hW
   calc Real.exp (m * z.im ^ 2 / 2) * ‖1 - z / γ‖ *
         (Real.exp (z.re * Xc ω 0 m - m * z.re ^ 2 / 2) *
@@ -167,7 +166,6 @@ theorem differentiable_cutoffIntegrand (Xc : Ω → ℂ → ℝ → ℝ) (M : Ω
     Differentiable ℂ fun z => cutoffIntegrand Xc M γ η m n z ω := by
   have hB : (baseMassReal M γ η n ω : ℂ) ≠ 0 :=
     Complex.ofReal_ne_zero.2 (hL.trans_le hLB).ne'
-  have hL' : (localMassReal M γ η ω : ℂ) ≠ 0 := Complex.ofReal_ne_zero.2 hL.ne'
   intro z
   unfold cutoffIntegrand
   apply DifferentiableAt.mul
@@ -176,7 +174,7 @@ theorem differentiable_cutoffIntegrand (Xc : Ω → ℂ → ℝ → ℝ) (M : Ω
     · exact (differentiableAt_const _).sub ((differentiableAt_id).div_const _) |>.const_cpow
         (Or.inl hB)
     · exact (differentiableAt_const _).sub ((differentiableAt_id).div_const _) |>.const_cpow
-        (Or.inl hL')
+        (Or.inl (Complex.ofReal_ne_zero.2 hL.ne'))
 
 end DOZZ.Proofs
 

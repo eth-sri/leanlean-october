@@ -82,11 +82,10 @@ theorem coulombCutoffBound_inv_root_base {x z : ℂ} {δ : ℝ} (hx : x ≠ 0) :
 /-- The inverted-chart base at infinity in the original variable. -/
 theorem coulombCutoffBound_inv_infty_base {x : ℂ} {δ : ℝ} (hx : x ≠ 0) :
     normPlus x⁻¹ / (‖x⁻¹‖ + δ) = normPlus x / (1 + δ * ‖x‖) := by
-  have hn : 0 < ‖x‖ := norm_pos_iff.mpr hx
   have h1 : ‖x⁻¹‖ + δ = (1 + δ * ‖x‖) / ‖x‖ := by
     rw [norm_inv]
     field_simp
-  rw [normPlus_inv_identity hx, h1, div_div_div_cancel_right₀ hn.ne']
+  rw [normPlus_inv_identity hx, h1, div_div_div_cancel_right₀ (norm_pos_iff.mpr hx).ne']
 
 /-- The inverted-chart weight at `x⁻¹` in the original variable `x`. -/
 theorem coulombCutoffBound_infinityWeight_inv {N : ℕ} (γ : ℝ) (α : Fin N → ℝ) (z : Fin N → ℂ)
@@ -147,11 +146,10 @@ theorem coulombCutoffBound_form_le {N : ℕ} (a e : Fin N → ℝ) (g eg : ℝ) 
     (he : ∀ j, |e j| ≤ E) (heg : |eg| ≤ E) :
     (∏ j, ENNReal.rpow (ENNReal.ofReal (a j)) (e j)) * ENNReal.rpow (ENNReal.ofReal g) eg ≤
       ENNReal.ofReal (L ^ ((N : ℝ) * E + E)) := by
-  have hLpos : 0 < L := lt_of_lt_of_le one_pos hL
   calc _ ≤ ENNReal.ofReal (L ^ ((N : ℝ) * E)) * ENNReal.ofReal (L ^ E) :=
         mul_le_mul' (coulombCutoffBound_prod_le Finset.univ a e hL hE (fun j _ => ha j)
           fun j _ => he j) (coulombCutoffBound_rpow_le hL hg.1 hg.2 heg)
-    _ = _ := coulombWeight_ofReal_rpow_mul hLpos _ _
+    _ = _ := coulombWeight_ofReal_rpow_mul (lt_of_lt_of_le one_pos hL) _ _
 
 /-- A product of bounded powers times the factor at infinity: lower bound. -/
 theorem coulombCutoffBound_form_ge {N : ℕ} (a e : Fin N → ℝ) (g eg : ℝ) {L E : ℝ} (hL : 1 ≤ L)
@@ -159,10 +157,9 @@ theorem coulombCutoffBound_form_ge {N : ℕ} (a e : Fin N → ℝ) (g eg : ℝ) 
     (he : ∀ j, |e j| ≤ E) (heg : |eg| ≤ E) :
     ENNReal.ofReal (L ^ (-((N : ℝ) * E + E))) ≤
       (∏ j, ENNReal.rpow (ENNReal.ofReal (a j)) (e j)) * ENNReal.rpow (ENNReal.ofReal g) eg := by
-  have hLpos : 0 < L := lt_of_lt_of_le one_pos hL
   calc ENNReal.ofReal (L ^ (-((N : ℝ) * E + E)))
       = ENNReal.ofReal (L ^ (-((N : ℝ) * E))) * ENNReal.ofReal (L ^ (-E)) := by
-        rw [coulombWeight_ofReal_rpow_mul hLpos, neg_add]
+        rw [coulombWeight_ofReal_rpow_mul (lt_of_lt_of_le one_pos hL), neg_add]
     _ ≤ _ := mul_le_mul' (coulombCutoffBound_prod_ge a e hL ha he)
         (coulombCutoffBound_le_rpow hL hg.1 hg.2 heg)
 
@@ -175,7 +172,6 @@ theorem coulombCutoffBound_rootForm_le {N : ℕ} (a e : Fin N → ℝ) (c D g eg
     (∏ j, ENNReal.rpow (ENNReal.ofReal (a j)) (e j)) * ENNReal.rpow (ENNReal.ofReal g) eg ≤
       ENNReal.ofReal (L ^ ((N : ℝ) * E + E + E)) * ENNReal.rpow (ENNReal.ofReal D) (-e k) := by
   have hLpos : 0 < L := lt_of_lt_of_le one_pos hL
-  have hcpos : 0 < c := lt_of_lt_of_le (inv_pos.mpr hLpos) hc.1
   have hP : ∏ j ∈ Finset.univ.erase k, ENNReal.rpow (ENNReal.ofReal (a j)) (e j) ≤
       ENNReal.ofReal (L ^ ((N : ℝ) * E)) :=
     coulombCutoffBound_prod_le _ a e hL hE
@@ -183,7 +179,7 @@ theorem coulombCutoffBound_rootForm_le {N : ℕ} (a e : Fin N → ℝ) (c D g eg
   have hC := coulombCutoffBound_rpow_le hL hc.1 hc.2 (he k)
   have hG := coulombCutoffBound_rpow_le hL hg.1 hg.2 heg
   rw [← Finset.mul_prod_erase Finset.univ _ (Finset.mem_univ k), hak,
-    coulombWeight_rpow_ofReal_div hcpos hD]
+    coulombWeight_rpow_ofReal_div (lt_of_lt_of_le (inv_pos.mpr hLpos) hc.1) hD]
   generalize ENNReal.rpow (ENNReal.ofReal D) (-e k) = R
   calc _ = (ENNReal.rpow (ENNReal.ofReal c) (e k) *
           (∏ j ∈ Finset.univ.erase k, ENNReal.rpow (ENNReal.ofReal (a j)) (e j)) *
@@ -254,8 +250,7 @@ theorem coulombCutoffBound_root_numer {m t d δ M Ri : ℝ} (hm1 : 1 ≤ m) (htm
     (hmM : m ≤ M) (hd : 0 ≤ d) (hδ : 0 < δ) (hRi : 1 ≤ Ri) (ht : Ri⁻¹ ≤ t) :
     1 ≤ m * (d + δ) / (d + δ * t) ∧ m * (d + δ) / (d + δ * t) ≤ M * Ri := by
   have hRipos : 0 < Ri := lt_of_lt_of_le one_pos hRi
-  have ht0 : 0 < t := lt_of_lt_of_le (inv_pos.mpr hRipos) ht
-  have hpos : 0 < d + δ * t := by linarith only [hd, mul_pos hδ ht0]
+  have hpos : 0 < d + δ * t := by linarith only [hd, mul_pos hδ (lt_of_lt_of_le (inv_pos.mpr hRipos) ht)]
   have hRit : 1 ≤ Ri * t := by
     calc (1 : ℝ) = Ri * Ri⁻¹ := (mul_inv_cancel₀ hRipos.ne').symm
       _ ≤ Ri * t := mul_le_mul_of_nonneg_left ht hRipos.le

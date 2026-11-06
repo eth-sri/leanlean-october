@@ -3,6 +3,7 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
+public import DOZZ.SharedHyp
 public import DOZZ.FourPoint.Fusion.FullDifferenceLimit
 public import DOZZ.FourPoint.Fusion.Coefficient
 public import DOZZ.FourPoint.FourPointTZeroEqStructureConstant
@@ -18,7 +19,7 @@ theorem gammaHalf_KRV_restricted_fusion {Ω : Type*} [MeasurableSpace Ω]
     (hγ : 0 < γ) (hγsq : γ ^ 2 < 2) (hμ : 0 < μ)
     (hαlo : γ / 2 + 1 / γ < α₁) (hαhi : α₁ < 2 / γ)
     (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ)
-    (hs : 2 * Q γ + γ / 2 < α₁ + α₂ + α₃)
+    (hs : SeibergSlack γ α₁ α₂ α₃)
     (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M) :
     let κ := γ * (Q γ - α₁)
     ∃ r : ℂ → ℝ,
@@ -37,7 +38,6 @@ theorem gammaHalf_KRV_restricted_fusion {Ω : Type*} [MeasurableSpace Ω]
     structureConstant P M γ μ (α₁ + γ / 2) α₂ α₃
   let F := fourPointT P M γ μ (-γ / 2) α₁ α₂ α₃
   let C₀ := structureConstant P M γ μ (α₁ - γ / 2) α₂ α₃
-  have hp : 0 ≤ p := (div_pos (by linarith) hγ).le
   have hse : fourPointSExp γ (-γ / 2) α₁ α₂ α₃ = p := by
     unfold fourPointSExp p
     congr 1
@@ -46,7 +46,7 @@ theorem gammaHalf_KRV_restricted_fusion {Ω : Type*} [MeasurableSpace Ω]
     simpa only [F, C₀, neg_div] using fourPointT_zero_eq_structureConstant P X M γ μ (γ / 2) α₁ α₂ α₃
       hγ hγ2 hμ (by unfold Q; linarith) hα₂ hα₃ (by linarith) hX hM
   have hnorm := (tendsto_const_nhds (x := B)).mul
-    (fusion_massDifference_normalized_tendsto P X hX γ hγ hγ2 M hM α₁ α₂ α₃ hαlo hαhi hα₂ hα₃ p hp)
+    (fusion_massDifference_normalized_tendsto P X hX γ hγ hγ2 M hM α₁ α₂ α₃ hαlo hαhi hα₂ hα₃ p ((div_pos (by linarith) hγ).le))
   have hcoef : B * (-p * gammaHalfRootedCoefficient P M γ α₁ α₂ α₃ p) = C :=
     fusion_normalized_rootedCoefficient P X hX γ hγ hγ2 M hM μ α₁ α₂ α₃ hμ hs
   rw [hcoef] at hnorm

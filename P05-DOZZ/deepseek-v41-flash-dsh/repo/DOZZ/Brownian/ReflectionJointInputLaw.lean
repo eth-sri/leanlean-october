@@ -87,12 +87,10 @@ theorem reflection_jointInputLaw_eq_of_lateralLaw_eq
   have hB'm : AEMeasurable B' P' := by
     have hm := hB₁'m.prodMk hB₂'m
     simpa only [Prod.eta] using hm
-  have hZm : AEMeasurable Z P := hZ.2.2.2.1
-  have hZ'm : AEMeasurable Z' P' := hZ'.2.2.2.1
   have hJoint : P.map (fun ω => (B ω, Z ω)) = (P.map B).prod (P.map Z) :=
-    (indepFun_iff_map_prod_eq_prod_map_map hBm hZm).1 hBInd
+    (indepFun_iff_map_prod_eq_prod_map_map hBm (hZ.2.2.2.1)).1 hBInd
   have hJoint' : P'.map (fun ω => (B' ω, Z' ω)) = (P'.map B').prod (P'.map Z') :=
-    (indepFun_iff_map_prod_eq_prod_map_map hB'm hZ'm).1 hB'Ind
+    (indepFun_iff_map_prod_eq_prod_map_map hB'm (hZ'.2.2.2.1)).1 hB'Ind
   calc
     P.map (fun ω => (B ω, Z ω)) = (P.map B).prod (P.map Z) := hJoint
     _ = (P'.map B').prod (P'.map Z') := by rw [hBlaw, hZlaw]

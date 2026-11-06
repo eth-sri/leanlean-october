@@ -245,12 +245,11 @@ theorem negativeDriftBrownian_maximum_tail
     (hν : 0 < ν) (hx : 0 ≤ x) :
     P {ω | ∃ t : ℝ≥0, x < B t ω - ν * t} = ENNReal.ofReal (Real.exp (-2 * ν * x)) := by
   let X := brownianContinuousPath B
-  have hm : AEMeasurable X P := aemeasurable_brownianContinuousPath hB
   have hS : MeasurableSet {p : BrownianPath | ∃ t : ℝ≥0, x < p t-ν*(t : ℝ)} := by
     simpa only [sub_eq_add_neg,neg_mul] using measurableSet_brownianPath_drift_crossing (-ν) x
   have he : P {ω | ∃ t : ℝ≥0, x < B t ω-ν*(t : ℝ)} =
       (P.map X) {p : BrownianPath | ∃ t : ℝ≥0, x < p t-ν*(t : ℝ)} := by
-    rw [Measure.map_apply_of_aemeasurable hm hS]
+    rw [Measure.map_apply_of_aemeasurable (aemeasurable_brownianContinuousPath hB) hS]
     apply measure_congr
     filter_upwards [brownianContinuousPath_eval_ae hB] with ω hω
     apply propext

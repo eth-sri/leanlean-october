@@ -54,13 +54,12 @@ private theorem connectionMidpointOneWronskian_ne_zero
     have hw' := hw
     norm_num at hw'
     simpa [connectionMidpointOneWronskian] using hw'
-  have hfactor : -(p.2.2 - p.1 - p.2.1) ≠ 0 := neg_ne_zero.mpr hδ
   have hpow₁ : (1 / 2 : ℂ) ^ (-p.2.2) ≠ 0 :=
     Complex.cpow_ne_zero_iff.mpr (Or.inl (by norm_num))
   have hpow₂ : (1 / 2 : ℂ) ^ (p.2.2 - p.1 - p.2.1 - 1) ≠ 0 :=
     Complex.cpow_ne_zero_iff.mpr (Or.inl (by norm_num))
   rw [hformula]
-  exact mul_ne_zero (mul_ne_zero hfactor hpow₁) hpow₂
+  exact mul_ne_zero (mul_ne_zero (neg_ne_zero.mpr hδ) hpow₁) hpow₂
 
 /-- The first midpoint Cramer quotient for expanding `FMinus` in the one-end basis. -/
 noncomputable def connectionMinusFirstCramerCoefficient

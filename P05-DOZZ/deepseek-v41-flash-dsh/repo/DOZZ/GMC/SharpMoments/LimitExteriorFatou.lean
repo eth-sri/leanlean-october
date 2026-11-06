@@ -105,8 +105,7 @@ integral of the weight. -/
 theorem limitExteriorFatou_lintegral_trunc_tendsto (R β : ℝ) (μ : Measure ℂ) :
     Tendsto (fun m : ℕ => ∫⁻ x, (limitExteriorFatou_trunc R β m x : ℝ≥0∞) ∂μ) atTop
       (𝓝 (∫⁻ x in {x : ℂ | R ≤ ‖x‖}, ENNReal.ofReal (‖x‖ ^ β) ∂μ)) := by
-  have hmeas : MeasurableSet {x : ℂ | R ≤ ‖x‖} := measurableSet_le measurable_const measurable_norm
-  rw [← lintegral_indicator hmeas]
+  rw [← lintegral_indicator (measurableSet_le measurable_const measurable_norm)]
   exact lintegral_tendsto_of_tendsto_of_monotone
     (fun m => (measurable_coe_nnreal_ennreal.comp
       (limitExteriorFatou_trunc_measurable R β m)).aemeasurable)

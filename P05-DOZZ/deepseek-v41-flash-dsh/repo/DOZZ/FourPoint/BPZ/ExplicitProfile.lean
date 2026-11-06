@@ -176,8 +176,7 @@ theorem bpzEP_tendsto_taylor {φ : ℝ → ℝ} (hφ : ContDiffOn ℝ 2 φ (Ioo 
       ring
     have hbound : ∀ x ∈ Ico (0 : ℝ) t, ‖deriv φ x - deriv φ 0‖ ≤ C * t := by
       intro x hx
-      have hx' : x ∈ Icc (0 : ℝ) (1 / 2) := ⟨hx.1, hx.2.le.trans ht.2⟩
-      calc ‖deriv φ x - deriv φ 0‖ ≤ C * (x - 0) := h1 x hx'
+      calc ‖deriv φ x - deriv φ 0‖ ≤ C * (x - 0) := h1 x (⟨hx.1, hx.2.le.trans ht.2⟩)
         _ ≤ C * t := by gcongr; linarith [hx.2]
     have h := norm_image_sub_le_of_norm_deriv_le_segment' hseg hbound t ⟨ht.1, le_rfl⟩
     simpa using h

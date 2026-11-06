@@ -62,10 +62,9 @@ theorem fusion_localR2_reference_scaled {Ω : Type*} [MeasurableSpace Ω]
     rw [← integral_const_mul]
     exact integral_congr_ae hpoint
   rw [hcalc] at hscale
-  have hr : 0 < ‖z‖ := norm_pos_iff.mpr hz
   have hp : ‖z‖ ^ (2 : ℕ) * (‖z‖ ^ (γ ^ 2 / 2 - γ * α₁) / ‖z‖ ^ (2 : ℕ)) =
       ‖z‖ ^ (γ ^ 2 / 2 - γ * α₁) := by
-    rw [mul_div_cancel₀ _ (pow_ne_zero 2 hr.ne')]
+    rw [mul_div_cancel₀ _ (pow_ne_zero 2 (norm_pos_iff.mpr hz).ne')]
   calc
     _ = ∫ x : ℂ, F x := (integral_indicator (show MeasurableSet B from Metric.isOpen_ball.measurableSet)).symm
     _ = _ := hscale

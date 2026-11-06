@@ -3,6 +3,7 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
+public import DOZZ.SharedHyp
 public import DOZZ.FourPoint.Dual.SourceCopiedInverseBound
 public import DOZZ.FourPoint.Dual.SourceCopiedPolarLimit
 public import DOZZ.FourPoint.Dual.BufferRelativeLimit
@@ -22,8 +23,8 @@ theorem dual_source_full_inverse_increment_tendsto
     (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ₂ : γ < 2)
     (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
     (Xc : Ω → ℂ → ℝ → ℝ) (hc : IsCircleAverage P X Xc)
-    (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
-    (hcont : ∀ᵐ ω ∂P, Continuous (fun p : ℂ × ℝ => Xc ω p.1 p.2))
+    (hm : MeasurableCircleAvg Xc)
+    (hcont : ContinuousCircleAvg P Xc)
     (α₁ α₂ α₃ ξ : ℝ) (hα₁ : α₁ < Q γ) (hreflect : Q γ-α₁ < γ/2)
     (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ)
     (hs : 2*Q γ+2/γ < α₁+α₂+α₃)

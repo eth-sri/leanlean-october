@@ -43,8 +43,7 @@ theorem crossing_gammaHalf_parameter_guards (γ a ε c : ℝ)
   dsimp only
   refine ⟨?_, ?_, hK₂.ne'⟩
   · intro n hn
-    have hpos : 0 < gaussParameterC γ (γ / 2) a := lt_trans (lt_trans hA hAB) hBC
-    have hn0 : (0 : ℤ) < n := by exact_mod_cast (hn ▸ hpos)
+    have hn0 : (0 : ℤ) < n := by exact_mod_cast (hn ▸ (lt_trans (lt_trans hA hAB) hBC))
     have hn1 : n < (1 : ℤ) := by exact_mod_cast (hn ▸ hC)
     omega
   · intro n hn

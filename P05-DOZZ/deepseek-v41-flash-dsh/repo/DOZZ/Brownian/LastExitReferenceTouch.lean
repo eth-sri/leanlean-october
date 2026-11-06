@@ -87,7 +87,6 @@ private theorem rational_strict_upper_bound_path
     (hq : ∀ r : ℚ, ∀ hr : 0 < (r : ℝ), q ⟨(r : ℝ), hr.le⟩ < a)
     (t : ℝ≥0) : q t ≤ a := by
   by_contra hnot
-  have hgt : a < q t := lt_of_not_ge hnot
   let F : ℝ → ℝ := fun s => q ⟨max s 0, le_max_right s 0⟩
   have hF : Continuous F := by
     apply q.continuous.comp
@@ -100,11 +99,10 @@ private theorem rational_strict_upper_bound_path
   have hopen : IsOpen (F ⁻¹' Set.Ioi a) := isOpen_Ioi.preimage hF
   have htmem : (t : ℝ) ∈ F ⁻¹' Set.Ioi a := by
     rw [Set.mem_preimage, hF_eval (t : ℝ) t.property]
-    exact hgt
+    exact (lt_of_not_ge hnot)
   by_cases htpos : 0 < (t : ℝ)
   · let U : Set ℝ := Set.Ioi 0 ∩ F ⁻¹' Set.Ioi a
-    have hU : IsOpen U := isOpen_Ioi.inter hopen
-    obtain ⟨r, hrU⟩ := Rat.denseRange_cast.exists_mem_open hU ⟨t, htpos, htmem⟩
+    obtain ⟨r, hrU⟩ := Rat.denseRange_cast.exists_mem_open (isOpen_Ioi.inter hopen) ⟨t, htpos, htmem⟩
     have hr : 0 < (r : ℝ) ∧ a < F (r : ℝ) := hrU
     have hrat := hq r hr.1
     have hEval := hF_eval (r : ℝ) hr.1.le
@@ -188,9 +186,6 @@ theorem brownianUpperConditionedReferenceFutureKernel_measure_touchZero
         exact hweak t)
     have hge : a ≤ driftedBrownianMaximum ν p := by
       by_contra hnot
-      have hMa : sSup (Set.range (fun t : ℝ≥0 => D p t)) < a := by
-        rw [← hsup]
-        exact lt_of_not_ge hnot
       let gap : ℝ := a - sSup (Set.range (fun t : ℝ≥0 => D p t))
       have hgap : 0 < gap := by dsimp [gap]; linarith
       obtain ⟨n, hn⟩ := exists_nat_gt (1 / gap)
@@ -207,21 +202,17 @@ theorem brownianUpperConditionedReferenceFutureKernel_measure_touchZero
       have hEval : eval (D p) r = a - D p ⟨(r : ℝ), hr.le⟩ := by
         simp [eval, brownianUpperConditionedPositiveRationalEvals,
           brownianUpperConditionedPositivePath, max_eq_left hr.le]
-      have hDnear : a - 1 / ((n : ℝ) + 1) < D p ⟨(r : ℝ), hr.le⟩ := by
-        rw [hEval] at hnear
-        linarith
       have hDs : D p ⟨(r : ℝ), hr.le⟩ ≤
           sSup (Set.range (fun t : ℝ≥0 => D p t)) :=
         le_csSup hbound (Set.mem_range_self (⟨(r : ℝ), hr.le⟩ : ℝ≥0))
       dsimp [gap] at hinv
       linarith
     exact le_antisymm hle hge
-  have hraw : B (D ⁻¹' A) = 0 := measure_mono_null hsubset hmaxzero
   have hlaw : brownianBelowConditionedLaw B ν a A = 0 := by
     rw [brownianBelowConditionedLaw, Measure.smul_apply, smul_eq_mul,
       Measure.map_apply hD hA, Measure.restrict_apply (hD hA)]
     have hsmall : B (D ⁻¹' A ∩ {p | ∀ t : ℝ≥0, D p t < a}) = 0 :=
-      measure_mono_null Set.inter_subset_left hraw
+      measure_mono_null Set.inter_subset_left (measure_mono_null hsubset hmaxzero)
     rw [hsmall]
     simp
   have hkernel : brownianUpperConditionedReferenceFutureKernel B ν hν a

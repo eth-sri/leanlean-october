@@ -63,7 +63,6 @@ theorem abs_log_norm_smul_sub_le {E : Type*} [NormedAddCommGroup E] [InnerProduc
   have hd : 0 < ‖u-v‖ := norm_pos_iff.mpr (sub_ne_zero.mpr huv)
   have hlow := norm_smul_sub_lower u v hu hv ρ r s hρ hr hs
   have hn : 0 < ‖r • u-s • v‖ := (mul_pos hρ hd).trans_le hlow
-  have hB : 0 < B := hρ.trans_le (hr.trans hrB)
   have hup : ‖r • u-s • v‖ ≤ 2*B := by
     calc
       _ ≤ ‖r • u‖+‖s • v‖ := norm_sub_le _ _
@@ -265,9 +264,8 @@ theorem unitPoissonWeight_pair_abs_le (c z w u v : ℂ) (ρ a : ℝ) (hρ : 0 < 
     (haρ : a < ρ) (hz : ‖z-c‖ ≤ a) (hw : ‖w-c‖ ≤ a)
     (hu : ‖u‖ = 1) (hv : ‖v‖ = 1) :
     |unitPoissonWeight c ρ z u*unitPoissonWeight c ρ w v| ≤ (ρ^2/(ρ-a)^2)^2 := by
-  have hzD : z ∈ ball c ρ := mem_ball_iff_norm.mpr (hz.trans_lt haρ)
   have hwD : w ∈ ball c ρ := mem_ball_iff_norm.mpr (hw.trans_lt haρ)
-  rw [abs_of_nonneg (mul_nonneg (unitPoissonWeight_nonneg c z u ρ hρ hzD)
+  rw [abs_of_nonneg (mul_nonneg (unitPoissonWeight_nonneg c z u ρ hρ (mem_ball_iff_norm.mpr (hz.trans_lt haρ)))
     (unitPoissonWeight_nonneg c w v ρ hρ hwD)), pow_two]
   exact mul_le_mul (unitPoissonWeight_le c z u ρ a hρ haρ hz hu)
     (unitPoissonWeight_le c w v ρ a hρ haρ hw hv)

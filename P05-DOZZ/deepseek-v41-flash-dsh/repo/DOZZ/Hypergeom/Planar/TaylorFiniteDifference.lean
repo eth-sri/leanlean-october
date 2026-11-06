@@ -222,10 +222,6 @@ theorem norm_rpow_centered_difference_le (k : ℝ) (hk : 0 < k) (hk₂ : k < 2)
     rw [hminus, norm_mul, Real.mul_rpow (norm_nonneg x) (norm_nonneg (1 - q))]
   have hremMinus := norm_unit_taylor_remainder_le k hk hk₂ q hq
   have hremPlus := norm_unit_taylor_remainder_le k hk hk₂ (-q) (by simpa using hq)
-  have hC : 0 ≤ C := by
-    dsimp [C]
-    have hfactor : 0 ≤ 1 - k / 2 := by linarith
-    positivity
   have hCnorm : |‖1 - q‖ ^ k - 1 + k * q.re| ≤ C * ‖q‖ ^ 2 := by
     simpa [C] using hremMinus
   have hCnorm' : |‖1 + q‖ ^ k - 1 - k * q.re| ≤ C * ‖q‖ ^ 2 := by
@@ -273,7 +269,6 @@ theorem norm_rpow_centered_difference_le_global (k : ℝ) (hk : 0 < k) (hk₂ : 
   let C : ℝ := k * (1 + (15 / 4) *
     ((1 - k / 2) * (1 / 4 : ℝ) ^ (k / 2 - 2)))
   let B : ℝ := 2 * (3 ^ k + 2 ^ k) * 2 ^ (2 - k)
-  have hxpos : 0 < ‖x‖ := norm_pos_iff.mpr hx
   have hC : 0 ≤ C := by
     dsimp [C]
     have hfactor : 0 ≤ 1 - k / 2 := by linarith
@@ -293,7 +288,6 @@ theorem norm_rpow_centered_difference_le_global (k : ℝ) (hk : 0 < k) (hk₂ : 
         exact mul_le_mul_of_nonneg_right (by linarith) hweight
       _ = (2 * C + B) * ‖y‖ ^ 2 * ‖x‖ ^ (k - 2) := by ring
   · have hlarge : ‖x‖ / 2 < ‖y‖ := lt_of_not_ge hsmall
-    have hypos : 0 < ‖y‖ := lt_of_le_of_lt (by positivity) hlarge
     have hxle : ‖x‖ ≤ 2 * ‖y‖ := by linarith
     have hplus : ‖x + y‖ ≤ 3 * ‖y‖ := by
       calc
@@ -325,7 +319,7 @@ theorem norm_rpow_centered_difference_le_global (k : ℝ) (hk : 0 < k) (hk₂ : 
     have hySplit : ‖y‖ ^ k = ‖y‖ ^ 2 * ‖y‖ ^ (k - 2) := by
       calc
         ‖y‖ ^ k = ‖y‖ ^ ((2 : ℝ) + (k - 2)) := by congr 1; ring
-        _ = ‖y‖ ^ (2 : ℝ) * ‖y‖ ^ (k - 2) := Real.rpow_add hypos _ _
+        _ = ‖y‖ ^ (2 : ℝ) * ‖y‖ ^ (k - 2) := Real.rpow_add (lt_of_le_of_lt (by positivity) hlarge) _ _
         _ = ‖y‖ ^ 2 * ‖y‖ ^ (k - 2) :=
           congrArg (fun t : ℝ => t * ‖y‖ ^ (k - 2)) (Real.rpow_natCast ‖y‖ 2)
     have hhalf : (‖x‖ / 2) ^ (k - 2) =

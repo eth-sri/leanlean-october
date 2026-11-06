@@ -42,7 +42,6 @@ theorem separatedTail_local_mixed_moment_le
       weightedGmcBallMass γ (M ω) α3 z3 1 ^ a3 ∂P) ≤ B) :
     (∫⁻ ω, localSingularMass M F2 z2 γ α2 ω ^ a2 *
       localSingularMass M F3 z3 γ α3 ω ^ a3 ∂P) ≤ S^(2*T)*B := by
-  have hSn : S ≠ 0 := ne_of_gt (lt_of_lt_of_le zero_lt_one hS1)
   calc
     _ ≤ ∫⁻ ω, (S*weightedGmcBallMass γ (M ω) α2 z2 1)^a2 *
         (S*weightedGmcBallMass γ (M ω) α3 z3 1)^a3 ∂P := by
@@ -56,7 +55,7 @@ theorem separatedTail_local_mixed_moment_le
       rw [← lintegral_const_mul' _ _ (ENNReal.rpow_ne_top_of_nonneg (add_nonneg ha2 ha3) hS)]
       apply lintegral_congr
       intro ω
-      rw [ENNReal.rpow_add _ _ hSn hS]
+      rw [ENNReal.rpow_add _ _ (ne_of_gt (lt_of_lt_of_le zero_lt_one hS1)) hS]
       ac_rfl
     _ ≤ S^(2*T)*B := mul_le_mul' (ENNReal.rpow_le_rpow_of_exponent_le hS1
       (by linarith)) hB

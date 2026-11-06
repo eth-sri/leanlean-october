@@ -81,11 +81,10 @@ distance to the root. -/
 theorem bpz_norm_div_root_pow (a : ℝ) (n : ℕ) {w : ℝ} (hw : 0 ≤ w) {x z : ℂ} (hxz : x ≠ z) :
     ‖((Complex.normSq (x - z) ^ a * w : ℝ) : ℂ) / (z - x) ^ n‖ =
       w * ‖x - z‖ ^ (2 * a - n) := by
-  have hu : 0 < ‖x - z‖ := norm_pos_iff.mpr (sub_ne_zero.mpr hxz)
   have hnn : 0 ≤ Complex.normSq (x - z) ^ a * w :=
     mul_nonneg (Real.rpow_nonneg (Complex.normSq_nonneg _) a) hw
   rw [norm_div, norm_pow, norm_sub_rev, Complex.norm_real, Real.norm_of_nonneg hnn,
-    bpz_normSq_rpow_eq, Real.rpow_sub hu, Real.rpow_natCast]
+    bpz_normSq_rpow_eq, Real.rpow_sub (norm_pos_iff.mpr (sub_ne_zero.mpr hxz)), Real.rpow_natCast]
   field_simp
 
 /-- A measure with no atom at `z` gives full mass to `{x | x ≠ z}`. -/

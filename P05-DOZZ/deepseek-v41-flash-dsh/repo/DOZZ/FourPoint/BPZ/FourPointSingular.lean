@@ -28,11 +28,9 @@ theorem continuousOn_bpzBaseWeight :
   intro x hx
   apply ContinuousAt.continuousWithinAt
   unfold bpzBaseWeight
-  have h0 : ‖x‖ ≠ 0 := norm_ne_zero_iff.mpr hx.1
-  have h1 : ‖x - 1‖ ≠ 0 := norm_ne_zero_iff.mpr (sub_ne_zero.mpr hx.2)
-  exact ((continuous_norm.continuousAt.rpow_const (Or.inl h0)).mul
+  exact ((continuous_norm.continuousAt.rpow_const (Or.inl (norm_ne_zero_iff.mpr hx.1))).mul
     ((continuous_norm.comp (continuous_id.sub continuous_const)).continuousAt.rpow_const
-      (Or.inl h1))).mul
+      (Or.inl (norm_ne_zero_iff.mpr (sub_ne_zero.mpr hx.2))))).mul
     (bpz_continuous_normPlus.continuousAt.rpow_const (Or.inl (bpz_normPlus_pos x).ne'))
 
 /-- The base factor is bounded near a regular root. -/
@@ -40,7 +38,6 @@ theorem bpz_base_bdd_near {z : ℂ} (hz0 : z ≠ 0) (hz1 : z ≠ 1) :
     ∃ r : ℝ, 0 < r ∧ ∃ C : ℝ, 0 ≤ C ∧
       ∀ x ∈ Metric.closedBall z r, bpzBaseWeight γ χ α₁ α₂ α₃ x ≤ C := by
   set r : ℝ := min ‖z‖ ‖z - 1‖ / 2 with hr
-  have hz0' : 0 < ‖z‖ := norm_pos_iff.mpr hz0
   have hz1' : 0 < ‖z - 1‖ := norm_pos_iff.mpr (sub_ne_zero.mpr hz1)
   have hr0 : 0 < r := by positivity
   have hsub : Metric.closedBall z r ⊆ {x | x ≠ 0 ∧ x ≠ 1} := by

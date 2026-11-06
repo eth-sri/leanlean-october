@@ -3,6 +3,7 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
+public import DOZZ.SharedHyp
 
 public import DOZZ.Statements.FourPoint.GammaHalfRootedCoefficient
 public import DOZZ.Statements.Defs.StructureConstant
@@ -64,7 +65,7 @@ theorem fusion_normalized_rootedCoefficient {Ω : Type*} [MeasurableSpace Ω]
     (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
     (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ)
     (hM : IsGMCOf P X γ M) (μ α₁ α₂ α₃ : ℝ) (hμ : 0 < μ)
-    (hs : 2 * Q γ + γ / 2 < α₁ + α₂ + α₃) :
+    (hs : SeibergSlack γ α₁ α₂ α₃) :
     let p := (α₁ + α₂ + α₃ - γ / 2 - 2 * Q γ) / γ
     (2 * μ ^ (-p) / γ * Real.Gamma p) *
         (-p * gammaHalfRootedCoefficient P M γ α₁ α₂ α₃ p) =

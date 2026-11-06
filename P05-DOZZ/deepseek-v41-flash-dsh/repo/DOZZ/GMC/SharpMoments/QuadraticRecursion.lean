@@ -34,13 +34,11 @@ theorem quadRec_tendsto_zero
   have hbdd : BddBelow (Set.range G) := ⟨0, by rintro _ ⟨x, rfl⟩; exact hG0 x⟩
   have htend : Tendsto G atTop (𝓝 (⨅ x, G x)) := tendsto_atTop_ciInf hG hbdd
   set g : ℝ := ⨅ x, G x
-  have hg0 : 0 ≤ g := le_ciInf hG0
   have hgL : g ≤ L := by
     obtain ⟨x, hx⟩ := hsmall.exists
     exact (ciInf_le hbdd x).trans hx
   have hlin : Tendsto (fun x : ℝ => κ * x - c₀) atTop atTop := by
-    have h1 : Tendsto (fun x : ℝ => κ * x) atTop atTop := tendsto_id.const_mul_atTop hκ
-    simpa [sub_eq_add_neg] using tendsto_atTop_add_const_right atTop (-c₀) h1
+    simpa [sub_eq_add_neg] using tendsto_atTop_add_const_right atTop (-c₀) (tendsto_id.const_mul_atTop hκ)
   have hcomp : Tendsto (fun x : ℝ => G (κ * x - c₀)) atTop (𝓝 g) := htend.comp hlin
   have hrhs : Tendsto (fun x : ℝ => a x + B * G (κ * x - c₀) ^ 2) atTop (𝓝 (0 + B * g ^ 2)) :=
     ha.add ((hcomp.pow 2).const_mul B)
@@ -49,28 +47,25 @@ theorem quadRec_tendsto_zero
   have hBg : B * g < 1 := by
     have : B * g ≤ B * L := mul_le_mul_of_nonneg_left hgL hB.le
     linarith
-  have hprod : g * (1 - B * g) ≤ 0 := by nlinarith
   have hg_nonpos : g ≤ 0 := by
     by_contra hpos
     have := mul_pos (not_le.1 hpos) (sub_pos.2 hBg)
     linarith
-  have hg_zero : g = 0 := le_antisymm hg_nonpos hg0
+  have hg_zero : g = 0 := le_antisymm hg_nonpos (le_ciInf hG0)
   rw [hg_zero] at htend
   exact htend
 
 /-- A contraction ratio above one half allows an exponent `β ∈ (1, 2)` with `2 k ^ β > 1`. -/
 theorem quadRec_exists_beta (k : ℝ) (hk : 1 / 2 < k) :
     ∃ β : ℝ, 1 < β ∧ β < 2 ∧ 1 < 2 * k ^ β := by
-  have hk0 : 0 < k := lt_trans (by norm_num) hk
   have hcont : ContinuousAt (fun β : ℝ => 2 * k ^ β) 1 :=
-    continuousAt_const.mul (Real.continuousAt_const_rpow hk0.ne')
+    continuousAt_const.mul (Real.continuousAt_const_rpow (lt_trans (by norm_num) hk).ne')
   have h1 : ∀ᶠ β in 𝓝 (1 : ℝ), 1 < 2 * k ^ β := by
     refine hcont.eventually (lt_mem_nhds ?_)
     simp only [Real.rpow_one]
     linarith
-  have h2 : ∀ᶠ β in 𝓝 (1 : ℝ), β < 2 := eventually_lt_nhds (by norm_num)
   have h3 : ∀ᶠ β in 𝓝[>] (1 : ℝ), (1 < 2 * k ^ β ∧ β < 2) ∧ 1 < β :=
-    ((h1.and h2).filter_mono nhdsWithin_le_nhds).and self_mem_nhdsWithin
+    ((h1.and (eventually_lt_nhds (by norm_num))).filter_mono nhdsWithin_le_nhds).and self_mem_nhdsWithin
   obtain ⟨β, ⟨hβ1, hβ2⟩, hβ3⟩ := h3.exists
   exact ⟨β, hβ3, hβ2, hβ1⟩
 
@@ -83,10 +78,9 @@ theorem quadRec_shift_recursion
       G x ≤ A * Real.exp (-c * x ^ 2) + B * G (k * x) ^ 2 := by
   intro x hx
   have hx0 : x₀ ≤ x := (le_max_left _ _).trans hx
-  have hxc : |c₀| / (κ - k) ≤ x := (le_max_right _ _).trans hx
   have hκk : 0 < κ - k := sub_pos.2 hkκ
   have hc₀ : c₀ ≤ (κ - k) * x := by
-    have h1 : |c₀| ≤ x * (κ - k) := (div_le_iff₀ hκk).1 hxc
+    have h1 : |c₀| ≤ x * (κ - k) := (div_le_iff₀ hκk).1 ((le_max_right _ _).trans hx)
     have h2 : c₀ ≤ |c₀| := le_abs_self c₀
     linarith
   have hle : k * x ≤ κ * x - c₀ := by linarith
@@ -127,15 +121,13 @@ theorem quadRec_gaussian_step (A c d β Z x : ℝ) (hA : 0 ≤ A) (hd : 0 ≤ d)
     (hdc : d ≤ c / 2) (hZ : 1 ≤ Z) (hZx : Z ≤ x)
     (hAZ : A * Real.exp (-(c / 2) * Z ^ 2) ≤ 1 / 2) :
     A * Real.exp (-c * x ^ 2) ≤ 1 / 2 * Real.exp (-d * x ^ β) := by
-  have hx1 : 1 ≤ x := hZ.trans hZx
-  have hZ0 : 0 ≤ Z := zero_le_one.trans hZ
   have h1 : x ^ β ≤ x ^ 2 := by
-    have := Real.rpow_le_rpow_of_exponent_le hx1 hβ
+    have := Real.rpow_le_rpow_of_exponent_le (hZ.trans hZx) hβ
     rwa [Real.rpow_two] at this
   have hx2 : 0 ≤ x ^ 2 := sq_nonneg x
   have h2 : d * x ^ β ≤ c / 2 * x ^ 2 :=
     (mul_le_mul_of_nonneg_left h1 hd).trans (mul_le_mul_of_nonneg_right hdc hx2)
-  have h3 : Z ^ 2 ≤ x ^ 2 := pow_le_pow_left₀ hZ0 hZx 2
+  have h3 : Z ^ 2 ≤ x ^ 2 := pow_le_pow_left₀ (zero_le_one.trans hZ) hZx 2
   have hc : 0 ≤ c / 2 := hd.trans hdc
   have h3' : c / 2 * Z ^ 2 ≤ c / 2 * x ^ 2 := mul_le_mul_of_nonneg_left h3 hc
   have h4 : Real.exp (-c * x ^ 2) ≤
@@ -158,9 +150,8 @@ theorem quadRec_gaussian_tail (A c Z : ℝ) (hc : 0 < c) (hZ : 1 ≤ Z) (hAZ : 4
   have h4 : c / 2 * Z ^ 2 ≤ Real.exp (c / 2 * Z ^ 2) := by
     have := Real.add_one_le_exp (c / 2 * Z ^ 2)
     linarith
-  have hE : 0 < Real.exp (c / 2 * Z ^ 2) := Real.exp_pos _
   have h5 : A ≤ 1 / 2 * Real.exp (c / 2 * Z ^ 2) := by linarith
-  rw [neg_mul, Real.exp_neg, ← div_eq_mul_inv, div_le_iff₀ hE]
+  rw [neg_mul, Real.exp_neg, ← div_eq_mul_inv, div_le_iff₀ (Real.exp_pos _)]
   exact h5
 
 /-- The inductive core: if the bound `G x ≤ exp (-d * x ^ β)` holds on `[Y, Z]` with `Y = k * Z`,
@@ -174,7 +165,6 @@ theorem quadRec_core
     (hGY : G Y ≤ Real.exp (-d * Z ^ β)) (hℓ : ℓ ≤ h * d * Z ^ β)
     (hgauss : ∀ x, Z ≤ x → A * Real.exp (-c * x ^ 2) ≤ 1 / 2 * Real.exp (-d * x ^ β)) :
     ∀ x, Y ≤ x → G x ≤ Real.exp (-d * x ^ β) := by
-  have hkne : k ≠ 0 := hk0.ne'
   have hZ0 : 0 < Z := by
     by_contra hneg
     have := mul_nonpos_of_nonneg_of_nonpos hk0.le (not_lt.1 hneg)
@@ -184,8 +174,7 @@ theorem quadRec_core
     exact mul_le_of_le_one_left hZ0.le hk1.le
   have hbase : ∀ x, Y ≤ x → x ≤ Z → G x ≤ Real.exp (-d * x ^ β) := by
     intro x hYx hxZ
-    have hx0 : 0 ≤ x := hY.le.trans hYx
-    have h1 : x ^ β ≤ Z ^ β := Real.rpow_le_rpow hx0 hxZ hβ
+    have h1 : x ^ β ≤ Z ^ β := Real.rpow_le_rpow (hY.le.trans hYx) hxZ hβ
     have h2 : d * x ^ β ≤ d * Z ^ β := mul_le_mul_of_nonneg_left h1 hd.le
     calc G x ≤ G Y := hG hYx
       _ ≤ Real.exp (-d * Z ^ β) := hGY
@@ -252,8 +241,7 @@ theorem quadRec_stretched_exp
   have hℓ0 : 0 < ℓ := lt_of_lt_of_le one_pos hℓ1
   have hB' : B * Real.exp (-ℓ) ≤ 1 / 2 := by
     have h1 : ℓ + 1 ≤ Real.exp ℓ := Real.add_one_le_exp ℓ
-    have hE : 0 < Real.exp ℓ := Real.exp_pos ℓ
-    rw [Real.exp_neg, ← div_eq_mul_inv, div_le_iff₀ hE]
+    rw [Real.exp_neg, ← div_eq_mul_inv, div_le_iff₀ (Real.exp_pos ℓ)]
     linarith
   have hshift := quadRec_shift_recursion G hG hG0 A B c κ k c₀ x₀ hB.le hk_hi hrec
   -- the starting point `Y`
@@ -264,7 +252,6 @@ theorem quadRec_stretched_exp
     exact (eventually_ge_atTop _).and ((eventually_ge_atTop _).and
       ((eventually_ge_atTop _).and (eventually_ge_atTop _)))
   obtain ⟨Y, ⟨hY1, hY2, hY3, hY4⟩, hGY⟩ := hev.exists
-  have hY0 : 0 < Y := lt_of_lt_of_le one_pos hY2
   obtain ⟨Z, hYZ⟩ : ∃ Z : ℝ, k * Z = Y := ⟨Y / k, by field_simp⟩
   have hZ0 : 0 < Z := by
     by_contra hneg
@@ -275,7 +262,6 @@ theorem quadRec_stretched_exp
     exact mul_le_of_le_one_left hZ0.le hk1.le
   have hZ1 : 1 ≤ Z := hY2.trans hYZ'
   have hZβ0 : 0 < Z ^ β := Real.rpow_pos_of_pos hZ0 β
-  have hZY : Y ≤ Z ^ β := hYZ'.trans (Real.self_le_rpow_of_one_le hZ1 hβ1.le)
   -- the rate `d`
   obtain ⟨d, hd_def⟩ : ∃ d : ℝ, d = ℓ / (h * Z ^ β) := ⟨_, rfl⟩
   have hd : 0 < d := hd_def ▸ div_pos hℓ0 (mul_pos hh hZβ0)
@@ -290,7 +276,7 @@ theorem quadRec_stretched_exp
   have hdc : d ≤ c / 2 := by
     have h2ℓ : 2 * ℓ ≤ Y * (c * h) := (div_le_iff₀ (mul_pos hc hh)).1 hY3
     have h3 : Y * (c * h) ≤ Z ^ β * (c * h) :=
-      mul_le_mul_of_nonneg_right hZY (mul_pos hc hh).le
+      mul_le_mul_of_nonneg_right (hYZ'.trans (Real.self_le_rpow_of_one_le hZ1 hβ1.le)) (mul_pos hc hh).le
     rw [hd_def, div_le_iff₀ (mul_pos hh hZβ0)]
     linarith
   have hgauss : ∀ x, Z ≤ x →
@@ -302,7 +288,7 @@ theorem quadRec_stretched_exp
     rw [this]
     exact hGY.le
   have hcore := quadRec_core G hG hG0 A B c k β d h ℓ Y Z hk0 hk1 (by linarith) hd hh hkβ hB'
-    hB.le hY0 hYZ (fun x hx => hshift x (hY1.trans hx)) hGY' hℓ' hgauss
+    hB.le (lt_of_lt_of_le one_pos hY2) hYZ (fun x hx => hshift x (hY1.trans hx)) hGY' hℓ' hgauss
   -- the constant `C`
   refine ⟨max 1 (G 0 * Real.exp (d * Y ^ β)), d, β, hd, hβ1, ?_⟩
   intro x hx

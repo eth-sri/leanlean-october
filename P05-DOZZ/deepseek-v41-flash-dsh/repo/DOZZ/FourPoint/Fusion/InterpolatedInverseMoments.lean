@@ -61,7 +61,6 @@ theorem fusionInterpolatedMass_inverse_expectation_seq {Ω : Type*} [MeasurableS
   have ham : ∀ n, AEMeasurable (a n) P := fun n => fusionMovingMass_aemeasurable P X hX γ hγ hγ2 M hM α₁ α₂ α₃ y _
   have hbm : ∀ n, AEMeasurable (b n) P := fun n => fusionRootOnlyMass_aemeasurable P X hX γ hγ hγ2 M hM α₁ α₂ α₃ y _
   have hfm : ∀ n, AEMeasurable (f n) P := fun n => (ham n).const_mul _ |>.add ((hbm n).const_mul _)
-  have hgm : AEMeasurable g P := fusionMovingMass_aemeasurable P X hX γ hγ hγ2 M hM α₁ α₂ α₃ y 0
   have haf : ∀ n, ∀ᵐ ω ∂P, a n ω ≠ ⊤ := fun n => fusionMovingMass_finite_near P X hX γ hγ hγ2 M hM α₁ α₂ α₃ p
     hα hα₁ hα₂ hα₃ hp hp1 hpR y _ hy (hN _ (Nat.le_add_left N n)).1 (hN _ (Nat.le_add_left N n)).2
   have hbf : ∀ n, ∀ᵐ ω ∂P, b n ω ≠ ⊤ := fun n => fusionRootOnlyMass_finite_near P X hX γ hγ hγ2 M hM α₁ α₂ α₃ p
@@ -88,7 +87,7 @@ theorem fusionInterpolatedMass_inverse_expectation_seq {Ω : Type*} [MeasurableS
     simpa only [he] using h
   have hfp : ∀ n, ∀ᵐ ω ∂P, f n ω ^ s ≠ ⊤ := fun n =>
     momentConv_ae_rpow_ne_top_of_neg P (f n) (hfm n) hs (by linarith) hC.ne (hfb n)
-  have hgp := momentConv_ae_rpow_ne_top_of_neg P g hgm hs (by linarith) hC.ne hgb
+  have hgp := momentConv_ae_rpow_ne_top_of_neg P g (fusionMovingMass_aemeasurable P X hX γ hγ hγ2 M hM α₁ α₂ α₃ y 0) hs (by linarith) hC.ne hgb
   have hr : 1 < (2 * s) / s := by rw [mul_div_cancel_right₀ _ hs.ne]; norm_num
   exact (tendsto_add_atTop_iff_nat N).mp
     (momentConv_tendsto_of_rpow_ne_top P f g hfm hgfin hc hs.ne hr hC.ne hfb hfp hgp)

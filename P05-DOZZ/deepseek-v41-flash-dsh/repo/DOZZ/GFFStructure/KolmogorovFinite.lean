@@ -307,8 +307,6 @@ lemma finite_set_bound_of_edist_le_of_le_diam (hJ : HasBoundedCoveringNumber J c
     exact not_le.mpr hδ_lt_st t.2
   -- introduce `m` such that `ε₀ * 2⁻¹ ^ m ≤ δ ≤ ε₀ * 4 * 2⁻¹ ^ m` and `m ≤ k`
   let m := min k ⌊Real.logb 2⁻¹ (δ / (ε₀ * 4))⌋₊
-  have hmk : m ≤ k := min_le_left _ _
-  have hm' : m ≤ ⌊Real.logb 2⁻¹ (δ / (ε₀ * 4))⌋₊ := min_le_right _ _
   have hδ_eq_logb : δ = ε₀ * 4 * 2⁻¹ ^ (Real.logb 2⁻¹ (δ / (ε₀ * 4))) := by
     symm
     ext -- go to ℝ
@@ -384,7 +382,7 @@ lemma finite_set_bound_of_edist_le_of_le_diam (hJ : HasBoundedCoveringNumber J c
     norm_num
     gcongr _ * ?_
     simp_rw [← mul_assoc]
-    refine (second_term_bound hX ?_ hC hC_subset hC_card hdq_lt hJ hmk).trans ?_
+    refine (second_term_bound hX ?_ hC hC_subset hC_card hdq_lt hJ (min_le_left _ _)).trans ?_
     · simp [ε₀, ENNReal.coe_toNNReal hε'.ne]
     change 2 ^ d * ↑M * c * (2 * ε₀ * 2⁻¹ ^ m) ^ (q - d) * Cp d p q
       ≤ 2 ^ (4 * q + 1) * ↑M * δ ^ (q - d) * c * Cp d p q
@@ -415,7 +413,6 @@ lemma finite_set_bound_of_edist_le_of_le_diam' (hJ : HasBoundedCoveringNumber J 
       ≤ 2 ^ (2 * p + 4 * q + 1) * M * c * δ ^ (q - d)
         * (4 ^ d * (ENNReal.ofReal (Real.logb 2 (c.toReal * 4 ^ d * δ.toReal⁻¹ ^ d))) ^ q
             + Cp d p q) := by
-  have h_diam_lt_top : Metric.ediam J < ∞ := hJ.ediam_lt_top
   refine (finite_set_bound_of_edist_le_of_le_diam hJ hJ_finite hX hd_pos hdq_lt hδ
     hδ_le).trans ?_
   simp_rw [mul_assoc]
@@ -430,7 +427,7 @@ lemma finite_set_bound_of_edist_le_of_le_diam' (hJ : HasBoundedCoveringNumber J 
       refine ne_of_lt ?_
       calc (δ : ℝ≥0∞)
       _ ≤ 4 * Metric.ediam J := by rwa [ENNReal.div_le_iff' (by simp) (by simp)] at hδ_le
-      _ < ∞ := ENNReal.mul_lt_top (by simp) h_diam_lt_top
+      _ < ∞ := ENNReal.mul_lt_top (by simp) (hJ.ediam_lt_top)
     have hJδ := hJ.coveringNumber_le (δ / 4) (by simpa)
     have hJ' : coveringNumber (δ / 4) J ≤ c * 4 ^ d * δ⁻¹ ^ d := by
       refine hJδ.trans_eq ?_

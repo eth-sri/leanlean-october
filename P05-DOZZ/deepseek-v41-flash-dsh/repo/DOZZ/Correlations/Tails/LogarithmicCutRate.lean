@@ -40,9 +40,8 @@ theorem log_cut_error_powers_le (γ a x p r η D K L : ℝ)
   rw [he1, he2]
   have hp1 : x^(-p-a) ≤ x^(-p-η) :=
     Real.rpow_le_rpow_of_exponent_le hx (by linarith)
-  have ha0 : 0 < a := hη.trans ha
   have hp2 : x^(-r) ≤ x^(-p-η) :=
-    Real.rpow_le_rpow_of_exponent_le hx (by nlinarith only [hpr,ha0,hr])
+    Real.rpow_le_rpow_of_exponent_le hx (by nlinarith only [hpr,(hη.trans ha),hr])
   have hp3 : x^(-(1-a)*r) ≤ x^(-p-η) :=
     Real.rpow_le_rpow_of_exponent_le hx (by linarith)
   have h1 := mul_le_mul_of_nonneg_left hp1 hD

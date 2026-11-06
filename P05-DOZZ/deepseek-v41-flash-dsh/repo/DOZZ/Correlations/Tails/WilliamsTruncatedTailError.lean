@@ -35,11 +35,10 @@ theorem truncated_williams_tail_error
   let μ := brownianMaximumReferenceLaw ν
   let : IsProbabilityMeasure μ := isProbabilityMeasure_brownianMaximumReferenceLaw hν
   have hp : 0 < 2*ν/γ := by positivity
-  have hr : 0 < r := hp.trans_le hpr
   have hs := truncated_williams_tail_sandwich μ P A J Jc hJc0 γ c x hγ hupper hlower
   have hu := williams_pareto_tail_error P J hJ hJ0 ν γ x r hν hγ hx hpr hJp hJr
   have hl := williams_pareto_tail_error P Jc hJc hJc0 ν γ x r hν hγ hx hpr hJcp hJcr
-  have he := power_tail_le_moment P Jc hJc0 r (x*Real.exp (-γ*c)) hr
+  have he := power_tail_le_moment P Jc hJc0 r (x*Real.exp (-γ*c)) (hp.trans_le hpr)
     (mul_pos hx (Real.exp_pos _)) hJcr
   have hd := mul_le_mul_of_nonneg_left hgap (Real.rpow_nonneg hx.le (-(2*ν/γ)))
   have hJi : 0 ≤ ∫ ω, J ω^r ∂P := integral_nonneg (fun ω => Real.rpow_nonneg (hJ0 ω) r)

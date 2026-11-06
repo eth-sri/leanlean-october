@@ -206,11 +206,10 @@ theorem twoSidedReflectionCutMass_aemeasurable {Ω : Type*} [MeasurableSpace Ω]
     (hB : AEMeasurable B P) (hZ : AEMeasurable Z P)
     (hfin : ∀ᵐ ω ∂P, ∀ a b : ℝ, Z ω (Icc a b) < ⊤) :
     AEMeasurable (fun ω => twoSidedReflectionCutMass γ c B Z ω) P := by
-  have hpair : AEMeasurable (fun ω => (B ω, Z ω)) P := hB.prodMk hZ
   have hsum : AEMeasurable
       (fun ω => ∑' n : ℕ, reflectionCutShell γ c n (B ω, Z ω)) P :=
     AEMeasurable.tsum fun n =>
-      (measurable_reflectionCutShell γ c n).comp_aemeasurable hpair
+      (measurable_reflectionCutShell γ c n).comp_aemeasurable (hB.prodMk hZ)
   refine hsum.congr ?_
   filter_upwards [hfin] with ω hω
   have hshell (n : ℕ) : Z ω (translationShell n) < ⊤ :=
@@ -248,10 +247,9 @@ theorem postLastExit_entranceMass_rpow_lintegral_eq
   let pair₂ : Ω → BrownianPath × Measure ℝ := fun ω => ((B ω).2, Z ω)
   let F : BrownianPath × Measure ℝ → ℝ≥0∞ := fun z => (positiveLateralMass γ z.1 z.2) ^ q
   have hpair₂ : AEMeasurable pair₂ P := hB.1.prodMk hZ.2.2.2.1
-  have hIndDZ : IndepFun (fun ω => (B ω).2) Z P := hInd.comp measurable_snd measurable_id
   have hpair₁ : AEMeasurable pair₁ P :=
     ((measurable_negativeConditionedPostLastExitPath c).comp_aemeasurable hB.1).prodMk
-      (lastExitReflectedMeasure_law_independent P γ c B Z hB.1 hZ hIndDZ).1
+      (lastExitReflectedMeasure_law_independent P γ c B Z hB.1 hZ (hInd.comp measurable_snd measurable_id)).1
   have hset : MeasurableSet {z : BrownianPath × Measure ℝ |
       LocallyFiniteOnTranslationWindows z.2} :=
     measurableSet_locallyFiniteOnTranslationWindows.preimage measurable_snd
@@ -478,7 +476,6 @@ theorem reflectionMass_lastCut_bound_of_inverse
       linarith only [mul_pos (by linarith only [hM1] : (0 : ℝ) < M) (sub_pos.mpr hp₂M)]
   set r : ℝ := max ((1 + M) / 2) ((M / (M - p₂ + 1) + M) / 2) with hrdef
   have hr1 : 1 < r := lt_of_lt_of_le (by linarith) (le_max_left _ _)
-  have hrM : r < M := max_lt (by linarith) (by linarith)
   have hrfrac : M / (M - p₂ + 1) < r := lt_of_lt_of_le (by linarith) (le_max_right _ _)
   set r' : ℝ := r / (r - 1) with hr'def
   have hr'0 : 0 < r' := div_pos (by linarith) (by linarith)
@@ -491,17 +488,16 @@ theorem reflectionMass_lastCut_bound_of_inverse
     · rw [hr'def, mul_div_assoc', div_lt_iff₀ (by linarith)]
       rw [div_lt_iff₀ hden] at hrfrac
       linarith only [hrfrac]
-  have hsTop0 : 0 < sTop := lt_of_lt_of_le (lt_of_lt_of_le hp₁ hp₁₂) (le_max_left _ _)
   set wTop : ℝ := max 1 ((1 - p₁) * r') with hwTopdef
   have hwTop0 : 0 < wTop := lt_of_lt_of_le one_pos (le_max_left _ _)
   -- uniform moment bounds
   obtain ⟨CJ, hCJ, hCJb⟩ := twoSidedReflectionMass_rpow_lintegral_le_compact P γ ν₁ ν₂ sTop
-    hγ hν₁ hsTop0 hsTop Z hZ
+    hγ hν₁ (lt_of_lt_of_le (lt_of_lt_of_le hp₁ hp₁₂) (le_max_left _ _)) hsTop Z hZ
   have hZfinIoc : ∀ᵐ ω ∂P, ∀ a b : ℝ, Z ω (Ioc a b) < ⊤ := by
     filter_upwards [hZ.2.2.2.2.1] with ω hω a b
     exact lt_of_le_of_lt (measure_mono Ioc_subset_Icc_self) (hω a b)
   have hLr : (∫⁻ ω, (Z ω (Ioc 0 1)) ^ r ∂P) < ⊤ :=
-    lateralGMC_interval_nonnegative_moment_finite P γ Z hZ 0 1 r (by linarith) hrM
+    lateralGMC_interval_nonnegative_moment_finite P γ Z hZ 0 1 r (by linarith) (max_lt (by linarith) (by linarith))
   have hLrb : ∀ n : ℕ, (∫⁻ ω, (Z ω (Ioc (n : ℝ) ((n : ℝ) + 1))) ^ r ∂P) ≤
       ∫⁻ ω, (Z ω (Ioc 0 1)) ^ r ∂P := by
     intro n

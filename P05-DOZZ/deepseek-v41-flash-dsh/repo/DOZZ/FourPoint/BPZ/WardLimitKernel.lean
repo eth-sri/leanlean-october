@@ -44,9 +44,8 @@ theorem abs_bpzKern_le (v w : ℂ) : |bpzKern v w| ≤ ‖v‖ / ‖w‖ := by
     unfold bpzKern
     rw [abs_neg, abs_div, abs_of_pos (by positivity : (0 : ℝ) < ‖w‖ ^ 2),
       div_le_div_iff₀ (by positivity) hw']
-    have hcs : |w.re * v.re + w.im * v.im| ≤ ‖w‖ * ‖v‖ := bpzSoft_abs_inner_le w v
     calc |w.re * v.re + w.im * v.im| * ‖w‖ ≤ ‖w‖ * ‖v‖ * ‖w‖ :=
-          mul_le_mul_of_nonneg_right hcs hw'.le
+          mul_le_mul_of_nonneg_right (bpzSoft_abs_inner_le w v) hw'.le
       _ = ‖v‖ * ‖w‖ ^ 2 := by ring
 
 /-- The real-algebra core of the Lipschitz bound for the limit kernel. -/
@@ -127,7 +126,6 @@ theorem bpzLamDeriv_zero (r : ℝ) : bpzLamDeriv r 0 = 0 := by
 theorem bpzLamDeriv_neg (r : ℝ) (w : ℂ) : bpzLamDeriv r (-w) = -bpzLamDeriv r w := by
   rcases eq_or_ne w 0 with rfl | hw
   · simp [bpzLamDeriv_zero]
-  have h1 : HasFDerivAt (bpzLam r) (bpzLamDeriv r w) w := hasFDerivAt_bpzLam r hw
   have h2 : HasFDerivAt (bpzLam r) (bpzLamDeriv r (-w)) (-w) :=
     hasFDerivAt_bpzLam r (neg_ne_zero.mpr hw)
   have h3 : HasFDerivAt (fun x => bpzLam r (-x))
@@ -135,7 +133,7 @@ theorem bpzLamDeriv_neg (r : ℝ) (w : ℂ) : bpzLamDeriv r (-w) = -bpzLamDeriv 
     h2.comp w (hasFDerivAt_id w).neg
   have heq : (fun x => bpzLam r (-x)) = bpzLam r := funext fun x => bpzLam_neg r x
   rw [heq] at h3
-  have huniq := h1.unique h3
+  have huniq := (hasFDerivAt_bpzLam r hw).unique h3
   ext h
   have hh := congrArg (fun L : ℂ →L[ℝ] ℝ => L h) huniq
   simp only [ContinuousLinearMap.coe_comp, Function.comp_apply, neg_apply,
@@ -290,7 +288,6 @@ theorem cutWeight_bound (hd : BPZLimitData γ q δ ρ kt k₂ φ D) :
     apply max_le hR₁1
     have := le_max_left R 0; linarith
   have hkt : kt y ≤ max B 0 := (hB y hy).trans (le_max_left _ _)
-  have hkt0 := hd.kt_nonneg y
   have hnp0 := bpz_normPlus_pos y
   constructor
   · refine le_max_of_le_left ?_
@@ -304,10 +301,9 @@ theorem cutWeight_bound (hd : BPZLimitData γ q δ ρ kt k₂ φ D) :
       Real.rpow_le_rpow hnp0.le hnp (by norm_num)
     have h5 : Real.exp (γ ^ 2 * q * bpzPin r y) ≤ Real.exp (γ ^ 2 * q * (Real.log R₁ + 1)) :=
       Real.exp_le_exp.mpr (mul_le_mul_of_nonneg_left hpin (by positivity))
-    have h6 : 0 ≤ normPlus y ^ (4 : ℝ) := Real.rpow_nonneg hnp0.le _
     calc kt y * normPlus y ^ (4 : ℝ) * Real.exp (γ ^ 2 * q * bpzPin r y)
         ≤ max B 0 * R₁ ^ (4 : ℝ) * Real.exp (γ ^ 2 * q * (Real.log R₁ + 1)) :=
-          mul_le_mul (mul_le_mul hkt h4 h6 (le_max_right _ _)) h5 (Real.exp_pos _).le
+          mul_le_mul (mul_le_mul hkt h4 (Real.rpow_nonneg hnp0.le _) (le_max_right _ _)) h5 (Real.exp_pos _).le
             (by positivity)
       _ = K₁ := rfl
   · refine le_max_of_le_right ?_

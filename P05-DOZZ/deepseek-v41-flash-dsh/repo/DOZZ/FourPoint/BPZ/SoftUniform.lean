@@ -61,12 +61,11 @@ theorem bpzSoft_rpow_pred_le_norm_rpow {a ε : ℝ} (ha1 : a ≤ 1) {x z : ℂ} 
 theorem norm_bpzSoftDeriv_le_uniform {a ε : ℝ} (ha : 0 < a) (ha1 : a ≤ 1) {x z : ℂ}
     (hxz : x ≠ z) :
     ‖bpzSoftDeriv a ε x z‖ ≤ 2 * a * ‖x - z‖ ^ (2 * a - 1) := by
-  have hu : 0 < ‖x - z‖ := norm_pos_iff.mpr (sub_ne_zero.mpr hxz)
   refine (norm_bpzSoftDeriv_le a ε x z).trans ?_
   rw [abs_of_pos ha]
   have h := bpzSoft_rpow_pred_le_norm_rpow (ε := ε) ha1 hxz
   have hpow : ‖x - z‖ ^ (2 * a - 2) * ‖x - z‖ = ‖x - z‖ ^ (2 * a - 1) := by
-    rw [← Real.rpow_add_one hu.ne']
+    rw [← Real.rpow_add_one (norm_pos_iff.mpr (sub_ne_zero.mpr hxz)).ne']
     congr 1
     ring
   calc 2 * a * (Complex.normSq (x - z) + ε ^ 2) ^ (a - 1) * ‖x - z‖
@@ -104,7 +103,6 @@ theorem norm_bpzSoftDeriv_le_far {a ε r : ℝ} (ha : 0 < a) (hr : 0 < r) {x z :
   have hN0 : 0 < Complex.normSq (x - z) + ε ^ 2 := lt_of_lt_of_le (by positivity) hNu
   refine (norm_bpzSoftDeriv_le a ε x z).trans ?_
   rw [abs_of_pos ha, Real.rpow_sub_one hN0.ne']
-  have hNa : 0 ≤ (Complex.normSq (x - z) + ε ^ 2) ^ a := Real.rpow_nonneg hN0.le a
   have key : ‖x - z‖ / (Complex.normSq (x - z) + ε ^ 2) ≤ 1 / r := by
     rw [div_le_div_iff₀ hN0 hr]
     nlinarith [mul_le_mul_of_nonneg_left hxz hu0.le]
@@ -128,14 +126,8 @@ theorem norm_bpzSoftDeriv2_le_far {a ε r : ℝ} (ha : 0 < a) (ha1 : a ≤ 1) (h
     rw [abs_of_nonpos (mul_nonpos_of_nonneg_of_nonpos ha.le (by linarith))]
     ring
   rw [habs, abs_of_pos ha, Real.rpow_sub_one hN0.ne']
-  have hc : 0 ≤ 4 * (a * (1 - a)) + 2 * a := by
-    have : 0 ≤ a * (1 - a) := mul_nonneg ha.le (by linarith)
-    positivity
-  have hNa : 0 ≤ (Complex.normSq (x - z) + ε ^ 2) ^ a := Real.rpow_nonneg hN0.le a
   have hr2 : r ^ 2 ≤ Complex.normSq (x - z) + ε ^ 2 :=
     le_trans (pow_le_pow_left₀ hr.le hxz 2) hNu
-  have key : 1 / (Complex.normSq (x - z) + ε ^ 2) ≤ 1 / r ^ 2 :=
-    one_div_le_one_div_of_le (by positivity) hr2
   calc (4 * (a * (1 - a)) + 2 * a) *
         ((Complex.normSq (x - z) + ε ^ 2) ^ a / (Complex.normSq (x - z) + ε ^ 2))
       = (4 * (a * (1 - a)) + 2 * a) * (Complex.normSq (x - z) + ε ^ 2) ^ a *
@@ -250,8 +242,7 @@ theorem bpz_lintegral_ball_rpow_le {p R : ℝ} (hp : -2 < p) (hR : 0 < R) (c : �
 theorem bpz_gmcReferenceMeasure_le_volume : gmcReferenceMeasure ≤ (volume : Measure ℂ) := by
   have h : gmcReferenceMeasure ≤ (volume : Measure ℂ).withDensity (1 : ℂ → ℝ≥0∞) := by
     refine withDensity_mono (Filter.Eventually.of_forall fun x => ?_)
-    have h1 : 1 ≤ normPlus x := le_max_left _ _
-    have h2 : normPlus x ^ (-4 : ℝ) ≤ 1 := Real.rpow_le_one_of_one_le_of_nonpos h1 (by norm_num)
+    have h2 : normPlus x ^ (-4 : ℝ) ≤ 1 := Real.rpow_le_one_of_one_le_of_nonpos (le_max_left _ _) (by norm_num)
     calc ENNReal.ofReal (normPlus x ^ (-4 : ℝ)) ≤ ENNReal.ofReal 1 := ENNReal.ofReal_le_ofReal h2
       _ = 1 := ENNReal.ofReal_one
   rwa [withDensity_one] at h

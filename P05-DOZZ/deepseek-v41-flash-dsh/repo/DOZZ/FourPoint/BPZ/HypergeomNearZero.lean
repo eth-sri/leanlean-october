@@ -3,6 +3,7 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
+public import DOZZ.SharedHyp
 
 public import DOZZ.Statements.Hypergeom.IsGaussHypergeometricFamily
 public import DOZZ.Statements.Hypergeom.GaussFMinus
@@ -32,7 +33,7 @@ namespace DOZZ.Proofs
 
 /-- The hypergeometric function is `1` at the origin. -/
 theorem bpzHG_eq_one_at_zero {H : ℂ → ℂ → ℂ → ℂ → ℂ} (hH : IsGaussHypergeometricFamily H)
-    {a b c : ℂ} (hc : ∀ n : ℕ, c ≠ -(n : ℂ)) : H a b c 0 = 1 := by
+    {a b c : ℂ} (hc : NotNegPole c) : H a b c 0 = 1 := by
   rw [(hH a b c hc).2 0 (by simp)]
   exact ordinaryHypergeometric_zero a b c
 
@@ -49,7 +50,7 @@ theorem bpzHG_mapsTo_ofReal_gaussSlitPlane :
 
 /-- On the real interval `(-1, 1)`, `u ↦ ‖H a b c u‖²` is smooth. -/
 theorem bpzHG_contDiffOn_normSq {H : ℂ → ℂ → ℂ → ℂ → ℂ} (hH : IsGaussHypergeometricFamily H)
-    {a b c : ℂ} (hc : ∀ n : ℕ, c ≠ -(n : ℂ)) :
+    {a b c : ℂ} (hc : NotNegPole c) :
     ContDiffOn ℝ 2 (fun u : ℝ => Complex.normSq (H a b c (u : ℂ))) (Set.Ioo (-1) 1) := by
   have hC : ContDiffOn ℂ 2 (H a b c) gaussSlitPlane :=
     (hH a b c hc).1.contDiffOn bpzHG_isOpen_gaussSlitPlane

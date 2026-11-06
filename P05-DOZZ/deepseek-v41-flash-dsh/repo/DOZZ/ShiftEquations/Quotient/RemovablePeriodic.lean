@@ -3,6 +3,7 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
+public import DOZZ.SharedHyp
 
 public import DOZZ.Statements.ShiftEquations.TwoPoleWindow
 import DOZZ.ShiftEquations.Quotient.Divisors
@@ -41,7 +42,7 @@ periods `γ` and `4/γ`. -/
 theorem structureConstant_DOZZ_quotient_removable_periodic
     (γ μ η : ℝ) (U : ℂ → ℂ) (α₂ α₃ : ℝ) (h : ℝ) (hh : 0 < h)
     (hγ : 0 < γ) (hγ2 : γ < 2) (hγirr : Irrational (γ ^ 2)) (hμ : 0 < μ)
-    (hη : 0 < η ∧ Q γ - 2 * η > γ)
+    (hη : DriftWindow γ η)
     (hα₂ : Q γ - η < α₂ ∧ α₂ < Q γ) (hα₃ : Q γ - η < α₃ ∧ α₃ < Q γ)
     (hU : IsUpsilon γ U)
     (C : ℂ → ℂ) (hC : MeromorphicOn C (horizontalStrip h))

@@ -242,8 +242,6 @@ theorem gaussGMinus_midpoint_deriv_differentiableAt_params
       (fun q => deriv (gaussGMinus H q.1 q.2.1 q.2.2) (1 / 2 : ℂ)) p := by
   have hSdiff : DifferentiableAt ℂ midpointGMinusParameters p := by
     fun_prop [midpointGMinusParameters]
-  have hder := familyParameterDeriv_comp_differentiableAt hH p midpointGMinusParameters
-    (midpointGMinusParameters_mem hp) hSdiff (1 / 2 : ℂ) (by norm_num)
   have hlocal : (fun q : ℂ × ℂ × ℂ =>
       deriv (gaussGMinus H q.1 q.2.1 q.2.2) (1 / 2 : ℂ)) =ᶠ[𝓝 p]
       (fun q => -deriv (H q.1 q.2.1 (1 + q.1 + q.2.1 - q.2.2)) (1 / 2 : ℂ)) := by
@@ -252,9 +250,8 @@ theorem gaussGMinus_midpoint_deriv_differentiableAt_params
   have hright : DifferentiableAt ℂ
       (fun q : ℂ × ℂ × ℂ =>
         -deriv (H q.1 q.2.1 (1 + q.1 + q.2.1 - q.2.2)) (1 / 2 : ℂ)) p := by
-    have hmap : DifferentiableAt ℂ midpointGMinusParameters p := hSdiff
     have hcomp := familyParameterDeriv_comp_differentiableAt hH p midpointGMinusParameters
-      (midpointGMinusParameters_mem hp) hmap (1 / 2 : ℂ) (by norm_num)
+      (midpointGMinusParameters_mem hp) (hSdiff) (1 / 2 : ℂ) (by norm_num)
     simpa [midpointGMinusParameters] using hcomp.neg
   exact hright.congr_of_eventuallyEq hlocal
 

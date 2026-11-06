@@ -3,6 +3,7 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
+public import DOZZ.SharedHyp
 
 public import DOZZ.Correlations.Residue.EqualReduction
 public import DOZZ.Correlations.Residue.UniformFamilies
@@ -28,22 +29,7 @@ theorem residue_unitVolume_bridge_of_insertion_tails
     (M : Ω → Measure ℂ) (γ α2 α3 : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
     (hα : 0 < α2 ∧ α2 ≤ α3 ∧ γ / 2 < α3 ∧ α3 < Q γ)
     (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M)
-    (hone : ∀
-    (Kz : Set ℂ) (_hKz : IsCompact Kz) (_hz : ∀ z ∈ Kz, 2 ≤ ‖z‖)
-    (Kα : Set ℝ) (_hKα : IsCompact Kα)
-    (_hα : ∀ α ∈ Kα, γ / 2 < α ∧ α < Q γ)
-    (Family : ℂ → Set (ℂ → ℝ)) (radius supBound derivBound lowerBound : ℝ)
-    (_hFamily : UniformPositiveC1Family Kz Family radius supBound derivBound lowerBound),
-    ∃ B : ℝ → Ω → BrownianPath × BrownianPath, ∃ Z : Ω → Measure ℝ,
-      IsSourceLateralProjection P X γ M Z ∧
-        (∀ α ∈ Kα, IsReflectionData P γ α (B α) Z) ∧
-        ∀ η : ℝ, 0 < η → (∀ α ∈ Kα, η < oneInsertionErrorCeiling γ α) →
-          ∃ C : ℝ, 0 ≤ C ∧
-            ∀ z ∈ Kz, ∀ α ∈ Kα, ∀ F ∈ Family z, ∀ x : ℝ, 1 ≤ x →
-              |(P {ω | ENNReal.ofReal x < localSingularMass M F z γ α ω}).toReal -
-                oneInsertionTailCoefficient γ α z (F z) (reflectionBarR P γ α (B α) Z) *
-                  Real.rpow x (-reflectionExponent γ α)| ≤
-                C * Real.rpow x (-reflectionExponent γ α - η) )
+    (hone : OneInsertionHyp P X M γ)
     (htwo : ∀
     (K2 K3 : Set ℂ) (_hK2 : IsCompact K2) (_hK3 : IsCompact K3)
     (_hpos2 : ∀ z ∈ K2, 2 ≤ ‖z‖) (_hpos3 : ∀ z ∈ K3, 2 ≤ ‖z‖)
@@ -101,9 +87,8 @@ theorem residue_unitVolume_bridge_of_insertion_tails
       {3} {7} F3s F7s (1 / 2) s3 d3 l3 s7 d7 l7 hF3 hF7
     have hsep : ∀ z2 ∈ ({3} : Set ℂ), ∀ z3 ∈ ({7} : Set ℂ), 3 ≤ ‖z2 - z3‖ := by
       intro z2 hz2 z3 hz3
-      have hh2 : z2 = 3 := hz2
       have hh3 : z3 = 7 := hz3
-      rw [hh2, hh3]
+      rw [(hz2), hh3]
       norm_num
     obtain ⟨B, Z, hZ, hB, htail⟩ := htwo {3} {7} isCompact_singleton isCompact_singleton
       hpos3 hpos7 hsep {α3} {α3} isCompact_singleton isCompact_singleton hcharge hcharge
@@ -129,8 +114,7 @@ theorem residue_unitVolume_bridge_of_insertion_tails
     have hη : 0 < η := by dsimp only [η]; positivity
     have hηbound : ∀ α ∈ ({α3} : Set ℝ), η < oneInsertionErrorCeiling γ α := by
       intro α hαs
-      have hh : α = α3 := hαs
-      rw [hh]
+      rw [(hαs)]
       dsimp only [η]
       linarith only [he]
     obtain ⟨C, hC, hCb⟩ := htail η hη hηbound

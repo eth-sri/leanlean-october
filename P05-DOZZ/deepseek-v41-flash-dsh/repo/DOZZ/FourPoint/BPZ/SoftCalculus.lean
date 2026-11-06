@@ -156,13 +156,11 @@ theorem norm_bpzSoftDeriv2_le (a ε : ℝ) (x z : ℂ)
     ‖bpzSoftDeriv2 a ε x z‖ ≤
       (4 * |a * (a - 1)| + 2 * |a|) * (Complex.normSq (x - z) + ε ^ 2) ^ (a - 1) := by
   set N : ℝ := Complex.normSq (x - z) + ε ^ 2
-  have hP : 0 ≤ N ^ (a - 2) := Real.rpow_nonneg hN.le _
   have hQ : N ^ (a - 1) = N ^ (a - 2) * N := by
     rw [show a - 1 = (a - 2) + 1 by ring, Real.rpow_add hN, Real.rpow_one]
   have hu : ‖x - z‖ ^ 2 ≤ N := by
     rw [← Complex.normSq_eq_norm_sq]
     exact le_add_of_nonneg_right (sq_nonneg ε)
-  have hQ0 : 0 ≤ N ^ (a - 1) := Real.rpow_nonneg hN.le _
   have hM : 0 ≤ (4 * |a * (a - 1)| + 2 * |a|) * N ^ (a - 1) := by positivity
   refine ContinuousLinearMap.opNorm_le_bound _ hM (fun h => ?_)
   refine ContinuousLinearMap.opNorm_le_bound _ (by positivity) (fun k => ?_)
@@ -171,13 +169,12 @@ theorem norm_bpzSoftDeriv2_le (a ε : ℝ) (x z : ℂ)
   have hk := bpzSoft_abs_inner_le (x - z) k
   have hhk := bpzSoft_abs_inner_le h k
   have hnh : 0 ≤ ‖h‖ := norm_nonneg h
-  have hnk : 0 ≤ ‖k‖ := norm_nonneg k
   have hnu : 0 ≤ ‖x - z‖ := norm_nonneg _
   have habs1 : |4 * a * (a - 1) * N ^ (a - 2)| = 4 * |a * (a - 1)| * N ^ (a - 2) := by
-    rw [mul_assoc 4 a (a - 1), abs_mul, abs_mul, abs_of_nonneg hP]
+    rw [mul_assoc 4 a (a - 1), abs_mul, abs_mul, abs_of_nonneg (Real.rpow_nonneg hN.le _)]
     norm_num
   have habs2 : |2 * a * N ^ (a - 1)| = 2 * |a| * N ^ (a - 1) := by
-    rw [abs_mul, abs_mul, abs_of_nonneg hQ0]
+    rw [abs_mul, abs_mul, abs_of_nonneg (Real.rpow_nonneg hN.le _)]
     norm_num
   have hprod : |((x - z).re * h.re + (x - z).im * h.im) *
         ((x - z).re * k.re + (x - z).im * k.im)| ≤ ‖x - z‖ ^ 2 * (‖h‖ * ‖k‖) := by
@@ -229,14 +226,13 @@ theorem bpzSoftDeriv_wirtinger_zero (a : ℝ) {x z : ℂ} (hxz : x ≠ z) :
       ((a * Complex.normSq (x - z) ^ a : ℝ) : ℂ) / (z - x) := by
   rw [bpzSoftDeriv_wirtinger]
   have hu : x - z ≠ 0 := sub_ne_zero.mpr hxz
-  have hN : 0 < Complex.normSq (x - z) := Complex.normSq_pos.mpr hu
   have hz : (z - x : ℂ) = -(x - z) := by ring
   have hc : conj (x - z) ≠ 0 := (map_ne_zero _).mpr hu
   have hNc : ((Complex.normSq (x - z) : ℝ) : ℂ) = (x - z) * conj (x - z) :=
     (Complex.mul_conj _).symm
   have hpow : Complex.normSq (x - z) ^ (a - 1) =
       Complex.normSq (x - z) ^ a / Complex.normSq (x - z) :=
-    Real.rpow_sub_one hN.ne' a
+    Real.rpow_sub_one (Complex.normSq_pos.mpr hu).ne' a
   simp only [ne_eq, OfNat.ofNat_ne_zero, not_false_eq_true, zero_pow, add_zero]
   rw [hpow, hz]
   push_cast
@@ -250,14 +246,13 @@ theorem bpzSoftDeriv2_wirtinger_zero (a : ℝ) {x z : ℂ} (hxz : x ≠ z) :
       ((a * (a - 1) * Complex.normSq (x - z) ^ a : ℝ) : ℂ) / (z - x) ^ 2 := by
   rw [bpzSoftDeriv2_wirtinger]
   have hu : x - z ≠ 0 := sub_ne_zero.mpr hxz
-  have hN : 0 < Complex.normSq (x - z) := Complex.normSq_pos.mpr hu
   have hz : (z - x : ℂ) = -(x - z) := by ring
   have hc : conj (x - z) ≠ 0 := (map_ne_zero _).mpr hu
   have hNc : ((Complex.normSq (x - z) : ℝ) : ℂ) = (x - z) * conj (x - z) :=
     (Complex.mul_conj _).symm
   have hpow : Complex.normSq (x - z) ^ (a - 2) =
       Complex.normSq (x - z) ^ a / Complex.normSq (x - z) ^ 2 := by
-    rw [Real.rpow_sub hN, Real.rpow_two]
+    rw [Real.rpow_sub (Complex.normSq_pos.mpr hu), Real.rpow_two]
   simp only [ne_eq, OfNat.ofNat_ne_zero, not_false_eq_true, zero_pow, add_zero]
   rw [hpow, hz]
   push_cast

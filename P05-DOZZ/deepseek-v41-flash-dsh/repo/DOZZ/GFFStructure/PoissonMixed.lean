@@ -3,6 +3,7 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
+public import DOZZ.SharedHyp
 public import DOZZ.GFFStructure.PoissonHarmonic
 /-!
 # Poisson/test covariance and Green cancellation
@@ -28,10 +29,9 @@ theorem tendsto_integral_canonicalPoissonCollarTest_mul (c z : ℂ) (ρ ε : ℝ
   let d := ρ+ε
   have hd : 0 < d := add_pos hρ hε
   let g : ℂ → ℝ := fun w => h (poissonDiskClamp c d w)
-  have hg : Continuous g := hh.comp (continuous_poissonDiskClamp c d hd)
   obtain ⟨M,hM⟩ := (isCompact_closedBall c d).exists_bound_of_continuousOn hh.continuousOn
   have hb (w : ℂ) : ‖g w‖ ≤ M := hM _ (poissonDiskClamp_mem_closedBall c w d hd)
-  have hl := tendsto_integral_poissonCollarTest_mul_bounded c z ρ ε hρ hε hz g hg M hb
+  have hl := tendsto_integral_poissonCollarTest_mul_bounded c z ρ ε hρ hε hz g (hh.comp (continuous_poissonDiskClamp c d hd)) M hb
   have he k : (fun w => canonicalPoissonCollarTest c z ρ ε hρ hε hz k w*g w) =
       fun w => canonicalPoissonCollarTest c z ρ ε hρ hε hz k w*h w := by
     funext w
@@ -364,7 +364,7 @@ theorem exteriorPinned_poisson_tests_isGaussianProcess {Ω : Type*} [MeasurableS
     (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
     (c : ℂ) (R ρ ε : ℝ) (hR : 0 < R) (hρ : 0 < ρ) (hε : 0 < ε)
-    (V : Ω → ℂ → ℝ) (hV : ∀ z ∈ ball c ρ, MemLp (fun ω => V ω z) 2 P)
+    (V : Ω → ℂ → ℝ) (hV : MemLpBall P V c ρ)
     (hlim : ∀ z (hz : z ∈ ball c ρ), Tendsto (fun k => eLpNorm
       (fun ω => exteriorPinnedEvaluation X Xc R hR ω
         (canonicalPoissonCollarTest c z ρ ε hρ hε hz k)-V ω z) 2 P) atTop (𝓝 0)) :

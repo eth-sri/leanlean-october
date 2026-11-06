@@ -3,6 +3,7 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
+public import DOZZ.SharedHyp
 
 public import DOZZ.Hypergeom.ODE.BranchOverlap
 public import DOZZ.Hypergeom.ODE.SeriesEquation
@@ -62,7 +63,7 @@ noncomputable def gaussSlitScalarState (a b c : ℂ) (z : ℂ) : ℂ :=
       else ordinaryHypergeometric (𝔸 := ℂ) a b c z
 
 private theorem gaussSlitScalarState_eq_negative_on_negativeCut
-    (a b c : ℂ) (hc : ∀ n : ℕ, c ≠ -(n : ℂ))
+    (a b c : ℂ) (hc : NotNegPole c)
     {z : ℂ} (hz : z ∈ gaussNegativeCutPlane) :
     gaussSlitScalarState a b c z = gaussNegativeCutPlaneScalarState a b c z := by
   classical
@@ -74,7 +75,7 @@ private theorem gaussSlitScalarState_eq_negative_on_negativeCut
 
 /-- On the open unit disk, the glued value is the ordinary Gauss series. -/
 theorem gaussSlitScalarState_eq_ordinary_on_unitDisk
-    (a b c : ℂ) (hc : ∀ n : ℕ, c ≠ -(n : ℂ))
+    (a b c : ℂ) (hc : NotNegPole c)
     {z : ℂ} (hznorm : ‖z‖ < 1) :
     gaussSlitScalarState a b c z = ordinaryHypergeometric (𝔸 := ℂ) a b c z := by
   classical
@@ -102,7 +103,7 @@ theorem gaussSlitScalarState_eq_ordinary_on_unitDisk
 
 /-- The glued scalar function is holomorphic on the slit plane. -/
 theorem gaussSlitScalarState_differentiableOn
-    (a b c : ℂ) (hc : ∀ n : ℕ, c ≠ -(n : ℂ)) :
+    (a b c : ℂ) (hc : NotNegPole c) :
     DifferentiableOn ℂ (gaussSlitScalarState a b c) gaussSlitPlane := by
   classical
   intro z hz

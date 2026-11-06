@@ -45,11 +45,6 @@ theorem negativeLevelHitAfter_realMeasure_le_complementAvoidance
       conditionedPositiveFutureAvoidanceCoordinate t c q)
     exact MeasurableSet.iInter fun q =>
       measurableSet_conditionedPositiveFutureAvoidanceCoordinate t c q
-  have hHitMeas : MeasurableSet (negativeLevelHitAfter t (c : ℝ)) := by
-    change MeasurableSet ((fun p : BrownianPath => ((c : ℝ), p)) ⁻¹'
-      {z : ℝ × BrownianPath | ∃ u : ℝ≥0, t < u ∧ z.2 u = -z.1})
-    exact (measurableSet_brownianPath_levelHit_after t).preimage
-      (measurable_const.prodMk measurable_id)
   have hTouch := conditionedPositiveFutureAvoidanceTouchEvent_measure_zero
     hP hB hν t ht c hc
   have hTouchReal :
@@ -152,10 +147,9 @@ theorem ae_negativeConditionedLevelHitSet_nonempty_bddAbove
           change -(p 0) ≤ (c : ℝ)
           rw [hp0]
           simp
-        have hfT : (c : ℝ) ≤ f ((n + 1 : ℕ) : ℝ≥0) := hhigh.le
         obtain ⟨u, hu, hfu⟩ := intermediate_value_Icc
           (a := (0 : ℝ≥0)) (b := ((n + 1 : ℕ) : ℝ≥0)) (f := f) zero_le
-          (p.continuous.neg.continuousOn) ⟨hf0, hfT⟩
+          (p.continuous.neg.continuousOn) ⟨hf0, (hhigh.le)⟩
         have hhit : p u = -(c : ℝ) := by
           have hneg := congrArg (fun x : ℝ => -x) hfu
           simpa [f] using hneg

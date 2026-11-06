@@ -27,10 +27,9 @@ private theorem tendstoInMeasure_add_of_sub
   have hδ : 0 < δ := by dsimp [δ]; linarith
   have hfg' : Tendsto (fun i => P {ω | δ ≤ ‖f i ω - g i ω‖}) l (𝓝 0) := by
     simpa [δ, sub_zero] using hfg δ hδ
-  have hgy' : Tendsto (fun i => P {ω | δ ≤ ‖g i ω - y ω‖}) l (𝓝 0) := hgy δ hδ
   have hadd : Tendsto (fun i =>
       P {ω | δ ≤ ‖f i ω - g i ω‖} + P {ω | δ ≤ ‖g i ω - y ω‖}) l (𝓝 0) := by
-    simpa using hfg'.add hgy'
+    simpa using hfg'.add (hgy δ hδ)
   apply tendsto_of_tendsto_of_tendsto_of_le_of_le'
     (tendsto_const_nhds : Tendsto (fun _ : ι => (0 : ℝ≥0∞)) l (𝓝 0)) hadd
   · exact Filter.Eventually.of_forall (fun _ => bot_le)
@@ -45,13 +44,12 @@ private theorem tendstoInMeasure_add_of_sub
                 ω ∈ {ω | δ ≤ ‖g i ω - y ω‖}) := by
               simpa only [Set.mem_union] using hnot
             rcases not_or.mp hnot' with ⟨h1, h2⟩
-            have h1' : ‖f i ω - g i ω‖ < δ := lt_of_not_ge h1
             have h2' : ‖g i ω - y ω‖ < δ := lt_of_not_ge h2
             have hsum : ‖f i ω - y ω‖ < ε := by
               calc
                 ‖f i ω - y ω‖ = ‖(f i ω - g i ω) + (g i ω - y ω)‖ := by congr 1; ring
                 _ ≤ ‖f i ω - g i ω‖ + ‖g i ω - y ω‖ := norm_add_le _ _
-                _ < δ + δ := add_lt_add h1' h2'
+                _ < δ + δ := add_lt_add (lt_of_not_ge h1) h2'
                 _ = ε := by dsimp [δ]; ring
             exact (not_le_of_gt hsum) hω
         _ ≤ P {ω | δ ≤ ‖f i ω - g i ω‖} + P {ω | δ ≤ ‖g i ω - y ω‖} := MeasureTheory.measure_union_le _ _

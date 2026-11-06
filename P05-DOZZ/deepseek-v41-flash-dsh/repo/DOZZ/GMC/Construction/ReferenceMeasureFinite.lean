@@ -21,7 +21,6 @@ theorem gmcReferenceMeasure_univ_ne_top :
     gmcReferenceMeasure Set.univ ≠ ∞ := by
   let B : Set ℂ := Metric.ball 0 1
   let f : ℂ → ℝ≥0∞ := fun x => ENNReal.ofReal (normPlus x ^ (-4 : ℝ))
-  have hB : MeasurableSet B := Metric.isOpen_ball.measurableSet
   have hBallVolume : volume B ≠ ∞ := by
     have hclosed : volume (Metric.closedBall (0 : ℂ) 1) ≠ ∞ :=
       (isCompact_closedBall (0 : ℂ) (1 : ℝ)).measure_ne_top
@@ -45,9 +44,8 @@ theorem gmcReferenceMeasure_univ_ne_top :
       (∫⁻ x in B, f x ∂volume) ≤ ∫⁻ x in B, (1 : ℝ≥0∞) ∂volume :=
         setLIntegral_mono (s := B) (f := f) (g := fun _ : ℂ => (1 : ℝ≥0∞))
           measurable_const (fun x hx => by
-        have hnorm : 1 ≤ normPlus x := le_max_left _ _
         have hp : normPlus x ^ (-4 : ℝ) ≤ 1 :=
-          Real.rpow_le_one_of_one_le_of_nonpos hnorm (by norm_num)
+          Real.rpow_le_one_of_one_le_of_nonpos (le_max_left _ _) (by norm_num)
         simp only [f]
         exact ENNReal.ofReal_le_one.mpr hp)
       _ = volume B := by simp
@@ -68,7 +66,7 @@ theorem gmcReferenceMeasure_univ_ne_top :
   have htailFinite' : (∫⁻ x in Bᶜ, f x ∂volume) ≠ ∞ :=
     ne_of_lt (lt_of_le_of_lt htailBound (lt_top_iff_ne_top.mpr htailFinite))
   have htotal : (∫⁻ x, f x ∂volume) ≠ ∞ := by
-    rw [← lintegral_add_compl f hB]
+    rw [← lintegral_add_compl f (Metric.isOpen_ball.measurableSet)]
     exact ENNReal.add_ne_top.mpr
       ⟨ne_of_lt (lt_of_le_of_lt hballBound (lt_top_iff_ne_top.mpr hBallVolume)),
         htailFinite'⟩

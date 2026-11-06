@@ -3,6 +3,7 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
+public import DOZZ.SharedHyp
 
 public import DOZZ.Brownian.Lateral.CircleRegularization
 public import DOZZ.GMC.Moments.CircleScale
@@ -169,12 +170,11 @@ theorem originCircleLateralL2_covariance_dilation
   rw [circleMeasure_scale hpos, integral_map hscale.aemeasurable ho.aestronglyMeasurable]
   apply integral_congr_ae
   filter_upwards [circle_norm_lower_ae _ _ _ p.property.2] with w hw
-  have hw0 : w ≠ 0 := norm_pos_iff.mp (p.property.1.trans_le hw)
   apply integral_congr_ae
   let : NullSingletonClass (circleMeasure q.val.2.1 q.val.2.2) := circleMeasure_noAtoms _ _
   filter_upwards [circle_norm_lower_ae _ _ _ q.property.2,
     (circleMeasure q.val.2.1 q.val.2.2).ae_ne w] with v hv hsep
-  exact origin_lateralKernel_dilation (c : ℂ) w v (by exact_mod_cast hpos.ne') hw0
+  exact origin_lateralKernel_dilation (c : ℂ) w v (by exact_mod_cast hpos.ne') (norm_pos_iff.mp (p.property.1.trans_le hw))
     (norm_pos_iff.mp (q.property.1.trans_le hv)) hsep.symm
 
 /-- The same covariance identity in the literal centered second-moment normalization. -/
@@ -215,7 +215,7 @@ theorem originLateralCircleRegularization_dilation_fdd_law
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
     (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
+    (hm : MeasurableCircleAvg Xc)
     (ρ c ε : ℝ) (hρ : 0 < ρ) (hcpos : 0 < c) (hε : 0 < ε) (hερ : ε ≤ ρ)
     (n : ℕ) (xs : Fin n → ℂ) (hxs : ∀ i, xs i ∈ originLateralChart ρ) :
     P.map (fun ω i => originLateralCircleRegularization Xc (c * ρ) ω (c * ε) (c * xs i)) =
@@ -249,7 +249,7 @@ theorem originLateralCircleRegularization_dilation_variance
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
     (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
+    (hm : MeasurableCircleAvg Xc)
     (ρ c ε : ℝ) (hρ : 0 < ρ) (hcpos : 0 < c) (hε : 0 < ε) (hερ : ε ≤ ρ)
     (x : ℂ) (hx : x ∈ originLateralChart ρ) :
     gaussianVariance P (fun ω => originLateralCircleRegularization Xc (c * ρ) ω (c * ε) (c * x)) =

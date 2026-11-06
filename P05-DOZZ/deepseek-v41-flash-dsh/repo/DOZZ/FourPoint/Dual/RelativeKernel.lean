@@ -16,7 +16,6 @@ namespace DOZZ.Proofs
 theorem dual_kernel_distance_ratio (γ α₁ α₂ α₃ : ℝ) (z x : ℂ) (hx : 0 < ‖x‖) :
     dualFusionKernel γ α₁ α₂ α₃ z x =
       (‖x - z‖ / ‖x‖) ^ ((2 : ℝ)) * dualFusionKernel γ α₁ α₂ α₃ 0 x := by
-  have hn : ‖x‖ ^ ((2 : ℝ)) ≠ 0 := (Real.rpow_pos_of_pos hx _).ne'
   unfold dualFusionKernel
   rw [sub_zero, Real.div_rpow (norm_nonneg _) hx.le]
   field_simp

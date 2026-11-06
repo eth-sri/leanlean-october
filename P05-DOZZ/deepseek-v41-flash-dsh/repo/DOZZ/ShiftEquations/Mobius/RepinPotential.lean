@@ -151,7 +151,6 @@ theorem abs_repinPotential_sub_le (a b : ℂ) (ha : a ≠ 0) (x x' : ℂ) :
   have h3 : |‖b - x'‖ - ‖b - x‖| ≤ ‖x - x'‖ := by
     have := abs_norm_sub_norm_le (b - x') (b - x)
     rwa [show b - x' - (b - x) = x - x' by ring] at this
-  have h4 : |‖x‖ - ‖x'‖| ≤ ‖x - x'‖ := abs_norm_sub_norm_le x x'
   unfold normPlus
   calc |(-Real.log (max ‖a‖ ‖b - x‖) + Real.log (max 1 ‖x‖) + repinConst a b) -
           (-Real.log (max ‖a‖ ‖b - x'‖) + Real.log (max 1 ‖x'‖) + repinConst a b)|
@@ -162,7 +161,7 @@ theorem abs_repinPotential_sub_le (a b : ℂ) (ha : a ≠ 0) (x x' : ℂ) :
     _ ≤ |‖b - x'‖ - ‖b - x‖| / ‖a‖ + |‖x‖ - ‖x'‖| / 1 := add_le_add h1 h2
     _ ≤ ‖x - x'‖ / ‖a‖ + ‖x - x'‖ / 1 :=
         add_le_add (div_le_div_of_nonneg_right h3 hapos.le)
-          (div_le_div_of_nonneg_right h4 one_pos.le)
+          (div_le_div_of_nonneg_right (abs_norm_sub_norm_le x x') one_pos.le)
     _ = (‖a‖⁻¹ + 1) * ‖x - x'‖ := by field_simp
 
 /-- The repinning potential is continuous. -/
@@ -282,8 +281,7 @@ theorem repin_selfEnergy (a b : ℂ) (ha : a ≠ 0) :
       2 * repinKappa a b := by
   have _ := circleMeasure_zero_zero_isProbability
   change ∫ u, repinPotential a b u ∂circleMeasure b (-Real.log ‖a‖) = _
-  have hmeas : Measurable (repinPotential a b) := (continuous_repinPotential a b ha).measurable
-  rw [circleMeasure_repin a b ha, integral_map (by fun_prop) hmeas.aestronglyMeasurable]
+  rw [circleMeasure_repin a b ha, integral_map (by fun_prop) ((continuous_repinPotential a b ha).measurable).aestronglyMeasurable]
   simp_rw [repinPotential_affine a b ha]
   rw [integral_add (integrable_affineDefect_circleMeasure a b ha 0 0) (integrable_const _),
     integral_const, probReal_univ, one_smul]

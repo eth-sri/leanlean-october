@@ -116,7 +116,6 @@ theorem abs_abkSpatialConvolution_le_small {d : Nat}
   refine ⟨B * 2 ^ d, mul_nonneg hB_nonneg (pow_nonneg zero_le_two d), ?_⟩
   intro r y hr
   let S : Set (Vec d) := Metric.closedBall y r
-  have hS_meas : MeasurableSet S := measurableSet_closedBall
   have hS_finite : (volume : Measure (Vec d)) S ≠ ∞ := by
     rw [Real.volume_pi_closedBall y hr.le, Fintype.card_fin]
     exact ENNReal.ofReal_ne_top
@@ -149,7 +148,7 @@ theorem abs_abkSpatialConvolution_le_small {d : Nat}
     abs_integral_le_measure_mul_of_abs_le_of_support_subset
       (f := F) (M := B) (S := S)
       (integrable_abkSpatialConvolution_integrand ζ ψ r y)
-      hS_meas hS_finite hpoint hsupport
+      (measurableSet_closedBall) hS_finite hpoint hsupport
   have hvol_real : ((volume : Measure (Vec d)) S).toReal = (2 * r) ^ d := by
     rw [Real.volume_pi_closedBall y hr.le, Fintype.card_fin]
     rw [ENNReal.toReal_ofReal]
@@ -237,10 +236,9 @@ theorem volume_abkSupportBall_le_large {d : Nat} {R r : ℝ}
     (hR_nonneg : 0 ≤ R) (hr : 1 ≤ r) :
     volume {y : Vec d | euclideanNorm y ≤ (d : ℝ) * (R + r)} ≤
       ENNReal.ofReal (((2 * (d : ℝ) * (R + 1)) ^ d) * r ^ d) := by
-  have hr_nonneg : 0 ≤ r := le_trans zero_le_one hr
   have hd_nonneg : 0 ≤ (d : ℝ) := Nat.cast_nonneg d
   have hA_nonneg : 0 ≤ (d : ℝ) * (R + r) :=
-    mul_nonneg hd_nonneg (add_nonneg hR_nonneg hr_nonneg)
+    mul_nonneg hd_nonneg (add_nonneg hR_nonneg (le_trans zero_le_one hr))
   have hRr : R + r ≤ (R + 1) * r := by
     nlinarith [mul_nonneg hR_nonneg (sub_nonneg.mpr hr)]
   have hbase_le :
@@ -288,7 +286,6 @@ theorem integral_norm_sq_abkSpatialConvolution_le_large {d : Nat}
   refine ⟨C, hC_nonneg, ?_⟩
   intro r hr hsection_int
   have hr_nonneg : 0 ≤ r := le_trans zero_le_one hr
-  have hr_pos : 0 < r := lt_of_lt_of_le zero_lt_one hr
   let A : ℝ := (d : ℝ) * (R + r)
   have hA_nonneg : 0 ≤ A :=
     mul_nonneg (Nat.cast_nonneg d) (add_nonneg hR_nonneg hr_nonneg)
@@ -296,7 +293,7 @@ theorem integral_norm_sq_abkSpatialConvolution_le_large {d : Nat}
       Function.support (fun y : Vec d => abkSpatialConvolution ζ ψ r y) ⊆
         {y : Vec d | euclideanNorm y ≤ A} := by
     simpa [A] using support_abkSpatialConvolution_subset_euclideanClosedBall ζ ψ
-      hψ_support hr_pos
+      hψ_support (lt_of_lt_of_le zero_lt_one hr)
   have hM_nonneg : 0 ≤ L * |r|⁻¹ * J :=
     mul_nonneg (mul_nonneg hL_nonneg (inv_nonneg.mpr (abs_nonneg r))) hJ_nonneg
   have hbasic :=
@@ -312,10 +309,9 @@ theorem integral_norm_sq_abkSpatialConvolution_le_large {d : Nat}
   have hvol_real_le :
       ((volume : Measure (Vec d)) {y : Vec d | euclideanNorm y ≤ A}).toReal ≤
         Cvol * r ^ d := by
-    have hfinite : ENNReal.ofReal (Cvol * r ^ d) ≠ ∞ := ENNReal.ofReal_ne_top
     have hnonneg : 0 ≤ Cvol * r ^ d :=
       mul_nonneg hCvol_nonneg (pow_nonneg hr_nonneg d)
-    simpa [ENNReal.toReal_ofReal hnonneg] using ENNReal.toReal_mono hfinite hvol_le
+    simpa [ENNReal.toReal_ofReal hnonneg] using ENNReal.toReal_mono (ENNReal.ofReal_ne_top) hvol_le
   have hmass_le :
       ((volume : Measure (Vec d)) {y : Vec d | euclideanNorm y ≤ A}).toReal *
           (L * |r|⁻¹ * J) ^ (2 : Nat) ≤
@@ -370,13 +366,12 @@ theorem abk_largeScale_power_identity {d : Nat} {r : ℝ} (hr : 0 < r) :
 theorem abk_smallScale_power_identity {d : Nat} {r : ℝ} (hr : 0 < r) :
     (r ^ (-(((d : ℝ) + 1) / 2))) ^ (2 : Nat) * r ^ (2 * d) =
       r ^ ((d : ℝ) - 1) := by
-  have hr_nonneg : 0 ≤ r := hr.le
   let a : ℝ := -(((d : ℝ) + 1) / 2)
   have hpref : (r ^ a) ^ (2 : Nat) = r ^ (-((d : ℝ) + 1)) := by
     calc
       (r ^ a) ^ (2 : Nat)
           = r ^ (a * ((2 : Nat) : ℝ)) :=
-            (Real.rpow_mul_natCast hr_nonneg a 2).symm
+            (Real.rpow_mul_natCast (hr.le) a 2).symm
       _ = r ^ (-((d : ℝ) + 1)) := by
             congr 1
             dsimp [a]

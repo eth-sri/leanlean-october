@@ -25,13 +25,12 @@ theorem equatorGFF_GMC_inversion_law
       (hMN.mono fun _ h => h.symm) (hconv f)
   let : IsProbabilityMeasure P := hX.1
   let A := fun ω => (N ω).map (fun z : ℂ => z⁻¹)
-  have hAmeas : Measurable A := (Measure.measurable_map _ measurable_inv).comp hNmeas
   have hAfin : ∀ ω, IsFiniteMeasure (A ω) := by
     intro ω
     let := hNfin ω
     infer_instance
   have hlaw : ∫⁻ ω, H (A ω) ∂P = ∫⁻ ω, H (N ω) ∂P := by
-    apply finite_random_measure_law_of_open_fdd P A N hAmeas hNmeas hAfin hNfin
+    apply finite_random_measure_law_of_open_fdd P A N ((Measure.measurable_map _ measurable_inv).comp hNmeas) hNmeas hAfin hNfin
     · intro ι _ U hU
       exact gmc_inversion_open_mass_fintype_law P X hX γ hγ hγ2 N hN hNmeas U hU
     · exact hH

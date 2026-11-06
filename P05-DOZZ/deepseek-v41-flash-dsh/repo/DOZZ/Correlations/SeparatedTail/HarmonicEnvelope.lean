@@ -27,7 +27,6 @@ theorem separatedTail_harmonic_envelope_aemeasurable
   classical
   obtain ⟨N, hNsub, hNm, hN0⟩ := exists_measurable_superset_of_null (mem_ae_iff.mp hcont)
   let S := Nᶜ
-  have hSm : MeasurableSet S := hNm.compl
   have hS : ∀ᵐ ω ∂P, ω ∈ S := compl_mem_ae_iff.mpr hN0
   have hgood : ∀ ω ∈ S, ContinuousOn (H ω) (closedBall c 1) := by
     intro ω hω
@@ -36,7 +35,7 @@ theorem separatedTail_harmonic_envelope_aemeasurable
   let f : closedBall c 1 → Ω → ℝ≥0∞ := fun z ω =>
     if ω ∈ S then ENNReal.ofReal (Real.exp (l*|H ω z|)) else 0
   have hf (z : closedBall c 1) : Measurable (f z) := by
-    apply Measurable.ite hSm
+    apply Measurable.ite (hNm.compl)
     · exact measurable_ofReal_exp_mul_abs (fun ω => H ω z)
         (hH.comp (measurable_id.prodMk measurable_const)) l
     · exact measurable_const

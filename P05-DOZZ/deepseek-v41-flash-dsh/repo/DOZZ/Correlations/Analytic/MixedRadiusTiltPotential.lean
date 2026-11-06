@@ -56,11 +56,10 @@ theorem mixed_circle_covariance_uniform
   · simp only [hC, hc]
   · rw [Metric.tendstoUniformly_iff]
     intro ε hε
-    have hd : 0 < ε / (N + 1 : ℝ) := div_pos hε (by positivity)
     have he : ∀ᶠ s : ℝ in atTop, ∀ i : Fin N, ∀ x : ℂ,
         dist (c i x) (gaussianCovariance P (fun ω => Xc ω x s)
           (fun ω => α i * Xc ω (z i) (r i))) < ε / (N + 1 : ℝ) :=
-      eventually_all.mpr fun i => (Metric.tendstoUniformly_iff.mp (hconv i)) _ hd
+      eventually_all.mpr fun i => (Metric.tendstoUniformly_iff.mp (hconv i)) _ (div_pos hε (by positivity))
     filter_upwards [he] with s hs x
     rw [hC, hcov, Real.dist_eq, ← Finset.sum_sub_distrib]
     have hb : (∑ i : Fin N, |c i x - gaussianCovariance P (fun ω => Xc ω x s)

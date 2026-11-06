@@ -78,7 +78,6 @@ theorem exterior_lintegral_le_inversion_weighted (μ : Measure ℂ) (γ αinf : 
     (hRr : 0 < Rr) :
     ∫⁻ x in {x : ℂ | Rr < ‖x‖}, ENNReal.rpow (ENNReal.ofReal ‖x‖) (γ * αinf) ∂μ ≤
       weightedGmcBallMass γ (μ.map (fun x => x⁻¹)) αinf 0 (1 / Rr) := by
-  have hE : MeasurableSet {x : ℂ | Rr < ‖x‖} := measurableSet_lt measurable_const measurable_norm
   have hB : MeasurableSet (Metric.ball (0 : ℂ) (1 / Rr)) := Metric.isOpen_ball.measurableSet
   set g : ℂ → ℝ≥0∞ := (Metric.ball (0 : ℂ) (1 / Rr)).indicator
     (fun u => ENNReal.rpow (ENNReal.ofReal ‖u - 0‖) (-γ * αinf)) with hg
@@ -86,7 +85,7 @@ theorem exterior_lintegral_le_inversion_weighted (μ : Measure ℂ) (γ αinf : 
     ((ENNReal.continuous_rpow_const (y := -γ * αinf)).measurable.comp
       (ENNReal.measurable_ofReal.comp (measurable_id.sub_const 0).norm)).indicator hB
   unfold weightedGmcBallMass
-  rw [← lintegral_indicator hB, lintegral_map hgm measurable_inv, ← lintegral_indicator hE]
+  rw [← lintegral_indicator hB, lintegral_map hgm measurable_inv, ← lintegral_indicator (measurableSet_lt measurable_const measurable_norm)]
   apply lintegral_mono
   intro x
   by_cases hx : Rr < ‖x‖

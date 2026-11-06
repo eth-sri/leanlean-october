@@ -71,9 +71,8 @@ theorem bpz_wirtinger_norm_sub_rpow (c : ℂ) (p : ℝ) {x : ℂ} (hx : x ≠ c)
       (((p * ‖x - c‖ ^ (p - 2)) • innerSL ℝ (x - c)) Complex.I : ℝ)) / 2 =
       ((p / 2 * ‖x - c‖ ^ p : ℝ) : ℂ) / (x - c) := by
   have hu : x - c ≠ 0 := sub_ne_zero.mpr hx
-  have hn : 0 < ‖x - c‖ := norm_pos_iff.mpr hu
   have hpow : ‖x - c‖ ^ p = ‖x - c‖ ^ (p - 2) * ‖x - c‖ ^ 2 := by
-    rw [← Real.rpow_natCast, ← Real.rpow_add hn]
+    rw [← Real.rpow_natCast, ← Real.rpow_add (norm_pos_iff.mpr hu)]
     congr 1
     push_cast
     ring
@@ -150,12 +149,10 @@ theorem bpz_tildeWeight_hasFDerivAt {γ χ α₁ α₂ : ℝ} {z x : ℂ} (hx : 
   have nC := bpz_norm_normSubRpowDeriv 1 (-(γ * α₂)) h1
   simp only [sub_zero, abs_neg] at nB
   simp only [abs_neg] at nC
-  have hnA : 0 < ‖x - z‖ := norm_pos_iff.mpr (sub_ne_zero.mpr hz)
   have hnB : 0 < ‖x‖ := norm_pos_iff.mpr h0
-  have hnC : 0 < ‖x - 1‖ := norm_pos_iff.mpr (sub_ne_zero.mpr h1)
-  have pA : 0 < ‖x - z‖ ^ (γ * χ) := Real.rpow_pos_of_pos hnA _
+  have pA : 0 < ‖x - z‖ ^ (γ * χ) := Real.rpow_pos_of_pos (norm_pos_iff.mpr (sub_ne_zero.mpr hz)) _
   have pB : 0 < ‖x‖ ^ (-(γ * α₁)) := Real.rpow_pos_of_pos hnB _
-  have pC : 0 < ‖x - 1‖ ^ (-(γ * α₂)) := Real.rpow_pos_of_pos hnC _
+  have pC : 0 < ‖x - 1‖ ^ (-(γ * α₂)) := Real.rpow_pos_of_pos (norm_pos_iff.mpr (sub_ne_zero.mpr h1)) _
   refine ⟨(‖x - z‖ ^ (γ * χ) * ‖x‖ ^ (-(γ * α₁))) •
       ((-(γ * α₂) * ‖x - 1‖ ^ (-(γ * α₂) - 2)) • innerSL ℝ (x - 1)) +
     ‖x - 1‖ ^ (-(γ * α₂)) • (‖x - z‖ ^ (γ * χ) •
@@ -178,11 +175,10 @@ theorem bpz_tildeWeight_hasFDerivAt {γ χ α₁ α₂ : ℝ} {z x : ℂ} (hx : 
 /-- Complex derivative of `g` and its algebraic form. -/
 theorem bpz_hasDerivAt_bpzGfun {z x : ℂ} (hx : x ≠ z) :
     HasDerivAt (bpzGfun z) (-1 + z * (z - 1) / (z - x) ^ 2) x := by
-  have hzx : z - x ≠ 0 := sub_ne_zero.mpr hx.symm
   have hN : HasDerivAt (fun y : ℂ => y * (y - 1)) (1 * (x - 1) + x * 1) x :=
     (hasDerivAt_id x).mul ((hasDerivAt_id x).sub_const 1)
   have hD : HasDerivAt (fun y : ℂ => z - y) (-1) x := (hasDerivAt_id x).const_sub z
-  have h := hN.div hD hzx
+  have h := hN.div hD (sub_ne_zero.mpr hx.symm)
   unfold bpzGfun
   convert h using 1
   field_simp
@@ -295,9 +291,6 @@ theorem bpz_g_kern_combination {z x y : ℂ} (hxy : x ≠ y) :
 /-- The difference quotient of `g`. -/
 theorem bpz_g_diff_quot {z x y : ℂ} (hxy : x ≠ y) (hx : x ≠ z) (hy : y ≠ z) :
     (bpzGfun z x - bpzGfun z y) / (x - y) = -1 + z * (z - 1) / ((z - x) * (z - y)) := by
-  have h1 : x - y ≠ 0 := sub_ne_zero.mpr hxy
-  have h2 : z - x ≠ 0 := sub_ne_zero.mpr hx.symm
-  have h3 : z - y ≠ 0 := sub_ne_zero.mpr hy.symm
   unfold bpzGfun
   field_simp
   ring

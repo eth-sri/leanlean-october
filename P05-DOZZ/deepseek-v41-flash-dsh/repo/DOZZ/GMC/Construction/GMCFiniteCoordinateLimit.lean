@@ -71,10 +71,9 @@ private theorem tendstoInMeasure_add_of_sub
   have hδ : 0 < δ := by dsimp [δ]; linarith
   have hfg' : Tendsto (fun r => P {ω | δ ≤ ‖f r ω - g r ω‖}) atTop (𝓝 0) := by
     simpa [δ, sub_zero] using hfg δ hδ
-  have hgy' : Tendsto (fun r => P {ω | δ ≤ ‖g r ω - y ω‖}) atTop (𝓝 0) := hgy δ hδ
   have hadd : Tendsto (fun r =>
       P {ω | δ ≤ ‖f r ω - g r ω‖} + P {ω | δ ≤ ‖g r ω - y ω‖}) atTop (𝓝 0) := by
-    simpa using hfg'.add hgy'
+    simpa using hfg'.add (hgy δ hδ)
   apply tendsto_of_tendsto_of_tendsto_of_le_of_le'
     (tendsto_const_nhds : Tendsto (fun _ : ℝ => (0 : ℝ≥0∞)) atTop (𝓝 0)) hadd
   · exact Filter.Eventually.of_forall (fun _ => bot_le)
@@ -288,9 +287,8 @@ theorem equatorGFF_unweightedFiniteCoordinate_tendstoInMeasure_under_tilt
     simpa [density] using
       @equatorGFF_gaussianL2_tilt_density_integral_eq_one Ω _ P hX.1 X hX Xc hXc L hL
   have hdenAEMeas : AEMeasurable density P := by
-    have hLmeas : AEMeasurable L P := hL.1.aestronglyMeasurable.aemeasurable
     have hExpArg : AEMeasurable (fun ω => L ω - gaussianVariance P L / 2) P :=
-      hLmeas.sub_const _
+      (hL.1.aestronglyMeasurable.aemeasurable).sub_const _
     exact ENNReal.measurable_ofReal.comp_aemeasurable
       (Real.measurable_exp.comp_aemeasurable hExpArg)
   have hdenNe : ∀ᵐ ω ∂P, density ω ≠ 0 := by

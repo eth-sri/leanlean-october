@@ -103,7 +103,6 @@ theorem gaussParameterSeriesRatioDeriv_norm_le
     (ContinuousLinearMap.snd ℂ ℂ ℂ).comp (ContinuousLinearMap.snd ℂ ℂ (ℂ × ℂ))
   let x : ℝ := (n : ℝ)
   have hxR : R < x := by simpa [x] using hRn
-  have hx0 : 0 < x := lt_of_le_of_lt hR hxR
   have hxmR : 0 < x - R := by linarith
   have hxpR : 0 ≤ x + R := by linarith
   have hA_norm : ‖A‖ ≤ x + R := by
@@ -152,7 +151,6 @@ theorem gaussParameterSeriesRatioDeriv_norm_le
   have hratio : (x + R) / (x - R) ≤ 2 := by
     rw [div_le_iff₀ hxmR]
     nlinarith [h3R]
-  have hratio_nonneg : 0 ≤ (x + R) / (x - R) := div_nonneg hxpR hxmR.le
   have hratio_sq : ((x + R) / (x - R)) ^ 2 ≤ 4 := by
     have hleft : 0 ≤ 2 - (x + R) / (x - R) := by linarith
     have hright : 0 ≤ 2 + (x + R) / (x - R) := by positivity
@@ -172,9 +170,8 @@ theorem gaussParameterSeriesRatioDeriv_norm_le
         _ ≤ ‖C⁻¹‖ ^ 2 := by
           simpa [mul_one] using mul_le_mul_of_nonneg_left heC (sq_nonneg ‖C⁻¹‖)
         _ ≤ (1 / (x - R)) ^ 2 := by
-          have hnonneg : 0 ≤ ‖C⁻¹‖ := norm_nonneg _
           have hdennonneg : 0 ≤ 1 / (x - R) := by positivity
-          exact (sq_le_sq₀ hnonneg hdennonneg).2 hC_inv
+          exact (sq_le_sq₀ (norm_nonneg _) hdennonneg).2 hC_inv
     calc
       ‖(A * B) • (-(C⁻¹ ^ 2) • eC)‖ ≤
           ‖A * B‖ * (1 / (x - R)) ^ 2 := by

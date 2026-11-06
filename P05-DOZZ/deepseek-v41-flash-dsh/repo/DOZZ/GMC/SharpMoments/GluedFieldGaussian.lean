@@ -176,9 +176,8 @@ theorem gluedField_measurable {Ω S : Type*} [MeasurableSpace Ω] [MeasurableSpa
   have h2 : Measurable (fun p : (Ω × Ω × ℝ) × S => Φ p.1.2.1 p.2) :=
     hΦ.1.comp (by fun_prop : Measurable fun p : (Ω × Ω × ℝ) × S => (p.1.2.1, p.2))
   have h3 : Measurable (fun p : (Ω × Ω × ℝ) × S => p.1.2.2) := by fun_prop
-  have hA1 : MeasurableSet {p : (Ω × Ω × ℝ) × S | p.2 ∈ A} := measurable_snd hA
   have hA2 : MeasurableSet {p : (Ω × Ω × ℝ) × S | p.2 ∈ Aᶜ} := measurable_snd hA.compl
-  exact ((h1.indicator hA1).add (h2.indicator hA2)).add h3
+  exact ((h1.indicator (measurable_snd hA)).add (h2.indicator hA2)).add h3
 
 /-- The glued field is a centered Gaussian field on the product of two independent copies of the
 sample space and an independent Gaussian scalar. -/

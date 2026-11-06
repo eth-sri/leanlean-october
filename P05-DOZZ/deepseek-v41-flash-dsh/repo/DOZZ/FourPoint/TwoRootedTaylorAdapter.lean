@@ -40,7 +40,6 @@ theorem twoRooted_term_power_bound {Ω : Type*} [MeasurableSpace Ω]
     rw [ofReal_norm]
     exact (twoRooted_mixed_expectation_enorm_le P M γ α₁ α₂ α₃ p w).trans (hI w hw hwr)
   intro z hz hzr
-  have hnz : 0 < ‖z‖ := norm_pos_iff.mpr hz
   have htime₁ := time_integral_bound F₁ C e r hC he hr hF₁ z hz hzr
   have htime₂ := time_integral_bound F₂ C e r hC he hr hF₂ z hz hzr
   let c : ℝ := p * (p + 1) * (γ ^ 2 / 4) ^ 2
@@ -71,7 +70,7 @@ theorem twoRooted_term_power_bound {Ω : Type*} [MeasurableSpace Ω]
     exact hadd.trans (by linarith only [hP₁, hP₂])
   have heq : 4 * ‖c‖ * ‖z‖ ^ 2 * (C * ‖z‖ ^ e / (e + 1)) =
       (4 * ‖c‖ * C / (e + 1)) * ‖z‖ ^ (e + 2) := by
-    rw [Real.rpow_add hnz, Real.rpow_two]
+    rw [Real.rpow_add (norm_pos_iff.mpr hz), Real.rpow_two]
     ring
   exact hsum.trans_eq heq
 

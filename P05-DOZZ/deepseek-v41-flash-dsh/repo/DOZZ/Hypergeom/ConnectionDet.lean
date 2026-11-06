@@ -21,7 +21,6 @@ private lemma invGamma_reflection_pair (z : ℂ) :
       Complex.sin (Real.pi * z) / (Real.pi : ℂ) := by
   by_cases hz : z ∈ Complex.integerComplement
   · have hsin : Complex.sin (Real.pi * z) ≠ 0 := sin_pi_mul_ne_zero hz
-    have hpi : (Real.pi : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr Real.pi_pos.ne'
     have hΓz : Complex.Gamma z ≠ 0 := by
       apply Complex.Gamma_ne_zero
       intro m hm
@@ -43,7 +42,7 @@ private lemma invGamma_reflection_pair (z : ℂ) :
       _ = ((Real.pi : ℂ) / Complex.sin (Real.pi * z))⁻¹ := by
         rw [Complex.Gamma_mul_Gamma_one_sub]
       _ = Complex.sin (Real.pi * z) / (Real.pi : ℂ) := by
-        field_simp [hsin, hpi]
+        field_simp [hsin, (Complex.ofReal_ne_zero.mpr Real.pi_pos.ne')]
   · have hzint : ∃ n : ℤ, (n : ℂ) = z := by
       by_contra hn
       exact hz ((Complex.mem_integerComplement_iff).2 hn)
@@ -59,7 +58,6 @@ private lemma invGamma_reflection_pair (z : ℂ) :
         rw [Int.toNat_of_nonneg (by omega : 0 ≤ -n)]
         omega
       · right
-        have hn1 : 1 ≤ n := by omega
         refine ⟨(n - 1).toNat, ?_⟩
         rw [Int.toNat_of_nonneg (by omega : 0 ≤ n - 1)]
         omega
@@ -125,14 +123,13 @@ theorem gauss_connection_det (a b c : ℂ)
     apply hδ 0
     simpa [δ] using hz
   have hc1 : c ≠ 1 := by simpa using hc 1
-  have h1c : (1 : ℂ) - c ≠ 0 := sub_ne_zero.mpr (Ne.symm hc1)
   have hΓc : Complex.Gamma c * Complex.Gamma (2 - c) =
       (1 - c) * ((Real.pi : ℂ) / Complex.sin (Real.pi * c)) := by
     calc
       Complex.Gamma c * Complex.Gamma (2 - c) =
           Complex.Gamma c * ((1 - c) * Complex.Gamma (1 - c)) := by
             rw [show (2 : ℂ) - c = (1 - c) + 1 by ring,
-              Complex.Gamma_add_one (1 - c) h1c]
+              Complex.Gamma_add_one (1 - c) (sub_ne_zero.mpr (Ne.symm hc1))]
       _ = (1 - c) * (Complex.Gamma c * Complex.Gamma (1 - c)) := by ring
       _ = (1 - c) * ((Real.pi : ℂ) / Complex.sin (Real.pi * c)) := by
             rw [Complex.Gamma_mul_Gamma_one_sub]

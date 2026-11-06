@@ -42,9 +42,8 @@ theorem ae_summable_sq_of_summable_L2_norms {Ω ι : Type*} [MeasurableSpace Ω]
     (P : Measure Ω) (W : ι → Lp ℝ 2 P) (hW : Summable fun i => ‖W i‖^2) :
     ∀ᵐ ω ∂P, Summable fun i => (W i ω)^2 := by
   let eNN : ι → ℝ≥0 := fun i => ‖W i‖₊^2
-  have hNN : Summable eNN := NNReal.summable_coe.1 (by simpa [eNN] using hW)
   have hfiniteNN : (∑' i, (eNN i : ℝ≥0∞)) ≠ ∞ :=
-    ENNReal.tsum_coe_ne_top_iff_summable_coe.mpr (NNReal.summable_coe.2 hNN)
+    ENNReal.tsum_coe_ne_top_iff_summable_coe.mpr (NNReal.summable_coe.2 (NNReal.summable_coe.1 (by simpa [eNN] using hW)))
   have hnorm i : eLpNorm (W i) 2 P = ENNReal.ofReal ‖W i‖ := by
     rw [Lp.norm_def,ENNReal.ofReal_toReal (Lp.eLpNorm_ne_top (W i))]
   have hmoment i : eLpNorm (fun ω => (W i ω)^2) 1 P = (eNN i : ℝ≥0∞) := by

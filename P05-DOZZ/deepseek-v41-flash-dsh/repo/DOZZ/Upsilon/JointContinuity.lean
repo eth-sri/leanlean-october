@@ -60,9 +60,7 @@ private theorem exists_shift_into_strip {γ : ℝ} (hγ : 0 < γ)
     have hy0 : 0 ≤ y := by dsimp [y]; exact div_nonneg (neg_nonneg.mpr hx0) hb.le
     let N := Nat.floor y
     let n := N + 1
-    have hfloor : (N : ℝ) ≤ y := Nat.floor_le hy0
-    have hfloorlt : y < (N : ℝ) + 1 := Nat.lt_floor_add_one y
-    have hnlt : y < (n : ℝ) := by simpa [n] using hfloorlt
+    have hnlt : y < (n : ℝ) := by simpa [n] using (Nat.lt_floor_add_one y)
     have hne : y * (γ / 2) = -x := by
       dsimp [y]
       field_simp [ne_of_gt hb]
@@ -73,7 +71,7 @@ private theorem exists_shift_into_strip {γ : ℝ} (hγ : 0 < γ)
     have hnle : (n : ℝ) ≤ y + 1 := by
       calc
         (n : ℝ) = (N : ℝ) + 1 := by simp [n]
-        _ ≤ y + 1 := by linarith [hfloor]
+        _ ≤ y + 1 := by linarith [(Nat.floor_le hy0)]
     have hupp : x + (n : ℝ) * (γ / 2) ≤ γ / 2 := by
       have hmul := mul_le_mul_of_nonneg_right hnle hb.le
       calc
@@ -251,7 +249,6 @@ private theorem jointShiftChart_continuousAt {γ₀ : ℝ} {z₀ : ℂ}
     fun_prop
   have hW : ContinuousAt (fun p : ℝ × ℂ =>
       jointChartArg reflect p + jointShiftN p.1 n) (γ₀, z₀) := hArg.add hN
-  have hW0 : jointChartArg reflect (γ₀, z₀) + jointShiftN γ₀ n = v₀ := rfl
   have hstep : ∀ j : ℕ, j < n → (w₀ + jointShiftN γ₀ j).re < 2 / γ₀ := by
     intro j hj
     have hjn : (j : ℝ) + 1 ≤ (n : ℝ) := by
@@ -300,9 +297,6 @@ private theorem jointShiftChart_continuousAt {γ₀ : ℝ} {z₀ : ℂ}
     ContinuousAt.comp (f := fun p : ℝ × ℂ =>
       jointChartArg reflect p + jointShiftN p.1 n) (g := Complex.re)
       (x := (γ₀, z₀)) Complex.continuous_re.continuousAt hW
-  have hGap : ContinuousAt (fun p : ℝ × ℂ => Q p.1 -
-      (jointChartArg reflect p + jointShiftN p.1 n).re) (γ₀, z₀) :=
-    hQ.sub hWre
   have hLogOuter : ContinuousAt (Function.uncurry upsilonLog) (γ₀, v₀) :=
     upsilonLog_continuousAt_joint hγ₀ hfinal.1 hfinal.2
   have hLogMap : ContinuousAt (fun p : ℝ × ℂ =>
@@ -415,8 +409,7 @@ theorem IsUpsilon.continuousOn_uncurry {U : ℝ → ℂ → ℂ}
     simpa [γ₀, z₀, jointShiftN_re, Complex.add_re] using And.intro hfinal0 hfinalQ)
   have heq : Function.uncurry U =ᶠ[𝓝 p] jointShiftChart reflect n := by
     filter_upwards [hnear] with q hq
-    have hUq : IsUpsilon q.1 (U q.1) := hU q.1 ⟨hq.1, hq.2.1⟩
-    exact IsUpsilon.eq_jointShiftChart hq.1 hq.2.1 hUq reflect n q.2 ⟨hq.2.2.1, hq.2.2.2⟩
+    exact IsUpsilon.eq_jointShiftChart hq.1 hq.2.1 (hU q.1 ⟨hq.1, hq.2.1⟩) reflect n q.2 ⟨hq.2.2.1, hq.2.2.2⟩
   have hAt : ContinuousAt (Function.uncurry U) p := hchart0.congr_of_eventuallyEq heq
   exact hAt.continuousWithinAt
 

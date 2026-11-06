@@ -126,7 +126,6 @@ private theorem density_test_limit {E : Type*} [MeasurableSpace E] (μ : Measure
         (ae_of_all _ hAlim)
   have hψbound (x : E) : ψ x ≤ K := le_of_tendsto (hlim x)
     (Filter.Eventually.of_forall (fun n => hbound n x))
-  have hKg : Measurable (fun x => K*g x) := measurable_const.mul hg
   have hKgfin : (∫⁻ x, K*g x ∂μ) ≠ ∞ := by rw [lintegral_const_mul K hg,hgm,mul_one]; exact hK
   have hAP (n : ℕ) : Measurable (fun x => A n x*φ n x) := (hA n).mul (hφ n)
   have hT : Tendsto (fun n => ∫⁻ x, A n x*φ n x ∂μ) atTop (𝓝 (∫⁻ x, g x*ψ x ∂μ)) := by
@@ -156,10 +155,6 @@ private theorem density_test_limit {E : Type*} [MeasurableSpace E] (μ : Measure
         have hm : Measurable (fun x => f n x-A n x) := (hf n).sub (hA n)
         rw [lintegral_const_mul K hm,lintegral_sub (hA n) (hAm n)
           (ae_of_all _ (fun x => min_le_left _ _)),hfm n]
-  have hI : (∫⁻ x, g x*ψ x ∂μ) ≤ K := by
-    calc
-      _ ≤ ∫⁻ x, K*g x ∂μ := lintegral_mono (fun x => (mul_le_mul' le_rfl (hψbound x)).trans_eq (mul_comm _ _))
-      _ = K := by rw [lintegral_const_mul K hg,hgm,mul_one]
   have hTop : Tendsto (fun n => (∫⁻ x, A n x*φ n x ∂μ)+K*(1-∫⁻ x, A n x ∂μ)) atTop
       (𝓝 (∫⁻ x, g x*ψ x ∂μ)) := by
     simpa only [add_zero] using hT.add hres

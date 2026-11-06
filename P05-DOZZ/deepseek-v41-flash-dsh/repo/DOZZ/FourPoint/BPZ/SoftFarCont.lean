@@ -46,7 +46,6 @@ theorem bpzSoft_rpow_le_near {a ε : ℝ} (ha : 0 < a) (ha1 : a ≤ 1) (hε0 : 0
   have hbase : Complex.normSq (x - z) + ε ^ 2 ≤ 3 * (Complex.normSq (x - z₀) + 1) := by
     rw [Complex.normSq_eq_norm_sq, Complex.normSq_eq_norm_sq]
     linarith [sq_nonneg ‖x - z₀‖]
-  have hN0 : 0 ≤ Complex.normSq (x - z) + ε ^ 2 := bpzSoft_normSq_add_nonneg ε _
   have h3 : (3 : ℝ) ^ a ≤ 3 := by
     calc (3 : ℝ) ^ a ≤ (3 : ℝ) ^ (1 : ℝ) := Real.rpow_le_rpow_of_exponent_le (by norm_num) ha1
       _ = 3 := Real.rpow_one 3
@@ -55,7 +54,7 @@ theorem bpzSoft_rpow_le_near {a ε : ℝ} (ha : 0 < a) (ha1 : a ≤ 1) (hε0 : 0
     rwa [Real.one_rpow] at h
   have hP : 0 ≤ Complex.normSq (x - z₀) ^ a + 1 := by positivity
   calc (Complex.normSq (x - z) + ε ^ 2) ^ a
-      ≤ (3 * (Complex.normSq (x - z₀) + 1)) ^ a := Real.rpow_le_rpow hN0 hbase ha.le
+      ≤ (3 * (Complex.normSq (x - z₀) + 1)) ^ a := Real.rpow_le_rpow (bpzSoft_normSq_add_nonneg ε _) hbase ha.le
     _ = 3 ^ a * (Complex.normSq (x - z₀) + 1) ^ a := Real.mul_rpow (by norm_num) (by positivity)
     _ ≤ 3 * (Complex.normSq (x - z₀) ^ a + 1) := by
         gcongr

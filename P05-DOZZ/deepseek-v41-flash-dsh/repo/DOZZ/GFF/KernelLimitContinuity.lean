@@ -124,18 +124,14 @@ noncomputable def equatorKernelLimitMapCLM :
       have hseminorm : ‖(f : ℂ →ᵇ ℝ)‖ =
           ContDiffMapSupportedIn.seminorm ℝ ℂ ℝ (↑(⊤ : ENat)) K 0 f :=
         ContDiffMapSupportedIn.norm_toBoundedContinuousFunction ℝ f
-      have hnonnegSemi : 0 ≤
-          ContDiffMapSupportedIn.seminorm ℝ ℂ ℝ (↑(⊤ : ENat)) K 0 f :=
-        by rw [← hseminorm]; positivity
       have htarget : ‖A f‖ ≤ C *
           ContDiffMapSupportedIn.seminorm ℝ ℂ ℝ (↑(⊤ : ENat)) K 0 f := by
-        have hprod : 0 ≤ C * ‖(f : ℂ →ᵇ ℝ)‖ := mul_nonneg hC (norm_nonneg _)
         have hsqprod : ‖A f‖ ^ 2 ≤ (C * ‖(f : ℂ →ᵇ ℝ)‖) ^ 2 := by
           calc
             ‖A f‖ ^ 2 ≤ Q * (V * ‖(f : ℂ →ᵇ ℝ)‖ ^ 2) := hest
             _ = (Q * V) * ‖(f : ℂ →ᵇ ℝ)‖ ^ 2 := by ring
             _ = (C * ‖(f : ℂ →ᵇ ℝ)‖) ^ 2 := by rw [← hCsq]; ring
-        have hnormle := (sq_le_sq₀ (norm_nonneg _) hprod).1 hsqprod
+        have hnormle := (sq_le_sq₀ (norm_nonneg _) (mul_nonneg hC (norm_nonneg _))).1 hsqprod
         rw [← hseminorm]
         exact hnormle
       simpa using htarget

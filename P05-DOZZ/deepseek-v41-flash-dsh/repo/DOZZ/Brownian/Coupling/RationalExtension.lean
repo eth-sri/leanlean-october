@@ -334,11 +334,10 @@ theorem couplingRationalReindex_mem_orderSet (x : ℕ → BrownianPath)
     (hx : x ∈ negativeEntranceOrderSet couplingEnumeratedDrift) :
     couplingRationalReindex x ∈ negativeEntranceOrderSet ((↑) : ℚ → ℝ) := by
   intro q r hq hqr t
-  have hr : 0 ≤ (r : ℝ) := hq.trans hqr
   have hq' : couplingEnumeratedDrift (couplingRationalEnumeration q) = (q : ℝ) := by
     simp [couplingEnumeratedDrift, max_eq_left hq]
   have hr' : couplingEnumeratedDrift (couplingRationalEnumeration r) = (r : ℝ) := by
-    simp [couplingEnumeratedDrift, max_eq_left hr]
+    simp [couplingEnumeratedDrift, max_eq_left (hq.trans hqr)]
   have h := hx (couplingRationalEnumeration q) (couplingRationalEnumeration r)
     (by rw [hq']; exact hq) (by rw [hq', hr']; exact hqr) t
   simpa only [couplingRationalReindex, hq', hr'] using h

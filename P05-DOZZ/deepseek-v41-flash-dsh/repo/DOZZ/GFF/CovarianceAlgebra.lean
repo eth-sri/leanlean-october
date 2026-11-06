@@ -270,7 +270,6 @@ theorem integrable_abkLogCovarianceKernel_integrand
   have hαpos (n : ℕ) : 0 < α n := inv_pos.mpr (by positivity)
   have hαle (n : ℕ) : α n ≤ 1 / 2 := by
     have hden_le : (2 : ℝ) ≤ (n : ℝ) + 2 := by
-      have hn0 : (0 : ℝ) ≤ (n : ℝ) := Nat.cast_nonneg n
       linarith
     dsimp [α]
     calc
@@ -301,8 +300,7 @@ theorem integrable_abkLogCovarianceKernel_integrand
     filter_upwards [hbound_seq] with n hn
     apply lintegral_mono_ae
     filter_upwards [hn] with p hp
-    have hnonneg : 0 ≤ bound p := le_trans (norm_nonneg _) hp
-    simpa only [Real.enorm_eq_ofReal hnonneg, ofReal_norm] using
+    simpa only [Real.enorm_eq_ofReal (le_trans (norm_nonneg _) hp), ofReal_norm] using
       ENNReal.ofReal_le_ofReal hp
   have hlimsup :
       limsup (fun n : ℕ => ∫⁻ p, ‖slope n p‖ₑ ∂μ) atTop ≤
@@ -355,8 +353,6 @@ theorem integrable_testFnVec_logKernel_pair (f g : TestFn) :
   rcases exists_ball_testFnVec f with ⟨Rf, hRf, hfball⟩
   rcases exists_ball_testFnVec g with ⟨Rg, hRg, hgball⟩
   let R := max Rf Rg
-  have hR : 0 ≤ R := le_max_of_le_left hRf
-  have hRfR : Rf ≤ R := le_max_left _ _
   have hRgR : Rg ≤ R := le_max_right _ _
   let a : GaussianFields.Vec 2 := GaussianFields.abkRadialPoint 2 (R + 2)
   have ha_norm : GaussianFields.euclideanNorm a = R + 2 := by
@@ -385,7 +381,7 @@ theorem integrable_testFnVec_logKernel_pair (f g : TestFn) :
       ψ x = testFnVec f x := by
     have hxmem : x ∈ Function.support (testFnVec f) := by
       simpa [Function.mem_support] using hx
-    have hxR : GaussianFields.euclideanNorm x ≤ R := (hfball hxmem).trans hRfR
+    have hxR : GaussianFields.euclideanNorm x ≤ R := (hfball hxmem).trans (le_max_left _ _)
     dsimp [ψ]
     exact centeredTestFnAt_eq_testFnVec_of_bump_zero f a x
       (abkUnitMassBumpAt_eq_zero_of_norm_le x a hxR ha)
@@ -562,13 +558,6 @@ theorem integral_gffKernelVec_pair (f g : TestFn) :
       (fun p : GaussianFields.Vec 2 × GaussianFields.Vec 2 =>
         testFnVec f p.1 * (testFnVec g p.2 * logNormPlusVec p.2)) μ := by
     simpa [μ] using hpoty
-  have hsum : Integrable
-      (fun p : GaussianFields.Vec 2 × GaussianFields.Vec 2 =>
-        testFnVec f p.1 * testFnVec g p.2 *
-            GaussianFields.abkLogCovarianceKernel p.1 p.2 +
-          (testFnVec f p.1 * logNormPlusVec p.1) * testFnVec g p.2 +
-          testFnVec f p.1 * (testFnVec g p.2 * logNormPlusVec p.2)) μ :=
-    (hlog.add hpotx').add hpoty'
   have hsplit :
       (∫ p : GaussianFields.Vec 2 × GaussianFields.Vec 2,
         testFnVec f p.1 * gffKernelVec p.1 p.2 * testFnVec g p.2 ∂μ) =
@@ -721,9 +710,8 @@ theorem abkLogCovariancePairing_self_nonneg
   let P := GaussianFields.scaleSpaceWhiteNoiseMeasure 2
   let X := GaussianFields.abkLogCorrelatedFieldL2Canonical
     (by norm_num : 0 < 2) (GaussianFields.abkStandardCutoff 2) ψ
-  have hXa : AEMeasurable (fun ω => X ω) P := (Lp.aestronglyMeasurable X).aemeasurable
   have hcov : 0 ≤ cov[X, X; P] := by
-    rw [covariance_self hXa]
+    rw [covariance_self ((Lp.aestronglyMeasurable X).aemeasurable)]
     exact variance_nonneg X P
   have hformula :=
     GaussianFields.covariance_abkLogCorrelatedFieldL2Canonical_eq_logCovariancePairing

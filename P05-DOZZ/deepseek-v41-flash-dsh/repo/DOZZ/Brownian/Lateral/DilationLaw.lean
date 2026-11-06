@@ -3,6 +3,7 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
+public import DOZZ.SharedHyp
 
 public import DOZZ.Brownian.Lateral.CovarianceSymmetry
 public import DOZZ.Brownian.Lateral.LocalIntensity
@@ -119,7 +120,7 @@ theorem originLateralCircleRegularization_dilation_zeroed_fdd_law
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
     (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
+    (hm : MeasurableCircleAvg Xc)
     (ρ c ε : ℝ) (hρ : 0 < ρ) (hcpos : 0 < c) (hε : 0 < ε) (hερ : ε ≤ ρ)
     (K : Set ℂ) (hKU : K ⊆ originLateralChart ρ) (n : ℕ) (xs : Fin n → ℂ) :
     P.map (fun ω i => K.indicator
@@ -201,7 +202,7 @@ theorem originLateralCutoff_dilation_test_vector_law
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
     (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
+    (hm : MeasurableCircleAvg Xc)
     (ρ c : ℝ) (hρ : 0 < ρ) (hcpos : 0 < c) (γ r : ℝ)
     (hr : Real.exp (-r) ≤ min ρ 1)
     (hrc : c * Real.exp (-r) ≤ min (c * ρ) 1)
@@ -266,8 +267,7 @@ theorem originLateralCutoff_dilation_test_vector_law
   let scale : ℂ → ℂ := fun x => (c : ℂ) * x
   have hscale : Measurable scale := by fun_prop
   have hcn : (c : ℂ) ≠ 0 := by exact_mod_cast hcpos.ne'
-  have hinj : Function.Injective scale := fun _ _ h => mul_left_cancel₀ hcn h
-  have hemb : MeasurableEmbedding scale := hscale.measurableEmbedding hinj
+  have hemb : MeasurableEmbedding scale := hscale.measurableEmbedding (fun _ _ h => mul_left_cancel₀ hcn h)
   have hsK : IsCompact (scale '' K) := hK.image (by fun_prop)
   have hsKU : scale '' K ⊆ V := by
     rintro x ⟨y, hy, rfl⟩
@@ -277,8 +277,7 @@ theorem originLateralCutoff_dilation_test_vector_law
     have hxy : scale y = x := by
       dsimp [scale, y]
       rw [← mul_assoc, mul_inv_cancel₀ hcn, one_mul]
-    have hy : y ∉ K := fun hy => hx ⟨y, hy, hxy⟩
-    simpa only [← hxy] using hzero j y hy
+    simpa only [← hxy] using hzero j y (fun hy => hx ⟨y, hy, hxy⟩)
   have hexp : Real.exp (-(r - Real.log c)) = c * ε := by
     have ha : -(r - Real.log c) = Real.log c + -r := by ring
     rw [ha, Real.exp_add, Real.exp_log hcpos]
@@ -342,8 +341,8 @@ theorem originRadialRemovedGMC_test_limit
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
     (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
-    (hcont : ∀ᵐ ω ∂P, Continuous (fun p : ℂ × ℝ => Xc ω p.1 p.2))
+    (hm : MeasurableCircleAvg Xc)
+    (hcont : ContinuousCircleAvg P Xc)
     (ρ γ : ℝ) (hρ : 0 < ρ) (hγ : 0 < γ) (hγ2 : γ < 2)
     (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
     (f : BoundedContinuousFunction ℂ ℝ) (hfc : HasCompactSupport (f : ℂ → ℝ))
@@ -370,8 +369,8 @@ theorem originRadialRemovedGMC_dilation_test_vector_law
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
     (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
-    (hcont : ∀ᵐ ω ∂P, Continuous (fun p : ℂ × ℝ => Xc ω p.1 p.2))
+    (hm : MeasurableCircleAvg Xc)
+    (hcont : ContinuousCircleAvg P Xc)
     (ρ c γ : ℝ) (hρ : 0 < ρ) (hcpos : 0 < c) (hγ : 0 < γ) (hγ2 : γ < 2)
     (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
     (K : Set ℂ) (hK : IsCompact K) (hKU : K ⊆ originLateralChart ρ)

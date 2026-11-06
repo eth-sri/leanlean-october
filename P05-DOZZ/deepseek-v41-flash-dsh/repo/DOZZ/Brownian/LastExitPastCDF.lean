@@ -53,7 +53,6 @@ theorem measurable_lastExitGaussianKernelCDF_state (ν c dt : ℝ) :
     continuous_iff_continuousAt.mpr fun x => (hasDerivAt_brownianStandardHeatTail x).continuousAt
   have htail : Measurable (brownianHeatTail dt) :=
     (hstandard.comp (continuous_id.div_const (Real.sqrt dt))).measurable
-  have hH : Measurable (conditionedH ν) := measurable_conditionedH_ref ν
   unfold lastExitGaussianKernelCDF
   have h1 : Measurable (fun x : ℝ => brownianHeatTail dt (c-x-ν*dt)) :=
     htail.comp ((measurable_const.sub measurable_id).sub measurable_const)
@@ -66,7 +65,7 @@ theorem measurable_lastExitGaussianKernelCDF_state (ν c dt : ℝ) :
   have hE2 : Measurable (fun x : ℝ => Real.exp (-2*ν*x)) := by fun_prop
   have hE3 : Measurable (fun x : ℝ => Real.exp (2*ν*(c-x))) := by fun_prop
   exact (((h1.sub (hE2.mul h2)).sub (hE3.mul h3)).add
-    (measurable_const.mul h4)).div hH
+    (measurable_const.mul h4)).div (measurable_conditionedH_ref ν)
 
 /-- The last-exit primitive is a probability weight at every positive starting state. -/
 theorem lastExitGaussianKernelCDF_bounds (ν c x dt : ℝ)
@@ -122,8 +121,6 @@ theorem negativeConditionedLaw_finitePast_lastExit_CDF
   have hmF : Measurable F :=
     ((measurable_lastExitAvoidanceFactor ν (c : ℝ)).comp measurable_snd).indicator
       (hA.preimage measurable_fst)
-  have hu0 : 0 < (u : ℝ) := (hs (Fin.last k)).trans (NNReal.coe_lt_coe.mpr hu)
-  have hdt : 0 < (u : ℝ)-(ss (Fin.last k) : ℝ) := sub_pos.mpr (NNReal.coe_lt_coe.mpr hu)
   have hU : MeasurableSet[conditionedPositiveNaturalFiltration u] U := by
     let : MeasurableSpace BrownianPath := conditionedPositiveNaturalFiltration u
     have hmeval : Measurable evalPast := by
@@ -132,13 +129,12 @@ theorem negativeConditionedLaw_finitePast_lastExit_CDF
       change Measurable[conditionedPositiveNaturalFiltration u]
         (conditionedPositiveProcessValue (ss i))
       apply Measurable.of_comap_le
-      have hsu : ss i ≤ u := (hmono.monotone (Fin.le_last i)).trans hu.le
-      exact le_iSup_of_le (ss i) (le_iSup_of_le hsu le_rfl)
+      exact le_iSup_of_le (ss i) (le_iSup_of_le ((hmono.monotone (Fin.le_last i)).trans hu.le) le_rfl)
     exact hA.preimage hmeval
   have hE : MeasurableSet E := measurableSet_le
     (measurable_negativeLastExitTime_joint.comp (measurable_const.prodMk measurable_id))
     measurable_const
-  have hCDF := conditionedPositiveHistory_lastExit_le_setIntegral hP hB hν u c hu0 hc U hU
+  have hCDF := conditionedPositiveHistory_lastExit_le_setIntegral hP hB hν u c ((hs (Fin.last k)).trans (NNReal.coe_lt_coe.mpr hu)) hc U hU
   have hleft : (∫ p in U, E.indicator (fun _ => (1 : ℝ)) p ∂P) =
       P.real {p : BrownianPath | evalPast p ∈ A ∧ negativeLastExitTime p (c : ℝ) ≤ u} := by
     rw [setIntegral_indicator hE, setIntegral_const, smul_eq_mul, mul_one]
@@ -182,7 +178,7 @@ theorem negativeConditionedLaw_finitePast_lastExit_CDF
     _ = _ := by
       apply setIntegral_congr_ae hA
       filter_upwards [hxpos] with x hx _
-      exact conditionedPastStateKernel_integral_avoidance ν (c : ℝ) _ k hν hc hdt x hx
+      exact conditionedPastStateKernel_integral_avoidance ν (c : ℝ) _ k hν hc (sub_pos.mpr (NNReal.coe_lt_coe.mpr hu)) x hx
 
 end DOZZ.Proofs
 

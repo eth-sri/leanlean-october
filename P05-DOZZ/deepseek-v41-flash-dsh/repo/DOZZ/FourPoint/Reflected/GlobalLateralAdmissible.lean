@@ -3,6 +3,7 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
+public import DOZZ.SharedHyp
 public import DOZZ.FourPoint.Reflected.GlobalLateralCarrier
 /-! Every local circle chart belongs to the same genuine global lateral carrier. -/
 @[expose] public section
@@ -15,8 +16,8 @@ simultaneously; chart radii may therefore tend to zero without changing the unde
 theorem reflected_global_lateral_admissible
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
     (Xc : Ω → ℂ → ℝ → ℝ) (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
-    (hcont : ∀ᵐ ω ∂P, Continuous (fun p : ℂ × ℝ => Xc ω p.1 p.2))
+    (hm : MeasurableCircleAvg Xc)
+    (hcont : ContinuousCircleAvg P Xc)
     (γ : ℝ) (hγ : 0 < γ) (hγ₂ : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) :
     ∃ N : Ω → Measure ℂ, Measurable N ∧
       IndepFun (originRadialPath Xc) N P ∧
@@ -47,8 +48,7 @@ theorem reflected_global_lateral_admissible
     apply hfin ω K hK
     intro x hx
     have hh : 2*ρ < ‖x‖ := hKU hx
-    have hx0 : x ≠ 0 := norm_ne_zero_iff.mp (ne_of_gt (by linarith : 0 < ‖x‖))
-    simpa using hx0
+    simpa using (norm_ne_zero_iff.mp (ne_of_gt (by linarith : 0 < ‖x‖)))
   · intro f hfc hfU
     have ht := hNc.2.2.2 f hfc hfU
     have htests : (fun ω => ∫ x, f x ∂Nc ω) =ᵐ[P]

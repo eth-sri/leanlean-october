@@ -50,11 +50,9 @@ theorem gaussSystemCoeff₁_differentiableOn (a b : ℂ) :
     exact differentiableOn_id.mul ((differentiableOn_const 1).sub differentiableOn_id)
   have hden_ne : ∀ z ∈ gaussRegularPlane, z * (1 - z) ≠ 0 := by
     intro z hz
-    have hz0 : z ≠ 0 := hz.1
-    have hz1 : z ≠ 1 := hz.2
-    apply mul_ne_zero hz0
+    apply mul_ne_zero (hz.1)
     intro hz'
-    apply hz1
+    apply (hz.2)
     linear_combination -hz'
   have hinv : DifferentiableOn ℂ (fun z : ℂ => (z * (1 - z))⁻¹) gaussRegularPlane :=
     hden.inv hden_ne
@@ -67,11 +65,9 @@ theorem gaussSystemCoeff₂_differentiableOn (a b c : ℂ) :
     exact differentiableOn_id.mul ((differentiableOn_const 1).sub differentiableOn_id)
   have hden_ne : ∀ z ∈ gaussRegularPlane, z * (1 - z) ≠ 0 := by
     intro z hz
-    have hz0 : z ≠ 0 := hz.1
-    have hz1 : z ≠ 1 := hz.2
-    apply mul_ne_zero hz0
+    apply mul_ne_zero (hz.1)
     intro hz'
-    apply hz1
+    apply (hz.2)
     linear_combination -hz'
   have hinv : DifferentiableOn ℂ (fun z : ℂ => (z * (1 - z))⁻¹) gaussRegularPlane :=
     hden.inv hden_ne
@@ -121,7 +117,6 @@ theorem gaussHolomorphicOperator_eq_mul_system_residual
     gaussHolomorphicOperator a b c f z =
       z * (1 - z) * (deriv (deriv f) z -
         (gaussSystemCoeff₁ a b z * f z + gaussSystemCoeff₂ a b c z * deriv f z)) := by
-  have hden : z * (1 - z) ≠ 0 := mul_ne_zero hz0 (sub_ne_zero.mpr (Ne.symm hz1))
   simp only [gaussHolomorphicOperator, gaussSystemCoeff₁, gaussSystemCoeff₂]
   field_simp
   ring
@@ -133,10 +128,9 @@ theorem gaussHolomorphicOperator_eq_zero_iff_system_residual_eq_zero
       deriv (deriv f) z =
         gaussSystemCoeff₁ a b z * f z + gaussSystemCoeff₂ a b c z * deriv f z := by
   rw [gaussHolomorphicOperator_eq_mul_system_residual a b c f hz0 hz1]
-  have hden : z * (1 - z) ≠ 0 := mul_ne_zero hz0 (sub_ne_zero.mpr (Ne.symm hz1))
   constructor
   · intro h
-    have hres := (mul_eq_zero.mp h).resolve_left hden
+    have hres := (mul_eq_zero.mp h).resolve_left (mul_ne_zero hz0 (sub_ne_zero.mpr (Ne.symm hz1)))
     exact sub_eq_zero.mp hres
   · intro h
     simp [h]

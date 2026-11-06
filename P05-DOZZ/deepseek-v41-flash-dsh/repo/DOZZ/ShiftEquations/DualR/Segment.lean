@@ -43,7 +43,6 @@ theorem eq_at_one_of_segment {F G : ℂ → ℂ} {U : Set ℂ}
     (hF : MeromorphicOn F U) (hG : MeromorphicOn G U)
     (hstart : ∀ᶠ t : ℝ in 𝓝[>] 0, F t = G t)
     (hF1 : AnalyticAt ℂ F 1) (hG1 : AnalyticAt ℂ G 1) : F 1 = G 1 := by
-  have h0U : ((0 : ℝ) : ℂ) ∈ U := hseg 0 le_rfl zero_le_one
   have hWU : connectedComponentIn U ((0 : ℝ) : ℂ) ⊆ U := connectedComponentIn_subset U _
   have hsegW : (fun s : ℝ => (s : ℂ)) '' Icc 0 1 ⊆ connectedComponentIn U ((0 : ℝ) : ℂ) :=
     (isPreconnected_Icc.image _ Complex.continuous_ofReal.continuousOn).subset_connectedComponentIn
@@ -57,7 +56,7 @@ theorem eq_at_one_of_segment {F G : ℂ → ℂ} {U : Set ℂ}
       hstart.frequently.filter_mono (nhdsWithin_mono _ fun x (hx : (0 : ℝ) < x) => hx.ne')
     exact (tendsto_ofReal_nhdsNE_slice 0).frequently h1
   have hev := ShiftGluing.meromorphicOn_eventuallyEq_of_frequently (hF.mono_set hWU) (hG.mono_set hWU)
-    isPreconnected_connectedComponentIn (mem_connectedComponentIn h0U) h1W hfreq
+    isPreconnected_connectedComponentIn (mem_connectedComponentIn (hseg 0 le_rfl zero_le_one)) h1W hfreq
   exact eq_of_eventuallyEq_nhdsNE_of_continuousAt hev hF1.continuousAt hG1.continuousAt
 
 /-- Points of a real segment, as complex affine functions of the parameter. -/
@@ -148,10 +147,6 @@ theorem extendedSeiberg3_segment {γ a₁ a₂ a₃ b₁ b₂ b₃ t : ℝ} (hγ
             (2 * Q γ - (a₁ + a₂ + a₃) - 2 * (Q γ - a₂))) := by ring
     linarith
   · have h := add_mul_sub_lt_of_lt (sub_neg.mpr a7) (sub_neg.mpr b7) ht0 ht1
-    have e : 2 * Q γ - (a₁ + t * (b₁ - a₁) + (a₂ + t * (b₂ - a₂)) + (a₃ + t * (b₃ - a₃))) -
-        2 * (Q γ - (a₃ + t * (b₃ - a₃))) = 2 * Q γ - (a₁ + a₂ + a₃) - 2 * (Q γ - a₃) +
-          t * (2 * Q γ - (b₁ + b₂ + b₃) - 2 * (Q γ - b₃) -
-            (2 * Q γ - (a₁ + a₂ + a₃) - 2 * (Q γ - a₃))) := by ring
     linarith
 
 /-! ### Analyticity of `Γ`, `l` and `1/l` -/
@@ -238,10 +233,9 @@ theorem analyticAt_structureConstantH_comp' {f : (Fin 3 → ℂ) → ℂ} {V : S
     {ℓ : ℂ → Fin 3 → ℂ} (hℓ : Differentiable ℂ ℓ) {t : ℂ} (ht : ℓ t ∈ V)
     (hs : AnalyticAt ℂ Complex.Gamma (sExpC γ (ℓ t))) :
     AnalyticAt ℂ (fun t => structureConstantH f γ μ (ℓ t)) t := by
-  have hUo : IsOpen (ℓ ⁻¹' V) := hV.preimage hℓ.continuous
   have hfℓ : DifferentiableOn ℂ (fun t => f (ℓ t)) (ℓ ⁻¹' V) :=
     hf.comp hℓ.differentiableOn fun _ hx => hx
-  have hfa : AnalyticAt ℂ (fun t => f (ℓ t)) t := hfℓ.analyticAt (hUo.mem_nhds ht)
+  have hfa : AnalyticAt ℂ (fun t => f (ℓ t)) t := hfℓ.analyticAt ((hV.preimage hℓ.continuous).mem_nhds ht)
   have hsa : AnalyticAt ℂ (fun t => sExpC γ (ℓ t)) t := by
     unfold sExpC
     have h0 : AnalyticAt ℂ (fun t => ℓ t 0) t :=

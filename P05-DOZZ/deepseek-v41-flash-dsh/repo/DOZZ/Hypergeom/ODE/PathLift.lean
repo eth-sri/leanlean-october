@@ -97,7 +97,6 @@ theorem exists_continuous_lift_from_disk_chain
     | succ m ih =>
         have hmN : m < N := by omega
         have ⟨hprevCont, hprevFormula⟩ := ih (by omega)
-        have htNext : τ m ≤ τ (m + 1) := hτmono m (m + 1) (by omega)
         have hτm_nonneg : 0 ≤ τ m := (hτ01 m (by omega)).1
         have hτnext_le : τ (m + 1) ≤ 1 := (hτ01 (m + 1) (by omega)).2
         have hjoinm := hjoin m (by omega) hprevFormula
@@ -149,12 +148,11 @@ theorem exists_continuous_lift_from_disk_chain
           · have htOld : t ≤ τ m := by
               exact le_trans ht.2 (hτmono (i + 1) m (by omega))
             have hprev := hprevFormula i him t ht
-            have htmem : t ∈ Iic (τ m) := htOld
             have hpiece : P (m + 1) t = P m t := by
               change (Iic (τ m)).piecewise (P m)
                 (fun t => (D m).solution (γ t)) t = P m t
               exact Set.piecewise_eq_of_mem (s := Iic (τ m)) (f := P m)
-                (g := fun t => (D m).solution (γ t)) htmem
+                (g := fun t => (D m).solution (γ t)) (htOld)
             rw [hpiece]
             exact hprev
           · have hiEq : i = m := by omega

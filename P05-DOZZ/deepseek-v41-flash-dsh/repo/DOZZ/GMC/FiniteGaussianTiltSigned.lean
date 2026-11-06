@@ -53,9 +53,7 @@ theorem finite_gaussian_tilt_signed
     apply AEMeasurable.of_eval
     intro i
     exact hZ.2.1 i
-  have hFZ : AEMeasurable (fun ω => F (Z ω)) P := hF.aemeasurable.comp_aemeasurable hZae
   have hlinAE : AEMeasurable (fun ω => ∑ i, a i * Z ω i) P := by
-    have hcoord : ∀ i, AEMeasurable (fun ω => Z ω i) P := hZ.2.1
     fun_prop
   have hTiltExp : AEMeasurable tiltExp P := by
     have hlog : AEMeasurable (fun ω => (∑ i, a i * Z ω i) -
@@ -65,7 +63,7 @@ theorem finite_gaussian_tilt_signed
         (hlinAE.prodMk (measurable_const.aemeasurable))
     simpa [Function.comp_def, tiltExp] using Real.measurable_exp.comp_aemeasurable hlog
   have hGmeas : AEStronglyMeasurable G P := by
-    have hpair := hTiltExp.prodMk hFZ
+    have hpair := hTiltExp.prodMk (hF.aemeasurable.comp_aemeasurable hZae)
     exact (measurable_mul.comp_aemeasurable hpair).aestronglyMeasurable
   have hPosMeas : Measurable pos := by
     dsimp [pos]

@@ -226,7 +226,6 @@ theorem centeredJointlyGaussian_standardLinearRepresentation
       _ = _ := by
             congr 1
   let Y : Ω → E := fun ω => WithLp.toLp 2 (Z ω)
-  have hmapY : P.map Y = multivariateGaussian 0 S := hLaw
   have hZae : AEMeasurable Z P := by
     apply AEMeasurable.of_eval
     intro i
@@ -245,7 +244,7 @@ theorem centeredJointlyGaussian_standardLinearRepresentation
             congr 1
           _ = (P.map Y).map (WithLp.ofLp) :=
             (AEMeasurable.map_map_of_aemeasurable hOfLp.aemeasurable hYae).symm
-      _ = (multivariateGaussian 0 S).map (WithLp.ofLp) := by rw [hmapY]
+      _ = (multivariateGaussian 0 S).map (WithLp.ofLp) := by rw [(hLaw)]
       _ = ((stdGaussian E).map L).map (WithLp.ofLp) := by
         rw [multivariateGaussian]
         simp only [zero_add]

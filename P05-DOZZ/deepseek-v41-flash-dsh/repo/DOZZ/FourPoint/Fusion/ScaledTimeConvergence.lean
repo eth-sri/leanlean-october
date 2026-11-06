@@ -24,8 +24,7 @@ theorem fusion_time_weight_integral (e : ℝ) (he : -1 < e) :
       (fun t => (1 - t) * t ^ e) := by
     filter_upwards [ae_restrict_mem measurableSet_Icc,
       ae_restrict_of_ae (Measure.ae_ne volume (0 : ℝ))] with t ht ht0
-    have htpos : 0 < t := lt_of_le_of_ne ht.1 (Ne.symm ht0)
-    rw [Real.rpow_add htpos, Real.rpow_one]
+    rw [Real.rpow_add (lt_of_le_of_ne ht.1 (Ne.symm ht0)), Real.rpow_one]
     ring
   refine ⟨(h1.sub h2).congr heq, ?_⟩
   rw [← integral_congr_ae heq, integral_sub h1 h2, hv1, hv2]
@@ -48,7 +47,6 @@ theorem fusionScaledTimeIntegral_tendsto {Ω : Type*} [MeasurableSpace Ω]
           ((∫⁻ ω, fusionMovingMass γ α₁ α₂ α₃ 1 0 (M ω) ^ s ∂P).toReal : ℂ)))) := by
   obtain ⟨B, hB, hb⟩ := fusionScaledFactor_uniform_bound P X hX γ hγ hγ2 M hM α₁ α₂ α₃ s hs.le
   let D := (∫ y : ℂ, ‖K y‖) * B
-  have hD : 0 ≤ D := mul_nonneg (integral_nonneg fun _ => norm_nonneg _) hB
   have hspacebound : ∀ w : ℂ, ‖w‖ ≤ 1 →
       ‖∫ y : ℂ, K y * (fusionScaledFactor P M γ α₁ α₂ α₃ s y w : ℂ)‖ ≤ D := by
     intro w hw

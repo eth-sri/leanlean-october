@@ -97,9 +97,6 @@ theorem bpz_near_expect_bound {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
         gcongr
         exact bpz_lintegral_ball_rpow_le hβ (by positivity) z
     _ = ENNReal.ofReal (Cn * CB * (2 * Real.pi * (2 * r) ^ (β + 2) / (β + 2))) := by
-        have h2 : 0 ≤ 2 * Real.pi * (2 * r) ^ (β + 2) / (β + 2) := by
-          have : 0 < β + 2 := by linarith
-          positivity
         rw [← ENNReal.ofReal_mul hCB0, ← ENNReal.ofReal_mul hCn0]
         congr 1
         ring

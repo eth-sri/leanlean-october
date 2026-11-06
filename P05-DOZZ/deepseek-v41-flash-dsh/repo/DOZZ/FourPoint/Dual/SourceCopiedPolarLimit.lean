@@ -3,6 +3,7 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
+public import DOZZ.SharedHyp
 
 public import DOZZ.FourPoint.Dual.SourcePolarLimit
 public import DOZZ.FourPoint.Dual.SourceCopiedPolarExpectation
@@ -26,10 +27,10 @@ theorem dual_source_copied_polar_increment_tendsto
     (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ₂ : γ < 2)
     (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
     (Xc : Ω → ℂ → ℝ → ℝ) (hc : IsCircleAverage P X Xc)
-    (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
-    (hcont : ∀ᵐ ω ∂P, Continuous (fun p : ℂ × ℝ => Xc ω p.1 p.2))
+    (hm : MeasurableCircleAvg Xc)
+    (hcont : ContinuousCircleAvg P Xc)
     (N : Ω → Measure ℂ) (hNm : Measurable N)
-    (hfin : ∀ ω K, IsCompact K → K ⊆ ({0} : Set ℂ)ᶜ → N ω K < ⊤)
+    (hfin : FiniteOffOrigin N)
     (hlaw : ∀ β₁ β₂ β₃ ξ' : ℝ, ∀ z : ℂ, ‖z‖ < ‖z‖^(1-ξ') →
       P.map (fun ω => (originRadialPath Xc ω,dualOuterMass γ β₁ β₂ β₃ (M ω) z ξ')) =
         (P.prod P).map (fun ω : Ω × Ω => (originRadialPath Xc ω.1,

@@ -32,12 +32,11 @@ theorem dual_deleted_disk_rooted_bound {Ω : Type*} [MeasurableSpace Ω]
   intro z ξ r hz hcut hr hr₁
   let D := Metric.ball (0 : ℂ) r
   let f := D.indicator (dualFusionKernel γ α₁ α₂ α₃ 0)
-  have hf : Measurable f := (dual_kernel_measurable γ α₁ α₂ α₃ 0).indicator measurableSet_ball
   have he : (fun x => ENNReal.ofReal (f x)) =
       D.indicator (fun x => ENNReal.ofReal (dualFusionKernel γ α₁ α₂ α₃ 0 x)) := by
     funext x
     by_cases hx : x ∈ D <;> simp [f, hx]
-  have ht := hb z ξ hz hcut f hf
+  have ht := hb z ξ hz hcut f ((dual_kernel_measurable γ α₁ α₂ α₃ 0).indicator measurableSet_ball)
   simp_rw [show ∀ x, ENNReal.ofReal (f x) = D.indicator
     (fun x => ENNReal.ofReal (dualFusionKernel γ α₁ α₂ α₃ 0 x)) x from fun x => congrFun he x] at ht
   rw [lintegral_indicator measurableSet_ball] at ht

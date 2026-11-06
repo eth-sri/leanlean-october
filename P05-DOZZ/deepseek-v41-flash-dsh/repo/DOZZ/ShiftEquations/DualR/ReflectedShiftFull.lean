@@ -3,6 +3,7 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
+public import DOZZ.SharedHyp
 
 public import DOZZ.ShiftEquations.DualR.FirstShiftFull
 import DOZZ.ShiftEquations.Gluing.BandNear
@@ -111,7 +112,7 @@ strip-meromorphic `R` with the physical reflection values, at every real point o
 where `R` is analytic. -/
 theorem reflectedShift_nearQ_of_reflected_shift_and_gluing {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
     (X : Ω → Distr) (M : Ω → Measure ℂ) {γ μ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2) (hμ : 0 < μ)
-    (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M) {η : ℝ} (hη : 0 < η ∧ Q γ - 2 * η > γ)
+    (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M) {η : ℝ} (hη : DriftWindow γ η)
     (hShiftGluing : ∀ α₂ α₃ : ℝ, (Q γ - η < α₂ ∧ α₂ < Q γ) → (Q γ - η < α₃ ∧ α₃ < Q γ) →
       ∃ B : ℝ → Ω → BrownianPath × BrownianPath, ∃ Z : Ω → Measure ℝ,
         IsSourceLateralProjection P X γ M Z ∧
@@ -130,8 +131,8 @@ theorem reflectedShift_nearQ_of_reflected_shift_and_gluing {Ω : Type*} [Measura
                     C (z - γ / 2)))
     {hR : ℝ} (hhR : 0 < hR) {R : ℂ → ℂ} (hRm : MeromorphicOn R (horizontalStrip hR))
     {BR : ℝ → Ω → BrownianPath × BrownianPath} {ZR : Ω → Measure ℝ}
-    (hBR : ∀ α : ℝ, γ / 2 < α → α < Q γ → IsReflectionData P γ α (BR α) ZR)
-    (hRv : ∀ α : ℝ, γ / 2 < α → α < Q γ → R (α : ℂ) = (reflectionR P γ μ α (BR α) ZR : ℂ))
+    (hBR : ReflectionDataFamily P γ BR ZR)
+    (hRv : ReflectionFamily P γ μ R BR ZR)
     (y b c : ℝ) (hy₁ : Q γ < y) (hy₂ : y < Q γ + γ) (hb₁ : Q γ - η < b) (hb₂ : b < Q γ)
     (hc₁ : Q γ - η < c) (hc₂ : c < Q γ) (hRy : AnalyticAt ℂ R (y : ℂ)) :
     R y * (structureConstant P M γ μ (2 * Q γ - y) b c : ℂ) = -(1 / (Real.pi * μ)) *
@@ -141,7 +142,6 @@ theorem reflectedShift_nearQ_of_reflected_shift_and_gluing {Ω : Type*} [Measura
   obtain ⟨B, Z, -, hBd, h, hh, C, Rs, hCm, hRsm, hCv, hRsv, -, hrefl⟩ :=
     hShiftGluing b c ⟨hb₁, hb₂⟩ ⟨hc₁, hc₂⟩
   set h' : ℝ := min h hR with hh'
-  have hh'pos : 0 < h' := lt_min hh hhR
   have hsub₁ : horizontalStrip h' ⊆ {z : ℂ | |z.im| < h} := fun z hz =>
     lt_of_lt_of_le (show |z.im| < h' from hz) (min_le_left _ _)
   have hsub₂ : horizontalStrip h' ⊆ horizontalStrip hR := fun z hz =>
@@ -162,7 +162,7 @@ theorem reflectedShift_nearQ_of_reflected_shift_and_gluing {Ω : Type*} [Measura
     analyticAt_shiftCoeffA_comp (f₁ := id) (f₂ := fun _ => (b : ℂ)) (f₃ := fun _ => (c : ℂ))
       analyticAt_id analyticAt_const analyticAt_const hgood
   exact reflectedShift_exact_of_strip P M hγ hγ2 hμ hη ⟨hb₁, hb₂⟩ ⟨hc₁, hc₂⟩ hV₃ hV₃mem hf₃
-    hf₃eq hh'pos (hCm.mono_set hsub₁) (hRsm.mono_set hsub₁) (hRm.mono_set hsub₂) hCv hRsR hrefl
+    hf₃eq (lt_min hh hhR) (hCm.mono_set hsub₁) (hRsm.mono_set hsub₁) (hRm.mono_set hsub₂) hCv hRsR hrefl
     hy₁ hy₂ hRy hAy
 
 /-- **The reflected shift on the two-triple extended domain**, from
@@ -173,27 +173,11 @@ coefficient analytic. -/
 theorem reflectedShift_full {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
     (M : Ω → Measure ℂ) {γ μ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2) (hμ : 0 < μ)
     (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M)
-    (hShiftGluing : ∀ η : ℝ, (0 < η ∧ Q γ - 2 * η > γ) → ∀ α₂ α₃ : ℝ,
-      (Q γ - η < α₂ ∧ α₂ < Q γ) → (Q γ - η < α₃ ∧ α₃ < Q γ) →
-      ∃ B : ℝ → Ω → BrownianPath × BrownianPath, ∃ Z : Ω → Measure ℝ,
-        IsSourceLateralProjection P X γ M Z ∧
-          (∀ α : ℝ, γ / 2 < α → α < Q γ → IsReflectionData P γ α (B α) Z) ∧
-            ∃ h : ℝ, 0 < h ∧ ∃ C R : ℂ → ℂ,
-              MeromorphicOn C {z | |z.im| < h} ∧
-              MeromorphicOn R {z | |z.im| < h} ∧
-              (∀ α : ℝ, 2 * η < α → α < Q γ →
-                C (α : ℂ) = (structureConstant P M γ μ α α₂ α₃ : ℂ)) ∧
-              (∀ α : ℝ, γ / 2 < α → α < Q γ →
-                R (α : ℂ) = (reflectionR P γ μ α (B α) Z : ℂ)) ∧
-              (∀ᶠ z in codiscrete ℂ, C z = R z * C (2 * Q γ - z)) ∧
-              (∀ᶠ z in codiscrete ℂ,
-                R (z + γ / 2) * C (2 * Q γ - z - γ / 2) =
-                  -(1 / (Real.pi * μ)) * shiftCoeffA γ (γ / 2) z (α₂ : ℂ) (α₃ : ℂ) *
-                    C (z - γ / 2)))
+    (hShiftGluing : ShiftGluingHyp P X M γ μ)
     {hR : ℝ} (hhR : 0 < hR) {R : ℂ → ℂ} (hRm : MeromorphicOn R (horizontalStrip hR))
     {BR : ℝ → Ω → BrownianPath × BrownianPath} {ZR : Ω → Measure ℝ}
-    (hBR : ∀ α : ℝ, γ / 2 < α → α < Q γ → IsReflectionData P γ α (BR α) ZR)
-    (hRv : ∀ α : ℝ, γ / 2 < α → α < Q γ → R (α : ℂ) = (reflectionR P γ μ α (BR α) ZR : ℂ))
+    (hBR : ReflectionDataFamily P γ BR ZR)
+    (hRv : ReflectionFamily P γ μ R BR ZR)
     {x b c : ℝ} (h₁ : ExtendedSeiberg3 γ (2 * Q γ - x) b c)
     (h₂ : ExtendedSeiberg3 γ (x - γ) b c) (hRx : AnalyticAt ℂ R (x : ℂ))
     (hs₁ : AnalyticAt ℂ Complex.Gamma (sExp γ (2 * Q γ - x) b c : ℂ))
@@ -216,8 +200,7 @@ theorem reflectedShift_full {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (
   set x₁ : ℝ := Q γ + γ / 2 with hx₁
   obtain ⟨u, hu, hRu⟩ : ∃ u : ℝ, u ∈ Ioo (-(γ / 4)) (γ / 4) ∧
       AnalyticAt ℂ R ((x₁ + u : ℝ) : ℂ) := by
-    have hmer : MeromorphicAt R (x₁ : ℂ) := hRm _ (ofReal_mem_horizontalStrip hhR x₁)
-    have hev := eventually_analyticAt_affine hmer (a := 1) one_ne_zero
+    have hev := eventually_analyticAt_affine (hRm _ (ofReal_mem_horizontalStrip hhR x₁)) (a := 1) one_ne_zero
     have hI : Ioo (-(γ / 4)) (γ / 4) ∈ 𝓝 (0 : ℝ) := Ioo_mem_nhds (by linarith) (by linarith)
     obtain ⟨u, hu1, hu2⟩ := (hev.and (nhdsWithin_le_nhds hI)).exists
     exact ⟨u, hu2, by simpa using hu1⟩

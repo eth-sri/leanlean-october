@@ -62,7 +62,6 @@ theorem brownianBelowConditionedLaw_avoidance_shift_integral
   have _ := hB
   let hx : ℝ := conditionedH ν x
   let hxc : ℝ := conditionedH ν (x - c)
-  have hxpos : 0 < hx := conditionedH_pos_of_pos hν (lt_trans hc hcx)
   have hxcpos : 0 < hxc := conditionedH_pos_of_pos hν (sub_pos.mpr hcx)
   have hset : MeasurableSet (brownianPathStrictlyBelow (x - c)) :=
     measurableSet_brownianPath_below (x - c)
@@ -72,9 +71,6 @@ theorem brownianBelowConditionedLaw_avoidance_shift_integral
   have hF' : Measurable (fun q : BrownianPath =>
       F (brownianUpperConditionedPositivePath (x - c) q)) :=
     hF.comp (measurable_brownianUpperConditionedPositivePath (x - c))
-  have hF'' : Measurable (fun p : BrownianPath =>
-      F (brownianUpperConditionedPositivePath (x - c) (driftedBrownianPath (-ν) p))) :=
-    hF'.comp hD
   have htest : Measurable ((brownianPathStrictlyBelow (x - c)).indicator
       (fun q => F (brownianUpperConditionedPositivePath (x - c) q))) :=
     hF'.indicator hset
@@ -112,17 +108,16 @@ theorem brownianBelowConditionedLaw_avoidance_shift_integral
       simp [hp, hq]
   have hcoeff : ENNReal.ofReal (hxc / hx) * (ENNReal.ofReal hxc)⁻¹ =
       (ENNReal.ofReal hx)⁻¹ := by
-    rw [ENNReal.ofReal_div_of_pos hxpos, div_eq_mul_inv]
+    rw [ENNReal.ofReal_div_of_pos (conditionedH_pos_of_pos hν (lt_trans hc hcx)), div_eq_mul_inv]
     have ha0 : ENNReal.ofReal hxc ≠ 0 :=
       ne_of_gt (ENNReal.ofReal_pos.mpr hxcpos)
-    have hatop : ENNReal.ofReal hxc ≠ ∞ := ENNReal.ofReal_ne_top
     calc
       (ENNReal.ofReal hxc * (ENNReal.ofReal hx)⁻¹) *
           (ENNReal.ofReal hxc)⁻¹ =
         (ENNReal.ofReal hx)⁻¹ *
           (ENNReal.ofReal hxc * (ENNReal.ofReal hxc)⁻¹) := by ac_rfl
       _ = (ENNReal.ofReal hx)⁻¹ := by
-        rw [ENNReal.mul_inv_cancel ha0 hatop, mul_one]
+        rw [ENNReal.mul_inv_cancel ha0 (ENNReal.ofReal_ne_top), mul_one]
   have hfactor : lastExitAvoidanceFactor ν c x = hxc / hx := by
     simp [lastExitAvoidanceFactor, hx, hxc, hcx]
   calc
@@ -155,7 +150,6 @@ theorem brownianBelowConditionedLaw_avoidance_shift_integral
           brownianBelowConditionedLaw B ν (x - c) := by
         have hA0 : ENNReal.ofReal hxc ≠ 0 :=
           ne_of_gt (ENNReal.ofReal_pos.mpr hxcpos)
-        have hAtop : ENNReal.ofReal hxc ≠ ∞ := ENNReal.ofReal_ne_top
         rw [hfactor]
         calc
           (ENNReal.ofReal hx)⁻¹ *
@@ -186,7 +180,7 @@ theorem brownianBelowConditionedLaw_avoidance_shift_integral
                     ENNReal.ofReal (hxc / hx) *
                       ((ENNReal.ofReal hxc)⁻¹ * ENNReal.ofReal hxc) := by ac_rfl
                   _ = ENNReal.ofReal (hxc / hx) := by
-                    rw [ENNReal.inv_mul_cancel hA0 hAtop, mul_one]
+                    rw [ENNReal.inv_mul_cancel hA0 (ENNReal.ofReal_ne_top), mul_one]
 
 end DOZZ.Proofs
 

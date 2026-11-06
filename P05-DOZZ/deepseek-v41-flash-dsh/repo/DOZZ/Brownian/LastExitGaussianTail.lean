@@ -46,7 +46,6 @@ theorem hasDerivAt_brownianStandardHeatTail (z : ℝ) :
 /-- Scaling the Gaussian density by its standard deviation. -/
 theorem brownianHeatDensity_standard_scale {t : ℝ} (ht : 0 < t) (z : ℝ) :
     brownianHeatDensity 1 (z / Real.sqrt t) / Real.sqrt t = brownianHeatDensity t z := by
-  have hs : Real.sqrt t ≠ 0 := (Real.sqrt_pos.2 ht).ne'
   have he : -(z / Real.sqrt t)^2 / (2 * 1) = -z^2 / (2*t) := by
     rw [div_pow, Real.sq_sqrt ht.le]
     field_simp

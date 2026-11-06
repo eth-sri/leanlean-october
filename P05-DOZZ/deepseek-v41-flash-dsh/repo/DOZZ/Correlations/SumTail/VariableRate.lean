@@ -40,8 +40,7 @@ theorem sumtail_uniform_variable_rate
   let V (i : K) : Set K := {a | |e a-e i| ≤ δ i}
   let L (i : K) : Set A := Subtype.val '' V i
   have hLc (i : K) : IsCompact (L i) := by
-    have hv : IsClosed (V i) := isClosed_le (hec.sub continuous_const).abs continuous_const
-    exact hv.isCompact.image continuous_subtype_val
+    exact (isClosed_le (hec.sub continuous_const).abs continuous_const).isCompact.image continuous_subtype_val
   have hLs (i : K) : L i ⊆ K := by rintro _ ⟨a,_,rfl⟩; exact a.2
   have hηe (i : K) (a : A) (ha : a ∈ L i) : η i < e a := by
     obtain ⟨b,hb,rfl⟩ := ha
@@ -63,16 +62,13 @@ theorem sumtail_uniform_variable_rate
   obtain ⟨i,hi⟩ := mem_iUnion.mp (hI (mem_univ aa))
   obtain ⟨hiI,hui⟩ := mem_iUnion.mp hi
   change |e aa-e i| < δ i at hui
-  have hva : aa ∈ V i := hui.le
-  have hla : a ∈ L i := ⟨aa,hva,rfl⟩
   have hrate : -p a-η i ≤ -p a-e a+d := by
     have hh := (abs_le.mp hui.le).2
     have hhδ := min_le_left (d/4) (e i/4)
     dsimp [η,δ] at *
     linarith only [hh,hhδ,hd]
-  have hCi : C i ≤ ∑ j ∈ I, C j := Finset.single_le_sum (fun j _ => hC j) hiI
-  exact (hCb i a hla s x hx).trans (mul_le_mul
-    hCi (Real.rpow_le_rpow_of_exponent_le hx hrate)
+  exact (hCb i a (⟨aa,(hui.le),rfl⟩) s x hx).trans (mul_le_mul
+    (Finset.single_le_sum (fun j _ => hC j) hiI) (Real.rpow_le_rpow_of_exponent_le hx hrate)
     (Real.rpow_nonneg (by linarith only [hx]) _) (Finset.sum_nonneg (fun j _ => hC j)))
 
 end DOZZ.Proofs

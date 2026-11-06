@@ -22,8 +22,7 @@ noncomputable def singularCompactTest (f : BoundedContinuousFunction ℂ ℝ)
   have hcont : Continuous F := f.continuous.mul
     ((continuous_norm.max continuous_const).rpow_const (fun x => Or.inl (ne_of_gt
       (lt_of_lt_of_le (by positivity : 0 < 1 / ((n : ℝ)+1)) (le_max_right _ _)))))
-  have hs : HasCompactSupport F := hfc.mul_right
-  let hb := hcont.bounded_above_of_compact_support hs
+  let hb := hcont.bounded_above_of_compact_support (hfc.mul_right)
   exact BoundedContinuousFunction.ofNormedAddCommGroup F hcont hb.choose hb.choose_spec
 
 theorem singular_compact_test_support (f : BoundedContinuousFunction ℂ ℝ)

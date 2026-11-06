@@ -121,11 +121,9 @@ theorem cutoffWeightedGmcBallMass_le_positive_dyadic_cover
             _ = _ := add_comm _ _
         simpa [f, hx, hcoreTerm] using hweight.trans hsumCore
       · have hδd : δ ≤ ‖x - z‖ := le_of_not_gt hcore
-        have hdpos : 0 < ‖x - z‖ := lt_of_lt_of_le hδ hδd
-        obtain ⟨n, hlow, hhigh⟩ := exists_dyadic_shell_index hdpos hd
+        obtain ⟨n, hlow, hhigh⟩ := exists_dyadic_shell_index (lt_of_lt_of_le hδ hδd) hd
         have hnle : n ≤ N := by
           by_contra hn
-          have hNlt : N < n := Nat.lt_of_not_ge hn
           have hpow : (2 : ℝ) ^ (N + 1) ≤ (2 : ℝ) ^ n := by
             exact pow_le_pow_right₀ (by norm_num) (by omega)
           have hradius : cutoffDyadicBallRadius R n ≤
@@ -201,9 +199,8 @@ theorem cutoffWeightedGmcBallMass_le_positive_dyadic_cover
 
 private theorem ennreal_ofReal_rpow_of_pos_cutoff {x p : ℝ} (hx : 0 < x) :
     ENNReal.rpow (ENNReal.ofReal x) p = ENNReal.ofReal (x ^ p) := by
-  have hx0 : ENNReal.ofReal x ≠ 0 := ne_of_gt (ENNReal.ofReal_pos.mpr hx)
   have hleft : ENNReal.rpow (ENNReal.ofReal x) p ≠ ⊤ :=
-    ENNReal.rpow_ne_top_of_ne_zero hx0 ENNReal.ofReal_ne_top
+    ENNReal.rpow_ne_top_of_ne_zero (ne_of_gt (ENNReal.ofReal_pos.mpr hx)) ENNReal.ofReal_ne_top
   have hright : ENNReal.ofReal (x ^ p) ≠ ⊤ := ENNReal.ofReal_ne_top
   apply (ENNReal.toReal_eq_toReal_iff' hleft hright).1
   calc
@@ -351,11 +348,10 @@ theorem cutoffWeightedGmcBallMoment_positive_subunit_scale_formula
     exact weightedGmcMomentExponent_pos_of_sharp_range hγ hp hpRange
   have hqReal : (1 / 2 : ℝ) ^ eta < 1 :=
     Real.rpow_lt_one (by norm_num) (by norm_num) hetaPos
-  have hq : q < 1 := ENNReal.ofReal_lt_one.mpr (by simpa [q] using hqReal)
   have hden : 1 - q ≠ 0 := by
     intro h
     have hqle : 1 ≤ q := tsub_eq_zero_iff_le.mp h
-    exact (not_le_of_gt hq) hqle
+    exact (not_le_of_gt (ENNReal.ofReal_lt_one.mpr (by simpa [q] using hqReal))) hqle
   have hgeom : (1 - q)⁻¹ < ⊤ :=
     lt_top_iff_ne_top.mpr (ENNReal.inv_ne_top.mpr hden)
   have hRefBall : gmcReferenceMeasure (Metric.ball 0 (1 / 2)) ≤
@@ -369,13 +365,6 @@ theorem cutoffWeightedGmcBallMoment_positive_subunit_scale_formula
   have hscale : scale < ⊤ := by
     dsimp [scale]
     exact ENNReal.ofReal_lt_top
-  have hcoreConst : coreConst < ⊤ := by
-    dsimp [coreConst]
-    exact ENNReal.mul_lt_top
-      (ENNReal.mul_lt_top ENNReal.ofReal_lt_top hscale) hrefBase
-  have hshellConst : shellConst < ⊤ := by
-    dsimp [shellConst]
-    exact ENNReal.mul_lt_top ENNReal.ofReal_lt_top hscale
   have hC : C < ⊤ := by
     dsimp [C]
     exact ENNReal.add_lt_top.mpr ⟨
@@ -426,7 +415,6 @@ theorem cutoffWeightedGmcBallMoment_positive_subunit_scale_formula
       _ ≤ 2 ^ xi * R ^ eta := by
         gcongr
   have hcoreMomentBound : coreCoeff ^ p * coreMoment ≤ coreConst := by
-    have hrealNonneg : 0 ≤ δ ^ (-γ * α * p) := Real.rpow_nonneg hδ.le _
     calc
       _ ≤ ENNReal.ofReal (δ ^ (-γ * α * p)) *
           (ENNReal.ofReal ((2 * δ) ^ xi) * base) := by
@@ -437,7 +425,7 @@ theorem cutoffWeightedGmcBallMoment_positive_subunit_scale_formula
         calc
           _ = (ENNReal.ofReal (δ ^ (-γ * α * p)) *
               ENNReal.ofReal ((2 * δ) ^ xi)) * base := by ac_rfl
-          _ = _ := by rw [← ENNReal.ofReal_mul hrealNonneg]
+          _ = _ := by rw [← ENNReal.ofReal_mul (Real.rpow_nonneg hδ.le _)]
       _ ≤ ENNReal.ofReal (2 ^ xi * R ^ eta) * refBase := by
         dsimp [base]
         gcongr

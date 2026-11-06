@@ -54,7 +54,6 @@ theorem dual_outer_moving_moment_bound {Ω : Type*} [MeasurableSpace Ω]
     (dual_retainedZero_measure_measurable γ α₁ α₂ α₃ r).comp_aemeasurable hm
   have hTm : AEMeasurable T P :=
     (dual_outerMass_measure_measurable γ α₁ α₂ α₃ ξ z).comp_aemeasurable hm
-  have hSt : (∫⁻ ω, S ω ^ (-p) ∂P) ≠ ⊤ := ne_top_of_le_ne_top ENNReal.ofReal_ne_top (hsb r hr₁)
   have hTt : (∫⁻ ω, T ω ^ (-p) ∂P) ≠ ⊤ := ne_top_of_le_ne_top ENNReal.ofReal_ne_top (htb z ξ hz₁ hr₁)
   have hRb : (∫⁻ ω, R ω ∂P) ≤ ENNReal.ofReal ((A * 4 * Cs) * (‖z‖ / r)) := by
     dsimp only [R]
@@ -76,7 +75,7 @@ theorem dual_outer_moving_moment_bound {Ω : Type*} [MeasurableSpace Ω]
     exact reflected_ennreal_inverse_relative_comparison p d hp hd (S ω) (T ω)
       hpf.1.ne' hsfin hl hu hv
   have hh := reflected_lintegral_toReal_difference_bound P (fun ω => T ω ^ (-p))
-    (fun ω => S ω ^ (-p)) R (hTm.pow_const _) (hSm.pow_const _) hTt hSt hRt
+    (fun ω => S ω ^ (-p)) R (hTm.pow_const _) (hSm.pow_const _) hTt (ne_top_of_le_ne_top ENNReal.ofReal_ne_top (hsb r hr₁)) hRt
     (hcomp.mono fun _ h => h.1) (hcomp.mono fun _ h => h.2)
   calc
     _ ≤ (∫⁻ ω, R ω ∂P).toReal := hh

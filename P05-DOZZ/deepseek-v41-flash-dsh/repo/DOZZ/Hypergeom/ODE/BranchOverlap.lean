@@ -3,6 +3,7 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
+public import DOZZ.SharedHyp
 
 public import DOZZ.Hypergeom.ODE.CutPlaneSeriesAgreement
 public import DOZZ.Hypergeom.ODE.NegativeCutPlaneSeriesAgreement
@@ -17,7 +18,7 @@ open Filter Set Topology
 namespace DOZZ.Proofs
 
 private theorem gaussBranches_eq_on_upperHalfPlane
-    (a b c : ℂ) (hc : ∀ n : ℕ, c ≠ -(n : ℂ)) :
+    (a b c : ℂ) (hc : NotNegPole c) :
     EqOn (gaussCutPlaneScalarState a b c)
       (gaussNegativeCutPlaneScalarState a b c) {z : ℂ | 0 < z.im} := by
   let U : Set ℂ := {z : ℂ | 0 < z.im}
@@ -59,19 +60,17 @@ private theorem gaussBranches_eq_on_upperHalfPlane
         _ ≤ ‖z - z₀‖ + ‖z₀‖ := norm_add_le _ _
     have hz₀norm : ‖z₀‖ = (1 / 2 : ℝ) := by norm_num [z₀]
     have hznorm : ‖z‖ < 1 := by linarith
-    have hzcut : z ∈ gaussCutPlane := Or.inl (ne_of_gt himpos)
-    have hzneg : z ∈ gaussNegativeCutPlane := Or.inl (ne_of_gt himpos)
     calc
       gaussCutPlaneScalarState a b c z = ordinaryHypergeometric a b c z :=
-        gaussCutPlaneScalarState_eq_ordinary_on_unitDisk a b c hc hzcut hznorm
+        gaussCutPlaneScalarState_eq_ordinary_on_unitDisk a b c hc (Or.inl (ne_of_gt himpos)) hznorm
       _ = gaussNegativeCutPlaneScalarState a b c z :=
         (gaussNegativeCutPlaneScalarState_eq_ordinary_on_unitDisk
-          a b c hc hzneg hznorm).symm
+          a b c hc (Or.inl (ne_of_gt himpos)) hznorm).symm
   exact AnalyticOnNhd.eqOn_of_preconnected_of_eventuallyEq
     hFanalytic hGanalytic hpre hz₀ hnear
 
 private theorem gaussBranches_eq_on_lowerHalfPlane
-    (a b c : ℂ) (hc : ∀ n : ℕ, c ≠ -(n : ℂ)) :
+    (a b c : ℂ) (hc : NotNegPole c) :
     EqOn (gaussCutPlaneScalarState a b c)
       (gaussNegativeCutPlaneScalarState a b c) {z : ℂ | z.im < 0} := by
   let U : Set ℂ := {z : ℂ | z.im < 0}
@@ -113,20 +112,18 @@ private theorem gaussBranches_eq_on_lowerHalfPlane
         _ ≤ ‖z - z₀‖ + ‖z₀‖ := norm_add_le _ _
     have hz₀norm : ‖z₀‖ = (1 / 2 : ℝ) := by norm_num [z₀]
     have hznorm : ‖z‖ < 1 := by linarith
-    have hzcut : z ∈ gaussCutPlane := Or.inl (ne_of_lt himneg)
-    have hzneg : z ∈ gaussNegativeCutPlane := Or.inl (ne_of_lt himneg)
     calc
       gaussCutPlaneScalarState a b c z = ordinaryHypergeometric a b c z :=
-        gaussCutPlaneScalarState_eq_ordinary_on_unitDisk a b c hc hzcut hznorm
+        gaussCutPlaneScalarState_eq_ordinary_on_unitDisk a b c hc (Or.inl (ne_of_lt himneg)) hznorm
       _ = gaussNegativeCutPlaneScalarState a b c z :=
         (gaussNegativeCutPlaneScalarState_eq_ordinary_on_unitDisk
-          a b c hc hzneg hznorm).symm
+          a b c hc (Or.inl (ne_of_lt himneg)) hznorm).symm
   exact AnalyticOnNhd.eqOn_of_preconnected_of_eventuallyEq
     hFanalytic hGanalytic hpre hz₀ hnear
 
 /-- The two selected continuations agree wherever both cut planes contain a nonreal point. -/
 theorem gaussBranches_eq_of_im_ne_zero
-    (a b c : ℂ) (hc : ∀ n : ℕ, c ≠ -(n : ℂ))
+    (a b c : ℂ) (hc : NotNegPole c)
     {z : ℂ} (hz : z.im ≠ 0) :
     gaussCutPlaneScalarState a b c z = gaussNegativeCutPlaneScalarState a b c z := by
   rcases lt_or_gt_of_ne hz with hneg | hpos

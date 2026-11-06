@@ -48,8 +48,7 @@ theorem reflected_pastPlaneWeight_eq (γ : ℝ) (a : TwoSidedPath) (T : ℝ≥0)
     change a (min (Real.toNNReal (-Real.log ‖x‖)) T : ℝ) = a (-Real.log ‖x‖)
     rw [Real.coe_toNNReal _ hl,min_eq_left hx]
   · rw [ite_eq_right hl]
-    have hh : 0 ≤ Real.log ‖x‖ := (le_of_lt (neg_neg_iff_pos.mp (lt_of_not_ge hl)))
     change a (-(Real.toNNReal (Real.log ‖x‖) : ℝ)) = a (-Real.log ‖x‖)
-    rw [Real.coe_toNNReal _ hh]
+    rw [Real.coe_toNNReal _ ((le_of_lt (neg_neg_iff_pos.mp (lt_of_not_ge hl))))]
 
 end DOZZ.Proofs

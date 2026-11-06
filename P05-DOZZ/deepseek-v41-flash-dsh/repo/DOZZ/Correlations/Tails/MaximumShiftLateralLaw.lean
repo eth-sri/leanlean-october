@@ -35,14 +35,13 @@ theorem maximum_shift_lateral_law
     (NNReal.continuous_coe.measurable.comp_aemeasurable
       (aemeasurable_driftedBrownianMaximumTime (P.map D) hB ν hν)).neg
   let T := ht.mk (fun p : BrownianPath => -(driftedBrownianMaximumTime ν p : ℝ))
-  have hT : Measurable T := ht.measurable_mk
   have hshift : (fun ω => (Z ω).map
       (fun s => s - (driftedBrownianMaximumTime ν (D ω) : ℝ))) =ᵐ[P]
       (fun ω => (Z ω).map (fun s => s + T (D ω))) := by
     filter_upwards [ae_of_ae_map hD ht.ae_eq_mk] with ω hω
     change -(driftedBrownianMaximumTime ν (D ω) : ℝ) = T (D ω) at hω
     simp only [sub_eq_add_neg, ← hω]
-  obtain ⟨hm, hlaw, hi⟩ := lateralGMC_random_translation P γ Z hZ D hD hInd T hT
+  obtain ⟨hm, hlaw, hi⟩ := lateralGMC_random_translation P γ Z hZ D hD hInd T (ht.measurable_mk)
   exact ⟨hm.congr hshift.symm, (Measure.map_congr hshift).trans hlaw,
     hi.congr (Filter.EventuallyEq.refl _ _) hshift.symm⟩
 

@@ -38,8 +38,6 @@ theorem reflected_lateral_cross_bound (w v : ℂ) (hw : w ≠ 0) (hv : v ≠ 0)
       2 * (‖v‖ / ‖w‖) := by
   have hwpos : 0 < ‖w‖ := norm_pos_iff.mpr hw
   have hnorm : ‖v‖ < ‖w‖ := by linarith only [hsep, hwpos]
-  have hwv : w ≠ v := fun h => hnorm.ne (congrArg norm h.symm)
-  have hdpos : 0 < ‖w - v‖ := norm_pos_iff.mpr (sub_ne_zero.mpr hwv)
   have hq : 0 ≤ ‖v‖ / ‖w‖ := div_nonneg (norm_nonneg _) hwpos.le
   have hq₂ : ‖v‖ / ‖w‖ ≤ 1 / 2 := (div_le_iff₀ hwpos).mpr (by linarith only [hsep])
   have hupper := norm_sub_le w v
@@ -56,7 +54,7 @@ theorem reflected_lateral_cross_bound (w v : ℂ) (hw : w ≠ 0) (hv : v ≠ 0)
   rw [origin_lateralKernel_cancellation hw hv, max_eq_left hnorm.le]
   have he : -Real.log ‖w - v‖ + Real.log ‖w‖ =
       -Real.log (‖w - v‖ / ‖w‖) := by
-    rw [Real.log_div hdpos.ne' hwpos.ne']
+    rw [Real.log_div (norm_pos_iff.mpr (sub_ne_zero.mpr (fun h => hnorm.ne (congrArg norm h.symm)))).ne' hwpos.ne']
     ring
   rw [he, abs_neg]
   exact hlog
@@ -71,8 +69,7 @@ theorem reflected_lateral_cross_bound_relative (w v : ℂ) (ρ : ℝ)
       ‖v‖ ≤ ρ * ‖w‖ := hsep
       _ ≤ (1 / 2) * ‖w‖ := mul_le_mul_of_nonneg_right hρ hwpos.le
       _ = ‖w‖ / 2 := by ring
-  have hratio : ‖v‖ / ‖w‖ ≤ ρ := (div_le_iff₀ hwpos).mpr hsep
   exact (reflected_lateral_cross_bound w v hw hv hhalf).trans
-    (mul_le_mul_of_nonneg_left hratio (by norm_num))
+    (mul_le_mul_of_nonneg_left ((div_le_iff₀ hwpos).mpr hsep) (by norm_num))
 
 end DOZZ.Proofs

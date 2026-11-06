@@ -103,8 +103,7 @@ theorem brownianUnitNorm_nat_tail_le (P : Measure BrownianPath)
   by_cases hn : n = 0
   · subst n
     let _ := (hB.hasLaw_eval 0).isProbabilityMeasure
-    have hb : P {p | (0 : ℝ) ≤ brownianUnitNorm p} ≤ 1 := prob_le_one
-    simpa using hb.trans (by norm_num : (1 : ℝ≥0∞) ≤ 4)
+    simpa using (prob_le_one).trans (by norm_num : (1 : ℝ≥0∞) ≤ 4)
   · exact brownianUnitNorm_tail_le P hB n (Nat.cast_pos.mpr (Nat.pos_of_ne_zero hn))
 
 /-- A nonnegative real variable can be bounded by its integer lower-level exponential sum. -/
@@ -113,15 +112,13 @@ theorem ennreal_exp_le_integer_levels (x θ : ℝ) (hx : 0 ≤ x) (hθ : 0 ≤ �
       ∑' n : ℕ, ENNReal.ofReal (Real.exp (θ * ((n : ℝ) + 1))) *
         ({y : ℝ | (n : ℝ) ≤ y}.indicator (fun _ => (1 : ℝ≥0∞)) x) := by
   let n : ℕ := Nat.floor x
-  have hn : (n : ℝ) ≤ x := Nat.floor_le hx
-  have hn' : x < (n : ℝ) + 1 := Nat.lt_floor_add_one x
   calc
     _ ≤ ENNReal.ofReal (Real.exp (θ * ((n : ℝ) + 1))) :=
       ENNReal.ofReal_le_ofReal (Real.exp_le_exp.mpr
-        (mul_le_mul_of_nonneg_left hn'.le hθ))
+        (mul_le_mul_of_nonneg_left (Nat.lt_floor_add_one x).le hθ))
     _ = ENNReal.ofReal (Real.exp (θ * ((n : ℝ) + 1))) *
         ({y : ℝ | (n : ℝ) ≤ y}.indicator (fun _ => (1 : ℝ≥0∞)) x) := by
-      rw [indicator_of_mem (show x ∈ {y : ℝ | (n : ℝ) ≤ y} from hn), mul_one]
+      rw [indicator_of_mem (show x ∈ {y : ℝ | (n : ℝ) ≤ y} from (Nat.floor_le hx)), mul_one]
     _ ≤ _ := ENNReal.le_tsum (f := fun k : ℕ =>
       ENNReal.ofReal (Real.exp (θ * ((k : ℝ) + 1))) *
         ({y : ℝ | (k : ℝ) ≤ y}.indicator (fun _ => (1 : ℝ≥0∞)) x)) n
@@ -138,7 +135,6 @@ theorem summable_brownianWindow_exponential_series (θ : ℝ) :
   apply Real.exp_le_exp.mpr
   have hx : 0 ≤ ((n + N : ℕ) : ℝ) := Nat.cast_nonneg _
   have hnN : (N : ℝ) ≤ ((n + N : ℕ) : ℝ) := by exact_mod_cast Nat.le_add_left N n
-  have hm := mul_le_mul_of_nonneg_right (hN.trans hnN) hx
   have hnn : (n : ℝ) ≤ ((n + N : ℕ) : ℝ) := by exact_mod_cast Nat.le_add_right n N
   nlinarith
 

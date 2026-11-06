@@ -81,7 +81,6 @@ theorem equatorGFF_testL2_tendsto_to_circle_limit
     nlinarith
   have hnorm : dist (U n) (V m) < η := by
     rw [dist_eq_norm]
-    have hn0 : 0 ≤ ‖U n - V m‖ := norm_nonneg _
     nlinarith
   have htriangle : dist (U n) W ≤ dist (U n) (V m) + dist (V m) W :=
     dist_triangle _ _ _
@@ -117,8 +116,7 @@ theorem exists_measurable_equatorGFF_circle_L2_limit
   change Measurable[equatorGFFRawDistributionSigma X] Y at hYm0
   have hmap : Measurable (fun ω => fun g : TestFn => X ω g) :=
     measurable_pi_iff.mpr (fun g => (hX.2 g).1)
-  have hm0 : m0 ≤ ‹MeasurableSpace Ω› := hmap.comap_le
-  have hYm : Measurable Y := hYm0.mono hm0 le_rfl
+  have hYm : Measurable Y := hYm0.mono (hmap.comap_le) le_rfl
   have hYmem : MemLp Y 2 P := MemLp.ae_eq hYae.symm hV
   have hYlim : Tendsto (fun n => eLpNorm (fun ω => X ω (f n) - Y ω) 2 P)
       atTop (𝓝 0) := by

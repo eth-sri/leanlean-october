@@ -26,7 +26,6 @@ private theorem lastExitAvoidanceFactor_nonneg_le_one
     0 ≤ lastExitAvoidanceFactor ν c y ∧ lastExitAvoidanceFactor ν c y ≤ 1 := by
   by_cases hcy : c < y
   · have hy : 0 < y := lt_trans hc hcy
-    have hyc : 0 < y - c := sub_pos.mpr hcy
     have hnumExp : Real.exp (-2 * ν * (y - c)) < 1 := by
       apply Real.exp_lt_one_iff.mpr
       nlinarith
@@ -36,7 +35,6 @@ private theorem lastExitAvoidanceFactor_nonneg_le_one
     have hnum : 0 < 1 - Real.exp (-2 * ν * (y - c)) := by linarith
     have hden : 0 < 1 - Real.exp (-2 * ν * y) := by linarith
     have harg : -2 * ν * y ≤ -2 * ν * (y - c) := by
-      have hstep : 0 < 2 * ν * c := by positivity
       nlinarith
     have hratio : 1 - Real.exp (-2 * ν * (y - c)) ≤
         1 - Real.exp (-2 * ν * y) := by
@@ -73,8 +71,6 @@ theorem tendsto_integral_lastExitAvoidanceFactor_atTop
       ∫ p, lastExitAvoidanceFactor ν c (-(p t)) ∂P) atTop (𝓝 1) := by
   let : IsProbabilityMeasure P := hP.2.1
   have hfactorlim := lastExitAvoidanceFactor_tendsto_one_atTop (ν := ν) (c := c) hν
-  have hstate := conditionedPositiveStateAt_measureReal_Iic_tendsto_zero_atTop
-    hP hν
   have hmeasFactor : Measurable (lastExitAvoidanceFactor ν c) :=
     measurable_lastExitAvoidanceFactor ν c
   have hfactorBound (x : ℝ) :
@@ -122,8 +118,7 @@ theorem tendsto_integral_lastExitAvoidanceFactor_atTop
     let g : BrownianPath → ℝ := fun p =>
       ({p : BrownianPath | -(p t) ≤ M}).indicator (fun _ => (1 : ℝ)) p + δ
     have hf : Integrable f P := by
-      have hconst : Integrable (fun _ : BrownianPath => (1 : ℝ)) P := integrable_const 1
-      have hsub := hconst.sub (hInt t)
+      have hsub := (integrable_const 1).sub (hInt t)
       exact hsub.congr (Filter.Eventually.of_forall fun p => by simp [f])
     have hg : Integrable g P := by
       exact ((integrable_const (1 : ℝ)).indicator hA).add (integrable_const δ)
@@ -136,7 +131,6 @@ theorem tendsto_integral_lastExitAvoidanceFactor_atTop
       · have hgt : M < -(p t) := lt_of_not_ge hp
         have hyM : M₀ ≤ -(p t) := le_trans (le_max_left _ _) hgt.le
         have hlarg := hM₀ (-(p t)) hyM
-        have hlt : 1 - lastExitAvoidanceFactor ν c (-(p t)) < δ := by linarith
         simp [f, g, hp]
         linarith
     have hbound : ∫ p, f p ∂P ≤ P.real {p | -(p t) ≤ M} + δ := by

@@ -139,9 +139,8 @@ private theorem crossing_functions_match_jets_of_eqOn
     (hEq : ∀ w ∈ S, F w = G w) :
     F z = G z ∧ wirtingerZ F z = wirtingerZ G z := by
   have hfreq := mem_closure_iff_frequently.mp hz
-  have hvalueFreq : ∃ᶠ w in 𝓝 z, F w = G w := hfreq.mono hEq
   have hvalue := tendsto_nhds_unique_of_frequently_eq
-    hF.continuousAt.tendsto hG.continuousAt.tendsto hvalueFreq
+    hF.continuousAt.tendsto hG.continuousAt.tendsto (hfreq.mono hEq)
   have hFz : DifferentiableAt ℝ (fun w => wirtingerZ F w) z :=
     differentiableAt_wirtingerZ_of_contDiffAt_two hF
   have hGz : DifferentiableAt ℝ (fun w => wirtingerZ G w) z :=
@@ -216,8 +215,6 @@ theorem realGaussSolution_canonical_hermitian_offDiagonal_zero
       star (phase⁻¹) = (star phase)⁻¹ := by simp
       _ = (phase⁻¹)⁻¹ := by rw [hphaseStar]
       _ = phase := by simp
-  have hphaseInvUnit : phase⁻¹ * phase = 1 := inv_mul_cancel₀ hphase0
-  have hphaseMulInvUnit : phase * phase⁻¹ = 1 := mul_inv_cancel₀ hphase0
   let Qup : ℂ → ℂ := hermitianQuadraticTensor f g
     (α : ℂ) (star β) β (δ : ℂ)
   let Bdown : ℂ := star β * phase
@@ -256,7 +253,7 @@ theorem realGaussSolution_canonical_hermitian_offDiagonal_zero
       calc
         gaussFPlus H (a : ℂ) (b : ℂ) (c : ℂ) z =
             (phase⁻¹ * phase) * gaussFPlus H (a : ℂ) (b : ℂ) (c : ℂ) z := by
-              simp [hphaseInvUnit]
+              simp [(inv_mul_cancel₀ hphase0)]
         _ = phase⁻¹ * (phase * gaussFPlus H (a : ℂ) (b : ℂ) (c : ℂ) z) := by ring
         _ = phase⁻¹ * g z := by rw [← htrans]
     change F z = _ at hrepz
@@ -267,7 +264,7 @@ theorem realGaussSolution_canonical_hermitian_offDiagonal_zero
         rw [hplus]
         simp only [map_add, map_mul, Complex.conj_conj, Complex.conj_ofReal]
         rw [show (starRingEnd ℂ) (phase⁻¹) = phase from hphaseInvStar]
-        linear_combination ((δ : ℂ) * g z * (starRingEnd ℂ) (g z)) * hphaseMulInvUnit
+        linear_combination ((δ : ℂ) * g z * (starRingEnd ℂ) (g z)) * (mul_inv_cancel₀ hphase0)
   have hUpperFdiff : ∀ z ∈ gaussNegativeCrossingUpperSet,
       DifferentiableAt ℝ F z := by
     intro z hz
@@ -288,14 +285,12 @@ theorem realGaussSolution_canonical_hermitian_offDiagonal_zero
     norm_num [gaussNegativeCrossingDisk, gaussNegativeCrossingCenter,
       Metric.mem_ball, dist_eq_norm]
   have hcenterC2 : ContDiffAt ℝ 2 F gaussNegativeCrossingCenter := hFcont _ hcenter
-  have hcenterUpC2 : ContDiffAt ℝ 2 Qup gaussNegativeCrossingCenter := hQupAt _ hcenter
-  have hcenterDownC2 : ContDiffAt ℝ 2 Qdown gaussNegativeCrossingCenter := hQdownAt _ hcenter
   have hJetsUp := crossing_functions_match_jets_of_eqOn
     gaussNegativeCrossingUpperSet_isOpen gaussNegativeCrossingUpper_closure
-    hcenterC2 hcenterUpC2 hUpperFdiff hUpperQdiff hUpperEq
+    hcenterC2 (hQupAt _ hcenter) hUpperFdiff hUpperQdiff hUpperEq
   have hJetsDown := crossing_functions_match_jets_of_eqOn
     gaussNegativeCrossingLowerSet_isOpen gaussNegativeCrossingLower_closure
-    hcenterC2 hcenterDownC2 hLowerFdiff hLowerQdiff hLowerEq
+    hcenterC2 (hQdownAt _ hcenter) hLowerFdiff hLowerQdiff hLowerEq
   have hW : f gaussNegativeCrossingCenter * deriv g gaussNegativeCrossingCenter -
       deriv f gaussNegativeCrossingCenter * g gaussNegativeCrossingCenter ≠ 0 := by
     have h := gaussNegativeCrossing_wronskian_ne_zero hH

@@ -3,6 +3,7 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
+public import DOZZ.SharedHyp
 public import DOZZ.FourPoint.Dual.PastObservable
 public import DOZZ.FourPoint.Dual.LeadingRadialMoment
 /-! Identifying the actual likelihood with its radial-path and stopped-past observables. -/
@@ -23,7 +24,7 @@ theorem dual_path_radial_scale_measurable (γ ν h : ℝ) (z : ℂ) :
 /-- The actual circle-average likelihood agrees almost surely with its radial-path version. -/
 theorem dual_source_radial_scale_eq_path_ae
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hcont : ∀ᵐ ω ∂P, Continuous (fun p : ℂ × ℝ => Xc ω p.1 p.2))
+    (hcont : ContinuousCircleAvg P Xc)
     (γ ν h : ℝ) (z : ℂ) :
     dual_radial_scale γ ν h Xc z =ᵐ[P]
       (fun ω => dualPathRadialScale γ ν h z (originRadialPath Xc ω)) := by

@@ -51,12 +51,9 @@ theorem gmc_twoSided_radius_extend
     obtain ⟨hlo, hup⟩ := hlarge z r har hr1
     constructor
     · apply le_trans (ENNReal.ofReal_le_ofReal ?_) hlo
-      have hDl : D ≤ C*l := (div_le_iff₀ hl).mp hDC
-      have hh : r ^ ξ / C ≤ l := (div_le_iff₀ hC).mpr (by nlinarith only [hrD, hDl])
-      simpa only [div_eq_mul_inv, mul_comm] using hh
+      simpa only [div_eq_mul_inv, mul_comm] using ((div_le_iff₀ hC).mpr (by nlinarith only [hrD, ((div_le_iff₀ hl).mp hDC)]))
     · apply hup.trans (ENNReal.ofReal_le_ofReal ?_)
-      have huc : u ≤ C*d := (div_le_iff₀ hd).mp huC
-      exact huc.trans (mul_le_mul_of_nonneg_left hrd hC.le)
+      exact ((div_le_iff₀ hd).mp huC).trans (mul_le_mul_of_nonneg_left hrd hC.le)
 
 end DOZZ.Proofs
 end

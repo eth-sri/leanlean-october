@@ -21,7 +21,6 @@ theorem affineMax_abs_sub_le
       |affineMax a b x - affineMax a b y| ≤ C * |x - y| := by
   classical
   let C := ∑ i : κ, |a i|
-  have hC : 0 ≤ C := Finset.sum_nonneg fun _ _ => abs_nonneg _
   have ha (i : κ) : |a i| ≤ C :=
     Finset.single_le_sum (f := fun j => |a j|) (fun _ _ => abs_nonneg _) (Finset.mem_univ i)
   have hbound (x y : ℝ) : affineMax a b x ≤ affineMax a b y + C * |x - y| := by
@@ -31,7 +30,7 @@ theorem affineMax_abs_sub_le
     have hdiff : a i * (x - y) ≤ C * |x - y| :=
       (le_abs_self _).trans (by rw [abs_mul]; exact mul_le_mul_of_nonneg_right (ha i) (abs_nonneg _))
     linarith only [hline, hdiff]
-  refine ⟨C, hC, fun x y => ?_⟩
+  refine ⟨C, (Finset.sum_nonneg fun _ _ => abs_nonneg _), fun x y => ?_⟩
   rw [abs_le]
   have hxy := hbound x y
   have hyx := hbound y x

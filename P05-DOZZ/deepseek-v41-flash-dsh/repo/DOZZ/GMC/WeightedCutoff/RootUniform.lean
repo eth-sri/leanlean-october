@@ -31,10 +31,8 @@ theorem regularizedGMC_openBall_root_bound_compact_gamma_chart
     P X hX Xc hXc Γ hΓ hΓpos q hq hcrit
   let B : ℝ≥0∞ := 1 + D
   have hB : B < ⊤ := ENNReal.add_lt_top.mpr ⟨ENNReal.one_lt_top, hD⟩
-  have hBone : 1 ≤ B := le_add_of_nonneg_right (by positivity)
   let A : ℝ≥0∞ := Asmall + B
-  have hA : A < ⊤ := ENNReal.add_lt_top.mpr ⟨hAsmall, hB⟩
-  refine ⟨A, hA, ?_⟩
+  refine ⟨A, (ENNReal.add_lt_top.mpr ⟨hAsmall, hB⟩), ?_⟩
   intro γ hγ p hp hpq z R δ hR hRhalf hδ hδR hchart
   have hp0 : 0 < p := lt_of_lt_of_le zero_lt_one hp
   by_cases hRsmall : R ≤ 1 / 8
@@ -42,12 +40,11 @@ theorem regularizedGMC_openBall_root_bound_compact_gamma_chart
     refine ⟨hs.trans ?_, htop⟩
     apply mul_le_mul_left
     exact le_add_of_nonneg_right (by positivity)
-  have hRlo : 1 / 8 ≤ R := le_of_not_ge hRsmall
   let f : Ω → ℝ≥0∞ := fun ω =>
     regularizedGMC P Xc γ (Real.log (1 / δ)) ω (Metric.ball z R)
   have hf : AEMeasurable f P := regularizedGMC_mass_aemeasurable P X hX Xc hXc γ
     (Real.log (1 / δ)) (Metric.ball z R) Metric.isOpen_ball.measurableSet
-  have hqbound := hlarge γ hγ z R δ hRlo hRhalf hδ hδR hchart
+  have hqbound := hlarge γ hγ z R δ (le_of_not_ge hRsmall) hRhalf hδ hδR hchart
   have hmoment : (∫⁻ ω, f ω ^ p ∂P) ≤ B := by
     calc
       _ ≤ P Set.univ + ∫⁻ ω, f ω ^ q ∂P :=
@@ -58,7 +55,7 @@ theorem regularizedGMC_openBall_root_bound_compact_gamma_chart
   have hroot : (∫⁻ ω, f ω ^ p ∂P) ^ (1 / p) ≤ B := by
     calc
       _ ≤ B ^ (1 / p) := ENNReal.rpow_le_rpow hmoment (by positivity)
-      _ ≤ B ^ (1 : ℝ) := ENNReal.rpow_le_rpow_of_exponent_le hBone
+      _ ≤ B ^ (1 : ℝ) := ENNReal.rpow_le_rpow_of_exponent_le (le_add_of_nonneg_right (by positivity))
         ((div_le_iff₀ hp0).mpr (by simpa using hp))
       _ = B := ENNReal.rpow_one B
   have hγpos := hΓpos γ hγ

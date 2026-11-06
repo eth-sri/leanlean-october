@@ -57,10 +57,9 @@ theorem reflected_open_exterior_remove_roots (μ : Measure ℂ) (r : ℝ) (hr : 
     (h1 : μ {1} = 0) (f : ℂ → ℝ≥0∞) :
     (∫⁻ x in {x : ℂ | r < ‖x‖}, f x ∂μ) =
       ∫⁻ x in {x : ℂ | r < ‖x‖} ∩ ({0, 1} : Set ℂ)ᶜ, f x ∂μ := by
-  have hn : ∀ᵐ x ∂μ, x ∉ ({1} : Set ℂ) := measure_eq_zero_iff_ae_notMem.mp h1
   have he : ({x : ℂ | r < ‖x‖} : Set ℂ) =ᵐ[μ]
       {x : ℂ | r < ‖x‖} ∩ ({0, 1} : Set ℂ)ᶜ := by
-    filter_upwards [hn] with x hx
+    filter_upwards [(measure_eq_zero_iff_ae_notMem.mp h1)] with x hx
     have hx1 : x ≠ 1 := by simpa only [mem_singleton_iff] using hx
     apply propext
     constructor

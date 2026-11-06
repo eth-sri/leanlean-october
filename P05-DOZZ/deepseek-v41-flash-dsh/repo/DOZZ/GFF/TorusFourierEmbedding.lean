@@ -153,9 +153,8 @@ theorem hasSum_torusPeriodization_realFourier (L : ℝ) (f : TestFn) :
 
 /-- A directional derivative of a compactly supported test function, again as a test function. -/
 noncomputable def directionalDerivativeTest (f : TestFn) (v : ℂ) : TestFn := by
-  have hfOn : ContDiffOn ℝ (↑(⊤ : ENat)) f Set.univ := f.contDiff.contDiffOn
   have hfderivOn : ContDiffOn ℝ (↑(⊤ : ENat)) (fderiv ℝ f) Set.univ := by
-    exact hfOn.fderiv_of_isOpen isOpen_univ (by simp)
+    exact (f.contDiff.contDiffOn).fderiv_of_isOpen isOpen_univ (by simp)
   have hfderiv : ContDiff ℝ (↑(⊤ : ENat)) (fderiv ℝ f) := by
     exact contDiffOn_univ.mp hfderivOn
   have hdir : ContDiff ℝ (↑(⊤ : ENat)) (fun z : ℂ => (fderiv ℝ f z) v) := by

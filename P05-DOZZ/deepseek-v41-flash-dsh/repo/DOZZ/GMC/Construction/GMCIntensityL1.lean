@@ -155,10 +155,8 @@ theorem equatorGFF_GMC_lintegral_mass_eq_reference_of_l1
 theorem gmcReferenceMeasure_unitBall_pos :
     0 < gmcReferenceMeasure (Metric.ball (0 : ℂ) 1) := by
   let B : Set ℂ := Metric.ball (0 : ℂ) 1
-  have hB : MeasurableSet B := Metric.isOpen_ball.measurableSet
-  have hvolume : 0 < volume B := Metric.measure_ball_pos volume 0 (by norm_num)
   have hle : volume B ≤ gmcReferenceMeasure B := by
-    rw [gmcReferenceMeasure, withDensity_apply _ hB]
+    rw [gmcReferenceMeasure, withDensity_apply _ (Metric.isOpen_ball.measurableSet)]
     calc
       volume B = ∫⁻ x in B, (1 : ℝ≥0∞) ∂volume := by simp
       _ ≤ ∫⁻ x in B, ENNReal.ofReal (normPlus x ^ (-4 : ℝ)) ∂volume :=
@@ -171,7 +169,7 @@ theorem gmcReferenceMeasure_unitBall_pos :
             have hplus : normPlus x = 1 := by
               simp [normPlus, max_eq_left hxnorm.le]
             simp [hplus])
-  exact lt_of_lt_of_le hvolume hle
+  exact lt_of_lt_of_le (Metric.measure_ball_pos volume 0 (by norm_num)) hle
 
 /-- Exact expected intensity on all measurable sets rules out the zero GMC. -/
 theorem equatorGFF_GMC_nontrivial_of_intensity
@@ -181,7 +179,6 @@ theorem equatorGFF_GMC_nontrivial_of_intensity
     ¬ ∀ᵐ ω ∂P, M ω = 0 := by
   intro hzero
   let B : Set ℂ := Metric.ball (0 : ℂ) 1
-  have hB : MeasurableSet B := Metric.isOpen_ball.measurableSet
   have hmassZero : ∀ᵐ ω ∂P, M ω B = 0 := by
     filter_upwards [hzero] with ω hω
     rw [hω]
@@ -193,7 +190,7 @@ theorem equatorGFF_GMC_nontrivial_of_intensity
       _ = 0 := by simp
   have hreference : gmcReferenceMeasure B = 0 := by
     rw [← hmass]
-    exact (hIntensity B hB).symm
+    exact (hIntensity B (Metric.isOpen_ball.measurableSet)).symm
   exact (gmcReferenceMeasure_unitBall_pos).ne' hreference
 
 /-- Exact intensity on every measurable set follows once the cutoff set masses converge in L¹

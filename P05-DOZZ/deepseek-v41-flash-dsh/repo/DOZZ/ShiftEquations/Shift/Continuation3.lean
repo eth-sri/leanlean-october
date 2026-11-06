@@ -3,6 +3,7 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
+public import DOZZ.SharedHyp
 
 public import DOZZ.ShiftEquations.Shift.Multiplier3
 public import DOZZ.ShiftEquations.Rbar.Continuation
@@ -154,11 +155,7 @@ continued from the crossing region in the third charge. -/
 theorem unitVolume_crossing_sliceA {Ω : Type*} [MeasurableSpace Ω]
     (P : MeasureTheory.Measure Ω) (M : Ω → MeasureTheory.Measure ℂ) {γ : ℝ} (hγ : 0 < γ)
     (hγ2 : γ < 2)
-    (hCross : ∀ μ α' ε α : ℝ, 0 < μ → γ / 2 < ε → ε < 2 / γ → α < Q γ → α' < Q γ →
-      2 * Q γ < α + α' + ε - γ / 2 →
-      unitVolumeStructureConstant P M γ (α' - γ / 2) ε α =
-        gammaHalfUnitCrossingMultiplier γ μ α' ε α *
-          unitVolumeStructureConstant P M γ α' (ε + γ / 2) α)
+    (hCross : CrossingHyp P M γ)
     {V₃ : Set (Fin 3 → ℂ)} (hV₃ : IsOpen V₃)
     (hV₃mem : ∀ α : Fin 3 → ℝ, ExtendedSeiberg3 γ (α 0) (α 1) (α 2) →
       complexifyNCharges α ∈ V₃)
@@ -237,9 +234,8 @@ theorem unitVolume_crossing_sliceA {Ω : Type*} [MeasurableSpace Ω]
     intro s hs1 hs2
     have hs3 : 2 / γ < s := lt_of_le_of_lt (le_max_left _ _) hs1
     have hs4 : Q γ + η + γ / 2 - ε < s := lt_of_le_of_lt (le_max_right _ _) hs1
-    have hx : 0 < (s + (Q γ - η) + ε - γ / 2 - 2 * Q γ) / γ := div_pos (by linarith) hγ
     rw [hL s hs3 hs2, hR s hs3 hs2, hu₂,
-      ← gammaHalfUnitCrossingMultiplier_eq_three hγ one_pos (by linarith) hε₂ hx,
+      ← gammaHalfUnitCrossingMultiplier_eq_three hγ one_pos (by linarith) hε₂ (div_pos (by linarith) hγ),
       ← Complex.ofReal_mul,
       hCross 1 (Q γ - η) ε s one_pos (by linarith) hε₂ hs2 (by linarith) (by linarith)]
   have h := eq_of_real_interval hDo hg₁ hg₂ hJD (le_max_left _ _) hc₀Q le_rfl heq ht₁ ht₂
@@ -251,11 +247,7 @@ T(Q - η, x, 2/γ + η) C̄(Q - η, x + γ/2, 2/γ + η)` for `2η < x < 2/γ`. 
 theorem unitVolume_crossing_slice {Ω : Type*} [MeasurableSpace Ω]
     (P : MeasureTheory.Measure Ω) (M : Ω → MeasureTheory.Measure ℂ) {γ : ℝ} (hγ : 0 < γ)
     (hγ2 : γ < 2)
-    (hCross : ∀ μ α' ε α : ℝ, 0 < μ → γ / 2 < ε → ε < 2 / γ → α < Q γ → α' < Q γ →
-      2 * Q γ < α + α' + ε - γ / 2 →
-      unitVolumeStructureConstant P M γ (α' - γ / 2) ε α =
-        gammaHalfUnitCrossingMultiplier γ μ α' ε α *
-          unitVolumeStructureConstant P M γ α' (ε + γ / 2) α)
+    (hCross : CrossingHyp P M γ)
     {V₃ : Set (Fin 3 → ℂ)} (hV₃ : IsOpen V₃)
     (hV₃mem : ∀ α : Fin 3 → ℝ, ExtendedSeiberg3 γ (α 0) (α 1) (α 2) →
       complexifyNCharges α ∈ V₃)

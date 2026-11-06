@@ -103,7 +103,6 @@ theorem bpz_sub_eq_integral_of_tendsto_deriv {F : Type*} [NormedAddCommGroup F]
     g (z + h) - g z = ∫ t in (0 : ℝ)..1, g' (z + t • h) h := by
   have hfb : ∀ n, ∀ w ∈ Metric.ball z r, HasFDerivAt (f n) (f' n w) w :=
     fun n w hw => hf n w (hrU hw)
-  have hz : z ∈ U := hrU (Metric.mem_ball_self (lt_of_le_of_lt (norm_nonneg h) hh))
   have hzh : z + h ∈ U := by
     refine hrU ?_
     simpa using bpz_segment_mem_ball (z := z) (t := 1) hh (by simp)
@@ -121,7 +120,7 @@ theorem bpz_sub_eq_integral_of_tendsto_deriv {F : Type*} [NormedAddCommGroup F]
       exact ((ContinuousLinearMap.apply ℝ F h).continuous.tendsto _).comp (hlim' _ (hrU hmem))
   have hL2 : Tendsto (fun n => ∫ t in (0 : ℝ)..1, f' n (z + t • h) h) atTop
       (𝓝 (g (z + h) - g z)) := by
-    refine ((hlim _ hzh).sub (hlim _ hz)).congr fun n => ?_
+    refine ((hlim _ hzh).sub (hlim _ (hrU (Metric.mem_ball_self (lt_of_le_of_lt (norm_nonneg h) hh))))).congr fun n => ?_
     exact bpz_segment_ftc (hfb n) (hC n) hh
   exact tendsto_nhds_unique hL2 hL1
 
@@ -140,7 +139,6 @@ theorem bpz_hasFDerivAt_of_tendsto_deriv {F : Type*} [NormedAddCommGroup F] [Nor
   obtain ⟨r₀, hr₀, hr₀U⟩ := Metric.isOpen_iff.mp hU z hz
   obtain ⟨r₁, hr₁, C, hC⟩ := hbd z hz
   set r : ℝ := min r₀ r₁ with hr
-  have hrpos : 0 < r := lt_min hr₀ hr₁
   have hrU : Metric.ball z r ⊆ U :=
     (Metric.ball_subset_ball (min_le_left _ _)).trans hr₀U
   have hrC : ∀ n, ∀ w ∈ Metric.ball z r, ‖f' n w‖ ≤ C := fun n w hw =>
@@ -148,7 +146,7 @@ theorem bpz_hasFDerivAt_of_tendsto_deriv {F : Type*} [NormedAddCommGroup F] [Nor
   rw [hasFDerivAt_iff_isLittleO_nhds_zero, Asymptotics.isLittleO_iff]
   intro ρ hρ
   obtain ⟨δ, hδ, hδg⟩ := Metric.continuousAt_iff.mp (hcont.continuousAt (hU.mem_nhds hz)) ρ hρ
-  filter_upwards [Metric.ball_mem_nhds (0 : ℂ) (lt_min hδ hrpos)] with h hh
+  filter_upwards [Metric.ball_mem_nhds (0 : ℂ) (lt_min hδ (lt_min hr₀ hr₁))] with h hh
   rw [mem_ball_zero_iff, lt_min_iff] at hh
   obtain ⟨hhδ, hhr⟩ := hh
   have hseg : ∀ t ∈ Set.uIcc (0 : ℝ) 1, z + t • h ∈ U := fun t ht =>
@@ -166,9 +164,8 @@ theorem bpz_hasFDerivAt_of_tendsto_deriv {F : Type*} [NormedAddCommGroup F] [Nor
   rw [hint]
   have hbound : ∀ t ∈ Set.uIoc (0 : ℝ) 1, ‖g' (z + t • h) h - g' z h‖ ≤ ρ * ‖h‖ := by
     intro t ht
-    have ht' : t ∈ Set.uIcc (0 : ℝ) 1 := Set.uIoc_subset_uIcc ht
     have hdist : dist (z + t • h) z < δ := by
-      have := bpz_segment_mem_ball (z := z) (r := δ) hhδ ht'
+      have := bpz_segment_mem_ball (z := z) (r := δ) hhδ (Set.uIoc_subset_uIcc ht)
       rwa [Metric.mem_ball] at this
     have hg := hδg hdist
     rw [dist_eq_norm] at hg

@@ -215,7 +215,6 @@ private theorem differentiableAt_upsilonLeftFactor
 private theorem upsilonLeftRight_cancel
     (hγ : 0 < γ) {z : ℂ} (hz0 : 0 < z.re) (hzQ : z.re < 2 / γ) :
     upsilonLeftFactor γ z * upsilonRightFactor γ z = 1 := by
-  have hb : upsilonB γ ≠ 0 := upsilonB_ne_zero hγ
   have hbzre : (upsilonB γ * z).re = (γ / 2) * z.re := by
     simp [upsilonB, Complex.mul_re]
   have hGamma : Complex.Gamma (upsilonB γ * z) ≠ 0 :=
@@ -240,7 +239,7 @@ private theorem upsilonLeftRight_cancel
     rw [heq]
     exact hGamma1
   have hpow : upsilonB γ ^ (1 - (γ : ℂ) * z) ≠ 0 :=
-    Complex.cpow_ne_zero_iff.mpr (Or.inl hb)
+    Complex.cpow_ne_zero_iff.mpr (Or.inl (upsilonB_ne_zero hγ))
   change
     (upsilonB γ ^ ((γ : ℂ) * z - 1) *
       Complex.Gamma (1 - upsilonB γ * z) *
@@ -312,10 +311,9 @@ private theorem differentiableAt_upsilonChart
           upsilonLeftFactor γ (w + upsilonShiftN γ j)) z
     exact hBaseComp.mul hProd
   | right n =>
-    have hBaseArg : z - upsilonShiftN γ n ∈ upsilonStrip γ := hz
     have hBaseAt : DifferentiableAt ℂ (upsilonBase γ)
         (z - upsilonShiftN γ n) :=
-      hbase.differentiableAt ((upsilonStrip_isOpen γ).mem_nhds hBaseArg)
+      hbase.differentiableAt ((upsilonStrip_isOpen γ).mem_nhds (hz))
     have hShiftDiff : DifferentiableAt ℂ
         (fun w : ℂ => w - upsilonShiftN γ n) z := by fun_prop
     have hBaseComp : DifferentiableAt ℂ
@@ -331,8 +329,7 @@ private theorem differentiableAt_upsilonChart
           upsilonRightFactor γ (w - upsilonShiftN γ (j + 1)))
         (by
           intro j hj
-          have hjn : j < n := Finset.mem_range.mp hj
-          have hjn' : j + 1 ≤ n := Nat.succ_le_iff.mpr hjn
+          have hjn' : j + 1 ≤ n := Nat.succ_le_iff.mpr (Finset.mem_range.mp hj)
           have hshift : (upsilonShiftN γ (j + 1)).re ≤
               (upsilonShiftN γ n).re := upsilonShiftN_mono hγ hjn'
           change (z - upsilonShiftN γ n).re > 0 ∧
@@ -652,8 +649,7 @@ private theorem exists_upsilonChartDomain
     · let N : ℕ := Nat.floor y
       have hNpos : 1 ≤ N := by
         by_contra hnot
-        have hNlt : N < 1 := Nat.lt_of_not_ge hnot
-        have hNlt' : Nat.floor y < 1 := by simpa only [N] using hNlt
+        have hNlt' : Nat.floor y < 1 := by simpa only [N] using (Nat.lt_of_not_ge hnot)
         have hylt' : y < 1 := by
           simpa using (Nat.floor_lt hy0).mp hNlt'
         exact (not_lt_of_ge (le_of_not_gt hylt)) hylt'
@@ -691,13 +687,12 @@ private theorem exists_upsilonChartDomain
     let N : ℕ := Nat.floor y
     let n : ℕ := N + 1
     have hfloor : (N : ℝ) ≤ y := Nat.floor_le hy0
-    have hfloorlt : y < (N : ℝ) + 1 := Nat.lt_floor_add_one y
     have hncast : (n : ℝ) = (N : ℝ) + 1 := by simp [n]
     have hxy : z.re = -(y * (γ / 2)) := by
       dsimp [y]
       field_simp [ne_of_gt hb]
     have hscaledLow : -z.re < (n : ℝ) * (γ / 2) := by
-      have h := mul_lt_mul_of_pos_right hfloorlt hb
+      have h := mul_lt_mul_of_pos_right (Nat.lt_floor_add_one y) hb
       rw [hxy, hncast]
       linarith only [h]
     have hscaledLow' : -z.re < ((N : ℝ) + 1) * (γ / 2) := by
@@ -777,9 +772,8 @@ private theorem exists_IsUpsilon_of_strip_data
     exact upsilonContinuation_differentiableAt hγ hγ2 hbase hshift z
   refine ⟨U, hUdiff, ?_⟩
   intro z hz0 hzQ
-  have hstrip : z ∈ upsilonStrip γ := ⟨hz0, hzQ⟩
   have hleft0 : z ∈ upsilonLeftDomain γ 0 := by
-    simpa [upsilonLeftDomain, upsilonShiftN, upsilonStrip] using hstrip
+    simpa [upsilonLeftDomain, upsilonShiftN, upsilonStrip] using (⟨hz0, hzQ⟩)
   calc
     U z = upsilonContinuationFunction (γ := γ) hγ hγ2 z := rfl
     _ = upsilonChart γ (.left 0) z :=

@@ -3,6 +3,7 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
+public import DOZZ.SharedHyp
 
 public import DOZZ.FourPoint.FreezingAnnulusNegativeMomentLocal
 public import DOZZ.FourPoint.FreezingAnnulusNegativeMoment
@@ -25,7 +26,7 @@ namespace DOZZ.Proofs
 /-- The reflected supercritical charge satisfies the full freezing-order threshold. -/
 theorem reflected_freezing_margins (γ α₁ α₂ α₃ : ℝ) (hγ : 0 < γ)
     (hα₁ : α₁ < Q γ) (hreflect : Q γ - α₁ < γ / 2)
-    (hs : 2 * Q γ + γ / 2 < α₁ + α₂ + α₃) :
+    (hs : SeibergSlack γ α₁ α₂ α₃) :
     Q γ < α₁ + γ / 2 ∧
       0 < (α₁ + α₂ + α₃ - γ / 2 - 2 * Q γ) / γ + 1 ∧
       α₁ + γ / 2 - Q γ <
@@ -45,7 +46,7 @@ theorem reflected_freezing_local_input {Ω : Type*} [MeasurableSpace Ω]
     (P : Measure Ω) (X : Ω → Distr) (M : Ω → Measure ℂ) (γ α₁ α₂ α₃ : ℝ)
     (hγ : 0 < γ) (hγ₂ : γ < 2) (hα₁ : α₁ < Q γ)
     (hreflect : Q γ - α₁ < γ / 2)
-    (hs : 2 * Q γ + γ / 2 < α₁ + α₂ + α₃)
+    (hs : SeibergSlack γ α₁ α₂ α₃)
     (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M) :
     ∃ C ε₀ : ℝ, 0 < C ∧ 0 < ε₀ ∧ ∀ ε : ℝ, 0 < ε → ε < ε₀ →
       (∫⁻ ω, (freezingAnnulusMassLocal γ (α₁ + γ / 2) (M ω) 0 ε (1 / 2)) ^

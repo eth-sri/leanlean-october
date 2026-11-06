@@ -104,7 +104,6 @@ theorem weightedGmcBallMoment_lt_top_of_sharp_range
   have hB := gmc_set_mass_aemeasurable_of_isGMCOf P X hX γ hγ hγ2 M hM (Metric.ball z r)
     Metric.isOpen_ball.measurableSet
   set L : ℝ≥0∞ := ENNReal.LpAddConst (ENNReal.ofReal p)⁻¹ with hL
-  have hLtop : L ≠ ⊤ := (ENNReal.LpAddConst_lt_top _).ne
   have hctop : c ^ p ≠ ⊤ := ENNReal.rpow_ne_top_of_nonneg hp.le ENNReal.ofReal_ne_top
   calc weightedGmcBallMoment P M γ α z r p
       ≤ ∫⁻ ω, L * (weightedGmcBallMass γ (M ω) α z ρ ^ p +
@@ -129,7 +128,7 @@ theorem weightedGmcBallMoment_lt_top_of_sharp_range
         rw [lintegral_const_mul'' _ hsum, lintegral_add_left' (hW.pow_const p),
           lintegral_const_mul'' _ (hB.pow_const p)]
         rfl
-    _ < ⊤ := ENNReal.mul_lt_top hLtop.lt_top (ENNReal.add_lt_top.mpr
+    _ < ⊤ := ENNReal.mul_lt_top ((ENNReal.LpAddConst_lt_top _).ne).lt_top (ENNReal.add_lt_top.mpr
         ⟨hinner, ENNReal.mul_lt_top hctop.lt_top houter⟩)
 
 end DOZZ.Proofs

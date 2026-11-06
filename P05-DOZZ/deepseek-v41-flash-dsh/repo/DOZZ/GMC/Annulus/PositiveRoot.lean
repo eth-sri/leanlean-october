@@ -43,9 +43,8 @@ theorem measurable_gmcCircleWickDensity
     have hf : Measurable (fun q : ℂ × Ω => Xc q.2 q.1 r ^ 2) :=
       ((hXc.1 r).comp measurable_swap).pow_const 2
     exact hf.stronglyMeasurable.integral_prod_right.measurable
-  have hfield : Measurable (fun q : Ω × ℂ => Xc q.1 q.2 r) := hXc.1 r
   exact ENNReal.measurable_ofReal.comp (Real.measurable_exp.comp
-    ((measurable_const.mul hfield).sub (measurable_const.mul (hV.comp measurable_snd))))
+    ((measurable_const.mul (hXc.1 r)).sub (measurable_const.mul (hV.comp measurable_snd))))
 
 /-- The actual cutoff measure `DOZZ.regularizedGMC` is the reference measure weighted by the Wick
 density. -/

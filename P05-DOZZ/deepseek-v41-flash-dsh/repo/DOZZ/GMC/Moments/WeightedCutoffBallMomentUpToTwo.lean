@@ -48,9 +48,8 @@ theorem ennreal_lintegral_rpow_const_mul_root_eq
 
 private theorem ennreal_ofReal_rpow_of_pos_upto_two {x p : ℝ} (hx : 0 < x) :
     ENNReal.rpow (ENNReal.ofReal x) p = ENNReal.ofReal (x ^ p) := by
-  have hx0 : ENNReal.ofReal x ≠ 0 := ne_of_gt (ENNReal.ofReal_pos.mpr hx)
   have hleft : ENNReal.rpow (ENNReal.ofReal x) p ≠ ⊤ :=
-    ENNReal.rpow_ne_top_of_ne_zero hx0 ENNReal.ofReal_ne_top
+    ENNReal.rpow_ne_top_of_ne_zero (ne_of_gt (ENNReal.ofReal_pos.mpr hx)) ENNReal.ofReal_ne_top
   have hright : ENNReal.ofReal (x ^ p) ≠ ⊤ := ENNReal.ofReal_ne_top
   apply (ENNReal.toReal_eq_toReal_iff' hleft hright).1
   calc
@@ -65,12 +64,11 @@ theorem ennreal_root_mul_ofReal_rpow_eq
     (C : ℝ≥0∞) (hC : C < ⊤) (a xi p : ℝ) (ha : 0 < a) (hp : 0 < p) :
     (C * ENNReal.ofReal (a ^ xi)) ^ (1 / p) =
       C ^ (1 / p) * ENNReal.ofReal (a ^ (xi / p)) := by
-  have hreal : 0 < a ^ xi := Real.rpow_pos_of_pos ha xi
   calc
     _ = C ^ (1 / p) * ENNReal.rpow (ENNReal.ofReal (a ^ xi)) (1 / p) :=
       ENNReal.mul_rpow_of_ne_top hC.ne ENNReal.ofReal_ne_top _
     _ = C ^ (1 / p) * ENNReal.ofReal ((a ^ xi) ^ (1 / p)) := by
-      rw [ennreal_ofReal_rpow_of_pos_upto_two hreal]
+      rw [ennreal_ofReal_rpow_of_pos_upto_two (Real.rpow_pos_of_pos ha xi)]
     _ = C ^ (1 / p) * ENNReal.ofReal (a ^ (xi / p)) := by
       congr 2
       rw [← Real.rpow_mul ha.le]
@@ -232,8 +230,6 @@ theorem cutoffWeightedGmcBallMoment_positive_lp_shell_bound
       have hnrange : ¬ n < N + 1 := by
         intro hnlt
         exact hn (Finset.mem_range.mpr hnlt)
-      have hnlt : N < n := by
-        omega
       have hnle : ¬ n ≤ N := by omega
       simp [hnle]
   have hdecomp (ω : Ω) :

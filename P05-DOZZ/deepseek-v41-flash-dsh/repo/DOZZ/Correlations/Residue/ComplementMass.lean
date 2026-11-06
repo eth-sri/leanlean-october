@@ -69,7 +69,6 @@ theorem residue_complement_moment_le
       (∫⁻ x, if x ∉ Metric.ball z 1 then coulombWeight γ ![a, b] ![z, w] c x else 0 ∂M ω) t ∂P) ≤
       (ENNReal.ofReal ((‖z‖ + 2) ^ (γ * a))) ^ t *
         ∫⁻ ω, ENNReal.rpow (coulombMass γ (M ω) ![b] ![w] c) t ∂P := by
-  have hcoef : 0 < (‖z‖ + 2) ^ (γ * a) := Real.rpow_pos_of_pos (by positivity) _
   have hcoeft : (ENNReal.ofReal ((‖z‖ + 2) ^ (γ * a))) ^ t ≠ ⊤ :=
     (ENNReal.rpow_lt_top_of_nonneg ht ENNReal.ofReal_ne_top).ne
   rw [← lintegral_const_mul' _ _ hcoeft]
@@ -78,7 +77,7 @@ theorem residue_complement_moment_le
   calc _ ≤ (ENNReal.ofReal ((‖z‖ + 2) ^ (γ * a)) * coulombMass γ (M ω) ![b] ![w] c) ^ t :=
       ENNReal.rpow_le_rpow (residue_complement_mass_le γ a b c hγα z w (M ω)) ht
     _ = _ := by
-      rw [inversionMoment_mul_rpow (ENNReal.ofReal_pos.mpr hcoef).ne' ENNReal.ofReal_ne_top]
+      rw [inversionMoment_mul_rpow (ENNReal.ofReal_pos.mpr (Real.rpow_pos_of_pos (by positivity) _)).ne' ENNReal.ofReal_ne_top]
       rfl
 
 /-- Outside every critical insertion ball, all finite-root factors may be removed. -/
@@ -114,8 +113,7 @@ theorem residue_all_complement_moment_le
   have hAtop : A ≠ ⊤ := (ENNReal.prod_lt_top (fun _ _ => ENNReal.ofReal_lt_top)).ne
   have hA0 : A ≠ 0 := Finset.prod_ne_zero_iff.mpr fun k _ =>
     (ENNReal.ofReal_pos.mpr (Real.rpow_pos_of_pos (by positivity) _)).ne'
-  have hAt : A ^ t ≠ ⊤ := (ENNReal.rpow_lt_top_of_nonneg ht hAtop).ne
-  rw [← lintegral_const_mul' _ _ hAt]
+  rw [← lintegral_const_mul' _ _ ((ENNReal.rpow_lt_top_of_nonneg ht hAtop).ne)]
   apply lintegral_mono
   intro ω
   calc _ ≤ (A * coulombMass γ (M ω) ![] ![] c) ^ t :=

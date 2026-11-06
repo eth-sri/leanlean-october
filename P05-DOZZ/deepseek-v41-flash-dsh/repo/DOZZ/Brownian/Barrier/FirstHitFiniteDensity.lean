@@ -292,7 +292,6 @@ theorem measurable_brownianKilledTransitionPDF_time (a : ℝ) :
 /-- The Gaussian heat density is jointly continuous in positive elapsed time and state. -/
 theorem continuousAt_brownian_heatPDF (T : ℝ≥0) (x : ℝ) (hT : T ≠ 0) :
     ContinuousAt (fun z : ℝ≥0 × ℝ => gaussianPDFReal 0 z.1 z.2) (T,x) := by
-  have hpos : 0 < (T : ℝ) := NNReal.coe_pos.mpr (pos_iff_ne_zero.mpr hT)
   unfold gaussianPDFReal
   fun_prop (disch := positivity)
 

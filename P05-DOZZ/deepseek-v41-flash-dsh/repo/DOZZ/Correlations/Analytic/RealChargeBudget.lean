@@ -88,9 +88,8 @@ theorem real_charge_moment_budget {I : Type*} [Fintype I]
     dsimp only [A]
     linarith
   let lo := min (-1) (p - 2)
-  have hlo : lo ≤ 0 := (min_le_left _ _).trans (by norm_num)
   have hlop : lo < p - 1 := (min_le_right _ _).trans_lt (by linarith)
   exact ⟨A, a, gap, m, g, lo, hi, q, |p| + 1, hA, hαa, hgap, hgapQ, hm, hm1,
-    hmT, hg, hlo, hlop, hhi.le, hphi, hq, by linarith, hgt.le.trans ht.2.le, hgt.le.trans htroot.le⟩
+    hmT, hg, ((min_le_left _ _).trans (by norm_num)), hlop, hhi.le, hphi, hq, by linarith, hgt.le.trans ht.2.le, hgt.le.trans htroot.le⟩
 
 end DOZZ.Proofs

@@ -46,14 +46,12 @@ theorem rpow_add_gt_add_rpow_of_pos {x y p : ℝ}
     rw [hxu, Real.mul_rpow hu.1.le hs.le]
   have hyPow : y ^ p = v ^ p * s ^ p := by
     rw [hyv, Real.mul_rpow hv.1.le hs.le]
-  have huPow : u ^ p < u := Real.rpow_lt_self_of_lt_one hu.1 hu.2 hp
-  have hvPow : v ^ p < v := Real.rpow_lt_self_of_lt_one hv.1 hv.2 hp
   have hxu' : x ^ p < u * s ^ p := by
     rw [hxPow]
-    exact mul_lt_mul_of_pos_right huPow hsPow
+    exact mul_lt_mul_of_pos_right (Real.rpow_lt_self_of_lt_one hu.1 hu.2 hp) hsPow
   have hyv' : y ^ p < v * s ^ p := by
     rw [hyPow]
-    exact mul_lt_mul_of_pos_right hvPow hsPow
+    exact mul_lt_mul_of_pos_right (Real.rpow_lt_self_of_lt_one hv.1 hv.2 hp) hsPow
   calc
     x ^ p + y ^ p < u * s ^ p + v * s ^ p := add_lt_add hxu' hyv'
     _ = s ^ p := by rw [← add_mul, huv, one_mul]

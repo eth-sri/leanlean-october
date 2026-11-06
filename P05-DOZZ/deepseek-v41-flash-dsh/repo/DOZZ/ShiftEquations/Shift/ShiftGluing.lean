@@ -54,8 +54,7 @@ theorem meromorphicOn_eventuallyEq_of_frequently {f g : ℂ → ℂ} {U : Set �
   have h0 : (f - g) =ᶠ[𝓝[≠] x₀] 0 := by
     refine ((hsub x₀ hx₀).frequently_zero_iff_eventuallyEq_zero).mp ?_
     exact hfreq.mono fun z hz => by simp [hz]
-  have htop : meromorphicOrderAt (f - g) x₀ = ⊤ := meromorphicOrderAt_eq_top_iff.mpr h0
-  have htop' := hsub.meromorphicOrderAt_eq_top_of_isPreconnected hU hx₀ hy htop
+  have htop' := hsub.meromorphicOrderAt_eq_top_of_isPreconnected hU hx₀ hy (meromorphicOrderAt_eq_top_iff.mpr h0)
   have := meromorphicOrderAt_eq_top_iff.mp htop'
   exact this.mono fun z hz => sub_eq_zero.mp hz
 
@@ -86,9 +85,8 @@ theorem shift_relation_eventually {c a b d₁ d₂ : ℝ} (hc : 0 < c)
   have hgan : AnalyticOnNhd ℂ g W := hg.analyticOnNhd hW
   have hL : MeromorphicOn (fun z : ℂ => g (z - c)) (W ∩ (fun z : ℂ => z - c) ⁻¹' W) := by
     intro z hz
-    have hzc : z - (c : ℂ) ∈ W := hz.2
     have hsub : AnalyticAt ℂ (fun w : ℂ => w - (c : ℂ)) z := analyticAt_id.sub analyticAt_const
-    exact ((hgan (z - c) hzc).comp_of_eq hsub rfl).meromorphicAt
+    exact ((hgan (z - c) (hz.2)).comp_of_eq hsub rfl).meromorphicAt
   have hR : MeromorphicOn (fun z : ℂ => m z * g z) (W ∩ (fun z : ℂ => z - c) ⁻¹' W) :=
     fun z hz => (hm z (mem_univ z)).mul (hgan z hz.1).meromorphicAt
   have hSpre : IsPreconnected ((fun t : ℝ => (t : ℂ)) '' Ioo (a + c) b) :=
@@ -280,8 +278,7 @@ theorem shiftDown_compat {c a b h : ℝ} {m g : ℂ → ℂ}
     filter_upwards [eventually_comp_add (p := fun w => g (w - c) = m w * g w) c
       (hrel _ ⟨hz₁', hz₂'⟩)] with w hw
     show m (w + c) * g (w + c) = g w
-    have hw' : g (w + c - c) = m (w + c) * g (w + c) := hw
-    rw [← hw', add_sub_cancel_right]
+    rw [← (hw), add_sub_cancel_right]
   | succ k ih =>
     intro z hz₁ hz₂
     have h₁ : z + (c : ℂ) ∈ shiftRect a b h (-((k + 1) * c)) :=
@@ -425,10 +422,9 @@ theorem exists_meromorphicOn_strip_of_base_relation {c a b h : ℝ} (hc : 0 < c)
     obtain ⟨n, hn⟩ := mem_iUnion.mp hz'
     have hzc : z - (c : ℂ) ∈ shiftRect a b h (((n - 1 : ℤ) : ℝ) * c) :=
       sub_mem_shiftRect hn (by push_cast; ring)
-    have h1 : ∀ᶠ w in 𝓝[≠] z, F w = shiftPiece c m g n w := hpiece n z hn
     have h2 : ∀ᶠ w in 𝓝[≠] (z - c), F w = shiftPiece c m g (n - 1) w :=
       hpiece (n - 1) (z - c) hzc
-    filter_upwards [h1, eventually_comp_sub c h2, hm0 z] with w h1w h3w hmw
+    filter_upwards [(hpiece n z hn), eventually_comp_sub c h2, hm0 z] with w h1w h3w hmw
     rw [h3w, h1w]
     exact shiftPiece_rel n w hmw
 
@@ -494,9 +490,8 @@ theorem exists_override_on_segment {a b h : ℝ} {g F : ℂ → ℂ}
         have := hgc w.re hwa hwb
         rw [hwe] at this
         exact this.tendsto.mono_left nhdsWithin_le_nhds
-      have hFw : F w = g w := tendsto_nhds_unique (hcF.congr' hFgw) hcg
       show (if w.im = 0 ∧ a < w.re ∧ w.re < b then g w else F w) = F w
-      rw [ite_eq_left ⟨him, hwa, hwb⟩, hFw]
+      rw [ite_eq_left ⟨him, hwa, hwb⟩, (tendsto_nhds_unique (hcF.congr' hFgw) hcg)]
     · show (if w.im = 0 ∧ a < w.re ∧ w.re < b then g w else F w) = F w
       rw [ite_eq_right hcond]
 
@@ -532,9 +527,8 @@ theorem exists_meromorphicOn_strip_of_shift {c a b d₁ d₂ : ℝ} (hc : 0 < c)
       (ofReal_mem_shiftRect_iff hh).mpr ⟨by linarith, by linarith⟩⟩
   have hrelP := shift_relation_eventually hc hd₁ hd hd₂ hW hWab hg hm hrel hPpre hPO
     (x₁ := (a' + c + b') / 2) (by linarith) (by linarith) hx₁P
-  have hg0 : MeromorphicOn g (shiftRect a' b' h 0) := hgan.meromorphicOn.mono_set hrectW
   obtain ⟨F, hF, hFg0, hFrel⟩ := exists_meromorphicOn_strip_of_base_relation hc hh hlen hlen2 hm
-    hm0' hg0 fun y hy => hrelP y hy
+    hm0' (hgan.meromorphicOn.mono_set hrectW) fun y hy => hrelP y hy
   -- `F` agrees with `g` near every point of the real segment `(a, b)`
   have hFseg : ∀ x : ℝ, a < x → x < b → F =ᶠ[𝓝[≠] (x : ℂ)] g := by
     have hSpre : IsPreconnected ((fun t : ℝ => (t : ℂ)) '' Ioo a b) :=

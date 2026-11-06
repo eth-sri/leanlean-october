@@ -28,7 +28,6 @@ theorem parameter_integral_grid_error
   have hgrid := parameter_grid_error k t
   have hstep : 1 / ((k : ℝ) + 1) ≤ 1 := by
     apply (div_le_one (by positivity : 0 < (k : ℝ) + 1)).mpr
-    have hk : 0 ≤ (k : ℝ) := Nat.cast_nonneg k
     linarith
   have hpoint (x : ℂ) : ENNReal.ofReal |F t x - F (parameterGrid k t) x| ≤
       K.indicator (fun _ => ENNReal.ofReal (Lcoef t * (1 / ((k : ℝ) + 1)))) x := by

@@ -141,8 +141,6 @@ private lemma malmstenRealIntegrand_aestronglyMeasurable (x : ℝ) :
 private lemma malmstenRealIntegrand_integrableOn_Ioc {x : ℝ} (_hx : 0 < x) :
     IntegrableOn (malmstenRealIntegrand x) (Ioc 0 1) := by
   obtain ⟨C, hC, hTaylor⟩ := exists_malmstenRealNumerator_taylor_bound x
-  have hc : 0 < 1 - Real.exp (-1) := by
-    exact sub_pos.mpr (Real.exp_lt_one_iff.mpr (by norm_num))
   have hmeas := malmstenRealIntegrand_aestronglyMeasurable x
   apply Measure.integrableOn_of_bounded (s := Ioc 0 1) (μ := volume) (by simp) hmeas
   filter_upwards [ae_restrict_mem measurableSet_Ioc] with u hu
@@ -220,8 +218,6 @@ private lemma malmstenRealIntegrand_integrableOn_Ioi_one {x : ℝ} (hx : 0 < x) 
     exact sub_pos.mpr (Real.exp_lt_one_iff.mpr (by norm_num))
   let A : ℝ := (|x - 1| + 1) / (1 - Real.exp (-1))
   let B : ℝ := 1 / (1 - Real.exp (-1))
-  have hA : 0 ≤ A := by dsimp [A]; positivity
-  have hB : 0 ≤ B := by dsimp [B]; positivity
   have hmajor1 : IntegrableOn (fun u : ℝ => A * Real.exp (-u)) (Ioi 1) := by
     change Integrable (fun u : ℝ => A * Real.exp (-u)) (volume.restrict (Ioi 1))
     simpa [mul_comm] using (exp_neg_integrableOn_Ioi 1 (b := 1) (by norm_num)).const_mul A

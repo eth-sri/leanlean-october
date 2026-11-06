@@ -63,7 +63,6 @@ theorem fusion_rootOnlyKernel_exterior_tendsto (γ α₁ α₂ α₃ : ℝ) (y :
     exact (ENNReal.mul_lt_top ENNReal.ofReal_lt_top
       (lt_of_le_of_lt (setLIntegral_le_lintegral _ _) hfin)).ne
   · filter_upwards [ae_restrict_mem (measurableSet_le measurable_const measurable_norm)] with x hx
-    have hx0 : x ≠ 0 := norm_ne_zero_iff.mp (ne_of_gt (lt_of_lt_of_le hδ hx))
     have hg : ContinuousAt (fun z : ℂ => gffKernel (y * z) x) 0 := by
       unfold gffKernel normPlus
       apply ContinuousAt.add
@@ -71,7 +70,7 @@ theorem fusion_rootOnlyKernel_exterior_tendsto (γ α₁ α₂ α₃ : ℝ) (y :
         · apply ContinuousAt.neg
           apply ContinuousAt.log
           · fun_prop
-          · simpa only [mul_zero, zero_sub, norm_neg] using norm_ne_zero_iff.mpr hx0
+          · simpa only [mul_zero, zero_sub, norm_neg] using norm_ne_zero_iff.mpr (norm_ne_zero_iff.mp (ne_of_gt (lt_of_lt_of_le hδ hx)))
         · apply ContinuousAt.log
           · fun_prop
           · simp

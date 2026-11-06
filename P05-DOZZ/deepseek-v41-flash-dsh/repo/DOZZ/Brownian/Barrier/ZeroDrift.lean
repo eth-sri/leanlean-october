@@ -213,10 +213,9 @@ theorem brownian_barrier_probability_gaussian {Ω : Type*} [MeasurableSpace Ω]
     (β : ℝ) (hβ : 0 < β) (T : ℝ≥0) (hT : T ≠ 0) :
     P {ω | ∀ u : ℝ≥0, u ≤ T → B u ω ≤ β} = gaussianReal 0 T (Icc (-β) β) := by
   let X := brownianContinuousPath B
-  have hm : AEMeasurable X P := aemeasurable_brownianContinuousPath hB
   have hcross : P {ω | ∀ u : ℝ≥0, u ≤ T → B u ω ≤ β} =
       (P.map X) {p | ∀ u : ℝ≥0, u ≤ T → p u ≤ β} := by
-    rw [Measure.map_apply_of_aemeasurable hm
+    rw [Measure.map_apply_of_aemeasurable (aemeasurable_brownianContinuousPath hB)
       ((brownianRawFiltration _ (fun t => ContinuousMap.measurable_eval t)).le T _
         (measurableSet_brownianPath_barrier T β))]
     apply measure_congr
@@ -230,8 +229,6 @@ theorem brownian_barrier_probability_gaussian {Ω : Type*} [MeasurableSpace Ω]
 theorem brownian_gaussian_normalization :
     2*(Real.sqrt (2*Real.pi))⁻¹ = Real.sqrt (2/Real.pi) := by
   rw [Real.sqrt_div (by norm_num : (0 : ℝ) ≤ 2),Real.sqrt_mul (by norm_num : (0 : ℝ) ≤ 2)]
-  have h2 : Real.sqrt 2 ≠ 0 := by positivity
-  have hp : Real.sqrt Real.pi ≠ 0 := by positivity
   field_simp
   nlinarith [Real.sq_sqrt (by norm_num : (0 : ℝ) ≤ 2)]
 
@@ -261,8 +258,7 @@ theorem gaussianReal_symmetric_interval (a : ℝ) (ha : 0 ≤ a) :
 theorem gaussianReal_interval_scale (T : ℝ≥0) (hT : T ≠ 0) (β : ℝ) :
     gaussianReal 0 T (Icc (-β) β) =
       gaussianReal 0 1 (Icc (-(β/Real.sqrt T)) (β/Real.sqrt T)) := by
-  have hTp : 0 < (T : ℝ) := NNReal.coe_pos.mpr (pos_iff_ne_zero.mpr hT)
-  have hs : 0 < Real.sqrt (T : ℝ) := Real.sqrt_pos.mpr hTp
+  have hs : 0 < Real.sqrt (T : ℝ) := Real.sqrt_pos.mpr (NNReal.coe_pos.mpr (pos_iff_ne_zero.mpr hT))
   have hv : (NNReal.mk ((Real.sqrt (T : ℝ))^2) (sq_nonneg _) : ℝ≥0) = T := by
     apply NNReal.eq_iff.mpr
     exact Real.sq_sqrt T.coe_nonneg
@@ -345,8 +341,7 @@ theorem brownian_zeroDrift_barrier_bound
   let T : ℝ≥0 := ⟨t,ht.le⟩
   have hT : T ≠ 0 := by
     intro he
-    have ht0 : t = 0 := congrArg (fun x : ℝ≥0 => (x : ℝ)) he
-    exact ht.ne' ht0
+    exact ht.ne' (congrArg (fun x : ℝ≥0 => (x : ℝ)) he)
   have htime (u : ℝ≥0) : (u : ℝ) ≤ t ↔ u ≤ T := Iff.rfl
   have hevent : {ω | ∀ u : ℝ≥0, (u : ℝ) ≤ t → B u ω ≤ β} =
       {ω | ∀ u : ℝ≥0, u ≤ T → B u ω ≤ β} := by

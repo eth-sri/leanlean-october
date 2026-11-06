@@ -35,16 +35,12 @@ private theorem inversionZero_normPlus_inv {y : ℂ} (hy : y ≠ 0) :
 /-- The ratio at the root `0` becomes the background `|y|_+`. -/
 private theorem inversionZero_origin_ratio {y : ℂ} (hy : y ≠ 0) :
     normPlus y⁻¹ / ‖y⁻¹ - 0‖ = normPlus y := by
-  have hyn : 0 < ‖y‖ := norm_pos_iff.mpr hy
   rw [inversionZero_normPlus_inv hy, sub_zero, norm_inv]
   field_simp
 
 /-- The ratio at a nonzero root `w` becomes the ratio at the root `w⁻¹`, divided by `|w|`. -/
 private theorem inversionZero_root_ratio {y w : ℂ} (hy : y ≠ 0) (hw : w ≠ 0) (hyw : y ≠ w⁻¹) :
     normPlus y⁻¹ / ‖y⁻¹ - w‖ = normPlus y / (‖w‖ * ‖y - w⁻¹‖) := by
-  have hyn : 0 < ‖y‖ := norm_pos_iff.mpr hy
-  have hwn : 0 < ‖w‖ := norm_pos_iff.mpr hw
-  have hd : 0 < ‖y - w⁻¹‖ := norm_pos_iff.mpr (sub_ne_zero.mpr hyw)
   have hsub : ‖y⁻¹ - w‖ = ‖w‖ * ‖y - w⁻¹‖ / ‖y‖ := by
     rw [show y⁻¹ - w = -w * (y - w⁻¹) / y by field_simp; ring, norm_div, norm_mul, norm_neg]
   rw [inversionZero_normPlus_inv hy, hsub]
@@ -69,7 +65,6 @@ theorem coulombWeight_inv_cons {N : ℕ} (γ β₀ βinf : ℝ) (α : Fin N → 
       (∏ k, ENNReal.rpow (ENNReal.ofReal ‖z k‖) (-(γ * α k))) *
         coulombWeight γ (Fin.cons βinf α : Fin (N + 1) → ℝ)
           (Fin.cons 0 (fun k => (z k)⁻¹) : Fin (N + 1) → ℂ) β₀ y := by
-  have hyp : 0 < normPlus y := lt_of_lt_of_le one_pos (le_max_left _ _)
   unfold coulombWeight
   rw [Fin.prod_univ_succ, Fin.prod_univ_succ]
   simp only [Fin.cons_zero, Fin.cons_succ]
@@ -79,7 +74,7 @@ theorem coulombWeight_inv_cons {N : ℕ} (γ β₀ βinf : ℝ) (α : Fin N → 
     rw [← Finset.prod_mul_distrib]
     refine Finset.prod_congr rfl fun k _ => ?_
     rw [inversionZero_root_ratio hy (hz k) (hyz k)]
-    exact inversionZero_rpow_factor hyp (norm_pos_iff.mpr (hz k))
+    exact inversionZero_rpow_factor (lt_of_lt_of_le one_pos (le_max_left _ _)) (norm_pos_iff.mpr (hz k))
       (norm_pos_iff.mpr (sub_ne_zero.mpr (hyz k))) _
   rw [hprod, inversionZero_origin_ratio hy, inversionZero_normPlus_inv hy, sub_zero]
   ring

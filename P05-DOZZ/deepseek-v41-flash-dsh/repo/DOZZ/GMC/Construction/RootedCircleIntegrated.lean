@@ -48,10 +48,9 @@ theorem regularizedGMC_root_sample_lintegral
   have hw : Measurable w := by
     have hx : Measurable (fun q : ℂ × Ω => Xc q.2 q.1 r) :=
       (hXc.1 r).comp measurable_swap
-    have hv : Measurable (fun q : ℂ × Ω => V q.1) := hV.comp measurable_fst
     dsimp [w]
     exact ENNReal.measurable_ofReal.comp (Real.measurable_exp.comp
-      ((measurable_const.mul hx).sub (measurable_const.mul hv)))
+      ((measurable_const.mul hx).sub (measurable_const.mul (hV.comp measurable_fst))))
   have hprod : Measurable (fun q : Ω × ℂ => b q.2 * w (q.2, q.1) * Ψ (q.2, q.1)) :=
     ((hb.comp measurable_snd).mul (hw.comp measurable_swap)).mul
       (hΨ.comp measurable_swap)

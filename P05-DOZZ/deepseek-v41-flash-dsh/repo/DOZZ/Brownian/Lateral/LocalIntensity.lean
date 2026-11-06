@@ -3,6 +3,7 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
+public import DOZZ.SharedHyp
 
 public import DOZZ.Brownian.Lateral.GlobalIndependence
 public import DOZZ.GMC.Construction.GMCIntensityL1
@@ -119,7 +120,6 @@ measure. No global finiteness of the chart measure is required. -/
 theorem integrable_compact_test_of_chart (μ : Measure ℂ)
     (f : BoundedContinuousFunction ℂ ℝ) (hfin : μ (tsupport (f : ℂ → ℝ)) < ⊤) :
     Integrable (f : ℂ → ℝ) μ := by
-  have hK : MeasurableSet (tsupport (f : ℂ → ℝ)) := (isClosed_tsupport _).measurableSet
   let : IsFiniteMeasure (μ.restrict (tsupport (f : ℂ → ℝ))) :=
     isFiniteMeasure_restrict.mpr hfin.ne
   have hi : IntegrableOn (f : ℂ → ℝ) (tsupport (f : ℂ → ℝ)) μ := f.integrable (μ := μ.restrict (tsupport (f : ℂ → ℝ)))
@@ -129,7 +129,7 @@ theorem integrable_compact_test_of_chart (μ : Measure ℂ)
     · exact indicator_of_mem hx _
     · rw [indicator_of_notMem hx, image_eq_zero_of_notMem_tsupport hx]
   rw [← heq]
-  exact hi.integrable_indicator hK
+  exact hi.integrable_indicator ((isClosed_tsupport _).measurableSet)
 
 /-- Integrating a nonnegative compact test against the expected random measure equals
 its deterministic reference integral. -/
@@ -276,8 +276,8 @@ theorem originRadialRemovedGMC_chart_intensity
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
     (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
-    (hcont : ∀ᵐ ω ∂P, Continuous (fun p : ℂ × ℝ => Xc ω p.1 p.2))
+    (hm : MeasurableCircleAvg Xc)
+    (hcont : ContinuousCircleAvg P Xc)
     (ρ γ : ℝ) (hρ : 0 < ρ) (hγ : 0 < γ) (hγ2 : γ < 2)
     (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) :
     (P.bind (fun ω => (M ω).withDensity
@@ -310,8 +310,8 @@ theorem originRadialRemovedGMC_expected_measure
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
     (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
-    (hcont : ∀ᵐ ω ∂P, Continuous (fun p : ℂ × ℝ => Xc ω p.1 p.2))
+    (hm : MeasurableCircleAvg Xc)
+    (hcont : ContinuousCircleAvg P Xc)
     (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
     (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) :
     P.bind (fun ω => (M ω).withDensity (lateralRadialWeight γ (originRadialPath Xc ω))) =
@@ -337,8 +337,8 @@ theorem lateralProjectedGMC_expected_measure
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
     (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
-    (hcont : ∀ᵐ ω ∂P, Continuous (fun p : ℂ × ℝ => Xc ω p.1 p.2))
+    (hm : MeasurableCircleAvg Xc)
+    (hcont : ContinuousCircleAvg P Xc)
     (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
     (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) :
     P.bind (fun ω => lateralProjectedGMC γ (originRadialPath Xc ω) (M ω)) =
@@ -461,8 +461,8 @@ theorem lateralProjectedGMC_expected_flat_measure
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
     (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
-    (hcont : ∀ᵐ ω ∂P, Continuous (fun p : ℂ × ℝ => Xc ω p.1 p.2))
+    (hm : MeasurableCircleAvg Xc)
+    (hcont : ContinuousCircleAvg P Xc)
     (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
     (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) :
     P.bind (fun ω => lateralProjectedGMC γ (originRadialPath Xc ω) (M ω)) =
@@ -477,8 +477,8 @@ theorem lateralProjectedGMC_interval_intensity
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
     (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
-    (hcont : ∀ᵐ ω ∂P, Continuous (fun p : ℂ × ℝ => Xc ω p.1 p.2))
+    (hm : MeasurableCircleAvg Xc)
+    (hcont : ContinuousCircleAvg P Xc)
     (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
     (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
     (a b : ℝ) :

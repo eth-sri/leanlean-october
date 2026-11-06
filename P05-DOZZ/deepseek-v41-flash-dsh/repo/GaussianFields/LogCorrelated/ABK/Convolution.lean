@@ -103,8 +103,7 @@ Euclidean ball of radius `r`. -/
 theorem euclideanNorm_le_of_abkScaledCutoff_ne_zero {d : Nat} (ζ : ABKCutoff d)
     {r : ℝ} (hr : 0 < r) {x : Vec d} (hx : abkScaledCutoff ζ r x ≠ 0) :
     euclideanNorm x ≤ r := by
-  have hsupp : r⁻¹ • x ∈ Function.support ζ := hx
-  have hunit : euclideanNorm (r⁻¹ • x) ≤ 1 := ζ.support_subset_unitBall hsupp
+  have hunit : euclideanNorm (r⁻¹ • x) ≤ 1 := ζ.support_subset_unitBall (hx)
   have hscaled : euclideanNorm (r⁻¹ • x) = r⁻¹ * euclideanNorm x := by
     rw [euclideanNorm_smul, abs_of_pos (inv_pos.mpr hr)]
   have hunit' : r⁻¹ * euclideanNorm x ≤ 1 := by
@@ -180,17 +179,15 @@ theorem integrable_abkSpatialConvolution_integrand {d : Nat} (ζ : ABKCutoff d)
       exact (ζ.continuous.comp hinner).mul ψ.continuous
     exact hcont.aestronglyMeasurable
   · filter_upwards with x
-    have hz_nonneg : 0 ≤ ζ (r⁻¹ • (y - x)) := ζ.nonneg _
-    have hz_le_one : ζ (r⁻¹ • (y - x)) ≤ 1 := ζ.le_one _
     calc
       ‖abkScaledCutoff ζ r (y - x) * ψ x‖
           = |ζ (r⁻¹ • (y - x)) * ψ x| := by
             rfl
       _ = |ζ (r⁻¹ • (y - x))| * |ψ x| := abs_mul _ _
       _ = ζ (r⁻¹ • (y - x)) * |ψ x| := by
-            rw [abs_of_nonneg hz_nonneg]
+            rw [abs_of_nonneg (ζ.nonneg _)]
       _ ≤ 1 * |ψ x| := by
-            exact mul_le_mul_of_nonneg_right hz_le_one (abs_nonneg (ψ x))
+            exact mul_le_mul_of_nonneg_right (ζ.le_one _) (abs_nonneg (ψ x))
       _ = |ψ x| := by ring
       _ = ‖ψ x‖ := by rw [Real.norm_eq_abs]
 
@@ -263,8 +260,6 @@ theorem abs_abkSpatialConvolution_le_scaled_moment {d : Nat}
       Integrable (fun x : Vec d => euclideanNorm x * |ψ x|)
         (volume : Measure (Vec d)) :=
     integrable_euclideanNorm_mul_abs_meanZeroTestFunction ψ
-  have hconst_nonneg : 0 ≤ L * |r|⁻¹ :=
-    mul_nonneg hL_nonneg (inv_nonneg.mpr (abs_nonneg r))
   have hpoint :
       ∀ x : Vec d,
         ‖F x‖ ≤ L * |r|⁻¹ * (euclideanNorm x * |ψ x|) := by
@@ -321,8 +316,7 @@ theorem abkSpatialConvolution_eq_zero_of_euclideanNorm_gt {d : Nat}
   · simp [hψx]
   · have hcut_zero : abkScaledCutoff ζ r (y - x) = 0 := by
       by_contra hcut
-      have hx_support : x ∈ Function.support ψ := hψx
-      have hx_norm : euclideanNorm x ≤ R := hψ_support hx_support
+      have hx_norm : euclideanNorm x ≤ R := hψ_support (hψx)
       have hcut_norm : euclideanNorm (y - x) ≤ r :=
         euclideanNorm_le_of_abkScaledCutoff_ne_zero ζ hr hcut
       have hy_decomp : x + (y - x) = y := by
@@ -364,8 +358,7 @@ theorem volume_euclideanClosedBall_le {d : Nat} {A : ℝ} (hA_nonneg : 0 ≤ A) 
   have hsubset :
       {y : Vec d | euclideanNorm y ≤ A} ⊆ Metric.closedBall (0 : Vec d) A := by
     intro y hy
-    have hynorm : ‖y‖ ≤ A := (norm_le_euclideanNorm y).trans hy
-    simpa [Metric.mem_closedBall, dist_eq_norm] using hynorm
+    simpa [Metric.mem_closedBall, dist_eq_norm] using ((norm_le_euclideanNorm y).trans hy)
   calc
     volume {y : Vec d | euclideanNorm y ≤ A}
         ≤ volume (Metric.closedBall (0 : Vec d) A) := measure_mono hsubset
@@ -385,8 +378,7 @@ theorem isCompact_euclideanClosedBall {d : Nat} (A : ℝ) :
   have hsubset :
       {y : Vec d | euclideanNorm y ≤ A} ⊆ Metric.closedBall (0 : Vec d) A := by
     intro y hy
-    have hynorm : ‖y‖ ≤ A := (norm_le_euclideanNorm y).trans hy
-    simpa [Metric.mem_closedBall, dist_eq_norm] using hynorm
+    simpa [Metric.mem_closedBall, dist_eq_norm] using ((norm_le_euclideanNorm y).trans hy)
   exact (isCompact_closedBall (0 : Vec d) A).of_isClosed_subset hclosed hsubset
 
 /-- At positive scale, the ABK spatial convolution has compact support. -/

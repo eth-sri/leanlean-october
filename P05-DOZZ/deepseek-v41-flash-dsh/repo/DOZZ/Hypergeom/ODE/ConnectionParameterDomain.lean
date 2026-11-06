@@ -24,8 +24,7 @@ def gaussConnectionParameterDomain : Set (ℂ × ℂ × ℂ) :=
 
 /-- The integer lattice is closed in the complex plane. -/
 private theorem gaussIntegerRange_isClosed : IsClosed gaussIntegerRange := by
-  have hIso : Isometry (fun n : ℤ => (n : ℂ)) := Complex.isometry_intCast
-  exact hIso.isClosedEmbedding.isClosed_range
+  exact (Complex.isometry_intCast).isClosedEmbedding.isClosed_range
 
 /-- The nonresonant parameter domain is open. -/
 theorem gaussConnectionParameterDomain_isOpen :

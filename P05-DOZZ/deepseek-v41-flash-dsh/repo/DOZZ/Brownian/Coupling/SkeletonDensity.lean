@@ -235,12 +235,9 @@ theorem wienerRadialSamples_zeroDrift_fdd : ∀ (n : ℕ) (times : Fin (n + 1) �
     let s := times ((Fin.last n).castSucc)
     let dt := times (Fin.last (n + 1)) - s
     have hlastlt : s < times (Fin.last (n + 1)) := hmono (Fin.castSucc_lt_last _)
-    have hdt : 0 < dt := tsub_pos_iff_lt.mpr hlastlt
     have hs : 0 < s := hpos _
-    have hsum : s + dt = times (Fin.last (n + 1)) := add_tsub_cancel_of_le hlastlt.le
     have hpast : ∀ i, past i ≤ s := fun i => hmono.monotone (Fin.strictMono_castSucc.monotone (Fin.le_last i))
-    have hmonoPast : StrictMono past := hmono.comp Fin.strictMono_castSucc
-    have hprev := ih past (fun i => hpos i.castSucc) hmonoPast
+    have hprev := ih past (fun i => hpos i.castSucc) (hmono.comp Fin.strictMono_castSucc)
     let e := radialSkeletonLastSplit (n + 1)
     apply e.measurableEmbedding.map_injective
     rw [Measure.map_map e.measurable (measurable_wienerRadialSamples times)]
@@ -250,10 +247,10 @@ theorem wienerRadialSamples_zeroDrift_fdd : ∀ (n : ℕ) (times : Fin (n + 1) �
       apply Prod.ext
       · rw [radialSkeletonLastSplit_fst]
         rfl
-      · rw [radialSkeletonLastSplit_snd, hsum]
+      · rw [radialSkeletonLastSplit_snd, (add_tsub_cancel_of_le hlastlt.le)]
         rfl
     change wienerTripleMeasure.map (fun V => e (wienerRadialSamples times V)) = _
-    rw [heval, wienerRadial_samples_next_density_joint_map past s hs hpast rfl dt hdt, hprev,
+    rw [heval, wienerRadial_samples_next_density_joint_map past s hs hpast rfl dt (tsub_pos_iff_lt.mpr hlastlt), hprev,
       radialSkeletonDensityMeasure_last_compProd 0 (le_refl 0) n]
     have hcoe : (dt : ℝ) = (times (Fin.last (n + 1)) : ℝ) - (s : ℝ) :=
       NNReal.coe_sub hlastlt.le

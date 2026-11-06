@@ -93,7 +93,6 @@ lemma lintegral_div_edist_le_sum_integral_edist_le (hT : Metric.ediam U < ∞)
                 edist (X s ω) (X t ω) ^p ∂P := by
   let η k := 2⁻¹ ^ k * (Metric.ediam U + 1)
   have hp_pos := hX.p_pos
-  have hq_pos := hX.q_pos
   have hη_ge (k : ℕ) : 2⁻¹ ^ (k : ℝ) ≤ η k := by simp [η, mul_add]
   have hη_succ (k : ℕ) : η (k + 1) = 2⁻¹ * η k := by simp [η, pow_add, mul_comm]; grind
   have hη_lim : Filter.Tendsto η Filter.atTop (nhds 0) := by
@@ -163,7 +162,6 @@ lemma constL_lt_top
   have hC_pos : 0 < Cp d p q := by
     unfold Cp
     apply lt_max_of_lt_right (ENNReal.div_pos (by norm_num) (by finiteness))
-  have h_rpow_ne : c ^ d⁻¹ ≠ ∞ := ENNReal.rpow_ne_top_of_nonneg (inv_nonneg.mpr hd_pos.le) hc
   apply ENNReal.mul_lt_top (ENNReal.mul_lt_top (by finiteness)
     (ENNReal.rpow_lt_top_of_nonneg (by linarith) (by finiteness)))
   conv =>
@@ -269,8 +267,6 @@ lemma finite_kolmogorov_chentsov
     apply hX.edist_eq_zero
     refine le_antisymm ?_ zero_le
     exact le_trans (Metric.edist_le_ediam_of_mem (hT'U s.2) (hT'U t.2)) h_ae
-  have h_diam_real : 0 < (Metric.ediam U).toReal :=
-    ENNReal.toReal_pos_iff.mpr ⟨h_diam_zero, h_diam⟩
   apply le_trans
     (lintegral_div_edist_le_sum_integral_edist_le h_diam hX hβ_pos hT'U)
   apply ENNReal.tsum_le_tsum

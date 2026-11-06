@@ -63,12 +63,11 @@ theorem coulomb_power_increment_exponential
       (fun k j h => hsep j k h) A a gap m hgap ha hm hm1 hms
   let D := ENNReal.ofReal (2 * b) * H₁
   let B := ((ENNReal.ofReal 2) ^ q * Hq) ^ (1 / q)
-  have hD : D ≠ ⊤ := ENNReal.mul_ne_top ENNReal.ofReal_ne_top hH₁.ne
   have hB : B ≠ ⊤ := ENNReal.rpow_ne_top_of_nonneg
     (by positivity : 0 ≤ 1 / q)
     (ENNReal.mul_ne_top (ENNReal.rpow_ne_top_of_nonneg (by linarith) ENNReal.ofReal_ne_top) hHq.ne)
   obtain ⟨K, κ, hK, hκ, hdec⟩ := threshold_finite_constants
-    D B C hD hB hC.ne (γ * gap * m) m q (by positivity) hm hq
+    D B C (ENNReal.mul_ne_top ENNReal.ofReal_ne_top hH₁.ne) hB hC.ne (γ * gap * m) m q (by positivity) hm hq
   refine ⟨K, κ, hK, hκ, ?_⟩
   filter_upwards [htail, retained_cutoff_geometry_eventually z δ R hδ] with n hn hgeo
   intro β hβA hβa hβlo hβhi hβnorm

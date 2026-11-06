@@ -63,7 +63,6 @@ theorem reflectionInput_law_eq_prod_carrier
   have := isProbabilityMeasure_of_twoSidedConditioned hBc
   have hBm := aemeasurable_of_twoSidedConditioned hB
   have hBcm := aemeasurable_of_twoSidedConditioned hBc
-  have hBlaw : P.map B = Pc.map Bc := twoSidedConditionedPathPair_law_eq P Pc B Bc ν hB hBc
   have hBcfst : AEMeasurable (fun ω : Ωc × Ω => Bc ω.1) (Pc.prod P) :=
     hBcm.comp_quasiMeasurePreserving (measurePreserving_fst.quasiMeasurePreserving)
   have hZsnd : AEMeasurable (fun ω : Ωc × Ω => Z ω.2) (Pc.prod P) :=
@@ -86,7 +85,7 @@ theorem reflectionInput_law_eq_prod_carrier
       (μ := Pc.prod P) (g := Z) (f := Prod.snd)
     rw [measurePreserving_snd.map_eq] at h
     exact h.symm
-  rw [hLeft, hRight, hfst, hsnd, hBlaw]
+  rw [hLeft, hRight, hfst, hsnd, (twoSidedConditionedPathPair_law_eq P Pc B Bc ν hB hBc)]
 
 /-- Equal joint input laws give equal expectations of every a.e.-measurable input functional. -/
 theorem lintegral_reflectionInput_eq_of_law
@@ -99,8 +98,7 @@ theorem lintegral_reflectionInput_eq_of_law
     (F : (BrownianPath × BrownianPath) × Measure ℝ → ℝ≥0∞)
     (hF : AEMeasurable F (P.map pair)) :
     (∫⁻ ω, F (pair ω) ∂P) = ∫⁻ ω, F (pair' ω) ∂P' := by
-  have hF' : AEMeasurable F (P'.map pair') := hLaw ▸ hF
-  rw [← lintegral_map' hF hpair, ← lintegral_map' hF' hpair', hLaw]
+  rw [← lintegral_map' hF hpair, ← lintegral_map' (hLaw ▸ hF) hpair', hLaw]
 
 /-- Every real power of the reflection mass has the same expectation on a transplanted carrier of
 the conditioned path law. -/
@@ -229,11 +227,10 @@ theorem tendsto_ennreal_rpow_of_squeeze {ι : Type*} {l : Filter ι} {a b : ℝ�
     (ha : 0 < a) (hb : b < ⊤) {f : ι → ℝ≥0∞} {e : ι → ℝ} (he : Tendsto e l (𝓝 0))
     (he0 : ∀ᶠ i in l, 0 ≤ e i) (hf : ∀ᶠ i in l, a ≤ f i ∧ f i ≤ b) :
     Tendsto (fun i => f i ^ e i) l (𝓝 1) := by
-  have hab : ∀ᶠ i in l, a ≤ b := hf.mono fun i hi => hi.1.trans hi.2
   rcases l.eq_or_neBot with hl | hl
   · rw [hl]
     exact tendsto_bot
-  obtain ⟨i, hi⟩ := hab.exists
+  obtain ⟨i, hi⟩ := (hf.mono fun i hi => hi.1.trans hi.2).exists
   have hb0 : 0 < b := ha.trans_le hi
   apply tendsto_of_tendsto_of_tendsto_of_le_of_le'
     (tendsto_ennreal_rpow_nhds_one ha (lt_of_le_of_lt hi hb) he)
@@ -373,9 +370,8 @@ theorem twoSidedConditionedValue_of_pos {Ω : Type*} (B : Ω → BrownianPath ×
 theorem twoSidedConditionedValue_of_neg {Ω : Type*} (B : Ω → BrownianPath × BrownianPath)
     (ω : Ω) {s : ℝ} (hs : s < 0) :
     twoSidedConditionedValue B ω s = (B ω).2 (Real.toNNReal (-s)) := by
-  have h : ¬ 0 ≤ s := not_le.mpr hs
   have h' : 0 ≤ -s := by linarith
-  simp only [twoSidedConditionedValue, h, dite_false, Real.toNNReal_of_nonneg h']
+  simp only [twoSidedConditionedValue, (not_le.mpr hs), dite_false, Real.toNNReal_of_nonneg h']
   rfl
 
 /-- At the origin the two-sided value is the first entrance path at time zero. -/
@@ -511,11 +507,10 @@ theorem ennreal_tsum_rpow_le {ι : Type*} (a : ι → ℝ≥0∞) {q : ℝ} (hq0
     rw [ENNReal.tsum_eq_iSup_sum]
     refine iSup_le fun s => ?_
     have hs := ennreal_finset_sum_rpow_le s a hq0 hq1
-    have hle : (∑ i ∈ s, a i ^ q) ≤ ∑' i, a i ^ q := ENNReal.sum_le_tsum s
     calc (∑ i ∈ s, a i) = ((∑ i ∈ s, a i) ^ q) ^ (1 / q) := by
           rw [← ENNReal.rpow_mul, mul_one_div_cancel hq0.ne', ENNReal.rpow_one]
       _ ≤ (∑' i, a i ^ q) ^ (1 / q) :=
-          ENNReal.rpow_le_rpow (hs.trans hle) (one_div_nonneg.mpr hq0.le)
+          ENNReal.rpow_le_rpow (hs.trans (ENNReal.sum_le_tsum s)) (one_div_nonneg.mpr hq0.le)
   calc (∑' i, a i) ^ q ≤ ((∑' i, a i ^ q) ^ (1 / q)) ^ q := ENNReal.rpow_le_rpow hroot hq0.le
     _ = ∑' i, a i ^ q := by
       rw [← ENNReal.rpow_mul, one_div_mul_cancel hq0.ne', ENNReal.rpow_one]
@@ -525,10 +520,9 @@ theorem ennreal_add3_rpow_le (a b c : ℝ≥0∞) {q : ℝ} (hq : 0 ≤ q) :
     (a + b + c) ^ q ≤ 3 ^ q * (a ^ q + b ^ q + c ^ q) := by
   let m := max a (max b c)
   have hsum : a + b + c ≤ 3 * m := by
-    have ha : a ≤ m := le_max_left _ _
     have hb : b ≤ m := (le_max_left _ _).trans (le_max_right _ _)
     have hc : c ≤ m := (le_max_right _ _).trans (le_max_right _ _)
-    calc a + b + c ≤ m + m + m := add_le_add (add_le_add ha hb) hc
+    calc a + b + c ≤ m + m + m := add_le_add (add_le_add (le_max_left _ _) hb) hc
       _ = 3 * m := by ring
   have hm : m ^ q ≤ a ^ q + b ^ q + c ^ q := by
     rcases le_total b c with hbc | hbc

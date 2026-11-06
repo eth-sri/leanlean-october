@@ -30,10 +30,9 @@ private theorem wirtingerBar_deriv_term
     (k : ℂ) {z : ℂ} (hz : z ∈ U) :
     wirtingerBar (fun w => k * deriv f w * star (g w)) z =
       k * deriv f z * star (deriv g z) := by
-  have hf' : DifferentiableAt ℂ (deriv f) z := (hf.deriv z hz).differentiableAt
   have hgAt : DifferentiableAt ℂ g z := (hg z hz).differentiableAt
   have hp : DifferentiableAt ℂ (fun w => k * deriv f w) z :=
-    (differentiableAt_const k).mul hf'
+    (differentiableAt_const k).mul ((hf.deriv z hz).differentiableAt)
   have hgStar : DifferentiableAt ℝ (fun w => star (g w)) z :=
     (Complex.differentiable_conj.differentiableAt (x := g z)).comp z
       (hgAt.restrictScalars ℝ)
@@ -131,7 +130,6 @@ theorem hermitianTensor_coefficients_eq_of_eqOn
   have hnear : Q₁ =ᶠ[𝓝 z] Q₂ := by
     filter_upwards [hU.mem_nhds hz] with w hw
     exact hEq w hw
-  have hvalue : Q₁ z = Q₂ z := hEq z hz
   have hQ₁diff : DifferentiableAt ℝ Q₁ z := hQ₁At.differentiableAt (by norm_num)
   have hQ₂diff : DifferentiableAt ℝ Q₂ z := hQ₂At.differentiableAt (by norm_num)
   have hZeq := wirtingerZ_congr_of_eventuallyEq hQ₁diff hQ₂diff hnear
@@ -155,7 +153,7 @@ theorem hermitianTensor_coefficients_eq_of_eqOn
         (C - C') * g z * star (f z) + (D - D') * g z * star (g z) = 0 := by
     calc
       _ = Q₁ z - Q₂ z := by dsimp [Q₁, Q₂, hermitianQuadraticTensor]; ring
-      _ = 0 := sub_eq_zero.mpr hvalue
+      _ = 0 := sub_eq_zero.mpr (hEq z hz)
   have hZeq' :
       wirtingerZ (hermitianQuadraticTensor f g A B C D) z =
         wirtingerZ (hermitianQuadraticTensor f g A' B' C' D') z := by

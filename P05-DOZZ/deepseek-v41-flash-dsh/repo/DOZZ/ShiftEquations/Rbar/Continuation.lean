@@ -159,10 +159,9 @@ theorem unitVolume_crossing_diag_continued {Ω : Type*} [MeasurableSpace Ω]
   have hcross : ∀ t : ℝ, Q γ - (ε - γ / 2) / 2 < t → t < Q γ → g₁ (t : ℂ) = g₂ (t : ℂ) := by
     intro t ht1 ht2
     have htJ : t ∈ J := ⟨by rw [hQ] at ht1; linarith, ht2⟩
-    have hx : 0 < (2 * t + ε - γ / 2 - 2 * Q γ) / γ := div_pos (by linarith) hγ
     simp only [hg₁, hg₂]
     rw [hS t htJ, hR t htJ, hCross t ht2 (by linarith), Complex.ofReal_mul,
-      gammaHalfUnitCrossingMultiplier_eq_diag hγ one_pos hε₁ hε₂ hx]
+      gammaHalfUnitCrossingMultiplier_eq_diag hγ one_pos hε₁ hε₂ (div_pos (by linarith) hγ)]
   -- the identity theorem on the component of `D` through a crossing point
   set a₀ : ℝ := Q γ - (ε - γ / 2) / 4 with ha₀
   have ha₀J : a₀ ∈ J := ⟨by rw [ha₀, hQ]; linarith, by rw [ha₀]; linarith⟩

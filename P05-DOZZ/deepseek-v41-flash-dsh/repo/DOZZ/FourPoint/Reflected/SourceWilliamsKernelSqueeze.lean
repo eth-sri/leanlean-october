@@ -3,6 +3,7 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
+public import DOZZ.SharedHyp
 public import DOZZ.FourPoint.Reflected.SourceRadialSignedExpectation
 public import DOZZ.FourPoint.Reflected.SourceKernelExpectation
 public import DOZZ.Statements.FourPoint.GammaHalfOuterMoment
@@ -16,12 +17,12 @@ namespace DOZZ.Proofs
 theorem reflected_source_williams_kernel_squeeze
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
     (hX : IsEquatorGFF P X) (Xc : Ω → ℂ → ℝ → ℝ) (hc : IsCircleAverage P X Xc)
-    (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
-    (hcont : ∀ᵐ ω ∂P, Continuous (fun p : ℂ × ℝ => Xc ω p.1 p.2))
+    (hm : MeasurableCircleAvg Xc)
+    (hcont : ContinuousCircleAvg P Xc)
     (γ : ℝ) (hγ : 0 < γ) (hγ₂ : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
     (N : Ω → Measure ℂ) (hN : Measurable N) (hi : IndepFun (originRadialPath Xc) N P)
     (heq : N =ᵐ[P] (fun ω => (M ω).withDensity (lateralRadialWeight γ (originRadialPath Xc ω))))
-    (hfin : ∀ ω K, IsCompact K → K ⊆ ({0} : Set ℂ)ᶜ → N ω K < ⊤)
+    (hfin : FiniteOffOrigin N)
     (α₁ α₂ α₃ ξ h : ℝ) (hα₁ : α₁ < Q γ)
     (B : Ω → BrownianPath × BrownianPath)
     (hL : IsLateralGMCOf P γ (fun ω => lateralProjectedGMC γ (originRadialPath Xc ω) (M ω)))
@@ -45,7 +46,6 @@ theorem reflected_source_williams_kernel_squeeze
       gammaHalfMoment P M γ α₁ α₂ α₃ p z-gammaHalfOuterMoment P M γ α₁ α₂ α₃ p z ξ ≤
         min 1 ((1-Real.exp (-h))^(γ^2/2)*(1-Real.exp (-h)*‖z‖)⁻¹^(-|γ*α₂|))*W z+E z := by
   let R := Real.exp (-h)
-  have hR : 0 < R := Real.exp_pos _
   have hR1 : R < 1 := Real.exp_lt_one_iff.mpr (neg_neg_of_pos hh)
   filter_upwards [reflected_outer_cutoff_geometry ξ 1 hξ hξ1 zero_lt_one,self_mem_nhdsWithin]
     with z hz hz0
@@ -67,7 +67,7 @@ theorem reflected_source_williams_kernel_squeeze
     exact (mul_le_of_le_one_left hn.le hR1.le).trans hzr.le
   have hk := reflected_source_copied_kernel_inverse_squeeze P X hX Xc hc hcont γ hγ hγ₂ M hM
     N hN hi heq hfin α₁ α₂ α₃ ξ p R hp hα₁ hα₂ hα₃ z hz0 hz1 hzn.le hz.1 hzr hr1 T
-    hR.le hR1 hη1 hη.le
+    (Real.exp_pos _).le hR1 hη1 hη.le
   have hw := reflected_source_copied_radial_signed_expectation P X hX Xc hc hm hcont γ hγ hγ₂ M hM
     N hN hi heq hfin α₁ α₂ α₃ ξ h hα₁ B hL hData Qν hQν z hz0 T hcoord hz.1 hzr hTr p hp.le
     hα₂ hα₃ hz1 hzn.le hr1

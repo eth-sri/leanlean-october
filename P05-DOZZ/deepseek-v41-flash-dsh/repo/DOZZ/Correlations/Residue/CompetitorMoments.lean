@@ -46,7 +46,6 @@ theorem residue_unequal_competitor_coulomb_moment
   have hεloss : 2 * ε / γ < τ / 4 := by
     apply (div_lt_iff₀ hγ).mpr
     nlinarith only [hετ]
-  have hp : 0 < p := (residue_critical_order_bounds γ α3 hγ hα3 hα3Q).1
   have hbulk : 4 / γ ^ 2 - p = 2 * (α3 - γ / 2) / γ := by
     dsimp only [p]
     unfold reflectionExponent Q
@@ -71,7 +70,7 @@ theorem residue_unequal_competitor_coulomb_moment
     linarith only [hα23]
   · rw [abs_of_pos (by linarith only [hα23, hε] : 0 < α3 - α2 + ε)]
     linarith only [hεa, hα2]
-  · exact add_pos hp (by positivity)
+  · exact add_pos ((residue_critical_order_bounds γ α3 hγ hα3 hα3Q).1) (by positivity)
   · linarith only [hbulk, hτb, hτ]
   · intro k; fin_cases k
     change p + τ / 8 + τ / 8 ≤ 2 / γ * (Q γ - α2)
@@ -107,7 +106,6 @@ theorem residue_equal_background_coulomb_moment
   have hεloss : 2 * ε / γ < τ / 4 := by
     apply (div_lt_iff₀ hγ).mpr
     nlinarith only [hετ]
-  have hp : 0 < p := (residue_critical_order_bounds γ α hγ hα hαQ).1
   have hbulk : 4 / γ ^ 2 - p = 2 * (α - γ / 2) / γ := by
     dsimp only [p]
     unfold reflectionExponent Q
@@ -123,7 +121,7 @@ theorem residue_equal_background_coulomb_moment
   · intro j; exact j.elim0
   · intro j; exact j.elim0
   · rw [abs_of_pos hε]; linarith only [hεa, hα0]
-  · exact add_pos hp (by positivity)
+  · exact add_pos ((residue_critical_order_bounds γ α hγ hα hαQ).1) (by positivity)
   · linarith only [hbulk, hτb, hτ]
   · intro j; exact j.elim0
   · linarith only [hinf, hτinf, hτ, hεloss]

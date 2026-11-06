@@ -130,8 +130,7 @@ theorem inversionCircle_compatible_of_coupled_limits
     have hεe : ε ≤ e := hεb.trans ((min_le_right _ _).trans (min_le_right _ _))
     rw [DOZZ.Assembly.gaussianCovariance_comm P (fun ω => Z ω x (Real.log (1 / ε)))]
     rw [hmix (Real.exp_pos _) hε hεe y x (hKU hx), hsrc]
-    have hlogk : Real.log (1 / Real.exp (-(k : ℝ))) = k := log_one_div_exp_neg_eq _
-    rw [hlogk]
+    rw [(log_one_div_exp_neg_eq _)]
     exact hb ε hε (hεb.trans (min_le_left _ _)) x (hU x (hKU hx)).1 y⁻¹
 
 end DOZZ.Proofs

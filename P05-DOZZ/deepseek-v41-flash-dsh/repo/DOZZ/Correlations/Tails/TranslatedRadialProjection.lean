@@ -3,6 +3,7 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
+public import DOZZ.SharedHyp
 
 public import DOZZ.Correlations.Tails.TranslatedField
 public import DOZZ.Brownian.Lateral.GlobalIndependence
@@ -17,7 +18,7 @@ namespace DOZZ.Proofs
 
 theorem translated_circle_jointMeasurable
     {Ω : Type*} [MeasurableSpace Ω] (Xc : Ω → ℂ → ℝ → ℝ)
-    (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2)) (z : ℂ) :
+    (hm : MeasurableCircleAvg Xc) (z : ℂ) :
     Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 (z+p.2.1) p.2.2 - Xc p.1 z 0) :=
   (hm.comp (measurable_fst.prodMk
     ((measurable_const.add measurable_snd.fst).prodMk measurable_snd.snd))).sub
@@ -25,7 +26,7 @@ theorem translated_circle_jointMeasurable
 
 theorem translated_circle_continuous
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hcont : ∀ᵐ ω ∂P, Continuous (fun p : ℂ × ℝ => Xc ω p.1 p.2)) (z : ℂ) :
+    (hcont : ContinuousCircleAvg P Xc) (z : ℂ) :
     ∀ᵐ ω ∂P, Continuous (fun p : ℂ × ℝ => Xc ω (z+p.1) p.2 - Xc ω z 0) := by
   filter_upwards [hcont] with ω hω
   exact (hω.comp ((continuous_const.add continuous_fst).prodMk continuous_snd)).sub
@@ -36,8 +37,8 @@ source projection. In particular the complete radial path is independent of the 
 theorem translated_radial_sourceProjection
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
     (Xc : Ω → ℂ → ℝ → ℝ) (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
-    (hcont : ∀ᵐ ω ∂P, Continuous (fun p : ℂ × ℝ => Xc ω p.1 p.2))
+    (hm : MeasurableCircleAvg Xc)
+    (hcont : ContinuousCircleAvg P Xc)
     (z : ℂ) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
     (N : Ω → Measure ℂ) (hN : IsGMCOf P (translatedField X Xc z) γ N) :
     let Uc := fun ω x r => Xc ω (z+x) r - Xc ω z 0

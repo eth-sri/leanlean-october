@@ -274,13 +274,12 @@ theorem regularizedGMC_clipped_dyadic_subunit_moment_bound
           (1 + gmcReferenceMeasure (Metric.ball 0 R)) := by
   by_cases ha : Real.exp (-t) ≤ gmcDyadicRadius R n
   · have hn1 : 0 < gmcDyadicRadius R (n + 1) := by unfold gmcDyadicRadius; positivity
-    have hc : 0 < (gmcDyadicRadius R (n + 1)) ^ (-γ ^ 2) := Real.rpow_pos_of_pos hn1 _
     have he : (∫⁻ ω, (gmcClippedDyadicTerm (regularizedGMC P Xc γ t ω)
         γ R (Real.exp (-t)) u n) ^ q ∂P) =
         ENNReal.ofReal ((gmcDyadicRadius R (n + 1)) ^ (-γ ^ 2 * q)) *
           gmcMassMoment P (regularizedGMC P Xc γ t) (Metric.ball u (gmcDyadicRadius R n)) q := by
       simp only [gmcClippedDyadicTerm, ite_eq_left ha, ENNReal.mul_rpow_of_nonneg _ _ hq.le,
-        ENNReal.ofReal_rpow_of_pos hc, ← Real.rpow_mul hn1.le]
+        ENNReal.ofReal_rpow_of_pos (Real.rpow_pos_of_pos hn1 _), ← Real.rpow_mul hn1.le]
       rw [lintegral_const_mul' _ _ ENNReal.ofReal_ne_top]
       rfl
     rw [he]
@@ -346,12 +345,11 @@ theorem regularizedGMC_inner_clipped_subunit_moment_bound
   let δ := Real.exp (-t)
   let ξ := 2 * q + γ ^ 2 * q / 2 - γ ^ 2 * q ^ 2 / 2
   have hδ : 0 < δ := Real.exp_pos _
-  have hc : 0 < δ ^ (-γ ^ 2) := Real.rpow_pos_of_pos hδ _
   have he : (∫⁻ ω, (ENNReal.ofReal (δ ^ (-γ ^ 2)) *
       regularizedGMC P Xc γ t ω (Metric.ball u (2 * δ))) ^ q ∂P) =
       ENNReal.ofReal (δ ^ (-γ ^ 2 * q)) *
         gmcMassMoment P (regularizedGMC P Xc γ t) (Metric.ball u (2 * δ)) q := by
-    simp only [ENNReal.mul_rpow_of_nonneg _ _ hq.le, ENNReal.ofReal_rpow_of_pos hc,
+    simp only [ENNReal.mul_rpow_of_nonneg _ _ hq.le, ENNReal.ofReal_rpow_of_pos (Real.rpow_pos_of_pos hδ _),
       ← Real.rpow_mul hδ.le]
     rw [lintegral_const_mul' _ _ ENNReal.ofReal_ne_top]
     rfl

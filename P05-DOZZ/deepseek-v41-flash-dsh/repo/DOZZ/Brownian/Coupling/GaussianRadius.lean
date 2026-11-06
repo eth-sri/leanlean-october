@@ -63,7 +63,6 @@ theorem three_gaussianPDF_product (a : ℝ) (t : ℝ≥0) (ht : t ≠ 0) (z : Fi
   have hsq := EuclideanSpace.real_norm_sq_eq (WithLp.toLp 2 z)
   have hnorm : ‖WithLp.toLp 2 z‖ ^ 2 = (z 0) ^ 2 + ((z 1) ^ 2 + (z 2) ^ 2) := by
     simpa [Fin.sum_univ_succ] using hsq
-  have htr : (t : ℝ) ≠ 0 := by exact_mod_cast ht
   simp only [Fin.prod_univ_three, Fin.isValue, Fin.reduceEq, ite_true, ite_false,
     gaussianPDF, gaussianPDFReal, sub_zero]
   rw [← ENNReal.ofReal_mul (by positivity), ← ENNReal.ofReal_mul (by positivity),
@@ -139,7 +138,6 @@ theorem lintegral_three_gaussian_radial_pos (F : ℝ → ℝ≥0∞) (hF : Measu
   have hnorm : Measurable (fun z : Fin 3 → ℝ => F ‖WithLp.toLp 2 z‖) :=
     hF.comp (PiLp.continuous_toLp 2 _).norm.measurable
   let G := fun y => F y * ENNReal.ofReal (Real.exp (-y ^ 2 / (2 * (t : ℝ)) - a ^ 2 * (t : ℝ) / 2))
-  have hG : Measurable G := hF.mul (by fun_prop)
   rw [pi_gaussianReal_withDensity _ t ht.ne',
     lintegral_withDensity_eq_lintegral_mul volume hpdf hnorm]
   simp_rw [Pi.mul_apply, three_gaussianPDF_product a t ht.ne']
@@ -153,7 +151,7 @@ theorem lintegral_three_gaussian_radial_pos (F : ℝ → ℝ≥0∞) (hF : Measu
       ring
     _ = ENNReal.ofReal (radialGaussianConstant t) * (ENNReal.ofReal (4 * Real.pi) *
         ∫⁻ y in Ioi (0 : ℝ), G y * ENNReal.ofReal (y * Real.sinh (a * y) / a)) := by
-      rw [lintegral_three_radial_exp G hG a ha.ne']
+      rw [lintegral_three_radial_exp G (hF.mul (by fun_prop)) a ha.ne']
     _ = ∫⁻ y in Ioi (0 : ℝ), F y * ENNReal.ofReal (conditionedPositiveEntranceDensity a t y) := by
       rw [← mul_assoc, ← lintegral_const_mul' _ _ (ENNReal.mul_ne_top ENNReal.ofReal_ne_top ENNReal.ofReal_ne_top)]
       apply setLIntegral_congr_fun measurableSet_Ioi
@@ -176,7 +174,6 @@ theorem lintegral_three_gaussian_radial_zero (F : ℝ → ℝ≥0∞) (hF : Meas
   have hnorm : Measurable (fun z : Fin 3 → ℝ => F ‖WithLp.toLp 2 z‖) :=
     hF.comp (PiLp.continuous_toLp 2 _).norm.measurable
   let G := fun y => F y * ENNReal.ofReal (Real.exp (-y ^ 2 / (2 * (t : ℝ))))
-  have hG : Measurable G := hF.mul (by fun_prop)
   have hproduct (z : Fin 3 → ℝ) : (∏ i, gaussianPDF 0 t (z i)) =
       ENNReal.ofReal (radialGaussianConstant t) * ENNReal.ofReal (Real.exp (-‖WithLp.toLp 2 z‖ ^ 2 / (2 * (t : ℝ)))) := by
     simpa using three_gaussianPDF_product 0 t ht.ne' z
@@ -192,7 +189,7 @@ theorem lintegral_three_gaussian_radial_zero (F : ℝ → ℝ≥0∞) (hF : Meas
       ring
     _ = ENNReal.ofReal (radialGaussianConstant t) * (ENNReal.ofReal (4 * Real.pi) *
         ∫⁻ y in Ioi (0 : ℝ), G y * ENNReal.ofReal (y ^ 2)) := by
-      rw [lintegral_three_radial_zero G hG]
+      rw [lintegral_three_radial_zero G (hF.mul (by fun_prop))]
     _ = ∫⁻ y in Ioi (0 : ℝ), F y * ENNReal.ofReal (conditionedPositiveEntranceDensity 0 t y) := by
       rw [← mul_assoc, ← lintegral_const_mul' _ _ (ENNReal.mul_ne_top ENNReal.ofReal_ne_top ENNReal.ofReal_ne_top)]
       apply setLIntegral_congr_fun measurableSet_Ioi
@@ -226,8 +223,7 @@ theorem lintegral_entranceDensity_Ioi (F : ℝ → ℝ≥0∞) (a t : ℝ) :
   apply setLIntegral_eq_of_support_subset
   intro y hy
   by_contra hpos
-  have hy0 : y ≤ 0 := le_of_not_gt hpos
-  exact hy (by simp [entranceDensity_eq_zero_of_nonpositive a t y hy0])
+  exact hy (by simp [entranceDensity_eq_zero_of_nonpositive a t y (le_of_not_gt hpos)])
 
 /-- Gaussian norm pushforward equals the actual entrance-density measure. -/
 theorem three_gaussian_norm_map_eq_entrance (a : ℝ) (ha : 0 ≤ a) (t : ℝ≥0) (ht : 0 < t) :
@@ -254,8 +250,6 @@ theorem negativeRogersPitmanWienerMeasure_eval_eq_entrance (a : ℝ) (ha : 0 ≤
     (t : ℝ≥0) (ht : 0 < t) :
     (negativeRogersPitmanWienerMeasure a).map (fun p => p t) =
       (conditionedPositiveEntranceMeasure a t).map Neg.neg := by
-  have hnorm : Measurable (fun z : Fin 3 → ℝ => ‖WithLp.toLp 2 z‖) :=
-    (PiLp.continuous_toLp 2 _).norm.measurable
   rw [← rogersPitmanWienerMeasure_eval_eq_entrance a ha t ht,
     rogersPitmanWienerMeasure, negativeRogersPitmanWienerMeasure,
     rogersPitmanEntranceMeasure, negativeRogersPitmanEntranceMeasure]

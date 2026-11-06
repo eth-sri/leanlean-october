@@ -251,7 +251,6 @@ theorem conditionedPositiveEntranceGridMeasure_markov_rect
   let : IsProbabilityMeasure U := isProbabilityMeasure_unitInput
   let f : ConditionedEntranceGridPath n × ConditionedUnitInput → ConditionedPositiveState := fun z =>
     conditionedPositiveEntranceGridStep ν dt hν hdt n z.1 z.2
-  have hf : Measurable f := measurable_conditionedPositiveEntranceGridStep ν dt hν hdt n
   have hinit : Measurable (fun p : ConditionedEntranceGridPath (n + 1) => Fin.init p) := by
     apply measurable_pi_iff.mpr
     intro i
@@ -279,7 +278,7 @@ theorem conditionedPositiveEntranceGridMeasure_markov_rect
       (measurable_conditionedPositiveEntranceGridAppend ν dt hν hdt n)]
     exact congrArg (fun g => (μ.prod U).map g) hcomp
   rw [hmap]
-  exact map_prod_graph_apply_rect μ U f hf
+  exact map_prod_graph_apply_rect μ U f (measurable_conditionedPositiveEntranceGridStep ν dt hν hdt n)
     (fun x => conditionedPositiveTransitionSubtypeMeasure ν (dt n) hν (hdt n)
       (x (Fin.last n))) (by intro x; rfl) A B hA hB
 

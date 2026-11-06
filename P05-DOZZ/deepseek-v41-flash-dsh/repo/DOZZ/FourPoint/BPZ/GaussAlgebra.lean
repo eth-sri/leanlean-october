@@ -95,7 +95,6 @@ theorem bpz_gauss_of_ward {γ χ α₁ α₂ α₃ : ℝ} (hγ : 0 < γ) (hχ : 
       ((gaussParameterA γ χ α₁ α₂ α₃ : ℝ) : ℂ) * ((gaussParameterB γ χ α₁ α₂ α₃ : ℝ) : ℂ) /
         (z * (1 - z)) * (T : ℂ) = 0 := by
   have hγ0 : γ ≠ 0 := hγ.ne'
-  have hd : z * (1 - z) ≠ 0 := mul_ne_zero hz0 (sub_ne_zero.mpr (Ne.symm hz1))
   have hQ := bpz_gauss_chi_relation hγ0 hχ
   have hC := congrArg (fun x : ℝ => (x : ℂ)) (bpz_gauss_C_eq (α₁ := α₁) hQ)
   have hAB := congrArg (fun x : ℝ => (x : ℂ)) (bpz_gauss_sum_eq (α₁ := α₁) (α₂ := α₂)
@@ -104,7 +103,7 @@ theorem bpz_gauss_of_ward {γ χ α₁ α₂ α₃ : ℝ} (hγ : 0 < γ) (hχ : 
   have hJ := congrArg (fun x : ℝ => (x : ℂ)) (bpz_gauss_J_coeff (α₁ := α₁) (α₂ := α₂)
     (α₃ := α₃) hγ0 hχ)
   push_cast at hC hAB hF hJ
-  refine bpz_gauss_div_combo hd ?_
+  refine bpz_gauss_div_combo (mul_ne_zero hz0 (sub_ne_zero.mpr (Ne.symm hz1))) ?_
   subst hT hW1 hW2
   push_cast at hward ⊢
   linear_combination (-(↑(fourPointSExp γ (-χ) α₁ α₂ α₃) * (K : ℂ) * (χ : ℂ) ^ 2)) * hward +

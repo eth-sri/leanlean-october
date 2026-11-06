@@ -270,8 +270,6 @@ theorem preimage_eval_Iio_eq_iUnion_dyadicBox {d : Nat} (r : Fin d) (a : ℝ) :
           _ = x r + p⁻¹ := by
             field_simp [ne_of_gt hp]
       have hlt : x r + p⁻¹ < a := by
-        have hn' : p⁻¹ < a - x r := by
-          simpa [p] using hn
         linarith
       simpa [cell, p] using lt_of_le_of_lt hupper_le hlt
     · intro s _hs

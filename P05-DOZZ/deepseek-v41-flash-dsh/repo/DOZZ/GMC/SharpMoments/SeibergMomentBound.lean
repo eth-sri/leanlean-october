@@ -197,8 +197,7 @@ theorem coulombMass_moment_uniform_nonpos
       _ = cmin ^ tmin * (1 + gmcMassMoment P M B tmin) := by
           have h1m : AEMeasurable (fun ω => 1 + M ω B ^ tmin) P :=
             aemeasurable_const.add (hBm.pow_const tmin)
-          have hone : AEMeasurable (fun _ : Ω => (1 : ℝ≥0∞)) P := aemeasurable_const
-          rw [lintegral_const_mul'' _ h1m, lintegral_add_left' hone, lintegral_const,
+          rw [lintegral_const_mul'' _ h1m, lintegral_add_left' (aemeasurable_const), lintegral_const,
             measure_univ, mul_one]
           rfl
   · -- a negative charge bound admits no parameters

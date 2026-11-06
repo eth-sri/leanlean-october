@@ -37,7 +37,6 @@ private theorem massCutoffFun_support (n : ℕ) :
     Function.support (massCutoffFun n) ⊆ Metric.closedBall (0 : ℂ) ((n : ℝ) + 1) := by
   intro x hx
   change massCutoffFun n x ≠ 0 at hx
-  have hfx : massCutoffFun n x ≠ 0 := hx
   by_contra hout
   have hn : (n : ℝ) + 1 - ‖x‖ ≤ 0 := by
     have hxnorm : dist x (0 : ℂ) = ‖x‖ := by simp
@@ -46,7 +45,7 @@ private theorem massCutoffFun_support (n : ℕ) :
   have hzero : massCutoffFun n x = 0 := by
     dsimp [massCutoffFun]
     rw [max_eq_left (le_trans (min_le_right _ _) hn)]
-  exact hfx hzero
+  exact (hx) hzero
 
 private def massCutoffCc (n : ℕ) : C_c(ℂ, ℝ) := by
   let f : C(ℂ, ℝ) := ⟨massCutoffFun n, massCutoffFun_continuous n⟩
@@ -97,15 +96,11 @@ private def cutoffTest (f : BoundedContinuousFunction ℂ ℝ) (R : ℕ) :
 private theorem cutoffTest_hasCompactSupport (f : BoundedContinuousFunction ℂ ℝ) (R : ℕ) :
     HasCompactSupport (cutoffTest f R : ℂ → ℝ) := by
   let g : ℂ → ℝ := fun x => f x * massCutoff R x
-  have hgcont : Continuous g := by
-    dsimp [g]
-    exact f.continuous.mul (massCutoff R).continuous
   have hgsupport : Function.support g ⊆ Metric.closedBall (0 : ℂ) ((R : ℝ) + 1) := by
     intro x hx
     change g x ≠ 0 at hx
     by_contra hout
-    have hzero : massCutoff R x = 0 := massCutoff_zero_of_not_mem_closedBall R x hout
-    exact hx (by simp [g, hzero])
+    exact hx (by simp [g, (massCutoff_zero_of_not_mem_closedBall R x hout)])
   exact HasCompactSupport.of_support_subset_isCompact
     (isCompact_closedBall (0 : ℂ) ((R : ℝ) + 1)) (by simpa [g, cutoffTest] using hgsupport)
 
@@ -131,13 +126,11 @@ private theorem circleIntegral_cutoff_error_le
       (ae_of_all _ (cutoffTest f R).norm_coe_le_norm)
   have hgint : Integrable (fun x => cutoffTest f R x) μ := hgmem.integrable (by norm_num)
   let d : ℂ → ℝ := fun x => f x - cutoffTest f R x
-  have hdint : Integrable d μ := hfint.sub hgint
   have htailConst : Integrable (tail.indicator (fun _ : ℂ => ‖f‖)) μ := by
     have hcLp : MemLp (fun _ : ℂ => ‖f‖) 1 μ :=
       MemLp.of_bound (aestronglyMeasurable_const : AEStronglyMeasurable
         (fun _ : ℂ => ‖f‖) μ) ‖f‖ (ae_of_all _ fun _ => by simp)
-    have hc : Integrable (fun _ : ℂ => ‖f‖) μ := hcLp.integrable (by norm_num)
-    exact hc.indicator htail
+    exact (hcLp.integrable (by norm_num)).indicator htail
   have hpoint : ∀ x, ‖d x‖ ≤ tail.indicator (fun _ : ℂ => ‖f‖) x := by
     intro x
     by_cases hx : x ∈ tail
@@ -165,7 +158,7 @@ private theorem circleIntegral_cutoff_error_le
       rw [integral_sub hfint hgint]
     _ ≤ ∫ x, ‖d x‖ ∂μ := norm_integral_le_integral_norm _
     _ ≤ ∫ x, tail.indicator (fun _ : ℂ => ‖f‖) x ∂μ :=
-      integral_mono hdint.norm htailConst hpoint
+      integral_mono (hfint.sub hgint).norm htailConst hpoint
     _ = ‖f‖ * (μ tail).toReal := by
       rw [integral_indicator_const ‖f‖ htail]
       rw [Measure.real_def]
@@ -190,7 +183,6 @@ private theorem massCutoff_tendsto_one (x : ℂ) :
       have hnorm : ‖x‖ < (N : ℝ) := by exact_mod_cast hN
       have hnReal : (N : ℝ) ≤ (n : ℝ) := by exact_mod_cast hn
       have hle : ‖x‖ ≤ (n : ℝ) := le_trans hnorm.le hnReal
-      have hnonneg : 0 ≤ (n : ℝ) - ‖x‖ := sub_nonneg.mpr hle
       linarith⟩
   have hEq : ∀ᶠ n : ℕ in atTop, massCutoff n x = 1 := by
     filter_upwards [hEvent] with n hn
@@ -273,9 +265,6 @@ private theorem tailTest_le_inner (R n : ℕ) (x : ℂ) :
   have hcut' : massCutoffFun n x ≤ 1 := by
     simpa [massCutoff, massCutoffCc,
       CompactlySupportedContinuousMap.toBoundedContinuousFunction] using hcut
-  have hnonneg' : 0 ≤ massCutoffFun n x := by
-    simpa [massCutoff, massCutoffCc,
-      CompactlySupportedContinuousMap.toBoundedContinuousFunction] using hnonneg
   linarith only [mul_nonneg hleft (sub_nonneg.mpr hcut')]
 
 private theorem tailTest_mono (R : ℕ) (x : ℂ) :
@@ -314,9 +303,8 @@ private theorem tailInner_zero_of_mem_closedBall (R : ℕ) (x : ℂ)
     (hx : x ∈ Metric.closedBall (0 : ℂ) (R : ℝ)) : tailInnerFun R x = 0 := by
   have hnorm : ‖x‖ ≤ (R : ℝ) := by
     simpa [Metric.mem_closedBall, dist_zero_right] using hx
-  have hsub : ‖x‖ - (R : ℝ) ≤ 0 := sub_nonpos.mpr hnorm
   dsimp [tailInnerFun]
-  rw [max_eq_left (le_trans (min_le_right _ _) hsub)]
+  rw [max_eq_left (le_trans (min_le_right _ _) (sub_nonpos.mpr hnorm))]
 
 private theorem tailInner_one_of_mem_compl_closedBall (R : ℕ) (x : ℂ)
     (hx : x ∈ (Metric.closedBall (0 : ℂ) ((R : ℝ) + 1))ᶜ) : tailInnerFun R x = 1 := by
@@ -387,8 +375,7 @@ theorem admissibleCircleVersion_expected_total_le
     exact massCutoff_lintegral_tendsto (M ω)
   have hlim := lintegral_tendsto_of_tendsto_of_monotone
     (fun n => (hAmeas n).aemeasurable) hAmono hAlim
-  have hbound : ∀ n, ∫⁻ ω, A n ω ∂P ≤ gmcReferenceMeasure Set.univ := hABound
-  exact le_of_tendsto' hlim hbound
+  exact le_of_tendsto' hlim (hABound)
 
 /-- An admissible whole-plane circle-chaos version is finite almost surely. -/
 theorem admissibleCircleVersion_finite_ae
@@ -533,9 +520,7 @@ theorem admissibleCircleVersion_to_IsGMCOf
     intro ε hε
     let B : ℝ := ‖f‖ + 1
     let q : ℝ≥0∞ := ENNReal.ofReal (ε / (3 * B))
-    have hB : 0 < B := by dsimp [B]; linarith [norm_nonneg f]
-    have hqpos : 0 < q := ENNReal.ofReal_pos.mpr (div_pos hε (by positivity))
-    have hq0 : q ≠ 0 := ne_of_gt hqpos
+    have hq0 : q ≠ 0 := ne_of_gt (ENNReal.ofReal_pos.mpr (div_pos hε (by positivity)))
     have hqtop : q ≠ ∞ := ENNReal.ofReal_ne_top
     let tail : ℕ → Set ℂ := fun n =>
       (Metric.closedBall (0 : ℂ) ((n + 1 : ℕ) : ℝ))ᶜ
@@ -572,8 +557,7 @@ theorem admissibleCircleVersion_to_IsGMCOf
           (∫ x, cutoffTest f (n + 1) x ∂regularizedGMC P Xc γ r ω) -
           (∫ x, cutoffTest f (n + 1) x ∂N ω)‖}) atTop (𝓝 0) := by
       let fc := cutoffTest f (n + 1)
-      have hfc : HasCompactSupport (fc : ℂ → ℝ) := cutoffTest_hasCompactSupport f (n + 1)
-      have hMlim := hM.2.2.2 fc hfc (Set.subset_univ _)
+      have hMlim := hM.2.2.2 fc (cutoffTest_hasCompactSupport f (n + 1)) (Set.subset_univ _)
       have hcut : ∀ r : ℝ,
           (fun ω => regularizedLogChaosTestMass P Set.univ
             (fun x => normPlus x ^ (-4 : ℝ))

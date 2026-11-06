@@ -25,9 +25,8 @@ theorem gmcReferenceMeasure_compl_closedBall_tendsto_zero :
     exact ((Metric.isClosed_closedBall (x := (0 : ℂ)) (ε := (n : ℝ))).measurableSet.compl).nullMeasurableSet
   have hanti : Antitone S := by
     intro n m hnm x hx
-    have hx' : x ∉ Metric.closedBall (0 : ℂ) m := hx
     intro hxclosed
-    apply hx'
+    apply (hx)
     apply Metric.mem_closedBall.mpr
     have hdist : dist x (0 : ℂ) ≤ (n : ℝ) := by
       simpa [Metric.mem_closedBall] using hxclosed

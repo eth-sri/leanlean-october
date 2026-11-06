@@ -171,8 +171,7 @@ theorem fieldChaosMoment_independent_common_scalar_factor
   have hfactor : ∀ᵐ u ∂P.prod Q,
       DOZZ.fieldChaosMass (P.prod Q) (fun ω x => Φ ω.1 x + c * ω.2) ν h γ u ^ p =
         F u.1 * H u.2 := by
-    have hfst : MeasurePreserving Prod.fst (P.prod Q) P := measurePreserving_fst
-    filter_upwards [hfst.quasiMeasurePreserving.ae hmassFinite] with u hu
+    filter_upwards [(measurePreserving_fst).quasiMeasurePreserving.ae hmassFinite] with u hu
     rw [fieldChaosMass_independent_common_scalar_factor P Φ hΦ ν h γ c u.1 u.2]
     change (ENNReal.ofReal (G u.2) * M u.1) ^ p = F u.1 * H u.2
     rw [ENNReal.mul_rpow_of_ne_top ENNReal.ofReal_ne_top hu]

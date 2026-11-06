@@ -3,6 +3,7 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
+public import DOZZ.SharedHyp
 
 public import DOZZ.Brownian.Lateral.CircleProjection
 public import DOZZ.GMC.CircleAverage
@@ -55,7 +56,7 @@ theorem originLateralChart_cutoff_lower (ρ ε : ℝ) (x : ℂ)
 radii outside the range used by the local admissibility statement. -/
 theorem originLateralCircleRegularization_measurableAtScale
     {Ω : Type*} [MeasurableSpace Ω] (Xc : Ω → ℂ → ℝ → ℝ)
-    (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
+    (hm : MeasurableCircleAvg Xc)
     (ρ : ℝ) (hρ : 0 < ρ) (ε : ℝ) :
     Measurable (fun p : Ω × ℂ => originLateralCircleRegularization Xc ρ p.1 ε p.2) :=
   (measurable_clampedCircleLateralSample Xc hm ρ hρ).comp
@@ -67,7 +68,7 @@ theorem originLateralCircleRegularization_gaussian
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
     (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
+    (hm : MeasurableCircleAvg Xc)
     (ρ : ℝ) (hρ : 0 < ρ) (n : ℕ) (q : Fin n → ℝ × ℂ) :
     IsCenteredJointlyGaussian P
       (fun ω i => originLateralCircleRegularization Xc ρ ω (q i).1 (q i).2) :=
@@ -139,7 +140,7 @@ theorem originLateralCircleRegularization_gaussianCovariance
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
     (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
+    (hm : MeasurableCircleAvg Xc)
     (ρ : ℝ) (hρ : 0 < ρ) (ε δ : ℝ) (x y : ℂ) :
     gaussianCovariance P (fun ω => originLateralCircleRegularization Xc ρ ω ε x)
       (fun ω => originLateralCircleRegularization Xc ρ ω δ y) =
@@ -185,7 +186,7 @@ theorem originLateralCircleRegularization_covarianceBound
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
     (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
+    (hm : MeasurableCircleAvg Xc)
     (ρ : ℝ) (hρ : 0 < ρ) (K : Set ℂ) (hK : IsCompact K)
     (hKU : K ⊆ originLateralChart ρ) :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ ε δ, 0 < ε → ε ≤ min ρ 1 → 0 < δ → δ ≤ min ρ 1 →
@@ -221,7 +222,7 @@ theorem originLateralCircleRegularization_coarseMixedBound
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
     (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
+    (hm : MeasurableCircleAvg Xc)
     (ρ : ℝ) (hρ : 0 < ρ) (K : Set ℂ) (hK : IsCompact K)
     (hKU : K ⊆ originLateralChart ρ) :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ k : ℕ, Real.exp (-(k : ℝ)) ≤ min ρ 1 →
@@ -243,7 +244,7 @@ theorem originLateralCircleRegularization_coarseVarianceBound
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
     (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
+    (hm : MeasurableCircleAvg Xc)
     (ρ : ℝ) (hρ : 0 < ρ) (K : Set ℂ) (hK : IsCompact K)
     (hKU : K ⊆ originLateralChart ρ) :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ k : ℕ, Real.exp (-(k : ℝ)) ≤ min ρ 1 → ∀ x ∈ K,
@@ -316,8 +317,8 @@ theorem originRadialPath_lateralChartCutoffs_indepFun
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
     (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
-    (hcont : ∀ᵐ ω ∂P, Continuous (fun p : ℂ × ℝ => Xc ω p.1 p.2))
+    (hm : MeasurableCircleAvg Xc)
+    (hcont : ContinuousCircleAvg P Xc)
     (ρ : ℝ) (hρ : 0 < ρ) :
     IndepFun (originRadialPath Xc)
       (fun ω => fun p : OriginLateralChartCutoff ρ =>
@@ -490,7 +491,7 @@ theorem originLateralCircleRegularization_offDiagonalLimit
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
     (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
+    (hm : MeasurableCircleAvg Xc)
     (ρ : ℝ) (hρ : 0 < ρ) :
     ∃ H : ℂ → ℂ → ℝ, ContinuousOn (Function.uncurry H)
       (originLateralChart ρ ×ˢ originLateralChart ρ) ∧
@@ -541,7 +542,7 @@ theorem originLateralCircleRegularization_fixedCoarseLimit
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
     (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
+    (hm : MeasurableCircleAvg Xc)
     (ρ : ℝ) (hρ : 0 < ρ) :
     ∃ coarseKernel : ℕ → ℂ → ℂ → ℝ,
       ∀ K, IsCompact K → K ⊆ originLateralChart ρ → ∀ k : ℕ,
@@ -592,7 +593,7 @@ theorem originLateralCircleRegularization_admissible
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
     (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
+    (hm : MeasurableCircleAvg Xc)
     (ρ : ℝ) (hρ : 0 < ρ) :
     IsAdmissibleLogRegularization P (originLateralChart ρ) originLateralPlaneDensity
       (min ρ 1) (originLateralCircleRegularization Xc ρ) := by
@@ -684,7 +685,7 @@ noncomputable def originLateralCutoffPath
 /-- One probability-one event identifies every coordinate of the packed cutoff path. -/
 theorem originLateralCutoffPath_eval_ae
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hcont : ∀ᵐ ω ∂P, Continuous (fun p : ℂ × ℝ => Xc ω p.1 p.2))
+    (hcont : ContinuousCircleAvg P Xc)
     (ρ : ℝ) (hρ : 0 < ρ) :
     ∀ᵐ ω ∂P, ∀ p : OriginLateralCutoffDomain ρ,
       originLateralCutoffPath Xc ρ ω p = clampedCircleLateralSample Xc ρ ω p.1.val
@@ -699,8 +700,8 @@ theorem originLateralCutoffPath_eval_ae
 cutoff path as a continuous-function-valued random variable. -/
 theorem originLateralCutoffPath_aemeasurable
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
-    (hcont : ∀ᵐ ω ∂P, Continuous (fun p : ℂ × ℝ => Xc ω p.1 p.2))
+    (hm : MeasurableCircleAvg Xc)
+    (hcont : ContinuousCircleAvg P Xc)
     (ρ : ℝ) (hρ : 0 < ρ) : AEMeasurable (originLateralCutoffPath Xc ρ) P := by
   obtain ⟨D, hDc, hDd⟩ := TopologicalSpace.exists_countable_dense (OriginLateralCutoffDomain ρ)
   let _ := hDc.to_subtype
@@ -734,8 +735,8 @@ theorem originRadialPath_lateralCutoffPath_indepFun
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
     (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
-    (hcont : ∀ᵐ ω ∂P, Continuous (fun p : ℂ × ℝ => Xc ω p.1 p.2))
+    (hm : MeasurableCircleAvg Xc)
+    (hcont : ContinuousCircleAvg P Xc)
     (ρ : ℝ) (hρ : 0 < ρ) :
     IndepFun (originRadialPath Xc) (originLateralCutoffPath Xc ρ) P := by
   obtain ⟨D, hDc, hDd⟩ := TopologicalSpace.exists_countable_dense (OriginLateralCutoffDomain ρ)

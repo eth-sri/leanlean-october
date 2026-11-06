@@ -3,6 +3,7 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
+public import DOZZ.SharedHyp
 
 public import DOZZ.FourPoint.BPZ.UnreflectedA
 public import DOZZ.FourPoint.BPZ.StructureConstantAnalytic
@@ -105,9 +106,8 @@ theorem bpz_analyticAt_shift_lhs {Ω : Type*} [MeasurableSpace Ω] (P : Measure 
         rw [hQ]
         have : t < 2 / γ := hhi
         linarith only [this, hγ]
-      have e2 : 0 < 2 / γ * (Q γ - α₂) := mul_pos (by positivity) (by linarith only [hα₂])
       have e3 : 0 < 2 / γ * (Q γ - α₃) := mul_pos (by positivity) (by linarith only [hα₃])
-      exact lt_min (by positivity) (lt_min e1 (lt_min e2 e3))
+      exact lt_min (by positivity) (lt_min e1 (lt_min (mul_pos (by positivity) (by linarith only [hα₂])) e3))
     refine ⟨⟨?_, hα₂, hα₃, by linarith only [hsE, hmin]⟩, hsE⟩
     rw [hQ]
     have : t < 2 / γ := hhi
@@ -135,8 +135,6 @@ theorem bpz_analyticAt_shift_rhs {Ω : Type*} [MeasurableSpace Ω] (P : Measure 
   have hγsq : γ ^ 2 < 4 := by linarith only [hγt0, hγt1]
   have hpos : 0 < γ ^ 2 / 4 := by positivity
   -- the three arguments of `lFun` are not integers
-  have hnot : ∀ {x : ℝ} {n : ℤ}, (n : ℝ) < x → x < n + 1 → x ≠ n := fun h1 _ h => by
-    rw [h] at h1; exact lt_irrefl _ h1
   have harg1 : ∀ n : ℤ, γ * t / 2 ≠ n := by
     intro n hn
     have h0 : (0 : ℝ) < n := by rw [← hn]; linarith only [hγt0, hpos]
@@ -173,9 +171,8 @@ theorem bpz_analyticAt_shift_rhs {Ω : Type*} [MeasurableSpace Ω] (P : Measure 
         rw [hQ]
         have : t < 2 / γ := hhi
         linarith only [this]
-      have e2 : 0 < 2 / γ * (Q γ - α₂) := mul_pos (by positivity) (by linarith only [hα₂])
       have e3 : 0 < 2 / γ * (Q γ - α₃) := mul_pos (by positivity) (by linarith only [hα₃])
-      exact lt_min (by positivity) (lt_min e1 (lt_min e2 e3))
+      exact lt_min (by positivity) (lt_min e1 (lt_min (mul_pos (by positivity) (by linarith only [hα₂])) e3))
     refine ⟨⟨?_, hα₂, hα₃, by linarith only [hsE, hmin]⟩, hsE⟩
     rw [hQ]
     have : t < 2 / γ := hhi
@@ -190,7 +187,7 @@ theorem bpz_shift_small_gamma {Ω : Type*} [MeasurableSpace Ω] {H : ℂ → ℂ
     (hH : IsGaussHypergeometricFamily H) (P : Measure Ω) (X : Ω → Distr) (M : Ω → Measure ℂ)
     (γ μ α₁ α₂ α₃ : ℝ) (hγ : 0 < γ) (hγsq : γ ^ 2 < 2) (hμ : 0 < μ)
     (hαlo : γ / 2 < α₁) (hαhi : α₁ < 2 / γ) (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ)
-    (hs : 2 * Q γ + γ / 2 < α₁ + α₂ + α₃) (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M)
+    (hs : SeibergSlack γ α₁ α₂ α₃) (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M)
     (hdiag : ∀ t : ℝ, γ / 2 < t → t < 2 / γ → 2 * Q γ + γ / 2 < t + α₂ + α₃ →
       ∀ z ∈ gaussCutPlane, fourPointT P M γ μ (-(γ / 2)) t α₂ α₃ z =
         structureConstant P M γ μ (t - γ / 2) α₂ α₃ *
@@ -207,11 +204,6 @@ theorem bpz_shift_small_gamma {Ω : Type*} [MeasurableSpace Ω] {H : ℂ → ℂ
           structureConstant P M γ μ (α₁ + γ / 2) α₂ α₃ := by
   have hγ2 : γ < 2 := lt_of_pow_lt_pow_left₀ 2 zero_le_two (by linarith only [hγsq])
   set J : Set ℝ := {t | γ / 2 < t ∧ t < 2 / γ ∧ 2 * Q γ + γ / 2 < t + α₂ + α₃} with hJ
-  have hJo : IsOpen J :=
-    (isOpen_lt (f := fun _ : ℝ => γ / 2) (g := fun t : ℝ => t) continuous_const
-      continuous_id).inter ((isOpen_lt (f := fun t : ℝ => t) (g := fun _ : ℝ => 2 / γ)
-        continuous_id continuous_const).inter (isOpen_lt (f := fun _ : ℝ => 2 * Q γ + γ / 2)
-          (g := fun t : ℝ => t + α₂ + α₃) continuous_const (by fun_prop)))
   have hJc : IsPreconnected J := by
     have hord : J.OrdConnected := ⟨fun x hx y hy z hz =>
       ⟨lt_of_lt_of_le hx.1 hz.1, lt_of_le_of_lt hz.2 hy.2.1, by linarith only [hx.2.2, hz.1]⟩⟩

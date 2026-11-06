@@ -32,9 +32,8 @@ theorem normalizedDiskPrimitive_sub_center_eq_segmentIntegral
   have hr : 0 < r := by
     have hdist := Metric.mem_ball.mp hz
     exact lt_of_le_of_lt (dist_nonneg) hdist
-  have hc : c ∈ Metric.ball c r := Metric.mem_ball_self hr
   have hseg : MapsTo g (Icc (0 : ℝ) 1) (Metric.ball c r) :=
-    (convex_ball c r).mapsTo_lineMap hc hz
+    (convex_ball c r).mapsTo_lineMap (Metric.mem_ball_self hr) hz
   have hderiv : ∀ t ∈ uIcc (0 : ℝ) 1, HasDerivAt F (f' t) t := by
     intro t ht
     have ht' : t ∈ Icc (0 : ℝ) 1 := by simpa [uIcc_of_le zero_le_one] using ht
@@ -50,8 +49,7 @@ theorem normalizedDiskPrimitive_sub_center_eq_segmentIntegral
         simpa [uIcc_of_le zero_le_one] using ht)
     change ContinuousOn (fun t => (z - c) • f (g t)) (uIcc (0 : ℝ) 1)
     exact continuousOn_const.smul hfcomp
-  have hint : IntervalIntegrable f' volume 0 1 := hfg.intervalIntegrable
-  have heq := intervalIntegral.integral_eq_sub_of_hasDerivAt hderiv hint
+  have heq := intervalIntegral.integral_eq_sub_of_hasDerivAt hderiv (hfg.intervalIntegrable)
   have hF0 : F 0 = y := by
     simp [F, g, normalizedDiskPrimitive_apply_center]
   have hF1 : F 1 = normalizedDiskPrimitive c r f y hf z := by

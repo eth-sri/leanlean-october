@@ -31,7 +31,6 @@ theorem regularizedGMC_symmetryRepinned
         (fun x => ENNReal.ofReal (Real.exp (-γ * Xc ω 1 0 +
           γ ^ 2 * symmetryCirclePotentialMean r x + 4 * symmetryReflectionPotential x))) := by
   let : IsProbabilityMeasure P := hX.1
-  let Z := fun ω x r => Xc ω (1 - x) r - Xc ω 1 0
   have hZ := isCircleAverage_symmetryRepinned P X hX Xc hXc
   have hY := isEquatorGFF_symmetryRepinnedField P X hX Xc hXc
   have hvar : Measurable (fun x : ℂ => ∫ ω', Xc ω' x r ^ 2 ∂P) := by

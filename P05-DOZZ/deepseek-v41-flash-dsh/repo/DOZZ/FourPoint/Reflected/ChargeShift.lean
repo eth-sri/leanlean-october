@@ -30,9 +30,8 @@ theorem reflected_coulombWeight_charge_shift (γ a α₁ α₂ α₃ : ℝ) (z x
     ENNReal.ofReal ((normPlus x / ‖x‖) ^ (γ * a)) *
       coulombWeight γ ![-γ / 2, α₁, α₂] ![z, 0, 1] α₃ x =
         coulombWeight γ ![-γ / 2, α₁ + a, α₂] ![z, 0, 1] α₃ x := by
-  have hn : 0 < ‖x‖ := norm_pos_iff.mpr hx
   have hp : 0 < normPlus x := lt_of_lt_of_le zero_lt_one (le_max_left _ _)
-  have hd : 0 < normPlus x / ‖x‖ := div_pos hp hn
+  have hd : 0 < normPlus x / ‖x‖ := div_pos hp (norm_pos_iff.mpr hx)
   simp only [coulombWeight, Fin.prod_univ_succ, Matrix.cons_val_zero,
     Matrix.cons_val_succ, Fin.prod_univ_zero, mul_one, sub_zero]
   rw [coulombWeight_rpow_ofReal hd, coulombWeight_rpow_ofReal hd]

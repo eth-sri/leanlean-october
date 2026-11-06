@@ -30,7 +30,6 @@ theorem fusion_weightedMoment_location_transfer
   let T : ℝ≥0∞ := ENNReal.ofReal (Real.exp (γ ^ 2 * (2 * (Real.log 3 +
       2 * Real.log (1 + R))) / 2 * |p ^ 2 - p|)) *
       ENNReal.ofReal ((1 + R) ^ 4) ^ |p|
-  have hB : MeasurableSet (Metric.ball z ρ) := Metric.isOpen_ball.measurableSet
   have hN : ∀ N : ℕ, ∫⁻ ω, (∫⁻ x in Metric.ball z ρ,
       (insertionTruncWeight γ α N (x - z) : ℝ≥0∞) ∂M ω) ^ p ∂P ≤
         T * weightedGmcBallMoment P M γ α z₀ ρ p := by
@@ -52,7 +51,7 @@ theorem fusion_weightedMoment_location_transfer
       (insertionTruncWeight γ α N (x - z) : ℝ≥0∞) ∂M ω) ^ p) P := fun N =>
     (gmc_setLIntegral_aemeasurable P X hX γ hγ hγ2 M hM _
       (measurable_coe_nnreal_ennreal.comp ((measurable_insertionTruncWeight γ α N).comp
-        (measurable_id.sub_const z))) _ hB).pow_const p
+        (measurable_id.sub_const z))) _ (Metric.isOpen_ball.measurableSet)).pow_const p
   have hmono : ∀ᵐ ω ∂P, Monotone fun N : ℕ => (∫⁻ x in Metric.ball z ρ,
       (insertionTruncWeight γ α N (x - z) : ℝ≥0∞) ∂M ω) ^ p := by
     refine Eventually.of_forall fun ω m n hmn => ENNReal.rpow_le_rpow ?_ hp.le
@@ -84,7 +83,6 @@ theorem fusion_weightedMoment_small_uniform
   change 0 < ξ ∧ _
   have hp4 := (lt_min_iff.mp hpRange).1
   have hpin := (lt_min_iff.mp hpRange).2
-  have hsq : 0 < γ ^ 2 := sq_pos_of_pos hγ
   have hξ : 0 < ξ := by
     rw [div_mul_eq_mul_div] at hpin
     have h := (lt_div_iff₀ hγ).mp hpin

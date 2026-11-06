@@ -26,7 +26,6 @@ theorem fusion_taylor_parameters (γ α₁ : ℝ) (hγ : 0 < γ)
   have hβ : γ * α₁ < 2 := by
     have := (lt_div_iff₀ hγ).mp hhi
     nlinarith
-  have hlo' := mul_lt_mul_of_pos_left hlo hγ
   rw [fusion_exponent_eq γ α₁ hγ.ne']
   refine ⟨by positivity, by nlinarith, hβ, by linarith, by nlinarith, by nlinarith⟩
 

@@ -87,13 +87,12 @@ theorem abkLGFCovarianceConstant_eq_gammaFormula (d : Nat) (hd : 0 < d) :
   have hs_pos : 0 < s := by
     dsimp [s]
     positivity
-  have hs_ne : s ≠ 0 := hs_pos.ne'
   have hgamma_ne : Real.Gamma s ≠ 0 :=
     (Real.Gamma_pos_of_pos hs_pos).ne'
   have hd_real_ne : (d : ℝ) ≠ 0 := by exact_mod_cast (ne_of_gt hd)
   have hgamma : Real.Gamma ((d : ℝ) / 2 + 1) =
       ((d : ℝ) / 2) * Real.Gamma ((d : ℝ) / 2) := by
-    exact Real.Gamma_add_one hs_ne
+    exact Real.Gamma_add_one (hs_pos.ne')
   have htwo :
       2 ^ (1 - (d : ℝ)) = (2 : ℝ) / 2 ^ d := by
     calc

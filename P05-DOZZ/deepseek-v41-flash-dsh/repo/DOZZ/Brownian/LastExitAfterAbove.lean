@@ -57,8 +57,7 @@ theorem conditionedPositiveEventuallyBelow_measure_zero
         htail
         (Filter.Eventually.of_forall fun _ => measureReal_nonneg)
         hbound
-    have hreal : P.real E = 0 := tendsto_nhds_unique hconst hlim
-    exact (measureReal_eq_zero_iff (measure_ne_top _ _)).1 hreal
+    exact (measureReal_eq_zero_iff (measure_ne_top _ _)).1 (tendsto_nhds_unique hconst hlim)
   have hnull : P (⋃ N : ℕ, conditionedPositiveBelowAfter c N) = 0 :=
     measure_iUnion_null hzero
   have heq : conditionedPositiveEventuallyBelow c =
@@ -83,16 +82,12 @@ theorem ae_negativeConditionedPath_above_after_lastExit
     measure_eq_zero_iff_ae_notMem.mp hnotlow
   filter_upwards [hgood, hnotlowAE] with p hp hpn
   rcases hp with ⟨hnonempty, hbounded⟩
-  have hlast : p (negativeLastExitTime p (c : ℝ)) = -(c : ℝ) :=
-    negativeLastExitTime_mem_of_nonempty_bddAbove p (c : ℝ) hnonempty hbounded
   have hnohit : ∀ u : ℝ≥0, negativeLastExitTime p (c : ℝ) < u →
       p u ≠ -(c : ℝ) := by
     intro u hu hpu
-    have huL : u ≤ negativeLastExitTime p (c : ℝ) := le_csSup hbounded hpu
-    exact (not_le_of_gt hu) huL
+    exact (not_le_of_gt hu) (le_csSup hbounded hpu)
   intro t ht
   by_contra hnot
-  have hle : -(p t) ≤ (c : ℝ) := le_of_not_gt hnot
   have hlt : -(p t) < (c : ℝ) := by
     by_contra heq
     have hval : p t = -(c : ℝ) := by linarith
@@ -103,22 +98,19 @@ theorem ae_negativeConditionedPath_above_after_lastExit
     let T : ℝ≥0 := ((n + 1 : ℕ) : ℝ≥0)
     have htT : t ≤ T := by
       apply NNReal.coe_le_coe.mp
-      have hNreal : (t : ℝ) < (N : ℝ) := hN
       have hnreal : (N : ℝ) ≤ ((n + 1 : ℕ) : ℝ) := by
         exact_mod_cast Nat.le_trans hn (Nat.le_succ n)
       dsimp [T]
-      exact hNreal.le.trans hnreal
+      exact (hN).le.trans hnreal
     by_contra hT
-    have hTgt : (c : ℝ) < -(p T) := lt_of_not_ge hT
     let f : ℝ≥0 → ℝ := fun s => -(p s)
     obtain ⟨u, hu, hfu⟩ := intermediate_value_Icc
       (a := t) (b := T) (f := f) htT p.continuous.neg.continuousOn
-      ⟨hlt.le, hTgt.le⟩
+      ⟨hlt.le, (lt_of_not_ge hT).le⟩
     have hhit : p u = -(c : ℝ) := by
       have hneg := congrArg (fun x : ℝ => -x) hfu
       simpa [f] using hneg
-    have htu : t ≤ u := hu.1
-    exact hnohit u (lt_of_lt_of_le ht htu) hhit
+    exact hnohit u (lt_of_lt_of_le ht (hu.1)) hhit
   exact hpn hEventually
 
 end DOZZ.Proofs

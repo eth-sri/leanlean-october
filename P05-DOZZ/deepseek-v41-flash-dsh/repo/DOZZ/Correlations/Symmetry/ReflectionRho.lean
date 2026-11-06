@@ -37,8 +37,7 @@ theorem symmetry_reflection_total_exponent (γ a b c : ℝ) (hγ : γ ≠ 0) :
 theorem symmetry_exp_mul_rpow (t p : ℝ) (A : ℝ≥0∞) :
     (ENNReal.ofReal (Real.exp t) * A) ^ p = ENNReal.ofReal (Real.exp (t * p)) * A ^ p := by
   rw [ENNReal.mul_rpow_eq_ite]
-  have h0 : ENNReal.ofReal (Real.exp t) ≠ 0 := (ENNReal.ofReal_pos.mpr (Real.exp_pos _)).ne'
-  simp only [h0, ENNReal.ofReal_ne_top, false_and, false_or, ite_false]
+  simp only [((ENNReal.ofReal_pos.mpr (Real.exp_pos _)).ne'), ENNReal.ofReal_ne_top, false_and, false_or, ite_false]
   rw [ENNReal.ofReal_rpow_of_pos (Real.exp_pos _), Real.rpow_def_of_pos (Real.exp_pos _), Real.log_exp]
 
 /-- The coupled corrected mass is the original canonical mass times the correlated scalar. -/

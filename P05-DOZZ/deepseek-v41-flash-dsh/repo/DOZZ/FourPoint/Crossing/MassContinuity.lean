@@ -95,12 +95,11 @@ theorem crossing_coulombMass_tendsto_seq (ν : Measure ℂ) (γ a b c : ℝ)
       Matrix.cons_val_succ, Fin.prod_univ_zero, mul_one]
     have hp : 0 < normPlus x := lt_of_lt_of_le zero_lt_one (le_max_left _ _)
     have hx0p : 0 < ‖x - 0‖ := by simpa only [sub_zero] using norm_pos_iff.mpr hx
-    have hx1p : 0 < ‖x - 1‖ := norm_pos_iff.mpr (sub_ne_zero.mpr hx1)
     have hr : ENNReal.rpow (ENNReal.ofReal (normPlus x / ‖x - 0‖)) (γ * a) *
         ENNReal.rpow (ENNReal.ofReal (normPlus x / ‖x - 1‖)) (γ * b) *
         ENNReal.rpow (ENNReal.ofReal (normPlus x)) (γ * c) ≠ ⊤ := by
       rw [coulombWeight_rpow_ofReal (div_pos hp hx0p),
-        coulombWeight_rpow_ofReal (div_pos hp hx1p), coulombWeight_rpow_ofReal hp]
+        coulombWeight_rpow_ofReal (div_pos hp (norm_pos_iff.mpr (sub_ne_zero.mpr hx1))), coulombWeight_rpow_ofReal hp]
       exact ENNReal.mul_ne_top (ENNReal.mul_ne_top ENNReal.ofReal_ne_top
         ENNReal.ofReal_ne_top) ENNReal.ofReal_ne_top
     simp only [mul_assoc] at hr ⊢

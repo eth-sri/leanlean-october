@@ -156,7 +156,6 @@ theorem eventuallyEq_nhdsNE_strip_of_eq_on_Ioo {h₁ h₂ : ℝ} (hh₁ : 0 < h�
     (hg : MeromorphicOn g (horizontalStrip h₂)) {a b : ℝ} (hab : a < b)
     (hfg : ∀ y ∈ Ioo a b, f (y : ℂ) = g (y : ℂ)) :
     ∀ z ∈ horizontalStrip (min h₁ h₂), f =ᶠ[𝓝[≠] z] g := by
-  have hh : 0 < min h₁ h₂ := lt_min hh₁ hh₂
   have hsub₁ : horizontalStrip (min h₁ h₂) ⊆ horizontalStrip h₁ := fun z hz => by
     simp only [horizontalStrip, mem_ofPred_eq] at hz ⊢
     exact lt_of_lt_of_le hz (min_le_left _ _)
@@ -165,7 +164,7 @@ theorem eventuallyEq_nhdsNE_strip_of_eq_on_Ioo {h₁ h₂ : ℝ} (hh₁ : 0 < h�
     exact lt_of_lt_of_le hz (min_le_right _ _)
   have hx₀ : (a + b) / 2 ∈ Ioo a b := ⟨by linarith only [hab], by linarith only [hab]⟩
   have hmem : (((a + b) / 2 : ℝ) : ℂ) ∈ horizontalStrip (min h₁ h₂) :=
-    ofReal_mem_horizontalStrip hh _
+    ofReal_mem_horizontalStrip (lt_min hh₁ hh₂) _
   have h0 : f =ᶠ[𝓝[≠] (((a + b) / 2 : ℝ) : ℂ)] g :=
     eventuallyEq_nhdsNE_of_eq_on_Ioo hx₀ (hf _ (hsub₁ hmem)) (hg _ (hsub₂ hmem)) hfg
   exact eventuallyEq_nhdsNE_of_isPreconnected (convex_horizontalStrip _).isPreconnected
@@ -463,7 +462,6 @@ theorem continuousAt_reflectionDOZZ_gamma {γ₀ μ α : ℝ} (hγ₀ : 0 < γ�
       (continuousAt_id.div_const 2)).sub continuousAt_const)).div_const 2
   have hpos := (reflectionExponent_in_subcritical_range γ₀ α hγ₀ hα).2.1
   have htα := reflectionGammaArg_mem_Ioo hγ₀ hα
-  have hbase : 0 < dozzBase γ₀ μ := dozzBase_pos hγ₀ hγ₀2 hμ
   have hG1 : ContinuousAt (fun γ : ℝ => Real.Gamma (-(γ * (Q γ - α) / 2))) γ₀ := by
     have hs : ∀ m : ℕ, -(γ₀ * (Q γ₀ - α) / 2) ≠ -m := by
       intro m hm
@@ -495,7 +493,7 @@ theorem continuousAt_reflectionDOZZ_gamma {γ₀ μ α : ℝ} (hγ₀ : 0 < γ�
       linarith only [hm, this, hpos]
     exact ContinuousAt.comp (g := Real.Gamma) (Real.differentiableAt_Gamma hs).continuousAt hp
   have hpowb : ContinuousAt (fun γ : ℝ => dozzBase γ μ ^ reflectionExponent γ α) γ₀ :=
-    (continuousAt_dozzBase_gamma hγ₀ hγ₀2 μ).rpow hp (Or.inl hbase.ne')
+    (continuousAt_dozzBase_gamma hγ₀ hγ₀2 μ).rpow hp (Or.inl (dozzBase_pos hγ₀ hγ₀2 hμ).ne')
   have hne2 : Real.Gamma (γ₀ * (Q γ₀ - α) / 2) ≠ 0 := (Real.Gamma_pos_of_pos htα.1).ne'
   have hne4 : Real.Gamma (reflectionExponent γ₀ α) ≠ 0 := (Real.Gamma_pos_of_pos hpos).ne'
   exact (hpowb.neg.mul (hG1.div hG2 hne2)).mul (hG3.div hG4 hne4)
@@ -532,11 +530,10 @@ theorem reflectionR_eq_reflectionDOZZ_of_irrational_of_continuousOn
   have hKgood : ∀ q ∈ Icc (γ₀ - δ / 2) (γ₀ + δ / 2) ×ˢ ({α₀} : Set ℝ),
       (0 < q.1 ∧ q.1 < 2 ∧ q.1 / 2 < q.2 ∧ q.2 < Q q.1) ∧ ReflectionPoleFree q.1 q.2 := by
     intro q hq
-    have hq2 : q.2 = α₀ := hq.2
     have hdist : dist q.1 γ₀ < δ := by
       rw [Real.dist_eq, abs_lt]
       constructor <;> linarith only [hq.1.1, hq.1.2, hδ]
-    rw [hq2]
+    rw [(hq.2)]
     exact hball hdist
   have hC := hcont _ (isCompact_Icc.prod isCompact_singleton) (fun q hq => (hKgood q hq).1)
     (fun q hq => (hKgood q hq).2)

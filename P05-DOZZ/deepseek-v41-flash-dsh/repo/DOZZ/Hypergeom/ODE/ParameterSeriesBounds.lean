@@ -23,7 +23,6 @@ theorem gaussParameterSeriesTerm_norm_succ_le
     (hc : ∀ k : ℕ, p.2.2 ≠ -(k : ℂ)) :
     ‖gaussParameterSeriesTerm p z (n + 1)‖ ≤
       q * ‖gaussParameterSeriesTerm p z n‖ := by
-  have hn0 : 0 < (n : ℝ) := lt_of_le_of_lt hR hRn
   have hnc : (n : ℂ) + p.2.2 ≠ 0 := by
     intro h
     have hcEq : p.2.2 = -((n : ℂ)) :=
@@ -121,10 +120,9 @@ theorem exists_nat_uniform_gaussParameterSeries_ratio_bound
     lt_of_lt_of_le (lt_of_le_of_lt (le_max_left _ _) hNreal) hnreal
   have hRlt : R < ε * (n : ℝ) := by
     simpa [mul_comm] using (div_lt_iff₀ hε).mp hRat
-  have ht : 0 ≤ R / (n : ℝ) := div_nonneg hR hnpos.le
   have htn : R / (n : ℝ) < ε := (div_lt_iff₀ hnpos).2 hRlt
   have hnear' := hnear (x := R / (n : ℝ)) (by
-    rw [Real.dist_eq, sub_zero, abs_of_nonneg ht]
+    rw [Real.dist_eq, sub_zero, abs_of_nonneg (div_nonneg hR hnpos.le)]
     exact htn)
   have hgBound : g (R / (n : ℝ)) < q := by
     rw [Real.dist_eq, hg0, abs_sub_lt_iff] at hnear'

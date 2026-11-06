@@ -17,7 +17,6 @@ theorem fusion_inverse_interpolation (a b p : ℝ) (ha : 0 < a) (hb : 0 < b) :
   have hfpos : ∀ t ∈ Icc (0 : ℝ) 1, 0 < f t := by
     intro t ht
     dsimp only [f]
-    have h1 : 0 ≤ t * b := mul_nonneg ht.1 hb.le
     have h2 : 0 ≤ (1 - t) * a := mul_nonneg (sub_nonneg.mpr ht.2) ha.le
     by_cases ht0 : t = 0
     · subst t; simpa using ha

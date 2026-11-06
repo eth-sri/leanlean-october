@@ -67,12 +67,11 @@ private theorem hasDerivAt_conditionedEntranceShape
     have hsinh := (Real.hasDerivAt_sinh (ν * y)).comp y harg
     have hprod := (hasDerivAt_id y).mul hsinh
     have hquot := hprod.div_const ν
-    have hsinhpos : 0 < Real.sinh (ν * y) := Real.sinh_pos_iff.mpr (mul_pos hνpos hy)
     have halg : (Real.sinh (ν * y) + y * (Real.cosh (ν * y) * ν)) / ν =
         (y * Real.sinh (ν * y) / ν) *
           (1 / y + conditionedKernelScore ν y) := by
       dsimp [conditionedKernelScore]
-      field_simp [hνpos.ne', hy.ne', hsinhpos.ne']
+      field_simp [hνpos.ne', hy.ne', (Real.sinh_pos_iff.mpr (mul_pos hνpos hy)).ne']
     have hshape : conditionedEntranceShape ν =
         (fun z : ℝ => z * Real.sinh (ν * z) / ν) := by
       funext z
@@ -101,7 +100,6 @@ private theorem conditionedEntranceScore_antitoneOn_state
       simp [conditionedEntranceScore, hν0]
     rw [hscore]
     have hy' : 0 < y := by simpa using hy
-    have hz' : 0 < z := by simpa using hz
     have hinv : 1 / z ≤ 1 / y := one_div_le_one_div_of_le hy'
         (by simpa using hyz)
     calc
@@ -266,9 +264,8 @@ private theorem conditionedPositiveEntranceDensity_shifted_factor
       Real.exp ((a ^ 2 - b ^ 2) * t / 2) *
         conditionedEntranceShiftedDensityRatio a b t d y *
           conditionedPositiveEntranceDensity a t y := by
-  have hb : 0 ≤ b := ha.trans hab
   have hyD : 0 < y + d := by linarith
-  rw [conditionedPositiveEntranceDensity_eq_shape hb ht hyD,
+  rw [conditionedPositiveEntranceDensity_eq_shape (ha.trans hab) ht hyD,
     conditionedPositiveEntranceDensity_eq_shape ha ht hy]
   dsimp [conditionedEntranceShiftedDensityRatio]
   have hshapeA : conditionedEntranceShape a y ≠ 0 :=
@@ -327,9 +324,8 @@ private theorem conditionedPositiveEntranceDensity_pos
     {ν t y : ℝ} (hν : 0 ≤ ν) (ht : 0 < t) (hy : 0 < y) :
     0 < conditionedPositiveEntranceDensity ν t y := by
   rw [conditionedPositiveEntranceDensity_eq_shape hν ht hy]
-  have hsqrt : 0 < Real.sqrt (2 / Real.pi) := Real.sqrt_pos.2 (by positivity)
   have hpow : 0 < t ^ (-(3 / 2 : ℝ)) := Real.rpow_pos_of_pos ht _
-  exact mul_pos (mul_pos (mul_pos hsqrt hpow)
+  exact mul_pos (mul_pos (mul_pos (Real.sqrt_pos.2 (by positivity)) hpow)
     (conditionedEntranceShape_pos hν hy)) (Real.exp_pos _)
 
 private theorem volume_map_add_right (d : ℝ) :
@@ -347,10 +343,9 @@ private theorem integrable_conditionedPositiveEntranceDensity_shifted
       (volume : Measure ℝ) := by
   have he : MeasurableEmbedding (fun y : ℝ => y + d) :=
     (Homeomorph.addRight d).isClosedEmbedding.measurableEmbedding
-  have hmap : (volume : Measure ℝ).map (fun y => y + d) = volume := volume_map_add_right d
   have hbase : Integrable (conditionedPositiveEntranceDensity ν t)
       ((volume : Measure ℝ).map (fun y => y + d)) := by
-    rw [hmap]
+    rw [(volume_map_add_right d)]
     exact integrable_conditionedPositiveEntranceDensity hν ht
   exact he.integrable_map_iff.mp hbase
 
@@ -359,7 +354,6 @@ private theorem conditionedPositiveEntranceDensity_shifted_integral_eq_one
     ∫ y : ℝ, conditionedPositiveEntranceDensity ν t (y + d) = 1 := by
   have he : MeasurableEmbedding (fun y : ℝ => y + d) :=
     (Homeomorph.addRight d).isClosedEmbedding.measurableEmbedding
-  have hmap : (volume : Measure ℝ).map (fun y => y + d) = volume := volume_map_add_right d
   calc
     ∫ y, conditionedPositiveEntranceDensity ν t (y + d) =
         ∫ y, conditionedPositiveEntranceDensity ν t y ∂((volume : Measure ℝ).map
@@ -368,7 +362,7 @@ private theorem conditionedPositiveEntranceDensity_shifted_integral_eq_one
             exact he.integral_map (conditionedPositiveEntranceDensity ν t)
     _ = ∫ y, conditionedPositiveEntranceDensity ν t y := by
           rw [show (volume : Measure ℝ).map
-            ((Homeomorph.addRight d).toMeasurableEquiv) = volume by exact hmap]
+            ((Homeomorph.addRight d).toMeasurableEquiv) = volume by exact (volume_map_add_right d)]
     _ = 1 := conditionedPositiveEntranceDensity_integral_eq_one hν ht
 
 private theorem isProbabilityMeasure_conditionedPositiveEntranceShiftedMeasure
@@ -436,8 +430,7 @@ private theorem entranceShift_cdf_superlevel_bddBelow
   intro x hx
   change u ≤ ProbabilityTheory.cdf μ x at hx
   by_contra hnot
-  have hxnonpos : x ≤ 0 := le_of_lt (lt_of_not_ge hnot)
-  rw [hzero x hxnonpos] at hx
+  rw [hzero x (le_of_lt (lt_of_not_ge hnot))] at hx
   linarith
 
 /-- Translating the larger-drift entrance density left by its drift increment gives a CDF that
@@ -452,7 +445,6 @@ theorem conditionedPositiveEntranceDensity_shifted_cdf_ge
   let g : ℝ → ℝ := fun y => conditionedPositiveEntranceDensity b t (y + d)
   let C : ℝ := Real.exp ((a ^ 2 - b ^ 2) * t / 2)
   let r : ℝ → ℝ := fun y => C * conditionedEntranceShiftedDensityRatio a b t d y
-  have hf : Integrable f (volume : Measure ℝ) := integrable_conditionedPositiveEntranceDensity ha ht
   have hg : Integrable g (volume : Measure ℝ) :=
     integrable_conditionedPositiveEntranceDensity_shifted (d := d) hb ht
   have hng : ∀ y, 0 ≤ g y := fun y =>
@@ -504,7 +496,7 @@ theorem conditionedPositiveEntranceDensity_shifted_cdf_ge
     dsimp [r]
     apply mul_le_mul_of_nonneg_left _ (le_of_lt (Real.exp_pos _))
     exact conditionedEntranceShiftedDensityRatio_antitoneOn ha hab ht hd hshift hy hz hyz
-  exact integral_Iic_ge_of_shiftedAntitoneDensityRatio hf hg hng hzero hunitf hunitg
+  exact integral_Iic_ge_of_shiftedAntitoneDensityRatio (integrable_conditionedPositiveEntranceDensity ha ht) hg hng hzero hunitf hunitg
     hmassPos hmassLe (by rfl) hfactor hrpos hratio z
 
 /-- The upper common-uniform drift bound for the conditioned entrance law. -/
@@ -517,7 +509,6 @@ theorem conditionedPositiveEntranceQuantile_drift_add
         (ProbabilityTheory.cdf (conditionedPositiveEntranceMeasure a t)) u + (b - a) * t := by
   have hb : 0 ≤ b := ha.trans hab
   let d := (b - a) * t
-  have hd : 0 ≤ d := mul_nonneg (sub_nonneg.mpr hab) ht.le
   have hdt : d / t = b - a := by
     dsimp [d]
     field_simp [ht.ne']
@@ -537,18 +528,14 @@ theorem conditionedPositiveEntranceQuantile_drift_add
     simp
   have hnonempty : {z | u ≤ ProbabilityTheory.cdf μsmall z}.Nonempty :=
     entranceShift_cdf_superlevel_nonempty hμsmall hu1
-  have hbddSmall : BddBelow {z | u ≤ ProbabilityTheory.cdf μsmall z} :=
-    entranceShift_cdf_superlevel_bddBelow hμsmall hu
-      (fun z hz => hzeroSmall z hz)
   have hcdfOrder : ∀ z, ProbabilityTheory.cdf μsmall z ≤ ProbabilityTheory.cdf μshift z := by
     intro z
     rw [conditionedPositiveEntranceMeasure_cdf_eq_integral ha ht,
       conditionedPositiveEntranceShiftedMeasure_cdf_eq_integral hb ht]
-    exact conditionedPositiveEntranceDensity_shifted_cdf_ge ha hab ht hd hdt
+    exact conditionedPositiveEntranceDensity_shifted_cdf_ge ha hab ht (mul_nonneg (sub_nonneg.mpr hab) ht.le) hdt
   have hquantShift : cdfGeneralizedQuantile (ProbabilityTheory.cdf μshift) u =
       cdfGeneralizedQuantile (ProbabilityTheory.cdf μlarge) u - d := by
     let S : Set ℝ := {z | u ≤ ProbabilityTheory.cdf μlarge z}
-    have hSnonempty : S.Nonempty := entranceShift_cdf_superlevel_nonempty hμlarge hu1
     have hzeroLarge (z : ℝ) (hz : z ≤ 0) : ProbabilityTheory.cdf μlarge z = 0 := by
       rw [conditionedPositiveEntranceMeasure_cdf_eq_integral hb ht]
       rw [setIntegral_congr_fun measurableSet_Iic
@@ -584,7 +571,7 @@ theorem conditionedPositiveEntranceQuantile_drift_add
         refine ⟨y, hy, ?_⟩
         rw [OrderIso.addRight_apply] at hz
         exact hz
-    have hmap := (OrderIso.addRight (-d)).map_csInf' hSnonempty hSbdd
+    have hmap := (OrderIso.addRight (-d)).map_csInf' (entranceShift_cdf_superlevel_nonempty hμlarge hu1) hSbdd
     have hmap' : sInf ((fun z : ℝ => z - d) '' S) = sInf S - d := by
       rw [himage, ← hmap, OrderIso.addRight_apply]
       ring
@@ -606,8 +593,7 @@ theorem conditionedPositiveEntranceQuantile_drift_add
     intro z hz
     change u ≤ ProbabilityTheory.cdf μshift z at hz
     by_contra hnot
-    have hbelow : z ≤ -d := le_of_lt (lt_of_not_ge hnot)
-    rw [hzeroShift z hbelow] at hz
+    rw [hzeroShift z (le_of_lt (lt_of_not_ge hnot))] at hz
     linarith
   have hqorder := cdfGeneralizedQuantile_antitone hcdfOrder hnonempty hshiftBdd
   rw [hquantShift] at hqorder

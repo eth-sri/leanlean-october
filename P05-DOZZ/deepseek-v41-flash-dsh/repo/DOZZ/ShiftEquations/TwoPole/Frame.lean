@@ -75,10 +75,9 @@ theorem totalMass_eq_coulombMass (γ η x : ℝ) (μ : Measure ℂ) (h0 : μ {0}
   refine lintegral_congr_ae ?_
   filter_upwards [e0, e1, e2] with y hy0 hy1 hy2
   have hw := poleWeight_eq_coulombWeight γ η hy1 hy2
-  have hn : 0 < ‖y‖ := norm_pos_iff.mpr hy0
   unfold coulombWeight at hw ⊢
   rw [Fin.prod_univ_succ, hw]
-  simp only [Fin.cons_zero, Fin.cons_succ, sub_zero, zeroTilt, ENNReal.ofReal_div_of_pos hn,
+  simp only [Fin.cons_zero, Fin.cons_succ, sub_zero, zeroTilt, ENNReal.ofReal_div_of_pos (norm_pos_iff.mpr hy0),
     mul_zero, ENNReal.rpow_eq_pow, ENNReal.rpow_zero, mul_one]
 
 /-- `α₂ + α₃ = 4/γ` turns the inversion constant into `2^{-4q}`. -/

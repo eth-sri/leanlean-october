@@ -69,8 +69,6 @@ theorem fourPointT_zero_eq_structureConstant {Ω : Type*} [MeasurableSpace Ω]
     (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M) :
     fourPointT P M γ μ (-χ) α₁ α₂ α₃ 0 =
       structureConstant P M γ μ (α₁ - χ) α₂ α₃ := by
-  have _hDomain : 0 < μ ∧ α₁ - χ < Q γ ∧ α₂ < Q γ ∧ α₃ < Q γ ∧
-      2 * Q γ < α₁ + α₂ + α₃ - χ := ⟨hμ, hα₁, hα₂, hα₃, hs⟩
   have hsExp : fourPointSExp γ (-χ) α₁ α₂ α₃ = sExp γ (α₁ - χ) α₂ α₃ := by
     unfold fourPointSExp sExp
     congr 1

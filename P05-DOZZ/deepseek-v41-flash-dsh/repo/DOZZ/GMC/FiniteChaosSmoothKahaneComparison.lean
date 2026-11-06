@@ -460,7 +460,6 @@ theorem kahaneSmoothInterpolation_integrand_nonpos_of_gaussian_ibp
     intro i j
     have hintD := hScoreInt i
     have hintK := hKInt i j
-    have hintField := hFieldDInt i j
     have hpoint (ω : ΩX × ΩY) : γ * fieldD ω i j =
         γ ^ 2 * K ω i j + if i = j then γ ^ 2 * score ω i else 0 := by
       simp only [fieldD, kahaneSumVectorFieldScoreDerivative,
@@ -473,18 +472,6 @@ theorem kahaneSmoothInterpolation_integrand_nonpos_of_gaussian_ibp
       · simp only [ite_eq_right hij]
         dsimp [score, K, kahaneSumVectorScore, finiteChaosVectorTestScore]
         ring
-    have hintRhs : Integrable (fun ω => γ ^ 2 * K ω i j +
-        if i = j then γ ^ 2 * score ω i else 0) μ := by
-      by_cases hij : i = j
-      · subst j
-        have hfun : (fun ω : ΩX × ΩY => γ ^ 2 * K ω i i +
-            if i = i then γ ^ 2 * score ω i else 0) =
-            fun ω => γ ^ 2 * K ω i i + γ ^ 2 * score ω i := by
-          funext ω
-          simp
-        rw [hfun]
-        exact (hintK.const_mul (γ ^ 2)).add (hintD.const_mul (γ ^ 2))
-      · simpa [hij] using hintK.const_mul (γ ^ 2)
     calc
       Hbar i j = ∫ ω, γ * fieldD ω i j ∂μ := by
         dsimp [Hbar]

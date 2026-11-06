@@ -77,7 +77,6 @@ theorem tendsto_lintegral_abs_sub_realizationMeasure (f : ℂ → ℝ) (hf : Con
     Tendsto (fun r => ∫⁻ ω, ENNReal.ofReal |admissibleCutoffIntegral P U dens Y γ r f ω -
       ∫ x, f x ∂realizationMeasure P U hU dens ε₀ Y hY T γ R e he c ω| ∂P) atTop (𝓝 0) := by
   obtain ⟨Lf, hLf⟩ := hf.bounded_above_of_compact_support hfc
-  have hfL : ∀ x, |f x| ≤ Lf := fun x => by rw [← Real.norm_eq_abs]; exact hLf x
   have hfK : ∀ x ∉ tsupport f, f x = 0 := fun x hx => image_eq_zero_of_notMem_tsupport hx
   have hgood := ae_mem_realizationGoodSet P U dens ε₀ Y hY T γ R hR e c hc hcut
   have hFm (r : ℝ) : Measurable (admissibleCutoffIntegral P U dens Y γ r f) :=
@@ -115,7 +114,7 @@ theorem tendsto_lintegral_abs_sub_realizationMeasure (f : ℂ → ℝ) (hf : Con
         apply Eventually.frequently
         filter_upwards [(tendsto_fastCutoff R e c hc).eventually (eventually_ge_atTop R₀)]
           with j hj
-        have h := hR₀ r (fastCutoff R e c j) hr hj γ rfl f hf.measurable hfL hfK
+        have h := hR₀ r (fastCutoff R e c j) hr hj γ rfl f hf.measurable (fun x => by rw [← Real.norm_eq_abs]; exact hLf x) hfK
         rw [ENNReal.ofReal_toReal hεtop] at h
         exact h.le
 
@@ -321,19 +320,17 @@ theorem interleavedRegularization_admissible
     have hεZ : ε ≤ ε₁ := hεc.trans (min_le_right _ _)
     have hδY : δ ≤ ε₀ := hδc.trans (min_le_left _ _)
     have hδZ : δ ≤ ε₁ := hδc.trans (min_le_right _ _)
-    have hCY' : CY ≤ max CY (max CZ CX) := le_max_left _ _
-    have hCZ' : CZ ≤ max CY (max CZ CX) := le_trans (le_max_left _ _) (le_max_right _ _)
     have hCX' : CX ≤ max CY (max CZ CX) := le_trans (le_max_right _ _) (le_max_right _ _)
     by_cases hsε : secondScale ε <;> by_cases hsδ : secondScale δ
     · simp only [W, interleavedRegularization, hsε, hsδ, ite_true]
-      exact (hZ' ε δ hε hεZ hδ hδZ x hx y hy).trans hCZ'
+      exact (hZ' ε δ hε hεZ hδ hδZ x hx y hy).trans (le_trans (le_max_left _ _) (le_max_right _ _))
     · simp only [W, interleavedRegularization, hsε, hsδ, ite_true, ite_false]
       rw [gaussianCovariance_comm, norm_sub_rev, max_comm ε δ]
       exact (hX' δ ε hδ hδY hε hεZ y hy x hx).trans hCX'
     · simp only [W, interleavedRegularization, hsε, hsδ, ite_true, ite_false]
       exact (hX' ε δ hε hεY hδ hδZ x hx y hy).trans hCX'
     · simp only [W, interleavedRegularization, hsε, hsδ, ite_false]
-      exact (hY' ε δ hε hεY hδ hδY x hx y hy).trans hCY'
+      exact (hY' ε δ hε hεY hδ hδY x hx y hy).trans (le_max_left _ _)
   · intro K hK hKU
     obtain ⟨C, hC, hvar⟩ := hY.coarseVarianceBound K hK hKU
     refine ⟨C, hC, fun k hk x hx => ?_⟩
@@ -542,8 +539,6 @@ theorem admissibleLogRegularization_GMC_unique_ae
       have hjs : max RY (max RZ RW) ≤ s := by
         have : (0 : ℝ) ≤ j := Nat.cast_nonneg j
         linarith
-      have hRYr : RY ≤ r := (le_max_left _ _).trans hjr
-      have hRZs : RZ ≤ s := ((le_max_left _ _).trans (le_max_right _ _)).trans hjs
       have hRWr : RW ≤ r := ((le_max_right _ _).trans (le_max_right _ _)).trans hjr
       have hRWs : RW ≤ s := ((le_max_right _ _).trans (le_max_right _ _)).trans hjs
       have hYmeas := admissibleCutoffIntegral_measurable P U dens ε₀ Y hY γ r f
@@ -557,10 +552,10 @@ theorem admissibleLogRegularization_GMC_unique_ae
           admissibleCutoffIntegral_interleaved_odd_half] at h
         exact h
       have hend : ∫⁻ ω, ENNReal.ofReal |admissibleCutoffIntegral P U dens Z γ s f ω -
-          ∫ x, f x ∂N ω| ∂P ≤ ENNReal.ofReal ε := hRZ s hRZs
+          ∫ x, f x ∂N ω| ∂P ≤ ENNReal.ofReal ε := hRZ s (((le_max_left _ _).trans (le_max_right _ _)).trans hjs)
       have hstart : ∫⁻ ω, ENNReal.ofReal |∫ x, f x ∂M ω -
           admissibleCutoffIntegral P U dens Y γ r f ω| ∂P ≤ ENNReal.ofReal ε := by
-        have h := hRY r hRYr
+        have h := hRY r ((le_max_left _ _).trans hjr)
         refine le_of_eq_of_le ?_ h
         congr 1
         funext ω
@@ -585,8 +580,7 @@ theorem admissibleLogRegularization_GMC_unique_ae
       hzero
     filter_upwards [hae] with ω hω
     have h := ENNReal.ofReal_eq_zero.mp hω
-    have h' : |∫ x, f x ∂M ω - ∫ x, f x ∂N ω| = 0 := le_antisymm h (abs_nonneg _)
-    exact sub_eq_zero.mp (abs_eq_zero.mp h')
+    exact sub_eq_zero.mp (abs_eq_zero.mp (le_antisymm h (abs_nonneg _)))
   -- countable determination
   obtain ⟨K, hKc, hKU, -, -, hcof, f, hf, hdense⟩ :=
     DOZZ.Proofs.exists_countable_dense_admissible_tests U hU

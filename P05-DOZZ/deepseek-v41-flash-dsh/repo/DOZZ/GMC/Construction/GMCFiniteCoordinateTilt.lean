@@ -129,8 +129,6 @@ theorem equatorGFF_tilted_finiteGmcCoordinate_law_at_cutoff
       gmcTiltFiniteCoordinatePath s p.1 p.2) := measurable_gmcTiltFiniteCoordinatePath s
   apply Measure.ext
   intro A hA
-  let obs : (TestFn → ℝ) × Measure ℂ → (∀ i : {i // i ∈ s}, ℝ) := fun p =>
-    gmcTiltFiniteCoordinatePath s p.1 p.2
   let F : (TestFn → ℝ) → Measure ℂ → ℝ≥0∞ := fun q μ =>
     if gmcTiltFiniteCoordinatePath s q μ ∈ A then 1 else 0
   have hF : Measurable (fun p : (TestFn → ℝ) × Measure ℂ => F p.1 p.2) := by
@@ -139,7 +137,6 @@ theorem equatorGFF_tilted_finiteGmcCoordinate_law_at_cutoff
   have hEqInt := equatorGFF_tilted_test_regularizedGMC_cutoff_lintegral
     P X hX Xc hXc γ r L hL F hF
   have hPreLeft : MeasurableSet (leftPath ⁻¹' A) := hA.preimage hleft
-  have hPreRight : MeasurableSet (rightPath ⁻¹' A) := hA.preimage hright
   have hleftInt : (∫⁻ ω in leftPath ⁻¹' A, density ω ∂P) =
       ∫⁻ ω, density ω * F (field ω) (regularizedGMC P Xc γ r ω) ∂P := by
     rw [← lintegral_indicator hPreLeft]
@@ -154,7 +151,7 @@ theorem equatorGFF_tilted_finiteGmcCoordinate_law_at_cutoff
       P (rightPath ⁻¹' A) =
           ∫⁻ ω, (rightPath ⁻¹' A).indicator (fun _ => (1 : ℝ≥0∞)) ω ∂P := by
             symm
-            rw [lintegral_indicator_const hPreRight 1]
+            rw [lintegral_indicator_const (hA.preimage hright) 1]
             simp
       _ = ∫⁻ ω, F (fieldShift ω)
           ((regularizedGMC P Xc γ r ω).withDensity (fun z => ENNReal.ofReal

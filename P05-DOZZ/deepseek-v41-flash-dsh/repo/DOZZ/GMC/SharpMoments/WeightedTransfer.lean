@@ -46,7 +46,6 @@ theorem regularizedGMC_integral_l1_tendsto
     intro η hη
     have hη' : η = γ := by simpa [I] using hη
     simpa [hη'] using ⟨hγ, hγ2⟩
-  have hK : IsCompact K := isCompact_closedBall _ _
   have hMfam : ∀ η ∈ Set.Ioo (0 : ℝ) 2, IsGMCOf P X η (Mfam η) := by
     intro η hη
     simp only [Mfam, dite_eq_left hη]
@@ -58,7 +57,7 @@ theorem regularizedGMC_integral_l1_tendsto
       ∫⁻ ω, ENNReal.ofReal
         |∫ x, g x ∂regularizedGMC P Xc η r ω - ∫ x, g x ∂Mfam η ω| ∂P
   have hS : Tendsto S atTop (𝓝 0) :=
-    equatorGFF_GMC_uniform_L1 P X hX Xc hXc Mfam hMfam I hI hI2 K hK Lb
+    equatorGFF_GMC_uniform_L1 P X hX Xc hXc Mfam hMfam I hI hI2 K (isCompact_closedBall _ _) Lb
   have hbound (r : ℝ) :
       ∫⁻ ω, ENNReal.ofReal
         |∫ x, f x ∂regularizedGMC P Xc γ r ω - ∫ x, f x ∂M ω| ∂P ≤ S r := by

@@ -30,9 +30,8 @@ theorem reflected_outerMass_inverse_moment_tendsto
   have hw : 0 < w := by dsimp only [w]; positivity
   have hn : Tendsto (fun z : ℂ => ‖z‖) l (nhds 0) := by
     simpa only [norm_zero] using (continuous_norm.tendsto (0 : ℂ)).mono_left nhdsWithin_le_nhds
-  have hsmall : ∀ᶠ z in l, ‖z‖ < 1 := hn.eventually (gt_mem_nhds zero_lt_one)
   have hgeom : ∀ᶠ z in l, ‖z‖ ≤ 1 ∧ ‖z‖ ^ (1 - ξ) ≤ 1 ∧ ‖z‖ < ‖z‖ ^ (1 - ξ) := by
-    filter_upwards [hsmall, self_mem_nhdsWithin] with z hz hz0
+    filter_upwards [(hn.eventually (gt_mem_nhds zero_lt_one)), self_mem_nhdsWithin] with z hz hz0
     have hr := Real.rpow_le_rpow (norm_nonneg z) hz.le (sub_nonneg.mpr hξ₁.le)
     have hs := Real.rpow_lt_rpow_of_exponent_gt (norm_pos_iff.mpr hz0) hz
       (by linarith only [hξ] : 1 - ξ < 1)

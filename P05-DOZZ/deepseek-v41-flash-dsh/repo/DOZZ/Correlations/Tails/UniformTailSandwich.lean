@@ -70,8 +70,7 @@ theorem uniform_tail_sandwich_bound
     apply abs_le.mpr
     constructor <;> rw [add_mul,add_mul] <;> dsimp only at hs <;> linarith only [hs.1,hs.2,hlower,hU,herr₁,herr₂,hsmall]
   · have hx2' : x ≤ 2 := le_of_not_ge hx2
-    have hpone : x^(-p) ≤ 1 := Real.rpow_le_one_of_one_le_of_nonpos hx (neg_nonpos.mpr hp)
-    have hcx : c*x^(-p) ≤ cmax := (mul_le_of_le_one_right hc hpone).trans hcc
+    have hcx : c*x^(-p) ≤ cmax := (mul_le_of_le_one_right hc (Real.rpow_le_one_of_one_le_of_nonpos hx (neg_nonpos.mpr hp))).trans hcc
     have hcx0 : 0 ≤ c*x^(-p) := mul_nonneg hc (Real.rpow_nonneg hx0.le _)
     have hrough : |T x-c*x^(-p)| ≤ 1+cmax := by
       apply abs_le.mpr

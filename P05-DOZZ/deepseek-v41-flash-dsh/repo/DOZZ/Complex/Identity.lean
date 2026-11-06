@@ -280,9 +280,8 @@ theorem exists_closed_polydisc_subset_open {N : ℕ} (U : Set (Fin N → ℂ))
       complexPolydisc a R ⊆ U := by
   obtain ⟨ε, hε, hball⟩ := Metric.mem_nhds_iff.mp (hU.mem_nhds ha)
   let R : Fin N → ℝ := fun _ => ε / 2
-  have hR : ∀ i, 0 < R i := fun _ => half_pos hε
   have hclosed : Set.pi Set.univ (fun i => Metric.closedBall (a i) (R i)) ⊆ U :=
     (closed_pi_subset_ball a R ε hε (fun _ => half_lt_self hε)).trans hball
-  exact ⟨R, hR, hclosed, (complexPolydisc_subset_closed_pi a R).trans hclosed⟩
+  exact ⟨R, (fun _ => half_pos hε), hclosed, (complexPolydisc_subset_closed_pi a R).trans hclosed⟩
 
 end DOZZ.Proofs

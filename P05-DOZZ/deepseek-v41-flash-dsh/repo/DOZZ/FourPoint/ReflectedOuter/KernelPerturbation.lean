@@ -44,7 +44,6 @@ theorem reflected_rpow_near_one (b t : ℝ) (hb : 0 ≤ b) (hb₂ : b ≤ 2)
 theorem reflected_kernel_distance_ratio (γ α₁ α₂ α₃ : ℝ) (z x : ℂ) (hx : 0 < ‖x‖) :
     gammaHalfKernel γ α₁ α₂ α₃ z x =
       (‖x - z‖ / ‖x‖) ^ (γ ^ 2 / 2) * gammaHalfKernel γ α₁ α₂ α₃ 0 x := by
-  have hn : ‖x‖ ^ (γ ^ 2 / 2) ≠ 0 := (Real.rpow_pos_of_pos hx _).ne'
   unfold gammaHalfKernel
   rw [sub_zero, Real.div_rpow (norm_nonneg _) hx.le]
   field_simp

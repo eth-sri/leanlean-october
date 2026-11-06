@@ -58,11 +58,9 @@ theorem bpz_rpow_neg_two_nonneg {t : ℝ} (ht : 0 ≤ t) : 0 ≤ t ^ (-2 : ℝ) 
 
 theorem bpz_rpow_neg_two_le_four_mul {t s : ℝ} (ht : 0 < t) (hs : t / 2 ≤ s) :
     s ^ (-2 : ℝ) ≤ 4 * t ^ (-2 : ℝ) := by
-  have hs0 : 0 < s := lt_of_lt_of_le (by positivity) hs
-  rw [bpz_rpow_neg_two hs0.le, bpz_rpow_neg_two ht.le]
+  rw [bpz_rpow_neg_two (lt_of_lt_of_le (by positivity) hs).le, bpz_rpow_neg_two ht.le]
   have h1 : (t / 2) ^ 2 ≤ s ^ 2 := pow_le_pow_left₀ (by positivity) hs 2
-  have h2 : (s ^ 2)⁻¹ ≤ ((t / 2) ^ 2)⁻¹ := inv_anti₀ (by positivity) h1
-  calc (s ^ 2)⁻¹ ≤ ((t / 2) ^ 2)⁻¹ := h2
+  calc (s ^ 2)⁻¹ ≤ ((t / 2) ^ 2)⁻¹ := (inv_anti₀ (by positivity) h1)
     _ = 4 * (t ^ 2)⁻¹ := by
         field_simp
         norm_num
@@ -135,7 +133,6 @@ theorem bpz_mul_norm_le (z ξ : ℂ) :
     ‖ξ‖ * ‖ξ - 1‖ ≤ (1 + ‖z‖) * (1 + ‖z - 1‖) * (‖ξ - z‖ ^ 2 + 1) := by
   have hp := bpz_norm_le_add z ξ
   have hq := bpz_norm_sub_one_le_add z ξ
-  have ht : 0 ≤ ‖ξ - z‖ := norm_nonneg _
   have ha : 0 ≤ ‖z‖ := norm_nonneg _
   have hb : 0 ≤ ‖z - 1‖ := norm_nonneg _
   calc ‖ξ‖ * ‖ξ - 1‖ ≤ (‖ξ - z‖ + ‖z‖) * (‖ξ - z‖ + ‖z - 1‖) :=
@@ -161,7 +158,6 @@ theorem norm_bpzG_le {z ξ : ℂ} (hξ : ξ ≠ z) :
 theorem bpzG_div_norm_le (z ξ : ℂ) (hξz : ξ ≠ z) (hξ0 : ξ ≠ 0) :
     ‖bpzG z ξ‖ / ‖ξ‖ ≤ (1 + ‖z - 1‖) * (1 + ‖ξ - z‖ ^ (-2 : ℝ)) := by
   have ht : 0 < ‖ξ - z‖ := norm_pos_iff.2 (sub_ne_zero.2 hξz)
-  have hp : 0 < ‖ξ‖ := norm_pos_iff.2 hξ0
   have hb : 0 ≤ ‖z - 1‖ := norm_nonneg _
   apply bpz_le_mul_one_add_rpow ht
   rw [norm_bpzG_eq]
@@ -601,7 +597,6 @@ theorem bpz_exists_norm_fderiv_bpzG_mul_bpzCut_le (z : ℂ) :
   refine ⟨A₁ + 4 * C * A₂, by positivity, fun m hm ξ hξ => ?_⟩
   have h1 := bpz_norm_fderiv_bpzG_mul_bpzCut_le (m := m) hξ
   have hg' := hA₁ ξ hξ
-  have hs : 0 ≤ ‖ξ - z‖ ^ (-2 : ℝ) := bpz_rpow_neg_two_nonneg (norm_nonneg _)
   by_cases h01 : ξ = 0 ∨ ξ = 1
   · have hg0 : bpzG z ξ = 0 := by
       rcases h01 with rfl | rfl
@@ -617,7 +612,6 @@ theorem bpz_exists_norm_fderiv_bpzG_mul_bpzCut_le (z : ℂ) :
     have hg0 : 0 ≤ ‖bpzG z ξ‖ := norm_nonneg _
     have hx : 0 ≤ ‖bpzG z ξ‖ / ‖ξ - z‖ := by positivity
     have hw : 0 ≤ ‖bpzG z ξ‖ / ‖ξ - 1‖ := by positivity
-    have hy : 0 ≤ ‖bpzG z ξ‖ / ‖ξ‖ := by positivity
     have h2 : ‖bpzG z ξ‖ * ‖fderiv ℝ (bpzCut m z) ξ‖ ≤
         2 * C * (2 * (A₂ * (1 + ‖ξ - z‖ ^ (-2 : ℝ)))) := by
       calc ‖bpzG z ξ‖ * ‖fderiv ℝ (bpzCut m z) ξ‖
@@ -671,7 +665,6 @@ theorem bpz_norm_sub_le_near {z : ℂ} {H : ℂ → ℂ} {A : ℝ} (hA0 : 0 ≤ 
           exact mul_le_mul_of_nonneg_left
             (add_le_add le_rfl (bpz_rpow_neg_two_le_four_mul ht hwz)) hA0
   have hmv := hconv.norm_image_sub_le_of_norm_fderiv_le (fun w _ => hH w) hbound hxs hys
-  have hu : 0 ≤ ‖x - z‖ ^ (-2 : ℝ) := bpz_rpow_neg_two_nonneg (norm_nonneg _)
   rw [norm_sub_rev (H x)]
   calc ‖H y - H x‖ ≤ A * (1 + 4 * ‖x - z‖ ^ (-2 : ℝ)) * ‖y - x‖ := hmv
     _ = A * (1 + 4 * ‖x - z‖ ^ (-2 : ℝ)) * ‖x - y‖ := by rw [norm_sub_rev y x]

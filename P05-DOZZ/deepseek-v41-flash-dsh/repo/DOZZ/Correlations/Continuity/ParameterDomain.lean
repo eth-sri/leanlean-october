@@ -63,7 +63,6 @@ noncomputable def continuityChartWeightBCF : BoundedContinuousFunction ℂ ℝ�
 
 theorem continuityChartWeight_sum_one {x : ℂ} (hx : x ≠ 0) :
     continuityChartWeight x + continuityChartWeight x⁻¹ = 1 := by
-  have hn : 0 < ‖x‖ := norm_pos_iff.mpr hx
   have he : (2 - ‖x⁻¹‖) / (1 + ‖x⁻¹‖) = 1 - (2 - ‖x‖) / (1 + ‖x‖) := by
     rw [norm_inv]
     field_simp

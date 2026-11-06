@@ -214,18 +214,16 @@ private theorem exists_fderiv_bound {F : ℂ → ℝ} {z : ℂ}
 private theorem clamp_nonneg (a b : ℝ) (z x : ℂ) :
     0 ≤ min ‖x‖ 3 ^ a * (min ‖x‖ 3 / max ‖x + z‖ 1) ^ b := by
   have h0 : 0 ≤ min ‖x‖ 3 := le_min (norm_nonneg x) (by norm_num)
-  have h1 : 0 < max ‖x + z‖ 1 := lt_max_of_lt_right one_pos
-  exact mul_nonneg (Real.rpow_nonneg h0 a) (Real.rpow_nonneg (div_nonneg h0 h1.le) b)
+  exact mul_nonneg (Real.rpow_nonneg h0 a) (Real.rpow_nonneg (div_nonneg h0 (lt_max_of_lt_right one_pos).le) b)
 
 private theorem clamp_le {a b : ℝ} (ha : 0 ≤ a) (hb : 0 ≤ b) (z x : ℂ) :
     min ‖x‖ 3 ^ a * (min ‖x‖ 3 / max ‖x + z‖ 1) ^ b ≤ 3 ^ (a + b) := by
   have h0 : 0 ≤ min ‖x‖ 3 := le_min (norm_nonneg x) (by norm_num)
   have h1 : 1 ≤ max ‖x + z‖ 1 := le_max_right _ _
   have h3 : min ‖x‖ 3 ≤ 3 := min_le_right _ _
-  have h4 : min ‖x‖ 3 / max ‖x + z‖ 1 ≤ 3 := (div_le_self h0 h1).trans h3
   have h5 : 0 ≤ min ‖x‖ 3 / max ‖x + z‖ 1 := div_nonneg h0 (zero_le_one.trans h1)
   rw [Real.rpow_add (by norm_num)]
-  exact mul_le_mul (Real.rpow_le_rpow h0 h3 ha) (Real.rpow_le_rpow h5 h4 hb)
+  exact mul_le_mul (Real.rpow_le_rpow h0 h3 ha) (Real.rpow_le_rpow h5 ((div_le_self h0 h1).trans h3) hb)
     (Real.rpow_nonneg h5 b) (Real.rpow_nonneg (by norm_num) a)
 
 private theorem contDiffOn_clamp (a b : ℝ) {z : ℂ} (hz : ‖z‖ = 2) :
@@ -251,9 +249,8 @@ private theorem contDiffOn_clamp (a b : ℝ) {z : ℂ} (hz : ‖z‖ = 2) :
     (contDiffAt_id.add contDiffAt_const).norm ℝ hxz
   have hne1 : ‖x‖ ≠ 0 := by linarith
   have hne2 : ‖x + z‖ ≠ 0 := by linarith
-  have hq : ContDiffAt ℝ 1 (fun y : ℂ => ‖y‖ / ‖y + z‖) x := hn1.fun_div hn2 hne2
   exact ((hn1.rpow_const_of_ne hne1).mul
-    (hq.rpow_const_of_ne (div_ne_zero hne1 hne2))).contDiffWithinAt
+    ((hn1.fun_div hn2 hne2).rpow_const_of_ne (div_ne_zero hne1 hne2))).contDiffWithinAt
 
 private theorem uniform_of_clamp {a b : ℝ} {z : ℂ} {F : ℂ → ℝ}
     (hF : F = fun x : ℂ => min ‖x‖ 3 ^ a * (min ‖x‖ 3 / max ‖x + z‖ 1) ^ b)
@@ -263,9 +260,8 @@ private theorem uniform_of_clamp {a b : ℝ} {z : ℂ} {F : ℂ → ℝ}
   subst hF
   refine ⟨by norm_num, by norm_num, hD0, by norm_num, ?_⟩
   intro z' hz' F' hF'
-  have hz'' : z' = z := hz'
   have hF'' : F' = fun x : ℂ => min ‖x‖ 3 ^ a * (min ‖x‖ 3 / max ‖x + z‖ 1) ^ b := hF'
-  rw [hz'', hF'']
+  rw [(hz'), hF'']
   refine ⟨by fun_prop, fun x => ⟨clamp_nonneg a b z x, ?_⟩, hlow, ?_, hD⟩
   · rw [abs_of_nonneg (clamp_nonneg a b z x)]
     calc _ ≤ (3 : ℝ) ^ (a + b) := clamp_le ha hb z x

@@ -75,7 +75,6 @@ theorem holder_decay {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω} {U : ℕ
       ∫⁻ ω, U n ω * V ω ∂P ≤ ENNReal.ofReal (K * Real.exp (-(ζ / r) * n)) := by
   set q : ℝ := r / (r - 1) with hqdef
   have hr0 : 0 < r := by linarith
-  have hq0 : 0 < q := div_pos hr0 (by linarith)
   set I : ℝ := (∫⁻ ω, V ω ^ q ∂P).toReal with hI
   refine ⟨max C 0 ^ (1 / r) * I ^ (1 / q), by positivity, fun n => ?_⟩
   have hH := lintegral_mul_le_holder (hU n) hV hr
@@ -114,7 +113,6 @@ theorem lintegral_cutoffDomination_lt_top {Ω : Type*} [MeasurableSpace Ω] (P :
   have _ := hX.1
   have hη := (window_eta_pos hW).le
   have hηγ := window_eta_le_two_div hγ hγ2 hW
-  have hp := window_threshold_pos hγ hW
   have hroom := window_holder_room hγ hγ2 hW
   have hκ : 1 < 4 / γ ^ 2 := by
     rw [lt_div_iff₀ (by positivity)]
@@ -144,7 +142,6 @@ theorem lintegral_cutoffDomination_lt_top {Ω : Type*} [MeasurableSpace Ω] (P :
           poleLocalMass γ (2 / γ + η) (2 / γ - η) (M ω) ^ s) ≤
         162 * (M ω univ * poleTotalMass γ 0 (2 / γ + η) (2 / γ - η) (M ω) ^ s) := by
       intro ω
-      have hmax : max a 0 = 0 := max_eq_right ha0
       have h1 : cutoffTiltedMass γ η a n (M ω) ^ s ≤
           poleTotalMass γ 0 (2 / γ + η) (2 / γ - η) (M ω) ^ s :=
         ENNReal.rpow_le_rpow (cutoffTiltedMass_le_totalMass_zero hγ ha0 n (M ω)) hs0
@@ -152,7 +149,7 @@ theorem lintegral_cutoffDomination_lt_top {Ω : Type*} [MeasurableSpace Ω] (P :
           poleTotalMass γ 0 (2 / γ + η) (2 / γ - η) (M ω) ^ s :=
         ENNReal.rpow_le_rpow (localMass_le_totalMass γ η (M ω)) hs0
       have h3 := hreg ω
-      rw [hmax, mul_zero, zero_mul, Real.exp_zero, ENNReal.ofReal_one, mul_one] at h3
+      rw [(max_eq_right ha0), mul_zero, zero_mul, Real.exp_zero, ENNReal.ofReal_one, mul_one] at h3
       calc _ ≤ (81 * M ω univ) * (poleTotalMass γ 0 (2 / γ + η) (2 / γ - η) (M ω) ^ s +
             poleTotalMass γ 0 (2 / γ + η) (2 / γ - η) (M ω) ^ s) :=
             mul_le_mul' h3 (add_le_add h1 h2)

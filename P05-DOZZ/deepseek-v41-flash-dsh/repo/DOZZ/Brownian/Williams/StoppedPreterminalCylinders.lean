@@ -171,7 +171,6 @@ theorem SameStoppedPreterminalLaws.positive_cylinder_eq
       let J := I.erase t
       have htI : t ∈ I := Finset.max'_mem I hI
       have hJ : J ⊂ I := Finset.erase_ssubset htI
-      have hJpos : ∀ r ∈ J, 0 < r := fun r hr => hpos r (Finset.mem_of_mem_erase hr)
       let E := stoppedPathCylinder U I S
       let F := {z : StoppedBrownianPath | z.1 ≤ t}
       have hE := measurableSet_stoppedPathCylinder U hU I S hS
@@ -206,7 +205,7 @@ theorem SameStoppedPreterminalLaws.positive_cylinder_eq
                 rwa [hz t hzt]
               · exact hJ r (Finset.mem_erase.mpr ⟨hrt, hr⟩)
           rw [measure_congr (hevent μ hμend), measure_congr (hevent η hηend)]
-          exact ih J hJ (U ∩ Iic (t : ℝ)) (hU.inter measurableSet_Iic) hJpos
+          exact ih J hJ (U ∩ Iic (t : ℝ)) (hU.inter measurableSet_Iic) (fun r hr => hpos r (Finset.mem_of_mem_erase hr))
         · have hzero (M : Measure StoppedBrownianPath)
               (hend : ∀ᵐ z ∂M, ∀ r, z.1 ≤ r → -(z.2 r) = c) : M (E ∩ F) = 0 := by
             apply measure_eq_zero_iff_ae_notMem.mpr

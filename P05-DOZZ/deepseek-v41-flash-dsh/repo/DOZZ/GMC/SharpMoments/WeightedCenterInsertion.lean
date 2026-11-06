@@ -104,7 +104,6 @@ theorem weightedGmcBallMoment_center_eq_top_of_insertion
     weightedGmcBallMoment P M γ α 0 R p = ⊤ := by
   let _ : IsProbabilityMeasure P := hX.1
   by_contra hne
-  have hI : weightedGmcBallMoment P M γ α 0 R p < ⊤ := lt_top_iff_ne_top.mpr hne
   -- scaling by `1 / 2` with a nonpositive exponent can only increase the moment
   have hscale := gmc_weighted_ball_moment_scale P X hX γ M hM α (c := 1 / 2) (R := R)
     (by norm_num) (by norm_num) hR hR1 p
@@ -122,15 +121,14 @@ theorem weightedGmcBallMoment_center_eq_top_of_insertion
       weightedGmcBallMoment P M γ α 0 R p :=
     lintegral_mono fun ω => ENNReal.rpow_le_rpow
       (centerInsertion_mass_mono (M ω) γ α (by linarith)) hp.le
-  have hIhalf : weightedGmcBallMoment P M γ α 0 ((1 / 2) * R) p < ⊤ := lt_of_le_of_lt hle hI
+  have hIhalf : weightedGmcBallMoment P M γ α 0 ((1 / 2) * R) p < ⊤ := lt_of_le_of_lt hle (lt_top_iff_ne_top.mpr hne)
   -- the half-radius mass is almost surely finite
   have hWhalf := gmc_weighted_mass_aemeasurable P X hX γ hγ hγ2 M hM α 0 ((1 / 2) * R)
   have hWfull := gmc_weighted_mass_aemeasurable P X hX γ hγ hγ2 M hM α 0 R
   have hfin : ∀ᵐ ω ∂P, weightedGmcBallMass γ (M ω) α 0 ((1 / 2) * R) < ⊤ := by
     filter_upwards [ae_lt_top' (hWhalf.pow_const p) hIhalf.ne] with ω hω
     by_contra hcon
-    have htop : weightedGmcBallMass γ (M ω) α 0 ((1 / 2) * R) = ⊤ := not_lt_top_iff.mp hcon
-    rw [htop, ENNReal.top_rpow_of_pos hp] at hω
+    rw [(not_lt_top_iff.mp hcon), ENNReal.top_rpow_of_pos hp] at hω
     exact lt_irrefl _ hω
   -- the annulus ball has almost surely positive mass
   have hpos := gmc_ball_mass_pos_ae P X hX γ hγ hγ2 M hM (((3 * R / 4 : ℝ)) : ℂ) (R / 4)

@@ -3,6 +3,7 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
+public import DOZZ.SharedHyp
 
 public import DOZZ.Correlations.Tails.CanonicalLeadingTail
 public import DOZZ.Correlations.Tails.UniformCutMoments
@@ -23,8 +24,8 @@ namespace DOZZ.Proofs
 theorem oneInsertion_estimate_uniform
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
     (Xc : Ω → ℂ → ℝ → ℝ) (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
-    (hcont : ∀ᵐ ω ∂P, Continuous (fun p : ℂ × ℝ => Xc ω p.1 p.2))
+    (hm : MeasurableCircleAvg Xc)
+    (hcont : ContinuousCircleAvg P Xc)
     (M : Ω → Measure ℂ) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (hM : IsGMCOf P X γ M)
     (Kz : Set ℂ) (hKz : IsCompact Kz) (hz : ∀ z ∈ Kz, 2 ≤ ‖z‖)
     (Kα : Set ℝ) (hKα : IsCompact Kα) (hα : ∀ α ∈ Kα, γ/2 < α ∧ α < Q γ)
@@ -75,14 +76,12 @@ theorem oneInsertion_estimate_uniform
     γ hγ hγ2 M hM
   obtain ⟨hFm,hFb,hFl,_,_⟩ := hFamily.2.2.2.2 z hzk F hF
   have hFz : 0 < F z := hFamily.2.2.2.1.trans_le hFl
-  have hFzb : F z ≤ supBound := (le_abs_self _).trans (hFb z).2
   have hα0 : 0 ≤ α := (div_pos hγ (by norm_num : (0 : ℝ) < 2)).le.trans (hα α hαk).1.le
   have hp : 0 < reflectionExponent γ α :=
     (residue_critical_order_bounds γ α hγ (hα α hαk).1 (hα α hαk).2).1
   obtain ⟨hr,hrR,hpr,hmargin⟩ := hcuts α hαk
   have hpR : reflectionExponent γ α ≤ R := by
     nlinarith only [hpr,hr,hrR,ha0,hη]
-  have hbulk : r α*qH+g ≤ 4/γ^2 := hmargin.trans (min_le_right _ _)
   have hins : r α*qH+g ≤ 2/γ*(Q γ-(α-1/γ)) := by
     have hi : reflectionExponent γ α+2/γ^2 = 2/γ*(Q γ-(α-1/γ)) := by
       unfold reflectionExponent
@@ -93,7 +92,7 @@ theorem oneInsertion_estimate_uniform
   have hOrigMoment : (∫⁻ ω, originalAnnular M F z γ α (ρ/4) ω^(r α) ∂P) ≤ D₁ :=
     hOrig z hzk α (r α) hα0 (hA α hαk) hr hrR F
       (fun y => ⟨(hFb y).1,(le_abs_self _).trans (hFb y).2⟩)
-  have hCopyMoment := hCopy z hzk F hF N hN α (r α) hα0 (hA α hαk) (hAmax α hαk) hr hrR hbulk hins
+  have hCopyMoment := hCopy z hzk F hF N hN α (r α) hα0 (hA α hαk) (hAmax α hαk) hr hrR (hmargin.trans (min_le_right _ _)) hins
   change AEMeasurable (copiedRemainder N Xc F z γ α ρ) (P.prod P) ∧
     (∫⁻ q, copiedRemainder N Xc F z γ α ρ q^(r α) ∂P.prod P) ≤ D₂ at hCopyMoment
   obtain ⟨hLaw,hLm,hLcm,hEm,hEcm,hSource,hCopied⟩ :=
@@ -108,7 +107,7 @@ theorem oneInsertion_estimate_uniform
     exact mul_nonneg (mul_nonneg (Real.rpow_nonneg (norm_nonneg z) _)
       (Real.rpow_nonneg hFz.le _)) ENNReal.toReal_nonneg
   have hL (t : ℝ) (ht : 1 ≤ t) : |L t-c*t^(-reflectionExponent γ α)| ≤ E*t^(-reflectionExponent γ α-η) :=
-    hLead z hzk α hαk (F z) hFz hFzb N hN t ht
+    hLead z hzk α hαk (F z) hFz ((le_abs_self _).trans (hFb z).2) N hN t ht
   have hT (t : ℝ) (_ : 1 ≤ t) : 0 ≤ T t ∧ T t ≤ 1 := by
     constructor
     · exact ENNReal.toReal_nonneg
@@ -126,8 +125,7 @@ theorem oneInsertion_estimate_uniform
       L (t+h)-D₂.toReal*h^(-(r α)) ≤ T t ∧
       T t ≤ L (t-2*h)+(D₁.toReal+D₂.toReal)*h^(-(r α)) := by
     dsimp only
-    have ht1 : 1 ≤ t := (by norm_num : (1 : ℝ) ≤ 2).trans ht
-    have hsize := polynomial_shift_size t a ht1 ha0.le
+    have hsize := polynomial_shift_size t a ((by norm_num : (1 : ℝ) ≤ 2).trans ht) ha0.le
     have hh : 2*(t^(1-a)/4) ≤ t := by linarith only [hsize.2.1,ht]
     have hs := two_space_localization_tail_sandwich P (P.prod P)
       (localSingularMass M F z γ α) (localizedOriginal M χ F z γ α)

@@ -34,9 +34,7 @@ theorem fusion_coulombWeight_root_zero (γ α₁ α₂ α₃ : ℝ) {x : ℂ} (h
     ENNReal.ofReal (Real.exp (γ ^ 2 * gffKernel 0 x)) *
       coulombWeight γ ![-γ / 2, α₁, α₂] ![0, 0, 1] α₃ x =
       coulombWeight γ ![α₁ + γ / 2, α₂] ![0, 1] α₃ x := by
-  have hn : 0 < ‖x‖ := norm_pos_iff.mpr hx
-  have hp : 0 < normPlus x := lt_of_lt_of_le zero_lt_one (le_max_left _ _)
-  have hd : 0 < normPlus x / ‖x‖ := div_pos hp hn
+  have hd : 0 < normPlus x / ‖x‖ := div_pos (lt_of_lt_of_le zero_lt_one (le_max_left _ _)) (norm_pos_iff.mpr hx)
   rw [fusion_rootDensity_zero γ hx]
   simp only [coulombWeight, Fin.prod_univ_succ, Matrix.cons_val_zero,
     Matrix.cons_val_succ, Fin.prod_univ_zero, mul_one, sub_zero]

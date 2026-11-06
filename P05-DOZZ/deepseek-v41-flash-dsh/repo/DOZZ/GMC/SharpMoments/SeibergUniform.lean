@@ -41,7 +41,6 @@ theorem transferConstant_le {γ R t tm : ℝ} (hR : 0 ≤ R) (ht : 0 < t) (htm :
       ENNReal.ofReal (Real.exp (γ ^ 2 * (2 * (Real.log 3 + 2 * Real.log (1 + R))) / 2 *
         (tm ^ 2 + tm))) * ENNReal.ofReal ((1 + R) ^ 4) ^ tm := by
   have hc : 0 ≤ γ ^ 2 * (2 * (Real.log 3 + 2 * Real.log (1 + R))) / 2 := by
-    have h3 : 0 ≤ Real.log 3 := Real.log_nonneg (by norm_num)
     have h1 : 0 ≤ Real.log (1 + R) := Real.log_nonneg (by linarith)
     positivity
   have habs : |t ^ 2 - t| ≤ tm ^ 2 + tm := by
@@ -80,7 +79,6 @@ theorem coulombMass_moment_uniform_pos
   have h4 : 0 < 4 / γ ^ 2 := by positivity
   set tm : ℝ := max (4 / γ ^ 2 - g) 0 with htm
   have htm0 : 0 ≤ tm := le_max_right _ _
-  have htm4 : tm < 4 / γ ^ 2 := max_lt (by linarith) h4
   obtain ⟨K1, hK1, hK1b⟩ := weightedGmcBallMoment_uniform_center P X hX γ hγ hγ2 M hM δ hδ hδ1 A
     g hg
   obtain ⟨K2, hK2, hK2b⟩ := weightedGmcBallMoment_uniform_center P X hX γ hγ hγ2 M hM (1 / Rr)
@@ -94,7 +92,7 @@ theorem coulombMass_moment_uniform_pos
   set cEm : ℝ≥0∞ := ENNReal.ofReal ((2 : ℝ) ^ (N * (γ * A))) with hcEm
   set MBm : ℝ≥0∞ := 1 + gmcMassMoment P M (Metric.closedBall 0 Rr) tm with hMBm
   have hMBmtop : MBm < ⊤ := ENNReal.add_lt_top.mpr ⟨ENNReal.one_lt_top,
-    gmc_bounded_moment_lt_top P X hX γ hγ hγ2 M hM _ Metric.isBounded_closedBall tm htm0 htm4⟩
+    gmc_bounded_moment_lt_top P X hX γ hγ hγ2 M hM _ Metric.isBounded_closedBall tm htm0 (max_lt (by linarith) h4)⟩
   have hfin : ∀ x : ℝ≥0∞, x ≠ ⊤ → x ^ tm < ⊤ := fun x hx =>
     ENNReal.rpow_lt_top_of_nonneg htm0 hx
   refine ⟨2 ^ tm * (2 ^ tm * (((N : ℝ≥0∞) + 1) ^ tm * (N * (cRm ^ tm * (Tm * K1))) +
@@ -165,9 +163,6 @@ theorem coulombMass_moment_uniform_pos
       (hK1b (α k) t (hαA k) ht htb (hti k))
   -- the bulk moment
   have hMB : gmcMassMoment P M (Metric.closedBall 0 Rr) t ≤ MBm := by
-    have hm : AEMeasurable (fun ω => M ω (Metric.closedBall 0 Rr) ^ tm) P :=
-      (gmc_set_mass_aemeasurable_of_isGMCOf P X hX γ hγ hγ2 M hM _
-        Metric.isClosed_closedBall.measurableSet).pow_const tm
     calc gmcMassMoment P M (Metric.closedBall 0 Rr) t
         ≤ ∫⁻ ω, (1 + M ω (Metric.closedBall 0 Rr) ^ tm) ∂P :=
           lintegral_mono fun ω => weightedGrid_ennreal_rpow_le_one_add_rpow _ ht htle

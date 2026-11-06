@@ -21,13 +21,12 @@ theorem fusion_exteriorSecondKernel_bound (γ α₁ α₂ α₃ : ℝ) (z x : �
   have hl : (1 / 4 : ℝ) ≤ ‖x - z‖ := by
     have h := norm_sub_norm_le x z
     linarith
-  have hd : 0 < ‖x - z‖ ^ 2 := pow_pos (by linarith : 0 < ‖x - z‖) 2
   have hk : 0 ≤ gammaHalfKernel γ α₁ α₂ α₃ z x := by
     unfold gammaHalfKernel
     exact div_nonneg (mul_nonneg (Real.rpow_nonneg (norm_nonneg _) _)
       (Real.rpow_nonneg (by unfold normPlus; positivity) _))
       (mul_nonneg (Real.rpow_nonneg (norm_nonneg _) _) (Real.rpow_nonneg (norm_nonneg _) _))
-  rw [fusion_secondKernel_norm, div_le_iff₀ hd]
+  rw [fusion_secondKernel_norm, div_le_iff₀ (pow_pos (by linarith : 0 < ‖x - z‖) 2)]
   have hs : 1 ≤ 16 * ‖x - z‖ ^ 2 := by nlinarith [sq_nonneg (‖x - z‖ - 1 / 4)]
   calc
     _ ≤ gammaHalfKernel γ α₁ α₂ α₃ z x * (16 * ‖x - z‖ ^ 2) :=

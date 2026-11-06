@@ -74,9 +74,6 @@ theorem brownianUpperConditionedReferenceFutureKernel_finite_projection_doob
       funext i
       simpa using congrFun htimesReal i
     rw [hleft] at hchain
-    have htargetNonneg : 0 ≤ conditionedPositiveTimeChainDensity ν t x
-        (List.ofFn fun i : Fin n => t + (offsets i : ℝ)) (List.ofFn y) :=
-      conditionedPositiveTimeChainDensity_nonneg hν.le _ _ (by simp)
     change brownianDoobFinitePDF ν n ds x y =
       ENNReal.ofReal (max 0 (conditionedPositiveTimeChainDensity ν t x
         (List.ofFn fun i : Fin n => t + (offsets i : ℝ)) (List.ofFn y)))
@@ -94,8 +91,6 @@ theorem brownianUpperConditionedReferenceFutureKernel_finite_projection_doob
             (List.ofFn fun i : Fin n => t + (offsets i : ℝ)) (List.ofFn y))) := by
         rw [← htranslate']
         simp
-  have hproject : Measurable (fun y : ℚ → ℝ => fun i => y (offsets i)) :=
-    measurable_pi_iff.mpr (fun i => measurable_pi_apply (offsets i))
   have hinput : Measurable (fun z : ℝ × (Fin n → ℝ) =>
       ((fun _ : Fin 1 => z.1), z.2)) := by
     apply Measurable.prodMk

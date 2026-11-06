@@ -42,8 +42,7 @@ theorem equatorGFF_GMC_weighted_cutoff_bound_uniform_gamma
   let Cl : ℝ := (E.toReal + 1) / L
   have hCl : 0 < Cl := by dsimp [Cl]; positivity
   let C : ℝ := max Cs Cl
-  have hC : 0 < C := hCs.trans_le (le_max_left _ _)
-  refine ⟨C, hC, ?_⟩
+  refine ⟨C, (hCs.trans_le (le_max_left _ _)), ?_⟩
   intro γ hγ t ht z hz δ R hδ hδR hR₀
   have hR : 0 < R := hδ.trans_le hδR
   change (∫⁻ ω, cutoffWeightedGmcBallMass P Xc γ t.1 z R δ ω ^ t.2 ∂P) ≤

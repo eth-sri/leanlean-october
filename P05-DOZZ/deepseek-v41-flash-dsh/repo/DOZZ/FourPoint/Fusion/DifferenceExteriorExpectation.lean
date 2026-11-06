@@ -50,9 +50,8 @@ theorem fusion_difference_exterior_expectation_bound {Ω : Type*} [MeasurableSpa
       gmc_singleton_mass_eq_zero_ae P X hX γ hγ hγ2 M hM 0,
       gmc_singleton_mass_eq_zero_ae P X hX γ hγ hγ2 M hM 1] with ω hzI h0I hωz hω0 hω1
     have hIf := fusion_convexMass_pos_finite _ _ t ht hzI.1 hzI.2 h0I.1 h0I.2
-    have hIt : I ω ^ (-p) ≠ ⊤ := ENNReal.rpow_ne_top_of_ne_zero hIf.1 hIf.2
     have hab := fusion_difference_exterior_absolute_bound γ α₁ α₂ α₃ t p ht hp z hz4 (M ω) hωz hω0 hω1
-    have hbound := ENNReal.toReal_mono (ENNReal.mul_ne_top ENNReal.ofReal_ne_top hIt) hab
+    have hbound := ENNReal.toReal_mono (ENNReal.mul_ne_top ENNReal.ofReal_ne_top (ENNReal.rpow_ne_top_of_ne_zero hIf.1 hIf.2)) hab
     change ((∫⁻ x in B, ENNReal.ofReal |f x| ∂M ω) * I ω ^ (-p - 1)).toReal ≤
       (ENNReal.ofReal (D * ‖z‖) * I ω ^ (-p)).toReal at hbound
     rw [ENNReal.toReal_mul, ENNReal.toReal_mul,

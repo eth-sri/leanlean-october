@@ -531,7 +531,6 @@ theorem finiteChaosMatrixLaplaceInterpolation_derivative_integral_nonpos
         have h3 := (hSInt i).const_mul
           (γ ^ 2 / 2 * (finiteChaosMatrixRowVariance A i -
             finiteChaosMatrixRowVariance B i))
-        have h12 := h1.sub h2
         dsimp [T, AX, BY, Dbar]
         calc
           ∫ z, ((γ / (2 * Real.sqrt t) *

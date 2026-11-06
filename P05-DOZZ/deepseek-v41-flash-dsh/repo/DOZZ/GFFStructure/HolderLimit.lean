@@ -78,10 +78,9 @@ lemma isLimitOfIndicator_holderModification
     (hc : c ≠ ∞) (hd_pos : 0 < d) (hdq_lt : d < q) (hβ_pos : 0 < β) (hβ_lt : β < (q - d) / p) :
     IsLimitOfIndicator (holderModification X β p U) X P U := by
   let A := holderSet X (denseCountable T) p β U
-  have hA_meas : MeasurableSet A := DOZZ.Proofs.IsKolmogorovProcess.measurableSet_holderSet hX countable_denseCountable
   have hA_ae : ∀ᵐ ω ∂P, ω ∈ A := ae_mem_holderSet hT hX hc hd_pos hdq_lt hβ_pos hβ_lt
     countable_denseCountable
-  refine ⟨A, hA_meas, hA_ae, fun t htU ω hω ↦ ?_, fun t htU ω ↦ ?_, fun t htUc ω ↦ ?_⟩
+  refine ⟨A, (DOZZ.Proofs.IsKolmogorovProcess.measurableSet_holderSet hX countable_denseCountable), hA_ae, fun t htU ω hω ↦ ?_, fun t htU ω ↦ ?_, fun t htUc ω ↦ ?_⟩
   · exact exists_tendsto_of_mem_holderSet hT hU hX.p_pos hβ_pos dense_denseCountable
       hω t htU
   · simp only [holderModification, htU, ↓reduceIte, Dense.extend, IsDenseInducing.extend, A]
@@ -344,9 +343,8 @@ lemma indistinguishable_of_edist_modification_on {T Ω E : Type*} {mΩ : Measura
     (h : ∀ t ∈ U, ∀ᵐ ω ∂P, edist (X t ω) (Y t ω) = 0) :
     ∀ᵐ ω ∂P, ∀ t ∈ U, edist (X t ω) (Y t ω) = 0 := by
   let ⟨D, D_countable, D_dense⟩ := ‹SeparableSpace T›
-  have DU_countable : (D ∩ U).Countable := D_countable.mono Set.inter_subset_left
   have eq (ht : ∀ t ∈ (D ∩ U), ∀ᵐ ω ∂P, edist (X t ω) (Y t ω) = 0) :
-      ∀ᵐ ω ∂P, ∀ t ∈ (D ∩ U), edist (X t ω) (Y t ω) = 0 := (ae_ball_iff DU_countable).mpr ht
+      ∀ᵐ ω ∂P, ∀ t ∈ (D ∩ U), edist (X t ω) (Y t ω) = 0 := (ae_ball_iff (D_countable.mono Set.inter_subset_left)).mpr ht
   filter_upwards [hX, hY, eq (fun t ht ↦ h t ht.2)] with ω hX hY h t htU
   suffices Set.EqOn (fun t ↦ edist (X t ω) (Y t ω)) 0 U from this htU
   refine Set.EqOn.of_subset_closure h ?_ (by fun_prop) Set.inter_subset_right ?_

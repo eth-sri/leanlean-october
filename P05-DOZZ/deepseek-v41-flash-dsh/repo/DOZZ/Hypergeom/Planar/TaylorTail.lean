@@ -30,7 +30,6 @@ private theorem rpow_lipschitz_on {p : ℝ} (hp : p < 0) :
     exact (Real.hasDerivAt_rpow_const
       (Or.inl (ne_of_gt (lt_of_lt_of_le (by norm_num) hx.1)))).differentiableAt
   · intro x hx
-    have hxpos : 0 < x := lt_of_lt_of_le (by norm_num) hx.1
     have hpow : x ^ (p - 1) ≤ (1/4 : ℝ) ^ (p - 1) :=
       Real.rpow_le_rpow_of_nonpos (by norm_num) hx.1 (by linarith only [hp])
     have hB : 0 ≤ (-p) * (1/4 : ℝ) ^ (p - 1) :=
@@ -39,7 +38,7 @@ private theorem rpow_lipschitz_on {p : ℝ} (hp : p < 0) :
     rw [coe_nnnorm, Real.coe_toNNReal _ hB]
     change ‖deriv (fun y : ℝ => y ^ p) x‖ ≤ _
     rw [Real.deriv_rpow_const, Real.norm_eq_abs, abs_mul, abs_of_neg hp,
-      abs_of_nonneg (Real.rpow_nonneg (le_of_lt hxpos) _)]
+      abs_of_nonneg (Real.rpow_nonneg (le_of_lt (lt_of_lt_of_le (by norm_num) hx.1)) _)]
     exact mul_le_mul_of_nonneg_left hpow (by linarith only [hp])
 
 private def segmentNormSq (u z : ℂ) (t : ℝ) : ℝ :=
@@ -94,10 +93,9 @@ private theorem unitSegment_normSq_bounds (w : ℂ) (hw : ‖w‖ ≤ 1 / 2)
     1 / 4 ≤ segmentNormSq 1 w t ∧ segmentNormSq 1 w t ≤ 9 / 4 := by
   have ht₀ : 0 ≤ t := ht.1
   have ht₁ : t ≤ 1 := ht.2
-  have hs : 0 ≤ ‖w‖ := norm_nonneg w
   have hv : ‖(t : ℂ) * w‖ ≤ 1 / 2 := by
     rw [norm_mul, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg ht₀]
-    exact (mul_le_of_le_one_left hs ht₁).trans hw
+    exact (mul_le_of_le_one_left (norm_nonneg w) ht₁).trans hw
   have hlow : 1 / 2 ≤ ‖(1 : ℂ) - (t : ℂ) * w‖ := by
     have h := norm_sub_norm_le (1 : ℂ) ((t : ℂ) * w)
     rw [norm_one] at h
@@ -124,8 +122,7 @@ private theorem unitTaylorPath_hasDerivAt (k : ℝ) (w : ℂ) (t : ℝ)
       (k * ((segmentNormSq 1 w t ^ (k / 2 - 1) - 1) *
         (t * ‖w‖ ^ 2 - w.re) + t * ‖w‖ ^ 2)) t := by
   have hbounds := unitSegment_normSq_bounds w hw ht
-  have hq : 0 < segmentNormSq 1 w t := lt_of_lt_of_le (by norm_num) hbounds.1
-  have hp := segmentRpow_hasDerivAt k 1 w t hq
+  have hp := segmentRpow_hasDerivAt k 1 w t (lt_of_lt_of_le (by norm_num) hbounds.1)
   have hlinear : HasDerivAt (fun s : ℝ => k * s * w.re) (k * w.re) t := by
     convert (hasDerivAt_id t).const_mul (k * w.re) using 1
     · ext s
@@ -150,13 +147,12 @@ private theorem unitTaylorPath_deriv_bound (k : ℝ) (hk : 0 < k) (hk₂ : k < 2
     dsimp [L]
     exact mul_nonneg (by linarith only [hp]) (Real.rpow_nonneg (by norm_num) _)
   have hbounds := unitSegment_normSq_bounds w hw ht
-  have hqmem : segmentNormSq 1 w t ∈ Icc (1 / 4 : ℝ) (9 / 4) := hbounds
   have hone : (1 : ℝ) ∈ Icc (1 / 4 : ℝ) (9 / 4) := by norm_num
   have hLpos : 0 ≤ (-p) * (1 / 4 : ℝ) ^ (p - 1) := by
     exact mul_nonneg (by linarith only [hp]) (Real.rpow_nonneg (by norm_num) _)
   have hpowdiff : |segmentNormSq 1 w t ^ p - 1| ≤ L * |segmentNormSq 1 w t - 1| := by
     have hLip := rpow_lipschitz_on hp
-    have h := hLip.norm_sub_le hqmem hone
+    have h := hLip.norm_sub_le (hbounds) hone
     rw [Real.coe_toNNReal _ hLpos] at h
     rw [Real.norm_eq_abs, Real.norm_eq_abs] at h
     rw [Real.one_rpow] at h
@@ -164,10 +160,9 @@ private theorem unitTaylorPath_deriv_bound (k : ℝ) (hk : 0 < k) (hk₂ : k < 2
     exact h
   have ht₀ : 0 ≤ t := ht.1
   have ht₁ : t ≤ 1 := ht.2
-  have hs : 0 ≤ ‖w‖ := norm_nonneg w
   have hRe : |w.re| ≤ ‖w‖ := Complex.abs_re_le_norm w
   have hss : ‖w‖ ^ 2 ≤ (1 / 2 : ℝ) * ‖w‖ := by
-    linarith only [mul_le_mul_of_nonneg_left hw hs]
+    linarith only [mul_le_mul_of_nonneg_left hw (norm_nonneg w)]
   have hts : t * ‖w‖ ^ 2 ≤ ‖w‖ ^ 2 := by
     exact mul_le_of_le_one_left (sq_nonneg ‖w‖) ht₁
   have htSq : t ^ 2 ≤ 1 := pow_le_one₀ ht₀ ht₁
@@ -273,12 +268,11 @@ theorem abs_planarTaylorNumerator_le (k : ℝ) (hk : 0 < k) (hk₂ : k < 2)
       (z / u + star z / star u).re| ≤
       (k * (1 + (15 / 4) * ((1 - k / 2) * (1 / 4 : ℝ) ^ (k / 2 - 2)))) *
         ‖u‖ ^ k * ‖z / u‖ ^ 2 := by
-  have hr : 0 < ‖u‖ := norm_pos_iff.mpr hu
   let w : ℂ := z / u
   have hw : ‖w‖ ≤ 1 / 2 := by
     dsimp [w]
     rw [norm_div]
-    apply (div_le_iff₀ hr).2
+    apply (div_le_iff₀ (norm_pos_iff.mpr hu)).2
     linarith only [hlarge]
   have hfactor : ‖u - z‖ ^ k = ‖u‖ ^ k * ‖(1 : ℂ) - w‖ ^ k := by
     have heq : u - z = u * ((1 : ℂ) - w) := by
@@ -300,10 +294,6 @@ theorem abs_planarTaylorNumerator_le (k : ℝ) (hk : 0 < k) (hk₂ : k < 2)
     ring
   rw [hnum]
   have hunit := norm_unit_taylor_remainder_le k hk hk₂ w hw
-  have hconst : 0 ≤ k * (1 + (15 / 4) *
-      ((1 - k / 2) * (1 / 4 : ℝ) ^ (k / 2 - 2))) := by
-    have hfirst : 0 ≤ 1 - k / 2 := by linarith only [hk₂]
-    positivity
   have hnorm : 0 ≤ ‖u‖ ^ k := Real.rpow_nonneg (norm_nonneg u) k
   calc
     _ = ‖u‖ ^ k * |‖(1 : ℂ) - w‖ ^ k - 1 + k * w.re| := by
@@ -393,10 +383,6 @@ theorem integrableOn_planarTaylorRemainder_tail (k β : ℝ) (hk : 0 < k)
   let B : ℝ := C * ‖z‖ ^ 2
   have hr : 0 < 2 * ‖z‖ := by positivity
   have hp : p < -2 := by dsimp [p]; linarith only [hβ]
-  have hB : 0 ≤ B := by
-    dsimp [B, C]
-    have hfirst : 0 ≤ 1 - k / 2 := by linarith only [hβ, hβ₂]
-    positivity
   have hrad : IntegrableOn (fun u : ℂ => ‖u‖ ^ p)
       (ball (0 : ℂ) (2 * ‖z‖))ᶜ volume :=
     (integrableOn_norm_rpow_ball_compl_iff p (2 * ‖z‖) hr).2 hp
@@ -429,8 +415,6 @@ private theorem abs_planarTaylorNumerator_local_le (k : ℝ) (hk : 0 < k)
       (z / u + star z / star u).re| ≤
       (3 * ‖z‖) ^ k + ‖u‖ ^ k + k * ‖z‖ * ‖u‖ ^ (k - 1) := by
   have hr : 0 < ‖u‖ := norm_pos_iff.mpr hu
-  have ha : 0 ≤ ‖z‖ := norm_nonneg z
-  have hrpow : 0 ≤ ‖u‖ ^ k := Real.rpow_nonneg hr.le k
   have hshift : ‖u - z‖ ^ k ≤ (3 * ‖z‖) ^ k := by
     have hnorm : ‖u - z‖ ≤ 3 * ‖z‖ := by
       calc
@@ -466,7 +450,7 @@ private theorem abs_planarTaylorNumerator_local_le (k : ℝ) (hk : 0 < k)
   have hshift' : |‖u - z‖ ^ k| ≤ (3 * ‖z‖) ^ k := by
     rw [abs_of_nonneg (Real.rpow_nonneg (norm_nonneg _) k)]
     exact hshift
-  have hrad' : |‖u‖ ^ k| = ‖u‖ ^ k := abs_of_nonneg hrpow
+  have hrad' : |‖u‖ ^ k| = ‖u‖ ^ k := abs_of_nonneg (Real.rpow_nonneg hr.le k)
   calc
     _ ≤ |‖u - z‖ ^ k - ‖u‖ ^ k| +
         |(k / 2) * ‖u‖ ^ k * (z / u + star z / star u).re| := abs_add_le _ _
@@ -528,8 +512,6 @@ theorem integrableOn_planarTaylorRemainder_ball (k β : ℝ)
   have hp₀ : -2 < p₀ := by dsimp [p₀]; linarith only [hβ₂]
   have hp₁ : -2 < p₁ := by dsimp [p₁]; linarith only [hβ₂, hk]
   have hp₂ : -2 < p₂ := by dsimp [p₂]; linarith only [hβlin]
-  have hA : 0 ≤ A := by dsimp [A]; positivity
-  have hC : 0 ≤ k * ‖z‖ := mul_nonneg (le_of_lt hk) (norm_nonneg z)
   have h₀ : IntegrableOn (fun u : ℂ => A * ‖u‖ ^ p₀) (ball 0 R) volume :=
     ((integrableOn_norm_rpow_ball_iff p₀ R hR).2 hp₀).const_mul A
   have h₁ : IntegrableOn (fun u : ℂ => ‖u‖ ^ p₁) (ball 0 R) volume :=

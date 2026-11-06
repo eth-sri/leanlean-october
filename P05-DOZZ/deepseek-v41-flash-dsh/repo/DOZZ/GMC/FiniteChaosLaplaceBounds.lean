@@ -83,7 +83,6 @@ lemma finiteChaos_laplace_first_weight_bound
     ‖finiteChaosVectorWeight a v γ x i *
       (-s * Real.exp (-s * finiteChaosVectorMass a v γ x))‖ ≤ 1 := by
   have hmass := finiteChaosVectorWeight_le_mass a v γ ha x i
-  have hm := finiteChaosVectorMass_nonneg a v γ ha x
   have hscaled :
       s * finiteChaosVectorWeight a v γ x i ≤
         s * finiteChaosVectorMass a v γ x := mul_le_mul_of_nonneg_left hmass.2 hs

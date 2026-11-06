@@ -80,9 +80,8 @@ theorem affinePush_norm_iteratedFDeriv_le (a b : ℂ) {f : ℂ → ℝ} (hf : Co
       fun x => (‖a‖ ^ 2)⁻¹ • (f ∘ L) (x - b) := by
     funext x
     simp [hLapp]
-  have hfL : ContDiff ℝ ∞ (f ∘ L) := hf.comp L.contDiff
   have hdiff : ContDiffAt ℝ i (fun z => (f ∘ L) (z - b)) x :=
-    ((hfL.comp (contDiff_id.sub contDiff_const)).contDiffAt).of_le (by exact_mod_cast le_top)
+    (((hf.comp L.contDiff).comp (contDiff_id.sub contDiff_const)).contDiffAt).of_le (by exact_mod_cast le_top)
   have h2 := L.iteratedFDeriv_comp_right hf (x - b) (i := i) (by exact_mod_cast le_top)
   rw [hfun, iteratedFDeriv_const_smul_apply' hdiff, iteratedFDeriv_comp_sub, h2, norm_smul,
     Real.norm_of_nonneg (by positivity), hLapp]

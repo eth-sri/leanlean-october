@@ -55,7 +55,6 @@ theorem pairCoarseScale_ge (k₀ m : ℕ) (i : Fin (pairCoarseCount k₀ m)) :
 
 theorem pairCoarseScale_le (k₀ m : ℕ) (i : Fin (pairCoarseCount k₀ m)) :
     pairCoarseScale k₀ m i ≤ m := by
-  have h := ((finProdFinEquiv.symm i).1).isLt
   unfold pairCoarseScale
   omega
 
@@ -317,14 +316,13 @@ theorem finiteBarrierPairKernel_toReal_uniform_cauchy
     (fun p hp i => hvar _ (pairCoarseScale_ge k₀ m i) _ (pairCoarseCenter_mem k₀ m p K hp.1 i))
     (fun i => a * (pairCoarseScale k₀ m i : ℝ)) true true Γ B hB hΓ
   obtain ⟨δ, hδ, hδconv⟩ := hconv (η / 2) (half_pos hη)
-  have hcut : 0 < min δ ε₀ := lt_min hδ hY.cutoffPositive
   refine ⟨-Real.log (min δ ε₀), ?_⟩
   intro r s r' s' hr hs hr' hs' g hg p hp
   have hexp (t : ℝ) (ht : -Real.log (min δ ε₀) ≤ t) :
       Real.exp (-t) ≤ min δ (min ε₀ ε₀) := by
     rw [min_self]
     calc Real.exp (-t) ≤ Real.exp (Real.log (min δ ε₀)) := Real.exp_le_exp.mpr (by linarith)
-      _ = min δ ε₀ := Real.exp_log hcut
+      _ = min δ ε₀ := Real.exp_log (lt_min hδ hY.cutoffPositive)
   have hle (t : ℝ) (ht : -Real.log (min δ ε₀) ≤ t) : Real.exp (-t) ≤ ε₀ := by
     have h := hexp t ht
     rw [min_self] at h
@@ -390,7 +388,6 @@ noncomputable abbrev growingPairKernel {Ω : Type*} [MeasurableSpace Ω]
 /-- A real distance bound for two extended reals squeezed by an additive error. -/
 theorem abs_toReal_sub_le_of_le_add {x y t : ℝ≥0∞} (hyx : y ≤ x) (hx : x ≤ y + t)
     (hxtop : x ≠ ⊤) (ht : t ≠ ⊤) : |x.toReal - y.toReal| ≤ t.toReal := by
-  have hytop : y ≠ ⊤ := ne_top_of_le_ne_top hxtop hyx
   rw [← ENNReal.toReal_sub_of_le hyx hxtop, abs_of_nonneg ENNReal.toReal_nonneg]
   exact ENNReal.toReal_mono ht (tsub_le_iff_left.mpr hx)
 
@@ -402,9 +399,8 @@ theorem tsum_barrier_rate_le_of_le (g gHi a : ℝ) (hg : g ≤ gHi) (hga : gHi <
   intro j
   apply ENNReal.ofReal_le_ofReal
   apply Real.exp_le_exp.mpr
-  have h1 : 0 ≤ a - gHi := (sub_pos.mpr hga).le
   have h2 : a - gHi ≤ a - g := by linarith
-  have hsq : (a - gHi) ^ 2 ≤ (a - g) ^ 2 := pow_le_pow_left₀ h1 h2 2
+  have hsq : (a - gHi) ^ 2 ≤ (a - g) ^ 2 := pow_le_pow_left₀ ((sub_pos.mpr hga).le) h2 2
   have hn : (0 : ℝ) ≤ ((j + N : ℕ) : ℝ) := Nat.cast_nonneg _
   have := mul_le_mul_of_nonneg_right hsq hn
   linarith
@@ -487,12 +483,11 @@ theorem growingPairKernel_offDiagonal_uniform_cauchy
     have hgpos : 0 < g := lt_of_lt_of_le hgLo hg.1
     have hga' : g < a := lt_of_le_of_lt hg.2 hga
     obtain ⟨hpos, hLp⟩ := hL p hp
-    have hrcut : Real.exp (-r) ≤ ε₀ := le_trans (Real.exp_le_exp.mpr (by linarith)) hmcut
     have hscut : Real.exp (-s) ≤ ε₀ := le_trans (Real.exp_le_exp.mpr (by linarith)) hmcut
     have hfin : compatibleAdmissibleSelectedFiniteBarrierPairKernel P Y Y g a k₀ m
         (Real.exp (-r)) (Real.exp (-s)) p.1 p.2 true true ≠ ⊤ := by
       rw [finiteBarrierPairKernel_eq_rectangle P U dens ε₀ Y hY g a k₀ m hk₀cut _ _
-        (Real.exp_pos _) hrcut (Real.exp_pos _) hscut p]
+        (Real.exp_pos _) (le_trans (Real.exp_le_exp.mpr (by linarith)) hmcut) (Real.exp_pos _) hscut p]
       exact ENNReal.ofReal_ne_top
     have hle := compatibleAdmissibleSelectedMixedGrowingBarrierPairKernel_le_finiteBarrier
       P Y Y g a k₀ m r s p.1 p.2 true true hmr hms
@@ -500,8 +495,7 @@ theorem growingPairKernel_offDiagonal_uniform_cauchy
       have hA : 0 ≤ |L| + 2 * C := by positivity
       have h1 : g * (|L| + 2 * C) ≤ gHi * (|L| + 2 * C) := mul_le_mul_of_nonneg_right hg.2 hA
       have h2 : (a - gHi) * (m : ℝ) / 2 ≤ (a - g) * (m : ℝ) / 2 := by
-        have hm0 : (0 : ℝ) ≤ m := Nat.cast_nonneg m
-        have := mul_le_mul_of_nonneg_right (show a - gHi ≤ a - g by linarith [hg.2]) hm0
+        have := mul_le_mul_of_nonneg_right (show a - gHi ≤ a - g by linarith [hg.2]) (Nat.cast_nonneg m)
         linarith
       linarith
     have hup := htail k₀ m hCm hmcut r s hmr hms p.1 hp.1.1 p.2 hp.1.2 L hpos hLp g a hgpos
@@ -521,8 +515,7 @@ theorem growingPairKernel_offDiagonal_uniform_cauchy
         2 * (cHi * THi (m + 1)) := by
       gcongr
     have herrfin : 2 * (cHi * THi (m + 1)) ≠ ⊤ := ne_top_of_lt herrm
-    have hgtop : growingPairKernel P Y g a k₀ r s p ≠ ⊤ := ne_top_of_le_ne_top hfin hle
-    refine ⟨hgtop, hfin, ?_⟩
+    refine ⟨(ne_top_of_le_ne_top hfin hle), hfin, ?_⟩
     have habs := abs_toReal_sub_le_of_le_add hle (hup.trans (add_le_add_right herrG _)) hfin
       herrfin
     refine lt_of_le_of_lt habs ?_

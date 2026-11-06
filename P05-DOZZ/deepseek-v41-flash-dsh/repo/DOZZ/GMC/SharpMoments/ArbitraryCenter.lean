@@ -106,8 +106,7 @@ theorem gmc_ball_mass_pos_ae
   have hpos : 0 < M ω (Metric.ball z ρ') := by
     by_contra h0
     push Not at h0
-    have hz : M ω (Metric.ball z ρ') = 0 := le_antisymm h0 zero_le
-    rw [hz, ENNReal.zero_rpow_of_neg (by norm_num)] at hω
+    rw [(le_antisymm h0 zero_le), ENNReal.zero_rpow_of_neg (by norm_num)] at hω
     exact lt_irrefl _ hω
   exact lt_of_lt_of_le hpos (measure_mono (Metric.ball_subset_ball (min_le_left _ _)))
 
@@ -152,8 +151,7 @@ theorem gmc_bounded_moment_lt_top
     have : IsFiniteMeasure gmcReferenceMeasure := ⟨gmcReferenceMeasure_univ_ne_top.lt_top⟩
     exact h.trans_lt (ENNReal.add_lt_top.mpr ⟨ENNReal.one_lt_top, measure_lt_top _ _⟩)
   -- cover the closure by finitely many small disks
-  have hK : IsCompact (closure O) := hO.isCompact_closure
-  obtain ⟨t, -, htfin, hcover⟩ := finite_cover_balls_of_compact hK (by norm_num : (0 : ℝ) < 1 / 16)
+  obtain ⟨t, -, htfin, hcover⟩ := finite_cover_balls_of_compact (hO.isCompact_closure) (by norm_num : (0 : ℝ) < 1 / 16)
   set S : Finset ℂ := htfin.toFinset with hS
   have hOS : O ⊆ ⋃ c ∈ S, Metric.ball c (1 / 16) := by
     intro x hx

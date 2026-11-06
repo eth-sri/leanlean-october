@@ -81,8 +81,7 @@ theorem zeroMode_tendsto_slope_comp {U : ℂ → ℂ} (hU : Differentiable ℂ U
     rw [sub_self, zero_div] at h
     exact h.mono_left nhdsWithin_le_nhds
   · filter_upwards [self_mem_nhdsWithin] with t ht
-    have ht' : t - t₀ ≠ 0 := sub_ne_zero.mpr ht
-    simpa using ht'
+    simpa using (sub_ne_zero.mpr ht)
 
 /-- `Υ` does not vanish at a real point of the open strip `0 < x < Q`. -/
 theorem zeroMode_ne_zero {γ : ℝ} {U : ℂ → ℂ} (hU : IsUpsilon γ U) {x : ℝ} (hx : 0 < x)

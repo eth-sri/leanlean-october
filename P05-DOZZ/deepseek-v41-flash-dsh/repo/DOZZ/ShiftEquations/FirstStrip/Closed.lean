@@ -3,6 +3,7 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
+public import DOZZ.SharedHyp
 
 public import DOZZ.ShiftEquations.FirstStrip.Strip
 public import DOZZ.FourPoint.BPZ.GammaHalfFullUnreflectedFormula
@@ -28,7 +29,7 @@ theorem structureConstant_first_shift_strip_unconditional
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
     (M : Ω → Measure ℂ) (γ μ η : ℝ)
     (hγ : 0 < γ) (hγ2 : γ < 2) (hμ : 0 < μ)
-    (hη : 0 < η ∧ Q γ - 2 * η > γ)
+    (hη : DriftWindow γ η)
     (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M)
     (α₂ α₃ : ℝ)
     (hα₂ : Q γ - η < α₂ ∧ α₂ < Q γ)

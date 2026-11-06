@@ -67,16 +67,6 @@ theorem admissible_logRegularization_reference_pair_kernel_lintegrable
         simp [smul_smul]
   obtain ⟨B, hB, hpair⟩ :=
     complex_norm_pair_neg_rpow_lintegral_isCompact K hK κ hκ hκ2
-  have hbase :
-      ∫⁻ p : ℂ × ℂ,
-        ENNReal.ofReal (‖p.1 - p.2‖ ^ (-κ)) ∂(volK.prod volK) ≠ ∞ := by
-    have hrewrite : volK.prod volK =
-        (volume.prod volume).restrict (K ×ˢ K) := by
-      exact Measure.prod_restrict K K
-    rw [hrewrite]
-    change (∫⁻ p in K ×ˢ K,
-      ENNReal.ofReal (‖p.1 - p.2‖ ^ (-κ)) ∂(volume.prod volume)) ≠ ∞
-    exact ne_top_of_le_ne_top hB hpair
   have hlin :
       ∫⁻ p : ℂ × ℂ,
         ENNReal.ofReal (‖p.1 - p.2‖ ^ (-κ)) ∂(ν.prod ν) ≤

@@ -76,8 +76,7 @@ theorem tendsto_realGamma_comp {l : Filter ℝ} {φ : ℝ → ℝ} {s : ℝ} (h�
 theorem sub_mul_lR_eq {γ ε : ℝ} (hγ : 0 < γ) (hε : γ / 2 < ε) :
     (ε - γ / 2) * lR (γ / 4 * (ε - γ / 2)) =
       4 / γ * (Real.Gamma (γ / 4 * (ε - γ / 2) + 1) / Real.Gamma (1 - γ / 4 * (ε - γ / 2))) := by
-  have hB : γ / 4 * (ε - γ / 2) ≠ 0 := (mul_pos (by positivity) (by linarith)).ne'
-  rw [Real.Gamma_add_one hB]
+  rw [Real.Gamma_add_one ((mul_pos (by positivity) (by linarith)).ne')]
   unfold lR
   field_simp
 

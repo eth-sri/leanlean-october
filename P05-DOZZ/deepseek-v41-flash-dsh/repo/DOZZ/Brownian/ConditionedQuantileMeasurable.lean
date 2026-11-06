@@ -42,8 +42,7 @@ private theorem cdf_superlevel_bddBelow {μ : Measure ℝ} [IsProbabilityMeasure
   refine ⟨a, ?_⟩
   intro x hx
   by_contra hnot
-  have hxa : x ≤ a := (lt_of_not_ge hnot).le
-  exact (not_lt_of_ge hx) (ha x hxa)
+  exact (not_lt_of_ge hx) (ha x ((lt_of_not_ge hnot).le))
 
 /-- The generalized quantile is monotone as a function of the uniform level on `(0,1)`. -/
 theorem cdfGeneralizedQuantile_monoOn_Ioo

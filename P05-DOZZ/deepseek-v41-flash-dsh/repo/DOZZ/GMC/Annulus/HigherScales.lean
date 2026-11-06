@@ -73,13 +73,12 @@ theorem regularizedGMC_clipped_dyadic_moment_bound_of_reference
         R = R * 1 := (mul_one R).symm
         _ ≤ R * (2 : ℝ) ^ n := mul_le_mul_of_nonneg_left (one_le_pow₀ (by norm_num)) hR.le
     have hn1 : 0 < gmcDyadicRadius R (n + 1) := by unfold gmcDyadicRadius; positivity
-    have hc : 0 < (gmcDyadicRadius R (n + 1)) ^ (-γ ^ 2) := Real.rpow_pos_of_pos hn1 _
     have he : (∫⁻ ω, (gmcClippedDyadicTerm (regularizedGMC P Xc γ t ω)
         γ R (Real.exp (-t)) u n) ^ q ∂P) =
         ENNReal.ofReal ((gmcDyadicRadius R (n + 1)) ^ (-γ ^ 2 * q)) *
           gmcMassMoment P (regularizedGMC P Xc γ t) (Metric.ball u (gmcDyadicRadius R n)) q := by
       simp only [gmcClippedDyadicTerm, ite_eq_left ha, ENNReal.mul_rpow_of_nonneg _ _ hq.le,
-        ENNReal.ofReal_rpow_of_pos hc, ← Real.rpow_mul hn1.le]
+        ENNReal.ofReal_rpow_of_pos (Real.rpow_pos_of_pos hn1 _), ← Real.rpow_mul hn1.le]
       rw [lintegral_const_mul' _ _ ENNReal.ofReal_ne_top]
       rfl
     rw [he]
@@ -165,12 +164,11 @@ theorem regularizedGMC_root_inner_moment_uniform_of_reference
   let δ := Real.exp (-t)
   let ξ := gmcRootOrderExponent γ q
   have hδ : 0 < δ := Real.exp_pos _
-  have hc : 0 < δ ^ (-γ ^ 2) := Real.rpow_pos_of_pos hδ _
   have he : (∫⁻ ω, (ENNReal.ofReal (δ ^ (-γ ^ 2)) *
       regularizedGMC P Xc γ t ω (Metric.ball u (2 * δ))) ^ q ∂P) =
       ENNReal.ofReal (δ ^ (-γ ^ 2 * q)) *
         gmcMassMoment P (regularizedGMC P Xc γ t) (Metric.ball u (2 * δ)) q := by
-    simp only [ENNReal.mul_rpow_of_nonneg _ _ hq.le, ENNReal.ofReal_rpow_of_pos hc,
+    simp only [ENNReal.mul_rpow_of_nonneg _ _ hq.le, ENNReal.ofReal_rpow_of_pos (Real.rpow_pos_of_pos hδ _),
       ← Real.rpow_mul hδ.le]
     rw [lintegral_const_mul' _ _ ENNReal.ofReal_ne_top]
     rfl
@@ -243,9 +241,8 @@ theorem regularizedGMC_root_clipped_higher_moment_uniform
       ((Measure.measurable_coe Metric.isOpen_ball.measurableSet).comp
         (regularizedGMC_measurable P X hX Xc hXc γ t)))
   have hb : (∫⁻ ω, (O ω) ^ q ∂P) ≤ ENNReal.ofReal (R ^ (-γ ^ 2 * q)) * C := by
-    have hc : 0 < R ^ (-γ ^ 2) := Real.rpow_pos_of_pos hR _
     simp only [O, ENNReal.mul_rpow_of_nonneg _ _ hq0.le,
-      ENNReal.ofReal_rpow_of_pos hc, ← Real.rpow_mul hR.le]
+      ENNReal.ofReal_rpow_of_pos (Real.rpow_pos_of_pos hR _), ← Real.rpow_mul hR.le]
     rw [lintegral_const_mul' _ _ ENNReal.ofReal_ne_top]
     exact mul_le_mul' le_rfl (hRef t ht)
   calc

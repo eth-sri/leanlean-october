@@ -272,9 +272,8 @@ theorem integral_log_normPlus_circleMeasure_exterior {x : ℂ} {r : ℝ}
   have heq : (fun z => Real.log (normPlus z)) =ᵐ[circleMeasure x r]
       fun z => Real.log ‖z‖ := (ae_normPlus_eq_norm_circleMeasure hout).fun_comp Real.log
   rw [integral_congr_ae heq]
-  have hmax : Real.exp (-r) ≤ ‖x‖ := le_trans (le_add_of_nonneg_left zero_le_one) hout
   have hpotential := integral_log_norm_sub_circleMeasure x 0 r
-  simpa only [sub_zero, max_eq_right hmax] using hpotential
+  simpa only [sub_zero, max_eq_right (le_trans (le_add_of_nonneg_left zero_le_one) hout)] using hpotential
 
 /-- The concentric source closed potential in logarithmic-radius coordinates. -/
 theorem circleLogPotential_concentric (r s : ℝ) :
@@ -288,16 +287,14 @@ theorem circleLogPotential_concentric (r s : ℝ) :
 theorem circleLogPotential_of_radii_le_distance {d : ℝ≥0}
     (a b : {r : ℝ // 0 < r}) (hsep : (a : ℝ) + b ≤ d) :
     circleLogPotential d a b = Real.log d := by
-  have hd : 0 < (d : ℝ) := lt_of_lt_of_le (add_pos a.2 b.2) hsep
   have ha : (a : ℝ) ≤ d := le_trans (le_add_of_nonneg_right b.2.le) hsep
-  have hsub : 0 ≤ (d : ℝ) - a := sub_nonneg.mpr ha
   have hb : (b : ℝ) ≤ |(d : ℝ) - a| := by
-    rw [abs_of_nonneg hsub]
+    rw [abs_of_nonneg (sub_nonneg.mpr ha)]
     linarith only [hsep]
   have hout : ¬ (d : ℝ) + a ≤ b := by
     intro h
     linarith only [hsep, h, a.2]
-  rw [circleLogPotential_of_le_abs_sub a b hd.ne' hb hout, max_eq_left ha]
+  rw [circleLogPotential_of_le_abs_sub a b (lt_of_lt_of_le (add_pos a.2 b.2) hsep).ne' hb hout, max_eq_left ha]
 
 /-- The radii used at nonnegative logarithmic times never exceed one. -/
 theorem exp_neg_le_one {r : ℝ} (hr : 0 ≤ r) : Real.exp (-r) ≤ 1 := by

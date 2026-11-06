@@ -39,10 +39,9 @@ private theorem weightedTotal_eq_integral
         rw [lintegral_const]
         exact ENNReal.mul_lt_top ENNReal.ofReal_lt_top
           (lt_top_iff_ne_top.mpr (@measure_ne_top ℂ _ μ hμ Set.univ))
-  have hWfinite : IsFiniteMeasure (μ.withDensity W) := isFiniteMeasure_withDensity hWint
   have hconst : ∫ z, (1 : BoundedContinuousFunction ℂ ℝ) z ∂μ.withDensity W =
       ((μ.withDensity W) Set.univ).toReal := by
-    let _ : IsFiniteMeasure (μ.withDensity W) := hWfinite
+    let _ : IsFiniteMeasure (μ.withDensity W) := (isFiniteMeasure_withDensity hWint)
     rw [← Measure.real_def]
     simp [integral_const]
   have hInt := integral_withDensity_eq_integral_toReal_smul hW hWlt (1 : BoundedContinuousFunction ℂ ℝ)

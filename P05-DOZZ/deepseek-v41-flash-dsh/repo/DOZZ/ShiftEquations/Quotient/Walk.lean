@@ -73,7 +73,6 @@ theorem boundedWalk_greedy {a a' g : ℝ} (ha : 0 < a) (ha' : 0 < a') :
         refine ⟨j - 1, ?_⟩
         rcases Nat.eq_zero_or_pos j with rfl | hj
         · exfalso
-          have hi : (0 : ℝ) ≤ i := Nat.cast_nonneg i
           push_cast at hs
           nlinarith
         · omega

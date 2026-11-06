@@ -3,6 +3,7 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
+public import DOZZ.SharedHyp
 public import DOZZ.FourPoint.Reflected.PastOuterMass
 public import DOZZ.FourPoint.Reflected.SpatialBoundary
 /-! The actual retained GMC mass is a stopped-past observable, shown by radial reinsertion. -/
@@ -19,7 +20,7 @@ theorem reflected_source_outerMass_pastCode_ae
     (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
     (A : Ω → TwoSidedPath) (N : Ω → Measure ℂ)
     (heq : N =ᵐ[P] (fun ω => (M ω).withDensity (lateralRadialWeight γ (A ω))))
-    (hfin : ∀ ω K, IsCompact K → K ⊆ ({0} : Set ℂ)ᶜ → N ω K < ⊤)
+    (hfin : FiniteOffOrigin N)
     (α₁ α₂ α₃ ξ : ℝ) (z : ℂ) (T : ℝ≥0)
     (hr : 0 < ‖z‖^(1-ξ)) (hz : ‖z‖ < ‖z‖^(1-ξ))
     (hT : Real.exp (-(T : ℝ)) ≤ ‖z‖^(1-ξ)) :
@@ -34,7 +35,6 @@ theorem reflected_source_outerMass_pastCode_ae
     intro x hx
     have hn := hr.trans hx.1
     simpa only [mem_compl_iff,mem_singleton_iff] using norm_pos_iff.mp hn
-  have hF : Measurable F := (reflected_gammaHalfKernel_measurable γ α₁ α₂ α₃ z).ennreal_ofReal
   filter_upwards [heq,reflected_source_outerMass_eq_comparison_region P X hX γ hγ hγ₂ M hM
     α₁ α₂ α₃ ξ z hz] with ω hω ho
   rw [reflected_pastOuterMassCode_eq γ α₁ α₂ α₃ (‖z‖^(1-ξ)) z (A ω) T (N ω) hr hT (hfin ω)]
@@ -46,7 +46,7 @@ theorem reflected_source_outerMass_pastCode_ae
   rw [show (fun x : ℂ => F x*ENNReal.ofReal (reflected_global_reinsertionWeight γ (A ω) x)) =
     (fun x => ENNReal.ofReal (reflected_global_reinsertionWeight γ (A ω) x)*F x) from
       funext fun _ => mul_comm _ _]
-  have hw := setLIntegral_withDensity_eq_setLIntegral_mul (N ω) hW hF hU
+  have hw := setLIntegral_withDensity_eq_setLIntegral_mul (N ω) hW ((reflected_gammaHalfKernel_measurable γ α₁ α₂ α₃ z).ennreal_ofReal) hU
   simp only [Pi.mul_apply] at hw
   rw [← hw]
   rw [hω,reflected_global_reinsertion_measure,Measure.restrict_restrict hU,inter_eq_left.mpr hU0]

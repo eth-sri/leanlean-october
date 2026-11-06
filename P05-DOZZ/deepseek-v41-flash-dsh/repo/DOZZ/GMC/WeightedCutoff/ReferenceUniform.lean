@@ -70,8 +70,6 @@ theorem lintegral_rpow_le_measure_add_larger_order
     (hf : AEMeasurable f P) {p q : ℝ} (hp : 0 ≤ p) (hpq : p ≤ q) :
     (∫⁻ ω, ENNReal.rpow (f ω) p ∂P) ≤
       P Set.univ + ∫⁻ ω, ENNReal.rpow (f ω) q ∂P := by
-  have hqmeas : AEMeasurable (fun ω => ENNReal.rpow (f ω) q) P := by
-    exact ENNReal.continuous_rpow_const.measurable.comp_aemeasurable hf
   have hpoint (ω : Ω) : ENNReal.rpow (f ω) p ≤ 1 + ENNReal.rpow (f ω) q := by
     by_cases hω : f ω ≤ 1
     · exact (ENNReal.rpow_le_one hω hp).trans (le_add_of_nonneg_right (by positivity))

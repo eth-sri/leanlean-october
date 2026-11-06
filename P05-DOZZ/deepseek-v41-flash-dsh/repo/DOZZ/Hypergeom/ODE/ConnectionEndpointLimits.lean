@@ -3,6 +3,7 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
+public import DOZZ.SharedHyp
 
 public import DOZZ.Hypergeom.ConnectionFormulaFromBox
 public import Mathlib.Analysis.SpecialFunctions.Pow.Real
@@ -24,7 +25,7 @@ private theorem gaussSlitPlane_isOpen_for_endpointLimits : IsOpen gaussSlitPlane
 /-- Every characterized family member tends to its normalized value `1` at the regular origin. -/
 theorem gaussFamily_tendsto_one_at_zero
     {H : ℂ → ℂ → ℂ → ℂ → ℂ} (hH : IsGaussHypergeometricFamily H)
-    (a b c : ℂ) (hc : ∀ n : ℕ, c ≠ -(n : ℂ)) :
+    (a b c : ℂ) (hc : NotNegPole c) :
     Tendsto (H a b c) (𝓝 0) (𝓝 1) := by
   have hchar := hH a b c hc
   have hzero : H a b c 0 = 1 := by
@@ -47,16 +48,14 @@ private theorem tendsto_one_sub_ofReal_cpow_zero (δ : ℂ) (hδ : 0 < δ.re) :
   have hrpow : Tendsto (fun x : ℝ => (1 - x) ^ δ.re) F (𝓝 0) := by
     have hcont : ContinuousAt (fun p : ℝ × ℝ => p.1 ^ p.2) (0, δ.re) :=
       Real.continuousAt_rpow (0, δ.re) (Or.inr hδ)
-    have hconst : Tendsto (fun _ : ℝ => δ.re) F (𝓝 δ.re) := tendsto_const_nhds
-    have h := hcont.tendsto.comp (hsub.prodMk_nhds hconst)
+    have h := hcont.tendsto.comp (hsub.prodMk_nhds (tendsto_const_nhds))
     simpa [Function.comp_def, Real.zero_rpow hδ.ne'] using h
   have hnorm :
       (fun x : ℝ => ‖(1 - (x : ℂ)) ^ δ‖) =ᶠ[F]
         (fun x : ℝ => (1 - x) ^ δ.re) := by
     filter_upwards [self_mem_nhdsWithin] with x hx
-    have hxpos : 0 < 1 - x := sub_pos.mpr hx
     have hbase : 1 - (x : ℂ) = ((1 - x : ℝ) : ℂ) := by push_cast; ring
-    rw [hbase, Complex.norm_cpow_eq_rpow_re_of_pos hxpos]
+    rw [hbase, Complex.norm_cpow_eq_rpow_re_of_pos (sub_pos.mpr hx)]
   rw [tendsto_congr' hnorm]
   exact hrpow
 
@@ -173,7 +172,6 @@ theorem connectionMinusSecondCramer_eq_of_scaled_endpoint_limit
     exact hp.2 (n + 1) (by simpa [δ] using hδn)
   have hcPlus : ∀ n : ℕ, (1 + p.2.2 - p.1 - p.2.1) ≠ -(n : ℂ) := by
     intro n hn
-    have hcast : -((n + 1 : ℕ) : ℂ) = (-(n + 1 : ℤ) : ℂ) := by norm_cast
     have hδn : δ = -((n + 1 : ℕ) : ℂ) := by
       dsimp [δ]
       calc

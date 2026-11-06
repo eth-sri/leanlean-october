@@ -31,7 +31,6 @@ theorem kahaneInterpolation_diagonal_cancellation
         γ ^ 2 / 2 * ∑ i, (covX i i - covY i i) * D i =
       γ ^ 2 / 2 * ∑ i, ∑ j, (covX i j - covY i j) * K i j := by
   classical
-  have hsqrtT : Real.sqrt t ≠ 0 := ne_of_gt (Real.sqrt_pos.2 ht)
   have hsqrtOne : Real.sqrt (1 - t) ≠ 0 :=
     ne_of_gt (Real.sqrt_pos.2 (by linarith))
   have hX : (∑ i, A i) / (2 * Real.sqrt t) =

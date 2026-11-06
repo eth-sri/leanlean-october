@@ -44,14 +44,9 @@ theorem reflected_near_window {γ α₁ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2) (h
   · have : γ * (Q γ - α₁) < γ * (γ / 16) := mul_lt_mul_of_pos_left (by linarith) hγ
     nlinarith
   · set t := Q γ - α₁ with ht
-    have ht0 : 0 < t := by linarith
     have ht1 : t < γ / 16 := by linarith
     have hsq : (α₁ + γ / 2 - Q γ) ^ 2 = (γ / 2 - t) ^ 2 := by rw [ht]; ring
     rw [hsq]
-    have hb : 7 * γ / 16 < γ / 2 - t := by linarith
-    have hsq' : (7 * γ / 16) ^ 2 < (γ / 2 - t) ^ 2 := by
-      have h0 : 0 < 7 * γ / 16 := by positivity
-      nlinarith
     have hγt : γ * t < γ * (γ / 16) := mul_lt_mul_of_pos_left ht1 hγ
     nlinarith
 

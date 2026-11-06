@@ -217,7 +217,6 @@ theorem conditionedPositiveEntranceDensity_nonneg
       positivity
     · have hνpos : 0 < ν := lt_of_le_of_ne hν (Ne.symm hν0)
       simp only [conditionedPositiveEntranceDensity, hν, ht, hy, and_self, ite_true, hν0]
-      have hsinh : 0 < Real.sinh (ν * y) := Real.sinh_pos_iff.mpr (mul_pos hνpos hy)
       positivity
   · have hy' : y ≤ 0 := le_of_not_gt hy
     simp [conditionedPositiveEntranceDensity, hν, ht, not_lt.mpr hy']
@@ -483,9 +482,8 @@ theorem negativeConditionedLaw_positiveFDD
         (fun x => ENNReal.ofReal (max 0 (conditionedPositiveFDDDensity ν
           (List.ofFn fun i => (times i : ℝ)) (List.ofFn fun i => x i)))) := by
   let neg := conditionedCoordinateNegEquiv (Fin n)
-  have hnegmeas : Measurable neg := neg.measurable
   have hvol : MeasurePreserving neg (volume : Measure (Fin n → ℝ)) volume := by
-    exact ⟨hnegmeas, map_conditionedCoordinateNegEquiv_volume (Fin n)⟩
+    exact ⟨(neg.measurable), map_conditionedCoordinateNegEquiv_volume (Fin n)⟩
   have hfd := hP.2.2.2 n hn times htimes hmono
   have heval : Measurable (fun p : BrownianPath => fun i => p (times i)) := by
     apply measurable_pi_iff.mpr

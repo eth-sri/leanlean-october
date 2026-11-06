@@ -3,6 +3,7 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
+public import DOZZ.SharedHyp
 
 public import DOZZ.Brownian.Lateral.CircleRegularization
 
@@ -264,7 +265,7 @@ theorem originLateralUniversal_time_nonneg (ρ ε : ℝ) (hε : 0 < ε)
 local circle cutoff below its base ceiling. -/
 theorem originLateralUniversalRegularization_comp_ae
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hcont : ∀ᵐ ω ∂P, Continuous (fun p : ℂ × ℝ => Xc ω p.1 p.2))
+    (hcont : ContinuousCircleAvg P Xc)
     (ρ : ℝ) (hρ : 0 < ρ)
     (π : Ω → C(OriginLateralCutoffDomain ρ, ℝ))
     (hπ : π =ᵐ[P] originLateralCutoffPath Xc ρ) :
@@ -287,8 +288,8 @@ theorem originLateralUniversalRegularization_admissible
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
     (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
-    (hcont : ∀ᵐ ω ∂P, Continuous (fun p : ℂ × ℝ => Xc ω p.1 p.2))
+    (hm : MeasurableCircleAvg Xc)
+    (hcont : ContinuousCircleAvg P Xc)
     (ρ : ℝ) (hρ : 0 < ρ)
     (π : Ω → C(OriginLateralCutoffDomain ρ, ℝ)) (hπm : Measurable π)
     (hπ : π =ᵐ[P] originLateralCutoffPath Xc ρ) :

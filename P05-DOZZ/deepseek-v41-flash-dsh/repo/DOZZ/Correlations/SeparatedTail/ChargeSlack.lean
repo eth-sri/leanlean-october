@@ -41,14 +41,10 @@ theorem separatedTail_exists_uniform_holder_slack {γ ε : ℝ} (hγ : 0 < γ) (
     linarith
   refine ⟨q, hq, fun α hα hεα => ?_⟩
   have hpB := separatedTail_reflectionExponent_lt_bulk hγ hα
-  have hp0 : 0 < reflectionExponent γ α-ε := sub_pos.mpr hεα
   have hfrac : ε/(2*(B+1))*(B+1) = ε/2 := by field_simp
   have hmargin : q*(reflectionExponent γ α-ε)+ε/2 ≤ reflectionExponent γ α := by
     dsimp [q]
-    have hmul := mul_le_mul_of_nonneg_left
-      (show reflectionExponent γ α-ε ≤ B+1 by dsimp [B]; linarith) (by positivity :
-        0 ≤ ε/(2*(B+1)))
     nlinarith
-  exact ⟨mul_pos (by linarith) hp0, hmargin, hmargin.trans_lt hpB⟩
+  exact ⟨mul_pos (by linarith) (sub_pos.mpr hεα), hmargin, hmargin.trans_lt hpB⟩
 
 end DOZZ.Proofs

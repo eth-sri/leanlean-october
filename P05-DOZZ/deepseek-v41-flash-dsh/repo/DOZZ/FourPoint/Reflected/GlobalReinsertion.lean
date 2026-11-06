@@ -27,8 +27,7 @@ theorem reflected_global_reinsertionWeight_measurable (γ : ℝ) :
 theorem reflected_global_reinsertionWeight_chart (ρ γ : ℝ) (hρ : 0 < ρ)
     (A : TwoSidedPath) (x : ℂ) (hx : x ∈ originLateralChart ρ) :
     reflected_global_reinsertionWeight γ A x = originRadialReinsertionWeight ρ γ A x := by
-  have hx0 : ‖x‖ ≠ 0 := ne_of_gt (lt_trans (by linarith : 0 < 2*ρ) hx)
-  rw [reflected_global_reinsertionWeight, ite_eq_right hx0,
+  rw [reflected_global_reinsertionWeight, ite_eq_right (ne_of_gt (lt_trans (by linarith : 0 < 2*ρ) hx)),
     originRadialReinsertionWeight_chart_eq ρ γ hρ A x hx]
 
 /-- Reinsertion cancels the exact removal density, as a samplewise measure identity. -/

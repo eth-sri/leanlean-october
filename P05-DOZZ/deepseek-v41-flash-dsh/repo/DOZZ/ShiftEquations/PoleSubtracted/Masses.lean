@@ -181,11 +181,10 @@ theorem iUnion_cutoffRegion : ⋃ n, cutoffRegion n = {0}ᶜ := by
   · rintro ⟨n, hn⟩ hx0
     exact (norm_pos_iff.mp (norm_pos_of_mem_cutoffRegion hn)) hx0
   · intro hx0
-    have hpos : 0 < ‖x‖ := norm_pos_iff.mpr hx0
     obtain ⟨n, hn⟩ := exists_nat_ge (-Real.log ‖x‖)
     refine ⟨n, ?_⟩
     change Real.exp (-(n : ℝ)) ≤ ‖x‖
-    rw [← Real.le_log_iff_exp_le hpos]
+    rw [← Real.le_log_iff_exp_le (norm_pos_iff.mpr hx0)]
     linarith
 
 
@@ -305,11 +304,10 @@ theorem tendsto_cutoffTiltedMass (γ η a : ℝ) (μ : Measure ℂ) (h0 : μ {0}
 
 theorem circleTiltDensity_eq_zeroTilt (γ a : ℝ) {n m : ℕ} (hnm : n ≤ m) {x : ℂ}
     (hx : x ∈ cutoffRegion n) : circleTiltDensity γ a m x = zeroTilt γ a x := by
-  have hmn : Real.exp (-(m : ℝ)) ≤ ‖x‖ := cutoffRegion_mono hnm hx
   have hpos : 0 < ‖x‖ := norm_pos_of_mem_cutoffRegion hx
   have hnp : 0 < normPlus x := lt_of_lt_of_le one_pos (le_max_left _ _)
   unfold circleTiltDensity zeroTilt
-  rw [max_eq_right hmn, ← ENNReal.ofReal_div_of_pos hpos, ENNReal.rpow_eq_pow,
+  rw [max_eq_right (cutoffRegion_mono hnm hx), ← ENNReal.ofReal_div_of_pos hpos, ENNReal.rpow_eq_pow,
     ENNReal.ofReal_rpow_of_pos (div_pos hnp hpos), Real.rpow_def_of_pos (div_pos hnp hpos),
     Real.log_div hnp.ne' hpos.ne']
   congr 2
@@ -317,9 +315,8 @@ theorem circleTiltDensity_eq_zeroTilt (γ a : ℝ) {n m : ℕ} (hnm : n ≤ m) {
 
 theorem circleTiltDensity_of_one_le_norm (γ a : ℝ) (m : ℕ) {x : ℂ} (hx : 1 ≤ ‖x‖) :
     circleTiltDensity γ a m x = 1 := by
-  have h1 : Real.exp (-(m : ℝ)) ≤ ‖x‖ := (exp_neg_natCast_le_one m).trans hx
   unfold circleTiltDensity
-  rw [max_eq_right h1, show normPlus x = ‖x‖ from max_eq_right hx]
+  rw [max_eq_right ((exp_neg_natCast_le_one m).trans hx), show normPlus x = ‖x‖ from max_eq_right hx]
   simp
 
 theorem cutoffTiltedMass_withDensity (γ η a : ℝ) {n m : ℕ} (hnm : n ≤ m) (μ : Measure ℂ) :
@@ -442,7 +439,6 @@ theorem zeroTilt_le_one {γ a : ℝ} (hγ : 0 < γ) (ha : a ≤ 0) (x : ℂ) : z
 /-- On `C_n` a nonnegative zero charge gives a tilt at most `e^{γ a n}`. -/
 theorem zeroTilt_le_of_mem_cutoffRegion {γ a : ℝ} (hγ : 0 < γ) (ha : 0 ≤ a) {n : ℕ} {x : ℂ}
     (hx : x ∈ cutoffRegion n) : zeroTilt γ a x ≤ ENNReal.ofReal (Real.exp (γ * a * n)) := by
-  have hxn : Real.exp (-(n : ℝ)) ≤ ‖x‖ := hx
   have hpos : 0 < ‖x‖ := norm_pos_of_mem_cutoffRegion hx
   have hn1 : 1 ≤ Real.exp n := Real.one_le_exp (Nat.cast_nonneg n)
   have hratio : ENNReal.ofReal (normPlus x) / ENNReal.ofReal ‖x‖ ≤
@@ -450,7 +446,7 @@ theorem zeroTilt_le_of_mem_cutoffRegion {γ a : ℝ} (hγ : 0 < γ) (ha : 0 ≤ 
     rw [← ENNReal.ofReal_div_of_pos hpos]
     refine ENNReal.ofReal_le_ofReal ((div_le_iff₀ hpos).mpr (max_le ?_ ?_))
     · calc (1 : ℝ) = Real.exp n * Real.exp (-(n : ℝ)) := by rw [← Real.exp_add]; simp
-        _ ≤ Real.exp n * ‖x‖ := mul_le_mul_of_nonneg_left hxn (Real.exp_pos _).le
+        _ ≤ Real.exp n * ‖x‖ := mul_le_mul_of_nonneg_left (hx) (Real.exp_pos _).le
     · nlinarith
   unfold zeroTilt
   rw [ENNReal.rpow_eq_pow]

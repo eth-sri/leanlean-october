@@ -32,9 +32,8 @@ theorem weightedGmcBallMass_mono_charge (μ : Measure ℂ) {γ : ℝ} (hγ : 0 �
   apply setLIntegral_mono' Metric.isOpen_ball.measurableSet
   intro x hx
   rw [Metric.mem_ball, dist_eq_norm] at hx
-  have hx1 : ENNReal.ofReal ‖x - z‖ ≤ 1 := ENNReal.ofReal_le_one.mpr (hx.le.trans hρ1)
   rw [ENNReal.rpow_eq_pow, ENNReal.rpow_eq_pow]
-  exact ENNReal.rpow_le_rpow_of_exponent_ge hx1 hexp
+  exact ENNReal.rpow_le_rpow_of_exponent_ge (ENNReal.ofReal_le_one.mpr (hx.le.trans hρ1)) hexp
 
 /-- A positive power is at most one plus any larger power. The name carries the prefix because
 `DOZZ.Proofs.ennreal_rpow_le_one_add_rpow` is already declared in
@@ -93,12 +92,11 @@ theorem weightedGrid_le_order {γ g α a' t : ℝ} (hγ : 0 < γ) (hg : 0 < g)
 /-- Rounding up to the grid of mesh `h` moves a real number up by less than `h`. -/
 theorem weightedGrid_ceil_mul_bounds {h : ℝ} (hh : 0 < h) (α : ℝ) :
     α ≤ (⌈α / h⌉ : ℝ) * h ∧ (⌈α / h⌉ : ℝ) * h < α + h := by
-  have h1 : α / h ≤ (⌈α / h⌉ : ℝ) := Int.le_ceil _
   have h2 : (⌈α / h⌉ : ℝ) < α / h + 1 := Int.ceil_lt_add_one _
   have h3 : α / h * h = α := div_mul_cancel₀ α hh.ne'
   constructor
   · calc α = α / h * h := h3.symm
-      _ ≤ (⌈α / h⌉ : ℝ) * h := mul_le_mul_of_nonneg_right h1 hh.le
+      _ ≤ (⌈α / h⌉ : ℝ) * h := mul_le_mul_of_nonneg_right (Int.le_ceil _) hh.le
   · calc (⌈α / h⌉ : ℝ) * h < (α / h + 1) * h := mul_lt_mul_of_pos_right h2 hh
       _ = α + h := by rw [add_mul, h3, one_mul]
 
@@ -146,9 +144,8 @@ theorem weightedGrid_moment_le_term {Ω : Type*} [MeasurableSpace Ω] (P : Measu
     (hbulk : t + g ≤ 4 / γ ^ 2) (hins : t + g ≤ 2 / γ * (Q γ - α)) :
     weightedGmcBallMoment P M γ α 0 ρ t ≤ 1 + weightedGrid_term P M γ ρ g a' := by
   have hto : t ≤ weightedGrid_order γ g a' := weightedGrid_le_order hγ hg ha' hbulk hins
-  have hpos : 0 < weightedGrid_order γ g a' := ht.trans_le hto
   unfold weightedGrid_term
-  rw [ite_eq_left hpos]
+  rw [ite_eq_left (ht.trans_le hto)]
   exact weightedGrid_moment_le_one_add P M hγ.le 0 hρ1 hαa ht hto
 
 /-- Uniform bound for weighted local moments at the chart center over charges `|α| ≤ A` and

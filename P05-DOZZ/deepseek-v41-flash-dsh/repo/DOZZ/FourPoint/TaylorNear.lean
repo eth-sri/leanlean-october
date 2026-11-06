@@ -33,7 +33,6 @@ theorem twoRooted_near_bound
   let C : ℝ := C₀ * k * C₁
   refine ⟨C, by dsimp only [C, k]; positivity, ?_⟩
   intro z hz hz4 d hd hdsmall
-  have hzpos : 0 < ‖z‖ := norm_pos_iff.mpr hz
   have hnear (x : ℂ) (hx : x ∈ Metric.ball z d) : ‖x - z‖ ≤ ‖z‖ / 2 :=
     (show ‖x - z‖ < d by simpa only [Metric.mem_ball, dist_eq_norm] using hx).le.trans hdsmall
   have hunit (x : ℂ) (hx : x ∈ Metric.ball z d) : ‖x‖ ≤ 1 / 2 := by

@@ -64,7 +64,6 @@ theorem fusionMovingMass_inverse_expectation_seq {Ω : Type*} [MeasurableSpace �
   let g : Ω → ℝ≥0∞ := fun ω => fusionMovingMass γ α₁ α₂ α₃ y 0 (M ω)
   have hf : ∀ n, AEMeasurable (f n) P := fun n =>
     fusionMovingMass_aemeasurable P X hX γ hγ hγ2 M hM α₁ α₂ α₃ y (z (n + N))
-  have hg : AEMeasurable g P := fusionMovingMass_aemeasurable P X hX γ hγ hγ2 M hM α₁ α₂ α₃ y 0
   have hgb : ∫⁻ ω, g ω ^ (2 * s) ∂P ≤ C := hbound y 0 (by simp)
   have hgfin : ∀ᵐ ω ∂P, g ω ≠ ⊤ := by
     simpa only [g, fusionMovingMass, fusionMovingKernel, mul_zero] using
@@ -78,7 +77,7 @@ theorem fusionMovingMass_inverse_expectation_seq {Ω : Type*} [MeasurableSpace �
   have hfp : ∀ n, ∀ᵐ ω ∂P, f n ω ^ s ≠ ⊤ := fun n =>
     momentConv_ae_rpow_ne_top_of_neg P (f n) (hf n) hs (by linarith) hC.ne (hfb n)
   have hgp : ∀ᵐ ω ∂P, g ω ^ s ≠ ⊤ :=
-    momentConv_ae_rpow_ne_top_of_neg P g hg hs (by linarith) hC.ne hgb
+    momentConv_ae_rpow_ne_top_of_neg P g (fusionMovingMass_aemeasurable P X hX γ hγ hγ2 M hM α₁ α₂ α₃ y 0) hs (by linarith) hC.ne hgb
   have hratio : 1 < (2 * s) / s := by rw [mul_div_cancel_right₀ _ hs.ne]; norm_num
   have hlim := momentConv_tendsto_of_rpow_ne_top P f g hf hgfin hconv hs.ne hratio hC.ne hfb hfp hgp
   exact (tendsto_add_atTop_iff_nat N).mp hlim

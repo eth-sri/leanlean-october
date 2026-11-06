@@ -73,11 +73,10 @@ theorem brownian_exp_event_bound {Ω : Type*} [MeasurableSpace Ω]
     {P : Measure Ω} [IsFiniteMeasure P] {X : Ω → ℝ} (hX : Integrable (fun ω => Real.exp (X ω)) P)
     (A : Set Ω) (c : ℝ) (hA : ∀ ω ∈ A, c ≤ X ω) :
     P A ≤ ENNReal.ofReal (Real.exp (-c)*(∫ ω, Real.exp (X ω) ∂P)) := by
-  have hs : A ⊆ {ω | c ≤ X ω} := hA
   have htail := measure_ge_le_exp_mul_mgf (μ := P) (X := X) (t := 1) c (by norm_num)
     (by simpa only [one_mul] using hX)
   calc
-    P A ≤ P {ω | c ≤ X ω} := measure_mono hs
+    P A ≤ P {ω | c ≤ X ω} := measure_mono (hA)
     _ = ENNReal.ofReal (P.real {ω | c ≤ X ω}) := (ENNReal.ofReal_toReal (measure_ne_top _ _)).symm
     _ ≤ _ := by
       apply ENNReal.ofReal_le_ofReal
@@ -221,11 +220,10 @@ theorem cappedBrownianFirstPassage_lt_of_strict_crossing (x : ℝ) (T : ℝ≥0)
     cappedBrownianFirstPassage x T p < T := by
   obtain ⟨v,hv,hpv⟩ := intermediate_value_Icc (a := (0 : ℝ≥0)) (b := u)
     (f := fun t : ℝ≥0 => p t) zero_le p.continuous.continuousOn ⟨h0.le,hx.le⟩
-  have hvu : v < u := lt_of_le_of_ne hv.2 (by intro he; exact hx.ne (he ▸ hpv).symm)
   have hτv : cappedBrownianFirstPassage x T p ≤ v :=
     csInf_le (s := {t : ℝ≥0 | t ≤ T ∧ x ≤ p t} ∪ {T}) (OrderBot.bddBelow _)
       (Or.inl ⟨hv.2.trans hu,hpv ▸ le_rfl⟩)
-  exact (hτv.trans_lt hvu).trans_le hu
+  exact (hτv.trans_lt (lt_of_le_of_ne hv.2 (by intro he; exact hx.ne (he ▸ hpv).symm))).trans_le hu
 
 /-- Every finite-horizon strict crossing of a negative-drift path obeys the exponential upper bound. -/
 theorem brownianPath_negativeDrift_finiteMaximum_le (P : Measure BrownianPath)

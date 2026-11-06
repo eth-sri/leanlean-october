@@ -70,7 +70,6 @@ theorem crossing_collision_inverse_expectation_seq {Ω : Type*} [MeasurableSpace
   let g : Ω → ℝ≥0∞ := fun ω => coulombMass γ (M ω) ![-γ / 2, a, b] ![0, 0, 1] c
   have hf : ∀ n, AEMeasurable (f n) P := fun n =>
     gmc_coulombMass_aemeasurable P X hX γ hγ hγ2 M hM _ _ _
-  have hg : AEMeasurable g P := gmc_coulombMass_aemeasurable P X hX γ hγ hγ2 M hM _ _ _
   have hgfin : ∀ᵐ ω ∂P, g ω ≠ ⊤ :=
     crossing_collision_mass_finite_ae P X hX γ hγ hγ2 M hM a b c ha hb hc 0 (by simp)
   have hfin : ∀ n, ∀ᵐ ω ∂P, f n ω ≠ ⊤ := fun n =>
@@ -83,7 +82,7 @@ theorem crossing_collision_inverse_expectation_seq {Ω : Type*} [MeasurableSpace
     (fun n => (ENNReal.measurable_toReal.comp_aemeasurable (hf n)).aestronglyMeasurable) hreal
   obtain ⟨C, hC, hbound⟩ := crossing_collision_inverse_uniform
     P X hX γ hγ hγ2 M hM a b c (2 * s) (by linarith only [hs])
-  exact lintegral_rpow_tendsto_of_uniform_moment P f g hf hg hfin hgfin hconv s (2 * s)
+  exact lintegral_rpow_tendsto_of_uniform_moment P f g hf (gmc_coulombMass_aemeasurable P X hX γ hγ hγ2 M hM _ _ _) hfin hgfin hconv s (2 * s)
     (Or.inr ⟨by linarith only [hs], hs⟩) C hC.ne (fun n => hbound (z n) (hz1 n))
 
 /-- Removing the unit-disk restriction by taking a sequence tail gives the full

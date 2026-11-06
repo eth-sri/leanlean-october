@@ -30,7 +30,6 @@ theorem reflected_ennreal_inverse_relative_comparison (p d : ℝ) (hp : 0 < p) (
     (ENNReal.ofReal_pos.mpr (by norm_num : (0 : ℝ) < 1 / 4)).ne' hS).trans_le hl)
   have hTt : T ≠ ⊤ := ne_top_of_le_ne_top
     (ENNReal.add_ne_top.mpr ⟨hSt, ENNReal.mul_ne_top ENNReal.ofReal_ne_top hSt⟩) hu
-  have hs : 0 < S.toReal := ENNReal.toReal_pos hS hSt
   have hlow : S.toReal / 4 ≤ T.toReal := by
     have hh := ENNReal.toReal_mono hTt hl
     rw [ENNReal.toReal_mul, ENNReal.toReal_ofReal (by norm_num : (0 : ℝ) ≤ 1 / 4)] at hh
@@ -45,7 +44,7 @@ theorem reflected_ennreal_inverse_relative_comparison (p d : ℝ) (hp : 0 < p) (
     rw [ENNReal.toReal_add hTt (ENNReal.mul_ne_top ENNReal.ofReal_ne_top hSt),
       ENNReal.toReal_mul, ENNReal.toReal_ofReal hd] at hs'
     exact abs_le.mpr ⟨by linarith only [hs'], by linarith only [ht]⟩
-  have hh := reflected_real_inverse_relative_bound p d S.toReal T.toReal hp hs hlow herr
+  have hh := reflected_real_inverse_relative_bound p d S.toReal T.toReal hp (ENNReal.toReal_pos hS hSt) hlow herr
   have hSp := ENNReal.rpow_ne_top_of_ne_zero hS hSt (y := -p)
   have hTp := ENNReal.rpow_ne_top_of_ne_zero hT hTt (y := -p)
   have hRp : ENNReal.ofReal L * S ^ (-p) ≠ ⊤ := ENNReal.mul_ne_top ENNReal.ofReal_ne_top hSp

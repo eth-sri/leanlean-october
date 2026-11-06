@@ -3,6 +3,7 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
+public import DOZZ.SharedHyp
 public import DOZZ.FourPoint.Reflected.FirstOrderFreezing
 public import DOZZ.FourPoint.Reflected.RadialTilt
 public import DOZZ.FourPoint.Reflected.Remainder
@@ -22,7 +23,7 @@ theorem reflected_first_order_radial_error_bound
     (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
     (α₁ α₂ α₃ ξ h : ℝ) (hh : 0 ≤ h) (hξ : 0 < ξ) (hξ₁ : ξ < 1)
     (hα₁ : α₁ < Q γ) (hreflect : Q γ - α₁ < γ / 2)
-    (hs : 2 * Q γ + γ / 2 < α₁ + α₂ + α₃) :
+    (hs : SeibergSlack γ α₁ α₂ α₃) :
     ∃ C : ℝ, 0 < C ∧ ∀ᶠ z : ℂ in nhdsWithin 0 {z : ℂ | z ≠ 0},
       (∫⁻ ω, ENNReal.ofReal (Real.exp
         (γ * Xc ω 0 (-Real.log ‖z‖ + h) - γ * (Q γ - α₁) * (-Real.log ‖z‖ + h) -
@@ -124,7 +125,7 @@ theorem reflected_first_order_radial_error_littleO
     (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
     (α₁ α₂ α₃ ξ h : ℝ) (hh : 0 ≤ h) (hξ : 0 < ξ) (hξ₁ : ξ < 1)
     (hα₁ : α₁ < Q γ) (hreflect : Q γ - α₁ < γ / 2)
-    (hs : 2 * Q γ + γ / 2 < α₁ + α₂ + α₃) :
+    (hs : SeibergSlack γ α₁ α₂ α₃) :
     IsComplexLittleOAtZero (γ * (Q γ - α₁)) (fun z =>
       (((∫⁻ ω, ENNReal.ofReal (Real.exp
         (γ * Xc ω 0 (-Real.log ‖z‖ + h) - γ * (Q γ - α₁) * (-Real.log ‖z‖ + h) -

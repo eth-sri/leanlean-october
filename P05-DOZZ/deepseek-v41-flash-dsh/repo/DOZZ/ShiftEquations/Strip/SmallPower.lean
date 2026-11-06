@@ -81,7 +81,6 @@ theorem lastone_rpow_add_increment_le_moments (a b p q : ℝ)
         (by linarith : -q ≤ p - q)).trans
         (le_add_of_nonneg_left (by norm_num))
   have hbq := Real.rpow_nonneg hb q
-  have haq := Real.rpow_nonneg ha.le (-q)
   have hbSq : (b ^ q) ^ (2 : ℕ) = b ^ (2 * q) := by
     rw [← Real.rpow_natCast, ← Real.rpow_mul hb]
     congr 1
@@ -91,14 +90,11 @@ theorem lastone_rpow_add_increment_le_moments (a b p q : ℝ)
     congr 1
     ring
   have hdom : b ^ q * a ^ (p - q) ≤ 1 + 2 * b ^ (2 * q) + a ^ (-2 * q) := by
-    have hmul := mul_le_mul_of_nonneg_left hweight hbq
-    have hs1 := sq_nonneg (b ^ q - 1)
     have hs2 := sq_nonneg (b ^ q - a ^ (-q))
     rw [← hbSq, ← haSq]
     nlinarith
-  have hcoef : 0 ≤ p / q := (div_pos hp (hp.trans_le hpq)).le
   exact (lastone_rpow_add_increment_le a b p q ha hb hp hpq hq1).trans
-    (by simpa only [mul_assoc] using mul_le_mul_of_nonneg_left hdom hcoef)
+    (by simpa only [mul_assoc] using mul_le_mul_of_nonneg_left hdom ((div_pos hp (hp.trans_le hpq)).le))
 
 /-- Uniform positive and inverse moments force every varying small positive moment to tend
 to one. No convergence of the underlying random variables is required. -/
@@ -113,11 +109,10 @@ theorem lastone_smallPower_moment_tendsto_one
     (huBound : ∀ᶠ i in l, ∫⁻ ω, f i ω ^ u ∂P ≤ Cu)
     (hvBound : ∀ᶠ i in l, ∫⁻ ω, f i ω ^ (-v) ∂P ≤ Cv) :
     Tendsto (fun i => (∫⁻ ω, f i ω ^ e i ∂P).toReal) l (𝓝 1) := by
-  have hsmall : ∀ᶠ i in l, e i ≤ u := he.eventually (eventually_le_nhds hu)
   have hbounds : ∀ᶠ i in l,
       1 - e i / v * Cv.toReal ≤ (∫⁻ ω, f i ω ^ e i ∂P).toReal ∧
       (∫⁻ ω, f i ω ^ e i ∂P).toReal ≤ 1 + e i / u * Cu.toReal := by
-    filter_upwards [hepos, hsmall, hf, hfin, huBound, hvBound]
+    filter_upwards [hepos, (he.eventually (eventually_le_nhds hu)), hf, hfin, huBound, hvBound]
       with i hpi hpu hfi hfinite hUi hVi
     have hpow (p : ℝ) : AEMeasurable (fun ω => f i ω ^ p) P :=
       ENNReal.continuous_rpow_const.measurable.comp_aemeasurable hfi

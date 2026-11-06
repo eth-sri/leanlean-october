@@ -3,6 +3,7 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
+public import DOZZ.SharedHyp
 public import DOZZ.FourPoint.Reflected.GlobalCompactComparison
 /-! Full punctured-plane moments conditioned on the actual radial-path law. -/
 @[expose] public section
@@ -16,7 +17,7 @@ theorem reflected_global_mass_iterated
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) [IsProbabilityMeasure P]
     (A : Ω → TwoSidedPath) (hA : AEMeasurable A P)
     (γ : ℝ) (N : Ω → Measure ℂ) (hN : Measurable N)
-    (hfin : ∀ ω K, IsCompact K → K ⊆ ({0} : Set ℂ)ᶜ → N ω K < ⊤)
+    (hfin : FiniteOffOrigin N)
     (f : ℂ → ℝ≥0∞) (hf : Measurable f) (q : ℝ) :
     (∫⁻ ω : Ω × Ω, (∫⁻ x in ({0} : Set ℂ)ᶜ,
       f x*ENNReal.ofReal (reflected_global_reinsertionWeight γ (A ω.1) x) ∂N ω.2)^q ∂P.prod P) =

@@ -115,8 +115,7 @@ theorem planarDifferenceKernel_integral_scale (k β : ℝ) (hk : 0 < k) (hβ : k
   have hright : r ^ 2 * ((r ^ 2)⁻¹ *
       (∫ u : ℂ, DOZZ.planarDifferenceKernel k β z u)) =
       (∫ u : ℂ, DOZZ.planarDifferenceKernel k β z u) := by
-    have hr2 : r ^ 2 ≠ 0 := pow_ne_zero 2 hr.ne'
-    field_simp [hr2]
+    field_simp [(pow_ne_zero 2 hr.ne')]
   calc
     (∫ u : ℂ, DOZZ.planarDifferenceKernel k β z u) =
         r ^ 2 * ((r ^ 2)⁻¹ *

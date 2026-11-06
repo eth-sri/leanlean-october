@@ -3,6 +3,7 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
+public import DOZZ.SharedHyp
 public import DOZZ.FourPoint.Reflected.DecorrelationError
 public import DOZZ.FourPoint.Reflected.Remainder
 public import DOZZ.FourPoint.ReflectedOuter.Rates
@@ -32,11 +33,11 @@ admissible circle-chart realizations; no decorrelation or limiting bound is assu
 theorem reflected_source_decorrelation_error_on_carrier
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
     (Xc : Ω → ℂ → ℝ → ℝ) (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
-    (hcont : ∀ᵐ ω ∂P, Continuous (fun p : ℂ × ℝ => Xc ω p.1 p.2))
+    (hm : MeasurableCircleAvg Xc)
+    (hcont : ContinuousCircleAvg P Xc)
     (γ : ℝ) (hγ : 0 < γ) (hγ₂ : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
     (N : Ω → Measure ℂ) (hN : Measurable N)
-    (hfin : ∀ ω K, IsCompact K → K ⊆ ({0} : Set ℂ)ᶜ → N ω K < ⊤)
+    (hfin : FiniteOffOrigin N)
     (hwhole : ∀ (f : ℂ → ℝ≥0∞), Measurable f →
       ∀ G : TwoSidedPath × ℝ≥0∞ → ℝ≥0∞, Measurable G →
       (∫⁻ ω, G (originRadialPath Xc ω, ∫⁻ x in ({0} : Set ℂ)ᶜ, f x ∂M ω) ∂P) =
@@ -100,11 +101,9 @@ theorem reflected_source_decorrelation_error_on_carrier
     have hratio : s/r ≤ ‖z‖^ξ := by
       rw [he]
       exact mul_le_of_le_one_left (Real.rpow_nonneg hnz.le _) (Real.exp_le_one_iff.mpr (neg_nonpos.mpr hh))
-    have hsep : s/r ≤ 1/2 := hratio.trans hp.le
     have hzsep : ‖z‖ < ‖z‖^(1-ξ) := by linarith only [hz.1,hz.2.2.2.1]
-    obtain ⟨ho,hc,herr⟩ := hbound z ξ s hz.2.2.1 hzsep hz.1 hz.2.1 hs hsep
+    obtain ⟨ho,hc,herr⟩ := hbound z ξ s hz.2.2.1 hzsep hz.1 hz.2.1 hs (hratio.trans hp.le)
     let t : ℝ := A*(s/r)
-    have ht0 : 0 ≤ t := mul_nonneg hA.le (div_pos hs hz.1).le
     have ht : t ≤ A*‖z‖^ξ := mul_le_mul_of_nonneg_left hratio hA.le
     have ht1 : t ≤ 1 := ht.trans hsmallz
     have heq : γ^2*(3*(s/‖z‖^(1-ξ)))/2*(q^2+q) = t := by
@@ -114,7 +113,7 @@ theorem reflected_source_decorrelation_error_on_carrier
     refine ⟨ho,hc,herr.trans ?_⟩
     calc
       (Real.exp t-1)*Real.exp t*C₀ ≤ (2*Real.exp 1*t)*C₀ :=
-        mul_le_mul_of_nonneg_right (reflected_comparison_exponential_error_bound t ht0 ht1) hC₀.le
+        mul_le_mul_of_nonneg_right (reflected_comparison_exponential_error_bound t (mul_nonneg hA.le (div_pos hs hz.1).le) ht1) hC₀.le
       _ ≤ (2*Real.exp 1*(A*‖z‖^ξ))*C₀ :=
         mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left ht (by positivity)) hC₀.le
       _ = C*‖z‖^ξ := by dsimp only [C]; ring

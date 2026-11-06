@@ -75,7 +75,6 @@ theorem norm_sub_bpzGridCorner_le {h : ℝ} (hh : 0 < h) (x : ℂ) :
 theorem bpzGrid_floor_mem_Icc {h R t : ℝ} (hh : 0 < h) (ht : |t| ≤ R) :
     ⌊t / h⌋ ∈ Finset.Icc (-(⌈R / h⌉₊ : ℤ)) ⌈R / h⌉₊ := by
   rw [Finset.mem_Icc]
-  have hR : 0 ≤ R := (abs_nonneg t).trans ht
   have hc : R / h ≤ (⌈R / h⌉₊ : ℝ) := Nat.le_ceil _
   have hlo : -(R / h) ≤ t / h := by
     rw [neg_div', div_le_div_iff_of_pos_right hh]

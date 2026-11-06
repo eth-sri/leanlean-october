@@ -47,8 +47,7 @@ theorem measure_eq_of_Ioc_above (μ η : Measure ℝ) [IsFiniteMeasure μ] [IsFi
   rw [Measure.comap_apply e he.injective (fun _ => he.measurableSet_image.mpr) _ hpre,
     Measure.comap_apply e he.injective (fun _ => he.measurableSet_image.mpr) _ hpre,
     image_preimage_eq_inter_range] at heq
-  have hrange : range e = Ioi s := Subtype.range_coe
-  rw [hrange] at heq
+  rw [(Subtype.range_coe)] at heq
   rw [← hrμ, ← hrη, Measure.restrict_apply hA, Measure.restrict_apply hA]
   exact heq
 

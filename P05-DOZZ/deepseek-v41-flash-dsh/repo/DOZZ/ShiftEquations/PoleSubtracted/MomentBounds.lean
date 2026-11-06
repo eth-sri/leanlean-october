@@ -166,13 +166,12 @@ theorem lintegral_localMass_rpow_neg_lt_top {Ω : Type*} [MeasurableSpace Ω] (P
     intro ω
     have _ := hM.1 ω
     have hle := ball_le_localMass hγ hη hηγ (M ω)
-    have hm : M ω (Metric.ball 2 (1 / 2)) ≠ ⊤ := measure_ne_top _ _
     calc poleLocalMass γ (2 / γ + η) (2 / γ - η) (M ω) ^ (-q)
         ≤ ((1 / 9 : ℝ≥0∞) * M ω (Metric.ball 2 (1 / 2))) ^ (-q) := by
           rw [ENNReal.rpow_neg, ENNReal.rpow_neg]
           exact ENNReal.inv_le_inv.2 (ENNReal.rpow_le_rpow hle hq.le)
       _ = 9 ^ q * ENNReal.rpow (M ω (Metric.ball 2 (1 / 2))) (-q) := by
-          rw [ENNReal.mul_rpow_of_ne_top (by simp) hm, ENNReal.rpow_eq_pow,
+          rw [ENNReal.mul_rpow_of_ne_top (by simp) (measure_ne_top _ _), ENNReal.rpow_eq_pow,
             one_div, ENNReal.inv_rpow, ← ENNReal.rpow_neg, neg_neg]
   calc ∫⁻ ω, poleLocalMass γ (2 / γ + η) (2 / γ - η) (M ω) ^ (-q) ∂P
       ≤ ∫⁻ ω, 9 ^ q * ENNReal.rpow (M ω (Metric.ball 2 (1 / 2))) (-q) ∂P := lintegral_mono hpt

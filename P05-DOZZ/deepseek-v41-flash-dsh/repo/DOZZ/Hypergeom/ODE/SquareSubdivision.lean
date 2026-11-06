@@ -43,13 +43,10 @@ theorem exists_square_grid_subdivision {Γ : ℝ × ℝ → ℂ}
       exact_mod_cast hi
   refine ⟨N, hNnat, ?_⟩
   intro i hi j hj s hs t ht
-  have hiNext : i + 1 ≤ N := Nat.succ_le_iff.mpr hi
-  have hjNext : j + 1 ≤ N := Nat.succ_le_iff.mpr hj
   have hleft := hcoord i (Nat.le_of_lt hi)
-  have hright := hcoord (i + 1) hiNext
+  have hright := hcoord (i + 1) (Nat.succ_le_iff.mpr hi)
   have hbottom := hcoord j (Nat.le_of_lt hj)
-  have htop := hcoord (j + 1) hjNext
-  have hs01 : s ∈ Icc (0 : ℝ) 1 := ⟨le_trans hleft.1 hs.1, le_trans hs.2 hright.2⟩
+  have htop := hcoord (j + 1) (Nat.succ_le_iff.mpr hj)
   have ht01 : t ∈ Icc (0 : ℝ) 1 := ⟨le_trans hbottom.1 ht.1, le_trans ht.2 htop.2⟩
   have hsDist : dist s ((i : ℝ) / (N : ℝ)) ≤ 1 / (N : ℝ) := by
     have hlen : (((i + 1 : ℕ) : ℝ) / (N : ℝ)) - (i : ℝ) / (N : ℝ) =
@@ -65,7 +62,7 @@ theorem exists_square_grid_subdivision {Γ : ℝ × ℝ → ℂ}
       ((i : ℝ) / (N : ℝ), (j : ℝ) / (N : ℝ)) < δ := by
     rw [Prod.dist_eq]
     exact max_lt (hsDist.trans_lt hgap) (htDist.trans_lt hgap)
-  have hbase := hclose (s, t) ⟨hs01, ht01⟩
+  have hbase := hclose (s, t) ⟨(⟨le_trans hleft.1 hs.1, le_trans hs.2 hright.2⟩), ht01⟩
     ((i : ℝ) / (N : ℝ), (j : ℝ) / (N : ℝ)) ⟨hleft, hbottom⟩ hprod
   exact hbase
 

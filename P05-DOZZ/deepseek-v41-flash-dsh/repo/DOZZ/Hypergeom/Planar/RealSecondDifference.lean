@@ -118,22 +118,17 @@ theorem integrable_planarRealSecondDifferenceQuotient (k β : ℝ)
   · let C : ℝ := 2 * (k * (1 + (15 / 4) * ((1 - k / 2) *
         (1 / 4 : ℝ) ^ (k / 2 - 2))) + (3 ^ k + 2 ^ k) * 2 ^ (2 - k))
     let bound : ℂ → ℝ := fun u => C * (‖u‖ ^ (-β) * ‖u - 1‖ ^ (k - 2))
-    have hC : 0 ≤ C := by
-      dsimp [C]
-      have hk₂ : 0 < 1 - k / 2 := by linarith [hβ, hβ₂]
-      positivity
     have hRiesz := positive_riesz_convolution_integrable k β hk hβ hβ₂ 1 (by norm_num)
     have hboundInt : Integrable bound volume := by
       simpa [bound, C, mul_assoc] using hRiesz.const_mul C
     have hpoint : ∀ᵐ u ∂volume,
         ‖planarRealSecondDifferenceQuotient k β t u‖ ≤ bound u := by
       filter_upwards [Measure.ae_ne volume (1 : ℂ)] with u hu
-      have hx : u - 1 ≠ 0 := sub_ne_zero.mpr hu
       have hk₂ : k < 2 := by linarith [hβ, hβ₂]
       have hnorm : 0 ≤ ‖u‖ ^ (-β) := Real.rpow_nonneg (norm_nonneg u) _
       rw [planarRealSecondDifferenceQuotient, Real.norm_eq_abs, abs_mul,
         abs_of_nonneg hnorm]
-      have hdiff := normPowerRealSecondDifference_le k hk hk₂ (u - 1) t hx ht
+      have hdiff := normPowerRealSecondDifference_le k hk hk₂ (u - 1) t (sub_ne_zero.mpr hu) ht
       have hmul := mul_le_mul_of_nonneg_left hdiff hnorm
       exact hmul.trans_eq (by dsimp only [bound, C]; ring)
     apply hboundInt.mono'
@@ -144,9 +139,8 @@ theorem integrable_planarRealSecondDifferenceQuotient (k β : ℝ)
 theorem planarRealSecondDifferenceQuotient_tendsto (k β : ℝ) (u : ℂ) (hu : u ≠ 1) :
     Tendsto (fun t : ℝ => planarRealSecondDifferenceQuotient k β t u)
       (𝓝[≠] (0 : ℝ)) (𝓝 (planarRealSecondDifferenceLimit k β u)) := by
-  have hx : u - 1 ≠ 0 := sub_ne_zero.mpr hu
   let w : ℝ := ‖u‖ ^ (-β)
-  have hrad := norm_rpow_real_centered_difference_tendsto k (u - 1) hx
+  have hrad := norm_rpow_real_centered_difference_tendsto k (u - 1) (sub_ne_zero.mpr hu)
   have hmul : Tendsto
       (fun t : ℝ => w * normPowerRealSecondDifference k t (u - 1))
       (𝓝[≠] (0 : ℝ))
@@ -164,10 +158,6 @@ theorem planarRealSecondDifferenceQuotient_integral_tendsto (k β : ℝ)
   let C : ℝ := 2 * (k * (1 + (15 / 4) * ((1 - k / 2) *
     (1 / 4 : ℝ) ^ (k / 2 - 2))) + (3 ^ k + 2 ^ k) * 2 ^ (2 - k))
   let bound : ℂ → ℝ := fun u => C * (‖u‖ ^ (-β) * ‖u - 1‖ ^ (k - 2))
-  have hC : 0 ≤ C := by
-    dsimp [C]
-    have hk₂ : 0 < 1 - k / 2 := by linarith [hβ, hβ₂]
-    positivity
   have hRiesz := positive_riesz_convolution_integrable k β hk hβ hβ₂ 1 (by norm_num)
   have hboundInt : Integrable bound volume := by
     simpa [bound, C, mul_assoc] using hRiesz.const_mul C
@@ -180,12 +170,11 @@ theorem planarRealSecondDifferenceQuotient_integral_tendsto (k β : ℝ)
     filter_upwards [self_mem_nhdsWithin] with t ht
     have ht0 : t ≠ 0 := by simpa using ht
     filter_upwards [Measure.ae_ne volume (1 : ℂ)] with u hu
-    have hx : u - 1 ≠ 0 := sub_ne_zero.mpr hu
     have hk₂ : k < 2 := by linarith [hβ, hβ₂]
     have hnorm : 0 ≤ ‖u‖ ^ (-β) := Real.rpow_nonneg (norm_nonneg u) _
     rw [planarRealSecondDifferenceQuotient, Real.norm_eq_abs, abs_mul,
       abs_of_nonneg hnorm]
-    have hdiff := normPowerRealSecondDifference_le k hk hk₂ (u - 1) t hx ht0
+    have hdiff := normPowerRealSecondDifference_le k hk hk₂ (u - 1) t (sub_ne_zero.mpr hu) ht0
     have hmul := mul_le_mul_of_nonneg_left hdiff hnorm
     exact hmul.trans_eq (by dsimp only [bound, C]; ring)
   have hlim : ∀ᵐ u ∂volume, Tendsto

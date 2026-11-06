@@ -29,7 +29,6 @@ theorem meromorphic_shiftCoeffA (γ : ℝ) (χ α₂ α₃ : ℂ) :
     Meromorphic (fun z => shiftCoeffA γ χ z α₂ α₃) := by
   intro x
   unfold shiftCoeffA
-  have h1 : MeromorphicAt (fun _ : ℂ => lFun (-χ ^ 2)) x := MeromorphicAt.const _ _
   have h2 := meromorphicAt_lFun_comp (f := fun z : ℂ => χ * z) (z := x) (by fun_prop)
   have h3 := meromorphicAt_lFun_comp (f := fun z : ℂ => χ * z - χ ^ 2) (z := x) (by fun_prop)
   have h4 := meromorphicAt_lFun_comp (f := fun z : ℂ => χ / 2 * ((z + α₂ + α₃) - 2 * z - χ))
@@ -40,7 +39,7 @@ theorem meromorphic_shiftCoeffA (γ : ℝ) (χ α₂ α₃ : ℂ) :
     (f := fun z : ℂ => χ / 2 * ((z + α₂ + α₃) - 2 * α₃ - χ)) (z := x) (by fun_prop)
   have h7 := meromorphicAt_lFun_comp
     (f := fun z : ℂ => χ / 2 * ((z + α₂ + α₃) - 2 * α₂ - χ)) (z := x) (by fun_prop)
-  exact (((h1.mul h2).mul h3).mul h4).div ((h5.mul h6).mul h7)
+  exact ((((MeromorphicAt.const _ _).mul h2).mul h3).mul h4).div ((h5.mul h6).mul h7)
 
 /-- Real translations preserve horizontal strips. -/
 theorem add_ofReal_mem_horizontalStrip_glue {h : ℝ} {z : ℂ} (hz : z ∈ horizontalStrip h) (t : ℝ) :

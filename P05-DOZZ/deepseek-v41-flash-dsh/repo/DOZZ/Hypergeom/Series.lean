@@ -3,6 +3,7 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
+public import DOZZ.SharedHyp
 
 public import DOZZ.Hypergeom.Defs
 import Mathlib.Analysis.Calculus.FDeriv.Analytic
@@ -18,7 +19,7 @@ namespace DOZZ.Proofs
 /-- The ordinary Gauss series has positive convergence radius whenever its denominator parameter
 is not a nonpositive integer. -/
 theorem ordinaryHypergeometricSeries_radius_pos (a b c : ℂ)
-    (hc : ∀ n : ℕ, c ≠ -(n : ℂ)) :
+    (hc : NotNegPole c) :
     0 < (ordinaryHypergeometricSeries ℂ a b c).radius := by
   by_cases ha : ∃ n : ℕ, a = -(n : ℂ)
   · obtain ⟨n, hn⟩ := ha
@@ -61,7 +62,7 @@ theorem ordinaryHypergeometricSeries_radius_pos (a b c : ℂ)
 denominator parameter is not a nonpositive integer. Terminating numerator parameters have
 infinite radius; otherwise the radius is exactly one. -/
 theorem ordinaryHypergeometricSeries_one_le_radius (a b c : ℂ)
-    (hc : ∀ n : ℕ, c ≠ -(n : ℂ)) :
+    (hc : NotNegPole c) :
     1 ≤ (ordinaryHypergeometricSeries ℂ a b c).radius := by
   by_cases ha : ∃ n : ℕ, a = -(n : ℂ)
   · obtain ⟨n, hn⟩ := ha

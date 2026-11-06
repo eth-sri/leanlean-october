@@ -66,10 +66,9 @@ theorem wirtingerZ_second_reflection
   have hAt : ContDiffAt ℝ 2 f (1 - z) :=
     hf (1 - z) hz' |>.contDiffAt (hU.mem_nhds hz')
   have hmap : ContDiffAt ℝ 2 (fun w : ℂ => (1 : ℂ) - w) z := by fun_prop
-  have hcomp : ContDiffAt ℝ 2 (fun w => f (1 - w)) z := hAt.comp z hmap
   have hleft : DifferentiableAt ℝ
       (fun w => wirtingerZ (fun v => f (1 - v)) w) z :=
-    differentiableAt_wirtingerZ_of_contDiffAt_two hcomp
+    differentiableAt_wirtingerZ_of_contDiffAt_two (hAt.comp z hmap)
   have hG : DifferentiableAt ℝ (fun w => wirtingerZ f w) (1 - z) :=
     differentiableAt_wirtingerZ_of_contDiffAt_two hAt
   have hmapDiff : DifferentiableAt ℝ (fun w : ℂ => (1 : ℂ) - w) z :=

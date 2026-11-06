@@ -63,9 +63,8 @@ theorem inverse_fixed_disk_uniform
     ∃ C : ℝ, 0 < C ∧ ∀ I : Ω → ℝ≥0∞,
       (∀ ω, ENNReal.ofReal w * M ω (Metric.ball (3 : ℂ) (1 / 8)) ≤ I ω) →
         (∫⁻ ω, I ω ^ (-q) ∂P) ≤ ENNReal.ofReal C := by
-  have hp : -q < 4 / γ ^ 2 := lt_of_le_of_lt (neg_nonpos.mpr hq) (by positivity)
   obtain ⟨Cb, hCb, hball⟩ := equatorGFF_GMC_ball_moment_bound P X hX γ hγ hγ2 M hM
-    (-q) hp {(3 : ℂ)} isCompact_singleton
+    (-q) (lt_of_le_of_lt (neg_nonpos.mpr hq) (by positivity)) {(3 : ℂ)} isCompact_singleton
   let ξ : ℝ := γ * Q γ * (-q) - γ ^ 2 * (-q) ^ 2 / 2
   let C : ℝ := w ^ (-q) * (Cb * (1 / 8 : ℝ) ^ ξ)
   refine ⟨C, by dsimp only [C]; positivity, ?_⟩

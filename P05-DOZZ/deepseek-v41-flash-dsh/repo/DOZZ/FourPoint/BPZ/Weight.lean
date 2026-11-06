@@ -47,8 +47,6 @@ theorem bpz_continuous_normPlus : Continuous normPlus := by
 
 theorem bpzBaseWeight_nonneg (x : ℂ) : 0 ≤ bpzBaseWeight γ χ α₁ α₂ α₃ x := by
   unfold bpzBaseWeight
-  have h1 := Real.rpow_nonneg (norm_nonneg x) (-(γ * α₁))
-  have h2 := Real.rpow_nonneg (norm_nonneg (x - 1)) (-(γ * α₂))
   have h3 := Real.rpow_nonneg (bpz_normPlus_pos x).le (γ * (α₁ + α₂ + α₃ - χ))
   positivity
 

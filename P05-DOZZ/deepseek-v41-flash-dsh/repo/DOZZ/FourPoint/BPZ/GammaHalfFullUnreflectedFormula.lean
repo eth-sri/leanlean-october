@@ -3,6 +3,7 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
+public import DOZZ.SharedHyp
 
 public import DOZZ.FourPoint.BPZ.UnreflectedD
 public import DOZZ.FourPoint.Diagonal.Assembly
@@ -28,7 +29,7 @@ theorem gammaHalf_full_unreflected_formula {Ω : Type*} [MeasurableSpace Ω]
     (hγ : 0 < γ) (hγ₂ : γ < 2) (hμ : 0 < μ)
     (hαlo : γ / 2 < α₁) (hαhi : α₁ < 2 / γ)
     (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ)
-    (hs : 2 * Q γ + γ / 2 < α₁ + α₂ + α₃)
+    (hs : SeibergSlack γ α₁ α₂ α₃)
     (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M) :
     let a := gaussParameterA γ (γ / 2) α₁ α₂ α₃
     let b := gaussParameterB γ (γ / 2) α₁ α₂ α₃

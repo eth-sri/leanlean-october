@@ -3,6 +3,7 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
+public import DOZZ.SharedHyp
 public import DOZZ.FourPoint.Reflected.WeightedSpatialLimit
 /-! Both compact comparison directions for literal extended-real global masses. -/
 @[expose] public section
@@ -13,7 +14,7 @@ namespace DOZZ.Proofs
 theorem reflected_global_compact_mass_comparison
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
     (Xc : Ω → ℂ → ℝ → ℝ) (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
+    (hm : MeasurableCircleAvg Xc)
     (ρ γ : ℝ) (hρ : 0 < ρ) (N : Ω → Measure ℂ)
     (hN : IsAdmissibleGMCVersion P (originLateralChart ρ) originLateralPlaneDensity
       (originLateralCircleRegularization Xc ρ) γ (fun ω => (N ω).restrict (originLateralChart ρ)))
@@ -36,8 +37,7 @@ theorem reflected_global_compact_mass_comparison
   have hK0 : K ⊆ ({0} : Set ℂ)ᶜ := by
     intro x hx
     have hh : 2*ρ < ‖x‖ := hKU hx
-    have hx0 : x ≠ 0 := norm_ne_zero_iff.mp (ne_of_gt (by linarith : 0 < ‖x‖))
-    simpa using hx0
+    simpa using (norm_ne_zero_iff.mp (ne_of_gt (by linarith : 0 < ‖x‖)))
   have hW : Measurable (fun x => ENNReal.ofReal (reflected_global_reinsertionWeight γ a x)) :=
     ((reflected_global_reinsertionWeight_measurable γ).comp
       (measurable_const.prodMk measurable_id)).ennreal_ofReal

@@ -192,7 +192,6 @@ theorem le_fastCutoff (R : ChartTestSystem.Index → ℕ → ℝ) (e : ℕ → C
     Finset.single_le_sum (f := fun k' => ∑ i' ∈ Finset.range (k' + 1), |R (e i') k'|)
       (fun _ _ => Finset.sum_nonneg fun _ _ => abs_nonneg _)
       (Finset.mem_range.mpr (show k < j + 1 by omega))
-  have hj : (0 : ℝ) ≤ j := Nat.cast_nonneg j
   linarith [le_abs_self (R (e i) k)]
 
 theorem const_le_fastCutoff (R : ChartTestSystem.Index → ℕ → ℝ)
@@ -200,7 +199,6 @@ theorem const_le_fastCutoff (R : ChartTestSystem.Index → ℕ → ℝ)
   unfold fastCutoff
   have h1 : (0 : ℝ) ≤ ∑ k ∈ Finset.range (j + 1), ∑ i ∈ Finset.range (k + 1), |R (e i) k| :=
     Finset.sum_nonneg fun _ _ => Finset.sum_nonneg fun _ _ => abs_nonneg _
-  have hj : (0 : ℝ) ≤ j := Nat.cast_nonneg j
   linarith
 
 theorem nat_le_fastCutoff (R : ChartTestSystem.Index → ℕ → ℝ)
@@ -465,13 +463,12 @@ theorem abs_admissibleCutoffIntegral_sub_le_mass
     calc δ * |(T.mass n : ℂ → ℝ) x| ≤ δ * 1 := mul_le_mul_of_nonneg_left (hχL x) hδ
       _ = δ := mul_one δ
   have hδχS : ∀ x ∉ S, δ * (T.mass n : ℂ → ℝ) x = 0 := fun x hx => by rw [hχS x hx, mul_zero]
-  have hnegm : Measurable (fun x => -δ * (T.mass n : ℂ → ℝ) x) := hχm.const_mul (-δ)
   have hnegL : ∀ x, |-δ * (T.mass n : ℂ → ℝ) x| ≤ δ := fun x => by
     rw [neg_mul, abs_neg]; exact hδχL x
   have hnegS : ∀ x ∉ S, -δ * (T.mass n : ℂ → ℝ) x = 0 := fun x hx => by rw [hχS x hx, mul_zero]
   have hup := admissibleCutoffIntegral_mono P U dens ε₀ Y hY S γ r ω hω (Lg + Lh) δ _ _ hdiffm
     hδχm hdiffL hδχL hdiffS hδχS (fun x => (le_abs_self _).trans (hband x))
-  have hlow := admissibleCutoffIntegral_mono P U dens ε₀ Y hY S γ r ω hω δ (Lg + Lh) _ _ hnegm
+  have hlow := admissibleCutoffIntegral_mono P U dens ε₀ Y hY S γ r ω hω δ (Lg + Lh) _ _ (hχm.const_mul (-δ))
     hdiffm hnegL hdiffL hnegS hdiffS (fun x => by
       have := (neg_abs_le (g x - h x)).trans' (neg_le_neg (hband x))
       linarith)

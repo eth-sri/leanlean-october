@@ -128,15 +128,13 @@ theorem bpzWardCutWeight_bdd (hd : BPZWardData γ q r δ ρ kt k₂ φ D) :
     have : γ ^ 2 * q * bpzPin r y + γ ^ 2 * bpzPin r y = γ ^ 2 * (q + 1) * bpzPin r y := by ring
     rw [this]
     exact mul_le_mul_of_nonneg_left hpin (by positivity)
-  have hkt : kt y ≤ max Bk 0 := le_trans (hBk y hy) (le_max_left _ _)
   have hp4 : normPlus y ^ (4 : ℝ) ≤ (max R 0 + 1) ^ (4 : ℝ) :=
     Real.rpow_le_rpow (bpz_normPlus_pos y).le hnp (by norm_num)
-  have hkt0 := hd.kt_nonneg y
   have hn4 : 0 ≤ normPlus y ^ (4 : ℝ) := Real.rpow_nonneg (bpz_normPlus_pos y).le _
   calc kt y * normPlus y ^ (4 : ℝ) * Real.exp (γ ^ 2 * q * bpzPin r y + γ ^ 2 * bpzPin r y)
       ≤ max Bk 0 * (max R 0 + 1) ^ (4 : ℝ) *
           Real.exp (γ ^ 2 * (q + 1) * (Real.log (max R 0 + 1) + 1)) := by
-        apply mul_le_mul (mul_le_mul hkt hp4 hn4 (le_max_right _ _)) hexp (Real.exp_pos _).le
+        apply mul_le_mul (mul_le_mul (le_trans (hBk y hy) (le_max_left _ _)) hp4 hn4 (le_max_right _ _)) hexp (Real.exp_pos _).le
         exact mul_nonneg (le_max_right _ _) (Real.rpow_nonneg (by positivity) _)
 
 end Bounds
@@ -376,13 +374,11 @@ theorem bpzWard_integrable_rpow_neg (hp : BPZWardProb P X γ M Xc ρ k₂ D) (hD
     {Y : Ω → ℝ} (hYm : AEStronglyMeasurable Y P) {c : ℝ} (hc : 0 < c)
     (hlow : ∀ᵐ ω ∂P, c * (M ω D).toReal ≤ Y ω) {p : ℝ} (hp0 : 0 ≤ p) :
     Integrable (fun ω => Y ω ^ (-p)) P := by
-  have hmD : Measurable (fun ω => M ω D) := (Measure.measurable_coe hD).comp hp.hMm
   have hg : Integrable (fun ω => (M ω D ^ (-p)).toReal) P :=
-    integrable_toReal_of_lintegral_ne_top (hmD.aemeasurable.pow_const _) (hp.D_neg p hp0).ne
+    integrable_toReal_of_lintegral_ne_top (((Measure.measurable_coe hD).comp hp.hMm).aemeasurable.pow_const _) (hp.D_neg p hp0).ne
   refine (hg.const_mul (c ^ (-p))).mono' (hYm.aemeasurable.pow_const _).aestronglyMeasurable ?_
   filter_upwards [hlow, bpzWard_far_mass_pos hp hD] with ω hω hpos
-  have hY : 0 < Y ω := lt_of_lt_of_le (mul_pos hc hpos) hω
-  rw [Real.norm_eq_abs, abs_of_nonneg (Real.rpow_nonneg hY.le _), ← ENNReal.toReal_rpow,
+  rw [Real.norm_eq_abs, abs_of_nonneg (Real.rpow_nonneg (lt_of_lt_of_le (mul_pos hc hpos) hω).le _), ← ENNReal.toReal_rpow,
     ← Real.mul_rpow hc.le hpos.le]
   exact Real.rpow_le_rpow_of_nonpos (mul_pos hc hpos) hω (by linarith)
 

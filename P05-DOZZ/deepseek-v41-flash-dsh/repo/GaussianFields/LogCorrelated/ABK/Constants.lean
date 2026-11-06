@@ -119,16 +119,14 @@ theorem abkCutoffSelfConvolution_zero {d : Nat} (ζ : ABKCutoff d) :
   unfold abkCutoffSelfConvolution abkM0
   refine integral_congr_ae ?_
   filter_upwards with y
-  have hneg : ζ (-y) = ζ y := ζ.radial _ _ (euclideanNorm_neg y)
   simp only [zero_sub]
-  rw [hneg]
+  rw [(ζ.radial _ _ (euclideanNorm_neg y))]
   ring
 
 /-- The cutoff square mass `M_0` is strictly positive. -/
 theorem abkM0_pos {d : Nat} (ζ : ABKCutoff d) : 0 < abkM0 ζ := by
   unfold abkM0
   let f : Vec d → ℝ := fun x => (ζ x) ^ (2 : Nat)
-  have hf_cont : Continuous f := ζ.continuous.pow 2
   have hf_int : Integrable f (volume : Measure (Vec d)) := by
     simpa [f] using ζ.memLp_two.integrable_sq
   have hf_nonneg : 0 ≤ f := by
@@ -140,7 +138,7 @@ theorem abkM0_pos {d : Nat} (ζ : ABKCutoff d) : 0 < abkM0 ζ := by
     dsimp [f]
     rw [ζ.eq_one_of_norm_le_half 0 hzero_norm]
     norm_num
-  exact integral_pos_of_integrable_nonneg_nonzero hf_cont hf_int hf_nonneg hf_zero
+  exact integral_pos_of_integrable_nonneg_nonzero (ζ.continuous.pow 2) hf_int hf_nonneg hf_zero
 
 /-- The cutoff square mass `M_0` is nonzero. -/
 theorem abkM0_ne_zero {d : Nat} (ζ : ABKCutoff d) : abkM0 ζ ≠ 0 :=
@@ -150,11 +148,10 @@ theorem abkM0_ne_zero {d : Nat} (ζ : ABKCutoff d) : abkM0 ζ ≠ 0 :=
 prefactor. -/
 theorem abkNormalizationRadicand_mul_abkM0 {d : Nat} (ζ : ABKCutoff d) :
     abkNormalizationRadicand ζ * abkM0 ζ = abkLGFCovarianceConstant d := by
-  have hM0 : abkM0 ζ ≠ 0 := abkM0_ne_zero ζ
   have htwopi : (2 * Real.pi) ^ d ≠ 0 :=
     pow_ne_zero d (mul_ne_zero (by norm_num : (2 : ℝ) ≠ 0) Real.pi_ne_zero)
   unfold abkNormalizationRadicand abkLGFCovarianceConstant
-  field_simp [hM0, htwopi]
+  field_simp [(abkM0_ne_zero ζ), htwopi]
 
 end GaussianFields
 

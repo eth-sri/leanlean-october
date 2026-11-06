@@ -3,6 +3,7 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
+public import DOZZ.SharedHyp
 
 public import DOZZ.ShiftEquations.FirstStrip.Seed
 public import DOZZ.ShiftEquations.DualR.Segment
@@ -46,7 +47,7 @@ theorem structureConstant_first_shift_strip_of_unreflected
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
     (M : Ω → Measure ℂ) (γ μ η : ℝ)
     (hγ : 0 < γ) (hγ2 : γ < 2) (hμ : 0 < μ)
-    (hη : 0 < η ∧ Q γ - 2 * η > γ)
+    (hη : DriftWindow γ η)
     (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M)
     (α₂ α₃ : ℝ)
     (hα₂ : Q γ - η < α₂ ∧ α₂ < Q γ)
@@ -189,8 +190,6 @@ theorem structureConstant_first_shift_strip_of_unreflected
       exact mul_ne_zero (neg_ne_zero.mpr (mul_ne_zero hπc hμc)) (inv_ne_zero hu2)
   have hrel : ∀ x : ℝ, d₁ < x → x < d₂ → g ((x : ℂ) - (γ : ℂ)) = m x * g x := by
     intro x h1 h2
-    have hxa : γ + 2 * η < x := lt_of_le_of_lt (le_max_right _ _) h1
-    have hxb : x < Q γ := lt_of_lt_of_le h2 (min_le_right _ _)
     have hxδ : dist x x₁ < δ := by
       rw [Real.dist_eq, abs_lt]
       constructor
@@ -206,7 +205,7 @@ theorem structureConstant_first_shift_strip_of_unreflected
     rw [show x - γ / 2 + γ / 2 = x by ring, show x - γ / 2 - γ / 2 = x - γ by ring,
       show ((x - γ / 2 : ℝ) : ℂ) = (x : ℂ) - γ / 2 by push_cast; ring] at hseed
     rw [show (x : ℂ) - (γ : ℂ) = ((x - γ : ℝ) : ℂ) by push_cast; ring,
-      hgv (x - γ) (by linarith) (by linarith), hgv x (by linarith) hxb]
+      hgv (x - γ) (by linarith) (by linarith), hgv x (by linarith) (lt_of_lt_of_le h2 (min_le_right _ _))]
     simp only [hm]
     change A ((x : ℂ) - γ / 2) ≠ 0 at hAx
     rw [hseed]
@@ -221,8 +220,7 @@ theorem structureConstant_first_shift_strip_of_unreflected
       G (z + ((γ / 2 : ℝ) : ℂ)) = (fun z => -(1 / (Real.pi * μ)) * A z) z *
         G (z + ((-(γ / 2) : ℝ) : ℂ)) := by
     intro w hw
-    have hw' : w + ((γ / 2 : ℝ) : ℂ) ∈ horizontalStrip h := add_ofReal_mem_horizontalStrip_glue hw _
-    have h1 := ShiftGluing.eventually_comp_add (z := w) ((γ / 2 : ℝ) : ℂ) (hGrel _ hw')
+    have h1 := ShiftGluing.eventually_comp_add (z := w) ((γ / 2 : ℝ) : ℂ) (hGrel _ (add_ofReal_mem_horizontalStrip_glue hw _))
     have h2 := (eventually_codiscrete_iff_forall_eventually_nhdsNE.mp hAne) w
     filter_upwards [h1, h2] with z hz hAz
     have e1 : z + ((γ / 2 : ℝ) : ℂ) - (γ : ℂ) = z + ((-(γ / 2) : ℝ) : ℂ) := by push_cast; ring

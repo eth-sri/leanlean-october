@@ -347,13 +347,11 @@ theorem abkScaledCutoffSelfConvolution_le_volume_closedBall {d : Nat}
     filter_upwards with y
     by_cases hyS : y ∈ S
     · have hleft_le : abkScaledCutoff ζ r y ≤ 1 := ζ.le_one _
-      have hright_le : abkScaledCutoff ζ r (x - y) ≤ 1 := ζ.le_one _
-      have hleft_nonneg : 0 ≤ abkScaledCutoff ζ r y := ζ.nonneg _
       have hright_nonneg : 0 ≤ abkScaledCutoff ζ r (x - y) := ζ.nonneg _
       rw [Set.indicator_of_mem hyS]
       calc
         abkScaledCutoff ζ r y * abkScaledCutoff ζ r (x - y)
-            ≤ 1 * 1 := mul_le_mul hleft_le hright_le hright_nonneg zero_le_one
+            ≤ 1 * 1 := mul_le_mul hleft_le (ζ.le_one _) hright_nonneg zero_le_one
         _ = 1 := by norm_num
     · have hleft_zero : abkScaledCutoff ζ r y = 0 := by
         by_contra hne
@@ -385,10 +383,9 @@ theorem abkScaledCutoffSelfConvolution_le_pow {d : Nat}
         (volume : Measure (Vec d)) {y : Vec d | euclideanNorm y ≤ r} ≤
           ENNReal.ofReal ((2 * r) ^ d) :=
       volume_euclideanClosedBall_le (d := d) hr.le
-    have htop : ENNReal.ofReal ((2 * r) ^ d) ≠ ∞ := ENNReal.ofReal_ne_top
     have hnonneg : 0 ≤ (2 * r) ^ d := by positivity
     simpa [ENNReal.toReal_ofReal hnonneg] using
-      ENNReal.toReal_mono htop hvol_le
+      ENNReal.toReal_mono (ENNReal.ofReal_ne_top) hvol_le
   exact hvol.trans hmeasure
 
 /-- The tail `r^{-1-α}` is integrable on `[c,∞)` for `α,c>0`. -/
@@ -410,11 +407,6 @@ theorem integral_indicator_Ici_rpow_neg_one_sub {α c : ℝ}
         (Set.Ici c).indicator (fun r : ℝ => r ^ (-(1 + α))) r
         ∂(volume : Measure ℝ)) =
       c ^ (-α) / α := by
-  have htail :
-      IntegrableOn (fun r : ℝ => r ^ (-(1 + α))) (Set.Ici c)
-    (volume : Measure ℝ) :=
-    (integrableOn_Ioi_rpow_of_lt (by linarith : -(1 + α) < -1) hc).congr_set_ae
-      Ioi_ae_eq_Ici.symm
   rw [integral_indicator measurableSet_Ici]
   rw [integral_Ici_eq_integral_Ioi]
   rw [integral_Ioi_rpow_of_lt (by linarith : -(1 + α) < -1) hc]

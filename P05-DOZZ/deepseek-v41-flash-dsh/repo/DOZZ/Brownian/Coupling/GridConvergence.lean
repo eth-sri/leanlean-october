@@ -35,10 +35,6 @@ theorem coupling_convex_error {x y b r ε : ℝ} (hr0 : 0 ≤ r) (hr1 : r ≤ 1)
     |(1 - r) * x + r * y - b| ≤ ε := by
   obtain ⟨hxlo, hxhi⟩ := abs_le.mp hx
   obtain ⟨hylo, hyhi⟩ := abs_le.mp hy
-  have hlo0 := mul_le_mul_of_nonneg_left hxlo (sub_nonneg.mpr hr1)
-  have hlo1 := mul_le_mul_of_nonneg_left hylo hr0
-  have hhi0 := mul_le_mul_of_nonneg_left hxhi (sub_nonneg.mpr hr1)
-  have hhi1 := mul_le_mul_of_nonneg_left hyhi hr0
   apply abs_le.mpr
   constructor <;> nlinarith
 
@@ -121,7 +117,6 @@ theorem couplingGridInterpolant_tendstoUniformlyOn
   filter_upwards [hsmall, hsmallOne, hlarge] with m hm hm1 hmT
   intro t ht
   have htT := hT t ht
-  have htB : t ∈ Icc 0 B := ⟨zero_le, by change (t : ℝ) ≤ T + 1; linarith⟩
   have herror := couplingGridInterpolant_error (hδ m) p hp0 (N m) (x m) (hsample m)
     t (htT.trans hmT) (ε := ε / 2) (by
       intro s hs
@@ -133,7 +128,7 @@ theorem couplingGridInterpolant_tendstoUniformlyOn
       have hdist : dist s t ≤ η := by
         change |(s : ℝ) - (t : ℝ)| ≤ η
         exact hs.trans hm.le
-      simpa only [Real.dist_eq] using hη s hsB t htB hdist)
+      simpa only [Real.dist_eq] using hη s hsB t (⟨zero_le, by change (t : ℝ) ≤ T + 1; linarith⟩) hdist)
   rw [Real.dist_eq, abs_sub_comm]
   exact herror.trans_lt (half_lt_self hε)
 

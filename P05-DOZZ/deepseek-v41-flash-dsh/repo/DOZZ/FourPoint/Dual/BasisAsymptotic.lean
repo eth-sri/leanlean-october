@@ -3,6 +3,7 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
+public import DOZZ.SharedHyp
 
 public import DOZZ.FourPoint.Reflected.Remainder
 public import DOZZ.Hypergeom.ODE.ConnectionEndpointLimits
@@ -39,7 +40,7 @@ theorem dual_normalized_norm_sq_littleO (F : ℂ → ℂ)
 /-- The characterized principal Gauss continuation is differentiable and normalized at zero. -/
 theorem dual_gauss_regular_origin {H : ℂ → ℂ → ℂ → ℂ → ℂ}
     (hH : IsGaussHypergeometricFamily H) (a b c : ℂ)
-    (hc : ∀ n : ℕ, c ≠ -(n : ℂ)) :
+    (hc : NotNegPole c) :
     DifferentiableAt ℂ (H a b c) 0 ∧ H a b c 0 = 1 := by
   have hchar := hH a b c hc
   have hopen : IsOpen {z : ℂ | z.re < 1} := isOpen_lt Complex.continuous_re continuous_const
@@ -53,7 +54,7 @@ theorem dual_gauss_regular_origin {H : ℂ → ℂ → ℂ → ℂ → ℂ}
 /-- The actual first Gauss basis has its required sublinear squared-norm remainder. -/
 theorem dual_gauss_norm_sq_littleO {H : ℂ → ℂ → ℂ → ℂ → ℂ}
     (hH : IsGaussHypergeometricFamily H) (a b c : ℂ)
-    (hc : ∀ n : ℕ, c ≠ -(n : ℂ)) (κ : ℝ) (hκ : κ < 1) :
+    (hc : NotNegPole c) (κ : ℝ) (hκ : κ < 1) :
     Tendsto (fun z : ℂ => (‖gaussFMinus H a b c z‖ ^ 2 - 1) / ‖z‖ ^ κ)
       (nhdsWithin 0 {z : ℂ | z ≠ 0}) (nhds 0) := by
   obtain ⟨hd, hz⟩ := dual_gauss_regular_origin hH a b c hc

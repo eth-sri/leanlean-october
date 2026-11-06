@@ -41,7 +41,6 @@ theorem time_integral_bound (F : ℂ → ℂ) (C e r : ℝ)
   have hdom : ∀ᵐ t ∂volume.restrict (Icc (0 : ℝ) 1),
       ‖(1 - t : ℝ) * F ((t : ℂ) * z)‖ ≤ (C * ‖z‖ ^ e) * t ^ e := by
     filter_upwards [ae_restrict_mem measurableSet_Icc, ae_restrict_of_ae hae] with t ht ht0
-    have htpos : 0 < t := lt_of_le_of_ne ht.1 (Ne.symm ht0)
     have htz : ‖(t : ℂ) * z‖ = t * ‖z‖ := by
       rw [norm_mul, Complex.norm_real, Real.norm_of_nonneg ht.1]
     have htr : ‖(t : ℂ) * z‖ ≤ r := by

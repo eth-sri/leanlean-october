@@ -209,7 +209,6 @@ theorem integral_abs_pow_gaussianReal (v : ℝ≥0) (m : ℕ) :
     (∫ x : ℝ, |x| ^ (2 * m) ∂gaussianReal 0 v) =
       (v : ℝ) ^ m * (∫ x : ℝ, |x| ^ (2 * m) ∂gaussianReal 0 1) := by
   let a := Real.sqrt (v : ℝ)
-  have ha : 0 ≤ a := Real.sqrt_nonneg _
   have ha2 : a ^ 2 = (v : ℝ) := Real.sq_sqrt v.coe_nonneg
   have he : (gaussianReal 0 1).map (fun x : ℝ => a * x) = gaussianReal 0 v := by
     rw [gaussianReal_map_const_mul, mul_zero, mul_one]
@@ -217,7 +216,7 @@ theorem integral_abs_pow_gaussianReal (v : ℝ≥0) (m : ℕ) :
     exact NNReal.eq ha2
   rw [← he, integral_map (by fun_prop) (by fun_prop)]
   have hp x : |a * x| ^ (2 * m) = (v : ℝ) ^ m * |x| ^ (2 * m) := by
-    rw [abs_mul, mul_pow, abs_of_nonneg ha, pow_mul, ha2]
+    rw [abs_mul, mul_pow, abs_of_nonneg (Real.sqrt_nonneg _), pow_mul, ha2]
   simp_rw [hp]
   exact integral_const_mul _ _
 

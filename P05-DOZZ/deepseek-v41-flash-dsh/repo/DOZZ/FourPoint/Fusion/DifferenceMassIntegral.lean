@@ -17,9 +17,8 @@ theorem fusion_gammaHalfKernel_integral (γ α₁ α₂ α₃ : ℝ) (z : ℂ) (
       (∫ x, gammaHalfKernel γ α₁ α₂ α₃ z x ∂μ) =
         (coulombMass γ μ ![-γ / 2, α₁, α₂] ![z, 0, 1] α₃).toReal := by
   have hm : Measurable (fun x => ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ z x)) := by
-    have hp : Measurable (fun x : ℂ => (z, x)) := measurable_const.prodMk measurable_id
     exact ENNReal.measurable_ofReal.comp
-      ((fusion_measurable_gammaHalfKernel γ α₁ α₂ α₃).comp (f := fun x : ℂ => (z, x)) hp)
+      ((fusion_measurable_gammaHalfKernel γ α₁ α₂ α₃).comp (f := fun x : ℂ => (z, x)) (measurable_const.prodMk measurable_id))
   rw [fusion_gammaHalfMass_kernel γ α₁ α₂ α₃ z μ hz h0 h1] at hf ⊢
   have he : (fun x => (ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ z x)).toReal) =
       gammaHalfKernel γ α₁ α₂ α₃ z := by

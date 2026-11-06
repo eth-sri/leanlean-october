@@ -37,14 +37,13 @@ theorem cpow_common_threshold
   have hs : ∀ᵐ ω ∂P, ENNReal.ofReal (Y ω) < ENNReal.ofReal u →
       F ω ≤ ENNReal.ofReal u * (ENNReal.ofReal (2 * ‖p‖) * H ω) := by
     filter_upwards [hL, hLZ, hYpos, hZU] with ω hL hLZ hY hZU hsmall
-    have hyu : Y ω < u := (ENNReal.ofReal_lt_ofReal_iff hu).mp hsmall
     have he := (cpow_common_envelope (L ω) (Z ω) (Y ω) (U ω) lo hi p
       hL hLZ hY hZU hlo hhi hlop hphi).1
     have hU : 0 < U ω := (hL.trans_le hLZ).trans_le
       ((le_add_of_nonneg_right hY).trans hZU)
     have hE : 0 ≤ L ω ^ lo + U ω ^ hi :=
       add_nonneg (Real.rpow_nonneg hL.le _) (Real.rpow_nonneg hU.le _)
-    have hbound := he.trans (mul_le_mul_of_nonneg_left hyu.le
+    have hbound := he.trans (mul_le_mul_of_nonneg_left ((ENNReal.ofReal_lt_ofReal_iff hu).mp hsmall).le
       (mul_nonneg (mul_nonneg (by norm_num) (norm_nonneg _)) hE))
     have hnonneg : 0 ≤ 2 * ‖p‖ := by positivity
     have hh := ENNReal.ofReal_le_ofReal hbound

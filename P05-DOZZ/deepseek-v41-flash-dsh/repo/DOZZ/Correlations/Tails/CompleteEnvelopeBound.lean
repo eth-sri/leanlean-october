@@ -21,8 +21,6 @@ theorem complete_envelope_gaussian_bound (z : ℂ) (γ N Nbar d s a : ℝ)
       ((d+5*s)*Real.exp (2*γ^2+4))*
         Real.exp ((|γ|+2*a)*(|Nbar|+|N|)) := by
   have hln : 0 ≤ Real.log ‖z‖ := Real.log_nonneg (by linarith)
-  have ha0 : 0 ≤ a :=
-    (div_nonneg (abs_nonneg γ) (offCenter_pin_variance_pos z hz).le).trans ha
   have hD0 : 0 ≤ pinCorrectionEnvelope z γ N Nbar := by
     unfold pinCorrectionEnvelope
     exact add_nonneg (mul_nonneg

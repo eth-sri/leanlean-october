@@ -94,9 +94,6 @@ theorem conditionedPositiveEntranceQuantileWalkOn_initial_law
     cdfGeneralizedQuantile (ProbabilityTheory.cdf μ) u
   let : IsProbabilityMeasure μ :=
     isProbabilityMeasure_conditionedPositiveEntranceMeasure ν t₀ hν ht₀
-  have hqSubtype : Measurable (fun u : Set.Ioo (0 : ℝ) 1 => q u.1) := by
-    dsimp [q, μ]
-    exact measurable_conditionedPositiveEntranceQuantile hν ht₀
   have hqUniform : AEMeasurable q uniformOpenUnit := by
     simpa [q, μ, uniformOpenUnit] using
       (aemeasurable_cdfGeneralizedQuantile_Ioo μ)

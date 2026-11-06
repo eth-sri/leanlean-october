@@ -24,8 +24,7 @@ theorem admissible_logRegularization_reference_measure_ne_top
     (hY : IsAdmissibleLogRegularization P U dens ε₀ Y)
     (K : Set ℂ) (hK : IsCompact K) (hKU : K ⊆ U) :
     logRegularizationReference U dens K ≠ ∞ := by
-  have hcont : ContinuousOn dens K := hY.densityContinuous.mono hKU
-  obtain ⟨B, hB⟩ := hK.bddAbove_image hcont
+  obtain ⟨B, hB⟩ := hK.bddAbove_image (hY.densityContinuous.mono hKU)
   let B₀ : ℝ := max B 0
   have hB₀ : 0 ≤ B₀ := le_max_right _ _
   have hpoint : ∀ x ∈ K, ENNReal.ofReal (dens x) ≤ ENNReal.ofReal B₀ := by

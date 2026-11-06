@@ -43,10 +43,8 @@ theorem lateral_law_locally_finite
   obtain ⟨n,hn⟩ := exists_nat_ge (max |a| |b|)
   apply lt_of_le_of_lt (measure_mono ?_) (hμ n)
   intro t ht
-  have ha : |a| ≤ n := (le_max_left _ _).trans hn
-  have hb : |b| ≤ n := (le_max_right _ _).trans hn
-  exact ⟨by linarith only [ht.1,ha,neg_abs_le a],
-    by linarith only [ht.2,hb,le_abs_self b]⟩
+  exact ⟨by linarith only [ht.1,((le_max_left _ _).trans hn),neg_abs_le a],
+    by linarith only [ht.2,((le_max_right _ _).trans hn),le_abs_self b]⟩
 
 theorem williams_source_input_law
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
@@ -75,14 +73,13 @@ theorem williams_source_input_law
   rw [williams_reference_input_law γ _ (sub_pos.mpr hα) Qν (P.map Z)
     (lateral_law_locally_finite P γ Z hData.2.1),← hJoint]
   let pm := hp.mk pair
-  have hpm : Measurable pm := hp.measurable_mk
   have heq : pair =ᵐ[P] pm := hp.ae_eq_mk
   have hInput : (μ.prod P).map (fun q : ℝ × Ω => (q.1,pair q.2)) = μ.prod (P.map pair) := by
     have heq' := (measurePreserving_snd (μ := μ) (ν := P)).quasiMeasurePreserving.ae heq
     have hlift : (fun q : ℝ × Ω => (q.1,pair q.2)) =ᵐ[μ.prod P]
         (fun q => (q.1,pm q.2)) := heq'.mono fun q hq => Prod.ext rfl hq
     rw [Measure.map_congr hlift,Measure.map_congr heq,
-      ← Measure.map_id (μ := μ),Measure.map_prod_map _ _ measurable_id hpm]
+      ← Measure.map_id (μ := μ),Measure.map_prod_map _ _ measurable_id (hp.measurable_mk)]
     simp only [Measure.map_id]
     rfl
   have hInp : AEMeasurable (fun q : ℝ × Ω => (q.1,pair q.2)) (μ.prod P) :=

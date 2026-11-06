@@ -47,17 +47,15 @@ theorem bpzRH_softDeriv_one (a w : ℝ) {x z : ℂ} (hxz : x ≠ z) :
       -(a : ℂ) * (((Complex.normSq (x - z) ^ a * w : ℝ) : ℂ) / (x - z) +
         ((Complex.normSq (x - z) ^ a * w : ℝ) : ℂ) / conj (x - z)) := by
   have hv : x - z ≠ 0 := sub_ne_zero.mpr hxz
-  have hN : 0 < Complex.normSq (x - z) := Complex.normSq_pos.mpr hv
   rw [bpzSoftDeriv_apply]
   simp only [Complex.one_re, Complex.one_im, mul_one, mul_zero, add_zero, ne_eq,
     OfNat.ofNat_ne_zero, not_false_eq_true, zero_pow]
-  rw [Real.rpow_sub_one hN.ne']
+  rw [Real.rpow_sub_one (Complex.normSq_pos.mpr hv).ne']
   generalize x - z = v at *
   have hc : conj v ≠ 0 := (map_ne_zero _).mpr hv
-  have hNc : ((Complex.normSq v : ℝ) : ℂ) = v * conj v := (Complex.mul_conj _).symm
   have hre : ((v.re : ℝ) : ℂ) = (v + conj v) / 2 := Complex.re_eq_add_conj _
   push_cast
-  rw [hre, hNc]
+  rw [hre, ((Complex.mul_conj _).symm)]
   field_simp
   ring
 
@@ -76,10 +74,9 @@ theorem bpzRH_softDeriv2_one_one (a w : ℝ) {x z : ℂ} (hxz : x ≠ z) :
   rw [Real.rpow_sub_one hN.ne', Real.rpow_sub hN, Real.rpow_two, ← Complex.normSq_eq_norm_sq]
   generalize x - z = v at *
   have hc : conj v ≠ 0 := (map_ne_zero _).mpr hv
-  have hNc : ((Complex.normSq v : ℝ) : ℂ) = v * conj v := (Complex.mul_conj _).symm
   have hre : ((v.re : ℝ) : ℂ) = (v + conj v) / 2 := Complex.re_eq_add_conj _
   push_cast
-  rw [hre, hNc]
+  rw [hre, ((Complex.mul_conj _).symm)]
   field_simp
   ring
 
@@ -311,8 +308,6 @@ theorem bpzRH_softWeight_eq_kernel (u : ℂ) {x : ℂ} (hx0 : x ≠ 0) (hx1 : x 
   rw [bpzSoftWeight_zero]
   unfold bpzBaseWeight gammaHalfKernel
   rw [Real.rpow_neg h0.le, Real.rpow_neg h1.le, show γ * (γ / 2) = γ ^ 2 / 2 by ring]
-  have e0 : ‖x‖ ^ (γ * α₁) ≠ 0 := (Real.rpow_pos_of_pos h0 _).ne'
-  have e1 : ‖x - 1‖ ^ (γ * α₂) ≠ 0 := (Real.rpow_pos_of_pos h1 _).ne'
   field_simp
 
 /-- Integrals against `gammaHalfKernel` are integrals against the degenerate weight, for a

@@ -245,12 +245,11 @@ private lemma upsilonLogIntegrand_eq_canceled_div {γ : ℝ} (hγ : 0 < γ)
     Complex.ofReal_ne_zero.mpr (Real.sinh_pos_iff.2 (by positivity)).ne'
   have hS₂ : (Real.sinh (t / γ) : ℂ) ≠ 0 :=
     Complex.ofReal_ne_zero.mpr (Real.sinh_pos_iff.2 (div_pos ht hγ)).ne'
-  have htC : (t : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr (ne_of_gt ht)
   have hRD : (realDenom γ t : ℂ) =
       (Real.sinh (t * γ / 4) : ℂ) * (Real.sinh (t / γ) : ℂ) := by
     simp [realDenom]
   rw [hRD]
-  field_simp [hD, hS₁, hS₂, htC]
+  field_simp [hD, hS₁, hS₂, (Complex.ofReal_ne_zero.mpr (ne_of_gt ht))]
 
 private lemma upsilonLogIntegrand_norm_le_of_taylor {γ : ℝ} (hγ : 0 < γ)
     (z : ℂ) (C : ℝ) (hC : 0 ≤ C)
@@ -267,12 +266,11 @@ private lemma upsilonLogIntegrand_norm_le_of_taylor {γ : ℝ} (hγ : 0 < γ)
   have hnormDen : ‖(realDenom γ t : ℂ) * (t : ℂ)‖ = realDenom γ t * t := by
     rw [norm_mul, Complex.norm_real, Complex.norm_real, Real.norm_eq_abs, Real.norm_eq_abs,
       abs_of_pos hDen, abs_of_pos ht]
-  have hG' : ‖canceledNumerator γ z t‖ ≤ C * t ^ 3 := hG t ⟨le_of_lt ht, ht1⟩
   rw [upsilonLogIntegrand_eq_canceled_div hγ z ht, norm_div, hnormDen]
   calc
     ‖canceledNumerator γ z t‖ / (realDenom γ t * t) ≤
         (C * t ^ 3) / (realDenom γ t * t) :=
-          div_le_div_of_nonneg_right hG' (le_of_lt hDtPos)
+          div_le_div_of_nonneg_right (hG t ⟨le_of_lt ht, ht1⟩) (le_of_lt hDtPos)
     _ ≤ 4 * C := (div_le_iff₀ hDtPos).2 <| by
       calc
         C * t ^ 3 = 4 * C * (t ^ 3 / 4) := by ring
@@ -418,9 +416,6 @@ lemma upsilonLogIntegrand_norm_le_tail {γ : ℝ} (hγ : 0 < γ)
         (tailConst γ)⁻¹ * Real.exp (-(Q γ / 2 - |Q γ / 2 - z.re|) * t) := by
   let w : ℂ := (Q γ / 2 : ℂ) - z
   let δ : ℝ := Q γ / 2 - |w.re|
-  have hQpos : 0 < Q γ := by
-    unfold Q
-    positivity
   have hstrip : |w.re| < Q γ / 2 := by
     apply (abs_lt).2
     constructor <;> dsimp [w] <;> simp <;> linarith
@@ -428,7 +423,6 @@ lemma upsilonLogIntegrand_norm_le_tail {γ : ℝ} (hγ : 0 < γ)
   have hdenPos := realDenom_pos hγ (by linarith : 0 < t)
   have hdenLower := realDenom_ge_tail_exp hγ ht
   have hK : 0 < tailConst γ := tailConst_pos hγ
-  have hKinv : 0 ≤ (tailConst γ)⁻¹ := le_of_lt (inv_pos.mpr hK)
   have hdeltaExp :
       Real.exp (|w.re| * t) / realDenom γ t ≤
         (tailConst γ)⁻¹ * Real.exp (-δ * t) := by
@@ -537,15 +531,10 @@ private lemma upsilonLogIntegrand_integrableOn_Ioi_one {γ : ℝ} (hγ : 0 < γ)
   let δ : ℝ := Q γ / 2 - |w.re|
   let A : ℝ := ‖(Q γ / 2 : ℂ) - z‖ ^ 2
   let B : ℝ := (tailConst γ)⁻¹
-  have hQpos : 0 < Q γ := by unfold Q; positivity
   have hstrip : |w.re| < Q γ / 2 := by
     apply (abs_lt).2
     constructor <;> dsimp [w] <;> simp <;> linarith
   have hδ : 0 < δ := by dsimp [δ]; linarith
-  have hB : 0 ≤ B := by
-    dsimp [B]
-    exact le_of_lt (inv_pos.mpr (tailConst_pos hγ))
-  have hA : 0 ≤ A := by dsimp [A]; positivity
   have hmajor1 : IntegrableOn (fun t : ℝ => A * Real.exp (-t)) (Ioi 1) := by
     change Integrable (fun t : ℝ => A * Real.exp (-t)) (volume.restrict (Ioi 1))
     simpa [mul_comm] using (exp_neg_integrableOn_Ioi 1 (b := 1) (by norm_num)).const_mul A

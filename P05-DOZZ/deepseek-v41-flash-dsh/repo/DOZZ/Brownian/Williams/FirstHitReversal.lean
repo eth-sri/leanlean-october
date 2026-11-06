@@ -280,9 +280,8 @@ private theorem gridPDF_compact_bound (a c : ℝ) (n : ℕ) (ss : Fin (n+1) → 
     have h := NNReal.coe_pos.mpr hs0
     linarith
   let L : Set ((Fin (n+1) → ℝ) × ℝ) := K ∩ {z | (b : ℝ) ≤ z.2}
-  have hL : IsCompact L := hK.inter_right (isClosed_le continuous_const continuous_snd)
   let D : Set (ℝ≥0 × ((Fin (n+1) → ℝ) × ℝ)) := Icc 0 ε ×ˢ L
-  have hD : IsCompact D := isCompact_Icc.prod hL
+  have hD : IsCompact D := isCompact_Icc.prod (hK.inter_right (isClosed_le continuous_const continuous_snd))
   let F : (ℝ≥0 × ((Fin (n+1) → ℝ) × ℝ)) → ℝ := fun w =>
     (brownianFirstHitFinitePDF a (n+1)
       (brownianFirstHitElapsed (n+1) (fun i => (Real.toNNReal w.2.2+w.1)-ss i.rev)) c w.2.1 w.2.2).toReal

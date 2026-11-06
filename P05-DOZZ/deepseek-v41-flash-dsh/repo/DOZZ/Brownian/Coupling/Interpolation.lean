@@ -40,14 +40,12 @@ theorem couplingRamp_eq_zero {a δ t : ℝ} (hδ : 0 < δ) (ht : t ≤ a) :
 
 theorem couplingRamp_eq_one {a δ t : ℝ} (hδ : 0 < δ) (ht : a + δ ≤ t) :
     couplingRamp a δ t = 1 := by
-  have hdiv : 1 ≤ (t - a) / δ := (le_div_iff₀ hδ).mpr (by linarith)
-  exact min_eq_left (hdiv.trans (le_max_right _ _))
+  exact min_eq_left (((le_div_iff₀ hδ).mpr (by linarith)).trans (le_max_right _ _))
 
 /-- The ramp's contribution to elapsed time never exceeds the elapsed time itself. -/
 theorem couplingRamp_time_budget {a δ t : ℝ} (hδ : 0 < δ) (hat : a ≤ t) :
     couplingRamp a δ t * δ ≤ t - a := by
-  have hdiv : 0 ≤ (t - a) / δ := div_nonneg (sub_nonneg.mpr hat) hδ.le
-  rw [couplingRamp, max_eq_right hdiv]
+  rw [couplingRamp, max_eq_right (div_nonneg (sub_nonneg.mpr hat) hδ.le)]
   exact (mul_le_mul_of_nonneg_right (min_le_right _ _) hδ.le).trans_eq (div_mul_cancel₀ _ hδ.ne')
 
 /-- Regard the ramp as an actual continuous path on nonnegative time. -/
@@ -173,11 +171,6 @@ theorem couplingGridInterpolant_order {δ d : ℝ} (hδ : 0 < δ) (hd : 0 ≤ d)
         have hramp0 := couplingRamp_nonneg (((n : ℝ) + 1) * δ) δ (t : ℝ)
         have hramp1 := couplingRamp_le_one (((n : ℝ) + 1) * δ) δ (t : ℝ)
         have hbudget := couplingRamp_time_budget hδ ht'
-        have hlold := mul_le_mul_of_nonneg_left hold.1 (sub_nonneg.mpr hramp1)
-        have hlnew := mul_le_mul_of_nonneg_left hnew.1 hramp0
-        have huold := mul_le_mul_of_nonneg_left hold.2 (sub_nonneg.mpr hramp1)
-        have hunew := mul_le_mul_of_nonneg_left hnew.2 hramp0
-        have hbudget' := mul_le_mul_of_nonneg_left hbudget hd
         constructor <;> nlinarith
 
 /-- Uniform-grid elapsed times match the affine interpolation endpoints exactly. -/
@@ -203,11 +196,10 @@ theorem couplingInterpolatedFamily_mem_orderSet {J : Type*}
     (hx : x ∈ coupledEntranceGridOrderSet v δ (fun _ => δ) n) :
     couplingInterpolatedFamily δ n x ∈ negativeEntranceOrderSet (fun j => (v j : ℝ)) := by
   intro j k _ hjk t
-  have hjk' : v j ≤ v k := hjk
   have hxy : ∀ i : Fin (n + 1), (x j i).1 ≤ (x k i).1 ∧
       (x k i).1 ≤ (x j i).1 + ((v k : ℝ) - (v j : ℝ)) * (((i.val : ℝ) + 1) * δ) := by
     intro i
-    simpa only [coupledEntranceGridTime_uniform] using hx j k hjk' i
+    simpa only [coupledEntranceGridTime_uniform] using hx j k (hjk) i
   obtain ⟨hlo, hhi⟩ := couplingGridInterpolant_order hδ (sub_nonneg.mpr hjk) n
     (x j) (x k) hxy t
   change -couplingGridInterpolant δ n (x k) t ≤ -couplingGridInterpolant δ n (x j) t ∧

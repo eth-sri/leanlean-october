@@ -26,7 +26,6 @@ theorem holomorphic_limit_of_eventual_geometric {N : ℕ}
   let G (n : ℕ) := F (n + n₀)
   let r := Real.exp (-κ)
   have hr : r < 1 := Real.exp_lt_one_iff.mpr (neg_lt_zero.mpr hκ)
-  have hr0 : 0 ≤ r := (Real.exp_pos _).le
   have hG : ∀ n, DifferentiableOn ℂ (G n) U :=
     fun n => (hn₀ (n + n₀) (Nat.le_add_left n₀ n)).1
   have hstep : ∀ x ∈ U, ∀ n : ℕ, dist (G n x) (G (n + 1) x) ≤ K * r ^ n := by
@@ -56,7 +55,7 @@ theorem holomorphic_limit_of_eventual_geometric {N : ℕ}
     fun x hx n => dist_le_of_le_geometric_of_tendsto _ _ hr (hstep x hx) (hlimG x hx) n
   have hbound : Tendsto (fun n : ℕ => K * r ^ n / (1 - r)) atTop (𝓝 0) := by
     simpa only [mul_zero, zero_div] using
-      ((tendsto_pow_atTop_nhds_zero_of_lt_one hr0 hr).const_mul K).div_const (1 - r)
+      ((tendsto_pow_atTop_nhds_zero_of_lt_one ((Real.exp_pos _).le) hr).const_mul K).div_const (1 - r)
   have hUG : TendstoUniformlyOn G f atTop U := by
     rw [Metric.tendstoUniformlyOn_iff]
     intro ε hε
@@ -69,8 +68,7 @@ theorem holomorphic_limit_of_eventual_geometric {N : ℕ}
     obtain ⟨k, hk⟩ := eventually_atTop.mp (Metric.tendstoUniformlyOn_iff.mp hUG ε hε)
     filter_upwards [eventually_ge_atTop (k + n₀)] with n hn x hx
     have hn₀ : n₀ ≤ n := (Nat.le_add_left n₀ k).trans hn
-    have hnk : k ≤ n - n₀ := (Nat.le_sub_iff_add_le hn₀).mpr hn
-    have he := hk (n - n₀) hnk x hx
+    have he := hk (n - n₀) ((Nat.le_sub_iff_add_le hn₀).mpr hn) x hx
     simpa only [G, Nat.sub_add_cancel hn₀] using he
   exact ⟨(differentiableOn_of_tendstoLocallyUniformlyOn_fin U hU G f hG
     hUG.tendstoLocallyUniformlyOn).1, hUF⟩

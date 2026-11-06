@@ -37,7 +37,6 @@ theorem twoRooted_intermediate_optimized_bound
       (γ / 2 + Q γ - α₁) ^ 2 / (2 * q) := by
     calc
       _ = γ * (Q γ - α₁ + γ / 2) * s - γ ^ 2 * q * s ^ 2 / 2 := by
-        have hq0 : q ≠ 0 := (zero_lt_one.trans hq).ne'
         field_simp
         ring
       _ = _ := hopt

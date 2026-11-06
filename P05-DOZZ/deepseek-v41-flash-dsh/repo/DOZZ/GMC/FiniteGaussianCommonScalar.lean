@@ -37,10 +37,9 @@ theorem independent_common_scalar_add_isCenteredJointlyGaussian
       (fun ω i => Z ω.1 i + c * ω.2) := by
   classical
   let Q : Measure ℝ := gaussianReal 0 1
-  have hQ : IsProbabilityMeasure Q := inferInstance
   have hP : IsProbabilityMeasure P := hZ.1
   let : IsProbabilityMeasure P := hP
-  let : IsProbabilityMeasure Q := hQ
+  let : IsProbabilityMeasure Q := (inferInstance)
   refine ⟨inferInstance, ?_, ?_⟩
   · intro i
     have hZi : AEMeasurable (fun ω : Ω × ℝ => Z ω.1 i) (P.prod Q) :=
@@ -55,9 +54,6 @@ theorem independent_common_scalar_add_isCenteredJointlyGaussian
     have hUmeas : AEMeasurable U P := hUmem.aemeasurable
     have hUlaw : HasLaw U (gaussianReal 0 vU) P := ⟨hUmeas, hUmap⟩
     let d : ℝ := (∑ i, a i) * c
-    have hVmem : MemLp V 2 Q := by
-      dsimp [V, Q, d]
-      exact (memLp_id_gaussianReal (2 : ℝ≥0)).const_mul ((∑ i, a i) * c)
     have hVlaw : HasLaw V (gaussianReal 0 ⟨d ^ 2, sq_nonneg d⟩) Q := by
       refine ⟨?_, ?_⟩
       · exact (measurable_const_mul d).aemeasurable
@@ -173,14 +169,13 @@ theorem gaussianCovariance_independent_common_scalar_add
   have hXjN : Xj ⟂ᵢ[μ] N := by
     exact indepFun_prod₀ (hZ.2.1 j)
       (measurable_const_mul c).aemeasurable
-  have hNj : N ⟂ᵢ[μ] Xj := hXjN.symm
   have hsumCov : ProbabilityTheory.covariance (Xi + N) (Xj + N) μ =
       ProbabilityTheory.covariance Xi Xj μ + ProbabilityTheory.covariance N N μ := by
     rw [ProbabilityTheory.covariance_add_left hXi hN (hXj.add hN),
       ProbabilityTheory.covariance_add_right (X := Xi) (Y := Xj) (Z := N) hXi hXj hN,
       ProbabilityTheory.covariance_add_right (X := N) (Y := Xj) (Z := N) hN hXj hN]
     simp [ProbabilityTheory.IndepFun.covariance_eq_zero hXiN hXi hN,
-      ProbabilityTheory.IndepFun.covariance_eq_zero hNj hN hXj]
+      ProbabilityTheory.IndepFun.covariance_eq_zero (hXjN.symm) hN hXj]
   have hcovXiXj : ProbabilityTheory.covariance Xi Xj μ =
       DOZZ.gaussianCovariance P (fun ω => Z ω i) (fun ω => Z ω j) := by
     have hiMeasMap : AEStronglyMeasurable Zi (μ.map Prod.fst) := by

@@ -162,9 +162,8 @@ theorem regularizedGMC_root_clipped_moment_uniform
         (regularizedGMC_measurable P X hX Xc hXc γ t)))
   have hb : (∫⁻ ω, (O ω) ^ q ∂P) ≤
       ENNReal.ofReal (R ^ (-γ ^ 2 * q)) * gmcRootSubunitReference R := by
-    have hc : 0 < R ^ (-γ ^ 2) := Real.rpow_pos_of_pos hR _
     simp only [O, ENNReal.mul_rpow_of_nonneg _ _ hq.le,
-      ENNReal.ofReal_rpow_of_pos hc, ← Real.rpow_mul hR.le]
+      ENNReal.ofReal_rpow_of_pos (Real.rpow_pos_of_pos hR _), ← Real.rpow_mul hR.le]
     rw [lintegral_const_mul' _ _ ENNReal.ofReal_ne_top]
     exact mul_le_mul' le_rfl (regularizedGMC_subunit_moment_uniform P X hX Xc hXc γ t q
       hq.le hq1 (Metric.ball 0 R) Metric.isOpen_ball.measurableSet)
@@ -251,10 +250,9 @@ theorem regularizedGMC_reference_positive_moment_uniform_upto_two
   · exact (regularizedGMC_reference_positive_moment_fine_upto_two P X hX Xc hXc γ p hγ hp hp2
       hcrit hR hRsmall ht hcut).trans (le_add_of_nonneg_right zero_le)
   · have htT : t ≤ T := by
-      have hr : 0 < 2 / R := div_pos (by norm_num) hR
       have he : Real.exp (-T) = R / 2 := by
         dsimp [T]
-        rw [Real.exp_neg, Real.exp_log hr, inv_div]
+        rw [Real.exp_neg, Real.exp_log (div_pos (by norm_num) hR), inv_div]
       have hexp : Real.exp (-T) < Real.exp (-t) := by rw [he]; linarith
       exact (neg_lt_neg_iff.mp (Real.exp_lt_exp.mp hexp)).le
     have hchart : ∀ x ∈ Metric.ball (0 : ℂ) R, ‖x‖ ≤ R := by

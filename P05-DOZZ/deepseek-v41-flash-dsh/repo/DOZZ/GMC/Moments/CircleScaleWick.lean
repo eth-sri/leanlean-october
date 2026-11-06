@@ -23,9 +23,8 @@ theorem circleAverage_variance_measurable
     (Xc : Ω → ℂ → ℝ → ℝ) (hmeas : ∀ r, Measurable (fun p : Ω × ℂ => Xc p.1 p.2 r))
     (r : ℝ) :
     Measurable (fun x => gaussianVariance P (fun ω => Xc ω x r)) := by
-  have hfield : Measurable (fun p : Ω × ℂ => Xc p.1 p.2 r) := hmeas r
   have hswap : Measurable (fun p : ℂ × Ω => Xc p.2 p.1 r) :=
-    hfield.comp measurable_swap
+    (hmeas r).comp measurable_swap
   have hsquare : Measurable (fun p : ℂ × Ω => Xc p.2 p.1 r ^ 2) :=
     hswap.pow_const 2
   have hvar : Measurable (fun x : ℂ => ∫ ω, Xc ω x r ^ 2 ∂P) :=
@@ -110,8 +109,7 @@ theorem circleAverage_affine_scaled_wick_integral_law
   let P' : Measure (Ω × ℝ) := P.prod G
   let X' : Ω → S → ℝ := fun ω x => Xc ω (a + c * z x) (r - Real.log c)
   let Y : Ω × ℝ → S → ℝ := fun p x => Xc p.1 (z x) r
-  have hP : IsProbabilityMeasure P := hX.1
-  let : IsProbabilityMeasure P := hP
+  let : IsProbabilityMeasure P := (hX.1)
   have hG : IsProbabilityMeasure (gaussianReal 0 ⟨-Real.log c,
       neg_nonneg.mpr (Real.log_nonpos (le_of_lt hc) hc₁)⟩) :=
     ProbabilityTheory.instIsProbabilityMeasureGaussianReal 0 _

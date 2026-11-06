@@ -116,8 +116,7 @@ private theorem strictMono_nat_le_self {ψ : ℕ → ℕ} (hψ : StrictMono ψ) 
   induction n with
   | zero => exact Nat.zero_le _
   | succ n ih =>
-      have hs : ψ n < ψ (n + 1) := hψ (by omega)
-      exact Nat.succ_le_of_lt (lt_of_le_of_lt ih hs)
+      exact Nat.succ_le_of_lt (lt_of_le_of_lt ih (hψ (by omega)))
 
 /-- From countably many scalar convergences in measure, extract one increasing subsequence along
 which every coordinate converges almost everywhere. The diagonal sequence uses nested subsequences,

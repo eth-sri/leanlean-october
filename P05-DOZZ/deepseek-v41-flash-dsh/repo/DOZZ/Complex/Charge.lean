@@ -505,7 +505,6 @@ theorem differentiableOn_gaussian_charge_moment {Ω : Type*} [MeasurableSpace Ω
       (fun z => ∫ ω, Complex.exp (c z + ∑ i, z i * (L ω i : ℂ)) *
         (A ω : ℂ) ^ (-(s₀ + sL z)) ∂P)
       {z ∈ U | -(s₀ + sL z).re < pstar} := by
-  have hzero := hmom 0 le_rfl hpstar
   have hcharge := differentiableOn_chargeIntegral P L hL A hA hpos pstar hinv hmom U hU s₀ sL
   constructor
   · intro z hz

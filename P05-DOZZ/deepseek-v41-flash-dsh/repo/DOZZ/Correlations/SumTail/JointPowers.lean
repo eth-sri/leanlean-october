@@ -42,12 +42,11 @@ theorem sumtail_joint_equal_power (p q ε β θ x : ℝ) (hq : 0 ≤ q)
 theorem sumtail_small_power_absorption (T β θ x : ℝ) (hT : 0 ≤ T)
     (hβ : β ≤ T) (hθ : 0 ≤ θ) (hx : 1 ≤ x) (hx4 : x ≤ 4) :
     1 ≤ 4^T*x^(-β+θ) := by
-  have h4 : 0 < (4:ℝ)^T := Real.rpow_pos_of_pos (by norm_num) _
   have hr : (4:ℝ)^(-T) ≤ x^(-β+θ) := calc
     _ ≤ x^(-T) := Real.rpow_le_rpow_of_nonpos (by linarith only [hx]) hx4 (by linarith only [hT])
     _ ≤ _ := Real.rpow_le_rpow_of_exponent_le hx (by linarith only [hβ,hθ])
   calc
     _ = (4:ℝ)^T*4^(-T) := by rw [← Real.rpow_add (by norm_num)]; simp only [add_neg_cancel,Real.rpow_zero]
-    _ ≤ _ := mul_le_mul_of_nonneg_left hr h4.le
+    _ ≤ _ := mul_le_mul_of_nonneg_left hr (Real.rpow_pos_of_pos (by norm_num) _).le
 
 end DOZZ.Proofs

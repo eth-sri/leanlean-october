@@ -34,13 +34,12 @@ theorem reflected_source_buffer_inverse_error
   let I := fun ω => ∫⁻ x in reflected_innerRegion s, K x ∂M ω
   let B := fun ω => ∫⁻ x in {x : ℂ | s ≤ ‖x‖ ∧ ‖x‖ < ‖z‖^(1-ξ)}, K x ∂M ω
   let O := fun ω => gammaHalfOuterMass γ α₁ α₂ α₃ (M ω) z ξ
-  have hK : Measurable K := (reflected_gammaHalfKernel_measurable γ α₁ α₂ α₃ z).ennreal_ofReal
   have hU : MeasurableSet (reflected_innerRegion s) :=
     (measurableSet_lt measurable_const measurable_norm).inter
       (measurableSet_lt measurable_norm measurable_const)
   have hI : AEMeasurable I P := by
     simpa only [lintegral_indicator hU] using gmc_lintegral_aemeasurable
-      P X hX γ hγ hγ₂ M hM _ (hK.indicator hU)
+      P X hX γ hγ hγ₂ M hM _ (((reflected_gammaHalfKernel_measurable γ α₁ α₂ α₃ z).ennreal_ofReal).indicator hU)
   have hF : AEMeasurable F P := gmc_coulombMass_aemeasurable P X hX γ hγ hγ₂ M hM
     ![-γ/2,α₁,α₂] ![z,0,1] α₃
   have hO : AEMeasurable O P :=

@@ -68,8 +68,7 @@ private theorem product_randomTranslation_invariant
   apply Measure.prod_eq
   intro S U hS hU
   rw [Measure.map_apply hG (hS.prod hU)]
-  have hpre : MeasurableSet (G ⁻¹' (S ×ˢ U)) := hG (hS.prod hU)
-  rw [Measure.prod_apply hpre]
+  rw [Measure.prod_apply (hG (hS.prod hU))]
   have hsection (a : A) :
       μB ((Prod.mk a) ⁻¹' G ⁻¹' (S ×ˢ U)) =
         (S.indicator (fun _ => μB U)) a := by
@@ -100,9 +99,8 @@ theorem lateralGMC_randomTranslation_aemeasurable
     (hZ : IsLateralGMCOf P γ Z) (D : Ω → BrownianPath) (hD : AEMeasurable D P)
     (T : BrownianPath → ℝ) (hT : Measurable T) :
     AEMeasurable (fun ω => (Z ω).map (fun s => s + T (D ω))) P := by
-  have hZA : AEMeasurable Z P := hZ.2.2.2.1
   have hparam : AEMeasurable (fun ω => (T (D ω), Z ω)) P :=
-    AEMeasurable.prodMk (hT.comp_aemeasurable hD) hZA
+    AEMeasurable.prodMk (hT.comp_aemeasurable hD) (hZ.2.2.2.1)
   have hsurrogate : AEMeasurable (fun ω => locallyFiniteTranslation (T (D ω), Z ω)) P :=
     measurable_locallyFiniteTranslation.comp_aemeasurable hparam
   have htranslate : (fun ω => (Z ω).map (fun s => s + T (D ω))) =ᵐ[P]
@@ -149,7 +147,6 @@ theorem lateralGMC_random_translation
     exact (locallyFiniteTranslation_eq_map (T (D ω)) (Z ω) (by
       intro n
       exact hloc (-(n : ℝ)) (n : ℝ))).symm
-  have hpairY : AEMeasurable (fun ω => (D ω, Y ω)) P := hD.prodMk hY
   have hpairLaw : P.map (fun ω => (D ω, Y ω)) = μD.prod μZ := by
     calc
       P.map (fun ω => (D ω, Y ω)) = P.map (fun ω => G (D ω, Z ω)) :=
@@ -163,7 +160,7 @@ theorem lateralGMC_random_translation
     calc
       P.map Y = (P.map (fun ω => (D ω, Y ω))).map Prod.snd := by
         symm
-        exact AEMeasurable.map_map_of_aemeasurable measurable_snd.aemeasurable hpairY
+        exact AEMeasurable.map_map_of_aemeasurable measurable_snd.aemeasurable (hD.prodMk hY)
       _ = (μD.prod μZ).map Prod.snd := congrArg (fun m : Measure (BrownianPath × Measure ℝ) => m.map Prod.snd) hpairLaw
       _ = μZ := by rw [Measure.map_snd_prod, measure_univ, one_smul]
   refine ⟨hY, hYlaw, ?_⟩

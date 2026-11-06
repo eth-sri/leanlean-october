@@ -22,10 +22,8 @@ theorem isCircleAverage_symmetryRepinned
   let L := fun ω => Xc ω 1 0
   let Y := symmetryRepinnedField X L
   let Z := fun ω x r => Xc ω (1 - x) r - L ω
-  have hY : IsEquatorGFF P Y := isEquatorGFF_symmetryRepinnedField P X hX Xc hXc
-  obtain ⟨Yc, hYc⟩ := exists_equatorGFF_circle_average_witness Y hY
+  obtain ⟨Yc, hYc⟩ := exists_equatorGFF_circle_average_witness Y (isEquatorGFF_symmetryRepinnedField P X hX Xc hXc)
   have hLmeas : Measurable L := (hXc.1 0).comp (measurable_id.prodMk measurable_const)
-  have hL : MemLp L 2 P := hXc.2.1 1 0
   apply isCircleAverage_of_ae_eq P Y Yc Z hYc
   · intro r
     exact ((hXc.1 r).comp (measurable_fst.prodMk
@@ -52,7 +50,7 @@ theorem isCircleAverage_symmetryRepinned
       (continuous_enorm.tendsto (0 : ℝ)).comp h
   have hb : Tendsto (fun n => eLpNorm (fun ω => (1 - testMass (f n)) * L ω) 2 P)
       atTop (𝓝 0) := by
-    have h := ENNReal.Tendsto.mul_const hc (Or.inr hL.eLpNorm_ne_top)
+    have h := ENNReal.Tendsto.mul_const hc (Or.inr (hXc.2.1 1 0).eLpNorm_ne_top)
     simp only [zero_mul] at h
     have he n : eLpNorm (fun ω => (1 - testMass (f n)) * L ω) 2 P =
         ‖1 - testMass (f n)‖ₑ * eLpNorm L 2 P := by

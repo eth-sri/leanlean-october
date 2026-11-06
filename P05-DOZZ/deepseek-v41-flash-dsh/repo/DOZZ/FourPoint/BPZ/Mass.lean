@@ -66,7 +66,6 @@ theorem bpzSoftWeight_ge_on_farBall (R : ℝ) (hR : 0 ≤ R) :
       ∀ x ∈ bpzFarBall R, c ≤ bpzSoftWeight γ χ α₁ α₂ α₃ ε z x := by
   set L : ℝ := (2 * R + 6) ^ 2 + 1 with hL
   have hL1 : 1 ≤ L := by rw [hL]; linarith only [sq_nonneg (2 * R + 6)]
-  have hLpos : 0 < L := by linarith
   have hLinv : L⁻¹ ≤ 1 := inv_le_one_of_one_le₀ hL1
   refine ⟨L ^ (-|γ * χ / 2|) * (L ^ (-|-(γ * α₁)|) * L ^ (-|-(γ * α₂)|) *
       L ^ (-|γ * (α₁ + α₂ + α₃ - χ)|)), by positivity, ?_⟩
@@ -108,12 +107,6 @@ theorem bpzSoftWeight_ge_on_farBall (R : ℝ) (hR : 0 ≤ R) :
   have f3 := coulombWeight_le_rpow hL1 (le_trans hLinv (by rw [hnp]; linarith))
     (by rw [hnp]; linarith : normPlus x ≤ L) (γ * (α₁ + α₂ + α₃ - χ))
   unfold bpzSoftWeight bpzBaseWeight
-  have p0 : 0 ≤ L ^ (-|γ * χ / 2|) := by positivity
-  have p1 : 0 ≤ L ^ (-|-(γ * α₁)|) := by positivity
-  have p2 : 0 ≤ L ^ (-|-(γ * α₂)|) := by positivity
-  have p3 : 0 ≤ L ^ (-|γ * (α₁ + α₂ + α₃ - χ)|) := by positivity
-  have q1 : 0 ≤ ‖x‖ ^ (-(γ * α₁)) := Real.rpow_nonneg (norm_nonneg _) _
-  have q2 : 0 ≤ ‖x - 1‖ ^ (-(γ * α₂)) := Real.rpow_nonneg (norm_nonneg _) _
   gcongr
 
 /-- The mass is at least a fixed positive multiple of the chaos mass of the far disk. -/
@@ -194,9 +187,8 @@ theorem bpzMass_pos_ae
   have hfin := bpz_farBall_negMoment_lt_top P X hX hγ hγ2 M hM R 1 zero_le_one
   have hmeas : AEMeasurable (fun ω => M ω (bpzFarBall R)) P :=
     gmc_set_mass_aemeasurable_of_isGMCOf P X hX γ hγ hγ2 M hM _ (bpzFarBall_measurableSet R)
-  have hfin' : ∫⁻ ω, M ω (bpzFarBall R) ^ (-1 : ℝ) ∂P ≠ ⊤ := hfin.ne
   have hae : ∀ᵐ ω ∂P, M ω (bpzFarBall R) ^ (-1 : ℝ) < ⊤ :=
-    ae_lt_top' (hmeas.pow_const _) hfin'
+    ae_lt_top' (hmeas.pow_const _) (hfin.ne)
   filter_upwards [hae] with ω hω
   have hpos : M ω (bpzFarBall R) ≠ 0 := by
     intro h0
@@ -288,8 +280,7 @@ theorem fourPointT_eq_bpzMass
 private theorem bpz_ae_lt_top_of_moment
     {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω} {Y : Ω → ℝ≥0∞} (hY : AEMeasurable Y P)
     {t : ℝ} (ht : 0 < t) (hfin : ∫⁻ ω, ENNReal.rpow (Y ω) t ∂P < ⊤) : ∀ᵐ ω ∂P, Y ω < ⊤ := by
-  have hfin' : ∫⁻ ω, Y ω ^ t ∂P ≠ ⊤ := hfin.ne
-  filter_upwards [ae_lt_top' (hY.pow_const t) hfin'] with ω hω
+  filter_upwards [ae_lt_top' (hY.pow_const t) (hfin.ne)] with ω hω
   by_contra h
   rw [not_lt, top_le_iff] at h
   rw [h, ENNReal.top_rpow_of_pos ht] at hω

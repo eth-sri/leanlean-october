@@ -58,7 +58,6 @@ theorem exists_inversionChart_testFn_gap_approx (x : ℂ) (r : ℝ) (f : TestFn)
     apply hout
     simp only [hz0, mem_ball, dist_self]; positivity
   obtain ⟨M, hM⟩ := f.hasCompactSupport.exists_bound_of_continuous f.continuous
-  have hM0 : 0 ≤ M := (norm_nonneg (f 0)).trans (hM 0)
   let g : ℂ → ℝ := fun z => if z = 0 then 0 else f z
   have hlim : ∀ z, Tendsto (fun n => q n z) atTop (𝓝 (g z)) := by
     intro z
@@ -88,7 +87,7 @@ theorem exists_inversionChart_testFn_gap_approx (x : ℂ) (r : ℝ) (f : TestFn)
   refine ⟨q, hqU, ?_⟩
   simp_rw [← densityCircleGap_testFn]
   rw [← densityCircleGap_congr_ae x r hg]
-  apply tendsto_densityCircleGap_of_common_support x r (fun n => q n) g hR hM0
+  apply tendsto_densityCircleGap_of_common_support x r (fun n => q n) g hR ((norm_nonneg (f 0)).trans (hM 0))
     (fun n => (q n).continuous.measurable)
     (fun n => (subset_tsupport _).trans (tsupport_mul_subset_left.trans hs))
     _ hlim

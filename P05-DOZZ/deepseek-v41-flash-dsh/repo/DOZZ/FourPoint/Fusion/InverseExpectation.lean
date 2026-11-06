@@ -20,12 +20,11 @@ theorem fusion_small_moment_order (γ α₁ : ℝ) (hγ : 0 < γ) (hα₁ : α�
       p < min (4 / γ ^ 2) (2 / γ * (Q γ - (α₁ + γ / 2))) := by
   have hgap : 0 < Q γ - (α₁ + γ / 2) := by unfold Q; linarith
   let b := min (4 / γ ^ 2) (2 / γ * (Q γ - (α₁ + γ / 2)))
-  have hb : 0 < b := lt_min (by positivity) (by positivity)
   refine ⟨min 1 b / 2, by positivity, ?_, ?_⟩
   · have := min_le_left (1 : ℝ) b
     linarith
   · have := min_le_right (1 : ℝ) b
-    have : 0 < min (1 : ℝ) b := lt_min zero_lt_one hb
+    have : 0 < min (1 : ℝ) b := lt_min zero_lt_one (lt_min (by positivity) (by positivity))
     linarith
 
 /-- Inverse expectations converge at zero without a first moment assumption on the mass. -/

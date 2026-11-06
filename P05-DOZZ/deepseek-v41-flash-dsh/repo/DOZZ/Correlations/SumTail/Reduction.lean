@@ -3,6 +3,7 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
+public import DOZZ.SharedHyp
 
 public import DOZZ.Correlations.SumTail.OneTail
 public import DOZZ.Correlations.SumTail.Sandwich
@@ -34,22 +35,7 @@ theorem sumtail_twoInsertion_tail_sum_uniform_of_oneInsertion_tail
     (F2s F3s : ℂ → Set (ℂ → ℝ)) (radius supBound derivBound lowerBound : ℝ)
     (hF2 : UniformPositiveC1Family K2 F2s radius supBound derivBound lowerBound)
     (hF3 : UniformPositiveC1Family K3 F3s radius supBound derivBound lowerBound)
-    (hone : ∀
-    (Kz : Set ℂ) (_hKz : IsCompact Kz) (_hz : ∀ z ∈ Kz, 2 ≤ ‖z‖)
-    (Kα : Set ℝ) (_hKα : IsCompact Kα)
-    (_hα : ∀ α ∈ Kα, γ / 2 < α ∧ α < Q γ)
-    (Family : ℂ → Set (ℂ → ℝ)) (radius supBound derivBound lowerBound : ℝ)
-    (_hFamily : UniformPositiveC1Family Kz Family radius supBound derivBound lowerBound),
-    ∃ B : ℝ → Ω → BrownianPath × BrownianPath, ∃ Z : Ω → Measure ℝ,
-      IsSourceLateralProjection P X γ M Z ∧
-        (∀ α ∈ Kα, IsReflectionData P γ α (B α) Z) ∧
-        ∀ η : ℝ, 0 < η → (∀ α ∈ Kα, η < oneInsertionErrorCeiling γ α) →
-          ∃ C : ℝ, 0 ≤ C ∧
-            ∀ z ∈ Kz, ∀ α ∈ Kα, ∀ F ∈ Family z, ∀ x : ℝ, 1 ≤ x →
-              |(P {ω | ENNReal.ofReal x < localSingularMass M F z γ α ω}).toReal -
-                oneInsertionTailCoefficient γ α z (F z) (reflectionBarR P γ α (B α) Z) *
-                  Real.rpow x (-reflectionExponent γ α)| ≤
-                C * Real.rpow x (-reflectionExponent γ α - η) ) :
+    (hone : OneInsertionHyp P X M γ) :
     ∃ B : ℝ → Ω → BrownianPath × BrownianPath, ∃ Z : Ω → Measure ℝ,
       IsSourceLateralProjection P X γ M Z ∧
         (∀ α, (α ∈ A2 ∨ α ∈ A3) → IsReflectionData P γ α (B α) Z) ∧
@@ -114,7 +100,6 @@ theorem sumtail_twoInsertion_tail_sum_uniform_of_oneInsertion_tail
     F2s F3s radius supBound derivBound lowerBound hF2 hF3 ε hε
     (fun α ha => hεK α (Or.inl ha)) (fun α ha => hεK α (Or.inr ha))
   let T : ℝ := 4/γ^2
-  have hT : 0 ≤ T := by dsimp [T]; positivity
   refine ⟨(1+2*H)*4^(T+1)+(2*C+D+2*((C+H*T)*2^(T+1))+2*D*2^T),by positivity,?_⟩
   intro z2 hz2 z3 hz3 α2 hα2mem α3 hα3mem F2 hF2mem F3 hF3mem x hx
   let W2 := localSingularMass M F2 z2 γ α2

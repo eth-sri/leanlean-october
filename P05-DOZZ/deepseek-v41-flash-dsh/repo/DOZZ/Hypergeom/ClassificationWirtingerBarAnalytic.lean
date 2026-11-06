@@ -25,11 +25,10 @@ theorem differentiableAt_wirtingerBar_of_analytic_conjugate
   let h : ℂ → ℂ := fun w => star (f w)
   have hderiv : AnalyticOnNhd ℂ (deriv h) U := by
     simpa [h] using hf.deriv
-  have hderivAt : DifferentiableAt ℂ (deriv h) z := (hderiv z hz).differentiableAt
   have hclm : DifferentiableAt ℝ (starRingEnd ℂ) (deriv h z) :=
     Complex.differentiable_conj.differentiableAt (x := deriv h z)
   have hstarAt : DifferentiableAt ℝ (fun w => star (deriv h w)) z :=
-    hclm.comp z (hderivAt.restrictScalars ℝ)
+    hclm.comp z (((hderiv z hz).differentiableAt).restrictScalars ℝ)
   have hEq : (fun w => wirtingerBar f w) =ᶠ[𝓝 z]
       (fun w => star (deriv h w)) := by
     filter_upwards [hU.mem_nhds hz] with w hw
@@ -56,7 +55,6 @@ theorem wirtingerBar_wirtingerBar_eq_star_deriv_deriv_of_analytic_conjugate
     have hclm : DifferentiableAt ℝ (starRingEnd ℂ) (wirtingerBar f z) :=
       Complex.differentiable_conj.differentiableAt (x := wirtingerBar f z)
     exact hclm.comp z hbarAt
-  have hderivRealAt : DifferentiableAt ℝ (deriv h) z := hderivAt.restrictScalars ℝ
   have heq : (fun w => star (wirtingerBar f w)) =ᶠ[𝓝 z] deriv h := by
     filter_upwards [hU.mem_nhds hz] with w hw
     have hwEq := wirtingerBar_eq_star_deriv_of_star_differentiableAt
@@ -64,7 +62,7 @@ theorem wirtingerBar_wirtingerBar_eq_star_deriv_deriv_of_analytic_conjugate
     calc
       star (wirtingerBar f w) = star (star (deriv h w)) := by rw [hwEq]
       _ = deriv h w := star_star _
-  have hWZeq := wirtingerZ_congr_of_eventuallyEq hstarBarAt hderivRealAt heq
+  have hWZeq := wirtingerZ_congr_of_eventuallyEq hstarBarAt (hderivAt.restrictScalars ℝ) heq
   change star (wirtingerZ (fun w => star (wirtingerBar f w)) z) = _
   rw [hWZeq, wirtingerZ_eq_deriv_of_differentiableAt hderivAt]
 
@@ -78,10 +76,9 @@ theorem wirtingerZ_wirtingerBar_eq_zero_of_analytic_conjugate
   have hderiv : AnalyticOnNhd ℂ (deriv h) U := by
     simpa [h] using hf.deriv
   have hderivAt : DifferentiableAt ℂ (deriv h) z := (hderiv z hz).differentiableAt
-  have hderivRealAt : DifferentiableAt ℝ (deriv h) z := hderivAt.restrictScalars ℝ
   have hstarAt : DifferentiableAt ℝ (fun w => star (deriv h w)) z := by
     have hclm := Complex.differentiable_conj.differentiableAt (x := deriv h z)
-    exact hclm.comp z hderivRealAt
+    exact hclm.comp z (hderivAt.restrictScalars ℝ)
   have hbarAt : DifferentiableAt ℝ (fun w => wirtingerBar f w) z :=
     differentiableAt_wirtingerBar_of_analytic_conjugate hU hf hz
   have heq : (fun w => wirtingerBar f w) =ᶠ[𝓝 z]

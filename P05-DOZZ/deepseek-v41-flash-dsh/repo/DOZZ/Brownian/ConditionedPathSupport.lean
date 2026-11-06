@@ -34,13 +34,12 @@ theorem ae_negativeConditionedPath_eval_lt_zero
   let A : Set (Fin 1 → ℝ) := {x | 0 ≤ x 0}
   let ρ : (Fin 1 → ℝ) → ℝ≥0∞ := fun x => ENNReal.ofReal
     (max 0 (negativeConditionedFDDDensity ν [t] [x 0]))
-  have htimes : ∀ i, 0 < (times i : ℝ) := fun _ => ht
   have hmono : StrictMono times := by
     intro i j hij
     have hij' : i = j := Subsingleton.elim _ _
     subst j
     exact False.elim (lt_irrefl i hij)
-  have hfdd := hP.2.2.2 1 (by norm_num) times htimes hmono
+  have hfdd := hP.2.2.2 1 (by norm_num) times (fun _ => ht) hmono
   have hlaw : P.map X = (volume : Measure (Fin 1 → ℝ)).withDensity ρ := by
     simpa [X, times, ρ, negativeConditionedFDDDensity] using hfdd
   have hA : MeasurableSet A := measurableSet_le measurable_const

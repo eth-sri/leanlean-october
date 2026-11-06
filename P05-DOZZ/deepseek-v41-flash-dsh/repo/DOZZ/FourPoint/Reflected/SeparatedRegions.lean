@@ -38,13 +38,12 @@ theorem reflected_separated_region_geometry (s r : ℝ) (_hs : 0 < s) (hr : 0 < 
   · exact (isOpen_lt continuous_const continuous_norm).inter
       (isClosed_singleton.union isClosed_singleton).isOpen_compl
   · intro x hx
-    have hx0 : x ≠ 0 := norm_pos_iff.mp hx.1
     have hx1 : x ≠ 1 := by
       intro hh
       have h := hx.2
       simp only [hh, norm_one] at h
       exact (not_lt_of_ge hs1.le) h
-    simp [hx0, hx1]
+    simp [(norm_pos_iff.mp hx.1), hx1]
   · intro x hx
     simpa only [Metric.mem_ball, dist_zero_right] using hx.2.trans_le (by linarith only [hsr, hr])
   · intro x hx hh
@@ -62,8 +61,7 @@ theorem reflected_separated_region_geometry (s r : ℝ) (_hs : 0 < s) (hr : 0 < 
     rw [h3] at hn
     have hxnorm : 1 < ‖x‖ := by linarith only [hn, hd]
     refine ⟨hr1.trans_lt hxnorm, ?_⟩
-    have hx0 : x ≠ 0 := norm_pos_iff.mp (zero_lt_one.trans hxnorm)
     have hx1 : x ≠ 1 := by intro hh; simp [hh] at hxnorm
-    simp [hx0, hx1]
+    simp [(norm_pos_iff.mp (zero_lt_one.trans hxnorm)), hx1]
 
 end DOZZ.Proofs

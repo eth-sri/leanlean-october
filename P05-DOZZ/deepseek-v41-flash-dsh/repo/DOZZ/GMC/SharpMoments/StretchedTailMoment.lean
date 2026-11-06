@@ -84,8 +84,7 @@ theorem stretchedTail_pos_case (q : ℝ) (hq : 0 < q) (v : ℝ≥0∞) (hv0 : v 
   · exact (ENNReal.rpow_le_one_of_one_le_of_neg hv1 (neg_lt_zero.2 hq)).trans le_self_add
   · obtain ⟨r, hr, rfl⟩ : ∃ r : ℝ, 0 < r ∧ ENNReal.ofReal r = v :=
       ⟨v.toReal, ENNReal.toReal_pos hv0 hvt, ENNReal.ofReal_toReal hvt⟩
-    have hr1 : r ≤ 1 := (ENNReal.ofReal_lt_one.1 (not_le.1 hv1)).le
-    obtain ⟨n, hn1, hn2⟩ := stretchedTail_exists_level q hq r hr hr1
+    obtain ⟨n, hn1, hn2⟩ := stretchedTail_exists_level q hq r hr ((ENNReal.ofReal_lt_one.1 (not_le.1 hv1)).le)
     calc ENNReal.ofReal r ^ (-q) = ENNReal.ofReal (r ^ (-q)) := ENNReal.ofReal_rpow_of_pos hr
       _ ≤ ENNReal.ofReal (Real.exp (q * ((n : ℝ) + 1))) := ENNReal.ofReal_le_ofReal hn2
       _ = stretchedTail_layer q n (ENNReal.ofReal r) :=

@@ -107,11 +107,10 @@ theorem cutoffWeightedGmcBallMoment_subunit_compact_gamma_parameters_chart
   have hq0Real : q0Real < 1 := by
     dsimp [q0Real]
     exact Real.rpow_lt_one (by norm_num) (by norm_num) hε
-  have hq0 : q0 < 1 := ENNReal.ofReal_lt_one.mpr (by simpa [q0] using hq0Real)
   have hden0 : 1 - q0 ≠ 0 := by
     intro h
     have hq0le : 1 ≤ q0 := tsub_eq_zero_iff_le.mp h
-    exact (not_le_of_gt hq0) hq0le
+    exact (not_le_of_gt (ENNReal.ofReal_lt_one.mpr (by simpa [q0] using hq0Real))) hq0le
   have hgeom0 : (1 - q0)⁻¹ < ⊤ :=
     lt_top_iff_ne_top.mpr (ENNReal.inv_ne_top.mpr hden0)
   have hRefTop : refBase < ⊤ := by
@@ -145,9 +144,8 @@ theorem cutoffWeightedGmcBallMoment_subunit_compact_gamma_parameters_chart
       cutoffWeightedPositiveSubunitScaleConstant g t.1 t.2 ≤ C := by
     dsimp [cutoffWeightedPositiveSubunitScaleConstant, weightedCutoffMomentScaleExponent,
       xi, eta, shellCoef, coreCoef, refBase, q0, q0Real]
-    have hAxi : 2 ^ xi u ≤ A := le_trans (le_max_left _ _) (hAupper u hu)
     have hcore : ENNReal.ofReal (2 ^ xi u) ≤ ENNReal.ofReal A :=
-      ENNReal.ofReal_le_ofReal hAxi
+      ENNReal.ofReal_le_ofReal (le_trans (le_max_left _ _) (hAupper u hu))
     have hshell : ENNReal.ofReal
         ((1 / 2 : ℝ) ^ (-g * t.1 * t.2) * 2 ^ xi u) ≤ ENNReal.ofReal B :=
       ENNReal.ofReal_le_ofReal (hBupper u hu)
@@ -164,9 +162,8 @@ theorem cutoffWeightedGmcBallMoment_subunit_compact_gamma_parameters_chart
         _ ≤ (ENNReal.ofReal B * refBase) * (1 - q0)⁻¹ := by
           exact mul_le_mul_of_nonneg_left hgeom (by positivity)
   have hcoefNeg : ENNReal.ofReal (2 ^ eta u) * refBase ≤ C := by
-    have hAeta : 2 ^ eta u ≤ A := le_trans (le_max_right _ _) (hAupper u hu)
     have hcore : ENNReal.ofReal (2 ^ eta u) * refBase ≤ ENNReal.ofReal A * refBase :=
-      mul_le_mul_of_nonneg_right (ENNReal.ofReal_le_ofReal hAeta) (by positivity)
+      mul_le_mul_of_nonneg_right (ENNReal.ofReal_le_ofReal (le_trans (le_max_right _ _) (hAupper u hu))) (by positivity)
     dsimp [C]
     calc
       _ ≤ ENNReal.ofReal A * refBase := hcore

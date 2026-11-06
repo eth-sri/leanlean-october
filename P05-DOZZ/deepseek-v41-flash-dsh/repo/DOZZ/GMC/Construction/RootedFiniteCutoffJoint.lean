@@ -79,9 +79,8 @@ theorem regularizedGMC_joint_circle_tilt
   obtain ⟨Z, hZcoord, hZae, hZmeas⟩ :=
     exists_measurable_continuousCircleProfile P X hX Xc hXc r
   let Hroot : (TestFn → ℝ) → Measure ℂ → ℝ≥0∞ := H
-  have hHroot : Measurable (fun q : (TestFn → ℝ) × Measure ℂ => Hroot q.1 q.2) := hH
   have hTransport := equatorGFF_tilted_test_continuousCircle_cutoff_lintegral
-    P X hX Xc hXc r 1 γ L hL Z hZmeas hZae hcovCont Hroot hHroot
+    P X hX Xc hXc r 1 γ L hL Z hZmeas hZae hcovCont Hroot (hH)
   have hProfileAE := continuousCircleCutoffMeasure_ae_eq_regularizedGMC
     P X hX Xc hXc γ r Z hZmeas hZae
   have hProfileShiftAE := continuousCircleCutoffMeasure_shift_ae_eq_regularizedGMC_withDensity

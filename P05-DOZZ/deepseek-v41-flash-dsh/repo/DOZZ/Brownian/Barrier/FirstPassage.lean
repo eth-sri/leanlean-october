@@ -130,8 +130,7 @@ theorem cappedBrownianFirstPassage_value (β : ℝ) (T : ℝ≥0) (p : BrownianP
     (f := fun v : ℝ≥0 => p v) zero_le p.continuous.continuousOn ⟨h0.le,hβ⟩
   have hτu : τ ≤ u := csInf_le (s := {u : ℝ≥0 | u ≤ T ∧ β ≤ p u} ∪ {T})
     (OrderBot.bddBelow _) (Or.inl ⟨hu.2.trans hτT,hpu ▸ le_rfl⟩)
-  have he : u = τ := le_antisymm hu.2 hτu
-  simpa only [he] using hpu
+  simpa only [(le_antisymm hu.2 hτu)] using hpu
 
 /-- A strict terminal crossing forces the capped hit strictly before the cap. -/
 theorem cappedBrownianFirstPassage_lt_of_terminal (β : ℝ) (T : ℝ≥0)
@@ -139,9 +138,8 @@ theorem cappedBrownianFirstPassage_lt_of_terminal (β : ℝ) (T : ℝ≥0)
     cappedBrownianFirstPassage β T p < T := by
   obtain ⟨u,hu,hpu⟩ := intermediate_value_Icc (a := (0 : ℝ≥0)) (b := T)
     (f := fun v : ℝ≥0 => p v) zero_le p.continuous.continuousOn ⟨h0.le,hT.le⟩
-  have huT : u < T := lt_of_le_of_ne hu.2 (by intro he; exact hT.ne (he ▸ hpu).symm)
   exact lt_of_le_of_lt (csInf_le (s := {u : ℝ≥0 | u ≤ T ∧ β ≤ p u} ∪ {T})
-    (OrderBot.bddBelow _) (Or.inl ⟨hu.2,hpu ▸ le_rfl⟩)) huT
+    (OrderBot.bddBelow _) (Or.inl ⟨hu.2,hpu ▸ le_rfl⟩)) (lt_of_le_of_ne hu.2 (by intro he; exact hT.ne (he ▸ hpu).symm))
 
 /-- The finite stopping time itself is measurable for its stopped sigma algebra. -/
 theorem measurable_finite_stoppingTime_stopped {Ω : Type*} [mΩ : MeasurableSpace Ω]
@@ -277,12 +275,11 @@ theorem brownianPath_firstHit_terminal_reflection (P : Measure BrownianPath)
   have hlower : {p : BrownianPath | τ p < T ∧ brownianShiftPath (τ p) p (T-τ p) < 0}
       =ᵐ[P] {p | τ p < T ∧ p T < β} := by
     filter_upwards [hB.eval_zero_ae_eq_zero] with p hp
-    have h0 : p 0 < β := hp ▸ hβ
     by_cases hτ : τ p < T
     · apply propext
       dsimp [brownianShiftPath]
       rw [add_tsub_cancel_of_le (cappedBrownianFirstPassage_le β T p),
-        cappedBrownianFirstPassage_value β T p h0 hτ,sub_neg]
+        cappedBrownianFirstPassage_value β T p (hp ▸ hβ) hτ,sub_neg]
     · simp only [hτ,false_and]
   exact (measure_congr hupper).symm.trans (hs.trans (measure_congr hlower))
 /-- A nondegenerate Brownian time marginal has no atom at any barrier. -/
@@ -343,8 +340,7 @@ theorem brownianPath_crossing_ae_firstHit (P : Measure BrownianPath)
     · exact hτT
     · have he : cappedBrownianFirstPassage β T p = T :=
         le_antisymm (cappedBrownianFirstPassage_le β T p) (le_of_not_gt hτT)
-      have huT : u = T := le_antisymm hu (he ▸ hτu)
-      have hbT : β < p T := lt_of_le_of_ne (huT ▸ hβu) hn.symm
+      have hbT : β < p T := lt_of_le_of_ne ((le_antisymm hu (he ▸ hτu)) ▸ hβu) hn.symm
       exact cappedBrownianFirstPassage_lt_of_terminal β T p (hp ▸ hβ) hbT
   · intro hτ
     refine ⟨_,(cappedBrownianFirstPassage_le β T p),?_⟩

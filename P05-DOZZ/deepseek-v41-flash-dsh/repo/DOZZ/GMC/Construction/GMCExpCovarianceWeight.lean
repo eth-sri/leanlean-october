@@ -64,7 +64,6 @@ theorem equatorGFF_circleCovariance_exp_weight_family
     exact (Metric.tendstoUniformly_iff.mp hc) 1 zero_lt_one
   obtain ⟨R, hR⟩ := Filter.eventually_atTop.mp hnear
   let K : ℝ := ‖c‖ + 1
-  have hK : 0 ≤ K := by dsimp [K]; positivity
   have hcBound (x : ℂ) : |c x| ≤ K := by
     calc
       |c x| = ‖c x‖ := (Real.norm_eq_abs _).symm

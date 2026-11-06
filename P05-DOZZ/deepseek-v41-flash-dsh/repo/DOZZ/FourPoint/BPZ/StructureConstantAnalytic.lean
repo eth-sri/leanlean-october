@@ -73,13 +73,12 @@ theorem bpz_analyticAt_unitVolumeStructureConstant {Ω : Type*} [MeasurableSpace
     · exact differentiable_id
     · exact differentiable_const _
     · exact differentiable_const _
-  have hU : IsOpen (e ⁻¹' V) := hVo.preimage hediff.continuous
   have hmem : (α₁ : ℂ) ∈ e ⁻¹' V := by
     rw [Set.mem_preimage, he]
     exact hVmem _ h
   have hF : DifferentiableOn ℂ (f ∘ e) (e ⁻¹' V) :=
     hf.comp hediff.differentiableOn fun τ hτ => hτ
-  have hFa : AnalyticAt ℂ (f ∘ e) (α₁ : ℂ) := hF.analyticAt (hU.mem_nhds hmem)
+  have hFa : AnalyticAt ℂ (f ∘ e) (α₁ : ℂ) := hF.analyticAt ((hVo.preimage hediff.continuous).mem_nhds hmem)
   have h1 : AnalyticAt ℝ (fun t : ℝ => (t : ℂ)) α₁ := Complex.ofRealCLM.analyticAt α₁
   have h2 : AnalyticAt ℝ (fun t : ℝ => (f ∘ e) (t : ℂ)) α₁ :=
     (hFa.restrictScalars (𝕜 := ℝ)).comp h1

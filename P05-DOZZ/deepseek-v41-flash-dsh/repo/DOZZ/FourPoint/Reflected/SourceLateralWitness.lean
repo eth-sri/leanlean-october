@@ -3,6 +3,7 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
+public import DOZZ.SharedHyp
 public import DOZZ.Statements.Brownian.EquatorGFFLateralGMCDecomposition
 public import DOZZ.Brownian.Lateral.ReflectionJointLaw
 public import DOZZ.ShiftEquations.Reflection.Witness
@@ -20,8 +21,8 @@ theorem reflected_source_lateral_witness
     (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) :
     ∃ Xc : Ω → ℂ → ℝ → ℝ,
       IsCircleAverage P X Xc ∧
-      Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2) ∧
-      (∀ᵐ ω ∂P, Continuous (fun p : ℂ × ℝ => Xc ω p.1 p.2)) ∧
+      MeasurableCircleAvg Xc ∧
+      (ContinuousCircleAvg P Xc) ∧
       IsSourceLateralProjection P X γ M
         (fun ω => lateralProjectedGMC γ (originRadialPath Xc ω) (M ω)) ∧
       IsLateralGMCOf P γ (fun ω => lateralProjectedGMC γ (originRadialPath Xc ω) (M ω)) := by
@@ -43,8 +44,8 @@ theorem reflected_regular_source_reflection_family
     (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) :
     ∃ Xc : Ω → ℂ → ℝ → ℝ, ∃ B : ℝ → Ω → BrownianPath × BrownianPath,
       IsCircleAverage P X Xc ∧
-      Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2) ∧
-      (∀ᵐ ω ∂P, Continuous (fun p : ℂ × ℝ => Xc ω p.1 p.2)) ∧
+      MeasurableCircleAvg Xc ∧
+      (ContinuousCircleAvg P Xc) ∧
       IsSourceLateralProjection P X γ M
         (fun ω => lateralProjectedGMC γ (originRadialPath Xc ω) (M ω)) ∧
       IsLateralGMCOf P γ (fun ω => lateralProjectedGMC γ (originRadialPath Xc ω) (M ω)) ∧

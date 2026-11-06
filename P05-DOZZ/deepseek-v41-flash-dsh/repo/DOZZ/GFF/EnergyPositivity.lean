@@ -45,12 +45,11 @@ theorem abs_log_max_sub_log_max_one (r t δ : ℝ) (hr : 0 < r)
       linarith only [this]
     have hδLower : 1 / 2 ≤ 1 - δ := by linarith only [hδhalf]
     exact (hδLower.trans hrLower).trans (le_max_left r t)
-  have hbOne : 1 ≤ b := le_max_left 1 t
   have hratio : |a / b - 1| ≤ δ := by
     rw [show a / b - 1 = (a - b) / b by field_simp [ne_of_gt hb], abs_div,
       abs_of_pos hb]
     apply (div_le_iff₀ hb).2
-    linarith only [hab, mul_nonneg hδ (sub_nonneg.mpr hbOne)]
+    linarith only [hab, mul_nonneg hδ (sub_nonneg.mpr (le_max_left 1 t))]
   have hratioInv : |b / a - 1| ≤ 2 * δ := by
     rw [show b / a - 1 = (b - a) / a by field_simp [ne_of_gt ha], abs_div,
       abs_of_pos ha]
@@ -60,7 +59,6 @@ theorem abs_log_max_sub_log_max_one (r t δ : ℝ) (hr : 0 < r)
     have hba : |b - a| ≤ δ := by simpa [abs_sub_comm] using hab
     linarith only [hba, hδa]
   have hq : 0 < a / b := div_pos ha hb
-  have hqInv : 0 < (a / b)⁻¹ := inv_pos.mpr hq
   have hlogUpper : Real.log (a / b) ≤ 2 * δ := by
     calc
       Real.log (a / b) ≤ a / b - 1 := Real.log_le_sub_one_of_pos hq
@@ -68,7 +66,7 @@ theorem abs_log_max_sub_log_max_one (r t δ : ℝ) (hr : 0 < r)
       _ ≤ δ := hratio
       _ ≤ 2 * δ := by linarith only [hδ]
   have hlogLower : -Real.log (a / b) ≤ 2 * δ := by
-    have h := Real.log_le_sub_one_of_pos hqInv
+    have h := Real.log_le_sub_one_of_pos (inv_pos.mpr hq)
     rw [Real.log_inv] at h
     calc
       -Real.log (a / b) ≤ (a / b)⁻¹ - 1 := h
@@ -262,8 +260,7 @@ theorem abs_logPlus_of_annularDensity_ne_zero (n : ℕ) (z : ℂ)
   have htLower : 1 ≤ max 1 ‖z‖ := le_max_left 1 ‖z‖
   have htUpper : max 1 ‖z‖ ≤ 1 + δ :=
     max_le (by linarith) hnormUpper
-  have hlogNonneg : 0 ≤ Real.log (max 1 ‖z‖) := Real.log_nonneg htLower
-  rw [abs_of_nonneg hlogNonneg]
+  rw [abs_of_nonneg (Real.log_nonneg htLower)]
   calc
     Real.log (max 1 ‖z‖) ≤ max 1 ‖z‖ - 1 :=
       Real.log_le_sub_one_of_pos (lt_of_lt_of_le zero_lt_one htLower)
@@ -366,8 +363,6 @@ theorem abs_annularSelfEnergy_le (n : ℕ) :
     simpa [ρ, μ] using integral_annularProbabilityDensity n
   have hD : annularSelfEnergy n = -(∫ z : ℂ, ρ z * V z ∂μ) := by
     simpa [annularSelfEnergy, ρ, V, μ, annularLogPotential] using hPair.2
-  have hc : 0 ≤ c := by dsimp [c]; positivity
-  have hUpperInt : Integrable (fun z : ℂ => c * ρ z) μ := hρInt.const_mul c
   have hPointwise (z : ℂ) : |ρ z * V z| ≤ c * ρ z := by
     by_cases hzero : ρ z = 0
     · simp [hzero]
@@ -403,7 +398,7 @@ theorem abs_annularSelfEnergy_le (n : ℕ) :
     |annularSelfEnergy n| = |∫ z : ℂ, ρ z * V z ∂μ| := by rw [hD, abs_neg]
     _ ≤ ∫ z : ℂ, |ρ z * V z| ∂μ := abs_integral_le_integral_abs
     _ ≤ ∫ z : ℂ, c * ρ z ∂μ := by
-      apply integral_mono_ae hVInt.norm hUpperInt
+      apply integral_mono_ae hVInt.norm (hρInt.const_mul c)
       filter_upwards with z
       exact hPointwise z
     _ = c := by rw [integral_const_mul, hρMass]; ring
@@ -433,13 +428,12 @@ theorem integral_complexLogKernelPair_eq_vec (u v : ℂ → ℝ)
     u q.1 * v q.2 * (-Real.log ‖q.1 - q.2‖)
   let FVec : GaussianFields.Vec 2 × GaussianFields.Vec 2 → ℝ := fun p =>
     uVec p.1 * vVec p.2 * GaussianFields.abkLogCovarianceKernel p.1 p.2
-  have huVec : Continuous uVec := hu.comp complexLinearEquivVecTwo.symm.continuous
   have hvVec : Continuous vVec := hv.comp complexLinearEquivVecTwo.symm.continuous
   have hucVec : HasCompactSupport uVec :=
     huc.comp_homeomorph complexLinearEquivVecTwo.symm.toHomeomorph
   have hvcVec : HasCompactSupport vVec :=
     hvc.comp_homeomorph complexLinearEquivVecTwo.symm.toHomeomorph
-  have hFVec := integrable_compactLogKernelPair uVec vVec huVec hvVec hucVec hvcVec
+  have hFVec := integrable_compactLogKernelPair uVec vVec (hu.comp complexLinearEquivVecTwo.symm.continuous) hvVec hucVec hvcVec
   have hnorm (z w : ℂ) :
       GaussianFields.euclideanNorm (complexToVecTwo z - complexToVecTwo w) =
         ‖z - w‖ := by
@@ -610,14 +604,9 @@ theorem annularCenteredPairing_eq_expansion (f : TestFn) (n : ℕ) :
   have hCint : Integrable C μ := by simpa [C, μ] using hC.1
   have hDint : Integrable D μ := by simpa [D, μ] using hD.1
   have hgPair := integral_complexLogKernelPair_eq_vec g g hgc hgc hgcs hgcs
-  have hgInt : Integrable (fun q : ℂ × ℂ =>
-      g q.1 * g q.2 * (-Real.log ‖q.1 - q.2‖)) μ := by
-    simpa [μ] using hgPair.1
   have hBm : Integrable (fun q => m * B q) μ := hBint.const_mul m
   have hCm : Integrable (fun q => m * C q) μ := hCint.const_mul m
   have hDmm : Integrable (fun q => m ^ 2 * D q) μ := hDint.const_mul (m ^ 2)
-  have hExpanded : Integrable (fun q => (A q - m * B q) - (m * C q - m ^ 2 * D q)) μ :=
-    (hAint.sub hBm).sub (hCm.sub hDmm)
   have hPointwise (q : ℂ × ℂ) :
       g q.1 * g q.2 * (-Real.log ‖q.1 - q.2‖) =
         (A q - m * B q) - (m * C q - m ^ 2 * D q) := by
@@ -671,12 +660,6 @@ theorem gffCov_self_nonneg (f : TestFn) : 0 ≤ gffCov f f := by
     GaussianFields.abkLogCovariancePairing
       (annularCenteredTestFn f n) (annularCenteredTestFn f n)
   let C : ℝ := |m| * L + m ^ 2
-  have hLnonneg : 0 ≤ L := by
-    dsimp [L]
-    exact integral_nonneg (fun z => abs_nonneg (f z))
-  have hCnonneg : 0 ≤ C := by
-    dsimp [C]
-    positivity
   have hCovExpansion : gffCov f f =
       testFnLogPairing f f + 2 * m * testFnPotential f := by
     rw [gffCov_eq_equatorLogEnergy]

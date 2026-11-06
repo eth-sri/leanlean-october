@@ -300,12 +300,11 @@ theorem exists_measurable_closedBall_extension {Ω : Type*} [MeasurableSpace Ω]
   classical
   let A : Set (Ω × ℂ) := {p | p.2 ∈ closedBall c a}
   let B (ω : Ω) (z : ℂ) := if hz : z ∈ closedBall c a then Z ⟨z,hz⟩ ω else 0
-  have hA : MeasurableSet A := isClosed_closedBall.measurableSet.preimage measurable_snd
   have hbranch : Measurable (fun p : A => Z ⟨p.1.2,p.2⟩ p.1.1) :=
     hZm.comp (measurable_subtype_coe.fst.prodMk
       (measurable_subtype_coe.snd.subtype_mk))
   refine ⟨B,?_,?_,fun ω z => by simp only [B, dite_eq_left z.2]⟩
-  · exact Measurable.dite hbranch measurable_const hA
+  · exact Measurable.dite hbranch measurable_const (isClosed_closedBall.measurableSet.preimage measurable_snd)
   · intro ω
     rw [continuousOn_iff_continuous_domRestrict]
     convert hZc ω using 1
@@ -486,10 +485,9 @@ theorem exists_harmonic_poisson_modification
   let V (ω : Ω) (z : ℂ) := if hz : z ∈ ball c ρ then Y ⟨z,hz⟩ ω else 0
   have hVm : Measurable (fun p : Ω × ℂ => V p.1 p.2) := by
     let S : Set (Ω × ℂ) := {p | p.2 ∈ ball c ρ}
-    have hS : MeasurableSet S := isOpen_ball.measurableSet.preimage measurable_snd
     have hbranch : Measurable (fun p : S => Y ⟨p.1.2,p.2⟩ p.1.1) :=
       hYj.comp (measurable_subtype_coe.fst.prodMk measurable_subtype_coe.snd.subtype_mk)
-    exact Measurable.dite hbranch measurable_const hS
+    exact Measurable.dite hbranch measurable_const (isOpen_ball.measurableSet.preimage measurable_snd)
   have hVc ω : ContinuousOn (V ω) (ball c ρ) := by
     rw [continuousOn_iff_continuous_domRestrict]
     convert hYc ω using 1
@@ -505,8 +503,7 @@ theorem exists_harmonic_poisson_modification
     · simpa only [edist_eq_zero] using h
     · have hzρ : z ∈ ball c ρ := mem_ball_iff_norm.mpr
         ((mem_ball_iff_norm.mp hz).trans ((hdb j).2.1.trans (hdb j).2.2))
-      have hzZ : Z j z =ᵐ[P] H ⟨z,hzρ⟩ := hZe j ⟨z,hzρ⟩ hz
-      filter_upwards [hVe z hzρ,hzZ] with ω hv hz'
+      filter_upwards [hVe z hzρ,(hZe j ⟨z,hzρ⟩ hz)] with ω hv hz'
       have hzero : edist (V ω z) (Z j z ω) = 0 := by rw [hv,hz',edist_self]
       exact hzero
   have hcommon : ∀ᵐ ω ∂P, ∀ j z, z ∈ ball c (d j) → V ω z = W j ω z := by
@@ -521,10 +518,9 @@ theorem exists_harmonic_poisson_modification
   have hpoint z (hz : z ∈ ball c ρ) :
       InnerProductSpace.HarmonicAt (V ω) z ∧ ContDiffAt ℝ (⊤ : ℕ∞) (V ω) z := by
     obtain ⟨j,hj⟩ := hcover ‖z-c‖ (mem_ball_iff_norm.mp hz)
-    have hzd : z ∈ ball c (d j) := mem_ball_iff_norm.mpr hj
     have hzb : z ∈ ball c (b j) := mem_ball_iff_norm.mpr (hj.trans (hdb j).2.1)
     have heq : V ω =ᶠ[𝓝 z] W j ω :=
-      (show ∀ᶠ x in 𝓝 z, x ∈ ball c (d j) from isOpen_ball.mem_nhds hzd).mono
+      (show ∀ᶠ x in 𝓝 z, x ∈ ball c (d j) from isOpen_ball.mem_nhds (mem_ball_iff_norm.mpr hj)).mono
         (fun x hx => hω j x hx)
     refine ⟨(InnerProductSpace.harmonicAt_congr_nhds heq).mpr ((hWh j ω).1 z hzb),?_⟩
     exact (((hWh j ω).2 z hzb).contDiffAt (isOpen_ball.mem_nhds hzb)).congr_of_eventuallyEq heq

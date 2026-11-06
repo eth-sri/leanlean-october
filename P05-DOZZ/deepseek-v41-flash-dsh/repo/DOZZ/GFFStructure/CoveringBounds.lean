@@ -336,12 +336,11 @@ theorem hasCoveringExponent_closedBall {E : Type*} [NormedAddCommGroup E]
     [MeasurableSpace E] [BorelSpace E] (x : E) (r : ℝ≥0) (hr : 0 < r) :
     Metric.HasCoveringExponent (Metric.closedEBall x r)
       ((4*r : ℝ≥0∞) ^ (Module.finrank ℝ E)) (Module.finrank ℝ E) := by
-  have hdim : Module.finrank ℝ E ≠ 0 := (Module.finrank_pos (R := ℝ) (M := E)).ne'
   constructor
   · exact lt_of_le_of_lt Metric.ediam_closedEBall_le (by finiteness)
   · intro ε hε
     obtain rfl | hεpos := eq_zero_or_pos ε
-    · simp [hdim, hr.ne']
+    · simp [((Module.finrank_pos (R := ℝ) (M := E)).ne'), hr.ne']
     have hdiam : Metric.ediam (Metric.closedEBall x r) ≤ 2*r := Metric.ediam_closedEBall_le
     have hεle : (ε : ℝ≥0∞) ≤ 2*r := hε.trans hdiam
     have hrat : (1 : ℝ≥0∞) ≤ 2*r/ε := by

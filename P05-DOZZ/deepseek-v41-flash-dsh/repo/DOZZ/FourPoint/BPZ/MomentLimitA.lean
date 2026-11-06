@@ -245,8 +245,6 @@ theorem bpz_mom2_sub_le {s J u t v A : ℝ} (hs : 0 ≤ s) (hJ : 0 < J)
       ((s * (s + 1) * J ^ (-s - 2)) • Lf.smulRight Lf + (-s * J ^ (-s - 1)) • Bf)‖ ≤
       s * (s + 1) * (J ^ (-s - 1) * t) + 2 * s * (s + 1) * A * (J ^ (-s - 1) * u) +
         s * (J ^ (-s - 1) * v) := by
-  have hu0 : 0 ≤ u := (norm_nonneg _).trans hu
-  have hJ2 : 0 ≤ J ^ (-s - 2) := Real.rpow_nonneg hJ.le _
   have hJ1 : 0 ≤ J ^ (-s - 1) := Real.rpow_nonneg hJ.le _
   have hc2 : 0 ≤ s * (s + 1) * J ^ (-s - 2) := by
     have : 0 ≤ s + 1 := by linarith
@@ -267,7 +265,7 @@ theorem bpz_mom2_sub_le {s J u t v A : ℝ} (hs : 0 ≤ s) (hJ : 0 < J)
       rw [hL]; exact (norm_add_le _ _).trans (add_le_add hu hLf)
     rw [hsub]
     calc ‖Ln‖ * (‖L‖ + ‖Lf‖) ≤ u * ((u + A * J) + A * J) :=
-          mul_le_mul hu (add_le_add hLn hLf) (by positivity) hu0
+          mul_le_mul hu (add_le_add hLn hLf) (by positivity) ((norm_nonneg _).trans hu)
       _ = u * (u + 2 * (A * J)) := by ring
   rw [e]
   refine (norm_add_le _ _).trans ?_

@@ -53,8 +53,7 @@ theorem exp_mul_le_add_of_mem_Icc {a a₁ a₂ : ℝ} (ha : a ∈ Icc a₁ a₂)
 endpoint values of `t ^ (Re w - 1)` on `[L, B]`. -/
 theorem norm_mul_ofReal_cpow_sub_one_le {L B t : ℝ} (hL : 0 < L) (ht : t ∈ Icc L B) (w : ℂ) :
     ‖w * (t : ℂ) ^ (w - 1)‖ ≤ ‖w‖ * (B ^ (w.re - 1) + L ^ (w.re - 1)) := by
-  have htpos : 0 < t := hL.trans_le ht.1
-  rw [norm_mul, Complex.norm_cpow_eq_rpow_re_of_pos htpos, Complex.sub_re, Complex.one_re]
+  rw [norm_mul, Complex.norm_cpow_eq_rpow_re_of_pos (hL.trans_le ht.1), Complex.sub_re, Complex.one_re]
   exact mul_le_mul_of_nonneg_left (rpow_le_add_of_mem_Icc hL ht _) (norm_nonneg w)
 
 /-- **Complex powers of two positive reals** differ by at most `‖w‖ (B - L)` times the sum of

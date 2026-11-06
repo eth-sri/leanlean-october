@@ -178,11 +178,8 @@ theorem gmc_openSquare_critical_moment_eq_top
         (Complex.continuous_im.sub continuous_const)) continuous_const)
   have hTmeas : ∀ σ₁ σ₂ : ℝ, MeasurableSet (gmcSubSquare s σ₁ σ₂) :=
     fun σ₁ σ₂ => (hTopen σ₁ σ₂).measurableSet
-  have hSmeas : MeasurableSet (gmcOpenSquare s) := (isOpen_gmcOpenSquare s).measurableSet
   -- the four subsquares are disjoint subsets of the square
-  have d12 : Disjoint T₁ T₂ := gmcSubSquare_disjoint_re s 1 1
   have d13 : Disjoint T₁ T₃ := gmcSubSquare_disjoint_re s 1 (-1)
-  have d14 : Disjoint T₁ T₄ := gmcSubSquare_disjoint_im s 1 1
   have d23 : Disjoint T₂ T₃ := gmcSubSquare_disjoint_im s (-1) (-1)
   have d24 : Disjoint T₂ T₄ := (gmcSubSquare_disjoint_re s (-1) 1).symm
   have d34 : Disjoint T₃ T₄ := (gmcSubSquare_disjoint_re s (-1) (-1)).symm
@@ -195,10 +192,10 @@ theorem gmc_openSquare_critical_moment_eq_top
   have hsum_le : ∀ ω, M ω T₁ + M ω T₂ + M ω T₃ + M ω T₄ ≤ M ω (gmcOpenSquare s) := by
     intro ω
     have h1 : M ω (T₁ ∪ T₂ ∪ T₃ ∪ T₄) = M ω T₁ + M ω T₂ + M ω T₃ + M ω T₄ := by
-      rw [measure_union (Set.disjoint_union_left.mpr ⟨Set.disjoint_union_left.mpr ⟨d14, d24⟩,
+      rw [measure_union (Set.disjoint_union_left.mpr ⟨Set.disjoint_union_left.mpr ⟨(gmcSubSquare_disjoint_im s 1 1), d24⟩,
           d34⟩) (hTmeas 1 (-1)),
         measure_union (Set.disjoint_union_left.mpr ⟨d13, d23⟩) (hTmeas (-1) (-1)),
-        measure_union d12 (hTmeas (-1) 1)]
+        measure_union (gmcSubSquare_disjoint_re s 1 1) (hTmeas (-1) 1)]
     rw [← h1]
     exact measure_mono hunion_sub
   -- scaling of the critical moments
@@ -208,7 +205,6 @@ theorem gmc_openSquare_critical_moment_eq_top
     fun σ₁ σ₂ h₁ h₂ => gmc_subSquare_critical_moment P X hX γ hγ hγ2 M hM s hs hs2 h₁ h₂
   by_contra hfin
   set E : ℝ≥0∞ := gmcMassMoment P M (gmcOpenSquare s) p with hEdef
-  have hEfin : E ≠ ⊤ := hfin
   have hmeasT : ∀ σ₁ σ₂ : ℝ, AEMeasurable (fun ω => M ω (gmcSubSquare s σ₁ σ₂) ^ p) P :=
     fun σ₁ σ₂ => (gmc_set_mass_aemeasurable_of_isGMCOf P X hX γ hγ hγ2 M hM _
       (hTmeas σ₁ σ₂)).pow_const p
@@ -258,7 +254,7 @@ theorem gmc_openSquare_critical_moment_eq_top
       (hTmeas σ₁ σ₂)
     exact ((((hm 1 1).add (hm (-1) 1)).add (hm (-1) (-1))).add (hm 1 (-1))).pow_const p
   have hlt := lintegral_strict_mono (IsProbabilityMeasure.ne_zero P) hgmeas
-    (by rw [hsumE]; exact hEfin) hstrict
+    (by rw [hsumE]; exact (hfin)) hstrict
   rw [hsumE] at hlt
   have hle : ∫⁻ ω, (M ω T₁ + M ω T₂ + M ω T₃ + M ω T₄) ^ p ∂P ≤ E := by
     apply lintegral_mono

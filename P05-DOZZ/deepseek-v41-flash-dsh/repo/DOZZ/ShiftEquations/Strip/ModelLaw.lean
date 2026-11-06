@@ -43,7 +43,6 @@ theorem lastone_williamsInput_model_map
   let F : ((ℝ × BrownianPath) × BrownianPath) × Measure ℝ →
       ((ℝ × StoppedBrownianPath) × BrownianPath) × Measure ℝ :=
     Prod.map (Prod.map T id) id
-  have hF : Measurable F := (hT.prodMap measurable_id).prodMap measurable_id
   have hn : (((μ.prod Q).prod Q).prod L).map F =
       (((μ.prod Q).map T).prod Q).prod L := by
     have h1 := Measure.map_prod_map (μ.prod Q) Q hT measurable_id
@@ -52,7 +51,7 @@ theorem lastone_williamsInput_model_map
     simp only [Measure.map_id] at h1 h2
     exact h2.symm.trans (congrArg (fun N => N.prod L) h1.symm)
   change (μ.prod ((Q.prod Q).prod L)).map (F ∘ R) = _
-  rw [← Measure.map_map hF hR.measurable, hR.map_eq]
+  rw [← Measure.map_map ((hT.prodMap measurable_id).prodMap measurable_id) hR.measurable, hR.map_eq]
   exact hn
 
 /-- A conditioned pair independent of the supplied lateral measure realizes exactly the

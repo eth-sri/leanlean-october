@@ -63,13 +63,12 @@ theorem meromorphicAt_gaussCoefficientRatioC_comp {fa fb fc : ℂ → ℂ} {t : 
   have hG : ∀ g : ℂ → ℂ, AnalyticAt ℂ g t → MeromorphicAt (fun t => Complex.Gamma (g t)) t :=
     fun g hg => (meromorphicAt_complexGamma (g t)).comp_analyticAt hg
   have hone : AnalyticAt ℂ (fun _ : ℂ => (1 : ℂ)) t := analyticAt_const
-  have htwo : AnalyticAt ℂ (fun _ : ℂ => (2 : ℂ)) t := analyticAt_const
   have h1 := hG fc hc
   have h2 := hG (fun t => 1 - fa t) (hone.sub ha)
   have h3 := hG (fun t => 1 - fb t) (hone.sub hb)
   have h4 := hG (fun t => fa t - fc t + 1) ((ha.sub hc).add hone)
   have h5 := hG (fun t => fb t - fc t + 1) ((hb.sub hc).add hone)
-  have h6 := hG (fun t => 2 - fc t) (htwo.sub hc)
+  have h6 := hG (fun t => 2 - fc t) ((analyticAt_const).sub hc)
   have h7 := hG (fun t => fc t - fa t) (hc.sub ha)
   have h8 := hG (fun t => fc t - fb t) (hc.sub hb)
   have h9 := hG fa ha
@@ -109,13 +108,12 @@ theorem analyticAt_gaussCoefficientRatioC_comp {fa fb fc : ℂ → ℂ} {t : ℂ
   have hb0 : 0 < b := by linarith
   have hc0 : 0 < c := by linarith
   have hone : AnalyticAt ℂ (fun _ : ℂ => (1 : ℂ)) t := analyticAt_const
-  have htwo : AnalyticAt ℂ (fun _ : ℂ => (2 : ℂ)) t := analyticAt_const
   have a1 := hΓ fc c hfc hc hc0
   have a2 := hΓ (fun t => 1 - fa t) _ (hone.sub hfa) e2 p2
   have a3 := hΓ (fun t => 1 - fb t) _ (hone.sub hfb) e3 p3
   have a4 := hΓ (fun t => fa t - fc t + 1) _ ((hfa.sub hfc).add hone) e4 p4
   have a5 := hΓ (fun t => fb t - fc t + 1) _ ((hfb.sub hfc).add hone) e5 p5
-  have a6 := hΓ (fun t => 2 - fc t) _ (htwo.sub hfc) e6 p6
+  have a6 := hΓ (fun t => 2 - fc t) _ ((analyticAt_const).sub hfc) e6 p6
   have a7 := hΓ (fun t => fc t - fa t) _ (hfc.sub hfa) e7 p7
   have a8 := hΓ (fun t => fc t - fb t) _ (hfc.sub hfb) e8 p8
   have a9 := hΓ fa a hfa ha ha0
@@ -261,7 +259,6 @@ theorem seeds_shifted_triple {γ α α₂ α₃ : ℝ} (hγ : 0 < γ)
 theorem seeds_reflected_triple {γ α α₂ α₃ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2)
     (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ) (hα : α < Q γ) (hs : 2 * Q γ + 2 / γ < α + α₂ + α₃) :
     0 < sExp γ (2 * Q γ - α - 2 / γ) α₂ α₃ ∧ ExtendedSeiberg3 γ (2 * Q γ - α - 2 / γ) α₂ α₃ := by
-  have hlow := (dual_seed_charge_lower γ α α₂ α₃ hα hα₂ hα₃ hs).1
   have hhalf : γ / 2 < 2 / γ := by
     rw [div_lt_div_iff₀ two_pos hγ]
     nlinarith
@@ -372,7 +369,6 @@ theorem analyticAt_dualReflRight {f : (Fin 3 → ℂ) → ℂ} {V : Set (Fin 3 �
     (hs : 2 * Q γ + 2 / γ < α + α₂ + α₃) (hG : AnalyticAt ℂ G (α : ℂ)) :
     AnalyticAt ℂ (dualReflRight f G γ μ α₂ α₃) (α : ℂ) := by
   obtain ⟨hspos, hES⟩ := seeds_reflected_triple hγ hγ2 hα₂ hα₃ hα hs
-  have hlow := (dual_seed_charge_lower γ α α₂ α₃ hα hα₂ hα₃ hs).1
   have hp0 : 0 < reflectionExponent γ α := by
     unfold reflectionExponent
     exact div_pos (by linarith) hγ

@@ -20,7 +20,6 @@ theorem fusion_gammaHalfKernel_scaled (γ α₁ α₂ α₃ : ℝ) (y z : ℂ)
       ‖z‖ ^ (γ ^ 2 / 2 - γ * α₁) *
         (‖y - 1‖ ^ (γ ^ 2 / 2) / ‖y‖ ^ (γ * α₁)) *
           ‖y * z - 1‖ ^ (-γ * α₂) := by
-  have hr : 0 < ‖z‖ := norm_pos_iff.mpr hz
   have hn : normPlus (y * z) = 1 := max_eq_left (by linarith)
   have h1 : 0 < ‖y * z - 1‖ := by
     have h := norm_sub_norm_le (1 : ℂ) (y * z)
@@ -31,7 +30,7 @@ theorem fusion_gammaHalfKernel_scaled (γ α₁ α₂ α₃ : ℝ) (y z : ℂ)
   rw [hn, Real.one_rpow, mul_one, hsub, norm_mul, norm_mul,
     Real.mul_rpow (norm_nonneg _) (norm_nonneg _),
     Real.mul_rpow (norm_nonneg _) (norm_nonneg _),
-    Real.rpow_sub hr, neg_mul γ α₂, Real.rpow_neg h1.le]
+    Real.rpow_sub (norm_pos_iff.mpr hz), neg_mul γ α₂, Real.rpow_neg h1.le]
   simp only [div_eq_mul_inv, mul_inv_rev]
   ring
 

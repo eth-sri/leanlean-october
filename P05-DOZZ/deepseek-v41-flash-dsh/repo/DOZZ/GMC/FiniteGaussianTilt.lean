@@ -56,8 +56,6 @@ lemma lintegral_pi_prod_fin : ∀ n (α : Type*) [MeasurableSpace α]
         apply Finset.measurable_prod
         intro j hj
         exact (hf j.succ).comp (measurable_pi_apply j)
-      have hF : Measurable F := by
-        exact (hf 0).comp measurable_fst |>.mul (htail.comp measurable_snd)
       calc
         ∫⁻ x, ∏ i, f i (x i) ∂Measure.pi (fun _ : Fin (n + 1) => μ)
             = ∫⁻ y, F y ∂μ.prod (Measure.pi (fun _ : Fin n => μ)) := by
@@ -132,8 +130,7 @@ lemma pi_gaussian_tilt {n : ℕ} (c : Fin n → ℝ) :
       _ = ∫⁻ x, (Set.univ.pi s).indicator (fun x => ∏ i, tilt i (x i)) x ∂Measure.pi base := by
             rw [← lintegral_indicator (MeasurableSet.univ_pi hs)]
             apply lintegral_congr_ae
-            have hd : density = fun x => ∏ i, tilt i (x i) := funext hdensity
-            exact ae_of_all _ (fun x => congrArg (fun g => (Set.univ.pi s).indicator g x) hd)
+            exact ae_of_all _ (fun x => congrArg (fun g => (Set.univ.pi s).indicator g x) (funext hdensity))
       _ = ∫⁻ x, ∏ i, f i (x i) ∂Measure.pi base := by
             congr 1
             funext x
@@ -227,9 +224,8 @@ lemma multivariateGaussian_tilt {ι : Type*} [Fintype ι] [DecidableEq ι]
   let A : EuclideanSpace ℝ ι →L[ℝ] EuclideanSpace ℝ ι :=
     toEuclideanCLM (𝕜 := ℝ) (CFC.sqrt S)
   let sh : EuclideanSpace ℝ ι := WithLp.toLp 2 (Matrix.mulVec S a.ofLp)
-  have hsqrt : IsSelfAdjoint (CFC.sqrt S) := (CFC.sqrt_nonneg S).isSelfAdjoint
   have hAself : IsSelfAdjoint A := by
-    exact hsqrt.map (toEuclideanCLM (𝕜 := ℝ))
+    exact ((CFC.sqrt_nonneg S).isSelfAdjoint).map (toEuclideanCLM (𝕜 := ℝ))
   have hAinner (x z : EuclideanSpace ℝ ι) : ⟪x, A z⟫ = ⟪A x, z⟫ := by
     calc
       ⟪x, A z⟫ = ⟪A.adjoint x, z⟫ := (ContinuousLinearMap.adjoint_inner_left A z x).symm
@@ -420,7 +416,6 @@ theorem finite_gaussian_tilt
   let F' : EuclideanSpace ℝ ι → ℝ≥0∞ := fun y => F y.ofLp
   let weight : EuclideanSpace ℝ ι → ℝ≥0∞ := fun y =>
     ENNReal.ofReal (Real.exp (⟪aE, y⟫ - ⟪aE, sh⟫ / 2)) * F' y
-  have hF' : Measurable F' := hF.comp (WithLp.measurable_ofLp 2 (ι → ℝ))
   have hweight : Measurable weight := by
     dsimp [weight]
     fun_prop
@@ -468,7 +463,7 @@ theorem finite_gaussian_tilt
         (fun y => F y.ofLp) (hF.comp (WithLp.measurable_ofLp 2 (ι → ℝ)))
     _ = ∫⁻ y, F' (y + sh) ∂P.map Y := by rw [hLaw]
     _ = ∫⁻ ω, F' (Y ω + sh) ∂P :=
-      lintegral_map' (hF'.comp (measurable_id.add_const sh)).aemeasurable hY
+      lintegral_map' ((hF.comp (WithLp.measurable_ofLp 2 (ι → ℝ))).comp (measurable_id.add_const sh)).aemeasurable hY
     _ = ∫⁻ ω, F (fun i => Z ω i +
         ∑ j, DOZZ.gaussianCovariance P (fun ω => Z ω i) (fun ω => Z ω j) * a j) ∂P := by
       apply lintegral_congr_ae

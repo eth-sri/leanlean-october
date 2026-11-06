@@ -35,8 +35,7 @@ theorem negativeLastExitTime_le_iff_no_future_visit
   by_cases hA : A.Nonempty
   · constructor
     · intro hlast u htu hu
-      have hu_le : u ≤ sSup A := le_csSup hbounded hu
-      exact (not_lt_of_ge (hu_le.trans hlast)) htu
+      exact (not_lt_of_ge ((le_csSup hbounded hu).trans hlast)) htu
     · intro havoid
       apply csSup_le hA
       intro u hu
@@ -57,8 +56,7 @@ theorem negativeLastExitTime_mem_of_nonempty_bddAbove
     (hbounded : BddAbove {u : ℝ≥0 | p u = -c}) :
     p (negativeLastExitTime p c) = -c := by
   let A : Set ℝ≥0 := {u | p u = -c}
-  have hclosed : IsClosed A := isClosed_singleton.preimage p.continuous
-  have hmem : sSup A ∈ A := hclosed.csSup_mem hnonempty hbounded
+  have hmem : sSup A ∈ A := (isClosed_singleton.preimage p.continuous).csSup_mem hnonempty hbounded
   exact hmem
 
 /-- Right endpoint of the dyadic mesh cell strictly containing a nonnegative last-exit time.
@@ -118,7 +116,6 @@ theorem continuousPath_dyadicLastExitCeiling_eval_tendsto
   let L : ℝ≥0 := negativeLastExitTime p c
   have hlast : p L = -c := negativeLastExitTime_mem_of_nonempty_bddAbove p c
     hnonempty hbounded
-  have hL : 0 ≤ (L : ℝ) := L.property
   let F : ℝ → ℝ := fun x => p ⟨max x 0, le_max_right x 0⟩
   have hF : Continuous F := by
     apply p.continuous.comp
@@ -127,7 +124,7 @@ theorem continuousPath_dyadicLastExitCeiling_eval_tendsto
   have hFL : F (L : ℝ) = p L := by
     change p ⟨max (L : ℝ) 0, le_max_right _ _⟩ = p L
     congr 1
-    exact Subtype.ext (max_eq_left hL)
+    exact Subtype.ext (max_eq_left (L.property))
   have htime := dyadicLastExitCeilingTime_coe_tendsto L
   have hcomp : Tendsto (fun n : ℕ => F (dyadicLastExitCeilingTime n L : ℝ))
       atTop (𝓝 (p L)) := by

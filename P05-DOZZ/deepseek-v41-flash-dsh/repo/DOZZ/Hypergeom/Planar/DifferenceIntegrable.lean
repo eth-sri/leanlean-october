@@ -105,7 +105,6 @@ private theorem abs_planarDifferenceKernel_tail_le (k β : ℝ)
     have hfactor : 0 ≤ 1 - k / 2 := by linarith
     positivity
   have hTaylor := norm_unit_taylor_remainder_le k hk hk₂ w hw
-  have hRe : |w.re| ≤ ‖w‖ := Complex.abs_re_le_norm w
   have hfirst : |‖(1 : ℂ) - w‖ ^ k - 1| ≤ (k + T / 2) * ‖w‖ := by
     calc
       |‖(1 : ℂ) - w‖ ^ k - 1| =
@@ -116,7 +115,7 @@ private theorem abs_planarDifferenceKernel_tail_le (k β : ℝ)
       _ ≤ T * ‖w‖ ^ 2 + k * ‖w‖ := by
         refine add_le_add hTaylor ?_
         rw [abs_mul, abs_of_nonneg hk.le]
-        exact mul_le_mul_of_nonneg_left hRe hk.le
+        exact mul_le_mul_of_nonneg_left (Complex.abs_re_le_norm w) hk.le
       _ ≤ (T / 2) * ‖w‖ + k * ‖w‖ := by
         have hsq : ‖w‖ ^ 2 ≤ (1 / 2 : ℝ) * ‖w‖ := by nlinarith [hw, norm_nonneg w]
         calc
@@ -169,7 +168,6 @@ theorem integrableOn_planarDifferenceKernel_ball (k β : ℝ)
   let R : ℝ := 2 * ‖z‖
   let A : ℝ := (3 * ‖z‖) ^ k
   have hR : 0 < R := by dsimp [R]; positivity
-  have hA : 0 ≤ A := by dsimp [A]; positivity
   have hp₀ : -2 < -β := by linarith
   have hp₁ : -2 < k - β := by linarith
   have h₀ : IntegrableOn (fun u : ℂ => A * ‖u‖ ^ (-β)) (ball 0 R) volume :=
@@ -202,11 +200,6 @@ theorem integrableOn_planarDifferenceKernel_tail (k β : ℝ)
   have hR : 0 < R := by dsimp [R]; positivity
   have hk₂ : k < 2 := by linarith
   have hp : p < -2 := by dsimp [p]; linarith
-  have hT : 0 ≤ T := by
-    dsimp [T]
-    have hfactor : 0 ≤ 1 - k / 2 := by linarith
-    positivity
-  have hA : 0 ≤ A := by dsimp [A]; positivity
   have hrad : IntegrableOn (fun u : ℂ => ‖u‖ ^ p)
       (ball (0 : ℂ) R)ᶜ volume :=
     (integrableOn_norm_rpow_ball_compl_iff p R hR).2 hp

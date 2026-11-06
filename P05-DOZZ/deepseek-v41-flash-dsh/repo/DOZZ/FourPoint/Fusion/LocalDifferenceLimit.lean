@@ -23,7 +23,6 @@ theorem fusion_localDifference_normalized_tendsto {Ω : Type*} [MeasurableSpace 
       (nhds (gammaHalfRootedCoefficient P M γ α₁ α₂ α₃ p)) := by
   obtain ⟨hk, hβ, hβ2, _, _⟩ := fusion_difference_parameters γ α₁ hγ hlo hα₁
   let K := planarDifferenceKernel (γ ^ 2 / 2) (γ * α₁) 1
-  have hK : Integrable K volume := (planar_difference_integral _ _ hk hβ hβ2 1).1
   have hm : Measurable K := by
     unfold K planarDifferenceKernel
     exact (((measurable_id.sub_const (1 : ℂ)).norm.pow_const _).sub
@@ -31,7 +30,7 @@ theorem fusion_localDifference_normalized_tendsto {Ω : Type*} [MeasurableSpace 
   have hc := fusionInterpolatedTimeIntegral_tendsto P X hX γ hγ hγ2 M hM α₁ α₂ α₃
     (by have := div_pos (show (0 : ℝ) < 1 by norm_num) hγ; linarith)
     hα₁ hα₂ hα₃ (-p - 1) (by linarith) (fun y => (K y : ℂ))
-    (Complex.measurable_ofReal.comp hm) (hK.ofReal)
+    (Complex.measurable_ofReal.comp hm) (((planar_difference_integral _ _ hk hβ hβ2 1).1).ofReal)
   have hi : (∫ y : ℂ, (K y : ℂ)) = planarGaussConstant (γ ^ 2 / 2) (γ * α₁) := by
     simpa only [norm_one, Real.one_rpow, Complex.ofReal_one, one_mul] using
       (planar_difference_integral _ _ hk hβ hβ2 1).2

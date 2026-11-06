@@ -27,9 +27,7 @@ theorem reflected_random_reflection_cut_squeeze_ae
   let f : Ω → BrownianPath := fun ω => (B ω).2
   have hf : AEMeasurable f P := hB.2.1.1
   let f' := hf.mk f
-  have hfm : Measurable f' := hf.measurable_mk
-  have hmap : P.map f' = P.map f := (Measure.map_congr hf.ae_eq_mk).symm
-  have hpf : MeasurePreserving f' P (P.map f) := ⟨hfm,hmap⟩
+  have hpf : MeasurePreserving f' P (P.map f) := ⟨(hf.measurable_mk),((Measure.map_congr hf.ae_eq_mk).symm)⟩
   have hpm : MeasurePreserving Real.toNNReal μ (μ.map Real.toNNReal) :=
     ⟨continuous_real_toNNReal.measurable,rfl⟩
   have hprod := hpm.prod hpf
@@ -40,12 +38,11 @@ theorem reflected_random_reflection_cut_squeeze_ae
   filter_upwards [hpull,heq] with v hv he hvH
   have hm : H ≤ Real.toNNReal v.1 := by
     exact_mod_cast (show (H : ℝ) ≤ max v.1 0 from hvH.trans (le_max_left _ _))
-  have hm0 : 0 ≤ v.1 := hH.le.trans hvH
   have hl := hv hm
   change negativeLastExitTime (f' v.2) H ≤
     negativeLastExitTime (f' v.2) (Real.toNNReal v.1) at hl
   change f v.2 = f' v.2 at he
-  rw [← he,Real.coe_toNNReal v.1 hm0] at hl
+  rw [← he,Real.coe_toNNReal v.1 (hH.le.trans hvH)] at hl
   exact ⟨reflected_cutMass_mono_of_lastExit γ H v.1 B Z v.2 hl,
     twoSidedReflectionCutMass_le_mass γ v.1 B Z v.2⟩
 

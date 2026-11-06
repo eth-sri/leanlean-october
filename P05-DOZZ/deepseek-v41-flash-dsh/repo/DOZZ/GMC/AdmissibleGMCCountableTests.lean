@@ -133,8 +133,7 @@ theorem exists_countable_dense_admissible_tests
     let : PseudoMetricSpace (↥(R n)) := inferInstance
     let gS : ↥(S n) := ⟨g, ⟨hg, hgs⟩⟩
     let target : C(↑(K n), ℝ) := g.restrict (K n)
-    have htarget : target ∈ R n := ⟨gS, rfl⟩
-    let targetR : ↥(R n) := ⟨target, htarget⟩
+    let targetR : ↥(R n) := ⟨target, (⟨gS, rfl⟩)⟩
     have hclosure : targetR ∈ closure (Set.range (seq n)) := hseq n targetR
     obtain ⟨q, hq, hdist⟩ := (Metric.mem_closure_iff.mp hclosure) δ hδ
     obtain ⟨m, rfl⟩ := hq
@@ -148,10 +147,9 @@ theorem exists_countable_dense_admissible_tests
         exact hdist
       have hdistx : dist (g x) ((seq n m).1 ⟨x, hx⟩) < δ :=
         lt_of_le_of_lt hpoint hdistAmbient
-      have hsourceeq : (source n m).1.restrict (K n) = (seq n m).1 := hsource n m
       let xK : ↑(K n) := ⟨x, hx⟩
       have hsourceval : ((source n m).1.restrict (K n)) xK = (seq n m).1 xK :=
-        congrArg (fun F : C(↑(K n), ℝ) => F xK) hsourceeq
+        congrArg (fun F : C(↑(K n), ℝ) => F xK) (hsource n m)
       have htesteq : test (n, m) x = (seq n m).1 ⟨x, hx⟩ := by
         simpa [test, CompactlySupportedContinuousMap.toBoundedContinuousFunction]
           using hsourceval

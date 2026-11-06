@@ -79,7 +79,6 @@ theorem tendsto_compatible_mixed_double_root_barrier_tail_sum
         ENNReal.ofReal (Real.exp (-((a - g) ^ 2 * ((k + N : ℕ) : ℝ) / 16))))
       atTop (𝓝 0) := by
   let c : ℝ := (a - g) ^ 2 / 16
-  have hc : 0 < c := by dsimp [c]; positivity
   have hsummable : Summable (fun k : ℕ => Real.exp (-c * (k : ℝ))) := by
     have h := summable_compatible_mixed_double_root_barrier_rate g a hga
     apply h.congr

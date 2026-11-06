@@ -46,12 +46,11 @@ theorem weighted_ball_moment_small_radius_bound
     calc
       m = ENNReal.ofReal m.toReal := (ENNReal.ofReal_toReal hm.ne).symm
       _ ≤ ENNReal.ofReal (m.toReal + 1) := ENNReal.ofReal_le_ofReal (by linarith)
-  have hpow : 0 ≤ (2 * r) ^ E := (Real.rpow_pos_of_pos (by positivity) _).le
   calc
     ENNReal.ofReal ((2 * r) ^ E) * m ≤
         ENNReal.ofReal ((2 * r) ^ E) * ENNReal.ofReal (m.toReal + 1) := mul_le_mul' le_rfl hmle
     _ = ENNReal.ofReal (C * r ^ E) := by
-      rw [← ENNReal.ofReal_mul hpow, Real.mul_rpow (by norm_num : (0 : ℝ) ≤ 2) hr.le]
+      rw [← ENNReal.ofReal_mul ((Real.rpow_pos_of_pos (by positivity) _).le), Real.mul_rpow (by norm_num : (0 : ℝ) ≤ 2) hr.le]
       congr 1
       dsimp only [C]
       ring

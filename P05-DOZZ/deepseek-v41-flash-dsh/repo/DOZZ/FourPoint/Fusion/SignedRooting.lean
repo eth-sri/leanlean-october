@@ -112,8 +112,6 @@ theorem fusion_rooted_real_integral {Ω : Type*} [MeasurableSpace Ω]
         ∂gmcReferenceMeasure := by
   let fp := fun u => max (f u) 0
   let fn := fun u => max (-f u) 0
-  have hfp : Measurable fp := hf.max measurable_const
-  have hfn : Measurable fn := hf.neg.max measurable_const
   have hbp : (∫⁻ u, ENNReal.ofReal (fp u) *
       (∫⁻ ω, G (gmcRootedMeasure γ u (M ω)) ∂P) ∂gmcReferenceMeasure) < ⊤ := by
     apply lt_of_le_of_lt (lintegral_mono ?_) hb
@@ -125,9 +123,9 @@ theorem fusion_rooted_real_integral {Ω : Type*} [MeasurableSpace Ω]
     intro u
     exact mul_le_mul' (ENNReal.ofReal_le_ofReal (max_le (neg_le_abs _) (abs_nonneg _))) le_rfl
   obtain ⟨hLp, hRp, hep⟩ := fusion_rooted_nonnegative_integral P X hX γ hγ hγ2 M hM
-    fp hfp (fun _ => le_max_right _ _) G hG hbp
+    fp (hf.max measurable_const) (fun _ => le_max_right _ _) G hG hbp
   obtain ⟨hLn, hRn, hen⟩ := fusion_rooted_nonnegative_integral P X hX γ hγ hγ2 M hM
-    fn hfn (fun _ => le_max_right _ _) G hG hbn
+    fn (hf.neg.max measurable_const) (fun _ => le_max_right _ _) G hG hbn
   have hsplit : ∀ u, f u = fp u - fn u := by
     intro u
     dsimp only [fp, fn]

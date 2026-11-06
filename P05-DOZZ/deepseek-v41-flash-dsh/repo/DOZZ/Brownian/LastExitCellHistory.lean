@@ -52,7 +52,6 @@ theorem measurableSet_conditionedPositiveHistoryHitsOnInterval
   have hHV : H = Vᶜ := by
     ext f
     simp [H, V, MapsTo, Set.mem_compl_iff]
-  have hHclosed : IsClosed H := hHV ▸ hV.isClosed_compl
   have hsegment : Measurable segment := by
     apply ContinuousMap.measurable_iff_eval.mpr
     intro u
@@ -87,7 +86,7 @@ theorem measurableSet_conditionedPositiveHistoryHitsOnInterval
       · change conditionedPositiveStateAt (τ u) p = c at hval
         exact hval
   rw [hpre]
-  exact hHclosed.measurableSet.preimage hsegment
+  exact (hHV ▸ hV.isClosed_compl).measurableSet.preimage hsegment
 
 /-- The deterministic-time past/future factorization applies to a compact-interval barrier hit.
 The future avoidance and rational-future test are both taken strictly after the deterministic

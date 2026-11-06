@@ -72,13 +72,11 @@ theorem exists_partialHomeomorph_pullback_test
         simp [g, hy]
       exact hct.congr heq.symm
     · have hxK : x ∉ K := fun hxK => hxU (hKU hxK)
-      have hnear : Kᶜ ∈ 𝓝 x := hKclosed.isOpen_compl.mem_nhds hxK
       have hzero : (fun y => g y) =ᶠ[𝓝 x] fun _ => (0 : ℝ) := by
-        filter_upwards [hnear] with y hy
+        filter_upwards [(hKclosed.isOpen_compl.mem_nhds hxK)] with y hy
         have hgy : g y = 0 := by
           by_contra hne
-          have hyK : y ∈ K := hsupport (Function.mem_support.mpr hne)
-          exact hy hyK
+          exact hy (hsupport (Function.mem_support.mpr hne))
         exact hgy
       exact continuousAt_const.congr hzero.symm
   let gc : C_c(ℂ, ℝ) := ⟨⟨g, hgcont⟩, by
@@ -130,7 +128,6 @@ theorem regularizedLogChaosTestMass_coordinate_change
   let sourceIntegrand : ℂ → ℝ := fun x =>
     g x * Real.exp (γ * YU ω ε x - γ ^ 2 / 2 * varU x)
   have hUmeas : MeasurableSet U := hYU.openChart.measurableSet
-  have hVmeas : MeasurableSet V := hYV.openChart.measurableSet
   have hμUrestrict : μU = μU.restrict U := by
     dsimp [μU]
     exact logRegularizationReference_restrict_of_subset U U densU hUmeas subset_rfl
@@ -153,17 +150,13 @@ theorem regularizedLogChaosTestMass_coordinate_change
   have htargetMeas : Measurable targetIntegrand := by
     dsimp [targetIntegrand]
     fun_prop
-  have hsourceMeas : Measurable sourceIntegrand := by
-    dsimp [sourceIntegrand]
-    fun_prop
   have hpoint (x : ℂ) (hx : x ∈ U) : targetIntegrand (φ x) = sourceIntegrand x := by
     have hxSource : x ∈ φ.source := by simpa [hφU] using hx
     have hφxV : φ x ∈ V := by
       have h := φ.map_source hxSource
       simpa [hφV] using h
-    have hleft : φ.symm (φ x) = x := φ.left_inv hxSource
     have hfield (ω' : Ω) : YV ω' ε (φ x) = YU ω' ε x := by
-      rw [hField ω' ε (φ x) hφxV, hleft]
+      rw [hField ω' ε (φ x) hφxV, (φ.left_inv hxSource)]
     have hvariance : varV (φ x) = varU x := by
       dsimp [varV, varU]
       exact integral_congr_ae (ae_of_all P fun ω' => by

@@ -219,9 +219,8 @@ theorem lateral_interval_moment_annular_comparison {Ω : Type*} [MeasurableSpace
   have hf : Measurable f := measurable_lateralMomentAttenuation γ a b q
   have hg : Measurable g := ENNReal.continuous_rpow_const.measurable.comp
     (Measure.measurable_coe measurableSet_Ioc)
-  have hi : IndepFun (fun ω => f (A ω)) (fun ω => g (Z ω)) P := hInd.comp hf hg
   have hprod := lintegral_mul_eq_lintegral_mul_lintegral_of_indepFun''
-    (hf.comp_aemeasurable hA) (hg.comp_aemeasurable hZ) hi
+    (hf.comp_aemeasurable hA) (hg.comp_aemeasurable hZ) (hInd.comp hf hg)
   change (∫⁻ ω, f (A ω) * g (Z ω) ∂P) =
     (∫⁻ ω, f (A ω) ∂P) * (∫⁻ ω, g (Z ω) ∂P) at hprod
   change (∫⁻ ω, f (A ω) ∂P) * (∫⁻ ω, g (Z ω) ∂P) ≤ _
