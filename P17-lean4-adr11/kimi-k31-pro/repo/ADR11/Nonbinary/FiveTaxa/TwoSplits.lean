@@ -199,7 +199,10 @@ theorem ac2_balanced_P6_rule (τ : SpeciesTree (Fin 5)) :
         exp (-τ.length {0, 1}) < 1) ∧
     (τ.clusters = hierarchyOf {{3, 4}, {2, 3, 4}} → ac2_solveZ (u τ 13) (u τ 15) (u τ 9) = 1) := by
   refine ⟨fun h => ?_, fun h => ?_, fun h => ?_, fun h => ?_⟩
-  · obtain ⟨-, e2, -, -, e5, -, e7, -⟩ := rootingDist5_2_5 τ h
+  · have e2 := rootingDist5_2_5 τ h 2 (by decide)
+    have e5 := rootingDist5_2_5 τ h 5 (by decide)
+    have e7 := rootingDist5_2_5 τ h 7 (by decide)
+    simp only [Nat.reduceEqDiff, mem_insert, mem_singleton, or_false, or_true, ↓reduceIte] at e2 e5 e7
     obtain ⟨x0, -⟩ := five_exp_bounds τ (A := {0, 1}) (by rw [h]; decide) (by decide)
     obtain ⟨y0, -⟩ := five_exp_bounds τ (A := {0, 1, 2}) (by rw [h]; decide) (by decide)
     obtain ⟨z0, z1⟩ := five_exp_bounds τ (A := {3, 4}) (by rw [h]; decide) (by decide)
@@ -208,12 +211,18 @@ theorem ac2_balanced_P6_rule (τ : SpeciesTree (Fin 5)) :
     obtain ⟨x0, -⟩ := five_exp_bounds τ (A := {0, 1}) (by rw [h]; decide) (by decide)
     obtain ⟨y0, -⟩ := five_exp_bounds τ (A := {0, 1, 2}) (by rw [h]; decide) (by decide)
     exact ac2_solveZ_eq x0 y0 one_pos (by rw [e2]; ring) (by rw [e5]; ring) (by rw [e7]; ring)
-  · obtain ⟨-, -, -, -, -, -, -, -, e9, -, -, -, e13, -, e15⟩ := rootingDist5_2_6 τ h
+  · have e9 := rootingDist5_2_6 τ h 9 (by decide)
+    have e13 := rootingDist5_2_6 τ h 13 (by decide)
+    have e15 := rootingDist5_2_6 τ h 15 (by decide)
+    simp only [Nat.reduceEqDiff, mem_insert, mem_singleton, or_false, or_true, ↓reduceIte] at e9 e13 e15
     obtain ⟨z0, z1⟩ := five_exp_bounds τ (A := {0, 1}) (by rw [h]; decide) (by decide)
     obtain ⟨x0, -⟩ := five_exp_bounds τ (A := {3, 4}) (by rw [h]; decide) (by decide)
     obtain ⟨y0, -⟩ := five_exp_bounds τ (A := {2, 3, 4}) (by rw [h]; decide) (by decide)
     exact ⟨ac2_solveZ_eq x0 y0 z0 (by rw [e13]; ring) (by rw [e15]; ring) (by rw [e9]; ring), z1⟩
-  · obtain ⟨-, -, -, -, -, -, -, -, e9, -, -, -, e13, -, e15⟩ := rootingDist5_2_9 τ h
+  · have e9 := rootingDist5_2_9 τ h 9 (by decide)
+    have e13 := rootingDist5_2_9 τ h 13 (by decide)
+    have e15 := rootingDist5_2_9 τ h 15 (by decide)
+    simp only [Nat.reduceEqDiff, mem_insert, mem_singleton, or_false, or_true, ↓reduceIte] at e9 e13 e15
     obtain ⟨x0, -⟩ := five_exp_bounds τ (A := {3, 4}) (by rw [h]; decide) (by decide)
     obtain ⟨y0, -⟩ := five_exp_bounds τ (A := {2, 3, 4}) (by rw [h]; decide) (by decide)
     exact ac2_solveZ_eq x0 y0 one_pos (by rw [e13]; ring) (by rw [e15]; ring) (by rw [e9]; ring)
@@ -249,7 +258,11 @@ theorem ac2_P6_lengths (τ : SpeciesTree (Fin 5)) :
         rw [e4, e5, e7]; ring, log_exp, neg_neg]
     · rw [show 3 * u τ 2 + 3 * u τ 5 + 9 * u τ 7 = exp (-τ.length {0, 1, 2}) by
         rw [e2, e5, e7]; ring, log_exp, neg_neg]
-  · obtain ⟨-, -, e3, -, -, -, -, -, e9, -, -, -, e13, -, e15⟩ := rootingDist5_2_9 τ h
+  · have e3 := rootingDist5_2_9 τ h 3 (by decide)
+    have e9 := rootingDist5_2_9 τ h 9 (by decide)
+    have e13 := rootingDist5_2_9 τ h 13 (by decide)
+    have e15 := rootingDist5_2_9 τ h 15 (by decide)
+    simp only [Nat.reduceEqDiff, mem_insert, mem_singleton, or_false, or_true, ↓reduceIte] at e3 e9 e13 e15
     constructor
     · rw [show 3 * u τ 3 + 6 * u τ 15 + 6 * u τ 9 = exp (-τ.length {3, 4}) by
         rw [e3, e15, e9]; ring, log_exp, neg_neg]

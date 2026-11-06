@@ -3,6 +3,7 @@ module
 public import ADR11.FiveTaxa.Basic
 public import ADR11.Computation.FiveTaxa
 public import ADR11.FiveTaxa.Explanations
+public import ADR11.Identifiability.FiveTaxa.Classes
 
 /-!
 # The balanced 5-taxon species tree `(((a,b):x,c):y,(d,e):z)`
@@ -118,45 +119,21 @@ theorem balanced_extremeClasses (σ : SpeciesTree (Fin 5)) (hσ : σ.clusters = 
     {i ∈ Icc 1 15 | ∀ j ∈ Icc 1 15, u σ j ≤ u σ i} = {1} := by
   obtain ⟨h12, h14, h25, h45, h57⟩ := equation4 σ hσ
   obtain ⟨-, -, e3, -, e13, -, e6, e9, e12, -, e8, e10, e11, e14, e15⟩ := equation11 σ hσ
-  have K1 : ∀ j ∈ Icc 1 15, u σ 7 ≤ u σ j := by
-    intro j hj
-    obtain ⟨hj1, hj2⟩ := mem_Icc.1 hj
-    interval_cases j <;> linarith
-  have K2 : ∀ j ∈ Icc 1 15, u σ 7 < u σ j → u σ 5 ≤ u σ j := by
-    intro j hj hj7
-    obtain ⟨hj1, hj2⟩ := mem_Icc.1 hj
-    interval_cases j <;> linarith
-  have K3 : ∀ j ∈ Icc 1 15, u σ j ≤ u σ 1 := by
-    intro j hj
-    obtain ⟨hj1, hj2⟩ := mem_Icc.1 hj
-    interval_cases j <;> linarith
-  refine ⟨?_, ?_, ?_⟩
-  · ext i
-    simp only [mem_filter, mem_insert, mem_singleton]
-    constructor
-    · rintro ⟨hi, h⟩
-      have h7 := h 7 (by simp)
+  have hL := five_leastClass_eq (τ := σ) {7, 8, 10, 11, 14, 15} (u σ 7)
+    (by decide) (by decide) (by
+      intro i hi
       obtain ⟨hi1, hi2⟩ := mem_Icc.1 hi
-      interval_cases i <;> first | (exfalso; linarith) | simp
-    · rintro (rfl | rfl | rfl | rfl | rfl | rfl) <;>
-        exact ⟨by simp, fun j hj => by linarith [K1 j hj]⟩
-  · ext i
-    simp only [mem_filter, mem_insert, mem_singleton]
-    constructor
-    · rintro ⟨hi, hlt, h⟩
-      have h5 := h 5 (by simp) h57
+      interval_cases i <;> simp_all <;> linarith)
+  have hS := five_secondClass_eq hL {5, 6, 9, 12} (u σ 5) (by decide) (by decide) (by decide) (by
+      intro i hi
       obtain ⟨hi1, hi2⟩ := mem_Icc.1 hi
-      interval_cases i <;> first | (exfalso; linarith) | simp
-    · rintro (rfl | rfl | rfl | rfl) <;>
-        exact ⟨by simp, by linarith, fun j hj hj7 => by linarith [K2 j hj hj7]⟩
-  · ext i
-    simp only [mem_filter, mem_singleton]
-    constructor
-    · rintro ⟨hi, h⟩
-      have h1 := h 1 (by simp)
+      interval_cases i <;> simp_all <;> linarith)
+  have hM := five_mostProbable_eq (τ := σ) {1} (u σ 1) (by decide) (by decide) (by
+      intro i hi
       obtain ⟨hi1, hi2⟩ := mem_Icc.1 hi
-      interval_cases i <;> first | (exfalso; linarith) | rfl
-    · rintro rfl
-      exact ⟨by simp, K3⟩
+      interval_cases i <;> simp_all <;> linarith)
+  refine ⟨hL, ?_, hM⟩
+  rw [← cls_secondClass_eq_filter (m := 7) (by rw [hL]; decide)]
+  exact hS
 
 end ADR11

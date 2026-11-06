@@ -1,6 +1,6 @@
 module
 
-public import ADR11.MSC.Basic
+public import ADR11.Trees.Hierarchy
 
 /-!
 # Marginalization
@@ -614,46 +614,6 @@ private theorem marg_sum_pi_reindex {ι ι' : Type*} [DecidableEq ι] [Decidable
     dsimp only
     rw [hsup, hprod]
 
-omit [DecidableEq X] in
-/-- Two clusters of a hierarchy sharing an element are nested. -/
-private theorem marg_nested {H : Finset (Finset X)} (hH : IsHierarchy H) {A B : Finset X}
-    (hA : A ∈ H) (hB : B ∈ H) {x : X} (hxA : x ∈ A) (hxB : x ∈ B) : A ⊆ B ∨ B ⊆ A := by
-  rcases hH.2.2.2 A hA B hB with h | h | h
-  · exact Or.inl h
-  · exact Or.inr h
-  · exact absurd hxB (Finset.disjoint_left.1 h hxA)
-
-/-- A cluster strictly inside a cluster `A` of a hierarchy lies inside a child of `A`. -/
-private theorem marg_subset_child {H : Finset (Finset X)} (hH : IsHierarchy H) {A E : Finset X}
-    (hE : E ∈ H) (hEA : E ⊂ A) : ∃ B ∈ childClusters H A, E ⊆ B := by
-  obtain ⟨x, hx⟩ := hH.2.2.1 E hE
-  obtain ⟨y, hyA, hyE⟩ := exists_of_ssubset hEA
-  have hA2 : 2 ≤ #A := one_lt_card.2 ⟨x, hEA.subset hx, y, hyA, fun h => hyE (h ▸ hx)⟩
-  obtain ⟨B, hB, hxB⟩ := hH.exists_mem_childClusters hA2 (hEA.subset hx)
-  refine ⟨B, hB, ?_⟩
-  rcases marg_nested hH hE (mem_childClusters.1 hB).1 hx hxB with h | h
-  · exact h
-  · rcases h.eq_or_ssubset with h' | h'
-    · rw [h']
-    · exact absurd hEA ((mem_childClusters.1 hB).2.2 E hE h')
-
-omit [Fintype X] in
-private theorem marg_subtype_nonempty {S A : Finset X} :
-    (A.subtype (· ∈ S)).Nonempty ↔ (A ∩ S).Nonempty := by
-  constructor
-  · rintro ⟨x, hx⟩
-    exact ⟨x, mem_inter.2 ⟨mem_subtype.1 hx, x.2⟩⟩
-  · rintro ⟨x, hx⟩
-    rw [mem_inter] at hx
-    exact ⟨⟨x, hx.2⟩, mem_subtype.2 hx.1⟩
-
-omit [Fintype X] in
-private theorem marg_mem_restrictClusters {S : Finset X} {H : Finset (Finset X)}
-    {D : Finset S} :
-    D ∈ restrictClusters S H ↔ ∃ A ∈ H, (A ∩ S).Nonempty ∧ A.subtype (· ∈ S) = D := by
-  unfold restrictClusters
-  simp only [mem_image, mem_filter, and_assoc]
-
 /-- The trace of a child of `A` meeting `S`, with a trace different from that of `A`, is a child
 of the trace of `A` in the induced tree. -/
 private theorem marg_subtype_mem_childClusters {H : Finset (Finset X)} (hH : IsHierarchy H)
@@ -661,15 +621,15 @@ private theorem marg_subtype_mem_childClusters {H : Finset (Finset X)} (hH : IsH
     (hne : B.subtype (· ∈ S) ≠ A.subtype (· ∈ S)) :
     B.subtype (· ∈ S) ∈ childClusters (restrictClusters S H) (A.subtype (· ∈ S)) := by
   obtain ⟨hBH, hBA, hBmax⟩ := mem_childClusters.1 hB
-  refine mem_childClusters.2 ⟨marg_mem_restrictClusters.2 ⟨B, hBH, hBS, rfl⟩,
+  refine mem_childClusters.2 ⟨mem_restrictClusters.2 ⟨B, hBH, hBS, rfl⟩,
     (subtype_mono hBA.subset).ssubset_of_ne hne, fun E' hE' hBE' hE'A => ?_⟩
-  obtain ⟨E, hE, -, rfl⟩ := marg_mem_restrictClusters.1 hE'
-  obtain ⟨x, hx⟩ := marg_subtype_nonempty.2 hBS
+  obtain ⟨E, hE, -, rfl⟩ := mem_restrictClusters.1 hE'
+  obtain ⟨x, hx⟩ := subtype_nonempty_iff.2 hBS
   have hxB : (x : X) ∈ B := mem_subtype.1 hx
   have hxE : (x : X) ∈ E := mem_subtype.1 (hBE'.subset hx)
   have hxA : (x : X) ∈ A := hBA.subset hxB
-  rcases marg_nested hH hE hA hxE hxA with hEA | hAE
-  · rcases marg_nested hH hE hBH hxE hxB with hEB | hBE
+  rcases hH.subset_or_subset_of_mem hE hA hxE hxA with hEA | hAE
+  · rcases hH.subset_or_subset_of_mem hE hBH hxE hxB with hEB | hBE
     · exact not_subset_of_ssubset hBE' (subtype_mono hEB)
     · have hBE_ne : B ≠ E := by
         rintro rfl
@@ -685,7 +645,7 @@ private theorem marg_eq_of_subtype_eq {H : Finset (Finset X)} (hH : IsHierarchy 
     {S A B₁ B₂ : Finset X} (hB₁ : B₁ ∈ childClusters H A) (hB₂ : B₂ ∈ childClusters H A)
     (hB₁S : (B₁ ∩ S).Nonempty) (h : B₁.subtype (· ∈ S) = B₂.subtype (· ∈ S)) : B₁ = B₂ := by
   by_contra hne
-  obtain ⟨x, hx⟩ := marg_subtype_nonempty.2 hB₁S
+  obtain ⟨x, hx⟩ := subtype_nonempty_iff.2 hB₁S
   have hx2 : x ∈ B₂.subtype (· ∈ S) := h ▸ hx
   exact Finset.disjoint_left.1 (hH.disjoint_of_mem_childClusters hB₁ hB₂ hne)
     (mem_subtype.1 hx) (mem_subtype.1 hx2)
@@ -724,16 +684,16 @@ private theorem marg_filter_top {H : Finset (Finset X)} (hH : IsHierarchy H) {S 
   constructor
   · rintro ⟨hA'H, -, htr⟩
     refine ⟨hA'H, ?_, htr⟩
-    obtain ⟨x, hx⟩ := marg_subtype_nonempty.2 hBS
+    obtain ⟨x, hx⟩ := subtype_nonempty_iff.2 hBS
     have hxB : (x : X) ∈ B := mem_subtype.1 hx
     have hxA' : (x : X) ∈ A' := mem_subtype.1 (htr.symm ▸ hx)
     have hxA : (x : X) ∈ A := hBA.subset hxB
-    rcases marg_nested hH hA'H hBH hxA' hxB with h | hBA'
+    rcases hH.subset_or_subset_of_mem hA'H hBH hxA' hxB with h | hBA'
     · exact h
     · rcases hBA'.eq_or_ssubset with h | hBA'
       · rw [h]
       · exfalso
-        rcases marg_nested hH hA'H hA hxA' hxA with hA'A | hAA'
+        rcases hH.subset_or_subset_of_mem hA'H hA hxA' hxA with hA'A | hAA'
         · rcases hA'A.eq_or_ssubset with h | hA'A
           · subst h
             exact hne htr.symm
@@ -759,8 +719,8 @@ private theorem marg_filter_chain {H : Finset (Finset X)} (hH : IsHierarchy H) {
     · exact Or.inl h
     · right
       refine ⟨hA'H, ?_, htr'.trans htr.symm⟩
-      obtain ⟨B, hB, hA'B⟩ := marg_subset_child hH hA'H hA'A
-      obtain ⟨x, hx⟩ := marg_subtype_nonempty.2 hAS
+      obtain ⟨B, hB, hA'B⟩ := hH.exists_mem_childClusters_superset hA'H hA'A
+      obtain ⟨x, hx⟩ := subtype_nonempty_iff.2 hAS
       have hxA' : (x : X) ∈ A' := mem_subtype.1 (htr'.symm ▸ hx)
       have hxB₀ : (x : X) ∈ B₀ := mem_subtype.1 (htr.symm ▸ hx)
       have hBB₀ : B = B₀ := by
@@ -781,7 +741,7 @@ private theorem marg_filter_bot {H : Finset (Finset X)} (hH : IsHierarchy H) {S 
   constructor
   · rintro ⟨hA'H, hA'A, htr'⟩
     by_contra hne
-    obtain ⟨B, hB, hA'B⟩ := marg_subset_child hH hA'H (hA'A.ssubset_of_ne hne)
+    obtain ⟨B, hB, hA'B⟩ := hH.exists_mem_childClusters_superset hA'H (hA'A.ssubset_of_ne hne)
     refine hbot B hB (subset_antisymm (subtype_mono (mem_childClusters.1 hB).2.1.subset) ?_)
     rw [← htr']
     exact subtype_mono hA'B
@@ -932,7 +892,7 @@ private theorem marg_prune (σ : SpeciesTree X) {S : Finset X} (hS : S.Nonempty)
   · obtain ⟨B₀, hB₀, htr⟩ := hc
     obtain ⟨hB₀H, hB₀A, -⟩ := mem_childClusters.1 hB₀
     have hB₀S : (B₀ ∩ S).Nonempty :=
-      marg_subtype_nonempty.1 (htr ▸ marg_subtype_nonempty.2 hAS)
+      subtype_nonempty_iff.1 (htr ▸ subtype_nonempty_iff.2 hAS)
     have hB₀u : B₀ ≠ univ := by
       intro h
       rw [h] at hB₀A
@@ -996,7 +956,7 @@ theorem SpeciesTree.rootedDist_restrict (σ : SpeciesTree X) (S : Finset X) (hS 
   · obtain ⟨B₀, hB₀, htr⟩ := hc
     obtain ⟨hB₀H, hB₀A, -⟩ := mem_childClusters.1 hB₀
     have hB₀S : (B₀ ∩ S).Nonempty :=
-      marg_subtype_nonempty.1 (htr ▸ marg_subtype_nonempty.2 hunivS)
+      subtype_nonempty_iff.1 (htr ▸ subtype_nonempty_iff.2 hunivS)
     have hB₀u : B₀ ≠ univ := by
       intro h
       rw [h] at hB₀A

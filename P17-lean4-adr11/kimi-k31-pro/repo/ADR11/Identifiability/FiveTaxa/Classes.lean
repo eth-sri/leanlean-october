@@ -105,6 +105,43 @@ theorem cls_mem_mostProbable {τ : SpeciesTree (Fin 5)} {i : ℕ} :
     i ∈ cls_mostProbable τ ↔ i ∈ Icc 1 15 ∧ ∀ j ∈ Icc 1 15, u τ j ≤ u τ i := by
   simp only [cls_mostProbable, mem_filter]
 
+/-- A nonempty class with one strictly least value is the least-probable class. -/
+theorem five_leastClass_eq {τ : SpeciesTree (Fin 5)} (S : Finset ℕ) (v : ℝ) (hS : S ⊆ Icc 1 15)
+    (hne : S.Nonempty) (hu : ∀ i ∈ Icc 1 15, (i ∈ S → u τ i = v) ∧ (i ∉ S → v < u τ i)) :
+    cls_leastClass τ = S := by
+  ext i
+  simp only [cls_mem_leastClass]
+  grind
+
+/-- The next nonempty class with one strictly least value outside `S₁` is the second class. -/
+theorem five_secondClass_eq {τ : SpeciesTree (Fin 5)} {S₁ : Finset ℕ} (h₁ : cls_leastClass τ = S₁)
+    (S₂ : Finset ℕ) (w : ℝ) (hS₂ : S₂ ⊆ Icc 1 15) (hd : Disjoint S₁ S₂) (hne : S₂.Nonempty)
+    (hu : ∀ i ∈ Icc 1 15, (i ∈ S₂ → u τ i = w) ∧ (i ∉ S₁ → i ∉ S₂ → w < u τ i)) :
+    cls_secondClass τ = S₂ := by
+  ext i
+  rw [cls_mem_secondClass, h₁]
+  constructor
+  · rintro ⟨hi, hi₁, hmin⟩
+    by_contra hiS
+    obtain ⟨j, hj⟩ := hne
+    have h1 := hmin j (hS₂ hj) (disjoint_right.1 hd hj)
+    rw [(hu j (hS₂ hj)).1 hj] at h1
+    exact absurd ((hu i hi).2 hi₁ hiS) (not_lt.2 h1)
+  · intro hiS
+    refine ⟨hS₂ hiS, disjoint_right.1 hd hiS, fun j hj hj₁ => ?_⟩
+    rw [(hu i (hS₂ hiS)).1 hiS]
+    by_cases hjS : j ∈ S₂
+    · rw [(hu j hj).1 hjS]
+    · exact ((hu j hj).2 hj₁ hjS).le
+
+/-- A nonempty class with one strictly greatest value is the most-probable class. -/
+theorem five_mostProbable_eq {τ : SpeciesTree (Fin 5)} (S : Finset ℕ) (m : ℝ) (hS : S ⊆ Icc 1 15)
+    (hne : S.Nonempty) (hu : ∀ i ∈ Icc 1 15, (i ∈ S → u τ i = m) ∧ (i ∉ S → u τ i < m)) :
+    cls_mostProbable τ = S := by
+  ext i
+  simp only [cls_mem_mostProbable]
+  grind
+
 /-! ### Relabelling the taxa permutes the classes -/
 
 /-- Relabelling back: if `π` maps `T_i` to `T_j`, then `T_j` has the same probability under `τ`

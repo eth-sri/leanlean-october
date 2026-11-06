@@ -32,32 +32,16 @@ open Finset Real
 
 /-! ### The jump chain has rational transition probabilities -/
 
-section Rational
-
-variable {L : Type*} [Fintype L] [DecidableEq L]
-
-end Rational
-
 /-! ### Sums over coalescent histories -/
 
-section HistorySum
+-- section HistorySum
 
 variable {X : Type*}
 
-/-- `φ`, a function of the edge lengths, is a sum over finitely many coalescent histories `h` of
+/- `φ`, a function of the edge lengths, is a sum over finitely many coalescent histories `h` of
 `c(h) ∏_{b ∈ D} g_{i(h,b) j(h,b)}(len b)`, with rational `c(h) > 0` and
 `1 ≤ j(h,b) ≤ i(h,b) ≤ #b`. -/
-def model_IsHistorySum (D : Finset (Finset X)) (φ : (Finset X → ℝ) → ℝ) : Prop :=
-  ∃ (ι : Type) (_ : Fintype ι) (c : ι → ℚ) (i j : ι → Finset X → ℕ),
-    (∀ h, 0 < c h) ∧ (∀ h, ∀ b ∈ D, 1 ≤ j h b ∧ j h b ≤ i h b ∧ i h b ≤ #b) ∧
-    ∀ len, φ len = ∑ h : ι, (c h : ℝ) * ∏ b ∈ D, deathProb (i h b) (j h b) (len b)
-
-theorem model_IsHistorySum.congr {D : Finset (Finset X)} {φ ψ : (Finset X → ℝ) → ℝ}
-    (h : model_IsHistorySum D φ) (e : ∀ len, ψ len = φ len) : model_IsHistorySum D ψ := by
-  obtain ⟨ι, _, c, i, j, hc, hij, hφ⟩ := h
-  exact ⟨ι, inferInstance, c, i, j, hc, hij, fun len => (e len).trans (hφ len)⟩
-
-end HistorySum
+-- end HistorySum
 
 /-! ### The history decomposition -/
 

@@ -3,6 +3,7 @@ module
 public import ADR11.FiveTaxa.Basic
 public import ADR11.Computation.FiveTaxa
 public import ADR11.FiveTaxa.Explanations
+public import ADR11.Identifiability.FiveTaxa.Classes
 
 /-!
 # The pseudocaterpillar 5-taxon species tree `(((a,b):x,(d,e):y):z,c)`
@@ -111,18 +112,10 @@ theorem pseudocaterpillar_minClass (σ : SpeciesTree (Fin 5))
     {i ∈ Icc 1 15 | ∀ j ∈ Icc 1 15, u σ i ≤ u σ j} = {5, 6, 7, 9, 10, 12, 14, 15} := by
   obtain ⟨h12, h14, h18, h25, h45, h85⟩ := equation6 σ hσ
   obtain ⟨-, -, e3, -, e13, -, e6, e7, e9, e10, e12, e14, e15, -, e11⟩ := equation13 σ hσ
-  have K : ∀ j ∈ Icc 1 15, u σ 5 ≤ u σ j := by
-    intro j hj
-    obtain ⟨hj1, hj2⟩ := mem_Icc.1 hj
-    interval_cases j <;> linarith
-  ext i
-  simp only [mem_filter, mem_insert, mem_singleton]
-  constructor
-  · rintro ⟨hi, h⟩
-    have h5 := h 5 (by simp)
-    obtain ⟨hi1, hi2⟩ := mem_Icc.1 hi
-    interval_cases i <;> first | (exfalso; linarith) | simp
-  · rintro (rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl) <;>
-      exact ⟨by simp, fun j hj => by linarith [K j hj]⟩
+  exact five_leastClass_eq (τ := σ) {5, 6, 7, 9, 10, 12, 14, 15} (u σ 5)
+    (by decide) (by decide) (by
+      intro i hi
+      obtain ⟨hi1, hi2⟩ := mem_Icc.1 hi
+      interval_cases i <;> simp_all <;> linarith)
 
 end ADR11

@@ -359,37 +359,15 @@ theorem sh_read_relabel (τ : SpeciesTree (Fin 5)) (π : Equiv.Perm (Fin 5)) :
 probable class. -/
 theorem sh_leastClass_eq {τ : SpeciesTree (Fin 5)} {C : Finset ℕ} {m : ℕ} (hC : C ⊆ Icc 1 15)
     (hm : m ∈ C) (heq : ∀ i ∈ C, u τ i = u τ m) (hlt : ∀ i ∈ Icc 1 15, i ∉ C → u τ m < u τ i) :
-    cls_leastClass τ = C := by
-  ext i
-  rw [cls_mem_leastClass]
-  constructor
-  · rintro ⟨hi, h⟩
-    by_contra hiC
-    exact absurd (h m (hC hm)) (not_le.2 (hlt i hi hiC))
-  · intro hiC
-    refine ⟨hC hiC, fun j hj => ?_⟩
-    rw [heq i hiC]
-    by_cases hjC : j ∈ C
-    · rw [heq j hjC]
-    · exact (hlt j hj hjC).le
+    cls_leastClass τ = C :=
+  ac1_leastClass_eq C (u τ m) hC ⟨m, hm⟩ fun i hi => ⟨heq i, hlt i hi⟩
 
 /-- A set `C ⊆ [1, 15]` of equiprobable gene trees, more probable than all the others, is the set
 of the most probable gene trees. -/
 theorem sh_mostProbable_eq {τ : SpeciesTree (Fin 5)} {C : Finset ℕ} {m : ℕ} (hC : C ⊆ Icc 1 15)
     (hm : m ∈ C) (heq : ∀ i ∈ C, u τ i = u τ m) (hlt : ∀ i ∈ Icc 1 15, i ∉ C → u τ i < u τ m) :
-    cls_mostProbable τ = C := by
-  ext i
-  rw [cls_mem_mostProbable]
-  constructor
-  · rintro ⟨hi, h⟩
-    by_contra hiC
-    exact absurd (h m (hC hm)) (not_le.2 (hlt i hi hiC))
-  · intro hiC
-    refine ⟨hC hiC, fun j hj => ?_⟩
-    rw [heq i hiC]
-    by_cases hjC : j ∈ C
-    · rw [heq j hjC]
-    · exact (hlt j hj hjC).le
+    cls_mostProbable τ = C :=
+  ac1_mostProbable_eq C (u τ m) hC ⟨m, hm⟩ fun i hi => ⟨heq i, hlt i hi⟩
 
 /-- Appendix C, `|𝒞| = 12`: `P₂` and `P₃` are told apart since "all gene trees in the 3-element
 class for `P₃` have the same taxon not occurring in a cherry, while for `P₂` the gene trees in the
@@ -410,7 +388,7 @@ theorem sh_P2_P3_rule :
     decide
   · obtain ⟨e1, e2⟩ := ac1_classes_P3 σ h
     rw [e1, e2]
-    exact ⟨by decide, by decide, 4, by decide⟩
+    decide
 
 /-- Appendix C, `|𝒞| = 10`: `P₅ = ((a,b),(d,e),c)` and `P₇ = (((a,b),d,e),c)` are told apart "by
 considering the two 2-element classes for both". For `P₅`, the gene trees of each of the classes
@@ -462,8 +440,21 @@ theorem sh_P5_P7_rule (σ : SpeciesTree (Fin 5)) :
     decide
   · -- `P₇`: Table 7 and the inequalities `u₁ > u₂, u₈ > u₄` of Table 6
     obtain ⟨h12, h18, h24, h84⟩ := (table6 σ).2.2.2.2.2.1 h
-    obtain ⟨-, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13, e14, e15⟩ :=
-      rootingDist5_1_5 σ h
+    have e2 := rootingDist5_1_5 σ h 2 (by decide)
+    have e3 := rootingDist5_1_5 σ h 3 (by decide)
+    have e4 := rootingDist5_1_5 σ h 4 (by decide)
+    have e5 := rootingDist5_1_5 σ h 5 (by decide)
+    have e6 := rootingDist5_1_5 σ h 6 (by decide)
+    have e7 := rootingDist5_1_5 σ h 7 (by decide)
+    have e8 := rootingDist5_1_5 σ h 8 (by decide)
+    have e9 := rootingDist5_1_5 σ h 9 (by decide)
+    have e10 := rootingDist5_1_5 σ h 10 (by decide)
+    have e11 := rootingDist5_1_5 σ h 11 (by decide)
+    have e12 := rootingDist5_1_5 σ h 12 (by decide)
+    have e13 := rootingDist5_1_5 σ h 13 (by decide)
+    have e14 := rootingDist5_1_5 σ h 14 (by decide)
+    have e15 := rootingDist5_1_5 σ h 15 (by decide)
+    simp only [Nat.reduceEqDiff, mem_insert, mem_singleton, or_false, or_true, ↓reduceIte] at e2 e3 e4 e5 e6 e7 e8 e9 e10 e11 e12 e13 e14 e15
     have q3 : u σ 3 = u σ 2 := by rw [e3, e2]
     have q11 : u σ 11 = u σ 8 := by rw [e11, e8]
     have hL : cls_leastClass σ = {4, 5, 6, 7, 9, 10, 12, 13, 14, 15} := by

@@ -123,7 +123,9 @@ theorem ac1_P4_P8_rule (τ : SpeciesTree (Fin 5)) :
       ac1_solveZ τ = exp (-τ.length {0, 1}) ∧ ac1_solveZ τ < 1) ∧
     (τ.clusters = hierarchyOf {{2, 3, 4}} → ac1_solveZ τ = 1) := by
   refine ⟨fun h => ?_, fun h => ?_⟩
-  · obtain ⟨-, -, -, h4, h5, -⟩ := rootingDist5_1_2 τ h
+  · have h4 := rootingDist5_1_2 τ h 4 (by decide)
+    have h5 := rootingDist5_1_2 τ h 5 (by decide)
+    simp only [Nat.reduceEqDiff, mem_insert, mem_singleton, or_false, or_true, ↓reduceIte] at h4 h5
     obtain ⟨z0, z1⟩ := five_exp_bounds τ (A := {0, 1}) (by rw [h]; decide) (by decide)
     obtain ⟨y0, -⟩ := five_exp_bounds τ (A := {2, 3, 4}) (by rw [h]; decide) (by decide)
     have key : (6 * u τ 4 + 9 * u τ 5) ^ 3 / (15 * u τ 5) = exp (-τ.length {0, 1}) ^ 2 := by
@@ -135,7 +137,9 @@ theorem ac1_P4_P8_rule (τ : SpeciesTree (Fin 5)) :
     have e : ac1_solveZ τ = exp (-τ.length {0, 1}) := by
       rw [ac1_solveZ, key, Real.sqrt_sq z0.le]
     exact ⟨e, e ▸ z1⟩
-  · obtain ⟨-, -, -, h4, h5, -⟩ := rootingDist5_1_1 τ h
+  · have h4 := rootingDist5_1_1 τ h 4 (by decide)
+    have h5 := rootingDist5_1_1 τ h 5 (by decide)
+    simp only [Nat.reduceEqDiff, mem_insert, mem_singleton, or_false, or_true, ↓reduceIte] at h4 h5
     obtain ⟨y0, -⟩ := five_exp_bounds τ (A := {2, 3, 4}) (by rw [h]; decide) (by decide)
     have key : (6 * u τ 4 + 9 * u τ 5) ^ 3 / (15 * u τ 5) = 1 := by
       rw [h4, h5]
@@ -284,48 +288,49 @@ theorem ac1_solve_one {τ τ' : SpeciesTree (Fin 5)} {C : Finset (Fin 5)} {i n :
 theorem ac1_lengths_0_1 {τ τ' : SpeciesTree (Fin 5)} (hu : ∀ i, u τ i = u τ' i)
     (h : τ.clusters = hierarchyOf {{1, 2, 3, 4}}) (h' : τ'.clusters = hierarchyOf {{1, 2, 3, 4}}) :
     τ.SameRootedMetricTree τ' := by
-  obtain ⟨f, -⟩ := rootingDist5_0_1 τ h
-  obtain ⟨f', -⟩ := rootingDist5_0_1 τ' h'
+  have f := rootingDist5_0_1 τ h 1 (by decide)
+  have f' := rootingDist5_0_1 τ' h' 1 (by decide)
   exact ac1_solve_one h h' (by norm_num) (by norm_num) (hu 1) f f'
 
 /-- `P₃ = ((a,c,d,e):z,b)`: `u₁ = 1/18 + Z⁶/90` (Table 7) gives `Z`. -/
 theorem ac1_lengths_0_2 {τ τ' : SpeciesTree (Fin 5)} (hu : ∀ i, u τ i = u τ' i)
     (h : τ.clusters = hierarchyOf {{0, 2, 3, 4}}) (h' : τ'.clusters = hierarchyOf {{0, 2, 3, 4}}) :
     τ.SameRootedMetricTree τ' := by
-  obtain ⟨f, -⟩ := rootingDist5_0_2 τ h
-  obtain ⟨f', -⟩ := rootingDist5_0_2 τ' h'
+  have f := rootingDist5_0_2 τ h 1 (by decide)
+  have f' := rootingDist5_0_2 τ' h' 1 (by decide)
   exact ac1_solve_one h h' (by norm_num) (by norm_num) (hu 1) f f'
 
 /-- `P₃ = ((a,b,d,e):z,c)`: `u₂ = 1/18 + Z⁶/90` (Table 7) gives `Z`. -/
 theorem ac1_lengths_0_3 {τ τ' : SpeciesTree (Fin 5)} (hu : ∀ i, u τ i = u τ' i)
     (h : τ.clusters = hierarchyOf {{0, 1, 3, 4}}) (h' : τ'.clusters = hierarchyOf {{0, 1, 3, 4}}) :
     τ.SameRootedMetricTree τ' := by
-  obtain ⟨-, f, -⟩ := rootingDist5_0_3 τ h
-  obtain ⟨-, f', -⟩ := rootingDist5_0_3 τ' h'
+  have f := rootingDist5_0_3 τ h 2 (by decide)
+  have f' := rootingDist5_0_3 τ' h' 2 (by decide)
   exact ac1_solve_one h h' (by norm_num) (by norm_num) (hu 2) f f'
 
 /-- `P₃ = ((a,b,c,e):z,d)`: `u₁ = 1/18 + Z⁶/90` (Table 7) gives `Z`. -/
 theorem ac1_lengths_0_4 {τ τ' : SpeciesTree (Fin 5)} (hu : ∀ i, u τ i = u τ' i)
     (h : τ.clusters = hierarchyOf {{0, 1, 2, 4}}) (h' : τ'.clusters = hierarchyOf {{0, 1, 2, 4}}) :
     τ.SameRootedMetricTree τ' := by
-  obtain ⟨f, -⟩ := rootingDist5_0_4 τ h
-  obtain ⟨f', -⟩ := rootingDist5_0_4 τ' h'
+  have f := rootingDist5_0_4 τ h 1 (by decide)
+  have f' := rootingDist5_0_4 τ' h' 1 (by decide)
   exact ac1_solve_one h h' (by norm_num) (by norm_num) (hu 1) f f'
 
 /-- `P₃ = ((a,b,c,d):z,e)`: `u₁ = 1/18 + Z⁶/90` (Table 7) gives `Z`. -/
 theorem ac1_lengths_0_5 {τ τ' : SpeciesTree (Fin 5)} (hu : ∀ i, u τ i = u τ' i)
     (h : τ.clusters = hierarchyOf {{0, 1, 2, 3}}) (h' : τ'.clusters = hierarchyOf {{0, 1, 2, 3}}) :
     τ.SameRootedMetricTree τ' := by
-  obtain ⟨f, -⟩ := rootingDist5_0_5 τ h
-  obtain ⟨f', -⟩ := rootingDist5_0_5 τ' h'
+  have f := rootingDist5_0_5 τ h 1 (by decide)
+  have f' := rootingDist5_0_5 τ' h' 1 (by decide)
   exact ac1_solve_one h h' (by norm_num) (by norm_num) (hu 1) f f'
 
 /-- `P₂ = ((a,b):z,c,d,e)`: `u₄ = Z/15` (Table 7) gives `Z`. -/
 theorem ac1_lengths_1_0 {τ τ' : SpeciesTree (Fin 5)} (hu : ∀ i, u τ i = u τ' i)
     (h : τ.clusters = hierarchyOf {{0, 1}}) (h' : τ'.clusters = hierarchyOf {{0, 1}}) :
     τ.SameRootedMetricTree τ' := by
-  obtain ⟨-, -, -, f, -⟩ := rootingDist5_1_0 τ h
-  obtain ⟨-, -, -, f', -⟩ := rootingDist5_1_0 τ' h'
+  have f := rootingDist5_1_0 τ h 4 (by decide)
+  have f' := rootingDist5_1_0 τ' h' 4 (by decide)
+  simp only [Nat.reduceEqDiff, mem_insert, mem_singleton, or_false, or_true, ↓reduceIte] at f f'
   exact ac1_solve_one (n := 1) (A := 1 / 15) (B := 0) h h' one_ne_zero (by norm_num) (hu 4)
     (by rw [f]; ring) (by rw [f']; ring)
 
@@ -333,8 +338,9 @@ theorem ac1_lengths_1_0 {τ τ' : SpeciesTree (Fin 5)} (hu : ∀ i, u τ i = u �
 theorem ac1_lengths_1_1 {τ τ' : SpeciesTree (Fin 5)} (hu : ∀ i, u τ i = u τ' i)
     (h : τ.clusters = hierarchyOf {{2, 3, 4}}) (h' : τ'.clusters = hierarchyOf {{2, 3, 4}}) :
     τ.SameRootedMetricTree τ' := by
-  obtain ⟨-, -, -, -, f, -⟩ := rootingDist5_1_1 τ h
-  obtain ⟨-, -, -, -, f', -⟩ := rootingDist5_1_1 τ' h'
+  have f := rootingDist5_1_1 τ h 5 (by decide)
+  have f' := rootingDist5_1_1 τ' h' 5 (by decide)
+  simp only [Nat.reduceEqDiff, mem_insert, mem_singleton, or_false, or_true, ↓reduceIte] at f f'
   exact ac1_solve_one (n := 3) (A := 1 / 15) (B := 0) h h' (by norm_num) (by norm_num) (hu 5)
     (by rw [f]; ring) (by rw [f']; ring)
 
@@ -347,8 +353,9 @@ theorem ac1_lengths_1_2 {τ τ' : SpeciesTree (Fin 5)} (hu : ∀ i, u τ i = u �
     have e : ac1_solveZ τ = ac1_solveZ τ' := by rw [ac1_solveZ, ac1_solveZ, hu 4, hu 5]
     rw [((ac1_P4_P8_rule τ).1 h).1, ((ac1_P4_P8_rule τ').1 h').1] at e
     exact neg_inj.1 (Real.exp_injective e)
-  obtain ⟨-, -, -, -, f, -⟩ := rootingDist5_1_2 τ h
-  obtain ⟨-, -, -, -, f', -⟩ := rootingDist5_1_2 τ' h'
+  have f := rootingDist5_1_2 τ h 5 (by decide)
+  have f' := rootingDist5_1_2 τ' h' 5 (by decide)
+  simp only [Nat.reduceEqDiff, mem_insert, mem_singleton, or_false, or_true, ↓reduceIte] at f f'
   have hy : τ.length {2, 3, 4} = τ'.length {2, 3, 4} :=
     five_length_eq (n := 3) (v := u τ' 5) (A := 1 / 15 * exp (-τ'.length {0, 1})) (B := 0)
       (by norm_num) (by positivity) (by rw [← hu 5, f, hz]; ring) (by rw [f']; ring)
@@ -356,95 +363,84 @@ theorem ac1_lengths_1_2 {τ τ' : SpeciesTree (Fin 5)} (hu : ∀ i, u τ i = u �
   simp only [mem_insert, mem_singleton, forall_eq_or_imp, forall_eq]
   exact ⟨hz, hy⟩
 
+macro "ac1_p9_len" τ:ident t2:ident hu:ident h:ident h2:ident r:term:max Z:term:max : tactic => `(tactic| (
+  have f1 := $r $τ $h 1 (by decide)
+  have f5 := $r $τ $h 5 (by decide)
+  have f1' := $r $t2 $h2 1 (by decide)
+  have f5' := $r $t2 $h2 5 (by decide)
+  simp only [Nat.reduceEqDiff, mem_insert, mem_singleton, or_false, or_true, ↓reduceIte] at f1 f5 f1' f5'
+  have hy : ($τ).length {2, 3, 4} = ($t2).length {2, 3, 4} :=
+    five_length_eq (n := 1) (v := u ($t2) 1 - u ($t2) 5) (A := -1 / 3) (B := 1 / 3) one_ne_zero
+      (by norm_num) (by rw [← ($hu) 1, ← ($hu) 5, f1, f5]; ring) (by rw [f1', f5']; ring)
+  have hz : ($τ).length $Z = ($t2).length $Z :=
+    five_length_eq (n := 6) (v := u ($t2) 5) (A := 1 / 90 * exp (-($t2).length {2, 3, 4}) ^ 3)
+      (B := 1 / 18 * exp (-($t2).length {2, 3, 4}) ^ 3) (by norm_num) (by positivity)
+      (by rw [← ($hu) 5, f5, hy]) (by rw [f5'])
+  refine five_sameRootedMetricTree_of_lengths $h $h2 ?_
+  simp only [mem_insert, mem_singleton, forall_eq_or_imp, forall_eq]
+  exact ⟨hy, hz⟩))
+
+macro "ac1_p7_len" τ:ident t2:ident hu:ident h:ident h2:ident f4:ident fk:ident
+    f42:ident fk2:ident k:term:max Z:term:max : tactic => `(tactic| (
+  simp only [Nat.reduceEqDiff, mem_insert, mem_singleton, or_false, or_true, ↓reduceIte] at $f4 $fk $f42 $fk2
+  have hx : ($τ).length {0, 1} = ($t2).length {0, 1} :=
+    five_length_eq (n := 1) (v := u ($t2) ($k) + 4 * u ($t2) 4) (A := 1 / 3) (B := 0) one_ne_zero
+      (by norm_num) (by rw [← ($hu) ($k), ← ($hu) 4, show _ from $fk, show _ from $f4]; ring)
+      (by rw [show _ from $fk2, show _ from $f42]; ring)
+  have hz : ($τ).length $Z = ($t2).length $Z :=
+    five_length_eq (n := 6) (v := u ($t2) 4) (A := 1 / 90 * exp (-($t2).length {0, 1}))
+      (B := 1 / 18 * exp (-($t2).length {0, 1})) (by norm_num) (by positivity)
+      (by rw [← ($hu) 4, show _ from $f4, hx]) (by rw [show _ from $f42])
+  refine five_sameRootedMetricTree_of_lengths $h $h2 ?_
+  simp only [mem_insert, mem_singleton, forall_eq_or_imp, forall_eq]
+  exact ⟨hx, hz⟩))
+
 /-- `P₉ = (((c,d,e):y,b):z,a)`: `u₁ - u₅ = (1 - Y)/3` (Table 7) gives `Y`, and then
 `u₅ = Y³/18 + Y³Z⁶/90` gives `Z`. -/
 theorem ac1_lengths_1_3 {τ τ' : SpeciesTree (Fin 5)} (hu : ∀ i, u τ i = u τ' i)
     (h : τ.clusters = hierarchyOf {{2, 3, 4}, {1, 2, 3, 4}})
     (h' : τ'.clusters = hierarchyOf {{2, 3, 4}, {1, 2, 3, 4}}) : τ.SameRootedMetricTree τ' := by
-  obtain ⟨f1, -, -, -, f5, -⟩ := rootingDist5_1_3 τ h
-  obtain ⟨f1', -, -, -, f5', -⟩ := rootingDist5_1_3 τ' h'
-  have hy : τ.length {2, 3, 4} = τ'.length {2, 3, 4} :=
-    five_length_eq (n := 1) (v := u τ' 1 - u τ' 5) (A := -1 / 3) (B := 1 / 3) one_ne_zero
-      (by norm_num) (by rw [← hu 1, ← hu 5, f1, f5]; ring) (by rw [f1', f5']; ring)
-  have hz : τ.length {1, 2, 3, 4} = τ'.length {1, 2, 3, 4} :=
-    five_length_eq (n := 6) (v := u τ' 5) (A := 1 / 90 * exp (-τ'.length {2, 3, 4}) ^ 3)
-      (B := 1 / 18 * exp (-τ'.length {2, 3, 4}) ^ 3) (by norm_num) (by positivity)
-      (by rw [← hu 5, f5, hy]) (by rw [f5'])
-  refine five_sameRootedMetricTree_of_lengths h h' ?_
-  simp only [mem_insert, mem_singleton, forall_eq_or_imp, forall_eq]
-  exact ⟨hy, hz⟩
+  ac1_p9_len τ τ' hu h h' rootingDist5_1_3 {1, 2, 3, 4}
 
 /-- `P₉ = (((c,d,e):y,a):z,b)`: `u₁ - u₅ = (1 - Y)/3` (Table 7) gives `Y`, and then
 `u₅ = Y³/18 + Y³Z⁶/90` gives `Z`. -/
 theorem ac1_lengths_1_4 {τ τ' : SpeciesTree (Fin 5)} (hu : ∀ i, u τ i = u τ' i)
     (h : τ.clusters = hierarchyOf {{2, 3, 4}, {0, 2, 3, 4}})
     (h' : τ'.clusters = hierarchyOf {{2, 3, 4}, {0, 2, 3, 4}}) : τ.SameRootedMetricTree τ' := by
-  obtain ⟨f1, -, -, -, f5, -⟩ := rootingDist5_1_4 τ h
-  obtain ⟨f1', -, -, -, f5', -⟩ := rootingDist5_1_4 τ' h'
-  have hy : τ.length {2, 3, 4} = τ'.length {2, 3, 4} :=
-    five_length_eq (n := 1) (v := u τ' 1 - u τ' 5) (A := -1 / 3) (B := 1 / 3) one_ne_zero
-      (by norm_num) (by rw [← hu 1, ← hu 5, f1, f5]; ring) (by rw [f1', f5']; ring)
-  have hz : τ.length {0, 2, 3, 4} = τ'.length {0, 2, 3, 4} :=
-    five_length_eq (n := 6) (v := u τ' 5) (A := 1 / 90 * exp (-τ'.length {2, 3, 4}) ^ 3)
-      (B := 1 / 18 * exp (-τ'.length {2, 3, 4}) ^ 3) (by norm_num) (by positivity)
-      (by rw [← hu 5, f5, hy]) (by rw [f5'])
-  refine five_sameRootedMetricTree_of_lengths h h' ?_
-  simp only [mem_insert, mem_singleton, forall_eq_or_imp, forall_eq]
-  exact ⟨hy, hz⟩
+  ac1_p9_len τ τ' hu h h' rootingDist5_1_4 {0, 2, 3, 4}
 
 /-- `P₇ = (((a,b):x,d,e):z,c)`: `u₈ + 4u₄ = X/3` (Table 7) gives `X`, and then
 `u₄ = X/18 + XZ⁶/90` gives `Z`. -/
 theorem ac1_lengths_1_5 {τ τ' : SpeciesTree (Fin 5)} (hu : ∀ i, u τ i = u τ' i)
     (h : τ.clusters = hierarchyOf {{0, 1}, {0, 1, 3, 4}})
     (h' : τ'.clusters = hierarchyOf {{0, 1}, {0, 1, 3, 4}}) : τ.SameRootedMetricTree τ' := by
-  obtain ⟨-, -, -, f4, -, -, -, f8, -⟩ := rootingDist5_1_5 τ h
-  obtain ⟨-, -, -, f4', -, -, -, f8', -⟩ := rootingDist5_1_5 τ' h'
-  have hx : τ.length {0, 1} = τ'.length {0, 1} :=
-    five_length_eq (n := 1) (v := u τ' 8 + 4 * u τ' 4) (A := 1 / 3) (B := 0) one_ne_zero
-      (by norm_num) (by rw [← hu 8, ← hu 4, f8, f4]; ring) (by rw [f8', f4']; ring)
-  have hz : τ.length {0, 1, 3, 4} = τ'.length {0, 1, 3, 4} :=
-    five_length_eq (n := 6) (v := u τ' 4) (A := 1 / 90 * exp (-τ'.length {0, 1}))
-      (B := 1 / 18 * exp (-τ'.length {0, 1})) (by norm_num) (by positivity)
-      (by rw [← hu 4, f4, hx]) (by rw [f4'])
-  refine five_sameRootedMetricTree_of_lengths h h' ?_
-  simp only [mem_insert, mem_singleton, forall_eq_or_imp, forall_eq]
-  exact ⟨hx, hz⟩
+  have f4 := rootingDist5_1_5 τ h 4 (by decide)
+  have f8 := rootingDist5_1_5 τ h 8 (by decide)
+  have f4' := rootingDist5_1_5 τ' h' 4 (by decide)
+  have f8' := rootingDist5_1_5 τ' h' 8 (by decide)
+  ac1_p7_len τ τ' hu h h' f4 f8 f4' f8' 8 {0, 1, 3, 4}
 
 /-- `P₇ = (((a,b):x,c,e):z,d)`: `u₅ + 4u₄ = X/3` (Table 7) gives `X`, and then
 `u₄ = X/18 + XZ⁶/90` gives `Z`. -/
 theorem ac1_lengths_1_6 {τ τ' : SpeciesTree (Fin 5)} (hu : ∀ i, u τ i = u τ' i)
     (h : τ.clusters = hierarchyOf {{0, 1}, {0, 1, 2, 4}})
     (h' : τ'.clusters = hierarchyOf {{0, 1}, {0, 1, 2, 4}}) : τ.SameRootedMetricTree τ' := by
-  obtain ⟨-, -, -, f4, f5, -⟩ := rootingDist5_1_6 τ h
-  obtain ⟨-, -, -, f4', f5', -⟩ := rootingDist5_1_6 τ' h'
-  have hx : τ.length {0, 1} = τ'.length {0, 1} :=
-    five_length_eq (n := 1) (v := u τ' 5 + 4 * u τ' 4) (A := 1 / 3) (B := 0) one_ne_zero
-      (by norm_num) (by rw [← hu 5, ← hu 4, f5, f4]; ring) (by rw [f5', f4']; ring)
-  have hz : τ.length {0, 1, 2, 4} = τ'.length {0, 1, 2, 4} :=
-    five_length_eq (n := 6) (v := u τ' 4) (A := 1 / 90 * exp (-τ'.length {0, 1}))
-      (B := 1 / 18 * exp (-τ'.length {0, 1})) (by norm_num) (by positivity)
-      (by rw [← hu 4, f4, hx]) (by rw [f4'])
-  refine five_sameRootedMetricTree_of_lengths h h' ?_
-  simp only [mem_insert, mem_singleton, forall_eq_or_imp, forall_eq]
-  exact ⟨hx, hz⟩
+  have f4 := rootingDist5_1_6 τ h 4 (by decide)
+  have f5 := rootingDist5_1_6 τ h 5 (by decide)
+  have f4' := rootingDist5_1_6 τ' h' 4 (by decide)
+  have f5' := rootingDist5_1_6 τ' h' 5 (by decide)
+  ac1_p7_len τ τ' hu h h' f4 f5 f4' f5' 5 {0, 1, 2, 4}
 
 /-- `P₇ = (((a,b):x,c,d):z,e)`: `u₆ + 4u₄ = X/3` (Table 7) gives `X`, and then
 `u₄ = X/18 + XZ⁶/90` gives `Z`. -/
 theorem ac1_lengths_1_7 {τ τ' : SpeciesTree (Fin 5)} (hu : ∀ i, u τ i = u τ' i)
     (h : τ.clusters = hierarchyOf {{0, 1}, {0, 1, 2, 3}})
     (h' : τ'.clusters = hierarchyOf {{0, 1}, {0, 1, 2, 3}}) : τ.SameRootedMetricTree τ' := by
-  obtain ⟨-, -, -, f4, -, f6, -⟩ := rootingDist5_1_7 τ h
-  obtain ⟨-, -, -, f4', -, f6', -⟩ := rootingDist5_1_7 τ' h'
-  have hx : τ.length {0, 1} = τ'.length {0, 1} :=
-    five_length_eq (n := 1) (v := u τ' 6 + 4 * u τ' 4) (A := 1 / 3) (B := 0) one_ne_zero
-      (by norm_num) (by rw [← hu 6, ← hu 4, f6, f4]; ring) (by rw [f6', f4']; ring)
-  have hz : τ.length {0, 1, 2, 3} = τ'.length {0, 1, 2, 3} :=
-    five_length_eq (n := 6) (v := u τ' 4) (A := 1 / 90 * exp (-τ'.length {0, 1}))
-      (B := 1 / 18 * exp (-τ'.length {0, 1})) (by norm_num) (by positivity)
-      (by rw [← hu 4, f4, hx]) (by rw [f4'])
-  refine five_sameRootedMetricTree_of_lengths h h' ?_
-  simp only [mem_insert, mem_singleton, forall_eq_or_imp, forall_eq]
-  exact ⟨hx, hz⟩
+  have f4 := rootingDist5_1_7 τ h 4 (by decide)
+  have f6 := rootingDist5_1_7 τ h 6 (by decide)
+  have f4' := rootingDist5_1_7 τ' h' 4 (by decide)
+  have f6' := rootingDist5_1_7 τ' h' 6 (by decide)
+  ac1_p7_len τ τ' hu h h' f4 f6 f4' f6' 6 {0, 1, 2, 3}
 
 /-! ### The main results -/
 

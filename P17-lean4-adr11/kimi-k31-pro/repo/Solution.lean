@@ -31,6 +31,15 @@ theorem unrootedDist_nonneg {L : Type*} [Fintype L] [DecidableEq L] (σ : Specie
 theorem unrootedDist_sum {L : Type*} [Fintype L] [DecidableEq L] (σ : SpeciesTree X)
     (s : L → X) : ∑ T, σ.unrootedDist s T = 1 := ADR11.unrootedDist_sum σ s
 
+private theorem quartetTrees :
+    treeOfClusters ({{0, 1}} : Finset (Finset (Fin 4))) =
+      {{0, 1}, {2, 3}, {0}, {1}, {2}, {3}, {1, 2, 3}, {0, 2, 3}, {0, 1, 3}, {0, 1, 2}} ∧
+    treeOfClusters ({{0, 2}} : Finset (Finset (Fin 4))) =
+      {{0, 2}, {1, 3}, {0}, {1}, {2}, {3}, {1, 2, 3}, {0, 2, 3}, {0, 1, 3}, {0, 1, 2}} ∧
+    treeOfClusters ({{0, 3}} : Finset (Finset (Fin 4))) =
+      {{0, 3}, {1, 2}, {0}, {1}, {2}, {3}, {1, 2, 3}, {0, 2, 3}, {0, 1, 3}, {0, 1, 2}} := by
+  decide
+
 /-- Section 4.1, balanced species tree `((a,b):x,(c,d):y)` on `Fin 4`: the unrooted gene trees
 `AB|CD`, `AC|BD`, `AD|BC` (each given by the sides of its splits, trivial ones included) have
 probabilities `1 - (2/3)e^{-(x+y)}`, `(1/3)e^{-(x+y)}`, `(1/3)e^{-(x+y)}`. -/
@@ -44,12 +53,7 @@ theorem fourTaxa_balanced (σ : SpeciesTree (Fin 4))
         {0, 1, 2}} = 1 / 3 * exp (-(σ.length {0, 1} + σ.length {2, 3})) := by
   have h4 : (balanced4 : Finset (Finset (Fin 4))) = {univ, {0, 1}, {2, 3}, {0}, {1}, {2}, {3}} := by
     decide
-  have t1 : treeOfClusters ({{0, 1}} : Finset (Finset (Fin 4))) =
-      {{0, 1}, {2, 3}, {0}, {1}, {2}, {3}, {1, 2, 3}, {0, 2, 3}, {0, 1, 3}, {0, 1, 2}} := by decide
-  have t2 : treeOfClusters ({{0, 2}} : Finset (Finset (Fin 4))) =
-      {{0, 2}, {1, 3}, {0}, {1}, {2}, {3}, {1, 2, 3}, {0, 2, 3}, {0, 1, 3}, {0, 1, 2}} := by decide
-  have t3 : treeOfClusters ({{0, 3}} : Finset (Finset (Fin 4))) =
-      {{0, 3}, {1, 2}, {0}, {1}, {2}, {3}, {1, 2, 3}, {0, 2, 3}, {0, 1, 3}, {0, 1, 2}} := by decide
+  obtain ⟨t1, t2, t3⟩ := quartetTrees
   have := ADR11.fourTaxa_balanced σ (hσ.trans h4.symm)
   rwa [t1, t2, t3] at this
 
@@ -66,12 +70,7 @@ theorem fourTaxa_caterpillar (σ : SpeciesTree (Fin 4))
         {0, 1, 2}} = 1 / 3 * exp (-σ.length {0, 1}) := by
   have h4 : (caterpillar4 : Finset (Finset (Fin 4))) =
       {univ, {0, 1}, {0, 1, 2}, {0}, {1}, {2}, {3}} := by decide
-  have t1 : treeOfClusters ({{0, 1}} : Finset (Finset (Fin 4))) =
-      {{0, 1}, {2, 3}, {0}, {1}, {2}, {3}, {1, 2, 3}, {0, 2, 3}, {0, 1, 3}, {0, 1, 2}} := by decide
-  have t2 : treeOfClusters ({{0, 2}} : Finset (Finset (Fin 4))) =
-      {{0, 2}, {1, 3}, {0}, {1}, {2}, {3}, {1, 2, 3}, {0, 2, 3}, {0, 1, 3}, {0, 1, 2}} := by decide
-  have t3 : treeOfClusters ({{0, 3}} : Finset (Finset (Fin 4))) =
-      {{0, 3}, {1, 2}, {0}, {1}, {2}, {3}, {1, 2, 3}, {0, 2, 3}, {0, 1, 3}, {0, 1, 2}} := by decide
+  obtain ⟨t1, t2, t3⟩ := quartetTrees
   have := ADR11.fourTaxa_caterpillar σ (hσ.trans h4.symm)
   rwa [t1, t2, t3] at this
 

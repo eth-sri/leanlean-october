@@ -1,0 +1,2449 @@
+diff --git a/ADR11/Basic.lean b/ADR11/Basic.lean
+index 24b4ec79b..ce5155697 100644
+--- a/ADR11/Basic.lean
++++ b/ADR11/Basic.lean
+@@ -39,19 +39,13 @@ def restrictSplits (S : Finset X) (T : Finset (Finset X)) : Finset (Finset S) :=
+ namespace SpeciesTree
+ 
+ theorem restrict_univ_mem (σ : SpeciesTree X) (S : Finset X) (hS : S.Nonempty) :
+-    (univ : Finset S) ∈ restrictClusters S σ.clusters := by
+-  unfold restrictClusters
+-  rw [mem_image]
+-  refine ⟨univ, mem_filter.2 ⟨σ.univ_mem, by simpa using hS⟩, ?_⟩
+-  simp
++    (univ : Finset S) ∈ restrictClusters S σ.clusters :=
++  mem_image.2 ⟨univ, mem_filter.2 ⟨σ.univ_mem, by simpa using hS⟩, by simp⟩
+ 
+ theorem restrict_singleton_mem (σ : SpeciesTree X) (S : Finset X) (x : S) :
+-    {x} ∈ restrictClusters S σ.clusters := by
+-  unfold restrictClusters
+-  rw [mem_image]
+-  refine ⟨{x.1}, mem_filter.2 ⟨σ.singleton_mem x.1, ⟨x.1, by simp [x.2]⟩⟩, ?_⟩
+-  ext ⟨y, hy⟩
+-  rw [mem_subtype, mem_singleton, mem_singleton, Subtype.ext_iff]
++    {x} ∈ restrictClusters S σ.clusters :=
++  mem_image.2 ⟨{x.1}, mem_filter.2 ⟨σ.singleton_mem x.1, ⟨x.1, by simp [x.2]⟩⟩,
++    by ext ⟨y, hy⟩; rw [mem_subtype, mem_singleton, mem_singleton, Subtype.ext_iff]⟩
+ 
+ theorem restrict_nonempty_of_mem (σ : SpeciesTree X) (S : Finset X) :
+     ∀ C ∈ restrictClusters S σ.clusters, C.Nonempty := by
+diff --git a/ADR11/FiveTaxa/Balanced.lean b/ADR11/FiveTaxa/Balanced.lean
+index fb35d11ad..dc33307b4 100644
+--- a/ADR11/FiveTaxa/Balanced.lean
++++ b/ADR11/FiveTaxa/Balanced.lean
+@@ -3,6 +3,7 @@ module
+ public import ADR11.FiveTaxa.Basic
+ public import ADR11.Computation.FiveTaxa
+ public import ADR11.FiveTaxa.Explanations
++public import ADR11.Identifiability.FiveTaxa.Classes
+ 
+ /-!
+ # The balanced 5-taxon species tree `(((a,b):x,c):y,(d,e):z)`
+@@ -118,45 +119,21 @@ theorem balanced_extremeClasses (σ : SpeciesTree (Fin 5)) (hσ : σ.clusters =
+     {i ∈ Icc 1 15 | ∀ j ∈ Icc 1 15, u σ j ≤ u σ i} = {1} := by
+   obtain ⟨h12, h14, h25, h45, h57⟩ := equation4 σ hσ
+   obtain ⟨-, -, e3, -, e13, -, e6, e9, e12, -, e8, e10, e11, e14, e15⟩ := equation11 σ hσ
+-  have K1 : ∀ j ∈ Icc 1 15, u σ 7 ≤ u σ j := by
+-    intro j hj
+-    obtain ⟨hj1, hj2⟩ := mem_Icc.1 hj
+-    interval_cases j <;> linarith
+-  have K2 : ∀ j ∈ Icc 1 15, u σ 7 < u σ j → u σ 5 ≤ u σ j := by
+-    intro j hj hj7
+-    obtain ⟨hj1, hj2⟩ := mem_Icc.1 hj
+-    interval_cases j <;> linarith
+-  have K3 : ∀ j ∈ Icc 1 15, u σ j ≤ u σ 1 := by
+-    intro j hj
+-    obtain ⟨hj1, hj2⟩ := mem_Icc.1 hj
+-    interval_cases j <;> linarith
+-  refine ⟨?_, ?_, ?_⟩
+-  · ext i
+-    simp only [mem_filter, mem_insert, mem_singleton]
+-    constructor
+-    · rintro ⟨hi, h⟩
+-      have h7 := h 7 (by simp)
++  have hL := five_leastClass_eq (τ := σ) {7, 8, 10, 11, 14, 15} (u σ 7)
++    (by decide) (by decide) (by
++      intro i hi
+       obtain ⟨hi1, hi2⟩ := mem_Icc.1 hi
+-      interval_cases i <;> first | (exfalso; linarith) | simp
+-    · rintro (rfl | rfl | rfl | rfl | rfl | rfl) <;>
+-        exact ⟨by simp, fun j hj => by linarith [K1 j hj]⟩
+-  · ext i
+-    simp only [mem_filter, mem_insert, mem_singleton]
+-    constructor
+-    · rintro ⟨hi, hlt, h⟩
+-      have h5 := h 5 (by simp) h57
++      interval_cases i <;> simp_all <;> linarith)
++  have hS := five_secondClass_eq hL {5, 6, 9, 12} (u σ 5) (by decide) (by decide) (by decide) (by
++      intro i hi
+       obtain ⟨hi1, hi2⟩ := mem_Icc.1 hi
+-      interval_cases i <;> first | (exfalso; linarith) | simp
+-    · rintro (rfl | rfl | rfl | rfl) <;>
+-        exact ⟨by simp, by linarith, fun j hj hj7 => by linarith [K2 j hj hj7]⟩
+-  · ext i
+-    simp only [mem_filter, mem_singleton]
+-    constructor
+-    · rintro ⟨hi, h⟩
+-      have h1 := h 1 (by simp)
++      interval_cases i <;> simp_all <;> linarith)
++  have hM := five_mostProbable_eq (τ := σ) {1} (u σ 1) (by decide) (by decide) (by
++      intro i hi
+       obtain ⟨hi1, hi2⟩ := mem_Icc.1 hi
+-      interval_cases i <;> first | (exfalso; linarith) | rfl
+-    · rintro rfl
+-      exact ⟨by simp, K3⟩
++      interval_cases i <;> simp_all <;> linarith)
++  refine ⟨hL, ?_, hM⟩
++  rw [← cls_secondClass_eq_filter (m := 7) (by rw [hL]; decide)]
++  exact hS
+ 
+ end ADR11
+diff --git a/ADR11/FiveTaxa/Caterpillar.lean b/ADR11/FiveTaxa/Caterpillar.lean
+index 89059e417..7b63fa430 100644
+--- a/ADR11/FiveTaxa/Caterpillar.lean
++++ b/ADR11/FiveTaxa/Caterpillar.lean
+@@ -3,6 +3,7 @@ module
+ public import ADR11.FiveTaxa.Basic
+ public import ADR11.Computation.FiveTaxa
+ public import ADR11.FiveTaxa.Explanations
++public import ADR11.Identifiability.FiveTaxa.Classes
+ 
+ /-!
+ # The rooted caterpillar 5-taxon species tree `((((a,b):x,c):y,d):z,e)`
+@@ -129,32 +130,17 @@ theorem caterpillar_extremeClasses (σ : SpeciesTree (Fin 5)) (hσ : σ.clusters
+       {5, 12} := by
+   obtain ⟨h12, h14, h25, h45, h57, h32, h36, h65⟩ := equation5 σ hσ
+   obtain ⟨-, -, -, -, e13, -, e12, -, e9, -, e8, e10, e11, e14, e15⟩ := equation12 σ hσ
+-  have K1 : ∀ j ∈ Icc 1 15, u σ 7 ≤ u σ j := by
+-    intro j hj
+-    obtain ⟨hj1, hj2⟩ := mem_Icc.1 hj
+-    interval_cases j <;> linarith
+-  have K2 : ∀ j ∈ Icc 1 15, u σ 7 < u σ j → u σ 5 ≤ u σ j := by
+-    intro j hj hj7
+-    obtain ⟨hj1, hj2⟩ := mem_Icc.1 hj
+-    interval_cases j <;> linarith
+-  refine ⟨?_, ?_⟩
+-  · ext i
+-    simp only [mem_filter, mem_insert, mem_singleton]
+-    constructor
+-    · rintro ⟨hi, h⟩
+-      have h7 := h 7 (by simp)
++  have hL := five_leastClass_eq (τ := σ) {7, 8, 10, 11, 14, 15} (u σ 7)
++    (by decide) (by decide) (by
++      intro i hi
+       obtain ⟨hi1, hi2⟩ := mem_Icc.1 hi
+-      interval_cases i <;> first | (exfalso; linarith) | simp
+-    · rintro (rfl | rfl | rfl | rfl | rfl | rfl) <;>
+-        exact ⟨by simp, fun j hj => by linarith [K1 j hj]⟩
+-  · ext i
+-    simp only [mem_filter, mem_insert, mem_singleton]
+-    constructor
+-    · rintro ⟨hi, hlt, h⟩
+-      have h5 := h 5 (by simp) h57
++      interval_cases i <;> simp_all <;> linarith)
++  have hS := five_secondClass_eq hL {5, 12} (u σ 5) (by decide) (by decide) (by decide) (by
++      intro i hi
+       obtain ⟨hi1, hi2⟩ := mem_Icc.1 hi
+-      interval_cases i <;> first | (exfalso; linarith) | simp
+-    · rintro (rfl | rfl) <;>
+-        exact ⟨by simp, by linarith, fun j hj hj7 => by linarith [K2 j hj hj7]⟩
++      interval_cases i <;> simp_all <;> linarith)
++  refine ⟨hL, ?_⟩
++  rw [← cls_secondClass_eq_filter (m := 7) (by rw [hL]; decide)]
++  exact hS
+ 
+ end ADR11
+diff --git a/ADR11/FiveTaxa/Pseudocaterpillar.lean b/ADR11/FiveTaxa/Pseudocaterpillar.lean
+index 95cd44b02..4081bbf33 100644
+--- a/ADR11/FiveTaxa/Pseudocaterpillar.lean
++++ b/ADR11/FiveTaxa/Pseudocaterpillar.lean
+@@ -3,6 +3,7 @@ module
+ public import ADR11.FiveTaxa.Basic
+ public import ADR11.Computation.FiveTaxa
+ public import ADR11.FiveTaxa.Explanations
++public import ADR11.Identifiability.FiveTaxa.Classes
+ 
+ /-!
+ # The pseudocaterpillar 5-taxon species tree `(((a,b):x,(d,e):y):z,c)`
+@@ -111,18 +112,10 @@ theorem pseudocaterpillar_minClass (σ : SpeciesTree (Fin 5))
+     {i ∈ Icc 1 15 | ∀ j ∈ Icc 1 15, u σ i ≤ u σ j} = {5, 6, 7, 9, 10, 12, 14, 15} := by
+   obtain ⟨h12, h14, h18, h25, h45, h85⟩ := equation6 σ hσ
+   obtain ⟨-, -, e3, -, e13, -, e6, e7, e9, e10, e12, e14, e15, -, e11⟩ := equation13 σ hσ
+-  have K : ∀ j ∈ Icc 1 15, u σ 5 ≤ u σ j := by
+-    intro j hj
+-    obtain ⟨hj1, hj2⟩ := mem_Icc.1 hj
+-    interval_cases j <;> linarith
+-  ext i
+-  simp only [mem_filter, mem_insert, mem_singleton]
+-  constructor
+-  · rintro ⟨hi, h⟩
+-    have h5 := h 5 (by simp)
+-    obtain ⟨hi1, hi2⟩ := mem_Icc.1 hi
+-    interval_cases i <;> first | (exfalso; linarith) | simp
+-  · rintro (rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl) <;>
+-      exact ⟨by simp, fun j hj => by linarith [K j hj]⟩
++  exact five_leastClass_eq (τ := σ) {5, 6, 7, 9, 10, 12, 14, 15} (u σ 5)
++    (by decide) (by decide) (by
++      intro i hi
++      obtain ⟨hi1, hi2⟩ := mem_Icc.1 hi
++      interval_cases i <;> simp_all <;> linarith)
+ 
+ end ADR11
+diff --git a/ADR11/Identifiability/FiveTaxa/Classes.lean b/ADR11/Identifiability/FiveTaxa/Classes.lean
+index 5eb54883a..a10bc13b0 100644
+--- a/ADR11/Identifiability/FiveTaxa/Classes.lean
++++ b/ADR11/Identifiability/FiveTaxa/Classes.lean
+@@ -105,6 +105,43 @@ theorem cls_mem_mostProbable {τ : SpeciesTree (Fin 5)} {i : ℕ} :
+     i ∈ cls_mostProbable τ ↔ i ∈ Icc 1 15 ∧ ∀ j ∈ Icc 1 15, u τ j ≤ u τ i := by
+   simp only [cls_mostProbable, mem_filter]
+ 
++/-- A nonempty class with one strictly least value is the least-probable class. -/
++theorem five_leastClass_eq {τ : SpeciesTree (Fin 5)} (S : Finset ℕ) (v : ℝ) (hS : S ⊆ Icc 1 15)
++    (hne : S.Nonempty) (hu : ∀ i ∈ Icc 1 15, (i ∈ S → u τ i = v) ∧ (i ∉ S → v < u τ i)) :
++    cls_leastClass τ = S := by
++  ext i
++  simp only [cls_mem_leastClass]
++  grind
++
++/-- The next nonempty class with one strictly least value outside `S₁` is the second class. -/
++theorem five_secondClass_eq {τ : SpeciesTree (Fin 5)} {S₁ : Finset ℕ} (h₁ : cls_leastClass τ = S₁)
++    (S₂ : Finset ℕ) (w : ℝ) (hS₂ : S₂ ⊆ Icc 1 15) (hd : Disjoint S₁ S₂) (hne : S₂.Nonempty)
++    (hu : ∀ i ∈ Icc 1 15, (i ∈ S₂ → u τ i = w) ∧ (i ∉ S₁ → i ∉ S₂ → w < u τ i)) :
++    cls_secondClass τ = S₂ := by
++  ext i
++  rw [cls_mem_secondClass, h₁]
++  constructor
++  · rintro ⟨hi, hi₁, hmin⟩
++    by_contra hiS
++    obtain ⟨j, hj⟩ := hne
++    have h1 := hmin j (hS₂ hj) (disjoint_right.1 hd hj)
++    rw [(hu j (hS₂ hj)).1 hj] at h1
++    exact absurd ((hu i hi).2 hi₁ hiS) (not_lt.2 h1)
++  · intro hiS
++    refine ⟨hS₂ hiS, disjoint_right.1 hd hiS, fun j hj hj₁ => ?_⟩
++    rw [(hu i (hS₂ hiS)).1 hiS]
++    by_cases hjS : j ∈ S₂
++    · rw [(hu j hj).1 hjS]
++    · exact ((hu j hj).2 hj₁ hjS).le
++
++/-- A nonempty class with one strictly greatest value is the most-probable class. -/
++theorem five_mostProbable_eq {τ : SpeciesTree (Fin 5)} (S : Finset ℕ) (m : ℝ) (hS : S ⊆ Icc 1 15)
++    (hne : S.Nonempty) (hu : ∀ i ∈ Icc 1 15, (i ∈ S → u τ i = m) ∧ (i ∉ S → u τ i < m)) :
++    cls_mostProbable τ = S := by
++  ext i
++  simp only [cls_mem_mostProbable]
++  grind
++
+ /-! ### Relabelling the taxa permutes the classes -/
+ 
+ /-- Relabelling back: if `π` maps `T_i` to `T_j`, then `T_j` has the same probability under `τ`
+diff --git a/ADR11/MSC/Marginal.lean b/ADR11/MSC/Marginal.lean
+index 68b58b4b5..73498aa34 100644
+--- a/ADR11/MSC/Marginal.lean
++++ b/ADR11/MSC/Marginal.lean
+@@ -1,6 +1,6 @@
+ module
+ 
+-public import ADR11.MSC.Basic
++public import ADR11.Trees.Hierarchy
+ 
+ /-!
+ # Marginalization
+@@ -614,46 +614,6 @@ private theorem marg_sum_pi_reindex {ι ι' : Type*} [DecidableEq ι] [Decidable
+     dsimp only
+     rw [hsup, hprod]
+ 
+-omit [DecidableEq X] in
+-/-- Two clusters of a hierarchy sharing an element are nested. -/
+-private theorem marg_nested {H : Finset (Finset X)} (hH : IsHierarchy H) {A B : Finset X}
+-    (hA : A ∈ H) (hB : B ∈ H) {x : X} (hxA : x ∈ A) (hxB : x ∈ B) : A ⊆ B ∨ B ⊆ A := by
+-  rcases hH.2.2.2 A hA B hB with h | h | h
+-  · exact Or.inl h
+-  · exact Or.inr h
+-  · exact absurd hxB (Finset.disjoint_left.1 h hxA)
+-
+-/-- A cluster strictly inside a cluster `A` of a hierarchy lies inside a child of `A`. -/
+-private theorem marg_subset_child {H : Finset (Finset X)} (hH : IsHierarchy H) {A E : Finset X}
+-    (hE : E ∈ H) (hEA : E ⊂ A) : ∃ B ∈ childClusters H A, E ⊆ B := by
+-  obtain ⟨x, hx⟩ := hH.2.2.1 E hE
+-  obtain ⟨y, hyA, hyE⟩ := exists_of_ssubset hEA
+-  have hA2 : 2 ≤ #A := one_lt_card.2 ⟨x, hEA.subset hx, y, hyA, fun h => hyE (h ▸ hx)⟩
+-  obtain ⟨B, hB, hxB⟩ := hH.exists_mem_childClusters hA2 (hEA.subset hx)
+-  refine ⟨B, hB, ?_⟩
+-  rcases marg_nested hH hE (mem_childClusters.1 hB).1 hx hxB with h | h
+-  · exact h
+-  · rcases h.eq_or_ssubset with h' | h'
+-    · rw [h']
+-    · exact absurd hEA ((mem_childClusters.1 hB).2.2 E hE h')
+-
+-omit [Fintype X] in
+-private theorem marg_subtype_nonempty {S A : Finset X} :
+-    (A.subtype (· ∈ S)).Nonempty ↔ (A ∩ S).Nonempty := by
+-  constructor
+-  · rintro ⟨x, hx⟩
+-    exact ⟨x, mem_inter.2 ⟨mem_subtype.1 hx, x.2⟩⟩
+-  · rintro ⟨x, hx⟩
+-    rw [mem_inter] at hx
+-    exact ⟨⟨x, hx.2⟩, mem_subtype.2 hx.1⟩
+-
+-omit [Fintype X] in
+-private theorem marg_mem_restrictClusters {S : Finset X} {H : Finset (Finset X)}
+-    {D : Finset S} :
+-    D ∈ restrictClusters S H ↔ ∃ A ∈ H, (A ∩ S).Nonempty ∧ A.subtype (· ∈ S) = D := by
+-  unfold restrictClusters
+-  simp only [mem_image, mem_filter, and_assoc]
+-
+ /-- The trace of a child of `A` meeting `S`, with a trace different from that of `A`, is a child
+ of the trace of `A` in the induced tree. -/
+ private theorem marg_subtype_mem_childClusters {H : Finset (Finset X)} (hH : IsHierarchy H)
+@@ -661,15 +621,15 @@ private theorem marg_subtype_mem_childClusters {H : Finset (Finset X)} (hH : IsH
+     (hne : B.subtype (· ∈ S) ≠ A.subtype (· ∈ S)) :
+     B.subtype (· ∈ S) ∈ childClusters (restrictClusters S H) (A.subtype (· ∈ S)) := by
+   obtain ⟨hBH, hBA, hBmax⟩ := mem_childClusters.1 hB
+-  refine mem_childClusters.2 ⟨marg_mem_restrictClusters.2 ⟨B, hBH, hBS, rfl⟩,
++  refine mem_childClusters.2 ⟨mem_restrictClusters.2 ⟨B, hBH, hBS, rfl⟩,
+     (subtype_mono hBA.subset).ssubset_of_ne hne, fun E' hE' hBE' hE'A => ?_⟩
+-  obtain ⟨E, hE, -, rfl⟩ := marg_mem_restrictClusters.1 hE'
+-  obtain ⟨x, hx⟩ := marg_subtype_nonempty.2 hBS
++  obtain ⟨E, hE, -, rfl⟩ := mem_restrictClusters.1 hE'
++  obtain ⟨x, hx⟩ := subtype_nonempty_iff.2 hBS
+   have hxB : (x : X) ∈ B := mem_subtype.1 hx
+   have hxE : (x : X) ∈ E := mem_subtype.1 (hBE'.subset hx)
+   have hxA : (x : X) ∈ A := hBA.subset hxB
+-  rcases marg_nested hH hE hA hxE hxA with hEA | hAE
+-  · rcases marg_nested hH hE hBH hxE hxB with hEB | hBE
++  rcases hH.subset_or_subset_of_mem hE hA hxE hxA with hEA | hAE
++  · rcases hH.subset_or_subset_of_mem hE hBH hxE hxB with hEB | hBE
+     · exact not_subset_of_ssubset hBE' (subtype_mono hEB)
+     · have hBE_ne : B ≠ E := by
+         rintro rfl
+@@ -685,7 +645,7 @@ private theorem marg_eq_of_subtype_eq {H : Finset (Finset X)} (hH : IsHierarchy
+     {S A B₁ B₂ : Finset X} (hB₁ : B₁ ∈ childClusters H A) (hB₂ : B₂ ∈ childClusters H A)
+     (hB₁S : (B₁ ∩ S).Nonempty) (h : B₁.subtype (· ∈ S) = B₂.subtype (· ∈ S)) : B₁ = B₂ := by
+   by_contra hne
+-  obtain ⟨x, hx⟩ := marg_subtype_nonempty.2 hB₁S
++  obtain ⟨x, hx⟩ := subtype_nonempty_iff.2 hB₁S
+   have hx2 : x ∈ B₂.subtype (· ∈ S) := h ▸ hx
+   exact Finset.disjoint_left.1 (hH.disjoint_of_mem_childClusters hB₁ hB₂ hne)
+     (mem_subtype.1 hx) (mem_subtype.1 hx2)
+@@ -724,16 +684,16 @@ private theorem marg_filter_top {H : Finset (Finset X)} (hH : IsHierarchy H) {S
+   constructor
+   · rintro ⟨hA'H, -, htr⟩
+     refine ⟨hA'H, ?_, htr⟩
+-    obtain ⟨x, hx⟩ := marg_subtype_nonempty.2 hBS
++    obtain ⟨x, hx⟩ := subtype_nonempty_iff.2 hBS
+     have hxB : (x : X) ∈ B := mem_subtype.1 hx
+     have hxA' : (x : X) ∈ A' := mem_subtype.1 (htr.symm ▸ hx)
+     have hxA : (x : X) ∈ A := hBA.subset hxB
+-    rcases marg_nested hH hA'H hBH hxA' hxB with h | hBA'
++    rcases hH.subset_or_subset_of_mem hA'H hBH hxA' hxB with h | hBA'
+     · exact h
+     · rcases hBA'.eq_or_ssubset with h | hBA'
+       · rw [h]
+       · exfalso
+-        rcases marg_nested hH hA'H hA hxA' hxA with hA'A | hAA'
++        rcases hH.subset_or_subset_of_mem hA'H hA hxA' hxA with hA'A | hAA'
+         · rcases hA'A.eq_or_ssubset with h | hA'A
+           · subst h
+             exact hne htr.symm
+@@ -759,8 +719,8 @@ private theorem marg_filter_chain {H : Finset (Finset X)} (hH : IsHierarchy H) {
+     · exact Or.inl h
+     · right
+       refine ⟨hA'H, ?_, htr'.trans htr.symm⟩
+-      obtain ⟨B, hB, hA'B⟩ := marg_subset_child hH hA'H hA'A
+-      obtain ⟨x, hx⟩ := marg_subtype_nonempty.2 hAS
++      obtain ⟨B, hB, hA'B⟩ := hH.exists_mem_childClusters_superset hA'H hA'A
++      obtain ⟨x, hx⟩ := subtype_nonempty_iff.2 hAS
+       have hxA' : (x : X) ∈ A' := mem_subtype.1 (htr'.symm ▸ hx)
+       have hxB₀ : (x : X) ∈ B₀ := mem_subtype.1 (htr.symm ▸ hx)
+       have hBB₀ : B = B₀ := by
+@@ -781,7 +741,7 @@ private theorem marg_filter_bot {H : Finset (Finset X)} (hH : IsHierarchy H) {S
+   constructor
+   · rintro ⟨hA'H, hA'A, htr'⟩
+     by_contra hne
+-    obtain ⟨B, hB, hA'B⟩ := marg_subset_child hH hA'H (hA'A.ssubset_of_ne hne)
++    obtain ⟨B, hB, hA'B⟩ := hH.exists_mem_childClusters_superset hA'H (hA'A.ssubset_of_ne hne)
+     refine hbot B hB (subset_antisymm (subtype_mono (mem_childClusters.1 hB).2.1.subset) ?_)
+     rw [← htr']
+     exact subtype_mono hA'B
+@@ -932,7 +892,7 @@ private theorem marg_prune (σ : SpeciesTree X) {S : Finset X} (hS : S.Nonempty)
+   · obtain ⟨B₀, hB₀, htr⟩ := hc
+     obtain ⟨hB₀H, hB₀A, -⟩ := mem_childClusters.1 hB₀
+     have hB₀S : (B₀ ∩ S).Nonempty :=
+-      marg_subtype_nonempty.1 (htr ▸ marg_subtype_nonempty.2 hAS)
++      subtype_nonempty_iff.1 (htr ▸ subtype_nonempty_iff.2 hAS)
+     have hB₀u : B₀ ≠ univ := by
+       intro h
+       rw [h] at hB₀A
+@@ -996,7 +956,7 @@ theorem SpeciesTree.rootedDist_restrict (σ : SpeciesTree X) (S : Finset X) (hS
+   · obtain ⟨B₀, hB₀, htr⟩ := hc
+     obtain ⟨hB₀H, hB₀A, -⟩ := mem_childClusters.1 hB₀
+     have hB₀S : (B₀ ∩ S).Nonempty :=
+-      marg_subtype_nonempty.1 (htr ▸ marg_subtype_nonempty.2 hunivS)
++      subtype_nonempty_iff.1 (htr ▸ subtype_nonempty_iff.2 hunivS)
+     have hB₀u : B₀ ≠ univ := by
+       intro h
+       rw [h] at hB₀A
+diff --git a/ADR11/Model/History.lean b/ADR11/Model/History.lean
+index 4f3cf0d8e..3b50e5837 100644
+--- a/ADR11/Model/History.lean
++++ b/ADR11/Model/History.lean
+@@ -32,32 +32,16 @@ open Finset Real
+ 
+ /-! ### The jump chain has rational transition probabilities -/
+ 
+-section Rational
+-
+-variable {L : Type*} [Fintype L] [DecidableEq L]
+-
+-end Rational
+-
+ /-! ### Sums over coalescent histories -/
+ 
+-section HistorySum
++-- section HistorySum
+ 
+ variable {X : Type*}
+ 
+-/-- `φ`, a function of the edge lengths, is a sum over finitely many coalescent histories `h` of
++/- `φ`, a function of the edge lengths, is a sum over finitely many coalescent histories `h` of
+ `c(h) ∏_{b ∈ D} g_{i(h,b) j(h,b)}(len b)`, with rational `c(h) > 0` and
+ `1 ≤ j(h,b) ≤ i(h,b) ≤ #b`. -/
+-def model_IsHistorySum (D : Finset (Finset X)) (φ : (Finset X → ℝ) → ℝ) : Prop :=
+-  ∃ (ι : Type) (_ : Fintype ι) (c : ι → ℚ) (i j : ι → Finset X → ℕ),
+-    (∀ h, 0 < c h) ∧ (∀ h, ∀ b ∈ D, 1 ≤ j h b ∧ j h b ≤ i h b ∧ i h b ≤ #b) ∧
+-    ∀ len, φ len = ∑ h : ι, (c h : ℝ) * ∏ b ∈ D, deathProb (i h b) (j h b) (len b)
+-
+-theorem model_IsHistorySum.congr {D : Finset (Finset X)} {φ ψ : (Finset X → ℝ) → ℝ}
+-    (h : model_IsHistorySum D φ) (e : ∀ len, ψ len = φ len) : model_IsHistorySum D ψ := by
+-  obtain ⟨ι, _, c, i, j, hc, hij, hφ⟩ := h
+-  exact ⟨ι, inferInstance, c, i, j, hc, hij, fun len => (e len).trans (hφ len)⟩
+-
+-end HistorySum
++-- end HistorySum
+ 
+ /-! ### The history decomposition -/
+ 
+diff --git a/ADR11/Nonbinary/FiveTaxa/Ac1Classes.lean b/ADR11/Nonbinary/FiveTaxa/Ac1Classes.lean
+index 1be48bb7b..f528b25bf 100644
+--- a/ADR11/Nonbinary/FiveTaxa/Ac1Classes.lean
++++ b/ADR11/Nonbinary/FiveTaxa/Ac1Classes.lean
+@@ -40,22 +40,7 @@ open Finset Real
+ gene trees, then `S` is the least probable class. -/
+ theorem ac1_leastClass_eq {τ : SpeciesTree (Fin 5)} (S : Finset ℕ) (v : ℝ) (hS : S ⊆ Icc 1 15)
+     (hne : S.Nonempty) (hu : ∀ i ∈ Icc 1 15, (i ∈ S → u τ i = v) ∧ (i ∉ S → v < u τ i)) :
+-    cls_leastClass τ = S := by
+-  ext i
+-  rw [cls_mem_leastClass]
+-  constructor
+-  · rintro ⟨hi, hmin⟩
+-    by_contra hiS
+-    obtain ⟨j, hj⟩ := hne
+-    have h1 := hmin j (hS hj)
+-    rw [(hu j (hS hj)).1 hj] at h1
+-    exact absurd ((hu i hi).2 hiS) (not_lt.2 h1)
+-  · intro hiS
+-    refine ⟨hS hiS, fun j hj => ?_⟩
+-    rw [(hu i (hS hiS)).1 hiS]
+-    by_cases hjS : j ∈ S
+-    · rw [(hu j hj).1 hjS]
+-    · exact ((hu j hj).2 hjS).le
++    cls_leastClass τ = S := five_leastClass_eq S v hS hne hu
+ 
+ /-- If the least probable class is `S₁`, and `u τ` takes the value `w` on a nonempty set `S₂` of
+ gene trees outside `S₁` and larger values on the gene trees outside `S₁ ∪ S₂`, then `S₂` is the
+@@ -63,43 +48,13 @@ class with the second smallest probability. -/
+ theorem ac1_secondClass_eq {τ : SpeciesTree (Fin 5)} {S₁ : Finset ℕ} (h₁ : cls_leastClass τ = S₁)
+     (S₂ : Finset ℕ) (w : ℝ) (hS₂ : S₂ ⊆ Icc 1 15) (hd : Disjoint S₁ S₂) (hne : S₂.Nonempty)
+     (hu : ∀ i ∈ Icc 1 15, (i ∈ S₂ → u τ i = w) ∧ (i ∉ S₁ → i ∉ S₂ → w < u τ i)) :
+-    cls_secondClass τ = S₂ := by
+-  ext i
+-  rw [cls_mem_secondClass, h₁]
+-  constructor
+-  · rintro ⟨hi, hi₁, hmin⟩
+-    by_contra hiS
+-    obtain ⟨j, hj⟩ := hne
+-    have h1 := hmin j (hS₂ hj) (disjoint_right.1 hd hj)
+-    rw [(hu j (hS₂ hj)).1 hj] at h1
+-    exact absurd ((hu i hi).2 hi₁ hiS) (not_lt.2 h1)
+-  · intro hiS
+-    refine ⟨hS₂ hiS, disjoint_right.1 hd hiS, fun j hj hj₁ => ?_⟩
+-    rw [(hu i (hS₂ hiS)).1 hiS]
+-    by_cases hjS : j ∈ S₂
+-    · rw [(hu j hj).1 hjS]
+-    · exact ((hu j hj).2 hj₁ hjS).le
++    cls_secondClass τ = S₂ := five_secondClass_eq h₁ S₂ w hS₂ hd hne hu
+ 
+ /-- If `u τ` takes the value `m` on a nonempty set `S` of gene trees and smaller values on the
+ other gene trees, then `S` is the set of the most probable gene trees. -/
+ theorem ac1_mostProbable_eq {τ : SpeciesTree (Fin 5)} (S : Finset ℕ) (m : ℝ) (hS : S ⊆ Icc 1 15)
+     (hne : S.Nonempty) (hu : ∀ i ∈ Icc 1 15, (i ∈ S → u τ i = m) ∧ (i ∉ S → u τ i < m)) :
+-    cls_mostProbable τ = S := by
+-  ext i
+-  rw [cls_mem_mostProbable]
+-  constructor
+-  · rintro ⟨hi, hmax⟩
+-    by_contra hiS
+-    obtain ⟨j, hj⟩ := hne
+-    have h1 := hmax j (hS hj)
+-    rw [(hu j (hS hj)).1 hj] at h1
+-    exact absurd ((hu i hi).2 hiS) (not_lt.2 h1)
+-  · intro hiS
+-    refine ⟨hS hiS, fun j hj => ?_⟩
+-    rw [(hu i (hS hiS)).1 hiS]
+-    by_cases hjS : j ∈ S
+-    · rw [(hu j hj).1 hjS]
+-    · exact ((hu j hj).2 hjS).le
++    cls_mostProbable τ = S := five_mostProbable_eq S m hS hne hu
+ 
+ /-- A distribution with two classes: if `u τ` takes the value `a` on a nonempty set `C` of gene
+ trees and a smaller value `b` on the others (at least one), then the least probable class is the
+@@ -121,6 +76,141 @@ theorem ac1_classes_two {τ : SpeciesTree (Fin 5)} (C : Finset ℕ) (a b : ℝ)
+   · intro h1 h2
+     exact absurd (mem_sdiff.2 ⟨hi, h2⟩) h1
+ 
++private theorem ac1_classes_two_eq {τ : SpeciesTree (Fin 5)} (C L : Finset ℕ) (a b : ℝ)
++    (hC : C ⊆ Icc 1 15) (hne : C.Nonempty) (hne' : (Icc 1 15 \ C).Nonempty)
++    (hL : L = Icc 1 15 \ C)
++    (hu : ∀ i ∈ Icc 1 15, u τ i = if i ∈ C then a else b) (hba : b < a) :
++    cls_leastClass τ = L ∧ cls_secondClass τ = C := by
++  subst L
++  exact ac1_classes_two C a b hC hne hne' hu hba
++
++macro "ac1_interval" i:ident hi:ident : tactic => `(tactic| (
++  obtain ⟨hi1, hi2⟩ := mem_Icc.1 $hi
++  interval_cases $i <;> simp_all))
++
++macro "ac1_p3" τ:ident h:ident r:term:max A:term:max : tactic => `(tactic| (
++  have hd := $r $τ $h
++  have h1 := hd 1 (by decide)
++  have h2 := hd 2 (by decide)
++  have h3 := hd 3 (by decide)
++  have h4 := hd 4 (by decide)
++  have h5 := hd 5 (by decide)
++  have h6 := hd 6 (by decide)
++  have h7 := hd 7 (by decide)
++  have h8 := hd 8 (by decide)
++  have h9 := hd 9 (by decide)
++  have h10 := hd 10 (by decide)
++  have h11 := hd 11 (by decide)
++  have h12 := hd 12 (by decide)
++  have h13 := hd 13 (by decide)
++  have h14 := hd 14 (by decide)
++  have h15 := hd 15 (by decide)
++  clear hd
++  obtain ⟨z0, z1⟩ := five_exp_bounds $τ (A := $A) (by rw [show _ from $h]; decide) (by decide)
++  generalize exp (-($τ).length $A) = Z at *
++  have f : Z ^ 6 < 1 := pow_lt_one₀ z0.le z1 (by norm_num)
++  have i_ba : 1 / 90 * Z ^ 6 + 1 / 18 < -2 / 45 * Z ^ 6 + 1 / 9 := by linarith only [f]
++  generalize 1 / 90 * Z ^ 6 + 1 / 18 = b at *
++  generalize -2 / 45 * Z ^ 6 + 1 / 9 = a at *
++  refine ac1_classes_two_eq _ _ a b (by decide) (by decide) (by decide) (by decide) ?_ i_ba
++  intro i hi
++  ac1_interval i hi))
++
++macro "ac1_p9" τ:ident h:ident r:term:max A:term:max B:term:max L:term:max S:term:max : tactic => `(tactic| (
++  have hd := $r $τ $h
++  have h1 := hd 1 (by decide)
++  have h2 := hd 2 (by decide)
++  have h3 := hd 3 (by decide)
++  have h4 := hd 4 (by decide)
++  have h5 := hd 5 (by decide)
++  have h6 := hd 6 (by decide)
++  have h7 := hd 7 (by decide)
++  have h8 := hd 8 (by decide)
++  have h9 := hd 9 (by decide)
++  have h10 := hd 10 (by decide)
++  have h11 := hd 11 (by decide)
++  have h12 := hd 12 (by decide)
++  have h13 := hd 13 (by decide)
++  have h14 := hd 14 (by decide)
++  have h15 := hd 15 (by decide)
++  clear hd
++  obtain ⟨y0, y1⟩ := five_exp_bounds $τ (A := $A) (by rw [show _ from $h]; decide) (by decide)
++  obtain ⟨z0, z1⟩ := five_exp_bounds $τ (A := $B) (by rw [show _ from $h]; decide) (by decide)
++  generalize exp (-($τ).length $A) = Y at *
++  generalize exp (-($τ).length $B) = Z at *
++  have f1 : 0 < Y * ((1 - Y) * (1 + Y)) :=
++    mul_pos y0 (mul_pos (sub_pos.2 y1) (by linarith only [y0]))
++  have f2 : 0 < (1 - Y) ^ 2 * (2 + Y) := mul_pos (pow_pos (sub_pos.2 y1) 2) (by linarith only [y0])
++  have f3 : Y ^ 3 * Z ^ 6 < Y ^ 3 :=
++    mul_lt_of_lt_one_right (pow_pos y0 3) (pow_lt_one₀ z0.le z1 (by norm_num))
++  have i_vw : 1 / 90 * Y ^ 3 * Z ^ 6 + 1 / 18 * Y ^ 3 <
++      1 / 90 * Y ^ 3 * Z ^ 6 - 1 / 9 * Y ^ 3 + 1 / 6 * Y := by linarith only [y1, f1, f2, f3]
++  have i_vs : 1 / 90 * Y ^ 3 * Z ^ 6 + 1 / 18 * Y ^ 3 <
++      -2 / 45 * Y ^ 3 * Z ^ 6 - 1 / 18 * Y ^ 3 + 1 / 6 * Y := by linarith only [y1, f1, f2, f3]
++  have i_vt : 1 / 90 * Y ^ 3 * Z ^ 6 + 1 / 18 * Y ^ 3 <
++      1 / 90 * Y ^ 3 * Z ^ 6 + 1 / 18 * Y ^ 3 - 1 / 3 * Y + 1 / 3 := by
++    linarith only [y1, f1, f2, f3]
++  have i_wt : 1 / 90 * Y ^ 3 * Z ^ 6 - 1 / 9 * Y ^ 3 + 1 / 6 * Y <
++      1 / 90 * Y ^ 3 * Z ^ 6 + 1 / 18 * Y ^ 3 - 1 / 3 * Y + 1 / 3 := by
++    linarith only [y1, f1, f2, f3]
++  have i_ws : 1 / 90 * Y ^ 3 * Z ^ 6 - 1 / 9 * Y ^ 3 + 1 / 6 * Y <
++      -2 / 45 * Y ^ 3 * Z ^ 6 - 1 / 18 * Y ^ 3 + 1 / 6 * Y := by
++    linarith only [y1, f1, f2, f3]
++  generalize 1 / 90 * Y ^ 3 * Z ^ 6 + 1 / 18 * Y ^ 3 - 1 / 3 * Y + 1 / 3 = t at *
++  generalize -2 / 45 * Y ^ 3 * Z ^ 6 - 1 / 18 * Y ^ 3 + 1 / 6 * Y = s at *
++  generalize 1 / 90 * Y ^ 3 * Z ^ 6 - 1 / 9 * Y ^ 3 + 1 / 6 * Y = w at *
++  generalize 1 / 90 * Y ^ 3 * Z ^ 6 + 1 / 18 * Y ^ 3 = v at *
++  have hC := ac1_leastClass_eq (τ := $τ) $L v (by decide) (by decide) (by
++    intro i hi
++    ac1_interval i hi)
++  refine ⟨hC, ac1_secondClass_eq hC $S w (by decide) (by decide) (by decide) (by
++    intro i hi
++    ac1_interval i hi)⟩))
++
++macro "ac1_p7" τ:ident h:ident r:term:max A:term:max B:term:max L:term:max M:term:max : tactic => `(tactic| (
++  have hd := $r $τ $h
++  have h1 := hd 1 (by decide)
++  have h2 := hd 2 (by decide)
++  have h3 := hd 3 (by decide)
++  have h4 := hd 4 (by decide)
++  have h5 := hd 5 (by decide)
++  have h6 := hd 6 (by decide)
++  have h7 := hd 7 (by decide)
++  have h8 := hd 8 (by decide)
++  have h9 := hd 9 (by decide)
++  have h10 := hd 10 (by decide)
++  have h11 := hd 11 (by decide)
++  have h12 := hd 12 (by decide)
++  have h13 := hd 13 (by decide)
++  have h14 := hd 14 (by decide)
++  have h15 := hd 15 (by decide)
++  clear hd
++  obtain ⟨x0, x1⟩ := five_exp_bounds $τ (A := $A) (by rw [show _ from $h]; decide) (by decide)
++  obtain ⟨z0, z1⟩ := five_exp_bounds $τ (A := $B) (by rw [show _ from $h]; decide) (by decide)
++  generalize exp (-($τ).length $A) = X at *
++  generalize exp (-($τ).length $B) = Z at *
++  have f : X * Z ^ 6 < X := mul_lt_of_lt_one_right x0 (pow_lt_one₀ z0.le z1 (by norm_num))
++  have i_vp : 1 / 90 * X * Z ^ 6 + 1 / 18 * X <
++      1 / 90 * X * Z ^ 6 - 5 / 18 * X + 1 / 3 := by linarith only [x1, f]
++  have i_vq : 1 / 90 * X * Z ^ 6 + 1 / 18 * X <
++      -2 / 45 * X * Z ^ 6 + 1 / 9 * X := by linarith only [x1, f]
++  have i_vm : 1 / 90 * X * Z ^ 6 + 1 / 18 * X <
++      -2 / 45 * X * Z ^ 6 - 2 / 9 * X + 1 / 3 := by linarith only [x1, f]
++  have i_pm : 1 / 90 * X * Z ^ 6 - 5 / 18 * X + 1 / 3 <
++      -2 / 45 * X * Z ^ 6 - 2 / 9 * X + 1 / 3 := by linarith only [x1, f]
++  have i_qm : -2 / 45 * X * Z ^ 6 + 1 / 9 * X <
++      -2 / 45 * X * Z ^ 6 - 2 / 9 * X + 1 / 3 := by linarith only [x1, f]
++  generalize -2 / 45 * X * Z ^ 6 - 2 / 9 * X + 1 / 3 = m at *
++  generalize 1 / 90 * X * Z ^ 6 - 5 / 18 * X + 1 / 3 = p at *
++  generalize 1 / 90 * X * Z ^ 6 + 1 / 18 * X = v at *
++  generalize -2 / 45 * X * Z ^ 6 + 1 / 9 * X = q at *
++  have hC := ac1_leastClass_eq (τ := $τ) $L v (by decide) (by decide) (by
++    intro i hi
++    ac1_interval i hi)
++  refine ⟨hC, ac1_mostProbable_eq $M m (by decide) (by decide) (by
++    intro i hi
++    ac1_interval i hi)⟩))
++
+ /-! ### The rootings of `U5 0` and `U5 1` -/
+ 
+ /-- The classes of gene trees of the rooting `hierarchyOf {{1, 2, 3, 4}}` of `U5 0`
+@@ -129,31 +219,7 @@ theorem ac1_classes_0_1 (τ : SpeciesTree (Fin 5))
+     (h : τ.clusters = hierarchyOf {{1, 2, 3, 4}}) :
+     cls_leastClass τ = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12} ∧
+       cls_secondClass τ = {13, 14, 15} := by
+-  obtain ⟨h1, h2, h3, h4, h5, h6, h7, h8, h9, h10, h11, h12, h13, h14, h15⟩ :=
+-    rootingDist5_0_1 τ h
+-  obtain ⟨z0, z1⟩ := five_exp_bounds τ (A := {1, 2, 3, 4}) (by rw [h]; decide) (by decide)
+-  generalize exp (-τ.length {1, 2, 3, 4}) = Z at *
+-  have f : Z ^ 6 < 1 := pow_lt_one₀ z0.le z1 (by norm_num)
+-  have i_ba : 1 / 90 * Z ^ 6 + 1 / 18 <
+-      -2 / 45 * Z ^ 6 + 1 / 9 := by
+-    linarith only [f]
+-  clear f
+-  generalize 1 / 90 * Z ^ 6 + 1 / 18 = b at *
+-  generalize -2 / 45 * Z ^ 6 + 1 / 9 = a at *
+-  have hC := ac1_leastClass_eq (τ := τ) {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12} b
+-    (by decide) (by decide) (by
+-    intro i hi
+-    rw [mem_Icc] at hi
+-    obtain ⟨hi1, hi2⟩ := hi
+-    interval_cases i <;> constructor <;> intro hm <;>
+-      first | exact absurd hm (by decide) | linarith)
+-  refine ⟨hC, ac1_secondClass_eq hC {13, 14, 15} a (by decide) (by decide) (by decide)
+-    (by
+-    intro i hi
+-    rw [mem_Icc] at hi
+-    obtain ⟨hi1, hi2⟩ := hi
+-    interval_cases i <;> refine ⟨fun hm => ?_, fun hn hm => ?_⟩ <;>
+-      first | exact absurd hm (by decide) | exact absurd hn (by decide) | linarith)⟩
++  ac1_p3 τ h rootingDist5_0_1 {1, 2, 3, 4}
+ 
+ /-- The classes of gene trees of the rooting `hierarchyOf {{0, 2, 3, 4}}` of `U5 0`
+ (`P₃ = ((a,c,d,e),b)`), read off its gene tree distribution `rootingDist5_0_2`. -/
+@@ -161,31 +227,7 @@ theorem ac1_classes_0_2 (τ : SpeciesTree (Fin 5))
+     (h : τ.clusters = hierarchyOf {{0, 2, 3, 4}}) :
+     cls_leastClass τ = {1, 2, 3, 5, 6, 8, 9, 11, 12, 13, 14, 15} ∧
+       cls_secondClass τ = {4, 7, 10} := by
+-  obtain ⟨h1, h2, h3, h4, h5, h6, h7, h8, h9, h10, h11, h12, h13, h14, h15⟩ :=
+-    rootingDist5_0_2 τ h
+-  obtain ⟨z0, z1⟩ := five_exp_bounds τ (A := {0, 2, 3, 4}) (by rw [h]; decide) (by decide)
+-  generalize exp (-τ.length {0, 2, 3, 4}) = Z at *
+-  have f : Z ^ 6 < 1 := pow_lt_one₀ z0.le z1 (by norm_num)
+-  have i_ba : 1 / 90 * Z ^ 6 + 1 / 18 <
+-      -2 / 45 * Z ^ 6 + 1 / 9 := by
+-    linarith only [f]
+-  clear f
+-  generalize 1 / 90 * Z ^ 6 + 1 / 18 = b at *
+-  generalize -2 / 45 * Z ^ 6 + 1 / 9 = a at *
+-  have hC := ac1_leastClass_eq (τ := τ) {1, 2, 3, 5, 6, 8, 9, 11, 12, 13, 14, 15} b
+-    (by decide) (by decide) (by
+-    intro i hi
+-    rw [mem_Icc] at hi
+-    obtain ⟨hi1, hi2⟩ := hi
+-    interval_cases i <;> constructor <;> intro hm <;>
+-      first | exact absurd hm (by decide) | linarith)
+-  refine ⟨hC, ac1_secondClass_eq hC {4, 7, 10} a (by decide) (by decide) (by decide)
+-    (by
+-    intro i hi
+-    rw [mem_Icc] at hi
+-    obtain ⟨hi1, hi2⟩ := hi
+-    interval_cases i <;> refine ⟨fun hm => ?_, fun hn hm => ?_⟩ <;>
+-      first | exact absurd hm (by decide) | exact absurd hn (by decide) | linarith)⟩
++  ac1_p3 τ h rootingDist5_0_2 {0, 2, 3, 4}
+ 
+ /-- The classes of gene trees of the rooting `hierarchyOf {{0, 1, 3, 4}}` of `U5 0`
+ (`P₃ = ((a,b,d,e),c)`), read off its gene tree distribution `rootingDist5_0_3`. -/
+@@ -193,31 +235,7 @@ theorem ac1_classes_0_3 (τ : SpeciesTree (Fin 5))
+     (h : τ.clusters = hierarchyOf {{0, 1, 3, 4}}) :
+     cls_leastClass τ = {2, 3, 4, 5, 6, 7, 9, 10, 12, 13, 14, 15} ∧
+       cls_secondClass τ = {1, 8, 11} := by
+-  obtain ⟨h1, h2, h3, h4, h5, h6, h7, h8, h9, h10, h11, h12, h13, h14, h15⟩ :=
+-    rootingDist5_0_3 τ h
+-  obtain ⟨z0, z1⟩ := five_exp_bounds τ (A := {0, 1, 3, 4}) (by rw [h]; decide) (by decide)
+-  generalize exp (-τ.length {0, 1, 3, 4}) = Z at *
+-  have f : Z ^ 6 < 1 := pow_lt_one₀ z0.le z1 (by norm_num)
+-  have i_ba : 1 / 90 * Z ^ 6 + 1 / 18 <
+-      -2 / 45 * Z ^ 6 + 1 / 9 := by
+-    linarith only [f]
+-  clear f
+-  generalize -2 / 45 * Z ^ 6 + 1 / 9 = a at *
+-  generalize 1 / 90 * Z ^ 6 + 1 / 18 = b at *
+-  have hC := ac1_leastClass_eq (τ := τ) {2, 3, 4, 5, 6, 7, 9, 10, 12, 13, 14, 15} b
+-    (by decide) (by decide) (by
+-    intro i hi
+-    rw [mem_Icc] at hi
+-    obtain ⟨hi1, hi2⟩ := hi
+-    interval_cases i <;> constructor <;> intro hm <;>
+-      first | exact absurd hm (by decide) | linarith)
+-  refine ⟨hC, ac1_secondClass_eq hC {1, 8, 11} a (by decide) (by decide) (by decide)
+-    (by
+-    intro i hi
+-    rw [mem_Icc] at hi
+-    obtain ⟨hi1, hi2⟩ := hi
+-    interval_cases i <;> refine ⟨fun hm => ?_, fun hn hm => ?_⟩ <;>
+-      first | exact absurd hm (by decide) | exact absurd hn (by decide) | linarith)⟩
++  ac1_p3 τ h rootingDist5_0_3 {0, 1, 3, 4}
+ 
+ /-- The classes of gene trees of the rooting `hierarchyOf {{0, 1, 2, 4}}` of `U5 0`
+ (`P₃ = ((a,b,c,e),d)`), read off its gene tree distribution `rootingDist5_0_4`. -/
+@@ -225,31 +243,7 @@ theorem ac1_classes_0_4 (τ : SpeciesTree (Fin 5))
+     (h : τ.clusters = hierarchyOf {{0, 1, 2, 4}}) :
+     cls_leastClass τ = {1, 3, 4, 6, 7, 8, 9, 10, 11, 13, 14, 15} ∧
+       cls_secondClass τ = {2, 5, 12} := by
+-  obtain ⟨h1, h2, h3, h4, h5, h6, h7, h8, h9, h10, h11, h12, h13, h14, h15⟩ :=
+-    rootingDist5_0_4 τ h
+-  obtain ⟨z0, z1⟩ := five_exp_bounds τ (A := {0, 1, 2, 4}) (by rw [h]; decide) (by decide)
+-  generalize exp (-τ.length {0, 1, 2, 4}) = Z at *
+-  have f : Z ^ 6 < 1 := pow_lt_one₀ z0.le z1 (by norm_num)
+-  have i_ba : 1 / 90 * Z ^ 6 + 1 / 18 <
+-      -2 / 45 * Z ^ 6 + 1 / 9 := by
+-    linarith only [f]
+-  clear f
+-  generalize 1 / 90 * Z ^ 6 + 1 / 18 = b at *
+-  generalize -2 / 45 * Z ^ 6 + 1 / 9 = a at *
+-  have hC := ac1_leastClass_eq (τ := τ) {1, 3, 4, 6, 7, 8, 9, 10, 11, 13, 14, 15} b
+-    (by decide) (by decide) (by
+-    intro i hi
+-    rw [mem_Icc] at hi
+-    obtain ⟨hi1, hi2⟩ := hi
+-    interval_cases i <;> constructor <;> intro hm <;>
+-      first | exact absurd hm (by decide) | linarith)
+-  refine ⟨hC, ac1_secondClass_eq hC {2, 5, 12} a (by decide) (by decide) (by decide)
+-    (by
+-    intro i hi
+-    rw [mem_Icc] at hi
+-    obtain ⟨hi1, hi2⟩ := hi
+-    interval_cases i <;> refine ⟨fun hm => ?_, fun hn hm => ?_⟩ <;>
+-      first | exact absurd hm (by decide) | exact absurd hn (by decide) | linarith)⟩
++  ac1_p3 τ h rootingDist5_0_4 {0, 1, 2, 4}
+ 
+ /-- The classes of gene trees of the rooting `hierarchyOf {{0, 1, 2, 3}}` of `U5 0`
+ (`P₃ = ((a,b,c,d),e)`), read off its gene tree distribution `rootingDist5_0_5`. -/
+@@ -257,133 +251,21 @@ theorem ac1_classes_0_5 (τ : SpeciesTree (Fin 5))
+     (h : τ.clusters = hierarchyOf {{0, 1, 2, 3}}) :
+     cls_leastClass τ = {1, 2, 4, 5, 7, 8, 10, 11, 12, 13, 14, 15} ∧
+       cls_secondClass τ = {3, 6, 9} := by
+-  obtain ⟨h1, h2, h3, h4, h5, h6, h7, h8, h9, h10, h11, h12, h13, h14, h15⟩ :=
+-    rootingDist5_0_5 τ h
+-  obtain ⟨z0, z1⟩ := five_exp_bounds τ (A := {0, 1, 2, 3}) (by rw [h]; decide) (by decide)
+-  generalize exp (-τ.length {0, 1, 2, 3}) = Z at *
+-  have f : Z ^ 6 < 1 := pow_lt_one₀ z0.le z1 (by norm_num)
+-  have i_ba : 1 / 90 * Z ^ 6 + 1 / 18 <
+-      -2 / 45 * Z ^ 6 + 1 / 9 := by
+-    linarith only [f]
+-  clear f
+-  generalize 1 / 90 * Z ^ 6 + 1 / 18 = b at *
+-  generalize -2 / 45 * Z ^ 6 + 1 / 9 = a at *
+-  have hC := ac1_leastClass_eq (τ := τ) {1, 2, 4, 5, 7, 8, 10, 11, 12, 13, 14, 15} b
+-    (by decide) (by decide) (by
+-    intro i hi
+-    rw [mem_Icc] at hi
+-    obtain ⟨hi1, hi2⟩ := hi
+-    interval_cases i <;> constructor <;> intro hm <;>
+-      first | exact absurd hm (by decide) | linarith)
+-  refine ⟨hC, ac1_secondClass_eq hC {3, 6, 9} a (by decide) (by decide) (by decide)
+-    (by
+-    intro i hi
+-    rw [mem_Icc] at hi
+-    obtain ⟨hi1, hi2⟩ := hi
+-    interval_cases i <;> refine ⟨fun hm => ?_, fun hn hm => ?_⟩ <;>
+-      first | exact absurd hm (by decide) | exact absurd hn (by decide) | linarith)⟩
++  ac1_p3 τ h rootingDist5_0_5 {0, 1, 2, 3}
+ 
+ /-- The classes of gene trees of the rooting `hierarchyOf {{2, 3, 4}, {1, 2, 3, 4}}` of `U5 1`
+ (`P₉ = (((c,d,e),b),a)`), read off its gene tree distribution `rootingDist5_1_3`. -/
+ theorem ac1_classes_1_3 (τ : SpeciesTree (Fin 5))
+     (h : τ.clusters = hierarchyOf {{2, 3, 4}, {1, 2, 3, 4}}) :
+     cls_leastClass τ = {5, 6, 8, 9, 11, 12} ∧ cls_secondClass τ = {4, 7, 10} := by
+-  obtain ⟨h1, h2, h3, h4, h5, h6, h7, h8, h9, h10, h11, h12, h13, h14, h15⟩ :=
+-    rootingDist5_1_3 τ h
+-  obtain ⟨y0, y1⟩ := five_exp_bounds τ (A := {2, 3, 4}) (by rw [h]; decide) (by decide)
+-  obtain ⟨z0, z1⟩ := five_exp_bounds τ (A := {1, 2, 3, 4}) (by rw [h]; decide) (by decide)
+-  generalize exp (-τ.length {2, 3, 4}) = Y at *
+-  generalize exp (-τ.length {1, 2, 3, 4}) = Z at *
+-  have f1 : 0 < Y * ((1 - Y) * (1 + Y)) :=
+-    mul_pos y0 (mul_pos (sub_pos.2 y1) (by linarith only [y0]))
+-  have f2 : 0 < (1 - Y) ^ 2 * (2 + Y) := mul_pos (pow_pos (sub_pos.2 y1) 2) (by linarith only [y0])
+-  have f3 : Y ^ 3 * Z ^ 6 < Y ^ 3 :=
+-    mul_lt_of_lt_one_right (pow_pos y0 3) (pow_lt_one₀ z0.le z1 (by norm_num))
+-  have i_vw : 1 / 90 * Y ^ 3 * Z ^ 6 + 1 / 18 * Y ^ 3 <
+-      1 / 90 * Y ^ 3 * Z ^ 6 - 1 / 9 * Y ^ 3 + 1 / 6 * Y := by
+-    linarith only [y1, f1, f2, f3]
+-  have i_vs : 1 / 90 * Y ^ 3 * Z ^ 6 + 1 / 18 * Y ^ 3 <
+-      -2 / 45 * Y ^ 3 * Z ^ 6 - 1 / 18 * Y ^ 3 + 1 / 6 * Y := by
+-    linarith only [y1, f1, f2, f3]
+-  have i_vt : 1 / 90 * Y ^ 3 * Z ^ 6 + 1 / 18 * Y ^ 3 <
+-      1 / 90 * Y ^ 3 * Z ^ 6 + 1 / 18 * Y ^ 3 - 1 / 3 * Y + 1 / 3 := by
+-    linarith only [y1, f1, f2, f3]
+-  have i_wt : 1 / 90 * Y ^ 3 * Z ^ 6 - 1 / 9 * Y ^ 3 + 1 / 6 * Y <
+-      1 / 90 * Y ^ 3 * Z ^ 6 + 1 / 18 * Y ^ 3 - 1 / 3 * Y + 1 / 3 := by
+-    linarith only [y1, f1, f2, f3]
+-  have i_ws : 1 / 90 * Y ^ 3 * Z ^ 6 - 1 / 9 * Y ^ 3 + 1 / 6 * Y <
+-      -2 / 45 * Y ^ 3 * Z ^ 6 - 1 / 18 * Y ^ 3 + 1 / 6 * Y := by
+-    linarith only [y1, f1, f2, f3]
+-  clear f1 f2 f3
+-  generalize 1 / 90 * Y ^ 3 * Z ^ 6 + 1 / 18 * Y ^ 3 - 1 / 3 * Y + 1 / 3 = t at *
+-  generalize -2 / 45 * Y ^ 3 * Z ^ 6 - 1 / 18 * Y ^ 3 + 1 / 6 * Y = s at *
+-  generalize 1 / 90 * Y ^ 3 * Z ^ 6 - 1 / 9 * Y ^ 3 + 1 / 6 * Y = w at *
+-  generalize 1 / 90 * Y ^ 3 * Z ^ 6 + 1 / 18 * Y ^ 3 = v at *
+-  have hC := ac1_leastClass_eq (τ := τ) {5, 6, 8, 9, 11, 12} v
+-    (by decide) (by decide) (by
+-    intro i hi
+-    rw [mem_Icc] at hi
+-    obtain ⟨hi1, hi2⟩ := hi
+-    interval_cases i <;> constructor <;> intro hm <;>
+-      first | exact absurd hm (by decide) | linarith)
+-  refine ⟨hC, ac1_secondClass_eq hC {4, 7, 10} w (by decide) (by decide) (by decide)
+-    (by
+-    intro i hi
+-    rw [mem_Icc] at hi
+-    obtain ⟨hi1, hi2⟩ := hi
+-    interval_cases i <;> refine ⟨fun hm => ?_, fun hn hm => ?_⟩ <;>
+-      first | exact absurd hm (by decide) | exact absurd hn (by decide) | linarith)⟩
++  ac1_p9 τ h rootingDist5_1_3 {2, 3, 4} {1, 2, 3, 4} {5, 6, 8, 9, 11, 12} {4, 7, 10}
+ 
+ /-- The classes of gene trees of the rooting `hierarchyOf {{2, 3, 4}, {0, 2, 3, 4}}` of `U5 1`
+ (`P₉ = (((c,d,e),a),b)`), read off its gene tree distribution `rootingDist5_1_4`. -/
+ theorem ac1_classes_1_4 (τ : SpeciesTree (Fin 5))
+     (h : τ.clusters = hierarchyOf {{2, 3, 4}, {0, 2, 3, 4}}) :
+     cls_leastClass τ = {5, 6, 8, 9, 11, 12} ∧ cls_secondClass τ = {13, 14, 15} := by
+-  obtain ⟨h1, h2, h3, h4, h5, h6, h7, h8, h9, h10, h11, h12, h13, h14, h15⟩ :=
+-    rootingDist5_1_4 τ h
+-  obtain ⟨y0, y1⟩ := five_exp_bounds τ (A := {2, 3, 4}) (by rw [h]; decide) (by decide)
+-  obtain ⟨z0, z1⟩ := five_exp_bounds τ (A := {0, 2, 3, 4}) (by rw [h]; decide) (by decide)
+-  generalize exp (-τ.length {2, 3, 4}) = Y at *
+-  generalize exp (-τ.length {0, 2, 3, 4}) = Z at *
+-  have f1 : 0 < Y * ((1 - Y) * (1 + Y)) :=
+-    mul_pos y0 (mul_pos (sub_pos.2 y1) (by linarith only [y0]))
+-  have f2 : 0 < (1 - Y) ^ 2 * (2 + Y) := mul_pos (pow_pos (sub_pos.2 y1) 2) (by linarith only [y0])
+-  have f3 : Y ^ 3 * Z ^ 6 < Y ^ 3 :=
+-    mul_lt_of_lt_one_right (pow_pos y0 3) (pow_lt_one₀ z0.le z1 (by norm_num))
+-  have i_vw : 1 / 90 * Y ^ 3 * Z ^ 6 + 1 / 18 * Y ^ 3 <
+-      1 / 90 * Y ^ 3 * Z ^ 6 - 1 / 9 * Y ^ 3 + 1 / 6 * Y := by
+-    linarith only [y1, f1, f2, f3]
+-  have i_vs : 1 / 90 * Y ^ 3 * Z ^ 6 + 1 / 18 * Y ^ 3 <
+-      -2 / 45 * Y ^ 3 * Z ^ 6 - 1 / 18 * Y ^ 3 + 1 / 6 * Y := by
+-    linarith only [y1, f1, f2, f3]
+-  have i_vt : 1 / 90 * Y ^ 3 * Z ^ 6 + 1 / 18 * Y ^ 3 <
+-      1 / 90 * Y ^ 3 * Z ^ 6 + 1 / 18 * Y ^ 3 - 1 / 3 * Y + 1 / 3 := by
+-    linarith only [y1, f1, f2, f3]
+-  have i_wt : 1 / 90 * Y ^ 3 * Z ^ 6 - 1 / 9 * Y ^ 3 + 1 / 6 * Y <
+-      1 / 90 * Y ^ 3 * Z ^ 6 + 1 / 18 * Y ^ 3 - 1 / 3 * Y + 1 / 3 := by
+-    linarith only [y1, f1, f2, f3]
+-  have i_ws : 1 / 90 * Y ^ 3 * Z ^ 6 - 1 / 9 * Y ^ 3 + 1 / 6 * Y <
+-      -2 / 45 * Y ^ 3 * Z ^ 6 - 1 / 18 * Y ^ 3 + 1 / 6 * Y := by
+-    linarith only [y1, f1, f2, f3]
+-  clear f1 f2 f3
+-  generalize 1 / 90 * Y ^ 3 * Z ^ 6 + 1 / 18 * Y ^ 3 - 1 / 3 * Y + 1 / 3 = t at *
+-  generalize -2 / 45 * Y ^ 3 * Z ^ 6 - 1 / 18 * Y ^ 3 + 1 / 6 * Y = s at *
+-  generalize 1 / 90 * Y ^ 3 * Z ^ 6 - 1 / 9 * Y ^ 3 + 1 / 6 * Y = w at *
+-  generalize 1 / 90 * Y ^ 3 * Z ^ 6 + 1 / 18 * Y ^ 3 = v at *
+-  have hC := ac1_leastClass_eq (τ := τ) {5, 6, 8, 9, 11, 12} v
+-    (by decide) (by decide) (by
+-    intro i hi
+-    rw [mem_Icc] at hi
+-    obtain ⟨hi1, hi2⟩ := hi
+-    interval_cases i <;> constructor <;> intro hm <;>
+-      first | exact absurd hm (by decide) | linarith)
+-  refine ⟨hC, ac1_secondClass_eq hC {13, 14, 15} w (by decide) (by decide) (by decide)
+-    (by
+-    intro i hi
+-    rw [mem_Icc] at hi
+-    obtain ⟨hi1, hi2⟩ := hi
+-    interval_cases i <;> refine ⟨fun hm => ?_, fun hn hm => ?_⟩ <;>
+-      first | exact absurd hm (by decide) | exact absurd hn (by decide) | linarith)⟩
++  ac1_p9 τ h rootingDist5_1_4 {2, 3, 4} {0, 2, 3, 4} {5, 6, 8, 9, 11, 12} {13, 14, 15}
+ 
+ /-- The classes of gene trees of the rooting `hierarchyOf {{0, 1}, {0, 1, 3, 4}}` of `U5 1`
+ (`P₇ = (((a,b),d,e),c)`), read off its gene tree distribution `rootingDist5_1_5`. -/
+@@ -391,46 +273,7 @@ theorem ac1_classes_1_5 (τ : SpeciesTree (Fin 5))
+     (h : τ.clusters = hierarchyOf {{0, 1}, {0, 1, 3, 4}}) :
+     cls_leastClass τ = {4, 5, 6, 7, 9, 10, 12, 13, 14, 15} ∧
+       cls_mostProbable τ = {1} := by
+-  obtain ⟨h1, h2, h3, h4, h5, h6, h7, h8, h9, h10, h11, h12, h13, h14, h15⟩ :=
+-    rootingDist5_1_5 τ h
+-  obtain ⟨x0, x1⟩ := five_exp_bounds τ (A := {0, 1}) (by rw [h]; decide) (by decide)
+-  obtain ⟨z0, z1⟩ := five_exp_bounds τ (A := {0, 1, 3, 4}) (by rw [h]; decide) (by decide)
+-  generalize exp (-τ.length {0, 1}) = X at *
+-  generalize exp (-τ.length {0, 1, 3, 4}) = Z at *
+-  have f : X * Z ^ 6 < X := mul_lt_of_lt_one_right x0 (pow_lt_one₀ z0.le z1 (by norm_num))
+-  have i_vp : 1 / 90 * X * Z ^ 6 + 1 / 18 * X <
+-      1 / 90 * X * Z ^ 6 - 5 / 18 * X + 1 / 3 := by
+-    linarith only [x1, f]
+-  have i_vq : 1 / 90 * X * Z ^ 6 + 1 / 18 * X <
+-      -2 / 45 * X * Z ^ 6 + 1 / 9 * X := by
+-    linarith only [x1, f]
+-  have i_vm : 1 / 90 * X * Z ^ 6 + 1 / 18 * X <
+-      -2 / 45 * X * Z ^ 6 - 2 / 9 * X + 1 / 3 := by
+-    linarith only [x1, f]
+-  have i_pm : 1 / 90 * X * Z ^ 6 - 5 / 18 * X + 1 / 3 <
+-      -2 / 45 * X * Z ^ 6 - 2 / 9 * X + 1 / 3 := by
+-    linarith only [x1, f]
+-  have i_qm : -2 / 45 * X * Z ^ 6 + 1 / 9 * X <
+-      -2 / 45 * X * Z ^ 6 - 2 / 9 * X + 1 / 3 := by
+-    linarith only [x1, f]
+-  clear f
+-  generalize -2 / 45 * X * Z ^ 6 - 2 / 9 * X + 1 / 3 = m at *
+-  generalize 1 / 90 * X * Z ^ 6 - 5 / 18 * X + 1 / 3 = p at *
+-  generalize 1 / 90 * X * Z ^ 6 + 1 / 18 * X = v at *
+-  generalize -2 / 45 * X * Z ^ 6 + 1 / 9 * X = q at *
+-  have hC := ac1_leastClass_eq (τ := τ) {4, 5, 6, 7, 9, 10, 12, 13, 14, 15} v
+-    (by decide) (by decide) (by
+-    intro i hi
+-    rw [mem_Icc] at hi
+-    obtain ⟨hi1, hi2⟩ := hi
+-    interval_cases i <;> constructor <;> intro hm <;>
+-      first | exact absurd hm (by decide) | linarith)
+-  refine ⟨hC, ac1_mostProbable_eq {1} m (by decide) (by decide) (by
+-    intro i hi
+-    rw [mem_Icc] at hi
+-    obtain ⟨hi1, hi2⟩ := hi
+-    interval_cases i <;> constructor <;> intro hm <;>
+-      first | exact absurd hm (by decide) | linarith)⟩
++  ac1_p7 τ h rootingDist5_1_5 {0, 1} {0, 1, 3, 4} {4, 5, 6, 7, 9, 10, 12, 13, 14, 15} {1}
+ 
+ /-- The classes of gene trees of the rooting `hierarchyOf {{0, 1}, {0, 1, 2, 4}}` of `U5 1`
+ (`P₇ = (((a,b),c,e),d)`), read off its gene tree distribution `rootingDist5_1_6`. -/
+@@ -438,46 +281,7 @@ theorem ac1_classes_1_6 (τ : SpeciesTree (Fin 5))
+     (h : τ.clusters = hierarchyOf {{0, 1}, {0, 1, 2, 4}}) :
+     cls_leastClass τ = {4, 6, 7, 8, 9, 10, 11, 13, 14, 15} ∧
+       cls_mostProbable τ = {2} := by
+-  obtain ⟨h1, h2, h3, h4, h5, h6, h7, h8, h9, h10, h11, h12, h13, h14, h15⟩ :=
+-    rootingDist5_1_6 τ h
+-  obtain ⟨x0, x1⟩ := five_exp_bounds τ (A := {0, 1}) (by rw [h]; decide) (by decide)
+-  obtain ⟨z0, z1⟩ := five_exp_bounds τ (A := {0, 1, 2, 4}) (by rw [h]; decide) (by decide)
+-  generalize exp (-τ.length {0, 1}) = X at *
+-  generalize exp (-τ.length {0, 1, 2, 4}) = Z at *
+-  have f : X * Z ^ 6 < X := mul_lt_of_lt_one_right x0 (pow_lt_one₀ z0.le z1 (by norm_num))
+-  have i_vp : 1 / 90 * X * Z ^ 6 + 1 / 18 * X <
+-      1 / 90 * X * Z ^ 6 - 5 / 18 * X + 1 / 3 := by
+-    linarith only [x1, f]
+-  have i_vq : 1 / 90 * X * Z ^ 6 + 1 / 18 * X <
+-      -2 / 45 * X * Z ^ 6 + 1 / 9 * X := by
+-    linarith only [x1, f]
+-  have i_vm : 1 / 90 * X * Z ^ 6 + 1 / 18 * X <
+-      -2 / 45 * X * Z ^ 6 - 2 / 9 * X + 1 / 3 := by
+-    linarith only [x1, f]
+-  have i_pm : 1 / 90 * X * Z ^ 6 - 5 / 18 * X + 1 / 3 <
+-      -2 / 45 * X * Z ^ 6 - 2 / 9 * X + 1 / 3 := by
+-    linarith only [x1, f]
+-  have i_qm : -2 / 45 * X * Z ^ 6 + 1 / 9 * X <
+-      -2 / 45 * X * Z ^ 6 - 2 / 9 * X + 1 / 3 := by
+-    linarith only [x1, f]
+-  clear f
+-  generalize 1 / 90 * X * Z ^ 6 - 5 / 18 * X + 1 / 3 = p at *
+-  generalize -2 / 45 * X * Z ^ 6 - 2 / 9 * X + 1 / 3 = m at *
+-  generalize 1 / 90 * X * Z ^ 6 + 1 / 18 * X = v at *
+-  generalize -2 / 45 * X * Z ^ 6 + 1 / 9 * X = q at *
+-  have hC := ac1_leastClass_eq (τ := τ) {4, 6, 7, 8, 9, 10, 11, 13, 14, 15} v
+-    (by decide) (by decide) (by
+-    intro i hi
+-    rw [mem_Icc] at hi
+-    obtain ⟨hi1, hi2⟩ := hi
+-    interval_cases i <;> constructor <;> intro hm <;>
+-      first | exact absurd hm (by decide) | linarith)
+-  refine ⟨hC, ac1_mostProbable_eq {2} m (by decide) (by decide) (by
+-    intro i hi
+-    rw [mem_Icc] at hi
+-    obtain ⟨hi1, hi2⟩ := hi
+-    interval_cases i <;> constructor <;> intro hm <;>
+-      first | exact absurd hm (by decide) | linarith)⟩
++  ac1_p7 τ h rootingDist5_1_6 {0, 1} {0, 1, 2, 4} {4, 6, 7, 8, 9, 10, 11, 13, 14, 15} {2}
+ 
+ /-- The classes of gene trees of the rooting `hierarchyOf {{0, 1}, {0, 1, 2, 3}}` of `U5 1`
+ (`P₇ = (((a,b),c,d),e)`), read off its gene tree distribution `rootingDist5_1_7`. -/
+@@ -485,46 +289,7 @@ theorem ac1_classes_1_7 (τ : SpeciesTree (Fin 5))
+     (h : τ.clusters = hierarchyOf {{0, 1}, {0, 1, 2, 3}}) :
+     cls_leastClass τ = {4, 5, 7, 8, 10, 11, 12, 13, 14, 15} ∧
+       cls_mostProbable τ = {3} := by
+-  obtain ⟨h1, h2, h3, h4, h5, h6, h7, h8, h9, h10, h11, h12, h13, h14, h15⟩ :=
+-    rootingDist5_1_7 τ h
+-  obtain ⟨x0, x1⟩ := five_exp_bounds τ (A := {0, 1}) (by rw [h]; decide) (by decide)
+-  obtain ⟨z0, z1⟩ := five_exp_bounds τ (A := {0, 1, 2, 3}) (by rw [h]; decide) (by decide)
+-  generalize exp (-τ.length {0, 1}) = X at *
+-  generalize exp (-τ.length {0, 1, 2, 3}) = Z at *
+-  have f : X * Z ^ 6 < X := mul_lt_of_lt_one_right x0 (pow_lt_one₀ z0.le z1 (by norm_num))
+-  have i_vp : 1 / 90 * X * Z ^ 6 + 1 / 18 * X <
+-      1 / 90 * X * Z ^ 6 - 5 / 18 * X + 1 / 3 := by
+-    linarith only [x1, f]
+-  have i_vq : 1 / 90 * X * Z ^ 6 + 1 / 18 * X <
+-      -2 / 45 * X * Z ^ 6 + 1 / 9 * X := by
+-    linarith only [x1, f]
+-  have i_vm : 1 / 90 * X * Z ^ 6 + 1 / 18 * X <
+-      -2 / 45 * X * Z ^ 6 - 2 / 9 * X + 1 / 3 := by
+-    linarith only [x1, f]
+-  have i_pm : 1 / 90 * X * Z ^ 6 - 5 / 18 * X + 1 / 3 <
+-      -2 / 45 * X * Z ^ 6 - 2 / 9 * X + 1 / 3 := by
+-    linarith only [x1, f]
+-  have i_qm : -2 / 45 * X * Z ^ 6 + 1 / 9 * X <
+-      -2 / 45 * X * Z ^ 6 - 2 / 9 * X + 1 / 3 := by
+-    linarith only [x1, f]
+-  clear f
+-  generalize 1 / 90 * X * Z ^ 6 - 5 / 18 * X + 1 / 3 = p at *
+-  generalize -2 / 45 * X * Z ^ 6 - 2 / 9 * X + 1 / 3 = m at *
+-  generalize 1 / 90 * X * Z ^ 6 + 1 / 18 * X = v at *
+-  generalize -2 / 45 * X * Z ^ 6 + 1 / 9 * X = q at *
+-  have hC := ac1_leastClass_eq (τ := τ) {4, 5, 7, 8, 10, 11, 12, 13, 14, 15} v
+-    (by decide) (by decide) (by
+-    intro i hi
+-    rw [mem_Icc] at hi
+-    obtain ⟨hi1, hi2⟩ := hi
+-    interval_cases i <;> constructor <;> intro hm <;>
+-      first | exact absurd hm (by decide) | linarith)
+-  refine ⟨hC, ac1_mostProbable_eq {3} m (by decide) (by decide) (by
+-    intro i hi
+-    rw [mem_Icc] at hi
+-    obtain ⟨hi1, hi2⟩ := hi
+-    interval_cases i <;> constructor <;> intro hm <;>
+-      first | exact absurd hm (by decide) | linarith)⟩
++  ac1_p7 τ h rootingDist5_1_7 {0, 1} {0, 1, 2, 3} {4, 5, 7, 8, 10, 11, 12, 13, 14, 15} {3}
+ 
+ /-! ### The representatives `P₂` and `P₃` (Table 7) -/
+ 
+diff --git a/ADR11/Nonbinary/FiveTaxa/Shapes.lean b/ADR11/Nonbinary/FiveTaxa/Shapes.lean
+index fb107e050..a97f1a3fb 100644
+--- a/ADR11/Nonbinary/FiveTaxa/Shapes.lean
++++ b/ADR11/Nonbinary/FiveTaxa/Shapes.lean
+@@ -359,37 +359,15 @@ theorem sh_read_relabel (τ : SpeciesTree (Fin 5)) (π : Equiv.Perm (Fin 5)) :
+ probable class. -/
+ theorem sh_leastClass_eq {τ : SpeciesTree (Fin 5)} {C : Finset ℕ} {m : ℕ} (hC : C ⊆ Icc 1 15)
+     (hm : m ∈ C) (heq : ∀ i ∈ C, u τ i = u τ m) (hlt : ∀ i ∈ Icc 1 15, i ∉ C → u τ m < u τ i) :
+-    cls_leastClass τ = C := by
+-  ext i
+-  rw [cls_mem_leastClass]
+-  constructor
+-  · rintro ⟨hi, h⟩
+-    by_contra hiC
+-    exact absurd (h m (hC hm)) (not_le.2 (hlt i hi hiC))
+-  · intro hiC
+-    refine ⟨hC hiC, fun j hj => ?_⟩
+-    rw [heq i hiC]
+-    by_cases hjC : j ∈ C
+-    · rw [heq j hjC]
+-    · exact (hlt j hj hjC).le
++    cls_leastClass τ = C :=
++  ac1_leastClass_eq C (u τ m) hC ⟨m, hm⟩ fun i hi => ⟨heq i, hlt i hi⟩
+ 
+ /-- A set `C ⊆ [1, 15]` of equiprobable gene trees, more probable than all the others, is the set
+ of the most probable gene trees. -/
+ theorem sh_mostProbable_eq {τ : SpeciesTree (Fin 5)} {C : Finset ℕ} {m : ℕ} (hC : C ⊆ Icc 1 15)
+     (hm : m ∈ C) (heq : ∀ i ∈ C, u τ i = u τ m) (hlt : ∀ i ∈ Icc 1 15, i ∉ C → u τ i < u τ m) :
+-    cls_mostProbable τ = C := by
+-  ext i
+-  rw [cls_mem_mostProbable]
+-  constructor
+-  · rintro ⟨hi, h⟩
+-    by_contra hiC
+-    exact absurd (h m (hC hm)) (not_le.2 (hlt i hi hiC))
+-  · intro hiC
+-    refine ⟨hC hiC, fun j hj => ?_⟩
+-    rw [heq i hiC]
+-    by_cases hjC : j ∈ C
+-    · rw [heq j hjC]
+-    · exact (hlt j hj hjC).le
++    cls_mostProbable τ = C :=
++  ac1_mostProbable_eq C (u τ m) hC ⟨m, hm⟩ fun i hi => ⟨heq i, hlt i hi⟩
+ 
+ /-- Appendix C, `|𝒞| = 12`: `P₂` and `P₃` are told apart since "all gene trees in the 3-element
+ class for `P₃` have the same taxon not occurring in a cherry, while for `P₂` the gene trees in the
+@@ -410,7 +388,7 @@ theorem sh_P2_P3_rule :
+     decide
+   · obtain ⟨e1, e2⟩ := ac1_classes_P3 σ h
+     rw [e1, e2]
+-    exact ⟨by decide, by decide, 4, by decide⟩
++    decide
+ 
+ /-- Appendix C, `|𝒞| = 10`: `P₅ = ((a,b),(d,e),c)` and `P₇ = (((a,b),d,e),c)` are told apart "by
+ considering the two 2-element classes for both". For `P₅`, the gene trees of each of the classes
+@@ -462,8 +440,21 @@ theorem sh_P5_P7_rule (σ : SpeciesTree (Fin 5)) :
+     decide
+   · -- `P₇`: Table 7 and the inequalities `u₁ > u₂, u₈ > u₄` of Table 6
+     obtain ⟨h12, h18, h24, h84⟩ := (table6 σ).2.2.2.2.2.1 h
+-    obtain ⟨-, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13, e14, e15⟩ :=
+-      rootingDist5_1_5 σ h
++    have e2 := rootingDist5_1_5 σ h 2 (by decide)
++    have e3 := rootingDist5_1_5 σ h 3 (by decide)
++    have e4 := rootingDist5_1_5 σ h 4 (by decide)
++    have e5 := rootingDist5_1_5 σ h 5 (by decide)
++    have e6 := rootingDist5_1_5 σ h 6 (by decide)
++    have e7 := rootingDist5_1_5 σ h 7 (by decide)
++    have e8 := rootingDist5_1_5 σ h 8 (by decide)
++    have e9 := rootingDist5_1_5 σ h 9 (by decide)
++    have e10 := rootingDist5_1_5 σ h 10 (by decide)
++    have e11 := rootingDist5_1_5 σ h 11 (by decide)
++    have e12 := rootingDist5_1_5 σ h 12 (by decide)
++    have e13 := rootingDist5_1_5 σ h 13 (by decide)
++    have e14 := rootingDist5_1_5 σ h 14 (by decide)
++    have e15 := rootingDist5_1_5 σ h 15 (by decide)
++    simp only [Nat.reduceEqDiff, mem_insert, mem_singleton, or_false, or_true, ↓reduceIte] at e2 e3 e4 e5 e6 e7 e8 e9 e10 e11 e12 e13 e14 e15
+     have q3 : u σ 3 = u σ 2 := by rw [e3, e2]
+     have q11 : u σ 11 = u σ 8 := by rw [e11, e8]
+     have hL : cls_leastClass σ = {4, 5, 6, 7, 9, 10, 12, 13, 14, 15} := by
+diff --git a/ADR11/Nonbinary/FiveTaxa/StarOneSplit.lean b/ADR11/Nonbinary/FiveTaxa/StarOneSplit.lean
+index 6422b6729..2573db719 100644
+--- a/ADR11/Nonbinary/FiveTaxa/StarOneSplit.lean
++++ b/ADR11/Nonbinary/FiveTaxa/StarOneSplit.lean
+@@ -123,7 +123,9 @@ theorem ac1_P4_P8_rule (τ : SpeciesTree (Fin 5)) :
+       ac1_solveZ τ = exp (-τ.length {0, 1}) ∧ ac1_solveZ τ < 1) ∧
+     (τ.clusters = hierarchyOf {{2, 3, 4}} → ac1_solveZ τ = 1) := by
+   refine ⟨fun h => ?_, fun h => ?_⟩
+-  · obtain ⟨-, -, -, h4, h5, -⟩ := rootingDist5_1_2 τ h
++  · have h4 := rootingDist5_1_2 τ h 4 (by decide)
++    have h5 := rootingDist5_1_2 τ h 5 (by decide)
++    simp only [Nat.reduceEqDiff, mem_insert, mem_singleton, or_false, or_true, ↓reduceIte] at h4 h5
+     obtain ⟨z0, z1⟩ := five_exp_bounds τ (A := {0, 1}) (by rw [h]; decide) (by decide)
+     obtain ⟨y0, -⟩ := five_exp_bounds τ (A := {2, 3, 4}) (by rw [h]; decide) (by decide)
+     have key : (6 * u τ 4 + 9 * u τ 5) ^ 3 / (15 * u τ 5) = exp (-τ.length {0, 1}) ^ 2 := by
+@@ -135,7 +137,9 @@ theorem ac1_P4_P8_rule (τ : SpeciesTree (Fin 5)) :
+     have e : ac1_solveZ τ = exp (-τ.length {0, 1}) := by
+       rw [ac1_solveZ, key, Real.sqrt_sq z0.le]
+     exact ⟨e, e ▸ z1⟩
+-  · obtain ⟨-, -, -, h4, h5, -⟩ := rootingDist5_1_1 τ h
++  · have h4 := rootingDist5_1_1 τ h 4 (by decide)
++    have h5 := rootingDist5_1_1 τ h 5 (by decide)
++    simp only [Nat.reduceEqDiff, mem_insert, mem_singleton, or_false, or_true, ↓reduceIte] at h4 h5
+     obtain ⟨y0, -⟩ := five_exp_bounds τ (A := {2, 3, 4}) (by rw [h]; decide) (by decide)
+     have key : (6 * u τ 4 + 9 * u τ 5) ^ 3 / (15 * u τ 5) = 1 := by
+       rw [h4, h5]
+@@ -284,48 +288,49 @@ theorem ac1_solve_one {τ τ' : SpeciesTree (Fin 5)} {C : Finset (Fin 5)} {i n :
+ theorem ac1_lengths_0_1 {τ τ' : SpeciesTree (Fin 5)} (hu : ∀ i, u τ i = u τ' i)
+     (h : τ.clusters = hierarchyOf {{1, 2, 3, 4}}) (h' : τ'.clusters = hierarchyOf {{1, 2, 3, 4}}) :
+     τ.SameRootedMetricTree τ' := by
+-  obtain ⟨f, -⟩ := rootingDist5_0_1 τ h
+-  obtain ⟨f', -⟩ := rootingDist5_0_1 τ' h'
++  have f := rootingDist5_0_1 τ h 1 (by decide)
++  have f' := rootingDist5_0_1 τ' h' 1 (by decide)
+   exact ac1_solve_one h h' (by norm_num) (by norm_num) (hu 1) f f'
+ 
+ /-- `P₃ = ((a,c,d,e):z,b)`: `u₁ = 1/18 + Z⁶/90` (Table 7) gives `Z`. -/
+ theorem ac1_lengths_0_2 {τ τ' : SpeciesTree (Fin 5)} (hu : ∀ i, u τ i = u τ' i)
+     (h : τ.clusters = hierarchyOf {{0, 2, 3, 4}}) (h' : τ'.clusters = hierarchyOf {{0, 2, 3, 4}}) :
+     τ.SameRootedMetricTree τ' := by
+-  obtain ⟨f, -⟩ := rootingDist5_0_2 τ h
+-  obtain ⟨f', -⟩ := rootingDist5_0_2 τ' h'
++  have f := rootingDist5_0_2 τ h 1 (by decide)
++  have f' := rootingDist5_0_2 τ' h' 1 (by decide)
+   exact ac1_solve_one h h' (by norm_num) (by norm_num) (hu 1) f f'
+ 
+ /-- `P₃ = ((a,b,d,e):z,c)`: `u₂ = 1/18 + Z⁶/90` (Table 7) gives `Z`. -/
+ theorem ac1_lengths_0_3 {τ τ' : SpeciesTree (Fin 5)} (hu : ∀ i, u τ i = u τ' i)
+     (h : τ.clusters = hierarchyOf {{0, 1, 3, 4}}) (h' : τ'.clusters = hierarchyOf {{0, 1, 3, 4}}) :
+     τ.SameRootedMetricTree τ' := by
+-  obtain ⟨-, f, -⟩ := rootingDist5_0_3 τ h
+-  obtain ⟨-, f', -⟩ := rootingDist5_0_3 τ' h'
++  have f := rootingDist5_0_3 τ h 2 (by decide)
++  have f' := rootingDist5_0_3 τ' h' 2 (by decide)
+   exact ac1_solve_one h h' (by norm_num) (by norm_num) (hu 2) f f'
+ 
+ /-- `P₃ = ((a,b,c,e):z,d)`: `u₁ = 1/18 + Z⁶/90` (Table 7) gives `Z`. -/
+ theorem ac1_lengths_0_4 {τ τ' : SpeciesTree (Fin 5)} (hu : ∀ i, u τ i = u τ' i)
+     (h : τ.clusters = hierarchyOf {{0, 1, 2, 4}}) (h' : τ'.clusters = hierarchyOf {{0, 1, 2, 4}}) :
+     τ.SameRootedMetricTree τ' := by
+-  obtain ⟨f, -⟩ := rootingDist5_0_4 τ h
+-  obtain ⟨f', -⟩ := rootingDist5_0_4 τ' h'
++  have f := rootingDist5_0_4 τ h 1 (by decide)
++  have f' := rootingDist5_0_4 τ' h' 1 (by decide)
+   exact ac1_solve_one h h' (by norm_num) (by norm_num) (hu 1) f f'
+ 
+ /-- `P₃ = ((a,b,c,d):z,e)`: `u₁ = 1/18 + Z⁶/90` (Table 7) gives `Z`. -/
+ theorem ac1_lengths_0_5 {τ τ' : SpeciesTree (Fin 5)} (hu : ∀ i, u τ i = u τ' i)
+     (h : τ.clusters = hierarchyOf {{0, 1, 2, 3}}) (h' : τ'.clusters = hierarchyOf {{0, 1, 2, 3}}) :
+     τ.SameRootedMetricTree τ' := by
+-  obtain ⟨f, -⟩ := rootingDist5_0_5 τ h
+-  obtain ⟨f', -⟩ := rootingDist5_0_5 τ' h'
++  have f := rootingDist5_0_5 τ h 1 (by decide)
++  have f' := rootingDist5_0_5 τ' h' 1 (by decide)
+   exact ac1_solve_one h h' (by norm_num) (by norm_num) (hu 1) f f'
+ 
+ /-- `P₂ = ((a,b):z,c,d,e)`: `u₄ = Z/15` (Table 7) gives `Z`. -/
+ theorem ac1_lengths_1_0 {τ τ' : SpeciesTree (Fin 5)} (hu : ∀ i, u τ i = u τ' i)
+     (h : τ.clusters = hierarchyOf {{0, 1}}) (h' : τ'.clusters = hierarchyOf {{0, 1}}) :
+     τ.SameRootedMetricTree τ' := by
+-  obtain ⟨-, -, -, f, -⟩ := rootingDist5_1_0 τ h
+-  obtain ⟨-, -, -, f', -⟩ := rootingDist5_1_0 τ' h'
++  have f := rootingDist5_1_0 τ h 4 (by decide)
++  have f' := rootingDist5_1_0 τ' h' 4 (by decide)
++  simp only [Nat.reduceEqDiff, mem_insert, mem_singleton, or_false, or_true, ↓reduceIte] at f f'
+   exact ac1_solve_one (n := 1) (A := 1 / 15) (B := 0) h h' one_ne_zero (by norm_num) (hu 4)
+     (by rw [f]; ring) (by rw [f']; ring)
+ 
+@@ -333,8 +338,9 @@ theorem ac1_lengths_1_0 {τ τ' : SpeciesTree (Fin 5)} (hu : ∀ i, u τ i = u 
+ theorem ac1_lengths_1_1 {τ τ' : SpeciesTree (Fin 5)} (hu : ∀ i, u τ i = u τ' i)
+     (h : τ.clusters = hierarchyOf {{2, 3, 4}}) (h' : τ'.clusters = hierarchyOf {{2, 3, 4}}) :
+     τ.SameRootedMetricTree τ' := by
+-  obtain ⟨-, -, -, -, f, -⟩ := rootingDist5_1_1 τ h
+-  obtain ⟨-, -, -, -, f', -⟩ := rootingDist5_1_1 τ' h'
++  have f := rootingDist5_1_1 τ h 5 (by decide)
++  have f' := rootingDist5_1_1 τ' h' 5 (by decide)
++  simp only [Nat.reduceEqDiff, mem_insert, mem_singleton, or_false, or_true, ↓reduceIte] at f f'
+   exact ac1_solve_one (n := 3) (A := 1 / 15) (B := 0) h h' (by norm_num) (by norm_num) (hu 5)
+     (by rw [f]; ring) (by rw [f']; ring)
+ 
+@@ -347,8 +353,9 @@ theorem ac1_lengths_1_2 {τ τ' : SpeciesTree (Fin 5)} (hu : ∀ i, u τ i = u 
+     have e : ac1_solveZ τ = ac1_solveZ τ' := by rw [ac1_solveZ, ac1_solveZ, hu 4, hu 5]
+     rw [((ac1_P4_P8_rule τ).1 h).1, ((ac1_P4_P8_rule τ').1 h').1] at e
+     exact neg_inj.1 (Real.exp_injective e)
+-  obtain ⟨-, -, -, -, f, -⟩ := rootingDist5_1_2 τ h
+-  obtain ⟨-, -, -, -, f', -⟩ := rootingDist5_1_2 τ' h'
++  have f := rootingDist5_1_2 τ h 5 (by decide)
++  have f' := rootingDist5_1_2 τ' h' 5 (by decide)
++  simp only [Nat.reduceEqDiff, mem_insert, mem_singleton, or_false, or_true, ↓reduceIte] at f f'
+   have hy : τ.length {2, 3, 4} = τ'.length {2, 3, 4} :=
+     five_length_eq (n := 3) (v := u τ' 5) (A := 1 / 15 * exp (-τ'.length {0, 1})) (B := 0)
+       (by norm_num) (by positivity) (by rw [← hu 5, f, hz]; ring) (by rw [f']; ring)
+@@ -356,95 +363,84 @@ theorem ac1_lengths_1_2 {τ τ' : SpeciesTree (Fin 5)} (hu : ∀ i, u τ i = u 
+   simp only [mem_insert, mem_singleton, forall_eq_or_imp, forall_eq]
+   exact ⟨hz, hy⟩
+ 
++macro "ac1_p9_len" τ:ident t2:ident hu:ident h:ident h2:ident r:term:max Z:term:max : tactic => `(tactic| (
++  have f1 := $r $τ $h 1 (by decide)
++  have f5 := $r $τ $h 5 (by decide)
++  have f1' := $r $t2 $h2 1 (by decide)
++  have f5' := $r $t2 $h2 5 (by decide)
++  simp only [Nat.reduceEqDiff, mem_insert, mem_singleton, or_false, or_true, ↓reduceIte] at f1 f5 f1' f5'
++  have hy : ($τ).length {2, 3, 4} = ($t2).length {2, 3, 4} :=
++    five_length_eq (n := 1) (v := u ($t2) 1 - u ($t2) 5) (A := -1 / 3) (B := 1 / 3) one_ne_zero
++      (by norm_num) (by rw [← ($hu) 1, ← ($hu) 5, f1, f5]; ring) (by rw [f1', f5']; ring)
++  have hz : ($τ).length $Z = ($t2).length $Z :=
++    five_length_eq (n := 6) (v := u ($t2) 5) (A := 1 / 90 * exp (-($t2).length {2, 3, 4}) ^ 3)
++      (B := 1 / 18 * exp (-($t2).length {2, 3, 4}) ^ 3) (by norm_num) (by positivity)
++      (by rw [← ($hu) 5, f5, hy]) (by rw [f5'])
++  refine five_sameRootedMetricTree_of_lengths $h $h2 ?_
++  simp only [mem_insert, mem_singleton, forall_eq_or_imp, forall_eq]
++  exact ⟨hy, hz⟩))
++
++macro "ac1_p7_len" τ:ident t2:ident hu:ident h:ident h2:ident f4:ident fk:ident
++    f42:ident fk2:ident k:term:max Z:term:max : tactic => `(tactic| (
++  simp only [Nat.reduceEqDiff, mem_insert, mem_singleton, or_false, or_true, ↓reduceIte] at $f4 $fk $f42 $fk2
++  have hx : ($τ).length {0, 1} = ($t2).length {0, 1} :=
++    five_length_eq (n := 1) (v := u ($t2) ($k) + 4 * u ($t2) 4) (A := 1 / 3) (B := 0) one_ne_zero
++      (by norm_num) (by rw [← ($hu) ($k), ← ($hu) 4, show _ from $fk, show _ from $f4]; ring)
++      (by rw [show _ from $fk2, show _ from $f42]; ring)
++  have hz : ($τ).length $Z = ($t2).length $Z :=
++    five_length_eq (n := 6) (v := u ($t2) 4) (A := 1 / 90 * exp (-($t2).length {0, 1}))
++      (B := 1 / 18 * exp (-($t2).length {0, 1})) (by norm_num) (by positivity)
++      (by rw [← ($hu) 4, show _ from $f4, hx]) (by rw [show _ from $f42])
++  refine five_sameRootedMetricTree_of_lengths $h $h2 ?_
++  simp only [mem_insert, mem_singleton, forall_eq_or_imp, forall_eq]
++  exact ⟨hx, hz⟩))
++
+ /-- `P₉ = (((c,d,e):y,b):z,a)`: `u₁ - u₅ = (1 - Y)/3` (Table 7) gives `Y`, and then
+ `u₅ = Y³/18 + Y³Z⁶/90` gives `Z`. -/
+ theorem ac1_lengths_1_3 {τ τ' : SpeciesTree (Fin 5)} (hu : ∀ i, u τ i = u τ' i)
+     (h : τ.clusters = hierarchyOf {{2, 3, 4}, {1, 2, 3, 4}})
+     (h' : τ'.clusters = hierarchyOf {{2, 3, 4}, {1, 2, 3, 4}}) : τ.SameRootedMetricTree τ' := by
+-  obtain ⟨f1, -, -, -, f5, -⟩ := rootingDist5_1_3 τ h
+-  obtain ⟨f1', -, -, -, f5', -⟩ := rootingDist5_1_3 τ' h'
+-  have hy : τ.length {2, 3, 4} = τ'.length {2, 3, 4} :=
+-    five_length_eq (n := 1) (v := u τ' 1 - u τ' 5) (A := -1 / 3) (B := 1 / 3) one_ne_zero
+-      (by norm_num) (by rw [← hu 1, ← hu 5, f1, f5]; ring) (by rw [f1', f5']; ring)
+-  have hz : τ.length {1, 2, 3, 4} = τ'.length {1, 2, 3, 4} :=
+-    five_length_eq (n := 6) (v := u τ' 5) (A := 1 / 90 * exp (-τ'.length {2, 3, 4}) ^ 3)
+-      (B := 1 / 18 * exp (-τ'.length {2, 3, 4}) ^ 3) (by norm_num) (by positivity)
+-      (by rw [← hu 5, f5, hy]) (by rw [f5'])
+-  refine five_sameRootedMetricTree_of_lengths h h' ?_
+-  simp only [mem_insert, mem_singleton, forall_eq_or_imp, forall_eq]
+-  exact ⟨hy, hz⟩
++  ac1_p9_len τ τ' hu h h' rootingDist5_1_3 {1, 2, 3, 4}
+ 
+ /-- `P₉ = (((c,d,e):y,a):z,b)`: `u₁ - u₅ = (1 - Y)/3` (Table 7) gives `Y`, and then
+ `u₅ = Y³/18 + Y³Z⁶/90` gives `Z`. -/
+ theorem ac1_lengths_1_4 {τ τ' : SpeciesTree (Fin 5)} (hu : ∀ i, u τ i = u τ' i)
+     (h : τ.clusters = hierarchyOf {{2, 3, 4}, {0, 2, 3, 4}})
+     (h' : τ'.clusters = hierarchyOf {{2, 3, 4}, {0, 2, 3, 4}}) : τ.SameRootedMetricTree τ' := by
+-  obtain ⟨f1, -, -, -, f5, -⟩ := rootingDist5_1_4 τ h
+-  obtain ⟨f1', -, -, -, f5', -⟩ := rootingDist5_1_4 τ' h'
+-  have hy : τ.length {2, 3, 4} = τ'.length {2, 3, 4} :=
+-    five_length_eq (n := 1) (v := u τ' 1 - u τ' 5) (A := -1 / 3) (B := 1 / 3) one_ne_zero
+-      (by norm_num) (by rw [← hu 1, ← hu 5, f1, f5]; ring) (by rw [f1', f5']; ring)
+-  have hz : τ.length {0, 2, 3, 4} = τ'.length {0, 2, 3, 4} :=
+-    five_length_eq (n := 6) (v := u τ' 5) (A := 1 / 90 * exp (-τ'.length {2, 3, 4}) ^ 3)
+-      (B := 1 / 18 * exp (-τ'.length {2, 3, 4}) ^ 3) (by norm_num) (by positivity)
+-      (by rw [← hu 5, f5, hy]) (by rw [f5'])
+-  refine five_sameRootedMetricTree_of_lengths h h' ?_
+-  simp only [mem_insert, mem_singleton, forall_eq_or_imp, forall_eq]
+-  exact ⟨hy, hz⟩
++  ac1_p9_len τ τ' hu h h' rootingDist5_1_4 {0, 2, 3, 4}
+ 
+ /-- `P₇ = (((a,b):x,d,e):z,c)`: `u₈ + 4u₄ = X/3` (Table 7) gives `X`, and then
+ `u₄ = X/18 + XZ⁶/90` gives `Z`. -/
+ theorem ac1_lengths_1_5 {τ τ' : SpeciesTree (Fin 5)} (hu : ∀ i, u τ i = u τ' i)
+     (h : τ.clusters = hierarchyOf {{0, 1}, {0, 1, 3, 4}})
+     (h' : τ'.clusters = hierarchyOf {{0, 1}, {0, 1, 3, 4}}) : τ.SameRootedMetricTree τ' := by
+-  obtain ⟨-, -, -, f4, -, -, -, f8, -⟩ := rootingDist5_1_5 τ h
+-  obtain ⟨-, -, -, f4', -, -, -, f8', -⟩ := rootingDist5_1_5 τ' h'
+-  have hx : τ.length {0, 1} = τ'.length {0, 1} :=
+-    five_length_eq (n := 1) (v := u τ' 8 + 4 * u τ' 4) (A := 1 / 3) (B := 0) one_ne_zero
+-      (by norm_num) (by rw [← hu 8, ← hu 4, f8, f4]; ring) (by rw [f8', f4']; ring)
+-  have hz : τ.length {0, 1, 3, 4} = τ'.length {0, 1, 3, 4} :=
+-    five_length_eq (n := 6) (v := u τ' 4) (A := 1 / 90 * exp (-τ'.length {0, 1}))
+-      (B := 1 / 18 * exp (-τ'.length {0, 1})) (by norm_num) (by positivity)
+-      (by rw [← hu 4, f4, hx]) (by rw [f4'])
+-  refine five_sameRootedMetricTree_of_lengths h h' ?_
+-  simp only [mem_insert, mem_singleton, forall_eq_or_imp, forall_eq]
+-  exact ⟨hx, hz⟩
++  have f4 := rootingDist5_1_5 τ h 4 (by decide)
++  have f8 := rootingDist5_1_5 τ h 8 (by decide)
++  have f4' := rootingDist5_1_5 τ' h' 4 (by decide)
++  have f8' := rootingDist5_1_5 τ' h' 8 (by decide)
++  ac1_p7_len τ τ' hu h h' f4 f8 f4' f8' 8 {0, 1, 3, 4}
+ 
+ /-- `P₇ = (((a,b):x,c,e):z,d)`: `u₅ + 4u₄ = X/3` (Table 7) gives `X`, and then
+ `u₄ = X/18 + XZ⁶/90` gives `Z`. -/
+ theorem ac1_lengths_1_6 {τ τ' : SpeciesTree (Fin 5)} (hu : ∀ i, u τ i = u τ' i)
+     (h : τ.clusters = hierarchyOf {{0, 1}, {0, 1, 2, 4}})
+     (h' : τ'.clusters = hierarchyOf {{0, 1}, {0, 1, 2, 4}}) : τ.SameRootedMetricTree τ' := by
+-  obtain ⟨-, -, -, f4, f5, -⟩ := rootingDist5_1_6 τ h
+-  obtain ⟨-, -, -, f4', f5', -⟩ := rootingDist5_1_6 τ' h'
+-  have hx : τ.length {0, 1} = τ'.length {0, 1} :=
+-    five_length_eq (n := 1) (v := u τ' 5 + 4 * u τ' 4) (A := 1 / 3) (B := 0) one_ne_zero
+-      (by norm_num) (by rw [← hu 5, ← hu 4, f5, f4]; ring) (by rw [f5', f4']; ring)
+-  have hz : τ.length {0, 1, 2, 4} = τ'.length {0, 1, 2, 4} :=
+-    five_length_eq (n := 6) (v := u τ' 4) (A := 1 / 90 * exp (-τ'.length {0, 1}))
+-      (B := 1 / 18 * exp (-τ'.length {0, 1})) (by norm_num) (by positivity)
+-      (by rw [← hu 4, f4, hx]) (by rw [f4'])
+-  refine five_sameRootedMetricTree_of_lengths h h' ?_
+-  simp only [mem_insert, mem_singleton, forall_eq_or_imp, forall_eq]
+-  exact ⟨hx, hz⟩
++  have f4 := rootingDist5_1_6 τ h 4 (by decide)
++  have f5 := rootingDist5_1_6 τ h 5 (by decide)
++  have f4' := rootingDist5_1_6 τ' h' 4 (by decide)
++  have f5' := rootingDist5_1_6 τ' h' 5 (by decide)
++  ac1_p7_len τ τ' hu h h' f4 f5 f4' f5' 5 {0, 1, 2, 4}
+ 
+ /-- `P₇ = (((a,b):x,c,d):z,e)`: `u₆ + 4u₄ = X/3` (Table 7) gives `X`, and then
+ `u₄ = X/18 + XZ⁶/90` gives `Z`. -/
+ theorem ac1_lengths_1_7 {τ τ' : SpeciesTree (Fin 5)} (hu : ∀ i, u τ i = u τ' i)
+     (h : τ.clusters = hierarchyOf {{0, 1}, {0, 1, 2, 3}})
+     (h' : τ'.clusters = hierarchyOf {{0, 1}, {0, 1, 2, 3}}) : τ.SameRootedMetricTree τ' := by
+-  obtain ⟨-, -, -, f4, -, f6, -⟩ := rootingDist5_1_7 τ h
+-  obtain ⟨-, -, -, f4', -, f6', -⟩ := rootingDist5_1_7 τ' h'
+-  have hx : τ.length {0, 1} = τ'.length {0, 1} :=
+-    five_length_eq (n := 1) (v := u τ' 6 + 4 * u τ' 4) (A := 1 / 3) (B := 0) one_ne_zero
+-      (by norm_num) (by rw [← hu 6, ← hu 4, f6, f4]; ring) (by rw [f6', f4']; ring)
+-  have hz : τ.length {0, 1, 2, 3} = τ'.length {0, 1, 2, 3} :=
+-    five_length_eq (n := 6) (v := u τ' 4) (A := 1 / 90 * exp (-τ'.length {0, 1}))
+-      (B := 1 / 18 * exp (-τ'.length {0, 1})) (by norm_num) (by positivity)
+-      (by rw [← hu 4, f4, hx]) (by rw [f4'])
+-  refine five_sameRootedMetricTree_of_lengths h h' ?_
+-  simp only [mem_insert, mem_singleton, forall_eq_or_imp, forall_eq]
+-  exact ⟨hx, hz⟩
++  have f4 := rootingDist5_1_7 τ h 4 (by decide)
++  have f6 := rootingDist5_1_7 τ h 6 (by decide)
++  have f4' := rootingDist5_1_7 τ' h' 4 (by decide)
++  have f6' := rootingDist5_1_7 τ' h' 6 (by decide)
++  ac1_p7_len τ τ' hu h h' f4 f6 f4' f6' 6 {0, 1, 2, 3}
+ 
+ /-! ### The main results -/
+ 
+diff --git a/ADR11/Nonbinary/FiveTaxa/TwoSplits.lean b/ADR11/Nonbinary/FiveTaxa/TwoSplits.lean
+index 3588131e6..1de49c60b 100644
+--- a/ADR11/Nonbinary/FiveTaxa/TwoSplits.lean
++++ b/ADR11/Nonbinary/FiveTaxa/TwoSplits.lean
+@@ -199,7 +199,10 @@ theorem ac2_balanced_P6_rule (τ : SpeciesTree (Fin 5)) :
+         exp (-τ.length {0, 1}) < 1) ∧
+     (τ.clusters = hierarchyOf {{3, 4}, {2, 3, 4}} → ac2_solveZ (u τ 13) (u τ 15) (u τ 9) = 1) := by
+   refine ⟨fun h => ?_, fun h => ?_, fun h => ?_, fun h => ?_⟩
+-  · obtain ⟨-, e2, -, -, e5, -, e7, -⟩ := rootingDist5_2_5 τ h
++  · have e2 := rootingDist5_2_5 τ h 2 (by decide)
++    have e5 := rootingDist5_2_5 τ h 5 (by decide)
++    have e7 := rootingDist5_2_5 τ h 7 (by decide)
++    simp only [Nat.reduceEqDiff, mem_insert, mem_singleton, or_false, or_true, ↓reduceIte] at e2 e5 e7
+     obtain ⟨x0, -⟩ := five_exp_bounds τ (A := {0, 1}) (by rw [h]; decide) (by decide)
+     obtain ⟨y0, -⟩ := five_exp_bounds τ (A := {0, 1, 2}) (by rw [h]; decide) (by decide)
+     obtain ⟨z0, z1⟩ := five_exp_bounds τ (A := {3, 4}) (by rw [h]; decide) (by decide)
+@@ -208,12 +211,18 @@ theorem ac2_balanced_P6_rule (τ : SpeciesTree (Fin 5)) :
+     obtain ⟨x0, -⟩ := five_exp_bounds τ (A := {0, 1}) (by rw [h]; decide) (by decide)
+     obtain ⟨y0, -⟩ := five_exp_bounds τ (A := {0, 1, 2}) (by rw [h]; decide) (by decide)
+     exact ac2_solveZ_eq x0 y0 one_pos (by rw [e2]; ring) (by rw [e5]; ring) (by rw [e7]; ring)
+-  · obtain ⟨-, -, -, -, -, -, -, -, e9, -, -, -, e13, -, e15⟩ := rootingDist5_2_6 τ h
++  · have e9 := rootingDist5_2_6 τ h 9 (by decide)
++    have e13 := rootingDist5_2_6 τ h 13 (by decide)
++    have e15 := rootingDist5_2_6 τ h 15 (by decide)
++    simp only [Nat.reduceEqDiff, mem_insert, mem_singleton, or_false, or_true, ↓reduceIte] at e9 e13 e15
+     obtain ⟨z0, z1⟩ := five_exp_bounds τ (A := {0, 1}) (by rw [h]; decide) (by decide)
+     obtain ⟨x0, -⟩ := five_exp_bounds τ (A := {3, 4}) (by rw [h]; decide) (by decide)
+     obtain ⟨y0, -⟩ := five_exp_bounds τ (A := {2, 3, 4}) (by rw [h]; decide) (by decide)
+     exact ⟨ac2_solveZ_eq x0 y0 z0 (by rw [e13]; ring) (by rw [e15]; ring) (by rw [e9]; ring), z1⟩
+-  · obtain ⟨-, -, -, -, -, -, -, -, e9, -, -, -, e13, -, e15⟩ := rootingDist5_2_9 τ h
++  · have e9 := rootingDist5_2_9 τ h 9 (by decide)
++    have e13 := rootingDist5_2_9 τ h 13 (by decide)
++    have e15 := rootingDist5_2_9 τ h 15 (by decide)
++    simp only [Nat.reduceEqDiff, mem_insert, mem_singleton, or_false, or_true, ↓reduceIte] at e9 e13 e15
+     obtain ⟨x0, -⟩ := five_exp_bounds τ (A := {3, 4}) (by rw [h]; decide) (by decide)
+     obtain ⟨y0, -⟩ := five_exp_bounds τ (A := {2, 3, 4}) (by rw [h]; decide) (by decide)
+     exact ac2_solveZ_eq x0 y0 one_pos (by rw [e13]; ring) (by rw [e15]; ring) (by rw [e9]; ring)
+@@ -249,7 +258,11 @@ theorem ac2_P6_lengths (τ : SpeciesTree (Fin 5)) :
+         rw [e4, e5, e7]; ring, log_exp, neg_neg]
+     · rw [show 3 * u τ 2 + 3 * u τ 5 + 9 * u τ 7 = exp (-τ.length {0, 1, 2}) by
+         rw [e2, e5, e7]; ring, log_exp, neg_neg]
+-  · obtain ⟨-, -, e3, -, -, -, -, -, e9, -, -, -, e13, -, e15⟩ := rootingDist5_2_9 τ h
++  · have e3 := rootingDist5_2_9 τ h 3 (by decide)
++    have e9 := rootingDist5_2_9 τ h 9 (by decide)
++    have e13 := rootingDist5_2_9 τ h 13 (by decide)
++    have e15 := rootingDist5_2_9 τ h 15 (by decide)
++    simp only [Nat.reduceEqDiff, mem_insert, mem_singleton, or_false, or_true, ↓reduceIte] at e3 e9 e13 e15
+     constructor
+     · rw [show 3 * u τ 3 + 6 * u τ 15 + 6 * u τ 9 = exp (-τ.length {3, 4}) by
+         rw [e3, e15, e9]; ring, log_exp, neg_neg]
+diff --git a/ADR11/Rootings/Statements.lean b/ADR11/Rootings/Statements.lean
+index d2470a4bf..f4b3a48a2 100644
+--- a/ADR11/Rootings/Statements.lean
++++ b/ADR11/Rootings/Statements.lean
+@@ -109,90 +109,70 @@ theorem rootingDist5_2_5 (τ : SpeciesTree (Fin 5)) (hτ : τ.clusters = hierarc
+     let X01 := exp (-τ.length {0, 1})
+     let X34 := exp (-τ.length {3, 4})
+     let X012 := exp (-τ.length {0, 1, 2})
+-    u τ 1 = 1 / 15 * X01 * X34 * X012 ^ 3 + 1 / 3 * X01 * X34 * X012 - 2 / 3 * X01 - 2 / 3 * X34 * X012 + 1 ∧
+-    u τ 2 = -1 / 10 * X01 * X34 * X012 ^ 3 - 1 / 6 * X01 * X34 * X012 + 1 / 3 * X34 * X012 ∧
+-    u τ 3 = -1 / 10 * X01 * X34 * X012 ^ 3 - 1 / 6 * X01 * X34 * X012 + 1 / 3 * X34 * X012 ∧
+-    u τ 4 = 1 / 15 * X01 * X34 * X012 ^ 3 - 1 / 3 * X01 * X34 * X012 + 1 / 3 * X01 ∧
+-    u τ 5 = -1 / 10 * X01 * X34 * X012 ^ 3 + 1 / 6 * X01 * X34 * X012 ∧
+-    u τ 6 = -1 / 10 * X01 * X34 * X012 ^ 3 + 1 / 6 * X01 * X34 * X012 ∧
+-    u τ 7 = 1 / 15 * X01 * X34 * X012 ^ 3 ∧
+-    u τ 8 = 1 / 15 * X01 * X34 * X012 ^ 3 ∧
+-    u τ 9 = -1 / 10 * X01 * X34 * X012 ^ 3 + 1 / 6 * X01 * X34 * X012 ∧
+-    u τ 10 = 1 / 15 * X01 * X34 * X012 ^ 3 ∧
+-    u τ 11 = 1 / 15 * X01 * X34 * X012 ^ 3 ∧
+-    u τ 12 = -1 / 10 * X01 * X34 * X012 ^ 3 + 1 / 6 * X01 * X34 * X012 ∧
+-    u τ 13 = 1 / 15 * X01 * X34 * X012 ^ 3 - 1 / 3 * X01 * X34 * X012 + 1 / 3 * X01 ∧
+-    u τ 14 = 1 / 15 * X01 * X34 * X012 ^ 3 ∧
+-    u τ 15 = 1 / 15 * X01 * X34 * X012 ^ 3 := by
++    ∀ i ∈ Icc 1 15, u τ i =
++      if i = 1 then
++        1 / 15 * X01 * X34 * X012 ^ 3 + 1 / 3 * X01 * X34 * X012 - 2 / 3 * X01 - 2 / 3 * X34 * X012 + 1
++      else if i ∈ ({2, 3} : Finset ℕ) then
++        -1 / 10 * X01 * X34 * X012 ^ 3 - 1 / 6 * X01 * X34 * X012 + 1 / 3 * X34 * X012
++      else if i ∈ ({4, 13} : Finset ℕ) then
++        1 / 15 * X01 * X34 * X012 ^ 3 - 1 / 3 * X01 * X34 * X012 + 1 / 3 * X01
++      else if i ∈ ({5, 6, 9, 12} : Finset ℕ) then
++        -1 / 10 * X01 * X34 * X012 ^ 3 + 1 / 6 * X01 * X34 * X012
++      else 1 / 15 * X01 * X34 * X012 ^ 3 := by
++  let a : List (ℚ × List (ℕ × ℕ)) := [(1 / 15, [(24, 1), (3, 1), (7, 3)])]
++  let b : List (ℚ × List (ℕ × ℕ)) :=
++    [(-1 / 10, [(24, 1), (3, 1), (7, 3)]), (1 / 6, [(24, 1), (3, 1), (7, 1)])]
++  let c : List (ℚ × List (ℕ × ℕ)) := [(1 / 15, [(24, 1), (3, 1), (7, 3)]),
++    (-1 / 3, [(24, 1), (3, 1), (7, 1)]), (1 / 3, [(3, 1)])]
++  let d : List (ℚ × List (ℕ × ℕ)) := [(-1 / 10, [(24, 1), (3, 1), (7, 3)]),
++    (-1 / 6, [(24, 1), (3, 1), (7, 1)]), (1 / 3, [(24, 1), (7, 1)])]
++  dsimp only
++  intro i hi
++  obtain ⟨hi1, hi15⟩ := mem_Icc.1 hi
+   obtain ⟨h1, h2, h3, h4, h5, h6, h7, h8, h9, h10, h11, h12, h13, h14, h15⟩ :=
+     root_u5 τ hτ (.node 31 [.node 24 [.leaf 3, .leaf 4], .node 7 [.node 3 [.leaf 0, .leaf 1], .leaf 2]])
+       (by decide +kernel) rfl (by decide +kernel)
+       (P₁ := [(1 / 15, [(24, 1), (3, 1), (7, 3)]), (1 / 3, [(24, 1), (3, 1), (7, 1)]),
+         (-2 / 3, [(3, 1)]), (-2 / 3, [(24, 1), (7, 1)]), (1, [])])
+-      (P₂ := [(-1 / 10, [(24, 1), (3, 1), (7, 3)]), (-1 / 6, [(24, 1), (3, 1), (7, 1)]),
+-        (1 / 3, [(24, 1), (7, 1)])])
+-      (P₃ := [(-1 / 10, [(24, 1), (3, 1), (7, 3)]), (-1 / 6, [(24, 1), (3, 1), (7, 1)]),
+-        (1 / 3, [(24, 1), (7, 1)])])
+-      (P₄ := [(1 / 15, [(24, 1), (3, 1), (7, 3)]), (-1 / 3, [(24, 1), (3, 1), (7, 1)]),
+-        (1 / 3, [(3, 1)])])
+-      (P₅ := [(-1 / 10, [(24, 1), (3, 1), (7, 3)]), (1 / 6, [(24, 1), (3, 1), (7, 1)])])
+-      (P₆ := [(-1 / 10, [(24, 1), (3, 1), (7, 3)]), (1 / 6, [(24, 1), (3, 1), (7, 1)])])
+-      (P₇ := [(1 / 15, [(24, 1), (3, 1), (7, 3)])])
+-      (P₈ := [(1 / 15, [(24, 1), (3, 1), (7, 3)])])
+-      (P₉ := [(-1 / 10, [(24, 1), (3, 1), (7, 3)]), (1 / 6, [(24, 1), (3, 1), (7, 1)])])
+-      (P₁₀ := [(1 / 15, [(24, 1), (3, 1), (7, 3)])])
+-      (P₁₁ := [(1 / 15, [(24, 1), (3, 1), (7, 3)])])
+-      (P₁₂ := [(-1 / 10, [(24, 1), (3, 1), (7, 3)]), (1 / 6, [(24, 1), (3, 1), (7, 1)])])
+-      (P₁₃ := [(1 / 15, [(24, 1), (3, 1), (7, 3)]), (-1 / 3, [(24, 1), (3, 1), (7, 1)]),
+-        (1 / 3, [(3, 1)])])
+-      (P₁₄ := [(1 / 15, [(24, 1), (3, 1), (7, 3)])])
+-      (P₁₅ := [(1 / 15, [(24, 1), (3, 1), (7, 3)])])
+-  root_finish
++      (P₂ := d) (P₃ := d) (P₄ := c) (P₅ := b) (P₆ := b) (P₇ := a) (P₈ := a)
++      (P₉ := b) (P₁₀ := a) (P₁₁ := a) (P₁₂ := b) (P₁₃ := c) (P₁₄ := a) (P₁₅ := a)
++  interval_cases i <;> simp only [a, b, c, d, mem_insert, mem_singleton, Nat.reduceEqDiff, or_false,
++    or_true, ↓reduceIte] at * <;> root_finish
+ 
+ /-- The rooting `hierarchyOf {{0, 1}, {3, 4}, {2, 3, 4}}` of `U5 2`. -/
+ theorem rootingDist5_2_6 (τ : SpeciesTree (Fin 5)) (hτ : τ.clusters = hierarchyOf {{0, 1}, {3, 4}, {2, 3, 4}}) :
+     let X01 := exp (-τ.length {0, 1})
+     let X34 := exp (-τ.length {3, 4})
+     let X234 := exp (-τ.length {2, 3, 4})
+-    u τ 1 = 1 / 15 * X01 * X34 * X234 ^ 3 + 1 / 3 * X01 * X34 * X234 - 2 / 3 * X01 * X234 - 2 / 3 * X34 + 1 ∧
+-    u τ 2 = 1 / 15 * X01 * X34 * X234 ^ 3 - 1 / 3 * X01 * X34 * X234 + 1 / 3 * X34 ∧
+-    u τ 3 = 1 / 15 * X01 * X34 * X234 ^ 3 - 1 / 3 * X01 * X34 * X234 + 1 / 3 * X34 ∧
+-    u τ 4 = -1 / 10 * X01 * X34 * X234 ^ 3 - 1 / 6 * X01 * X34 * X234 + 1 / 3 * X01 * X234 ∧
+-    u τ 5 = 1 / 15 * X01 * X34 * X234 ^ 3 ∧
+-    u τ 6 = 1 / 15 * X01 * X34 * X234 ^ 3 ∧
+-    u τ 7 = -1 / 10 * X01 * X34 * X234 ^ 3 + 1 / 6 * X01 * X34 * X234 ∧
+-    u τ 8 = 1 / 15 * X01 * X34 * X234 ^ 3 ∧
+-    u τ 9 = 1 / 15 * X01 * X34 * X234 ^ 3 ∧
+-    u τ 10 = -1 / 10 * X01 * X34 * X234 ^ 3 + 1 / 6 * X01 * X34 * X234 ∧
+-    u τ 11 = 1 / 15 * X01 * X34 * X234 ^ 3 ∧
+-    u τ 12 = 1 / 15 * X01 * X34 * X234 ^ 3 ∧
+-    u τ 13 = -1 / 10 * X01 * X34 * X234 ^ 3 - 1 / 6 * X01 * X34 * X234 + 1 / 3 * X01 * X234 ∧
+-    u τ 14 = -1 / 10 * X01 * X34 * X234 ^ 3 + 1 / 6 * X01 * X34 * X234 ∧
+-    u τ 15 = -1 / 10 * X01 * X34 * X234 ^ 3 + 1 / 6 * X01 * X34 * X234 := by
++    ∀ i ∈ Icc 1 15, u τ i =
++      if i = 1 then
++        1 / 15 * X01 * X34 * X234 ^ 3 + 1 / 3 * X01 * X34 * X234 - 2 / 3 * X01 * X234 - 2 / 3 * X34 + 1
++      else if i ∈ ({2, 3} : Finset ℕ) then
++        1 / 15 * X01 * X34 * X234 ^ 3 - 1 / 3 * X01 * X34 * X234 + 1 / 3 * X34
++      else if i ∈ ({4, 13} : Finset ℕ) then
++        -1 / 10 * X01 * X34 * X234 ^ 3 - 1 / 6 * X01 * X34 * X234 + 1 / 3 * X01 * X234
++      else if i ∈ ({7, 10, 14, 15} : Finset ℕ) then
++        -1 / 10 * X01 * X34 * X234 ^ 3 + 1 / 6 * X01 * X34 * X234
++      else 1 / 15 * X01 * X34 * X234 ^ 3 := by
++  let a : List (ℚ × List (ℕ × ℕ)) := [(1 / 15, [(3, 1), (24, 1), (28, 3)])]
++  let b : List (ℚ × List (ℕ × ℕ)) :=
++    [(-1 / 10, [(3, 1), (24, 1), (28, 3)]), (1 / 6, [(3, 1), (24, 1), (28, 1)])]
++  let c : List (ℚ × List (ℕ × ℕ)) := [(-1 / 10, [(3, 1), (24, 1), (28, 3)]),
++    (-1 / 6, [(3, 1), (24, 1), (28, 1)]), (1 / 3, [(3, 1), (28, 1)])]
++  let d : List (ℚ × List (ℕ × ℕ)) := [(1 / 15, [(3, 1), (24, 1), (28, 3)]),
++    (-1 / 3, [(3, 1), (24, 1), (28, 1)]), (1 / 3, [(24, 1)])]
++  dsimp only
++  intro i hi
++  obtain ⟨hi1, hi15⟩ := mem_Icc.1 hi
+   obtain ⟨h1, h2, h3, h4, h5, h6, h7, h8, h9, h10, h11, h12, h13, h14, h15⟩ :=
+     root_u5 τ hτ (.node 31 [.node 3 [.leaf 0, .leaf 1], .node 28 [.node 24 [.leaf 3, .leaf 4], .leaf 2]])
+       (by decide +kernel) rfl (by decide +kernel)
+       (P₁ := [(1 / 15, [(3, 1), (24, 1), (28, 3)]), (1 / 3, [(3, 1), (24, 1), (28, 1)]),
+         (-2 / 3, [(3, 1), (28, 1)]), (-2 / 3, [(24, 1)]), (1, [])])
+-      (P₂ := [(1 / 15, [(3, 1), (24, 1), (28, 3)]), (-1 / 3, [(3, 1), (24, 1), (28, 1)]),
+-        (1 / 3, [(24, 1)])])
+-      (P₃ := [(1 / 15, [(3, 1), (24, 1), (28, 3)]), (-1 / 3, [(3, 1), (24, 1), (28, 1)]),
+-        (1 / 3, [(24, 1)])])
+-      (P₄ := [(-1 / 10, [(3, 1), (24, 1), (28, 3)]), (-1 / 6, [(3, 1), (24, 1), (28, 1)]),
+-        (1 / 3, [(3, 1), (28, 1)])])
+-      (P₅ := [(1 / 15, [(3, 1), (24, 1), (28, 3)])])
+-      (P₆ := [(1 / 15, [(3, 1), (24, 1), (28, 3)])])
+-      (P₇ := [(-1 / 10, [(3, 1), (24, 1), (28, 3)]), (1 / 6, [(3, 1), (24, 1), (28, 1)])])
+-      (P₈ := [(1 / 15, [(3, 1), (24, 1), (28, 3)])])
+-      (P₉ := [(1 / 15, [(3, 1), (24, 1), (28, 3)])])
+-      (P₁₀ := [(-1 / 10, [(3, 1), (24, 1), (28, 3)]), (1 / 6, [(3, 1), (24, 1), (28, 1)])])
+-      (P₁₁ := [(1 / 15, [(3, 1), (24, 1), (28, 3)])])
+-      (P₁₂ := [(1 / 15, [(3, 1), (24, 1), (28, 3)])])
+-      (P₁₃ := [(-1 / 10, [(3, 1), (24, 1), (28, 3)]), (-1 / 6, [(3, 1), (24, 1), (28, 1)]),
+-        (1 / 3, [(3, 1), (28, 1)])])
+-      (P₁₄ := [(-1 / 10, [(3, 1), (24, 1), (28, 3)]), (1 / 6, [(3, 1), (24, 1), (28, 1)])])
+-      (P₁₅ := [(-1 / 10, [(3, 1), (24, 1), (28, 3)]), (1 / 6, [(3, 1), (24, 1), (28, 1)])])
+-  root_finish
++      (P₂ := d) (P₃ := d) (P₄ := c) (P₅ := a) (P₆ := a) (P₇ := b) (P₈ := a)
++      (P₉ := a) (P₁₀ := b) (P₁₁ := a) (P₁₂ := a) (P₁₃ := c) (P₁₄ := b) (P₁₅ := b)
++  interval_cases i <;> simp only [a, b, c, d, mem_insert, mem_singleton, Nat.reduceEqDiff, or_false,
++    or_true, ↓reduceIte] at * <;> root_finish
+ 
+ /-- The rooting `hierarchyOf {{0, 1}, {3, 4}}` of `U5 2`. -/
+ theorem rootingDist5_2_7 (τ : SpeciesTree (Fin 5)) (hτ : τ.clusters = hierarchyOf {{0, 1}, {3, 4}}) :
+@@ -213,24 +193,16 @@ theorem rootingDist5_2_7 (τ : SpeciesTree (Fin 5)) (hτ : τ.clusters = hierarc
+     u τ 13 = -4 / 15 * X01 * X34 + 1 / 3 * X01 ∧
+     u τ 14 = 1 / 15 * X01 * X34 ∧
+     u τ 15 = 1 / 15 * X01 * X34 := by
++  let a : List (ℚ × List (ℕ × ℕ)) := [(1 / 15, [(3, 1), (24, 1)])]
++  let b : List (ℚ × List (ℕ × ℕ)) := [(-4 / 15, [(3, 1), (24, 1)]), (1 / 3, [(24, 1)])]
++  let c : List (ℚ × List (ℕ × ℕ)) := [(-4 / 15, [(3, 1), (24, 1)]), (1 / 3, [(3, 1)])]
+   obtain ⟨h1, h2, h3, h4, h5, h6, h7, h8, h9, h10, h11, h12, h13, h14, h15⟩ :=
+     root_u5 τ hτ (.node 31 [.node 3 [.leaf 0, .leaf 1], .node 24 [.leaf 3, .leaf 4], .leaf 2])
+       (by decide +kernel) rfl (by decide +kernel)
+       (P₁ := [(2 / 5, [(3, 1), (24, 1)]), (-2 / 3, [(3, 1)]), (-2 / 3, [(24, 1)]), (1, [])])
+-      (P₂ := [(-4 / 15, [(3, 1), (24, 1)]), (1 / 3, [(24, 1)])])
+-      (P₃ := [(-4 / 15, [(3, 1), (24, 1)]), (1 / 3, [(24, 1)])])
+-      (P₄ := [(-4 / 15, [(3, 1), (24, 1)]), (1 / 3, [(3, 1)])])
+-      (P₅ := [(1 / 15, [(3, 1), (24, 1)])])
+-      (P₆ := [(1 / 15, [(3, 1), (24, 1)])])
+-      (P₇ := [(1 / 15, [(3, 1), (24, 1)])])
+-      (P₈ := [(1 / 15, [(3, 1), (24, 1)])])
+-      (P₉ := [(1 / 15, [(3, 1), (24, 1)])])
+-      (P₁₀ := [(1 / 15, [(3, 1), (24, 1)])])
+-      (P₁₁ := [(1 / 15, [(3, 1), (24, 1)])])
+-      (P₁₂ := [(1 / 15, [(3, 1), (24, 1)])])
+-      (P₁₃ := [(-4 / 15, [(3, 1), (24, 1)]), (1 / 3, [(3, 1)])])
+-      (P₁₄ := [(1 / 15, [(3, 1), (24, 1)])])
+-      (P₁₅ := [(1 / 15, [(3, 1), (24, 1)])])
++      (P₂ := b) (P₃ := b) (P₄ := c) (P₅ := a) (P₆ := a) (P₇ := a) (P₈ := a)
++      (P₉ := a) (P₁₀ := a) (P₁₁ := a) (P₁₂ := a) (P₁₃ := c) (P₁₄ := a) (P₁₅ := a)
++  simp only [a, b, c] at *
+   root_finish
+ 
+ /-- The rooting `hierarchyOf {{0, 1}, {0, 1, 2}}` of `U5 2`. -/
+@@ -252,565 +224,338 @@ theorem rootingDist5_2_8 (τ : SpeciesTree (Fin 5)) (hτ : τ.clusters = hierarc
+     u τ 13 = 1 / 15 * X01 * X012 ^ 3 - 1 / 3 * X01 * X012 + 1 / 3 * X01 ∧
+     u τ 14 = 1 / 15 * X01 * X012 ^ 3 ∧
+     u τ 15 = 1 / 15 * X01 * X012 ^ 3 := by
++  let a : List (ℚ × List (ℕ × ℕ)) := [(1 / 15, [(3, 1), (7, 3)])]
++  let b : List (ℚ × List (ℕ × ℕ)) :=
++    [(-1 / 10, [(3, 1), (7, 3)]), (1 / 6, [(3, 1), (7, 1)])]
++  let c : List (ℚ × List (ℕ × ℕ)) := [(1 / 15, [(3, 1), (7, 3)]),
++    (-1 / 3, [(3, 1), (7, 1)]), (1 / 3, [(3, 1)])]
++  let d : List (ℚ × List (ℕ × ℕ)) := [(-1 / 10, [(3, 1), (7, 3)]),
++    (-1 / 6, [(3, 1), (7, 1)]), (1 / 3, [(7, 1)])]
+   obtain ⟨h1, h2, h3, h4, h5, h6, h7, h8, h9, h10, h11, h12, h13, h14, h15⟩ :=
+     root_u5 τ hτ (.node 31 [.node 7 [.node 3 [.leaf 0, .leaf 1], .leaf 2], .leaf 3, .leaf 4])
+       (by decide +kernel) rfl (by decide +kernel)
+       (P₁ := [(1 / 15, [(3, 1), (7, 3)]), (1 / 3, [(3, 1), (7, 1)]), (-2 / 3, [(3, 1)]),
+         (-2 / 3, [(7, 1)]), (1, [])])
+-      (P₂ := [(-1 / 10, [(3, 1), (7, 3)]), (-1 / 6, [(3, 1), (7, 1)]), (1 / 3, [(7, 1)])])
+-      (P₃ := [(-1 / 10, [(3, 1), (7, 3)]), (-1 / 6, [(3, 1), (7, 1)]), (1 / 3, [(7, 1)])])
+-      (P₄ := [(1 / 15, [(3, 1), (7, 3)]), (-1 / 3, [(3, 1), (7, 1)]), (1 / 3, [(3, 1)])])
+-      (P₅ := [(-1 / 10, [(3, 1), (7, 3)]), (1 / 6, [(3, 1), (7, 1)])])
+-      (P₆ := [(-1 / 10, [(3, 1), (7, 3)]), (1 / 6, [(3, 1), (7, 1)])])
+-      (P₇ := [(1 / 15, [(3, 1), (7, 3)])])
+-      (P₈ := [(1 / 15, [(3, 1), (7, 3)])])
+-      (P₉ := [(-1 / 10, [(3, 1), (7, 3)]), (1 / 6, [(3, 1), (7, 1)])])
+-      (P₁₀ := [(1 / 15, [(3, 1), (7, 3)])])
+-      (P₁₁ := [(1 / 15, [(3, 1), (7, 3)])])
+-      (P₁₂ := [(-1 / 10, [(3, 1), (7, 3)]), (1 / 6, [(3, 1), (7, 1)])])
+-      (P₁₃ := [(1 / 15, [(3, 1), (7, 3)]), (-1 / 3, [(3, 1), (7, 1)]), (1 / 3, [(3, 1)])])
+-      (P₁₄ := [(1 / 15, [(3, 1), (7, 3)])])
+-      (P₁₅ := [(1 / 15, [(3, 1), (7, 3)])])
++      (P₂ := d) (P₃ := d) (P₄ := c) (P₅ := b) (P₆ := b) (P₇ := a) (P₈ := a)
++      (P₉ := b) (P₁₀ := a) (P₁₁ := a) (P₁₂ := b) (P₁₃ := c) (P₁₄ := a) (P₁₅ := a)
++  simp only [a, b, c, d] at *
+   root_finish
+ 
+ /-- The rooting `hierarchyOf {{3, 4}, {2, 3, 4}}` of `U5 2`. -/
+ theorem rootingDist5_2_9 (τ : SpeciesTree (Fin 5)) (hτ : τ.clusters = hierarchyOf {{3, 4}, {2, 3, 4}}) :
+     let X34 := exp (-τ.length {3, 4})
+     let X234 := exp (-τ.length {2, 3, 4})
+-    u τ 1 = 1 / 15 * X34 * X234 ^ 3 + 1 / 3 * X34 * X234 - 2 / 3 * X34 - 2 / 3 * X234 + 1 ∧
+-    u τ 2 = 1 / 15 * X34 * X234 ^ 3 - 1 / 3 * X34 * X234 + 1 / 3 * X34 ∧
+-    u τ 3 = 1 / 15 * X34 * X234 ^ 3 - 1 / 3 * X34 * X234 + 1 / 3 * X34 ∧
+-    u τ 4 = -1 / 10 * X34 * X234 ^ 3 - 1 / 6 * X34 * X234 + 1 / 3 * X234 ∧
+-    u τ 5 = 1 / 15 * X34 * X234 ^ 3 ∧
+-    u τ 6 = 1 / 15 * X34 * X234 ^ 3 ∧
+-    u τ 7 = -1 / 10 * X34 * X234 ^ 3 + 1 / 6 * X34 * X234 ∧
+-    u τ 8 = 1 / 15 * X34 * X234 ^ 3 ∧
+-    u τ 9 = 1 / 15 * X34 * X234 ^ 3 ∧
+-    u τ 10 = -1 / 10 * X34 * X234 ^ 3 + 1 / 6 * X34 * X234 ∧
+-    u τ 11 = 1 / 15 * X34 * X234 ^ 3 ∧
+-    u τ 12 = 1 / 15 * X34 * X234 ^ 3 ∧
+-    u τ 13 = -1 / 10 * X34 * X234 ^ 3 - 1 / 6 * X34 * X234 + 1 / 3 * X234 ∧
+-    u τ 14 = -1 / 10 * X34 * X234 ^ 3 + 1 / 6 * X34 * X234 ∧
+-    u τ 15 = -1 / 10 * X34 * X234 ^ 3 + 1 / 6 * X34 * X234 := by
++    ∀ i ∈ Icc 1 15, u τ i =
++      if i = 1 then
++        1 / 15 * X34 * X234 ^ 3 + 1 / 3 * X34 * X234 - 2 / 3 * X34 - 2 / 3 * X234 + 1
++      else if i ∈ ({2, 3} : Finset ℕ) then
++        1 / 15 * X34 * X234 ^ 3 - 1 / 3 * X34 * X234 + 1 / 3 * X34
++      else if i ∈ ({4, 13} : Finset ℕ) then
++        -1 / 10 * X34 * X234 ^ 3 - 1 / 6 * X34 * X234 + 1 / 3 * X234
++      else if i ∈ ({7, 10, 14, 15} : Finset ℕ) then
++        -1 / 10 * X34 * X234 ^ 3 + 1 / 6 * X34 * X234
++      else 1 / 15 * X34 * X234 ^ 3 := by
++  let a : List (ℚ × List (ℕ × ℕ)) := [(1 / 15, [(24, 1), (28, 3)])]
++  let b : List (ℚ × List (ℕ × ℕ)) :=
++    [(-1 / 10, [(24, 1), (28, 3)]), (1 / 6, [(24, 1), (28, 1)])]
++  let c : List (ℚ × List (ℕ × ℕ)) := [(-1 / 10, [(24, 1), (28, 3)]),
++    (-1 / 6, [(24, 1), (28, 1)]), (1 / 3, [(28, 1)])]
++  let d : List (ℚ × List (ℕ × ℕ)) := [(1 / 15, [(24, 1), (28, 3)]),
++    (-1 / 3, [(24, 1), (28, 1)]), (1 / 3, [(24, 1)])]
++  dsimp only
++  intro i hi
++  obtain ⟨hi1, hi15⟩ := mem_Icc.1 hi
+   obtain ⟨h1, h2, h3, h4, h5, h6, h7, h8, h9, h10, h11, h12, h13, h14, h15⟩ :=
+     root_u5 τ hτ (.node 31 [.node 28 [.node 24 [.leaf 3, .leaf 4], .leaf 2], .leaf 0, .leaf 1])
+       (by decide +kernel) rfl (by decide +kernel)
+       (P₁ := [(1 / 15, [(24, 1), (28, 3)]), (1 / 3, [(24, 1), (28, 1)]), (-2 / 3, [(24, 1)]),
+         (-2 / 3, [(28, 1)]), (1, [])])
+-      (P₂ := [(1 / 15, [(24, 1), (28, 3)]), (-1 / 3, [(24, 1), (28, 1)]), (1 / 3, [(24, 1)])])
+-      (P₃ := [(1 / 15, [(24, 1), (28, 3)]), (-1 / 3, [(24, 1), (28, 1)]), (1 / 3, [(24, 1)])])
+-      (P₄ := [(-1 / 10, [(24, 1), (28, 3)]), (-1 / 6, [(24, 1), (28, 1)]), (1 / 3, [(28, 1)])])
+-      (P₅ := [(1 / 15, [(24, 1), (28, 3)])])
+-      (P₆ := [(1 / 15, [(24, 1), (28, 3)])])
+-      (P₇ := [(-1 / 10, [(24, 1), (28, 3)]), (1 / 6, [(24, 1), (28, 1)])])
+-      (P₈ := [(1 / 15, [(24, 1), (28, 3)])])
+-      (P₉ := [(1 / 15, [(24, 1), (28, 3)])])
+-      (P₁₀ := [(-1 / 10, [(24, 1), (28, 3)]), (1 / 6, [(24, 1), (28, 1)])])
+-      (P₁₁ := [(1 / 15, [(24, 1), (28, 3)])])
+-      (P₁₂ := [(1 / 15, [(24, 1), (28, 3)])])
+-      (P₁₃ := [(-1 / 10, [(24, 1), (28, 3)]), (-1 / 6, [(24, 1), (28, 1)]), (1 / 3, [(28, 1)])])
+-      (P₁₄ := [(-1 / 10, [(24, 1), (28, 3)]), (1 / 6, [(24, 1), (28, 1)])])
+-      (P₁₅ := [(-1 / 10, [(24, 1), (28, 3)]), (1 / 6, [(24, 1), (28, 1)])])
+-  root_finish
++      (P₂ := d) (P₃ := d) (P₄ := c) (P₅ := a) (P₆ := a) (P₇ := b) (P₈ := a)
++      (P₉ := a) (P₁₀ := b) (P₁₁ := a) (P₁₂ := a) (P₁₃ := c) (P₁₄ := b) (P₁₅ := b)
++  interval_cases i <;> simp only [a, b, c, d, mem_insert, mem_singleton, Nat.reduceEqDiff, or_false,
++    or_true, ↓reduceIte] at * <;> root_finish
+ 
+ /-- The rooting `hierarchyOf {{0, 1}}` of `U5 1`. -/
+ theorem rootingDist5_1_0 (τ : SpeciesTree (Fin 5)) (hτ : τ.clusters = hierarchyOf {{0, 1}}) :
+     let X01 := exp (-τ.length {0, 1})
+-    u τ 1 = -4 / 15 * X01 + 1 / 3 ∧
+-    u τ 2 = -4 / 15 * X01 + 1 / 3 ∧
+-    u τ 3 = -4 / 15 * X01 + 1 / 3 ∧
+-    u τ 4 = 1 / 15 * X01 ∧
+-    u τ 5 = 1 / 15 * X01 ∧
+-    u τ 6 = 1 / 15 * X01 ∧
+-    u τ 7 = 1 / 15 * X01 ∧
+-    u τ 8 = 1 / 15 * X01 ∧
+-    u τ 9 = 1 / 15 * X01 ∧
+-    u τ 10 = 1 / 15 * X01 ∧
+-    u τ 11 = 1 / 15 * X01 ∧
+-    u τ 12 = 1 / 15 * X01 ∧
+-    u τ 13 = 1 / 15 * X01 ∧
+-    u τ 14 = 1 / 15 * X01 ∧
+-    u τ 15 = 1 / 15 * X01 := by
++    ∀ i ∈ Icc 1 15, u τ i = if i ∈ ({1, 2, 3} : Finset ℕ) then -4 / 15 * X01 + 1 / 3
++      else 1 / 15 * X01 := by
++  let a : List (ℚ × List (ℕ × ℕ)) := [(-4 / 15, [(3, 1)]), (1 / 3, [])]
++  let b : List (ℚ × List (ℕ × ℕ)) := [(1 / 15, [(3, 1)])]
++  dsimp only
++  intro i hi
++  obtain ⟨hi1, hi15⟩ := mem_Icc.1 hi
+   obtain ⟨h1, h2, h3, h4, h5, h6, h7, h8, h9, h10, h11, h12, h13, h14, h15⟩ :=
+     root_u5 τ hτ (.node 31 [.node 3 [.leaf 0, .leaf 1], .leaf 2, .leaf 3, .leaf 4])
+       (by decide +kernel) rfl (by decide +kernel)
+-      (P₁ := [(-4 / 15, [(3, 1)]), (1 / 3, [])])
+-      (P₂ := [(-4 / 15, [(3, 1)]), (1 / 3, [])])
+-      (P₃ := [(-4 / 15, [(3, 1)]), (1 / 3, [])])
+-      (P₄ := [(1 / 15, [(3, 1)])])
+-      (P₅ := [(1 / 15, [(3, 1)])])
+-      (P₆ := [(1 / 15, [(3, 1)])])
+-      (P₇ := [(1 / 15, [(3, 1)])])
+-      (P₈ := [(1 / 15, [(3, 1)])])
+-      (P₉ := [(1 / 15, [(3, 1)])])
+-      (P₁₀ := [(1 / 15, [(3, 1)])])
+-      (P₁₁ := [(1 / 15, [(3, 1)])])
+-      (P₁₂ := [(1 / 15, [(3, 1)])])
+-      (P₁₃ := [(1 / 15, [(3, 1)])])
+-      (P₁₄ := [(1 / 15, [(3, 1)])])
+-      (P₁₅ := [(1 / 15, [(3, 1)])])
+-  root_finish
++      (P₁ := a) (P₂ := a) (P₃ := a) (P₄ := b) (P₅ := b) (P₆ := b) (P₇ := b)
++      (P₈ := b) (P₉ := b) (P₁₀ := b) (P₁₁ := b) (P₁₂ := b) (P₁₃ := b) (P₁₄ := b) (P₁₅ := b)
++  interval_cases i <;> simp only [a, b, mem_insert, mem_singleton, Nat.reduceEqDiff, or_false,
++    or_true, ↓reduceIte] at * <;> root_finish
+ 
+ /-- The rooting `hierarchyOf {{2, 3, 4}}` of `U5 1`. -/
+ theorem rootingDist5_1_1 (τ : SpeciesTree (Fin 5)) (hτ : τ.clusters = hierarchyOf {{2, 3, 4}}) :
+     let X234 := exp (-τ.length {2, 3, 4})
+-    u τ 1 = 1 / 15 * X234 ^ 3 - 1 / 3 * X234 + 1 / 3 ∧
+-    u τ 2 = 1 / 15 * X234 ^ 3 - 1 / 3 * X234 + 1 / 3 ∧
+-    u τ 3 = 1 / 15 * X234 ^ 3 - 1 / 3 * X234 + 1 / 3 ∧
+-    u τ 4 = -1 / 10 * X234 ^ 3 + 1 / 6 * X234 ∧
+-    u τ 5 = 1 / 15 * X234 ^ 3 ∧
+-    u τ 6 = 1 / 15 * X234 ^ 3 ∧
+-    u τ 7 = -1 / 10 * X234 ^ 3 + 1 / 6 * X234 ∧
+-    u τ 8 = 1 / 15 * X234 ^ 3 ∧
+-    u τ 9 = 1 / 15 * X234 ^ 3 ∧
+-    u τ 10 = -1 / 10 * X234 ^ 3 + 1 / 6 * X234 ∧
+-    u τ 11 = 1 / 15 * X234 ^ 3 ∧
+-    u τ 12 = 1 / 15 * X234 ^ 3 ∧
+-    u τ 13 = -1 / 10 * X234 ^ 3 + 1 / 6 * X234 ∧
+-    u τ 14 = -1 / 10 * X234 ^ 3 + 1 / 6 * X234 ∧
+-    u τ 15 = -1 / 10 * X234 ^ 3 + 1 / 6 * X234 := by
++    ∀ i ∈ Icc 1 15, u τ i =
++      if i ∈ ({1, 2, 3} : Finset ℕ) then 1 / 15 * X234 ^ 3 - 1 / 3 * X234 + 1 / 3
++      else if i ∈ ({5, 6, 8, 9, 11, 12} : Finset ℕ) then 1 / 15 * X234 ^ 3
++      else -1 / 10 * X234 ^ 3 + 1 / 6 * X234 := by
++  let a : List (ℚ × List (ℕ × ℕ)) := [(1 / 15, [(28, 3)]), (-1 / 3, [(28, 1)]), (1 / 3, [])]
++  let b : List (ℚ × List (ℕ × ℕ)) := [(1 / 15, [(28, 3)])]
++  let c : List (ℚ × List (ℕ × ℕ)) := [(-1 / 10, [(28, 3)]), (1 / 6, [(28, 1)])]
++  dsimp only
++  intro i hi
++  obtain ⟨hi1, hi15⟩ := mem_Icc.1 hi
+   obtain ⟨h1, h2, h3, h4, h5, h6, h7, h8, h9, h10, h11, h12, h13, h14, h15⟩ :=
+     root_u5 τ hτ (.node 31 [.node 28 [.leaf 2, .leaf 3, .leaf 4], .leaf 0, .leaf 1])
+       (by decide +kernel) rfl (by decide +kernel)
+-      (P₁ := [(1 / 15, [(28, 3)]), (-1 / 3, [(28, 1)]), (1 / 3, [])])
+-      (P₂ := [(1 / 15, [(28, 3)]), (-1 / 3, [(28, 1)]), (1 / 3, [])])
+-      (P₃ := [(1 / 15, [(28, 3)]), (-1 / 3, [(28, 1)]), (1 / 3, [])])
+-      (P₄ := [(-1 / 10, [(28, 3)]), (1 / 6, [(28, 1)])])
+-      (P₅ := [(1 / 15, [(28, 3)])])
+-      (P₆ := [(1 / 15, [(28, 3)])])
+-      (P₇ := [(-1 / 10, [(28, 3)]), (1 / 6, [(28, 1)])])
+-      (P₈ := [(1 / 15, [(28, 3)])])
+-      (P₉ := [(1 / 15, [(28, 3)])])
+-      (P₁₀ := [(-1 / 10, [(28, 3)]), (1 / 6, [(28, 1)])])
+-      (P₁₁ := [(1 / 15, [(28, 3)])])
+-      (P₁₂ := [(1 / 15, [(28, 3)])])
+-      (P₁₃ := [(-1 / 10, [(28, 3)]), (1 / 6, [(28, 1)])])
+-      (P₁₄ := [(-1 / 10, [(28, 3)]), (1 / 6, [(28, 1)])])
+-      (P₁₅ := [(-1 / 10, [(28, 3)]), (1 / 6, [(28, 1)])])
+-  root_finish
++      (P₁ := a) (P₂ := a) (P₃ := a) (P₄ := c) (P₅ := b) (P₆ := b) (P₇ := c)
++      (P₈ := b) (P₉ := b) (P₁₀ := c) (P₁₁ := b) (P₁₂ := b) (P₁₃ := c) (P₁₄ := c) (P₁₅ := c)
++  interval_cases i <;> simp only [a, b, c, mem_insert, mem_singleton, Nat.reduceEqDiff, or_false,
++    or_true, ↓reduceIte] at * <;> root_finish
+ 
+ /-- The rooting `hierarchyOf {{0, 1}, {2, 3, 4}}` of `U5 1`. -/
+ theorem rootingDist5_1_2 (τ : SpeciesTree (Fin 5)) (hτ : τ.clusters = hierarchyOf {{0, 1}, {2, 3, 4}}) :
+     let X01 := exp (-τ.length {0, 1})
+     let X234 := exp (-τ.length {2, 3, 4})
+-    u τ 1 = 1 / 15 * X01 * X234 ^ 3 - 1 / 3 * X01 * X234 + 1 / 3 ∧
+-    u τ 2 = 1 / 15 * X01 * X234 ^ 3 - 1 / 3 * X01 * X234 + 1 / 3 ∧
+-    u τ 3 = 1 / 15 * X01 * X234 ^ 3 - 1 / 3 * X01 * X234 + 1 / 3 ∧
+-    u τ 4 = -1 / 10 * X01 * X234 ^ 3 + 1 / 6 * X01 * X234 ∧
+-    u τ 5 = 1 / 15 * X01 * X234 ^ 3 ∧
+-    u τ 6 = 1 / 15 * X01 * X234 ^ 3 ∧
+-    u τ 7 = -1 / 10 * X01 * X234 ^ 3 + 1 / 6 * X01 * X234 ∧
+-    u τ 8 = 1 / 15 * X01 * X234 ^ 3 ∧
+-    u τ 9 = 1 / 15 * X01 * X234 ^ 3 ∧
+-    u τ 10 = -1 / 10 * X01 * X234 ^ 3 + 1 / 6 * X01 * X234 ∧
+-    u τ 11 = 1 / 15 * X01 * X234 ^ 3 ∧
+-    u τ 12 = 1 / 15 * X01 * X234 ^ 3 ∧
+-    u τ 13 = -1 / 10 * X01 * X234 ^ 3 + 1 / 6 * X01 * X234 ∧
+-    u τ 14 = -1 / 10 * X01 * X234 ^ 3 + 1 / 6 * X01 * X234 ∧
+-    u τ 15 = -1 / 10 * X01 * X234 ^ 3 + 1 / 6 * X01 * X234 := by
++    ∀ i ∈ Icc 1 15, u τ i =
++      if i ∈ ({1, 2, 3} : Finset ℕ) then 1 / 15 * X01 * X234 ^ 3 - 1 / 3 * X01 * X234 + 1 / 3
++      else if i ∈ ({5, 6, 8, 9, 11, 12} : Finset ℕ) then 1 / 15 * X01 * X234 ^ 3
++      else -1 / 10 * X01 * X234 ^ 3 + 1 / 6 * X01 * X234 := by
++  let a : List (ℚ × List (ℕ × ℕ)) :=
++    [(1 / 15, [(3, 1), (28, 3)]), (-1 / 3, [(3, 1), (28, 1)]), (1 / 3, [])]
++  let b : List (ℚ × List (ℕ × ℕ)) := [(1 / 15, [(3, 1), (28, 3)])]
++  let c : List (ℚ × List (ℕ × ℕ)) := [(-1 / 10, [(3, 1), (28, 3)]), (1 / 6, [(3, 1), (28, 1)])]
++  dsimp only
++  intro i hi
++  obtain ⟨hi1, hi15⟩ := mem_Icc.1 hi
+   obtain ⟨h1, h2, h3, h4, h5, h6, h7, h8, h9, h10, h11, h12, h13, h14, h15⟩ :=
+     root_u5 τ hτ (.node 31 [.node 3 [.leaf 0, .leaf 1], .node 28 [.leaf 2, .leaf 3, .leaf 4]])
+       (by decide +kernel) rfl (by decide +kernel)
+-      (P₁ := [(1 / 15, [(3, 1), (28, 3)]), (-1 / 3, [(3, 1), (28, 1)]), (1 / 3, [])])
+-      (P₂ := [(1 / 15, [(3, 1), (28, 3)]), (-1 / 3, [(3, 1), (28, 1)]), (1 / 3, [])])
+-      (P₃ := [(1 / 15, [(3, 1), (28, 3)]), (-1 / 3, [(3, 1), (28, 1)]), (1 / 3, [])])
+-      (P₄ := [(-1 / 10, [(3, 1), (28, 3)]), (1 / 6, [(3, 1), (28, 1)])])
+-      (P₅ := [(1 / 15, [(3, 1), (28, 3)])])
+-      (P₆ := [(1 / 15, [(3, 1), (28, 3)])])
+-      (P₇ := [(-1 / 10, [(3, 1), (28, 3)]), (1 / 6, [(3, 1), (28, 1)])])
+-      (P₈ := [(1 / 15, [(3, 1), (28, 3)])])
+-      (P₉ := [(1 / 15, [(3, 1), (28, 3)])])
+-      (P₁₀ := [(-1 / 10, [(3, 1), (28, 3)]), (1 / 6, [(3, 1), (28, 1)])])
+-      (P₁₁ := [(1 / 15, [(3, 1), (28, 3)])])
+-      (P₁₂ := [(1 / 15, [(3, 1), (28, 3)])])
+-      (P₁₃ := [(-1 / 10, [(3, 1), (28, 3)]), (1 / 6, [(3, 1), (28, 1)])])
+-      (P₁₄ := [(-1 / 10, [(3, 1), (28, 3)]), (1 / 6, [(3, 1), (28, 1)])])
+-      (P₁₅ := [(-1 / 10, [(3, 1), (28, 3)]), (1 / 6, [(3, 1), (28, 1)])])
+-  root_finish
++      (P₁ := a) (P₂ := a) (P₃ := a) (P₄ := c) (P₅ := b) (P₆ := b) (P₇ := c)
++      (P₈ := b) (P₉ := b) (P₁₀ := c) (P₁₁ := b) (P₁₂ := b) (P₁₃ := c) (P₁₄ := c) (P₁₅ := c)
++  interval_cases i <;> simp only [a, b, c, mem_insert, mem_singleton, Nat.reduceEqDiff, or_false,
++    or_true, ↓reduceIte] at * <;> root_finish
++
++private abbrev RP := List (ℚ × List (ℕ × ℕ))
++
++private def r9a (c : ℕ) : RP :=
++  [(1 / 90, [(28, 3), (c, 6)]), (1 / 18, [(28, 3)]), (-1 / 3, [(28, 1)]), (1 / 3, [])]
++private def r9b (c : ℕ) : RP := [(1 / 90, [(28, 3), (c, 6)]), (1 / 18, [(28, 3)])]
++private def r9c (c : ℕ) : RP :=
++  [(1 / 90, [(28, 3), (c, 6)]), (-1 / 9, [(28, 3)]), (1 / 6, [(28, 1)])]
++private def r9d (c : ℕ) : RP :=
++  [(-2 / 45, [(28, 3), (c, 6)]), (-1 / 18, [(28, 3)]), (1 / 6, [(28, 1)])]
++
++private def r7a (c : ℕ) : RP :=
++  [(1 / 90, [(3, 1), (c, 6)]), (-5 / 18, [(3, 1)]), (1 / 3, [])]
++private def r7b (c : ℕ) : RP := [(1 / 90, [(3, 1), (c, 6)]), (1 / 18, [(3, 1)])]
++private def r7c (c : ℕ) : RP := [(-2 / 45, [(3, 1), (c, 6)]), (1 / 9, [(3, 1)])]
++private def r7d (c : ℕ) : RP :=
++  [(-2 / 45, [(3, 1), (c, 6)]), (-2 / 9, [(3, 1)]), (1 / 3, [])]
++
++private def r0a (c : ℕ) : RP := [(1 / 90, [(c, 6)]), (1 / 18, [])]
++private def r0b (c : ℕ) : RP := [(-2 / 45, [(c, 6)]), (1 / 9, [])]
++
++macro "root_shared_finish" : tactic => `(tactic| (
++  simp only [r9a, r9b, r9c, r9d, r7a, r7b, r7c, r7d, r0a, r0b, mem_insert,
++    mem_singleton, Nat.reduceEqDiff, or_false, or_true, ↓reduceIte] at *
++  root_finish))
+ 
+ /-- The rooting `hierarchyOf {{2, 3, 4}, {1, 2, 3, 4}}` of `U5 1`. -/
+ theorem rootingDist5_1_3 (τ : SpeciesTree (Fin 5)) (hτ : τ.clusters = hierarchyOf {{2, 3, 4}, {1, 2, 3, 4}}) :
+     let X234 := exp (-τ.length {2, 3, 4})
+     let X1234 := exp (-τ.length {1, 2, 3, 4})
+-    u τ 1 = 1 / 90 * X234 ^ 3 * X1234 ^ 6 + 1 / 18 * X234 ^ 3 - 1 / 3 * X234 + 1 / 3 ∧
+-    u τ 2 = 1 / 90 * X234 ^ 3 * X1234 ^ 6 + 1 / 18 * X234 ^ 3 - 1 / 3 * X234 + 1 / 3 ∧
+-    u τ 3 = 1 / 90 * X234 ^ 3 * X1234 ^ 6 + 1 / 18 * X234 ^ 3 - 1 / 3 * X234 + 1 / 3 ∧
+-    u τ 4 = 1 / 90 * X234 ^ 3 * X1234 ^ 6 - 1 / 9 * X234 ^ 3 + 1 / 6 * X234 ∧
+-    u τ 5 = 1 / 90 * X234 ^ 3 * X1234 ^ 6 + 1 / 18 * X234 ^ 3 ∧
+-    u τ 6 = 1 / 90 * X234 ^ 3 * X1234 ^ 6 + 1 / 18 * X234 ^ 3 ∧
+-    u τ 7 = 1 / 90 * X234 ^ 3 * X1234 ^ 6 - 1 / 9 * X234 ^ 3 + 1 / 6 * X234 ∧
+-    u τ 8 = 1 / 90 * X234 ^ 3 * X1234 ^ 6 + 1 / 18 * X234 ^ 3 ∧
+-    u τ 9 = 1 / 90 * X234 ^ 3 * X1234 ^ 6 + 1 / 18 * X234 ^ 3 ∧
+-    u τ 10 = 1 / 90 * X234 ^ 3 * X1234 ^ 6 - 1 / 9 * X234 ^ 3 + 1 / 6 * X234 ∧
+-    u τ 11 = 1 / 90 * X234 ^ 3 * X1234 ^ 6 + 1 / 18 * X234 ^ 3 ∧
+-    u τ 12 = 1 / 90 * X234 ^ 3 * X1234 ^ 6 + 1 / 18 * X234 ^ 3 ∧
+-    u τ 13 = -2 / 45 * X234 ^ 3 * X1234 ^ 6 - 1 / 18 * X234 ^ 3 + 1 / 6 * X234 ∧
+-    u τ 14 = -2 / 45 * X234 ^ 3 * X1234 ^ 6 - 1 / 18 * X234 ^ 3 + 1 / 6 * X234 ∧
+-    u τ 15 = -2 / 45 * X234 ^ 3 * X1234 ^ 6 - 1 / 18 * X234 ^ 3 + 1 / 6 * X234 := by
++    ∀ i ∈ Icc 1 15, u τ i =
++      if i ∈ ({1, 2, 3} : Finset ℕ) then
++        1 / 90 * X234 ^ 3 * X1234 ^ 6 + 1 / 18 * X234 ^ 3 - 1 / 3 * X234 + 1 / 3
++      else if i ∈ ({4, 7, 10} : Finset ℕ) then
++        1 / 90 * X234 ^ 3 * X1234 ^ 6 - 1 / 9 * X234 ^ 3 + 1 / 6 * X234
++      else if i ∈ ({13, 14, 15} : Finset ℕ) then
++        -2 / 45 * X234 ^ 3 * X1234 ^ 6 - 1 / 18 * X234 ^ 3 + 1 / 6 * X234
++      else 1 / 90 * X234 ^ 3 * X1234 ^ 6 + 1 / 18 * X234 ^ 3 := by
++  dsimp only
++  intro i hi
++  obtain ⟨hi1, hi15⟩ := mem_Icc.1 hi
+   obtain ⟨h1, h2, h3, h4, h5, h6, h7, h8, h9, h10, h11, h12, h13, h14, h15⟩ :=
+     root_u5 τ hτ (.node 31 [.node 30 [.node 28 [.leaf 2, .leaf 3, .leaf 4], .leaf 1], .leaf 0])
+       (by decide +kernel) rfl (by decide +kernel)
+-      (P₁ := [(1 / 90, [(28, 3), (30, 6)]), (1 / 18, [(28, 3)]), (-1 / 3, [(28, 1)]), (1 / 3, [])])
+-      (P₂ := [(1 / 90, [(28, 3), (30, 6)]), (1 / 18, [(28, 3)]), (-1 / 3, [(28, 1)]), (1 / 3, [])])
+-      (P₃ := [(1 / 90, [(28, 3), (30, 6)]), (1 / 18, [(28, 3)]), (-1 / 3, [(28, 1)]), (1 / 3, [])])
+-      (P₄ := [(1 / 90, [(28, 3), (30, 6)]), (-1 / 9, [(28, 3)]), (1 / 6, [(28, 1)])])
+-      (P₅ := [(1 / 90, [(28, 3), (30, 6)]), (1 / 18, [(28, 3)])])
+-      (P₆ := [(1 / 90, [(28, 3), (30, 6)]), (1 / 18, [(28, 3)])])
+-      (P₇ := [(1 / 90, [(28, 3), (30, 6)]), (-1 / 9, [(28, 3)]), (1 / 6, [(28, 1)])])
+-      (P₈ := [(1 / 90, [(28, 3), (30, 6)]), (1 / 18, [(28, 3)])])
+-      (P₉ := [(1 / 90, [(28, 3), (30, 6)]), (1 / 18, [(28, 3)])])
+-      (P₁₀ := [(1 / 90, [(28, 3), (30, 6)]), (-1 / 9, [(28, 3)]), (1 / 6, [(28, 1)])])
+-      (P₁₁ := [(1 / 90, [(28, 3), (30, 6)]), (1 / 18, [(28, 3)])])
+-      (P₁₂ := [(1 / 90, [(28, 3), (30, 6)]), (1 / 18, [(28, 3)])])
+-      (P₁₃ := [(-2 / 45, [(28, 3), (30, 6)]), (-1 / 18, [(28, 3)]), (1 / 6, [(28, 1)])])
+-      (P₁₄ := [(-2 / 45, [(28, 3), (30, 6)]), (-1 / 18, [(28, 3)]), (1 / 6, [(28, 1)])])
+-      (P₁₅ := [(-2 / 45, [(28, 3), (30, 6)]), (-1 / 18, [(28, 3)]), (1 / 6, [(28, 1)])])
+-  root_finish
++      (P₁ := r9a 30) (P₂ := r9a 30) (P₃ := r9a 30) (P₄ := r9c 30)
++      (P₅ := r9b 30) (P₆ := r9b 30) (P₇ := r9c 30) (P₈ := r9b 30)
++      (P₉ := r9b 30) (P₁₀ := r9c 30) (P₁₁ := r9b 30) (P₁₂ := r9b 30)
++      (P₁₃ := r9d 30) (P₁₄ := r9d 30) (P₁₅ := r9d 30)
++  interval_cases i <;> root_shared_finish
+ 
+ /-- The rooting `hierarchyOf {{2, 3, 4}, {0, 2, 3, 4}}` of `U5 1`. -/
+ theorem rootingDist5_1_4 (τ : SpeciesTree (Fin 5)) (hτ : τ.clusters = hierarchyOf {{2, 3, 4}, {0, 2, 3, 4}}) :
+     let X234 := exp (-τ.length {2, 3, 4})
+     let X0234 := exp (-τ.length {0, 2, 3, 4})
+-    u τ 1 = 1 / 90 * X234 ^ 3 * X0234 ^ 6 + 1 / 18 * X234 ^ 3 - 1 / 3 * X234 + 1 / 3 ∧
+-    u τ 2 = 1 / 90 * X234 ^ 3 * X0234 ^ 6 + 1 / 18 * X234 ^ 3 - 1 / 3 * X234 + 1 / 3 ∧
+-    u τ 3 = 1 / 90 * X234 ^ 3 * X0234 ^ 6 + 1 / 18 * X234 ^ 3 - 1 / 3 * X234 + 1 / 3 ∧
+-    u τ 4 = -2 / 45 * X234 ^ 3 * X0234 ^ 6 - 1 / 18 * X234 ^ 3 + 1 / 6 * X234 ∧
+-    u τ 5 = 1 / 90 * X234 ^ 3 * X0234 ^ 6 + 1 / 18 * X234 ^ 3 ∧
+-    u τ 6 = 1 / 90 * X234 ^ 3 * X0234 ^ 6 + 1 / 18 * X234 ^ 3 ∧
+-    u τ 7 = -2 / 45 * X234 ^ 3 * X0234 ^ 6 - 1 / 18 * X234 ^ 3 + 1 / 6 * X234 ∧
+-    u τ 8 = 1 / 90 * X234 ^ 3 * X0234 ^ 6 + 1 / 18 * X234 ^ 3 ∧
+-    u τ 9 = 1 / 90 * X234 ^ 3 * X0234 ^ 6 + 1 / 18 * X234 ^ 3 ∧
+-    u τ 10 = -2 / 45 * X234 ^ 3 * X0234 ^ 6 - 1 / 18 * X234 ^ 3 + 1 / 6 * X234 ∧
+-    u τ 11 = 1 / 90 * X234 ^ 3 * X0234 ^ 6 + 1 / 18 * X234 ^ 3 ∧
+-    u τ 12 = 1 / 90 * X234 ^ 3 * X0234 ^ 6 + 1 / 18 * X234 ^ 3 ∧
+-    u τ 13 = 1 / 90 * X234 ^ 3 * X0234 ^ 6 - 1 / 9 * X234 ^ 3 + 1 / 6 * X234 ∧
+-    u τ 14 = 1 / 90 * X234 ^ 3 * X0234 ^ 6 - 1 / 9 * X234 ^ 3 + 1 / 6 * X234 ∧
+-    u τ 15 = 1 / 90 * X234 ^ 3 * X0234 ^ 6 - 1 / 9 * X234 ^ 3 + 1 / 6 * X234 := by
++    ∀ i ∈ Icc 1 15, u τ i =
++      if i ∈ ({1, 2, 3} : Finset ℕ) then
++        1 / 90 * X234 ^ 3 * X0234 ^ 6 + 1 / 18 * X234 ^ 3 - 1 / 3 * X234 + 1 / 3
++      else if i ∈ ({4, 7, 10} : Finset ℕ) then
++        -2 / 45 * X234 ^ 3 * X0234 ^ 6 - 1 / 18 * X234 ^ 3 + 1 / 6 * X234
++      else if i ∈ ({13, 14, 15} : Finset ℕ) then
++        1 / 90 * X234 ^ 3 * X0234 ^ 6 - 1 / 9 * X234 ^ 3 + 1 / 6 * X234
++      else 1 / 90 * X234 ^ 3 * X0234 ^ 6 + 1 / 18 * X234 ^ 3 := by
++  dsimp only
++  intro i hi
++  obtain ⟨hi1, hi15⟩ := mem_Icc.1 hi
+   obtain ⟨h1, h2, h3, h4, h5, h6, h7, h8, h9, h10, h11, h12, h13, h14, h15⟩ :=
+     root_u5 τ hτ (.node 31 [.node 29 [.node 28 [.leaf 2, .leaf 3, .leaf 4], .leaf 0], .leaf 1])
+       (by decide +kernel) rfl (by decide +kernel)
+-      (P₁ := [(1 / 90, [(28, 3), (29, 6)]), (1 / 18, [(28, 3)]), (-1 / 3, [(28, 1)]), (1 / 3, [])])
+-      (P₂ := [(1 / 90, [(28, 3), (29, 6)]), (1 / 18, [(28, 3)]), (-1 / 3, [(28, 1)]), (1 / 3, [])])
+-      (P₃ := [(1 / 90, [(28, 3), (29, 6)]), (1 / 18, [(28, 3)]), (-1 / 3, [(28, 1)]), (1 / 3, [])])
+-      (P₄ := [(-2 / 45, [(28, 3), (29, 6)]), (-1 / 18, [(28, 3)]), (1 / 6, [(28, 1)])])
+-      (P₅ := [(1 / 90, [(28, 3), (29, 6)]), (1 / 18, [(28, 3)])])
+-      (P₆ := [(1 / 90, [(28, 3), (29, 6)]), (1 / 18, [(28, 3)])])
+-      (P₇ := [(-2 / 45, [(28, 3), (29, 6)]), (-1 / 18, [(28, 3)]), (1 / 6, [(28, 1)])])
+-      (P₈ := [(1 / 90, [(28, 3), (29, 6)]), (1 / 18, [(28, 3)])])
+-      (P₉ := [(1 / 90, [(28, 3), (29, 6)]), (1 / 18, [(28, 3)])])
+-      (P₁₀ := [(-2 / 45, [(28, 3), (29, 6)]), (-1 / 18, [(28, 3)]), (1 / 6, [(28, 1)])])
+-      (P₁₁ := [(1 / 90, [(28, 3), (29, 6)]), (1 / 18, [(28, 3)])])
+-      (P₁₂ := [(1 / 90, [(28, 3), (29, 6)]), (1 / 18, [(28, 3)])])
+-      (P₁₃ := [(1 / 90, [(28, 3), (29, 6)]), (-1 / 9, [(28, 3)]), (1 / 6, [(28, 1)])])
+-      (P₁₄ := [(1 / 90, [(28, 3), (29, 6)]), (-1 / 9, [(28, 3)]), (1 / 6, [(28, 1)])])
+-      (P₁₅ := [(1 / 90, [(28, 3), (29, 6)]), (-1 / 9, [(28, 3)]), (1 / 6, [(28, 1)])])
+-  root_finish
++      (P₁ := r9a 29) (P₂ := r9a 29) (P₃ := r9a 29) (P₄ := r9d 29)
++      (P₅ := r9b 29) (P₆ := r9b 29) (P₇ := r9d 29) (P₈ := r9b 29)
++      (P₉ := r9b 29) (P₁₀ := r9d 29) (P₁₁ := r9b 29) (P₁₂ := r9b 29)
++      (P₁₃ := r9c 29) (P₁₄ := r9c 29) (P₁₅ := r9c 29)
++  interval_cases i <;> root_shared_finish
+ 
+ /-- The rooting `hierarchyOf {{0, 1}, {0, 1, 3, 4}}` of `U5 1`. -/
+ theorem rootingDist5_1_5 (τ : SpeciesTree (Fin 5)) (hτ : τ.clusters = hierarchyOf {{0, 1}, {0, 1, 3, 4}}) :
+     let X01 := exp (-τ.length {0, 1})
+     let X0134 := exp (-τ.length {0, 1, 3, 4})
+-    u τ 1 = -2 / 45 * X01 * X0134 ^ 6 - 2 / 9 * X01 + 1 / 3 ∧
+-    u τ 2 = 1 / 90 * X01 * X0134 ^ 6 - 5 / 18 * X01 + 1 / 3 ∧
+-    u τ 3 = 1 / 90 * X01 * X0134 ^ 6 - 5 / 18 * X01 + 1 / 3 ∧
+-    u τ 4 = 1 / 90 * X01 * X0134 ^ 6 + 1 / 18 * X01 ∧
+-    u τ 5 = 1 / 90 * X01 * X0134 ^ 6 + 1 / 18 * X01 ∧
+-    u τ 6 = 1 / 90 * X01 * X0134 ^ 6 + 1 / 18 * X01 ∧
+-    u τ 7 = 1 / 90 * X01 * X0134 ^ 6 + 1 / 18 * X01 ∧
+-    u τ 8 = -2 / 45 * X01 * X0134 ^ 6 + 1 / 9 * X01 ∧
+-    u τ 9 = 1 / 90 * X01 * X0134 ^ 6 + 1 / 18 * X01 ∧
+-    u τ 10 = 1 / 90 * X01 * X0134 ^ 6 + 1 / 18 * X01 ∧
+-    u τ 11 = -2 / 45 * X01 * X0134 ^ 6 + 1 / 9 * X01 ∧
+-    u τ 12 = 1 / 90 * X01 * X0134 ^ 6 + 1 / 18 * X01 ∧
+-    u τ 13 = 1 / 90 * X01 * X0134 ^ 6 + 1 / 18 * X01 ∧
+-    u τ 14 = 1 / 90 * X01 * X0134 ^ 6 + 1 / 18 * X01 ∧
+-    u τ 15 = 1 / 90 * X01 * X0134 ^ 6 + 1 / 18 * X01 := by
++    ∀ i ∈ Icc 1 15, u τ i =
++      if i = 1 then -2 / 45 * X01 * X0134 ^ 6 - 2 / 9 * X01 + 1 / 3
++      else if i ∈ ({2, 3} : Finset ℕ) then 1 / 90 * X01 * X0134 ^ 6 - 5 / 18 * X01 + 1 / 3
++      else if i ∈ ({8, 11} : Finset ℕ) then -2 / 45 * X01 * X0134 ^ 6 + 1 / 9 * X01
++      else 1 / 90 * X01 * X0134 ^ 6 + 1 / 18 * X01 := by
++  dsimp only
++  intro i hi
++  obtain ⟨hi1, hi15⟩ := mem_Icc.1 hi
+   obtain ⟨h1, h2, h3, h4, h5, h6, h7, h8, h9, h10, h11, h12, h13, h14, h15⟩ :=
+     root_u5 τ hτ (.node 31 [.node 27 [.node 3 [.leaf 0, .leaf 1], .leaf 3, .leaf 4], .leaf 2])
+       (by decide +kernel) rfl (by decide +kernel)
+-      (P₁ := [(-2 / 45, [(3, 1), (27, 6)]), (-2 / 9, [(3, 1)]), (1 / 3, [])])
+-      (P₂ := [(1 / 90, [(3, 1), (27, 6)]), (-5 / 18, [(3, 1)]), (1 / 3, [])])
+-      (P₃ := [(1 / 90, [(3, 1), (27, 6)]), (-5 / 18, [(3, 1)]), (1 / 3, [])])
+-      (P₄ := [(1 / 90, [(3, 1), (27, 6)]), (1 / 18, [(3, 1)])])
+-      (P₅ := [(1 / 90, [(3, 1), (27, 6)]), (1 / 18, [(3, 1)])])
+-      (P₆ := [(1 / 90, [(3, 1), (27, 6)]), (1 / 18, [(3, 1)])])
+-      (P₇ := [(1 / 90, [(3, 1), (27, 6)]), (1 / 18, [(3, 1)])])
+-      (P₈ := [(-2 / 45, [(3, 1), (27, 6)]), (1 / 9, [(3, 1)])])
+-      (P₉ := [(1 / 90, [(3, 1), (27, 6)]), (1 / 18, [(3, 1)])])
+-      (P₁₀ := [(1 / 90, [(3, 1), (27, 6)]), (1 / 18, [(3, 1)])])
+-      (P₁₁ := [(-2 / 45, [(3, 1), (27, 6)]), (1 / 9, [(3, 1)])])
+-      (P₁₂ := [(1 / 90, [(3, 1), (27, 6)]), (1 / 18, [(3, 1)])])
+-      (P₁₃ := [(1 / 90, [(3, 1), (27, 6)]), (1 / 18, [(3, 1)])])
+-      (P₁₄ := [(1 / 90, [(3, 1), (27, 6)]), (1 / 18, [(3, 1)])])
+-      (P₁₅ := [(1 / 90, [(3, 1), (27, 6)]), (1 / 18, [(3, 1)])])
+-  root_finish
++      (P₁ := r7d 27) (P₂ := r7a 27) (P₃ := r7a 27) (P₄ := r7b 27)
++      (P₅ := r7b 27) (P₆ := r7b 27) (P₇ := r7b 27) (P₈ := r7c 27)
++      (P₉ := r7b 27) (P₁₀ := r7b 27) (P₁₁ := r7c 27) (P₁₂ := r7b 27)
++      (P₁₃ := r7b 27) (P₁₄ := r7b 27) (P₁₅ := r7b 27)
++  interval_cases i <;> root_shared_finish
+ 
+ /-- The rooting `hierarchyOf {{0, 1}, {0, 1, 2, 4}}` of `U5 1`. -/
+ theorem rootingDist5_1_6 (τ : SpeciesTree (Fin 5)) (hτ : τ.clusters = hierarchyOf {{0, 1}, {0, 1, 2, 4}}) :
+     let X01 := exp (-τ.length {0, 1})
+     let X0124 := exp (-τ.length {0, 1, 2, 4})
+-    u τ 1 = 1 / 90 * X01 * X0124 ^ 6 - 5 / 18 * X01 + 1 / 3 ∧
+-    u τ 2 = -2 / 45 * X01 * X0124 ^ 6 - 2 / 9 * X01 + 1 / 3 ∧
+-    u τ 3 = 1 / 90 * X01 * X0124 ^ 6 - 5 / 18 * X01 + 1 / 3 ∧
+-    u τ 4 = 1 / 90 * X01 * X0124 ^ 6 + 1 / 18 * X01 ∧
+-    u τ 5 = -2 / 45 * X01 * X0124 ^ 6 + 1 / 9 * X01 ∧
+-    u τ 6 = 1 / 90 * X01 * X0124 ^ 6 + 1 / 18 * X01 ∧
+-    u τ 7 = 1 / 90 * X01 * X0124 ^ 6 + 1 / 18 * X01 ∧
+-    u τ 8 = 1 / 90 * X01 * X0124 ^ 6 + 1 / 18 * X01 ∧
+-    u τ 9 = 1 / 90 * X01 * X0124 ^ 6 + 1 / 18 * X01 ∧
+-    u τ 10 = 1 / 90 * X01 * X0124 ^ 6 + 1 / 18 * X01 ∧
+-    u τ 11 = 1 / 90 * X01 * X0124 ^ 6 + 1 / 18 * X01 ∧
+-    u τ 12 = -2 / 45 * X01 * X0124 ^ 6 + 1 / 9 * X01 ∧
+-    u τ 13 = 1 / 90 * X01 * X0124 ^ 6 + 1 / 18 * X01 ∧
+-    u τ 14 = 1 / 90 * X01 * X0124 ^ 6 + 1 / 18 * X01 ∧
+-    u τ 15 = 1 / 90 * X01 * X0124 ^ 6 + 1 / 18 * X01 := by
++    ∀ i ∈ Icc 1 15, u τ i =
++      if i = 2 then -2 / 45 * X01 * X0124 ^ 6 - 2 / 9 * X01 + 1 / 3
++      else if i ∈ ({1, 3} : Finset ℕ) then 1 / 90 * X01 * X0124 ^ 6 - 5 / 18 * X01 + 1 / 3
++      else if i ∈ ({5, 12} : Finset ℕ) then -2 / 45 * X01 * X0124 ^ 6 + 1 / 9 * X01
++      else 1 / 90 * X01 * X0124 ^ 6 + 1 / 18 * X01 := by
++  dsimp only
++  intro i hi
++  obtain ⟨hi1, hi15⟩ := mem_Icc.1 hi
+   obtain ⟨h1, h2, h3, h4, h5, h6, h7, h8, h9, h10, h11, h12, h13, h14, h15⟩ :=
+     root_u5 τ hτ (.node 31 [.node 23 [.node 3 [.leaf 0, .leaf 1], .leaf 2, .leaf 4], .leaf 3])
+       (by decide +kernel) rfl (by decide +kernel)
+-      (P₁ := [(1 / 90, [(3, 1), (23, 6)]), (-5 / 18, [(3, 1)]), (1 / 3, [])])
+-      (P₂ := [(-2 / 45, [(3, 1), (23, 6)]), (-2 / 9, [(3, 1)]), (1 / 3, [])])
+-      (P₃ := [(1 / 90, [(3, 1), (23, 6)]), (-5 / 18, [(3, 1)]), (1 / 3, [])])
+-      (P₄ := [(1 / 90, [(3, 1), (23, 6)]), (1 / 18, [(3, 1)])])
+-      (P₅ := [(-2 / 45, [(3, 1), (23, 6)]), (1 / 9, [(3, 1)])])
+-      (P₆ := [(1 / 90, [(3, 1), (23, 6)]), (1 / 18, [(3, 1)])])
+-      (P₇ := [(1 / 90, [(3, 1), (23, 6)]), (1 / 18, [(3, 1)])])
+-      (P₈ := [(1 / 90, [(3, 1), (23, 6)]), (1 / 18, [(3, 1)])])
+-      (P₉ := [(1 / 90, [(3, 1), (23, 6)]), (1 / 18, [(3, 1)])])
+-      (P₁₀ := [(1 / 90, [(3, 1), (23, 6)]), (1 / 18, [(3, 1)])])
+-      (P₁₁ := [(1 / 90, [(3, 1), (23, 6)]), (1 / 18, [(3, 1)])])
+-      (P₁₂ := [(-2 / 45, [(3, 1), (23, 6)]), (1 / 9, [(3, 1)])])
+-      (P₁₃ := [(1 / 90, [(3, 1), (23, 6)]), (1 / 18, [(3, 1)])])
+-      (P₁₄ := [(1 / 90, [(3, 1), (23, 6)]), (1 / 18, [(3, 1)])])
+-      (P₁₅ := [(1 / 90, [(3, 1), (23, 6)]), (1 / 18, [(3, 1)])])
+-  root_finish
++      (P₁ := r7a 23) (P₂ := r7d 23) (P₃ := r7a 23) (P₄ := r7b 23)
++      (P₅ := r7c 23) (P₆ := r7b 23) (P₇ := r7b 23) (P₈ := r7b 23)
++      (P₉ := r7b 23) (P₁₀ := r7b 23) (P₁₁ := r7b 23) (P₁₂ := r7c 23)
++      (P₁₃ := r7b 23) (P₁₄ := r7b 23) (P₁₅ := r7b 23)
++  interval_cases i <;> root_shared_finish
+ 
+ /-- The rooting `hierarchyOf {{0, 1}, {0, 1, 2, 3}}` of `U5 1`. -/
+ theorem rootingDist5_1_7 (τ : SpeciesTree (Fin 5)) (hτ : τ.clusters = hierarchyOf {{0, 1}, {0, 1, 2, 3}}) :
+     let X01 := exp (-τ.length {0, 1})
+     let X0123 := exp (-τ.length {0, 1, 2, 3})
+-    u τ 1 = 1 / 90 * X01 * X0123 ^ 6 - 5 / 18 * X01 + 1 / 3 ∧
+-    u τ 2 = 1 / 90 * X01 * X0123 ^ 6 - 5 / 18 * X01 + 1 / 3 ∧
+-    u τ 3 = -2 / 45 * X01 * X0123 ^ 6 - 2 / 9 * X01 + 1 / 3 ∧
+-    u τ 4 = 1 / 90 * X01 * X0123 ^ 6 + 1 / 18 * X01 ∧
+-    u τ 5 = 1 / 90 * X01 * X0123 ^ 6 + 1 / 18 * X01 ∧
+-    u τ 6 = -2 / 45 * X01 * X0123 ^ 6 + 1 / 9 * X01 ∧
+-    u τ 7 = 1 / 90 * X01 * X0123 ^ 6 + 1 / 18 * X01 ∧
+-    u τ 8 = 1 / 90 * X01 * X0123 ^ 6 + 1 / 18 * X01 ∧
+-    u τ 9 = -2 / 45 * X01 * X0123 ^ 6 + 1 / 9 * X01 ∧
+-    u τ 10 = 1 / 90 * X01 * X0123 ^ 6 + 1 / 18 * X01 ∧
+-    u τ 11 = 1 / 90 * X01 * X0123 ^ 6 + 1 / 18 * X01 ∧
+-    u τ 12 = 1 / 90 * X01 * X0123 ^ 6 + 1 / 18 * X01 ∧
+-    u τ 13 = 1 / 90 * X01 * X0123 ^ 6 + 1 / 18 * X01 ∧
+-    u τ 14 = 1 / 90 * X01 * X0123 ^ 6 + 1 / 18 * X01 ∧
+-    u τ 15 = 1 / 90 * X01 * X0123 ^ 6 + 1 / 18 * X01 := by
++    ∀ i ∈ Icc 1 15, u τ i =
++      if i = 3 then -2 / 45 * X01 * X0123 ^ 6 - 2 / 9 * X01 + 1 / 3
++      else if i ∈ ({1, 2} : Finset ℕ) then 1 / 90 * X01 * X0123 ^ 6 - 5 / 18 * X01 + 1 / 3
++      else if i ∈ ({6, 9} : Finset ℕ) then -2 / 45 * X01 * X0123 ^ 6 + 1 / 9 * X01
++      else 1 / 90 * X01 * X0123 ^ 6 + 1 / 18 * X01 := by
++  dsimp only
++  intro i hi
++  obtain ⟨hi1, hi15⟩ := mem_Icc.1 hi
+   obtain ⟨h1, h2, h3, h4, h5, h6, h7, h8, h9, h10, h11, h12, h13, h14, h15⟩ :=
+     root_u5 τ hτ (.node 31 [.node 15 [.node 3 [.leaf 0, .leaf 1], .leaf 2, .leaf 3], .leaf 4])
+       (by decide +kernel) rfl (by decide +kernel)
+-      (P₁ := [(1 / 90, [(3, 1), (15, 6)]), (-5 / 18, [(3, 1)]), (1 / 3, [])])
+-      (P₂ := [(1 / 90, [(3, 1), (15, 6)]), (-5 / 18, [(3, 1)]), (1 / 3, [])])
+-      (P₃ := [(-2 / 45, [(3, 1), (15, 6)]), (-2 / 9, [(3, 1)]), (1 / 3, [])])
+-      (P₄ := [(1 / 90, [(3, 1), (15, 6)]), (1 / 18, [(3, 1)])])
+-      (P₅ := [(1 / 90, [(3, 1), (15, 6)]), (1 / 18, [(3, 1)])])
+-      (P₆ := [(-2 / 45, [(3, 1), (15, 6)]), (1 / 9, [(3, 1)])])
+-      (P₇ := [(1 / 90, [(3, 1), (15, 6)]), (1 / 18, [(3, 1)])])
+-      (P₈ := [(1 / 90, [(3, 1), (15, 6)]), (1 / 18, [(3, 1)])])
+-      (P₉ := [(-2 / 45, [(3, 1), (15, 6)]), (1 / 9, [(3, 1)])])
+-      (P₁₀ := [(1 / 90, [(3, 1), (15, 6)]), (1 / 18, [(3, 1)])])
+-      (P₁₁ := [(1 / 90, [(3, 1), (15, 6)]), (1 / 18, [(3, 1)])])
+-      (P₁₂ := [(1 / 90, [(3, 1), (15, 6)]), (1 / 18, [(3, 1)])])
+-      (P₁₃ := [(1 / 90, [(3, 1), (15, 6)]), (1 / 18, [(3, 1)])])
+-      (P₁₄ := [(1 / 90, [(3, 1), (15, 6)]), (1 / 18, [(3, 1)])])
+-      (P₁₅ := [(1 / 90, [(3, 1), (15, 6)]), (1 / 18, [(3, 1)])])
+-  root_finish
++      (P₁ := r7a 15) (P₂ := r7a 15) (P₃ := r7d 15) (P₄ := r7b 15)
++      (P₅ := r7b 15) (P₆ := r7c 15) (P₇ := r7b 15) (P₈ := r7b 15)
++      (P₉ := r7c 15) (P₁₀ := r7b 15) (P₁₁ := r7b 15) (P₁₂ := r7b 15)
++      (P₁₃ := r7b 15) (P₁₄ := r7b 15) (P₁₅ := r7b 15)
++  interval_cases i <;> root_shared_finish
+ 
+ /-- The rooting `hierarchyOf {{1, 2, 3, 4}}` of `U5 0`. -/
+ theorem rootingDist5_0_1 (τ : SpeciesTree (Fin 5)) (hτ : τ.clusters = hierarchyOf {{1, 2, 3, 4}}) :
+     let X1234 := exp (-τ.length {1, 2, 3, 4})
+-    u τ 1 = 1 / 90 * X1234 ^ 6 + 1 / 18 ∧
+-    u τ 2 = 1 / 90 * X1234 ^ 6 + 1 / 18 ∧
+-    u τ 3 = 1 / 90 * X1234 ^ 6 + 1 / 18 ∧
+-    u τ 4 = 1 / 90 * X1234 ^ 6 + 1 / 18 ∧
+-    u τ 5 = 1 / 90 * X1234 ^ 6 + 1 / 18 ∧
+-    u τ 6 = 1 / 90 * X1234 ^ 6 + 1 / 18 ∧
+-    u τ 7 = 1 / 90 * X1234 ^ 6 + 1 / 18 ∧
+-    u τ 8 = 1 / 90 * X1234 ^ 6 + 1 / 18 ∧
+-    u τ 9 = 1 / 90 * X1234 ^ 6 + 1 / 18 ∧
+-    u τ 10 = 1 / 90 * X1234 ^ 6 + 1 / 18 ∧
+-    u τ 11 = 1 / 90 * X1234 ^ 6 + 1 / 18 ∧
+-    u τ 12 = 1 / 90 * X1234 ^ 6 + 1 / 18 ∧
+-    u τ 13 = -2 / 45 * X1234 ^ 6 + 1 / 9 ∧
+-    u τ 14 = -2 / 45 * X1234 ^ 6 + 1 / 9 ∧
+-    u τ 15 = -2 / 45 * X1234 ^ 6 + 1 / 9 := by
++    ∀ i ∈ Icc 1 15, u τ i = if i ∈ ({13, 14, 15} : Finset ℕ) then
++      -2 / 45 * X1234 ^ 6 + 1 / 9 else 1 / 90 * X1234 ^ 6 + 1 / 18 := by
++  dsimp only
++  intro i hi
++  obtain ⟨hi1, hi15⟩ := mem_Icc.1 hi
+   obtain ⟨h1, h2, h3, h4, h5, h6, h7, h8, h9, h10, h11, h12, h13, h14, h15⟩ :=
+     root_u5 τ hτ (.node 31 [.node 30 [.leaf 1, .leaf 2, .leaf 3, .leaf 4], .leaf 0])
+       (by decide +kernel) rfl (by decide +kernel)
+-      (P₁ := [(1 / 90, [(30, 6)]), (1 / 18, [])])
+-      (P₂ := [(1 / 90, [(30, 6)]), (1 / 18, [])])
+-      (P₃ := [(1 / 90, [(30, 6)]), (1 / 18, [])])
+-      (P₄ := [(1 / 90, [(30, 6)]), (1 / 18, [])])
+-      (P₅ := [(1 / 90, [(30, 6)]), (1 / 18, [])])
+-      (P₆ := [(1 / 90, [(30, 6)]), (1 / 18, [])])
+-      (P₇ := [(1 / 90, [(30, 6)]), (1 / 18, [])])
+-      (P₈ := [(1 / 90, [(30, 6)]), (1 / 18, [])])
+-      (P₉ := [(1 / 90, [(30, 6)]), (1 / 18, [])])
+-      (P₁₀ := [(1 / 90, [(30, 6)]), (1 / 18, [])])
+-      (P₁₁ := [(1 / 90, [(30, 6)]), (1 / 18, [])])
+-      (P₁₂ := [(1 / 90, [(30, 6)]), (1 / 18, [])])
+-      (P₁₃ := [(-2 / 45, [(30, 6)]), (1 / 9, [])])
+-      (P₁₄ := [(-2 / 45, [(30, 6)]), (1 / 9, [])])
+-      (P₁₅ := [(-2 / 45, [(30, 6)]), (1 / 9, [])])
+-  root_finish
++      (P₁ := r0a 30) (P₂ := r0a 30) (P₃ := r0a 30) (P₄ := r0a 30)
++      (P₅ := r0a 30) (P₆ := r0a 30) (P₇ := r0a 30) (P₈ := r0a 30)
++      (P₉ := r0a 30) (P₁₀ := r0a 30) (P₁₁ := r0a 30) (P₁₂ := r0a 30)
++      (P₁₃ := r0b 30) (P₁₄ := r0b 30) (P₁₅ := r0b 30)
++  interval_cases i <;> root_shared_finish
+ 
+ /-- The rooting `hierarchyOf {{0, 2, 3, 4}}` of `U5 0`. -/
+ theorem rootingDist5_0_2 (τ : SpeciesTree (Fin 5)) (hτ : τ.clusters = hierarchyOf {{0, 2, 3, 4}}) :
+     let X0234 := exp (-τ.length {0, 2, 3, 4})
+-    u τ 1 = 1 / 90 * X0234 ^ 6 + 1 / 18 ∧
+-    u τ 2 = 1 / 90 * X0234 ^ 6 + 1 / 18 ∧
+-    u τ 3 = 1 / 90 * X0234 ^ 6 + 1 / 18 ∧
+-    u τ 4 = -2 / 45 * X0234 ^ 6 + 1 / 9 ∧
+-    u τ 5 = 1 / 90 * X0234 ^ 6 + 1 / 18 ∧
+-    u τ 6 = 1 / 90 * X0234 ^ 6 + 1 / 18 ∧
+-    u τ 7 = -2 / 45 * X0234 ^ 6 + 1 / 9 ∧
+-    u τ 8 = 1 / 90 * X0234 ^ 6 + 1 / 18 ∧
+-    u τ 9 = 1 / 90 * X0234 ^ 6 + 1 / 18 ∧
+-    u τ 10 = -2 / 45 * X0234 ^ 6 + 1 / 9 ∧
+-    u τ 11 = 1 / 90 * X0234 ^ 6 + 1 / 18 ∧
+-    u τ 12 = 1 / 90 * X0234 ^ 6 + 1 / 18 ∧
+-    u τ 13 = 1 / 90 * X0234 ^ 6 + 1 / 18 ∧
+-    u τ 14 = 1 / 90 * X0234 ^ 6 + 1 / 18 ∧
+-    u τ 15 = 1 / 90 * X0234 ^ 6 + 1 / 18 := by
++    ∀ i ∈ Icc 1 15, u τ i = if i ∈ ({4, 7, 10} : Finset ℕ) then
++      -2 / 45 * X0234 ^ 6 + 1 / 9 else 1 / 90 * X0234 ^ 6 + 1 / 18 := by
++  dsimp only
++  intro i hi
++  obtain ⟨hi1, hi15⟩ := mem_Icc.1 hi
+   obtain ⟨h1, h2, h3, h4, h5, h6, h7, h8, h9, h10, h11, h12, h13, h14, h15⟩ :=
+     root_u5 τ hτ (.node 31 [.node 29 [.leaf 0, .leaf 2, .leaf 3, .leaf 4], .leaf 1])
+       (by decide +kernel) rfl (by decide +kernel)
+-      (P₁ := [(1 / 90, [(29, 6)]), (1 / 18, [])])
+-      (P₂ := [(1 / 90, [(29, 6)]), (1 / 18, [])])
+-      (P₃ := [(1 / 90, [(29, 6)]), (1 / 18, [])])
+-      (P₄ := [(-2 / 45, [(29, 6)]), (1 / 9, [])])
+-      (P₅ := [(1 / 90, [(29, 6)]), (1 / 18, [])])
+-      (P₆ := [(1 / 90, [(29, 6)]), (1 / 18, [])])
+-      (P₇ := [(-2 / 45, [(29, 6)]), (1 / 9, [])])
+-      (P₈ := [(1 / 90, [(29, 6)]), (1 / 18, [])])
+-      (P₉ := [(1 / 90, [(29, 6)]), (1 / 18, [])])
+-      (P₁₀ := [(-2 / 45, [(29, 6)]), (1 / 9, [])])
+-      (P₁₁ := [(1 / 90, [(29, 6)]), (1 / 18, [])])
+-      (P₁₂ := [(1 / 90, [(29, 6)]), (1 / 18, [])])
+-      (P₁₃ := [(1 / 90, [(29, 6)]), (1 / 18, [])])
+-      (P₁₄ := [(1 / 90, [(29, 6)]), (1 / 18, [])])
+-      (P₁₅ := [(1 / 90, [(29, 6)]), (1 / 18, [])])
+-  root_finish
++      (P₁ := r0a 29) (P₂ := r0a 29) (P₃ := r0a 29) (P₄ := r0b 29)
++      (P₅ := r0a 29) (P₆ := r0a 29) (P₇ := r0b 29) (P₈ := r0a 29)
++      (P₉ := r0a 29) (P₁₀ := r0b 29) (P₁₁ := r0a 29) (P₁₂ := r0a 29)
++      (P₁₃ := r0a 29) (P₁₄ := r0a 29) (P₁₅ := r0a 29)
++  interval_cases i <;> root_shared_finish
+ 
+ /-- The rooting `hierarchyOf {{0, 1, 3, 4}}` of `U5 0`. -/
+ theorem rootingDist5_0_3 (τ : SpeciesTree (Fin 5)) (hτ : τ.clusters = hierarchyOf {{0, 1, 3, 4}}) :
+     let X0134 := exp (-τ.length {0, 1, 3, 4})
+-    u τ 1 = -2 / 45 * X0134 ^ 6 + 1 / 9 ∧
+-    u τ 2 = 1 / 90 * X0134 ^ 6 + 1 / 18 ∧
+-    u τ 3 = 1 / 90 * X0134 ^ 6 + 1 / 18 ∧
+-    u τ 4 = 1 / 90 * X0134 ^ 6 + 1 / 18 ∧
+-    u τ 5 = 1 / 90 * X0134 ^ 6 + 1 / 18 ∧
+-    u τ 6 = 1 / 90 * X0134 ^ 6 + 1 / 18 ∧
+-    u τ 7 = 1 / 90 * X0134 ^ 6 + 1 / 18 ∧
+-    u τ 8 = -2 / 45 * X0134 ^ 6 + 1 / 9 ∧
+-    u τ 9 = 1 / 90 * X0134 ^ 6 + 1 / 18 ∧
+-    u τ 10 = 1 / 90 * X0134 ^ 6 + 1 / 18 ∧
+-    u τ 11 = -2 / 45 * X0134 ^ 6 + 1 / 9 ∧
+-    u τ 12 = 1 / 90 * X0134 ^ 6 + 1 / 18 ∧
+-    u τ 13 = 1 / 90 * X0134 ^ 6 + 1 / 18 ∧
+-    u τ 14 = 1 / 90 * X0134 ^ 6 + 1 / 18 ∧
+-    u τ 15 = 1 / 90 * X0134 ^ 6 + 1 / 18 := by
++    ∀ i ∈ Icc 1 15, u τ i = if i ∈ ({1, 8, 11} : Finset ℕ) then
++      -2 / 45 * X0134 ^ 6 + 1 / 9 else 1 / 90 * X0134 ^ 6 + 1 / 18 := by
++  dsimp only
++  intro i hi
++  obtain ⟨hi1, hi15⟩ := mem_Icc.1 hi
+   obtain ⟨h1, h2, h3, h4, h5, h6, h7, h8, h9, h10, h11, h12, h13, h14, h15⟩ :=
+     root_u5 τ hτ (.node 31 [.node 27 [.leaf 0, .leaf 1, .leaf 3, .leaf 4], .leaf 2])
+       (by decide +kernel) rfl (by decide +kernel)
+-      (P₁ := [(-2 / 45, [(27, 6)]), (1 / 9, [])])
+-      (P₂ := [(1 / 90, [(27, 6)]), (1 / 18, [])])
+-      (P₃ := [(1 / 90, [(27, 6)]), (1 / 18, [])])
+-      (P₄ := [(1 / 90, [(27, 6)]), (1 / 18, [])])
+-      (P₅ := [(1 / 90, [(27, 6)]), (1 / 18, [])])
+-      (P₆ := [(1 / 90, [(27, 6)]), (1 / 18, [])])
+-      (P₇ := [(1 / 90, [(27, 6)]), (1 / 18, [])])
+-      (P₈ := [(-2 / 45, [(27, 6)]), (1 / 9, [])])
+-      (P₉ := [(1 / 90, [(27, 6)]), (1 / 18, [])])
+-      (P₁₀ := [(1 / 90, [(27, 6)]), (1 / 18, [])])
+-      (P₁₁ := [(-2 / 45, [(27, 6)]), (1 / 9, [])])
+-      (P₁₂ := [(1 / 90, [(27, 6)]), (1 / 18, [])])
+-      (P₁₃ := [(1 / 90, [(27, 6)]), (1 / 18, [])])
+-      (P₁₄ := [(1 / 90, [(27, 6)]), (1 / 18, [])])
+-      (P₁₅ := [(1 / 90, [(27, 6)]), (1 / 18, [])])
+-  root_finish
++      (P₁ := r0b 27) (P₂ := r0a 27) (P₃ := r0a 27) (P₄ := r0a 27)
++      (P₅ := r0a 27) (P₆ := r0a 27) (P₇ := r0a 27) (P₈ := r0b 27)
++      (P₉ := r0a 27) (P₁₀ := r0a 27) (P₁₁ := r0b 27) (P₁₂ := r0a 27)
++      (P₁₃ := r0a 27) (P₁₄ := r0a 27) (P₁₅ := r0a 27)
++  interval_cases i <;> root_shared_finish
+ 
+ /-- The rooting `hierarchyOf {{0, 1, 2, 4}}` of `U5 0`. -/
+ theorem rootingDist5_0_4 (τ : SpeciesTree (Fin 5)) (hτ : τ.clusters = hierarchyOf {{0, 1, 2, 4}}) :
+     let X0124 := exp (-τ.length {0, 1, 2, 4})
+-    u τ 1 = 1 / 90 * X0124 ^ 6 + 1 / 18 ∧
+-    u τ 2 = -2 / 45 * X0124 ^ 6 + 1 / 9 ∧
+-    u τ 3 = 1 / 90 * X0124 ^ 6 + 1 / 18 ∧
+-    u τ 4 = 1 / 90 * X0124 ^ 6 + 1 / 18 ∧
+-    u τ 5 = -2 / 45 * X0124 ^ 6 + 1 / 9 ∧
+-    u τ 6 = 1 / 90 * X0124 ^ 6 + 1 / 18 ∧
+-    u τ 7 = 1 / 90 * X0124 ^ 6 + 1 / 18 ∧
+-    u τ 8 = 1 / 90 * X0124 ^ 6 + 1 / 18 ∧
+-    u τ 9 = 1 / 90 * X0124 ^ 6 + 1 / 18 ∧
+-    u τ 10 = 1 / 90 * X0124 ^ 6 + 1 / 18 ∧
+-    u τ 11 = 1 / 90 * X0124 ^ 6 + 1 / 18 ∧
+-    u τ 12 = -2 / 45 * X0124 ^ 6 + 1 / 9 ∧
+-    u τ 13 = 1 / 90 * X0124 ^ 6 + 1 / 18 ∧
+-    u τ 14 = 1 / 90 * X0124 ^ 6 + 1 / 18 ∧
+-    u τ 15 = 1 / 90 * X0124 ^ 6 + 1 / 18 := by
++    ∀ i ∈ Icc 1 15, u τ i = if i ∈ ({2, 5, 12} : Finset ℕ) then
++      -2 / 45 * X0124 ^ 6 + 1 / 9 else 1 / 90 * X0124 ^ 6 + 1 / 18 := by
++  dsimp only
++  intro i hi
++  obtain ⟨hi1, hi15⟩ := mem_Icc.1 hi
+   obtain ⟨h1, h2, h3, h4, h5, h6, h7, h8, h9, h10, h11, h12, h13, h14, h15⟩ :=
+     root_u5 τ hτ (.node 31 [.node 23 [.leaf 0, .leaf 1, .leaf 2, .leaf 4], .leaf 3])
+       (by decide +kernel) rfl (by decide +kernel)
+-      (P₁ := [(1 / 90, [(23, 6)]), (1 / 18, [])])
+-      (P₂ := [(-2 / 45, [(23, 6)]), (1 / 9, [])])
+-      (P₃ := [(1 / 90, [(23, 6)]), (1 / 18, [])])
+-      (P₄ := [(1 / 90, [(23, 6)]), (1 / 18, [])])
+-      (P₅ := [(-2 / 45, [(23, 6)]), (1 / 9, [])])
+-      (P₆ := [(1 / 90, [(23, 6)]), (1 / 18, [])])
+-      (P₇ := [(1 / 90, [(23, 6)]), (1 / 18, [])])
+-      (P₈ := [(1 / 90, [(23, 6)]), (1 / 18, [])])
+-      (P₉ := [(1 / 90, [(23, 6)]), (1 / 18, [])])
+-      (P₁₀ := [(1 / 90, [(23, 6)]), (1 / 18, [])])
+-      (P₁₁ := [(1 / 90, [(23, 6)]), (1 / 18, [])])
+-      (P₁₂ := [(-2 / 45, [(23, 6)]), (1 / 9, [])])
+-      (P₁₃ := [(1 / 90, [(23, 6)]), (1 / 18, [])])
+-      (P₁₄ := [(1 / 90, [(23, 6)]), (1 / 18, [])])
+-      (P₁₅ := [(1 / 90, [(23, 6)]), (1 / 18, [])])
+-  root_finish
++      (P₁ := r0a 23) (P₂ := r0b 23) (P₃ := r0a 23) (P₄ := r0a 23)
++      (P₅ := r0b 23) (P₆ := r0a 23) (P₇ := r0a 23) (P₈ := r0a 23)
++      (P₉ := r0a 23) (P₁₀ := r0a 23) (P₁₁ := r0a 23) (P₁₂ := r0b 23)
++      (P₁₃ := r0a 23) (P₁₄ := r0a 23) (P₁₅ := r0a 23)
++  interval_cases i <;> root_shared_finish
+ 
+ /-- The rooting `hierarchyOf {{0, 1, 2, 3}}` of `U5 0`. -/
+ theorem rootingDist5_0_5 (τ : SpeciesTree (Fin 5)) (hτ : τ.clusters = hierarchyOf {{0, 1, 2, 3}}) :
+     let X0123 := exp (-τ.length {0, 1, 2, 3})
+-    u τ 1 = 1 / 90 * X0123 ^ 6 + 1 / 18 ∧
+-    u τ 2 = 1 / 90 * X0123 ^ 6 + 1 / 18 ∧
+-    u τ 3 = -2 / 45 * X0123 ^ 6 + 1 / 9 ∧
+-    u τ 4 = 1 / 90 * X0123 ^ 6 + 1 / 18 ∧
+-    u τ 5 = 1 / 90 * X0123 ^ 6 + 1 / 18 ∧
+-    u τ 6 = -2 / 45 * X0123 ^ 6 + 1 / 9 ∧
+-    u τ 7 = 1 / 90 * X0123 ^ 6 + 1 / 18 ∧
+-    u τ 8 = 1 / 90 * X0123 ^ 6 + 1 / 18 ∧
+-    u τ 9 = -2 / 45 * X0123 ^ 6 + 1 / 9 ∧
+-    u τ 10 = 1 / 90 * X0123 ^ 6 + 1 / 18 ∧
+-    u τ 11 = 1 / 90 * X0123 ^ 6 + 1 / 18 ∧
+-    u τ 12 = 1 / 90 * X0123 ^ 6 + 1 / 18 ∧
+-    u τ 13 = 1 / 90 * X0123 ^ 6 + 1 / 18 ∧
+-    u τ 14 = 1 / 90 * X0123 ^ 6 + 1 / 18 ∧
+-    u τ 15 = 1 / 90 * X0123 ^ 6 + 1 / 18 := by
++    ∀ i ∈ Icc 1 15, u τ i = if i ∈ ({3, 6, 9} : Finset ℕ) then
++      -2 / 45 * X0123 ^ 6 + 1 / 9 else 1 / 90 * X0123 ^ 6 + 1 / 18 := by
++  dsimp only
++  intro i hi
++  obtain ⟨hi1, hi15⟩ := mem_Icc.1 hi
+   obtain ⟨h1, h2, h3, h4, h5, h6, h7, h8, h9, h10, h11, h12, h13, h14, h15⟩ :=
+     root_u5 τ hτ (.node 31 [.node 15 [.leaf 0, .leaf 1, .leaf 2, .leaf 3], .leaf 4])
+       (by decide +kernel) rfl (by decide +kernel)
+-      (P₁ := [(1 / 90, [(15, 6)]), (1 / 18, [])])
+-      (P₂ := [(1 / 90, [(15, 6)]), (1 / 18, [])])
+-      (P₃ := [(-2 / 45, [(15, 6)]), (1 / 9, [])])
+-      (P₄ := [(1 / 90, [(15, 6)]), (1 / 18, [])])
+-      (P₅ := [(1 / 90, [(15, 6)]), (1 / 18, [])])
+-      (P₆ := [(-2 / 45, [(15, 6)]), (1 / 9, [])])
+-      (P₇ := [(1 / 90, [(15, 6)]), (1 / 18, [])])
+-      (P₈ := [(1 / 90, [(15, 6)]), (1 / 18, [])])
+-      (P₉ := [(-2 / 45, [(15, 6)]), (1 / 9, [])])
+-      (P₁₀ := [(1 / 90, [(15, 6)]), (1 / 18, [])])
+-      (P₁₁ := [(1 / 90, [(15, 6)]), (1 / 18, [])])
+-      (P₁₂ := [(1 / 90, [(15, 6)]), (1 / 18, [])])
+-      (P₁₃ := [(1 / 90, [(15, 6)]), (1 / 18, [])])
+-      (P₁₄ := [(1 / 90, [(15, 6)]), (1 / 18, [])])
+-      (P₁₅ := [(1 / 90, [(15, 6)]), (1 / 18, [])])
+-  root_finish
++      (P₁ := r0a 15) (P₂ := r0a 15) (P₃ := r0b 15) (P₄ := r0a 15)
++      (P₅ := r0a 15) (P₆ := r0b 15) (P₇ := r0a 15) (P₈ := r0a 15)
++      (P₉ := r0b 15) (P₁₀ := r0a 15) (P₁₁ := r0a 15) (P₁₂ := r0a 15)
++      (P₁₃ := r0a 15) (P₁₄ := r0a 15) (P₁₅ := r0a 15)
++  interval_cases i <;> root_shared_finish
+ 
+ end ADR11
+diff --git a/Solution.lean b/Solution.lean
+index 4a46f6155..b8559eef8 100644
+--- a/Solution.lean
++++ b/Solution.lean
+@@ -31,6 +31,15 @@ theorem unrootedDist_nonneg {L : Type*} [Fintype L] [DecidableEq L] (σ : Specie
+ theorem unrootedDist_sum {L : Type*} [Fintype L] [DecidableEq L] (σ : SpeciesTree X)
+     (s : L → X) : ∑ T, σ.unrootedDist s T = 1 := ADR11.unrootedDist_sum σ s
+ 
++private theorem quartetTrees :
++    treeOfClusters ({{0, 1}} : Finset (Finset (Fin 4))) =
++      {{0, 1}, {2, 3}, {0}, {1}, {2}, {3}, {1, 2, 3}, {0, 2, 3}, {0, 1, 3}, {0, 1, 2}} ∧
++    treeOfClusters ({{0, 2}} : Finset (Finset (Fin 4))) =
++      {{0, 2}, {1, 3}, {0}, {1}, {2}, {3}, {1, 2, 3}, {0, 2, 3}, {0, 1, 3}, {0, 1, 2}} ∧
++    treeOfClusters ({{0, 3}} : Finset (Finset (Fin 4))) =
++      {{0, 3}, {1, 2}, {0}, {1}, {2}, {3}, {1, 2, 3}, {0, 2, 3}, {0, 1, 3}, {0, 1, 2}} := by
++  decide
++
+ /-- Section 4.1, balanced species tree `((a,b):x,(c,d):y)` on `Fin 4`: the unrooted gene trees
+ `AB|CD`, `AC|BD`, `AD|BC` (each given by the sides of its splits, trivial ones included) have
+ probabilities `1 - (2/3)e^{-(x+y)}`, `(1/3)e^{-(x+y)}`, `(1/3)e^{-(x+y)}`. -/
+@@ -44,12 +53,7 @@ theorem fourTaxa_balanced (σ : SpeciesTree (Fin 4))
+         {0, 1, 2}} = 1 / 3 * exp (-(σ.length {0, 1} + σ.length {2, 3})) := by
+   have h4 : (balanced4 : Finset (Finset (Fin 4))) = {univ, {0, 1}, {2, 3}, {0}, {1}, {2}, {3}} := by
+     decide
+-  have t1 : treeOfClusters ({{0, 1}} : Finset (Finset (Fin 4))) =
+-      {{0, 1}, {2, 3}, {0}, {1}, {2}, {3}, {1, 2, 3}, {0, 2, 3}, {0, 1, 3}, {0, 1, 2}} := by decide
+-  have t2 : treeOfClusters ({{0, 2}} : Finset (Finset (Fin 4))) =
+-      {{0, 2}, {1, 3}, {0}, {1}, {2}, {3}, {1, 2, 3}, {0, 2, 3}, {0, 1, 3}, {0, 1, 2}} := by decide
+-  have t3 : treeOfClusters ({{0, 3}} : Finset (Finset (Fin 4))) =
+-      {{0, 3}, {1, 2}, {0}, {1}, {2}, {3}, {1, 2, 3}, {0, 2, 3}, {0, 1, 3}, {0, 1, 2}} := by decide
++  obtain ⟨t1, t2, t3⟩ := quartetTrees
+   have := ADR11.fourTaxa_balanced σ (hσ.trans h4.symm)
+   rwa [t1, t2, t3] at this
+ 
+@@ -66,12 +70,7 @@ theorem fourTaxa_caterpillar (σ : SpeciesTree (Fin 4))
+         {0, 1, 2}} = 1 / 3 * exp (-σ.length {0, 1}) := by
+   have h4 : (caterpillar4 : Finset (Finset (Fin 4))) =
+       {univ, {0, 1}, {0, 1, 2}, {0}, {1}, {2}, {3}} := by decide
+-  have t1 : treeOfClusters ({{0, 1}} : Finset (Finset (Fin 4))) =
+-      {{0, 1}, {2, 3}, {0}, {1}, {2}, {3}, {1, 2, 3}, {0, 2, 3}, {0, 1, 3}, {0, 1, 2}} := by decide
+-  have t2 : treeOfClusters ({{0, 2}} : Finset (Finset (Fin 4))) =
+-      {{0, 2}, {1, 3}, {0}, {1}, {2}, {3}, {1, 2, 3}, {0, 2, 3}, {0, 1, 3}, {0, 1, 2}} := by decide
+-  have t3 : treeOfClusters ({{0, 3}} : Finset (Finset (Fin 4))) =
+-      {{0, 3}, {1, 2}, {0}, {1}, {2}, {3}, {1, 2, 3}, {0, 2, 3}, {0, 1, 3}, {0, 1, 2}} := by decide
++  obtain ⟨t1, t2, t3⟩ := quartetTrees
+   have := ADR11.fourTaxa_caterpillar σ (hσ.trans h4.symm)
+   rwa [t1, t2, t3] at this
+ 

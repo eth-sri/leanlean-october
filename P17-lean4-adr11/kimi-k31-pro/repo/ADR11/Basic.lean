@@ -39,19 +39,13 @@ def restrictSplits (S : Finset X) (T : Finset (Finset X)) : Finset (Finset S) :=
 namespace SpeciesTree
 
 theorem restrict_univ_mem (σ : SpeciesTree X) (S : Finset X) (hS : S.Nonempty) :
-    (univ : Finset S) ∈ restrictClusters S σ.clusters := by
-  unfold restrictClusters
-  rw [mem_image]
-  refine ⟨univ, mem_filter.2 ⟨σ.univ_mem, by simpa using hS⟩, ?_⟩
-  simp
+    (univ : Finset S) ∈ restrictClusters S σ.clusters :=
+  mem_image.2 ⟨univ, mem_filter.2 ⟨σ.univ_mem, by simpa using hS⟩, by simp⟩
 
 theorem restrict_singleton_mem (σ : SpeciesTree X) (S : Finset X) (x : S) :
-    {x} ∈ restrictClusters S σ.clusters := by
-  unfold restrictClusters
-  rw [mem_image]
-  refine ⟨{x.1}, mem_filter.2 ⟨σ.singleton_mem x.1, ⟨x.1, by simp [x.2]⟩⟩, ?_⟩
-  ext ⟨y, hy⟩
-  rw [mem_subtype, mem_singleton, mem_singleton, Subtype.ext_iff]
+    {x} ∈ restrictClusters S σ.clusters :=
+  mem_image.2 ⟨{x.1}, mem_filter.2 ⟨σ.singleton_mem x.1, ⟨x.1, by simp [x.2]⟩⟩,
+    by ext ⟨y, hy⟩; rw [mem_subtype, mem_singleton, mem_singleton, Subtype.ext_iff]⟩
 
 theorem restrict_nonempty_of_mem (σ : SpeciesTree X) (S : Finset X) :
     ∀ C ∈ restrictClusters S σ.clusters, C.Nonempty := by
