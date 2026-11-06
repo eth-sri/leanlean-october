@@ -23,8 +23,11 @@ theorem historyMeasure_smul_sum {I X : Type*} [MeasurableSpace X]
   simp only [Measure.smul_apply, Measure.sum_apply _ hs, smul_eq_mul]
   exact ENNReal.tsum_mul_left.symm
 
+section
+variable (dependent : J → J → Prop)
+
 /-- The actual marked reference law on the canonical append fiber is a fresh-mark pushforward. -/
-theorem historyMarkedAppend_fiber_map (dependent : J → J → Prop)
+theorem historyMarkedAppend_fiber_map 
     (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
     (j : J) (g : HistoryShape (fun a b => ¬ dependent a b))
     {E : Type*} [MeasurableSpace E] [StandardBorelSpace E]
@@ -36,8 +39,7 @@ theorem historyMarkedAppend_fiber_map (dependent : J → J → Prop)
   let ν := Measure.pi (fun _ : Fin (historyShapeLength dependent g) => π)
   let f : (Fin (historyShapeLength dependent g) → E) × E → HistoryMarked dependent E :=
     fun p => historyMarkedAppend dependent hsymm j (⟨g, p.1⟩, p.2)
-  have hf : Measurable f := (historyMarkedAppend_measurable dependent hsymm j).comp
-    ((historyMarked_measurable_mk dependent g).prodMap measurable_id)
+  
   have hm : (Measure.map (Sigma.mk g) ν).prod π =
       Measure.map (Prod.map (fun marks : Fin (historyShapeLength dependent g) → E =>
         (⟨g, marks⟩ : HistoryMarked dependent E)) id) (ν.prod π) := by
@@ -45,7 +47,7 @@ theorem historyMarkedAppend_fiber_map (dependent : J → J → Prop)
       Measure.map_prod_map ν π (historyMarked_measurable_mk dependent g) measurable_id
   rw [hm, Measure.map_map (historyMarkedAppend_measurable dependent hsymm j)
     ((historyMarked_measurable_mk dependent g).prodMap measurable_id)]
-  change Measure.map f (ν.prod π) = _
+  
   let m := fun p : (Fin (historyShapeLength dependent g) → E) × E =>
     historyCanonicalMarkAppendEquiv dependent hsymm j g (p.2, p.1)
   have hp : MeasurePreserving m (ν.prod π)
@@ -56,7 +58,7 @@ theorem historyMarkedAppend_fiber_map (dependent : J → J → Prop)
   rw [← Measure.map_map (historyMarked_measurable_mk dependent _) hp.measurable, hp.map_eq]
 
 /-- The actual countable reference component consisting of appended shapes. -/
-def historyMarkedTerminalReferenceRaw (dependent : J → J → Prop)
+def historyMarkedTerminalReferenceRaw 
     (Δ : ℕ) (j : J) {E : Type*} [MeasurableSpace E] (π : Measure E) :
     Measure (HistoryMarked dependent E) :=
   Measure.sum fun g => ENNReal.ofReal (historyShapeReferenceWeight dependent Δ (historyShapeAppend dependent j g)) •
@@ -64,7 +66,7 @@ def historyMarkedTerminalReferenceRaw (dependent : J → J → Prop)
       (Measure.pi (fun _ : Fin (historyShapeLength dependent (historyShapeAppend dependent j g)) => π))
 
 /-- Exact source rho factor for the actual marked append, derived from both finite mark and shape laws. -/
-theorem historyMarkedReferenceRaw_append (dependent : J → J → Prop)
+theorem historyMarkedReferenceRaw_append 
     (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
     (Δ : ℕ) (j : J) {E : Type*} [MeasurableSpace E] [StandardBorelSpace E]
     (π : Measure E) [IsProbabilityMeasure π] :
@@ -82,17 +84,24 @@ theorem historyMarkedReferenceRaw_append (dependent : J → J → Prop)
     ENNReal.ofReal_mul (historyReferenceRho_pos Δ).le]
   exact (historyMarkedAppend_measurable dependent hsymm j).aemeasurable
 
+section
+variable (j : J) {E : Type*}
+include j
+
 /-- Shapes with a true appended maximal label, including all of their marks. -/
-def historyMarkedTerminalSet (dependent : J → J → Prop) (j : J) {E : Type*} :
+def historyMarkedTerminalSet   :
     Set (HistoryMarked dependent E) := {h | h.1 ∈ Set.range (historyShapeAppend dependent j)}
 
-theorem historyMarkedTerminalSet_measurable (dependent : J → J → Prop) (j : J)
-    {E : Type*} [MeasurableSpace E] : MeasurableSet (historyMarkedTerminalSet dependent j (E := E)) := by
+theorem historyMarkedTerminalSet_measurable   [MeasurableSpace E] : MeasurableSet (historyMarkedTerminalSet dependent j (E := E)) := by
   rw [MeasurableSpace.measurableSet_iInf]
   intro g
   change MeasurableSet {marks : Fin (historyShapeLength dependent g) → E |
     g ∈ Set.range (historyShapeAppend dependent j)}
-  by_cases hg : g ∈ Set.range (historyShapeAppend dependent j) <;> simp [hg]
+  simp_all
+end
+
+end
+
 
 omit [Fintype J] [LinearOrder J] in
 /-- Reindex a sum of measures on an actual subtype, with zero outside it. -/
@@ -109,10 +118,12 @@ theorem historyMeasure_sum_subtype {I X : Type*} [MeasurableSpace X]
       split_ifs <;> rfl
     _ = _ := by simpa [Set.indicator_apply] using (tsum_subtype S (fun i => μ i s)).symm
 
+section
+variable (dependent : J → J → Prop) (hrefl : ∀ j, dependent j j) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i) (Δ : ℕ) (j : J) {E : Type*} [MeasurableSpace E]
+include hrefl hsymm
+
 /-- The append component is exactly the actual reference measure restricted to appended shapes. -/
-theorem historyMarkedTerminalReferenceRaw_eq_restrict (dependent : J → J → Prop)
-    (hrefl : ∀ j, dependent j j) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
-    (Δ : ℕ) (j : J) {E : Type*} [MeasurableSpace E] (π : Measure E) :
+theorem historyMarkedTerminalReferenceRaw_eq_restrict  (π : Measure E) :
     historyMarkedTerminalReferenceRaw dependent Δ j π =
       (historyMarkedReferenceRaw dependent Δ π).restrict (historyMarkedTerminalSet dependent j) := by
   classical
@@ -130,8 +141,7 @@ theorem historyMarkedTerminalReferenceRaw_eq_restrict (dependent : J → J → P
         (⟨g, marks⟩ : HistoryMarked dependent E)) ⁻¹' historyMarkedTerminalSet dependent j =
         if g ∈ G then Set.univ else ∅ := by
       ext marks
-      simp only [Set.mem_preimage, historyMarkedTerminalSet, Set.mem_ofPred_eq]
-      by_cases hg : g ∈ G <;> simp [G, hg]
+      measurability
     rw [hp]
     by_cases hg : g ∈ G <;> simp [hg, μ]
   change _ = (Measure.sum μ).restrict _
@@ -143,11 +153,11 @@ theorem historyMarkedTerminalReferenceRaw_eq_restrict (dependent : J → J → P
   have he := Measure.sum_comp_equiv e (fun g : G => μ g.val)
   exact he
 
+section
+variable [StandardBorelSpace E] (π : Measure E) [IsProbabilityMeasure π]
+
 /-- Full marked append/delete change of variables for the actual reference measure. -/
-theorem historyMarkedReferenceRaw_append_restrict (dependent : J → J → Prop)
-    (hrefl : ∀ j, dependent j j) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
-    (Δ : ℕ) (j : J) {E : Type*} [MeasurableSpace E] [StandardBorelSpace E]
-    (π : Measure E) [IsProbabilityMeasure π] :
+theorem historyMarkedReferenceRaw_append_restrict   :
     ENNReal.ofReal (historyReferenceRho Δ) •
       Measure.map (historyMarkedAppend dependent hsymm j (E := E))
         ((historyMarkedReferenceRaw dependent Δ π).prod π) =
@@ -156,10 +166,7 @@ theorem historyMarkedReferenceRaw_append_restrict (dependent : J → J → Prop)
     (historyMarkedTerminalReferenceRaw_eq_restrict dependent hrefl hsymm Δ j π)
 
 /-- The same exact append change of variables holds for the normalized reference probability. -/
-theorem historyMarkedReference_append_restrict (dependent : J → J → Prop)
-    (hrefl : ∀ j, dependent j j) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
-    (Δ : ℕ) (j : J) {E : Type*} [MeasurableSpace E] [StandardBorelSpace E]
-    (π : Measure E) [IsProbabilityMeasure π] :
+theorem historyMarkedReference_append_restrict   :
     ENNReal.ofReal (historyReferenceRho Δ) •
       Measure.map (historyMarkedAppend dependent hsymm j (E := E))
         ((historyMarkedReference dependent Δ π).prod π) =
@@ -173,5 +180,9 @@ theorem historyMarkedReference_append_restrict (dependent : J → J → Prop)
   · exact (historyMarkedAppend_measurable dependent hsymm j).aemeasurable
   rw [smul_smul, mul_comm, ← smul_smul,
     historyMarkedReferenceRaw_append_restrict dependent hrefl hsymm Δ j π]
+end
+
+end
+
 
 end NearlyMinimax

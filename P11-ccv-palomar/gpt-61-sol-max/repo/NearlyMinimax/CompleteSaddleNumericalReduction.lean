@@ -17,24 +17,24 @@ namespace NearlyMinimax
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1000000
 
- theorem completeSourceSaddle_penalized_numeric_envelope {d : ℕ} [NeZero d]
-    (C : ModelConstants d) (hs : 1 < C.smoothness) (hd : 4*C.smoothness < (d : ℝ))
-    {cf CB C5 C6 C7 ch ctr cm Cω : ℝ}
+ theorem completeSourceSaddle_penalized_numeric_envelope {d } [NeZero d]
+    (C : ModelConstants d) (hs : 1 < C.smoothness) (hd : 4*C.smoothness < d)
+    {cf CB C5 C6 C7 ch ctr cm Cω }
     (hcf : 0 < cf) (hCB : 0 ≤ CB) (hC5 : 0 ≤ C5) (hC6 : 0 ≤ C6)
     (hC7 : 0 ≤ C7) (hch : 0 ≤ ch) (hctr : 0 < ctr) (hcm : 0 < cm)
     (hshift : 1+Real.log (rawCostConstant CB C5 C6 C7 cf ch)+
-      ((d : ℝ)^2-16*C.smoothness)/((d : ℝ)*((d : ℝ)+4))*highCompleteSourceSaddleTheta C+
-      2*d*densityIntervalExponent C.densityLower C.densityUpper/((d : ℝ)+4) < Cω) :
+      (d^2-16*C.smoothness)/(d*(d+4))*highCompleteSourceSaddleTheta C+
+      2*d*densityIntervalExponent C.densityLower C.densityUpper/(d+4) < Cω) :
     ∃ c : ℝ, 0 < c ∧ ∀ᶠ n : ℕ in atTop,
       let m := highCompleteSourceSaddleCoefficient C
       let theta := highCompleteSourceSaddleTheta C
       let tauM := shrunkDensityExponent C.densityLower C.densityUpper
       let k := lowerSaddleGrid d m theta Cω n
-      let eta := cf*(k : ℝ)^(-C.smoothness)
+      let eta := cf*k^(-C.smoothness)
       let B := lowerSaddleActivity C.smoothness d m theta Cω tauM n
-      ∀ Bl E : ℝ, 1 ≤ B → 0 ≤ Bl → 0 ≤ E → Bl ≤ CB*B →
+      ∀ Bl E , 1 ≤ B → 0 ≤ Bl → 0 ≤ E → Bl ≤ CB*B →
       E ≤ lowerSaddleRawEnergyBound C.smoothness d m theta Cω cf C5 C6 C7 ch Bl tauM n →
-      (c*paperRiskScale C n)^2 ≤ ctr*eta^4/(1+Bl^2+(k : ℝ)^d*E)-
+      (c*paperRiskScale C n)^2 ≤ ctr*eta^4/(1+Bl^2+k^d*E)-
         (effectiveVarianceUpper C-C.varianceLower)^2*highCompleteSourceSaddleTail C Cω cm n := by
   have hab := C.densityLower_lt_one.trans C.one_lt_densityUpper
   let CG := rawCostConstant CB C5 C6 C7 cf ch

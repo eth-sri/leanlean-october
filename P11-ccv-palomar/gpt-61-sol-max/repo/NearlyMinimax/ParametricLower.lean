@@ -26,8 +26,11 @@ instance labelBase_isProbability : IsProbabilityMeasure labelBase := by
   simp [labelBase, Measure.smul_apply, Measure.count_univ]
   exact ENNReal.inv_mul_cancel (by norm_num) (by norm_num)
 
-def ternaryDensityLaw (a V : ℝ) (ha : a ≠ 0)
-    (hp : ∀ y, 0 ≤ ternaryMass a 0 V y) : DensityLaw labelBase where
+section
+variable (a V : ℝ) (ha : a ≠ 0) (hp : ∀ y, 0 ≤ ternaryMass a 0 V y)
+include ha hp
+
+def ternaryDensityLaw  : DensityLaw labelBase where
   density y := 3 * ternaryMass a 0 V y
   measurable := measurable_of_countable _
   integrable := Integrable.of_finite
@@ -38,8 +41,7 @@ def ternaryDensityLaw (a V : ℝ) (ha : a ≠ 0)
     rw [← Finset.mul_sum, ternary_normalized a 0 V ha]
     norm_num
 
-theorem ternaryDensityLaw_measure (a V : ℝ) (ha : a ≠ 0)
-    (hp : ∀ y, 0 ≤ ternaryMass a 0 V y) :
+theorem ternaryDensityLaw_measure  :
     (ternaryDensityLaw a V ha hp).measure =
       Measure.count.withDensity (fun y => ENNReal.ofReal (ternaryMass a 0 V y)) := by
   unfold DensityLaw.measure ternaryDensityLaw labelBase
@@ -48,30 +50,30 @@ theorem ternaryDensityLaw_measure (a V : ℝ) (ha : a ≠ 0)
     funext y
     simp only [Pi.smul_apply, smul_eq_mul]
     rw [← ENNReal.ofReal_mul (by norm_num : (0 : ℝ) ≤ 1 / 3)]
-    congr 1
+    
     ring
-  · exact ENNReal.measurable_ofReal.comp (measurable_of_countable _)
+  fun_prop
 
-theorem ternaryDensityLaw_map (a V : ℝ) (ha : a ≠ 0)
-    (hp : ∀ y, 0 ≤ ternaryMass a 0 V y) :
+theorem ternaryDensityLaw_map  :
     (ternaryDensityLaw a V ha hp).measure.map (ternaryValue a) = ternaryMeasure a 0 V := by
   rw [ternaryDensityLaw_measure, count_withDensity,
     Measure.map_sum (measurable_of_countable _).aemeasurable, Measure.sum_fintype]
   apply Finset.sum_congr rfl
   intro y _
   rw [Measure.map_smul _ (measurable_of_countable _).aemeasurable, Measure.map_dirac]
+end
 
-theorem ternary_submodel_admissible {d : ℕ} (C : ModelConstants d)
+
+theorem ternary_submodel_admissible {d } C
     (a V : ℝ) (ha : 0 < a) (hV : C.varianceLower ≤ V)
     (hVupper : V ≤ C.varianceUpper) (_hVa : V < a ^ 2)
     (hfourth : a ^ 2 * V ≤ C.fourthBound)
-    (hp : ∀ y, 0 ≤ ternaryMass a 0 V y) :
+    hp :
     Admissible C (uniformZeroParameter d a V ha.ne' hp) := by
   let θ := uniformZeroParameter d a V ha.ne' hp
-  change Admissible C θ
+  
   refine ⟨measurable_const, measurable_const, ?_, ?_, ?_, hV, hVupper, ?_⟩
-  · exact Filter.Eventually.of_forall (fun x =>
-      ⟨C.densityLower_lt_one.le, C.one_lt_densityUpper.le⟩)
+  · solve_by_elim [Filter.Eventually.of_forall, C.densityLower_lt_one.le, C.one_lt_densityUpper.le]
   · simp only [θ, uniformZeroParameter, ENNReal.ofReal_one, lintegral_const, one_mul]
     exact cubeVolume_univ d
   · refine ⟨fun _ => 0, fun _ _ => rfl, contDiffOn_const, ?_⟩
@@ -84,24 +86,27 @@ theorem ternary_submodel_admissible {d : ℕ} (C : ModelConstants d)
       ternaryMeasure_integrable a 0 V _, ternaryMeasure_mean a 0 V ha.ne' hp, ?_, ?_⟩
     · simpa using ternaryMeasure_variance a 0 V ha.ne' hp
     · have he := ternaryMeasure_fourthMoment a 0 V ha.ne' hp
-      simp only [sub_zero, zero_pow (by decide : 2 ≠ 0), zero_pow (by decide : 4 ≠ 0),
-        mul_zero, add_zero] at he
-      exact he.trans_le hfourth
+      simp_all
 
-def encodeResponse {d n : ℕ} (a : ℝ) :
+section
+variable {d n : ℕ}
+
+def encodeResponse  (a : ℝ) :
     (Fin n → Fin 3) × (Fin n → Covariate d) → (Fin n → Observation d) :=
   fun z i => (z.2 i, ternaryValue a (z.1 i))
 
-theorem encodeResponse_measurable {d n : ℕ} (a : ℝ) :
+theorem encodeResponse_measurable  a :
     Measurable (encodeResponse (d := d) (n := n) a) := by
   apply Measurable.of_eval
   intro i
   exact ((measurable_pi_apply i).comp measurable_snd).prodMk
     ((measurable_of_countable (ternaryValue a)).comp
       ((measurable_pi_apply i).comp measurable_fst))
+end
 
-theorem ternary_label_design_map {d : ℕ} (a V : ℝ) (ha : a ≠ 0)
-    (hp : ∀ y, 0 ≤ ternaryMass a 0 V y) :
+
+theorem ternary_label_design_map {d } a V ha
+    hp :
     (((ternaryDensityLaw a V ha hp).measure).prod (cubeVolume d)).map
       (fun z => (z.2, ternaryValue a z.1)) =
         observationLaw (uniformZeroParameter d a V ha hp) := by
@@ -120,11 +125,11 @@ theorem ternary_label_design_map {d : ℕ} (a V : ℝ) (ha : a ≠ 0)
     _ = ((ternaryMeasure a 0 V).prod (cubeVolume d)).map Prod.swap := by rw [← h]
     _ = _ := Measure.prod_swap
 
-theorem encodeResponse_measurePreserving {d n : ℕ} (a V : ℝ) (ha : a ≠ 0)
-    (hp : ∀ y, 0 ≤ ternaryMass a 0 V y) :
+theorem encodeResponse_measurePreserving {d n } a V ha
+    hp :
     MeasurePreserving (encodeResponse (d := d) (n := n) a)
-      ((Measure.pi (fun _ : Fin n => (ternaryDensityLaw a V ha hp).measure)).prod
-        (Measure.pi (fun _ : Fin n => cubeVolume d)))
+      ((Measure.pi (fun _  => (ternaryDensityLaw a V ha hp).measure)).prod
+        (Measure.pi (fun _  => cubeVolume d)))
       (sampleLaw (uniformZeroParameter d a V ha hp) n) := by
   let _ := cubeVolume_isProbability d
   let _ := ternaryMeasure_isProbability a 0 V ha hp
@@ -146,15 +151,15 @@ theorem encodeResponse_measurePreserving {d n : ℕ} (a V : ℝ) (ha : a ≠ 0)
 def ternaryDensitySlope (a : ℝ) : Fin 3 → ℝ :=
   ![3 / (2 * a ^ 2), -3 / a ^ 2, 3 / (2 * a ^ 2)]
 
-theorem ternary_density_affine (a V : ℝ) (y : Fin 3) :
+theorem ternary_density_affine a V y :
     3 * ternaryMass a 0 V y = ![0, 3, 0] y + V * ternaryDensitySlope a y := by
   fin_cases y <;> simp [ternaryMass, ternaryDensitySlope, div_eq_mul_inv] <;> ring
 
 /-- Actual two-point testing lower bound for the original regression minimax
 problem.  The premises are numerical legality and one-observation mass bounds,
 not statistical risk or estimator assumptions. -/
-theorem ternary_two_point_minimax_lower {d : ℕ} (C : ModelConstants d) (n : ℕ)
-    (a V₀ V₁ cf Cf : ℝ) (ha : 0 < a) (hcf : 0 < cf) (hCf : 0 ≤ Cf)
+theorem ternary_two_point_minimax_lower {d } (C : ModelConstants d) (n : ℕ)
+    a V₀ V₁ cf Cf (ha : 0 < a) (hcf : 0 < cf) (hCf : 0 ≤ Cf)
     (hV₀ : C.varianceLower ≤ V₀) (hV₀upper : V₀ ≤ C.varianceUpper)
     (hV₁ : C.varianceLower ≤ V₁) (hV₁upper : V₁ ≤ C.varianceUpper)
     (hVa₀ : V₀ < a ^ 2) (hVa₁ : V₁ < a ^ 2)
@@ -163,7 +168,7 @@ theorem ternary_two_point_minimax_lower {d : ℕ} (C : ModelConstants d) (n : �
     (hmass₀ : ∀ y, cf ≤ 3 * ternaryMass a 0 V₀ y)
     (hmass₁ : ∀ y, cf ≤ 3 * ternaryMass a 0 V₁ y)
     (hslope : ∀ y, |ternaryDensitySlope a y| ≤ Cf)
-    (hsmall : (n : ℝ) * Cf ^ 2 * (V₀ - V₁) ^ 2 / (4 * cf) ≤ 1 / 4) :
+    (hsmall : n * Cf ^ 2 * (V₀ - V₁) ^ 2 / (4 * cf) ≤ 1 / 4) :
     ENNReal.ofReal (|V₁ - V₀| / 4) ≤ minimaxRMS C n := by
   have hp₀ : ∀ y, 0 ≤ ternaryMass a 0 V₀ y := by
     intro y
@@ -173,16 +178,15 @@ theorem ternary_two_point_minimax_lower {d : ℕ} (C : ModelConstants d) (n : �
     linarith [hmass₁ y]
   let θ₀ := uniformZeroParameter d a V₀ ha.ne' hp₀
   let θ₁ := uniformZeroParameter d a V₁ ha.ne' hp₁
-  have hθ₀ : Admissible C θ₀ :=
+  have hθ₀  :=
     ternary_submodel_admissible C a V₀ ha hV₀ hV₀upper hVa₀ hfourth₀ hp₀
-  have hθ₁ : Admissible C θ₁ :=
+  have hθ₁  :=
     ternary_submodel_admissible C a V₁ ha hV₁ hV₁upper hVa₁ hfourth₁ hp₁
   let P₀ := ternaryDensityLaw a V₀ ha.ne' hp₀
   let P₁ := ternaryDensityLaw a V₁ ha.ne' hp₁
   let ν := Measure.pi (fun _ : Fin n => cubeVolume d)
   let _ := cubeVolume_isProbability d
-  let _ : IsProbabilityMeasure ν := inferInstanceAs
-    (IsProbabilityMeasure (Measure.pi (fun _ : Fin n => cubeVolume d)))
+  
   let L := densityLawWithSeed ν (iidDensityLaw P₀ n)
   let R := densityLawWithSeed ν (iidDensityLaw P₁ n)
   have hH : hellingerSquared L R ≤ 1 / 4 := by
@@ -193,17 +197,16 @@ theorem ternary_two_point_minimax_lower {d : ℕ} (C : ModelConstants d) (n : �
       (Filter.Eventually.of_forall (fun y => by rw [← ternary_density_affine]; exact hmass₀ y))
       (Filter.Eventually.of_forall (fun y => by rw [← ternary_density_affine]; exact hmass₁ y))
       (Filter.Eventually.of_forall hslope)
-    change hellingerSquared (densityLawWithSeed ν (iidDensityLaw P₀ n))
-      (densityLawWithSeed ν (iidDensityLaw P₁ n)) ≤ _
+    
     rw [hellinger_with_seed]
     exact (hellinger_iid_le P₀ P₁ n).trans
       ((mul_le_mul_of_nonneg_left hone (Nat.cast_nonneg n)).trans (by
         convert hsmall using 1; ring))
   have hL : L.measure = (Measure.pi (fun _ : Fin n => P₀.measure)).prod ν := by
-    dsimp [L]
+    
     rw [densityLawWithSeed_measure, iidDensityLaw_measure]
   have hR : R.measure = (Measure.pi (fun _ : Fin n => P₁.measure)).prod ν := by
-    dsimp [R]
+    
     rw [densityLawWithSeed_measure, iidDensityLaw_measure]
   rw [minimaxRMS_eq_inf_sup_eLpNorm]
   apply le_iInf
@@ -213,13 +216,11 @@ theorem ternary_two_point_minimax_lower {d : ℕ} (C : ModelConstants d) (n : �
   rw [hL, hR] at ht
   have he₀ : eLpNorm (fun z => T.val (encodeResponse a z) - V₀) 2
       ((Measure.pi (fun _ : Fin n => P₀.measure)).prod ν) =
-      eLpNorm (fun z => T.val z - θ₀.variance) 2 (sampleLaw θ₀ n) := by
-    exact eLpNorm_comp_measurePreserving (T.property.sub measurable_const).aestronglyMeasurable
+      eLpNorm (fun z => T.val z - θ₀.variance) 2 (sampleLaw θ₀ n) := eLpNorm_comp_measurePreserving (T.property.sub measurable_const).aestronglyMeasurable
       (encodeResponse_measurePreserving a V₀ ha.ne' hp₀)
   have he₁ : eLpNorm (fun z => T.val (encodeResponse a z) - V₁) 2
       ((Measure.pi (fun _ : Fin n => P₁.measure)).prod ν) =
-      eLpNorm (fun z => T.val z - θ₁.variance) 2 (sampleLaw θ₁ n) := by
-    exact eLpNorm_comp_measurePreserving (T.property.sub measurable_const).aestronglyMeasurable
+      eLpNorm (fun z => T.val z - θ₁.variance) 2 (sampleLaw θ₁ n) := eLpNorm_comp_measurePreserving (T.property.sub measurable_const).aestronglyMeasurable
       (encodeResponse_measurePreserving a V₁ ha.ne' hp₁)
   change _ ≤ eLpNorm (fun z => T.val (encodeResponse a z) - V₀) 2 _ ∨
     _ ≤ eLpNorm (fun z => T.val (encodeResponse a z) - V₁) 2 _ at ht
@@ -230,16 +231,16 @@ theorem ternary_two_point_minimax_lower {d : ℕ} (C : ModelConstants d) (n : �
   · exact ht.trans (le_iSup (fun θ : {θ // Admissible C θ} =>
       eLpNorm (fun z => T.val z - θ.val.variance) 2 (sampleLaw θ.val n)) ⟨θ₁, hθ₁⟩)
 
-theorem ternaryDensitySlope_eq (a : ℝ) (y : Fin 3) :
+theorem ternaryDensitySlope_eq a y :
     ternaryDensitySlope a y = 3 * ternaryVarianceDerivative a y := by
   fin_cases y <;> simp [ternaryDensitySlope, ternaryVarianceDerivative] <;> ring
 
 /-- The original statistical class has a positive root-n minimax RMS lower
 bound for every sample size n>=1 and every smoothness/dimension regime.
 The constants and the actual iid submodel are constructed, not assumed. -/
-theorem parametric_minimax_lower {d : ℕ} (C : ModelConstants d) :
+theorem parametric_minimax_lower {d } (C : ModelConstants d) :
     ∃ c : ℝ, 0 < c ∧ ∀ n : ℕ, 1 ≤ n →
-      ENNReal.ofReal (c * (n : ℝ) ^ (-(1 / 2 : ℝ))) ≤ minimaxRMS C n := by
+      ENNReal.ofReal (c * n ^ (-(1 / 2 : ℝ))) ≤ minimaxRMS C n := by
   obtain ⟨P⟩ := parametricTernaryConstants_exists C
   refine ⟨P.delta / 2, div_pos P.delta_pos (by norm_num), ?_⟩
   intro n hn

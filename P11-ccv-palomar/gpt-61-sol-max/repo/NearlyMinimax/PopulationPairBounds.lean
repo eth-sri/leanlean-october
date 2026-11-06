@@ -14,13 +14,12 @@ namespace NearlyMinimax
 set_option maxHeartbeats 1000000
 set_option backward.isDefEq.respectTransparency false
 
-theorem dyadicPopulationCoefficients_first {d : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (J : ℕ) (m : ℕ → ℕ) (w : Covariate d × Covariate d) :
-    dyadicPopulationCoefficients C θ J m w 0 = 1 := by
-  rfl
+theorem dyadicPopulationCoefficients_first {d } (C : ModelConstants d)
+    θ J m w :
+    dyadicPopulationCoefficients C θ J m w 0 = 1 := rfl
 
-theorem regularPairDesignMeasure_dyadic_cell_ae {d : ℕ} (θ : RegressionParameter d) (J : ℕ) :
-    ∀ᵐ w ∂regularPairDesignMeasure θ ((2 : ℕ) ^ J) (by positivity),
+theorem regularPairDesignMeasure_dyadic_cell_ae {d } (θ : RegressionParameter d) J :
+    ∀ᵐ w ∂regularPairDesignMeasure θ (2 ^ J) (by positivity),
       w.2 ∈ dyadicPilotCell J w.1 := by
   apply regularPairDesignMeasure_ae_of_supported
   filter_upwards [] with w hw

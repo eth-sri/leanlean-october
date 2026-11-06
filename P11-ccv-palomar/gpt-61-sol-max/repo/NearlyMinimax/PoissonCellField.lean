@@ -14,10 +14,16 @@ namespace NearlyMinimax
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 400000
 
-abbrev partitionFieldFiber (H : Type*) (n : ℕ) :=
+section
+variable (H : Type*)
+include H
+
+abbrev partitionFieldFiber  (n : ℕ) :=
   (Fin n → H) × ((Fin n → Fin 2) → Fin 2)
 
-abbrev partitionFieldMark (H : Type*) := Σ n : ℕ, partitionFieldFiber H n
+abbrev partitionFieldMark  := Σ n : ℕ, partitionFieldFiber H n
+end
+
 
 variable {H X : Type*} [MeasurableSpace H] [MeasurableSpace X]
 
@@ -30,9 +36,8 @@ theorem measurable_variable_finite_eval {E I B : Type*} [MeasurableSpace E]
       ⋃ i, (p ⁻¹' {i}) ∩ ((fun z => g z i) ⁻¹' s) := by
     ext z
     simp
-  rw [he]
-  exact MeasurableSet.iUnion (fun i =>
-    (hp (measurableSet_singleton i)).inter ((hg.eval) hs))
+  
+  measurability
 
 def partitionFieldFiberLaw (μ : Measure H) (n : ℕ) : Measure (partitionFieldFiber H n) :=
   (Measure.pi (fun _ : Fin n => μ)).prod (cellSignLaw (Fin n → Fin 2))
@@ -64,46 +69,55 @@ theorem poissonCellFieldLaw_measurable (μ : Measure H) :
   apply Measure.measurable_of_measurable_coe
   intro s hs
   simp only [poissonCellFieldLaw, Measure.sum_apply _ hs, Measure.smul_apply, smul_eq_mul]
-  apply Measurable.ennreal_tsum
-  intro n
-  apply Measurable.mul_const
-  apply ENNReal.measurable_ofReal.comp
-  exact (((measurable_coe_nnreal_real.neg.exp).mul
-    (measurable_coe_nnreal_real.pow_const n)).div_const _)
+  fun_prop
 
 instance partitionFieldMark_standardBorel [StandardBorelSpace H] :
     StandardBorelSpace (partitionFieldMark H) := sigma_standardBorel_actual
 
-def partitionFieldPattern (ρ : H → X → Fin 2) {n : ℕ}
-    (h : Fin n → H) (x : X) : Fin n → Fin 2 := fun i => ρ (h i) x
+section
+variable (ρ : H → X → Fin 2)
+include ρ
 
-def partitionFieldFiberValue (ρ : H → X → Fin 2) {n : ℕ}
-    (z : partitionFieldFiber H n) (x : X) : ℝ :=
+section
+variable {n : ℕ}
+
+def partitionFieldPattern  
+    (h : Fin n → H) (x : X)  := fun i => ρ (h i) x
+
+def partitionFieldFiberValue  
+    (z : partitionFieldFiber H n) (x : X)  :=
   fairSignValue (z.2 (partitionFieldPattern ρ z.1 x))
+end
 
-def poissonCellFieldValue (ρ : H → X → Fin 2)
-    (z : partitionFieldMark H) (x : X) : ℝ := partitionFieldFiberValue ρ z.2 x
 
-theorem partitionFieldFiberValue_abs (ρ : H → X → Fin 2) {n : ℕ}
+def poissonCellFieldValue 
+    (z : partitionFieldMark H) (x : X)  := partitionFieldFiberValue ρ z.2 x
+
+theorem partitionFieldFiberValue_abs  {n }
     (z : partitionFieldFiber H n) (x : X) : |partitionFieldFiberValue ρ z x| = 1 :=
   fairSignValue_abs _
 
-theorem poissonCellFieldValue_abs (ρ : H → X → Fin 2)
-    (z : partitionFieldMark H) (x : X) : |poissonCellFieldValue ρ z x| = 1 :=
+theorem poissonCellFieldValue_abs 
+    z (x : X) : |poissonCellFieldValue ρ z x| = 1 :=
   partitionFieldFiberValue_abs _ _ _
 
-theorem partitionFieldPattern_measurable (ρ : H → X → Fin 2)
-    (hρ : Measurable (Function.uncurry ρ)) (n : ℕ) :
+section
+variable (hρ : Measurable (Function.uncurry ρ))
+include hρ
+
+section
+variable (n : ℕ)
+
+theorem partitionFieldPattern_measurable 
+      :
     Measurable (fun z : (Fin n → H) × X => partitionFieldPattern ρ z.1 z.2) := by
   apply Measurable.of_eval
   intro i
   change Measurable (fun z : (Fin n → H) × X => ρ (z.1 i) z.2)
-  have he : Measurable (fun z : (Fin n → H) × X => (z.1 i, z.2)) :=
-    ((measurable_pi_apply i).comp measurable_fst).prodMk measurable_snd
-  exact hρ.comp he
+  fun_prop
 
-theorem partitionFieldFiberValue_measurable (ρ : H → X → Fin 2)
-    (hρ : Measurable (Function.uncurry ρ)) (n : ℕ) :
+theorem partitionFieldFiberValue_measurable 
+      :
     Measurable (fun z : partitionFieldFiber H n × X =>
       partitionFieldFiberValue ρ z.1 z.2) := by
   unfold partitionFieldFiberValue
@@ -113,24 +127,29 @@ theorem partitionFieldFiberValue_measurable (ρ : H → X → Fin 2)
       (measurable_fst.fst.prodMk measurable_snd)
   have hb : Measurable (fun z : partitionFieldFiber H n × X => z.1.2) :=
     measurable_fst.snd
-  exact (Measurable.of_discrete : Measurable fairSignValue).comp
-    (measurable_variable_finite_eval _ _ hb hp)
+  aesop (add unsafe [measurable_variable_finite_eval])
 
-theorem partitionFieldFiberValue_measurable_fixed (ρ : H → X → Fin 2)
-    (hρ : Measurable (Function.uncurry ρ)) (n : ℕ) (x : X) :
+theorem partitionFieldFiberValue_measurable_fixed 
+      (x : X) :
     Measurable (fun z : partitionFieldFiber H n => partitionFieldFiberValue ρ z x) :=
   (partitionFieldFiberValue_measurable ρ hρ n).comp (measurable_id.prodMk measurable_const)
+end
 
-theorem poissonCellFieldValue_measurable_fixed (ρ : H → X → Fin 2)
-    (hρ : Measurable (Function.uncurry ρ)) (x : X) :
-    Measurable (fun z : partitionFieldMark H => poissonCellFieldValue ρ z x) := by
-  exact measurable_sigma_of_fibers _ (fun n => partitionFieldFiberValue_measurable_fixed ρ hρ n x)
+
+theorem poissonCellFieldValue_measurable_fixed 
+     (x : X) :
+    Measurable (fun z  => poissonCellFieldValue ρ z x) := by
+  solve_by_elim [measurable_sigma_of_fibers, partitionFieldFiberValue_measurable_fixed]
+end
+
+end
+
 
 theorem poissonCellField_integral_series (μ : Measure H) [IsProbabilityMeasure μ]
-    (r : ℝ≥0) (f : partitionFieldMark H → ℝ) (hf : Measurable f)
+    r f (hf : Measurable f)
     (hfbound : ∀ z, |f z| ≤ 1) :
     (∫ z, f z ∂poissonCellFieldLaw μ r) =
-      ∑' n, (Real.exp (-r) * (r : ℝ) ^ n / n.factorial) *
+      ∑' n, (Real.exp (-r) * r ^ n / n.factorial) *
         ∫ z, f ⟨n, z⟩ ∂partitionFieldFiberLaw μ n := by
   have hi : Integrable f (poissonCellFieldLaw μ r) :=
     Integrable.of_bound hf.aestronglyMeasurable 1
@@ -144,12 +163,12 @@ theorem poissonCellField_integral_series (μ : Measure H) [IsProbabilityMeasure 
   simp only [ENNReal.toReal_ofReal hw, smul_eq_mul]
 
 theorem poissonCellFieldValue_measurable [StandardBorelSpace H] [StandardBorelSpace X]
-    (ρ : H → X → Fin 2) (hρ : Measurable (Function.uncurry ρ)) :
+    ρ (hρ : Measurable (Function.uncurry ρ)) :
     Measurable (fun z : partitionFieldMark H × X => poissonCellFieldValue ρ z.1 z.2) := by
-  letI : TopologicalSpace H := (upgradeStandardBorel H).toTopologicalSpace
-  letI : BorelSpace H := (upgradeStandardBorel H).toBorelSpace
-  letI : TopologicalSpace X := (upgradeStandardBorel X).toTopologicalSpace
-  letI : BorelSpace X := (upgradeStandardBorel X).toBorelSpace
+  letI  := (upgradeStandardBorel H).toTopologicalSpace
+  
+  letI  := (upgradeStandardBorel X).toTopologicalSpace
+  
   letI : BorelSpace (partitionFieldMark H) := sigma_borelSpace_actual
   letI : BorelSpace (Σ n : ℕ, partitionFieldFiber H n × X) := sigma_borelSpace_actual
   have hf : Measurable (fun z : Σ n : ℕ, partitionFieldFiber H n × X =>
@@ -157,15 +176,18 @@ theorem poissonCellFieldValue_measurable [StandardBorelSpace H] [StandardBorelSp
     measurable_sigma_of_fibers _ (partitionFieldFiberValue_measurable ρ hρ)
   exact hf.comp (Homeomorph.sigmaProdDistrib.measurable)
 
-def partitionSameProbability (μ : Measure H) (ρ : H → X → Fin 2) (x y : X) : ℝ :=
+section
+variable (μ : Measure H)
+include μ
+
+def partitionSameProbability  (ρ : H → X → Fin 2) (x y : X)  :=
   ∫ h, if ρ h x = ρ h y then (1 : ℝ) else 0 ∂μ
 
-theorem partitionFieldFiber_covariance (μ : Measure H) [IsProbabilityMeasure μ]
-    (ρ : H → X → Fin 2) (hρ : Measurable (Function.uncurry ρ)) (n : ℕ) (x y : X) :
+theorem partitionFieldFiber_covariance  [IsProbabilityMeasure μ]
+    ρ (hρ : Measurable (Function.uncurry ρ)) n (x y : X) :
     (∫ z, partitionFieldFiberValue ρ z x * partitionFieldFiberValue ρ z y
       ∂partitionFieldFiberLaw μ n) = partitionSameProbability μ ρ x y ^ n := by
-  have hm : Measurable (fun z : partitionFieldFiber H n =>
-      partitionFieldFiberValue ρ z x * partitionFieldFiberValue ρ z y) :=
+  have hm  :=
     (partitionFieldFiberValue_measurable_fixed ρ hρ n x).mul
       (partitionFieldFiberValue_measurable_fixed ρ hρ n y)
   have hi : Integrable (fun z : partitionFieldFiber H n =>
@@ -184,25 +206,27 @@ theorem partitionFieldFiber_covariance (μ : Measure H) [IsProbabilityMeasure μ
   simp_rw [he]
   rw [integral_fintype_prod_eq_pow (fun h => if ρ h x = ρ h y then (1 : ℝ) else 0)]
   simp only [Fintype.card_fin, partitionSameProbability]
+end
 
-theorem poisson_weighted_power_hasSum (r : ℝ≥0) (p : ℝ) :
-    HasSum (fun n : ℕ => (Real.exp (-r) * (r : ℝ) ^ n / n.factorial) * p ^ n)
-      (Real.exp (-(r : ℝ) * (1 - p))) := by
+
+theorem poisson_weighted_power_hasSum (r : ℝ≥0) p :
+    HasSum (fun n  => (Real.exp (-r) * r ^ n / n.factorial) * p ^ n)
+      (Real.exp (-r * (1 - p))) := by
   have h := (NormedSpace.expSeries_div_hasSum_exp ((r : ℝ) * p)).mul_left
     (Real.exp (-(r : ℝ)))
   convert h using 1
   · ext n
-    rw [mul_pow]
+    
     ring
   · rw [← Real.exp_eq_exp_ℝ, ← Real.exp_add]
-    congr 1
+    
     ring
 
 theorem poissonCellField_covariance (μ : Measure H) [IsProbabilityMeasure μ]
-    (r : ℝ≥0) (ρ : H → X → Fin 2) (hρ : Measurable (Function.uncurry ρ)) (x y : X) :
+    r ρ (hρ : Measurable (Function.uncurry ρ)) (x y : X) :
     (∫ z, poissonCellFieldValue ρ z x * poissonCellFieldValue ρ z y
       ∂poissonCellFieldLaw μ r) =
-        Real.exp (-(r : ℝ) * (1 - partitionSameProbability μ ρ x y)) := by
+        Real.exp (-r * (1 - partitionSameProbability μ ρ x y)) := by
   rw [poissonCellField_integral_series μ r (fun z =>
     poissonCellFieldValue ρ z x * poissonCellFieldValue ρ z y)
     ((poissonCellFieldValue_measurable_fixed ρ hρ x).mul

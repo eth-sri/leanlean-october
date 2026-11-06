@@ -21,28 +21,27 @@ section Packet
 variable {Z ι : Type*} [MeasurableSpace Z] [Fintype ι] [DecidableEq ι]
   [MeasurableSpace ι] [MeasurableSingletonClass ι]
 
-theorem highPacket_reference_all_count_bound {n : ℕ}
-    (σ : Measure Z) [IsFiniteMeasure σ] (ad bd : ℝ) (m r D q : ℕ) (hn : 1 ≤ n)
+theorem highPacket_reference_all_count_bound {n }
+    σ [IsFiniteMeasure σ] ad bd m r D q (hn : 1 ≤ n)
     (C a V η ρ pPlus : ℝ) (hC : 0 < C) (ha : 0 < a) (hη : 0 ≤ η)
     (hρ : 0 ≤ ρ) (hηρ : η ≤ ρ/2) (hpPlus : 0 ≤ pPlus)
-    (A : Z → ι → ι → ℝ) (hA : ∀ γ δ, Measurable (fun ζ => A ζ γ δ))
+    A (hA : ∀ γ δ, Measurable (fun ζ => A ζ γ δ))
     (hcost : Integrable (separatedMatrixCost A) σ)
     (hpos : 0 < highPacketMarkMass σ ad bd m r D q C A)
     (reset : Z × HighDensityMarkIndex m r D → Fin n → ℝ)
     (hmReset : ∀ i, Measurable (fun e => reset e i))
     (hReset : ∀ e i, |reset e i| ≤ pPlus)
-    (g w : Fin n → ℝ) (φ : Fin n → ι → ℝ) (c : ι → ℝ)
+    g w φ c
     (hc : ∑ γ, |c γ| ≤ C⁻¹) (hg : ∀ i, |g i| ≤ ρ/2) (hw : ∀ i, |w i| ≤ 1)
     (hφ : ∀ v : ι → ℝ, (∑ γ, |v γ|) ≤ C⁻¹ → ∀ i, |∑ γ, φ i γ*v γ| ≤ 1)
-    (hp : ∀ f : ℝ, |f| ≤ ρ → ∀ y, 0 ≤ ternaryMass a f V y) (y : Fin n → Fin 3) :
+    (hp : ∀ f , |f| ≤ ρ → ∀ y, 0 ≤ ternaryMass a f V y) y :
     |highMarkedResponseAction (highPacketAbsoluteLaw σ ad bd m r D q C A)
       (highPacketActivation σ ad bd m r D q C A) a V η
       (fun e => reset (e.1,e.2.1))
       (fun e => coefficientReset c (highResponseMarkAtom C q e.2.2).2
         (highResponseMarkAtom 0 q e.2.2).1) g w φ y| ≤
-      (pPlus^n*highSeparatedDerivativeBudget a ρ*(n : ℝ)^2*η^2)*
-        highPacketMarkMass σ ad bd m r D q C A := by
-  exact responseTensor_reference_all_count_bound σ q hn C a V η ρ pPlus hC ha hη hρ hηρ hpPlus
+      (pPlus^n*highSeparatedDerivativeBudget a ρ*n^2*η^2)*
+        highPacketMarkMass σ ad bd m r D q C A := responseTensor_reference_all_count_bound σ q hn C a V η ρ pPlus hC ha hη hρ hηρ hpPlus
     (densityPacketWeight ad bd m r D) A
     (highPacketMarkWeight_measurable ad bd m r D q C A hA)
     (highPacketMarkWeight_integrable σ ad bd m r D q C A hA hcost) hpos
@@ -50,28 +49,27 @@ theorem highPacket_reference_all_count_bound {n : ℕ}
     (fun e i => (hmReset i).comp (measurable_id.prodMk measurable_const))
     (fun ζ e i => hReset (ζ,e) i) g w φ c hc hg hw hφ hp y
 
-theorem finePairPacket_reference_all_count_bound {n : ℕ}
-    (σ : Measure Z) [IsFiniteMeasure σ] (ad bd : ℝ) (M q : ℕ) (hn : 1 ≤ n)
+theorem finePairPacket_reference_all_count_bound {n }
+    σ [IsFiniteMeasure σ] ad bd M q (hn : 1 ≤ n)
     (C a V η ρ pPlus : ℝ) (hC : 0 < C) (ha : 0 < a) (hη : 0 ≤ η)
     (hρ : 0 ≤ ρ) (hηρ : η ≤ ρ/2) (hpPlus : 0 ≤ pPlus)
-    (A : Z → ι → ι → ℝ) (hA : ∀ γ δ, Measurable (fun ζ => A ζ γ δ))
+    A (hA : ∀ γ δ, Measurable (fun ζ => A ζ γ δ))
     (hcost : Integrable (separatedMatrixCost A) σ)
     (hpos : 0 < finePairPacketMarkMass σ ad bd M q C A)
     (reset : Z × FinePairDensityIndex M → Fin n → ℝ)
     (hmReset : ∀ i, Measurable (fun e => reset e i))
     (hReset : ∀ e i, |reset e i| ≤ pPlus)
-    (g w : Fin n → ℝ) (φ : Fin n → ι → ℝ) (c : ι → ℝ)
+    g w φ c
     (hc : ∑ γ, |c γ| ≤ C⁻¹) (hg : ∀ i, |g i| ≤ ρ/2) (hw : ∀ i, |w i| ≤ 1)
     (hφ : ∀ v : ι → ℝ, (∑ γ, |v γ|) ≤ C⁻¹ → ∀ i, |∑ γ, φ i γ*v γ| ≤ 1)
-    (hp : ∀ f : ℝ, |f| ≤ ρ → ∀ y, 0 ≤ ternaryMass a f V y) (y : Fin n → Fin 3) :
+    (hp : ∀ f , |f| ≤ ρ → ∀ y, 0 ≤ ternaryMass a f V y) y :
     |highMarkedResponseAction (finePairPacketAbsoluteLaw σ ad bd M q C A)
       (finePairPacketActivation σ ad bd M q C A) a V η
       (fun e => reset (e.1,e.2.1))
       (fun e => coefficientReset c (finePairPacketResponseVector M q C e)
         (finePairPacketResponseTime M q e)) g w φ y| ≤
-      (pPlus^n*highSeparatedDerivativeBudget a ρ*(n : ℝ)^2*η^2)*
-        finePairPacketMarkMass σ ad bd M q C A := by
-  exact responseTensor_reference_all_count_bound σ q hn C a V η ρ pPlus hC ha hη hρ hηρ hpPlus
+      (pPlus^n*highSeparatedDerivativeBudget a ρ*n^2*η^2)*
+        finePairPacketMarkMass σ ad bd M q C A := responseTensor_reference_all_count_bound σ q hn C a V η ρ pPlus hC ha hη hρ hηρ hpPlus
     (finePairDensityWeight ad bd M) A
     (finePairPacketWeight_measurable ad bd M q C A hA)
     (finePairPacketWeight_integrable σ ad bd M q C A hA hcost) hpos
@@ -84,29 +82,29 @@ end Packet
 /-- All rows of the actual complete source satisfy the same Taylor cap,
 with their own true variation masses. In particular this holds for sample
 counts exceeding the exterior selector degree. -/
-theorem sourceRow_reference_all_count_bound {n : ℕ}
-    (d : ℕ) [NeZero d] (k D M q : ℕ) (hn : 1 ≤ n)
-    (ad bd C lam ℓ N μ a V η ρ pPlus : ℝ)
+theorem sourceRow_reference_all_count_bound {n }
+    d [NeZero d] k D M q (hn : 1 ≤ n)
+    ad bd C lam ℓ N μ a V η ρ pPlus
     (hC : 0 < C) (ha : 0 < a) (hη : 0 ≤ η) (hρ : 0 ≤ ρ)
     (hηρ : η ≤ ρ/2) (hpPlus : 0 ≤ pPlus)
     (hpos : ∀ i, 0 < (sourceRowData d k D M q ad bd C lam ℓ N μ).rowMass i)
-    (i : SourceRowIndex d D M q ad bd C lam ℓ N μ)
+    i
     (reset : SourceRowDensityMark d D M q ad bd C lam ℓ N μ i → Fin n → ℝ)
     (hmReset : ∀ u, Measurable (fun e => reset e u))
     (hReset : ∀ e u, |reset e u| ≤ pPlus)
-    (g w : Fin n → ℝ) (φ : Fin n → HighFrameIndex d D → ℝ)
-    (c : HighFrameIndex d D → ℝ) (hc : ∑ γ, |c γ| ≤ C⁻¹)
+    g w φ
+    c (hc : ∑ γ, |c γ| ≤ C⁻¹)
     (hg : ∀ u, |g u| ≤ ρ/2) (hw : ∀ u, |w u| ≤ 1)
     (hφ : ∀ v : HighFrameIndex d D → ℝ, (∑ γ, |v γ|) ≤ C⁻¹ →
       ∀ u, |∑ γ, φ u γ*v γ| ≤ 1)
-    (hp : ∀ f : ℝ, |f| ≤ ρ → ∀ y, 0 ≤ ternaryMass a f V y) (y : Fin n → Fin 3) :
+    (hp : ∀ f , |f| ≤ ρ → ∀ y, 0 ≤ ternaryMass a f V y) y :
     |highMarkedResponseAction ((sourceRowData d k D M q ad bd C lam ℓ N μ).rowLaw i)
       ((sourceRowData d k D M q ad bd C lam ℓ N μ).rowActivation i) a V η
       (fun e => reset (sourceRowDensityProj d D M q ad bd C lam ℓ N μ i e))
       (fun e => coefficientReset c
         ((sourceRowData d k D M q ad bd C lam ℓ N μ).rowVector i e)
         ((sourceRowData d k D M q ad bd C lam ℓ N μ).rowTime i e)) g w φ y| ≤
-      (pPlus^n*highSeparatedDerivativeBudget a ρ*(n : ℝ)^2*η^2)*
+      (pPlus^n*highSeparatedDerivativeBudget a ρ*n^2*η^2)*
         (sourceRowData d k D M q ad bd C lam ℓ N μ).rowMass i := by
   cases i with
   | inl p =>

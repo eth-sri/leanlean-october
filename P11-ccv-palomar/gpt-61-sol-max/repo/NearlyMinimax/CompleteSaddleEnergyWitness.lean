@@ -17,10 +17,10 @@ attribute [local instance] Classical.propDecidable
 attribute [local irreducible] highUnionSourceDensity highUnionSourceState historyMarkedAppend
 
  theorem completeSaddleGeometry_witness {d : ℕ} [NeZero d]
-    (C : ModelConstants d) (Q : LowSmoothnessTernaryConstants C)
+    C Q
     (hs : 1 < C.smoothness) (hd : 4*C.smoothness < (d : ℝ)) :
     ∃ Cfr0 eta0 : ℝ, 1 ≤ Cfr0 ∧ 0 < eta0 ∧
-      ∀ Cfr cf : ℝ, Cfr0 ≤ Cfr → 0 < cf → ∀ Cω : ℝ,
+      ∀ Cfr cf , Cfr0 ≤ Cfr → 0 < cf → ∀ Cω ,
       ∀ᶠ n : ℕ in atTop,
       let m := highCompleteSourceSaddleCoefficient C
       let theta := highCompleteSourceSaddleTheta C
@@ -40,13 +40,13 @@ attribute [local irreducible] highUnionSourceDensity highUnionSourceState histor
           (highRowTotalMass R.rowMass/highCenterMix C) (shrunkDensityExponent C.densityLower C.densityUpper) n ∧
         (∀ r, Integrable (completeSaddleGeometryEnvelope C Q Cfr cf Cω n r) (fullSpatialPatchDesign d r)) ∧
         (∀ r U, 0 ≤ completeSaddleGeometryEnvelope C Q Cfr cf Cω n r U) ∧
-        (∀ V : ℝ, |V-Q.v| ≤ Q.ρ →
+        (∀ V , |V-Q.v| ≤ Q.ρ →
           ∀ h : HighCompleteSourceHistory C k D M q Cfr (spatialInterpolationLambda d) ell N mu,
           ∀ j r x, (∀ i, x i ∈ highTorusPatch d k j) →
           selectedRawSquareEnergy (highUnionSourceRawNumerator C R r Q.a V eta h j) x ≤
             completeSaddleGeometryEnvelope C Q Cfr cf Cω n r (highPatchProductChart d k j x)) ∧
         highSourceSpatialSeries d k n C.densityLower Q.c (fun _j => completeSaddleGeometryEnvelope C Q Cfr cf Cω n) ≤
-          (3^d : ℕ)*(k : ℝ)^d*E := by
+          (3^d : ℕ)*k^d*E := by
   obtain ⟨Cfr0,eta0,hfr0,heta0,hcap⟩ := completeSource_original_all_geometry C Q
   refine ⟨Cfr0,eta0,hfr0,heta0,?_⟩
   intro Cfr cf hfr hcf Cω
@@ -89,7 +89,7 @@ attribute [local irreducible] highUnionSourceDensity highUnionSourceState histor
   let E := completeSaddleEnergyBudget C Q Cfr cf Cω n
   refine ⟨E,completeSaddleEnergyBudget_nonneg C Q Cfr cf Cω n,le_rfl,?_,?_,?_,?_⟩
   · intro r
-    exact completeSaddleGeometryEnvelope_integrable C Q hd5 Cfr cf Cω n r G.ell_one G.ell_lt_N.le
+    solve_by_elim [completeSaddleGeometryEnvelope_integrable, G.ell_one, G.ell_lt_N.le]
   · exact completeSaddleGeometryEnvelope_nonneg C Q Cfr cf Cω n
   · intro V hV h j r x hx
     have hI (t : ℕ) (ht : t ∈ ordinaryFineAliasTargetSet d D ell N mu) : 1 ≤ t ∧ t ≤ Rbound :=

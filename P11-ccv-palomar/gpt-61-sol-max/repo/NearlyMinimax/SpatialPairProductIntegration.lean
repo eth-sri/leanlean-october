@@ -47,15 +47,18 @@ instance spatialPatchProbability_isProbability (d : ℕ) : IsProbabilityMeasure 
   rw [spatialPatchProbability, Measure.smul_apply, smul_eq_mul, Measure.restrict_apply_univ, spatialPatchBox_volume]
   exact ENNReal.inv_mul_cancel (by positivity) (by finiteness)
 
-theorem spatialPatchProbability_le_volume (d : ℕ) : spatialPatchProbability d ≤ volume := by
+theorem spatialPatchProbability_le_volume d : spatialPatchProbability d ≤ volume := by
   have hc : ((2 : ℝ≥0∞)^d)⁻¹ ≤ 1 := ENNReal.inv_le_one.mpr (one_le_pow₀ (by norm_num))
   intro S
   rw [spatialPatchProbability, Measure.smul_apply, smul_eq_mul]
   exact (mul_le_of_le_one_left (show 0 ≤ (volume.restrict (spatialPatchBox d)) S from zero_le) hc).trans (Measure.restrict_le_self S)
 
+section
+variable {J E : Type*} [Fintype J] [MeasurableSpace E] (π : Measure E) [IsProbabilityMeasure π] (i j : J) (hij : i ≠ j)
+include hij
+
 /-- Actual distinct-coordinate pair evaluation preserves the true independent product law. -/
-theorem spatialPi_pair_preserving {J E : Type*} [Fintype J] [MeasurableSpace E]
-    (π : Measure E) [IsProbabilityMeasure π] (i j : J) (hij : i ≠ j) :
+theorem spatialPi_pair_preserving  :
     MeasurePreserving (fun U : J → E => (U i, U j))
       (Measure.pi (fun _ : J => π)) (π.prod π) := by
   classical
@@ -67,18 +70,19 @@ theorem spatialPi_pair_preserving {J E : Type*} [Fintype J] [MeasurableSpace E]
   simp [MeasurableEquiv.finTwoArrow, e]
 
 /-- Genuine integration through an actual pair projection. -/
-theorem spatialPi_pair_integral {J E : Type*} [Fintype J] [MeasurableSpace E]
-    (π : Measure E) [IsProbabilityMeasure π] (i j : J) (hij : i ≠ j)
+theorem spatialPi_pair_integral 
     (F : E × E → ℝ) (hF : Measurable F) :
     (∫ U : J → E, F (U i, U j) ∂Measure.pi (fun _ : J => π)) = ∫ z, F z ∂π.prod π := by
   have hp := spatialPi_pair_preserving π i j hij
   exact (integral_map hp.measurable.aemeasurable hF.aestronglyMeasurable).symm.trans
     (congrArg (fun μ : Measure (E × E) => ∫ z, F z ∂μ) hp.map_eq)
+end
+
 
 /-- A true probability spatial law dominated by volume has the dimension-scaled pair exponential integral. -/
-theorem spatial_probability_pair_exponential_integral_le {d : ℕ} (hd : 0 < d)
+theorem spatial_probability_pair_exponential_integral_le {d } (hd : 0 < d)
     (π : Measure (Covariate d)) [IsProbabilityMeasure π] (hπ : π ≤ volume)
-    {T : ℝ} (hT : 0 < T) :
+    {T } (hT : 0 < T) :
     (∫ xy : Covariate d × Covariate d, Real.exp (-(T * exactEuclideanDistance xy.1 xy.2)) ∂π.prod π) ≤
       spatialExponentialConstant d / T^d := by
   have hm : Measurable (fun xy : Covariate d × Covariate d =>
@@ -88,7 +92,7 @@ theorem spatial_probability_pair_exponential_integral_le {d : ℕ} (hd : 0 < d)
       Real.exp (-(T * exactEuclideanDistance xy.1 xy.2))) (π.prod π) :=
     Integrable.of_bound hm.aestronglyMeasurable 1 (Filter.Eventually.of_forall fun xy => by
       rw [Real.norm_eq_abs, abs_of_pos (Real.exp_pos _)]
-      exact Real.exp_le_one_iff.mpr (neg_nonpos.mpr (mul_nonneg hT.le (exactEuclideanDistance_nonneg _ _))))
+      solve_by_elim [Real.exp_le_one_iff.mpr, neg_nonpos.mpr, mul_nonneg, hT.le, exactEuclideanDistance_nonneg])
   rw [integral_prod _ hi]
   have hb (x : Covariate d) :
       (∫ y, Real.exp (-(T*exactEuclideanDistance x y)) ∂π) ≤ spatialExponentialConstant d / T^d :=

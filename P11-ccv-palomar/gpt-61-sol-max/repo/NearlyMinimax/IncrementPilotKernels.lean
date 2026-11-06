@@ -16,9 +16,19 @@ namespace NearlyMinimax
 set_option maxHeartbeats 1000000
 set_option backward.isDefEq.respectTransparency false
 
-def dyadicIncrementKernel {d : ℕ} (C : ModelConstants d) (θ : RegressionParameter d)
-    (j : ℕ) (x : Covariate d) (y : ℝ) (m : ℕ)
-    (row : Fin (anchoredDimension d C.order) → ℝ) (k : ℕ) :
+section
+variable {d : ℕ} (C : ModelConstants d)
+
+section
+variable (θ : RegressionParameter d)
+include θ
+
+section
+variable (j : ℕ) (x : Covariate d) (y : ℝ) (m : ℕ) (row : Fin (anchoredDimension d C.order) → ℝ) (k : ℕ)
+include x y m row
+
+def dyadicIncrementKernel  
+     :
     ContinuousMultilinearMap ℝ
       (fun _ : Fin k => Fin (Fintype.card (IncrementGlobalIndex d C.order j)) → ℝ) ℝ :=
   (iteratedFDeriv ℝ k (incrementFinScalar (anchoredDimension d C.order)
@@ -26,19 +36,17 @@ def dyadicIncrementKernel {d : ℕ} (C : ModelConstants d) (θ : RegressionParam
       (dyadicIncrementRawMean θ j x)).compContinuousLinearMap
         (fun _ => incrementPilotCoordinate j x)
 
-theorem dyadicIncrementKernel_raw {d : ℕ} (C : ModelConstants d) (θ : RegressionParameter d)
-    (j : ℕ) (x : Covariate d) (y : ℝ) (m : ℕ)
-    (row : Fin (anchoredDimension d C.order) → ℝ) (k : ℕ) (z : Fin k → Observation d) :
+theorem dyadicIncrementKernel_raw  
+     (z : Fin k → Observation d) :
     dyadicIncrementKernel C θ j x y m row k (fun i => incrementGlobalVector j (z i)) =
       iteratedFDeriv ℝ k (incrementFinScalar (anchoredDimension d C.order)
         C.densityLower C.densityUpper (anchoredFinTransport d C.order) y m row)
         (dyadicIncrementRawMean θ j x) (fun i => dyadicIncrementRawVector j x (z i)) := by
   simp [dyadicIncrementKernel, ContinuousMultilinearMap.compContinuousLinearMap_apply]
 
-theorem dyadicIncrementKernel_symmetric {d : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (j : ℕ) (x : Covariate d) (y : ℝ) (m : ℕ)
-    (row : Fin (anchoredDimension d C.order) → ℝ) (k : ℕ)
-    (σ : Equiv.Perm (Fin k)) (v : Fin k → Fin (Fintype.card (IncrementGlobalIndex d C.order j)) → ℝ) :
+theorem dyadicIncrementKernel_symmetric 
+     
+    (σ : Equiv.Perm (Fin k)) v :
     dyadicIncrementKernel C θ j x y m row k (fun i => v (σ i)) =
       dyadicIncrementKernel C θ j x y m row k v := by
   let F := rowIncrementPolynomial (anchoredDimension d C.order) C.densityLower C.densityUpper
@@ -51,20 +59,22 @@ theorem dyadicIncrementKernel_symmetric {d : ℕ} (C : ModelConstants d)
   rw [← hF]
   exact (AnalyticOnNhd.eval_mvPolynomial F).analyticOn.iteratedFDeriv_comp_perm
     (fun i => incrementPilotCoordinate j x (v i)) σ
+end
 
-theorem dyadicIncrementKernel_disjoint {d : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (j k : ℕ) (hk : 0 < k) (x v : Covariate d)
+
+theorem dyadicIncrementKernel_disjoint 
+     j k (hk : 0 < k) x v
     (hxv : dyadicPilotLabel (j - 1) x ≠ dyadicPilotLabel (j - 1) v)
-    (y t : ℝ) (m l : ℕ) (row s : Fin (anchoredDimension d C.order) → ℝ)
+    y t m l row s
     (z : Fin k → Observation d) :
     dyadicIncrementKernel C θ j x y m row k (fun i => incrementGlobalVector j (z i)) *
       dyadicIncrementKernel C θ j v t l s k (fun i => incrementGlobalVector j (z i)) = 0 := by
   rw [dyadicIncrementKernel_raw, dyadicIncrementKernel_raw]
   exact dyadic_increment_raw_kernels_disjoint hk j x v hxv _ _ z
 
-theorem dyadicIncrementKernel_centered {d : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ) (j : ℕ) (x : Covariate d)
-    (y : ℝ) (m : ℕ) (row : Fin (anchoredDimension d C.order) → ℝ) (k : ℕ)
+theorem dyadicIncrementKernel_centered 
+     (hθ : Admissible C θ) j x
+    y m row k
     (z : Fin k → Observation d) :
     dyadicIncrementKernel C θ j x y m row k
       (fun i => incrementGlobalVector j (z i) - incrementGlobalMean θ j) =
@@ -74,14 +84,16 @@ theorem dyadicIncrementKernel_centered {d : ℕ} (C : ModelConstants d)
         (fun i => dyadicIncrementRawVector j x (z i) - dyadicIncrementRawMean θ j x) := by
   simp [dyadicIncrementKernel, ContinuousMultilinearMap.compContinuousLinearMap_apply,
     map_sub, incrementPilotCoordinate_mean C θ hθ]
+end
+
 
 /-- Exact translation of the original coefficient pilot to a single fixed
 global feature vector, with no covariance or mean premise. -/
-theorem dyadicPolynomialPilot_centered_global {d : ℕ} (C : ModelConstants d)
-    [Nonempty (AnchoredIndex d C.order)] (θ : RegressionParameter d) (hθ : Admissible C θ)
-    (n j : ℕ) (x : Covariate d) (y : ℝ) (m : ℕ)
-    (row : Fin (anchoredDimension d C.order) → ℝ)
-    (hdegree : m + anchoredDimension d C.order + 1 ≤ n) (z : Fin n → Observation d) :
+theorem dyadicPolynomialPilot_centered_global 
+    [Nonempty (AnchoredIndex d C.order)] θ (hθ : Admissible C θ)
+    n j x y m
+    row
+    (hdegree : m + anchoredDimension d C.order + 1 ≤ n) z :
     LiftL2.centeredKernelExpansion 0
       (fun r : Fin (m + anchoredDimension d C.order + 1) =>
         dyadicIncrementKernel C θ j x y m row (r.val + 1))
@@ -113,5 +125,7 @@ theorem dyadicPolynomialPilot_centered_global {d : ℕ} (C : ModelConstants d)
   intro e _
   rw [hF]
   exact dyadicIncrementKernel_centered C θ hθ j x y m row _ (fun i => z (e i))
+end
+
 
 end NearlyMinimax

@@ -91,8 +91,7 @@ theorem historyMarkedPrior_original_minimax_path_bound
       (fun ω x y => (hq t ht ω x y).le)
   have hsample (t : ℝ) (ht : t ∈ Icc 0 T) (ω) : L t ω = sampleLaw (θ t ω) n := by
     rw [hθ t ht ω]
-    exact highRealSampleKernel_eq_sampleLaw n a (v-η^2*t) p F hp hF aRaw bRaw haRaw hraw
-      ha.ne' (fun ω x y => (hq t ht ω x y).le) ω
+    solve_by_elim [highRealSampleKernel_eq_sampleLaw]
   have hvariance (t : ℝ) (ht : t ∈ Icc 0 T) (ω) : (θ t ω).variance = v-η^2*t := by
     rw [hθ t ht ω]
     rfl
@@ -124,7 +123,7 @@ theorem historyMarkedPrior_original_minimax_path_bound
   have hh := paper_score_to_risk C σ L θ (fun t => v-η^2*t) R T ε hT hσ hL hsample hvariance
     hV bad hbad hlegal hbadmass hR hc hAC hd hi
   have he : ((v-η^2*T)-(v-η^2*0))^2 = η^4*T^2 := by ring
-  dsimp only at hh ⊢
+  
   rw [he] at hh
   exact hh
 

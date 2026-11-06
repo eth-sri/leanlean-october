@@ -20,7 +20,10 @@ namespace NearlyMinimax
 
 universe u
 
-theorem finite_tree_closed_spanning_walk {V : Type u} [Fintype V]
+section
+variable {V : Type u} [Fintype V]
+
+theorem finite_tree_closed_spanning_walk 
     (T : SimpleGraph V) (hT : T.IsTree) (r : V) :
     ∃ p : T.Walk r r, p.length = 2 * (Fintype.card V - 1) ∧ ∀ v, v ∈ p.support := by
   classical
@@ -32,17 +35,15 @@ theorem finite_tree_closed_spanning_walk {V : Type u} [Fintype V]
     rename_i n ih
     intro V instV hcard T hT r
     by_cases hs : Subsingleton V
-    · let : Subsingleton V := hs
+    · let  := hs
       let : Unique V := { default := r, uniq := fun v => Subsingleton.elim v r }
       refine ⟨.nil, by simp, ?_⟩
       intro v
       simp [Subsingleton.elim v r]
-    · let : Nontrivial V := not_subsingleton_iff_nontrivial.1 hs
+    · let  := not_subsingleton_iff_nontrivial.1 hs
       obtain ⟨a, b, hab, ha, hb⟩ := hT.exists_ne_and_degree_eq_one
       have hleaf : ∃ v : V, v ≠ r ∧ T.degree v = 1 := by
-        by_cases har : a = r
-        · exact ⟨b, fun hbr => hab (har.trans hbr.symm), hb⟩
-        · exact ⟨a, har, ha⟩
+        grind
       obtain ⟨v, hvr, hdeg⟩ := hleaf
       let S : Set V := {v}ᶜ
       let T' := T.induce S
@@ -57,7 +58,7 @@ theorem finite_tree_closed_spanning_walk {V : Type u} [Fintype V]
         exact Fintype.card_subtype_lt (x := v) (by simp [S])
       obtain ⟨p', hp'len, hp'all⟩ := ih (Fintype.card S) hlt S rfl T' hT' r'
       let f : T' →g T := { toFun := Subtype.val, map_rel' := fun h => h }
-      let p : T.Walk r r := p'.map f
+      let p  := p'.map f
       have hplen : p.length = 2 * (Fintype.card S - 1) := by
         simpa only [p, SimpleGraph.Walk.length_map] using hp'len
       have hpall : ∀ x : V, x ≠ v → x ∈ p.support := by
@@ -65,7 +66,7 @@ theorem finite_tree_closed_spanning_walk {V : Type u} [Fintype V]
         rw [show p = p'.map f from rfl, SimpleGraph.Walk.support_map]
         exact List.mem_map.2 ⟨⟨x, by simpa [S] using hxv⟩, hp'all _, rfl⟩
       obtain ⟨w, hvw, _⟩ := T.degree_eq_one_iff_existsUnique_adj.1 hdeg
-      have hwv : w ≠ v := hvw.ne.symm
+      have hwv  := hvw.ne.symm
       have hwp := hpall w hwv
       let left := p.takeUntil w hwp
       let right := p.dropUntil w hwp
@@ -95,12 +96,14 @@ theorem finite_tree_closed_spanning_walk {V : Type u} [Fintype V]
   exact hmain (Fintype.card V) V rfl T hT r
 
 /-- The source's DFS encoding is available for every actual finite connected graph. -/
-theorem finite_connected_closed_spanning_walk {V : Type u} [Fintype V]
+theorem finite_connected_closed_spanning_walk 
     (G : SimpleGraph V) (hG : G.Connected) (r : V) :
     ∃ p : G.Walk r r, p.length = 2 * (Fintype.card V - 1) ∧ ∀ v, v ∈ p.support := by
   obtain ⟨T, hTG, hT⟩ := hG.exists_isTree_le
   obtain ⟨p, hplen, hpall⟩ := finite_tree_closed_spanning_walk T hT r
-  exact ⟨p.mapLe hTG, by simpa only [SimpleGraph.Walk.length_mapLe] using hplen,
-    fun v => by simpa only [SimpleGraph.Walk.support_mapLe_eq_support] using hpall v⟩
+  exact ⟨p.mapLe hTG, by simp_all,
+    fun v => by simp_all⟩
+end
+
 
 end NearlyMinimax

@@ -15,10 +15,16 @@ namespace NearlyMinimax
 
 variable {Ω : Type*} [MeasurableSpace Ω]
 
+section
+variable (μ : Measure Ω) [IsProbabilityMeasure μ] (m : Ω → ℝ) (hm : Measurable m)
+include hm
+
+section
+variable (n : ℕ) (l b : ℝ) (hl : 0 < l) (hbound : ∀ ω, l ≤ m ω ∧ m ω ≤ b)
+include hl hbound
+
 /-- The source mean-one power normalizer is at least one, by the actual tangent inequality. -/
-theorem massPowerNormalizer_one_le (μ : Measure Ω) [IsProbabilityMeasure μ]
-    (m : Ω → ℝ) (hm : Measurable m) (n : ℕ) (l b : ℝ) (hl : 0 < l)
-    (hbound : ∀ ω, l ≤ m ω ∧ m ω ≤ b) (hmean : ∫ ω, m ω ∂μ = 1) :
+theorem massPowerNormalizer_one_le   (hmean : ∫ ω, m ω ∂μ = 1) :
     1 ≤ massPowerNormalizer μ m n := by
   have hi := massPower_integrable μ m hm 1 l b hl hbound
   have him : Integrable m μ := by simpa only [pow_one] using hi
@@ -35,12 +41,10 @@ theorem massPowerNormalizer_one_le (μ : Measure Ω) [IsProbabilityMeasure μ]
   exact hh
 
 /-- The true mass-power tilt of a measurable event is its normalized weighted indicator integral. -/
-theorem massPowerTilt_real_apply (μ : Measure Ω) [IsProbabilityMeasure μ]
-    (m : Ω → ℝ) (hm : Measurable m) (n : ℕ) (l b : ℝ) (hl : 0 < l)
-    (hbound : ∀ ω, l ≤ m ω ∧ m ω ≤ b) (S : Set Ω) (hS : MeasurableSet S) :
+theorem massPowerTilt_real_apply   S (hS : MeasurableSet S) :
     (massPowerTilt μ m n).real S =
       ∫ ω, S.indicator (fun ω => m ω ^ n / massPowerNormalizer μ m n) ω ∂μ := by
-  let := massPowerTilt_isProbability μ m hm n l b hl hbound
+  
   have hG := massPowerNormalizer_pos μ m hm n l b hl hbound
   rw [← integral_indicator_one hS, massPowerTilt,
     integral_withDensity_eq_integral_toReal_smul ((hm.pow_const n).div_const _).ennreal_ofReal
@@ -51,11 +55,12 @@ theorem massPowerTilt_real_apply (μ : Measure Ω) [IsProbabilityMeasure μ]
   have hp : 0 ≤ m ω ^ n / massPowerNormalizer μ m n :=
     div_nonneg (pow_nonneg (hl.le.trans (hbound ω).1) _) hG.le
   by_cases hω : ω ∈ S <;> simp [hω, ENNReal.toReal_ofReal hp, smul_eq_mul]
+end
+
 
 /-- A positive bounded mass has an integrable exponential at every real parameter. -/
-theorem boundedMass_exp_integrable (μ : Measure Ω) [IsProbabilityMeasure μ]
-    (m : Ω → ℝ) (hm : Measurable m) (l b : ℝ) (hl : 0 < l)
-    (hbound : ∀ ω, l ≤ m ω ∧ m ω ≤ b) (u : ℝ) :
+theorem boundedMass_exp_integrable  l b (hl : 0 < l)
+    (hbound : ∀ ω, l ≤ m ω ∧ m ω ≤ b) u :
     Integrable (fun ω => Real.exp (u * (m ω - 1))) μ := by
   apply Integrable.of_bound (Real.measurable_exp.comp (measurable_const.mul (hm.sub measurable_const))).aestronglyMeasurable
     (Real.exp (|u| * (|b| + 1)))
@@ -63,27 +68,21 @@ theorem boundedMass_exp_integrable (μ : Measure Ω) [IsProbabilityMeasure μ]
   intro ω
   change ‖Real.exp (u * (m ω - 1))‖ ≤ _
   rw [Real.norm_eq_abs, abs_of_pos (Real.exp_pos _)]
-  apply Real.exp_le_exp.2
-  have hmabs : |m ω| ≤ |b| := by
-    rw [abs_of_pos (hl.trans_le (hbound ω).1)]
-    exact (hbound ω).2.trans (le_abs_self b)
-  have hz : |m ω - 1| ≤ |b| + 1 := by
-    have hh := abs_sub (m ω) 1
-    norm_num only [abs_one] at hh
-    linarith
-  exact (le_abs_self _).trans (by rw [abs_mul]; exact mul_le_mul_of_nonneg_left hz (abs_nonneg u))
+  grind only [Real.exp_le_exp, abs_of_pos, abs_sub, abs_one, abs_mul, mul_le_mul_of_nonneg_left, abs_nonneg]
+
+section
+variable (n : ℕ) (l b : ℝ) (hl : 0 < l) (hbound : ∀ ω, l ≤ m ω ∧ m ω ≤ b) (hmean : ∫ ω, m ω ∂μ = 1)
+include hl hbound hmean
 
 /-- The positive-side event under a true mass-power tilt satisfies a genuine Chernoff bound. -/
-theorem massPowerTilt_right_chernoff (μ : Measure Ω) [IsProbabilityMeasure μ]
-    (m : Ω → ℝ) (hm : Measurable m) (n : ℕ) (l b : ℝ) (hl : 0 < l)
-    (hbound : ∀ ω, l ≤ m ω ∧ m ω ≤ b) (hmean : ∫ ω, m ω ∂μ = 1)
-    (ε u : ℝ) (hu : 0 ≤ u) :
+theorem massPowerTilt_right_chernoff  
+    ε u (hu : 0 ≤ u) :
     (massPowerTilt μ m n).real {ω | ε < m ω - 1} ≤
-      Real.exp (-u * ε) * ∫ ω, Real.exp (((n : ℝ) + u) * (m ω - 1)) ∂μ := by
+      Real.exp (-u * ε) * ∫ ω, Real.exp ((n + u) * (m ω - 1)) ∂μ := by
   let S := {ω | ε < m ω - 1}
   have hS : MeasurableSet S := measurableSet_lt measurable_const (hm.sub measurable_const)
   have hG := massPowerNormalizer_one_le μ m hm n l b hl hbound hmean
-  have hGpos := massPowerNormalizer_pos μ m hm n l b hl hbound
+  
   have hI := massPower_integrable μ m hm n l b hl hbound
   rw [massPowerTilt_real_apply μ m hm n l b hl hbound S hS, ← integral_const_mul]
   apply integral_mono ((hI.div_const _).indicator hS)
@@ -111,10 +110,8 @@ theorem massPowerTilt_right_chernoff (μ : Measure Ω) [IsProbabilityMeasure μ]
     positivity
 
 /-- The negative-side Chernoff bound uses the true mass-power tilt and m^n≤1 on the lower event. -/
-theorem massPowerTilt_left_chernoff (μ : Measure Ω) [IsProbabilityMeasure μ]
-    (m : Ω → ℝ) (hm : Measurable m) (n : ℕ) (l b : ℝ) (hl : 0 < l)
-    (hbound : ∀ ω, l ≤ m ω ∧ m ω ≤ b) (hmean : ∫ ω, m ω ∂μ = 1)
-    (ε u : ℝ) (hε : 0 ≤ ε) (hu : 0 ≤ u) :
+theorem massPowerTilt_left_chernoff  
+    ε u (hε : 0 ≤ ε) (hu : 0 ≤ u) :
     (massPowerTilt μ m n).real {ω | m ω - 1 < -ε} ≤
       Real.exp (-u * ε) * ∫ ω, Real.exp ((-u) * (m ω - 1)) ∂μ := by
   let S := {ω | m ω - 1 < -ε}
@@ -139,12 +136,16 @@ theorem massPowerTilt_left_chernoff (μ : Measure Ω) [IsProbabilityMeasure μ]
         nlinarith [mul_nonneg hu (sub_nonneg.2 hh)]
   · simp only [Set.indicator_of_notMem hω]
     positivity
+end
+
+end
+
 
 /-- The exact source ε≥8an guard controls the positive-side tilted exponent. -/
-theorem massTilt_exponent_right (a ε : ℝ) (n : ℕ) (ha : 0 < a)
+theorem massTilt_exponent_right a ε (n : ℕ) (ha : 0 < a)
     (hε : 8 * a * (n : ℝ) ≤ ε) :
-    0 ≤ ε / (2 * a) - (n : ℝ) ∧
-      -(ε / (2 * a) - (n : ℝ)) * ε + a * ((n : ℝ) + (ε / (2 * a) - (n : ℝ))) ^ 2 ≤
+    0 ≤ ε / (2 * a) - n ∧
+      -(ε / (2 * a) - n) * ε + a * (n + (ε / (2 * a) - n)) ^ 2 ≤
         -ε ^ 2 / (8 * a) := by
   have hn : (0 : ℝ) ≤ n := Nat.cast_nonneg n
   have he0 : 0 ≤ ε := (by positivity : (0 : ℝ) ≤ 8 * a * (n : ℝ)).trans hε
@@ -157,14 +158,14 @@ theorem massTilt_exponent_right (a ε : ℝ) (n : ℕ) (ha : 0 < a)
     nlinarith [mul_nonneg he0 (sub_nonneg.2 hε)]
   have hid : -(ε / (2 * a) - (n : ℝ)) * ε + a * ((n : ℝ) + (ε / (2 * a) - (n : ℝ))) ^ 2 =
       (n : ℝ) * ε - 2 * (ε ^ 2 / (8 * a)) := by field_simp; ring
-  exact ⟨hu, by rw [hid]; simp only [neg_div]; linarith⟩
+  grind
 
 /-- The exact source lower-tail exponent before weakening its constant. -/
 theorem massTilt_exponent_left (a ε : ℝ) (ha : 0 < a) :
     -(ε / (2 * a)) * ε + a * (-(ε / (2 * a))) ^ 2 ≤ -ε ^ 2 / (8 * a) := by
   have hid : -(ε / (2 * a)) * ε + a * (-(ε / (2 * a))) ^ 2 =
       -2 * (ε ^ 2 / (8 * a)) := by field_simp; ring
-  rw [hid]
+  
   simp only [neg_div]
   have hn : 0 ≤ ε ^ 2 / (8 * a) := div_nonneg (sq_nonneg _) (by positivity)
   linarith
@@ -172,11 +173,11 @@ theorem massTilt_exponent_left (a ε : ℝ) (ha : 0 < a) :
 /-- The source mass-power tilted exceptional tail follows from its actual mean-one MGF.
 This is a probability lemma; the history MGF is established independently from finite label blocks. -/
 theorem massPowerTilt_abs_tail (μ : Measure Ω) [IsProbabilityMeasure μ]
-    (m : Ω → ℝ) (hm : Measurable m) (n : ℕ) (l b : ℝ) (hl : 0 < l)
+    m (hm : Measurable m) (n : ℕ) l b (hl : 0 < l)
     (hbound : ∀ ω, l ≤ m ω ∧ m ω ≤ b) (hmean : ∫ ω, m ω ∂μ = 1)
-    (a ε : ℝ) (ha : 0 < a)
-    (hmgf : ∀ u : ℝ, (∫ ω, Real.exp (u * (m ω - 1)) ∂μ) ≤ Real.exp (a * u ^ 2))
-    (hε : 8 * a * (n : ℝ) ≤ ε) :
+    a ε (ha : 0 < a)
+    (hmgf : ∀ u , (∫ ω, Real.exp (u * (m ω - 1)) ∂μ) ≤ Real.exp (a * u ^ 2))
+    (hε : 8 * a * n ≤ ε) :
     (massPowerTilt μ m n).real {ω | ε < |m ω - 1|} ≤ 2 * Real.exp (-ε ^ 2 / (8 * a)) := by
   let := massPowerTilt_isProbability μ m hm n l b hl hbound
   have he0 : 0 ≤ ε := (by positivity : (0 : ℝ) ≤ 8 * a * (n : ℝ)).trans hε
@@ -200,11 +201,7 @@ theorem massPowerTilt_abs_tail (μ : Measure Ω) [IsProbabilityMeasure μ]
   have hset : {ω | ε < |m ω - 1|} = {ω | ε < m ω - 1} ∪ {ω | m ω - 1 < -ε} := by
     ext ω
     simp only [Set.mem_ofPred_eq, Set.mem_union, lt_abs]
-    constructor <;> intro h <;> rcases h with h | h
-    · exact Or.inl h
-    · exact Or.inr (by linarith)
-    · exact Or.inl h
-    · exact Or.inr (by linarith)
+    grind
   rw [hset]
   exact (measureReal_union_le _ _).trans (by linarith)
 

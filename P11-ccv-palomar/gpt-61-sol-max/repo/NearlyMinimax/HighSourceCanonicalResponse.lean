@@ -34,15 +34,15 @@ variable (hp : ∀ v : HighFrameIndex d D → ℝ, (∑ γ, |v γ|) ≤ Cfr⁻¹
     0 ≤ ternaryMass a (coefficientRegression η g w (fun u : Fin n => highLocalFrameFeature (D := D) k j (x u)) v u) V b)
 include hD hq hM hCfr hℓ hℓN hx ha hp
 
-theorem completeSourceResponseAction_eq_signed_first_action (y : Fin n → Fin 3) :
+theorem completeSourceResponseAction_eq_signed_first_action y :
     highMarkedResponseAction (highUnionLaw R (highCenterMix C))
       (highUnionActivation R (highCenterMix C)) a V η
       (fun e u => highUnionSourceResetDensity C R j h e (x u))
-      (highUnionSourceResetCoefficient C R j h) g w (fun u : Fin n => highLocalFrameFeature (D := D) k j (x u)) y =
-      completeSourceSignedFirstAction (C.densityLower+1/(M : ℝ))
-        (C.densityUpper-1/(M : ℝ)) lam ℓ N μ D M q Cfr U
+      (highUnionSourceResetCoefficient C R j h) g w (fun u  => highLocalFrameFeature (D := D) k j (x u)) y =
+      completeSourceSignedFirstAction (C.densityLower+1/M)
+        (C.densityUpper-1/M) lam ℓ N μ D M q Cfr U
         (fun u => highUnionSourceDensity C R h (x u)) ((highUnionSourceState C R h).2 j)
-        (fun v => highResponseProduct a V η g w (fun u : Fin n => highLocalFrameFeature (D := D) k j (x u)) v y) := by
+        (fun v => highResponseProduct a V η g w (fun u  => highLocalFrameFeature (D := D) k j (x u)) v y) := by
   let Φ := fun v : HighFrameIndex d D → ℝ => highResponseProduct a V η g w (fun u : Fin n => highLocalFrameFeature (D := D) k j (x u)) v y
   have hmΦ : Measurable Φ := highMarkedResponseProduct_measurable a V η (fun v => v)
     (fun γ => measurable_pi_apply γ) g w (fun u : Fin n => highLocalFrameFeature (D := D) k j (x u)) y
@@ -57,14 +57,14 @@ theorem completeSourceResponseAction_eq_signed_first_action (y : Fin n → Fin 3
   dsimp only [Φ]
   ring
 
-theorem completeSourceRawNumerator_eq_canonical (y : Fin n → Fin 3) :
+theorem completeSourceRawNumerator_eq_canonical y :
     highMarkedLocalScoreNumerator (highUnionLaw R (highCenterMix C))
       (highUnionActivation R (highCenterMix C)) a V η
       (fun u => highUnionSourceDensity C R h (x u))
       (fun e u => highUnionSourceResetDensity C R j h e (x u))
-      (highUnionSourceResetCoefficient C R j h) g w (fun u : Fin n => highLocalFrameFeature (D := D) k j (x u)) ((highUnionSourceState C R h).2 j) y =
-      completeSourceRawNumerator (C.densityLower+1/(M : ℝ))
-        (C.densityUpper-1/(M : ℝ)) lam ℓ N μ D M q Cfr a V η U
+      (highUnionSourceResetCoefficient C R j h) g w (fun u  => highLocalFrameFeature (D := D) k j (x u)) ((highUnionSourceState C R h).2 j) y =
+      completeSourceRawNumerator (C.densityLower+1/M)
+        (C.densityUpper-1/M) lam ℓ N μ D M q Cfr a V η U
         (fun u => highUnionSourceDensity C R h (x u)) g w ((highUnionSourceState C R h).2 j) y := by
   unfold highMarkedLocalScoreNumerator completeSourceRawNumerator
   rw [completeSourceResponseAction_eq_signed_first_action C hD hq hM Cfr lam ℓ N μ

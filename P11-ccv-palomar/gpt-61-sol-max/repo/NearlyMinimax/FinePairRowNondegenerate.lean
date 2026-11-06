@@ -15,9 +15,9 @@ namespace NearlyMinimax
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 600000
 
-theorem finePairRowMass_positive (d : ℕ) [NeZero d] (D : ℕ) (hD : 3 ≤ D)
-    (M q : ℕ) (hq : 1 ≤ q) (a b : ℝ) (ha : 0 < a) (hab : a < b)
-    (C : ℝ) (hC : 0 < C) (T₀ N : ℝ) (hT₀ : 0 < T₀) (hTN : T₀ < N)
+theorem finePairRowMass_positive d [NeZero d] D (hD : 3 ≤ D)
+    M q (hq : 1 ≤ q) a b (ha : 0 < a) (hab : a < b)
+    C (hC : 0 < C) T₀ N (hT₀ : 0 < T₀) (hTN : T₀ < N)
     (i : FinePairRowTag) : 0 < finePairRowMass d D M q a b C T₀ N i := by
   have hr : 0 < ∑ h : Fin (2*q+2), |responseWeight q h| :=
     lt_of_lt_of_le zero_lt_one (response_absolute_cost_ge_one q hq)

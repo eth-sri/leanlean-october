@@ -50,8 +50,7 @@ theorem historyMarkedPrior_rawObservable_hasDerivAt (dependent : J → J → Pro
   have hG'b (u : ℝ) (hu : u ∈ Ioo 0 T) (ω : HistoryMarked dependent E) : |G' u ω| ≤ M' := by
     change |-η ^ 2 * highRawObservableVarianceDerivative n a (v - η ^ 2 * u) (p ω) (F ω) H| ≤ _
     rw [abs_mul, abs_neg, abs_of_nonneg (sq_nonneg η)]
-    exact mul_le_mul_of_nonneg_left (highRawObservableVarianceDerivative_abs_le n a (v - η ^ 2 * u)
-      P B ha hP hB (p ω) (F ω) (hpb ω) (hq u hu ω) H hHb) (sq_nonneg η)
+    grind only [mul_le_mul_of_nonneg_left, highRawObservableVarianceDerivative_abs_le, sq_nonneg]
   have hGD (ω : HistoryMarked dependent E) (u : ℝ) (hu : u ∈ Ioo 0 T) :
       HasDerivAt (fun w => G w ω) (G' u ω) u :=
     highRawObservable_hasDerivAt_path n a v η u T P B ha hu.1 hu.2 hP hB p F hp hF hpb hq H hH hHb ω

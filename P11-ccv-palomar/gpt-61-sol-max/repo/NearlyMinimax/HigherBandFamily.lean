@@ -13,24 +13,24 @@ namespace NearlyMinimax
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 700000
 
-def higherBandTargetScale (d r : ℕ) (N μ : ℝ) : ℝ :=
+def higherBandTargetScale (d r : ℕ) N μ  :=
   N * (μ * (1 + Real.log N))^(((r : ℝ)-2)/(d : ℝ))
 
-def higherBandFamilyTarget {D : ℕ} (i : Fin (D-2) × Bool) : ℕ := i.1.val + 3
-def higherBandFamilyGuardDegree {D : ℕ} (M : ℕ) (i : Fin (D-2) × Bool) : ℕ :=
+def higherBandFamilyTarget {D } (i : Fin (D-2) × Bool)  := i.1.val + 3
+def higherBandFamilyGuardDegree {D } M (i : Fin (D-2) × Bool)  :=
   if i.2 then M else D
-def higherBandFamilyUpper (d : ℕ) {D : ℕ} (ℓ N μ : ℝ) (i : Fin (D-2) × Bool) : ℝ :=
+def higherBandFamilyUpper d {D } ℓ N μ (i : Fin (D-2) × Bool)  :=
   if i.2 then higherBandTargetScale d (higherBandFamilyTarget i) N μ
   else min ℓ (higherBandTargetScale d (higherBandFamilyTarget i) N μ)
 
-def HigherBandFamilySelected (d D M q : ℕ) (a b C lam ℓ N μ : ℝ) (i : Fin (D-2) × Bool) : Prop :=
+def HigherBandFamilySelected d D M q a b C lam ℓ N μ (i : Fin (D-2) × Bool)  :=
   1 ≤ higherBandFamilyUpper d ℓ N μ i ∧
   (i.2 = true → ℓ < higherBandTargetScale d (higherBandFamilyTarget i) N μ) ∧
   higherBandFamilyTarget i ≤ higherBandFamilyGuardDegree M i ∧
   0 < higherBandRowMass d (higherBandFamilyTarget i) (higherBandFamilyGuardDegree M i) D q
     a b C lam ℓ (higherBandFamilyUpper d ℓ N μ i) i.2
 
-abbrev HigherBandFamilyIndex (d D M q : ℕ) (a b C lam ℓ N μ : ℝ) :=
+abbrev HigherBandFamilyIndex d D M q a b C lam ℓ N μ :=
   {i : Fin (D-2) × Bool // HigherBandFamilySelected d D M q a b C lam ℓ N μ i}
 
 instance higherBandFamilyIndex_fintype (d D M q : ℕ) (a b C lam ℓ N μ : ℝ) :
@@ -38,11 +38,10 @@ instance higherBandFamilyIndex_fintype (d D M q : ℕ) (a b C lam ℓ N μ : ℝ
   classical
   infer_instance
 
-instance higherBandFamilyIndex_measurable (d D M q : ℕ) (a b C lam ℓ N μ : ℝ) :
-    MeasurableSpace (HigherBandFamilyIndex d D M q a b C lam ℓ N μ) := ⊤
 
-def HigherBandFamilyMark (d D M q : ℕ) (a b C lam ℓ N μ : ℝ)
-    (i : HigherBandFamilyIndex d D M q a b C lam ℓ N μ) : Type :=
+
+def HigherBandFamilyMark d D M q a b C lam ℓ N μ
+    (i : HigherBandFamilyIndex d D M q a b C lam ℓ N μ)  :=
   HigherBandRowMark d (higherBandFamilyTarget i.val) (higherBandFamilyGuardDegree M i.val) D q i.val.2
 
 instance higherBandFamilyMark_measurable (d D M q : ℕ) (a b C lam ℓ N μ : ℝ)
@@ -57,17 +56,20 @@ instance higherBandFamilyMark_standardBorel (d D M q : ℕ) (a b C lam ℓ N μ 
   letI : StandardBorelSpace (HigherBandCarrier d (higherBandFamilyTarget i.val) i.val.2) :=
     higherBandCarrier_standardBorel _ _ _
   letI : StandardBorelSpace (HighPacketMarkIndex (HighFrameIndex d D)
-      (higherBandFamilyGuardDegree M i.val) (higherBandFamilyTarget i.val) D q) := by infer_instance
+      (higherBandFamilyGuardDegree M i.val) (higherBandFamilyTarget i.val) D q) := inferInstance
   dsimp [HigherBandFamilyMark, higherBandFamilyMark_measurable]
   infer_instance
 
-def higherBandFamilyComponent (d k D M q : ℕ) (a b C lam ℓ N μ : ℝ)
-    (i : HigherBandFamilyIndex d D M q a b C lam ℓ N μ) :
+section
+variable (d k D M q : ℕ) (a b C lam ℓ N μ : ℝ)
+
+def higherBandFamilyComponent 
+    i :
     HighUnionRowData d k D Unit (fun _ => HigherBandFamilyMark d D M q a b C lam ℓ N μ i) :=
   higherBandRowData d k (higherBandFamilyTarget i.val) (higherBandFamilyGuardDegree M i.val) D q
     a b C lam ℓ (higherBandFamilyUpper d ℓ N μ i.val) i.val.2
 
-def higherBandFamilyData (d k D M q : ℕ) (a b C lam ℓ N μ : ℝ) :
+def higherBandFamilyData  :
     HighUnionRowData d k D (HigherBandFamilyIndex d D M q a b C lam ℓ N μ)
       (HigherBandFamilyMark d D M q a b C lam ℓ N μ) where
   rowLaw := fun i => (higherBandFamilyComponent d k D M q a b C lam ℓ N μ i).rowLaw ()
@@ -77,19 +79,21 @@ def higherBandFamilyData (d k D M q : ℕ) (a b C lam ℓ N μ : ℝ) :
   rowSlope := fun j i => (higherBandFamilyComponent d k D M q a b C lam ℓ N μ i).rowSlope j ()
   rowVector := fun i => (higherBandFamilyComponent d k D M q a b C lam ℓ N μ i).rowVector ()
   rowTime := fun i => (higherBandFamilyComponent d k D M q a b C lam ℓ N μ i).rowTime ()
+end
 
-theorem higherBandFamily_target_bounds (d D M q : ℕ) (a b C lam ℓ N μ : ℝ)
+
+theorem higherBandFamily_target_bounds d D M q a b C lam ℓ N μ
     (i : HigherBandFamilyIndex d D M q a b C lam ℓ N μ) :
     3 ≤ higherBandFamilyTarget i.val ∧ higherBandFamilyTarget i.val ≤ D := by
   have hi := i.val.1.isLt
   dsimp [higherBandFamilyTarget]
   omega
 
-theorem higherBandFamily_mass_positive (d k D M q : ℕ) (a b C lam ℓ N μ : ℝ)
-    (i : HigherBandFamilyIndex d D M q a b C lam ℓ N μ) :
+theorem higherBandFamily_mass_positive d k D M q a b C lam ℓ N μ
+    i :
     0 < (higherBandFamilyData d k D M q a b C lam ℓ N μ).rowMass i := i.property.2.2.2
 
-theorem higherBand_zero_mass_signed_zero (d r m D q : ℕ) (a b C lam L T : ℝ)
+theorem higherBand_zero_mass_signed_zero d r m D q a b C lam L T
     (hT : 1 ≤ T) (fine : Bool) (hz : higherBandRowMass d r m D q a b C lam L T fine = 0) :
     higherBandSignedRow d r m D q a b C lam L T fine = 0 := by
   letI := higherBandCarrierMeasure_finite d r L T hT fine
@@ -102,7 +106,7 @@ theorem higherBand_zero_mass_signed_zero (d r m D q : ℕ) (a b C lam L T : ℝ)
     rw [higherBandSignedRow, highPacketSignedMeasure, Measure.variation_withDensityᵥ hi]
     rw [withDensity_apply _ MeasurableSet.univ, Measure.restrict_univ]
     exact ne_of_lt hi.hasFiniteIntegral
-  have hzero : (higherBandSignedRow d r m D q a b C lam L T fine).variation univ = 0 :=
+  have hzero  :=
     (ENNReal.toReal_eq_zero_iff _).mp hz |>.resolve_right hv
   exact VectorMeasure.variation_eq_zero.mp ((Measure.measure_univ_eq_zero).mp hzero)
 

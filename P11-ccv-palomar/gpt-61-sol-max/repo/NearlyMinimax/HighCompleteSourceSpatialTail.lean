@@ -19,8 +19,8 @@ set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1200000
 attribute [local instance] Classical.propDecidable
 
-theorem fullSpatialPatchDesign_real_univ (d n : ℕ) :
-    (fullSpatialPatchDesign d n).real univ = (2 : ℝ)^(d*n) := by
+theorem fullSpatialPatchDesign_real_univ d n :
+    (fullSpatialPatchDesign d n).real univ = 2^(d*n) := by
   simp only [fullSpatialPatchDesign, measureReal_def, Measure.pi_univ,
     Measure.restrict_apply_univ, Finset.prod_const, Finset.card_univ,
     Fintype.card_fin, ENNReal.toReal_pow]

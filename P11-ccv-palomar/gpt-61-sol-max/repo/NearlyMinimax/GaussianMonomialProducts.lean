@@ -19,7 +19,7 @@ def gaussianAffineExponent {d : ℕ} (a : Fin d) (s : Bool) : Fin d →₀ ℕ :
 
 def gaussianAffineCoefficient (s : Bool) : ℝ := if s then -8 else 2
 
-theorem gaussianAffinePolynomial_monomial {d : ℕ} (a : Fin d) (s : Bool) :
+theorem gaussianAffinePolynomial_monomial {d } (a : Fin d) (s : Bool) :
     gaussianAffinePolynomial a s =
       monomial (gaussianAffineExponent a s) (gaussianAffineCoefficient s) := by
   cases s <;> simp only [gaussianAffinePolynomial, gaussianAffineExponent, gaussianAffineCoefficient,
@@ -40,7 +40,10 @@ theorem gaussianPolynomialProduct_monomial {κ : Type*} [Fintype κ] {d : ℕ}
 theorem gaussianAffineCoefficient_abs_le_eight (s : Bool) : |gaussianAffineCoefficient s| ≤ 8 := by
   cases s <;> norm_num [gaussianAffineCoefficient]
 
-theorem gaussianPolynomialProduct_coefficient_bound {κ : Type*} [Fintype κ]
+section
+variable {κ : Type*} [Fintype κ]
+
+theorem gaussianPolynomialProduct_coefficient_bound 
     (s : κ → Bool) :
     |∏ i, gaussianAffineCoefficient (s i)| ≤ (8 : ℝ) ^ Fintype.card κ := by
   rw [Finset.abs_prod]
@@ -49,7 +52,7 @@ theorem gaussianPolynomialProduct_coefficient_bound {κ : Type*} [Fintype κ]
       (fun i _ => gaussianAffineCoefficient_abs_le_eight (s i))
     _ = _ := by simp
 
-theorem gaussianPolynomialProduct_frame_cost {κ : Type*} [Fintype κ] {d D : ℕ}
+theorem gaussianPolynomialProduct_frame_cost  {d D : ℕ}
     (a : κ → Fin d) (s : κ → Bool) :
     (∑ β : HighFrameIndex d D, |highFrameCoefficients (gaussianPolynomialProduct a s) β|) ≤
       (8 : ℝ) ^ Fintype.card κ := by
@@ -71,6 +74,8 @@ theorem gaussianPolynomialProduct_frame_cost {κ : Type*} [Fintype κ] {d D : �
   calc
     _ ≤ |∏ i, gaussianAffineCoefficient (s i)| * 1 := mul_le_mul_of_nonneg_left h (abs_nonneg _)
     _ ≤ _ := by simpa only [mul_one] using gaussianPolynomialProduct_coefficient_bound s
+end
+
 
 /-- Uniform finite-frame coefficient cost of the actual rank-one product
 amplitude, derived from its monomial products. -/

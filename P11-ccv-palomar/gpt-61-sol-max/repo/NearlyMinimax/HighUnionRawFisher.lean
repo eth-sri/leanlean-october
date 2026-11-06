@@ -19,8 +19,8 @@ attribute [local irreducible] highUnionSourceDensity highUnionSourceRegression h
   historyMarkedAppend highRawSampleLikelihood massPowerNormalizer
 
 /-- Exact spatial factorial series in the original normalized experiment. -/
-def highSourceSpatialSeries (d k n : ℕ) [NeZero k] (pMinus cMass : ℝ)
-    (H : HighWindowLabels d k → (r : ℕ) → (Fin r → Covariate d) → ℝ) : ℝ :=
+def highSourceSpatialSeries d k n [NeZero k] pMinus cMass
+    (H : HighWindowLabels d k → (r : ℕ) → (Fin r → Covariate d) → ℝ)  :=
   (3^d : ℕ)*∑ j : HighWindowLabels d k, ∑ r ∈ Finset.range (n+1),
     ((n : ℝ)*highFixedScoreDenominator pMinus cMass*(2/(k : ℝ))^d)^r /
       (r.factorial : ℝ)*∫ u, H j r u
@@ -88,7 +88,7 @@ include G hpos in
       unfold highSourceSpatialSeries at hb0
       have hb := (hs h).2.trans hb0
       simpa only [highHistoryLikelihoodScore] using hb)
-  have hG : 0 < massPowerNormalizer ν (fun h => highRawDensityMass (p h)) n :=
+  have hG  :=
     massPowerNormalizer_pos ν _ (highRawDensityMass_joint_measurable p hp) n
       C.densityLower C.densityUpper C.densityLower_pos
       (fun h => highRawDensityMass_mem_Icc (p h) hp.of_uncurry_left

@@ -13,8 +13,11 @@ noncomputable section
 open MeasureTheory
 namespace NearlyMinimax
 
+section
+variable {I : Type*}
+
 /-- The sum sigma-algebra makes sectionwise measurable maps measurable. -/
-theorem historySigma_measurable_iff {I : Type*} {X : I → Type*} {Y : Type*}
+theorem historySigma_measurable_iff  {X : I → Type*} {Y : Type*}
     [∀ i, MeasurableSpace (X i)] [MeasurableSpace Y] (f : Sigma X → Y) :
     Measurable f ↔ ∀ i, Measurable (fun x => f ⟨i, x⟩) := by
   constructor
@@ -27,7 +30,7 @@ theorem historySigma_measurable_iff {I : Type*} {X : I → Type*} {Y : Type*}
     exact fun i => hf i hs
 
 /-- Standard Borel fibers let a product and a countable disjoint union interchange measurably. -/
-def historySigmaProdMeasurableEquiv {I : Type*} [Countable I] (X : I → Type*) (Y : Type*)
+def historySigmaProdMeasurableEquiv  [Countable I] (X : I → Type*) (Y : Type*)
     [∀ i, MeasurableSpace (X i)] [∀ i, StandardBorelSpace (X i)]
     [MeasurableSpace Y] [StandardBorelSpace Y] : (Sigma X) × Y ≃ᵐ Sigma (fun i => X i × Y) := by
   let := fun i => upgradeStandardBorel (X i)
@@ -35,21 +38,23 @@ def historySigmaProdMeasurableEquiv {I : Type*} [Countable I] (X : I → Type*) 
   let : BorelSpace (Sigma X) := historySigma_borelSpace
   let : BorelSpace (Sigma (fun i => X i × Y)) := historySigma_borelSpace
   exact (Homeomorph.sigmaProdDistrib (X := X) (Y := Y)).toMeasurableEquiv
+end
+
 
 variable {J : Type*} [Fintype J] [LinearOrder J]
 
+section
+variable (dependent : J → J → Prop) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i) (j : J) {E : Type*}
+include hsymm j
+
 /-- Apply one independent marked local update and reorder into the genuine canonical append. -/
-def historyMarkedAppend (dependent : J → J → Prop)
-    (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
-    (j : J) {E : Type*} [MeasurableSpace E] (h : HistoryMarked dependent E × E) :
+def historyMarkedAppend  [MeasurableSpace E] (h : HistoryMarked dependent E × E) :
     HistoryMarked dependent E :=
   ⟨historyShapeAppend dependent j h.1.1,
     historyCanonicalMarkAppendEquiv dependent hsymm j h.1.1 (h.2, h.1.2)⟩
 
 /-- Both the old history and fresh mark vary measurably in the actual append operation. -/
-theorem historyMarkedAppend_measurable (dependent : J → J → Prop)
-    (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
-    (j : J) {E : Type*} [MeasurableSpace E] [StandardBorelSpace E] :
+theorem historyMarkedAppend_measurable  [MeasurableSpace E] [StandardBorelSpace E] :
     Measurable (historyMarkedAppend dependent hsymm j (E := E)) := by
   let X := fun g : HistoryShape (fun a b => ¬ dependent a b) => Fin (historyShapeLength dependent g) → E
   let e := historySigmaProdMeasurableEquiv X E
@@ -63,5 +68,7 @@ theorem historyMarkedAppend_measurable (dependent : J → J → Prop)
       ((historyCanonicalMarkAppendEquiv dependent hsymm j g).measurable.comp
         MeasurableEquiv.prodComm.measurable)
   exact hf.comp e.measurable
+end
+
 
 end NearlyMinimax

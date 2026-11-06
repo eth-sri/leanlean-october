@@ -19,25 +19,23 @@ set_option maxHeartbeats 1500000
 attribute [local instance] Classical.propDecidable
 attribute [local irreducible] highUnionSourceDensity highUnionSourceState historyMarkedAppend
 
- theorem completeSource_original_higher_geometry {d : ℕ} [NeZero d]
-    (C : ModelConstants d) (Q : LowSmoothnessTernaryConstants C) :
+ theorem completeSource_original_higher_geometry {d } [NeZero d]
+    C (Q : LowSmoothnessTernaryConstants C) :
     ∃ Cfr0 eta0 : ℝ, 1 ≤ Cfr0 ∧ 0 < eta0 ∧
       ∀ k D M q : ℕ, ∀ (_ : NeZero k), ∀ (_ : LinearOrder (HighWindowLabels d k)),
-      4 ≤ k → 3 ≤ D → 1 ≤ q → highCenterResolutionThreshold C ≤ (M : ℝ) →
-      ∀ Cfr c0 ell N mu cf : ℝ, Cfr0 ≤ Cfr → 1 ≤ ell → ell < N → 0 ≤ cf →
-      cf*(k : ℝ)^(-C.smoothness) ≤ eta0 →
+      4 ≤ k → 3 ≤ D → 1 ≤ q → highCenterResolutionThreshold C ≤ M →
+      ∀ Cfr c0 ell N mu cf , Cfr0 ≤ Cfr → 1 ≤ ell → ell < N → 0 ≤ cf →
+      cf*k^(-C.smoothness) ≤ eta0 →
       shrunkDensityExponent C.densityLower C.densityUpper M ≤ c0 →
       (∀ j : Fin (D-2), 0 < higherBandTargetScale d (j.val+3) N mu) →
       (∀ j : Fin (D-2), ell < higherBandTargetScale d (j.val+3) N mu → j.val+3 ≤ M) →
-      ∀ Rbound : ℕ, (∀ r ∈ ordinaryFineAliasTargetSet d D ell N mu, 1 ≤ r ∧ r ≤ Rbound) →
-      ∀ V : ℝ, |V-Q.v| ≤ Q.ρ → ∀ j : HighWindowLabels d k,
-      ∀ h : HistoryMarked (fun i j => j ∈ highNeighborLabels d k i)
-        (HighUnionMark (SourceRowMark d D M q (C.densityLower+1/(M : ℝ))
-          (C.densityUpper-1/(M : ℝ)) Cfr (spatialInterpolationLambda d) ell N mu)),
-      ∀ n : ℕ, 3 ≤ n → n ≤ D → ∀ x : Fin n → Covariate d,
+      ∀ Rbound , (∀ r ∈ ordinaryFineAliasTargetSet d D ell N mu, 1 ≤ r ∧ r ≤ Rbound) →
+      ∀ V , |V-Q.v| ≤ Q.ρ → ∀ j ,
+      ∀ h ,
+      ∀ n , 3 ≤ n → n ≤ D → ∀ x ,
       (∀ i, x i ∈ highTorusPatch d k j) →
       let R := completeSourceRows C k D M q Cfr (spatialInterpolationLambda d) ell N mu
-      let eta := cf*(k : ℝ)^(-C.smoothness)
+      let eta := cf*k^(-C.smoothness)
       selectedRawSquareEnergy (highUnionSourceRawNumerator C R n Q.a V eta h j) x ≤
         completeSourceHigherGeometryEnvelope (D := D) C.densityLower C.densityUpper c0 ell N mu
           M Rbound q Cfr Q.a Q.ρ eta (highPatchProductChart d k j x) := by
@@ -46,8 +44,8 @@ attribute [local irreducible] highUnionSourceDensity highUnionSourceState histor
   refine ⟨max CfrG CfrR, min etaG etaR, hfrG.trans (le_max_left _ _), lt_min hetaG hetaR,?_⟩
   intro k D M q hk0 horder hk hD hq hM Cfr c0 ell N mu cf hfr hell hellN hcf heta htau hnu hFine
     Rbound hI V hV j h n hn hnD x hx
-  letI := hk0
-  letI := horder
+  
+  
   let lam := spatialInterpolationLambda d
   let R := completeSourceRows C k D M q Cfr lam ell N mu
   let eta := cf*(k : ℝ)^(-C.smoothness)
@@ -82,12 +80,11 @@ attribute [local irreducible] highUnionSourceDensity highUnionSourceState histor
       V hV j h n x hx y).1
   have hs : selectedRawSquareEnergy (highUnionSourceRawNumerator C R n Q.a V eta h j) x =
       ∑ y : Fin n → Fin 3, completeSourceRawNumerator (C.densityLower+1/(M : ℝ)) (C.densityUpper-1/(M : ℝ)) lam ell N mu D M q Cfr Q.a V eta U p g w (c j) y^2 := by
-    unfold selectedRawSquareEnergy
+    
     apply Finset.sum_congr (by ext y; simp)
     intro y _
     rw [he]
-  change selectedRawSquareEnergy (highUnionSourceRawNumerator C R n Q.a V eta h j) x ≤
-    completeSourceHigherGeometryEnvelope (D := D) C.densityLower C.densityUpper c0 ell N mu M Rbound q Cfr Q.a Q.ρ eta U
+  
   exact hs.trans_le (by simpa only [one_div] using hcap)
 
 end NearlyMinimax

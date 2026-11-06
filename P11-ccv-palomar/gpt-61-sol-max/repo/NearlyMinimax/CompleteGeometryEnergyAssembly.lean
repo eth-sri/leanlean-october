@@ -16,34 +16,40 @@ namespace NearlyMinimax
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1000000
 
-def completeGeometryDefectConstant (d q : ℕ) (B C a rho Cs : ℝ) : ℝ :=
+section
+variable (d q : ℕ)
+include d q
+
+def completeGeometryDefectConstant  B C a rho Cs  :=
   1+|completeGeometryRadialConstant d B a rho Cs|+
     4*|cardinalGeometryFactorialConstant d q B C a rho Cs|
 
-def completeGeometryFieldConstant (d q : ℕ) (aD bD C a rho c0 Cs : ℝ) : ℝ :=
+def completeGeometryFieldConstant  aD bD C a rho c0 Cs  :=
   1+4*|finePairFieldFactorialConstant d q aD bD C a rho c0 (3*Cs)|
 
-def completeGeometryAliasConstant (d q : ℕ) (aD bD C a rho c0 K Cs Cord : ℝ) : ℝ :=
+def completeGeometryAliasConstant  aD bD C a rho c0 K Cs Cord  :=
   1+4*|Cord|+4*|finePairSaddleAliasFactorialConstant d q aD bD C a rho c0 K (3*Cs)|
 
-theorem completeGeometryDefectConstant_pos (d q : ℕ) (B C a rho Cs : ℝ) :
+theorem completeGeometryDefectConstant_pos  B C a rho Cs :
     0 < completeGeometryDefectConstant d q B C a rho Cs := by
   unfold completeGeometryDefectConstant
   positivity
 
-theorem completeGeometryFieldConstant_pos (d q : ℕ) (aD bD C a rho c0 Cs : ℝ) :
+theorem completeGeometryFieldConstant_pos  aD bD C a rho c0 Cs :
     0 < completeGeometryFieldConstant d q aD bD C a rho c0 Cs := by
   unfold completeGeometryFieldConstant
   positivity
 
-theorem completeGeometryAliasConstant_pos (d q : ℕ) (aD bD C a rho c0 K Cs Cord : ℝ) :
+theorem completeGeometryAliasConstant_pos  aD bD C a rho c0 K Cs Cord :
     0 < completeGeometryAliasConstant d q aD bD C a rho c0 K Cs Cord := by
   unfold completeGeometryAliasConstant
   positivity
+end
 
-theorem four_component_raw_energy_algebra {mu Pdef Pal Plo A2 Ad Ao Ap Af : ℝ}
+
+theorem four_component_raw_energy_algebra {mu Pdef Pal Plo A2 Ad Ao Ap Af }
     (hmu : 0 ≤ mu) (hPd : 0 ≤ Pdef) (hPal : 0 ≤ Pal) (hPlo : 0 ≤ Plo)
-    (hPloPal : Plo ≤ Pal) (hAo : 0 ≤ Ao) (hAp : 0 ≤ Ap) (M : ℕ) :
+    (hPloPal : Plo ≤ Pal) (hAo : 0 ≤ Ao) (hAp : 0 ≤ Ap) M :
     A2*Pdef+4*(Ad*Pdef+Ao*Pal*poissonCountWeight (Ao*mu) (M+1)+
       Ap*Plo*poissonCountWeight (Ap*mu) (M+1)+Af*Pdef) ≤
       3*((1+|A2|+4*|Ad|)+(1+4*|Af|))*Pdef+
@@ -76,8 +82,11 @@ theorem four_component_raw_energy_algebra {mu Pdef Pal Plo A2 Ad Ao Ap Af : ℝ}
   dsimp only [C6] at ho hp hAli hd
   nlinarith only [ho,hp,hAli,hd]
 
-theorem completeSourceGeometryEnvelope_refined_integral {d : ℕ}
-    (D M R q j : ℕ) (hj : 3+j ≤ D) (aD bD c0 ell N mu C a rho eta Chi Bl : ℝ) :
+section
+variable {d : ℕ}
+
+theorem completeSourceGeometryEnvelope_refined_integral 
+    D M R q j (hj : 3+j ≤ D) aD bD c0 ell N mu C a rho eta Chi Bl :
     (∫ U, completeSourceGeometryEnvelope (d := d) D M R q aD bD c0 ell N mu C a rho eta Chi Bl (3+j) U
       ∂fullSpatialPatchDesign d (3+j)) =
       ∫ U, completeSourceHigherGeometryEnvelope (d := d) (n := 3+j) (D := D)
@@ -86,7 +95,7 @@ theorem completeSourceGeometryEnvelope_refined_integral {d : ℕ}
   rw [hcast] at hj ⊢
   simp only [completeSourceGeometryEnvelope,if_pos hj]
 
-theorem completeSourceGeometryEnvelope_factorial_from_higher {d : ℕ} (hd : 0 < d)
+theorem completeSourceGeometryEnvelope_factorial_from_higher  (hd : 0 < d)
     (D M R q n : ℕ) (hD : 3 ≤ D)
     (aD bD c0 K ell N mu C a rho eta Chi Bl Cs Cord tau : ℝ)
     (hN : 0 < N) (hCs : 0 ≤ Cs) (hmu : 0 ≤ mu) (hmu1 : mu ≤ 1)
@@ -155,5 +164,7 @@ theorem completeSourceGeometryEnvelope_factorial_from_higher {d : ℕ} (hd : 0 <
     (Real.exp (completeGeometryExteriorConstant d Cs Chi)*eta^4*(Bl+1)^2*
       poissonCountWeight (completeGeometryExteriorConstant d Cs Chi*mu) (D+1))
   convert h using 1 <;> (try dsimp [e,completeGeometryDefectConstant,completeGeometryFieldConstant,completeGeometryAliasConstant]) <;> ring
+end
+
 
 end NearlyMinimax

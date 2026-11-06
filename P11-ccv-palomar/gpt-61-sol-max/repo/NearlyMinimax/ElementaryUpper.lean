@@ -16,22 +16,39 @@ namespace NearlyMinimax
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 800000
 
-def elementaryDenominatorKernel {d : ℕ} (k : ℕ) (hk : 0 < k) :
+section
+variable {d : ℕ}
+
+section
+variable (k : ℕ) (hk : 0 < k)
+include hk
+
+def elementaryDenominatorKernel   :
     Observation d × Observation d → ℝ := sameLabelKernel (regularObservationLabel k hk)
 
-def elementaryNumeratorKernel {d : ℕ} (k : ℕ) (hk : 0 < k) :
+def elementaryNumeratorKernel   :
     Observation d × Observation d → ℝ :=
   pairWindowScore (regularObservationLabel k hk) Prod.snd 0
+end
 
-def elementaryNumerator {d : ℕ} (n k : ℕ) (hk : 0 < k) :
+
+section
+variable (n k : ℕ) (hk : 0 < k)
+include hk
+
+def elementaryNumerator   :
     (Fin n → Observation d) → ℝ :=
   PairUStatistic.pairAverage n (elementaryNumeratorKernel k hk)
 
-def elementaryDenominator {d : ℕ} (n k : ℕ) (hk : 0 < k) :
+def elementaryDenominator   :
     (Fin n → Observation d) → ℝ :=
   PairUStatistic.pairAverage n (elementaryDenominatorKernel k hk)
+end
 
-def elementaryFloor (d k : ℕ) : ℝ := 1 / (2 * (k : ℝ) ^ d)
+end
+
+
+def elementaryFloor (d k : ℕ)  := 1 / (2 * (k : ℝ) ^ d)
 
 def elementaryGridEstimator {d : ℕ} (C : ModelConstants d) (n k : ℕ) (hk : 0 < k) :
     Estimator d n :=
@@ -52,8 +69,8 @@ theorem pairAverage_sub_mul {E : Type*} [MeasurableSpace E] (n : ℕ)
   simp_rw [Finset.sum_sub_distrib, ← Finset.mul_sum]
   ring
 
-theorem elementary_score_identity {d : ℕ} (θ : RegressionParameter d)
-    (n k : ℕ) (hk : 0 < k) (z : Fin n → Observation d) :
+theorem elementary_score_identity {d } (θ : RegressionParameter d)
+    n k hk z :
     elementaryNumerator n k hk z - θ.variance * elementaryDenominator n k hk z =
       PairUStatistic.pairAverage n (regularPairScore θ k hk) z := by
   have he : regularPairScore θ k hk =
@@ -66,13 +83,13 @@ theorem elementary_score_identity {d : ℕ} (θ : RegressionParameter d)
   rw [he, pairAverage_sub_mul]
   rfl
 
-theorem elementary_denominator_fluctuation_le {d n : ℕ} (C : ModelConstants d)
+theorem elementary_denominator_fluctuation_le {d n } C
     (θ : RegressionParameter d) (hθ : Admissible C θ) (hn : 2 ≤ n)
-    (k : ℕ) (hk : 0 < k) :
+    k hk :
     (∫ z, (elementaryDenominator n k hk z - regularGridCollisionMass θ k hk) ^ 2
       ∂sampleLaw θ n) ≤
-      4 / (n : ℝ) * (C.densityUpper / (k : ℝ) ^ d) ^ 2 +
-      2 / ((n : ℝ) * (n - 1 : ℕ)) * (C.densityUpper / (k : ℝ) ^ d) := by
+      4 / n * (C.densityUpper / k ^ d) ^ 2 +
+      2 / (n * (n - 1 : ℕ)) * (C.densityUpper / k ^ d) := by
   let := observationLaw_isProbability C θ hθ
   let := sampleLaw_isProbability C θ hθ n
   have hi := iIndepFun_pi (μ := fun _ : Fin n => observationLaw θ)
@@ -82,7 +99,7 @@ theorem elementary_denominator_fluctuation_le {d n : ℕ} (C : ModelConstants d)
     (fun i (z : Fin n → Observation d) => z i) hi hp
     (sameLabelKernel_measurable _ (regularObservationLabel_measurable k hk))
     (sameLabelKernel_memLp (observationLaw θ) _ (regularObservationLabel_measurable k hk))
-    (fun x y => by exact (sameLabelKernel_symmetric _
+    (fun x y => (sameLabelKernel_symmetric _
       (regularObservationLabel_measurable k hk) (x, y)).symm)
   change (∫ z, (elementaryDenominator n k hk z -
       ∫ p, sameLabelKernel (regularObservationLabel k hk) p
@@ -103,32 +120,38 @@ theorem elementary_denominator_fluctuation_le {d n : ℕ} (C : ModelConstants d)
     (mul_le_mul_of_nonneg_left hr (by positivity))
     (mul_le_mul_of_nonneg_left hm (by positivity)))
 
-def elementaryRowBound {d : ℕ} (C : ModelConstants d) : ℝ :=
+def elementaryRowBound {d } (C : ModelConstants d)  :=
   responseFourthBound C + (C.varianceUpper + responseSecondBound C) ^ 2
 
-def elementaryKernelBound {d : ℕ} (C : ModelConstants d) : ℝ :=
+def elementaryKernelBound {d } (C : ModelConstants d)  :=
   8 * responseFourthBound C + 2 * C.varianceUpper ^ 2
 
-theorem elementaryRowBound_pos {d : ℕ} (C : ModelConstants d) :
-    0 < elementaryRowBound C := by
-  unfold elementaryRowBound
-  exact add_pos_of_pos_of_nonneg (responseFourthBound_pos C) (sq_nonneg _)
+section
+variable {d : ℕ} (C : ModelConstants d)
 
-theorem elementaryKernelBound_pos {d : ℕ} (C : ModelConstants d) :
+theorem elementaryRowBound_pos  :
+    0 < elementaryRowBound C := add_pos_of_pos_of_nonneg (responseFourthBound_pos C) (sq_nonneg _)
+
+theorem elementaryKernelBound_pos  :
     0 < elementaryKernelBound C := by
   unfold elementaryKernelBound
   have hh := responseFourthBound_pos C
   positivity
+end
 
-theorem elementary_score_fluctuation_le {d n : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ) (hn : 2 ≤ n)
-    (k : ℕ) (hk : 0 < k) :
+
+section
+variable {d n : ℕ} (C : ModelConstants d) (θ : RegressionParameter d) (hθ : Admissible C θ) (hn : 2 ≤ n)
+include hθ hn
+
+theorem elementary_score_fluctuation_le 
+    k hk :
     (∫ z, (PairUStatistic.pairAverage n (regularPairScore θ k hk) z -
       ∫ p, regularPairScore θ k hk p ∂(observationLaw θ).prod (observationLaw θ)) ^ 2
       ∂sampleLaw θ n) ≤
-      8 / (n : ℝ) * (C.densityUpper / (k : ℝ) ^ d) ^ 2 * elementaryRowBound C +
-      2 / ((n : ℝ) * (n - 1 : ℕ)) * elementaryKernelBound C *
-        (C.densityUpper / (k : ℝ) ^ d) := by
+      8 / n * (C.densityUpper / k ^ d) ^ 2 * elementaryRowBound C +
+      2 / (n * (n - 1 : ℕ)) * elementaryKernelBound C *
+        (C.densityUpper / k ^ d) := by
   let := observationLaw_isProbability C θ hθ
   let := sampleLaw_isProbability C θ hθ n
   have hi := iIndepFun_pi (μ := fun _ : Fin n => observationLaw θ)
@@ -139,11 +162,11 @@ theorem elementary_score_fluctuation_le {d n : ℕ} (C : ModelConstants d)
     (pairWindowScore_measurable _ (regularObservationLabel_measurable k hk)
       Prod.snd measurable_snd θ.variance) (regularPairScore_memLp C θ hθ k hk)
     (pairWindowScore_symmetric _ Prod.snd θ.variance)
-  have hV0 : 0 ≤ θ.variance := C.varianceLower_pos.le.trans hθ.2.2.2.2.2.1
-  have hVU : θ.variance ≤ C.varianceUpper := hθ.2.2.2.2.2.2.1
-  have hU0 : 0 ≤ C.varianceUpper := hV0.trans hVU
-  have hC4 : 0 ≤ responseFourthBound C := (responseFourthBound_pos C).le
-  have hC2 : 0 ≤ responseSecondBound C := (responseSecondBound_pos C).le
+  have hV0  := C.varianceLower_pos.le.trans hθ.2.2.2.2.2.1
+  have hVU  := hθ.2.2.2.2.2.2.1
+  have hU0  := hV0.trans hVU
+  have hC4  := (responseFourthBound_pos C).le
+  have hC2  := (responseSecondBound_pos C).le
   have hr : (∫ x, (∫ y, regularPairScore θ k hk (x, y) ∂observationLaw θ) ^ 2
       ∂observationLaw θ) ≤
       2 * (C.densityUpper / (k : ℝ) ^ d) ^ 2 * elementaryRowBound C := by
@@ -152,17 +175,13 @@ theorem elementary_score_fluctuation_le {d n : ℕ} (C : ModelConstants d)
     rw [abs_of_nonneg hV0]
     gcongr
   have hq := regularGridCollisionMass_upper C θ hθ k hk
-  have hq0 : 0 ≤ regularGridCollisionMass θ k hk := by
-    unfold regularGridCollisionMass
-    exact Finset.sum_nonneg (fun _ _ => sq_nonneg _)
+  have hq0 : 0 ≤ regularGridCollisionMass θ k hk := Finset.sum_nonneg (fun _ _ => sq_nonneg _)
   have hker : (∫ z, regularPairScore θ k hk z ^ 2
       ∂(observationLaw θ).prod (observationLaw θ)) ≤
       elementaryKernelBound C * (C.densityUpper / (k : ℝ) ^ d) := by
     apply (regularPairScore_kernel_energy_le C θ hθ k hk).trans
     unfold elementaryKernelBound
-    have hVsq : θ.variance ^ 2 ≤ C.varianceUpper ^ 2 :=
-      pow_le_pow_left₀ hV0 hVU 2
-    gcongr
+    bound
   have hn0 : 0 < (n : ℝ) := by exact_mod_cast (by omega : 0 < n)
   have hn1 : 0 < ((n - 1 : ℕ) : ℝ) := by exact_mod_cast (by omega : 0 < n - 1)
   have hb := he.trans (add_le_add
@@ -170,15 +189,14 @@ theorem elementary_score_fluctuation_le {d n : ℕ} (C : ModelConstants d)
     (mul_le_mul_of_nonneg_left hker (by positivity)))
   convert hb using 1 <;> first | rfl | ring
 
-theorem elementary_score_second_moment_le {d n : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ) (hn : 2 ≤ n)
-    (k : ℕ) (hk : 0 < k) :
+theorem elementary_score_second_moment_le 
+    k hk :
     (∫ z, (elementaryNumerator n k hk z - θ.variance * elementaryDenominator n k hk z) ^ 2
       ∂sampleLaw θ n) ≤
-      8 / (n : ℝ) * (C.densityUpper / (k : ℝ) ^ d) ^ 2 * elementaryRowBound C +
-      2 / ((n : ℝ) * (n - 1 : ℕ)) * elementaryKernelBound C *
-        (C.densityUpper / (k : ℝ) ^ d) +
-      ((regularGridOscillation C k ^ 2 / 2) * (C.densityUpper / (k : ℝ) ^ d)) ^ 2 := by
+      8 / n * (C.densityUpper / k ^ d) ^ 2 * elementaryRowBound C +
+      2 / (n * (n - 1 : ℕ)) * elementaryKernelBound C *
+        (C.densityUpper / k ^ d) +
+      ((regularGridOscillation C k ^ 2 / 2) * (C.densityUpper / k ^ d)) ^ 2 := by
   let := observationLaw_isProbability C θ hθ
   let := sampleLaw_isProbability C θ hθ n
   have hi := iIndepFun_pi (μ := fun _ : Fin n => observationLaw θ)
@@ -210,9 +228,8 @@ theorem elementary_score_second_moment_le {d n : ℕ} (C : ModelConstants d)
     rw [hmean] at hv hc
     dsimp [b]
     linarith
-  have hb0 : 0 ≤ b := regularPairScore_mean_nonneg C θ hθ k hk
-  have hbm : b ≤ (regularGridOscillation C k ^ 2 / 2) *
-      (C.densityUpper / (k : ℝ) ^ d) :=
+  have hb0  := regularPairScore_mean_nonneg C θ hθ k hk
+  have hbm  :=
     (regularPairScore_mean_le C θ hθ k hk).trans
       (mul_le_mul_of_nonneg_left (regularGridCollisionMass_upper C θ hθ k hk)
         (by positivity))
@@ -221,15 +238,14 @@ theorem elementary_score_second_moment_le {d n : ℕ} (C : ModelConstants d)
   rw [hEq]
   exact add_le_add (elementary_score_fluctuation_le C θ hθ hn k hk) hbsq
 
-theorem elementary_grid_mse_explicit {d n : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ) (hn : 2 ≤ n)
-    (k : ℕ) (hk : 0 < k) :
+theorem elementary_grid_mse_explicit 
+    k hk :
     (∫ z, ((elementaryGridEstimator C n k hk).val z - θ.variance) ^ 2
       ∂sampleLaw θ n) ≤
       (64 * C.densityUpper ^ 2 * elementaryRowBound C +
-        32 * C.densityUpper ^ 2 * C.varianceUpper ^ 2) / (n : ℝ) +
+        32 * C.densityUpper ^ 2 * C.varianceUpper ^ 2) / n +
       (16 * C.densityUpper * (elementaryKernelBound C + C.varianceUpper ^ 2)) *
-        (k : ℝ) ^ d / ((n : ℝ) * (n - 1 : ℕ)) +
+        k ^ d / (n * (n - 1 : ℕ)) +
       2 * C.densityUpper ^ 2 * regularGridOscillation C k ^ 4 := by
   let := observationLaw_isProbability C θ hθ
   let := sampleLaw_isProbability C θ hθ n
@@ -248,7 +264,7 @@ theorem elementary_grid_mse_explicit {d n : ℕ} (C : ModelConstants d)
     simp_rw [elementary_score_identity θ n k hk]
     exact PairUStatistic.pairAverage_memLp_two
       (fun i (z : Fin n → Observation d) => z i) hi hp (regularPairScore_memLp C θ hθ k hk)
-  have hD2 : MemLp (elementaryDenominator n k hk) 2 (sampleLaw θ n) :=
+  have hD2  :=
     PairUStatistic.pairAverage_memLp_two
       (fun i (z : Fin n → Observation d) => z i) hi hp
       (sameLabelKernel_memLp (observationLaw θ) _ (regularObservationLabel_measurable k hk))
@@ -260,7 +276,7 @@ theorem elementary_grid_mse_explicit {d n : ℕ} (C : ModelConstants d)
     convert regularGridCollisionMass_lower C θ hθ k hk using 1
     unfold elementaryFloor
     field_simp
-  have hV0 : 0 ≤ θ.variance := C.varianceLower_pos.le.trans hθ.2.2.2.2.2.1
+  have hV0  := C.varianceLower_pos.le.trans hθ.2.2.2.2.2.1
   have hM := stabilized_ratio_mse_le (sampleLaw θ n) hmN hmD hS2 hD2
     ha hθ.2.2.2.2.2.1 hθ.2.2.2.2.2.2.1 hV0 hED
   have hS := elementary_score_second_moment_le C θ hθ hn k hk
@@ -274,14 +290,20 @@ theorem elementary_grid_mse_explicit {d n : ℕ} (C : ModelConstants d)
   unfold elementaryFloor
   field_simp [hk0.ne', hn0.ne', hn1.ne', pow_ne_zero d hk0.ne']
   <;> ring
+end
 
-def elementaryBiasFactor {d : ℕ} (C : ModelConstants d) : ℝ :=
+
+section
+variable {d : ℕ} (C : ModelConstants d)
+include C
+
+def elementaryBiasFactor   :=
   (2 * ((d : ℝ) + 1) * C.holderBound) ^ 4 * (Real.sqrt d) ^ (4 * elementarySmoothness C)
 
-theorem regularGridOscillation_fourth {d : ℕ} (C : ModelConstants d)
-    (k : ℕ) (hk : 0 < k) :
+theorem regularGridOscillation_fourth 
+    k (hk : 0 < k) :
     regularGridOscillation C k ^ 4 = elementaryBiasFactor C *
-      (k : ℝ) ^ (-4 * elementarySmoothness C) := by
+      k ^ (-4 * elementarySmoothness C) := by
   have hk0 : 0 < (k : ℝ) := by exact_mod_cast hk
   have he : ((Real.sqrt d * (1 / (k : ℝ))) ^ elementarySmoothness C) ^ 4 =
       (Real.sqrt d) ^ (4 * elementarySmoothness C) *
@@ -294,35 +316,44 @@ theorem regularGridOscillation_fourth {d : ℕ} (C : ModelConstants d)
   unfold regularGridOscillation elementaryBiasFactor
   rw [mul_pow, he]
   ring
+end
 
-def elementaryUpperConstant {d : ℕ} (C : ModelConstants d) : ℝ :=
+
+def elementaryUpperConstant {d } (C : ModelConstants d)  :=
   (64 * C.densityUpper ^ 2 * elementaryRowBound C +
     32 * C.densityUpper ^ 2 * C.varianceUpper ^ 2) +
     (16 * C.densityUpper * (elementaryKernelBound C + C.varianceUpper ^ 2)) +
     (2 * C.densityUpper ^ 2 * elementaryBiasFactor C)
 
-theorem elementaryUpperConstant_pos {d : ℕ} (C : ModelConstants d) :
+theorem elementaryUpperConstant_pos {d } (C : ModelConstants d) :
     0 < elementaryUpperConstant C := by
-  have hU : 0 < C.densityUpper := (by norm_num : (0 : ℝ) < 1).trans C.one_lt_densityUpper
+  have hU  := (by norm_num : (0 : ℝ) < 1).trans C.one_lt_densityUpper
   have hR := elementaryRowBound_pos C
   have hK := elementaryKernelBound_pos C
   have hB : 0 ≤ elementaryBiasFactor C := by unfold elementaryBiasFactor; positivity
   unfold elementaryUpperConstant
   positivity
 
-theorem elementary_grid_mse_le {d n : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ) (hn : 2 ≤ n)
-    (k : ℕ) (hk : 0 < k) :
+section
+variable {d n : ℕ} (C : ModelConstants d)
+
+section
+variable (θ : RegressionParameter d) (hθ : Admissible C θ) (hn : 2 ≤ n)
+include hθ hn
+
+theorem elementary_grid_mse_le 
+    
+    k hk :
     (∫ z, ((elementaryGridEstimator C n k hk).val z - θ.variance) ^ 2
       ∂sampleLaw θ n) ≤ elementaryUpperConstant C *
-      (1 / (n : ℝ) + (k : ℝ) ^ d / ((n : ℝ) * (n - 1 : ℕ)) +
-        (k : ℝ) ^ (-4 * elementarySmoothness C)) := by
+      (1 / n + k ^ d / (n * (n - 1 : ℕ)) +
+        k ^ (-4 * elementarySmoothness C)) := by
   have hb := elementary_grid_mse_explicit C θ hθ hn k hk
   rw [regularGridOscillation_fourth C k hk] at hb
   have hn0 : 0 < (n : ℝ) := by exact_mod_cast (by omega : 0 < n)
   have hn1 : 0 < ((n - 1 : ℕ) : ℝ) := by exact_mod_cast (by omega : 0 < n - 1)
   have hk0 : 0 < (k : ℝ) := by exact_mod_cast hk
-  have hU : 0 < C.densityUpper := (by norm_num : (0 : ℝ) < 1).trans C.one_lt_densityUpper
+  have hU  := (by norm_num : (0 : ℝ) < 1).trans C.one_lt_densityUpper
   have hR := (elementaryRowBound_pos C).le
   have hK := (elementaryKernelBound_pos C).le
   have hB : 0 ≤ elementaryBiasFactor C := by unfold elementaryBiasFactor; positivity
@@ -342,15 +373,15 @@ theorem elementary_grid_mse_le {d n : ℕ} (C : ModelConstants d)
     (Real.rpow_pos_of_pos hk0 (-4 * elementarySmoothness C)).le
   dsimp [A, B, E] at h1 h2 h3
   unfold elementaryUpperConstant
-  convert add_le_add (add_le_add h1 h2) h3 using 1 <;> ring
+  grind
 
-theorem elementary_grid_risk_le {d n : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ) (hn : 2 ≤ n)
-    (k : ℕ) (hk : 0 < k) :
+theorem elementary_grid_risk_le 
+    
+    k hk :
     meanSquaredRisk (elementaryGridEstimator C n k hk) θ ≤
       ENNReal.ofReal (elementaryUpperConstant C *
-      (1 / (n : ℝ) + (k : ℝ) ^ d / ((n : ℝ) * (n - 1 : ℕ)) +
-        (k : ℝ) ^ (-4 * elementarySmoothness C))) := by
+      (1 / n + k ^ d / (n * (n - 1 : ℕ)) +
+        k ^ (-4 * elementarySmoothness C))) := by
   let := sampleLaw_isProbability C θ hθ n
   have hmN : Measurable (elementaryNumerator (d := d) n k hk) :=
     PairUStatistic.pairAverage_measurable n
@@ -366,42 +397,49 @@ theorem elementary_grid_risk_le {d n : ℕ} (C : ModelConstants d)
   rw [meanSquaredRisk, ← ofReal_integral_eq_lintegral_ofReal hT
     (Eventually.of_forall (fun z => sq_nonneg _))]
   exact ENNReal.ofReal_mono (elementary_grid_mse_le C θ hθ hn k hk)
+end
 
-theorem elementary_grid_worstCaseRisk_le {d n : ℕ} (C : ModelConstants d)
-    (hn : 2 ≤ n) (k : ℕ) (hk : 0 < k) :
+
+theorem elementary_grid_worstCaseRisk_le 
+    (hn : 2 ≤ n) k hk :
     worstCaseRisk C (elementaryGridEstimator C n k hk) ≤
       ENNReal.ofReal (elementaryUpperConstant C *
-      (1 / (n : ℝ) + (k : ℝ) ^ d / ((n : ℝ) * (n - 1 : ℕ)) +
-        (k : ℝ) ^ (-4 * elementarySmoothness C))) := by
+      (1 / n + k ^ d / (n * (n - 1 : ℕ)) +
+        k ^ (-4 * elementarySmoothness C))) := by
   apply iSup_le
   intro θ
   exact elementary_grid_risk_le C θ.val θ.property hn k hk
+end
 
-def elementaryChosenGrid {d : ℕ} (C : ModelConstants d) (n : ℕ) : ℕ :=
+
+def elementaryChosenGrid {d } (C : ModelConstants d) (n : ℕ)  :=
   lowSmoothnessGrid d (elementarySmoothness C) n
 
-theorem elementaryChosenGrid_pos {d n : ℕ} (C : ModelConstants d) (hn : 0 < n) :
+theorem elementaryChosenGrid_pos {d n } (C : ModelConstants d) (hn : 0 < n) :
     0 < elementaryChosenGrid C n := by
   have hh := lowSmoothnessGrid_ge_four (d := d) (elementarySmoothness_pos C)
     (show 1 ≤ (n : ℝ) by exact_mod_cast hn)
   unfold elementaryChosenGrid
   omega
 
-def elementaryEstimator {d : ℕ} (C : ModelConstants d) (n : ℕ) : Estimator d n :=
+def elementaryEstimator {d } C n  :=
   if hn : 2 ≤ n then
     elementaryGridEstimator C n (elementaryChosenGrid C n)
       (elementaryChosenGrid_pos C (by omega))
   else constantEstimator d n C.varianceLower
 
-def elementaryRMSConstant {d : ℕ} (C : ModelConstants d) : ℝ :=
+def elementaryRMSConstant {d } (C : ModelConstants d)  :=
   2 * Real.sqrt (elementaryUpperConstant C * (2 * (5 : ℝ) ^ d + 1)) +
     (C.varianceUpper - C.varianceLower)
 
-theorem elementary_rms_upper_of_two_le {d n : ℕ} (C : ModelConstants d) (hn : 2 ≤ n) :
+section
+variable {d n : ℕ} (C : ModelConstants d)
+
+theorem elementary_rms_upper_of_two_le  (hn : 2 ≤ n) :
     (worstCaseRisk C (elementaryEstimator C n)) ^ (1 / 2 : ℝ) ≤
-      ENNReal.ofReal (Real.sqrt (elementaryUpperConstant C * (2 * (5 : ℝ) ^ d + 1)) *
-        ((n : ℝ) ^ (-(1 / 2 : ℝ)) +
-          (n : ℝ) ^ (-4 * elementarySmoothness C / ((d : ℝ) + 4 * elementarySmoothness C)))) := by
+      ENNReal.ofReal (Real.sqrt (elementaryUpperConstant C * (2 * 5 ^ d + 1)) *
+        (n ^ (-(1 / 2 : ℝ)) +
+          n ^ (-4 * elementarySmoothness C / (d + 4 * elementarySmoothness C)))) := by
   have hn0 : 0 < n := by omega
   have hnR : 2 ≤ (n : ℝ) := by exact_mod_cast hn
   have hnR0 : 0 < (n : ℝ) := by positivity
@@ -426,17 +464,16 @@ theorem elementary_rms_upper_of_two_le {d n : ℕ} (C : ModelConstants d) (hn : 
   have hs : Real.sqrt M ≤ Real.sqrt (elementaryUpperConstant C * (2 * (5 : ℝ) ^ d + 1)) *
       ((n : ℝ) ^ (-(1 / 2 : ℝ)) +
         (n : ℝ) ^ (-4 * elementarySmoothness C / ((d : ℝ) + 4 * elementarySmoothness C))) := by
-    apply pairGrid_rms_of_mse_bound (elementarySmoothness_pos C) hnR hC (Real.sqrt_nonneg M)
-    exact le_of_eq (Real.sq_sqrt hM0)
+    grind only [pairGrid_rms_of_mse_bound, elementarySmoothness_pos, Real.sqrt_nonneg, Real.sq_sqrt]
   exact hh.trans (ENNReal.ofReal_mono hs)
 
 /-- All sample sizes, including the one-observation constant estimator.
 This gives the full low-smoothness branch of the paper's elementary upper. -/
-theorem elementary_rms_upper {d n : ℕ} (C : ModelConstants d) (hn : 0 < n) :
+theorem elementary_rms_upper  (hn : 0 < n) :
     (worstCaseRisk C (elementaryEstimator C n)) ^ (1 / 2 : ℝ) ≤
       ENNReal.ofReal (elementaryRMSConstant C * max
         ((n : ℝ) ^ (-(1 / 2 : ℝ)))
-        ((n : ℝ) ^ (-4 * elementarySmoothness C / ((d : ℝ) + 4 * elementarySmoothness C)))) := by
+        (n ^ (-4 * elementarySmoothness C / (d + 4 * elementarySmoothness C)))) := by
   by_cases hn2 : 2 ≤ n
   · apply (elementary_rms_upper_of_two_le C hn2).trans
     apply ENNReal.ofReal_mono
@@ -445,7 +482,7 @@ theorem elementary_rms_upper {d n : ℕ} (C : ModelConstants d) (hn : 0 < n) :
         (-4 * elementarySmoothness C / ((d : ℝ) + 4 * elementarySmoothness C)) := by positivity
     have hs : 0 ≤ Real.sqrt (elementaryUpperConstant C * (2 * (5 : ℝ) ^ d + 1)) :=
       Real.sqrt_nonneg _
-    have hdiam : 0 ≤ C.varianceUpper - C.varianceLower := sub_nonneg.mpr C.variance_interval.le
+    have hdiam  := sub_nonneg.mpr C.variance_interval.le
     have hmax := le_max_left ((n : ℝ) ^ (-(1 / 2 : ℝ)))
       ((n : ℝ) ^ (-4 * elementarySmoothness C / ((d : ℝ) + 4 * elementarySmoothness C)))
     have hmax' := le_max_right ((n : ℝ) ^ (-(1 / 2 : ℝ)))
@@ -469,14 +506,15 @@ theorem elementary_rms_upper {d n : ℕ} (C : ModelConstants d) (hn : 0 < n) :
     apply ENNReal.ofReal_mono
     simp only [Nat.cast_one, Real.one_rpow, max_self, mul_one]
     unfold elementaryRMSConstant
-    have hs := Real.sqrt_nonneg (elementaryUpperConstant C * (2 * (5 : ℝ) ^ d + 1))
-    linarith
+    simp_all
 
-theorem elementary_upper_low_smoothness {d n : ℕ} (C : ModelConstants d)
+theorem elementary_upper_low_smoothness 
     (hs : C.smoothness ≤ 1) (hn : 0 < n) :
     (worstCaseRisk C (elementaryEstimator C n)) ^ (1 / 2 : ℝ) ≤
       ENNReal.ofReal (elementaryRMSConstant C * max ((n : ℝ) ^ (-(1 / 2 : ℝ)))
-        ((n : ℝ) ^ (-4 * C.smoothness / ((d : ℝ) + 4 * C.smoothness)))) := by
+        (n ^ (-4 * C.smoothness / (d + 4 * C.smoothness)))) := by
   simpa only [elementarySmoothness, min_eq_left hs] using elementary_rms_upper C hn
+end
+
 
 end NearlyMinimax

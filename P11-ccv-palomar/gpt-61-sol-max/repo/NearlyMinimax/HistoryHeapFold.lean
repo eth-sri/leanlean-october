@@ -12,7 +12,10 @@ namespace NearlyMinimax
 set_option maxHeartbeats 600000
 set_option backward.isDefEq.respectTransparency false
 
-theorem historyFold_move_to_front {ι X : Type*} (update : ι → X → X)
+section
+variable {ι X : Type*}
+
+theorem historyFold_move_to_front  (update : ι → X → X)
     (before after : List ι) (x : ι)
     (hcomm : ∀ y ∈ before, ∀ state, update x (update y state) = update y (update x state))
     (initial : X) :
@@ -23,16 +26,12 @@ theorem historyFold_move_to_front {ι X : Type*} (update : ι → X → X)
     induction before with
     | nil => intro state; rfl
     | cons y ys ih =>
-      intro state
-      simp only [List.foldl_cons]
-      rw [ih (fun z hz => hcomm z (List.mem_cons_of_mem y hz))]
-      rw [hcomm y List.mem_cons_self]
-  simp only [List.foldl_append, List.foldl_cons]
-  rw [hfold]
+      simp_all
+  simp_all
 
 /-- Finite heap linear extensions preserve the actual marked update fold.
 Only incomparable actions must commute. -/
-theorem historyFold_linear_extension_invariant {ι X : Type*} [PartialOrder ι]
+theorem historyFold_linear_extension_invariant  [PartialOrder ι]
     (dependent : ι → ι → Prop) (update : ι → X → X)
     (hcomp : ∀ x y, dependent x y → x ≤ y ∨ y ≤ x)
     (hcomm : ∀ x y, ¬ dependent x y → ∀ state,
@@ -44,36 +43,38 @@ theorem historyFold_linear_extension_invariant {ι X : Type*} [PartialOrder ι]
       l'.foldl (fun state x => update x state) initial := by
   induction l' generalizing l initial with
   | nil =>
-    have he : l = [] := List.perm_nil.mp hperm
+    have he  := List.perm_nil.mp hperm
     subst l
     rfl
   | cons x xs ih =>
-    have hx : x ∈ l := hperm.mem_iff.mpr List.mem_cons_self
+    have hx  := hperm.mem_iff.mpr List.mem_cons_self
     obtain ⟨before, after, rfl⟩ := List.mem_iff_append.mp hx
     obtain ⟨hbefore, hafter, hcross⟩ := List.pairwise_append.mp hl
-    have htailperm : (before ++ after).Perm xs :=
+    have htailperm  :=
       (List.perm_middle.symm.trans hperm).cons_inv
-    have htail : (before ++ after).Pairwise (fun x y => ¬ y ≤ x) :=
-      hl.sublist (List.Sublist.append (List.Sublist.refl before) (List.Sublist.cons x (List.Sublist.refl after)))
+    
     have hmove : ∀ y ∈ before, ∀ state, update x (update y state) = update y (update x state) := by
       intro y hy state
-      have hxy : ¬ x ≤ y := hcross y hy x List.mem_cons_self
-      have hyne : y ≠ x := by intro h; subst y; exact hxy le_rfl
+      
+      
       have hymem : y ∈ xs := by
-        have hm : y ∈ x :: xs := hperm.mem_iff.mp (List.mem_append_left _ hy)
-        simpa only [List.mem_cons, hyne, false_or] using hm
-      have hyx : ¬ y ≤ x := (List.pairwise_cons.mp hl').1 y hymem
-      have hdep : ¬ dependent x y := fun hd => (hcomp x y hd).elim hxy hyx
-      exact (hcomm x y hdep state).symm
+        grind
+      have hyx  := (List.pairwise_cons.mp hl').1 y hymem
+      grind
     rw [historyFold_move_to_front update before after x hmove initial]
-    exact ih htailperm htail hl'.of_cons (update x initial)
+    grind
+end
 
-def historyWordMarkedState {J E X : Type*} (update : J → E → X → X)
+
+section
+variable {J E X : Type*}
+
+def historyWordMarkedState  (update : J → E → X → X)
     (initial : X) (word : List J) (marks : Fin word.length → E) : X :=
   historyWordState (fun p : J × E => update p.1 p.2) initial
     (List.ofFn (fun i => (word.get i, marks i)))
 
-theorem historyWordMarkedState_eq_heapFold {J E X : Type*}
+theorem historyWordMarkedState_eq_heapFold 
     (dependent : J → J → Prop) (update : J → E → X → X)
     (initial : X) (word : List J) (marks : Fin word.length → E) :
     historyWordMarkedState update initial word marks =
@@ -89,7 +90,7 @@ theorem historyWordMarkedState_eq_heapFold {J E X : Type*}
 
 /-- Any actual labelled heap isomorphism transports all marks and the raw
 folded state exactly. Representative invariance is a proved conclusion. -/
-theorem historyHeapMarkEquiv_state {J E X : Type*} [MeasurableSpace E]
+theorem historyHeapMarkEquiv_state  [MeasurableSpace E]
     (dependent : J → J → Prop)
     (hsymm : ∀ ⦃a b⦄, dependent a b → dependent b a)
     (update : J → E → X → X)
@@ -106,17 +107,15 @@ theorem historyHeapMarkEquiv_state {J E X : Type*} [MeasurableSpace E]
   have hlnd : l.Nodup := List.nodup_ofFn.mpr (fun _ _ h => congrArg WordHeapPiece.position h)
   have hl'nd : l'.Nodup := List.nodup_ofFn.mpr (fun _ _ h =>
     congrArg WordHeapPiece.position (e.symm.injective h))
-  have hp : l.Perm l' := (List.perm_ext_iff_of_nodup hlnd hl'nd).mpr (by
+  have hp  := (List.perm_ext_iff_of_nodup hlnd hl'nd).mpr (by
     intro x
     constructor
     · intro _
       apply List.mem_ofFn.mpr
       exact ⟨(e x).position, by
-        have hx : (⟨(e x).position⟩ : WordHeapPiece v dependent) = e x := by cases e x; rfl
+        have hx : (⟨(e x).position⟩ : WordHeapPiece v dependent) = e x := by skip; rfl
         rw [hx, e.symm_apply_apply]⟩
-    · intro _
-      apply List.mem_ofFn.mpr
-      exact ⟨x.position, by cases x; rfl⟩)
+    grind)
   have hl : l.Pairwise (fun x y => ¬ y ≤ x) := by
     apply List.pairwise_iff_getElem.mpr
     intro i j hi hj hij hle
@@ -149,5 +148,7 @@ theorem historyHeapMarkEquiv_state {J E X : Type*} [MeasurableSpace E]
   have hmark := historyHeapMarkEquiv_position e marks (e.symm x)
   simp only [OrderIso.apply_symm_apply] at hlabel hmark
   simp only [action, hlabel, hmark]
+end
+
 
 end NearlyMinimax

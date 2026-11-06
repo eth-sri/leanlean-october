@@ -14,19 +14,19 @@ open MeasureTheory Set Filter Metric
 open scoped Topology BigOperators
 namespace NearlyMinimax
 
-abbrev FiniteExperimentData (m n : ℕ) :=
+abbrev FiniteExperimentData m n :=
   ℝ × (((Fin m → Fin 3) → Fin n → ℝ) × ((Fin n → Fin 3) → ℝ))
 
-def finiteExperimentRawDerivative (m n : ℕ) (a v η t : ℝ)
-    (f : (Fin m → Fin 3) → Fin n → ℝ) (T : (Fin n → Fin 3) → ℝ) : ℝ :=
+def finiteExperimentRawDerivative m n a v η t
+    f (T : (Fin n → Fin 3) → ℝ)  :=
   ∑ ξ, (activationProductPriorDerivative m t ξ *
       (∑ y, finiteResponseLikelihood m n a (v - η ^ 2 * t) f ξ y * T y) +
     activationProductPrior m t ξ *
       (∑ y, ((∑ i, finiteResponseVarianceTerm m n a (v - η ^ 2 * t) f ξ y i) *
         (-η ^ 2)) * T y))
 
-theorem finite_experiment_raw_hasDerivAt (m n : ℕ) (a v η t : ℝ)
-    (f : (Fin m → Fin 3) → Fin n → ℝ) (T : (Fin n → Fin 3) → ℝ) :
+theorem finite_experiment_raw_hasDerivAt m n a v η t
+    f T :
     HasDerivAt (fun u => finiteExperimentExpectation m n a v η u f T)
       (finiteExperimentRawDerivative m n a v η t f T) t := by
   have hV : HasDerivAt (fun u : ℝ => v - η ^ 2 * u) (-η ^ 2) t :=
@@ -39,12 +39,15 @@ theorem finite_experiment_raw_hasDerivAt (m n : ℕ) (a v η t : ℝ)
   intro y _
   exact ((finite_response_variance_hasDerivAt m n a (v - η ^ 2 * t) f ξ y).comp t hV).mul_const (T y)
 
-theorem ternaryMass_joint_continuous (a : ℝ) (y : Fin 3) :
+theorem ternaryMass_joint_continuous a y :
     Continuous (fun z : ℝ × ℝ => ternaryMass a z.1 z.2 y) := by
   fin_cases y <;> simp [ternaryMass] <;> fun_prop
 
-private theorem finite_response_data_continuous (m n : ℕ) (a v η : ℝ)
-    (ξ : Fin m → Fin 3) (y : Fin n → Fin 3) :
+section
+variable (m n : ℕ) (a v η : ℝ)
+
+private theorem finite_response_data_continuous 
+    ξ y :
     Continuous (fun z : FiniteExperimentData m n =>
       finiteResponseLikelihood m n a (v - η ^ 2 * z.1) z.2.1 ξ y) := by
   unfold finiteResponseLikelihood
@@ -54,8 +57,8 @@ private theorem finite_response_data_continuous (m n : ℕ) (a v η : ℝ)
     ((show Continuous (fun z : FiniteExperimentData m n => z.2.1 ξ i) from by fun_prop).prodMk
       (show Continuous (fun z : FiniteExperimentData m n => v - η ^ 2 * z.1) from by fun_prop))
 
-private theorem finite_variance_data_continuous (m n : ℕ) (a v η : ℝ)
-    (ξ : Fin m → Fin 3) (y : Fin n → Fin 3) (i : Fin n) :
+private theorem finite_variance_data_continuous 
+    ξ y i :
     Continuous (fun z : FiniteExperimentData m n =>
       finiteResponseVarianceTerm m n a (v - η ^ 2 * z.1) z.2.1 ξ y i) := by
   unfold finiteResponseVarianceTerm
@@ -66,7 +69,7 @@ private theorem finite_variance_data_continuous (m n : ℕ) (a v η : ℝ)
     ((show Continuous (fun z : FiniteExperimentData m n => z.2.1 ξ k) from by fun_prop).prodMk
       (show Continuous (fun z : FiniteExperimentData m n => v - η ^ 2 * z.1) from by fun_prop))
 
-theorem finite_experiment_expectation_data_continuous (m n : ℕ) (a v η : ℝ) :
+theorem finite_experiment_expectation_data_continuous  :
     Continuous (fun z : FiniteExperimentData m n =>
       finiteExperimentExpectation m n a v η z.1 z.2.1 z.2.2) := by
   unfold finiteExperimentExpectation
@@ -80,7 +83,7 @@ theorem finite_experiment_expectation_data_continuous (m n : ℕ) (a v η : ℝ)
     exact (finite_response_data_continuous m n a v η ξ y).mul
       ((continuous_apply y).comp (continuous_snd.comp continuous_snd))
 
-theorem finite_experiment_raw_derivative_data_continuous (m n : ℕ) (a v η : ℝ) :
+theorem finite_experiment_raw_derivative_data_continuous  :
     Continuous (fun z : FiniteExperimentData m n =>
       finiteExperimentRawDerivative m n a v η z.1 z.2.1 z.2.2) := by
   unfold finiteExperimentRawDerivative
@@ -106,24 +109,23 @@ theorem finite_experiment_raw_derivative_data_continuous (m n : ℕ) (a v η : �
     · apply continuous_finset_sum
       intro y _
       apply Continuous.mul
-      · apply Continuous.mul_const
-        apply continuous_finset_sum
-        intro i _
-        exact finite_variance_data_continuous m n a v η ξ y i
+      · solve_by_elim [Continuous.mul_const, continuous_finset_sum, finite_variance_data_continuous]
       · exact (continuous_apply y).comp (continuous_snd.comp continuous_snd)
+end
+
 
 /-- Both the expectation and its raw derivative are bounded on each finite
 parameter box, including parameter values outside the probability interval. -/
-theorem finite_experiment_uniform_box_bound (m n : ℕ) (a v η R : ℝ) :
-    ∃ B : ℝ, 0 < B ∧ ∀ (t : ℝ)
-      (f : (Fin m → Fin 3) → Fin n → ℝ) (T : (Fin n → Fin 3) → ℝ),
+theorem finite_experiment_uniform_box_bound m n a v η R :
+    ∃ B : ℝ, 0 < B ∧ ∀ t
+      f T,
       |t| ≤ R → ‖f‖ ≤ R → ‖T‖ ≤ R →
       ‖finiteExperimentExpectation m n a v η t f T‖ ≤ B ∧
       ‖finiteExperimentRawDerivative m n a v η t f T‖ ≤ B := by
   let G : FiniteExperimentData m n → ℝ × ℝ := fun z =>
     (finiteExperimentExpectation m n a v η z.1 z.2.1 z.2.2,
       finiteExperimentRawDerivative m n a v η z.1 z.2.1 z.2.2)
-  have hG : Continuous G := (finite_experiment_expectation_data_continuous m n a v η).prodMk
+  have hG  := (finite_experiment_expectation_data_continuous m n a v η).prodMk
     (finite_experiment_raw_derivative_data_continuous m n a v η)
   obtain ⟨C, hC⟩ := (isCompact_closedBall (0 : FiniteExperimentData m n) R).exists_bound_of_continuousOn hG.continuousOn
   refine ⟨max 1 C, (zero_lt_one : (0 : ℝ) < 1).trans_le (le_max_left _ _), ?_⟩
@@ -150,15 +152,13 @@ theorem finite_experiment_integrated_raw_hasDerivAt (m n : ℕ) (a v η t ρ M :
         (∫ x, finiteExperimentRawDerivative m n a v η t (f x) (T x) ∂μ) t := by
   let R := max (|t| + 1) (max ρ M)
   obtain ⟨B, hB, hBox⟩ := finite_experiment_uniform_box_bound m n a v η R
-  let F : ℝ → α → ℝ := fun u x => finiteExperimentExpectation m n a v η u (f x) (T x)
-  let D : ℝ → α → ℝ := fun u x => finiteExperimentRawDerivative m n a v η u (f x) (T x)
+  let F  := fun u x => finiteExperimentExpectation m n a v η u (f x) (T x)
+  let D  := fun u x => finiteExperimentRawDerivative m n a v η u (f x) (T x)
   have hData (u : ℝ) : Measurable (fun x : α => (u, (f x, T x))) :=
     measurable_const.prodMk (hf.prodMk hT)
-  have hFData : Measurable (fun z : FiniteExperimentData m n =>
-      finiteExperimentExpectation m n a v η z.1 z.2.1 z.2.2) :=
+  have hFData  :=
     (finite_experiment_expectation_data_continuous m n a v η).measurable
-  have hDData : Measurable (fun z : FiniteExperimentData m n =>
-      finiteExperimentRawDerivative m n a v η z.1 z.2.1 z.2.2) :=
+  have hDData  :=
     (finite_experiment_raw_derivative_data_continuous m n a v η).measurable
   have hFmeas (u : ℝ) : Measurable (F u) := by
     have hComp := hFData.comp (hData u)
@@ -171,7 +171,7 @@ theorem finite_experiment_integrated_raw_hasDerivAt (m n : ℕ) (a v η t ρ M :
     exact ⟨hfx.trans ((le_max_left ρ M).trans (le_max_right _ _)),
       hTx.trans ((le_max_right ρ M).trans (le_max_right _ _))⟩
   have htR : |t| ≤ R := (le_add_of_nonneg_right (by norm_num : (0 : ℝ) ≤ 1)).trans (le_max_left _ _)
-  have hFint : Integrable (F t) μ := Integrable.of_bound (hFmeas t).aestronglyMeasurable B (by
+  have hFint  := Integrable.of_bound (hFmeas t).aestronglyMeasurable B (by
     filter_upwards [hFields] with x hx
     exact (hBox t (f x) (T x) htR hx.1 hx.2).1)
   have hDom : ∀ᵐ x ∂μ, ∀ u ∈ ball t 1, ‖D u x‖ ≤ B := by
@@ -179,7 +179,7 @@ theorem finite_experiment_integrated_raw_hasDerivAt (m n : ℕ) (a v η t ρ M :
     intro u hu
     have hut : ‖u - t‖ < 1 := by simpa only [mem_ball, dist_eq_norm] using hu
     have huR : |u| ≤ R := by
-      have huNorm : ‖u‖ ≤ |t| + 1 := calc
+      have huNorm  := calc
         ‖u‖ ≤ ‖u - t‖ + ‖t‖ := norm_le_norm_sub_add u t
         _ ≤ 1 + ‖t‖ := add_le_add hut.le le_rfl
         _ = |t| + 1 := by rw [Real.norm_eq_abs]; ring
@@ -193,8 +193,11 @@ theorem finite_experiment_integrated_raw_hasDerivAt (m n : ℕ) (a v η t ρ M :
     (hDmeas t).aestronglyMeasurable hDom (integrable_const B)
     (Filter.Eventually.of_forall (fun x u _ => finite_experiment_raw_hasDerivAt m n a v η u (f x) (T x)))
 
-theorem finite_experiment_raw_derivative_eq_score (m n : ℕ) (a v η t : ℝ)
-    (f : (Fin m → Fin 3) → Fin n → ℝ) (T : (Fin n → Fin 3) → ℝ)
+section
+variable (m n : ℕ)
+
+theorem finite_experiment_raw_derivative_eq_score  a v η t
+    f T
     (hpositive : ∀ ξ y, 0 < finiteResponseLikelihood m n a (v - η ^ 2 * t) f ξ y) :
     finiteExperimentRawDerivative m n a v η t f T =
       ∑ ξ, activationProductPrior m t ξ * ∑ y,
@@ -205,8 +208,8 @@ theorem finite_experiment_raw_derivative_eq_score (m n : ℕ) (a v η t : ℝ)
 
 /-- The integrated derivative is continuous, so its interval integrability
 on a bounded parameter path is a consequence of the actual finite formulas. -/
-theorem finite_experiment_integrated_raw_derivative_continuous (m n : ℕ) (a v η ρ M : ℝ)
-    (f : α → (Fin m → Fin 3) → Fin n → ℝ) (T : α → (Fin n → Fin 3) → ℝ)
+theorem finite_experiment_integrated_raw_derivative_continuous  a v η ρ M
+    f T
     (hf : Measurable f) (hT : Measurable T)
     (hfBound : ∀ᵐ x ∂μ, ‖f x‖ ≤ ρ) (hTBound : ∀ᵐ x ∂μ, ‖T x‖ ≤ M) :
     Continuous (fun t => ∫ x, finiteExperimentRawDerivative m n a v η t (f x) (T x) ∂μ) := by
@@ -214,11 +217,10 @@ theorem finite_experiment_integrated_raw_derivative_continuous (m n : ℕ) (a v 
   intro t
   let R := max (|t| + 1) (max ρ M)
   obtain ⟨B, hB, hBox⟩ := finite_experiment_uniform_box_bound m n a v η R
-  let D : ℝ → α → ℝ := fun u x => finiteExperimentRawDerivative m n a v η u (f x) (T x)
+  let D  := fun u x => finiteExperimentRawDerivative m n a v η u (f x) (T x)
   have hData (u : ℝ) : Measurable (fun x : α => (u, (f x, T x))) :=
     measurable_const.prodMk (hf.prodMk hT)
-  have hDData : Measurable (fun z : FiniteExperimentData m n =>
-      finiteExperimentRawDerivative m n a v η z.1 z.2.1 z.2.2) :=
+  have hDData  :=
     (finite_experiment_raw_derivative_data_continuous m n a v η).measurable
   have hDmeas (u : ℝ) : Measurable (D u) := by
     have hComp := hDData.comp (hData u)
@@ -228,15 +230,13 @@ theorem finite_experiment_integrated_raw_derivative_continuous (m n : ℕ) (a v 
     filter_upwards [hfBound, hTBound] with x hfx hTx
     have hut : ‖u - t‖ < 1 := by simpa only [mem_ball, dist_eq_norm] using hu
     have huR : |u| ≤ R := by
-      have huNorm : ‖u‖ ≤ |t| + 1 := calc
+      have huNorm  := calc
         ‖u‖ ≤ ‖u - t‖ + ‖t‖ := norm_le_norm_sub_add u t
         _ ≤ 1 + ‖t‖ := add_le_add hut.le le_rfl
         _ = |t| + 1 := by rw [Real.norm_eq_abs]; ring
       have huAbs : |u| ≤ |t| + 1 := by simpa only [Real.norm_eq_abs] using huNorm
       exact huAbs.trans (le_max_left _ _)
-    exact (hBox u (f x) (T x) huR
-      (hfx.trans ((le_max_left ρ M).trans (le_max_right _ _)))
-      (hTx.trans ((le_max_right ρ M).trans (le_max_right _ _)))).2
+    grind only [le_max_left, le_max_right]
   have hCont : ∀ᵐ x ∂μ, ContinuousAt (fun u => D u x) t := by
     apply Filter.Eventually.of_forall
     intro x
@@ -249,7 +249,7 @@ theorem finite_experiment_integrated_raw_derivative_continuous (m n : ℕ) (a v 
 
 /-- Exact score representation after integrating over the design. Likelihood
 positivity is needed only at the differentiation point. -/
-theorem finite_experiment_integrated_score_hasDerivAt (m n : ℕ) (a v η t ρ M : ℝ)
+theorem finite_experiment_integrated_score_hasDerivAt  (a v η t ρ M : ℝ)
     (f : α → (Fin m → Fin 3) → Fin n → ℝ) (T : α → (Fin n → Fin 3) → ℝ)
     (hf : Measurable f) (hT : Measurable T)
     (hfBound : ∀ᵐ x ∂μ, ‖f x‖ ≤ ρ) (hTBound : ∀ᵐ x ∂μ, ‖T x‖ ≤ M)
@@ -270,6 +270,8 @@ theorem finite_experiment_integrated_score_hasDerivAt (m n : ℕ) (a v η t ρ M
     filter_upwards [hpositive] with x hx
     exact finite_experiment_raw_derivative_eq_score m n a v η t (f x) (T x) hx
   exact ⟨hInt.congr he, (integral_congr_ae he) ▸ hDeriv⟩
+end
+
 
 end Integrated
 end NearlyMinimax

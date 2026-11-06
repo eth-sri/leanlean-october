@@ -17,29 +17,27 @@ set_option maxHeartbeats 900000
 section
 variable {α ι E : Type*} [MeasurableSpace α] [Fintype ι] [DecidableEq ι] [MeasurableSpace E]
 
-theorem highMarkedResponseMass_measurable (a V η : ℝ) (g w : α → ℝ)
-    (hg : Measurable g) (hw : Measurable w) (φ : α → ι → ℝ)
-    (hφ : ∀ γ, Measurable (fun x => φ x γ)) (c : ι → ℝ) (y : Fin 3) :
+theorem highMarkedResponseMass_measurable a V η (g w : α → ℝ)
+    (hg : Measurable g) (hw : Measurable w) φ
+    (hφ : ∀ γ, Measurable (fun x => φ x γ)) (c : ι → ℝ) y :
     Measurable (fun x => highMarkedResponseMass a V η g w φ c x y) := by
   apply ternaryMass_measurable_comp
   exact hg.add ((measurable_const.mul hw).mul
     (Finset.measurable_sum _ (fun γ _ => (hφ γ).mul_const (c γ))))
 
-theorem highMarkedSampleNumerator_measurable (r : ℕ) (π : Measure E) [SFinite π]
-    (activation : E → ℝ) (hAct : Measurable activation) (a V η : ℝ)
-    (p : α → ℝ) (hp : Measurable p) (pReset : E → α → ℝ)
-    (hpReset : Measurable (Function.uncurry pReset)) (cReset : E → ι → ℝ)
+theorem highMarkedSampleNumerator_measurable r (π : Measure E) [SFinite π]
+    activation (hAct : Measurable activation) a V η
+    (p : α → ℝ) (hp : Measurable p) pReset
+    (hpReset : Measurable (Function.uncurry pReset)) cReset
     (hcReset : ∀ γ, Measurable (fun e => cReset e γ))
-    (g w : α → ℝ) (hg : Measurable g) (hw : Measurable w)
-    (φ : α → ι → ℝ) (hφ : ∀ γ, Measurable (fun x => φ x γ))
-    (c : ι → ℝ) (y : Fin r → Fin 3) :
+    g w (hg : Measurable g) (hw : Measurable w)
+    φ (hφ : ∀ γ, Measurable (fun x => φ x γ))
+    (c : ι → ℝ) y :
     Measurable (fun x => highMarkedSampleNumerator r π activation a V η p pReset cReset g w φ c x y) := by
   have hReset (i : Fin r) : Measurable (fun z : E × (Fin r → α) => pReset z.1 (z.2 i)) :=
     hpReset.comp (measurable_fst.prodMk ((measurable_pi_apply i).comp measurable_snd))
   have hreg (i : Fin r) : Measurable (fun z : E × (Fin r → α) =>
-      coefficientRegression η (g ∘ z.2) (w ∘ z.2) (φ ∘ z.2) (cReset z.1) i) := by
-    unfold coefficientRegression
-    exact (hg.comp ((measurable_pi_apply i).comp measurable_snd)).add
+      coefficientRegression η (g ∘ z.2) (w ∘ z.2) (φ ∘ z.2) (cReset z.1) i) := (hg.comp ((measurable_pi_apply i).comp measurable_snd)).add
       ((measurable_const.mul (hw.comp ((measurable_pi_apply i).comp measurable_snd))).mul
         (Finset.measurable_sum _ (fun γ _ =>
           ((hφ γ).comp ((measurable_pi_apply i).comp measurable_snd)).mul
@@ -59,9 +57,7 @@ theorem highMarkedSampleNumerator_measurable (r : ℕ) (π : Measure E) [SFinite
       ternaryMass a (coefficientRegression η (g ∘ x) (w ∘ x) (φ ∘ x) c i) V (y i)) :=
     (highMarkedResponseMass_measurable a V η g w hg hw φ hφ c (y i)).comp (measurable_pi_apply i)
   have hvar (i : Fin r) : Measurable (fun x : Fin r → α =>
-      highResponseVarianceTerm a V η (g ∘ x) (w ∘ x) (φ ∘ x) c y i) := by
-    unfold highResponseVarianceTerm
-    exact measurable_const.mul (Finset.measurable_prod _ (fun l _ => hq l))
+      highResponseVarianceTerm a V η (g ∘ x) (w ∘ x) (φ ∘ x) c y i) := measurable_const.mul (Finset.measurable_prod _ (fun l _ => hq l))
   exact hAction.sub ((measurable_const.mul
     (Finset.measurable_prod _ (fun i _ => hp.comp (measurable_pi_apply i)))).mul
       (Finset.measurable_sum _ (fun i _ =>

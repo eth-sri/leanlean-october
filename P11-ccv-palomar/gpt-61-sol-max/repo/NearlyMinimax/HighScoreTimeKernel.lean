@@ -35,9 +35,7 @@ instance highHistoryIndexTimeKernel_isSFinite {E : Type*} [MeasurableSpace E] {d
     (activation : E → ℝ) (ham : Measurable activation) (n : ℕ) (a v η : ℝ)
     (p F : HistoryMarked dependent E → Covariate d → ℝ)
     (hp : Measurable (Function.uncurry p)) (hF : Measurable (Function.uncurry F)) :
-    IsSFiniteKernel (highHistoryIndexTimeKernel dependent Δ π activation ham n a v η p F hp hF) := by
-  unfold highHistoryIndexTimeKernel
-  exact Kernel.isSFiniteKernel_withDensity_of_isFiniteKernel _ (fun _ _ => ENNReal.ofReal_ne_top)
+    IsSFiniteKernel (highHistoryIndexTimeKernel dependent Δ π activation ham n a v η p F hp hF) := Kernel.isSFiniteKernel_withDensity_of_isFiniteKernel _ (fun _ _ => ENNReal.ofReal_ne_top)
 
 def highHistoryRealTimeKernel {E : Type*} [MeasurableSpace E] {d : ℕ}
     (dependent : J → J → Prop) (Δ : ℕ) (π : Measure E)
@@ -58,12 +56,13 @@ instance highHistoryRealTimeKernel_isSFinite {E : Type*} [MeasurableSpace E] {d 
   unfold highHistoryRealTimeKernel
   infer_instance
 
-theorem highHistoryIndexTimeKernel_apply {E : Type*} [MeasurableSpace E] {d : ℕ}
-    (dependent : J → J → Prop) (Δ : ℕ) (π : Measure E)
-    [SFinite (historyMarkedReference dependent Δ π)]
-    (activation : E → ℝ) (ham : Measurable activation) (n : ℕ) (a v η : ℝ)
-    (p F : HistoryMarked dependent E → Covariate d → ℝ)
-    (hp : Measurable (Function.uncurry p)) (hF : Measurable (Function.uncurry F)) (t : ℝ) :
+section
+variable {E : Type*} [MeasurableSpace E]
+
+section
+variable {d : ℕ} (dependent : J → J → Prop) (Δ : ℕ) (π : Measure E) [SFinite (historyMarkedReference dependent Δ π)] (activation : E → ℝ) (ham : Measurable activation) (n : ℕ) (a v η : ℝ) (p F : HistoryMarked dependent E → Covariate d → ℝ) (hp : Measurable (Function.uncurry p)) (hF : Measurable (Function.uncurry F)) (t : ℝ)
+
+theorem highHistoryIndexTimeKernel_apply   :
     highHistoryIndexTimeKernel dependent Δ π activation ham n a v η p F hp hF t =
       (highSampleReference d n).withDensity (fun z => ENNReal.ofReal
         (highMarginalRawLikelihood (historyMarkedPrior dependent Δ t π activation)
@@ -79,13 +78,7 @@ theorem highHistoryIndexTimeKernel_apply {E : Type*} [MeasurableSpace E] {d : �
       ((highMassPowerNormalizer_time_measurable dependent Δ π activation ham n p hp).comp measurable_fst)).ennreal_ofReal
   exact Kernel.withDensity_apply _ hd t
 
-theorem highHistoryRealTimeKernel_eq_data {E : Type*} [MeasurableSpace E] {d : ℕ}
-    (dependent : J → J → Prop) (Δ : ℕ) (π : Measure E)
-    [SFinite (historyMarkedReference dependent Δ π)]
-    (activation : E → ℝ) (ham : Measurable activation) (n : ℕ) (a v η : ℝ)
-    (p F : HistoryMarked dependent E → Covariate d → ℝ)
-    (hp : Measurable (Function.uncurry p)) (hF : Measurable (Function.uncurry F))
-    (t : ℝ) [IsProbabilityMeasure (historyMarkedPrior dependent Δ t π activation)]
+theorem highHistoryRealTimeKernel_eq_data   [IsProbabilityMeasure (historyMarkedPrior dependent Δ t π activation)]
     (aRaw bRaw : ℝ) (haRaw : 0 < aRaw) (ha : a ≠ 0)
     (hraw : ∀ ω x, aRaw ≤ p ω x ∧ p ω x ≤ bRaw)
     (hq : ∀ ω x y, 0 ≤ ternaryMass a (F ω x) (v-η^2*t) y) :
@@ -98,8 +91,10 @@ theorem highHistoryRealTimeKernel_eq_data {E : Type*} [MeasurableSpace E] {d : �
       (historyMarkedPrior dependent Δ t π activation) n a (v-η^2*t) p F hp hF aRaw bRaw haRaw ha hraw hq,
     Measure.map_comp _ _ (encodeDesignResponse_measurable a)]
   rfl
+end
 
-theorem highHistoryScoreEnergyProxy_measurable {E : Type*} [MeasurableSpace E]
+
+theorem highHistoryScoreEnergyProxy_measurable 
     [StandardBorelSpace E] {d : ℕ}
     (dependent : J → J → Prop) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
     (Δ : ℕ) (π : Measure E) [SFinite π] [SFinite (historyMarkedReference dependent Δ π)]
@@ -112,11 +107,13 @@ theorem highHistoryScoreEnergyProxy_measurable {E : Type*} [MeasurableSpace E]
       ∂highHistoryRealTimeKernel dependent Δ π activation ham n a v η p F hp hF t) :=
   (((highMarginalRealScore_time_measurable dependent hsymm Δ π activation ham n a v η p F hp hF).pow_const 2).stronglyMeasurable.integral_kernel_prod_right'
     (κ := highHistoryRealTimeKernel dependent Δ π activation ham n a v η p F hp hF)).measurable
+end
+
 
 /-- Joint Borel dependence and a genuine energy bound imply the square-root
 energy is interval integrable. -/
-theorem intervalIntegrable_sqrt_of_measurable_bound (f : ℝ → ℝ)
-    (hf : Measurable f) (T M : ℝ) (hT : 0 ≤ T)
+theorem intervalIntegrable_sqrt_of_measurable_bound f
+    (hf : Measurable f) T M (hT : 0 ≤ T)
     (hbound : ∀ t ∈ Icc 0 T, f t ≤ M) :
     IntervalIntegrable (fun t => Real.sqrt (f t)) volume 0 T := by
   apply (intervalIntegrable_const (c := Real.sqrt M)).mono_fun'

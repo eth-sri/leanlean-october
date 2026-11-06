@@ -22,7 +22,7 @@ theorem target_cutoff_inverse_budget {d : ℕ} (hd : d ≠ 0)
   field_simp
 
 theorem response_taylor_budget_absorption {eta N : ℝ} (hN : 0 < N)
-    (q d : ℕ) (hsmall : eta ^ (4 * q) * N ^ d ≤ 1) :
+    q d (hsmall : eta ^ (4 * q) * N ^ d ≤ 1) :
     eta ^ (4 * q + 4) ≤ eta ^ 4 / N ^ d := by
   apply (le_div_iff₀ (pow_pos hN d)).mpr
   have h := mul_le_mul_of_nonneg_left hsmall (by positivity : 0 ≤ eta ^ 4)

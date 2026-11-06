@@ -44,21 +44,26 @@ instance finiteProductKernel_markov {ι α β : Type*} [Fintype ι]
     IsMarkovKernel (finiteProductKernel κ) :=
   ⟨fun x => inferInstanceAs (IsProbabilityMeasure (Measure.pi (fun i => κ i (x i))))⟩
 
-theorem finiteProductKernel_apply {ι α β : Type*} [Fintype ι]
+section
+variable {ι α β : Type*}
+
+theorem finiteProductKernel_apply  [Fintype ι]
     [MeasurableSpace α] [MeasurableSpace β]
     (κ : ι → Kernel α β) [∀ i, IsMarkovKernel (κ i)] (x : ι → α) :
     finiteProductKernel κ x = Measure.pi (fun i => κ i (x i)) := rfl
 
 /-- Reassemble separate design and error vectors into coordinate pairs. -/
-def pairVectors {ι α β : Type*} (z : (ι → α) × (ι → β)) : ι → α × β :=
+def pairVectors  (z : (ι → α) × (ι → β)) : ι → α × β :=
   fun i => (z.1 i, z.2 i)
 
-theorem pairVectors_measurable {ι α β : Type*}
+theorem pairVectors_measurable 
     [MeasurableSpace α] [MeasurableSpace β] :
     Measurable (pairVectors (ι := ι) (α := α) (β := β)) :=
   Measurable.of_eval (fun i =>
     ((measurable_pi_apply i).comp measurable_fst).prodMk
       ((measurable_pi_apply i).comp measurable_snd))
+end
+
 
 /-- Tonelli factorization for coordinate functions under a product probability law. -/
 theorem lintegral_coordinate_product {ι α : Type*} [Fintype ι] [MeasurableSpace α]
@@ -101,11 +106,11 @@ theorem pi_compProd_eq_map_pairVectors {ι α β : Type*} [Fintype ι]
 def designVectorLaw {d : ℕ} (θ : RegressionParameter d) (n : ℕ) :
     Measure (Fin n → Covariate d) := Measure.pi (fun _ => designLaw θ)
 
-def conditionalErrorLaw {d n : ℕ} (θ : RegressionParameter d)
-    (x : Fin n → Covariate d) : Measure (Fin n → ℝ) :=
+def conditionalErrorLaw {d n } (θ : RegressionParameter d)
+    (x : Fin n → Covariate d)  :=
   Measure.pi (fun i => θ.errors (x i))
 
-def conditionalErrorKernel {d : ℕ} (θ : RegressionParameter d) (n : ℕ) :
+def conditionalErrorKernel {d } (θ : RegressionParameter d) n :
     Kernel (Fin n → Covariate d) (Fin n → ℝ) :=
   finiteProductKernel (fun _ => θ.errors)
 
@@ -119,21 +124,27 @@ instance conditionalErrorLaw_probability {d n : ℕ} (θ : RegressionParameter d
   unfold conditionalErrorLaw
   infer_instance
 
+section
+variable {d n : ℕ} (θ : RegressionParameter d)
+include θ
+
 /-- Reconstruct observations from the design and error vectors. -/
-def samplesFromDesignErrors {d n : ℕ} (θ : RegressionParameter d)
+def samplesFromDesignErrors 
     (z : (Fin n → Covariate d) × (Fin n → ℝ)) : Fin n → Observation d :=
   fun i => (z.1 i, θ.regression (z.1 i) + z.2 i)
 
-theorem samplesFromDesignErrors_measurable {d n : ℕ} (θ : RegressionParameter d)
+theorem samplesFromDesignErrors_measurable 
     (hf : Measurable θ.regression) : Measurable (samplesFromDesignErrors (n := n) θ) :=
   Measurable.of_eval (fun i =>
     ((measurable_pi_apply i).comp measurable_fst).prodMk
       ((hf.comp ((measurable_pi_apply i).comp measurable_fst)).add
         ((measurable_pi_apply i).comp measurable_snd)))
+end
+
 
 /-- An equality of the actual original sample measure, not an assumed conditional law. -/
-theorem sampleLaw_eq_conditional_map {d : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ) (n : ℕ) :
+theorem sampleLaw_eq_conditional_map {d } C
+    (θ : RegressionParameter d) (hθ : Admissible C θ) n :
     sampleLaw θ n =
       ((designVectorLaw θ n).compProd (conditionalErrorKernel θ n)).map
         (samplesFromDesignErrors θ) := by
@@ -151,10 +162,16 @@ theorem sampleLaw_eq_conditional_map {d : ℕ} (C : ModelConstants d)
   rw [Measure.map_map hv pairVectors_measurable]
   rfl
 
+section
+variable {d n : ℕ}
+
+section
+variable (C : ModelConstants d)
+
 /-- Tonelli's identity for any nonnegative measurable loss under the original law. -/
-theorem sampleLaw_lintegral_conditioning {d n : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ)
-    (g : (Fin n → Observation d) → ℝ≥0∞) (hg : Measurable g) :
+theorem sampleLaw_lintegral_conditioning  
+    θ (hθ : Admissible C θ)
+    g (hg : Measurable g) :
     (∫⁻ z, g z ∂sampleLaw θ n) =
       ∫⁻ x, ∫⁻ u, g (samplesFromDesignErrors θ (x, u))
         ∂conditionalErrorLaw θ x ∂designVectorLaw θ n := by
@@ -170,17 +187,19 @@ theorem sampleLaw_lintegral_conditioning {d n : ℕ} (C : ModelConstants d)
   rfl
 
 /-- The paper's extended-valued mean square risk is exactly the conditional loss average. -/
-theorem meanSquaredRisk_conditioning {d n : ℕ} (C : ModelConstants d)
-    (T : Estimator d n) (θ : RegressionParameter d) (hθ : Admissible C θ) :
+theorem meanSquaredRisk_conditioning  
+    T θ (hθ : Admissible C θ) :
     meanSquaredRisk T θ =
       ∫⁻ x, ∫⁻ u, ENNReal.ofReal
         ((T.val (samplesFromDesignErrors θ (x, u)) - θ.variance) ^ 2)
         ∂conditionalErrorLaw θ x ∂designVectorLaw θ n := by
   apply sampleLaw_lintegral_conditioning C θ hθ
-  exact ENNReal.measurable_ofReal.comp ((T.property.sub measurable_const).pow_const 2)
+  measurability
+end
+
 
 /-- Bochner Fubini for every integrable vector-valued observation function. -/
-theorem sampleLaw_integral_conditioning {d n : ℕ} {E : Type*}
+theorem sampleLaw_integral_conditioning  {E : Type*}
     [NormedAddCommGroup E] [NormedSpace ℝ E] (C : ModelConstants d)
     (θ : RegressionParameter d) (hθ : Admissible C θ)
     (g : (Fin n → Observation d) → E) (hg : Integrable g (sampleLaw θ n)) :
@@ -202,15 +221,17 @@ theorem sampleLaw_integral_conditioning {d n : ℕ} {E : Type*}
     integral_map hm.aemeasurable hmap.aestronglyMeasurable,
     Measure.integral_compProd hcomp]
   rfl
+end
+
 
 /-- Finite fourth moment gives actual fourth-power integrability of the coordinate. -/
 theorem memLp_id_four_of_integrable_fourth (μ : Measure ℝ)
-    (h4 : Integrable (fun u : ℝ => u ^ 4) μ) : MemLp (fun u : ℝ => u) 4 μ := by
+    (h4 : Integrable (fun u : ℝ => u ^ 4) μ) : MemLp (fun u  => u) 4 μ := by
   apply (integrable_norm_rpow_iff (f := fun u : ℝ => u) (p := 4)
     aestronglyMeasurable_id (by norm_num) (by simp)).mp
   have heq : (fun u : ℝ => ‖u‖ ^ ((4 : ℝ≥0∞).toReal)) = (fun u => u ^ 4) := by
     funext u
-    norm_num only [ENNReal.toReal_ofNat, Real.norm_eq_abs]
+    
     calc
       |u| ^ (4 : ℝ) = |u| ^ (4 : ℕ) := Real.rpow_natCast _ _
       _ = |u ^ 4| := (abs_pow u 4).symm
@@ -218,45 +239,49 @@ theorem memLp_id_four_of_integrable_fourth (μ : Measure ℝ)
   rw [heq]
   exact h4
 
-theorem conditionalErrorLaw_iIndepFun {d n : ℕ} (θ : RegressionParameter d)
-    (x : Fin n → Covariate d) :
-    iIndepFun (fun i (u : Fin n → ℝ) => u i) (conditionalErrorLaw θ x) :=
+section
+variable {d n : ℕ} (θ : RegressionParameter d) (x : Fin n → Covariate d)
+
+theorem conditionalErrorLaw_iIndepFun  :
+    iIndepFun (fun i u => u i) (conditionalErrorLaw θ x) :=
   iIndepFun_pi (μ := fun i => θ.errors (x i)) (X := fun _ => id)
     (fun _ => aemeasurable_id)
 
-theorem conditionalErrorLaw_integral_coordinate {d n : ℕ} (θ : RegressionParameter d)
-    (x : Fin n → Covariate d) (i : Fin n) (g : ℝ → ℝ) (hg : Measurable g) :
+theorem conditionalErrorLaw_integral_coordinate  i (g : ℝ → ℝ) (hg : Measurable g) :
     (∫ u, g (u i) ∂conditionalErrorLaw θ x) = ∫ a, g a ∂θ.errors (x i) := by
   have hm := (measurePreserving_eval (fun j => θ.errors (x j)) i).map_eq
   have h := integral_map (μ := Measure.pi (fun j => θ.errors (x j)))
     (measurable_pi_apply i).aemeasurable hg.aestronglyMeasurable
   rw [hm] at h
   exact h.symm
+end
 
-theorem unitCube_measurable (d : ℕ) : MeasurableSet (unitCube d) := by
+
+theorem unitCube_measurable d : MeasurableSet (unitCube d) := by
   have heq : unitCube d = Set.univ.pi (fun _ : Fin d => Set.Icc (0 : ℝ) 1) := by
     ext x
     simp only [unitCube, Set.mem_ofPred_eq, Set.mem_pi, Set.mem_univ,
       true_imp_iff, Set.mem_Icc]
-  rw [heq]
-  exact MeasurableSet.univ_pi (fun _ => measurableSet_Icc)
+  simp_all
+
+section
+variable {d : ℕ}
 
 /-- The design law is supported on the actual cube, even before admissibility. -/
-theorem designLaw_cube_ae {d : ℕ} (θ : RegressionParameter d) :
+theorem designLaw_cube_ae  θ :
     ∀ᵐ x ∂designLaw θ, x ∈ unitCube d := by
   have hx : ∀ᵐ x ∂cubeVolume d, x ∈ unitCube d :=
     ae_restrict_mem (unitCube_measurable d)
-  exact hx.filter_mono (withDensity_absolutelyContinuous (cubeVolume d)
-    (fun x => ENNReal.ofReal (θ.density x))).ae_le
+  solve_by_elim [withDensity_absolutelyContinuous]
 
 /-- All fixed-design hypotheses used by projection risk bounds follow from
 admissibility for almost every vector of iid design points. -/
-theorem admissible_conditional_error_facts {d : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ) (n : ℕ) :
+theorem admissible_conditional_error_facts  C
+    θ (hθ : Admissible C θ) n :
     ∀ᵐ x ∂designVectorLaw θ n,
       (∀ i, x i ∈ unitCube d) ∧
-      (∀ i, MemLp (fun u : Fin n → ℝ => u i) 4 (conditionalErrorLaw θ x)) ∧
-      iIndepFun (fun i (u : Fin n → ℝ) => u i) (conditionalErrorLaw θ x) ∧
+      (∀ i, MemLp (fun u  => u i) 4 (conditionalErrorLaw θ x)) ∧
+      iIndepFun (fun i u => u i) (conditionalErrorLaw θ x) ∧
       (∀ i, (∫ u, u i ∂conditionalErrorLaw θ x) = 0) ∧
       (∀ i, (∫ u, (u i) ^ 2 ∂conditionalErrorLaw θ x) = θ.variance) ∧
       (∀ i, (∫ u, (u i) ^ 4 ∂conditionalErrorLaw θ x) ≤ C.fourthBound) := by
@@ -289,5 +314,7 @@ theorem admissible_conditional_error_facts {d : ℕ} (C : ModelConstants d)
   · intro i
     rw [conditionalErrorLaw_integral_coordinate θ x i (fun u => u ^ 4) (by fun_prop)]
     exact (hx i).2.2.2.2.2.2
+end
+
 
 end NearlyMinimax

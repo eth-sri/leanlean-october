@@ -15,12 +15,15 @@ namespace NearlyMinimax
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 800000
 
-def finiteResponseSquareEnergy {α : Type*} [MeasurableSpace α] (n : ℕ)
+section
+variable {α : Type*}
+
+def finiteResponseSquareEnergy  [MeasurableSpace α] (n : ℕ)
     (a V : ℝ) (F : α → ℝ) (S : ((Fin n → α) × (Fin n → Fin 3)) → ℝ)
     (x : Fin n → α) : ℝ :=
   ∑ y : Fin n → Fin 3, (∏ i, ternaryMass a (F (x i)) V (y i)) * (S (x, y)) ^ 2
 
-theorem response_sample_square_integrable_integral {α : Type*} [MeasurableSpace α]
+theorem response_sample_square_integrable_integral  [MeasurableSpace α]
     (n : ℕ) (μ : Measure (Fin n → α)) [SFinite μ] (a V : ℝ) (ha : a ≠ 0)
     (F : α → ℝ) (hF : Measurable F) (hq : ∀ x y, 0 ≤ ternaryMass a (F x) V y)
     (S : ((Fin n → α) × (Fin n → Fin 3)) → ℝ) (hS : Measurable S)
@@ -40,8 +43,8 @@ theorem response_sample_square_integrable_integral {α : Type*} [MeasurableSpace
     · simpa only [he] using hE
   refine ⟨hi, ?_⟩
   rw [Measure.integral_compProd hi]
-  apply integral_congr_ae
-  exact Filter.Eventually.of_forall (fun x =>
-    responseSampleIndexKernel_integral n a V F hF x (fun i y => hq (x i) y) _)
+  aesop (add unsafe [integral_congr_ae, responseSampleIndexKernel_integral])
+end
+
 
 end NearlyMinimax

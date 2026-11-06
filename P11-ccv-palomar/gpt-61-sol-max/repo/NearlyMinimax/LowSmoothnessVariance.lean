@@ -15,25 +15,31 @@ namespace NearlyMinimax
 
 noncomputable section
 
+section
+variable {ι : Type*}
+
 /-- First derivative of a finite product, in the product-rule representation. -/
-def finiteProductFirst {ι : Type*} [DecidableEq ι] (s : Finset ι)
+def finiteProductFirst  [DecidableEq ι] (s : Finset ι)
     (q d : ι → ℝ → ℝ) (z : ℝ) : ℝ :=
   ∑ i ∈ s, (∏ j ∈ s.erase i, q j z) * d i z
 
 /-- Second derivative obtained by differentiating that product rule. -/
-def finiteProductSecond {ι : Type*} [DecidableEq ι] (s : Finset ι)
+def finiteProductSecond  [DecidableEq ι] (s : Finset ι)
     (q d e : ι → ℝ → ℝ) (z : ℝ) : ℝ :=
   ∑ i ∈ s, ((∑ j ∈ s.erase i, (∏ k ∈ (s.erase i).erase j, q k z) * d j z) * d i z +
     (∏ j ∈ s.erase i, q j z) * e i z)
 
+section
+variable [DecidableEq ι] (s : Finset ι)
+
 /-- This is the actual first derivative, rather than just a formal expression. -/
-theorem finite_product_hasDerivAt {ι : Type*} [DecidableEq ι] (s : Finset ι)
+theorem finite_product_hasDerivAt  
     (q d : ι → ℝ → ℝ) (z : ℝ) (hq : ∀ i ∈ s, HasDerivAt (q i) (d i z) z) :
     HasDerivAt (fun u => ∏ i ∈ s, q i u) (finiteProductFirst s q d z) z := by
-  simpa [finiteProductFirst, smul_eq_mul] using HasDerivAt.fun_finset_prod hq
+  solve_by_elim [HasDerivAt.fun_finset_prod]
 
 /-- This is the actual derivative of the first product derivative. -/
-theorem finite_product_first_hasDerivAt {ι : Type*} [DecidableEq ι] (s : Finset ι)
+theorem finite_product_first_hasDerivAt  
     (q d e : ι → ℝ → ℝ) (z : ℝ)
     (hq : ∀ i ∈ s, HasDerivAt (q i) (d i z) z)
     (hd : ∀ i ∈ s, HasDerivAt (d i) (e i z) z) :
@@ -46,14 +52,19 @@ theorem finite_product_first_hasDerivAt {ι : Type*} [DecidableEq ι] (s : Finse
     simpa [smul_eq_mul] using HasDerivAt.fun_finset_prod
       (fun j hj => hq j (Finset.mem_of_mem_erase hj))
   exact hrest.mul (hd i hi)
+end
 
-private theorem abs_finite_product_le_one {ι : Type*} (s : Finset ι) (q : ι → ℝ)
+
+private theorem abs_finite_product_le_one  (s : Finset ι) (q : ι → ℝ)
     (hq : ∀ i ∈ s, |q i| ≤ 1) : |∏ i ∈ s, q i| ≤ 1 := by
   rw [Finset.abs_prod]
   exact Finset.prod_le_one₀ (fun i _ => abs_nonneg (q i)) hq
 
+section
+variable [DecidableEq ι] (s : Finset ι)
+
 /-- Product derivative bound, including the dependence on the number of factors. -/
-theorem finite_product_first_abs_bound {ι : Type*} [DecidableEq ι] (s : Finset ι)
+theorem finite_product_first_abs_bound  
     (q d : ι → ℝ → ℝ) (z B : ℝ) (_hB : 0 ≤ B)
     (hq : ∀ i ∈ s, |q i z| ≤ 1) (hd : ∀ i ∈ s, |d i z| ≤ B) :
     |finiteProductFirst s q d z| ≤ s.card * B := by
@@ -72,7 +83,7 @@ theorem finite_product_first_abs_bound {ι : Type*} [DecidableEq ι] (s : Finset
     _ = _ := by simp
 
 /-- A second product derivative has at most a quadratic factor-count cost. -/
-theorem finite_product_second_abs_bound {ι : Type*} [DecidableEq ι] (s : Finset ι)
+theorem finite_product_second_abs_bound  
     (q d e : ι → ℝ → ℝ) (z B1 B2 : ℝ) (hB1 : 0 ≤ B1) (_hB2 : 0 ≤ B2)
     (hq : ∀ i ∈ s, |q i z| ≤ 1) (hd : ∀ i ∈ s, |d i z| ≤ B1)
     (he : ∀ i ∈ s, |e i z| ≤ B2) :
@@ -89,7 +100,7 @@ theorem finite_product_second_abs_bound {ι : Type*} [DecidableEq ι] (s : Finse
         (fun j hj => hd j (Finset.mem_of_mem_erase hj))
       have hcard : ((s.erase i).card : ℝ) ≤ s.card := by
         exact_mod_cast Finset.card_le_card (Finset.erase_subset i s)
-      have hfirst' : |∑ j ∈ s.erase i, (∏ k ∈ (s.erase i).erase j, q k z) * d j z| ≤ s.card * B1 :=
+      have hfirst'  :=
         hfirst.trans (mul_le_mul_of_nonneg_right hcard hB1)
       have hp : |∏ j ∈ s.erase i, q j z| ≤ 1 :=
         abs_finite_product_le_one _ _ (fun j hj => hq j (Finset.mem_of_mem_erase hj))
@@ -98,18 +109,20 @@ theorem finite_product_second_abs_bound {ι : Type*} [DecidableEq ι] (s : Finse
             |(∏ j ∈ s.erase i, q j z) * e i z| := abs_add_le _ _
         _ ≤ (s.card * B1) * B1 + 1 * B2 := by
           rw [abs_mul, abs_mul]
-          exact add_le_add
-            (mul_le_mul hfirst' (hd i hi) (abs_nonneg _) (by positivity))
-            (mul_le_mul hp (he i hi) (abs_nonneg _) (by norm_num))
+          exact (by bound)
         _ = _ := by ring
     _ = _ := by simp; ring
+end
+
+end
+
 
 /-- A symmetric second difference is controlled by the second derivative
 on `[-1,1]`. This is a mean-value proof of the Taylor remainder estimate. -/
-theorem symmetric_difference_abs_bound (H D E : ℝ → ℝ) (B : ℝ) (hB : 0 ≤ B)
-    (hH : ∀ z ∈ Set.Icc (-1 : ℝ) 1, HasDerivAt H (D z) z)
-    (hD : ∀ z ∈ Set.Icc (-1 : ℝ) 1, HasDerivAt D (E z) z)
-    (hE : ∀ z ∈ Set.Icc (-1 : ℝ) 1, |E z| ≤ B) :
+theorem symmetric_difference_abs_bound (H D E : ℝ → ℝ) B (hB : 0 ≤ B)
+    (hH : ∀ z ∈ Set.Icc (-1) 1, HasDerivAt H (D z) z)
+    (hD : ∀ z ∈ Set.Icc (-1) 1, HasDerivAt D (E z) z)
+    (hE : ∀ z ∈ Set.Icc (-1) 1, |E z| ≤ B) :
     |symmetricDifference H| ≤ B := by
   have hzero : (0 : ℝ) ∈ Set.Icc (-1 : ℝ) 1 := by norm_num
   have hDdiff (z : ℝ) (hz : z ∈ Set.Icc (-1 : ℝ) 1) : |D z - D 0| ≤ B := by
@@ -118,12 +131,11 @@ theorem symmetric_difference_abs_bound (H D E : ℝ → ℝ) (B : ℝ) (hB : 0 �
       (fun x hx => by simpa only [Real.norm_eq_abs] using hE x hx)
       (convex_Icc (-1 : ℝ) 1) hzero hz
     simp only [Real.norm_eq_abs, sub_zero] at h
-    have hzabs : |z| ≤ 1 := abs_le.mpr hz
+    have hzabs  := abs_le.mpr hz
     exact h.trans (by nlinarith)
-  let G : ℝ → ℝ := fun z => H z - H 0 - z * D 0
+  let G  := fun z => H z - H 0 - z * D 0
   have hG (z : ℝ) (hz : z ∈ Set.Icc (-1 : ℝ) 1) :
-      HasDerivAt G (D z - D 0) z := by
-    exact (((hH z hz).sub_const (H 0)).sub
+      HasDerivAt G (D z - D 0) z := (((hH z hz).sub_const (H 0)).sub
       ((hasDerivAt_id z).mul_const (D 0))).congr_deriv (by ring)
   have hGbound (z : ℝ) (hz : z ∈ Set.Icc (-1 : ℝ) 1) : |G z| ≤ B * |z| := by
     have h := Convex.norm_image_sub_le_of_norm_hasDerivWithin_le
@@ -146,8 +158,7 @@ theorem symmetric_difference_abs_bound (H D E : ℝ → ℝ) (B : ℝ) (hB : 0 �
     _ ≤ (1 / 2 : ℝ) * B + (1 / 2 : ℝ) * B := by
       rw [abs_mul, abs_mul]
       norm_num only [abs_of_pos (by norm_num : (0 : ℝ) < 1 / 2)]
-      exact add_le_add (mul_le_mul_of_nonneg_left hp (by norm_num))
-        (mul_le_mul_of_nonneg_left hm (by norm_num))
+      grind only []
     _ = B := by ring
 
 /-- A finite product's symmetric difference inherits its derivative bounds. -/
@@ -169,21 +180,23 @@ theorem finite_product_symmetric_difference_bound {ι : Type*} [DecidableEq ι]
   · intro z hz
     exact finite_product_first_hasDerivAt s q d e z (hq z hz) (hd z hz)
   · intro z hz
-    exact finite_product_second_abs_bound s q d e z B1 B2 hB1 hB2
-      (h0 z hz) (h1 z hz) (h2 z hz)
+    grind only [finite_product_second_abs_bound]
+
+section
+variable (n : ℕ)
 
 /-- Actual first latent-direction derivative of an observation's response mass. -/
-def patchFactorFirst (n : ℕ) (a _V η : ℝ) (g w : Fin n → ℝ)
-    (y : Fin n → Fin 3) (i : Fin n) (z : ℝ) : ℝ :=
+def patchFactorFirst  (a _V η : ℝ) (g w : Fin n → ℝ)
+    (y : Fin n → Fin 3) i z  :=
   (η * w i) * ternaryMeanDerivative a (g i + η * w i * z) (y i)
 
 /-- Actual second latent-direction derivative of that response mass. -/
-def patchFactorSecond (n : ℕ) (a η : ℝ) (w : Fin n → ℝ)
-    (y : Fin n → Fin 3) (i : Fin n) (_z : ℝ) : ℝ :=
+def patchFactorSecond  a η (w : Fin n → ℝ)
+    (y : Fin n → Fin 3) i (_z : ℝ)  :=
   (η * w i) ^ 2 * ternaryMeanSecondDerivative a (y i)
 
-theorem patch_factor_hasDerivAt (n : ℕ) (a V η : ℝ) (g w : Fin n → ℝ)
-    (y : Fin n → Fin 3) (i : Fin n) (z : ℝ) :
+theorem patch_factor_hasDerivAt  a V η g w
+    y i z :
     HasDerivAt (fun u => ternaryMass a (g i + η * w i * u) V (y i))
       (patchFactorFirst n a V η g w y i z) z := by
   have hx : HasDerivAt (fun u : ℝ => g i + η * w i * u) (η * w i) z := by
@@ -191,8 +204,8 @@ theorem patch_factor_hasDerivAt (n : ℕ) (a V η : ℝ) (g w : Fin n → ℝ)
   have h := (ternary_hasDerivAt_mean a (g i + η * w i * z) V (y i)).comp z hx
   exact h.congr_deriv (by unfold patchFactorFirst; ring)
 
-theorem patch_factor_first_hasDerivAt (n : ℕ) (a V η : ℝ) (g w : Fin n → ℝ)
-    (y : Fin n → Fin 3) (i : Fin n) (z : ℝ) :
+theorem patch_factor_first_hasDerivAt  a V η g w
+    y i z :
     HasDerivAt (patchFactorFirst n a V η g w y i)
       (patchFactorSecond n a η w y i z) z := by
   have hx : HasDerivAt (fun u : ℝ => g i + η * w i * u) (η * w i) z := by
@@ -201,16 +214,16 @@ theorem patch_factor_first_hasDerivAt (n : ℕ) (a V η : ℝ) (g w : Fin n → 
   exact h.congr_deriv (by unfold patchFactorSecond; ring)
 
 /-- The quadratic-in-count Taylor bound for the actual response product. -/
-theorem patch_product_symmetric_difference_bound (n : ℕ) (a V η M N : ℝ)
-    (g w : Fin n → ℝ) (y : Fin n → Fin 3) (hM : 0 ≤ M) (hN : 0 ≤ N)
+theorem patch_product_symmetric_difference_bound  a V η M N
+    g w y (hM : 0 ≤ M) (hN : 0 ≤ N)
     (hw : ∀ i, |w i| ≤ 1)
-    (hq : ∀ z ∈ Set.Icc (-1 : ℝ) 1, ∀ i,
+    (hq : ∀ z ∈ Set.Icc (-1) 1, ∀ i,
       |ternaryMass a (g i + η * w i * z) V (y i)| ≤ 1)
-    (hfirst : ∀ z ∈ Set.Icc (-1 : ℝ) 1, ∀ i,
+    (hfirst : ∀ z ∈ Set.Icc (-1) 1, ∀ i,
       |ternaryMeanDerivative a (g i + η * w i * z) (y i)| ≤ M)
     (hsecond : ∀ i, |ternaryMeanSecondDerivative a (y i)| ≤ N) :
     |symmetricDifference (patchResponseProduct n a V η g w y)| ≤
-      ((n : ℝ) ^ 2 * M ^ 2 + n * N) * η ^ 2 := by
+      (n ^ 2 * M ^ 2 + n * N) * η ^ 2 := by
   have hd : ∀ z ∈ Set.Icc (-1 : ℝ) 1, ∀ i,
       |patchFactorFirst n a V η g w y i z| ≤ |η| * M := by
     intro z hz i
@@ -247,8 +260,8 @@ theorem patch_product_symmetric_difference_bound (n : ℕ) (a V η M N : ℝ)
     ring
 
 /-- The variance correction grows at most linearly in the patch count. -/
-theorem patch_variance_correction_abs_bound (n : ℕ) (a V η z B : ℝ)
-    (g w : Fin n → ℝ) (y : Fin n → Fin 3) (hB : 0 ≤ B) (hw : ∀ i, |w i| ≤ 1)
+theorem patch_variance_correction_abs_bound  a V η z B
+    g w y (hB : 0 ≤ B) (hw : ∀ i, |w i| ≤ 1)
     (hq : ∀ i, |ternaryMass a (g i + η * w i * z) V (y i)| ≤ 1)
     (hvariance : ∀ i, |ternaryVarianceDerivative a (y i)| ≤ B) :
     |∑ i, (w i) ^ 2 * patchVarianceTerm n a V η g w y z i| ≤ n * B := by
@@ -273,18 +286,18 @@ theorem patch_variance_correction_abs_bound (n : ℕ) (a V η z B : ℝ)
 
 /-- The actual score numerator has the paper's `k^2*eta^2` bound, with
 constants determined by individual response derivative bounds. -/
-theorem patch_score_numerator_abs_bound (n : ℕ) (a V η z M N B : ℝ)
-    (g w : Fin n → ℝ) (y : Fin n → Fin 3) (hn : 1 ≤ n)
-    (hz : z ∈ Set.Icc (-1 : ℝ) 1) (hM : 0 ≤ M) (hN : 0 ≤ N) (hB : 0 ≤ B)
+theorem patch_score_numerator_abs_bound  a V η z M N B
+    (g w : Fin n → ℝ) y (hn : 1 ≤ n)
+    (hz : z ∈ Set.Icc (-1) 1) (hM : 0 ≤ M) (hN : 0 ≤ N) (hB : 0 ≤ B)
     (hw : ∀ i, |w i| ≤ 1)
-    (hq : ∀ u ∈ Set.Icc (-1 : ℝ) 1, ∀ i,
+    (hq : ∀ u ∈ Set.Icc (-1) 1, ∀ i,
       |ternaryMass a (g i + η * w i * u) V (y i)| ≤ 1)
-    (hfirst : ∀ u ∈ Set.Icc (-1 : ℝ) 1, ∀ i,
+    (hfirst : ∀ u ∈ Set.Icc (-1) 1, ∀ i,
       |ternaryMeanDerivative a (g i + η * w i * u) (y i)| ≤ M)
     (hsecond : ∀ i, |ternaryMeanSecondDerivative a (y i)| ≤ N)
     (hvariance : ∀ i, |ternaryVarianceDerivative a (y i)| ≤ B) :
     |patchScoreNumerator n a V η g w y z| ≤
-      (M ^ 2 + N + B) * (n : ℝ) ^ 2 * η ^ 2 := by
+      (M ^ 2 + N + B) * n ^ 2 * η ^ 2 := by
   have hD := patch_product_symmetric_difference_bound n a V η M N g w y hM hN
     hw hq hfirst hsecond
   have hV := patch_variance_correction_abs_bound n a V η z B g w y hB hw (hq z hz) hvariance
@@ -308,8 +321,8 @@ theorem patch_score_numerator_abs_bound (n : ℕ) (a V η z M N B : ℝ)
     _ ≤ _ := by nlinarith [mul_le_mul_of_nonneg_right hNB (sq_nonneg η)]
 
 /-- A uniform positive mass bound propagates to the actual product denominator. -/
-theorem patch_response_lower_bound (n : ℕ) (a V η z c : ℝ)
-    (g w : Fin n → ℝ) (y : Fin n → Fin 3) (hc : 0 ≤ c)
+theorem patch_response_lower_bound  a V η z c
+    g w y (hc : 0 ≤ c)
     (hq : ∀ i, c ≤ ternaryMass a (g i + η * w i * z) V (y i)) :
     c ^ n ≤ patchResponseProduct n a V η g w y z := by
   calc
@@ -318,11 +331,11 @@ theorem patch_response_lower_bound (n : ℕ) (a V η z c : ℝ)
 
 /-- Explicit score-square bound for `n` observations in the patch. It displays
 both the polynomial count factor and the exponential likelihood denominator. -/
-theorem patch_score_square_bound (n : ℕ) (a V η z M N B c : ℝ)
-    (g w : Fin n → ℝ) (y : Fin n → Fin 3) (hn : 1 ≤ n)
-    (hz : z ∈ Set.Icc (-1 : ℝ) 1) (hM : 0 ≤ M) (hN : 0 ≤ N) (hB : 0 ≤ B) (hc : 0 < c)
+theorem patch_score_square_bound  a V η z M N B c
+    (g w : Fin n → ℝ) y (hn : 1 ≤ n)
+    (hz : z ∈ Set.Icc (-1) 1) (hM : 0 ≤ M) (hN : 0 ≤ N) (hB : 0 ≤ B) (hc : 0 < c)
     (hw : ∀ i, |w i| ≤ 1)
-    (hq : ∀ u ∈ Set.Icc (-1 : ℝ) 1, ∀ i,
+    (hq : ∀ u ∈ Set.Icc (-1) 1, ∀ i,
       |ternaryMass a (g i + η * w i * u) V (y i)| ≤ 1)
     (hfirst : ∀ u ∈ Set.Icc (-1 : ℝ) 1, ∀ i,
       |ternaryMeanDerivative a (g i + η * w i * u) (y i)| ≤ M)
@@ -330,12 +343,12 @@ theorem patch_score_square_bound (n : ℕ) (a V η z M N B c : ℝ)
     (hvariance : ∀ i, |ternaryVarianceDerivative a (y i)| ≤ B)
     (hlower : ∀ i, c ≤ ternaryMass a (g i + η * w i * z) V (y i)) :
     (patchObservableScore n a V η g w y z) ^ 2 ≤
-      (M ^ 2 + N + B) ^ 2 * (n : ℝ) ^ 4 * η ^ 4 / c ^ (2 * n) := by
+      (M ^ 2 + N + B) ^ 2 * n ^ 4 * η ^ 4 / c ^ (2 * n) := by
   have hnum := patch_score_numerator_abs_bound n a V η z M N B g w y hn hz hM hN hB
     hw hq hfirst hsecond hvariance
   have hden := patch_response_lower_bound n a V η z c g w y hc.le hlower
-  have hcp : 0 < c ^ n := pow_pos hc n
-  have hL : 0 < patchResponseProduct n a V η g w y z := hcp.trans_le hden
+  have hcp  := pow_pos hc n
+  have hL  := hcp.trans_le hden
   have hscore : |patchObservableScore n a V η g w y z| ≤
       (M ^ 2 + N + B) * (n : ℝ) ^ 2 * η ^ 2 / c ^ n := by
     unfold patchObservableScore
@@ -348,7 +361,7 @@ theorem patch_score_square_bound (n : ℕ) (a V η z M N B c : ℝ)
   ring
 
 /-- Polynomial count growth can be absorbed into a fixed exponential. -/
-theorem fourth_power_count_le_exponential (n : ℕ) : (n : ℝ) ^ 4 ≤ (16 : ℝ) ^ n := by
+theorem fourth_power_count_le_exponential  : (n : ℝ) ^ 4 ≤ 16 ^ n := by
   have hn : (n : ℝ) ≤ (2 : ℝ) ^ n := by exact_mod_cast (Nat.lt_two_pow_self (n := n)).le
   have h := pow_le_pow_left₀ (Nat.cast_nonneg n) hn 4
   calc
@@ -357,26 +370,26 @@ theorem fourth_power_count_le_exponential (n : ℕ) : (n : ℝ) ^ 4 ≤ (16 : �
 
 /-- The precise polynomial/denominator score bound implies the `C^k*eta^4`
 bound used in the paper, with an explicit constant depending only on `K,c`. -/
-theorem score_bound_exponential_absorption (n : ℕ) (K c η r : ℝ) (hn : 1 ≤ n) (hc : 0 < c)
-    (hr : r ^ 2 ≤ K ^ 2 * (n : ℝ) ^ 4 * η ^ 4 / c ^ (2 * n)) :
+theorem score_bound_exponential_absorption  (K c η r : ℝ) (hn : 1 ≤ n) (hc : 0 < c)
+    (hr : r ^ 2 ≤ K ^ 2 * n ^ 4 * η ^ 4 / c ^ (2 * n)) :
     r ^ 2 ≤ (16 * max 1 (K ^ 2) / c ^ 2) ^ n * η ^ 4 := by
-  have hK : K ^ 2 ≤ (max 1 (K ^ 2)) ^ n := by
-    exact (le_max_right 1 (K ^ 2)).trans (by
+  have hK  := (le_max_right 1 (K ^ 2)).trans (by
       simpa using pow_le_pow_right₀ (le_max_left 1 (K ^ 2)) hn)
   have hn4 := fourth_power_count_le_exponential n
   have hnum : K ^ 2 * (n : ℝ) ^ 4 * η ^ 4 ≤
       (max 1 (K ^ 2)) ^ n * (16 : ℝ) ^ n * η ^ 4 := by
-    exact mul_le_mul_of_nonneg_right
-      (mul_le_mul hK hn4 (by positivity) (by positivity)) (by positivity)
+    exact (by gcongr)
   calc
     _ ≤ K ^ 2 * (n : ℝ) ^ 4 * η ^ 4 / c ^ (2 * n) := hr
     _ ≤ (max 1 (K ^ 2)) ^ n * (16 : ℝ) ^ n * η ^ 4 / c ^ (2 * n) :=
       div_le_div_of_nonneg_right hnum (by positivity)
     _ = _ := by rw [div_pow, mul_pow, ← pow_mul]; ring
+end
+
 
 /-- Finite exponential-series tail from order two, uniformly in its cutoff. -/
-theorem finite_exponential_tail_bound (x : ℝ) (hx : 0 ≤ x) (n : ℕ) :
-    (∑ k ∈ Finset.range (n + 2), if 2 ≤ k then x ^ k / (k.factorial : ℝ) else 0) ≤
+theorem finite_exponential_tail_bound (x : ℝ) (hx : 0 ≤ x) n :
+    (∑ k ∈ Finset.range (n + 2), if 2 ≤ k then x ^ k / k.factorial else 0) ≤
       x ^ 2 * Real.exp x := by
   rw [Nat.add_comm n 2, Finset.sum_range_add]
   have hsmall : (∑ k ∈ Finset.range 2, if 2 ≤ k then x ^ k / (k.factorial : ℝ) else 0) = 0 := by
@@ -398,10 +411,10 @@ theorem finite_exponential_tail_bound (x : ℝ) (hx : 0 ≤ x) (n : ℕ) :
       mul_le_mul_of_nonneg_left (Real.sum_le_exp_of_nonneg hx n) (sq_nonneg x)
 
 /-- The binomial count law, represented by its actual finite masses. -/
-def binomialCountMass (n : ℕ) (p : ℝ) (k : ℕ) : ℝ :=
+def binomialCountMass n p k  :=
   (n.choose k : ℝ) * p ^ k * (1 - p) ^ (n - k)
 
-theorem binomial_count_mass_nonnegative (n : ℕ) (p : ℝ) (hp : 0 ≤ p) (hp1 : p ≤ 1) (k : ℕ) :
+theorem binomial_count_mass_nonnegative n p (hp : 0 ≤ p) (hp1 : p ≤ 1) k :
     0 ≤ binomialCountMass n p k := by
   have h1mp : 0 ≤ 1 - p := by linarith
   unfold binomialCountMass
@@ -439,10 +452,10 @@ theorem binomial_count_tail_energy (n : ℕ) (p C : ℝ)
       nlinarith [mul_le_mul_of_nonneg_left hexp (sq_nonneg (C * n * p))]
 
 /-- Uniform regression-direction derivative bound on an admissible bounded field. -/
-theorem ternary_mean_derivative_abs_bound (a f ρ : ℝ) (ha : 0 < a) (hρ : 0 ≤ ρ)
-    (hf : |f| ≤ ρ) (y : Fin 3) :
+theorem ternary_mean_derivative_abs_bound a f ρ (ha : 0 < a) (hρ : 0 ≤ ρ)
+    (hf : |f| ≤ ρ) y :
     |ternaryMeanDerivative a f y| ≤ (2 * ρ + a) / a ^ 2 := by
-  have ha2 : 0 < a ^ 2 := sq_pos_of_pos ha
+  have ha2  := sq_pos_of_pos ha
   have hA : 0 ≤ 2 * ρ + a := by positivity
   have hm : |2 * f - a| ≤ 2 * ρ + a := by
     have h := abs_sub_le (2 * f) 0 a
@@ -469,37 +482,35 @@ theorem ternary_mean_derivative_abs_bound (a f ρ : ℝ) (ha : 0 < a) (hρ : 0 �
     exact (div_le_div_of_nonneg_right hp (by positivity)).trans hhalf
 
 /-- Uniform second derivative bound, independent of the regression value. -/
-theorem ternary_mean_second_derivative_abs_bound (a : ℝ) (ha : 0 < a) (y : Fin 3) :
+theorem ternary_mean_second_derivative_abs_bound a (ha : 0 < a) y :
     |ternaryMeanSecondDerivative a y| ≤ 2 / a ^ 2 := by
-  have ha2 : 0 < a ^ 2 := sq_pos_of_pos ha
+  have ha2  := sq_pos_of_pos ha
   fin_cases y
   · change |1 / a ^ 2| ≤ _
     rw [abs_div, abs_of_pos ha2, abs_one]
-    exact div_le_div_of_nonneg_right (show (1 : ℝ) ≤ 2 by norm_num) ha2.le
+    exact (by bound)
   · change |-2 / a ^ 2| ≤ _
     simp [abs_div, abs_of_pos ha2]
   · change |1 / a ^ 2| ≤ _
     rw [abs_div, abs_of_pos ha2, abs_one]
-    exact div_le_div_of_nonneg_right (show (1 : ℝ) ≤ 2 by norm_num) ha2.le
+    exact (by bound)
 
 /-- Uniform variance derivative bound. -/
-theorem ternary_variance_derivative_abs_bound (a : ℝ) (ha : 0 < a) (y : Fin 3) :
+theorem ternary_variance_derivative_abs_bound a (ha : 0 < a) y :
     |ternaryVarianceDerivative a y| ≤ 1 / a ^ 2 := by
-  have ha2 : 0 < a ^ 2 := sq_pos_of_pos ha
+  have ha2  := sq_pos_of_pos ha
   fin_cases y
   · change |1 / (2 * a ^ 2)| ≤ _
     rw [abs_div, abs_of_pos (by positivity : 0 < 2 * a ^ 2), abs_one]
-    exact div_le_div₀ (show (0 : ℝ) ≤ 1 by norm_num) le_rfl ha2
-      (show a ^ 2 ≤ 2 * a ^ 2 by nlinarith)
+    exact (by bound)
   · change |-1 / a ^ 2| ≤ _
     simp [abs_div, abs_of_pos ha2]
   · change |1 / (2 * a ^ 2)| ≤ _
     rw [abs_div, abs_of_pos (by positivity : 0 < 2 * a ^ 2), abs_one]
-    exact div_le_div₀ (show (0 : ℝ) ≤ 1 by norm_num) le_rfl ha2
-      (show a ^ 2 ≤ 2 * a ^ 2 by nlinarith)
+    exact (by bound)
 
 /-- Response-averaged squared observable patch score. -/
-def patchExpectedScoreEnergy (n : ℕ) (a V η : ℝ) (g w : Fin n → ℝ) (z : ℝ) : ℝ :=
+def patchExpectedScoreEnergy n a V η g w z  :=
   ∑ y : Fin n → Fin 3,
     patchResponseProduct n a V η g w y z * (patchObservableScore n a V η g w y z) ^ 2
 
@@ -509,17 +520,17 @@ def ternaryScoreExponentialConstant (a ρ c : ℝ) : ℝ :=
 
 /-- Actual response score energy is bounded by `C^k*eta^4`, with all
 constants deduced from the bounded regression field and legal masses. -/
-theorem patch_expected_score_energy_bound (n : ℕ) (a V η z ρ c : ℝ)
-    (g w : Fin n → ℝ) (hn : 1 ≤ n) (ha : 0 < a) (hρ : 0 ≤ ρ) (hc : 0 < c)
-    (hz : z ∈ Set.Icc (-1 : ℝ) 1) (hw : ∀ i, |w i| ≤ 1)
-    (hreg : ∀ u ∈ Set.Icc (-1 : ℝ) 1, ∀ i, |g i + η * w i * u| ≤ ρ)
-    (hq : ∀ u ∈ Set.Icc (-1 : ℝ) 1, ∀ i y,
+theorem patch_expected_score_energy_bound n a V η z ρ c
+    g w (hn : 1 ≤ n) (ha : 0 < a) (hρ : 0 ≤ ρ) (hc : 0 < c)
+    (hz : z ∈ Set.Icc (-1) 1) (hw : ∀ i, |w i| ≤ 1)
+    (hreg : ∀ u ∈ Set.Icc (-1) 1, ∀ i, |g i + η * w i * u| ≤ ρ)
+    (hq : ∀ u ∈ Set.Icc (-1) 1, ∀ i y,
       0 ≤ ternaryMass a (g i + η * w i * u) V y ∧ ternaryMass a (g i + η * w i * u) V y ≤ 1)
     (hlower : ∀ i y, c ≤ ternaryMass a (g i + η * w i * z) V y) :
     patchExpectedScoreEnergy n a V η g w z ≤ ternaryScoreExponentialConstant a ρ c ^ n * η ^ 4 := by
   let M := (2 * ρ + a) / a ^ 2
   let K := M ^ 2 + 3 / a ^ 2
-  have ha2 : 0 < a ^ 2 := sq_pos_of_pos ha
+  have ha2  := sq_pos_of_pos ha
   have hy (y : Fin n → Fin 3) : (patchObservableScore n a V η g w y z) ^ 2 ≤
       ternaryScoreExponentialConstant a ρ c ^ n * η ^ 4 := by
     have hs := patch_score_square_bound n a V η z M (2 / a ^ 2) (1 / a ^ 2) c g w y hn hz
@@ -530,8 +541,7 @@ theorem patch_expected_score_energy_bound (n : ℕ) (a V η z ρ c : ℝ)
       (fun i => ternary_variance_derivative_abs_bound a ha (y i)) (fun i => hlower i (y i))
     have hK : M ^ 2 + 2 / a ^ 2 + 1 / a ^ 2 = K := by dsimp [K]; ring
     rw [hK] at hs
-    simpa [ternaryScoreExponentialConstant, K, M] using
-      score_bound_exponential_absorption n K c η _ hn hc hs
+    solve_by_elim [score_bound_exponential_absorption]
   unfold patchExpectedScoreEnergy
   calc
     _ ≤ ∑ y : Fin n → Fin 3,
@@ -543,13 +553,10 @@ theorem patch_expected_score_energy_bound (n : ℕ) (a V η z ρ c : ℝ)
     _ = _ := by rw [← Finset.sum_mul, patch_response_normalized n a V η g w z (ne_of_gt ha), one_mul]
 
 /-- Exact zero-count energy cancellation. -/
-theorem patch_expected_score_energy_zero (a V η z : ℝ) (g w : Fin 0 → ℝ) :
+theorem patch_expected_score_energy_zero a V η z g w :
     patchExpectedScoreEnergy 0 a V η g w z = 0 := by
   unfold patchExpectedScoreEnergy
-  apply Finset.sum_eq_zero
-  intro y _
-  have hnum := patch_score_cancel_zero 0 a V η g w y z (fun i => Fin.elim0 i)
-  simp [patchObservableScore, hnum]
+  simp_all [patch_score_cancel_zero, patchObservableScore]
 
 /-- The binomial count-tail bound integrates any countwise exponential energy
 bound that vanishes at counts zero and one. -/
@@ -566,7 +573,7 @@ theorem binomial_collision_energy_bound (n : ℕ) (p C η : ℝ) (e : ℕ → �
       intro k _
       by_cases hk : 2 ≤ k
       · rw [if_pos hk]
-        exact mul_le_mul_of_nonneg_left (he k hk) (binomial_count_mass_nonnegative n p hp hp1 k)
+        simp_all [mul_le_mul_of_nonneg_left, binomial_count_mass_nonnegative]
       · rw [if_neg hk]
         have hk' : k = 0 ∨ k = 1 := by omega
         rcases hk' with rfl | rfl <;> simp [he0, he1]

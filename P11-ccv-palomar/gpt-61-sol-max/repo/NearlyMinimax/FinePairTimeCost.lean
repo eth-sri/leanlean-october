@@ -13,8 +13,8 @@ namespace NearlyMinimax
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 500000
 
-theorem finePairTimeFieldMeasure_abs_time_integral (d : ℕ) [NeZero d]
-    (lo hi : ℝ) (hlo : 0 ≤ lo) (horder : lo ≤ hi) :
+theorem finePairTimeFieldMeasure_abs_time_integral d [NeZero d]
+    lo hi (hlo : 0 ≤ lo) (horder : lo ≤ hi) :
     (∫ e : ℝ × FinePairFieldMark d, |e.1| ∂finePairTimeFieldMeasure d lo hi) =
       (hi ^ 2 - lo ^ 2) / 2 := by
   have he : (fun e : ℝ × FinePairFieldMark d => |e.1|) =ᵐ[finePairTimeFieldMeasure d lo hi]

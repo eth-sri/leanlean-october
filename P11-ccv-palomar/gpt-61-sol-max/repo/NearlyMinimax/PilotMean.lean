@@ -17,15 +17,22 @@ variable [NormedAddCommGroup H] [InnerProductSpace ℝ H]
 variable [MeasurableSpace H] [BorelSpace H] [SecondCountableTopology H]
 variable {μ : Measure Ω} {M : Measure W} [IsProbabilityMeasure μ] [IsFiniteMeasure M]
 
-def pilotMean (m : W → H) (η : Ω → W → H) (B : W → H →L[ℝ] H) (z : Ω × Ω) : ℝ :=
+section
+variable (m : W → H)
+include m
+
+def pilotMean  (η : Ω → W → H) (B : W → H →L[ℝ] H) (z : Ω × Ω)  :=
   ∫ w, ⟪m w + η z.1 w, B w (m w + η z.2 w)⟫ ∂M
 
-theorem pilotMean_sub_eq (m : W → H) (hmm : Measurable m) (hm : MemLp m 2 M)
-    {η : Ω → W → H} (hmη : Measurable (fun z : Ω × W => η z.1 z.2))
-    {B : W → H →L[ℝ] H} (hmB : Measurable (fun z : W × H => B z.1 z.2))
-    {C : ℝ} (hbound : ∀ w, ‖B w‖ ≤ C)
+section
+variable (hmm : Measurable m) (hm : MemLp m 2 M) {η : Ω → W → H} (hmη : Measurable (fun z : Ω × W => η z.1 z.2))
+include hmm hm hmη
+
+theorem pilotMean_sub_eq  
+    {B } (hmB : Measurable (fun z : W × H => B z.1 z.2))
+    {C } (hbound : ∀ w, ‖B w‖ ≤ C)
     (hsym : ∀ w x y, ⟪x, B w y⟫ = ⟪B w x, y⟫)
-    {x y : Ω} (hx : MemLp (η x) 2 M) (hy : MemLp (η y) 2 M) :
+    {x y } (hx : MemLp (η x) 2 M) (hy : MemLp (η y) 2 M) :
     pilotMean (M := M) m η B (x, y) - (∫ w, ⟪m w, B w (m w)⟫ ∂M) =
       fluctuation (M := M) η B (fun w => B w (m w)) (fun w => B w (m w)) (x, y) := by
   have hBm := operatorField_memLp hmB hbound hmm hm
@@ -52,11 +59,10 @@ theorem pilotMean_sub_eq (m : W → H) (hmm : Measurable m) (hm : MemLp m 2 M)
 
 /-- The deterministic-centered pilot mean has its variance bound derived
 from the original universal linear tests. -/
-theorem pilotMean_centered_sq_le (m : W → H) (hmm : Measurable m) (hm : MemLp m 2 M)
-    {η : Ω → W → H} (hmη : Measurable (fun z : Ω × W => η z.1 z.2))
-    (hη : MemLp (fun z : Ω × W => η z.1 z.2) 2 (μ.prod M))
-    {B : W → H →L[ℝ] H} (hmB : Measurable (fun z : W × H => B z.1 z.2))
-    {C lam : ℝ} (hC : 0 ≤ C) (hlam : 0 ≤ lam) (hbound : ∀ w, ‖B w‖ ≤ C)
+theorem pilotMean_centered_sq_le  
+    (hη : MemLp (fun z  => η z.1 z.2) 2 (μ.prod M))
+    {B } (hmB : Measurable (fun z : W × H => B z.1 z.2))
+    {C lam } (hC : 0 ≤ C) (hlam : 0 ≤ lam) (hbound : ∀ w, ‖B w‖ ≤ C)
     (hsym : ∀ w x y, ⟪x, B w y⟫ = ⟪B w x, y⟫)
     (htest : ∀ v : W → H, MemLp v 2 M →
       (∫ x, test (M := M) η v x ^ 2 ∂μ) ≤ lam * ∫ w, ‖v w‖ ^ 2 ∂M) :
@@ -76,5 +82,9 @@ theorem pilotMean_centered_sq_le (m : W → H) (hmm : Measurable m) (hm : MemLp 
   have hcoef : 0 ≤ 3 * lam := mul_nonneg (by norm_num) hlam
   have hb := mul_le_mul_of_nonneg_left (add_le_add hv hv) hcoef
   nlinarith
+end
+
+end
+
 
 end NearlyMinimax.PilotFields

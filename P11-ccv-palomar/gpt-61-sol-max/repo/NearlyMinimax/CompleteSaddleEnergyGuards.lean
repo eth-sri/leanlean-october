@@ -16,29 +16,35 @@ namespace NearlyMinimax
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1000000
 
-abbrev completeSaddleM {d : ℕ} (C : ModelConstants d) (x : ℝ) :=
+abbrev completeSaddleM {d } (C : ModelConstants d) x :=
   lowerSaddleM (highCompleteSourceSaddleCoefficient C) x
-abbrev completeSaddleD {d : ℕ} (C : ModelConstants d) (x : ℝ) :=
+section
+variable {d : ℕ} (C : ModelConstants d)
+include C
+
+abbrev completeSaddleD  x :=
   lowerSaddleD d (highCompleteSourceSaddleCoefficient C) x
-abbrev completeSaddleN {d : ℕ} (C : ModelConstants d) (Cω x : ℝ) :=
+abbrev completeSaddleN  Cω x :=
   lowerSaddleN C.smoothness d (highCompleteSourceSaddleCoefficient C)
     (highCompleteSourceSaddleTheta C) Cω (shrunkDensityExponent C.densityLower C.densityUpper) x
-abbrev completeSaddleMu {d : ℕ} (C : ModelConstants d) (Cω x : ℝ) :=
+abbrev completeSaddleMu  Cω x :=
   lowerSaddleMu d (highCompleteSourceSaddleCoefficient C) (highCompleteSourceSaddleTheta C) Cω x
-abbrev completeSaddleEta {d : ℕ} (C : ModelConstants d) (Cω cf x : ℝ) :=
+abbrev completeSaddleEta  Cω cf x :=
   lowerSaddleEta C.smoothness d (highCompleteSourceSaddleCoefficient C)
     (highCompleteSourceSaddleTheta C) Cω cf x
-abbrev completeSaddleC0 {d : ℕ} (C : ModelConstants d) :=
+end
+
+abbrev completeSaddleC0 {d } (C : ModelConstants d) :=
   densityIntervalExponent C.densityLower C.densityUpper+1
-abbrev completeSaddleEll {d : ℕ} (C : ModelConstants d) (Cω x : ℝ) :=
+abbrev completeSaddleEll {d } (C : ModelConstants d) Cω x :=
   lowerAliasCutoff C.smoothness d (highCompleteSourceSaddleCoefficient C)
     (highCompleteSourceSaddleTheta C) Cω (completeSaddleC0 C)
     (shrunkDensityExponent C.densityLower C.densityUpper) x
-abbrev completeSaddleTau {d : ℕ} (C : ModelConstants d) (x : ℝ) :=
+abbrev completeSaddleTau {d } (C : ModelConstants d) x :=
   shrunkDensityExponent C.densityLower C.densityUpper (completeSaddleM C x)
-abbrev completeSaddleAD {d : ℕ} (C : ModelConstants d) (x : ℝ) :=
+abbrev completeSaddleAD {d } (C : ModelConstants d) x :=
   C.densityLower+1/(completeSaddleM C x : ℝ)
-abbrev completeSaddleBD {d : ℕ} (C : ModelConstants d) (x : ℝ) :=
+abbrev completeSaddleBD {d } (C : ModelConstants d) x :=
   C.densityUpper-1/(completeSaddleM C x : ℝ)
 
 structure CompleteSaddleEnergyGuards {d : ℕ} (C : ModelConstants d) (Cω cf x : ℝ) : Prop where
@@ -69,9 +75,9 @@ structure CompleteSaddleEnergyGuards {d : ℕ} (C : ModelConstants d) (Cω cf x 
   ad_positive : 0 < completeSaddleAD C x
   density_interval : completeSaddleAD C x < completeSaddleBD C x
 
- theorem eventually_completeSaddleEnergyGuards {d : ℕ} [NeZero d]
-    (C : ModelConstants d) (hs : 1 < C.smoothness) (hd : 4*C.smoothness < (d : ℝ))
-    {cf : ℝ} (hcf : 0 < cf) (Cω : ℝ) :
+ theorem eventually_completeSaddleEnergyGuards {d } [NeZero d]
+    (C : ModelConstants d) (hs : 1 < C.smoothness) (hd : 4*C.smoothness < d)
+    {cf } (hcf : 0 < cf) Cω :
     ∀ᶠ n : ℕ in atTop, CompleteSaddleEnergyGuards C Cω cf n := by
   let m := highCompleteSourceSaddleCoefficient C
   let theta := highCompleteSourceSaddleTheta C

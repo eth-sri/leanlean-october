@@ -16,33 +16,35 @@ set_option maxHeartbeats 800000
 set_option backward.isDefEq.respectTransparency false
 variable {Ω : Type*} [MeasurableSpace Ω]
 
-def highRawSampleVarianceDerivative {d : ℕ} (n : ℕ) (a V : ℝ)
-    (p F : Covariate d → ℝ) (z : (Fin n → Covariate d) × (Fin n → Fin 3)) : ℝ :=
+section
+variable {d : ℕ} (n : ℕ)
+
+def highRawSampleVarianceDerivative  a V
+    (p F : Covariate d → ℝ) (z : (Fin n → Covariate d) × (Fin n → Fin 3))  :=
   (∏ i, p (z.1 i)) * ∑ i, (∏ j ∈ Finset.univ.erase i,
     ternaryMass a (F (z.1 j)) V (z.2 j)) * ternaryVarianceDerivative a (z.2 i)
 
-theorem highRawSampleLikelihood_hasDerivAt_variance {d : ℕ} (n : ℕ) (a V : ℝ)
-    (p F : Covariate d → ℝ) (z : (Fin n → Covariate d) × (Fin n → Fin 3)) :
+theorem highRawSampleLikelihood_hasDerivAt_variance  a V
+    (p F : Covariate d → ℝ) z :
     HasDerivAt (fun W => highRawSampleLikelihood n a W p F z)
       (highRawSampleVarianceDerivative n a V p F z) V := by
   have h := (HasDerivAt.fun_finsetProd (u := (Finset.univ : Finset (Fin n)))
     (fun i _ => ternary_hasDerivAt_variance a (F (z.1 i)) V (z.2 i))).const_mul
       (∏ i, p (z.1 i))
-  simpa only [highRawSampleLikelihood, highRawSampleVarianceDerivative,
-    Finset.prod_mul_distrib, smul_eq_mul] using h
+  simp_all [Finset.prod_mul_distrib, highRawSampleLikelihood, highRawSampleVarianceDerivative]
 
-theorem highRawSampleLikelihood_hasDerivAt_path {d : ℕ} (n : ℕ) (a v η t : ℝ)
-    (p F : Covariate d → ℝ) (z : (Fin n → Covariate d) × (Fin n → Fin 3)) :
+theorem highRawSampleLikelihood_hasDerivAt_path  a v η t
+    (p F : Covariate d → ℝ) z :
     HasDerivAt (fun u => highRawSampleLikelihood n a (v - η ^ 2 * u) p F z)
       (-η ^ 2 * highRawSampleVarianceDerivative n a (v - η ^ 2 * t) p F z) t := by
   have h := (highRawSampleLikelihood_hasDerivAt_variance n a (v - η ^ 2 * t) p F z).comp t
     ((hasDerivAt_const t v).sub ((hasDerivAt_id t).const_mul (η ^ 2)))
-  simpa only [Function.comp_def, Pi.sub_apply, id_eq, zero_sub, mul_one, mul_comm] using h
+  simp_all [Function.comp_def, mul_comm]
 
-theorem highRawSampleLikelihood_abs_le {d : ℕ} (n : ℕ) (a V P : ℝ) (hP : 0 ≤ P)
+theorem highRawSampleLikelihood_abs_le  a V P (hP : 0 ≤ P)
     (p F : Covariate d → ℝ) (hp : ∀ x, |p x| ≤ P) (ha : a ≠ 0)
     (hq : ∀ x y, 0 ≤ ternaryMass a (F x) V y)
-    (z : (Fin n → Covariate d) × (Fin n → Fin 3)) :
+    z :
     |highRawSampleLikelihood n a V p F z| ≤ P ^ n := by
   unfold highRawSampleLikelihood
   rw [Finset.abs_prod]
@@ -57,11 +59,11 @@ theorem highRawSampleLikelihood_abs_le {d : ℕ} (n : ℕ) (a V P : ℝ) (hP : 0
         _ = P := mul_one _
     _ = _ := by simp
 
-theorem highRawSampleVarianceDerivative_abs_le {d : ℕ} (n : ℕ) (a V P : ℝ)
+theorem highRawSampleVarianceDerivative_abs_le  a V P
     (ha : 0 < a) (hP : 0 ≤ P) (p F : Covariate d → ℝ)
     (hp : ∀ x, |p x| ≤ P) (hq : ∀ x y, 0 ≤ ternaryMass a (F x) V y)
-    (z : (Fin n → Covariate d) × (Fin n → Fin 3)) :
-    |highRawSampleVarianceDerivative n a V p F z| ≤ P ^ n * ((n : ℝ) / a ^ 2) := by
+    z :
+    |highRawSampleVarianceDerivative n a V p F z| ≤ P ^ n * (n / a ^ 2) := by
   have hpp : |∏ i : Fin n, p (z.1 i)| ≤ P ^ n := by
     rw [Finset.abs_prod]
     simpa using Finset.prod_le_prod₀ (fun i (_ : i ∈ Finset.univ) => abs_nonneg (p (z.1 i)))
@@ -69,9 +71,7 @@ theorem highRawSampleVarianceDerivative_abs_le {d : ℕ} (n : ℕ) (a V P : ℝ)
   have hqprod (i : Fin n) :
       |∏ j ∈ Finset.univ.erase i, ternaryMass a (F (z.1 j)) V (z.2 j)| ≤ 1 := by
     rw [Finset.abs_prod]
-    exact Finset.prod_le_one₀ (fun j _ => abs_nonneg _) (fun j _ => by
-      rw [abs_of_nonneg (hq (z.1 j) (z.2 j))]
-      exact ternary_mass_le_one a _ V ha.ne' (hq _) _)
+    simp_all [Finset.prod_le_one₀, abs_of_nonneg, ternary_mass_le_one, ha.ne']
   have hs : |∑ i : Fin n, (∏ j ∈ Finset.univ.erase i,
       ternaryMass a (F (z.1 j)) V (z.2 j)) * ternaryVarianceDerivative a (z.2 i)| ≤
         (n : ℝ) / a ^ 2 := by
@@ -87,10 +87,10 @@ theorem highRawSampleVarianceDerivative_abs_le {d : ℕ} (n : ℕ) (a V P : ℝ)
           (abs_nonneg _) zero_le_one).trans_eq (one_mul _)
       _ = _ := by simp [div_eq_mul_inv]
   rw [highRawSampleVarianceDerivative, abs_mul]
-  exact mul_le_mul hpp hs (abs_nonneg _) (pow_nonneg hP n)
+  bound
 
-theorem highRawSampleVarianceDerivative_joint_measurable {d : ℕ} (n : ℕ) (a V : ℝ)
-    (p F : Ω → Covariate d → ℝ) (hp : Measurable (Function.uncurry p))
+theorem highRawSampleVarianceDerivative_joint_measurable  a V
+    p F (hp : Measurable (Function.uncurry p))
     (hF : Measurable (Function.uncurry F)) :
     Measurable (fun z : Ω × ((Fin n → Covariate d) × (Fin n → Fin 3)) =>
       highRawSampleVarianceDerivative n a V (p z.1) (F z.1) z.2) := by
@@ -105,5 +105,7 @@ theorem highRawSampleVarianceDerivative_joint_measurable {d : ℕ} (n : ℕ) (a 
       (Finset.measurable_prod _ (fun j _ =>
         (ternaryMass_joint_measurable a V (Function.uncurry F) hF).comp ((hx j).prodMk (hy j)))).mul
       ((measurable_of_countable (ternaryVarianceDerivative a)).comp (hy i))))
+end
+
 
 end NearlyMinimax

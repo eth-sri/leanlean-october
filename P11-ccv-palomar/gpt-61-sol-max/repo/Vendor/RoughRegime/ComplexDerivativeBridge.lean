@@ -11,9 +11,9 @@ public import RoughRegime.PolynomialDerivatives
 noncomputable section
 namespace RoughRegime.ComplexDerivativeBridge
 
-def complexMonomial {p q : ℕ} (σ : Fin q → Fin p) (x : Fin p → ℂ) : ℂ := ∏ i, x (σ i)
+def complexMonomial {p q } (σ : Fin q → Fin p) (x : Fin p → ℂ)  := ∏ i, x (σ i)
 
-def complexSlotMap {p q : ℕ} (σ : Fin q → Fin p) : (Fin p → ℂ) →L[ℂ] (Fin q → ℂ) :=
+def complexSlotMap {p q } (σ : Fin q → Fin p) : (Fin p → ℂ) →L[ℂ] (Fin q → ℂ) :=
   ContinuousLinearMap.pi (fun i => ContinuousLinearMap.proj (σ i))
 
 @[simp] lemma complexSlotMap_apply {p q : ℕ} (σ : Fin q → Fin p) (x : Fin p → ℂ) (i : Fin q) :
@@ -116,25 +116,25 @@ lemma norm_ofReal_pi {p : ℕ} (v : Fin p → ℝ) : ‖fun j => (v j : ℂ)‖ 
     simpa only [Complex.norm_real] using norm_le_pi_norm (fun j => (v j : ℂ)) j
 
 /-- Actual real polynomial derivatives satisfy the source Cauchy direction bound. -/
-theorem real_polynomial_derivative_bound {p r : ℕ} (F : MvPolynomial (Fin p) ℝ)
-    (m : Fin p → ℝ) (ε A : ℝ) (hε : 0 < ε)
+theorem real_polynomial_derivative_bound {p r } F
+    m ε A (hε : 0 < ε)
     (hbound : ∀ y : Fin p → ℂ, ‖y - (fun j => (m j : ℂ))‖ < ε →
       ‖MvPolynomial.eval y (complexify F)‖ ≤ A)
-    (hr : 0 < r) (v : Fin r → Fin p → ℝ) :
+    (hr : 0 < r) v :
     ‖iteratedFDeriv ℝ r (fun x => MvPolynomial.eval x F) m v‖ ≤
-      A * (r.factorial : ℝ) * (Real.exp 1 / ε) ^ r * ∏ i, ‖v i‖ := by
+      A * r.factorial * (Real.exp 1 / ε) ^ r * ∏ i, ‖v i‖ := by
   have hc := RoughRegime.Cauchy.polynomial_derivative_bound (complexify F)
     (fun j => (m j : ℂ)) ε A hε hbound r hr (fun i j => (v i j : ℂ))
   rw [complexify_iteratedFDeriv, Complex.norm_real] at hc
   simpa only [norm_ofReal_pi] using hc
 
 /-- The corresponding operator norm bound used in Lemma 8. -/
-theorem real_polynomial_derivative_norm_bound {p r : ℕ} (F : MvPolynomial (Fin p) ℝ)
-    (m : Fin p → ℝ) (ε A : ℝ) (hε : 0 < ε) (hA : 0 ≤ A)
+theorem real_polynomial_derivative_norm_bound {p r } F
+    m ε A (hε : 0 < ε) (hA : 0 ≤ A)
     (hbound : ∀ y : Fin p → ℂ, ‖y - (fun j => (m j : ℂ))‖ < ε →
       ‖MvPolynomial.eval y (complexify F)‖ ≤ A) (hr : 0 < r) :
     ‖iteratedFDeriv ℝ r (fun x => MvPolynomial.eval x F) m‖ ≤
-      A * (r.factorial : ℝ) * (Real.exp 1 / ε) ^ r := by
+      A * r.factorial * (Real.exp 1 / ε) ^ r := by
   apply ContinuousMultilinearMap.opNorm_le_bound
   · positivity
   · exact real_polynomial_derivative_bound F m ε A hε hbound hr

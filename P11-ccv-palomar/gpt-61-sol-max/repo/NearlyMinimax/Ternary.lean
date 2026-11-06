@@ -20,49 +20,59 @@ noncomputable section
 /-- The support of the paper's three-point response law. -/
 def ternaryValue (a : ℝ) : Fin 3 → ℝ := ![-a, 0, a]
 
+section
+variable (a f V : ℝ)
+include a f V
+
 /-- The three probability masses; positivity is proved separately. -/
-def ternaryMass (a f V : ℝ) : Fin 3 → ℝ :=
+def ternaryMass  : Fin 3 → ℝ :=
   ![(V + f ^ 2 - a * f) / (2 * a ^ 2),
     1 - (V + f ^ 2) / a ^ 2,
     (V + f ^ 2 + a * f) / (2 * a ^ 2)]
 
 /-- Integration against the finite response law. -/
-def ternaryExpectation (a f V : ℝ) (g : ℝ → ℝ) : ℝ :=
+def ternaryExpectation  (g : ℝ → ℝ)  :=
   ∑ y : Fin 3, ternaryMass a f V y * g (ternaryValue a y)
 
-theorem ternary_normalized (a f V : ℝ) (ha : a ≠ 0) :
+section
+variable (ha : a ≠ 0)
+include ha
+
+theorem ternary_normalized   :
     ∑ y : Fin 3, ternaryMass a f V y = 1 := by
   simp [Fin.sum_univ_succ, ternaryMass]
   field_simp [ha]
   ring
 
-theorem ternary_mean (a f V : ℝ) (ha : a ≠ 0) :
+theorem ternary_mean   :
     ternaryExpectation a f V id = f := by
   simp [ternaryExpectation, Fin.sum_univ_succ, ternaryMass, ternaryValue]
   field_simp [ha]
   ring
 
-theorem ternary_variance (a f V : ℝ) (ha : a ≠ 0) :
+theorem ternary_variance   :
     ternaryExpectation a f V (fun y => (y - f) ^ 2) = V := by
   simp [ternaryExpectation, Fin.sum_univ_succ, ternaryMass, ternaryValue]
   field_simp [ha]
   ring
 
 /-- The exact centered fourth moment appearing in the paper. -/
-theorem ternary_fourth_central_moment (a f V : ℝ) (ha : a ≠ 0) :
+theorem ternary_fourth_central_moment   :
     ternaryExpectation a f V (fun y => (y - f) ^ 4) =
       a ^ 2 * V + (6 * V - 3 * a ^ 2) * f ^ 2 + 3 * f ^ 4 := by
   simp [ternaryExpectation, Fin.sum_univ_succ, ternaryMass, ternaryValue]
   field_simp [ha]
   ring
+end
+
 
 /-- Explicit sufficient conditions for all masses to be strictly positive. -/
-theorem ternary_mass_positive (a f V : ℝ) (ha : 0 < a)
+theorem ternary_mass_positive  (ha : 0 < a)
     (hupper : V + f ^ 2 < a ^ 2)
     (hlower : a * |f| < V + f ^ 2) :
-    ∀ y : Fin 3, 0 < ternaryMass a f V y := by
-  have ha2 : 0 < a ^ 2 := sq_pos_of_pos ha
-  have hleft : a * f ≤ a * |f| := mul_le_mul_of_nonneg_left (le_abs_self f) ha.le
+    ∀ y , 0 < ternaryMass a f V y := by
+  have ha2  := sq_pos_of_pos ha
+  have hleft  := mul_le_mul_of_nonneg_left (le_abs_self f) ha.le
   have hright : -(a * f) ≤ a * |f| := by
     have := mul_le_mul_of_nonneg_left (neg_le_abs f) ha.le
     nlinarith
@@ -74,28 +84,29 @@ theorem ternary_mass_positive (a f V : ℝ) (ha : 0 < a)
   · exact div_pos (by linarith) (by positivity)
 
 /-- Every nonnegative normalized mass is at most one. -/
-theorem ternary_mass_le_one (a f V : ℝ) (ha : a ≠ 0)
-    (hnonneg : ∀ y, 0 ≤ ternaryMass a f V y) (y : Fin 3) :
+theorem ternary_mass_le_one  (ha : a ≠ 0)
+    (hnonneg : ∀ y, 0 ≤ ternaryMass a f V y) y :
     ternaryMass a f V y ≤ 1 := by
-  rw [← ternary_normalized a f V ha]
-  exact Finset.single_le_sum (fun i _ => hnonneg i) (Finset.mem_univ y)
+  linarith [ternary_normalized a f V ha, Finset.single_le_sum (fun i _ => hnonneg i) (Finset.mem_univ y)]
+end
+
 
 /-- All response constraints hold uniformly in a rectangular neighborhood
 of an interior zero-regression law, exactly as in Section 6.1. -/
-theorem ternary_admissible_neighborhood (a v vMinus vPlus C4 : ℝ)
+theorem ternary_admissible_neighborhood a v vMinus vPlus C4
     (ha : 0 < a) (hv : 0 < v) (hva : v < a ^ 2)
     (hvMinus : vMinus < v) (hvPlus : v < vPlus) (hC4 : a ^ 2 * v < C4) :
     ∃ ρ c : ℝ, 0 < ρ ∧ 0 < c ∧
-      ∀ f V : ℝ, |f| ≤ ρ → |V - v| ≤ ρ →
+      ∀ f V , |f| ≤ ρ → |V - v| ≤ ρ →
         vMinus < V ∧ V < vPlus ∧
-        (∀ y : Fin 3, c ≤ ternaryMass a f V y) ∧
+        (∀ y , c ≤ ternaryMass a f V y) ∧
         ternaryExpectation a f V (fun y => (y - f) ^ 4) ≤ C4 := by
-  let p : ℝ := v / (2 * a ^ 2)
-  let q : ℝ := 1 - v / a ^ 2
-  let c : ℝ := min p q / 2
-  have ha2 : 0 < a ^ 2 := sq_pos_of_pos ha
+  let p  := v / (2 * a ^ 2)
+  let q  := 1 - v / a ^ 2
+  let c  := min p q / 2
+  have ha2  := sq_pos_of_pos ha
   have hp : 0 < p := div_pos hv (by positivity)
-  have hq : 0 < q := sub_pos.mpr ((div_lt_one ha2).mpr hva)
+  have hq  := sub_pos.mpr ((div_lt_one ha2).mpr hva)
   have hc : 0 < c := div_pos (lt_min hp hq) (by norm_num)
   have hcp : c < p := by dsimp [c]; linarith [min_le_left p q]
   have hcq : c < q := by dsimp [c]; linarith [min_le_right p q]
@@ -110,8 +121,7 @@ theorem ternary_admissible_neighborhood (a v vMinus vPlus C4 : ℝ)
     intro y
     fin_cases y <;> simp [ternaryMass] <;> fun_prop
   have hmassEvent : ∀ᶠ x : ℝ × ℝ in nhds (0, v),
-      ∀ y : Fin 3, c < ternaryMass a x.1 x.2 y := by
-    exact Filter.eventually_all.mpr (fun y =>
+      ∀ y : Fin 3, c < ternaryMass a x.1 x.2 y := Filter.eventually_all.mpr (fun y =>
       continuousAt_const.eventually_lt (hmassCont y).continuousAt (hmass0 y))
   have hVMinus : ∀ᶠ x : ℝ × ℝ in nhds (0, v), vMinus < x.2 :=
     continuousAt_const.eventually_lt continuous_snd.continuousAt hvMinus
@@ -137,9 +147,7 @@ theorem ternary_admissible_neighborhood (a v vMinus vPlus C4 : ℝ)
     simp only [Prod.dist_eq, Real.dist_eq, sub_zero]
     exact max_lt (by linarith) (by linarith)
   obtain ⟨hm, hp, hq, hfourth⟩ := hbound hdist
-  refine ⟨hm, hp, fun y => (hq y).le, ?_⟩
-  rw [ternary_fourth_central_moment a f V (ne_of_gt ha)]
-  exact hfourth.le
+  grind only [ternary_fourth_central_moment]
 
 /-- The mass derivative in the variance direction. -/
 def ternaryVarianceDerivative (a : ℝ) : Fin 3 → ℝ :=
@@ -155,7 +163,7 @@ def ternaryMeanSecondDerivative (a : ℝ) : Fin 3 → ℝ :=
   ![1 / a ^ 2, -2 / a ^ 2, 1 / a ^ 2]
 
 /-- The displayed variance derivative is the actual derivative of every mass. -/
-theorem ternary_hasDerivAt_variance (a f V : ℝ) (y : Fin 3) :
+theorem ternary_hasDerivAt_variance a f V y :
     HasDerivAt (fun W => ternaryMass a f W y) (ternaryVarianceDerivative a y) V := by
   fin_cases y
   · change HasDerivAt (fun W => (W + f ^ 2 - a * f) / (2 * a ^ 2))
@@ -171,7 +179,7 @@ theorem ternary_hasDerivAt_variance (a f V : ℝ) (y : Fin 3) :
       (2 * a ^ 2)).congr_deriv (by ring)
 
 /-- The displayed regression derivative is the actual derivative. -/
-theorem ternary_hasDerivAt_mean (a f V : ℝ) (y : Fin 3) :
+theorem ternary_hasDerivAt_mean a f V y :
     HasDerivAt (fun g => ternaryMass a g V y) (ternaryMeanDerivative a f y) f := by
   fin_cases y
   · change HasDerivAt (fun g => (V + g ^ 2 - a * g) / (2 * a ^ 2))
@@ -190,7 +198,7 @@ theorem ternary_hasDerivAt_mean (a f V : ℝ) (y : Fin 3) :
       (2 * a ^ 2)).congr_deriv (by simp only [id_eq]; ring)
 
 /-- The displayed second regression derivative is the actual derivative. -/
-theorem ternary_hasDerivAt_mean_derivative (a f : ℝ) (y : Fin 3) :
+theorem ternary_hasDerivAt_mean_derivative a f y :
     HasDerivAt (fun g => ternaryMeanDerivative a g y)
       (ternaryMeanSecondDerivative a y) f := by
   fin_cases y
@@ -205,14 +213,14 @@ theorem ternary_hasDerivAt_mean_derivative (a f : ℝ) (y : Fin 3) :
       (2 * a ^ 2)).congr_deriv (by simp [div_eq_mul_inv]; ring)
 
 /-- The exact heat identity for the quadratic masses. -/
-theorem ternary_heat_identity (a : ℝ) (y : Fin 3) :
+theorem ternary_heat_identity a y :
     ternaryMeanSecondDerivative a y = 2 * ternaryVarianceDerivative a y := by
   fin_cases y <;> simp [ternaryMeanSecondDerivative, ternaryVarianceDerivative] <;> ring
 
 /-- The exact finite-difference identity used in the small-smoothness lower bound. -/
-theorem ternary_finite_difference (a g V η w : ℝ) (ha : a ≠ 0) (y : Fin 3) :
-    (1 / 2 : ℝ) * ternaryMass a (g + η * w) V y +
-      (1 / 2 : ℝ) * ternaryMass a (g - η * w) V y - ternaryMass a g V y =
+theorem ternary_finite_difference a g V η w (ha : a ≠ 0) y :
+    (1 / 2) * ternaryMass a (g + η * w) V y +
+      (1 / 2) * ternaryMass a (g - η * w) V y - ternaryMass a g V y =
       η ^ 2 * w ^ 2 * ternaryVarianceDerivative a y := by
   fin_cases y <;> simp [ternaryMass, ternaryVarianceDerivative] <;>
     field_simp [ha] <;> ring

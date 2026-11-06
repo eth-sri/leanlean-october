@@ -14,10 +14,14 @@ set_option maxHeartbeats 1000000
 set_option backward.isDefEq.respectTransparency false
 variable {Ω Z : Type*} [MeasurableSpace Ω] [MeasurableSpace Z]
 
-def posteriorMeanScore (ν : Measure Ω) (L D : Ω × Z → ℝ) (z : Z) : ℝ :=
+section
+variable (ν : Measure Ω)
+include ν
+
+def posteriorMeanScore  (L D : Ω × Z → ℝ) (z : Z)  :=
   (∫ ω, D (ω,z) ∂ν) / (∫ ω, L (ω,z) ∂ν)
 
-theorem posteriorMeanScore_measurable (ν : Measure Ω) [SFinite ν]
+theorem posteriorMeanScore_measurable  [SFinite ν]
     (L D : Ω × Z → ℝ) (hL : Measurable L) (hD : Measurable D) :
     Measurable (posteriorMeanScore ν L D) :=
   hD.stronglyMeasurable.integral_prod_left'.measurable.div
@@ -25,19 +29,19 @@ theorem posteriorMeanScore_measurable (ν : Measure Ω) [SFinite ν]
 
 /-- Genuine marginal Fisher energy contracts the true latent Fisher
 energy. The premises are primitive likelihood/derivative integrability. -/
-theorem posteriorMeanScore_memLp_energy (ν : Measure Ω) [IsProbabilityMeasure ν]
-    (μ : Measure Z) [SFinite μ] (L D : Ω × Z → ℝ)
+theorem posteriorMeanScore_memLp_energy  [IsProbabilityMeasure ν]
+    (μ : Measure Z) [SFinite μ] L D
     (hLm : Measurable L) (hDm : Measurable D) (hLp : ∀ z, 0 < L z)
-    (LC DC G : ℝ) (hG : 0 < G) (hLb : ∀ z, L z ≤ LC) (hDb : ∀ z, |D z| ≤ DC)
+    LC DC G (hG : 0 < G) (hLb : ∀ z, L z ≤ LC) (hDb : ∀ z, |D z| ≤ DC)
     (hE : Integrable (fun z => D z^2 / L z) (ν.prod μ)) :
     let ρ := μ.withDensity (fun z => ENNReal.ofReal ((∫ ω, L (ω,z) ∂ν) / G))
     MemLp (posteriorMeanScore ν L D) 2 ρ ∧
       (∫ z, (posteriorMeanScore ν L D z)^2 ∂ρ) ≤
         G⁻¹ * ∫ z, D z^2 / L z ∂ν.prod μ := by
-  let M : Z → ℝ := fun z => ∫ ω, L (ω,z) ∂ν
-  let A : Z → ℝ := fun z => ∫ ω, D (ω,z) ∂ν
-  let E : Z → ℝ := fun z => ∫ ω, D (ω,z)^2 / L (ω,z) ∂ν
-  let R : Z → ℝ := posteriorMeanScore ν L D
+  let M  := fun z => ∫ ω, L (ω,z) ∂ν
+  let A  := fun z => ∫ ω, D (ω,z) ∂ν
+  let E  := fun z => ∫ ω, D (ω,z)^2 / L (ω,z) ∂ν
+  let R  := posteriorMeanScore ν L D
   let ρ := μ.withDensity (fun z => ENNReal.ofReal (M z / G))
   have hM : Measurable M := hLm.stronglyMeasurable.integral_prod_left'.measurable
   have hA : Measurable A := hDm.stronglyMeasurable.integral_prod_left'.measurable
@@ -47,13 +51,10 @@ theorem posteriorMeanScore_memLp_energy (ν : Measure Ω) [IsProbabilityMeasure 
     (fun ω => hLp (ω,z)) (fun ω => hLb (ω,z))
   have hiL (z) : Integrable (fun ω => L (ω,z)) ν := by
     apply Integrable.of_bound (hLm.comp (measurable_id.prodMk measurable_const)).aestronglyMeasurable LC
-    exact Eventually.of_forall fun ω => by
-      change ‖L (ω,z)‖ ≤ LC
-      rw [Real.norm_eq_abs, abs_of_nonneg (hLp _).le]
-      exact hLb _
+    grind only [Eventually.of_forall, Real.norm_eq_abs, abs_of_nonneg]
   have hiD (z) : Integrable (fun ω => D (ω,z)) ν := by
     apply Integrable.of_bound (hDm.comp (measurable_id.prodMk measurable_const)).aestronglyMeasurable DC
-    exact Eventually.of_forall fun ω => by simpa only [Real.norm_eq_abs, Function.comp_apply, id_eq] using hDb (ω,z)
+    solve_by_elim [Eventually.of_forall]
   have hE0 (z) : 0 ≤ E z := integral_nonneg (fun ω => div_nonneg (sq_nonneg _) (hLp _).le)
   have hEnergy : ∀ᵐ z ∂μ, (M z / G) * R z^2 ≤ G⁻¹ * E z := by
     filter_upwards [hE.prod_left_ae] with z hEz
@@ -71,7 +72,7 @@ theorem posteriorMeanScore_memLp_energy (ν : Measure Ω) [IsProbabilityMeasure 
     change ‖(M z/G) * R z^2‖ ≤ _
     rw [Real.norm_eq_abs, abs_of_nonneg (mul_nonneg (div_nonneg (hden z).le hG.le) (sq_nonneg _))]
     exact hz
-  have hdens : Measurable (fun z => ENNReal.ofReal (M z/G)) := (hM.div_const G).ennreal_ofReal
+  have hdens  := (hM.div_const G).ennreal_ofReal
   have hsquare : Integrable (fun z => R z^2) ρ := by
     apply (integrable_withDensity_iff_integrable_smul' hdens (Eventually.of_forall fun _ => ENNReal.ofReal_lt_top)).2
     simpa only [ENNReal.toReal_ofReal (div_nonneg (hden _).le hG.le), smul_eq_mul] using hweighted
@@ -82,5 +83,7 @@ theorem posteriorMeanScore_memLp_energy (ν : Measure Ω) [IsProbabilityMeasure 
   calc
     _ ≤ ∫ z, G⁻¹ * E z ∂μ := integral_mono_ae hweighted hiE hEnergy
     _ = _ := by rw [integral_const_mul, ← MeasureTheory.integral_prod_symm _ hE]
+end
+
 
 end NearlyMinimax

@@ -12,8 +12,14 @@ namespace NearlyMinimax
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 800000
 
-theorem highFrameFeature_abs_le_one {d F : ℕ} (x : Covariate d)
-    (hx : ∀ i, |x i| ≤ 2) (γ : HighFrameIndex d F) :
+section
+variable {d F : ℕ}
+
+section
+variable (x : Covariate d) (hx : ∀ i, |x i| ≤ 2)
+include hx
+
+theorem highFrameFeature_abs_le_one   (γ : HighFrameIndex d F) :
     |highFrameFeature x γ| ≤ 1 := by
   unfold highFrameFeature
   rw [Finset.abs_prod]
@@ -25,30 +31,32 @@ theorem highFrameFeature_abs_le_one {d F : ℕ} (x : Covariate d)
     have hb : |x i / 8| ≤ 1 := by
       rw [abs_div]
       rw [show |(8 : ℝ)| = 8 by norm_num]
-      apply (div_le_one (by norm_num : (0 : ℝ) < 8)).mpr
-      exact (hx i).trans (by norm_num)
+      grind only []
     exact pow_le_one₀ (abs_nonneg _) hb
 
-theorem highFrameProfile_abs_le_coefficients {d F : ℕ} (x : Covariate d)
-    (hx : ∀ i, |x i| ≤ 2) (v : HighFrameIndex d F → ℝ) :
+theorem highFrameProfile_abs_le_coefficients   (v : HighFrameIndex d F → ℝ) :
     |∑ γ, highFrameFeature x γ * v γ| ≤ ∑ γ, |v γ| := by
   apply (Finset.abs_sum_le_sum_abs _ _).trans
   apply Finset.sum_le_sum
   intro γ _
   rw [abs_mul]
   exact (mul_le_mul_of_nonneg_right (highFrameFeature_abs_le_one x hx γ) (abs_nonneg _)).trans_eq (one_mul _)
+end
 
-theorem highFrameProfile_abs_le_one {d F : ℕ} (C : ℝ) (hC : 1 ≤ C)
-    (x : Covariate d) (hx : ∀ i, |x i| ≤ 2) (v : HighFrameIndex d F → ℝ)
+
+theorem highFrameProfile_abs_le_one  C (hC : 1 ≤ C)
+    x (hx : ∀ i, |x i| ≤ 2) (v : HighFrameIndex d F → ℝ)
     (hv : ∑ γ, |v γ| ≤ C⁻¹) :
     |∑ γ, highFrameFeature x γ * v γ| ≤ 1 :=
   (highFrameProfile_abs_le_coefficients x hx v).trans (hv.trans (inv_le_one_of_one_le₀ hC))
+end
 
-theorem highFrameCoefficientRegression_abs_le {d n F : ℕ}
-    (C η ρ : ℝ) (hC : 1 ≤ C) (hη : 0 ≤ η) (hηρ : η ≤ ρ/2)
+
+theorem highFrameCoefficientRegression_abs_le {d n F }
+    C η ρ (hC : 1 ≤ C) (hη : 0 ≤ η) (hηρ : η ≤ ρ/2)
     (U : Fin n → Covariate d) (hU : ∀ i l, |U i l| ≤ 2)
-    (g w : Fin n → ℝ) (hg : ∀ i, |g i| ≤ ρ/2) (hw : ∀ i, |w i| ≤ 1)
-    (c : HighFrameIndex d F → ℝ) (hc : ∑ γ, |c γ| ≤ C⁻¹) (i : Fin n) :
+    g w (hg : ∀ i, |g i| ≤ ρ/2) (hw : ∀ i, |w i| ≤ 1)
+    (c : HighFrameIndex d F → ℝ) (hc : ∑ γ, |c γ| ≤ C⁻¹) i :
     |coefficientRegression η g w (fun i => highFrameFeature (U i)) c i| ≤ ρ := by
   have hprof := highFrameProfile_abs_le_one C hC (U i) (hU i) c hc
   have hwη : |η*w i| ≤ η := by

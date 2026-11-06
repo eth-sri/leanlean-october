@@ -17,25 +17,27 @@ set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 800000
 attribute [local instance] Classical.propDecidable
 
-theorem finite_activity_fin_tail_le {K q : ℝ} (hK : 0 ≤ K) (hq : 0 ≤ q)
-    (hqh : q ≤ 1/2) (m : ℕ) (B : Fin m → ℝ)
+theorem finite_activity_fin_tail_le {K q } (hK : 0 ≤ K) (hq : 0 ≤ q)
+    (hqh : q ≤ 1/2) m (B : Fin m → ℝ)
     (hB : ∀ j, B j ≤ K*q^(j.val+1)) :
     (∑ j, B j) ≤ 2*K*q := by
   calc
     _ ≤ ∑ j : Fin m, K*q^(j.val+1) := Finset.sum_le_sum fun j _ => hB j
     _ = K * ∑ j : Fin m, q^(j.val+1) := (Finset.mul_sum _ _ _).symm
-    _ = K * ∑ j ∈ Finset.range m, q^(j+1) := by
-      exact congrArg (fun t : ℝ => K*t) (Fin.sum_univ_eq_sum_range (fun j => q^(j+1)) m)
+    _ = K * ∑ j ∈ Finset.range m, q^(j+1) := congrArg (fun t : ℝ => K*t) (Fin.sum_univ_eq_sum_range (fun j => q^(j+1)) m)
     _ ≤ K*(2*q) := mul_le_mul_of_nonneg_left (finite_geometric_tail_le_two_mul hq hqh m) hK
     _ = _ := by ring
 
-theorem higherBandCoarseActivity_geometric_le {d D M q : ℕ} (hd : 0 < d) (hD : 1 ≤ D)
-    (a b C lam ℓ N μ B : ℝ) (ha : 0 < a) (hab : a < b)
+section
+variable {d D M q : ℕ} (hd : 0 < d) (hD : 1 ≤ D) (a b C lam ℓ N μ B : ℝ) (ha : 0 < a) (hab : a < b)
+include hd hD ha hab
+
+theorem higherBandCoarseActivity_geometric_le 
     (hℓ : 0 ≤ ℓ) (hN : 1 ≤ N) (hμ : 0 ≤ μ) (hbase1 : μ*(1+Real.log N) ≤ 1)
-    (hB : 0 ≤ B) (hbB : ordinaryDensityActivityBase a b ≤ B) (j : Fin (D-2)) :
+    (hB : 0 ≤ B) (hbB : ordinaryDensityActivityBase a b ≤ B) j :
     higherBandCoarseActivity d D M q a b C lam ℓ N μ j ≤
       higherBandGeometricPrefactor B (higherBandInterpolationBase d lam) (sourceResponseCost q C) *
-      (D : ℝ)^2 * Real.exp ((D : ℝ)*exteriorTau ((a+b)/(b-a))) * (N*ℓ) *
+      D^2 * Real.exp (D*exteriorTau ((a+b)/(b-a))) * (N*ℓ) *
       (higherBandGeometricRatio d D (higherBandGeometricConstant B (higherBandInterpolationBase d lam))
         (1+Real.log N) (μ*(1+Real.log N)) 1)^(j.val+1) := by
   unfold higherBandCoarseActivity higherBandFilteredMass
@@ -51,13 +53,12 @@ theorem higherBandCoarseActivity_geometric_le {d D M q : ℕ} (hd : 0 < d) (hD :
       higherBandGeometricConstant sourceResponseCost
     positivity
 
-theorem higherBandFineActivity_geometric_le {d D M q : ℕ} (hd : 0 < d) (hD : 1 ≤ D)
-    (a b C lam ℓ N μ B : ℝ) (ha : 0 < a) (hab : a < b)
+theorem higherBandFineActivity_geometric_le 
     (hN : 1 ≤ N) (hμ : 0 ≤ μ) (hbase1 : μ*(1+Real.log N) ≤ 1)
-    (hB : 0 ≤ B) (hbB : ordinaryDensityActivityBase a b ≤ B) (j : Fin (D-2)) :
+    (hB : 0 ≤ B) (hbB : ordinaryDensityActivityBase a b ≤ B) j :
     higherBandFineActivity d D M q a b C lam ℓ N μ j ≤
       higherBandGeometricPrefactor B (higherBandInterpolationBase d lam) (sourceResponseCost q C) *
-      (D : ℝ)^2 * Real.exp ((M : ℝ)*exteriorTau ((a+b)/(b-a))) * N^2 *
+      D^2 * Real.exp (M*exteriorTau ((a+b)/(b-a))) * N^2 *
       (higherBandGeometricRatio d D (higherBandGeometricConstant B (higherBandInterpolationBase d lam))
         (1+Real.log N) (μ*(1+Real.log N)) 2)^(j.val+1) := by
   unfold higherBandFineActivity higherBandFilteredMass
@@ -74,23 +75,25 @@ theorem higherBandFineActivity_geometric_le {d D M q : ℕ} (hd : 0 < d) (hD : 1
     unfold higherBandGeometricPrefactor higherBandInterpolationBase higherBandGeometricRatio
       higherBandGeometricConstant sourceResponseCost
     positivity
+end
+
 
 /-- The entire actual selected higher family obeys the paper's geometric
 activity estimate. Only elementary inequalities on the computed source scales
 are inputs; every component measure estimate is derived above. -/
-theorem higherBandFamily_activity_bound {d k D M q : ℕ} (hd : 0 < d) (hD : 1 ≤ D)
-    (a b C lam ℓ N μ B q1 q2 : ℝ) (ha : 0 < a) (hab : a < b)
+theorem higherBandFamily_activity_bound {d k D M q } (hd : 0 < d) (hD : 1 ≤ D)
+    a b C lam ℓ N μ B q1 q2 (ha : 0 < a) (hab : a < b)
     (hℓ : 0 ≤ ℓ) (hN : 1 ≤ N) (hμ : 0 ≤ μ) (hbase1 : μ*(1+Real.log N) ≤ 1)
     (hB : 0 ≤ B) (hbB : ordinaryDensityActivityBase a b ≤ B)
     (hq1 : q1 = higherBandGeometricRatio d D
       (higherBandGeometricConstant B (higherBandInterpolationBase d lam)) (1+Real.log N) (μ*(1+Real.log N)) 1)
     (hq2 : q2 = higherBandGeometricRatio d D
       (higherBandGeometricConstant B (higherBandInterpolationBase d lam)) (1+Real.log N) (μ*(1+Real.log N)) 2)
-    (hq1h : q1 ≤ 1/2) (hq21 : q2 ≤ q1) (hsmall : (D : ℝ)^2*q1 ≤ 1)
-    (hcoarse : Real.exp ((D : ℝ)*exteriorTau ((a+b)/(b-a)))*ℓ ≤ N) :
+    (hq1h : q1 ≤ 1/2) (hq21 : q2 ≤ q1) (hsmall : D^2*q1 ≤ 1)
+    (hcoarse : Real.exp (D*exteriorTau ((a+b)/(b-a)))*ℓ ≤ N) :
     highRowTotalMass (higherBandFamilyData d k D M q a b C lam ℓ N μ).rowMass ≤
       4 * higherBandGeometricPrefactor B (higherBandInterpolationBase d lam) (sourceResponseCost q C) *
-        N^2 * Real.exp ((M : ℝ)*exteriorTau ((a+b)/(b-a))) := by
+        N^2 * Real.exp (M*exteriorTau ((a+b)/(b-a))) := by
   let K := higherBandGeometricPrefactor B (higherBandInterpolationBase d lam) (sourceResponseCost q C)
   let ED := Real.exp ((D : ℝ)*exteriorTau ((a+b)/(b-a)))
   let EM := Real.exp ((M : ℝ)*exteriorTau ((a+b)/(b-a)))
@@ -130,7 +133,6 @@ theorem higherBandFamily_activity_bound {d k D M q : ℕ} (hd : 0 < d) (hD : 1 �
       _ = _ := mul_one _
   rw [higherBandFamily_totalMass_eq]
   have hm := mul_le_mul_of_nonneg_left hEM (by positivity : 0 ≤ 2*K*N^2)
-  change _ ≤ 4*K*N^2*EM
-  nlinarith only [hc', hf', hm]
+  bound
 
 end NearlyMinimax

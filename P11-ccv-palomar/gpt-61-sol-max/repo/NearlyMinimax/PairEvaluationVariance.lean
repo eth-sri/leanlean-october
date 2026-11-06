@@ -15,10 +15,13 @@ set_option backward.isDefEq.respectTransparency false
 set_option synthInstance.maxHeartbeats 200000
 set_option maxHeartbeats 800000
 
-def pairEvaluationCoefficient {d : ℕ} (C : ModelConstants d) (m k : ℕ) : ℝ :=
+def pairEvaluationCoefficient {d } (C : ModelConstants d) (m k : ℕ)  :=
   C.densityUpper / (m : ℝ) + (k : ℝ) ^ d / (2 * (m : ℝ) * (m - 1 : ℕ))
 
-def pairPilotVarianceBase {Ω : Type*} [MeasurableSpace Ω] {d : ℕ}
+section
+variable {Ω : Type*}
+
+def pairPilotVarianceBase  [MeasurableSpace Ω] {d : ℕ}
     (θ : RegressionParameter d) (k : ℕ) (hk : 0 < k) (μ : Measure Ω)
     (bar : Covariate d × Covariate d → PairVector)
     (η : Ω → Covariate d × Covariate d → PairVector) : ℝ :=
@@ -26,13 +29,15 @@ def pairPilotVarianceBase {Ω : Type*} [MeasurableSpace Ω] {d : ℕ}
     ∫ z : Ω × (Covariate d × Covariate d), ‖η z.1 z.2‖ ^ 2
       ∂μ.prod (regularPairDesignMeasure θ k hk)
 
-theorem pairPilotVarianceBase_nonneg {Ω : Type*} [MeasurableSpace Ω] {d : ℕ}
+theorem pairPilotVarianceBase_nonneg  [MeasurableSpace Ω] {d : ℕ}
     (θ : RegressionParameter d) (k : ℕ) (hk : 0 < k) (μ : Measure Ω)
     (bar : Covariate d × Covariate d → PairVector)
     (η : Ω → Covariate d × Covariate d → PairVector) :
     0 ≤ pairPilotVarianceBase θ k hk μ bar η := by
   unfold pairPilotVarianceBase
   positivity
+end
+
 
 section
 variable {Ω Ξ : Type*} [MeasurableSpace Ω] [MeasurableSpace Ξ]
@@ -47,7 +52,7 @@ variable (hind : iIndepFun X ν) (hX : ∀ i, MeasurePreserving (X i) ν (observ
 include hθ hp hm hind hX
 
 theorem pairPilotScoreEstimate_centered_sq_le :
-    (∫ z, (PairUStatistic.fieldPairAverage m ((k : ℝ) ^ d)
+    (∫ z, (PairUStatistic.fieldPairAverage m (k ^ d)
       (pairPilotScoreKernel θ k hk bar η) X z -
         ∫ p, pairPilotScoreMean θ k hk bar η p ∂μ.prod μ) ^ 2 ∂(μ.prod μ).prod ν) ≤
       2 * pairEvaluationCoefficient C m k *
@@ -96,7 +101,7 @@ theorem pairPilotScoreEstimate_centered_sq_le :
   nlinarith
 
 theorem pairPilotNoiseEstimate_centered_sq_le :
-    (∫ z, (PairUStatistic.fieldPairAverage m ((k : ℝ) ^ d)
+    (∫ z, (PairUStatistic.fieldPairAverage m (k ^ d)
       (pairPilotNoiseKernel k hk bar η) X z -
         ∫ p, pairPilotNoiseMean θ k hk bar η p ∂μ.prod μ) ^ 2 ∂(μ.prod μ).prod ν) ≤
       8 * pairEvaluationCoefficient C m k *

@@ -21,7 +21,7 @@ theorem weighted_score_energy_contraction (ν : Measure Ω) (L D : Ω → ℝ)
     (hiE : Integrable (fun ω => D ω ^ 2 / L ω) ν)
     (hmean : 0 < ∫ ω, L ω ∂ν) :
     (∫ ω, D ω ∂ν)^2 / (∫ ω, L ω ∂ν) ≤ ∫ ω, D ω ^ 2 / L ω ∂ν := by
-  let r : ℝ := (∫ ω, D ω ∂ν) / (∫ ω, L ω ∂ν)
+  let r  := (∫ ω, D ω ∂ν) / (∫ ω, L ω ∂ν)
   have he (ω : Ω) : (D ω - r * L ω)^2 / L ω =
       D ω^2 / L ω - 2*r*D ω + r^2*L ω := by
     field_simp [(hL ω).ne']

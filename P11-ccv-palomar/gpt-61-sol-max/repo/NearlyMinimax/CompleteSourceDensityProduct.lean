@@ -35,14 +35,11 @@ attribute [local irreducible] highUnionSourceDensity highUnionSourceState histor
     (n : ℕ) (x : Fin n → Covariate d) :
     (∫ e, highUnionActivation R (highCenterMix C) e *
       ∏ i, highUnionSourceResetDensity C R j h e (x i) ∂highUnionLaw R (highCenterMix C)) = 0 := by
-  let Fobs : HighUnionMark E → ℝ := fun e => ∏ i, highUnionSourceResetDensity C R j h e (x i)
+  let Fobs  := fun e => ∏ i, highUnionSourceResetDensity C R j h e (x i)
   have hF : Measurable Fobs := Finset.measurable_fun_prod _ (fun i _ =>
     (highUnionSourceResetDensity_measurable C R G j h).comp (measurable_id.prodMk measurable_const))
   have hFb (e : HighUnionMark E) : ‖Fobs e‖ ≤ C.densityUpper^n := by
-    simpa only [Real.norm_eq_abs,Fobs] using finite_density_product_abs_bound
-      (fun i => highUnionSourceResetDensity C R j h e (x i)) C.densityUpper
-      (by linarith [C.one_lt_densityUpper])
-      (fun i => highUnionSourceResetDensity_abs_le C R G j h e (x i))
+    grind only [Real.norm_eq_abs, finite_density_product_abs_bound, C.one_lt_densityUpper, highUnionSourceResetDensity_abs_le]
   have hp (i : I) (e : E i) (z : Covariate d) :
       highUnionSourceResetDensity C R j h (Sum.inl ⟨i,e⟩) z =
       highUnionSourceResetDensity C R j h (Sum.inl ⟨i,lift i (project i e)⟩) z := by
@@ -54,7 +51,7 @@ attribute [local irreducible] highUnionSourceDensity highUnionSourceState histor
         R.rowIntercept i (lift i (project i e)) else _)
     rw [hSlope j i e z,hIntercept i e]
   have hrow (i : I) : (∫ e, R.rowActivation i e * Fobs (Sum.inl ⟨i,e⟩) ∂(R.rowLaw i)) = 0 := by
-    let Hi : D i → ℝ := fun z => Fobs (Sum.inl ⟨i,lift i z⟩)
+    let Hi  := fun z => Fobs (Sum.inl ⟨i,lift i z⟩)
     have hHi : Measurable Hi := hF.comp
       (measurable_inl.comp ((rowSigmaMk_measurable i).comp (hlift i)))
     have he (e : E i) : Fobs (Sum.inl ⟨i,e⟩) = Hi (project i e) := by
@@ -73,13 +70,11 @@ attribute [local irreducible] highUnionSourceDensity highUnionSourceState histor
 conditional density-product zero mass at every count. -/
 theorem completeSourceDensity_product_zero {d k D M q : ℕ}
     [NeZero d] [NeZero k] [LinearOrder (HighWindowLabels d k)]
-    (C : ModelConstants d) (hD : 3 ≤ D) (hq : 1 ≤ q)
-    (hM : highCenterResolutionThreshold C ≤ (M : ℝ))
-    (Cfr lam ℓ N μ : ℝ) (hCfr : 1 ≤ Cfr) (hℓ : 0 < ℓ) (hℓN : ℓ < N)
-    (j : HighWindowLabels d k)
-    (h : HistoryMarked (fun i j => j ∈ highNeighborLabels d k i)
-      (HighUnionMark (SourceRowMark d D M q (C.densityLower+1/(M : ℝ))
-        (C.densityUpper-1/(M : ℝ)) Cfr lam ℓ N μ))) (n : ℕ) (x : Fin n → Covariate d) :
+    C (hD : 3 ≤ D) (hq : 1 ≤ q)
+    (hM : highCenterResolutionThreshold C ≤ M)
+    Cfr lam ℓ N μ (hCfr : 1 ≤ Cfr) (hℓ : 0 < ℓ) (hℓN : ℓ < N)
+    j
+    h n (x : Fin n → Covariate d) :
     (∫ e, highUnionActivation (completeSourceRows C k D M q Cfr lam ℓ N μ) (highCenterMix C) e *
       ∏ i, highUnionSourceResetDensity C (completeSourceRows C k D M q Cfr lam ℓ N μ)
         j h e (x i) ∂highUnionLaw (completeSourceRows C k D M q Cfr lam ℓ N μ) (highCenterMix C)) = 0 := by

@@ -17,22 +17,20 @@ set_option maxHeartbeats 1800000
 attribute [local instance] Classical.propDecidable
 attribute [local irreducible] highUnionSourceDensity highUnionSourceState historyMarkedAppend
 
-theorem completeSourceNumerator_original_field_bound {d : ℕ} [NeZero d]
-    (C : ModelConstants d) (Q : LowSmoothnessTernaryConstants C) :
+theorem completeSourceNumerator_original_field_bound {d } [NeZero d]
+    C (Q : LowSmoothnessTernaryConstants C) :
     ∃ Cfr0 η0 : ℝ, 1 ≤ Cfr0 ∧ 0 < η0 ∧
       ∀ k D M q n : ℕ, ∀ (_ : NeZero k), ∀ (_ : LinearOrder (HighWindowLabels d k)),
       4 ≤ k → 3 ≤ D → 1 ≤ q → 1 ≤ n →
-      highCenterResolutionThreshold C ≤ (M : ℝ) →
-      ∀ Cfr lam ℓ N μ cf : ℝ, Cfr0 ≤ Cfr → 0 < ℓ → ℓ < N → 0 ≤ cf →
-      cf*(k : ℝ)^(-C.smoothness) ≤ η0 →
-      ∀ V : ℝ, |V-Q.v| ≤ Q.ρ →
-      ∀ j : HighWindowLabels d k,
-      ∀ h : HistoryMarked (fun i j => j ∈ highNeighborLabels d k i)
-        (HighUnionMark (SourceRowMark d D M q (C.densityLower+1/(M : ℝ))
-          (C.densityUpper-1/(M : ℝ)) Cfr lam ℓ N μ)),
-      ∀ x : Fin n → Covariate d, ∀ y : Fin n → Fin 3,
+      highCenterResolutionThreshold C ≤ M →
+      ∀ Cfr lam ℓ N μ cf , Cfr0 ≤ Cfr → 0 < ℓ → ℓ < N → 0 ≤ cf →
+      cf*k^(-C.smoothness) ≤ η0 →
+      ∀ V , |V-Q.v| ≤ Q.ρ →
+      ∀ j ,
+      ∀ h ,
+      ∀ x : Fin n → Covariate d, ∀ y ,
       let R := completeSourceRows C k D M q Cfr lam ℓ N μ
-      let η := cf*(k : ℝ)^(-C.smoothness)
+      let η := cf*k^(-C.smoothness)
       let c := (highUnionSourceState C R h).2
       |highMarkedLocalScoreNumerator (highUnionLaw R (highCenterMix C))
         (highUnionActivation R (highCenterMix C)) Q.a V η
@@ -60,8 +58,7 @@ theorem completeSourceNumerator_original_field_bound {d : ℕ} [NeZero d]
   let φ : Fin n → HighFrameIndex d D → ℝ := fun u => highLocalFrameFeature k j (x u)
   have hηn : 0 ≤ η := by dsimp [η]; positivity
   have hamp : ((2 : ℝ)^d+1)*η ≤ Q.ρ/2 := by
-    have ht := (le_div_iff₀ (by positivity : 0 < 2*((2 : ℝ)^d+1))).mp hη
-    nlinarith
+    linarith [(le_div_iff₀ (by positivity : 0 < 2*((2 : ℝ)^d+1))).mp hη     ]
   have hηρ : η ≤ Q.ρ/2 := by nlinarith [pow_nonneg (by norm_num : (0 : ℝ) ≤ 2) d]
   have hP (l) : frameCoefficientL1 (highFramePolynomial (c l)) ≤ Cfr0⁻¹ := by
     apply (highFramePolynomial_coefficientL1_le _).trans
@@ -84,7 +81,7 @@ theorem completeSourceNumerator_original_field_bound {d : ℕ} [NeZero d]
     have he : g u = highFrameField d k η (fun l => highFramePolynomial (c l)) (x u)-
         η*w u*(∑ γ, φ u γ*c j γ) := by dsimp [g,w,φ]; linarith [hd]
     rw [he]
-    exact (abs_sub _ _).trans ((add_le_add (hF (x u)) hh).trans (by nlinarith only [hamp]))
+    grind only [abs_sub]
   exact completeSourceNumerator_all_count_exponential_bound C hD hq hM Cfr lam ℓ N μ
     (hfr0.trans hfr) hℓ hℓN hn j h Q.a V η Q.ρ Q.a_pos hηn Q.ρ_pos.le hηρ x g w φ
     hg hw hφ (fun f hf z => Q.c_pos.le.trans ((Q.legal f V hf hV).2.2.1 z)) y

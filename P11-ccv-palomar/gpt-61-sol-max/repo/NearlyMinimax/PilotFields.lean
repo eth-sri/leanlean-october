@@ -25,51 +25,61 @@ theorem toLp_norm_sq {f : W → H} (hf : MemLp f 2 M) :
   filter_upwards [hf.coeFn_toLp] with w hw
   rw [hw, real_inner_self_eq_norm_sq]
 
-theorem toLp_inner {f g : W → H} (hf : MemLp f 2 M) (hg : MemLp g 2 M) :
+section
+variable {f g : W → H} (hf : MemLp f 2 M) (hg : MemLp g 2 M)
+include hf hg
+
+theorem toLp_inner  :
     ⟪hf.toLp f, hg.toLp g⟫ = ∫ w, ⟪f w, g w⟫ ∂M := by
-  rw [L2.inner_def]
+  
   apply integral_congr_ae
   filter_upwards [hf.coeFn_toLp, hg.coeFn_toLp] with w hfw hgw
   rw [hfw, hgw]
 
-theorem inner_integral_sq_le {f g : W → H} (hf : MemLp f 2 M) (hg : MemLp g 2 M) :
+theorem inner_integral_sq_le  :
     (∫ w, ⟪f w, g w⟫ ∂M) ^ 2 ≤
       (∫ w, ‖f w‖ ^ 2 ∂M) * (∫ w, ‖g w‖ ^ 2 ∂M) := by
   rw [← toLp_inner hf hg, ← toLp_norm_sq hf, ← toLp_norm_sq hg]
   calc
     _ ≤ (‖hf.toLp f‖ * ‖hg.toLp g‖) ^ 2 := by
-      simpa only [sq_abs] using pow_le_pow_left₀ (abs_nonneg _)
-        (abs_real_inner_le_norm (hf.toLp f) (hg.toLp g)) 2
+      grind only [sq_abs, pow_le_pow_left₀, abs_nonneg, abs_real_inner_le_norm]
     _ = _ := by ring
 
-theorem inner_integrable {f g : W → H} (hf : MemLp f 2 M) (hg : MemLp g 2 M) :
+theorem inner_integrable  :
     Integrable (fun w => ⟪f w, g w⟫) M := by
   apply (L2.integrable_inner (𝕜 := ℝ) (hf.toLp f) (hg.toLp g)).congr
   filter_upwards [hf.coeFn_toLp, hg.coeFn_toLp] with w hfw hgw
   rw [hfw, hgw]
+end
 
-def test (η : Ω → W → H) (v : W → H) (x : Ω) : ℝ :=
+
+def test (η : Ω → W → H) (v : W → H) (x : Ω)  :=
   ∫ w, ⟪η x w, v w⟫ ∂M
 
-theorem memLp_sections {η : Ω → W → H}
-    (hη : MemLp (fun z : Ω × W => η z.1 z.2) 2 (μ.prod M)) :
+section
+variable {η : Ω → W → H} (hη : MemLp (fun z : Ω × W => η z.1 z.2) 2 (μ.prod M))
+include hη
+
+theorem memLp_sections  :
     ∀ᵐ x ∂μ, MemLp (η x) 2 M := by
   filter_upwards [hη.aestronglyMeasurable.prodMk_left,
     hη.norm.integrable_sq.prod_right_ae] with x hm hi
   exact (memLp_two_iff_integrable_sq_norm hm).2 hi
 
-theorem test_aestronglyMeasurable {η : Ω → W → H}
-    (hη : MemLp (fun z : Ω × W => η z.1 z.2) 2 (μ.prod M))
-    {v : W → H} (hv : MemLp v 2 M) :
+section
+variable {v : W → H} (hv : MemLp v 2 M)
+include hv
+
+theorem test_aestronglyMeasurable 
+     :
     AEStronglyMeasurable (test (M := M) η v) μ := by
   have hm : AEStronglyMeasurable
       (fun z : Ω × W => ⟪η z.1 z.2, v z.2⟫) (μ.prod M) :=
     hη.aestronglyMeasurable.inner hv.aestronglyMeasurable.comp_snd
   exact hm.integral_prod_right'
 
-theorem test_sq_integrable {η : Ω → W → H}
-    (hη : MemLp (fun z : Ω × W => η z.1 z.2) 2 (μ.prod M))
-    {v : W → H} (hv : MemLp v 2 M) :
+theorem test_sq_integrable 
+     :
     Integrable (fun x => test (M := M) η v x ^ 2) μ := by
   have hi := hη.norm.integrable_sq.integral_prod_left.mul_const
     (∫ w, ‖v w‖ ^ 2 ∂M)
@@ -78,17 +88,20 @@ theorem test_sq_integrable {η : Ω → W → H}
   rw [Real.norm_eq_abs, abs_of_nonneg (sq_nonneg _)]
   exact inner_integral_sq_le hx hv
 
-theorem test_memLp_two {η : Ω → W → H}
-    (hη : MemLp (fun z : Ω × W => η z.1 z.2) 2 (μ.prod M))
-    {v : W → H} (hv : MemLp v 2 M) :
+theorem test_memLp_two 
+     :
     MemLp (test (M := M) η v) 2 μ :=
   (memLp_two_iff_integrable_sq (test_aestronglyMeasurable hη hv)).2
     (test_sq_integrable hη hv)
+end
+
+end
+
 
 /-- Pointwise mean centering implies centering against every deterministic
 L² test, with the Fubini integrability obligation proved. -/
-theorem test_mean_zero [CompleteSpace H] {η : Ω → W → H}
-    (hη : MemLp (fun z : Ω × W => η z.1 z.2) 2 (μ.prod M))
+theorem test_mean_zero [CompleteSpace H] {η }
+    (hη : MemLp (fun z  => η z.1 z.2) 2 (μ.prod M))
     (hcenter : ∀ᵐ w ∂M, (∫ x, η x w ∂μ) = 0)
     {v : W → H} (hv : MemLp v 2 M) :
     (∫ x, test (M := M) η v x ∂μ) = 0 := by
@@ -100,48 +113,44 @@ theorem test_mean_zero [CompleteSpace H] {η : Ω → W → H}
   apply integral_eq_zero_of_ae
   filter_upwards [hcenter, hη.aestronglyMeasurable.prodMk_right,
     hη.norm.integrable_sq.prod_left_ae] with w hw hm hisq
-  have hηw : MemLp (fun x => η x w) 2 μ :=
+  have hηw  :=
     (memLp_two_iff_integrable_sq_norm hm).2 hisq
   calc
     (∫ x, ⟪η x w, v w⟫ ∂μ) = ∫ x, ⟪v w, η x w⟫ ∂μ := by
-      apply integral_congr_ae
-      exact Filter.Eventually.of_forall (fun _ => real_inner_comm _ _)
+      solve_by_elim [integral_congr_ae, Filter.Eventually.of_forall, real_inner_comm]
     _ = ⟪v w, ∫ x, η x w ∂μ⟫ := integral_inner (hηw.integrable (by norm_num)) _
     _ = 0 := by rw [hw]; simp
 
 section OperatorField
 variable [MeasurableSpace H] [BorelSpace H] [SecondCountableTopology H]
 
-def bilinear (η : Ω → W → H) (B : W → H →L[ℝ] H) (z : Ω × Ω) : ℝ :=
+def bilinear (η : Ω → W → H) (B : W → H →L[ℝ] H) (z : Ω × Ω)  :=
   ∫ w, ⟪η z.1 w, B w (η z.2 w)⟫ ∂M
 
-theorem bilinear_measurable {η : Ω → W → H}
+theorem bilinear_measurable {η }
     (hmη : Measurable (fun z : Ω × W => η z.1 z.2))
-    {B : W → H →L[ℝ] H}
+    {B }
     (hmB : Measurable (fun z : W × H => B z.1 z.2)) :
     Measurable (bilinear (M := M) η B) := by
   have hm : Measurable (fun z : (Ω × Ω) × W =>
       ⟪η z.1.1 z.2, B z.2 (η z.1.2 z.2)⟫) := by
-    apply Measurable.inner
-    · exact hmη.comp (measurable_fst.fst.prodMk measurable_snd)
-    · exact hmB.comp (measurable_snd.prodMk
-        (hmη.comp (measurable_fst.snd.prodMk measurable_snd)))
+    fun_prop
   exact hm.stronglyMeasurable.integral_prod_right'.measurable
 
-theorem operatorField_memLp {B : W → H →L[ℝ] H}
-    (hmB : Measurable (fun z : W × H => B z.1 z.2))
-    {C : ℝ} (hbound : ∀ w, ‖B w‖ ≤ C)
-    {f : W → H} (hmf : Measurable f) (hf : MemLp f 2 M) :
+section
+variable {B : W → H →L[ℝ] H} (hmB : Measurable (fun z : W × H => B z.1 z.2)) {C : ℝ}
+include hmB
+
+theorem operatorField_memLp  (hbound : ∀ w, ‖B w‖ ≤ C)
+    {f } (hmf : Measurable f) (hf : MemLp f 2 M) :
     MemLp (fun w => B w (f w)) 2 M := by
   apply hf.of_le_mul (c := C)
     (hmB.comp (measurable_id.prodMk hmf)).aestronglyMeasurable
   exact Filter.Eventually.of_forall (fun w =>
     ((B w).le_opNorm _).trans (mul_le_mul_of_nonneg_right (hbound w) (norm_nonneg _)))
 
-theorem operatorField_energy_le {B : W → H →L[ℝ] H}
-    (hmB : Measurable (fun z : W × H => B z.1 z.2))
-    {C : ℝ} (hC : 0 ≤ C) (hbound : ∀ w, ‖B w‖ ≤ C)
-    {f : W → H} (hmf : Measurable f) (hf : MemLp f 2 M) :
+theorem operatorField_energy_le  (hC : 0 ≤ C) (hbound : ∀ w, ‖B w‖ ≤ C)
+    {f } (hmf : Measurable f) (hf : MemLp f 2 M) :
     (∫ w, ‖B w (f w)‖ ^ 2 ∂M) ≤ C ^ 2 * ∫ w, ‖f w‖ ^ 2 ∂M := by
   rw [← integral_const_mul]
   apply integral_mono (operatorField_memLp hmB hbound hmf hf).norm.integrable_sq
@@ -153,15 +162,20 @@ theorem operatorField_energy_le {B : W → H →L[ℝ] H}
         (((B w).le_opNorm _).trans
           (mul_le_mul_of_nonneg_right (hbound w) (norm_nonneg _))) 2
     _ = C ^ 2 * ‖f w‖ ^ 2 := by ring
+end
 
-theorem bilinear_section_energy_le {η : Ω → W → H}
-    (hmη : Measurable (fun z : Ω × W => η z.1 z.2))
-    {B : W → H →L[ℝ] H}
+
+section
+variable {η : Ω → W → H} (hmη : Measurable (fun z : Ω × W => η z.1 z.2))
+include hmη
+
+theorem bilinear_section_energy_le 
+    {B }
     (hmB : Measurable (fun z : W × H => B z.1 z.2))
-    {C lam : ℝ} (hC : 0 ≤ C) (hlam : 0 ≤ lam) (hbound : ∀ w, ‖B w‖ ≤ C)
-    (htest : ∀ v : W → H, MemLp v 2 M →
+    {C lam } (hC : 0 ≤ C) (hlam : 0 ≤ lam) (hbound : ∀ w, ‖B w‖ ≤ C)
+    (htest : ∀ v , MemLp v 2 M →
       (∫ x, test (M := M) η v x ^ 2 ∂μ) ≤ lam * ∫ w, ‖v w‖ ^ 2 ∂M)
-    {y : Ω} (hy : MemLp (η y) 2 M) :
+    {y } (hy : MemLp (η y) 2 M) :
     (∫ x, bilinear (M := M) η B (x, y) ^ 2 ∂μ) ≤
       lam * C ^ 2 * ∫ w, ‖η y w‖ ^ 2 ∂M := by
   have hm : Measurable (η y) := hmη.comp (measurable_const.prodMk measurable_id)
@@ -170,14 +184,13 @@ theorem bilinear_section_energy_le {η : Ω → W → H}
     (mul_le_mul_of_nonneg_left (operatorField_energy_le hmB hC hbound hm hy) hlam)
   simpa only [test, bilinear, mul_assoc] using hb
 
-theorem bilinear_sq_integrable {η : Ω → W → H}
-    (hmη : Measurable (fun z : Ω × W => η z.1 z.2))
-    (hη : MemLp (fun z : Ω × W => η z.1 z.2) 2 (μ.prod M))
-    {B : W → H →L[ℝ] H}
-    (hmB : Measurable (fun z : W × H => B z.1 z.2))
-    {C lam : ℝ} (hC : 0 ≤ C) (hlam : 0 ≤ lam) (hbound : ∀ w, ‖B w‖ ≤ C)
-    (htest : ∀ v : W → H, MemLp v 2 M →
-      (∫ x, test (M := M) η v x ^ 2 ∂μ) ≤ lam * ∫ w, ‖v w‖ ^ 2 ∂M) :
+section
+variable (hη : MemLp (fun z : Ω × W => η z.1 z.2) 2 (μ.prod M)) {B : W → H →L[ℝ] H} (hmB : Measurable (fun z : W × H => B z.1 z.2)) {C lam : ℝ} (hC : 0 ≤ C) (hlam : 0 ≤ lam) (hbound : ∀ w, ‖B w‖ ≤ C) (htest : ∀ v : W → H, MemLp v 2 M →
+      (∫ x, test (M := M) η v x ^ 2 ∂μ) ≤ lam * ∫ w, ‖v w‖ ^ 2 ∂M)
+include hη hmB hC hlam hbound htest
+
+theorem bilinear_sq_integrable 
+     :
     Integrable (fun z => bilinear (M := M) η B z ^ 2) (μ.prod μ) := by
   have hmZ : AEStronglyMeasurable
       (fun z : Ω × Ω => bilinear (M := M) η B z ^ 2) (μ.prod μ) :=
@@ -196,14 +209,8 @@ theorem bilinear_sq_integrable {η : Ω → W → H}
 
 /-- The integrated test estimate supplies the bilinear fluctuation bound
 for the actual product of two jointly measurable pilot fields. -/
-theorem bilinear_energy_le {η : Ω → W → H}
-    (hmη : Measurable (fun z : Ω × W => η z.1 z.2))
-    (hη : MemLp (fun z : Ω × W => η z.1 z.2) 2 (μ.prod M))
-    {B : W → H →L[ℝ] H}
-    (hmB : Measurable (fun z : W × H => B z.1 z.2))
-    {C lam : ℝ} (hC : 0 ≤ C) (hlam : 0 ≤ lam) (hbound : ∀ w, ‖B w‖ ≤ C)
-    (htest : ∀ v : W → H, MemLp v 2 M →
-      (∫ x, test (M := M) η v x ^ 2 ∂μ) ≤ lam * ∫ w, ‖v w‖ ^ 2 ∂M) :
+theorem bilinear_energy_le 
+     :
     (∫ z, bilinear (M := M) η B z ^ 2 ∂μ.prod μ) ≤
       lam * C ^ 2 * ∫ z : Ω × W, ‖η z.1 z.2‖ ^ 2 ∂μ.prod M := by
   have hZ := bilinear_sq_integrable hmη hη hmB hC hlam hbound htest
@@ -217,26 +224,24 @@ theorem bilinear_energy_le {η : Ω → W → H}
     _ = _ := by
       rw [integral_const_mul, integral_prod _ hη.norm.integrable_sq]
 
-theorem bilinear_memLp_two {η : Ω → W → H}
-    (hmη : Measurable (fun z : Ω × W => η z.1 z.2))
-    (hη : MemLp (fun z : Ω × W => η z.1 z.2) 2 (μ.prod M))
-    {B : W → H →L[ℝ] H}
-    (hmB : Measurable (fun z : W × H => B z.1 z.2))
-    {C lam : ℝ} (hC : 0 ≤ C) (hlam : 0 ≤ lam) (hbound : ∀ w, ‖B w‖ ≤ C)
-    (htest : ∀ v : W → H, MemLp v 2 M →
-      (∫ x, test (M := M) η v x ^ 2 ∂μ) ≤ lam * ∫ w, ‖v w‖ ^ 2 ∂M) :
+theorem bilinear_memLp_two 
+     :
     MemLp (bilinear (M := M) η B) 2 (μ.prod μ) :=
   (memLp_two_iff_integrable_sq
     (bilinear_measurable (M := M) hmη hmB).aestronglyMeasurable).2
     (bilinear_sq_integrable hmη hη hmB hC hlam hbound htest)
+end
 
-theorem bilinear_mean_zero [CompleteSpace H] {η : Ω → W → H}
+end
+
+
+theorem bilinear_mean_zero [CompleteSpace H] {η }
     (hmη : Measurable (fun z : Ω × W => η z.1 z.2))
-    (hη : MemLp (fun z : Ω × W => η z.1 z.2) 2 (μ.prod M))
+    (hη : MemLp (fun z  => η z.1 z.2) 2 (μ.prod M))
     (hcenter : ∀ᵐ w ∂M, (∫ x, η x w ∂μ) = 0)
-    {B : W → H →L[ℝ] H}
+    {B }
     (hmB : Measurable (fun z : W × H => B z.1 z.2))
-    {C lam : ℝ} (hC : 0 ≤ C) (hlam : 0 ≤ lam) (hbound : ∀ w, ‖B w‖ ≤ C)
+    {C lam } (hC : 0 ≤ C) (hlam : 0 ≤ lam) (hbound : ∀ w, ‖B w‖ ≤ C)
     (htest : ∀ v : W → H, MemLp v 2 M →
       (∫ x, test (M := M) η v x ^ 2 ∂μ) ≤ lam * ∫ w, ‖v w‖ ^ 2 ∂M) :
     (∫ z, bilinear (M := M) η B z ∂μ.prod μ) = 0 := by
@@ -247,19 +252,16 @@ theorem bilinear_mean_zero [CompleteSpace H] {η : Ω → W → H}
   have hmy : Measurable (η y) := hmη.comp (measurable_const.prodMk measurable_id)
   exact test_mean_zero hη hcenter (operatorField_memLp hmB hbound hmy hy)
 
-def fluctuation (η : Ω → W → H) (B : W → H →L[ℝ] H)
-    (v₁ v₂ : W → H) (z : Ω × Ω) : ℝ :=
+def fluctuation η B
+    (v₁ v₂ : W → H) (z : Ω × Ω)  :=
   test (M := M) η v₁ z.1 + test (M := M) η v₂ z.2 + bilinear (M := M) η B z
 
-theorem fluctuation_memLp_two {η : Ω → W → H}
-    (hmη : Measurable (fun z : Ω × W => η z.1 z.2))
-    (hη : MemLp (fun z : Ω × W => η z.1 z.2) 2 (μ.prod M))
-    {B : W → H →L[ℝ] H}
-    (hmB : Measurable (fun z : W × H => B z.1 z.2))
-    {C lam : ℝ} (hC : 0 ≤ C) (hlam : 0 ≤ lam) (hbound : ∀ w, ‖B w‖ ≤ C)
-    (htest : ∀ v : W → H, MemLp v 2 M →
-      (∫ x, test (M := M) η v x ^ 2 ∂μ) ≤ lam * ∫ w, ‖v w‖ ^ 2 ∂M)
-    {v₁ v₂ : W → H} (hv₁ : MemLp v₁ 2 M) (hv₂ : MemLp v₂ 2 M) :
+section
+variable {η : Ω → W → H} (hmη : Measurable (fun z : Ω × W => η z.1 z.2)) (hη : MemLp (fun z : Ω × W => η z.1 z.2) 2 (μ.prod M)) {B : W → H →L[ℝ] H} (hmB : Measurable (fun z : W × H => B z.1 z.2)) {C lam : ℝ} (hC : 0 ≤ C) (hlam : 0 ≤ lam) (hbound : ∀ w, ‖B w‖ ≤ C) (htest : ∀ v : W → H, MemLp v 2 M →
+      (∫ x, test (M := M) η v x ^ 2 ∂μ) ≤ lam * ∫ w, ‖v w‖ ^ 2 ∂M) {v₁ v₂ : W → H} (hv₁ : MemLp v₁ 2 M) (hv₂ : MemLp v₂ 2 M)
+include hmη hη hmB hC hlam hbound htest hv₁ hv₂
+
+theorem fluctuation_memLp_two  :
     MemLp (fluctuation (M := M) η B v₁ v₂) 2 (μ.prod μ) := by
   have h₁ : MemLp (fun z : Ω × Ω => test (M := M) η v₁ z.1) 2 (μ.prod μ) :=
     (test_memLp_two hη hv₁).comp_measurePreserving measurePreserving_fst
@@ -267,15 +269,7 @@ theorem fluctuation_memLp_two {η : Ω → W → H}
     (test_memLp_two hη hv₂).comp_measurePreserving measurePreserving_snd
   exact (h₁.add h₂).add (bilinear_memLp_two hmη hη hmB hC hlam hbound htest)
 
-theorem fluctuation_energy_le {η : Ω → W → H}
-    (hmη : Measurable (fun z : Ω × W => η z.1 z.2))
-    (hη : MemLp (fun z : Ω × W => η z.1 z.2) 2 (μ.prod M))
-    {B : W → H →L[ℝ] H}
-    (hmB : Measurable (fun z : W × H => B z.1 z.2))
-    {C lam : ℝ} (hC : 0 ≤ C) (hlam : 0 ≤ lam) (hbound : ∀ w, ‖B w‖ ≤ C)
-    (htest : ∀ v : W → H, MemLp v 2 M →
-      (∫ x, test (M := M) η v x ^ 2 ∂μ) ≤ lam * ∫ w, ‖v w‖ ^ 2 ∂M)
-    {v₁ v₂ : W → H} (hv₁ : MemLp v₁ 2 M) (hv₂ : MemLp v₂ 2 M) :
+theorem fluctuation_energy_le  :
     (∫ z, fluctuation (M := M) η B v₁ v₂ z ^ 2 ∂μ.prod μ) ≤
       3 * lam * ((∫ w, ‖v₁ w‖ ^ 2 ∂M) + (∫ w, ‖v₂ w‖ ^ 2 ∂M) +
         C ^ 2 * ∫ z : Ω × W, ‖η z.1 z.2‖ ^ 2 ∂μ.prod M) := by
@@ -284,8 +278,7 @@ theorem fluctuation_energy_le {η : Ω → W → H}
   have h₃ := bilinear_sq_integrable hmη hη hmB hC hlam hbound htest
   calc
     _ ≤ ∫ z : Ω × Ω, 3 * (test (M := M) η v₁ z.1 ^ 2 +
-        test (M := M) η v₂ z.2 ^ 2 + bilinear (M := M) η B z ^ 2) ∂μ.prod μ := by
-      exact integral_mono
+        test (M := M) η v₂ z.2 ^ 2 + bilinear (M := M) η B z ^ 2) ∂μ.prod μ := integral_mono
         (fluctuation_memLp_two hmη hη hmB hC hlam hbound htest hv₁ hv₂).integrable_sq
         (((h₁.add h₂).add h₃).const_mul 3)
         (fun _ => PilotFluctuation.three_square_le _ _ _)
@@ -306,6 +299,8 @@ theorem fluctuation_energy_le {η : Ω → W → H}
       · exact htest v₂ hv₂
       · exact bilinear_energy_le hmη hη hmB hC hlam hbound htest
     _ = _ := by ring
+end
+
 
 end OperatorField
 

@@ -17,7 +17,11 @@ set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1200000
 attribute [local instance] Classical.propDecidable
 
-theorem high_source_interval_numeric {d : ℕ} (C : ModelConstants d) (M : ℝ)
+section
+variable {d : ℕ} (C : ModelConstants d)
+include C
+
+theorem high_source_interval_numeric  M
     (hM : highCenterResolutionThreshold C ≤ M) :
     0 < C.densityLower+1/M ∧ C.densityLower+1/M < C.densityUpper-1/M := by
   have hg := highCenterResolution_guards C M hM
@@ -27,18 +31,18 @@ theorem high_source_interval_numeric {d : ℕ} (C : ModelConstants d) (M : ℝ)
   · linarith [hg.2,highCenterRadius_pos C,(highCenterRadius_le_margins C).1,
       (highCenterRadius_le_margins C).2]
 
-def completeSourceRows {d : ℕ} (C : ModelConstants d) (k D M q : ℕ)
-    (Cfr lam ℓ N μ : ℝ) :=
+def completeSourceRows  k D M q
+    Cfr lam ℓ N μ :=
   sourceRowData d k D M q (C.densityLower+1/(M : ℝ))
     (C.densityUpper-1/(M : ℝ)) Cfr lam ℓ N μ
 
 /-- The actual singleton response/density row satisfies every source
 primitive guard; its nondegeneracy and centering follow from finite rules. -/
-theorem singletonRowSource_guards {d : ℕ} (C : ModelConstants d) (k D M q : ℕ)
-    (hq : 1 ≤ q) (hM : highCenterResolutionThreshold C ≤ (M : ℝ))
-    (Cfr : ℝ) (hCfr : 1 ≤ Cfr) :
-    HighUnionSourceGuards C (M : ℝ) Cfr
-      (singletonRowData d k D q (C.densityLower+1/(M : ℝ)) (C.densityUpper-1/(M : ℝ)) Cfr) := by
+theorem singletonRowSource_guards  (k D M q : ℕ)
+    (hq : 1 ≤ q) (hM : highCenterResolutionThreshold C ≤ M)
+    Cfr (hCfr : 1 ≤ Cfr) :
+    HighUnionSourceGuards C M Cfr
+      (singletonRowData d k D q (C.densityLower+1/M) (C.densityUpper-1/M) Cfr) := by
   let a := C.densityLower+1/(M : ℝ)
   let b := C.densityUpper-1/(M : ℝ)
   obtain ⟨ha,hab⟩ := high_source_interval_numeric C (M : ℝ) hM
@@ -69,9 +73,7 @@ theorem singletonRowSource_guards {d : ℕ} (C : ModelConstants d) (k D M q : �
     vector_ball := fun _ _ => covarianceAtom_mem_ball Cfr hCf _ _ _ _
     time_interval := fun _ _ => responseNode_mem_unit q _ }
   · simpa [highRowTotalMass,singletonRowData,a,b] using hpos
-  · intro j i
-    exact (highPacketSlope_measurable a b D 1 D q (fun _ : Unit => fun _ => (1 : ℝ))
-      (fun _ => measurable_const)).comp measurable_fst
+  · fun_prop
   · intro j x i
     exact highPacketSlope_integrable (Measure.dirac ()) a b ha hab D 1 D q (by norm_num) Cfr A hA hc hpos
       (fun _ : Unit => fun _ => (1 : ℝ)) (fun _ => measurable_const) (by intro _ _; norm_num)
@@ -84,12 +86,10 @@ theorem singletonRowSource_guards {d : ℕ} (C : ModelConstants d) (k D M q : �
       (densityPacketAtom a b D 1 D e.2.1).2 (densityPacketAtom_mem a b hab.le D 1 D e.2.1).2
       (fun _ : Unit => v) (fun _ _ => (1 : ℝ)) () hv (by intro _; norm_num)
     convert hh using 1 <;> dsimp [singletonRowData,highPacketSlope,highPacketIntercept,localDensityReset] <;> ring
-  · intro i γ
-    exact (measurable_of_countable (fun h : HighPacketMarkIndex (HighFrameIndex d D) D 1 D q =>
-      (highResponseMarkAtom Cfr q h.2).2 γ)).comp measurable_snd
-  · intro i
-    exact (measurable_of_countable (fun h : HighPacketMarkIndex (HighFrameIndex d D) D 1 D q =>
-      (highResponseMarkAtom (ι := HighFrameIndex d D) 0 q h.2).1)).comp measurable_snd
+  · fun_prop
+  fun_prop
+end
+
 
 /-- Restricting primitive guards to one genuine positive row preserves
 all of them. The one-row total is its actual variation mass. -/
@@ -120,11 +120,11 @@ theorem HighUnionSourceGuards.restrict {d k F : ℕ} {I : Type*} [Fintype I] {E 
 /-- The complete actual source family satisfies every primitive source
 condition from numerical guards alone. In particular the final prior is
 not restricted to the pair rows or a single higher-target packet. -/
-theorem completeSourceRows_guards {d : ℕ} (C : ModelConstants d) [NeZero d]
+theorem completeSourceRows_guards {d } (C : ModelConstants d) [NeZero d]
     (k D M q : ℕ) (hD : 3 ≤ D) (hq : 1 ≤ q)
-    (hM : highCenterResolutionThreshold C ≤ (M : ℝ))
-    (Cfr lam ℓ N μ : ℝ) (hCfr : 1 ≤ Cfr) (hℓ : 0 < ℓ) (hℓN : ℓ < N) :
-    HighUnionSourceGuards C (M : ℝ) Cfr (completeSourceRows C k D M q Cfr lam ℓ N μ) := by
+    (hM : highCenterResolutionThreshold C ≤ M)
+    Cfr lam ℓ N μ (hCfr : 1 ≤ Cfr) (hℓ : 0 < ℓ) (hℓN : ℓ < N) :
+    HighUnionSourceGuards C M Cfr (completeSourceRows C k D M q Cfr lam ℓ N μ) := by
   let a := C.densityLower+1/(M : ℝ)
   let b := C.densityUpper-1/(M : ℝ)
   obtain ⟨ha,hab⟩ := high_source_interval_numeric C (M : ℝ) hM
@@ -141,7 +141,7 @@ theorem completeSourceRows_guards {d : ℕ} (C : ModelConstants d) [NeZero d]
       | inr i =>
         exact higherBandSourceRow_guards C k (higherBandFamilyTarget i.val)
           (higherBandFamilyGuardDegree M i.val) D q
-          (by have hh := (higherBandFamily_target_bounds d D M q a b Cfr lam ℓ N μ i).1; omega)
+          (by linarith [higherBandFamily_target_bounds d D M q a b Cfr lam ℓ N μ i])
           (M : ℝ) Cfr lam ℓ (higherBandFamilyUpper d ℓ N μ i.val) i.val.2 hM hCfr
           i.property.1 i.property.2.2.2
   exact {

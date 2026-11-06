@@ -15,8 +15,8 @@ open Filter
 namespace NearlyMinimax
 set_option backward.isDefEq.respectTransparency false
 
-def CompleteSaddleCostRiskBudget {d : ℕ} (C : ModelConstants d)
-    (cf CB C5 C6 C7 ch ctr cm Cω : ℝ) (n : ℕ) : Prop :=
+def CompleteSaddleCostRiskBudget {d : ℕ} C
+    cf CB C5 C6 C7 ch ctr cm Cω (n : ℕ)  :=
   let m := highCompleteSourceSaddleCoefficient C
   let theta := highCompleteSourceSaddleTheta C
   let tauM := shrunkDensityExponent C.densityLower C.densityUpper
@@ -32,21 +32,21 @@ def CompleteSaddleCostRiskBudget {d : ℕ} (C : ModelConstants d)
 
 /-- Fixed constants for the primitive raw cost precede the saddle shift,
 the extension domain and the sample size. -/
-theorem completeSaddle_lower_rate_of_actual_cost_budget {d : ℕ} [NeZero d]
-    (C : ModelConstants d) (hs : 1 < C.smoothness) (hd : 4*C.smoothness < (d : ℝ))
-    {cf CB C5 C6 C7 ch ctr cm : ℝ}
+theorem completeSaddle_lower_rate_of_actual_cost_budget {d } [NeZero d]
+    (C : ModelConstants d) (hs : 1 < C.smoothness) (hd : 4*C.smoothness < d)
+    {cf CB C5 C6 C7 ch ctr cm }
     (hcf : 0 < cf) (hCB : 0 ≤ CB) (hC5 : 0 ≤ C5) (hC6 : 0 ≤ C6)
     (hC7 : 0 ≤ C7) (hch : 0 ≤ ch) (hctr : 0 < ctr) (hcm : 0 < cm)
-    (hcost : ∀ Cω : ℝ, ∀ᶠ n : ℕ in atTop,
+    (hcost : ∀ Cω , ∀ᶠ n : ℕ in atTop,
       CompleteSaddleCostRiskBudget C cf CB C5 C6 C7 ch ctr cm Cω n) :
     ∃ c : ℝ, 0 < c ∧ ∃ n₀ : ℕ, 2 ≤ n₀ ∧
-      ∀ (U : ExtensionDomain d) (n : ℕ), n₀ ≤ n →
+      ∀ U n, n₀ ≤ n →
         ENNReal.ofReal (c*paperRiskScale C n) ≤ minimaxRMS (C.withDomain U) n := by
   let Cω := 1+Real.log (rawCostConstant CB C5 C6 C7 cf ch)+
     ((d : ℝ)^2-16*C.smoothness)/((d : ℝ)*((d : ℝ)+4))*highCompleteSourceSaddleTheta C+
     2*d*densityIntervalExponent C.densityLower C.densityUpper/((d : ℝ)+4)+1
   obtain ⟨c,hc,hrate⟩ := completeSourceSaddle_penalized_numeric_envelope C hs hd
-    hcf hCB hC5 hC6 hC7 hch hctr hcm (Cω := Cω) (by dsimp only [Cω]; linarith)
+    hcf hCB hC5 hC6 hC7 hch hctr hcm (Cω := Cω) (by skip; linarith)
   have hall : ∀ᶠ n : ℕ in atTop,
       2 ≤ n ∧ ∀ U : ExtensionDomain d,
         ENNReal.ofReal (c*paperRiskScale C n) ≤ minimaxRMS (C.withDomain U) n := by

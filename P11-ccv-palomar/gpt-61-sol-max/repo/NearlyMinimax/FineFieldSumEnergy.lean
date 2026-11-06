@@ -13,28 +13,30 @@ open scoped BigOperators
 namespace NearlyMinimax
 set_option backward.isDefEq.respectTransparency false
 
-def fineFieldSubsetEnergyBase (d : ℕ) : ℝ :=
+def fineFieldSubsetEnergyBase d  :=
   4 * (2 : ℝ) ^ d * hyperplaneSpatialMomentConstant d ^ 2
 
-theorem hyperplaneSpatialMomentConstant_ge_one (d : ℕ) :
+theorem hyperplaneSpatialMomentConstant_ge_one d :
     1 ≤ hyperplaneSpatialMomentConstant d := by
   unfold hyperplaneSpatialMomentConstant
   have hp : 1 ≤ (2 : ℝ) ^ d := one_le_pow₀ (by norm_num)
   have hc := spatialExponentialConstant_nonneg d
   nlinarith only [hp, hc]
 
-theorem finePairTimeSubsetMoment_uniform_square_integral_le {d k : ℕ} [NeZero d]
-    (hd : 3 ≤ d) {lo hi : ℝ} (hlo : 0 < lo) (S : Finset (Fin k)) (hS : 4 ≤ S.card) :
+section
+variable {d k : ℕ} [NeZero d] (hd : 3 ≤ d) {lo hi : ℝ} (hlo : 0 < lo)
+include hd hlo
+
+theorem finePairTimeSubsetMoment_uniform_square_integral_le  S (hS : 4 ≤ S.card) :
     (∫ U : Fin k → Covariate d, finePairTimeSubsetMoment lo hi U S ^ 2
       ∂fullSpatialPatchDesign d k) ≤
-      (2 : ℝ) ^ (d * k) * hyperplaneSpatialMomentConstant d ^ (2 * k) *
-        (k : ℝ) ^ 8 * (lo ^ (2 - (d : ℝ))) ^ 2 := by
+      2 ^ (d * k) * hyperplaneSpatialMomentConstant d ^ (2 * k) *
+        k ^ 8 * (lo ^ (2 - (d : ℝ))) ^ 2 := by
   have hc : S.card ≤ k := by
     simpa only [Finset.card_univ, Fintype.card_fin] using Finset.card_le_card (Finset.subset_univ S)
   have hv : (2 : ℝ) ^ (d * (k - S.card)) ≤ (2 : ℝ) ^ (d * k) :=
     pow_le_pow_right₀ (by norm_num) (Nat.mul_le_mul_left d (Nat.sub_le _ _))
-  have hconst : hyperplaneSpatialMomentConstant d ^ (2 * S.card) ≤
-      hyperplaneSpatialMomentConstant d ^ (2 * k) :=
+  have hconst  :=
     pow_le_pow_right₀ (hyperplaneSpatialMomentConstant_ge_one d) (Nat.mul_le_mul_left 2 hc)
   have hj : (S.card : ℝ) ^ 8 ≤ (k : ℝ) ^ 8 :=
     pow_le_pow_left₀ (Nat.cast_nonneg _) (by exact_mod_cast hc) 8
@@ -49,14 +51,13 @@ theorem finePairTimeSubsetMoment_uniform_square_integral_le {d k : ℕ} [NeZero 
 
 /-- Any family of higher subsets has the same geometric count envelope;
 the concrete even-subset field family is a particular case. -/
-theorem finePairTimeSubsetMoment_sum_abs_square_integral_le {d k : ℕ} [NeZero d]
-    (hd : 3 ≤ d) {lo hi : ℝ} (hlo : 0 < lo) (s : Finset (Finset (Fin k)))
+theorem finePairTimeSubsetMoment_sum_abs_square_integral_le  s
     (hs : ∀ S ∈ s, 4 ≤ S.card) :
     (∫ U : Fin k → Covariate d, (∑ S ∈ s, |finePairTimeSubsetMoment lo hi U S|) ^ 2
       ∂fullSpatialPatchDesign d k) ≤
-      fineFieldSubsetEnergyBase d ^ k * (k : ℝ) ^ 8 * (lo ^ (2 - (d : ℝ))) ^ 2 := by
+      fineFieldSubsetEnergyBase d ^ k * k ^ 8 * (lo ^ (2 - (d : ℝ))) ^ 2 := by
   classical
-  let K : ℝ := (2 : ℝ) ^ (d * k) * hyperplaneSpatialMomentConstant d ^ (2 * k) *
+  let K  := (2 : ℝ) ^ (d * k) * hyperplaneSpatialMomentConstant d ^ (2 * k) *
     (k : ℝ) ^ 8 * (lo ^ (2 - (d : ℝ))) ^ 2
   have hK : 0 ≤ K := by
     dsimp [K]
@@ -65,7 +66,7 @@ theorem finePairTimeSubsetMoment_sum_abs_square_integral_le {d k : ℕ} [NeZero 
   have h := finite_sum_square_integral_le (fullSpatialPatchDesign d k) s
     (fun S U => |finePairTimeSubsetMoment lo hi U S|) K
     (fun S _ => (finePairTimeSubsetMoment_measurable lo hi S).abs)
-    (fun S hS => by simpa only [sq_abs] using finePairTimeSubsetMoment_square_integrable hd hlo S (hs S hS))
+    (fun S hS => by simp_all [finePairTimeSubsetMoment_square_integrable])
     (fun S hS => by simpa only [sq_abs] using finePairTimeSubsetMoment_uniform_square_integral_le hd hlo S (hs S hS))
   have hcNat : s.card ≤ 2 ^ k := by
     have hsub : s ⊆ (Finset.univ : Finset (Fin k)).powerset := by intro S _; simp
@@ -80,5 +81,7 @@ theorem finePairTimeSubsetMoment_sum_abs_square_integral_le {d k : ℕ} [NeZero 
     rw [show (4 : ℝ) = (2 : ℝ) ^ 2 by norm_num, ← pow_mul, Nat.mul_comm]
   rw [hfour]
   ring
+end
+
 
 end NearlyMinimax

@@ -18,10 +18,10 @@ namespace NearlyMinimax
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 800000
 
-theorem paper_upper_sharp_estimator {d : ℕ} (C : ModelConstants d)
+theorem paper_upper_sharp_estimator {d } C
     (hreg : highSmoothnessRegime C) :
     ∃ K : ℝ, 0 < K ∧ ∃ n₀ : ℕ, 2 ≤ n₀ ∧
-      ∀ (U : ExtensionDomain d) (n : ℕ), n₀ ≤ n → ∃ T : Estimator d n,
+      ∀ U n, n₀ ≤ n → ∃ T : Estimator d n,
         ∀ θ, Admissible (C.withDomain U) θ →
           meanSquaredRisk T θ ^ (1 / 2 : ℝ) ≤ ENNReal.ofReal (K * paperUpperScale C n) := by
   obtain ⟨A, Cp, hA, hCp, hp⟩ := uniform_domain_eventually_allocated_pair_pilot_assumptions C hreg
@@ -98,7 +98,7 @@ theorem paper_upper_sharp_estimator {d : ℕ} (C : ModelConstants d)
   intro U n hn
   exact hn₀ n ((le_max_right _ _).trans hn) U
 
-theorem paper_upper_sharp {d : ℕ} (C : ModelConstants d) : UpperSharpClaim C := by
+theorem paper_upper_sharp {d } (C : ModelConstants d) : UpperSharpClaim C := by
   intro hreg
   obtain ⟨K, hK, n₀, hn₀, hT⟩ := paper_upper_sharp_estimator C hreg
   refine ⟨K, hK, n₀, hn₀, ?_⟩

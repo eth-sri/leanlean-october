@@ -1,5 +1,7 @@
 module
 
+
+public import NearlyMinimax.AnchoredGeometry
 public import NearlyMinimax.LowSmoothnessPrior
 
 @[expose] public section
@@ -22,33 +24,35 @@ attribute [local instance] Classical.propDecidable
 
 def clampUnit (x : ℝ) : ℝ := min 1 (max 0 x)
 
-theorem clampUnit_mem (x : ℝ) : clampUnit x ∈ Icc (0 : ℝ) 1 := by
+theorem clampUnit_mem x : clampUnit x ∈ Icc 0 1 := by
   constructor
   · exact le_min (by norm_num) (le_max_left _ _)
   · exact min_le_left _ _
 
-theorem clampUnit_eq (x : ℝ) (hx : x ∈ Icc (0 : ℝ) 1) : clampUnit x = x := by
+theorem clampUnit_eq x (hx : x ∈ Icc 0 1) : clampUnit x = x := by
   simp [clampUnit, max_eq_right hx.1, min_eq_right hx.2]
 
-def gridTent (k : ℕ) (j : Fin (k + 1)) (x : ℝ) : ℝ :=
+section
+variable (k : ℕ)
+include k
+
+def gridTent  (j : Fin (k + 1)) x  :=
   max 0 (1 - |(k : ℝ) * clampUnit x - j.val|)
 
-theorem gridTent_nonneg (k : ℕ) (j : Fin (k + 1)) (x : ℝ) : 0 ≤ gridTent k j x :=
+theorem gridTent_nonneg  j x : 0 ≤ gridTent k j x :=
   le_max_left _ _
 
-theorem gridTent_le_one (k : ℕ) (j : Fin (k + 1)) (x : ℝ) : gridTent k j x ≤ 1 := by
-  unfold gridTent
-  exact max_le (by norm_num) (by linarith [abs_nonneg ((k : ℝ) * clampUnit x - j.val)])
+theorem gridTent_le_one  j x : gridTent k j x ≤ 1 := max_le (by norm_num) (by linarith [abs_nonneg ((k : ℝ) * clampUnit x - j.val)])
 
-theorem gridTent_continuous (k : ℕ) (j : Fin (k + 1)) : Continuous (gridTent k j) := by
+theorem gridTent_continuous  j : Continuous (gridTent k j) := by
   unfold gridTent clampUnit
   fun_prop
 
 /-- A nearest grid index has tent value at least one half, globally. -/
-theorem gridTent_cover (k : ℕ) (x : ℝ) :
-    ∃ j : Fin (k + 1), (1 / 2 : ℝ) ≤ gridTent k j x := by
+theorem gridTent_cover  x :
+    ∃ j : Fin (k + 1), (1 / 2) ≤ gridTent k j x := by
   let t := (k : ℝ) * clampUnit x
-  have ht0 : 0 ≤ t := mul_nonneg (Nat.cast_nonneg k) (clampUnit_mem x).1
+  have ht0  := mul_nonneg (Nat.cast_nonneg k) (clampUnit_mem x).1
   have htk : t ≤ k := by
     simpa [t] using mul_le_mul_of_nonneg_left (clampUnit_mem x).2 (Nat.cast_nonneg k)
   let j := Nat.floor (t + 1 / 2)
@@ -63,80 +67,86 @@ theorem gridTent_cover (k : ℕ) (x : ℝ) :
   exact le_trans (by simpa [t] using (show (1 / 2 : ℝ) ≤ 1 - |t - j| by linarith))
     (le_max_right _ _)
 
-def gridTentEnergy (k : ℕ) (x : ℝ) : ℝ := ∑ j : Fin (k + 1), gridTent k j x ^ 2
+def gridTentEnergy  x  := ∑ j : Fin (k + 1), gridTent k j x ^ 2
 
-theorem gridTentEnergy_lower (k : ℕ) (x : ℝ) : (1 / 4 : ℝ) ≤ gridTentEnergy k x := by
+theorem gridTentEnergy_lower  x : (1 / 4) ≤ gridTentEnergy k x := by
   obtain ⟨j, hj⟩ := gridTent_cover k x
   have hsq : (1 / 4 : ℝ) ≤ gridTent k j x ^ 2 := by nlinarith
   exact hsq.trans (Finset.single_le_sum (fun i _ => sq_nonneg (gridTent k i x)) (Finset.mem_univ j))
 
-theorem gridTentEnergy_pos (k : ℕ) (x : ℝ) : 0 < gridTentEnergy k x :=
+theorem gridTentEnergy_pos  x : 0 < gridTentEnergy k x :=
   lt_of_lt_of_le (by norm_num) (gridTentEnergy_lower k x)
 
-theorem gridTentEnergy_continuous (k : ℕ) : Continuous (gridTentEnergy k) :=
+theorem gridTentEnergy_continuous  : Continuous (gridTentEnergy k) :=
   continuous_finsetSum _ (fun j _ => (gridTent_continuous k j).pow 2)
 
-def gridWindow (k : ℕ) (j : Fin (k + 1)) (x : ℝ) : ℝ :=
+def gridWindow  j x  :=
   gridTent k j x / Real.sqrt (gridTentEnergy k x)
 
-theorem gridWindow_nonneg (k : ℕ) (j : Fin (k + 1)) (x : ℝ) : 0 ≤ gridWindow k j x :=
+theorem gridWindow_nonneg  j x : 0 ≤ gridWindow k j x :=
   div_nonneg (gridTent_nonneg k j x) (Real.sqrt_nonneg _)
 
-theorem gridWindow_continuous (k : ℕ) (j : Fin (k + 1)) : Continuous (gridWindow k j) := by
-  exact (gridTent_continuous k j).div (gridTentEnergy_continuous k).sqrt
+theorem gridWindow_continuous  j : Continuous (gridWindow k j) := (gridTent_continuous k j).div (gridTentEnergy_continuous k).sqrt
     (fun x => ne_of_gt (Real.sqrt_pos.mpr (gridTentEnergy_pos k x)))
 
 /-- The normalized windows form an exact squared partition of unity. -/
-theorem gridWindow_square_partition (k : ℕ) (x : ℝ) :
+theorem gridWindow_square_partition  x :
     (∑ j : Fin (k + 1), gridWindow k j x ^ 2) = 1 := by
   simp only [gridWindow, div_pow, Real.sq_sqrt (gridTentEnergy_pos k x).le]
   rw [← Finset.sum_div]
   exact div_self (ne_of_gt (gridTentEnergy_pos k x))
 
-theorem gridWindow_le_one (k : ℕ) (j : Fin (k + 1)) (x : ℝ) : gridWindow k j x ≤ 1 := by
+theorem gridWindow_le_one  j x : gridWindow k j x ≤ 1 := by
   have hs : gridWindow k j x ^ 2 ≤ 1 := by
     rw [← gridWindow_square_partition k x]
     exact Finset.single_le_sum (fun i _ => sq_nonneg (gridWindow k i x)) (Finset.mem_univ j)
   nlinarith [gridWindow_nonneg k j x]
+end
 
-def gridTensorWindow (d k : ℕ) (j : Fin d → Fin (k + 1)) (x : Covariate d) : ℝ :=
+
+section
+variable (d k : ℕ)
+
+def gridTensorWindow  (j : Fin d → Fin (k + 1)) (x : Covariate d)  :=
   ∏ i, gridWindow k (j i) (x i)
 
-theorem gridTensorWindow_continuous (d k : ℕ) (j : Fin d → Fin (k + 1)) :
+theorem gridTensorWindow_continuous  j :
     Continuous (gridTensorWindow d k j) :=
   continuous_finsetProd _ (fun i _ => (gridWindow_continuous k (j i)).comp (continuous_apply i))
 
-theorem gridTensorWindow_nonneg (d k : ℕ) (j : Fin d → Fin (k + 1)) (x : Covariate d) :
+theorem gridTensorWindow_nonneg  j x :
     0 ≤ gridTensorWindow d k j x := Finset.prod_nonneg (fun i _ => gridWindow_nonneg k (j i) (x i))
 
-theorem gridTensorWindow_le_one (d k : ℕ) (j : Fin d → Fin (k + 1)) (x : Covariate d) :
+theorem gridTensorWindow_le_one  j x :
     gridTensorWindow d k j x ≤ 1 :=
   Finset.prod_le_one₀ (fun i _ => gridWindow_nonneg k (j i) (x i))
     (fun i _ => gridWindow_le_one k (j i) (x i))
 
-theorem gridTensorWindow_square_partition (d k : ℕ) (x : Covariate d) :
+theorem gridTensorWindow_square_partition  x :
     (∑ j : Fin d → Fin (k + 1), gridTensorWindow d k j x ^ 2) = 1 := by
   simp only [gridTensorWindow, ← Finset.prod_pow]
   rw [← Fintype.prod_sum (fun i (j : Fin (k + 1)) => gridWindow k j (x i) ^ 2)]
   simp [gridWindow_square_partition]
+end
 
-def gridTentActive (k : ℕ) (x : ℝ) : Finset (Fin (k + 1)) :=
+
+def gridTentActive k x  :=
   Finset.univ.filter (fun j => gridTent k j x ≠ 0)
 
-private theorem gridTent_active_indices (k : ℕ) (x : ℝ) (j : Fin (k + 1))
+private theorem gridTent_active_indices k x j
     (hj : j ∈ gridTentActive k x) :
-    j.val = Nat.floor ((k : ℝ) * clampUnit x) ∨
-      j.val = Nat.floor ((k : ℝ) * clampUnit x) + 1 := by
+    j.val = Nat.floor (k * clampUnit x) ∨
+      j.val = Nat.floor (k * clampUnit x) + 1 := by
   let t := (k : ℝ) * clampUnit x
   let m := Nat.floor t
-  have hne : gridTent k j x ≠ 0 := (Finset.mem_filter.mp hj).2
+  have hne  := (Finset.mem_filter.mp hj).2
   have hd : |t - j.val| < 1 := by
     by_contra h
     have he : gridTent k j x = 0 := max_eq_left (by dsimp [t] at h; linarith)
     exact hne he
-  have ht0 : 0 ≤ t := mul_nonneg (Nat.cast_nonneg k) (clampUnit_mem x).1
-  have hm : (m : ℝ) ≤ t := Nat.floor_le ht0
-  have hlt : t < (m : ℝ) + 1 := Nat.lt_floor_add_one t
+  have ht0  := mul_nonneg (Nat.cast_nonneg k) (clampUnit_mem x).1
+  have hm  := Nat.floor_le ht0
+  have hlt  := Nat.lt_floor_add_one t
   have hlow : m ≤ j.val := by
     by_contra h
     have hcast : (j.val : ℝ) + 1 ≤ m := by exact_mod_cast (by omega : j.val + 1 ≤ m)
@@ -149,7 +159,7 @@ private theorem gridTent_active_indices (k : ℕ) (x : ℝ) (j : Fin (k + 1))
   omega
 
 /-- At most two one-dimensional tents are nonzero at any point. -/
-theorem gridTent_active_card (k : ℕ) (x : ℝ) : (gridTentActive k x).card ≤ 2 := by
+theorem gridTent_active_card k x : (gridTentActive k x).card ≤ 2 := by
   have hsub : (gridTentActive k x).image Fin.val ⊆
       {Nat.floor ((k : ℝ) * clampUnit x), Nat.floor ((k : ℝ) * clampUnit x) + 1} := by
     intro j hj
@@ -159,61 +169,42 @@ theorem gridTent_active_card (k : ℕ) (x : ℝ) : (gridTentActive k x).card ≤
   rw [Finset.card_image_of_injective _ Fin.val_injective] at hcard
   exact hcard.trans (by simp)
 
-theorem gridWindow_eq_zero_iff (k : ℕ) (j : Fin (k + 1)) (x : ℝ) :
+theorem gridWindow_eq_zero_iff k j x :
     gridWindow k j x = 0 ↔ gridTent k j x = 0 := by
   simp only [gridWindow, div_eq_zero_iff, ne_of_gt (Real.sqrt_pos.mpr (gridTentEnergy_pos k x)),
     or_false]
 
-def gridTensorActive (d k : ℕ) (x : Covariate d) : Finset (Fin d → Fin (k + 1)) :=
+def gridTensorActive d k (x : Covariate d)  :=
   Fintype.piFinset (fun i => gridTentActive k (x i))
 
-theorem gridTensorWindow_eq_zero_of_not_active (d k : ℕ) (j : Fin d → Fin (k + 1))
-    (x : Covariate d) (hj : j ∉ gridTensorActive d k x) : gridTensorWindow d k j x = 0 := by
+theorem gridTensorWindow_eq_zero_of_not_active d k j
+    x (hj : j ∉ gridTensorActive d k x) : gridTensorWindow d k j x = 0 := by
   have hnot : ¬∀ i, j i ∈ gridTentActive k (x i) := by
     simpa [gridTensorActive, Fintype.mem_piFinset] using hj
   obtain ⟨i, hi⟩ := not_forall.mp hnot
   have hz : gridWindow k (j i) (x i) = 0 := by
-    apply (gridWindow_eq_zero_iff k (j i) (x i)).mpr
-    simpa [gridTentActive] using hi
+    simp_all [gridWindow_eq_zero_iff, gridTentActive]
   exact Finset.prod_eq_zero (Finset.mem_univ i) hz
 
-theorem gridTensor_active_card (d k : ℕ) (x : Covariate d) : (gridTensorActive d k x).card ≤ 2 ^ d := by
+theorem gridTensor_active_card d k x : (gridTensorActive d k x).card ≤ 2 ^ d := by
   rw [gridTensorActive, Fintype.card_piFinset]
   calc
     _ ≤ ∏ _i : Fin d, 2 := Finset.prod_le_prod (fun i _ => gridTent_active_card k (x i))
     _ = _ := by simp
 
-theorem clampUnit_modulus (x y : ℝ) : |clampUnit x - clampUnit y| ≤ |x - y| := by
-  have hmax : |max 0 x - max 0 y| ≤ |x - y| := by
-    simpa only [sub_self, abs_zero, max_eq_right (abs_nonneg (x - y))] using
-      abs_max_sub_max_le_max (0 : ℝ) x 0 y
-  have hmin : |clampUnit x - clampUnit y| ≤ |max 0 x - max 0 y| := by
-    simpa only [clampUnit, sub_self, abs_zero,
-      max_eq_right (abs_nonneg (max 0 x - max 0 y))] using
-      abs_min_sub_min_le_max (1 : ℝ) (max 0 x) 1 (max 0 y)
-  exact hmin.trans hmax
 
-theorem gridTent_modulus (k : ℕ) (j : Fin (k + 1)) (x y : ℝ) :
-    |gridTent k j x - gridTent k j y| ≤ (k : ℝ) * |x - y| := by
-  have hmax : |gridTent k j x - gridTent k j y| ≤
-      abs (|(k : ℝ) * clampUnit x - j.val| - |(k : ℝ) * clampUnit y - j.val|) := by
-    have h := abs_max_sub_max_le_max (0 : ℝ)
-      (1 - |(k : ℝ) * clampUnit x - j.val|) 0 (1 - |(k : ℝ) * clampUnit y - j.val|)
-    have hr : max 0 |(1 - |(k : ℝ) * clampUnit x - j.val|) -
-        (1 - |(k : ℝ) * clampUnit y - j.val|)| =
-        abs (|(k : ℝ) * clampUnit x - j.val| - |(k : ℝ) * clampUnit y - j.val|) := by
-      rw [max_eq_right (abs_nonneg _), sub_sub_sub_cancel_left, abs_sub_comm]
-    simpa only [gridTent, sub_self, abs_zero, hr] using h
-  calc
-    _ ≤ abs (|(k : ℝ) * clampUnit x - j.val| - |(k : ℝ) * clampUnit y - j.val|) := hmax
-    _ ≤ |((k : ℝ) * clampUnit x - j.val) - ((k : ℝ) * clampUnit y - j.val)| :=
-      abs_abs_sub_abs_le_abs_sub _ _
-    _ = (k : ℝ) * |clampUnit x - clampUnit y| := by
-      rw [sub_sub_sub_cancel_right, ← mul_sub, abs_mul, abs_of_nonneg (Nat.cast_nonneg k)]
-    _ ≤ _ := mul_le_mul_of_nonneg_left (clampUnit_modulus x y) (Nat.cast_nonneg k)
+
+theorem gridTent_modulus k j x y :
+    |gridTent k j x - gridTent k j y| ≤ k * |x - y| := by
+  have h := ((IsometryEquiv.constVSub (1 : ℝ)).isometry.lipschitzWith.comp
+    (lipschitzWith_one_norm.comp ((IsometryEquiv.constVSub (j.val : ℝ)).isometry.lipschitzWith.comp
+      ((lipschitzWith_smul (k : ℝ)).comp
+        ((LipschitzWith.id.const_max (0 : ℝ)).const_min 1))))).const_max 0
+  simpa [gridTent, clampUnit, Real.dist_eq, Real.norm_eq_abs, abs_sub_comm,
+    abs_of_nonneg ((show (0 : ℝ) ≤ k from Nat.cast_nonneg k)), smul_eq_mul] using h.dist_le_mul x y
 
 /-- The normalization energy has a scale-correct uniform Lipschitz bound. -/
-theorem gridTentEnergy_modulus (k : ℕ) (x y : ℝ) :
+theorem gridTentEnergy_modulus k x y :
     |gridTentEnergy k x - gridTentEnergy k y| ≤ 8 * k * |x - y| := by
   let S := gridTentActive k x ∪ gridTentActive k y
   have hcard : S.card ≤ 4 := (Finset.card_union_le _ _).trans
@@ -221,10 +212,10 @@ theorem gridTentEnergy_modulus (k : ℕ) (x y : ℝ) :
   have hzero (j : Fin (k + 1)) (hj : j ∉ S) :
       gridTent k j x ^ 2 - gridTent k j y ^ 2 = 0 := by
     have hx : gridTent k j x = 0 := by
-      have : j ∉ gridTentActive k x := fun h => hj (Finset.mem_union_left _ h)
+      have  := fun h => hj (Finset.mem_union_left _ h)
       simpa [gridTentActive] using this
     have hy : gridTent k j y = 0 := by
-      have : j ∉ gridTentActive k y := fun h => hj (Finset.mem_union_right _ h)
+      have  := fun h => hj (Finset.mem_union_right _ h)
       simpa [gridTentActive] using this
     simp [hx, hy]
   have hpoint (j : Fin (k + 1)) :
@@ -249,12 +240,12 @@ theorem gridTentEnergy_modulus (k : ℕ) (x y : ℝ) :
       have hcast : (S.card : ℝ) ≤ 4 := by exact_mod_cast hcard
       nlinarith [mul_nonneg (Nat.cast_nonneg k) (abs_nonneg (x - y))]
 
-theorem gridTentEnergy_sqrt_lower (k : ℕ) (x : ℝ) :
-    (1 / 2 : ℝ) ≤ Real.sqrt (gridTentEnergy k x) := by
+theorem gridTentEnergy_sqrt_lower k x :
+    (1 / 2) ≤ Real.sqrt (gridTentEnergy k x) := by
   nlinarith [Real.sqrt_nonneg (gridTentEnergy k x),
     Real.sq_sqrt (gridTentEnergy_pos k x).le, gridTentEnergy_lower k x]
 
-theorem gridTentEnergy_sqrt_modulus (k : ℕ) (x y : ℝ) :
+theorem gridTentEnergy_sqrt_modulus k x y :
     |Real.sqrt (gridTentEnergy k x) - Real.sqrt (gridTentEnergy k y)| ≤ 8 * k * |x - y| := by
   have hx := gridTentEnergy_sqrt_lower k x
   have hy := gridTentEnergy_sqrt_lower k y
@@ -271,12 +262,12 @@ theorem gridTentEnergy_sqrt_modulus (k : ℕ) (x y : ℝ) :
   rw [hid] at hb
   nlinarith [abs_nonneg (Real.sqrt (gridTentEnergy k x) - Real.sqrt (gridTentEnergy k y))]
 
-theorem gridWindow_modulus (k : ℕ) (j : Fin (k + 1)) (x y : ℝ) :
+theorem gridWindow_modulus k j x y :
     |gridWindow k j x - gridWindow k j y| ≤ 34 * k * |x - y| := by
   let A := Real.sqrt (gridTentEnergy k x)
   let B := Real.sqrt (gridTentEnergy k y)
-  have hA : (1 / 2 : ℝ) ≤ A := gridTentEnergy_sqrt_lower k x
-  have hB : (1 / 2 : ℝ) ≤ B := gridTentEnergy_sqrt_lower k y
+  have hA  := gridTentEnergy_sqrt_lower k x
+  have hB  := gridTentEnergy_sqrt_lower k y
   have hAp : 0 < A := by linarith
   have hBp : 0 < B := by linarith
   have hAB : (1 / 4 : ℝ) ≤ A * B := by nlinarith
@@ -312,7 +303,7 @@ private theorem bounded_product_modulus {ι : Type*} [DecidableEq ι] (s : Finse
     rw [Finset.prod_insert hi, Finset.prod_insert hi, Finset.sum_insert hi]
     have hp : |∏ j ∈ s, f j| ≤ 1 := by
       rw [Finset.abs_prod]
-      exact Finset.prod_le_one₀ (fun j _ => abs_nonneg _) (fun j hj => hf j (Finset.mem_insert_of_mem hj))
+      simp_all [Finset.prod_le_one₀]
     have hh := ih (fun j hj => hf j (Finset.mem_insert_of_mem hj))
       (fun j hj => hg j (Finset.mem_insert_of_mem hj))
     have hgi := hg i (Finset.mem_insert_self _ _)
@@ -326,15 +317,9 @@ private theorem bounded_product_modulus {ι : Type*} [DecidableEq ι] (s : Finse
         exact add_le_add (by nlinarith [abs_nonneg (f i - g i)])
           (by simpa only [one_mul] using mul_le_mul hgi hh (abs_nonneg _) (by norm_num : (0 : ℝ) ≤ 1))
 
-theorem coordinate_abs_le_euclideanNorm {d : ℕ} (x : Covariate d) (i : Fin d) :
-    |x i| ≤ euclideanNorm x := by
-  have hs : x i ^ 2 ≤ ∑ j, x j ^ 2 :=
-    Finset.single_le_sum (fun j _ => sq_nonneg (x j)) (Finset.mem_univ i)
-  have he : euclideanNorm x ^ 2 = ∑ j, x j ^ 2 := Real.sq_sqrt (Finset.sum_nonneg (fun j _ => sq_nonneg _))
-  have hn : 0 ≤ euclideanNorm x := Real.sqrt_nonneg _
-  nlinarith [sq_abs (x i), abs_nonneg (x i)]
+alias coordinate_abs_le_euclideanNorm := abs_coordinate_le_euclideanNorm
 
-theorem gridTensorWindow_modulus (d k : ℕ) (j : Fin d → Fin (k + 1)) (x y : Covariate d) :
+theorem gridTensorWindow_modulus d k j x y :
     |gridTensorWindow d k j x - gridTensorWindow d k j y| ≤
       34 * k * d * euclideanNorm (x - y) := by
   have hh := bounded_product_modulus (Finset.univ : Finset (Fin d))
@@ -350,26 +335,24 @@ theorem gridTensorWindow_modulus (d k : ℕ) (j : Fin d → Fin (k + 1)) (x y : 
         (mul_le_mul_of_nonneg_left (coordinate_abs_le_euclideanNorm (x - y) i) (by positivity))
     _ = _ := by simp; ring
 
-def gridPriorField (d k : ℕ) (η : ℝ) (ξ : (Fin d → Fin (k + 1)) → Fin 3)
-    (x : Covariate d) : ℝ :=
+def gridPriorField d k η (ξ : (Fin d → Fin (k + 1)) → Fin 3)
+    x  :=
   η * ∑ j, gridTensorWindow d k j x * ternaryValue 1 (ξ j)
 
-theorem gridPriorField_continuous (d k : ℕ) (η : ℝ)
-    (ξ : (Fin d → Fin (k + 1)) → Fin 3) : Continuous (gridPriorField d k η ξ) :=
+theorem gridPriorField_continuous d k η
+    ξ : Continuous (gridPriorField d k η ξ) :=
   (continuous_finsetSum _ (fun j _ => (gridTensorWindow_continuous d k j).mul_const _)).const_mul _
 
-theorem ternaryValue_one_abs_le (y : Fin 3) : |ternaryValue 1 y| ≤ 1 := by
+theorem ternaryValue_one_abs_le y : |ternaryValue 1 y| ≤ 1 := by
   fin_cases y <;> norm_num [ternaryValue]
 
-theorem gridPriorField_abs_bound (d k : ℕ) (η : ℝ) (hη : 0 ≤ η)
-    (ξ : (Fin d → Fin (k + 1)) → Fin 3) (x : Covariate d) :
-    |gridPriorField d k η ξ x| ≤ (2 : ℝ) ^ d * η := by
+theorem gridPriorField_abs_bound d k η (hη : 0 ≤ η)
+    ξ x :
+    |gridPriorField d k η ξ x| ≤ 2 ^ d * η := by
   have heq : (∑ j, gridTensorWindow d k j x * ternaryValue 1 (ξ j)) =
       ∑ j ∈ gridTensorActive d k x, gridTensorWindow d k j x * ternaryValue 1 (ξ j) := by
     symm
-    apply Finset.sum_subset (Finset.subset_univ _)
-    intro j _ hj
-    simp [gridTensorWindow_eq_zero_of_not_active d k j x hj]
+    grind only [Finset.sum_subset, Finset.subset_univ, gridTensorWindow_eq_zero_of_not_active]
   rw [gridPriorField, abs_mul, abs_of_nonneg hη, heq]
   have hsum : |∑ j ∈ gridTensorActive d k x,
       gridTensorWindow d k j x * ternaryValue 1 (ξ j)| ≤ (2 : ℝ) ^ d := by
@@ -387,10 +370,10 @@ theorem gridPriorField_abs_bound (d k : ℕ) (η : ℝ) (hη : 0 ≤ η)
         exact_mod_cast gridTensor_active_card d k x
   simpa only [mul_comm] using mul_le_mul_of_nonneg_left hsum hη
 
-theorem gridPriorField_lipschitz_bound (d k : ℕ) (η : ℝ) (hη : 0 ≤ η)
-    (ξ : (Fin d → Fin (k + 1)) → Fin 3) (x y : Covariate d) :
+theorem gridPriorField_lipschitz_bound d k η (hη : 0 ≤ η)
+    ξ x y :
     |gridPriorField d k η ξ x - gridPriorField d k η ξ y| ≤
-      (68 * (2 : ℝ) ^ d * (d + 1)) * η * k * euclideanNorm (x - y) := by
+      (68 * 2 ^ d * (d + 1)) * η * k * euclideanNorm (x - y) := by
   let S := gridTensorActive d k x ∪ gridTensorActive d k y
   have hcard : (S.card : ℝ) ≤ 2 * (2 : ℝ) ^ d := by
     have h := (Finset.card_union_le (gridTensorActive d k x) (gridTensorActive d k y)).trans
@@ -436,7 +419,7 @@ theorem scaled_lipschitz_holder_bound (s b k A r u : ℝ)
     (hs : 0 ≤ s) (hs1 : s ≤ 1) (hb : 0 ≤ b) (hk : 0 < k) (hA : 0 ≤ A) (hr : 0 ≤ r)
     (hbounded : u ≤ A * (b / k ^ s)) (hlip : u ≤ A * (b / k ^ s) * k * r) :
     u ≤ A * b * r ^ s := by
-  have hkp : 0 < k ^ s := Real.rpow_pos_of_pos hk s
+  have hkp  := Real.rpow_pos_of_pos hk s
   have hrpow : (k * r) ^ s = k ^ s * r ^ s := Real.mul_rpow hk.le hr
   have hcoef : 0 ≤ A * (b / k ^ s) := by positivity
   have heq : A * (b / k ^ s) * (k * r) ^ s = A * b * r ^ s := by
@@ -454,11 +437,14 @@ theorem scaled_lipschitz_holder_bound (s b k A r u : ℝ)
       _ ≤ A * (b / k ^ s) * (k * r) ^ s := by nlinarith
       _ = _ := heq
 
-theorem gridPriorField_holder_bound (d k : ℕ) (s b : ℝ) (hk : 1 ≤ k)
+section
+variable (d k : ℕ)
+
+theorem gridPriorField_holder_bound  (s b : ℝ) (hk : 1 ≤ k)
     (hs : 0 ≤ s) (hs1 : s ≤ 1) (hb : 0 ≤ b)
-    (ξ : (Fin d → Fin (k + 1)) → Fin 3) (x y : Covariate d) :
-    |gridPriorField d k (b / (k : ℝ) ^ s) ξ x - gridPriorField d k (b / (k : ℝ) ^ s) ξ y| ≤
-      (68 * (2 : ℝ) ^ d * (d + 1)) * b * euclideanNorm (x - y) ^ s := by
+    ξ x y :
+    |gridPriorField d k (b / k ^ s) ξ x - gridPriorField d k (b / k ^ s) ξ y| ≤
+      (68 * 2 ^ d * (d + 1)) * b * euclideanNorm (x - y) ^ s := by
   have hkp : 0 < (k : ℝ) := by exact_mod_cast (by omega : 0 < k)
   have hη : 0 ≤ b / (k : ℝ) ^ s := by positivity
   apply scaled_lipschitz_holder_bound s b k (68 * (2 : ℝ) ^ d * (d + 1)) _ _ hs hs1 hb
@@ -475,10 +461,10 @@ theorem gridPriorField_holder_bound (d k : ℕ) (s b : ℝ) (hk : 1 ≤ k)
   · exact gridPriorField_lipschitz_bound d k _ hη ξ x y
 
 /-- A support patch, defined globally through the same clamp as its window. -/
-def gridPatch (d k : ℕ) (j : Fin d → Fin (k + 1)) : Set (Covariate d) :=
+def gridPatch  (j : Fin d → Fin (k + 1)) : Set (Covariate d) :=
   {x | ∀ i, |(k : ℝ) * clampUnit (x i) - (j i).val| ≤ 1}
 
-theorem gridPatch_measurable (d k : ℕ) (j : Fin d → Fin (k + 1)) :
+theorem gridPatch_measurable  j :
     MeasurableSet (gridPatch d k j) := by
   have heq : gridPatch d k j = ⋂ i : Fin d, {x : Covariate d |
       |(k : ℝ) * clampUnit (x i) - (j i).val| ≤ 1} := by
@@ -494,17 +480,17 @@ theorem gridPatch_measurable (d k : ℕ) (j : Fin d → Fin (k + 1)) :
     exact hc.measurable
   · exact measurable_const
 
-theorem gridTensorWindow_zero_outside_patch (d k : ℕ) (j : Fin d → Fin (k + 1))
-    (x : Covariate d) (hx : x ∉ gridPatch d k j) : gridTensorWindow d k j x = 0 := by
+theorem gridTensorWindow_zero_outside_patch  j
+    x (hx : x ∉ gridPatch d k j) : gridTensorWindow d k j x = 0 := by
   obtain ⟨i, hi⟩ := not_forall.mp hx
   have ht : gridTent k (j i) (x i) = 0 := max_eq_left (by linarith [lt_of_not_ge hi])
   exact Finset.prod_eq_zero (Finset.mem_univ i) ((gridWindow_eq_zero_iff k (j i) (x i)).mpr ht)
 
 /-- Actual uniform-design patch probability has the required volume scaling. -/
-theorem gridPatch_cube_probability_bound (d k : ℕ) (j : Fin d → Fin (k + 1)) (hk : 0 < k) :
-    (cubeVolume d).real (gridPatch d k j) ≤ (2 / (k : ℝ)) ^ d := by
+theorem gridPatch_cube_probability_bound  j (hk : 0 < k) :
+    (cubeVolume d).real (gridPatch d k j) ≤ (2 / k) ^ d := by
   have hkp : 0 < (k : ℝ) := by exact_mod_cast hk
-  let R : Set (Covariate d) := Set.univ.pi
+  let R  := Set.univ.pi
     (fun i => Icc (((j i).val - 1 : ℝ) / k) (((j i).val + 1 : ℝ) / k))
   have hsub : gridPatch d k j ∩ unitCube d ⊆ R := by
     intro x hx
@@ -524,17 +510,19 @@ theorem gridPatch_cube_probability_bound (d k : ℕ) (j : Fin d → Fin (k + 1))
     have hwidth (i : Fin d) : (((j i).val + 1 : ℝ) / k) - (((j i).val - 1 : ℝ) / k) = 2 / k := by ring
     simp_rw [hwidth]
     simp only [Finset.prod_const, Finset.card_univ, Fintype.card_fin]
-    exact (ENNReal.ofReal_pow (div_nonneg (by norm_num : (0 : ℝ) ≤ 2) hkp.le) d).symm
+    simp_all [div_nonneg]
   have hbound : cubeVolume d (gridPatch d k j) ≤ ENNReal.ofReal ((2 / (k : ℝ)) ^ d) := by
     rw [cubeVolume, Measure.restrict_apply (gridPatch_measurable d k j), ← hvol]
     exact measure_mono hsub
   exact (ENNReal.toReal_mono ENNReal.ofReal_ne_top hbound).trans_eq
     (ENNReal.toReal_ofReal (by positivity))
+end
 
-def gridNeighbors (k : ℕ) (j : Fin (k + 1)) : Finset (Fin (k + 1)) :=
+
+def gridNeighbors k (j : Fin (k + 1)) : Finset (Fin (k + 1)) :=
   Finset.univ.filter (fun l => |(j.val : ℝ) - l.val| ≤ 2)
 
-theorem gridNeighbors_card (k : ℕ) (j : Fin (k + 1)) : (gridNeighbors k j).card ≤ 5 := by
+theorem gridNeighbors_card k j : (gridNeighbors k j).card ≤ 5 := by
   have hsub : (gridNeighbors k j).image Fin.val ⊆ Finset.Icc (j.val - 2) (j.val + 2) := by
     intro l hl
     obtain ⟨i, hi, rfl⟩ := Finset.mem_image.mp hl
@@ -548,18 +536,18 @@ theorem gridNeighbors_card (k : ℕ) (j : Fin (k + 1)) : (gridNeighbors k j).car
   rw [Finset.card_image_of_injective _ Fin.val_injective, Nat.card_Icc] at h
   omega
 
-def gridTensorNeighbors (d k : ℕ) (j : Fin d → Fin (k + 1)) : Finset (Fin d → Fin (k + 1)) :=
+def gridTensorNeighbors d k (j : Fin d → Fin (k + 1))  :=
   Fintype.piFinset (fun i => gridNeighbors k (j i))
 
-theorem gridTensorNeighbors_card (d k : ℕ) (j : Fin d → Fin (k + 1)) :
+theorem gridTensorNeighbors_card d k j :
     (gridTensorNeighbors d k j).card ≤ 5 ^ d := by
   rw [gridTensorNeighbors, Fintype.card_piFinset]
   calc
     _ ≤ ∏ _i : Fin d, 5 := Finset.prod_le_prod (fun i _ => gridNeighbors_card k (j i))
     _ = _ := by simp
 
-theorem gridPatch_common_point_neighbors (d k : ℕ) (j l : Fin d → Fin (k + 1))
-    (x : Covariate d) (hj : x ∈ gridPatch d k j) (hl : x ∈ gridPatch d k l) :
+theorem gridPatch_common_point_neighbors d k j l
+    x (hj : x ∈ gridPatch d k j) (hl : x ∈ gridPatch d k l) :
     l ∈ gridTensorNeighbors d k j := by
   apply Fintype.mem_piFinset.mpr
   intro i
@@ -570,9 +558,9 @@ theorem gridPatch_common_point_neighbors (d k : ℕ) (j l : Fin d → Fin (k + 1
   exact abs_le.mpr ⟨by linarith, by linarith⟩
 
 /-- Every actual observation-support graph has uniformly bounded closed degree. -/
-theorem grid_observed_patch_degree (d k n : ℕ) (x : Fin n → Covariate d)
-    (j : Fin d → Fin (k + 1)) :
-    (Finset.univ.filter fun l : Fin d → Fin (k + 1) =>
+theorem grid_observed_patch_degree d k n (x : Fin n → Covariate d)
+    j :
+    (Finset.univ.filter fun l  =>
       ¬Disjoint (Finset.univ.filter fun i => x i ∈ gridPatch d k j)
         (Finset.univ.filter fun i => x i ∈ gridPatch d k l)).card ≤ 5 ^ d := by
   have hsub : (Finset.univ.filter fun l : Fin d → Fin (k + 1) =>

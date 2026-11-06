@@ -16,35 +16,30 @@ namespace NearlyMinimax
 set_option maxHeartbeats 1000000
 set_option backward.isDefEq.respectTransparency false
 
-def polynomialLiftLinearMap {Ω : Type*} {n p : ℕ}
+section
+variable {Ω : Type*}
+
+def polynomialLiftLinearMap  {n p : ℕ}
     (X : Fin n → Ω → Fin p → ℝ) (z : Ω) : MvPolynomial (Fin p) ℝ →ₗ[ℝ] ℝ where
   toFun P := Finsupp.linearCombination ℝ (fun α =>
     RoughRegime.Upper.monomialLift (RoughRegime.Upper.exponentCoordinates α) X z) P.coeff
   map_add' P Q := by simp only [AddMonoidAlgebra.coeff_add, map_add]
   map_smul' a P := by simp only [AddMonoidAlgebra.coeff_smul, map_smul, RingHom.id_apply]
 
-theorem polynomialLiftLinearMap_apply {Ω : Type*} {n p : ℕ}
+theorem polynomialLiftLinearMap_apply  {n p : ℕ}
     (X : Fin n → Ω → Fin p → ℝ) (z : Ω) (P : MvPolynomial (Fin p) ℝ) :
     polynomialLiftLinearMap X z P = RoughRegime.Upper.polynomialLift P X z := by
-  simp only [polynomialLiftLinearMap, Finsupp.linearCombination_apply, Finsupp.sum,
-    smul_eq_mul, RoughRegime.Upper.polynomialLift, MvPolynomial.finsupp_support_eq_support]
   rfl
 
-theorem polynomialLift_joint_measurable {Ω : Type*} [MeasurableSpace Ω] {n p : ℕ}
+theorem polynomialLift_joint_measurable  [MeasurableSpace Ω] {n p : ℕ}
     (P : MvPolynomial (Fin p) ℝ) (X : Fin n → Ω → Fin p → ℝ)
     (hX : ∀ i, Measurable (X i)) :
     Measurable (RoughRegime.Upper.polynomialLift P X) := by
   classical
   unfold RoughRegime.Upper.polynomialLift RoughRegime.Upper.monomialLift
-  apply Finset.measurable_sum
-  intro α _
-  apply Measurable.const_mul
-  apply Measurable.const_mul
-  apply Finset.measurable_sum
-  intro e _
-  exact Finset.measurable_prod Finset.univ (fun i _ => (hX (e i)).eval)
+  fun_prop
 
-theorem rowIncrementPolynomial_lift {Ω : Type*} {n r : ℕ}
+theorem rowIncrementPolynomial_lift  {n r : ℕ}
     (a b : ℝ) (T : Matrix (Fin r) (Fin r) ℝ) (y : ℝ) (m : ℕ)
     (row : Fin r → ℝ)
     (X : Fin n → Ω → Fin (Fintype.card (incrementVariables r)) → ℝ) (z : Ω) :
@@ -52,6 +47,8 @@ theorem rowIncrementPolynomial_lift {Ω : Type*} {n r : ℕ}
       ∑ i, row i * RoughRegime.Upper.polynomialLift (incrementFinPolynomial r a b T y m i) X z := by
   simp only [← polynomialLiftLinearMap_apply, rowIncrementPolynomial, ← MvPolynomial.smul_eq_C_mul,
     map_sum, map_smul, smul_eq_mul]
+end
+
 
 attribute [local irreducible] dyadicIncrementRawVector
 
@@ -88,31 +85,41 @@ theorem dyadicPolynomialPilot_raw_joint_measurable {d : ℕ} (C : ModelConstants
     (polynomialLift_joint_measurable (n := n)
       (p := Fintype.card (incrementVariables (anchoredDimension d C.order))) _ X hX)
 
-def dyadicRawPilotSum {d : ℕ} (C : ModelConstants d) (n J : ℕ) (m : ℕ → ℕ)
-    (y : ℝ) (z : Fin n → Observation d) (w : Covariate d × Covariate d) : ℝ :=
+section
+variable {d : ℕ} (C : ModelConstants d)
+include C
+
+section
+variable (n J : ℕ) (m : ℕ → ℕ)
+include J m
+
+def dyadicRawPilotSum  
+    y z (w : Covariate d × Covariate d)  :=
   ∑ j : Fin (J + 1), dyadicPolynomialPilot C n j.val w.1 y (m j.val)
     (dyadicPilotRow j.val w.1 w.2) z
 
-def dyadicRawCoefficients {d : ℕ} (C : ModelConstants d) (n J : ℕ) (m : ℕ → ℕ)
+def dyadicRawCoefficients  
     (z : Fin n → Observation d) (w : Covariate d × Covariate d) : PairVector :=
   WithLp.toLp 2 ![1, -1 + (dyadicRawPilotSum C n J m 0 z w - dyadicRawPilotSum C n J m 1 z w),
     -dyadicRawPilotSum C n J m 0 z w]
+end
 
-def dyadicNoiseCoefficients {d : ℕ} (C : ModelConstants d) (θ : RegressionParameter d)
-    (n J : ℕ) (m : ℕ → ℕ) (z : Fin n → Observation d) (w : Covariate d × Covariate d) : PairVector :=
+
+def dyadicNoiseCoefficients  θ
+    n J m z w  :=
   twoScalarPilotVector (dyadicMultilevelErrorField C θ n J 0 m z w)
     (dyadicMultilevelErrorField C θ n J 1 m z w)
 
-theorem dyadicRawPilotSum_joint_measurable {d : ℕ} (C : ModelConstants d)
-    (n J : ℕ) (m : ℕ → ℕ) (y : ℝ) :
+theorem dyadicRawPilotSum_joint_measurable 
+    n J m y :
     Measurable (fun t : (Fin n → Observation d) × (Covariate d × Covariate d) =>
       dyadicRawPilotSum C n J m y t.1 t.2) :=
   Finset.measurable_sum Finset.univ (fun j _ =>
     dyadicPolynomialPilot_raw_joint_measurable C n j.val y (m j.val)
       (fun w => dyadicPilotRow j.val w.1 w.2) (dyadicPilotRow_field_measurable j.val))
 
-theorem dyadicRawCoefficients_joint_measurable {d : ℕ} (C : ModelConstants d)
-    (n J : ℕ) (m : ℕ → ℕ) :
+theorem dyadicRawCoefficients_joint_measurable 
+    n J m :
     Measurable (fun t : (Fin n → Observation d) × (Covariate d × Covariate d) =>
       dyadicRawCoefficients C n J m t.1 t.2) := by
   have h0 := dyadicRawPilotSum_joint_measurable C n J m 0
@@ -125,9 +132,9 @@ theorem dyadicRawCoefficients_joint_measurable {d : ℕ} (C : ModelConstants d)
   · exact measurable_const.add (h0.sub h1)
   · exact h0.neg
 
-theorem dyadicMultilevelErrorField_eq_raw_sub_population {d : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (n J : ℕ) (m : ℕ → ℕ) (y : ℝ)
-    (z : Fin n → Observation d) (w : Covariate d × Covariate d) :
+theorem dyadicMultilevelErrorField_eq_raw_sub_population 
+    θ n J m y
+    z w :
     dyadicMultilevelErrorField C θ n J y m z w = dyadicRawPilotSum C n J m y z w -
       (dyadicPopulationPilotSum C θ J m false w - y * dyadicPopulationPilotSum C θ J m true w) := by
   unfold dyadicMultilevelErrorField dyadicPilotErrorField dyadicRawPilotSum
@@ -148,14 +155,16 @@ theorem dyadicMultilevelErrorField_eq_raw_sub_population {d : ℕ} (C : ModelCon
   intro i _
   ring
 
-theorem dyadicRawCoefficients_eq_population_add_noise {d : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (n J : ℕ) (m : ℕ → ℕ)
-    (z : Fin n → Observation d) (w : Covariate d × Covariate d) :
+theorem dyadicRawCoefficients_eq_population_add_noise 
+    θ n J m
+    z w :
     dyadicRawCoefficients C n J m z w = dyadicPopulationCoefficients C θ J m w +
       dyadicNoiseCoefficients C θ n J m z w := by
   ext i
   fin_cases i <;>
     simp [dyadicRawCoefficients, dyadicPopulationCoefficients, dyadicNoiseCoefficients,
       twoScalarPilotVector_coordinates, dyadicMultilevelErrorField_eq_raw_sub_population] <;> ring
+end
+
 
 end NearlyMinimax

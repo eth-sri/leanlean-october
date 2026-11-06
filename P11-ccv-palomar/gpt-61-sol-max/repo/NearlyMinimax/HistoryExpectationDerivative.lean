@@ -15,15 +15,18 @@ namespace NearlyMinimax
 
 variable {J : Type*} [Fintype J] [LinearOrder J]
 
+section
+variable (dependent : J → J → Prop)
+
 /-- The expectation weighted by the actual source history polynomial. -/
-def historyMarkedExpectation (dependent : J → J → Prop) (ρ : ℝ)
+def historyMarkedExpectation  (ρ : ℝ)
     {E : Type*} [MeasurableSpace E] (μ : Measure (HistoryMarked dependent E))
     (a : E → ℝ) (F : HistoryMarked dependent E → ℝ) (t : ℝ) : ℝ :=
   ∫ h, F h * historyMarkedDensity dependent ρ t a h ∂μ
 
 /-- A bounded measurable observable has a genuine derivative under the finite reference law.
 The uniform majorant is proved from maximal-label injectivity and source positivity. -/
-theorem historyMarkedExpectation_hasDerivAt (dependent : J → J → Prop)
+theorem historyMarkedExpectation_hasDerivAt 
     (hrefl : ∀ j, dependent j j) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
     (Δ : ℕ) (hlabels : ∀ j, (dependentLabelFinset dependent j).card ≤ Δ)
     (ρ T B t : ℝ) (hρ : 0 < ρ) (ht : 0 < t) (htT : t < T) (hB : 0 ≤ B)
@@ -35,9 +38,9 @@ theorem historyMarkedExpectation_hasDerivAt (dependent : J → J → Prop)
     Integrable (fun h => F h * historyMarkedDensityDerivative dependent ρ t a h) μ ∧
       HasDerivAt (historyMarkedExpectation dependent ρ μ a F)
         (∫ h, F h * historyMarkedDensityDerivative dependent ρ t a h ∂μ) t := by
-  let C : ℝ := (3 / 2 : ℝ) ^ Fintype.card J
-  let D : ℝ := ρ⁻¹ * (Fintype.card J : ℝ) * B * C
-  have hC : 0 ≤ C := by positivity
+  let C  := (3 / 2 : ℝ) ^ Fintype.card J
+  let D  := ρ⁻¹ * (Fintype.card J : ℝ) * B * C
+  
   have hs : ∀ u ∈ Ioo 0 T, u * B / ρ ≤ 1 / (2 + 8 * (Δ : ℝ) ^ 2) := by
     intro u hu
     exact (div_le_div_of_nonneg_right (mul_le_mul_of_nonneg_right hu.2.le hB) hρ.le).trans hsmall
@@ -72,5 +75,7 @@ theorem historyMarkedExpectation_hasDerivAt (dependent : J → J → Prop)
     (Eventually.of_forall fun h u hu => by simpa only [Real.norm_eq_abs] using hbound u hu h)
     (integrable_const (M * D))
     (Eventually.of_forall fun h u _ => (historyMarkedDensity_hasDerivAt dependent ρ u a h).const_mul (F h))
+end
+
 
 end NearlyMinimax

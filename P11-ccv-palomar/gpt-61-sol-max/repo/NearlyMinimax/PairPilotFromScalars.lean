@@ -16,7 +16,10 @@ set_option backward.isDefEq.respectTransparency false
 set_option synthInstance.maxHeartbeats 200000
 set_option maxHeartbeats 600000
 
-theorem PairPilotAssumptions.mono_lam {Ω : Type*} [MeasurableSpace Ω] {d : ℕ}
+section
+variable {Ω : Type*} [MeasurableSpace Ω]
+
+theorem PairPilotAssumptions.mono_lam  {d : ℕ}
     {θ : RegressionParameter d} {k : ℕ} {hk : 0 < k} {μ : Measure Ω}
     {bar : Covariate d × Covariate d → PairVector}
     {η : Ω → Covariate d × Covariate d → PairVector} {Cp W lam lam' : ℝ}
@@ -28,7 +31,7 @@ theorem PairPilotAssumptions.mono_lam {Ω : Type*} [MeasurableSpace Ω] {d : ℕ
     (integral_nonneg (fun w => sq_nonneg ‖v w‖)))
 
 theorem pairPilotAssumptions_of_two_scalars
-    {Ω : Type*} [MeasurableSpace Ω] (μ : Measure Ω) [IsFiniteMeasure μ] {d : ℕ}
+     (μ : Measure Ω) [IsFiniteMeasure μ] {d : ℕ}
     (θ : RegressionParameter d) (k : ℕ) (hk : 0 < k)
     (bar : Covariate d × Covariate d → PairVector)
     (a b : Ω → Covariate d × Covariate d → ℝ)
@@ -74,7 +77,7 @@ theorem pairPilotAssumptions_of_two_scalars
     exact twoScalarPilotVector_memLp (hw hs).1 (hw hs).2
   · filter_upwards [hsections, henergy] with w hw he hs
     exact (twoScalarPilotVector_second_le (hw hs).1 (hw hs).2 (he hs).1 (he hs).2).trans
-      (by have hm := mul_le_mul_of_nonneg_right hpoint hW; nlinarith only [hm])
+      (by nlinarith)
   · have hM := regularPairDesignMeasure_ae_of_supported θ k hk hsections
     filter_upwards [hM, hcenter] with w hw hc
     exact twoScalarPilotVector_mean_zero hw.1 hw.2 hc.1 hc.2
@@ -82,6 +85,8 @@ theorem pairPilotAssumptions_of_two_scalars
   · intro v hv
     exact twoScalarPilotVector_test_second_le μ (regularPairDesignMeasure θ k hk) a b
       (div_nonneg (mul_nonneg htest hW) hΛ.le) hinta hintb hLa hLb hEa hEb v hv
+end
+
 
 theorem scalarPilot_covariance_sample_budget {Cp W test Λ n : ℝ}
     (hn : 0 < n) (hW : 0 ≤ W) (htest : 0 ≤ test) (hΛ : n / 12 ≤ Λ)
@@ -92,7 +97,6 @@ theorem scalarPilot_covariance_sample_budget {Cp W test Λ n : ℝ}
   have hden := mul_le_mul_of_nonneg_left hΛ (mul_nonneg (sq_nonneg Cp) hW)
   rw [← mul_div_assoc]
   apply (div_le_div_iff₀ hΛ0 hn).mpr
-  have hmn := mul_le_mul_of_nonneg_right hm hn.le
-  nlinarith only [hmn, hden]
+  nlinarith
 
 end NearlyMinimax

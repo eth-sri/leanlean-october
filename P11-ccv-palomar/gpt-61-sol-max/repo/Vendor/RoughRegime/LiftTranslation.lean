@@ -110,8 +110,7 @@ theorem monomialLift_centering {Ω : Type*} {n p q : ℕ}
   intro S _
   have hprod (e : Fin q ↪ Fin n) :
       (∏ i ∈ S, Y (e i) ω (σ i)) =
-        ∏ i : ↥S, Y (e i) ω (σ i) := by
-    exact (Finset.prod_coe_sort S (fun i => Y (e i) ω (σ i))).symm
+        ∏ i : ↥S, Y (e i) ω (σ i) := (Finset.prod_coe_sort S (fun i => Y (e i) ω (σ i))).symm
   simp_rw [hprod]
   rw [← Finset.sum_mul]
   have h : (n.descFactorial q : ℝ)⁻¹ * (∑ e : Fin q ↪ Fin n, ∏ i : ↥S, Y (e i) ω (σ i)) =
@@ -284,15 +283,18 @@ lemma normalized_monomial_derivative_sample_sum {n p q r : ℕ} (σ : Fin q → 
     field_simp
   · simp
 
+section
+variable {Ω : Type*}
+
 /-- The derivative-defined distinct-sample expression at any expansion point. -/
-def derivativeLiftAt {Ω : Type*} {n p : ℕ} (R : ℕ) (f : (Fin p → ℝ) → ℝ)
+def derivativeLiftAt  {n p : ℕ} (R : ℕ) (f : (Fin p → ℝ) → ℝ)
     (m : Fin p → ℝ) (Y : Fin n → Ω → Fin p → ℝ) (ω : Ω) : ℝ :=
   ∑ r ∈ Finset.range (R + 1),
     (((r.factorial : ℝ) * (n.descFactorial r : ℝ))⁻¹ * ∑ e : Fin r ↪ Fin n,
       iteratedFDeriv ℝ r f m (fun i => Y (e i) ω))
 
 /-- A monomial lift agrees exactly with the centered derivative expansion at its degree. -/
-theorem monomialLift_eq_derivativeLiftAt {Ω : Type*} {n p q : ℕ}
+theorem monomialLift_eq_derivativeLiftAt  {n p q : ℕ}
     (σ : Fin q → Fin p) (Y : Fin n → Ω → Fin p → ℝ) (m : Fin p → ℝ)
     (hqn : q ≤ n) (ω : Ω) :
     RoughRegime.Upper.monomialLift σ (fun j ω => Y j ω + m) ω =
@@ -317,6 +319,8 @@ theorem monomialLift_eq_derivativeLiftAt {Ω : Type*} {n p q : ℕ}
         omega
       simp [hS]
     _ = _ := Finset.sum_congr rfl (fun r hr => (hexp r hr).symm)
+end
+
 
 lemma derivativeLiftAt_monomial_stable {Ω : Type*} {n p q R : ℕ}
     (σ : Fin q → Fin p) (Y : Fin n → Ω → Fin p → ℝ) (m : Fin p → ℝ)

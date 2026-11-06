@@ -17,24 +17,22 @@ set_option maxHeartbeats 1800000
 attribute [local instance] Classical.propDecidable
 attribute [local irreducible] highUnionSourceDensity highUnionSourceState historyMarkedAppend
 
-theorem completeSource_original_response_exact_and_low_counts {d : ℕ} [NeZero d]
-    (C : ModelConstants d) (Q : LowSmoothnessTernaryConstants C) :
+theorem completeSource_original_response_exact_and_low_counts {d } [NeZero d]
+    C (Q : LowSmoothnessTernaryConstants C) :
     ∃ Cfr0 eta0 : ℝ, 1 ≤ Cfr0 ∧ 0 < eta0 ∧
       ∀ k D M q : ℕ, ∀ (_ : NeZero k), ∀ (_ : LinearOrder (HighWindowLabels d k)),
-      4 ≤ k → 3 ≤ D → 1 ≤ q → highCenterResolutionThreshold C ≤ (M : ℝ) →
-      ∀ Cfr lam ell N mu cf : ℝ, Cfr0 ≤ Cfr → 0 < ell → ell < N → 0 ≤ cf →
-      cf*(k : ℝ)^(-C.smoothness) ≤ eta0 →
-      ∀ V : ℝ, |V-Q.v| ≤ Q.ρ → ∀ j : HighWindowLabels d k,
-      ∀ h : HistoryMarked (fun i j => j ∈ highNeighborLabels d k i)
-        (HighUnionMark (SourceRowMark d D M q (C.densityLower+1/(M : ℝ))
-          (C.densityUpper-1/(M : ℝ)) Cfr lam ell N mu)),
-      ∀ n : ℕ, ∀ x : Fin n → Covariate d, (∀ i, x i ∈ highTorusPatch d k j) →
-      ∀ y : Fin n → Fin 3,
+      4 ≤ k → 3 ≤ D → 1 ≤ q → highCenterResolutionThreshold C ≤ M →
+      ∀ Cfr lam ell N mu cf , Cfr0 ≤ Cfr → 0 < ell → ell < N → 0 ≤ cf →
+      cf*k^(-C.smoothness) ≤ eta0 →
+      ∀ V , |V-Q.v| ≤ Q.ρ → ∀ j ,
+      ∀ h ,
+      ∀ n , ∀ x , (∀ i, x i ∈ highTorusPatch d k j) →
+      ∀ y ,
       let R := completeSourceRows C k D M q Cfr lam ell N mu
-      let eta := cf*(k : ℝ)^(-C.smoothness)
+      let eta := cf*k^(-C.smoothness)
       let c := (highUnionSourceState C R h).2
       highUnionSourceMarkedNumerator C R n Q.a V eta j h x y =
-        completeSourceRawNumerator (C.densityLower+1/(M : ℝ)) (C.densityUpper-1/(M : ℝ))
+        completeSourceRawNumerator (C.densityLower+1/M) (C.densityUpper-1/M)
           lam ell N mu D M q Cfr Q.a V eta (fun i => highLocalCoordinates d k j (x i))
           (fun i => highUnionSourceDensity C R h (x i))
           (fun i => highLocalFieldWithout d k D eta c j (x i))
@@ -43,8 +41,8 @@ theorem completeSource_original_response_exact_and_low_counts {d : ℕ} [NeZero 
   obtain ⟨Cfr0,eta0,hfr0,heta0,hguards⟩ := completeSource_original_local_guards C Q
   refine ⟨Cfr0,eta0,hfr0,heta0,?_⟩
   intro k D M q hk0 horder hk hD hq hM Cfr lam ell N mu cf hfr hell hellN hcf heta V hV j h n x hx y
-  letI := hk0
-  letI := horder
+  
+  
   let R := completeSourceRows C k D M q Cfr lam ell N mu
   let eta := cf*(k : ℝ)^(-C.smoothness)
   let c := (highUnionSourceState C R h).2
@@ -74,8 +72,7 @@ theorem completeSource_original_response_exact_and_low_counts {d : ℕ} [NeZero 
     (highLocalCoordinates_abs_le_one d k j (x i) r).trans (by norm_num)
   have hcases : n = 0 ∨ n = 1 := by omega
   rcases hcases with rfl | rfl
-  · exact completeSourceRawNumerator_count_zero _ _ lam ell N mu ha hab D M q (by omega)
-      Cfr Q.a V eta U p g w (c j) y
+  · grind only [completeSourceRawNumerator_count_zero]
   · exact completeSourceRawNumerator_count_one _ _ lam ell N mu ha hab D M q (by omega) hq
       Cfr Q.a V eta (by linarith) U hU p g w hp (c j) y
 

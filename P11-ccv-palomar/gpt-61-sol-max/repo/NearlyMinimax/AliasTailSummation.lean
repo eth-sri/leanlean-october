@@ -11,11 +11,10 @@ noncomputable section
 open scoped BigOperators
 namespace NearlyMinimax
 
-theorem poissonCountWeight_mono {x y : ℝ} (hx : 0 ≤ x) (hxy : x ≤ y) (k : ℕ) :
-    poissonCountWeight x k ≤ poissonCountWeight y k := by
-  exact div_le_div_of_nonneg_right (pow_le_pow_left₀ hx hxy k) (Nat.cast_nonneg _)
+theorem poissonCountWeight_mono {x y } (hx : 0 ≤ x) (hxy : x ≤ y) k :
+    poissonCountWeight x k ≤ poissonCountWeight y k := div_le_div_of_nonneg_right (pow_le_pow_left₀ hx hxy k) (Nat.cast_nonneg _)
 
-theorem finite_poissonCountWeight_tail_le {x : ℝ} (hx : 0 ≤ x) (a J : ℕ) :
+theorem finite_poissonCountWeight_tail_le {x } (hx : 0 ≤ x) a J :
     (∑ j ∈ Finset.range J, poissonCountWeight x (a + j)) ≤
       Real.exp x * poissonCountWeight x a := by
   have hs : Summable (fun j => poissonCountWeight x (a + j)) :=
@@ -23,10 +22,13 @@ theorem finite_poissonCountWeight_tail_le {x : ℝ} (hx : 0 ≤ x) (a J : ℕ) :
   exact (hs.sum_le_tsum _ (fun j _ => poissonCountWeight_nonneg hx _)).trans
     (poissonCountWeight_tail_le hx a)
 
-def aliasTailConstant (A Csharp C L : ℝ) : ℝ :=
+def aliasTailConstant A Csharp C L  :=
   1 + A * Real.exp (Csharp * C) + Csharp * C * Real.exp L
 
-theorem aliasTailConstant_ge_one {A Csharp C L : ℝ}
+section
+variable {A Csharp C L : ℝ}
+
+theorem aliasTailConstant_ge_one 
     (hA : 0 ≤ A) (hCs : 0 ≤ Csharp) (hC : 0 ≤ C) :
     1 ≤ aliasTailConstant A Csharp C L := by
   unfold aliasTailConstant
@@ -34,20 +36,22 @@ theorem aliasTailConstant_ge_one {A Csharp C L : ℝ}
   have h2 : 0 ≤ Csharp * C * Real.exp L := by positivity
   linarith only [h1, h2]
 
-theorem aliasTailConstant_ge_prefactor {A Csharp C L : ℝ}
+theorem aliasTailConstant_ge_prefactor 
     (hCs : 0 ≤ Csharp) (hC : 0 ≤ C) :
     A * Real.exp (Csharp * C) ≤ aliasTailConstant A Csharp C L := by
   unfold aliasTailConstant
   have h : 0 ≤ Csharp * C * Real.exp L := by positivity
   linarith only [h]
 
-theorem aliasTailConstant_ge_base {A Csharp C L : ℝ} (hA : 0 ≤ A) :
+theorem aliasTailConstant_ge_base  (hA : 0 ≤ A) :
     Csharp * C * Real.exp L ≤ aliasTailConstant A Csharp C L := by
   unfold aliasTailConstant
   have h : 0 ≤ A * Real.exp (Csharp * C) := by positivity
   linarith only [h]
+end
 
-theorem poissonCountWeight_exp_absorption {x L : ℝ} (hx : 0 ≤ x) (hL : 0 ≤ L) (M : ℕ) :
+
+theorem poissonCountWeight_exp_absorption {x L } (hx : 0 ≤ x) (hL : 0 ≤ L) (M : ℕ) :
     Real.exp (L * M) * poissonCountWeight x (M + 1) ≤
       poissonCountWeight (x * Real.exp L) (M + 1) := by
   have he : Real.exp (L * M) ≤ Real.exp (L * (M + 1)) := by
@@ -60,14 +64,14 @@ theorem poissonCountWeight_exp_absorption {x L : ℝ} (hx : 0 ≤ x) (hL : 0 ≤
     push_cast
     ring
   rw [heq] at h
-  simpa only [poissonCountWeight, mul_pow, div_eq_mul_inv, mul_assoc, mul_left_comm, mul_comm] using h
+  simp_all [mul_pow, div_eq_mul_inv, mul_assoc, mul_left_comm, poissonCountWeight]
 
 /-- Actual count energies may be supplied only on the finite selected tail.
 The fixed constant is chosen before M and the number of counted terms. -/
-theorem finite_alias_energy_tail_le {A P Csharp C L mu : ℝ}
+theorem finite_alias_energy_tail_le {A P Csharp C L mu }
     (hA : 0 ≤ A) (hP : 0 ≤ P) (hCs : 0 ≤ Csharp) (hC : 0 ≤ C)
     (hL : 0 ≤ L) (hmu : 0 ≤ mu) (hmu1 : mu ≤ 1)
-    (M J : ℕ) (R : ℕ → ℝ)
+    M J (R : ℕ → ℝ)
     (hR : ∀ j ∈ Finset.range J, R (M + 1 + j) ≤
       A * P * Real.exp (L * M) * C ^ (M + 1 + j)) :
     (∑ j ∈ Finset.range J, poissonCountWeight (Csharp * mu) (M + 1 + j) * R (M + 1 + j)) ≤
@@ -75,7 +79,7 @@ theorem finite_alias_energy_tail_le {A P Csharp C L mu : ℝ}
         poissonCountWeight (aliasTailConstant A Csharp C L * mu) (M + 1) := by
   let K := aliasTailConstant A Csharp C L
   have hK1 : 1 ≤ K := aliasTailConstant_ge_one hA hCs hC
-  have hK0 : 0 ≤ K := (by norm_num : (0 : ℝ) ≤ 1).trans hK1
+  have hK0  := (by norm_num : (0 : ℝ) ≤ 1).trans hK1
   have hb (j : ℕ) (hj : j ∈ Finset.range J) :
       poissonCountWeight (Csharp * mu) (M + 1 + j) * R (M + 1 + j) ≤
       (A * P * Real.exp (L * M)) * poissonCountWeight (Csharp * C * mu) (M + 1 + j) := by

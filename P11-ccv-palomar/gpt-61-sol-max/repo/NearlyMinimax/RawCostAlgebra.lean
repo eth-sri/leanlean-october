@@ -11,24 +11,30 @@ open scoped BigOperators
 namespace NearlyMinimax
 set_option backward.isDefEq.respectTransparency false
 
-def rawCostConstants (CB C5 C6 C7 cf ch : ℝ) : Fin 7 → ℝ :=
+section
+variable (CB C5 C6 C7 cf ch : ℝ)
+include CB C5 C6 C7 cf ch
+
+def rawCostConstants  : Fin 7 → ℝ :=
   ![1, C6, ch, 1 + CB ^ 2, 3 * (C5 + C7) * cf ^ 4,
     3 * C6 ^ 2 * cf ^ 4, Real.exp ch * ch * cf ^ 4 * (CB + 1) ^ 2]
 
-def rawCostConstant (CB C5 C6 C7 cf ch : ℝ) : ℝ :=
+def rawCostConstant   :=
   Finset.univ.sup' (by simp) (rawCostConstants CB C5 C6 C7 cf ch)
 
-theorem rawCostConstant_ge (CB C5 C6 C7 cf ch : ℝ) (i : Fin 7) :
+theorem rawCostConstant_ge  i :
     rawCostConstants CB C5 C6 C7 cf ch i ≤ rawCostConstant CB C5 C6 C7 cf ch :=
   Finset.le_sup' _ (Finset.mem_univ i)
 
-theorem rawCostConstant_ge_one (CB C5 C6 C7 cf ch : ℝ) :
+theorem rawCostConstant_ge_one  :
     1 ≤ rawCostConstant CB C5 C6 C7 cf ch := rawCostConstant_ge _ _ _ _ _ _ 0
+end
+
 
 theorem factorial_succ_energy_reduction {n v mu eta4 h4s cf c C F : ℝ}
     (hv : 0 < v) (hmu : mu = n * v) (hn : 0 ≤ n) (hcf : 0 ≤ cf)
     (hp4s : 0 ≤ h4s) (heta : eta4 = cf ^ 4 * h4s)
-    (hc : 0 ≤ c) (hcC : c ≤ C) (hF : 0 ≤ F) (m : ℕ) :
+    (hc : 0 ≤ c) (hcC : c ≤ C) (hF : 0 ≤ F) m :
     v⁻¹ * (eta4 * F * (c * mu) ^ (m + 1) / (m + 1).factorial) ≤
       c * cf ^ 4 * n * h4s * F * (C * mu) ^ m / (m + 1).factorial := by
   have hmu0 : 0 ≤ mu := by rw [hmu]; positivity
@@ -36,7 +42,7 @@ theorem factorial_succ_energy_reduction {n v mu eta4 h4s cf c C F : ℝ}
     rw [pow_succ]
     have hh : (c * mu) ^ m ≤ (C * mu) ^ m :=
       pow_le_pow_left₀ (mul_nonneg hc hmu0) (mul_le_mul_of_nonneg_right hcC hmu0) _
-    simpa only [mul_comm] using mul_le_mul_of_nonneg_right hh (mul_nonneg hc hmu0)
+    grind only [mul_comm, mul_le_mul_of_nonneg_right, mul_nonneg]
   calc
     _ ≤ v⁻¹ * (eta4 * F * (c * mu * (C * mu) ^ m) / (m + 1).factorial) := by
       apply mul_le_mul_of_nonneg_left
@@ -88,13 +94,10 @@ theorem raw_energy_cost_bound {n v mu eta4 h4s B Bl E Fdef Fal CB C5 C6 C7 cf ch
   have hmu0 : 0 ≤ mu := by rw [hmu]; positivity
   have hCG0 : 0 ≤ CG := by linarith only [hCG]
   have hb2 : Bl ^ 2 ≤ CB ^ 2 * B ^ 2 := by
-    calc
-      _ ≤ (CB * B) ^ 2 := (sq_le_sq₀ hBl (mul_nonneg hCB hB0)).mpr hcost
-      _ = _ := mul_pow _ _ _
+    linarith [(sq_le_sq₀ hBl (mul_nonneg hCB hB0)).mpr hcost       ]
   have hb1 : 1 ≤ B ^ 2 := by nlinarith only [hB]
   have hbase : 1 + Bl ^ 2 ≤ CG * B ^ 2 := by
-    have hh := mul_le_mul_of_nonneg_right hBG (sq_nonneg B)
-    nlinarith only [hh, hb1, hb2]
+    linarith [mul_le_mul_of_nonneg_right hBG (sq_nonneg B)     ]
   have hp : v⁻¹ * (3 * (C5 + C7) * eta4 * mu ^ 2 * Fdef) ≤
       CG * (n ^ 2 * v * h4s * Fdef) := by
     calc

@@ -17,16 +17,17 @@ variable {X I : Type*} [MeasurableSpace X] [Fintype I] [MeasurableSpace I]
   [MeasurableSingletonClass I] [MeasurableEq I]
 variable (μ : Measure X) [IsProbabilityMeasure μ] (label : X → I)
 
-def partitionPairMeasure (weight : ℝ) : Measure (X × X) :=
+def partitionPairMeasure weight  :=
   ENNReal.ofReal weight • (μ.prod μ).restrict {z | label z.1 = label z.2}
 
 instance partitionPairMeasure_isFinite (weight : ℝ) :
-    IsFiniteMeasure (partitionPairMeasure μ label weight) := by
-  unfold partitionPairMeasure
-  exact ((μ.prod μ).restrict {z | label z.1 = label z.2}).smul_finite ENNReal.ofReal_ne_top
+    IsFiniteMeasure (partitionPairMeasure μ label weight) := ((μ.prod μ).restrict {z | label z.1 = label z.2}).smul_finite ENNReal.ofReal_ne_top
 
-theorem partitionPairMeasure_integral (hlabel : Measurable label)
-    {weight : ℝ} (hw : 0 ≤ weight) {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
+section
+variable (hlabel : Measurable label) {weight : ℝ} (hw : 0 ≤ weight)
+include hlabel hw
+
+theorem partitionPairMeasure_integral  {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
     (f : X × X → E) :
     (∫ z, f z ∂partitionPairMeasure μ label weight) =
       weight • ∫ z, sameLabelKernel label z • f z ∂μ.prod μ := by
@@ -41,49 +42,51 @@ theorem partitionPairMeasure_integral (hlabel : Measurable label)
   rw [partitionPairMeasure, integral_smul_measure, ENNReal.toReal_ofReal hw, he,
     integral_indicator hC]
 
-theorem partitionPairMeasure_real_univ (hlabel : Measurable label)
-    {weight : ℝ} (hw : 0 ≤ weight) :
+theorem partitionPairMeasure_real_univ  :
     (partitionPairMeasure μ label weight).real univ =
       weight * ∑ i : I, μ.real (label ⁻¹' {i}) ^ 2 := by
   have hi := partitionPairMeasure_integral μ label hlabel hw (fun _ => (1 : ℝ))
   simp only [integral_const, smul_eq_mul, mul_one] at hi
   rwa [sameLabelKernel_integral μ label hlabel] at hi
+end
+
 
 end Partition
 
-def regularPairDesignMeasure {d : ℕ} (θ : RegressionParameter d) (k : ℕ) (hk : 0 < k) :
+section
+variable {d : ℕ}
+
+def regularPairDesignMeasure  (θ : RegressionParameter d) (k : ℕ) (hk : 0 < k) :
     Measure (Covariate d × Covariate d) :=
   ENNReal.ofReal ((k : ℝ) ^ d) • ((designLaw θ).prod (designLaw θ)).restrict
     {z | regularGridCell k hk z.1 = regularGridCell k hk z.2}
 
-theorem regularPairDesignMeasure_isFinite {d : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ) (k : ℕ) (hk : 0 < k) :
+section
+variable (C : ModelConstants d) (θ : RegressionParameter d) (hθ : Admissible C θ) (k : ℕ) (hk : 0 < k)
+include hθ
+
+theorem regularPairDesignMeasure_isFinite   :
     IsFiniteMeasure (regularPairDesignMeasure θ k hk) := by
   let := designLaw_isProbability C θ hθ
   change IsFiniteMeasure (partitionPairMeasure (designLaw θ) (regularGridCell k hk) ((k : ℝ) ^ d))
   infer_instance
 
-theorem regularPairDesignMeasure_integral {d : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ) (k : ℕ) (hk : 0 < k)
+theorem regularPairDesignMeasure_integral  
     {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
     (f : Covariate d × Covariate d → E) :
     (∫ z, f z ∂regularPairDesignMeasure θ k hk) =
       (k : ℝ) ^ d • ∫ z, sameLabelKernel (regularGridCell k hk) z • f z
         ∂(designLaw θ).prod (designLaw θ) := by
   let := designLaw_isProbability C θ hθ
-  exact partitionPairMeasure_integral (designLaw θ) (regularGridCell k hk)
-    (regular_grid_cell_measurable k hk) (pow_nonneg (Nat.cast_nonneg k) d) f
+  solve_by_elim [partitionPairMeasure_integral, regular_grid_cell_measurable, pow_nonneg, Nat.cast_nonneg]
 
-theorem regularPairDesignMeasure_mass {d : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ) (k : ℕ) (hk : 0 < k) :
+theorem regularPairDesignMeasure_mass   :
     (regularPairDesignMeasure θ k hk).real univ =
-      (k : ℝ) ^ d * regularGridCollisionMass θ k hk := by
+      k ^ d * regularGridCollisionMass θ k hk := by
   let := designLaw_isProbability C θ hθ
-  exact partitionPairMeasure_real_univ (designLaw θ) (regularGridCell k hk)
-    (regular_grid_cell_measurable k hk) (pow_nonneg (Nat.cast_nonneg k) d)
+  solve_by_elim [partitionPairMeasure_real_univ, regular_grid_cell_measurable, pow_nonneg, Nat.cast_nonneg]
 
-theorem regularPairDesignMeasure_mass_bounds {d : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ) (k : ℕ) (hk : 0 < k) :
+theorem regularPairDesignMeasure_mass_bounds   :
     1 ≤ (regularPairDesignMeasure θ k hk).real univ ∧
       (regularPairDesignMeasure θ k hk).real univ ≤ C.densityUpper := by
   rw [regularPairDesignMeasure_mass C θ hθ k hk]
@@ -93,5 +96,9 @@ theorem regularPairDesignMeasure_mass_bounds {d : ℕ} (C : ModelConstants d)
     simpa [hkp.ne', mul_div_cancel₀] using h
   · have h := mul_le_mul_of_nonneg_left (regularGridCollisionMass_upper C θ hθ k hk) hkp.le
     simpa [hkp.ne', mul_comm, mul_div_cancel₀] using h
+end
+
+end
+
 
 end NearlyMinimax

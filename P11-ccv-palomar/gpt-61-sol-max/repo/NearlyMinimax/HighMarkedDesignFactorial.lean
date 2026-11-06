@@ -17,8 +17,10 @@ set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1000000
 attribute [local instance] Classical.propDecidable
 
-theorem iid_cell_selected_integrable {α : Type*} [MeasurableSpace α]
-    (μ : Measure α) [IsProbabilityMeasure μ] (n : ℕ) (A : Set α)
+section
+variable {α : Type*} [MeasurableSpace α] (μ : Measure α) [IsProbabilityMeasure μ] (n : ℕ) (A : Set α)
+
+theorem iid_cell_selected_integrable 
     (S : Finset (Fin n)) (H : (S → α) → ℝ)
     (hH : Integrable H (Measure.pi (fun _ : S => μ.restrict A))) :
     IntegrableOn (fun x : Fin n → α => H (fun i : S => x i.val))
@@ -43,8 +45,7 @@ theorem iid_cell_selected_integrable {α : Type*} [MeasurableSpace α]
   have hh := hs.integrable_comp_of_integrable hp
   exact hh
 
-theorem iid_energy_integrable_of_selected {α : Type*} [MeasurableSpace α]
-    (μ : Measure α) [IsProbabilityMeasure μ] (n : ℕ) (A : Set α) (hA : MeasurableSet A)
+theorem iid_energy_integrable_of_selected  (hA : MeasurableSet A)
     (E : (Fin n → α) → ℝ) (H : (S : Finset (Fin n)) → (S → α) → ℝ)
     (hH : ∀ S, Integrable (H S) (Measure.pi (fun _ : S => μ.restrict A)))
     (he : ∀ S x, x ∈ designMembershipCell n A S → E x = H S (fun i : S => x i.val)) :
@@ -66,39 +67,47 @@ theorem iid_energy_integrable_of_selected {α : Type*} [MeasurableSpace α]
     filter_upwards [ae_restrict_mem (design_membership_cell_measurable n A hA S)] with x hx
     exact (he S x hx).symm
   simpa only [hcover, integrableOn_univ] using hi
+end
+
 
 section
 variable {α ι E : Type*} [MeasurableSpace α] [Fintype ι] [DecidableEq ι] [MeasurableSpace E]
 
-def highMarkedResponseMass (a V η : ℝ) (g w : α → ℝ) (φ : α → ι → ℝ)
-    (c : ι → ℝ) (x : α) (y : Fin 3) : ℝ :=
+def highMarkedResponseMass a V η (g w : α → ℝ) (φ : α → ι → ℝ)
+    (c : ι → ℝ) (x : α) y  :=
   ternaryMass a (g x + η * w x * ∑ γ, φ x γ * c γ) V y
 
-def highMarkedSampleNumerator (r : ℕ) (π : Measure E) (activation : E → ℝ)
-    (a V η : ℝ) (p : α → ℝ) (pReset : E → α → ℝ) (cReset : E → ι → ℝ)
-    (g w : α → ℝ) (φ : α → ι → ℝ) (c : ι → ℝ)
-    (x : Fin r → α) (y : Fin r → Fin 3) : ℝ :=
+section
+variable (r : ℕ) (π : Measure E) (activation : E → ℝ) (a V η : ℝ)
+include π activation a V η
+
+section
+variable (p : α → ℝ) (pReset : E → α → ℝ)
+include p pReset
+
+def highMarkedSampleNumerator   cReset
+    g w φ (c : ι → ℝ)
+    (x : Fin r → α) y  :=
   highMarkedResponseAction π activation a V η (fun z => pReset z ∘ x) cReset
     (g ∘ x) (w ∘ x) (φ ∘ x) y - η ^ 2 * (∏ i, p (x i)) *
       ∑ i, (w (x i)) ^ 2 * highResponseVarianceTerm a V η (g ∘ x) (w ∘ x) (φ ∘ x) c y i
 
-def highMarkedSampleConditionalEnergy (r : ℕ) (π : Measure E) (activation : E → ℝ)
-    (a V η : ℝ) (p : α → ℝ) (pReset : E → α → ℝ) (cReset : E → ι → ℝ)
-    (g w : α → ℝ) (φ : α → ι → ℝ) (c : ι → ℝ) (x : Fin r → α) : ℝ :=
+def highMarkedSampleConditionalEnergy   cReset
+    g w φ (c : ι → ℝ) x  :=
   selectedConditionalScoreEnergy p (highMarkedResponseMass a V η g w φ c)
     (highMarkedSampleNumerator r π activation a V η p pReset cReset g w φ c) x
 
-theorem high_marked_sample_score_eq_ratio (r : ℕ) (π : Measure E) (activation : E → ℝ)
-    (a V η : ℝ) (p : α → ℝ) (pReset : E → α → ℝ) (cReset : E → ι → ℝ)
-    (g w : α → ℝ) (φ : α → ι → ℝ) (c : ι → ℝ) (x : Fin r → α) (y : Fin r → Fin 3) :
+theorem high_marked_sample_score_eq_ratio   cReset
+    g w φ (c : ι → ℝ) x y :
     highMarkedLocalScore π activation a V η (p ∘ x) (fun z => pReset z ∘ x) cReset
       (g ∘ x) (w ∘ x) (φ ∘ x) c y =
     highMarkedSampleNumerator r π activation a V η p pReset cReset g w φ c x y /
       selectedRawLikelihood p (highMarkedResponseMass a V η g w φ c) x y := rfl
+end
 
-theorem high_marked_sample_energy_integral (r : ℕ) (π : Measure E) (activation : E → ℝ)
-    (a V η : ℝ) (ha : a ≠ 0) (p : α → ℝ) (pReset : E → α → ℝ) (cReset : E → ι → ℝ)
-    (g w : α → ℝ) (φ : α → ι → ℝ) (c : ι → ℝ) (x : Fin r → α)
+
+theorem high_marked_sample_energy_integral  ha (p : α → ℝ) pReset cReset
+    g w φ (c : ι → ℝ) x
     (hp : ∀ z y, 0 < highMarkedResponseMass a V η g w φ c z y) :
     (∫ y, highMarkedLocalScore π activation a V η (p ∘ x) (fun z => pReset z ∘ x) cReset
       (g ∘ x) (w ∘ x) (φ ∘ x) c y ^ 2
@@ -111,21 +120,31 @@ theorem high_marked_sample_energy_integral (r : ℕ) (π : Measure E) (activatio
   apply Finset.sum_congr (by ext y; simp)
   intro y hy
   rfl
+end
 
-def selectedDesignEnumeration {n : ℕ} (S : Finset (Fin n)) : Fin S.card ≃ S :=
+
+section
+variable {n : ℕ}
+
+def selectedDesignEnumeration  (S : Finset (Fin n))  :=
   (S.orderIsoOfFin rfl).toEquiv
 
-def selectedDesignEmbedding {n : ℕ} (S : Finset (Fin n)) : Fin S.card ↪ Fin n :=
+section
+variable (S : Finset (Fin n))
+
+def selectedDesignEmbedding    :=
   (S.orderEmbOfFin rfl).toEmbedding
 
-theorem selected_design_embedding_map {n : ℕ} (S : Finset (Fin n)) :
+theorem selected_design_embedding_map   :
     Finset.univ.map (selectedDesignEmbedding S) = S := Finset.map_orderEmbOfFin_univ S rfl
+end
 
-theorem high_marked_sample_energy_cell_selected {n : ℕ} (A : Set α)
-    (S : Finset (Fin n)) (x : Fin n → α) (hx : x ∈ designMembershipCell n A S)
-    (π : Measure E) (activation : E → ℝ) (a V η : ℝ) (ha : a ≠ 0)
-    (p : α → ℝ) (pReset : E → α → ℝ) (cReset : E → ι → ℝ)
-    (g w : α → ℝ) (φ : α → ι → ℝ) (c : ι → ℝ)
+
+theorem high_marked_sample_energy_cell_selected  (A : Set α)
+    S x (hx : x ∈ designMembershipCell n A S)
+    (π : Measure E) activation a V η (ha : a ≠ 0)
+    p pReset cReset
+    g w φ (c : ι → ℝ)
     (hpd : ∀ z, p z ≠ 0) (hp : ∀ z y, 0 < highMarkedResponseMass a V η g w φ c z y)
     (hw : ∀ z, z ∉ A → w z = 0) (hReset : ∀ e z, z ∉ A → pReset e z = p z) :
     highMarkedSampleConditionalEnergy n π activation a V η p pReset cReset g w φ c x =
@@ -150,13 +169,15 @@ theorem high_marked_sample_energy_cell_selected {n : ℕ} (A : Set α)
     (g ∘ (x ∘ selectedDesignEmbedding S)) (w ∘ (x ∘ selectedDesignEmbedding S))
     (φ ∘ (x ∘ selectedDesignEmbedding S)) c y ^ 2 ∂_) at he
   exact he.trans hs
+end
 
-theorem high_marked_design_raw_factorial_series (ν : Measure α) [IsProbabilityMeasure ν]
-    (n : ℕ) (A : Set α) (hA : MeasurableSet A) (m pMinus cMass : ℝ)
+
+theorem high_marked_design_raw_factorial_series ν [IsProbabilityMeasure ν]
+    n (A : Set α) (hA : MeasurableSet A) m pMinus cMass
     (hpMinus : 0 < pMinus) (hcMass : 0 < cMass) (hm : pMinus ≤ m)
-    (π : Measure E) (activation : E → ℝ) (a V η : ℝ) (ha : a ≠ 0)
-    (p : α → ℝ) (hpMeas : Measurable p) (pReset : E → α → ℝ) (cReset : E → ι → ℝ)
-    (g w : α → ℝ) (φ : α → ι → ℝ) (c : ι → ℝ)
+    (π : Measure E) activation a V η (ha : a ≠ 0)
+    p (hpMeas : Measurable p) pReset cReset
+    g w φ (c : ι → ℝ)
     (hqMeas : ∀ y, Measurable (fun x => highMarkedResponseMass a V η g w φ c x y))
     (hprob : IsProbabilityMeasure (ν.withDensity (fun x => ENNReal.ofReal (p x / m))))
     (hpd : ∀ x, pMinus ≤ p x)
@@ -165,24 +186,24 @@ theorem high_marked_design_raw_factorial_series (ν : Measure α) [IsProbability
     (hRMeas : ∀ r y, Measurable (fun x => highMarkedSampleNumerator r π activation a V η p pReset cReset g w φ c x y))
     (hRaw : ∀ r, Integrable (selectedRawSquareEnergy
       (highMarkedSampleNumerator r π activation a V η p pReset cReset g w φ c))
-        (Measure.pi (fun _ : Fin r => ν.restrict A))) :
+        (Measure.pi (fun _  => ν.restrict A))) :
     Integrable (highMarkedSampleConditionalEnergy n π activation a V η p pReset cReset g w φ c)
-      (Measure.pi (fun _ : Fin n => ν.withDensity (fun x => ENNReal.ofReal (p x / m)))) ∧
+      (Measure.pi (fun _  => ν.withDensity (fun x => ENNReal.ofReal (p x / m)))) ∧
     (∫ x, highMarkedSampleConditionalEnergy n π activation a V η p pReset cReset g w φ c x
-      ∂Measure.pi (fun _ : Fin n => ν.withDensity (fun x => ENNReal.ofReal (p x / m)))) ≤
+      ∂Measure.pi (fun _  => ν.withDensity (fun x => ENNReal.ofReal (p x / m)))) ≤
       ∑ r ∈ Finset.range (n + 1),
-        ((n : ℝ) * highFixedScoreDenominator pMinus cMass) ^ r / (r.factorial : ℝ) *
+        (n * highFixedScoreDenominator pMinus cMass) ^ r / r.factorial *
           ∫ x, selectedRawSquareEnergy
             (highMarkedSampleNumerator r π activation a V η p pReset cReset g w φ c) x
-              ∂Measure.pi (fun _ : Fin r => ν.restrict A) := by
+              ∂Measure.pi (fun _  => ν.restrict A) := by
   let μ := ν.withDensity (fun x => ENNReal.ofReal (p x / m))
   let _ : IsProbabilityMeasure μ := hprob
   let F (r : ℕ) := highMarkedSampleConditionalEnergy r π activation a V η p pReset cReset g w φ c
-  let H (S : Finset (Fin n)) (z : S → α) : ℝ := F S.card (z ∘ selectedDesignEnumeration S)
+  let H (S : Finset (Fin n)) (z : S → α)  := F S.card (z ∘ selectedDesignEnumeration S)
   let J (r : ℕ) := ∫ x, selectedRawSquareEnergy
     (highMarkedSampleNumerator r π activation a V η p pReset cReset g w φ c) x
       ∂Measure.pi (fun _ : Fin r => ν.restrict A)
-  have hp0 (x : α) : p x ≠ 0 := (hpMinus.trans_le (hpd x)).ne'
+  have hp0 (x : α)  := (hpMinus.trans_le (hpd x)).ne'
   have hq0 (x : α) (y : Fin 3) : 0 < highMarkedResponseMass a V η g w φ c x y := hcMass.trans_le (hp x y)
   have hFI (r : ℕ) := normalized_selected_score_energy_integrable_bound ν A hA m pMinus cMass
     hpMinus hcMass hm p hpMeas (highMarkedResponseMass a V η g w φ c) hqMeas
@@ -194,7 +215,7 @@ theorem high_marked_design_raw_factorial_series (ν : Measure α) [IsProbability
       F n x = H S (fun i : S => x i.val) :=
     high_marked_sample_energy_cell_selected A S x hx π activation a V η ha p pReset cReset
       g w φ c hp0 hq0 hw hReset
-  have hFn : Integrable (F n) (Measure.pi (fun _ : Fin n => μ)) :=
+  have hFn  :=
     iid_energy_integrable_of_selected μ n A hA (F n) H hHI hEq
   refine ⟨hFn, ?_⟩
   apply iid_local_energy_le_factorial_spatial_series μ n A hA (F n) hFn H hHI

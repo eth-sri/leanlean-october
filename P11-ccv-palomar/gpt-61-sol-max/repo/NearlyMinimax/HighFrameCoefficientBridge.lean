@@ -18,13 +18,13 @@ theorem frameCoefficientL1_sum_monomial_le {d : ℕ} {I : Type*} [Fintype I]
     (e : I → Fin d →₀ ℕ) (c : I → ℝ) :
     frameCoefficientL1 (∑ i, MvPolynomial.monomial (e i) (c i)) ≤ ∑ i, |c i| := by
   classical
-  let P : MvPolynomial (Fin d) ℝ := ∑ i, MvPolynomial.monomial (e i) (c i)
-  change (∑ β ∈ P.support, |P.coeff β|) ≤ _
+  let P  := ∑ i, MvPolynomial.monomial (e i) (c i)
+  
   calc
     _ ≤ ∑ β ∈ P.support, ∑ i, |(MvPolynomial.monomial (e i) (c i)).coeff β| := by
       apply Finset.sum_le_sum
       intro β hβ
-      change |(∑ i, MvPolynomial.monomial (e i) (c i)).coeff β| ≤ _
+      
       rw [MvPolynomial.coeff_sum]
       simpa only [Real.norm_eq_abs] using norm_sum_le Finset.univ
         (fun i => (MvPolynomial.monomial (e i) (c i)).coeff β)
@@ -39,15 +39,17 @@ theorem frameCoefficientL1_sum_monomial_le {d : ℕ} {I : Type*} [Fintype I]
       · exact le_rfl
       · exact abs_nonneg _
 
-def highFramePolynomial {d D : ℕ} (c : HighFrameIndex d D → ℝ) :
-    MvPolynomial (Fin d) ℝ :=
+def highFramePolynomial {d D } (c : HighFrameIndex d D → ℝ)  :=
   ∑ γ, MvPolynomial.monomial (polynomialBoxExponent γ.val) (c γ)
 
-theorem highFramePolynomial_coefficientL1_le {d D : ℕ} (c : HighFrameIndex d D → ℝ) :
+section
+variable {d D : ℕ} (c : HighFrameIndex d D → ℝ)
+
+theorem highFramePolynomial_coefficientL1_le  :
     frameCoefficientL1 (highFramePolynomial c) ≤ ∑ γ, |c γ| :=
   frameCoefficientL1_sum_monomial_le _ _
 
-theorem highFramePolynomial_scaled_eval {d D : ℕ} (c : HighFrameIndex d D → ℝ)
+theorem highFramePolynomial_scaled_eval 
     (x : Covariate d) :
     MvPolynomial.eval x (frameScaledPolynomial (highFramePolynomial c)) =
       ∑ γ, c γ * highFrameFeature x γ := by
@@ -55,10 +57,8 @@ theorem highFramePolynomial_scaled_eval {d D : ℕ} (c : HighFrameIndex d D → 
   rw [frameScaledPolynomial_eval]
   simp only [highFramePolynomial, map_sum, MvPolynomial.eval_monomial,
     highFrameFeature]
-  apply Finset.sum_congr rfl
-  intro γ hγ
-  congr 1
-  rw [Finsupp.prod_fintype _ _ (fun _ => by simp)]
-  simp only [polynomial_box_exponent_apply]
+  norm_num
+end
+
 
 end NearlyMinimax

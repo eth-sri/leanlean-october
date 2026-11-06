@@ -23,17 +23,17 @@ variable {d k D : ℕ} {I : Type*} [Fintype I] {E : I → Type*}
     {M Cfr : ℝ} (G : HighUnionSourceGuards C M Cfr R)
 
 /-- The actual density after appending the mark at the given window. -/
-def highUnionSourceResetDensity (j : HighWindowLabels d k)
+def highUnionSourceResetDensity j
     (h : HistoryMarked (fun i j => j ∈ highNeighborLabels d k i) (HighUnionMark E))
-    (e : HighUnionMark E) (x : Covariate d) : ℝ :=
+    e x  :=
   highUnionSourceDensity C R (historyMarkedAppend
     (fun i j => j ∈ highNeighborLabels d k i)
     (fun {_ _} h => highNeighborLabels_symmetric d k _ _ h) j (h,e)) x
 
 /-- The actual reset coefficient vector at the selected window. -/
-def highUnionSourceResetCoefficient (j : HighWindowLabels d k)
-    (h : HistoryMarked (fun i j => j ∈ highNeighborLabels d k i) (HighUnionMark E))
-    (e : HighUnionMark E) : HighFrameIndex d D → ℝ :=
+def highUnionSourceResetCoefficient j
+    h
+    e  :=
   highUnionResponseReset R e ((highUnionSourceState C R h).2 j)
 
 include G in
@@ -74,15 +74,13 @@ include G in
 theorem highUnionSourceResetCoefficient_measurable (j : HighWindowLabels d k)
     (h : HistoryMarked (fun i j => j ∈ highNeighborLabels d k i) (HighUnionMark E))
     (γ : HighFrameIndex d D) :
-    Measurable (fun e => highUnionSourceResetCoefficient C R j h e γ) := by
-  unfold highUnionSourceResetCoefficient highUnionResponseReset coefficientReset
-  exact (measurable_const.sub (highUnionResponseTime_measurable R G.time_measurable)).mul
+    Measurable (fun e => highUnionSourceResetCoefficient C R j h e γ) := (measurable_const.sub (highUnionResponseTime_measurable R G.time_measurable)).mul
     measurable_const |>.add ((highUnionResponseTime_measurable R G.time_measurable).mul
       (highUnionResponseVector_measurable R G.vector_measurable γ))
 
-theorem highUnionSourceResetDensity_outside (j : HighWindowLabels d k)
-    (h : HistoryMarked (fun i j => j ∈ highNeighborLabels d k i) (HighUnionMark E))
-    (e : HighUnionMark E) (x : Covariate d) (hx : x ∉ highTorusPatch d k j) :
+theorem highUnionSourceResetDensity_outside j
+    h
+    e x (hx : x ∉ highTorusPatch d k j) :
     highUnionSourceResetDensity C R j h e x = highUnionSourceDensity C R h x :=
   highUnionSourceDensity_append_of_not_mem R C j h e x hx
 

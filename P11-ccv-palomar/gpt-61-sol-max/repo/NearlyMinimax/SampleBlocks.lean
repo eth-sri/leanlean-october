@@ -11,7 +11,7 @@ open scoped ENNReal
 namespace NearlyMinimax
 set_option backward.isDefEq.respectTransparency false
 
- def sampleBlockIndexEquiv (a b c : ℕ) :
+ def sampleBlockIndexEquiv a b c :
     ((Fin a ⊕ Fin b) ⊕ Fin c) ≃ Fin (a + b + c) :=
   (Equiv.sumCongr finSumFinEquiv (Equiv.refl (Fin c))).trans finSumFinEquiv
 
@@ -27,8 +27,8 @@ def sampleBlockSplitEquiv (d a b c : ℕ) :
     (MeasurableEquiv.sumPiEquivProdPi (fun _ : Fin a ⊕ Fin b => Observation d))
     (MeasurableEquiv.refl (Fin c → Observation d))))
 
-theorem sampleBlockSplit_measurePreserving {d : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ) (a b c : ℕ) :
+theorem sampleBlockSplit_measurePreserving {d } C
+    θ (hθ : Admissible C θ) a b c :
     MeasurePreserving (sampleBlockSplitEquiv d a b c) (sampleLaw θ (a + b + c))
       (((sampleLaw θ a).prod (sampleLaw θ b)).prod (sampleLaw θ c)) := by
   let := observationLaw_isProbability C θ hθ

@@ -18,11 +18,11 @@ variable {J E : Type*} [Fintype J] [MeasurableSpace E] [Nonempty E]
 /-- The genuine bounded-differences bound is independent of the chosen finite enumeration. -/
 theorem fintype_product_centered_mgf_le [DecidableEq J] (π : J → Measure E)
     [∀ j, IsProbabilityMeasure (π j)]
-    (F : (J → E) → ℝ) (hF : Measurable F) (R c : ℝ) (hc : 0 ≤ c)
+    F (hF : Measurable F) R c (hc : 0 ≤ c)
     (hbound : ∀ x, |F x| ≤ R)
-    (hosc : ∀ j x y, |F (Function.update x j y) - F x| ≤ c) (u : ℝ) :
+    (hosc : ∀ j x y, |F (Function.update x j y) - F x| ≤ c) u :
     (∫ x, Real.exp (u * (F x - ∫ y, F y ∂Measure.pi π)) ∂Measure.pi π) ≤
-      Real.exp ((Fintype.card J : ℝ) * u ^ 2 * c ^ 2 / 8) := by
+      Real.exp ((Fintype.card J) * u ^ 2 * c ^ 2 / 8) := by
   classical
   let f := (Fintype.equivFin J).symm
   let e := MeasurableEquiv.piCongrLeft (fun _ : J => E) f
@@ -74,13 +74,10 @@ theorem label_block_centered_mgf_le {I : Type*} [Fintype I] [DecidableEq J]
   have hG : Measurable G := hF.comp (labelBlockReconstruct_measurable labels)
   have ho : ∀ j blocks new, |G (Function.update blocks j new) - G blocks| ≤ c := by
     intro j blocks new
-    apply hosc j (labelBlockReconstruct labels (Function.update blocks j new)) (labelBlockReconstruct labels blocks)
-    intro i hi
-    exact labelBlockReconstruct_update_other labels blocks j new i hi
+    solve_by_elim [labelBlockReconstruct_update_other]
   have hh := fintype_product_centered_mgf_le (fun _ : J => ν) G hG R c hc
     (fun blocks => hbound (labelBlockReconstruct labels blocks)) ho u
-  have hm : (∫ blocks, G blocks ∂μ) = ∫ marks, F marks ∂ν := by
-    exact (integral_map hp.measurable.aemeasurable hF.aestronglyMeasurable).symm.trans
+  have hm : (∫ blocks, G blocks ∂μ) = ∫ marks, F marks ∂ν := (integral_map hp.measurable.aemeasurable hF.aestronglyMeasurable).symm.trans
       (congrArg (fun m : Measure (I → E) => ∫ marks, F marks ∂m) hp.map_eq)
   change (∫ blocks, Real.exp (u * (G blocks - ∫ blocks', G blocks' ∂μ)) ∂μ) ≤ _ at hh
   rw [hm] at hh

@@ -28,7 +28,7 @@ lemma iteratedFDeriv_swap_head {n : ℕ} {f : E → F} {x : E}
     (hf : ContDiffAt ℝ (n+2 : ℕ) f x) (a b : E) (w : Fin n → E) :
     iteratedFDeriv ℝ (n+2) f x (Fin.cons a (Fin.cons b w)) =
       iteratedFDeriv ℝ (n+2) f x (Fin.cons b (Fin.cons a w)) := by
-  let g : E → F := fun y => iteratedFDeriv ℝ n f y w
+  let g  := fun y => iteratedFDeriv ℝ n f y w
   have hg : ContDiffAt ℝ 2 g x :=
     (ContinuousMultilinearMap.apply ℝ (fun _ : Fin n => E) F w).contDiff.contDiffAt.comp x
       (hf.iteratedFDeriv_right (by simp [add_comm]))
@@ -40,7 +40,7 @@ lemma iteratedFDeriv_swap_head {n : ℕ} {f : E → F} {x : E}
     simp only [Fin.tail_cons,Fin.cons_zero]
     have heq : (fun y => iteratedFDeriv ℝ (n+1) f y (Fin.cons b w)) =ᶠ[𝓝 x]
         fun y => fderiv ℝ g y b := by
-      filter_upwards [hf.eventually (by exact Ne.symm (ne_of_beq_false rfl))] with y hy
+      filter_upwards [hf.eventually (Ne.symm (ne_of_beq_false rfl))] with y hy
       have hdy : DifferentiableAt ℝ (iteratedFDeriv ℝ n f) y :=
         hy.differentiableAt_iteratedFDeriv (by exact_mod_cast (show n < n+2 by omega))
       simpa only [Fin.tail_cons,Fin.cons_zero,g] using
@@ -89,7 +89,7 @@ lemma iteratedFDeriv_adjacent_swap (n : ℕ) {f : E → F} {x : E}
       rw [hd.iteratedFDeriv_succ_apply_left',hd.iteratedFDeriv_succ_apply_left',hzero,htail]
       have he : (fun y => iteratedFDeriv ℝ (n+1) f y (Fin.tail v ∘ Equiv.swap i.castSucc i.succ)) =ᶠ[𝓝 x]
           fun y => iteratedFDeriv ℝ (n+1) f y (Fin.tail v) := by
-        filter_upwards [hf.eventually (by exact Ne.symm (ne_of_beq_false rfl))] with y hy
+        filter_upwards [hf.eventually (Ne.symm (ne_of_beq_false rfl))] with y hy
         exact ih (hy.of_le (by exact_mod_cast (show n+1 ≤ n+2 by omega))) i (Fin.tail v)
       rw [he.fderiv_eq]
 
@@ -98,8 +98,8 @@ lemma iteratedFDeriv_adjacent_swap (n : ℕ) {f : E → F} {x : E}
 /-- The actual q-th Fréchet derivative of a real C^q function is symmetric.
 This uses finite differentiability and genuine adjacent transpositions,
 rather than analytic regularity. -/
-theorem iteratedFDeriv_comp_perm_finite {q : ℕ} {f : E → F} {x : E}
-    (hf : ContDiffAt ℝ q f x) (v : Fin q → E) (σ : Equiv.Perm (Fin q)) :
+theorem iteratedFDeriv_comp_perm_finite {q : ℕ} {f : E → F} {x }
+    (hf : ContDiffAt ℝ q f x) v (σ : Equiv.Perm (Fin q)) :
     iteratedFDeriv ℝ q f x (v ∘ σ) = iteratedFDeriv ℝ q f x v := by
   cases q with
   | zero => congr 1; exact Subsingleton.elim _ _
@@ -125,20 +125,22 @@ theorem iteratedFDeriv_comp_perm_finite {q : ℕ} {f : E → F} {x : E}
 
 end CoordinatePartialBridge
 
+section
+variable {d : ℕ}
+
 /-- The sorted coordinate word used in the paper's mixed partial definition. -/
-def coordinateWord {d : ℕ} (γ : Fin d → ℕ) : List (Fin d) :=
+def coordinateWord  (γ : Fin d → ℕ)  :=
   (List.finRange d).flatMap (fun i => List.replicate (γ i) i)
 
 /-- Coordinate directions of a finite word, with the word's actual length. -/
-def wordBasis {d : ℕ} (w : List (Fin d)) : Fin w.length → Covariate d :=
+def wordBasis  (w : List (Fin d)) : Fin w.length → Covariate d :=
   fun j => Pi.single (w.get j) 1
 
 /-- Successive coordinate differentiation in the supplied order. -/
-def partialWord {d : ℕ} (F : Covariate d → ℝ) (w : List (Fin d)) :
-    Covariate d → ℝ :=
+def partialWord  F (w : List (Fin d))  :=
   w.foldl (fun G i => coordinatePartial i G) F
 
-theorem wordBasis_cons {d : ℕ} (i : Fin d) (w : List (Fin d)) :
+theorem wordBasis_cons  (i : Fin d) w :
     wordBasis (i :: w) = Fin.cons (Pi.single i 1) (wordBasis w) := by
   funext j
   refine Fin.cases ?_ (fun j => ?_) j
@@ -147,9 +149,9 @@ theorem wordBasis_cons {d : ℕ} (i : Fin d) (w : List (Fin d)) :
 
 /-- Left folds add their latest differentiation direction at the head of
 the true iterated derivative, hence the reversed word on the right. -/
-theorem partialWord_eq_iteratedFDeriv {d : ℕ} (U : Set (Covariate d))
-    (hU : IsOpen U) (F : Covariate d → ℝ) (ℓ : ℕ)
-    (hf : ContDiffOn ℝ ℓ F U) (w : List (Fin d)) (hw : w.length ≤ ℓ)
+theorem partialWord_eq_iteratedFDeriv  U
+    (hU : IsOpen U) F (ℓ : ℕ)
+    (hf : ContDiffOn ℝ ℓ F U) w (hw : w.length ≤ ℓ)
     (x : Covariate d) (hx : x ∈ U) :
     partialWord F w x =
       iteratedFDeriv ℝ w.reverse.length F x (wordBasis w.reverse) := by
@@ -172,24 +174,34 @@ theorem partialWord_eq_iteratedFDeriv {d : ℕ} (U : Set (Covariate d))
     simpa only [List.length_cons, Fin.tail_cons, Fin.cons_zero] using
       (hd.iteratedFDeriv_succ_apply_left' (m := Fin.cons (Pi.single i 1) (wordBasis w.reverse))).symm
 
-theorem coordinateWord_length {d : ℕ} (γ : Fin d → ℕ) :
+section
+variable (γ : Fin d → ℕ)
+
+theorem coordinateWord_length   :
     (coordinateWord γ).length = ∑ i, γ i := by
   simp only [coordinateWord, List.length_flatMap, List.length_replicate]
   rw [← List.sum_toFinset _ (List.nodup_finRange d)]
   simp
 
-theorem coordinateWord_count {d : ℕ} (γ : Fin d → ℕ) (i : Fin d) :
+theorem coordinateWord_count   i :
     (coordinateWord γ).count i = γ i := by
   simp only [coordinateWord, List.count_flatMap]
   rw [← List.sum_toFinset _ (List.nodup_finRange d)]
   simp [List.count_replicate]
+end
 
-theorem coordinate_counts_sum {d : ℕ} (w : List (Fin d)) :
+
+theorem coordinate_counts_sum  (w : List (Fin d)) :
     (∑ i, w.count i) = w.length := by
   simpa using (Multiset.sum_count_eq_card (s := Finset.univ)
     (m := (w : Multiset (Fin d))) (by simp))
+end
 
-theorem coordinate_fiber_card {q d : ℕ} (σ : Fin q → Fin d) (i : Fin d) :
+
+section
+variable {q d : ℕ}
+
+theorem coordinate_fiber_card  σ (i : Fin d) :
     Fintype.card {j : Fin q // σ j = i} = (List.ofFn σ).count i := by
   rw [Fintype.card_subtype, List.ofFn_eq_map]
   change (Finset.univ.filter (fun j => σ j = i)).card = _
@@ -199,33 +211,41 @@ theorem coordinate_fiber_card {q d : ℕ} (σ : Fin q → Fin d) (i : Fin d) :
   rw [← he, List.toFinset_card_of_nodup ((List.nodup_finRange q).filter _)]
   rfl
 
-theorem coordinate_tuple_perm_of_counts {q d : ℕ} (σ τ : Fin q → Fin d)
+theorem coordinate_tuple_perm_of_counts  (σ τ : Fin q → Fin d)
     (hcount : ∀ i, (List.ofFn σ).count i = (List.ofFn τ).count i) :
     ∃ p : Equiv.Perm (Fin q), τ ∘ p = σ := by
   let e (i : Fin d) : {j : Fin q // σ j = i} ≃ {j : Fin q // τ j = i} :=
     Fintype.equivOfCardEq (by rw [coordinate_fiber_card, coordinate_fiber_card, hcount i])
   exact ⟨Equiv.ofFiberEquiv e, funext (Equiv.ofFiberEquiv_map e)⟩
+end
 
-theorem iteratedFDeriv_cast_order {d : ℕ} {a b : ℕ} (h : a = b)
-    (F : Covariate d → ℝ) (x : Covariate d) (v : Fin b → Covariate d) :
+
+theorem iteratedFDeriv_cast_order {d } {a b } h
+    (F : Covariate d → ℝ) x v :
     iteratedFDeriv ℝ a F x (fun j => v (Fin.cast h j)) =
       iteratedFDeriv ℝ b F x v := by
   cases h
   rfl
 
-theorem fin_cast_inverse {a b : ℕ} (h : a = b) (k : b = a) (j : Fin a) :
+theorem fin_cast_inverse {a b } (h : a = b) k j :
     Fin.cast k (Fin.cast h j) = j := rfl
+
+section
+variable {d : ℕ}
 
 /-- Directions corresponding to a mixed partial, in the reverse order
 required by its left-fold definition. -/
-def multiIndexBasis {d : ℕ} (γ : Fin d → ℕ) : Fin (∑ i, γ i) → Covariate d :=
+def multiIndexBasis  (γ : Fin d → ℕ) : Fin (∑ i, γ i) → Covariate d :=
   fun j => wordBasis (coordinateWord γ).reverse
     (Fin.cast (by rw [List.length_reverse, coordinateWord_length]) j)
 
-theorem multiPartial_eq_iteratedFDeriv {d : ℕ} (U : Set (Covariate d))
-    (hU : IsOpen U) (F : Covariate d → ℝ) (ℓ : ℕ)
-    (hf : ContDiffOn ℝ ℓ F U) (γ : Fin d → ℕ) (hγ : (∑ i, γ i) ≤ ℓ)
-    (x : Covariate d) (hx : x ∈ U) :
+section
+variable (U : Set (Covariate d)) (hU : IsOpen U) (F : Covariate d → ℝ)
+include hU
+
+theorem multiPartial_eq_iteratedFDeriv   (ℓ : ℕ)
+    (hf : ContDiffOn ℝ ℓ F U) γ (hγ : (∑ i, γ i) ≤ ℓ)
+    x (hx : x ∈ U) :
     multiPartial F γ x =
       iteratedFDeriv ℝ (∑ i, γ i) F x (multiIndexBasis γ) := by
   have hpart := partialWord_eq_iteratedFDeriv U hU F ℓ hf (coordinateWord γ)
@@ -241,18 +261,17 @@ theorem multiPartial_eq_iteratedFDeriv {d : ℕ} (U : Set (Covariate d))
 
 /-- Every ordering of coordinate directions represents the model's mixed
 partial with the same multiplicities. -/
-theorem iteratedFDeriv_coordinates_eq_multiPartial {d : ℕ} (U : Set (Covariate d))
-    (hU : IsOpen U) (F : Covariate d → ℝ) (ℓ q : ℕ)
-    (hf : ContDiffOn ℝ ℓ F U) (hq : q ≤ ℓ) (σ : Fin q → Fin d)
-    (x : Covariate d) (hx : x ∈ U) :
+theorem iteratedFDeriv_coordinates_eq_multiPartial   (ℓ q : ℕ)
+    (hf : ContDiffOn ℝ ℓ F U) (hq : q ≤ ℓ) σ
+    x (hx : x ∈ U) :
     iteratedFDeriv ℝ q F x (fun j => Pi.single (σ j) 1) =
       multiPartial F (fun i => (List.ofFn σ).count i) x := by
-  let γ : Fin d → ℕ := fun i => (List.ofFn σ).count i
+  let γ  := fun i => (List.ofFn σ).count i
   let w := coordinateWord γ
   have hlen : w.reverse.length = q := by
     simp only [List.length_reverse, w, coordinateWord_length, γ]
     rw [coordinate_counts_sum, List.length_ofFn]
-  let τ : Fin q → Fin d := fun j => w.reverse.get (Fin.cast hlen.symm j)
+  let τ  := fun j => w.reverse.get (Fin.cast hlen.symm j)
   have hlist : List.ofFn τ = w.reverse := by
     dsimp only [τ]
     rw [← List.ofFn_congr hlen w.reverse.get, List.ofFn_get]
@@ -279,14 +298,15 @@ theorem iteratedFDeriv_coordinates_eq_multiPartial {d : ℕ} (U : Set (Covariate
   rw [hder] at hpart
   exact hsym.trans hpart.symm
 
+section
+variable (ℓ : ℕ) (α H : ℝ) (hH : 0 ≤ H) (hf : ContDiffOn ℝ ℓ F U) (hNorm : holderNorm U F ℓ α ≤ ENNReal.ofReal H)
+include hH hf hNorm
+
 /-- The paper's Hölder norm bounds each ordered contraction of the actual
 Fréchet derivative, in every order through `ℓ`. -/
-theorem ordered_coordinate_bound {d : ℕ} (U : Set (Covariate d))
-    (hU : IsOpen U) (F : Covariate d → ℝ) (ℓ : ℕ) (α H : ℝ)
-    (hH : 0 ≤ H) (hf : ContDiffOn ℝ ℓ F U)
-    (hNorm : holderNorm U F ℓ α ≤ ENNReal.ofReal H)
-    (q : ℕ) (hq : q ≤ ℓ) (σ : Fin q → Fin d)
-    (x : Covariate d) (hx : x ∈ U) :
+theorem ordered_coordinate_bound   
+    q (hq : q ≤ ℓ) (σ : Fin q → Fin d)
+    x (hx : x ∈ U) :
     |iteratedFDeriv ℝ q F x (fun j => Pi.single (σ j) 1)| ≤ H := by
   let γ : Fin d → Fin (ℓ + 1) := fun i =>
     ⟨(List.ofFn σ).count i,
@@ -298,11 +318,8 @@ theorem ordered_coordinate_bound {d : ℕ} (U : Set (Covariate d))
 
 /-- The top ordered Fréchet contractions inherit the exact Euclidean
 Hölder modulus in the model norm. -/
-theorem ordered_coordinate_modulus {d : ℕ} (U : Set (Covariate d))
-    (hU : IsOpen U) (F : Covariate d → ℝ) (ℓ : ℕ) (α H : ℝ)
-    (hH : 0 ≤ H) (hf : ContDiffOn ℝ ℓ F U)
-    (hNorm : holderNorm U F ℓ α ≤ ENNReal.ofReal H)
-    (σ : Fin ℓ → Fin d) (x y : Covariate d) (hx : x ∈ U) (hy : y ∈ U) :
+theorem ordered_coordinate_modulus   
+    (σ : Fin ℓ → Fin d) x y (hx : x ∈ U) (hy : y ∈ U) :
     |iteratedFDeriv ℝ ℓ F x (fun j => Pi.single (σ j) 1) -
       iteratedFDeriv ℝ ℓ F y (fun j => Pi.single (σ j) 1)| ≤
       H * euclideanNorm (x - y) ^ α := by
@@ -314,5 +331,11 @@ theorem ordered_coordinate_modulus {d : ℕ} (U : Set (Covariate d))
     iteratedFDeriv_coordinates_eq_multiPartial U hU F ℓ ℓ hf le_rfl σ y hy]
   exact holderNorm_top_derivative_modulus U F ℓ α H hH hNorm γ
     (by simp only [γ, coordinate_counts_sum, List.length_ofFn]) x y hx hy
+end
+
+end
+
+end
+
 
 end NearlyMinimax

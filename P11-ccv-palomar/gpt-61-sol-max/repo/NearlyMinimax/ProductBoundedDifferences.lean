@@ -36,8 +36,8 @@ theorem finiteMarkAppend_preserving_varying (n : ℕ) (π : Fin (n + 1) → Meas
 
 /-- The uncentered one-coordinate exponential bound follows from the proved oscillation lemma. -/
 theorem exp_integral_le_of_oscillation (π : Measure E) [IsProbabilityMeasure π]
-    (X : E → ℝ) (hX : Measurable X) (R c : ℝ) (hc : 0 ≤ c)
-    (hbound : ∀ e, |X e| ≤ R) (hosc : ∀ e f, |X e - X f| ≤ c) (u : ℝ) :
+    X (hX : Measurable X) R c (hc : 0 ≤ c)
+    (hbound : ∀ e, |X e| ≤ R) (hosc : ∀ e f, |X e - X f| ≤ c) u :
     (∫ e, Real.exp (u * X e) ∂π) ≤
       Real.exp (u * ∫ e, X e ∂π) * Real.exp (u ^ 2 * c ^ 2 / 8) := by
   have hh := centered_mgf_le_of_oscillation π X hX R c hc hbound hosc u
@@ -50,15 +50,15 @@ theorem exp_integral_le_of_oscillation (π : Measure E) [IsProbabilityMeasure π
   rw [hf, integral_const_mul]
   exact mul_le_mul_of_nonneg_left hh (Real.exp_pos _).le
 
+section
+variable (n : ℕ) (π : Fin n → Measure E) [∀ i, IsProbabilityMeasure (π i)] (F : (Fin n → E) → ℝ) (hF : Measurable F) (R c : ℝ) (hc : 0 ≤ c) (hbound : ∀ x, |F x| ≤ R) (hosc : ∀ i x y, |F (Function.update x i y) - F x| ≤ c)
+include hF hc hbound hosc
+
 /-- True McDiarmid moment bound for an arbitrary bounded measurable function of finite independent blocks.
 Only the actual coordinate oscillation is an input; the concentration inequality is proved. -/
-theorem product_exp_integral_le (n : ℕ) (π : Fin n → Measure E)
-    [∀ i, IsProbabilityMeasure (π i)]
-    (F : (Fin n → E) → ℝ) (hF : Measurable F) (R c : ℝ) (hc : 0 ≤ c)
-    (hbound : ∀ x, |F x| ≤ R)
-    (hosc : ∀ i x y, |F (Function.update x i y) - F x| ≤ c) (u : ℝ) :
+theorem product_exp_integral_le  u :
     (∫ x, Real.exp (u * F x) ∂Measure.pi π) ≤
-      Real.exp (u * ∫ x, F x ∂Measure.pi π) * Real.exp ((n : ℝ) * u ^ 2 * c ^ 2 / 8) := by
+      Real.exp (u * ∫ x, F x ∂Measure.pi π) * Real.exp (n * u ^ 2 * c ^ 2 / 8) := by
   induction n with
   | zero =>
     let empty : Fin 0 → E := Fin.elim0
@@ -79,7 +79,7 @@ theorem product_exp_integral_le (n : ℕ) (π : Fin n → Measure E)
     have hXi : ∀ x, Integrable (fun y => H (y, x)) ν := by
       intro x
       apply Integrable.of_bound (hH.comp (measurable_id.prodMk measurable_const)).aestronglyMeasurable R
-      exact Eventually.of_forall fun y => by simpa only [Real.norm_eq_abs, Function.comp_apply, Prod.map_apply, id_eq, H] using hbound (e (y, x))
+      solve_by_elim [Eventually.of_forall]
     have hGb : ∀ x, |G x| ≤ R := by
       intro x
       simpa [G, Real.norm_eq_abs] using
@@ -90,10 +90,7 @@ theorem product_exp_integral_le (n : ℕ) (π : Fin n → Measure E)
       change |(∫ z, H (z, Function.update x i y) ∂ν) - ∫ z, H (z, x) ∂ν| ≤ c
       rw [← integral_sub (hXi _) (hXi _)]
       have hb : ∀ᵐ z ∂ν, ‖H (z, Function.update x i y) - H (z, x)‖ ≤ c := by
-        apply Eventually.of_forall
-        intro z
-        simpa only [H, e, finiteMarkAppend_eq_snoc, Fin.snoc_update, Real.norm_eq_abs] using
-          hosc i.castSucc (Fin.snoc x z) y
+        grind only [Eventually.of_forall, finiteMarkAppend_eq_snoc, Fin.snoc_update, Real.norm_eq_abs]
       simpa [Real.norm_eq_abs] using norm_integral_le_of_norm_le_const hb
     have hXo : ∀ x y z, |H (y, x) - H (z, x)| ≤ c := by
       intro x y z
@@ -140,13 +137,9 @@ theorem product_exp_integral_le (n : ℕ) (π : Fin n → Measure E)
         ring
 
 /-- Centering gives the exact source exponent N c² u²/8. -/
-theorem product_centered_mgf_le (n : ℕ) (π : Fin n → Measure E)
-    [∀ i, IsProbabilityMeasure (π i)]
-    (F : (Fin n → E) → ℝ) (hF : Measurable F) (R c : ℝ) (hc : 0 ≤ c)
-    (hbound : ∀ x, |F x| ≤ R)
-    (hosc : ∀ i x y, |F (Function.update x i y) - F x| ≤ c) (u : ℝ) :
+theorem product_centered_mgf_le  u :
     (∫ x, Real.exp (u * (F x - ∫ y, F y ∂Measure.pi π)) ∂Measure.pi π) ≤
-      Real.exp ((n : ℝ) * u ^ 2 * c ^ 2 / 8) := by
+      Real.exp (n * u ^ 2 * c ^ 2 / 8) := by
   have hh := product_exp_integral_le n π F hF R c hc hbound hosc u
   let m := ∫ y, F y ∂Measure.pi π
   have hf : (fun x => Real.exp (u * (F x - m))) =
@@ -165,5 +158,7 @@ theorem product_centered_mgf_le (n : ℕ) (π : Fin n → Measure E)
         (Real.exp (u * m) * Real.exp ((n : ℝ) * u ^ 2 * c ^ 2 / 8)) :=
       mul_le_mul_of_nonneg_left hh (Real.exp_pos _).le
     _ = _ := by rw [← mul_assoc, hprod, one_mul]
+end
+
 
 end NearlyMinimax

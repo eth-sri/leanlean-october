@@ -19,9 +19,9 @@ attribute [local instance] Classical.propDecidable
 
 /-- The exact raw target-r ordinary fine-band expression produced by the
 finite density selector and finite response matrix action. -/
-def ordinaryFineAliasRawAction {d n F : ℕ} (ad bd lam L T : ℝ) (M r q : ℕ)
-    (C a V η : ℝ) (U : Fin n → Covariate d) (p g w : Fin n → ℝ)
-    (c : HighFrameIndex d F → ℝ) (y : Fin n → Fin 3) : ℝ :=
+def ordinaryFineAliasRawAction {d n F } ad bd lam L T M r q
+    C a V η U (p g w : Fin n → ℝ)
+    (c : HighFrameIndex d F → ℝ) y  :=
   densityCountCoefficient ad bd M r n *
     ∑ S ∈ (Finset.univ : Finset (Fin n)).powersetCard r,
       (∏ i ∈ S, p i) * responseMatrixAction q C
@@ -29,16 +29,16 @@ def ordinaryFineAliasRawAction {d n F : ℕ} (ad bd lam L T : ℝ) (M r q : ℕ)
         (fun v => highResponseProduct a V η g w (fun i => highFrameFeature (U i)) v y)
 
 /-- Genuine uniform selector-product bound at every count. -/
-theorem ordinary_count_product_abs_bound {n : ℕ} (ad bd : ℝ)
-    (ha : 0 < ad) (hab : ad < bd) (M r : ℕ) (hr : 1 ≤ r)
+theorem ordinary_count_product_abs_bound {n } ad bd
+    (ha : 0 < ad) (hab : ad < bd) M r (hr : 1 ≤ r)
     (p : Fin n → ℝ) (hp : ∀ i, p i ∈ Icc ad bd)
-    (S : Finset (Fin n)) (hS : S.card = r) :
+    S (hS : S.card = r) :
     |densityCountCoefficient ad bd M r n * (∏ i ∈ S, p i)| ≤
       bd^n * (ordinaryDensityActivityBase ad bd)^r *
-        Real.exp ((M : ℝ) * exteriorTau ((ad+bd)/(bd-ad))) := by
-  have hbd : 0 < bd := ha.trans hab
+        Real.exp (M * exteriorTau ((ad+bd)/(bd-ad))) := by
+  have hbd  := ha.trans hab
   have hcard : r ≤ n := by simpa only [hS, Finset.card_univ, Fintype.card_fin] using Finset.card_le_univ S
-  have hm : 0 < |densityMargin ad bd 0| := abs_pos.mpr (densityMargin_zero_ne ad bd ha hab)
+  have hm  := abs_pos.mpr (densityMargin_zero_ne ad bd ha hab)
   have hτ : 0 ≤ exteriorTau ((ad+bd)/(bd-ad)) := by
     rw [exteriorTau_sqrt_ratio ad bd ha hab]
     exact (densityIntervalExponent_pos ha hab).le
@@ -54,8 +54,7 @@ theorem ordinary_count_product_abs_bound {n : ℕ} (ad bd : ℝ)
     rw [Real.cosh_eq]
     have he := Real.exp_le_exp.mpr (show -((M+r : ℕ)*exteriorTau ((ad+bd)/(bd-ad))) ≤
       ((M+r : ℕ)*exteriorTau ((ad+bd)/(bd-ad))) by
-        have hh := mul_nonneg (Nat.cast_nonneg (M+r)) hτ
-        linarith)
+        linarith [mul_nonneg (Nat.cast_nonneg (M+r)) hτ         ])
     linarith
   have hj : (bd-ad)/4 ≤ bd := by linarith
   have he : Real.exp (exteriorTau ((ad+bd)/(bd-ad))) ≤
@@ -78,7 +77,7 @@ theorem ordinary_count_product_abs_bound {n : ℕ} (ad bd : ℝ)
           (Real.exp (exteriorTau ((ad+bd)/(bd-ad))))^r := by
       rw [Nat.cast_add, add_mul, Real.exp_add]
       congr 1
-      simpa only [mul_comm] using Real.exp_nat_mul (exteriorTau ((ad+bd)/(bd-ad))) r
+      solve_by_elim [Real.exp_nat_mul]
     rw [heq]
     generalize (bd-ad)/4 = J
     generalize |densityMargin ad bd 0| = H
@@ -103,18 +102,18 @@ theorem ordinary_count_product_abs_bound {n : ℕ} (ad bd : ℝ)
 /-- Fixed constants bound every actual shrinking interval and every bounded
 fine target, before the exterior degree or sample size is chosen. -/
 theorem ordinary_count_product_shrunk_abs_bound {n M r R : ℕ}
-    (ad bd c0 : ℝ) (ha : 0 < ad)
+    ad bd c0 (ha : 0 < ad)
     (hshrink : ad+(M : ℝ)⁻¹ < bd-(M : ℝ)⁻¹)
     (htau : shrunkDensityExponent ad bd M ≤ c0) (hr : 1 ≤ r) (hrR : r ≤ R)
     (p : Fin n → ℝ) (hp : ∀ i, p i ∈ Icc (ad+(M : ℝ)⁻¹) (bd-(M : ℝ)⁻¹))
-    (S : Finset (Fin n)) (hS : S.card = r) :
+    S (hS : S.card = r) :
     |densityCountCoefficient (ad+(M : ℝ)⁻¹) (bd-(M : ℝ)⁻¹) M r n * (∏ i ∈ S, p i)| ≤
       (1+bd)^n * (1+uniformOrdinaryDensityActivityBase ad bd c0)^R *
-        Real.exp ((M : ℝ)*shrunkDensityExponent ad bd M) := by
+        Real.exp (M*shrunkDensityExponent ad bd M) := by
   have ht : 0 ≤ (M : ℝ)⁻¹ := inv_nonneg.mpr (Nat.cast_nonneg _)
   have hab : ad < bd := by linarith
   have hap : 0 < ad+(M : ℝ)⁻¹ := by linarith
-  have hbp : 0 < bd-(M : ℝ)⁻¹ := hap.trans hshrink
+  have hbp  := hap.trans hshrink
   have he : exteriorTau (((ad+(M : ℝ)⁻¹)+(bd-(M : ℝ)⁻¹))/
       ((bd-(M : ℝ)⁻¹)-(ad+(M : ℝ)⁻¹))) = shrunkDensityExponent ad bd M := by
     rw [exteriorTau_sqrt_ratio _ _ hap hshrink]
@@ -140,28 +139,28 @@ theorem ordinary_count_product_shrunk_abs_bound {n M r R : ℕ}
       (pow_nonneg (by unfold ordinaryDensityActivityBase; positivity) r)
       (pow_nonneg (by linarith) n)) (Real.exp_pos _).le)
 
-def ordinaryAliasResponseConstant (q : ℕ) (C a ρ : ℝ) : ℝ :=
+def ordinaryAliasResponseConstant q C a ρ  :=
   (2*C^2) * (∑ j : Fin (2*q+2), |responseWeight q j|) * highSeparatedDerivativeBudget a ρ
 
 /-- Uniform pointwise all-count response and selector control. The primitive
 nuisance guards hold at this tuple; no norm bound is supplied as a premise. -/
 theorem ordinaryFineAliasRawAction_abs_bound_of_chart {d n F M r R : ℕ}
-    (ad bd c0 lam L T : ℝ) (haD : 0 < ad)
+    ad bd c0 lam L T (haD : 0 < ad)
     (hshrink : ad+(M : ℝ)⁻¹ < bd-(M : ℝ)⁻¹)
     (htau : shrunkDensityExponent ad bd M ≤ c0) (hr : 1 ≤ r) (hrR : r ≤ R)
-    (q : ℕ) (hn : 1 ≤ n) (C a V η ρ : ℝ) (hC : 1 ≤ C) (ha : 0 < a)
+    q (hn : 1 ≤ n) C a V η ρ (hC : 1 ≤ C) (ha : 0 < a)
     (hη : 0 ≤ η) (hρ : 0 ≤ ρ) (hηρ : η ≤ ρ/2)
-    (U : Fin n → Covariate d) (hU : ∀ i l, |U i l| ≤ 2)
+    U (hU : ∀ i l, |U i l| ≤ 2)
     (p g w : Fin n → ℝ)
     (hpD : ∀ i, p i ∈ Icc (ad+(M : ℝ)⁻¹) (bd-(M : ℝ)⁻¹))
     (hg : ∀ i, |g i| ≤ ρ/2) (hw : ∀ i, |w i| ≤ 1)
     (c : HighFrameIndex d F → ℝ) (hc : ∑ γ, |c γ| ≤ C⁻¹)
-    (hp : ∀ f : ℝ, |f| ≤ ρ → ∀ u, 0 ≤ ternaryMass a f V u) (y : Fin n → Fin 3) :
+    (hp : ∀ f , |f| ≤ ρ → ∀ u, 0 ≤ ternaryMass a f V u) y :
     |ordinaryFineAliasRawAction (ad+(M : ℝ)⁻¹) (bd-(M : ℝ)⁻¹) lam L T M r q C a V η U p g w c y| ≤
       ((1+bd)^n * (1+uniformOrdinaryDensityActivityBase ad bd c0)^R *
-        Real.exp ((M : ℝ)*shrunkDensityExponent ad bd M)) *
-      (ordinaryAliasResponseConstant q C a ρ * (n : ℝ)^2 * η^2) *
-        ∑ S ∈ (Finset.univ : Finset (Fin n)).powersetCard r,
+        Real.exp (M*shrunkDensityExponent ad bd M)) *
+      (ordinaryAliasResponseConstant q C a ρ * n^2 * η^2) *
+        ∑ S ∈ Finset.univ.powersetCard r,
           spatialMatrixL1 (globalCardinalBandMatrix (D := F) lam L T (spatialSubsetConfiguration S U)) := by
   unfold ordinaryFineAliasRawAction
   rw [Finset.mul_sum]
@@ -191,25 +190,23 @@ theorem ordinaryFineAliasRawAction_abs_bound_of_chart {d n F M r R : ℕ}
     ring)
 
 /-- Exact subset lifting of the constructed fine-band matrix envelope. -/
-theorem ordinaryFineAliasKernel_sum_square_integrable_and_le {d n F r : ℕ}
-    (hd : 5 ≤ d) (hr : 2 ≤ r) {L T : ℝ} (hL : 1 ≤ L) (hT : 1 ≤ T) (hLT : L ≤ T) :
-    Integrable (fun U : Fin n → Covariate d =>
-      (∑ S ∈ (Finset.univ : Finset (Fin n)).powersetCard r,
+theorem ordinaryFineAliasKernel_sum_square_integrable_and_le {d n F r }
+    (hd : 5 ≤ d) (hr : 2 ≤ r) {L T } (hL : 1 ≤ L) (hT : 1 ≤ T) (hLT : L ≤ T) :
+    Integrable (fun U  =>
+      (∑ S ∈ Finset.univ.powersetCard r,
         spatialMatrixL1 (globalCardinalBandMatrix (D := F) (spatialInterpolationLambda d) L T
           (spatialSubsetConfiguration S U)))^2) (fullSpatialPatchDesign d n) ∧
     (∫ U : Fin n → Covariate d,
-      (∑ S ∈ (Finset.univ : Finset (Fin n)).powersetCard r,
+      (∑ S ∈ Finset.univ.powersetCard r,
         spatialMatrixL1 (globalCardinalBandMatrix (D := F) (spatialInterpolationLambda d) L T
           (spatialSubsetConfiguration S U)))^2 ∂fullSpatialPatchDesign d n) ≤
-      (n.choose r : ℝ)^2 * (2 : ℝ)^(d*(n-r)) *
-        ((r : ℝ)^2*(2 : ℝ)^d*cardinalBandSquareBudget d r L) := by
+      (n.choose r)^2 * 2^(d*(n-r)) *
+        (r^2*2^d*cardinalBandSquareBudget d r L) := by
   let f := fun (S : Finset (Fin n)) (V : Fin S.card → Covariate d) =>
     spatialMatrixL1 (globalCardinalBandMatrix (D := F) (spatialInterpolationLambda d) L T V)
-  have hf (S : Finset (Fin n)) : Measurable (f S) := by
-    unfold f spatialMatrixL1
-    exact Finset.measurable_sum _ (fun γ _ => Finset.measurable_sum _
+  have hf (S : Finset (Fin n)) : Measurable (f S) := Finset.measurable_sum _ (fun γ _ => Finset.measurable_sum _
       (fun δ _ => (integrated_cardinal_band_continuous (spatialInterpolationLambda d) hL hT γ δ).measurable.abs))
-  have hs (S) (hS : S ∈ (Finset.univ : Finset (Fin n)).powersetCard r) : S.card = r :=
+  have hs (S) (hS : S ∈ (Finset.univ : Finset (Fin n)).powersetCard r)  :=
     (Finset.mem_powersetCard.mp hS).2
   have hi (S) (hS : S ∈ (Finset.univ : Finset (Fin n)).powersetCard r) :
       Integrable (fun V => f S V^2) (fullSpatialPatchDesign d S.card) :=
@@ -227,7 +224,7 @@ theorem ordinaryFineAliasKernel_sum_square_integrable_and_le {d n F r : ℕ}
           (show 2 ≤ S.card by rw [hs S hS]; exact hr) hL hT hLT
         simpa only [f, hs S hS] using h)
 
-def ordinaryFineAliasSpatialBudget (d n M r R q : ℕ) (ad bd c0 C a ρ η L : ℝ) : ℝ :=
+def ordinaryFineAliasSpatialBudget (d n M r R q : ℕ) ad bd c0 C a ρ η L  :=
   (((1+bd)^n * (1+uniformOrdinaryDensityActivityBase ad bd c0)^R *
       Real.exp ((M : ℝ)*shrunkDensityExponent ad bd M)) *
     (ordinaryAliasResponseConstant q C a ρ * (n : ℝ)^2 * η^2))^2 *
@@ -236,9 +233,9 @@ def ordinaryFineAliasSpatialBudget (d n M r R q : ℕ) (ad bd c0 C a ρ η L : �
 
 /-- The exact binomial, response-polynomial and unused-coordinate factors
 are absorbed into one fixed exponential base. -/
-theorem ordinary_alias_count_factors_le {d n r : ℕ} {bd : ℝ} (hbd : 0 ≤ bd) :
-    ((1+bd)^n)^2 * (n : ℝ)^4 * (n.choose r : ℝ)^2 * (2 : ℝ)^(d*(n-r)) ≤
-      (64*(2 : ℝ)^d*(1+bd)^2)^n := by
+theorem ordinary_alias_count_factors_le {d n r : ℕ} {bd } (hbd : 0 ≤ bd) :
+    ((1+bd)^n)^2 * n^4 * (n.choose r : ℝ)^2 * 2^(d*(n-r)) ≤
+      (64*2^d*(1+bd)^2)^n := by
   have hn : (n : ℝ) ≤ (2 : ℝ)^n := by exact_mod_cast (Nat.lt_two_pow_self (n := n)).le
   have hc : (n.choose r : ℝ) ≤ (2 : ℝ)^n := by exact_mod_cast Nat.choose_le_two_pow n r
   have hn4 : (n : ℝ)^4 ≤ (16 : ℝ)^n := by
@@ -249,7 +246,7 @@ theorem ordinary_alias_count_factors_le {d n r : ℕ} {bd : ℝ} (hbd : 0 ≤ bd
     convert h using 1 <;> rw [← pow_mul, Nat.mul_comm n 2, pow_mul] <;> norm_num
   have hv : (2 : ℝ)^(d*(n-r)) ≤ ((2 : ℝ)^d)^n := by
     rw [← pow_mul]
-    exact pow_le_pow_right₀ (by norm_num) (Nat.mul_le_mul_left d (Nat.sub_le n r))
+    simp_all [pow_le_pow_right₀, Nat.mul_le_mul_left]
   have h := mul_le_mul (mul_le_mul (mul_le_mul (le_refl (((1+bd)^n)^2)) hn4
       (by positivity) (by positivity)) hc2 (by positivity) (by positivity)) hv (by positivity) (by positivity)
   apply h.trans_eq
@@ -257,20 +254,18 @@ theorem ordinary_alias_count_factors_le {d n r : ℕ} {bd : ℝ} (hbd : 0 ≤ bd
   congr 1
   ring
 
-def ordinaryAliasSpatialPrefactor (d q R : ℕ) (ad bd c0 C a ρ : ℝ) : ℝ :=
+def ordinaryAliasSpatialPrefactor d q R ad bd c0 C a ρ  :=
   ((1+uniformOrdinaryDensityActivityBase ad bd c0)^R)^2 *
     (ordinaryAliasResponseConstant q C a ρ)^2 * lowerAliasSpatialA d R
 
-def ordinaryAliasSpatialCountBase (d : ℕ) (bd : ℝ) : ℝ :=
+def ordinaryAliasSpatialCountBase d bd  :=
   64*(2 : ℝ)^d*(1+bd)^2
 
-def ordinaryAliasSpatialResponseBase (d : ℕ) (bd : ℝ) : ℝ :=
+def ordinaryAliasSpatialResponseBase d bd  :=
   3*ordinaryAliasSpatialCountBase d bd
 
-theorem ordinaryAliasSpatialPrefactor_nonneg (d q R : ℕ) (ad bd c0 C a ρ : ℝ) :
-    0 ≤ ordinaryAliasSpatialPrefactor d q R ad bd c0 C a ρ := by
-  unfold ordinaryAliasSpatialPrefactor
-  exact mul_nonneg (mul_nonneg (sq_nonneg _) (sq_nonneg _)) (lowerAliasSpatialA_nonneg d R)
+theorem ordinaryAliasSpatialPrefactor_nonneg d q R ad bd c0 C a ρ :
+    0 ≤ ordinaryAliasSpatialPrefactor d q R ad bd c0 C a ρ := mul_nonneg (mul_nonneg (sq_nonneg _) (sq_nonneg _)) (lowerAliasSpatialA_nonneg d R)
 
 /-- Genuine cardinal-band integration and elementary count factors give the
 source alias scale, with constants fixed before M,n or nuisance values. -/
@@ -278,7 +273,7 @@ theorem ordinaryFineAliasSpatialBudget_source_scale_le {d n M r R : ℕ}
     (hd : 5 ≤ d) (hrR : r ≤ R) {ad bd c0 C a ρ η D K N : ℝ}
     (hbd : 0 ≤ bd) (hD : 0 ≤ D) (hK : 0 ≤ K) (hc0 : 0 ≤ c0)
     (hDK : D ≤ K*M) (hN : 0 < N) (hell : 1 ≤ N*Real.exp (-c0*D))
-    (hH : Real.log (1+Real.log N) ≤ M) (q : ℕ) :
+    (hH : Real.log (1+Real.log N) ≤ M) q :
     ordinaryFineAliasSpatialBudget d n M r R q ad bd c0 C a ρ η (N*Real.exp (-c0*D)) ≤
       ordinaryAliasSpatialPrefactor d q R ad bd c0 C a ρ *
         η^4 * Real.exp (2*shrunkDensityExponent ad bd M*M) * N^(4-(d : ℝ)) *

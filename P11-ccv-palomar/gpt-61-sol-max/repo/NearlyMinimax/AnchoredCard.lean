@@ -11,10 +11,13 @@ noncomputable section
 open scoped BigOperators
 namespace NearlyMinimax
 
-abbrev TotalDegreeIndex (d ℓ : ℕ) :=
+abbrev TotalDegreeIndex d ℓ :=
   {γ : PolynomialBox d ℓ // (∑ i, (γ i).val) ≤ ℓ}
 
-def totalDegreeSlackEquiv (d ℓ : ℕ) :
+section
+variable (d ℓ : ℕ)
+
+def totalDegreeSlackEquiv  :
     TotalDegreeIndex d ℓ ≃ {v : Option (Fin d) → ℕ // ∑ i, v i = ℓ} where
   toFun γ := ⟨fun i => i.casesOn (ℓ - ∑ j, (γ.val j).val) (fun j => (γ.val j).val), by
     rw [Fintype.sum_option]
@@ -43,7 +46,7 @@ def totalDegreeSlackEquiv (d ℓ : ℕ) :
       omega
     | some i => rfl
 
-theorem totalDegreeIndex_card (d ℓ : ℕ) :
+theorem totalDegreeIndex_card  :
     Fintype.card (TotalDegreeIndex d ℓ) = (d + ℓ).choose d := by
   let e := (totalDegreeSlackEquiv d ℓ).trans (Sym.equivNatSumOfFintype (Option (Fin d)) ℓ).symm
   rw [Fintype.card_congr e, Sym.card_sym_eq_choose]
@@ -53,15 +56,15 @@ theorem totalDegreeIndex_card (d ℓ : ℕ) :
   have hc := Nat.choose_symm (show ℓ ≤ d + ℓ by omega)
   simpa only [Nat.add_sub_cancel] using hc.symm
 
-def anchoredNonzeroEquiv (d ℓ : ℕ) : AnchoredIndex d ℓ ≃
+def anchoredNonzeroEquiv  : AnchoredIndex d ℓ ≃
     {γ : TotalDegreeIndex d ℓ // ¬ (∑ i, (γ.val i).val) = 0} where
   toFun γ := ⟨⟨γ.val, γ.property.2⟩, ne_of_gt γ.property.1⟩
   invFun γ := ⟨γ.val.val, Nat.pos_of_ne_zero γ.property, γ.val.property⟩
-  left_inv γ := by rfl
-  right_inv γ := by rfl
+  left_inv γ := rfl
+  right_inv γ := rfl
 
 /-- The concrete feature dimension is exactly the manuscript's `q_s - 1`. -/
-theorem anchoredIndex_card (d ℓ : ℕ) :
+theorem anchoredIndex_card  :
     Fintype.card (AnchoredIndex d ℓ) = (d + ℓ).choose d - 1 := by
   classical
   let z : {γ : TotalDegreeIndex d ℓ // (∑ i, (γ.val i).val) = 0} :=
@@ -72,16 +75,13 @@ theorem anchoredIndex_card (d ℓ : ℕ) :
         apply Subtype.ext
         apply Subtype.ext
         funext i
-        apply Fin.ext
-        have hi : (γ.val.val i).val ≤ ∑ j, (γ.val.val j).val :=
-          Finset.single_le_sum (f := fun j => (γ.val.val j).val)
-            (fun j _ => Nat.zero_le _) (Finset.mem_univ i)
-        rw [γ.property] at hi
-        exact Nat.eq_zero_of_le_zero hi }
+        aesop (add unsafe [Fin.ext]) }
   rw [Fintype.card_congr (anchoredNonzeroEquiv d ℓ),
     Fintype.card_subtype_compl, totalDegreeIndex_card]
   have hz : Fintype.card {γ : TotalDegreeIndex d ℓ // (∑ i, (γ.val i).val) = 0} = 1 :=
     Fintype.card_unique
   rw [hz]
+end
+
 
 end NearlyMinimax

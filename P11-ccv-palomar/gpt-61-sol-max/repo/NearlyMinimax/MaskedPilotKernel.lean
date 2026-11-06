@@ -19,30 +19,31 @@ variable [MeasurableSpace H] [BorelSpace H] [SecondCountableTopology H]
 variable {μ : Measure Ω} {ν : Measure W} [IsProbabilityMeasure μ] [SFinite ν]
 
 def maskedPilotKernel (c : Ω → W → H) (A : W → H →L[ℝ] H)
-    (q : W → ℝ) (z : (Ω × Ω) × W) : ℝ :=
+    (q : W → ℝ) (z : (Ω × Ω) × W)  :=
   q z.2 * ⟪c z.1.1 z.2, A z.2 (c z.1.2 z.2)⟫
 
-theorem maskedPilotKernel_measurable {c : Ω → W → H}
+section
+variable {c : Ω → W → H}
+
+theorem maskedPilotKernel_measurable 
     (hmc : Measurable (fun z : Ω × W => c z.1 z.2))
-    {A : W → H →L[ℝ] H} (hmA : Measurable (fun z : W × H => A z.1 z.2))
-    {q : W → ℝ} (hmq : Measurable q) : Measurable (maskedPilotKernel c A q) := by
-  exact (hmq.comp measurable_snd).mul
+    {A } (hmA : Measurable (fun z : W × H => A z.1 z.2))
+    {q } (hmq : Measurable q) : Measurable (maskedPilotKernel c A q) := (hmq.comp measurable_snd).mul
     ((hmc.comp (measurable_fst.fst.prodMk measurable_snd)).inner
       (hmA.comp (measurable_snd.prodMk
         (hmc.comp (measurable_fst.snd.prodMk measurable_snd)))))
 
-theorem maskedPilotKernel_sq_eq {c : Ω → W → H} {A : W → H →L[ℝ] H}
-    {q : W → ℝ} (hq : ∀ w, q w ^ 2 = q w) (z : (Ω × Ω) × W) :
+theorem maskedPilotKernel_sq_eq  {A }
+    {q } (hq : ∀ w, q w ^ 2 = q w) z :
     maskedPilotKernel c A q z ^ 2 = weightedPilotKernel c A q z := by
   simp only [maskedPilotKernel, weightedPilotKernel, mul_pow, hq]
 
-theorem maskedPilotKernel_memLp {c : Ω → W → H}
-    (hmc : Measurable (fun z : Ω × W => c z.1 z.2))
-    {A : W → H →L[ℝ] H} (hmA : Measurable (fun z : W × H => A z.1 z.2))
-    {q : W → ℝ} (hmq : Measurable q) (hq : ∀ w, q w ^ 2 = q w)
-    (hA : Integrable (fun w => q w * ‖A w‖ ^ 2) ν)
-    (hc : ∀ᵐ w ∂ν, MemLp (fun x => c x w) 2 μ)
-    {L : ℝ} (hL : 0 ≤ L) (hE : ∀ᵐ w ∂ν, (∫ x, ‖c x w‖ ^ 2 ∂μ) ≤ L) :
+section
+variable (hmc : Measurable (fun z : Ω × W => c z.1 z.2)) {A : W → H →L[ℝ] H} (hmA : Measurable (fun z : W × H => A z.1 z.2)) {q : W → ℝ} (hmq : Measurable q) (hq : ∀ w, q w ^ 2 = q w) (hA : Integrable (fun w => q w * ‖A w‖ ^ 2) ν) (hc : ∀ᵐ w ∂ν, MemLp (fun x => c x w) 2 μ) {L : ℝ} (hL : 0 ≤ L) (hE : ∀ᵐ w ∂ν, (∫ x, ‖c x w‖ ^ 2 ∂μ) ≤ L)
+include hmc hmA hmq hq hA hc hL hE
+
+theorem maskedPilotKernel_memLp 
+     :
     MemLp (maskedPilotKernel c A q) 2 ((μ.prod μ).prod ν) := by
   apply (memLp_two_iff_integrable_sq
     (maskedPilotKernel_measurable hmc hmA hmq).aestronglyMeasurable).2
@@ -50,17 +51,16 @@ theorem maskedPilotKernel_memLp {c : Ω → W → H}
   exact weightedPilotKernel_integrable hmc hmA hmq
     (Filter.Eventually.of_forall (fun w => (hq w).symm ▸ sq_nonneg (q w))) hA hc hL hE
 
-theorem maskedPilotKernel_energy_le {c : Ω → W → H}
-    (hmc : Measurable (fun z : Ω × W => c z.1 z.2))
-    {A : W → H →L[ℝ] H} (hmA : Measurable (fun z : W × H => A z.1 z.2))
-    {q : W → ℝ} (hmq : Measurable q) (hq : ∀ w, q w ^ 2 = q w)
-    (hA : Integrable (fun w => q w * ‖A w‖ ^ 2) ν)
-    (hc : ∀ᵐ w ∂ν, MemLp (fun x => c x w) 2 μ)
-    {L : ℝ} (hL : 0 ≤ L) (hE : ∀ᵐ w ∂ν, (∫ x, ‖c x w‖ ^ 2 ∂μ) ≤ L) :
+theorem maskedPilotKernel_energy_le 
+     :
     (∫ z, maskedPilotKernel c A q z ^ 2 ∂(μ.prod μ).prod ν) ≤
       L ^ 2 * ∫ w, q w * ‖A w‖ ^ 2 ∂ν := by
   simp_rw [maskedPilotKernel_sq_eq hq]
   exact weightedPilotKernel_energy_le hmc hmA hmq
     (Filter.Eventually.of_forall (fun w => (hq w).symm ▸ sq_nonneg (q w))) hA hc hL hE
+end
+
+end
+
 
 end NearlyMinimax.PilotFields

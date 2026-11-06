@@ -40,12 +40,12 @@ theorem paper_score_to_risk {Α : Type*} [MeasurableSpace Α] {d n : ℕ}
     ENNReal.ofReal ((V δ - V 0) ^ 2 /
       (2 + ∫ t in (0 : ℝ)..δ, Real.sqrt (∫ x, (R t x) ^ 2 ∂(L t ∘ₘ σ t))) ^ 2
       - (effectiveVarianceUpper C - C.varianceLower) ^ 2 * ε) ≤ minimaxRisk C n := by
-  have hε : 0 ≤ ε := (measureReal_nonneg).trans (hmass 0 ⟨le_rfl, hδ⟩)
+  have hε  := (measureReal_nonneg).trans (hmass 0 ⟨le_rfl, hδ⟩)
   let P (t : ℝ) := L t ∘ₘ σ t
   have hprob (t : ℝ) (ht : t ∈ Icc 0 δ) : IsProbabilityMeasure (P t) := by
     let _ := hσ t ht
     let _ := hLprob t ht
-    dsimp only [P]
+    
     infer_instance
   rw [minimaxRisk_eq_inf_bounded]
   apply le_iInf

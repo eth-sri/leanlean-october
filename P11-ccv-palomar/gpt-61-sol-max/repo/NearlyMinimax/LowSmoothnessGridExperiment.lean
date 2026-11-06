@@ -16,21 +16,24 @@ namespace NearlyMinimax
 
 attribute [local instance] Classical.propDecidable
 
-def gridWindowCount (d k : ℕ) : ℕ := (k + 1) ^ d
+def gridWindowCount d k  := (k + 1) ^ d
 
-def gridWindowIndexEquiv (d k : ℕ) : Fin (gridWindowCount d k) ≃ (Fin d → Fin (k + 1)) :=
+section
+variable (d k : ℕ)
+
+def gridWindowIndexEquiv  : Fin (gridWindowCount d k) ≃ (Fin d → Fin (k + 1)) :=
   (Fintype.equivFinOfCardEq (by simp [gridWindowCount])).symm
 
-def indexedGridWindow (d k : ℕ) (j : Fin (gridWindowCount d k)) : Covariate d → ℝ :=
+def indexedGridWindow  j  :=
   gridTensorWindow d k (gridWindowIndexEquiv d k j)
 
-def indexedGridPatch (d k : ℕ) (j : Fin (gridWindowCount d k)) : Set (Covariate d) :=
+def indexedGridPatch  j  :=
   gridPatch d k (gridWindowIndexEquiv d k j)
 
-def indexedGridField (d k : ℕ) (η : ℝ) (ξ : Fin (gridWindowCount d k) → Fin 3)
-    (x : Covariate d) : ℝ := η * ∑ j, indexedGridWindow d k j x * ternaryValue 1 (ξ j)
+def indexedGridField  η (ξ : Fin (gridWindowCount d k) → Fin 3)
+    x  := η * ∑ j, indexedGridWindow d k j x * ternaryValue 1 (ξ j)
 
-theorem indexedGridField_eq (d k : ℕ) (η : ℝ) (ξ : Fin (gridWindowCount d k) → Fin 3) :
+theorem indexedGridField_eq  η ξ :
     indexedGridField d k η ξ =
       gridPriorField d k η (fun j => ξ ((gridWindowIndexEquiv d k).symm j)) := by
   funext x
@@ -38,48 +41,50 @@ theorem indexedGridField_eq (d k : ℕ) (η : ℝ) (ξ : Fin (gridWindowCount d 
   congr 1
   exact Fintype.sum_equiv (gridWindowIndexEquiv d k) _ _ (fun j => by simp [indexedGridWindow])
 
-theorem indexedGridField_continuous (d k : ℕ) (η : ℝ) (ξ : Fin (gridWindowCount d k) → Fin 3) :
+theorem indexedGridField_continuous  η ξ :
     Continuous (indexedGridField d k η ξ) := by
   rw [indexedGridField_eq]
   exact gridPriorField_continuous _ _ _ _
 
-theorem indexedGridField_abs_bound (d k : ℕ) (η : ℝ) (hη : 0 ≤ η)
-    (ξ : Fin (gridWindowCount d k) → Fin 3) (x : Covariate d) :
-    |indexedGridField d k η ξ x| ≤ (2 : ℝ) ^ d * η := by
+theorem indexedGridField_abs_bound  η (hη : 0 ≤ η)
+    ξ x :
+    |indexedGridField d k η ξ x| ≤ 2 ^ d * η := by
   rw [indexedGridField_eq]
   exact gridPriorField_abs_bound _ _ _ hη _ x
+end
 
-def gridSampleWeights (d k n : ℕ) (x : Fin n → Covariate d) :
-    Fin n → Fin (gridWindowCount d k) → ℝ := fun i j => indexedGridWindow d k j (x i)
 
-theorem grid_latent_regression_eq (d k n : ℕ) (η : ℝ) (x : Fin n → Covariate d)
-    (ξ : Fin (gridWindowCount d k) → Fin 3) (i : Fin n) :
+section
+variable (d k n : ℕ)
+
+def gridSampleWeights  (x : Fin n → Covariate d)  := fun i j => indexedGridWindow d k j (x i)
+
+theorem grid_latent_regression_eq  η x
+    ξ i :
     latentRegression (gridWindowCount d k) n η (fun _ => 0) (gridSampleWeights d k n x) ξ i =
       indexedGridField d k η ξ (x i) := by
   simp [latentRegression, indexedGridField, gridSampleWeights]
 
-theorem grid_sample_squared_partition (d k n : ℕ) (x : Fin n → Covariate d) (i : Fin n) :
+theorem grid_sample_squared_partition  x i :
     (∑ j, gridSampleWeights d k n x i j ^ 2) = 1 := by
   have h := Fintype.sum_equiv (gridWindowIndexEquiv d k)
     (fun j => indexedGridWindow d k j (x i) ^ 2) (fun j => gridTensorWindow d k j (x i) ^ 2)
     (fun _ => rfl)
   exact h.trans (gridTensorWindow_square_partition d k (x i))
 
-theorem grid_modified_regression_abs_bound (d k n : ℕ) (η u : ℝ) (hη : 0 ≤ η)
-    (x : Fin n → Covariate d) (ξ : Fin (gridWindowCount d k) → Fin 3)
-    (j : Fin (gridWindowCount d k)) (i : Fin n) (hu : u ∈ Icc (-1 : ℝ) 1) :
+theorem grid_modified_regression_abs_bound  η u (hη : 0 ≤ η)
+    x ξ
+    j i (hu : u ∈ Icc (-1) 1) :
     |latentRegressionWithout (gridWindowCount d k) n η (fun _ => 0) (gridSampleWeights d k n x) ξ j i +
-      η * gridSampleWeights d k n x i j * u| ≤ ((2 : ℝ) ^ d + 2) * η := by
+      η * gridSampleWeights d k n x i j * u| ≤ (2 ^ d + 2) * η := by
   let z := ternaryValue 1 (ξ j)
-  have hz : |z| ≤ 1 := ternaryValue_one_abs_le (ξ j)
+  have hz  := ternaryValue_one_abs_le (ξ j)
   have hw : |gridSampleWeights d k n x i j| ≤ 1 := by
     change |gridTensorWindow d k (gridWindowIndexEquiv d k j) (x i)| ≤ 1
     rw [abs_of_nonneg (gridTensorWindow_nonneg d k (gridWindowIndexEquiv d k j) (x i))]
     exact gridTensorWindow_le_one _ _ _ _
   have hdiff : |u - z| ≤ 2 := by
-    have h := abs_sub_le u 0 z
-    simp only [sub_zero, zero_sub, abs_neg] at h
-    linarith [abs_le.mpr hu]
+    grind
   have heq : latentRegressionWithout (gridWindowCount d k) n η (fun _ => 0)
       (gridSampleWeights d k n x) ξ j i + η * gridSampleWeights d k n x i j * u =
         indexedGridField d k η ξ (x i) + η * gridSampleWeights d k n x i j * (u - z) := by
@@ -91,59 +96,57 @@ theorem grid_modified_regression_abs_bound (d k n : ℕ) (η u : ℝ) (hη : 0 �
     rw [abs_mul, abs_mul, abs_of_nonneg hη]
     have h := mul_le_mul (mul_le_mul_of_nonneg_left hw hη) hdiff (abs_nonneg _) (by positivity : 0 ≤ η * 1)
     simpa only [mul_one, mul_comm] using h
-  exact (abs_add_le _ _).trans (by nlinarith [indexedGridField_abs_bound d k η hη ξ (x i)])
+  grind only [abs_add_le, indexedGridField_abs_bound]
 
-def gridCoordinateEnergy (d k n : ℕ) (a V η : ℝ)
-    (ξ : Fin (gridWindowCount d k) → Fin 3) (j : Fin (gridWindowCount d k))
-    (x : Fin n → Covariate d) : ℝ :=
+def gridCoordinateEnergy  a V η
+    ξ j
+    x  :=
   patchExpectedScoreEnergy n a V η
     (latentRegressionWithout (gridWindowCount d k) n η (fun _ => 0)
       (gridSampleWeights d k n x) ξ j)
     (fun i => gridSampleWeights d k n x i j) (ternaryValue 1 (ξ j))
 
-theorem grid_sample_weight_measurable (d k n : ℕ) (j : Fin (gridWindowCount d k)) (i : Fin n) :
-    Measurable (fun x : Fin n → Covariate d => gridSampleWeights d k n x i j) :=
+theorem grid_sample_weight_measurable  j i :
+    Measurable (fun x  => gridSampleWeights d k n x i j) :=
   ((gridTensorWindow_continuous d k (gridWindowIndexEquiv d k j)).comp
     (continuous_apply i)).measurable
 
-theorem grid_excluded_field_measurable (d k n : ℕ) (η : ℝ)
-    (ξ : Fin (gridWindowCount d k) → Fin 3) (j : Fin (gridWindowCount d k)) (i : Fin n) :
-    Measurable (fun x : Fin n → Covariate d =>
-      latentRegressionWithout (gridWindowCount d k) n η (fun _ => 0) (gridSampleWeights d k n x) ξ j i) := by
-  unfold latentRegressionWithout
-  exact measurable_const.add ((Finset.measurable_sum _
+theorem grid_excluded_field_measurable  η
+    ξ j i :
+    Measurable (fun x  =>
+      latentRegressionWithout (gridWindowCount d k) n η (fun _ => 0) (gridSampleWeights d k n x) ξ j i) := measurable_const.add ((Finset.measurable_sum _
     (fun l _ => (grid_sample_weight_measurable d k n l i).mul_const _)).const_mul _)
+end
+
 
 /-- Actual coordinate score energy integrated over the complete uniform-design
 sample. The observations outside the patch have already been cancelled. -/
-theorem grid_coordinate_design_energy_bound {d : ℕ} (C : ModelConstants d)
-    (P : LowSmoothnessTernaryConstants C) (k n : ℕ) (η t : ℝ)
-    (ξ : Fin (gridWindowCount d k) → Fin 3) (j : Fin (gridWindowCount d k))
-    (hk : 0 < k) (hη : 0 ≤ η) (ht : t ∈ Icc (0 : ℝ) 1)
-    (hfield : ((2 : ℝ) ^ d + 2) * η ≤ P.ρ) (hvariance : η ^ 2 ≤ P.ρ)
+theorem grid_coordinate_design_energy_bound {d } (C : ModelConstants d)
+    (P : LowSmoothnessTernaryConstants C) (k n : ℕ) η t
+    ξ j
+    (hk : 0 < k) (hη : 0 ≤ η) (ht : t ∈ Icc 0 1)
+    (hfield : (2 ^ d + 2) * η ≤ P.ρ) (hvariance : η ^ 2 ≤ P.ρ)
     (hmean : n * (2 / (k : ℝ)) ^ d ≤ 1) :
     (∫ x : Fin n → Covariate d, gridCoordinateEnergy d k n P.a (P.variancePath η t) η ξ j x
-      ∂Measure.pi (fun _ : Fin n => cubeVolume d)) ≤
+      ∂Measure.pi (fun _  => cubeVolume d)) ≤
       ternaryScoreExponentialConstant P.a P.ρ P.c ^ 2 *
         Real.exp (ternaryScoreExponentialConstant P.a P.ρ P.c) * η ^ 4 *
-          (n * (2 / (k : ℝ)) ^ d) ^ 2 := by
+          (n * (2 / k) ^ d) ^ 2 := by
   let _ := cubeVolume_isProbability d
-  let g : (Fin n → Covariate d) → Fin n → ℝ := fun x =>
+  let g  := fun x =>
     latentRegressionWithout (gridWindowCount d k) n η (fun _ => 0) (gridSampleWeights d k n x) ξ j
-  let w : (Fin n → Covariate d) → Fin n → ℝ := fun x i => gridSampleWeights d k n x i j
+  let w  := fun x i => gridSampleWeights d k n x i j
   let A := indexedGridPatch d k j
   let z := ternaryValue 1 (ξ j)
-  have hz : z ∈ Icc (-1 : ℝ) 1 := abs_le.mp (ternaryValue_one_abs_le (ξ j))
-  have hreg (x : Fin n → Covariate d) (u : ℝ) (hu : u ∈ Icc (-1 : ℝ) 1) (i : Fin n) :
-      |g x i + η * w x i * u| ≤ P.ρ :=
+  have hz  := abs_le.mp (ternaryValue_one_abs_le (ξ j))
+  have hreg (x : Fin n → Covariate d) (u : ℝ) (hu : u ∈ Icc (-1 : ℝ) 1) (i : Fin n)  :=
     (grid_modified_regression_abs_bound d k n η u hη x ξ j i hu).trans hfield
   have hlegal (x : Fin n → Covariate d) (u : ℝ) (hu : u ∈ Icc (-1 : ℝ) 1) (i : Fin n) :=
     P.path_legality η t (g x i + η * w x i * u) ht hvariance (hreg x u hu i)
-  have hp (x : Fin n → Covariate d) (u : ℝ) (hu : u ∈ Icc (-1 : ℝ) 1) (i : Fin n) (y : Fin 3) :
-      0 < ternaryMass P.a (g x i + η * w x i * u) (P.variancePath η t) y :=
+  have hp (x : Fin n → Covariate d) (u : ℝ) (hu : u ∈ Icc (-1 : ℝ) 1) (i : Fin n) (y : Fin 3)  :=
     P.c_pos.trans_le ((hlegal x u hu i).2.2.1 y)
   have hvol : (cubeVolume d).real A ≤ (2 / (k : ℝ)) ^ d := gridPatch_cube_probability_bound d k _ hk
-  have hmean' : n * (cubeVolume d).real A ≤ 1 :=
+  have hmean'  :=
     (mul_le_mul_of_nonneg_left hvol (Nat.cast_nonneg n)).trans hmean
   have hbound := iid_design_full_patch_score_energy_bound (cubeVolume d) n A
     (gridPatch_measurable d k _) P.a (P.variancePath η t) η z P.ρ P.c g w
@@ -160,16 +163,19 @@ theorem grid_coordinate_design_energy_bound {d : ℕ} (C : ModelConstants d)
   apply hbound.trans
   gcongr
 
-def gridFullScoreEnergy (d k n : ℕ) (a V η : ℝ) (ξ : Fin (gridWindowCount d k) → Fin 3)
-    (x : Fin n → Covariate d) : ℝ :=
+section
+variable (d k n : ℕ)
+
+def gridFullScoreEnergy  a V η ξ
+    x  :=
   ∑ y, finiteResponseLikelihood (gridWindowCount d k) n a V
     (latentRegression (gridWindowCount d k) n η (fun _ => 0) (gridSampleWeights d k n x)) ξ y *
     (finiteExperimentScore (gridWindowCount d k) n a V η
       (latentRegression (gridWindowCount d k) n η (fun _ => 0) (gridSampleWeights d k n x)) ξ y) ^ 2
 
-theorem indexed_grid_observed_patch_degree (d k n : ℕ) (x : Fin n → Covariate d)
-    (j : Fin (gridWindowCount d k)) :
-    (Finset.univ.filter fun l : Fin (gridWindowCount d k) =>
+theorem indexed_grid_observed_patch_degree  (x : Fin n → Covariate d)
+    j :
+    (Finset.univ.filter fun l  =>
       ¬Disjoint (Finset.univ.filter fun i => x i ∈ indexedGridPatch d k j)
         (Finset.univ.filter fun i => x i ∈ indexedGridPatch d k l)).card ≤ 5 ^ d := by
   have heq := Finset.card_equiv (gridWindowIndexEquiv d k) (s := Finset.univ.filter fun l =>
@@ -179,19 +185,17 @@ theorem indexed_grid_observed_patch_degree (d k n : ℕ) (x : Fin n → Covariat
       ¬Disjoint (Finset.univ.filter fun i => x i ∈ gridPatch d k (gridWindowIndexEquiv d k j))
         (Finset.univ.filter fun i => x i ∈ gridPatch d k l))
     (fun _ => by
-      rw [Finset.mem_filter, Finset.mem_filter]
-      simp only [Finset.mem_univ, true_and]
-      rfl)
+      measurability)
   rw [heq]
   exact grid_observed_patch_degree d k n x _
 
-theorem grid_full_score_conditional_energy_bound (d k n : ℕ) (a V η : ℝ)
-    (ξ : Fin (gridWindowCount d k) → Fin 3) (x : Fin n → Covariate d)
+theorem grid_full_score_conditional_energy_bound  a V η
+    ξ x
     (ha : a ≠ 0) (hp : ∀ i y, 0 < ternaryMass a (indexedGridField d k η ξ (x i)) V y) :
-    gridFullScoreEnergy d k n a V η ξ x ≤ (5 : ℝ) ^ d *
+    gridFullScoreEnergy d k n a V η ξ x ≤ 5 ^ d *
       ∑ j, gridCoordinateEnergy d k n a V η ξ j x := by
   let f := latentRegression (gridWindowCount d k) n η (fun _ => 0) (gridSampleWeights d k n x)
-  let S : Fin (gridWindowCount d k) → Finset (Fin n) :=
+  let S  :=
     fun j => Finset.univ.filter (fun i => x i ∈ indexedGridPatch d k j)
   have hpos : ∀ i y, 0 < ternaryMass a (f ξ i) V y := by
     intro i y
@@ -199,9 +203,7 @@ theorem grid_full_score_conditional_energy_bound (d k n : ℕ) (a V η : ℝ)
   have h := latent_full_score_variance_bound (gridWindowCount d k) n a V η (fun _ => 0)
     (gridSampleWeights d k n x) ξ S (5 ^ d)
     (fun j i hi => gridTensorWindow_zero_outside_patch d k _ (x i) (by
-      intro hmem
-      apply hi
-      exact Finset.mem_filter.mpr ⟨Finset.mem_univ i, hmem⟩))
+      measurability))
     (grid_sample_squared_partition d k n x)
     (indexed_grid_observed_patch_degree d k n x) ha hpos
   simp_rw [ternary_index_product_integral] at h
@@ -220,13 +222,12 @@ theorem grid_full_score_conditional_energy_bound (d k n : ℕ) (a V η : ℝ)
     simp only [finiteResponseLikelihood, patchResponseProduct, f]
     simp_rw [latent_regression_decomposition (gridWindowCount d k) n η (fun _ => 0)
       (gridSampleWeights d k n x) ξ j]
-  simp_rw [hcoord] at h
-  simpa only [Nat.cast_pow, Nat.cast_ofNat] using h
+  simp_all
 
-theorem grid_full_score_energy_measurable (d k n : ℕ) (a V η : ℝ)
-    (ξ : Fin (gridWindowCount d k) → Fin 3) :
+theorem grid_full_score_energy_measurable  a V η
+    ξ :
     Measurable (gridFullScoreEnergy d k n a V η ξ) := by
-  let f : (Fin n → Covariate d) → (Fin (gridWindowCount d k) → Fin 3) → Fin n → ℝ :=
+  let f  :=
     fun x => latentRegression (gridWindowCount d k) n η (fun _ => 0) (gridSampleWeights d k n x)
   have hq (ξ' : Fin (gridWindowCount d k) → Fin 3) (i : Fin n) (y : Fin 3) :
       Measurable (fun x => ternaryMass a (f x ξ' i) V y) := by
@@ -239,9 +240,7 @@ theorem grid_full_score_energy_measurable (d k n : ℕ) (a V η : ℝ)
   have hU (y : Fin n → Fin 3) (i : Fin n) :
       Measurable (fun x => finiteResponseVarianceTerm (gridWindowCount d k) n a V (f x) ξ y i) :=
     (Finset.measurable_prod _ (fun l _ => hq ξ l (y l))).const_mul _
-  have hD (y : Fin n → Fin 3) (j : Fin (gridWindowCount d k)) :
-      Measurable (fun x => latentDifference (gridWindowCount d k) j
-        (fun ξ' => finiteResponseLikelihood (gridWindowCount d k) n a V (f x) ξ' y) ξ) :=
+  have hD (y : Fin n → Fin 3) (j : Fin (gridWindowCount d k))  :=
     (((hL (Function.update ξ j 2) y).const_mul (1 / 2)).add
       ((hL (Function.update ξ j 0) y).const_mul (1 / 2))).sub (hL (Function.update ξ j 1) y)
   have hR (y : Fin n → Fin 3) :
@@ -249,27 +248,29 @@ theorem grid_full_score_energy_measurable (d k n : ℕ) (a V η : ℝ)
     ((Finset.measurable_sum _ (fun j _ => hD y j)).sub
       ((Finset.measurable_sum _ (fun i _ => hU y i)).const_mul (η ^ 2))).div (hL ξ y)
   exact Finset.measurable_sum _ (fun y _ => (hL ξ y).mul ((hR y).pow_const 2))
+end
 
-theorem grid_coordinate_energy_integrable {d : ℕ} (C : ModelConstants d)
-    (P : LowSmoothnessTernaryConstants C) (k n : ℕ) (η t : ℝ)
-    (ξ : Fin (gridWindowCount d k) → Fin 3) (j : Fin (gridWindowCount d k))
-    (hη : 0 ≤ η) (ht : t ∈ Icc (0 : ℝ) 1)
-    (hfield : ((2 : ℝ) ^ d + 2) * η ≤ P.ρ) (hvariance : η ^ 2 ≤ P.ρ) :
+
+section
+variable {d : ℕ} (C : ModelConstants d) (P : LowSmoothnessTernaryConstants C) (k n : ℕ) (η t : ℝ)
+
+theorem grid_coordinate_energy_integrable 
+    ξ j
+    (hη : 0 ≤ η) (ht : t ∈ Icc 0 1)
+    (hfield : (2 ^ d + 2) * η ≤ P.ρ) (hvariance : η ^ 2 ≤ P.ρ) :
     Integrable (gridCoordinateEnergy d k n P.a (P.variancePath η t) η ξ j)
-      (Measure.pi (fun _ : Fin n => cubeVolume d)) := by
+      (Measure.pi (fun _  => cubeVolume d)) := by
   let _ := cubeVolume_isProbability d
-  let g : (Fin n → Covariate d) → Fin n → ℝ := fun x =>
+  let g  := fun x =>
     latentRegressionWithout (gridWindowCount d k) n η (fun _ => 0) (gridSampleWeights d k n x) ξ j
-  let w : (Fin n → Covariate d) → Fin n → ℝ := fun x i => gridSampleWeights d k n x i j
+  let w  := fun x i => gridSampleWeights d k n x i j
   let z := ternaryValue 1 (ξ j)
-  have hz : z ∈ Icc (-1 : ℝ) 1 := abs_le.mp (ternaryValue_one_abs_le (ξ j))
-  have hreg (x : Fin n → Covariate d) (u : ℝ) (hu : u ∈ Icc (-1 : ℝ) 1) (i : Fin n) :
-      |g x i + η * w x i * u| ≤ P.ρ :=
+  have hz  := abs_le.mp (ternaryValue_one_abs_le (ξ j))
+  have hreg (x : Fin n → Covariate d) (u : ℝ) (hu : u ∈ Icc (-1 : ℝ) 1) (i : Fin n)  :=
     (grid_modified_regression_abs_bound d k n η u hη x ξ j i hu).trans hfield
   have hlegal (x : Fin n → Covariate d) (u : ℝ) (hu : u ∈ Icc (-1 : ℝ) 1) (i : Fin n) :=
     P.path_legality η t (g x i + η * w x i * u) ht hvariance (hreg x u hu i)
-  have hp (x : Fin n → Covariate d) (u : ℝ) (hu : u ∈ Icc (-1 : ℝ) 1) (i : Fin n) (y : Fin 3) :
-      0 < ternaryMass P.a (g x i + η * w x i * u) (P.variancePath η t) y :=
+  have hp (x : Fin n → Covariate d) (u : ℝ) (hu : u ∈ Icc (-1 : ℝ) 1) (i : Fin n) (y : Fin 3)  :=
     P.c_pos.trans_le ((hlegal x u hu i).2.2.1 y)
   exact patch_expected_score_energy_integrable _ n P.a (P.variancePath η t) η z P.ρ P.c g w
     (grid_excluded_field_measurable d k n η ξ j) (grid_sample_weight_measurable d k n j)
@@ -281,24 +282,22 @@ theorem grid_coordinate_energy_integrable {d : ℕ} (C : ModelConstants d)
       ternary_mass_le_one P.a _ _ P.a_pos.ne' (fun b => (hp x u hu i b).le) y⟩)
     (fun x i y => (hlegal x z hz i).2.2.1 y)
 
-theorem grid_response_positive {d : ℕ} (C : ModelConstants d)
-    (P : LowSmoothnessTernaryConstants C) (k n : ℕ) (η t : ℝ)
-    (ξ : Fin (gridWindowCount d k) → Fin 3) (x : Fin n → Covariate d)
-    (hη : 0 ≤ η) (ht : t ∈ Icc (0 : ℝ) 1)
-    (hfield : ((2 : ℝ) ^ d + 2) * η ≤ P.ρ) (hvariance : η ^ 2 ≤ P.ρ) :
+theorem grid_response_positive 
+    ξ (x : Fin n → Covariate d)
+    (hη : 0 ≤ η) (ht : t ∈ Icc 0 1)
+    (hfield : (2 ^ d + 2) * η ≤ P.ρ) (hvariance : η ^ 2 ≤ P.ρ) :
     ∀ i y, 0 < ternaryMass P.a (indexedGridField d k η ξ (x i)) (P.variancePath η t) y := by
   intro i y
-  have hF : |indexedGridField d k η ξ (x i)| ≤ P.ρ :=
+  have hF  :=
     (indexedGridField_abs_bound d k η hη ξ (x i)).trans (by nlinarith)
   exact P.c_pos.trans_le ((P.path_legality η t _ ht hvariance hF).2.2.1 y)
 
-theorem grid_full_score_energy_integrable {d : ℕ} (C : ModelConstants d)
-    (P : LowSmoothnessTernaryConstants C) (k n : ℕ) (η t : ℝ)
-    (ξ : Fin (gridWindowCount d k) → Fin 3)
-    (hη : 0 ≤ η) (ht : t ∈ Icc (0 : ℝ) 1)
-    (hfield : ((2 : ℝ) ^ d + 2) * η ≤ P.ρ) (hvariance : η ^ 2 ≤ P.ρ) :
+theorem grid_full_score_energy_integrable 
+    ξ
+    (hη : 0 ≤ η) (ht : t ∈ Icc 0 1)
+    (hfield : (2 ^ d + 2) * η ≤ P.ρ) (hvariance : η ^ 2 ≤ P.ρ) :
     Integrable (gridFullScoreEnergy d k n P.a (P.variancePath η t) η ξ)
-      (Measure.pi (fun _ : Fin n => cubeVolume d)) := by
+      (Measure.pi (fun _  => cubeVolume d)) := by
   have hI := (integrable_finsetSum (Finset.univ : Finset (Fin (gridWindowCount d k))) (fun j _ =>
     grid_coordinate_energy_integrable C P k n η t ξ j hη ht hfield hvariance)).const_mul ((5 : ℝ) ^ d)
   apply hI.mono' (grid_full_score_energy_measurable d k n P.a (P.variancePath η t) η ξ).aestronglyMeasurable
@@ -306,22 +305,21 @@ theorem grid_full_score_energy_integrable {d : ℕ} (C : ModelConstants d)
   intro x
   have hp := grid_response_positive C P k n η t ξ x hη ht hfield hvariance
   rw [Real.norm_eq_abs, abs_of_nonneg]
-  · exact grid_full_score_conditional_energy_bound d k n P.a (P.variancePath η t) η ξ x P.a_pos.ne' hp
+  · solve_by_elim [grid_full_score_conditional_energy_bound, P.a_pos.ne']
   · exact Finset.sum_nonneg (fun y _ => mul_nonneg
       (Finset.prod_nonneg (fun i _ => by simpa [grid_latent_regression_eq] using (hp i (y i)).le))
       (sq_nonneg _))
 
-theorem grid_full_score_design_energy_bound {d : ℕ} (C : ModelConstants d)
-    (P : LowSmoothnessTernaryConstants C) (k n : ℕ) (η t : ℝ)
-    (ξ : Fin (gridWindowCount d k) → Fin 3) (hk : 0 < k)
-    (hη : 0 ≤ η) (ht : t ∈ Icc (0 : ℝ) 1)
-    (hfield : ((2 : ℝ) ^ d + 2) * η ≤ P.ρ) (hvariance : η ^ 2 ≤ P.ρ)
+theorem grid_full_score_design_energy_bound 
+    ξ (hk : 0 < k)
+    (hη : 0 ≤ η) (ht : t ∈ Icc 0 1)
+    (hfield : (2 ^ d + 2) * η ≤ P.ρ) (hvariance : η ^ 2 ≤ P.ρ)
     (hmean : n * (2 / (k : ℝ)) ^ d ≤ 1) :
     (∫ x : Fin n → Covariate d, gridFullScoreEnergy d k n P.a (P.variancePath η t) η ξ x
-      ∂Measure.pi (fun _ : Fin n => cubeVolume d)) ≤
-      (5 : ℝ) ^ d * gridWindowCount d k *
+      ∂Measure.pi (fun _  => cubeVolume d)) ≤
+      5 ^ d * gridWindowCount d k *
         (ternaryScoreExponentialConstant P.a P.ρ P.c ^ 2 *
-          Real.exp (ternaryScoreExponentialConstant P.a P.ρ P.c) * η ^ 4 * (n * (2 / (k : ℝ)) ^ d) ^ 2) := by
+          Real.exp (ternaryScoreExponentialConstant P.a P.ρ P.c) * η ^ 4 * (n * (2 / k) ^ d) ^ 2) := by
   let μ := Measure.pi (fun _ : Fin n => cubeVolume d)
   have hcoords (j : Fin (gridWindowCount d k)) :=
     grid_coordinate_energy_integrable C P k n η t ξ j hη ht hfield hvariance
@@ -343,24 +341,29 @@ theorem grid_full_score_design_energy_bound {d : ℕ} (C : ModelConstants d)
                 (n * (2 / (k : ℝ)) ^ d) ^ 2 := Finset.sum_le_sum (fun j _ =>
           grid_coordinate_design_energy_bound C P k n η t ξ j hk hη ht hfield hvariance hmean)
         _ = _ := by simp
+end
+
 
 /-- The actual latent-prior, design, and response score energy. -/
-def gridPriorScoreEnergy (d k n : ℕ) (a v η t : ℝ) : ℝ :=
+def gridPriorScoreEnergy d k n a v η t  :=
   ∑ ξ, activationProductPrior (gridWindowCount d k) t ξ *
     ∫ x : Fin n → Covariate d, gridFullScoreEnergy d k n a (v - η ^ 2 * t) η ξ x
       ∂Measure.pi (fun _ : Fin n => cubeVolume d)
 
+section
+variable {d : ℕ}
+
 /-- Uniform full score budget for the actual prior and the actual IID design.
 Every energy bound is derived from the ternary likelihood, count law, and
 window support geometry. -/
-theorem grid_prior_score_energy_bound {d : ℕ} (C : ModelConstants d)
-    (P : LowSmoothnessTernaryConstants C) (k n : ℕ) (η t : ℝ) (hk : 1 ≤ k)
-    (hη : 0 ≤ η) (ht : t ∈ Icc (0 : ℝ) 1)
-    (hfield : ((2 : ℝ) ^ d + 2) * η ≤ P.ρ) (hvariance : η ^ 2 ≤ P.ρ)
+theorem grid_prior_score_energy_bound  (C : ModelConstants d)
+    (P : LowSmoothnessTernaryConstants C) (k n : ℕ) η t (hk : 1 ≤ k)
+    (hη : 0 ≤ η) (ht : t ∈ Icc 0 1)
+    (hfield : (2 ^ d + 2) * η ≤ P.ρ) (hvariance : η ^ 2 ≤ P.ρ)
     (hmean : n * (2 / (k : ℝ)) ^ d ≤ 1) :
     gridPriorScoreEnergy d k n P.a P.v η t ≤
-      (40 : ℝ) ^ d * ternaryScoreExponentialConstant P.a P.ρ P.c ^ 2 *
-        Real.exp (ternaryScoreExponentialConstant P.a P.ρ P.c) * n ^ 2 * η ^ 4 / (k : ℝ) ^ d := by
+      40 ^ d * ternaryScoreExponentialConstant P.a P.ρ P.c ^ 2 *
+        Real.exp (ternaryScoreExponentialConstant P.a P.ρ P.c) * n ^ 2 * η ^ 4 / k ^ d := by
   let K := ternaryScoreExponentialConstant P.a P.ρ P.c
   let B := (5 : ℝ) ^ d * gridWindowCount d k *
     (K ^ 2 * Real.exp K * η ^ 4 * (n * (2 / (k : ℝ)) ^ d) ^ 2)
@@ -384,7 +387,7 @@ theorem grid_prior_score_energy_bound {d : ℕ} (C : ModelConstants d)
     _ ≤ B := hbudget
     _ ≤ (5 : ℝ) ^ d * (2 * (k : ℝ)) ^ d *
         (K ^ 2 * Real.exp K * η ^ 4 * (n * (2 / (k : ℝ)) ^ d) ^ 2) := by
-      exact mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left hm (by positivity)) (by positivity)
+      bound
     _ = _ := by
       rw [show (40 : ℝ) = 5 * 2 ^ 3 by norm_num]
       have htwo : ((2 : ℝ) ^ 3) ^ d = ((2 : ℝ) ^ d) ^ 3 := by
@@ -394,29 +397,28 @@ theorem grid_prior_score_energy_bound {d : ℕ} (C : ModelConstants d)
       field_simp [ne_of_gt hkr]
 
 /-- The actual model parameter in each latent state of the indexed grid prior. -/
-def gridPathParameter {d : ℕ} (C : ModelConstants d) (P : LowSmoothnessTernaryConstants C)
-    (k : ℕ) (η t : ℝ) (ξ : Fin (gridWindowCount d k) → Fin 3)
-    (hη : 0 ≤ η) (ht : t ∈ Icc (0 : ℝ) 1)
-    (hfield : ((2 : ℝ) ^ d + 2) * η ≤ P.ρ) (hvariance : η ^ 2 ≤ P.ρ) :
-    RegressionParameter d :=
+def gridPathParameter  C (P : LowSmoothnessTernaryConstants C)
+    k η t ξ
+    hη ht
+    (hfield : ((2 : ℝ) ^ d + 2) * η ≤ P.ρ) hvariance  :=
   P.pathParameter (indexedGridField d k η ξ) (indexedGridField_continuous d k η ξ) η t ht hvariance
     (fun x => (indexedGridField_abs_bound d k η hη ξ x).trans (by nlinarith))
 
-theorem gridPathParameter_admissible {d : ℕ} (C : ModelConstants d)
-    (P : LowSmoothnessTernaryConstants C) (k : ℕ) (η b t : ℝ)
-    (ξ : Fin (gridWindowCount d k) → Fin 3) (hk : 1 ≤ k) (hs1 : C.smoothness ≤ 1)
-    (hb : 0 ≤ b) (hη : 0 ≤ η) (ht : t ∈ Icc (0 : ℝ) 1)
-    (hfield : ((2 : ℝ) ^ d + 2) * η ≤ P.ρ) (hvariance : η ^ 2 ≤ P.ρ)
+theorem gridPathParameter_admissible  (C : ModelConstants d)
+    P (k : ℕ) η b t
+    ξ (hk : 1 ≤ k) (hs1 : C.smoothness ≤ 1)
+    (hb : 0 ≤ b) hη ht
+    hfield hvariance
     (hscale : η = b / (k : ℝ) ^ C.smoothness)
-    (hholder : ((2 : ℝ) ^ d + 68 * (2 : ℝ) ^ d * (d + 1)) * b ≤ C.holderBound) :
+    (hholder : (2 ^ d + 68 * 2 ^ d * (d + 1)) * b ≤ C.holderBound) :
     Admissible C (gridPathParameter C P k η t ξ hη ht hfield hvariance) := by
   have horder : C.order = 0 := by
-    have ho : (C.order : ℝ) < 1 := C.order_lt.trans_le hs1
+    have ho  := C.order_lt.trans_le hs1
     have hnat : C.order < 1 := by exact_mod_cast ho
     omega
   have hηb : η ≤ b := by
     rw [hscale]
-    exact div_le_self hb (Real.one_le_rpow (by exact_mod_cast hk) C.smoothness_pos.le)
+    simp_all [div_le_self, Real.one_le_rpow, C.smoothness_pos.le]
   apply P.pathParameter_admissible_order_zero _ _ η t ht hvariance _ horder
     ((2 : ℝ) ^ d * b) ((68 * (2 : ℝ) ^ d * (d + 1)) * b)
     (by positivity) (by positivity) (by nlinarith [hholder])
@@ -424,6 +426,8 @@ theorem gridPathParameter_admissible {d : ℕ} (C : ModelConstants d)
     exact (indexedGridField_abs_bound d k η hη ξ x).trans (mul_le_mul_of_nonneg_left hηb (by positivity))
   · intro x y
     rw [hscale, indexedGridField_eq]
-    exact gridPriorField_holder_bound d k C.smoothness b hk C.smoothness_pos.le hs1 hb _ x y
+    solve_by_elim [gridPriorField_holder_bound, C.smoothness_pos.le]
+end
+
 
 end NearlyMinimax

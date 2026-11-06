@@ -19,8 +19,14 @@ namespace NearlyMinimax
 set_option maxHeartbeats 1000000
 set_option backward.isDefEq.respectTransparency false
 
-theorem dyadicPilotCoordinate_measurable {d ℓ : ℕ} (j : ℕ) (a : LocalPilotIndex d ℓ) :
-    Measurable (fun x : Covariate d => dyadicPilotCoordinate j x a) := by
+section
+variable {d ℓ : ℕ} (j : ℕ)
+
+section
+variable (a : LocalPilotIndex d ℓ)
+
+theorem dyadicPilotCoordinate_measurable   :
+    Measurable (fun x  => dyadicPilotCoordinate j x a) := by
   have hlin : Measurable (fun x : Covariate d => pilotPolynomialLinear (ℓ := 2 * ℓ)
       (dyadicPilotLabel j x) (dyadicPilotPolynomial j x a) (dyadicPilotResponse a)) := by
     unfold pilotPolynomialLinear
@@ -34,16 +40,16 @@ theorem dyadicPilotCoordinate_measurable {d ℓ : ℕ} (j : ℕ) (a : LocalPilot
           (Fin (DyadicGlobalDimension d ℓ j) → ℝ) →L[ℝ] ℝ))).comp (dyadicPilotLabel_measurable j))
   exact (measurable_const : Measurable (fun _ : Covariate d => dyadicPilotScale d j)).smul hlin
 
-theorem preconditionedPilotCoordinate_measurable {d ℓ : ℕ} (j : ℕ) (a : LocalPilotIndex d ℓ) :
-    Measurable (fun x : Covariate d => preconditionedPilotCoordinate j x a) := by
-  unfold preconditionedPilotCoordinate
-  exact Finset.measurable_sum Finset.univ (fun β _ =>
+theorem preconditionedPilotCoordinate_measurable   :
+    Measurable (fun x  => preconditionedPilotCoordinate j x a) := Finset.measurable_sum Finset.univ (fun β _ =>
     ((dyadicKnownGram_inverse_measurable j).eval_matrix (i := localPilotRow a) (j := β)).smul
       (dyadicPilotCoordinate_measurable j (localPilotReplaceRow a β)))
+end
 
-theorem incrementPilotFreeCoordinate_measurable {d ℓ : ℕ} (j : ℕ)
+
+theorem incrementPilotFreeCoordinate_measurable 
     (a : incrementVariables (anchoredDimension d ℓ)) :
-    Measurable (fun x : Covariate d => incrementPilotFreeCoordinate j x a) := by
+    Measurable (fun x  => incrementPilotFreeCoordinate j x a) := by
   let pc : ((Fin (DyadicGlobalDimension d ℓ j) → ℝ) →L[ℝ] ℝ) →L[ℝ]
       ((Fin (Fintype.card (IncrementGlobalIndex d ℓ j)) → ℝ) →L[ℝ] ℝ) :=
     ContinuousLinearMap.precomp ℝ (incrementGlobalCurrent j)
@@ -79,12 +85,13 @@ theorem incrementPilotFreeCoordinate_measurable {d ℓ : ℕ} (j : ℕ)
     · exact hc (Sum.inr (Sum.inr (anchoredFinIndex i)))
     · exact hc (Sum.inr (Sum.inl (anchoredFinIndex i)))
 
-theorem incrementPilotCoordinate_measurable {d ℓ : ℕ} (j : ℕ) :
-    Measurable (incrementPilotCoordinate (d := d) (ℓ := ℓ) j) := by
-  exact (ContinuousLinearMap.piEquivL ℝ
+theorem incrementPilotCoordinate_measurable  :
+    Measurable (incrementPilotCoordinate (d := d) (ℓ := ℓ) j) := (ContinuousLinearMap.piEquivL ℝ
     (Fin (Fintype.card (IncrementGlobalIndex d ℓ j)) → ℝ)
     (fun _ : Fin (Fintype.card (incrementVariables (anchoredDimension d ℓ))) => ℝ)).continuous.measurable.comp
       (measurable_pi_iff.mpr (fun _ => incrementPilotFreeCoordinate_measurable j _))
+end
+
 
 theorem real_pi_projection_norm_le {ι : Type*} [Fintype ι] (i : ι) :
     ‖(ContinuousLinearMap.proj i : (ι → ℝ) →L[ℝ] ℝ)‖ ≤ 1 := by
@@ -92,11 +99,11 @@ theorem real_pi_projection_norm_le {ι : Type*} [Fintype ι] (i : ι) :
   intro v
   simpa only [ContinuousLinearMap.proj_apply, one_mul] using norm_le_pi_norm v i
 
-theorem pilotPolynomialLinear_norm_le {q d ℓ : ℕ} (c : Fin q)
-    (P : MvPolynomial (Fin d) ℝ) (response : Bool) (M : ℝ) (hM : 0 ≤ M)
+theorem pilotPolynomialLinear_norm_le {q d ℓ } (c : Fin q)
+    P (response : Bool) M (hM : 0 ≤ M)
     (hP : ∀ β : PolynomialBox d ℓ, |P.coeff (polynomialBoxExponent β)| ≤ M) :
     ‖pilotPolynomialLinear (ℓ := ℓ) c P response‖ ≤
-      (Fintype.card (PolynomialBox d ℓ) : ℝ) * M := by
+      (Fintype.card (PolynomialBox d ℓ)) * M := by
   apply (norm_sum_le _ _).trans
   calc
     (∑ β : PolynomialBox d ℓ, ‖P.coeff (polynomialBoxExponent β) •
@@ -108,7 +115,10 @@ theorem pilotPolynomialLinear_norm_le {q d ℓ : ℕ} (c : Fin q)
       exact (mul_le_mul (hP β) (real_pi_projection_norm_le _) (norm_nonneg _) hM).trans_eq (mul_one M)
     _ = (Fintype.card (PolynomialBox d ℓ) : ℝ) * M := by simp
 
-theorem dyadicPilotCoordinate_uniform_bound {d ℓ : ℕ} (j : ℕ) :
+section
+variable {d ℓ : ℕ} (j : ℕ)
+
+theorem dyadicPilotCoordinate_uniform_bound  :
     ∃ M : ℝ, 0 < M ∧ ∀ x ∈ unitCube d, ∀ a : LocalPilotIndex d ℓ,
       ‖dyadicPilotCoordinate j x a‖ ≤ M := by
   obtain ⟨P, hP, hcap⟩ := dyadicPilotPolynomial_coeff_uniform_bound (d := d) (ℓ := ℓ) j
@@ -120,7 +130,7 @@ theorem dyadicPilotCoordinate_uniform_bound {d ℓ : ℕ} (j : ℕ) :
   exact (mul_le_mul_of_nonneg_left (pilotPolynomialLinear_norm_le _ _ _ P hP.le
     (hcap x hx a)) hscale).trans (le_max_right _ _)
 
-theorem preconditionedPilotCoordinate_uniform_bound {d ℓ : ℕ} (j : ℕ) :
+theorem preconditionedPilotCoordinate_uniform_bound  :
     ∃ M : ℝ, 0 < M ∧ ∀ x ∈ unitCube d, ∀ a : LocalPilotIndex d ℓ,
       ‖preconditionedPilotCoordinate j x a‖ ≤ M := by
   obtain ⟨L, hL, hLb⟩ := dyadicKnownGram_inverse_uniform_bound (d := d) (ℓ := ℓ)
@@ -142,15 +152,15 @@ theorem preconditionedPilotCoordinate_uniform_bound {d ℓ : ℕ} (j : ℕ) :
     _ = B := by simp [B]
     _ ≤ max 1 B := le_max_right _ _
 
-theorem incrementGlobalCurrent_norm_le {d ℓ : ℕ} (j : ℕ) :
+theorem incrementGlobalCurrent_norm_le  :
     ‖incrementGlobalCurrent (d := d) (ℓ := ℓ) j‖ ≤ 1 :=
   ContinuousLinearMap.norm_pi_le_of_le (fun _ => real_pi_projection_norm_le _) zero_le_one
 
-theorem incrementGlobalParent_norm_le {d ℓ : ℕ} (j : ℕ) :
+theorem incrementGlobalParent_norm_le  :
     ‖incrementGlobalParent (d := d) (ℓ := ℓ) j‖ ≤ 1 :=
   ContinuousLinearMap.norm_pi_le_of_le (fun _ => real_pi_projection_norm_le _) zero_le_one
 
-theorem incrementPilotCoordinate_uniform_bound {d ℓ : ℕ} (j : ℕ) :
+theorem incrementPilotCoordinate_uniform_bound  :
     ∃ M : ℝ, 0 < M ∧ ∀ x ∈ unitCube d, ‖incrementPilotCoordinate (ℓ := ℓ) j x‖ ≤ M := by
   obtain ⟨C, hC, hCb⟩ := preconditionedPilotCoordinate_uniform_bound (d := d) (ℓ := ℓ) j
   obtain ⟨P, hP, hPb⟩ := preconditionedPilotCoordinate_uniform_bound (d := d) (ℓ := ℓ) (j - 1)
@@ -194,5 +204,7 @@ theorem incrementPilotCoordinate_uniform_bound {d ℓ : ℕ} (j : ℕ) :
     · exact hp (Sum.inr (Sum.inl (anchoredFinIndex i)))
     · exact hc (Sum.inr (Sum.inr (anchoredFinIndex i)))
     · exact hc (Sum.inr (Sum.inl (anchoredFinIndex i)))
+end
+
 
 end NearlyMinimax

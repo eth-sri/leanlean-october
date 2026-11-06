@@ -14,24 +14,23 @@ namespace NearlyMinimax
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1000000
 
-theorem finePairCoordinatePolynomial_monomial {d : ℕ} (l : Fin d) :
-    finePairCoordinatePolynomial l = monomial (Finsupp.single l 1) 8 := by
-  exact C_mul_X_eq_monomial
+theorem finePairCoordinatePolynomial_monomial {d } (l : Fin d) :
+    finePairCoordinatePolynomial l = monomial (Finsupp.single l 1) 8 := C_mul_X_eq_monomial
 
-theorem finePairSquarePolynomial_monomial_sum (d : ℕ) :
+theorem finePairSquarePolynomial_monomial_sum d :
     finePairSquarePolynomial d = ∑ l : Fin d,
-      monomial (Finsupp.single l 1 + Finsupp.single l 1) (64 : ℝ) := by
+      monomial (Finsupp.single l 1 + Finsupp.single l 1) 64 := by
   unfold finePairSquarePolynomial
   simp only [finePairCoordinatePolynomial_monomial, pow_two, monomial_mul]
   norm_num
 
-theorem finePairCoordinateCoefficients_l1_le {d F : ℕ} (l : Fin d) :
+theorem finePairCoordinateCoefficients_l1_le {d F } l :
     (∑ β : HighFrameIndex d F, |highFrameCoefficients (finePairCoordinatePolynomial l) β|) ≤ 8 := by
   apply (highFrameCoefficients_sum_abs_le _).trans
   rw [finePairCoordinatePolynomial_monomial]
   simp [frameCoefficientL1, MvPolynomial.support_monomial]
 
-theorem finePairSquareCoefficients_l1_le (d F : ℕ) :
+theorem finePairSquareCoefficients_l1_le d F :
     (∑ β : HighFrameIndex d F, |highFrameCoefficients (finePairSquarePolynomial d) β|) ≤ 64 * d := by
   apply (highFrameCoefficients_sum_abs_le _).trans
   rw [finePairSquarePolynomial_monomial_sum]
@@ -39,16 +38,16 @@ theorem finePairSquareCoefficients_l1_le (d F : ℕ) :
   simp only [show |(64 : ℝ)| = 64 by norm_num, Finset.sum_const, Finset.card_univ, Fintype.card_fin, nsmul_eq_mul]
   ring
 
-theorem finePairUnitCoefficients_l1_le (d F : ℕ) :
-    (∑ β : HighFrameIndex d F, |highFrameCoefficients (1 : MvPolynomial (Fin d) ℝ) β|) ≤ 1 :=
+theorem finePairUnitCoefficients_l1_le d F :
+    (∑ β : HighFrameIndex d F, |highFrameCoefficients 1 β|) ≤ 1 :=
   (highFrameCoefficients_sum_abs_le _).trans_eq frameCoefficientL1_one
 
-theorem spatial_matrix_l1_outer {d F : ℕ} (u v : HighFrameIndex d F → ℝ) :
+theorem spatial_matrix_l1_outer {d F } (u v : HighFrameIndex d F → ℝ) :
     spatialMatrixL1 (fun β β' => u β * v β') =
       (∑ β, |u β|) * (∑ β, |v β|) := by
   simp only [spatialMatrixL1, abs_mul, ← Finset.mul_sum, ← Finset.sum_mul]
 
-theorem finePairUnitMatrix_l1_le (d F : ℕ) :
+theorem finePairUnitMatrix_l1_le d F :
     spatialMatrixL1 (finePairUnitMatrix d F) ≤ 1 := by
   unfold finePairUnitMatrix
   rw [spatial_matrix_l1_outer]
@@ -56,17 +55,22 @@ theorem finePairUnitMatrix_l1_le (d F : ℕ) :
     (finePairUnitCoefficients_l1_le d F) (Finset.sum_nonneg (fun _ _ => abs_nonneg _))
     (by norm_num : (0 : ℝ) ≤ 1)
 
-private def finePairMatrixEntryCost {κ : Type*} [Fintype κ] (A : κ → κ → ℝ) : ℝ :=
+section
+variable {κ : Type*}
+
+private def finePairMatrixEntryCost  [Fintype κ] (A : κ → κ → ℝ) : ℝ :=
   ∑ i, ∑ j, |A i j|
 
-private theorem fine_pair_entry_cost_outer {κ : Type*} [Fintype κ] (u v : κ → ℝ) :
+private theorem fine_pair_entry_cost_outer  [Fintype κ] (u v : κ → ℝ) :
     finePairMatrixEntryCost (fun i j => u i * v j) = (∑ i, |u i|) * (∑ j, |v j|) := by
   simp only [finePairMatrixEntryCost, abs_mul, ← Finset.mul_sum, ← Finset.sum_mul]
 
-private theorem fine_pair_entry_cost_sub_le {κ : Type*} [Fintype κ] (A B : κ → κ → ℝ) :
+private theorem fine_pair_entry_cost_sub_le  [Fintype κ] (A B : κ → κ → ℝ) :
     finePairMatrixEntryCost (fun i j => A i j - B i j) ≤ finePairMatrixEntryCost A + finePairMatrixEntryCost B := by
   simp only [finePairMatrixEntryCost, ← Finset.sum_add_distrib]
   exact Finset.sum_le_sum (fun i _ => Finset.sum_le_sum (fun j _ => abs_sub _ _))
+end
+
 
 private theorem fine_pair_entry_cost_sum_le {κ I : Type*} [Fintype κ] [Fintype I]
     (A : I → κ → κ → ℝ) :
@@ -77,17 +81,20 @@ private theorem fine_pair_entry_cost_sum_le {κ I : Type*} [Fintype κ] [Fintype
   simp_rw [Finset.sum_comm (f := fun j l => |A l _ j|)]
   rw [Finset.sum_comm]
 
-private theorem fine_pair_entry_cost_scalar {κ : Type*} [Fintype κ] (t : ℝ) (A : κ → κ → ℝ) :
+section
+variable {κ : Type*} [Fintype κ]
+
+private theorem fine_pair_entry_cost_scalar  (t : ℝ) (A : κ → κ → ℝ) :
     finePairMatrixEntryCost (fun i j => t * A i j) = |t| * finePairMatrixEntryCost A := by
   simp only [finePairMatrixEntryCost, abs_mul, ← Finset.mul_sum]
 
-private theorem finite_quadratic_matrix_cost {κ : Type*} [Fintype κ] (d : ℕ)
+private theorem finite_quadratic_matrix_cost  (d : ℕ)
     (c0 cs : κ → ℝ) (cl : Fin d → κ → ℝ)
     (h0 : (∑ β, |c0 β|) ≤ 1) (hs : (∑ β, |cs β|) ≤ 64 * d)
     (hl : ∀ l, (∑ β, |cl l β|) ≤ 8) :
     finePairMatrixEntryCost (fun β β' => (∑ l, 2 * cl l β * cl l β') -
       cs β * c0 β' - c0 β * cs β') ≤ 256 * d := by
-  let B (β β' : κ) : ℝ := ∑ l, 2 * cl l β * cl l β'
+  let B (β β' : κ)  := ∑ l, 2 * cl l β * cl l β'
   have houterS : finePairMatrixEntryCost (fun β β' => cs β * c0 β') ≤ 64 * d := by
     rw [fine_pair_entry_cost_outer]
     exact (mul_le_mul hs h0
@@ -110,21 +117,19 @@ private theorem finite_quadratic_matrix_cost {κ : Type*} [Fintype κ] (d : ℕ)
         exact (mul_le_mul_of_nonneg_left hh (abs_nonneg (2 : ℝ))).trans_eq (by norm_num)
       _ = _ := by simp; ring
   change finePairMatrixEntryCost (fun β β' => B β β' - cs β * c0 β' - c0 β * cs β') ≤ _
-  have hsub : finePairMatrixEntryCost (fun β β' => B β β' - cs β * c0 β') ≤
-      finePairMatrixEntryCost B + finePairMatrixEntryCost (fun β β' => cs β * c0 β') :=
+  have hsub  :=
     fine_pair_entry_cost_sub_le B (fun β β' => cs β * c0 β')
-  have hsub' : finePairMatrixEntryCost (fun β β' => B β β' - cs β * c0 β' - c0 β * cs β') ≤
-      finePairMatrixEntryCost (fun β β' => B β β' - cs β * c0 β') +
-        finePairMatrixEntryCost (fun β β' => c0 β * cs β') :=
+  have hsub'  :=
     fine_pair_entry_cost_sub_le (fun β β' => B β β' - cs β * c0 β')
       (fun β β' => c0 β * cs β')
-  have hh : finePairMatrixEntryCost (fun β β' => B β β' - cs β * c0 β' - c0 β * cs β') ≤
-      (128 * d + 64 * d) + 64 * d :=
+  have hh  :=
     (hsub'.trans (add_le_add hsub (le_refl _))).trans
       (add_le_add (add_le_add hB houterS) houterS')
   exact hh.trans_eq (by ring)
+end
 
-theorem spatial_matrix_l1_quadratic_three_le (d F : ℕ)
+
+theorem spatial_matrix_l1_quadratic_three_le d F
     (c0 cs : HighFrameIndex d F → ℝ) (cl : Fin d → HighFrameIndex d F → ℝ)
     (h0 : (∑ β, |c0 β|) ≤ 1) (hs : (∑ β, |cs β|) ≤ 64 * d)
     (hl : ∀ l, (∑ β, |cl l β|) ≤ 8) :
@@ -132,7 +137,7 @@ theorem spatial_matrix_l1_quadratic_three_le (d F : ℕ)
       cs β * c0 β' - c0 β * cs β') ≤ 256 * d :=
   finite_quadratic_matrix_cost d c0 cs cl h0 hs hl
 
-theorem finePairDistanceMatrix_l1_le (d F : ℕ) :
+theorem finePairDistanceMatrix_l1_le d F :
     spatialMatrixL1 (finePairDistanceMatrix d F) ≤ 256 * d :=
   spatial_matrix_l1_quadratic_three_le d F _ _ _
     (finePairUnitCoefficients_l1_le d F) (finePairSquareCoefficients_l1_le d F)

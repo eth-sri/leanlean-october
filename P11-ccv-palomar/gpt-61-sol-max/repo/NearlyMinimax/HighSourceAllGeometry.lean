@@ -16,24 +16,22 @@ set_option maxHeartbeats 1800000
 attribute [local instance] Classical.propDecidable
 attribute [local irreducible] highUnionSourceDensity highUnionSourceState historyMarkedAppend
 
- theorem completeSource_original_all_geometry {d : ℕ} [NeZero d]
-    (C : ModelConstants d) (Q : LowSmoothnessTernaryConstants C) :
+ theorem completeSource_original_all_geometry {d } [NeZero d]
+    C (Q : LowSmoothnessTernaryConstants C) :
     ∃ Cfr0 eta0 : ℝ, 1 ≤ Cfr0 ∧ 0 < eta0 ∧
       ∀ k D M q : ℕ, ∀ (_ : NeZero k), ∀ (_ : LinearOrder (HighWindowLabels d k)),
-      4 ≤ k → 3 ≤ D → 2 ≤ q → highCenterResolutionThreshold C ≤ (M : ℝ) →
-      ∀ Cfr c0 ell N mu cf : ℝ, Cfr0 ≤ Cfr → 1 ≤ ell → ell < N → 0 ≤ cf →
-      cf*(k : ℝ)^(-C.smoothness) ≤ eta0 →
+      4 ≤ k → 3 ≤ D → 2 ≤ q → highCenterResolutionThreshold C ≤ M →
+      ∀ Cfr c0 ell N mu cf , Cfr0 ≤ Cfr → 1 ≤ ell → ell < N → 0 ≤ cf →
+      cf*k^(-C.smoothness) ≤ eta0 →
       shrunkDensityExponent C.densityLower C.densityUpper M ≤ c0 →
       (∀ j : Fin (D-2), 0 < higherBandTargetScale d (j.val+3) N mu) →
       (∀ j : Fin (D-2), ell < higherBandTargetScale d (j.val+3) N mu → j.val+3 ≤ M) →
-      ∀ Rbound : ℕ, (∀ r ∈ ordinaryFineAliasTargetSet d D ell N mu, 1 ≤ r ∧ r ≤ Rbound) →
-      ∀ V : ℝ, |V-Q.v| ≤ Q.ρ → ∀ j : HighWindowLabels d k,
-      ∀ h : HistoryMarked (fun i j => j ∈ highNeighborLabels d k i)
-        (HighUnionMark (SourceRowMark d D M q (C.densityLower+1/(M : ℝ))
-          (C.densityUpper-1/(M : ℝ)) Cfr (spatialInterpolationLambda d) ell N mu)),
-      ∀ n : ℕ, ∀ x : Fin n → Covariate d, (∀ i, x i ∈ highTorusPatch d k j) →
+      ∀ Rbound , (∀ r ∈ ordinaryFineAliasTargetSet d D ell N mu, 1 ≤ r ∧ r ≤ Rbound) →
+      ∀ V , |V-Q.v| ≤ Q.ρ → ∀ j ,
+      ∀ h ,
+      ∀ n , ∀ x , (∀ i, x i ∈ highTorusPatch d k j) →
       let R := completeSourceRows C k D M q Cfr (spatialInterpolationLambda d) ell N mu
-      let eta := cf*(k : ℝ)^(-C.smoothness)
+      let eta := cf*k^(-C.smoothness)
       let Chi := highSeparatedScoreExponentialConstant Q.a Q.ρ C.densityUpper 1 1
       selectedRawSquareEnergy (highUnionSourceRawNumerator C R n Q.a V eta h j) x ≤
         completeSourceGeometryEnvelope D M Rbound q C.densityLower C.densityUpper c0 ell N mu Cfr Q.a Q.ρ eta
@@ -137,7 +135,7 @@ attribute [local irreducible] highUnionSourceDensity highUnionSourceState histor
           M Rbound q Cfr Q.a Q.ρ eta U else (3*Chi^2)^(n+3)*eta^4*(highRowTotalMass R.rowMass+1)^2
       rw [if_neg hnD]
       apply crude_raw_square_energy_pointwise Chi eta (highRowTotalMass R.rowMass)
-      · exact (highSeparatedScoreExponentialConstant_pos Q.a Q.ρ C.densityUpper 1 1).le
+      · linarith [highSeparatedScoreExponentialConstant_pos Q.a Q.ρ C.densityUpper 1 1]
       · exact G.total_positive.le
       · intro z y
         exact hcrude k D M q (n+3) hk0 horder hk hD (by omega) (by omega) hM Cfr lam ell N mu cf

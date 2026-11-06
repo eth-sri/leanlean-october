@@ -18,9 +18,9 @@ section Packet
 variable {ι E : Type*} [Fintype ι] [DecidableEq ι] [Fintype E]
 
 /-- Density marks are kept separate from the response covariance marks. -/
-def highDensityResponseAction (q : ℕ) (C : ℝ) (weights : E → ℝ)
-    (A : E → ι → ι → ℝ) (c : ι → ℝ) (b : E → ℝ)
-    (Φ : (ι → ℝ) → ℝ) : ℝ :=
+def highDensityResponseAction q C (weights : E → ℝ)
+    (A : E → ι → ι → ℝ) c (b : E → ℝ)
+    Φ  :=
   ∑ e, weights e * b e * responseMatrixAction q C (A e) c Φ
 
 omit [DecidableEq ι] in
@@ -40,20 +40,18 @@ theorem high_response_variance_term_sum_zero {n : ℕ} (a V η : ℝ)
 
 /-- The explicit finite covariance-mark variation entering the response
 packet; it is determined by the actual matrices and density weights. -/
-def highResponsePacketCost (C : ℝ) (weights : E → ℝ) (A : E → ι → ι → ℝ) : ℝ :=
+def highResponsePacketCost C (weights : E → ℝ) (A : E → ι → ι → ℝ)  :=
   ∑ e, |weights e| * (2 * C ^ 2 * ∑ k, ∑ l, |A e k l|)
 
-def highLocalDerivativeConstant (q : ℕ) (a ρ : ℝ) : ℝ :=
+def highLocalDerivativeConstant q a ρ  :=
   (∑ j : Fin (2 * q + 2), |responseWeight q j|) *
     (4 * (((2 * ρ + a) / a ^ 2) ^ 2 + 2 / a ^ 2))
 
-theorem finite_density_product_abs_bound {n : ℕ} (p : Fin n → ℝ) (pPlus : ℝ)
+theorem finite_density_product_abs_bound {n } (p : Fin n → ℝ) pPlus
     (_hpPlus : 0 ≤ pPlus) (hp : ∀ i, |p i| ≤ pPlus) :
     |∏ i, p i| ≤ pPlus ^ n := by
   rw [Finset.abs_prod]
-  simpa only [Finset.prod_const, Finset.card_univ, Fintype.card_fin] using
-    Finset.prod_le_prod₀ (fun i (_ : i ∈ (Finset.univ : Finset (Fin n))) => abs_nonneg (p i))
-      (fun i (_ : i ∈ (Finset.univ : Finset (Fin n))) => hp i)
+  grind only [Finset.prod_const, Finset.card_univ, Fintype.card_fin, Finset.prod_le_prod₀, abs_nonneg]
 
 omit [DecidableEq ι] in
 theorem high_response_variance_term_abs_bound {n : ℕ} (a V η : ℝ) (ha : 0 < a)
@@ -74,19 +72,19 @@ theorem high_response_variance_term_abs_bound {n : ℕ} (a V η : ℝ) (ha : 0 <
   exact (mul_le_mul (ternary_variance_derivative_abs_bound a ha (y i)) hprod
     (abs_nonneg _) (by positivity : 0 ≤ 1 / a ^ 2)).trans_eq (mul_one _)
 
-theorem high_density_response_product_abs_bound {n : ℕ} (q : ℕ) (hn : 1 ≤ n)
-    (C a V η ρ pPlus : ℝ) (hC : 0 < C) (ha : 0 < a) (hη : 0 ≤ η)
+theorem high_density_response_product_abs_bound {n } q (hn : 1 ≤ n)
+    C a V η ρ pPlus (hC : 0 < C) (ha : 0 < a) (hη : 0 ≤ η)
     (hρ : 0 ≤ ρ) (hηρ : η ≤ ρ / 2) (hpPlus : 0 ≤ pPlus)
-    (weights : E → ℝ) (A : E → ι → ι → ℝ) (pReset : E → Fin n → ℝ)
-    (g w : Fin n → ℝ) (φ : Fin n → ι → ℝ) (c : ι → ℝ)
+    weights A (pReset : E → Fin n → ℝ)
+    (g w : Fin n → ℝ) φ c
     (hc : ∑ k, |c k| ≤ C⁻¹) (hg : ∀ i, |g i| ≤ ρ / 2) (hw : ∀ i, |w i| ≤ 1)
     (hφ : ∀ v : ι → ℝ, (∑ k, |v k|) ≤ C⁻¹ → ∀ i, |∑ k, φ i k * v k| ≤ 1)
-    (hp : ∀ f : ℝ, |f| ≤ ρ → ∀ u, 0 ≤ ternaryMass a f V u)
-    (hReset : ∀ e i, |pReset e i| ≤ pPlus) (y : Fin n → Fin 3) :
+    (hp : ∀ f , |f| ≤ ρ → ∀ u, 0 ≤ ternaryMass a f V u)
+    (hReset : ∀ e i, |pReset e i| ≤ pPlus) y :
     |highDensityResponseAction q C weights A c (fun e => ∏ i, pReset e i)
       (fun c => highResponseProduct a V η g w φ c y)| ≤
       pPlus ^ n * highResponsePacketCost C weights A *
-        (highLocalDerivativeConstant q a ρ * (n : ℝ) ^ 2 * η ^ 2) := by
+        (highLocalDerivativeConstant q a ρ * n ^ 2 * η ^ 2) := by
   unfold highDensityResponseAction
   apply (Finset.abs_sum_le_sum_abs _ _).trans
   calc

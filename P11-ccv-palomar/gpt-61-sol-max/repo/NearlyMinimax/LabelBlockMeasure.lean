@@ -17,7 +17,7 @@ variable {J I E : Type*} [Fintype J] [Fintype I] [MeasurableSpace E]
 
 /-- Reconstruct each actual occurrence mark from the independent vector for its true label.
 Unused coordinates give a harmless redundant realization of independent finite label blocks. -/
-def labelBlockReconstruct (labels : I → J) (blocks : J → I → E) : I → E :=
+def labelBlockReconstruct (labels : I → J) (blocks : J → I → E)  :=
   fun i => blocks (labels i) i
 
 omit [Fintype J] [Fintype I] in
@@ -29,10 +29,10 @@ theorem labelBlockReconstruct_measurable (labels : I → J) :
   exact (measurable_pi_apply i).comp (measurable_pi_apply (labels i))
 
 /-- Redundant independent label vectors reproduce exactly the original independent occurrence marks. -/
-theorem labelBlockReconstruct_preserving (labels : I → J) (π : Measure E) [IsProbabilityMeasure π] :
+theorem labelBlockReconstruct_preserving (labels : I → J) π [IsProbabilityMeasure π] :
     MeasurePreserving (labelBlockReconstruct labels (E := E))
-      (Measure.pi (fun _ : J => Measure.pi (fun _ : I => π)))
-      (Measure.pi (fun _ : I => π)) := by
+      (Measure.pi (fun _  => Measure.pi (fun _  => π)))
+      (Measure.pi (fun _  => π)) := by
   classical
   refine ⟨labelBlockReconstruct_measurable labels, ?_⟩
   apply (Measure.pi_eq (μ := fun _ : I => π) ?_).symm

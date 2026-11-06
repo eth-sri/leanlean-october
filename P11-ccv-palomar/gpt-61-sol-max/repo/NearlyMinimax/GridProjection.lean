@@ -15,22 +15,27 @@ to the last cell. -/
 def regularGridIndex (k : ℕ) (hk : 0 < k) (x : ℝ) : Fin k :=
   ⟨min ⌊(k : ℝ) * x⌋₊ (k - 1), (min_le_right _ _).trans_lt (by omega)⟩
 
+section
+variable {d : ℕ} (k : ℕ)
+
 /-- Product cell label of a covariate. -/
-def regularGridCell {d : ℕ} (k : ℕ) (hk : 0 < k) (x : Covariate d) : Fin d → Fin k :=
+def regularGridCell  hk (x : Covariate d)  :=
   fun i => regularGridIndex k hk (x i)
 
 /-- The lower corner of an actual regular-grid cell. -/
-def regularGridCorner {d : ℕ} (k : ℕ) (c : Fin d → Fin k) : Covariate d :=
+def regularGridCorner  (c : Fin d → Fin k) : Covariate d :=
   fun i => (c i : ℝ) / k
+end
+
 
 /-- The explicit floor-based label and corner have the claimed cell
 radius, including observations on the cube's right boundary. -/
-theorem regular_grid_index_radius (k : ℕ) (hk : 0 < k) (x : ℝ)
+theorem regular_grid_index_radius k hk x
     (hx0 : 0 ≤ x) (hx1 : x ≤ 1) :
-    |x - (regularGridIndex k hk x : ℝ) / k| ≤ 1 / k := by
+    |x - (regularGridIndex k hk x) / k| ≤ 1 / k := by
   have hkreal : (0 : ℝ) < k := by exact_mod_cast hk
   let m := ⌊(k : ℝ) * x⌋₊
-  have hfloor : (m : ℝ) ≤ (k : ℝ) * x := Nat.floor_le (mul_nonneg hkreal.le hx0)
+  have hfloor  := Nat.floor_le (mul_nonneg hkreal.le hx0)
   have hmin : ((min m (k - 1) : ℕ) : ℝ) ≤ m := by exact_mod_cast min_le_left m (k - 1)
   have hcorner : (regularGridIndex k hk x : ℝ) / k ≤ x := by
     apply (div_le_iff₀ hkreal).mpr
@@ -47,33 +52,37 @@ theorem regular_grid_index_radius (k : ℕ) (hk : 0 < k) (x : ℝ)
     have hlt : (k : ℝ) * x < (m : ℝ) + 1 := Nat.lt_floor_add_one _
     nlinarith
   · have hm' : k - 1 ≤ m := by omega
-    rw [min_eq_right hm', Nat.cast_sub (by omega : 1 ≤ k), Nat.cast_one]
-    nlinarith [mul_le_mul_of_nonneg_right hx1 hkreal.le]
+    simp_all
+
+section
+variable {d : ℕ} (k : ℕ) (hk : 0 < k)
+include hk
 
 /-- Every chosen cell corner belongs to the model's design cube. -/
-theorem regular_grid_corner_mem_cube {d : ℕ} (k : ℕ) (hk : 0 < k)
-    (c : Fin d → Fin k) : regularGridCorner k c ∈ unitCube d := by
+theorem regular_grid_corner_mem_cube 
+    c : regularGridCorner k c ∈ unitCube d := by
   intro i
   have hkreal : (0 : ℝ) < k := by exact_mod_cast hk
   refine ⟨div_nonneg (Nat.cast_nonneg _) hkreal.le, ?_⟩
   apply (div_le_iff₀ hkreal).mpr
-  have hi : ((c i).val : ℝ) < k := by exact_mod_cast (c i).isLt
-  simpa only [one_mul] using hi.le
+  simp_all
 
 /-- The regular-grid radius follows directly from the covariate's cube
 membership, with no assumed approximation property. -/
-theorem regular_grid_cell_radius {d : ℕ} (k : ℕ) (hk : 0 < k)
-    (x : Covariate d) (hx : x ∈ unitCube d) (i : Fin d) :
+theorem regular_grid_cell_radius 
+    x (hx : x ∈ unitCube d) i :
     |x i - regularGridCorner k (regularGridCell k hk x) i| ≤ 1 / k :=
   regular_grid_index_radius k hk (x i) (hx i).1 (hx i).2
+end
+
 
 /-- Grid labels are Borel despite the floor discontinuities. -/
-theorem regular_grid_index_measurable (k : ℕ) (hk : 0 < k) :
+theorem regular_grid_index_measurable k hk :
     Measurable (regularGridIndex k hk) := by
   let f : ℕ → Fin k := fun m => ⟨min m (k - 1), (min_le_right _ _).trans_lt (by omega)⟩
   exact (measurable_of_countable f).comp ((measurable_const.mul measurable_id).nat_floor)
 
-theorem regular_grid_cell_measurable {d : ℕ} (k : ℕ) (hk : 0 < k) :
+theorem regular_grid_cell_measurable {d } k hk :
     Measurable (regularGridCell (d := d) k hk) := by
   apply measurable_pi_iff.mpr
   intro i

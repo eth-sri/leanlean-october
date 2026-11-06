@@ -12,8 +12,11 @@ open MeasureTheory Set Matrix
 open scoped BigOperators Matrix.Norms.L2Operator
 namespace NearlyMinimax
 
-theorem anchoredVectorMoment_integrable {d ℓ : ℕ} (u : Covariate d)
-    (p g : Covariate d → ℝ) (hpmeas : Measurable p) (b : ℝ)
+section
+variable {d ℓ : ℕ}
+
+theorem anchoredVectorMoment_integrable  u
+    p g (hpmeas : Measurable p) b
     (hp : ∀ᵐ w ∂cubeVolume d, 0 ≤ p w ∧ p w ≤ b)
     (hg : ContinuousOn g (unitCube d)) (γ : AnchoredIndex d ℓ) :
     Integrable (fun w => p w * anchoredFeature u w γ * g w) (cubeVolume d) := by
@@ -26,8 +29,8 @@ theorem anchoredVectorMoment_integrable {d ℓ : ℕ} (u : Covariate d)
   · funext w; ring
   · rfl
 
-theorem anchoredVectorMoment_sub {d ℓ : ℕ} (u : Covariate d)
-    (p g h : Covariate d → ℝ) (hpmeas : Measurable p) (b : ℝ)
+theorem anchoredVectorMoment_sub  u
+    p g h (hpmeas : Measurable p) b
     (hp : ∀ᵐ w ∂cubeVolume d, 0 ≤ p w ∧ p w ≤ b)
     (hg : ContinuousOn g (unitCube d)) (hh : ContinuousOn h (unitCube d)) :
     anchoredVectorMoment (ℓ := ℓ) u p (g - h) =
@@ -38,8 +41,8 @@ theorem anchoredVectorMoment_sub {d ℓ : ℕ} (u : Covariate d)
   exact integral_sub (anchoredVectorMoment_integrable u p g hpmeas b hp hg γ)
     (anchoredVectorMoment_integrable u p h hpmeas b hp hh γ)
 
-theorem anchoredPopulationFit_error_equation {d ℓ : ℕ} (u : Covariate d)
-    (p g : Covariate d → ℝ) (hpmeas : Measurable p) (a b : ℝ) (ha : 0 < a)
+theorem anchoredPopulationFit_error_equation  u
+    p g (hpmeas : Measurable p) a b (ha : 0 < a)
     (hp : ∀ᵐ w ∂cubeVolume d, a ≤ p w ∧ p w ≤ b)
     (hg : ContinuousOn g (unitCube d)) (c : AnchoredIndex d ℓ → ℝ) :
     anchoredDensityGram u p *ᵥ (anchoredPopulationFit u p g - c) =
@@ -51,13 +54,13 @@ theorem anchoredPopulationFit_error_equation {d ℓ : ℕ} (u : Covariate d)
     anchoredVectorMoment_polynomial u p hpmeas b
       (hp.mono (fun w hw => ⟨ha.le.trans hw.1, hw.2⟩))]
 
-theorem anchoredDensityGram_solve_norm_bound {d ℓ : ℕ} (u : Covariate d)
-    (p : Covariate d → ℝ) (hpmeas : Measurable p) (a b cB : ℝ)
+theorem anchoredDensityGram_solve_norm_bound  u
+    p (hpmeas : Measurable p) a b cB
     (ha : 0 < a) (hcB : 0 < cB)
     (hp : ∀ᵐ w ∂cubeVolume d, a ≤ p w ∧ p w ≤ b)
     (hB : ∀ c : AnchoredCoefficientSpace d ℓ,
       cB * ‖c‖ ^ 2 ≤ anchoredQuadratic u c)
-    (e r : AnchoredIndex d ℓ → ℝ) (her : anchoredDensityGram u p *ᵥ e = r) :
+    e r (her : anchoredDensityGram u p *ᵥ e = r) :
     ‖(EuclideanSpace.equiv (AnchoredIndex d ℓ) ℝ).symm e‖ ≤
       ‖(EuclideanSpace.equiv (AnchoredIndex d ℓ) ℝ).symm r‖ / (a * cB) := by
   let E := (EuclideanSpace.equiv (AnchoredIndex d ℓ) ℝ).symm e
@@ -76,18 +79,18 @@ theorem anchoredDensityGram_solve_norm_bound {d ℓ : ℕ} (u : Covariate d)
   change ‖E‖ ≤ ‖R‖ / (a * cB)
   by_cases he : ‖E‖ = 0
   · rw [he]; positivity
-  · have hpos : 0 < ‖E‖ := lt_of_le_of_ne (norm_nonneg _) (Ne.symm he)
+  · have hpos  := lt_of_le_of_ne (norm_nonneg _) (Ne.symm he)
     apply (le_div_iff₀ (mul_pos ha hcB)).2
     nlinarith
 
 /-- A uniform coefficient-error constant derived from density bounds and the
 known Gram. The approximation premise is solely a genuine polynomial residual. -/
-theorem anchoredPopulationFit_coefficient_error {d ℓ : ℕ} [Nonempty (AnchoredIndex d ℓ)]
-    (a b : ℝ) (ha : 0 < a) (hb : 0 ≤ b) :
-    ∃ D : ℝ, 0 < D ∧ ∀ u ∈ unitCube d, ∀ p g : Covariate d → ℝ,
+theorem anchoredPopulationFit_coefficient_error  [Nonempty (AnchoredIndex d ℓ)]
+    a b (ha : 0 < a) (hb : 0 ≤ b) :
+    ∃ D : ℝ, 0 < D ∧ ∀ u ∈ unitCube d, ∀ p g ,
       Measurable p → (∀ᵐ w ∂cubeVolume d, a ≤ p w ∧ p w ≤ b) →
       ContinuousOn g (unitCube d) → ∀ c : AnchoredIndex d ℓ → ℝ,
-      ∀ R : ℝ, 0 ≤ R → (∀ w ∈ unitCube d, |g w - anchoredFitPolynomial u c w| ≤ R) →
+      ∀ R , 0 ≤ R → (∀ w ∈ unitCube d, |g w - anchoredFitPolynomial u c w| ≤ R) →
       ‖(EuclideanSpace.equiv (AnchoredIndex d ℓ) ℝ).symm (anchoredPopulationFit u p g - c)‖ ≤ D * R := by
   obtain ⟨cB, CB, hcB, hCB, hGram⟩ := anchoredGram_uniform_bounds (d := d) (ℓ := ℓ)
   let D := max 1 (Real.sqrt (Fintype.card (AnchoredIndex d ℓ) : ℝ) * b / (a * cB))
@@ -105,9 +108,9 @@ theorem anchoredPopulationFit_coefficient_error {d ℓ : ℕ} [Nonempty (Anchore
     _ = (Real.sqrt (Fintype.card (AnchoredIndex d ℓ) : ℝ) * b / (a * cB)) * R := by ring
     _ ≤ D * R := mul_le_mul_of_nonneg_right (le_max_right _ _) hR
 
-theorem anchoredFitPolynomial_abs_le_distance {d ℓ : ℕ} (u w : Covariate d)
-    (hu : u ∈ unitCube d) (hw : w ∈ unitCube d) (c : AnchoredIndex d ℓ → ℝ) :
-    |anchoredFitPolynomial u c w| ≤ (Fintype.card (AnchoredIndex d ℓ) : ℝ) *
+theorem anchoredFitPolynomial_abs_le_distance  u w
+    (hu : u ∈ unitCube d) (hw : w ∈ unitCube d) c :
+    |anchoredFitPolynomial u c w| ≤ (Fintype.card (AnchoredIndex d ℓ)) *
       ‖(EuclideanSpace.equiv (AnchoredIndex d ℓ) ℝ).symm c‖ * euclideanNorm (w - u) := by
   calc
     _ ≤ ∑ γ, |c γ * anchoredFeature u w γ| := Finset.abs_sum_le_sum_abs _ _
@@ -122,19 +125,19 @@ theorem anchoredFitPolynomial_abs_le_distance {d ℓ : ℕ} (u w : Covariate d)
         PiLp.norm_apply_le ((EuclideanSpace.equiv (AnchoredIndex d ℓ) ℝ).symm c) γ
     _ = _ := by simp; ring
 
-theorem anchoredFitPolynomial_sub {d ℓ : ℕ} (u w : Covariate d)
+theorem anchoredFitPolynomial_sub  u w
     (c e : AnchoredIndex d ℓ → ℝ) :
     anchoredFitPolynomial u (c - e) w = anchoredFitPolynomial u c w - anchoredFitPolynomial u e w := by
   simp only [anchoredFitPolynomial, Pi.sub_apply, sub_mul, Finset.sum_sub_distrib]
 
 /-- The coefficient estimate yields the spatial Lipschitz-at-anchor error term
 needed by the actual population fit, without an assumed fitted-coefficient bound. -/
-theorem anchoredPopulationFit_pointwise_error {d ℓ : ℕ} [Nonempty (AnchoredIndex d ℓ)]
-    (a b : ℝ) (ha : 0 < a) (hb : 0 ≤ b) :
-    ∃ D : ℝ, 0 < D ∧ ∀ u ∈ unitCube d, ∀ p g : Covariate d → ℝ,
+theorem anchoredPopulationFit_pointwise_error  [Nonempty (AnchoredIndex d ℓ)]
+    a b (ha : 0 < a) (hb : 0 ≤ b) :
+    ∃ D : ℝ, 0 < D ∧ ∀ u ∈ unitCube d, ∀ p g ,
       Measurable p → (∀ᵐ v ∂cubeVolume d, a ≤ p v ∧ p v ≤ b) →
       ContinuousOn g (unitCube d) → ∀ c : AnchoredIndex d ℓ → ℝ,
-      ∀ R : ℝ, 0 ≤ R → (∀ v ∈ unitCube d, |g v - anchoredFitPolynomial u c v| ≤ R) →
+      ∀ R , 0 ≤ R → (∀ v ∈ unitCube d, |g v - anchoredFitPolynomial u c v| ≤ R) →
       ∀ w ∈ unitCube d,
       |g w - anchoredFitPolynomial u (anchoredPopulationFit (ℓ := ℓ) u p g) w| ≤
         |g w - anchoredFitPolynomial u c w| + D * R * euclideanNorm (w - u) := by
@@ -152,8 +155,7 @@ theorem anchoredPopulationFit_pointwise_error {d ℓ : ℕ} [Nonempty (AnchoredI
       _ ≤ (Fintype.card (AnchoredIndex d ℓ) : ℝ) * (D * R) * euclideanNorm (w - u) := by
         gcongr
       _ = ((Fintype.card (AnchoredIndex d ℓ) : ℝ) * D) * R * euclideanNorm (w - u) := by ring
-      _ ≤ E * R * euclideanNorm (w - u) := by
-        exact mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_right (le_max_right _ _) hR) hnonneg
+      _ ≤ E * R * euclideanNorm (w - u) := mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_right (le_max_right _ _) hR) hnonneg
   have heq : g w - anchoredFitPolynomial u (anchoredPopulationFit (ℓ := ℓ) u p g) w =
       (g w - anchoredFitPolynomial u c w) -
         anchoredFitPolynomial u (anchoredPopulationFit u p g - c) w := by
@@ -161,5 +163,7 @@ theorem anchoredPopulationFit_pointwise_error {d ℓ : ℕ} [Nonempty (AnchoredI
     ring
   rw [heq]
   exact (abs_sub _ _).trans (add_le_add le_rfl habs)
+end
+
 
 end NearlyMinimax

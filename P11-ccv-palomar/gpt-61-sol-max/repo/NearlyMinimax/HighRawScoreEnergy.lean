@@ -65,14 +65,12 @@ theorem raw_joint_fisher_integrable_bound {Ω Z : Type*}
       (∫ z, (D ω z / L ω z) ^ 2 ∂μ.withDensity (fun z => ENNReal.ofReal (L ω z / c ω))) := by
     have hs := (normalized_likelihood_score_square_transfer μ (c ω) (hc ω) (L ω) (D ω)
       hL.of_uncurry_left (hpos ω)).2
-    rw [hs]
-    rw [← mul_assoc, mul_inv_cancel₀ (hc ω).ne', one_mul]
+    grind
   have hnorm (ω : Ω) : (∫ z, ‖W (ω, z)‖ ∂μ) ≤ c ω * B := by
     have heNorm : (fun z => ‖W (ω, z)‖) = (fun z => W (ω, z)) := by
       funext z
       rw [Real.norm_eq_abs, abs_of_nonneg (hWn ω z)]
-    rw [heNorm, he]
-    exact mul_le_mul_of_nonneg_left (hbound ω) (hc ω).le
+    simp_all
   have hnormMeas : AEStronglyMeasurable (fun ω => ∫ z, ‖W (ω, z)‖ ∂μ) ν :=
     hW.stronglyMeasurable.norm.integral_prod_right'.aestronglyMeasurable
   have hnormI : Integrable (fun ω => ∫ z, ‖W (ω, z)‖ ∂μ) ν := by
@@ -90,10 +88,7 @@ theorem raw_joint_fisher_integrable_bound {Ω Z : Type*}
     _ ≤ ∫ ω, c ω * B ∂ν := by
       apply integral_mono_ae hWI.integral_prod_left (hci.mul_const B)
       apply Filter.Eventually.of_forall
-      intro ω
-      change (∫ z, W (ω, z) ∂μ) ≤ c ω * B
-      rw [he]
-      exact mul_le_mul_of_nonneg_left (hbound ω) (hc ω).le
+      simp_all
     _ = _ := integral_mul_const _ _
 
 theorem high_raw_joint_fisher_integrable_bound {Ω : Type*} [MeasurableSpace Ω]
@@ -114,7 +109,7 @@ theorem high_raw_joint_fisher_integrable_bound {Ω : Type*} [MeasurableSpace Ω]
     (∫ z, D z.1 z.2 ^ 2 / highRawSampleLikelihood n a V (p z.1) (F z.1) z.2
       ∂ν.prod (highSampleReference d n)) ≤
       massPowerNormalizer ν (fun ω => highRawDensityMass (p ω)) n * B := by
-  let c : Ω → ℝ := fun ω => highRawDensityMass (p ω) ^ n
+  let c  := fun ω => highRawDensityMass (p ω) ^ n
   have hmBound (ω : Ω) : aRaw ≤ highRawDensityMass (p ω) ∧ highRawDensityMass (p ω) ≤ bRaw :=
     highRawDensityMass_mem_Icc (p ω) hp.of_uncurry_left aRaw bRaw haRaw
       (Filter.Eventually.of_forall (hraw ω))
@@ -123,20 +118,15 @@ theorem high_raw_joint_fisher_integrable_bound {Ω : Type*} [MeasurableSpace Ω]
   have hcm : Measurable c := (highRawDensityMass_joint_measurable p hp).pow_const n
   have hci : Integrable c ν := by
     apply (integrable_const (bRaw ^ n)).mono' hcm.aestronglyMeasurable
-    apply Filter.Eventually.of_forall
-    intro ω
-    rw [Real.norm_eq_abs, abs_of_nonneg (hc ω).le]
-    exact pow_le_pow_left₀ (hm ω).le (hmBound ω).2 n
+    grind only [Filter.Eventually.of_forall, Real.norm_eq_abs, abs_of_nonneg, pow_le_pow_left₀]
   have he (ω : Ω) : highSampleIndexKernel n a V p F hp hF ω =
       (highSampleReference d n).withDensity (fun z =>
         ENNReal.ofReal (highRawSampleLikelihood n a V (p ω) (F ω) z / c ω)) := by
     rw [highSampleIndexKernel_apply]
-    congr 1
-    funext z
-    congr 1
-    apply (eq_div_iff (hc ω).ne').mpr
-    simpa only [c, mul_comm] using
-      highSampleLikelihood_mass_cancellation n a V (p ω) (F ω) (hm ω).ne' z
+    
+    
+    
+    grind only [highSampleLikelihood_mass_cancellation]
   exact raw_joint_fisher_integrable_bound ν (highSampleReference d n) c hc hci
     (fun ω => highRawSampleLikelihood n a V (p ω) (F ω)) D
     (highRawSampleLikelihood_joint_measurable n a V p F hp hF) hD

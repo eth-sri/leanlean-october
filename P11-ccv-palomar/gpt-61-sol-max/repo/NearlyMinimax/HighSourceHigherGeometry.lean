@@ -17,13 +17,13 @@ set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1000000
 attribute [local instance] Classical.propDecidable
 
- theorem highCardinalRawNumerator_eq_matrix_heat {d n F : ℕ}
-    (ad bd lam : ℝ) (haD : 0 < ad) (hab : ad < bd) (hlam : 0 ≤ lam)
-    {T : ℝ} (hT : 1 ≤ T) (m D q : ℕ) (hn : 1 ≤ n) (hnm : n ≤ m)
-    (hnD : n ≤ D) (hnF : n ≤ F) (C a V η : ℝ) (hC : C ≠ 0)
-    (U : Fin n → Covariate d) (hU : ∀ i l, |U i l| ≤ 2)
+ theorem highCardinalRawNumerator_eq_matrix_heat {d n F }
+    ad bd lam (haD : 0 < ad) (hab : ad < bd) (hlam : 0 ≤ lam)
+    {T } (hT : 1 ≤ T) m D q (hn : 1 ≤ n) (hnm : n ≤ m)
+    (hnD : n ≤ D) (hnF : n ≤ F) C a V η (hC : C ≠ 0)
+    U (hU : ∀ i l, |U i l| ≤ 2)
     (p g w : Fin n → ℝ) (hp : ∀ i, p i ∈ Icc ad bd)
-    (c : HighFrameIndex d F → ℝ) (y : Fin n → Fin 3) :
+    (c : HighFrameIndex d F → ℝ) y :
     highCardinalRawNumerator ad bd lam T m D q C a V η U p g w c y =
       (∏ i, p i)*responseMatrixAction q C (integratedCardinalMatrix lam T U) c
         (fun v => highResponseProduct a V η g w (fun i => highFrameFeature (U i)) v y) -
@@ -33,20 +33,20 @@ attribute [local instance] Classical.propDecidable
   simp only [mul_sub, sub_mul, mul_one, Finset.sum_sub_distrib]
   ring
 
- theorem higherBandTargetScale_pos_of_physical {d n D : ℕ} (hn : 3 ≤ n) (hnD : n ≤ D)
-    (N μ : ℝ) (hnu : ∀ j : Fin (D-2), 0 < higherBandTargetScale d (j.val+3) N μ) :
+ theorem higherBandTargetScale_pos_of_physical {d n D } (hn : 3 ≤ n) (hnD : n ≤ D)
+    N μ (hnu : ∀ j : Fin (D-2), 0 < higherBandTargetScale d (j.val+3) N μ) :
     0 < higherBandTargetScale d n N μ := by
   let j : Fin (D-2) := ⟨n-3, by omega⟩
   have hj : j.val+3 = n := by dsimp [j]; omega
   simpa only [hj] using hnu j
 
- theorem completeSourceRawNumerator_higher_components {d n : ℕ} [NeZero d]
-    (ad bd lam ℓ N μ : ℝ) (haD : 0 < ad) (hab : ad < bd) (hlam : 0 ≤ lam) (hℓ : 1 ≤ ℓ)
-    (D M q : ℕ) (hn : 3 ≤ n) (hnD : n ≤ D)
+ theorem completeSourceRawNumerator_higher_components {d n } [NeZero d]
+    ad bd lam ℓ N μ (haD : 0 < ad) (hab : ad < bd) (hlam : 0 ≤ lam) (hℓ : 1 ≤ ℓ)
+    D M q (hn : 3 ≤ n) (hnD : n ≤ D)
     (hnu : ∀ j : Fin (D-2), 0 < higherBandTargetScale d (j.val+3) N μ)
     (hFine : ∀ j : Fin (D-2), ℓ < higherBandTargetScale d (j.val+3) N μ → j.val+3 ≤ M)
-    (C a V η : ℝ) (hC : C ≠ 0) (U : Fin n → Covariate d) (hU : ∀ i l, |U i l| ≤ 2)
-    (p g w : Fin n → ℝ) (hp : ∀ i, p i ∈ Icc ad bd) (c : HighFrameIndex d D → ℝ) (y : Fin n → Fin 3) :
+    C a V η (hC : C ≠ 0) U (hU : ∀ i l, |U i l| ≤ 2)
+    (p g w : Fin n → ℝ) (hp : ∀ i, p i ∈ Icc ad bd) (c : HighFrameIndex d D → ℝ) y :
     completeSourceRawNumerator ad bd lam ℓ N μ D M q C a V η U p g w c y =
       highCardinalRawNumerator ad bd lam (max 1 (higherBandTargetScale d n N μ)) D D q C a V η U p g w c y +
       (if M<n then ordinaryFineAliasFamilyRawAction (ordinaryFineAliasTargetSet d D ℓ N μ)
@@ -72,16 +72,16 @@ attribute [local instance] Classical.propDecidable
     simp only [if_neg hnM, ite_self]
     ring
 
- def completeSourceHigherGeometryEnvelope {d n D : ℕ} (aD bD c0 ℓ N μ : ℝ)
-    (M R q : ℕ) (C a ρ η : ℝ) (U : Fin n → Covariate d) : ℝ :=
+ def completeSourceHigherGeometryEnvelope {d n D } aD bD c0 ℓ N μ
+    (M R q : ℕ) C a ρ η (U : Fin n → Covariate d)  :=
   4*(cardinalGeometryEnvelope (F := D) q (bD-(M : ℝ)⁻¹) C a ρ η (max 1 (higherBandTargetScale d n N μ)) U +
     (if M<n then ordinaryFineAliasFamilyResponseSquareEnvelope (F := D) (ordinaryFineAliasTargetSet d D ℓ N μ)
       M R q aD bD c0 C a ρ η ℓ (fun r => higherBandTargetScale d r N μ) U else 0) +
     (if M<n then finePairAliasGeometryEnvelope (aD+(M : ℝ)⁻¹) (bD-(M : ℝ)⁻¹) ℓ N M q C a ρ η U else 0) +
     fineFieldGeometryEnvelope (aD+(M : ℝ)⁻¹) (bD-(M : ℝ)⁻¹) ℓ N M q C a ρ η U)
 
- theorem completeSourceHigherGeometryEnvelope_nonneg {d n D : ℕ} (aD bD c0 ℓ N μ : ℝ)
-    (M R q : ℕ) (C a ρ η : ℝ) (U : Fin n → Covariate d) :
+ theorem completeSourceHigherGeometryEnvelope_nonneg {d n D } aD bD c0 ℓ N μ
+    M R q C a ρ η (U : Fin n → Covariate d) :
     0 ≤ completeSourceHigherGeometryEnvelope (D := D) aD bD c0 ℓ N μ M R q C a ρ η U := by
   unfold completeSourceHigherGeometryEnvelope
   have hA := cardinalGeometryEnvelope_nonneg (F := D) q (bD-(M : ℝ)⁻¹) C a ρ η (max 1 (higherBandTargetScale d n N μ)) U
@@ -90,18 +90,18 @@ attribute [local instance] Classical.propDecidable
   have hF := fineFieldGeometryEnvelope_nonneg (aD+(M : ℝ)⁻¹) (bD-(M : ℝ)⁻¹) ℓ N M q C a ρ η U
   split_ifs <;> positivity
 
- theorem completeSourceRawNumerator_higher_square_le_geometry {d n : ℕ} [NeZero d]
-    (aD bD c0 ℓ N μ : ℝ) (haD : 0 < aD) (hℓ : 1 ≤ ℓ) (D M R q : ℕ)
+ theorem completeSourceRawNumerator_higher_square_le_geometry {d n } [NeZero d]
+    aD bD c0 ℓ N μ (haD : 0 < aD) (hℓ : 1 ≤ ℓ) (D M R q : ℕ)
     (hshrink : aD+(M : ℝ)⁻¹ < bD-(M : ℝ)⁻¹) (htau : shrunkDensityExponent aD bD M ≤ c0)
     (hn : 3 ≤ n) (hnD : n ≤ D) (hq : 1 ≤ q)
     (hnu : ∀ j : Fin (D-2), 0 < higherBandTargetScale d (j.val+3) N μ)
     (hFine : ∀ j : Fin (D-2), ℓ < higherBandTargetScale d (j.val+3) N μ → j.val+3 ≤ M)
     (hI : ∀ r ∈ ordinaryFineAliasTargetSet d D ℓ N μ, 1 ≤ r ∧ r ≤ R)
-    (C a V η ρ : ℝ) (hC : 1 ≤ C) (ha : 0 < a) (hη : 0 ≤ η) (hρ : 0 ≤ ρ) (hηρ : η ≤ ρ/2)
+    C a V η ρ (hC : 1 ≤ C) (ha : 0 < a) (hη : 0 ≤ η) (hρ : 0 ≤ ρ) (hηρ : η ≤ ρ/2)
     (U : Fin n → Covariate d) (hU : ∀ i l, |U i l| ≤ 2)
-    (p g w : Fin n → ℝ) (hpD : ∀ i, p i ∈ Icc (aD+(M : ℝ)⁻¹) (bD-(M : ℝ)⁻¹))
-    (hg : ∀ i, |g i| ≤ ρ/2) (hw : ∀ i, |w i| ≤ 1) (c : HighFrameIndex d D → ℝ)
-    (hc : ∑ γ, |c γ| ≤ C⁻¹) (hp : ∀ f : ℝ, |f| ≤ ρ → ∀ u, 0 ≤ ternaryMass a f V u) :
+    p g w (hpD : ∀ i, p i ∈ Icc (aD+(M : ℝ)⁻¹) (bD-(M : ℝ)⁻¹))
+    (hg : ∀ i, |g i| ≤ ρ/2) (hw : ∀ i, |w i| ≤ 1) c
+    (hc : ∑ γ, |c γ| ≤ C⁻¹) (hp : ∀ f , |f| ≤ ρ → ∀ u, 0 ≤ ternaryMass a f V u) :
     (∑ y : Fin n → Fin 3, completeSourceRawNumerator (aD+(M : ℝ)⁻¹) (bD-(M : ℝ)⁻¹)
       (spatialInterpolationLambda d) ℓ N μ D M q C a V η U p g w c y^2) ≤
       completeSourceHigherGeometryEnvelope (D := D) aD bD c0 ℓ N μ M R q C a ρ η U := by
@@ -148,9 +148,9 @@ attribute [local instance] Classical.propDecidable
     convert mul_le_mul_of_nonneg_left (add_le_add (add_le_add (add_le_add hA hB) hP) hF)
       (by norm_num : (0 : ℝ) ≤ 4) using 1)
 
- theorem ordinaryFineAliasFamilyResponseSquareEnvelope_integrable {d n F : ℕ}
-    (hd : 5 ≤ d) (I : Finset ℕ) (M R q : ℕ) (ad bd c0 C a ρ η L : ℝ)
-    (T : ℕ → ℝ) (hL : 1 ≤ L) (hI : ∀ r ∈ I, 2 ≤ r ∧ L ≤ T r) :
+ theorem ordinaryFineAliasFamilyResponseSquareEnvelope_integrable {d n F }
+    (hd : 5 ≤ d) I M R q ad bd c0 C a ρ η L
+    T (hL : 1 ≤ L) (hI : ∀ r ∈ I, 2 ≤ r ∧ L ≤ T r) :
     Integrable (ordinaryFineAliasFamilyResponseSquareEnvelope (d := d) (n := n) (F := F)
       I M R q ad bd c0 C a ρ η L T) (fullSpatialPatchDesign d n) := by
   let f := fun r (U : Fin n → Covariate d) => ordinaryFineAliasAmplitudeFactor n M R q ad bd c0 C a ρ η *
@@ -168,15 +168,11 @@ attribute [local instance] Classical.propDecidable
   have hs : Integrable (fun U => (∑ r ∈ I, f r U)^2) (fullSpatialPatchDesign d n) := by
     have h := finite_sum_abs_square_integrable (fullSpatialPatchDesign d n) I f hm hi
     apply h.mono' ((Finset.measurable_sum I hm).pow_const 2).aestronglyMeasurable
-    apply Filter.Eventually.of_forall
-    intro U
-    have hb := Finset.abs_sum_le_sum_abs (fun r => f r U) I
-    simpa only [Real.norm_eq_abs, abs_sq, sq_abs] using
-      (sq_le_sq₀ (abs_nonneg _) (Finset.sum_nonneg (fun _ _ => abs_nonneg _))).mpr hb
+    grind only [Filter.Eventually.of_forall, Finset.abs_sum_le_sum_abs, Real.norm_eq_abs, abs_sq, sq_abs, sq_le_sq₀, abs_nonneg]
   exact hs.const_mul ((3 : ℝ)^n)
 
- theorem completeSourceHigherGeometryEnvelope_integrable {d n D : ℕ} [NeZero d]
-    (hd : 5 ≤ d) (hn : 2 ≤ n) (aD bD c0 ℓ N μ : ℝ) (M R q : ℕ) (C a ρ η : ℝ)
+ theorem completeSourceHigherGeometryEnvelope_integrable {d n D } [NeZero d]
+    (hd : 5 ≤ d) (hn : 2 ≤ n) aD bD c0 ℓ N μ M R q C a ρ η
     (hℓ : 1 ≤ ℓ) (hN : ℓ ≤ N) :
     Integrable (completeSourceHigherGeometryEnvelope (d := d) (n := n) (D := D)
       aD bD c0 ℓ N μ M R q C a ρ η) (fullSpatialPatchDesign d n) := by

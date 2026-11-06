@@ -19,23 +19,21 @@ attribute [local irreducible] highUnionSourceDensity highUnionSourceState histor
 
 theorem completeSourceCanonicalAction_eq_signed_first_action
     {d k D M q n : ℕ} [NeZero d] [NeZero k] [LinearOrder (HighWindowLabels d k)]
-    (C : ModelConstants d) (hD : 3 ≤ D) (hq : 1 ≤ q)
-    (hM : highCenterResolutionThreshold C ≤ (M : ℝ))
-    (Cfr lam ℓ N μ : ℝ) (hCfr : 1 ≤ Cfr) (hℓ : 0 < ℓ) (hℓN : ℓ < N)
-    (j : HighWindowLabels d k)
-    (h : HistoryMarked (fun i j => j ∈ highNeighborLabels d k i)
-      (HighUnionMark (SourceRowMark d D M q (C.densityLower+1/(M : ℝ))
-        (C.densityUpper-1/(M : ℝ)) Cfr lam ℓ N μ)))
+    C (hD : 3 ≤ D) (hq : 1 ≤ q)
+    (hM : highCenterResolutionThreshold C ≤ M)
+    Cfr lam ℓ N μ (hCfr : 1 ≤ Cfr) (hℓ : 0 < ℓ) (hℓN : ℓ < N)
+    j
+    h
     (x : Fin n → Covariate d) (hx : ∀ u, x u ∈ highTorusPatch d k j)
-    (Φ : (HighFrameIndex d D → ℝ) → ℝ) (hmΦ : Measurable Φ)
-    (B : ℝ) (hB : 0 ≤ B) (hΦ : ∀ v : HighFrameIndex d D → ℝ,
+    Φ (hmΦ : Measurable Φ)
+    B (hB : 0 ≤ B) (hΦ : ∀ v ,
       (∑ γ, |v γ|) ≤ Cfr⁻¹ → |Φ v| ≤ B) :
     let R := completeSourceRows C k D M q Cfr lam ℓ N μ
     (∫ e, highUnionActivation R (highCenterMix C) e*
       ((∏ u, highUnionSourceResetDensity C R j h e (x u))*
         Φ (highUnionSourceResetCoefficient C R j h e)) ∂highUnionLaw R (highCenterMix C)) =
-      completeSourceSignedFirstAction (C.densityLower+1/(M : ℝ))
-        (C.densityUpper-1/(M : ℝ)) lam ℓ N μ D M q Cfr
+      completeSourceSignedFirstAction (C.densityLower+1/M)
+        (C.densityUpper-1/M) lam ℓ N μ D M q Cfr
         (fun u => highLocalCoordinates d k j (x u))
         (fun u => highUnionSourceDensity C R h (x u)) ((highUnionSourceState C R h).2 j) Φ := by
   dsimp only
@@ -48,10 +46,9 @@ theorem completeSourceCanonicalAction_eq_signed_first_action
   let U := fun u : Fin n => highLocalCoordinates d k j (x u)
   let O := fun e => (∏ u, highUnionSourceResetDensity C R j h e (x u))*
     Φ (highUnionSourceResetCoefficient C R j h e)
-  letI : StandardBorelSpace (HighUnionMark (SourceRowMark d D M q ad bd Cfr lam ℓ N μ)) :=
-    highUnionMark_standardBorel
+  
   have hc := highUnionSourceState_coefficient_ball C R G h j
-  have hmCoef : Measurable (highUnionSourceResetCoefficient C R j h) :=
+  have hmCoef  :=
     measurable_pi_iff.mpr (highUnionSourceResetCoefficient_measurable C R G j h)
   have hmO : Measurable O := (Finset.measurable_fun_prod _ (fun u _ =>
     (highUnionSourceResetDensity_measurable C R G j h).comp
@@ -88,7 +85,7 @@ theorem completeSourceCanonicalAction_eq_signed_first_action
   have hunit : (∫ᵛ e, O (Sum.inl ⟨Sum.inl FinePairRowTag.unit,e⟩)
       ∂<•sourceRowSignedMeasure d k D M q ad bd Cfr lam ℓ N μ (.inl .unit)) =
       finePairUnitFirstAction ad bd D q Cfr p c Φ := by
-    unfold finePairUnitFirstAction sourceRowSignedMeasure
+    
     congr 1
     funext e
     rw [hO]
@@ -104,7 +101,7 @@ theorem completeSourceCanonicalAction_eq_signed_first_action
   have hcoarse : (∫ᵛ e, O (Sum.inl ⟨Sum.inl FinePairRowTag.coarse,e⟩)
       ∂<•sourceRowSignedMeasure d k D M q ad bd Cfr lam ℓ N μ (.inl .coarse)) =
       finePairCoarseFirstAction ad bd ℓ D q Cfr U p c Φ := by
-    unfold finePairCoarseFirstAction sourceRowSignedMeasure
+    
     congr 1
     funext e
     rw [hO]
@@ -120,7 +117,7 @@ theorem completeSourceCanonicalAction_eq_signed_first_action
   have hfine : (∫ᵛ e, O (Sum.inl ⟨Sum.inl FinePairRowTag.fine,e⟩)
       ∂<•sourceRowSignedMeasure d k D M q ad bd Cfr lam ℓ N μ (.inl .fine)) =
       finePairFineFirstAction ad bd ℓ N M q Cfr U p c Φ := by
-    unfold finePairFineFirstAction sourceRowSignedMeasure
+    
     congr 1
     funext e
     rw [hO]
@@ -136,7 +133,7 @@ theorem completeSourceCanonicalAction_eq_signed_first_action
   have hsingle : (∫ᵛ e, O (Sum.inl ⟨Sum.inr (Sum.inl ()),e⟩)
       ∂<•sourceRowSignedMeasure d k D M q ad bd Cfr lam ℓ N μ (.inr (.inl ()))) =
       singletonFirstAction ad bd D q Cfr p c Φ := by
-    unfold singletonFirstAction sourceRowSignedMeasure
+    
     congr 1
     funext e
     rw [hO]
@@ -153,7 +150,7 @@ theorem completeSourceCanonicalAction_eq_signed_first_action
         ∂<•sourceRowSignedMeasure d k D M q ad bd Cfr lam ℓ N μ (.inr (.inr i))) =
       higherBandFirstAction ad bd lam ℓ (higherBandFamilyUpper d ℓ N μ i.val)
         (higherBandFamilyTarget i.val) (higherBandFamilyGuardDegree M i.val) D q Cfr i.val.2 U p c Φ := by
-    unfold higherBandFirstAction sourceRowSignedMeasure
+    
     congr 1
     funext e
     rw [hO]

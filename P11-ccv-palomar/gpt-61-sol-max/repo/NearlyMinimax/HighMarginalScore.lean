@@ -17,14 +17,17 @@ set_option maxHeartbeats 1000000
 set_option backward.isDefEq.respectTransparency false
 variable {J : Type*} [Fintype J] [LinearOrder J]
 
-def highMarginalLikelihoodDerivative {E : Type*} [MeasurableSpace E] {d : ℕ}
+section
+variable {E : Type*}
+
+def highMarginalLikelihoodDerivative  [MeasurableSpace E] {d : ℕ}
     (dependent : J → J → Prop) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
     (ν : Measure (HistoryMarked dependent E)) (π : Measure E) (activation : E → ℝ)
     (n : ℕ) (a V η : ℝ) (p F : HistoryMarked dependent E → Covariate d → ℝ)
     (z : (Fin n → Covariate d) × (Fin n → Fin 3)) : ℝ :=
   ∫ ω, highHistoryLikelihoodDerivative dependent hsymm π activation n a V η p F ω z ∂ν
 
-def highMarginalIndexScore {E : Type*} [MeasurableSpace E] {d : ℕ}
+def highMarginalIndexScore  [MeasurableSpace E] {d : ℕ}
     (dependent : J → J → Prop) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
     (ν : Measure (HistoryMarked dependent E)) (π : Measure E) (activation : E → ℝ)
     (n : ℕ) (a V η : ℝ) (p F : HistoryMarked dependent E → Covariate d → ℝ)
@@ -32,49 +35,38 @@ def highMarginalIndexScore {E : Type*} [MeasurableSpace E] {d : ℕ}
   highMarginalLikelihoodDerivative dependent hsymm ν π activation n a V η p F z /
     highMarginalRawLikelihood ν n a V p F z
 
-def highMarginalRealScore {E : Type*} [MeasurableSpace E] {d : ℕ}
+def highMarginalRealScore  [MeasurableSpace E] {d : ℕ}
     (dependent : J → J → Prop) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
     (ν : Measure (HistoryMarked dependent E)) (π : Measure E) (activation : E → ℝ)
     (n : ℕ) (a V η : ℝ) (p F : HistoryMarked dependent E → Covariate d → ℝ)
     (z : Fin n → Observation d) : ℝ :=
   highMarginalIndexScore dependent hsymm ν π activation n a V η p F (decodeDesignResponse a z)
 
-theorem highMarginalIndexScore_measurable {E : Type*} [MeasurableSpace E]
-    [StandardBorelSpace E] {d : ℕ}
-    (dependent : J → J → Prop) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
-    (ν : Measure (HistoryMarked dependent E)) [SFinite ν] (π : Measure E) [SFinite π]
-    (activation : E → ℝ) (ham : Measurable activation) (n : ℕ) (a V η : ℝ)
-    (p F : HistoryMarked dependent E → Covariate d → ℝ)
-    (hp : Measurable (Function.uncurry p)) (hF : Measurable (Function.uncurry F)) :
-    Measurable (highMarginalIndexScore dependent hsymm ν π activation n a V η p F) := by
-  exact (highHistoryLikelihoodDerivative_measurable dependent hsymm π activation ham n a V η p F hp hF).stronglyMeasurable.integral_prod_left'.measurable.div
+section
+variable [MeasurableSpace E] [StandardBorelSpace E] {d : ℕ} (dependent : J → J → Prop) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i) (ν : Measure (HistoryMarked dependent E))
+
+section
+variable [SFinite ν] (π : Measure E) [SFinite π] (activation : E → ℝ) (ham : Measurable activation) (n : ℕ) (a V η : ℝ) (p F : HistoryMarked dependent E → Covariate d → ℝ) (hp : Measurable (Function.uncurry p)) (hF : Measurable (Function.uncurry F))
+include ham hp hF
+
+theorem highMarginalIndexScore_measurable    :
+    Measurable (highMarginalIndexScore dependent hsymm ν π activation n a V η p F) := (highHistoryLikelihoodDerivative_measurable dependent hsymm π activation ham n a V η p F hp hF).stronglyMeasurable.integral_prod_left'.measurable.div
     (highMarginalRawLikelihood_measurable ν n a V p F hp hF)
 
-theorem highMarginalRealScore_measurable {E : Type*} [MeasurableSpace E]
-    [StandardBorelSpace E] {d : ℕ}
-    (dependent : J → J → Prop) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
-    (ν : Measure (HistoryMarked dependent E)) [SFinite ν] (π : Measure E) [SFinite π]
-    (activation : E → ℝ) (ham : Measurable activation) (n : ℕ) (a V η : ℝ)
-    (p F : HistoryMarked dependent E → Covariate d → ℝ)
-    (hp : Measurable (Function.uncurry p)) (hF : Measurable (Function.uncurry F)) :
+theorem highMarginalRealScore_measurable    :
     Measurable (highMarginalRealScore dependent hsymm ν π activation n a V η p F) :=
   (highMarginalIndexScore_measurable dependent hsymm ν π activation ham n a V η p F hp hF).comp
     (decodeDesignResponse_measurable a)
+end
+
+
+section
+variable [IsProbabilityMeasure ν] (π : Measure E) [IsProbabilityMeasure π] (activation : E → ℝ) (ham : Measurable activation) (Ba : ℝ) (hBa : 0 ≤ Ba) (habound : ∀ e, |activation e| ≤ Ba) (n : ℕ) (a V η aRaw bRaw B : ℝ) (ha : 0 < a) (haRaw : 0 < aRaw) (hB : 0 ≤ B) (p F : HistoryMarked dependent E → Covariate d → ℝ) (hp : Measurable (Function.uncurry p)) (hF : Measurable (Function.uncurry F)) (hraw : ∀ ω x, aRaw ≤ p ω x ∧ p ω x ≤ bRaw) (hq : ∀ ω x y, 0 < ternaryMass a (F ω x) V y) (H : (Fin n → Observation d) → ℝ) (hH : Measurable H) (hHb : ∀ z, |H z| ≤ B)
+include ham hBa habound ha haRaw hB hraw hq hH hHb
 
 /-- Actual marginal score testing has the genuine averaged derivative
 as its density; all Fubini integrability is derived from primitive bounds. -/
-theorem highMarginalIndexScore_integral {E : Type*} [MeasurableSpace E]
-    [StandardBorelSpace E] {d : ℕ}
-    (dependent : J → J → Prop) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
-    (ν : Measure (HistoryMarked dependent E)) [IsProbabilityMeasure ν]
-    (π : Measure E) [IsProbabilityMeasure π] (activation : E → ℝ) (ham : Measurable activation)
-    (Ba : ℝ) (hBa : 0 ≤ Ba) (habound : ∀ e, |activation e| ≤ Ba)
-    (n : ℕ) (a V η aRaw bRaw B : ℝ) (ha : 0 < a) (haRaw : 0 < aRaw) (hB : 0 ≤ B)
-    (p F : HistoryMarked dependent E → Covariate d → ℝ)
-    (hp : Measurable (Function.uncurry p)) (hF : Measurable (Function.uncurry F))
-    (hraw : ∀ ω x, aRaw ≤ p ω x ∧ p ω x ≤ bRaw)
-    (hq : ∀ ω x y, 0 < ternaryMass a (F ω x) V y)
-    (H : (Fin n → Observation d) → ℝ) (hH : Measurable H) (hHb : ∀ z, |H z| ≤ B) :
+theorem highMarginalIndexScore_integral    :
     (∫ z, H (encodeDesignResponse a z) *
       highMarginalIndexScore dependent hsymm ν π activation n a V η p F z
       ∂(highSampleIndexKernel n a V p F hp hF) ∘ₘ
@@ -91,8 +83,7 @@ theorem highMarginalIndexScore_integral {E : Type*} [MeasurableSpace E]
       (Eventually.of_forall (hraw ω))
   have hG := massPowerNormalizer_pos ν m hm n aRaw bRaw haRaw hb
   have hpb (ω : HistoryMarked dependent E) (x : Covariate d) : |p ω x| ≤ |bRaw| := by
-    rw [abs_of_nonneg (haRaw.le.trans (hraw ω x).1)]
-    exact (hraw ω x).2.trans (le_abs_self _)
+    grind
   have hL (z) := highMarginalRawLikelihood_pos ν n a V |bRaw| (abs_nonneg _) ha.ne' p F hp hF
     (fun ω x => haRaw.trans_le (hraw ω x).1) hpb hq z
   have hdens : Measurable (fun z => ENNReal.ofReal
@@ -114,9 +105,7 @@ theorem highMarginalIndexScore_integral {E : Type*} [MeasurableSpace E]
       change ‖H (encodeDesignResponse a z.2) *
         highHistoryLikelihoodDerivative dependent hsymm π activation n a V η p F z.1 z.2‖ ≤ _
       rw [Real.norm_eq_abs, abs_mul]
-      exact mul_le_mul (hHb _) (highHistoryLikelihoodDerivative_abs_le π dependent hsymm activation Ba hBa
-        habound n a V η |bRaw| (abs_nonneg _) ha p F hpb (fun ω x y => (hq ω x y).le) z.1 z.2)
-        (abs_nonneg _) hB
+      grind only [mul_le_mul, highHistoryLikelihoodDerivative_abs_le, abs_nonneg]
   calc
     _ = (massPowerNormalizer ν m n)⁻¹ *
         ∫ z, H (encodeDesignResponse a z) *
@@ -135,18 +124,7 @@ theorem highMarginalIndexScore_integral {E : Type*} [MeasurableSpace E]
         dsimp only [highMarginalLikelihoodDerivative]
         rw [integral_const_mul]
 
-theorem highMarginalRealScore_integral {E : Type*} [MeasurableSpace E]
-    [StandardBorelSpace E] {d : ℕ}
-    (dependent : J → J → Prop) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
-    (ν : Measure (HistoryMarked dependent E)) [IsProbabilityMeasure ν]
-    (π : Measure E) [IsProbabilityMeasure π] (activation : E → ℝ) (ham : Measurable activation)
-    (Ba : ℝ) (hBa : 0 ≤ Ba) (habound : ∀ e, |activation e| ≤ Ba)
-    (n : ℕ) (a V η aRaw bRaw B : ℝ) (ha : 0 < a) (haRaw : 0 < aRaw) (hB : 0 ≤ B)
-    (p F : HistoryMarked dependent E → Covariate d → ℝ)
-    (hp : Measurable (Function.uncurry p)) (hF : Measurable (Function.uncurry F))
-    (hraw : ∀ ω x, aRaw ≤ p ω x ∧ p ω x ≤ bRaw)
-    (hq : ∀ ω x y, 0 < ternaryMass a (F ω x) V y)
-    (H : (Fin n → Observation d) → ℝ) (hH : Measurable H) (hHb : ∀ z, |H z| ≤ B) :
+theorem highMarginalRealScore_integral    :
     (∫ z, H z * highMarginalRealScore dependent hsymm ν π activation n a V η p F z
       ∂(highRealSampleKernel n a V p F hp hF) ∘ₘ
         (massPowerTilt ν (fun ω => highRawDensityMass (p ω)) n)) =
@@ -167,5 +145,11 @@ theorem highMarginalRealScore_integral {E : Type*} [MeasurableSpace E]
   exact Eventually.of_forall fun z => by
     dsimp only [highMarginalRealScore]
     rw [decodeDesignResponse_encode a ha]
+end
+
+end
+
+end
+
 
 end NearlyMinimax

@@ -35,15 +35,17 @@ theorem highPacketSlope_joint_measurable_general {Z : Type*} [MeasurableSpace Z]
   exact hc.mul (Finset.measurable_fun_sum _ (fun l _ => (he l).mul
     ((hB l).comp ((measurable_fst.comp measurable_fst).prodMk measurable_snd))))
 
-def higherBandSourceRow {d : ℕ} (C : ModelConstants d) (k r m D q : ℕ)
-    (M Cfr lam L T : ℝ) (fine : Bool) :
-    HighUnionRowData d k D Unit (fun _ => HigherBandRowMark d r m D q fine) :=
+section
+variable {d : ℕ} (C : ModelConstants d) (k r m D q : ℕ)
+include C
+
+def higherBandSourceRow 
+    M Cfr lam L T (fine : Bool)  :=
   higherBandRowData d k r m D q (C.densityLower+1/M) (C.densityUpper-1/M) Cfr lam L T fine
 
 /-- Every actual selected positive-mass higher-band row satisfies the
 source's primitive probability, reset, and mean-one balancing inputs. -/
-theorem higherBandSourceRow_guards {d : ℕ} (C : ModelConstants d)
-    (k r m D q : ℕ) (hr : 1 ≤ r) (M Cfr lam L T : ℝ) (fine : Bool)
+theorem higherBandSourceRow_guards  (hr : 1 ≤ r) M Cfr lam L T (fine : Bool)
     (hM : highCenterResolutionThreshold C ≤ M) (hCfr : 1 ≤ Cfr) (hT : 1 ≤ T)
     (hpos : 0 < higherBandRowMass d r m D q (C.densityLower+1/M)
       (C.densityUpper-1/M) Cfr lam L T fine) :
@@ -61,7 +63,7 @@ theorem higherBandSourceRow_guards {d : ℕ} (C : ModelConstants d)
   have hM0 : 0 < M := by linarith [hg.1]
   have ha : 0 < a := by dsimp [a]; linarith [C.densityLower_pos,one_div_pos.mpr hM0]
   have hab : a < b := by
-    dsimp [a,b]
+    
     linarith [hg.2,highCenterRadius_pos C,(highCenterRadius_le_margins C).1,
       (highCenterRadius_le_margins C).2]
   have hCf : 0 < Cfr := by linarith
@@ -96,7 +98,7 @@ theorem higherBandSourceRow_guards {d : ℕ} (C : ModelConstants d)
     time_interval := ?_ }
   · simpa [highRowTotalMass,higherBandSourceRow,higherBandRowData] using hpos
   · intro i
-    exact absoluteActivation_measurable _ _ (highPacketMarkWeight_measurable a b m r D q Cfr A hA)
+    solve_by_elim [absoluteActivation_measurable, highPacketMarkWeight_measurable]
   · intro j i
     exact highPacketSlope_joint_measurable_general d m r D q a b (fun ζ x l => B j ζ x l) (hB j)
   · intro j x i
@@ -114,25 +116,23 @@ theorem higherBandSourceRow_guards {d : ℕ} (C : ModelConstants d)
       (fun _ : Unit => v) (fun _ l => B j e.1 x l) () hv (fun l => hBb j e.1 x l)
     convert hh using 1 <;>
       dsimp [higherBandSourceRow,higherBandRowData,highPacketSlope,highPacketIntercept,localDensityReset] <;> ring
-  · intro i γ
-    exact (measurable_of_countable (fun h : HighPacketMarkIndex (HighFrameIndex d D) m r D q =>
-      (highResponseMarkAtom Cfr q h.2).2 γ)).comp measurable_snd
-  · intro i
-    exact (measurable_of_countable (fun h : HighPacketMarkIndex (HighFrameIndex d D) m r D q =>
-      (highResponseMarkAtom (ι := HighFrameIndex d D) 0 q h.2).1)).comp measurable_snd
+  · fun_prop
+  · fun_prop
   · intro i e
     exact covarianceAtom_mem_ball Cfr hCf _ _ _ _
   · intro i e
     exact responseNode_mem_unit q _
+end
+
 
 
 /-- The actual higher-band response atoms kill every bounded Borel
 observable of the retained carrier and density atom index. -/
-theorem higherBandRow_density_observable_zero (d r m D q : ℕ)
-    (a b Cfr lam L T : ℝ) (fine : Bool) (hT : 1 ≤ T)
+theorem higherBandRow_density_observable_zero d r m D q
+    a b Cfr lam L T (fine : Bool) (hT : 1 ≤ T)
     (hpos : 0 < higherBandRowMass d r m D q a b Cfr lam L T fine)
-    (H : HigherBandCarrier d r fine × HighDensityMarkIndex m r D → ℝ)
-    (hH : Measurable H) (B : ℝ) (hB : ∀ z, ‖H z‖ ≤ B) :
+    H
+    (hH : Measurable H) B (hB : ∀ z, ‖H z‖ ≤ B) :
     (∫ e, higherBandRowActivation d r m D q a b Cfr lam L T fine e * H (e.1,e.2.1)
       ∂higherBandRowLaw d r m D q a b Cfr lam L T fine) = 0 := by
   letI := higherBandCarrierMeasure_finite d r L T hT fine

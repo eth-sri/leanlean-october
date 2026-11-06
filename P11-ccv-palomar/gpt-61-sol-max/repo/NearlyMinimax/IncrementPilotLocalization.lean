@@ -16,12 +16,12 @@ namespace NearlyMinimax
 set_option maxHeartbeats 1000000
 set_option backward.isDefEq.respectTransparency false
 
-theorem preconditionedPilotFeature_zero_off_cell {d ℓ : ℕ} (j : ℕ) (x : Covariate d)
-    (a : LocalPilotIndex d ℓ) (z : Observation d) (hz : z.1 ∉ dyadicPilotCell j x) :
+theorem preconditionedPilotFeature_zero_off_cell {d ℓ } j x
+    (a : LocalPilotIndex d ℓ) z (hz : z.1 ∉ dyadicPilotCell j x) :
     preconditionedPilotFeature j x a z = 0 := by
   simp [preconditionedPilotFeature, dyadicPilotFeature, hz]
 
-theorem dyadicIncrementRawVector_zero_off_parent {d ℓ : ℕ} (j : ℕ) (x : Covariate d)
+theorem dyadicIncrementRawVector_zero_off_parent {d ℓ } j x
     (z : Observation d) (hz : z.1 ∉ dyadicPilotCell (j - 1) x) :
     dyadicIncrementRawVector (ℓ := ℓ) j x z = 0 := by
   have hj : j ≠ 0 := by
@@ -58,20 +58,20 @@ theorem dyadicIncrementRawVector_zero_off_parent {d ℓ : ℕ} (j : ℕ) (x : Co
       | simpa [dyadicIncrementFeature, hj] using
           preconditionedPilotFeature_zero_off_cell (j - 1) x (Sum.inr (Sum.inr (anchoredFinIndex i))) z hz
 
-theorem dyadic_increment_raw_kernel_zero_off_parent {d ℓ k : ℕ} (j : ℕ) (x : Covariate d)
+theorem dyadic_increment_raw_kernel_zero_off_parent {d ℓ k } j x
     (H : ContinuousMultilinearMap ℝ
-      (fun _ : Fin k => Fin (Fintype.card (incrementVariables (anchoredDimension d ℓ))) → ℝ) ℝ)
-    (z : Fin k → Observation d) (i : Fin k) (hz : (z i).1 ∉ dyadicPilotCell (j - 1) x) :
+      (fun _  => Fin (Fintype.card (incrementVariables (anchoredDimension d ℓ))) → ℝ) ℝ)
+    (z : Fin k → Observation d) i (hz : (z i).1 ∉ dyadicPilotCell (j - 1) x) :
     H (fun t => dyadicIncrementRawVector j x (z t)) = 0 :=
   H.map_coord_zero i (dyadicIncrementRawVector_zero_off_parent j x (z i) hz)
 
 /-- Raw derivative kernels on different actual parent cells are orthogonal
 before any centering. No covariance orthogonality is postulated. -/
-theorem dyadic_increment_raw_kernels_disjoint {d ℓ k : ℕ} (hk : 0 < k)
-    (j : ℕ) (x y : Covariate d)
+theorem dyadic_increment_raw_kernels_disjoint {d ℓ k } (hk : 0 < k)
+    j x y
     (hcell : dyadicPilotLabel (j - 1) x ≠ dyadicPilotLabel (j - 1) y)
     (H G : ContinuousMultilinearMap ℝ
-      (fun _ : Fin k => Fin (Fintype.card (incrementVariables (anchoredDimension d ℓ))) → ℝ) ℝ)
+      (fun _  => Fin (Fintype.card (incrementVariables (anchoredDimension d ℓ))) → ℝ) ℝ)
     (z : Fin k → Observation d) :
     H (fun t => dyadicIncrementRawVector j x (z t)) *
       G (fun t => dyadicIncrementRawVector j y (z t)) = 0 := by
@@ -87,14 +87,14 @@ theorem dyadic_increment_raw_kernels_disjoint {d ℓ k : ℕ} (hk : 0 < k)
 
 /-- Each actual parent-anchor block has weighted-pair mass at most
 `p₊² / K_parent`, the localization gain required by U7. -/
-theorem regularPairDesignMeasure_parent_block_mass {d : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ) (k : ℕ) (hk : 0 < k) (j : ℕ)
-    (c : Fin d → Fin ((2 : ℕ) ^ (j - 1))) :
+theorem regularPairDesignMeasure_parent_block_mass {d } C
+    θ (hθ : Admissible C θ) k hk j
+    c :
     (regularPairDesignMeasure θ k hk).real
-      {w : Covariate d × Covariate d | regularGridCell ((2 : ℕ) ^ (j - 1)) (by positivity) w.1 = c} ≤
+      {w : Covariate d × Covariate d | regularGridCell (2 ^ (j - 1)) (by positivity) w.1 = c} ≤
         C.densityUpper ^ 2 / dyadicPilotScale d (j - 1) := by
   let := cubeVolume_isProbability d
-  let A : Set (Covariate d) := (regularGridCell ((2 : ℕ) ^ (j - 1)) (by positivity)) ⁻¹' {c}
+  let A  := (regularGridCell ((2 : ℕ) ^ (j - 1)) (by positivity)) ⁻¹' {c}
   have hA : MeasurableSet A := measurableSet_singleton c |>.preimage (regular_grid_cell_measurable _ _)
   have hmap := regularPairDesignMeasure_fst_cube_le C θ hθ k hk
   have hfirst : (regularPairDesignMeasure θ k hk).real (Prod.fst ⁻¹' A) ≤

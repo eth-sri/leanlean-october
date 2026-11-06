@@ -32,20 +32,20 @@ theorem historyWord_sum_count (word : List J) : (∑ j : J, word.count j) = word
     rw [Finset.sum_add_distrib, ih]
     simp
 
-def historyShapeLength (dependent : J → J → Prop)
-    (g : HistoryShape (fun a b => ¬ dependent a b)) : ℕ := ∑ j : J, historyShapeMultiplicity dependent j g
+def historyShapeLength dependent
+    g  := ∑ j : J, historyShapeMultiplicity dependent j g
 
-theorem historyShapeLength_mk (dependent : J → J → Prop) (word : List J) :
+theorem historyShapeLength_mk dependent (word : List J) :
     historyShapeLength dependent (Quotient.mk _ word) = word.length := historyWord_sum_count word
 
-def historyReferenceRho (Δ : ℕ) : ℝ := (1 / 2 : ℝ) ^ (Δ + 1)
+def historyReferenceRho Δ  := (1 / 2 : ℝ) ^ (Δ + 1)
 
-theorem historyReferenceRho_pos (Δ : ℕ) : 0 < historyReferenceRho Δ := by
+theorem historyReferenceRho_pos Δ : 0 < historyReferenceRho Δ := by
   unfold historyReferenceRho
   positivity
 
-theorem historyReferenceRho_times_degree_power (Δ : ℕ) (hΔ : 1 ≤ Δ) :
-    historyReferenceRho Δ * (2 : ℝ) ^ (Δ - 1) = 1 / 4 := by
+theorem historyReferenceRho_times_degree_power Δ (hΔ : 1 ≤ Δ) :
+    historyReferenceRho Δ * 2 ^ (Δ - 1) = 1 / 4 := by
   have hc : Δ + 1 = (Δ - 1) + 2 := by omega
   unfold historyReferenceRho
   rw [hc, pow_add]
@@ -53,14 +53,20 @@ theorem historyReferenceRho_times_degree_power (Δ : ℕ) (hΔ : 1 ≤ Δ) :
     _ = ((1 / 2 : ℝ) * 2) ^ (Δ - 1) * (1 / 2 : ℝ) ^ 2 := by rw [mul_pow]; ring
     _ = _ := by norm_num
 
-def historyShapeReferenceWeight (dependent : J → J → Prop) (Δ : ℕ)
-    (g : HistoryShape (fun a b => ¬ dependent a b)) : ℝ :=
+section
+variable (dependent : J → J → Prop)
+
+def historyShapeReferenceWeight  Δ
+    g  :=
   historyReferenceRho Δ ^ historyShapeLength dependent g
 
-theorem historyFiniteMultiplicityFiber_card_le (dependent : J → J → Prop)
-    (hrefl : ∀ j, dependent j j) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
-    (Δ : ℕ) (hlabels : ∀ j, (dependentLabelFinset dependent j).card ≤ Δ)
-    (A : Finset (HistoryShape (fun a b => ¬ dependent a b))) (n : J → ℕ) :
+section
+variable (hrefl : ∀ j, dependent j j) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i) (Δ : ℕ)
+include hrefl hsymm
+
+theorem historyFiniteMultiplicityFiber_card_le 
+     (hlabels : ∀ j, (dependentLabelFinset dependent j).card ≤ Δ)
+    (A : Finset (HistoryShape (fun a b => ¬ dependent a b))) n :
     (A.filter (fun g => (fun j => historyShapeMultiplicity dependent j g) = n)).card ≤
       2 ^ ((Δ - 1) * ∑ j : J, n j) := by
   classical
@@ -69,19 +75,22 @@ theorem historyFiniteMultiplicityFiber_card_le (dependent : J → J → Prop)
     ⟨g.val, fun j => congrFun (Finset.mem_filter.1 g.prop).2 j⟩
   have hf : Function.Injective f := by
     intro g h heq
-    exact Subtype.ext (congrArg (fun z : HistoryMultiplicityShape dependent n => z.val) heq)
-  let : Finite (HistoryMultiplicityShape dependent n) := historyMultiplicityShape_finite dependent hrefl hsymm n
+    aesop (add unsafe [Subtype.ext])
+  let  := historyMultiplicityShape_finite dependent hrefl hsymm n
   have hh := Nat.card_le_card_of_injective f hf
   have hF : Nat.card F = F.card := by rw [Nat.card_eq_fintype_card, Fintype.card_coe]
   rw [hF] at hh
   exact hh.trans (historyMultiplicityShape_card_le_degree dependent hrefl hsymm Δ hlabels n)
 
-theorem historyReferenceWeight_fiber_majorant (dependent : J → J → Prop)
-    (hrefl : ∀ j, dependent j j) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
-    (Δ : ℕ) (hΔ : 1 ≤ Δ) (hlabels : ∀ j, (dependentLabelFinset dependent j).card ≤ Δ)
-    (A : Finset (HistoryShape (fun a b => ¬ dependent a b))) (n : J → ℕ) :
+section
+variable (hΔ : 1 ≤ Δ) (hlabels : ∀ j, (dependentLabelFinset dependent j).card ≤ Δ)
+include hΔ hlabels
+
+theorem historyReferenceWeight_fiber_majorant 
+     
+    (A : Finset (HistoryShape (fun a b => ¬ dependent a b))) n :
     (∑ g ∈ A.filter (fun g => (fun j => historyShapeMultiplicity dependent j g) = n),
-      historyShapeReferenceWeight dependent Δ g) ≤ (1 / 4 : ℝ) ^ (∑ j : J, n j) := by
+      historyShapeReferenceWeight dependent Δ g) ≤ (1 / 4) ^ (∑ j : J, n j) := by
   classical
   have heq : (∑ g ∈ A.filter (fun g => (fun j => historyShapeMultiplicity dependent j g) = n),
       historyShapeReferenceWeight dependent Δ g) =
@@ -104,11 +113,10 @@ theorem historyReferenceWeight_fiber_majorant (dependent : J → J → Prop)
     _ = (1 / 4 : ℝ) ^ (∑ j : J, n j) := by
       rw [pow_mul, ← mul_pow, mul_comm ((2 : ℝ) ^ (Δ - 1)), historyReferenceRho_times_degree_power Δ hΔ]
 
-theorem historyReferenceWeight_finite_sum_le (dependent : J → J → Prop)
-    (hrefl : ∀ j, dependent j j) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
-    (Δ : ℕ) (hΔ : 1 ≤ Δ) (hlabels : ∀ j, (dependentLabelFinset dependent j).card ≤ Δ)
-    (A : Finset (HistoryShape (fun a b => ¬ dependent a b))) :
-    (∑ g ∈ A, historyShapeReferenceWeight dependent Δ g) ≤ (4 / 3 : ℝ) ^ Fintype.card J := by
+theorem historyReferenceWeight_finite_sum_le 
+     
+    A :
+    (∑ g ∈ A, historyShapeReferenceWeight dependent Δ g) ≤ (4 / 3) ^ Fintype.card J := by
   classical
   let code := fun g => (fun j => historyShapeMultiplicity dependent j g)
   let C := A.image code
@@ -126,9 +134,7 @@ theorem historyReferenceWeight_finite_sum_le (dependent : J → J → Prop)
     _ = ∑ n ∈ C, ∑ g ∈ A.filter (fun g => code g = n), historyShapeReferenceWeight dependent Δ g :=
       (Finset.sum_fiberwise_of_maps_to hmap _).symm
     _ ≤ ∑ n ∈ C, (1 / 4 : ℝ) ^ (∑ j : J, n j) := by
-      apply Finset.sum_le_sum
-      intro n hn
-      exact historyReferenceWeight_fiber_majorant dependent hrefl hsymm Δ hΔ hlabels A n
+      grind only [Finset.sum_le_sum, historyReferenceWeight_fiber_majorant]
     _ ≤ ∑ n ∈ Fintype.piFinset (fun _ : J => Finset.range N), (1 / 4 : ℝ) ^ (∑ j : J, n j) :=
       Finset.sum_le_sum_of_subset_of_nonneg hbox (fun _ _ _ => by positivity)
     _ = ∏ _j : J, ∑ r ∈ Finset.range N, (1 / 4 : ℝ) ^ r := by
@@ -144,11 +150,16 @@ theorem historyReferenceWeight_finite_sum_le (dependent : J → J → Prop)
     _ = _ := by rw [Finset.prod_const, Finset.card_univ]
 
 /-- The actual countable shape reference weights are summable. -/
-theorem historyShapeReferenceWeight_summable (dependent : J → J → Prop)
-    (hrefl : ∀ j, dependent j j) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
-    (Δ : ℕ) (hΔ : 1 ≤ Δ) (hlabels : ∀ j, (dependentLabelFinset dependent j).card ≤ Δ) :
+theorem historyShapeReferenceWeight_summable 
+      :
     Summable (historyShapeReferenceWeight dependent Δ) :=
   summable_of_sum_le (fun _ => pow_nonneg (historyReferenceRho_pos Δ).le _)
     (historyReferenceWeight_finite_sum_le dependent hrefl hsymm Δ hΔ hlabels)
+end
+
+end
+
+end
+
 
 end NearlyMinimax

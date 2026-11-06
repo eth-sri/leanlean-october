@@ -25,32 +25,28 @@ set_option backward.isDefEq.respectTransparency false
 
 variable {Ω : Type*} [MeasurableSpace Ω] {μ : Measure Ω}
 
+section
+variable [IsProbabilityMeasure μ] {ι : Type*} [DecidableEq ι] {Y : ι → Ω → ℝ} (hind : iIndepFun Y μ) (hmeas : ∀ i, Measurable (Y i))
+include hind hmeas
+
 /-- Integrable independent factors have an integrable finite product. -/
-theorem independent_finset_product_integrable [IsProbabilityMeasure μ]
-    {ι : Type*} [DecidableEq ι] {Y : ι → Ω → ℝ}
-    (hind : iIndepFun Y μ) (hmeas : ∀ i, Measurable (Y i))
+theorem independent_finset_product_integrable 
     (hint : ∀ i, Integrable (Y i) μ) (s : Finset ι) :
     Integrable (fun ω => ∏ i ∈ s, Y i ω) μ := by
   induction s using Finset.induction_on with
   | empty => simp
   | @insert i s hi ih =>
-    have hpfun : (∏ j ∈ s, Y j) = (fun ω => ∏ j ∈ s, Y j ω) := by
-      funext ω
+    have hpi : Integrable (∏ j ∈ s, Y j) μ := by
+      convert ih using 1
+      ext ω
       simp
-    have hpi : Integrable (∏ j ∈ s, Y j) μ := by rw [hpfun]; exact ih
-    have hprod := (hind.indepFun_finsetProd_of_notMem hmeas hi).symm.integrable_mul
-      (hint i) hpi
-    rw [hpfun] at hprod
-    have hp : (Y i * (fun ω => ∏ j ∈ s, Y j ω)) =
-        (fun ω => Y i ω * ∏ j ∈ s, Y j ω) := by funext ω; rfl
-    rw [hp] at hprod
-    simpa only [Finset.prod_insert hi] using hprod
+    convert (hind.indepFun_finsetProd_of_notMem hmeas hi).symm.integrable_mul (hint i) hpi using 1
+    ext ω
+    simp [hi]
 
 /-- The product of independent `L²` factors remains in `L²`. Independence
 prevents the need for higher moments as the number of factors grows. -/
-theorem independent_finset_product_memLp_two [IsProbabilityMeasure μ]
-    {ι : Type*} [DecidableEq ι] {Y : ι → Ω → ℝ}
-    (hind : iIndepFun Y μ) (hmeas : ∀ i, Measurable (Y i))
+theorem independent_finset_product_memLp_two 
     (hL2 : ∀ i, MemLp (Y i) 2 μ) (s : Finset ι) :
     MemLp (fun ω => ∏ i ∈ s, Y i ω) 2 μ := by
   apply (memLp_two_iff_integrable_sq
@@ -60,11 +56,13 @@ theorem independent_finset_product_memLp_two [IsProbabilityMeasure μ]
   have hsq := independent_finset_product_integrable hsqind
     (fun i => (hmeas i).pow_const 2) (fun i => (hL2 i).integrable_sq) s
   simpa only [Finset.prod_pow] using hsq
+end
+
 
 /-- A coordinate monomial uses one square-integrable coordinate from each
 of distinct independent observations. -/
 theorem coordinate_monomial_memLp_two [IsProbabilityMeasure μ]
-    {n p r : ℕ} (e : Fin r ↪ Fin n) (σ : Fin r → Fin p)
+    {n p r } (e : Fin r ↪ Fin n) (σ : Fin r → Fin p)
     (X : Fin n → Ω → Fin p → ℝ) (hind : iIndepFun X μ)
     (hmeas : ∀ j, Measurable (X j))
     (hL2 : ∀ j a, MemLp (fun ω => X j ω a) 2 μ) :
@@ -80,22 +78,22 @@ theorem coordinate_monomial_memLp_two [IsProbabilityMeasure μ]
 /-- Products of two coordinate monomials are integrable even when their
 observation index sets overlap: each observation contributes at most twice. -/
 theorem coordinate_monomial_pair_integrable [IsProbabilityMeasure μ]
-    {n p r t : ℕ} (e : Fin r ↪ Fin n) (f : Fin t ↪ Fin n)
+    {n p r t } (e : Fin r ↪ Fin n) (f : Fin t ↪ Fin n)
     (σ : Fin r → Fin p) (τ : Fin t → Fin p)
     (X : Fin n → Ω → Fin p → ℝ) (hind : iIndepFun X μ)
     (hmeas : ∀ j, Measurable (X j))
     (hL2 : ∀ j a, MemLp (fun ω => X j ω a) 2 μ) :
     Integrable (fun ω => (∏ i, X (e i) ω (σ i)) *
-      (∏ i, X (f i) ω (τ i))) μ := by
-  exact ((coordinate_monomial_memLp_two e σ X hind hmeas hL2).integrable_mul
+      (∏ i, X (f i) ω (τ i))) μ := ((coordinate_monomial_memLp_two e σ X hind hmeas hL2).integrable_mul
       (coordinate_monomial_memLp_two f τ X hind hmeas hL2)).congr
     (Filter.Eventually.of_forall fun ω => rfl)
 
+section
+variable [IsProbabilityMeasure μ] {A : Type*} [Fintype A] {n p : ℕ} (s : A → Fin n) (σ : A → Fin p) (X : Fin n → Ω → Fin p → ℝ) (hind : iIndepFun X μ) (hmeas : ∀ j, Measurable (X j))
+include hind hmeas
+
 /-- Group coordinate factors by their observation index before using independence. -/
-theorem coordinate_product_integral_fiberwise [IsProbabilityMeasure μ]
-    {A : Type*} [Fintype A] {n p : ℕ}
-    (s : A → Fin n) (σ : A → Fin p) (X : Fin n → Ω → Fin p → ℝ)
-    (hind : iIndepFun X μ) (hmeas : ∀ j, Measurable (X j)) :
+theorem coordinate_product_integral_fiberwise  :
     (∫ ω, ∏ i, X (s i) ω (σ i) ∂μ) =
       ∏ j : Fin n, ∫ ω, ∏ i : A with s i = j, X j ω (σ i) ∂μ := by
   classical
@@ -106,7 +104,7 @@ theorem coordinate_product_integral_fiberwise [IsProbabilityMeasure μ]
   have hfun : (fun ω => ∏ i, X (s i) ω (σ i)) =
       (fun ω => ∏ j, F j (X j ω)) := by
     funext ω
-    dsimp [F]
+    
     rw [← Finset.prod_fiberwise (Finset.univ : Finset A) s
       (fun i => X (s i) ω (σ i))]
     apply Finset.prod_congr rfl
@@ -120,10 +118,7 @@ theorem coordinate_product_integral_fiberwise [IsProbabilityMeasure μ]
 
 /-- A centered coordinate used at just one observation slot annihilates the
 whole expectation. Pair integrability is provided by the previous theorem. -/
-theorem coordinate_product_integral_eq_zero [IsProbabilityMeasure μ]
-    {A : Type*} [Fintype A] {n p : ℕ}
-    (s : A → Fin n) (σ : A → Fin p) (X : Fin n → Ω → Fin p → ℝ)
-    (hind : iIndepFun X μ) (hmeas : ∀ j, Measurable (X j))
+theorem coordinate_product_integral_eq_zero 
     (hmean : ∀ j a, ∫ ω, X j ω a ∂μ = 0)
     (k : A) (hk : ∀ i, s i = s k → i = k) :
     (∫ ω, ∏ i, X (s i) ω (σ i) ∂μ) = 0 := by
@@ -131,54 +126,44 @@ theorem coordinate_product_integral_eq_zero [IsProbabilityMeasure μ]
   rw [coordinate_product_integral_fiberwise s σ X hind hmeas]
   apply Finset.prod_eq_zero (Finset.mem_univ (s k))
   have hfilter : (Finset.univ.filter (fun i : A => s i = s k)) = {k} := by
-    ext i
-    simp only [Finset.mem_filter, Finset.mem_univ, true_and, Finset.mem_singleton]
-    exact ⟨hk i, fun h => by rw [h]⟩
+    grind
   rw [hfilter]
   simpa using hmean (s k) (σ k)
+end
+
 
 /-- Coordinate products of two distinct-index tuples are orthogonal if one
 tuple contains an observation absent from the other. -/
 theorem coordinate_monomial_pair_integral_eq_zero [IsProbabilityMeasure μ]
-    {n p r t : ℕ} (e : Fin r ↪ Fin n) (f : Fin t ↪ Fin n)
+    {n p r t } (e : Fin r ↪ Fin n) (f : Fin t ↪ Fin n)
     (σ : Fin r → Fin p) (τ : Fin t → Fin p)
     (X : Fin n → Ω → Fin p → ℝ) (hind : iIndepFun X μ)
     (hmeas : ∀ j, Measurable (X j))
     (hmean : ∀ j a, ∫ ω, X j ω a ∂μ = 0)
-    (k : Fin r) (hk : e k ∉ Set.range f) :
+    k (hk : e k ∉ Set.range f) :
     (∫ ω, (∏ i, X (e i) ω (σ i)) * (∏ i, X (f i) ω (τ i)) ∂μ) = 0 := by
   have h := coordinate_product_integral_eq_zero (Sum.elim e f) (Sum.elim σ τ)
     X hind hmeas hmean (Sum.inl k) (by
-      intro i hi
-      cases i with
-      | inl i => exact congrArg Sum.inl (e.injective hi)
-      | inr i => exact (hk ⟨i, hi⟩).elim)
+      grind)
   simpa [Fintype.prod_sum_type] using h
 
 /-- Finite coordinate expansion of any multilinear map. -/
-theorem multilinear_coordinate_expansion {p r : ℕ}
-    (H : MultilinearMap ℝ (fun _ : Fin r => Fin p → ℝ) ℝ)
-    (v : Fin r → Fin p → ℝ) :
+theorem multilinear_coordinate_expansion {p r }
+    (H : MultilinearMap ℝ (fun _  => Fin p → ℝ) ℝ)
+    v :
     H v = ∑ σ : Fin r → Fin p,
       H (fun i => Pi.single (σ i) 1) * ∏ i, v i (σ i) := by
   classical
   have hv : v = fun i => ∑ a : Fin p, v i a • (Pi.single a (1 : ℝ) : Fin p → ℝ) := by
-    funext i a
+    ext i a
     simp [Pi.single_apply]
-  calc
-    H v = H (fun i => ∑ a : Fin p, v i a • (Pi.single a (1 : ℝ) : Fin p → ℝ)) := congrArg H hv
-    _ = ∑ σ : Fin r → Fin p, H (fun i => v i (σ i) • (Pi.single (σ i) (1 : ℝ) : Fin p → ℝ)) := H.map_sum _
-    _ = _ := by
-      apply Finset.sum_congr rfl
-      intro σ _
-      rw [H.map_smul_univ]
-      simp only [smul_eq_mul]
-      exact mul_comm _ _
+  simpa only [H.map_smul_univ, smul_eq_mul, mul_comm] using
+    (congrArg H hv).trans (H.map_sum _)
 
 /-- A multilinear kernel applied to distinct independent `L²` observations
 is itself square integrable, with no pointwise bound on the observations. -/
 theorem multilinear_kernel_memLp_two [IsProbabilityMeasure μ]
-    {n p r : ℕ} (H : MultilinearMap ℝ (fun _ : Fin r => Fin p → ℝ) ℝ)
+    {n p r } (H : MultilinearMap ℝ (fun _  => Fin p → ℝ) ℝ)
     (e : Fin r ↪ Fin n) (X : Fin n → Ω → Fin p → ℝ)
     (hind : iIndepFun X μ) (hmeas : ∀ j, Measurable (X j))
     (hL2 : ∀ j a, MemLp (fun ω => X j ω a) 2 μ) :
@@ -195,22 +180,21 @@ theorem multilinear_kernel_memLp_two [IsProbabilityMeasure μ]
 /-- Two such kernels have an integrable product, including all possible
 index overlaps. This discharges the integrability needed to expand covariance. -/
 theorem multilinear_kernel_pair_integrable [IsProbabilityMeasure μ]
-    {n p r t : ℕ}
-    (H : MultilinearMap ℝ (fun _ : Fin r => Fin p → ℝ) ℝ)
-    (G : MultilinearMap ℝ (fun _ : Fin t => Fin p → ℝ) ℝ)
+    {n p r t }
+    (H : MultilinearMap ℝ (fun _  => Fin p → ℝ) ℝ)
+    (G : MultilinearMap ℝ (fun _  => Fin p → ℝ) ℝ)
     (e : Fin r ↪ Fin n) (f : Fin t ↪ Fin n)
     (X : Fin n → Ω → Fin p → ℝ) (hind : iIndepFun X μ)
     (hmeas : ∀ j, Measurable (X j))
     (hL2 : ∀ j a, MemLp (fun ω => X j ω a) 2 μ) :
-    Integrable (fun ω => H (fun i => X (e i) ω) * G (fun i => X (f i) ω)) μ := by
-  exact ((multilinear_kernel_memLp_two H e X hind hmeas hL2).integrable_mul
+    Integrable (fun ω => H (fun i => X (e i) ω) * G (fun i => X (f i) ω)) μ := ((multilinear_kernel_memLp_two H e X hind hmeas hL2).integrable_mul
       (multilinear_kernel_memLp_two G f X hind hmeas hL2)).congr
     (Filter.Eventually.of_forall fun ω => rfl)
 
 /-- The product of two multilinear kernels expands into coordinate products. -/
-theorem multilinear_pair_coordinate_expansion {n p r t : ℕ}
-    (H : MultilinearMap ℝ (fun _ : Fin r => Fin p → ℝ) ℝ)
-    (G : MultilinearMap ℝ (fun _ : Fin t => Fin p → ℝ) ℝ)
+theorem multilinear_pair_coordinate_expansion {n p r t }
+    (H : MultilinearMap ℝ (fun _  => Fin p → ℝ) ℝ)
+    (G : MultilinearMap ℝ (fun _  => Fin p → ℝ) ℝ)
     (e : Fin r ↪ Fin n) (f : Fin t ↪ Fin n) (v : Fin n → Fin p → ℝ) :
     H (fun i => v (e i)) * G (fun i => v (f i)) =
       ∑ σ : Fin r → Fin p, ∑ τ : Fin t → Fin p,
@@ -226,18 +210,14 @@ theorem multilinear_pair_coordinate_expansion {n p r t : ℕ}
   intro τ _
   ring
 
+section
+variable [IsProbabilityMeasure μ] {n p r t : ℕ} (H : MultilinearMap ℝ (fun _ : Fin r => Fin p → ℝ) ℝ) (G : MultilinearMap ℝ (fun _ : Fin t => Fin p → ℝ) ℝ) (e : Fin r ↪ Fin n) (f : Fin t ↪ Fin n) (X : Fin n → Ω → Fin p → ℝ) (hind : iIndepFun X μ) (hmeas : ∀ j, Measurable (X j)) (hL2 : ∀ j a, MemLp (fun ω => X j ω a) 2 μ) (hmean : ∀ j a, ∫ ω, X j ω a ∂μ = 0)
+include hind hmeas hL2 hmean
+
 /-- Exact orthogonality of degenerate kernels on different observation sets,
 with genuine finite second moments in place of pointwise boundedness. -/
-theorem multilinear_kernel_pair_integral_eq_zero_left [IsProbabilityMeasure μ]
-    {n p r t : ℕ}
-    (H : MultilinearMap ℝ (fun _ : Fin r => Fin p → ℝ) ℝ)
-    (G : MultilinearMap ℝ (fun _ : Fin t => Fin p → ℝ) ℝ)
-    (e : Fin r ↪ Fin n) (f : Fin t ↪ Fin n)
-    (X : Fin n → Ω → Fin p → ℝ) (hind : iIndepFun X μ)
-    (hmeas : ∀ j, Measurable (X j))
-    (hL2 : ∀ j a, MemLp (fun ω => X j ω a) 2 μ)
-    (hmean : ∀ j a, ∫ ω, X j ω a ∂μ = 0)
-    (k : Fin r) (hk : e k ∉ Set.range f) :
+theorem multilinear_kernel_pair_integral_eq_zero_left 
+    k (hk : e k ∉ Set.range f) :
     (∫ ω, H (fun i => X (e i) ω) * G (fun i => X (f i) ω) ∂μ) = 0 := by
   classical
   have hexp (ω : Ω) := multilinear_pair_coordinate_expansion H G e f (fun j => X j ω)
@@ -258,15 +238,7 @@ theorem multilinear_kernel_pair_integral_eq_zero_left [IsProbabilityMeasure μ]
       (coordinate_monomial_pair_integrable e f σ τ X hind hmeas hL2).const_mul _
 
 /-- Range inequality suffices for orthogonality, even at different kernel orders. -/
-theorem multilinear_kernel_pair_integral_eq_zero [IsProbabilityMeasure μ]
-    {n p r t : ℕ}
-    (H : MultilinearMap ℝ (fun _ : Fin r => Fin p → ℝ) ℝ)
-    (G : MultilinearMap ℝ (fun _ : Fin t => Fin p → ℝ) ℝ)
-    (e : Fin r ↪ Fin n) (f : Fin t ↪ Fin n)
-    (X : Fin n → Ω → Fin p → ℝ) (hind : iIndepFun X μ)
-    (hmeas : ∀ j, Measurable (X j))
-    (hL2 : ∀ j a, MemLp (fun ω => X j ω a) 2 μ)
-    (hmean : ∀ j a, ∫ ω, X j ω a ∂μ = 0)
+theorem multilinear_kernel_pair_integral_eq_zero 
     (hef : Set.range e ≠ Set.range f) :
     (∫ ω, H (fun i => X (e i) ω) * G (fun i => X (f i) ω) ∂μ) = 0 := by
   classical
@@ -279,12 +251,14 @@ theorem multilinear_kernel_pair_integral_eq_zero [IsProbabilityMeasure μ]
   · obtain ⟨j, hj, hjf⟩ := Set.not_subset.mp hsub
     obtain ⟨k, rfl⟩ := hj
     exact multilinear_kernel_pair_integral_eq_zero_left H G e f X hind hmeas hL2 hmean k hjf
+end
+
 
 /-- Every positive-order multilinear kernel is centered under independent,
 coordinatewise centered observations. -/
 theorem multilinear_kernel_integral_eq_zero [IsProbabilityMeasure μ]
-    {n p r : ℕ} (hr : 0 < r)
-    (H : MultilinearMap ℝ (fun _ : Fin r => Fin p → ℝ) ℝ)
+    {n p r } (hr : 0 < r)
+    (H : MultilinearMap ℝ (fun _  => Fin p → ℝ) ℝ)
     (e : Fin r ↪ Fin n) (X : Fin n → Ω → Fin p → ℝ)
     (hind : iIndepFun X μ) (hmeas : ∀ j, Measurable (X j))
     (hL2 : ∀ j a, MemLp (fun ω => X j ω a) 2 μ)
@@ -303,14 +277,16 @@ theorem multilinear_kernel_integral_eq_zero [IsProbabilityMeasure μ]
       (by norm_num)).const_mul _
 
 /-- Ordered distinct-observation kernel sum. -/
-def kernelSum {n p r : ℕ}
+def kernelSum {n p r }
     (H : MultilinearMap ℝ (fun _ : Fin r => Fin p → ℝ) ℝ)
-    (X : Fin n → Ω → Fin p → ℝ) : Ω → ℝ :=
+    (X : Fin n → Ω → Fin p → ℝ)  :=
   fun ω => ∑ e : Fin r ↪ Fin n, H (fun i => X (e i) ω)
 
+section
+variable [IsProbabilityMeasure μ] {n p r : ℕ}
+
 /-- Distinct-observation kernel sums are genuinely square integrable. -/
-theorem kernelSum_memLp_two [IsProbabilityMeasure μ]
-    {n p r : ℕ} (H : MultilinearMap ℝ (fun _ : Fin r => Fin p → ℝ) ℝ)
+theorem kernelSum_memLp_two  (H : MultilinearMap ℝ (fun _ : Fin r => Fin p → ℝ) ℝ)
     (X : Fin n → Ω → Fin p → ℝ) (hind : iIndepFun X μ)
     (hmeas : ∀ j, Measurable (X j))
     (hL2 : ∀ j a, MemLp (fun ω => X j ω a) 2 μ) :
@@ -318,8 +294,7 @@ theorem kernelSum_memLp_two [IsProbabilityMeasure μ]
   memLp_finsetSum Finset.univ (fun e _ => multilinear_kernel_memLp_two H e X hind hmeas hL2)
 
 /-- Positive-order kernel sums have mean zero. -/
-theorem kernelSum_integral_eq_zero [IsProbabilityMeasure μ]
-    {n p r : ℕ} (hr : 0 < r)
+theorem kernelSum_integral_eq_zero  (hr : 0 < r)
     (H : MultilinearMap ℝ (fun _ : Fin r => Fin p → ℝ) ℝ)
     (X : Fin n → Ω → Fin p → ℝ) (hind : iIndepFun X μ)
     (hmeas : ∀ j, Measurable (X j))
@@ -332,13 +307,15 @@ theorem kernelSum_integral_eq_zero [IsProbabilityMeasure μ]
       hr H e X hind hmeas hL2 hmean)
   · exact fun e _ => (multilinear_kernel_memLp_two H e X hind hmeas hL2).integrable
       (by norm_num)
+end
+
 
 /-- Exact covariance expansion into the pairs with equal observation ranges.
 This is the probabilistic foundation of the factorial-lift variance identity. -/
 theorem kernelSum_covariance_same_range [IsProbabilityMeasure μ]
-    {n p r t : ℕ} (hr : 0 < r) (ht : 0 < t)
-    (H : MultilinearMap ℝ (fun _ : Fin r => Fin p → ℝ) ℝ)
-    (G : MultilinearMap ℝ (fun _ : Fin t => Fin p → ℝ) ℝ)
+    {n p r t } (hr : 0 < r) (ht : 0 < t)
+    H
+    G
     (X : Fin n → Ω → Fin p → ℝ) (hind : iIndepFun X μ)
     (hmeas : ∀ j, Measurable (X j))
     (hL2 : ∀ j a, MemLp (fun ω => X j ω a) 2 μ)
@@ -447,8 +424,8 @@ lemma multilinear_pair_integral_same_range [IsProbabilityMeasure μ]
 /-- The exact factorial covariance of the unnormalized kernel sum, for
 square-integrable unbounded i.i.d. observations. -/
 theorem kernelSum_covariance [IsProbabilityMeasure μ]
-    {n p r : ℕ} (hr : 0 < r)
-    (H G : ContinuousMultilinearMap ℝ (fun _ : Fin r => Fin p → ℝ) ℝ)
+    {n p r } (hr : 0 < r)
+    (H G : ContinuousMultilinearMap ℝ (fun _  => Fin p → ℝ) ℝ)
     (hsym : ∀ (σ : Equiv.Perm (Fin r)) v, G (fun i => v (σ i)) = G v)
     (e₀ : Fin r ↪ Fin n) (X : Fin n → Ω → Fin p → ℝ)
     (hind : iIndepFun X μ) (hmeas : ∀ j, Measurable (X j))
@@ -456,7 +433,7 @@ theorem kernelSum_covariance [IsProbabilityMeasure μ]
     (hL2 : ∀ j a, MemLp (fun ω => X j ω a) 2 μ)
     (hmean : ∀ j a, ∫ ω, X j ω a ∂μ = 0) :
     covariance (kernelSum H.toMultilinearMap X) (kernelSum G.toMultilinearMap X) μ =
-      (n.descFactorial r : ℝ) * (r.factorial : ℝ) *
+      (n.descFactorial r) * r.factorial *
         ∫ ω, H (fun i => X (e₀ i) ω) * G (fun i => X (e₀ i) ω) ∂μ := by
   rw [kernelSum_covariance_same_range hr hr H.toMultilinearMap G.toMultilinearMap
     X hind hmeas hL2 hmean]
@@ -465,10 +442,7 @@ theorem kernelSum_covariance [IsProbabilityMeasure μ]
       (∑ f : Fin r ↪ Fin n with Set.range e.toFun = Set.range f.toFun,
         ∫ ω, H (fun i => X (e i) ω) * G (fun i => X (f i) ω) ∂μ) =
       (r.factorial : ℝ) * J := by
-    have hsame : (fun f : Fin r ↪ Fin n => Set.range e.toFun = Set.range f.toFun) =
-        (fun f : Fin r ↪ Fin n => Set.range f.toFun = Set.range e.toFun) := by
-      funext f
-      exact propext eq_comm
+    
     have hfilterEq : Finset.univ.filter (fun f : Fin r ↪ Fin n =>
         Set.range e.toFun = Set.range f.toFun) =
         Finset.univ.filter (fun f : Fin r ↪ Fin n =>
@@ -492,12 +466,12 @@ theorem kernelSum_covariance [IsProbabilityMeasure μ]
   simp_rw [hs]
   simp only [Finset.sum_const, Finset.card_univ, nsmul_eq_mul,
     Fintype.card_embedding_eq, Fintype.card_fin]
-  dsimp [J]
+  
   ring
 
 /-- Kernel sums of different positive orders are exactly orthogonal. -/
 theorem kernelSum_covariance_different_orders [IsProbabilityMeasure μ]
-    {n p r t : ℕ} (hr : 0 < r) (ht : 0 < t) (hrt : r ≠ t)
+    {n p r t } (hr : 0 < r) (ht : 0 < t) (hrt : r ≠ t)
     (H : MultilinearMap ℝ (fun _ : Fin r => Fin p → ℝ) ℝ)
     (G : MultilinearMap ℝ (fun _ : Fin t => Fin p → ℝ) ℝ)
     (X : Fin n → Ω → Fin p → ℝ) (hind : iIndepFun X μ)
@@ -516,17 +490,17 @@ theorem kernelSum_covariance_different_orders [IsProbabilityMeasure μ]
   rw [hfilter, Finset.sum_empty]
 
 /-- The normalization appearing in the centered Taylor lift. -/
-def kernelStatistic {n p r : ℕ}
+def kernelStatistic {n p r }
     (H : ContinuousMultilinearMap ℝ (fun _ : Fin r => Fin p → ℝ) ℝ)
-    (X : Fin n → Ω → Fin p → ℝ) : Ω → ℝ :=
+    (X : Fin n → Ω → Fin p → ℝ)  :=
   fun ω => (((r.factorial : ℝ) * (n.descFactorial r : ℝ))⁻¹) *
     kernelSum H.toMultilinearMap X ω
 
 /-- Exact variance of one centered symmetric factorial-lift term, with finite
 second moments and no pointwise boundedness restriction. -/
 theorem kernelStatistic_variance [IsProbabilityMeasure μ]
-    {n p r : ℕ} (hr : 0 < r) (hrn : r ≤ n)
-    (H : ContinuousMultilinearMap ℝ (fun _ : Fin r => Fin p → ℝ) ℝ)
+    {n p r } (hr : 0 < r) hrn
+    H
     (hsym : ∀ (σ : Equiv.Perm (Fin r)) v, H (fun i => v (σ i)) = H v)
     (X : Fin n → Ω → Fin p → ℝ) (hind : iIndepFun X μ)
     (hmeas : ∀ j, Measurable (X j))
@@ -534,27 +508,23 @@ theorem kernelStatistic_variance [IsProbabilityMeasure μ]
     (hL2 : ∀ j a, MemLp (fun ω => X j ω a) 2 μ)
     (hmean : ∀ j a, ∫ ω, X j ω a ∂μ = 0) :
     variance (kernelStatistic H X) μ =
-      (((r.factorial : ℝ) * (n.descFactorial r : ℝ))⁻¹) *
+      ((r.factorial * (n.descFactorial r : ℝ))⁻¹) *
         ∫ ω, H (fun i => X (Fin.castLEEmb hrn i) ω) ^ 2 ∂μ := by
   unfold kernelStatistic
   rw [variance_const_mul, ← covariance_self
     (kernelSum_memLp_two H.toMultilinearMap X hind hmeas hL2).aemeasurable,
     kernelSum_covariance hr H H hsym (Fin.castLEEmb hrn) X hind hmeas hid hL2 hmean]
-  have hfac : (r.factorial : ℝ) ≠ 0 := by exact_mod_cast Nat.factorial_ne_zero r
-  have hdesc : (n.descFactorial r : ℝ) ≠ 0 := by
-    exact_mod_cast (Nat.ne_of_gt (Nat.descFactorial_pos.mpr hrn))
-  simp only [← pow_two]
-  field_simp
+  grind
 
 /-- The finite centered-kernel expansion of a polynomial lift. -/
-def centeredKernelExpansion {n p R : ℕ} (c : ℝ)
+def centeredKernelExpansion {n p R } c
     (H : (r : Fin R) → ContinuousMultilinearMap ℝ
       (fun _ : Fin (r.val + 1) => Fin p → ℝ) ℝ)
-    (X : Fin n → Ω → Fin p → ℝ) : Ω → ℝ :=
+    (X : Fin n → Ω → Fin p → ℝ)  :=
   fun ω => c + ∑ r, kernelStatistic (H r) X ω
 
 theorem kernelStatistic_memLp_two [IsProbabilityMeasure μ]
-    {n p r : ℕ}
+    {n p r }
     (H : ContinuousMultilinearMap ℝ (fun _ : Fin r => Fin p → ℝ) ℝ)
     (X : Fin n → Ω → Fin p → ℝ) (hind : iIndepFun X μ)
     (hmeas : ∀ j, Measurable (X j))
@@ -563,9 +533,9 @@ theorem kernelStatistic_memLp_two [IsProbabilityMeasure μ]
   (kernelSum_memLp_two H.toMultilinearMap X hind hmeas hL2).const_mul _
 
 theorem centeredKernelExpansion_memLp_two [IsProbabilityMeasure μ]
-    {n p R : ℕ} (c : ℝ)
+    {n p R } c
     (H : (r : Fin R) → ContinuousMultilinearMap ℝ
-      (fun _ : Fin (r.val + 1) => Fin p → ℝ) ℝ)
+      (fun _  => Fin p → ℝ) ℝ)
     (X : Fin n → Ω → Fin p → ℝ) (hind : iIndepFun X μ)
     (hmeas : ∀ j, Measurable (X j))
     (hL2 : ∀ j a, MemLp (fun ω => X j ω a) 2 μ) :
@@ -574,7 +544,7 @@ theorem centeredKernelExpansion_memLp_two [IsProbabilityMeasure μ]
     kernelStatistic_memLp_two (H r) X hind hmeas hL2))
 
 theorem kernelStatistic_integral_eq_zero [IsProbabilityMeasure μ]
-    {n p r : ℕ} (hr : 0 < r)
+    {n p r } (hr : 0 < r)
     (H : ContinuousMultilinearMap ℝ (fun _ : Fin r => Fin p → ℝ) ℝ)
     (X : Fin n → Ω → Fin p → ℝ) (hind : iIndepFun X μ)
     (hmeas : ∀ j, Measurable (X j))
@@ -585,10 +555,12 @@ theorem kernelStatistic_integral_eq_zero [IsProbabilityMeasure μ]
   rw [integral_const_mul,
     kernelSum_integral_eq_zero hr H.toMultilinearMap X hind hmeas hL2 hmean, mul_zero]
 
-theorem centeredKernelExpansion_expectation [IsProbabilityMeasure μ]
-    {n p R : ℕ} (c : ℝ)
+section
+variable [IsProbabilityMeasure μ] {n p R : ℕ}
+
+theorem centeredKernelExpansion_expectation  c
     (H : (r : Fin R) → ContinuousMultilinearMap ℝ
-      (fun _ : Fin (r.val + 1) => Fin p → ℝ) ℝ)
+      (fun _  => Fin p → ℝ) ℝ)
     (X : Fin n → Ω → Fin p → ℝ) (hind : iIndepFun X μ)
     (hmeas : ∀ j, Measurable (X j))
     (hL2 : ∀ j a, MemLp (fun ω => X j ω a) 2 μ)
@@ -608,10 +580,8 @@ theorem centeredKernelExpansion_expectation [IsProbabilityMeasure μ]
 
 /-- Exact centered Taylor variance series under the original paper's finite
 second-moment hypothesis, without restricting the responses to a bounded set. -/
-theorem centeredKernelExpansion_variance [IsProbabilityMeasure μ]
-    {n p R : ℕ} (c : ℝ)
-    (H : (r : Fin R) → ContinuousMultilinearMap ℝ
-      (fun _ : Fin (r.val + 1) => Fin p → ℝ) ℝ)
+theorem centeredKernelExpansion_variance  c
+    H
     (hsym : ∀ r (σ : Equiv.Perm (Fin (r.val + 1))) v,
       H r (fun i => v (σ i)) = H r v)
     (X : Fin n → Ω → Fin p → ℝ) (hR : R ≤ n)
@@ -621,7 +591,7 @@ theorem centeredKernelExpansion_variance [IsProbabilityMeasure μ]
     (hmean : ∀ j a, ∫ ω, X j ω a ∂μ = 0) :
     variance (centeredKernelExpansion c H X) μ =
       ∑ r : Fin R, (((r.val + 1).factorial : ℝ) *
-        (n.descFactorial (r.val + 1) : ℝ))⁻¹ *
+        (n.descFactorial (r.val + 1)))⁻¹ *
         ∫ ω, H r (fun i => X
           (Fin.castLEEmb ((Nat.succ_le_of_lt r.isLt).trans hR) i) ω) ^ 2 ∂μ := by
   have hstats (r : Fin R) := kernelStatistic_memLp_two (H r) X hind hmeas hL2
@@ -639,18 +609,20 @@ theorem centeredKernelExpansion_variance [IsProbabilityMeasure μ]
     unfold kernelStatistic
     rw [covariance_const_mul_left, covariance_const_mul_right]
     have hrt : r.val + 1 ≠ t.val + 1 := by
-      intro h
-      apply htr
-      apply Fin.ext
+      
+      
+      
       omega
     rw [kernelSum_covariance_different_orders (by omega) (by omega) hrt
       (H r).toMultilinearMap (H t).toMultilinearMap X hind hmeas hL2 hmean]
     ring
   · exact fun h => (h (Finset.mem_univ r)).elim
+end
+
 
 /-- Centering preserves all the actual probability and moment hypotheses. -/
 theorem centerObservations_l2 [IsProbabilityMeasure μ]
-    {n p : ℕ} (X : Fin n → Ω → Fin p → ℝ) (m : Fin p → ℝ)
+    {n p } (X : Fin n → Ω → Fin p → ℝ) m
     (hind : iIndepFun X μ) (hmeas : ∀ j, Measurable (X j))
     (hid : ∀ i j, IdentDistrib (X i) (X j) μ μ)
     (hL2 : ∀ j a, MemLp (fun ω => X j ω a) 2 μ)
@@ -672,8 +644,8 @@ theorem centerObservations_l2 [IsProbabilityMeasure μ]
 
 /-- The supplied coefficient lift is the centered Taylor expansion. This
 uses only the imported algebraic lift identity, which has no boundedness premise. -/
-theorem polynomialLift_centering_l2 {n p R : ℕ}
-    (F : MvPolynomial (Fin p) ℝ) (X : Fin n → Ω → Fin p → ℝ) (m : Fin p → ℝ)
+theorem polynomialLift_centering_l2 {n p R }
+    F (X : Fin n → Ω → Fin p → ℝ) m
     (hdeg : F.totalDegree ≤ R) (hRn : R ≤ n) :
     RoughRegime.Upper.polynomialLift F X =
       centeredKernelExpansion (MvPolynomial.eval m F)
@@ -685,8 +657,8 @@ theorem polynomialLift_centering_l2 {n p R : ℕ}
 /-- Original `lem:U6` exact variance identity for the actual unbiased polynomial
 lift on unbounded i.i.d. `L²` features. -/
 theorem polynomialLift_variance_l2 [IsProbabilityMeasure μ]
-    {n p R : ℕ} (F : MvPolynomial (Fin p) ℝ)
-    (X : Fin n → Ω → Fin p → ℝ) (m : Fin p → ℝ)
+    {n p R } F
+    (X : Fin n → Ω → Fin p → ℝ) m
     (hdeg : F.totalDegree ≤ R) (hRn : R ≤ n)
     (hind : iIndepFun X μ) (hmeas : ∀ j, Measurable (X j))
     (hid : ∀ i j, IdentDistrib (X i) (X j) μ μ)
@@ -694,7 +666,7 @@ theorem polynomialLift_variance_l2 [IsProbabilityMeasure μ]
     (hmean : ∀ j a, ∫ ω, X j ω a ∂μ = m a) :
     variance (RoughRegime.Upper.polynomialLift F X) μ =
       ∑ r : Fin R, (((r.val + 1).factorial : ℝ) *
-        (n.descFactorial (r.val + 1) : ℝ))⁻¹ *
+        (n.descFactorial (r.val + 1)))⁻¹ *
         ∫ ω, (iteratedFDeriv ℝ (r.val + 1) (fun x => MvPolynomial.eval x F) m
           (fun i => X (Fin.castLEEmb ((Nat.succ_le_of_lt r.isLt).trans hRn) i) ω - m)) ^ 2 ∂μ := by
   obtain ⟨hi, hm, hid', hlp, hzero⟩ := centerObservations_l2 X m hind hmeas hid hL2 hmean
@@ -703,9 +675,11 @@ theorem polynomialLift_variance_l2 [IsProbabilityMeasure μ]
   intro r σ v
   exact (AnalyticOnNhd.eval_mvPolynomial F).analyticOn.iteratedFDeriv_comp_perm v σ
 
+section
+variable [IsProbabilityMeasure μ] {p : ℕ} (X : Ω → Fin p → ℝ)
+
 /-- Coordinatewise `L²` gives an integrable vector with the coordinate means. -/
-theorem vector_integral_of_coordinate_moments [IsProbabilityMeasure μ]
-    {p : ℕ} (X : Ω → Fin p → ℝ) (m : Fin p → ℝ)
+theorem vector_integral_of_coordinate_moments  (m : Fin p → ℝ)
     (hL2 : ∀ a, MemLp (fun ω => X ω a) 2 μ)
     (hmean : ∀ a, ∫ ω, X ω a ∂μ = m a) :
     Integrable X μ ∧ (∫ ω, X ω ∂μ) = m := by
@@ -716,10 +690,9 @@ theorem vector_integral_of_coordinate_moments [IsProbabilityMeasure μ]
   exact ((ContinuousLinearMap.proj a : (Fin p → ℝ) →L[ℝ] ℝ).integral_comp_comm hi).symm.trans (hmean a)
 
 /-- Subtracting the mean contracts the scalar `L²` norm of every linear functional. -/
-theorem linear_centering_square_le_l2 [IsProbabilityMeasure μ]
-    {p : ℕ} (X : Ω → Fin p → ℝ) (hm : Measurable X)
+theorem linear_centering_square_le_l2  (hm : Measurable X)
     (hL2 : ∀ a, MemLp (fun ω => X ω a) 2 μ)
-    (m : Fin p → ℝ) (hmean : ∀ a, ∫ ω, X ω a ∂μ = m a)
+    m (hmean : ∀ a, ∫ ω, X ω a ∂μ = m a)
     (L : (Fin p → ℝ) →L[ℝ] ℝ) :
     (∫ ω, L (X ω - m) ^ 2 ∂μ) ≤ ∫ ω, L (X ω) ^ 2 ∂μ := by
   obtain ⟨hi, hvector⟩ := vector_integral_of_coordinate_moments X m hL2 hmean
@@ -729,14 +702,16 @@ theorem linear_centering_square_le_l2 [IsProbabilityMeasure μ]
   have hv := variance_le_expectation_sq (μ := μ) hLX.aestronglyMeasurable
   rw [variance_eq_integral hLX.aemeasurable, hml] at hv
   simpa only [map_sub, Pi.pow_apply] using hv
+end
+
 
 /-- Independent copies of possibly different coordinatewise `L²` vectors have
 an integrable squared multilinear kernel. -/
 theorem product_kernel_square_integrable_l2 [IsProbabilityMeasure μ]
-    {p r : ℕ} (H : ContinuousMultilinearMap ℝ (fun _ : Fin r => Fin p → ℝ) ℝ)
+    {p r } (H : ContinuousMultilinearMap ℝ (fun _  => Fin p → ℝ) ℝ)
     (A : Fin r → Ω → Fin p → ℝ) (hm : ∀ i, Measurable (A i))
     (hL2 : ∀ i a, MemLp (fun ω => A i ω a) 2 μ) :
-    Integrable (fun ω : Fin r → Ω => H (fun i => A i (ω i)) ^ 2)
+    Integrable (fun ω  => H (fun i => A i (ω i)) ^ 2)
       (Measure.pi (fun _ => μ)) := by
   let X : Fin r → (Fin r → Ω) → Fin p → ℝ := fun i ω => A i (ω i)
   have hind : iIndepFun X (Measure.pi (fun _ : Fin r => μ)) :=
@@ -754,7 +729,7 @@ lemma integral_pi_succ_l2 [IsProbabilityMeasure μ] {r : ℕ}
       ∫ x, ∫ y, f (Fin.cons x y) ∂Measure.pi (fun _ : Fin r => μ) ∂μ := by
   let e := MeasurableEquiv.piFinSuccAbove (fun _ : Fin (r + 1) => Ω) 0
   have he := measurePreserving_piFinSuccAbove (fun _ : Fin (r + 1) => μ) 0
-  have hf' : Integrable (f ∘ e.symm) (μ.prod (Measure.pi (fun _ : Fin r => μ))) :=
+  have hf'  :=
     (he.symm e).integrable_comp_of_integrable hf
   rw [← (he.symm e).integral_comp' f]
   change (∫ x, (f ∘ e.symm) x ∂μ.prod (Measure.pi (fun _ : Fin r => μ))) = _
@@ -796,11 +771,12 @@ lemma kernel_cons_square_integrable_l2 [IsProbabilityMeasure μ] {p r : ℕ}
     funext i
     cases i using Fin.cases <;> simp [C, e]
 
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (μ : Measure Ω) [IsProbabilityMeasure μ] {p r : ℕ} (H : ContinuousMultilinearMap ℝ (fun _ : Fin r => Fin p → ℝ) ℝ)
+
 /-- Centering each slot of an independent multilinear kernel contracts its
 squared norm. Only finite second moments are required. -/
-theorem multilinear_iid_centering_square_le_l2 {Ω : Type*} [MeasurableSpace Ω]
-    (μ : Measure Ω) [IsProbabilityMeasure μ] {p r : ℕ}
-    (H : ContinuousMultilinearMap ℝ (fun _ : Fin r => Fin p → ℝ) ℝ)
+theorem multilinear_iid_centering_square_le_l2 
     (X : Ω → Fin p → ℝ) (hm : Measurable X)
     (hL2 : ∀ a, MemLp (fun ω => X ω a) 2 μ)
     (m : Fin p → ℝ) (hmean : ∀ a, ∫ ω, X ω a ∂μ = m a) :
@@ -815,7 +791,7 @@ theorem multilinear_iid_centering_square_le_l2 {Ω : Type*} [MeasurableSpace Ω]
     funext j
     exact Fin.elim0 j
   | succ r ih =>
-    let Y : Ω → Fin p → ℝ := fun ω => X ω - m
+    let Y  := fun ω => X ω - m
     have hY : Measurable Y := hm.sub measurable_const
     have hYlp : ∀ a, MemLp (fun ω => Y ω a) 2 μ := fun a =>
       (hL2 a).sub (memLp_const (m a))
@@ -867,9 +843,7 @@ theorem multilinear_iid_centering_square_le_l2 {Ω : Type*} [MeasurableSpace Ω]
 
 /-- The `L²` contraction transfers from independent product copies to actual
 i.i.d. observations on an arbitrary probability space. -/
-theorem independent_centering_square_le_l2 {Ω : Type*} [MeasurableSpace Ω]
-    (μ : Measure Ω) [IsProbabilityMeasure μ] {p r : ℕ}
-    (H : ContinuousMultilinearMap ℝ (fun _ : Fin r => Fin p → ℝ) ℝ)
+theorem independent_centering_square_le_l2 
     (X : Fin r → Ω → Fin p → ℝ) (hm : ∀ i, Measurable (X i))
     (hind : iIndepFun X μ) (hid : ∀ i j, IdentDistrib (X i) (X j) μ μ)
     (hL2 : ∀ i a, MemLp (fun ω => X i ω a) 2 μ)
@@ -886,7 +860,7 @@ theorem independent_centering_square_le_l2 {Ω : Type*} [MeasurableSpace Ω]
   · let j : Fin r := ⟨0, Nat.pos_of_ne_zero hr⟩
     have hcopy : Measurable (fun ω : Fin r → Ω => fun i => X j (ω i)) :=
       measurable_pi_iff.mpr fun i => (hm j).comp (measurable_pi_apply i)
-    have hjoint : Measurable (fun ω => fun i => X i ω) :=
+    have hjoint  :=
       measurable_pi_iff.mpr hm
     have hjointLaw : IdentDistrib (fun ω => fun i => X i ω)
         (fun ω : Fin r → Ω => fun i => X j (ω i)) μ (Measure.pi (fun _ => μ)) := by
@@ -899,7 +873,7 @@ theorem independent_centering_square_le_l2 {Ω : Type*} [MeasurableSpace Ω]
     have hc : Measurable (fun v : Fin r → Fin p → ℝ => H (fun i => v i - m) ^ 2) :=
       (H.coe_continuous.measurable.comp
         (measurable_pi_iff.mpr fun i => (measurable_pi_apply i).sub measurable_const)).pow_const 2
-    have hu : Measurable (fun v : Fin r → Fin p → ℝ => H v ^ 2) :=
+    have hu  :=
       H.coe_continuous.measurable.pow_const 2
     have hcEq : (∫ ω, H (fun i => X i ω - m) ^ 2 ∂μ) =
         ∫ ω, H (fun i => X j (ω i) - m) ^ 2 ∂Measure.pi (fun _ : Fin r => μ) := by
@@ -908,15 +882,17 @@ theorem independent_centering_square_le_l2 {Ω : Type*} [MeasurableSpace Ω]
         ∫ ω, H (fun i => X j (ω i)) ^ 2 ∂Measure.pi (fun _ : Fin r => μ) := by
       simpa only [Function.comp_def] using (hjointLaw.comp hu).integral_eq
     rw [hcEq, huEq]
-    exact multilinear_iid_centering_square_le_l2 μ H (X j) (hm j) (hL2 j) m (hmean j)
+    solve_by_elim [multilinear_iid_centering_square_le_l2]
+end
 
+
+
+section
+variable [IsProbabilityMeasure μ] {n p R : ℕ} (F : MvPolynomial (Fin p) ℝ) (X : Fin n → Ω → Fin p → ℝ) (m : Fin p → ℝ) (hdeg : F.totalDegree ≤ R) (hRn : R ≤ n) (hind : iIndepFun X μ) (hmeas : ∀ j, Measurable (X j))
+include m hdeg hRn hind hmeas
 
 /-- The actual coefficient lift is square integrable under coordinatewise `L²`. -/
-theorem polynomialLift_memLp_two_l2 [IsProbabilityMeasure μ]
-    {n p R : ℕ} (F : MvPolynomial (Fin p) ℝ)
-    (X : Fin n → Ω → Fin p → ℝ) (m : Fin p → ℝ)
-    (hdeg : F.totalDegree ≤ R) (hRn : R ≤ n)
-    (hind : iIndepFun X μ) (hmeas : ∀ j, Measurable (X j))
+theorem polynomialLift_memLp_two_l2 
     (hL2 : ∀ j a, MemLp (fun ω => X j ω a) 2 μ) :
     MemLp (RoughRegime.Upper.polynomialLift F X) 2 μ := by
   rw [polynomialLift_centering_l2 F X m hdeg hRn]
@@ -926,32 +902,24 @@ theorem polynomialLift_memLp_two_l2 [IsProbabilityMeasure μ]
     (fun j => (hmeas j).sub_const m)
     (fun j a => (hL2 j a).sub (memLp_const (m a)))
 
+section
+variable (hid : ∀ i j, IdentDistrib (X i) (X j) μ μ) (hL2 : ∀ j a, MemLp (fun ω => X j ω a) 2 μ) (hmean : ∀ j a, ∫ ω, X j ω a ∂μ = m a)
+include hid hL2 hmean
+
 /-- The coefficient lift is unbiased at the actual population mean. -/
-theorem polynomialLift_expectation_l2 [IsProbabilityMeasure μ]
-    {n p R : ℕ} (F : MvPolynomial (Fin p) ℝ)
-    (X : Fin n → Ω → Fin p → ℝ) (m : Fin p → ℝ)
-    (hdeg : F.totalDegree ≤ R) (hRn : R ≤ n)
-    (hind : iIndepFun X μ) (hmeas : ∀ j, Measurable (X j))
-    (hid : ∀ i j, IdentDistrib (X i) (X j) μ μ)
-    (hL2 : ∀ j a, MemLp (fun ω => X j ω a) 2 μ)
-    (hmean : ∀ j a, ∫ ω, X j ω a ∂μ = m a) :
+theorem polynomialLift_expectation_l2 
+     :
     (∫ ω, RoughRegime.Upper.polynomialLift F X ω ∂μ) = MvPolynomial.eval m F := by
   obtain ⟨hi, hm, _, hlp, hzero⟩ := centerObservations_l2 X m hind hmeas hid hL2 hmean
   rw [polynomialLift_centering_l2 F X m hdeg hRn]
   exact centeredKernelExpansion_expectation _ _ _ hi hm hlp hzero
 
 /-- Original U6 comparison with the true descending-factorial denominators. -/
-theorem polynomialLift_variance_le_raw_l2 [IsProbabilityMeasure μ]
-    {n p R : ℕ} (F : MvPolynomial (Fin p) ℝ)
-    (X : Fin n → Ω → Fin p → ℝ) (m : Fin p → ℝ)
-    (hdeg : F.totalDegree ≤ R) (hRn : R ≤ n)
-    (hind : iIndepFun X μ) (hmeas : ∀ j, Measurable (X j))
-    (hid : ∀ i j, IdentDistrib (X i) (X j) μ μ)
-    (hL2 : ∀ j a, MemLp (fun ω => X j ω a) 2 μ)
-    (hmean : ∀ j a, ∫ ω, X j ω a ∂μ = m a) :
+theorem polynomialLift_variance_le_raw_l2 
+     :
     variance (RoughRegime.Upper.polynomialLift F X) μ ≤
       ∑ r : Fin R, (((r.val + 1).factorial : ℝ) *
-        (n.descFactorial (r.val + 1) : ℝ))⁻¹ *
+        (n.descFactorial (r.val + 1)))⁻¹ *
         ∫ ω, (iteratedFDeriv ℝ (r.val + 1) (fun x => MvPolynomial.eval x F) m
           (fun i => X (Fin.castLEEmb ((Nat.succ_le_of_lt r.isLt).trans hRn) i) ω)) ^ 2 ∂μ := by
   rw [polynomialLift_variance_l2 F X m hdeg hRn hind hmeas hid hL2 hmean]
@@ -963,15 +931,19 @@ theorem polynomialLift_variance_le_raw_l2 [IsProbabilityMeasure μ]
     (fun i => hmeas (e i)) (hind.precomp e.injective)
     (fun i j => hid (e i) (e j)) (fun i a => hL2 (e i) a) m
     (fun i a => hmean (e i) a)
+end
+
+end
+
 
 /-- A positive lower bound on each available observation count bounds the
 whole descending factorial. -/
 theorem descFactorial_lower_bound {n R k : ℕ} (hRn : R ≤ n) (hkR : k ≤ R)
-    {Λ : ℝ} (hΛ : 0 ≤ Λ) (hΛn : Λ ≤ (n : ℝ) - R + 1) :
-    Λ ^ k ≤ (n.descFactorial k : ℝ) := by
+    {Λ : ℝ} (hΛ : 0 ≤ Λ) (hΛn : Λ ≤ n - R + 1) :
+    Λ ^ k ≤ (n.descFactorial k) := by
   have hkn : k ≤ n + 1 := by omega
   have hcast : ((n + 1 - k : ℕ) : ℝ) = (n : ℝ) + 1 - k := by
-    rw [Nat.cast_sub hkn, Nat.cast_add, Nat.cast_one]
+    simp_all
   have hRk : (k : ℝ) ≤ R := by exact_mod_cast hkR
   have hbase : Λ ≤ ((n + 1 - k : ℕ) : ℝ) := by rw [hcast]; linarith
   calc
@@ -980,16 +952,16 @@ theorem descFactorial_lower_bound {n R k : ℕ} (hRn : R ≤ n) (hkR : k ≤ R)
 
 /-- The denominator comparison in U6 for every `0 < Λ ≤ n - degree + 1`. -/
 theorem polynomialLift_variance_le_raw_power_l2 [IsProbabilityMeasure μ]
-    {n p R : ℕ} (F : MvPolynomial (Fin p) ℝ)
-    (X : Fin n → Ω → Fin p → ℝ) (m : Fin p → ℝ)
+    {n p R } F
+    (X : Fin n → Ω → Fin p → ℝ) m
     (hdeg : F.totalDegree ≤ R) (hRn : R ≤ n)
     (hind : iIndepFun X μ) (hmeas : ∀ j, Measurable (X j))
     (hid : ∀ i j, IdentDistrib (X i) (X j) μ μ)
     (hL2 : ∀ j a, MemLp (fun ω => X j ω a) 2 μ)
     (hmean : ∀ j a, ∫ ω, X j ω a ∂μ = m a)
-    (Λ : ℝ) (hΛ : 0 < Λ) (hΛn : Λ ≤ (n : ℝ) - R + 1) :
+    (Λ : ℝ) (hΛ : 0 < Λ) (hΛn : Λ ≤ n - R + 1) :
     variance (RoughRegime.Upper.polynomialLift F X) μ ≤
-      ∑ r : Fin R, (((r.val + 1).factorial : ℝ) * Λ ^ (r.val + 1))⁻¹ *
+      ∑ r : Fin R, (((r.val + 1).factorial) * Λ ^ (r.val + 1))⁻¹ *
         ∫ ω, (iteratedFDeriv ℝ (r.val + 1) (fun x => MvPolynomial.eval x F) m
           (fun i => X (Fin.castLEEmb ((Nat.succ_le_of_lt r.isLt).trans hRn) i) ω)) ^ 2 ∂μ := by
   apply (polynomialLift_variance_le_raw_l2 F X m hdeg hRn hind hmeas hid hL2 hmean).trans
@@ -997,10 +969,7 @@ theorem polynomialLift_variance_le_raw_power_l2 [IsProbabilityMeasure μ]
   intro r _
   apply mul_le_mul_of_nonneg_right _ (integral_nonneg fun _ => sq_nonneg _)
   have hb := descFactorial_lower_bound hRn (Nat.succ_le_of_lt r.isLt) hΛ.le hΛn
-  have hfac : 0 < ((r.val + 1).factorial : ℝ) := by positivity
-  have hpow : 0 < Λ ^ (r.val + 1) := pow_pos hΛ _
-  exact (inv_le_inv₀ (mul_pos hfac (hpow.trans_le hb)) (mul_pos hfac hpow)).2
-    (mul_le_mul_of_nonneg_left hb hfac.le)
+  gcongr
 
 end NearlyMinimax.LiftL2
 

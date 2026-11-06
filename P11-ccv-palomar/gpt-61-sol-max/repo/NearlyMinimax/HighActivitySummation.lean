@@ -12,7 +12,7 @@ open scoped BigOperators
 namespace NearlyMinimax
 
 theorem finite_geometric_tail_le_two_mul {q : ℝ} (hq : 0 ≤ q) (hqh : q ≤ 1 / 2)
-    (m : ℕ) : (∑ j ∈ Finset.range m, q ^ (j + 1)) ≤ 2 * q := by
+    m : (∑ j ∈ Finset.range m, q ^ (j + 1)) ≤ 2 * q := by
   calc
     _ = q * ∑ j ∈ Finset.range m, q ^ j := by simp_rw [pow_succ]; rw [Finset.mul_sum]; ring
     _ ≤ q * ∑ j ∈ Finset.range m, (1 / (2 : ℝ)) ^ j :=

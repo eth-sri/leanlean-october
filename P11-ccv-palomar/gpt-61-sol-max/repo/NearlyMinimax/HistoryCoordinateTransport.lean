@@ -24,30 +24,39 @@ def wordHeapPiecePositionEquiv (word : List J) (dependent : J → J → Prop) :
   left_inv x := by cases x; rfl
   right_inv _ := rfl
 
+section
+variable {u v : List J}
+
+section
+variable {dependent : J → J → Prop} (e : WordHeapPiece u dependent ≃o WordHeapPiece v dependent)
+include e
+
 /-- A true heap isomorphism induces a bijection of actual mark coordinates. -/
-def historyHeapCoordinateEquiv {u v : List J} {dependent : J → J → Prop}
-    (e : WordHeapPiece u dependent ≃o WordHeapPiece v dependent) : Fin u.length ≃ Fin v.length :=
+def historyHeapCoordinateEquiv    :=
   (wordHeapPiecePositionEquiv u dependent).symm.trans
     (e.toEquiv.trans (wordHeapPiecePositionEquiv v dependent))
 
-@[simp] theorem historyHeapCoordinateEquiv_position {u v : List J} {dependent : J → J → Prop}
-    (e : WordHeapPiece u dependent ≃o WordHeapPiece v dependent) (x : WordHeapPiece u dependent) :
+@[simp] theorem historyHeapCoordinateEquiv_position   x :
     historyHeapCoordinateEquiv e x.position = (e x).position := by
   cases x
   rfl
+end
+
 
 /-- This is the actual measurable coordinate insertion into another word representative. -/
-def historyHeapMarkEquiv {u v : List J} {dependent : J → J → Prop}
+def historyHeapMarkEquiv  {dependent : J → J → Prop}
     (e : WordHeapPiece u dependent ≃o WordHeapPiece v dependent) {E : Type*} [MeasurableSpace E] :
     (Fin u.length → E) ≃ᵐ (Fin v.length → E) :=
   MeasurableEquiv.piCongrLeft (fun _ => E) (historyHeapCoordinateEquiv e)
 
-@[simp] theorem historyHeapMarkEquiv_position {u v : List J} {dependent : J → J → Prop}
+@[simp] theorem historyHeapMarkEquiv_position  {dependent : J → J → Prop}
     (e : WordHeapPiece u dependent ≃o WordHeapPiece v dependent) {E : Type*} [MeasurableSpace E]
     (marks : Fin u.length → E) (x : WordHeapPiece u dependent) :
     historyHeapMarkEquiv e marks (e x).position = marks x.position := by
   have hh := MeasurableEquiv.piCongrLeft_apply_apply (historyHeapCoordinateEquiv e)
     (β := fun _ : Fin v.length => E) marks x.position
-  simpa only [historyHeapMarkEquiv, historyHeapCoordinateEquiv_position] using hh
+  solve_by_elim []
+end
+
 
 end NearlyMinimax

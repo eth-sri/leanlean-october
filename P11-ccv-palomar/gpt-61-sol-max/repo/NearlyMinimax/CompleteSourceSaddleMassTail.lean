@@ -27,12 +27,12 @@ include hD hq hM hCfr hell hellN
 /-- Every time of the actual complete-row source has the genuine tilted
 exceptional bound. All mass-law and local cancellation premises are
 discharged by the true complete packet construction. -/
-theorem completeSourceMass_prior_tilted_tail (hk : 2 ≤ k) (T : ℝ) (hT : 0 ≤ T)
+theorem completeSourceMass_prior_tilted_tail (hk : 2 ≤ k) T (hT : 0 ≤ T)
     (hsmall : T*(highRowTotalMass (completeSourceRows C k D M q Cfr lam ell N mu).rowMass /
-      highCenterMix C)/historyReferenceRho (3^d) ≤ 1/(2+8*((3^d:ℕ):ℝ)^2))
-    (n : ℕ) (epsilon : ℝ)
-    (hepsilon : 8*highHistoryMassParameter d k C.densityLower C.densityUpper*(n:ℝ) ≤ epsilon)
-    (t : ℝ) (ht : t ∈ Icc 0 T) :
+      highCenterMix C)/historyReferenceRho (3^d) ≤ 1/(2+8*((3^d:ℕ))^2))
+    (n : ℕ) epsilon
+    (hepsilon : 8*highHistoryMassParameter d k C.densityLower C.densityUpper*n ≤ epsilon)
+    t (ht : t ∈ Icc 0 T) :
     (massPowerTilt
       (historyMarkedPrior (fun i j => j ∈ highNeighborLabels d k i) (3^d) t
         (highUnionLaw (completeSourceRows C k D M q Cfr lam ell N mu) (highCenterMix C))
@@ -47,16 +47,22 @@ theorem completeSourceMass_prior_tilted_tail (hk : 2 ≤ k) (T : ℝ) (hT : 0 �
 
 end Pointwise
 
+section
+variable {d : ℕ} (C : ModelConstants d)
+include C
+
 /-- The fixed canonical source coefficient; it depends only on model constants. -/
-def highCompleteSourceSaddleCoefficient {d : ℕ} (C : ModelConstants d) : ℝ :=
+def highCompleteSourceSaddleCoefficient   :=
   lowerSaddleCoefficient C.smoothness d (densityIntervalExponent C.densityLower C.densityUpper)
 
-def highCompleteSourceSaddleTheta {d : ℕ} (C : ModelConstants d) : ℝ :=
+def highCompleteSourceSaddleTheta   :=
   lowerSaddleTheta C.smoothness d (densityIntervalExponent C.densityLower C.densityUpper)
 
 /-- The actual geometric envelope for the complete-row tilted bad mass. -/
-def highCompleteSourceSaddleTail {d : ℕ} (C : ModelConstants d) (Cω cm : ℝ) (n : ℕ) : ℝ :=
+def highCompleteSourceSaddleTail  Cω cm (n : ℕ)  :=
   lowerSaddleExceptionalTail d (highCompleteSourceSaddleCoefficient C) (highCompleteSourceSaddleTheta C) Cω
     (cm^2/(8*highHistoryMassMomentConstant d C.densityLower C.densityUpper)) n
+end
+
 
 end NearlyMinimax

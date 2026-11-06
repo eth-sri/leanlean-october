@@ -25,12 +25,12 @@ theorem finite_pi_reindex_integrable {I J E : Type*} [Fintype I] [Fintype J]
   have h := hp.integrable_comp_of_integrable hf
   simpa only [Function.comp_def, MeasurableEquiv.coe_piCongrLeft, he] using h
 
-theorem spatial_subset_square_integrable_enumerated {d k : ℕ} (s : Finset (Fin k))
+theorem spatial_subset_square_integrable_enumerated {d k } s
     (f : (Fin s.card → Covariate d) → ℝ)
     (hf : Integrable (fun V => f V ^ 2) (fullSpatialPatchDesign d s.card)) :
-    Integrable (fun U : Fin k → Covariate d => f (spatialSubsetConfiguration s U) ^ 2)
+    Integrable (fun U  => f (spatialSubsetConfiguration s U) ^ 2)
       (fullSpatialPatchDesign d k) := by
-  let e : s ≃ Fin s.card := (Fintype.equivFin s).trans (finCongr (Fintype.card_coe s))
+  let e  := (Fintype.equivFin s).trans (finCongr (Fintype.card_coe s))
   have hi := finite_pi_reindex_integrable (volume.restrict (spatialPatchBox d)) e
     (fun V => f V ^ 2) hf
   have h := finite_pi_subset_integrable (volume.restrict (spatialPatchBox d)) s
@@ -51,9 +51,7 @@ theorem finite_sum_square_integral_le {I X : Type*} [MeasurableSpace X]
     (integrable_finsetSum s hi).const_mul _
   have hl : Integrable (fun x => (∑ i ∈ s, f i x) ^ 2) μ := by
     apply hu.mono' ((Finset.measurable_fun_sum s hm).pow_const 2).aestronglyMeasurable
-    exact Filter.Eventually.of_forall (fun x => by
-      rw [Real.norm_eq_abs, abs_sq]
-      exact hb x)
+    simp_all []
   have h := integral_mono hl hu hb
   rw [integral_const_mul, integral_finsetSum _ hi] at h
   apply h.trans
@@ -62,16 +60,16 @@ theorem finite_sum_square_integral_le {I X : Type*} [MeasurableSpace X]
 
 /-- This is the exact binomial and unused-coordinate factor in the paper's
 subset lift; each selected kernel is integrated over its genuine Q^r law. -/
-theorem spatial_subset_sum_square_integral_le {d k r : ℕ}
-    (f : (s : Finset (Fin k)) → (Fin s.card → Covariate d) → ℝ) (K : ℝ)
-    (hm : ∀ s ∈ (Finset.univ : Finset (Fin k)).powersetCard r, Measurable (f s))
-    (hi : ∀ s ∈ (Finset.univ : Finset (Fin k)).powersetCard r,
+theorem spatial_subset_sum_square_integral_le {d k r }
+    (f : (s : Finset (Fin k)) → (Fin s.card → Covariate d) → ℝ) K
+    (hm : ∀ s ∈ Finset.univ.powersetCard r, Measurable (f s))
+    (hi : ∀ s ∈ Finset.univ.powersetCard r,
       Integrable (fun V => f s V ^ 2) (fullSpatialPatchDesign d s.card))
-    (hK : ∀ s ∈ (Finset.univ : Finset (Fin k)).powersetCard r,
+    (hK : ∀ s ∈ Finset.univ.powersetCard r,
       (∫ V, f s V ^ 2 ∂fullSpatialPatchDesign d s.card) ≤ K) :
-    (∫ U, (∑ s ∈ (Finset.univ : Finset (Fin k)).powersetCard r,
+    (∫ U, (∑ s ∈ Finset.univ.powersetCard r,
       f s (spatialSubsetConfiguration s U)) ^ 2 ∂fullSpatialPatchDesign d k) ≤
-      (k.choose r : ℝ) ^ 2 * (2 : ℝ) ^ (d * (k - r)) * K := by
+      (k.choose r) ^ 2 * 2 ^ (d * (k - r)) * K := by
   classical
   have h := finite_sum_square_integral_le (fullSpatialPatchDesign d k)
     ((Finset.univ : Finset (Fin k)).powersetCard r)
@@ -84,6 +82,6 @@ theorem spatial_subset_sum_square_integral_le {d k r : ℕ}
       have hv : (2 : ℝ) ^ (d * (k - s.card)) = (2 : ℝ) ^ (d * (k - r)) := by rw [hc]
       rw [hv]
       exact mul_le_mul_of_nonneg_left (hK s hs) (by positivity))
-  simpa only [Finset.card_powersetCard, Finset.card_univ, Fintype.card_fin, ← mul_assoc] using h
+  grind only [Finset.card_powersetCard, Finset.card_univ, Fintype.card_fin, mul_assoc]
 
 end NearlyMinimax

@@ -22,11 +22,10 @@ theorem deletion_comparison {α : Type*} [DecidableEq α]
   by_cases heq : U = T
   · subst U
     simp
-  · have hnot : ¬ T ⊆ U := fun hTU => heq (Finset.Subset.antisymm hUT hTU)
+  · have hnot  := fun hTU => heq (Finset.Subset.antisymm hUT hTU)
     obtain ⟨x, hxT, hxU⟩ := Finset.not_subset.mp hnot
     have hue : U ⊆ T.erase x := by
-      intro y hy
-      exact Finset.mem_erase.mpr ⟨by intro h; subst y; exact hxU hy, hUT hy⟩
+      grind
     have hsmall := ih (T.erase x) (Finset.erase_ssubset hxT) U hue
       (fun V hV => hstep V (hV.trans (Finset.erase_subset _ _)))
     have hscale : (2 : ℝ) ^ ((T.erase x).card - U.card) * F (T.erase x) ≤
@@ -34,9 +33,7 @@ theorem deletion_comparison {α : Type*} [DecidableEq α]
       mul_le_mul_of_nonneg_left (hstep T Finset.Subset.rfl x hxT) (by positivity)
     have hcard : T.card - U.card = ((T.erase x).card - U.card) + 1 := by
       have hle := Finset.card_le_card hue
-      have herase := Finset.card_erase_of_mem hxT
-      have hpos := Finset.card_pos.mpr ⟨x, hxT⟩
-      omega
+      grind
     calc
       F U ≤ (2 : ℝ) ^ ((T.erase x).card - U.card) * F (T.erase x) := hsmall
       _ ≤ (2 : ℝ) ^ ((T.erase x).card - U.card) * (2 * F T) := hscale
@@ -71,21 +68,17 @@ theorem positive_deletion_recurrence {α β : Type*} [DecidableEq α]
         intro P hP
         obtain ⟨hxP, hPS⟩ := hremove S x hx P hP
         have hsub : S \ removed P ⊆ S.erase x := by
-          intro y hy
-          obtain ⟨hyS, hyn⟩ := Finset.mem_sdiff.mp hy
-          exact Finset.mem_erase.mpr ⟨by intro h; subst y; exact hyn hxP, hyS⟩
-        have hproper : S \ removed P ⊂ S :=
+          grind
+        have hproper  :=
           hsub.trans_ssubset (Finset.erase_ssubset hx)
         have hc : (S.erase x).card - (S \ removed P).card = (removed P).card - 1 := by
           have hRcard := Finset.card_le_card hPS
-          have hRpos := Finset.card_pos.mpr ⟨x, hxP⟩
-          rw [Finset.card_erase_of_mem hx, Finset.card_sdiff_of_subset hPS]
-          omega
+          grind
         refine ⟨(ih (S \ removed P) hproper).1.le, ?_⟩
         rw [← hc]
         apply deletion_comparison F (S.erase x) (S \ removed P) hsub
         intro V hV y hy
-        have hp : V ⊂ S := hV.trans_ssubset (Finset.erase_ssubset hx)
+        have hp  := hV.trans_ssubset (Finset.erase_ssubset hx)
         have hlower := (ih V hp).2 y hy |>.1
         linarith
       have herr : |F S - F (S.erase x)| ≤ F (S.erase x) / 2 := by
@@ -100,20 +93,14 @@ theorem positive_deletion_recurrence {α β : Type*} [DecidableEq α]
             rw [abs_mul, abs_of_nonneg (hterms P hP).1]
           _ ≤ ∑ P ∈ rows S x,
               |weight P| * ((2 : ℝ) ^ ((removed P).card - 1) * F (S.erase x)) := by
-            apply Finset.sum_le_sum
-            intro P hP
-            exact mul_le_mul_of_nonneg_left (hterms P hP).2 (abs_nonneg _)
+            grind only [Finset.sum_le_sum, mul_le_mul_of_nonneg_left, abs_nonneg]
           _ = (∑ P ∈ rows S x, |weight P| * (2 : ℝ) ^ ((removed P).card - 1)) *
               F (S.erase x) := by simp_rw [← mul_assoc]; rw [Finset.sum_mul]
           _ ≤ 1 / 2 * F (S.erase x) :=
             mul_le_mul_of_nonneg_right (hactivity S x hx) hprevious.1.le
           _ = F (S.erase x) / 2 := by ring
-      refine ⟨hprevious.1, ?_, ?_⟩
-      · linarith [neg_le_abs (F S - F (S.erase x))]
-      · linarith [le_abs_self (F S - F (S.erase x))]
-    obtain ⟨x, hx⟩ := Finset.nonempty_iff_ne_empty.mpr he
-    have h := hratio x hx
-    refine ⟨by linarith [h.1], fun y hy => (hratio y hy).2⟩
+      grind
+    grind
 
 /-- Multiplying the deletion ratios gives the history density bounds in
 lower_heaps, independently of the total number of pieces. -/

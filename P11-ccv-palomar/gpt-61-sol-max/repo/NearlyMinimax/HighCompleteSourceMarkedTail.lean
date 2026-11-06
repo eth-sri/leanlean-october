@@ -16,9 +16,9 @@ set_option maxHeartbeats 1500000
 attribute [local instance] Classical.propDecidable
 attribute [local irreducible] highUnionSourceDensity highUnionSourceState historyMarkedAppend
 
-theorem crude_raw_square_energy_pointwise {d n : ℕ} (Chi η B : ℝ)
+theorem crude_raw_square_energy_pointwise {d n } Chi η B
     (hChi : 0 ≤ Chi) (hB : 0 ≤ B)
-    (R : (Fin n → Covariate d) → (Fin n → Fin 3) → ℝ)
+    R
     (hcap : ∀ x y, |R x y| ≤ Chi^n*η^2*(B+1)) (x : Fin n → Covariate d) :
     selectedRawSquareEnergy R x ≤ (3*Chi^2)^n*η^4*(B+1)^2 := by
   have hp (y) : R x y ^ 2 ≤ Chi^(2*n)*η^4*(B+1)^2 := by
@@ -44,10 +44,10 @@ variable {d k D : ℕ} {I : Type*} [Fintype I] {E : I → Type*}
   [∀ i, MeasurableSpace (E i)] [∀ i, StandardBorelSpace (E i)]
   [NeZero k] [LinearOrder (HighWindowLabels d k)]
 
-def highUnionSourceMarkedNumerator (C : ModelConstants d) (R : HighUnionRowData d k D I E)
-    (n : ℕ) (a V η : ℝ) (j : HighWindowLabels d k)
-    (h : HistoryMarked (fun i j => j ∈ highNeighborLabels d k i) (HighUnionMark E))
-    (x : Fin n → Covariate d) (y : Fin n → Fin 3) : ℝ :=
+def highUnionSourceMarkedNumerator C (R : HighUnionRowData d k D I E)
+    n a V η j
+    h
+    x y  :=
   highMarkedSampleNumerator n (highUnionLaw R (highCenterMix C))
     (highUnionActivation R (highCenterMix C)) a V η
     (highUnionSourceDensity C R h) (highUnionSourceResetDensity C R j h)

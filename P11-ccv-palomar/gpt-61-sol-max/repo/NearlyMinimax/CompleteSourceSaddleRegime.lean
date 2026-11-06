@@ -11,10 +11,13 @@ noncomputable section
 open Filter
 namespace NearlyMinimax
 
- theorem completeSourceSaddle_fixed_regime_window {d : ℕ} (C : ModelConstants d)
-    (hs : 1 < C.smoothness) (hd : 4*C.smoothness < (d : ℝ))
-    {cf : ℝ} (hcf : 0 < cf) :
-    ∃ K : ℝ, 1 ≤ K ∧ ∀ (Cω eta0 : ℝ) (M0 : ℕ), 0 < eta0 →
+ section
+variable {d : ℕ} (C : ModelConstants d) (hs : 1 < C.smoothness) (hd : 4*C.smoothness < (d : ℝ))
+include hs hd
+
+theorem completeSourceSaddle_fixed_regime_window 
+    {cf } (hcf : 0 < cf) :
+    ∃ K : ℝ, 1 ≤ K ∧ ∀ Cω eta0 M0, 0 < eta0 →
       ∀ᶠ n : ℕ in atTop,
         LowerSaddleReg K eta0 C.smoothness d (highCompleteSourceSaddleCoefficient C)
           (highCompleteSourceSaddleTheta C) Cω cf M0
@@ -24,8 +27,7 @@ namespace NearlyMinimax
   refine ⟨K,hK,fun Cω eta0 M0 heta0 => ?_⟩
   exact tendsto_natCast_atTop_atTop.eventually (h Cω eta0 M0 heta0)
 
- theorem completeSourceSaddle_higher_family_eventually_legal {d : ℕ}
-    (C : ModelConstants d) (hs : 1 < C.smoothness) (hd : 4*C.smoothness < (d : ℝ)) (Cω : ℝ) :
+ theorem completeSourceSaddle_higher_family_eventually_legal  Cω :
     ∀ᶠ n : ℕ in atTop,
       let m := highCompleteSourceSaddleCoefficient C
       let theta := highCompleteSourceSaddleTheta C
@@ -36,10 +38,11 @@ namespace NearlyMinimax
       let ell := lowerAliasCutoff C.smoothness d m theta Cω
         (densityIntervalExponent C.densityLower C.densityUpper+1)
         (shrunkDensityExponent C.densityLower C.densityUpper) n
-      1 ≤ ell ∧ (∀ r : ℕ, 0 < higherBandTargetScale d r N mu) ∧
-        (∀ r : ℕ, ell < higherBandTargetScale d r N mu → r ≤ M) := by
-  exact tendsto_natCast_atTop_atTop.eventually
+      1 ≤ ell ∧ (∀ r , 0 < higherBandTargetScale d r N mu) ∧
+        (∀ r , ell < higherBandTargetScale d r N mu → r ≤ M) := tendsto_natCast_atTop_atTop.eventually
     (sourceSaddleHigherFamily_eventually_legal d C.smoothness C.densityLower C.densityUpper Cω
       hs hd C.densityLower_pos (C.densityLower_lt_one.trans C.one_lt_densityUpper))
+end
+
 
 end NearlyMinimax

@@ -27,13 +27,13 @@ include hA hcost hpos
 
 end Packet
 
-def highCenterResolutionThreshold {d : ℕ} (C : ModelConstants d) : ℝ :=
+def highCenterResolutionThreshold {d } (C : ModelConstants d)  :=
   max 2 (highCenterRadius C)⁻¹
 
-theorem highCenterResolution_guards {d : ℕ} (C : ModelConstants d) (M : ℝ)
+theorem highCenterResolution_guards {d } (C : ModelConstants d) M
     (hM : highCenterResolutionThreshold C ≤ M) : 2 ≤ M ∧ 1 / M ≤ highCenterRadius C := by
-  have hM2 : 2 ≤ M := (le_max_left _ _).trans hM
-  have hMr : (highCenterRadius C)⁻¹ ≤ M := (le_max_right _ _).trans hM
+  have hM2  := (le_max_left _ _).trans hM
+  have hMr  := (le_max_right _ _).trans hM
   have hM0 : 0 < M := by linarith
   refine ⟨hM2, ?_⟩
   apply (div_le_iff₀ hM0).mpr

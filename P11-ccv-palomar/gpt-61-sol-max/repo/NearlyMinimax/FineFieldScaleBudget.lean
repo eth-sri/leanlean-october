@@ -14,19 +14,19 @@ open scoped Topology
 namespace NearlyMinimax
 set_option backward.isDefEq.respectTransparency false
 
-def lowerSaddleFineFieldScale (s d m theta C c0 : ℝ) (tauM : ℕ → ℝ) (x : ℝ) : ℝ :=
+def lowerSaddleFineFieldScale s d m theta C c0 tauM x  :=
   Real.exp (2 * tauM (lowerSaddleM m x) * lowerSaddleM m x) *
     lowerSaddleN s d m theta C tauM x ^ (4 - d) *
     Real.exp (c0 * (2 * d - 4) * lowerSaddleD d m x)
 
-theorem lowerSaddleFineFieldScale_positive (s d m theta C c0 : ℝ) (tauM : ℕ → ℝ) (x : ℝ) :
+theorem lowerSaddleFineFieldScale_positive s d m theta C c0 tauM x :
     0 < lowerSaddleFineFieldScale s d m theta C c0 tauM x := by
   unfold lowerSaddleFineFieldScale
   positivity [lowerSaddleN_positive s d m theta C tauM x]
 
-theorem lowerSaddleFineFieldScale_tends_zero {s d m theta tau Ctau : ℝ}
-    {tauM : ℕ → ℝ} (hs : 1 < s) (hd : 4 * s < d) (hm : 0 < m) (htheta : 0 < theta)
-    (hcontrol : LowerExponentControl tauM tau Ctau) (C c0 : ℝ) :
+theorem lowerSaddleFineFieldScale_tends_zero {s d m theta tau Ctau }
+    {tauM } (hs : 1 < s) (hd : 4 * s < d) (hm : 0 < m) (htheta : 0 < theta)
+    (hcontrol : LowerExponentControl tauM tau Ctau) C c0 :
     Tendsto (lowerSaddleFineFieldScale s d m theta C c0 tauM) atTop (𝓝 0) := by
   have hd0 : 0 < d := by linarith only [hs, hd]
   have hd4 : 4 < d := by linarith only [hs, hd]
@@ -53,7 +53,7 @@ theorem lowerSaddleFineFieldScale_tends_zero {s d m theta tau Ctau : ℝ}
   simp only [Pi.inv_apply]
   field_simp [hMx.ne']
 
-theorem fine_field_scale_absorption {d N mu ell tau M D c0 : ℝ}
+theorem fine_field_scale_absorption {d N mu ell tau M D c0 }
     (hN : 0 < N) (hmu : 0 ≤ mu) (hmu1 : mu ≤ 1)
     (hell : ell = N * Real.exp (-c0 * D))
     (hscale : Real.exp (2 * tau * M) * N ^ (4 - d) *
@@ -62,11 +62,11 @@ theorem fine_field_scale_absorption {d N mu ell tau M D c0 : ℝ}
       mu ^ 2 * N ^ (-d) := by
   have hNpow : N ^ (-d) * N ^ (4 - d) = N ^ (4 - 2 * d) := by
     rw [← Real.rpow_add hN]
-    congr 1
+    
     ring
   have he : Real.exp (-c0 * D) ^ (4 - 2 * d) = Real.exp (c0 * (2 * d - 4) * D) := by
     rw [← Real.exp_mul]
-    congr 1
+    
     ring
   rw [hell, Real.mul_rpow hN.le (Real.exp_pos _).le, he]
   have hmu2 : mu ^ 2 ≤ 1 := pow_le_one₀ hmu hmu1
@@ -86,9 +86,9 @@ theorem fine_field_scale_absorption {d N mu ell tau M D c0 : ℝ}
     _ ≤ (mu ^ 2 * N ^ (-d)) * 1 := mul_le_mul_of_nonneg_left hprod (by positivity)
     _ = _ := mul_one _
 
-theorem eventually_lowerSaddle_fine_field_energy_scale {s d m theta tau Ctau : ℝ}
-    {tauM : ℕ → ℝ} (hs : 1 < s) (hd : 4 * s < d) (hm : 0 < m) (htheta : 0 < theta)
-    (hcontrol : LowerExponentControl tauM tau Ctau) (C c0 : ℝ) :
+theorem eventually_lowerSaddle_fine_field_energy_scale {s d m theta tau Ctau }
+    {tauM } (hs : 1 < s) (hd : 4 * s < d) (hm : 0 < m) (htheta : 0 < theta)
+    (hcontrol : LowerExponentControl tauM tau Ctau) C c0 :
     ∀ᶠ x : ℝ in atTop,
       Real.exp (2 * tauM (lowerSaddleM m x) * lowerSaddleM m x) *
         lowerSaddleMu d m theta C x ^ 4 *

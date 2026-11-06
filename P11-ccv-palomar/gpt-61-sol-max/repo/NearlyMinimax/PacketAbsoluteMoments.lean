@@ -28,14 +28,14 @@ theorem finite_even_odd_sum_zero {I : Type*} [Fintype I]
       _ = _ := Finset.sum_neg_distrib _
   linarith
 
-def densityMarkReflection (m r D : ℕ) : Equiv.Perm (HighDensityMarkIndex m r D) :=
+def densityMarkReflection m r D : Equiv.Perm (HighDensityMarkIndex m r D) :=
   Equiv.prodCongr (Equiv.refl _) (Equiv.piCongrRight (fun _ : Fin r => Fin.revPerm))
 
 def packetMarkReflection (ι : Type*) (m r D q : ℕ) : Equiv.Perm (HighPacketMarkIndex ι m r D q) :=
   Equiv.prodCongr (densityMarkReflection m r D) (Equiv.refl _)
 
-theorem densityPacketWeight_abs_reflection (a b : ℝ) (m r D : ℕ)
-    (h : HighDensityMarkIndex m r D) :
+theorem densityPacketWeight_abs_reflection a b m r D
+    h :
     |densityPacketWeight a b m r D (densityMarkReflection m r D h)| =
       |densityPacketWeight a b m r D h| := by
   change |densityPacketPrefactor a b r * exteriorWeight a b (m + r) h.1 *
@@ -52,23 +52,30 @@ section Packet
 variable {Z ι : Type*} [MeasurableSpace Z] [Fintype ι] [DecidableEq ι]
   [MeasurableSpace ι] [MeasurableSingletonClass ι]
 
-def highPacketIntercept (a b : ℝ) (m r D q : ℕ)
-    (e : Z × HighPacketMarkIndex ι m r D q) : ℝ :=
+section
+variable (a b : ℝ)
+include a b
+
+section
+variable (m r D q : ℕ)
+
+def highPacketIntercept  
+    (e : Z × HighPacketMarkIndex ι m r D q)  :=
   (densityPacketAtom a b m r D e.2.1).1
 
-def highPacketSlope (a b : ℝ) (m r D q : ℕ) (B : Z → Fin r → ℝ)
-    (e : Z × HighPacketMarkIndex ι m r D q) : ℝ :=
+def highPacketSlope   (B : Z → Fin r → ℝ)
+    (e : Z × HighPacketMarkIndex ι m r D q)  :=
   densityMargin a b (highPacketIntercept a b m r D q e) / ((r : ℝ) * b) *
     ∑ l, (densityPacketAtom a b m r D e.2.1).2 l * B e.1 l
 
-theorem highPacketIntercept_measurable (a b : ℝ) (m r D q : ℕ) :
+theorem highPacketIntercept_measurable   :
     Measurable (highPacketIntercept (Z := Z) (ι := ι) a b m r D q) := by
   apply measurable_from_prod_countable_left
   intro h
   change Measurable (fun _ : Z => (densityPacketAtom a b m r D h.1).1)
   exact measurable_const
 
-theorem highPacketSlope_measurable (a b : ℝ) (m r D q : ℕ) (B : Z → Fin r → ℝ)
+theorem highPacketSlope_measurable   (B : Z → Fin r → ℝ)
     (hB : ∀ l, Measurable (fun ζ => B ζ l)) :
     Measurable (highPacketSlope (ι := ι) a b m r D q B) := by
   apply measurable_from_prod_countable_left
@@ -77,9 +84,11 @@ theorem highPacketSlope_measurable (a b : ℝ) (m r D q : ℕ) (B : Z → Fin r 
   dsimp only
   apply Measurable.const_mul
   exact Finset.measurable_fun_sum _ (fun l _ => (hB l).const_mul _)
+end
 
-theorem highPacketSlope_bound (a b : ℝ) (ha : 0 < a) (hab : a < b)
-    (m r D q : ℕ) (hr : 1 ≤ r) (B : Z → Fin r → ℝ) (hB : ∀ ζ l, |B ζ l| ≤ 1)
+
+theorem highPacketSlope_bound  (ha : 0 < a) (hab : a < b)
+    m r D q (hr : 1 ≤ r) B (hB : ∀ ζ l, |B ζ l| ≤ 1)
     (e : Z × HighPacketMarkIndex ι m r D q) :
     |highPacketSlope a b m r D q B e| ≤ (b - a) / (4 * b) :=
   localDensityReset_slope_bound a b ha hab r hr
@@ -89,16 +98,19 @@ theorem highPacketSlope_bound (a b : ℝ) (ha : 0 < a) (hab : a < b)
     (densityPacketAtom_mem a b hab.le m r D e.2.1).2
     (fun _ l => B e.1 l) () (hB e.1)
 
-theorem highPacketMarkWeight_abs_reflection (a b : ℝ) (m r D q : ℕ) (C : ℝ)
-    (A : Z → ι → ι → ℝ) (ζ : Z) (h : HighPacketMarkIndex ι m r D q) :
+section
+variable (m r D q : ℕ)
+
+theorem highPacketMarkWeight_abs_reflection   C
+    A (ζ : Z) h :
     |highPacketMarkWeight a b m r D q C A (ζ, packetMarkReflection ι m r D q h)| =
       |highPacketMarkWeight a b m r D q C A (ζ, h)| := by
   change |densityPacketWeight a b m r D (densityMarkReflection m r D h.1) *
       highResponseMarkWeight C q (A ζ) h.2| = _
   rw [abs_mul, densityPacketWeight_abs_reflection, highPacketMarkWeight, abs_mul]
 
-theorem highPacketSlope_reflection (a b : ℝ) (m r D q : ℕ) (B : Z → Fin r → ℝ)
-    (ζ : Z) (h : HighPacketMarkIndex ι m r D q) :
+theorem highPacketSlope_reflection   B
+    (ζ : Z) h :
     highPacketSlope a b m r D q B (ζ, packetMarkReflection ι m r D q h) =
       -highPacketSlope a b m r D q B (ζ, h) := by
   change densityMargin a b (exteriorNode a b (m + r) h.1.1) / ((r : ℝ) * b) *
@@ -107,13 +119,17 @@ theorem highPacketSlope_reflection (a b : ℝ) (m r D q : ℕ) (B : Z → Fin r 
   simp only [neg_mul, Finset.sum_neg_distrib, mul_neg]
   rfl
 
-theorem highPacketSlope_absolute_finite_sum_zero (a b : ℝ) (m r D q : ℕ) (C : ℝ)
-    (A : Z → ι → ι → ℝ) (B : Z → Fin r → ℝ) (ζ : Z) :
+theorem highPacketSlope_absolute_finite_sum_zero   C
+    A B (ζ : Z) :
     (∑ h : HighPacketMarkIndex ι m r D q,
       |highPacketMarkWeight a b m r D q C A (ζ, h)| * highPacketSlope a b m r D q B (ζ, h)) = 0 :=
   finite_even_odd_sum_zero (packetMarkReflection ι m r D q) _ _
     (highPacketMarkWeight_abs_reflection a b m r D q C A ζ)
     (highPacketSlope_reflection a b m r D q B ζ)
+end
+
+end
+
 
 theorem absoluteMarkLaw_integral {E : Type*} [MeasurableSpace E]
     (μ : Measure E) (w : E → ℝ) (hmw : Measurable w)
@@ -129,38 +145,31 @@ theorem absoluteMarkLaw_integral {E : Type*} [MeasurableSpace E]
     exact div_mul_eq_mul_div _ _ _
   rw [he, integral_div]
 
-theorem highPacketSlope_integrable (σ : Measure Z) [IsFiniteMeasure σ]
-    (a b : ℝ) (ha : 0 < a) (hab : a < b) (m r D q : ℕ) (hr : 1 ≤ r) (C : ℝ)
-    (A : Z → ι → ι → ℝ) (hA : ∀ i j, Measurable (fun ζ => A ζ i j))
-    (hcost : Integrable (separatedMatrixCost A) σ)
-    (hpos : 0 < highPacketMarkMass σ a b m r D q C A)
-    (B : Z → Fin r → ℝ) (hmB : ∀ l, Measurable (fun ζ => B ζ l))
-    (hB : ∀ ζ l, |B ζ l| ≤ 1) :
+section
+variable (σ : Measure Z) [IsFiniteMeasure σ] (a b : ℝ) (ha : 0 < a) (hab : a < b) (m r D q : ℕ) (hr : 1 ≤ r) (C : ℝ) (A : Z → ι → ι → ℝ) (hA : ∀ i j, Measurable (fun ζ => A ζ i j)) (hcost : Integrable (separatedMatrixCost A) σ) (hpos : 0 < highPacketMarkMass σ a b m r D q C A) (B : Z → Fin r → ℝ) (hmB : ∀ l, Measurable (fun ζ => B ζ l)) (hB : ∀ ζ l, |B ζ l| ≤ 1)
+include ha hab hr hA hcost hpos hmB hB
+
+theorem highPacketSlope_integrable  :
     Integrable (highPacketSlope a b m r D q B) (highPacketAbsoluteLaw σ a b m r D q C A) := by
   letI := highPacketAbsoluteLaw_probability σ a b m r D q C A hA hcost hpos
   apply (integrable_const ((b - a) / (4 * b))).mono'
     (highPacketSlope_measurable a b m r D q B hmB).aestronglyMeasurable
-  exact Filter.Eventually.of_forall (fun e => by
-    simpa only [Real.norm_eq_abs] using highPacketSlope_bound a b ha hab m r D q hr B hB e)
+  simp_all [highPacketSlope_bound]
 
 /-- Absolute derivative-rule reflection kills the actual affine slope under
 the genuine normalized absolute packet law. No desired slope mean is supplied. -/
-theorem highPacketAbsoluteLaw_slope_integral_zero (σ : Measure Z) [IsFiniteMeasure σ]
-    (a b : ℝ) (ha : 0 < a) (hab : a < b) (m r D q : ℕ) (hr : 1 ≤ r) (C : ℝ)
-    (A : Z → ι → ι → ℝ) (hA : ∀ i j, Measurable (fun ζ => A ζ i j))
-    (hcost : Integrable (separatedMatrixCost A) σ)
-    (hpos : 0 < highPacketMarkMass σ a b m r D q C A)
-    (B : Z → Fin r → ℝ) (hmB : ∀ l, Measurable (fun ζ => B ζ l))
-    (hB : ∀ ζ l, |B ζ l| ≤ 1) :
+theorem highPacketAbsoluteLaw_slope_integral_zero  :
     (∫ e, highPacketSlope a b m r D q B e ∂highPacketAbsoluteLaw σ a b m r D q C A) = 0 := by
   have hi := (highPacketMarkWeight_integrable σ a b m r D q C A hA hcost).abs.mul_bdd
     (highPacketSlope_measurable a b m r D q B hmB).aestronglyMeasurable
     (Filter.Eventually.of_forall (fun e => by
-      simpa only [Real.norm_eq_abs] using highPacketSlope_bound a b ha hab m r D q hr B hB e))
+      solve_by_elim [highPacketSlope_bound]))
   rw [highPacketAbsoluteLaw, absoluteMarkLaw_integral _ _
     (highPacketMarkWeight_measurable a b m r D q C A hA) hpos,
     integral_prod _ hi]
   simp only [integral_count, highPacketSlope_absolute_finite_sum_zero, integral_zero, zero_div]
+end
+
 
 end Packet
 end NearlyMinimax

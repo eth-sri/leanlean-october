@@ -17,26 +17,21 @@ set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 800000
 attribute [local instance] Classical.propDecidable
 
-theorem finset_sum_cardinality {n : ℕ} (F : ℕ → ℝ) :
+theorem finset_sum_cardinality {n } (F : ℕ → ℝ) :
     (∑ S : Finset (Fin n), F S.card) =
-      ∑ r ∈ Finset.range (n + 1), (n.choose r : ℝ) * F r := by
+      ∑ r ∈ Finset.range (n + 1), (n.choose r) * F r := by
   have h := Finset.sum_powerset (Finset.univ : Finset (Fin n)) (fun S => F S.card)
   simp only [Finset.powerset_univ, Finset.card_univ, Fintype.card_fin] at h
   rw [h]
   apply Finset.sum_congr rfl
-  intro r hr
-  simpa only [Finset.sum_powersetCard, Finset.card_univ, Fintype.card_fin,
-    nsmul_eq_mul, Nat.cast_ofNat] using
-      (Finset.sum_powersetCard r (Finset.univ : Finset (Fin n)) F)
+  
+  simp_all [Finset.sum_powersetCard]
 
-theorem iid_local_energy_le_binomial_spatial_series {α : Type*} [MeasurableSpace α]
-    (μ : Measure α) [IsProbabilityMeasure μ] (n : ℕ) (A : Set α) (hA : MeasurableSet A)
-    (E : (Fin n → α) → ℝ) (hE : Integrable E (Measure.pi (fun _ : Fin n => μ)))
-    (H : (S : Finset (Fin n)) → (S → α) → ℝ)
-    (hH : ∀ S, Integrable (H S) (Measure.pi (fun _ : S => μ.restrict A)))
-    (hHn : ∀ S z, 0 ≤ H S z)
-    (hdom : ∀ S x, x ∈ designMembershipCell n A S → E x ≤ H S (fun i : S => x i.val))
-    (ψ : ℝ) (J : ℕ → ℝ)
+section
+variable {α : Type*} [MeasurableSpace α] (μ : Measure α) [IsProbabilityMeasure μ] (n : ℕ) (A : Set α) (hA : MeasurableSet A) (E : (Fin n → α) → ℝ) (hE : Integrable E (Measure.pi (fun _ : Fin n => μ))) (H : (S : Finset (Fin n)) → (S → α) → ℝ) (hH : ∀ S, Integrable (H S) (Measure.pi (fun _ : S => μ.restrict A))) (hHn : ∀ S z, 0 ≤ H S z) (hdom : ∀ S x, x ∈ designMembershipCell n A S → E x ≤ H S (fun i : S => x i.val)) (ψ : ℝ)
+include hA hE hH hHn hdom
+
+theorem iid_local_energy_le_binomial_spatial_series  (J : ℕ → ℝ)
     (hspatial : ∀ S : Finset (Fin n), (∫ z, H S z ∂Measure.pi (fun _ : S => μ.restrict A)) ≤ ψ ^ S.card * J S.card) :
     (∫ x, E x ∂Measure.pi (fun _ : Fin n => μ)) ≤
       ∑ r ∈ Finset.range (n + 1), (n.choose r : ℝ) * ψ ^ r * J r := by
@@ -51,14 +46,7 @@ theorem iid_local_energy_le_binomial_spatial_series {α : Type*} [MeasurableSpac
       intro r hr
       ring
 
-theorem iid_local_energy_le_factorial_spatial_series {α : Type*} [MeasurableSpace α]
-    (μ : Measure α) [IsProbabilityMeasure μ] (n : ℕ) (A : Set α) (hA : MeasurableSet A)
-    (E : (Fin n → α) → ℝ) (hE : Integrable E (Measure.pi (fun _ : Fin n => μ)))
-    (H : (S : Finset (Fin n)) → (S → α) → ℝ)
-    (hH : ∀ S, Integrable (H S) (Measure.pi (fun _ : S => μ.restrict A)))
-    (hHn : ∀ S z, 0 ≤ H S z)
-    (hdom : ∀ S x, x ∈ designMembershipCell n A S → E x ≤ H S (fun i : S => x i.val))
-    (ψ : ℝ) (hψ : 0 ≤ ψ) (J : ℕ → ℝ) (hJ : ∀ r, 0 ≤ J r)
+theorem iid_local_energy_le_factorial_spatial_series  (hψ : 0 ≤ ψ) (J : ℕ → ℝ) (hJ : ∀ r, 0 ≤ J r)
     (hspatial : ∀ S : Finset (Fin n), (∫ z, H S z ∂Measure.pi (fun _ : S => μ.restrict A)) ≤ ψ ^ S.card * J S.card) :
     (∫ x, E x ∂Measure.pi (fun _ : Fin n => μ)) ≤
       ∑ r ∈ Finset.range (n + 1), ((n : ℝ) * ψ) ^ r / (r.factorial : ℝ) * J r := by
@@ -66,9 +54,10 @@ theorem iid_local_energy_le_factorial_spatial_series {α : Type*} [MeasurableSpa
   apply Finset.sum_le_sum
   intro r hr
   calc
-    _ ≤ ((n : ℝ) ^ r / (r.factorial : ℝ)) * ψ ^ r * J r := by
-      exact mul_le_mul_of_nonneg_right
+    _ ≤ ((n : ℝ) ^ r / (r.factorial : ℝ)) * ψ ^ r * J r := mul_le_mul_of_nonneg_right
         (mul_le_mul_of_nonneg_right (Nat.choose_le_pow_div r n) (pow_nonneg hψ r)) (hJ r)
-    _ = _ := by rw [mul_pow]; ring
+    _ = _ := by skip; ring
+end
+
 
 end NearlyMinimax

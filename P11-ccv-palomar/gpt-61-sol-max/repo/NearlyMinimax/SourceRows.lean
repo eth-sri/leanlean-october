@@ -25,7 +25,7 @@ def highUnionRowRestrict {d k D : ℕ} {I : Type*} {E : I → Type*} [∀ i, Mea
   rowVector := fun _ => R.rowVector i
   rowTime := fun _ => R.rowTime i
 
-abbrev SourceRowIndex (d D M q : ℕ) (a b C lam ℓ N μ : ℝ) :=
+abbrev SourceRowIndex d D M q a b C lam ℓ N μ :=
   FinePairRowTag ⊕ (Unit ⊕ HigherBandFamilyIndex d D M q a b C lam ℓ N μ)
 
 def SourceRowMark (d D M q : ℕ) (a b C lam ℓ N μ : ℝ) :
@@ -46,14 +46,20 @@ instance sourceRowMark_standardBorel (d D M q : ℕ) (a b C lam ℓ N μ : ℝ)
   | inl p => exact finePairRowMark_standardBorel d D M q p
   | inr i => cases i <;> dsimp [SourceRowMark, sourceRowMark_measurable] <;> infer_instance
 
-def sourceRowComponent (d k D M q : ℕ) (a b C lam ℓ N μ : ℝ) :
+section
+variable (d k D M q : ℕ)
+
+section
+variable (a b C lam ℓ N μ : ℝ)
+
+def sourceRowComponent   :
     (i : SourceRowIndex d D M q a b C lam ℓ N μ) →
       HighUnionRowData d k D Unit (fun _ => SourceRowMark d D M q a b C lam ℓ N μ i)
   | .inl p => highUnionRowRestrict (finePairRowData d k D M q a b C ℓ N) p
   | .inr (.inl _) => singletonRowData d k D q a b C
   | .inr (.inr i) => higherBandFamilyComponent d k D M q a b C lam ℓ N μ i
 
-def sourceRowData (d k D M q : ℕ) (a b C lam ℓ N μ : ℝ) :
+def sourceRowData   :
     HighUnionRowData d k D (SourceRowIndex d D M q a b C lam ℓ N μ)
       (SourceRowMark d D M q a b C lam ℓ N μ) where
   rowLaw := fun i => (sourceRowComponent d k D M q a b C lam ℓ N μ i).rowLaw ()
@@ -64,8 +70,8 @@ def sourceRowData (d k D M q : ℕ) (a b C lam ℓ N μ : ℝ) :
   rowVector := fun i => (sourceRowComponent d k D M q a b C lam ℓ N μ i).rowVector ()
   rowTime := fun i => (sourceRowComponent d k D M q a b C lam ℓ N μ i).rowTime ()
 
-theorem sourceRowMass_nonneg (d k D M q : ℕ) (a b C lam ℓ N μ : ℝ)
-    (i : SourceRowIndex d D M q a b C lam ℓ N μ) :
+theorem sourceRowMass_nonneg  
+    i :
     0 ≤ (sourceRowData d k D M q a b C lam ℓ N μ).rowMass i := by
   cases i with
   | inl p => exact finePairRowMass_nonneg d D M q a b C ℓ N p
@@ -73,12 +79,16 @@ theorem sourceRowMass_nonneg (d k D M q : ℕ) (a b C lam ℓ N μ : ℝ)
     cases i with
     | inl _ => exact signedMarkMass_nonneg _ _
     | inr i => exact (higherBandFamily_mass_positive d k D M q a b C lam ℓ N μ i).le
+end
 
-theorem sourceRowTotalMass_positive (d k D M q : ℕ) (hq : 1 ≤ q)
-    (a b : ℝ) (ha : 0 < a) (hab : a < b) (C : ℝ) (hC : 0 < C) (lam ℓ N μ : ℝ) :
+
+theorem sourceRowTotalMass_positive  (hq : 1 ≤ q)
+    a b (ha : 0 < a) (hab : a < b) C (hC : 0 < C) lam ℓ N μ :
     0 < highRowTotalMass (sourceRowData d k D M q a b C lam ℓ N μ).rowMass := by
   apply (singletonRowMass_positive d D q hq a b ha hab C hC).trans_le
   exact Finset.single_le_sum (fun i _ => sourceRowMass_nonneg d k D M q a b C lam ℓ N μ i)
     (Finset.mem_univ (Sum.inr (Sum.inl ())))
+end
+
 
 end NearlyMinimax

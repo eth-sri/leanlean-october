@@ -16,13 +16,16 @@ set_option backward.isDefEq.respectTransparency false
 variable {Ω W : Type*} [MeasurableSpace Ω] [MeasurableSpace W]
 variable {μ : Measure Ω} [IsProbabilityMeasure μ] {M : Measure W}
 
-abbrev KernelMap (p k : ℕ) :=
+abbrev KernelMap p k :=
   ContinuousMultilinearMap ℝ (fun _ : Fin k => Fin p → ℝ) ℝ
+
+section
+variable {n p k : ℕ}
 
 /-- The actual raw kernel is a continuous linear function of its
 multilinear coefficient map, with values in the observation L² space.
 The finite coordinate expansion proves this even for unbounded features. -/
-def rawKernelOperator {n p k : ℕ} (e : Fin k ↪ Fin n)
+def rawKernelOperator  (e : Fin k ↪ Fin n)
     (X : Fin n → Ω → Fin p → ℝ) (hind : iIndepFun X μ)
     (hmeas : ∀ j, Measurable (X j))
     (hL2 : ∀ j a, MemLp (fun ω => X j ω a) 2 μ) : KernelMap p k →L[ℝ] Lp ℝ 2 μ :=
@@ -32,11 +35,13 @@ def rawKernelOperator {n p k : ℕ} (e : Fin k ↪ Fin n)
       ((LiftL2.coordinate_monomial_memLp_two e σ X hind hmeas hL2).toLp
         (fun ω => ∏ i, X (e i) ω (σ i)))
 
+section
+variable (e : Fin k ↪ Fin n) (X : Fin n → Ω → Fin p → ℝ) (hind : iIndepFun X μ)
+
 /-- This operator is precisely the real raw kernel, modulo almost-everywhere equality. -/
-theorem raw_kernel_operator_eq_toLp {n p k : ℕ} (e : Fin k ↪ Fin n)
-    (X : Fin n → Ω → Fin p → ℝ) (hind : iIndepFun X μ)
-    (hmeas : ∀ j, Measurable (X j))
-    (hL2 : ∀ j a, MemLp (fun ω => X j ω a) 2 μ) (H : KernelMap p k) :
+theorem raw_kernel_operator_eq_toLp  
+    hmeas
+    hL2 (H : KernelMap p k) :
     rawKernelOperator e X hind hmeas hL2 H =
       (LiftL2.multilinear_kernel_memLp_two H.toMultilinearMap e X hind hmeas hL2).toLp
         (fun ω => H (fun i => X (e i) ω)) := by
@@ -78,44 +83,45 @@ theorem raw_kernel_operator_eq_toLp {n p k : ℕ} (e : Fin k ↪ Fin n)
       (LiftL2.multilinear_coordinate_expansion H.toMultilinearMap _).symm
 
 /-- The genuine raw-kernel energy equals the operator's squared Hilbert norm. -/
-theorem raw_kernel_operator_norm_sq {n p k : ℕ} (e : Fin k ↪ Fin n)
-    (X : Fin n → Ω → Fin p → ℝ) (hind : iIndepFun X μ)
-    (hmeas : ∀ j, Measurable (X j))
-    (hL2 : ∀ j a, MemLp (fun ω => X j ω a) 2 μ) (H : KernelMap p k) :
+theorem raw_kernel_operator_norm_sq  
+    hmeas
+    hL2 (H : KernelMap p k) :
     ‖rawKernelOperator e X hind hmeas hL2 H‖ ^ 2 =
       ∫ ω, H (fun i => X (e i) ω) ^ 2 ∂μ := by
   rw [raw_kernel_operator_eq_toLp]
   exact LocalizationL2.toLp_norm_sq_eq_integral_sq _
 
 /-- Bochner integration commutes with the actual raw-kernel operator. -/
-theorem raw_kernel_integral_commute {n p k : ℕ} (e : Fin k ↪ Fin n)
-    (X : Fin n → Ω → Fin p → ℝ) (hind : iIndepFun X μ)
-    (hmeas : ∀ j, Measurable (X j))
-    (hL2 : ∀ j a, MemLp (fun ω => X j ω a) 2 μ)
+theorem raw_kernel_integral_commute  
+    hmeas
+    hL2
     (ν : W → ℝ) (H : W → KernelMap p k)
     (hH : Integrable (fun w => ν w • H w) M) :
     rawKernelOperator e X hind hmeas hL2 (∫ w, ν w • H w ∂M) =
       ∫ w, ν w • rawKernelOperator e X hind hmeas hL2 (H w) ∂M := by
   rw [← (rawKernelOperator e X hind hmeas hL2).integral_comp_comm hH]
-  apply integral_congr_ae
-  exact Filter.Eventually.of_forall (fun w => map_smul _ _ _)
+  solve_by_elim [integral_congr_ae, Filter.Eventually.of_forall, map_smul]
 
 /-- Raw support separation becomes genuine L² orthogonality, before centering. -/
-theorem raw_kernel_operator_inner_zero {n p k : ℕ} (e : Fin k ↪ Fin n)
-    (X : Fin n → Ω → Fin p → ℝ) (hind : iIndepFun X μ)
-    (hmeas : ∀ j, Measurable (X j))
-    (hL2 : ∀ j a, MemLp (fun ω => X j ω a) 2 μ) (H G : KernelMap p k)
+theorem raw_kernel_operator_inner_zero  
+    hmeas
+    hL2 (H G : KernelMap p k)
     (hdisjoint : ∀ᵐ ω ∂μ,
       H (fun i => X (e i) ω) * G (fun i => X (e i) ω) = 0) :
     ⟪rawKernelOperator e X hind hmeas hL2 H,
       rawKernelOperator e X hind hmeas hL2 G⟫ = 0 := by
   rw [raw_kernel_operator_eq_toLp, raw_kernel_operator_eq_toLp]
   exact LocalizationL2.toLp_inner_eq_zero_of_disjoint _ _ hdisjoint
+end
+
+
+section
+variable (X : Fin n → Ω → Fin p → ℝ) (ν : W → ℝ) (H : W → KernelMap p k) (hH : Integrable (fun w => ν w • H w) M) (ω : Ω)
+include hH
 
 /-- A weighted factorial-lift term is integrable in its coefficient field. -/
-theorem weighted_kernel_statistic_integrable {n p k : ℕ}
-    (X : Fin n → Ω → Fin p → ℝ) (ν : W → ℝ) (H : W → KernelMap p k)
-    (hH : Integrable (fun w => ν w • H w) M) (ω : Ω) :
+theorem weighted_kernel_statistic_integrable 
+     :
     Integrable (fun w => ν w * LiftL2.kernelStatistic (H w) X ω) M := by
   classical
   let d := (((k.factorial : ℝ) * (n.descFactorial k : ℝ))⁻¹)
@@ -133,9 +139,8 @@ theorem weighted_kernel_statistic_integrable {n p k : ℕ}
   ring
 
 /-- Actual spatial integration commutes with finite factorial averaging. -/
-theorem kernel_statistic_integral_commute {n p k : ℕ}
-    (X : Fin n → Ω → Fin p → ℝ) (ν : W → ℝ) (H : W → KernelMap p k)
-    (hH : Integrable (fun w => ν w • H w) M) (ω : Ω) :
+theorem kernel_statistic_integral_commute 
+     :
     (∫ w, ν w * LiftL2.kernelStatistic (H w) X ω ∂M) =
       LiftL2.kernelStatistic (∫ w, ν w • H w ∂M) X ω := by
   classical
@@ -160,9 +165,13 @@ theorem kernel_statistic_integral_commute {n p k : ℕ}
   change d * ∑ e : Fin k ↪ Fin n, (∫ w, ν w * H w (fun i => X (e i) ω) ∂M) =
     d * ∑ e : Fin k ↪ Fin n, (∫ w, ν w • H w ∂M) (fun i => X (e i) ω)
   simp_rw [heval]
+end
+
+end
+
 
 /-- Spatial integration commutes with the entire centered Taylor lift. -/
-theorem centered_expansion_integral_commute {n p R : ℕ}
+theorem centered_expansion_integral_commute {n p R }
     (X : Fin n → Ω → Fin p → ℝ) (ν : W → ℝ)
     (H : W → (r : Fin R) → KernelMap p (r.val + 1))
     (hH : ∀ r, Integrable (fun w => ν w • H w r) M) (ω : Ω) :
@@ -173,25 +182,27 @@ theorem centered_expansion_integral_commute {n p R : ℕ}
   exact Finset.sum_congr rfl (fun r _ => kernel_statistic_integral_commute X ν (fun w => H w r) (hH r) ω)
 
 /-- Symmetry of the genuine multilinear fields is preserved by integration. -/
-theorem integrated_kernel_symmetric {p k : ℕ}
+theorem integrated_kernel_symmetric {p k }
     (ν : W → ℝ) (H : W → KernelMap p k)
     (hH : Integrable (fun w => ν w • H w) M)
     (hsym : ∀ w (σ : Equiv.Perm (Fin k)) v,
       H w (fun i => v (σ i)) = H w v)
-    (σ : Equiv.Perm (Fin k)) (v : Fin k → Fin p → ℝ) :
+    (σ : Equiv.Perm (Fin k)) v :
     (∫ w, ν w • H w ∂M) (fun i => v (σ i)) = (∫ w, ν w • H w ∂M) v := by
   rw [ContinuousMultilinearMap.integral_apply hH,
     ContinuousMultilinearMap.integral_apply hH]
-  exact integral_congr_ae (Filter.Eventually.of_forall (fun w => by
-    simp only [smul_apply, hsym w σ v]))
+  simp_all []
+
+section
+variable {n p R : ℕ}
 
 /-- Actual coefficient integration yields a square-integrable centered
 random variable; centering and integrability are proved from the input L²
 observations, rather than required as covariance hypotheses. -/
-theorem integrated_centered_lift_moment_facts {n p R : ℕ}
+theorem integrated_centered_lift_moment_facts 
     (H : W → (r : Fin R) → KernelMap p (r.val + 1))
     (ν : W → ℝ) (hH : ∀ r, Integrable (fun w => ν w • H w r) M)
-    (X : Fin n → Ω → Fin p → ℝ) (m : Fin p → ℝ)
+    (X : Fin n → Ω → Fin p → ℝ) m
     (hind : iIndepFun X μ) (hmeas : ∀ j, Measurable (X j))
     (hid : ∀ i j, IdentDistrib (X i) (X j) μ μ)
     (hL2 : ∀ j a, MemLp (fun ω => X j ω a) 2 μ)
@@ -215,18 +226,18 @@ theorem integrated_centered_lift_moment_facts {n p R : ℕ}
 /-- The factorial variance series and the centering contraction apply to an
 arbitrary symmetric Taylor coefficient collection, including one obtained by
 spatial integration. The right side consists of actual uncentered kernels. -/
-theorem centered_expansion_variance_le_raw_power {n p R : ℕ}
+theorem centered_expansion_variance_le_raw_power 
     (H : (r : Fin R) → KernelMap p (r.val + 1))
     (hsym : ∀ r (σ : Equiv.Perm (Fin (r.val + 1))) v,
       H r (fun i => v (σ i)) = H r v)
-    (X : Fin n → Ω → Fin p → ℝ) (m : Fin p → ℝ) (hR : R ≤ n)
+    (X : Fin n → Ω → Fin p → ℝ) m (hR : R ≤ n)
     (hind : iIndepFun X μ) (hmeas : ∀ j, Measurable (X j))
     (hid : ∀ i j, IdentDistrib (X i) (X j) μ μ)
     (hL2 : ∀ j a, MemLp (fun ω => X j ω a) 2 μ)
     (hmean : ∀ j a, ∫ ω, X j ω a ∂μ = m a)
-    (Λ : ℝ) (hΛ : 0 < Λ) (hΛn : Λ ≤ (n : ℝ) - R + 1) :
+    Λ (hΛ : 0 < Λ) (hΛn : Λ ≤ (n : ℝ) - R + 1) :
     variance (LiftL2.centeredKernelExpansion 0 H (fun j ω => X j ω - m)) μ ≤
-      ∑ r : Fin R, (((r.val + 1).factorial : ℝ) * Λ ^ (r.val + 1))⁻¹ *
+      ∑ r : Fin R, (((r.val + 1).factorial) * Λ ^ (r.val + 1))⁻¹ *
         ∫ ω, H r (fun i => X
           (Fin.castLEEmb ((Nat.succ_le_of_lt r.isLt).trans hR) i) ω) ^ 2 ∂μ := by
   obtain ⟨hi, hm, hid', hlp, hzero⟩ := LiftL2.centerObservations_l2 X m
@@ -251,20 +262,20 @@ theorem centered_expansion_variance_le_raw_power {n p R : ℕ}
 centered factorial lifts is bounded by the integral-free raw kernel series.
 The proof commutes actual integration with the finite lift, proves symmetry
 after integration, and then contracts the centered kernel in L². -/
-theorem integrated_centered_lift_variance_le_raw {n p R : ℕ}
+theorem integrated_centered_lift_variance_le_raw 
     (H : W → (r : Fin R) → KernelMap p (r.val + 1))
     (ν : W → ℝ) (hH : ∀ r, Integrable (fun w => ν w • H w r) M)
     (hsym : ∀ w r (σ : Equiv.Perm (Fin (r.val + 1))) v,
       H w r (fun i => v (σ i)) = H w r v)
-    (X : Fin n → Ω → Fin p → ℝ) (m : Fin p → ℝ) (hR : R ≤ n)
+    (X : Fin n → Ω → Fin p → ℝ) m (hR : R ≤ n)
     (hind : iIndepFun X μ) (hmeas : ∀ j, Measurable (X j))
     (hid : ∀ i j, IdentDistrib (X i) (X j) μ μ)
     (hL2 : ∀ j a, MemLp (fun ω => X j ω a) 2 μ)
     (hmean : ∀ j a, ∫ ω, X j ω a ∂μ = m a)
-    (Λ : ℝ) (hΛ : 0 < Λ) (hΛn : Λ ≤ (n : ℝ) - R + 1) :
+    (Λ : ℝ) (hΛ : 0 < Λ) (hΛn : Λ ≤ n - R + 1) :
     variance (fun ω => ∫ w,
       ν w * LiftL2.centeredKernelExpansion 0 (H w) (fun j ω => X j ω - m) ω ∂M) μ ≤
-      ∑ r : Fin R, (((r.val + 1).factorial : ℝ) * Λ ^ (r.val + 1))⁻¹ *
+      ∑ r : Fin R, (((r.val + 1).factorial) * Λ ^ (r.val + 1))⁻¹ *
         ∫ ω, (∫ w, ν w • H w r ∂M)
           (fun i => X (Fin.castLEEmb ((Nat.succ_le_of_lt r.isLt).trans hR) i) ω) ^ 2 ∂μ := by
   have heq : (fun ω => ∫ w,
@@ -277,23 +288,25 @@ theorem integrated_centered_lift_variance_le_raw {n p R : ℕ}
   exact centered_expansion_variance_le_raw_power _
     (fun r => integrated_kernel_symmetric ν (fun w => H w r) (hH r)
       (fun w => hsym w r)) X m hR hind hmeas hid hL2 hmean Λ hΛ hΛn
+end
+
 
 /-- U6's second spatial inequality for actual raw kernels. Distinct spatial
 blocks are checked before centering; their L² orthogonality is proved from
 disjoint raw support. This gains the block mass, without bounding responses. -/
-theorem integrated_centered_lift_variance_localized [IsFiniteMeasure M] {n p R q : ℕ}
+theorem integrated_centered_lift_variance_localized [IsFiniteMeasure M] {n p R q }
     (H : W → (r : Fin R) → KernelMap p (r.val + 1))
-    (ν : W → ℝ) (hν : MemLp ν 2 M)
+    ν (hν : MemLp ν 2 M)
     (hH : ∀ r, Integrable (fun w => ν w • H w r) M)
     (hHmeas : ∀ r, AEStronglyMeasurable (fun w => H w r) M)
     (hsym : ∀ w r (σ : Equiv.Perm (Fin (r.val + 1))) v,
       H w r (fun i => v (σ i)) = H w r v)
-    (X : Fin n → Ω → Fin p → ℝ) (m : Fin p → ℝ) (hR : R ≤ n)
-    (hind : iIndepFun X μ) (hmeas : ∀ j, Measurable (X j))
+    (X : Fin n → Ω → Fin p → ℝ) m (hR : R ≤ n)
+    (hind : iIndepFun X μ) hmeas
     (hid : ∀ i j, IdentDistrib (X i) (X j) μ μ)
-    (hL2 : ∀ j a, MemLp (fun ω => X j ω a) 2 μ)
+    hL2
     (hmean : ∀ j a, ∫ ω, X j ω a ∂μ = m a)
-    (Λ : ℝ) (hΛ : 0 < Λ) (hΛn : Λ ≤ (n : ℝ) - R + 1)
+    (Λ : ℝ) (hΛ : 0 < Λ) (hΛn : Λ ≤ n - R + 1)
     (b : W → Fin q) (hb : Measurable b)
     (C : Fin R → ℝ) (hC : ∀ r, 0 ≤ C r)
     (hbound : ∀ r, ∀ᵐ w ∂M,
@@ -302,19 +315,19 @@ theorem integrated_centered_lift_variance_localized [IsFiniteMeasure M] {n p R q
     (hdisjoint : ∀ r w v, b w ≠ b v → ∀ᵐ ω ∂μ,
       H w r (fun i => X (Fin.castLEEmb ((Nat.succ_le_of_lt r.isLt).trans hR) i) ω) *
       H v r (fun i => X (Fin.castLEEmb ((Nat.succ_le_of_lt r.isLt).trans hR) i) ω) = 0)
-    (L : ℝ) (hL : ∀ c, M.real {w | b w = c} ≤ L) :
+    L (hL : ∀ c, M.real {w | b w = c} ≤ L) :
     variance (fun ω => ∫ w,
       ν w * LiftL2.centeredKernelExpansion 0 (H w) (fun j ω => X j ω - m) ω ∂M) μ ≤
       L * ∫ w, ν w ^ 2 * ∑ r : Fin R,
-        (((r.val + 1).factorial : ℝ) * Λ ^ (r.val + 1))⁻¹ *
+        (((r.val + 1).factorial) * Λ ^ (r.val + 1))⁻¹ *
           ∫ ω, H w r (fun i => X
             (Fin.castLEEmb ((Nat.succ_le_of_lt r.isLt).trans hR) i) ω) ^ 2 ∂μ ∂M := by
   let e (r : Fin R) := Fin.castLEEmb ((Nat.succ_le_of_lt r.isLt).trans hR)
   let K (r : Fin R) (w : W) := rawKernelOperator (e r) X hind hmeas hL2 (H w r)
   let δ (r : Fin R) := (((r.val + 1).factorial : ℝ) * Λ ^ (r.val + 1))⁻¹
-  have hKmeas (r : Fin R) : AEStronglyMeasurable (K r) M :=
+  have hKmeas (r : Fin R)  :=
     (rawKernelOperator (e r) X hind hmeas hL2).continuous.comp_aestronglyMeasurable (hHmeas r)
-  have horth (r : Fin R) (w v : W) (h : b w ≠ b v) : ⟪K r w, K r v⟫ = 0 :=
+  have horth (r : Fin R) (w v : W) (h : b w ≠ b v)  :=
     raw_kernel_operator_inner_zero (e r) X hind hmeas hL2 (H w r) (H v r) (hdisjoint r w v h)
   have hl := LocalizationL2.weighted_kernel_series_localization_bound b hb ν hν K hKmeas
     C hC hbound horth δ (fun r => by dsimp [δ]; positivity) L hL
@@ -344,7 +357,6 @@ theorem integrated_centered_lift_variance_localized [IsFiniteMeasure M] {n p R q
     apply congrArg (fun t => ν w ^ 2 * t)
     apply Finset.sum_congr rfl
     intro r _
-    exact congrArg (fun t => δ r * t)
-      (raw_kernel_operator_norm_sq (e r) X hind hmeas hL2 (H w r)).symm)
+    solve_by_elim [raw_kernel_operator_norm_sq, symm])
 
 end NearlyMinimax.FieldLiftCovariance

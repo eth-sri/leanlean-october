@@ -15,11 +15,13 @@ lemma euclidean_coordinate_decomposition {d : ℕ} (x : Covariate d) :
   ext j
   simp [Pi.single_apply]
 
-theorem multilinear_coordinate_expansion {d q : ℕ}
-    (L : ContinuousMultilinearMap ℝ (fun _ : Fin q => Covariate d) ℝ)
-    (v : Fin q → Covariate d) :
+section
+variable {d q : ℕ} (L : ContinuousMultilinearMap ℝ (fun _ : Fin q => Covariate d) ℝ)
+
+theorem multilinear_coordinate_expansion 
+    v :
     L v = ∑ σ : Fin q → Fin d, (∏ i, v i (σ i)) *
-      L (fun i => EuclideanSpace.single (σ i) (1 : ℝ)) := by
+      L (fun i => EuclideanSpace.single (σ i) 1) := by
   classical
   have hv : v = fun i => ∑ j : Fin d, v i j • EuclideanSpace.single j (1 : ℝ) := by
     funext i
@@ -30,11 +32,10 @@ theorem multilinear_coordinate_expansion {d q : ℕ}
   simp only [L.toMultilinearMap.map_smul_univ, smul_eq_mul]
   rfl
 
-theorem multilinear_norm_le_coordinate_bound {d q : ℕ}
-    (L : ContinuousMultilinearMap ℝ (fun _ : Fin q => Covariate d) ℝ)
-    (H : ℝ) (hH : 0 ≤ H)
+theorem multilinear_norm_le_coordinate_bound 
+    H (hH : 0 ≤ H)
     (hb : ∀ σ : Fin q → Fin d, |L (fun i => EuclideanSpace.single (σ i) 1)| ≤ H) :
-    ‖L‖ ≤ (d : ℝ) ^ q * H := by
+    ‖L‖ ≤ d ^ q * H := by
   classical
   apply L.opNorm_le_bound (by positivity)
   intro v
@@ -47,22 +48,22 @@ theorem multilinear_norm_le_coordinate_bound {d q : ℕ}
       intro σ _
       rw [norm_mul, Real.norm_eq_abs, Finset.abs_prod]
       apply mul_le_mul _ (hb σ) (abs_nonneg _) (Finset.prod_nonneg fun _ _ => norm_nonneg _)
-      exact Finset.prod_le_prod₀ (fun _ _ => abs_nonneg _)
-        (fun i _ => by simpa only [Real.norm_eq_abs] using PiLp.norm_apply_le (v i) (σ i))
+      grind only [Finset.prod_le_prod₀, abs_nonneg, Real.norm_eq_abs, PiLp.norm_apply_le]
     _ = ((d : ℝ) ^ q * H) * ∏ i, ‖v i‖ := by simp; ring
+end
 
-theorem holderBall_iteratedFDerivWithin_modulus {d : ℕ} (f : Covariate d → ℝ)
-    (t H : ℝ) (hH : 0 ≤ H) (hf : f ∈ holderBall t H)
-    (x y : Covariate d) (hx : x ∈ cube d) (hy : y ∈ cube d) :
+
+theorem holderBall_iteratedFDerivWithin_modulus {d } f
+    t H (hH : 0 ≤ H) (hf : f ∈ holderBall t H)
+    x y (hx : x ∈ cube d) (hy : y ∈ cube d) :
     ‖iteratedFDerivWithin ℝ (holderOrder t) f (cube d) x -
       iteratedFDerivWithin ℝ (holderOrder t) f (cube d) y‖ ≤
-      (d : ℝ) ^ holderOrder t * H * ‖x - y‖ ^ holderExponent t := by
+      d ^ holderOrder t * H * ‖x - y‖ ^ holderExponent t := by
   have hbound := multilinear_norm_le_coordinate_bound
     (iteratedFDerivWithin ℝ (holderOrder t) f (cube d) x -
       iteratedFDerivWithin ℝ (holderOrder t) f (cube d) y)
     (H * ‖x - y‖ ^ holderExponent t) (by positivity) (fun σ => by
-      simpa only [sub_apply, coordinateDerivative] using
-        holderBall_coordinate_modulus f t H hH hf σ x y hx hy)
+      solve_by_elim [holderBall_coordinate_modulus])
   simpa only [mul_assoc] using hbound
 
 end RoughRegime.Model

@@ -86,14 +86,15 @@ theorem finite_overlap_variance_bound {Ω ι : Type*} [Fintype Ω] [Fintype ι]
       (fun i j => ∫ x, r i x * r j x ∂μ) (fun i => integral_nonneg (fun x => sq_nonneg _))
       hdegree hzero hpair
 
+section
+variable (n : ℕ) (μ : Fin n → Measure (Fin 3)) [∀ i, IsProbabilityMeasure (μ i)] (S T : Finset (Fin n)) (hST : Disjoint S T) (R : (S → Fin 3) → ℝ) (Q : (T → Fin 3) → ℝ)
+include hST
+
 /-- Local observables on disjoint response supports are independent under the
 actual conditional product probability measure. -/
-theorem finite_product_local_observables_independent (n : ℕ)
-    (μ : Fin n → Measure (Fin 3)) [∀ i, IsProbabilityMeasure (μ i)]
-    (S T : Finset (Fin n)) (hST : Disjoint S T)
-    (R : (S → Fin 3) → ℝ) (Q : (T → Fin 3) → ℝ) :
-    IndepFun (fun y : Fin n → Fin 3 => R (fun i : S => y i))
-      (fun y : Fin n → Fin 3 => Q (fun i : T => y i)) (Measure.pi μ) := by
+theorem finite_product_local_observables_independent  :
+    IndepFun (fun y : Fin n → Fin 3 => R (fun i  => y i))
+      (fun y  => Q (fun i  => y i)) (Measure.pi μ) := by
   have hi : iIndepFun (fun i (y : Fin n → Fin 3) => y i) (Measure.pi μ) :=
     iIndepFun_pi (fun _ => measurable_id.aemeasurable)
   have h := hi.indepFun_finset S T hST (fun i => measurable_pi_apply i)
@@ -101,41 +102,42 @@ theorem finite_product_local_observables_independent (n : ℕ)
 
 /-- Centered local scores on disjoint supports are conditionally orthogonal.
 Their independence is derived from the product response measure. -/
-theorem finite_product_local_scores_orthogonal (n : ℕ)
-    (μ : Fin n → Measure (Fin 3)) [∀ i, IsProbabilityMeasure (μ i)]
-    (S T : Finset (Fin n)) (hST : Disjoint S T)
-    (R : (S → Fin 3) → ℝ) (Q : (T → Fin 3) → ℝ)
-    (hR : (∫ y : Fin n → Fin 3, R (fun i : S => y i) ∂Measure.pi μ) = 0) :
-    (∫ y : Fin n → Fin 3, R (fun i : S => y i) * Q (fun i : T => y i) ∂Measure.pi μ) = 0 := by
+theorem finite_product_local_scores_orthogonal 
+    (hR : (∫ y : Fin n → Fin 3, R (fun i  => y i) ∂Measure.pi μ) = 0) :
+    (∫ y : Fin n → Fin 3, R (fun i  => y i) * Q (fun i  => y i) ∂Measure.pi μ) = 0 := by
   have hi := finite_product_local_observables_independent n μ S T hST R Q
   rw [hi.integral_fun_mul_eq_mul_integral
     (measurable_of_countable _).aestronglyMeasurable
     (measurable_of_countable _).aestronglyMeasurable, hR, zero_mul]
+end
+
 
 /-- The ternary response masses as an actual probability mass function on indices. -/
-def ternaryIndexPMF (a f V : ℝ) (ha : a ≠ 0) (hp : ∀ y, 0 ≤ ternaryMass a f V y) : PMF (Fin 3) :=
+def ternaryIndexPMF a f V ha (hp : ∀ y, 0 ≤ ternaryMass a f V y)  :=
   PMF.ofFintype (fun y => ENNReal.ofReal (ternaryMass a f V y)) (by
     rw [← ENNReal.ofReal_sum_of_nonneg (fun y _ => hp y), ternary_normalized a f V ha]
     norm_num)
 
 /-- The corresponding genuine conditional response probability measure. -/
-def ternaryIndexMeasure (a f V : ℝ) (ha : a ≠ 0) (hp : ∀ y, 0 ≤ ternaryMass a f V y) : Measure (Fin 3) :=
+def ternaryIndexMeasure a f V ha hp  :=
   (ternaryIndexPMF a f V ha hp).toMeasure
 
 instance ternaryIndexMeasure_isProbability (a f V : ℝ) (ha : a ≠ 0)
     (hp : ∀ y, 0 ≤ ternaryMass a f V y) : IsProbabilityMeasure (ternaryIndexMeasure a f V ha hp) :=
   PMF.toMeasure.isProbabilityMeasure _
 
-theorem ternary_index_measure_singleton (a f V : ℝ) (ha : a ≠ 0)
-    (hp : ∀ y, 0 ≤ ternaryMass a f V y) (y : Fin 3) :
+theorem ternary_index_measure_singleton a f V ha
+    hp y :
     (ternaryIndexMeasure a f V ha hp).real {y} = ternaryMass a f V y := by
   rw [measureReal_def, ternaryIndexMeasure, PMF.toMeasure_apply_singleton _ _ (measurableSet_singleton y)]
   exact ENNReal.toReal_ofReal (hp y)
 
+section
+variable (n : ℕ) (a V : ℝ) (f : Fin n → ℝ) (ha : a ≠ 0) (hp : ∀ i y, 0 ≤ ternaryMass a (f i) V y)
+
 /-- The conditional product measure has exactly the finite likelihood masses
 used in the score construction. -/
-theorem ternary_index_product_singleton (n : ℕ) (a V : ℝ) (f : Fin n → ℝ) (ha : a ≠ 0)
-    (hp : ∀ i y, 0 ≤ ternaryMass a (f i) V y) (y : Fin n → Fin 3) :
+theorem ternary_index_product_singleton  y :
     (Measure.pi (fun i => ternaryIndexMeasure a (f i) V ha (hp i))).real {y} =
       ∏ i, ternaryMass a (f i) V (y i) := by
   have heq : ({y} : Set (Fin n → Fin 3)) = Set.pi Set.univ (fun i => ({y i} : Set (Fin 3))) := by
@@ -149,24 +151,23 @@ theorem ternary_index_product_singleton (n : ℕ) (a V : ℝ) (f : Fin n → ℝ
       funext i
       exact h i
   rw [measureReal_def, heq, Measure.pi_pi, ENNReal.toReal_prod]
-  apply Finset.prod_congr rfl
-  intro i _
-  exact ternary_index_measure_singleton a (f i) V ha (hp i) (y i)
+  solve_by_elim [Finset.prod_congr, ternary_index_measure_singleton]
 
 /-- Finite score expectations agree exactly with integrals under the actual
 conditional response product measure. -/
-theorem ternary_index_product_integral (n : ℕ) (a V : ℝ) (f : Fin n → ℝ) (ha : a ≠ 0)
-    (hp : ∀ i y, 0 ≤ ternaryMass a (f i) V y) (F : (Fin n → Fin 3) → ℝ) :
+theorem ternary_index_product_integral  (F : (Fin n → Fin 3) → ℝ) :
     (∫ y, F y ∂Measure.pi (fun i => ternaryIndexMeasure a (f i) V ha (hp i))) =
       ∑ y, (∏ i, ternaryMass a (f i) V (y i)) * F y := by
   rw [integral_fintype Integrable.of_finite]
   simp_rw [ternary_index_product_singleton, smul_eq_mul]
+end
+
 
 /-- The actual coordinate scores are centered under the genuine conditional
 response product probability measure. -/
-theorem ternary_coordinate_score_measure_centered (m n : ℕ) (a V η : ℝ)
-    (f : (Fin m → Fin 3) → Fin n → ℝ) (w : Fin n → Fin m → ℝ)
-    (ξ : Fin m → Fin 3) (j : Fin m) (ha : a ≠ 0)
+theorem ternary_coordinate_score_measure_centered m n a V η
+    (f : (Fin m → Fin 3) → Fin n → ℝ) w
+    ξ j ha
     (hp : ∀ i y, 0 ≤ ternaryMass a (f ξ i) V y)
     (hpositive : ∀ y, 0 < finiteResponseLikelihood m n a V f ξ y) :
     (∫ y, finiteCoordinateScore m n a V η f w ξ y j

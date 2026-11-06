@@ -28,7 +28,7 @@ attribute [local instance] Classical.propDecidable
     simpa only [one_mul, one_pow, Finset.sum_const, nsmul_eq_mul, mul_one, sq_abs] using
       Finset.sum_mul_sq_le_sq_mul_sq s (fun _ : I => (1 : ℝ)) (fun i => |f i x|))
 
- def finePairEvenActionSpatialBudget (d n M q : ℕ) (ad bd C a ρ η T0 : ℝ) : ℝ :=
+ def finePairEvenActionSpatialBudget d n M q ad bd C a ρ η T0  :=
   (finePairDensityCoefficientBudget ad bd M n *
     (finePairResponseActionBudget d q C a ρ * (n : ℝ)^2 * η^2))^2 *
       fineFieldSubsetEnergyBase d ^ n * (n : ℝ)^8 * (T0 ^ (2-(d : ℝ)))^2

@@ -13,18 +13,21 @@ open scoped BigOperators
 open MvPolynomial
 
 /-- Current and parent matrix entries together with their regression and density vector moments. -/
-abbrev incrementVariables (r : ℕ) := parentInverseVariables r ⊕ (Bool × Bool × Fin r)
+abbrev incrementVariables r := parentInverseVariables r ⊕ (Bool × Bool × Fin r)
 
-def currentVariableMatrix (r : ℕ) : Matrix (Fin r) (Fin r) (MvPolynomial (parentInverseVariables r) ℝ) :=
+section
+variable (r : ℕ)
+
+def currentVariableMatrix  : Matrix (Fin r) (Fin r) (MvPolynomial (parentInverseVariables r) ℝ) :=
   fun i j => X (Sum.inl (i, j))
 
-def parentVariableMatrix (r : ℕ) : Matrix (Fin r) (Fin r) (MvPolynomial (parentInverseVariables r) ℝ) :=
+def parentVariableMatrix  : Matrix (Fin r) (Fin r) (MvPolynomial (parentInverseVariables r) ℝ) :=
   fun i j => X (Sum.inr ⟨0, (i, j)⟩)
 
-def vectorMoment (r : ℕ) (parent response : Bool) (i : Fin r) :
+def vectorMoment  (parent response : Bool) (i : Fin r) :
     MvPolynomial (incrementVariables r) ℝ := X (Sum.inr (parent, response, i))
 
-def rawNumeratorPolynomial (r : ℕ) (T : Matrix (Fin r) (Fin r) ℝ)
+def rawNumeratorPolynomial  (T : Matrix (Fin r) (Fin r) ℝ)
     (response : Bool) (i : Fin r) : MvPolynomial (incrementVariables r) ℝ :=
   rename Sum.inl (parentVariableMatrix r).det * vectorMoment r false response i -
     ∑ j, ∑ k, ∑ l,
@@ -32,13 +35,14 @@ def rawNumeratorPolynomial (r : ℕ) (T : Matrix (Fin r) (Fin r) ℝ)
       rename Sum.inl ((parentVariableMatrix r).adjugate k l) * vectorMoment r true response l
 
 /-- The exact determinant-cleared numerator, affine in the formal response `y`. -/
-def numeratorPolynomial (r : ℕ) (T : Matrix (Fin r) (Fin r) ℝ) (y : ℝ) (i : Fin r) :
-    MvPolynomial (incrementVariables r) ℝ :=
+def numeratorPolynomial  T y i  :=
   rawNumeratorPolynomial r T false i - C y * rawNumeratorPolynomial r T true i
 
-def incrementEntryPolynomial (r : ℕ) (a b : ℝ) (T : Matrix (Fin r) (Fin r) ℝ)
+def incrementEntryPolynomial  (a b : ℝ) (T : Matrix (Fin r) (Fin r) ℝ)
     (y : ℝ) (m : ℕ) (i : Fin r) : MvPolynomial (incrementVariables r) ℝ :=
   ∑ j, rename Sum.inl (parentInverseEntryPolynomial a b r m i j) * numeratorPolynomial r T y j
+end
+
 
 private theorem determinant_degree_le {V n : Type*} [Fintype n] [DecidableEq n]
     (M : Matrix n n (MvPolynomial V ℝ)) (hM : ∀ i j, (M i j).totalDegree ≤ 1) :
@@ -46,7 +50,7 @@ private theorem determinant_degree_le {V n : Type*} [Fintype n] [DecidableEq n]
   rw [Matrix.det_apply]
   apply MvPolynomial.totalDegree_finsetSum_le
   intro σ hσ
-  simp only [Units.smul_def]
+  
   apply (MvPolynomial.totalDegree_smul_le _ _).trans
   apply (MvPolynomial.totalDegree_finsetProd Finset.univ _).trans
   calc
@@ -67,11 +71,14 @@ private theorem adjugate_degree_le {V : Type*} (r : ℕ)
     have hd := determinant_degree_le (M.submatrix j.succAbove i.succAbove) (fun i j => hM _ _)
     simpa using Nat.add_le_add hz hd
 
+section
+variable (r : ℕ) [NeZero r]
+
 /-- The cleared numerator has total degree at most `r+1`. -/
-theorem rawNumeratorPolynomial_degree (r : ℕ) [NeZero r]
-    (T : Matrix (Fin r) (Fin r) ℝ) (response : Bool) (i : Fin r) :
+theorem rawNumeratorPolynomial_degree 
+    T (response : Bool) i :
     (rawNumeratorPolynomial r T response i).totalDegree ≤ r + 1 := by
-  unfold rawNumeratorPolynomial
+  
   apply (MvPolynomial.totalDegree_sub _ _).trans
   apply max_le
   · apply (MvPolynomial.totalDegree_mul _ _).trans
@@ -100,30 +107,29 @@ theorem rawNumeratorPolynomial_degree (r : ℕ) [NeZero r]
         rename Sum.inl ((parentVariableMatrix r).adjugate k l)) (vectorMoment r true response l)
     simp only [MvPolynomial.totalDegree_C, add_zero] at h1
     have hv : (vectorMoment r true response l).totalDegree = 1 := by simp [vectorMoment]
-    rw [hv] at h3
-    have hr : r ≠ 0 := NeZero.ne r
+    
+    have hr  := NeZero.ne r
     omega
 
-theorem numeratorPolynomial_degree (r : ℕ) [NeZero r]
-    (T : Matrix (Fin r) (Fin r) ℝ) (y : ℝ) (i : Fin r) :
+theorem numeratorPolynomial_degree 
+    T y i :
     (numeratorPolynomial r T y i).totalDegree ≤ r + 1 := by
-  unfold numeratorPolynomial
+  
   apply (MvPolynomial.totalDegree_sub _ _).trans
   apply max_le (rawNumeratorPolynomial_degree r T false i)
   apply (MvPolynomial.totalDegree_mul _ _).trans
   simpa using rawNumeratorPolynomial_degree r T true i
 
 /-- The complete free-moment increment has the paper's degree bound `m+r+1`. -/
-theorem incrementEntryPolynomial_degree (r : ℕ) [NeZero r] (a b : ℝ)
-    (T : Matrix (Fin r) (Fin r) ℝ) (y : ℝ) (m : ℕ) (i : Fin r) :
+theorem incrementEntryPolynomial_degree  a b
+    T y m i :
     (incrementEntryPolynomial r a b T y m i).totalDegree ≤ m + r + 1 := by
-  unfold incrementEntryPolynomial
+  
   apply MvPolynomial.totalDegree_finsetSum_le
-  intro j hj
-  apply (MvPolynomial.totalDegree_mul _ _).trans
-  exact (Nat.add_le_add ((MvPolynomial.totalDegree_rename_le _ _).trans
-    (parentInverseEntryPolynomial_degree a b r m i j))
-    (numeratorPolynomial_degree r T y j)).trans_eq (by omega)
+  
+  grind only [MvPolynomial.totalDegree_mul, MvPolynomial.totalDegree_rename_le, parentInverseEntryPolynomial_degree, numeratorPolynomial_degree]
+end
+
 
 def rawIncrementEntryPolynomial (r : ℕ) (a b : ℝ) (T : Matrix (Fin r) (Fin r) ℝ)
     (response : Bool) (m : ℕ) (i : Fin r) : MvPolynomial (incrementVariables r) ℝ :=
@@ -131,8 +137,8 @@ def rawIncrementEntryPolynomial (r : ℕ) (a b : ℝ) (T : Matrix (Fin r) (Fin r
     rawNumeratorPolynomial r T response j
 
 /-- The response variable appears only affinely in the entire increment polynomial. -/
-theorem incrementEntryPolynomial_affine (r : ℕ) (a b : ℝ)
-    (T : Matrix (Fin r) (Fin r) ℝ) (y : ℝ) (m : ℕ) (i : Fin r) :
+theorem incrementEntryPolynomial_affine r a b
+    T y m i :
     incrementEntryPolynomial r a b T y m i =
       rawIncrementEntryPolynomial r a b T false m i - C y *
         rawIncrementEntryPolynomial r a b T true m i := by
@@ -147,15 +153,18 @@ theorem incrementEntryPolynomial_affine (r : ℕ) (a b : ℝ)
 
 open RoughRegime.CombinedPolynomial
 
+section
+variable {r : ℕ}
+
 /-- Evaluation substitutes the current and parent Gram entries and the two vector families. -/
-def incrementValuation {r : ℕ} (A C : Matrix (Fin r) (Fin r) ℝ)
+def incrementValuation  (A C : Matrix (Fin r) (Fin r) ℝ)
     (U V : Bool → Fin r → ℝ) : incrementVariables r → ℝ
   | Sum.inl x => entryValuation A (fun _ : Fin 1 => C) x
   | Sum.inr (parent, response, i) => if parent then V response i else U response i
 
-private theorem rawNumeratorPolynomial_eval {r : ℕ}
-    (A C T : Matrix (Fin r) (Fin r) ℝ) (U V : Bool → Fin r → ℝ)
-    (response : Bool) (i : Fin r) :
+private theorem rawNumeratorPolynomial_eval 
+    A C T U V
+    (response : Bool) i :
     eval (incrementValuation A C U V) (rawNumeratorPolynomial r T response i) =
       incrementNumerator A C T (U response) (V response) i := by
   let f := MvPolynomial.eval₂Hom (RingHom.id ℝ) (entryValuation A (fun _ : Fin 1 => C))
@@ -170,7 +179,7 @@ private theorem rawNumeratorPolynomial_eval {r : ℕ}
   have ha (k l : Fin r) : eval (incrementValuation A C U V)
       (rename Sum.inl ((parentVariableMatrix r).adjugate k l)) = C.adjugate k l := by
     rw [MvPolynomial.eval_rename]
-    change f ((parentVariableMatrix r).adjugate k l) = C.adjugate k l
+    
     have h := congrArg (fun M => M k l) (f.map_adjugate (parentVariableMatrix r))
     rw [hm] at h
     exact h
@@ -181,9 +190,9 @@ private theorem rawNumeratorPolynomial_eval {r : ℕ}
     Matrix.mulVec, dotProduct, Finset.mul_sum, Finset.sum_mul, mul_assoc]
 
 /-- Evaluating the free polynomial gives exactly the paper's cleared numerator for `β-yμ`. -/
-theorem numeratorPolynomial_eval {r : ℕ}
-    (A C T : Matrix (Fin r) (Fin r) ℝ) (U V : Bool → Fin r → ℝ)
-    (y : ℝ) (i : Fin r) :
+theorem numeratorPolynomial_eval 
+    A C T U V
+    y i :
     eval (incrementValuation A C U V) (numeratorPolynomial r T y i) =
       incrementNumerator A C T (U false - y • U true) (V false - y • V true) i := by
   rw [numeratorPolynomial, eval_sub, eval_mul, eval_C,
@@ -193,34 +202,32 @@ theorem numeratorPolynomial_eval {r : ℕ}
   ring
 
 /-- Evaluation recovers the actual fitted-increment polynomial for arbitrary free Gram matrices. -/
-theorem incrementEntryPolynomial_eval {r : ℕ} (a b : ℝ)
-    (A C T : Matrix (Fin r) (Fin r) ℝ) (U V : Bool → Fin r → ℝ)
-    (y : ℝ) (m : ℕ) (i : Fin r) :
+theorem incrementEntryPolynomial_eval  a b
+    A C T U V
+    y m i :
     eval (incrementValuation A C U V) (incrementEntryPolynomial r a b T y m i) =
       (parentInversePolynomial a b A C m).mulVec
         (incrementNumerator A C T (U false - y • U true) (V false - y • V true)) i := by
   simp only [incrementEntryPolynomial, eval_sum, eval_mul, numeratorPolynomial_eval]
   simp_rw [MvPolynomial.eval_rename]
-  change ∑ j, eval (entryValuation A (fun _ : Fin 1 => C))
-    (parentInverseEntryPolynomial a b r m i j) *
-    incrementNumerator A C T (U false - y • U true) (V false - y • V true) j = _
-  simp_rw [← parentInversePolynomial_eval]
   rfl
+end
+
 
 open scoped Matrix.Norms.L2Operator
 
 /-- The exact polynomial propagates any explicitly supplied small-increment bound to U5(2). -/
-theorem incrementEntryPolynomial_error {r : ℕ} [NeZero r]
-    (a b : ℝ) (ha : 0 < a) (hab : a < b)
-    (A C T : Matrix (Fin r) (Fin r) ℝ) (hA : A.IsHermitian) (hC : C.IsHermitian)
+theorem incrementEntryPolynomial_error {r } [NeZero r]
+    a b (ha : 0 < a) (hab : a < b)
+    A C T (hA : A.IsHermitian) (hC : C.IsHermitian)
     (hSpecA : spectrum ℝ A ⊆ Set.Icc a b) (hSpecC : spectrum ℝ C ⊆ Set.Icc a b)
-    (Q R : (Matrix (Fin r) (Fin r) ℝ)ˣ) (χ : ℝ)
+    (Q R : (Matrix (Fin r) (Fin r) ℝ)ˣ) χ
     (hχ : ‖(Q : Matrix (Fin r) (Fin r) ℝ)‖ * ‖(↑Q⁻¹ : Matrix (Fin r) (Fin r) ℝ)‖ ≤ χ)
-    (U V : Bool → Fin r → ℝ) (y ε : ℝ)
+    U V y ε
     (hδ : ‖(EuclideanSpace.equiv (Fin r) ℝ).symm
       ((matrixSimilarity Q A)⁻¹.mulVec (U false - y • U true) -
         T.mulVec ((matrixSimilarity R C)⁻¹.mulVec (V false - y • V true)))‖ ≤ ε)
-    (m : ℕ) :
+    m :
     let G := matrixSimilarity Q A
     let Cminus := matrixSimilarity R C
     ‖(EuclideanSpace.equiv (Fin r) ℝ).symm
@@ -231,21 +238,19 @@ theorem incrementEntryPolynomial_error {r : ℕ} [NeZero r]
       (χ ^ 2 * b ^ (r + 1) * parentInverseErrorConstant a b r) * ε *
         ((m + 1 : ℕ) : ℝ) ^ r *
         Real.exp (-(m : ℝ) * exteriorTau ((a + b) / (b - a))) := by
-  dsimp only
+  
   simp_rw [incrementEntryPolynomial_eval]
   let β := U false - y • U true
   let βminus := V false - y • V true
-  have hχ0 : 0 ≤ χ := (mul_nonneg (norm_nonneg _) (norm_nonneg _)).trans hχ
-  have hb : 0 < b := ha.trans hab
+  have hχ0  := (mul_nonneg (norm_nonneg _) (norm_nonneg _)).trans hχ
+  have hb  := ha.trans hab
   have hM := parentInverseErrorConstant_pos a b ha hab r
   have hn := increment_numerator_norm_le a b ha hab A C T hA hC hSpecA hSpecC Q R χ hχ β βminus
-  dsimp only at hn
-  have hsmall : ‖(EuclideanSpace.equiv (Fin r) ℝ).symm
-      (incrementNumerator (matrixSimilarity Q A) (matrixSimilarity R C) T β βminus)‖ ≤
-      χ * b ^ (r + 1) * ε := hn.trans
+  
+  have hsmall  := hn.trans
         (mul_le_mul_of_nonneg_left hδ (by positivity))
   have he := increment_polynomial_error a b ha hab A C T hA hC hSpecA hSpecC Q R χ hχ β βminus m
-  dsimp only at he
+  
   apply he.trans
   apply (mul_le_mul_of_nonneg_left hsmall (by positivity)).trans_eq
   ring

@@ -27,9 +27,7 @@ theorem historyMarkedRawState_patch_append {Z E R : Type*} [DecidableEq J] [Meas
     rawPatchUpdate j (patch j) (slope j fresh) (intercept j fresh) (response j fresh)
       (historyMarkedRawState dependent
         (fun j e => rawPatchUpdate j (patch j) (slope j e) (intercept j e) (response j e)) initial h) := by
-  apply historyMarkedRawState_append
-  intro i j h e f state
-  exact rawPatchUpdate_commute _ _ _ _ _ _ _ _ (hdistinct i j h) (hdisjoint i j h) state
+  grind only [historyMarkedRawState_append, rawPatchUpdate_commute]
 
 /-- The torus-neighbour dependency gives canonical append compatibility
 for arbitrary full-mark density and coefficient resets. -/
@@ -52,12 +50,8 @@ theorem highMarkedRawState_patch_append (d k : ℕ) [NeZero k]
     intro i j h he
     subst j
     exact h (highNeighborLabels_self_mem d k i)
-  have hd : ∀ i j : HighWindowLabels d k, j ∉ highNeighborLabels d k i →
-      Disjoint (highTorusPatch d k i) (highTorusPatch d k j) :=
+  have hd  :=
     fun i j h => highTorusPatch_disjoint_of_not_neighbor d k i j h
-  exact historyMarkedRawState_patch_append
-    (fun i j => j ∈ highNeighborLabels d k i)
-    (fun {_ _} h => highNeighborLabels_symmetric d k _ _ h)
-    (highTorusPatch d k) slope intercept response hi hd initial j h fresh
+  solve_by_elim [historyMarkedRawState_patch_append]
 
 end NearlyMinimax

@@ -18,7 +18,7 @@ set_option backward.isDefEq.respectTransparency false
 
 variable {Ω : Type*} [MeasurableSpace Ω] {μ : Measure Ω}
 
-theorem integrable_sqrt_product {f g : Ω → ℝ}
+theorem integrable_sqrt_product {f g }
     (hf : Integrable f μ) (hg : Integrable g μ)
     (hf₀ : 0 ≤ᵐ[μ] f) (hg₀ : 0 ≤ᵐ[μ] g) :
     Integrable (fun x => Real.sqrt (f x) * Real.sqrt (g x)) μ := by
@@ -32,14 +32,18 @@ theorem integrable_sqrt_product {f g : Ω → ℝ}
     nlinarith [Real.sq_sqrt hfx, Real.sq_sqrt hgx,
       sq_nonneg (Real.sqrt (f x) - Real.sqrt (g x))]
 
-def densityAffinity (L R : GeneralTesting.DensityLaw μ) : ℝ :=
+section
+variable (L R : GeneralTesting.DensityLaw μ)
+include L R
+
+def densityAffinity   :=
   ∫ x, Real.sqrt (L.density x) * Real.sqrt (R.density x) ∂μ
 
-theorem densityAffinity_integrable (L R : GeneralTesting.DensityLaw μ) :
+theorem densityAffinity_integrable  :
     Integrable (fun x => Real.sqrt (L.density x) * Real.sqrt (R.density x)) μ :=
   integrable_sqrt_product L.integrable R.integrable L.nonneg R.nonneg
 
-theorem hellinger_integral_eq (L R : GeneralTesting.DensityLaw μ) :
+theorem hellinger_integral_eq  :
     GeneralTesting.hellingerSquared L R = 2 - 2 * densityAffinity L R := by
   have hi := densityAffinity_integrable L R
   have he : (fun x => (Real.sqrt (L.density x) - Real.sqrt (R.density x)) ^ 2) =ᵐ[μ]
@@ -58,18 +62,13 @@ theorem hellinger_integral_eq (L R : GeneralTesting.DensityLaw μ) :
   unfold densityAffinity
   ring
 
-theorem hellinger_integrable (L R : GeneralTesting.DensityLaw μ) :
-    Integrable (fun x => (Real.sqrt (L.density x) - Real.sqrt (R.density x)) ^ 2) μ := by
-  apply ((L.integrable.add R.integrable).sub ((densityAffinity_integrable L R).const_mul 2)).congr
-  filter_upwards [L.nonneg, R.nonneg] with x hx hy
-  change 0 ≤ L.density x at hx
-  change 0 ≤ R.density x at hy
-  change L.density x + R.density x - 2 * (Real.sqrt (L.density x) * Real.sqrt (R.density x)) = _
-  nlinarith [Real.sq_sqrt hx, Real.sq_sqrt hy]
+alias hellinger_integrable := GeneralTesting.hellinger_integrable
 
-theorem densityAffinity_nonneg (L R : GeneralTesting.DensityLaw μ) :
+theorem densityAffinity_nonneg  :
     0 ≤ densityAffinity L R := integral_nonneg fun _ =>
       mul_nonneg (Real.sqrt_nonneg _) (Real.sqrt_nonneg _)
+end
+
 
 def iidDensityLaw [SigmaFinite μ] (L : GeneralTesting.DensityLaw μ) (n : ℕ) :
     GeneralTesting.DensityLaw (Measure.pi (fun _ : Fin n => μ)) where
@@ -92,8 +91,8 @@ def iidDensityLaw [SigmaFinite μ] (L : GeneralTesting.DensityLaw μ) (n : ℕ) 
 
 /-- The density-product construction is exactly the iid product of the actual
 probability laws, not merely an integral representation. -/
-theorem iidDensityLaw_measure [SigmaFinite μ] (L : GeneralTesting.DensityLaw μ) (n : ℕ) :
-    (iidDensityLaw L n).measure = Measure.pi (fun _ : Fin n => L.measure) := by
+theorem iidDensityLaw_measure [SigmaFinite μ] (L : GeneralTesting.DensityLaw μ) n :
+    (iidDensityLaw L n).measure = Measure.pi (fun _  => L.measure) := by
   apply (Measure.pi_eq (μ := fun _ : Fin n => L.measure) ?_).symm
   intro s hs
   have hS : MeasurableSet (Set.univ.pi s) := MeasurableSet.univ_pi hs
@@ -109,7 +108,10 @@ theorem iidDensityLaw_measure [SigmaFinite μ] (L : GeneralTesting.DensityLaw μ
   change (∫ xs : Fin n → Ω, ∏ i, L.density (xs i) ∂Measure.pi (fun i => μ.restrict (s i))) = _
   rw [integral_fin_nat_prod_eq_prod (fun _ : Fin n => L.density)]
 
-theorem densityAffinity_iid [SigmaFinite μ] (L R : GeneralTesting.DensityLaw μ) (n : ℕ) :
+section
+variable [SigmaFinite μ] (L R : GeneralTesting.DensityLaw μ)
+
+theorem densityAffinity_iid  n :
     densityAffinity (iidDensityLaw L n) (iidDensityLaw R n) = densityAffinity L R ^ n := by
   have hp : ∀ᵐ xs : Fin n → Ω ∂Measure.pi (fun _ : Fin n => μ),
       ∀ i, 0 ≤ L.density (xs i) := by
@@ -133,19 +135,21 @@ theorem densityAffinity_iid [SigmaFinite μ] (L R : GeneralTesting.DensityLaw μ
     fun x : Ω => Real.sqrt (L.density x) * Real.sqrt (R.density x))]
   simp
 
-theorem hellinger_iid_le [SigmaFinite μ] (L R : GeneralTesting.DensityLaw μ) (n : ℕ) :
+theorem hellinger_iid_le  n :
     GeneralTesting.hellingerSquared (iidDensityLaw L n) (iidDensityLaw R n) ≤
       n * GeneralTesting.hellingerSquared L R := by
   rw [hellinger_integral_eq, densityAffinity_iid, hellinger_integral_eq]
   have h := one_add_mul_sub_le_pow (by linarith [densityAffinity_nonneg L R] :
     -1 ≤ densityAffinity L R) n
   nlinarith
+end
+
 
 /-- Quadratic Hellinger bound for an affine density path on an arbitrary
 measurable observation space, with all density inequalities almost everywhere. -/
 theorem affine_hellinger_bound [IsProbabilityMeasure μ]
     (L R : GeneralTesting.DensityLaw μ) (f₀ f₁ : Ω → ℝ)
-    (t s cf Cf : ℝ) (hcf : 0 < cf) (hCf : 0 ≤ Cf)
+    t s cf Cf (hcf : 0 < cf) (hCf : 0 ≤ Cf)
     (hL : L.density =ᵐ[μ] fun x => f₀ x + t * f₁ x)
     (hR : R.density =ᵐ[μ] fun x => f₀ x + s * f₁ x)
     (ht : ∀ᵐ x ∂μ, cf ≤ f₀ x + t * f₁ x)
@@ -168,7 +172,10 @@ theorem affine_hellinger_bound [IsProbabilityMeasure μ]
     (integrable_const (Cf ^ 2 * (t - s) ^ 2 / (4 * cf))) hx
   simpa [GeneralTesting.hellingerSquared] using hi
 
-def densityLawWithSeed {S : Type*} [MeasurableSpace S] (ν : Measure S)
+section
+variable {S : Type*}
+
+def densityLawWithSeed  [MeasurableSpace S] (ν : Measure S)
     [SigmaFinite μ] [IsProbabilityMeasure ν] (L : GeneralTesting.DensityLaw μ) :
     GeneralTesting.DensityLaw (μ.prod ν) where
   density x := L.density x.1
@@ -182,19 +189,22 @@ def densityLawWithSeed {S : Type*} [MeasurableSpace S] (ν : Measure S)
     rw [integral_fun_fst]
     simp [L.integral_one]
 
-theorem densityLawWithSeed_measure {S : Type*} [MeasurableSpace S] (ν : Measure S)
-    [SigmaFinite μ] [IsProbabilityMeasure ν] (L : GeneralTesting.DensityLaw μ) :
-    (densityLawWithSeed ν L).measure = L.measure.prod ν := by
-  unfold densityLawWithSeed GeneralTesting.DensityLaw.measure
-  exact (prod_withDensity_left (ENNReal.measurable_ofReal.comp L.measurable)).symm
+section
+variable [MeasurableSpace S] (ν : Measure S) [SigmaFinite μ] [IsProbabilityMeasure ν]
 
-theorem hellinger_with_seed {S : Type*} [MeasurableSpace S] (ν : Measure S)
-    [SigmaFinite μ] [IsProbabilityMeasure ν] (L R : GeneralTesting.DensityLaw μ) :
+theorem densityLawWithSeed_measure   (L : GeneralTesting.DensityLaw μ) :
+    (densityLawWithSeed ν L).measure = L.measure.prod ν := (prod_withDensity_left (ENNReal.measurable_ofReal.comp L.measurable)).symm
+
+theorem hellinger_with_seed   (L R : GeneralTesting.DensityLaw μ) :
     GeneralTesting.hellingerSquared (densityLawWithSeed ν L) (densityLawWithSeed ν R) =
       GeneralTesting.hellingerSquared L R := by
   change (∫ x : Ω × S, (Real.sqrt (L.density x.1) - Real.sqrt (R.density x.1)) ^ 2 ∂μ.prod ν) =
     ∫ x, (Real.sqrt (L.density x) - Real.sqrt (R.density x)) ^ 2 ∂μ
   rw [integral_fun_fst (fun x => (Real.sqrt (L.density x) - Real.sqrt (R.density x)) ^ 2)]
   simp
+end
+
+end
+
 
 end RoughRegime.LowerMeasure

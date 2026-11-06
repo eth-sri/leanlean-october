@@ -10,22 +10,25 @@ noncomputable section
 open scoped BigOperators
 namespace NearlyMinimax
 
-def defectTailConstant (Csharp C : ℝ) : ℝ :=
+def defectTailConstant Csharp C  :=
   Real.exp (Csharp * C) * poissonCountWeight (Csharp * C) 2
 
-theorem poisson_scaled_defect_identity {mu : ℝ} (hmu : 0 < mu)
-    (Csharp C : ℝ) (j : ℕ) :
+theorem poisson_scaled_defect_identity {mu } (hmu : 0 < mu)
+    Csharp C j :
     poissonCountWeight (Csharp * mu) (2 + j) * C ^ (2 + j) / mu ^ j =
       mu ^ 2 * poissonCountWeight (Csharp * C) (2 + j) := by
   unfold poissonCountWeight
   rw [mul_pow, mul_pow, pow_add mu]
   field_simp
 
+section
+variable {P Csharp C mu : ℝ} (hP : 0 ≤ P) (hCs : 0 ≤ Csharp) (hC : 0 ≤ C)
+include hP hCs hC
+
 /-- The inverse occupancy factor in the genuine interpolation deficit is
 cancelled before the finite factorial series is summed. -/
-theorem finite_interpolation_defect_tail_le {P Csharp C mu : ℝ}
-    (hP : 0 ≤ P) (hCs : 0 ≤ Csharp) (hC : 0 ≤ C) (hmu : 0 < mu)
-    (J : ℕ) (R : ℕ → ℝ)
+theorem finite_interpolation_defect_tail_le  (hmu : 0 < mu)
+    J (R : ℕ → ℝ)
     (hR : ∀ j ∈ Finset.range J, R (2 + j) ≤ P * C ^ (2 + j) / mu ^ j) :
     (∑ j ∈ Finset.range J, poissonCountWeight (Csharp * mu) (2 + j) * R (2 + j)) ≤
       defectTailConstant Csharp C * P * mu ^ 2 := by
@@ -47,9 +50,12 @@ theorem finite_interpolation_defect_tail_le {P Csharp C mu : ℝ}
   unfold defectTailConstant
   ring
 
-theorem finite_geometric_count_energy_tail_le {P Csharp C mu : ℝ}
-    (hP : 0 ≤ P) (hCs : 0 ≤ Csharp) (hC : 0 ≤ C)
-    (hmu : 0 ≤ mu) (hmu1 : mu ≤ 1) (J : ℕ) (R : ℕ → ℝ)
+section
+variable (hmu : 0 ≤ mu) (hmu1 : mu ≤ 1)
+include hmu hmu1
+
+theorem finite_geometric_count_energy_tail_le 
+     J (R : ℕ → ℝ)
     (hR : ∀ j ∈ Finset.range J, R (2 + j) ≤ P * C ^ (2 + j)) :
     (∑ j ∈ Finset.range J, poissonCountWeight (Csharp * mu) (2 + j) * R (2 + j)) ≤
       defectTailConstant Csharp C * P * mu ^ 2 := by
@@ -60,8 +66,7 @@ theorem finite_geometric_count_energy_tail_le {P Csharp C mu : ℝ}
       (poissonCountWeight_nonneg (mul_nonneg hCs hmu) (2 + j))
     apply h.trans
     have hp : mu ^ (2 + j) ≤ mu ^ 2 := by
-      rw [pow_add]
-      exact (mul_le_mul_of_nonneg_left (pow_le_one₀ hmu hmu1) (sq_nonneg mu)).trans_eq (mul_one _)
+      bound
     have hh := mul_le_mul_of_nonneg_left hp
       (mul_nonneg hP (poissonCountWeight_nonneg (mul_nonneg hCs hC) (2 + j)))
     convert hh using 1 <;> unfold poissonCountWeight <;> simp only [mul_pow] <;> ring
@@ -76,9 +81,8 @@ theorem finite_geometric_count_energy_tail_le {P Csharp C mu : ℝ}
 
 /-- The actual fixed-order Taylor derivative factor k^a is absorbed into a
 fixed geometric count factor before applying the same genuine series bound. -/
-theorem finite_taylor_count_energy_tail_le {P Csharp C mu : ℝ}
-    (hP : 0 ≤ P) (hCs : 0 ≤ Csharp) (hC : 0 ≤ C)
-    (hmu : 0 ≤ mu) (hmu1 : mu ≤ 1) (a J : ℕ) (R : ℕ → ℝ)
+theorem finite_taylor_count_energy_tail_le 
+     a J (R : ℕ → ℝ)
     (hR : ∀ j ∈ Finset.range J, R (2 + j) ≤ P * C ^ (2 + j) * (2 + j : ℕ) ^ a) :
     (∑ j ∈ Finset.range J, poissonCountWeight (Csharp * mu) (2 + j) * R (2 + j)) ≤
       defectTailConstant Csharp (C * 2 ^ a) * P * mu ^ 2 := by
@@ -88,5 +92,9 @@ theorem finite_taylor_count_energy_tail_le {P Csharp C mu : ℝ}
   have h := mul_le_mul_of_nonneg_left (polynomial_count_factor_le (2 + j) a)
     (by positivity : 0 ≤ P * C ^ (2 + j))
   simpa only [mul_pow, ← mul_assoc] using h
+end
+
+end
+
 
 end NearlyMinimax

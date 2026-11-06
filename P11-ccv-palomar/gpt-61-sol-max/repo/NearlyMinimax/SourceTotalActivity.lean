@@ -14,28 +14,25 @@ namespace NearlyMinimax
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 800000
 
-theorem source_exteriorTau_nonneg {a b : ℝ} (ha : 0 < a) (hab : a < b) :
+theorem source_exteriorTau_nonneg {a b } (ha : 0 < a) (hab : a < b) :
     0 ≤ exteriorTau ((a+b)/(b-a)) := by
   apply exteriorTau_nonneg
   apply (le_div_iff₀ (sub_pos.mpr hab)).mpr
   linarith
 
-theorem finePairTotalMass_activity_bound (d : ℕ) [NeZero d] (k D M q : ℕ) (hD : 1 ≤ D)
-    (a b C ℓ N : ℝ) (ha : 0 < a) (hab : a < b) (hℓ : 0 ≤ ℓ) (hℓN : ℓ ≤ N)
-    (hunit : (D : ℝ)^2*Real.exp ((D : ℝ)*exteriorTau ((a+b)/(b-a))) ≤ N^2)
-    (hcoarse : (D : ℝ)^2*Real.exp ((D : ℝ)*exteriorTau ((a+b)/(b-a)))*ℓ^2 ≤ 2*N^2) :
+theorem finePairTotalMass_activity_bound d [NeZero d] (k D M q : ℕ) (hD : 1 ≤ D)
+    a b C ℓ N (ha : 0 < a) (hab : a < b) (hℓ : 0 ≤ ℓ) (hℓN : ℓ ≤ N)
+    (hunit : D^2*Real.exp (D*exteriorTau ((a+b)/(b-a))) ≤ N^2)
+    (hcoarse : D^2*Real.exp (D*exteriorTau ((a+b)/(b-a)))*ℓ^2 ≤ 2*N^2) :
     highRowTotalMass (finePairRowData d k D M q a b C ℓ N).rowMass ≤
-      (ordinaryDensityActivityBase a b)^2 * sourceResponseCost q C * (1+512*(d : ℝ)) *
-        N^2 * Real.exp ((M : ℝ)*exteriorTau ((a+b)/(b-a))) := by
+      (ordinaryDensityActivityBase a b)^2 * sourceResponseCost q C * (1+512*d) *
+        N^2 * Real.exp (M*exteriorTau ((a+b)/(b-a))) := by
   let K := (ordinaryDensityActivityBase a b)^2 * sourceResponseCost q C
   let EM := Real.exp ((M : ℝ)*exteriorTau ((a+b)/(b-a)))
   have hK : 0 ≤ K := mul_nonneg (sq_nonneg _) (sourceResponseCost_nonneg q C)
   have hEM : 1 ≤ EM := Real.one_le_exp (mul_nonneg (Nat.cast_nonneg _) (source_exteriorTau_nonneg ha hab))
   have hu : finePairRowMass d D M q a b C ℓ N .unit ≤ K*N^2 := by
-    apply (finePairRowMass_unit_le d D M q hD a b ha hab C ℓ N).trans
-    calc
-      _ = K*((D : ℝ)^2*Real.exp ((D : ℝ)*exteriorTau ((a+b)/(b-a)))) := by dsimp [K]; ring
-      _ ≤ K*N^2 := mul_le_mul_of_nonneg_left hunit hK
+    linarith [finePairRowMass_unit_le d D M q hD a b ha hab C ℓ N, mul_le_mul_of_nonneg_left hunit hK]
   have hc : finePairRowMass d D M q a b C ℓ N .coarse ≤ 256*(d : ℝ)*K*N^2 := by
     apply (finePairRowMass_coarse_le d D M q hD a b ha hab C ℓ N hℓ).trans
     calc
@@ -59,31 +56,31 @@ theorem finePairTotalMass_activity_bound (d : ℕ) [NeZero d] (k D M q : ℕ) (h
   dsimp [K, EM] at hu' hc'
   nlinarith only [hu', hc', hf]
 
-def sourceActivityConstant (d q : ℕ) (C B lam : ℝ) : ℝ :=
+def sourceActivityConstant (d q : ℕ) C B lam  :=
   B^2 * sourceResponseCost q C * (1+512*(d : ℝ)) + B * sourceResponseCost q C +
     4 * higherBandGeometricPrefactor B (higherBandInterpolationBase d lam) (sourceResponseCost q C)
 
-theorem sourceActivityConstant_nonneg (d q : ℕ) (C B lam : ℝ) (hB : 0 ≤ B) :
+theorem sourceActivityConstant_nonneg d q C B lam (hB : 0 ≤ B) :
     0 ≤ sourceActivityConstant d q C B lam := by
   unfold sourceActivityConstant higherBandGeometricPrefactor higherBandInterpolationBase sourceResponseCost
   positivity
 
 /-- The actual complete finite row family has a fixed total activity constant.
 The hypotheses are elementary inequalities on the computed source scales. -/
-theorem sourceRows_activity_bound {d k D M q : ℕ} [NeZero d] (hd : 0 < d) (hD : 1 ≤ D)
-    (a b C lam ℓ N μ B q1 q2 : ℝ) (ha : 0 < a) (hab : a < b)
+theorem sourceRows_activity_bound {d k D M q } [NeZero d] (hd : 0 < d) (hD : 1 ≤ D)
+    a b C lam ℓ N μ B q1 q2 (ha : 0 < a) (hab : a < b)
     (hℓ : 0 ≤ ℓ) (hℓN : ℓ ≤ N) (hN : 1 ≤ N) (hμ : 0 ≤ μ) (hbase1 : μ*(1+Real.log N) ≤ 1)
     (hB : 0 ≤ B) (hbB : ordinaryDensityActivityBase a b ≤ B)
     (hq1 : q1 = higherBandGeometricRatio d D
       (higherBandGeometricConstant B (higherBandInterpolationBase d lam)) (1+Real.log N) (μ*(1+Real.log N)) 1)
     (hq2 : q2 = higherBandGeometricRatio d D
       (higherBandGeometricConstant B (higherBandInterpolationBase d lam)) (1+Real.log N) (μ*(1+Real.log N)) 2)
-    (hq1h : q1 ≤ 1/2) (hq21 : q2 ≤ q1) (hsmall : (D : ℝ)^2*q1 ≤ 1)
-    (hcoarse : Real.exp ((D : ℝ)*exteriorTau ((a+b)/(b-a)))*ℓ ≤ N)
-    (hsingle : (D : ℝ)*Real.exp ((D : ℝ)*exteriorTau ((a+b)/(b-a))) ≤ N)
-    (hpair : (D : ℝ)^2*Real.exp ((D : ℝ)*exteriorTau ((a+b)/(b-a)))*ℓ^2 ≤ 2*N^2) :
+    (hq1h : q1 ≤ 1/2) (hq21 : q2 ≤ q1) (hsmall : D^2*q1 ≤ 1)
+    (hcoarse : Real.exp (D*exteriorTau ((a+b)/(b-a)))*ℓ ≤ N)
+    (hsingle : D*Real.exp (D*exteriorTau ((a+b)/(b-a))) ≤ N)
+    (hpair : D^2*Real.exp (D*exteriorTau ((a+b)/(b-a)))*ℓ^2 ≤ 2*N^2) :
     highRowTotalMass (sourceRowData d k D M q a b C lam ℓ N μ).rowMass ≤
-      sourceActivityConstant d q C B lam * N^2 * Real.exp ((M : ℝ)*exteriorTau ((a+b)/(b-a))) := by
+      sourceActivityConstant d q C B lam * N^2 * Real.exp (M*exteriorTau ((a+b)/(b-a))) := by
   let A := ordinaryDensityActivityBase a b
   let EM := Real.exp ((M : ℝ)*exteriorTau ((a+b)/(b-a)))
   let ED := Real.exp ((D : ℝ)*exteriorTau ((a+b)/(b-a)))
@@ -91,17 +88,13 @@ theorem sourceRows_activity_bound {d k D M q : ℕ} [NeZero d] (hd : 0 < d) (hD 
   have hED : 1 ≤ ED := Real.one_le_exp (mul_nonneg (Nat.cast_nonneg _) (source_exteriorTau_nonneg ha hab))
   have hEM : 1 ≤ EM := Real.one_le_exp (mul_nonneg (Nat.cast_nonneg _) (source_exteriorTau_nonneg ha hab))
   have hunit : (D : ℝ)^2*ED ≤ N^2 := by
-    have h1 := mul_le_mul_of_nonneg_left hED (by positivity : 0 ≤ (D : ℝ)^2*ED)
-    have h2 := pow_le_pow_left₀ (by positivity : 0 ≤ (D : ℝ)*ED) hsingle 2
-    nlinarith only [h1, h2]
+    linarith [mul_le_mul_of_nonneg_left hED (by positivity : 0 ≤ (D : ℝ)^2*ED)     , pow_le_pow_left₀ (by positivity : 0 ≤ (D : ℝ)*ED) hsingle 2     ]
   have hp := finePairTotalMass_activity_bound d k D M q hD a b C ℓ N ha hab hℓ hℓN hunit hpair
   have hbpow := pow_le_pow_left₀ hA hbB 2
   have hp' : highRowTotalMass (finePairRowData d k D M q a b C ℓ N).rowMass ≤
       B^2*sourceResponseCost q C*(1+512*(d : ℝ))*N^2*EM := by
     apply hp.trans
-    exact mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_right
-      (mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_right hbpow (sourceResponseCost_nonneg q C))
-        (by positivity)) (sq_nonneg N)) (Real.exp_pos _).le
+    grind only [mul_le_mul_of_nonneg_right, sourceResponseCost_nonneg, sq_nonneg]
   have hs := singletonRowMass_exponential_bound d D q hD a b ha hab C
   have hs' : singletonRowMass d D q a b C ≤ B*sourceResponseCost q C*N^2*EM := by
     apply hs.trans

@@ -14,30 +14,24 @@ namespace NearlyMinimax
 set_option maxHeartbeats 1000000
 set_option backward.isDefEq.respectTransparency false
 
-theorem dyadicMultilevelErrorField_envelope_test_moment_facts {d : ℕ} (C : ModelConstants d)
-    [Nonempty (AnchoredIndex d C.order)] (θ : RegressionParameter d) (hθ : Admissible C θ)
-    (n J L : ℕ) (hJL : J ≤ L) (y : ℝ) (hy : |y| ≤ max C.holderBound 1) (m : ℕ → ℕ)
-    (hdegree : ∀ j : Fin (J + 1), m j.val + anchoredDimension d C.order + 1 ≤ n)
-    (ν : Covariate d × Covariate d → ℝ)
-    (hν : MemLp ν 2 (regularPairDesignMeasure θ ((2 : ℕ) ^ L) (by positivity))) :
+section
+variable {d : ℕ} (C : ModelConstants d) [Nonempty (AnchoredIndex d C.order)] (θ : RegressionParameter d) (hθ : Admissible C θ) (n J L : ℕ) (hJL : J ≤ L) (y : ℝ) (hy : |y| ≤ max C.holderBound 1) (m : ℕ → ℕ) (hdegree : ∀ j : Fin (J + 1), m j.val + anchoredDimension d C.order + 1 ≤ n) (ν : Covariate d × Covariate d → ℝ) (hν : MemLp ν 2 (regularPairDesignMeasure θ ((2 : ℕ) ^ L) (pow_pos Nat.zero_lt_two L)))
+include hθ hJL hy hdegree hν
+
+theorem dyadicMultilevelErrorField_envelope_test_moment_facts  :
     MemLp (fun t => ∫ w, ν w * dyadicMultilevelErrorField C θ n J y m t w
-      ∂regularPairDesignMeasure θ ((2 : ℕ) ^ L) (by positivity)) 2 (sampleLaw θ n) ∧
+      ∂regularPairDesignMeasure θ (2 ^ L) (by positivity)) 2 (sampleLaw θ n) ∧
     (∫ t, ∫ w, ν w * dyadicMultilevelErrorField C θ n J y m t w
-      ∂regularPairDesignMeasure θ ((2 : ℕ) ^ L) (by positivity) ∂sampleLaw θ n) = 0 := by
+      ∂regularPairDesignMeasure θ (2 ^ L) (by positivity) ∂sampleLaw θ n) = 0 := by
   letI : Nonempty (AnchoredIndex d (pilotModelConstants C).order) :=
     inferInstanceAs (Nonempty (AnchoredIndex d C.order))
   exact dyadicMultilevelErrorField_test_moment_facts (pilotModelConstants C) θ
     (admissible_pilotModelConstants C θ hθ) n J L hJL y hy m hdegree ν hν
 
-theorem dyadicMultilevelErrorField_envelope_weighted_integrable {d : ℕ} (C : ModelConstants d)
-    [Nonempty (AnchoredIndex d C.order)] (θ : RegressionParameter d) (hθ : Admissible C θ)
-    (n J L : ℕ) (hJL : J ≤ L) (y : ℝ) (hy : |y| ≤ max C.holderBound 1) (m : ℕ → ℕ)
-    (hdegree : ∀ j : Fin (J + 1), m j.val + anchoredDimension d C.order + 1 ≤ n)
-    (ν : Covariate d × Covariate d → ℝ)
-    (hν : MemLp ν 2 (regularPairDesignMeasure θ ((2 : ℕ) ^ L) (by positivity)))
-    (t : Fin n → Observation d) :
+theorem dyadicMultilevelErrorField_envelope_weighted_integrable 
+    t :
     Integrable (fun w => ν w * dyadicMultilevelErrorField C θ n J y m t w)
-      (regularPairDesignMeasure θ ((2 : ℕ) ^ L) (by positivity)) := by
+      (regularPairDesignMeasure θ (2 ^ L) (by positivity)) := by
   letI : Nonempty (AnchoredIndex d (pilotModelConstants C).order) :=
     inferInstanceAs (Nonempty (AnchoredIndex d C.order))
   have hi (j : Fin (J + 1)) := dyadicPilotErrorField_weighted_integrable (pilotModelConstants C) θ
@@ -48,5 +42,7 @@ theorem dyadicMultilevelErrorField_envelope_weighted_integrable {d : ℕ} (C : M
   funext w
   simp only [dyadicMultilevelErrorField, Finset.mul_sum]
   rfl
+end
+
 
 end NearlyMinimax

@@ -25,7 +25,7 @@ variable {d k F : ℕ} {I : Type*} [Fintype I] {E : I → Type*}
     (hpos : ∀ i, 0 < R.rowMass i)
 include G hpos
 
-theorem highUnionSourceActivation_bound (e : HighUnionMark E) :
+theorem highUnionSourceActivation_bound e :
     |highUnionActivation R (highCenterMix C) e| ≤
       highRowTotalMass R.rowMass / highCenterMix C :=
   highCenteredRowUnionActivation_bound R.rowMass hpos G.total_positive R.rowActivation
@@ -39,11 +39,14 @@ theorem highUnionSourceActivation_centered :
       (Filter.Eventually.of_forall (fun e => by simpa only [Real.norm_eq_abs] using G.activation_bound i e)))
     G.activation_centered _ (highCenterMix_mem C).1 (highCenterMix_mem C).2.le
 
+section
+variable (T : ℝ) (hT : 0 ≤ T) (hsmall : T * (highRowTotalMass R.rowMass / highCenterMix C) / historyReferenceRho (3^d) ≤
+      1 / (2 + 8 * ((3^d : ℕ) : ℝ)^2))
+include hT hsmall
+
 /-- The actual complete tagged union, with its one corrective branch,
 produces a genuine probability source path under the source positivity budget. -/
-theorem highUnionSourcePrior_probability (T : ℝ) (hT : 0 ≤ T)
-    (hsmall : T * (highRowTotalMass R.rowMass / highCenterMix C) / historyReferenceRho (3^d) ≤
-      1 / (2 + 8 * ((3^d : ℕ) : ℝ)^2)) (t : ℝ) (ht : t ∈ Icc 0 T) :
+theorem highUnionSourcePrior_probability  t (ht : t ∈ Icc 0 T) :
     IsProbabilityMeasure (historyMarkedPrior (fun i j => j ∈ highNeighborLabels d k i) (3^d) t
       (highUnionLaw R (highCenterMix C)) (highUnionActivation R (highCenterMix C))) := by
   letI := highUnionSourceLaw_probability C R G
@@ -53,7 +56,7 @@ theorem highUnionSourcePrior_probability (T : ℝ) (hT : 0 ≤ T)
   have hi : Integrable (highUnionActivation R (highCenterMix C))
       (highUnionLaw R (highCenterMix C)) :=
     Integrable.of_bound hm.aestronglyMeasurable _ (Filter.Eventually.of_forall fun e => by
-      simpa only [Real.norm_eq_abs] using highUnionSourceActivation_bound C R G hpos e)
+      solve_by_elim [highUnionSourceActivation_bound])
   have hs : t * (highRowTotalMass R.rowMass / highCenterMix C) / historyReferenceRho (3^d) ≤
       1 / (2 + 8 * ((3^d : ℕ) : ℝ)^2) :=
     (div_le_div_of_nonneg_right (mul_le_mul_of_nonneg_right ht.2 hB)
@@ -66,16 +69,14 @@ theorem highUnionSourcePrior_probability (T : ℝ) (hT : 0 ≤ T)
 
 /-- Structural response-summed packet annihilation implies the true
 complete-union canonical mass pushforward is constant in time. -/
-theorem highUnionSourceMass_prior_law_of_append_annihilation (T : ℝ) (hT : 0 ≤ T)
-    (hsmall : T * (highRowTotalMass R.rowMass / highCenterMix C) / historyReferenceRho (3^d) ≤
-      1 / (2 + 8 * ((3^d : ℕ) : ℝ)^2))
+theorem highUnionSourceMass_prior_law_of_append_annihilation 
     (hkill : ∀ j h S, MeasurableSet S →
-      (∫ e, S.indicator (fun _ : ℝ => (1 : ℝ))
+      (∫ e, S.indicator (fun _  => 1)
         (highUnionSourceMass C R (historyMarkedAppend
           (fun i j => j ∈ highNeighborLabels d k i)
           (fun {_ _} h => highNeighborLabels_symmetric d k _ _ h) j (h,e))) *
         highUnionActivation R (highCenterMix C) e ∂highUnionLaw R (highCenterMix C)) = 0)
-    (t : ℝ) (ht : t ∈ Icc 0 T) :
+    t (ht : t ∈ Icc 0 T) :
     Measure.map (highUnionSourceMass C R)
       (historyMarkedPrior (fun i j => j ∈ highNeighborLabels d k i) (3^d) t
         (highUnionLaw R (highCenterMix C)) (highUnionActivation R (highCenterMix C))) =
@@ -92,6 +93,8 @@ theorem highUnionSourceMass_prior_law_of_append_annihilation (T : ℝ) (hT : 0 �
     (highUnionActivation_measurable R G.activation_measurable _)
     (highUnionSourceActivation_centered C R G hpos) (highUnionSourceActivation_bound C R G hpos)
     hsmall _ (highUnionSourceMass_measurable C R G) hkill t ht
+end
+
 
 end Generic
 

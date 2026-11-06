@@ -61,20 +61,10 @@ theorem historyShapeAppend_injective (dependent : J → J → Prop)
   rw [List.filter_append, List.filter_append] at hc
   exact List.append_cancel_right hc
 
-omit [Fintype J] in
-@[simp] theorem historyShapeMultiplicity_append (dependent : J → J → Prop) (j i : J)
-    (g : HistoryShape (fun a b => ¬ dependent a b)) :
-    historyShapeMultiplicity dependent i (historyShapeAppend dependent j g) =
-      historyShapeMultiplicity dependent i g + if j = i then 1 else 0 := by
-  induction g using Quotient.inductionOn
-  rename_i word
-  change (word ++ [j]).count i = word.count i + if j = i then 1 else 0
-  by_cases hj : j = i
-  · subst j; simp
-  · simp [hj]
 
-@[simp] theorem historyShapeLength_append (dependent : J → J → Prop) (j : J)
-    (g : HistoryShape (fun a b => ¬ dependent a b)) :
+
+@[simp] theorem historyShapeLength_append dependent (j : J)
+    g :
     historyShapeLength dependent (historyShapeAppend dependent j g) = historyShapeLength dependent g + 1 := by
   induction g using Quotient.inductionOn
   rename_i word
@@ -82,8 +72,8 @@ omit [Fintype J] in
   simp
 
 /-- The exact source reference factor needed for append/delete change of variables. -/
-theorem historyShapeReferenceWeight_append (dependent : J → J → Prop) (Δ : ℕ) (j : J)
-    (g : HistoryShape (fun a b => ¬ dependent a b)) :
+theorem historyShapeReferenceWeight_append dependent Δ (j : J)
+    g :
     historyShapeReferenceWeight dependent Δ (historyShapeAppend dependent j g) =
       historyReferenceRho Δ * historyShapeReferenceWeight dependent Δ g := by
   unfold historyShapeReferenceWeight

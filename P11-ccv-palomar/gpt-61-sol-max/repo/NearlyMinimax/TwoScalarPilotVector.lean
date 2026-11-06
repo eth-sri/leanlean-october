@@ -16,29 +16,35 @@ set_option backward.isDefEq.respectTransparency false
 set_option synthInstance.maxHeartbeats 200000
 set_option maxHeartbeats 600000
 
-def twoScalarPilotVector (a b : ℝ) : PairVector :=
+section
+variable (a b : ℝ)
+include a b
+
+def twoScalarPilotVector   :=
   (a - b) • pairCoordinateVector 1 - a • pairCoordinateVector 2
 
-theorem twoScalarPilotVector_coordinates (a b : ℝ) :
+theorem twoScalarPilotVector_coordinates  :
     twoScalarPilotVector a b = WithLp.toLp 2 ![0, a - b, -a] := by
   ext i
   fin_cases i <;> simp [twoScalarPilotVector, pairCoordinateVector]
 
-theorem twoScalarPilotVector_norm_sq (a b : ℝ) :
+theorem twoScalarPilotVector_norm_sq  :
     ‖twoScalarPilotVector a b‖ ^ 2 = (a - b) ^ 2 + a ^ 2 := by
   rw [EuclideanSpace.real_norm_sq_eq, twoScalarPilotVector_coordinates]
   simp [Fin.sum_univ_succ]
 
-theorem twoScalarPilotVector_norm_sq_le (a b : ℝ) :
+theorem twoScalarPilotVector_norm_sq_le  :
     ‖twoScalarPilotVector a b‖ ^ 2 ≤ 3 * a ^ 2 + 2 * b ^ 2 := by
   rw [twoScalarPilotVector_norm_sq]
   nlinarith only [sq_nonneg (a + b)]
 
-theorem twoScalarPilotVector_inner (a b : ℝ) (v : PairVector) :
+theorem twoScalarPilotVector_inner  (v : PairVector) :
     ⟪twoScalarPilotVector a b, v⟫ = (v 1 - v 2) * a - v 1 * b := by
   rw [twoScalarPilotVector_coordinates]
   simp [PiLp.inner_apply, RCLike.inner_apply, Fin.sum_univ_succ]
   ring
+end
+
 
 section
 variable {Ω : Type*} [MeasurableSpace Ω] {μ : Measure Ω}
@@ -56,16 +62,14 @@ theorem twoScalarPilotVector_memLp (ha : MemLp a 2 μ) (hb : MemLp b 2 μ) :
     (ha.integrable_sq.const_mul 3).add (hb.integrable_sq.const_mul 2)
   apply (memLp_two_iff_integrable_sq_norm hs).2
   apply hi.mono' (hs.norm.pow 2)
-  exact Filter.Eventually.of_forall fun x => by
-    rw [Real.norm_eq_abs, abs_of_nonneg (sq_nonneg _)]
-    exact twoScalarPilotVector_norm_sq_le _ _
+  simp_all [twoScalarPilotVector_norm_sq_le]
 
 theorem twoScalarPilotVector_mean_zero [IsFiniteMeasure μ]
     (ha : MemLp a 2 μ) (hb : MemLp b 2 μ)
     (hma : (∫ x, a x ∂μ) = 0) (hmb : (∫ x, b x ∂μ) = 0) :
     (∫ x, twoScalarPilotVector (a x) (b x) ∂μ) = 0 := by
-  have hai : Integrable a μ := ha.integrable (by norm_num)
-  have hbi : Integrable b μ := hb.integrable (by norm_num)
+  have hai  := ha.integrable (by norm_num)
+  have hbi  := hb.integrable (by norm_num)
   have hs1 : Integrable (fun x => (a x - b x) • pairCoordinateVector 1) μ := (hai.sub hbi).smul_const _
   have hs2 : Integrable (fun x => a x • pairCoordinateVector 2) μ := hai.smul_const _
   unfold twoScalarPilotVector
@@ -74,7 +78,7 @@ theorem twoScalarPilotVector_mean_zero [IsFiniteMeasure μ]
   simp
 
 theorem twoScalarPilotVector_second_le (ha : MemLp a 2 μ) (hb : MemLp b 2 μ)
-    {E : ℝ} (hEa : (∫ x, a x ^ 2 ∂μ) ≤ E) (hEb : (∫ x, b x ^ 2 ∂μ) ≤ E) :
+    {E } (hEa : (∫ x, a x ^ 2 ∂μ) ≤ E) (hEb : (∫ x, b x ^ 2 ∂μ) ≤ E) :
     (∫ x, ‖twoScalarPilotVector (a x) (b x)‖ ^ 2 ∂μ) ≤ 5 * E := by
   have h := integral_mono (twoScalarPilotVector_memLp ha hb).norm.integrable_sq
     ((ha.integrable_sq.const_mul 3).add (hb.integrable_sq.const_mul 2))
@@ -143,9 +147,7 @@ theorem twoScalarPilotVector_test_second_le
       have hn : ‖v w‖ ^ 2 = v w 0 ^ 2 + v w 1 ^ 2 + v w 2 ^ 2 := by
         rw [EuclideanSpace.real_norm_sq_eq]
         simp [Fin.sum_univ_succ, add_assoc]
-      rw [hn]
-      dsimp [vA, vB]
-      nlinarith only [sq_nonneg (v w 1 + v w 2), sq_nonneg (v w 0), sq_nonneg (v w 2)]
+      nlinarith
     have hh := integral_mono (hvA.integrable_sq.add hvB.integrable_sq)
       (hv.norm.integrable_sq.const_mul 3) hp
     rwa [integral_const_mul] at hh
@@ -153,8 +155,6 @@ theorem twoScalarPilotVector_test_second_le
   simp_rw [heq]
   have hca := hEa vA hvA
   have hcb := hEb vB hvB
-  have hm := mul_le_mul_of_nonneg_left hweights hc
-  dsimp only [A, B] at hsq
-  nlinarith only [hsq, hca, hcb, hm]
+  nlinarith
 
 end NearlyMinimax

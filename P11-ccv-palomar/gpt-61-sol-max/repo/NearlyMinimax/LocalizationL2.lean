@@ -17,7 +17,7 @@ variable [NormedAddCommGroup E] [InnerProductSpace ℝ E] [CompleteSpace E]
 variable {M : Measure W} [IsFiniteMeasure M]
 
 /-- The finite-measure Cauchy bound, proved by integrating a nonnegative square. -/
-theorem integral_sq_le_mass_mul_integral_sq {f : W → ℝ} (hf : MemLp f 2 M) :
+theorem integral_sq_le_mass_mul_integral_sq {f } (hf : MemLp f 2 M) :
     (∫ w, f w ∂M) ^ 2 ≤ M.real Set.univ * ∫ w, f w ^ 2 ∂M := by
   let a := ∫ w, f w ∂M
   let b := M.real Set.univ
@@ -27,11 +27,10 @@ theorem integral_sq_le_mass_mul_integral_sq {f : W → ℝ} (hf : MemLp f 2 M) :
       apply Measure.measure_univ_eq_zero.mp
       exact (measureReal_eq_zero_iff).mp hb0
     simp [hM0]
-  · have hbpos : 0 < b := lt_of_le_of_ne hb (Ne.symm hb0)
-    have hi : Integrable f M := hf.integrable (by norm_num)
+  · skip
+    have hi  := hf.integrable (by norm_num)
     have hi2 := hf.integrable_sq
-    have hic : Integrable (fun w => f w ^ 2 - (2 * (a / b)) * f w + (a / b) ^ 2) M :=
-      (hi2.sub (hi.const_mul _)).add (integrable_const _)
+    
     have heq : (∫ w, (f w - a / b) ^ 2 ∂M) =
         (∫ w, f w ^ 2 ∂M) - (2 * (a / b)) * a + b * (a / b) ^ 2 := by
       have hfalg : (fun w => (f w - a / b) ^ 2) =
@@ -52,15 +51,13 @@ theorem integral_sq_le_mass_mul_integral_sq {f : W → ℝ} (hf : MemLp f 2 M) :
         b * (∫ w, f w ^ 2 ∂M) - a ^ 2 := by
       field_simp
       ring
-    have hmul := mul_nonneg hb hnon
-    rw [hid] at hmul
-    exact sub_nonneg.mp hmul
+    nlinarith
 
 /-- Integration of a Hilbert-valued `L²` field is bounded by its mass and energy. -/
 theorem norm_integral_sq_le_mass_mul_integral_norm_sq {f : W → E} (hf : MemLp f 2 M) :
     ‖∫ w, f w ∂M‖ ^ 2 ≤ M.real Set.univ * ∫ w, ‖f w‖ ^ 2 ∂M := by
   have hn := norm_integral_le_integral_norm (f := f) (μ := M)
-  have hsq : ‖∫ w, f w ∂M‖ ^ 2 ≤ (∫ w, ‖f w‖ ∂M) ^ 2 :=
+  have hsq  :=
     pow_le_pow_left₀ (norm_nonneg _) hn 2
   exact hsq.trans (integral_sq_le_mass_mul_integral_sq hf.norm)
 
@@ -86,17 +83,20 @@ theorem integral_inner_eq_zero_of_ae {N P : Measure W} {f g : W → E}
       change ⟪g v, f w⟫ = 0
       rw [real_inner_comm, hw])
 
+section
+variable {q : ℕ}
+
 /-- The localization inequality for finitely many orthogonal blocks. The
 block measures may be restrictions of one finite parameter measure. -/
-theorem finite_block_integral_bound {q : ℕ}
+theorem finite_block_integral_bound 
     (N : Fin q → Measure W) [∀ c, IsFiniteMeasure (N c)]
     (F : Fin q → W → E) (hF : ∀ c, MemLp (F c) 2 (N c))
     (horth : ∀ c d, c ≠ d → ∀ᵐ v ∂N d, ∀ᵐ w ∂N c, ⟪F c w, F d v⟫ = 0)
-    (L : ℝ) (hL : ∀ c, (N c).real Set.univ ≤ L) :
+    L (hL : ∀ c, (N c).real Set.univ ≤ L) :
     ‖∑ c : Fin q, ∫ w, F c w ∂N c‖ ^ 2 ≤
       L * ∑ c : Fin q, ∫ w, ‖F c w‖ ^ 2 ∂N c := by
-  let I : Fin q → E := fun c => ∫ w, F c w ∂N c
-  have hIorth : ∀ c d, c ≠ d → ⟪I c, I d⟫ = 0 := fun c d hcd =>
+  let I  := fun c => ∫ w, F c w ∂N c
+  have hIorth  := fun c d hcd =>
     integral_inner_eq_zero_of_ae ((hF c).integrable (by norm_num))
       ((hF d).integrable (by norm_num)) (horth c d hcd)
   have hsum : ‖∑ c : Fin q, I c‖ ^ 2 = ∑ c : Fin q, ‖I c‖ ^ 2 := by
@@ -108,20 +108,24 @@ theorem finite_block_integral_bound {q : ℕ}
     · intro d _ hdc
       exact hIorth c d (Ne.symm hdc)
     · exact fun h => (h (Finset.mem_univ c)).elim
-  change ‖∑ c : Fin q, I c‖ ^ 2 ≤ _
+  
   rw [hsum, Finset.mul_sum]
   apply Finset.sum_le_sum
   intro c _
   exact (norm_integral_sq_le_mass_mul_integral_norm_sq (hF c)).trans
     (mul_le_mul_of_nonneg_right (hL c) (integral_nonneg fun _ => sq_nonneg _))
 
+section
+variable (b : W → Fin q) (hb : Measurable b)
+include hb
+
 /-- Integrating over a measurable finite partition is summing the block integrals. -/
-theorem integral_eq_sum_fibers {q : ℕ} (b : W → Fin q) (hb : Measurable b)
+theorem integral_eq_sum_fibers  
     {f : W → E} (hf : Integrable f M) :
     (∫ w, f w ∂M) = ∑ c : Fin q, ∫ w in {v | b v = c}, f w ∂M := by
   classical
   have hB : ∀ c, MeasurableSet {v | b v = c} := fun c => measurableSet_eq_fun hb measurable_const
-  have hi : ∀ c, Integrable (({v | b v = c} : Set W).indicator f) M :=
+  have hi  :=
     fun c => hf.indicator (hB c)
   calc
     _ = ∫ w, ∑ c : Fin q, ({v | b v = c} : Set W).indicator f w ∂M := by
@@ -139,37 +143,34 @@ theorem integral_eq_sum_fibers {q : ℕ} (b : W → Fin q) (hb : Measurable b)
 
 /-- A finite partition with mutually orthogonal kernel blocks gains the largest
 block mass instead of the total mass in the integral Cauchy bound. -/
-theorem partition_localization_bound {q : ℕ} (b : W → Fin q) (hb : Measurable b)
+theorem partition_localization_bound  
     (K : W → E) (hK : MemLp K 2 M)
     (horth : ∀ w v, b w ≠ b v → ⟪K w, K v⟫ = 0)
-    (L : ℝ) (hL : ∀ c, M.real {w | b w = c} ≤ L) :
+    L (hL : ∀ c, M.real {w | b w = c} ≤ L) :
     ‖∫ w, K w ∂M‖ ^ 2 ≤ L * ∫ w, ‖K w‖ ^ 2 ∂M := by
   have hB : ∀ c, MeasurableSet {w | b w = c} := fun c => measurableSet_eq_fun hb measurable_const
-  have hKint : Integrable K M := hK.integrable (by norm_num)
-  have hnormint : Integrable (fun w => ‖K w‖ ^ 2) M := hK.norm.integrable_sq
+  have hKint  := hK.integrable (by norm_num)
+  have hnormint  := hK.norm.integrable_sq
   have hsum := finite_block_integral_bound (fun c => M.restrict {w | b w = c})
     (fun _ => K) (fun c => hK.restrict _) (fun c d hcd => by
       filter_upwards [ae_restrict_mem (hB d)] with v hv
       filter_upwards [ae_restrict_mem (hB c)] with w hw
-      exact horth w v (by
-        change b w = c at hw
-        change b v = d at hv
-        rw [hw, hv]
-        exact hcd))
-    L (fun c => by simpa only [measureReal_restrict_apply_univ] using hL c)
+      simp_all)
+    L (fun c => by simp_all)
   rw [← integral_eq_sum_fibers b hb hKint] at hsum
-  have hscalar : (∑ c : Fin q, ∫ w in {v | b v = c}, ‖K w‖ ^ 2 ∂M) =
-      ∫ w, ‖K w‖ ^ 2 ∂M := by
-    -- The same partition identity for real-valued energy.
-    exact (integral_eq_sum_fibers (E := ℝ) b hb hnormint).symm
+  have hscalar  := (integral_eq_sum_fibers (E := ℝ) b hb hnormint).symm
   rw [hscalar] at hsum
   exact hsum
+end
+
+end
+
 
 /-- A uniformly `L²` bounded kernel field times an `L²` weight is an `L²`
 Bochner field. Here the Hilbert norm is the kernel's observation `L²` norm. -/
 theorem weighted_field_memLp_two (ν : W → ℝ) (hν : MemLp ν 2 M)
     (K : W → E) (hK : AEStronglyMeasurable K M)
-    (C : ℝ) (hC : 0 ≤ C) (hbound : ∀ᵐ w ∂M, ‖K w‖ ≤ C) :
+    C (hC : 0 ≤ C) (hbound : ∀ᵐ w ∂M, ‖K w‖ ≤ C) :
     MemLp (fun w => ν w • K w) 2 M := by
   apply (hν.const_mul C).of_le (hν.aestronglyMeasurable.smul hK)
   filter_upwards [hbound] with w hw
@@ -180,13 +181,13 @@ theorem weighted_field_memLp_two (ν : W → ℝ) (hν : MemLp ν 2 M)
 
 /-- The weighted localization estimate of original U6, with actual Bochner
 integration and unbounded observation kernels represented in a Hilbert space. -/
-theorem weighted_partition_localization_bound {q : ℕ}
+theorem weighted_partition_localization_bound {q }
     (b : W → Fin q) (hb : Measurable b)
-    (ν : W → ℝ) (hν : MemLp ν 2 M)
+    ν (hν : MemLp ν 2 M)
     (K : W → E) (hK : AEStronglyMeasurable K M)
-    (C : ℝ) (hC : 0 ≤ C) (hbound : ∀ᵐ w ∂M, ‖K w‖ ≤ C)
+    C (hC : 0 ≤ C) (hbound : ∀ᵐ w ∂M, ‖K w‖ ≤ C)
     (horth : ∀ w v, b w ≠ b v → ⟪K w, K v⟫ = 0)
-    (L : ℝ) (hL : ∀ c, M.real {w | b w = c} ≤ L) :
+    L (hL : ∀ c, M.real {w | b w = c} ≤ L) :
     ‖∫ w, ν w • K w ∂M‖ ^ 2 ≤ L * ∫ w, ν w ^ 2 * ‖K w‖ ^ 2 ∂M := by
   have hlp := weighted_field_memLp_two ν hν K hK C hC hbound
   have hweightedorth : ∀ w v, b w ≠ b v → ⟪ν w • K w, ν v • K v⟫ = 0 := by
@@ -216,12 +217,10 @@ theorem toLp_inner_eq_zero_of_disjoint {f g : Ω → ℝ}
     (hf : MemLp f 2 μ) (hg : MemLp g 2 μ)
     (hdisjoint : ∀ᵐ ω ∂μ, f ω * g ω = 0) :
     ⟪hf.toLp f, hg.toLp g⟫ = 0 := by
-  rw [L2.inner_def]
+  
   apply integral_eq_zero_of_ae
   filter_upwards [hf.coeFn_toLp, hg.coeFn_toLp, hdisjoint] with ω hfω hgω hω
-  change inner ℝ ((hf.toLp f) ω) ((hg.toLp g) ω) = 0
-  rw [hfω, hgω]
-  simpa only [RCLike.inner_apply, conj_trivial, mul_comm] using hω
+  measurability
 
 end ObservationKernels
 /-- The block estimate summed over kernel orders, allowing each order to live
@@ -243,7 +242,7 @@ theorem weighted_kernel_series_localization_bound {D q : ℕ}
   have hi : ∀ r, Integrable (fun w => ν w ^ 2 * ‖K r w‖ ^ 2) M := by
     intro r
     have hlp := weighted_field_memLp_two ν hν (K r) (hK r) (C r) (hC r) (hbound r)
-    simpa only [norm_smul, mul_pow, Real.norm_eq_abs, sq_abs] using hlp.norm.integrable_sq
+    grind only [norm_smul, Real.norm_eq_abs, sq_abs, hlp.norm.integrable_sq]
   have heq : (∫ w, ν w ^ 2 * ∑ r : Fin D, δ r * ‖K r w‖ ^ 2 ∂M) =
       ∑ r : Fin D, δ r * ∫ w, ν w ^ 2 * ‖K r w‖ ^ 2 ∂M := by
     simp_rw [Finset.mul_sum]

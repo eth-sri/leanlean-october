@@ -22,9 +22,9 @@ theorem integral_square_le_weight_mass_mul {α : Type*} [MeasurableSpace α]
     (hwn : ∀ᵐ x ∂μ, 0 ≤ w x) (hgn : ∀ᵐ x ∂μ, 0 ≤ g x)
     (hdom : ∀ᵐ x ∂μ, (h x) ^ 2 ≤ w x * g x) :
     (∫ x, h x ∂μ) ^ 2 ≤ (∫ x, w x ∂μ) * (∫ x, g x ∂μ) := by
-  have hws : AEStronglyMeasurable (fun x => Real.sqrt (w x)) μ :=
+  have hws  :=
     Real.continuous_sqrt.comp_aestronglyMeasurable hw.aestronglyMeasurable
-  have hgs : AEStronglyMeasurable (fun x => Real.sqrt (g x)) μ :=
+  have hgs  :=
     Real.continuous_sqrt.comp_aestronglyMeasurable hg.aestronglyMeasurable
   have hew : (fun x => Real.sqrt (w x) ^ 2) =ᵐ[μ] w := by
     filter_upwards [hwn] with x hx
@@ -32,9 +32,9 @@ theorem integral_square_le_weight_mass_mul {α : Type*} [MeasurableSpace α]
   have heg : (fun x => Real.sqrt (g x) ^ 2) =ᵐ[μ] g := by
     filter_upwards [hgn] with x hx
     exact Real.sq_sqrt hx
-  have hwL : MemLp (fun x => Real.sqrt (w x)) 2 μ :=
+  have hwL  :=
     (memLp_two_iff_integrable_sq hws).mpr (hw.congr hew.symm)
-  have hgL : MemLp (fun x => Real.sqrt (g x)) 2 μ :=
+  have hgL  :=
     (memLp_two_iff_integrable_sq hgs).mpr (hg.congr heg.symm)
   have hprodL : MemLp (fun x => Real.sqrt (w x) * Real.sqrt (g x)) 1 μ := hwL.fun_mul hgL
   have hprod := memLp_one_iff_integrable.mp hprodL
@@ -44,8 +44,8 @@ theorem integral_square_le_weight_mass_mul {α : Type*} [MeasurableSpace α]
     simpa only [sq_abs, mul_pow, Real.sq_sqrt hx, Real.sq_sqrt hy] using hz
   have hcs := integral_cauchy_schwarz μ _ _ hwL hgL
   rw [integral_congr_ae hew, integral_congr_ae heg] at hcs
-  have hW : 0 ≤ ∫ x, w x ∂μ := integral_nonneg_of_ae hwn
-  have hG : 0 ≤ ∫ x, g x ∂μ := integral_nonneg_of_ae hgn
+  have hW  := integral_nonneg_of_ae hwn
+  have hG  := integral_nonneg_of_ae hgn
   have hbound : |∫ x, h x ∂μ| ≤ Real.sqrt (∫ x, w x ∂μ) * Real.sqrt (∫ x, g x ∂μ) := by
     calc
       _ ≤ ∫ x, |h x| ∂μ := by

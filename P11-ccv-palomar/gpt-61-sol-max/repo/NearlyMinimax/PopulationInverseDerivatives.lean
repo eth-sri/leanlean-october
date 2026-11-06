@@ -20,15 +20,15 @@ variable {n m : Type*} [Fintype n] [Fintype m] [DecidableEq n] [DecidableEq m]
 /-- Canonical matrix reindexing preserves the operator norm. -/
 theorem reindex_matrix_norm (e : n ≃ m) (A : Matrix n n ℝ) : ‖A.reindex e e‖ = ‖A‖ := by
   let φ := Matrix.reindexAlgEquiv ℝ ℝ e
-  change ‖φ A‖ = ‖A‖
+  
   have hs : IsSelfAdjoint (star A * A) := .star_mul_self A
-  have hs' : IsSelfAdjoint (φ (star A * A)) := Matrix.isHermitian_iff_isSelfAdjoint.mp
+  have hs'  := Matrix.isHermitian_iff_isSelfAdjoint.mp
     ((Matrix.isHermitian_iff_isSelfAdjoint.mpr hs).reindex e)
   have hspec : spectrum ℝ (φ (star A * A)) = spectrum ℝ (star A * A) := AlgEquiv.spectrum_eq φ _
   have hgR := IsometricContinuousFunctionalCalculus.isGreatest_norm_spectrum (𝕜 := ℝ) (star A * A) hs
   have hgS := IsometricContinuousFunctionalCalculus.isGreatest_norm_spectrum (𝕜 := ℝ) (φ (star A * A)) hs'
   rw [hspec] at hgS
-  have he : ‖φ (star A * A)‖ = ‖star A * A‖ := hgS.unique hgR
+  have he  := hgS.unique hgR
   have hm : φ (star A * A) = star (φ A) * φ A := by
     rw [map_mul]
     rfl
@@ -37,75 +37,83 @@ theorem reindex_matrix_norm (e : n ≃ m) (A : Matrix n n ℝ) : ‖A.reindex e 
 
 end Reindex
 
-abbrev anchoredDimension (d ℓ : ℕ) := Fintype.card (AnchoredIndex d ℓ)
+abbrev anchoredDimension d ℓ := Fintype.card (AnchoredIndex d ℓ)
 
 instance anchoredDimension_neZero {d ℓ : ℕ} [Nonempty (AnchoredIndex d ℓ)] :
     NeZero (anchoredDimension d ℓ) := ⟨Fintype.card_ne_zero⟩
 
-def anchoredFinReindex (d ℓ : ℕ) : Matrix (AnchoredIndex d ℓ) (AnchoredIndex d ℓ) ℝ ≃ₐ[ℝ]
+def anchoredFinReindex d ℓ : Matrix (AnchoredIndex d ℓ) (AnchoredIndex d ℓ) ℝ ≃ₐ[ℝ]
     Matrix (Fin (anchoredDimension d ℓ)) (Fin (anchoredDimension d ℓ)) ℝ :=
   Matrix.reindexAlgEquiv ℝ ℝ (Fintype.equivFin (AnchoredIndex d ℓ))
 
-def anchoredFinNormalizedGram {d ℓ : ℕ} (u : Covariate d) (p : Covariate d → ℝ) :
-    Matrix (Fin (anchoredDimension d ℓ)) (Fin (anchoredDimension d ℓ)) ℝ :=
+section
+variable {d ℓ : ℕ}
+
+def anchoredFinNormalizedGram  u p  :=
   anchoredFinReindex d ℓ ((anchoredGram u)⁻¹ * anchoredDensityGram u p)
 
-def anchoredFinSimilarityUnit {d ℓ : ℕ} (u : Covariate d) :
-    (Matrix (Fin (anchoredDimension d ℓ)) (Fin (anchoredDimension d ℓ)) ℝ)ˣ :=
+def anchoredFinSimilarityUnit  u  :=
   Units.map (anchoredFinReindex d ℓ).toMonoidHom (anchoredSimilarityUnit u)
 
-@[simp] theorem anchoredFinSimilarityUnit_val {d ℓ : ℕ} (u : Covariate d) :
+section
+variable (u : Covariate d)
+
+@[simp] theorem anchoredFinSimilarityUnit_val   :
     (anchoredFinSimilarityUnit (ℓ := ℓ) u).val = anchoredFinReindex d ℓ (anchoredSimilarityUnit u).val := rfl
 
-@[simp] theorem anchoredFinSimilarityUnit_inv_val {d ℓ : ℕ} (u : Covariate d) :
+@[simp] theorem anchoredFinSimilarityUnit_inv_val   :
     ((anchoredFinSimilarityUnit (ℓ := ℓ) u)⁻¹).val =
       anchoredFinReindex d ℓ ((anchoredSimilarityUnit u)⁻¹).val := rfl
 
-theorem anchoredFin_similarity {d ℓ : ℕ} (u : Covariate d) (p : Covariate d → ℝ) :
+theorem anchoredFin_similarity   p :
     matrixSimilarity (anchoredFinSimilarityUnit (ℓ := ℓ) u)⁻¹ (anchoredFinNormalizedGram u p) =
       anchoredFinReindex d ℓ (anchoredWhitenedGram u p) := by
   change anchoredFinReindex d ℓ _ * anchoredFinReindex d ℓ _ * anchoredFinReindex d ℓ _ = _
   rw [← map_mul, ← map_mul]
   exact congrArg (anchoredFinReindex d ℓ) (anchored_preconditioned_similarity u p)
 
-theorem anchoredFin_similarity_isHermitian {d ℓ : ℕ} (u : Covariate d) (p : Covariate d → ℝ) :
+theorem anchoredFin_similarity_isHermitian   p :
     (matrixSimilarity (anchoredFinSimilarityUnit (ℓ := ℓ) u)⁻¹ (anchoredFinNormalizedGram u p)).IsHermitian := by
   rw [anchoredFin_similarity]
   exact (anchoredWhitenedGram_isHermitian u p).reindex (Fintype.equivFin (AnchoredIndex d ℓ))
 
-theorem anchoredFin_similarity_spectrum {d ℓ : ℕ} (u : Covariate d)
-    (p : Covariate d → ℝ) (hpmeas : Measurable p) (a b : ℝ) (ha : 0 ≤ a)
+theorem anchoredFin_similarity_spectrum  
+    p (hpmeas : Measurable p) a b (ha : 0 ≤ a)
     (hp : ∀ᵐ w ∂cubeVolume d, a ≤ p w ∧ p w ≤ b) :
     spectrum ℝ (matrixSimilarity (anchoredFinSimilarityUnit (ℓ := ℓ) u)⁻¹ (anchoredFinNormalizedGram u p)) ⊆ Set.Icc a b := by
   rw [anchoredFin_similarity, AlgEquiv.spectrum_eq]
   exact anchoredWhitenedGram_spectrum u p hpmeas a b ha hp
+end
 
-theorem anchoredFinSimilarityUnit_uniform_condition {d ℓ : ℕ} [Nonempty (AnchoredIndex d ℓ)] :
+
+theorem anchoredFinSimilarityUnit_uniform_condition  [Nonempty (AnchoredIndex d ℓ)] :
     ∃ χ : ℝ, 0 < χ ∧ ∀ u ∈ unitCube d,
       ‖(anchoredFinSimilarityUnit (ℓ := ℓ) u).val‖ *
         ‖((anchoredFinSimilarityUnit (ℓ := ℓ) u)⁻¹).val‖ ≤ χ := by
   obtain ⟨χ, hχ, hQ⟩ := anchoredSimilarityUnit_uniform_condition (d := d) (ℓ := ℓ)
   refine ⟨χ, hχ, ?_⟩
   intro u hu
-  rw [anchoredFinSimilarityUnit_val, anchoredFinSimilarityUnit_inv_val]
+  
   change ‖((anchoredSimilarityUnit u).val).reindex _ _‖ *
     ‖(((anchoredSimilarityUnit u)⁻¹).val).reindex _ _‖ ≤ χ
   rw [reindex_matrix_norm, reindex_matrix_norm]
   exact hQ u hu
+end
+
 
 theorem positive_spectral_matrix_norm_le {n : Type*} [Fintype n] [DecidableEq n]
     (A : Matrix n n ℝ) (hA : A.IsHermitian) (a b : ℝ) (ha : 0 ≤ a)
     (hb : 0 ≤ b) (hSpec : spectrum ℝ A ⊆ Set.Icc a b) : ‖A‖ ≤ b := by
-  have hs : IsSelfAdjoint A := Matrix.isHermitian_iff_isSelfAdjoint.mp hA
+  have hs  := Matrix.isHermitian_iff_isSelfAdjoint.mp hA
   rw [← cfc_id ℝ A hs]
   apply norm_cfc_le hb
   intro t ht
   rw [id_eq, Real.norm_eq_abs, abs_of_nonneg (ha.trans (hSpec ht).1)]
   exact (hSpec ht).2
 
-theorem anchoredFinNormalizedGram_norm_le {d ℓ : ℕ} [Nonempty (AnchoredIndex d ℓ)]
-    (u : Covariate d) (p : Covariate d → ℝ) (hpmeas : Measurable p)
-    (a b χ : ℝ) (ha : 0 ≤ a) (hb : 0 ≤ b) (hχ : 0 ≤ χ)
+theorem anchoredFinNormalizedGram_norm_le {d ℓ } [Nonempty (AnchoredIndex d ℓ)]
+    u p (hpmeas : Measurable p)
+    a b χ (ha : 0 ≤ a) (hb : 0 ≤ b) (hχ : 0 ≤ χ)
     (hp : ∀ᵐ w ∂cubeVolume d, a ≤ p w ∧ p w ≤ b)
     (hQ : ‖(anchoredFinSimilarityUnit (ℓ := ℓ) u).val‖ *
       ‖((anchoredFinSimilarityUnit (ℓ := ℓ) u)⁻¹).val‖ ≤ χ) :
@@ -117,18 +125,16 @@ theorem anchoredFinNormalizedGram_norm_le {d ℓ : ℕ} [Nonempty (AnchoredIndex
   change ‖A‖ ≤ χ * b
   rw [← he]
   apply (matrixSimilarity_norm_le Q _).trans
-  exact mul_le_mul hQ
-    (positive_spectral_matrix_norm_le _ (anchoredFin_similarity_isHermitian u p) a b ha hb
-      (anchoredFin_similarity_spectrum u p hpmeas a b ha hp)) (norm_nonneg _) hχ
+  grind only [mul_le_mul, positive_spectral_matrix_norm_le, anchoredFin_similarity_isHermitian, anchoredFin_similarity_spectrum, norm_nonneg]
 
 theorem matrix_real_entry_norm_le {n : Type*} [Fintype n] [DecidableEq n] [Nonempty n]
     (A : Matrix n n ℝ) (i j : n) : ‖A i j‖ ≤ ‖A‖ := by
   rw [← complexify_matrix_norm A, ← Complex.norm_real (A i j)]
   exact matrix_entry_norm_le_l2 (A.map Complex.ofReal) i j
 
-theorem incrementValuation_norm_le {r : ℕ} [NeZero r]
-    (A C : Matrix (Fin r) (Fin r) ℝ) (U V : Bool → Fin r → ℝ)
-    (M W : ℝ) (hM : 0 ≤ M) (hW : 0 ≤ W)
+theorem incrementValuation_norm_le {r } [NeZero r]
+    A C (U V : Bool → Fin r → ℝ)
+    M W (hM : 0 ≤ M) (hW : 0 ≤ W)
     (hA : ‖A‖ ≤ M) (hC : ‖C‖ ≤ M) (hU : ∀ t, ‖U t‖ ≤ W) (hV : ∀ t, ‖V t‖ ≤ W) :
     ‖incrementValuation A C U V‖ ≤ max M W := by
   apply (pi_norm_le_iff_of_nonneg (hM.trans (le_max_left _ _))).mpr
@@ -169,36 +175,35 @@ def populationInverseDerivativeCenter {d ℓ : ℕ} [Nonempty (AnchoredIndex d �
   currentSpectrum := anchoredFin_similarity_spectrum u p hpmeas a b ha hp
   parentSpectrum := anchoredFin_similarity_spectrum v q hqmeas a b ha hq
 
-def anchoredFinTransport (d ℓ : ℕ) :
-    Matrix (Fin (anchoredDimension d ℓ)) (Fin (anchoredDimension d ℓ)) ℝ :=
+def anchoredFinTransport d ℓ  :=
   anchoredFinReindex d ℓ (anchoredTransport d ℓ)
 
 /-- The actual anchored population matrices obey the common derivative bound.
 No chart, spectrum, or condition bound is supplied by the caller. -/
-theorem anchored_population_inverse_derivatives {d ℓ : ℕ} [Nonempty (AnchoredIndex d ℓ)]
-    (a b W Y : ℝ) (ha : 0 < a) (hab : a < b) (hW : 0 ≤ W) (hY : 0 ≤ Y) :
+theorem anchored_population_inverse_derivatives {d ℓ } [Nonempty (AnchoredIndex d ℓ)]
+    a b W Y (ha : 0 < a) (hab : a < b) (hW : 0 ≤ W) (hY : 0 ≤ Y) :
     ∃ C A : ℝ, 0 < C ∧ 0 < A ∧
-      ∀ (u v : Covariate d), u ∈ unitCube d → v ∈ unitCube d →
-      ∀ (p q : Covariate d → ℝ), Measurable p → Measurable q →
+      ∀ u v, u ∈ unitCube d → v ∈ unitCube d →
+      ∀ p q, Measurable p → Measurable q →
       (∀ᵐ w ∂cubeVolume d, a ≤ p w ∧ p w ≤ b) →
       (∀ᵐ w ∂cubeVolume d, a ≤ q w ∧ q w ≤ b) →
-      ∀ (U V : Bool → Fin (anchoredDimension d ℓ) → ℝ),
+      ∀ U V,
       (∀ t, ‖U t‖ ≤ W) → (∀ t, ‖V t‖ ≤ W) →
-      ∀ y : ℝ, |y| ≤ Y → ∀ m k : ℕ,
-      ∀ directions : Fin k → Fin (Fintype.card (incrementVariables (anchoredDimension d ℓ))) → ℝ,
+      ∀ y , |y| ≤ Y → ∀ m k ,
+      ∀ directions ,
         ‖iteratedFDeriv ℝ k (incrementFinVector (anchoredDimension d ℓ) a b (anchoredFinTransport d ℓ) y m)
           (fun j => incrementValuation (anchoredFinNormalizedGram u p) (anchoredFinNormalizedGram v q) U V
             ((Fintype.equivFin (incrementVariables (anchoredDimension d ℓ))).symm j)) directions‖ ≤
-            C * (k.factorial : ℝ) * A ^ k * ∏ j, ‖directions j‖ := by
+            C * k.factorial * A ^ k * ∏ j, ‖directions j‖ := by
   obtain ⟨χ, hχ, hQ⟩ := anchoredFinSimilarityUnit_uniform_condition (d := d) (ℓ := ℓ)
   let η := (1 + RoughRegime.Upper.intervalRho a b) / 2
   have hρ := RoughRegime.Upper.intervalRho_pos a b ha hab
   have hρ1 := RoughRegime.Upper.intervalRho_lt_one a b ha hab
   have hρη : RoughRegime.Upper.intervalRho a b < η := by dsimp [η]; linarith
   have hη1 : η < 1 := by dsimp [η]; linarith
-  have hη : 0 < η := hρ.trans hρη
+  have hη  := hρ.trans hρη
   let L := max (χ * b) W
-  have hb : 0 < b := ha.trans hab
+  have hb  := ha.trans hab
   have hL : 0 ≤ L := (mul_nonneg hχ.le hb.le).trans (le_max_left _ _)
   let M := similarIncrementEnvelope (anchoredDimension d ℓ) a b
     (RoughRegime.Upper.intervalRho a b / η) χ L Y (anchoredFinTransport d ℓ)
@@ -206,7 +211,7 @@ theorem anchored_population_inverse_derivatives {d ℓ : ℕ} [Nonempty (Anchore
     (zero_lt_one : (0 : ℝ) < 1).trans_le (le_max_left _ _),
     inverseDerivativeRate_pos _ a b η χ hη hη1 hχ, ?_⟩
   intro u v hu hv p q hpmeas hqmeas hp hq U V hU hV y hy m k directions
-  let c : InverseDerivativeCenter (anchoredDimension d ℓ) a b χ L :=
+  let c  :=
     populationInverseDerivativeCenter (ℓ := ℓ) u v p q hpmeas hqmeas a b χ W ha.le hb.le hχ.le hW
     hp hq (hQ u hu) (hQ v hv) U V hU hV
   have h := paper_inverse_vector_derivative_bound (anchoredDimension d ℓ) a b ha hab η hρη hη1 χ hχ

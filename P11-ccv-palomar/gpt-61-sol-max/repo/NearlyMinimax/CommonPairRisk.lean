@@ -16,8 +16,8 @@ set_option backward.isDefEq.respectTransparency false
 set_option synthInstance.maxHeartbeats 200000
 set_option maxHeartbeats 800000
 
-def pairRiskBudget {d : ℕ} (C : ModelConstants d) (m k : ℕ)
-    (Cp W lam B b a : ℝ) : ℝ :=
+def pairRiskBudget {d } (C : ModelConstants d) m k
+    Cp W lam B b a  :=
   (2 / a ^ 2) *
     (4 * pairEvaluationCoefficient C m k *
       ((2 * Cp ^ 2 + 2 * Cp * W) ^ 2 * responseOperatorEnergyBound C * C.densityUpper) +
@@ -52,14 +52,14 @@ include hθ hp hm hind hX
 
 /-- Extended-real MSE of the actual floored and clipped ratio. All moments,
 conditional means, denominator positivity, and covariance bounds are derived. -/
-theorem common_pair_ratio_risk_le (b a : ℝ) (ha : 0 < a)
+theorem common_pair_ratio_risk_le b a (ha : 0 < a)
     (hresidual : ∀ᵐ w ∂regularPairDesignMeasure θ k hk,
       |⟪bar w, pairResponseVector (θ.regression w.1) (θ.regression w.2)⟫| ≤ b)
     (hfloor : 2 * a ≤ ∫ p, pairPilotNoiseMean θ k hk bar η p ∂μ.prod μ) :
     (∫⁻ z, ENNReal.ofReal
       ((stabilizedRatio C.varianceLower C.varianceUpper a
-        (PairUStatistic.fieldPairAverage m ((k : ℝ) ^ d) (pairPilotNumeratorKernel k hk bar η) X)
-        (PairUStatistic.fieldPairAverage m ((k : ℝ) ^ d) (pairPilotNoiseKernel k hk bar η) X) z -
+        (PairUStatistic.fieldPairAverage m (k ^ d) (pairPilotNumeratorKernel k hk bar η) X)
+        (PairUStatistic.fieldPairAverage m (k ^ d) (pairPilotNoiseKernel k hk bar η) X) z -
           θ.variance) ^ 2) ∂(μ.prod μ).prod ν) ≤
     ENNReal.ofReal (pairRiskBudget C m k Cp W lam
       (pairPilotVarianceBase θ k hk μ bar η) b a) := by
@@ -91,7 +91,7 @@ theorem common_pair_ratio_risk_le (b a : ℝ) (ha : 0 < a)
   have hvhi := hθ.2.2.2.2.2.2.1
   have hr := stabilized_ratio_lintegral_mse_le ((μ.prod μ).prod ν) hmN hmD hgap hD
     ha hvlo hvhi (C.varianceLower_pos.le.trans hvlo) hfloor
-  have hpoint : ∀ z, N z - θ.variance * D z = S z := fun z => congrFun hdif z
+  have hpoint  := fun z => congrFun hdif z
   simp_rw [hpoint] at hr
   have hM := pairPilotAssumptions_meanConditions μ C θ hθ k hk bar η Cp W lam hp
   have hb := pairPilotScoreMean_abs_bias_le C θ hθ k hk μ bar η Cp lam hM b hresidual
@@ -104,11 +104,7 @@ theorem common_pair_ratio_risk_le (b a : ℝ) (ha : 0 < a)
   apply hr.trans
   apply ENNReal.ofReal_mono
   unfold pairRiskBudget
-  apply mul_le_mul_of_nonneg_left _ (by positivity : 0 ≤ 2 / a ^ 2)
-  apply add_le_add
-  · change (∫ z, S z ^ 2 ∂(μ.prod μ).prod ν) ≤ _
-    nlinarith
-  · exact mul_le_mul_of_nonneg_left hDv (sq_nonneg _)
+  bound
 
 end
 end NearlyMinimax

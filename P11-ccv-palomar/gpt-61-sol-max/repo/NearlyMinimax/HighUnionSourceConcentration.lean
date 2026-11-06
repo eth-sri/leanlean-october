@@ -39,12 +39,11 @@ theorem highUnionSourceMass_reference_mean_one :
   intro h
   have hp := highUnionSourceMass_interval C R G h
   have hM0 : 0 < M := by
-    have := (highCenterResolution_guards C M G.resolution).1
-    linarith
+    linarith [highCenterResolution_guards C M G.resolution]
   rw [abs_of_nonneg (by linarith [hp.1, C.densityLower_pos, one_div_pos.mpr hM0])]
   linarith [hp.2, one_div_pos.mpr hM0]
 
-theorem highUnionSourceMass_reference_mgf (hk : 2 ≤ k) (u : ℝ) :
+theorem highUnionSourceMass_reference_mgf (hk : 2 ≤ k) u :
     (∫ h, Real.exp (u * (highUnionSourceMass C R h-1))
       ∂historyMarkedReference (fun i j => j ∈ highNeighborLabels d k i) (3^d)
         (highUnionLaw R (highCenterMix C))) ≤
@@ -55,8 +54,7 @@ theorem highUnionSourceMass_reference_mgf (hk : 2 ≤ k) (u : ℝ) :
     intro h
     have hp := highUnionSourceMass_interval C R G h
     have hM0 : 0 < M := by
-      have := (highCenterResolution_guards C M G.resolution).1
-      linarith
+      linarith [highCenterResolution_guards C M G.resolution]
     rw [abs_of_nonneg (by linarith [hp.1, C.densityLower_pos, one_div_pos.mpr hM0])]
     linarith [hp.2, one_div_pos.mpr hM0]
   have hgap : 0 ≤ C.densityUpper-C.densityLower := by

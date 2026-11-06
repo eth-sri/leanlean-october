@@ -17,51 +17,62 @@ set_option backward.isDefEq.respectTransparency false
 
 variable {Ω : Type*} [MeasurableSpace Ω]
 
-def pairPilotCoefficient {d : ℕ} (bar : Covariate d × Covariate d → PairVector)
-    (η : Ω → Covariate d × Covariate d → PairVector) (x : Ω)
-    (w : Covariate d × Covariate d) : PairVector := bar w + η x w
+section
+variable {d : ℕ}
 
-def pairPilotScoreKernel {d : ℕ} (θ : RegressionParameter d) (k : ℕ) (hk : 0 < k)
+def pairPilotCoefficient  (bar : Covariate d × Covariate d → PairVector)
+    (η : Ω → Covariate d × Covariate d → PairVector) (x : Ω)
+    w  := bar w + η x w
+
+def pairPilotScoreKernel  (θ : RegressionParameter d) (k : ℕ) (hk : 0 < k)
     (bar : Covariate d × Covariate d → PairVector)
     (η : Ω → Covariate d × Covariate d → PairVector) (x : Ω × Ω) :
     Observation d × Observation d → ℝ :=
   pairScoreFieldKernel θ (pairPilotCoefficient bar η x.1) (pairPilotCoefficient bar η x.2)
     (sameLabelKernel (regularGridCell k hk))
 
-def pairPilotNoiseKernel {d : ℕ} (k : ℕ) (hk : 0 < k)
+def pairPilotNoiseKernel  (k : ℕ) (hk : 0 < k)
     (bar : Covariate d × Covariate d → PairVector)
     (η : Ω → Covariate d × Covariate d → PairVector) (x : Ω × Ω) :
     Observation d × Observation d → ℝ :=
   pairNoiseFieldKernel (pairPilotCoefficient bar η x.1) (pairPilotCoefficient bar η x.2)
     (sameLabelKernel (regularGridCell k hk))
 
-def pairPilotScoreMean {d : ℕ} (θ : RegressionParameter d) (k : ℕ) (hk : 0 < k)
-    (bar : Covariate d × Covariate d → PairVector)
-    (η : Ω → Covariate d × Covariate d → PairVector) (x : Ω × Ω) : ℝ :=
+section
+variable (θ : RegressionParameter d) (k : ℕ)
+include θ
+
+def pairPilotScoreMean   hk
+    bar
+    η (x : Ω × Ω)  :=
   PairUStatistic.fieldPairMean (μ := observationLaw θ) ((k : ℝ) ^ d)
     (pairPilotScoreKernel θ k hk bar η) x
 
-def pairPilotNoiseMean {d : ℕ} (θ : RegressionParameter d) (k : ℕ) (hk : 0 < k)
-    (bar : Covariate d × Covariate d → PairVector)
-    (η : Ω → Covariate d × Covariate d → PairVector) (x : Ω × Ω) : ℝ :=
+def pairPilotNoiseMean   hk
+    bar
+    η (x : Ω × Ω)  :=
   PairUStatistic.fieldPairMean (μ := observationLaw θ) ((k : ℝ) ^ d)
     (pairPilotNoiseKernel k hk bar η) x
+end
 
-theorem pairPilotScoreMean_eq_half_pilotMean {d : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ) (k : ℕ) (hk : 0 < k)
-    (bar : Covariate d × Covariate d → PairVector)
-    (η : Ω → Covariate d × Covariate d → PairVector) (x : Ω × Ω)
+
+section
+variable (C : ModelConstants d) (θ : RegressionParameter d) (hθ : Admissible C θ)
+include hθ
+
+theorem pairPilotScoreMean_eq_half_pilotMean   k hk
+    bar
+    η (x : Ω × Ω)
     (hi : Integrable (pairPilotScoreKernel θ k hk bar η x)
       ((observationLaw θ).prod (observationLaw θ))) :
     pairPilotScoreMean θ k hk bar η x = (1 / 2) *
       PilotFields.pilotMean (M := regularPairDesignMeasure θ k hk) bar η
         (boundedPairRegressionOperator C θ) x := by
-  let := observationLaw_isProbability C θ hθ
+  
   rw [pairPilotScoreMean, PairUStatistic.fieldPairMean]
   have h := pairScoreFieldKernel_mean C θ hθ (pairPilotCoefficient bar η x.1)
     (pairPilotCoefficient bar η x.2) (sameLabelKernel (regularGridCell k hk)) hi
-  change ((k : ℝ) ^ d / 2) * (∫ z, pairPilotScoreKernel θ k hk bar η x z
-    ∂(observationLaw θ).prod (observationLaw θ)) = _
+  
   unfold pairPilotScoreKernel
   rw [h]
   have hM := regularPairDesignMeasure_integral C θ hθ k hk (fun w =>
@@ -69,7 +80,7 @@ theorem pairPilotScoreMean_eq_half_pilotMean {d : ℕ} (C : ModelConstants d)
       InnerProductSpace.rankOne ℝ (pairResponseVector (θ.regression w.1) (θ.regression w.2))
         (pairResponseVector (θ.regression w.1) (θ.regression w.2))
           (pairPilotCoefficient bar η x.2 w)⟫)
-  rw [smul_eq_mul] at hM
+  
   calc
     _ = (1 / 2) * ((k : ℝ) ^ d * ∫ w, sameLabelKernel (regularGridCell k hk) w *
       ⟪pairPilotCoefficient bar η x.1 w,
@@ -87,21 +98,19 @@ theorem pairPilotScoreMean_eq_half_pilotMean {d : ℕ} (C : ModelConstants d)
       filter_upwards [boundedPairRegressionOperator_eq_ae C θ hθ k hk] with w hw
       simp only [PilotFields.pilotMean, pairPilotCoefficient, hw]
 
-theorem pairPilotNoiseMean_eq_half_pilotMean {d : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ) (k : ℕ) (hk : 0 < k)
-    (bar : Covariate d × Covariate d → PairVector)
-    (η : Ω → Covariate d × Covariate d → PairVector) (x : Ω × Ω)
+theorem pairPilotNoiseMean_eq_half_pilotMean   k hk
+    bar
+    η (x : Ω × Ω)
     (hi : Integrable (pairPilotNoiseKernel k hk bar η x)
       ((observationLaw θ).prod (observationLaw θ))) :
     pairPilotNoiseMean θ k hk bar η x = (1 / 2) *
       PilotFields.pilotMean (M := regularPairDesignMeasure θ k hk) bar η
         (fun _ => pairNoiseOperator) x := by
-  let := observationLaw_isProbability C θ hθ
+  
   rw [pairPilotNoiseMean, PairUStatistic.fieldPairMean]
   have h := pairNoiseFieldKernel_mean C θ hθ (pairPilotCoefficient bar η x.1)
     (pairPilotCoefficient bar η x.2) (sameLabelKernel (regularGridCell k hk)) hi
-  change ((k : ℝ) ^ d / 2) * (∫ z, pairPilotNoiseKernel k hk bar η x z
-    ∂(observationLaw θ).prod (observationLaw θ)) = _
+  
   unfold pairPilotNoiseKernel
   rw [h]
   have hM := regularPairDesignMeasure_integral C θ hθ k hk (fun w =>
@@ -110,6 +119,10 @@ theorem pairPilotNoiseMean_eq_half_pilotMean {d : ℕ} (C : ModelConstants d)
   simp only [PilotFields.pilotMean, pairPilotCoefficient]
   rw [hM]
   ring
+end
+
+end
+
 
 section HalfMean
 variable {W H : Type*} [MeasurableSpace W]
@@ -117,29 +130,18 @@ variable [NormedAddCommGroup H] [InnerProductSpace ℝ H] [CompleteSpace H]
 variable [MeasurableSpace H] [BorelSpace H] [SecondCountableTopology H]
 variable {μ : Measure Ω} {M : Measure W} [IsProbabilityMeasure μ] [IsFiniteMeasure M]
 
-theorem half_pilotMean_mean_eq (bar : W → H) (hbarMeas : Measurable bar) (hbar : MemLp bar 2 M)
-    {η : Ω → W → H} (hmη : Measurable (fun z : Ω × W => η z.1 z.2))
-    (hη : MemLp (fun z : Ω × W => η z.1 z.2) 2 (μ.prod M))
-    (hcenter : ∀ᵐ w ∂M, (∫ x, η x w ∂μ) = 0)
-    {B : W → H →L[ℝ] H} (hmB : Measurable (fun z : W × H => B z.1 z.2))
-    {cB lam : ℝ} (hcB : 0 ≤ cB) (hlam : 0 ≤ lam) (hbound : ∀ w, ‖B w‖ ≤ cB)
-    (hsym : ∀ w a b, ⟪a, B w b⟫ = ⟪B w a, b⟫)
-    (htest : ∀ v : W → H, MemLp v 2 M →
-      (∫ x, PilotFields.test (M := M) η v x ^ 2 ∂μ) ≤ lam * ∫ w, ‖v w‖ ^ 2 ∂M) :
+section
+variable (bar : W → H) (hbarMeas : Measurable bar) (hbar : MemLp bar 2 M) {η : Ω → W → H} (hmη : Measurable (fun z : Ω × W => η z.1 z.2)) (hη : MemLp (fun z : Ω × W => η z.1 z.2) 2 (μ.prod M)) (hcenter : ∀ᵐ w ∂M, (∫ x, η x w ∂μ) = 0) {B : W → H →L[ℝ] H} (hmB : Measurable (fun z : W × H => B z.1 z.2)) {cB lam : ℝ} (hcB : 0 ≤ cB) (hlam : 0 ≤ lam) (hbound : ∀ w, ‖B w‖ ≤ cB) (hsym : ∀ w a b, ⟪a, B w b⟫ = ⟪B w a, b⟫) (htest : ∀ v : W → H, MemLp v 2 M →
+      (∫ x, PilotFields.test (M := M) η v x ^ 2 ∂μ) ≤ lam * ∫ w, ‖v w‖ ^ 2 ∂M)
+include hbarMeas hbar hmη hη hcenter hmB hcB hlam hbound hsym htest
+
+theorem half_pilotMean_mean_eq  :
     (∫ x, (1 / 2) * PilotFields.pilotMean (M := M) bar η B x ∂μ.prod μ) =
       (1 / 2) * ∫ w, ⟪bar w, B w (bar w)⟫ ∂M := by
   rw [integral_const_mul,
     PilotFields.pilotMean_mean_eq bar hbarMeas hbar hmη hη hcenter hmB hcB hlam hbound hsym htest]
 
-theorem half_pilotMean_centered_sq_le (bar : W → H) (hbarMeas : Measurable bar) (hbar : MemLp bar 2 M)
-    {η : Ω → W → H} (hmη : Measurable (fun z : Ω × W => η z.1 z.2))
-    (hη : MemLp (fun z : Ω × W => η z.1 z.2) 2 (μ.prod M))
-    (hcenter : ∀ᵐ w ∂M, (∫ x, η x w ∂μ) = 0)
-    {B : W → H →L[ℝ] H} (hmB : Measurable (fun z : W × H => B z.1 z.2))
-    {cB lam : ℝ} (hcB : 0 ≤ cB) (hlam : 0 ≤ lam) (hbound : ∀ w, ‖B w‖ ≤ cB)
-    (hsym : ∀ w a b, ⟪a, B w b⟫ = ⟪B w a, b⟫)
-    (htest : ∀ v : W → H, MemLp v 2 M →
-      (∫ x, PilotFields.test (M := M) η v x ^ 2 ∂μ) ≤ lam * ∫ w, ‖v w‖ ^ 2 ∂M) :
+theorem half_pilotMean_centered_sq_le  :
     (∫ x, ((1 / 2) * PilotFields.pilotMean (M := M) bar η B x -
       ∫ z, (1 / 2) * PilotFields.pilotMean (M := M) bar η B z ∂μ.prod μ) ^ 2 ∂μ.prod μ) ≤
       (3 / 4) * lam * cB ^ 2 * (2 * (∫ w, ‖bar w‖ ^ 2 ∂M) +
@@ -155,16 +157,8 @@ theorem half_pilotMean_centered_sq_le (bar : W → H) (hbarMeas : Measurable bar
     (by norm_num : (0 : ℝ) ≤ 1 / 4)
   convert h using 1 <;> ring
 
-theorem half_pilotMean_variance_transfer (bar : W → H) (hbarMeas : Measurable bar) (hbar : MemLp bar 2 M)
-    {η : Ω → W → H} (hmη : Measurable (fun z : Ω × W => η z.1 z.2))
-    (hη : MemLp (fun z : Ω × W => η z.1 z.2) 2 (μ.prod M))
-    (hcenter : ∀ᵐ w ∂M, (∫ x, η x w ∂μ) = 0)
-    {B : W → H →L[ℝ] H} (hmB : Measurable (fun z : W × H => B z.1 z.2))
-    {cB lam : ℝ} (hcB : 0 ≤ cB) (hlam : 0 ≤ lam) (hbound : ∀ w, ‖B w‖ ≤ cB)
-    (hsym : ∀ w a b, ⟪a, B w b⟫ = ⟪B w a, b⟫)
-    (htest : ∀ v : W → H, MemLp v 2 M →
-      (∫ x, PilotFields.test (M := M) η v x ^ 2 ∂μ) ≤ lam * ∫ w, ‖v w‖ ^ 2 ∂M)
-    (G : Ω × Ω → ℝ)
+theorem half_pilotMean_variance_transfer 
+    G
     (he : G =ᵐ[μ.prod μ] fun x => (1 / 2) * PilotFields.pilotMean (M := M) bar η B x) :
     MemLp G 2 (μ.prod μ) ∧
       (∫ x, (G x - ∫ z, G z ∂μ.prod μ) ^ 2 ∂μ.prod μ) ≤
@@ -181,6 +175,8 @@ theorem half_pilotMean_variance_transfer (bar : W → H) (hbarMeas : Measurable 
     rw [hx, hMean]
   rw [integral_congr_ae hSq]
   exact half_pilotMean_centered_sq_le bar hbarMeas hbar hmη hη hcenter hmB hcB hlam hbound hsym htest
+end
+
 
 end HalfMean
 
@@ -191,9 +187,7 @@ theorem pairNoiseOperator_symmetric (a b : PairVector) :
 
 theorem pairNoiseOperator_measurable_apply {W : Type*} [MeasurableSpace W] :
     Measurable (fun z : W × PairVector => pairNoiseOperator z.2) := by
-  have h := pairNoiseOperator.continuous.measurable.comp
-    (show Measurable (fun z : W × PairVector => z.2) from measurable_snd)
-  exact h
+  fun_prop
 
 section ActualMean
 variable {d : ℕ} (C : ModelConstants d) (θ : RegressionParameter d) (hθ : Admissible C θ)
@@ -202,15 +196,18 @@ variable (bar : Covariate d × Covariate d → PairVector)
 variable (η : Ω → Covariate d × Covariate d → PairVector)
 include C hθ
 
+section
+variable (hbarMeas : Measurable bar) (R : ℝ) (hbarBound : ∀ᵐ w ∂regularPairDesignMeasure θ k hk, ‖bar w‖ ≤ R)
+include hbarMeas hbarBound
+
 theorem pairPilotNoiseMean_mean_eq
-    (hbarMeas : Measurable bar) (R : ℝ)
-    (hbarBound : ∀ᵐ w ∂regularPairDesignMeasure θ k hk, ‖bar w‖ ≤ R)
+    
     (hmη : Measurable (fun z : Ω × (Covariate d × Covariate d) => η z.1 z.2))
-    (hη : MemLp (fun z : Ω × (Covariate d × Covariate d) => η z.1 z.2) 2
+    (hη : MemLp (fun z  => η z.1 z.2) 2
       (μ.prod (regularPairDesignMeasure θ k hk)))
     (hcenter : ∀ᵐ w ∂regularPairDesignMeasure θ k hk, (∫ x, η x w ∂μ) = 0)
-    (lam : ℝ) (hlam : 0 ≤ lam)
-    (htest : ∀ v : (Covariate d × Covariate d) → PairVector,
+    lam (hlam : 0 ≤ lam)
+    (htest : ∀ v ,
       MemLp v 2 (regularPairDesignMeasure θ k hk) →
       (∫ x, PilotFields.test (M := regularPairDesignMeasure θ k hk) η v x ^ 2 ∂μ) ≤
         lam * ∫ w, ‖v w‖ ^ 2 ∂regularPairDesignMeasure θ k hk)
@@ -232,21 +229,20 @@ theorem pairPilotNoiseMean_mean_eq
   simp only [pairNoiseOperator_inner, pow_two]
 
 theorem pairPilotNoiseMean_mean_lower
-    (hbarMeas : Measurable bar) (R : ℝ)
-    (hbarBound : ∀ᵐ w ∂regularPairDesignMeasure θ k hk, ‖bar w‖ ≤ R)
+    
     (hfirst : ∀ᵐ w ∂regularPairDesignMeasure θ k hk, bar w 0 = 1)
     (hmη : Measurable (fun z : Ω × (Covariate d × Covariate d) => η z.1 z.2))
-    (hη : MemLp (fun z : Ω × (Covariate d × Covariate d) => η z.1 z.2) 2
+    (hη : MemLp (fun z  => η z.1 z.2) 2
       (μ.prod (regularPairDesignMeasure θ k hk)))
     (hcenter : ∀ᵐ w ∂regularPairDesignMeasure θ k hk, (∫ x, η x w ∂μ) = 0)
-    (lam : ℝ) (hlam : 0 ≤ lam)
-    (htest : ∀ v : (Covariate d × Covariate d) → PairVector,
+    lam (hlam : 0 ≤ lam)
+    (htest : ∀ v ,
       MemLp v 2 (regularPairDesignMeasure θ k hk) →
       (∫ x, PilotFields.test (M := regularPairDesignMeasure θ k hk) η v x ^ 2 ∂μ) ≤
         lam * ∫ w, ‖v w‖ ^ 2 ∂regularPairDesignMeasure θ k hk)
     (hi : ∀ᵐ x ∂μ.prod μ, Integrable (pairPilotNoiseKernel k hk bar η x)
       ((observationLaw θ).prod (observationLaw θ))) :
-    (1 / 2 : ℝ) ≤ ∫ x, pairPilotNoiseMean θ k hk bar η x ∂μ.prod μ := by
+    (1 / 2) ≤ ∫ x, pairPilotNoiseMean θ k hk bar η x ∂μ.prod μ := by
   let := regularPairDesignMeasure_isFinite C θ hθ k hk
   have hbar : MemLp bar 2 (regularPairDesignMeasure θ k hk) :=
     MemLp.of_bound hbarMeas.aestronglyMeasurable R hbarBound
@@ -259,13 +255,15 @@ theorem pairPilotNoiseMean_mean_lower
       filter_upwards [hfirst] with w hw
       rw [pairNoiseOperator_inner, hw]
       nlinarith [sq_nonneg (bar w 1)])
-    simpa only [integral_const, smul_eq_mul, mul_one] using h
+    simp_all
   rw [pairPilotNoiseMean_mean_eq C θ hθ k hk μ bar η hbarMeas R hbarBound hmη hη hcenter lam hlam htest hi]
   have hEq : (∫ w, (bar w 0) ^ 2 + (bar w 1) ^ 2 ∂regularPairDesignMeasure θ k hk) =
       ∫ w, ⟪bar w, pairNoiseOperator (bar w)⟫ ∂regularPairDesignMeasure θ k hk := by
     simp only [pairNoiseOperator_inner, pow_two]
   rw [hEq]
   linarith [(regularPairDesignMeasure_mass_bounds C θ hθ k hk).1]
+end
+
 
 end ActualMean
 
@@ -318,7 +316,7 @@ theorem pairPilotScoreMean_mean_eq :
 
 /-- The actual conditional numerator-minus-variance-denominator mean has
 bias bounded by the squared pointwise deterministic residual. -/
-theorem pairPilotScoreMean_bias_le (b : ℝ)
+theorem pairPilotScoreMean_bias_le b
     (hresidual : ∀ᵐ w ∂regularPairDesignMeasure θ k hk,
       |⟪bar w, pairResponseVector (θ.regression w.1) (θ.regression w.2)⟫| ≤ b) :
     (∫ x, pairPilotScoreMean θ k hk bar η x ∂μ.prod μ) ≤ (C.densityUpper / 2) * b ^ 2 := by
@@ -349,7 +347,7 @@ theorem pairPilotScoreMean_bias_le (b : ℝ)
 
 theorem pairPilotNoiseMean_denominator_lower
     (hfirst : ∀ᵐ w ∂regularPairDesignMeasure θ k hk, bar w 0 = 1) :
-    (1 / 2 : ℝ) ≤ ∫ x, pairPilotNoiseMean θ k hk bar η x ∂μ.prod μ :=
+    (1 / 2) ≤ ∫ x, pairPilotNoiseMean θ k hk bar η x ∂μ.prod μ :=
   pairPilotNoiseMean_mean_lower C θ hθ k hk μ bar η hp.barMeasurable R hp.barBound hfirst
     hp.noiseMeasurable hp.noiseMemLp hp.noiseCentered lam hp.lamNonnegative hp.linearTest hp.noiseConditionalIntegrable
 
@@ -416,13 +414,11 @@ theorem pairPilotScoreMean_mean_nonneg :
 
 /-- The squared deterministic residual bounds the absolute actual score
 mean, with no bias assumption on the pilot law. -/
-theorem pairPilotScoreMean_abs_bias_le (b : ℝ)
+theorem pairPilotScoreMean_abs_bias_le b
     (hresidual : ∀ᵐ w ∂regularPairDesignMeasure θ k hk,
       |⟪bar w, pairResponseVector (θ.regression w.1) (θ.regression w.2)⟫| ≤ b) :
     |∫ x, pairPilotScoreMean θ k hk bar η x ∂μ.prod μ| ≤
-      (C.densityUpper / 2) * b ^ 2 := by
-  rw [abs_of_nonneg (pairPilotScoreMean_mean_nonneg C θ hθ k hk μ bar η R lam hp)]
-  exact pairPilotScoreMean_bias_le C θ hθ k hk μ bar η R lam hp b hresidual
+      (C.densityUpper / 2) * b ^ 2 := by grind only [abs_of_nonneg, pairPilotScoreMean_mean_nonneg, pairPilotScoreMean_bias_le]
 
 end ConcreteBounds
 end NearlyMinimax

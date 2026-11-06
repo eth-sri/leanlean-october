@@ -17,31 +17,33 @@ attribute [local instance] Classical.propDecidable
 attribute [local irreducible] highUnionSourceDensity highUnionSourceRegression highUnionSourceState
   historyMarkedPrior massPowerNormalizer highRawDensityMass highMarginalRealScore highRealSampleKernel
 
+section
+variable {d : ℕ} [NeZero d] (C : ModelConstants d) (Q : LowSmoothnessTernaryConstants C) (CfrMin : ℝ)
+
 /-- All constants imposing model legality and the response floor are fixed
 before the extension domain and every statistical parameter. The only energy
 inputs are genuine raw local numerator envelopes and their factorial sum. -/
-theorem highCompleteSource_minimax_path_bound_uniform_above {d : ℕ} [NeZero d]
-    (C : ModelConstants d) (Q : LowSmoothnessTernaryConstants C) (CfrMin : ℝ) :
+theorem highCompleteSource_minimax_path_bound_uniform_above  :
     ∃ Cfr eta0 : ℝ, 1 ≤ Cfr ∧ CfrMin ≤ Cfr ∧ 0 < eta0 ∧
-      ∀ U : ExtensionDomain d, ∀ k D M q : ℕ,
+      ∀ U , ∀ k D M q : ℕ,
       ∀ (_ : NeZero k) (_ : LinearOrder (HighWindowLabels d k)),
       ∀ hk : 4 ≤ k, ∀ hD : 3 ≤ D, ∀ hq : 1 ≤ q,
-      ∀ hM : highCenterResolutionThreshold C ≤ (M : ℝ),
-      ∀ lam ell N mu : ℝ, ∀ hell : 0 < ell, ∀ hellN : ell < N,
+      ∀ hM : highCenterResolutionThreshold C ≤ M,
+      ∀ lam ell N mu , ∀ hell : 0 < ell, ∀ hellN : ell < N,
       let R := completeSourceRows C k D M q Cfr lam ell N mu
       let Ω := HighCompleteSourceHistory C k D M q Cfr lam ell N mu
-      ∀ cf : ℝ, 0 ≤ cf → highWindowHolderConstant C*cf ≤ C.holderBound →
-      let eta := cf*(k : ℝ)^(-C.smoothness)
+      ∀ cf , 0 ≤ cf → highWindowHolderConstant C*cf ≤ C.holderBound →
+      let eta := cf*k^(-C.smoothness)
       eta ≤ eta0 →
-      ∀ cm : ℝ, 0 ≤ cm → cm ≤ 1/C.densityUpper →
-      ∀ n : ℕ, ∀ T B : ℝ, ∀ hT : 0 ≤ T, 0 ≤ B →
+      ∀ cm , 0 ≤ cm → cm ≤ 1/C.densityUpper →
+      ∀ n : ℕ, ∀ T B , ∀ hT : 0 ≤ T, 0 ≤ B →
       T*(highRowTotalMass R.rowMass/highCenterMix C)/historyReferenceRho (3^d) ≤
-        1/(2+8*((3^d:ℕ):ℝ)^2) →
+        1/(2+8*((3^d:ℕ))^2) →
       eta^2*T ≤ Q.ρ →
-      8*highHistoryMassParameter d k C.densityLower C.densityUpper*(n:ℝ) ≤ cm/(M:ℝ) →
+      8*highHistoryMassParameter d k C.densityLower C.densityUpper*n ≤ cm/M →
       ∀ H : ℝ → Ω → HighWindowLabels d k → (r : ℕ) → (Fin r → Covariate d) → ℝ,
       (∀ t ∈ Icc 0 T, ∀ h j r, Integrable (H t h j r)
-        (Measure.pi (fun _ : Fin r => volume.restrict (spatialPatchBox d)))) →
+        (Measure.pi (fun _  => volume.restrict (spatialPatchBox d)))) →
       (∀ t ∈ Icc 0 T, ∀ h j r u, 0 ≤ H t h j r u) →
       (∀ t ∈ Icc 0 T, ∀ h j r x, (∀ i, x i ∈ highTorusPatch d k j) →
         selectedRawSquareEnergy (highUnionSourceRawNumerator C R r Q.a (Q.v-eta^2*t) eta h j) x ≤
@@ -49,7 +51,7 @@ theorem highCompleteSource_minimax_path_bound_uniform_above {d : ℕ} [NeZero d]
       (∀ t ∈ Icc 0 T, ∀ h, highSourceSpatialSeries d k n C.densityLower Q.c (H t h) ≤ B) →
       ENNReal.ofReal (eta^4*T^2/(2+T*Real.sqrt B)^2-
         (effectiveVarianceUpper C-C.varianceLower)^2 *
-          (2*Real.exp (-(cm/(M:ℝ))^2/(8*highHistoryMassParameter d k C.densityLower C.densityUpper)))) ≤
+          (2*Real.exp (-(cm/M)^2/(8*highHistoryMassParameter d k C.densityLower C.densityUpper)))) ≤
         minimaxRisk (C.withDomain U) n := by
   obtain ⟨Cfm,etam,hCfm,hetam,hmodel⟩ := highUnionSource_original_model_uniform C Q
   obtain ⟨Cfq,etaq,hCfq,hetaq,hfloor⟩ := highUnionSource_ternary_floor_uniform C Q
@@ -99,7 +101,7 @@ theorem highCompleteSource_minimax_path_bound_uniform_above {d : ℕ} [NeZero d]
   let θ := highNormalizedParameterPath T hT Q.a Q.v eta Q.a_pos.ne' p F hF hqNonneg
   let bad : ℝ → Set Ω := fun _ => {h | cm/(M:ℝ) < |highUnionSourceMass C R h-1|}
   let eps := 2*Real.exp (-(cm/(M:ℝ))^2/(8*highHistoryMassParameter d k C.densityLower C.densityUpper))
-  have hm : Measurable (highUnionSourceMass C R) := highUnionSourceMass_measurable C R G
+  have hm  := highUnionSourceMass_measurable C R G
   have hbad (t : ℝ) (_ : t ∈ Icc 0 T) : MeasurableSet (bad t) :=
     measurableSet_lt measurable_const ((hm.sub_const 1).abs)
   have hlegal (t : ℝ) (ht : t ∈ Icc 0 T) (h : Ω) (hh : h ∉ bad t) :
@@ -179,38 +181,37 @@ theorem highCompleteSource_minimax_path_bound_uniform_above {d : ℕ} [NeZero d]
   simpa only [ModelConstants.withDomain,effectiveVarianceUpper] using hout
 
 
- theorem highCompleteSource_cost_risk_uniform_above {d : ℕ} [NeZero d]
-    (C : ModelConstants d) (Q : LowSmoothnessTernaryConstants C) (CfrMin : ℝ) :
+ theorem highCompleteSource_cost_risk_uniform_above  :
     ∃ Cfr eta0 ctr : ℝ, 1 ≤ Cfr ∧ CfrMin ≤ Cfr ∧ 0 < eta0 ∧ 0 < ctr ∧
-      ∀ U : ExtensionDomain d, ∀ k D M q : ℕ,
+      ∀ U , ∀ k D M q : ℕ,
       ∀ (_ : NeZero k) (_ : LinearOrder (HighWindowLabels d k)),
       ∀ hk : 4 ≤ k, ∀ hD : 3 ≤ D, ∀ hq : 1 ≤ q,
-      ∀ hM : highCenterResolutionThreshold C ≤ (M : ℝ),
-      ∀ lam ell N mu : ℝ, ∀ hell : 0 < ell, ∀ hellN : ell < N,
+      ∀ hM : highCenterResolutionThreshold C ≤ M,
+      ∀ lam ell N mu , ∀ hell : 0 < ell, ∀ hellN : ell < N,
       let R := completeSourceRows C k D M q Cfr lam ell N mu
       let Ω := HighCompleteSourceHistory C k D M q Cfr lam ell N mu
-      ∀ cf : ℝ, 0 ≤ cf → highWindowHolderConstant C*cf ≤ C.holderBound →
-      let eta := cf*(k : ℝ)^(-C.smoothness)
+      ∀ cf , 0 ≤ cf → highWindowHolderConstant C*cf ≤ C.holderBound →
+      let eta := cf*k^(-C.smoothness)
       eta ≤ eta0 →
-      ∀ cm : ℝ, 0 ≤ cm → cm ≤ 1/C.densityUpper →
-      ∀ n : ℕ, ∀ E : ℝ, 0 ≤ E →
-      8*highHistoryMassParameter d k C.densityLower C.densityUpper*(n:ℝ) ≤ cm/(M:ℝ) →
+      ∀ cm , 0 ≤ cm → cm ≤ 1/C.densityUpper →
+      ∀ n : ℕ, ∀ E , 0 ≤ E →
+      8*highHistoryMassParameter d k C.densityLower C.densityUpper*n ≤ cm/M →
       let Bl := highRowTotalMass R.rowMass/highCenterMix C
       let c := highPathConstant (3^d) Q.ρ eta0
-      let I := Real.sqrt ((3^d:ℕ)*(k:ℝ)^d*E)
+      let I := Real.sqrt ((3^d:ℕ)*k^d*E)
       let delta := localScorePathLength c Bl I
       ∀ H : ℝ → Ω → HighWindowLabels d k → (r : ℕ) → (Fin r → Covariate d) → ℝ,
       (∀ t ∈ Icc 0 delta, ∀ h j r, Integrable (H t h j r)
-        (Measure.pi (fun _ : Fin r => volume.restrict (spatialPatchBox d)))) →
+        (Measure.pi (fun _  => volume.restrict (spatialPatchBox d)))) →
       (∀ t ∈ Icc 0 delta, ∀ h j r u, 0 ≤ H t h j r u) →
       (∀ t ∈ Icc 0 delta, ∀ h j r x, (∀ i, x i ∈ highTorusPatch d k j) →
         selectedRawSquareEnergy (highUnionSourceRawNumerator C R r Q.a (Q.v-eta^2*t) eta h j) x ≤
           H t h j r (highPatchProductChart d k j x)) →
       (∀ t ∈ Icc 0 delta, ∀ h,
-        highSourceSpatialSeries d k n C.densityLower Q.c (H t h) ≤ (3^d:ℕ)*(k:ℝ)^d*E) →
-      ENNReal.ofReal (ctr*eta^4/(1+Bl^2+(k:ℝ)^d*E)-
+        highSourceSpatialSeries d k n C.densityLower Q.c (H t h) ≤ (3^d:ℕ)*k^d*E) →
+      ENNReal.ofReal (ctr*eta^4/(1+Bl^2+k^d*E)-
         (effectiveVarianceUpper C-C.varianceLower)^2 *
-          (2*Real.exp (-(cm/(M:ℝ))^2/(8*highHistoryMassParameter d k C.densityLower C.densityUpper)))) ≤
+          (2*Real.exp (-(cm/M)^2/(8*highHistoryMassParameter d k C.densityLower C.densityUpper)))) ≤
         minimaxRisk (C.withDomain U) n := by
   obtain ⟨Cfr,eta0,hCfr,hmin,heta0,hpath⟩ := highCompleteSource_minimax_path_bound_uniform_above C Q CfrMin
   let c := highPathConstant (3^d) Q.ρ eta0
@@ -241,12 +242,14 @@ theorem highCompleteSource_minimax_path_bound_uniform_above {d : ℕ} [NeZero d]
     cf hcf hcfH heta cm hcm hcmU n delta ((3^d:ℕ)*(k:ℝ)^d*E) hdelt.le hbudget0
     hsmall hV heps H hH hH0 hdom hbudget
   have hIE : I^2 = (3^d:ℕ)*((k:ℝ)^d*E) := by
-    simpa only [I,mul_assoc] using Real.sq_sqrt hbudget0
+    linarith [Real.sq_sqrt hbudget0]
   have hK : (1:ℝ) ≤ (3^d:ℕ) := by exact_mod_cast one_le_pow₀ (by norm_num : (1:ℕ) ≤ 3)
   have hn := score_cost_scaled_numeric (eta := eta) hc hBl hI (mul_nonneg hdelt.le hI)
     (show delta*I ≤ localScorePathLength c Bl I*I from le_rfl) hK hnumE hIE
   have hout := (ENNReal.ofReal_le_ofReal (sub_le_sub_right hn _)).trans hh
   exact hout
+end
+
 
 
 end NearlyMinimax

@@ -39,7 +39,7 @@ structure ParametricTernaryConstants {d : ℕ} (C : ModelConstants d) where
   delta_score : Cf ^ 2 * delta ^ 2 / cf ≤ 1 / 4
 
 /-- The strict model margins imply an interior ternary interval. -/
-theorem parametricTernaryConstants_exists {d : ℕ} (C : ModelConstants d) :
+theorem parametricTernaryConstants_exists {d } (C : ModelConstants d) :
     Nonempty (ParametricTernaryConstants C) := by
   let s := Real.sqrt C.fourthBound
   have hC4 : 0 < C.fourthBound := lt_trans (sq_pos_of_pos C.varianceLower_pos) C.fourth_margin
@@ -69,8 +69,7 @@ theorem parametricTernaryConstants_exists {d : ℕ} (C : ModelConstants d) :
   let cf := min (l / (2 * a ^ 2)) (1 - r / a ^ 2)
   have ha2pos : 0 < a ^ 2 := sq_pos_of_pos ha
   have hcf : 0 < cf := by
-    exact lt_min (div_pos hl (by positivity))
-      (sub_pos.2 ((div_lt_one ha2pos).2 (ha2 ▸ hrt)))
+    bound
   have hmass : ∀ V ∈ Icc l r, ∀ y : Fin 3, cf ≤ ternaryMass a 0 V y := by
     intro V hV y
     have hleft : cf ≤ V / (2 * a ^ 2) :=
@@ -84,9 +83,7 @@ theorem parametricTernaryConstants_exists {d : ℕ} (C : ModelConstants d) :
   have hderiv : ∀ y : Fin 3, |3 * ternaryVarianceDerivative a y| ≤ Cf := by
     intro y
     have hsmall : 3 / (2 * a ^ 2) ≤ Cf := by
-      dsimp [Cf]
-      apply (div_le_div_iff₀ (by positivity) ha2pos).2
-      nlinarith
+      bound
     fin_cases y
     · change |3 * (1 / (2 * a ^ 2))| ≤ Cf
       rw [show 3 * (1 / (2 * a ^ 2)) = 3 / (2 * a ^ 2) by ring,
@@ -106,7 +103,7 @@ theorem parametricTernaryConstants_exists {d : ℕ} (C : ModelConstants d) :
   have hdeltaS : Cf ^ 2 * delta ^ 2 / cf ≤ 1 / 4 := by
     have hds : delta ≤ Real.sqrt cf / (2 * Cf) := min_le_right _ _
     have hprod : delta * (2 * Cf) ≤ Real.sqrt cf := (le_div_iff₀ (by positivity)).1 hds
-    have hsqrt : (Real.sqrt cf) ^ 2 = cf := Real.sq_sqrt hcf.le
+    have hsqrt  := Real.sq_sqrt hcf.le
     have hp : 0 ≤ delta * (2 * Cf) := by positivity
     have hsq : (delta * (2 * Cf)) ^ 2 ≤ cf := by
       nlinarith [Real.sqrt_nonneg cf]
@@ -119,39 +116,53 @@ namespace ParametricTernaryConstants
 
 variable {d : ℕ} {C : ModelConstants d} (P : ParametricTernaryConstants C)
 
+section
+variable (V : ℝ) (hV : V ∈ Icc P.l P.r)
+include hV
+
 /-- With counting measure normalized to total mass one, the density is three
 times the ternary mass.  The same positive lower guard remains valid. -/
-theorem density_lower (V : ℝ) (hV : V ∈ Icc P.l P.r) (y : Fin 3) :
+theorem density_lower  y :
     P.cf ≤ 3 * ternaryMass P.a 0 V y := by
   have hmass := P.mass_lower V hV y
   have hcf := P.cf_pos
   linarith
 
-theorem model_variance_bounds (V : ℝ) (hV : V ∈ Icc P.l P.r) :
+theorem model_variance_bounds  :
     C.varianceLower ≤ V ∧ V ≤ C.varianceUpper :=
   ⟨le_trans P.lower_le hV.1, le_trans hV.2 P.upper_le⟩
 
-theorem variance_lt_square_of_mem (V : ℝ) (hV : V ∈ Icc P.l P.r) :
+theorem variance_lt_square_of_mem  :
     V < P.a ^ 2 := lt_of_le_of_lt hV.2 P.variance_lt_square
 
-theorem fourth_le_of_mem (V : ℝ) (hV : V ∈ Icc P.l P.r) :
+theorem fourth_le_of_mem  :
     P.a ^ 2 * V ≤ C.fourthBound :=
   le_trans (mul_le_mul_of_nonneg_left hV.2 (sq_nonneg _)) P.fourth_le
+end
 
-def varianceMinus (n : ℕ) : ℝ := (P.l + P.r) / 2 - P.delta / Real.sqrt n
 
-def variancePlus (n : ℕ) : ℝ := (P.l + P.r) / 2 + P.delta / Real.sqrt n
+section
+variable (n : ℕ)
+include n
 
-theorem perturbation_nonneg (n : ℕ) : 0 ≤ P.delta / Real.sqrt n := by
+def varianceMinus   := (P.l + P.r) / 2 - P.delta / Real.sqrt n
+
+def variancePlus   := (P.l + P.r) / 2 + P.delta / Real.sqrt n
+
+theorem perturbation_nonneg  : 0 ≤ P.delta / Real.sqrt n := by
   exact div_nonneg P.delta_pos.le (Real.sqrt_nonneg _)
 
-theorem perturbation_le (n : ℕ) (hn : 1 ≤ n) :
+section
+variable (hn : 1 ≤ n)
+include hn
+
+theorem perturbation_le   :
     P.delta / Real.sqrt n ≤ P.delta := by
   have hs : 1 ≤ Real.sqrt (n : ℝ) := Real.one_le_sqrt.2 (by exact_mod_cast hn)
   have hd := P.delta_pos
   exact div_le_self hd.le hs
 
-theorem varianceMinus_mem (n : ℕ) (hn : 1 ≤ n) :
+theorem varianceMinus_mem   :
     P.varianceMinus n ∈ Icc P.l P.r := by
   have hnonneg := P.perturbation_nonneg n
   have hpert := P.perturbation_le n hn
@@ -159,44 +170,51 @@ theorem varianceMinus_mem (n : ℕ) (hn : 1 ≤ n) :
   have hinterval := P.interval
   constructor <;> dsimp [varianceMinus] <;> linarith
 
-theorem variancePlus_mem (n : ℕ) (hn : 1 ≤ n) :
+theorem variancePlus_mem   :
     P.variancePlus n ∈ Icc P.l P.r := by
   have hnonneg := P.perturbation_nonneg n
   have hpert := P.perturbation_le n hn
   have hdelta := P.delta_interval
   have hinterval := P.interval
   constructor <;> dsimp [variancePlus] <;> linarith
+end
 
-theorem separation (n : ℕ) :
+
+theorem separation  :
     P.variancePlus n - P.varianceMinus n = 2 * P.delta / Real.sqrt n := by
   dsimp [varianceMinus, variancePlus]
   ring
 
-theorem separation_pos (n : ℕ) (hn : 1 ≤ n) :
+section
+variable (hn : 1 ≤ n)
+include hn
+
+theorem separation_pos   :
     0 < P.variancePlus n - P.varianceMinus n := by
   rw [P.separation]
-  exact div_pos (mul_pos (by norm_num) P.delta_pos)
-    (Real.sqrt_pos.2 (by exact_mod_cast (lt_of_lt_of_le Nat.zero_lt_one hn)))
+  aesop (add unsafe [div_pos, P.delta_pos])
 
-theorem score_budget (n : ℕ) (hn : 1 ≤ n) :
-    (n : ℝ) * P.Cf ^ 2 * (P.variancePlus n - P.varianceMinus n) ^ 2 /
+theorem score_budget   :
+    n * P.Cf ^ 2 * (P.variancePlus n - P.varianceMinus n) ^ 2 /
       (4 * P.cf) ≤ 1 / 4 := by
-  have hnp : 0 < (n : ℝ) := by exact_mod_cast (lt_of_lt_of_le Nat.zero_lt_one hn)
-  have hs : 0 < Real.sqrt (n : ℝ) := Real.sqrt_pos.2 hnp
-  have hs2 : (Real.sqrt (n : ℝ)) ^ 2 = n := Real.sq_sqrt hnp.le
+  have hnp : 0 < (n : ℝ) := by positivity
+  have hs  := Real.sqrt_pos.2 hnp
+  have hs2  := Real.sq_sqrt hnp.le
   rw [P.separation]
   have heq : (n : ℝ) * P.Cf ^ 2 * (2 * P.delta / Real.sqrt n) ^ 2 /
       (4 * P.cf) = P.Cf ^ 2 * P.delta ^ 2 / P.cf := by
-    field_simp [ne_of_gt hs, ne_of_gt P.cf_pos]
-    rw [hs2]
-    ring
+    grind
   rw [heq]
   exact P.delta_score
 
-theorem score_budget_reverse (n : ℕ) (hn : 1 ≤ n) :
-    (n : ℝ) * P.Cf ^ 2 * (P.varianceMinus n - P.variancePlus n) ^ 2 /
+theorem score_budget_reverse   :
+    n * P.Cf ^ 2 * (P.varianceMinus n - P.variancePlus n) ^ 2 /
       (4 * P.cf) ≤ 1 / 4 := by
   convert P.score_budget n hn using 1 <;> ring
+end
+
+end
+
 
 end ParametricTernaryConstants
 

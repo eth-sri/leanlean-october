@@ -15,26 +15,24 @@ namespace NearlyMinimax
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1000000
 
- def finePairSpatialEnergyPrefactor (d q : ℕ) (ad bd C a ρ : ℝ) : ℝ :=
+ def finePairSpatialEnergyPrefactor d q ad bd C a ρ  :=
   |finePairDensityPrefactor ad bd|^2 * finePairResponseActionBudget d q C a ρ ^ 2 *
     Real.exp (4*exteriorTau ((ad+bd)/(bd-ad)))
 
- theorem finePairSpatialEnergyPrefactor_nonneg (d q : ℕ) (ad bd C a ρ : ℝ) :
+ theorem finePairSpatialEnergyPrefactor_nonneg d q ad bd C a ρ :
     0 ≤ finePairSpatialEnergyPrefactor d q ad bd C a ρ := by
   unfold finePairSpatialEnergyPrefactor
   positivity
 
- theorem finePairResponseCoefficient_square_le (d n M q : ℕ) (ad bd C a ρ η : ℝ)
+ theorem finePairResponseCoefficient_square_le d n M q ad bd C a ρ η
     (haD : 0 < ad) (hab : ad < bd) :
     (finePairDensityCoefficientBudget ad bd M n *
-      (finePairResponseActionBudget d q C a ρ * (n : ℝ)^2 * η^2))^2 ≤
-      finePairSpatialEnergyPrefactor d q ad bd C a ρ * (bd^2)^n * (n : ℝ)^4 * η^4 *
+      (finePairResponseActionBudget d q C a ρ * n^2 * η^2))^2 ≤
+      finePairSpatialEnergyPrefactor d q ad bd C a ρ * (bd^2)^n * n^4 * η^4 *
         Real.exp (2*exteriorTau ((ad+bd)/(bd-ad))*M) := by
   let tau := exteriorTau ((ad+bd)/(bd-ad))
   have hc : Real.cosh ((M+2 : ℕ)*tau) ≤ Real.exp ((M+2 : ℕ)*tau) := by
-    dsimp [tau]
-    rw [← exterior_rule_variation ad bd haD hab (M+2) (by omega)]
-    exact exterior_rule_variation_le_exp ad bd haD hab (M+2) (by omega)
+    linarith [exterior_rule_variation ad bd haD hab (M+2) (by omega), exterior_rule_variation_le_exp ad bd haD hab (M+2) (by omega)]
   have hsq := (sq_le_sq₀ (Real.cosh_pos _).le (Real.exp_pos _).le).mpr hc
   have hb := (haD.trans hab).le
   have h := mul_le_mul_of_nonneg_left hsq
@@ -59,19 +57,19 @@ set_option maxHeartbeats 1000000
       simp only [mul_pow, ← pow_mul]
       ring
 
- def finePairFieldGeometricBase (d : ℕ) (bd : ℝ) : ℝ :=
+ def finePairFieldGeometricBase d bd  :=
   1 + bd^2 * fineFieldSubsetEnergyBase d
 
- theorem finePairFieldGeometricBase_nonneg (d : ℕ) (bd : ℝ) :
+ theorem finePairFieldGeometricBase_nonneg d bd :
     0 ≤ finePairFieldGeometricBase d bd := by
   unfold finePairFieldGeometricBase fineFieldSubsetEnergyBase
   positivity
 
- theorem finePairEvenActionSpatialBudget_geometric_le (d n M q : ℕ)
-    (ad bd C a ρ η T0 : ℝ) (haD : 0 < ad) (hab : ad < bd) :
+ theorem finePairEvenActionSpatialBudget_geometric_le d n M q
+    ad bd C a ρ η T0 (haD : 0 < ad) (hab : ad < bd) :
     finePairEvenActionSpatialBudget d n M q ad bd C a ρ η T0 ≤
       finePairSpatialEnergyPrefactor d q ad bd C a ρ * finePairFieldGeometricBase d bd ^ n *
-        (n : ℝ)^12 * η^4 * Real.exp (2*exteriorTau ((ad+bd)/(bd-ad))*M) *
+        n^12 * η^4 * Real.exp (2*exteriorTau ((ad+bd)/(bd-ad))*M) *
           (T0^(2-(d : ℝ)))^2 := by
   have h := mul_le_mul_of_nonneg_right (finePairResponseCoefficient_square_le d n M q ad bd C a ρ η haD hab)
     (by unfold fineFieldSubsetEnergyBase; positivity : 0 ≤ fineFieldSubsetEnergyBase d ^ n * (n : ℝ)^8*(T0^(2-(d : ℝ)))^2)
@@ -87,20 +85,20 @@ set_option maxHeartbeats 1000000
     convert hm using 1 <;> simp only [mul_pow] <;> ring)
   convert hh using 1 <;> ring
 
- theorem spatialInverseFourConstant_nonneg (d : ℕ) : 0 ≤ spatialInverseFourConstant d := by
+ theorem spatialInverseFourConstant_nonneg d : 0 ≤ spatialInverseFourConstant d := by
   unfold spatialInverseFourConstant
   positivity
 
- def finePairAliasGeometricBase (d : ℕ) (bd : ℝ) : ℝ := 1 + bd^2*(2 : ℝ)^d
+ def finePairAliasGeometricBase d bd  := 1 + bd^2*(2 : ℝ)^d
 
- theorem finePairAliasGeometricBase_nonneg (d : ℕ) (bd : ℝ) :
+ theorem finePairAliasGeometricBase_nonneg d bd :
     0 ≤ finePairAliasGeometricBase d bd := by unfold finePairAliasGeometricBase; positivity
 
- theorem finePairAliasActionSpatialBudget_geometric_le (d n M q : ℕ)
-    (ad bd C a ρ η T0 : ℝ) (haD : 0 < ad) (hab : ad < bd) (hT0 : 0 < T0) :
+ theorem finePairAliasActionSpatialBudget_geometric_le d n M q
+    ad bd C a ρ η T0 (haD : 0 < ad) (hab : ad < bd) (hT0 : 0 < T0) :
     finePairAliasActionSpatialBudget d n M q ad bd C a ρ η T0 ≤
-      (finePairSpatialEnergyPrefactor d q ad bd C a ρ * 6*(2 : ℝ)^d*spatialInverseFourConstant d) *
-        finePairAliasGeometricBase d bd ^ n * (n : ℝ)^8 * η^4 *
+      (finePairSpatialEnergyPrefactor d q ad bd C a ρ * 6*2^d*spatialInverseFourConstant d) *
+        finePairAliasGeometricBase d bd ^ n * n^8 * η^4 *
           Real.exp (2*exteriorTau ((ad+bd)/(bd-ad))*M) / T0^(d-4) := by
   have hPref := finePairSpatialEnergyPrefactor_nonneg d q ad bd C a ρ
   have hCoeff := finePairResponseCoefficient_square_le d n M q ad bd C a ρ η haD hab

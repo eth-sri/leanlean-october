@@ -46,14 +46,12 @@ theorem product_pairScoreOperator_integral {E F : Type*}
   have hs₀ : (∫ z : E × F, Y' z.2 ^ 2 ∂μ.prod ν) = f' ^ 2 + V := by
     calc
       _ = ∫ x, Y' x ^ 2 ∂ν := by
-        simpa only [measureReal_def, measure_univ, ENNReal.toReal_one, one_smul] using
-          integral_fun_snd (μ := μ) (ν := ν) (fun x => Y' x ^ 2)
+        grind only [measureReal_def, measure_univ, ENNReal.toReal_one, one_smul, integral_fun_snd]
       _ = _ := h2'
   have hs₁ : (∫ z : E × F, Y z.1 ^ 2 ∂μ.prod ν) = f ^ 2 + V := by
     calc
       _ = ∫ x, Y x ^ 2 ∂μ := by
-        simpa only [measureReal_def, measure_univ, ENNReal.toReal_one, one_smul] using
-          integral_fun_fst (μ := μ) (ν := ν) (fun x => Y x ^ 2)
+        grind only [measureReal_def, measure_univ, ENNReal.toReal_one, one_smul, integral_fun_fst]
       _ = _ := h2
   simp only [integral_const_mul, integral_fun_snd, integral_fun_fst, integral_prod_mul,
     hm, hm', hs₀, hs₁, measureReal_def, measure_univ, ENNReal.toReal_one, one_smul, integral_const,
@@ -61,12 +59,12 @@ theorem product_pairScoreOperator_integral {E F : Type*}
   rw [real_inner_comm b (pairResponseVector f f'), pairResponseVector_inner]
   ring
 
-theorem conditional_pairScoreOperator_integral (μ ν : Measure ℝ)
+theorem conditional_pairScoreOperator_integral μ ν
     [IsProbabilityMeasure μ] [IsProbabilityMeasure ν]
-    (hμ : MemLp (fun u : ℝ => u) 2 μ) (hν : MemLp (fun u : ℝ => u) 2 ν)
+    (hμ : MemLp (fun u  => u) 2 μ) (hν : MemLp (fun u  => u) 2 ν)
     (hmμ : (∫ u : ℝ, u ∂μ) = 0) (hmν : (∫ u : ℝ, u ∂ν) = 0)
-    {V : ℝ} (h2μ : (∫ u : ℝ, u ^ 2 ∂μ) = V) (h2ν : (∫ u : ℝ, u ^ 2 ∂ν) = V)
-    (f f' : ℝ) (a b : PairVector) :
+    {V } (h2μ : (∫ u : ℝ, u ^ 2 ∂μ) = V) (h2ν : (∫ u : ℝ, u ^ 2 ∂ν) = V)
+    f f' (a b : PairVector) :
     (∫ z : ℝ × ℝ, ⟪a, pairScoreOperator V (f + z.1) (f' + z.2) b⟫ ∂μ.prod ν) =
       ⟪a, InnerProductSpace.rankOne ℝ (pairResponseVector f f') (pairResponseVector f f') b⟫ := by
   have hY : MemLp (fun u : ℝ => f + u) 2 μ := (memLp_const f).add hμ

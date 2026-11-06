@@ -50,8 +50,7 @@ theorem high_marked_original_design_spatial_series {ι E : Type*}
     (Filter.Eventually.of_forall hraw)
   have hm : pMinus ≤ highRawDensityMass p :=
     (highRawDensityMass_mem_Icc p hpMeas pMinus pPlus hpMinus (Filter.Eventually.of_forall hraw)).1
-  have hR (r : ℕ) (y : Fin r → Fin 3) : Measurable (fun x =>
-      highMarkedSampleNumerator r π activation a V η p pReset cReset g w φ c x y) :=
+  have hR (r : ℕ) (y : Fin r → Fin 3)  :=
     highMarkedSampleNumerator_measurable r π activation hAct a V η p hpMeas pReset hpReset
       cReset hcReset g w hg hw φ hφ c y
   have hRaw (r : ℕ) := high_raw_square_patch_integrable_bound hk j
@@ -68,8 +67,7 @@ theorem high_marked_original_design_spatial_series {ι E : Type*}
   intro r hr
   have hco : 0 ≤ ((n : ℝ) * highFixedScoreDenominator pMinus cMass) ^ r / (r.factorial : ℝ) := by
     apply div_nonneg
-    · exact pow_nonneg (mul_nonneg (Nat.cast_nonneg n)
-        (high_fixed_score_denominator_pos hpMinus hcMass).le) r
+    · grind only [pow_nonneg, mul_nonneg, high_fixed_score_denominator_pos]
     · exact Nat.cast_nonneg _
   calc
     _ ≤ (((n : ℝ) * highFixedScoreDenominator pMinus cMass) ^ r / (r.factorial : ℝ)) *

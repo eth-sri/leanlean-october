@@ -21,19 +21,20 @@ variable {d k D M q : ℕ} [NeZero d] [NeZero k] [LinearOrder (HighWindowLabels 
     (Cfr lam ℓ N μ : ℝ) (hCfr : 1 ≤ Cfr) (hℓ : 0 < ℓ) (hℓN : ℓ < N)
 include hD hq hM hCfr hℓ hℓN
 
-theorem completeSourceRows_mass_positive (i : SourceRowIndex d D M q
-    (C.densityLower+1/(M : ℝ)) (C.densityUpper-1/(M : ℝ)) Cfr lam ℓ N μ) :
+theorem completeSourceRows_mass_positive i :
     0 < (completeSourceRows C k D M q Cfr lam ℓ N μ).rowMass i := by
   obtain ⟨ha,hab⟩ := high_source_interval_numeric C (M : ℝ) hM
   exact sourceRowMass_positive_actual d k D M q hD hq _ _ ha hab Cfr
     (by linarith) lam ℓ N μ hℓ hℓN i
 
+section
+variable (T : ℝ) (hT : 0 ≤ T) (hsmall : T * (highRowTotalMass (completeSourceRows C k D M q Cfr lam ℓ N μ).rowMass /
+      highCenterMix C) / historyReferenceRho (3^d) ≤ 1 / (2+8*((3^d : ℕ):ℝ)^2)) (t : ℝ) (ht : t ∈ Icc 0 T)
+include hT hsmall ht
+
 /-- Probability of the actual full source path follows from its primitive
 finite packet guards and the explicit history positivity budget. -/
-theorem completeSourcePrior_probability (T : ℝ) (hT : 0 ≤ T)
-    (hsmall : T * (highRowTotalMass (completeSourceRows C k D M q Cfr lam ℓ N μ).rowMass /
-      highCenterMix C) / historyReferenceRho (3^d) ≤ 1 / (2+8*((3^d : ℕ):ℝ)^2))
-    (t : ℝ) (ht : t ∈ Icc 0 T) :
+theorem completeSourcePrior_probability  :
     IsProbabilityMeasure (historyMarkedPrior (fun i j => j ∈ highNeighborLabels d k i) (3^d) t
       (highUnionLaw (completeSourceRows C k D M q Cfr lam ℓ N μ) (highCenterMix C))
       (highUnionActivation (completeSourceRows C k D M q Cfr lam ℓ N μ) (highCenterMix C))) :=
@@ -43,10 +44,7 @@ theorem completeSourcePrior_probability (T : ℝ) (hT : 0 ≤ T)
 
 /-- Actual canonical append cancellation closes mass-law invariance for
 all retained rows, including every higher coarse/fine target. -/
-theorem completeSourceMass_prior_law (T : ℝ) (hT : 0 ≤ T)
-    (hsmall : T * (highRowTotalMass (completeSourceRows C k D M q Cfr lam ℓ N μ).rowMass /
-      highCenterMix C) / historyReferenceRho (3^d) ≤ 1 / (2+8*((3^d : ℕ):ℝ)^2))
-    (t : ℝ) (ht : t ∈ Icc 0 T) :
+theorem completeSourceMass_prior_law  :
     Measure.map (highUnionSourceMass C (completeSourceRows C k D M q Cfr lam ℓ N μ))
       (historyMarkedPrior (fun i j => j ∈ highNeighborLabels d k i) (3^d) t
         (highUnionLaw (completeSourceRows C k D M q Cfr lam ℓ N μ) (highCenterMix C))
@@ -59,5 +57,7 @@ theorem completeSourceMass_prior_law (T : ℝ) (hT : 0 ≤ T)
     (completeSourceRows_mass_positive C hD hq hM Cfr lam ℓ N μ hCfr hℓ hℓN)
     T hT hsmall
     (completeSourceMass_append_indicator_zero C hD hq hM Cfr lam ℓ N μ hCfr hℓ hℓN) t ht
+end
+
 
 end NearlyMinimax

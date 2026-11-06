@@ -15,22 +15,13 @@ set_option maxHeartbeats 1000000
 set_option backward.isDefEq.respectTransparency false
 variable {J : Type*} [Fintype J] [LinearOrder J]
 
-theorem historyMarkedPrior_dataScore_centered (dependent : J → J → Prop)
-    (hrefl : ∀ j, dependent j j) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
-    (Δ : ℕ) (hΔ : 1 ≤ Δ) (hlabels : ∀ j, (dependentLabelFinset dependent j).card ≤ Δ)
-    (T Ba : ℝ) (hBa : 0 ≤ Ba)
-    {E : Type*} [MeasurableSpace E] [StandardBorelSpace E]
-    (π : Measure E) [IsProbabilityMeasure π] (activation : E → ℝ) (hactivation : Measurable activation)
-    (hcenter : ∫ e, activation e ∂π = 0) (habound : ∀ e, |activation e| ≤ Ba)
-    (hsmall : T * Ba / historyReferenceRho Δ ≤ 1 / (2 + 8 * (Δ : ℝ) ^ 2))
-    {d : ℕ} (n : ℕ) (a v η aRaw bRaw : ℝ) (ha : 0 < a) (haRaw : 0 < aRaw)
-    (p F : HistoryMarked dependent E → Covariate d → ℝ)
-    (hp : Measurable (Function.uncurry p)) (hF : Measurable (Function.uncurry F))
-    (hraw : ∀ ω x, aRaw ≤ p ω x ∧ p ω x ≤ bRaw)
-    (hq : ∀ u ∈ Icc 0 T, ∀ ω x y, 0 < ternaryMass a (F ω x) (v - η ^ 2 * u) y)
-    (hmass : ∀ u ∈ Icc 0 T,
+section
+variable (dependent : J → J → Prop) (hrefl : ∀ j, dependent j j) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i) (Δ : ℕ) (hΔ : 1 ≤ Δ) (hlabels : ∀ j, (dependentLabelFinset dependent j).card ≤ Δ) (T Ba : ℝ) (hBa : 0 ≤ Ba) {E : Type*} [MeasurableSpace E] [StandardBorelSpace E] (π : Measure E) [IsProbabilityMeasure π] (activation : E → ℝ) (hactivation : Measurable activation) (hcenter : ∫ e, activation e ∂π = 0) (habound : ∀ e, |activation e| ≤ Ba) (hsmall : T * Ba / historyReferenceRho Δ ≤ 1 / (2 + 8 * (Δ : ℝ) ^ 2)) {d : ℕ} (n : ℕ) (a v η aRaw bRaw : ℝ) (ha : 0 < a) (haRaw : 0 < aRaw) (p F : HistoryMarked dependent E → Covariate d → ℝ) (hp : Measurable (Function.uncurry p)) (hF : Measurable (Function.uncurry F)) (hraw : ∀ ω x, aRaw ≤ p ω x ∧ p ω x ≤ bRaw) (hq : ∀ u ∈ Icc 0 T, ∀ ω x y, 0 < ternaryMass a (F ω x) (v - η ^ 2 * u) y) (hmass : ∀ u ∈ Icc 0 T,
       (historyMarkedPrior dependent Δ u π activation).map (fun ω => highRawDensityMass (p ω)) =
       (historyMarkedPrior dependent Δ 0 π activation).map (fun ω => highRawDensityMass (p ω)))
+include hrefl hΔ hlabels hBa hactivation hcenter habound hsmall ha haRaw hraw hq hmass
+
+theorem historyMarkedPrior_dataScore_centered 
     (t : ℝ) (ht : 0 < t) (htT : t < T) :
     (∫ z, highMarginalRealScore dependent hsymm
       (historyMarkedPrior dependent Δ t π activation) π activation n a (v - η^2*t) η p F z
@@ -46,7 +37,7 @@ theorem historyMarkedPrior_dataScore_centered (dependent : J → J → Prop)
     filter_upwards [Ioo_mem_nhds ht htT] with u hu
     have hint : Integrable activation π := by
       apply Integrable.of_bound hactivation.aestronglyMeasurable Ba
-      exact Eventually.of_forall fun e => by simpa only [Real.norm_eq_abs] using habound e
+      solve_by_elim [Eventually.of_forall]
     have hs : u * Ba / historyReferenceRho Δ ≤ 1 / (2 + 8 * (Δ : ℝ)^2) :=
       (div_le_div_of_nonneg_right (mul_le_mul_of_nonneg_right hu.2.le hBa)
         (historyReferenceRho_pos Δ).le).trans hsmall
@@ -64,22 +55,7 @@ theorem historyMarkedPrior_dataScore_centered (dependent : J → J → Prop)
   have hc := (hasDerivAt_const t (1 : ℝ)).congr_of_eventuallyEq he
   simpa only [one_mul] using hd.unique hc
 
-theorem historyMarkedPrior_dataScore_centered_ae (dependent : J → J → Prop)
-    (hrefl : ∀ j, dependent j j) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
-    (Δ : ℕ) (hΔ : 1 ≤ Δ) (hlabels : ∀ j, (dependentLabelFinset dependent j).card ≤ Δ)
-    (T Ba : ℝ) (hBa : 0 ≤ Ba)
-    {E : Type*} [MeasurableSpace E] [StandardBorelSpace E]
-    (π : Measure E) [IsProbabilityMeasure π] (activation : E → ℝ) (hactivation : Measurable activation)
-    (hcenter : ∫ e, activation e ∂π = 0) (habound : ∀ e, |activation e| ≤ Ba)
-    (hsmall : T * Ba / historyReferenceRho Δ ≤ 1 / (2 + 8 * (Δ : ℝ) ^ 2))
-    {d : ℕ} (n : ℕ) (a v η aRaw bRaw : ℝ) (ha : 0 < a) (haRaw : 0 < aRaw)
-    (p F : HistoryMarked dependent E → Covariate d → ℝ)
-    (hp : Measurable (Function.uncurry p)) (hF : Measurable (Function.uncurry F))
-    (hraw : ∀ ω x, aRaw ≤ p ω x ∧ p ω x ≤ bRaw)
-    (hq : ∀ u ∈ Icc 0 T, ∀ ω x y, 0 < ternaryMass a (F ω x) (v - η ^ 2 * u) y)
-    (hmass : ∀ u ∈ Icc 0 T,
-      (historyMarkedPrior dependent Δ u π activation).map (fun ω => highRawDensityMass (p ω)) =
-      (historyMarkedPrior dependent Δ 0 π activation).map (fun ω => highRawDensityMass (p ω)))
+theorem historyMarkedPrior_dataScore_centered_ae 
     : ∀ᵐ t ∂(volume : Measure ℝ), t ∈ Icc 0 T →
       (∫ z, highMarginalRealScore dependent hsymm
         (historyMarkedPrior dependent Δ t π activation) π activation n a (v - η^2*t) η p F z
@@ -93,5 +69,7 @@ theorem historyMarkedPrior_dataScore_centered_ae (dependent : J → J → Prop)
   exact historyMarkedPrior_dataScore_centered dependent hrefl hsymm Δ hΔ hlabels
     T Ba hBa π activation hactivation hcenter habound hsmall n a v η aRaw bRaw ha haRaw p F hp hF
     hraw hq hmass t (lt_of_le_of_ne ht.1 (Ne.symm ht0)) (lt_of_le_of_ne ht.2 htT)
+end
+
 
 end NearlyMinimax

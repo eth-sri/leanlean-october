@@ -17,7 +17,7 @@ attribute [local instance] Classical.propDecidable
 
 def finePairEvenSelector (j : ℕ) : ℝ := if j = 0 then 0 else if Even j then 1 else 0
 
-theorem finePairEvenSelector_split (j : ℕ) :
+theorem finePairEvenSelector_split j :
     finePairEvenSelector j = (if j = 2 then 1 else 0) +
       (if 4 ≤ j ∧ Even j then 1 else 0) := by
   by_cases hj0 : j = 0
@@ -29,20 +29,28 @@ theorem finePairEvenSelector_split (j : ℕ) :
     simp [finePairEvenSelector, hj0, hj2, hj, hj4]
   · simp [finePairEvenSelector, hj0, hj2, hj]
 
-theorem finePairTimeField_product_measurable {d n : ℕ} (U : Fin n → Covariate d)
-    (S : Finset (Fin n)) :
+section
+variable {d n : ℕ}
+
+section
+variable (U : Fin n → Covariate d)
+
+theorem finePairTimeField_product_measurable  
+    S :
     Measurable (fun e : ℝ × FinePairFieldMark d => ∏ i ∈ S, finePairTimeFieldValue e (U i)) :=
   Finset.measurable_fun_prod S (fun i _ =>
     (boundedHyperplaneFieldValue_section_measurable d (U i)).comp measurable_snd)
 
-theorem finePairTimeField_product_abs {d n : ℕ} (U : Fin n → Covariate d)
-    (S : Finset (Fin n)) (e : ℝ × FinePairFieldMark d) :
+theorem finePairTimeField_product_abs  
+    S e :
     |∏ i ∈ S, finePairTimeFieldValue e (U i)| = 1 := by
   rw [Finset.abs_prod]
   simp only [finePairTimeFieldValue_abs, Finset.prod_const_one]
+end
 
-theorem finePairTimeField_weighted_product_integrable {d n : ℕ} [NeZero d]
-    (lo hi : ℝ) (U : Fin n → Covariate d) (S : Finset (Fin n)) :
+
+theorem finePairTimeField_weighted_product_integrable  [NeZero d]
+    lo hi (U : Fin n → Covariate d) S :
     Integrable (fun e : ℝ × FinePairFieldMark d =>
       e.1 * (∏ i ∈ S, finePairTimeFieldValue e (U i))) (finePairTimeFieldMeasure d lo hi) :=
   (finePairTimeFieldMeasure_fst_integrable d lo hi).mul_bdd (c := 1)
@@ -50,32 +58,34 @@ theorem finePairTimeField_weighted_product_integrable {d n : ℕ} [NeZero d]
     (Filter.Eventually.of_forall fun e => by
       rw [Real.norm_eq_abs, finePairTimeField_product_abs])
 
-def finePairTimeSubsetMoment {d n : ℕ} (lo hi : ℝ) (U : Fin n → Covariate d)
-    (S : Finset (Fin n)) : ℝ :=
+def finePairTimeSubsetMoment  lo hi (U : Fin n → Covariate d)
+    S  :=
   ∫ e : ℝ × FinePairFieldMark d,
     e.1 * (∏ i ∈ S, finePairTimeFieldValue e (U i)) ∂finePairTimeFieldMeasure d lo hi
 
-theorem finePairTimeSubsetMoment_actual {d n : ℕ} [NeZero d]
-    (lo hi : ℝ) (U : Fin n → Covariate d) (S : Finset (Fin n)) :
+theorem finePairTimeSubsetMoment_actual  [NeZero d]
+    lo hi U (S : Finset (Fin n)) :
     finePairTimeSubsetMoment lo hi U S =
       ∫ T in Icc lo hi, T * (∫ z, ∏ i ∈ S, boundedHyperplaneFieldValue z (U i)
         ∂boundedHyperplaneFieldLaw d T) := by
   rw [finePairTimeSubsetMoment, finePairTimeFieldMeasure_integral d lo hi _
     (finePairTimeField_weighted_product_integrable lo hi U S)]
   simp only [finePairTimeFieldValue, integral_const_mul]
+end
+
 
 section Generic
 variable {ι Z : Type*} [Fintype ι] [DecidableEq ι] [MeasurableSpace ι]
   [MeasurableSingletonClass ι] [MeasurableSpace Z]
 
-theorem finePairPacket_even_subset_expansion {n : ℕ}
-    (σ : Measure Z) [IsFiniteMeasure σ] (a b : ℝ) (ha : 0 < a) (hab : a < b)
-    (M q : ℕ) (C : ℝ) (A : Z → ι → ι → ℝ)
+theorem finePairPacket_even_subset_expansion {n }
+    σ [IsFiniteMeasure σ] a b (ha : 0 < a) (hab : a < b)
+    M q C A
     (hA : ∀ i j, Measurable (fun ζ => A ζ i j))
     (hcost : Integrable (separatedMatrixCost A) σ) (c : ι → ℝ)
-    (p : Fin n → ℝ) (hp : ∀ i, p i ∈ Icc a b) (ψ : Z → Fin n → ℝ)
+    p (hp : ∀ i, p i ∈ Icc a b) (ψ : Z → Fin n → ℝ)
     (hmψ : ∀ i, Measurable (fun ζ => ψ ζ i)) (hbψ : ∀ ζ i, |ψ ζ i| ≤ 1)
-    (Φ : (ι → ℝ) → ℝ) :
+    Φ :
     (∫ᵛ e, finePairPacketObservable a b M q C c
       (fun ζ z eps => ∏ i, finePairDensityReset a b z eps p (ψ ζ) i) Φ e
       ∂<•finePairPacketSignedMeasure σ a b M q C A) =
@@ -85,14 +95,14 @@ theorem finePairPacket_even_subset_expansion {n : ℕ}
   have hm (z eps : ℝ) (i : Fin n) :
       Measurable (fun ζ => finePairDensityReset a b z eps p (ψ ζ) i) := by
     unfold finePairDensityReset
-    exact measurable_const.add ((hmψ i).const_mul _)
+    fun_prop
   rw [finePairPacketSignedMeasure_factor_integral σ a b M q C A hA hcost c _
     (fun z eps => Finset.measurable_fun_prod _ (fun i _ => hm z eps i))
     (b^n) (pow_nonneg (ha.trans hab).le n) (fun ζ e =>
       finite_density_product_abs_bound _ b (ha.trans hab).le
         (fun i => finePairFieldReset_abs_le a b ha hab M p hp ψ hbψ (ζ,e) i))
     Φ (finePairResponseAtomBound q C c Φ) (finePairResponseAtomBound_le q C c Φ)]
-  have hiRsp : Integrable (fun ζ => responseMatrixAction q C (A ζ) c Φ) σ :=
+  have hiRsp  :=
     responseMatrixAction_integrable σ q C A (separatedMatrix_entry_integrable σ A hA hcost) c Φ
   have hi (W : Finset (Fin n)) :
       Integrable (fun ζ => (∏ i ∈ W, ψ ζ i) * responseMatrixAction q C (A ζ) c Φ) σ := by
@@ -100,8 +110,7 @@ theorem finePairPacket_even_subset_expansion {n : ℕ}
       (Finset.measurable_fun_prod W (fun i _ => hmψ i)).aestronglyMeasurable
     exact Filter.Eventually.of_forall fun ζ => by
       rw [Real.norm_eq_abs, Finset.abs_prod]
-      exact (Finset.prod_le_prod₀ (fun _ _ => abs_nonneg _) (fun i _ => hbψ ζ i)).trans_eq
-        (Finset.prod_const_one)
+      grind only [Finset.prod_le_prod₀, abs_nonneg, Finset.prod_const_one]
   have hsubset (ζ : Z) :
       (∫ᵛ e, (∏ i, finePairDensityReset a b e.1 e.2 p (ψ ζ) i)
         ∂<•finePairDensitySignedRule a b M) =
@@ -122,10 +131,13 @@ theorem finePairPacket_even_subset_expansion {n : ℕ}
 
 end Generic
 
-theorem finePairFineFirstAction_even_subset_expansion {d n F : ℕ} [NeZero d]
-    (ad bd T0 N : ℝ) (ha : 0 < ad) (hab : ad < bd) (M q : ℕ) (C : ℝ)
-    (U : Fin n → Covariate d) (p : Fin n → ℝ) (hp : ∀ i, p i ∈ Icc ad bd)
-    (c : HighFrameIndex d F → ℝ) (Φ : (HighFrameIndex d F → ℝ) → ℝ) :
+section
+variable {d n F : ℕ}
+
+theorem finePairFineFirstAction_even_subset_expansion  [NeZero d]
+    ad bd T0 N (ha : 0 < ad) (hab : ad < bd) M q C
+    U p (hp : ∀ i, p i ∈ Icc ad bd)
+    c Φ :
     finePairFineFirstAction ad bd T0 N M q C U p c Φ =
       ∑ W ∈ (Finset.univ : Finset (Fin n)).powerset,
         finePairCountCoefficient ad bd M n W.card * (∏ i ∈ W, p i) * finePairEvenSelector W.card *
@@ -151,25 +163,25 @@ theorem finePairFineFirstAction_even_subset_expansion {d n F : ℕ} [NeZero d]
   unfold finePairTimeSubsetMoment
   ring
 
-def finePairPairAliasAction {d n F : ℕ} (ad bd T0 N : ℝ) (M q : ℕ) (C : ℝ)
-    (U : Fin n → Covariate d) (p : Fin n → ℝ) (c : HighFrameIndex d F → ℝ)
-    (Φ : (HighFrameIndex d F → ℝ) → ℝ) : ℝ :=
+def finePairPairAliasAction  ad bd T0 N M q C
+    (U : Fin n → Covariate d) (p : Fin n → ℝ) c
+    Φ  :=
   ∑ W ∈ (Finset.univ : Finset (Fin n)).powerset,
     finePairCountCoefficient ad bd M n W.card * (∏ i ∈ W, p i) * (if W.card = 2 then 1 else 0) *
       finePairTimeSubsetMoment T0 N U W * responseMatrixAction q C (finePairDistanceMatrix d F) c Φ
 
-def finePairEvenFieldAction {d n F : ℕ} (ad bd T0 N : ℝ) (M q : ℕ) (C : ℝ)
-    (U : Fin n → Covariate d) (p : Fin n → ℝ) (c : HighFrameIndex d F → ℝ)
-    (Φ : (HighFrameIndex d F → ℝ) → ℝ) : ℝ :=
+def finePairEvenFieldAction  ad bd T0 N M q C
+    (U : Fin n → Covariate d) (p : Fin n → ℝ) c
+    Φ  :=
   ∑ W ∈ (Finset.univ : Finset (Fin n)).powerset,
     finePairCountCoefficient ad bd M n W.card * (∏ i ∈ W, p i) *
       (if 4 ≤ W.card ∧ Even W.card then 1 else 0) *
         finePairTimeSubsetMoment T0 N U W * responseMatrixAction q C (finePairDistanceMatrix d F) c Φ
 
-theorem finePairFineFirstAction_alias_even_field {d n F : ℕ} [NeZero d]
-    (ad bd T0 N : ℝ) (ha : 0 < ad) (hab : ad < bd) (M q : ℕ) (C : ℝ)
-    (U : Fin n → Covariate d) (p : Fin n → ℝ) (hp : ∀ i, p i ∈ Icc ad bd)
-    (c : HighFrameIndex d F → ℝ) (Φ : (HighFrameIndex d F → ℝ) → ℝ) :
+theorem finePairFineFirstAction_alias_even_field  [NeZero d]
+    ad bd T0 N (ha : 0 < ad) (hab : ad < bd) M q C
+    U (p : Fin n → ℝ) (hp : ∀ i, p i ∈ Icc ad bd)
+    (c : HighFrameIndex d F → ℝ) Φ :
     finePairFineFirstAction ad bd T0 N M q C U p c Φ =
       finePairPairAliasAction ad bd T0 N M q C U p c Φ +
         finePairEvenFieldAction ad bd T0 N M q C U p c Φ := by
@@ -177,18 +189,15 @@ theorem finePairFineFirstAction_alias_even_field {d n F : ℕ} [NeZero d]
   simp only [finePairEvenSelector_split, finePairPairAliasAction, finePairEvenFieldAction,
     mul_add, add_mul, Finset.sum_add_distrib]
 
-theorem finePairPairAliasAction_zero_selected_count {d n F : ℕ}
-    (ad bd T0 N : ℝ) (ha : 0 < ad) (hab : ad < bd) (M q : ℕ)
-    (hn : 3 ≤ n) (hM : n ≤ M) (C : ℝ)
-    (U : Fin n → Covariate d) (p : Fin n → ℝ) (c : HighFrameIndex d F → ℝ)
-    (Φ : (HighFrameIndex d F → ℝ) → ℝ) :
+theorem finePairPairAliasAction_zero_selected_count 
+    ad bd T0 N (ha : 0 < ad) (hab : ad < bd) M q
+    (hn : 3 ≤ n) (hM : n ≤ M) C
+    U (p : Fin n → ℝ) (c : HighFrameIndex d F → ℝ)
+    Φ :
     finePairPairAliasAction ad bd T0 N M q C U p c Φ = 0 := by
   unfold finePairPairAliasAction
-  apply Finset.sum_eq_zero
-  intro W _
-  by_cases hW : W.card = 2
-  · rw [hW, finePairCountCoefficient_two_exact ad bd ha hab M n (by omega) hM]
-    simp [show n ≠ 2 by omega]
-  · simp [hW]
+  grind only [Finset.sum_eq_zero, finePairCountCoefficient_two_exact]
+end
+
 
 end NearlyMinimax

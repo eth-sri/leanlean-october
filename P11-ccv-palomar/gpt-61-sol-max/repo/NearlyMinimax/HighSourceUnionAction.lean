@@ -31,12 +31,12 @@ def sourceRowSignedMeasure (d k D M q : ℕ) (a b C lam ℓ N μ : ℝ) :
       (higherBandFamilyGuardDegree M i.val) D q a b C lam ℓ
       (higherBandFamilyUpper d ℓ N μ i.val) i.val.2
 
-theorem sourceRow_activated_signed_action (d : ℕ) [NeZero d] (k D M q : ℕ)
-    (a b C lam ℓ N μ : ℝ)
+theorem sourceRow_activated_signed_action d [NeZero d] k D M q
+    a b C lam ℓ N μ
     (hpos : ∀ i, 0 < (sourceRowData d k D M q a b C lam ℓ N μ).rowMass i)
-    (i : SourceRowIndex d D M q a b C lam ℓ N μ)
-    (F : SourceRowMark d D M q a b C lam ℓ N μ i → ℝ) (hF : Measurable F)
-    (L : ℝ) (hFbound : ∀ e, ‖F e‖ ≤ L) :
+    i
+    F (hF : Measurable F)
+    L (hFbound : ∀ e, ‖F e‖ ≤ L) :
     (∫ e, (sourceRowData d k D M q a b C lam ℓ N μ).rowActivation i e * F e
       ∂(sourceRowData d k D M q a b C lam ℓ N μ).rowLaw i) =
       ∫ᵛ e, F e ∂<•sourceRowSignedMeasure d k D M q a b C lam ℓ N μ i := by
@@ -87,17 +87,16 @@ theorem sourceRow_activated_signed_action (d : ℕ) [NeZero d] (k D M q : ℕ)
 /-- The entire canonical source generator is an actual finite sum of
 its constructed signed packet integrals, with numerical source guards. -/
 theorem completeSourceUnion_signed_action {d k D M q : ℕ} [NeZero d]
-    (C : ModelConstants d) (hD : 3 ≤ D) (hq : 1 ≤ q)
-    (hM : highCenterResolutionThreshold C ≤ (M : ℝ))
-    (Cfr lam ℓ N μ : ℝ) (hCfr : 1 ≤ Cfr) (hℓ : 0 < ℓ) (hℓN : ℓ < N)
-    (F : HighUnionMark (SourceRowMark d D M q (C.densityLower+1/(M : ℝ))
-      (C.densityUpper-1/(M : ℝ)) Cfr lam ℓ N μ) → ℝ) (hF : Measurable F)
-    (L : ℝ) (hFbound : ∀ e, ‖F e‖ ≤ L) :
+    C (hD : 3 ≤ D) (hq : 1 ≤ q)
+    (hM : highCenterResolutionThreshold C ≤ M)
+    Cfr lam ℓ N μ (hCfr : 1 ≤ Cfr) (hℓ : 0 < ℓ) (hℓN : ℓ < N)
+    F (hF : Measurable F)
+    L (hFbound : ∀ e, ‖F e‖ ≤ L) :
     let R := completeSourceRows C k D M q Cfr lam ℓ N μ
     (∫ e, highUnionActivation R (highCenterMix C) e*F e ∂highUnionLaw R (highCenterMix C)) =
       ∑ i, ∫ᵛ e, F (Sum.inl ⟨i,e⟩)
-        ∂<•sourceRowSignedMeasure d k D M q (C.densityLower+1/(M : ℝ))
-          (C.densityUpper-1/(M : ℝ)) Cfr lam ℓ N μ i := by
+        ∂<•sourceRowSignedMeasure d k D M q (C.densityLower+1/M)
+          (C.densityUpper-1/M) Cfr lam ℓ N μ i := by
   dsimp only
   let a := C.densityLower+1/(M : ℝ)
   let b := C.densityUpper-1/(M : ℝ)

@@ -11,7 +11,7 @@ open Set
 open scoped BigOperators
 namespace RoughRegime.Model
 
-theorem convex_cube (d : ℕ) : Convex ℝ (cube d) := by
+theorem convex_cube d : Convex ℝ (cube d) := by
   intro x hx y hy a b ha hb hab j
   have hxj := hx j
   have hyj := hy j
@@ -23,7 +23,7 @@ theorem convex_cube (d : ℕ) : Convex ℝ (cube d) := by
         (mul_le_mul_of_nonneg_left hyj.2 hb)
       _ = 1 := by nlinarith
 
-theorem cube_nonempty_interior (d : ℕ) : (interior (cube d)).Nonempty := by
+theorem cube_nonempty_interior d : (interior (cube d)).Nonempty := by
   let c : Covariate d := WithLp.toLp 2 (fun _ => (1 / 2 : ℝ))
   refine ⟨c, mem_interior_iff_mem_nhds.mpr ?_⟩
   apply Filter.mem_of_superset (Metric.ball_mem_nhds c (by norm_num : (0 : ℝ) < 1 / 2))
@@ -34,11 +34,11 @@ theorem cube_nonempty_interior (d : ℕ) : (interior (cube d)).Nonempty := by
     exact hb.trans_lt hd
   exact ⟨by linarith [(abs_lt.mp hcoord).1], by linarith [(abs_lt.mp hcoord).2]⟩
 
-theorem uniqueDiffOn_cube (d : ℕ) : UniqueDiffOn ℝ (cube d) :=
+theorem uniqueDiffOn_cube d : UniqueDiffOn ℝ (cube d) :=
   uniqueDiffOn_convex (convex_cube d) (cube_nonempty_interior d)
 
-theorem coordinateDerivative_eq_iteratedFDeriv {d : ℕ} (f : Covariate d → ℝ)
-    (q : ℕ) (σ : Fin q → Fin d) (x : Covariate d) (hx : x ∈ cube d)
+theorem coordinateDerivative_eq_iteratedFDeriv {d } f
+    (q : ℕ) σ x (hx : x ∈ cube d)
     (hf : ContDiffAt ℝ q f x) :
     coordinateDerivative f q σ x =
       iteratedFDeriv ℝ q f x (fun j => EuclideanSpace.single (σ j) 1) := by

@@ -15,21 +15,21 @@ namespace NearlyMinimax
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 800000
 
-theorem high_raw_square_patch_integrable_bound {d k r : ℕ} [NeZero k]
-    (hk : 4 ≤ k) (j : HighWindowLabels d k)
-    (R : (Fin r → Covariate d) → (Fin r → Fin 3) → ℝ)
+theorem high_raw_square_patch_integrable_bound {d k r } [NeZero k]
+    (hk : 4 ≤ k) j
+    R
     (hR : ∀ y, Measurable (fun x => R x y))
     (H : (Fin r → Covariate d) → ℝ)
-    (hH : Integrable H (Measure.pi (fun _ : Fin r => volume.restrict (spatialPatchBox d))))
+    (hH : Integrable H (Measure.pi (fun _  => volume.restrict (spatialPatchBox d))))
     (hH0 : ∀ u, 0 ≤ H u)
     (hdom : ∀ x, (∀ i, x i ∈ highTorusPatch d k j) →
       selectedRawSquareEnergy R x ≤ H (highPatchProductChart d k j x)) :
     Integrable (selectedRawSquareEnergy R)
-      (Measure.pi (fun _ : Fin r => (cubeVolume d).restrict (highTorusPatch d k j))) ∧
+      (Measure.pi (fun _  => (cubeVolume d).restrict (highTorusPatch d k j))) ∧
     (∫ x, selectedRawSquareEnergy R x
-      ∂Measure.pi (fun _ : Fin r => (cubeVolume d).restrict (highTorusPatch d k j))) ≤
-      ((2 / (k : ℝ)) ^ d) ^ r *
-        ∫ u, H u ∂Measure.pi (fun _ : Fin r => volume.restrict (spatialPatchBox d)) := by
+      ∂Measure.pi (fun _  => (cubeVolume d).restrict (highTorusPatch d k j))) ≤
+      ((2 / k) ^ d) ^ r *
+        ∫ u, H u ∂Measure.pi (fun _  => volume.restrict (spatialPatchBox d)) := by
   let _ := cubeVolume_isProbability d
   have hrawMeas : Measurable (selectedRawSquareEnergy R) :=
     Finset.measurable_sum _ (fun y _ => (hR y).pow_const 2)

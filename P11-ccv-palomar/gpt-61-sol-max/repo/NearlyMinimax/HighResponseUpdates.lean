@@ -15,46 +15,46 @@ set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1000000
 
 /-- A ternary response on an affine regression line, as an actual polynomial. -/
-def ternaryLinePolynomial (a f V δ : ℝ) (y : Fin 3) : ℝ[X] :=
+def ternaryLinePolynomial a f V δ y  :=
   C (ternaryMass a f V y) + monomial 1 (δ * ternaryMeanDerivative a f y) +
     monomial 2 (δ ^ 2 * ternaryVarianceDerivative a y)
 
-theorem ternary_line_polynomial_eval (a f V δ z : ℝ) (y : Fin 3) :
+theorem ternary_line_polynomial_eval a f V δ z y :
     (ternaryLinePolynomial a f V δ y).eval z = ternaryMass a (f + z * δ) V y := by
   fin_cases y <;> simp [ternaryLinePolynomial, ternaryMass, ternaryMeanDerivative,
     ternaryVarianceDerivative, div_eq_mul_inv] <;> ring
 
-theorem ternary_line_polynomial_natDegree (a f V δ : ℝ) (y : Fin 3) :
+theorem ternary_line_polynomial_natDegree a f V δ y :
     (ternaryLinePolynomial a f V δ y).natDegree ≤ 2 := by
   unfold ternaryLinePolynomial
   apply (natDegree_add_le _ _).trans
-  apply max_le
-  · apply (natDegree_add_le _ _).trans
-    exact max_le (by simp) ((natDegree_monomial_le _).trans (by norm_num))
-  · exact natDegree_monomial_le _
+  measurability
 
 /-- Complete finite product likelihood on the same line. -/
-def responseLinePolynomial (n : ℕ) (a V : ℝ) (f δ : Fin n → ℝ)
-    (y : Fin n → Fin 3) : ℝ[X] := ∏ i, ternaryLinePolynomial a (f i) V (δ i) (y i)
+def responseLinePolynomial n a V (f δ : Fin n → ℝ)
+    (y : Fin n → Fin 3)  := ∏ i, ternaryLinePolynomial a (f i) V (δ i) (y i)
 
-theorem response_line_polynomial_eval (n : ℕ) (a V : ℝ) (f δ : Fin n → ℝ)
-    (y : Fin n → Fin 3) (z : ℝ) :
+section
+variable (n : ℕ) (a V : ℝ) (f δ : Fin n → ℝ) (y : Fin n → Fin 3)
+
+theorem response_line_polynomial_eval  z :
     (responseLinePolynomial n a V f δ y).eval z =
       ∏ i, ternaryMass a (f i + z * δ i) V (y i) := by
   simp only [responseLinePolynomial, eval_prod]
   simp only [ternary_line_polynomial_eval]
 
-theorem response_line_polynomial_natDegree (n : ℕ) (a V : ℝ) (f δ : Fin n → ℝ)
-    (y : Fin n → Fin 3) : (responseLinePolynomial n a V f δ y).natDegree ≤ 2 * n := by
+theorem response_line_polynomial_natDegree  : (responseLinePolynomial n a V f δ y).natDegree ≤ 2 * n := by
   apply (natDegree_prod_le _ _).trans
   calc
     _ ≤ ∑ _i : Fin n, 2 := Finset.sum_le_sum (fun i _ => ternary_line_polynomial_natDegree _ _ _ _ _)
     _ = _ := by simp [mul_comm]
+end
+
 
 /-- Exact cardinal quadratic extraction of the genuine likelihood through
 count q, including arbitrary offsets and incoming regression fields. -/
-theorem response_line_rule_exact (q n : ℕ) (a V : ℝ) (f δ : Fin n → ℝ)
-    (y : Fin n → Fin 3) (hn : n ≤ q) :
+theorem response_line_rule_exact q n a V f δ
+    y (hn : n ≤ q) :
     (∑ j : Fin (2 * q + 2), responseWeight q j *
       ∏ i, ternaryMass a (f i + responseNode q j * δ i) V (y i)) =
       (responseLinePolynomial n a V f δ y).coeff 2 := by
@@ -66,16 +66,16 @@ theorem response_line_rule_exact (q n : ℕ) (a V : ℝ) (f δ : Fin n → ℝ)
 
 /-- Formal quadratic coefficient equals half the genuine second directional
 product derivative, so its heat contraction can be evaluated explicitly. -/
-theorem response_line_quadratic_coefficient (n : ℕ) (a V : ℝ) (f δ : Fin n → ℝ)
-    (y : Fin n → Fin 3) :
+theorem response_line_quadratic_coefficient n a V f δ
+    y :
     2 * (responseLinePolynomial n a V f δ y).coeff 2 =
       finiteProductSecond Finset.univ
         (fun i z => ternaryMass a (f i + z * δ i) V (y i))
         (fun i z => δ i * ternaryMeanDerivative a (f i + z * δ i) (y i))
         (fun i _ => (δ i) ^ 2 * ternaryMeanSecondDerivative a (y i)) 0 := by
   let Q := responseLinePolynomial n a V f δ y
-  let H : Fin n → ℝ → ℝ := fun i z => ternaryMass a (f i + z * δ i) V (y i)
-  let D : Fin n → ℝ → ℝ := fun i z => δ i * ternaryMeanDerivative a (f i + z * δ i) (y i)
+  let H  := fun i z => ternaryMass a (f i + z * δ i) V (y i)
+  let D  := fun i z => δ i * ternaryMeanDerivative a (f i + z * δ i) (y i)
   let E : Fin n → ℝ → ℝ := fun i _ => (δ i) ^ 2 * ternaryMeanSecondDerivative a (y i)
   have hH (i : Fin n) (z : ℝ) : HasDerivAt (H i) (D i z) z := by
     have h := (ternary_hasDerivAt_mean a (f i + z * δ i) V (y i)).comp z
@@ -86,8 +86,7 @@ theorem response_line_quadratic_coefficient (n : ℕ) (a V : ℝ) (f δ : Fin n 
       (((hasDerivAt_id z).mul_const (δ i)).const_add (f i))).const_mul (δ i)
     exact h.congr_deriv (by dsimp [E]; ring)
   have hQ (z : ℝ) : HasDerivAt (fun z => Q.eval z) (finiteProductFirst Finset.univ H D z) z := by
-    simpa only [Q, response_line_polynomial_eval] using
-      finite_product_hasDerivAt Finset.univ H D z (fun i _ => hH i z)
+    grind only [response_line_polynomial_eval, finite_product_hasDerivAt]
   have hd : (fun z => Q.derivative.eval z) = finiteProductFirst Finset.univ H D := by
     funext z
     exact (Q.hasDerivAt z).unique (hQ z)
@@ -97,8 +96,7 @@ theorem response_line_quadratic_coefficient (n : ℕ) (a V : ℝ) (f δ : Fin n 
   have he := (Q.derivative.hasDerivAt 0).unique hsecond
   change Q.derivative.derivative.eval 0 = finiteProductSecond Finset.univ H D E 0 at he
   rw [← coeff_zero_eq_eval_zero, coeff_derivative, coeff_derivative] at he
-  norm_num only [Nat.cast_ofNat, Nat.cast_one, mul_one, Nat.zero_add] at he
-  simpa only [mul_comm, Q, H, D, E] using he
+  grind
 
 /-- A uniform second-derivative estimate yields an affine Taylor remainder
 bound at every scalar response mark; no score bound is assumed. -/
@@ -115,7 +113,7 @@ theorem affine_line_remainder_abs_bound (H D E : ℝ → ℝ) (B : ℝ) (hB : 0 
       (convex_Icc (0 : ℝ) 1) hzero hu
     simp only [Real.norm_eq_abs, sub_zero] at h
     have huabs : |u| ≤ 1 := abs_le.mpr ⟨by linarith [hu.1], hu.2⟩
-    exact h.trans (mul_le_mul_of_nonneg_left huabs hB |>.trans_eq (mul_one B))
+    nlinarith
   let G := fun u => H u - H 0 - u * D 0
   have hG (u : ℝ) (hu : u ∈ Icc (0 : ℝ) 1) : HasDerivAt G (D u - D 0) u :=
     (((hH u hu).sub_const (H 0)).sub ((hasDerivAt_id u).mul_const (D 0))).congr_deriv (by ring)
@@ -125,7 +123,7 @@ theorem affine_line_remainder_abs_bound (H D E : ℝ → ℝ) (B : ℝ) (hB : 0 
     (convex_Icc (0 : ℝ) 1) hzero hz
   have hzabs : |z| ≤ 1 := abs_le.mpr ⟨by linarith [hz.1], hz.2⟩
   simp only [G, sub_zero, zero_mul, sub_self, Real.norm_eq_abs] at h
-  exact h.trans (mul_le_mul_of_nonneg_left hzabs hB |>.trans_eq (mul_one B))
+  nlinarith
 
 /-- The real scalar cardinal action has the all-count quadratic derivative
 bound; its affine part cancels exactly by the proved moments. -/
@@ -158,20 +156,25 @@ section Covariance
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
 
 /-- Incoming coefficients are reset by the actual scalar mark and covariance atom. -/
-def coefficientReset (c v : ι → ℝ) (z : ℝ) : ι → ℝ :=
+def coefficientReset (c v : ι → ℝ) z  :=
   fun i => (1 - z) * c i + z * v i
 
+section
+variable (q : ℕ) (C : ℝ) (A : ι → ι → ℝ) (c : ι → ℝ)
+include q C A c
+
 /-- The paper's B_A as a genuine finite signed action. -/
-def responseMatrixAction (q : ℕ) (C : ℝ) (A : ι → ι → ℝ)
-    (c : ι → ℝ) (Φ : (ι → ℝ) → ℝ) : ℝ :=
+def responseMatrixAction  (Φ : (ι → ℝ) → ℝ)  :=
   covarianceAction C A (fun v => ∑ j : Fin (2 * q + 2),
     responseWeight q j * Φ (coefficientReset c v (responseNode q j)))
 
-theorem responseMatrixAction_zero_mass (q : ℕ) (C : ℝ) (A : ι → ι → ℝ) (c : ι → ℝ) :
+theorem responseMatrixAction_zero_mass  :
     responseMatrixAction q C A c (fun _ => 1) = 0 := by
   simp [responseMatrixAction, response_zero_mass, covarianceAction]
+end
 
-theorem covariance_displacement_second (C : ℝ) (A : ι → ι → ℝ)
+
+theorem covariance_displacement_second C A
     (hC : C ≠ 0) (hA : ∀ i j, A i j = A j i) (c : ι → ℝ) (k l : ι) :
     covarianceAction C A (fun v => (v k - c k) * (v l - c l)) = A k l := by
   have hf : (fun v : ι → ℝ => (v k - c k) * (v l - c l)) =
@@ -184,8 +187,8 @@ theorem covariance_displacement_second (C : ℝ) (A : ι → ι → ℝ)
     covariance_zero_mean, covariance_zero_mass]
   ring
 
-theorem responseNode_mem_unit (q : ℕ) (j : Fin (2 * q + 2)) :
-    responseNode q j ∈ Icc (0 : ℝ) 1 := by
+theorem responseNode_mem_unit q j :
+    responseNode q j ∈ Icc 0 1 := by
   have hden : (0 : ℝ) < (2 * q + 1 : ℕ) := by positivity
   constructor
   · exact div_nonneg (by positivity) hden.le
@@ -211,16 +214,22 @@ theorem coefficientReset_mem_ball (C : ℝ) (c v : ι → ℝ) (z : ℝ)
 
 /-- The finite spatial polynomial frame is evaluated without any abstract
 smoothness or response assumptions. -/
-def spatialFrameCovariance (A : ι → ι → ℝ) {n : ℕ} (φ : Fin n → ι → ℝ)
-    (i l : Fin n) : ℝ := ∑ k, ∑ m, φ i k * φ l m * A k m
+def spatialFrameCovariance (A : ι → ι → ℝ) {n } (φ : Fin n → ι → ℝ)
+    i l  := ∑ k, ∑ m, φ i k * φ l m * A k m
 
-def coefficientRegression {n : ℕ} (η : ℝ) (g w : Fin n → ℝ)
-    (φ : Fin n → ι → ℝ) (c : ι → ℝ) : Fin n → ℝ :=
+section
+variable {n : ℕ} (η : ℝ)
+include η
+
+def coefficientRegression  (g w : Fin n → ℝ)
+    (φ : Fin n → ι → ℝ) (c : ι → ℝ)  :=
   fun i => g i + η * w i * ∑ k, φ i k * c k
 
-def coefficientDirection {n : ℕ} (η : ℝ) (w : Fin n → ℝ)
-    (φ : Fin n → ι → ℝ) (c v : ι → ℝ) : Fin n → ℝ :=
+def coefficientDirection  (w : Fin n → ℝ)
+    (φ : Fin n → ι → ℝ) (c v : ι → ℝ)  :=
   fun i => η * w i * ∑ k, φ i k * (v k - c k)
+end
+
 
 omit [DecidableEq ι] in
 theorem coefficientRegression_reset {n : ℕ} (η : ℝ) (g w : Fin n → ℝ)
@@ -240,9 +249,12 @@ theorem coefficientRegression_reset {n : ℕ} (η : ℝ) (g w : Fin n → ℝ)
   simp only [coefficientRegression, coefficientDirection, hs, mul_sub, Finset.sum_sub_distrib]
   ring
 
-theorem covariance_direction_product {n : ℕ} (C η : ℝ) (A : ι → ι → ℝ)
-    (hC : C ≠ 0) (hA : ∀ i j, A i j = A j i) (w : Fin n → ℝ)
-    (φ : Fin n → ι → ℝ) (c : ι → ℝ) (i l : Fin n) :
+section
+variable {n : ℕ}
+
+theorem covariance_direction_product  C η A
+    (hC : C ≠ 0) (hA : ∀ i j, A i j = A j i) w
+    φ (c : ι → ℝ) (i l : Fin n) :
     covarianceAction C A (fun v => coefficientDirection η w φ c v i *
       coefficientDirection η w φ c v l) = η ^ 2 * w i * w l * spatialFrameCovariance A φ i l := by
   have he : (fun v : ι → ℝ => coefficientDirection η w φ c v i * coefficientDirection η w φ c v l) =
@@ -251,11 +263,7 @@ theorem covariance_direction_product {n : ℕ} (C η : ℝ) (A : ι → ι → �
     funext v
     simp only [coefficientDirection, Finset.mul_sum, Finset.sum_mul]
     rw [Finset.sum_comm]
-    apply Finset.sum_congr rfl
-    intro k _
-    apply Finset.sum_congr rfl
-    intro m _
-    ring
+    grind
   rw [he, covarianceAction_mul, covarianceAction_sum]
   congr 1
   apply Finset.sum_congr rfl
@@ -266,17 +274,17 @@ theorem covariance_direction_product {n : ℕ} (C η : ℝ) (A : ι → ι → �
   rw [covarianceAction_mul, covariance_displacement_second C A hC hA]
 
 /-- Real response likelihood of a single local coefficient state. -/
-def highResponseProduct {n : ℕ} (a V η : ℝ) (g w : Fin n → ℝ)
-    (φ : Fin n → ι → ℝ) (c : ι → ℝ) (y : Fin n → Fin 3) : ℝ :=
+def highResponseProduct  a V η g w
+    φ (c : ι → ℝ) (y : Fin n → Fin 3)  :=
   ∏ i, ternaryMass a (coefficientRegression η g w φ c i) V (y i)
 
 /-- The exact finite signed response operator is its directional Hessian
 contraction through count q. This comes from actual cardinal evaluation. -/
-theorem high_response_matrix_second {n : ℕ} (q : ℕ) (hn : n ≤ q)
-    (C a V η : ℝ) (A : ι → ι → ℝ) (g w : Fin n → ℝ)
-    (φ : Fin n → ι → ℝ) (c : ι → ℝ) (y : Fin n → Fin 3) :
+theorem high_response_matrix_second  q (hn : n ≤ q)
+    C a V η A (g w : Fin n → ℝ)
+    φ (c : ι → ℝ) y :
     responseMatrixAction q C A c (fun c => highResponseProduct a V η g w φ c y) =
-      (1 / 2 : ℝ) * covarianceAction C A (fun v =>
+      (1 / 2) * covarianceAction C A (fun v =>
         finiteProductSecond Finset.univ
           (fun i z => ternaryMass a (coefficientRegression η g w φ c i +
             z * coefficientDirection η w φ c v i) V (y i))
@@ -293,16 +301,16 @@ theorem high_response_matrix_second {n : ℕ} (q : ℕ) (hn : n ≤ q)
   linarith
 
 /-- The variance derivative before substituting a common variance. -/
-def highResponseVarianceTerm {n : ℕ} (a V η : ℝ) (g w : Fin n → ℝ)
-    (φ : Fin n → ι → ℝ) (c : ι → ℝ) (y : Fin n → Fin 3) (i : Fin n) : ℝ :=
+def highResponseVarianceTerm  a V η g w
+    φ (c : ι → ℝ) (y : Fin n → Fin 3) i  :=
   ternaryVarianceDerivative a (y i) * ∏ l ∈ (Finset.univ : Finset (Fin n)).erase i,
     ternaryMass a (coefficientRegression η g w φ c l) V (y l)
 
 /-- Spatial cardinal covariance cancels every off-diagonal product derivative.
 This is the actual heat identity of the realized finite signed update. -/
-theorem high_response_matrix_heat {n : ℕ} (q : ℕ) (hn : n ≤ q)
-    (C a V η : ℝ) (A : ι → ι → ℝ) (hC : C ≠ 0) (hA : ∀ i j, A i j = A j i)
-    (g w : Fin n → ℝ) (φ : Fin n → ι → ℝ) (c : ι → ℝ) (y : Fin n → Fin 3)
+theorem high_response_matrix_heat  q (hn : n ≤ q)
+    C a V η A (hC : C ≠ 0) (hA : ∀ i j, A i j = A j i)
+    g w φ (c : ι → ℝ) y
     (d : Fin n → ℝ)
     (hdiag : ∀ i l, spatialFrameCovariance A φ i l = if i = l then d i else 0) :
     responseMatrixAction q C A c (fun c => highResponseProduct a V η g w φ c y) =
@@ -312,7 +320,7 @@ theorem high_response_matrix_heat {n : ℕ} (q : ℕ) (hn : n ≤ q)
   let p := fun i => ternaryMass a (f i) V (y i)
   let m := fun i => ternaryMeanDerivative a (f i) (y i)
   let e := fun i => ternaryMeanSecondDerivative a (y i)
-  let S : (ι → ℝ) → ℝ := fun v => ∑ i : Fin n,
+  let S  := fun v => ∑ i : Fin n,
     ((∑ l ∈ (Finset.univ : Finset (Fin n)).erase i,
       (∏ k ∈ ((Finset.univ : Finset (Fin n)).erase i).erase l, p k) *
         m l * m i * (δ v l * δ v i)) +
@@ -327,10 +335,7 @@ theorem high_response_matrix_heat {n : ℕ} (q : ℕ) (hn : n ≤ q)
     intro i _
     congr 1
     · rw [Finset.sum_mul]
-      apply Finset.sum_congr rfl
-      intro l _
-      dsimp [p, m]
-      ring
+      grind
     · dsimp [p]
       ring
   rw [high_response_matrix_second q hn C a V η A g w φ c y]
@@ -366,11 +371,13 @@ theorem high_response_matrix_heat {n : ℕ} (q : ℕ) (hn : n ≤ q)
   apply Finset.sum_congr rfl
   intro i _
   ring
+end
+
 
 /-- All-count cardinal action bound propagated through the genuine product
 likelihood. The assumptions are individual legality and displacement bounds. -/
-theorem response_scalar_product_action_abs_bound (q n : ℕ) (hn : 1 ≤ n)
-    (a V η ρ : ℝ) (f δ : Fin n → ℝ) (y : Fin n → Fin 3)
+theorem response_scalar_product_action_abs_bound q n (hn : 1 ≤ n)
+    a V η ρ (f δ : Fin n → ℝ) (y : Fin n → Fin 3)
     (ha : 0 < a) (hη : 0 ≤ η) (hρ : 0 ≤ ρ)
     (hf : ∀ z ∈ Icc (0 : ℝ) 1, ∀ i, |f i + z * δ i| ≤ ρ)
     (hp : ∀ z ∈ Icc (0 : ℝ) 1, ∀ i u, 0 ≤ ternaryMass a (f i + z * δ i) V u)
@@ -379,8 +386,8 @@ theorem response_scalar_product_action_abs_bound (q n : ℕ) (hn : 1 ≤ n)
       ∏ i, ternaryMass a (f i + responseNode q j * δ i) V (y i)| ≤
       (∑ j : Fin (2 * q + 2), |responseWeight q j|) *
         (4 * (((2 * ρ + a) / a ^ 2) ^ 2 + 2 / a ^ 2) * n ^ 2 * η ^ 2) := by
-  let H : Fin n → ℝ → ℝ := fun i z => ternaryMass a (f i + z * δ i) V (y i)
-  let D : Fin n → ℝ → ℝ := fun i z => δ i * ternaryMeanDerivative a (f i + z * δ i) (y i)
+  let H  := fun i z => ternaryMass a (f i + z * δ i) V (y i)
+  let D  := fun i z => δ i * ternaryMeanDerivative a (f i + z * δ i) (y i)
   let E : Fin n → ℝ → ℝ := fun i _ => (δ i) ^ 2 * ternaryMeanSecondDerivative a (y i)
   let A := (2 * ρ + a) / a ^ 2
   let S := 2 / a ^ 2
@@ -399,8 +406,7 @@ theorem response_scalar_product_action_abs_bound (q n : ℕ) (hn : 1 ≤ n)
     exact ternary_mass_le_one a _ V ha.ne' (hp z hz i) (y i)
   have hDbound (z : ℝ) (hz : z ∈ Icc (0 : ℝ) 1) (i : Fin n) : |D i z| ≤ 2 * η * A := by
     rw [abs_mul]
-    exact mul_le_mul (hδ i) (ternary_mean_derivative_abs_bound a _ ρ ha hρ (hf z hz i) (y i))
-      (abs_nonneg _) (by positivity)
+    grind only [mul_le_mul, ternary_mean_derivative_abs_bound, abs_nonneg]
   have hEbound (z : ℝ) (i : Fin n) : |E i z| ≤ 4 * η ^ 2 * S := by
     rw [abs_mul, abs_of_nonneg (sq_nonneg _)]
     have hs : (δ i) ^ 2 ≤ (2 * η) ^ 2 := by
@@ -427,10 +433,10 @@ theorem response_scalar_product_action_abs_bound (q n : ℕ) (hn : 1 ≤ n)
 
 /-- Matrix-response bound at every count, derived from legal frame resets
 and the actual ternary product derivatives. -/
-theorem high_response_matrix_all_count_bound {n : ℕ} (q : ℕ) (hn : 1 ≤ n)
-    (C a V η ρ : ℝ) (hC : 0 < C) (ha : 0 < a) (hη : 0 ≤ η) (hρ : 0 ≤ ρ)
-    (hηρ : η ≤ ρ / 2) (A : ι → ι → ℝ) (g w : Fin n → ℝ)
-    (φ : Fin n → ι → ℝ) (c : ι → ℝ) (y : Fin n → Fin 3)
+theorem high_response_matrix_all_count_bound {n } q (hn : 1 ≤ n)
+    C a V η ρ (hC : 0 < C) (ha : 0 < a) (hη : 0 ≤ η) (hρ : 0 ≤ ρ)
+    (hηρ : η ≤ ρ / 2) A (g w : Fin n → ℝ)
+    φ c y
     (hc : ∑ k, |c k| ≤ C⁻¹) (hg : ∀ i, |g i| ≤ ρ / 2)
     (hw : ∀ i, |w i| ≤ 1)
     (hφ : ∀ v : ι → ℝ, (∑ k, |v k|) ≤ C⁻¹ → ∀ i, |∑ k, φ i k * v k| ≤ 1)
@@ -454,7 +460,7 @@ theorem high_response_matrix_all_count_bound {n : ℕ} (q : ℕ) (hn : 1 ≤ n)
       exact (abs_sub _ _).trans (by linarith [hφ v hv i, hφ c hc i])
     have hm : |η * w i| ≤ η := by
       rw [abs_mul, abs_of_nonneg hη]
-      exact (mul_le_mul_of_nonneg_left (hw i) hη).trans_eq (mul_one η)
+      bound
     change |η * w i * (∑ k, φ i k * (v k - c k))| ≤ 2 * η
     rw [abs_mul]
     exact (mul_le_mul hm hprof (abs_nonneg _) hη).trans_eq (by ring)
@@ -466,7 +472,7 @@ theorem high_response_matrix_all_count_bound {n : ℕ} (q : ℕ) (hn : 1 ≤ n)
     change |g i + η * w i * (∑ k, φ i k * coefficientReset c v z k)| ≤ ρ
     have hm : |η * w i| ≤ η := by
       rw [abs_mul, abs_of_nonneg hη]
-      exact (mul_le_mul_of_nonneg_left (hw i) hη).trans_eq (mul_one η)
+      bound
     have hpterm : |η * w i * (∑ k, φ i k * coefficientReset c v z k)| ≤ η := by
       rw [abs_mul]
       exact (mul_le_mul hm hprof (abs_nonneg _) hη).trans_eq (mul_one η)

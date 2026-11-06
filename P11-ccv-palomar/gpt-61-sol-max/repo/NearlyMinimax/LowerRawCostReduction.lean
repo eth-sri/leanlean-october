@@ -16,8 +16,8 @@ set_option maxHeartbeats 1000000
 set_option backward.isDefEq.respectTransparency false
 
 /-- The three actual primitive local-score energy contributions. -/
-def lowerSaddleRawEnergyBound (s d m θ C cf C5 C6 C7 ch Bl : ℝ)
-    (τM : ℕ → ℝ) (x : ℝ) : ℝ :=
+def lowerSaddleRawEnergyBound s d m θ C cf C5 C6 C7 ch Bl
+    τM x  :=
   let η := lowerSaddleEta s d m θ C cf x
   let μ := lowerSaddleMu d m θ C x
   let N := lowerSaddleN s d m θ C τM x
@@ -29,8 +29,8 @@ def lowerSaddleRawEnergyBound (s d m θ C cf C5 C6 C7 ch Bl : ℝ)
 
 /-- Exact inverse-volume bookkeeping converts the genuine primitive
 energy bound to the source's explicit seven-constant cost expression. -/
-theorem lowerSaddle_raw_energy_cost {s d m θ C cf CB C5 C6 C7 ch x Bl E : ℝ}
-    (τM : ℕ → ℝ) (hx : 0 ≤ x) (hcf : 0 ≤ cf) (hCB : 0 ≤ CB)
+theorem lowerSaddle_raw_energy_cost {s d m θ C cf CB C5 C6 C7 ch x Bl E }
+    τM (hx : 0 ≤ x) (hcf : 0 ≤ cf) (hCB : 0 ≤ CB)
     (hC5 : 0 ≤ C5) (hC6 : 0 ≤ C6) (hC7 : 0 ≤ C7) (hch : 0 ≤ ch)
     (hB : 1 ≤ lowerSaddleActivity s d m θ C τM x) (hBl : 0 ≤ Bl)
     (hcost : Bl ≤ CB*lowerSaddleActivity s d m θ C τM x)
@@ -58,7 +58,7 @@ theorem lowerSaddle_raw_energy_cost {s d m θ C cf CB C5 C6 C7 ch x Bl E : ℝ}
       (lowerSaddleN s d m θ C τM x)^(4-d))
     (CB := CB) (C5 := C5) (C6 := C6) (C7 := C7) (cf := cf) (ch := ch)
     (Real.rpow_pos_of_pos hh _)
-    (by rfl) hx (Real.rpow_nonneg hh.le _) he hB hBl hCB hC5 hC6 hC7 hcf hch
+    (rfl) hx (Real.rpow_nonneg hh.le _) he hB hBl hCB hC5 hC6 hC7 hcf hch
     (Real.rpow_nonneg (lowerSaddleN_positive _ _ _ _ _ _ _).le _)
     (mul_nonneg (Real.exp_pos _).le (Real.rpow_nonneg (lowerSaddleN_positive _ _ _ _ _ _ _).le _))
     hcost (lowerSaddleM m x) (lowerSaddleD d m x) hE
@@ -67,16 +67,13 @@ theorem lowerSaddle_raw_energy_cost {s d m θ C cf CB C5 C6 C7 ch x Bl E : ℝ}
   have he1 : x^2*h^d*h^(4*s)*(lowerSaddleN s d m θ C τM x)^(-d) =
       lowerSaddleEnergyOne s d m θ C τM x := by
     unfold lowerSaddleEnergyOne
-    change x^2*h^d*h^(4*s)*(lowerSaddleN s d m θ C τM x)^(-d) =
-      x^2*h^(d+4*s)*(lowerSaddleN s d m θ C τM x)^(-d)
-    rw [Real.rpow_add hh]
-    ring
+    grind
   rw [he1] at hr
   simpa only [lowerSaddleEnergyTwo, lowerSaddleEnergyThree, ← mul_assoc] using hr
 
 /-- The actual shrunk-endpoint saddle supplies the cost bound eventually;
 the only remaining variables are the genuine raw activity and energy. -/
-theorem eventually_actual_lowerSaddle_raw_cost {s d a b cf CB C5 C6 C7 ch C : ℝ}
+theorem eventually_actual_lowerSaddle_raw_cost {s d a b cf CB C5 C6 C7 ch C }
     (hs : 1 < s) (hd : 4*s < d) (ha : 0 < a) (hab : a < b)
     (hcf : 0 ≤ cf) (hCB : 0 ≤ CB) (hC5 : 0 ≤ C5) (hC6 : 0 ≤ C6)
     (hC7 : 0 ≤ C7) (hch : 0 ≤ ch)
@@ -88,7 +85,7 @@ theorem eventually_actual_lowerSaddle_raw_cost {s d a b cf CB C5 C6 C7 ch C : �
       let θ := lowerSaddleTheta s d (densityIntervalExponent a b)
       let τM := shrunkDensityExponent a b
       let B := lowerSaddleActivity s d m θ C τM x
-      ∀ Bl E : ℝ, 1 ≤ B → 0 ≤ Bl → Bl ≤ CB*B →
+      ∀ Bl E , 1 ≤ B → 0 ≤ Bl → Bl ≤ CB*B →
         E ≤ lowerSaddleRawEnergyBound s d m θ C cf C5 C6 C7 ch Bl τM x →
       1+Bl^2+(lowerSaddleH d m θ C x)^(-d)*E ≤
         3*rawCostConstant CB C5 C6 C7 cf ch*B^2 := by
@@ -102,8 +99,8 @@ theorem eventually_actual_lowerSaddle_raw_cost {s d a b cf CB C5 C6 C7 ch C : �
 
 /-- A true cost denominator bound yields the square of the actual saddle
 risk. This is algebra, without a statistical lower-bound premise. -/
-theorem lowerSaddle_cost_risk_reduction {s d m θ C cf x den CG ctr : ℝ}
-    (τM : ℕ → ℝ) (hden : 0 < den) (hCG : 0 < CG) (hctr : 0 ≤ ctr)
+theorem lowerSaddle_cost_risk_reduction {s d m θ C cf x den CG ctr }
+    τM (hden : 0 < den) (hCG : 0 < CG) (hctr : 0 ≤ ctr)
     (hcost : den ≤ 3*CG*(lowerSaddleActivity s d m θ C τM x)^2) :
     ctr/(3*CG)*(lowerSaddleRisk s d m θ C cf τM x)^2 ≤
       ctr*(lowerSaddleEta s d m θ C cf x)^4/den := by

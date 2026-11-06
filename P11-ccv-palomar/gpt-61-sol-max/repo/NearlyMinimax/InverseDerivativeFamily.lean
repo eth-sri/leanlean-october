@@ -14,15 +14,14 @@ open scoped BigOperators Matrix.Norms.L2Operator
 
 set_option backward.isDefEq.respectTransparency false
 
-def incrementFinRawVector (r : ℕ) (a b : ℝ) (T : Matrix (Fin r) (Fin r) ℝ)
-    (response : Bool) (m : ℕ) :
-    (Fin (Fintype.card (incrementVariables r)) → ℝ) → Fin r → ℝ :=
+def incrementFinRawVector r a b T
+    (response : Bool) m  :=
   fun x i => MvPolynomial.eval x
     (MvPolynomial.rename (Fintype.equivFin (incrementVariables r))
       (rawIncrementEntryPolynomial r a b T response m i))
 
-theorem incrementFinVector_affine (r : ℕ) (a b : ℝ) (T : Matrix (Fin r) (Fin r) ℝ)
-    (y : ℝ) (m : ℕ) :
+theorem incrementFinVector_affine r a b T
+    y m :
     incrementFinVector r a b T y m = incrementFinRawVector r a b T false m -
       y • incrementFinRawVector r a b T true m := by
   funext x i

@@ -16,10 +16,14 @@ variable {E I : Type*} [MeasurableSpace E] [MeasurableSpace I]
 variable [MeasurableSingletonClass I]
 variable {μ : Measure E} [IsProbabilityMeasure μ]
 
-theorem supported_row_sq_le (label : E → I) (hlabel : Measurable label)
-    {K : E × E → ℝ} (hsupport : ∀ x y, label x ≠ label y → K (x, y) = 0)
+section
+variable (label : E → I) (hlabel : Measurable label)
+include hlabel
+
+theorem supported_row_sq_le 
+    {K } (hsupport : ∀ x y, label x ≠ label y → K (x, y) = 0)
     (x : E) (hKx : MemLp (fun y => K (x, y)) 2 μ)
-    {cap : ℝ} (hcap : ∀ i, μ.real (label ⁻¹' {i}) ≤ cap) :
+    {cap } (hcap : ∀ i, μ.real (label ⁻¹' {i}) ≤ cap) :
     rowIntegral (μ := μ) K x ^ 2 ≤ cap * ∫ y, K (x, y) ^ 2 ∂μ := by
   let S := label ⁻¹' {label x}
   have hS : MeasurableSet S := (measurableSet_singleton _).preimage hlabel
@@ -28,7 +32,7 @@ theorem supported_row_sq_le (label : E → I) (hlabel : Measurable label)
     by_cases hy : y ∈ S
     · exact indicator_of_mem hy _
     · rw [indicator_of_notMem hy]
-      exact (hsupport x y (by simpa only [S, mem_preimage, mem_singleton_iff, ne_comm] using hy)).symm
+      solve_by_elim [symm]
   have he₂ : S.indicator (fun y => K (x, y) ^ 2) = (fun y => K (x, y) ^ 2) := by
     funext y
     by_cases hy : y ∈ S
@@ -49,10 +53,10 @@ theorem supported_row_sq_le (label : E → I) (hlabel : Measurable label)
     _ ≤ _ := mul_le_mul_of_nonneg_right (hcap (label x))
       (integral_nonneg (fun _ => sq_nonneg _))
 
-theorem partition_row_energy_le (label : E → I) (hlabel : Measurable label)
-    {K : E × E → ℝ} (hK : MemLp K 2 (μ.prod μ))
+theorem partition_row_energy_le 
+    {K } (hK : MemLp K 2 (μ.prod μ))
     (hsupport : ∀ x y, label x ≠ label y → K (x, y) = 0)
-    {cap : ℝ} (hcap : ∀ i, μ.real (label ⁻¹' {i}) ≤ cap) :
+    {cap } (hcap : ∀ i, μ.real (label ⁻¹' {i}) ≤ cap) :
     (∫ x, rowIntegral (μ := μ) K x ^ 2 ∂μ) ≤
       cap * ∫ z, K z ^ 2 ∂μ.prod μ := by
   have hsec : ∀ᵐ x ∂μ, MemLp (fun y => K (x, y)) 2 μ :=
@@ -64,6 +68,8 @@ theorem partition_row_energy_le (label : E → I) (hlabel : Measurable label)
       filter_upwards [hsec] with x hx
       exact supported_row_sq_le label hlabel hsupport x hx hcap
     _ = _ := by rw [integral_const_mul, integral_prod _ hK.integrable_sq]
+end
+
 
 theorem partition_pairAverage_centered_sq_le {Ω : Type*} [MeasurableSpace Ω]
     {ν : Measure Ω} [IsProbabilityMeasure ν] {n : ℕ} (hn : 2 ≤ n)

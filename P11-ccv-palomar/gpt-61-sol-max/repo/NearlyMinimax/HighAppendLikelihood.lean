@@ -24,7 +24,10 @@ def highAppendLikelihoodAction {E : Type*} [MeasurableSpace E] {d : ℕ}
     (p (historyMarkedAppend dependent hsymm j (ω,e)))
     (F (historyMarkedAppend dependent hsymm j (ω,e))) z ∂π
 
-theorem highAppendLikelihoodAction_measurable {E : Type*} [MeasurableSpace E]
+section
+variable {E : Type*} [MeasurableSpace E]
+
+theorem highAppendLikelihoodAction_measurable 
     [StandardBorelSpace E] {d : ℕ}
     (dependent : J → J → Prop) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
     (π : Measure E) [SFinite π] (activation : E → ℝ) (ha : Measurable activation) (n : ℕ) (a V : ℝ)
@@ -47,7 +50,7 @@ theorem highAppendLikelihoodAction_measurable {E : Type*} [MeasurableSpace E]
       ((highRawSampleLikelihood_joint_measurable n a V p F hp hF).comp hcoord)
   exact hj.stronglyMeasurable.integral_prod_right'.measurable
 
-theorem highAppendLikelihoodAction_abs_le {E : Type*} [MeasurableSpace E]
+theorem highAppendLikelihoodAction_abs_le 
     (π : Measure E) [IsProbabilityMeasure π] {d : ℕ}
     (dependent : J → J → Prop) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
     (activation : E → ℝ) (Ba : ℝ) (hBa : 0 ≤ Ba) (habound : ∀ e, |activation e| ≤ Ba)
@@ -62,18 +65,17 @@ theorem highAppendLikelihoodAction_abs_le {E : Type*} [MeasurableSpace E]
       (F (historyMarkedAppend dependent hsymm j (ω,e))) z‖ ≤ Ba * P^n := by
     intro e
     rw [Real.norm_eq_abs, abs_mul]
-    exact mul_le_mul (habound e) (highRawSampleLikelihood_abs_le n a V P hP
-      (p (historyMarkedAppend dependent hsymm j (ω,e)))
-      (F (historyMarkedAppend dependent hsymm j (ω,e)))
-      (hp _) ha (hq _) z) (abs_nonneg _) hBa
+    grind only [mul_le_mul, highRawSampleLikelihood_abs_le, abs_nonneg]
   simpa using norm_integral_le_of_norm_le_const (μ := π) (Eventually.of_forall hb)
 
 
+section
+variable [StandardBorelSpace E] (π : Measure E) [IsProbabilityMeasure π] {d : ℕ} (dependent : J → J → Prop) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
+
 /-- Fubini converts the true append action on a data observable into the
 actual append likelihood action; integrability follows from the source bounds. -/
-theorem highAppendLikelihoodAction_observable {E : Type*} [MeasurableSpace E]
-    [StandardBorelSpace E] (π : Measure E) [IsProbabilityMeasure π] {d : ℕ}
-    (dependent : J → J → Prop) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
+theorem highAppendLikelihoodAction_observable 
+    
     (activation : E → ℝ) (ham : Measurable activation)
     (Ba : ℝ) (hBa : 0 ≤ Ba) (habound : ∀ e, |activation e| ≤ Ba)
     (n : ℕ) (a V P B : ℝ) (hP : 0 ≤ P) (hB : 0 ≤ B) (ha : a ≠ 0)
@@ -105,10 +107,7 @@ theorem highAppendLikelihoodAction_observable {E : Type*} [MeasurableSpace E]
         (F (historyMarkedAppend dependent hsymm j (ω,z.1))) z.2))
       (π.prod (highSampleReference d n)) := by
     apply Integrable.of_bound hM.aestronglyMeasurable (Ba * (B * P^n))
-    exact Eventually.of_forall fun z => by
-      rw [Real.norm_eq_abs, abs_mul, abs_mul]
-      exact mul_le_mul (habound _) (mul_le_mul (hHb _) (highRawSampleLikelihood_abs_le n a V P hP
-        _ _ (hpb _) ha (hq _) z.2) (abs_nonneg _) hB) (by positivity) hBa
+    grind only [Eventually.of_forall, Real.norm_eq_abs, abs_mul, mul_le_mul, highRawSampleLikelihood_abs_le, abs_nonneg]
   calc
     _ = ∫ e, ∫ z, activation e * (H (encodeDesignResponse a z) * highRawSampleLikelihood n a V
         (p (historyMarkedAppend dependent hsymm j (ω,e)))
@@ -128,9 +127,8 @@ theorem highAppendLikelihoodAction_observable {E : Type*} [MeasurableSpace E]
 
 /-- The actual prior/product-mark append integral is the raw likelihood
 append action tested against the data observable. -/
-theorem highAppendLikelihoodAction_prior_observable {E : Type*} [MeasurableSpace E]
-    [StandardBorelSpace E] (π : Measure E) [IsProbabilityMeasure π] {d : ℕ}
-    (dependent : J → J → Prop) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
+theorem highAppendLikelihoodAction_prior_observable 
+    
     (ν : Measure (HistoryMarked dependent E)) [IsProbabilityMeasure ν]
     (activation : E → ℝ) (ham : Measurable activation)
     (Ba : ℝ) (hBa : 0 ≤ Ba) (habound : ∀ e, |activation e| ≤ Ba)
@@ -156,8 +154,7 @@ theorem highAppendLikelihoodAction_prior_observable {E : Type*} [MeasurableSpace
       ((B * P^n * (highSampleReference d n).real univ) * Ba)
     exact Eventually.of_forall fun z => by
       rw [Real.norm_eq_abs, Pi.mul_apply, Function.comp_apply, Function.comp_apply, abs_mul]
-      exact mul_le_mul (highRawObservable_abs_le n a V P B hP hB _ _ (hpb _) ha (hq _) H hHb)
-        (habound _) (abs_nonneg _) (by positivity)
+      grind only [mul_le_mul, highRawObservable_abs_le, abs_nonneg]
   have hi' : Integrable (fun z : HistoryMarked dependent E × ((Fin n → Covariate d) × (Fin n → Fin 3)) =>
       H (encodeDesignResponse a z.2) *
         highAppendLikelihoodAction dependent hsymm π activation n a V p F j z.1 z.2)
@@ -168,8 +165,7 @@ theorem highAppendLikelihoodAction_prior_observable {E : Type*} [MeasurableSpace
       (B * (Ba * P^n))
     exact Eventually.of_forall fun z => by
       rw [Real.norm_eq_abs, Pi.mul_apply, Function.comp_apply, Function.comp_apply, abs_mul]
-      exact mul_le_mul (hHb _) (highAppendLikelihoodAction_abs_le π dependent hsymm activation Ba hBa
-        habound n a V P hP ha p F hpb hq j z.1 z.2) (abs_nonneg _) hB
+      grind only [mul_le_mul, highAppendLikelihoodAction_abs_le, abs_nonneg]
   rw [MeasureTheory.integral_prod _ hi, MeasureTheory.integral_prod _ hi']
   apply integral_congr_ae
   exact Eventually.of_forall fun ω => by
@@ -178,5 +174,9 @@ theorem highAppendLikelihoodAction_prior_observable {E : Type*} [MeasurableSpace
     convert he using 1
     apply integral_congr_ae
     exact Eventually.of_forall fun e => mul_comm _ _
+end
+
+end
+
 
 end NearlyMinimax

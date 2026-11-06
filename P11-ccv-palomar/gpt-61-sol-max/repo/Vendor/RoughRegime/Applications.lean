@@ -19,12 +19,9 @@ open Filter MeasureTheory
 
 namespace RoughRegime.Applications
 
-/-- A measurable estimator on an arbitrary experiment, including an experiment
-with an auxiliary random seed. -/
-abbrev Estimator (Ω : Type*) [MeasurableSpace Ω] := {f : Ω → ℝ // Measurable f}
 
-instance estimator_nonempty (Ω : Type*) [MeasurableSpace Ω] : Nonempty (Estimator Ω) :=
-  ⟨⟨fun _ => 0, measurable_const⟩⟩
+
+
 
 lemma square_tail_lower {Ω : Type*} [MeasurableSpace Ω]
     (μ : Measure Ω) (f : Ω → ℝ) (hf : Measurable f) (t : ℝ) (ht : 0 ≤ t) :

@@ -12,32 +12,48 @@ open MeasureTheory Set Matrix
 open scoped BigOperators MatrixOrder Matrix.Norms.L2Operator
 namespace NearlyMinimax
 
-def dyadicNormalizedAnchor {d : ℕ} (j : ℕ) (x : Covariate d) : Covariate d :=
+section
+variable {d : ℕ} (j : ℕ)
+include j
+
+def dyadicNormalizedAnchor  (x : Covariate d) : Covariate d :=
   gridNormalizedAnchor ((2 : ℕ) ^ j) (by positivity) x
 
-def dyadicCellAffine {d : ℕ} (j : ℕ) (x w : Covariate d) : Covariate d :=
+def dyadicCellAffine  (x w : Covariate d) : Covariate d :=
   gridAffine ((2 : ℕ) ^ j) (regularGridCell _ (by positivity) x) w
+end
 
-def dyadicNormalizedDensity {d : ℕ} (θ : RegressionParameter d) (j : ℕ)
-    (x : Covariate d) : Covariate d → ℝ := θ.density ∘ dyadicCellAffine j x
 
-def dyadicKnownGram {d ℓ : ℕ} (j : ℕ) (x : Covariate d) :
+def dyadicNormalizedDensity {d } (θ : RegressionParameter d) j
+    x  := θ.density ∘ dyadicCellAffine j x
+
+section
+variable {d ℓ : ℕ}
+
+def dyadicKnownGram  (j : ℕ) (x : Covariate d) :
     Matrix (AnchoredIndex d ℓ) (AnchoredIndex d ℓ) ℝ := fun γ δ =>
   dyadicPilotScale d j * ∫ z in dyadicPilotCell j x,
     dyadicAnchoredFeature j x z γ * dyadicAnchoredFeature j x z δ ∂cubeVolume d
 
-def dyadicPopulationGram {d ℓ : ℕ} (θ : RegressionParameter d) (j : ℕ) (x : Covariate d) :
+section
+variable (θ : RegressionParameter d) (j : ℕ) (x : Covariate d)
+include θ j x
+
+def dyadicPopulationGram   :
     Matrix (AnchoredIndex d ℓ) (AnchoredIndex d ℓ) ℝ := fun γ δ =>
   dyadicPilotScale d j * ∫ z in dyadicPilotCell j x,
     dyadicAnchoredFeature j x z γ * dyadicAnchoredFeature j x z δ ∂designLaw θ
 
-def dyadicPreconditionedGram {d ℓ : ℕ} (θ : RegressionParameter d) (j : ℕ)
-    (x : Covariate d) : Matrix (AnchoredIndex d ℓ) (AnchoredIndex d ℓ) ℝ :=
+def dyadicPreconditionedGram   : Matrix (AnchoredIndex d ℓ) (AnchoredIndex d ℓ) ℝ :=
   (dyadicKnownGram j x)⁻¹ * dyadicPopulationGram θ j x
+end
 
-theorem admissible_designLaw_setIntegral {d : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ)
-    (s : Set (Covariate d)) (hs : MeasurableSet s) (f : Covariate d → ℝ) :
+end
+
+
+theorem admissible_designLaw_setIntegral {d } C
+    θ (hθ : Admissible C θ)
+    s (hs : MeasurableSet s) (f : Covariate d → ℝ) :
     (∫ z in s, f z ∂designLaw θ) = ∫ z in s, θ.density z * f z ∂cubeVolume d := by
   unfold designLaw
   rw [setIntegral_withDensity_eq_setIntegral_toReal_smul₀
@@ -47,7 +63,7 @@ theorem admissible_designLaw_setIntegral {d : ℕ} (C : ModelConstants d)
   rw [ENNReal.toReal_ofReal (C.densityLower_pos.le.trans hz.1)]
   rfl
 
-theorem dyadicKnownGram_eq_normalized {d ℓ : ℕ} (j : ℕ) (x : Covariate d) :
+theorem dyadicKnownGram_eq_normalized {d ℓ } j (x : Covariate d) :
     dyadicKnownGram (ℓ := ℓ) j x = anchoredGram (dyadicNormalizedAnchor j x) := by
   ext γ δ
   have h := regular_grid_cell_integral ((2 : ℕ) ^ j) (by positivity)
@@ -57,8 +73,8 @@ theorem dyadicKnownGram_eq_normalized {d ℓ : ℕ} (j : ℕ) (x : Covariate d) 
     dyadicPilotCell, Set.preimage, Set.mem_singleton_iff, dyadicAnchoredFeature_affine,
     anchoredGram, dyadicNormalizedAnchor] using h
 
-theorem dyadicPopulationGram_eq_normalized {d ℓ : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ) (j : ℕ) (x : Covariate d) :
+theorem dyadicPopulationGram_eq_normalized {d ℓ } (C : ModelConstants d)
+    θ (hθ : Admissible C θ) j x :
     dyadicPopulationGram (ℓ := ℓ) θ j x =
       anchoredDensityGram (dyadicNormalizedAnchor j x) (dyadicNormalizedDensity θ j x) := by
   ext γ δ
@@ -72,18 +88,18 @@ theorem dyadicPopulationGram_eq_normalized {d ℓ : ℕ} (C : ModelConstants d)
     Set.preimage, Set.mem_singleton_iff, dyadicAnchoredFeature_affine, anchoredDensityGram,
     dyadicNormalizedAnchor, dyadicNormalizedDensity, Function.comp_apply, dyadicCellAffine] using h
 
-theorem dyadicNormalizedDensity_measurable {d : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ) (j : ℕ) (x : Covariate d) :
+theorem dyadicNormalizedDensity_measurable {d } (C : ModelConstants d)
+    θ (hθ : Admissible C θ) j x :
     Measurable (dyadicNormalizedDensity θ j x) :=
   hθ.1.comp (gridAffineEquiv _ (by positivity) _).measurable
 
-theorem dyadicNormalizedDensity_bounds {d : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ) (j : ℕ) (x : Covariate d) :
+theorem dyadicNormalizedDensity_bounds {d } C
+    θ (hθ : Admissible C θ) j x :
     ∀ᵐ w ∂cubeVolume d, C.densityLower ≤ dyadicNormalizedDensity θ j x w ∧
       dyadicNormalizedDensity θ j x w ≤ C.densityUpper :=
   gridAffine_ae_pullback _ (by positivity) _ hθ.2.2.1
 
-theorem dyadicKnownGram_posDef {d ℓ : ℕ} (j : ℕ) (x : Covariate d) :
+theorem dyadicKnownGram_posDef {d ℓ } j (x : Covariate d) :
     (dyadicKnownGram (ℓ := ℓ) j x).PosDef := by
   rw [dyadicKnownGram_eq_normalized]
   exact anchoredGram_posDef _

@@ -9,22 +9,26 @@ public import Mathlib.Analysis.Normed.Algebra.Exponential
 noncomputable section
 namespace NearlyMinimax
 
-def poissonCountWeight (x : ℝ) (k : ℕ) : ℝ := x ^ k / (k.factorial : ℝ)
+def poissonCountWeight x k  := x ^ k / (k.factorial : ℝ)
 
-theorem poissonCountWeight_nonneg {x : ℝ} (hx : 0 ≤ x) (k : ℕ) :
+theorem poissonCountWeight_nonneg {x } (hx : 0 ≤ x) k :
     0 ≤ poissonCountWeight x k := by unfold poissonCountWeight; positivity
 
-theorem poissonCountWeight_summable (x : ℝ) : Summable (poissonCountWeight x) :=
+theorem poissonCountWeight_summable x : Summable (poissonCountWeight x) :=
   Real.summable_pow_div_factorial x
 
-theorem poissonCountWeight_tsum (x : ℝ) :
+theorem poissonCountWeight_tsum x :
     (∑' k, poissonCountWeight x k) = Real.exp x := by
   simpa only [poissonCountWeight, Real.exp_eq_exp_ℝ] using
     (NormedSpace.expSeries_div_hasSum_exp x).tsum_eq
 
-theorem poissonCountWeight_add_le {x : ℝ} (hx : 0 ≤ x) (a j : ℕ) :
+section
+variable {x : ℝ} (hx : 0 ≤ x)
+include hx
+
+theorem poissonCountWeight_add_le  a j :
     poissonCountWeight x (a + j) ≤ poissonCountWeight x a * poissonCountWeight x j := by
-  have hfNat : a.factorial * j.factorial ≤ (a + j).factorial :=
+  have hfNat  :=
     Nat.le_of_dvd (Nat.factorial_pos _) (Nat.factorial_mul_factorial_dvd_factorial_add a j)
   have hf : (a.factorial : ℝ) * (j.factorial : ℝ) ≤ ((a + j).factorial : ℝ) := by
     exact_mod_cast hfNat
@@ -32,7 +36,7 @@ theorem poissonCountWeight_add_le {x : ℝ} (hx : 0 ≤ x) (a j : ℕ) :
     (mul_pos (by exact_mod_cast Nat.factorial_pos a) (by exact_mod_cast Nat.factorial_pos j)) hf
   simpa only [poissonCountWeight, pow_add, div_mul_div_comm] using h
 
-theorem poissonCountWeight_tail_le {x : ℝ} (hx : 0 ≤ x) (a : ℕ) :
+theorem poissonCountWeight_tail_le  a :
     (∑' j, poissonCountWeight x (a + j)) ≤ Real.exp x * poissonCountWeight x a := by
   have hs : Summable (fun j => poissonCountWeight x (a + j)) :=
     (poissonCountWeight_summable x).comp_injective (fun _ _ h => Nat.add_left_cancel h)
@@ -43,5 +47,7 @@ theorem poissonCountWeight_tail_le {x : ℝ} (hx : 0 ≤ x) (a : ℕ) :
       hs.tsum_le_tsum (poissonCountWeight_add_le hx a) hg
     _ = Real.exp x * poissonCountWeight x a := by
       rw [tsum_mul_left, poissonCountWeight_tsum, mul_comm]
+end
+
 
 end NearlyMinimax

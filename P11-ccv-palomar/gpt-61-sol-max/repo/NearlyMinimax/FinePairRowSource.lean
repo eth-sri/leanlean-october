@@ -16,19 +16,22 @@ set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 800000
 attribute [local instance] Classical.propDecidable
 
-def finePairSourceRows {d : ℕ} (C : ModelConstants d) (k D M q : ℕ)
-    (Cfr T₀ N : ℝ) :
-    HighUnionRowData d k D FinePairRowTag (FinePairRowMark d D M q) :=
+section
+variable {d : ℕ} (C : ModelConstants d)
+include C
+
+def finePairSourceRows  k D M q
+    Cfr T₀ N  :=
   finePairRowData d k D M q (C.densityLower+1/(M : ℝ))
     (C.densityUpper-1/(M : ℝ)) Cfr T₀ N
 
 /-- The three true unit/coarse/fine packet rows satisfy every primitive
 source guard under their physical numerical parameter conditions. -/
-theorem finePairSourceRows_guards {d : ℕ} (C : ModelConstants d) [NeZero d]
+theorem finePairSourceRows_guards  [NeZero d]
     (k D M q : ℕ) (hD : 3 ≤ D) (hq : 1 ≤ q)
-    (hM : highCenterResolutionThreshold C ≤ (M : ℝ))
-    (Cfr : ℝ) (hCfr : 1 ≤ Cfr) (T₀ N : ℝ) (hT₀ : 0 < T₀) (hTN : T₀ < N) :
-    HighUnionSourceGuards C (M : ℝ) Cfr (finePairSourceRows C k D M q Cfr T₀ N) := by
+    (hM : highCenterResolutionThreshold C ≤ M)
+    Cfr (hCfr : 1 ≤ Cfr) T₀ N (hT₀ : 0 < T₀) (hTN : T₀ < N) :
+    HighUnionSourceGuards C M Cfr (finePairSourceRows C k D M q Cfr T₀ N) := by
   let a := C.densityLower+1/(M : ℝ)
   let b := C.densityUpper-1/(M : ℝ)
   have hg := highCenterResolution_guards C (M : ℝ) hM
@@ -74,5 +77,7 @@ theorem finePairSourceRows_guards {d : ℕ} (C : ModelConstants d) [NeZero d]
   · exact finePairRowTime_measurable d D M q
   · exact finePairRowVector_ball d D M q Cfr hCf
   · exact finePairRowTime_unit d D M q
+end
+
 
 end NearlyMinimax

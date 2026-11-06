@@ -42,8 +42,8 @@ theorem secondMoment_sum_le_weighted {Ω ι : Type*} [MeasurableSpace Ω] [Finty
       (mul_le_mul_of_nonneg_left hterms (Finset.sum_nonneg (fun i _ => (hw i).le)))
     _ = _ := by ring
 
-theorem dyadic_geometric_sum_bound (J : ℕ) :
-    (∑ j : Fin (J + 1), (2 : ℝ) ^ j.val) ≤ 2 * (2 : ℝ) ^ J := by
+theorem dyadic_geometric_sum_bound J :
+    (∑ j : Fin (J + 1), (2 : ℝ) ^ j.val) ≤ 2 * 2 ^ J := by
   rw [Fin.sum_univ_eq_sum_range]
   have h := geom_sum_mul_of_one_le (by norm_num : (1 : ℝ) ≤ 2) (J + 1)
   norm_num only [sub_self, add_zero, sub_zero, mul_one] at h
@@ -59,7 +59,7 @@ theorem secondMoment_dyadic_sum_le {Ω : Type*} [MeasurableSpace Ω]
     (fun _ => by positivity) B hE
   have hs := dyadic_geometric_sum_bound J
   have hnon : 0 ≤ ∑ j : Fin (J + 1), (2 : ℝ) ^ j.val := by positivity
-  apply h.trans
+  
   nlinarith [mul_le_mul_of_nonneg_left (pow_le_pow_left₀ hnon hs 2) hB]
 
 end NearlyMinimax

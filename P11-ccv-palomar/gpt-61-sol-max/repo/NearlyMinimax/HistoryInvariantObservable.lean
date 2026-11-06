@@ -15,10 +15,12 @@ namespace NearlyMinimax
 
 variable {J : Type*} [Fintype J] [LinearOrder J]
 
+section
+variable (dependent : J → J → Prop) (hrefl : ∀ j, dependent j j) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i) (Δ : ℕ) (hΔ : 1 ≤ Δ) (hlabels : ∀ j, (dependentLabelFinset dependent j).card ≤ Δ)
+include hrefl hΔ hlabels
+
 /-- Conditional signed-mark annihilation kills the true append generator by Fubini. -/
-theorem historyMarkedGeneratorExpectation_eq_zero (dependent : J → J → Prop)
-    (hrefl : ∀ j, dependent j j) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
-    (Δ : ℕ) (hΔ : 1 ≤ Δ) (hlabels : ∀ j, (dependentLabelFinset dependent j).card ≤ Δ)
+theorem historyMarkedGeneratorExpectation_eq_zero 
     (t B : ℝ) (ht : 0 ≤ t) (hB : 0 ≤ B) {E : Type*} [MeasurableSpace E] [StandardBorelSpace E]
     (π : Measure E) [IsProbabilityMeasure π] (a : E → ℝ) (ha : Measurable a)
     (habound : ∀ e, |a e| ≤ B)
@@ -51,7 +53,7 @@ theorem historyMarkedGeneratorExpectation_eq_zero (dependent : J → J → Prop)
     have hp : 0 ≤ historyMarkedDensity dependent (historyReferenceRho Δ) t a p.1 :=
       (by positivity : (0 : ℝ) ≤ (1 / 2 : ℝ) ^ Fintype.card J).trans hb.1
     rw [abs_of_nonneg hp]
-    exact mul_le_mul (mul_le_mul (hFbound _) (habound _) (abs_nonneg _) hM) hb.2 hp (mul_nonneg hM hB)
+    grind only [mul_le_mul, abs_nonneg, mul_nonneg]
   change (∫ p, G p ∂μ.prod π) = 0
   rw [integral_prod G hInt]
   have hin : ∀ h, ∫ e, G (h, e) ∂π = 0 := by
@@ -62,9 +64,7 @@ theorem historyMarkedGeneratorExpectation_eq_zero (dependent : J → J → Prop)
   exact integral_zero _ _
 
 /-- An annihilated bounded observable has the same expectation throughout the closed source interval. -/
-theorem historyMarkedPrior_invariant_observable (dependent : J → J → Prop)
-    (hrefl : ∀ j, dependent j j) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
-    (Δ : ℕ) (hΔ : 1 ≤ Δ) (hlabels : ∀ j, (dependentLabelFinset dependent j).card ≤ Δ)
+theorem historyMarkedPrior_invariant_observable 
     (T B : ℝ) (hT : 0 ≤ T) (hB : 0 ≤ B)
     {E : Type*} [MeasurableSpace E] [StandardBorelSpace E]
     (π : Measure E) [IsProbabilityMeasure π] (a : E → ℝ) (ha : Measurable a)
@@ -97,12 +97,14 @@ theorem historyMarkedPrior_invariant_observable (dependent : J → J → Prop)
       π a ha habound (hs u hu) F hF M hM hFbound hkill] at hd
     exact hd
   obtain ⟨C, hC⟩ := hAC.const_of_ae_hasDerivAt_zero hzero
-  have hft : f t = f 0 := (hC t (by simpa only [uIcc_of_le hT] using ht)).trans
-    (hC 0 (by simp only [uIcc_of_le hT, mem_Icc]; exact ⟨le_rfl, hT⟩)).symm
+  have hft  := (hC t (by simpa only [uIcc_of_le hT] using ht)).trans
+    (hC 0 (by bound)).symm
   rw [historyMarkedPrior_integral_eq_expectation dependent hrefl hsymm Δ hlabels
     t B ht.1 hB π a ha habound (hs t ht) F]
   change f t = _
   rw [hft]
   simp [f, μ, historyMarkedExpectation, historyMarkedDensity_zero]
+end
+
 
 end NearlyMinimax

@@ -12,21 +12,28 @@ open Matrix MeasureTheory
 open scoped BigOperators MatrixOrder Matrix.Norms.L2Operator
 namespace NearlyMinimax
 
+section
+variable {d ℓ : ℕ}
+
+section
+variable (u : Covariate d)
+include u
+
 /-- The inverse positive square root of the known Lebesgue Gram. -/
-def anchoredWhitening {d ℓ : ℕ} (u : Covariate d) :
+def anchoredWhitening   :
     Matrix (AnchoredIndex d ℓ) (AnchoredIndex d ℓ) ℝ :=
   (CFC.sqrt (anchoredGram u))⁻¹
 
-theorem anchoredGram_sqrt_isUnit {d ℓ : ℕ} (u : Covariate d) :
+theorem anchoredGram_sqrt_isUnit   :
     IsUnit (CFC.sqrt (anchoredGram (ℓ := ℓ) u)) :=
   (CFC.isUnit_sqrt_iff _ (anchoredGram_posDef u).posSemidef.nonneg).mpr
     (anchoredGram_posDef u).isUnit
 
-theorem anchoredWhitening_isHermitian {d ℓ : ℕ} (u : Covariate d) :
+theorem anchoredWhitening_isHermitian   :
     (anchoredWhitening (ℓ := ℓ) u).IsHermitian :=
   (Matrix.LE.le.posSemidef (CFC.sqrt_nonneg (anchoredGram u))).isHermitian.inv
 
-theorem anchoredWhitening_gram_identity {d ℓ : ℕ} (u : Covariate d) :
+theorem anchoredWhitening_gram_identity   :
     anchoredWhitening (ℓ := ℓ) u * anchoredGram u * anchoredWhitening u = 1 := by
   have hdet := (Matrix.isUnit_iff_isUnit_det _).mp (anchoredGram_sqrt_isUnit (ℓ := ℓ) u)
   calc
@@ -36,25 +43,31 @@ theorem anchoredWhitening_gram_identity {d ℓ : ℕ} (u : Covariate d) :
         (CFC.sqrt_mul_sqrt_self (anchoredGram u) (anchoredGram_posDef u).posSemidef.nonneg).symm
     _ = 1 := by
       unfold anchoredWhitening
-      rw [← Matrix.mul_assoc, Matrix.nonsing_inv_mul _ hdet, one_mul,
-        Matrix.mul_nonsing_inv _ hdet]
+      simp_all
+
+section
+variable (p : Covariate d → ℝ)
+include p
 
 /-- The symmetric whitened population matrix used in the inverse approximation. -/
-def anchoredWhitenedGram {d ℓ : ℕ} (u : Covariate d) (p : Covariate d → ℝ) :
+def anchoredWhitenedGram    :
     Matrix (AnchoredIndex d ℓ) (AnchoredIndex d ℓ) ℝ :=
   anchoredWhitening u * anchoredDensityGram u p * anchoredWhitening u
 
-theorem anchoredWhitenedGram_isHermitian {d ℓ : ℕ} (u : Covariate d)
-    (p : Covariate d → ℝ) : (anchoredWhitenedGram (ℓ := ℓ) u p).IsHermitian := by
+theorem anchoredWhitenedGram_isHermitian  
+     : (anchoredWhitenedGram (ℓ := ℓ) u p).IsHermitian := by
   have h := Matrix.isHermitian_conjTranspose_mul_mul (anchoredWhitening (ℓ := ℓ) u)
     (anchoredDensityGram_isHermitian u p)
   rw [(anchoredWhitening_isHermitian u).eq] at h
   exact h
 
+section
+variable (hpmeas : Measurable p) (a b : ℝ) (ha : 0 ≤ a) (hp : ∀ᵐ w ∂cubeVolume d, a ≤ p w ∧ p w ≤ b)
+include hpmeas ha hp
+
 /-- Whitening converts the proved density Gram sandwich into scalar-matrix bounds. -/
-theorem anchoredWhitenedGram_sandwich {d ℓ : ℕ} (u : Covariate d)
-    (p : Covariate d → ℝ) (hpmeas : Measurable p) (a b : ℝ) (ha : 0 ≤ a)
-    (hp : ∀ᵐ w ∂cubeVolume d, a ≤ p w ∧ p w ≤ b) :
+theorem anchoredWhitenedGram_sandwich  
+      :
     a • (1 : Matrix (AnchoredIndex d ℓ) (AnchoredIndex d ℓ) ℝ) ≤ anchoredWhitenedGram u p ∧
       anchoredWhitenedGram u p ≤ b • (1 : Matrix (AnchoredIndex d ℓ) (AnchoredIndex d ℓ) ℝ) := by
   have h := anchoredDensityGram_sandwich (ℓ := ℓ) u p hpmeas a b ha hp
@@ -71,9 +84,8 @@ theorem anchoredWhitenedGram_sandwich {d ℓ : ℕ} (u : Covariate d)
     exact hup
 
 /-- The actual normalized population Gram has spectrum in the density interval. -/
-theorem anchoredWhitenedGram_spectrum {d ℓ : ℕ} (u : Covariate d)
-    (p : Covariate d → ℝ) (hpmeas : Measurable p) (a b : ℝ) (ha : 0 ≤ a)
-    (hp : ∀ᵐ w ∂cubeVolume d, a ≤ p w ∧ p w ≤ b) :
+theorem anchoredWhitenedGram_spectrum  
+      :
     spectrum ℝ (anchoredWhitenedGram (ℓ := ℓ) u p) ⊆ Set.Icc a b := by
   have hs := anchoredWhitenedGram_sandwich (ℓ := ℓ) u p hpmeas a b ha hp
   have hlo : algebraMap ℝ (Matrix (AnchoredIndex d ℓ) (AnchoredIndex d ℓ) ℝ) a ≤
@@ -84,22 +96,25 @@ theorem anchoredWhitenedGram_spectrum {d ℓ : ℕ} (u : Covariate d)
   intro t ht
   exact ⟨(algebraMap_le_iff_le_spectrum (anchoredWhitenedGram_isHermitian u p)).mp hlo t ht,
     (le_algebraMap_iff_spectrum_le (anchoredWhitenedGram_isHermitian u p)).mp hup t ht⟩
+end
+
+end
+
 
 /-- A genuine matrix unit implementing the population similarity transform. -/
-def anchoredSimilarityUnit {d ℓ : ℕ} (u : Covariate d) :
-    (Matrix (AnchoredIndex d ℓ) (AnchoredIndex d ℓ) ℝ)ˣ :=
+def anchoredSimilarityUnit    :=
   (anchoredGram_sqrt_isUnit (ℓ := ℓ) u).unit⁻¹
 
-@[simp] theorem anchoredSimilarityUnit_val {d ℓ : ℕ} (u : Covariate d) :
+@[simp] theorem anchoredSimilarityUnit_val   :
     (anchoredSimilarityUnit (ℓ := ℓ) u).val = anchoredWhitening u := by
   rw [anchoredSimilarityUnit, Matrix.coe_units_inv, IsUnit.unit_spec]
   rfl
 
-@[simp] theorem anchoredSimilarityUnit_inv_val {d ℓ : ℕ} (u : Covariate d) :
+@[simp] theorem anchoredSimilarityUnit_inv_val   :
     ((anchoredSimilarityUnit (ℓ := ℓ) u)⁻¹).val = CFC.sqrt (anchoredGram u) := by
-  simp only [anchoredSimilarityUnit, inv_inv, IsUnit.unit_spec]
+  rfl
 
-theorem anchoredWhitening_square {d ℓ : ℕ} (u : Covariate d) :
+theorem anchoredWhitening_square   :
     (anchoredGram (ℓ := ℓ) u)⁻¹ = anchoredWhitening u * anchoredWhitening u := by
   calc
     (anchoredGram u)⁻¹ = (CFC.sqrt (anchoredGram u) * CFC.sqrt (anchoredGram u))⁻¹ :=
@@ -108,8 +123,8 @@ theorem anchoredWhitening_square {d ℓ : ℕ} (u : Covariate d) :
     _ = _ := Matrix.mul_inv_rev _ _
 
 /-- The actual preconditioned Gram is similar to the Hermitian spectral matrix. -/
-theorem anchored_preconditioned_similarity {d ℓ : ℕ} (u : Covariate d)
-    (p : Covariate d → ℝ) :
+theorem anchored_preconditioned_similarity  
+    p :
     ((anchoredSimilarityUnit (ℓ := ℓ) u)⁻¹).val *
       ((anchoredGram u)⁻¹ * anchoredDensityGram u p) *
       (anchoredSimilarityUnit (ℓ := ℓ) u).val = anchoredWhitenedGram u p := by
@@ -119,47 +134,45 @@ theorem anchored_preconditioned_similarity {d ℓ : ℕ} (u : Covariate d)
   simp only [← Matrix.mul_assoc, anchoredWhitenedGram]
   rw [show CFC.sqrt (anchoredGram u) * anchoredWhitening u = 1 by
     exact Matrix.mul_nonsing_inv _ hdet, one_mul]
+end
 
-theorem anchoredGram_continuous {d ℓ : ℕ} :
+
+theorem anchoredGram_continuous  :
     Continuous (anchoredGram (d := d) (ℓ := ℓ)) :=
   continuous_matrix anchoredGram_entry_continuous
 
-theorem anchoredGram_sqrt_continuous {d ℓ : ℕ} :
-    Continuous (fun u : Covariate d => CFC.sqrt (anchoredGram (ℓ := ℓ) u)) := by
-  exact CFC.continuousOn_sqrt.comp_continuous anchoredGram_continuous
+theorem anchoredGram_sqrt_continuous  :
+    Continuous (fun u : Covariate d => CFC.sqrt (anchoredGram (ℓ := ℓ) u)) := CFC.continuousOn_sqrt.comp_continuous anchoredGram_continuous
     (fun u => (anchoredGram_posDef u).posSemidef.nonneg)
 
-theorem anchoredWhitening_continuous {d ℓ : ℕ} :
+theorem anchoredWhitening_continuous  :
     Continuous (anchoredWhitening (d := d) (ℓ := ℓ)) := by
   rw [continuous_iff_continuousAt]
   intro u
   have hdet := (Matrix.isUnit_iff_isUnit_det _).mp (anchoredGram_sqrt_isUnit (ℓ := ℓ) u)
   have hinv : ContinuousAt Ring.inverse (CFC.sqrt (anchoredGram (ℓ := ℓ) u)).det := by
-    have heq : (Ring.inverse : ℝ → ℝ) = Inv.inv := funext Ring.inverse_eq_inv
-    rw [heq]
-    exact continuousAt_inv₀ hdet.ne_zero
+    simp_all
   have hR : Continuous (fun v : Covariate d => CFC.sqrt (anchoredGram (ℓ := ℓ) v)) :=
     anchoredGram_sqrt_continuous
-  have hI : ContinuousAt
-      (Inv.inv : Matrix (AnchoredIndex d ℓ) (AnchoredIndex d ℓ) ℝ → Matrix _ _ ℝ)
-      (CFC.sqrt (anchoredGram (ℓ := ℓ) u)) := continuousAt_matrix_inv _ hinv
+  have hI  := continuousAt_matrix_inv _ hinv
   exact hI.comp (f := fun v : Covariate d => CFC.sqrt (anchoredGram (ℓ := ℓ) v))
     (x := u) (hR.continuousAt (x := u))
 
 /-- A fixed finite condition-number bound exists for every actual similarity
 unit, uniformly over anchors. It depends only on the monomial dimensions. -/
-theorem anchoredSimilarityUnit_uniform_condition {d ℓ : ℕ} :
+theorem anchoredSimilarityUnit_uniform_condition  :
     ∃ χ : ℝ, 0 < χ ∧ ∀ u ∈ unitCube d,
       ‖(anchoredSimilarityUnit (ℓ := ℓ) u).val‖ *
         ‖((anchoredSimilarityUnit (ℓ := ℓ) u)⁻¹).val‖ ≤ χ := by
-  have hc : Continuous (fun u : Covariate d =>
-      ‖anchoredWhitening (ℓ := ℓ) u‖ * ‖CFC.sqrt (anchoredGram (ℓ := ℓ) u)‖) :=
+  have hc  :=
     (anchoredWhitening_continuous (d := d) (ℓ := ℓ)).norm.mul
       (anchoredGram_sqrt_continuous (d := d) (ℓ := ℓ)).norm
   obtain ⟨M, hM⟩ := (unitCube_isCompact d).bddAbove_image hc.continuousOn
   refine ⟨max 1 M, lt_of_lt_of_le zero_lt_one (le_max_left _ _), ?_⟩
   intro u hu
   rw [anchoredSimilarityUnit_val, anchoredSimilarityUnit_inv_val]
-  exact (hM (Set.mem_image_of_mem _ hu)).trans (le_max_right _ _)
+  aesop
+end
+
 
 end NearlyMinimax

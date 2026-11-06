@@ -16,22 +16,33 @@ open Filter
 open scoped Topology
 namespace NearlyMinimax
 
-theorem paper_main {d : ℕ} (C : ModelConstants d) : MainBracketClaim C :=
+section
+variable {d : ℕ} (C : ModelConstants d)
+
+theorem paper_main  : MainBracketClaim C :=
   mainBracketClaim_of_separate_bounds C (paper_upper_sharp C) (paper_lower_sharp C)
 
-theorem paper_exponent_limit {d : ℕ} (C : ModelConstants d)
-    (hreg : highSmoothnessRegime C) :
-    Tendsto (fun n : ℕ => -Real.log (minimaxRMS C n).toReal / Real.log (n : ℝ))
+section
+variable (hreg : highSmoothnessRegime C)
+include hreg
+
+theorem paper_exponent_limit 
+     :
+    Tendsto (fun n  => -Real.log (minimaxRMS C n).toReal / Real.log n)
       atTop (𝓝 (rateExponent C.smoothness d)) :=
   paper_exponent_limit_of_mainBracketClaim C hreg (paper_main C)
 
-theorem paper_polynomial_bounds {d : ℕ} (C : ModelConstants d)
-    (hreg : highSmoothnessRegime C) :
-    ∃ c A : ℝ, 0 < c ∧ 0 < A ∧ ∀ epsilon : ℝ, 0 < epsilon →
+theorem paper_polynomial_bounds 
+     :
+    ∃ c A : ℝ, 0 < c ∧ 0 < A ∧ ∀ epsilon , 0 < epsilon →
       ∀ᶠ n : ℕ in atTop,
-        c*(n : ℝ)^(-rateExponent C.smoothness d-epsilon) ≤ (minimaxRMS C n).toReal ∧
-        (minimaxRMS C n).toReal ≤ A*(n : ℝ)^(-rateExponent C.smoothness d) :=
+        c*n^(-rateExponent C.smoothness d-epsilon) ≤ (minimaxRMS C n).toReal ∧
+        (minimaxRMS C n).toReal ≤ A*n^(-rateExponent C.smoothness d) :=
   polynomial_bounds_nat_of_rateBracket (paper_stretchConstant_pos C hreg)
     (hasNatRateBracket_of_mainBracketClaim C hreg (paper_main C))
+end
+
+end
+
 
 end NearlyMinimax

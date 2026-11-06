@@ -19,25 +19,28 @@ set_option maxHeartbeats 1500000
 section
 variable {E : Type*} [MeasurableSpace E]
 
-def highFrameFullMarkedScore (d k D n : ℕ) [NeZero k]
-    (π : HighWindowLabels d k → Measure E) (activation : HighWindowLabels d k → E → ℝ)
-    (a V η : ℝ) (p : Covariate d → ℝ)
+section
+variable (d k D n : ℕ)
+
+def highFrameFullMarkedScore  [NeZero k]
+    π activation
+    a V η p
     (pReset : HighWindowLabels d k → E → Covariate d → ℝ)
-    (cReset : HighWindowLabels d k → E → HighFrameIndex d D → ℝ)
-    (c : HighWindowLabels d k → HighFrameIndex d D → ℝ)
-    (z : (Fin n → Covariate d) × (Fin n → Fin 3)) : ℝ :=
+    cReset
+    c
+    (z : (Fin n → Covariate d) × (Fin n → Fin 3))  :=
   ∑ j, highFrameMarkedScore d k D n π activation a V η (p ∘ z.1)
     (fun j e => pReset j e ∘ z.1) cReset c z.1 j z.2
 
-theorem highFrameFullMarkedScore_measurable (d k D n : ℕ) [NeZero k]
+theorem highFrameFullMarkedScore_measurable  [NeZero k]
     (π : HighWindowLabels d k → Measure E) [∀ j, SFinite (π j)]
-    (activation : HighWindowLabels d k → E → ℝ) (hAct : ∀ j, Measurable (activation j))
-    (a V η : ℝ) (p : Covariate d → ℝ) (hp : Measurable p)
-    (pReset : HighWindowLabels d k → E → Covariate d → ℝ)
+    activation (hAct : ∀ j, Measurable (activation j))
+    a V η p (hp : Measurable p)
+    pReset
     (hReset : ∀ j, Measurable (Function.uncurry (pReset j)))
-    (cReset : HighWindowLabels d k → E → HighFrameIndex d D → ℝ)
+    cReset
     (hcReset : ∀ j γ, Measurable (fun e => cReset j e γ))
-    (c : HighWindowLabels d k → HighFrameIndex d D → ℝ) :
+    c :
     Measurable (highFrameFullMarkedScore d k D n π activation a V η p pReset cReset c) := by
   apply measurable_from_prod_countable_left
   intro y
@@ -64,21 +67,21 @@ theorem highFrameFullMarkedScore_measurable (d k D n : ℕ) [NeZero k]
   simp_rw [high_marked_sample_score_eq_ratio]
   exact hR.div hL
 
-theorem high_frame_complete_design_spatial_series (d k D n : ℕ) [NeZero k] (hk : 4 ≤ k)
+theorem high_frame_complete_design_spatial_series  [NeZero k] (hk : 4 ≤ k)
     (π : HighWindowLabels d k → Measure E) [∀ j, SFinite (π j)]
-    (activation : HighWindowLabels d k → E → ℝ)
+    activation
     (hAct : ∀ j, Measurable (activation j)) (hActI : ∀ j, Integrable (activation j) (π j))
-    (a V η pMinus pPlus cMass : ℝ) (ha : a ≠ 0) (hpMinus : 0 < pMinus)
+    a V η pMinus pPlus cMass (ha : a ≠ 0) (hpMinus : 0 < pMinus)
     (hpPlus : 0 ≤ pPlus) (hcMass : 0 < cMass)
-    (p : Covariate d → ℝ) (hp : Measurable p)
+    p (hp : Measurable p)
     (hraw : ∀ x, pMinus ≤ p x ∧ p x ≤ pPlus)
     (pReset : HighWindowLabels d k → E → Covariate d → ℝ)
     (hReset : ∀ j, Measurable (Function.uncurry (pReset j)))
     (hBound : ∀ j e x, |pReset j e x| ≤ pPlus)
     (hOutside : ∀ j e x, x ∉ highTorusPatch d k j → pReset j e x = p x)
-    (cReset : HighWindowLabels d k → E → HighFrameIndex d D → ℝ)
+    cReset
     (hcReset : ∀ j γ, Measurable (fun e => cReset j e γ))
-    (c : HighWindowLabels d k → HighFrameIndex d D → ℝ)
+    c
     (hq : ∀ x y, cMass ≤ ternaryMass a (highFrameField d k η (fun l => highFramePolynomial (c l)) x) V y)
     (hqReset : ∀ j e x y, 0 ≤ highMarkedResponseMass a V η
       (highLocalFieldWithout d k D η c j) (highPeriodicTensor d k j)
@@ -86,7 +89,7 @@ theorem high_frame_complete_design_spatial_series (d k D n : ℕ) [NeZero k] (hk
     (hDensity : ∀ j (x : Fin n → Covariate d),
       (∫ e, activation j e * ∏ i, pReset j e (x i) ∂π j) = 0)
     (H : HighWindowLabels d k → (r : ℕ) → (Fin r → Covariate d) → ℝ)
-    (hH : ∀ j r, Integrable (H j r) (Measure.pi (fun _ : Fin r => volume.restrict (spatialPatchBox d))))
+    (hH : ∀ j r, Integrable (H j r) (Measure.pi (fun _  => volume.restrict (spatialPatchBox d))))
     (hH0 : ∀ j r u, 0 ≤ H j r u)
     (hdom : ∀ j r x, (∀ i, x i ∈ highTorusPatch d k j) →
       selectedRawSquareEnergy (highMarkedSampleNumerator r (π j) (activation j) a V η p (pReset j)
@@ -95,14 +98,14 @@ theorem high_frame_complete_design_spatial_series (d k D n : ℕ) [NeZero k] (hk
     let F := highFrameField d k η (fun l => highFramePolynomial (c l))
     let hF : Measurable F := (highFrameField_contDiff d k η _).continuous.measurable
     let S := highFrameFullMarkedScore d k D n π activation a V η p pReset cReset c
-    Integrable (fun z => S z ^ 2) ((Measure.pi (fun _ : Fin n => highNormalizedDesignLaw p)).compProd
+    Integrable (fun z => S z ^ 2) ((Measure.pi (fun _  => highNormalizedDesignLaw p)).compProd
       (responseSampleIndexKernel n a V F hF)) ∧
-    (∫ z, S z ^ 2 ∂(Measure.pi (fun _ : Fin n => highNormalizedDesignLaw p)).compProd
+    (∫ z, S z ^ 2 ∂(Measure.pi (fun _  => highNormalizedDesignLaw p)).compProd
       (responseSampleIndexKernel n a V F hF)) ≤
       (3 ^ d : ℕ) * ∑ j : HighWindowLabels d k, ∑ r ∈ Finset.range (n + 1),
-        ((n : ℝ) * highFixedScoreDenominator pMinus cMass * (2 / (k : ℝ)) ^ d) ^ r /
-          (r.factorial : ℝ) * ∫ u, H j r u
-            ∂Measure.pi (fun _ : Fin r => volume.restrict (spatialPatchBox d)) := by
+        (n * highFixedScoreDenominator pMinus cMass * (2 / k) ^ d) ^ r /
+          r.factorial * ∫ u, H j r u
+            ∂Measure.pi (fun _  => volume.restrict (spatialPatchBox d)) := by
   let F := highFrameField d k η (fun l => highFramePolynomial (c l))
   have hF : Measurable F := (highFrameField_contDiff d k η _).continuous.measurable
   let S := highFrameFullMarkedScore d k D n π activation a V η p pReset cReset c
@@ -185,6 +188,8 @@ theorem high_frame_complete_design_spatial_series (d k D n : ℕ) [NeZero k] (hk
     _ = (3 ^ d : ℕ) * ∑ j, ∫ x, Elocal j x ∂μ := by
       rw [integral_const_mul, integral_finsetSum _ (fun j _ => (hlocal j).1)]
     _ ≤ _ := mul_le_mul_of_nonneg_left (Finset.sum_le_sum (fun j _ => (hlocal j).2)) (Nat.cast_nonneg _)
+end
+
 
 end
 end NearlyMinimax

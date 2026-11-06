@@ -18,17 +18,20 @@ namespace NearlyMinimax
 set_option maxHeartbeats 1000000
 set_option backward.isDefEq.respectTransparency false
 
-abbrev PilotBasisIndex (q d ℓ : ℕ) := (Fin q × PolynomialBox d ℓ) × Bool
+abbrev PilotBasisIndex q d ℓ := (Fin q × PolynomialBox d ℓ) × Bool
 
-def pilotGlobalMonomial {d ℓ : ℕ} (γ : PolynomialBox d ℓ) (x : Covariate d) : ℝ :=
+def pilotGlobalMonomial {d ℓ } (γ : PolynomialBox d ℓ) (x : Covariate d)  :=
   ∏ i, (x i) ^ (γ i).val
 
-theorem pilotGlobalMonomial_continuous {d ℓ : ℕ} (γ : PolynomialBox d ℓ) :
+section
+variable {d ℓ : ℕ} (γ : PolynomialBox d ℓ)
+
+theorem pilotGlobalMonomial_continuous  :
     Continuous (pilotGlobalMonomial γ) :=
   continuous_finset_prod Finset.univ (fun i _ => (continuous_apply i).pow _)
 
-theorem pilotGlobalMonomial_abs_le_one {d ℓ : ℕ} (γ : PolynomialBox d ℓ)
-    (x : Covariate d) (hx : x ∈ unitCube d) : |pilotGlobalMonomial γ x| ≤ 1 := by
+theorem pilotGlobalMonomial_abs_le_one 
+    x (hx : x ∈ unitCube d) : |pilotGlobalMonomial γ x| ≤ 1 := by
   unfold pilotGlobalMonomial
   rw [Finset.abs_prod]
   simp only [abs_pow]
@@ -40,26 +43,32 @@ theorem pilotGlobalMonomial_abs_le_one {d ℓ : ℕ} (γ : PolynomialBox d ℓ)
       Finset.prod_le_prod₀ (fun i _ => pow_nonneg (abs_nonneg _) _)
         (fun i _ => pow_le_pow_left₀ (abs_nonneg _) (hcoord i) _)
     _ = 1 := by simp
+end
+
+
+section
+variable {q d ℓ : ℕ} (cell : Covariate d → Fin q)
+include cell
 
 /-- A fixed global coordinate: a cell indicator times a monomial, optionally
 multiplied by the observed response. Local anchored features are linear
 combinations of this finite basis. -/
-def pilotBasisFeature {q d ℓ : ℕ} (cell : Covariate d → Fin q)
-    (a : PilotBasisIndex q d ℓ) (z : Observation d) : ℝ :=
+def pilotBasisFeature 
+    (a : PilotBasisIndex q d ℓ) (z : Observation d)  :=
   if cell z.1 = a.1.1 then pilotGlobalMonomial a.1.2 z.1 * (if a.2 then z.2 else 1) else 0
 
-theorem pilotBasisFeature_measurable {q d ℓ : ℕ} (cell : Covariate d → Fin q)
+theorem pilotBasisFeature_measurable 
     (hc : Measurable cell) (a : PilotBasisIndex q d ℓ) :
     Measurable (pilotBasisFeature cell a) := by
   unfold pilotBasisFeature
   apply Measurable.ite
-  · exact measurableSet_eq_fun (hc.comp measurable_fst) measurable_const
+  · measurability
   · exact ((pilotGlobalMonomial_continuous a.1.2).measurable.comp measurable_fst).mul
-      (by cases a.2 <;> first | exact measurable_const | exact measurable_snd)
+      (by measurability)
   · exact measurable_const
 
-theorem pilotBasisFeature_abs_bound {q d ℓ : ℕ} (cell : Covariate d → Fin q)
-    (a : PilotBasisIndex q d ℓ) (z : Observation d) (hz : z.1 ∈ unitCube d) :
+theorem pilotBasisFeature_abs_bound 
+    (a : PilotBasisIndex q d ℓ) z (hz : z.1 ∈ unitCube d) :
     |pilotBasisFeature cell a z| ≤
       (Prod.fst ⁻¹' {x | cell x = a.1.1}).indicator
         (fun z : Observation d => 1 + |z.2|) z := by
@@ -72,23 +81,28 @@ theorem pilotBasisFeature_abs_bound {q d ℓ : ℕ} (cell : Covariate d → Fin 
     · simp only [Bool.true_eq_false, ↓reduceIte]
       exact (mul_le_mul_of_nonneg_right hmono (abs_nonneg z.2)).trans (by linarith)
   · simp [pilotBasisFeature, h]
+end
+
 
 /-- The actual covariate marginal proves cube membership for observations. -/
-theorem observationLaw_cube_ae {d : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ) :
+theorem observationLaw_cube_ae {d } C
+    θ (hθ : Admissible C θ) :
     ∀ᵐ z ∂observationLaw θ, z.1 ∈ unitCube d :=
   (observationLaw_fst_measurePreserving C θ hθ).quasiMeasurePreserving.ae
     (designLaw_cube_ae θ)
 
+section
+variable {q d ℓ : ℕ}
+
 /-- Every global pilot coordinate is genuinely L² under the original model. -/
-theorem pilotBasisFeature_memLp_two {q d ℓ : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ)
-    (cell : Covariate d → Fin q) (hc : Measurable cell) (a : PilotBasisIndex q d ℓ) :
+theorem pilotBasisFeature_memLp_two  C
+    θ (hθ : Admissible C θ)
+    cell (hc : Measurable cell) (a : PilotBasisIndex q d ℓ) :
     MemLp (pilotBasisFeature cell a) 2 (observationLaw θ) := by
   let := observationLaw_isProbability C θ hθ
   have hy : MemLp (fun z : Observation d => |z.2|) 2 (observationLaw θ) := by
     simpa only [Real.norm_eq_abs] using (observationLaw_response_memLp_two C θ hθ).norm
-  have hbase : MemLp (fun z : Observation d => 1 + |z.2|) 2 (observationLaw θ) :=
+  have hbase  :=
     (memLp_const (1 : ℝ)).add hy
   apply hbase.mono' (pilotBasisFeature_measurable cell hc a).aestronglyMeasurable
   filter_upwards [observationLaw_cube_ae C θ hθ] with z hz
@@ -98,8 +112,9 @@ theorem pilotBasisFeature_memLp_two {q d ℓ : ℕ} (C : ModelConstants d)
 
 /-- Coordinate indexing compatible with the paper's finite-dimensional
 polynomial lift; this is an exact reindexing of the global basis. -/
-def pilotRawVector {q d ℓ : ℕ} (cell : Covariate d → Fin q) (z : Observation d) :
-    Fin (Fintype.card (PilotBasisIndex q d ℓ)) → ℝ :=
+def pilotRawVector  cell z  :=
   fun a => pilotBasisFeature cell ((Fintype.equivFin (PilotBasisIndex q d ℓ)).symm a) z
+end
+
 
 end NearlyMinimax

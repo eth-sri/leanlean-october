@@ -23,66 +23,58 @@ open scoped Topology
 
 namespace NearlyMinimax
 
-def lowerSaddleM (m x : ℝ) : ℕ := Nat.ceil (m * Real.sqrt (Real.log x))
+def lowerSaddleM m x  := Nat.ceil (m * Real.sqrt (Real.log x))
 
-def lowerSaddleD (d m x : ℝ) : ℕ := Nat.ceil ((d + 8) / 4 * lowerSaddleM m x)
+def lowerSaddleD (d m x : ℝ)  := Nat.ceil ((d + 8) / 4 * lowerSaddleM m x)
 
-def lowerSaddleOmegaZero (m θ C x : ℝ) : ℝ :=
+def lowerSaddleOmegaZero m θ C x  :=
   θ * lowerSaddleM m x - Real.log (lowerSaddleM m x) + C
 
-def lowerSaddleGridBase (d m θ C x : ℝ) : ℝ :=
+section
+variable (d m θ C x : ℝ)
+include d m θ C x
+
+def lowerSaddleGridBase   :=
   Real.exp ((Real.log x + lowerSaddleOmegaZero m θ C x) / d)
 
-def lowerSaddleGrid (d m θ C x : ℝ) : ℕ := Nat.ceil (lowerSaddleGridBase d m θ C x)
+def lowerSaddleGrid   := Nat.ceil (lowerSaddleGridBase d m θ C x)
 
-def lowerSaddleH (d m θ C x : ℝ) : ℝ := (lowerSaddleGrid d m θ C x : ℝ)⁻¹
+def lowerSaddleH   := (lowerSaddleGrid d m θ C x : ℝ)⁻¹
 
-def lowerSaddleMu (d m θ C x : ℝ) : ℝ := x * (lowerSaddleH d m θ C x) ^ d
+def lowerSaddleMu   := x * (lowerSaddleH d m θ C x) ^ d
 
-def lowerSaddleOmega (d m θ C x : ℝ) : ℝ :=
+def lowerSaddleOmega   :=
   d * Real.log (lowerSaddleGrid d m θ C x) - Real.log x
+end
 
-theorem lowerSaddleM_rounding {m x : ℝ} (hm : 0 ≤ m) :
-    m * Real.sqrt (Real.log x) ≤ (lowerSaddleM m x : ℝ) ∧
-      (lowerSaddleM m x : ℝ) < m * Real.sqrt (Real.log x) + 1 := by
-  exact ⟨Nat.le_ceil _, Nat.ceil_lt_add_one (mul_nonneg hm (Real.sqrt_nonneg _))⟩
 
-theorem lowerSaddleM_tendsto_atTop {m : ℝ} (hm : 0 < m) :
-    Tendsto (fun x : ℝ => (lowerSaddleM m x : ℝ)) atTop atTop := by
+theorem lowerSaddleM_rounding {m x } (hm : 0 ≤ m) :
+    m * Real.sqrt (Real.log x) ≤ (lowerSaddleM m x) ∧
+      (lowerSaddleM m x) < m * Real.sqrt (Real.log x) + 1 := ⟨Nat.le_ceil _, Nat.ceil_lt_add_one (mul_nonneg hm (Real.sqrt_nonneg _))⟩
+
+section
+variable {m : ℝ} (hm : 0 < m)
+include hm
+
+theorem lowerSaddleM_tendsto_atTop  :
+    Tendsto (fun x  => (lowerSaddleM m x : ℝ)) atTop atTop := by
   apply tendsto_atTop_mono (fun x => (lowerSaddleM_rounding hm.le).1)
   exact tendsto_sqrt_log_atTop.const_mul_atTop hm
 
-theorem lowerSaddleM_div_sqrt_log_limit {m : ℝ} (hm : 0 < m) :
-    Tendsto (fun x : ℝ => (lowerSaddleM m x : ℝ) / Real.sqrt (Real.log x))
+theorem lowerSaddleM_div_sqrt_log_limit  :
+    Tendsto (fun x  => (lowerSaddleM m x) / Real.sqrt (Real.log x))
       atTop (𝓝 m) := by
-  have herr : Tendsto (fun x : ℝ =>
-      ((lowerSaddleM m x : ℝ) - m * Real.sqrt (Real.log x)) /
-        Real.sqrt (Real.log x)) atTop (𝓝 0) := by
-    have hu : Tendsto (fun x : ℝ => 1 / Real.sqrt (Real.log x)) atTop (𝓝 0) := by
-      simpa only [one_div] using! tendsto_sqrt_log_atTop.inv_tendsto_atTop
-    apply squeeze_zero' _ _ hu
-    · filter_upwards [eventually_gt_atTop (1 : ℝ)] with x hx
-      exact div_nonneg (sub_nonneg.2 (lowerSaddleM_rounding hm.le).1) (Real.sqrt_nonneg _)
-    · filter_upwards [eventually_gt_atTop (1 : ℝ)] with x hx
-      exact div_le_div_of_nonneg_right (by linarith [(lowerSaddleM_rounding (x := x) hm.le).2])
-        (Real.sqrt_nonneg _)
-  have hh := (tendsto_const_nhds (x := m)).add herr
-  simp only [add_zero] at hh
-  refine hh.congr' ?_
-  filter_upwards [eventually_gt_atTop (1 : ℝ)] with x hx
-  have hz : Real.sqrt (Real.log x) ≠ 0 := (Real.sqrt_pos.2 (Real.log_pos hx)).ne'
-  field_simp
-  ring
+  exact (tendsto_nat_ceil_mul_div_atTop hm.le).comp tendsto_sqrt_log_atTop
 
-theorem lowerSaddleM_sq_div_log_limit {m : ℝ} (hm : 0 < m) :
-    Tendsto (fun x : ℝ => (lowerSaddleM m x : ℝ) ^ 2 / Real.log x) atTop (𝓝 (m ^ 2)) := by
+theorem lowerSaddleM_sq_div_log_limit  :
+    Tendsto (fun x  => (lowerSaddleM m x) ^ 2 / Real.log x) atTop (𝓝 (m ^ 2)) := by
   have hh := (lowerSaddleM_div_sqrt_log_limit hm).pow 2
   refine hh.congr' ?_
   filter_upwards [eventually_gt_atTop (1 : ℝ)] with x hx
   simp only [div_pow, Real.sq_sqrt (Real.log_pos hx).le]
 
-theorem log_lowerSaddleM_residual_limit {m : ℝ} (hm : 0 < m) :
-    Tendsto (fun x : ℝ => Real.log (lowerSaddleM m x) - Real.log (Real.log x) / 2)
+theorem log_lowerSaddleM_residual_limit  :
+    Tendsto (fun x  => Real.log (lowerSaddleM m x) - Real.log (Real.log x) / 2)
       atTop (𝓝 (Real.log m)) := by
   have hh := (Real.continuousAt_log hm.ne').tendsto.comp (lowerSaddleM_div_sqrt_log_limit hm)
   refine hh.congr' ?_
@@ -92,8 +84,8 @@ theorem log_lowerSaddleM_residual_limit {m : ℝ} (hm : 0 < m) :
   rw [Real.log_div hM.ne' (Real.sqrt_pos.2 (Real.log_pos hx)).ne',
     Real.log_sqrt (Real.log_pos hx).le]
 
-theorem lowerSaddleOmegaZero_div_M_limit {m : ℝ} (hm : 0 < m) (θ C : ℝ) :
-    Tendsto (fun x : ℝ => lowerSaddleOmegaZero m θ C x / lowerSaddleM m x)
+theorem lowerSaddleOmegaZero_div_M_limit  θ C :
+    Tendsto (fun x  => lowerSaddleOmegaZero m θ C x / lowerSaddleM m x)
       atTop (𝓝 θ) := by
   have ht := lowerSaddleM_tendsto_atTop hm
   have hl := Real.isLittleO_log_id_atTop.tendsto_div_nhds_zero.comp ht
@@ -106,8 +98,10 @@ theorem lowerSaddleOmegaZero_div_M_limit {m : ℝ} (hm : 0 < m) (θ C : ℝ) :
   simp only [Function.comp_apply, id_eq]
   unfold lowerSaddleOmegaZero
   field_simp
+end
 
-theorem lowerSaddleOmegaZero_tendsto_atTop {m θ : ℝ} (hm : 0 < m) (hθ : 0 < θ) (C : ℝ) :
+
+theorem lowerSaddleOmegaZero_tendsto_atTop {m θ } (hm : 0 < m) (hθ : 0 < θ) C :
     Tendsto (lowerSaddleOmegaZero m θ C) atTop atTop := by
   have ht := lowerSaddleM_tendsto_atTop hm
   have hh := ht.atTop_mul_pos hθ (lowerSaddleOmegaZero_div_M_limit hm θ C)
@@ -115,52 +109,33 @@ theorem lowerSaddleOmegaZero_tendsto_atTop {m θ : ℝ} (hm : 0 < m) (hθ : 0 < 
   filter_upwards [ht.eventually (eventually_gt_atTop (0 : ℝ))] with x hx
   exact mul_div_cancel₀ _ hx.ne'
 
-theorem lowerSaddleGrid_positive (d m θ C x : ℝ) : 0 < (lowerSaddleGrid d m θ C x : ℝ) := by
+theorem lowerSaddleGrid_positive d m θ C x : 0 < (lowerSaddleGrid d m θ C x : ℝ) := by
   have hh := Nat.le_ceil (lowerSaddleGridBase d m θ C x)
   exact (Real.exp_pos _).trans_le hh
 
-theorem lowerSaddleH_positive (d m θ C x : ℝ) : 0 < lowerSaddleH d m θ C x :=
+theorem lowerSaddleH_positive d m θ C x : 0 < lowerSaddleH d m θ C x :=
   inv_pos.2 (lowerSaddleGrid_positive d m θ C x)
 
-theorem lowerSaddleGridBase_tendsto_atTop {d m θ : ℝ}
-    (hd : 0 < d) (hm : 0 < m) (hθ : 0 < θ) (C : ℝ) :
-    Tendsto (lowerSaddleGridBase d m θ C) atTop atTop := by
-  exact Real.tendsto_exp_atTop.comp
+section
+variable {d m θ : ℝ} (hd : 0 < d) (hm : 0 < m) (hθ : 0 < θ)
+include hd hm hθ
+
+theorem lowerSaddleGridBase_tendsto_atTop  C :
+    Tendsto (lowerSaddleGridBase d m θ C) atTop atTop := Real.tendsto_exp_atTop.comp
     ((Real.tendsto_log_atTop.atTop_add_atTop (lowerSaddleOmegaZero_tendsto_atTop hm hθ C)).atTop_div_const hd)
 
-theorem lowerSaddleGrid_tendsto_atTop {d m θ : ℝ}
-    (hd : 0 < d) (hm : 0 < m) (hθ : 0 < θ) (C : ℝ) :
-    Tendsto (fun x : ℝ => (lowerSaddleGrid d m θ C x : ℝ)) atTop atTop := by
+theorem lowerSaddleGrid_tendsto_atTop  C :
+    Tendsto (fun x  => (lowerSaddleGrid d m θ C x : ℝ)) atTop atTop := by
   apply tendsto_atTop_mono (fun x => Nat.le_ceil _)
   exact lowerSaddleGridBase_tendsto_atTop hd hm hθ C
 
-theorem lowerSaddleGrid_div_base_limit {d m θ : ℝ}
-    (hd : 0 < d) (hm : 0 < m) (hθ : 0 < θ) (C : ℝ) :
-    Tendsto (fun x : ℝ => (lowerSaddleGrid d m θ C x : ℝ) / lowerSaddleGridBase d m θ C x)
+theorem lowerSaddleGrid_div_base_limit  C :
+    Tendsto (fun x  => (lowerSaddleGrid d m θ C x) / lowerSaddleGridBase d m θ C x)
       atTop (𝓝 1) := by
-  have hb := lowerSaddleGridBase_tendsto_atTop hd hm hθ C
-  have herr : Tendsto (fun x : ℝ =>
-      ((lowerSaddleGrid d m θ C x : ℝ) - lowerSaddleGridBase d m θ C x) /
-        lowerSaddleGridBase d m θ C x) atTop (𝓝 0) := by
-    have hu : Tendsto (fun x : ℝ => 1 / lowerSaddleGridBase d m θ C x) atTop (𝓝 0) := by
-      simpa only [one_div] using! hb.inv_tendsto_atTop
-    apply squeeze_zero' (Eventually.of_forall fun x => ?_) (Eventually.of_forall fun x => ?_) hu
-    · exact div_nonneg (sub_nonneg.2 (Nat.le_ceil _)) (Real.exp_pos _).le
-    · apply div_le_div_of_nonneg_right _ (show 0 ≤ lowerSaddleGridBase d m θ C x from (Real.exp_pos _).le)
-      change (lowerSaddleGrid d m θ C x : ℝ) - lowerSaddleGridBase d m θ C x ≤ 1
-      have hh := Nat.ceil_lt_add_one (show 0 ≤ lowerSaddleGridBase d m θ C x from (Real.exp_pos _).le)
-      change (lowerSaddleGrid d m θ C x : ℝ) < lowerSaddleGridBase d m θ C x + 1 at hh
-      linarith
-  have hh := (tendsto_const_nhds (x := (1 : ℝ))).add herr
-  simp only [add_zero] at hh
-  refine hh.congr (fun x => ?_)
-  have hp : lowerSaddleGridBase d m θ C x ≠ 0 := (Real.exp_pos _).ne'
-  field_simp
-  ring
+  exact tendsto_nat_ceil_div_atTop.comp (lowerSaddleGridBase_tendsto_atTop hd hm hθ C)
 
-theorem lowerSaddleOmega_rounding_limit {d m θ : ℝ}
-    (hd : 0 < d) (hm : 0 < m) (hθ : 0 < θ) (C : ℝ) :
-    Tendsto (fun x : ℝ => lowerSaddleOmega d m θ C x - lowerSaddleOmegaZero m θ C x)
+theorem lowerSaddleOmega_rounding_limit  C :
+    Tendsto (fun x  => lowerSaddleOmega d m θ C x - lowerSaddleOmegaZero m θ C x)
       atTop (𝓝 0) := by
   have hh := ((Real.continuousAt_log (by norm_num : (1 : ℝ) ≠ 0)).tendsto.comp
     (lowerSaddleGrid_div_base_limit hd hm hθ C)).const_mul d
@@ -173,8 +148,13 @@ theorem lowerSaddleOmega_rounding_limit {d m θ : ℝ}
   rw [Real.log_exp]
   field_simp
   ring
+end
 
-theorem lowerSaddleOmega_rounding_bounds {d m θ C x : ℝ} (hd : 0 < d)
+
+section
+variable {d m θ C x : ℝ}
+
+theorem lowerSaddleOmega_rounding_bounds  (hd : 0 < d)
     (hb : 1 ≤ lowerSaddleGridBase d m θ C x) :
     lowerSaddleOmegaZero m θ C x ≤ lowerSaddleOmega d m θ C x ∧
       lowerSaddleOmega d m θ C x ≤ lowerSaddleOmegaZero m θ C x + d * Real.log 2 := by
@@ -195,7 +175,7 @@ theorem lowerSaddleOmega_rounding_bounds {d m θ C x : ℝ} (hd : 0 < d)
     mul_le_mul_of_nonneg_left hhigh hd.le, mul_div_cancel₀
       (Real.log x + lowerSaddleOmegaZero m θ C x) hd.ne']
 
-theorem lowerSaddleMu_eq_exp {d m θ C x : ℝ} (hx : 0 < x) :
+theorem lowerSaddleMu_eq_exp  (hx : 0 < x) :
     lowerSaddleMu d m θ C x = Real.exp (-lowerSaddleOmega d m θ C x) := by
   unfold lowerSaddleMu
   calc
@@ -203,22 +183,27 @@ theorem lowerSaddleMu_eq_exp {d m θ C x : ℝ} (hx : 0 < x) :
       rw [Real.exp_log hx, Real.rpow_def_of_pos (lowerSaddleH_positive d m θ C x)]
     _ = Real.exp (Real.log x + Real.log (lowerSaddleH d m θ C x) * d) := (Real.exp_add _ _).symm
     _ = _ := by
-      congr 1
+      
       unfold lowerSaddleH lowerSaddleOmega
       rw [Real.log_inv]
       ring
 
-theorem lowerSaddleH_eq_exp {d m θ C x : ℝ} (hd : d ≠ 0) :
+theorem lowerSaddleH_eq_exp  (hd : d ≠ 0) :
     lowerSaddleH d m θ C x =
       Real.exp (-(Real.log x + lowerSaddleOmega d m θ C x) / d) := by
   unfold lowerSaddleH lowerSaddleOmega
   have hh : -(Real.log x + (d * Real.log (lowerSaddleGrid d m θ C x) - Real.log x)) / d =
       -Real.log (lowerSaddleGrid d m θ C x) := by field_simp; ring
   rw [hh, Real.exp_neg, Real.exp_log (lowerSaddleGrid_positive d m θ C x)]
+end
 
-theorem lowerSaddleOmega_div_M_limit {d m θ : ℝ}
-    (hd : 0 < d) (hm : 0 < m) (hθ : 0 < θ) (C : ℝ) :
-    Tendsto (fun x : ℝ => lowerSaddleOmega d m θ C x / lowerSaddleM m x) atTop (𝓝 θ) := by
+
+section
+variable {d m θ : ℝ} (hd : 0 < d) (hm : 0 < m) (hθ : 0 < θ)
+include hd hm hθ
+
+theorem lowerSaddleOmega_div_M_limit  C :
+    Tendsto (fun x  => lowerSaddleOmega d m θ C x / lowerSaddleM m x) atTop (𝓝 θ) := by
   have hr := (lowerSaddleOmega_rounding_limit hd hm hθ C).mul
     (lowerSaddleM_tendsto_atTop hm).inv_tendsto_atTop
   have hh := (lowerSaddleOmegaZero_div_M_limit hm θ C).add hr
@@ -228,30 +213,31 @@ theorem lowerSaddleOmega_div_M_limit {d m θ : ℝ}
   change lowerSaddleOmega d m θ C x / (lowerSaddleM m x : ℝ) =
     lowerSaddleOmegaZero m θ C x / (lowerSaddleM m x : ℝ) +
     (lowerSaddleOmega d m θ C x - lowerSaddleOmegaZero m θ C x) / (lowerSaddleM m x : ℝ)
-  simp only [div_eq_mul_inv]
+  
   ring
 
-theorem lowerSaddleOmega_tendsto_atTop {d m θ : ℝ}
-    (hd : 0 < d) (hm : 0 < m) (hθ : 0 < θ) (C : ℝ) :
+theorem lowerSaddleOmega_tendsto_atTop  C :
     Tendsto (lowerSaddleOmega d m θ C) atTop atTop := by
   have ht := lowerSaddleM_tendsto_atTop hm
   have hh := ht.atTop_mul_pos hθ (lowerSaddleOmega_div_M_limit hd hm hθ C)
   refine hh.congr' ?_
   filter_upwards [ht.eventually (eventually_gt_atTop (0 : ℝ))] with x hx
   exact mul_div_cancel₀ _ hx.ne'
+end
 
-theorem lowerSaddleM_div_log_limit {m : ℝ} (hm : 0 < m) :
-    Tendsto (fun x : ℝ => (lowerSaddleM m x : ℝ) / Real.log x) atTop (𝓝 0) := by
+
+theorem lowerSaddleM_div_log_limit {m } (hm : 0 < m) :
+    Tendsto (fun x  => (lowerSaddleM m x) / Real.log x) atTop (𝓝 0) := by
   have hh := (lowerSaddleM_div_sqrt_log_limit hm).mul tendsto_sqrt_log_div_log
   simp only [mul_zero] at hh
   refine hh.congr' ?_
   filter_upwards [eventually_gt_atTop (1 : ℝ)] with x hx
-  have hz : Real.sqrt (Real.log x) ≠ 0 := (Real.sqrt_pos.2 (Real.log_pos hx)).ne'
+  have hz  := (Real.sqrt_pos.2 (Real.log_pos hx)).ne'
   field_simp
 
-theorem lowerSaddleOmega_div_log_limit {d m θ : ℝ}
-    (hd : 0 < d) (hm : 0 < m) (hθ : 0 < θ) (C : ℝ) :
-    Tendsto (fun x : ℝ => lowerSaddleOmega d m θ C x / Real.log x) atTop (𝓝 0) := by
+theorem lowerSaddleOmega_div_log_limit {d m θ }
+    (hd : 0 < d) (hm : 0 < m) (hθ : 0 < θ) C :
+    Tendsto (fun x  => lowerSaddleOmega d m θ C x / Real.log x) atTop (𝓝 0) := by
   have hh := (lowerSaddleOmega_div_M_limit hd hm hθ C).mul (lowerSaddleM_div_log_limit hm)
   simp only [mul_zero] at hh
   refine hh.congr' ?_
@@ -259,70 +245,70 @@ theorem lowerSaddleOmega_div_log_limit {d m θ : ℝ}
   field_simp
 
 /-- `τM` denotes the interval exponent evaluated at the actual natural degree. -/
-def lowerSaddleN (s d m θ C : ℝ) (τM : ℕ → ℝ) (x : ℝ) : ℝ :=
+def lowerSaddleN s d m θ C (τM : ℕ → ℝ) x  :=
   Real.exp (lowerSaddleLogN s d (Real.log x) (lowerSaddleOmega d m θ C x)
     (τM (lowerSaddleM m x)) (lowerSaddleM m x))
 
-def lowerSaddleEta (s d m θ C cf x : ℝ) : ℝ := cf * (lowerSaddleH d m θ C x) ^ s
+def lowerSaddleEta (s d m θ C cf x : ℝ)  := cf * (lowerSaddleH d m θ C x) ^ s
 
-def lowerSaddleActivity (s d m θ C : ℝ) (τM : ℕ → ℝ) (x : ℝ) : ℝ :=
+def lowerSaddleActivity s d m θ C τM x  :=
   (lowerSaddleN s d m θ C τM x) ^ 2 * Real.exp (τM (lowerSaddleM m x) * lowerSaddleM m x)
 
-def lowerSaddleRisk (s d m θ C cf : ℝ) (τM : ℕ → ℝ) (x : ℝ) : ℝ :=
+def lowerSaddleRisk s d m θ C cf τM x  :=
   (lowerSaddleEta s d m θ C cf x) ^ 2 / lowerSaddleActivity s d m θ C τM x
 
-def lowerSaddleEnergyOne (s d m θ C : ℝ) (τM : ℕ → ℝ) (x : ℝ) : ℝ :=
+def lowerSaddleEnergyOne s d m θ C τM x  :=
   x ^ (2 : ℕ) * (lowerSaddleH d m θ C x) ^ (d + 4 * s) *
     (lowerSaddleN s d m θ C τM x) ^ (-d)
 
-def lowerSaddleEnergyTwo (s d m θ C CG : ℝ) (τM : ℕ → ℝ) (x : ℝ) : ℝ :=
+def lowerSaddleEnergyTwo s d m θ C CG τM x  :=
   x * (lowerSaddleH d m θ C x) ^ (4 * s) *
     Real.exp (2 * τM (lowerSaddleM m x) * lowerSaddleM m x) *
     (lowerSaddleN s d m θ C τM x) ^ (4 - d) *
     (CG * lowerSaddleMu d m θ C x) ^ lowerSaddleM m x /
       ((lowerSaddleM m x + 1).factorial : ℝ)
 
-def lowerSaddleEnergyThree (s d m θ C CG : ℝ) (τM : ℕ → ℝ) (x : ℝ) : ℝ :=
+def lowerSaddleEnergyThree s d m θ C CG τM x  :=
   x * (lowerSaddleH d m θ C x) ^ (4 * s) *
     (lowerSaddleActivity s d m θ C τM x) ^ 2 *
     (CG * lowerSaddleMu d m θ C x) ^ lowerSaddleD d m x /
       ((lowerSaddleD d m x + 1).factorial : ℝ)
 
-theorem lowerSaddleN_positive (s d m θ C : ℝ) (τM : ℕ → ℝ) (x : ℝ) :
+theorem lowerSaddleN_positive s d m θ C τM x :
     0 < lowerSaddleN s d m θ C τM x := Real.exp_pos _
 
-theorem lowerSaddleActivity_positive (s d m θ C : ℝ) (τM : ℕ → ℝ) (x : ℝ) :
+theorem lowerSaddleActivity_positive s d m θ C τM x :
     0 < lowerSaddleActivity s d m θ C τM x := by
-  unfold lowerSaddleActivity
-  exact mul_pos (sq_pos_of_pos (lowerSaddleN_positive s d m θ C τM x)) (Real.exp_pos _)
+  
+  solve_by_elim [mul_pos, sq_pos_of_pos, Real.exp_pos]
 
-theorem lowerSaddleEnergyOne_eq_activity_sq {s d m θ C x : ℝ}
-    (hd : 0 < d) (hd4 : d + 4 ≠ 0) (hx : 0 < x) (τM : ℕ → ℝ) :
+theorem lowerSaddleEnergyOne_eq_activity_sq {s d m θ C x }
+    (hd : 0 < d) (hd4 : d + 4 ≠ 0) (hx : 0 < x) τM :
     lowerSaddleEnergyOne s d m θ C τM x = (lowerSaddleActivity s d m θ C τM x) ^ 2 := by
-  have hx2 : x ^ (2 : ℕ) = Real.exp ((2 : ℝ) * Real.log x) := by
-    change x ^ (2 : ℕ) = Real.exp (((2 : ℕ) : ℝ) * Real.log x)
+  have hx2 : x ^ 2 = Real.exp ((2 : ℝ) * Real.log x) := by
+    change x ^ 2 = Real.exp (((2 : ℕ) : ℝ) * Real.log x)
     rw [Real.exp_nat_mul, Real.exp_log hx]
   unfold lowerSaddleEnergyOne lowerSaddleActivity lowerSaddleN
   rw [hx2, Real.rpow_def_of_pos (lowerSaddleH_positive d m θ C x),
     Real.rpow_def_of_pos (Real.exp_pos _), mul_pow]
   simp only [Real.log_exp, ← Real.exp_nat_mul, ← Real.exp_add]
   rw [lowerSaddleH_eq_exp hd.ne', Real.log_exp]
-  congr 1
+  
   unfold lowerSaddleLogN
   field_simp
   ring
 
 /-- The fixed endpoint estimate `τ≤τ_M≤τ+Cτ/M`, expressed without division. -/
-def LowerExponentControl (τM : ℕ → ℝ) (τ Cτ : ℝ) : Prop :=
+def LowerExponentControl (τM : ℕ → ℝ) τ Cτ  :=
   ∀ᶠ M : ℕ in atTop, τ ≤ τM M ∧ (τM M - τ) * (M : ℝ) ≤ Cτ
 
-theorem lowerSaddleM_nat_tendsto_atTop {m : ℝ} (hm : 0 < m) :
+theorem lowerSaddleM_nat_tendsto_atTop {m } (hm : 0 < m) :
     Tendsto (lowerSaddleM m) atTop atTop :=
   tendsto_natCast_atTop_iff.1 (lowerSaddleM_tendsto_atTop hm)
 
-theorem lowerSaddleTau_limit {m τ Cτ : ℝ} {τM : ℕ → ℝ}
+theorem lowerSaddleTau_limit {m τ Cτ } {τM }
     (hm : 0 < m) (hcontrol : LowerExponentControl τM τ Cτ) :
-    Tendsto (fun x : ℝ => τM (lowerSaddleM m x)) atTop (𝓝 τ) := by
+    Tendsto (fun x  => τM (lowerSaddleM m x)) atTop (𝓝 τ) := by
   have ht := lowerSaddleM_tendsto_atTop hm
   have he := (lowerSaddleM_nat_tendsto_atTop hm).eventually hcontrol
   have hu : Tendsto (fun x : ℝ => Cτ / lowerSaddleM m x) atTop (𝓝 0) := by
@@ -335,10 +321,12 @@ theorem lowerSaddleTau_limit {m τ Cτ : ℝ} {τM : ℕ → ℝ}
   simp only [zero_add, sub_add_cancel] at h
   exact h
 
-theorem lowerSaddleLogN_div_log_limit {d m θ τ Cτ : ℝ} {τM : ℕ → ℝ}
-    (hd : 0 < d) (hm : 0 < m) (hθ : 0 < θ)
-    (hcontrol : LowerExponentControl τM τ Cτ) (s C : ℝ) :
-    Tendsto (fun x : ℝ => Real.log (lowerSaddleN s d m θ C τM x) / Real.log x)
+section
+variable {d m θ τ Cτ : ℝ} {τM : ℕ → ℝ} (hd : 0 < d) (hm : 0 < m) (hθ : 0 < θ) (hcontrol : LowerExponentControl τM τ Cτ)
+include hd hm hθ hcontrol
+
+theorem lowerSaddleLogN_div_log_limit  s C :
+    Tendsto (fun x  => Real.log (lowerSaddleN s d m θ C τM x) / Real.log x)
       atTop (𝓝 ((d - 4 * s) / (d * (d + 4)))) := by
   have hcost := (lowerSaddleTau_limit hm hcontrol).mul (lowerSaddleM_div_log_limit hm)
   have homega := (lowerSaddleOmega_div_log_limit hd hm hθ C).const_mul (1 + 4 * s / d)
@@ -353,10 +341,8 @@ theorem lowerSaddleLogN_div_log_limit {d m θ τ Cτ : ℝ} {τM : ℕ → ℝ}
   rw [Real.log_exp]
   field_simp [(Real.log_pos hx).ne']
 
-theorem lowerSaddleLogN_div_M_sq_limit {d m θ τ Cτ : ℝ} {τM : ℕ → ℝ}
-    (hd : 0 < d) (hm : 0 < m) (hθ : 0 < θ)
-    (hcontrol : LowerExponentControl τM τ Cτ) (s C : ℝ) :
-    Tendsto (fun x : ℝ => Real.log (lowerSaddleN s d m θ C τM x) / (lowerSaddleM m x : ℝ) ^ 2)
+theorem lowerSaddleLogN_div_M_sq_limit  s C :
+    Tendsto (fun x  => Real.log (lowerSaddleN s d m θ C τM x) / (lowerSaddleM m x) ^ 2)
       atTop (𝓝 (((d - 4 * s) / (d * (d + 4))) / m ^ 2)) := by
   have hh := (lowerSaddleLogN_div_log_limit hd hm hθ hcontrol s C).div
     (lowerSaddleM_sq_div_log_limit hm) (pow_ne_zero 2 hm.ne')
@@ -366,10 +352,12 @@ theorem lowerSaddleLogN_div_M_sq_limit {d m θ τ Cτ : ℝ} {τM : ℕ → ℝ}
     ((lowerSaddleM m x : ℝ) ^ 2 / Real.log x) =
       Real.log (lowerSaddleN s d m θ C τM x) / (lowerSaddleM m x : ℝ) ^ 2
   field_simp [(Real.log_pos hx).ne']
+end
 
-theorem lowerSaddleN_tendsto_atTop {s d m θ τ Cτ : ℝ} {τM : ℕ → ℝ}
+
+theorem lowerSaddleN_tendsto_atTop {s d m θ τ Cτ } {τM }
     (hs : 1 < s) (hd : 4 * s < d) (hm : 0 < m) (hθ : 0 < θ)
-    (hcontrol : LowerExponentControl τM τ Cτ) (C : ℝ) :
+    (hcontrol : LowerExponentControl τM τ Cτ) C :
     Tendsto (lowerSaddleN s d m θ C τM) atTop atTop := by
   have hd0 : 0 < d := by linarith
   have hγ : 0 < (d - 4 * s) / (d * (d + 4)) := by positivity
@@ -382,8 +370,11 @@ theorem lowerSaddleN_tendsto_atTop {s d m θ τ Cτ : ℝ} {τM : ℕ → ℝ}
   have h := Real.tendsto_exp_atTop.comp ht
   exact h.congr (fun x => Real.exp_log (lowerSaddleN_positive s d m θ C τM x))
 
-theorem lowerSaddleMu_tends_zero {d m θ : ℝ}
-    (hd : 0 < d) (hm : 0 < m) (hθ : 0 < θ) (C : ℝ) :
+section
+variable {d m θ : ℝ} (hd : 0 < d) (hm : 0 < m) (hθ : 0 < θ)
+include hd hm hθ
+
+theorem lowerSaddleMu_tends_zero  C :
     Tendsto (lowerSaddleMu d m θ C) atTop (𝓝 0) := by
   have hh := Real.tendsto_exp_atBot.comp
     (tendsto_neg_atTop_atBot.comp (lowerSaddleOmega_tendsto_atTop hd hm hθ C))
@@ -391,18 +382,18 @@ theorem lowerSaddleMu_tends_zero {d m θ : ℝ}
   filter_upwards [eventually_gt_atTop (0 : ℝ)] with x hx
   exact (lowerSaddleMu_eq_exp hx).symm
 
-theorem lowerSaddleH_tends_zero {d m θ : ℝ}
-    (hd : 0 < d) (hm : 0 < m) (hθ : 0 < θ) (C : ℝ) :
-    Tendsto (lowerSaddleH d m θ C) atTop (𝓝 0) := by
-  exact (lowerSaddleGrid_tendsto_atTop hd hm hθ C).inv_tendsto_atTop
+theorem lowerSaddleH_tends_zero  C :
+    Tendsto (lowerSaddleH d m θ C) atTop (𝓝 0) := (lowerSaddleGrid_tendsto_atTop hd hm hθ C).inv_tendsto_atTop
+end
 
-theorem lowerSaddleEta_tends_zero {s d m θ : ℝ}
-    (hs : 0 < s) (hd : 0 < d) (hm : 0 < m) (hθ : 0 < θ) (C cf : ℝ) :
+
+theorem lowerSaddleEta_tends_zero {s d m θ }
+    (hs : 0 < s) (hd : 0 < d) (hm : 0 < m) (hθ : 0 < θ) C cf :
     Tendsto (lowerSaddleEta s d m θ C cf) atTop (𝓝 0) := by
   have hh := ((lowerSaddleH_tends_zero hd hm hθ C).rpow_const (Or.inr hs.le)).const_mul cf
   simpa only [Real.zero_rpow hs.ne', mul_zero] using! hh
 
-theorem tendsto_atBot_of_div_negative {f g : ℝ → ℝ} {c : ℝ}
+theorem tendsto_atBot_of_div_negative {f g : ℝ → ℝ} {c }
     (hg : Tendsto g atTop atTop) (hf : Tendsto (fun x => f x / g x) atTop (𝓝 c))
     (hc : c < 0) : Tendsto f atTop atBot := by
   have hh := hg.atTop_mul_neg hc hf
@@ -410,21 +401,16 @@ theorem tendsto_atBot_of_div_negative {f g : ℝ → ℝ} {c : ℝ}
   filter_upwards [hg.eventually (eventually_gt_atTop (0 : ℝ))] with x hx
   exact mul_div_cancel₀ _ hx.ne'
 
-theorem lowerSaddleM_mul_mu_tends_zero {d m θ : ℝ}
-    (hd : 0 < d) (hm : 0 < m) (hθ : 0 < θ) (C : ℝ) :
-    Tendsto (fun x : ℝ => (lowerSaddleM m x : ℝ) * lowerSaddleMu d m θ C x) atTop (𝓝 0) := by
+theorem lowerSaddleM_mul_mu_tends_zero {d m θ }
+    (hd : 0 < d) (hm : 0 < m) (hθ : 0 < θ) C :
+    Tendsto (fun x  => (lowerSaddleM m x) * lowerSaddleMu d m θ C x) atTop (𝓝 0) := by
   have hh := (Real.isLittleO_log_id_atTop.tendsto_div_nhds_zero.comp
     (lowerSaddleM_tendsto_atTop hm)).sub (lowerSaddleOmega_div_M_limit hd hm hθ C)
   simp only [zero_sub] at hh
   have ht : Tendsto (fun x : ℝ => Real.log (lowerSaddleM m x) - lowerSaddleOmega d m θ C x)
       atTop atBot := by
     apply tendsto_atBot_of_div_negative (lowerSaddleM_tendsto_atTop hm) _ (neg_neg_of_pos hθ)
-    convert! hh using 1
-    funext x
-    change (Real.log (lowerSaddleM m x) - lowerSaddleOmega d m θ C x) / (lowerSaddleM m x : ℝ) =
-      Real.log (lowerSaddleM m x) / (lowerSaddleM m x : ℝ) -
-        lowerSaddleOmega d m θ C x / (lowerSaddleM m x : ℝ)
-    ring
+    grind
   have h := Real.tendsto_exp_atBot.comp ht
   refine h.congr' ?_
   filter_upwards [eventually_gt_atTop (0 : ℝ),
@@ -433,15 +419,16 @@ theorem lowerSaddleM_mul_mu_tends_zero {d m θ : ℝ}
   rw [Real.exp_sub, Real.exp_log hM, lowerSaddleMu_eq_exp hx, Real.exp_neg]
   rfl
 
-theorem lowerSaddleRisk_positive {s d m θ C cf x : ℝ} (hcf : 0 < cf) (τM : ℕ → ℝ) :
+section
+variable {s d m θ C cf x : ℝ}
+
+theorem lowerSaddleRisk_positive  (hcf : 0 < cf) τM :
     0 < lowerSaddleRisk s d m θ C cf τM x := by
   unfold lowerSaddleRisk lowerSaddleEta
-  exact div_pos (sq_pos_of_pos (mul_pos hcf
-    (Real.rpow_pos_of_pos (lowerSaddleH_positive d m θ C x) s)))
-    (lowerSaddleActivity_positive s d m θ C τM x)
+  simp_all [Real.rpow_pos_of_pos, lowerSaddleH_positive, lowerSaddleActivity_positive]
 
-theorem log_lowerSaddleRisk {s d m θ C cf x : ℝ}
-    (hs : 1 < s) (hd : 4 * s < d) (hcf : 0 < cf) (τM : ℕ → ℝ) :
+theorem log_lowerSaddleRisk 
+    (hs : 1 < s) (hd : 4 * s < d) (hcf : 0 < cf) τM :
     Real.log (lowerSaddleRisk s d m θ C cf τM x) =
       2 * Real.log cf - rateExponent s d * Real.log x -
         (2 * (s - 1) * lowerSaddleOmega d m θ C x +
@@ -464,10 +451,12 @@ theorem log_lowerSaddleRisk {s d m θ C cf x : ℝ}
     (τM (lowerSaddleM m x)) (lowerSaddleM m x)
   ring_nf at hh ⊢
   linarith
+end
+
 
 theorem log_factorial_succ_lower (M : ℕ) (hM : 1 ≤ M) :
-    (M : ℝ) * Real.log M - M ≤ Real.log ((M + 1).factorial : ℝ) := by
-  have hMpos : 0 < (M : ℝ) := by exact_mod_cast (lt_of_lt_of_le Nat.zero_lt_one hM)
+    M * Real.log M - M ≤ Real.log ((M + 1).factorial) := by
+  
   have hs := Stirling.le_log_factorial_stirling (Nat.ne_of_gt (by omega : 0 < M))
   have hlogM : 0 ≤ Real.log M := Real.log_nonneg (by exact_mod_cast hM)
   have hlogpi : 0 ≤ Real.log (2 * Real.pi) := Real.log_nonneg (by linarith [Real.pi_gt_three])
@@ -476,17 +465,15 @@ theorem log_factorial_succ_lower (M : ℕ) (hM : 1 ≤ M) :
   have hl := Real.log_le_log (by positivity : 0 < (M.factorial : ℝ)) hfac
   linarith
 
-theorem log_lowerSaddleEnergyTwo_ratio {s d m θ C CG x : ℝ}
-    (hd : 0 < d) (hCG : 0 < CG) (hx : 0 < x) (τM : ℕ → ℝ) :
+theorem log_lowerSaddleEnergyTwo_ratio {s d m θ C CG x }
+    (hd : 0 < d) (hCG : 0 < CG) (hx : 0 < x) τM :
     Real.log (lowerSaddleEnergyTwo s d m θ C CG τM x /
       (lowerSaddleActivity s d m θ C τM x) ^ 2) =
     4 * ((d - 4 * s) / (d * (d + 4))) * Real.log x +
       ((d ^ 2 - 16 * s) / (d * (d + 4)) - lowerSaddleM m x) * lowerSaddleOmega d m θ C x +
       (2 * d * τM (lowerSaddleM m x) / (d + 4) + Real.log CG) * lowerSaddleM m x -
-      Real.log ((lowerSaddleM m x + 1).factorial : ℝ) := by
-  have hMu : 0 < lowerSaddleMu d m θ C x := by
-    unfold lowerSaddleMu
-    exact mul_pos hx (Real.rpow_pos_of_pos (lowerSaddleH_positive d m θ C x) d)
+      Real.log ((lowerSaddleM m x + 1).factorial) := by
+  have hMu : 0 < lowerSaddleMu d m θ C x := mul_pos hx (Real.rpow_pos_of_pos (lowerSaddleH_positive d m θ C x) d)
   have hH := lowerSaddleH_positive d m θ C x
   have hN := lowerSaddleN_positive s d m θ C τM x
   have hA := lowerSaddleActivity_positive s d m θ C τM x
@@ -504,9 +491,9 @@ theorem log_lowerSaddleEnergyTwo_ratio {s d m θ C CG x : ℝ}
   field_simp
   ring
 
-theorem lowerSaddleM_square_balance {m θ γ x : ℝ}
+theorem lowerSaddleM_square_balance {m θ γ x }
     (hm : 0 < m) (hθ : 0 < θ) (hbalance : θ * m ^ 2 = 4 * γ)
-    (hx : 1 ≤ x) : 4 * γ * Real.log x ≤ θ * (lowerSaddleM m x : ℝ) ^ 2 := by
+    (hx : 1 ≤ x) : 4 * γ * Real.log x ≤ θ * (lowerSaddleM m x) ^ 2 := by
   have hr := (lowerSaddleM_rounding (x := x) hm.le).1
   have hsq := (sq_le_sq₀ (by positivity : 0 ≤ m * Real.sqrt (Real.log x)) (by positivity)).2 hr
   rw [mul_pow, Real.sq_sqrt (Real.log_nonneg hx)] at hsq
@@ -514,11 +501,11 @@ theorem lowerSaddleM_square_balance {m θ γ x : ℝ}
   rw [← mul_assoc, hbalance] at hh
   exact hh
 
-def lowerSaddleAliasUpper (s d m θ C CG : ℝ) (τM : ℕ → ℝ) (x : ℝ) : ℝ :=
+def lowerSaddleAliasUpper s d m θ C CG (τM : ℕ → ℝ) x  :=
   (d ^ 2 - 16 * s) / (d * (d + 4)) * lowerSaddleOmega d m θ C x +
     (2 * d * τM (lowerSaddleM m x) / (d + 4) + Real.log CG + 1 - C) * lowerSaddleM m x
 
-theorem eventually_log_energyTwo_le_aliasUpper {s d m θ C CG : ℝ} {τM : ℕ → ℝ}
+theorem eventually_log_energyTwo_le_aliasUpper {s d m θ C CG } {τM }
     (hd : 0 < d) (hm : 0 < m) (hθ : 0 < θ) (hCG : 0 < CG)
     (hbalance : θ * m ^ 2 = 4 * ((d - 4 * s) / (d * (d + 4)))) :
     ∀ᶠ x : ℝ in atTop,
@@ -531,16 +518,16 @@ theorem eventually_log_energyTwo_le_aliasUpper {s d m θ C CG : ℝ} {τM : ℕ 
   have hMnat : 1 ≤ lowerSaddleM m x := by exact_mod_cast hM
   have hf := log_factorial_succ_lower (lowerSaddleM m x) hMnat
   have hω := (lowerSaddleOmega_rounding_bounds hd hb).1
-  have hωmul := mul_le_mul_of_nonneg_left hω (show 0 ≤ (lowerSaddleM m x : ℝ) by positivity)
+  
   have hbudget := lowerSaddleM_square_balance hm hθ hbalance hx.le
   rw [log_lowerSaddleEnergyTwo_ratio hd hCG (by linarith) τM]
   unfold lowerSaddleAliasUpper lowerSaddleOmegaZero at *
   nlinarith
 
-theorem lowerSaddleAliasUpper_div_M_limit {d m θ τ Cτ : ℝ} {τM : ℕ → ℝ}
+theorem lowerSaddleAliasUpper_div_M_limit {d m θ τ Cτ } {τM }
     (hd : 0 < d) (hm : 0 < m) (hθ : 0 < θ)
-    (hcontrol : LowerExponentControl τM τ Cτ) (s C CG : ℝ) :
-    Tendsto (fun x : ℝ => lowerSaddleAliasUpper s d m θ C CG τM x / lowerSaddleM m x)
+    (hcontrol : LowerExponentControl τM τ Cτ) s C CG :
+    Tendsto (fun x  => lowerSaddleAliasUpper s d m θ C CG τM x / lowerSaddleM m x)
       atTop (𝓝 ((d ^ 2 - 16 * s) / (d * (d + 4)) * θ +
         2 * d * τ / (d + 4) + Real.log CG + 1 - C)) := by
   have hω := (lowerSaddleOmega_div_M_limit hd hm hθ C).const_mul
@@ -560,13 +547,13 @@ theorem lowerSaddleAliasUpper_div_M_limit {d m θ τ Cτ : ℝ} {τM : ℕ → �
   ring
 
 /-- The genuine alias energy is negligible relative to the squared activity. -/
-theorem lowerSaddleEnergyTwo_ratio_tends_zero {s d m θ C CG τ Cτ : ℝ} {τM : ℕ → ℝ}
+theorem lowerSaddleEnergyTwo_ratio_tends_zero {s d m θ C CG τ Cτ } {τM }
     (hd : 0 < d) (hm : 0 < m) (hθ : 0 < θ) (hCG : 0 < CG)
     (hcontrol : LowerExponentControl τM τ Cτ)
     (hbalance : θ * m ^ 2 = 4 * ((d - 4 * s) / (d * (d + 4))))
     (hC : 1 + Real.log CG + (d ^ 2 - 16 * s) / (d * (d + 4)) * θ +
       2 * d * τ / (d + 4) < C) :
-    Tendsto (fun x : ℝ => lowerSaddleEnergyTwo s d m θ C CG τM x /
+    Tendsto (fun x  => lowerSaddleEnergyTwo s d m θ C CG τM x /
       (lowerSaddleActivity s d m θ C τM x) ^ 2) atTop (𝓝 0) := by
   have hu := tendsto_atBot_of_div_negative (lowerSaddleM_tendsto_atTop hm)
     (lowerSaddleAliasUpper_div_M_limit hd hm hθ hcontrol s C CG) (by linarith)
@@ -575,7 +562,7 @@ theorem lowerSaddleEnergyTwo_ratio_tends_zero {s d m θ C CG τ Cτ : ℝ} {τM 
   · filter_upwards [eventually_gt_atTop (0 : ℝ)] with x hx
     have hH := lowerSaddleH_positive d m θ C x
     have hN := lowerSaddleN_positive s d m θ C τM x
-    have hA := lowerSaddleActivity_positive s d m θ C τM x
+    
     unfold lowerSaddleEnergyTwo lowerSaddleMu
     positivity
   · filter_upwards [eventually_gt_atTop (0 : ℝ),
@@ -587,42 +574,23 @@ theorem lowerSaddleEnergyTwo_ratio_tends_zero {s d m θ C CG τ Cτ : ℝ} {τM 
       have hA := lowerSaddleActivity_positive s d m θ C τM x
       unfold lowerSaddleEnergyTwo lowerSaddleMu
       positivity
-    change _ ≤ Real.exp (lowerSaddleAliasUpper s d m θ C CG τM x)
+    
     exact (Real.exp_log hp).symm.trans_le (Real.exp_le_exp.2 hlog)
 
-theorem lowerSaddleD_div_M_limit {d m : ℝ} (hd : 0 < d) (hm : 0 < m) :
-    Tendsto (fun x : ℝ => (lowerSaddleD d m x : ℝ) / lowerSaddleM m x)
+theorem lowerSaddleD_div_M_limit {d m } (hd : 0 < d) (hm : 0 < m) :
+    Tendsto (fun x  => (lowerSaddleD d m x : ℝ) / lowerSaddleM m x)
       atTop (𝓝 ((d + 8) / 4)) := by
-  have ht := lowerSaddleM_tendsto_atTop hm
-  have hu : Tendsto (fun x : ℝ => 1 / (lowerSaddleM m x : ℝ)) atTop (𝓝 0) := by
-    simpa only [one_div] using! ht.inv_tendsto_atTop
-  have herr : Tendsto (fun x : ℝ =>
-      ((lowerSaddleD d m x : ℝ) - (d + 8) / 4 * lowerSaddleM m x) / lowerSaddleM m x)
-      atTop (𝓝 0) := by
-    apply squeeze_zero' (Eventually.of_forall fun x => ?_) (Eventually.of_forall fun x => ?_) hu
-    · exact div_nonneg (sub_nonneg.2 (Nat.le_ceil _)) (by positivity)
-    · apply div_le_div_of_nonneg_right _ (by positivity)
-      have hc : 0 ≤ (d + 8) / 4 * (lowerSaddleM m x : ℝ) := by positivity
-      have hh := Nat.ceil_lt_add_one hc
-      change (lowerSaddleD d m x : ℝ) < (d + 8) / 4 * lowerSaddleM m x + 1 at hh
-      linarith
-  have hh := (tendsto_const_nhds (x := (d + 8) / 4)).add herr
-  simp only [add_zero] at hh
-  refine hh.congr' ?_
-  filter_upwards [ht.eventually (eventually_gt_atTop (0 : ℝ))] with x hx
-  field_simp
-  ring
+  exact (tendsto_nat_ceil_mul_div_atTop (by positivity : 0 ≤ (d + 8) / 4)).comp
+    (lowerSaddleM_tendsto_atTop hm)
 
-theorem log_lowerSaddleEnergyThree_ratio {s d m θ C CG x : ℝ}
-    (hd : 0 < d) (hCG : 0 < CG) (hx : 0 < x) (τM : ℕ → ℝ) :
+theorem log_lowerSaddleEnergyThree_ratio {s d m θ C CG x }
+    (hd : 0 < d) (hCG : 0 < CG) (hx : 0 < x) τM :
     Real.log (lowerSaddleEnergyThree s d m θ C CG τM x /
       (lowerSaddleActivity s d m θ C τM x) ^ 2) =
       (1 - 4 * s / d) * Real.log x - 4 * s / d * lowerSaddleOmega d m θ C x +
-      (lowerSaddleD d m x : ℝ) * (Real.log CG - lowerSaddleOmega d m θ C x) -
-        Real.log ((lowerSaddleD d m x + 1).factorial : ℝ) := by
-  have hMu : 0 < lowerSaddleMu d m θ C x := by
-    unfold lowerSaddleMu
-    exact mul_pos hx (Real.rpow_pos_of_pos (lowerSaddleH_positive d m θ C x) d)
+      (lowerSaddleD d m x) * (Real.log CG - lowerSaddleOmega d m θ C x) -
+        Real.log ((lowerSaddleD d m x + 1).factorial) := by
+  have hMu : 0 < lowerSaddleMu d m θ C x := mul_pos hx (Real.rpow_pos_of_pos (lowerSaddleH_positive d m θ C x) d)
   have hA := lowerSaddleActivity_positive s d m θ C τM x
   have hH := lowerSaddleH_positive d m θ C x
   unfold lowerSaddleEnergyThree
@@ -631,14 +599,14 @@ theorem log_lowerSaddleEnergyThree_ratio {s d m θ C CG x : ℝ}
   repeat rw [Real.log_mul (by positivity) (by positivity)]
   rw [Real.log_rpow hH, Real.log_pow, Real.log_pow, Real.log_mul hCG.ne' hMu.ne',
     lowerSaddleMu_eq_exp hx, Real.log_exp, lowerSaddleH_eq_exp hd.ne', Real.log_exp]
-  field_simp
+  
   ring
 
-def lowerSaddleCountUpper (s d m θ C CG x : ℝ) : ℝ :=
+def lowerSaddleCountUpper s d m θ C CG x  :=
   (1 - 4 * s / d) * Real.log x +
     (lowerSaddleD d m x : ℝ) * (Real.log CG - lowerSaddleOmega d m θ C x)
 
-theorem eventually_log_energyThree_le_countUpper {s d m θ C CG : ℝ} {τM : ℕ → ℝ}
+theorem eventually_log_energyThree_le_countUpper {s d m θ C CG } {τM }
     (hs : 0 ≤ s) (hd : 0 < d) (hm : 0 < m) (hθ : 0 < θ) (hCG : 0 < CG) :
     ∀ᶠ x : ℝ in atTop,
       Real.log (lowerSaddleEnergyThree s d m θ C CG τM x /
@@ -648,14 +616,14 @@ theorem eventually_log_energyThree_le_countUpper {s d m θ C CG : ℝ} {τM : �
     with x hx hω
   rw [log_lowerSaddleEnergyThree_ratio hd hCG hx τM]
   have hf : 0 ≤ Real.log ((lowerSaddleD d m x + 1).factorial : ℝ) :=
-    Real.log_nonneg (by exact_mod_cast Nat.factorial_pos (lowerSaddleD d m x + 1))
+    (by positivity)
   unfold lowerSaddleCountUpper
   have hp : 0 ≤ 4 * s / d * lowerSaddleOmega d m θ C x := by positivity
   linarith
 
-theorem lowerSaddleCountUpper_div_log_limit {d m θ : ℝ}
-    (hd : 0 < d) (hm : 0 < m) (hθ : 0 < θ) (s C CG : ℝ) :
-    Tendsto (fun x : ℝ => lowerSaddleCountUpper s d m θ C CG x / Real.log x)
+theorem lowerSaddleCountUpper_div_log_limit {d m θ }
+    (hd : 0 < d) (hm : 0 < m) (hθ : 0 < θ) s C CG :
+    Tendsto (fun x  => lowerSaddleCountUpper s d m θ C CG x / Real.log x)
       atTop (𝓝 (1 - 4 * s / d - (d + 8) / 4 * θ * m ^ 2)) := by
   have hD := lowerSaddleD_div_M_limit hd hm
   have hω := lowerSaddleOmega_div_M_limit hd hm hθ C
@@ -674,17 +642,17 @@ theorem lowerSaddleCountUpper_div_log_limit {d m θ : ℝ}
   field_simp [(Real.log_pos hx).ne']
 
 /-- The genuine high-count factorial energy is negligible relative to squared activity. -/
-theorem lowerSaddleEnergyThree_ratio_tends_zero {s d m θ C CG : ℝ} {τM : ℕ → ℝ}
+theorem lowerSaddleEnergyThree_ratio_tends_zero {s d m θ C CG } {τM }
     (hs : 1 < s) (hd : 4 * s < d) (hm : 0 < m) (hθ : 0 < θ) (hCG : 0 < CG)
     (hbalance : θ * m ^ 2 = 4 * ((d - 4 * s) / (d * (d + 4)))) :
-    Tendsto (fun x : ℝ => lowerSaddleEnergyThree s d m θ C CG τM x /
+    Tendsto (fun x  => lowerSaddleEnergyThree s d m θ C CG τM x /
       (lowerSaddleActivity s d m θ C τM x) ^ 2) atTop (𝓝 0) := by
   have hd0 : 0 < d := by linarith
   have hc : 1 - 4 * s / d - (d + 8) / 4 * θ * m ^ 2 < 0 := by
     rw [mul_assoc ((d + 8) / 4), hbalance]
     have hid : 1 - 4 * s / d - (d + 8) / 4 * (4 * ((d - 4 * s) / (d * (d + 4)))) =
       -4 * ((d - 4 * s) / (d * (d + 4))) := by field_simp; ring
-    rw [hid]
+    
     have hp : 0 < (d - 4 * s) / (d * (d + 4)) := by positivity
     linarith
   have hu := tendsto_atBot_of_div_negative Real.tendsto_log_atTop
@@ -693,7 +661,7 @@ theorem lowerSaddleEnergyThree_ratio_tends_zero {s d m θ C CG : ℝ} {τM : ℕ
   apply squeeze_zero' _ _ hb
   · filter_upwards [eventually_gt_atTop (0 : ℝ)] with x hx
     have hH := lowerSaddleH_positive d m θ C x
-    have hA := lowerSaddleActivity_positive s d m θ C τM x
+    
     unfold lowerSaddleEnergyThree lowerSaddleMu
     positivity
   · filter_upwards [eventually_gt_atTop (0 : ℝ),
@@ -705,11 +673,11 @@ theorem lowerSaddleEnergyThree_ratio_tends_zero {s d m θ C CG : ℝ} {τM : ℕ
       have hA := lowerSaddleActivity_positive s d m θ C τM x
       unfold lowerSaddleEnergyThree lowerSaddleMu
       positivity
-    change _ ≤ Real.exp (lowerSaddleCountUpper s d m θ C CG x)
+    
     exact (Real.exp_log hp).symm.trans_le (Real.exp_le_exp.2 hlog)
 
 /-- The combined explicit numerical energy envelope is at most `3 CG B²` eventually. -/
-theorem eventually_lowerSaddle_numeric_cost {s d m θ C CG τ Cτ : ℝ} {τM : ℕ → ℝ}
+theorem eventually_lowerSaddle_numeric_cost {s d m θ C CG τ Cτ } {τM }
     (hs : 1 < s) (hd : 4 * s < d) (hm : 0 < m) (hθ : 0 < θ) (hCG : 0 < CG)
     (hcontrol : LowerExponentControl τM τ Cτ)
     (hbalance : θ * m ^ 2 = 4 * ((d - 4 * s) / (d * (d + 4))))
@@ -731,36 +699,32 @@ theorem eventually_lowerSaddle_numeric_cost {s d m θ C CG τ Cτ : ℝ} {τM : 
   have h2' := (div_lt_iff₀ hA).1 h2
   have h3' := (div_lt_iff₀ hA).1 h3
   rw [lowerSaddleEnergyOne_eq_activity_sq hd0 (by linarith) hx τM]
-  calc
-    _ ≤ CG * (3 * (lowerSaddleActivity s d m θ C τM x) ^ 2) :=
-      mul_le_mul_of_nonneg_left (by linarith only [h2', h3']) hCG.le
-    _ = _ := by ring
+  nlinarith
 
-theorem lowerSaddleRisk_residual_identity {s d m θ C cf τ x : ℝ} (τM : ℕ → ℝ)
+theorem lowerSaddleRisk_residual_identity {s d m θ C cf τ x } τM
     (hs : 1 < s) (hd : 4 * s < d) (hcf : 0 < cf)
     (hθrelation : 2 * (s - 1) * θ = d * τ) :
     Real.log (lowerSaddleRisk s d m θ C cf τM x) -
       rateLog (rateExponent s d) (2 * d * τ / (d + 4) * m) (lowerLogPower s d) x =
       (2 * Real.log cf - 2 * (s - 1) / (d + 4) * C) -
-      (2 * d * τ / (d + 4)) * ((lowerSaddleM m x : ℝ) - m * Real.sqrt (Real.log x)) +
+      (2 * d * τ / (d + 4)) * ((lowerSaddleM m x) - m * Real.sqrt (Real.log x)) +
       (2 * (s - 1) / (d + 4)) * (Real.log (lowerSaddleM m x) - Real.log (Real.log x) / 2) -
       (2 * (s - 1) / (d + 4)) * (lowerSaddleOmega d m θ C x - lowerSaddleOmegaZero m θ C x) -
       (d / (d + 4)) * ((τM (lowerSaddleM m x) - τ) * lowerSaddleM m x) := by
-  have hsm : 2 * (s - 1) ≠ 0 := by linarith
-  have hθeq : θ = d * τ / (2 * (s - 1)) :=
-    (eq_div_iff hsm).2 (by simpa only [mul_comm] using hθrelation)
+  
+  
   rw [log_lowerSaddleRisk hs hd hcf τM]
   unfold rateLog lowerLogPower lowerSaddleOmegaZero
-  rw [hθeq]
-  field_simp [show s - 1 ≠ 0 by linarith, show d + 4 ≠ 0 by linarith]
-  ring
+  grind
 
-theorem lowerSaddleRisk_residual_isBigO {s d m θ C cf τ Cτ : ℝ} {τM : ℕ → ℝ}
-    (hs : 1 < s) (hd : 4 * s < d) (hm : 0 < m) (hθ : 0 < θ) (hcf : 0 < cf)
-    (hcontrol : LowerExponentControl τM τ Cτ) (hθrelation : 2 * (s - 1) * θ = d * τ) :
-    (fun x : ℝ => Real.log (lowerSaddleRisk s d m θ C cf τM x) -
+section
+variable {s d m θ C cf τ Cτ : ℝ} {τM : ℕ → ℝ} (hs : 1 < s) (hd : 4 * s < d) (hm : 0 < m) (hθ : 0 < θ) (hcf : 0 < cf) (hcontrol : LowerExponentControl τM τ Cτ) (hθrelation : 2 * (s - 1) * θ = d * τ)
+include hs hd hm hθ hcf hcontrol hθrelation
+
+theorem lowerSaddleRisk_residual_isBigO  :
+    (fun x  => Real.log (lowerSaddleRisk s d m θ C cf τM x) -
       rateLog (rateExponent s d) (2 * d * τ / (d + 4) * m) (lowerLogPower s d) x)
-      =O[atTop] (fun _ : ℝ => (1 : ℝ)) := by
+      =O[atTop] (fun _  => (1 : ℝ)) := by
   have hd0 : 0 < d := by linarith
   have hceil : (fun x : ℝ => (lowerSaddleM m x : ℝ) - m * Real.sqrt (Real.log x))
       =O[atTop] (fun _ : ℝ => (1 : ℝ)) := by
@@ -786,9 +750,7 @@ theorem lowerSaddleRisk_residual_isBigO {s d m θ C cf τ Cτ : ℝ} {τM : ℕ 
   exact hh.congr_left (fun x => (lowerSaddleRisk_residual_identity τM hs hd hcf hθrelation).symm)
 
 /-- The actual rounded numeric risk is comparable to the exact displayed saddle scale. -/
-theorem eventually_lowerSaddleRisk_rate_bracket {s d m θ C cf τ Cτ : ℝ} {τM : ℕ → ℝ}
-    (hs : 1 < s) (hd : 4 * s < d) (hm : 0 < m) (hθ : 0 < θ) (hcf : 0 < cf)
-    (hcontrol : LowerExponentControl τM τ Cτ) (hθrelation : 2 * (s - 1) * θ = d * τ) :
+theorem eventually_lowerSaddleRisk_rate_bracket  :
     ∃ c A : ℝ, 0 < c ∧ 0 < A ∧ ∀ᶠ x : ℝ in atTop,
       c * rateScale (rateExponent s d) (2 * d * τ / (d + 4) * m) (lowerLogPower s d) x ≤
         lowerSaddleRisk s d m θ C cf τM x ∧
@@ -804,50 +766,59 @@ theorem eventually_lowerSaddleRisk_rate_bracket {s d m θ C cf τ Cτ : ℝ} {τ
   rw [← Real.exp_add, ← Real.exp_add]
   constructor
   · rw [← Real.exp_log hp]
-    exact Real.exp_le_exp.2 ((le_sub_iff_add_le).1 hl)
+    bound
   · rw [← Real.exp_log hp]
-    exact Real.exp_le_exp.2 ((sub_le_iff_le_add).1 hu)
+    simp_all
+end
+
 
 def lowerSaddleTheta (s d τ : ℝ) : ℝ := d * τ / (2 * (s - 1))
 
-theorem lowerSaddleCoefficient_pos {s d τ : ℝ}
-    (hs : 1 < s) (hd : 4 * s < d) (hτ : 0 < τ) :
+section
+variable {s d τ : ℝ} (hs : 1 < s)
+include hs
+
+section
+variable (hd : 4 * s < d) (hτ : 0 < τ)
+include hd hτ
+
+theorem lowerSaddleCoefficient_pos   :
     0 < lowerSaddleCoefficient s d τ := by
   have hd0 : 0 < d := by linarith
-  unfold lowerSaddleCoefficient
+  
   apply Real.sqrt_pos.2
   positivity
 
-theorem lowerSaddleTheta_pos {s d τ : ℝ}
-    (hs : 1 < s) (hd : 4 * s < d) (hτ : 0 < τ) : 0 < lowerSaddleTheta s d τ := by
+theorem lowerSaddleTheta_pos   : 0 < lowerSaddleTheta s d τ := by
   have hd0 : 0 < d := by linarith
   unfold lowerSaddleTheta
   positivity
+end
 
-theorem lowerSaddleTheta_relation {s d τ : ℝ} (hs : 1 < s) :
+
+theorem lowerSaddleTheta_relation  :
     2 * (s - 1) * lowerSaddleTheta s d τ = d * τ := by
   unfold lowerSaddleTheta
   field_simp [show s - 1 ≠ 0 by linarith]
 
-theorem lowerSaddle_canonical_balance {s d τ : ℝ}
-    (hs : 1 < s) (hd : 4 * s < d) (hτ : 0 < τ) :
+theorem lowerSaddle_canonical_balance  (hd : 4 * s < d) (hτ : 0 < τ) :
     lowerSaddleTheta s d τ * (lowerSaddleCoefficient s d τ) ^ 2 =
       4 * ((d - 4 * s) / (d * (d + 4))) := by
   have hd0 : 0 < d := by linarith
   have hp : 0 ≤ 8 * (d - 4 * s) * (s - 1) / (d ^ 2 * (d + 4) * τ) := by positivity
   unfold lowerSaddleTheta lowerSaddleCoefficient
-  rw [Real.sq_sqrt hp]
-  field_simp [show s - 1 ≠ 0 by linarith]
-  ring
+  grind
+end
+
 
 /-- The exact shrunk-endpoint exponent supplies the saddle's fixed control hypothesis. -/
-theorem exists_actual_lowerExponentControl {a b : ℝ} (ha : 0 < a) (hab : a < b) :
+theorem exists_actual_lowerExponentControl {a b } (ha : 0 < a) (hab : a < b) :
     ∃ Cτ : ℝ, 0 ≤ Cτ ∧ LowerExponentControl (shrunkDensityExponent a b)
       (densityIntervalExponent a b) Cτ := exists_shrunkDensityExponent_control ha hab
 
 /-- With all the paper's fixed constants substituted, the actual risk has its displayed rate. -/
-theorem actual_lowerSaddleRisk_rate_bracket {s d a b cf : ℝ}
-    (hs : 1 < s) (hd : 4 * s < d) (ha : 0 < a) (hab : a < b) (hcf : 0 < cf) (C : ℝ) :
+theorem actual_lowerSaddleRisk_rate_bracket {s d a b cf }
+    (hs : 1 < s) (hd : 4 * s < d) (ha : 0 < a) (hab : a < b) (hcf : 0 < cf) C :
     ∃ c A : ℝ, 0 < c ∧ 0 < A ∧ ∀ᶠ x : ℝ in atTop,
       c * rateScale (rateExponent s d) (stretchConstant s d (densityIntervalExponent a b))
         (lowerLogPower s d) x ≤
@@ -865,9 +836,9 @@ theorem actual_lowerSaddleRisk_rate_bracket {s d a b cf : ℝ}
   rw [lower_saddle_stretchConstant hs hd hτ] at hh
   exact hh
 
-theorem log_lowerSaddleEta_div_log_limit {s d m θ cf : ℝ}
-    (hd : 0 < d) (hm : 0 < m) (hθ : 0 < θ) (hcf : 0 < cf) (C : ℝ) :
-    Tendsto (fun x : ℝ => Real.log (lowerSaddleEta s d m θ C cf x) / Real.log x)
+theorem log_lowerSaddleEta_div_log_limit {s d m θ cf }
+    (hd : 0 < d) (hm : 0 < m) (hθ : 0 < θ) (hcf : 0 < cf) C :
+    Tendsto (fun x  => Real.log (lowerSaddleEta s d m θ C cf x) / Real.log x)
       atTop (𝓝 (-s / d)) := by
   have hconst := tendsto_const_div_log (Real.log cf)
   have hω := lowerSaddleOmega_div_log_limit hd hm hθ C
@@ -881,15 +852,15 @@ theorem log_lowerSaddleEta_div_log_limit {s d m θ cf : ℝ}
   field_simp [(Real.log_pos hx).ne']
   ring
 
-def lowerSaddleResponseQuantity (s d m θ C cf : ℝ) (q : ℕ) (τM : ℕ → ℝ) (x : ℝ) : ℝ :=
+def lowerSaddleResponseQuantity s d m θ C cf q τM x  :=
   (lowerSaddleEta s d m θ C cf x) ^ (4 * q) * (lowerSaddleN s d m θ C τM x) ^ d
 
-theorem lowerSaddleResponseQuantity_tends_zero {s d m θ cf τ Cτ : ℝ} {τM : ℕ → ℝ}
+theorem lowerSaddleResponseQuantity_tends_zero {s d m θ cf τ Cτ : ℝ} {τM }
     (hs : 1 < s) (hd : 4 * s < d) (hm : 0 < m) (hθ : 0 < θ) (hcf : 0 < cf)
-    (hcontrol : LowerExponentControl τM τ Cτ) (q : ℕ) (hq : d / (4 * s) - 1 ≤ (q : ℝ)) (C : ℝ) :
+    (hcontrol : LowerExponentControl τM τ Cτ) (q : ℕ) (hq : d / (4 * s) - 1 ≤ q) C :
     Tendsto (lowerSaddleResponseQuantity s d m θ C cf q τM) atTop (𝓝 0) := by
   have hd0 : 0 < d := by linarith
-  have hs0 : 0 < s := by linarith
+  
   have hγ : 0 < (d - 4 * s) / (d * (d + 4)) := by positivity
   have hqmul : d ≤ 4 * s * ((q : ℝ) + 1) := by
     have hh : d / (4 * s) ≤ (q : ℝ) + 1 := by linarith
@@ -899,7 +870,7 @@ theorem lowerSaddleResponseQuantity_tends_zero {s d m θ cf τ Cτ : ℝ} {τM :
         -4 * ((d - 4 * s) / (d * (d + 4))) + (d - 4 * s * ((q : ℝ) + 1)) / d := by
       field_simp
       ring
-    rw [hid]
+    
     have hn : (d - 4 * s * ((q : ℝ) + 1)) / d ≤ 0 := div_nonpos_of_nonpos_of_nonneg (by linarith) hd0.le
     linarith
   have hh := ((log_lowerSaddleEta_div_log_limit (s := s) hd0 hm hθ hcf C).const_mul
@@ -925,17 +896,17 @@ theorem lowerSaddleResponseQuantity_tends_zero {s d m θ cf τ Cτ : ℝ} {τM :
     have hN := lowerSaddleN_positive s d m θ C τM x
     positivity))
 
-def lowerSaddleResponseOrder (s d : ℝ) : ℕ := max 2 (Nat.floor (d / (4 * s)))
+def lowerSaddleResponseOrder (s d : ℝ)  := max 2 (Nat.floor (d / (4 * s)))
 
-theorem lowerSaddleResponseOrder_bound {s d : ℝ} (_hs : 0 < s) (_hd : 0 ≤ d) :
-    d / (4 * s) - 1 ≤ (lowerSaddleResponseOrder s d : ℝ) := by
+theorem lowerSaddleResponseOrder_bound {s d } (_hs : 0 < s) (_hd : 0 ≤ d) :
+    d / (4 * s) - 1 ≤ (lowerSaddleResponseOrder s d) := by
   have hfloor := Nat.lt_floor_add_one (d / (4 * s))
   have hmax : (Nat.floor (d / (4 * s)) : ℝ) ≤ lowerSaddleResponseOrder s d := by
     exact_mod_cast le_max_right 2 (Nat.floor (d / (4 * s)))
   linarith
 
 /-- The complete numerical regime of `eq:LB-regime`, for the actual saddle tuple. -/
-def LowerSaddleReg (K η0 s d m θ C cf : ℝ) (M0 : ℕ) (τM : ℕ → ℝ) (x : ℝ) : Prop :=
+def LowerSaddleReg K η0 s d m θ C cf M0 τM x  :=
   M0 ≤ lowerSaddleM m x ∧
   lowerSaddleD d m x = Nat.ceil ((d + 8) / 4 * lowerSaddleM m x) ∧
   1 ≤ lowerSaddleN s d m θ C τM x ∧
@@ -947,12 +918,12 @@ def LowerSaddleReg (K η0 s d m θ C cf : ℝ) (M0 : ℕ) (τM : ℕ → ℝ) (x
   0 < lowerSaddleEta s d m θ C cf x ∧ lowerSaddleEta s d m θ C cf x ≤ η0 ∧
   lowerSaddleResponseQuantity s d m θ C cf (lowerSaddleResponseOrder s d) τM x ≤ 1
 
-theorem eventually_lowerSaddleReg {K η0 s d m θ cf τ Cτ : ℝ} {τM : ℕ → ℝ}
+theorem eventually_lowerSaddleReg {K η0 s d m θ cf τ Cτ } {τM }
     (hs : 1 < s) (hd : 4 * s < d) (hm : 0 < m) (hθ : 0 < θ) (hcf : 0 < cf)
     (hη0 : 0 < η0) (_hK : 1 ≤ K) (hcontrol : LowerExponentControl τM τ Cτ)
     (hθlow : 1 / K < θ) (hθhigh : θ < K)
     (hNlow : 1 / K < ((d - 4 * s) / (d * (d + 4))) / m ^ 2)
-    (hNhigh : ((d - 4 * s) / (d * (d + 4))) / m ^ 2 < K) (C : ℝ) (M0 : ℕ) :
+    (hNhigh : ((d - 4 * s) / (d * (d + 4))) / m ^ 2 < K) C M0 :
     ∀ᶠ x : ℝ in atTop, LowerSaddleReg K η0 s d m θ C cf M0 τM x := by
   have hd0 : 0 < d := by linarith
   have hM := lowerSaddleM_tendsto_atTop hm
@@ -970,9 +941,7 @@ theorem eventually_lowerSaddleReg {K η0 s d m θ cf τ Cτ : ℝ} {τM : ℕ �
     (lowerSaddleEta_tends_zero (s := s) (by linarith) hd0 hm hθ C cf).eventually (gt_mem_nhds hη0),
     hrsp.eventually (gt_mem_nhds (by norm_num : (0 : ℝ) < 1))]
     with x hx hM0 hMpos hN1 hMu1 hωl hωu hNl hNu hEta0 hRsp
-  have hMu : 0 < lowerSaddleMu d m θ C x := by
-    unfold lowerSaddleMu
-    exact mul_pos hx (Real.rpow_pos_of_pos (lowerSaddleH_positive d m θ C x) d)
+  have hMu : 0 < lowerSaddleMu d m θ C x := mul_pos hx (Real.rpow_pos_of_pos (lowerSaddleH_positive d m θ C x) d)
   have hEta : 0 < lowerSaddleEta s d m θ C cf x :=
     mul_pos hcf (Real.rpow_pos_of_pos (lowerSaddleH_positive d m θ C x) s)
   have hωl' := (lt_div_iff₀ hMpos).1 hωl
@@ -980,16 +949,16 @@ theorem eventually_lowerSaddleReg {K η0 s d m θ cf τ Cτ : ℝ} {τM : ℕ �
   have hNl' := (lt_div_iff₀ (sq_pos_of_pos hMpos)).1 hNl
   have hNu' := (div_lt_iff₀ (sq_pos_of_pos hMpos)).1 hNu
   refine ⟨hM0, rfl, hN1, hMu, hMu1, ?_, hωu'.le, ?_, hNu'.le, hEta, hEta0.le, hRsp.le⟩
-  · simpa only [one_div, div_eq_mul_inv, mul_comm, mul_one] using hωl'.le
-  · simpa only [one_div, div_eq_mul_inv, mul_comm, mul_one] using hNl'.le
+  · grind
+  grind
 
 /-- The remaining fixed grid and mass hypotheses of `lem:score-risk` hold eventually. -/
-theorem eventually_lowerSaddle_grid_and_mass {d m θ cm Cmgf : ℝ}
+theorem eventually_lowerSaddle_grid_and_mass {d m θ cm Cmgf }
     (hd : 0 < d) (hm : 0 < m) (hθ : 0 < θ) (hcm : 0 < cm) (hCmgf : 0 < Cmgf)
-    (C : ℝ) (gridThreshold : ℕ) :
+    C gridThreshold :
     ∀ᶠ x : ℝ in atTop, gridThreshold ≤ lowerSaddleGrid d m θ C x ∧
       8 * Cmgf * lowerSaddleMu d m θ C x ≤ cm / lowerSaddleM m x := by
-  have hgrid : Tendsto (lowerSaddleGrid d m θ C) atTop atTop :=
+  have hgrid  :=
     tendsto_natCast_atTop_iff.1 (lowerSaddleGrid_tendsto_atTop hd hm hθ C)
   have hcap : 0 < cm / (8 * Cmgf) := by positivity
   filter_upwards [hgrid.eventually (eventually_ge_atTop gridThreshold),
@@ -999,7 +968,7 @@ theorem eventually_lowerSaddle_grid_and_mass {d m θ cm Cmgf : ℝ}
   have hh := (lt_div_iff₀ (by positivity : 0 < 8 * Cmgf)).1 hmass
   nlinarith only [hh]
 
-theorem tendsto_sample_div_log : Tendsto (fun x : ℝ => x / Real.log x) atTop atTop := by
+theorem tendsto_sample_div_log : Tendsto (fun x  => x / Real.log x) atTop atTop := by
   have hh : Tendsto (fun x : ℝ => Real.log x / x) atTop (𝓝 0) := by
     simpa only [Real.rpow_one] using tendsto_log_power_div_sample 1
   have hwithin : Tendsto (fun x : ℝ => Real.log x / x) atTop (𝓝[>] 0) := by
@@ -1008,12 +977,11 @@ theorem tendsto_sample_div_log : Tendsto (fun x : ℝ => x / Real.log x) atTop a
     filter_upwards [eventually_gt_atTop (1 : ℝ)] with x hx
     exact div_pos (Real.log_pos hx) (by linarith)
   exact hwithin.inv_tendsto_nhdsGT_zero.congr (fun x => by
-    change (Real.log x / x)⁻¹ = x / Real.log x
-    rw [inv_div])
+    simp_all)
 
 /-- The mass-tail envelope is negligible compared with the square of every displayed rate. -/
-theorem exponential_sample_log_tail_over_rate_tends_zero {c : ℝ} (hc : 0 < c) (lam κ a : ℝ) :
-    Tendsto (fun x : ℝ => 2 * Real.exp (-c * x / Real.log x) / (rateScale lam κ a x) ^ 2)
+theorem exponential_sample_log_tail_over_rate_tends_zero {c } (hc : 0 < c) lam κ a :
+    Tendsto (fun x  => 2 * Real.exp (-c * x / Real.log x) / (rateScale lam κ a x) ^ 2)
       atTop (𝓝 0) := by
   have hs := tendsto_sample_div_log
   have hconst : Tendsto (fun x : ℝ => Real.log 2 / (x / Real.log x)) atTop (𝓝 0) := by
@@ -1021,9 +989,9 @@ theorem exponential_sample_log_tail_over_rate_tends_zero {c : ℝ} (hc : 0 < c) 
   have hrate : Tendsto (fun x : ℝ => rateLog lam κ a x / Real.log x) atTop (𝓝 (-lam)) := by
     have hh := (tendsto_normalized_log_scale lam κ a 0).neg
     convert! hh using 1
-    funext x
+    
     ring
-  have hsq : Tendsto (fun x : ℝ => (Real.log x) ^ (2 : ℕ) / x) atTop (𝓝 0) := by
+  have hsq : Tendsto (fun x : ℝ => (Real.log x) ^ 2 / x) atTop (𝓝 0) := by
     simpa only [Real.rpow_two] using tendsto_log_power_div_sample 2
   have hcorr : Tendsto (fun x : ℝ => rateLog lam κ a x / (x / Real.log x)) atTop (𝓝 0) := by
     have hh := hrate.mul hsq
@@ -1049,13 +1017,13 @@ theorem exponential_sample_log_tail_over_rate_tends_zero {c : ℝ} (hc : 0 < c) 
   rw [show -c * x / Real.log x = -(c * x / Real.log x) by ring, Real.exp_neg]
   ring
 
-def lowerSaddleExceptionalTail (d m θ C c x : ℝ) : ℝ :=
+def lowerSaddleExceptionalTail d m θ C c x  :=
   2 * Real.exp (-c / ((lowerSaddleM m x : ℝ) ^ 2 * (lowerSaddleH d m θ C x) ^ d))
 
-theorem eventually_lowerSaddle_mass_variance_bound {d m θ : ℝ}
-    (hd : 0 < d) (hm : 0 < m) (hθ : 0 < θ) (C : ℝ) :
+theorem eventually_lowerSaddle_mass_variance_bound {d m θ }
+    (hd : 0 < d) (hm : 0 < m) (hθ : 0 < θ) C :
     ∀ᶠ x : ℝ in atTop,
-      (lowerSaddleM m x : ℝ) ^ 2 * (lowerSaddleH d m θ C x) ^ d ≤
+      (lowerSaddleM m x) ^ 2 * (lowerSaddleH d m θ C x) ^ d ≤
         2 * m ^ 2 * Real.log x / x := by
   have hsq := lowerSaddleM_sq_div_log_limit hm
   filter_upwards [eventually_gt_atTop (1 : ℝ),
@@ -1071,31 +1039,30 @@ theorem eventually_lowerSaddle_mass_variance_bound {d m θ : ℝ}
   calc
     _ ≤ (lowerSaddleM m x : ℝ) ^ 2 * (1 / x) := mul_le_mul_of_nonneg_left hH (sq_nonneg _)
     _ ≤ 2 * m ^ 2 * Real.log x / x := by
-      simpa only [one_div, div_eq_mul_inv, mul_assoc, one_mul] using
-        mul_le_mul_of_nonneg_right hM'.le (inv_nonneg.2 hx0.le)
+      grind only [mul_le_mul_of_nonneg_right, inv_nonneg]
 
-theorem eventually_lowerSaddle_exceptionalTail_envelope {d m θ c : ℝ}
-    (hd : 0 < d) (hm : 0 < m) (hθ : 0 < θ) (hc : 0 < c) (C : ℝ) :
+section
+variable {d m θ c : ℝ} (hd : 0 < d) (hm : 0 < m) (hθ : 0 < θ) (hc : 0 < c)
+include hd hm hθ hc
+
+theorem eventually_lowerSaddle_exceptionalTail_envelope  C :
     ∀ᶠ x : ℝ in atTop, lowerSaddleExceptionalTail d m θ C c x ≤
       2 * Real.exp (-(c / (2 * m ^ 2)) * x / Real.log x) := by
   filter_upwards [eventually_gt_atTop (1 : ℝ),
     (lowerSaddleM_tendsto_atTop hm).eventually (eventually_gt_atTop (0 : ℝ)),
     eventually_lowerSaddle_mass_variance_bound hd hm hθ C] with x hx hM hbound
-  have hx0 : 0 < x := by linarith
+  
   have hden : 0 < (lowerSaddleM m x : ℝ) ^ 2 * (lowerSaddleH d m θ C x) ^ d :=
     mul_pos (sq_pos_of_pos hM) (Real.rpow_pos_of_pos (lowerSaddleH_positive d m θ C x) d)
   have hh := div_le_div_of_nonneg_left hc.le hden hbound
   have hid : c / (2 * m ^ 2 * Real.log x / x) = (c / (2 * m ^ 2)) * x / Real.log x := by field_simp
-  rw [hid] at hh
+  
   unfold lowerSaddleExceptionalTail
-  apply mul_le_mul_of_nonneg_left _ (by norm_num : (0 : ℝ) ≤ 2)
-  apply Real.exp_le_exp.2
-  convert neg_le_neg hh using 1 <;> ring
+  grind only [mul_le_mul_of_nonneg_left, Real.exp_le_exp]
 
 /-- The paper's actual mass exception is `o(Psi²)`, without an exceptional-tail hypothesis. -/
-theorem lowerSaddleExceptionalTail_over_rate_tends_zero {d m θ c : ℝ}
-    (hd : 0 < d) (hm : 0 < m) (hθ : 0 < θ) (hc : 0 < c) (C lam κ a : ℝ) :
-    Tendsto (fun x : ℝ => lowerSaddleExceptionalTail d m θ C c x / (rateScale lam κ a x) ^ 2)
+theorem lowerSaddleExceptionalTail_over_rate_tends_zero  C lam κ a :
+    Tendsto (fun x  => lowerSaddleExceptionalTail d m θ C c x / (rateScale lam κ a x) ^ 2)
       atTop (𝓝 0) := by
   have hb := exponential_sample_log_tail_over_rate_tends_zero
     (show 0 < c / (2 * m ^ 2) by positivity) lam κ a
@@ -1103,30 +1070,32 @@ theorem lowerSaddleExceptionalTail_over_rate_tends_zero {d m θ c : ℝ}
     unfold lowerSaddleExceptionalTail rateScale
     positivity) _ hb
   filter_upwards [eventually_lowerSaddle_exceptionalTail_envelope hd hm hθ hc C] with x hx
-  exact div_le_div_of_nonneg_right hx (sq_nonneg _)
+  bound
+end
+
 
 /-- Every fixed positive pair of limits lies strictly inside one fixed `Reg(K)` window. -/
-theorem exists_regime_window {u v : ℝ} (hu : 0 < u) (hv : 0 < v) :
+theorem exists_regime_window {u v } (hu : 0 < u) (hv : 0 < v) :
     ∃ K : ℝ, 1 ≤ K ∧ 1 / K < u ∧ u < K ∧ 1 / K < v ∧ v < K := by
   let K := 2 + u + v + 1 / u + 1 / v
   have huinv : 0 < 1 / u := by positivity
   have hvinv : 0 < 1 / v := by positivity
-  have hK : 0 < K := by dsimp [K]; linarith
-  have h1u : 1 / u < K := by dsimp [K]; linarith
-  have h1v : 1 / v < K := by dsimp [K]; linarith
+  have hK : 0 < K := by skip; linarith
+  have h1u : 1 / u < K := by skip; linarith
+  have h1v : 1 / v < K := by skip; linarith
   refine ⟨K, ?_, (div_lt_iff₀ hK).2 ?_, ?_, (div_lt_iff₀ hK).2 ?_, ?_⟩
-  · dsimp [K]; linarith
+  · skip; linarith
   · have hh := mul_lt_mul_of_pos_left h1u hu
-    simpa only [one_div, mul_inv_cancel₀ hu.ne'] using hh
-  · dsimp [K]; linarith
+    grind
+  · skip; linarith
   · have hh := mul_lt_mul_of_pos_left h1v hv
-    simpa only [one_div, mul_inv_cancel₀ hv.ne'] using hh
-  · dsimp [K]; linarith
+    grind
+  · skip; linarith
 
 /-- A fixed `K` works for the actual shrunk endpoints and every later fixed threshold. -/
-theorem actual_lowerSaddle_fixed_regime_window {s d a b cf : ℝ}
+theorem actual_lowerSaddle_fixed_regime_window {s d a b cf }
     (hs : 1 < s) (hd : 4 * s < d) (ha : 0 < a) (hab : a < b) (hcf : 0 < cf) :
-    ∃ K : ℝ, 1 ≤ K ∧ ∀ (C η0 : ℝ) (M0 : ℕ), 0 < η0 →
+    ∃ K : ℝ, 1 ≤ K ∧ ∀ C η0 M0, 0 < η0 →
       ∀ᶠ x : ℝ in atTop,
         LowerSaddleReg K η0 s d (lowerSaddleCoefficient s d (densityIntervalExponent a b))
           (lowerSaddleTheta s d (densityIntervalExponent a b)) C cf M0 (shrunkDensityExponent a b) x := by
@@ -1138,11 +1107,10 @@ theorem actual_lowerSaddle_fixed_regime_window {s d a b cf : ℝ}
       (lowerSaddleCoefficient s d (densityIntervalExponent a b)) ^ 2 := by positivity
   obtain ⟨K, hK, hθl, hθu, hNl, hNu⟩ := exists_regime_window hθ hγm
   obtain ⟨Cτ, _, hcontrol⟩ := exists_actual_lowerExponentControl ha hab
-  refine ⟨K, hK, fun C η0 M0 hη0 => ?_⟩
-  exact eventually_lowerSaddleReg hs hd hm hθ hcf hη0 hK hcontrol hθl hθu hNl hNu C M0
+  grind only [eventually_lowerSaddleReg]
 
 /-- The numerical cost estimate for the exact source parameters, including actual `τ_M`. -/
-theorem eventually_actual_lowerSaddle_numeric_cost {s d a b CG C : ℝ}
+theorem eventually_actual_lowerSaddle_numeric_cost {s d a b CG C }
     (hs : 1 < s) (hd : 4 * s < d) (ha : 0 < a) (hab : a < b) (hCG : 0 < CG)
     (hC : 1 + Real.log CG + (d ^ 2 - 16 * s) / (d * (d + 4)) *
       lowerSaddleTheta s d (densityIntervalExponent a b) +
@@ -1156,14 +1124,13 @@ theorem eventually_actual_lowerSaddle_numeric_cost {s d a b CG C : ℝ}
           3 * CG * (lowerSaddleActivity s d m θ C τM x) ^ 2 := by
   have hτ := densityIntervalExponent_pos ha hab
   obtain ⟨Cτ, _, hcontrol⟩ := exists_actual_lowerExponentControl ha hab
-  exact eventually_lowerSaddle_numeric_cost hs hd (lowerSaddleCoefficient_pos hs hd hτ)
-    (lowerSaddleTheta_pos hs hd hτ) hCG hcontrol (lowerSaddle_canonical_balance hs hd hτ) hC
+  grind only [eventually_lowerSaddle_numeric_cost, lowerSaddleCoefficient_pos, lowerSaddleTheta_pos, lowerSaddle_canonical_balance]
 
 /-- `epsilon_n` with the source's mass-tail coefficient is `o(Psi²)`. -/
-theorem actual_lowerSaddle_exceptionalTail_over_Psi_tends_zero {s d a b cm Cmgf : ℝ}
+theorem actual_lowerSaddle_exceptionalTail_over_Psi_tends_zero {s d a b cm Cmgf }
     (hs : 1 < s) (hd : 4 * s < d) (ha : 0 < a) (hab : a < b)
-    (hcm : 0 < cm) (hCmgf : 0 < Cmgf) (C : ℝ) :
-    Tendsto (fun x : ℝ =>
+    (hcm : 0 < cm) (hCmgf : 0 < Cmgf) C :
+    Tendsto (fun x  =>
       lowerSaddleExceptionalTail d (lowerSaddleCoefficient s d (densityIntervalExponent a b))
         (lowerSaddleTheta s d (densityIntervalExponent a b)) C (cm ^ 2 / (8 * Cmgf)) x /
         (rateScale (rateExponent s d) (stretchConstant s d (densityIntervalExponent a b))

@@ -33,77 +33,99 @@ def highCenteredRowUnionIntercept (π : (j : J) → Measure (E j)) (B : J → �
 def highCenteredRowUnionSlope (slope : (j : J) → E j → ℝ) : (Sigma E) ⊕ Unit → ℝ :=
   balancedSlope (fun e : Sigma E => slope e.1 e.2)
 
-theorem highCenteredRowUnionLaw_probability (π : (j : J) → Measure (E j))
-    [∀ j, IsProbabilityMeasure (π j)] (B : J → ℝ) (hB : ∀ j, 0 ≤ B j)
-    (hTotal : 0 < highRowTotalMass B) (δ : ℝ) (hδ0 : 0 ≤ δ) (hδ1 : δ ≤ 1) :
+section
+variable (π : (j : J) → Measure (E j))
+
+theorem highCenteredRowUnionLaw_probability 
+    [∀ j, IsProbabilityMeasure (π j)] B (hB : ∀ j, 0 ≤ B j)
+    (hTotal : 0 < highRowTotalMass B) δ (hδ0 : 0 ≤ δ) (hδ1 : δ ≤ 1) :
     IsProbabilityMeasure (highCenteredRowUnionLaw π B δ) := by
   letI := highRowReferenceUnion_probability π B hB hTotal
   exact balancedReferenceLaw_probability _ δ hδ0 hδ1
 
-theorem highCenteredRowUnionActivation_centered (π : (j : J) → Measure (E j))
-    (B : J → ℝ) (hB : ∀ j, 0 ≤ B j) (w : (j : J) → E j → ℝ)
+theorem highCenteredRowUnionActivation_centered 
+    B (hB : ∀ j, 0 ≤ B j) w
     (hw : ∀ j, Measurable (w j)) (hInt : ∀ j, Integrable (w j) (π j))
     (hCenter : ∀ j, (∫ e, w j e ∂π j) = 0)
-    (δ : ℝ) (hδ : 0 < δ) (hδ1 : δ ≤ 1) :
+    δ (hδ : 0 < δ) (hδ1 : δ ≤ 1) :
     (∫ e, highCenteredRowUnionActivation B w δ e ∂highCenteredRowUnionLaw π B δ) = 0 :=
   balancedActivation_integral_zero _ δ hδ hδ1 _ (highRowUnionActivation_measurable B w hw)
     (highRowUnionActivation_integrable π B w hw hInt)
     (highRowUnionActivation_centered π B hB w hw hInt hCenter)
+end
 
-theorem highCenteredRowUnionActivation_bound (B : J → ℝ) (hB : ∀ j, 0 < B j)
-    (hTotal : 0 < highRowTotalMass B) (w : (j : J) → E j → ℝ)
-    (hw : ∀ j e, |w j e| ≤ B j) (δ : ℝ) (hδ : 0 < δ) (e : (Sigma E) ⊕ Unit) :
+
+section
+variable (B : J → ℝ)
+
+theorem highCenteredRowUnionActivation_bound  (hB : ∀ j, 0 < B j)
+    (hTotal : 0 < highRowTotalMass B) w
+    (hw : ∀ j e, |w j e| ≤ B j) δ (hδ : 0 < δ) (e : (Sigma E) ⊕ Unit) :
     |highCenteredRowUnionActivation B w δ e| ≤ highRowTotalMass B / δ := by
   apply balancedActivation_bound _ δ _ hδ hTotal.le
   intro e
   simpa only [div_one] using highRowUnionActivation_bound B hB hTotal 1 (by norm_num)
     w (by simpa only [div_one] using hw) e
 
-theorem highCenteredRowUnionActivation_measurable (B : J → ℝ)
-    (w : (j : J) → E j → ℝ) (hw : ∀ j, Measurable (w j)) (δ : ℝ) :
+theorem highCenteredRowUnionActivation_measurable 
+    (w : (j : J) → E j → ℝ) (hw : ∀ j, Measurable (w j)) δ :
     Measurable (highCenteredRowUnionActivation B w δ) :=
   balancedActivation_measurable _ (highRowUnionActivation_measurable B w hw) δ
+end
+
 
 theorem highCenteredRowUnionSlope_measurable (slope : (j : J) → E j → ℝ)
     (hSlope : ∀ j, Measurable (slope j)) : Measurable (highCenteredRowUnionSlope slope) :=
   balancedSlope_measurable _ (rowSigmaFunction_measurable slope hSlope)
 
-theorem highCenteredRowUnionIntercept_measurable (π : (j : J) → Measure (E j)) (B : J → ℝ)
-    (intercept : (j : J) → E j → ℝ) (hIntercept : ∀ j, Measurable (intercept j)) (δ : ℝ) :
+section
+variable (π : (j : J) → Measure (E j))
+
+section
+variable (B : J → ℝ)
+
+theorem highCenteredRowUnionIntercept_measurable  
+    intercept (hIntercept : ∀ j, Measurable (intercept j)) δ :
     Measurable (highCenteredRowUnionIntercept π B intercept δ) :=
   balancedIntercept_measurable _ (rowSigmaFunction_measurable intercept hIntercept) δ _
 
-theorem highCenteredRowUnionSlope_integral_zero (π : (j : J) → Measure (E j))
-    (B : J → ℝ) (hB : ∀ j, 0 ≤ B j) (hTotal : 0 < highRowTotalMass B)
-    (slope : (j : J) → E j → ℝ) (hSlope : ∀ j, Measurable (slope j))
+theorem highCenteredRowUnionSlope_integral_zero 
+     (hB : ∀ j, 0 ≤ B j) (hTotal : 0 < highRowTotalMass B)
+    slope (hSlope : ∀ j, Measurable (slope j))
     (hiSlope : ∀ j, Integrable (slope j) (π j))
     (hCenter : ∀ j, (∫ e, slope j e ∂π j) = 0)
-    (δ : ℝ) (hδ0 : 0 ≤ δ) (hδ1 : δ ≤ 1) :
+    δ (hδ0 : 0 ≤ δ) (hδ1 : δ ≤ 1) :
     (∫ e, highCenteredRowUnionSlope slope e ∂highCenteredRowUnionLaw π B δ) = 0 :=
   balancedSlope_integral_zero _ δ hδ0 hδ1 _ (rowSigmaFunction_measurable slope hSlope)
     (highRowReferenceUnion_integrable π B _ (rowSigmaFunction_measurable slope hSlope) hiSlope)
     (highRowReferenceUnion_integral_common_mean π B hB hTotal slope hSlope hiSlope 0 hCenter)
+end
 
-theorem highCenteredRowUnionIntercept_integral_one (π : (j : J) → Measure (E j))
-    [∀ j, IsProbabilityMeasure (π j)] (B : J → ℝ) (hB : ∀ j, 0 ≤ B j)
+
+theorem highCenteredRowUnionIntercept_integral_one 
+    [∀ j, IsProbabilityMeasure (π j)] B (hB : ∀ j, 0 ≤ B j)
     (hTotal : 0 < highRowTotalMass B)
-    (intercept : (j : J) → E j → ℝ) (hIntercept : ∀ j, Measurable (intercept j))
-    (a b : ℝ) (hBound : ∀ j e, intercept j e ∈ Icc a b)
-    (δ : ℝ) (hδ0 : 0 ≤ δ) (hδ1 : δ < 1) :
+    intercept (hIntercept : ∀ j, Measurable (intercept j))
+    a b (hBound : ∀ j e, intercept j e ∈ Icc a b)
+    δ (hδ0 : 0 ≤ δ) (hδ1 : δ < 1) :
     (∫ e, highCenteredRowUnionIntercept π B intercept δ e ∂highCenteredRowUnionLaw π B δ) = 1 := by
   letI := highRowReferenceUnion_probability π B hB hTotal
   exact balancedIntercept_integral_one _ δ hδ0 hδ1 _
     (rowSigmaFunction_measurable intercept hIntercept)
     (boundedIntercept_integrable (highRowReferenceUnion π B) _
       (rowSigmaFunction_measurable intercept hIntercept) a b (fun e => hBound e.1 e.2))
+end
+
+
+section
+variable {d : ℕ} (C : ModelConstants d) (π : (j : J) → Measure (E j)) [∀ j, IsProbabilityMeasure (π j)] (B : J → ℝ) (hB : ∀ j, 0 ≤ B j) (hTotal : 0 < highRowTotalMass B)
+include hB hTotal
 
 /-- The source's single corrective intercept is legal at its uniform
 resolution threshold, for the actual total union intercept mean. -/
-theorem highCenteredRowUnionIntercept_source_interval {d : ℕ} (C : ModelConstants d)
-    (π : (j : J) → Measure (E j)) [∀ j, IsProbabilityMeasure (π j)]
-    (B : J → ℝ) (hB : ∀ j, 0 ≤ B j) (hTotal : 0 < highRowTotalMass B)
-    (intercept : (j : J) → E j → ℝ) (hIntercept : ∀ j, Measurable (intercept j))
-    (M : ℝ) (hM : highCenterResolutionThreshold C ≤ M)
+theorem highCenteredRowUnionIntercept_source_interval 
+    intercept (hIntercept : ∀ j, Measurable (intercept j))
+    M (hM : highCenterResolutionThreshold C ≤ M)
     (hBound : ∀ j e, intercept j e ∈ Icc (C.densityLower+1/M) (C.densityUpper-1/M)) :
     ∀ e, highCenteredRowUnionIntercept π B intercept (highCenterMix C) e ∈
       Icc (C.densityLower+1/M) (C.densityUpper-1/M) := by
@@ -119,15 +141,13 @@ theorem highCenteredRowUnionIntercept_source_interval {d : ℕ} (C : ModelConsta
     exact sourceBalancedResetAnchor_mem C M _ (by linarith) hg.2 hq
 
 /-- Source global density reset legality, including the one corrective branch. -/
-theorem highCenteredRowUnion_reset_source_legal {d : ℕ} (C : ModelConstants d)
-    (π : (j : J) → Measure (E j)) [∀ j, IsProbabilityMeasure (π j)]
-    (B : J → ℝ) (hB : ∀ j, 0 ≤ B j) (hTotal : 0 < highRowTotalMass B)
-    (slope intercept : (j : J) → E j → ℝ) (hIntercept : ∀ j, Measurable (intercept j))
-    (M : ℝ) (hM : highCenterResolutionThreshold C ≤ M)
+theorem highCenteredRowUnion_reset_source_legal 
+    slope intercept (hIntercept : ∀ j, Measurable (intercept j))
+    M (hM : highCenterResolutionThreshold C ≤ M)
     (hBound : ∀ j e, intercept j e ∈ Icc (C.densityLower+1/M) (C.densityUpper-1/M))
     (hlegal : ∀ j e p, p ∈ Icc (C.densityLower+1/M) (C.densityUpper-1/M) →
       slope j e*p+intercept j e ∈ Icc (C.densityLower+1/M) (C.densityUpper-1/M))
-    (e : (Sigma E) ⊕ Unit) (p : ℝ)
+    e p
     (hp : p ∈ Icc (C.densityLower+1/M) (C.densityUpper-1/M)) :
     highCenteredRowUnionSlope slope e*p+highCenteredRowUnionIntercept π B intercept (highCenterMix C) e ∈
       Icc (C.densityLower+1/M) (C.densityUpper-1/M) := by
@@ -137,6 +157,8 @@ theorem highCenteredRowUnion_reset_source_legal {d : ℕ} (C : ModelConstants d)
     simpa only [highCenteredRowUnionSlope, balancedSlope, Sum.elim_inr, zero_mul, zero_add]
       using highCenteredRowUnionIntercept_source_interval C π B hB hTotal intercept hIntercept
         M hM hBound (Sum.inr u)
+end
+
 
 end
 

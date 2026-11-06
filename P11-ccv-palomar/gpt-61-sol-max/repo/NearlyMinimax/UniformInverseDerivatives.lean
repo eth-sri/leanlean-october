@@ -15,29 +15,39 @@ open Polynomial
 section ChebyshevPerturbation
 variable {R : Type*} [Ring R] [Algebra ℝ R]
 
-def matrixChebyshevT (x : R) (n : ℕ) : R := aeval x (Chebyshev.T ℝ (n : ℤ))
-def matrixChebyshevU (x : R) (n : ℤ) : R := aeval x (Chebyshev.U ℝ n)
+section
+variable (x : R)
+include x
 
-theorem matrixChebyshevT_recurrence (x : R) (n : ℕ) :
+def matrixChebyshevT  (n : ℕ)  := aeval x (Chebyshev.T ℝ (n : ℤ))
+def matrixChebyshevU  n  := aeval x (Chebyshev.U ℝ n)
+
+theorem matrixChebyshevT_recurrence  n :
     matrixChebyshevT x (n + 2) = 2 * x * matrixChebyshevT x (n + 1) - matrixChebyshevT x n := by
   unfold matrixChebyshevT
   rw [show ((n + 2 : ℕ) : ℤ) = (n : ℤ) + 2 by omega, Chebyshev.T_add_two]
   simp [map_ofNat]
 
-theorem matrixChebyshevU_recurrence (x : R) (n : ℤ) :
+theorem matrixChebyshevU_recurrence  n :
     matrixChebyshevU x (n + 1) = 2 * x * matrixChebyshevU x n - matrixChebyshevU x (n - 1) := by
   unfold matrixChebyshevU
   rw [Chebyshev.U_add_one]
   simp [map_ofNat]
+end
+
 
 /-- The forcing term for Chebyshev polynomials at two possibly noncommuting matrices. -/
-def chebyshevForcing (x y : R) (j : ℕ) : R :=
+def chebyshevForcing (x y : R) j  :=
   if j = 0 then y - x else 2 * (y - x) * matrixChebyshevT y j
 
-def chebyshevResponse (x : R) (f : ℕ → R) (n : ℕ) : R :=
+section
+variable (x : R) (f : ℕ → R) (n : ℕ)
+include x f n
+
+def chebyshevResponse   :=
   ∑ j ∈ Finset.range n, matrixChebyshevU x ((n : ℤ) - 1 - j) * f j
 
-theorem chebyshevResponse_recurrence (x : R) (f : ℕ → R) (n : ℕ) :
+theorem chebyshevResponse_recurrence  :
     chebyshevResponse x f (n + 2) =
       2 * x * chebyshevResponse x f (n + 1) - chebyshevResponse x f n + f (n + 1) := by
   unfold chebyshevResponse
@@ -59,9 +69,11 @@ theorem chebyshevResponse_recurrence (x : R) (f : ℕ → R) (n : ℕ) :
   simp_rw [hindex']
   simp only [sub_mul, Finset.sum_sub_distrib, mul_assoc, ← Finset.mul_sum]
   noncomm_ring
+end
+
 
 /-- Exact discrete variation of constants; no commutativity of the two arguments is assumed. -/
-theorem matrixChebyshevT_perturbation_identity (x y : R) (n : ℕ) :
+theorem matrixChebyshevT_perturbation_identity (x y : R) n :
     matrixChebyshevT y n - matrixChebyshevT x n =
       chebyshevResponse x (chebyshevForcing x y) n := by
   induction n using Nat.twoStepInduction with
@@ -76,9 +88,13 @@ theorem matrixChebyshevT_perturbation_identity (x y : R) (n : ℕ) :
 end ChebyshevPerturbation
 
 /-- A finite positive weighted geometric constant; it is independent of polynomial degree. -/
-def perturbationConstant (η : ℝ) : ℝ := ∑' k : ℕ, ((k + 1 : ℕ) : ℝ) * η ^ k
+def perturbationConstant η  := ∑' k : ℕ, ((k + 1 : ℕ) : ℝ) * η ^ k
 
-theorem perturbationConstant_pos (η : ℝ) (hη : 0 < η) (hη1 : η < 1) :
+section
+variable (η : ℝ) (hη : 0 < η) (hη1 : η < 1)
+include hη hη1
+
+theorem perturbationConstant_pos  :
     0 < perturbationConstant η := by
   have hs : Summable (fun k : ℕ => ((k + 1 : ℕ) : ℝ) * η ^ k) := by
     simpa using RoughRegime.SeriesBounds.weighted_geometric_summable 1 η hη hη1
@@ -86,8 +102,8 @@ theorem perturbationConstant_pos (η : ℝ) (hη : 0 < η) (hη1 : η < 1) :
   apply hs.tsum_pos (fun k => by positivity) 0
   simp
 
-theorem weighted_convolution_le_constant (η : ℝ) (hη : 0 < η) (hη1 : η < 1) (n : ℕ) :
-    (∑ j ∈ Finset.range n, ((n - j : ℕ) : ℝ) * η ^ (n - j)) ≤ perturbationConstant η := by
+theorem weighted_convolution_le_constant  n :
+    (∑ j ∈ Finset.range n, ((n - j : ℕ)) * η ^ (n - j)) ≤ perturbationConstant η := by
   have hs : Summable (fun k : ℕ => ((k + 1 : ℕ) : ℝ) * η ^ k) := by
     simpa using RoughRegime.SeriesBounds.weighted_geometric_summable 1 η hη hη1
   rw [← Finset.sum_range_reflect]
@@ -109,13 +125,15 @@ theorem weighted_convolution_le_constant (η : ℝ) (hη : 0 < η) (hη1 : η < 
           mul_le_mul_of_nonneg_left hη1.le (by positivity)
         _ = _ := by ring
     _ ≤ _ := hs.sum_le_tsum (Finset.range n) (fun k hk => by positivity)
+end
+
 
 /-- Discrete Gronwall majorant with a second-order convolution kernel. -/
-theorem recurrence_exponential_majorant (u : ℕ → ℝ) (η δ : ℝ)
+theorem recurrence_exponential_majorant (u : ℕ → ℝ) η δ
     (hη : 0 < η) (hη1 : η < 1) (hδ : 0 ≤ δ)
     (hsmall : 4 * δ * perturbationConstant η ≤ 1)
     (hu : ∀ n, u n ≤ 1 + 2 * δ *
-      ∑ j ∈ Finset.range n, ((n - j : ℕ) : ℝ) * u j) (n : ℕ) :
+      ∑ j ∈ Finset.range n, ((n - j : ℕ) : ℝ) * u j) n :
     η ^ n * u n ≤ 2 := by
   induction n using Nat.strong_induction_on with
   | h n ih =>
@@ -156,7 +174,7 @@ private theorem norm_two_ring : ‖(2 : R)‖ = 2 := by
   rw [h, norm_smul, norm_one, Real.norm_two, mul_one]
 
 theorem matrixChebyshevU_norm_le (x : R) (hx : ∀ n, ‖matrixChebyshevT x n‖ ≤ 1) (n : ℕ) :
-    ‖matrixChebyshevU x (n : ℤ)‖ ≤ (n : ℝ) + 1 := by
+    ‖matrixChebyshevU x n‖ ≤ n + 1 := by
   induction n using Nat.twoStepInduction with
   | zero => simp [matrixChebyshevU]
   | one =>
@@ -175,12 +193,14 @@ theorem matrixChebyshevU_norm_le (x : R) (hx : ∀ n, ‖matrixChebyshevT x n‖
     rw [he]
     calc
       _ ≤ ‖2 * matrixChebyshevT x (n + 2)‖ + ‖matrixChebyshevU x (n : ℤ)‖ := norm_add_le _ _
-      _ ≤ 2 * ‖matrixChebyshevT x (n + 2)‖ + ((n : ℝ) + 1) := by
-        exact add_le_add (by simpa only [norm_two_ring] using norm_mul_le (2 : R) _) hn
+      _ ≤ 2 * ‖matrixChebyshevT x (n + 2)‖ + ((n : ℝ) + 1) := add_le_add (by simpa only [norm_two_ring] using norm_mul_le (2 : R) _) hn
       _ ≤ _ := by have h := hx (n + 2); push_cast; linarith
 
-theorem chebyshevForcing_norm_le (x y : R) (δ : ℝ) (hδ : 0 ≤ δ)
-    (hd : ‖y - x‖ ≤ δ) (j : ℕ) :
+section
+variable (x y : R)
+
+theorem chebyshevForcing_norm_le  δ (hδ : 0 ≤ δ)
+    (hd : ‖y - x‖ ≤ δ) j :
     ‖chebyshevForcing x y j‖ ≤ 2 * δ * ‖matrixChebyshevT y j‖ := by
   unfold chebyshevForcing
   split_ifs with hj
@@ -192,11 +212,15 @@ theorem chebyshevForcing_norm_le (x y : R) (δ : ℝ) (hδ : 0 ≤ δ)
         apply mul_le_mul_of_nonneg_right _ (norm_nonneg _)
         exact (norm_mul_le _ _).trans (by rw [norm_two_ring]; gcongr)
 
-theorem matrixChebyshevT_norm_volterra (x y : R)
-    (hx : ∀ n, ‖matrixChebyshevT x n‖ ≤ 1) (δ : ℝ) (hδ : 0 ≤ δ)
-    (hd : ‖y - x‖ ≤ δ) (n : ℕ) :
+section
+variable (hx : ∀ n, ‖matrixChebyshevT x n‖ ≤ 1)
+include hx
+
+theorem matrixChebyshevT_norm_volterra 
+     δ (hδ : 0 ≤ δ)
+    (hd : ‖y - x‖ ≤ δ) n :
     ‖matrixChebyshevT y n‖ ≤ 1 + 2 * δ *
-      ∑ j ∈ Finset.range n, ((n - j : ℕ) : ℝ) * ‖matrixChebyshevT y j‖ := by
+      ∑ j ∈ Finset.range n, ((n - j : ℕ)) * ‖matrixChebyshevT y j‖ := by
   have hterm (j : ℕ) (hj : j ∈ Finset.range n) :
       ‖matrixChebyshevU x ((n : ℤ) - 1 - j) * chebyshevForcing x y j‖ ≤
         2 * δ * (((n - j : ℕ) : ℝ) * ‖matrixChebyshevT y j‖) := by
@@ -230,13 +254,17 @@ theorem matrixChebyshevT_norm_volterra (x y : R)
 
 /-- Uniform exponential control in a fixed noncommutative neighborhood of a bounded
 Chebyshev center. The radius depends on `η`, never on the polynomial degree. -/
-theorem matrixChebyshevT_neighborhood_bound (x y : R)
-    (hx : ∀ n, ‖matrixChebyshevT x n‖ ≤ 1) (η δ : ℝ)
+theorem matrixChebyshevT_neighborhood_bound 
+     η δ
     (hη : 0 < η) (hη1 : η < 1) (hδ : 0 ≤ δ)
-    (hsmall : 4 * δ * perturbationConstant η ≤ 1) (hd : ‖y - x‖ ≤ δ) (n : ℕ) :
+    (hsmall : 4 * δ * perturbationConstant η ≤ 1) (hd : ‖y - x‖ ≤ δ) n :
     η ^ n * ‖matrixChebyshevT y n‖ ≤ 2 :=
   recurrence_exponential_majorant (fun n => ‖matrixChebyshevT y n‖) η δ hη hη1 hδ hsmall
     (matrixChebyshevT_norm_volterra x y hx δ hδ hd) n
+end
+
+end
+
 
 end ChebyshevNorm
 
@@ -245,11 +273,11 @@ variable {R I : Type*} [NormedCommRing R] [NormOneClass R] [DecidableEq I]
 
 /-- Finite Cauchy products preserve a common geometric envelope in any normed
 commutative ring, including the complexified matrix entries. -/
-theorem powerSeries_prod_geometric_bound (s : Finset I) (f : I → PowerSeries R)
-    (q B : ℝ) (hq : 0 < q) (hB : 0 ≤ B)
-    (hf : ∀ i ∈ s, ∀ k, ‖PowerSeries.coeff k (f i)‖ ≤ B * q ^ k) (k : ℕ) :
+theorem powerSeries_prod_geometric_bound s (f : I → PowerSeries R)
+    q B (hq : 0 < q) (hB : 0 ≤ B)
+    (hf : ∀ i ∈ s, ∀ k, ‖PowerSeries.coeff k (f i)‖ ≤ B * q ^ k) k :
     ‖PowerSeries.coeff k (∏ i ∈ s, f i)‖ ≤
-      B ^ s.card * ((k + 1 : ℕ) : ℝ) ^ s.card * q ^ k := by
+      B ^ s.card * ((k + 1 : ℕ)) ^ s.card * q ^ k := by
   induction s using Finset.induction_on generalizing k with
   | empty =>
     simp only [Finset.prod_empty, Finset.card_empty, pow_zero, one_mul, PowerSeries.coeff_one]
@@ -275,17 +303,27 @@ open scoped Matrix.Norms.L2Operator
 open RoughRegime.Upper RoughRegime.MatrixUpper RoughRegime.MatrixDeterminant
 variable {n : Type*} [Fintype n] [DecidableEq n] [Nonempty n]
 
-def normalizeMatrix (lo hi : ℝ) (A : Matrix n n ℂ) : Matrix n n ℂ :=
+section
+variable (lo hi : ℝ)
+include lo hi
+
+section
+variable (A : Matrix n n ℂ)
+include A
+
+def normalizeMatrix    :=
   (intervalHalfWidth lo hi)⁻¹ • (A - intervalCenter lo hi • 1)
 
-theorem normalizedChebyshev_aeval_complex (lo hi : ℝ) (A : Matrix n n ℂ) (k : ℕ) :
+theorem normalizedChebyshev_aeval_complex   k :
     aeval A (normalizedChebyshev lo hi k) = matrixChebyshevT (normalizeMatrix lo hi A) k := by
   rw [normalizedChebyshev, aeval_comp]
   congr 1
   simp [normalizeMatrix, Algebra.smul_def]
+end
 
-theorem normalizedChebyshev_complex_center_bound (lo hi : ℝ) (hlo : 0 < lo) (hlt : lo < hi)
-    (A : Matrix n n ℂ) (hA : A.IsHermitian) (hSpec : spectrum ℝ A ⊆ Set.Icc lo hi) (k : ℕ) :
+
+theorem normalizedChebyshev_complex_center_bound  (hlo : 0 < lo) (hlt : lo < hi)
+    (A : Matrix n n ℂ) (hA : A.IsHermitian) (hSpec : spectrum ℝ A ⊆ Set.Icc lo hi) k :
     ‖matrixChebyshevT (normalizeMatrix lo hi A) k‖ ≤ 1 := by
   rw [← normalizedChebyshev_aeval_complex]
   have hs : IsSelfAdjoint A := Matrix.isHermitian_iff_isSelfAdjoint.mp hA
@@ -296,12 +334,14 @@ theorem normalizedChebyshev_complex_center_bound (lo hi : ℝ) (hlo : 0 < lo) (h
   exact RoughRegime.Upper.chebyshev_abs_le_one _
     (interval_argument_mem lo hi x hlo hlt (hSpec hx)) k
 
-theorem normalizeMatrix_sub (lo hi : ℝ) (A B : Matrix n n ℂ) :
+theorem normalizeMatrix_sub  (A B : Matrix n n ℂ) :
     normalizeMatrix lo hi B - normalizeMatrix lo hi A =
       (intervalHalfWidth lo hi)⁻¹ • (B - A) := by
   simp only [normalizeMatrix, ← smul_sub]
   congr 1
   abel
+end
+
 
 theorem matrix_entry_norm_le_l2 (A : Matrix n n ℂ) (i j : n) : ‖A i j‖ ≤ ‖A‖ := by
   let e : EuclideanSpace ℂ n := EuclideanSpace.single j 1
@@ -318,11 +358,11 @@ theorem matrix_entry_norm_le_l2 (A : Matrix n n ℂ) (i j : n) : ‖A i j‖ ≤
 def complexKernelSeries (lo hi : ℝ) (A : Matrix n n ℂ) : Matrix n n (PowerSeries ℂ) :=
   fun i j => PowerSeries.mk (fun k => (aeval A (kernelCoefficientPolynomial lo hi k)) i j)
 
-theorem complex_kernel_coefficient_bound (lo hi : ℝ) (hlo : 0 < lo) (hlt : lo < hi)
+theorem complex_kernel_coefficient_bound lo hi (hlo : 0 < lo) (hlt : lo < hi)
     (A B : Matrix n n ℂ) (hA : A.IsHermitian) (hSpec : spectrum ℝ A ⊆ Set.Icc lo hi)
-    (η δ : ℝ) (hη : 0 < η) (hη1 : η < 1) (hδ : 0 ≤ δ)
+    η δ (hη : 0 < η) (hη1 : η < 1) (hδ : 0 ≤ δ)
     (hsmall : 4 * δ * perturbationConstant η ≤ 1)
-    (hd : ‖normalizeMatrix lo hi B - normalizeMatrix lo hi A‖ ≤ δ) (k : ℕ) :
+    (hd : ‖normalizeMatrix lo hi B - normalizeMatrix lo hi A‖ ≤ δ) k :
     ‖aeval B (kernelCoefficientPolynomial lo hi k)‖ ≤
       4 * (intervalRho lo hi / η) ^ k := by
   have hb := matrixChebyshevT_neighborhood_bound
@@ -346,11 +386,11 @@ theorem complex_kernel_coefficient_bound (lo hi : ℝ) (hlo : 0 < lo) (hlt : lo 
       _ = _ := by ring
 
 theorem determinant_series_coefficient_bound (K : Matrix n n (PowerSeries ℂ))
-    (q B : ℝ) (hq : 0 < q) (hB : 0 ≤ B)
-    (hK : ∀ i j k, ‖PowerSeries.coeff k (K i j)‖ ≤ B * q ^ k) (k : ℕ) :
+    q B (hq : 0 < q) (hB : 0 ≤ B)
+    (hK : ∀ i j k, ‖PowerSeries.coeff k (K i j)‖ ≤ B * q ^ k) k :
     ‖PowerSeries.coeff k K.det‖ ≤
-      (Fintype.card (Equiv.Perm n) : ℝ) * B ^ Fintype.card n *
-        ((k + 1 : ℕ) : ℝ) ^ Fintype.card n * q ^ k := by
+      (Fintype.card (Equiv.Perm n)) * B ^ Fintype.card n *
+        ((k + 1 : ℕ)) ^ Fintype.card n * q ^ k := by
   have hsign (σ : Equiv.Perm n) (P : PowerSeries ℂ) :
       ‖PowerSeries.coeff k (Equiv.Perm.sign σ • P)‖ = ‖PowerSeries.coeff k P‖ := by
     obtain hs | hs := Int.units_eq_one_or (Equiv.Perm.sign σ)
@@ -373,13 +413,13 @@ theorem determinant_series_coefficient_bound (K : Matrix n n (PowerSeries ℂ))
 /-- A finite combined-index inverse/determinant truncation admits a common
 degree-independent bound whenever its entries share a geometric envelope. -/
 theorem combined_truncation_uniform_bound (K L : Matrix n n (PowerSeries ℂ))
-    (q B : ℝ) (hq : 0 < q) (hq1 : q < 1) (hB : 0 ≤ B)
+    q B (hq : 0 < q) (hq1 : q < 1) (hB : 0 ≤ B)
     (hK : ∀ i j k, ‖PowerSeries.coeff k (K i j)‖ ≤ B * q ^ k)
     (hL : ∀ i j k, ‖PowerSeries.coeff k (L i j)‖ ≤ B * q ^ k)
-    (i j : n) (m : ℕ) :
+    (i j : n) m :
     ‖∑ k ∈ Finset.range (m + 1), PowerSeries.coeff k (K i j * L.det)‖ ≤
-      ((Fintype.card (Equiv.Perm n) : ℝ) * B ^ (Fintype.card n + 1)) *
-        ∑' k : ℕ, ((k + 1 : ℕ) : ℝ) ^ (Fintype.card n + 1) * q ^ k := by
+      ((Fintype.card (Equiv.Perm n)) * B ^ (Fintype.card n + 1)) *
+        ∑' k : ℕ, ((k + 1 : ℕ)) ^ (Fintype.card n + 1) * q ^ k := by
   let A : ℝ := (Fintype.card (Equiv.Perm n) : ℝ) * B ^ (Fintype.card n + 1)
   have hA : 0 ≤ A := by dsimp [A]; positivity
   have hcoeff (k : ℕ) : ‖PowerSeries.coeff k (K i j * L.det)‖ ≤
@@ -399,8 +439,8 @@ theorem combined_truncation_uniform_bound (K L : Matrix n n (PowerSeries ℂ))
       simpa only [mul_assoc] using hs.sum_le_tsum (Finset.range (m + 1)) (fun k hk => by positivity)
     _ = _ := by rw [tsum_mul_left]
 
-theorem variableMatrix_power_eval_complex (A : Matrix n n ℂ) (k : ℕ) (i j : n) :
-    MvPolynomial.eval₂ Complex.ofRealHom (fun ij : n × n => A ij.1 ij.2)
+theorem variableMatrix_power_eval_complex (A : Matrix n n ℂ) k (i j : n) :
+    MvPolynomial.eval₂ Complex.ofRealHom (fun ij  => A ij.1 ij.2)
       ((variableMatrix n ^ k) i j) = (A ^ k) i j := by
   induction k generalizing i j with
   | zero => simp only [pow_zero, Matrix.one_apply]; split_ifs <;> simp
@@ -408,8 +448,8 @@ theorem variableMatrix_power_eval_complex (A : Matrix n n ℂ) (k : ℕ) (i j : 
     simp only [pow_succ, Matrix.mul_apply, MvPolynomial.eval₂_sum, MvPolynomial.eval₂_mul, ih]
     simp [variableMatrix]
 
-theorem matrixEntryPolynomial_eval_complex (p : ℝ[X]) (A : Matrix n n ℂ) (i j : n) :
-    MvPolynomial.eval₂ Complex.ofRealHom (fun ij : n × n => A ij.1 ij.2)
+theorem matrixEntryPolynomial_eval_complex p (A : Matrix n n ℂ) (i j : n) :
+    MvPolynomial.eval₂ Complex.ofRealHom (fun ij  => A ij.1 ij.2)
       (matrixEntryPolynomial p i j) = (aeval A p) i j := by
   rw [Polynomial.aeval_eq_sum_range]
   unfold matrixEntryPolynomial
@@ -418,8 +458,8 @@ theorem matrixEntryPolynomial_eval_complex (p : ℝ[X]) (A : Matrix n n ℂ) (i 
   simp only [Complex.real_smul, smul_eq_mul]
   rfl
 
-theorem variableKernelSeries_eval_complex (lo hi : ℝ) (A : Matrix n n ℂ) :
-    (PowerSeries.map (MvPolynomial.eval₂Hom Complex.ofRealHom (fun ij : n × n => A ij.1 ij.2))).mapMatrix
+theorem variableKernelSeries_eval_complex lo hi A :
+    (PowerSeries.map (MvPolynomial.eval₂Hom Complex.ofRealHom (fun ij  => A ij.1 ij.2))).mapMatrix
       (variableKernelSeries lo hi (n := n)) = complexKernelSeries lo hi A := by
   ext i j k
   rw [RingHom.mapMatrix_apply, Matrix.map_apply, PowerSeries.coeff_map]
@@ -471,28 +511,28 @@ theorem eval_renamed_series_complex {V W : Type*} (f : V → W) (values : W → 
   rw [PowerSeries.coeff_map, PowerSeries.coeff_map, PowerSeries.coeff_map]
   exact MvPolynomial.eval₂_rename _ _ _ _
 
-theorem inverseVariableSeries_eval_complex (lo hi : ℝ)
-    (A C : Matrix (Fin r) (Fin r) ℂ) (i j : Fin r) :
+section
+variable (lo hi : ℝ) (A C : Matrix (Fin r) (Fin r) ℂ)
+
+theorem inverseVariableSeries_eval_complex  i j :
     PowerSeries.map (MvPolynomial.eval₂Hom Complex.ofRealHom (complexParentValuation r A C))
-      (inverseVariableSeries r (fun _ : Fin 1 => r) lo hi i j) = complexKernelSeries lo hi A i j := by
+      (inverseVariableSeries r (fun _  => r) lo hi i j) = complexKernelSeries lo hi A i j := by
   rw [inverseVariableSeries, eval_renamed_series_complex]
   exact congrArg (fun K => K i j) (variableKernelSeries_eval_complex lo hi A)
 
-theorem determinantVariableSeries_eval_complex (lo hi : ℝ)
-    (A C : Matrix (Fin r) (Fin r) ℂ) (t : Fin 1) :
+theorem determinantVariableSeries_eval_complex  t :
     PowerSeries.map (MvPolynomial.eval₂Hom Complex.ofRealHom (complexParentValuation r A C))
-      (determinantVariableSeries r (fun _ : Fin 1 => r) lo hi t) =
+      (determinantVariableSeries r (fun _  => r) lo hi t) =
       (complexKernelSeries lo hi C).det := by
   rw [determinantVariableSeries, eval_renamed_series_complex]
   change PowerSeries.map (MvPolynomial.eval₂Hom Complex.ofRealHom (fun ij : Fin r × Fin r => C ij.1 ij.2))
     (variableKernelSeries lo hi).det = _
   rw [RingHom.map_det, variableKernelSeries_eval_complex]
 
-theorem parentInverseEntryPolynomial_eval_complex (lo hi : ℝ)
-    (A C : Matrix (Fin r) (Fin r) ℂ) (i j : Fin r) (m : ℕ) :
+theorem parentInverseEntryPolynomial_eval_complex  i j m :
     MvPolynomial.eval₂ Complex.ofRealHom (complexParentValuation r A C)
       (parentInverseEntryPolynomial lo hi r m i j) =
-      ((intervalGeometricMean lo hi ^ (r + 1))⁻¹ : ℝ) *
+      ((intervalGeometricMean lo hi ^ (r + 1))⁻¹) *
         ∑ k ∈ Finset.range (m + 1),
           PowerSeries.coeff k (complexKernelSeries lo hi A i j * (complexKernelSeries lo hi C).det) := by
   have he : PowerSeries.map (MvPolynomial.eval₂Hom Complex.ofRealHom (complexParentValuation r A C))
@@ -509,23 +549,29 @@ theorem parentInverseEntryPolynomial_eval_complex (lo hi : ℝ)
   have hc := congrArg (fun P => PowerSeries.coeff k P) he
   rw [PowerSeries.coeff_map] at hc
   exact hc
+end
+
 
 end ComplexFreeCoordinates
 
 section PolynomialBounds
 variable {V : Type*} [Fintype V] [DecidableEq V]
 
+section
+variable (P : MvPolynomial V ℝ)
+include P
+
 /-- A concrete finite coefficient envelope for a real polynomial on a complex coordinate ball. -/
-def polynomialCoordinateBound (P : MvPolynomial V ℝ) (R : ℝ) : ℝ :=
+def polynomialCoordinateBound  R  :=
   ∑ α ∈ P.support, ‖P.coeff α‖ * ∏ j : V, R ^ α j
 
-theorem polynomialCoordinateBound_nonneg (P : MvPolynomial V ℝ) (R : ℝ) (hR : 0 ≤ R) :
+theorem polynomialCoordinateBound_nonneg  R (hR : 0 ≤ R) :
     0 ≤ polynomialCoordinateBound P R := by
   unfold polynomialCoordinateBound
   positivity
 
-theorem polynomial_complex_coordinate_bound (P : MvPolynomial V ℝ) (z : V → ℂ)
-    (R : ℝ) (hR : 0 ≤ R) (hz : ∀ j, ‖z j‖ ≤ R) :
+theorem polynomial_complex_coordinate_bound  z
+    R (hR : 0 ≤ R) (hz : ∀ j, ‖z j‖ ≤ R) :
     ‖MvPolynomial.eval₂ Complex.ofRealHom z P‖ ≤ polynomialCoordinateBound P R := by
   rw [MvPolynomial.eval₂_eq']
   calc
@@ -536,11 +582,9 @@ theorem polynomial_complex_coordinate_bound (P : MvPolynomial V ℝ) (z : V → 
       rw [norm_mul, norm_prod]
       change ‖(P.coeff α : ℂ)‖ * ∏ j : V, ‖z j ^ α j‖ ≤ _
       rw [Complex.norm_real]
-      apply mul_le_mul_of_nonneg_left _ (norm_nonneg _)
-      apply Finset.prod_le_prod₀ (fun j hj => norm_nonneg _)
-      intro j hj
-      rw [norm_pow]
-      exact pow_le_pow_left₀ (norm_nonneg _) (hz j) _
+      simp_all [Finset.prod_le_prod₀, pow_le_pow_left₀]
+end
+
 
 end PolynomialBounds
 
@@ -564,13 +608,19 @@ def currentCoordinateCLM : (incrementVariables r → ℂ) →L[ℂ] Matrix (Fin 
 def parentCoordinateCLM : (incrementVariables r → ℂ) →L[ℂ] Matrix (Fin r) (Fin r) ℂ :=
   (parentCoordinateMatrix r).toContinuousLinearMap
 
-@[simp] theorem currentCoordinateCLM_apply (z : incrementVariables r → ℂ) (i j : Fin r) :
-    currentCoordinateCLM r z i j = z (Sum.inl (Sum.inl (i, j))) := rfl
+section
+variable (z : incrementVariables r → ℂ)
 
-@[simp] theorem parentCoordinateCLM_apply (z : incrementVariables r → ℂ) (i j : Fin r) :
-    parentCoordinateCLM r z i j = z (Sum.inl (Sum.inr ⟨0, (i, j)⟩)) := rfl
+section
+variable (i j : Fin r)
 
-theorem coordinate_parent_valuation (z : incrementVariables r → ℂ) :
+
+
+
+end
+
+
+theorem coordinate_parent_valuation  :
     z ∘ Sum.inl = complexParentValuation r (currentCoordinateCLM r z) (parentCoordinateCLM r z) := by
   funext v
   cases v with
@@ -580,6 +630,8 @@ theorem coordinate_parent_valuation (z : incrementVariables r → ℂ) :
     have ht : t = 0 := Subsingleton.elim _ _
     subst t
     rfl
+end
+
 
 open RoughRegime.Upper
 
@@ -598,17 +650,22 @@ open RoughRegime.Upper RoughRegime.ComplexDerivativeBridge
 variable (r : ℕ) [NeZero r]
 
 /-- The paper's free moment polynomial after the canonical finite coordinate enumeration. -/
-def incrementFinPolynomial (lo hi : ℝ) (T : Matrix (Fin r) (Fin r) ℝ)
-    (y : ℝ) (m : ℕ) (i : Fin r) :
-    MvPolynomial (Fin (Fintype.card (incrementVariables r))) ℝ :=
+def incrementFinPolynomial lo hi T
+    y m i  :=
   MvPolynomial.rename (Fintype.equivFin (incrementVariables r))
     (incrementEntryPolynomial r lo hi T y m i)
 
-def currentRealCoordinateMatrix (u : incrementVariables r → ℝ) : Matrix (Fin r) (Fin r) ℝ :=
+section
+variable (u : incrementVariables r → ℝ)
+include u
+
+def currentRealCoordinateMatrix  : Matrix (Fin r) (Fin r) ℝ :=
   fun i j => u (Sum.inl (Sum.inl (i, j)))
 
-def parentRealCoordinateMatrix (u : incrementVariables r → ℝ) : Matrix (Fin r) (Fin r) ℝ :=
+def parentRealCoordinateMatrix  : Matrix (Fin r) (Fin r) ℝ :=
   fun i j => u (Sum.inl (Sum.inr ⟨0, (i, j)⟩))
+end
+
 
 end ActualDerivatives
 end NearlyMinimax

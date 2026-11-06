@@ -16,17 +16,17 @@ set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 800000
 
 theorem sourceSaddleHigherFamily_eventually_legal (d : ℕ)
-    (s a b shift : ℝ) (hs : 1 < s) (hd : 4*s < (d : ℝ)) (ha : 0 < a) (hab : a < b) :
+    s a b shift (hs : 1 < s) (hd : 4*s < (d : ℝ)) (ha : 0 < a) (hab : a < b) :
     let tau := densityIntervalExponent a b
-    let m := lowerSaddleCoefficient s (d : ℝ) tau
-    let theta := lowerSaddleTheta s (d : ℝ) tau
+    let m := lowerSaddleCoefficient s d tau
+    let theta := lowerSaddleTheta s d tau
     ∀ᶠ x in atTop,
       let M := lowerSaddleM m x
-      let N := lowerSaddleN s (d : ℝ) m theta shift (shrunkDensityExponent a b) x
-      let mu := lowerSaddleMu (d : ℝ) m theta shift x
-      let ell := lowerAliasCutoff s (d : ℝ) m theta shift (tau+1) (shrunkDensityExponent a b) x
-      1 ≤ ell ∧ (∀ r : ℕ, 0 < higherBandTargetScale d r N mu) ∧
-        (∀ r : ℕ, ell < higherBandTargetScale d r N mu → r ≤ M) := by
+      let N := lowerSaddleN s d m theta shift (shrunkDensityExponent a b) x
+      let mu := lowerSaddleMu d m theta shift x
+      let ell := lowerAliasCutoff s d m theta shift (tau+1) (shrunkDensityExponent a b) x
+      1 ≤ ell ∧ (∀ r , 0 < higherBandTargetScale d r N mu) ∧
+        (∀ r , ell < higherBandTargetScale d r N mu → r ≤ M) := by
   dsimp only
   let tau := densityIntervalExponent a b
   let m := lowerSaddleCoefficient s (d : ℝ) tau

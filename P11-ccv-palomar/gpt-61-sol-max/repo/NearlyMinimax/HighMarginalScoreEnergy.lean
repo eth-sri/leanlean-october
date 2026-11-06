@@ -50,8 +50,7 @@ theorem highMarginalRealScore_memLp_energy {E : Type*} [MeasurableSpace E]
       (Eventually.of_forall (hraw ω))
   have hG : 0 < G := massPowerNormalizer_pos ν m hm n aRaw bRaw haRaw hb
   have hpb (ω : HistoryMarked dependent E) (x : Covariate d) : |p ω x| ≤ |bRaw| := by
-    rw [abs_of_nonneg (haRaw.le.trans (hraw ω x).1)]
-    exact (hraw ω x).2.trans (le_abs_self _)
+    grind
   have hLp (z) : 0 < L z := highRawSampleLikelihood_pos n a V p F
     (fun ω x => haRaw.trans_le (hraw ω x).1) hq z.1 z.2
   have hLb (z) : L z ≤ |bRaw|^n := (le_abs_self _).trans
@@ -69,30 +68,24 @@ theorem highMarginalRealScore_memLp_energy {E : Type*} [MeasurableSpace E]
     hraw (fun ω x y => (hq ω x y).le)
   let Pi := (highSampleIndexKernel n a V p F hp hF) ∘ₘ massPowerTilt ν m n
   have hpost : posteriorMeanScore ν L D = highMarginalIndexScore dependent hsymm ν π activation n a V η p F := rfl
-  change MemLp (posteriorMeanScore ν L D) 2
-      (μ.withDensity (fun z => ENNReal.ofReal ((∫ ω, L (ω,z) ∂ν) / G))) ∧ _ at he
+  
   rw [hpost] at he
   change Pi = μ.withDensity (fun z => ENNReal.ofReal ((∫ ω, L (ω,z) ∂ν) / G)) at hden
   rw [← hden] at he
   have hmap : (highRealSampleKernel n a V p F hp hF) ∘ₘ massPowerTilt ν m n =
-      Pi.map (encodeDesignResponse a) := by
-    exact (Measure.map_comp _ _ (encodeDesignResponse_measurable a)).symm
+      Pi.map (encodeDesignResponse a) := (Measure.map_comp _ _ (encodeDesignResponse_measurable a)).symm
   have hR := highMarginalRealScore_measurable dependent hsymm ν π activation ham n a V η p F hp hF
   have hcomp : (fun z => highMarginalRealScore dependent hsymm ν π activation n a V η p F
       (encodeDesignResponse a z)) = highMarginalIndexScore dependent hsymm ν π activation n a V η p F := by
     funext z
     exact congrArg (highMarginalIndexScore dependent hsymm ν π activation n a V η p F)
       (decodeDesignResponse_encode a ha z)
-  dsimp only
+  
   rw [hmap]
   constructor
   · apply (memLp_map_measure_iff hR.aestronglyMeasurable (encodeDesignResponse_measurable a).aemeasurable).2
     simpa only [Function.comp_def, hcomp] using he.1
   · rw [integral_map_of_stronglyMeasurable (encodeDesignResponse_measurable a) (hR.pow_const 2).stronglyMeasurable]
-    have hpoint (z) : highMarginalRealScore dependent hsymm ν π activation n a V η p F
-        (encodeDesignResponse a z) = highMarginalIndexScore dependent hsymm ν π activation n a V η p F z :=
-      congrFun hcomp z
-    simp_rw [hpoint]
-    exact he.2
+    grind
 
 end NearlyMinimax

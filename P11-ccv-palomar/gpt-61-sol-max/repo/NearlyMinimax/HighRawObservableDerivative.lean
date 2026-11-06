@@ -15,18 +15,18 @@ variable {Ω : Type*} [MeasurableSpace Ω]
 
 /-- Differentiating the real bounded data observable follows from the actual
 finite ternary product derivative and a derived constant majorant. -/
-theorem highRawObservable_hasDerivAt_path {d : ℕ} (n : ℕ) (a v η t T P B : ℝ)
+theorem highRawObservable_hasDerivAt_path {d } n a v η t T P B
     (ha : 0 < a) (ht : 0 < t) (htT : t < T) (hP : 0 ≤ P) (hB : 0 ≤ B)
     (p F : Ω → Covariate d → ℝ) (hp : Measurable (Function.uncurry p))
     (hF : Measurable (Function.uncurry F)) (hpb : ∀ ω x, |p ω x| ≤ P)
     (hq : ∀ u ∈ Ioo 0 T, ∀ ω x y, 0 ≤ ternaryMass a (F ω x) (v - η ^ 2 * u) y)
-    (H : (Fin n → Observation d) → ℝ) (hH : Measurable H)
+    H (hH : Measurable H)
     (hHb : ∀ z, |H z| ≤ B) (ω : Ω) :
     HasDerivAt (fun u => highRawObservable n a (v - η ^ 2 * u) (p ω) (F ω) H)
       (-η ^ 2 * highRawObservableVarianceDerivative n a (v - η ^ 2 * t) (p ω) (F ω) H) t := by
-  let L : ℝ → ((Fin n → Covariate d) × (Fin n → Fin 3)) → ℝ := fun u z =>
+  let L  := fun u z =>
     H (encodeDesignResponse a z) * highRawSampleLikelihood n a (v - η ^ 2 * u) (p ω) (F ω) z
-  let L' : ℝ → ((Fin n → Covariate d) × (Fin n → Fin 3)) → ℝ := fun u z =>
+  let L'  := fun u z =>
     H (encodeDesignResponse a z) * (-η ^ 2 *
       highRawSampleVarianceDerivative n a (v - η ^ 2 * u) (p ω) (F ω) z)
   have hLM (u : ℝ) : Measurable (L u) := by
@@ -75,7 +75,6 @@ theorem highRawObservable_hasDerivAt_path {d : ℕ} (n : ℕ) (a v η t T P B : 
     -η ^ 2 * ∫ z, H (encodeDesignResponse a z) *
       highRawSampleVarianceDerivative n a (v - η ^ 2 * t) (p ω) (F ω) z ∂highSampleReference d n
   rw [← integral_const_mul]
-  apply integral_congr_ae
-  exact Eventually.of_forall fun z => by dsimp [L']; ring
+  grind
 
 end NearlyMinimax

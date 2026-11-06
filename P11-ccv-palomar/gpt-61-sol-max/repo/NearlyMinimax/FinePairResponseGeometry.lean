@@ -53,46 +53,45 @@ theorem high_response_matrix_two_general {ι : Type*} [Fintype ι] [DecidableEq 
   dsimp [m, f, e]
   ring
 
-def finePairCoordinatePolynomial {d : ℕ} (l : Fin d) : MvPolynomial (Fin d) ℝ := C 8 * X l
+def finePairCoordinatePolynomial {d } (l : Fin d) : MvPolynomial (Fin d) ℝ := C 8 * X l
 
-def finePairSquarePolynomial (d : ℕ) : MvPolynomial (Fin d) ℝ :=
+def finePairSquarePolynomial d : MvPolynomial (Fin d) ℝ :=
   ∑ l, (finePairCoordinatePolynomial l) ^ 2
 
-theorem finePairCoordinatePolynomial_degree {d : ℕ} (l : Fin d) :
-    (finePairCoordinatePolynomial l).totalDegree ≤ 1 := by
-  exact (totalDegree_mul _ _).trans (by simp [finePairCoordinatePolynomial])
+theorem finePairCoordinatePolynomial_degree {d } (l : Fin d) :
+    (finePairCoordinatePolynomial l).totalDegree ≤ 1 := (totalDegree_mul _ _).trans (by simp [finePairCoordinatePolynomial])
 
-theorem finePairSquarePolynomial_degree (d : ℕ) :
+theorem finePairSquarePolynomial_degree d :
     (finePairSquarePolynomial d).totalDegree ≤ 2 := by
   unfold finePairSquarePolynomial
   apply (totalDegree_finsetSum _ _).trans
   apply Finset.sup_le
   intro l _
-  exact (totalDegree_pow _ _).trans (by nlinarith only [finePairCoordinatePolynomial_degree l])
+  grind only [totalDegree_pow, finePairCoordinatePolynomial_degree]
 
-theorem finePairCoordinatePolynomial_eval {d : ℕ} (l : Fin d) (x : Covariate d) :
+theorem finePairCoordinatePolynomial_eval {d } l (x : Covariate d) :
     eval (fun r => x r / 8) (finePairCoordinatePolynomial l) = x l := by
   simp only [finePairCoordinatePolynomial, map_mul, eval_C, eval_X]
   ring
 
-theorem finePairSquarePolynomial_eval (d : ℕ) (x : Covariate d) :
+theorem finePairSquarePolynomial_eval d (x : Covariate d) :
     eval (fun r => x r / 8) (finePairSquarePolynomial d) = ∑ r, (x r) ^ 2 := by
   simp only [finePairSquarePolynomial, map_sum, map_pow, finePairCoordinatePolynomial_eval]
 
-def finePairUnitMatrix (d F : ℕ) (β β' : HighFrameIndex d F) : ℝ :=
+def finePairUnitMatrix d F (β β' : HighFrameIndex d F)  :=
   highFrameCoefficients (1 : MvPolynomial (Fin d) ℝ) β * highFrameCoefficients 1 β'
 
-def finePairDistanceMatrix (d F : ℕ) (β β' : HighFrameIndex d F) : ℝ :=
+def finePairDistanceMatrix d F (β β' : HighFrameIndex d F)  :=
   (∑ l : Fin d, 2 * highFrameCoefficients (finePairCoordinatePolynomial l) β *
     highFrameCoefficients (finePairCoordinatePolynomial l) β') -
     highFrameCoefficients (finePairSquarePolynomial d) β * highFrameCoefficients 1 β' -
     highFrameCoefficients (1 : MvPolynomial (Fin d) ℝ) β *
       highFrameCoefficients (finePairSquarePolynomial d) β'
 
-theorem finePairUnitMatrix_symmetric (d F : ℕ) (β β' : HighFrameIndex d F) :
+theorem finePairUnitMatrix_symmetric d F β β' :
     finePairUnitMatrix d F β β' = finePairUnitMatrix d F β' β := mul_comm _ _
 
-theorem finePairDistanceMatrix_symmetric (d F : ℕ) (β β' : HighFrameIndex d F) :
+theorem finePairDistanceMatrix_symmetric d F β β' :
     finePairDistanceMatrix d F β β' = finePairDistanceMatrix d F β' β := by
   unfold finePairDistanceMatrix
   have hs : (∑ l : Fin d, 2 * highFrameCoefficients (finePairCoordinatePolynomial l) β *
@@ -103,8 +102,10 @@ theorem finePairDistanceMatrix_symmetric (d F : ℕ) (β β' : HighFrameIndex d 
   rw [hs]
   ring
 
-theorem spatial_frame_covariance_outer {κ : Type*} [Fintype κ] [DecidableEq κ]
-    {n : ℕ} (u v : κ → ℝ) (φ : Fin n → κ → ℝ) (i j : Fin n) :
+section
+variable {κ : Type*} [Fintype κ] [DecidableEq κ] {n : ℕ}
+
+theorem spatial_frame_covariance_outer  (u v : κ → ℝ) (φ : Fin n → κ → ℝ) (i j : Fin n) :
     spatialFrameCovariance (fun β β' => u β * v β') φ i j =
       (∑ β, φ i β * u β) * (∑ β, φ j β * v β) := by
   simp only [spatialFrameCovariance, Finset.mul_sum, Finset.sum_mul]
@@ -115,13 +116,14 @@ theorem spatial_frame_covariance_outer {κ : Type*} [Fintype κ] [DecidableEq κ
   intro β' _
   ring
 
-theorem spatial_frame_covariance_sub {κ : Type*} [Fintype κ] [DecidableEq κ]
-    {n : ℕ} (A B : κ → κ → ℝ) (φ : Fin n → κ → ℝ) (i j : Fin n) :
+theorem spatial_frame_covariance_sub  (A B : κ → κ → ℝ) (φ : Fin n → κ → ℝ) (i j : Fin n) :
     spatialFrameCovariance (fun β β' => A β β' - B β β') φ i j =
       spatialFrameCovariance A φ i j - spatialFrameCovariance B φ i j := by
   simp only [spatialFrameCovariance, mul_sub, Finset.sum_sub_distrib]
+end
 
-theorem finePairUnitMatrix_kernel {d n F : ℕ} (U : Fin n → Covariate d) (i j : Fin n) :
+
+theorem finePairUnitMatrix_kernel {d n F } (U : Fin n → Covariate d) i j :
     spatialFrameCovariance (finePairUnitMatrix d F) (fun l => highFrameFeature (U l)) i j = 1 := by
   unfold finePairUnitMatrix
   rw [spatial_frame_covariance_outer]
@@ -131,8 +133,8 @@ theorem finePairUnitMatrix_kernel {d n F : ℕ} (U : Fin n → Covariate d) (i j
       (by simp) x).symm
   rw [he, he, one_mul]
 
-theorem finePairDistanceMatrix_kernel {d n F : ℕ} (hF : 3 ≤ F)
-    (U : Fin n → Covariate d) (i j : Fin n) :
+theorem finePairDistanceMatrix_kernel {d n F } (hF : 3 ≤ F)
+    (U : Fin n → Covariate d) i j :
     spatialFrameCovariance (finePairDistanceMatrix d F) (fun l => highFrameFeature (U l)) i j =
       -spatialSquaredDistance (U i) (U j) := by
   have hc (x : Covariate d) : (∑ β : HighFrameIndex d F,
@@ -140,13 +142,11 @@ theorem finePairDistanceMatrix_kernel {d n F : ℕ} (hF : 3 ≤ F)
     simpa only [map_one] using (high_frame_polynomial_evaluation (1 : MvPolynomial (Fin d) ℝ)
       (by simp) x).symm
   have hl (x : Covariate d) (l : Fin d) : (∑ β : HighFrameIndex d F,
-      highFrameFeature x β * highFrameCoefficients (finePairCoordinatePolynomial l) β) = x l := by
-    exact (high_frame_polynomial_evaluation (finePairCoordinatePolynomial l)
+      highFrameFeature x β * highFrameCoefficients (finePairCoordinatePolynomial l) β) = x l := (high_frame_polynomial_evaluation (finePairCoordinatePolynomial l)
       ((finePairCoordinatePolynomial_degree l).trans (by omega)) x).symm.trans
         (finePairCoordinatePolynomial_eval l x)
   have hs (x : Covariate d) : (∑ β : HighFrameIndex d F,
-      highFrameFeature x β * highFrameCoefficients (finePairSquarePolynomial d) β) = ∑ l, (x l) ^ 2 := by
-    exact (high_frame_polynomial_evaluation (finePairSquarePolynomial d)
+      highFrameFeature x β * highFrameCoefficients (finePairSquarePolynomial d) β) = ∑ l, (x l) ^ 2 := (high_frame_polynomial_evaluation (finePairSquarePolynomial d)
       ((finePairSquarePolynomial_degree d).trans (by omega)) x).symm.trans
         (finePairSquarePolynomial_eval d x)
   unfold finePairDistanceMatrix
@@ -160,10 +160,10 @@ theorem finePairDistanceMatrix_kernel {d n F : ℕ} (hF : 3 ≤ F)
   intro l _
   ring
 
-def finePairCombinedMatrix (d F : ℕ) (W : ℝ) (β β' : HighFrameIndex d F) : ℝ :=
+def finePairCombinedMatrix d F W β β'  :=
   finePairUnitMatrix d F β β' + W * finePairDistanceMatrix d F β β'
 
-theorem finePairCombinedMatrix_symmetric (d F : ℕ) (W : ℝ) (β β' : HighFrameIndex d F) :
+theorem finePairCombinedMatrix_symmetric d F W β β' :
     finePairCombinedMatrix d F W β β' = finePairCombinedMatrix d F W β' β := by
   simp only [finePairCombinedMatrix, finePairUnitMatrix_symmetric d F β β',
     finePairDistanceMatrix_symmetric d F β β']
@@ -178,8 +178,8 @@ theorem spatial_frame_covariance_scalar {κ : Type*} [Fintype κ] [DecidableEq �
   intro β' _
   ring
 
-theorem finePairCombinedMatrix_kernel {d n F : ℕ} (hF : 3 ≤ F) (W : ℝ)
-    (U : Fin n → Covariate d) (i j : Fin n) :
+theorem finePairCombinedMatrix_kernel {d n F } (hF : 3 ≤ F) W
+    (U : Fin n → Covariate d) i j :
     spatialFrameCovariance (finePairCombinedMatrix d F W) (fun l => highFrameFeature (U l)) i j =
       1 - W * spatialSquaredDistance (U i) (U j) := by
   unfold finePairCombinedMatrix
@@ -189,10 +189,10 @@ theorem finePairCombinedMatrix_kernel {d n F : ℕ} (hF : 3 ≤ F) (W : ℝ)
 
 /-- Exact two-observation remainder after the single diagonal variance
 correction, with the paper's concrete fixed coefficient matrices. -/
-theorem finePairResponseCountTwo_numerator {d F : ℕ} (hF : 3 ≤ F)
-    (q : ℕ) (hq : 2 ≤ q) (C a V η W : ℝ) (hC : C ≠ 0)
+theorem finePairResponseCountTwo_numerator {d F } (hF : 3 ≤ F)
+    q (hq : 2 ≤ q) C a V η W (hC : C ≠ 0)
     (U : Fin 2 → Covariate d) (p g w : Fin 2 → ℝ)
-    (c : HighFrameIndex d F → ℝ) (y : Fin 2 → Fin 3) :
+    c y :
     (p 0 * p 1) * responseMatrixAction q C (finePairCombinedMatrix d F W) c
       (fun v => highResponseProduct a V η g w (fun i => highFrameFeature (U i)) v y) -
       η ^ 2 * (p 0 * p 1) * ∑ i, (w i) ^ 2 *

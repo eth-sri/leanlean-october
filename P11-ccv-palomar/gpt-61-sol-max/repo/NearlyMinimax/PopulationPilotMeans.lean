@@ -14,9 +14,9 @@ namespace NearlyMinimax
 set_option maxHeartbeats 1000000
 set_option backward.isDefEq.respectTransparency false
 
-theorem dyadicIncrementRawMean_eq_with_virtual_parent {d ℓ : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ) (j : ℕ)
-    (x : Covariate d) (hx : x ∈ unitCube d) :
+theorem dyadicIncrementRawMean_eq_with_virtual_parent {d ℓ } C
+    θ (hθ : Admissible C θ) j
+    x (hx : x ∈ unitCube d) :
     dyadicIncrementRawMean (ℓ := ℓ) θ j x = fun a =>
       incrementValuation
         (anchoredFinNormalizedGram (dyadicNormalizedAnchor j x) (dyadicNormalizedDensity θ j x))
@@ -32,15 +32,14 @@ theorem dyadicIncrementRawMean_eq_with_virtual_parent {d ℓ : ℕ} (C : ModelCo
   · simp only [hj, ite_false]
     rw [dyadicFinPilotGram_eq_normalized C θ hθ (j - 1) x]
 
-def dyadicPopulationRawPolynomial {d : ℕ} (C : ModelConstants d) (θ : RegressionParameter d)
-    (j : ℕ) (x : Covariate d) (t : Bool) (m : ℕ) : Fin (anchoredDimension d C.order) → ℝ :=
+def dyadicPopulationRawPolynomial {d } (C : ModelConstants d) θ
+    j x (t : Bool) m  :=
   incrementFinRawVector (anchoredDimension d C.order) C.densityLower C.densityUpper
     (anchoredFinTransport d C.order) t m (dyadicIncrementRawMean θ j x)
 
-theorem dyadicPopulationPolynomial_affine {d : ℕ} (C : ModelConstants d) (θ : RegressionParameter d)
-    (j : ℕ) (x : Covariate d) (y : ℝ) (m : ℕ) :
+theorem dyadicPopulationPolynomial_affine {d } C θ
+    j (x : Covariate d) y m :
     dyadicPopulationPolynomial C θ j x y m = dyadicPopulationRawPolynomial C θ j x false m -
-      y • dyadicPopulationRawPolynomial C θ j x true m := by
-  exact congrFun (incrementFinVector_affine _ _ _ _ y m) (dyadicIncrementRawMean θ j x)
+      y • dyadicPopulationRawPolynomial C θ j x true m := congrFun (incrementFinVector_affine _ _ _ _ y m) (dyadicIncrementRawMean θ j x)
 
 end NearlyMinimax

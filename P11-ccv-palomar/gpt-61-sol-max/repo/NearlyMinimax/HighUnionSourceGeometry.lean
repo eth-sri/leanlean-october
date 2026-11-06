@@ -16,17 +16,19 @@ variable {d k F : ℕ} {I : Type*} [Fintype I] {E : I → Type*}
   [∀ i, MeasurableSpace (E i)]
   (R : HighUnionRowData d k F I E)
 
-theorem highUnionRawUpdate_density_of_not_mem (δ : ℝ)
-    (j : HighWindowLabels d k) (e : HighUnionMark E) (θ : HighRawState d k F)
-    (x : Covariate d) (hx : x ∉ highTorusPatch d k j) :
+theorem highUnionRawUpdate_density_of_not_mem δ
+    j e θ
+    x (hx : x ∉ highTorusPatch d k j) :
     (highUnionRawUpdate R δ j e θ).1 x = θ.1 x := by
   simp only [highUnionRawUpdate, rawPatchUpdate, affinePatchUpdate, ite_eq_right hx]
 
 variable [NeZero k] [LinearOrder (HighWindowLabels d k)] (C : ModelConstants d)
 
-theorem highUnionSourceState_append (j : HighWindowLabels d k)
-    (h : HistoryMarked (fun i j => j ∈ highNeighborLabels d k i) (HighUnionMark E))
-    (e : HighUnionMark E) :
+section
+variable (j : HighWindowLabels d k) (h : HistoryMarked (fun i j => j ∈ highNeighborLabels d k i) (HighUnionMark E))
+
+theorem highUnionSourceState_append 
+    e :
     highUnionSourceState C R (historyMarkedAppend
       (fun i j => j ∈ highNeighborLabels d k i)
       (fun {_ _} h => highNeighborLabels_symmetric d k _ _ h) j (h,e)) =
@@ -35,9 +37,8 @@ theorem highUnionSourceState_append (j : HighWindowLabels d k)
 
 /-- Appending a full source mark leaves every density value outside that
 label's physical patch exactly unchanged. -/
-theorem highUnionSourceDensity_append_of_not_mem (j : HighWindowLabels d k)
-    (h : HistoryMarked (fun i j => j ∈ highNeighborLabels d k i) (HighUnionMark E))
-    (e : HighUnionMark E) (x : Covariate d) (hx : x ∉ highTorusPatch d k j) :
+theorem highUnionSourceDensity_append_of_not_mem 
+    e x (hx : x ∉ highTorusPatch d k j) :
     highUnionSourceDensity C R (historyMarkedAppend
       (fun i j => j ∈ highNeighborLabels d k i)
       (fun {_ _} h => highNeighborLabels_symmetric d k _ _ h) j (h,e)) x =
@@ -45,6 +46,8 @@ theorem highUnionSourceDensity_append_of_not_mem (j : HighWindowLabels d k)
   change (highUnionSourceState C R _).1 x = _
   rw [highUnionSourceState_append R C j h e]
   exact highUnionRawUpdate_density_of_not_mem R _ j e _ x hx
+end
+
 
 end
 end NearlyMinimax

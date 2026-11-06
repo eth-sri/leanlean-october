@@ -22,7 +22,7 @@ variable {d k F : ℕ} {I : Type*} [Fintype I] {E : I → Type*}
 include G
 
 theorem highUnionSourceMass_coarse_interval
-    (h : HistoryMarked (fun i j => j ∈ highNeighborLabels d k i) (HighUnionMark E)) :
+    h :
     highUnionSourceMass C R h ∈ Icc C.densityLower C.densityUpper := by
   have hg := highCenterResolution_guards C M G.resolution
   have hM0 : 0 < M := by linarith [hg.1]
@@ -33,8 +33,8 @@ theorem highUnionSourceMass_coarse_interval
 
 /-- Actual complete-union reference fiber means and true torus block
 oscillation yield the mass-tilted exceptional probability. -/
-theorem highUnionSourceMass_reference_tilted_tail (hk : 2 ≤ k) (n : ℕ) (ε : ℝ)
-    (hε : 8*highHistoryMassParameter d k C.densityLower C.densityUpper*(n:ℝ) ≤ ε) :
+theorem highUnionSourceMass_reference_tilted_tail (hk : 2 ≤ k) (n : ℕ) ε
+    (hε : 8*highHistoryMassParameter d k C.densityLower C.densityUpper*n ≤ ε) :
     (massPowerTilt
       (historyMarkedReference (fun i j => j ∈ highNeighborLabels d k i) (3^d)
         (highUnionLaw R (highCenterMix C))) (highUnionSourceMass C R) n).real

@@ -15,13 +15,16 @@ set_option maxHeartbeats 1000000
 set_option backward.isDefEq.respectTransparency false
 attribute [local instance] Classical.propDecidable
 
-def highCardinalDensityReset {d n : ℕ} (ad bd lam : ℝ)
-    (U : Fin n → Covariate d) (p : Fin n → ℝ)
-    (ζ : CardinalSeparatedMark d n) (z : ℝ) (ε : Fin n → ℝ) (i : Fin n) : ℝ :=
+def highCardinalDensityReset {d n } ad bd lam
+    (U : Fin n → Covariate d) p
+    ζ z ε i  :=
   localDensityReset ad bd n z ε p (fun i l => cardinalSeparatedFactor lam ζ l (U i)) i
 
-theorem cardinalSeparatedSubsetMatrix_univ {d n F : ℕ} (lam : ℝ) (hlam : 0 ≤ lam)
-    {T : ℝ} (hT : 1 ≤ T) (U : Fin n → Covariate d) (hU : ∀ i l, |U i l| ≤ 2) :
+section
+variable {d n F : ℕ}
+
+theorem cardinalSeparatedSubsetMatrix_univ  lam (hlam : 0 ≤ lam)
+    {T } (hT : 1 ≤ T) (U : Fin n → Covariate d) (hU : ∀ i l, |U i l| ≤ 2) :
     separatedSubsetMatrix (cardinalSeparatedMeasure d n T) n
       (fun ζ i l => cardinalSeparatedFactor lam ζ l (U i))
       (cardinalSeparatedAmplitude (D := F) lam) Finset.univ =
@@ -29,15 +32,15 @@ theorem cardinalSeparatedSubsetMatrix_univ {d n F : ℕ} (lam : ℝ) (hlam : 0 �
   funext β β'
   unfold separatedSubsetMatrix
   simp_rw [cardinal_density_separated_sym_eq]
-  exact (integrated_cardinal_symmetric_separated_exact lam hlam hT U hU β β').symm
+  solve_by_elim [integrated_cardinal_symmetric_separated_exact, symm]
 
 /-- Exact selector for the genuine cardinal ordinary packet at its selected
 count. Both the density selector and the matrix representation are evaluated. -/
-theorem high_cardinal_packet_action_exact {d n F : ℕ}
-    (ad bd lam : ℝ) (ha : 0 < ad) (hab : ad < bd) (hlam : 0 ≤ lam)
-    {T : ℝ} (hT : 1 ≤ T) (m D q : ℕ) (hn : 1 ≤ n) (hnm : n ≤ m) (hnD : n ≤ D)
-    (C : ℝ) (U : Fin n → Covariate d) (hU : ∀ i l, |U i l| ≤ 2)
-    (p : Fin n → ℝ) (c : HighFrameIndex d F → ℝ) (Φ : (HighFrameIndex d F → ℝ) → ℝ) :
+theorem high_cardinal_packet_action_exact 
+    ad bd lam (ha : 0 < ad) (hab : ad < bd) (hlam : 0 ≤ lam)
+    {T } (hT : 1 ≤ T) m D q (hn : 1 ≤ n) (hnm : n ≤ m) (hnD : n ≤ D)
+    C U (hU : ∀ i l, |U i l| ≤ 2)
+    p (c : HighFrameIndex d F → ℝ) Φ :
     highSeparatedPacketAction (cardinalSeparatedMeasure d n T) ad bd m n D q C
       (cardinalSeparatedAmplitude lam) c
       (fun ζ z ε => ∏ i, highCardinalDensityReset ad bd lam U p ζ z ε i) Φ =
@@ -56,5 +59,7 @@ theorem high_cardinal_packet_action_exact {d n F : ℕ}
     simpa using Finset.powersetCard_self (Finset.univ : Finset (Fin n))
   simp only [Finset.card_univ, Fintype.card_fin, ite_true, hpow,
     Finset.sum_singleton, cardinalSeparatedSubsetMatrix_univ lam hlam hT U hU]
+end
+
 
 end NearlyMinimax

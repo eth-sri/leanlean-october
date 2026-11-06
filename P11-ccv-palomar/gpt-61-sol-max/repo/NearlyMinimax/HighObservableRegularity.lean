@@ -31,11 +31,11 @@ theorem historyMarkedPrior_variable_observable_lipschitz (dependent : J → J �
   let μ := historyMarkedReference dependent Δ π
   let _ : IsProbabilityMeasure μ := historyMarkedReference_probability dependent hrefl hsymm Δ hΔ hlabels π
   let ρ := historyReferenceRho Δ
-  let C : ℝ := (3 / 2 : ℝ) ^ Fintype.card J
-  let D : ℝ := ρ⁻¹ * (Fintype.card J : ℝ) * B * C
+  let C  := (3 / 2 : ℝ) ^ Fintype.card J
+  let D  := ρ⁻¹ * (Fintype.card J : ℝ) * B * C
   have hρ : 0 < ρ := historyReferenceRho_pos Δ
-  have hC : 0 ≤ C := by positivity
-  have hD : 0 ≤ D := by dsimp [D]; positivity
+  
+  
   have hs (u : ℝ) (hu : u ∈ Icc 0 T) : u * B / ρ ≤ 1 / (2 + 8 * (Δ : ℝ) ^ 2) :=
     (div_le_div_of_nonneg_right (mul_le_mul_of_nonneg_right hu.2 hB) hρ.le).trans hsmall
   have hφ (u : ℝ) (hu : u ∈ Icc 0 T) (h : HistoryMarked dependent E) :
@@ -43,12 +43,10 @@ theorem historyMarkedPrior_variable_observable_lipschitz (dependent : J → J �
     have hb := historyMarkedDensity_bounds dependent hrefl hsymm Δ hlabels ρ u B hρ hu.1 hB a habound (hs u hu) h
     rw [Real.norm_eq_abs, abs_of_nonneg ((by positivity : (0 : ℝ) ≤ (1 / 2 : ℝ) ^ Fintype.card J).trans hb.1)]
     exact hb.2
-  let H : ℝ → HistoryMarked dependent E → ℝ := fun u h => G u h * historyMarkedDensity dependent ρ u a h
+  let H  := fun u h => G u h * historyMarkedDensity dependent ρ u a h
   have hi (u : ℝ) (hu : u ∈ Icc 0 T) : Integrable (H u) μ := by
     apply Integrable.of_bound ((hGM u).mul (historyMarkedDensity_measurable dependent ρ u a ha)).aestronglyMeasurable (M * C)
-    exact Eventually.of_forall fun h => by
-      rw [Pi.mul_apply, norm_mul, Real.norm_eq_abs]
-      exact mul_le_mul (hGb u hu h) (hφ u hu h) (norm_nonneg _) hM
+    grind only [Eventually.of_forall, Pi.mul_apply, norm_mul, Real.norm_eq_abs, mul_le_mul, norm_nonneg]
   apply LipschitzOnWith.of_dist_le_mul
   intro u hu v hv
   rw [historyMarkedPrior_integral_eq_expectation dependent hrefl hsymm Δ hlabels u B hu.1 hB π a ha habound (hs u hu),
@@ -59,11 +57,11 @@ theorem historyMarkedPrior_variable_observable_lipschitz (dependent : J → J �
     apply Eventually.of_forall
     intro h
     have hGdiff := (hGlip h).dist_le_mul u hu v hv
-    rw [dist_eq_norm] at hGdiff
+    
     have hφdiff := (historyMarkedDensity_lipschitzOn dependent hrefl hsymm Δ hlabels ρ T B hρ hB a habound hsmall h).dist_le_mul u hu v hv
-    rw [dist_eq_norm] at hφdiff
+    
     have he : H u h - H v h = (G u h - G v h) * historyMarkedDensity dependent ρ u a h +
-      G v h * (historyMarkedDensity dependent ρ u a h - historyMarkedDensity dependent ρ v a h) := by dsimp [H]; ring
+      G v h * (historyMarkedDensity dependent ρ u a h - historyMarkedDensity dependent ρ v a h) := by skip; ring
     rw [he]
     calc
       _ ≤ ‖(G u h - G v h) * historyMarkedDensity dependent ρ u a h‖ +

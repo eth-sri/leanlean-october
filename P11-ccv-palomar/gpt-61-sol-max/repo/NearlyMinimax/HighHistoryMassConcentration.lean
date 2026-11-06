@@ -22,18 +22,18 @@ set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 600000
 
 /-- The exact bounded-differences coefficient for the actual torus labels. -/
-def highHistoryMassParameter (d k : ℕ) (a b : ℝ) : ℝ :=
+def highHistoryMassParameter (d k : ℕ) a b  :=
   (k : ℝ)^d * ((2 / (k : ℝ))^d * (b-a))^2 / 8
 
-theorem highHistoryMassParameter_pos (d k : ℕ) (a b : ℝ) (hk : 0 < k) (hab : a < b) :
+theorem highHistoryMassParameter_pos d k a b (hk : 0 < k) (hab : a < b) :
     0 < highHistoryMassParameter d k a b := by
   have hkR : (0 : ℝ) < k := by exact_mod_cast hk
   unfold highHistoryMassParameter
   positivity
 
 /-- The exact parameter has the paper's inverse-grid-cardinality dependence. -/
-theorem highHistoryMassParameter_eq (d k : ℕ) (a b : ℝ) (hk : 0 < k) :
-    highHistoryMassParameter d k a b = (2 : ℝ)^(2*d) * (b-a)^2 / (8 * (k : ℝ)^d) := by
+theorem highHistoryMassParameter_eq d k a b (hk : 0 < k) :
+    highHistoryMassParameter d k a b = 2^(2*d) * (b-a)^2 / (8 * k^d) := by
   have hkR : (0 : ℝ) < k := by exact_mod_cast hk
   have hp : (k : ℝ)^d ≠ 0 := ne_of_gt (pow_pos hkR d)
   unfold highHistoryMassParameter

@@ -29,9 +29,7 @@ theorem coeff_totalDegree_mul_le {V : Type*}
   rw [PowerSeries.coeff_mul]
   apply MvPolynomial.totalDegree_finsetSum_le
   intro ij hij
-  exact (MvPolynomial.totalDegree_mul _ _).trans
-    ((Nat.add_le_add (hf ij.1) (hg ij.2)).trans_eq
-      (Finset.HasAntidiagonal.mem_antidiagonal.mp hij))
+  grind only [MvPolynomial.totalDegree_mul, Finset.HasAntidiagonal.mem_antidiagonal.mp]
 
 /-- Finite products preserve total degree bounded by the series index. -/
 theorem coeff_totalDegree_prod_le {V I : Type*} [DecidableEq I]
@@ -44,10 +42,7 @@ theorem coeff_totalDegree_prod_le {V I : Type*} [DecidableEq I]
     split_ifs <;> simp
   | @insert a s ha ih =>
     rw [Finset.prod_insert ha]
-    apply coeff_totalDegree_mul_le
-    · exact hf a (Finset.mem_insert_self ..)
-    · intro j
-      exact ih (fun i hi => hf i (Finset.mem_insert_of_mem hi)) j
+    simp_all [coeff_totalDegree_mul_le]
 
 /-- Taking a determinant does not increase the total degree of its kth coefficient. -/
 theorem determinant_coefficient_totalDegree_le {V n : Type*} [Fintype n] [DecidableEq n]
@@ -64,22 +59,28 @@ theorem determinant_coefficient_totalDegree_le {V n : Type*} [Fintype n] [Decida
       exact hM (σ i) i) k)
 
 /-- Scalar Chebyshev polynomial giving the kth normalized reciprocal-kernel coefficient. -/
-def kernelCoefficientPolynomial (lo hi : ℝ) (k : ℕ) : ℝ[X] :=
+def kernelCoefficientPolynomial lo hi k  :=
   C (if k = 0 then 1 else 2 * (-intervalRho lo hi) ^ k) * normalizedChebyshev lo hi k
 
 lemma kernelCoefficientPolynomial_natDegree (lo hi : ℝ) (k : ℕ) :
     (kernelCoefficientPolynomial lo hi k).natDegree ≤ k :=
   (natDegree_C_mul_le _ _).trans (normalizedChebyshev_natDegree lo hi k)
 
+section
+variable (lo hi : ℝ) {n : Type*}
+include lo hi
+
 /-- Reciprocal-kernel entry series in independent matrix-entry variables. -/
-def variableKernelSeries (lo hi : ℝ) {n : Type*} [Fintype n] [DecidableEq n] :
+def variableKernelSeries  [Fintype n] [DecidableEq n] :
     Matrix n n (PowerSeries (MvPolynomial (n × n) ℝ)) := fun i j =>
   PowerSeries.mk (fun k => matrixEntryPolynomial (kernelCoefficientPolynomial lo hi k) i j)
 
 /-- The determinant coefficient is an actual polynomial in all the matrix entries. -/
-def determinantCoefficientPolynomial (lo hi : ℝ) {n : Type*} [Fintype n] [DecidableEq n]
+def determinantCoefficientPolynomial  [Fintype n] [DecidableEq n]
     (k : ℕ) : MvPolynomial (n × n) ℝ :=
   PowerSeries.coeff k (variableKernelSeries lo hi (n := n)).det
+end
+
 
 theorem determinantCoefficientPolynomial_totalDegree {n : Type*} [Fintype n] [DecidableEq n]
     (lo hi : ℝ) (k : ℕ) :
@@ -87,16 +88,18 @@ theorem determinantCoefficientPolynomial_totalDegree {n : Type*} [Fintype n] [De
   apply determinant_coefficient_totalDegree_le
   intro i j t
   simp only [variableKernelSeries, PowerSeries.coeff_mk]
-  exact (matrixEntryPolynomial_degree _ i j).trans (kernelCoefficientPolynomial_natDegree lo hi t)
+  grind only [matrixEntryPolynomial_degree, kernelCoefficientPolynomial_natDegree]
 
 /-- The actual matrix kernel as a matrix of formal real power series. -/
 def kernelSeries (lo hi : ℝ) {n : Type*} [Fintype n] [DecidableEq n]
     (M : Matrix n n ℝ) : Matrix n n (PowerSeries ℝ) := fun i j =>
   PowerSeries.mk (fun k => (Polynomial.aeval M (kernelCoefficientPolynomial lo hi k)) i j)
 
+section
+variable {n : Type*} [Fintype n] [DecidableEq n] (lo hi : ℝ) (M : Matrix n n ℝ)
+
 /-- Evaluation of all matrix variables produces the actual kernel entry series. -/
-theorem variableKernelSeries_map_eval {n : Type*} [Fintype n] [DecidableEq n]
-    (lo hi : ℝ) (M : Matrix n n ℝ) :
+theorem variableKernelSeries_map_eval  :
     (PowerSeries.map (MvPolynomial.eval₂Hom (RingHom.id ℝ) (fun ij : n × n => M ij.1 ij.2))).mapMatrix
       (variableKernelSeries lo hi (n := n)) = kernelSeries lo hi M := by
   ext i j k
@@ -110,8 +113,7 @@ theorem variableKernelSeries_map_eval {n : Type*} [Fintype n] [DecidableEq n]
   exact matrixEntryPolynomial_eval _ M i j
 
 /-- Each polynomial coefficient evaluates to the kth coefficient of the actual kernel determinant. -/
-theorem determinantCoefficientPolynomial_eval {n : Type*} [Fintype n] [DecidableEq n]
-    (lo hi : ℝ) (M : Matrix n n ℝ) (k : ℕ) :
+theorem determinantCoefficientPolynomial_eval  (k : ℕ) :
     MvPolynomial.eval (fun ij : n × n => M ij.1 ij.2)
       (determinantCoefficientPolynomial lo hi (n := n) k) =
       PowerSeries.coeff k (kernelSeries lo hi M).det := by
@@ -121,43 +123,53 @@ theorem determinantCoefficientPolynomial_eval {n : Type*} [Fintype n] [Decidable
   rw [variableKernelSeries_map_eval] at he
   rw [PowerSeries.coeff_map] at he
   exact he
+end
+
 
 /-- Scalar series corresponding to one eigenvalue of the reciprocal kernel. -/
-def scalarKernelSeries (lo hi x : ℝ) : PowerSeries ℝ :=
+def scalarKernelSeries lo hi x  :=
   PowerSeries.mk (fun k => (kernelCoefficientPolynomial lo hi k).eval x)
 
-private theorem aeval_diagonal {n : Type*} [Fintype n] [DecidableEq n]
+section
+variable {n : Type*}
+
+private theorem aeval_diagonal  [Fintype n] [DecidableEq n]
     (q : ℝ[X]) (d : n → ℝ) :
     Polynomial.aeval (Matrix.diagonal d) q = Matrix.diagonal (fun i => q.eval (d i)) := by
   change Polynomial.aeval ((Matrix.diagonalAlgHom ℝ) d) q = _
   rw [Polynomial.aeval_algHom_apply, Polynomial.aeval_pi_apply]
   rfl
 
-def coefficientMatrix {n : Type*} (k : ℕ) (M : Matrix n n (PowerSeries ℝ)) :
+def coefficientMatrix  (k : ℕ) (M : Matrix n n (PowerSeries ℝ)) :
     Matrix n n ℝ := fun i j => PowerSeries.coeff k (M i j)
 
-theorem coefficientMatrix_constant_mul {n : Type*} [Fintype n] [DecidableEq n]
-    (A : Matrix n n ℝ) (M : Matrix n n (PowerSeries ℝ)) (k : ℕ) :
+section
+variable [Fintype n] [DecidableEq n] (A : Matrix n n ℝ) (M : Matrix n n (PowerSeries ℝ)) (k : ℕ)
+
+theorem coefficientMatrix_constant_mul   :
     coefficientMatrix k ((PowerSeries.C.mapMatrix A) * M) = A * coefficientMatrix k M := by
   ext i j
   simp [coefficientMatrix, Matrix.mul_apply, map_sum, PowerSeries.coeff_C_mul]
 
-theorem coefficientMatrix_mul_constant {n : Type*} [Fintype n] [DecidableEq n]
-    (A : Matrix n n ℝ) (M : Matrix n n (PowerSeries ℝ)) (k : ℕ) :
+theorem coefficientMatrix_mul_constant   :
     coefficientMatrix k (M * (PowerSeries.C.mapMatrix A)) = coefficientMatrix k M * A := by
   ext i j
   simp [coefficientMatrix, Matrix.mul_apply, map_sum, PowerSeries.coeff_mul_C]
+end
 
-theorem coefficientMatrix_diagonal {n : Type*} [DecidableEq n]
+
+theorem coefficientMatrix_diagonal  [DecidableEq n]
     (d : n → PowerSeries ℝ) (k : ℕ) :
     coefficientMatrix k (Matrix.diagonal d) = Matrix.diagonal (fun i => PowerSeries.coeff k (d i)) := by
   ext i j
   simp only [coefficientMatrix, Matrix.diagonal_apply]
   split_ifs <;> simp
 
+section
+variable [Fintype n] [DecidableEq n] (lo hi : ℝ) (M : Matrix n n ℝ) (hM : M.IsHermitian)
+
 /-- The actual formal matrix kernel diagonalizes in the same fixed eigenbasis as its argument. -/
-theorem kernelSeries_spectral {n : Type*} [Fintype n] [DecidableEq n]
-    (lo hi : ℝ) (M : Matrix n n ℝ) (hM : M.IsHermitian) :
+theorem kernelSeries_spectral   :
     kernelSeries lo hi M =
       (PowerSeries.C.mapMatrix (hM.eigenvectorUnitary : Matrix n n ℝ)) *
       Matrix.diagonal (fun i => scalarKernelSeries lo hi (hM.eigenvalues i)) *
@@ -176,13 +188,11 @@ theorem kernelSeries_spectral {n : Type*} [Fintype n] [DecidableEq n]
       (hM.eigenvectorUnitary : Matrix n n ℝ) *
       Matrix.diagonal (fun i => (kernelCoefficientPolynomial lo hi k).eval (hM.eigenvalues i)) *
       star (hM.eigenvectorUnitary : Matrix n n ℝ) := by
-    simpa only [Unitary.conjStarAlgAut_apply, Function.comp_apply, RCLike.ofReal_real_eq_id,
-      id_eq] using hp
+    solve_by_elim []
   exact congrArg (fun A : Matrix n n ℝ => A i j) hp'
 
 /-- The formal determinant is exactly the product of the scalar eigenvalue reciprocal series. -/
-theorem kernelSeries_det_spectral {n : Type*} [Fintype n] [DecidableEq n]
-    (lo hi : ℝ) (M : Matrix n n ℝ) (hM : M.IsHermitian) :
+theorem kernelSeries_det_spectral   :
     (kernelSeries lo hi M).det = ∏ i, scalarKernelSeries lo hi (hM.eigenvalues i) := by
   rw [kernelSeries_spectral lo hi M hM, Matrix.det_mul, Matrix.det_mul, Matrix.det_diagonal]
   have hu :
@@ -198,10 +208,17 @@ theorem kernelSeries_det_spectral {n : Type*} [Fintype n] [DecidableEq n]
       ((PowerSeries.C.mapMatrix (hM.eigenvectorUnitary : Matrix n n ℝ)).det *
       (PowerSeries.C.mapMatrix (star (hM.eigenvectorUnitary : Matrix n n ℝ))).det) := by ring
     _ = _ := by rw [hu, mul_one]
+end
+
+end
+
+
+section
+variable (lo hi x : ℝ) (hlo : 0 < lo) (hlt : lo < hi) (hx : x ∈ Set.Icc lo hi)
+include hlo hlt hx
 
 /-- Scalar kernel coefficients have the same geometric bound as in the paper. -/
-theorem scalarKernelSeries_coefficient_norm_le (lo hi x : ℝ) (hlo : 0 < lo)
-    (hlt : lo < hi) (hx : x ∈ Set.Icc lo hi) (k : ℕ) :
+theorem scalarKernelSeries_coefficient_norm_le  k :
     ‖PowerSeries.coeff k (scalarKernelSeries lo hi x)‖ ≤ 2 * intervalRho lo hi ^ k := by
   have hr := intervalRho_pos lo hi hlo hlt
   have ht : |(normalizedChebyshev lo hi k).eval x| ≤ 1 := by
@@ -214,20 +231,17 @@ theorem scalarKernelSeries_coefficient_norm_le (lo hi x : ℝ) (hlo : 0 < lo)
     simp [normalizedChebyshev]
   · simp only [hk, ite_false, Real.norm_eq_abs, abs_mul, abs_of_nonneg (by norm_num : (0 : ℝ) ≤ 2), abs_pow, abs_neg,
       abs_of_pos hr]
-    simpa using mul_le_mul_of_nonneg_left ht (by positivity : 0 ≤ 2 * intervalRho lo hi ^ k)
+    simp_all []
 
 /-- Absolute summability of every scalar eigenvalue kernel. -/
-theorem scalarKernelSeries_summable_norm (lo hi x : ℝ) (hlo : 0 < lo)
-    (hlt : lo < hi) (hx : x ∈ Set.Icc lo hi) :
+theorem scalarKernelSeries_summable_norm  :
     Summable (fun k => ‖PowerSeries.coeff k (scalarKernelSeries lo hi x)‖) := by
   have hg := (summable_geometric_of_lt_one (intervalRho_pos lo hi hlo hlt).le
     (intervalRho_lt_one lo hi hlo hlt)).mul_left (2 : ℝ)
-  exact Summable.of_nonneg_of_le (fun k => norm_nonneg _)
-    (scalarKernelSeries_coefficient_norm_le lo hi x hlo hlt hx) hg
+  grind only [Summable.of_nonneg_of_le, norm_nonneg, scalarKernelSeries_coefficient_norm_le]
 
 /-- At z=1 the scalar formal kernel sums to the normalized reciprocal. -/
-theorem scalarKernelSeries_tsum (lo hi x : ℝ) (hlo : 0 < lo)
-    (hlt : lo < hi) (hx : x ∈ Set.Icc lo hi) :
+theorem scalarKernelSeries_tsum  :
     (∑' k, PowerSeries.coeff k (scalarKernelSeries lo hi x)) = intervalGeometricMean lo hi / x := by
   have hs := (scalarKernelSeries_summable_norm lo hi x hlo hlt hx).of_norm
   rw [hs.tsum_eq_zero_add]
@@ -239,9 +253,14 @@ theorem scalarKernelSeries_tsum (lo hi x : ℝ) (hlo : 0 < lo)
   simp_rw [mul_assoc]
   rw [tsum_mul_left]
   exact reciprocal_real_series lo hi x hlo hlt hx
+end
+
+
+section
+variable {R I : Type*} [NormedCommRing R]
 
 /-- Absolute convergence is stable under the genuine finite Cauchy product. -/
-theorem powerSeries_prod_summable_norm {R I : Type*} [NormedCommRing R] [DecidableEq I]
+theorem powerSeries_prod_summable_norm  [DecidableEq I]
     (s : Finset I) (f : I → PowerSeries R)
     (hf : ∀ i ∈ s, Summable (fun k => ‖PowerSeries.coeff k (f i)‖)) :
     Summable (fun k => ‖PowerSeries.coeff k (∏ i ∈ s, f i)‖) := by
@@ -261,7 +280,7 @@ theorem powerSeries_prod_summable_norm {R I : Type*} [NormedCommRing R] [Decidab
     rw [PowerSeries.coeff_mul]
 
 /-- The sum of the coefficients of a finite product is the product of their sums. -/
-theorem powerSeries_prod_tsum {R I : Type*} [NormedCommRing R] [CompleteSpace R] [DecidableEq I]
+theorem powerSeries_prod_tsum  [CompleteSpace R] [DecidableEq I]
     (s : Finset I) (f : I → PowerSeries R)
     (hf : ∀ i ∈ s, Summable (fun k => ‖PowerSeries.coeff k (f i)‖)) :
     (∑' k, PowerSeries.coeff k (∏ i ∈ s, f i)) = ∏ i ∈ s, ∑' k, PowerSeries.coeff k (f i) := by
@@ -278,13 +297,16 @@ theorem powerSeries_prod_tsum {R I : Type*} [NormedCommRing R] [CompleteSpace R]
     rw [hc, RoughRegime.SeriesBounds.convolution_tsum]
     · rw [ih (fun i hi => hf i (Finset.mem_insert_of_mem hi))]
     · exact hf a (Finset.mem_insert_self ..)
-    · exact powerSeries_prod_summable_norm s f
-        (fun i hi => hf i (Finset.mem_insert_of_mem hi))
+    · simp_all [powerSeries_prod_summable_norm]
+end
+
+
+section
+variable {n : Type*} [Fintype n] [DecidableEq n] (lo hi : ℝ) (hlo : 0 < lo) (hlt : lo < hi) (M : Matrix n n ℝ) (hM : M.IsHermitian) (hSpec : spectrum ℝ M ⊆ Set.Icc lo hi)
+include hlo hlt hM hSpec
 
 /-- Absolute convergence of the actual formal determinant coefficients. -/
-theorem kernelSeries_det_summable_norm {n : Type*} [Fintype n] [DecidableEq n]
-    (lo hi : ℝ) (hlo : 0 < lo) (hlt : lo < hi) (M : Matrix n n ℝ) (hM : M.IsHermitian)
-    (hSpec : spectrum ℝ M ⊆ Set.Icc lo hi) :
+theorem kernelSeries_det_summable_norm  :
     Summable (fun k => ‖PowerSeries.coeff k (kernelSeries lo hi M).det‖) := by
   rw [kernelSeries_det_spectral lo hi M hM]
   apply powerSeries_prod_summable_norm
@@ -293,9 +315,7 @@ theorem kernelSeries_det_summable_norm {n : Type*} [Fintype n] [DecidableEq n]
     (hSpec (hM.eigenvalues_mem_spectrum_real i))
 
 /-- The actual determinant series sums to the normalized determinant reciprocal. -/
-theorem kernelSeries_det_tsum {n : Type*} [Fintype n] [DecidableEq n]
-    (lo hi : ℝ) (hlo : 0 < lo) (hlt : lo < hi) (M : Matrix n n ℝ) (hM : M.IsHermitian)
-    (hSpec : spectrum ℝ M ⊆ Set.Icc lo hi) :
+theorem kernelSeries_det_tsum  :
     (∑' k, PowerSeries.coeff k (kernelSeries lo hi M).det) =
       intervalGeometricMean lo hi ^ Fintype.card n / M.det := by
   rw [kernelSeries_det_spectral lo hi M hM, powerSeries_prod_tsum]
@@ -308,5 +328,7 @@ theorem kernelSeries_det_tsum {n : Type*} [Fintype n] [DecidableEq n]
   · intro i _
     exact scalarKernelSeries_summable_norm lo hi _ hlo hlt
       (hSpec (hM.eigenvalues_mem_spectrum_real i))
+end
+
 
 end RoughRegime.MatrixDeterminant

@@ -26,13 +26,16 @@ theorem historyMap_withDensity {A B : Type*} [MeasurableSpace A] [MeasurableSpac
 
 variable {J : Type*} [Fintype J] [LinearOrder J]
 
+section
+variable (dependent : J → J → Prop) (Δ : ℕ) (t : ℝ) {E : Type*} [MeasurableSpace E] (π : Measure E) (a : E → ℝ) (ha : Measurable a)
+include ha
+
 /-- The actual unnormalized mixture is exactly the reference measure tilted by Phi. -/
-theorem historyMarkedPriorRaw_eq_withDensity (dependent : J → J → Prop) (Δ : ℕ) (t : ℝ)
-    {E : Type*} [MeasurableSpace E] (π : Measure E) (a : E → ℝ) (ha : Measurable a) :
+theorem historyMarkedPriorRaw_eq_withDensity  :
     historyMarkedPriorRaw dependent Δ t π a =
       (historyMarkedReferenceRaw dependent Δ π).withDensity
         (fun h => ENNReal.ofReal (historyMarkedDensity dependent (historyReferenceRho Δ) t a h)) := by
-  let p : HistoryMarked dependent E → ℝ≥0∞ := fun h =>
+  let p  := fun h =>
     ENNReal.ofReal (historyMarkedDensity dependent (historyReferenceRho Δ) t a h)
   have hp : Measurable p := (historyMarkedDensity_measurable dependent _ t a ha).ennreal_ofReal
   have hm : ∀ g, Measure.map (fun marks => (⟨g, marks⟩ : HistoryMarked dependent E))
@@ -41,22 +44,23 @@ theorem historyMarkedPriorRaw_eq_withDensity (dependent : J → J → Prop) (Δ 
           (Measure.pi (fun _ : Fin (historyShapeLength dependent g) => π))).withDensity p := by
     intro g
     change Measure.map _ ((Measure.pi _).withDensity (p ∘ _)) = _
-    exact historyMap_withDensity _ _ (historyMarked_measurable_mk dependent g) p hp
+    solve_by_elim [historyMap_withDensity, historyMarked_measurable_mk]
   change historyMarkedPriorRaw dependent Δ t π a = (historyMarkedReferenceRaw dependent Δ π).withDensity p
   unfold historyMarkedPriorRaw historyMarkedReferenceRaw
   rw [withDensity_sum]
   apply congrArg Measure.sum
   funext g
   rw [withDensity_smul_measure]
-  exact congrArg (fun μ => ENNReal.ofReal (historyShapeReferenceWeight dependent Δ g) • μ) (hm g)
+  solve_by_elim []
 
 /-- Thus the actual positive prior path uses precisely dnu_t = Phi_t d tau_0. -/
-theorem historyMarkedPrior_eq_withDensity (dependent : J → J → Prop) (Δ : ℕ) (t : ℝ)
-    {E : Type*} [MeasurableSpace E] (π : Measure E) (a : E → ℝ) (ha : Measurable a) :
+theorem historyMarkedPrior_eq_withDensity  :
     historyMarkedPrior dependent Δ t π a =
       (historyMarkedReference dependent Δ π).withDensity
         (fun h => ENNReal.ofReal (historyMarkedDensity dependent (historyReferenceRho Δ) t a h)) := by
   unfold historyMarkedPrior historyMarkedReference
   rw [withDensity_smul_measure, historyMarkedPriorRaw_eq_withDensity dependent Δ t π a ha]
+end
+
 
 end NearlyMinimax

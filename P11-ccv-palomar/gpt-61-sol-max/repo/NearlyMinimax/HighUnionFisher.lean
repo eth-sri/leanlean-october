@@ -25,9 +25,9 @@ variable {d k D : ℕ} {I : Type*} [Fintype I] {E : I → Type*}
     {M Cfr : ℝ} (G : HighUnionSourceGuards C M Cfr R)
     (hpos : ∀ i, 0 < R.rowMass i)
 
-def highUnionSourceRawNumerator (r : ℕ) (a V η : ℝ)
-    (h : HistoryMarked (fun i j => j ∈ highNeighborLabels d k i) (HighUnionMark E))
-    (j : HighWindowLabels d k) (x : Fin r → Covariate d) (y : Fin r → Fin 3) : ℝ :=
+def highUnionSourceRawNumerator r a V η
+    h
+    j x y  :=
   highMarkedSampleNumerator r (highUnionLaw R (highCenterMix C))
     (highUnionActivation R (highCenterMix C)) a V η (highUnionSourceDensity C R h)
     (highUnionSourceResetDensity C R j h) (highUnionSourceResetCoefficient C R j h)

@@ -19,38 +19,36 @@ open Filter
 namespace NearlyMinimax
 
 /-- The variance factorial series, summing `k! x^k` for `1 ≤ k ≤ D`. -/
-def factorialSeries (D : ℕ) (x : ℝ) : ℝ :=
+def factorialSeries D x  :=
   ∑ k ∈ Finset.range D, ((k + 1).factorial : ℝ) * x ^ (k + 1)
 
-theorem factorialSeries_nonneg (D : ℕ) {x : ℝ} (hx : 0 ≤ x) :
-    0 ≤ factorialSeries D x := by
-  unfold factorialSeries
-  exact Finset.sum_nonneg fun k hk => by positivity
+theorem factorialSeries_nonneg D {x } (hx : 0 ≤ x) :
+    0 ≤ factorialSeries D x := Finset.sum_nonneg fun k hk => by positivity
 
 /-- The successive-term ratio is bounded by `1/2` throughout the finite sum. -/
-theorem factorial_term_le_geometric {D k : ℕ} {x : ℝ}
+theorem factorial_term_le_geometric {D k : ℕ} {x }
     (hx : 0 ≤ x) (hD : (D : ℝ) * x ≤ 1 / 2) (hk : k < D) :
-    ((k + 1).factorial : ℝ) * x ^ (k + 1) ≤ x * (1 / 2 : ℝ) ^ k := by
+    ((k + 1).factorial) * x ^ (k + 1) ≤ x * (1 / 2) ^ k := by
   induction k with
   | zero => simp
   | succ k ih =>
     have hkp : k < D := by omega
     have hratio : ((k + 2 : ℕ) : ℝ) * x ≤ 1 / 2 := by
       have hcast : ((k + 2 : ℕ) : ℝ) ≤ (D : ℝ) := by exact_mod_cast (by omega : k + 2 ≤ D)
-      exact (mul_le_mul_of_nonneg_right hcast hx).trans hD
+      nlinarith
     have hprev := ih hkp
     calc
       (((k + 1 + 1).factorial : ℕ) : ℝ) * x ^ (k + 1 + 1) =
           (((k + 2 : ℕ) : ℝ) * x) * (((k + 1).factorial : ℝ) * x ^ (k + 1)) := by
         rw [Nat.factorial_succ, Nat.cast_mul, pow_succ]
-        push_cast
+        
         ring
       _ ≤ (1 / 2 : ℝ) * (x * (1 / 2 : ℝ) ^ k) :=
         mul_le_mul hratio hprev (by positivity) (by norm_num)
-      _ = x * (1 / 2 : ℝ) ^ (k + 1) := by rw [pow_succ]; ring
+      _ = x * (1 / 2 : ℝ) ^ (k + 1) := by skip; ring
 
 /-- The uniform coarse-level estimate in the paper. -/
-theorem factorialSeries_coarse_bound {D : ℕ} {x : ℝ}
+theorem factorialSeries_coarse_bound {D : ℕ} {x }
     (hx : 0 ≤ x) (hD : (D : ℝ) * x ≤ 1 / 2) :
     factorialSeries D x ≤ 2 * x := by
   have hg : (∑ k ∈ Finset.range D, (1 / 2 : ℝ) ^ k) ≤ 2 := by
@@ -60,31 +58,32 @@ theorem factorialSeries_coarse_bound {D : ℕ} {x : ℝ}
   unfold factorialSeries
   calc
     _ ≤ ∑ k ∈ Finset.range D, x * (1 / 2 : ℝ) ^ k := by
-      apply Finset.sum_le_sum
-      intro k hk
-      exact factorial_term_le_geometric hx hD (Finset.mem_range.1 hk)
+      grind only [Finset.sum_le_sum, factorial_term_le_geometric, Finset.mem_range]
     _ = x * ∑ k ∈ Finset.range D, (1 / 2 : ℝ) ^ k := by rw [Finset.mul_sum]
     _ ≤ x * 2 := mul_le_mul_of_nonneg_left hg hx
     _ = 2 * x := mul_comm _ _
 
 /-- Factorials are bounded by the maximal degree to the corresponding power. -/
 theorem factorial_cast_le_degree_pow {D k : ℕ} (hk : k ≤ D) :
-    (k.factorial : ℝ) ≤ (D : ℝ) ^ k := by
-  have h : k.factorial ≤ D ^ k :=
+    (k.factorial : ℝ) ≤ D ^ k := by
+  have h  :=
     (Nat.factorial_le_pow k).trans (Nat.pow_le_pow_left hk k)
   exact_mod_cast h
 
+section
+variable {D : ℕ}
+
 /-- The finite fine-level estimate, prior to replacing `D` by its real upper bound. -/
-theorem factorialSeries_fine_bound {D : ℕ} {x z B A : ℝ}
+theorem factorialSeries_fine_bound  {x z B A }
     (hx : 0 ≤ x) (hz : 0 ≤ z) (hDx : (D : ℝ) * x ≤ Real.exp z)
     (hDz : (D : ℝ) * z ≤ B) (hDA : (D : ℝ) ≤ A) :
     factorialSeries D x ≤ A * Real.exp B := by
-  unfold factorialSeries
+  
   calc
     _ ≤ ∑ k ∈ Finset.range D, Real.exp B := by
       apply Finset.sum_le_sum
       intro k hk
-      have hkD : k + 1 ≤ D := Finset.mem_range.1 hk
+      have hkD  := Finset.mem_range.1 hk
       have hpow := pow_le_pow_left₀ (mul_nonneg (Nat.cast_nonneg D) hx) hDx (k + 1)
       have hcast : ((k + 1 : ℕ) : ℝ) ≤ (D : ℝ) := by exact_mod_cast hkD
       calc
@@ -100,7 +99,7 @@ theorem factorialSeries_fine_bound {D : ℕ} {x z B A : ℝ}
     _ ≤ A * Real.exp B := mul_le_mul_of_nonneg_right hDA (Real.exp_pos B).le
 
 /-- Direct substitution of the fine-level allocation's `x = exp z/(C_D S)`. -/
-theorem factorialSeries_fine_allocation {D : ℕ} {z β C_D S : ℝ}
+theorem factorialSeries_fine_allocation  {z β C_D S }
     (hz : 0 ≤ z) (hCS : 0 < C_D * S)
     (hD : (D : ℝ) ≤ C_D * S) (hDz : (D : ℝ) * z ≤ β * S ^ 2 / 4) :
     factorialSeries D (Real.exp z / (C_D * S)) ≤
@@ -108,11 +107,11 @@ theorem factorialSeries_fine_allocation {D : ℕ} {z β C_D S : ℝ}
   apply factorialSeries_fine_bound (div_nonneg (Real.exp_pos z).le hCS.le) hz _ hDz hD
   have hd := mul_le_mul_of_nonneg_right hD (div_nonneg (Real.exp_pos z).le hCS.le)
   have he : (C_D * S) * (Real.exp z / (C_D * S)) = Real.exp z := by
-    rw [← mul_div_assoc, mul_comm (C_D * S), mul_div_cancel_right₀ _ hCS.ne']
+    grind
   rwa [he] at hd
 
 /-- The fine-level series remains bounded after its sampling weight. -/
-theorem factorialSeries_fine_weighted {D : ℕ} {z β C₀ C_D S M : ℝ}
+theorem factorialSeries_fine_weighted  {z β C₀ C_D S M }
     (hz : 0 ≤ z) (_hC : 0 ≤ C₀) (hCS : 0 < C_D * S)
     (hD : (D : ℝ) ≤ C_D * S) (hDz : (D : ℝ) * z ≤ β * S ^ 2 / 4)
     (hM : 0 ≤ M) (hMb : M ≤ C₀ * C_D * S) :
@@ -122,6 +121,8 @@ theorem factorialSeries_fine_weighted {D : ℕ} {z β C₀ C_D S M : ℝ}
   have h := mul_le_mul hs hMb hM (mul_nonneg hCS.le (Real.exp_pos _).le)
   apply h.trans_eq
   ring
+end
+
 
 /-- The fixed subtraction in `eq:Udef-S` leaves the quadratic budget reserve. -/
 theorem quadratic_allocation_budget {β H t S : ℝ}
@@ -134,21 +135,19 @@ theorem quadratic_allocation_budget {β H t S : ℝ}
     rw [ht]
     field_simp
     ring
-  have hn : 0 ≤ β * (1 + 2 * H / β) ^ 2 / 4 + β * S / 2 := by positivity
-  linarith
+  nlinarith
 
 /-- The budget directly supplies the spatial reserve in `eq:U13-reserve`. -/
-theorem allocation_budget_reserve {β S η varpi L T : ℝ}
+theorem allocation_budget_reserve {β S η varpi L T }
     (hbudget : β * S ^ 2 / 4 + (η + 2) * S ≤ 2 * varpi * L)
     (hη : 0 ≤ η) (hT : T ≤ S) :
     Real.exp (-2 * varpi * L + η * T) ≤ Real.exp (-β * S ^ 2 / 4 - 2 * S) := by
   apply Real.exp_le_exp.2
-  have hm := mul_le_mul_of_nonneg_left hT hη
-  linarith
+  nlinarith
 
 /-- The explicit residual variance upper bound tends to zero. -/
-theorem tendsto_allocation_reserve_bound (C₀ C_D : ℝ) :
-    Tendsto (fun S : ℝ => 2 * C₀ * C_D ^ 2 * S ^ 2 * Real.exp (-2 * S))
+theorem tendsto_allocation_reserve_bound C₀ C_D :
+    Tendsto (fun S  => 2 * C₀ * C_D ^ 2 * S ^ 2 * Real.exp (-2 * S))
       atTop (𝓝 0) := by
   have h := (tendsto_rpow_mul_exp_neg_mul_atTop_nhds_zero (2 : ℝ) 2 (by norm_num)).const_mul
     (2 * C₀ * C_D ^ 2)

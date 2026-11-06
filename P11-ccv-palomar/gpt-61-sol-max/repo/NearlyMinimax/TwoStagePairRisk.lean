@@ -19,11 +19,11 @@ variable {P Ω E I : Type*} [MeasurableSpace P] [MeasurableSpace Ω]
 variable {π : Measure P} {ν : Measure Ω} {μ : Measure E}
   [IsProbabilityMeasure π] [IsProbabilityMeasure ν] [IsProbabilityMeasure μ]
 
-def fieldPairAverage (n : ℕ) (weight : ℝ) (G : P → E × E → ℝ)
-    (X : Fin n → Ω → E) (z : P × Ω) : ℝ :=
+def fieldPairAverage n weight (G : P → E × E → ℝ)
+    (X : Fin n → Ω → E) (z : P × Ω)  :=
   pairAverage n (weightedSymmetrization weight (G z.1)) (fun i => X i z.2)
 
-theorem fieldPairAverage_measurable (n : ℕ) (weight : ℝ) {G : P → E × E → ℝ}
+theorem fieldPairAverage_measurable n weight {G }
     (hmG : Measurable (fun z : P × (E × E) => G z.1 z.2))
     (X : Fin n → Ω → E) (hX : ∀ i, Measurable (X i)) :
     Measurable (fieldPairAverage n weight G X) := by
@@ -40,37 +40,37 @@ theorem fieldPairAverage_measurable (n : ℕ) (weight : ℝ) {G : P → E × E �
       (hmG.comp (measurable_fst.prodMk
         (((hX j).comp measurable_snd).prodMk ((hX i).comp measurable_snd))))
 
-def fieldPairMean (weight : ℝ) (G : P → E × E → ℝ) (p : P) : ℝ :=
+def fieldPairMean weight (G : P → E × E → ℝ) (p : P)  :=
   weight / 2 * ∫ z, G p z ∂μ.prod μ
 
-theorem fieldPairMean_measurable (weight : ℝ) {G : P → E × E → ℝ}
+theorem fieldPairMean_measurable weight {G }
     (hmG : Measurable (fun z : P × (E × E) => G z.1 z.2)) :
     Measurable (fieldPairMean (μ := μ) weight G) :=
   hmG.stronglyMeasurable.integral_prod_right'.measurable.const_mul _
 
-theorem fieldPairAverage_two_stage_mse_le {n : ℕ} (hn : 2 ≤ n)
-    (X : Fin n → Ω → E) (hind : iIndepFun X ν)
+theorem fieldPairAverage_two_stage_mse_le {n } (hn : 2 ≤ n)
+    X (hind : iIndepFun X ν)
     (hX : ∀ i, MeasurePreserving (X i) ν μ)
     (label : E → I) (hlabel : Measurable label)
-    {G : P → E × E → ℝ}
+    {G }
     (hmG : Measurable (fun z : P × (E × E) => G z.1 z.2))
-    (hG : MemLp (fun z : P × (E × E) => G z.1 z.2) 2 (π.prod (μ.prod μ)))
+    (hG : MemLp (fun z  => G z.1 z.2) 2 (π.prod (μ.prod μ)))
     (hsupport : ∀ p x y, label x ≠ label y → G p (x, y) = 0)
-    {weight cap bound d c : ℝ} (hw : 0 < weight) (hcap : 0 ≤ cap)
+    {weight cap bound d c } (hw : 0 < weight) (hcap : 0 ≤ cap)
     (hmass : ∀ i, μ.real (label ⁻¹' {i}) ≤ cap) (hbound : weight * cap ≤ bound)
     (hd : 0 ≤ d)
     (hmean : (∫⁻ p, ENNReal.ofReal ((fieldPairMean (μ := μ) weight G p - c) ^ 2) ∂π) ≤
       ENNReal.ofReal d) :
     (∫⁻ z, ENNReal.ofReal ((fieldPairAverage n weight G X z - c) ^ 2) ∂π.prod ν) ≤
       ENNReal.ofReal (2 *
-        (bound / (n : ℝ) + weight / (2 * (n : ℝ) * (n - 1 : ℕ))) *
+        (bound / n + weight / (2 * n * (n - 1 : ℕ))) *
         (weight * ∫ z : P × (E × E), G z.1 z.2 ^ 2 ∂π.prod (μ.prod μ)) + 2 * d) := by
-  let a : ℝ := bound / (n : ℝ) + weight / (2 * (n : ℝ) * (n - 1 : ℕ))
-  let b : P → ℝ := fun p => weight * ∫ z, G p z ^ 2 ∂μ.prod μ
-  have hb : Integrable b π := hG.integrable_sq.integral_prod_left.const_mul weight
+  let a  := bound / (n : ℝ) + weight / (2 * (n : ℝ) * (n - 1 : ℕ))
+  let b  := fun p => weight * ∫ z, G p z ^ 2 ∂μ.prod μ
+  have hb  := hG.integrable_sq.integral_prod_left.const_mul weight
   have hb0 : ∀ᵐ p ∂π, 0 ≤ b p := Filter.Eventually.of_forall (fun p =>
     mul_nonneg hw.le (integral_nonneg (fun _ => sq_nonneg _)))
-  have hbn : 0 ≤ bound := (mul_nonneg hw.le hcap).trans hbound
+  have hbn  := (mul_nonneg hw.le hcap).trans hbound
   have ha : 0 ≤ a := by dsimp [a]; positivity
   have hc : ∀ᵐ p ∂π, (∫⁻ x, ENNReal.ofReal
       ((fieldPairAverage n weight G X (p, x) - fieldPairMean (μ := μ) weight G p) ^ 2) ∂ν) ≤

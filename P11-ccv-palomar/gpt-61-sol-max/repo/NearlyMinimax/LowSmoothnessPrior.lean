@@ -21,13 +21,16 @@ open scoped ENNReal BigOperators
 
 namespace NearlyMinimax
 
-theorem ternaryMass_measurable_comp {α : Type*} [MeasurableSpace α]
+section
+variable {α : Type*}
+
+theorem ternaryMass_measurable_comp  [MeasurableSpace α]
     (a V : ℝ) (F : α → ℝ) (hF : Measurable F) (y : Fin 3) :
     Measurable (fun x => ternaryMass a (F x) V y) := by
   fin_cases y <;> simp [ternaryMass] <;> fun_prop
 
 /-- The errors have actual values `-a-f(x)`, `-f(x)`, and `a-f(x)`. -/
-def ternaryErrorKernel {α : Type*} [MeasurableSpace α]
+def ternaryErrorKernel  [MeasurableSpace α]
     (a V : ℝ) (F : α → ℝ) (hF : Measurable F) : Kernel α ℝ where
   toFun x := ∑ y : Fin 3, ENNReal.ofReal (ternaryMass a (F x) V y) •
     Measure.dirac (ternaryValue a y - F x)
@@ -41,14 +44,15 @@ def ternaryErrorKernel {α : Type*} [MeasurableSpace α]
     exact (ENNReal.measurable_ofReal.comp (ternaryMass_measurable_comp a V F hF y)).mul
       (measurable_const.indicator (((measurable_const.sub hF) hs)))
 
-theorem ternaryErrorKernel_apply {α : Type*} [MeasurableSpace α]
-    (a V : ℝ) (F : α → ℝ) (hF : Measurable F) (x : α) :
+section
+variable [MeasurableSpace α] (a V : ℝ) (F : α → ℝ) (hF : Measurable F)
+
+theorem ternaryErrorKernel_apply   (x : α) :
     ternaryErrorKernel a V F hF x = ∑ y : Fin 3,
       ENNReal.ofReal (ternaryMass a (F x) V y) •
         Measure.dirac (ternaryValue a y - F x) := rfl
 
-theorem ternaryErrorKernel_markov {α : Type*} [MeasurableSpace α]
-    (a V : ℝ) (F : α → ℝ) (hF : Measurable F) (ha : a ≠ 0)
+theorem ternaryErrorKernel_markov   (ha : a ≠ 0)
     (hp : ∀ x y, 0 ≤ ternaryMass a (F x) V y) :
     IsMarkovKernel (ternaryErrorKernel a V F hF) := by
   constructor
@@ -59,28 +63,31 @@ theorem ternaryErrorKernel_markov {α : Type*} [MeasurableSpace α]
   rw [← ENNReal.ofReal_sum_of_nonneg (fun y _ => hp x y), ternary_normalized a (F x) V ha]
   simp
 
-theorem ternary_error_integrable {α : Type*} [MeasurableSpace α]
-    (a V : ℝ) (F : α → ℝ) (hF : Measurable F) (x : α) (G : ℝ → ℝ) :
+section
+variable (x : α)
+
+theorem ternary_error_integrable    (G : ℝ → ℝ) :
     Integrable G (ternaryErrorKernel a V F hF x) := by
   rw [ternaryErrorKernel_apply]
   apply integrable_finsetSum_measure.mpr
   intro y _
   exact (integrable_dirac (by simp)).smul_measure ENNReal.ofReal_ne_top
 
-theorem ternary_error_integral {α : Type*} [MeasurableSpace α]
-    (a V : ℝ) (F : α → ℝ) (hF : Measurable F) (x : α)
+theorem ternary_error_integral   
     (hp : ∀ y, 0 ≤ ternaryMass a (F x) V y) (G : ℝ → ℝ) :
     (∫ u, G u ∂ternaryErrorKernel a V F hF x) =
       ∑ y, ternaryMass a (F x) V y * G (ternaryValue a y - F x) := by
   rw [ternaryErrorKernel_apply, integral_finsetSum_measure]
-  · simp only [integral_smul_measure, integral_dirac, smul_eq_mul,
-      ENNReal.toReal_ofReal (hp _)]
+  · simp_all
   · intro y _
     exact (integrable_dirac (by simp)).smul_measure ENNReal.ofReal_ne_top
 
-theorem ternary_error_mean {α : Type*} [MeasurableSpace α]
-    (a V : ℝ) (F : α → ℝ) (hF : Measurable F) (x : α)
-    (ha : a ≠ 0) (hp : ∀ y, 0 ≤ ternaryMass a (F x) V y) :
+section
+variable (ha : a ≠ 0) (hp : ∀ y, 0 ≤ ternaryMass a (F x) V y)
+include ha hp
+
+theorem ternary_error_mean   
+     :
     (∫ u, u ∂ternaryErrorKernel a V F hF x) = 0 := by
   rw [ternary_error_integral a V F hF x hp]
   simp_rw [mul_sub]
@@ -90,24 +97,33 @@ theorem ternary_error_mean {α : Type*} [MeasurableSpace α]
   rw [hm, ternary_normalized a (F x) V ha]
   ring
 
-theorem ternary_error_variance {α : Type*} [MeasurableSpace α]
-    (a V : ℝ) (F : α → ℝ) (hF : Measurable F) (x : α)
-    (ha : a ≠ 0) (hp : ∀ y, 0 ≤ ternaryMass a (F x) V y) :
+theorem ternary_error_variance   
+     :
     (∫ u, u ^ 2 ∂ternaryErrorKernel a V F hF x) = V := by
   rw [ternary_error_integral a V F hF x hp]
   exact ternary_variance a (F x) V ha
 
-theorem ternary_error_fourth {α : Type*} [MeasurableSpace α]
-    (a V : ℝ) (F : α → ℝ) (hF : Measurable F) (x : α)
-    (ha : a ≠ 0) (hp : ∀ y, 0 ≤ ternaryMass a (F x) V y) :
+theorem ternary_error_fourth   
+     :
     (∫ u, u ^ 4 ∂ternaryErrorKernel a V F hF x) =
       a ^ 2 * V + (6 * V - 3 * a ^ 2) * (F x) ^ 2 + 3 * (F x) ^ 4 := by
   rw [ternary_error_integral a V F hF x hp]
   exact ternary_fourth_central_moment a (F x) V ha
+end
+
+end
+
+end
+
+end
+
+
+section
+variable {d : ℕ}
 
 /-- Global bounds imply the paper's exact order-zero norm bound on any domain. -/
-theorem holderNorm_order_zero_of_global_bounds {d : ℕ} (U : Set (Covariate d))
-    (F : Covariate d → ℝ) (α M H : ℝ) (hM : 0 ≤ M) (hH : 0 ≤ H)
+theorem holderNorm_order_zero_of_global_bounds  U
+    (F : Covariate d → ℝ) α M H (hM : 0 ≤ M) (hH : 0 ≤ H)
     (hsup : ∀ x, |F x| ≤ M)
     (hmod : ∀ x y, |F x - F y| ≤ H * euclideanNorm (x - y) ^ α) :
     holderNorm U F 0 α ≤ ENNReal.ofReal (M + H) := by
@@ -131,7 +147,7 @@ theorem holderNorm_order_zero_of_global_bounds {d : ℕ} (U : Set (Covariate d))
   exact add_le_add hs hh
 
 /-- The genuine original-model parameter with uniform design and ternary errors. -/
-def uniformTernaryParameter {d : ℕ} (a V : ℝ) (F : Covariate d → ℝ)
+def uniformTernaryParameter  (a V : ℝ) (F : Covariate d → ℝ)
     (hF : Measurable F) (ha : a ≠ 0) (hp : ∀ x y, 0 ≤ ternaryMass a (F x) V y) :
     RegressionParameter d := {
   density := fun _ => 1
@@ -142,19 +158,18 @@ def uniformTernaryParameter {d : ℕ} (a V : ℝ) (F : Covariate d → ℝ)
 
 /-- Order-zero legality uses global bounds, so it is independent of the
 size or shape of the model's prescribed extension domain. -/
-theorem uniformTernaryParameter_admissible_order_zero {d : ℕ} (C : ModelConstants d)
-    (a V : ℝ) (F : Covariate d → ℝ) (hF : Continuous F) (horder : C.order = 0)
-    (ha : a ≠ 0) (hp : ∀ x y, 0 ≤ ternaryMass a (F x) V y)
+theorem uniformTernaryParameter_admissible_order_zero  (C : ModelConstants d)
+    a V F (hF : Continuous F) (horder : C.order = 0)
+    ha hp
     (hVlo : C.varianceLower ≤ V) (hVhi : V ≤ C.varianceUpper)
-    (M H : ℝ) (hM : 0 ≤ M) (hH : 0 ≤ H) (hbudget : M + H ≤ C.holderBound)
+    M H (hM : 0 ≤ M) (hH : 0 ≤ H) (hbudget : M + H ≤ C.holderBound)
     (hsup : ∀ x, |F x| ≤ M)
     (hmod : ∀ x y, |F x - F y| ≤ H * euclideanNorm (x - y) ^ C.smoothness)
     (hfourth : ∀ x, a ^ 2 * V + (6 * V - 3 * a ^ 2) * (F x) ^ 2 +
       3 * (F x) ^ 4 ≤ C.fourthBound) :
     Admissible C (uniformTernaryParameter a V F hF.measurable ha hp) := by
   refine ⟨measurable_const, hF.measurable, ?_, ?_, ?_, hVlo, hVhi, ?_⟩
-  · exact Filter.Eventually.of_forall (fun _ =>
-      ⟨C.densityLower_lt_one.le, C.one_lt_densityUpper.le⟩)
+  · solve_by_elim [Filter.Eventually.of_forall, C.densityLower_lt_one.le, C.one_lt_densityUpper.le]
   · simp only [uniformTernaryParameter, ENNReal.ofReal_one, lintegral_const, one_mul]
     exact cubeVolume_univ d
   · refine ⟨F, fun _ _ => rfl, ?_, ?_⟩
@@ -172,6 +187,8 @@ theorem uniformTernaryParameter_admissible_order_zero {d : ℕ} (C : ModelConsta
       ternary_error_mean a V F hF.measurable x ha (hp x),
       ternary_error_variance a V F hF.measurable x ha (hp x), ?_⟩
     exact (ternary_error_fourth a V F hF.measurable x ha (hp x)).trans_le (hfourth x)
+end
+
 
 /-- Uniform interior margins for nonzero regression fields and the variance path. -/
 structure LowSmoothnessTernaryConstants {d : ℕ} (C : ModelConstants d) where
@@ -187,7 +204,7 @@ structure LowSmoothnessTernaryConstants {d : ℕ} (C : ModelConstants d) where
       (∀ y, c ≤ ternaryMass a f V y) ∧
       ternaryExpectation a f V (fun y => (y - f) ^ 4) ≤ C.fourthBound
 
-theorem lowSmoothnessTernaryConstants_exists {d : ℕ} (C : ModelConstants d) :
+theorem lowSmoothnessTernaryConstants_exists {d } (C : ModelConstants d) :
     Nonempty (LowSmoothnessTernaryConstants C) := by
   obtain ⟨P⟩ := parametricTernaryConstants_exists C
   let v := (P.l + P.r) / 2
@@ -206,30 +223,32 @@ namespace LowSmoothnessTernaryConstants
 
 variable {d : ℕ} {C : ModelConstants d} (P : LowSmoothnessTernaryConstants C)
 
-def variancePath (η t : ℝ) : ℝ := P.v - η ^ 2 * t
+def variancePath η t  := P.v - η ^ 2 * t
 
-theorem variance_path_distance (η t : ℝ) (ht : t ∈ Icc (0 : ℝ) 1) :
+theorem variance_path_distance η t (ht : t ∈ Icc 0 1) :
     |P.variancePath η t - P.v| ≤ η ^ 2 := by
   simp only [variancePath, sub_sub_cancel_left, abs_neg, abs_mul, abs_of_nonneg (sq_nonneg η),
     abs_of_nonneg ht.1]
   simpa only [mul_one] using mul_le_mul_of_nonneg_left ht.2 (sq_nonneg η)
 
-theorem path_legality (η t f : ℝ) (ht : t ∈ Icc (0 : ℝ) 1)
+theorem path_legality η t f (ht : t ∈ Icc 0 1)
     (hη : η ^ 2 ≤ P.ρ) (hf : |f| ≤ P.ρ) :
     C.varianceLower < P.variancePath η t ∧ P.variancePath η t < C.varianceUpper ∧
       (∀ y, P.c ≤ ternaryMass P.a f (P.variancePath η t) y) ∧
       ternaryExpectation P.a f (P.variancePath η t) (fun y => (y - f) ^ 4) ≤ C.fourthBound :=
   P.legal f (P.variancePath η t) hf ((P.variance_path_distance η t ht).trans hη)
 
+section
+variable (F : Covariate d → ℝ) (hF : Continuous F) (η t : ℝ) (ht : t ∈ Icc (0 : ℝ) 1) (hη : η ^ 2 ≤ P.ρ) (hf : ∀ x, |F x| ≤ P.ρ)
+include hF ht hη hf
+
 /-- A canonical actual-model parameter along the variance path. -/
-def pathParameter (F : Covariate d → ℝ) (hF : Continuous F) (η t : ℝ)
-    (ht : t ∈ Icc (0 : ℝ) 1) (hη : η ^ 2 ≤ P.ρ) (hf : ∀ x, |F x| ≤ P.ρ) :
+def pathParameter  :
     RegressionParameter d :=
   uniformTernaryParameter P.a (P.variancePath η t) F hF.measurable P.a_pos.ne'
     (fun x y => P.c_pos.le.trans ((P.path_legality η t (F x) ht hη (hf x)).2.2.1 y))
 
-theorem pathParameter_admissible_order_zero (F : Covariate d → ℝ) (hF : Continuous F)
-    (η t : ℝ) (ht : t ∈ Icc (0 : ℝ) 1) (hη : η ^ 2 ≤ P.ρ) (hf : ∀ x, |F x| ≤ P.ρ)
+theorem pathParameter_admissible_order_zero 
     (horder : C.order = 0) (M H : ℝ) (hM : 0 ≤ M) (hH : 0 ≤ H)
     (hbudget : M + H ≤ C.holderBound) (hsup : ∀ x, |F x| ≤ M)
     (hmod : ∀ x y, |F x - F y| ≤ H * euclideanNorm (x - y) ^ C.smoothness) :
@@ -241,6 +260,8 @@ theorem pathParameter_admissible_order_zero (F : Covariate d → ℝ) (hF : Cont
   have hf4 := (hlegal x).2.2.2
   rw [ternary_fourth_central_moment P.a (F x) (P.variancePath η t) P.a_pos.ne'] at hf4
   exact hf4
+end
+
 
 end LowSmoothnessTernaryConstants
 

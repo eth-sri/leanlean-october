@@ -17,9 +17,9 @@ set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1000000
 attribute [local instance] Classical.propDecidable
 
-theorem completeSourceHigherGeometryEnvelope_integral_eq {d r D : ℕ} [NeZero d]
-    (hd : 5 ≤ d) (hr : 2 ≤ r) (aD bD c0 ell N mu : ℝ) (M R q : ℕ)
-    (C a rho eta : ℝ) (hell : 1 ≤ ell) (hellN : ell ≤ N) :
+theorem completeSourceHigherGeometryEnvelope_integral_eq {d r D } [NeZero d]
+    (hd : 5 ≤ d) (hr : 2 ≤ r) aD bD c0 ell N mu M R q
+    C a rho eta (hell : 1 ≤ ell) (hellN : ell ≤ N) :
     (∫ U, completeSourceHigherGeometryEnvelope (d := d) (n := r) (D := D)
       aD bD c0 ell N mu M R q C a rho eta U ∂fullSpatialPatchDesign d r) =
       4*((∫ U, cardinalGeometryEnvelope (d := d) (n := r) (F := D) q (bD-(M : ℝ)⁻¹) C a rho eta
@@ -55,8 +55,8 @@ theorem completeSourceHigherGeometryEnvelope_integral_eq {d r D : ℕ} [NeZero d
     rw [integral_const_mul,integral_add hA hF]
 
 theorem finite_complete_higher_geometry_energy_le {d D : ℕ} [NeZero d]
-    (hd : 5 ≤ d) (hD : 3 ≤ D) (aD bD c0 K ell N mu : ℝ) (M R q : ℕ)
-    (C a rho eta Cs Eord : ℝ) (haD : 0 < aD) (ha : 0 < a)
+    (hd : 5 ≤ d) (hD : 3 ≤ D) aD bD c0 K ell N mu (M R q : ℕ)
+    C a rho eta Cs Eord (haD : 0 < aD) (ha : 0 < a)
     (hshrink : aD+(M : ℝ)⁻¹ < bD-(M : ℝ)⁻¹)
     (htau : exteriorTau (((aD+(M : ℝ)⁻¹)+(bD-(M : ℝ)⁻¹))/
       ((bD-(M : ℝ)⁻¹)-(aD+(M : ℝ)⁻¹))) ≤ c0)
@@ -83,7 +83,7 @@ theorem finite_complete_higher_geometry_energy_le {d D : ℕ} [NeZero d]
   have hNpos : 0 < N := lt_of_lt_of_le zero_lt_one hN
   have had : aD ≤ aD+(M : ℝ)⁻¹ := le_add_of_nonneg_right
     (inv_nonneg.mpr (Nat.cast_nonneg M))
-  have hbd : bD-(M : ℝ)⁻¹ ≤ bD := by linarith [inv_nonneg.mpr (Nat.cast_nonneg M : (0 : ℝ) ≤ M)]
+  have hbd : bD-(M : ℝ)⁻¹ ≤ bD := by bound
   have hbd0 : 0 ≤ bD-(M : ℝ)⁻¹ := (haD.trans_le had).le.trans hshrink.le
   have hA := finite_cardinal_geometry_budget_le (D := D) (F := D) hd hbd0 hbd q C a rho eta Cs ha hCs hN hmu hmu1 hmuH hTaylor
   have hP := finite_fine_pair_alias_geometry_budget_le (D := D) hd haD had hbd hshrink htau hc0 hK M q
@@ -131,7 +131,6 @@ theorem finite_complete_higher_geometry_energy_le {d D : ℕ} [NeZero d]
     simp_rw [halg,mul_ite,mul_zero]
     rw [←Finset.mul_sum]
     simp only [Finset.sum_add_distrib]
-  rw [heq]
-  exact mul_le_mul_of_nonneg_left (add_le_add (add_le_add (add_le_add hA hO) hP) hFfinal) (by norm_num)
+  linarith
 
 end NearlyMinimax

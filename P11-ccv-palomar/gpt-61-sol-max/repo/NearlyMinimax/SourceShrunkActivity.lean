@@ -16,28 +16,26 @@ set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 800000
 
 theorem sourceRows_shrunk_activity_bound {d k D M q : ℕ} [NeZero d] (hd : 0 < d) (hD : 1 ≤ D)
-    (a b C lam N μ c0 q1 q2 : ℝ) (ha : 0 < a)
+    a b C lam N μ c0 q1 q2 (ha : 0 < a)
     (hshrink : a+(M : ℝ)⁻¹ < b-(M : ℝ)⁻¹) (htau : shrunkDensityExponent a b M ≤ c0)
     (hc0 : 1 ≤ c0) (hN : 1 ≤ N) (hμ : 0 ≤ μ) (hbase1 : μ*(1+Real.log N) ≤ 1)
-    (hDN : (D : ℝ)*Real.exp (c0*(D : ℝ)) ≤ N)
+    (hDN : D*Real.exp (c0*D) ≤ N)
     (hq1 : q1 = higherBandGeometricRatio d D (higherBandSourceCact d a b c0 lam)
       (1+Real.log N) (μ*(1+Real.log N)) 1)
     (hq2 : q2 = higherBandGeometricRatio d D (higherBandSourceCact d a b c0 lam)
       (1+Real.log N) (μ*(1+Real.log N)) 2)
-    (hq1h : q1 ≤ 1/2) (hq21 : q2 ≤ q1) (hsmall : (D : ℝ)^2*q1 ≤ 1) :
+    (hq1h : q1 ≤ 1/2) (hq21 : q2 ≤ q1) (hsmall : D^2*q1 ≤ 1) :
     highRowTotalMass (sourceRowData d k D M q (a+(M : ℝ)⁻¹) (b-(M : ℝ)⁻¹) C lam
-      (N*Real.exp (-c0*(D : ℝ))) N μ).rowMass ≤
+      (N*Real.exp (-c0*D)) N μ).rowMass ≤
       sourceActivityConstant d q C (uniformOrdinaryDensityActivityBase a b c0) lam *
-        N^2 * Real.exp (shrunkDensityExponent a b M*(M : ℝ)) := by
+        N^2 * Real.exp (shrunkDensityExponent a b M*M) := by
   have ht : 0 ≤ (M : ℝ)⁻¹ := inv_nonneg.mpr (Nat.cast_nonneg M)
   have hap : 0 < a+(M : ℝ)⁻¹ := by linarith
   have hab : a < b := by linarith
   have hc00 : 0 ≤ c0 := by linarith
   have hd0 : (0 : ℝ) ≤ D := Nat.cast_nonneg D
   have hN0 : 0 ≤ N := by linarith
-  have hB : 0 ≤ uniformOrdinaryDensityActivityBase a b c0 := by
-    unfold uniformOrdinaryDensityActivityBase
-    exact mul_nonneg (Real.exp_pos _).le (div_nonneg (sub_pos.mpr hab).le ha.le)
+  have hB : 0 ≤ uniformOrdinaryDensityActivityBase a b c0 := mul_nonneg (Real.exp_pos _).le (div_nonneg (sub_pos.mpr hab).le ha.le)
   have hbB := ordinaryDensityActivityBase_shrunk_le ha ht hshrink htau
   have he : exteriorTau (((a+(M : ℝ)⁻¹)+(b-(M : ℝ)⁻¹))/((b-(M : ℝ)⁻¹)-(a+(M : ℝ)⁻¹))) =
       shrunkDensityExponent a b M := by

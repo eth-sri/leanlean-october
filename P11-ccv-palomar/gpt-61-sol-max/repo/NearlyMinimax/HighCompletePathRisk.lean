@@ -26,8 +26,8 @@ attribute [local instance] Classical.propDecidable
 attribute [local irreducible] highUnionSourceDensity highUnionSourceRegression highUnionSourceState
   historyMarkedPrior massPowerNormalizer highRawDensityMass highMarginalRealScore highRealSampleKernel
 
-abbrev HighCompleteSourceHistory {d : ℕ} (C : ModelConstants d) (k D M q : ℕ)
-    [NeZero k] [LinearOrder (HighWindowLabels d k)] (Cfr lam ell N mu : ℝ) :=
+abbrev HighCompleteSourceHistory {d } (C : ModelConstants d) k D M q
+    [NeZero k] [LinearOrder (HighWindowLabels d k)] Cfr lam ell N mu :=
   HistoryMarked (fun i j => j ∈ highNeighborLabels d k i)
     (HighUnionMark (SourceRowMark d D M q (C.densityLower+1/(M : ℝ))
       (C.densityUpper-1/(M : ℝ)) Cfr lam ell N mu))

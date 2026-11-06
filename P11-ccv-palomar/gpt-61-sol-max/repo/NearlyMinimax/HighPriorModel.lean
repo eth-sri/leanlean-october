@@ -14,7 +14,13 @@ namespace NearlyMinimax
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 600000
 
-theorem high_raw_mass_lower {d : ℕ} (C : ModelConstants d) (M cm m : ℝ)
+section
+variable {d : ℕ}
+
+section
+variable (C : ModelConstants d)
+
+theorem high_raw_mass_lower   M cm m
     (hM : 2 ≤ M) (hcm : 0 ≤ cm) (hcmU : cm ≤ 1 / C.densityUpper)
     (hm : |m - 1| ≤ cm / M) : 1 / 2 ≤ m := by
   have hU : 0 < C.densityUpper := lt_trans (by norm_num) C.one_lt_densityUpper
@@ -28,8 +34,8 @@ theorem high_raw_mass_lower {d : ℕ} (C : ModelConstants d) (M cm m : ℝ)
   have := (abs_le.mp hm).1
   linarith
 
-theorem high_normalized_density_interval {d : ℕ} (C : ModelConstants d)
-    (M cm m p : ℝ) (hM : 2 ≤ M) (hcm : 0 ≤ cm)
+theorem high_normalized_density_interval  
+    M cm m p (hM : 2 ≤ M) (hcm : 0 ≤ cm)
     (hcmU : cm ≤ 1 / C.densityUpper) (hm : |m - 1| ≤ cm / M)
     (hp : C.densityLower + 1 / M ≤ p ∧ p ≤ C.densityUpper - 1 / M) :
     C.densityLower ≤ p / m ∧ p / m ≤ C.densityUpper := by
@@ -40,9 +46,7 @@ theorem high_normalized_density_interval {d : ℕ} (C : ModelConstants d)
     have h := (le_div_iff₀ hU).mp hcmU
     nlinarith
   have hLcm : C.densityLower * cm ≤ 1 := by
-    have hLU : C.densityLower ≤ C.densityUpper :=
-      C.densityLower_lt_one.le.trans C.one_lt_densityUpper.le
-    exact (mul_le_mul_of_nonneg_right hLU hcm).trans hcmprod
+    nlinarith [C.densityLower_lt_one.le.trans C.one_lt_densityUpper.le     ]
   have hmass := abs_le.mp hm
   have hmulU : C.densityUpper * (cm / M) ≤ 1 / M := by
     have h := div_le_div_of_nonneg_right hcmprod hM0.le
@@ -55,18 +59,26 @@ theorem high_normalized_density_interval {d : ℕ} (C : ModelConstants d)
     nlinarith [mul_le_mul_of_nonneg_left hmass.2 C.densityLower_pos.le]
   · apply (div_le_iff₀ hm0).mpr
     nlinarith [mul_le_mul_of_nonneg_left hmass.1 hU.le]
+end
 
-def highRawDensityMass {d : ℕ} (p : Covariate d → ℝ) : ℝ :=
+
+section
+variable (p : Covariate d → ℝ)
+include p
+
+def highRawDensityMass    :=
   ∫ x, p x ∂cubeVolume d
 
-def highNormalizedDensity {d : ℕ} (p : Covariate d → ℝ) (x : Covariate d) : ℝ :=
+def highNormalizedDensity   x  :=
   p x / highRawDensityMass p
 
-theorem highNormalizedDensity_measurable {d : ℕ} (p : Covariate d → ℝ)
+theorem highNormalizedDensity_measurable  
     (hp : Measurable p) : Measurable (highNormalizedDensity p) := hp.div_const _
+end
 
-theorem highRawDensity_integrable {d : ℕ} (C : ModelConstants d) (M : ℝ)
-    (hM : 0 < M) (p : Covariate d → ℝ) (hp : Measurable p)
+
+theorem highRawDensity_integrable  (C : ModelConstants d) M
+    (hM : 0 < M) p (hp : Measurable p)
     (hb : ∀ᵐ x ∂cubeVolume d,
       C.densityLower + 1 / M ≤ p x ∧ p x ≤ C.densityUpper - 1 / M) :
     Integrable p (cubeVolume d) := by
@@ -81,7 +93,7 @@ theorem highRawDensity_integrable {d : ℕ} (C : ModelConstants d) (M : ℝ)
     linarith [one_div_pos.mpr hM]
   exact (integrable_const C.densityUpper).mono' hp.aestronglyMeasurable hbound
 
-theorem highNormalizedDensity_normalized {d : ℕ} (p : Covariate d → ℝ)
+theorem highNormalizedDensity_normalized  p
     (hp : Integrable p (cubeVolume d)) (hp0 : 0 ≤ᵐ[cubeVolume d] p)
     (hm : 0 < highRawDensityMass p) :
     (∫⁻ x, ENNReal.ofReal (highNormalizedDensity p x) ∂cubeVolume d) = 1 := by
@@ -92,9 +104,9 @@ theorem highNormalizedDensity_normalized {d : ℕ} (p : Covariate d → ℝ)
   change ENNReal.ofReal (highRawDensityMass p / highRawDensityMass p) = 1
   simp only [div_self hm.ne', ENNReal.ofReal_one]
 
-theorem highNormalizedDensity_bounds {d : ℕ} (C : ModelConstants d) (M cm : ℝ)
+theorem highNormalizedDensity_bounds  (C : ModelConstants d) M cm
     (hM : 2 ≤ M) (hcm : 0 ≤ cm) (hcmU : cm ≤ 1 / C.densityUpper)
-    (p : Covariate d → ℝ)
+    p
     (hb : ∀ᵐ x ∂cubeVolume d,
       C.densityLower + 1 / M ≤ p x ∧ p x ≤ C.densityUpper - 1 / M)
     (hm : |highRawDensityMass p - 1| ≤ cm / M) :
@@ -106,7 +118,7 @@ theorem highNormalizedDensity_bounds {d : ℕ} (C : ModelConstants d) (M cm : �
     hM hcm hcmU hm hx
 
 /-- Actual ternary regression model with a normalized, nonuniform design. -/
-def normalizedDensityTernaryParameter {d : ℕ} (p F : Covariate d → ℝ)
+def normalizedDensityTernaryParameter  (p F : Covariate d → ℝ)
     (a V : ℝ) (hF : Measurable F) (ha : a ≠ 0)
     (hp : ∀ x y, 0 ≤ ternaryMass a (F x) V y) : RegressionParameter d where
   density := highNormalizedDensity p
@@ -117,14 +129,14 @@ def normalizedDensityTernaryParameter {d : ℕ} (p F : Covariate d → ℝ)
 
 /-- Pointwise mixed-derivative and Euclidean modulus bounds imply the
 original sum-over-distinct-multi-indices norm on any extension domain. -/
-theorem holderNorm_of_global_mixed_bounds {d : ℕ} (U : Set (Covariate d))
-    (F : Covariate d → ℝ) (ℓ : ℕ) (α B L : ℝ) (hB : 0 ≤ B) (hL : 0 ≤ L)
+theorem holderNorm_of_global_mixed_bounds  U
+    F ℓ α B L (hB : 0 ≤ B) (hL : 0 ≤ L)
     (hsup : ∀ γ : Fin d → Fin (ℓ + 1), (∑ i, (γ i).val) ≤ ℓ →
       ∀ x, |multiPartial F (fun i => (γ i).val) x| ≤ B)
     (hmod : ∀ γ : Fin d → Fin (ℓ + 1), (∑ i, (γ i).val) = ℓ → ∀ x y,
       |multiPartial F (fun i => (γ i).val) x - multiPartial F (fun i => (γ i).val) y| ≤
         L * euclideanNorm (x - y) ^ α) :
-    holderNorm U F ℓ α ≤ ENNReal.ofReal (((ℓ + 1 : ℕ) : ℝ) ^ d * B + L) := by
+    holderNorm U F ℓ α ≤ ENNReal.ofReal (((ℓ + 1 : ℕ)) ^ d * B + L) := by
   have hs (γ : Fin d → Fin (ℓ + 1)) (hγ : (∑ i, (γ i).val) ≤ ℓ) :
       derivativeSup U (multiPartial F (fun i => (γ i).val)) ≤ ENNReal.ofReal B := by
     apply iSup_le
@@ -168,5 +180,7 @@ theorem holderNorm_of_global_mixed_bounds {d : ℕ} (U : Set (Covariate d))
   unfold holderNorm
   rw [ENNReal.ofReal_add (mul_nonneg (by positivity) hB) hL]
   exact add_le_add hsum hsem
+end
+
 
 end NearlyMinimax

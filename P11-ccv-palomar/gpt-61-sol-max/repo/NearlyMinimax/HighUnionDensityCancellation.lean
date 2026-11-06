@@ -42,7 +42,7 @@ theorem highUnionSourceMass_append_indicator_zero_of_density_projection
         (fun {_ _} h => highNeighborLabels_symmetric d k _ _ h) j (h,e))) *
       highUnionActivation R (highCenterMix C) e ∂highUnionLaw R (highCenterMix C)) = 0 := by
   letI : StandardBorelSpace (HighUnionMark E) := highUnionMark_standardBorel
-  let Fobs : HighUnionMark E → ℝ := fun e => S.indicator (fun _ : ℝ => (1 : ℝ))
+  let Fobs  := fun e => S.indicator (fun _ : ℝ => (1 : ℝ))
     (highUnionSourceMass C R (historyMarkedAppend
       (fun i j => j ∈ highNeighborLabels d k i)
       (fun {_ _} h => highNeighborLabels_symmetric d k _ _ h) j (h,e)))
@@ -69,7 +69,7 @@ theorem highUnionSourceMass_append_indicator_zero_of_density_projection
         R.rowIntercept i (lift i (project i e)) else _)
     rw [hSlope j i e x,hIntercept i e]
   have hrow (i : I) : (∫ e, R.rowActivation i e * Fobs (Sum.inl ⟨i,e⟩) ∂(R.rowLaw i)) = 0 := by
-    let Hi : D i → ℝ := fun z => Fobs (Sum.inl ⟨i,lift i z⟩)
+    let Hi  := fun z => Fobs (Sum.inl ⟨i,lift i z⟩)
     have hHi : Measurable Hi := hF.comp
       (measurable_inl.comp ((rowSigmaMk_measurable i).comp (hlift i)))
     have hf (e : E i) : Fobs (Sum.inl ⟨i,e⟩) = Hi (project i e) :=

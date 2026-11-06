@@ -13,7 +13,7 @@ open Set Matrix
 open scoped BigOperators
 namespace NearlyMinimax
 
-theorem anchoredIndex_nonempty_of_one_lt_smoothness {d : ℕ} (C : ModelConstants d)
+theorem anchoredIndex_nonempty_of_one_lt_smoothness {d } (C : ModelConstants d)
     (hs : 1 < C.smoothness) : Nonempty (AnchoredIndex d C.order) := by
   have horder : 0 < C.order := by
     by_contra h

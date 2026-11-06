@@ -23,16 +23,18 @@ attribute [local instance] Classical.propDecidable
 section FinitePacket
 variable {ι E : Type*} [Fintype ι] [DecidableEq ι] [Fintype E]
 
-theorem high_response_ratio_depends_on_support {n : ℕ} (a V η : ℝ)
-    (g w : Fin n → ℝ) (φ : Fin n → ι → ℝ) (c v : ι → ℝ)
+section
+variable {n : ℕ} (a V η : ℝ) (g w : Fin n → ℝ) (φ : Fin n → ι → ℝ)
+
+theorem high_response_ratio_depends_on_support  c v
     (S : Finset (Fin n)) (hw : ∀ i, i ∉ S → w i = 0)
-    (y y' : Fin n → Fin 3) (hyy : ∀ i ∈ S, y i = y' i)
+    y y' (hyy : ∀ i ∈ S, y i = y' i)
     (hp : ∀ i b, 0 < ternaryMass a (coefficientRegression η g w φ c i) V b) :
     highResponseProduct a V η g w φ v y / highResponseProduct a V η g w φ c y =
       highResponseProduct a V η g w φ v y' / highResponseProduct a V η g w φ c y' := by
-  let outside (z : Fin n → Fin 3) : ℝ :=
+  let outside (z : Fin n → Fin 3)  :=
     ∏ i ∈ (Finset.univ : Finset (Fin n)) \ S, ternaryMass a (g i) V (z i)
-  let inside (z : Fin n → Fin 3) (u : ι → ℝ) : ℝ :=
+  let inside (z : Fin n → Fin 3) (u : ι → ℝ)  :=
     ∏ i ∈ S, ternaryMass a (coefficientRegression η g w φ u i) V (z i)
   have hfactor (z : Fin n → Fin 3) (u : ι → ℝ) :
       highResponseProduct a V η g w φ u z = outside z * inside z u := by
@@ -57,9 +59,8 @@ theorem high_response_ratio_depends_on_support {n : ℕ} (a V η : ℝ)
   rw [hfactor y v, hfactor y c, hfactor y' v, hfactor y' c, hs v, hs c]
   field_simp [hout y, hout y', hin y']
 
-theorem high_response_variance_ratio {n : ℕ} (a V η : ℝ)
-    (g w : Fin n → ℝ) (φ : Fin n → ι → ℝ) (c : ι → ℝ)
-    (y : Fin n → Fin 3) (i : Fin n)
+theorem high_response_variance_ratio  c
+    y i
     (hp : ∀ k, 0 < ternaryMass a (coefficientRegression η g w φ c k) V (y k)) :
     highResponseVarianceTerm a V η g w φ c y i / highResponseProduct a V η g w φ c y =
       ternaryVarianceDerivative a (y i) /
@@ -70,14 +71,16 @@ theorem high_response_variance_ratio {n : ℕ} (a V η : ℝ)
       ternaryMass a (coefficientRegression η g w φ c k) V (y k)) ≠ 0 :=
     ne_of_gt (Finset.prod_pos (fun k _ => hp k))
   exact mul_div_mul_right _ _ hrest
+end
+
 
 end FinitePacket
 
 /-- Product-law orthogonality from local response dependence and actual
 conditional centering. This helper is used below only with properties proved
 from the explicit signed density-response packet. -/
-theorem local_response_scores_orthogonal {n : ℕ}
-    (μ : Fin n → Measure (Fin 3)) [∀ i, IsProbabilityMeasure (μ i)]
+theorem local_response_scores_orthogonal {n }
+    μ [∀ i, IsProbabilityMeasure (μ i)]
     (r s : (Fin n → Fin 3) → ℝ) (S T : Finset (Fin n)) (hST : Disjoint S T)
     (hr : ∀ y y', (∀ i ∈ S, y i = y' i) → r y = r y')
     (hs : ∀ y y', (∀ i ∈ T, y i = y' i) → s y = s y')
@@ -109,13 +112,16 @@ variable {J ι E Z : Type*} [Fintype J] [Fintype ι] [DecidableEq ι]
 
 end Family
 
+section
+variable (d k n : ℕ)
+
 /-- The actual observation indices in a torus patch. -/
-def highPatchSampleIndices (d k n : ℕ) (j : HighWindowLabels d k)
-    (x : Fin n → Covariate d) : Finset (Fin n) :=
+def highPatchSampleIndices  j
+    (x : Fin n → Covariate d)  :=
   Finset.univ.filter (fun i => x i ∈ highTorusPatch d k j)
 
-theorem highPatchSampleIndices_disjoint (d k n : ℕ) [NeZero k]
-    (x : Fin n → Covariate d) (j l : HighWindowLabels d k)
+theorem highPatchSampleIndices_disjoint  [NeZero k]
+    x j l
     (hjl : l ∉ highNeighborLabels d k j) :
     Disjoint (highPatchSampleIndices d k n j x) (highPatchSampleIndices d k n l x) := by
   apply Finset.disjoint_left.mpr
@@ -123,12 +129,14 @@ theorem highPatchSampleIndices_disjoint (d k n : ℕ) [NeZero k]
   exact Set.disjoint_left.mp (highTorusPatch_disjoint_of_not_neighbor d k j l hjl)
     (Finset.mem_filter.mp hi).2 (Finset.mem_filter.mp hj).2
 
-theorem highPeriodicTensor_sample_zero_outside_patch (d k n : ℕ)
-    (j : HighWindowLabels d k) (x : Fin n → Covariate d) (i : Fin n)
+theorem highPeriodicTensor_sample_zero_outside_patch 
+    j x i
     (hi : i ∉ highPatchSampleIndices d k n j x) :
     highPeriodicTensor d k j (x i) = 0 := by
   by_contra h
   have hx := highPeriodicTensor_supported_patch d k j h
   exact hi (Finset.mem_filter.mpr ⟨Finset.mem_univ i, hx⟩)
+end
+
 
 end NearlyMinimax

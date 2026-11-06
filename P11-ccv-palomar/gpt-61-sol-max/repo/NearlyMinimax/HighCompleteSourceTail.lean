@@ -53,23 +53,19 @@ variable {d k D M q n : ℕ} [NeZero d] [NeZero k] [LinearOrder (HighWindowLabel
 local notation "R" => completeSourceRows C k D M q Cfr lam ℓ N μ
 include hD hq hM hCfr hℓ hℓN
 
-theorem completeSourceResponseAction_all_count_bound (hn : 1 ≤ n)
-    (j : HighWindowLabels d k)
-    (h : HistoryMarked (fun i j => j ∈ highNeighborLabels d k i)
+section
+variable (hn : 1 ≤ n) (j : HighWindowLabels d k) (h : HistoryMarked (fun i j => j ∈ highNeighborLabels d k i)
       (HighUnionMark (SourceRowMark d D M q (C.densityLower+1/(M : ℝ))
-        (C.densityUpper-1/(M : ℝ)) Cfr lam ℓ N μ)))
-    (a V η ρ : ℝ) (ha : 0 < a) (hη : 0 ≤ η) (hρ : 0 ≤ ρ) (hηρ : η ≤ ρ/2)
-    (x : Fin n → Covariate d) (g w : Fin n → ℝ)
-    (φ : Fin n → HighFrameIndex d D → ℝ)
-    (hg : ∀ u, |g u| ≤ ρ/2) (hw : ∀ u, |w u| ≤ 1)
-    (hφ : ∀ v : HighFrameIndex d D → ℝ, (∑ γ, |v γ|) ≤ Cfr⁻¹ →
-      ∀ u, |∑ γ, φ u γ*v γ| ≤ 1)
-    (hp : ∀ f : ℝ, |f| ≤ ρ → ∀ y, 0 ≤ ternaryMass a f V y) (y : Fin n → Fin 3) :
+        (C.densityUpper-1/(M : ℝ)) Cfr lam ℓ N μ))) (a V η ρ : ℝ) (ha : 0 < a) (hη : 0 ≤ η) (hρ : 0 ≤ ρ) (hηρ : η ≤ ρ/2) (x : Fin n → Covariate d) (g w : Fin n → ℝ) (φ : Fin n → HighFrameIndex d D → ℝ) (hg : ∀ u, |g u| ≤ ρ/2) (hw : ∀ u, |w u| ≤ 1) (hφ : ∀ v : HighFrameIndex d D → ℝ, (∑ γ, |v γ|) ≤ Cfr⁻¹ →
+      ∀ u, |∑ γ, φ u γ*v γ| ≤ 1) (hp : ∀ f : ℝ, |f| ≤ ρ → ∀ y, 0 ≤ ternaryMass a f V y)
+include hn ha hη hρ hηρ hg hw hφ hp
+
+theorem completeSourceResponseAction_all_count_bound  y :
     |highMarkedResponseAction (highUnionLaw R (highCenterMix C))
       (highUnionActivation R (highCenterMix C)) a V η
       (fun e u => highUnionSourceResetDensity C R j h e (x u))
       (highUnionSourceResetCoefficient C R j h) g w φ y| ≤
-      (C.densityUpper^n*highSeparatedDerivativeBudget a ρ*(n : ℝ)^2*η^2)*
+      (C.densityUpper^n*highSeparatedDerivativeBudget a ρ*n^2*η^2)*
         highRowTotalMass (R).rowMass := by
   let ad := C.densityLower+1/(M : ℝ)
   let bd := C.densityUpper-1/(M : ℝ)
@@ -88,8 +84,7 @@ theorem completeSourceResponseAction_all_count_bound (hn : 1 ≤ n)
       SourceRowDensityMark d D M q ad bd Cfr lam ℓ N μ i → Fin n → ℝ :=
     fun i z u => highUnionSourceResetDensity C R j h
       (Sum.inl ⟨i,sourceRowDensityLift d D M q ad bd Cfr lam ℓ N μ r₀ i z⟩) (x u)
-  have hresetMeas (i) (u) : Measurable (fun z => reset i z u) := by
-    exact (highUnionSourceResetDensity_measurable C R G j h).comp
+  have hresetMeas (i) (u) : Measurable (fun z => reset i z u) := (highUnionSourceResetDensity_measurable C R G j h).comp
       (((measurable_inl.comp ((rowSigmaMk_measurable i).comp
         (sourceRowDensityLift_measurable d D M q ad bd Cfr lam ℓ N μ r₀ i))).prodMk measurable_const))
   have hresetBound (i) (z) (u) : |reset i z u| ≤ C.densityUpper :=
@@ -151,18 +146,7 @@ theorem completeSourceResponseAction_all_count_bound (hn : 1 ≤ n)
       g w φ c hc hg hw hφ hp y)).trans_eq
   exact (Finset.mul_sum _ _ _).symm
 
-theorem completeSourceNumerator_all_count_exponential_bound (hn : 1 ≤ n)
-    (j : HighWindowLabels d k)
-    (h : HistoryMarked (fun i j => j ∈ highNeighborLabels d k i)
-      (HighUnionMark (SourceRowMark d D M q (C.densityLower+1/(M : ℝ))
-        (C.densityUpper-1/(M : ℝ)) Cfr lam ℓ N μ)))
-    (a V η ρ : ℝ) (ha : 0 < a) (hη : 0 ≤ η) (hρ : 0 ≤ ρ) (hηρ : η ≤ ρ/2)
-    (x : Fin n → Covariate d) (g w : Fin n → ℝ)
-    (φ : Fin n → HighFrameIndex d D → ℝ)
-    (hg : ∀ u, |g u| ≤ ρ/2) (hw : ∀ u, |w u| ≤ 1)
-    (hφ : ∀ v : HighFrameIndex d D → ℝ, (∑ γ, |v γ|) ≤ Cfr⁻¹ →
-      ∀ u, |∑ γ, φ u γ*v γ| ≤ 1)
-    (hp : ∀ f : ℝ, |f| ≤ ρ → ∀ y, 0 ≤ ternaryMass a f V y) (y : Fin n → Fin 3) :
+theorem completeSourceNumerator_all_count_exponential_bound  y :
     |highMarkedLocalScoreNumerator (highUnionLaw R (highCenterMix C))
       (highUnionActivation R (highCenterMix C)) a V η
       (fun u => highUnionSourceDensity C R h (x u))
@@ -199,13 +183,12 @@ theorem completeSourceNumerator_all_count_exponential_bound (hn : 1 ≤ n)
       (highUnionSourceResetCoefficient C R j h) g w φ c y| ≤
       C.densityUpper^n*(highSeparatedDerivativeBudget a ρ*B+1/a^2)*(n : ℝ)^2*η^2 := by
     unfold highMarkedLocalScoreNumerator
-    apply (abs_sub _ _).trans
-    apply (add_le_add haction hcorrection).trans_eq
-    dsimp [B]
-    ring
+    grind only [abs_sub]
   apply hraw.trans
   simpa only [mul_one,div_one] using highSeparated_score_budget_absorb n hn a ρ C.densityUpper
     1 1 η B (lt_trans zero_lt_one C.one_lt_densityUpper).le (by norm_num) (by norm_num) G.total_positive.le
+end
+
 
 end Complete
 end NearlyMinimax

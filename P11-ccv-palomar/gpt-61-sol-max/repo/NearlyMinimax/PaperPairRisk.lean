@@ -42,7 +42,7 @@ theorem paper_common_pair_rms {Ω Ξ : Type*} [MeasurableSpace Ω] [MeasurableSp
   have hfloor : 2 * (1 / 4 : ℝ) ≤ ∫ p, pairPilotNoiseMean θ k hk bar η p ∂μ.prod μ := by
     have hM := pairPilotAssumptions_meanConditions μ C θ hθ k hk bar η Cp W _ hp
     norm_num only [show 2 * (1 / 4 : ℝ) = 1 / 2 by norm_num]
-    exact pairPilotNoiseMean_denominator_lower C θ hθ k hk μ bar η Cp _ hM hfirst
+    exact?
   have hr := common_pair_ratio_risk_le μ ν C θ hθ k hk bar η Cp W _ hp hm X hind hX
     b (1 / 4) (by norm_num) hresidual hfloor
   have hrate := pairRiskBudget_rate_le (k := k) (b := b) C hn hm hp.constantNonnegative hp.budgetNonnegative

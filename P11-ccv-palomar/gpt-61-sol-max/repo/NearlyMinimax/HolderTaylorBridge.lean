@@ -18,33 +18,43 @@ namespace NearlyMinimax
 def euclideanCoordinates (d : ℕ) : EuclideanSpace ℝ (Fin d) ≃L[ℝ] Covariate d :=
   PiLp.continuousLinearEquiv 2 ℝ (fun _ : Fin d => ℝ)
 
-def euclideanPoint {d : ℕ} (x : Covariate d) : EuclideanSpace ℝ (Fin d) :=
+section
+variable {d : ℕ}
+
+def euclideanPoint  (x : Covariate d) : EuclideanSpace ℝ (Fin d) :=
   (euclideanCoordinates d).symm x
 
-def euclideanExtension {d : ℕ} (F : Covariate d → ℝ) : EuclideanSpace ℝ (Fin d) → ℝ :=
+def euclideanExtension  (F : Covariate d → ℝ) : EuclideanSpace ℝ (Fin d) → ℝ :=
   F ∘ euclideanCoordinates d
 
-@[simp] theorem euclideanCoordinates_apply {d : ℕ} (x : EuclideanSpace ℝ (Fin d))
-    (i : Fin d) : euclideanCoordinates d x i = x i := rfl
+@[simp] theorem euclideanCoordinates_apply  x
+    i : euclideanCoordinates d x i = x i := rfl
 
-@[simp] theorem euclideanPoint_apply {d : ℕ} (x : Covariate d) (i : Fin d) :
+section
+variable (x : Covariate d)
+
+@[simp] theorem euclideanPoint_apply   i :
     euclideanPoint x i = x i := rfl
 
-@[simp] theorem euclideanCoordinates_point {d : ℕ} (x : Covariate d) :
+@[simp] theorem euclideanCoordinates_point   :
     euclideanCoordinates d (euclideanPoint x) = x :=
   (euclideanCoordinates d).apply_symm_apply x
+end
 
-theorem euclideanCoordinates_norm {d : ℕ} (x : EuclideanSpace ℝ (Fin d)) :
+
+theorem euclideanCoordinates_norm  x :
     euclideanNorm (euclideanCoordinates d x) = ‖x‖ := by
   rw [euclideanNorm, EuclideanSpace.norm_eq]
   simp only [euclideanCoordinates_apply, Real.norm_eq_abs, sq_abs]
 
-theorem euclideanPoint_norm {d : ℕ} (x : Covariate d) :
+theorem euclideanPoint_norm  (x : Covariate d) :
     ‖euclideanPoint x‖ = euclideanNorm x := by
   rw [← euclideanCoordinates_norm, euclideanCoordinates_point]
+end
 
-theorem euclideanExtension_contDiffOn {d ℓ : ℕ} {U : Set (Covariate d)}
-    {F : Covariate d → ℝ} (hf : ContDiffOn ℝ ℓ F U)
+
+theorem euclideanExtension_contDiffOn {d ℓ : ℕ} {U }
+    {F } (hf : ContDiffOn ℝ ℓ F U)
     (hcube : unitCube d ⊆ U) :
     ContDiffOn ℝ ℓ (euclideanExtension F) (RoughRegime.Model.cube d) := by
   apply (hf.comp_continuousLinearMap (euclideanCoordinates d).toContinuousLinearMap).mono
@@ -53,8 +63,8 @@ theorem euclideanExtension_contDiffOn {d ℓ : ℕ} {U : Set (Covariate d)}
 
 /-- Linear transport of the true ordered Fréchet derivative, with no norm
 comparison and no differentiability assumption hidden in the coordinates. -/
-theorem euclideanExtension_iteratedFDeriv {d q : ℕ} (F : Covariate d → ℝ)
-    (x : EuclideanSpace ℝ (Fin d)) (σ : Fin q → Fin d) :
+theorem euclideanExtension_iteratedFDeriv {d q } F
+    x (σ : Fin q → Fin d) :
     iteratedFDeriv ℝ q (euclideanExtension F) x
         (fun j => EuclideanSpace.single (σ j) 1) =
       iteratedFDeriv ℝ q F (euclideanCoordinates d x)
@@ -70,16 +80,16 @@ theorem euclideanExtension_iteratedFDeriv {d q : ℕ} (F : Covariate d → ℝ)
 /-- Within-cube coordinate derivatives of the transported extension are the
 true derivatives of the original function, including cube boundary points. -/
 theorem euclideanExtension_coordinateDerivative {d ℓ q : ℕ}
-    (U : Set (Covariate d)) (hU : IsOpen U) (F : Covariate d → ℝ)
+    U (hU : IsOpen U) F
     (hf : ContDiffOn ℝ ℓ F U) (hcube : unitCube d ⊆ U) (hq : q ≤ ℓ)
-    (σ : Fin q → Fin d) (x : EuclideanSpace ℝ (Fin d))
+    σ (x : EuclideanSpace ℝ (Fin d))
     (hx : x ∈ RoughRegime.Model.cube d) :
     RoughRegime.Model.coordinateDerivative (euclideanExtension F) q σ x =
       iteratedFDeriv ℝ q F (euclideanCoordinates d x)
         (fun j => Pi.single (σ j) 1) := by
   have hqf : ContDiffOn ℝ q F U := hf.of_le (by exact_mod_cast hq)
   have hreg := hqf.comp_continuousLinearMap (euclideanCoordinates d).toContinuousLinearMap
-  have hopen : IsOpen ((euclideanCoordinates d) ⁻¹' U) :=
+  have hopen  :=
     hU.preimage (euclideanCoordinates d).continuous
   have hxU : euclideanCoordinates d x ∈ U := hcube hx
   have hat : ContDiffAt ℝ q (euclideanExtension F) x :=
@@ -87,12 +97,23 @@ theorem euclideanExtension_coordinateDerivative {d ℓ q : ℕ}
   rw [RoughRegime.Model.coordinateDerivative_eq_iteratedFDeriv _ q σ x hx hat]
   exact euclideanExtension_iteratedFDeriv F x σ
 
+section
+variable {d : ℕ} (C : ModelConstants d)
+include C
+
+section
+variable (F : Covariate d → ℝ)
+include F
+
+section
+variable (hf : ContDiffOn ℝ C.order F C.domain)
+include hf
+
 /-- Pointwise ordered derivative bounds and the Euclidean top-order modulus
 control the related library's closed-cube norm. This lemma is a transport
 step; the original model supplies its two premises in the final bridge. -/
-theorem euclideanExtension_mem_holderBall_of_coordinate_bounds {d : ℕ}
-    (C : ModelConstants d) (F : Covariate d → ℝ)
-    (hf : ContDiffOn ℝ C.order F C.domain)
+theorem euclideanExtension_mem_holderBall_of_coordinate_bounds  
+    
     (hb : ∀ q ≤ C.order, ∀ σ : Fin q → Fin d, ∀ x ∈ C.domain,
       |iteratedFDeriv ℝ q F x (fun j => Pi.single (σ j) 1)| ≤ C.holderBound)
     (hm : ∀ σ : Fin C.order → Fin d, ∀ x ∈ C.domain, ∀ y ∈ C.domain,
@@ -109,7 +130,7 @@ theorem euclideanExtension_mem_holderBall_of_coordinate_bounds {d : ℕ}
     exact euclideanExtension_contDiffOn hf C.cube_subset
   have hsup : RoughRegime.Model.derivativeSup (euclideanExtension F)
       (RoughRegime.Model.holderOrder C.smoothness) ≤ ENNReal.ofReal C.holderBound := by
-    unfold RoughRegime.Model.derivativeSup
+    
     rw [horder]
     apply iSup_le; intro q
     apply iSup_le; intro hq
@@ -158,38 +179,45 @@ theorem euclideanExtension_mem_holderBall_of_coordinate_bounds {d : ℕ}
 
 /-- The manuscript's actual open-domain sum norm implies the related
 ordered-coordinate closed-cube norm, with the explicit harmless factor two. -/
-theorem euclideanExtension_mem_holderBall {d : ℕ} (C : ModelConstants d)
-    (F : Covariate d → ℝ) (hf : ContDiffOn ℝ C.order F C.domain)
+theorem euclideanExtension_mem_holderBall 
+     
     (hNorm : holderNorm C.domain F C.order C.alpha ≤ ENNReal.ofReal C.holderBound) :
     euclideanExtension F ∈ RoughRegime.Model.holderBall C.smoothness (2 * C.holderBound) := by
   apply euclideanExtension_mem_holderBall_of_coordinate_bounds C F hf
   · intro q hq σ x hx
     exact ordered_coordinate_bound C.domain C.domain_open F C.order C.alpha C.holderBound
       C.holderBound_pos.le hf hNorm q hq σ x hx
-  · intro σ x hx y hy
-    exact ordered_coordinate_modulus C.domain C.domain_open F C.order C.alpha C.holderBound
-      C.holderBound_pos.le hf hNorm σ x y hx hy
+  · skip
+    aesop (add unsafe [ordered_coordinate_modulus, C.domain_open, C.holderBound_pos.le])
+end
+
+
+section
+variable (x : Covariate d)
+include x
 
 /-- Concrete polynomial in the original covariates, obtained from the true
 multivariate Taylor coefficients after the Euclidean coordinate transport. -/
-def modelTaylorPolynomial {d : ℕ} (C : ModelConstants d) (F : Covariate d → ℝ)
-    (x : Covariate d) : MvPolynomial (Fin d) ℝ :=
+def modelTaylorPolynomial  
+      :=
   RoughRegime.Model.holderTaylorPolynomial (euclideanExtension F) C.order (euclideanPoint x)
 
-theorem modelTaylorPolynomial_degree {d : ℕ} (C : ModelConstants d)
-    (F : Covariate d → ℝ) (x : Covariate d) :
+theorem modelTaylorPolynomial_degree 
+      :
     (modelTaylorPolynomial C F x).totalDegree ≤ C.order :=
   RoughRegime.Model.holderTaylorPolynomial_degree _ _ _
+end
+
 
 /-- Taylor approximation from the transported regularity. The final model
 bridge establishes membership from the original sum of mixed partial norms. -/
-theorem modelTaylorPolynomial_error_of_holderBall {d : ℕ} (C : ModelConstants d)
-    (F : Covariate d → ℝ)
+theorem modelTaylorPolynomial_error_of_holderBall 
+    
     (hf : euclideanExtension F ∈
       RoughRegime.Model.holderBall C.smoothness (2 * C.holderBound))
-    (x y : Covariate d) (hx : x ∈ unitCube d) (hy : y ∈ unitCube d) :
+    x y (hx : x ∈ unitCube d) (hy : y ∈ unitCube d) :
     |F y - MvPolynomial.eval y (modelTaylorPolynomial C F x)| ≤
-      ((d : ℝ) ^ C.order * (2 * C.holderBound) / C.order.factorial) *
+      (d ^ C.order * (2 * C.holderBound) / C.order.factorial) *
         euclideanNorm (y - x) ^ C.smoothness := by
   have herr := RoughRegime.Model.holderTaylorPolynomial_error (euclideanExtension F)
     C.smoothness (2 * C.holderBound)
@@ -200,41 +228,43 @@ theorem modelTaylorPolynomial_error_of_holderBall {d : ℕ} (C : ModelConstants 
   have hdiff : euclideanPoint y - euclideanPoint x = euclideanPoint (y - x) :=
     ((euclideanCoordinates d).symm.map_sub y x).symm
   rw [hdiff, euclideanPoint_norm] at herr
-  simpa only [euclideanExtension, Function.comp_apply, euclideanCoordinates_point,
-    euclideanPoint_apply, modelTaylorPolynomial] using herr
+  solve_by_elim []
 
 /-- The original model's regularity gives the genuine multivariate Taylor
 remainder uniformly on the design cube, in every finite smoothness order. -/
-theorem modelTaylorPolynomial_error {d : ℕ} (C : ModelConstants d)
-    (F : Covariate d → ℝ) (hf : ContDiffOn ℝ C.order F C.domain)
+theorem modelTaylorPolynomial_error 
+     (hf : ContDiffOn ℝ C.order F C.domain)
     (hNorm : holderNorm C.domain F C.order C.alpha ≤ ENNReal.ofReal C.holderBound)
-    (x y : Covariate d) (hx : x ∈ unitCube d) (hy : y ∈ unitCube d) :
+    x y (hx : x ∈ unitCube d) (hy : y ∈ unitCube d) :
     |F y - MvPolynomial.eval y (modelTaylorPolynomial C F x)| ≤
-      ((d : ℝ) ^ C.order * (2 * C.holderBound) / C.order.factorial) *
+      (d ^ C.order * (2 * C.holderBound) / C.order.factorial) *
         euclideanNorm (y - x) ^ C.smoothness :=
   modelTaylorPolynomial_error_of_holderBall C F
     (euclideanExtension_mem_holderBall C F hf hNorm) x y hx hy
+end
+
 
 /-- The approximation factor depends only on dimension and smoothness order,
 and retains the norm radius as a separate multiplicative factor. -/
-def taylorErrorFactor {d : ℕ} (C : ModelConstants d) : ℝ :=
+def taylorErrorFactor   :=
   (2 * (d : ℝ) ^ C.order / C.order.factorial) *
     (Real.sqrt (d : ℝ)) ^ C.smoothness
 
-theorem taylorErrorFactor_pos {d : ℕ} (C : ModelConstants d) :
+theorem taylorErrorFactor_pos  :
     0 < taylorErrorFactor C := by
   have hd : 0 < (d : ℝ) := by exact_mod_cast C.dimension_pos
-  have hs : 0 < Real.sqrt (d : ℝ) := Real.sqrt_pos.2 hd
+  
   unfold taylorErrorFactor
-  exact mul_pos (div_pos (mul_pos (by norm_num) (pow_pos hd _))
-    (by exact_mod_cast Nat.factorial_pos _)) (Real.rpow_pos_of_pos hs _)
+  simp_all [Nat.factorial_pos, Real.rpow_pos_of_pos]
 
-theorem modelTaylorPolynomial_cell_error_of_holderBall {d : ℕ}
-    (C : ModelConstants d) (F : Covariate d → ℝ)
+section
+variable (F : Covariate d → ℝ)
+
+theorem modelTaylorPolynomial_cell_error_of_holderBall  
     (hf : euclideanExtension F ∈
       RoughRegime.Model.holderBall C.smoothness (2 * C.holderBound))
-    (x y : Covariate d) (hx : x ∈ unitCube d) (hy : y ∈ unitCube d)
-    (h : ℝ) (hh : 0 ≤ h) (hxy : ∀ i, |y i - x i| ≤ h) :
+    x y (hx : x ∈ unitCube d) (hy : y ∈ unitCube d)
+    h (hh : 0 ≤ h) (hxy : ∀ i, |y i - x i| ≤ h) :
     |F y - MvPolynomial.eval y (modelTaylorPolynomial C F x)| ≤
       taylorErrorFactor C * C.holderBound * h ^ C.smoothness := by
   have he := modelTaylorPolynomial_error_of_holderBall C F hf x y hx hy
@@ -253,24 +283,29 @@ theorem modelTaylorPolynomial_cell_error_of_holderBall {d : ℕ}
       unfold taylorErrorFactor
       ring
 
-theorem modelTaylorPolynomial_cell_error {d : ℕ} (C : ModelConstants d)
-    (F : Covariate d → ℝ) (hf : ContDiffOn ℝ C.order F C.domain)
+theorem modelTaylorPolynomial_cell_error 
+     (hf : ContDiffOn ℝ C.order F C.domain)
     (hNorm : holderNorm C.domain F C.order C.alpha ≤ ENNReal.ofReal C.holderBound)
-    (x y : Covariate d) (hx : x ∈ unitCube d) (hy : y ∈ unitCube d)
-    (h : ℝ) (hh : 0 ≤ h) (hxy : ∀ i, |y i - x i| ≤ h) :
+    x y (hx : x ∈ unitCube d) (hy : y ∈ unitCube d)
+    h (hh : 0 ≤ h) (hxy : ∀ i, |y i - x i| ≤ h) :
     |F y - MvPolynomial.eval y (modelTaylorPolynomial C F x)| ≤
       taylorErrorFactor C * C.holderBound * h ^ C.smoothness :=
   modelTaylorPolynomial_cell_error_of_holderBall C F
     (euclideanExtension_mem_holderBall C F hf hNorm) x y hx hy h hh hxy
+end
+
+
+section
+variable (θ : RegressionParameter d) (hθ : Admissible C θ) (x : Covariate d) (hx : x ∈ unitCube d)
+include hθ hx
 
 /-- Every admissible regression admits a degree-bounded Taylor polynomial
 around each point in the design cube, with the original Hölder radius. -/
-theorem admissible_regression_taylor {d : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ)
-    (x : Covariate d) (hx : x ∈ unitCube d) :
+theorem admissible_regression_taylor 
+     :
     ∃ P : MvPolynomial (Fin d) ℝ, P.totalDegree ≤ C.order ∧
       ∀ y ∈ unitCube d, |θ.regression y - MvPolynomial.eval y P| ≤
-        ((d : ℝ) ^ C.order * (2 * C.holderBound) / C.order.factorial) *
+        (d ^ C.order * (2 * C.holderBound) / C.order.factorial) *
           euclideanNorm (y - x) ^ C.smoothness := by
   rcases hθ with ⟨_, _, _, _, ⟨F, hcube, hreg, hNorm⟩, _, _, _⟩
   refine ⟨modelTaylorPolynomial C F x, modelTaylorPolynomial_degree C F x, ?_⟩
@@ -279,17 +314,19 @@ theorem admissible_regression_taylor {d : ℕ} (C : ModelConstants d)
 
 /-- Uniform polynomial approximation on a cell of side `h`. The explicit
 error factor depends only on dimension and smoothness, not the open domain. -/
-theorem admissible_regression_taylor_cell {d : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ)
-    (x : Covariate d) (hx : x ∈ unitCube d) (h : ℝ) (hh : 0 ≤ h) :
+theorem admissible_regression_taylor_cell 
+     h (hh : 0 ≤ h) :
     ∃ P : MvPolynomial (Fin d) ℝ, P.totalDegree ≤ C.order ∧
       ∀ y ∈ unitCube d, (∀ i, |y i - x i| ≤ h) →
         |θ.regression y - MvPolynomial.eval y P| ≤
           taylorErrorFactor C * C.holderBound * h ^ C.smoothness := by
   rcases hθ with ⟨_, _, _, _, ⟨F, hcube, hreg, hNorm⟩, _, _, _⟩
   refine ⟨modelTaylorPolynomial C F x, modelTaylorPolynomial_degree C F x, ?_⟩
-  intro y hy hxy
-  simpa only [hcube y hy] using
-    modelTaylorPolynomial_cell_error C F hreg hNorm x y hx hy h hh hxy
+  
+  grind only [modelTaylorPolynomial_cell_error]
+end
+
+end
+
 
 end NearlyMinimax

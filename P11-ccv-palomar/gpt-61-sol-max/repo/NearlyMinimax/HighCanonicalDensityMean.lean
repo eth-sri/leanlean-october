@@ -20,7 +20,7 @@ theorem packetSum_borelSpace {A B : Type*} [TopologicalSpace A] [TopologicalSpac
   apply le_antisymm
   · intro s hs
     have hsec := measurableSet_sum_iff.mp hs
-    let : MeasurableSpace (A ⊕ B) := borel (A ⊕ B)
+    let  := borel (A ⊕ B)
     let : BorelSpace (A ⊕ B) := ⟨rfl⟩
     have hleft : MeasurableSet (Sum.inl '' (Sum.inl ⁻¹' s) : Set (A ⊕ B)) :=
       Topology.IsClosedEmbedding.inl.measurableEmbedding.measurableSet_image' hsec.1

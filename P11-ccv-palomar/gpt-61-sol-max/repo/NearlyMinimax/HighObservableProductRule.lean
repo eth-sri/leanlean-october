@@ -36,8 +36,8 @@ theorem historyMarkedPrior_observable_product_rule (dependent : J → J → Prop
   let μ := historyMarkedReference dependent Δ π
   let _ : IsProbabilityMeasure μ := historyMarkedReference_probability dependent hrefl hsymm Δ hΔ hlabels π
   let ρ := historyReferenceRho Δ
-  let C : ℝ := (3 / 2 : ℝ) ^ Fintype.card J
-  let D : ℝ := ρ⁻¹ * (Fintype.card J : ℝ) * B * C
+  let C  := (3 / 2 : ℝ) ^ Fintype.card J
+  let D  := ρ⁻¹ * (Fintype.card J : ℝ) * B * C
   have hρ : 0 < ρ := historyReferenceRho_pos Δ
   have hC : 0 ≤ C := by positivity
   have hD : 0 ≤ D := by dsimp [D]; positivity
@@ -56,9 +56,9 @@ theorem historyMarkedPrior_observable_product_rule (dependent : J → J → Prop
       |historyMarkedDensityDerivative dependent ρ u a h| ≤ D :=
     historyMarkedDensityDerivative_bound dependent hrefl hsymm Δ hlabels ρ u B
       (historyReferenceRho_pos Δ) hu.1.le hB a habound (hs u hu) h
-  let H : ℝ → HistoryMarked dependent E → ℝ := fun u h =>
+  let H  := fun u h =>
     G u h * historyMarkedDensity dependent ρ u a h
-  let H' : ℝ → HistoryMarked dependent E → ℝ := fun u h =>
+  let H'  := fun u h =>
     G' u h * historyMarkedDensity dependent ρ u a h +
       G u h * historyMarkedDensityDerivative dependent ρ u a h
   have hHM (u : ℝ) : Measurable (H u) :=
@@ -74,7 +74,7 @@ theorem historyMarkedPrior_observable_product_rule (dependent : J → J → Prop
     rw [Real.norm_eq_abs]
     exact (abs_add_le _ _).trans (add_le_add
       (by rw [abs_mul]; exact mul_le_mul (hG'b u hu h) (hφ u hu h) (abs_nonneg _) hM')
-      (by rw [abs_mul]; exact mul_le_mul (hGb u hu h) (hφd u hu h) (abs_nonneg _) hM))
+      (by rw [abs_mul]; bound))
   have hi : Integrable (H t) μ := Integrable.of_bound (hHM t).aestronglyMeasurable
     (M * C) (Eventually.of_forall (hHb t ⟨ht, htT⟩))
   have hd := (hasDerivAt_integral_of_dominated_loc_of_deriv_le

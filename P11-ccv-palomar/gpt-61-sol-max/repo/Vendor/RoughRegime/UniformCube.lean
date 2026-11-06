@@ -13,18 +13,10 @@ open scoped ENNReal
 
 namespace RoughRegime.Model
 
-theorem cube_eq_preimage (d : ℕ) : cube d =
-    (@WithLp.ofLp 2 (Fin d → ℝ)) ⁻¹' pi univ (fun _ : Fin d => Icc (0 : ℝ) 1) := by
-  ext x
-  simp only [cube, mem_ofPred_eq, mem_preimage, mem_pi, mem_univ, true_implies]
 
-theorem volume_cube (d : ℕ) : volume (cube d) = 1 := by
-  rw [cube_eq_preimage,
-    (PiLp.volume_preserving_ofLp (Fin d)).measure_preimage
-      (MeasurableSet.pi Set.countable_univ fun _ _ => measurableSet_Icc).nullMeasurableSet]
-  simp [Real.volume_Icc_pi]
 
-instance cubeVolume_isProbabilityMeasure (d : ℕ) : IsProbabilityMeasure (cubeVolume d) where
-  measure_univ := by simp [cubeVolume, volume_cube]
+
+
+
 
 end RoughRegime.Model

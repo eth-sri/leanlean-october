@@ -12,31 +12,41 @@ namespace NearlyMinimax
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1000000
 
-def pairFluctuationScale {d : ℕ} (n k : ℕ) : ℝ :=
+section
+variable {d : ℕ}
+include d
+
+section
+variable (n k : ℕ)
+include n k
+
+def pairFluctuationScale    :=
   (Real.sqrt (n : ℝ))⁻¹ + Real.sqrt ((k : ℝ) ^ d) / (n : ℝ)
 
-theorem pairFluctuationScale_nonneg {d : ℕ} (n k : ℕ) :
+theorem pairFluctuationScale_nonneg   :
     0 ≤ pairFluctuationScale (d := d) n k := by unfold pairFluctuationScale; positivity
 
-theorem pairFluctuationScale_sq_lower {d : ℕ} (n k : ℕ) (hn : 0 < n) :
-    1 / (n : ℝ) + (k : ℝ) ^ d / (n : ℝ) ^ 2 ≤ pairFluctuationScale (d := d) n k ^ 2 := by
+theorem pairFluctuationScale_sq_lower   (hn : 0 < n) :
+    1 / n + k ^ d / n ^ 2 ≤ pairFluctuationScale (d := d) n k ^ 2 := by
   have hn0 : 0 < (n : ℝ) := by exact_mod_cast hn
   have hk0 : 0 ≤ (k : ℝ) ^ d := by positivity
   have ha : ((Real.sqrt (n : ℝ))⁻¹) ^ 2 = 1 / (n : ℝ) := by
-    rw [inv_pow, Real.sq_sqrt hn0.le]; simp [one_div]
+    skip; simp [one_div]
   have hb : (Real.sqrt ((k : ℝ) ^ d) / (n : ℝ)) ^ 2 = (k : ℝ) ^ d / (n : ℝ) ^ 2 := by
     rw [div_pow, Real.sq_sqrt hk0]
   have hab : 0 ≤ (Real.sqrt (n : ℝ))⁻¹ * (Real.sqrt ((k : ℝ) ^ d) / (n : ℝ)) := by positivity
   unfold pairFluctuationScale
   nlinarith
+end
 
-theorem pairEvaluationCoefficient_rate_le {d : ℕ} (C : ModelConstants d)
-    {n m k : ℕ} (hn : 0 < n) (hm : 2 ≤ m) {c : ℝ} (hc : 0 < c)
+
+theorem pairEvaluationCoefficient_rate_le  (C : ModelConstants d)
+    {n m k : ℕ} (hn : 0 < n) (hm : 2 ≤ m) {c } (hc : 0 < c)
     (hsize : c * (n : ℝ) ≤ m) :
     pairEvaluationCoefficient C m k ≤
       (C.densityUpper / c + 1 / c ^ 2) * pairFluctuationScale (d := d) n k ^ 2 := by
-  have hn0 : 0 < (n : ℝ) := by exact_mod_cast hn
-  have hm0 : 0 < (m : ℝ) := by exact_mod_cast (by omega : 0 < m)
+  
+  
   have hpp : 0 ≤ C.densityUpper := by linarith [C.one_lt_densityUpper]
   have hk0 : 0 ≤ (k : ℝ) ^ d := by positivity
   have hm1 : (m : ℝ) ≤ 2 * ((m - 1 : ℕ) : ℝ) := by
@@ -44,7 +54,7 @@ theorem pairEvaluationCoefficient_rate_le {d : ℕ} (C : ModelConstants d)
   have hmsq : (c * (n : ℝ)) ^ 2 ≤ (m : ℝ) ^ 2 :=
     pow_le_pow_left₀ (by positivity) hsize 2
   have hden : c ^ 2 * (n : ℝ) ^ 2 ≤ 2 * (m : ℝ) * (m - 1 : ℕ) := by
-    have h := mul_le_mul_of_nonneg_left hm1 hm0.le
+    
     nlinarith
   have hfirst : C.densityUpper / (m : ℝ) ≤ C.densityUpper / (c * n) :=
     div_le_div_of_nonneg_left hpp (by positivity) hsize
@@ -61,27 +71,28 @@ theorem pairEvaluationCoefficient_rate_le {d : ℕ} (C : ModelConstants d)
         (1 / c ^ 2) * ((k : ℝ) ^ d / (n : ℝ) ^ 2) := by ring
     _ ≤ (C.densityUpper / c + 1 / c ^ 2) *
         (1 / (n : ℝ) + (k : ℝ) ^ d / (n : ℝ) ^ 2) := by
-      have ha := mul_le_mul_of_nonneg_right h1 (by positivity : 0 ≤ 1 / (n : ℝ))
-      have hb := mul_le_mul_of_nonneg_right h2 (by positivity : 0 ≤ (k : ℝ) ^ d / (n : ℝ) ^ 2)
-      nlinarith
+      linarith [mul_le_mul_of_nonneg_right h1 (by positivity : 0 ≤ 1 / (n : ℝ))       , mul_le_mul_of_nonneg_right h2 (by positivity : 0 ≤ (k : ℝ) ^ d / (n : ℝ) ^ 2)       ]
     _ ≤ _ := mul_le_mul_of_nonneg_left (pairFluctuationScale_sq_lower n k hn) hA
 
-def pairRateSquaredConstant {d : ℕ} (C : ModelConstants d) (Cp c a : ℝ) : ℝ :=
+def pairRateSquaredConstant  (C : ModelConstants d) Cp c a  :=
   (2 / a ^ 2) *
     ((4 * responseOperatorEnergyBound C * C.densityUpper + 8 * C.varianceUpper ^ 2 * C.densityUpper) *
       (4 * (C.densityUpper / c + 1 / c ^ 2) * (1 + Cp) ^ 4) +
     (3 * (2 * C.holderBound ^ 2 + 1) ^ 2 + 6 * C.varianceUpper ^ 2) *
       (2 * C.densityUpper * (1 + Cp) ^ 4) + C.densityUpper ^ 2 / 2)
 
-theorem pairRateSquaredConstant_pos {d : ℕ} (C : ModelConstants d)
-    {Cp c a : ℝ} (hCp : 0 ≤ Cp) (hc : 0 < c) (ha : 0 < a) :
+section
+variable (C : ModelConstants d)
+
+theorem pairRateSquaredConstant_pos  
+    {Cp c a } (hCp : 0 ≤ Cp) (hc : 0 < c) (ha : 0 < a) :
     0 < pairRateSquaredConstant C Cp c a := by
   have hpp : 0 < C.densityUpper := by linarith [C.one_lt_densityUpper]
   have hEB := responseOperatorEnergyBound_pos C
   unfold pairRateSquaredConstant
   positivity
 
-theorem pairRiskBudget_rate_le {d : ℕ} (C : ModelConstants d)
+theorem pairRiskBudget_rate_le  
     {n m k : ℕ} (hn : 0 < n) (hm : 2 ≤ m) {Cp W lam B b c a : ℝ}
     (hCp : 0 ≤ Cp) (hW : 0 ≤ W) (hlam : 0 ≤ lam) (hB : 0 ≤ B)
     (hc : 0 < c) (ha : 0 < a) (hsize : c * (n : ℝ) ≤ m)
@@ -97,10 +108,10 @@ theorem pairRiskBudget_rate_le {d : ℕ} (C : ModelConstants d)
   have hn0 : 0 < (n : ℝ) := by exact_mod_cast hn
   have hpp : 0 ≤ C.densityUpper := by linarith [C.one_lt_densityUpper]
   have hEB := (responseOperatorEnergyBound_pos C).le
-  have hP : 0 ≤ P := by dsimp [P]; positivity
+  
   have ht : 0 ≤ t := pairFluctuationScale_nonneg n k
   have hR : 0 ≤ R := by dsimp [R]; positivity
-  have hE : 0 ≤ E := by dsimp [E]; positivity
+  
   have hF : 0 ≤ F := by dsimp [F]; positivity
   have hCP : Cp ≤ P ^ 2 := by dsimp [P]; nlinarith only [hCp, sq_nonneg Cp]
   have hC2P : Cp ^ 2 ≤ P ^ 2 := by dsimp [P]; nlinarith only [hCp]
@@ -110,18 +121,17 @@ theorem pairRiskBudget_rate_le {d : ℕ} (C : ModelConstants d)
     apply (pow_le_pow_left₀ hF hFb 2).trans_eq
     ring
   have he := pairEvaluationCoefficient_rate_le (k := k) C hn hm hc hsize
-  have hEt : 0 ≤ pairEvaluationCoefficient C m k := by unfold pairEvaluationCoefficient; positivity
+  
   have hEF : pairEvaluationCoefficient C m k * F ^ 2 ≤ 4 * E * P ^ 4 * R ^ 2 := by
     have h := mul_le_mul he hF2 (sq_nonneg F) (by positivity)
     apply h.trans_eq
     dsimp only [E, t, R]
     ring
   have hBb : B ≤ 2 * C.densityUpper * P ^ 2 * (1 + W) := by
-    have h := mul_le_mul_of_nonneg_left (show 2 * Cp ^ 2 + Cp * W ≤ 2 * P ^ 2 * (1 + W) by nlinarith only [hC2P, hCW, mul_nonneg (sq_nonneg P) hW]) hpp
+    have h := mul_le_mul_of_nonneg_left (show 2 * Cp ^ 2 + Cp * W ≤ 2 * P ^ 2 * (1 + W) by linarith [mul_nonneg (sq_nonneg P) hW]) hpp
     apply (hBBudget.trans h).trans_eq
     ring
-  have hLamSmall : lam ≤ P ^ 2 * W / (n : ℝ) := by
-    exact hlamBudget.trans (div_le_div_of_nonneg_right
+  have hLamSmall : lam ≤ P ^ 2 * W / (n : ℝ) := hlamBudget.trans (div_le_div_of_nonneg_right
       (mul_le_mul_of_nonneg_right hC2P hW) hn0.le)
   have hLamB : lam * B ≤ 2 * C.densityUpper * P ^ 4 * R ^ 2 := by
     have hmB := mul_le_mul hLamSmall hBb hB (by positivity : 0 ≤ P ^ 2 * W / (n : ℝ))
@@ -145,8 +155,7 @@ theorem pairRiskBudget_rate_le {d : ℕ} (C : ModelConstants d)
   have hsR : R ^ 2 ≤ (b ^ 2 + R) ^ 2 :=
     pow_le_pow_left₀ hR (le_add_of_nonneg_left (sq_nonneg b)) 2
   have hsb : b ^ 4 ≤ (b ^ 2 + R) ^ 2 := by
-    have hh := pow_le_pow_left₀ (sq_nonneg b) (le_add_of_nonneg_right hR) 2
-    simpa only [← pow_mul] using hh
+    linarith [pow_le_pow_left₀ (sq_nonneg b) (le_add_of_nonneg_right hR) 2     ]
   have hCR : 0 ≤ (4 * responseOperatorEnergyBound C * C.densityUpper +
       8 * C.varianceUpper ^ 2 * C.densityUpper) * (4 * E * P ^ 4) +
       (3 * (2 * C.holderBound ^ 2 + 1) ^ 2 + 6 * C.varianceUpper ^ 2) *
@@ -166,5 +175,9 @@ theorem pairRiskBudget_rate_le {d : ℕ} (C : ModelConstants d)
   apply mul_le_mul_of_nonneg_left _ (by positivity : 0 ≤ 2 / a ^ 2)
   dsimp only [E, P] at hER hLR hCsR hCsb
   linarith only [hER, hLR, hCsR, hCsb]
+end
+
+end
+
 
 end NearlyMinimax

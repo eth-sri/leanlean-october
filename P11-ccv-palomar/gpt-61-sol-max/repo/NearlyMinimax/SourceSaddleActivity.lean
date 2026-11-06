@@ -14,20 +14,18 @@ namespace NearlyMinimax
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1000000
 
-def sourceSaddleActivityConstant (d q : ℕ) (a b C lam : ℝ) : ℝ :=
+def sourceSaddleActivityConstant d q a b C lam  :=
   1 + sourceActivityConstant d q C
     (uniformOrdinaryDensityActivityBase a b (densityIntervalExponent a b+1)) lam
 
-theorem sourceSaddleActivityConstant_positive (d q : ℕ) (a b C lam : ℝ)
+theorem sourceSaddleActivityConstant_positive d q a b C lam
     (ha : 0 < a) (hab : a < b) : 0 < sourceSaddleActivityConstant d q a b C lam := by
-  have hB : 0 ≤ uniformOrdinaryDensityActivityBase a b (densityIntervalExponent a b+1) := by
-    unfold uniformOrdinaryDensityActivityBase
-    exact mul_nonneg (Real.exp_pos _).le (div_nonneg (sub_pos.mpr hab).le ha.le)
+  have hB : 0 ≤ uniformOrdinaryDensityActivityBase a b (densityIntervalExponent a b+1) := mul_nonneg (Real.exp_pos _).le (div_nonneg (sub_pos.mpr hab).le ha.le)
   have h := sourceActivityConstant_nonneg d q C _ lam hB
   unfold sourceSaddleActivityConstant
   linarith
 
-def sourceSaddleTotalMass (d k q : ℕ) (s a b C lam shift x : ℝ) : ℝ :=
+def sourceSaddleTotalMass (d k q : ℕ) s a b C lam shift x  :=
   let tau := densityIntervalExponent a b
   let m := lowerSaddleCoefficient s (d : ℝ) tau
   let theta := lowerSaddleTheta s (d : ℝ) tau
@@ -42,15 +40,15 @@ def sourceSaddleTotalMass (d k q : ℕ) (s a b C lam shift x : ℝ) : ℝ :=
 all sufficiently large sample scales and every spatial grid. No activity,
 row-budget, density-neighborhood, or selected-target hypothesis is assumed. -/
 theorem sourceSaddleTotalMass_eventually_bound (d q : ℕ) [NeZero d]
-    (s a b C lam shift : ℝ) (hs : 1 < s) (hd : 4*s < (d : ℝ))
+    s a b C lam shift (hs : 1 < s) (hd : 4*s < (d : ℝ))
     (ha : 0 < a) (hab : a < b) :
-    ∀ᶠ x in atTop, ∀ k : ℕ,
+    ∀ᶠ x in atTop, ∀ k ,
       sourceSaddleTotalMass d k q s a b C lam shift x ≤
         sourceSaddleActivityConstant d q a b C lam *
-          (lowerSaddleN s (d : ℝ) (lowerSaddleCoefficient s (d : ℝ) (densityIntervalExponent a b))
-            (lowerSaddleTheta s (d : ℝ) (densityIntervalExponent a b)) shift (shrunkDensityExponent a b) x)^2 *
-          Real.exp (shrunkDensityExponent a b (lowerSaddleM (lowerSaddleCoefficient s (d : ℝ) (densityIntervalExponent a b)) x)*
-            (lowerSaddleM (lowerSaddleCoefficient s (d : ℝ) (densityIntervalExponent a b)) x : ℝ)) := by
+          (lowerSaddleN s d (lowerSaddleCoefficient s d (densityIntervalExponent a b))
+            (lowerSaddleTheta s d (densityIntervalExponent a b)) shift (shrunkDensityExponent a b) x)^2 *
+          Real.exp (shrunkDensityExponent a b (lowerSaddleM (lowerSaddleCoefficient s d (densityIntervalExponent a b)) x)*
+            (lowerSaddleM (lowerSaddleCoefficient s d (densityIntervalExponent a b)) x : ℝ)) := by
   let tau := densityIntervalExponent a b
   let c0 := tau+1
   let m := lowerSaddleCoefficient s (d : ℝ) tau
@@ -102,6 +100,6 @@ theorem sourceSaddleTotalMass_eventually_bound (d q : ℕ) [NeZero d]
   have hc : sourceActivityConstant d q C (uniformOrdinaryDensityActivityBase a b c0) lam ≤
       sourceSaddleActivityConstant d q a b C lam := by unfold sourceSaddleActivityConstant; dsimp [c0, tau]; linarith
   apply hb.trans
-  exact mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_right hc (sq_nonneg N)) (Real.exp_pos _).le
+  grind only [mul_le_mul_of_nonneg_right, sq_nonneg, Real.exp_pos]
 
 end NearlyMinimax

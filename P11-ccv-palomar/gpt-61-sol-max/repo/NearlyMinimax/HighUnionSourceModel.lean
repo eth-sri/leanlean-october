@@ -21,21 +21,23 @@ variable {d k F : ℕ} {I : Type*} [Fintype I] {E : I → Type*}
   [∀ i, MeasurableSpace (E i)] [NeZero k] [LinearOrder (HighWindowLabels d k)]
   (C : ModelConstants d) (R : HighUnionRowData d k F I E)
 
-def highUnionSourceRegression (η : ℝ)
-    (h : HistoryMarked (fun i j => j ∈ highNeighborLabels d k i) (HighUnionMark E))
-    (x : Covariate d) : ℝ :=
+def highUnionSourceRegression η
+    h
+    x  :=
   highFrameField d k η (fun j => highFramePolynomial ((highUnionSourceState C R h).2 j)) x
 
-theorem highUnionSourceState_measurable [∀ i, StandardBorelSpace (E i)]
-    {M Cfr : ℝ} (G : HighUnionSourceGuards C M Cfr R) :
+section
+variable [∀ i, StandardBorelSpace (E i)] {M Cfr : ℝ} (G : HighUnionSourceGuards C M Cfr R)
+include G
+
+theorem highUnionSourceState_measurable  :
     Measurable (highUnionSourceState C R) :=
   historyMarkedRawState_measurable (fun i j => j ∈ highNeighborLabels d k i)
     (highUnionRawUpdate R (highCenterMix C))
     (fun j => highUnionRawUpdate_measurable R G.slope_measurable G.intercept_measurable
       G.vector_measurable G.time_measurable (highCenterMix C) j) highUnionVacuum
 
-theorem highUnionSourceRegression_joint_measurable [∀ i, StandardBorelSpace (E i)]
-    {M Cfr : ℝ} (G : HighUnionSourceGuards C M Cfr R) (η : ℝ) :
+theorem highUnionSourceRegression_joint_measurable  η :
     Measurable (fun hx : HistoryMarked (fun i j => j ∈ highNeighborLabels d k i)
       (HighUnionMark E) × Covariate d => highUnionSourceRegression C R η hx.1 hx.2) :=
 by
@@ -45,6 +47,8 @@ by
     measurable_snd.comp (highUnionSourceState_measurable C R G)
   exact highFrameField_joint_measurable (Ω := Ω) d k F η
     (fun h : Ω => (highUnionSourceState C R h).2) hcoef
+end
+
 
 end
 

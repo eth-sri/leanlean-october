@@ -38,10 +38,10 @@ theorem centeredKernelExpansion_field_measurable {Ω W : Type*}
         (Fin (r.val + 1) → Fin p → ℝ) => t.1 t.2) := continuous_eval
   exact heval.measurable.comp (hmH.prodMk hmX)
 
-theorem dyadicPolynomialPilot_centered_field_measurable {d : ℕ} (C : ModelConstants d)
-    [Nonempty (AnchoredIndex d C.order)] (θ : RegressionParameter d) (hθ : Admissible C θ)
-    (n j : ℕ) (y : ℝ) (m : ℕ)
-    (row : Covariate d × Covariate d → Fin (anchoredDimension d C.order) → ℝ)
+theorem dyadicPolynomialPilot_centered_field_measurable {d } C
+    [Nonempty (AnchoredIndex d C.order)] θ (hθ : Admissible C θ)
+    n j y m
+    row
     (hrow : Measurable row) (hdegree : m + anchoredDimension d C.order + 1 ≤ n) :
     Measurable (fun t : (Fin n → Observation d) × (Covariate d × Covariate d) =>
       dyadicPolynomialPilot C n j t.2.1 y m (row t.2) t.1 -
@@ -65,7 +65,7 @@ theorem dyadicPolynomialPilot_centered_field_measurable {d : ℕ} (C : ModelCons
           (anchoredFinTransport d C.order) y m (row t.2)
             (dyadicIncrementRawMean θ j t.2.1)) := by
     funext t
-    exact dyadicPolynomialPilot_centered_global C θ hθ n j t.2.1 y m (row t.2) hdegree t.1
+    solve_by_elim [dyadicPolynomialPilot_centered_global]
   rwa [heq] at h
 
 end NearlyMinimax

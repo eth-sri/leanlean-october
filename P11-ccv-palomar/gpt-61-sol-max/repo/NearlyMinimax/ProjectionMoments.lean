@@ -12,12 +12,16 @@ set_option maxHeartbeats 1000000
 
 namespace NearlyMinimax
 
+section
+variable {ι Ω : Type*}
+
+section
+variable [Fintype ι] [DecidableEq ι] [MeasurableSpace Ω] (μ : Measure Ω) [IsProbabilityMeasure μ] (ε : ι → Ω → ℝ) (hind : iIndepFun ε μ) (hmeas : ∀ i, AEStronglyMeasurable (ε i) μ)
+include hind hmeas
+
 /-- Independence factors arbitrary finite lists of coordinate errors,
 including repeated indices grouped into their multiplicities. -/
-theorem independent_error_list_moment {ι Ω : Type*} [Fintype ι] [DecidableEq ι]
-    [MeasurableSpace Ω] (μ : Measure Ω) [IsProbabilityMeasure μ]
-    (ε : ι → Ω → ℝ) (hind : iIndepFun ε μ)
-    (hmeas : ∀ i, AEStronglyMeasurable (ε i) μ) (l : List ι) :
+theorem independent_error_list_moment   (l : List ι) :
     (∫ ω, (l.map (fun i => ε i ω)).prod ∂μ) =
       ∏ i ∈ l.toFinset, ∫ ω, ε i ω ^ l.count i ∂μ := by
   have hid (ω : Ω) : (l.map (fun i => ε i ω)).prod = ∏ i : ι, ε i ω ^ l.count i := by
@@ -39,10 +43,7 @@ theorem independent_error_list_moment {ι Ω : Type*} [Fintype ι] [DecidableEq 
 
 /-- The four-coordinate moment rule behind the variance of a quadratic
 form, derived from actual independence and centered errors. -/
-theorem independent_error_fourth_product {ι Ω : Type*} [Fintype ι] [DecidableEq ι]
-    [MeasurableSpace Ω] (μ : Measure Ω) [IsProbabilityMeasure μ]
-    (ε : ι → Ω → ℝ) (hind : iIndepFun ε μ)
-    (hmeas : ∀ i, AEStronglyMeasurable (ε i) μ)
+theorem independent_error_fourth_product  
     (hmean : ∀ i, (∫ ω, ε i ω ∂μ) = 0) (V : ℝ)
     (hsecond : ∀ i, (∫ ω, ε i ω ^ 2 ∂μ) = V) (i j k l : ι) :
     (∫ ω, ε i ω * ε j ω * ε k ω * ε l ω ∂μ) =
@@ -61,9 +62,11 @@ theorem independent_error_fourth_product {ι Ω : Type*} [Fintype ι] [Decidable
       Finset.prod_insert, Finset.prod_singleton, pow_one, pow_two] <;>
     simp_all [eq_comm, pow_two]
   all_goals exact Or.inl (hsecond _)
+end
+
 
 /-- Fourth-integrable coordinate errors have square-integrable products. -/
-theorem independent_error_product_memLp_two {ι Ω : Type*} [MeasurableSpace Ω]
+theorem independent_error_product_memLp_two  [MeasurableSpace Ω]
     (μ : Measure Ω) (ε : ι → Ω → ℝ)
     (hε : ∀ i, MemLp (ε i) 4 μ) (i j : ι) :
     MemLp (fun ω => ε i ω * ε j ω) 2 μ := by
@@ -75,11 +78,13 @@ theorem independent_error_product_memLp_two {ι Ω : Type*} [MeasurableSpace Ω]
   funext ω
   simp [mul_comm]
 
+section
+variable [Fintype ι] [DecidableEq ι] [MeasurableSpace Ω] (μ : Measure Ω) [IsProbabilityMeasure μ]
+
 /-- The actual independent-error covariance rule for quadratic
 monomials.  Its diagonal coefficient is the variance of the squared
 coordinate error, and both crossing pairs contribute `V²`. -/
-theorem independent_error_product_covariance {ι Ω : Type*} [Fintype ι] [DecidableEq ι]
-    [MeasurableSpace Ω] (μ : Measure Ω) [IsProbabilityMeasure μ]
+theorem independent_error_product_covariance  
     (ε : ι → Ω → ℝ) (hind : iIndepFun ε μ) (hε : ∀ i, MemLp (ε i) 4 μ)
     (hmean : ∀ i, (∫ ω, ε i ω ∂μ) = 0) (V : ℝ)
     (hsecond : ∀ i, (∫ ω, ε i ω ^ 2 ∂μ) = V) (i j k l : ι) :
@@ -104,8 +109,7 @@ theorem independent_error_product_covariance {ι Ω : Type*} [Fintype ι] [Decid
 independent centered errors with bounded fourth moments.  All primitive
 product covariance rules in the earlier variance theorem are discharged. -/
 theorem independent_projection_estimator_mse_bound
-    {ι Ω : Type*} [Fintype ι] [DecidableEq ι] [MeasurableSpace Ω]
-    (μ : Measure Ω) [IsProbabilityMeasure μ] (A : Matrix ι ι ℝ)
+      (A : Matrix ι ι ℝ)
     (hsym : Aᵀ = A) (hidem : A * A = A) (hd : 0 < A.trace)
     (f : ι → ℝ) (ε : ι → Ω → ℝ) (V C₄ : ℝ)
     (hε : ∀ i, MemLp (ε i) 4 μ) (hind : iIndepFun ε μ)
@@ -126,5 +130,9 @@ theorem independent_projection_estimator_mse_bound
     have hmax := le_max_left C₄ (2 * V ^ 2)
     nlinarith [sq_nonneg V]
   · exact le_max_right _ _
+end
+
+end
+
 
 end NearlyMinimax

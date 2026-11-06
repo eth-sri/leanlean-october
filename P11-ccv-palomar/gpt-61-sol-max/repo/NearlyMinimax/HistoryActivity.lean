@@ -17,7 +17,7 @@ No activity, partition positivity, or deletion equation is assumed.
 noncomputable section
 namespace NearlyMinimax
 
-theorem history_finite_geom_sum_le {r : ℝ} (hr : 0 ≤ r) (hr1 : r < 1) (N : ℕ) :
+theorem history_finite_geom_sum_le {r : ℝ} (hr : 0 ≤ r) (hr1 : r < 1) N :
     (∑ j ∈ Finset.range N, r ^ j) ≤ 1 / (1 - r) := by
   apply (le_div_iff₀ (sub_pos.2 hr1)).2
   rw [geom_sum_mul_neg]
@@ -31,15 +31,15 @@ theorem history_degree_activity_threshold {D ε : ℝ} (hε : 0 ≤ ε)
   have hp : 0 < 1 - 2 * D ^ 2 * ε := by
     by_cases he : ε = 0
     · simp [he]
-    · have hepos : 0 < ε := lt_of_le_of_ne hε (Ne.symm he)
+    · have hepos  := lt_of_le_of_ne hε (Ne.symm he)
       nlinarith
   refine ⟨by positivity, by linarith, (div_le_iff₀ hp).2 ?_⟩
   nlinarith
 
 variable {α : Type*} [PartialOrder α] [DecidableEq α] [Fintype α]
 
-theorem historyUpperRows_card_by_size (D : ℕ)
-    (hD : ∀ x : α, (historyCoverGraph α).degree x ≤ D) (R : Finset α) (x : α) (j : ℕ) :
+theorem historyUpperRows_card_by_size D
+    (hD : ∀ x , (historyCoverGraph α).degree x ≤ D) R (x : α) j :
     ((historyGasRows (historyUpperPolymers Finset.univ) historyMaximalPieces R x).filter
       (fun P => P.card - 1 = j)).card ≤ D ^ (2 * j) := by
   classical
@@ -53,21 +53,21 @@ theorem historyUpperRows_card_by_size (D : ℕ)
       have hcard : P.card = j + 1 := by
         have hpos := Finset.card_pos.2 ⟨x, hxP⟩
         omega
-      exact mem_graphConnectedSubsets.2 ⟨hxP, hcard, historyUpperPolymer_coverGraph_connected hPpoly⟩
+      grind only [mem_graphConnectedSubsets, historyUpperPolymer_coverGraph_connected]
     _ ≤ _ := by
-      simpa only [Nat.add_sub_cancel] using
-        (graph_connected_subsets_card_le (historyCoverGraph α) D hD x (j + 1))
+      solve_by_elim [graph_connected_subsets_card_le]
 
-theorem historyUpperRows_activity_le (weight : α → ℝ) (ρ t B : ℝ)
-    (hρ : 0 < ρ) (ht : 0 ≤ t) (hB : 0 ≤ B) (hw : ∀ x, |weight x| ≤ B)
-    (D : ℕ) (hD : ∀ x : α, (historyCoverGraph α).degree x ≤ D)
-    (hsmall : t * B / ρ ≤ 1 / (2 + 2 * (D : ℝ) ^ 2)) (R : Finset α) (x : α) :
+section
+variable (weight : α → ℝ) (ρ t B : ℝ) (hρ : 0 < ρ) (ht : 0 ≤ t) (hB : 0 ≤ B) (hw : ∀ x, |weight x| ≤ B) (D : ℕ) (hD : ∀ x : α, (historyCoverGraph α).degree x ≤ D) (hsmall : t * B / ρ ≤ 1 / (2 + 2 * (D : ℝ) ^ 2))
+include hρ ht hB hw hD hsmall
+
+theorem historyUpperRows_activity_le  R (x : α) :
     (∑ P ∈ historyGasRows (historyUpperPolymers Finset.univ) historyMaximalPieces R x,
-      |historyComponentWeight weight ρ t P| * (2 : ℝ) ^ ((historyMaximalPieces P).card - 1)) ≤ 1 / 2 := by
+      |historyComponentWeight weight ρ t P| * 2 ^ ((historyMaximalPieces P).card - 1)) ≤ 1 / 2 := by
   classical
   let A := historyGasRows (historyUpperPolymers Finset.univ) historyMaximalPieces R x
   let ε := t * B / ρ
-  have hε : 0 ≤ ε := div_nonneg (mul_nonneg ht hB) hρ.le
+  have hε  := div_nonneg (mul_nonneg ht hB) hρ.le
   have hthreshold := history_degree_activity_threshold hε hsmall
   have hmap : ∀ P ∈ A, P.card - 1 ∈ Finset.range (Fintype.card α) := by
     intro P hP
@@ -80,10 +80,9 @@ theorem historyUpperRows_activity_le (weight : α → ℝ) (ρ t B : ℝ)
         ε ^ P.card * (2 : ℝ) ^ (P.card - 1) := by
     intro P hP
     have hc := historyComponentWeight_abs_le P hρ ht hB (fun y _ => hw y)
-    have hm : (historyMaximalPieces P).card - 1 ≤ P.card - 1 :=
+    have hm  :=
       Nat.sub_le_sub_right (Finset.card_le_card (historyMaximalPieces_subset P)) 1
-    exact mul_le_mul hc (pow_le_pow_right₀ (by norm_num : (1 : ℝ) ≤ 2) hm)
-      (by positivity) (pow_nonneg hε _)
+    grind only [mul_le_mul, pow_le_pow_right₀, pow_nonneg]
   have hfiber : ∀ j,
       (∑ P ∈ A.filter (fun P => P.card - 1 = j),
         |historyComponentWeight weight ρ t P| * (2 : ℝ) ^ ((historyMaximalPieces P).card - 1)) ≤
@@ -123,10 +122,7 @@ theorem historyUpperRows_activity_le (weight : α → ℝ) (ρ t B : ℝ)
     _ ≤ 1 / 2 := hthreshold.2.2
 
 /-- Actual finite history-density positivity, with activity derived from the cover graph. -/
-theorem historyUpperDensity_positive_of_degree_bound (weight : α → ℝ) (ρ t B : ℝ)
-    (hρ : 0 < ρ) (ht : 0 ≤ t) (hB : 0 ≤ B) (hw : ∀ x, |weight x| ≤ B)
-    (D : ℕ) (hD : ∀ x : α, (historyCoverGraph α).degree x ≤ D)
-    (hsmall : t * B / ρ ≤ 1 / (2 + 2 * (D : ℝ) ^ 2)) :
+theorem historyUpperDensity_positive_of_degree_bound  :
     ∀ R, 0 < historyRestrictedUpperDensity weight ρ t Finset.univ R ∧ ∀ x ∈ R,
       historyRestrictedUpperDensity weight ρ t Finset.univ (R.erase x) / 2 ≤
         historyRestrictedUpperDensity weight ρ t Finset.univ R ∧
@@ -135,6 +131,8 @@ theorem historyUpperDensity_positive_of_degree_bound (weight : α → ℝ) (ρ t
   apply historyRestrictedUpperDensity_positive
   intro R x hx
   exact historyUpperRows_activity_le weight ρ t B hρ ht hB hw D hD hsmall R x
+end
+
 
 omit [Fintype α] in
 @[simp] theorem historyRestrictedUpperDensity_empty (weight : α → ℝ) (ρ t : ℝ) (S : Finset α) :
@@ -144,14 +142,14 @@ omit [Fintype α] in
     (historyComponentWeight weight ρ t) (fun _ hP => historyUpperPolymer_support_nonempty hP)
 
 /-- The actual finite history density has the source's uniform maximal-piece bounds. -/
-theorem historyUpperDensity_bounds_of_degree_bound (weight : α → ℝ) (ρ t B : ℝ)
+theorem historyUpperDensity_bounds_of_degree_bound (weight : α → ℝ) ρ t B
     (hρ : 0 < ρ) (ht : 0 ≤ t) (hB : 0 ≤ B) (hw : ∀ x, |weight x| ≤ B)
-    (D : ℕ) (hD : ∀ x : α, (historyCoverGraph α).degree x ≤ D)
-    (hsmall : t * B / ρ ≤ 1 / (2 + 2 * (D : ℝ) ^ 2)) :
-    (1 / 2 : ℝ) ^ (historyMaximalPieces (Finset.univ : Finset α)).card ≤
+    D (hD : ∀ x , (historyCoverGraph α).degree x ≤ D)
+    (hsmall : t * B / ρ ≤ 1 / (2 + 2 * D ^ 2)) :
+    (1 / 2) ^ (historyMaximalPieces (Finset.univ : Finset α)).card ≤
         historyScaledUpperDensity weight ρ Finset.univ t ∧
       historyScaledUpperDensity weight ρ Finset.univ t ≤
-        (3 / 2 : ℝ) ^ (historyMaximalPieces (Finset.univ : Finset α)).card := by
+        (3 / 2) ^ (historyMaximalPieces (Finset.univ : Finset α)).card := by
   have hpos := historyUpperDensity_positive_of_degree_bound weight ρ t B hρ ht hB hw D hD hsmall
   have hb := deletion_ratios_global_bounds (historyRestrictedUpperDensity weight ρ t Finset.univ)
     (historyRestrictedUpperDensity_empty weight ρ t Finset.univ) (fun R x hx => (hpos R).2 x hx)

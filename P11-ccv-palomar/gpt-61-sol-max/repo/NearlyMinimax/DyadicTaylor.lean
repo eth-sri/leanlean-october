@@ -12,16 +12,19 @@ open MeasureTheory Set Matrix MvPolynomial
 open scoped BigOperators Matrix.Norms.L2Operator
 namespace NearlyMinimax
 
-def dyadicTaylorCoefficients {d ℓ : ℕ} (c : AnchoredIndex d ℓ → ℝ) (j : ℕ) :
-    AnchoredIndex d ℓ → ℝ := (anchoredTransport d ℓ) ^ j *ᵥ c
+section
+variable {d ℓ : ℕ} (c : AnchoredIndex d ℓ → ℝ)
+include c
 
-theorem dyadicTaylorCoefficients_succ {d ℓ : ℕ} (c : AnchoredIndex d ℓ → ℝ) (j : ℕ) :
+def dyadicTaylorCoefficients  j  := (anchoredTransport d ℓ) ^ j *ᵥ c
+
+theorem dyadicTaylorCoefficients_succ  j :
     dyadicTaylorCoefficients c (j + 1) = anchoredTransport d ℓ *ᵥ dyadicTaylorCoefficients c j := by
   rw [dyadicTaylorCoefficients, pow_succ', ← Matrix.mulVec_mulVec]
   rfl
 
-theorem dyadicTaylorCoefficients_evaluation {d ℓ : ℕ} (c : AnchoredIndex d ℓ → ℝ)
-    (j : ℕ) (x z : Covariate d) :
+theorem dyadicTaylorCoefficients_evaluation 
+    j x z :
     dyadicAnchoredFeature j x z ⬝ᵥ dyadicTaylorCoefficients c j = anchoredFitPolynomial x c z := by
   induction j with
   | zero =>
@@ -34,8 +37,7 @@ theorem dyadicTaylorCoefficients_evaluation {d ℓ : ℕ} (c : AnchoredIndex d �
   | succ j ih =>
     rw [dyadicTaylorCoefficients_succ, dyadicAnchoredFeature_transport_dot, ih]
 
-theorem dyadicTaylorCoefficients_normalized_evaluation {d ℓ : ℕ}
-    (c : AnchoredIndex d ℓ → ℝ) (j : ℕ) (x w : Covariate d) :
+theorem dyadicTaylorCoefficients_normalized_evaluation  j x w :
     anchoredFitPolynomial (dyadicNormalizedAnchor j x) (dyadicTaylorCoefficients c j) w =
       anchoredFitPolynomial x c (dyadicCellAffine j x w) := by
   have he := dyadicTaylorCoefficients_evaluation c j x (dyadicCellAffine j x w)
@@ -51,31 +53,36 @@ theorem dyadicTaylorCoefficients_normalized_evaluation {d ℓ : ℕ}
       intro γ _
       ring
     _ = _ := he
+end
 
-theorem euclideanNorm_smul {d : ℕ} (a : ℝ) (v : Covariate d) :
+
+section
+variable {d : ℕ}
+
+theorem euclideanNorm_smul  a (v : Covariate d) :
     euclideanNorm (a • v) = |a| * euclideanNorm v := by
   unfold euclideanNorm
   simp only [Pi.smul_apply, smul_eq_mul, mul_pow]
   rw [← Finset.mul_sum, Real.sqrt_mul (sq_nonneg a), Real.sqrt_sq_eq_abs]
 
-theorem dyadicCellAffine_euclidean_distance {d : ℕ} (j : ℕ) (x w : Covariate d) :
+theorem dyadicCellAffine_euclidean_distance  j (x w : Covariate d) :
     euclideanNorm (dyadicCellAffine j x w - x) =
-      ((2 : ℝ) ^ j)⁻¹ * euclideanNorm (w - dyadicNormalizedAnchor j x) := by
+      (2 ^ j)⁻¹ * euclideanNorm (w - dyadicNormalizedAnchor j x) := by
   rw [dyadicCellAffine_difference, euclideanNorm_smul, abs_of_nonneg (by positivity)]
 
 /-- One actual Taylor polynomial generates a coherent coefficient family at
 every level and a genuine residual bound, uniformly in the original model. -/
-theorem admissible_dyadic_taylor_family {d : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ) (x : Covariate d)
+theorem admissible_dyadic_taylor_family  C
+    θ (hθ : Admissible C θ) x
     (hx : x ∈ unitCube d) :
-    ∃ c : AnchoredIndex d C.order → ℝ, ∀ j : ℕ, ∀ w ∈ unitCube d,
+    ∃ c : AnchoredIndex d C.order → ℝ, ∀ j , ∀ w ∈ unitCube d,
       |dyadicRegressionDifference θ j x w -
         anchoredFitPolynomial (dyadicNormalizedAnchor j x) (dyadicTaylorCoefficients c j) w| ≤
-          taylorErrorFactor C * C.holderBound * (((2 : ℝ) ^ j)⁻¹) ^ C.smoothness ∧
+          taylorErrorFactor C * C.holderBound * ((2 ^ j)⁻¹) ^ C.smoothness ∧
       |dyadicRegressionDifference θ j x w -
         anchoredFitPolynomial (dyadicNormalizedAnchor j x) (dyadicTaylorCoefficients c j) w| ≤
-          ((d : ℝ) ^ C.order * (2 * C.holderBound) / C.order.factorial) *
-            (((2 : ℝ) ^ j)⁻¹) ^ C.smoothness *
+          (d ^ C.order * (2 * C.holderBound) / C.order.factorial) *
+            ((2 ^ j)⁻¹) ^ C.smoothness *
               euclideanNorm (w - dyadicNormalizedAnchor j x) ^ C.smoothness := by
   obtain ⟨P, hP, herr⟩ := admissible_regression_taylor C θ hθ x hx
   have hxP : eval x P = θ.regression x := by
@@ -116,5 +123,7 @@ theorem admissible_dyadic_taylor_family {d : ℕ} (C : ModelConstants d)
     rw [dyadicCellAffine_euclidean_distance, Real.mul_rpow (by positivity)
       (by unfold euclideanNorm; positivity)]
     ring
+end
+
 
 end NearlyMinimax

@@ -11,12 +11,14 @@ noncomputable section
 open scoped BigOperators
 namespace NearlyMinimax
 
-def fieldTailConstant (Csharp C : ℝ) : ℝ :=
+def fieldTailConstant Csharp C  :=
   Real.exp (Csharp * C) * poissonCountWeight (Csharp * C) 4
 
-theorem finite_geometric_field_count_tail_le {P Csharp C mu : ℝ}
-    (hP : 0 ≤ P) (hCs : 0 ≤ Csharp) (hC : 0 ≤ C)
-    (hmu : 0 ≤ mu) (hmu1 : mu ≤ 1) (J : ℕ) (R : ℕ → ℝ)
+section
+variable {P Csharp C mu : ℝ} (hP : 0 ≤ P) (hCs : 0 ≤ Csharp) (hC : 0 ≤ C) (hmu : 0 ≤ mu) (hmu1 : mu ≤ 1)
+include hP hCs hC hmu hmu1
+
+theorem finite_geometric_field_count_tail_le  J (R : ℕ → ℝ)
     (hR : ∀ j ∈ Finset.range J, R (4 + j) ≤ P * C ^ (4 + j)) :
     (∑ j ∈ Finset.range J, poissonCountWeight (Csharp * mu) (4 + j) * R (4 + j)) ≤
       fieldTailConstant Csharp C * P * mu ^ 4 := by
@@ -41,9 +43,7 @@ theorem finite_geometric_field_count_tail_le {P Csharp C mu : ℝ}
   unfold fieldTailConstant
   ring
 
-theorem finite_polynomial_field_count_tail_le {P Csharp C mu : ℝ}
-    (hP : 0 ≤ P) (hCs : 0 ≤ Csharp) (hC : 0 ≤ C)
-    (hmu : 0 ≤ mu) (hmu1 : mu ≤ 1) (a J : ℕ) (R : ℕ → ℝ)
+theorem finite_polynomial_field_count_tail_le  a J (R : ℕ → ℝ)
     (hR : ∀ j ∈ Finset.range J, R (4 + j) ≤ P * C ^ (4 + j) * (4 + j : ℕ) ^ a) :
     (∑ j ∈ Finset.range J, poissonCountWeight (Csharp * mu) (4 + j) * R (4 + j)) ≤
       fieldTailConstant Csharp (C * 2 ^ a) * P * mu ^ 4 := by
@@ -53,5 +53,7 @@ theorem finite_polynomial_field_count_tail_le {P Csharp C mu : ℝ}
   have h := mul_le_mul_of_nonneg_left (polynomial_count_factor_le (4 + j) a)
     (by positivity : 0 ≤ P * C ^ (4 + j))
   simpa only [mul_pow, ← mul_assoc] using h
+end
+
 
 end NearlyMinimax

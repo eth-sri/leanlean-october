@@ -15,19 +15,22 @@ set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1000000
 attribute [local instance] Classical.propDecidable
 
-def higherBandFamilyFirstAction {d n : ℕ} (ad bd lam ℓ N μ : ℝ)
-    (D M q : ℕ) (C : ℝ) (U : Fin n → Covariate d) (p : Fin n → ℝ)
-    (c : HighFrameIndex d D → ℝ) (Φ : (HighFrameIndex d D → ℝ) → ℝ) : ℝ :=
+section
+variable {d n : ℕ} (ad bd lam ℓ N μ : ℝ)
+include ad bd lam ℓ N μ
+
+def higherBandFamilyFirstAction 
+    D M q C U (p : Fin n → ℝ)
+    (c : HighFrameIndex d D → ℝ) Φ  :=
   ∑ i : HigherBandFamilyIndex d D M q ad bd C lam ℓ N μ,
     higherBandFirstAction ad bd lam ℓ (higherBandFamilyUpper d ℓ N μ i.val)
       (higherBandFamilyTarget i.val) (higherBandFamilyGuardDegree M i.val) D q C i.val.2 U p c Φ
 
-theorem higherBandFamilyFirstAction_zero_small_count {d n : ℕ}
-    (ad bd lam ℓ N μ : ℝ) (ha : 0 < ad) (hab : ad < bd)
-    (D M q : ℕ) (hD : 1 ≤ D) (hnD : n ≤ D) (hn : n ≤ 2) (C : ℝ)
-    (U : Fin n → Covariate d) (hU : ∀ i j, |U i j| ≤ 2)
+theorem higherBandFamilyFirstAction_zero_small_count  (ha : 0 < ad) (hab : ad < bd)
+    D M q (hD : 1 ≤ D) (hnD : n ≤ D) (hn : n ≤ 2) C
+    U (hU : ∀ i j, |U i j| ≤ 2)
     (p : Fin n → ℝ) (hp : ∀ i, p i ∈ Icc ad bd)
-    (c : HighFrameIndex d D → ℝ) (Φ : (HighFrameIndex d D → ℝ) → ℝ) :
+    (c : HighFrameIndex d D → ℝ) Φ :
     higherBandFamilyFirstAction ad bd lam ℓ N μ D M q C U p c Φ = 0 := by
   unfold higherBandFamilyFirstAction
   apply Finset.sum_eq_zero
@@ -36,20 +39,24 @@ theorem higherBandFamilyFirstAction_zero_small_count {d n : ℕ}
   exact higherBandFirstAction_zero_small_count ad bd lam ℓ _ ha hab i.property.1
     _ _ D q (by omega) hD hnD (by omega) C i.val.2 U hU p hp c Φ
 
-theorem completeSourceSignedFirstAction_eq_family {d n : ℕ}
-    (ad bd lam ℓ N μ : ℝ) (D M q : ℕ) (C : ℝ)
-    (U : Fin n → Covariate d) (p : Fin n → ℝ)
-    (c : HighFrameIndex d D → ℝ) (Φ : (HighFrameIndex d D → ℝ) → ℝ) :
+theorem completeSourceSignedFirstAction_eq_family  D M q C
+    U (p : Fin n → ℝ)
+    (c : HighFrameIndex d D → ℝ) Φ :
     completeSourceSignedFirstAction ad bd lam ℓ N μ D M q C U p c Φ =
       finePairThreeRowFirstAction ad bd ℓ N D M q C U p c Φ +
         singletonFirstAction ad bd D q C p c Φ +
         higherBandFamilyFirstAction ad bd lam ℓ N μ D M q C U p c Φ := rfl
+end
 
-theorem completeSourceRawNumerator_count_zero {d : ℕ} [NeZero d]
-    (ad bd lam ℓ N μ : ℝ) (ha : 0 < ad) (hab : ad < bd)
-    (D M q : ℕ) (hD : 1 ≤ D) (C a V η : ℝ)
-    (U : Fin 0 → Covariate d) (p g w : Fin 0 → ℝ)
-    (c : HighFrameIndex d D → ℝ) (y : Fin 0 → Fin 3) :
+
+section
+variable {d : ℕ}
+
+theorem completeSourceRawNumerator_count_zero  [NeZero d]
+    ad bd lam ℓ N μ (ha : 0 < ad) (hab : ad < bd)
+    D M q (hD : 1 ≤ D) C a V η
+    U (p g w : Fin 0 → ℝ)
+    (c : HighFrameIndex d D → ℝ) y :
     completeSourceRawNumerator ad bd lam ℓ N μ D M q C a V η U p g w c y = 0 := by
   unfold completeSourceRawNumerator
   rw [completeSourceSignedFirstAction_eq_family,
@@ -61,10 +68,10 @@ theorem completeSourceRawNumerator_count_zero {d : ℕ} [NeZero d]
       (by omega) (by omega) C U (fun i => Fin.elim0 i) p (fun i => Fin.elim0 i) c]
   simp
 
-theorem singletonFirstAction_response_heat {d : ℕ}
-    (ad bd : ℝ) (ha : 0 < ad) (hab : ad < bd) (D q : ℕ) (hD : 1 ≤ D) (hq : 1 ≤ q)
-    (C a V η : ℝ) (hC : C ≠ 0) (U : Fin 1 → Covariate d) (p g w : Fin 1 → ℝ)
-    (hp : ∀ i, p i ∈ Icc ad bd) (c : HighFrameIndex d D → ℝ) (y : Fin 1 → Fin 3) :
+theorem singletonFirstAction_response_heat 
+    ad bd (ha : 0 < ad) (hab : ad < bd) D q (hD : 1 ≤ D) (hq : 1 ≤ q)
+    C a V η (hC : C ≠ 0) (U : Fin 1 → Covariate d) (p g w : Fin 1 → ℝ)
+    (hp : ∀ i, p i ∈ Icc ad bd) c y :
     singletonFirstAction ad bd D q C p c
       (fun v => highResponseProduct a V η g w (fun i => highFrameFeature (U i)) v y) =
       η^2 * (∏ i, p i) * ∑ i, (w i)^2 *
@@ -80,12 +87,15 @@ theorem singletonFirstAction_response_heat {d : ℕ}
   simp only [mul_one]
   ring
 
-theorem completeSourceRawNumerator_count_one {d : ℕ} [NeZero d]
-    (ad bd lam ℓ N μ : ℝ) (ha : 0 < ad) (hab : ad < bd)
-    (D M q : ℕ) (hD : 1 ≤ D) (hq : 1 ≤ q) (C a V η : ℝ) (hC : C ≠ 0)
-    (U : Fin 1 → Covariate d) (hU : ∀ i j, |U i j| ≤ 2)
+section
+variable [NeZero d] (ad bd lam ℓ N μ : ℝ) (ha : 0 < ad) (hab : ad < bd)
+include ha hab
+
+theorem completeSourceRawNumerator_count_one  
+    D M q (hD : 1 ≤ D) (hq : 1 ≤ q) C a V η (hC : C ≠ 0)
+    U (hU : ∀ i j, |U i j| ≤ 2)
     (p g w : Fin 1 → ℝ) (hp : ∀ i, p i ∈ Icc ad bd)
-    (c : HighFrameIndex d D → ℝ) (y : Fin 1 → Fin 3) :
+    (c : HighFrameIndex d D → ℝ) y :
     completeSourceRawNumerator ad bd lam ℓ N μ D M q C a V η U p g w c y = 0 := by
   unfold completeSourceRawNumerator
   rw [completeSourceSignedFirstAction_eq_family,
@@ -95,13 +105,12 @@ theorem completeSourceRawNumerator_count_one {d : ℕ} [NeZero d]
     singletonFirstAction_response_heat ad bd ha hab D q hD hq C a V η hC U p g w hp c y]
   ring
 
-theorem completeSourceRawNumerator_count_two {d : ℕ} [NeZero d]
-    (ad bd lam ℓ N μ : ℝ) (ha : 0 < ad) (hab : ad < bd) (hℓ : 0 ≤ ℓ) (hℓN : ℓ ≤ N)
-    (D M q : ℕ) (hD : 3 ≤ D) (hM : 2 ≤ M) (hq : 2 ≤ q)
-    (C a V η : ℝ) (hC : C ≠ 0) (U : Fin 2 → Covariate d)
+theorem completeSourceRawNumerator_count_two   (hℓ : 0 ≤ ℓ) (hℓN : ℓ ≤ N)
+    D M q (hD : 3 ≤ D) (hM : 2 ≤ M) (hq : 2 ≤ q)
+    C a V η (hC : C ≠ 0) U
     (hU : ∀ i j, |U i j| ≤ 2) (hQ : ∀ i, U i ∈ hyperplaneCube d)
     (p g w : Fin 2 → ℝ) (hp : ∀ i, p i ∈ Icc ad bd)
-    (c : HighFrameIndex d D → ℝ) (y : Fin 2 → Fin 3) :
+    c y :
     completeSourceRawNumerator ad bd lam ℓ N μ D M q C a V η U p g w c y =
       η^2 * w 0 * w 1 * p 0 * p 1 *
         ((1 + N * exactEuclideanDistance (U 0) (U 1)) *
@@ -117,5 +126,9 @@ theorem completeSourceRawNumerator_count_two {d : ℕ} [NeZero d]
   simp only [add_zero, Fin.prod_univ_two]
   exact finePairThreeRow_count_two_numerator hD ad bd ℓ N ha hab hℓ hℓN D M q
     (by omega) hM hq C a V η hC U hQ p hp g w c y
+end
+
+end
+
 
 end NearlyMinimax

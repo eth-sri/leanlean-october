@@ -45,7 +45,10 @@ theorem historyMarkedPrior_integral_joint_measurable {E Z : Type*}
   rw [he]
   exact hi
 
-theorem highMarginalRawLikelihood_time_measurable {E : Type*} [MeasurableSpace E] {d : ℕ}
+section
+variable {E : Type*} [MeasurableSpace E]
+
+theorem highMarginalRawLikelihood_time_measurable  {d : ℕ}
     (dependent : J → J → Prop) (Δ : ℕ) (π : Measure E)
     [SFinite (historyMarkedReference dependent Δ π)]
     (activation : E → ℝ) (ham : Measurable activation) (n : ℕ) (a v η : ℝ)
@@ -57,7 +60,7 @@ theorem highMarginalRawLikelihood_time_measurable {E : Type*} [MeasurableSpace E
   historyMarkedPrior_integral_joint_measurable dependent Δ π activation ham _
     (highRawSampleLikelihood_time_measurable n a v η p F hp hF)
 
-theorem highMarginalIndexScore_time_measurable {E : Type*} [MeasurableSpace E]
+theorem highMarginalIndexScore_time_measurable 
     [StandardBorelSpace E] {d : ℕ}
     (dependent : J → J → Prop) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
     (Δ : ℕ) (π : Measure E) [SFinite π] [SFinite (historyMarkedReference dependent Δ π)]
@@ -70,12 +73,17 @@ theorem highMarginalIndexScore_time_measurable {E : Type*} [MeasurableSpace E]
   (historyMarkedPrior_integral_joint_measurable dependent Δ π activation ham _
     (highHistoryLikelihoodDerivative_time_measurable dependent hsymm π activation ham n a v η p F hp hF)).div
     (highMarginalRawLikelihood_time_measurable dependent Δ π activation ham n a v η p F hp hF)
+end
+
 
 set_option backward.isDefEq.respectTransparency true
 attribute [local irreducible] highMarginalIndexScore highMarginalRawLikelihood
   historyMarkedPrior highRawDensityMass massPowerNormalizer
 
-theorem highMarginalRealScore_time_measurable {E : Type*} [MeasurableSpace E]
+section
+variable {E : Type*} [MeasurableSpace E]
+
+theorem highMarginalRealScore_time_measurable 
     [StandardBorelSpace E] {d : ℕ}
     (dependent : J → J → Prop) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
     (Δ : ℕ) (π : Measure E) [SFinite π] [SFinite (historyMarkedReference dependent Δ π)]
@@ -84,18 +92,12 @@ theorem highMarginalRealScore_time_measurable {E : Type*} [MeasurableSpace E]
     (hp : Measurable (Function.uncurry p)) (hF : Measurable (Function.uncurry F)) :
     Measurable (fun z : ℝ × (Fin n → Observation d) =>
       highMarginalRealScore dependent hsymm (historyMarkedPrior dependent Δ z.1 π activation)
-        π activation n a (v-η^2*z.1) η p F z.2) := by
-  unfold highMarginalRealScore
-  change Measurable ((fun z : ℝ × ((Fin n → Covariate d) × (Fin n → Fin 3)) =>
-    highMarginalIndexScore dependent hsymm (historyMarkedPrior dependent Δ z.1 π activation)
-      π activation n a (v-η^2*z.1) η p F z.2) ∘
-    (fun z : ℝ × (Fin n → Observation d) => (z.1, decodeDesignResponse a z.2)))
-  exact (highMarginalIndexScore_time_measurable dependent hsymm Δ π activation ham n a v η p F hp hF).comp
+        π activation n a (v-η^2*z.1) η p F z.2) := (highMarginalIndexScore_time_measurable dependent hsymm Δ π activation ham n a v η p F hp hF).comp
     (show Measurable (fun z : ℝ × (Fin n → Observation d) =>
       (z.1, decodeDesignResponse a z.2)) from
       measurable_fst.prodMk ((decodeDesignResponse_measurable a).comp measurable_snd))
 
-theorem highMassPowerNormalizer_time_measurable {E : Type*} [MeasurableSpace E] {d : ℕ}
+theorem highMassPowerNormalizer_time_measurable  {d : ℕ}
     (dependent : J → J → Prop) (Δ : ℕ) (π : Measure E)
     [SFinite (historyMarkedReference dependent Δ π)]
     (activation : E → ℝ) (ham : Measurable activation) (n : ℕ)
@@ -111,5 +113,7 @@ theorem highMassPowerNormalizer_time_measurable {E : Type*} [MeasurableSpace E] 
     historyMarkedPrior_integral_joint_measurable dependent Δ π activation ham _ hG
   exact hi.comp (show Measurable (fun t : ℝ => (t, ())) from
     measurable_id.prodMk measurable_const)
+end
+
 
 end NearlyMinimax

@@ -18,43 +18,56 @@ namespace NearlyMinimax
 
 def quadraticProfile (S z : ℝ) : ℝ := S / 4 + (S - z) ^ 2 / S
 
-theorem quadraticProfile_lower {S z : ℝ} (hS : 0 < S) :
+section
+variable {S z : ℝ}
+
+theorem quadraticProfile_lower  (hS : 0 < S) :
     S / 4 ≤ quadraticProfile S z := by
   dsimp [quadraticProfile]
-  exact le_add_of_nonneg_right (div_nonneg (sq_nonneg _) hS.le)
+  bound
 
-theorem quadraticProfile_bias_identity {S z : ℝ} (hS : S ≠ 0) :
+section
+variable (hS : S ≠ 0)
+include hS
+
+theorem quadraticProfile_bias_identity   :
     z + quadraticProfile S z - S = (z - S / 2) ^ 2 / S := by
   dsimp [quadraticProfile]
   field_simp
   ring
 
-theorem quadraticProfile_fine_factorization {S z : ℝ} (hS : S ≠ 0) :
+theorem quadraticProfile_fine_factorization   :
     S ^ 2 / 4 - z * quadraticProfile S z =
       (S - z) * (2 * z - S) ^ 2 / (4 * S) := by
   dsimp [quadraticProfile]
   field_simp
   ring
+end
+
+
+section
+variable (hS : 0 < S)
+include hS
 
 /-- The sharp maximum used to limit the polynomial-lift variance. -/
-theorem quadraticProfile_fine_bound {S z : ℝ} (hS : 0 < S) (hz : z ≤ S) :
+theorem quadraticProfile_fine_bound   (hz : z ≤ S) :
     z * quadraticProfile S z ≤ S ^ 2 / 4 := by
   have h := quadraticProfile_fine_factorization (z := z) hS.ne'
   have hn : 0 ≤ (S - z) * (2 * z - S) ^ 2 / (4 * S) := by
-    exact div_nonneg (mul_nonneg (sub_nonneg.mpr hz) (sq_nonneg _)) (by positivity)
+    positivity
   linarith
 
-theorem quadraticProfile_fine_upper {S z : ℝ} (hS : 0 < S)
+theorem quadraticProfile_fine_upper  
     (hz0 : 0 ≤ z) (hzS : z ≤ S) : quadraticProfile S z ≤ 5 * S / 4 := by
   have hs : (S - z) ^ 2 ≤ S ^ 2 := by
     nlinarith [mul_nonneg hz0 (sub_nonneg.mpr hzS)]
   dsimp [quadraticProfile]
   have hd := (div_le_div_iff_of_pos_right hS).mpr hs
   have he : S ^ 2 / S = S := by field_simp
-  rw [he] at hd
+  
   linarith
 
-theorem quadraticProfile_gaussian_upper {S z : ℝ} (hS : 0 < S) :
+theorem quadraticProfile_gaussian_upper   :
     quadraticProfile S z ≤ S + 3 * (z - S / 2) ^ 2 / (2 * S) := by
   have h : S + 3 * (z - S / 2) ^ 2 / (2 * S) - quadraticProfile S z =
       (z + S / 2) ^ 2 / (2 * S) := by
@@ -63,8 +76,12 @@ theorem quadraticProfile_gaussian_upper {S z : ℝ} (hS : 0 < S) :
     ring
   have hn : 0 ≤ (z + S / 2) ^ 2 / (2 * S) := by positivity
   linarith
+end
 
-theorem quadraticProfile_hasDerivAt (S z : ℝ) :
+end
+
+
+theorem quadraticProfile_hasDerivAt S z :
     HasDerivAt (quadraticProfile S) (2 * (z - S) / S) z := by
   convert (hasDerivAt_const z (S / 4)).add
     (((hasDerivAt_const z S).sub (hasDerivAt_id z)).pow 2 |>.div_const S) using 1
@@ -74,10 +91,10 @@ theorem quadraticProfile_hasDerivAt (S z : ℝ) :
     ring
 
 /-- The coarse levels contribute a uniformly bounded factorial series. -/
-theorem quadraticProfile_coarse_bound {S z : ℝ} (hS : 2 ≤ S) (hz : z ≤ 0) :
+theorem quadraticProfile_coarse_bound {S z } (hS : 2 ≤ S) (hz : z ≤ 0) :
     Real.exp z * quadraticProfile S z ≤ 5 * S / 4 := by
-  have hSp : 0 < S := by linarith
-  let f : ℝ → ℝ := fun x => Real.exp x * quadraticProfile S x
+  
+  let f  := fun x => Real.exp x * quadraticProfile S x
   have hd (x : ℝ) : HasDerivAt f
       (Real.exp x * (quadraticProfile S x + 2 * (x - S) / S)) x := by
     convert (Real.hasDerivAt_exp x).mul (quadraticProfile_hasDerivAt S x) using 1

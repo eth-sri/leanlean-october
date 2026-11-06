@@ -16,23 +16,25 @@ variable {E I : Type*} [MeasurableSpace E] [MeasurableSpace I]
 variable [MeasurableSingletonClass I]
 variable {μ : Measure E} [IsProbabilityMeasure μ]
 
-def weightedSymmetrization (weight : ℝ) (G : E × E → ℝ) (z : E × E) : ℝ :=
+def weightedSymmetrization weight (G : E × E → ℝ) z  :=
   weight / 4 * (G z + G z.swap)
 
-theorem weightedSymmetrization_measurable (weight : ℝ) {G : E × E → ℝ}
+theorem weightedSymmetrization_measurable weight {G : E × E → ℝ}
     (hmG : Measurable G) : Measurable (weightedSymmetrization weight G) :=
   (hmG.add (hmG.comp measurable_swap)).const_mul _
 
-theorem weightedSymmetrization_symmetric (weight : ℝ) (G : E × E → ℝ) (x y : E) :
+theorem weightedSymmetrization_symmetric weight G (x y : E) :
     weightedSymmetrization weight G (x, y) = weightedSymmetrization weight G (y, x) := by
   simp only [weightedSymmetrization, Prod.swap_prod_mk, add_comm]
 
-theorem weightedSymmetrization_memLp (weight : ℝ) {G : E × E → ℝ}
-    (hG : MemLp G 2 (μ.prod μ)) : MemLp (weightedSymmetrization weight G) 2 (μ.prod μ) :=
+section
+variable (weight : ℝ) {G : E × E → ℝ} (hG : MemLp G 2 (μ.prod μ))
+include hG
+
+theorem weightedSymmetrization_memLp  : MemLp (weightedSymmetrization weight G) 2 (μ.prod μ) :=
   (hG.add (hG.comp_measurePreserving Measure.measurePreserving_swap)).const_mul _
 
-theorem weightedSymmetrization_mean (weight : ℝ) {G : E × E → ℝ}
-    (hG : MemLp G 2 (μ.prod μ)) :
+theorem weightedSymmetrization_mean  :
     (∫ z, weightedSymmetrization weight G z ∂μ.prod μ) =
       weight / 2 * ∫ z, G z ∂μ.prod μ := by
   have h₁ := hG.integrable (by norm_num : (1 : ℝ≥0∞) ≤ 2)
@@ -44,8 +46,7 @@ theorem weightedSymmetrization_mean (weight : ℝ) {G : E × E → ℝ}
   rw [integral_const_mul, ha, integral_prod_swap G]
   ring
 
-theorem weightedSymmetrization_energy_le (weight : ℝ) {G : E × E → ℝ}
-    (hG : MemLp G 2 (μ.prod μ)) :
+theorem weightedSymmetrization_energy_le  :
     (∫ z, weightedSymmetrization weight G z ^ 2 ∂μ.prod μ) ≤
       weight ^ 2 / 4 * ∫ z, G z ^ 2 ∂μ.prod μ := by
   have h₁ := hG.integrable_sq
@@ -57,7 +58,7 @@ theorem weightedSymmetrization_energy_le (weight : ℝ) {G : E × E → ℝ}
       intro z
       have hs : (G z + G z.swap) ^ 2 ≤ 2 * (G z ^ 2 + G z.swap ^ 2) := by
         nlinarith [sq_nonneg (G z - G z.swap)]
-      have hh := mul_le_mul_of_nonneg_left hs (by positivity : 0 ≤ weight ^ 2 / 16)
+      
       dsimp [weightedSymmetrization]
       nlinarith
     _ = _ := by
@@ -65,9 +66,11 @@ theorem weightedSymmetrization_energy_le (weight : ℝ) {G : E × E → ℝ}
       simp only [Pi.add_apply, Function.comp_def] at ha
       rw [integral_const_mul, ha, integral_prod_swap (fun z => G z ^ 2)]
       ring
+end
 
-theorem weightedSymmetrization_supported (weight : ℝ) (label : E → I)
-    {G : E × E → ℝ} (hsupport : ∀ x y, label x ≠ label y → G (x, y) = 0) :
+
+theorem weightedSymmetrization_supported weight (label : E → I)
+    {G } (hsupport : ∀ x y, label x ≠ label y → G (x, y) = 0) :
     ∀ x y, label x ≠ label y → weightedSymmetrization weight G (x, y) = 0 := by
   intro x y hxy
   simp only [weightedSymmetrization, Prod.swap_prod_mk, hsupport x y hxy,
@@ -95,13 +98,13 @@ theorem weighted_pair_centered_sq_le {Ω : Type*} [MeasurableSpace Ω]
   have hcoef : 0 ≤ 4 / (n : ℝ) * cap + 2 / ((n : ℝ) * (n - 1 : ℕ)) := by positivity
   apply (mul_le_mul_of_nonneg_left (weightedSymmetrization_energy_le weight hG) hcoef).trans
   have hn0 : 0 < (n : ℝ) := by exact_mod_cast (by omega : 0 < n)
-  have hm0 : 0 < ((n - 1 : ℕ) : ℝ) := by exact_mod_cast (by omega : 0 < n - 1)
+  
   have henergy : 0 ≤ ∫ z, G z ^ 2 ∂μ.prod μ := integral_nonneg (fun _ => sq_nonneg _)
   have hscale : (4 / (n : ℝ) * cap + 2 / ((n : ℝ) * (n - 1 : ℕ))) * (weight ^ 2 / 4) =
       (weight * cap / (n : ℝ) + weight / (2 * (n : ℝ) * (n - 1 : ℕ))) * weight := by
     field_simp
     <;> ring
-  rw [← mul_assoc, hscale]
+  
   have hb := mul_le_mul_of_nonneg_right
     (mul_le_mul_of_nonneg_right
       (add_le_add_right (div_le_div_of_nonneg_right hP hn0.le)

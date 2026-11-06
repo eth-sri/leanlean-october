@@ -15,7 +15,13 @@ set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 500000
 attribute [local instance] Classical.propDecidable
 
- def completeSaddleGeometryEnvelope {d : ℕ} (C : ModelConstants d)
+ section
+variable {d : ℕ}
+
+section
+variable (C : ModelConstants d)
+
+def completeSaddleGeometryEnvelope  
     (Q : LowSmoothnessTernaryConstants C) (Cfr cf Cω : ℝ) (n : ℕ) :
     (r : ℕ) → (Fin r → Covariate d) → ℝ :=
   let q := lowerSaddleResponseOrder C.smoothness d
@@ -33,15 +39,15 @@ attribute [local instance] Classical.propDecidable
   let Bl := completeSourceSaddleActivity C q Cfr (spatialInterpolationLambda d) Cω n
   completeSourceGeometryEnvelope D M Rbound q C.densityLower C.densityUpper c0 ell N mu Cfr Q.a Q.ρ eta Chi Bl
 
- theorem completeSaddleGeometryEnvelope_nonneg {d : ℕ} (C : ModelConstants d)
-    (Q : LowSmoothnessTernaryConstants C) (Cfr cf Cω : ℝ) (n r : ℕ) (U : Fin r → Covariate d) :
+ theorem completeSaddleGeometryEnvelope_nonneg  
+    Q Cfr cf Cω n r U :
     0 ≤ completeSaddleGeometryEnvelope C Q Cfr cf Cω n r U :=
-  by
-    unfold completeSaddleGeometryEnvelope
-    exact completeSourceGeometryEnvelope_nonneg _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ r U
+  completeSourceGeometryEnvelope_nonneg _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ r U
+end
 
- theorem completeSaddleGeometryEnvelope_integrable {d : ℕ} [NeZero d] (C : ModelConstants d)
-    (Q : LowSmoothnessTernaryConstants C) (hd : 5 ≤ d) (Cfr cf Cω : ℝ) (n r : ℕ)
+
+ theorem completeSaddleGeometryEnvelope_integrable  [NeZero d] C
+    Q (hd : 5 ≤ d) Cfr cf Cω (n r : ℕ)
     (hell : 1 ≤ lowerAliasCutoff C.smoothness d (highCompleteSourceSaddleCoefficient C)
       (highCompleteSourceSaddleTheta C) Cω (densityIntervalExponent C.densityLower C.densityUpper+1)
       (shrunkDensityExponent C.densityLower C.densityUpper) n)
@@ -52,9 +58,9 @@ attribute [local instance] Classical.propDecidable
         (highCompleteSourceSaddleTheta C) Cω (shrunkDensityExponent C.densityLower C.densityUpper) n) :
     Integrable (completeSaddleGeometryEnvelope C Q Cfr cf Cω n r) (fullSpatialPatchDesign d r) :=
   by
-    unfold completeSaddleGeometryEnvelope
-    apply completeSourceGeometryEnvelope_integrable hd
-    · exact hell
-    · exact hellN
+    
+    solve_by_elim [completeSourceGeometryEnvelope_integrable]
+end
+
 
 end NearlyMinimax

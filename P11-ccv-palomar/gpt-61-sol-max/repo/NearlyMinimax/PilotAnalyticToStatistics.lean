@@ -14,23 +14,29 @@ namespace NearlyMinimax
 set_option maxHeartbeats 2000000
 set_option backward.isDefEq.respectTransparency false
 
-theorem dyadicIncrementKernel_raw_budget_of_derivative {d : ℕ} (C : ModelConstants d)
-    [Nonempty (AnchoredIndex d C.order)] (θ : RegressionParameter d) (hθ : Admissible C θ)
-    (D A : ℝ) (hD : 0 < D) (hA : 0 < A)
-    (hder : ∀ j : ℕ, ∀ x ∈ unitCube d, ∀ y : ℝ, |y| ≤ C.holderBound → ∀ m k : ℕ,
+section
+variable {d : ℕ} (C : ModelConstants d) [Nonempty (AnchoredIndex d C.order)] (θ : RegressionParameter d) (hθ : Admissible C θ) (D A : ℝ) (hD : 0 < D) (hA : 0 < A)
+include hθ hD hA
+
+section
+variable (hder : ∀ j : ℕ, ∀ x ∈ unitCube d, ∀ y : ℝ, |y| ≤ C.holderBound → ∀ m k : ℕ,
       ∀ row : Fin (anchoredDimension d C.order) → ℝ,
         ‖iteratedFDeriv ℝ k (incrementFinScalar (anchoredDimension d C.order)
           C.densityLower C.densityUpper (anchoredFinTransport d C.order) y m row)
-          (dyadicIncrementRawMean θ j x)‖ ≤ (∑ i, |row i|) * D * (k.factorial : ℝ) * A ^ k) :
-    ∀ n j : ℕ,
-      ∀ x ∈ unitCube d, ∀ y : ℝ, |y| ≤ C.holderBound → ∀ m k : ℕ,
-      ∀ row : Fin (anchoredDimension d C.order) → ℝ, ∀ hk : k ≤ n,
+          (dyadicIncrementRawMean θ j x)‖ ≤ (∑ i, |row i|) * D * (k.factorial : ℝ) * A ^ k)
+include hder
+
+theorem dyadicIncrementKernel_raw_budget_of_derivative 
+     :
+    ∀ n j ,
+      ∀ x ∈ unitCube d, ∀ y , |y| ≤ C.holderBound → ∀ m k ,
+      ∀ row , ∀ hk ,
       ∀ Λ : ℝ, 0 < Λ →
-        (((k.factorial : ℝ) * Λ ^ k)⁻¹) *
+        ((k.factorial * Λ ^ k)⁻¹) *
           (∫ z : Fin n → Observation d,
             dyadicIncrementKernel C θ j x y m row k
               (fun i => incrementGlobalVector j (z (Fin.castLEEmb hk i))) ^ 2 ∂sampleLaw θ n) ≤
-          ((∑ i, |row i|) * D) ^ 2 * (k.factorial : ℝ) *
+          ((∑ i, |row i|) * D) ^ 2 * k.factorial *
             (A ^ 2 * (Fintype.card (incrementVariables (anchoredDimension d C.order)) *
               preconditionedPilotMomentConstant C C.order * dyadicPilotScale d j) / Λ) ^ k := by
   intro n j x hx y hy m k row hk Λ hΛ
@@ -40,8 +46,7 @@ theorem dyadicIncrementKernel_raw_budget_of_derivative {d : ℕ} (C : ModelConst
   let e := Fin.castLEEmb hk
   let E := (Fintype.card (incrementVariables (anchoredDimension d C.order)) : ℝ) *
     preconditionedPilotMomentConstant C C.order * dyadicPilotScale d j
-  have hE : 0 ≤ E := by
-    exact mul_nonneg (mul_nonneg (Nat.cast_nonneg _) (preconditionedPilotMomentConstant_pos C _).le)
+  have hE : 0 ≤ E := mul_nonneg (mul_nonneg (Nat.cast_nonneg _) (preconditionedPilotMomentConstant_pos C _).le)
       (dyadicPilotScale_pos _ _).le
   have hrow : 0 ≤ (∑ i, |row i|) * D :=
     mul_nonneg (Finset.sum_nonneg (fun i _ => abs_nonneg _)) hD.le
@@ -64,23 +69,17 @@ theorem dyadicIncrementKernel_raw_budget_of_derivative {d : ℕ} (C : ModelConst
   exact hb
 
 
-theorem dyadicPolynomialPilot_variance_of_derivative {d : ℕ} (C : ModelConstants d)
-    [Nonempty (AnchoredIndex d C.order)] (θ : RegressionParameter d) (hθ : Admissible C θ)
-    (D A : ℝ) (hD : 0 < D) (hA : 0 < A)
-    (hder : ∀ j : ℕ, ∀ x ∈ unitCube d, ∀ y : ℝ, |y| ≤ C.holderBound → ∀ m k : ℕ,
-      ∀ row : Fin (anchoredDimension d C.order) → ℝ,
-        ‖iteratedFDeriv ℝ k (incrementFinScalar (anchoredDimension d C.order)
-          C.densityLower C.densityUpper (anchoredFinTransport d C.order) y m row)
-          (dyadicIncrementRawMean θ j x)‖ ≤ (∑ i, |row i|) * D * (k.factorial : ℝ) * A ^ k) :
-    ∀ n j : ℕ,
-      ∀ x ∈ unitCube d, ∀ y : ℝ, |y| ≤ C.holderBound → ∀ m : ℕ,
-      ∀ row : Fin (anchoredDimension d C.order) → ℝ,
+theorem dyadicPolynomialPilot_variance_of_derivative 
+     :
+    ∀ n j ,
+      ∀ x ∈ unitCube d, ∀ y , |y| ≤ C.holderBound → ∀ m ,
+      ∀ row ,
       m + anchoredDimension d C.order + 1 ≤ n →
-      ∀ Λ : ℝ, 0 < Λ → Λ ≤ (n : ℝ) - (m + anchoredDimension d C.order + 1) + 1 →
+      ∀ Λ : ℝ, 0 < Λ → Λ ≤ n - (m + anchoredDimension d C.order + 1) + 1 →
         variance (dyadicPolynomialPilot C n j x y m row) (sampleLaw θ n) ≤
           ((∑ i, |row i|) * D) ^ 2 *
             ∑ t : Fin (m + anchoredDimension d C.order + 1),
-              ((t.val + 1).factorial : ℝ) *
+              ((t.val + 1).factorial) *
                 (A ^ 2 * (Fintype.card (incrementVariables (anchoredDimension d C.order)) *
                   preconditionedPilotMomentConstant C C.order * dyadicPilotScale d j) / Λ) ^ (t.val + 1) := by
   intro n j x hx y hy m row hdegree Λ hΛ hΛn
@@ -90,8 +89,7 @@ theorem dyadicPolynomialPilot_variance_of_derivative {d : ℕ} (C : ModelConstan
   let X (i : Fin n) (z : Fin n → Observation d) := dyadicIncrementRawVector (ℓ := C.order) j x (z i)
   let E := (Fintype.card (incrementVariables (anchoredDimension d C.order)) : ℝ) *
     preconditionedPilotMomentConstant C C.order * dyadicPilotScale d j
-  have hE : 0 ≤ E := by
-    exact mul_nonneg (mul_nonneg (Nat.cast_nonneg _) (preconditionedPilotMomentConstant_pos C _).le)
+  have hE : 0 ≤ E := mul_nonneg (mul_nonneg (Nat.cast_nonneg _) (preconditionedPilotMomentConstant_pos C _).le)
       (dyadicPilotScale_pos _ _).le
   have hrow : 0 ≤ (∑ i, |row i|) * D :=
     mul_nonneg (Finset.sum_nonneg (fun i _ => abs_nonneg _)) hD.le
@@ -118,37 +116,37 @@ theorem dyadicPolynomialPilot_variance_of_derivative {d : ℕ} (C : ModelConstan
     (fun i a => hL2 (e i) a) E ((∑ i, |row i|) * D) A Λ hE hrow hA.le hΛ
     (fun i => dyadicIncrementRawVector_sample_second_le C θ hθ j x hx (e i)) hd
   simpa only [E, e, mul_assoc] using hb
+end
 
 
-theorem dyadicPilotErrorField_test_variance_of_raw_budget {d : ℕ} (C : ModelConstants d)
-    [Nonempty (AnchoredIndex d C.order)] (θ : RegressionParameter d) (hθ : Admissible C θ)
-    (D A : ℝ) (hD : 0 < D) (hA : 0 < A)
-    (hraw : ∀ n j : ℕ,
-      ∀ x ∈ unitCube d, ∀ y : ℝ, |y| ≤ C.holderBound → ∀ m k : ℕ,
-      ∀ row : Fin (anchoredDimension d C.order) → ℝ, ∀ hk : k ≤ n,
+
+theorem dyadicPilotErrorField_test_variance_of_raw_budget 
+    (hraw : ∀ n j ,
+      ∀ x ∈ unitCube d, ∀ y , |y| ≤ C.holderBound → ∀ m k ,
+      ∀ row , ∀ hk ,
       ∀ Λ : ℝ, 0 < Λ →
-        (((k.factorial : ℝ) * Λ ^ k)⁻¹) *
+        ((k.factorial * Λ ^ k)⁻¹) *
           (∫ z : Fin n → Observation d,
             dyadicIncrementKernel C θ j x y m row k
               (fun i => incrementGlobalVector j (z (Fin.castLEEmb hk i))) ^ 2 ∂sampleLaw θ n) ≤
-          ((∑ i, |row i|) * D) ^ 2 * (k.factorial : ℝ) *
+          ((∑ i, |row i|) * D) ^ 2 * k.factorial *
             (A ^ 2 * (Fintype.card (incrementVariables (anchoredDimension d C.order)) *
               preconditionedPilotMomentConstant C C.order * dyadicPilotScale d j) / Λ) ^ k) :
-    ∀ n j J : ℕ, j ≤ J →
-      ∀ y : ℝ, |y| ≤ C.holderBound → ∀ m : ℕ,
+    ∀ n j J , j ≤ J →
+      ∀ y , |y| ≤ C.holderBound → ∀ m ,
       m + anchoredDimension d C.order + 1 ≤ n →
-      ∀ Λ : ℝ, 0 < Λ → Λ ≤ (n : ℝ) - (m + anchoredDimension d C.order + 1) + 1 →
-      ∀ ν : Covariate d × Covariate d → ℝ,
-      MemLp ν 2 (regularPairDesignMeasure θ ((2 : ℕ) ^ J) (by positivity)) →
+      ∀ Λ : ℝ, 0 < Λ → Λ ≤ n - (m + anchoredDimension d C.order + 1) + 1 →
+      ∀ ν ,
+      MemLp ν 2 (regularPairDesignMeasure θ (2 ^ J) (by positivity)) →
       variance (fun z => ∫ w, ν w * dyadicPilotErrorField C θ n j y m z w
-        ∂regularPairDesignMeasure θ ((2 : ℕ) ^ J) (by positivity)) (sampleLaw θ n) ≤
+        ∂regularPairDesignMeasure θ (2 ^ J) (by positivity)) (sampleLaw θ n) ≤
       (C.densityUpper ^ 2 / dyadicPilotScale d (j - 1)) *
         ((dyadicPilotRowCap d C.order j J * D) ^ 2 *
           ∑ r : Fin (m + anchoredDimension d C.order + 1),
-            ((r.val + 1).factorial : ℝ) *
+            ((r.val + 1).factorial) *
               (A ^ 2 * (Fintype.card (incrementVariables (anchoredDimension d C.order)) *
                 preconditionedPilotMomentConstant C C.order * dyadicPilotScale d j) / Λ) ^ (r.val + 1)) *
-        (∫ w, ν w ^ 2 ∂regularPairDesignMeasure θ ((2 : ℕ) ^ J) (by positivity)) := by
+        (∫ w, ν w ^ 2 ∂regularPairDesignMeasure θ (2 ^ J) (by positivity)) := by
   intro n j J hj y hy m hdegree Λ hΛ hΛn ν hν
   let := sampleLaw_isProbability C θ hθ n
   let M := regularPairDesignMeasure θ ((2 : ℕ) ^ J) (by positivity)
@@ -187,7 +185,7 @@ theorem dyadicPilotErrorField_test_variance_of_raw_budget {d : ℕ} (C : ModelCo
       ext w
       exact (Fintype.equivFin (DyadicPilotLabelIndex d (j - 1))).apply_eq_iff_eq_symm_apply
     rw [hs]
-    exact regularPairDesignMeasure_parent_block_mass C θ hθ ((2 : ℕ) ^ J) (by positivity) j _
+    solve_by_elim [regularPairDesignMeasure_parent_block_mass]
   have hu := FieldLiftCovariance.integrated_centered_lift_variance_localized
     (μ := sampleLaw θ n) (M := M) (n := n)
     (p := Fintype.card (IncrementGlobalIndex d C.order j)) (R := R)
@@ -266,9 +264,10 @@ theorem dyadicPilotErrorField_test_variance_of_raw_budget {d : ℕ} (C : ModelCo
       (dyadicPolynomialPilot_centered_global C θ hθ n j w.1 y m (dyadicPilotRow j w.1 w.2) hdegree z)
   rw [herr, hrhs] at hu
   exact hu.trans (by
-    have hL : 0 ≤ C.densityUpper ^ 2 / dyadicPilotScale d (j - 1) := by
-      exact div_nonneg (sq_nonneg _) (dyadicPilotScale_pos _ _).le
+    have hL : 0 ≤ C.densityUpper ^ 2 / dyadicPilotScale d (j - 1) := div_nonneg (sq_nonneg _) (dyadicPilotScale_pos _ _).le
     simpa only [P, R, rowcap, mul_assoc] using mul_le_mul_of_nonneg_left hile hL)
+end
+
 
 
 end NearlyMinimax

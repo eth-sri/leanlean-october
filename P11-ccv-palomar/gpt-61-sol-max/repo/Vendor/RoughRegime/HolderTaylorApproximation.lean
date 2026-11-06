@@ -21,11 +21,11 @@ lemma linePath_sub_base_norm_le {d : ℕ} (x y : Covariate d)
     (x y : Covariate d) : MvPolynomial.eval (fun i => y i) (holderTaylorPolynomial f 0 x) = f x := by
   simp [holderTaylorPolynomial, multilinearPolynomial_eval, iteratedFDerivWithin_zero_apply]
 
-theorem holderTaylorPolynomial_error {d : ℕ} (f : Covariate d → ℝ)
-    (t H : ℝ) (hH : 0 ≤ H) (hf : f ∈ holderBall t H)
-    (x y : Covariate d) (hx : x ∈ cube d) (hy : y ∈ cube d) :
+theorem holderTaylorPolynomial_error {d } f
+    t H (hH : 0 ≤ H) (hf : f ∈ holderBall t H)
+    x y (hx : x ∈ cube d) (hy : y ∈ cube d) :
     |f y - MvPolynomial.eval (fun i => y i) (holderTaylorPolynomial f (holderOrder t) x)| ≤
-      ((d : ℝ) ^ holderOrder t * H / (holderOrder t).factorial) * ‖y - x‖ ^ t := by
+      (d ^ holderOrder t * H / (holderOrder t).factorial) * ‖y - x‖ ^ t := by
   have hreg := holderBall_regular f t H hf
   cases hk : holderOrder t with
   | zero =>
@@ -72,7 +72,7 @@ theorem holderTaylorPolynomial_error {d : ℕ} (f : Covariate d → ℝ)
           iteratedFDerivWithin ℝ (n + 1) f (cube d) x (fun _ => y - x)‖ ≤
           ‖iteratedFDerivWithin ℝ (n + 1) f (cube d) (linePath x y z) -
             iteratedFDerivWithin ℝ (n + 1) f (cube d) x‖ * ‖y - x‖ ^ (n + 1) := by
-        simpa only [sub_apply, Finset.prod_const, Finset.card_univ, Fintype.card_fin] using hb
+        simp_all []
       exact hb'.trans
         (mul_le_mul_of_nonneg_right hD' (by positivity))
     have hTaylor := linePath_taylor_eq f hft x y hx hy
@@ -82,7 +82,7 @@ theorem holderTaylorPolynomial_error {d : ℕ} (f : Covariate d → ℝ)
       rw [← hTaylor, taylorWithinEval_succ]
       have hr : F 1 - taylorWithinEval F n (Icc (0 : ℝ) 1) 0 1 =
           iteratedDerivWithin (n + 1) F (Icc (0 : ℝ) 1) z / (n + 1).factorial := by
-        simpa only [uIcc_of_le (by norm_num : (0 : ℝ) ≤ 1), sub_zero, one_pow, mul_one] using hrem
+        simp_all []
       have hf1 : F 1 = f y := by simp [F]
       rw [hf1] at hr
       simp only [sub_zero, one_pow, mul_one, smul_eq_mul]

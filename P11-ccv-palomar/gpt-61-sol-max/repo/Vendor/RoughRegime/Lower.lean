@@ -20,24 +20,14 @@ noncomputable section
 set_option backward.isDefEq.respectTransparency false
 set_option linter.unnecessarySeqFocus false
 
-/-- A probability distribution on a finite space, with real-valued masses. -/
-structure FiniteLaw (α : Type*) [Fintype α] where
-  mass : α → ℝ
-  nonneg : ∀ x, 0 ≤ mass x
-  total : ∑ x, mass x = 1
+
 
 variable {α β : Type*} [Fintype α] [Fintype β]
 
-def FiniteLaw.prod (P : FiniteLaw α) (Q : FiniteLaw β) : FiniteLaw (α × β) where
-  mass x := P.mass x.1 * Q.mass x.2
-  nonneg x := mul_nonneg (P.nonneg _) (Q.nonneg _)
-  total := by
-    rw [Fintype.sum_prod_type]
-    simp_rw [← Finset.mul_sum]
-    simp [P.total, Q.total]
+
 
 /-- The square-root inequality used for mixture likelihoods. -/
-theorem square_root_difference_bound {f g c : ℝ} (hc : 0 < c)
+theorem square_root_difference_bound {f g c } (hc : 0 < c)
     (hf : c ≤ f) (hg : c ≤ g) :
     (Real.sqrt f - Real.sqrt g) ^ 2 ≤ (f - g) ^ 2 / (4 * c) := by
   have hf0 : 0 ≤ f := le_trans (le_of_lt hc) hf
@@ -58,9 +48,7 @@ theorem square_root_difference_bound {f g c : ℝ} (hc : 0 < c)
     have hi : f - g = (Real.sqrt f - Real.sqrt g) * (Real.sqrt f + Real.sqrt g) := by
       nlinarith
     rw [hi, mul_pow]
-  apply (le_div_iff₀ (by positivity : 0 < 4 * c)).mpr
-  rw [hid]
-  exact mul_le_mul_of_nonneg_left hden (sq_nonneg _)
+  simp_all [le_div_iff₀, mul_le_mul_of_nonneg_left, sq_nonneg]
 
 theorem sqrt_finite_product {ι : Type*} [Fintype ι] (f : ι → ℝ)
     (hf : ∀ i, 0 ≤ f i) :

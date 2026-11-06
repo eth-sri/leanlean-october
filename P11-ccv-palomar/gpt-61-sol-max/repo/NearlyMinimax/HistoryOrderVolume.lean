@@ -19,7 +19,7 @@ namespace NearlyMinimax
 
 variable {α : Type*} [PartialOrder α] [DecidableEq α]
 
-def IncomparableHistoryParts (P Q : Finset α) : Prop :=
+def IncomparableHistoryParts (P Q : Finset α)  :=
   ∀ p ∈ P, ∀ q ∈ Q, ¬ p ≤ q ∧ ¬ q ≤ p
 
 omit [DecidableEq α] in
@@ -29,11 +29,7 @@ theorem IncomparableHistoryParts.disjoint {P Q : Finset α} (h : IncomparableHis
   intro x hxP hxQ
   exact (h x hxP x hxQ).1 le_rfl
 
-omit [DecidableEq α] in
-theorem IncomparableHistoryParts.symm {P Q : Finset α} (h : IncomparableHistoryParts P Q) :
-    IncomparableHistoryParts Q P := by
-  intro q hq p hp
-  exact ⟨(h p hp q hq).2, (h p hp q hq).1⟩
+
 
 theorem historyMaximalPieces_union {P Q : Finset α} (h : IncomparableHistoryParts P Q) :
     historyMaximalPieces (P ∪ Q) = historyMaximalPieces P ∪ historyMaximalPieces Q := by
@@ -60,9 +56,9 @@ theorem historyMaximalPieces_union {P Q : Finset α} (h : IncomparableHistoryPar
       · exact ((h y hyP x hxQ).2 hxy).elim
       · exact hm y hyQ hxy
 
-def historyOrderCount (S : Finset α) : ℝ := historyDeletionCoefficient (fun _ : α => (1 : ℝ)) S.card S
+def historyOrderCount S  := historyDeletionCoefficient (fun _ : α => (1 : ℝ)) S.card S
 
-def historyOrderVolume (S : Finset α) : ℝ := historyOrderCount S / (S.card.factorial : ℝ)
+def historyOrderVolume (S : Finset α)  := historyOrderCount S / (S.card.factorial : ℝ)
 
 @[simp] theorem historyOrderCount_empty : historyOrderCount (∅ : Finset α) = 1 := by
   simp [historyOrderCount]
@@ -70,7 +66,10 @@ def historyOrderVolume (S : Finset α) : ℝ := historyOrderCount S / (S.card.fa
 @[simp] theorem historyOrderVolume_empty : historyOrderVolume (∅ : Finset α) = 1 := by
   simp [historyOrderVolume]
 
-theorem historyOrderCount_recursion (S : Finset α) (hS : S.Nonempty) :
+section
+variable (S : Finset α)
+
+theorem historyOrderCount_recursion  (hS : S.Nonempty) :
     historyOrderCount S = ∑ x ∈ historyMaximalPieces S, historyOrderCount (S.erase x) := by
   have hpos := Finset.card_pos.2 hS
   have hc : S.card = (S.card - 1) + 1 := by omega
@@ -81,7 +80,7 @@ theorem historyOrderCount_recursion (S : Finset α) (hS : S.Nonempty) :
   have hxS := historyMaximalPieces_subset S hx
   rw [Finset.card_erase_of_mem hxS, one_mul]
 
-theorem historyOrderCount_nonneg (S : Finset α) : 0 ≤ historyOrderCount S := by
+theorem historyOrderCount_nonneg  : 0 ≤ historyOrderCount S := by
   have hh : ∀ k (T : Finset α), 0 ≤ historyDeletionCoefficient (fun _ : α => (1 : ℝ)) k T := by
     intro k
     induction k with
@@ -94,7 +93,7 @@ theorem historyOrderCount_nonneg (S : Finset α) : 0 ≤ historyOrderCount S := 
       simpa only [one_mul] using ih (T.erase x)
   exact hh S.card S
 
-theorem historyOrderCount_le_factorial (S : Finset α) : historyOrderCount S ≤ (S.card.factorial : ℝ) := by
+theorem historyOrderCount_le_factorial  : historyOrderCount S ≤ S.card.factorial := by
   induction S using Finset.strongInductionOn
   rename_i S ih
   by_cases he : S = ∅
@@ -119,14 +118,13 @@ theorem historyOrderCount_le_factorial (S : Finset α) : historyOrderCount S ≤
         congr 1
         exact_mod_cast hc
 
-theorem historyOrderVolume_nonneg (S : Finset α) : 0 ≤ historyOrderVolume S :=
+theorem historyOrderVolume_nonneg  : 0 ≤ historyOrderVolume S :=
   div_nonneg (historyOrderCount_nonneg S) (by positivity)
 
-theorem historyOrderVolume_le_one (S : Finset α) : historyOrderVolume S ≤ 1 := by
-  exact (div_le_one (by positivity : 0 < (S.card.factorial : ℝ))).2 (historyOrderCount_le_factorial S)
+theorem historyOrderVolume_le_one  : historyOrderVolume S ≤ 1 := (div_le_one (by positivity : 0 < (S.card.factorial : ℝ))).2 (historyOrderCount_le_factorial S)
 
-theorem historyOrderVolume_recursion (S : Finset α) :
-    (S.card : ℝ) * historyOrderVolume S = ∑ x ∈ historyMaximalPieces S, historyOrderVolume (S.erase x) := by
+theorem historyOrderVolume_recursion  :
+    S.card * historyOrderVolume S = ∑ x ∈ historyMaximalPieces S, historyOrderVolume (S.erase x) := by
   classical
   by_cases he : S = ∅
   · subst S
@@ -149,6 +147,8 @@ theorem historyOrderVolume_recursion (S : Finset α) :
         apply Finset.sum_congr rfl
         intro x hx
         rw [Finset.card_erase_of_mem (historyMaximalPieces_subset S hx)]
+end
+
 
 /-- Order-volume coefficients multiply across disjoint incomparable history parts. -/
 theorem historyOrderVolume_union {P Q : Finset α} (hinc : IncomparableHistoryParts P Q) :
@@ -161,11 +161,11 @@ theorem historyOrderVolume_union {P Q : Finset α} (hinc : IncomparableHistoryPa
     rename_i n ih
     intro P Q hn hinc
     by_cases he : P ∪ Q = ∅
-    · have hP : P = ∅ := (Finset.union_eq_empty.1 he).1
-      have hQ : Q = ∅ := (Finset.union_eq_empty.1 he).2
+    · have hP  := (Finset.union_eq_empty.1 he).1
+      have hQ  := (Finset.union_eq_empty.1 he).2
       simp [hP, hQ]
     · have hdis := hinc.disjoint
-      have hmaxdis : Disjoint (historyMaximalPieces P) (historyMaximalPieces Q) :=
+      have hmaxdis  :=
         hdis.mono (historyMaximalPieces_subset P) (historyMaximalPieces_subset Q)
       have hleft : (∑ x ∈ historyMaximalPieces P, historyOrderVolume ((P ∪ Q).erase x)) =
           (P.card : ℝ) * historyOrderVolume P * historyOrderVolume Q := by
@@ -174,7 +174,7 @@ theorem historyOrderVolume_union {P Q : Finset α} (hinc : IncomparableHistoryPa
             apply Finset.sum_congr rfl
             intro x hx
             have hxP := historyMaximalPieces_subset P hx
-            have hxQ : x ∉ Q := fun hxQ => Finset.disjoint_left.1 hdis hxP hxQ
+            have hxQ  := fun hxQ => Finset.disjoint_left.1 hdis hxP hxQ
             have hU : (P ∪ Q).erase x = P.erase x ∪ Q := by
               rw [Finset.erase_union_distrib, Finset.erase_eq_of_notMem hxQ]
             have hlt : (P.erase x ∪ Q).card < n := by
@@ -194,7 +194,7 @@ theorem historyOrderVolume_union {P Q : Finset α} (hinc : IncomparableHistoryPa
             apply Finset.sum_congr rfl
             intro x hx
             have hxQ := historyMaximalPieces_subset Q hx
-            have hxP : x ∉ P := fun hxP => Finset.disjoint_left.1 hdis hxP hxQ
+            have hxP  := fun hxP => Finset.disjoint_left.1 hdis hxP hxQ
             have hU : (P ∪ Q).erase x = P ∪ Q.erase x := by
               rw [Finset.erase_union_distrib, Finset.erase_eq_of_notMem hxP]
             have hlt : (P ∪ Q.erase x).card < n := by
@@ -209,7 +209,7 @@ theorem historyOrderVolume_union {P Q : Finset α} (hinc : IncomparableHistoryPa
           _ = _ := by rw [← historyOrderVolume_recursion]; ring
       have hrec := historyOrderVolume_recursion (P ∪ Q)
       rw [historyMaximalPieces_union hinc, Finset.sum_union hmaxdis, hleft, hright] at hrec
-      have hcard : (P ∪ Q).card = P.card + Q.card := Finset.card_union_of_disjoint hdis
+      have hcard  := Finset.card_union_of_disjoint hdis
       have hpos : 0 < ((P ∪ Q).card : ℝ) := by
         exact_mod_cast Finset.card_pos.2 (Finset.nonempty_iff_ne_empty.2 he)
       apply (mul_left_cancel₀ hpos.ne')
@@ -218,11 +218,11 @@ theorem historyOrderVolume_union {P Q : Finset α} (hinc : IncomparableHistoryPa
       ring
   exact hmain (P ∪ Q).card P Q rfl hinc
 
-def historyComponentWeight (weight : α → ℝ) (ρ t : ℝ) (P : Finset α) : ℝ :=
+def historyComponentWeight (weight : α → ℝ) ρ t P  :=
   (t / ρ) ^ P.card * historyOrderVolume P * ∏ x ∈ P, weight x
 
 /-- The exact signed polynomial component weights multiply on incomparable parts. -/
-theorem historyComponentWeight_union (weight : α → ℝ) (ρ t : ℝ) {P Q : Finset α}
+theorem historyComponentWeight_union weight ρ t {P Q : Finset α}
     (hinc : IncomparableHistoryParts P Q) :
     historyComponentWeight weight ρ t (P ∪ Q) =
       historyComponentWeight weight ρ t P * historyComponentWeight weight ρ t Q := by
@@ -232,10 +232,10 @@ theorem historyComponentWeight_union (weight : α → ℝ) (ρ t : ℝ) {P Q : F
   ring
 
 /-- The actual finite component coefficient has the source's `epsilon^|P|` bound. -/
-theorem historyComponentWeight_abs_le {weight : α → ℝ} {ρ t B : ℝ} (P : Finset α)
+theorem historyComponentWeight_abs_le {weight : α → ℝ} {ρ t B } P
     (hρ : 0 < ρ) (ht : 0 ≤ t) (_hB : 0 ≤ B) (hw : ∀ x ∈ P, |weight x| ≤ B) :
     |historyComponentWeight weight ρ t P| ≤ (t * B / ρ) ^ P.card := by
-  have hp : 0 ≤ t / ρ := div_nonneg ht hρ.le
+  have hp  := div_nonneg ht hρ.le
   have hprod : (∏ x ∈ P, |weight x|) ≤ B ^ P.card := by
     calc
       _ ≤ ∏ _x ∈ P, B := Finset.prod_le_prod₀ (fun _ _ => abs_nonneg _) hw

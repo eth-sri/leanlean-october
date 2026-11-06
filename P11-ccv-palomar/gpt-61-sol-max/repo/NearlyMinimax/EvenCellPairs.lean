@@ -10,12 +10,18 @@ noncomputable section
 open scoped BigOperators
 namespace NearlyMinimax
 
-theorem even_cell_has_partner {I J : Type*} [DecidableEq I] [DecidableEq J]
-    (s : Finset J) (p : J → I) (h : ∀ i, Even ((s.filter (fun j => p j = i)).card))
+section
+variable {I J : Type*} [DecidableEq I] [DecidableEq J] (s : Finset J) (p : J → I)
+
+section
+variable (h : ∀ i, Even ((s.filter (fun j => p j = i)).card))
+include h
+
+theorem even_cell_has_partner  
     (a : J) (ha : a ∈ s) : ∃ b ∈ s, b ≠ a ∧ p b = p a := by
   let f := s.filter (fun j => p j = p a)
   have haf : a ∈ f := by simp [f, ha]
-  have hpos : 0 < f.card := Finset.card_pos.mpr ⟨a, haf⟩
+  have hpos  := Finset.card_pos.mpr ⟨a, haf⟩
   have he : Even f.card := h (p a)
   obtain ⟨k, hk⟩ := he
   have htwo : 2 ≤ f.card := by omega
@@ -27,8 +33,7 @@ theorem even_cell_has_partner {I J : Type*} [DecidableEq I] [DecidableEq J]
   exact ⟨b, (Finset.mem_filter.mp hb'.2).1, hb'.1,
     (Finset.mem_filter.mp hb'.2).2⟩
 
-theorem even_cells_erase_pair {I J : Type*} [DecidableEq I] [DecidableEq J]
-    (s : Finset J) (p : J → I) (h : ∀ i, Even ((s.filter (fun j => p j = i)).card))
+theorem even_cells_erase_pair  
     (a b : J) (ha : a ∈ s) (hb : b ∈ s) (hab : b ≠ a) (hp : p b = p a) :
     ∀ i, Even (((s.erase a).erase b).filter (fun j => p j = i)).card := by
   intro i
@@ -51,9 +56,10 @@ theorem even_cells_erase_pair {I J : Type*} [DecidableEq I] [DecidableEq J]
     have hbi : b ∉ s.filter (fun j => p j = i) := by simp [hp, hpa]
     simp only [Finset.erase_eq_of_notMem hai, Finset.erase_eq_of_notMem hbi]
     exact h i
+end
 
-theorem even_cells_two_disjoint_pairs {I J : Type*} [DecidableEq I] [DecidableEq J]
-    (s : Finset J) (p : J → I) (hs : 4 ≤ s.card)
+
+theorem even_cells_two_disjoint_pairs  (hs : 4 ≤ s.card)
     (h : ∀ i, Even ((s.filter (fun j => p j = i)).card)) :
     ∃ a ∈ s, ∃ b ∈ s, ∃ c ∈ s, ∃ e ∈ s,
       b ≠ a ∧ c ≠ a ∧ c ≠ b ∧ e ≠ a ∧ e ≠ b ∧ e ≠ c ∧
@@ -74,5 +80,7 @@ theorem even_cells_two_disjoint_pairs {I J : Type*} [DecidableEq I] [DecidableEq
   have het' := Finset.mem_erase.mp het.2
   exact ⟨a, ha, b, hb, c, hct'.2, e, het'.2, hab, hct'.1, hct.1,
     het'.1, het.1, hec, hpab, hpec⟩
+end
+
 
 end NearlyMinimax

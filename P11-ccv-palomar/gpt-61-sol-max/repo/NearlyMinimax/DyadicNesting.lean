@@ -10,13 +10,13 @@ noncomputable section
 open MeasureTheory Set
 namespace NearlyMinimax
 
-theorem regular_grid_same_cell_congr {d k l : ℕ} (h : k = l) (hk : 0 < k) (hl : 0 < l)
+theorem regular_grid_same_cell_congr {d k l } (h : k = l) hk hl
     (x z : Covariate d) : (regularGridCell k hk z = regularGridCell k hk x) ↔
       (regularGridCell l hl z = regularGridCell l hl x) := by
   subst l
   rfl
 
-theorem regular_grid_index_parent (k : ℕ) (hk : 0 < k) (x : ℝ) :
+theorem regular_grid_index_parent k hk x :
     (regularGridIndex (2 * k) (by omega) x).val / 2 = (regularGridIndex k hk x).val := by
   have hre : ((2 * k : ℕ) : ℝ) * x = ((k : ℝ) * x) * (2 : ℕ) := by push_cast; ring
   have hf : ⌊((2 * k : ℕ) : ℝ) * x⌋₊ / 2 = ⌊(k : ℝ) * x⌋₊ := by
@@ -25,7 +25,7 @@ theorem regular_grid_index_parent (k : ℕ) (hk : 0 < k) (x : ℝ) :
   omega
 
 /-- A genuine fine-cell equality implies equality of the dyadic parent labels. -/
-theorem regular_grid_cell_parent_eq {d : ℕ} (k : ℕ) (hk : 0 < k)
+theorem regular_grid_cell_parent_eq {d } k hk
     (x z : Covariate d)
     (h : regularGridCell (2 * k) (by omega) z = regularGridCell (2 * k) (by omega) x) :
     regularGridCell k hk z = regularGridCell k hk x := by
@@ -37,7 +37,7 @@ theorem regular_grid_cell_parent_eq {d : ℕ} (k : ℕ) (hk : 0 < k)
   rw [regular_grid_index_parent k hk, regular_grid_index_parent k hk] at hi
   exact hi
 
-theorem dyadicPilotCell_subset_parent {d : ℕ} (j : ℕ) (x : Covariate d) :
+theorem dyadicPilotCell_subset_parent {d } j (x : Covariate d) :
     dyadicPilotCell j x ⊆ dyadicPilotCell (j - 1) x := by
   cases j with
   | zero => simp
@@ -47,6 +47,6 @@ theorem dyadicPilotCell_subset_parent {d : ℕ} (j : ℕ) (x : Covariate d) :
     change regularGridCell ((2 : ℕ) ^ (j + 1)) (by positivity) z =
       regularGridCell ((2 : ℕ) ^ (j + 1)) (by positivity) x at hz
     have hsize : (2 : ℕ) ^ (j + 1) = 2 * 2 ^ j := by rw [pow_succ]; omega
-    exact (regular_grid_same_cell_congr hsize (by positivity) (by positivity) x z).mp hz
+    simp_all [regular_grid_same_cell_congr]
 
 end NearlyMinimax

@@ -13,13 +13,18 @@ namespace NearlyMinimax
 set_option maxHeartbeats 500000
 set_option backward.isDefEq.respectTransparency false
 
-def finiteAffineHistory {J E : Type*} (slope offset : J → E → ℝ)
-    (n : ℕ) (labels : Fin n → J) (marks : Fin n → E) : ℝ :=
+section
+variable {J E : Type*}
+
+section
+variable (slope offset : J → E → ℝ) (n : ℕ)
+include slope offset
+
+def finiteAffineHistory   (labels : Fin n → J) (marks : Fin n → E) : ℝ :=
   (List.ofFn (fun i : Fin n => i)).foldl
     (fun value i => slope (labels i) (marks i) * value + offset (labels i) (marks i)) 1
 
-theorem finiteAffineHistory_succ {J E : Type*} (slope offset : J → E → ℝ)
-    (n : ℕ) (labels : Fin (n + 1) → J) (marks : Fin (n + 1) → E) :
+theorem finiteAffineHistory_succ   (labels : Fin (n + 1) → J) (marks : Fin (n + 1) → E) :
     finiteAffineHistory slope offset (n + 1) labels marks =
       slope (labels (Fin.last n)) (marks (Fin.last n)) *
         finiteAffineHistory slope offset n (fun i => labels i.castSucc) (fun i => marks i.castSucc) +
@@ -30,10 +35,14 @@ theorem finiteAffineHistory_succ {J E : Type*} (slope offset : J → E → ℝ)
   have hh : (List.ofFn (fun i : Fin n => i.castSucc)) =
       (List.ofFn (fun i : Fin n => i)).map Fin.castSucc := by rw [List.map_ofFn]; rfl
   rw [hh, List.foldl_map]
+end
 
-theorem finiteAffineHistory_integrable {J E : Type*} [MeasurableSpace E]
-    (π : Measure E) [IsProbabilityMeasure π] (slope offset : J → E → ℝ)
-    (hs : ∀ j, Integrable (slope j) π) (ho : ∀ j, Integrable (offset j) π)
+
+section
+variable [MeasurableSpace E] (π : Measure E) [IsProbabilityMeasure π] (slope offset : J → E → ℝ) (hs : ∀ j, Integrable (slope j) π) (ho : ∀ j, Integrable (offset j) π)
+include hs ho
+
+theorem finiteAffineHistory_integrable  
     (n : ℕ) (labels : Fin n → J) :
     Integrable (finiteAffineHistory slope offset n labels) (Measure.pi (fun _ : Fin n => π)) := by
   induction n with
@@ -52,9 +61,7 @@ theorem finiteAffineHistory_integrable {J E : Type*} [MeasurableSpace E]
       historyFiniteMarkAppendEquiv_last, historyFiniteMarkAppendEquiv_old]
     rfl
 
-theorem finiteAffineHistory_integral_one {J E : Type*} [MeasurableSpace E]
-    (π : Measure E) [IsProbabilityMeasure π] (slope offset : J → E → ℝ)
-    (hs : ∀ j, Integrable (slope j) π) (ho : ∀ j, Integrable (offset j) π)
+theorem finiteAffineHistory_integral_one  
     (hmean : ∀ j, (∫ e, slope j e ∂π) + (∫ e, offset j e ∂π) = 1)
     (n : ℕ) (labels : Fin n → J) :
     (∫ marks, finiteAffineHistory slope offset n labels marks
@@ -78,5 +85,9 @@ theorem finiteAffineHistory_integral_one {J E : Type*} [MeasurableSpace E]
       ((ho j).comp_fst _), integral_prod_mul, integral_fun_fst]
     simp only [measureReal_def, measure_univ, ENNReal.toReal_one, one_smul, ih, mul_one]
     exact hmean j
+end
+
+end
+
 
 end NearlyMinimax

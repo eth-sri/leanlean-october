@@ -18,22 +18,16 @@ namespace NearlyMinimax
 
 variable {J : Type*} [Fintype J] [LinearOrder J]
 
-abbrev HistoryMaximalLabelShape (dependent : J → J → Prop) (j : J) :=
-  {g : HistoryShape (fun a b => ¬ dependent a b) // ∃ x : WordHeapPiece g.out dependent,
-    x ∈ historyMaximalPieces Finset.univ ∧ wordHeapLabel x = j}
+section
+variable (dependent : J → J → Prop)
+include dependent
 
-/-- The actual append bijection onto shapes having a true maximal piece with that label. -/
-def historyShapeTerminalEquiv (dependent : J → J → Prop)
-    (hrefl : ∀ j, dependent j j) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
-    (j : J) : HistoryShape (fun a b => ¬ dependent a b) ≃ HistoryMaximalLabelShape dependent j :=
-  (Equiv.ofInjective (historyShapeAppend dependent j)
-    (historyShapeAppend_injective dependent hrefl hsymm j)).trans
-      ((Equiv.refl _).subtypeEquiv (fun g => historyShape_terminal_iff_maximal dependent hsymm j g))
 
-omit [Fintype J] in
-@[simp] theorem historyShapeTerminalEquiv_val (dependent : J → J → Prop)
-    (hrefl : ∀ j, dependent j j) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
-    (j : J) (g : HistoryShape (fun a b => ¬ dependent a b)) :
-    (historyShapeTerminalEquiv dependent hrefl hsymm j g).val = historyShapeAppend dependent j g := rfl
+
+
+end
+
+
+
 
 end NearlyMinimax

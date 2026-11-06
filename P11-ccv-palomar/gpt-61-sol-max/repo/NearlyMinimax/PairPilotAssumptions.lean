@@ -18,8 +18,8 @@ set_option backward.isDefEq.respectTransparency false
 set_option synthInstance.maxHeartbeats 200000
 set_option maxHeartbeats 800000
 
-theorem regularPairDesignMeasure_ae_of_supported {d : ℕ}
-    (θ : RegressionParameter d) (k : ℕ) (hk : 0 < k)
+theorem regularPairDesignMeasure_ae_of_supported {d }
+    θ k hk
     {P : Covariate d × Covariate d → Prop}
     (hp : ∀ᵐ w ∂(designLaw θ).prod (designLaw θ),
       sameLabelKernel (regularGridCell k hk) w ≠ 0 → P w) :
@@ -32,9 +32,7 @@ theorem regularPairDesignMeasure_ae_of_supported {d : ℕ}
     ((regular_grid_cell_measurable k hk).comp measurable_fst)
     ((regular_grid_cell_measurable k hk).comp measurable_snd))).2
   filter_upwards [hp] with w hw hs
-  apply hw
-  have hs' : regularGridCell k hk w.1 = regularGridCell k hk w.2 := hs
-  simp [sameLabelKernel, hs']
+  simp_all [sameLabelKernel]
 
 structure PairPilotAssumptions {Ω : Type*} [MeasurableSpace Ω] {d : ℕ}
     (θ : RegressionParameter d) (k : ℕ) (hk : 0 < k) (μ : Measure Ω)
@@ -82,17 +80,14 @@ theorem pairPilotCoefficient_energy :
       sameLabelKernel (regularGridCell k hk) w ≠ 0 →
         (∫ x, ‖pairPilotCoefficient bar η x w‖ ^ 2 ∂μ) ≤ 2 * Cp ^ 2 + 2 * Cp * W := by
   filter_upwards [hp.noiseSection, hp.barBound, hp.noiseEnergy] with w hs hb he hq
-  simpa only [pairPilotCoefficient, mul_assoc] using
-    PilotFields.pilot_coefficient_second_moment_le (bar w) (hs hq)
-      hp.constantNonnegative (hb hq) (he hq)
+  simp_all [mul_assoc, PilotFields.pilot_coefficient_second_moment_le, hp.constantNonnegative, pairPilotCoefficient]
 
 include C hθ
 
 theorem pairPilotScoreKernel_memLp :
-    MemLp (fun z : (Ω × Ω) × (Observation d × Observation d) =>
+    MemLp (fun z  =>
       pairPilotScoreKernel θ k hk bar η z.1 z.2) 2
-      ((μ.prod μ).prod ((observationLaw θ).prod (observationLaw θ))) := by
-  exact rawModelPairScore_memLp μ C θ hθ k hk
+      ((μ.prod μ).prod ((observationLaw θ).prod (observationLaw θ))) := rawModelPairScore_memLp μ C θ hθ k hk
     (pairPilotCoefficient_measurable μ θ k hk bar η Cp W lam hp)
     (pairPilotCoefficient_sections μ θ k hk bar η Cp W lam hp)
     (by nlinarith [hp.constantNonnegative, hp.budgetNonnegative,
@@ -100,10 +95,9 @@ theorem pairPilotScoreKernel_memLp :
     (pairPilotCoefficient_energy μ θ k hk bar η Cp W lam hp)
 
 theorem pairPilotNoiseKernel_memLp :
-    MemLp (fun z : (Ω × Ω) × (Observation d × Observation d) =>
+    MemLp (fun z  =>
       pairPilotNoiseKernel k hk bar η z.1 z.2) 2
-      ((μ.prod μ).prod ((observationLaw θ).prod (observationLaw θ))) := by
-  exact rawModelPairNoise_memLp μ C θ hθ k hk
+      ((μ.prod μ).prod ((observationLaw θ).prod (observationLaw θ))) := rawModelPairNoise_memLp μ C θ hθ k hk
     (pairPilotCoefficient_measurable μ θ k hk bar η Cp W lam hp)
     (pairPilotCoefficient_sections μ θ k hk bar η Cp W lam hp)
     (by nlinarith [hp.constantNonnegative, hp.budgetNonnegative,
@@ -131,8 +125,7 @@ theorem pairPilotScoreKernel_energy_le :
       pairPilotScoreKernel θ k hk bar η z.1 z.2 ^ 2
       ∂(μ.prod μ).prod ((observationLaw θ).prod (observationLaw θ))) ≤
       (2 * Cp ^ 2 + 2 * Cp * W) ^ 2 *
-        (responseOperatorEnergyBound C * (C.densityUpper / (k : ℝ) ^ d)) := by
-  exact rawModelPairScore_energy_le μ C θ hθ k hk
+        (responseOperatorEnergyBound C * (C.densityUpper / k ^ d)) := rawModelPairScore_energy_le μ C θ hθ k hk
     (pairPilotCoefficient_measurable μ θ k hk bar η Cp W lam hp)
     (pairPilotCoefficient_sections μ θ k hk bar η Cp W lam hp)
     (by nlinarith [hp.constantNonnegative, hp.budgetNonnegative,
@@ -143,8 +136,7 @@ theorem pairPilotNoiseKernel_energy_le :
     (∫ z : (Ω × Ω) × (Observation d × Observation d),
       pairPilotNoiseKernel k hk bar η z.1 z.2 ^ 2
       ∂(μ.prod μ).prod ((observationLaw θ).prod (observationLaw θ))) ≤
-      (2 * Cp ^ 2 + 2 * Cp * W) ^ 2 * (4 * (C.densityUpper / (k : ℝ) ^ d)) := by
-  exact rawModelPairNoise_energy_le μ C θ hθ k hk
+      (2 * Cp ^ 2 + 2 * Cp * W) ^ 2 * (4 * (C.densityUpper / k ^ d)) := rawModelPairNoise_energy_le μ C θ hθ k hk
     (pairPilotCoefficient_measurable μ θ k hk bar η Cp W lam hp)
     (pairPilotCoefficient_sections μ θ k hk bar η Cp W lam hp)
     (by nlinarith [hp.constantNonnegative, hp.budgetNonnegative,

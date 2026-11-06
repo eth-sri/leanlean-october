@@ -16,21 +16,23 @@ open MeasureTheory Set
 open scoped ENNReal
 namespace NearlyMinimax
 
-def effectiveVarianceUpper {d : ℕ} (C : ModelConstants d) : ℝ :=
+def effectiveVarianceUpper {d } (C : ModelConstants d)  :=
   min C.varianceUpper (Real.sqrt C.fourthBound)
 
-def clippedEstimator {d n : ℕ} (C : ModelConstants d) (T : Estimator d n) :
+section
+variable {d n : ℕ} (C : ModelConstants d) (T : Estimator d n)
+include C T
+
+def clippedEstimator  :
     Estimator d n :=
   ⟨fun z => clip C.varianceLower (effectiveVarianceUpper C) (T.val z),
     (clip_lipschitz _ _).continuous.measurable.comp T.property⟩
 
-theorem clippedEstimator_mem_Icc {d n : ℕ} (C : ModelConstants d)
-    (T : Estimator d n) (z : Fin n → Observation d) :
+theorem clippedEstimator_mem_Icc  z :
     (clippedEstimator C T).val z ∈ Icc C.varianceLower (effectiveVarianceUpper C) :=
   clip_mem_Icc (effective_variance_interval_nondegenerate C).le
 
-theorem clippedEstimator_risk_le {d n : ℕ} (C : ModelConstants d)
-    (T : Estimator d n) (θ : RegressionParameter d) (hθ : Admissible C θ) :
+theorem clippedEstimator_risk_le  θ (hθ : Admissible C θ) :
     meanSquaredRisk (clippedEstimator C T) θ ≤ meanSquaredRisk T θ := by
   have hV := admissible_variance_effective_interval C θ hθ
   apply lintegral_mono
@@ -44,20 +46,25 @@ theorem clippedEstimator_risk_le {d n : ℕ} (C : ModelConstants d)
     sq_abs (T.val z - θ.variance), abs_nonneg (T.val z - θ.variance),
     abs_nonneg (clip C.varianceLower (effectiveVarianceUpper C) (T.val z) - θ.variance)]
 
-theorem clippedEstimator_worstCaseRisk_le {d n : ℕ} (C : ModelConstants d)
-    (T : Estimator d n) :
+theorem clippedEstimator_worstCaseRisk_le  :
     worstCaseRisk C (clippedEstimator C T) ≤ worstCaseRisk C T := by
   apply iSup_le
   intro θ
   exact (clippedEstimator_risk_le C T θ.val θ.property).trans
     (le_iSup (fun θ : {θ // Admissible C θ} => meanSquaredRisk T θ.val) θ)
+end
+
+
+section
+variable {d : ℕ} (C : ModelConstants d)
+include C
 
 /-- The bounded estimator class still quantifies all measurable statistics
 with values in the effective variance interval. -/
-abbrev BoundedEstimator {d : ℕ} (C : ModelConstants d) (n : ℕ) :=
+abbrev BoundedEstimator  n :=
   {T : Estimator d n // ∀ z, T.val z ∈ Icc C.varianceLower (effectiveVarianceUpper C)}
 
-theorem minimaxRisk_eq_inf_bounded {d : ℕ} (C : ModelConstants d) (n : ℕ) :
+theorem minimaxRisk_eq_inf_bounded  n :
     minimaxRisk C n = ⨅ T : BoundedEstimator C n, worstCaseRisk C T.val := by
   apply le_antisymm
   · apply le_iInf
@@ -68,18 +75,21 @@ theorem minimaxRisk_eq_inf_bounded {d : ℕ} (C : ModelConstants d) (n : ℕ) :
     exact (iInf_le (fun B : BoundedEstimator C n => worstCaseRisk C B.val)
       ⟨clippedEstimator C T, clippedEstimator_mem_Icc C T⟩).trans
       (clippedEstimator_worstCaseRisk_le C T)
+end
 
-theorem boundedEstimator_memLp {d n : ℕ} (C : ModelConstants d)
-    (T : BoundedEstimator C n) (μ : Measure (Fin n → Observation d))
-    [IsFiniteMeasure μ] (p : ℝ≥0∞) : MemLp T.val.val p μ := by
+
+section
+variable {d n : ℕ} (C : ModelConstants d) (T : BoundedEstimator C n)
+
+theorem boundedEstimator_memLp  (μ : Measure (Fin n → Observation d))
+    [IsFiniteMeasure μ] p : MemLp T.val.val p μ := by
   apply MemLp.of_bound T.val.property.aestronglyMeasurable (effectiveVarianceUpper C)
   apply Filter.Eventually.of_forall
   intro z
   rw [Real.norm_eq_abs, abs_of_nonneg (C.varianceLower_pos.le.trans (T.property z).1)]
   exact (T.property z).2
 
-theorem boundedEstimator_risk_le_diameter {d n : ℕ} (C : ModelConstants d)
-    (T : BoundedEstimator C n) (θ : RegressionParameter d) (hθ : Admissible C θ) :
+theorem boundedEstimator_risk_le_diameter  θ (hθ : Admissible C θ) :
     meanSquaredRisk T.val θ ≤
       ENNReal.ofReal ((effectiveVarianceUpper C - C.varianceLower) ^ 2) := by
   let _ := sampleLaw_isProbability C θ hθ n
@@ -88,15 +98,16 @@ theorem boundedEstimator_risk_le_diameter {d n : ℕ} (C : ModelConstants d)
   have hp : ∀ z, (T.val.val z - θ.variance) ^ 2 ≤
       (effectiveVarianceUpper C - C.varianceLower) ^ 2 := by
     intro z
-    have hT := T.property z
+    
     have habs : |T.val.val z - θ.variance| ≤ effectiveVarianceUpper C - C.varianceLower := by
-      apply abs_le.mpr
-      constructor <;> linarith [hV.1, hV.2, hT.1, hT.2]
+      grind
     nlinarith [sq_abs (T.val.val z - θ.variance), abs_nonneg (T.val.val z - θ.variance)]
   calc
     meanSquaredRisk T.val θ ≤ ∫⁻ _ : Fin n → Observation d,
         ENNReal.ofReal ((effectiveVarianceUpper C - C.varianceLower) ^ 2) ∂sampleLaw θ n :=
       lintegral_mono (fun z => ENNReal.ofReal_le_ofReal (hp z))
     _ = _ := by simp
+end
+
 
 end NearlyMinimax

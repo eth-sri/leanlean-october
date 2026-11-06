@@ -16,24 +16,28 @@ set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1000000
 attribute [local instance] Classical.propDecidable
 
- def cardinalGeometryEnvelope {d n F : ℕ} (q : ℕ) (bd C a ρ η T : ℝ)
-    (U : Fin n → Covariate d) : ℝ :=
+ section
+variable {d n F : ℕ}
+include F
+
+def cardinalGeometryEnvelope  q bd C a ρ η T
+    (U : Fin n → Covariate d)  :=
   (3 : ℝ)^n * (2*cardinalRawAliasCoefficient n bd a η^2 *
     (∑ i, cardinalWeightDefect i (spatialInterpolationLambda d) T U)^2 +
     2*cardinalRawTaylorCoefficient n q bd C a ρ η^2 *
       spatialMatrixL1 (integratedCardinalMatrix (D := F) (spatialInterpolationLambda d) T U)^2)
 
- theorem cardinalGeometryEnvelope_nonneg {d n F : ℕ} (q : ℕ) (bd C a ρ η T : ℝ)
+ theorem cardinalGeometryEnvelope_nonneg  q bd C a ρ η T
     (U : Fin n → Covariate d) : 0 ≤ cardinalGeometryEnvelope (F := F) q bd C a ρ η T U := by
   unfold cardinalGeometryEnvelope
   positivity
 
- theorem cardinalGeometryEnvelope_integrable_and_le {d n F : ℕ} (hd : 5 ≤ d) (hn : 2 ≤ n)
-    (q : ℕ) (bd C a ρ η : ℝ) {T : ℝ} (hT : 1 ≤ T) :
+ theorem cardinalGeometryEnvelope_integrable_and_le  (hd : 5 ≤ d) (hn : 2 ≤ n)
+    q bd C a ρ η {T } (hT : 1 ≤ T) :
     Integrable (cardinalGeometryEnvelope (d := d) (n := n) (F := F) q bd C a ρ η T)
       (fullSpatialPatchDesign d n) ∧
     (∫ U, cardinalGeometryEnvelope (F := F) q bd C a ρ η T U ∂fullSpatialPatchDesign d n) ≤
-      (3 : ℝ)^n * cardinalRawSpatialEnergyBudget d n q bd C a ρ η T := by
+      3^n * cardinalRawSpatialEnergyBudget d n q bd C a ρ η T := by
   have hlam : 0 ≤ spatialInterpolationLambda d := by unfold spatialInterpolationLambda; positivity
   have hZ : Integrable (fun U => (∑ i : Fin n, cardinalWeightDefect i (spatialInterpolationLambda d) T U)^2)
       (fullSpatialPatchDesign d n) := by
@@ -52,18 +56,17 @@ attribute [local instance] Classical.propDecidable
     (by positivity : 0 ≤ 2*cardinalRawAliasCoefficient n bd a η^2))
     (mul_le_mul_of_nonneg_left (integratedCardinalMatrix_full_square_integral_le (D := F) hd hn hT)
       (by positivity : 0 ≤ 2*cardinalRawTaylorCoefficient n q bd C a ρ η^2))
-  exact (mul_le_mul_of_nonneg_left h (by positivity : 0 ≤ (3 : ℝ)^n)).trans_eq (by
-    unfold cardinalRawSpatialEnergyBudget; ring)
+  simp_all [cardinalRawSpatialEnergyBudget]
 
- theorem highCardinalRawNumerator_sum_square_le_geometry {d n F : ℕ}
-    (ad bd : ℝ) (haD : 0 < ad) (hab : ad < bd) {T : ℝ} (hT : 1 ≤ T)
-    (m D q : ℕ) (hn : 1 ≤ n) (hnm : n ≤ m) (hnD : n ≤ D) (hnF : n ≤ F) (hq : 1 ≤ q)
-    (C a V η ρ : ℝ) (hC : 1 ≤ C) (ha : 0 < a) (hη : 0 ≤ η) (hρ : 0 ≤ ρ)
-    (hηρ : η ≤ ρ/2) (U : Fin n → Covariate d) (hU : ∀ i l, |U i l| ≤ 2)
-    (p g w : Fin n → ℝ) (hpD : ∀ i, p i ∈ Icc ad bd)
+ theorem highCardinalRawNumerator_sum_square_le_geometry 
+    ad bd (haD : 0 < ad) (hab : ad < bd) {T } (hT : 1 ≤ T)
+    m D q (hn : 1 ≤ n) (hnm : n ≤ m) (hnD : n ≤ D) (hnF : n ≤ F) (hq : 1 ≤ q)
+    C a V η ρ (hC : 1 ≤ C) (ha : 0 < a) (hη : 0 ≤ η) (hρ : 0 ≤ ρ)
+    (hηρ : η ≤ ρ/2) U (hU : ∀ i l, |U i l| ≤ 2)
+    p g w (hpD : ∀ i, p i ∈ Icc ad bd)
     (hg : ∀ i, |g i| ≤ ρ/2) (hw : ∀ i, |w i| ≤ 1)
     (c : HighFrameIndex d F → ℝ) (hc : ∑ γ, |c γ| ≤ C⁻¹)
-    (hp : ∀ f : ℝ, |f| ≤ ρ → ∀ u, 0 ≤ ternaryMass a f V u) :
+    (hp : ∀ f , |f| ≤ ρ → ∀ u, 0 ≤ ternaryMass a f V u) :
     (∑ y : Fin n → Fin 3, highCardinalRawNumerator ad bd (spatialInterpolationLambda d) T m D q
       C a V η U p g w c y^2) ≤ cardinalGeometryEnvelope (F := F) q bd C a ρ η T U := by
   have hlam : 0 ≤ spatialInterpolationLambda d := by unfold spatialInterpolationLambda; positivity
@@ -72,35 +75,42 @@ attribute [local instance] Classical.propDecidable
       C a V η ρ hC ha hη hρ hηρ U hU p g w hpD hg hw c hc hp y)
   exact h.trans_eq (by simp only [Finset.sum_const, Finset.card_univ, Fintype.card_fun, Fintype.card_fin,
     nsmul_eq_mul, Nat.cast_pow, Nat.cast_ofNat]; rfl)
+end
 
- def fineFieldGeometryEnvelope {d n : ℕ} (ad bd T0 N : ℝ) (M q : ℕ) (C a ρ η : ℝ)
-    (U : Fin n → Covariate d) : ℝ :=
+
+ section
+variable {d n : ℕ}
+
+section
+variable (ad bd T0 N : ℝ) (M q : ℕ) (C a ρ η : ℝ) (U : Fin n → Covariate d)
+include ad bd T0 N M q C a ρ η U
+
+def fineFieldGeometryEnvelope    :=
   (3 : ℝ)^n * (finePairDensityCoefficientBudget ad bd M n *
     (finePairResponseActionBudget d q C a ρ*(n : ℝ)^2*η^2))^2 *
       (∑ S ∈ ((Finset.univ : Finset (Fin n)).powerset).filter (fun S => 4 ≤ S.card ∧ Even S.card),
         |finePairTimeSubsetMoment T0 N U S|)^2
 
- def finePairAliasGeometryEnvelope {d n : ℕ} (ad bd T0 N : ℝ) (M q : ℕ) (C a ρ η : ℝ)
-    (U : Fin n → Covariate d) : ℝ :=
+ def finePairAliasGeometryEnvelope    :=
   (3 : ℝ)^n * (finePairDensityCoefficientBudget ad bd M n *
     (finePairResponseActionBudget d q C a ρ*(n : ℝ)^2*η^2))^2 *
       (∑ S ∈ (Finset.univ : Finset (Fin n)).powersetCard 2, |finePairTimeSubsetMoment T0 N U S|)^2
 
- theorem fineFieldGeometryEnvelope_nonneg {d n : ℕ} (ad bd T0 N : ℝ) (M q : ℕ) (C a ρ η : ℝ)
-    (U : Fin n → Covariate d) : 0 ≤ fineFieldGeometryEnvelope ad bd T0 N M q C a ρ η U := by
+ theorem fineFieldGeometryEnvelope_nonneg   : 0 ≤ fineFieldGeometryEnvelope ad bd T0 N M q C a ρ η U := by
   unfold fineFieldGeometryEnvelope; positivity
 
- theorem finePairAliasGeometryEnvelope_nonneg {d n : ℕ} (ad bd T0 N : ℝ) (M q : ℕ) (C a ρ η : ℝ)
-    (U : Fin n → Covariate d) : 0 ≤ finePairAliasGeometryEnvelope ad bd T0 N M q C a ρ η U := by
+ theorem finePairAliasGeometryEnvelope_nonneg   : 0 ≤ finePairAliasGeometryEnvelope ad bd T0 N M q C a ρ η U := by
   unfold finePairAliasGeometryEnvelope; positivity
+end
 
- theorem fineFieldGeometryEnvelope_integrable_and_le {d n : ℕ} [NeZero d] (hd : 3 ≤ d)
-    (ad bd T0 N : ℝ) (hT0 : 0 < T0) (M q : ℕ) (C a ρ η : ℝ) :
+
+ theorem fineFieldGeometryEnvelope_integrable_and_le  [NeZero d] (hd : 3 ≤ d)
+    ad bd T0 N (hT0 : 0 < T0) M q C a ρ η :
     Integrable (fineFieldGeometryEnvelope (d := d) (n := n) ad bd T0 N M q C a ρ η) (fullSpatialPatchDesign d n) ∧
     (∫ U, fineFieldGeometryEnvelope ad bd T0 N M q C a ρ η U ∂fullSpatialPatchDesign d n) ≤
-      (3 : ℝ)^n*finePairEvenActionSpatialBudget d n M q ad bd C a ρ η T0 := by
+      3^n*finePairEvenActionSpatialBudget d n M q ad bd C a ρ η T0 := by
   let s := ((Finset.univ : Finset (Fin n)).powerset).filter (fun S => 4 ≤ S.card ∧ Even S.card)
-  have hs (S) (hS : S ∈ s) : 4 ≤ S.card := (Finset.mem_filter.mp hS).2.1
+  have hs (S) (hS : S ∈ s)  := (Finset.mem_filter.mp hS).2.1
   have hi := finite_sum_abs_square_integrable (fullSpatialPatchDesign d n) s
     (fun S U => finePairTimeSubsetMoment T0 N U S)
     (fun S _ => finePairTimeSubsetMoment_measurable T0 N S)
@@ -113,13 +123,13 @@ attribute [local instance] Classical.propDecidable
       (finePairResponseActionBudget d q C a ρ*(n : ℝ)^2*η^2))^2)
   exact h.trans_eq (by unfold finePairEvenActionSpatialBudget; ring)
 
- theorem finePairAliasGeometryEnvelope_integrable_and_le {d n : ℕ} [NeZero d] (hd : 4 < d)
-    (ad bd T0 N : ℝ) (hT0 : 0 < T0) (hN : T0 ≤ N) (M q : ℕ) (C a ρ η : ℝ) :
+ theorem finePairAliasGeometryEnvelope_integrable_and_le  [NeZero d] (hd : 4 < d)
+    ad bd T0 N (hT0 : 0 < T0) (hN : T0 ≤ N) M q C a ρ η :
     Integrable (finePairAliasGeometryEnvelope (d := d) (n := n) ad bd T0 N M q C a ρ η) (fullSpatialPatchDesign d n) ∧
     (∫ U, finePairAliasGeometryEnvelope ad bd T0 N M q C a ρ η U ∂fullSpatialPatchDesign d n) ≤
-      (3 : ℝ)^n*finePairAliasActionSpatialBudget d n M q ad bd C a ρ η T0 := by
+      3^n*finePairAliasActionSpatialBudget d n M q ad bd C a ρ η T0 := by
   let s := (Finset.univ : Finset (Fin n)).powersetCard 2
-  have hs (S) (hS : S ∈ s) : S.card = 2 := (Finset.mem_powersetCard.mp hS).2
+  have hs (S) (hS : S ∈ s)  := (Finset.mem_powersetCard.mp hS).2
   have hi := finite_sum_abs_square_integrable (fullSpatialPatchDesign d n) s
     (fun S U => finePairTimeSubsetMoment T0 N U S)
     (fun S _ => finePairTimeSubsetMoment_measurable T0 N S)
@@ -131,23 +141,22 @@ attribute [local instance] Classical.propDecidable
     (fun S U => |finePairTimeSubsetMoment T0 N U S|)
     ((2 : ℝ)^(d*(n-2))*(6*(2 : ℝ)^d*spatialInverseFourConstant d/T0^(d-4)))
     (fun S _ => (finePairTimeSubsetMoment_measurable T0 N S).abs)
-    (fun S hS => by simpa only [sq_abs] using (finePairTimeSubsetMoment_two_subset_square_integrable_and_le hd hT0 hN S (hs S hS)).1)
-    (fun S hS => by simpa only [sq_abs] using (finePairTimeSubsetMoment_two_subset_square_integrable_and_le hd hT0 hN S (hs S hS)).2)
+    (fun S hS => by simp_all [finePairTimeSubsetMoment_two_subset_square_integrable_and_le])
+    (fun S hS => by simp_all [finePairTimeSubsetMoment_two_subset_square_integrable_and_le])
   exact (mul_le_mul_of_nonneg_left h (by positivity : 0 ≤ (3 : ℝ)^n*(finePairDensityCoefficientBudget ad bd M n *
     (finePairResponseActionBudget d q C a ρ*(n : ℝ)^2*η^2))^2)).trans_eq (by
       dsimp [s]
       rw [Finset.card_powersetCard, Finset.card_univ, Fintype.card_fin]
       unfold finePairAliasActionSpatialBudget
       ring)
+end
 
-theorem finePairPairAliasAction_sum_square_le_geometry {d n F : ℕ}
-    (ad bd T0 N : ℝ) (haD : 0 < ad) (hab : ad < bd) (M q : ℕ) (hn : 1 ≤ n)
-    (C a V η ρ : ℝ) (hC : 1 ≤ C) (ha : 0 < a) (hη : 0 ≤ η) (hρ : 0 ≤ ρ)
-    (hηρ : η ≤ ρ/2) (U : Fin n → Covariate d) (hU : ∀ i l, |U i l| ≤ 2)
-    (p g w : Fin n → ℝ) (hpD : ∀ i, p i ∈ Icc ad bd)
-    (c : HighFrameIndex d F → ℝ)
-    (hc : ∑ γ, |c γ| ≤ C⁻¹) (hg : ∀ i, |g i| ≤ ρ/2) (hw : ∀ i, |w i| ≤ 1)
-    (hp : ∀ f : ℝ, |f| ≤ ρ → ∀ y, 0 ≤ ternaryMass a f V y) :
+
+section
+variable {d n F : ℕ} (ad bd T0 N : ℝ) (haD : 0 < ad) (hab : ad < bd) (M q : ℕ) (hn : 1 ≤ n) (C a V η ρ : ℝ) (hC : 1 ≤ C) (ha : 0 < a) (hη : 0 ≤ η) (hρ : 0 ≤ ρ) (hηρ : η ≤ ρ/2) (U : Fin n → Covariate d) (hU : ∀ i l, |U i l| ≤ 2) (p g w : Fin n → ℝ) (hpD : ∀ i, p i ∈ Icc ad bd) (c : HighFrameIndex d F → ℝ) (hc : ∑ γ, |c γ| ≤ C⁻¹) (hg : ∀ i, |g i| ≤ ρ/2) (hw : ∀ i, |w i| ≤ 1) (hp : ∀ f : ℝ, |f| ≤ ρ → ∀ y, 0 ≤ ternaryMass a f V y)
+include haD hab hn hC ha hη hρ hηρ hU hpD hc hg hw hp
+
+theorem finePairPairAliasAction_sum_square_le_geometry  :
     (∑ y : Fin n → Fin 3, finePairPairAliasAction ad bd T0 N M q C U p c
       (fun v => highResponseProduct a V η g w (fun i => highFrameFeature (U i)) v y)^2) ≤
         finePairAliasGeometryEnvelope ad bd T0 N M q C a ρ η U := by
@@ -174,14 +183,7 @@ theorem finePairPairAliasAction_sum_square_le_geometry {d n F : ℕ}
     dsimp [K, Z, s]
     ring)
 
-theorem finePairEvenFieldAction_sum_square_le_geometry {d n F : ℕ}
-    (ad bd T0 N : ℝ) (haD : 0 < ad) (hab : ad < bd) (M q : ℕ) (hn : 1 ≤ n)
-    (C a V η ρ : ℝ) (hC : 1 ≤ C) (ha : 0 < a) (hη : 0 ≤ η) (hρ : 0 ≤ ρ)
-    (hηρ : η ≤ ρ/2) (U : Fin n → Covariate d) (hU : ∀ i l, |U i l| ≤ 2)
-    (p g w : Fin n → ℝ) (hpD : ∀ i, p i ∈ Icc ad bd)
-    (c : HighFrameIndex d F → ℝ)
-    (hc : ∑ γ, |c γ| ≤ C⁻¹) (hg : ∀ i, |g i| ≤ ρ/2) (hw : ∀ i, |w i| ≤ 1)
-    (hp : ∀ f : ℝ, |f| ≤ ρ → ∀ y, 0 ≤ ternaryMass a f V y) :
+theorem finePairEvenFieldAction_sum_square_le_geometry  :
     (∑ y : Fin n → Fin 3, finePairEvenFieldAction ad bd T0 N M q C U p c
       (fun v => highResponseProduct a V η g w (fun i => highFrameFeature (U i)) v y)^2) ≤
         fineFieldGeometryEnvelope ad bd T0 N M q C a ρ η U := by
@@ -207,16 +209,21 @@ theorem finePairEvenFieldAction_sum_square_le_geometry {d n F : ℕ}
     unfold fineFieldGeometryEnvelope
     dsimp [K, Z, s]
     ring)
+end
 
- def finePairCountTwoGeometryEnvelope {d : ℕ} (bd a ρ η N : ℝ) (U : Fin 2 → Covariate d) : ℝ :=
+
+ section
+variable {d : ℕ}
+
+def finePairCountTwoGeometryEnvelope  bd a ρ η N (U : Fin 2 → Covariate d)  :=
   9*(η^2*bd^2*((2*ρ+a)/a^2)^2)^2*finePairDistanceFactor N (U 0) (U 1)^2
 
- theorem finePairCountTwoGeometryEnvelope_nonneg {d : ℕ} (bd a ρ η N : ℝ)
+ theorem finePairCountTwoGeometryEnvelope_nonneg  bd a ρ η N
     (U : Fin 2 → Covariate d) : 0 ≤ finePairCountTwoGeometryEnvelope bd a ρ η N U := by
   unfold finePairCountTwoGeometryEnvelope; positivity
 
- theorem finePairCountTwoGeometryEnvelope_integrable_and_le {d : ℕ} (hd : 0 < d)
-    (bd a ρ η : ℝ) {N : ℝ} (hN : 0 < N) :
+ theorem finePairCountTwoGeometryEnvelope_integrable_and_le  (hd : 0 < d)
+    bd a ρ η {N } (hN : 0 < N) :
     Integrable (finePairCountTwoGeometryEnvelope (d := d) bd a ρ η N) (fullSpatialPatchDesign d 2) ∧
     (∫ U, finePairCountTwoGeometryEnvelope bd a ρ η N U ∂fullSpatialPatchDesign d 2) ≤
       9*finePairCountTwoSpatialBudget d bd a ρ η N := by
@@ -232,12 +239,14 @@ theorem finePairEvenFieldAction_sum_square_le_geometry {d n F : ℕ}
       (finePairDistanceFactor_square_integral_le hd hN)
   exact (mul_le_mul_of_nonneg_left hInt (by positivity : 0 ≤ 9*(η^2*bd^2*((2*ρ+a)/a^2)^2)^2)).trans_eq
     (by unfold finePairCountTwoSpatialBudget; ring)
-theorem finePairCountTwoRawNumerator_sum_square_le_geometry {d F : ℕ} [NeZero d] (hF : 3 ≤ F)
-    (ad bd T0 N : ℝ) (haD : 0 < ad) (hab : ad < bd) (hT0 : 0 ≤ T0) (hN : T0 ≤ N)
-    (D M q : ℕ) (hD : 2 ≤ D) (hM : 2 ≤ M) (hq : 2 ≤ q)
-    (C a V η ρ : ℝ) (hC : C ≠ 0) (ha : 0 < a) (hρ : 0 ≤ ρ)
-    (U : Fin 2 → Covariate d) (hU : ∀ i, U i ∈ hyperplaneCube d)
-    (p g w : Fin 2 → ℝ) (hp : ∀ i, p i ∈ Icc ad bd) (hw : ∀ i, |w i| ≤ 1)
+end
+
+theorem finePairCountTwoRawNumerator_sum_square_le_geometry {d F } [NeZero d] (hF : 3 ≤ F)
+    ad bd T0 N (haD : 0 < ad) (hab : ad < bd) (hT0 : 0 ≤ T0) (hN : T0 ≤ N)
+    D M q (hD : 2 ≤ D) (hM : 2 ≤ M) (hq : 2 ≤ q)
+    C a V η ρ (hC : C ≠ 0) (ha : 0 < a) (hρ : 0 ≤ ρ)
+    U (hU : ∀ i, U i ∈ hyperplaneCube d)
+    p g w (hp : ∀ i, p i ∈ Icc ad bd) (hw : ∀ i, |w i| ≤ 1)
     (c : HighFrameIndex d F → ℝ)
     (hf : ∀ i, |coefficientRegression η g w (fun i => highFrameFeature (U i)) c i| ≤ ρ) :
     (∑ y : Fin 2 → Fin 3, (finePairCountTwoRawNumerator ad bd T0 N D M q C a V η U p g w c y)^2) ≤

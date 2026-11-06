@@ -16,7 +16,7 @@ set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1000000
 attribute [local instance] Classical.propDecidable
 
-abbrev HighRawState (d k D : ℕ) :=
+abbrev HighRawState d k D :=
   (Covariate d → ℝ) × (HighWindowLabels d k → (HighFrameIndex d D → ℝ))
 
 end NearlyMinimax

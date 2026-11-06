@@ -17,14 +17,14 @@ set_option backward.isDefEq.respectTransparency false
 set_option synthInstance.maxHeartbeats 200000
 set_option maxHeartbeats 1000000
 
-def pairCovariates {d : ℕ} (z : Observation d × Observation d) : Covariate d × Covariate d :=
+def pairCovariates {d } (z : Observation d × Observation d)  :=
   (z.1.1, z.2.1)
 
-theorem pairCovariates_measurable (d : ℕ) : Measurable (pairCovariates (d := d)) :=
+theorem pairCovariates_measurable d : Measurable (pairCovariates (d := d)) :=
   measurable_fst.fst.prodMk measurable_snd.fst
 
-theorem observationPair_covariates_measurePreserving {d : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ) :
+theorem observationPair_covariates_measurePreserving {d } (C : ModelConstants d)
+    θ (hθ : Admissible C θ) :
     MeasurePreserving pairCovariates ((observationLaw θ).prod (observationLaw θ))
       ((designLaw θ).prod (designLaw θ)) := by
   let := observationLaw_isProbability C θ hθ
@@ -38,7 +38,7 @@ def rawModelPairScore {Ω : Type*} {d : ℕ} (θ : RegressionParameter d)
     ⟪c p.1 (pairCovariates z), pairScoreOperator θ.variance z.1.2 z.2.2
       (c p.2 (pairCovariates z))⟫
 
-theorem observationPairScoreOperator_measurable_apply {d : ℕ} (V : ℝ) :
+theorem observationPairScoreOperator_measurable_apply {d } V :
     Measurable (fun z : (Observation d × Observation d) × PairVector =>
       pairScoreOperator V z.1.1.2 z.1.2.2 z.2) := by
   have hv : Continuous (fun z : (Observation d × Observation d) × PairVector =>
@@ -54,18 +54,23 @@ theorem observationPairScoreOperator_measurable_apply {d : ℕ} (V : ℝ) :
     Pi.sub_def, Pi.smul_def, Function.comp_def] using
     (hs.sub ((pairNoiseOperator.continuous.comp continuous_snd).const_smul V)).measurable
 
-theorem pilotOnObservations_measurable {Ω : Type*} [MeasurableSpace Ω] {d : ℕ}
+section
+variable {Ω : Type*} [MeasurableSpace Ω]
+
+section
+variable {d : ℕ}
+
+theorem pilotOnObservations_measurable  
     {c : Ω → Covariate d × Covariate d → PairVector}
     (hmc : Measurable (fun z : Ω × (Covariate d × Covariate d) => c z.1 z.2)) :
     Measurable (fun z : Ω × (Observation d × Observation d) => c z.1 (pairCovariates z.2)) :=
   hmc.comp (measurable_fst.prodMk ((pairCovariates_measurable d).comp measurable_snd))
 
-theorem rawModelPairScore_measurable {Ω : Type*} [MeasurableSpace Ω] {d : ℕ}
+theorem rawModelPairScore_measurable  
     (θ : RegressionParameter d) (k : ℕ) (hk : 0 < k)
     {c : Ω → Covariate d × Covariate d → PairVector}
     (hmc : Measurable (fun z : Ω × (Covariate d × Covariate d) => c z.1 z.2)) :
-    Measurable (fun z : (Ω × Ω) × (Observation d × Observation d) => rawModelPairScore θ k hk c z.1 z.2) := by
-  exact PilotFields.maskedPilotKernel_measurable
+    Measurable (fun z : (Ω × Ω) × (Observation d × Observation d) => rawModelPairScore θ k hk c z.1 z.2) := PilotFields.maskedPilotKernel_measurable
     (c := fun x z => c x (pairCovariates z))
     (A := fun z : Observation d × Observation d => pairScoreOperator θ.variance z.1.2 z.2.2)
     (q := sameLabelKernel (regularObservationLabel (d := d) k hk))
@@ -73,16 +78,17 @@ theorem rawModelPairScore_measurable {Ω : Type*} [MeasurableSpace Ω] {d : ℕ}
     (observationPairScoreOperator_measurable_apply (d := d) θ.variance)
     (sameLabelKernel_measurable (regularObservationLabel (d := d) k hk)
       (regularObservationLabel_measurable (d := d) k hk))
+end
 
-theorem rawModelPairScore_memLp {Ω : Type*} [MeasurableSpace Ω]
-    (π : Measure Ω) [IsProbabilityMeasure π] {d : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ) (k : ℕ) (hk : 0 < k)
-    {c : Ω → Covariate d × Covariate d → PairVector}
-    (hmc : Measurable (fun z : Ω × (Covariate d × Covariate d) => c z.1 z.2))
-    (hc : ∀ᵐ w ∂(designLaw θ).prod (designLaw θ),
-      sameLabelKernel (regularGridCell k hk) w ≠ 0 → MemLp (fun x => c x w) 2 π)
-    {L : ℝ} (hL : 0 ≤ L) (hE : ∀ᵐ w ∂(designLaw θ).prod (designLaw θ),
-      sameLabelKernel (regularGridCell k hk) w ≠ 0 → (∫ x, ‖c x w‖ ^ 2 ∂π) ≤ L) :
+
+section
+variable (π : Measure Ω) [IsProbabilityMeasure π] {d : ℕ} (C : ModelConstants d) (θ : RegressionParameter d) (hθ : Admissible C θ) (k : ℕ) (hk : 0 < k) {c : Ω → Covariate d × Covariate d → PairVector} (hmc : Measurable (fun z : Ω × (Covariate d × Covariate d) => c z.1 z.2)) (hc : ∀ᵐ w ∂(designLaw θ).prod (designLaw θ),
+      sameLabelKernel (regularGridCell k hk) w ≠ 0 → MemLp (fun x => c x w) 2 π) {L : ℝ} (hL : 0 ≤ L) (hE : ∀ᵐ w ∂(designLaw θ).prod (designLaw θ),
+      sameLabelKernel (regularGridCell k hk) w ≠ 0 → (∫ x, ‖c x w‖ ^ 2 ∂π) ≤ L)
+include hθ hmc hc hL hE
+
+theorem rawModelPairScore_memLp 
+     :
     MemLp (fun z : (Ω × Ω) × (Observation d × Observation d) => rawModelPairScore θ k hk c z.1 z.2)
       2 ((π.prod π).prod ((observationLaw θ).prod (observationLaw θ))) := by
   let := observationLaw_isProbability C θ hθ
@@ -104,15 +110,8 @@ theorem rawModelPairScore_memLp {Ω : Type*} [MeasurableSpace Ω]
   · exact hL
   · exact hmp.quasiMeasurePreserving.ae hE
 
-theorem rawModelPairScore_energy_le {Ω : Type*} [MeasurableSpace Ω]
-    (π : Measure Ω) [IsProbabilityMeasure π] {d : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ) (k : ℕ) (hk : 0 < k)
-    {c : Ω → Covariate d × Covariate d → PairVector}
-    (hmc : Measurable (fun z : Ω × (Covariate d × Covariate d) => c z.1 z.2))
-    (hc : ∀ᵐ w ∂(designLaw θ).prod (designLaw θ),
-      sameLabelKernel (regularGridCell k hk) w ≠ 0 → MemLp (fun x => c x w) 2 π)
-    {L : ℝ} (hL : 0 ≤ L) (hE : ∀ᵐ w ∂(designLaw θ).prod (designLaw θ),
-      sameLabelKernel (regularGridCell k hk) w ≠ 0 → (∫ x, ‖c x w‖ ^ 2 ∂π) ≤ L) :
+theorem rawModelPairScore_energy_le 
+     :
     (∫ z : (Ω × Ω) × (Observation d × Observation d), rawModelPairScore θ k hk c z.1 z.2 ^ 2
       ∂(π.prod π).prod ((observationLaw θ).prod (observationLaw θ))) ≤
       L ^ 2 * (responseOperatorEnergyBound C * (C.densityUpper / (k : ℝ) ^ d)) := by
@@ -132,5 +131,9 @@ theorem rawModelPairScore_energy_le {Ω : Type*} [MeasurableSpace Ω]
     (hmp.quasiMeasurePreserving.ae hc) hL (hmp.quasiMeasurePreserving.ae hE)
   exact he.trans (mul_le_mul_of_nonneg_left (regularResponseOperatorEnergy_le C θ hθ k hk)
     (sq_nonneg L))
+end
+
+end
+
 
 end NearlyMinimax

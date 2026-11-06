@@ -47,12 +47,7 @@ theorem historyMarkedPrior_invariant_law (dependent : J → J → Prop)
     intro h
     by_cases hh : f h ∈ S <;> simp [F, hh]
   have hzero : ∀ j h, ∫ e, F (historyMarkedAppend dependent hsymm j (h, e)) * a e ∂π = 0 := by
-    intro j h
-    have hFi : ∀ h : HistoryMarked dependent E, F h = S.indicator (fun _ : X => (1 : ℝ)) (f h) := by
-      intro h
-      by_cases hh : f h ∈ S <;> simp [F, hh]
-    simp_rw [hFi]
-    exact hkill j h S hS
+    bound
   have he := historyMarkedPrior_invariant_observable dependent hrefl hsymm Δ hΔ hlabels T B hT hB
     π a ha habound hsmall F hF 1 (by norm_num) hbound hzero t ht
   change (∫ h, (f ⁻¹' S).indicator (1 : HistoryMarked dependent E → ℝ) h

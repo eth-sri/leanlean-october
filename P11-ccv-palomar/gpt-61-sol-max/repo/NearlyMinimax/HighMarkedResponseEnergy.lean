@@ -50,10 +50,10 @@ theorem high_marked_selected_response_energy {ι E : Type*} [Fintype ι]
   let μ (i : Fin n) := ternaryIndexMeasure a (coefficientRegression η g w φ c i) V ha
     (fun b => (hp i b).le)
   have hpres := finite_probability_pi_embedding_preserving μ e
-  let H : (Fin r → Fin 3) → ℝ := fun y =>
+  let H  := fun y =>
     highMarkedLocalScore π activation a V η (p ∘ e) (fun z => pReset z ∘ e)
       cReset (g ∘ e) (w ∘ e) (φ ∘ e) c y ^ 2
-  have hHm : Measurable H := measurable_of_countable H
+  have hHm  := measurable_of_countable H
   calc
     _ = ∫ y, H (fun l => y (e l)) ∂Measure.pi μ := by
       apply integral_congr_ae

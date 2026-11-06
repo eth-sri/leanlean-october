@@ -16,16 +16,21 @@ namespace NearlyMinimax
 
 variable {J : Type*} [Fintype J] [LinearOrder J]
 
+section
+variable (dependent : J → J → Prop)
+
+section
+variable (ρ t : ℝ) {E : Type*} (a : E → ℝ)
+include ρ t a
+
 /-- The actual maximal-deletion contribution of one spatial label. -/
-def historyMarkedLabelTerm (dependent : J → J → Prop) (ρ t : ℝ) {E : Type*}
-    (a : E → ℝ) (j : J) (h : HistoryMarked dependent E) : ℝ :=
+def historyMarkedLabelTerm   (j : J) (h : HistoryMarked dependent E) : ℝ :=
   ∑ x ∈ historyMaximalPieces Finset.univ,
     if wordHeapLabel x = j then historyMarkedPieceWeight dependent a h x *
       historyScaledUpperDensity (historyMarkedPieceWeight dependent a h) ρ (Finset.univ.erase x) t else 0
 
 /-- Genuine finite maximal pieces partition by their actual labels. -/
-theorem historyMarkedDensityDerivative_eq_labelSum (dependent : J → J → Prop) (ρ t : ℝ)
-    {E : Type*} (a : E → ℝ) (h : HistoryMarked dependent E) :
+theorem historyMarkedDensityDerivative_eq_labelSum   (h : HistoryMarked dependent E) :
     historyMarkedDensityDerivative dependent ρ t a h =
       ρ⁻¹ * ∑ j, historyMarkedLabelTerm dependent ρ t a j h := by
   classical
@@ -35,9 +40,11 @@ theorem historyMarkedDensityDerivative_eq_labelSum (dependent : J → J → Prop
   apply Finset.sum_congr rfl
   intro x hx
   simp
+end
+
 
 /-- There is no contribution when the actual shape has no maximal piece of that label. -/
-theorem historyMarkedLabelTerm_eq_zero (dependent : J → J → Prop)
+theorem historyMarkedLabelTerm_eq_zero 
     (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i) (ρ t : ℝ)
     {E : Type*} (a : E → ℝ) (j : J) (h : HistoryMarked dependent E)
     (hn : h ∉ historyMarkedTerminalSet dependent j) : historyMarkedLabelTerm dependent ρ t a j h = 0 := by
@@ -52,7 +59,7 @@ theorem historyMarkedLabelTerm_eq_zero (dependent : J → J → Prop)
   simp [hl]
 
 /-- On a genuine append, the unique fresh maximal label has exactly the old deleted density. -/
-theorem historyMarkedLabelTerm_append (dependent : J → J → Prop)
+theorem historyMarkedLabelTerm_append 
     (hrefl : ∀ j, dependent j j) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
     (ρ t : ℝ) {E : Type*} [MeasurableSpace E] (a : E → ℝ) (j : J)
     (h : HistoryMarked dependent E) (fresh : E) :
@@ -73,8 +80,7 @@ theorem historyMarkedLabelTerm_append (dependent : J → J → Prop)
     have hw : historyMarkedPieceWeight dependent a
         (historyMarkedAppend dependent hsymm j (⟨g, marks⟩, fresh)) x = a fresh :=
       congrArg a (historyCanonicalMarkAppendEquiv_fresh dependent hsymm j g fresh marks)
-    exact congrArg₂ (fun u v : ℝ => u * v) hw
-      (historyCanonicalAppend_density_delete dependent hsymm j g fresh marks a ρ t)
+    solve_by_elim [congrArg₂, historyCanonicalAppend_density_delete]
   · intro y hy hne
     have hn : wordHeapLabel y ≠ j := by
       intro hj
@@ -87,7 +93,7 @@ theorem historyMarkedLabelTerm_append (dependent : J → J → Prop)
     exact (hn (historyCanonicalAppendedPiece_maximal dependent hsymm j g)).elim
 
 /-- Every fixed maximal-label contribution is actually measurable. -/
-theorem historyMarkedLabelTerm_measurable (dependent : J → J → Prop) (ρ t : ℝ)
+theorem historyMarkedLabelTerm_measurable  (ρ t : ℝ)
     {E : Type*} [MeasurableSpace E] (a : E → ℝ) (ha : Measurable a) (j : J) :
     Measurable (historyMarkedLabelTerm dependent ρ t a j) := by
   classical
@@ -107,7 +113,7 @@ theorem historyMarkedLabelTerm_measurable (dependent : J → J → Prop) (ρ t :
   · exact measurable_const
 
 /-- The label contribution is bounded uniformly over all finite histories. -/
-theorem historyMarkedLabelTerm_bound (dependent : J → J → Prop)
+theorem historyMarkedLabelTerm_bound 
     (hrefl : ∀ j, dependent j j) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
     (Δ : ℕ) (hlabels : ∀ j, (dependentLabelFinset dependent j).card ≤ Δ)
     (ρ t B : ℝ) (hρ : 0 < ρ) (ht : 0 ≤ t) (hB : 0 ≤ B)
@@ -133,5 +139,7 @@ theorem historyMarkedLabelTerm_bound (dependent : J → J → Prop)
     exact mul_le_mul (ha _) hb.2 hp hB
   · rw [historyMarkedLabelTerm_eq_zero dependent hsymm ρ t a j h hn, abs_zero]
     positivity
+end
+
 
 end NearlyMinimax

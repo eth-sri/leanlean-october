@@ -21,11 +21,11 @@ attribute [local instance] Classical.propDecidable
 attribute [local irreducible] sourceRowData highRowTotalMass
   highUnionSourceDensity highUnionSourceState historyMarkedAppend
 
-theorem paper_lower_sharp {d : ℕ} (C : ModelConstants d) : LowerSharpClaim C := by
+theorem paper_lower_sharp {d } (C : ModelConstants d) : LowerSharpClaim C := by
   classical
   intro hreg
   obtain ⟨hs,hd⟩ := hreg
-  letI : NeZero d := NeZero.of_pos C.dimension_pos
+  letI  := NeZero.of_pos C.dimension_pos
   obtain ⟨Q⟩ := lowSmoothnessTernaryConstants_exists C
   obtain ⟨Cfr0,etaG,hCfr0,hetaG,hgeometry⟩ := completeSaddleGeometry_witness C Q hs hd
   obtain ⟨Cfr,eta0,ctr,hCfr,hmin,heta0,hctr,hcost⟩ :=
@@ -65,7 +65,7 @@ theorem paper_lower_sharp {d : ℕ} (C : ModelConstants d) : LowerSharpClaim C :
   have hD' : 3 ≤ D := hD
   have hM' : highCenterResolutionThreshold C ≤ (M : ℝ) := hM
   letI : NeZero k := ⟨by omega⟩
-  letI : LinearOrder (HighWindowLabels d k) :=
+  letI  :=
     LinearOrder.lift' (Fintype.equivFin (HighWindowLabels d k))
       (Fintype.equivFin (HighWindowLabels d k)).injective
   let R := completeSourceRows C k D M q Cfr lam ell N mu
@@ -76,8 +76,8 @@ theorem paper_lower_sharp {d : ℕ} (C : ModelConstants d) : LowerSharpClaim C :
   have hBl : 0 ≤ Bl := div_nonneg G.total_positive.le (highCenterMix_mem C).1.le
   have hactivity' : Bl ≤ CB*lowerSaddleActivity C.smoothness d m theta Cω
       (shrunkDensityExponent C.densityLower C.densityUpper) n := hactivity
-  change CompleteSaddleCostRiskBudget C cf CB C5 C6 C7 ch ctr cm Cω n
-  dsimp only [CompleteSaddleCostRiskBudget]
+  
+  
   refine ⟨Bl,E,hB,hBl,hE,hactivity',hEcap,?_⟩
   intro U
   let I := Real.sqrt ((3^d : ℕ)*(k : ℝ)^d*E)

@@ -20,25 +20,19 @@ theorem projection_half_degrees_risk_algebra {n d e b H V C : ℝ}
       (4 * C + 32 * V * H ^ 2) / n + 4 * b ^ 4 := by
   have hnd : n ≤ 2 * d := by linarith
   have hnsq : n ^ 2 ≤ 4 * d ^ 2 := by
-    have hs := (sq_le_sq₀ hn.le (by positivity : 0 ≤ 2 * d)).mpr hnd
-    nlinarith
+    linarith [(sq_le_sq₀ hn.le (by positivity : 0 ≤ 2 * d)).mpr hnd     ]
   have hfirst : 2 * C * n * d ≤ 4 * C * d ^ 2 := by
-    have hp := mul_nonneg (mul_nonneg hC hd.le) (by linarith : 0 ≤ 2 * d - n)
-    nlinarith
+    linarith [mul_nonneg (mul_nonneg hC hd.le) (by linarith : 0 ≤ 2 * d - n)     ]
   have hsecond1 : 8 * V * n * e ≤ 8 * V * n ^ 2 * H ^ 2 := by
-    have hp := mul_le_mul_of_nonneg_left heH (by positivity : 0 ≤ 8 * V * n)
-    nlinarith
+    linarith [mul_le_mul_of_nonneg_left heH (by positivity : 0 ≤ 8 * V * n)     ]
   have hsecond2 : 8 * V * n ^ 2 * H ^ 2 ≤ 32 * V * d ^ 2 * H ^ 2 := by
-    have hp := mul_le_mul_of_nonneg_left hnsq (by positivity : 0 ≤ 8 * V * H ^ 2)
-    nlinarith
+    linarith [mul_le_mul_of_nonneg_left hnsq (by positivity : 0 ≤ 8 * V * H ^ 2)     ]
   have hesq : e ^ 2 ≤ n ^ 2 * b ^ 4 := by
-    have hs := (sq_le_sq₀ he (mul_nonneg hn.le (sq_nonneg b))).mpr heb
-    nlinarith
+    linarith [(sq_le_sq₀ he (mul_nonneg hn.le (sq_nonneg b))).mpr heb     ]
   have hthird1 : n * e ^ 2 ≤ n * n ^ 2 * b ^ 4 := by
-    simpa only [mul_assoc] using mul_le_mul_of_nonneg_left hesq hn.le
+    linarith [mul_le_mul_of_nonneg_left hesq hn.le]
   have hthird2 : n * n ^ 2 * b ^ 4 ≤ 4 * n * d ^ 2 * b ^ 4 := by
-    have hp := mul_le_mul_of_nonneg_left hnsq (by positivity : 0 ≤ n * b ^ 4)
-    nlinarith
+    linarith [mul_le_mul_of_nonneg_left hnsq (by positivity : 0 ≤ n * b ^ 4)     ]
   have hlhs : (2 * C * d + 8 * V * e) / d ^ 2 + (e / d) ^ 2 =
       (2 * C * d + 8 * V * e + e ^ 2) / d ^ 2 := by
     rw [div_pow, ← add_div]
@@ -59,11 +53,7 @@ theorem projection_energy_le_uniform_bound {ι : Type*} [Fintype ι]
   unfold projectionEnergy dotProduct
   calc
     (∑ i, f i * f i) ≤ ∑ _i : ι, H ^ 2 := by
-      apply Finset.sum_le_sum
-      intro i hi
-      have hs := (sq_le_sq₀ (abs_nonneg _) hH).mpr (hf i)
-      rw [sq_abs] at hs
-      simpa only [pow_two] using hs
+      grind only [Finset.sum_le_sum, sq_le_sq₀, abs_nonneg, sq_abs, pow_two]
     _ = _ := by simp
 
 /-- The independent-error residual estimator has conditional risk
@@ -84,7 +74,7 @@ theorem independent_projection_half_degrees_mse
     (∫ ω, (projectionEstimator A (f + fun i => ε i ω) - V) ^ 2 ∂μ) ≤
       (4 * max C₄ (2 * V ^ 2) + 32 * V * H ^ 2) / Fintype.card ι + 4 * b ^ 4 := by
   have hnreal : (0 : ℝ) < Fintype.card ι := by exact_mod_cast hn
-  have hd : 0 < A.trace := (half_pos hnreal).trans_le hdegree
+  have hd  := (half_pos hnreal).trans_le hdegree
   apply (independent_projection_estimator_mse_bound μ A hsym hidem hd f ε V C₄
     hε hind hmean hsecond hfourth).trans
   exact projection_half_degrees_risk_algebra hnreal hd hdegree

@@ -12,7 +12,7 @@ open Matrix MeasureTheory Set
 open scoped BigOperators Matrix.Norms.L2Operator
 namespace NearlyMinimax
 
-theorem dyadicNormalizedAnchor_measurable {d : ℕ} (j : ℕ) :
+theorem dyadicNormalizedAnchor_measurable {d } j :
     Measurable (dyadicNormalizedAnchor (d := d) j) := by
   apply measurable_pi_iff.mpr
   intro i
@@ -20,7 +20,7 @@ theorem dyadicNormalizedAnchor_measurable {d : ℕ} (j : ℕ) :
     ((measurable_of_countable (fun c : Fin d → Fin ((2 : ℕ) ^ j) => regularGridCorner ((2 : ℕ) ^ j) c i)).comp
       (regular_grid_cell_measurable _ (by positivity))))
 
-theorem dyadicAnchoredFeature_joint_measurable {d ℓ : ℕ} (j : ℕ) (γ : AnchoredIndex d ℓ) :
+theorem dyadicAnchoredFeature_joint_measurable {d ℓ } j (γ : AnchoredIndex d ℓ) :
     Measurable (fun z : Covariate d × Covariate d => dyadicAnchoredFeature j z.1 z.2 γ) := by
   apply Continuous.measurable
   apply (anchoredMonomial_continuous γ).comp
@@ -29,9 +29,8 @@ theorem dyadicAnchoredFeature_joint_measurable {d ℓ : ℕ} (j : ℕ) (γ : Anc
   exact continuous_const.mul (((continuous_apply i).comp continuous_snd).sub
     ((continuous_apply i).comp continuous_fst))
 
-theorem dyadic_cell_pair_measurable {d : ℕ} (j : ℕ) :
-    MeasurableSet {z : Covariate d × Covariate d | z.2 ∈ dyadicPilotCell j z.1} := by
-  exact measurableSet_eq_fun ((regular_grid_cell_measurable _ (by positivity)).comp measurable_snd)
+theorem dyadic_cell_pair_measurable {d } j :
+    MeasurableSet {z : Covariate d × Covariate d | z.2 ∈ dyadicPilotCell j z.1} := measurableSet_eq_fun ((regular_grid_cell_measurable _ (by positivity)).comp measurable_snd)
     ((regular_grid_cell_measurable _ (by positivity)).comp measurable_fst)
 
 theorem matrix_nonsing_inverse_measurable {ι : Type*} [Fintype ι] [DecidableEq ι] :
@@ -46,18 +45,27 @@ theorem matrix_nonsing_inverse_measurable {ι : Type*} [Fintype ι] [DecidableEq
   rw [Matrix.inv_def, Ring.inverse_eq_inv]
   rfl
 
-theorem dyadicKnownGram_measurable {d ℓ : ℕ} (j : ℕ) :
+section
+variable {d ℓ : ℕ}
+
+section
+variable (j : ℕ)
+
+theorem dyadicKnownGram_measurable   :
     Measurable (dyadicKnownGram (d := d) (ℓ := ℓ) j) := by
   have he : dyadicKnownGram (d := d) (ℓ := ℓ) j =
       anchoredGram ∘ dyadicNormalizedAnchor j := funext (dyadicKnownGram_eq_normalized j)
   rw [he]
   exact anchoredGram_continuous.measurable.comp (dyadicNormalizedAnchor_measurable j)
 
-theorem dyadicKnownGram_inverse_measurable {d ℓ : ℕ} (j : ℕ) :
+theorem dyadicKnownGram_inverse_measurable   :
     Measurable (fun x : Covariate d => (dyadicKnownGram (ℓ := ℓ) j x)⁻¹) :=
   matrix_nonsing_inverse_measurable.comp (dyadicKnownGram_measurable j)
 
-theorem dyadicPilotScalar_joint_measurable {d ℓ : ℕ} (j : ℕ) (a : LocalPilotIndex d ℓ) :
+section
+variable (a : LocalPilotIndex d ℓ)
+
+theorem dyadicPilotScalar_joint_measurable    :
     Measurable (fun v : Covariate d × Observation d => dyadicPilotScalar j v.1 a v.2) := by
   have hpair : Measurable (fun v : Covariate d × Observation d => (v.1, v.2.1)) :=
     measurable_fst.prodMk (measurable_fst.comp measurable_snd)
@@ -69,7 +77,7 @@ theorem dyadicPilotScalar_joint_measurable {d ℓ : ℕ} (j : ℕ) (a : LocalPil
     | inl γ => exact (measurable_snd.comp measurable_snd).mul (hφ γ)
     | inr γ => exact hφ γ
 
-theorem dyadicPilotFeature_joint_measurable {d ℓ : ℕ} (j : ℕ) (a : LocalPilotIndex d ℓ) :
+theorem dyadicPilotFeature_joint_measurable    :
     Measurable (fun v : Covariate d × Observation d => dyadicPilotFeature j v.1 a v.2) := by
   let S := {v : Covariate d × Observation d | v.2.1 ∈ dyadicPilotCell j v.1}
   have hS : MeasurableSet S := (dyadic_cell_pair_measurable j).preimage
@@ -81,15 +89,17 @@ theorem dyadicPilotFeature_joint_measurable {d ℓ : ℕ} (j : ℕ) (a : LocalPi
   funext v
   by_cases hv : v.2.1 ∈ dyadicPilotCell j v.1 <;> simp [dyadicPilotFeature, S, hv]
 
-theorem preconditionedPilotFeature_joint_measurable {d ℓ : ℕ} (j : ℕ) (a : LocalPilotIndex d ℓ) :
+theorem preconditionedPilotFeature_joint_measurable    :
     Measurable (fun v : Covariate d × Observation d => preconditionedPilotFeature j v.1 a v.2) := by
   unfold preconditionedPilotFeature
   apply Finset.measurable_sum
   intro β _
   exact (((dyadicKnownGram_inverse_measurable j).eval_matrix (i := localPilotRow a) (j := β)).comp
     measurable_fst).mul (dyadicPilotFeature_joint_measurable j (localPilotReplaceRow a β))
+end
 
-theorem dyadicIncrementFeature_joint_measurable {d ℓ : ℕ} (j : ℕ)
+
+theorem dyadicIncrementFeature_joint_measurable  
     (a : incrementVariables (anchoredDimension d ℓ)) :
     Measurable (fun v : Covariate d × Observation d => dyadicIncrementFeature j v.1 a v.2) := by
   cases a with
@@ -110,17 +120,21 @@ theorem dyadicIncrementFeature_joint_measurable {d ℓ : ℕ} (j : ℕ)
           else Sum.inr (Sum.inl (anchoredFinIndex i))) v.2)
     split_ifs <;> first | exact measurable_const | exact preconditionedPilotFeature_joint_measurable _ _
 
-theorem dyadicIncrementRawVector_joint_measurable {d ℓ : ℕ} (j : ℕ) :
+theorem dyadicIncrementRawVector_joint_measurable   :
     Measurable (fun v : Covariate d × Observation d => dyadicIncrementRawVector (ℓ := ℓ) j v.1 v.2) :=
   measurable_pi_iff.mpr (fun _ => dyadicIncrementFeature_joint_measurable j _)
+end
 
-theorem dyadicIncrementRawMean_measurable {d ℓ : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ) (j : ℕ) :
+
+theorem dyadicIncrementRawMean_measurable  C
+    (θ : RegressionParameter d) (hθ : Admissible C θ) j :
     Measurable (dyadicIncrementRawMean (ℓ := ℓ) θ j) := by
   let := observationLaw_isProbability C θ hθ
   apply measurable_pi_iff.mpr
   intro a
   exact (((dyadicIncrementRawVector_joint_measurable (ℓ := ℓ) j).eval (a := a)).stronglyMeasurable.integral_prod_right'
     (ν := observationLaw θ)).measurable
+end
+
 
 end NearlyMinimax

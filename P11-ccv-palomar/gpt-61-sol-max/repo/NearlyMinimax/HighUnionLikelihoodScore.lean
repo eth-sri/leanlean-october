@@ -75,9 +75,9 @@ lemma highUnionSourceRegression_append (n : ℕ) (hk : 4 ≤ k) (η : ℝ)
 
 /-- The true local score, evaluated on the actual canonical history and
 its actual appended reset states. -/
-def highUnionSourceLocalScore (n : ℕ) (a V η : ℝ)
-    (h : HistoryMarked (fun i j => j ∈ highNeighborLabels d k i) (HighUnionMark E))
-    (x : Fin n → Covariate d) (j : HighWindowLabels d k) (y : Fin n → Fin 3) : ℝ :=
+def highUnionSourceLocalScore n a V η
+    h
+    x j y  :=
   highFrameMarkedScore d k D n
     (fun _ => highUnionLaw R (highCenterMix C))
     (fun _ => highUnionActivation R (highCenterMix C)) a V η
@@ -118,9 +118,9 @@ lemma highUnionSourceAppendLikelihoodAction_eq_responseAction (n : ℕ) (hk : 4 
 /-- The global append/heat likelihood score is exactly the sum of the
 true local window scores. This uses the actual reset recursion and exact
 squared partition, with no statistical energy premise. -/
-theorem highUnionSourceLikelihoodScore_eq_sum (n : ℕ) (hk : 4 ≤ k) (a V η : ℝ)
-    (h : HistoryMarked (fun i j => j ∈ highNeighborLabels d k i) (HighUnionMark E))
-    (x : Fin n → Covariate d) (y : Fin n → Fin 3) :
+theorem highUnionSourceLikelihoodScore_eq_sum n (hk : 4 ≤ k) a V η
+    h
+    x y :
     highHistoryLikelihoodScore (fun i j => j ∈ highNeighborLabels d k i)
       (fun {_ _} h => highNeighborLabels_symmetric d k _ _ h)
       (highUnionLaw R (highCenterMix C)) (highUnionActivation R (highCenterMix C))
@@ -135,11 +135,7 @@ theorem highUnionSourceLikelihoodScore_eq_sum (n : ℕ) (hk : 4 ≤ k) (a V η :
   simp_rw [highUnionSourceAppendLikelihoodAction_eq_responseAction C R n hk a V η]
   unfold highRawSampleLikelihood highRawSampleVarianceDerivative highUnionSourceRegression
   rw [Finset.prod_mul_distrib]
-  congr 2
-  simp only [Finset.mul_sum]
-  apply Finset.sum_congr rfl
-  intro i _
-  ring
+  grind
 
 end ActualSource
 end NearlyMinimax

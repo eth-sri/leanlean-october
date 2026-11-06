@@ -12,8 +12,8 @@ open MeasureTheory
 namespace NearlyMinimax
 set_option backward.isDefEq.respectTransparency false
 
-theorem observationPair_integral_conditioning {d : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ)
+theorem observationPair_integral_conditioning {d } C
+    θ (hθ : Admissible C θ)
     (g : Observation d × Observation d → ℝ)
     (hg : Integrable g ((observationLaw θ).prod (observationLaw θ))) :
     (∫ z, g z ∂(observationLaw θ).prod (observationLaw θ)) =
@@ -25,7 +25,7 @@ theorem observationPair_integral_conditioning {d : ℕ} (C : ModelConstants d)
   let := designLaw_isProbability C θ hθ
   have ho := measurePreserving_finTwoArrow (observationLaw θ)
   have hd := measurePreserving_finTwoArrow (designLaw θ)
-  have hi : Integrable (fun z : Fin 2 → Observation d => g (z 0, z 1)) (sampleLaw θ 2) :=
+  have hi  :=
     ho.integrable_comp_of_integrable hg
   have hs := sampleLaw_integral_conditioning C θ hθ _ hi
   have he : ∀ x : Fin 2 → Covariate d,

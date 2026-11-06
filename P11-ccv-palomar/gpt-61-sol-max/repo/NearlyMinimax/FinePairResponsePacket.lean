@@ -19,46 +19,60 @@ section Packet
 variable {Z ι : Type*} [MeasurableSpace Z] [Fintype ι] [DecidableEq ι]
   [MeasurableSpace ι] [MeasurableSingletonClass ι]
 
-def finePairPacketWeight (a b : ℝ) (M q : ℕ) (C : ℝ) (A : Z → ι → ι → ℝ)
-    (e : Z × FinePairPacketIndex ι M q) : ℝ :=
+section
+variable (a b : ℝ) (M q : ℕ) (C : ℝ) (A : Z → ι → ι → ℝ)
+include a b C A
+
+def finePairPacketWeight 
+    (e : Z × FinePairPacketIndex ι M q)  :=
   finePairDensityWeight a b M e.2.1 * highResponseMarkWeight C q (A e.1) e.2.2
 
-theorem finePairPacketWeight_slice_measurable (a b : ℝ) (M q : ℕ) (C : ℝ)
-    (A : Z → ι → ι → ℝ) (hA : ∀ i j, Measurable (fun ζ => A ζ i j))
-    (h : FinePairPacketIndex ι M q) : Measurable (fun ζ => finePairPacketWeight a b M q C A (ζ, h)) := by
+section
+variable (hA : ∀ i j, Measurable (fun ζ => A ζ i j))
+include hA
+
+theorem finePairPacketWeight_slice_measurable  
+    h : Measurable (fun ζ => finePairPacketWeight a b M q C A (ζ, h)) := by
   dsimp [finePairPacketWeight, highResponseMarkWeight, covarianceWeight]
   fun_prop
 
-theorem finePairPacketWeight_measurable (a b : ℝ) (M q : ℕ) (C : ℝ)
-    (A : Z → ι → ι → ℝ) (hA : ∀ i j, Measurable (fun ζ => A ζ i j)) :
+theorem finePairPacketWeight_measurable   :
     Measurable (finePairPacketWeight a b M q C A) :=
   measurable_from_prod_countable_left (finePairPacketWeight_slice_measurable a b M q C A hA)
+end
 
-theorem finePairPacketWeight_slice_integrable (σ : Measure Z) (a b : ℝ) (M q : ℕ) (C : ℝ)
-    (A : Z → ι → ι → ℝ) (hA : ∀ i j, Measurable (fun ζ => A ζ i j))
+end
+
+
+section
+variable (σ : Measure Z)
+include σ
+
+theorem finePairPacketWeight_slice_integrable  a b M q C
+    A (hA : ∀ i j, Measurable (fun ζ => A ζ i j))
     (hcost : Integrable (separatedMatrixCost A) σ) (h : FinePairPacketIndex ι M q) :
     Integrable (fun ζ => finePairPacketWeight a b M q C A (ζ, h)) σ := by
-  dsimp [finePairPacketWeight, highResponseMarkWeight, covarianceWeight]
+  
   exact (((((separatedMatrix_entry_integrable σ A hA hcost h.2.1.1 h.2.1.2).const_mul
     (C ^ 2 / 2)).mul_const (fairSign h.2.2.1.1)).mul_const (fairSign h.2.2.1.2)).const_mul
       (responseWeight q h.2.2.2)).const_mul (finePairDensityWeight a b M h.1)
 
-theorem finePairPacketWeight_integrable (σ : Measure Z) [IsFiniteMeasure σ]
-    (a b : ℝ) (M q : ℕ) (C : ℝ) (A : Z → ι → ι → ℝ)
+theorem finePairPacketWeight_integrable  [IsFiniteMeasure σ]
+    a b M q C (A : Z → ι → ι → ℝ)
     (hA : ∀ i j, Measurable (fun ζ => A ζ i j)) (hcost : Integrable (separatedMatrixCost A) σ) :
     Integrable (finePairPacketWeight a b M q C A) (σ.prod Measure.count) :=
   joint_finite_integrable σ _ (finePairPacketWeight_slice_measurable a b M q C A hA)
     (finePairPacketWeight_slice_integrable σ a b M q C A hA hcost)
 
-def finePairPacketSignedMeasure (σ : Measure Z) (a b : ℝ) (M q : ℕ) (C : ℝ)
+def finePairPacketSignedMeasure  (a b : ℝ) (M q : ℕ) (C : ℝ)
     (A : Z → ι → ι → ℝ) : SignedMeasure (Z × FinePairPacketIndex ι M q) :=
   (σ.prod Measure.count).withDensityᵥ (finePairPacketWeight a b M q C A)
 
-theorem finePairPacketSignedMeasure_integral (σ : Measure Z) [IsFiniteMeasure σ]
-    (a b : ℝ) (M q : ℕ) (C : ℝ) (A : Z → ι → ι → ℝ)
+theorem finePairPacketSignedMeasure_integral  [IsFiniteMeasure σ]
+    a b M q C A
     (hA : ∀ i j, Measurable (fun ζ => A ζ i j)) (hcost : Integrable (separatedMatrixCost A) σ)
     (f : Z × FinePairPacketIndex ι M q → ℝ) (hf : ∀ h, Measurable (fun ζ => f (ζ, h)))
-    (L : ℝ) (hb : ∀ ζ h, ‖f (ζ, h)‖ ≤ L) :
+    L (hb : ∀ ζ h, ‖f (ζ, h)‖ ≤ L) :
     (∫ᵛ e, f e ∂<•finePairPacketSignedMeasure σ a b M q C A) =
       ∫ ζ, ∑ h : FinePairPacketIndex ι M q, finePairPacketWeight a b M q C A (ζ, h) * f (ζ, h) ∂σ := by
   have hm := measurable_from_prod_countable_left hf
@@ -67,9 +81,11 @@ theorem finePairPacketSignedMeasure_integral (σ : Measure Z) [IsFiniteMeasure �
     (finePairPacketWeight_measurable a b M q C A hA) f hm L (fun e => hb e.1 e.2),
     integral_prod _ (hw.mul_bdd hm.aestronglyMeasurable (Filter.Eventually.of_forall (fun e => hb e.1 e.2)))]
   simp only [integral_count]
+end
 
-theorem finePairPacketWeight_variation (a b : ℝ) (M q : ℕ) (C : ℝ)
-    (A : Z → ι → ι → ℝ) (ζ : Z) :
+
+theorem finePairPacketWeight_variation a b M q C
+    A (ζ : Z) :
     (∑ h : FinePairPacketIndex ι M q, |finePairPacketWeight a b M q C A (ζ, h)|) =
       (∑ h : FinePairDensityIndex M, |finePairDensityWeight a b M h|) *
         (∑ h : Fin (2 * q + 2), |responseWeight q h|) * (2 * C ^ 2) * separatedMatrixCost A ζ := by
@@ -80,8 +96,8 @@ theorem finePairPacketWeight_variation (a b : ℝ) (M q : ℕ) (C : ℝ)
   unfold separatedMatrixCost
   ring
 
-theorem finePairPacketSignedMeasure_totalVariation (σ : Measure Z) [IsFiniteMeasure σ]
-    (a b : ℝ) (M q : ℕ) (C : ℝ) (A : Z → ι → ι → ℝ)
+theorem finePairPacketSignedMeasure_totalVariation σ [IsFiniteMeasure σ]
+    a b M q C (A : Z → ι → ι → ℝ)
     (hA : ∀ i j, Measurable (fun ζ => A ζ i j)) (hcost : Integrable (separatedMatrixCost A) σ) :
     ((finePairPacketSignedMeasure σ a b M q C A).variation univ).toReal =
       (∑ h : FinePairDensityIndex M, |finePairDensityWeight a b M h|) *
@@ -95,14 +111,14 @@ theorem finePairPacketSignedMeasure_totalVariation (σ : Measure Z) [IsFiniteMea
   simp only [integral_count, Real.norm_eq_abs, finePairPacketWeight_variation]
   rw [integral_const_mul]
 
-def finePairPacketObservable (a b : ℝ) (M q : ℕ) (C : ℝ) (c : ι → ℝ)
+def finePairPacketObservable a b M q C c
     (G : Z → ℝ → ℝ → ℝ) (Φ : (ι → ℝ) → ℝ)
-    (e : Z × FinePairPacketIndex ι M q) : ℝ :=
+    (e : Z × FinePairPacketIndex ι M q)  :=
   G e.1 (finePairDensityAtom a b M e.2.1).1 (finePairDensityAtom a b M e.2.1).2 *
     Φ (coefficientReset c (highResponseMarkAtom C q e.2.2).2 (highResponseMarkAtom C q e.2.2).1)
 
-theorem finePairPacketObservable_finite_action (a b : ℝ) (M q : ℕ) (C : ℝ)
-    (A : Z → ι → ι → ℝ) (c : ι → ℝ) (G : Z → ℝ → ℝ → ℝ) (Φ : (ι → ℝ) → ℝ) (ζ : Z) :
+theorem finePairPacketObservable_finite_action a b M q C
+    A c G Φ (ζ : Z) :
     (∑ h : FinePairPacketIndex ι M q, finePairPacketWeight a b M q C A (ζ, h) *
       finePairPacketObservable a b M q C c G Φ (ζ, h)) =
       (∫ᵛ e, G ζ e.1 e.2 ∂<•finePairDensitySignedRule a b M) * responseMatrixAction q C (A ζ) c Φ := by
@@ -119,12 +135,12 @@ theorem finePairPacketObservable_finite_action (a b : ℝ) (M q : ℕ) (C : ℝ)
   rw [← Finset.sum_mul]
 
 theorem finePairPacketSignedMeasure_factor_integral (σ : Measure Z) [IsFiniteMeasure σ]
-    (a b : ℝ) (M q : ℕ) (C : ℝ) (A : Z → ι → ι → ℝ)
+    a b M q C A
     (hA : ∀ i j, Measurable (fun ζ => A ζ i j)) (hcost : Integrable (separatedMatrixCost A) σ)
-    (c : ι → ℝ) (G : Z → ℝ → ℝ → ℝ) (hG : ∀ z eps, Measurable (fun ζ => G ζ z eps))
-    (L : ℝ) (hL : 0 ≤ L) (hGbound : ∀ ζ h,
+    c G (hG : ∀ z eps, Measurable (fun ζ => G ζ z eps))
+    L (hL : 0 ≤ L) (hGbound : ∀ ζ h,
       |G ζ (finePairDensityAtom a b M h).1 (finePairDensityAtom a b M h).2| ≤ L)
-    (Φ : (ι → ℝ) → ℝ) (R : ℝ) (hΦ : ∀ h : HighResponseMarkIndex ι q,
+    Φ R (hΦ : ∀ h : HighResponseMarkIndex ι q,
       |Φ (coefficientReset c (highResponseMarkAtom C q h).2 (highResponseMarkAtom C q h).1)| ≤ R) :
     (∫ᵛ e, finePairPacketObservable a b M q C c G Φ e ∂<•finePairPacketSignedMeasure σ a b M q C A) =
       ∫ ζ, (∫ᵛ e, G ζ e.1 e.2 ∂<•finePairDensitySignedRule a b M) * responseMatrixAction q C (A ζ) c Φ ∂σ := by
@@ -135,7 +151,7 @@ theorem finePairPacketSignedMeasure_factor_integral (σ : Measure Z) [IsFiniteMe
         Φ (coefficientReset c (highResponseMarkAtom C q h.2).2 (highResponseMarkAtom C q h.2).1))
       exact (hG _ _).mul_const _) (L * R) (fun ζ h => by
       rw [finePairPacketObservable, Real.norm_eq_abs, abs_mul]
-      exact mul_le_mul (hGbound ζ h.1) (hΦ h.2) (abs_nonneg _) hL)]
+      bound)]
   simp_rw [finePairPacketObservable_finite_action]
 
 theorem finePairPacketSignedMeasure_pair_action {U : Type*} (σ : Measure Z) [IsFiniteMeasure σ]
@@ -154,7 +170,7 @@ theorem finePairPacketSignedMeasure_pair_action {U : Type*} (σ : Measure Z) [Is
   have hm (z eps : ℝ) (u : U) :
       Measurable (fun ζ => finePairDensityReset a b z eps p (ψ ζ) u) := by
     unfold finePairDensityReset
-    exact measurable_const.add ((hmψ u).const_mul _)
+    fun_prop
   rw [finePairPacketSignedMeasure_factor_integral σ a b M q C A hA hcost c
     (fun ζ z eps => finePairDensityReset a b z eps p (ψ ζ) u * finePairDensityReset a b z eps p (ψ ζ) v)
     (fun z eps => (hm z eps u).mul (hm z eps v)) (b ^ 2) (by positivity) (fun ζ h => by

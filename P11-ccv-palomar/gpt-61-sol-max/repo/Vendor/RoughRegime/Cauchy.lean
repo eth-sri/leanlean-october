@@ -18,7 +18,7 @@ variable {E F : Type*} [NormedAddCommGroup E] [NormedSpace ℂ E]
 
 /-- A Banach-valued first derivative Cauchy estimate obtained on complex lines. -/
 theorem norm_fderiv_le_div (f : E → F) (hf : Differentiable ℂ f)
-    (x : E) (R A : ℝ) (hR : 0 < R)
+    (x : E) R A (hR : 0 < R)
     (hbound : ∀ y ∈ closedBall x R, ‖f y‖ ≤ A) :
     ‖fderiv ℂ f x‖ ≤ A / R := by
   have hA : 0 ≤ A := (norm_nonneg (f x)).trans (hbound x (mem_closedBall_self hR.le))
@@ -28,8 +28,7 @@ theorem norm_fderiv_le_div (f : E → F) (hf : Differentiable ℂ f)
   · simp [hv]
   have hvpos : 0 < ‖v‖ := norm_pos_iff.mpr hv
   let g : ℂ → F := fun z => f (x + z • v)
-  have hg : Differentiable ℂ g := by
-    exact hf.comp ((differentiable_const x).add (differentiable_id.smul_const v))
+  have hg : Differentiable ℂ g := hf.comp ((differentiable_const x).add (differentiable_id.smul_const v))
   have hd : deriv g 0 = (fderiv ℂ f x) v := by
     have hline : HasDerivAt (fun z : ℂ => x + z • v) v 0 := by
       simpa using ((hasDerivAt_id (0 : ℂ)).smul_const v).const_add x
@@ -51,11 +50,11 @@ theorem norm_fderiv_le_div (f : E → F) (hf : Differentiable ℂ f)
   convert hc using 1
   field_simp
 
+section
+variable {E F : Type u} [NormedAddCommGroup E] [NormedSpace ℂ E] [NormedAddCommGroup F] [NormedSpace ℂ F] [CompleteSpace F] (n : ℕ)
+
 /-- Iterating the first derivative estimate on equal-width nested balls. -/
-theorem iteratedFDeriv_closedBall_aux {E F : Type u}
-    [NormedAddCommGroup E] [NormedSpace ℂ E]
-    [NormedAddCommGroup F] [NormedSpace ℂ F] [CompleteSpace F]
-    (n : ℕ) (f : E → F) (hf : AnalyticOnNhd ℂ f Set.univ)
+theorem iteratedFDeriv_closedBall_aux  (f : E → F) (hf : AnalyticOnNhd ℂ f Set.univ)
     (x : E) (δ A : ℝ) (hδ : 0 < δ)
     (hbound : ∀ y ∈ closedBall x ((n : ℝ) * δ), ‖f y‖ ≤ A) :
     ‖iteratedFDeriv ℂ n f x‖ ≤ A / δ ^ n := by
@@ -82,25 +81,17 @@ theorem iteratedFDeriv_closedBall_aux {E F : Type u}
     field_simp
 
 /-- The degree-independent norm estimate on an open ball, before the factorial comparison. -/
-theorem iteratedFDeriv_openBall {E F : Type u}
-    [NormedAddCommGroup E] [NormedSpace ℂ E]
-    [NormedAddCommGroup F] [NormedSpace ℂ F] [CompleteSpace F]
-    (n : ℕ) (hn : 0 < n) (f : E → F) (hf : AnalyticOnNhd ℂ f Set.univ)
-    (x : E) (ε A : ℝ) (hε : 0 < ε)
+theorem iteratedFDeriv_openBall  (hn : 0 < n) (f : E → F) (hf : AnalyticOnNhd ℂ f Set.univ)
+    (x : E) ε A (hε : 0 < ε)
     (hbound : ∀ y ∈ ball x ε, ‖f y‖ ≤ A) :
-    ‖iteratedFDeriv ℂ n f x‖ ≤ A * ((n : ℝ) / ε) ^ n := by
+    ‖iteratedFDeriv ℂ n f x‖ ≤ A * (n / ε) ^ n := by
   have hnreal : 0 < (n : ℝ) := by exact_mod_cast hn
   have hinner (R : ℝ) (hR : 0 < R) (hRε : R < ε) :
       ‖iteratedFDeriv ℂ n f x‖ ≤ A * ((n : ℝ) / R) ^ n := by
     have hδ : 0 < R / (n : ℝ) := div_pos hR hnreal
     have h := iteratedFDeriv_closedBall_aux n f hf x (R / n) A hδ (by
       intro y hy
-      apply hbound
-      rw [mem_closedBall] at hy
-      rw [mem_ball]
-      have heq : (n : ℝ) * (R / n) = R := by field_simp
-      rw [heq] at hy
-      exact hy.trans_lt hRε)
+      grind only [mem_closedBall, mem_ball])
     convert h using 1
     simp_rw [div_pow]
     field_simp
@@ -113,6 +104,8 @@ theorem iteratedFDeriv_openBall {E F : Type u}
   filter_upwards [mem_nhdsWithin_of_mem_nhds (Ioi_mem_nhds hε),
     (self_mem_nhdsWithin : Set.Iio ε ∈ nhdsWithin ε (Set.Iio ε))] with R hR hRε
   exact hinner R hR hRε
+end
+
 
 /-- The elementary factorial comparison used in Lemma 5(c). -/
 lemma pow_le_factorial_exp (n : ℕ) :
@@ -145,14 +138,12 @@ theorem iteratedFDeriv_direction_bound {E F : Type u}
 
 /-- Full polynomial statement of Lemma 5(c). The norm on `Fin p → ℂ` is its coordinate
 supremum norm, and complex directions include the real directions in the manuscript. -/
-theorem polynomial_derivative_bound {p : ℕ} (P : MvPolynomial (Fin p) ℂ)
-    (x : Fin p → ℂ) (ε A : ℝ) (hε : 0 < ε)
+theorem polynomial_derivative_bound {p } P
+    x ε A (hε : 0 < ε)
     (hbound : ∀ y : Fin p → ℂ, ‖y - x‖ < ε → ‖MvPolynomial.eval y P‖ ≤ A)
-    (n : ℕ) (hn : 0 < n) (v : Fin n → (Fin p → ℂ)) :
+    n (hn : 0 < n) v :
     ‖iteratedFDeriv ℂ n (fun y => MvPolynomial.eval y P) x v‖ ≤
-      A * (n.factorial : ℝ) * (Real.exp 1 / ε) ^ n * ∏ i, ‖v i‖ := by
-  apply iteratedFDeriv_direction_bound n hn _ (AnalyticOnNhd.eval_mvPolynomial P) x ε A hε
-  intro y hy
-  exact hbound y (by simpa [mem_ball, dist_eq_norm] using hy)
+      A * n.factorial * (Real.exp 1 / ε) ^ n * ∏ i, ‖v i‖ := by
+  simp_all [iteratedFDeriv_direction_bound, AnalyticOnNhd.eval_mvPolynomial, dist_eq_norm]
 
 end RoughRegime.Cauchy

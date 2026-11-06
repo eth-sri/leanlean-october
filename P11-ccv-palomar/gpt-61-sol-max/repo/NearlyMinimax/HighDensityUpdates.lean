@@ -16,27 +16,27 @@ namespace NearlyMinimax
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1000000
 
-def densityDerivativeWeight (D : ℕ) (j : Fin (derivativeOrder D + 1)) : ℝ :=
+def densityDerivativeWeight D (j : Fin (derivativeOrder D + 1))  :=
   lobattoDerivativeWeight ((D - 1) / 2) j
 
 /-- The exponent selected by one first-derivative mark in every coordinate. -/
-def densityUnitExponent (r : ℕ) : Fin r →₀ ℕ :=
+def densityUnitExponent r : Fin r →₀ ℕ :=
   Finsupp.onFinset Finset.univ (fun _ => 1) (by simp)
 
-@[simp] theorem densityUnitExponent_apply (r : ℕ) (i : Fin r) :
+@[simp] theorem densityUnitExponent_apply r i :
     densityUnitExponent r i = 1 := by simp [densityUnitExponent]
 
-@[simp] theorem densityUnitExponent_degree (r : ℕ) :
+@[simp] theorem densityUnitExponent_degree r :
     (densityUnitExponent r).degree = r := by
   simp [Finsupp.degree_eq_sum]
 
 /-- Actual product of the finite Chebyshev derivative marks. -/
-def densityDerivativeAction (r D : ℕ) (f : (Fin r → ℝ) → ℝ) : ℝ :=
+def densityDerivativeAction r D (f : (Fin r → ℝ) → ℝ)  :=
   ∑ h : Fin r → Fin (derivativeOrder D + 1),
     (∏ l, densityDerivativeWeight D (h l)) *
       f (fun l => lobattoNode (derivativeOrder D) (h l))
 
-theorem derivative_rule_monomial (D : ℕ) (hD : 1 ≤ D) (k : ℕ) (hk : k ≤ D) :
+theorem derivative_rule_monomial D (hD : 1 ≤ D) k (hk : k ≤ D) :
     (∑ j : Fin (derivativeOrder D + 1),
       densityDerivativeWeight D j *
         lobattoNode (derivativeOrder D) j ^ k) = if k = 1 then 1 else 0 := by
@@ -46,8 +46,8 @@ theorem derivative_rule_monomial (D : ℕ) (hD : 1 ≤ D) (k : ℕ) (hk : k ≤ 
   simpa [densityDerivativeWeight, ← coeff_zero_eq_eval_zero, coeff_derivative,
     coeff_X_pow, eq_comm] using h
 
-theorem densityDerivativeAction_monomial (r D : ℕ) (hD : 1 ≤ D)
-    (d : Fin r →₀ ℕ) (hd : ∀ l, d l ≤ D) :
+theorem densityDerivativeAction_monomial r D (hD : 1 ≤ D)
+    d (hd : ∀ l, d l ≤ D) :
     densityDerivativeAction r D (fun ε => ∏ l, ε l ^ d l) =
       if d = densityUnitExponent r then 1 else 0 := by
   unfold densityDerivativeAction
@@ -69,8 +69,8 @@ theorem densityDerivativeAction_monomial (r D : ℕ) (hD : 1 ≤ D)
 
 /-- Tensor exactness follows from the proved one-variable moments, without
 an assumed mixed-derivative or interpolation identity. -/
-theorem densityDerivativeAction_polynomial (r D : ℕ) (hD : 1 ≤ D)
-    (P : MvPolynomial (Fin r) ℝ)
+theorem densityDerivativeAction_polynomial r D (hD : 1 ≤ D)
+    P
     (hP : ∀ d ∈ P.support, ∀ l, d l ≤ D) :
     densityDerivativeAction r D (fun ε => MvPolynomial.eval ε P) =
       P.coeff (densityUnitExponent r) := by
@@ -105,34 +105,41 @@ theorem densityDerivativeAction_polynomial (r D : ℕ) (hD : 1 ≤ D)
       simp [Finset.sum_ite_eq', MvPolynomial.mem_support_iff]
       exact fun h => h.symm
 
+section
+variable {ι : Type*}
+
 /-- Each mark acts on one affine density factor. -/
-def densityModulationPolynomial {ι : Type*} (r : ℕ) (B : ι → Fin r → ℝ)
+def densityModulationPolynomial  (r : ℕ) (B : ι → Fin r → ℝ)
     (i : ι) : MvPolynomial (Fin r) ℝ :=
   ∑ l, MvPolynomial.C (B i l) * MvPolynomial.X l
 
-theorem densityModulationPolynomial_homogeneous {ι : Type*} (r : ℕ)
+theorem densityModulationPolynomial_homogeneous  (r : ℕ)
     (B : ι → Fin r → ℝ) (i : ι) :
     (densityModulationPolynomial r B i).IsHomogeneous 1 := by
-  apply MvPolynomial.IsHomogeneous.sum
-  intro l _
-  exact MvPolynomial.isHomogeneous_C_mul_X _ _
+  solve_by_elim [MvPolynomial.IsHomogeneous.sum, MvPolynomial.isHomogeneous_C_mul_X]
 
 /-- The product of the incoming densities after their affine mark reset. -/
-def densityResetPolynomial {ι : Type*} [DecidableEq ι] (S : Finset ι)
+def densityResetPolynomial  [DecidableEq ι] (S : Finset ι)
     (r : ℕ) (z t : ℝ) (p : ι → ℝ) (B : ι → Fin r → ℝ) : MvPolynomial (Fin r) ℝ :=
   ∏ i ∈ S, (MvPolynomial.C z + MvPolynomial.C (t * p i) *
     densityModulationPolynomial r B i)
 
-theorem densityResetPolynomial_eval {ι : Type*} [DecidableEq ι] (S : Finset ι)
-    (r : ℕ) (z t : ℝ) (p : ι → ℝ) (B : ι → Fin r → ℝ) (ε : Fin r → ℝ) :
+section
+variable [DecidableEq ι] (S : Finset ι)
+
+section
+variable (r : ℕ) (z t : ℝ) (p : ι → ℝ) (B : ι → Fin r → ℝ)
+
+theorem densityResetPolynomial_eval  
+     (ε : Fin r → ℝ) :
     MvPolynomial.eval ε (densityResetPolynomial S r z t p B) =
       ∏ i ∈ S, (z + t * p i * ∑ l, ε l * B i l) := by
   simp only [densityResetPolynomial, map_prod, map_add, map_mul,
     MvPolynomial.eval_C, densityModulationPolynomial, map_sum, MvPolynomial.eval_X]
   simp only [mul_comm (B _ _)]
 
-theorem densityResetPolynomial_totalDegree {ι : Type*} [DecidableEq ι] (S : Finset ι)
-    (r : ℕ) (z t : ℝ) (p : ι → ℝ) (B : ι → Fin r → ℝ) :
+theorem densityResetPolynomial_totalDegree  
+     :
     (densityResetPolynomial S r z t p B).totalDegree ≤ S.card := by
   apply (MvPolynomial.totalDegree_finsetProd _ _).trans
   calc
@@ -148,8 +155,7 @@ theorem densityResetPolynomial_totalDegree {ι : Type*} [DecidableEq ι] (S : Fi
 
 /-- Exactly one occurrence of every mark selects only observation subsets
 of cardinality r. -/
-theorem densityResetPolynomial_coefficient {ι : Type*} [DecidableEq ι]
-    (S : Finset ι) (r : ℕ) (z t : ℝ) (p : ι → ℝ) (B : ι → Fin r → ℝ) :
+theorem densityResetPolynomial_coefficient    :
     (densityResetPolynomial S r z t p B).coeff (densityUnitExponent r) =
       z ^ (S.card - r) * t ^ r *
         ∑ U ∈ S.powersetCard r, (∏ i ∈ U, p i) *
@@ -188,9 +194,10 @@ theorem densityResetPolynomial_coefficient {ι : Type*} [DecidableEq ι]
       simp only [hzero, mul_zero]
   rw [Finset.sum_congr rfl hz]
   rw [← Finset.sum_filter, ← Finset.powersetCard_eq_filter, ← Finset.mul_sum]
+end
 
-theorem density_derivative_product_exact {ι : Type*} [DecidableEq ι]
-    (S : Finset ι) (r D : ℕ) (hD : 1 ≤ D) (hSD : S.card ≤ D)
+
+theorem density_derivative_product_exact   (r D : ℕ) (hD : 1 ≤ D) (hSD : S.card ≤ D)
     (z t : ℝ) (p : ι → ℝ) (B : ι → Fin r → ℝ) :
     densityDerivativeAction r D (fun ε => ∏ i ∈ S, (z + t * p i * ∑ l, ε l * B i l)) =
       z ^ (S.card - r) * t ^ r *
@@ -207,11 +214,15 @@ theorem density_derivative_product_exact {ι : Type*} [DecidableEq ι]
     exact (MvPolynomial.le_degreeOf_of_mem_support l hd).trans
       ((MvPolynomial.degreeOf_le_totalDegree _ _).trans
         ((densityResetPolynomial_totalDegree S r z t p B).trans hSD))
+end
+
+end
+
 
 /-- The quadratic density-interval margin in the manuscript. -/
 def densityMargin (a b z : ℝ) : ℝ := (z - a) * (b - z) / (b - a)
 
-theorem densityMargin_bounds (a b : ℝ) (hab : a < b) (z : ℝ) (hz : z ∈ Icc a b) :
+theorem densityMargin_bounds a b (hab : a < b) z (hz : z ∈ Icc a b) :
     0 ≤ densityMargin a b z ∧ densityMargin a b z ≤ z - a ∧
       densityMargin a b z ≤ b - z ∧ densityMargin a b z ≤ (b - a) / 4 := by
   have hba : 0 < b - a := sub_pos.mpr hab
@@ -226,20 +237,18 @@ theorem densityMargin_bounds (a b : ℝ) (hab : a < b) (z : ℝ) (hz : z ∈ Icc
   · apply (div_le_iff₀ hba).mpr
     nlinarith [sq_nonneg (z - (a + b) / 2)]
 
-theorem densityMargin_zero_ne (a b : ℝ) (ha : 0 < a) (hab : a < b) :
-    densityMargin a b 0 ≠ 0 := by
-  unfold densityMargin
-  exact div_ne_zero (mul_ne_zero (by simpa using ha.ne') (by simpa using (ha.trans hab).ne'))
+theorem densityMargin_zero_ne a b (ha : 0 < a) (hab : a < b) :
+    densityMargin a b 0 ≠ 0 := div_ne_zero (mul_ne_zero (by simpa using ha.ne') (by simpa using (ha.trans hab).ne'))
     (sub_pos.mpr hab).ne'
 
 def densityMarginPolynomial (a b : ℝ) : ℝ[X] :=
   (X - C a) * (C b - X) * C ((b - a)⁻¹)
 
-@[simp] theorem densityMarginPolynomial_eval (a b z : ℝ) :
+@[simp] theorem densityMarginPolynomial_eval a b z :
     (densityMarginPolynomial a b).eval z = densityMargin a b z := by
   simp [densityMarginPolynomial, densityMargin, div_eq_mul_inv]
 
-theorem densityMarginPolynomial_natDegree (a b : ℝ) :
+theorem densityMarginPolynomial_natDegree a b :
     (densityMarginPolynomial a b).natDegree ≤ 2 := by
   apply (natDegree_mul_le).trans
   have h₁ : (X - C a : ℝ[X]).natDegree ≤ 1 :=
@@ -249,14 +258,14 @@ theorem densityMarginPolynomial_natDegree (a b : ℝ) :
   have hm := (natDegree_mul_le (p := X - C a) (q := C b - X)).trans (add_le_add h₁ h₂)
   simpa using hm
 
-def densityCountPolynomial (a b : ℝ) (k r : ℕ) : ℝ[X] :=
+def densityCountPolynomial a b k r  :=
   X ^ (k - r) * densityMarginPolynomial a b ^ r
 
-@[simp] theorem densityCountPolynomial_eval (a b z : ℝ) (k r : ℕ) :
+@[simp] theorem densityCountPolynomial_eval a b z k r :
     (densityCountPolynomial a b k r).eval z = z ^ (k - r) * densityMargin a b z ^ r := by
   simp [densityCountPolynomial]
 
-theorem densityCountPolynomial_natDegree (a b : ℝ) (k r : ℕ) (hrk : r ≤ k) :
+theorem densityCountPolynomial_natDegree a b k r (hrk : r ≤ k) :
     (densityCountPolynomial a b k r).natDegree ≤ k + r := by
   apply (natDegree_mul_le).trans
   have hp := (natDegree_pow_le (p := densityMarginPolynomial a b) (n := r)).trans
@@ -265,15 +274,18 @@ theorem densityCountPolynomial_natDegree (a b : ℝ) (k r : ℕ) (hrk : r ≤ k)
   omega
 
 /-- The actual exterior count factor, including counts above the cutoff. -/
-def densityCountCoefficient (a b : ℝ) (m r k : ℕ) : ℝ :=
+def densityCountCoefficient a b m r k  :=
   (∑ j : Fin (m + r + 1), exteriorWeight a b (m + r) j *
     (exteriorNode a b (m + r) j ^ (k - r) *
       densityMargin a b (exteriorNode a b (m + r) j) ^ r)) / densityMargin a b 0 ^ r
 
+section
+variable (a b : ℝ) (ha : 0 < a) (hab : a < b) (m r k : ℕ) (hr : 1 ≤ r)
+include ha hab hr
+
 /-- Exact target-count selection is derived from the concrete exterior
 rule: every other count through m is annihilated. -/
-theorem densityCountCoefficient_exact (a b : ℝ) (ha : 0 < a) (hab : a < b)
-    (m r k : ℕ) (hr : 1 ≤ r) (hrk : r ≤ k) (hkm : k ≤ m) :
+theorem densityCountCoefficient_exact  (hrk : r ≤ k) (hkm : k ≤ m) :
     densityCountCoefficient a b m r k = if k = r then 1 else 0 := by
   have hdeg : (densityCountPolynomial a b k r).degree ≤ m + r :=
     degree_le_natDegree.trans (by
@@ -290,8 +302,7 @@ theorem densityCountCoefficient_exact (a b : ℝ) (ha : 0 < a) (hab : a < b)
     simp [zero_pow hpos, hkr]
 
 /-- Uniform finite-variation control for the count factor beyond the cutoff. -/
-theorem densityCountCoefficient_abs_bound (a b : ℝ) (ha : 0 < a) (hab : a < b)
-    (m r k : ℕ) (hr : 1 ≤ r) :
+theorem densityCountCoefficient_abs_bound  :
     |densityCountCoefficient a b m r k| ≤
       (b ^ (k - r) * ((b - a) / 4) ^ r / |densityMargin a b 0| ^ r) *
         Real.cosh ((m + r : ℕ) * exteriorTau ((a + b) / (b - a))) := by
@@ -305,8 +316,7 @@ theorem densityCountCoefficient_abs_bound (a b : ℝ) (ha : 0 < a) (hab : a < b)
     have hz := exteriorNode_mem a b hab.le (m + r) j
     have ht := densityMargin_bounds a b hab _ hz
     rw [abs_mul, abs_pow, abs_pow, abs_of_nonneg (ha.le.trans hz.1), abs_of_nonneg ht.1]
-    exact mul_le_mul (pow_le_pow_left₀ (ha.le.trans hz.1) hz.2 _)
-      (pow_le_pow_left₀ ht.1 ht.2.2.2 _) (pow_nonneg ht.1 _) (pow_nonneg hbn _)
+    grind only [mul_le_mul, pow_le_pow_left₀, pow_nonneg]
   have hs : |∑ j : Fin (m + r + 1), exteriorWeight a b (m + r) j *
       (exteriorNode a b (m + r) j ^ (k - r) *
         densityMargin a b (exteriorNode a b (m + r) j) ^ r)| ≤
@@ -316,23 +326,27 @@ theorem densityCountCoefficient_abs_bound (a b : ℝ) (ha : 0 < a) (hab : a < b)
       _ ≤ ∑ j : Fin (m + r + 1), |exteriorWeight a b (m + r) j| *
           (b ^ (k - r) * ((b - a) / 4) ^ r) := by
         apply (Finset.abs_sum_le_sum_abs _ _).trans
-        apply Finset.sum_le_sum
-        intro j _
-        rw [abs_mul]
-        exact mul_le_mul_of_nonneg_left (hb j) (abs_nonneg _)
+        simp_all [Finset.sum_le_sum, mul_le_mul_of_nonneg_left]
       _ = _ := by rw [← Finset.sum_mul, exterior_rule_variation a b ha hab _ (by omega)]
   unfold densityCountCoefficient
   rw [abs_div, abs_pow]
   exact (div_le_div_of_nonneg_right hs (by positivity)).trans_eq (by ring)
+end
+
+
+section
+variable {ι : Type*}
 
 /-- The incoming density is reset exactly as in (LB-loc-update). -/
-def localDensityReset {ι : Type*} (a b : ℝ) (r : ℕ) (z : ℝ)
+def localDensityReset  (a b : ℝ) (r : ℕ) (z : ℝ)
     (ε : Fin r → ℝ) (p : ι → ℝ) (B : ι → Fin r → ℝ) (i : ι) : ℝ :=
   z + densityMargin a b z / ((r : ℝ) * b) * p i * ∑ l, ε l * B i l
 
-theorem localDensityReset_slope_bound {ι : Type*} (a b : ℝ) (ha : 0 < a) (hab : a < b)
-    (r : ℕ) (hr : 1 ≤ r) (z : ℝ) (hz : z ∈ Icc a b)
-    (ε : Fin r → ℝ) (hε : ∀ l, |ε l| ≤ 1) (B : ι → Fin r → ℝ) (i : ι)
+section
+variable (a b : ℝ) (ha : 0 < a) (hab : a < b) (r : ℕ) (hr : 1 ≤ r) (z : ℝ) (hz : z ∈ Icc a b) (ε : Fin r → ℝ) (hε : ∀ l, |ε l| ≤ 1)
+include ha hab hr hz hε
+
+theorem localDensityReset_slope_bound   (B : ι → Fin r → ℝ) (i : ι)
     (hB : ∀ l, |B i l| ≤ 1) :
     |densityMargin a b z / ((r : ℝ) * b) * ∑ l, ε l * B i l| ≤
       (b - a) / (4 * b) := by
@@ -358,9 +372,7 @@ theorem localDensityReset_slope_bound {ι : Type*} (a b : ℝ) (ha : 0 < a) (hab
     _ ≤ ((b - a) / 4) / b := div_le_div_of_nonneg_right hθ.2.2.2 hb.le
     _ = _ := by ring
 
-theorem localDensityReset_mem_interval {ι : Type*} (a b : ℝ) (ha : 0 < a) (hab : a < b)
-    (r : ℕ) (hr : 1 ≤ r) (z : ℝ) (hz : z ∈ Icc a b)
-    (ε : Fin r → ℝ) (hε : ∀ l, |ε l| ≤ 1) (p : ι → ℝ)
+theorem localDensityReset_mem_interval   (p : ι → ℝ)
     (B : ι → Fin r → ℝ) (i : ι) (hp : p i ∈ Icc a b) (hB : ∀ l, |B i l| ≤ 1) :
     localDensityReset a b r z ε p B i ∈ Icc a b := by
   have hb : 0 < b := ha.trans hab
@@ -390,19 +402,23 @@ theorem localDensityReset_mem_interval {ι : Type*} (a b : ℝ) (ha : 0 < a) (ha
       _ = _ := div_mul_cancel₀ _ hb.ne'
   obtain ⟨hl, hu⟩ := abs_le.mp hshift
   constructor <;> dsimp [localDensityReset] <;> linarith [hθ.2.1, hθ.2.2.1]
+end
+
 
 /-- Symmetrization is the square-free coefficient divided by r!: it is
 independent of any ordering chosen for the observation subset. -/
-def densitySeparatedSym {ι : Type*} [DecidableEq ι] (r : ℕ)
+def densitySeparatedSym  [DecidableEq ι] (r : ℕ)
     (B : ι → Fin r → ℝ) (S : Finset ι) : ℝ :=
   (∏ i ∈ S, densityModulationPolynomial r B i).coeff (densityUnitExponent r) /
     (r.factorial : ℝ)
+end
 
-def densityPacketPrefactor (a b : ℝ) (r : ℕ) : ℝ :=
+
+def densityPacketPrefactor a b (r : ℕ)  :=
   (r : ℝ) ^ r / (r.factorial : ℝ) * (b / densityMargin a b 0) ^ r
 
 /-- The exact finite action of Gamma_{r,m}. -/
-def densityPacketAction (a b : ℝ) (m r D : ℕ) (f : ℝ → (Fin r → ℝ) → ℝ) : ℝ :=
+def densityPacketAction a b m r D (f : ℝ → (Fin r → ℝ) → ℝ)  :=
   densityPacketPrefactor a b r * ∑ j : Fin (m + r + 1),
     exteriorWeight a b (m + r) j *
       densityDerivativeAction r D (f (exteriorNode a b (m + r) j))
@@ -415,8 +431,8 @@ theorem density_packet_product_exact {ι : Type*} [DecidableEq ι]
       densityCountCoefficient a b m r S.card *
         ∑ U ∈ S.powersetCard r, (∏ i ∈ U, p i) * densitySeparatedSym r B U := by
   have hrR : (r : ℝ) ≠ 0 := by exact_mod_cast (show r ≠ 0 by omega)
-  have hb : b ≠ 0 := (ha.trans hab).ne'
-  have hθ : densityMargin a b 0 ≠ 0 := densityMargin_zero_ne a b ha hab
+  have hb  := (ha.trans hab).ne'
+  have hθ  := densityMargin_zero_ne a b ha hab
   have hfac : (r.factorial : ℝ) ≠ 0 := by exact_mod_cast r.factorial_ne_zero
   unfold densityPacketAction localDensityReset
   simp_rw [density_derivative_product_exact S r D hD hSD]
@@ -444,10 +460,10 @@ theorem density_packet_product_exact {ι : Type*} [DecidableEq ι]
       field_simp
     _ = _ := by simp only [← Finset.sum_mul, Finset.sum_div]
 
-private def densityAssignmentExponent (r : ℕ) (f : Fin r → Fin r) : Fin r →₀ ℕ :=
+private def densityAssignmentExponent r (f : Fin r → Fin r)  :=
   ∑ i, Finsupp.single (f i) 1
 
-private theorem densityAssignmentExponent_eq_unit_iff (r : ℕ) (f : Fin r → Fin r) :
+private theorem densityAssignmentExponent_eq_unit_iff r f :
     densityAssignmentExponent r f = densityUnitExponent r ↔ Function.Bijective f := by
   classical
   constructor
@@ -468,7 +484,7 @@ private theorem densityAssignmentExponent_eq_unit_iff (r : ℕ) (f : Fin r → F
 
 /-- The selected coefficient is the genuine permanent, hence the sum of
 all r! assignments of distinct marks to distinct observations. -/
-theorem density_linear_product_permanent (r : ℕ) (B : Fin r → Fin r → ℝ) :
+theorem density_linear_product_permanent r B :
     (∏ i, densityModulationPolynomial r B i).coeff (densityUnitExponent r) =
       ∑ σ : Equiv.Perm (Fin r), ∏ i, B i (σ i) := by
   classical
@@ -496,9 +512,12 @@ theorem density_linear_product_permanent (r : ℕ) (B : Fin r → Fin r → ℝ)
   intro f
   rfl
 
+section
+variable {ι : Type*} [DecidableEq ι]
+
 /-- Coefficient-based symmetrization agrees with the paper's average over
 permutations, for every enumeration of a cardinality-r subset. -/
-theorem densitySeparatedSym_eq_permutation_average {ι : Type*} [DecidableEq ι]
+theorem densitySeparatedSym_eq_permutation_average 
     (r : ℕ) (B : ι → Fin r → ℝ) (S : Finset ι) (e : Fin r ≃ S) :
     densitySeparatedSym r B S =
       (∑ σ : Equiv.Perm (Fin r), ∏ i, B (e i) (σ i)) / (r.factorial : ℝ) := by
@@ -509,9 +528,12 @@ theorem densitySeparatedSym_eq_permutation_average {ι : Type*} [DecidableEq ι]
     exact (e.prod_comp (fun i : S => densityModulationPolynomial r B i)).symm
   rw [he, density_linear_product_permanent]
 
-theorem density_packet_product_zero_of_small_count {ι : Type*} [DecidableEq ι]
-    (S : Finset ι) (a b : ℝ) (ha : 0 < a) (hab : a < b)
-    (m r D : ℕ) (hr : 1 ≤ r) (hD : 1 ≤ D) (hSD : S.card ≤ D)
+section
+variable (S : Finset ι) (a b : ℝ) (ha : 0 < a) (hab : a < b) (m r D : ℕ) (hr : 1 ≤ r) (hD : 1 ≤ D) (hSD : S.card ≤ D)
+include ha hab hr hD hSD
+
+theorem density_packet_product_zero_of_small_count 
+    
     (hSr : S.card < r) (p : ι → ℝ) (B : ι → Fin r → ℝ) :
     densityPacketAction a b m r D (fun z ε => ∏ i ∈ S, localDensityReset a b r z ε p B i) = 0 := by
   rw [density_packet_product_exact S a b ha hab m r D hr hD hSD p B,
@@ -519,9 +541,8 @@ theorem density_packet_product_zero_of_small_count {ι : Type*} [DecidableEq ι]
   simp
 
 /-- The full count selector identity for all counts through m. -/
-theorem density_packet_product_count_selector {ι : Type*} [DecidableEq ι]
-    (S : Finset ι) (a b : ℝ) (ha : 0 < a) (hab : a < b)
-    (m r D : ℕ) (hr : 1 ≤ r) (hD : 1 ≤ D) (hSD : S.card ≤ D)
+theorem density_packet_product_count_selector 
+    
     (hSm : S.card ≤ m) (p : ι → ℝ) (B : ι → Fin r → ℝ) :
     densityPacketAction a b m r D (fun z ε => ∏ i ∈ S, localDensityReset a b r z ε p B i) =
       if S.card = r then ∑ U ∈ S.powersetCard r, (∏ i ∈ U, p i) * densitySeparatedSym r B U else 0 := by
@@ -531,21 +552,35 @@ theorem density_packet_product_count_selector {ι : Type*} [DecidableEq ι]
     split_ifs <;> simp
   · rw [density_packet_product_zero_of_small_count S a b ha hab m r D hr hD hSD (by omega) p B,
       if_neg (by omega)]
+end
 
-def densityPacketAtom (a b : ℝ) (m r D : ℕ)
-    (j : Fin (m + r + 1) × (Fin r → Fin (derivativeOrder D + 1))) : ℝ × (Fin r → ℝ) :=
+end
+
+
+section
+variable (a b : ℝ) (m r D : ℕ)
+include a b m D
+
+section
+variable (j : Fin (m + r + 1) × (Fin r → Fin (derivativeOrder D + 1)))
+include j
+
+def densityPacketAtom 
+      :=
   (exteriorNode a b (m + r) j.1, fun l => lobattoNode (derivativeOrder D) (j.2 l))
 
-def densityPacketWeight (a b : ℝ) (m r D : ℕ)
-    (j : Fin (m + r + 1) × (Fin r → Fin (derivativeOrder D + 1))) : ℝ :=
+def densityPacketWeight 
+      :=
   densityPacketPrefactor a b r * exteriorWeight a b (m + r) j.1 *
     ∏ l, densityDerivativeWeight D (j.2 l)
+end
+
 
 /-- Gamma_{r,m} as an actual finite signed measure on density marks. -/
-def densityPacketSignedRule (a b : ℝ) (m r D : ℕ) : SignedMeasure (ℝ × (Fin r → ℝ)) :=
+def densityPacketSignedRule   :=
   atomicSignedRule (densityPacketAtom a b m r D) (densityPacketWeight a b m r D)
 
-theorem densityPacketSignedRule_integral (a b : ℝ) (m r D : ℕ)
+theorem densityPacketSignedRule_integral 
     (f : ℝ → (Fin r → ℝ) → ℝ) :
     (∫ᵛ e, f e.1 e.2 ∂<•(densityPacketSignedRule a b m r D)) =
       densityPacketAction a b m r D f := by
@@ -553,9 +588,11 @@ theorem densityPacketSignedRule_integral (a b : ℝ) (m r D : ℕ)
   simp only [Fintype.sum_prod_type, densityPacketWeight, densityPacketAtom,
     densityPacketAction, densityDerivativeAction]
   simp only [Finset.mul_sum, mul_assoc]
+end
 
-theorem densityPacketAtom_mem (a b : ℝ) (hab : a ≤ b) (m r D : ℕ)
-    (j : Fin (m + r + 1) × (Fin r → Fin (derivativeOrder D + 1))) :
+
+theorem densityPacketAtom_mem a b (hab : a ≤ b) m r D
+    j :
     (densityPacketAtom a b m r D j).1 ∈ Icc a b ∧
       ∀ l, |(densityPacketAtom a b m r D j).2 l| ≤ 1 := by
   constructor
@@ -563,57 +600,60 @@ theorem densityPacketAtom_mem (a b : ℝ) (hab : a ≤ b) (m r D : ℕ)
   · intro l
     exact abs_le.mpr ⟨Real.neg_one_le_cos _, Real.cos_le_one _⟩
 
-theorem densityDerivativeWeight_variation (D : ℕ) :
-    (∑ j : Fin (derivativeOrder D + 1), |densityDerivativeWeight D j|) = (derivativeOrder D : ℝ) :=
+theorem densityDerivativeWeight_variation D :
+    (∑ j : Fin (derivativeOrder D + 1), |densityDerivativeWeight D j|) = (derivativeOrder D) :=
   lobatto_derivative_rule_variation ((D - 1) / 2)
 
-theorem densityDerivativeWeight_tensor_variation (r D : ℕ) :
+theorem densityDerivativeWeight_tensor_variation r D :
     (∑ h : Fin r → Fin (derivativeOrder D + 1), ∏ l, |densityDerivativeWeight D (h l)|) =
-      (derivativeOrder D : ℝ) ^ r := by
+      (derivativeOrder D) ^ r := by
   rw [← Fintype.prod_sum (fun (_l : Fin r) (j : Fin (derivativeOrder D + 1)) =>
     |densityDerivativeWeight D j|)]
   simp only [densityDerivativeWeight_variation, Finset.prod_const, Finset.card_univ, Fintype.card_fin]
 
-theorem densityPacketWeight_variation (a b : ℝ) (ha : 0 < a) (hab : a < b)
-    (m r D : ℕ) (hr : 1 ≤ r) :
+section
+variable (a b : ℝ)
+
+section
+variable (ha : 0 < a) (hab : a < b) (m r D : ℕ) (hr : 1 ≤ r)
+include ha hab hr
+
+theorem densityPacketWeight_variation   :
     (∑ j : Fin (m + r + 1) × (Fin r → Fin (derivativeOrder D + 1)),
       |densityPacketWeight a b m r D j|) =
       |densityPacketPrefactor a b r| *
-        Real.cosh ((m + r : ℕ) * exteriorTau ((a + b) / (b - a))) * (derivativeOrder D : ℝ) ^ r := by
+        Real.cosh ((m + r : ℕ) * exteriorTau ((a + b) / (b - a))) * (derivativeOrder D) ^ r := by
   simp only [densityPacketWeight, abs_mul, Finset.abs_prod, Fintype.sum_prod_type]
   simp_rw [← Finset.mul_sum, densityDerivativeWeight_tensor_variation]
   rw [← Finset.sum_mul, ← Finset.mul_sum, exterior_rule_variation a b ha hab _ (by omega)]
 
-theorem densityPacketSignedRule_totalVariation_bound (a b : ℝ) (ha : 0 < a) (hab : a < b)
-    (m r D : ℕ) (hr : 1 ≤ r) (hD : 1 ≤ D) :
+theorem densityPacketSignedRule_totalVariation_bound   (hD : 1 ≤ D) :
     ((densityPacketSignedRule a b m r D).variation univ).toReal ≤
       |densityPacketPrefactor a b r| *
-        Real.cosh ((m + r : ℕ) * exteriorTau ((a + b) / (b - a))) * (D : ℝ) ^ r := by
+        Real.cosh ((m + r : ℕ) * exteriorTau ((a + b) / (b - a))) * D ^ r := by
   apply (atomicSignedRule_totalVariation_le _ _).trans
   rw [densityPacketWeight_variation a b ha hab m r D hr]
-  exact mul_le_mul_of_nonneg_left
-    (pow_le_pow_left₀ (by positivity) (derivative_rule_variation D hD).2 r)
-    (mul_nonneg (abs_nonneg _) (Real.cosh_pos _).le)
+  grind only [mul_le_mul_of_nonneg_left, pow_le_pow_left₀, derivative_rule_variation, mul_nonneg, abs_nonneg, Real.cosh_pos]
+end
+
 
 /-- The factorial normalization has the required exponential cost. -/
-theorem densityPacketPrefactor_abs_le (a b : ℝ) (r : ℕ) :
-    |densityPacketPrefactor a b r| ≤ Real.exp (r : ℝ) * |b / densityMargin a b 0| ^ r := by
+theorem densityPacketPrefactor_abs_le  r :
+    |densityPacketPrefactor a b r| ≤ Real.exp r * |b / densityMargin a b 0| ^ r := by
   unfold densityPacketPrefactor
   rw [abs_mul, abs_pow, abs_of_nonneg (by positivity : 0 ≤ (r : ℝ) ^ r / (r.factorial : ℝ))]
-  exact mul_le_mul_of_nonneg_right (Real.pow_div_factorial_le_exp (r : ℝ) (Nat.cast_nonneg r) r)
-    (by positivity)
+  simp_all [mul_le_mul_of_nonneg_right, Real.pow_div_factorial_le_exp]
 
 /-- The actual packet has cost C^r D^r exp(m tau), with an explicit C
 depending only on the fixed density interval. -/
-theorem densityPacketSignedRule_exponential_cost (a b : ℝ) (ha : 0 < a) (hab : a < b)
-    (m r D : ℕ) (hr : 1 ≤ r) (hD : 1 ≤ D) :
+theorem densityPacketSignedRule_exponential_cost  (ha : 0 < a) (hab : a < b)
+    m r D (hr : 1 ≤ r) (hD : 1 ≤ D) :
     ((densityPacketSignedRule a b m r D).variation univ).toReal ≤
       (Real.exp (1 + exteriorTau ((a + b) / (b - a))) * |b / densityMargin a b 0|) ^ r *
-        (D : ℝ) ^ r * Real.exp ((m : ℝ) * exteriorTau ((a + b) / (b - a))) := by
+        D ^ r * Real.exp (m * exteriorTau ((a + b) / (b - a))) := by
   have he : Real.cosh ((m + r : ℕ) * exteriorTau ((a + b) / (b - a))) ≤
       Real.exp ((m + r : ℕ) * exteriorTau ((a + b) / (b - a))) := by
-    rw [← exterior_rule_variation a b ha hab (m + r) (by omega)]
-    exact exterior_rule_variation_le_exp a b ha hab (m + r) (by omega)
+    linarith [exterior_rule_variation a b ha hab (m + r) (by omega), exterior_rule_variation_le_exp a b ha hab (m + r) (by omega)]
   apply (densityPacketSignedRule_totalVariation_bound a b ha hab m r D hr hD).trans
   calc
     _ ≤ Real.exp (r : ℝ) * |b / densityMargin a b 0| ^ r *
@@ -635,12 +675,14 @@ theorem densityPacketSignedRule_exponential_cost (a b : ℝ) (ha : 0 < a) (hab :
         _ = (Real.exp (r : ℝ) * Real.exp ((m + r : ℕ) * exteriorTau ((a + b) / (b - a)))) *
             |b / densityMargin a b 0| ^ r * (D : ℝ) ^ r := by ring
         _ = _ := by rw [heq]; ring
+end
+
 
 theorem densitySeparatedSym_abs_le_one {ι : Type*} [DecidableEq ι]
     (r : ℕ) (B : ι → Fin r → ℝ) (S : Finset ι) (hS : S.card = r)
     (hB : ∀ i ∈ S, ∀ l, |B i l| ≤ 1) : |densitySeparatedSym r B S| ≤ 1 := by
   classical
-  let e : Fin r ≃ S := (Fintype.equivFinOfCardEq (show Fintype.card S = r by simpa)).symm
+  let e  := (Fintype.equivFinOfCardEq (show Fintype.card S = r by simpa)).symm
   rw [densitySeparatedSym_eq_permutation_average r B S e, abs_div,
     abs_of_pos (by exact_mod_cast r.factorial_pos : (0 : ℝ) < r.factorial)]
   apply (div_le_iff₀ (by exact_mod_cast r.factorial_pos : (0 : ℝ) < r.factorial)).mpr

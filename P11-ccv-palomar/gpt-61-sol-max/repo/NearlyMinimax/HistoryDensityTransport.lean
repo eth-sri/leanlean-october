@@ -19,7 +19,10 @@ namespace NearlyMinimax
 
 variable {A B : Type*} [PartialOrder A] [PartialOrder B] [DecidableEq A] [DecidableEq B]
 
-theorem historyMaximalPieces_orderIso_map (e : A ≃o B) (S : Finset A) :
+section
+variable (e : A ≃o B)
+
+theorem historyMaximalPieces_orderIso_map  S :
     historyMaximalPieces (S.map e.toEquiv.toEmbedding) =
       (historyMaximalPieces S).map e.toEquiv.toEmbedding := by
   classical
@@ -48,8 +51,8 @@ theorem historyMaximalPieces_orderIso_map (e : A ≃o B) (S : Finset A) :
     simpa only [e.apply_symm_apply] using congrArg e hh
 
 /-- All genuine deletion coefficients are preserved, not just their eventual bounds. -/
-theorem historyDeletionCoefficient_orderIso_map (e : A ≃o B) (weight : B → ℝ)
-    (k : ℕ) (S : Finset A) :
+theorem historyDeletionCoefficient_orderIso_map  weight
+    k S :
     historyDeletionCoefficient weight k (S.map e.toEquiv.toEmbedding) =
       historyDeletionCoefficient (weight ∘ e) k S := by
   induction k generalizing S with
@@ -63,8 +66,8 @@ theorem historyDeletionCoefficient_orderIso_map (e : A ≃o B) (weight : B → �
     rfl
 
 /-- The actual upper-set density inherits invariance from its proved deletion polynomial. -/
-theorem historyUpperDensity_orderIso_map (e : A ≃o B) (weight : B → ℝ)
-    (S : Finset A) (t : ℝ) :
+theorem historyUpperDensity_orderIso_map  weight
+    S t :
     historyUpperDensity weight (S.map e.toEquiv.toEmbedding) t =
       historyUpperDensity (weight ∘ e) S t := by
   rw [historyUpperDensity_eq_deletionPolynomial, historyUpperDensity_eq_deletionPolynomial]
@@ -75,11 +78,11 @@ theorem historyUpperDensity_orderIso_map (e : A ≃o B) (weight : B → ℝ)
   rw [historyDeletionCoefficient_orderIso_map]
 
 /-- In particular, the actual source density with its rho factors transports exactly. -/
-theorem historyScaledUpperDensity_orderIso_map (e : A ≃o B) (weight : B → ℝ)
-    (ρ : ℝ) (S : Finset A) (t : ℝ) :
+theorem historyScaledUpperDensity_orderIso_map  weight
+    ρ S t :
     historyScaledUpperDensity weight ρ (S.map e.toEquiv.toEmbedding) t =
-      historyScaledUpperDensity (weight ∘ e) ρ S t := by
-  unfold historyScaledUpperDensity
-  exact historyUpperDensity_orderIso_map e _ S t
+      historyScaledUpperDensity (weight ∘ e) ρ S t := historyUpperDensity_orderIso_map e _ S t
+end
+
 
 end NearlyMinimax

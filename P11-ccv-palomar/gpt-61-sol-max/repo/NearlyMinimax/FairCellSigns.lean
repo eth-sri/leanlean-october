@@ -30,31 +30,28 @@ theorem fairSign_integral (f : Fin 2 → ℝ) :
     (∫ b, f b ∂fairSignLaw) = (f 0 + f 1) / 2 := by
   unfold fairSignLaw
   rw [integral_add_measure]
-  · simp only [integral_smul_measure, integral_dirac, smul_eq_mul]
+  · skip
     norm_num
     ring
   · exact (integrable_dirac (by simp)).smul_measure ENNReal.ofReal_ne_top
   · exact (integrable_dirac (by simp)).smul_measure ENNReal.ofReal_ne_top
 
-theorem fairSignValue_abs (b : Fin 2) : |fairSignValue b| = 1 := by
+theorem fairSignValue_abs b : |fairSignValue b| = 1 := by
   fin_cases b <;> norm_num [fairSignValue]
 
-theorem fairSignValue_sq (b : Fin 2) : fairSignValue b ^ 2 = 1 := by
+theorem fairSignValue_sq b : fairSignValue b ^ 2 = 1 := by
   fin_cases b <;> norm_num [fairSignValue]
 
 theorem fairSign_mean : (∫ b, fairSignValue b ∂fairSignLaw) = 0 := by
   rw [fairSign_integral]
   norm_num [fairSignValue]
 
-theorem fairSign_power_moment (k : ℕ) :
+theorem fairSign_power_moment k :
     (∫ b, fairSignValue b ^ k ∂fairSignLaw) = if Even k then 1 else 0 := by
   rw [fairSign_integral]
   simp only [fairSignValue]
-  norm_num
-  by_cases h : Even k
-  · simp [h, h.neg_one_pow]
-  · have ho : Odd k := Nat.not_even_iff_odd.mp h
-    simp [h, ho.neg_one_pow]
+  
+  measurability
 
 def cellSignLaw (I : Type*) [Fintype I] : Measure (I → Fin 2) :=
   Measure.pi (fun _ => fairSignLaw)
@@ -64,14 +61,17 @@ instance cellSignLaw_probability (I : Type*) [Fintype I] :
   unfold cellSignLaw
   infer_instance
 
-theorem cellSign_mean {I : Type*} [Fintype I] (i : I) :
+section
+variable {I : Type*} [Fintype I]
+
+theorem cellSign_mean  (i : I) :
     (∫ b, fairSignValue (b i) ∂cellSignLaw I) = 0 := by
   change (∫ b, fairSignValue (b i) ∂Measure.pi (fun _ : I => fairSignLaw)) = 0
   rw [integral_comp_eval (μ := fun _ : I => fairSignLaw)
     (f := fairSignValue) (i := i) (by fun_prop)]
   exact fairSign_mean
 
-theorem cellSign_covariance {I : Type*} [Fintype I] [DecidableEq I] (i j : I) :
+theorem cellSign_covariance  [DecidableEq I] (i j : I) :
     (∫ b, fairSignValue (b i) * fairSignValue (b j) ∂cellSignLaw I) =
       if i = j then 1 else 0 := by
   by_cases hij : i = j
@@ -79,20 +79,21 @@ theorem cellSign_covariance {I : Type*} [Fintype I] [DecidableEq I] (i j : I) :
     simp only [if_pos rfl, ← pow_two, fairSignValue_sq]
     simp
   · have hi : IndepFun (fun b : I → Fin 2 => b i) (fun b : I → Fin 2 => b j)
-        (cellSignLaw I) := by
-      exact (iIndepFun_pi (fun _ => measurable_id.aemeasurable)).indepFun hij
+        (cellSignLaw I) := (iIndepFun_pi (fun _ => measurable_id.aemeasurable)).indepFun hij
     rw [hi.integral_fun_comp_mul_comp (measurable_pi_apply i).aemeasurable
       (measurable_pi_apply j).aemeasurable (Measurable.of_discrete.aestronglyMeasurable)
       (Measurable.of_discrete.aestronglyMeasurable)]
     simp [cellSign_mean, hij]
 
-theorem cellSign_product_power_moment {I : Type*} [Fintype I] (k : I → ℕ) :
+theorem cellSign_product_power_moment  (k : I → ℕ) :
     (∫ b, ∏ i, fairSignValue (b i) ^ k i ∂cellSignLaw I) =
       ∏ i, if Even (k i) then (1 : ℝ) else 0 := by
   change (∫ b, ∏ i, fairSignValue (b i) ^ k i
     ∂Measure.pi (fun _ : I => fairSignLaw)) = _
   rw [integral_fintype_prod_eq_prod (fun i b => fairSignValue b ^ k i)]
   simp_rw [fairSign_power_moment]
+end
+
 
 theorem cellSign_product_moment {I J : Type*} [Fintype I] [Fintype J]
     [DecidableEq I] (p : J → I) :

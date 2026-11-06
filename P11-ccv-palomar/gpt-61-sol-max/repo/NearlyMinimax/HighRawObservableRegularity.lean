@@ -14,19 +14,19 @@ set_option maxHeartbeats 1000000
 set_option backward.isDefEq.respectTransparency false
 variable {Ω : Type*} [MeasurableSpace Ω]
 
-theorem highRawObservable_lipschitzOn {d : ℕ} (n : ℕ) (a v η T P B : ℝ)
+theorem highRawObservable_lipschitzOn {d } n a v η T P B
     (ha : 0 < a) (hP : 0 ≤ P) (hB : 0 ≤ B)
     (p F : Ω → Covariate d → ℝ) (hp : Measurable (Function.uncurry p))
     (hF : Measurable (Function.uncurry F)) (hpb : ∀ ω x, |p ω x| ≤ P)
     (hq : ∀ u ∈ Icc 0 T, ∀ ω x y, 0 ≤ ternaryMass a (F ω x) (v - η ^ 2 * u) y)
-    (H : (Fin n → Observation d) → ℝ) (hH : Measurable H)
+    H (hH : Measurable H)
     (hHb : ∀ z, |H z| ≤ B) (ω : Ω) :
     LipschitzOnWith
-      ⟨B * (η ^ 2 * (P ^ n * ((n : ℝ) / a ^ 2))) * (highSampleReference d n).real Set.univ, by positivity⟩
+      ⟨B * (η ^ 2 * (P ^ n * (n / a ^ 2))) * (highSampleReference d n).real Set.univ, by positivity⟩
       (fun u => highRawObservable n a (v - η ^ 2 * u) (p ω) (F ω) H) (Icc 0 T) := by
-  let c : ℝ := B * (η ^ 2 * (P ^ n * ((n : ℝ) / a ^ 2)))
+  let c  := B * (η ^ 2 * (P ^ n * ((n : ℝ) / a ^ 2)))
   have hc : 0 ≤ c := by dsimp [c]; positivity
-  let L : ℝ → ((Fin n → Covariate d) × (Fin n → Fin 3)) → ℝ := fun u z =>
+  let L  := fun u z =>
     H (encodeDesignResponse a z) * highRawSampleLikelihood n a (v - η ^ 2 * u) (p ω) (F ω) z
   have hLM (u : ℝ) : Measurable (L u) := by
     have hj : Measurable (Function.uncurry (fun ω z =>
@@ -36,11 +36,7 @@ theorem highRawObservable_lipschitzOn {d : ℕ} (n : ℕ) (a v η T P B : ℝ)
     exact (hH.comp (encodeDesignResponse_measurable a)).mul hw
   have hi (u : ℝ) (hu : u ∈ Icc 0 T) : Integrable (L u) (highSampleReference d n) := by
     apply Integrable.of_bound (hLM u).aestronglyMeasurable (B * P ^ n)
-    exact Eventually.of_forall fun z => by
-      change ‖H (encodeDesignResponse a z) * highRawSampleLikelihood n a (v - η ^ 2 * u) (p ω) (F ω) z‖ ≤ _
-      rw [Real.norm_eq_abs, abs_mul]
-      exact mul_le_mul (hHb _) (highRawSampleLikelihood_abs_le n a (v - η ^ 2 * u) P hP
-        (p ω) (F ω) (hpb ω) ha.ne' (hq u hu ω) z) (abs_nonneg _) hB
+    grind only [Eventually.of_forall, Real.norm_eq_abs, abs_mul, mul_le_mul, highRawSampleLikelihood_abs_le, abs_nonneg]
   have hl (z : (Fin n → Covariate d) × (Fin n → Fin 3)) :
       LipschitzOnWith ⟨c, hc⟩ (fun u => L u z) (Icc 0 T) := by
     apply (convex_Icc (0 : ℝ) T).lipschitzOnWith_of_nnnorm_hasDerivWithin_le
@@ -85,7 +81,7 @@ theorem historyMarkedPrior_rawObservable_exists_lipschitz (dependent : J → J �
     ∃ K : NNReal, LipschitzOnWith K
       (fun u => ∫ ω, highRawObservable n a (v - η ^ 2 * u) (p ω) (F ω) H
         ∂historyMarkedPrior dependent Δ u π activation) (Icc 0 T) := by
-  let G : ℝ → HistoryMarked dependent E → ℝ := fun u ω => highRawObservable n a (v - η ^ 2 * u) (p ω) (F ω) H
+  let G  := fun u ω => highRawObservable n a (v - η ^ 2 * u) (p ω) (F ω) H
   have hGM (u : ℝ) : Measurable (G u) := highRawObservable_measurable n a (v - η ^ 2 * u) p F hp hF H hH
   let M := B * P ^ n * (highSampleReference d n).real Set.univ
   have hM : 0 ≤ M := by dsimp [M]; positivity

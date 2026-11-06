@@ -19,7 +19,7 @@ namespace NearlyMinimax
 
 variable {J : Type*} [DecidableEq J]
 
-def historyPairProjection (i j : J) (word : List J) : List J :=
+def historyPairProjection (i j : J) (word : List J)  :=
   word.filter (fun x => decide (x = i ∨ x = j))
 
 omit [DecidableEq J] in
@@ -33,9 +33,11 @@ theorem history_dependent_pair_members {dependent : J → J → Prop}
   · exact hsymm hij
   · exact hrefl _
 
-theorem historyPairProjection_exchange {dependent : J → J → Prop}
-    (hrefl : ∀ i, dependent i i) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
-    {i j : J} (hij : dependent i j) {u v : List J}
+section
+variable {dependent : J → J → Prop} (hrefl : ∀ i, dependent i i) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i) {i j : J} (hij : dependent i j) {u v : List J}
+include hrefl hsymm hij
+
+theorem historyPairProjection_exchange 
     (h : IndependentHistoryExchange (fun a b => ¬ dependent a b) u v) :
     historyPairProjection i j u = historyPairProjection i j v := by
   cases h with
@@ -45,9 +47,7 @@ theorem historyPairProjection_exchange {dependent : J → J → Prop}
       simp [historyPairProjection, List.filter_append, hx, hy]
     · by_cases hy : y = i ∨ y = j <;> simp [historyPairProjection, List.filter_append, hx, hy]
 
-theorem historyPairProjection_shape_invariant {dependent : J → J → Prop}
-    (hrefl : ∀ i, dependent i i) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
-    {i j : J} (hij : dependent i j) {u v : List J}
+theorem historyPairProjection_shape_invariant 
     (h : Relation.EqvGen (IndependentHistoryExchange (fun a b => ¬ dependent a b)) u v) :
     historyPairProjection i j u = historyPairProjection i j v := by
   induction h with
@@ -55,19 +55,19 @@ theorem historyPairProjection_shape_invariant {dependent : J → J → Prop}
   | refl _ => rfl
   | symm _ _ _ ih => exact ih.symm
   | trans _ _ _ _ _ ih₁ ih₂ => exact ih₁.trans ih₂
+end
 
-theorem history_first_decomposition {a : J} {word : List J} (ha : a ∈ word) :
+
+theorem history_first_decomposition {a : J} {word } (ha : a ∈ word) :
     ∃ before after, word = before ++ a :: after ∧ a ∉ before := by
   induction word with
   | nil => simp at ha
   | cons b word ih =>
     by_cases hba : b = a
     · subst b; exact ⟨[], word, rfl, by simp⟩
-    · have ha' : a ∈ word := (List.mem_cons.1 ha).resolve_left (Ne.symm hba)
-      obtain ⟨before, after, hword, hbefore⟩ := ih ha'
-      exact ⟨b :: before, after, by simp [hword], by simp [hbefore, (Ne.symm hba)]⟩
+    grind
 
-theorem historyPairProjection_prefix_head {a b : J} {before after : List J}
+theorem historyPairProjection_prefix_head {a b : J} {before after }
     (ha : a ∉ before) (hb : b ∈ before) :
     (historyPairProjection a b (before ++ a :: after)).head? = some b := by
   induction before with
@@ -77,7 +77,7 @@ theorem historyPairProjection_prefix_head {a b : J} {before after : List J}
     have habefore : a ∉ before := fun h => ha (List.mem_cons.2 (Or.inr h))
     by_cases hcb : c = b
     · subst c; simp [historyPairProjection]
-    · have hbbefore : b ∈ before := (List.mem_cons.1 hb).resolve_left (Ne.symm hcb)
+    · have hbbefore  := (List.mem_cons.1 hb).resolve_left (Ne.symm hcb)
       simpa [historyPairProjection, hca, hcb] using ih habefore hbbefore
 
 omit [DecidableEq J] in
@@ -108,7 +108,7 @@ theorem historyShapeRelation_move_first {independent : J → J → Prop} (a : J)
 /-- Equality of the actual dependent pair chains determines the history shape. -/
 theorem historyShapeRelation_of_pair_projections {dependent : J → J → Prop}
     (hrefl : ∀ i, dependent i i) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
-    {u v : List J} (hproj : ∀ i j, dependent i j → historyPairProjection i j u = historyPairProjection i j v) :
+    {u v } (hproj : ∀ i j, dependent i j → historyPairProjection i j u = historyPairProjection i j v) :
     Relation.EqvGen (IndependentHistoryExchange (fun a b => ¬ dependent a b)) u v := by
   induction u generalizing v with
   | nil =>

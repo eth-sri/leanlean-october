@@ -16,10 +16,10 @@ variable {Ω : Type*} [MeasurableSpace Ω]
 
 /-- Actual tilted-prior/data integration cancels m^n against the true sample density.
 This identity holds for arbitrary real observables, with the usual total Bochner integral. -/
-theorem massPowerTilt_highSample_integral {d : ℕ} (ν : Measure Ω) [IsProbabilityMeasure ν]
-    (n : ℕ) (a V : ℝ) (p F : Ω → Covariate d → ℝ)
-    (hp : Measurable (Function.uncurry p)) (hF : Measurable (Function.uncurry F))
-    (aRaw bRaw : ℝ) (haRaw : 0 < aRaw)
+theorem massPowerTilt_highSample_integral {d } ν [IsProbabilityMeasure ν]
+    n a V p F
+    hp hF
+    aRaw bRaw (haRaw : 0 < aRaw)
     (hraw : ∀ ω x, aRaw ≤ p ω x ∧ p ω x ≤ bRaw)
     (hq : ∀ ω x y, 0 ≤ ternaryMass a (F ω x) V y)
     (H : Ω × ((Fin n → Covariate d) × (Fin n → Fin 3)) → ℝ) :
@@ -28,9 +28,9 @@ theorem massPowerTilt_highSample_integral {d : ℕ} (ν : Measure Ω) [IsProbabi
       (massPowerNormalizer ν (fun ω => highRawDensityMass (p ω)) n)⁻¹ *
         ∫ z, highRawSampleLikelihood n a V (p z.1) (F z.1) z.2 * H z
           ∂ν.prod (highSampleReference d n) := by
-  let m : Ω → ℝ := fun ω => highRawDensityMass (p ω)
-  have hm : Measurable m := highRawDensityMass_joint_measurable p hp
-  have hbound (ω : Ω) : aRaw ≤ m ω ∧ m ω ≤ bRaw :=
+  let m  := fun ω => highRawDensityMass (p ω)
+  have hm  := highRawDensityMass_joint_measurable p hp
+  have hbound (ω : Ω)  :=
     highRawDensityMass_mem_Icc (p ω) hp.of_uncurry_left aRaw bRaw haRaw
       (Filter.Eventually.of_forall (hraw ω))
   have hG := massPowerNormalizer_pos ν m hm n aRaw bRaw haRaw hbound

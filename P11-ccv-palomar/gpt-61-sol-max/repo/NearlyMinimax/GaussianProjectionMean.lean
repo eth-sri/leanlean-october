@@ -12,18 +12,18 @@ namespace NearlyMinimax
 set_option maxHeartbeats 600000
 set_option backward.isDefEq.respectTransparency false
 
-def gaussianAbsoluteMean : ℝ := ∫ z : ℝ, |z| ∂standardGaussianLine
+def gaussianAbsoluteMean  := ∫ z : ℝ, |z| ∂standardGaussianLine
 
 theorem standardGaussianLine_abs_integrable :
-    Integrable (fun z : ℝ => |z|) standardGaussianLine := by
+    Integrable (fun z  => |z|) standardGaussianLine := by
   simpa only [Real.norm_eq_abs, id_eq] using
     (IsGaussian.integrable_id (μ := standardGaussianLine)).norm
 
 theorem gaussianAbsoluteMean_pos : 0 < gaussianAbsoluteMean := by
   have hn : 0 ≤ gaussianAbsoluteMean := integral_nonneg (fun _ => abs_nonneg _)
   by_contra h
-  have hz : gaussianAbsoluteMean = 0 := le_antisymm (not_lt.mp h) hn
-  have habs : (fun z : ℝ => |z|) =ᵐ[standardGaussianLine] 0 :=
+  have hz  := le_antisymm (not_lt.mp h) hn
+  have habs  :=
     (integral_eq_zero_iff_of_nonneg (fun z => abs_nonneg z) standardGaussianLine_abs_integrable).mp hz
   have hid : id =ᵐ[standardGaussianLine] (fun _ : ℝ => (0 : ℝ)) := by
     filter_upwards [habs] with z hz
@@ -34,20 +34,23 @@ theorem gaussianAbsoluteMean_pos : 0 < gaussianAbsoluteMean := by
   rw [variance_zero] at hv
   exact one_ne_zero hv
 
-theorem euclideanNorm_eq_toLp_norm {d : ℕ} (v : Covariate d) :
+section
+variable {d : ℕ}
+
+theorem euclideanNorm_eq_toLp_norm  (v : Covariate d) :
     euclideanNorm v = ‖WithLp.toLp 2 v‖ := by
   simp only [euclideanNorm, EuclideanSpace.norm_eq, PiLp.toLp_apply,
     Real.norm_eq_abs, sq_abs]
 
-theorem gaussianPhase_eq_inner {d : ℕ} (v Z : Covariate d) :
+theorem gaussianPhase_eq_inner  (v Z : Covariate d) :
     gaussianPhase v Z = inner ℝ (WithLp.toLp 2 v) (WithLp.toLp 2 Z) := by
   simp only [gaussianPhase, PiLp.inner_apply, WithLp.ofLp_toLp, RCLike.inner_apply,
     conj_trivial, mul_comm]
 
-theorem gaussianPhase_map_eq_scaled_gaussian {d : ℕ} (v : Covariate d) :
+theorem gaussianPhase_map_eq_scaled_gaussian  v :
     (standardGaussianPi d).map (gaussianPhase v) =
-      standardGaussianLine.map (fun z : ℝ => euclideanNorm v * z) := by
-  let L : StrongDual ℝ (EuclideanSpace ℝ (Fin d)) := innerSL ℝ (WithLp.toLp 2 v)
+      standardGaussianLine.map (fun z  => euclideanNorm v * z) := by
+  let L  := innerSL ℝ (WithLp.toLp 2 v)
   have hfun : gaussianPhase v = L ∘ (WithLp.toLp 2) := by
     funext Z
     exact gaussianPhase_eq_inner v Z
@@ -61,7 +64,7 @@ theorem gaussianPhase_map_eq_scaled_gaussian {d : ℕ} (v : Covariate d) :
   simp only [L, innerSL_apply_norm, ← euclideanNorm_eq_toLp_norm]
   rfl
 
-theorem gaussianPhase_abs_integral {d : ℕ} (v : Covariate d) :
+theorem gaussianPhase_abs_integral  v :
     (∫ Z, |gaussianPhase v Z| ∂standardGaussianPi d) =
       gaussianAbsoluteMean * euclideanNorm v := by
   have hphase : Measurable (gaussianPhase v) := by unfold gaussianPhase; fun_prop
@@ -72,5 +75,7 @@ theorem gaussianPhase_abs_integral {d : ℕ} (v : Covariate d) :
   simp_rw [abs_mul, abs_of_nonneg (show 0 ≤ euclideanNorm v by unfold euclideanNorm; positivity)]
   rw [integral_const_mul]
   exact mul_comm _ _
+end
+
 
 end NearlyMinimax

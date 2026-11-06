@@ -16,10 +16,12 @@ namespace NearlyMinimax
 
 variable {J : Type*} [Fintype J] [LinearOrder J]
 
+section
+variable (dependent : J → J → Prop) (hrefl : ∀ j, dependent j j) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i) (Δ : ℕ) (hlabels : ∀ j, (dependentLabelFinset dependent j).card ≤ Δ)
+include hrefl hsymm hlabels
+
 /-- The actual finite density has a Lipschitz constant uniform over unbounded histories. -/
-theorem historyMarkedDensity_lipschitzOn (dependent : J → J → Prop)
-    (hrefl : ∀ j, dependent j j) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
-    (Δ : ℕ) (hlabels : ∀ j, (dependentLabelFinset dependent j).card ≤ Δ)
+theorem historyMarkedDensity_lipschitzOn 
     (ρ T B : ℝ) (hρ : 0 < ρ) (hB : 0 ≤ B) {E : Type*} [MeasurableSpace E]
     (a : E → ℝ) (habound : ∀ e, |a e| ≤ B)
     (hsmall : T * B / ρ ≤ 1 / (2 + 8 * (Δ : ℝ) ^ 2)) (h : HistoryMarked dependent E) :
@@ -35,9 +37,7 @@ theorem historyMarkedDensity_lipschitzOn (dependent : J → J → Prop)
     ((div_le_div_of_nonneg_right (mul_le_mul_of_nonneg_right hu.2 hB) hρ.le).trans hsmall) h
 
 /-- Every bounded observable-density product is integrable, including the endpoints. -/
-theorem historyMarkedDensityObservable_integrable (dependent : J → J → Prop)
-    (hrefl : ∀ j, dependent j j) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
-    (Δ : ℕ) (hlabels : ∀ j, (dependentLabelFinset dependent j).card ≤ Δ)
+theorem historyMarkedDensityObservable_integrable 
     (ρ t B : ℝ) (hρ : 0 < ρ) (ht : 0 ≤ t) (hB : 0 ≤ B)
     {E : Type*} [MeasurableSpace E] (μ : Measure (HistoryMarked dependent E)) [IsFiniteMeasure μ]
     (a : E → ℝ) (ha : Measurable a) (habound : ∀ e, |a e| ≤ B)
@@ -57,11 +57,13 @@ theorem historyMarkedDensityObservable_integrable (dependent : J → J → Prop)
   rw [abs_of_nonneg hp]
   exact mul_le_mul (hFbound h) hb.2 hp hM
 
+section
+variable (ρ T B : ℝ) (hρ : 0 < ρ)
+include hρ
+
 /-- Actual history expectations are Lipschitz on the closed source interval. -/
-theorem historyMarkedExpectation_lipschitzOn (dependent : J → J → Prop)
-    (hrefl : ∀ j, dependent j j) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
-    (Δ : ℕ) (hlabels : ∀ j, (dependentLabelFinset dependent j).card ≤ Δ)
-    (ρ T B : ℝ) (hρ : 0 < ρ) (hB : 0 ≤ B)
+theorem historyMarkedExpectation_lipschitzOn 
+     (hB : 0 ≤ B)
     {E : Type*} [MeasurableSpace E] (μ : Measure (HistoryMarked dependent E)) [IsProbabilityMeasure μ]
     (a : E → ℝ) (ha : Measurable a) (habound : ∀ e, |a e| ≤ B)
     (hsmall : T * B / ρ ≤ 1 / (2 + 8 * (Δ : ℝ) ^ 2))
@@ -94,10 +96,8 @@ theorem historyMarkedExpectation_lipschitzOn (dependent : J → J → Prop)
   simpa using norm_integral_le_of_norm_le_const hb
 
 /-- In particular, expectation regularity on the entire interval is proved, not assumed. -/
-theorem historyMarkedExpectation_absolutelyContinuous (dependent : J → J → Prop)
-    (hrefl : ∀ j, dependent j j) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
-    (Δ : ℕ) (hlabels : ∀ j, (dependentLabelFinset dependent j).card ≤ Δ)
-    (ρ T B : ℝ) (hρ : 0 < ρ) (hT : 0 ≤ T) (hB : 0 ≤ B)
+theorem historyMarkedExpectation_absolutelyContinuous 
+     (hT : 0 ≤ T) (hB : 0 ≤ B)
     {E : Type*} [MeasurableSpace E] (μ : Measure (HistoryMarked dependent E)) [IsProbabilityMeasure μ]
     (a : E → ℝ) (ha : Measurable a) (habound : ∀ e, |a e| ≤ B)
     (hsmall : T * B / ρ ≤ 1 / (2 + 8 * (Δ : ℝ) ^ 2))
@@ -108,5 +108,9 @@ theorem historyMarkedExpectation_absolutelyContinuous (dependent : J → J → P
     μ a ha habound hsmall F hF M hM hFbound
   rw [← uIcc_of_le hT] at hl
   exact hl.absolutelyContinuousOnInterval
+end
+
+end
+
 
 end NearlyMinimax

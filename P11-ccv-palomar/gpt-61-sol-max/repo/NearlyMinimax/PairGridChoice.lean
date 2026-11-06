@@ -16,19 +16,19 @@ The estimator inequality is an explicit input to the final scalar corollary.
 noncomputable section
 namespace NearlyMinimax
 
-def pairGridMSEEnvelope (d : ℕ) (s x : ℝ) : ℝ :=
+def pairGridMSEEnvelope d s x  :=
   1 / x + (lowSmoothnessGrid d s x : ℝ) ^ d / (x * (x - 1)) +
     (lowSmoothnessGrid d s x : ℝ) ^ (-4 * s)
 
 theorem pairGrid_denominator_bound {x : ℝ} (hx : 2 ≤ x) :
     x ^ 2 / 2 ≤ x * (x - 1) := by nlinarith
 
-theorem pairGridMSEEnvelope_bound {d : ℕ} {s x : ℝ} (hs : 0 < s) (hx : 2 ≤ x) :
+theorem pairGridMSEEnvelope_bound {d } {s x } (hs : 0 < s) (hx : 2 ≤ x) :
     pairGridMSEEnvelope d s x ≤
-      (2 * (5 : ℝ) ^ d + 1) * (1 / x + x ^ (-8 * s / ((d : ℝ) + 4 * s))) := by
+      (2 * 5 ^ d + 1) * (1 / x + x ^ (-8 * s / (d + 4 * s))) := by
   have hx1 : 1 ≤ x := by linarith
-  have hx0 : 0 < x := by linarith
-  have hden : 0 < x * (x - 1) := mul_pos hx0 (by linarith)
+  
+  
   have hp : 0 ≤ (lowSmoothnessGrid d s x : ℝ) ^ d := by positivity
   have hfirst : (lowSmoothnessGrid d s x : ℝ) ^ d / (x * (x - 1)) ≤
       2 * ((lowSmoothnessGrid d s x : ℝ) ^ d / x ^ 2) := by
@@ -44,22 +44,22 @@ theorem pairGridMSEEnvelope_bound {d : ℕ} {s x : ℝ} (hs : 0 < s) (hx : 2 ≤
   unfold pairGridMSEEnvelope
   nlinarith only [hfirst, hvar, hbias, hcoef]
 
-theorem sqrt_inverse_sample {x : ℝ} (hx : 0 < x) :
+theorem sqrt_inverse_sample {x } (hx : 0 < x) :
     Real.sqrt (1 / x) = x ^ (-(1 / 2 : ℝ)) := by
   rw [one_div, Real.sqrt_inv, Real.sqrt_eq_rpow, Real.rpow_neg hx.le]
 
 theorem sqrt_pair_rate {d : ℕ} {s x : ℝ} (hx : 0 < x) :
-    Real.sqrt (x ^ (-8 * s / ((d : ℝ) + 4 * s))) = x ^ (-4 * s / ((d : ℝ) + 4 * s)) := by
+    Real.sqrt (x ^ (-8 * s / (d + 4 * s))) = x ^ (-4 * s / (d + 4 * s)) := by
   rw [Real.sqrt_eq_rpow, ← Real.rpow_mul hx.le]
-  congr 1
+  
   ring
 
 /-- Applying the concrete finite-grid MSE bound gives the elementary root-mean-square rate. -/
-theorem pairGrid_rms_of_mse_bound {d : ℕ} {s x C R : ℝ}
+theorem pairGrid_rms_of_mse_bound {d } {s x C R }
     (hs : 0 < s) (hx : 2 ≤ x) (hC : 0 ≤ C) (hR : 0 ≤ R)
     (hRisk : R ^ 2 ≤ C * pairGridMSEEnvelope d s x) :
-    R ≤ Real.sqrt (C * (2 * (5 : ℝ) ^ d + 1)) *
-      (x ^ (-(1 / 2 : ℝ)) + x ^ (-4 * s / ((d : ℝ) + 4 * s))) := by
+    R ≤ Real.sqrt (C * (2 * 5 ^ d + 1)) *
+      (x ^ (-(1 / 2 : ℝ)) + x ^ (-4 * s / (d + 4 * s))) := by
   have hx0 : 0 < x := by linarith
   have henv := mul_le_mul_of_nonneg_left (pairGridMSEEnvelope_bound (d := d) hs hx) hC
   have hsq := Real.sqrt_le_sqrt (hRisk.trans henv)
@@ -74,6 +74,6 @@ theorem pairGrid_rms_of_mse_bound {d : ℕ} {s x C R : ℝ}
     nlinarith [Real.sq_sqrt hA, Real.sq_sqrt hB,
       mul_nonneg (Real.sqrt_nonneg (1 / x)) (Real.sqrt_nonneg (x ^ (-8 * s / ((d : ℝ) + 4 * s))))]
   rw [sqrt_inverse_sample hx0, sqrt_pair_rate hx0] at hadd
-  exact mul_le_mul_of_nonneg_left hadd (Real.sqrt_nonneg _)
+  bound
 
 end NearlyMinimax

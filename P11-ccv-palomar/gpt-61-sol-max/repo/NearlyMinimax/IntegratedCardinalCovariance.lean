@@ -15,31 +15,41 @@ namespace NearlyMinimax
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 2000000
 
-abbrev SpatialScaleIndex {n : ℕ} (i : Fin n) := {j : Fin n // j ≠ i}
-abbrev SpatialScaleVector {n : ℕ} (i : Fin n) := SpatialScaleIndex i → ℝ
+abbrev SpatialScaleIndex {n } i := {j : Fin n // j ≠ i}
+abbrev SpatialScaleVector {n } (i : Fin n) := SpatialScaleIndex i → ℝ
 
-def spatialScaleExtend {n : ℕ} (i : Fin n) (t : SpatialScaleVector i) (j : Fin n) : ℝ :=
+def spatialScaleExtend {n } (i : Fin n) (t : SpatialScaleVector i) j  :=
   if h : j ≠ i then t ⟨j, h⟩ else 0
 
-def spatialScaleLogSum {n : ℕ} (i : Fin n) (t : SpatialScaleVector i) : ℝ :=
+def spatialScaleLogSum {n } (i : Fin n) (t : SpatialScaleVector i)  :=
   ∑ j, Real.log (1 + max 0 (t j))
 
 /-- Equal to S≤2logT in the nonnegative scale orthant. The max only
 makes the defining function globally continuous. -/
-def spatialScaleDomain {n : ℕ} (i : Fin n) (T : ℝ) : Set (SpatialScaleVector i) :=
+def spatialScaleDomain {n } (i : Fin n) T  :=
   Ici 0 ∩ {t | spatialScaleLogSum i t ≤ 2 * Real.log T}
 
-theorem spatial_scale_log_sum_continuous {n : ℕ} (i : Fin n) :
+section
+variable {n : ℕ} (i : Fin n)
+
+theorem spatial_scale_log_sum_continuous  :
     Continuous (spatialScaleLogSum i) := by
   apply continuous_finsetSum
   intro j _
   exact (continuous_const.add (continuous_const.max (continuous_apply j))).log (by intro t; positivity)
 
-theorem spatial_scale_domain_isClosed {n : ℕ} (i : Fin n) (T : ℝ) :
+section
+variable (T : ℝ)
+
+theorem spatial_scale_domain_isClosed   :
     IsClosed (spatialScaleDomain i T) :=
   isClosed_Ici.inter (isClosed_le (spatial_scale_log_sum_continuous i) continuous_const)
 
-theorem spatial_scale_domain_subset_box {n : ℕ} (i : Fin n) (T : ℝ) (hT : 1 ≤ T) :
+section
+variable (hT : 1 ≤ T)
+include hT
+
+theorem spatial_scale_domain_subset_box    :
     spatialScaleDomain i T ⊆ Icc 0 (fun _ => T ^ 2 - 1) := by
   intro t ht
   refine ⟨ht.1, fun j => ?_⟩
@@ -56,36 +66,47 @@ theorem spatial_scale_domain_subset_box {n : ℕ} (i : Fin n) (T : ℝ) (hT : 1 
   rw [hpow] at he
   linarith
 
-theorem spatial_scale_domain_isCompact {n : ℕ} (i : Fin n) (T : ℝ) (hT : 1 ≤ T) :
+theorem spatial_scale_domain_isCompact    :
     IsCompact (spatialScaleDomain i T) :=
   isCompact_Icc.of_isClosed_subset (spatial_scale_domain_isClosed i T)
     (spatial_scale_domain_subset_box i T hT)
+end
+
+end
+
+end
+
 
 def spatialScaleMeasure {n : ℕ} (i : Fin n) (T : ℝ) : Measure (SpatialScaleVector i) :=
   volume.restrict (spatialScaleDomain i T)
 
-theorem spatial_scale_measure_finite {n : ℕ} (i : Fin n) (T : ℝ) (hT : 1 ≤ T) :
+section
+variable {n : ℕ} (i : Fin n)
+
+theorem spatial_scale_measure_finite  T (hT : 1 ≤ T) :
     IsFiniteMeasure (spatialScaleMeasure i T) := by
   apply isFiniteMeasure_restrict.mpr
   exact (spatial_scale_domain_isCompact i T hT).measure_ne_top
 
-theorem spatial_scale_extend_continuous {n : ℕ} (i : Fin n) :
+theorem spatial_scale_extend_continuous  :
     Continuous (spatialScaleExtend i) := by
   apply continuous_pi
   intro j
   by_cases hji : j ≠ i
-  · simpa only [spatialScaleExtend, dite_eq_left hji] using continuous_apply (⟨j, hji⟩ : SpatialScaleIndex i)
+  · simp_all [continuous_apply, spatialScaleExtend]
   · simp only [spatialScaleExtend, dite_eq_right hji]; exact continuous_const
+end
 
-def spatialCenteredCardinalMatrix {d n D : ℕ} (i : Fin n) (lam : ℝ)
-    (U : Fin n → Covariate d) (t : SpatialScaleVector i) (β β' : HighFrameIndex d D) : ℝ :=
+
+def spatialCenteredCardinalMatrix {d n D } (i : Fin n) lam
+    U t (β β' : HighFrameIndex d D)  :=
   spatialCardinalScale lam (spatialScaleExtend i t) U i *
     highFrameCoefficients (spatialCardinalPolynomial U i) β *
     highFrameCoefficients (spatialCardinalPolynomial U i) β'
 
-theorem spatial_centered_cardinal_scale_continuous {d n : ℕ}
-    (i : Fin n) (lam : ℝ) (U : Fin n → Covariate d) :
-    Continuous (fun t : SpatialScaleVector i => spatialCardinalScale lam (spatialScaleExtend i t) U i) := by
+theorem spatial_centered_cardinal_scale_continuous {d n }
+    i lam (U : Fin n → Covariate d) :
+    Continuous (fun t  => spatialCardinalScale lam (spatialScaleExtend i t) U i) := by
   unfold spatialCardinalScale
   apply continuous_finsetProd
   intro j _
@@ -93,8 +114,11 @@ theorem spatial_centered_cardinal_scale_continuous {d n : ℕ}
   exact ((hj.mul continuous_const).mul
     (Real.continuous_exp.comp (((hj.mul continuous_const).mul continuous_const).neg)))
 
-theorem spatial_centered_cardinal_matrix_integrable {d n D : ℕ}
-    (i : Fin n) (lam T : ℝ) (hT : 1 ≤ T) (U : Fin n → Covariate d)
+section
+variable {d n D : ℕ}
+
+theorem spatial_centered_cardinal_matrix_integrable 
+    (i : Fin n) lam T (hT : 1 ≤ T) U
     (β β' : HighFrameIndex d D) :
     Integrable (fun t => spatialCenteredCardinalMatrix i lam U t β β') (spatialScaleMeasure i T) := by
   apply ContinuousOn.integrableOn_compact (spatial_scale_domain_isCompact i T hT)
@@ -103,9 +127,11 @@ theorem spatial_centered_cardinal_matrix_integrable {d n D : ℕ}
 
 /-- The exact E_(k,T) from the paper, as a genuine coefficientwise
 Lebesgue integral of its explicit cardinal products. -/
-def integratedCardinalMatrix {d n D : ℕ} (lam T : ℝ) (U : Fin n → Covariate d)
+def integratedCardinalMatrix  (lam T : ℝ) (U : Fin n → Covariate d)
     (β β' : HighFrameIndex d D) : ℝ :=
   ∑ i, ∫ t, spatialCenteredCardinalMatrix i lam U t β β' ∂spatialScaleMeasure i T
+end
+
 
 def integratedCardinalWeight {d n : ℕ} (lam T : ℝ) (U : Fin n → Covariate d) (i : Fin n) : ℝ :=
   ∫ t, spatialCardinalWeight lam (spatialScaleExtend i t) U i ∂spatialScaleMeasure i T
@@ -126,8 +152,11 @@ theorem spatial_frame_covariance_integral {κ α : Type*} [Fintype κ] [Decidabl
   intro β' _
   rw [integral_const_mul]
 
-theorem spatial_centered_cardinal_matrix_diagonal {d n D : ℕ} (hn : n ≤ D)
-    (j : Fin n) (lam : ℝ) (U : Fin n → Covariate d) (t : SpatialScaleVector j) (i l : Fin n) :
+section
+variable {d n D : ℕ}
+
+theorem spatial_centered_cardinal_matrix_diagonal  (hn : n ≤ D)
+    j lam (U : Fin n → Covariate d) t i l :
     spatialFrameCovariance (spatialCenteredCardinalMatrix (D := D) j lam U t)
       (fun r => highFrameFeature (U r)) i l =
       if j = i ∧ i = l then spatialCardinalWeight lam (spatialScaleExtend j t) U j else 0 := by
@@ -146,8 +175,8 @@ theorem spatial_centered_cardinal_matrix_diagonal {d n D : ℕ} (hn : n ≤ D)
       mul_zero, zero_mul]
 
 /-- The integrated covariance matrix is genuinely symmetric. -/
-theorem integrated_cardinal_matrix_symmetric {d n D : ℕ}
-    (lam T : ℝ) (U : Fin n → Covariate d) (β β' : HighFrameIndex d D) :
+theorem integrated_cardinal_matrix_symmetric 
+    lam T (U : Fin n → Covariate d) (β β' : HighFrameIndex d D) :
     integratedCardinalMatrix lam T U β β' = integratedCardinalMatrix lam T U β' β := by
   apply Finset.sum_congr rfl
   intro i _
@@ -156,9 +185,13 @@ theorem integrated_cardinal_matrix_symmetric {d n D : ℕ}
   unfold spatialCenteredCardinalMatrix
   ring
 
+section
+variable (hn : n ≤ D)
+include hn
+
 /-- Exact evaluated diagonal of the actual scale integral E_(k,T). -/
-theorem integrated_cardinal_matrix_diagonal {d n D : ℕ} (hn : n ≤ D)
-    (lam T : ℝ) (hT : 1 ≤ T) (U : Fin n → Covariate d) (i l : Fin n) :
+theorem integrated_cardinal_matrix_diagonal  
+    lam T (hT : 1 ≤ T) (U : Fin n → Covariate d) i l :
     spatialFrameCovariance (integratedCardinalMatrix (D := D) lam T U)
       (fun j => highFrameFeature (U j)) i l =
       if i = l then integratedCardinalWeight lam T U i else 0 := by
@@ -176,9 +209,9 @@ theorem integrated_cardinal_matrix_diagonal {d n D : ℕ} (hn : n ≤ D)
     simp only [hji, false_and, ite_false, integral_zero]
   · simp
 
-theorem integrated_cardinal_response_heat {d n D : ℕ} (hn : n ≤ D) (q : ℕ)
-    (C a V η lam T : ℝ) (hC : C ≠ 0) (hT : 1 ≤ T) (U : Fin n → Covariate d)
-    (g w : Fin n → ℝ) (c : HighFrameIndex d D → ℝ) (y : Fin n → Fin 3) :
+theorem integrated_cardinal_response_heat   q
+    C a V η lam T (hC : C ≠ 0) (hT : 1 ≤ T) U
+    (g w : Fin n → ℝ) (c : HighFrameIndex d D → ℝ) y :
     responseMatrixAction q C (integratedCardinalMatrix lam T U) c
       (fun c => highResponseProduct a V η g w (fun i => highFrameFeature (U i)) c y) =
       η ^ 2 * ∑ i, (w i) ^ 2 * integratedCardinalWeight lam T U i *
@@ -188,5 +221,9 @@ theorem integrated_cardinal_response_heat {d n D : ℕ} (hn : n ≤ D) (q : ℕ)
   apply high_response_matrix_heat_with_defect q C a V η _ hC
   · exact integrated_cardinal_matrix_symmetric lam T U
   · exact integrated_cardinal_matrix_diagonal hn lam T hT U
+end
+
+end
+
 
 end NearlyMinimax

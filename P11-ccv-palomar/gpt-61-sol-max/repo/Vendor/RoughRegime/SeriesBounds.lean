@@ -81,13 +81,17 @@ theorem series_truncation_bound {E : Type*} [NormedAddCommGroup E] [CompleteSpac
     _ ≤ ∑' k : ℕ, C * w k := hsbound
     _ = _ := by rw [tsum_mul_left]
 
+section
+variable {R : Type*}
+include R
+
 /-- Combined-index Cauchy product. -/
-def convolution {R : Type*} [NonUnitalNonAssocSemiring R] (f g : ℕ → R) (k : ℕ) : R :=
+def convolution  [NonUnitalNonAssocSemiring R] (f g : ℕ → R) (k : ℕ) : R :=
   ∑ ij ∈ Finset.HasAntidiagonal.antidiagonal k, f ij.1 * g ij.2
 
 /-- Adding one reciprocal factor increases the polynomial coefficient weight by one.
 This proves the counting estimate in Lemma 5(a) without using eigenvalue-defined polynomials. -/
-theorem convolution_coefficient_bound {R : Type*} [NormedRing R]
+theorem convolution_coefficient_bound  [NormedRing R]
     (f g : ℕ → R) (ν k : ℕ) (ρ A B : ℝ) (hp : 0 < ρ) (hA : 0 ≤ A) (hB : 0 ≤ B)
     (hf : ∀ i : ℕ, ‖f i‖ ≤ A * ((i + 1 : ℕ) : ℝ) ^ ν * ρ ^ i)
     (hg : ∀ j : ℕ, ‖g j‖ ≤ B * ρ ^ j) :
@@ -113,19 +117,18 @@ theorem convolution_coefficient_bound {R : Type*} [NormedRing R]
     _ = _ := by simp only [Finset.sum_const, Finset.Nat.card_antidiagonal, nsmul_eq_mul]; rw [pow_succ]; ring
 
 /-- Exact Cauchy product identity used for the scalar factors of Lemma 5(a). -/
-theorem convolution_tsum {R : Type*} [NormedRing R] [CompleteSpace R]
+theorem convolution_tsum  [NormedRing R] [CompleteSpace R]
     (f g : ℕ → R) (hf : Summable (fun i => ‖f i‖)) (hg : Summable (fun i => ‖g i‖)) :
-    ∑' k : ℕ, convolution f g k = (∑' i : ℕ, f i) * ∑' j : ℕ, g j := by
-  exact (tsum_mul_tsum_eq_tsum_sum_antidiagonal_of_summable_norm hf hg).symm
+    ∑' k : ℕ, convolution f g k = (∑' i : ℕ, f i) * ∑' j : ℕ, g j := (tsum_mul_tsum_eq_tsum_sum_antidiagonal_of_summable_norm hf hg).symm
 
 /-- Form a combined-index product, starting with a distinguished matrix-valued factor. -/
-def addFactors {R : Type*} [NonUnitalNonAssocSemiring R] (f : ℕ → R) :
+def addFactors  [NonUnitalNonAssocSemiring R] (f : ℕ → R) :
     List (ℕ → R) → ℕ → R
   | [] => f
   | g :: gs => convolution (addFactors f gs) g
 
 /-- Coefficient bound for any finite number of reciprocal-type factors. -/
-theorem addFactors_coefficient_bound {R : Type*} [NormedRing R]
+theorem addFactors_coefficient_bound  [NormedRing R]
     (f : ℕ → R) (gs : List (ℕ → R)) (ρ A B : ℝ) (hp : 0 < ρ)
     (hA : 0 ≤ A) (hB : 0 ≤ B)
     (hf : ∀ k : ℕ, ‖f k‖ ≤ A * ρ ^ k)
@@ -144,5 +147,7 @@ theorem addFactors_coefficient_bound {R : Type*} [NormedRing R]
     convert hh using 1
     simp only [List.length_cons, pow_succ]
     ring
+end
+
 
 end RoughRegime.SeriesBounds

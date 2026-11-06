@@ -27,8 +27,8 @@ theorem historyMarkedReference_integral_le_of_fiber_bound (dependent : J → J �
       ∂Measure.pi (fun _ : Fin (historyShapeLength dependent g) => π)) ≤ C) :
     (∫ h, F h ∂historyMarkedReference dependent Δ π) ≤ C := by
   let μ := historyMarkedReferenceRaw dependent Δ π
-  let : IsFiniteMeasure μ := historyMarkedReferenceRaw_finite dependent hrefl hsymm Δ hΔ hlabels π
-  let : IsProbabilityMeasure (historyMarkedReference dependent Δ π) :=
+  let  := historyMarkedReferenceRaw_finite dependent hrefl hsymm Δ hΔ hlabels π
+  let  :=
     historyMarkedReference_probability dependent hrefl hsymm Δ hΔ hlabels π
   have hi : Integrable F μ := Integrable.of_bound hF.aestronglyMeasurable R
     (Eventually.of_forall fun h => by simpa only [Real.norm_eq_abs] using hbound h)

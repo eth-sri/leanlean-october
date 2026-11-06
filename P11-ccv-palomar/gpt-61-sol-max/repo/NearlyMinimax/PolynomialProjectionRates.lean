@@ -10,22 +10,31 @@ open scoped ENNReal
 noncomputable section
 namespace NearlyMinimax
 
-/-- Number of rectangular monomial features per grid cell. -/
-def polynomialFeatureCount {d : ℕ} (C : ModelConstants d) : ℕ := (C.order + 1) ^ d
+section
+variable {d : ℕ} (C : ModelConstants d)
+include C
 
-theorem polynomialFeatureCount_pos {d : ℕ} (C : ModelConstants d) :
+/-- Number of rectangular monomial features per grid cell. -/
+def polynomialFeatureCount   := (C.order + 1) ^ d
+
+theorem polynomialFeatureCount_pos  :
     0 < polynomialFeatureCount C := by
   unfold polynomialFeatureCount
   positivity
 
 /-- The actual root-floor grid uses half the sample as its feature budget. -/
-def polynomialProjectionGridSize {d : ℕ} (C : ModelConstants d) (n : ℕ) : ℕ :=
+def polynomialProjectionGridSize  (n : ℕ)  :=
   ⌊((n : ℝ) / (2 * polynomialFeatureCount C)) ^ ((d : ℝ)⁻¹)⌋₊
+end
 
-theorem polynomial_projection_grid_size_spec {d n : ℕ} (C : ModelConstants d)
-    (hn : 2 * polynomialFeatureCount C ≤ n) :
+
+section
+variable {d n : ℕ} (C : ModelConstants d) (hn : 2 * polynomialFeatureCount C ≤ n)
+include hn
+
+theorem polynomial_projection_grid_size_spec  :
     0 < polynomialProjectionGridSize C n ∧
-    (polynomialProjectionGridSize C n : ℝ) ^ d * (C.order + 1 : ℕ) ^ d ≤ (n : ℝ) / 2 ∧
+    (polynomialProjectionGridSize C n : ℝ) ^ d * (C.order + 1 : ℕ) ^ d ≤ n / 2 ∧
     ((n : ℝ) / (2 * polynomialFeatureCount C)) ^ ((d : ℝ)⁻¹) ≤
       2 * polynomialProjectionGridSize C n := by
   have hdreal : (0 : ℝ) < d := by exact_mod_cast C.dimension_pos
@@ -52,11 +61,10 @@ theorem polynomial_projection_grid_size_spec {d n : ℕ} (C : ModelConstants d)
   exact ⟨hk, hcolumns, by linarith⟩
 
 /-- Floor rounding changes inverse cell width by a fixed model factor. -/
-theorem polynomial_projection_grid_inverse_width_bound {d n : ℕ} (C : ModelConstants d)
-    (hn : 2 * polynomialFeatureCount C ≤ n) :
+theorem polynomial_projection_grid_inverse_width_bound  :
     1 / (polynomialProjectionGridSize C n : ℝ) ≤
-      (2 * (2 * polynomialFeatureCount C : ℝ) ^ ((d : ℝ)⁻¹)) *
-        (n : ℝ) ^ (-((d : ℝ)⁻¹)) := by
+      (2 * (2 * polynomialFeatureCount C) ^ ((d : ℝ)⁻¹)) *
+        n ^ (-((d : ℝ)⁻¹)) := by
   have hqreal : (0 : ℝ) < polynomialFeatureCount C := by exact_mod_cast polynomialFeatureCount_pos C
   have hnreal : (0 : ℝ) < n := by
     exact_mod_cast (lt_of_lt_of_le (by have := polynomialFeatureCount_pos C; omega : 0 < 2 * polynomialFeatureCount C) hn)
@@ -71,17 +79,19 @@ theorem polynomial_projection_grid_inverse_width_bound {d n : ℕ} (C : ModelCon
   apply hi.trans_eq
   rw [Real.div_rpow hnreal.le (by positivity), Real.rpow_neg hnreal.le]
   field_simp
+end
+
 
 /-- Explicit full-smoothness approximation constant, independent of sample size. -/
-def polynomialProjectionApproximationConstant {d : ℕ} (C : ModelConstants d) : ℝ :=
+def polynomialProjectionApproximationConstant {d } (C : ModelConstants d)  :=
   4 * (taylorErrorFactor C * C.holderBound *
     (2 * (2 * polynomialFeatureCount C : ℝ) ^ ((d : ℝ)⁻¹)) ^ C.smoothness) ^ 4
 
 /-- The constructed full-order projection bias has rate `n^(-4s/d)`. -/
-theorem polynomial_projection_grid_bias_rate {d n : ℕ} (C : ModelConstants d)
+theorem polynomial_projection_grid_bias_rate {d n } (C : ModelConstants d)
     (hn : 2 * polynomialFeatureCount C ≤ n) :
     polynomialGridBias C (polynomialProjectionGridSize C n) ≤
-      polynomialProjectionApproximationConstant C * (n : ℝ) ^ (-(4 * C.smoothness / d)) := by
+      polynomialProjectionApproximationConstant C * n ^ (-(4 * C.smoothness / d)) := by
   have hnreal : (0 : ℝ) < n := by
     exact_mod_cast (lt_of_lt_of_le (by have := polynomialFeatureCount_pos C; omega : 0 < 2 * polynomialFeatureCount C) hn)
   have hkreal : (0 : ℝ) < polynomialProjectionGridSize C n := by

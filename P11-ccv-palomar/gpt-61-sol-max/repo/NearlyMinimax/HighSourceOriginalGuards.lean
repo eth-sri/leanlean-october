@@ -32,14 +32,14 @@ structure HighFrameOriginalLocalGuards (d k D : ℕ) [NeZero k] (Cfr eta rho : �
     ∀ x, |highLocalFieldWithout d k D eta c j x + eta*highPeriodicTensor d k j x*
       (∑ γ, highLocalFrameFeature k j x γ*v γ)| ≤ rho
 
-theorem highFrame_original_local_guards {d : ℕ} (C : ModelConstants d)
+theorem highFrame_original_local_guards {d } (C : ModelConstants d)
     (Q : LowSmoothnessTernaryConstants C) :
     ∃ Cfr0 eta0 : ℝ, 1 ≤ Cfr0 ∧ 0 < eta0 ∧
-      ∀ k D : ℕ, ∀ (_ : NeZero k), 4 ≤ k → ∀ Cfr cf : ℝ,
-      Cfr0 ≤ Cfr → 0 ≤ cf → cf*(k : ℝ)^(-C.smoothness) ≤ eta0 →
-      ∀ c : HighWindowLabels d k → HighFrameIndex d D → ℝ,
+      ∀ k D : ℕ, ∀ (_ : NeZero k), 4 ≤ k → ∀ Cfr cf ,
+      Cfr0 ≤ Cfr → 0 ≤ cf → cf*k^(-C.smoothness) ≤ eta0 →
+      ∀ c ,
       (∀ j, (∑ γ, |c j γ|) ≤ Cfr⁻¹) →
-      HighFrameOriginalLocalGuards d k D Cfr (cf*(k : ℝ)^(-C.smoothness)) Q.ρ c := by
+      HighFrameOriginalLocalGuards d k D Cfr (cf*k^(-C.smoothness)) Q.ρ c := by
   obtain ⟨Cfr0,hfr0,hfield⟩ := highFrameField_original_model_bounds C
   let eta0 := Q.ρ/(2*((2 : ℝ)^d+1))
   refine ⟨Cfr0,eta0,hfr0,div_pos Q.ρ_pos (by positivity),?_⟩
@@ -49,9 +49,7 @@ theorem highFrame_original_local_guards {d : ℕ} (C : ModelConstants d)
   have hfr1 : 1 ≤ Cfr := hfr0.trans hfr
   have hen : 0 ≤ eta := by dsimp [eta]; positivity
   have hamp : ((2 : ℝ)^d+1)*eta ≤ Q.ρ/2 := by
-    have ht := (le_div_iff₀ (by positivity : 0 < 2*((2 : ℝ)^d+1))).mp heta
-    change eta*(2*((2 : ℝ)^d+1)) ≤ Q.ρ at ht
-    nlinarith
+    linarith [(le_div_iff₀ (by positivity : 0 < 2*((2 : ℝ)^d+1))).mp heta     ]
   have hehalf : eta ≤ Q.ρ/2 := by nlinarith [pow_nonneg (by norm_num : (0 : ℝ) ≤ 2) d]
   have hP (j) : frameCoefficientL1 (highFramePolynomial (c j)) ≤ Cfr0⁻¹ := by
     apply (highFramePolynomial_coefficientL1_le _).trans
@@ -60,8 +58,7 @@ theorem highFrame_original_local_guards {d : ℕ} (C : ModelConstants d)
   have hw (j) (x) : |highPeriodicTensor d k j x| ≤ 1 := by
     rw [abs_of_nonneg (highPeriodicTensor_nonneg d k j x)]
     exact highPeriodicTensor_le_one d k (by omega) j x
-  have hprof (j) (v : HighFrameIndex d D → ℝ) (hv : ∑ γ, |v γ| ≤ Cfr⁻¹) (x) :
-      |∑ γ, highLocalFrameFeature k j x γ*v γ| ≤ 1 :=
+  have hprof (j) (v : HighFrameIndex d D → ℝ) (hv : ∑ γ, |v γ| ≤ Cfr⁻¹) (x)  :=
     highLocalFrameFeature_ball_abs_le_one k j x Cfr hfr1 v hv
   have hterm (j) (v : HighFrameIndex d D → ℝ) (hv : ∑ γ, |v γ| ≤ Cfr⁻¹) (x) :
       |eta*highPeriodicTensor d k j x*(∑ γ, highLocalFrameFeature k j x γ*v γ)| ≤ eta := by
@@ -81,18 +78,16 @@ theorem highFrame_original_local_guards {d : ℕ} (C : ModelConstants d)
   intro j v hv x
   exact (abs_add_le _ _).trans (by linarith only [hg j x,hterm j v hv x,hehalf])
 
-theorem completeSource_original_local_guards {d : ℕ} [NeZero d]
-    (C : ModelConstants d) (Q : LowSmoothnessTernaryConstants C) :
+theorem completeSource_original_local_guards {d } [NeZero d]
+    C (Q : LowSmoothnessTernaryConstants C) :
     ∃ Cfr0 eta0 : ℝ, 1 ≤ Cfr0 ∧ 0 < eta0 ∧
       ∀ k D M q : ℕ, ∀ (_ : NeZero k), ∀ (_ : LinearOrder (HighWindowLabels d k)),
-      4 ≤ k → 3 ≤ D → 1 ≤ q → highCenterResolutionThreshold C ≤ (M : ℝ) →
-      ∀ Cfr lam ell N mu cf : ℝ, Cfr0 ≤ Cfr → 0 < ell → ell < N → 0 ≤ cf →
-      cf*(k : ℝ)^(-C.smoothness) ≤ eta0 →
-      ∀ h : HistoryMarked (fun i j => j ∈ highNeighborLabels d k i)
-        (HighUnionMark (SourceRowMark d D M q (C.densityLower+1/(M : ℝ))
-          (C.densityUpper-1/(M : ℝ)) Cfr lam ell N mu)),
+      4 ≤ k → 3 ≤ D → 1 ≤ q → highCenterResolutionThreshold C ≤ M →
+      ∀ Cfr lam ell N mu cf , Cfr0 ≤ Cfr → 0 < ell → ell < N → 0 ≤ cf →
+      cf*k^(-C.smoothness) ≤ eta0 →
+      ∀ h ,
       let R := completeSourceRows C k D M q Cfr lam ell N mu
-      HighFrameOriginalLocalGuards d k D Cfr (cf*(k : ℝ)^(-C.smoothness)) Q.ρ
+      HighFrameOriginalLocalGuards d k D Cfr (cf*k^(-C.smoothness)) Q.ρ
         (highUnionSourceState C R h).2 := by
   obtain ⟨Cfr0,eta0,hfr0,heta0,hguards⟩ := highFrame_original_local_guards C Q
   refine ⟨Cfr0,eta0,hfr0,heta0,?_⟩
@@ -105,15 +100,14 @@ theorem completeSource_original_local_guards {d : ℕ} [NeZero d]
   exact hguards k D hk0 hk Cfr cf hfr hcf heta (highUnionSourceState C R h).2
     (highUnionSourceState_coefficient_ball C R G h)
 
-theorem HighFrameOriginalLocalGuards.ternary_floor {d k D : ℕ}
+theorem HighFrameOriginalLocalGuards.ternary_floor {d k D }
     [NeZero k] {C : ModelConstants d} (Q : LowSmoothnessTernaryConstants C)
-    {Cfr eta V : ℝ} {c : HighWindowLabels d k → HighFrameIndex d D → ℝ}
+    {Cfr eta V } {c }
     (H : HighFrameOriginalLocalGuards d k D Cfr eta Q.ρ c)
-    (hV : |V-Q.v| ≤ Q.ρ) (j : HighWindowLabels d k)
+    (hV : |V-Q.v| ≤ Q.ρ) j
     (v : HighFrameIndex d D → ℝ) (hv : ∑ γ, |v γ| ≤ Cfr⁻¹)
-    (x : Covariate d) (y : Fin 3) :
+    x y :
     Q.c ≤ highMarkedResponseMass Q.a V eta (highLocalFieldWithout d k D eta c j)
-      (highPeriodicTensor d k j) (fun x => highLocalFrameFeature k j x) v x y := by
-  exact (Q.legal _ V (H.regression_abs j v hv x) hV).2.2.1 y
+      (highPeriodicTensor d k j) (fun x => highLocalFrameFeature k j x) v x y := (Q.legal _ V (H.regression_abs j v hv x) hV).2.2.1 y
 
 end NearlyMinimax

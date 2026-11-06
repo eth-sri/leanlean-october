@@ -13,21 +13,35 @@ open Matrix MeasureTheory Set
 open scoped BigOperators ENNReal Matrix.Norms.L2Operator
 namespace NearlyMinimax
 
+section
+variable {d ℓ : ℕ}
+
+section
+variable (u : Covariate d)
+include u
+
+section
+variable (p g : Covariate d → ℝ)
+include p g
+
 /-- The normalized scalar-feature moment before known-Gram preconditioning. -/
-def anchoredVectorMoment {d ℓ : ℕ} (u : Covariate d)
-    (p g : Covariate d → ℝ) : AnchoredIndex d ℓ → ℝ :=
+def anchoredVectorMoment  
+     : AnchoredIndex d ℓ → ℝ :=
   fun γ => ∫ w, p w * anchoredFeature u w γ * g w ∂cubeVolume d
 
 /-- The actual density and regression vector moments in the manuscript. -/
-def anchoredPreconditionedMoment {d ℓ : ℕ} (u : Covariate d)
-    (p g : Covariate d → ℝ) : AnchoredIndex d ℓ → ℝ :=
+def anchoredPreconditionedMoment  
+     : AnchoredIndex d ℓ → ℝ :=
   (anchoredGram u)⁻¹ *ᵥ anchoredVectorMoment u p g
+end
 
-theorem anchoredVectorMoment_coordinate_bound {d ℓ : ℕ} (u : Covariate d)
-    (hu : u ∈ unitCube d) (p g : Covariate d → ℝ) (b F : ℝ)
-    (hb : 0 ≤ b) (hF : 0 ≤ F)
-    (hp : ∀ᵐ w ∂cubeVolume d, 0 ≤ p w ∧ p w ≤ b)
-    (hg : ∀ w ∈ unitCube d, |g w| ≤ F) (γ : AnchoredIndex d ℓ) :
+
+section
+variable (hu : u ∈ unitCube d) (p g : Covariate d → ℝ) (b F : ℝ) (hb : 0 ≤ b) (hF : 0 ≤ F) (hp : ∀ᵐ w ∂cubeVolume d, 0 ≤ p w ∧ p w ≤ b) (hg : ∀ w ∈ unitCube d, |g w| ≤ F)
+include hu hb hF hp hg
+
+theorem anchoredVectorMoment_coordinate_bound  
+     (γ : AnchoredIndex d ℓ) :
     |anchoredVectorMoment u p g γ| ≤ b * F := by
   let := cubeVolume_isProbability d
   have hbound : ∀ᵐ w ∂cubeVolume d,
@@ -45,13 +59,10 @@ theorem anchoredVectorMoment_coordinate_bound {d ℓ : ℕ} (u : Covariate d)
   simpa only [Real.norm_eq_abs, measureReal_def, measure_univ, ENNReal.toReal_one, mul_one, anchoredVectorMoment]
     using norm_integral_le_of_norm_le_const hbound
 
-theorem anchoredVectorMoment_norm_bound {d ℓ : ℕ} (u : Covariate d)
-    (hu : u ∈ unitCube d) (p g : Covariate d → ℝ) (b F : ℝ)
-    (hb : 0 ≤ b) (hF : 0 ≤ F)
-    (hp : ∀ᵐ w ∂cubeVolume d, 0 ≤ p w ∧ p w ≤ b)
-    (hg : ∀ w ∈ unitCube d, |g w| ≤ F) :
+theorem anchoredVectorMoment_norm_bound  
+     :
     ‖(EuclideanSpace.equiv (AnchoredIndex d ℓ) ℝ).symm (anchoredVectorMoment u p g)‖ ≤
-      Real.sqrt (Fintype.card (AnchoredIndex d ℓ) : ℝ) * (b * F) := by
+      Real.sqrt (Fintype.card (AnchoredIndex d ℓ)) * (b * F) := by
   let v := (EuclideanSpace.equiv (AnchoredIndex d ℓ) ℝ).symm (anchoredVectorMoment u p g)
   change ‖v‖ ≤ _
   rw [EuclideanSpace.norm_eq, Real.sqrt_le_iff]
@@ -66,9 +77,13 @@ theorem anchoredVectorMoment_norm_bound {d ℓ : ℕ} (u : Covariate d)
       _ = (Fintype.card (AnchoredIndex d ℓ) : ℝ) * (b * F) ^ 2 := by simp
       _ = (Real.sqrt (Fintype.card (AnchoredIndex d ℓ) : ℝ) * (b * F)) ^ 2 := by
         simp only [mul_pow, Real.sq_sqrt (Nat.cast_nonneg _)]
+end
+
+end
+
 
 /-- The actual known-Gram inverse has a fixed finite bound on all cube anchors. -/
-theorem anchoredGram_inverse_uniform_bound {d ℓ : ℕ} :
+theorem anchoredGram_inverse_uniform_bound  :
     ∃ N : ℝ, 0 < N ∧ ∀ u ∈ unitCube d, ‖(anchoredGram (ℓ := ℓ) u)⁻¹‖ ≤ N := by
   have hc : Continuous (fun u : Covariate d => (anchoredGram (ℓ := ℓ) u)⁻¹) := by
     have heq : (fun u : Covariate d => (anchoredGram (ℓ := ℓ) u)⁻¹) =
@@ -82,9 +97,9 @@ theorem anchoredGram_inverse_uniform_bound {d ℓ : ℕ} :
   exact (hM (mem_image_of_mem _ hu)).trans (le_max_right _ _)
 
 /-- A uniform scalar bound for every actual preconditioned vector family. -/
-theorem anchoredPreconditionedMoment_uniform_bound {d ℓ : ℕ}
-    (b F : ℝ) (hb : 0 ≤ b) (hF : 0 ≤ F) :
-    ∃ W : ℝ, 0 < W ∧ ∀ u ∈ unitCube d, ∀ p g : Covariate d → ℝ,
+theorem anchoredPreconditionedMoment_uniform_bound 
+    b F (hb : 0 ≤ b) (hF : 0 ≤ F) :
+    ∃ W : ℝ, 0 < W ∧ ∀ u ∈ unitCube d, ∀ p g ,
       (∀ᵐ w ∂cubeVolume d, 0 ≤ p w ∧ p w ≤ b) →
       (∀ w ∈ unitCube d, |g w| ≤ F) →
       ‖anchoredPreconditionedMoment (ℓ := ℓ) u p g‖ ≤ W := by
@@ -103,5 +118,7 @@ theorem anchoredPreconditionedMoment_uniform_bound {d ℓ : ℕ}
   apply (pi_norm_le_iff_of_nonneg (by dsimp [W]; positivity)).mpr
   intro γ
   exact (PiLp.norm_apply_le _ γ).trans hpre
+end
+
 
 end NearlyMinimax

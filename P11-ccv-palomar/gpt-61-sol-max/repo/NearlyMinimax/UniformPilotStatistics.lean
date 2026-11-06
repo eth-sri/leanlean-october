@@ -16,10 +16,15 @@ namespace NearlyMinimax
 set_option maxHeartbeats 2000000
 set_option backward.isDefEq.respectTransparency false
 
-theorem dyadicPilotErrorField_point_second_of_variance {d : ℕ} (C : ModelConstants d)
-    [Nonempty (AnchoredIndex d C.order)] (θ : RegressionParameter d) (hθ : Admissible C θ)
-    (D A : ℝ) (hD : 0 < D) (hA : 0 < A)
-    (hv : ∀ n j : ℕ,
+section
+variable {d : ℕ} (C : ModelConstants d) [Nonempty (AnchoredIndex d C.order)]
+
+section
+variable (θ : RegressionParameter d) (hθ : Admissible C θ) (D A : ℝ) (hD : 0 < D) (hA : 0 < A)
+include hθ hD hA
+
+section
+variable (hv : ∀ n j : ℕ,
       ∀ x ∈ unitCube d, ∀ y : ℝ, |y| ≤ C.holderBound → ∀ m : ℕ,
       ∀ row : Fin (anchoredDimension d C.order) → ℝ,
       m + anchoredDimension d C.order + 1 ≤ n →
@@ -29,13 +34,17 @@ theorem dyadicPilotErrorField_point_second_of_variance {d : ℕ} (C : ModelConst
             ∑ t : Fin (m + anchoredDimension d C.order + 1),
               ((t.val + 1).factorial : ℝ) *
                 (A ^ 2 * (Fintype.card (incrementVariables (anchoredDimension d C.order)) *
-                  preconditionedPilotMomentConstant C C.order * dyadicPilotScale d j) / Λ) ^ (t.val + 1)) :
-    ∀ n j L : ℕ, j ≤ L → ∀ x ∈ unitCube d, ∀ z ∈ unitCube d,
-      regularGridCell ((2 : ℕ) ^ L) (by positivity) x =
-        regularGridCell ((2 : ℕ) ^ L) (by positivity) z →
-      ∀ y : ℝ, |y| ≤ C.holderBound → ∀ m : ℕ,
+                  preconditionedPilotMomentConstant C C.order * dyadicPilotScale d j) / Λ) ^ (t.val + 1))
+include hv
+
+theorem dyadicPilotErrorField_point_second_of_variance  
+     :
+    ∀ n j L , j ≤ L → ∀ x ∈ unitCube d, ∀ z ∈ unitCube d,
+      regularGridCell (2 ^ L) (by positivity) x =
+        regularGridCell (2 ^ L) (by positivity) z →
+      ∀ y , |y| ≤ C.holderBound → ∀ m ,
       m + anchoredDimension d C.order + 1 ≤ n → ∀ Λ : ℝ, 0 < Λ →
-      Λ ≤ (n : ℝ) - (m + anchoredDimension d C.order + 1) + 1 →
+      Λ ≤ n - (m + anchoredDimension d C.order + 1) + 1 →
       (∫ t, dyadicPilotErrorField C θ n j y m t (x, z) ^ 2 ∂sampleLaw θ n) ≤
         (dyadicPilotRowCap d C.order j L * D) ^ 2 * dyadicPilotSeries C A Λ j m := by
   intro n j L hj x hx z hz hc y hy m hdegree Λ hΛ hΛn
@@ -51,29 +60,17 @@ theorem dyadicPilotErrorField_point_second_of_variance {d : ℕ} (C : ModelConst
   exact mul_le_mul_of_nonneg_right hr hD.le
 
 
-theorem dyadicMultilevelErrorField_point_second_of_variance {d : ℕ} (C : ModelConstants d)
-    [Nonempty (AnchoredIndex d C.order)] (θ : RegressionParameter d) (hθ : Admissible C θ)
-    (D A : ℝ) (hD : 0 < D) (hA : 0 < A)
-    (hv : ∀ n j : ℕ,
-      ∀ x ∈ unitCube d, ∀ y : ℝ, |y| ≤ C.holderBound → ∀ m : ℕ,
-      ∀ row : Fin (anchoredDimension d C.order) → ℝ,
-      m + anchoredDimension d C.order + 1 ≤ n →
-      ∀ Λ : ℝ, 0 < Λ → Λ ≤ (n : ℝ) - (m + anchoredDimension d C.order + 1) + 1 →
-        variance (dyadicPolynomialPilot C n j x y m row) (sampleLaw θ n) ≤
-          ((∑ i, |row i|) * D) ^ 2 *
-            ∑ t : Fin (m + anchoredDimension d C.order + 1),
-              ((t.val + 1).factorial : ℝ) *
-                (A ^ 2 * (Fintype.card (incrementVariables (anchoredDimension d C.order)) *
-                  preconditionedPilotMomentConstant C C.order * dyadicPilotScale d j) / Λ) ^ (t.val + 1)) :
-    ∀ n J L : ℕ, J ≤ L → ∀ x ∈ unitCube d, ∀ z ∈ unitCube d,
-      regularGridCell ((2 : ℕ) ^ L) (by positivity) x =
-        regularGridCell ((2 : ℕ) ^ L) (by positivity) z →
-      ∀ y : ℝ, |y| ≤ C.holderBound → ∀ m : ℕ → ℕ,
+theorem dyadicMultilevelErrorField_point_second_of_variance  
+     :
+    ∀ n J L , J ≤ L → ∀ x ∈ unitCube d, ∀ z ∈ unitCube d,
+      regularGridCell (2 ^ L) (by positivity) x =
+        regularGridCell (2 ^ L) (by positivity) z →
+      ∀ y , |y| ≤ C.holderBound → ∀ m ,
       (∀ j : Fin (J + 1), m j.val + anchoredDimension d C.order + 1 ≤ n) →
       ∀ Λ : ℝ, 0 < Λ →
-      (∀ j : Fin (J + 1), Λ ≤ (n : ℝ) - (m j.val + anchoredDimension d C.order + 1) + 1) →
+      (∀ j : Fin (J + 1), Λ ≤ n - (m j.val + anchoredDimension d C.order + 1) + 1) →
       (∫ t, dyadicMultilevelErrorField C θ n J y m t (x, z) ^ 2 ∂sampleLaw θ n) ≤
-        4 * ((anchoredDimension d C.order : ℝ) * D) ^ 2 * (d : ℝ) *
+        4 * ((anchoredDimension d C.order) * D) ^ 2 * d *
           dyadicMultilevelBudget (dyadicSeriesEnvelope C A Λ J m) J L := by
   have hpoint := dyadicPilotErrorField_point_second_of_variance C θ hθ D A hD hA hv
   intro n J L hJL x hx z hz hc y hy m hdegree Λ hΛ hΛn
@@ -100,38 +97,38 @@ theorem dyadicMultilevelErrorField_point_second_of_variance {d : ℕ} (C : Model
   apply h.trans_eq
   dsimp [B, dyadicMultilevelBudget]
   ring
+end
 
 
-theorem dyadicMultilevelErrorField_test_second_of_variance {d : ℕ} (C : ModelConstants d)
-    [Nonempty (AnchoredIndex d C.order)] (θ : RegressionParameter d) (hθ : Admissible C θ)
-    (D A : ℝ) (hD : 0 < D) (hA : 0 < A)
-    (htest :     ∀ n j J : ℕ, j ≤ J →
-      ∀ y : ℝ, |y| ≤ C.holderBound → ∀ m : ℕ,
+
+theorem dyadicMultilevelErrorField_test_second_of_variance  
+    (htest :     ∀ n j J , j ≤ J →
+      ∀ y , |y| ≤ C.holderBound → ∀ m ,
       m + anchoredDimension d C.order + 1 ≤ n →
-      ∀ Λ : ℝ, 0 < Λ → Λ ≤ (n : ℝ) - (m + anchoredDimension d C.order + 1) + 1 →
-      ∀ ν : Covariate d × Covariate d → ℝ,
-      MemLp ν 2 (regularPairDesignMeasure θ ((2 : ℕ) ^ J) (by positivity)) →
+      ∀ Λ : ℝ, 0 < Λ → Λ ≤ n - (m + anchoredDimension d C.order + 1) + 1 →
+      ∀ ν ,
+      MemLp ν 2 (regularPairDesignMeasure θ (2 ^ J) (by positivity)) →
       variance (fun z => ∫ w, ν w * dyadicPilotErrorField C θ n j y m z w
-        ∂regularPairDesignMeasure θ ((2 : ℕ) ^ J) (by positivity)) (sampleLaw θ n) ≤
+        ∂regularPairDesignMeasure θ (2 ^ J) (by positivity)) (sampleLaw θ n) ≤
       (C.densityUpper ^ 2 / dyadicPilotScale d (j - 1)) *
         ((dyadicPilotRowCap d C.order j J * D) ^ 2 *
           ∑ r : Fin (m + anchoredDimension d C.order + 1),
-            ((r.val + 1).factorial : ℝ) *
+            ((r.val + 1).factorial) *
               (A ^ 2 * (Fintype.card (incrementVariables (anchoredDimension d C.order)) *
                 preconditionedPilotMomentConstant C C.order * dyadicPilotScale d j) / Λ) ^ (r.val + 1)) *
-        (∫ w, ν w ^ 2 ∂regularPairDesignMeasure θ ((2 : ℕ) ^ J) (by positivity))) :
-    ∀ n J L : ℕ, J ≤ L → ∀ y : ℝ, |y| ≤ C.holderBound → ∀ m : ℕ → ℕ,
+        (∫ w, ν w ^ 2 ∂regularPairDesignMeasure θ (2 ^ J) (by positivity))) :
+    ∀ n J L , J ≤ L → ∀ y , |y| ≤ C.holderBound → ∀ m ,
       (∀ j : Fin (J + 1), m j.val + anchoredDimension d C.order + 1 ≤ n) →
       ∀ Λ : ℝ, 0 < Λ →
-      (∀ j : Fin (J + 1), Λ ≤ (n : ℝ) - (m j.val + anchoredDimension d C.order + 1) + 1) →
-      ∀ ν : Covariate d × Covariate d → ℝ,
-      MemLp ν 2 (regularPairDesignMeasure θ ((2 : ℕ) ^ L) (by positivity)) →
+      (∀ j : Fin (J + 1), Λ ≤ n - (m j.val + anchoredDimension d C.order + 1) + 1) →
+      ∀ ν ,
+      MemLp ν 2 (regularPairDesignMeasure θ (2 ^ L) (by positivity)) →
       (∫ t, (∫ w, ν w * dyadicMultilevelErrorField C θ n J y m t w
-        ∂regularPairDesignMeasure θ ((2 : ℕ) ^ L) (by positivity)) ^ 2 ∂sampleLaw θ n) ≤
-        (4 * C.densityUpper ^ 2 * (2 : ℝ) ^ d *
-          ((anchoredDimension d C.order : ℝ) * D) ^ 2 * (d : ℝ) *
+        ∂regularPairDesignMeasure θ (2 ^ L) (by positivity)) ^ 2 ∂sampleLaw θ n) ≤
+        (4 * C.densityUpper ^ 2 * 2 ^ d *
+          ((anchoredDimension d C.order) * D) ^ 2 * d *
             dyadicMultilevelBudget (dyadicSeriesEnvelope C A Λ J m) J L / Λ) *
-          (∫ w, ν w ^ 2 ∂regularPairDesignMeasure θ ((2 : ℕ) ^ L) (by positivity)) := by
+          (∫ w, ν w ^ 2 ∂regularPairDesignMeasure θ (2 ^ L) (by positivity)) := by
   intro n J L hJL y hy m hdegree Λ hΛ hΛn ν hν
   let := sampleLaw_isProbability C θ hθ n
   let M := regularPairDesignMeasure θ ((2 : ℕ) ^ L) (by positivity)
@@ -183,29 +180,30 @@ theorem dyadicMultilevelErrorField_test_second_of_variance {d : ℕ} (C : ModelC
   apply h.trans_eq
   dsimp [B, dyadicMultilevelBudget]
   ring
+end
 
 
-theorem uniform_domain_common_dyadicMultilevel_bounds {d : ℕ} (C : ModelConstants d)
-    [Nonempty (AnchoredIndex d C.order)] :
-    ∃ D A : ℝ, 0 < D ∧ 0 < A ∧ ∀ U : ExtensionDomain d, ∀ θ : RegressionParameter d, Admissible (C.withDomain U) θ →
-      ∀ n J L : ℕ, J ≤ L → ∀ y : ℝ, |y| ≤ max C.holderBound 1 → ∀ m : ℕ → ℕ,
+
+theorem uniform_domain_common_dyadicMultilevel_bounds  :
+    ∃ D A : ℝ, 0 < D ∧ 0 < A ∧ ∀ U , ∀ θ , Admissible (C.withDomain U) θ →
+      ∀ n J L , J ≤ L → ∀ y , |y| ≤ max C.holderBound 1 → ∀ m ,
       (∀ j : Fin (J + 1), m j.val + anchoredDimension d C.order + 1 ≤ n) →
       ∀ Λ : ℝ, 0 < Λ →
-      (∀ j : Fin (J + 1), Λ ≤ (n : ℝ) - (m j.val + anchoredDimension d C.order + 1) + 1) →
+      (∀ j : Fin (J + 1), Λ ≤ n - (m j.val + anchoredDimension d C.order + 1) + 1) →
       (∀ x ∈ unitCube d, ∀ z ∈ unitCube d,
-        regularGridCell ((2 : ℕ) ^ L) (by positivity) x =
-          regularGridCell ((2 : ℕ) ^ L) (by positivity) z →
+        regularGridCell (2 ^ L) (by positivity) x =
+          regularGridCell (2 ^ L) (by positivity) z →
         (∫ t, dyadicMultilevelErrorField C θ n J y m t (x, z) ^ 2 ∂sampleLaw θ n) ≤
-          4 * ((anchoredDimension d C.order : ℝ) * D) ^ 2 * (d : ℝ) *
+          4 * ((anchoredDimension d C.order) * D) ^ 2 * d *
             dyadicMultilevelBudget (dyadicSeriesEnvelope (pilotModelConstants C) A Λ J m) J L) ∧
-      (∀ ν : Covariate d × Covariate d → ℝ,
-        MemLp ν 2 (regularPairDesignMeasure θ ((2 : ℕ) ^ L) (by positivity)) →
+      (∀ ν ,
+        MemLp ν 2 (regularPairDesignMeasure θ (2 ^ L) (by positivity)) →
         (∫ t, (∫ w, ν w * dyadicMultilevelErrorField C θ n J y m t w
-          ∂regularPairDesignMeasure θ ((2 : ℕ) ^ L) (by positivity)) ^ 2 ∂sampleLaw θ n) ≤
-          (4 * C.densityUpper ^ 2 * (2 : ℝ) ^ d *
-            ((anchoredDimension d C.order : ℝ) * D) ^ 2 * (d : ℝ) *
+          ∂regularPairDesignMeasure θ (2 ^ L) (by positivity)) ^ 2 ∂sampleLaw θ n) ≤
+          (4 * C.densityUpper ^ 2 * 2 ^ d *
+            ((anchoredDimension d C.order) * D) ^ 2 * d *
               dyadicMultilevelBudget (dyadicSeriesEnvelope (pilotModelConstants C) A Λ J m) J L / Λ) *
-            (∫ w, ν w ^ 2 ∂regularPairDesignMeasure θ ((2 : ℕ) ^ L) (by positivity))) := by
+            (∫ w, ν w ^ 2 ∂regularPairDesignMeasure θ (2 ^ L) (by positivity))) := by
   letI : Nonempty (AnchoredIndex d (pilotModelConstants C).order) :=
     inferInstanceAs (Nonempty (AnchoredIndex d C.order))
   obtain ⟨D, A, hD, hA, hder⟩ := uniform_domain_admissible_dyadic_increment_all_derivative_bound
@@ -215,7 +213,7 @@ theorem uniform_domain_common_dyadicMultilevel_bounds {d : ℕ} (C : ModelConsta
   let CE := (pilotModelConstants C).withDomain U
   letI : Nonempty (AnchoredIndex d CE.order) := inferInstanceAs (Nonempty (AnchoredIndex d C.order))
   have hθe : Admissible CE θ := by
-    simpa only [pilotModelConstants_withDomain] using admissible_pilotModelConstants (C.withDomain U) θ hθ
+    grind only [pilotModelConstants_withDomain, admissible_pilotModelConstants]
   have hd := hder U θ hθe
   have hr := dyadicIncrementKernel_raw_budget_of_derivative CE θ hθe D A hD hA hd
   have hv := dyadicPolynomialPilot_variance_of_derivative CE θ hθe D A hD hA hd
@@ -227,5 +225,7 @@ theorem uniform_domain_common_dyadicMultilevel_bounds {d : ℕ} (C : ModelConsta
   · intro ν hν
     exact dyadicMultilevelErrorField_test_second_of_variance CE θ hθe D A hD hA ht
       n J L hJL y hy m hdegree Λ hΛ hΛn ν hν
+end
+
 
 end NearlyMinimax

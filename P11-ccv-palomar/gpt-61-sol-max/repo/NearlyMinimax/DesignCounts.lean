@@ -19,20 +19,27 @@ noncomputable section
 
 attribute [local instance] Classical.propDecidable
 
+section
+variable {α : Type*}
+
+section
+variable (n : ℕ) (A : Set α)
+include A
+
 /-- Number of iid design observations falling in a patch. -/
-def designPatchCount {α : Type*} (n : ℕ) (A : Set α) (x : Fin n → α) : ℕ :=
+def designPatchCount   (x : Fin n → α) : ℕ :=
   (Finset.univ.filter fun i => x i ∈ A).card
 
 /-- The cell with precisely the observation indices in `s` inside the patch. -/
-def designMembershipCell {α : Type*} (n : ℕ) (A : Set α) (s : Finset (Fin n)) : Set (Fin n → α) :=
+def designMembershipCell   (s : Finset (Fin n)) : Set (Fin n → α) :=
   Set.pi Set.univ (fun i => if i ∈ s then A else Aᶜ)
 
-theorem design_patch_count_le {α : Type*} (n : ℕ) (A : Set α) (x : Fin n → α) :
+theorem design_patch_count_le   (x : Fin n → α) :
     designPatchCount n A x ≤ n := by
   unfold designPatchCount
   simpa using Finset.card_le_card (Finset.filter_subset (fun i => x i ∈ A) Finset.univ)
 
-theorem design_membership_cell_iff {α : Type*} (n : ℕ) (A : Set α)
+theorem design_membership_cell_iff  
     (s : Finset (Fin n)) (x : Fin n → α) :
     x ∈ designMembershipCell n A s ↔ ∀ i, x i ∈ A ↔ i ∈ s := by
   simp only [designMembershipCell, Set.mem_pi, Set.mem_univ, forall_true_left]
@@ -45,8 +52,10 @@ theorem design_membership_cell_iff {α : Type*} (n : ℕ) (A : Set α)
     by_cases hi : i ∈ s
     · simpa [hi] using (h i).mpr hi
     · simpa [hi] using (h i).not.mpr hi
+end
 
-theorem design_membership_cell_measurable {α : Type*} [MeasurableSpace α]
+
+theorem design_membership_cell_measurable  [MeasurableSpace α]
     (n : ℕ) (A : Set α) (hA : MeasurableSet A) (s : Finset (Fin n)) :
     MeasurableSet (designMembershipCell n A s) := by
   apply MeasurableSet.pi Set.countable_univ
@@ -55,25 +64,23 @@ theorem design_membership_cell_measurable {α : Type*} [MeasurableSpace α]
   · exact hA
   · exact hA.compl
 
-theorem design_membership_cells_disjoint {α : Type*} (n : ℕ) (A : Set α) :
+section
+variable (n : ℕ) (A : Set α)
+
+theorem design_membership_cells_disjoint   :
     Pairwise (fun s t : Finset (Fin n) => Disjoint (designMembershipCell n A s) (designMembershipCell n A t)) := by
   intro s t hst
-  apply Set.disjoint_left.mpr
-  intro x hs ht
-  apply hst
-  ext i
-  exact ((design_membership_cell_iff n A s x).mp hs i).symm.trans
-    ((design_membership_cell_iff n A t x).mp ht i)
+  grind only [Set.disjoint_left.mpr, design_membership_cell_iff]
 
 /-- The count event is a disjoint union of cells indexed by subsets of its count. -/
-theorem design_patch_count_fiber {α : Type*} (n : ℕ) (A : Set α) (k : ℕ) :
+theorem design_patch_count_fiber   (k : ℕ) :
     {x : Fin n → α | designPatchCount n A x = k} =
       ⋃ s ∈ (Finset.univ : Finset (Fin n)).powersetCard k, designMembershipCell n A s := by
   ext x
   constructor
   · intro hx
     change designPatchCount n A x = k at hx
-    let s : Finset (Fin n) := Finset.univ.filter fun i => x i ∈ A
+    let s  := Finset.univ.filter fun i => x i ∈ A
     apply Set.mem_iUnion.mpr
     refine ⟨s, Set.mem_iUnion.mpr ⟨?_, ?_⟩⟩
     · apply Finset.mem_powersetCard.mpr
@@ -89,11 +96,15 @@ theorem design_patch_count_fiber {α : Type*} (n : ℕ) (A : Set α) (k : ℕ) :
     change (Finset.univ.filter fun i => x i ∈ A).card = k
     rw [hfilter]
     exact (Finset.mem_powersetCard.mp hs).2
+end
+
+
+section
+variable [MeasurableSpace α] (μ : Measure α) [IsProbabilityMeasure μ] (n : ℕ) (A : Set α)
 
 /-- Membership cells have the product Bernoulli probabilities dictated by
 independence under the iid design product measure. -/
-theorem iid_design_membership_cell_measure {α : Type*} [MeasurableSpace α]
-    (μ : Measure α) [IsProbabilityMeasure μ] (n : ℕ) (A : Set α)
+theorem iid_design_membership_cell_measure  
     (s : Finset (Fin n)) :
     (Measure.pi (fun _ : Fin n => μ)) (designMembershipCell n A s) =
       (μ A) ^ s.card * (μ Aᶜ) ^ (n - s.card) := by
@@ -107,8 +118,7 @@ theorem iid_design_membership_cell_measure {α : Type*} [MeasurableSpace α]
 
 /-- Exact binomial count law, in real probabilities, for an arbitrary measurable
 patch under an arbitrary iid design probability measure. -/
-theorem iid_design_patch_count_probability {α : Type*} [MeasurableSpace α]
-    (μ : Measure α) [IsProbabilityMeasure μ] (n : ℕ) (A : Set α) (hA : MeasurableSet A) (k : ℕ) :
+theorem iid_design_patch_count_probability   (hA : MeasurableSet A) (k : ℕ) :
     (Measure.pi (fun _ : Fin n => μ)).real {x : Fin n → α | designPatchCount n A x = k} =
       binomialCountMass n (μ.real A) k := by
   rw [measureReal_def, design_patch_count_fiber]
@@ -132,9 +142,11 @@ theorem iid_design_patch_count_probability {α : Type*} [MeasurableSpace α]
     exact design_membership_cells_disjoint n A hst
   · intro s _
     exact design_membership_cell_measurable n A hA s
+end
+
 
 /-- The patch count is a measurable random variable. -/
-theorem design_patch_count_measurable {α : Type*} [MeasurableSpace α]
+theorem design_patch_count_measurable  [MeasurableSpace α]
     (n : ℕ) (A : Set α) (hA : MeasurableSet A) : Measurable (designPatchCount n A) := by
   have heq : designPatchCount n A =
       (fun x : Fin n → α => ∑ i : Fin n, if x i ∈ A then (1 : ℕ) else 0) := by
@@ -143,12 +155,15 @@ theorem design_patch_count_measurable {α : Type*} [MeasurableSpace α]
   rw [heq]
   apply Finset.measurable_sum
   intro i _
-  exact Measurable.ite (hA.preimage (measurable_pi_apply i)) measurable_const measurable_const
+  solve_by_elim [Measurable.ite, measurable_pi_apply, measurable_const]
+
+section
+variable [MeasurableSpace α] (μ : Measure α) [IsProbabilityMeasure μ] (n : ℕ) (A : Set α) (hA : MeasurableSet A)
+include hA
 
 /-- Every finite function of the actual patch count integrates against its
 binomial law. This connects the counting estimate to the iid design measure. -/
-theorem iid_design_count_integral {α : Type*} [MeasurableSpace α]
-    (μ : Measure α) [IsProbabilityMeasure μ] (n : ℕ) (A : Set α) (hA : MeasurableSet A)
+theorem iid_design_count_integral  
     (e : ℕ → ℝ) :
     (∫ x : Fin n → α, e (designPatchCount n A x) ∂Measure.pi (fun _ : Fin n => μ)) =
       ∑ k ∈ Finset.range (n + 1), binomialCountMass n (μ.real A) k * e k := by
@@ -166,12 +181,9 @@ theorem iid_design_count_integral {α : Type*} [MeasurableSpace α]
         · intro k _ hk
           simp [Ne.symm hk]
         · intro hn
-          exact False.elim (hn (Finset.mem_range.mpr
-            (Nat.lt_succ_iff.mpr (design_patch_count_le n A x))))
+          solve_by_elim [Finset.mem_range.mpr, Nat.lt_succ_iff.mpr, design_patch_count_le]
       _ = e (designPatchCount n A x) := by simp
-  have hfun : (fun x : Fin n → α => e (designPatchCount n A x)) =
-      (fun x => ∑ k ∈ Finset.range (n + 1),
-        ({x : Fin n → α | designPatchCount n A x = k}).indicator (fun _ => e k) x) := funext hdecomp
+  have hfun  := funext hdecomp
   rw [hfun, integral_finset_sum]
   · apply Finset.sum_congr rfl
     intro k _
@@ -182,15 +194,17 @@ theorem iid_design_count_integral {α : Type*} [MeasurableSpace α]
 
 /-- Integration of a genuine iid patch count gives the quadratic collision
 energy bound, without assuming a binomial count law as a hypothesis. -/
-theorem iid_design_collision_energy_bound {α : Type*} [MeasurableSpace α]
-    (μ : Measure α) [IsProbabilityMeasure μ] (n : ℕ) (A : Set α) (hA : MeasurableSet A)
+theorem iid_design_collision_energy_bound  
     (C η : ℝ) (e : ℕ → ℝ) (hC : 0 ≤ C) (hmean : n * μ.real A ≤ 1)
     (he0 : e 0 = 0) (he1 : e 1 = 0) (he : ∀ k, 2 ≤ k → e k ≤ C ^ k * η ^ 4) :
     (∫ x : Fin n → α, e (designPatchCount n A x) ∂Measure.pi (fun _ : Fin n => μ)) ≤
       C ^ 2 * Real.exp C * η ^ 4 * (n * μ.real A) ^ 2 := by
   rw [iid_design_count_integral μ n A hA e]
-  exact binomial_collision_energy_bound n (μ.real A) C η e measureReal_nonneg
-    measureReal_le_one hC hmean he0 he1 he
+  simp_all [binomial_collision_energy_bound]
+end
+
+end
+
 
 end
 

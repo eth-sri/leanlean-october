@@ -19,19 +19,18 @@ section Finite
 variable {d k F : ℕ} {I : Type*} [Fintype I] {E : I → Type*}
   [∀ i, MeasurableSpace (E i)] (R : HighUnionRowData d k F I E)
 
-def highUnionHistoryState (δ : ℝ) (n : ℕ) (labels : Fin n → HighWindowLabels d k)
-    (initial : HighRawState d k F) (marks : Fin n → HighUnionMark E) : HighRawState d k F :=
+def highUnionHistoryState δ n (labels : Fin n → HighWindowLabels d k)
+    initial (marks : Fin n → HighUnionMark E)  :=
   (List.ofFn (fun i : Fin n => i)).foldl
     (fun θ i => highUnionRawUpdate R δ (labels i) (marks i) θ) initial
 
 theorem highUnionHistory_density_joint_measurable [∀ i, StandardBorelSpace (E i)]
     (hSlope : ∀ j i, Measurable (fun ex : E i × Covariate d => R.rowSlope j i ex.1 ex.2))
-    (hOffset : ∀ i, Measurable (R.rowIntercept i)) (δ : ℝ)
-    (n : ℕ) (labels : Fin n → HighWindowLabels d k)
-    (initial : HighRawState d k F) (hi : Measurable initial.1) :
+    (hOffset : ∀ i, Measurable (R.rowIntercept i)) δ
+    n labels
+    initial (hi : Measurable initial.1) :
     Measurable (fun mx : (Fin n → HighUnionMark E) × Covariate d =>
-      (highUnionHistoryState R δ n labels initial mx.1).1 mx.2) := by
-  exact affinePatchFold_density_joint_measurable (highTorusPatch d k)
+      (highUnionHistoryState R δ n labels initial mx.1).1 mx.2) := affinePatchFold_density_joint_measurable (highTorusPatch d k)
     (highTorusPatch_measurableSet d k) (highUnionSlope R)
     (fun _ e _ => highUnionIntercept R δ e)
     (fun j => highUnionSlope_joint_measurable R hSlope j)
@@ -48,12 +47,12 @@ theorem highUnionHistory_density_mean_one [∀ i, IsProbabilityMeasure (R.rowLaw
     (hiSlope : ∀ j x i, Integrable (fun e => R.rowSlope j i e x) (R.rowLaw i))
     (hcSlope : ∀ j x i, (∫ e, R.rowSlope j i e x ∂(R.rowLaw i)) = 0)
     (hOffset : ∀ i, Measurable (R.rowIntercept i))
-    (a b : ℝ) (hOffsetBound : ∀ i e, R.rowIntercept i e ∈ Icc a b)
-    (δ : ℝ) (hδ0 : 0 ≤ δ) (hδ1 : δ < 1)
-    (n : ℕ) (labels : Fin n → HighWindowLabels d k)
-    (initial : HighRawState d k F) (hinit : ∀ x, initial.1 x = 1) (x : Covariate d) :
+    a b (hOffsetBound : ∀ i e, R.rowIntercept i e ∈ Icc a b)
+    δ (hδ0 : 0 ≤ δ) (hδ1 : δ < 1)
+    n labels
+    initial (hinit : ∀ x, initial.1 x = 1) x :
     (∫ marks, (highUnionHistoryState R δ n labels initial marks).1 x
-      ∂Measure.pi (fun _ : Fin n => highUnionLaw R δ)) = 1 := by
+      ∂Measure.pi (fun _  => highUnionLaw R δ)) = 1 := by
   let π := highUnionLaw R δ
   letI : IsProbabilityMeasure π := highUnionLaw_probability R hMass hTotal δ hδ0 hδ1.le
   let s := fun (j : HighWindowLabels d k) (e : HighUnionMark E) =>
@@ -105,21 +104,21 @@ theorem highUnionHistory_density_mean_one [∀ i, IsProbabilityMeasure (R.rowLaw
     (fun _ e _ => highUnionIntercept R δ e) (fun _ => highUnionResponseReset R)
     labels marks (List.ofFn (fun i : Fin n => i)) initial x).trans (by rw [hinit x]; rfl)
 
-theorem highUnionHistory_density_interval (δ : ℝ) (a b : ℝ)
+theorem highUnionHistory_density_interval δ a b
     (hLegal : ∀ j e x v, v ∈ Icc a b →
       highUnionSlope R j e x * v + highUnionIntercept R δ e ∈ Icc a b)
-    (n : ℕ) (labels : Fin n → HighWindowLabels d k) (initial : HighRawState d k F)
-    (hi : ∀ x, initial.1 x ∈ Icc a b) (marks : Fin n → HighUnionMark E) (x : Covariate d) :
+    n labels initial
+    (hi : ∀ x, initial.1 x ∈ Icc a b) marks x :
     (highUnionHistoryState R δ n labels initial marks).1 x ∈ Icc a b :=
   affineRawHistory_density_interval (highTorusPatch d k) (highUnionSlope R)
     (fun _ e _ => highUnionIntercept R δ e) (fun _ => highUnionResponseReset R)
     labels (List.ofFn (fun i : Fin n => i)) marks a b hLegal initial hi x
 
-theorem highUnionHistory_coefficient_ball (δ Cfr : ℝ) (hCfr : 0 < Cfr)
+theorem highUnionHistory_coefficient_ball δ Cfr (hCfr : 0 < Cfr)
     (hVector : ∀ i e, (∑ γ, |R.rowVector i e γ|) ≤ Cfr⁻¹)
-    (hTime : ∀ i e, R.rowTime i e ∈ Icc (0 : ℝ) 1)
-    (n : ℕ) (labels : Fin n → HighWindowLabels d k) (initial : HighRawState d k F)
-    (hi : ∀ j, (∑ γ, |initial.2 j γ|) ≤ Cfr⁻¹) (marks : Fin n → HighUnionMark E) :
+    (hTime : ∀ i e, R.rowTime i e ∈ Icc 0 1)
+    n labels initial
+    (hi : ∀ j, (∑ γ, |initial.2 j γ|) ≤ Cfr⁻¹) marks :
     ∀ j, (∑ γ, |(highUnionHistoryState R δ n labels initial marks).2 j γ|) ≤ Cfr⁻¹ := by
   have hf : ∀ indices : List (Fin n), ∀ initial : HighRawState d k F,
       (∀ j, (∑ γ, |initial.2 j γ|) ≤ Cfr⁻¹) → ∀ j,
@@ -150,22 +149,24 @@ variable {d k F : ℕ} {I : Type*} [Fintype I] {E : I → Type*}
   (R : HighUnionRowData d k F I E)
   (dependent : HighWindowLabels d k → HighWindowLabels d k → Prop)
 
-def highUnionMarkedState (δ : ℝ) (initial : HighRawState d k F)
-    (h : HistoryMarked dependent (HighUnionMark E)) : HighRawState d k F :=
+def highUnionMarkedState δ initial
+    h  :=
   historyMarkedRawState dependent (highUnionRawUpdate R δ) initial h
 
-def highUnionMarkedDensity (δ : ℝ) (initial : HighRawState d k F)
-    (h : HistoryMarked dependent (HighUnionMark E)) (x : Covariate d) : ℝ :=
+def highUnionMarkedDensity δ initial
+    h x  :=
   (highUnionMarkedState R dependent δ initial h).1 x
 
-def highUnionMarkedMass (δ : ℝ) (initial : HighRawState d k F)
-    (h : HistoryMarked dependent (HighUnionMark E)) : ℝ :=
+def highUnionMarkedMass δ initial
+    h  :=
   ∫ x, highUnionMarkedDensity R dependent δ initial h x ∂cubeVolume d
 
-theorem highUnionMarkedDensity_joint_measurable [∀ i, StandardBorelSpace (E i)]
-    (hSlope : ∀ j i, Measurable (fun ex : E i × Covariate d => R.rowSlope j i ex.1 ex.2))
-    (hOffset : ∀ i, Measurable (R.rowIntercept i)) (δ : ℝ)
-    (initial : HighRawState d k F) (hi : Measurable initial.1) :
+section
+variable [∀ i, StandardBorelSpace (E i)] (hSlope : ∀ j i, Measurable (fun ex : E i × Covariate d => R.rowSlope j i ex.1 ex.2)) (hOffset : ∀ i, Measurable (R.rowIntercept i))
+include hSlope hOffset
+
+theorem highUnionMarkedDensity_joint_measurable  δ
+    initial (hi : Measurable initial.1) :
     Measurable (fun hx : HistoryMarked dependent (HighUnionMark E) × Covariate d =>
       highUnionMarkedDensity R dependent δ initial hx.1 hx.2) := by
   letI : StandardBorelSpace (HighUnionMark E) := highUnionMark_standardBorel
@@ -180,18 +181,18 @@ theorem highUnionMarkedDensity_joint_measurable [∀ i, StandardBorelSpace (E i)
       (historyShapeLength dependent g) (historyShapeCanonicalLabels dependent g) initial hi
   exact hG.comp (historySigmaProdMeasurableEquiv X (Covariate d)).measurable
 
-theorem highUnionMarkedMass_measurable [∀ i, StandardBorelSpace (E i)]
-    (hSlope : ∀ j i, Measurable (fun ex : E i × Covariate d => R.rowSlope j i ex.1 ex.2))
-    (hOffset : ∀ i, Measurable (R.rowIntercept i)) (δ : ℝ)
-    (initial : HighRawState d k F) (hi : Measurable initial.1) :
+theorem highUnionMarkedMass_measurable  δ
+    initial (hi : Measurable initial.1) :
     Measurable (highUnionMarkedMass R dependent δ initial) := by
   letI := cubeVolume_isProbability d
   exact (highUnionMarkedDensity_joint_measurable R dependent hSlope hOffset δ initial hi).stronglyMeasurable.integral_prod_right'.measurable
+end
 
-theorem highUnionMarkedState_append [NeZero k] (δ : ℝ) (initial : HighRawState d k F)
-    (j : HighWindowLabels d k)
+
+theorem highUnionMarkedState_append [NeZero k] δ initial
+    j
     (h : HistoryMarked (fun i j => j ∈ highNeighborLabels d k i) (HighUnionMark E))
-    (fresh : HighUnionMark E) :
+    fresh :
     highUnionMarkedState R (fun i j => j ∈ highNeighborLabels d k i) δ initial
       (historyMarkedAppend (fun i j => j ∈ highNeighborLabels d k i)
         (fun {_ _} h => highNeighborLabels_symmetric d k _ _ h) j (h,fresh)) =

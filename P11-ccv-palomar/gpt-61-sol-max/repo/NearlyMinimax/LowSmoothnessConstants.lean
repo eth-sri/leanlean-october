@@ -12,12 +12,12 @@ noncomputable section
 open Set
 namespace NearlyMinimax
 
-def lowSmoothnessScoreConstant {d : ℕ} {C : ModelConstants d}
-    (P : LowSmoothnessTernaryConstants C) : ℝ :=
+def lowSmoothnessScoreConstant {d } {C : ModelConstants d}
+    (P : LowSmoothnessTernaryConstants C)  :=
   (40 : ℝ) ^ d * ternaryScoreExponentialConstant P.a P.ρ P.c ^ 2 *
     Real.exp (ternaryScoreExponentialConstant P.a P.ρ P.c)
 
-theorem lowSmoothnessScoreConstant_nonneg {d : ℕ} {C : ModelConstants d}
+theorem lowSmoothnessScoreConstant_nonneg {d } {C : ModelConstants d}
     (P : LowSmoothnessTernaryConstants C) : 0 ≤ lowSmoothnessScoreConstant P := by
   unfold lowSmoothnessScoreConstant
   positivity
@@ -33,7 +33,7 @@ structure LowSmoothnessPriorConstants {d : ℕ} (C : ModelConstants d) where
   score_guard : lowSmoothnessScoreConstant ternary * b ^ 4 ≤ 1
 
 /-- All prior legality and score guards hold for a fixed positive amplitude. -/
-theorem lowSmoothnessPriorConstants_exists {d : ℕ} (C : ModelConstants d) :
+theorem lowSmoothnessPriorConstants_exists {d } (C : ModelConstants d) :
     Nonempty (LowSmoothnessPriorConstants C) := by
   obtain ⟨P⟩ := lowSmoothnessTernaryConstants_exists C
   let M := (2 : ℝ) ^ d + 2
@@ -41,7 +41,7 @@ theorem lowSmoothnessPriorConstants_exists {d : ℕ} (C : ModelConstants d) :
   let Q := lowSmoothnessScoreConstant P
   have hM : 0 < M := by dsimp [M]; positivity
   have hH : 0 < H := by dsimp [H]; positivity
-  have hQ : 0 ≤ Q := lowSmoothnessScoreConstant_nonneg P
+  have hQ  := lowSmoothnessScoreConstant_nonneg P
   let b := min (min (min (min 1 (P.ρ / M)) (Real.sqrt P.ρ)) (C.holderBound / H)) (1 / (Q + 1))
   have hb : 0 < b := lt_min
     (lt_min (lt_min (lt_min (by norm_num) (div_pos P.ρ_pos hM)) (Real.sqrt_pos.mpr P.ρ_pos))
@@ -57,18 +57,14 @@ theorem lowSmoothnessPriorConstants_exists {d : ℕ} (C : ModelConstants d) :
     have h := (le_div_iff₀ hM).mp hbM
     nlinarith
   have hvariance : b ^ 2 ≤ P.ρ := by
-    nlinarith [Real.sq_sqrt P.ρ_pos.le, Real.sqrt_nonneg P.ρ]
+    nlinarith [Real.sq_sqrt P.ρ_pos.le]
   have hholder : H * b ≤ C.holderBound := by
     have h := (le_div_iff₀ hH).mp hbH
     nlinarith
   have hb4 : b ^ 4 ≤ b := by
-    calc
-      _ = b ^ 3 * b := by ring
-      _ ≤ 1 * b := mul_le_mul_of_nonneg_right (pow_le_one₀ (n := 3) hb.le hb1) hb.le
-      _ = b := one_mul b
+    linarith [mul_le_mul_of_nonneg_right (pow_le_one₀ (n := 3) hb.le hb1) hb.le       ]
   have hscore : Q * b ^ 4 ≤ 1 := by
-    have h := (le_div_iff₀ (by linarith : 0 < Q + 1)).mp hbQ
-    exact (mul_le_mul_of_nonneg_left hb4 hQ).trans (by nlinarith)
+    linarith [(le_div_iff₀ (by linarith : 0 < Q + 1)).mp hbQ     , mul_le_mul_of_nonneg_left hb4 hQ]
   exact ⟨⟨P, b, hb, hb1, hfield, hvariance, hholder, hscore⟩⟩
 
 end NearlyMinimax

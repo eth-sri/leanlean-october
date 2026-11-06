@@ -16,25 +16,28 @@ namespace NearlyMinimax
 set_option maxHeartbeats 1000000
 set_option backward.isDefEq.respectTransparency false
 
-def dyadicMultilevelErrorField {d : ℕ} (C : ModelConstants d) (θ : RegressionParameter d)
-    (n J : ℕ) (y : ℝ) (m : ℕ → ℕ) (z : Fin n → Observation d)
-    (w : Covariate d × Covariate d) : ℝ :=
+def dyadicMultilevelErrorField {d } (C : ModelConstants d) θ
+    n J y (m : ℕ → ℕ) z
+    w  :=
   ∑ j : Fin (J + 1), dyadicPilotErrorField C θ n j.val y (m j.val) z w
 
-def dyadicMultilevelBudget (H : ℝ) (J L : ℕ) : ℝ :=
+def dyadicMultilevelBudget H J L  :=
   (((2 : ℝ) ^ L)⁻¹) ^ 2 * ((2 : ℝ) ^ J) ^ 2 * H
 
-theorem dyadicPilotRowCap_square (d ℓ j L : ℕ) (D : ℝ) :
+theorem dyadicPilotRowCap_square d ℓ j L D :
     (dyadicPilotRowCap d ℓ j L * D) ^ 2 =
-      ((anchoredDimension d ℓ : ℝ) * D) ^ 2 * (d : ℝ) *
-        (((2 : ℝ) ^ L)⁻¹) ^ 2 * ((2 : ℝ) ^ j) ^ 2 := by
+      ((anchoredDimension d ℓ) * D) ^ 2 * d *
+        ((2 ^ L)⁻¹) ^ 2 * (2 ^ j) ^ 2 := by
   simp only [dyadicPilotRowCap, mul_pow, Real.sq_sqrt (Nat.cast_nonneg d)]
   ring
 
-theorem dyadicPilotErrorField_point_moment_facts {d : ℕ} (C : ModelConstants d)
-    [Nonempty (AnchoredIndex d C.order)] (θ : RegressionParameter d) (hθ : Admissible C θ)
-    (n j : ℕ) (x : Covariate d) (hx : x ∈ unitCube d) (z : Covariate d)
-    (y : ℝ) (m : ℕ) (hdegree : m + anchoredDimension d C.order + 1 ≤ n) :
+section
+variable {d : ℕ} (C : ModelConstants d) [Nonempty (AnchoredIndex d C.order)]
+include d C
+
+theorem dyadicPilotErrorField_point_moment_facts  θ (hθ : Admissible C θ)
+    n j x (hx : x ∈ unitCube d) z
+    y m (hdegree : m + anchoredDimension d C.order + 1 ≤ n) :
     MemLp (fun t => dyadicPilotErrorField C θ n j y m t (x, z)) 2 (sampleLaw θ n) ∧
       (∫ t, dyadicPilotErrorField C θ n j y m t (x, z) ∂sampleLaw θ n) = 0 := by
   let := sampleLaw_isProbability C θ hθ n
@@ -45,35 +48,15 @@ theorem dyadicPilotErrorField_point_moment_facts {d : ℕ} (C : ModelConstants d
   rw [integral_sub (hL2.integrable (by norm_num)) (integrable_const _), hmean]
   simp
 
-theorem admissible_dyadicPilotErrorField_point_second {d : ℕ} (C : ModelConstants d)
-    [Nonempty (AnchoredIndex d C.order)] :
-    ∃ D A : ℝ, 0 < D ∧ 0 < A ∧ ∀ θ : RegressionParameter d, Admissible C θ →
-      ∀ n j L : ℕ, j ≤ L → ∀ x ∈ unitCube d, ∀ z ∈ unitCube d,
-      regularGridCell ((2 : ℕ) ^ L) (by positivity) x =
-        regularGridCell ((2 : ℕ) ^ L) (by positivity) z →
-      ∀ y : ℝ, |y| ≤ C.holderBound → ∀ m : ℕ,
-      m + anchoredDimension d C.order + 1 ≤ n → ∀ Λ : ℝ, 0 < Λ →
-      Λ ≤ (n : ℝ) - (m + anchoredDimension d C.order + 1) + 1 →
-      (∫ t, dyadicPilotErrorField C θ n j y m t (x, z) ^ 2 ∂sampleLaw θ n) ≤
-        (dyadicPilotRowCap d C.order j L * D) ^ 2 * dyadicPilotSeries C A Λ j m := by
-  obtain ⟨D, A, hD, hA, hv⟩ := admissible_dyadicPolynomialPilot_variance C
-  refine ⟨D, A, hD, hA, ?_⟩
-  intro θ hθ n j L hj x hx z hz hc y hy m hdegree Λ hΛ hΛn
-  obtain ⟨hL2, hmean⟩ := dyadicPolynomialPilot_moment_facts C θ hθ n j x hx y m
-    (dyadicPilotRow j x z) hdegree
-  have h := hv θ hθ n j x hx y hy m (dyadicPilotRow j x z) hdegree Λ hΛ hΛn
-  rw [variance_eq_integral hL2.aemeasurable, hmean] at h
-  have hr := dyadicPilotRow_sum_abs_le_fine_cell (ℓ := C.order) j L hj x z hx hz hc.symm
-  apply h.trans
-  change ((∑ i, |dyadicPilotRow j x z i|) * D) ^ 2 * dyadicPilotSeries C A Λ j m ≤ _
-  apply mul_le_mul_of_nonneg_right _ (dyadicPilotSeries_nonneg C A Λ hΛ.le _ _)
-  apply pow_le_pow_left₀ (mul_nonneg (Finset.sum_nonneg (fun i _ => abs_nonneg _)) hD.le)
-  exact mul_le_mul_of_nonneg_right hr hD.le
 
-theorem dyadicMultilevelErrorField_point_moment_facts {d : ℕ} (C : ModelConstants d)
-    [Nonempty (AnchoredIndex d C.order)] (θ : RegressionParameter d) (hθ : Admissible C θ)
-    (n J : ℕ) (x : Covariate d) (hx : x ∈ unitCube d) (z : Covariate d)
-    (y : ℝ) (m : ℕ → ℕ)
+
+section
+variable (θ : RegressionParameter d) (hθ : Admissible C θ)
+include θ hθ
+
+theorem dyadicMultilevelErrorField_point_moment_facts  
+    n J x (hx : x ∈ unitCube d) z
+    y m
     (hdegree : ∀ j : Fin (J + 1), m j.val + anchoredDimension d C.order + 1 ≤ n) :
     MemLp (fun t => dyadicMultilevelErrorField C θ n J y m t (x, z)) 2 (sampleLaw θ n) ∧
       (∫ t, dyadicMultilevelErrorField C θ n J y m t (x, z) ∂sampleLaw θ n) = 0 := by
@@ -85,15 +68,14 @@ theorem dyadicMultilevelErrorField_point_moment_facts {d : ℕ} (C : ModelConsta
   rw [integral_finsetSum Finset.univ (fun j _ => (hf j).1.integrable (by norm_num))]
   exact Finset.sum_eq_zero (fun j _ => (hf j).2)
 
-theorem dyadicPilotErrorField_weighted_integrable {d : ℕ} (C : ModelConstants d)
-    [Nonempty (AnchoredIndex d C.order)] (θ : RegressionParameter d) (hθ : Admissible C θ)
-    (n j L : ℕ) (hj : j ≤ L) (y : ℝ) (hy : |y| ≤ C.holderBound) (m : ℕ)
+theorem dyadicPilotErrorField_weighted_integrable  
+    n j L (hj : j ≤ L) y (hy : |y| ≤ C.holderBound) m
     (hdegree : m + anchoredDimension d C.order + 1 ≤ n)
-    (ν : Covariate d × Covariate d → ℝ)
+    ν
     (hν : MemLp ν 2 (regularPairDesignMeasure θ ((2 : ℕ) ^ L) (by positivity)))
-    (t : Fin n → Observation d) :
+    t :
     Integrable (fun w => ν w * dyadicPilotErrorField C θ n j y m t w)
-      (regularPairDesignMeasure θ ((2 : ℕ) ^ L) (by positivity)) := by
+      (regularPairDesignMeasure θ (2 ^ L) (by positivity)) := by
   let M := regularPairDesignMeasure θ ((2 : ℕ) ^ L) (by positivity)
   let := regularPairDesignMeasure_isFinite C θ hθ ((2 : ℕ) ^ L) (by positivity)
   let R := m + anchoredDimension d C.order + 1
@@ -120,33 +102,29 @@ theorem dyadicPilotErrorField_weighted_integrable {d : ℕ} (C : ModelConstants 
     rfl
   rwa [heq]
 
-theorem dyadicMultilevelErrorField_test_integral_sum {d : ℕ} (C : ModelConstants d)
-    [Nonempty (AnchoredIndex d C.order)] (θ : RegressionParameter d) (hθ : Admissible C θ)
-    (n J L : ℕ) (hJL : J ≤ L) (y : ℝ) (hy : |y| ≤ C.holderBound) (m : ℕ → ℕ)
-    (hdegree : ∀ j : Fin (J + 1), m j.val + anchoredDimension d C.order + 1 ≤ n)
-    (ν : Covariate d × Covariate d → ℝ)
-    (hν : MemLp ν 2 (regularPairDesignMeasure θ ((2 : ℕ) ^ L) (by positivity)))
-    (t : Fin n → Observation d) :
+section
+variable (n J L : ℕ) (hJL : J ≤ L) (y : ℝ) (hy : |y| ≤ C.holderBound) (m : ℕ → ℕ) (hdegree : ∀ j : Fin (J + 1), m j.val + anchoredDimension d C.order + 1 ≤ n) (ν : Covariate d × Covariate d → ℝ) (hν : MemLp ν 2 (regularPairDesignMeasure θ ((2 : ℕ) ^ L) (pow_pos Nat.zero_lt_two L)))
+include n J L hJL y hy m hdegree ν hν
+
+theorem dyadicMultilevelErrorField_test_integral_sum  
+    
+    t :
     (∫ w, ν w * dyadicMultilevelErrorField C θ n J y m t w
-      ∂regularPairDesignMeasure θ ((2 : ℕ) ^ L) (by positivity)) =
+      ∂regularPairDesignMeasure θ (2 ^ L) (by positivity)) =
     ∑ j : Fin (J + 1), ∫ w, ν w * dyadicPilotErrorField C θ n j.val y (m j.val) t w
-      ∂regularPairDesignMeasure θ ((2 : ℕ) ^ L) (by positivity) := by
+      ∂regularPairDesignMeasure θ (2 ^ L) (by positivity) := by
   unfold dyadicMultilevelErrorField
   simp_rw [Finset.mul_sum]
   exact integral_finsetSum Finset.univ (fun j _ =>
     dyadicPilotErrorField_weighted_integrable C θ hθ n j.val L
       ((Nat.le_of_lt_succ j.isLt).trans hJL) y hy (m j.val) (hdegree j) ν hν t)
 
-theorem dyadicMultilevelErrorField_test_moment_facts {d : ℕ} (C : ModelConstants d)
-    [Nonempty (AnchoredIndex d C.order)] (θ : RegressionParameter d) (hθ : Admissible C θ)
-    (n J L : ℕ) (hJL : J ≤ L) (y : ℝ) (hy : |y| ≤ C.holderBound) (m : ℕ → ℕ)
-    (hdegree : ∀ j : Fin (J + 1), m j.val + anchoredDimension d C.order + 1 ≤ n)
-    (ν : Covariate d × Covariate d → ℝ)
-    (hν : MemLp ν 2 (regularPairDesignMeasure θ ((2 : ℕ) ^ L) (by positivity))) :
+theorem dyadicMultilevelErrorField_test_moment_facts  
+     :
     MemLp (fun t => ∫ w, ν w * dyadicMultilevelErrorField C θ n J y m t w
-      ∂regularPairDesignMeasure θ ((2 : ℕ) ^ L) (by positivity)) 2 (sampleLaw θ n) ∧
+      ∂regularPairDesignMeasure θ (2 ^ L) (by positivity)) 2 (sampleLaw θ n) ∧
     (∫ t, ∫ w, ν w * dyadicMultilevelErrorField C θ n J y m t w
-      ∂regularPairDesignMeasure θ ((2 : ℕ) ^ L) (by positivity) ∂sampleLaw θ n) = 0 := by
+      ∂regularPairDesignMeasure θ (2 ^ L) (by positivity) ∂sampleLaw θ n) = 0 := by
   let := sampleLaw_isProbability C θ hθ n
   have hf (j : Fin (J + 1)) := dyadicPilotErrorField_test_moment_facts C θ hθ n j.val L
     ((Nat.le_of_lt_succ j.isLt).trans hJL) y hy (m j.val) (hdegree j) ν hν
@@ -154,10 +132,11 @@ theorem dyadicMultilevelErrorField_test_moment_facts {d : ℕ} (C : ModelConstan
   refine ⟨memLp_finsetSum _ (fun j _ => (hf j).1), ?_⟩
   rw [integral_finsetSum Finset.univ (fun j _ => (hf j).1.integrable (by norm_num))]
   exact Finset.sum_eq_zero (fun j _ => (hf j).2)
+end
 
-theorem dyadicMultilevelErrorField_joint_measurable {d : ℕ} (C : ModelConstants d)
-    [Nonempty (AnchoredIndex d C.order)] (θ : RegressionParameter d) (hθ : Admissible C θ)
-    (n J : ℕ) (y : ℝ) (m : ℕ → ℕ)
+
+theorem dyadicMultilevelErrorField_joint_measurable  
+    n J y m
     (hdegree : ∀ j : Fin (J + 1), m j.val + anchoredDimension d C.order + 1 ≤ n) :
     Measurable (fun t : (Fin n → Observation d) × (Covariate d × Covariate d) =>
       dyadicMultilevelErrorField C θ n J y m t.1 t.2) := by
@@ -168,5 +147,9 @@ theorem dyadicMultilevelErrorField_joint_measurable {d : ℕ} (C : ModelConstant
   funext t
   simp only [dyadicMultilevelErrorField, Finset.sum_apply]
   rfl
+end
+
+end
+
 
 end NearlyMinimax

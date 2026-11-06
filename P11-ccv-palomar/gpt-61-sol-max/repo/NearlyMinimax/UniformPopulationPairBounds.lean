@@ -14,12 +14,19 @@ namespace NearlyMinimax
 set_option maxHeartbeats 1000000
 set_option backward.isDefEq.respectTransparency false
 
-theorem uniform_domain_admissible_dyadicPopulationCoefficients_supported_bound {d : ℕ} (C : ModelConstants d)
-    (hs : 1 < C.smoothness) :
-    ∃ Cp : ℝ, 0 < Cp ∧ ∀ Udom : ExtensionDomain d, ∀ θ : RegressionParameter d, Admissible (C.withDomain Udom) θ →
-      ∀ J Jh : ℕ, J ≤ Jh → ∀ m : ℕ → ℕ,
+section
+variable {d : ℕ} (C : ModelConstants d)
+
+section
+variable (hs : 1 < C.smoothness)
+include hs
+
+theorem uniform_domain_admissible_dyadicPopulationCoefficients_supported_bound 
+     :
+    ∃ Cp : ℝ, 0 < Cp ∧ ∀ Udom , ∀ θ , Admissible (C.withDomain Udom) θ →
+      ∀ J Jh , J ≤ Jh → ∀ m ,
       ∀ᵐ w ∂(designLaw θ).prod (designLaw θ),
-        sameLabelKernel (regularGridCell ((2 : ℕ) ^ Jh) (by positivity)) w ≠ 0 →
+        sameLabelKernel (regularGridCell (2 ^ Jh) (by positivity)) w ≠ 0 →
           ‖dyadicPopulationCoefficients C θ J m w‖ ≤ Cp := by
   obtain ⟨Cp, hCp, hb⟩ := uniform_domain_admissible_dyadicPopulationCoefficients_uniform_bound C hs
   refine ⟨Cp, hCp, ?_⟩
@@ -40,16 +47,16 @@ theorem uniform_domain_admissible_dyadicPopulationCoefficients_supported_bound {
 
 /-- A single bias constant works for every extension domain and original
 admissible parameter, at the actual allocation and every dyadic refinement. -/
-theorem uniform_domain_eventually_allocated_population_pair_residual {d : ℕ} (C : ModelConstants d)
-    (hs : 1 < C.smoothness) (a offset H : ℝ) (ha : 0 < a) (hH : 0 < H) :
+theorem uniform_domain_eventually_allocated_population_pair_residual 
+     a offset H (ha : 0 < a) (hH : 0 < H) :
     ∃ B : ℝ, 0 < B ∧ ∀ᶠ n : ℕ in atTop,
-      ∀ Udom : ExtensionDomain d, ∀ θ : RegressionParameter d, Admissible (C.withDomain Udom) θ →
-      ∀ Jh : ℕ, paperDyadicTerminalLevel C a offset H n ≤ Jh →
-      ∀ᵐ w ∂regularPairDesignMeasure θ ((2 : ℕ) ^ Jh) (by positivity),
+      ∀ Udom , ∀ θ , Admissible (C.withDomain Udom) θ →
+      ∀ Jh , paperDyadicTerminalLevel C a offset H n ≤ Jh →
+      ∀ᵐ w ∂regularPairDesignMeasure θ (2 ^ Jh) (by positivity),
         |⟪dyadicPopulationCoefficients C θ (paperDyadicTerminalLevel C a offset H n)
             (paperDyadicApproximationDegree C a offset H n) w,
           pairResponseVector (θ.regression w.1) (θ.regression w.2)⟫| ≤
-          B * Real.sqrt (d : ℝ) * ((2 : ℝ) ^ Jh)⁻¹ *
+          B * Real.sqrt d * (2 ^ Jh)⁻¹ *
             (dyadicPilotScale d (paperDyadicTerminalLevel C a offset H n)) ^ (-paperSpatialExponent C) := by
   obtain ⟨E, hE, he⟩ := uniform_domain_admissible_dyadicPopulationResidual_bound C hs
   obtain ⟨B, hB, hb⟩ := eventually_paper_dyadic_bias_budget C hs a offset H ha hH
@@ -78,25 +85,27 @@ theorem uniform_domain_eventually_allocated_population_pair_residual {d : ℕ} (
       mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left hr hE.le)
         (mul_nonneg hB.le (Real.rpow_nonneg (dyadicPilotScale_pos _ _).le _))
     _ = _ := by ring
+end
+
 
 /-- The population witnesses consumed by the concrete sharp upper estimator,
 with all constants and the eventual sample cutoff uniform over extension domains. -/
-theorem uniform_domain_allocated_population_pair_witnesses {d : ℕ} (C : ModelConstants d)
-    (hreg : highSmoothnessRegime C) {H : ℝ} (hH : 0 < H) :
+theorem uniform_domain_allocated_population_pair_witnesses 
+    (hreg : highSmoothnessRegime C) {H } (hH : 0 < H) :
     ∃ Cp B : ℝ, 0 < Cp ∧ 0 < B ∧ ∀ᶠ n : ℕ in atTop,
-      ∀ Udom : ExtensionDomain d, ∀ θ : RegressionParameter d, Admissible (C.withDomain Udom) θ →
+      ∀ Udom , ∀ θ , Admissible (C.withDomain Udom) θ →
       let J := paperDyadicTerminalLevel C (paperUpperSaddle C) (paperUpperShift C) H n
       let m := paperDyadicApproximationDegree C (paperUpperSaddle C) (paperUpperShift C) H n
       let Jh := paperAllocatedFinestLevel C H n
       Measurable (dyadicPopulationCoefficients C θ J m) ∧
       (∀ w, dyadicPopulationCoefficients C θ J m w 0 = 1) ∧
       (∀ᵐ w ∂(designLaw θ).prod (designLaw θ),
-        sameLabelKernel (regularGridCell ((2 : ℕ) ^ Jh) (by positivity)) w ≠ 0 →
+        sameLabelKernel (regularGridCell (2 ^ Jh) (by positivity)) w ≠ 0 →
           ‖dyadicPopulationCoefficients C θ J m w‖ ≤ Cp) ∧
-      (∀ᵐ w ∂regularPairDesignMeasure θ ((2 : ℕ) ^ Jh) (by positivity),
+      (∀ᵐ w ∂regularPairDesignMeasure θ (2 ^ Jh) (by positivity),
         |⟪dyadicPopulationCoefficients C θ J m w,
           pairResponseVector (θ.regression w.1) (θ.regression w.2)⟫| ≤
-          B * Real.sqrt (d : ℝ) * paperAllocatedSide C H n *
+          B * Real.sqrt d * paperAllocatedSide C H n *
             (dyadicPilotScale d J) ^ (-paperSpatialExponent C)) := by
   obtain ⟨Cp, hCp, hc⟩ := uniform_domain_admissible_dyadicPopulationCoefficients_supported_bound C hreg.1
   obtain ⟨B, hB, hb⟩ := uniform_domain_eventually_allocated_population_pair_residual C hreg.1
@@ -112,5 +121,7 @@ theorem uniform_domain_allocated_population_pair_witnesses {d : ℕ} (C : ModelC
   · exact dyadicPopulationCoefficients_measurable (C.withDomain Udom) θ hθ _ _
   · simpa only [paperAllocatedSide, dyadicRoundedSide_eq_inv_pow, paperAllocatedFinestLevel] using
       hb Udom θ hθ (paperAllocatedFinestLevel C H n) hg
+end
+
 
 end NearlyMinimax

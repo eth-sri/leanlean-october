@@ -16,18 +16,18 @@ set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 800000
 attribute [local instance] Classical.propDecidable
 
-theorem centered_cardinal_measure_below_one_eq_zero {n : ℕ} (i : Fin n) (d : ℕ)
-    {T : ℝ} (hT : 0 < T) (hT1 : T < 1) : centeredCardinalMeasure i d T = 0 := by
+theorem centered_cardinal_measure_below_one_eq_zero {n } (i : Fin n) d
+    {T } (hT : 0 < T) (hT1 : T < 1) : centeredCardinalMeasure i d T = 0 := by
   simp only [centeredCardinalMeasure, spatialScaleMeasure,
     spatial_scale_domain_empty_below_one i hT hT1, Measure.restrict_empty, Measure.zero_prod]
 
-theorem cardinal_separated_measure_below_one_eq_zero (d n : ℕ) {T : ℝ}
+theorem cardinal_separated_measure_below_one_eq_zero d n {T }
     (hT : 0 < T) (hT1 : T < 1) : cardinalSeparatedMeasure d n T = 0 := by
   unfold cardinalSeparatedMeasure
   simp_rw [centered_cardinal_measure_below_one_eq_zero _ d hT hT1, Measure.map_zero]
   exact Finset.sum_const_zero
 
-theorem higherBand_coarse_below_one_signed_zero (d r m D q : ℕ) (a b C lam L T : ℝ)
+theorem higherBand_coarse_below_one_signed_zero d r m D q a b C lam L T
     (hT : 0 < T) (hT1 : T < 1) : higherBandSignedRow d r m D q a b C lam L T false = 0 := by
   rw [higherBandSignedRow, higherBandCarrierMeasure,
     cardinal_separated_measure_below_one_eq_zero d r hT hT1, highPacketSignedMeasure, Measure.zero_prod]
@@ -35,26 +35,28 @@ theorem higherBand_coarse_below_one_signed_zero (d r m D q : ℕ) (a b C lam L T
   rw [withDensityᵥ_apply (by simp : Integrable _ (0 : Measure _)) hs]
   simp
 
-def higherBandFamilyRowIntegral (d D M q : ℕ) (a b C lam ell N mu : ℝ)
+section
+variable (d D M q : ℕ) (a b C lam ell N mu : ℝ)
+include a b C lam ell N mu
+
+def higherBandFamilyRowIntegral 
     (F : (i : Fin (D-2) × Bool) →
       HigherBandRowMark d (higherBandFamilyTarget i) (higherBandFamilyGuardDegree M i) D q i.2 → ℝ)
-    (i : Fin (D-2) × Bool) : ℝ :=
+    i  :=
   ∫ᵛ e, F i e ∂<•higherBandSignedRow d (higherBandFamilyTarget i) (higherBandFamilyGuardDegree M i) D q
     a b C lam ell (higherBandFamilyUpper d ell N mu i) i.2
 
-def higherBandPhysicalIntegral (d D M q : ℕ) (a b C lam ell N mu : ℝ)
-    (F : (i : Fin (D-2) × Bool) →
-      HigherBandRowMark d (higherBandFamilyTarget i) (higherBandFamilyGuardDegree M i) D q i.2 → ℝ)
-    (i : Fin (D-2) × Bool) : ℝ :=
+def higherBandPhysicalIntegral 
+    F
+    i  :=
   if i.2 = true then
     if ell < higherBandTargetScale d (higherBandFamilyTarget i) N mu then
       higherBandFamilyRowIntegral d D M q a b C lam ell N mu F i else 0
   else higherBandFamilyRowIntegral d D M q a b C lam ell N mu F i
 
-theorem higherBandPhysicalIntegral_selected (d D M q : ℕ) (a b C lam ell N mu : ℝ)
-    (F : (i : Fin (D-2) × Bool) →
-      HigherBandRowMark d (higherBandFamilyTarget i) (higherBandFamilyGuardDegree M i) D q i.2 → ℝ)
-    (i : Fin (D-2) × Bool) (hi : HigherBandFamilySelected d D M q a b C lam ell N mu i) :
+theorem higherBandPhysicalIntegral_selected 
+    F
+    i (hi : HigherBandFamilySelected d D M q a b C lam ell N mu i) :
     higherBandPhysicalIntegral d D M q a b C lam ell N mu F i =
       higherBandFamilyRowIntegral d D M q a b C lam ell N mu F i := by
   unfold higherBandPhysicalIntegral
@@ -62,13 +64,14 @@ theorem higherBandPhysicalIntegral_selected (d D M q : ℕ) (a b C lam ell N mu 
   · rw [ite_eq_left hf, ite_eq_left (hi.2.1 hf)]
   · rw [ite_eq_right hf]
 
-theorem higherBandPhysicalIntegral_unselected_zero (d D M q : ℕ) (a b C lam ell N mu : ℝ)
-    (hell : 1 ≤ ell)
-    (hnu : ∀ j : Fin (D-2), 0 < higherBandTargetScale d (j.val+3) N mu)
-    (hFine : ∀ j : Fin (D-2), ell < higherBandTargetScale d (j.val+3) N mu → j.val+3 ≤ M)
-    (F : (i : Fin (D-2) × Bool) →
-      HigherBandRowMark d (higherBandFamilyTarget i) (higherBandFamilyGuardDegree M i) D q i.2 → ℝ)
-    (i : Fin (D-2) × Bool) (hi : ¬HigherBandFamilySelected d D M q a b C lam ell N mu i) :
+section
+variable (hell : 1 ≤ ell) (hnu : ∀ j : Fin (D-2), 0 < higherBandTargetScale d (j.val+3) N mu) (hFine : ∀ j : Fin (D-2), ell < higherBandTargetScale d (j.val+3) N mu → j.val+3 ≤ M)
+include hell hnu hFine
+
+theorem higherBandPhysicalIntegral_unselected_zero 
+    
+    F
+    i (hi : ¬HigherBandFamilySelected d D M q a b C lam ell N mu i) :
     higherBandPhysicalIntegral d D M q a b C lam ell N mu F i = 0 := by
   rcases i with ⟨j, fine⟩
   cases fine
@@ -91,15 +94,13 @@ theorem higherBandPhysicalIntegral_unselected_zero (d D M q : ℕ) (a b C lam el
         exact ⟨hT1, (by intro h; cases h), (by have hj := j.isLt; omega), hp⟩
       have hzero : higherBandSignedRow d (higherBandFamilyTarget (j,false))
           (higherBandFamilyGuardDegree M (j,false)) D q a b C lam ell
-          (higherBandFamilyUpper d ell N mu (j,false)) false = 0 := by
-        exact higherBand_zero_mass_signed_zero d (j.val+3) D D q a b C lam ell _ hT1 false hz
+          (higherBandFamilyUpper d ell N mu (j,false)) false = 0 := higherBand_zero_mass_signed_zero d (j.val+3) D D q a b C lam ell _ hT1 false hz
       unfold higherBandFamilyRowIntegral
       rw [hzero]
       simp
     · have hzero : higherBandSignedRow d (higherBandFamilyTarget (j,false))
           (higherBandFamilyGuardDegree M (j,false)) D q a b C lam ell
-          (higherBandFamilyUpper d ell N mu (j,false)) false = 0 := by
-        exact higherBand_coarse_below_one_signed_zero d (j.val+3) D D q a b C lam ell _ hT (not_le.mp hT1)
+          (higherBandFamilyUpper d ell N mu (j,false)) false = 0 := higherBand_coarse_below_one_signed_zero d (j.val+3) D D q a b C lam ell _ hT (not_le.mp hT1)
       unfold higherBandFamilyRowIntegral
       rw [hzero]
       simp
@@ -122,19 +123,15 @@ theorem higherBandPhysicalIntegral_unselected_zero (d D M q : ℕ) (a b C lam el
         exact ⟨hT1, fun _ => hactive, hFine j hactive, hp⟩
       have hzero : higherBandSignedRow d (higherBandFamilyTarget (j,true))
           (higherBandFamilyGuardDegree M (j,true)) D q a b C lam ell
-          (higherBandFamilyUpper d ell N mu (j,true)) true = 0 := by
-        exact higherBand_zero_mass_signed_zero d (j.val+3) M D q a b C lam ell _ hT1 true hz
+          (higherBandFamilyUpper d ell N mu (j,true)) true = 0 := higherBand_zero_mass_signed_zero d (j.val+3) M D q a b C lam ell _ hT1 true hz
       unfold higherBandFamilyRowIntegral
       rw [hzero]
       simp
     · rw [ite_eq_right hactive]
 
-theorem higherBandFamily_signedIntegral_sum_eq_physical (d D M q : ℕ) (a b C lam ell N mu : ℝ)
-    (hell : 1 ≤ ell)
-    (hnu : ∀ j : Fin (D-2), 0 < higherBandTargetScale d (j.val+3) N mu)
-    (hFine : ∀ j : Fin (D-2), ell < higherBandTargetScale d (j.val+3) N mu → j.val+3 ≤ M)
-    (F : (i : Fin (D-2) × Bool) →
-      HigherBandRowMark d (higherBandFamilyTarget i) (higherBandFamilyGuardDegree M i) D q i.2 → ℝ) :
+theorem higherBandFamily_signedIntegral_sum_eq_physical 
+    
+    F :
     (∑ i : HigherBandFamilyIndex d D M q a b C lam ell N mu,
       higherBandFamilyRowIntegral d D M q a b C lam ell N mu F i.val) =
       ∑ i : Fin (D-2) × Bool, higherBandPhysicalIntegral d D M q a b C lam ell N mu F i := by
@@ -144,5 +141,9 @@ theorem higherBandFamily_signedIntegral_sum_eq_physical (d D M q : ℕ) (a b C l
     (fun i => higherBandFamilyRowIntegral d D M q a b C lam ell N mu F i.val)
     (fun i hi => higherBandPhysicalIntegral_selected d D M q a b C lam ell N mu F i hi)
     (fun i hi => higherBandPhysicalIntegral_unselected_zero d D M q a b C lam ell N mu hell hnu hFine F i hi)).symm
+end
+
+end
+
 
 end NearlyMinimax
