@@ -1,0 +1,2202 @@
+diff --git a/ALCS/A.lean b/ALCS/A.lean
+new file mode 100644
+index 000000000..e69de29bb
+diff --git a/ALCS/Background/Lp.lean b/ALCS/Background/Lp.lean
+deleted file mode 100644
+index a0f104d8e..000000000
+--- a/ALCS/Background/Lp.lean
++++ /dev/null
+@@ -1,287 +0,0 @@
+-module
+-
+-public import Mathlib.MeasureTheory.Function.LpSpace.Complete
+-public import Mathlib.MeasureTheory.Function.LpSpace.ContinuousCompMeasurePreserving
+-public import Mathlib.MeasureTheory.Function.LpSpace.Indicator
+-public import Mathlib.MeasureTheory.Function.UniformIntegrable
+-public import Mathlib.MeasureTheory.Measure.Haar.Unique
+-public import Mathlib.MeasureTheory.Measure.Lebesgue.Basic
+-public import Mathlib.MeasureTheory.Measure.RegularityCompacts
+-
+-@[expose] public section
+-
+-/-!
+-# Inputs: the space `L^p(ℝ₊; U)`, concatenation, shifts and truncations
+-
+-This file contains the measure-theoretic plumbing on inputs used throughout the
+-development. Nothing here is specific to control systems.
+-
+-## Conventions
+-
+-* `L^p(ℝ₊; U)` is Mathlib's `Lp U p muPlus`, where `muPlus` is Lebesgue measure
+-  restricted to `ℝ₊ = [0, ∞)`. Its elements are almost-everywhere classes;
+-  `⇑u : ℝ → U` is an (arbitrary) representative, whose values at negative times
+-  are irrelevant.
+-* The `τ`-concatenation `u ⋄_τ v` of the paper is `concat τ u v`, defined on raw
+-  functions `ℝ → U`. Statements about inputs are phrased as "`w` is an element of
+-  `L^p(ℝ₊; U)` whose representative is a.e. equal to `concat τ ⇑u ⇑v`".
+-
+-## Main declarations
+-
+-* `muPlus`, `concat`, `ALCS.concat_congr` : definitions, and independence of
+-  the concatenation from the chosen representatives.
+-* `ALCS.shiftLeft a u` : the input `s ↦ u (a + s)`; `ALCS.exists_shift` gives
+-  `u = u ⋄_a (shiftLeft a u)`, and `ALCS.tendsto_norm_shiftLeft_sub` is the
+-  continuity of translations in `L^p` for `p < ∞`.
+-* `ALCS.exists_delay` : the delayed input `0 ⋄_a u`, with the same norm bound.
+-* `ALCS.truncate τ u` : the input `u ⋄_τ 0`; `ALCS.tendsto_norm_truncate` says
+-  that `‖u‖_{L^p(0, τ)} → 0` as `τ → 0` for `p < ∞`.
+-* `ALCS.exists_concat` : for `p = ∞`, the concatenation of two inputs of norm
+-  at most `C` is an input of norm at most `C`.
+--/
+-
+-open MeasureTheory Filter Topology
+-open scoped ENNReal
+-
+-variable {U : Type*}
+-
+-/-- Lebesgue measure on `ℝ₊ = [0, ∞)`. -/
+-noncomputable abbrev muPlus : Measure ℝ := volume.restrict (Set.Ici 0)
+-
+-/-- The `τ`-concatenation `u ⋄_τ v` of the paper: equal to `u s` for `s < τ` and to
+-`v (s - τ)` for `s ≥ τ` ("play `u` on `[0, τ)`, then play `v`"). -/
+-noncomputable def concat (τ : ℝ) (u v : ℝ → U) : ℝ → U :=
+-  fun s => if s < τ then u s else v (s - τ)
+-
+-namespace ALCS
+-
+-/-! ## Translations of the half-line -/
+-
+-/-- `s ↦ -a + s` sends `[a, ∞)` to `ℝ₊`, preserving Lebesgue measure. -/
+-theorem measurePreserving_unshift (a : ℝ) :
+-    MeasurePreserving (fun s => -a + s) (volume.restrict (Set.Ici a)) muPlus := by
+-  have h := (measurePreserving_add_left (volume : Measure ℝ) (-a)).restrict_preimage
+-    (measurableSet_Ici : MeasurableSet (Set.Ici (0 : ℝ)))
+-  rwa [Set.preimage_const_add_Ici, zero_sub, neg_neg] at h
+-
+-/-! ## Concatenation -/
+-
+-/-- The concatenation does not depend on the chosen representatives. For the second
+-argument, the null set has to be transported by a translation. -/
+-lemma concat_congr {f f' g g' : ℝ → U} (a : ℝ)
+-    (hf : f =ᵐ[muPlus] f') (hg : g =ᵐ[muPlus] g') :
+-    concat a f g =ᵐ[muPlus] concat a f' g' := by
+-  have hg₁ := (measurePreserving_unshift a).quasiMeasurePreserving.ae hg
+-  have hg₂ := (ae_restrict_iff'
+-    (measurableSet_Ici : MeasurableSet (Set.Ici a))).1 hg₁
+-  filter_upwards [hf, ae_restrict_of_ae hg₂] with t hft hgt
+-  by_cases ht : t < a
+-  · simp [concat, ht, hft]
+-  · simpa only [concat, ite_eq_right ht, sub_eq_neg_add] using
+-      hgt (Set.mem_Ici.2 (not_lt.1 ht))
+-
+-variable [NormedAddCommGroup U]
+-
+-lemma concat_stronglyMeasurable {f g : ℝ → U}
+-    (hf : StronglyMeasurable f) (hg : StronglyMeasurable g) (a : ℝ) :
+-    StronglyMeasurable (concat a f g) :=
+-  StronglyMeasurable.ite measurableSet_Iio hf
+-    (hg.comp_measurable (measurable_id.sub_const a))
+-
+-/-! ## Extension by zero to the whole line -/
+-
+-/-- Extension by zero to `ℝ` of a function on `ℝ₊`. -/
+-noncomputable def zeroExt (f : ℝ → U) : ℝ → U := (Set.Ici (0 : ℝ)).indicator f
+-
+-lemma zeroExt_of_nonneg (f : ℝ → U) {s : ℝ} (hs : 0 ≤ s) : zeroExt f s = f s :=
+-  Set.indicator_of_mem (Set.mem_Ici.2 hs) f
+-
+-lemma zeroExt_of_neg (f : ℝ → U) {s : ℝ} (hs : s < 0) : zeroExt f s = 0 :=
+-  Set.indicator_of_notMem (fun h => (not_le.2 hs) (Set.mem_Ici.1 h)) f
+-
+-section General
+-
+-variable {p : ℝ≥0∞}
+-
+-lemma memLp_zeroExt (u : Lp U p muPlus) : MemLp (zeroExt ⇑u) p volume :=
+-  (memLp_indicator_iff_restrict measurableSet_Ici).2 (Lp.memLp u)
+-
+-lemma eLpNorm_zeroExt (u : Lp U p muPlus) :
+-    eLpNorm (zeroExt ⇑u) p volume = eLpNorm (⇑u) p muPlus :=
+-  eLpNorm_indicator_eq_eLpNorm_restrict measurableSet_Ici
+-
+-/-- If `φ` preserves Lebesgue measure on `ℝ`, then `‖(zeroExt u) ∘ φ‖_{L^p(ℝ₊)} ≤ ‖u‖`. -/
+-lemma eLpNorm_zeroExt_comp_le (u : Lp U p muPlus) {φ : ℝ → ℝ}
+-    (hφ : MeasurePreserving φ volume volume) :
+-    eLpNorm (zeroExt ⇑u ∘ φ) p muPlus ≤ eLpNorm (⇑u) p muPlus :=
+-  calc eLpNorm (zeroExt ⇑u ∘ φ) p muPlus
+-      ≤ eLpNorm (zeroExt ⇑u ∘ φ) p volume := eLpNorm_mono_measure _ Measure.restrict_le_self
+-    _ = eLpNorm (zeroExt ⇑u) p volume :=
+-        eLpNorm_comp_measurePreserving (memLp_zeroExt u).aestronglyMeasurable hφ
+-    _ = eLpNorm (⇑u) p muPlus := eLpNorm_zeroExt u
+-
+-lemma memLp_zeroExt_comp (u : Lp U p muPlus) {φ : ℝ → ℝ}
+-    (hφ : MeasurePreserving φ volume volume) : MemLp (zeroExt ⇑u ∘ φ) p muPlus :=
+-  ((memLp_zeroExt u).comp_measurePreserving hφ).mono_measure Measure.restrict_le_self
+-
+-/-- An element of `L^p` defined from a raw function has norm at most `‖u‖` as soon as
+-the `eLpNorm` of the raw function is at most that of `u`. -/
+-lemma norm_toLp_le_of_eLpNorm_le {f : ℝ → U} (hf : MemLp f p muPlus) (u : Lp U p muPlus)
+-    (h : eLpNorm f p muPlus ≤ eLpNorm (⇑u) p muPlus) : ‖hf.toLp f‖ ≤ ‖u‖ := by
+-  rw [Lp.norm_toLp, Lp.norm_def]
+-  exact ENNReal.toReal_mono (Lp.eLpNorm_ne_top u) h
+-
+-/-! ## Left shifts `u ↦ u (a + ·)` -/
+-
+-/-- The left shift `s ↦ u (a + s)` of an input. (For `a < 0`, the input is first
+-extended by zero to negative times.) -/
+-noncomputable def shiftLeft (a : ℝ) (u : Lp U p muPlus) : Lp U p muPlus :=
+-  (memLp_zeroExt_comp u (measurePreserving_add_left volume a)).toLp
+-    (zeroExt ⇑u ∘ fun s => a + s)
+-
+-lemma shiftLeft_ae (a : ℝ) (u : Lp U p muPlus) :
+-    ⇑(shiftLeft a u) =ᵐ[muPlus] (zeroExt ⇑u ∘ fun s => a + s) :=
+-  (memLp_zeroExt_comp u (measurePreserving_add_left volume a)).coeFn_toLp
+-
+-lemma norm_shiftLeft_le (a : ℝ) (u : Lp U p muPlus) : ‖shiftLeft a u‖ ≤ ‖u‖ :=
+-  norm_toLp_le_of_eLpNorm_le _ u
+-    (eLpNorm_zeroExt_comp_le u (measurePreserving_add_left volume a))
+-
+-/-- For `a ≥ 0`, `u = u ⋄_a (shiftLeft a u)`. -/
+-lemma concat_shiftLeft (a : ℝ) (ha : 0 ≤ a) (u : Lp U p muPlus) :
+-    ⇑u =ᵐ[muPlus] concat a ⇑u ⇑(shiftLeft a u) := by
+-  -- pointwise, `u = u ⋄_a (zeroExt u ∘ (a + ·))`
+-  have hraw : (⇑u : ℝ → U) = concat a ⇑u (zeroExt ⇑u ∘ fun s => a + s) := by
+-    funext s
+-    by_cases hs : s < a
+-    · simp only [concat, ite_eq_left hs]
+-    · have hs' : 0 ≤ s := le_trans ha (not_lt.1 hs)
+-      have e : a + (s - a) = s := by ring
+-      simp only [concat, ite_eq_right hs, Function.comp_apply, e, zeroExt_of_nonneg (⇑u) hs']
+-  exact (Filter.EventuallyEq.of_eq hraw).trans
+-    (concat_congr a (Filter.EventuallyEq.refl _ _) (shiftLeft_ae a u)).symm
+-
+-/-- Shifted input (used with `τ := a` in the composition property):
+-for `a ≥ 0`, `u₁ := u (a + ·)` satisfies `‖u₁‖ ≤ ‖u‖` and `u = u ⋄_a u₁`. -/
+-theorem exists_shift (a : ℝ) (ha : 0 ≤ a) (u : Lp U p muPlus) :
+-    ∃ u₁ : Lp U p muPlus, ‖u₁‖ ≤ ‖u‖ ∧ ⇑u =ᵐ[muPlus] concat a ⇑u ⇑u₁ :=
+-  ⟨shiftLeft a u, norm_shiftLeft_le a u, concat_shiftLeft a ha u⟩
+-
+-/-! ## Delays `u ↦ 0 ⋄_a u` -/
+-
+-/-- Delayed input: the input `0 ⋄_a u` (zero on `[0, a)`, then `u`)
+-belongs to `L^p(ℝ₊; U)`, with norm at most `‖u‖`. -/
+-theorem exists_delay (a : ℝ) (u : Lp U p muPlus) :
+-    ∃ w : Lp U p muPlus, ‖w‖ ≤ ‖u‖ ∧
+-      ⇑w =ᵐ[muPlus] concat a ⇑(0 : Lp U p muPlus) ⇑u := by
+-  have hφ : MeasurePreserving (fun s : ℝ => -a + s) volume volume :=
+-    measurePreserving_add_left volume (-a)
+-  refine ⟨(memLp_zeroExt_comp u hφ).toLp _,
+-    norm_toLp_le_of_eLpNorm_le _ u (eLpNorm_zeroExt_comp_le u hφ), ?_⟩
+-  -- pointwise, `zeroExt u (s - a) = (0 ⋄_a u) s`
+-  have hraw : (zeroExt ⇑u ∘ fun s => -a + s) = concat a (fun _ => (0 : U)) ⇑u := by
+-    funext s
+-    by_cases hsa : s < a
+-    · simp only [Function.comp_apply, zeroExt_of_neg (⇑u) (show -a + s < 0 by linarith),
+-        concat, ite_eq_left hsa]
+-    · simp only [Function.comp_apply, concat, ite_eq_right hsa, neg_add_eq_sub,
+-        zeroExt_of_nonneg (⇑u) (show 0 ≤ s - a by linarith [not_lt.1 hsa])]
+-  exact (memLp_zeroExt_comp u hφ).coeFn_toLp.trans
+-    ((Filter.EventuallyEq.of_eq hraw).trans (concat_congr a (Lp.coeFn_zero U p muPlus).symm
+-      (Filter.EventuallyEq.refl _ _)))
+-
+-/-! ## Truncations `u ↦ u ⋄_τ 0` -/
+-
+-/-! ## Continuity of left shifts for `p < ∞` -/
+-
+-end General
+-
+-/-! ## Inputs in `L^∞(ℝ₊; U)` -/
+-
+-section Infinity
+-
+-/-- A pointwise bound gives membership in `L^∞`, without a finite-measure assumption. -/
+-lemma memLp_of_bound {f : ℝ → U} (hf : StronglyMeasurable f)
+-    {C : ℝ} (hb : ∀ t, ‖f t‖ ≤ C) : MemLp f ∞ muPlus :=
+-  memLp_top_of_bound hf.aestronglyMeasurable C (Filter.Eventually.of_forall hb)
+-
+-/-- The `L^∞` norm is bounded by any nonnegative a.e. bound. -/
+-lemma lp_norm_le {u : Lp U ∞ muPlus} {C : ℝ} (hC : 0 ≤ C)
+-    (hb : ∀ᵐ t ∂muPlus, ‖u t‖ ≤ C) : ‖u‖ ≤ C := by
+-  have htop : eLpNorm (⇑u) ∞ muPlus = eLpNormEssSup (⇑u) muPlus :=
+-    eLpNorm_exponent_top (Lp.aestronglyMeasurable u)
+-  rw [Lp.norm_def, htop]
+-  calc
+-    (eLpNormEssSup (⇑u) muPlus).toReal ≤ (ENNReal.ofReal C).toReal :=
+-      ENNReal.toReal_mono ENNReal.ofReal_ne_top (eLpNormEssSup_le_of_ae_bound hb)
+-    _ = C := ENNReal.toReal_ofReal hC
+-
+-/-- The representative of an `L^∞` class obeys its norm bound a.e. -/
+-lemma ae_norm_le (u : Lp U ∞ muPlus) : ∀ᵐ t ∂muPlus, ‖u t‖ ≤ ‖u‖ := by
+-  have htop : eLpNorm (⇑u) ∞ muPlus = eLpNormEssSup (⇑u) muPlus :=
+-    eLpNorm_exponent_top (Lp.aestronglyMeasurable u)
+-  have hfinite : eLpNormEssSup (⇑u) muPlus ≠ ∞ := by
+-    rw [← htop]
+-    exact Lp.eLpNorm_ne_top u
+-  filter_upwards [enorm_ae_le_eLpNormEssSup (⇑u) muPlus] with t ht
+-  have ht' := ENNReal.toReal_mono hfinite ht
+-  simpa only [Lp.norm_def, htop, toReal_enorm] using ht'
+-
+-/-- An everywhere bounded, strongly measurable representative. The representative is
+-only modified where it exceeds `C`. -/
+-lemma exists_bounded_rep (u : Lp U ∞ muPlus) {C : ℝ}
+-    (hC : 0 ≤ C) (hu : ‖u‖ ≤ C) :
+-    ∃ f : ℝ → U, StronglyMeasurable f ∧ (∀ t, ‖f t‖ ≤ C) ∧ ⇑u =ᵐ[muPlus] f := by
+-  let f : ℝ → U := fun t => if ‖u t‖ ≤ C then u t else 0
+-  have hf : StronglyMeasurable f :=
+-    StronglyMeasurable.ite
+-      ((Lp.stronglyMeasurable u).norm.measurableSet_le stronglyMeasurable_const)
+-      (Lp.stronglyMeasurable u) stronglyMeasurable_const
+-  refine ⟨f, hf, ?_, ?_⟩
+-  · intro t
+-    by_cases ht : ‖u t‖ ≤ C
+-    · simp [f, ht]
+-    · simpa [f, ht] using hC
+-  · filter_upwards [ae_norm_le u] with t ht
+-    simp [f, ht.trans hu]
+-
+-/-- For `p = ∞`, concatenation preserves a common norm bound: if `‖u‖, ‖v‖ ≤ C`, then
+-`u ⋄_a v` is an input of norm at most `C`. -/
+-lemma exists_concat (a : ℝ) (u v : Lp U ∞ muPlus) {C : ℝ}
+-    (hC : 0 ≤ C) (hu : ‖u‖ ≤ C) (hv : ‖v‖ ≤ C) :
+-    ∃ w : Lp U ∞ muPlus, ‖w‖ ≤ C ∧ ⇑w =ᵐ[muPlus] concat a ⇑u ⇑v := by
+-  obtain ⟨f, hf, hfb, huf⟩ := exists_bounded_rep u hC hu
+-  obtain ⟨g, hg, hgb, hvg⟩ := exists_bounded_rep v hC hv
+-  have hb : ∀ t, ‖concat a f g t‖ ≤ C := by
+-    intro t
+-    by_cases ht : t < a
+-    · simpa [concat, ht] using hfb t
+-    · simpa [concat, ht] using hgb (t - a)
+-  have hm := memLp_of_bound (concat_stronglyMeasurable hf hg a) hb
+-  refine ⟨hm.toLp _, ?_, ?_⟩
+-  · apply lp_norm_le hC
+-    filter_upwards [hm.coeFn_toLp] with t ht
+-    rw [ht]
+-    exact hb t
+-  · exact hm.coeFn_toLp.trans (concat_congr a huf hvg).symm
+-
+-/-- The `L^∞` class of a bounded raw function has the same bound. -/
+-lemma norm_toLp_le {f : ℝ → U} (hf : MemLp f ∞ muPlus)
+-    {C : ℝ} (hC : 0 ≤ C) (hb : ∀ t, ‖f t‖ ≤ C) : ‖hf.toLp f‖ ≤ C := by
+-  apply lp_norm_le hC
+-  filter_upwards [hf.coeFn_toLp] with t ht
+-  rw [ht]
+-  exact hb t
+-
+-end Infinity
+-
+-/-- `‖(a + b) - (c + d)‖ ≤ ‖a - c‖ + ‖b‖ + ‖d‖` -/
+-lemma norm_three_terms_le {X : Type*} [NormedAddCommGroup X] (a b c d : X) :
+-    ‖a + b - (c + d)‖ ≤ ‖a - c‖ + ‖b‖ + ‖d‖ := by
+-  have key : a + b - (c + d) = (a - c + b) - d := by abel
+-  rw [key]
+-  have k1 := norm_sub_le (a - c + b) d
+-  have k2 := norm_add_le (a - c) b
+-  linarith
+-
+-end ALCS
+diff --git a/ALCS/Background/Phillips.lean b/ALCS/Background/Phillips.lean
+deleted file mode 100644
+index 8b58b229b..000000000
+--- a/ALCS/Background/Phillips.lean
++++ /dev/null
+@@ -1,453 +0,0 @@
+-module
+-
+-public import Mathlib.Analysis.Normed.Module.HahnBanach
+-public import Mathlib.Analysis.RCLike.Basic
+-public import Mathlib.Topology.ContinuousMap.Bounded.Normed
+-public import Mathlib.Topology.Instances.Nat
+-public import Mathlib.Data.Nat.Pairing
+-public import Mathlib.Data.Set.Finite.Lemmas
+-public import Mathlib.Topology.Algebra.InfiniteSum.Real
+-
+-public import Mathlib.Tactic.Abel
+-public import Mathlib.Tactic.Choose
+-public import Mathlib.Tactic.Linarith
+-public import Mathlib.Tactic.Positivity
+-public import Mathlib.Tactic.Push
+-
+-@[expose] public section
+-
+-/-!
+-# Phillips' lemma (Lemmas 2.2 and 2.3)
+-
+-**Lemma 2.2** (`lem:Phillips`). Let `(μ_n)` be a sequence in `(ℓ^∞(ℕ))*` such that
+-`μ_n(a) → 0` for every `a ∈ ℓ^∞(ℕ)`. Then `Σ_k |μ_n(e_k)| → 0`; in particular
+-`μ_n(e_n) → 0`.
+-
+-**Lemma 2.3** (`lem:cor-Phillips`). Let `S ∈ 𝓛(ℓ^∞(ℕ), X)` and `t_n ≥ 0` with `t_n → 0`.
+-Then `‖(T_{t_n} - Id) S e_n‖ → 0`.
+-
+-## Main declarations
+-
+-* `Phillips.full` : **Lemma 2.2** (summability of each `Σ_k |μ_n(e_k)|`, convergence of the
+-  sums to `0`, and `μ_n(e_n) → 0`); `Phillips.tsum_abs_tendsto_zero` is the real case
+-  written with absolute values.
+-* `Phillips.uniform` : **Lemma 2.3**. Only strong right-continuity of `T` at `0` is used;
+-  the semigroup law and completeness are not needed.
+-
+-`Linfty 𝕜` is the space of bounded sequences with values in `𝕜 = ℝ` or `ℂ`, represented as
+-bounded continuous functions on the discrete space `ℕ`; `e k` is the `k`-th canonical
+-vector. The paper quotes Lemma 2.2 from [Phillips 1940]; here it is proved.
+-
+-## Proof of Lemma 2.2
+-
+-1. Diagonal statement, `diagonal_tendsto_zero`: `μ_n(e_n) → 0`. An infinite set of indices
+-   is thinned so that a given functional is small on all its subsets (`small_on_subsets`);
+-   a recursive selection then produces a set `A` for which `μ_n(1_A)` cannot tend to zero
+-   (`diagonal_of_indicator_tendsto`). Only finite sums are used.
+-2. For a single functional, `Σ_{k ∈ s} |φ(e_k)| ≤ ‖φ‖` for every finite `s`, by testing `φ`
+-   on `Σ_{k ∈ s} λ_k e_k` with phases `|λ_k| ≤ 1` (`sum_norm_eval_le`); hence the series
+-   converge (`summable_norm_eval`).
+-3. Disjoint finite blocks `B_j` with coefficients of modulus `≤ 1` are encoded by one bounded
+-   operator `S : ℓ^∞ → ℓ^∞` with `S e_j` supported in `B_j`, defined coordinatewise
+-   (`exists_block_operator`).
+-4. Gliding hump (`finite_sum_eventually_small`): if finite sums were not eventually uniformly
+-   small, Steps 2–3 would produce functionals `ν_j = μ_{r_j} ∘ S` contradicting Step 1.
+-   This gives `Σ_k |μ_n(e_k)| → 0` (`tsum_norm_tendsto_zero`).
+-
+-Lemma 2.3 (`uniform`) applies the diagonal statement to `μ_n = x_n^* ∘ (T_{t_n} - Id) ∘ S`,
+-with norming functionals `x_n^*` given by Hahn–Banach (`norm_diagonal_tendsto_zero`).
+--/
+-
+-noncomputable section
+-
+-open Filter
+-open scoped BigOperators Topology
+-
+-set_option maxHeartbeats 800000
+-
+-namespace Phillips
+-
+-attribute [local instance] Classical.propDecidable
+-
+-/-- Bounded scalar sequences, with the supremum norm. -/
+-abbrev Linfty (𝕜 : Type*) [RCLike 𝕜] := BoundedContinuousFunction ℕ 𝕜
+-
+-variable {𝕜 : Type*} [RCLike 𝕜]
+-
+-/-- The characteristic sequence of a set of natural numbers. -/
+-def chi (S : Set ℕ) : Linfty 𝕜 :=
+-  BoundedContinuousFunction.ofNormedAddCommGroupDiscrete
+-    (fun k => if k ∈ S then (1 : 𝕜) else 0) 1
+-    (by
+-      intro k
+-      by_cases hk : k ∈ S <;> simp [hk])
+-
+-@[simp] theorem chi_apply (S : Set ℕ) (k : ℕ) :
+-    chi (𝕜 := 𝕜) S k = if k ∈ S then 1 else 0 := rfl
+-
+-/-- The `k`th canonical vector of `ℓ∞`. -/
+-def e (k : ℕ) : Linfty 𝕜 := chi {k}
+-
+-@[simp] theorem e_apply (k j : ℕ) :
+-    e (𝕜 := 𝕜) k j = if j = k then 1 else 0 := by
+-  simp [e]
+-
+-/-! ## Step 1: the diagonal statement `μ_n(e_n) → 0` -/
+-
+-/-- An infinite set can be thinned so that a given functional is small on
+-all characteristic sequences supported in the remaining set. -/
+-private theorem small_on_subsets
+-    (φ : Linfty 𝕜 →L[𝕜] 𝕜) (S : Set ℕ) (hS : S.Infinite)
+-    (δ : ℝ) (hδ : 0 < δ) :
+-    ∃ T : Set ℕ, T ⊆ S ∧ T.Infinite ∧
+-      ∀ B : Set ℕ, B ⊆ T → ‖φ (chi B)‖ ≤ δ := by
+-  classical
+-  -- Partition an infinite subset of S into infinitely many infinite sets.
+-  let emb : ℕ ↪ S := Set.Infinite.natEmbedding S hS
+-  let g : ℕ × ℕ → ℕ := fun p => (emb (Nat.pair p.1 p.2)).val
+-  have hg : Function.Injective g := by
+-    intro p q hpq
+-    have hpq' : Nat.pair p.1 p.2 = Nat.pair q.1 q.2 :=
+-      emb.injective (Subtype.ext hpq)
+-    exact Nat.pairEquiv.injective hpq'
+-  let A : ℕ → Set ℕ := fun i => Set.range (fun j => g (i, j))
+-  have hAinf (i : ℕ) : (A i).Infinite := by
+-    apply Set.infinite_range_of_injective
+-    intro j k hjk
+-    exact congrArg Prod.snd (hg hjk)
+-  have hAS (i : ℕ) : A i ⊆ S := by
+-    rintro x ⟨j, rfl⟩
+-    exact (emb (Nat.pair i j)).property
+-  by_contra h
+-  have hbad : ∀ i : ℕ, ∃ B : Set ℕ, B ⊆ A i ∧ δ < ‖φ (chi B)‖ := by
+-    intro i
+-    by_contra hi
+-    apply h
+-    refine ⟨A i, hAS i, hAinf i, ?_⟩
+-    intro B hBA
+-    by_contra hle
+-    exact hi ⟨B, hBA, lt_of_not_ge hle⟩
+-  choose B hBA hBδ using hbad
+-  have hdisj {i j x : ℕ} (hi : x ∈ B i) (hj : x ∈ B j) : i = j := by
+-    obtain ⟨a, ha⟩ := hBA i hi
+-    obtain ⟨b, hb⟩ := hBA j hj
+-    exact congrArg Prod.fst (hg (ha.trans hb.symm))
+-  have hz (i : ℕ) : φ (chi (B i)) ≠ 0 :=
+-    norm_pos_iff.mp (hδ.trans (hBδ i))
+-  -- Normalize each witness so that its image under φ is exactly 1.
+-  let v : ℕ → Linfty 𝕜 := fun i => (φ (chi (B i)))⁻¹ • chi (B i)
+-  have hv (i : ℕ) : φ (v i) = 1 := by
+-    simp [v, map_smul, smul_eq_mul, hz i]
+-  have hcoef (i : ℕ) : ‖(φ (chi (B i)))⁻¹‖ ≤ δ⁻¹ := by
+-    simpa only [norm_inv, one_div] using
+-      (one_div_le_one_div_of_le hδ (le_of_lt (hBδ i)))
+-  -- Disjoint supports give a norm bound independent of the number of terms.
+-  have hsum (s : Finset ℕ) : ‖∑ i ∈ s, v i‖ ≤ δ⁻¹ := by
+-    apply (BoundedContinuousFunction.norm_le (show 0 ≤ δ⁻¹ by positivity)).2
+-    intro x
+-    rw [BoundedContinuousFunction.sum_apply]
+-    by_cases hx : ∃ i ∈ s, x ∈ B i
+-    · obtain ⟨i, hi, hxi⟩ := hx
+-      have heq : (∑ j ∈ s, (v j) x) = (v i) x := by
+-        apply Finset.sum_eq_single i
+-        · intro j hj hji
+-          have hxj : x ∉ B j := fun hxj => hji (hdisj hxj hxi)
+-          simp [v, BoundedContinuousFunction.smul_apply, smul_eq_mul, hxj]
+-        · intro hnot
+-          exact (hnot hi).elim
+-      rw [heq]
+-      simpa [v, BoundedContinuousFunction.smul_apply, smul_eq_mul, hxi] using hcoef i
+-    · have hzero : ∀ i ∈ s, (v i) x = 0 := by
+-        intro i hi
+-        have hxi : x ∉ B i := fun hxi => hx ⟨i, hi, hxi⟩
+-        simp [v, BoundedContinuousFunction.smul_apply, smul_eq_mul, hxi]
+-      rw [Finset.sum_eq_zero hzero, norm_zero]
+-      positivity
+-  obtain ⟨N, hN⟩ := exists_nat_gt (‖φ‖ * δ⁻¹)
+-  have hval : φ (∑ i ∈ Finset.range N, v i) = (N : 𝕜) := by
+-    simp [map_sum, hv]
+-  have hup : ‖φ (∑ i ∈ Finset.range N, v i)‖ ≤ ‖φ‖ * δ⁻¹ :=
+-    (φ.le_opNorm _).trans
+-      (mul_le_mul_of_nonneg_left (hsum _) (norm_nonneg φ))
+-  rw [hval, RCLike.norm_natCast] at hup
+-  exact (not_le_of_gt hN) hup
+-
+-/-- It is enough to assume convergence on characteristic sequences. -/
+-theorem diagonal_of_indicator_tendsto
+-    (μ : ℕ → (Linfty 𝕜 →L[𝕜] 𝕜))
+-    (hμ : ∀ S : Set ℕ, Tendsto (fun n => μ n (chi S)) atTop (𝓝 0)) :
+-    Tendsto (fun n => μ n (e n)) atTop (𝓝 0) := by
+-  classical
+-  apply Metric.tendsto_atTop.2
+-  intro ε hε
+-  by_contra hnot
+-  have hbad : ∀ N : ℕ, ∃ n : ℕ, N ≤ n ∧ ε ≤ ‖μ n (e n)‖ := by
+-    push Not at hnot
+-    simpa only [dist_zero_right] using hnot
+-  let D : Set ℕ := {n | ε ≤ ‖μ n (e n)‖}
+-  have hD : D.Infinite := by
+-    intro hfin
+-    obtain ⟨N, hN⟩ := Set.exists_upper_bound_image D (fun n : ℕ => n) hfin
+-    obtain ⟨n, hn, hbn⟩ := hbad (N + 1)
+-    have hle : n ≤ N := hN n hbn
+-    omega
+-  let δ : ℝ := ε / 4
+-  have hδ : 0 < δ := by dsimp [δ]; positivity
+-  -- A reservoir is an infinite subset of the bad indices.
+-  let X := {S : Set ℕ // S.Infinite ∧ S ⊆ D}
+-  have hstep : ∀ (F : Set ℕ) (S : X), ∃ (n : ℕ) (T : X),
+-      n ∈ S.val ∧
+-      ‖μ n (chi F)‖ < δ ∧
+-      T.val ⊆ S.val ∧
+-      (∀ m ∈ T.val, n < m) ∧
+-      (∀ B : Set ℕ, B ⊆ T.val → ‖μ n (chi B)‖ ≤ δ) := by
+-    intro F S
+-    obtain ⟨N, hN⟩ := (Metric.tendsto_atTop.1 (hμ F)) δ hδ
+-    obtain ⟨n, hnS, hnN⟩ :=
+-      S.property.1.exists_notMem_finite (Set.finite_lt_nat N)
+-    have hNn : N ≤ n := by
+-      simpa only [Set.mem_ofPred_eq, not_lt] using hnN
+-    have hnsmall : ‖μ n (chi F)‖ < δ := by
+-      simpa only [dist_zero_right] using hN n hNn
+-    have hSinfinite : (S.val \ {m : ℕ | m ≤ n}).Infinite :=
+-      S.property.1.sdiff (Set.finite_le_nat n)
+-    obtain ⟨T, hTS, hTinf, hTsmall⟩ :=
+-      small_on_subsets (μ n) (S.val \ {m : ℕ | m ≤ n}) hSinfinite δ hδ
+-    have hTsub : T ⊆ S.val := fun m hm => (hTS hm).1
+-    have hTD : T ⊆ D := fun m hm => S.property.2 (hTsub hm)
+-    refine ⟨n, ⟨T, hTinf, hTD⟩, hnS, hnsmall, hTsub, ?_, hTsmall⟩
+-    intro m hm
+-    exact lt_of_not_ge (hTS hm).2
+-  choose pick tail hpick hhead hsub hgt hsmall using hstep
+-  -- State = (already selected indices, current infinite reservoir).
+-  let state : ℕ → Set ℕ × X :=
+-    Nat.rec (∅, ⟨D, hD, fun _ h => h⟩)
+-      (fun _ p => (insert (pick p.1 p.2) p.1, tail p.1 p.2))
+-  let n : ℕ → ℕ := fun i => pick (state i).1 (state i).2
+-  let F : ℕ → Set ℕ := fun i => (state i).1
+-  let R : ℕ → Set ℕ := fun i => ((state i).2).val
+-  have hF0 : F 0 = ∅ := rfl
+-  have hFs (i : ℕ) : F (i + 1) = insert (n i) (F i) := rfl
+-  have hnmem (i : ℕ) : n i ∈ R i := hpick (state i).1 (state i).2
+-  have hRsub (i : ℕ) : R (i + 1) ⊆ R i := hsub (state i).1 (state i).2
+-  have hRgt (i : ℕ) : ∀ m ∈ R (i + 1), n i < m :=
+-    hgt (state i).1 (state i).2
+-  have hhead' (i : ℕ) : ‖μ (n i) (chi (F i))‖ < δ :=
+-    hhead (state i).1 (state i).2
+-  have hsmall' (i : ℕ) :
+-      ∀ B : Set ℕ, B ⊆ R (i + 1) → ‖μ (n i) (chi B)‖ ≤ δ :=
+-    hsmall (state i).1 (state i).2
+-  have hnD (i : ℕ) : ε ≤ ‖μ (n i) (e (n i))‖ :=
+-    (state i).2.property.2 (hnmem i)
+-  have hnstep (i : ℕ) : n i < n (i + 1) := hRgt i _ (hnmem (i + 1))
+-  have hnmono : StrictMono n := strictMono_nat_of_lt_succ hnstep
+-  have hRanti : Antitone R := antitone_nat_of_succ_le hRsub
+-  have hin : ∀ i : ℕ, i ≤ n i := by
+-    intro i
+-    induction i with
+-    | zero => exact Nat.zero_le _
+-    | succ i ih =>
+-        have hi := hnstep i
+-        omega
+-  have hFmem : ∀ (i x : ℕ), x ∈ F i ↔ ∃ j < i, n j = x := by
+-    intro i
+-    induction i with
+-    | zero =>
+-        intro x
+-        simp [hF0]
+-    | succ i ih =>
+-        intro x
+-        rw [hFs, Set.mem_insert_iff, ih]
+-        constructor
+-        · rintro (hxi | ⟨j, hj, hjx⟩)
+-          · exact ⟨i, Nat.lt_succ_self i, hxi.symm⟩
+-          · exact ⟨j, by omega, hjx⟩
+-        · rintro ⟨j, hj, hjx⟩
+-          by_cases hji : j = i
+-          · left
+-            simpa [hji] using hjx.symm
+-          · right
+-            exact ⟨j, by omega, hjx⟩
+-  let A : Set ℕ := Set.range n
+-  let B : ℕ → Set ℕ := fun i => {x | ∃ j, i < j ∧ n j = x}
+-  have hBsub (i : ℕ) : B i ⊆ R (i + 1) := by
+-    rintro x ⟨j, hij, rfl⟩
+-    exact hRanti (Nat.succ_le_of_lt hij) (hnmem j)
+-  have hsplit (i : ℕ) :
+-      chi (𝕜 := 𝕜) A = chi (F i) + e (n i) + chi (B i) := by
+-    apply BoundedContinuousFunction.ext
+-    intro x
+-    simp only [BoundedContinuousFunction.add_apply, chi_apply, e_apply]
+-    by_cases hx : x ∈ A
+-    · obtain ⟨j, rfl⟩ := hx
+-      have hA : n j ∈ A := ⟨j, rfl⟩
+-      have hF : n j ∈ F i ↔ j < i := by
+-        rw [hFmem]
+-        constructor
+-        · rintro ⟨k, hk, hkj⟩
+-          exact hnmono.injective hkj ▸ hk
+-        · intro hji
+-          exact ⟨j, hji, rfl⟩
+-      have hB : n j ∈ B i ↔ i < j := by
+-        change (∃ k, i < k ∧ n k = n j) ↔ i < j
+-        constructor
+-        · rintro ⟨k, hk, hkj⟩
+-          exact hnmono.injective hkj ▸ hk
+-        · intro hij
+-          exact ⟨j, hij, rfl⟩
+-      have heq : n j = n i ↔ j = i :=
+-        ⟨fun h => hnmono.injective h, fun h => congrArg n h⟩
+-      rcases lt_trichotomy j i with hji | hji | hij
+-      · simp [hA, hF, hB, heq, hji, ne_of_lt hji, not_lt_of_ge (le_of_lt hji)]
+-      · subst j
+-        simp [hA, hF, hB]
+-      · simp [hA, hF, hB, heq, hij, ne_of_gt hij, not_lt_of_ge (le_of_lt hij)]
+-    · have hxF : x ∉ F i := by
+-        intro hxF
+-        obtain ⟨j, hj, hjx⟩ := (hFmem i x).1 hxF
+-        exact hx ⟨j, hjx⟩
+-      have hxB : x ∉ B i := by
+-        rintro ⟨j, hj, hjx⟩
+-        exact hx ⟨j, hjx⟩
+-      have hxn : x ≠ n i := by
+-        intro hxn
+-        exact hx ⟨i, hxn.symm⟩
+-      simp [hx, hxF, hxB, hxn]
+-  -- The characteristic sequence of all selected indices contradicts hμ.
+-  obtain ⟨N, hN⟩ := (Metric.tendsto_atTop.1 (hμ A)) δ hδ
+-  have hA_small : ‖μ (n N) (chi A)‖ < δ := by
+-    simpa only [dist_zero_right] using hN (n N) (hin N)
+-  have hF_small := hhead' N
+-  have hB_small := hsmall' N (B N) (hBsub N)
+-  have hidentity : μ (n N) (chi A) =
+-      μ (n N) (chi (F N)) + μ (n N) (e (n N)) + μ (n N) (chi (B N)) := by
+-    rw [hsplit N, map_add, map_add]
+-  have hdiag : μ (n N) (e (n N)) =
+-      μ (n N) (chi A) - μ (n N) (chi (F N)) - μ (n N) (chi (B N)) := by
+-    rw [hidentity]
+-    abel
+-  have hnorm : ‖μ (n N) (e (n N))‖ ≤
+-      ‖μ (n N) (chi A)‖ + ‖μ (n N) (chi (F N))‖ +
+-        ‖μ (n N) (chi (B N))‖ := by
+-    rw [hdiag]
+-    exact (norm_sub_le _ _).trans (add_le_add (norm_sub_le _ _) le_rfl)
+-  have hlarge := hnD N
+-  dsimp [δ] at hA_small hF_small hB_small
+-  linarith only [hε, hA_small, hF_small, hB_small, hnorm, hlarge]
+-
+-/-- Step 1 (diagonal statement): if `μ_n(a) → 0` for every `a ∈ ℓ^∞`, then
+-`μ_n(e_n) → 0`. This is the "in particular" part of Lemma 2.2, proved first; the full
+-lemma (`Phillips.full`) is deduced from it. -/
+-theorem diagonal_tendsto_zero
+-    (μ : ℕ → (Linfty 𝕜 →L[𝕜] 𝕜))
+-    (hμ : ∀ a : Linfty 𝕜, Tendsto (fun n => μ n a) atTop (𝓝 0)) :
+-    Tendsto (fun n => μ n (e n)) atTop (𝓝 0) :=
+-  diagonal_of_indicator_tendsto μ (fun S => hμ (chi S))
+-
+-end Phillips
+-
+-namespace Phillips
+-
+-open Filter
+-open scoped BigOperators Topology
+-
+-variable {𝕜 : Type*} [RCLike 𝕜]
+-
+-/-! ## Step 2: finite sums `Σ_{k ∈ s} |φ(e_k)| ≤ ‖φ‖` -/
+-
+-/-! ## Step 3: disjoint finite blocks, encoded by one bounded operator `ℓ^∞ → ℓ^∞` -/
+-
+-/-! ## Step 4: uniform smallness of all finite sums (gliding hump) -/
+-
+-/-! ## Lemma 2.2 -/
+-
+-end Phillips
+-
+-namespace Phillips
+-
+-open Filter
+-open scoped Topology
+-
+-variable {𝕜 : Type*} [RCLike 𝕜]
+-variable {X : Type*} [NormedAddCommGroup X] [NormedSpace 𝕜 X]
+-
+-/-! ## Lemma 2.3 -/
+-
+-/-- Vector-valued version of `diagonal_tendsto_zero`: if `A_n a → 0` for every `a ∈ ℓ^∞`,
+-then `‖A_n e_n‖ → 0`. (A norming functional is chosen for each `A_n e_n`.) -/
+-theorem norm_diagonal_tendsto_zero
+-    (A : ℕ → (Linfty 𝕜 →L[𝕜] X))
+-    (hA : ∀ a : Linfty 𝕜,
+-      Tendsto (fun n => A n a) atTop (𝓝 0)) :
+-    Tendsto (fun n => ‖A n (e n)‖) atTop (𝓝 0) := by
+-  classical
+-
+-  -- Choose a norming functional for each diagonal vector.
+-  choose φ hφnorm hφeval using
+-    (fun n : ℕ => exists_dual_vector'' 𝕜 (A n (e n)))
+-
+-  let μ : ℕ → (Linfty 𝕜 →L[𝕜] 𝕜) :=
+-    fun n => (φ n).comp (A n)
+-
+-  -- The scalar functionals converge pointwise to zero.
+-  have hμ : ∀ a : Linfty 𝕜,
+-      Tendsto (fun n => μ n a) atTop (𝓝 0) := by
+-    intro a
+-    refine squeeze_zero_norm (a := fun n => ‖A n a‖) ?_ ?_
+-    · intro n
+-      change ‖φ n (A n a)‖ ≤ ‖A n a‖
+-      calc
+-        ‖φ n (A n a)‖ ≤ ‖φ n‖ * ‖A n a‖ :=
+-          (φ n).le_opNorm _
+-        _ ≤ 1 * ‖A n a‖ :=
+-          mul_le_mul_of_nonneg_right (hφnorm n) (norm_nonneg _)
+-        _ = ‖A n a‖ := one_mul _
+-    · simpa only [norm_zero] using (hA a).norm
+-
+-  -- Taking norms recovers the norms of the diagonal vectors.
+-  have hnorm (n : ℕ) : ‖μ n (e n)‖ = ‖A n (e n)‖ := by
+-    change ‖φ n (A n (e n))‖ = ‖A n (e n)‖
+-    rw [hφeval n]
+-    exact RCLike.norm_of_nonneg (norm_nonneg _)
+-
+-  simpa only [hnorm, norm_zero] using
+-    (diagonal_tendsto_zero μ hμ).norm
+-
+-/-- **Lemma 2.3** (`lem:cor-Phillips`). Let `S : ℓ^∞ → X` be a bounded operator and
+-`t n ≥ 0` with `t n → 0`. Then `‖(T (t n) - Id) (S (e n))‖ → 0`.
+-
+-Only strong right-continuity of `T` at zero is required; the semigroup law and
+-completeness of `X` are not used. -/
+-theorem uniform
+-    (S : Linfty 𝕜 →L[𝕜] X)
+-    (T : ℝ → (X →L[𝕜] X))
+-    (hT : ∀ x : X,
+-      Tendsto (fun s : ℝ => T s x)
+-        (nhdsWithin 0 (Set.Ici 0)) (𝓝 x))
+-    (t : ℕ → ℝ)
+-    (ht_nonneg : ∀ n : ℕ, 0 ≤ t n)
+-    (ht : Tendsto t atTop (𝓝 0)) :
+-    Tendsto
+-      (fun n =>
+-        ‖(T (t n) - ContinuousLinearMap.id 𝕜 X) (S (e n))‖)
+-      atTop (𝓝 0) := by
+-  have htWithin :
+-      Tendsto t atTop (nhdsWithin (0 : ℝ) (Set.Ici 0)) :=
+-    tendsto_nhdsWithin_iff.2
+-      ⟨ht, Filter.Eventually.of_forall (fun n => ht_nonneg n)⟩
+-
+-  refine norm_diagonal_tendsto_zero
+-    (fun n => (T (t n) - ContinuousLinearMap.id 𝕜 X).comp S) ?_
+-  intro a
+-
+-  have hTa :
+-      Tendsto (fun n => T (t n) (S a)) atTop (𝓝 (S a)) :=
+-    (hT (S a)).comp htWithin
+-
+-  change Tendsto (fun n => T (t n) (S a) - S a) atTop (𝓝 0)
+-  simpa only [sub_self] using
+-    (hTa.sub
+-      (tendsto_const_nhds :
+-        Tendsto (fun _ : ℕ => S a) atTop (𝓝 (S a))))
+-
+-end Phillips
+diff --git a/ALCS/Background/Semigroup.lean b/ALCS/Background/Semigroup.lean
+deleted file mode 100644
+index 9f84e0f53..000000000
+--- a/ALCS/Background/Semigroup.lean
++++ /dev/null
+@@ -1,193 +0,0 @@
+-module
+-
+-public import Mathlib.Analysis.Normed.Operator.BanachSteinhaus
+-public import Mathlib.Analysis.SpecialFunctions.Log.Basic
+-public import Mathlib.Analysis.SpecificLimits.Basic
+-
+-@[expose] public section
+-
+-/-!
+-# Strongly continuous semigroups (Proposition 1.2)
+-
+-* `C0Semigroup 𝕜 X` : strongly continuous semigroups `T` on `X` (first item of
+-  Definition 1.1): `T 0 = Id`, `T (t + s) = T t ∘ T s` for `t, s ≥ 0`, and `T t y → y`
+-  as `t → 0⁺` for every `y`.
+-* `C0Semigroup.exists_exp_bound` : `‖T t‖ ≤ M exp(ω t)` for `t ≥ 0`
+-  ([Pazy 1983, Chapter 1, Theorem 2.2], used in the proofs of Theorem 1.5 and
+-  Proposition 1.3); proved with the Banach–Steinhaus theorem.
+-* `C0Semigroup.continuousOn_orbit` : **Proposition 1.2**
+-  (`prop:pazy-semigroup-solution-continuous`), `t ↦ T t x°` is continuous on `ℝ₊`.
+-
+-`T` is a function `ℝ → (X →L[𝕜] X)`; all axioms only involve nonnegative times, so the
+-values of `T t` for `t < 0` play no role. Completeness of `X` is assumed where needed.
+--/
+-
+-open Filter Topology
+-
+-variable {𝕜 : Type*} [NontriviallyNormedField 𝕜]
+-variable {X : Type*} [NormedAddCommGroup X] [NormedSpace 𝕜 X]
+-
+-/-- A strongly continuous semigroup on `X` (first item of Definition 1.1). -/
+-structure C0Semigroup (𝕜 : Type*) (X : Type*) [NontriviallyNormedField 𝕜]
+-    [NormedAddCommGroup X] [NormedSpace 𝕜 X] where
+-  /-- the operators `T t` -/
+-  T : ℝ → X →L[𝕜] X
+-  /-- `T 0 = Id` -/
+-  T_zero : T 0 = ContinuousLinearMap.id 𝕜 X
+-  /-- `T (t + s) = T t ∘ T s` for `t, s ≥ 0` -/
+-  T_add : ∀ t s : ℝ, 0 ≤ t → 0 ≤ s → T (t + s) = (T t).comp (T s)
+-  /-- `T t y → y` as `t → 0⁺`, for every `y` -/
+-  T_cont : ∀ y : X, Tendsto (fun t => T t y) (nhdsWithin 0 (Set.Ici 0)) (𝓝 y)
+-
+-namespace C0Semigroup
+-
+-variable (S : C0Semigroup 𝕜 X)
+-
+-/-! ## Exponential bound -/
+-
+-/-- First step: `‖T t‖ ≤ M` on some interval `[0, τ]` (Banach–Steinhaus). -/
+-theorem exists_bound_near_zero [CompleteSpace X] :
+-    ∃ τ > 0, ∃ M ≥ 1, ∀ t, 0 ≤ t → t ≤ τ → ‖S.T t‖ ≤ M := by
+-  by_contra h
+-  -- otherwise, for every `n`, there is `t n ∈ [0, 1/(n+1)]` with `‖T (t n)‖ > n + 1`
+-  have key : ∀ n : ℕ, ∃ t : ℝ, 0 ≤ t ∧ t ≤ 1 / ((n : ℝ) + 1) ∧ (n : ℝ) + 1 < ‖S.T t‖ := by
+-    intro n
+-    by_contra hn
+-    push Not at hn
+-    exact h ⟨1 / ((n : ℝ) + 1), by positivity, (n : ℝ) + 1,
+-      le_add_of_nonneg_left (by positivity), hn⟩
+-  choose t ht0 htle htbig using key
+-  -- `t n → 0⁺`
+-  have ht_lim : Tendsto t atTop (nhdsWithin 0 (Set.Ici 0)) := by
+-    rw [tendsto_nhdsWithin_iff]
+-    constructor
+-    · exact squeeze_zero ht0 htle tendsto_one_div_add_atTop_nhds_zero_nat
+-    · exact Filter.Eventually.of_forall (fun n => Set.mem_Ici.2 (ht0 n))
+-  -- for each `x`, the sequence `T (t n) x` converges to `x`, hence is bounded
+-  have hbdd : ∀ x : X, ∃ C, ∀ n, ‖S.T (t n) x‖ ≤ C := by
+-    intro x
+-    have hx : Tendsto (fun n => S.T (t n) x) atTop (𝓝 x) := (S.T_cont x).comp ht_lim
+-    obtain ⟨C, hC⟩ := isBounded_iff_forall_norm_le.1 (Metric.isBounded_range_of_tendsto _ hx)
+-    exact ⟨C, fun n => hC _ (Set.mem_range_self n)⟩
+-  -- Banach–Steinhaus: the norms `‖T (t n)‖` are bounded, contradiction
+-  obtain ⟨C, hC⟩ := banach_steinhaus hbdd
+-  obtain ⟨n, hn⟩ := exists_nat_gt C
+-  have h1 : ‖S.T (t n)‖ ≤ C := hC n
+-  have h2 := htbig n
+-  linarith
+-
+-/-- Exponential bound: `‖T t‖ ≤ M * exp (ω * t)` for all `t ≥ 0`, with `ω ≥ 0`, `M ≥ 1`. -/
+-theorem exists_exp_bound [CompleteSpace X] :
+-    ∃ ω ≥ 0, ∃ M ≥ 1, ∀ t, 0 ≤ t → ‖S.T t‖ ≤ M * Real.exp (ω * t) := by
+-  obtain ⟨τ, hτ, M, hM, hbound⟩ := S.exists_bound_near_zero
+-  have hMpos : 0 < M := by linarith
+-  have hlogM : 0 ≤ Real.log M := Real.log_nonneg hM
+-  -- `‖T (k τ)‖ ≤ M ^ k`, by induction on `k`
+-  have hpow : ∀ k : ℕ, ‖S.T (k * τ)‖ ≤ M ^ k := by
+-    intro k
+-    induction k with
+-    | zero =>
+-      rw [Nat.cast_zero, zero_mul, S.T_zero, pow_zero]
+-      exact ContinuousLinearMap.norm_id_le
+-    | succ k ih =>
+-      have hk : ((k + 1 : ℕ) : ℝ) * τ = k * τ + τ := by push_cast; ring
+-      rw [hk, S.T_add (k * τ) τ (mul_nonneg (by positivity) hτ.le) hτ.le, pow_succ]
+-      calc ‖(S.T (k * τ)).comp (S.T τ)‖
+-          ≤ ‖S.T (k * τ)‖ * ‖S.T τ‖ := by apply ContinuousLinearMap.opNorm_comp_le
+-        _ ≤ M ^ k * M :=
+-          mul_le_mul ih (hbound τ hτ.le le_rfl) (norm_nonneg _) (pow_nonneg hMpos.le k)
+-  -- `ω := log M / τ`
+-  refine ⟨Real.log M / τ, div_nonneg hlogM hτ.le, M, hM, fun t ht => ?_⟩
+-  -- write `t = k τ + t'` with `k = ⌊t/τ⌋` and `t' ∈ [0, τ)`
+-  obtain ⟨k, hk_le, hk_lt⟩ : ∃ k : ℕ, (k : ℝ) ≤ t / τ ∧ t / τ < k + 1 :=
+-    ⟨⌊t / τ⌋₊, Nat.floor_le (div_nonneg ht hτ.le), Nat.lt_floor_add_one _⟩
+-  have h1 : (k : ℝ) * τ ≤ t := (le_div_iff₀ hτ).1 hk_le
+-  have h2 : t < (k + 1) * τ := (div_lt_iff₀ hτ).1 hk_lt
+-  -- `T t = T (k τ) ∘ T (t - k τ)`
+-  have hdec : S.T t = (S.T (k * τ)).comp (S.T (t - k * τ)) := by
+-    rw [← S.T_add (k * τ) (t - k * τ) (mul_nonneg (by positivity) hτ.le) (by linarith)]
+-    rw [show (k : ℝ) * τ + (t - k * τ) = t by ring]
+-  -- `‖T t‖ ≤ M ^ k * M`
+-  have h3 : ‖S.T t‖ ≤ M ^ k * M := by
+-    rw [hdec]
+-    calc ‖(S.T (k * τ)).comp (S.T (t - k * τ))‖
+-        ≤ ‖S.T (k * τ)‖ * ‖S.T (t - k * τ)‖ := by apply ContinuousLinearMap.opNorm_comp_le
+-      _ ≤ M ^ k * M :=
+-        mul_le_mul (hpow k) (hbound (t - k * τ) (by linarith) (by linarith))
+-          (norm_nonneg _) (pow_nonneg hMpos.le k)
+-  -- `M ^ k = exp (k log M) ≤ exp (ω t)` since `k ≤ t / τ`
+-  have h4 : M ^ k ≤ Real.exp (Real.log M / τ * t) := by
+-    calc M ^ k = Real.exp (Real.log M) ^ k := by rw [Real.exp_log hMpos]
+-      _ = Real.exp (k * Real.log M) := (Real.exp_nat_mul _ _).symm
+-      _ ≤ Real.exp (Real.log M / τ * t) := by
+-        apply Real.exp_le_exp.2
+-        calc (k : ℝ) * Real.log M ≤ t / τ * Real.log M :=
+-              mul_le_mul_of_nonneg_right hk_le hlogM
+-          _ = Real.log M / τ * t := by ring
+-  calc ‖S.T t‖ ≤ M ^ k * M := h3
+-    _ ≤ Real.exp (Real.log M / τ * t) * M := mul_le_mul_of_nonneg_right h4 hMpos.le
+-    _ = M * Real.exp (Real.log M / τ * t) := mul_comm _ _
+-
+-/-! ## Proposition 1.2: continuity of the orbits -/
+-
+-/-- `T (a + h) y - T a y = T a (T h y - y)` -/
+-theorem orbit_sub (y : X) (a h : ℝ) (ha : 0 ≤ a) (hh : 0 ≤ h) :
+-    S.T (a + h) y - S.T a y = S.T a (S.T h y - y) := by
+-  rw [S.T_add a h ha hh, ContinuousLinearMap.comp_apply, map_sub]
+-
+-/-- `‖T (a + h) y - T a y‖ ≤ ‖T a‖ ‖T h y - y‖` -/
+-theorem norm_orbit_sub_le (y : X) (a h : ℝ) (ha : 0 ≤ a) (hh : 0 ≤ h) :
+-    ‖S.T (a + h) y - S.T a y‖ ≤ ‖S.T a‖ * ‖S.T h y - y‖ := by
+-  rw [S.orbit_sub y a h ha hh]
+-  apply ContinuousLinearMap.le_opNorm
+-
+-/-- **Proposition 1.2** (`prop:pazy-semigroup-solution-continuous`). For every `y`,
+-`t ↦ T t y` is continuous on `ℝ₊ = [0, ∞)`. -/
+-theorem continuousOn_orbit [CompleteSpace X] (y : X) :
+-    ContinuousOn (fun t => S.T t y) (Set.Ici 0) := by
+-  obtain ⟨ω, hω, M, hM, hexp⟩ := S.exists_exp_bound
+-  rw [Metric.continuousOn_iff]
+-  intro t₀ ht₀ ε hε
+-  rw [Set.mem_Ici] at ht₀
+-  -- uniform bound `‖T a‖ ≤ K` for `a ∈ [0, t₀]`, with `K := M exp (ω t₀)`
+-  obtain ⟨K, hKpos, hK⟩ : ∃ K > 0, ∀ a, 0 ≤ a → a ≤ t₀ → ‖S.T a‖ ≤ K := by
+-    refine ⟨M * Real.exp (ω * t₀), mul_pos (by linarith) (Real.exp_pos _), ?_⟩
+-    intro a ha hat
+-    calc ‖S.T a‖ ≤ M * Real.exp (ω * a) := hexp a ha
+-      _ ≤ M * Real.exp (ω * t₀) :=
+-        mul_le_mul_of_nonneg_left
+-          (Real.exp_le_exp.2 (mul_le_mul_of_nonneg_left hat hω)) (by linarith)
+-  -- strong continuity at `0`, with tolerance `ε / K`
+-  obtain ⟨δ, hδ, hcont⟩ :=
+-    Metric.tendsto_nhdsWithin_nhds.1 (S.T_cont y) (ε / K) (div_pos hε hKpos)
+-  -- key estimate: `‖T (a + h) y - T a y‖ < ε` for `a ∈ [0, t₀]`, `h ∈ [0, δ)`
+-  have key : ∀ a h : ℝ, 0 ≤ a → a ≤ t₀ → 0 ≤ h → h < δ →
+-      ‖S.T (a + h) y - S.T a y‖ < ε := by
+-    intro a h ha hat hh hhδ
+-    have h1 : dist (S.T h y) y < ε / K := by
+-      apply hcont (Set.mem_Ici.2 hh)
+-      rw [Real.dist_eq, sub_zero, abs_of_nonneg hh]
+-      exact hhδ
+-    rw [dist_eq_norm] at h1
+-    have h2 : K * ‖S.T h y - y‖ < ε := by
+-      rw [mul_comm]
+-      exact (lt_div_iff₀ hKpos).1 h1
+-    have h3 : ‖S.T a‖ * ‖S.T h y - y‖ ≤ K * ‖S.T h y - y‖ :=
+-      mul_le_mul_of_nonneg_right (hK a ha hat) (norm_nonneg _)
+-    have h4 := S.norm_orbit_sub_le y a h ha hh
+-    linarith
+-  refine ⟨δ, hδ, fun t ht hdist => ?_⟩
+-  rw [Set.mem_Ici] at ht
+-  rw [Real.dist_eq] at hdist
+-  obtain ⟨hd1, hd2⟩ := abs_lt.1 hdist
+-  show dist (S.T t y) (S.T t₀ y) < ε
+-  rw [dist_eq_norm]
+-  rcases le_total t₀ t with htt | htt
+-  · -- case `t₀ ≤ t`: apply `key` with `a = t₀`, `h = t - t₀`
+-    have := key t₀ (t - t₀) ht₀ le_rfl (by linarith) (by linarith)
+-    rwa [show t₀ + (t - t₀) = t by ring] at this
+-  · -- case `t ≤ t₀`: apply `key` with `a = t`, `h = t₀ - t`
+-    have := key t (t₀ - t) ht htt (by linarith) (by linarith)
+-    rwa [show t + (t₀ - t) = t₀ by ring, norm_sub_rev] at this
+-
+-end C0Semigroup
+diff --git a/ALCS/ContinuityLinfty.lean b/ALCS/ContinuityLinfty.lean
+deleted file mode 100644
+index 6e26e4143..000000000
+--- a/ALCS/ContinuityLinfty.lean
++++ /dev/null
+@@ -1,118 +0,0 @@
+-module
+-
+-public import ALCS.ZeroClass
+-
+-@[expose] public section
+-
+-/-!
+-# Continuity of the input response for `p = ∞` (Corollary 1.6)
+-
+-**Corollary 1.6** (`cor:p-infty-solution-continuous`). Let `X`, `U` be Banach spaces and
+-`(𝕋, Φ)` an abstract linear control system with `p = ∞`. For all `u ∈ L^∞(ℝ₊; U)`,
+-`t ↦ Φ_t u` is continuous on `ℝ₊`.
+-
+-This answers positively Problem 2.4 of [Weiss 1989]. The proof (§ 2.4 of the paper) only
+-uses Theorem 1.5 (`ALCS.zero_class`), the composition property and the continuity of
+-semigroup orbits (Proposition 1.2, `C0Semigroup.continuousOn_orbit`):
+-
+-* at `t₀ = 0`, `‖Φ_t u‖ ≤ κ(t) ‖u‖ → 0`;
+-* at `t₀ > 0`, with `t₁ = t₀ - δ` and `u₁ = u (t₁ + ·)`, the composition property gives
+-  `Φ_{t₁ + r} u = T_r (Φ_{t₁} u) + Φ_r u₁`, and `‖Φ_r u₁‖ ≤ κ(2δ) ‖u‖` for `r ≤ 2δ`.
+-
+-The main statement is `ALCS.continuousOn_Phi`.
+--/
+-
+-open MeasureTheory Filter Topology
+-open scoped ENNReal
+-
+-noncomputable section
+-
+-variable {𝕜 : Type*} [RCLike 𝕜]
+-variable {X : Type*} [NormedAddCommGroup X] [NormedSpace 𝕜 X]
+-variable {U : Type*} [NormedAddCommGroup U] [NormedSpace 𝕜 U]
+-
+-namespace ALCS
+-
+-/-- Consequence of Theorem 1.5: for `ε > 0` there is `η > 0` such that
+-`‖Φ r v‖ < ε` for all `r ∈ [0, η)` and all inputs `v` with `‖v‖ ≤ ‖u‖`. -/
+-theorem small_Phi [CompleteSpace X] [CompleteSpace U] (S : ALCS 𝕜 X U ∞)
+-    (u : Lp U ∞ muPlus) (ε : ℝ) (hε : 0 < ε) :
+-    ∃ η > 0, ∀ r, 0 ≤ r → r < η → ∀ v : Lp U ∞ muPlus, ‖v‖ ≤ ‖u‖ → ‖S.Φ r v‖ < ε := by
+-  -- `κ(r) = ‖Φ r‖ < ε / (‖u‖ + 1)` for `r ∈ [0, η)`
+-  have hz : Tendsto (fun t => ‖S.Φ t‖) (𝓝[≥] 0) (𝓝 0) := S.zero_class
+-  obtain ⟨η, hη, hκ⟩ := Metric.tendsto_nhdsWithin_nhds.1 hz (ε / (‖u‖ + 1)) (by positivity)
+-  refine ⟨η, hη, fun r hr hrη v hv => ?_⟩
+-  have h1 := hκ (Set.mem_Ici.2 hr)
+-    (by rw [Real.dist_eq, sub_zero, abs_of_nonneg hr]; exact hrη)
+-  have h2 : ‖S.Φ r‖ < ε / (‖u‖ + 1) := by simpa using h1
+-  have h3 : ‖S.Φ r‖ * (‖u‖ + 1) < ε := (lt_div_iff₀ (by positivity)).1 h2
+-  -- `‖Φ r v‖ ≤ κ(r) ‖v‖`
+-  calc ‖S.Φ r v‖ ≤ ‖S.Φ r‖ * ‖v‖ := ContinuousLinearMap.le_opNorm _ _
+-    _ ≤ ‖S.Φ r‖ * (‖u‖ + 1) := mul_le_mul_of_nonneg_left (by linarith) (norm_nonneg _)
+-    _ < ε := h3
+-
+-/-- **Corollary 1.6** (`cor:p-infty-solution-continuous`). Let `X`, `U` be real or complex
+-Banach spaces and `S = (𝕋, Φ)` an abstract linear control system with `p = ∞`. For every
+-input `u ∈ L^∞(ℝ₊; U)`, the map `t ↦ Φ t u` is continuous on `ℝ₊ = [0, ∞)`. -/
+-theorem continuousOn_Phi [CompleteSpace X] [CompleteSpace U] (S : ALCS 𝕜 X U ∞)
+-    (u : Lp U ∞ muPlus) :
+-    ContinuousOn (fun t => S.Φ t u) (Set.Ici 0) := by
+-  rw [Metric.continuousOn_iff]
+-  intro t₀ ht₀ ε hε
+-  rw [Set.mem_Ici] at ht₀
+-  rcases ht₀.eq_or_lt with h0 | hpos
+-  · -- continuity at `t₀ = 0`: `‖Φ t u‖ ≤ κ(t) ‖u‖ → 0`
+-    subst h0
+-    obtain ⟨η, hη, hsmall⟩ := S.small_Phi u ε hε
+-    refine ⟨η, hη, fun t ht hdist => ?_⟩
+-    rw [Set.mem_Ici] at ht
+-    rw [Real.dist_eq, sub_zero, abs_of_nonneg ht] at hdist
+-    show dist (S.Φ t u) (S.Φ 0 u) < ε
+-    rw [S.Phi_zero, zero_apply, dist_zero_right]
+-    exact hsmall t ht hdist u le_rfl
+-  · -- continuity at `t₀ > 0`
+-    -- `‖Φ r v‖ < ε / 4` for `r ∈ [0, η)` and `‖v‖ ≤ ‖u‖`
+-    obtain ⟨η, hη, hsmall⟩ := S.small_Phi u (ε / 4) (by positivity)
+-    -- `0 < δ < t₀` and `2 δ < η`
+-    obtain ⟨δ, hδpos, hδt, hδη⟩ : ∃ δ : ℝ, 0 < δ ∧ δ ≤ t₀ / 2 ∧ δ ≤ η / 3 :=
+-      ⟨min (t₀ / 2) (η / 3), lt_min (by linarith) (by linarith), min_le_left _ _,
+-        min_le_right _ _⟩
+-    -- `t₁ := t₀ - δ`, `u₁ := u (t₁ + ·)` and `y := Φ t₁ u`
+-    have ht₁ : 0 ≤ t₀ - δ := by linarith
+-    obtain ⟨u₁, hu₁, hcat⟩ := exists_shift (t₀ - δ) ht₁ u
+-    obtain ⟨y, hy⟩ : ∃ y : X, y = S.Φ (t₀ - δ) u := ⟨_, rfl⟩
+-    -- composition: `Φ (t₁ + r) u = T r y + Φ r u₁`
+-    have hcomp : ∀ r, 0 ≤ r → S.Φ (t₀ - δ + r) u = S.T r y + S.Φ r u₁ := by
+-      intro r hr
+-      rw [hy]
+-      exact S.composition (t₀ - δ) r ht₁ hr u u₁ u hcat
+-    -- in particular `Φ t₀ u = T δ y + Φ δ u₁`
+-    have e₀ : S.Φ t₀ u = S.T δ y + S.Φ δ u₁ := by
+-      have h := hcomp δ hδpos.le
+-      rwa [sub_add_cancel] at h
+-    -- continuity of `s ↦ T s y` at `s = δ`
+-    obtain ⟨δ', hδ', horbit⟩ := Metric.continuousOn_iff.1
+-      (S.toC0Semigroup.continuousOn_orbit y) δ (Set.mem_Ici.2 hδpos.le) (ε / 2) (by positivity)
+-    refine ⟨min δ δ', lt_min hδpos hδ', fun t _ hdist => ?_⟩
+-    -- write `t = t₁ + r`, with `|r - δ| = |t - t₀|`
+-    obtain ⟨r, rfl⟩ : ∃ r, t = t₀ - δ + r := ⟨t - (t₀ - δ), by ring⟩
+-    rw [Real.dist_eq, show t₀ - δ + r - t₀ = r - δ by ring] at hdist
+-    have hd1 : |r - δ| < δ := lt_of_lt_of_le hdist (min_le_left _ _)
+-    have hd2 : |r - δ| < δ' := lt_of_lt_of_le hdist (min_le_right _ _)
+-    obtain ⟨hr1, hr2⟩ := abs_lt.1 hd1
+-    have hr : 0 ≤ r := by linarith
+-    -- the three terms
+-    have h1 : ‖S.T r y - S.T δ y‖ < ε / 2 := by
+-      have h := horbit r (Set.mem_Ici.2 hr) (by rw [Real.dist_eq]; exact hd2)
+-      rwa [dist_eq_norm] at h
+-    have h2 : ‖S.Φ r u₁‖ < ε / 4 := hsmall r hr (by linarith) u₁ hu₁
+-    have h3 : ‖S.Φ δ u₁‖ < ε / 4 := hsmall δ hδpos.le (by linarith) u₁ hu₁
+-    -- conclusion
+-    show dist (S.Φ (t₀ - δ + r) u) (S.Φ t₀ u) < ε
+-    rw [dist_eq_norm, hcomp r hr, e₀]
+-    have h4 := norm_three_terms_le (S.T r y) (S.Φ r u₁) (S.T δ y) (S.Φ δ u₁)
+-    linarith
+-
+-end ALCS
+-
+-end
+diff --git a/ALCS/Definitions.lean b/ALCS/Definitions.lean
+deleted file mode 100644
+index fdee7c9f0..000000000
+--- a/ALCS/Definitions.lean
++++ /dev/null
+@@ -1,116 +0,0 @@
+-module
+-
+-public import ALCS.Background.Semigroup
+-public import ALCS.Background.Lp
+-
+-@[expose] public section
+-
+-/-!
+-# Abstract linear control systems (Section 1 and § 2.1 of the paper)
+-
+-* `ALCS 𝕜 X U p` : **Definition 1.1**, an abstract linear control system `(𝕋, Φ)`.
+-* `ALCS.IsZeroClass` : **Definition 1.4**, zero-class systems.
+-* `ALCS.Phi_zero` : `Φ_0 = 0` (§ 1.2).
+-* `ALCS.norm_Phi_mono` : equation `eq:Phi-monotone`, `κ(t) ≤ κ(t + τ)`,
+-  where `κ(t) = ‖Φ t‖`.
+-* `ALCS.causality`, `ALCS.delay`, `ALCS.free` : **Lemma 2.1** (`lem:Phi-properties`),
+-  equations `eq:causality`, `eq:delay`, `eq:free`.
+-
+-## Formalization choices
+-
+-* Scalars: any nontrivially normed field `𝕜` here; the main theorem uses `ℝ` or `ℂ`
+-  (`RCLike 𝕜`). Completeness of `X` and `U` is assumed only where it is used.
+-* `L^p(ℝ₊; U)` is `Lp U p muPlus` (see `ALCS/Background/Lp.lean`).
+-* Like the semigroup `T`, the input maps form a function `Φ : ℝ → (L^p →L X)`;
+-  only nonnegative times play a role in the axioms and in the results.
+-* Instead of constructing `u ⋄_τ v` as an element of `L^p`, the composition property
+-  is required for every `w ∈ L^p` whose representative is a.e. equal to
+-  `concat τ ⇑u ⇑v`. Since `u ⋄_τ v` does belong to `L^p` and a.e. classes are unique,
+-  this is exactly the identity of the paper.
+--/
+-
+-open MeasureTheory Filter Topology
+-open scoped ENNReal
+-
+-variable {𝕜 : Type*} [NontriviallyNormedField 𝕜]
+-variable {X : Type*} [NormedAddCommGroup X] [NormedSpace 𝕜 X]
+-variable {U : Type*} [NormedAddCommGroup U] [NormedSpace 𝕜 U]
+-
+-/-- **Definition 1.1** (abstract linear control system).
+-An abstract linear control system with state space `X`, input space `U` and exponent
+-`p ∈ [1, ∞]` is a strongly continuous semigroup `T` on `X` (the parent structure
+-`C0Semigroup`) together with bounded linear input maps `Φ t : L^p(ℝ₊; U) → X`
+-satisfying the composition property `eq:composition`. -/
+-structure ALCS (𝕜 : Type*) (X : Type*) (U : Type*) [NontriviallyNormedField 𝕜]
+-    [NormedAddCommGroup X] [NormedSpace 𝕜 X]
+-    [NormedAddCommGroup U] [NormedSpace 𝕜 U]
+-    (p : ℝ≥0∞) [Fact (1 ≤ p)] extends C0Semigroup 𝕜 X where
+-  /-- the input maps `Φ t : L^p(ℝ₊; U) → X` -/
+-  Φ : ℝ → Lp U p muPlus →L[𝕜] X
+-  /-- composition property `eq:composition`: `Φ (τ + t) (u ⋄_τ v) = T t (Φ τ u) + Φ t v`,
+-  where `w` is any input representing `u ⋄_τ v` -/
+-  composition : ∀ τ t : ℝ, 0 ≤ τ → 0 ≤ t → ∀ u v w : Lp U p muPlus,
+-    (⇑w =ᵐ[muPlus] concat τ ⇑u ⇑v) → Φ (τ + t) w = T t (Φ τ u) + Φ t v
+-
+-namespace ALCS
+-
+-variable {p : ℝ≥0∞} [Fact (1 ≤ p)] (S : ALCS 𝕜 X U p)
+-
+-/-- **Definition 1.4** (zero-class system): `κ(t) = ‖Φ t‖ → 0` as `t → 0⁺`
+-(equation `eq:kappa-0`). -/
+-def IsZeroClass : Prop :=
+-  Tendsto (fun t => ‖S.Φ t‖) (𝓝[≥] 0) (𝓝 0)
+-
+-/-! ## Elementary consequences of the composition property (§ 1.2 and Lemma 2.1) -/
+-
+-/-- `Φ 0 = 0` (§ 1.2): composition with `τ = t = 0` and `u = v`, since `u ⋄_0 u = u`. -/
+-theorem Phi_zero : S.Φ 0 = 0 := by
+-  refine ContinuousLinearMap.ext (fun u => ?_)
+-  -- `u ⋄_0 u = u` everywhere
+-  have hw : ⇑u =ᵐ[muPlus] concat 0 ⇑u ⇑u :=
+-    Filter.Eventually.of_forall (fun s => by simp [concat])
+-  -- `Φ 0 u = T 0 (Φ 0 u) + Φ 0 u = Φ 0 u + Φ 0 u`
+-  have h := S.composition 0 0 le_rfl le_rfl u u u hw
+-  simpa [S.T_zero] using h
+-
+-/-- **Lemma 2.1** (`lem:Phi-properties`), causality `eq:causality`:
+-`Φ τ (u ⋄_τ v) = Φ τ u`, i.e. `Φ τ u` only depends on the restriction of `u` to `[0, τ)`.
+-(Composition with `t = 0`.) -/
+-theorem causality (τ : ℝ) (hτ : 0 ≤ τ) (u v w : Lp U p muPlus)
+-    (hw : ⇑w =ᵐ[muPlus] concat τ ⇑u ⇑v) :
+-    S.Φ τ w = S.Φ τ u := by
+-  have h := S.composition τ 0 hτ le_rfl u v w hw
+-  simpa [S.T_zero, S.Phi_zero] using h
+-
+-/-- **Lemma 2.1** (`lem:Phi-properties`), delay `eq:delay`:
+-`Φ (s + t) (0 ⋄_s v) = Φ t v`, i.e. an initial period of zero input has no effect.
+-(Composition with `u = 0`.) -/
+-theorem delay (s t : ℝ) (hs : 0 ≤ s) (ht : 0 ≤ t) (v w : Lp U p muPlus)
+-    (hw : ⇑w =ᵐ[muPlus] concat s ⇑(0 : Lp U p muPlus) ⇑v) :
+-    S.Φ (s + t) w = S.Φ t v := by
+-  have h := S.composition s t hs ht 0 v w hw
+-  simpa using h
+-
+-/-- **Lemma 2.1** (`lem:Phi-properties`), free evolution `eq:free`:
+-`Φ (τ + t) (u ⋄_τ 0) = T t (Φ τ u)`, i.e. once the input is switched off, the state evolves
+-freely. (Composition with `v = 0`.) -/
+-theorem free (τ t : ℝ) (hτ : 0 ≤ τ) (ht : 0 ≤ t) (u w : Lp U p muPlus)
+-    (hw : ⇑w =ᵐ[muPlus] concat τ ⇑u ⇑(0 : Lp U p muPlus)) :
+-    S.Φ (τ + t) w = S.T t (S.Φ τ u) := by
+-  have h := S.composition τ t hτ ht u 0 w hw
+-  simpa using h
+-
+-/-- Monotonicity of `κ(t) = ‖Φ t‖`, equation `eq:Phi-monotone`:
+-`‖Φ s‖ ≤ ‖Φ t‖` for `0 ≤ s ≤ t`. Indeed `Φ s u = Φ t (0 ⋄_{t-s} u)` by `delay`. -/
+-theorem norm_Phi_mono {s t : ℝ} (hs : 0 ≤ s) (hst : s ≤ t) : ‖S.Φ s‖ ≤ ‖S.Φ t‖ := by
+-  apply ContinuousLinearMap.opNorm_le_bound _ (norm_nonneg _)
+-  intro u
+-  obtain ⟨w, hw, hcat⟩ := exists_delay (t - s) u
+-  have heq := S.delay (t - s) s (sub_nonneg.2 hst) hs u w hcat
+-  rw [sub_add_cancel] at heq
+-  calc
+-    ‖S.Φ s u‖ = ‖S.Φ t w‖ := congrArg norm heq.symm
+-    _ ≤ ‖S.Φ t‖ * ‖w‖ := (S.Φ t).le_opNorm w
+-    _ ≤ ‖S.Φ t‖ * ‖u‖ := mul_le_mul_of_nonneg_left hw (norm_nonneg _)
+-
+-end ALCS
+diff --git a/ALCS/ZeroClass.lean b/ALCS/ZeroClass.lean
+deleted file mode 100644
+index 1713b0f2e..000000000
+--- a/ALCS/ZeroClass.lean
++++ /dev/null
+@@ -1,711 +0,0 @@
+-module
+-
+-public import ALCS.Definitions
+-public import ALCS.Background.Phillips
+-
+-@[expose] public section
+-
+-/-!
+-# Every `L^∞` system is zero-class (Theorem 1.5)
+-
+-**Theorem 1.5** (`thm:p-infty-zero-class`). Let `X`, `U` be Banach spaces and `(𝕋, Φ)`
+-an abstract linear control system with `p = ∞`. Then the system is of the zero-class,
+-i.e. `‖Φ_t‖ → 0` as `t → 0`.
+-
+-The final statement is `ALCS.zero_class`, at the end of this file. The auxiliary
+-declarations live in the namespace `ALCS.ZeroClassProof` and follow § 2.3 of the paper:
+-
+-* `ell` is the limit `ℓ = lim_{t → 0⁺} κ(t) = inf_{t > 0} κ(t)` (`eq:ell`), and
+-  `norm_Phi_tendsto` identifies it as the limit along any positive null sequence.
+-* Step 1, `doubling`: the doubling inequality `eq:doubling`,
+-  `2 ‖Φ_h u‖ ≤ κ(2h) + ‖(T_h - Id) Φ_h u‖` for `‖u‖ ≤ 1`.
+-* Step 2, `data`, `h`, `x`: nearly extremal pulses `u_n` on rapidly decreasing time
+-  scales `h_n`, with states `x_n = Φ_{h_n} u_n` (`eq:xn-extremal`, `eq:hn-fast`).
+-* Step 3, `packing`, `packedOperator`: the pulses are packed into one bounded operator
+-  `S : ℓ^∞ → X`, and `packedOperator_close` is `eq:Sen-xn`.
+-* Step 4, `x_moves_tendsto`: Lemma 2.3 (`Phillips.uniform`) gives
+-  `‖(T_{h_n} - Id) x_n‖ → 0`, which is the second half of `eq:goal`.
+-
+-## Difference with the paper in Step 3
+-
+-The paper plays the pulses one after the other on consecutive intervals
+-`[s_n, s_{n+1})` and evaluates at the accumulated time `H = Σ h_k`. Here each pulse
+-gets its own *free-evolution time* `r_n ∈ (0, h_n]`, chosen in Step 2 so that
+-`‖T_{r_n} x_n - x_n‖ ≤ 2^{-n}`, and the `n`-th pulse is played on
+-`[1 - r_n - h_n, 1 - r_n)`, with zero input in the gaps; the operator is evaluated at
+-time `1`. Then `S e_n = T_{r_n} x_n` exactly. This changes the bookkeeping, not the
+-argument. The scalar field is `ℝ` or `ℂ` (`RCLike 𝕜`), as required by Phillips' lemma.
+--/
+-
+-open MeasureTheory Filter Topology
+-open scoped ENNReal
+-
+-noncomputable section
+-
+-section Endpoint
+-
+-open scoped BigOperators
+-
+-variable {𝕜 : Type*} [RCLike 𝕜]
+-variable {X : Type*} [NormedAddCommGroup X] [NormedSpace 𝕜 X]
+-variable {U : Type*} [NormedAddCommGroup U] [NormedSpace 𝕜 U]
+-
+-namespace ALCS
+-namespace ZeroClassProof
+-
+-/-! ### Step 1: the doubling inequality -/
+-
+-variable (S : ALCS 𝕜 X U ∞)
+-
+-/-- Step 1, the doubling inequality `eq:doubling`: for `h ≥ 0` and `‖u‖ ≤ 1`,
+-`2 ‖Φ_h u‖ ≤ κ(2h) + ‖T_h (Φ_h u) - Φ_h u‖`, obtained by playing `u` twice in a row. -/
+-lemma doubling {h : ℝ} (hh : 0 ≤ h) (u : Lp U ∞ muPlus)
+-    (hu : ‖u‖ ≤ 1) :
+-    2 * ‖S.Φ h u‖ ≤ ‖S.Φ (2 * h)‖ +
+-      ‖S.T h (S.Φ h u) - S.Φ h u‖ := by
+-  obtain ⟨w, hw, hcat⟩ := exists_concat h u u (by norm_num) hu hu
+-  have hcomp := S.composition h h hh hh u u w hcat
+-  have hnorm : ‖S.Φ (2 * h) w‖ ≤ ‖S.Φ (2 * h)‖ := by
+-    exact ((S.Φ (2 * h)).le_opNorm w).trans
+-      (by simpa using mul_le_mul_of_nonneg_left hw (norm_nonneg (S.Φ (2 * h))))
+-  let x := S.Φ h u
+-  have hid : x + x = S.Φ (2 * h) w - (S.T h x - x) := by
+-    rw [show 2 * h = h + h by ring, hcomp]
+-    dsimp [x]
+-    abel
+-  have htwo : ‖x + x‖ = 2 * ‖x‖ := by
+-    calc
+-      ‖x + x‖ = ‖(2 : 𝕜) • x‖ := by rw [two_smul]
+-      _ = ‖(2 : 𝕜)‖ * ‖x‖ := norm_smul _ _
+-      _ = 2 * ‖x‖ := by rw [show ‖(2 : 𝕜)‖ = 2 from RCLike.norm_natCast 2]
+-  calc
+-    2 * ‖S.Φ h u‖ = ‖x + x‖ := htwo.symm
+-    _ ≤ ‖S.Φ (2 * h) w‖ + ‖S.T h x - x‖ := by
+-      rw [hid]
+-      exact norm_sub_le _ _
+-    _ ≤ ‖S.Φ (2 * h)‖ + ‖S.T h x - x‖ := add_le_add hnorm le_rfl
+-
+-/-! ### Step 2: nearly extremal pulses on rapidly decreasing time scales -/
+-
+-/-- An input of norm at most one which almost realizes `κ(h) = ‖Φ h‖`. -/
+-lemma exists_near_extremal (h ε : ℝ) (hε : 0 < ε) :
+-    ∃ u : Lp U ∞ muPlus, ‖u‖ ≤ 1 ∧ ‖S.Φ h‖ - ε ≤ ‖S.Φ h u‖ := by
+-  by_cases hc : ‖S.Φ h‖ - ε ≤ 0
+-  · exact ⟨0, by simp, by simpa using hc⟩
+-  · by_contra hn
+-    have hbound : ‖S.Φ h‖ ≤ ‖S.Φ h‖ - ε := by
+-      apply ContinuousLinearMap.opNorm_le_of_unit_norm (le_of_lt (lt_of_not_ge hc))
+-      intro u hu
+-      exact (lt_of_not_ge (fun h => hn ⟨u, hu.le, h⟩)).le
+-    linarith
+-
+-/-- A *pulse* of length `h`: a control of norm at most one, given by an actual
+-(everywhere defined) representative vanishing outside `[0, h)`. -/
+-structure Pulse (U : Type*) [NormedAddCommGroup U] (h : ℝ) where
+-  /-- the representative -/
+-  f : ℝ → U
+-  measurable : StronglyMeasurable f
+-  bound : ∀ t, ‖f t‖ ≤ 1
+-  off : ∀ t, t < 0 ∨ h ≤ t → f t = 0
+-
+-namespace Pulse
+-
+-variable {h : ℝ} (P : Pulse U h)
+-
+-/-- The pulse, as an element of `L^∞(ℝ₊; U)`. -/
+-def input : Lp U ∞ muPlus :=
+-  (memLp_of_bound P.measurable P.bound).toLp P.f
+-
+-lemma coe_input : ⇑P.input =ᵐ[muPlus] P.f :=
+-  (memLp_of_bound P.measurable P.bound).coeFn_toLp
+-
+-lemma norm_input : ‖P.input‖ ≤ 1 :=
+-  norm_toLp_le _ (by norm_num) P.bound
+-
+-/-- A pulse of length `h` is switched off after time `h`: `P = P ⋄_h 0`. -/
+-lemma free_rep : ⇑P.input =ᵐ[muPlus]
+-    concat h ⇑P.input ⇑(0 : Lp U ∞ muPlus) := by
+-  have hraw : P.f = concat h P.f (fun _ => (0 : U)) := by
+-    funext t
+-    by_cases ht : t < h
+-    · simp [concat, ht]
+-    · simp [concat, ht, P.off t (Or.inr (not_lt.1 ht))]
+-  exact P.coe_input.trans
+-    ((Filter.EventuallyEq.of_eq hraw).trans
+-      (concat_congr h P.coe_input (Lp.coeFn_zero U ∞ muPlus)).symm)
+-
+-end Pulse
+-
+-/-- A nearly extremal input can be chosen to be a pulse (by causality `eq:causality`,
+-truncating it at time `h` does not change `Φ_h u`). -/
+-lemma exists_pulse (h : ℝ) (hh : 0 ≤ h) (ε : ℝ) (hε : 0 < ε) :
+-    ∃ P : Pulse U h, ‖S.Φ h‖ - ε ≤ ‖S.Φ h P.input‖ := by
+-  obtain ⟨u, hu, hnear⟩ := exists_near_extremal S h ε hε
+-  obtain ⟨g, hg, hgb, hug⟩ := exists_bounded_rep u (by norm_num) hu
+-  let f := (Set.Ico 0 h).indicator g
+-  have hf : StronglyMeasurable f := hg.indicator measurableSet_Ico
+-  have hb : ∀ t, ‖f t‖ ≤ 1 := by
+-    intro t
+-    by_cases ht : t ∈ Set.Ico 0 h
+-    · simpa [f, Set.indicator_of_mem ht] using hgb t
+-    · simp [f, Set.indicator_of_notMem ht]
+-  have hoff : ∀ t, t < 0 ∨ h ≤ t → f t = 0 := by
+-    intro t ht
+-    have hnot : t ∉ Set.Ico 0 h := by
+-      intro hin
+-      rcases ht with ht | ht
+-      · exact (not_lt_of_ge hin.1) ht
+-      · exact (not_lt_of_ge ht) hin.2
+-    exact Set.indicator_of_notMem hnot g
+-  let P : Pulse U h := ⟨f, hf, hb, hoff⟩
+-  have hraw : f =ᵐ[muPlus] concat h g (fun _ => (0 : U)) := by
+-    have hpos : ∀ᵐ t ∂muPlus, t ∈ Set.Ici (0 : ℝ) :=
+-      ae_restrict_mem measurableSet_Ici
+-    filter_upwards [hpos] with t ht
+-    have ht0 : 0 ≤ t := ht
+-    by_cases hth : t < h
+-    · simp [f, concat, hth, Set.mem_Ico, ht0]
+-    · simp [f, concat, hth, Set.mem_Ico]
+-  have hcat : ⇑P.input =ᵐ[muPlus] concat h ⇑u ⇑(0 : Lp U ∞ muPlus) :=
+-    P.coe_input.trans (hraw.trans (concat_congr h hug (Lp.coeFn_zero U ∞ muPlus)).symm)
+-  refine ⟨P, ?_⟩
+-  rwa [S.causality h hh u 0 P.input hcat]
+-
+-/-- The accuracy `2^{-n}` of the `n`-th selection. -/
+-def err (n : ℕ) : ℝ := (1 / 2 : ℝ) ^ n
+-
+-lemma err_pos (n : ℕ) : 0 < err n := by
+-  unfold err
+-  positivity
+-
+-lemma err_tendsto : Tendsto err atTop (𝓝 0) := by
+-  exact tendsto_pow_atTop_nhds_zero_of_lt_one (by norm_num) (by norm_num)
+-
+-/-- The data selected at step `n` of Step 2: a nearly extremal pulse of length `h`
+-(`eq:xn-extremal`), and a free-evolution time `r ∈ (0, h]` during which its state is
+-essentially frozen by the semigroup (the analogue of `eq:hn-fast`). -/
+-structure FrozenPulse (S : ALCS 𝕜 X U ∞) (n : ℕ) (h : ℝ) where
+-  pulse : Pulse U h
+-  near : ‖S.Φ h‖ - err n ≤ ‖S.Φ h pulse.input‖
+-  /-- the free-evolution time -/
+-  r : ℝ
+-  r_pos : 0 < r
+-  r_le : r ≤ h
+-  close : ‖S.T r (S.Φ h pulse.input) - S.Φ h pulse.input‖ ≤ err n
+-
+-lemma frozenPulse_nonempty (n : ℕ) (h : ℝ) (hh : 0 < h) :
+-    Nonempty (FrozenPulse S n h) := by
+-  obtain ⟨P, hP⟩ := exists_pulse S h hh.le (err n) (err_pos n)
+-  obtain ⟨δ, hδ, hc⟩ := Metric.tendsto_nhdsWithin_nhds.1
+-    (S.T_cont (S.Φ h P.input)) (err n) (err_pos n)
+-  let r := min h (δ / 2)
+-  have hr : 0 < r := lt_min hh (by positivity)
+-  have hrh : r ≤ h := min_le_left _ _
+-  have hrδ : r < δ := lt_of_le_of_lt (min_le_right _ _) (by linarith)
+-  refine ⟨⟨P, hP, r, hr, hrh, ?_⟩⟩
+-  have hc' := hc (Set.mem_Ici.2 hr.le)
+-    (show dist r 0 < δ by simpa [Real.dist_eq, abs_of_pos hr] using hrδ)
+-  have hclose : ‖S.T r (S.Φ h P.input) - S.Φ h P.input‖ < err n := by
+-    simpa only [dist_eq_norm] using hc'
+-  exact hclose.le
+-
+-/-- Classical choice is used only to choose actual witnesses to proved existences. -/
+-def choosePulse (n : ℕ) (h : ℝ) (hh : 0 < h) : FrozenPulse S n h :=
+-  Classical.choice (frozenPulse_nonempty S n h hh)
+-
+-/-- The time scales, defined recursively: `h 0 = 1/4` and `h (n + 1) = r n / 4`, so that
+-the next pulse fits inside the free-evolution interval of the previous one. -/
+-def positiveTimes : ℕ → {h : ℝ // 0 < h} :=
+-  Nat.rec ⟨1 / 4, by norm_num⟩
+-    (fun n h =>
+-      ⟨(choosePulse S n h.1 h.2).r / 4,
+-        div_pos (choosePulse S n h.1 h.2).r_pos (by norm_num)⟩)
+-
+-/-- The time scale `h_n`. -/
+-def h (n : ℕ) : ℝ := (positiveTimes S n).1
+-
+-/-- The pulse `u_n` and the free-evolution time `r_n` selected at step `n`. -/
+-def data (n : ℕ) : FrozenPulse S n (h S n) :=
+-  choosePulse S n (h S n) (positiveTimes S n).2
+-
+-/-- The free-evolution time `r_n ∈ (0, h_n]`. -/
+-def r (n : ℕ) : ℝ := (data S n).r
+-
+-/-- The state `x_n = Φ_{h_n} u_n`. -/
+-def x (n : ℕ) : X := S.Φ (h S n) (data S n).pulse.input
+-
+-lemma h_pos (n : ℕ) : 0 < h S n := (positiveTimes S n).2
+-lemma r_pos (n : ℕ) : 0 < r S n := (data S n).r_pos
+-lemma r_le_h (n : ℕ) : r S n ≤ h S n := (data S n).r_le
+-lemma h_zero : h S 0 = 1 / 4 := rfl
+-lemma h_succ (n : ℕ) : h S (n + 1) = r S n / 4 := rfl
+-
+-lemma h_succ_le (n : ℕ) : h S (n + 1) ≤ h S n / 2 := by
+-  rw [h_succ]
+-  have := r_le_h S n
+-  have := (h_pos S n).le
+-  linarith
+-
+-lemma h_le_quarter (n : ℕ) : h S n ≤ 1 / 4 := by
+-  induction n with
+-  | zero => simp [h_zero]
+-  | succ n ih =>
+-    have := h_succ_le S n
+-    linarith
+-
+-lemma h_geometric (n : ℕ) : h S n ≤ err n / 4 := by
+-  induction n with
+-  | zero => simp [h_zero, err]
+-  | succ n ih =>
+-    have := h_succ_le S n
+-    dsimp [err] at ih ⊢
+-    rw [pow_succ]
+-    linarith
+-
+-lemma h_tendsto : Tendsto (h S) atTop (𝓝 0) := by
+-  exact squeeze_zero (fun n => (h_pos S n).le) (h_geometric S)
+-    (by simpa using err_tendsto.div_const 4)
+-
+-lemma x_near (n : ℕ) : ‖S.Φ (h S n)‖ - err n ≤ ‖x S n‖ :=
+-  (data S n).near
+-
+-lemma x_le (n : ℕ) : ‖x S n‖ ≤ ‖S.Φ (h S n)‖ := by
+-  exact ((S.Φ (h S n)).le_opNorm _).trans
+-    (by simpa using
+-      mul_le_mul_of_nonneg_left (data S n).pulse.norm_input (norm_nonneg (S.Φ (h S n))))
+-
+-lemma x_frozen (n : ℕ) : ‖S.T (r S n) (x S n) - x S n‖ ≤ err n :=
+-  (data S n).close
+-
+-/-! ### Step 3: packing the pulses into one bounded operator `ℓ^∞ → X` -/
+-
+-/-- The `n`-th pulse is played on `window n = [start n, start n + h n)`, where
+-`start n = 1 - r n - h n`. These windows are pairwise disjoint subsets of `[0, 1)`. -/
+-def start (n : ℕ) : ℝ := 1 - r S n - h S n
+-
+-/-- The interval on which the `n`-th pulse is played. -/
+-def window (n : ℕ) : Set ℝ := Set.Ico (start S n) (start S n + h S n)
+-
+-/-- The `n`-th pulse, delayed so that it is played on `window n`. -/
+-def block (n : ℕ) (t : ℝ) : U := (data S n).pulse.f (t - start S n)
+-
+-lemma start_nonneg (n : ℕ) : 0 ≤ start S n := by
+-  have := r_le_h S n
+-  have := h_le_quarter S n
+-  dsimp [start]
+-  linarith
+-
+-lemma finish_le_next (n : ℕ) : start S n + h S n ≤ start S (n + 1) := by
+-  have h₁ := r_le_h S (n + 1)
+-  have h₂ := h_succ S n
+-  have h₃ := (r_pos S n).le
+-  dsimp [start]
+-  linarith
+-
+-lemma start_mono : Monotone (start S) := by
+-  apply monotone_nat_of_le_succ
+-  intro n
+-  have := finish_le_next S n
+-  have := (h_pos S n).le
+-  linarith
+-
+-lemma finish_le_start {i j : ℕ} (hij : i < j) :
+-    start S i + h S i ≤ start S j :=
+-  (finish_le_next S i).trans (start_mono S (Nat.succ_le_of_lt hij))
+-
+-lemma window_unique {i j : ℕ} {t : ℝ}
+-    (hi : t ∈ window S i) (hj : t ∈ window S j) : i = j := by
+-  rcases lt_trichotomy i j with hij | hij | hji
+-  · have := finish_le_start S hij
+-    have hi' := hi.2
+-    have hj' := hj.1
+-    linarith
+-  · exact hij
+-  · have := finish_le_start S hji
+-    have hj' := hj.2
+-    have hi' := hi.1
+-    linarith
+-
+-lemma block_measurable (n : ℕ) : StronglyMeasurable (block S n) :=
+-  (data S n).pulse.measurable.comp_measurable (measurable_id.sub_const _)
+-
+-lemma block_bound (n : ℕ) (t : ℝ) : ‖block S n t‖ ≤ 1 :=
+-  (data S n).pulse.bound _
+-
+-lemma block_off (n : ℕ) {t : ℝ} (ht : t ∉ window S n) : block S n t = 0 := by
+-  apply (data S n).pulse.off
+-  by_cases hs : t < start S n
+-  · left
+-    linarith
+-  · right
+-    by_contra hh
+-    apply ht
+-    constructor
+-    · exact not_lt.1 hs
+-    · change t < start S n + h S n
+-      linarith
+-
+-/-- The packed control `u^α` (raw function): on `window n` it is `α_n` times the `n`-th
+-pulse, and it vanishes outside the windows. -/
+-def packRaw (a : Phillips.Linfty 𝕜) : ℝ → U := by
+-  classical
+-  exact fun t => if ht : ∃ n, t ∈ window S n then
+-    a (Classical.choose ht) • block S (Classical.choose ht) t else 0
+-
+-lemma packRaw_on (a : Phillips.Linfty 𝕜) {n : ℕ} {t : ℝ}
+-    (ht : t ∈ window S n) : packRaw S a t = a n • block S n t := by
+-  classical
+-  have hex : ∃ j, t ∈ window S j := ⟨n, ht⟩
+-  have heq : Classical.choose hex = n :=
+-    window_unique S (Classical.choose_spec hex) ht
+-  simp only [packRaw, dite_eq_left hex, heq]
+-
+-lemma packRaw_off (a : Phillips.Linfty 𝕜) {t : ℝ}
+-    (ht : ¬ ∃ n, t ∈ window S n) : packRaw S a t = 0 := by
+-  classical
+-  simp [packRaw, ht]
+-
+-lemma packRaw_add (a b : Phillips.Linfty 𝕜) (t : ℝ) :
+-    packRaw S (a + b) t = packRaw S a t + packRaw S b t := by
+-  classical
+-  by_cases ht : ∃ n, t ∈ window S n
+-  · obtain ⟨n, hn⟩ := ht
+-    rw [packRaw_on S (a + b) hn, packRaw_on S a hn, packRaw_on S b hn]
+-    simp only [BoundedContinuousFunction.add_apply, add_smul]
+-  · simp only [packRaw_off S (a + b) ht, packRaw_off S a ht,
+-      packRaw_off S b ht, add_zero]
+-
+-lemma packRaw_smul (c : 𝕜) (a : Phillips.Linfty 𝕜) (t : ℝ) :
+-    packRaw S (c • a) t = c • packRaw S a t := by
+-  classical
+-  by_cases ht : ∃ n, t ∈ window S n
+-  · obtain ⟨n, hn⟩ := ht
+-    rw [packRaw_on S (c • a) hn, packRaw_on S a hn]
+-    simp only [BoundedContinuousFunction.smul_apply, smul_eq_mul, smul_smul]
+-  · simp only [packRaw_off S (c • a) ht, packRaw_off S a ht, smul_zero]
+-
+-lemma packRaw_bound (a : Phillips.Linfty 𝕜) (t : ℝ) :
+-    ‖packRaw S a t‖ ≤ ‖a‖ := by
+-  classical
+-  by_cases ht : ∃ n, t ∈ window S n
+-  · obtain ⟨n, hn⟩ := ht
+-    rw [packRaw_on S a hn, norm_smul]
+-    have ha : ‖a n‖ ≤ ‖a‖ :=
+-      (BoundedContinuousFunction.norm_le (norm_nonneg a)).1 le_rfl n
+-    calc
+-      ‖a n‖ * ‖block S n t‖ ≤ ‖a n‖ * 1 :=
+-        mul_le_mul_of_nonneg_left (block_bound S n t) (norm_nonneg _)
+-      _ ≤ ‖a‖ := by simpa using ha
+-  · rw [packRaw_off S a ht, norm_zero]
+-    exact norm_nonneg _
+-
+-/-- At every time the partial sums eventually equal the glued function.  This
+-uses pointwise disjointness, not convergence of a series in the L-infinity norm. -/
+-lemma partial_sums_eventually (a : Phillips.Linfty 𝕜) (t : ℝ) :
+-    ∀ᶠ N : ℕ in atTop,
+-      (∑ n ∈ Finset.range N, a n • block S n t) = packRaw S a t := by
+-  classical
+-  by_cases ht : ∃ n, t ∈ window S n
+-  · obtain ⟨n, hn⟩ := ht
+-    filter_upwards [eventually_ge_atTop (n + 1)] with N hN
+-    rw [packRaw_on S a hn]
+-    apply Finset.sum_eq_single n
+-    · intro j _ hjn
+-      have hj : t ∉ window S j :=
+-        fun hj => hjn (window_unique S hj hn)
+-      simp [block_off S j hj]
+-    · intro hnN
+-      exact (hnN (Finset.mem_range.2 (by omega))).elim
+-  · filter_upwards [] with N
+-    rw [packRaw_off S a ht]
+-    apply Finset.sum_eq_zero
+-    intro n _
+-    have hn : t ∉ window S n := fun hn => ht ⟨n, hn⟩
+-    simp [block_off S n hn]
+-
+-lemma packRaw_measurable (a : Phillips.Linfty 𝕜) :
+-    StronglyMeasurable (packRaw S a) := by
+-  classical
+-  apply stronglyMeasurable_of_tendsto atTop
+-    (f := fun N t => ∑ n ∈ Finset.range N, a n • block S n t)
+-  · intro N
+-    exact Finset.stronglyMeasurable_fun_sum (Finset.range N)
+-      (fun n _ => (block_measurable S n).const_smul (a n))
+-  · apply tendsto_pi_nhds.2
+-    intro t
+-    exact tendsto_const_nhds.congr' (Filter.EventuallyEq.symm (partial_sums_eventually S a t))
+-
+-lemma packRaw_memLp (a : Phillips.Linfty 𝕜) : MemLp (packRaw S a) ∞ muPlus :=
+-  memLp_of_bound (packRaw_measurable S a) (packRaw_bound S a)
+-
+-/-- The packed control `u^α ∈ L^∞(ℝ₊; U)`. -/
+-def packedInput (a : Phillips.Linfty 𝕜) : Lp U ∞ muPlus :=
+-  (packRaw_memLp S a).toLp (packRaw S a)
+-
+-lemma packedInput_ae (a : Phillips.Linfty 𝕜) :
+-    ⇑(packedInput S a) =ᵐ[muPlus] packRaw S a :=
+-  (packRaw_memLp S a).coeFn_toLp
+-
+-lemma packedInput_norm (a : Phillips.Linfty 𝕜) : ‖packedInput S a‖ ≤ ‖a‖ :=
+-  norm_toLp_le _ (norm_nonneg _) (packRaw_bound S a)
+-
+-lemma packedInput_add (a b : Phillips.Linfty 𝕜) :
+-    packedInput S (a + b) = packedInput S a + packedInput S b := by
+-  apply Lp.ext
+-  filter_upwards [packedInput_ae S (a + b), packedInput_ae S a,
+-    packedInput_ae S b, Lp.coeFn_add (packedInput S a) (packedInput S b)]
+-      with t hab ha hb hsum
+-  rw [hab, hsum]
+-  simpa only [Pi.add_apply, ha, hb] using packRaw_add S a b t
+-
+-lemma packedInput_smul (c : 𝕜) (a : Phillips.Linfty 𝕜) :
+-    packedInput S (c • a) = c • packedInput S a := by
+-  apply Lp.ext
+-  filter_upwards [packedInput_ae S (c • a), packedInput_ae S a,
+-    Lp.coeFn_smul c (packedInput S a)] with t hca ha hsmul
+-  rw [hca, hsmul]
+-  simpa only [Pi.smul_apply, ha] using packRaw_smul S c a t
+-
+-/-- The contraction `α ↦ u^α` from `ℓ^∞` to `L^∞(ℝ₊; U)`. -/
+-def packing : Phillips.Linfty 𝕜 →L[𝕜] Lp U ∞ muPlus :=
+-  LinearMap.mkContinuous
+-    { toFun := packedInput S
+-      map_add' := packedInput_add S
+-      map_smul' := fun c a => by
+-        simpa using packedInput_smul S c a }
+-    1 (fun a => by simpa using packedInput_norm S a)
+-
+-lemma packing_ae (a : Phillips.Linfty 𝕜) :
+-    ⇑(packing S a) =ᵐ[muPlus] packRaw S a := packedInput_ae S a
+-
+-lemma packRaw_e (n : ℕ) (t : ℝ) :
+-    packRaw S (Phillips.e n) t = block S n t := by
+-  classical
+-  by_cases hn : t ∈ window S n
+-  · rw [packRaw_on S _ hn]
+-    simp
+-  · rw [block_off S n hn]
+-    by_cases ht : ∃ j, t ∈ window S j
+-    · obtain ⟨j, hj⟩ := ht
+-      have hjn : j ≠ n := by
+-        intro heq
+-        subst j
+-        exact hn hj
+-      rw [packRaw_on S _ hj]
+-      simp [Phillips.e_apply, hjn]
+-    · exact packRaw_off S _ ht
+-
+-/-- The operator `S : ℓ^∞ → X`, `S α = Φ_1 u^α`. -/
+-def packedOperator : Phillips.Linfty 𝕜 →L[𝕜] X :=
+-  (S.Φ 1).comp (packing S)
+-
+-/-- `S e_n = T_{r_n} x_n`: the `n`-th state, after it has evolved freely during the
+-time `r_n` (by `eq:delay` and then `eq:free`). -/
+-lemma packedOperator_e (n : ℕ) :
+-    packedOperator S (Phillips.e n) = S.T (r S n) (x S n) := by
+-  let P := (data S n).pulse
+-  have hraw : packRaw S (Phillips.e n) =
+-      concat (start S n) (fun _ => (0 : U)) P.f := by
+-    funext t
+-    rw [packRaw_e]
+-    by_cases ht : t < start S n
+-    · have hoff : P.f (t - start S n) = 0 :=
+-        P.off _ (Or.inl (by linarith))
+-      simpa [concat, ht, block, P] using hoff
+-    · simp [concat, ht, block, P]
+-  have hw : ⇑(packing S (Phillips.e n)) =ᵐ[muPlus]
+-      concat (start S n) ⇑(0 : Lp U ∞ muPlus) ⇑P.input :=
+-    (packing_ae S _).trans
+-      ((Filter.EventuallyEq.of_eq hraw).trans
+-        (concat_congr (start S n) (Lp.coeFn_zero U ∞ muPlus) P.coe_input).symm)
+-  have hsum : start S n + (h S n + r S n) = 1 := by
+-    unfold start
+-    ring
+-  change S.Φ 1 (packing S (Phillips.e n)) = _
+-  rw [← hsum]
+-  rw [S.delay (start S n) (h S n + r S n) (start_nonneg S n)
+-    (add_nonneg (h_pos S n).le (r_pos S n).le) P.input _ hw]
+-  exact S.free (h S n) (r S n) (h_pos S n).le (r_pos S n).le
+-    P.input P.input P.free_rep
+-
+-/-- `‖S e_n - x_n‖ ≤ 2^{-n}`, equation `eq:Sen-xn`. -/
+-lemma packedOperator_close (n : ℕ) :
+-    ‖packedOperator S (Phillips.e n) - x S n‖ ≤ err n := by
+-  rw [packedOperator_e]
+-  exact x_frozen S n
+-
+-/-! ### The limit `ℓ` of `κ(t)` as `t → 0⁺` (`eq:ell`) -/
+-
+-/-- The possible input-map norms at strictly positive times. -/
+-def normRange : Set ℝ := (fun t : ℝ => ‖S.Φ t‖) '' Set.Ioi 0
+-
+-lemma normRange_nonempty : (normRange S).Nonempty :=
+-  ⟨‖S.Φ 1‖, 1, by norm_num, rfl⟩
+-
+-lemma normRange_bddBelow : BddBelow (normRange S) := by
+-  refine ⟨0, ?_⟩
+-  rintro y ⟨t, _, rfl⟩
+-  exact norm_nonneg _
+-
+-/-- `ℓ = inf_{t > 0} κ(t)`, equation `eq:ell`. -/
+-def ell : ℝ := sInf (normRange S)
+-
+-lemma ell_nonneg : 0 ≤ ell S := by
+-  apply le_csInf (normRange_nonempty S)
+-  rintro y ⟨t, _, rfl⟩
+-  exact norm_nonneg _
+-
+-lemma ell_le (t : ℝ) (ht : 0 < t) : ell S ≤ ‖S.Φ t‖ :=
+-  csInf_le (normRange_bddBelow S) ⟨t, ht, rfl⟩
+-
+-lemma exists_norm_lt (ε : ℝ) (hε : 0 < ε) :
+-    ∃ t : ℝ, 0 < t ∧ ‖S.Φ t‖ < ell S + ε := by
+-  by_contra hn
+-  have hbad : ell S + ε ≤ ell S := by
+-    apply le_csInf (normRange_nonempty S)
+-    rintro y ⟨t, ht, rfl⟩
+-    exact le_of_not_gt (fun hlt => hn ⟨t, ht, hlt⟩)
+-  linarith
+-
+-/-- Monotonicity identifies the norm limit along every positive null sequence. -/
+-lemma norm_Phi_tendsto (t : ℕ → ℝ) (htpos : ∀ n, 0 < t n)
+-    (ht : Tendsto t atTop (𝓝 0)) :
+-    Tendsto (fun n => ‖S.Φ (t n)‖) atTop (𝓝 (ell S)) := by
+-  rw [Metric.tendsto_atTop]
+-  intro ε hε
+-  obtain ⟨τ, hτ, hτnorm⟩ := exists_norm_lt S ε hε
+-  obtain ⟨N, hN⟩ := Metric.tendsto_atTop.1 ht τ hτ
+-  refine ⟨N, fun n hn => ?_⟩
+-  have htn : t n < τ := by
+-    have hdist := hN n hn
+-    simpa only [Real.dist_eq, sub_zero, abs_of_pos (htpos n)] using hdist
+-  have hupper := norm_Phi_mono S (htpos n).le htn.le
+-  have hlower := ell_le S (t n) (htpos n)
+-  rw [Real.dist_eq, abs_of_nonneg (sub_nonneg.2 hlower)]
+-  linarith
+-
+-/-- First half of `eq:goal`: `‖x_n‖ → ℓ`. -/
+-lemma x_norm_tendsto : Tendsto (fun n => ‖x S n‖) atTop (𝓝 (ell S)) := by
+-  have hk := norm_Phi_tendsto S (h S) (h_pos S) (h_tendsto S)
+-  rw [Metric.tendsto_atTop]
+-  intro ε hε
+-  obtain ⟨N₁, hN₁⟩ := Metric.tendsto_atTop.1 hk ε hε
+-  obtain ⟨N₂, hN₂⟩ := Metric.tendsto_atTop.1 err_tendsto ε hε
+-  refine ⟨max N₁ N₂, fun n hn => ?_⟩
+-  have hkdist := hN₁ n (le_trans (le_max_left _ _) hn)
+-  have hedist := hN₂ n (le_trans (le_max_right _ _) hn)
+-  have hkabs : |‖S.Φ (h S n)‖ - ell S| < ε := by
+-    simpa only [Real.dist_eq] using hkdist
+-  have he : err n < ε := by
+-    simpa only [Real.dist_eq, sub_zero, abs_of_pos (err_pos n)] using hedist
+-  have hupper := x_le S n
+-  have hnear := x_near S n
+-  have hlower := ell_le S (h S n) (h_pos S n)
+-  rw [Real.dist_eq]
+-  obtain ⟨_, hkright⟩ := abs_lt.1 hkabs
+-  exact abs_lt.2 ⟨by linarith, by linarith⟩
+-
+-/-! ### Step 4: conclusion with Lemma 2.3 -/
+-
+-/-- Second half of `eq:goal`: `‖T_{h_n} x_n - x_n‖ → 0`. By Lemma 2.3
+-(`Phillips.uniform`), `‖(T_{h_n} - Id) S e_n‖ → 0`, and `S e_n` is `2^{-n}`-close to `x_n`. -/
+-lemma x_moves_tendsto [CompleteSpace X] :
+-    Tendsto (fun n => ‖S.T (h S n) (x S n) - x S n‖) atTop (𝓝 0) := by
+-  obtain ⟨ω, hω, M, hM, hbound⟩ := S.toC0Semigroup.exists_exp_bound
+-  let K : ℝ := M * Real.exp ω
+-  have hM0 : 0 ≤ M := le_trans (by norm_num) hM
+-  have hK : 0 ≤ K := mul_nonneg hM0 (Real.exp_pos _).le
+-  have hTbound : ∀ n, ‖S.T (h S n)‖ ≤ K := by
+-    intro n
+-    calc
+-      ‖S.T (h S n)‖ ≤ M * Real.exp (ω * h S n) :=
+-        hbound _ (h_pos S n).le
+-      _ ≤ M * Real.exp ω := by
+-        apply mul_le_mul_of_nonneg_left _ hM0
+-        apply Real.exp_le_exp.2
+-        have hn : h S n ≤ 1 := le_trans (h_le_quarter S n) (by norm_num)
+-        simpa only [mul_one] using mul_le_mul_of_nonneg_left hn hω
+-      _ = K := rfl
+-  let A : ℕ → X →L[𝕜] X :=
+-    fun n => S.T (h S n) - ContinuousLinearMap.id 𝕜 X
+-  have hAbound : ∀ n, ‖A n‖ ≤ K + 1 := by
+-    intro n
+-    calc
+-      ‖A n‖ ≤ ‖S.T (h S n)‖ + ‖ContinuousLinearMap.id 𝕜 X‖ := norm_sub_le _ _
+-      _ ≤ K + 1 := add_le_add (hTbound n) (ContinuousLinearMap.norm_id_le)
+-  have hPhillips : Tendsto
+-      (fun n => ‖A n (packedOperator S (Phillips.e n))‖) atTop (𝓝 0) := by
+-    exact Phillips.uniform (packedOperator S) S.T S.T_cont
+-      (h S) (fun n => (h_pos S n).le) (h_tendsto S)
+-  have herror : ∀ n, ‖S.T (h S n) (x S n) - x S n‖ ≤
+-      ‖A n (packedOperator S (Phillips.e n))‖ + (K + 1) * err n := by
+-    intro n
+-    let y := packedOperator S (Phillips.e n)
+-    have hxy : ‖x S n - y‖ ≤ err n := by
+-      rw [norm_sub_rev]
+-      exact packedOperator_close S n
+-    have hsplit : A n (x S n) = A n y + A n (x S n - y) := by
+-      rw [map_sub]
+-      abel
+-    calc
+-      ‖S.T (h S n) (x S n) - x S n‖ = ‖A n (x S n)‖ := rfl
+-      _ = ‖A n y + A n (x S n - y)‖ := congrArg norm hsplit
+-      _ ≤ ‖A n y‖ + ‖A n (x S n - y)‖ := norm_add_le _ _
+-      _ ≤ ‖A n y‖ + ‖A n‖ * ‖x S n - y‖ :=
+-        add_le_add le_rfl ((A n).le_opNorm _)
+-      _ ≤ ‖A n y‖ + (K + 1) * err n := by
+-        apply add_le_add le_rfl
+-        exact mul_le_mul (hAbound n) hxy (norm_nonneg _) (by linarith)
+-  apply squeeze_zero (fun n => norm_nonneg _) herror
+-  simpa only [mul_zero, add_zero] using
+-    hPhillips.add (err_tendsto.const_mul (K + 1))
+-
+-end ZeroClassProof
+-
+-open ZeroClassProof
+-
+-/-- **Theorem 1.5** (`thm:p-infty-zero-class`). Let `X`, `U` be real or complex Banach
+-spaces and `S = (𝕋, Φ)` an abstract linear control system with `p = ∞`. Then `S` is of
+-the zero-class: `‖Φ t‖ → 0` as `t → 0⁺`.
+-
+-Proof: by Steps 2–4, `‖x_n‖ → ℓ` and `‖T_{h_n} x_n - x_n‖ → 0`; passing to the limit in
+-the doubling inequality of Step 1 gives `2ℓ ≤ ℓ`, hence `ℓ = 0`. -/
+-theorem zero_class [CompleteSpace X] [CompleteSpace U] (S : ALCS 𝕜 X U ∞) :
+-    S.IsZeroClass := by
+-  have hx := x_norm_tendsto S
+-  have hm := x_moves_tendsto S
+-  have htwo : Tendsto (fun n => ‖S.Φ (2 * h S n)‖) atTop (𝓝 (ell S)) :=
+-    norm_Phi_tendsto S (fun n => 2 * h S n)
+-      (fun n => mul_pos (by norm_num) (h_pos S n))
+-      (by simpa only [mul_zero] using (h_tendsto S).const_mul 2)
+-  have hineq : ∀ n, 2 * ‖x S n‖ ≤ ‖S.Φ (2 * h S n)‖ +
+-      ‖S.T (h S n) (x S n) - x S n‖ := by
+-    intro n
+-    exact doubling S (h_pos S n).le (data S n).pulse.input
+-      (data S n).pulse.norm_input
+-  have hlimit : 2 * ell S ≤ ell S := by
+-    have hleft := hx.const_mul 2
+-    have hright := htwo.add hm
+-    have hle := le_of_tendsto_of_tendsto hleft hright
+-      (Filter.Eventually.of_forall hineq)
+-    simpa only [add_zero] using hle
+-  have hell : ell S = 0 := by
+-    have := ell_nonneg S
+-    linarith
+-  rw [IsZeroClass, Metric.tendsto_nhdsWithin_nhds]
+-  intro ε hε
+-  obtain ⟨τ, hτ, hnormτ⟩ := exists_norm_lt S ε hε
+-  rw [hell, zero_add] at hnormτ
+-  refine ⟨τ, hτ, fun t ht hdist => ?_⟩
+-  have ht0 : 0 ≤ t := ht
+-  have htτ : t < τ := by
+-    simpa only [Real.dist_eq, sub_zero, abs_of_nonneg ht0] using hdist
+-  have hsmall : ‖S.Φ t‖ < ε :=
+-    lt_of_le_of_lt (norm_Phi_mono S ht0 htτ.le) hnormτ
+-  simpa using hsmall
+-
+-end ALCS
+-
+-end Endpoint
+-
+-end
+diff --git a/Solution.lean b/Solution.lean
+index 11318e759..5c8fb6f01 100644
+--- a/Solution.lean
++++ b/Solution.lean
+@@ -1,76 +1,218 @@
+ module
+ 
+-public import ALCS.ContinuityLinfty
++public import Mathlib.Analysis.Normed.Module.HahnBanach
++public import Mathlib.Analysis.Normed.Operator.BanachSteinhaus
++public import Mathlib.Analysis.RCLike.Basic
++public import Mathlib.Analysis.SpecificLimits.Basic
++public import Mathlib.Analysis.SpecificLimits.Normed
++public import Mathlib.Data.Nat.Pairing
++public import Mathlib.Data.Nat.Nth
++public import Mathlib.Data.Set.Finite.Lemmas
++public import Mathlib.MeasureTheory.Function.LpSpace.Complete
++public import Mathlib.MeasureTheory.Function.LpSpace.ContinuousCompMeasurePreserving
++public import Mathlib.MeasureTheory.Function.LpSpace.Indicator
++public import Mathlib.MeasureTheory.Function.UniformIntegrable
++public import Mathlib.MeasureTheory.Measure.Haar.Unique
++public import Mathlib.MeasureTheory.Measure.Lebesgue.Basic
++public import Mathlib.MeasureTheory.Measure.RegularityCompacts
++public import Mathlib.Topology.Algebra.InfiniteSum.Real
++public import Mathlib.Topology.ContinuousMap.Bounded.Normed
++public import Mathlib.Topology.Instances.Nat
++public import Mathlib.Topology.Order.Monotone
++public import Mathlib.MeasureTheory.Function.LpSeminorm.LpNorm
+ 
+ public section
+ 
+-/-!
+-# Proofs of the statements of `Challenge.lean`
++open MeasureTheory Filter Topology Set
++open scoped ENNReal BoundedContinuousFunction
+ 
+-The two declarations below have exactly the statements of `Challenge.lean` (Comparator
+-checks this). Their hypotheses are bundled into the structure `ALCS` (Definition 1.1,
+-`ALCS/Definitions.lean`) and the proofs are those of the development:
++variable {𝕜 : Type*} [RCLike 𝕜] {X : Type*} [NormedAddCommGroup X] [NormedSpace 𝕜 X] [CompleteSpace X]
++  {U : Type*} [NormedAddCommGroup U] [NormedSpace 𝕜 U] [CompleteSpace U]
+ 
+-* `PalomarALCS.zero_class` : Theorem 1.5 (`thm:p-infty-zero-class`), from
+-  `ALCS.zero_class` in `ALCS/ZeroClass.lean`;
+-* `PalomarALCS.continuousOn_Phi` : Corollary 1.6 (`cor:p-infty-solution-continuous`),
+-  from `ALCS.continuousOn_Phi` in `ALCS/ContinuityLinfty.lean`.
+--/
++notation "μ" => volume.restrict (Ici (0:ℝ))
++set_option hygiene false
++notation "L∞" => Lp U ∞ μ
++notation "Λ" => ℕ →ᵇ 𝕜
++notation "D" Y => Λ →L[𝕜] Y
++notation:50 f " ≗ " g:50 => f =ᵐ[μ] g
+ 
+-open MeasureTheory Filter Topology
+-open scoped ENNReal
++notation:max "ƒ" x:max b => fun x => b
++notation "cat" a:max f:max g:max => ƒ s ite (s < a) (f s) (g (s - a))
++notation:max "Fn" b => fun n => b
+ 
+-namespace PalomarALCS
++theorem cc a (hf : f ≗ f') (hg : g ≗ g') :
++    cat a f g ≗ cat a f' g' := by
++  filter_upwards [hf, ae_restrict_of_ae ((measurePreserving_sub_right volume a).quasiMeasurePreserving.ae ((ae_restrict_iff' measurableSet_Ici).1 hg))]
++  grind
+ 
+-variable {𝕜 : Type*} [RCLike 𝕜]
+-variable {X : Type*} [NormedAddCommGroup X] [NormedSpace 𝕜 X] [CompleteSpace X]
+-variable {U : Type*} [NormedAddCommGroup U] [NormedSpace 𝕜 U] [CompleteSpace U]
+ 
+-local notation "L∞(ℝ₊; " U ")" => Lp U ∞ (volume.restrict (Set.Ici (0 : ℝ)))
+ 
+-/-- **Theorem 1.5** (`thm:p-infty-zero-class`): every abstract linear control system with
+-`p = ∞` is zero-class, `‖Φ t‖ → 0` as `t → 0⁺`. -/
+-theorem zero_class
+-    (T : ℝ → X →L[𝕜] X)
+-    (Φ : ℝ → L∞(ℝ₊; U) →L[𝕜] X)
+-    -- `T` is a strongly continuous semigroup on `X`:
+-    (hT_zero : T 0 = ContinuousLinearMap.id 𝕜 X)
+-    (hT_semigroup : ∀ t s : ℝ, 0 ≤ t → 0 ≤ s → T (t + s) = (T t).comp (T s))
+-    (hT_cont : ∀ x : X, Tendsto (fun t => T t x) (𝓝[≥] 0) (𝓝 x))
+-    -- concatenation identity `Φ_{τ+t} (u ◇_τ v) = T_t (Φ_τ u) + Φ_t v`,
+-    -- where `w` represents the concatenation `u ◇_τ v`:
+-    (hΦ_concat : ∀ τ t : ℝ, 0 ≤ τ → 0 ≤ t →
+-      ∀ u v w : L∞(ℝ₊; U),
+-      (⇑w =ᵐ[volume.restrict (Set.Ici (0 : ℝ))]
+-        (fun s => if s < τ then u s else v (s - τ))) →
+-      Φ (τ + t) w = T t (Φ τ u) + Φ t v) :
+-    Tendsto (fun t => ‖Φ t‖) (𝓝[≥] 0) (𝓝 0) := by
+-  let S : ALCS 𝕜 X U ∞ :=
+-    { T := T, T_zero := hT_zero, T_add := hT_semigroup, T_cont := hT_cont,
+-      Φ := Φ, composition := hΦ_concat }
+-  exact S.zero_class
+-
+-/-- **Corollary 1.6** (`cor:p-infty-solution-continuous`): for `p = ∞` and every input
+-`u ∈ L^∞(ℝ₊; U)`, `t ↦ Φ t u` is continuous on `[0, ∞)`. -/
+-theorem continuousOn_Phi
+-    (T : ℝ → X →L[𝕜] X)
+-    (Φ : ℝ → L∞(ℝ₊; U) →L[𝕜] X)
+-    -- `T` is a strongly continuous semigroup on `X`:
++theorem rep (u : L∞) : ∃ f, StronglyMeasurable f ∧ (∀ t, ‖f t‖ ≤ ‖u‖) ∧ u ≗ f := by
++  have h := Lp.stronglyMeasurable u
++  refine ⟨{t | ‖u t‖ ≤ ‖u‖}.indicator u, h.indicator (h.norm.measurableSet_le stronglyMeasurable_const), ƒ t by unfold indicator; split_ifs <;> simp_all, ?_⟩
++  filter_upwards [ae_le_lpNorm_exponent_top (Lp.memLp u)] with t (h : ‖u t‖ ≤ ‖u‖)
++  grind [indicator]
++
++notation "EW" f => ∃ w : L∞, ‖w‖ ≤ C ∧ w ≗ f
++theorem mk (hf : StronglyMeasurable f) (h : ∀ t, ‖f t‖ ≤ C) :
++    EW f :=
++  ⟨_, by
++    simpa [hf.aestronglyMeasurable] using ENNReal.toReal_le_of_le_ofReal ((norm_nonneg _).trans (h 0)) (eLpNormEssSup_le_of_ae_bound (.of_forall h)), (memLp_top_of_bound hf.aestronglyMeasurable C (.of_forall h)).coeFn_toLp⟩
++
++theorem ec a {u v : L∞} (hu : ‖u‖ ≤ C) (hv : ‖v‖ ≤ C) :
++    EW cat a u v := by
++  have hf := (rep u).choose_spec
++  have hg := (rep v).choose_spec
++  exact (mk (hf.1.ite measurableSet_Iio (hg.1.comp_measurable (measurable_sub_const a))) ƒ t by grind).imp ƒ w And.imp_right (·.trans (cc a hf.2.2 hg.2.2).symm)
++noncomputable def chi (S : Set ℕ) : Λ :=
++  .ofNormedAddCommGroupDiscrete (S.indicator 1) 1 ƒ _ (norm_indicator_le_norm_self ..).trans norm_one.le
++notation:max "χ" n:max => chi {n}
++
++theorem small (φ : D 𝕜) (hS : Set.Infinite S) (hδ : 0 < δ) :
++    ∃ T ⊆ S, T.Infinite ∧ ∀ B ⊆ T, ‖φ (chi B)‖ ≤ δ := by
++  by_contra! h
++  let g i j := Nat.nth (· ∈ S) (Nat.pair i j)
++  have hg {i j i' j'} (h : g i j = g i' j') := Nat.pair_eq_pair.1 (Nat.nth_injective hS h)
++  choose B hB hBδ using ƒ i h (range (g i)) (range_subset_iff.2 ƒ j Nat.nth_mem_of_infinite hS _)
++    (infinite_range_of_injective fun j k h => (hg h).2)
++  have hd {i j x} (hi : x ∈ B i) hj :=
++    (hg ((hB i hi).choose_spec.trans (hB j hj).choose_spec.symm)).1
++  obtain ⟨N, hN⟩ := exists_nat_gt (‖φ‖ * δ⁻¹)
++  have : ‖∑ i ∈ Finset.range N, (φ (chi (B i)))⁻¹ • chi (𝕜 := 𝕜) (B i)‖ ≤ δ⁻¹ := by
++    refine BoundedContinuousFunction.norm_le_of_nonempty.2 ƒ x ?_
++    rw [BoundedContinuousFunction.sum_apply]
++    by_cases hx : ∃ i ∈ Finset.range N, x ∈ B i
++    · obtain ⟨i, hi, hx⟩ := hx
++      rw [Finset.sum_eq_single_of_mem i hi ƒ j by simp [chi]; grind]
++      simpa [chi, hx] using inv_anti₀ hδ (hBδ i).le
++    simp_all [chi, Finset.sum_eq_zero]
++    grind
++  refine hN.not_ge ?_
++  grw [← this, ← φ.le_opNorm]
++  simp [norm_pos_iff.1 (hδ.trans (hBδ _))]
++
++notation:max "σi" => σ i
++notation:max "G" => gt_mem_nhds (a := ε / 4) (by grind)
++notation:max "N0" => 𝓝 0
++notation "PR" => ℕ × {R : Set ℕ // R.Infinite}
++theorem phillips (A : ℕ → D X)
++    (hA : ∀ a, Tendsto (Fn A n a) atTop N0) :
++    Tendsto (Fn A n χ n) atTop N0 := by
++  refine Metric.tendsto_nhds.2 fun ε hε => ?_
++  by_contra h
++  choose φ hφ hφe using Fn exists_dual_vector'' 𝕜 (A n χ n)
++  have hμ C := ((tendsto_norm_zero.comp (hA (chi C))).eventually G).mono Fn ƒ h
++    ((φ n).le_of_opNorm_le (hφ n) _).trans_lt ((one_mul _).trans_lt h)
++  choose n hh hn T hT hTi hs using fun p : PR =>
++    (((finite_Iic p.1).finite_subsets.eventually_all.2 Fn ƒ _ hμ n).and_frequently (Nat.frequently_atTop_iff_infinite.2 p.2.2)).exists.imp Fn
++      And.imp_right (And.intro · (small ((φ n).comp (A n)) (p.2.2.sdiff (finite_Iic n)) (half_pos hε)))
++  let σ : ℕ → PR :=
++    Nat.rec (0, ⟨_, Nat.frequently_atTop_iff_infinite.1 (not_eventually.1 h)⟩) fun _ p => (n p, ⟨T p, hTi p⟩)
++  let N i := n σi
++  have hR : Antitone ƒ i σi.2.1 := antitone_nat_of_succ_le ƒ i (hT _).trans sdiff_subset
++  have hN : StrictMono N := strictMono_nat_of_lt_succ ƒ i not_le.1 (hT _ (hn (σ (i + 1)))).2
++  have hM : Monotone ƒ i σi.1 := monotone_nat_of_le_succ ƒ i i.casesOn zero_le ƒ k hN.monotone k.le_succ
++  obtain ⟨i, hi⟩ := (hN.tendsto_atTop.eventually (hμ (range N))).exists
++  have e : chi (𝕜 := 𝕜) {N i} = chi (range N) - chi (N '' Iio i) - chi (N '' Ioi i) := by
++    ext x
++    rcases em (x ∈ range N) with ⟨k, rfl⟩ | hx <;> simp_all [chi, indicator, Pi.single_apply, hN.injective.eq_iff]
++    grind
++  grind [norm_sub_le, show ε ≤ ‖φ (N i) (A (N i) χ (N i))‖ by simpa [hφe, σ, N] using hR i.zero_le (hn _),
++    hh σi (N '' Iio i) (image_subset_iff.2 ƒ _ Fn hM n),
++    hs σi (N '' Ioi i) (image_subset_iff.2 ƒ _ Fn hR n (hn _))]
++
++notation "ℒ" f => Lp.ext (((hw _).2.trans ?_).trans (f ..).symm)
++theorem pack (B : ℕ → ℝ → U) (hB : ∀ n, StronglyMeasurable (B n)) (hb : ∀ n t, ‖B n t‖ ≤ 1)
++    (hd : ∀ i j t, B i t ≠ 0 → B j t ≠ 0 → i = j) :
++    ∃ P : D L∞, ∀ n, P χ n ≗ B n := by
++  have hm n t h := hd _ _ _ (Classical.epsilon_spec (p := (B · t ≠ 0)) ⟨n, h⟩) h
++  choose w hw using fun a : Λ => mk
++    (stronglyMeasurable_of_tendsto _ (ƒ N Finset.stronglyMeasurable_fun_sum _ Fn ƒ _ (hB n).const_smul (a n))
++      (tendsto_pi_nhds.2 ƒ t (hasSum_single (Classical.epsilon Fn B n t ≠ 0) Fn ƒ h by simp; grind).tendsto_sum_nat))
++    ƒ t by grw [Pi.smul_apply, norm_smul, hb, a.norm_coe_le_norm, mul_comm]
++  refine ⟨LinearMap.mkContinuous ⟨⟨w, ƒ a Fn ℒ Lp.coeFn_add⟩, ƒ c Fn ℒ Lp.coeFn_smul⟩ 1 ƒ a (hw a).1, Fn (hw _).2.trans (.of_forall ƒ t ?_)⟩
++  · filter_upwards [(hw a).2, (hw n).2]
++    simp_all [add_smul]
++  · filter_upwards [(hw n).2]
++    simp_all [smul_smul]
++  simp [chi, Pi.single_apply]
++  grind
++
++variable (T : ℝ → X →L[𝕜] X) (Φ : ℝ → L∞ →L[𝕜] X)
+     (hT_zero : T 0 = ContinuousLinearMap.id 𝕜 X)
+-    (hT_semigroup : ∀ t s : ℝ, 0 ≤ t → 0 ≤ s → T (t + s) = (T t).comp (T s))
+-    (hT_cont : ∀ x : X, Tendsto (fun t => T t x) (𝓝[≥] 0) (𝓝 x))
+-    -- concatenation identity `Φ_{τ+t} (u ◇_τ v) = T_t (Φ_τ u) + Φ_t v`,
+-    -- where `w` represents the concatenation `u ◇_τ v`:
+-    (hΦ_concat : ∀ τ t : ℝ, 0 ≤ τ → 0 ≤ t →
+-      ∀ u v w : L∞(ℝ₊; U),
+-      (⇑w =ᵐ[volume.restrict (Set.Ici (0 : ℝ))]
+-        (fun s => if s < τ then u s else v (s - τ))) →
++    (hT_semigroup : ∀ t s, 0 ≤ t → 0 ≤ s → T (t + s) = (T t).comp (T s))
++    (hT_cont : ∀ x, Tendsto (T · x) (𝓝[≥] 0) (𝓝 x))
++    (hΦ_concat : ∀ τ t, 0 ≤ τ → 0 ≤ t →
++      ∀ u v w : L∞, w ≗ cat τ u v →
+       Φ (τ + t) w = T t (Φ τ u) + Φ t v)
+-    (u : L∞(ℝ₊; U)) :
+-    ContinuousOn (fun t => Φ t u) (Set.Ici 0) := by
+-  let S : ALCS 𝕜 X U ∞ :=
+-    { T := T, T_zero := hT_zero, T_add := hT_semigroup, T_cont := hT_cont,
+-      Φ := Φ, composition := hΦ_concat }
+-  exact S.continuousOn_Phi u
+-
+-end PalomarALCS
++include hT_zero hT_semigroup hT_cont hΦ_concat
++
++notation:max "gn" => g n
++
++notation:max "NΦ" => (‖Φ ·‖)
++theorem PalomarALCS.zero_class : Tendsto NΦ (𝓝[≥] 0) N0 := by
++
++  let s := NΦ '' Ioi 0
++  have hb : BddBelow s := ⟨0, by simp [s, lowerBounds]⟩
++  have hℓ := MonotoneOn.tendsto_nhdsGT (fun s hs t _ hst => (Φ s).opNorm_le_bound (norm_nonneg _) ƒ u by
++    have h := (ec (t - s) (norm_zero.trans_le (norm_nonneg u)) le_rfl).choose_spec
++    grind [hΦ_concat _ _ (by linarith) hs.le _ _ _ h.2, (Φ t).le_opNorm_of_le h.1]) hb
++  set ℓ := sInf s
++  choose! u hu r hr hy using ƒ x Fn
++    ((Φ (x / 2)).exists_lt_apply_of_lt_opNorm ((sub_lt_self ℓ n).trans_le (csInf_le hb ⟨x / 2, half_pos n, rfl⟩))).imp fun u h =>
++      And.intro h.1.le (Filter.Eventually.and (Ioo_mem_nhdsGT (half_pos n)) (((hT_cont _).norm.eventually (lt_mem_nhds h.2)).filter_mono (nhdsWithin_mono _ Ioi_subset_Ici_self))).exists
++  let a : ℕ → ℝ := Nat.rec 1 ƒ _ r
++  have ha n : 0 < a n := n.rec one_pos ƒ _ Fn (hr _ n).1
++  have anti : Antitone a := antitone_nat_of_succ_le Fn by grind
++  have ha0 := (summable_of_ratio_norm_eventually_le (f := a) one_half_lt_one (.of_forall Fn by grind [Real.norm_eq_abs])).tendsto_atTop_zero
++  let g n := a n / 2 + a (n + 1)
++  have hgp n : 0 < gn := by grind
++  have hg0 : Tendsto g atTop N0 := by simpa using (ha0.div_const 2).add (ha0.comp (tendsto_add_atTop_nat 1))
++  choose f hf hfb hfu using Fn rep (u (a n))
++  choose w hw hw' using Fn ec (a n / 2) (hu _ (ha n)) (norm_zero.trans_le zero_le_one)
++  let B n := cat (1 - gn) (ƒ _ 0) (cat (a n / 2) (f n) ƒ _ 0)
++  obtain ⟨P, hP⟩ := pack (𝕜 := 𝕜) B (Fn stronglyMeasurable_const.ite measurableSet_Iio (((hf n).ite measurableSet_Iio stronglyMeasurable_const).comp_measurable (measurable_sub_const _)))
++    (Fn ƒ t by grind [norm_zero])
++    ƒ i ƒ j by grind [lt_trichotomy i j, Antitone]
++  let S := (Φ 1).comp P
++  have hS n : S χ n = Φ gn (w n) := by
++    simpa [S] using hΦ_concat _ _ (by grind [show a n ≤ 1 from anti n.zero_le]) (hgp n).le _ _ _
++      ((hP n).trans (cc _ (Lp.coeFn_zero ..).symm ((hw' n).trans (cc _ (hfu n) (Lp.coeFn_zero ..))).symm))
++
++  rw [← nhdsGT_sup_nhdsWithin_singleton]
++  exact ((show ℓ = 0 by linarith [le_of_tendsto_of_tendsto' ((ha0.const_sub ℓ).const_mul 2) ((hℓ.comp (tendsto_nhdsWithin_iff.2 ⟨by simpa using hg0.add hg0, .of_forall Fn by grind⟩)).add (tendsto_norm_zero.comp (phillips (Fn (T gn - 1).comp S) ƒ b by simpa using ((hT_cont (S b)).comp (tendsto_nhdsWithin_iff.2 ⟨hg0, .of_forall Fn by grind⟩)).sub_const (S b)))) (ƒ n by
++    have h := (ec gn (hw n) (hw n)).choose_spec
++    set y := Φ gn (w n)
++    have := norm_sub_le (T gn y + y) (T gn y - y)
++    simp [← two_smul 𝕜, norm_smul] at this ⊢
++    grind [(Φ (gn + gn)).le_opNorm_of_le h.1, hΦ_concat _ _ (half_pos (ha n)).le (ha (n + 1)).le _ _ _ (hw' n)]), ge_of_tendsto' hℓ ƒ _ norm_nonneg _]) ▸ hℓ).sup (by simpa [show Φ 0 = 0 by ext u; simpa [hT_zero] using hΦ_concat 0 0 le_rfl le_rfl u u u (by simp)] using tendsto_pure_nhds NΦ 0)
++
++
++
++theorem PalomarALCS.continuousOn_Phi (u : L∞) : ContinuousOn (Φ · u) (Ici 0) := by
++  obtain ⟨M, hM⟩ : ∃ M, ∀ᶠ t in 𝓝[≥] 0, ‖T t‖ ≤ M := by
++    by_contra! h
++    have hB := (𝓝[≥] (0:ℝ)).exists_antitone_basis.choose_spec
++    choose t ht hM using Fn (Filter.Eventually.and_frequently (hB.mem n) (h n)).exists
++    obtain ⟨C, hC⟩ := banach_steinhaus ƒ x by
++      simpa [bddAbove_def] using ((hT_cont x).comp (hB.tendsto ht)).norm.bddAbove_range
++    grind [exists_nat_gt C]
++  obtain ⟨f, hf, hfb, huf⟩ := rep u
++  refine Metric.continuousOn_iff.2 fun t₀ ht₀ ε hε => ?_
++  obtain ⟨η, hη, hηs⟩ := mem_nhdsGE_iff_exists_Ico_subset.1 ((((PalomarALCS.zero_class T Φ hT_zero hT_semigroup hT_cont hΦ_concat).mul_const ‖u‖).eventually G).and hM)
++  set c := max (t₀ - η / 2) 0
++  have hv := (mk (hf.comp_measurable (measurable_const_add c)) ƒ t hfb _).choose_spec
++  set x := Φ c u
++  have hq s (h1 : 0 ≤ s) (h2 : s < η) : dist (T s x) (Φ (c + s) u) < ε / 4 := by
++    rw [hΦ_concat _ _ (le_max_right ..) h1 u _ u (huf.trans ((cc c huf hv.2).trans (.of_forall ƒ t by simp)).symm), dist_self_add_right]
++    grw [(Φ _).le_opNorm_of_le hv.1]
++    exact (hηs ⟨h1, h2⟩).1
++  obtain ⟨δ, hδ, hδs⟩ := (mem_nhdsGE_iff_exists_mem_Ioc_Ico_subset (half_pos hη)).1 (((tendsto_iff_dist_tendsto_zero.1 (hT_cont x)).const_mul M).eventually G)
++  have orb p q (hp : 0 ≤ p) (hpη : p < η) (hpq : p ≤ q) (hqp : q - p < δ) : dist (T q x) (T p x) < ε / 4 := by
++    rw [← add_sub_cancel p q, hT_semigroup _ _ hp, ContinuousLinearMap.comp_apply]
++    grw [(T p).dist_le_opNorm, (hηs ⟨hp, hpη⟩).2]
++    exact hδs ⟨by linarith, hqp⟩
++    linarith
++  refine ⟨δ, hδ.1, fun t ht hd => ?_⟩
++  grw [dist_triangle4 _ (T (t - c) x) (T (t₀ - c) x)]
++  grind [dist_comm, abs_lt.1 hd]
