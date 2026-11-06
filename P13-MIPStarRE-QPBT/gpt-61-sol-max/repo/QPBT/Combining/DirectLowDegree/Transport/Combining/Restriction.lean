@@ -1,5 +1,9 @@
 module
 
+public import QPBT.Algebra.CoordinatePolynomial
+
+public import QPBT.Types
+
 public import QPBT.Combining.DirectLowDegree.Transport.Combining.Linearity
 
 /-!
@@ -57,12 +61,12 @@ theorem combinedVar_cases {m k : ℕ} (i : Fin (m + k)) :
   · exact Or.inr ⟨r, by rw [combinedCoefficientVar, ← h, Equiv.apply_symm_apply]⟩
 
 @[simp] theorem combinedPoint_combinedPointVar {K : Type*} {m k : ℕ}
-    (u : Fin m → K) (α : Fin k → K) (j : Fin m) :
+    (u : MIPStarRE.QPBT.Coordinates m K) (α : MIPStarRE.QPBT.Coordinates k K) (j : Fin m) :
     combinedPoint u α (combinedPointVar m k j) = u j := by
   simp [combinedPoint, combinedPointVar]
 
 @[simp] theorem combinedPoint_combinedCoefficientVar {K : Type*} {m k : ℕ}
-    (u : Fin m → K) (α : Fin k → K) (r : Fin k) :
+    (u : MIPStarRE.QPBT.Coordinates m K) (α : MIPStarRE.QPBT.Coordinates k K) (r : Fin k) :
     combinedPoint u α (combinedCoefficientVar m k r) = α r := by
   simp [combinedPoint, combinedCoefficientVar]
 
@@ -71,32 +75,34 @@ theorem combinedVar_cases {m k : ℕ} (i : Fin (m + k)) :
 /-- The substitution replacing the point coordinates by the coordinates of `u`
 and keeping the combining coordinates as variables. -/
 def combinedRestrictSubstitution {K : Type*} [CommSemiring K] {m : ℕ} (k : ℕ)
-    (u : Fin m → K) : Fin (m + k) → MvPolynomial (Fin k) K :=
+    (u : MIPStarRE.QPBT.Coordinates m K) : Fin (m + k) → MIPStarRE.QPBT.CoordinatePolynomial k K :=
   fun i => Sum.elim (fun j : Fin m => MvPolynomial.C (u j))
-    (fun r : Fin k => MvPolynomial.X r) (finSumFinEquiv.symm i)
+    MvPolynomial.X (finSumFinEquiv.symm i)
 
-@[simp] theorem combinedRestrictSubstitution_point {K : Type*} [CommSemiring K]
-    {m k : ℕ} (u : Fin m → K) (j : Fin m) :
+variable {K : Type*} [CommSemiring K] {m k : ℕ}
+
+@[simp] theorem combinedRestrictSubstitution_point
+     (u : MIPStarRE.QPBT.Coordinates m K) (j : Fin m) :
     combinedRestrictSubstitution k u (combinedPointVar m k j) =
       MvPolynomial.C (u j) := by
   simp [combinedRestrictSubstitution, combinedPointVar]
 
-@[simp] theorem combinedRestrictSubstitution_coefficient {K : Type*} [CommSemiring K]
-    {m k : ℕ} (u : Fin m → K) (r : Fin k) :
+@[simp] theorem combinedRestrictSubstitution_coefficient
+     (u : MIPStarRE.QPBT.Coordinates m K) (r : Fin k) :
     combinedRestrictSubstitution k u (combinedCoefficientVar m k r) =
-      (MvPolynomial.X r : MvPolynomial (Fin k) K) := by
+      (MvPolynomial.X r : MIPStarRE.QPBT.CoordinatePolynomial k K) := by
   simp [combinedRestrictSubstitution, combinedCoefficientVar]
 
 /-- The polynomial `p(u, ·)` in the combining variables obtained from `p` by
 substituting the point `u` for the point variables. -/
-def combinedRestrict {K : Type*} [CommSemiring K] {m k : ℕ}
-    (p : MvPolynomial (Fin (m + k)) K) (u : Fin m → K) : MvPolynomial (Fin k) K :=
+def combinedRestrict
+    (p : MIPStarRE.QPBT.CoordinatePolynomial (m + k) K) (u : MIPStarRE.QPBT.Coordinates m K) : MIPStarRE.QPBT.CoordinatePolynomial k K :=
   MvPolynomial.aeval (combinedRestrictSubstitution k u) p
 
 /-- Evaluating the restriction of `p` at `u` at a combining vector `α`
 evaluates `p` at the combined point with parts `u` and `α`. -/
-theorem eval_combinedRestrict {K : Type*} [CommSemiring K] {m k : ℕ}
-    (p : MvPolynomial (Fin (m + k)) K) (u : Fin m → K) (α : Fin k → K) :
+theorem eval_combinedRestrict
+    (p : MIPStarRE.QPBT.CoordinatePolynomial (m + k) K) (u : MIPStarRE.QPBT.Coordinates m K) (α : MIPStarRE.QPBT.Coordinates k K) :
     MvPolynomial.eval α (combinedRestrict p u) =
       MvPolynomial.eval (combinedPoint u α) p := by
   have hcomp : (MvPolynomial.aeval (R := K) α).comp

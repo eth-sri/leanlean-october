@@ -35,7 +35,7 @@ EPR pair, including arbitrary auxiliary registers in local player order. -/
 theorem extracted_epr_actions_eq {I J V : Type*}
     [Fintype I] [DecidableEq I] [Fintype J] [DecidableEq J]
     [Fintype V] [DecidableEq V] [Nonempty V]
-    (aux : EuclideanSpace ℂ (I × J)) (T : Op V) (hT : Tᵀ = T) :
+    (aux : MIPStarRE.QPBT.StateVector (I × J)) (T : Op V) (hT : Tᵀ = T) :
     applyOperatorToState (heteroKron (heteroKron (1 : Op I) T) (1 : Op (J × V)))
         (reindexState prodShuffle (vecTensor aux (eprState V))) =
       applyOperatorToState (heteroKron (1 : Op (I × V)) (heteroKron (1 : Op J) T))
@@ -57,18 +57,18 @@ This is the quantitative combination of paper `eq:qld-unitary-7` through
 theorem pauli_distance_on_ideal_le {P : AdmissibleParams} {I J : Type*}
     [Fintype I] [DecidableEq I] [Fintype J] [DecidableEq J]
     (A : Measurement (PauliRegister P) (I × PauliRegister P)) (W : PauliKind)
-    (aux : EuclideanSpace ℂ (I × J)) (haux : ‖aux‖ = 1)
-    (theta : EuclideanSpace ℂ ((I × PauliRegister P) × (J × PauliRegister P)))
+    (aux : MIPStarRE.QPBT.StateVector (I × J)) (haux : ‖aux‖ = 1)
+    (theta : MIPStarRE.QPBT.StateVector ((I × PauliRegister P) ×  J × PauliRegister P ))
     (htheta : ‖theta‖ = 1) :
     let ideal := reindexState prodShuffle (vecTensor aux (eprState (PauliRegister P)))
     let B := rightPlacedMeasurement (ιA := J) (pauliRegisterMeas (params := P) W)
-    (∑ h : PauliRegister P, ‖applyOperatorToState
+     ∑ h : PauliRegister P, ‖applyOperatorToState
       (heteroKron (A.effect h - heteroKron (1 : Op I) (pauliProj W h))
-        (1 : Op (J × PauliRegister P))) ideal‖ ^ 2) ≤
-      2 * (1 - avgOver (uniformDistribution (Fin P.m → PauliScalar P)) (fun u =>
+        (1 : Op (J × PauliRegister P))) ideal‖ ^ 2  ≤
+      2 * (1 - avgOver (uniformDistribution (MIPStarRE.QPBT.PauliPoint P))  fun u =>
         ∑ a : PauliScalar P, stateQForm theta
-          (heteroKron ((A.postprocess (fun h => evalPoly (encodingPoly h) u)).effect a)
-            ((B.postprocess (fun h => evalPoly (encodingPoly h) u)).effect a)))) +
+          (heteroKron ((A.postprocess  fun h => evalPoly (encodingPoly h) u ).effect a)
+            ((B.postprocess  fun h => evalPoly (encodingPoly h) u ).effect a)) ) +
         2 * ((P.m * P.d : ℝ) / P.q) + 4 * ‖theta - ideal‖ := by
   dsimp only
   let ideal := reindexState prodShuffle (vecTensor aux (eprState (PauliRegister P)))
@@ -85,15 +85,9 @@ theorem pauli_distance_on_ideal_le {P : AdmissibleParams} {I J : Type*}
             (1 : Op (J × PauliRegister P))) ideal =
         applyOperatorToState
           ((leftPlacedMeasurement (ιB := J × PauliRegister P) A).effect h -
-            (rightPlacedMeasurement (ιA := I × PauliRegister P) B).effect h) ideal := by
-    change applyOperatorToState (heteroKron (A.effect h - _) _) ideal =
-      applyOperatorToState (heteroKron (A.effect h) _ -
-        heteroKron _ (heteroKron _ (pauliProj W h))) ideal
-    rw [heteroKron_sub_left, MagicSquareRigidity.applyOperatorToState_sub_op,
-      MagicSquareRigidity.applyOperatorToState_sub_op,
-      extracted_epr_actions_eq aux _ (pauliProj_transpose W h)]
+            (rightPlacedMeasurement (ιA := I × PauliRegister P) B).effect h) ideal := by aesop (add simp [pauliProj_transpose, extracted_epr_actions_eq, heteroKron_sub_left, MagicSquareRigidity.applyOperatorToState_sub_op])
   have hsum := Finset.sum_congr (s₁ := (Finset.univ : Finset (PauliRegister P)))
-    rfl (fun h _ => congrArg (fun v => ‖v‖ ^ 2) (haction h))
+    rfl  fun h _ => congrArg (fun v => ‖v‖ ^ 2) (haction h) 
   rw [hsum]
   have hoverlap := pauli_overlap_transfer A B theta ideal htheta hideal
   simp only [leftPlacedMeasurement, rightPlacedMeasurement, Measurement.ofSumEqOne,
@@ -114,7 +108,7 @@ theorem extraction_small_error_absorption (C delta : ℝ) (m d q : ℕ)
   have hsqrt : Real.sqrt delta ≤ delta ^ (1 / 4 : ℝ) := by
     rw [Real.sqrt_eq_rpow]
     exact Real.rpow_le_rpow_of_exponent_ge' hdelta hdelta_one (by norm_num) (by norm_num)
-  have hr : 0 ≤ (((m * d : ℕ) : ℝ) / q) := by positivity
+  have hr : 0 ≤  ((m * d : ℕ) : ℝ) / q  := by positivity
   have hp := mul_le_mul_of_nonneg_right hC
     (add_nonneg (Real.rpow_nonneg hdelta (1 / 4)) hr)
   constructor

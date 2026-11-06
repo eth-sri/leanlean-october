@@ -42,7 +42,7 @@ route is explained in `docs/paper-gaps/qpbt_combined-points-field-valued.tex`.
 
 @[expose] public section
 
-open scoped BigOperators Matrix MatrixOrder ComplexOrder
+open scoped BigOperators Matrix MatrixOrder ComplexOrder Classical
 
 namespace MIPStarRE.QPBT
 
@@ -67,20 +67,20 @@ theorem avgOver_rpow_quarter_le {X : Type*} (𝒟 : Distribution X)
     avgOver 𝒟 (fun x => Real.rpow (b x) (1 / 4 : ℝ)) ≤
       Real.rpow (avgOver 𝒟 b) (1 / 4 : ℝ) := by
   have h1 : |avgOver 𝒟 (fun x => Real.sqrt (Real.sqrt (b x)))| ≤
-      Real.sqrt (avgOver 𝒟 (fun x => Real.sqrt (b x))) :=
+      Real.sqrt (avgOver 𝒟  fun x => Real.sqrt (b x) ) :=
     MIPStarRE.LDT.Preliminaries.avgOver_abs_le_sqrt_of_pointwise 𝒟 _ _
-      (fun x => by rw [abs_of_nonneg (Real.sqrt_nonneg _)])
+       fun x => by rw [abs_of_nonneg (Real.sqrt_nonneg _)] 
       (fun x => Real.sqrt_nonneg _) h𝒟
-  have h2 : |avgOver 𝒟 (fun x => Real.sqrt (b x))| ≤ Real.sqrt (avgOver 𝒟 b) :=
+  have h2  :=
     MIPStarRE.LDT.Preliminaries.avgOver_abs_le_sqrt_of_pointwise 𝒟 _ _
-      (fun x => by rw [abs_of_nonneg (Real.sqrt_nonneg _)]) hb h𝒟
-  have havg : 0 ≤ avgOver 𝒟 b := avgOver_nonneg 𝒟 b hb
+       fun x => by rw [abs_of_nonneg (Real.sqrt_nonneg _)]  hb h𝒟
+  have havg  := avgOver_nonneg 𝒟 b hb
   rw [rpow_quarter_eq_sqrt_sqrt havg]
   calc avgOver 𝒟 (fun x => Real.rpow (b x) (1 / 4 : ℝ))
-      = avgOver 𝒟 (fun x => Real.sqrt (Real.sqrt (b x))) :=
+      = avgOver 𝒟  fun x => Real.sqrt (Real.sqrt (b x))  :=
         avgOver_congr _ _ _ fun x => rpow_quarter_eq_sqrt_sqrt (hb x)
     _ ≤ |avgOver 𝒟 (fun x => Real.sqrt (Real.sqrt (b x)))| := le_abs_self _
-    _ ≤ Real.sqrt (avgOver 𝒟 (fun x => Real.sqrt (b x))) := h1
+    _ ≤ Real.sqrt (avgOver 𝒟  fun x => Real.sqrt (b x) ) := h1
     _ ≤ Real.sqrt (Real.sqrt (avgOver 𝒟 b)) :=
         Real.sqrt_le_sqrt (le_trans (le_abs_self _) h2)
 
@@ -92,7 +92,7 @@ orthonormalize the sandwich POVM on Bob's side. -/
 def baAaBipartition (P : AdmissibleParams) (ιA ιB : Type*) :
     SixReg P ιA ιB ≃
       (ιB × PauliRegister P) ×
-        ((ιA × PauliRegister P) × (PauliRegister P × PauliRegister P)) where
+         (ιA × PauliRegister P) ×  PauliRegister P × PauliRegister P   where
   toFun := fun ⟨⟨a, a', a''⟩, b, b', b''⟩ => ((b, a''), ((a, a'), (b', b'')))
   invFun := fun ⟨⟨b, a''⟩, ⟨a, a'⟩, b', b''⟩ => ((a, (a', a'')), (b, (b', b'')))
   left_inv := by rintro ⟨⟨a, a', a''⟩, b, b', b''⟩; rfl
@@ -109,17 +109,8 @@ theorem reindexOp_baAaBipartition_left (S : ProjectiveSetting P ε)
     reindexOp (baAaBipartition P S.toStrategy.ιA S.toStrategy.ιB)
         (heteroKron O
           (1 : Op ((S.toStrategy.ιA × PauliRegister P) ×
-            (PauliRegister P × PauliRegister P)))) =
-      S.place .BA'' O := by
-  ext i j
-  obtain ⟨⟨a, a', a''⟩, b, b', b''⟩ := i
-  obtain ⟨⟨c, c', c''⟩, d, d', d''⟩ := j
-  simp only [reindexOp, Matrix.reindex_apply, Matrix.submatrix_apply,
-    Equiv.symm_symm, place, baAaBipartition, Equiv.coe_fn_mk, heteroKron,
-    Matrix.kronecker, Matrix.kroneckerMap_apply, Matrix.one_apply, Prod.mk.injEq]
-  split_ifs
-  all_goals simp_all
-  all_goals rfl
+             PauliRegister P × PauliRegister P ))) =
+      S.place .BA'' O := by aesop (add simp [Matrix.one_apply, baAaBipartition, heteroKron, place, reindexOp])
 
 /-- Under the `BA'' | AA'(B'B'')` bipartition, an `AA'` placement is the
 ordinary right tensor placement, with identity on the unused EPR pair. -/
@@ -128,16 +119,7 @@ theorem reindexOp_baAaBipartition_right (S : ProjectiveSetting P ε)
     reindexOp (baAaBipartition P S.toStrategy.ιA S.toStrategy.ιB)
         (heteroKron (1 : Op (S.toStrategy.ιB × PauliRegister P))
           (heteroKron O (1 : Op (PauliRegister P × PauliRegister P)))) =
-      S.place .AA' O := by
-  ext i j
-  obtain ⟨⟨a, a', a''⟩, b, b', b''⟩ := i
-  obtain ⟨⟨c, c', c''⟩, d, d', d''⟩ := j
-  simp only [reindexOp, Matrix.reindex_apply, Matrix.submatrix_apply,
-    Equiv.symm_symm, place, baAaBipartition, Equiv.coe_fn_mk, heteroKron,
-    Matrix.kronecker, Matrix.kroneckerMap_apply, Matrix.one_apply, Prod.mk.injEq]
-  split_ifs
-  all_goals simp_all
-  all_goals rfl
+      S.place .AA' O := by aesop (add simp [Matrix.one_apply, baAaBipartition, heteroKron, place, reindexOp])
 
 /-! ## Transport along a bipartition -/
 
@@ -152,11 +134,11 @@ state. -/
 theorem consistencyDefect_reindex_eq {α : Type*} [Fintype α] [DecidableEq α]
     (e : SixReg P S.toStrategy.ιA S.toStrategy.ιB ≃
       S.ExpandedLocalSpace p₁.side ×
-        (S.ExpandedLocalSpace p₂.side × (PauliRegister P × PauliRegister P)))
+         S.ExpandedLocalSpace p₂.side ×  PauliRegister P × PauliRegister P  )
     (he₁ : ∀ O : Op (S.ExpandedLocalSpace p₁.side),
       reindexOp e (heteroKron O
         (1 : Op (S.ExpandedLocalSpace p₂.side ×
-          (PauliRegister P × PauliRegister P)))) = S.place p₁ O)
+           PauliRegister P × PauliRegister P ))) = S.place p₁ O)
     (he₂ : ∀ O : Op (S.ExpandedLocalSpace p₂.side),
       reindexOp e (heteroKron (1 : Op (S.ExpandedLocalSpace p₁.side))
         (heteroKron O (1 : Op (PauliRegister P × PauliRegister P)))) =
@@ -170,7 +152,6 @@ theorem consistencyDefect_reindex_eq {α : Type*} [Fintype α] [DecidableEq α]
         (reindexState e S.psiHat) =
       ∑ a : α, ∑ b : α, if a = b then 0 else
         stateQForm S.psiHat (S.place p₁ (Q.effect a) * S.place p₂ (R.effect b)) := by
-  classical
   unfold consistencyDefect
   rw [avgOver_uniform_const]
   refine Finset.sum_congr rfl fun a _ => Finset.sum_congr rfl fun b _ => ?_
@@ -189,23 +170,17 @@ state. -/
 theorem opFamilyDistSq_reindex_left_eq {α : Type*} [Fintype α]
     (e : SixReg P S.toStrategy.ιA S.toStrategy.ιB ≃
       S.ExpandedLocalSpace p₁.side ×
-        (S.ExpandedLocalSpace p₂.side × (PauliRegister P × PauliRegister P)))
+         S.ExpandedLocalSpace p₂.side ×  PauliRegister P × PauliRegister P  )
     (he₁ : ∀ O : Op (S.ExpandedLocalSpace p₁.side),
       reindexOp e (heteroKron O
         (1 : Op (S.ExpandedLocalSpace p₂.side ×
-          (PauliRegister P × PauliRegister P)))) = S.place p₁ O)
+           PauliRegister P × PauliRegister P ))) = S.place p₁ O)
     (A B : α → Op (S.ExpandedLocalSpace p₁.side)) :
     opFamilyDistSq (uniformDistribution Unit)
         (fun _ a => heteroKron (A a) 1) (fun _ a => heteroKron (B a) 1)
         (reindexState e S.psiHat) =
       ∑ a : α, ‖applyOperatorToState (S.place p₁ (A a) - S.place p₁ (B a))
-        S.psiHat‖ ^ 2 := by
-  classical
-  unfold opFamilyDistSq
-  rw [avgOver_uniform_const]
-  refine Finset.sum_congr rfl fun a _ => ?_
-  rw [WinImplications.norm_applyOperatorToState_reindexState,
-    WinImplications.reindexOp_sub, he₁, he₁]
+        S.psiHat‖ ^ 2 := by simp_all only [avgOver_uniform_const, opFamilyDistSq, WinImplications.norm_applyOperatorToState_reindexState, WinImplications.reindexOp_sub]
 
 set_option synthInstance.maxSize 400 in
 /-- Fiberwise orthonormalization of the sandwich POVM: for the placement pair
@@ -220,11 +195,11 @@ carried out for each point pair and averaged by Jensen's inequality. -/
 theorem exists_projective_close_sandwich (hopp : p₁.IsOpposite p₂)
     (e : SixReg P S.toStrategy.ιA S.toStrategy.ιB ≃
       S.ExpandedLocalSpace p₁.side ×
-        (S.ExpandedLocalSpace p₂.side × (PauliRegister P × PauliRegister P)))
+         S.ExpandedLocalSpace p₂.side ×  PauliRegister P × PauliRegister P  )
     (he₁ : ∀ O : Op (S.ExpandedLocalSpace p₁.side),
       reindexOp e (heteroKron O
         (1 : Op (S.ExpandedLocalSpace p₂.side ×
-          (PauliRegister P × PauliRegister P)))) = S.place p₁ O)
+           PauliRegister P × PauliRegister P ))) = S.place p₁ O)
     (he₂ : ∀ O : Op (S.ExpandedLocalSpace p₂.side),
       reindexOp e (heteroKron (1 : Op (S.ExpandedLocalSpace p₁.side))
         (heteroKron O (1 : Op (PauliRegister P × PauliRegister P)))) =
@@ -245,7 +220,6 @@ theorem exists_projective_close_sandwich (hopp : p₁.IsOpposite p₂)
           S.psiHat ≤
           220 * Real.rpow (avgOver (uniformDistribution (PointPair P))
             (S.sandwichDefectBound p₁ p₂)) (1 / 4 : ℝ) := by
-  classical
   have hψ : ‖reindexState e S.psiHat‖ = 1 := by
     rw [reindexState_norm_eq, psiHat_norm]
   have hxz : ∀ xz : PointPair P,
@@ -282,11 +256,11 @@ theorem exists_projective_close_sandwich (hopp : p₁.IsOpposite p₂)
           (S.place p₁ ((Q xz).effect ab) -
             S.place p₁ ((S.sandwichPoint p₁.side xz.1 xz.2).effect ab))
           S.psiHat‖ ^ 2)
-      ≤ avgOver (uniformDistribution (PointPair P)) (fun xz =>
-          220 * Real.rpow (S.sandwichDefectBound p₁ p₂ xz) (1 / 4 : ℝ)) :=
+      ≤ avgOver (uniformDistribution (PointPair P))  fun xz =>
+          220 * Real.rpow (S.sandwichDefectBound p₁ p₂ xz) (1 / 4 : ℝ)  :=
         avgOver_mono _ _ _ fun xz => (hQ xz).2
-    _ = 220 * avgOver (uniformDistribution (PointPair P)) (fun xz =>
-          Real.rpow (S.sandwichDefectBound p₁ p₂ xz) (1 / 4 : ℝ)) :=
+    _ = 220 * avgOver (uniformDistribution (PointPair P))  fun xz =>
+          Real.rpow (S.sandwichDefectBound p₁ p₂ xz) (1 / 4 : ℝ)  :=
         avgOver_const_mul _ _ _
     _ ≤ 220 * Real.rpow (avgOver (uniformDistribution (PointPair P))
           (S.sandwichDefectBound p₁ p₂)) (1 / 4 : ℝ) := by
@@ -317,8 +291,8 @@ theorem exists_projective_close_sandwich_alice (S : ProjectiveSetting P ε) :
             (S.sandwichDefectBound .AA' .BA'')) (1 / 4 : ℝ) :=
   S.exists_projective_close_sandwich .AA' .BA'' trivial
     (aaBaBipartition P S.toStrategy.ιA S.toStrategy.ιB)
-    (fun O => reindexOp_aaBaBipartition_left S O)
-    (fun O => reindexOp_aaBaBipartition_right S O)
+    ( reindexOp_aaBaBipartition_left S )
+     (reindexOp_aaBaBipartition_right S) 
 
 /-- Fiberwise orthonormalization on Bob's side, for the placement pair
 `BA''`, `AA'`.  Both the pointwise and the averaged bound are on squared
@@ -341,8 +315,8 @@ theorem exists_projective_close_sandwich_bob (S : ProjectiveSetting P ε) :
             (S.sandwichDefectBound .BA'' .AA')) (1 / 4 : ℝ) :=
   S.exists_projective_close_sandwich .BA'' .AA' trivial
     (baAaBipartition P S.toStrategy.ιA S.toStrategy.ιB)
-    (fun O => reindexOp_baAaBipartition_left S O)
-    (fun O => reindexOp_baAaBipartition_right S O)
+    ( reindexOp_baAaBipartition_left S )
+     (reindexOp_baAaBipartition_right S) 
 
 end ProjectiveSetting
 

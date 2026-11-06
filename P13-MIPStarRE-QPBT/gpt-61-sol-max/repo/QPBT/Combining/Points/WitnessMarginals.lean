@@ -22,7 +22,7 @@ are a separate later step of that proof and are not formalized here.
 
 @[expose] public section
 
-open scoped BigOperators Matrix MatrixOrder ComplexOrder
+open scoped BigOperators Matrix MatrixOrder ComplexOrder Classical
 
 namespace MIPStarRE.QPBT
 
@@ -43,11 +43,10 @@ theorem CombinedPointsWitness.marginal_X_distance_le
     (p1 p2 : Placement) (hopp : p1.IsOpposite p2) :
     opFamilyDistSq
       (uniformDistribution
-        ((Fin P.m → PauliScalar P) × (Fin P.m → PauliScalar P)))
+        ( MIPStarRE.QPBT.PauliPoint P  ×  MIPStarRE.QPBT.PauliPoint P ))
       (fun xz a => ∑ b, S.place p1 ((points.Q p1.side xz.1 xz.2).effect (a, b)))
       (fun xz a => S.place p2 ((S.pointMeasExp p2.side .X xz.1).effect a))
       S.psiHat ≤ 4 * δQ := by
-  classical
   refine le_trans ?_ (mul_le_mul_of_nonneg_left (points.consistent_ZX p1 p2 hopp)
     (by norm_num : (0 : ℝ) ≤ 4))
   unfold opFamilyDistSq
@@ -64,7 +63,7 @@ theorem CombinedPointsWitness.marginal_X_distance_le
     (fun hbc => DistanceCalculus.projective_effect_mul_effect_eq_zero
       (S.placedMeasurement p1 (points.Q p1.side xz.1 xz.2))
       (S.placedMeasurement_isProjective p1 _ (points.projective _ _ _))
-      (fun hpair => hbc (congrArg Prod.snd hpair)))
+       fun hpair => hbc (congrArg Prod.snd hpair) )
     (S.placedMeasurement p2 (S.pointMeasExp p2.side .Z xz.2))
     (S.placedMeasurement_isProjective p2 _ (S.pointMeasExp_isProjective _ _ _))
     (fun b => S.place_comm p1 p2 hopp _ _)
@@ -82,11 +81,10 @@ theorem CombinedPointsWitness.marginal_Z_distance_le
     (p1 p2 : Placement) (hopp : p1.IsOpposite p2) :
     opFamilyDistSq
       (uniformDistribution
-        ((Fin P.m → PauliScalar P) × (Fin P.m → PauliScalar P)))
+        ( MIPStarRE.QPBT.PauliPoint P  ×  MIPStarRE.QPBT.PauliPoint P ))
       (fun xz b => ∑ a, S.place p1 ((points.Q p1.side xz.1 xz.2).effect (a, b)))
       (fun xz b => S.place p2 ((S.pointMeasExp p2.side .Z xz.2).effect b))
       S.psiHat ≤ 4 * δQ := by
-  classical
   refine le_trans ?_ (mul_le_mul_of_nonneg_left (points.consistent_XZ p1 p2 hopp)
     (by norm_num : (0 : ℝ) ≤ 4))
   unfold opFamilyDistSq
@@ -103,7 +101,7 @@ theorem CombinedPointsWitness.marginal_Z_distance_le
     (fun hac => DistanceCalculus.projective_effect_mul_effect_eq_zero
       (S.placedMeasurement p1 (points.Q p1.side xz.1 xz.2))
       (S.placedMeasurement_isProjective p1 _ (points.projective _ _ _))
-      (fun hpair => hac (congrArg Prod.fst hpair)))
+       fun hpair => hac (congrArg Prod.fst hpair) )
     (S.placedMeasurement p2 (S.pointMeasExp p2.side .X xz.1))
     (S.placedMeasurement_isProjective p2 _ (S.pointMeasExp_isProjective _ _ _))
     (fun a => S.place_comm p1 p2 hopp _ _)

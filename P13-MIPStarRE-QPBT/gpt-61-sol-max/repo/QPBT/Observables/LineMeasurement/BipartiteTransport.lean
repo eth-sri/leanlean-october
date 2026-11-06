@@ -61,14 +61,14 @@ theorem opFamilyDistSq_placed_le_two_mul_one_sub_overlap {X α ιA ιB : Type*}
     (μ : Distribution X) (hμ : μ.IsProbability)
     (A : X → MIPStarRE.Quantum.Measurement α ιA)
     (B : X → MIPStarRE.Quantum.Measurement α ιB)
-    (ψ : EuclideanSpace ℂ (ιA × ιB)) (hψ : ‖ψ‖ = 1) :
+    (ψ : MIPStarRE.QPBT.StateVector (ιA × ιB)) (hψ : ‖ψ‖ = 1) :
     opFamilyDistSq μ (fun x a => heteroKron ((A x).effect a) 1)
         (fun x a => heteroKron 1 ((B x).effect a)) ψ ≤
-      2 * (1 - avgOver μ (fun x => ∑ a,
+      2 * (1 - avgOver μ  fun x => ∑ a,
         stateQForm ψ (heteroKron ((A x).effect a) 1 *
-          heteroKron 1 ((B x).effect a)))) := by
+          heteroKron 1 ((B x).effect a)) ) := by
   classical
-  letI : Fintype X := Fintype.ofFinite X
+  letI  := Fintype.ofFinite X
   refine (WinImplications.opFamilyDistSq_placed_le_two_mul_consistencyDefect
     μ A B ψ).trans (le_of_eq ?_)
   congr 1
@@ -94,7 +94,7 @@ theorem stateQForm_aaBa_mul_eq (S : ProjectiveSetting P ε)
         (reindexState (aaBaBipartition P S.toStrategy.ιA S.toStrategy.ιB)
           S.psiHat)
         (heteroKron X (1 : Op ((S.toStrategy.ιB × PauliRegister P) ×
-            (PauliRegister P × PauliRegister P))) *
+             PauliRegister P × PauliRegister P )) *
           heteroKron (1 : Op (S.toStrategy.ιA × PauliRegister P))
             (heteroKron Y (1 : Op (PauliRegister P × PauliRegister P)))) =
       DistanceCalculus.stateQForm S.psiHat (S.place .AA' X * S.place .BA'' Y) := by
@@ -111,7 +111,7 @@ theorem stateQForm_abBb_mul_eq (S : ProjectiveSetting P ε)
         (reindexState (abBbBipartition P S.toStrategy.ιA S.toStrategy.ιB)
           S.psiHat)
         (heteroKron X (1 : Op ((S.toStrategy.ιB × PauliRegister P) ×
-            (PauliRegister P × PauliRegister P))) *
+             PauliRegister P × PauliRegister P )) *
           heteroKron (1 : Op (S.toStrategy.ιA × PauliRegister P))
             (heteroKron Y (1 : Op (PauliRegister P × PauliRegister P)))) =
       DistanceCalculus.stateQForm S.psiHat (S.place .AB'' X * S.place .BB' Y) := by

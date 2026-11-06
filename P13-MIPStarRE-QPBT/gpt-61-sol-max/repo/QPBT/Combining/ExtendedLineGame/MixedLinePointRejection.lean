@@ -20,7 +20,7 @@ they do not establish a complete passing-value bound or construct a witness.
 
 @[expose] public section
 
-open scoped BigOperators MatrixOrder ComplexOrder
+open scoped BigOperators MatrixOrder ComplexOrder Classical
 
 -- The six-register products use the same instance-search budget as StateTransport.
 set_option synthInstance.maxSize 400
@@ -65,26 +65,21 @@ private theorem point_diagonal_win_iff_read_eq
   · exact fun h => (diagonal_point_win_iff_read_eq sample coeffs values).mp h |>.symm
   · exact fun h => (diagonal_point_win_iff_read_eq sample coeffs values).mpr h.symm
 
+variable (lines : ExtendedLinesWitness setting points deltaL)
+
 private theorem diagonal_read_effect_bob
-    (lines : ExtendedLinesWitness setting points deltaL)
+
     (sample : DirectLdSpace P.extendedDirectLd) (answer : Option (PauliScalar P)) :
-    ((((answerMeasurement lines .bob
+      ((answerMeasurement lines .bob
         (.dline, directLdMap P.extendedDirectLd .dline sample)).postprocess
-      (diagonalGameRead sample)).effect answer)) =
-      (((lines.Qline .bob (directDLineDescOf P.extendedDirectLd sample)).postprocess
-        (fun coeffs => (directEvalOpt
+      (diagonalGameRead sample)).effect answer   =
+       ((lines.Qline .bob (directDLineDescOf P.extendedDirectLd sample)).postprocess
+         fun coeffs => (directEvalOpt
           (directDLineDescOf P.extendedDirectLd sample) sample.point coeffs).map
-            (extendedDirectScalarEquiv P))).effect answer) := by
-  classical
-  unfold answerMeasurement
-  rw [diagonal_description_canonical, MIPStarRE.Quantum.Measurement.postprocess_comp]
-  simp only [MIPStarRE.Quantum.Measurement.postprocess_effect, Finset.sum_filter]
-  apply Finset.sum_congr rfl
-  intro coeffs _
-  rw [diagonalGameRead_diagonalAnswer_eq]
+            (extendedDirectScalarEquiv P) ).effect answer  := by simp_all [ Finset.sum_congr, answerMeasurement, diagonal_description_canonical, diagonalGameRead_diagonalAnswer_eq, MIPStarRE.Quantum.Measurement.postprocess_comp]
 
 private theorem point_diagonal_rejectedTerm_eq_read_mismatch
-    (lines : ExtendedLinesWitness setting points deltaL)
+
     (sample : DirectLdSpace P.extendedDirectLd)
     (answerA answerB : DirectLdAnswer P.extendedDirectLd) :
     (if directLdWinPredicate P.extendedDirectLd
@@ -98,7 +93,6 @@ private theorem point_diagonal_rejectedTerm_eq_read_mismatch
       else outcomeWeight (strategy lines)
         (.point, directLdMap P.extendedDirectLd .point sample)
         (.dline, directLdMap P.extendedDirectLd .dline sample) answerA answerB := by
-  classical
   cases answerA with
   | pointVals values =>
       cases answerB with
@@ -115,10 +109,7 @@ private theorem point_diagonal_rejectedTerm_eq_read_mismatch
               (.pointVals values) (.dlinePolys coeffs) = true
           · have hread := (point_diagonal_win_iff_read_eq sample values coeffs).mp hwin
             simp [hwin, hread]
-          · have hread : pointGameRead (.pointVals values) ≠
-                diagonalGameRead sample (.dlinePolys coeffs) :=
-              fun h => hwin ((point_diagonal_win_iff_read_eq sample values coeffs).mpr h)
-            simp [hwin, hread]
+          simp_all [point_diagonal_win_iff_read_eq]
   | alinePolys coeffsA =>
       cases answerB with
       | pointVals valuesB =>
@@ -145,7 +136,7 @@ private theorem point_diagonal_rejectedTerm_eq_read_mismatch
 /-- At a fixed point/diagonal-line question pair, rejected Born mass is
 exactly the mass of unequal completed readouts. -/
 theorem point_diagonal_rejectedMass_eq_read_mismatch
-    (lines : ExtendedLinesWitness setting points deltaL)
+
     (sample : DirectLdSpace P.extendedDirectLd) :
     directRejectedMass P.extendedDirectLd (strategy lines)
         (.point, directLdMap P.extendedDirectLd .point sample)
@@ -153,23 +144,16 @@ theorem point_diagonal_rejectedMass_eq_read_mismatch
       outcomeEventWeight (strategy lines)
         (.point, directLdMap P.extendedDirectLd .point sample)
         (.dline, directLdMap P.extendedDirectLd .dline sample)
-        (fun answerA answerB =>
-          pointGameRead answerA ≠ diagonalGameRead sample answerB) := by
-  classical
+         fun answerA answerB =>
+          pointGameRead answerA ≠ diagonalGameRead sample answerB  := by
   unfold directRejectedMass outcomeEventWeight
   apply Finset.sum_congr rfl
-  intro answerA _
-  apply Finset.sum_congr rfl
-  intro answerB _
-  have hterm := point_diagonal_rejectedTerm_eq_read_mismatch lines sample answerA answerB
-  by_cases hread : pointGameRead answerA = diagonalGameRead sample answerB
-  · simpa [hread] using hterm
-  · simpa [hread] using hterm
+  simp_all [point_diagonal_rejectedTerm_eq_read_mismatch]
 
 /-- The `BB'`--`AB''` completed diagonal-line/point defect is the consistency
 defect of the reversed completed direct-game readouts on `pairState`. -/
 theorem reversed_diagonal_completed_defect_eq_read_defect
-    (lines : ExtendedLinesWitness setting points deltaL) :
+     :
     completedLinePointDefect lines .BB' .AB''
         (directDLinePointDist P.extendedDirectLd) =
       consistencyDefect (uniformDistribution (DirectLdSpace P.extendedDirectLd))
@@ -193,34 +177,32 @@ theorem reversed_diagonal_completed_defect_eq_read_defect
   intro answerB _
   by_cases hab : answerA = answerB
   · simp [hab]
-  · have hba : answerB ≠ answerA := Ne.symm hab
+  · have hba  := Ne.symm hab
     simp only [hab, hba, if_false, DistanceCalculus.consistency_term_eq_stateQForm]
-    let A : Op (setting.ExpandedLocalSpace .alice) :=
+    let A  :=
       ((points.Q .alice
         (projX (directPointToPauli P sample.point))
         (projZ (directPointToPauli P sample.point))).postprocess fun values =>
           some (directPointToPauli P sample.point (alphaVar P.m) * values.1 +
             directPointToPauli P sample.point (betaVar P.m) * values.2)).effect answerA
-    let B : Op (setting.ExpandedLocalSpace .bob) :=
+    let B  :=
       ((lines.Qline .bob
         (directDLineDescOf P.extendedDirectLd sample)).postprocess fun coeffs =>
           (directEvalOpt
             (directDLineDescOf P.extendedDirectLd sample) sample.point coeffs).map
               (extendedDirectScalarEquiv P)).effect answerB
-    have hA : A.IsHermitian := by
-      exact (Matrix.nonneg_iff_posSemidef.mp
+    have hA : A.IsHermitian := (Matrix.nonneg_iff_posSemidef.mp
         (((points.Q .alice
           (projX (directPointToPauli P sample.point))
           (projZ (directPointToPauli P sample.point))).postprocess fun values =>
             some (directPointToPauli P sample.point (alphaVar P.m) * values.1 +
               directPointToPauli P sample.point (betaVar P.m) * values.2)).pos answerA)).isHermitian
-    have hB : B.IsHermitian := by
-      exact (Matrix.nonneg_iff_posSemidef.mp
+    have hB : B.IsHermitian := (Matrix.nonneg_iff_posSemidef.mp
         (((lines.Qline .bob
           (directDLineDescOf P.extendedDirectLd sample)).postprocess
-            (fun coeffs => (directEvalOpt
+             fun coeffs => (directEvalOpt
               (directDLineDescOf P.extendedDirectLd sample) sample.point coeffs).map
-                (extendedDirectScalarEquiv P))).pos answerB)).isHermitian
+                (extendedDirectScalarEquiv P) ).pos answerB)).isHermitian
     rw [point_read_effect_alice lines sample answerA,
       diagonal_read_effect_bob lines sample answerB,
       DistanceCalculus.placed_product_stateQForm_eq]
@@ -235,7 +217,7 @@ completed diagonal-line/point defect. Zero directions and failed completed
 evaluation retain their `none` outcome. Paper
 `14_analysis_of_the_pauli_basis_test.tex:1279-1288`; blueprint `lem:qld-4-7`. -/
 theorem point_dline_rejection_eq_completedLinePointDefect
-    (lines : ExtendedLinesWitness setting points deltaL) :
+     :
     directLdBranchRejectionProbability P.extendedDirectLd (strategy lines)
         (.point, .dline) =
       completedLinePointDefect lines .BB' .AB''
@@ -247,11 +229,11 @@ theorem point_dline_rejection_eq_completedLinePointDefect
           (.point, directLdMap P.extendedDirectLd .point sample)
           (.dline, directLdMap P.extendedDirectLd .dline sample)) =
         avgOver (uniformDistribution (DirectLdSpace P.extendedDirectLd))
-          (fun sample => outcomeEventWeight (strategy lines)
+           fun sample => outcomeEventWeight (strategy lines)
             (.point, directLdMap P.extendedDirectLd .point sample)
             (.dline, directLdMap P.extendedDirectLd .dline sample)
-            (fun answerA answerB =>
-              pointGameRead answerA ≠ diagonalGameRead sample answerB)) := by
+             fun answerA answerB =>
+              pointGameRead answerA ≠ diagonalGameRead sample answerB   := by
       apply avgOver_congr
       exact point_diagonal_rejectedMass_eq_read_mismatch lines
     _ = consistencyDefect (uniformDistribution (DirectLdSpace P.extendedDirectLd))
@@ -263,8 +245,7 @@ theorem point_dline_rejection_eq_completedLinePointDefect
           (((answerMeasurement lines .bob
             (.dline, directLdMap P.extendedDirectLd .dline sample)).postprocess
               (diagonalGameRead sample)).effect answer))
-        (pairState setting) := by
-      exact (WinImplications.consistencyDefect_postprocess_eq_mismatch
+        (pairState setting) := (WinImplications.consistencyDefect_postprocess_eq_mismatch
         (uniformDistribution (DirectLdSpace P.extendedDirectLd)) (strategy lines)
         (fun sample => (.point, directLdMap P.extendedDirectLd .point sample))
         (fun sample => (.dline, directLdMap P.extendedDirectLd .dline sample))
@@ -278,7 +259,7 @@ theorem point_dline_rejection_eq_completedLinePointDefect
 oriented completed-defect bounds supplied by `lines`. Paper
 `14_analysis_of_the_pauli_basis_test.tex:1279-1288`; blueprint `lem:qld-4-7`. -/
 theorem mixed_line_point_rejections_le_four_mul
-    (lines : ExtendedLinesWitness setting points deltaL) :
+     :
     directLdBranchRejectionProbability P.extendedDirectLd (strategy lines)
           (.aline, .point) +
         directLdBranchRejectionProbability P.extendedDirectLd (strategy lines)

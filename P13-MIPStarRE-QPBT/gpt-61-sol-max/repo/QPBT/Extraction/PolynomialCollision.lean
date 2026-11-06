@@ -1,5 +1,7 @@
 module
 
+public import QPBT.Types
+
 public import MIPStarRE.LDT.Basic.DistributionAvg
 public import QPBT.Algebra.Decoding
 
@@ -38,11 +40,11 @@ or degree bound relative to the field size is required; representatives are
 not identified merely because their evaluations agree. -/
 theorem polyFunc_eval_collision_le {m d : ℕ} {K : Type*} [Field K] [Fintype K]
     [DecidableEq K] (first second : polyFunc m K d) (hne : first ≠ second) :
-    avgOver (uniformDistribution (Fin m → K))
+    avgOver (uniformDistribution (MIPStarRE.QPBT.Coordinates m K))
       (fun point => if MvPolynomial.eval point first.1 = MvPolynomial.eval point second.1
         then (1 : ℝ) else 0) ≤ (m * d : ℝ) / Fintype.card K := by
   have havg :
-      avgOver (uniformDistribution (Fin m → K))
+      avgOver (uniformDistribution (MIPStarRE.QPBT.Coordinates m K))
         (fun point => if MvPolynomial.eval point first.1 = MvPolynomial.eval point second.1
           then (1 : ℝ) else 0) =
         (polynomialAgreementProbability m K first.1 second.1 : ℝ) := by
@@ -51,7 +53,7 @@ theorem polyFunc_eval_collision_le {m d : ℕ} {K : Type*} [Field K] [Fintype K]
   rw [havg]
   have hbound := schwartzZippel_individualDegree first second hne
   have hreal : (polynomialAgreementProbability m K first.1 second.1 : ℝ) ≤
-      ((((m * d : ℕ) : ℚ≥0) / Fintype.card K) : ℝ) := by
+      ( ((m * d : ℕ) : ℚ≥0) / Fintype.card K  : ℝ) := by
     exact_mod_cast hbound
   simpa using hreal
 
@@ -63,10 +65,10 @@ This specializes `polyFunc_eval_collision_le` to the fixed field model and
 blueprint `eq:qld-nonencoding-mass`. -/
 theorem poly_eval_collision_le {P : AdmissibleParams}
     (first second : Poly P) (hne : first ≠ second) :
-    avgOver (uniformDistribution (Fin P.m → PauliScalar P))
+    avgOver (uniformDistribution (MIPStarRE.QPBT.PauliPoint P))
       (fun point => if evalPoly first point = evalPoly second point then (1 : ℝ) else 0) ≤
         (P.m * P.d : ℝ) / P.q := by
-  have hcard : Fintype.card (PauliScalar P) = P.q :=
+  have hcard  :=
     @FieldModel.card P.q P.model.toFieldModel
   unfold evalPoly
   conv_rhs => rw [← hcard]

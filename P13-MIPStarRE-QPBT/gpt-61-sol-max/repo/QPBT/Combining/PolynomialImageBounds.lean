@@ -1,5 +1,9 @@
 module
 
+public import QPBT.Algebra.CoordinatePolynomial
+
+public import QPBT.Types
+
 public import MIPStarRE.LDT.Preliminaries.Polynomials
 public import QPBT.Games.Sandwich
 public import QPBT.Test.MagicSquareTheorems.Rigidity.GroundSlice
@@ -30,7 +34,7 @@ lemmas remain private.
 
 @[expose] public section
 
-open scoped BigOperators Matrix MatrixOrder ComplexOrder
+open scoped BigOperators Matrix MatrixOrder ComplexOrder Classical
 
 namespace MIPStarRE.QPBT
 
@@ -44,13 +48,15 @@ namespace PolynomialImageBounds
 variable {F ι : Type*} [Field F] [Fintype F] [DecidableEq F]
   [Fintype ι] [DecidableEq ι]
 
+variable (X Z : Quantum.Measurement F ι)
+
 /-- The ordered product selected by the linear field-answer check in
 `eq:qld-g-42`. This is an operator, not an asserted measurement effect. -/
-def orderedIndicator (X Z : Quantum.Measurement F ι) (α β a : F) : Op ι :=
+def orderedIndicator  (α β a : F) : Op ι :=
   ∑ bc : F × F, if α * bc.1 + β * bc.2 = a then X.effect bc.1 * Z.effect bc.2 else 0
 
 /-- The diagonal sandwich sum in `eq:qld-g-prime`. -/
-def diagonalIndicator (X Z : Quantum.Measurement F ι) (α β a : F) : Op ι :=
+def diagonalIndicator  (α β a : F) : Op ι :=
   ∑ bc : F × F,
     if α * bc.1 + β * bc.2 = a then
       Z.effect bc.2 * X.effect bc.1 * Z.effect bc.2 else 0
@@ -59,11 +65,10 @@ def diagonalIndicator (X Z : Quantum.Measurement F ι) (α β a : F) : Op ι :=
 the field eliminate every off-diagonal term of the ordered Gram operator.
 This is the exact local algebra behind `eq:qld-g-prime`; no commutation of
 the X and Z measurements is assumed. -/
-private theorem orderedIndicator_gram_of_ne_zero (X Z : Quantum.Measurement F ι)
+private theorem orderedIndicator_gram_of_ne_zero
     (hX : Measurement.IsProjective X) (α β a : F) (hβ : β ≠ 0) :
     (orderedIndicator X Z α β a)ᴴ * orderedIndicator X Z α β a =
       diagonalIndicator X Z α β a := by
-  classical
   unfold orderedIndicator diagonalIndicator
   rw [Matrix.conjTranspose_sum, Finset.sum_mul]
   refine Finset.sum_congr rfl fun bc _ => ?_
@@ -78,7 +83,7 @@ private theorem orderedIndicator_gram_of_ne_zero (X Z : Quantum.Measurement F ι
     · by_cases h' : α * bc'.1 + β * bc'.2 = a
       · have hb : bc.1 ≠ bc'.1 := by
           intro hb
-          have hc : bc.2 = bc'.2 := mul_left_cancel₀ hβ (by
+          have hc  := mul_left_cancel₀ hβ (by
             apply add_left_cancel (a := α * bc.1)
             simpa only [hb] using h.trans h'.symm)
           exact hne (Prod.ext hb hc).symm
@@ -95,9 +100,9 @@ private theorem orderedIndicator_gram_of_ne_zero (X Z : Quantum.Measurement F ι
 
 /-- The squared state norm of the ordered indicator equals its diagonal
 sandwich quadratic form when the second coefficient is nonzero. -/
-private theorem orderedIndicator_norm_sq_of_ne_zero (X Z : Quantum.Measurement F ι)
+private theorem orderedIndicator_norm_sq_of_ne_zero
     (hX : Measurement.IsProjective X) (α β a : F) (hβ : β ≠ 0)
-    (ψ : EuclideanSpace ℂ ι) :
+    (ψ : MIPStarRE.QPBT.StateVector ι) :
     ‖applyOperatorToState (orderedIndicator X Z α β a) ψ‖ ^ 2 =
       stateQForm ψ (diagonalIndicator X Z α β a) := by
   rw [MagicSquareRigidity.norm_applyOperatorToState_sq,
@@ -106,12 +111,12 @@ private theorem orderedIndicator_norm_sq_of_ne_zero (X Z : Quantum.Measurement F
 
 /-- The diagonal indicator is a positive contraction, since it selects
 effects from the complete sandwich POVM. -/
-private theorem diagonalIndicator_bounds (X Z : Quantum.Measurement F ι)
+private theorem diagonalIndicator_bounds
     (hZ : Measurement.IsProjective Z) (α β a : F) :
     0 ≤ diagonalIndicator X Z α β a ∧ diagonalIndicator X Z α β a ≤ 1 := by
   obtain ⟨hpos, hsum⟩ := pastedMeasurement_isMeasurement X Z hZ
-  change (∀ bc : F × F, 0 ≤ Z.effect bc.2 * X.effect bc.1 * Z.effect bc.2) at hpos
-  change (∑ bc : F × F, Z.effect bc.2 * X.effect bc.1 * Z.effect bc.2) = 1 at hsum
+  change  ∀ bc : F × F, 0 ≤ Z.effect bc.2 * X.effect bc.1 * Z.effect bc.2  at hpos
+  change  ∑ bc : F × F, Z.effect bc.2 * X.effect bc.1 * Z.effect bc.2  = 1 at hsum
   constructor
   · exact Finset.sum_nonneg fun bc _ => by
       split_ifs
@@ -128,8 +133,8 @@ private theorem diagonalIndicator_bounds (X Z : Quantum.Measurement F ι)
 
 /-- At the exceptional coefficient zero, completeness of Z leaves a
 coarse-grained X projection. This includes zero first coefficient. -/
-private theorem orderedIndicator_zero (X Z : Quantum.Measurement F ι) (α a : F) :
-    orderedIndicator X Z α 0 a = (X.postprocess (fun b => α * b)).effect a := by
+private theorem orderedIndicator_zero  (α a : F) :
+    orderedIndicator X Z α 0 a = (X.postprocess  fun b => α * b ).effect a := by
   unfold orderedIndicator
   rw [Fintype.sum_prod_type, Quantum.Measurement.postprocess_effect, Finset.sum_filter]
   refine Finset.sum_congr rfl fun b _ => ?_
@@ -141,7 +146,7 @@ private theorem orderedIndicator_zero (X Z : Quantum.Measurement F ι) (α a : F
 /-- Every linear-answer ordered indicator is a contraction. For nonzero
 second coefficient this follows from the diagonal identity; at zero it
 follows from completeness and projective postprocessing. -/
-theorem orderedIndicator_gram_le_one (X Z : Quantum.Measurement F ι)
+theorem orderedIndicator_gram_le_one
     (hX : Measurement.IsProjective X) (hZ : Measurement.IsProjective Z) (α β a : F) :
     (orderedIndicator X Z α β a)ᴴ * orderedIndicator X Z α β a ≤ 1 := by
   by_cases hβ : β = 0
@@ -154,9 +159,9 @@ theorem orderedIndicator_gram_le_one (X Z : Quantum.Measurement F ι)
 
 /-- The pointwise error in `eq:qld-g-prime` is supported on the zero second
 coefficient and bounded by the squared norm of the actual state vector. -/
-theorem abs_orderedIndicator_norm_sq_sub_diagonal_le (X Z : Quantum.Measurement F ι)
+theorem abs_orderedIndicator_norm_sq_sub_diagonal_le
     (hX : Measurement.IsProjective X) (hZ : Measurement.IsProjective Z)
-    (α β a : F) (ψ : EuclideanSpace ℂ ι) :
+    (α β a : F) (ψ : MIPStarRE.QPBT.StateVector ι) :
     |‖applyOperatorToState (orderedIndicator X Z α β a) ψ‖ ^ 2 -
         stateQForm ψ (diagonalIndicator X Z α β a)| ≤
       if β = 0 then ‖ψ‖ ^ 2 else 0 := by
@@ -179,11 +184,11 @@ theorem abs_orderedIndicator_norm_sq_sub_diagonal_le (X Z : Quantum.Measurement 
 the normalization used after summing `eq:qld-g-prime` over polynomial labels. -/
 theorem sum_projective_state_norm_sq {Γ : Type*} [Fintype Γ]
     (S : Quantum.Measurement Γ ι) (hS : Measurement.IsProjective S)
-    (ψ : EuclideanSpace ℂ ι) :
+    (ψ : MIPStarRE.QPBT.StateVector ι) :
     ∑ g : Γ, ‖applyOperatorToState (S.effect g) ψ‖ ^ 2 = ‖ψ‖ ^ 2 := by
   simp_rw [MagicSquareRigidity.norm_applyOperatorToState_sq, measurement_effect_hermitian,
     fun g => (hS g).isIdempotentElem.eq]
-  change (∑ g : Γ, stateQForm ψ (S.effect g)) = ‖ψ‖ ^ 2
+  change  ∑ g : Γ, stateQForm ψ (S.effect g)  = ‖ψ‖ ^ 2
   rw [← stateQForm_finset_sum, S.sum_eq_one, stateQForm_one]
 
 /-- A polynomial not of the form `alpha * u + beta * v` has a nonzero
@@ -191,12 +196,11 @@ coefficient outside those two monomials. Applied over the ring of base-point
 polynomials, this chooses one coefficient independently of both measurement
 outcomes in the argument following `eq:qld-g-prime`. -/
 private theorem exists_nonzero_nonlinear_coeff {R : Type*} [CommRing R]
-    (p : MvPolynomial (Fin 2) R)
+    (p : MIPStarRE.QPBT.CoordinatePolynomial 2 R)
     (hp : ¬ ∃ u v : R, p = MvPolynomial.C u * MvPolynomial.X 0 +
       MvPolynomial.C v * MvPolynomial.X 1) :
     ∃ e : Fin 2 →₀ ℕ, e ≠ Finsupp.single 0 1 ∧ e ≠ Finsupp.single 1 1 ∧
       p.coeff e ≠ 0 := by
-  classical
   have h01 : (Finsupp.single (0 : Fin 2) 1 : Fin 2 →₀ ℕ) ≠ Finsupp.single 1 1 := by
     intro h
     simpa using congrArg (fun e : Fin 2 →₀ ℕ => e 0) h
@@ -218,9 +222,9 @@ omit [Fintype F] [DecidableEq F] in
 certifies nonzero difference from every `alpha * b + beta * c` simultaneously.
 This is the common good-base-point criterion needed before sandwich weighting. -/
 private theorem specialization_ne_linear_of_coeff {n : ℕ}
-    (p : MvPolynomial (Fin 2) (MvPolynomial (Fin n) F)) (e : Fin 2 →₀ ℕ)
+    (p : MIPStarRE.QPBT.CoordinatePolynomial 2 (MIPStarRE.QPBT.CoordinatePolynomial n F)) (e : Fin 2 →₀ ℕ)
     (he0 : e ≠ Finsupp.single 0 1) (he1 : e ≠ Finsupp.single 1 1)
-    (u : Fin n → F) (hu : MvPolynomial.eval u (p.coeff e) ≠ 0) (b c : F) :
+    (u : MIPStarRE.QPBT.Coordinates n F) (hu : MvPolynomial.eval u (p.coeff e) ≠ 0) (b c : F) :
     MvPolynomial.map (MvPolynomial.eval u) p ≠
       MvPolynomial.C b * MvPolynomial.X 0 + MvPolynomial.C c * MvPolynomial.X 1 := by
   intro h
@@ -231,9 +235,9 @@ private theorem specialization_ne_linear_of_coeff {n : ℕ}
 
 /-- Schwartz--Zippel in the uniform-average notation used by the coefficient
 and fiber calculations in `eq:qld-g-prime-bound` and `eq:qld-g-2`. -/
-theorem avg_eval_eq_le {n D : ℕ} (p r : MvPolynomial (Fin n) F)
+theorem avg_eval_eq_le {n D : ℕ} (p r : MIPStarRE.QPBT.CoordinatePolynomial n F)
     (hne : p ≠ r) (hp : p.totalDegree ≤ D) (hr : r.totalDegree ≤ D) :
-    avgOver (uniformDistribution (Fin n → F))
+    avgOver (uniformDistribution (MIPStarRE.QPBT.Coordinates n F))
       (fun u => if MvPolynomial.eval u p = MvPolynomial.eval u r then 1 else 0) ≤
       (D : ℝ) / Fintype.card F := by
   have hsz := Preliminaries.schwartzZippel_totalDegree hne hp hr
@@ -248,10 +252,10 @@ theorem avg_eval_eq_le {n D : ℕ} (p r : MvPolynomial (Fin n) F)
 Schwartz--Zippel bounds agreement with each linear answer polynomial. The
 bound is derived from coefficient polynomials, not assumed as a collision law. -/
 private theorem avg_specialization_eq_linear_le_of_coeff {n : ℕ}
-    (p : MvPolynomial (Fin 2) (MvPolynomial (Fin n) F)) (e : Fin 2 →₀ ℕ)
+    (p : MIPStarRE.QPBT.CoordinatePolynomial 2 (MIPStarRE.QPBT.CoordinatePolynomial n F)) (e : Fin 2 →₀ ℕ)
     (he0 : e ≠ Finsupp.single 0 1) (he1 : e ≠ Finsupp.single 1 1)
-    (u : Fin n → F) (hu : MvPolynomial.eval u (p.coeff e) ≠ 0) (b c : F) :
-    avgOver (uniformDistribution (Fin 2 → F)) (fun v =>
+    (u : MIPStarRE.QPBT.Coordinates n F) (hu : MvPolynomial.eval u (p.coeff e) ≠ 0) (b c : F) :
+    avgOver (uniformDistribution (MIPStarRE.QPBT.Coordinates 2 F)) (fun v =>
       if MvPolynomial.eval v (MvPolynomial.map (MvPolynomial.eval u) p) =
         v 0 * b + v 1 * c then 1 else 0) ≤
       (max 1 p.totalDegree : ℕ) / (Fintype.card F : ℝ) := by
@@ -274,32 +278,31 @@ all outcomes. Neither a uniform-collision premise nor an outcome-count loss
 occurs. The nested polynomial ring is the coefficient expansion used at paper
 lines 1311--1316; this theorem does not assert the later block-separation step. -/
 private theorem avg_diagonalIndicator_le_of_not_linear {n : ℕ}
-    (p : MvPolynomial (Fin 2) (MvPolynomial (Fin n) F))
-    (hp : ¬ ∃ r s : MvPolynomial (Fin n) F,
+    (p : MIPStarRE.QPBT.CoordinatePolynomial 2 (MIPStarRE.QPBT.CoordinatePolynomial n F))
+    (hp : ¬ ∃ r s : MIPStarRE.QPBT.CoordinatePolynomial n F,
       p = MvPolynomial.C r * MvPolynomial.X 0 + MvPolynomial.C s * MvPolynomial.X 1)
-    (X Z : (Fin n → F) → Quantum.Measurement F ι)
-    (hZ : ∀ u, Measurement.IsProjective (Z u)) (ψ : EuclideanSpace ℂ ι) :
-    avgOver (uniformDistribution (Fin n → F)) (fun u =>
-      avgOver (uniformDistribution (Fin 2 → F)) (fun v =>
+    (X Z :  MIPStarRE.QPBT.Coordinates n F  → Quantum.Measurement F ι)
+    (hZ : ∀ u, Measurement.IsProjective (Z u)) (ψ : MIPStarRE.QPBT.StateVector ι) :
+    avgOver (uniformDistribution (MIPStarRE.QPBT.Coordinates n F)) (fun u =>
+      avgOver (uniformDistribution (MIPStarRE.QPBT.Coordinates 2 F))  fun v =>
         stateQForm ψ (diagonalIndicator (X u) (Z u) (v 0) (v 1)
-          (MvPolynomial.eval v (MvPolynomial.map (MvPolynomial.eval u) p))))) ≤
+          (MvPolynomial.eval v (MvPolynomial.map (MvPolynomial.eval u) p))) ) ≤
       ((p.support.sup fun e => (p.coeff e).totalDegree) + max 1 p.totalDegree : ℕ) /
         (Fintype.card F : ℝ) * ‖ψ‖ ^ 2 := by
-  classical
   obtain ⟨e, he0, he1, he⟩ := exists_nonzero_nonlinear_coeff p hp
-  let D : ℕ := p.support.sup fun e => (p.coeff e).totalDegree
-  let E : ℝ := (max 1 p.totalDegree : ℕ) / (Fintype.card F : ℝ)
-  let w (u : Fin n → F) (bc : F × F) : ℝ :=
+  let D  := p.support.sup fun e => (p.coeff e).totalDegree
+  let E  := (max 1 p.totalDegree : ℕ) / (Fintype.card F : ℝ)
+  let w (u : MIPStarRE.QPBT.Coordinates n F) (bc : F × F)  :=
     stateQForm ψ ((Z u).effect bc.2 * (X u).effect bc.1 * (Z u).effect bc.2)
-  let f (u : Fin n → F) (v : Fin 2 → F) : F :=
+  let f (u : MIPStarRE.QPBT.Coordinates n F) (v : MIPStarRE.QPBT.Coordinates 2 F) : F :=
     MvPolynomial.eval v (MvPolynomial.map (MvPolynomial.eval u) p)
-  have hw (u : Fin n → F) (bc : F × F) : 0 ≤ w u bc :=
+  have hw (u : MIPStarRE.QPBT.Coordinates n F) (bc : F × F)  :=
     stateQForm_nonneg ψ ((pastedMeasurement_isMeasurement (X u) (Z u) (hZ u)).1 bc)
-  have hsum (u : Fin n → F) : ∑ bc : F × F, w u bc = ‖ψ‖ ^ 2 := by
+  have hsum (u : MIPStarRE.QPBT.Coordinates n F) : ∑ bc : F × F, w u bc = ‖ψ‖ ^ 2 := by
     rw [← stateQForm_one ψ,
       ← (pastedMeasurement_isMeasurement (X u) (Z u) (hZ u)).2, stateQForm_finset_sum]
     rfl
-  have hexpand (u : Fin n → F) (v : Fin 2 → F) :
+  have hexpand (u : MIPStarRE.QPBT.Coordinates n F) (v : MIPStarRE.QPBT.Coordinates 2 F) :
       stateQForm ψ (diagonalIndicator (X u) (Z u) (v 0) (v 1) (f u v)) =
         ∑ bc : F × F, (if f u v = v 0 * bc.1 + v 1 * bc.2 then 1 else 0) * w u bc := by
     rw [diagonalIndicator, stateQForm_finset_sum]
@@ -307,16 +310,16 @@ private theorem avg_diagonalIndicator_le_of_not_linear {n : ℕ}
     by_cases h : f u v = v 0 * bc.1 + v 1 * bc.2
     · simp [h, w]
     · simp [Ne.symm h, h, stateQForm, applyOperatorToState]
-  have hgood (u : Fin n → F) (hu : MvPolynomial.eval u (p.coeff e) ≠ 0) :
-      avgOver (uniformDistribution (Fin 2 → F)) (fun v =>
+  have hgood (u : MIPStarRE.QPBT.Coordinates n F) (hu : MvPolynomial.eval u (p.coeff e) ≠ 0) :
+      avgOver (uniformDistribution (MIPStarRE.QPBT.Coordinates 2 F)) (fun v =>
         stateQForm ψ (diagonalIndicator (X u) (Z u) (v 0) (v 1) (f u v))) ≤
         E * ‖ψ‖ ^ 2 := by
     simp_rw [hexpand, avgOver_sum, avgOver_mul_const]
     rw [← hsum u, Finset.mul_sum]
     exact Finset.sum_le_sum fun bc _ => mul_le_mul_of_nonneg_right
       (avg_specialization_eq_linear_le_of_coeff p e he0 he1 u hu bc.1 bc.2) (hw u bc)
-  have hpoint (u : Fin n → F) :
-      avgOver (uniformDistribution (Fin 2 → F)) (fun v =>
+  have hpoint (u : MIPStarRE.QPBT.Coordinates n F) :
+      avgOver (uniformDistribution (MIPStarRE.QPBT.Coordinates 2 F)) (fun v =>
         stateQForm ψ (diagonalIndicator (X u) (Z u) (v 0) (v 1) (f u v))) ≤
         (if MvPolynomial.eval u (p.coeff e) = 0 then 1 else 0) * ‖ψ‖ ^ 2 + E * ‖ψ‖ ^ 2 := by
     by_cases hu : MvPolynomial.eval u (p.coeff e) = 0
@@ -328,15 +331,13 @@ private theorem avg_diagonalIndicator_le_of_not_linear {n : ℕ}
         exact quadratic_form_mono (diagonalIndicator_bounds (X u) (Z u) (hZ u) _ _ _).2 ψ
       · exact le_add_of_nonneg_right (mul_nonneg (by positivity) (sq_nonneg _))
     · simpa only [hu, if_false, zero_mul, zero_add] using hgood u hu
-  have hbad : avgOver (uniformDistribution (Fin n → F))
-      (fun u => if MvPolynomial.eval u (p.coeff e) = 0 then 1 else 0) ≤
-        (D : ℝ) / Fintype.card F := by
+  have hbad  := by
     simpa using avg_eval_eq_le (p.coeff e) 0 he
       (Finset.le_sup (f := fun j => (p.coeff j).totalDegree)
         (MvPolynomial.mem_support_iff.mpr he)) (by simp)
   calc
-    _ ≤ avgOver (uniformDistribution (Fin n → F)) (fun u =>
-        (if MvPolynomial.eval u (p.coeff e) = 0 then 1 else 0) * ‖ψ‖ ^ 2 + E * ‖ψ‖ ^ 2) :=
+    _ ≤ avgOver (uniformDistribution (MIPStarRE.QPBT.Coordinates n F))  fun u =>
+        (if MvPolynomial.eval u (p.coeff e) = 0 then 1 else 0) * ‖ψ‖ ^ 2 + E * ‖ψ‖ ^ 2  :=
       avgOver_mono _ _ _ hpoint
     _ ≤ (D : ℝ) / Fintype.card F * ‖ψ‖ ^ 2 + E * ‖ψ‖ ^ 2 := by
       rw [avgOver_add, avgOver_mul_const, avgOver_uniform_const]
@@ -347,34 +348,34 @@ private theorem avg_diagonalIndicator_le_of_not_linear {n : ℕ}
 ordered-product estimate for a polynomial outside the scalar-linear image.
 The right side retains the squared norm of the unnormalized state. -/
 private theorem avg_orderedIndicator_norm_sq_le_of_not_linear {n : ℕ}
-    (p : MvPolynomial (Fin 2) (MvPolynomial (Fin n) F))
-    (hp : ¬ ∃ r s : MvPolynomial (Fin n) F,
+    (p : MIPStarRE.QPBT.CoordinatePolynomial 2 (MIPStarRE.QPBT.CoordinatePolynomial n F))
+    (hp : ¬ ∃ r s : MIPStarRE.QPBT.CoordinatePolynomial n F,
       p = MvPolynomial.C r * MvPolynomial.X 0 + MvPolynomial.C s * MvPolynomial.X 1)
-    (X Z : (Fin n → F) → Quantum.Measurement F ι)
+    (X Z :  MIPStarRE.QPBT.Coordinates n F  → Quantum.Measurement F ι)
     (hX : ∀ u, Measurement.IsProjective (X u))
-    (hZ : ∀ u, Measurement.IsProjective (Z u)) (ψ : EuclideanSpace ℂ ι) :
-    avgOver (uniformDistribution (Fin n → F)) (fun u =>
-      avgOver (uniformDistribution (Fin 2 → F)) (fun v =>
+    (hZ : ∀ u, Measurement.IsProjective (Z u)) (ψ : MIPStarRE.QPBT.StateVector ι) :
+    avgOver (uniformDistribution (MIPStarRE.QPBT.Coordinates n F)) (fun u =>
+      avgOver (uniformDistribution (MIPStarRE.QPBT.Coordinates 2 F))  fun v =>
         ‖applyOperatorToState (orderedIndicator (X u) (Z u) (v 0) (v 1)
-          (MvPolynomial.eval v (MvPolynomial.map (MvPolynomial.eval u) p))) ψ‖ ^ 2)) ≤
+          (MvPolynomial.eval v (MvPolynomial.map (MvPolynomial.eval u) p))) ψ‖ ^ 2 ) ≤
       ((p.support.sup fun e => (p.coeff e).totalDegree) + max 1 p.totalDegree + 1 : ℕ) /
         (Fintype.card F : ℝ) * ‖ψ‖ ^ 2 := by
-  let f (u : Fin n → F) (v : Fin 2 → F) : F :=
+  let f (u : MIPStarRE.QPBT.Coordinates n F) (v : MIPStarRE.QPBT.Coordinates 2 F) : F :=
     MvPolynomial.eval v (MvPolynomial.map (MvPolynomial.eval u) p)
-  have hexc : avgOver (uniformDistribution (Fin 2 → F))
+  have hexc : avgOver (uniformDistribution (MIPStarRE.QPBT.Coordinates 2 F))
       (fun v => if v 1 = 0 then ‖ψ‖ ^ 2 else 0) =
         (Fintype.card F : ℝ)⁻¹ * ‖ψ‖ ^ 2 := by
-    change avgOver (uniformDistribution (Fin 2 → F))
+    change avgOver (uniformDistribution (MIPStarRE.QPBT.Coordinates 2 F))
       (fun v => if ((finTwoArrowEquiv F) v).2 = 0 then ‖ψ‖ ^ 2 else 0) = _
     rw [avgOver_uniform_equiv (finTwoArrowEquiv F)]
     simp only [Equiv.apply_symm_apply]
-    rw [avgOver_uniform_snd (fun β : F => if β = 0 then ‖ψ‖ ^ 2 else 0)]
+    rw [avgOver_uniform_snd  fun β : F => if β = 0 then ‖ψ‖ ^ 2 else 0 ]
     simp [avgOver_uniform_eq_inv_card_mul_sum]
   calc
-    _ ≤ avgOver (uniformDistribution (Fin n → F)) (fun u =>
-        avgOver (uniformDistribution (Fin 2 → F)) (fun v =>
+    _ ≤ avgOver (uniformDistribution (MIPStarRE.QPBT.Coordinates n F))  fun u =>
+        avgOver (uniformDistribution (MIPStarRE.QPBT.Coordinates 2 F))  fun v =>
           stateQForm ψ (diagonalIndicator (X u) (Z u) (v 0) (v 1) (f u v)) +
-            (if v 1 = 0 then ‖ψ‖ ^ 2 else 0))) := by
+             if v 1 = 0 then ‖ψ‖ ^ 2 else 0    := by
       apply avgOver_mono
       intro u
       apply avgOver_mono
@@ -383,9 +384,9 @@ private theorem avg_orderedIndicator_norm_sq_le_of_not_linear {n : ℕ}
         (X u) (Z u) (hX u) (hZ u) (v 0) (v 1) (f u v) ψ
       have hle := le_trans (le_abs_self _) habs
       linarith
-    _ = avgOver (uniformDistribution (Fin n → F)) (fun u =>
-        avgOver (uniformDistribution (Fin 2 → F)) (fun v =>
-          stateQForm ψ (diagonalIndicator (X u) (Z u) (v 0) (v 1) (f u v)))) +
+    _ = avgOver (uniformDistribution (MIPStarRE.QPBT.Coordinates n F)) (fun u =>
+        avgOver (uniformDistribution (MIPStarRE.QPBT.Coordinates 2 F))  fun v =>
+          stateQForm ψ (diagonalIndicator (X u) (Z u) (v 0) (v 1) (f u v)) ) +
             (Fintype.card F : ℝ)⁻¹ * ‖ψ‖ ^ 2 := by
       simp_rw [avgOver_add, hexc, avgOver_uniform_const]
     _ ≤ ((p.support.sup fun e => (p.coeff e).totalDegree) + max 1 p.totalDegree : ℕ) /
@@ -397,16 +398,16 @@ private theorem avg_orderedIndicator_norm_sq_le_of_not_linear {n : ℕ}
 labels outside the scalar-linear image. Each label is weighted by its actual
 state mass; the estimate never replaces a sum by the number of labels. -/
 private theorem avg_sum_orderedIndicator_norm_sq_le_of_not_linear {n : ℕ} {Γ : Type*}
-    (s : Finset Γ) (p : Γ → MvPolynomial (Fin 2) (MvPolynomial (Fin n) F))
-    (hp : ∀ g ∈ s, ¬ ∃ r t : MvPolynomial (Fin n) F,
+    (s : Finset Γ) (p : Γ → MIPStarRE.QPBT.CoordinatePolynomial 2 (MIPStarRE.QPBT.CoordinatePolynomial n F))
+    (hp : ∀ g ∈ s, ¬ ∃ r t : MIPStarRE.QPBT.CoordinatePolynomial n F,
       p g = MvPolynomial.C r * MvPolynomial.X 0 + MvPolynomial.C t * MvPolynomial.X 1)
-    (X Z : (Fin n → F) → Quantum.Measurement F ι)
+    (X Z :  MIPStarRE.QPBT.Coordinates n F  → Quantum.Measurement F ι)
     (hX : ∀ u, Measurement.IsProjective (X u))
-    (hZ : ∀ u, Measurement.IsProjective (Z u)) (ψ : Γ → EuclideanSpace ℂ ι) :
-    avgOver (uniformDistribution (Fin n → F)) (fun u =>
-      avgOver (uniformDistribution (Fin 2 → F)) (fun v => ∑ g ∈ s,
+    (hZ : ∀ u, Measurement.IsProjective (Z u)) (ψ : Γ → MIPStarRE.QPBT.StateVector ι) :
+    avgOver (uniformDistribution (MIPStarRE.QPBT.Coordinates n F)) (fun u =>
+      avgOver (uniformDistribution (MIPStarRE.QPBT.Coordinates 2 F))  fun v => ∑ g ∈ s,
         ‖applyOperatorToState (orderedIndicator (X u) (Z u) (v 0) (v 1)
-          (MvPolynomial.eval v (MvPolynomial.map (MvPolynomial.eval u) (p g)))) (ψ g)‖ ^ 2)) ≤
+          (MvPolynomial.eval v (MvPolynomial.map (MvPolynomial.eval u) (p g)))) (ψ g)‖ ^ 2 ) ≤
       ∑ g ∈ s,
         (((p g).support.sup fun e => ((p g).coeff e).totalDegree) +
           max 1 (p g).totalDegree + 1 : ℕ) / (Fintype.card F : ℝ) * ‖ψ g‖ ^ 2 := by
@@ -420,7 +421,7 @@ This norm-to-residual step is shared with the
 wrong-variable argument in `eq:qld-g-prime-xpt-bound`; support for blueprint
 `lem:qld-4-7`. No normalization is assumed. -/
 theorem sum_mass_le_residual_add_image {Γ : Type*} (s : Finset Γ)
-    (ψ A : Γ → EuclideanSpace ℂ ι) :
+    (ψ A : Γ → MIPStarRE.QPBT.StateVector ι) :
     ∑ g ∈ s, ‖ψ g‖ ^ 2 ≤
       2 * ∑ g ∈ s, ‖ψ g - A g‖ ^ 2 + 2 * ∑ g ∈ s, ‖A g‖ ^ 2 := by
   rw [Finset.mul_sum, Finset.mul_sum, ← Finset.sum_add_distrib]
@@ -435,37 +436,35 @@ displayed in the conclusion. Combining this inequality with `eq:qld-g-42`
 requires deriving that correlation from the source measurements; no such
 estimate is an input to this auxiliary theorem. -/
 theorem nonlinear_mass_le_ordered_error {n : ℕ} {Γ : Type*}
-    (s : Finset Γ) (p : Γ → MvPolynomial (Fin 2) (MvPolynomial (Fin n) F))
-    (hp : ∀ g ∈ s, ¬ ∃ r t : MvPolynomial (Fin n) F,
+    (s : Finset Γ) (p : Γ → MIPStarRE.QPBT.CoordinatePolynomial 2 (MIPStarRE.QPBT.CoordinatePolynomial n F))
+    (hp : ∀ g ∈ s, ¬ ∃ r t : MIPStarRE.QPBT.CoordinatePolynomial n F,
       p g = MvPolynomial.C r * MvPolynomial.X 0 + MvPolynomial.C t * MvPolynomial.X 1)
-    (X Z : (Fin n → F) → Quantum.Measurement F ι)
+    (X Z :  MIPStarRE.QPBT.Coordinates n F  → Quantum.Measurement F ι)
     (hX : ∀ u, Measurement.IsProjective (X u))
-    (hZ : ∀ u, Measurement.IsProjective (Z u)) (ψ : Γ → EuclideanSpace ℂ ι) :
+    (hZ : ∀ u, Measurement.IsProjective (Z u)) (ψ : Γ → MIPStarRE.QPBT.StateVector ι) :
     ∑ g ∈ s, ‖ψ g‖ ^ 2 ≤
-      2 * avgOver (uniformDistribution (Fin n → F)) (fun u =>
-        avgOver (uniformDistribution (Fin 2 → F)) (fun v => ∑ g ∈ s,
+      2 * avgOver (uniformDistribution (MIPStarRE.QPBT.Coordinates n F)) (fun u =>
+        avgOver (uniformDistribution (MIPStarRE.QPBT.Coordinates 2 F))  fun v => ∑ g ∈ s,
           ‖ψ g - applyOperatorToState (orderedIndicator (X u) (Z u) (v 0) (v 1)
-            (MvPolynomial.eval v (MvPolynomial.map (MvPolynomial.eval u) (p g)))) (ψ g)‖ ^ 2)) +
+            (MvPolynomial.eval v (MvPolynomial.map (MvPolynomial.eval u) (p g)))) (ψ g)‖ ^ 2 ) +
       2 * ∑ g ∈ s,
         (((p g).support.sup fun e => ((p g).coeff e).totalDegree) +
           max 1 (p g).totalDegree + 1 : ℕ) / (Fintype.card F : ℝ) * ‖ψ g‖ ^ 2 := by
-  let A (u : Fin n → F) (v : Fin 2 → F) (g : Γ) : EuclideanSpace ℂ ι :=
+  let A (u : MIPStarRE.QPBT.Coordinates n F) (v : MIPStarRE.QPBT.Coordinates 2 F) (g : Γ)  :=
     applyOperatorToState (orderedIndicator (X u) (Z u) (v 0) (v 1)
       (MvPolynomial.eval v (MvPolynomial.map (MvPolynomial.eval u) (p g)))) (ψ g)
-  have hpoint (u : Fin n → F) (v : Fin 2 → F) :
-      ∑ g ∈ s, ‖ψ g‖ ^ 2 ≤
-        2 * ∑ g ∈ s, ‖ψ g - A u v g‖ ^ 2 + 2 * ∑ g ∈ s, ‖A u v g‖ ^ 2 :=
+  have hpoint (u : MIPStarRE.QPBT.Coordinates n F) (v : MIPStarRE.QPBT.Coordinates 2 F)  :=
     sum_mass_le_residual_add_image s ψ (A u v)
-  have havg := avgOver_mono (uniformDistribution (Fin n → F)) _ _ fun u =>
-    avgOver_mono (uniformDistribution (Fin 2 → F)) _ _ (hpoint u)
+  have havg := avgOver_mono (uniformDistribution (MIPStarRE.QPBT.Coordinates n F)) _ _ fun u =>
+    avgOver_mono (uniformDistribution (MIPStarRE.QPBT.Coordinates 2 F)) _ _ (hpoint u)
   simp only [avgOver_uniform_const, avgOver_add, avgOver_const_mul] at havg
   have hnorm := avg_sum_orderedIndicator_norm_sq_le_of_not_linear s p hp X Z hX hZ ψ
-  change ∑ g ∈ s, ‖ψ g‖ ^ 2 ≤ 2 * avgOver (uniformDistribution (Fin n → F))
-    (fun u => avgOver (uniformDistribution (Fin 2 → F))
-      (fun v => ∑ g ∈ s, ‖ψ g - A u v g‖ ^ 2)) + _
-  change avgOver (uniformDistribution (Fin n → F))
-    (fun u => avgOver (uniformDistribution (Fin 2 → F))
-      (fun v => ∑ g ∈ s, ‖A u v g‖ ^ 2)) ≤ _ at hnorm
+  change ∑ g ∈ s, ‖ψ g‖ ^ 2 ≤ 2 * avgOver (uniformDistribution (MIPStarRE.QPBT.Coordinates n F))
+    (fun u => avgOver (uniformDistribution (MIPStarRE.QPBT.Coordinates 2 F))
+       fun v => ∑ g ∈ s, ‖ψ g - A u v g‖ ^ 2 ) + _
+  change avgOver (uniformDistribution (MIPStarRE.QPBT.Coordinates n F))
+    (fun u => avgOver (uniformDistribution (MIPStarRE.QPBT.Coordinates 2 F))
+       fun v => ∑ g ∈ s, ‖A u v g‖ ^ 2 ) ≤ _ at hnorm
   linarith
 
 end PolynomialImageBounds

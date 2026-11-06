@@ -41,9 +41,7 @@ theorem consistencyDefect_integrand_le_one {P : AdmissibleParams} {ε : ℝ}
     (S.placedMeasurement p1 first) (S.placedMeasurement p2 second) S.psiHat
   simp only [ProjectiveSetting.placedMeasurement_effect, S.psiHat_norm, one_pow] at h
   rw [h]
-  have hproduct (answer : Outcome) :
-      0 ≤ S.place p1 (first.effect answer) * S.place p2 (second.effect answer) := by
-    exact Commute.mul_nonneg
+  have hproduct (answer : Outcome)  := Commute.mul_nonneg
       (S.place_nonneg p1 (first.pos answer))
       (S.place_nonneg p2 (second.pos answer))
       (S.place_comm p1 p2 hopp _ _)

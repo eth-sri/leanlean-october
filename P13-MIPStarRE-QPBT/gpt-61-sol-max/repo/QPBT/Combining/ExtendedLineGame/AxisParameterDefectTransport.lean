@@ -60,12 +60,12 @@ theorem axis_parameter_evaluated_coefficient_defect_eq
     (uniformDistribution (DirectScalarQ P.extendedDirectLd))
   have heffect (side : PlayerSide) (sample : DirectLdSpace P.extendedDirectLd)
       (parameter value : DirectScalarQ P.extendedDirectLd) :
-      ((((lines.Qline side (directALineDescOf P.extendedDirectLd sample)).postprocess
+       (((lines.Qline side (directALineDescOf P.extendedDirectLd sample)).postprocess
           (axisRead P)).postprocess
-            (fun coefficients => evalCoefficient coefficients parameter)).effect value) =
-        (((answerMeasurement lines side
+             fun coefficients => evalCoefficient coefficients parameter ).effect value  =
+         ((answerMeasurement lines side
           (.aline, directLdMap P.extendedDirectLd .aline sample)).postprocess
-            (fun answer => evalCoefficient (readAxis answer) parameter)).effect value) := by
+             fun answer => evalCoefficient (readAxis answer) parameter ).effect value  := by
     unfold answerMeasurement
     rw [axis_description_canonical]
     rw [MIPStarRE.Quantum.Measurement.postprocess_comp,
@@ -76,11 +76,11 @@ theorem axis_parameter_evaluated_coefficient_defect_eq
         (fun sample value => heteroKron
           (((answerMeasurement lines .alice
             (.aline, directLdMap P.extendedDirectLd .aline sample.1)).postprocess
-              (fun answer => evalCoefficient (readAxis answer) sample.2)).effect value) 1)
+               fun answer => evalCoefficient (readAxis answer) sample.2 ).effect value) 1)
         (fun sample value => heteroKron 1
           (((answerMeasurement lines .bob
             (.aline, directLdMap P.extendedDirectLd .aline sample.1)).postprocess
-              (fun answer => evalCoefficient (readAxis answer) sample.2)).effect value))
+               fun answer => evalCoefficient (readAxis answer) sample.2 ).effect value))
         (pairState setting) := by
     unfold axisParameterEvaluatedCoefficientDefect consistencyDefect
     dsimp only [law]
@@ -100,11 +100,11 @@ theorem axis_parameter_evaluated_coefficient_defect_eq
       (fun sample value => heteroKron
         ((((strategy lines).A
           (.aline, directLdMap P.extendedDirectLd .aline sample.1)).postprocess
-            (fun answer => evalCoefficient (readAxis answer) sample.2)).effect value) 1)
+             fun answer => evalCoefficient (readAxis answer) sample.2 ).effect value) 1)
       (fun sample value => heteroKron 1
         ((((strategy lines).B
           (.aline, directLdMap P.extendedDirectLd .aline sample.1)).postprocess
-            (fun answer => evalCoefficient (readAxis answer) sample.2)).effect value))
+             fun answer => evalCoefficient (readAxis answer) sample.2 ).effect value))
       (strategy lines).ψ = _
   rw [WinImplications.consistencyDefect_postprocess_eq_mismatch]
   unfold axisParameterEvaluationDefect

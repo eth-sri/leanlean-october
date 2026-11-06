@@ -20,7 +20,7 @@ The operator-family contraction is a formalization-only auxiliary lemma.
 
 @[expose] public section
 
-open scoped BigOperators
+open scoped BigOperators Classical
 
 namespace MIPStarRE.QPBT
 
@@ -46,19 +46,18 @@ theorem affine_collision_average {K : Type*}
       if coefficients.1 * p.1 + coefficients.2 * p.2 =
           coefficients.1 * p'.1 + coefficients.2 * p'.2 then (1 : ℝ) else 0) =
       if p = p' then 1 else (Fintype.card K : ℝ)⁻¹ := by
-  classical
   calc
     avgOver (uniformDistribution (K × K)) (fun coefficients =>
         if coefficients.1 * p.1 + coefficients.2 * p.2 =
             coefficients.1 * p'.1 + coefficients.2 * p'.2 then (1 : ℝ) else 0) =
-        avgOver (uniformDistribution K) (fun alpha =>
-          avgOver (uniformDistribution K) (fun beta =>
+        avgOver (uniformDistribution K)  fun alpha =>
+          avgOver (uniformDistribution K)  fun beta =>
             if alpha * p.1 + beta * p.2 = alpha * p'.1 + beta * p'.2 then
-              (1 : ℝ) else 0)) := by
+              (1 : ℝ) else 0   := by
                 simpa only using
-                  (avgOver_uniform_prod (α := K) (β := K) (fun alpha beta =>
+                   avgOver_uniform_prod (α := K) (β := K)  fun alpha beta =>
                     if alpha * p.1 + beta * p.2 = alpha * p'.1 + beta * p'.2 then
-                      (1 : ℝ) else 0))
+                      (1 : ℝ) else 0  
     _ = if p = p' then 1 else (Fintype.card K : ℝ)⁻¹ := by
       by_cases hp : p = p'
       · subst p'
@@ -68,79 +67,44 @@ theorem affine_collision_average {K : Type*}
         · have hsecond : p.2 ≠ p'.2 := by
             intro h
             exact hp (Prod.ext hfirst h)
-          have hdiff : p.2 - p'.2 ≠ 0 := sub_ne_zero.mpr hsecond
+          have hdiff  := sub_ne_zero.mpr hsecond
           calc
         avgOver (uniformDistribution K) (fun alpha =>
-            avgOver (uniformDistribution K) (fun beta =>
+            avgOver (uniformDistribution K)  fun beta =>
               if alpha * p.1 + beta * p.2 = alpha * p'.1 + beta * p'.2 then
-                (1 : ℝ) else 0)) =
-            avgOver (uniformDistribution K) (fun _ =>
-              avgOver (uniformDistribution K) (fun beta =>
-                if beta = 0 then (1 : ℝ) else 0)) := by
+                (1 : ℝ) else 0 ) =
+            avgOver (uniformDistribution K)  fun _ =>
+              avgOver (uniformDistribution K)  fun beta =>
+                if beta = 0 then (1 : ℝ) else 0   := by
               apply avgOver_congr
-              intro alpha
-              apply avgOver_congr
-              intro beta
-              congr 1
-              apply propext
-              constructor
-              · intro h
-                rw [hfirst] at h
-                have : beta * (p.2 - p'.2) = 0 := by
-                  linear_combination h
-                exact (mul_eq_zero.mp this).resolve_right hdiff
-              · intro h
-                subst beta
-                simp [hfirst]
+              simp_all
             _ = _ := by rw [avgOver_uniform_eq_indicator, avgOver_uniform_const]
-        · have hdiff : p.1 - p'.1 ≠ 0 := sub_ne_zero.mpr hfirst
+        · have hdiff  := sub_ne_zero.mpr hfirst
           calc
         avgOver (uniformDistribution K) (fun alpha =>
-            avgOver (uniformDistribution K) (fun beta =>
+            avgOver (uniformDistribution K)  fun beta =>
               if alpha * p.1 + beta * p.2 = alpha * p'.1 + beta * p'.2 then
-                (1 : ℝ) else 0)) =
-            avgOver (uniformDistribution K) (fun beta =>
-              avgOver (uniformDistribution K) (fun alpha =>
+                (1 : ℝ) else 0 ) =
+            avgOver (uniformDistribution K)  fun beta =>
+              avgOver (uniformDistribution K)  fun alpha =>
                 if alpha = beta * (p'.2 - p.2) / (p.1 - p'.1) then
-                  (1 : ℝ) else 0)) := by
+                  (1 : ℝ) else 0   := by
               rw [avgOver_uniform_comm]
               apply avgOver_congr
-              intro beta
-              apply avgOver_congr
-              intro alpha
-              congr 1
-              apply propext
-              exact calc
-                alpha * p.1 + beta * p.2 = alpha * p'.1 + beta * p'.2 ↔
-                    alpha * (p.1 - p'.1) = beta * (p'.2 - p.2) := by
-                      constructor <;> intro h <;> linear_combination h
-                _ ↔ alpha = beta * (p'.2 - p.2) / (p.1 - p'.1) :=
-                  (eq_div_iff hdiff).symm
-            _ = _ := by
-              calc
-                avgOver (uniformDistribution K) (fun beta =>
-                    avgOver (uniformDistribution K) (fun alpha =>
-                      if alpha = beta * (p'.2 - p.2) / (p.1 - p'.1) then
-                        (1 : ℝ) else 0)) =
-                    avgOver (uniformDistribution K)
-                      (fun _ => (Fintype.card K : ℝ)⁻¹) := by
-                        apply avgOver_congr
-                        intro beta
-                        exact avgOver_uniform_eq_indicator _
-                _ = _ := avgOver_uniform_const _
+              grind
+            _ = _ := by simp_all [ avgOver_uniform_const, avgOver_uniform_eq_indicator]
 
 private theorem sum_fiber_norm_sq_eq_pair_sum
     {Γ R ι : Type*} [Fintype Γ] [Fintype R] [DecidableEq R]
     [Fintype ι] [DecidableEq ι]
-    (f : Γ → R) (v : Γ → EuclideanSpace ℂ ι) :
-    (∑ r : R, ‖∑ g ∈ Finset.univ.filter (fun g => f g = r), v g‖ ^ 2) =
+    (f : Γ → R) (v : Γ → MIPStarRE.QPBT.StateVector ι) :
+     ∑ r : R, ‖∑ g ∈ Finset.univ.filter  fun g => f g = r , v g‖ ^ 2  =
       ∑ g : Γ, ∑ g' : Γ,
         if f g = f g' then (inner ℂ (v g) (v g')).re else 0 := by
-  classical
   calc
-    (∑ r : R, ‖∑ g ∈ Finset.univ.filter (fun g => f g = r), v g‖ ^ 2) =
-        ∑ r : R, ∑ g ∈ Finset.univ.filter (fun g => f g = r),
-          ∑ g' ∈ Finset.univ.filter (fun g' => f g' = r),
+     ∑ r : R, ‖∑ g ∈ Finset.univ.filter  fun g => f g = r , v g‖ ^ 2  =
+        ∑ r : R, ∑ g ∈ Finset.univ.filter  fun g => f g = r ,
+          ∑ g' ∈ Finset.univ.filter  fun g' => f g' = r ,
             (inner ℂ (v g) (v g')).re := by
               apply Finset.sum_congr rfl
               intro r _
@@ -192,19 +156,18 @@ private theorem sum_fiber_norm_sq_eq_pair_sum
 private theorem avg_affine_fiber_norm_sq_le
     {K ι : Type*} [Field K] [Fintype K] [DecidableEq K]
     [Fintype ι] [DecidableEq ι]
-    (v : K × K → EuclideanSpace ℂ ι) (hsum : ∑ p, v p = 0) :
+    (v : K × K → MIPStarRE.QPBT.StateVector ι) (hsum : ∑ p, v p = 0) :
     avgOver (uniformDistribution (K × K)) (fun coefficients =>
         ∑ c : K,
-          ‖∑ p ∈ Finset.univ.filter (fun p =>
-            coefficients.1 * p.1 + coefficients.2 * p.2 = c), v p‖ ^ 2) ≤
+          ‖∑ p ∈ Finset.univ.filter  fun p =>
+            coefficients.1 * p.1 + coefficients.2 * p.2 = c , v p‖ ^ 2) ≤
       ∑ p, ‖v p‖ ^ 2 := by
-  classical
-  let w : (K × K) → (K × K) → ℝ := fun p p' => (inner ℂ (v p) (v p')).re
-  let qinv : ℝ := (Fintype.card K : ℝ)⁻¹
-  have hall : (∑ p, ∑ p', w p p') = 0 := by
+  let w  := fun p p' => (inner ℂ (v p) (v p')).re
+  let qinv  := (Fintype.card K : ℝ)⁻¹
+  have hall  := by
     have h := sum_fiber_norm_sq_eq_pair_sum (fun _ : K × K => ()) v
     simpa [w, hsum] using h.symm
-  have hdiag : (∑ p, w p p) = ∑ p, ‖v p‖ ^ 2 := by
+  have hdiag :  ∑ p, w p p  = ∑ p, ‖v p‖ ^ 2 := by
     apply Finset.sum_congr rfl
     intro p _
     exact (@norm_sq_eq_re_inner ℂ _ _ _ _ (v p)).symm
@@ -214,18 +177,18 @@ private theorem avg_affine_fiber_norm_sq_le
   calc
     avgOver (uniformDistribution (K × K)) (fun coefficients =>
         ∑ c : K,
-          ‖∑ p ∈ Finset.univ.filter (fun p =>
-            coefficients.1 * p.1 + coefficients.2 * p.2 = c), v p‖ ^ 2) =
-        avgOver (uniformDistribution (K × K)) (fun coefficients =>
+          ‖∑ p ∈ Finset.univ.filter  fun p =>
+            coefficients.1 * p.1 + coefficients.2 * p.2 = c , v p‖ ^ 2) =
+        avgOver (uniformDistribution (K × K))  fun coefficients =>
           ∑ p, ∑ p', if
             coefficients.1 * p.1 + coefficients.2 * p.2 =
-              coefficients.1 * p'.1 + coefficients.2 * p'.2 then w p p' else 0) := by
+              coefficients.1 * p'.1 + coefficients.2 * p'.2 then w p p' else 0  := by
             apply avgOver_congr
             intro coefficients
             exact sum_fiber_norm_sq_eq_pair_sum _ v
-    _ = ∑ p, ∑ p', avgOver (uniformDistribution (K × K)) (fun coefficients =>
+    _ = ∑ p, ∑ p', avgOver (uniformDistribution (K × K))  fun coefficients =>
           if coefficients.1 * p.1 + coefficients.2 * p.2 =
-              coefficients.1 * p'.1 + coefficients.2 * p'.2 then w p p' else 0) := by
+              coefficients.1 * p'.1 + coefficients.2 * p'.2 then w p p' else 0  := by
             rw [avgOver_sum]
             apply Finset.sum_congr rfl
             intro p _
@@ -240,10 +203,10 @@ private theorem avg_affine_fiber_norm_sq_le
                   if coefficients.1 * p.1 + coefficients.2 * p.2 =
                       coefficients.1 * p'.1 + coefficients.2 * p'.2 then
                     w p p' else 0) =
-                  avgOver (uniformDistribution (K × K)) (fun coefficients =>
+                  avgOver (uniformDistribution (K × K))  fun coefficients =>
                     (if coefficients.1 * p.1 + coefficients.2 * p.2 =
                         coefficients.1 * p'.1 + coefficients.2 * p'.2 then
-                      (1 : ℝ) else 0) * w p p') := by
+                      (1 : ℝ) else 0) * w p p'  := by
                         apply avgOver_congr
                         intro coefficients
                         split <;> simp_all
@@ -254,7 +217,7 @@ private theorem avg_affine_fiber_norm_sq_le
     _ = (1 - qinv) * ∑ p, ‖v p‖ ^ 2 := by
           calc
             (∑ p, ∑ p', if p = p' then w p p' else qinv * w p p') =
-                qinv * (∑ p, ∑ p', w p p') + (1 - qinv) * ∑ p, w p p := by
+                qinv *  ∑ p, ∑ p', w p p'  + (1 - qinv) * ∑ p, w p p := by
                   rw [Finset.mul_sum, Finset.mul_sum]
                   rw [← Finset.sum_add_distrib]
                   apply Finset.sum_congr rfl
@@ -283,52 +246,51 @@ theorem opFamilyDistSq_uniform_affine_postprocess_le
     {X K ι : Type} [Fintype X] [DecidableEq X] [Nonempty X]
     [Field K] [Fintype K] [DecidableEq K]
     [Fintype ι] [DecidableEq ι]
-    (A B : X → K × K → Op ι) (ψ : EuclideanSpace ℂ ι)
+    (A B : X → K × K → Op ι) (ψ : MIPStarRE.QPBT.StateVector ι)
     (hsum : ∀ x, ∑ p, A x p = ∑ p, B x p) :
-    opFamilyDistSq (uniformDistribution (X × (K × K)))
+    opFamilyDistSq (uniformDistribution (X ×  K × K ))
         (fun question c =>
-          ∑ p ∈ Finset.univ.filter (fun p =>
-            question.2.1 * p.1 + question.2.2 * p.2 = c), A question.1 p)
+          ∑ p ∈ Finset.univ.filter  fun p =>
+            question.2.1 * p.1 + question.2.2 * p.2 = c , A question.1 p)
         (fun question c =>
-          ∑ p ∈ Finset.univ.filter (fun p =>
-            question.2.1 * p.1 + question.2.2 * p.2 = c), B question.1 p)
+          ∑ p ∈ Finset.univ.filter  fun p =>
+            question.2.1 * p.1 + question.2.2 * p.2 = c , B question.1 p)
         ψ ≤ opFamilyDistSq (uniformDistribution X) A B ψ := by
-  classical
   unfold opFamilyDistSq
   calc
-    avgOver (uniformDistribution (X × (K × K))) (fun question =>
+    avgOver (uniformDistribution (X ×  K × K )) (fun question =>
         ∑ c : K,
           ‖applyOperatorToState
-            ((∑ p ∈ Finset.univ.filter (fun p =>
-                question.2.1 * p.1 + question.2.2 * p.2 = c), A question.1 p) -
-              ∑ p ∈ Finset.univ.filter (fun p =>
-                question.2.1 * p.1 + question.2.2 * p.2 = c), B question.1 p) ψ‖ ^ 2) =
-        avgOver (uniformDistribution X) (fun x =>
-          avgOver (uniformDistribution (K × K)) (fun coefficients =>
+            ( ∑ p ∈ Finset.univ.filter  fun p =>
+                question.2.1 * p.1 + question.2.2 * p.2 = c , A question.1 p  -
+              ∑ p ∈ Finset.univ.filter  fun p =>
+                question.2.1 * p.1 + question.2.2 * p.2 = c , B question.1 p) ψ‖ ^ 2) =
+        avgOver (uniformDistribution X)  fun x =>
+          avgOver (uniformDistribution (K × K))  fun coefficients =>
             ∑ c : K,
               ‖applyOperatorToState
-                ((∑ p ∈ Finset.univ.filter (fun p =>
-                    coefficients.1 * p.1 + coefficients.2 * p.2 = c), A x p) -
-                  ∑ p ∈ Finset.univ.filter (fun p =>
-                    coefficients.1 * p.1 + coefficients.2 * p.2 = c), B x p) ψ‖ ^ 2)) := by
-          simpa only using (avgOver_uniform_prod (α := X) (β := K × K)
-            (fun x coefficients =>
+                ( ∑ p ∈ Finset.univ.filter  fun p =>
+                    coefficients.1 * p.1 + coefficients.2 * p.2 = c , A x p  -
+                  ∑ p ∈ Finset.univ.filter  fun p =>
+                    coefficients.1 * p.1 + coefficients.2 * p.2 = c , B x p) ψ‖ ^ 2   := by
+          simpa only using  avgOver_uniform_prod (α := X) (β := K × K)
+             fun x coefficients =>
               ∑ c : K,
                 ‖applyOperatorToState
-                  ((∑ p ∈ Finset.univ.filter (fun p =>
-                      coefficients.1 * p.1 + coefficients.2 * p.2 = c), A x p) -
-                    ∑ p ∈ Finset.univ.filter (fun p =>
-                      coefficients.1 * p.1 + coefficients.2 * p.2 = c), B x p) ψ‖ ^ 2))
-    _ ≤ avgOver (uniformDistribution X) (fun x =>
-        ∑ p, ‖applyOperatorToState (A x p - B x p) ψ‖ ^ 2) := by
+                  ( ∑ p ∈ Finset.univ.filter  fun p =>
+                      coefficients.1 * p.1 + coefficients.2 * p.2 = c , A x p  -
+                    ∑ p ∈ Finset.univ.filter  fun p =>
+                      coefficients.1 * p.1 + coefficients.2 * p.2 = c , B x p) ψ‖ ^ 2  
+    _ ≤ avgOver (uniformDistribution X)  fun x =>
+        ∑ p, ‖applyOperatorToState (A x p - B x p) ψ‖ ^ 2  := by
       apply avgOver_mono
       intro x
-      let v : K × K → EuclideanSpace ℂ ι := fun p =>
+      let v  := fun p =>
         applyOperatorToState (A x p - B x p) ψ
       have hvsum : ∑ p, v p = 0 := by
         simp only [v]
         calc
-          (∑ p, applyOperatorToState (A x p - B x p) ψ) =
+           ∑ p, applyOperatorToState (A x p - B x p) ψ  =
               applyOperatorToState (∑ p, (A x p - B x p)) ψ :=
                 (MagicSquareRigidity.applyOperatorToState_sum
                   (fun p => A x p - B x p) ψ).symm
@@ -339,14 +301,14 @@ theorem opFamilyDistSq_uniform_affine_postprocess_le
         avgOver (uniformDistribution (K × K)) (fun coefficients =>
             ∑ c : K,
               ‖applyOperatorToState
-                ((∑ p ∈ Finset.univ.filter (fun p =>
-                    coefficients.1 * p.1 + coefficients.2 * p.2 = c), A x p) -
-                  ∑ p ∈ Finset.univ.filter (fun p =>
-                    coefficients.1 * p.1 + coefficients.2 * p.2 = c), B x p) ψ‖ ^ 2) =
-            avgOver (uniformDistribution (K × K)) (fun coefficients =>
+                ( ∑ p ∈ Finset.univ.filter  fun p =>
+                    coefficients.1 * p.1 + coefficients.2 * p.2 = c , A x p  -
+                  ∑ p ∈ Finset.univ.filter  fun p =>
+                    coefficients.1 * p.1 + coefficients.2 * p.2 = c , B x p) ψ‖ ^ 2) =
+            avgOver (uniformDistribution (K × K))  fun coefficients =>
               ∑ c : K,
-                ‖∑ p ∈ Finset.univ.filter (fun p =>
-                  coefficients.1 * p.1 + coefficients.2 * p.2 = c), v p‖ ^ 2) := by
+                ‖∑ p ∈ Finset.univ.filter  fun p =>
+                  coefficients.1 * p.1 + coefficients.2 * p.2 = c , v p‖ ^ 2  := by
                   apply avgOver_congr
                   intro coefficients
                   apply Finset.sum_congr rfl
@@ -357,42 +319,43 @@ theorem opFamilyDistSq_uniform_affine_postprocess_le
         _ ≤ ∑ p, ‖v p‖ ^ 2 := avg_affine_fiber_norm_sq_le v hvsum
         _ = ∑ p, ‖applyOperatorToState (A x p - B x p) ψ‖ ^ 2 := rfl
 
+variable {P : AdmissibleParams} {ε : ℝ} (S : ProjectiveSetting P ε) (p : Placement)
+
 /-- Register placement preserves the total of a finite operator family. -/
-theorem place_sum {P : AdmissibleParams} {ε : ℝ}
-    (S : ProjectiveSetting P ε) (p : Placement) {α : Type*} [Fintype α]
+theorem place_sum
+      {α : Type*} [Fintype α]
     (A : α → Op (S.ExpandedLocalSpace p.side)) :
     S.place p (∑ a, A a) = ∑ a, S.place p (A a) := by
-  classical
   ext i j
   cases p <;> simp [ProjectiveSetting.place, Matrix.sum_apply,
     Finset.sum_mul, Finset.mul_sum]
 
-private theorem place_one {P : AdmissibleParams} {ε : ℝ}
-    (S : ProjectiveSetting P ε) (p : Placement) :
+private theorem place_one
+      :
     S.place p (1 : Op (S.ExpandedLocalSpace p.side)) = 1 := by
   ext i j
   cases p <;> simp only [ProjectiveSetting.place, Matrix.one_apply, Prod.ext_iff]
-  all_goals split_ifs <;> simp_all [Prod.ext_iff]
+  all_goals split_ifs <;> simp_all []
 
 /-- A complete measurement remains complete after register placement. -/
-theorem sum_placed_measurement_eq_one {P : AdmissibleParams} {ε : ℝ}
-    (S : ProjectiveSetting P ε) (p : Placement) {α : Type*} [Fintype α]
+theorem sum_placed_measurement_eq_one
+      {α : Type*} [Fintype α]
     (M : Measurement α (S.ExpandedLocalSpace p.side)) :
-    (∑ a, S.place p (M.effect a)) = 1 := by
+     ∑ a, S.place p (M.effect a)  = 1 := by
   rw [← place_sum, M.sum_eq_one, place_one]
 
 /-- Ordered products of two complete measurements have total identity after placement. -/
 theorem sum_placed_measurement_products_eq_one
-    {P : AdmissibleParams} {ε : ℝ}
-    (S : ProjectiveSetting P ε) (p : Placement)
+
+
     {α β : Type*} [Fintype α] [Fintype β]
     (M : Measurement α (S.ExpandedLocalSpace p.side))
     (N : Measurement β (S.ExpandedLocalSpace p.side)) :
-    (∑ ab : α × β, S.place p (M.effect ab.1 * N.effect ab.2)) = 1 := by
+     ∑ ab : α × β, S.place p (M.effect ab.1 * N.effect ab.2)  = 1 := by
   rw [← place_sum, Fintype.sum_prod_type]
-  have hlocal : (∑ a : α, ∑ b : β, M.effect a * N.effect b) = 1 := by
+  have hlocal  := by
     calc
-    (∑ a : α, ∑ b : β, M.effect a * N.effect b) =
+     ∑ a : α, ∑ b : β, M.effect a * N.effect b  =
         ∑ a : α, M.effect a * ∑ b : β, N.effect b := by
           apply Finset.sum_congr rfl
           intro a _

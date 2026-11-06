@@ -22,7 +22,7 @@ issue Dengnifer/MIPStarRE-QPBT-bak#123 in `docs/paper-gaps/qpbt_extraction-trans
 
 @[expose] public section
 
-open scoped BigOperators Matrix MatrixOrder ComplexOrder
+open scoped BigOperators Matrix MatrixOrder ComplexOrder Classical
 
 namespace MIPStarRE.QPBT
 
@@ -37,13 +37,12 @@ postprocessing at paper `14_analysis_of_the_pauli_basis_test.tex:1547-1551`. -/
 theorem sum_basis_character_effect_eq {P : AdmissibleParams} {ι : Type*}
     [Fintype ι] [DecidableEq ι] (A : Measurement (PauliScalar P) ι)
     (j : Fin P.model.basisDim) :
-    (∑ a, phaseSign (fixedBinTrace P.model (P.model.basis j * a)) • A.effect a) =
+     ∑ a, phaseSign (fixedBinTrace P.model (P.model.basis j * a)) • A.effect a  =
       ∑ b : ZMod 2, phaseSign b •
-        (A.postprocess (fun a => fixedBinTrace P.model (P.model.basis j * a))).effect b := by
-  classical
+        (A.postprocess  fun a => fixedBinTrace P.model (P.model.basis j * a) ).effect b := by
   rw [← Finset.sum_fiberwise_of_maps_to
     (g := fun a : PauliScalar P => fixedBinTrace P.model (P.model.basis j * a))
-    (t := (Finset.univ : Finset (ZMod 2))) (fun _ _ => Finset.mem_univ _)]
+    (t := (Finset.univ : Finset (ZMod 2)))  fun _ _ => Finset.mem_univ _ ]
   apply Finset.sum_congr rfl
   intro b _
   rw [MIPStarRE.Quantum.Measurement.postprocess_effect, Finset.smul_sum]
@@ -61,7 +60,7 @@ theorem basis_character_opDistSq_le_four_consistencyDefect
     [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
     (μ : Distribution X) (A : X → Measurement (PauliScalar P) ιA)
     (B : X → Measurement (PauliScalar P) ιB)
-    (ψ : EuclideanSpace ℂ (ιA × ιB)) (j : Fin P.model.basisDim) :
+    (ψ : MIPStarRE.QPBT.StateVector (ιA × ιB)) (j : Fin P.model.basisDim) :
     opDistSq μ
       (fun x => heteroKron
         (∑ a, phaseSign (fixedBinTrace P.model (P.model.basis j * a)) • (A x).effect a) 1)
@@ -69,7 +68,6 @@ theorem basis_character_opDistSq_le_four_consistencyDefect
         (∑ a, phaseSign (fixedBinTrace P.model (P.model.basis j * a)) • (B x).effect a)) ψ ≤
       4 * consistencyDefect μ (fun x a => heteroKron ((A x).effect a) 1)
         (fun x a => heteroKron 1 ((B x).effect a)) ψ := by
-  classical
   let f := fun a : PauliScalar P => fixedBinTrace P.model (P.model.basis j * a)
   let A' := fun x => (A x).postprocess f
   let B' := fun x => (B x).postprocess f
@@ -104,9 +102,7 @@ theorem tildeObs_opDistSq_le_four_consistencyDefect
       4 * consistencyDefect (uniformDistribution (PauliRegister P))
         (fun u a => S.placeSide .alice (tildeM w .alice W u a))
         (fun u a => S.placeSide .bob (tildeM w .bob W u a)) S.psiHat := by
-  classical
-  let M (side : PlayerSide) (u : PauliRegister P) :
-      Measurement (PauliScalar P) (ExtractionBlock P (S.LocalSpace side)) :=
+  let M (side : PlayerSide) (u : PauliRegister P)  :=
     MIPStarRE.Quantum.Measurement.ofSumEqOne (tildeM w side W u)
       (fun a => (tildeM_isProj w side W u a).nonneg) (sum_tildeM_eq_one w side W u)
   let e := sixRegExtractionEquiv P S.toStrategy.ιA S.toStrategy.ιB

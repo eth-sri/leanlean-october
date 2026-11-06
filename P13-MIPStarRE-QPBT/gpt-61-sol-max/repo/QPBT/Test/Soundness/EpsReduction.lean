@@ -65,10 +65,7 @@ theorem deltaQld_mono_epsilon {P : AdmissibleParams} {a b ε ε' : ℝ}
   have hmd0 : (0 : ℝ) ≤ ((P.m * P.d : ℕ) : ℝ) := by linarith
   unfold deltaQld
   simp only [Real.rpow_eq_pow]
-  have hεb : ε ^ b ≤ ε' ^ b := Real.rpow_le_rpow hε0 hle hb.le
-  have hpre : 0 ≤ a * ((P.m * P.d : ℕ) : ℝ) ^ a :=
-    mul_nonneg (by linarith) (Real.rpow_nonneg hmd0 a)
-  exact mul_le_mul_of_nonneg_left (by linarith) hpre
+  classical gcongr 
 
 end
 

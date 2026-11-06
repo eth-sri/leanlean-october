@@ -42,7 +42,7 @@ theorem extendedDirectLd_coefficientCollisionLoss_le_five_mul
       (P.q : ℝ) ≤ 5 * ((P.m : ℝ) * (P.d : ℝ) / (P.q : ℝ))
   push_cast
   rw [show 5 * ((P.m : ℝ) * (P.d : ℝ) / (P.q : ℝ)) =
-    (5 * ((P.m : ℝ) * (P.d : ℝ))) / (P.q : ℝ) by ring]
+     5 * ((P.m : ℝ) * (P.d : ℝ))  / (P.q : ℝ) by ring]
   apply (div_le_div_iff_of_pos_right hq).2
   nlinarith [show (0 : ℝ) ≤ (P.d : ℝ) by positivity]
 

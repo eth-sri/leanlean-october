@@ -1,5 +1,7 @@
 module
 
+public import QPBT.Types
+
 public import QPBT.Algebra.Subspaces
 
 /-!
@@ -32,7 +34,7 @@ provide an executable elimination algorithm or a complexity theorem for finding 
 
 @[expose] public section
 
-open scoped BigOperators
+open scoped BigOperators Classical
 
 namespace MIPStarRE.QPBT
 
@@ -55,19 +57,18 @@ lemma IsReducedRowEchelon.prefixRank_eq_card
     (hB : IsReducedRowEchelon B pivot) {k : ℕ} (hk : k ≤ n) :
     prefixRank (Submodule.span K (Set.range B.row)) k hk =
       (Finset.univ.filter fun i => (pivot i).val < k).card := by
-  classical
   let s := Finset.univ.filter fun i => (pivot i).val < k
-  let b : s → Fin k → K := fun i => prefixMap k n hk (B.row i.val)
+  let b : s → MIPStarRE.QPBT.Coordinates k K := fun i => prefixMap k n hk (B.row i.val)
   have hb : LinearIndependent K b := by
     apply Fintype.linearIndependent_iff.mpr
     intro c hc i
     have hi := congrFun hc
       ⟨(pivot i.val).val, (Finset.mem_filter.mp i.property).2⟩
     simp only [Finset.sum_apply, Pi.smul_apply, smul_eq_mul] at hi
-    change (∑ j : s, c j * B j.val (pivot i.val)) = 0 at hi
+    change  ∑ j : s, c j * B j.val (pivot i.val)  = 0 at hi
     simpa [hB.pivot_entry, ← Subtype.ext_iff] using hi
   have hspan :
-      Submodule.span K (Set.range (fun i => prefixMap k n hk (B.row i))) =
+      Submodule.span K (Set.range  fun i => prefixMap k n hk (B.row i) ) =
         Submodule.span K (Set.range b) := by
     apply le_antisymm
     · apply Submodule.span_le.mpr
@@ -88,7 +89,7 @@ lemma IsReducedRowEchelon.prefixRank_eq_card
       exact ⟨i.val, rfl⟩
   rw [prefixRank, Submodule.map_span, ← Set.range_comp]
   change Module.finrank K
-    (Submodule.span K (Set.range (fun i => prefixMap k n hk (B.row i)))) = s.card
+    (Submodule.span K (Set.range  fun i => prefixMap k n hk (B.row i) )) = s.card
   rw [hspan, finrank_span_eq_card hb]
   exact Fintype.card_coe s
 
@@ -100,18 +101,14 @@ theorem IsReducedRowEchelon.canonicalComplement_eq_nonpivot_indices
     (hB : IsReducedRowEchelon B pivot) :
     canonicalComplement (Submodule.span K (Set.range B.row)) =
       (Finset.univ.image pivot)ᶜ := by
-  classical
   ext j
   simp only [canonicalComplement, Finset.mem_filter, Finset.mem_univ, true_and,
     hB.prefixRank_eq_card, Finset.mem_compl, Finset.mem_image]
   constructor
   · intro hcard hpivot
     obtain ⟨i, hi⟩ := hpivot
-    have hsub : (Finset.univ.filter fun a => (pivot a).val < j.val) ⊆
-        (Finset.univ.filter fun a => (pivot a).val < j.val + 1) := by
-      intro a ha
-      simp only [Finset.mem_filter, Finset.mem_univ, true_and] at ha ⊢
-      omega
+    have hsub :  Finset.univ.filter fun a => (pivot a).val < j.val  ⊆
+         Finset.univ.filter fun a => (pivot a).val < j.val + 1  := by grind
     have heq := Finset.eq_of_subset_of_card_le hsub hcard.le
     have hi' : i ∈ Finset.univ.filter fun a => (pivot a).val < j.val + 1 := by
       simp [hi]

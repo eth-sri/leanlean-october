@@ -1,5 +1,7 @@
 module
 
+public import QPBT.Types
+
 public import QPBT.Combining.Defs
 public import QPBT.Combining.DirectLowDegree.Transport.Combining.Parameters
 
@@ -41,6 +43,8 @@ canonical parametrizations of the line.
 
 @[expose] public section
 
+variable {K : Type*} [CommSemiring K]
+
 open scoped BigOperators
 
 namespace MIPStarRE.QPBT
@@ -56,7 +60,7 @@ noncomputable section
 inverse of `linePolynomialOfCoefficients` on polynomials of degree at most
 `n`, which is the content of `evalCoefficient_coefficientsOfPolynomial`. -/
 def coefficientsOfPolynomial {K : Type*} [Semiring K] (n : ℕ)
-    (p : Polynomial K) : Fin (n + 1) → K :=
+    (p : Polynomial K) : MIPStarRE.QPBT.Coordinates (n + 1) K :=
   fun i => p.coeff i.val
 
 /-- A polynomial of degree at most `n` is evaluated by its bounded coefficient
@@ -70,19 +74,19 @@ theorem evalCoefficient_coefficientsOfPolynomial {K : Type*} [Semiring K] {n : �
 
 /-- The affine reparametrization `t ↦ evalCoefficient f (t + s)` of a bounded
 coefficient vector, as a univariate polynomial. -/
-def shiftedLinePolynomial {K : Type*} [CommSemiring K] {n : ℕ}
-    (f : Fin (n + 1) → K) (s : K) : Polynomial K :=
+def shiftedLinePolynomial   {n : ℕ}
+    (f : MIPStarRE.QPBT.Coordinates (n + 1) K) (s : K) : Polynomial K :=
   (linePolynomialOfCoefficients f).comp (Polynomial.X + Polynomial.C s)
 
-theorem shiftedLinePolynomial_eval {K : Type*} [CommSemiring K] {n : ℕ}
-    (f : Fin (n + 1) → K) (s t : K) :
+theorem shiftedLinePolynomial_eval   {n : ℕ}
+    (f : MIPStarRE.QPBT.Coordinates (n + 1) K) (s t : K) :
     (shiftedLinePolynomial f s).eval t = evalCoefficient f (t + s) := by
   rw [shiftedLinePolynomial, Polynomial.eval_comp]
   simpa using linePolynomialOfCoefficients_eval f (t + s)
 
 /-- Reparametrizing does not raise the degree of a line answer. -/
-theorem shiftedLinePolynomial_natDegree_le {K : Type*} [CommSemiring K] {n : ℕ}
-    (f : Fin (n + 1) → K) (s : K) :
+theorem shiftedLinePolynomial_natDegree_le   {n : ℕ}
+    (f : MIPStarRE.QPBT.Coordinates (n + 1) K) (s : K) :
     (shiftedLinePolynomial f s).natDegree ≤ n := by
   refine le_trans Polynomial.natDegree_comp_le ?_
   have hshift : (Polynomial.X + Polynomial.C s : Polynomial K).natDegree ≤ 1 := by
@@ -100,39 +104,41 @@ stored index is a point coordinate: the combining part `α` of the canonical
 base is constant along such a line, so the answer is the fixed combination
 `∑ r, α r * f r` of the measured line answers, reparametrized by `s`.  This is
 case 2 of `def:ld-combined-strategy`. -/
-def combinedAxisPolynomial {K : Type*} [CommSemiring K] {k n : ℕ}
-    (α : Fin k → K) (s : K) (f : Fin k → Fin (n + 1) → K) : Polynomial K :=
+def combinedAxisPolynomial   {k n : ℕ}
+    (α : MIPStarRE.QPBT.Coordinates k K) (s : K) (f : Fin k → MIPStarRE.QPBT.Coordinates (n + 1) K) : Polynomial K :=
   ∑ r : Fin k, Polynomial.C (α r) * shiftedLinePolynomial (f r) s
 
-theorem combinedAxisPolynomial_natDegree_le {K : Type*} [CommSemiring K] {k n : ℕ}
-    (α : Fin k → K) (s : K) (f : Fin k → Fin (n + 1) → K) :
+theorem combinedAxisPolynomial_natDegree_le   {k n : ℕ}
+    (α : MIPStarRE.QPBT.Coordinates k K) (s : K) (f : Fin k → MIPStarRE.QPBT.Coordinates (n + 1) K) :
     (combinedAxisPolynomial α s f).natDegree ≤ n := by
   refine Polynomial.natDegree_sum_le_of_forall_le _ _ fun r _ => ?_
   exact le_trans (Polynomial.natDegree_C_mul_le _ _)
     (shiftedLinePolynomial_natDegree_le (f r) s)
 
-theorem combinedAxisPolynomial_eval {K : Type*} [CommSemiring K] {k n : ℕ}
-    (α : Fin k → K) (s : K) (f : Fin k → Fin (n + 1) → K) (t : K) :
+theorem combinedAxisPolynomial_eval   {k n : ℕ}
+    (α : MIPStarRE.QPBT.Coordinates k K) (s : K) (f : Fin k → MIPStarRE.QPBT.Coordinates (n + 1) K) (t : K) :
     (combinedAxisPolynomial α s f).eval t =
       ∑ r : Fin k, α r * evalCoefficient (f r) (t + s) := by
   rw [combinedAxisPolynomial, Polynomial.eval_finsetSum]
   refine Finset.sum_congr rfl fun r _ => ?_
   rw [Polynomial.eval_mul, Polynomial.eval_C, shiftedLinePolynomial_eval]
 
+variable {k n : ℕ} (α w : MIPStarRE.QPBT.Coordinates k K) (s : K) (f : Fin k → MIPStarRE.QPBT.Coordinates (n + 1) K)
+
 /-- The combined answer on a diagonal line of the combined space whose stored
 index is a point coordinate: the combining part of the point at parameter `t`
 is `α + t • w`, so the answer is `∑ r, (α r + t * w r) * f r (t + s)`.  This is
 case 4 of `def:ld-combined-strategy`. -/
-def combinedDiagonalPolynomial {K : Type*} [CommSemiring K] {k n : ℕ}
-    (α w : Fin k → K) (s : K) (f : Fin k → Fin (n + 1) → K) : Polynomial K :=
+def combinedDiagonalPolynomial
+       : Polynomial K :=
   ∑ r : Fin k, (Polynomial.C (α r) + Polynomial.C (w r) * Polynomial.X) *
     shiftedLinePolynomial (f r) s
 
-theorem combinedDiagonalPolynomial_natDegree_le {K : Type*} [CommSemiring K]
-    {k n : ℕ} (α w : Fin k → K) (s : K) (f : Fin k → Fin (n + 1) → K) :
+theorem combinedDiagonalPolynomial_natDegree_le
+        :
     (combinedDiagonalPolynomial α w s f).natDegree ≤ n + 1 := by
   refine Polynomial.natDegree_sum_le_of_forall_le _ _ fun r _ => ?_
-  refine le_trans (Polynomial.natDegree_mul_le) ?_
+  refine le_trans  Polynomial.natDegree_mul_le  ?_
   have haffine :
       (Polynomial.C (α r) + Polynomial.C (w r) * Polynomial.X :
         Polynomial K).natDegree ≤ 1 := by
@@ -142,8 +148,8 @@ theorem combinedDiagonalPolynomial_natDegree_le {K : Type*} [CommSemiring K]
   have := shiftedLinePolynomial_natDegree_le (f r) s
   omega
 
-theorem combinedDiagonalPolynomial_eval {K : Type*} [CommSemiring K] {k n : ℕ}
-    (α w : Fin k → K) (s : K) (f : Fin k → Fin (n + 1) → K) (t : K) :
+theorem combinedDiagonalPolynomial_eval
+       (t : K) :
     (combinedDiagonalPolynomial α w s f).eval t =
       ∑ r : Fin k, (α r + t * w r) * evalCoefficient (f r) (t + s) := by
   rw [combinedDiagonalPolynomial, Polynomial.eval_finsetSum]
@@ -159,19 +165,19 @@ line, the combined value at parameter `t` is `∑ r, (α r + t * w r) * b r`, an
 the measured outcome is the point answer `b`.  This is cases 3 and 5 of
 `def:ld-combined-strategy`; case 3 is the axis-parallel case, where `w` is the
 standard basis vector of the varying combining coordinate. -/
-def fiberLinePolynomial {K : Type*} [CommSemiring K] {k : ℕ}
-    (α w b : Fin k → K) : Polynomial K :=
+def fiberLinePolynomial   {k : ℕ}
+    (α w b : MIPStarRE.QPBT.Coordinates k K) : Polynomial K :=
   Polynomial.C (∑ r : Fin k, α r * b r) +
     Polynomial.C (∑ r : Fin k, w r * b r) * Polynomial.X
 
-theorem fiberLinePolynomial_natDegree_le {K : Type*} [CommSemiring K] {k : ℕ}
-    (α w b : Fin k → K) : (fiberLinePolynomial α w b).natDegree ≤ 1 := by
+theorem fiberLinePolynomial_natDegree_le   {k : ℕ}
+    (α w b : MIPStarRE.QPBT.Coordinates k K) : (fiberLinePolynomial α w b).natDegree ≤ 1 := by
   refine le_trans (Polynomial.natDegree_add_le _ _) (max_le ?_ ?_)
   · exact le_trans (le_of_eq (Polynomial.natDegree_C _)) (Nat.zero_le 1)
   · exact le_trans (Polynomial.natDegree_C_mul_le _ _) Polynomial.natDegree_X_le
 
-theorem fiberLinePolynomial_eval {K : Type*} [CommSemiring K] {k : ℕ}
-    (α w b : Fin k → K) (t : K) :
+theorem fiberLinePolynomial_eval   {k : ℕ}
+    (α w b : MIPStarRE.QPBT.Coordinates k K) (t : K) :
     (fiberLinePolynomial α w b).eval t =
       ∑ r : Fin k, (α r + t * w r) * b r := by
   rw [fiberLinePolynomial]

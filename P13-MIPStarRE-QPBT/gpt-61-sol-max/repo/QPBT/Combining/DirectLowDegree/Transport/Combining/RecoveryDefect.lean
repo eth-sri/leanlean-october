@@ -46,7 +46,7 @@ insensitive to the placement.
 
 @[expose] public section
 
-open scoped BigOperators MatrixOrder Matrix ComplexOrder
+open scoped BigOperators MatrixOrder Matrix ComplexOrder Classical
 
 namespace MIPStarRE.QPBT
 
@@ -67,12 +67,11 @@ private theorem diagonalRight_pair_sum {β Γ ιA ιB : Type*}
     [Fintype β] [DecidableEq β] [Fintype Γ] [DecidableEq Γ]
     [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
     (A : Measurement β ιA) (B : Measurement Γ ιB)
-    (ψ : EuclideanSpace ℂ (ιA × ιB)) (f : Γ → β) :
-    (∑ b : β, stateQForm ψ
-      (heteroKron (A.effect b) ((B.postprocess f).effect b))) =
+    (ψ : MIPStarRE.QPBT.StateVector (ιA × ιB)) (f : Γ → β) :
+     ∑ b : β, stateQForm ψ
+      (heteroKron (A.effect b) ((B.postprocess f).effect b))  =
       ∑ b : β, ∑ g : Γ, if f g = b then
         stateQForm ψ (heteroKron (A.effect b) (B.effect g)) else 0 := by
-  classical
   refine Finset.sum_congr rfl fun b _ => ?_
   rw [MIPStarRE.Quantum.Measurement.postprocess_effect,
     heteroKron_finset_sum_right, stateQForm_finset_sum, Finset.sum_filter]
@@ -83,12 +82,11 @@ private theorem diagonalLeft_pair_sum {β Γ ιA ιB : Type*}
     [Fintype β] [DecidableEq β] [Fintype Γ] [DecidableEq Γ]
     [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
     (A : Measurement β ιB) (B : Measurement Γ ιA)
-    (ψ : EuclideanSpace ℂ (ιA × ιB)) (f : Γ → β) :
-    (∑ b : β, stateQForm ψ
-      (heteroKron ((B.postprocess f).effect b) (A.effect b))) =
+    (ψ : MIPStarRE.QPBT.StateVector (ιA × ιB)) (f : Γ → β) :
+     ∑ b : β, stateQForm ψ
+      (heteroKron ((B.postprocess f).effect b) (A.effect b))  =
       ∑ b : β, ∑ g : Γ, if f g = b then
         stateQForm ψ (heteroKron (B.effect g) (A.effect b)) else 0 := by
-  classical
   refine Finset.sum_congr rfl fun b _ => ?_
   rw [MIPStarRE.Quantum.Measurement.postprocess_effect,
     heteroKron_finset_sum_left, stateQForm_finset_sum, Finset.sum_filter]
@@ -100,12 +98,11 @@ private theorem diagonalPair_pair_sum {β Γ R ιA ιB : Type*}
     [Fintype R] [DecidableEq R]
     [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
     (A : Measurement β ιA) (B : Measurement Γ ιB)
-    (ψ : EuclideanSpace ℂ (ιA × ιB)) (e : β → R) (f : Γ → R) :
-    (∑ r : R, stateQForm ψ
-      (heteroKron ((A.postprocess e).effect r) ((B.postprocess f).effect r))) =
+    (ψ : MIPStarRE.QPBT.StateVector (ιA × ιB)) (e : β → R) (f : Γ → R) :
+     ∑ r : R, stateQForm ψ
+      (heteroKron ((A.postprocess e).effect r) ((B.postprocess f).effect r))  =
       ∑ b : β, ∑ g : Γ, if e b = f g then
         stateQForm ψ (heteroKron (A.effect b) (B.effect g)) else 0 := by
-  classical
   have hterm (r : R) : stateQForm ψ
       (heteroKron ((A.postprocess e).effect r) ((B.postprocess f).effect r)) =
       ∑ b : β, ∑ g : Γ, if e b = r ∧ f g = r then
@@ -140,12 +137,11 @@ private theorem diagonalPairLeft_pair_sum {β Γ R ιA ιB : Type*}
     [Fintype R] [DecidableEq R]
     [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
     (A : Measurement β ιB) (B : Measurement Γ ιA)
-    (ψ : EuclideanSpace ℂ (ιA × ιB)) (e : β → R) (f : Γ → R) :
-    (∑ r : R, stateQForm ψ
-      (heteroKron ((B.postprocess f).effect r) ((A.postprocess e).effect r))) =
+    (ψ : MIPStarRE.QPBT.StateVector (ιA × ιB)) (e : β → R) (f : Γ → R) :
+     ∑ r : R, stateQForm ψ
+      (heteroKron ((B.postprocess f).effect r) ((A.postprocess e).effect r))  =
       ∑ b : β, ∑ g : Γ, if e b = f g then
         stateQForm ψ (heteroKron (B.effect g) (A.effect b)) else 0 := by
-  classical
   have hterm (r : R) : stateQForm ψ
       (heteroKron ((B.postprocess f).effect r) ((A.postprocess e).effect r)) =
       ∑ b : β, ∑ g : Γ, if e b = r ∧ f g = r then
@@ -190,16 +186,15 @@ private theorem recovery_avg_le {X Y β Γ R : Type*}
     (f : X → Γ → β) (e₁ : X → Y → β → R) (f₁ : X → Y → Γ → R)
     (F : X → Γ → ℝ) (η : ℝ)
     (hwnonneg : ∀ x b g, 0 ≤ w x b g) (hWnonneg : ∀ g, 0 ≤ W g)
-    (hfiber : ∀ x g, (∑ b : β, w x b g) = W g) (hWsum : (∑ g : Γ, W g) = 1)
+    (hfiber : ∀ x g,  ∑ b : β, w x b g  = W g) (hWsum :  ∑ g : Γ, W g  = 1)
     (hFbound : ∀ x b g, avgOver (uniformDistribution Y)
       (fun y => if f x g ≠ b ∧ e₁ x y b = f₁ x y g then (1 : ℝ) else 0) ≤ F x g)
     (hFavg : ∀ g, avgOver (uniformDistribution X) (fun x => F x g) ≤ η) :
     avgOver (uniformDistribution X) (fun x =>
-        avgOver (uniformDistribution Y) (fun y =>
-          ∑ b : β, ∑ g : Γ, if e₁ x y b = f₁ x y g then w x b g else 0)) ≤
+        avgOver (uniformDistribution Y)  fun y =>
+          ∑ b : β, ∑ g : Γ, if e₁ x y b = f₁ x y g then w x b g else 0 ) ≤
       avgOver (uniformDistribution X)
         (fun x => ∑ b : β, ∑ g : Γ, if f x g = b then w x b g else 0) + η := by
-  classical
   have hstep : ∀ x : X,
       avgOver (uniformDistribution Y) (fun y =>
           ∑ b : β, ∑ g : Γ, if e₁ x y b = f₁ x y g then w x b g else 0) ≤
@@ -209,7 +204,7 @@ private theorem recovery_avg_le {X Y β Γ R : Type*}
     have hexp : avgOver (uniformDistribution Y) (fun y =>
         ∑ b : β, ∑ g : Γ, if e₁ x y b = f₁ x y g then w x b g else 0) =
         ∑ b : β, ∑ g : Γ, avgOver (uniformDistribution Y)
-          (fun y => if e₁ x y b = f₁ x y g then w x b g else 0) := by
+           fun y => if e₁ x y b = f₁ x y g then w x b g else 0  := by
       rw [avgOver_sum]
       exact Finset.sum_congr rfl fun b _ => avgOver_sum _ _
     rw [hexp]
@@ -222,41 +217,16 @@ private theorem recovery_avg_le {X Y β Γ R : Type*}
           (if e₁ x y b = f₁ x y g then w x b g else 0) ≤
             (if f x g = b then w x b g else 0) +
               (if f x g ≠ b ∧ e₁ x y b = f₁ x y g then (1 : ℝ) else 0) *
-                w x b g := by
-        intro y
-        by_cases hy : e₁ x y b = f₁ x y g
-        · by_cases hb : f x g = b
-          · rw [if_pos hy, if_pos hb, if_neg, zero_mul, add_zero]
-            rintro ⟨hne, -⟩
-            exact hne hb
-          · rw [if_pos hy, if_neg hb, if_pos ⟨hb, hy⟩, one_mul, zero_add]
-        · rw [if_neg hy]
-          have h1 : (0 : ℝ) ≤ if f x g = b then w x b g else 0 := by
-            split_ifs
-            · exact hwnonneg x b g
-            · exact le_rfl
-          have h2 : (0 : ℝ) ≤
-              (if f x g ≠ b ∧ e₁ x y b = f₁ x y g then (1 : ℝ) else 0) *
-                w x b g := by
-            have : (0 : ℝ) ≤
-                if f x g ≠ b ∧ e₁ x y b = f₁ x y g then (1 : ℝ) else 0 := by
-              split_ifs
-              · exact zero_le_one
-              · exact le_rfl
-            exact mul_nonneg this (hwnonneg x b g)
-          linarith
+                w x b g := by aesop
       refine le_trans (avgOver_mono _ _ _ hsplit) ?_
       rw [avgOver_add, avgOver_uniform_const, avgOver_mul_const]
       have hcomm : w x b g * F x g = F x g * w x b g := mul_comm _ _
       linarith [mul_le_mul_of_nonneg_right (hFbound x b g) (hwnonneg x b g)]
     refine le_trans (Finset.sum_le_sum fun b _ =>
       Finset.sum_le_sum fun g _ => hterm b g) ?_
-    have hsum : (∑ b : β, ∑ g : Γ,
-        ((if f x g = b then w x b g else 0) + w x b g * F x g)) =
-        (∑ b : β, ∑ g : Γ, if f x g = b then w x b g else 0) +
-          ∑ g : Γ, (∑ b : β, w x b g) * F x g := by
-      calc (∑ b : β, ∑ g : Γ,
-            ((if f x g = b then w x b g else 0) + w x b g * F x g))
+    have hsum  := by
+      calc  ∑ b : β, ∑ g : Γ,
+            ((if f x g = b then w x b g else 0) + w x b g * F x g) 
           = ∑ b : β, ((∑ g : Γ, if f x g = b then w x b g else 0) +
               ∑ g : Γ, w x b g * F x g) :=
             Finset.sum_congr rfl fun b _ => Finset.sum_add_distrib
@@ -267,7 +237,7 @@ private theorem recovery_avg_le {X Y β Γ R : Type*}
             congr 1
             rw [Finset.sum_comm]
             exact Finset.sum_congr rfl fun g _ => (Finset.sum_mul _ _ _).symm
-    have hW2 : (∑ g : Γ, (∑ b : β, w x b g) * F x g) =
+    have hW2 :  ∑ g : Γ, (∑ b : β, w x b g) * F x g  =
         ∑ g : Γ, W g * F x g :=
       Finset.sum_congr rfl fun g _ => by rw [hfiber x g]
     rw [hsum, hW2]
@@ -275,14 +245,14 @@ private theorem recovery_avg_le {X Y β Γ R : Type*}
   rw [avgOver_add]
   have hswap : avgOver (uniformDistribution X)
       (fun x => ∑ g : Γ, W g * F x g) =
-      ∑ g : Γ, W g * avgOver (uniformDistribution X) (fun x => F x g) := by
+      ∑ g : Γ, W g * avgOver (uniformDistribution X)  fun x => F x g  := by
     rw [avgOver_sum]
     exact Finset.sum_congr rfl fun g _ => avgOver_const_mul _ _ _
   have hfinal : avgOver (uniformDistribution X)
       (fun x => ∑ g : Γ, W g * F x g) ≤ η := by
     rw [hswap]
     calc
-      (∑ g : Γ, W g * avgOver (uniformDistribution X) (fun x => F x g)) ≤
+      (∑ g : Γ, W g * avgOver (uniformDistribution X)  fun x => F x g ) ≤
           ∑ g : Γ, W g * η :=
         Finset.sum_le_sum fun g _ =>
           mul_le_mul_of_nonneg_left (hFavg g) (hWnonneg g)
@@ -311,7 +281,7 @@ theorem consistencyDefect_le_of_recoveryBound
     [Fintype R] [DecidableEq R]
     [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
     (A : X → Measurement β ιA) (B : Measurement Γ ιB)
-    (ψ : EuclideanSpace ℂ (ιA × ιB)) (hψ : ‖ψ‖ = 1)
+    (ψ : MIPStarRE.QPBT.StateVector (ιA × ιB)) (hψ : ‖ψ‖ = 1)
     (f : X → Γ → β) (e₁ : X → Y → β → R) (f₁ : X → Y → Γ → R)
     (F : X → Γ → ℝ) (η : ℝ)
     (hFbound : ∀ x b g, avgOver (uniformDistribution Y)
@@ -323,22 +293,21 @@ theorem consistencyDefect_le_of_recoveryBound
       consistencyDefect (uniformDistribution (X × Y))
         (fun z r => heteroKron (((A z.1).postprocess (e₁ z.1 z.2)).effect r) 1)
         (fun z r => heteroKron 1 ((B.postprocess (f₁ z.1 z.2)).effect r)) ψ + η := by
-  classical
   set w : X → β → Γ → ℝ := fun x b g =>
     stateQForm ψ (heteroKron ((A x).effect b) (B.effect g)) with hwdef
-  have hwnonneg : ∀ x b g, 0 ≤ w x b g := fun x b g =>
+  have hwnonneg  := fun x b g =>
     stateQForm_nonneg ψ (MIPStarRE.Quantum.kronecker_nonneg ((A x).pos b) (B.pos g))
   set W : Γ → ℝ := fun g => stateQForm ψ (heteroKron (1 : Op ιA) (B.effect g))
     with hWdef
-  have hWnonneg : ∀ g, 0 ≤ W g := fun g =>
+  have hWnonneg  := fun g =>
     stateQForm_nonneg ψ (MIPStarRE.Quantum.kronecker_nonneg
       (Matrix.PosSemidef.one.nonneg : (0 : Op ιA) ≤ 1) (B.pos g))
-  have hfiber : ∀ x g, (∑ b : β, w x b g) = W g := by
+  have hfiber : ∀ x g,  ∑ b : β, w x b g  = W g := by
     intro x g
     rw [hwdef, hWdef]
     simp only
     rw [← (A x).sum_eq_one, heteroKron_finset_sum_left, stateQForm_finset_sum]
-  have hWsum : (∑ g : Γ, W g) = 1 := by
+  have hWsum :  ∑ g : Γ, W g  = 1 := by
     rw [hWdef]
     simp only
     rw [← stateQForm_finset_sum, ← heteroKron_finset_sum_right, B.sum_eq_one,
@@ -353,7 +322,7 @@ theorem consistencyDefect_le_of_recoveryBound
       (fun x b => heteroKron 1 ((B.postprocess (f x)).effect b)) ψ =
       1 - avgOver (uniformDistribution X) AgrG := by
     rw [consistencyDefect_placed_eq_avg_point (uniformDistribution X) A
-      (fun x => B.postprocess (f x))]
+       fun x => B.postprocess (f x) ]
     have hpoint : ∀ x : X,
         (∑ b : β, ∑ b' : β, if b = b' then 0 else stateQForm ψ
           (heteroKron ((A x).effect b) ((B.postprocess (f x)).effect b'))) =
@@ -372,10 +341,10 @@ theorem consistencyDefect_le_of_recoveryBound
       (fun z r => heteroKron (((A z.1).postprocess (e₁ z.1 z.2)).effect r) 1)
       (fun z r => heteroKron 1 ((B.postprocess (f₁ z.1 z.2)).effect r)) ψ =
       1 - avgOver (uniformDistribution X)
-        (fun x => avgOver (uniformDistribution Y) (AgrH x)) := by
+         fun x => avgOver (uniformDistribution Y) (AgrH x)  := by
     rw [consistencyDefect_placed_eq_avg_point (uniformDistribution (X × Y))
       (fun z => (A z.1).postprocess (e₁ z.1 z.2))
-      (fun z => B.postprocess (f₁ z.1 z.2))]
+       fun z => B.postprocess (f₁ z.1 z.2) ]
     have hpoint : ∀ z : X × Y,
         (∑ r : R, ∑ r' : R, if r = r' then 0 else stateQForm ψ
           (heteroKron (((A z.1).postprocess (e₁ z.1 z.2)).effect r)
@@ -392,7 +361,7 @@ theorem consistencyDefect_le_of_recoveryBound
       simp only
       rw [diagonalPair_pair_sum (A z.1) B ψ (e₁ z.1 z.2) (f₁ z.1 z.2)]
     rw [avgOver_congr _ _ _ hpoint, avgOver_sub, avgOver_uniform_const,
-      avgOver_uniform_prod (fun x y => AgrH x y)]
+      avgOver_uniform_prod  AgrH ]
   rw [hgoal, hhyp]
   have hkey : avgOver (uniformDistribution X)
       (fun x => avgOver (uniformDistribution Y) (AgrH x)) ≤
@@ -416,7 +385,7 @@ theorem consistencyDefect_le_of_recoveryBound_right
     [Fintype R] [DecidableEq R]
     [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
     (A : X → Measurement β ιB) (B : Measurement Γ ιA)
-    (ψ : EuclideanSpace ℂ (ιA × ιB)) (hψ : ‖ψ‖ = 1)
+    (ψ : MIPStarRE.QPBT.StateVector (ιA × ιB)) (hψ : ‖ψ‖ = 1)
     (f : X → Γ → β) (e₁ : X → Y → β → R) (f₁ : X → Y → Γ → R)
     (F : X → Γ → ℝ) (η : ℝ)
     (hFbound : ∀ x b g, avgOver (uniformDistribution Y)
@@ -429,22 +398,21 @@ theorem consistencyDefect_le_of_recoveryBound_right
         (fun z r => heteroKron ((B.postprocess (f₁ z.1 z.2)).effect r) 1)
         (fun z r => heteroKron 1
           (((A z.1).postprocess (e₁ z.1 z.2)).effect r)) ψ + η := by
-  classical
   set w : X → β → Γ → ℝ := fun x b g =>
     stateQForm ψ (heteroKron (B.effect g) ((A x).effect b)) with hwdef
-  have hwnonneg : ∀ x b g, 0 ≤ w x b g := fun x b g =>
+  have hwnonneg  := fun x b g =>
     stateQForm_nonneg ψ (MIPStarRE.Quantum.kronecker_nonneg (B.pos g) ((A x).pos b))
   set W : Γ → ℝ := fun g => stateQForm ψ (heteroKron (B.effect g) (1 : Op ιB))
     with hWdef
-  have hWnonneg : ∀ g, 0 ≤ W g := fun g =>
+  have hWnonneg  := fun g =>
     stateQForm_nonneg ψ (MIPStarRE.Quantum.kronecker_nonneg (B.pos g)
       (Matrix.PosSemidef.one.nonneg : (0 : Op ιB) ≤ 1))
-  have hfiber : ∀ x g, (∑ b : β, w x b g) = W g := by
+  have hfiber : ∀ x g,  ∑ b : β, w x b g  = W g := by
     intro x g
     rw [hwdef, hWdef]
     simp only
     rw [← (A x).sum_eq_one, heteroKron_finset_sum_right, stateQForm_finset_sum]
-  have hWsum : (∑ g : Γ, W g) = 1 := by
+  have hWsum :  ∑ g : Γ, W g  = 1 := by
     rw [hWdef]
     simp only
     rw [← stateQForm_finset_sum, ← heteroKron_finset_sum_left, B.sum_eq_one,
@@ -479,10 +447,10 @@ theorem consistencyDefect_le_of_recoveryBound_right
       (fun z r => heteroKron 1
         (((A z.1).postprocess (e₁ z.1 z.2)).effect r)) ψ =
       1 - avgOver (uniformDistribution X)
-        (fun x => avgOver (uniformDistribution Y) (AgrH x)) := by
+         fun x => avgOver (uniformDistribution Y) (AgrH x)  := by
     rw [consistencyDefect_placed_eq_avg_point (uniformDistribution (X × Y))
       (fun z => B.postprocess (f₁ z.1 z.2))
-      (fun z => (A z.1).postprocess (e₁ z.1 z.2))]
+       fun z => (A z.1).postprocess (e₁ z.1 z.2) ]
     have hpoint : ∀ z : X × Y,
         (∑ r : R, ∑ r' : R, if r = r' then 0 else stateQForm ψ
           (heteroKron ((B.postprocess (f₁ z.1 z.2)).effect r)
@@ -499,7 +467,7 @@ theorem consistencyDefect_le_of_recoveryBound_right
       simp only
       rw [diagonalPairLeft_pair_sum (A z.1) B ψ (e₁ z.1 z.2) (f₁ z.1 z.2)]
     rw [avgOver_congr _ _ _ hpoint, avgOver_sub, avgOver_uniform_const,
-      avgOver_uniform_prod (fun x y => AgrH x y)]
+      avgOver_uniform_prod  AgrH ]
   rw [hgoal, hhyp]
   have hkey : avgOver (uniformDistribution X)
       (fun x => avgOver (uniformDistribution Y) (AgrH x)) ≤

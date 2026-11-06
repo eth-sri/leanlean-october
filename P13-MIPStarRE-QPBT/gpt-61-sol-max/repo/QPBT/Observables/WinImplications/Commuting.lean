@@ -18,7 +18,7 @@ and blueprint `lem:qld-win-implications` and `lem:qld-win-implications-obs`.
 
 @[expose] public section
 
-open scoped BigOperators Matrix ComplexOrder
+open scoped BigOperators Matrix ComplexOrder Classical
 
 namespace MIPStarRE.QPBT
 
@@ -40,7 +40,7 @@ theorem pairLabels_eq_of_win (P : AdmissibleParams) (W : PauliKind)
     (z : PauliSpace P) (A B : PauliAnswer P)
     (hcomm : IsCommuting (pauliSharedSplit P z).1)
     (hwin : pauliWinPredicate P
-      ((.pairW W), pauliCL P (.pairW W) z)
+      ( .pairW W , pauliCL P (.pairW W) z)
       (.pair, pauliCL P .pair z) A B = true) :
     ProjectiveSetting.pairWAnswerOrZero A =
       selectedPairBit W (ProjectiveSetting.pairAnswerOrZero B) := by
@@ -51,27 +51,23 @@ theorem pairLabels_eq_of_win (P : AdmissibleParams) (W : PauliKind)
   rename_i bit bits
   simp only [ProjectiveSetting.pairWAnswerOrZero,
     ProjectiveSetting.pairAnswerOrZero]
-  have hgamma : pauliPairGamma P (pauliCL P (.pairW W) z) = 0 := by
-    change gammaValue P (pauliXBlock z) (pauliZBlock z)
-      (pauliRXBlock z) (pauliRZBlock z) = 0 at hcomm
-    rw [pauliCL_shared_eq P (.pairW W) rfl]
-    change gammaValue P (pauliXBlock z) (pauliZBlock z)
-      (pauliRXBlock z) (pauliRZBlock z) = 0
-    exact hcomm
+  have hgamma : pauliPairGamma P (pauliCL P (.pairW W) z) = 0 := by aesop
   cases W <;>
     simp only [pauliPairCondition, hgamma, ne_eq, not_true_eq_false,
       false_or, selectedPairBit] at hwin ⊢ <;>
     exact hwin.symm
 
+variable {P : AdmissibleParams} {ε : ℝ} (S : ProjectiveSetting P ε) (W : PauliKind)
+
 /-- Commuting Pair/W mismatch is contained in rejection. -/
-private theorem pairMismatch_le_rejection {P : AdmissibleParams} {ε : ℝ}
-    (S : ProjectiveSetting P ε) (W : PauliKind) (z : PauliSpace P)
+private theorem pairMismatch_le_rejection
+      (z : PauliSpace P)
     (hcomm : IsCommuting (pauliSharedSplit P z).1) :
     outcomeEventWeight S.toStrategy
-        ((.pairW W), pauliCL P (.pairW W) z)
+        ( .pairW W , pauliCL P (.pairW W) z)
         (.pair, pauliCL P .pair z)
-        (fun A B => ProjectiveSetting.pairWAnswerOrZero A ≠
-          selectedPairBit W (ProjectiveSetting.pairAnswerOrZero B)) ≤
+         fun A B => ProjectiveSetting.pairWAnswerOrZero A ≠
+          selectedPairBit W (ProjectiveSetting.pairAnswerOrZero B)  ≤
       pauliRejectionAt S.toStrategy
         (pairWPairEdge W) z := by
   apply outcome_event_weight_mono
@@ -82,19 +78,19 @@ private theorem pairMismatch_le_rejection {P : AdmissibleParams} {ε : ℝ}
   exact hne (pairLabels_eq_of_win P W z A B hcomm htrue)
 
 /-- The commuting consistency defect is the mismatch probability of source answers. -/
-private theorem commConsistency_eq_mismatch {P : AdmissibleParams} {ε : ℝ}
-    (S : ProjectiveSetting P ε) (W : PauliKind) :
+private theorem commConsistency_eq_mismatch
+      :
     consistencyDefect (commTupleDist P)
         (fun ω a => heteroKron
           ((S.pairWMeas .alice W ω.1 ω.2.1 ω.2.2.1 ω.2.2.2).effect a) 1)
         (fun ω a => heteroKron 1 ((S.pairComponentMeas .bob W ω).effect a))
         S.toStrategy.ψ =
-      avgOver (commTupleDist P) (fun ω =>
+      avgOver (commTupleDist P)  fun ω =>
         outcomeEventWeight S.toStrategy
           (ProjectiveSetting.pairWQuestion P W ω.1 ω.2.1 ω.2.2.1 ω.2.2.2)
           (ProjectiveSetting.pairQuestion P ω.1 ω.2.1 ω.2.2.1 ω.2.2.2)
-          (fun A B => ProjectiveSetting.pairWAnswerOrZero A ≠
-            selectedPairBit W (ProjectiveSetting.pairAnswerOrZero B))) := by
+           fun A B => ProjectiveSetting.pairWAnswerOrZero A ≠
+            selectedPairBit W (ProjectiveSetting.pairAnswerOrZero B)   := by
   let qA : PauliTuple P → PauliQuestion P := fun ω =>
     ProjectiveSetting.pairWQuestion P W ω.1 ω.2.1 ω.2.2.1 ω.2.2.2
   let qB : PauliTuple P → PauliQuestion P := fun ω =>
@@ -128,9 +124,9 @@ private theorem commConsistency_eq_mismatch {P : AdmissibleParams} {ε : ℝ}
         (fun ω c => heteroKron 1
           (((S.toStrategy.B (qB ω)).postprocess (fB ω)).effect c))
         S.toStrategy.ψ := consistencyDefect_congr _ _ _ _ _ _ hA hB
-    _ = avgOver (commTupleDist P) (fun ω =>
+    _ = avgOver (commTupleDist P)  fun ω =>
         outcomeEventWeight S.toStrategy (qA ω) (qB ω)
-          (fun A B => fA ω A ≠ fB ω B)) := h
+           fun A B => fA ω A ≠ fB ω B   := h
     _ = _ := by rfl
 
 /-- On commuting tuples, Pair/W answers agree with the corresponding
@@ -148,16 +144,16 @@ theorem win_comm_explicit :
   intro P ε S _ W
   rw [commConsistency_eq_mismatch]
   calc
-    _ ≤ 2 * avgOver (uniformDistribution (PauliTuple P)) (fun ω =>
+    _ ≤ 2 * avgOver (uniformDistribution (PauliTuple P))  fun ω =>
         if IsCommuting ω then
           outcomeEventWeight S.toStrategy
             (ProjectiveSetting.pairWQuestion P W
               ω.1 ω.2.1 ω.2.2.1 ω.2.2.2)
             (ProjectiveSetting.pairQuestion P
               ω.1 ω.2.1 ω.2.2.1 ω.2.2.2)
-            (fun A B => ProjectiveSetting.pairWAnswerOrZero A ≠
-              selectedPairBit W (ProjectiveSetting.pairAnswerOrZero B))
-        else 0) := by
+             fun A B => ProjectiveSetting.pairWAnswerOrZero A ≠
+              selectedPairBit W (ProjectiveSetting.pairAnswerOrZero B) 
+        else 0  := by
       apply avgOver_comm_le_two_mul_gated
       intro ω
       exact outcome_event_weight_nonneg S.toStrategy _ _ _
@@ -171,11 +167,7 @@ theorem win_comm_explicit :
       by_cases hcomm : IsCommuting (pauliSharedSplit P z).1
       · simp only [if_pos hcomm]
         have hs := pairMismatch_le_rejection S W z hcomm
-        rw [pauliCL_shared_eq P (.pairW W) rfl,
-          pauliCL_shared_eq P .pair rfl] at hs
-        simpa [pauliSharedSplit, ProjectiveSetting.pairWQuestion,
-          ProjectiveSetting.pairQuestion]
-          using hs
+        aesop
       · simp only [if_neg hcomm]
         exact pauliRejectionAt_nonneg S.toStrategy _ z
     _ ≤ 2 * (Fintype.card PauliEdge : ℝ) * ε := by
@@ -184,7 +176,7 @@ theorem win_comm_explicit :
 
 /-- Select the point coordinate of a shared Pauli tuple in one basis. -/
 def selectedTuplePoint (W : PauliKind) {P : AdmissibleParams}
-    (ω : PauliTuple P) : Fin P.m → PauliScalar P :=
+    (ω : PauliTuple P) : MIPStarRE.QPBT.PauliPoint P :=
   match W with
   | .X => ω.1
   | .Z => ω.2.1
@@ -202,20 +194,15 @@ def pointTraceLabel (P : AdmissibleParams) (W : PauliKind)
   fixedBinTrace P.model
     (ProjectiveSetting.pointAnswerOrZero A * selectedTupleScalar W ω)
 
-/-- The point coordinate of the low-degree projection is the selected shared block. -/
-theorem pauliToLd_point_eq_selected (P : AdmissibleParams) (W : PauliKind)
-    (z : PauliSpace P) :
-    (pauliToLd P W z).point = selectedTuplePoint W (pauliSharedSplit P z).1 := by
-  funext i
-  cases W <;> rfl
+
 
 /-- Winning the commuting point/Pair-W branch forces equality of trace labels. -/
 theorem pointPairLabels_eq_of_win (P : AdmissibleParams) (W : PauliKind)
     (z : PauliSpace P) (A B : PauliAnswer P)
     (hcomm : IsCommuting (pauliSharedSplit P z).1)
     (hwin : pauliWinPredicate P
-      ((.point W), pauliCL P (.point W) z)
-      ((.pairW W), pauliCL P (.pairW W) z) A B = true) :
+      ( .point W , pauliCL P (.point W) z)
+      ( .pairW W , pauliCL P (.pairW W) z) A B = true) :
     fixedBinTrace P.model
         (ProjectiveSetting.pointAnswerOrZero A *
           selectedTupleScalar W (pauliSharedSplit P z).1) =
@@ -227,39 +214,21 @@ theorem pointPairLabels_eq_of_win (P : AdmissibleParams) (W : PauliKind)
   rename_i a bit
   simp only [ProjectiveSetting.pointAnswerOrZero,
     ProjectiveSetting.pairWAnswerOrZero]
-  have hgamma : pauliPairGamma P (pauliCL P (.pairW W) z) = 0 := by
-    change gammaValue P (pauliXBlock z) (pauliZBlock z)
-      (pauliRXBlock z) (pauliRZBlock z) = 0 at hcomm
-    rw [pauliCL_shared_eq P (.pairW W) rfl]
-    change gammaValue P (pauliXBlock z) (pauliZBlock z)
-      (pauliRXBlock z) (pauliRZBlock z) = 0
-    exact hcomm
+  have hgamma : pauliPairGamma P (pauliCL P (.pairW W) z) = 0 := by aesop
   rw [pauliCL_shared_eq P (.pairW W) rfl] at hgamma
   rw [pauliCL_shared_eq P (.pairW W) rfl] at hwin
-  cases W with
-  | X =>
-      simp only [pauliPointPairCondition] at hwin
-      rcases hwin with hne | heq
-      · exact (hne hgamma).elim
-      · simpa [selectedTupleScalar, pauliSharedSplit, pauliRXBlock,
-          ProjectiveSetting.contentOfTuple] using heq
-  | Z =>
-      simp only [pauliPointPairCondition] at hwin
-      rcases hwin with hne | heq
-      · exact (hne hgamma).elim
-      · simpa [selectedTupleScalar, pauliSharedSplit, pauliRZBlock,
-          ProjectiveSetting.contentOfTuple] using heq
+  simp_all [ProjectiveSetting.contentOfTuple, selectedTupleScalar, pauliSharedSplit, pauliPointPairCondition, pauliRXBlock, pauliRZBlock] <;> first | omega   
 
 /-- Commuting point-trace/Pair-W mismatch is contained in rejection. -/
-theorem pointPairMismatch_le_rejection {P : AdmissibleParams} {ε : ℝ}
-    (S : ProjectiveSetting P ε) (W : PauliKind) (z : PauliSpace P)
+theorem pointPairMismatch_le_rejection
+      (z : PauliSpace P)
     (hcomm : IsCommuting (pauliSharedSplit P z).1) :
     outcomeEventWeight S.toStrategy
-        ((.point W), pauliCL P (.point W) z)
-        ((.pairW W), pauliCL P (.pairW W) z)
-        (fun A B =>
+        ( .point W , pauliCL P (.point W) z)
+        ( .pairW W , pauliCL P (.pairW W) z)
+         fun A B =>
           pointTraceLabel P W (pauliSharedSplit P z).1 A ≠
-            ProjectiveSetting.pairWAnswerOrZero B) ≤
+            ProjectiveSetting.pairWAnswerOrZero B  ≤
       pauliRejectionAt S.toStrategy
         (pointPairWEdge W) z := by
   apply outcome_event_weight_mono
@@ -270,8 +239,8 @@ theorem pointPairMismatch_le_rejection {P : AdmissibleParams} {ε : ℝ}
   exact hne (pointPairLabels_eq_of_win P W z A B hcomm htrue)
 
 /-- Point-trace/Pair-W consistency is the mismatch probability of source answers. -/
-theorem commConsConsistency_eq_mismatch {P : AdmissibleParams} {ε : ℝ}
-    (S : ProjectiveSetting P ε) (W : PauliKind) :
+theorem commConsConsistency_eq_mismatch
+      :
     consistencyDefect (commTupleDist P)
         (fun ω a => heteroKron
           ((S.pointTraceMeas .alice W (selectedTuplePoint W ω)
@@ -279,19 +248,18 @@ theorem commConsConsistency_eq_mismatch {P : AdmissibleParams} {ε : ℝ}
         (fun ω a => heteroKron 1
           ((S.pairWMeas .bob W ω.1 ω.2.1 ω.2.2.1 ω.2.2.2).effect a))
         S.toStrategy.ψ =
-      avgOver (commTupleDist P) (fun ω =>
+      avgOver (commTupleDist P)  fun ω =>
         outcomeEventWeight S.toStrategy
           (ProjectiveSetting.pointQuestion P W (selectedTuplePoint W ω))
           (ProjectiveSetting.pairWQuestion P W
             ω.1 ω.2.1 ω.2.2.1 ω.2.2.2)
-          (fun A B => pointTraceLabel P W ω A ≠
-            ProjectiveSetting.pairWAnswerOrZero B)) := by
-  let qA : PauliTuple P → PauliQuestion P := fun ω =>
+           fun A B => pointTraceLabel P W ω A ≠
+            ProjectiveSetting.pairWAnswerOrZero B   := by
+  let qA  := fun ω =>
     ProjectiveSetting.pointQuestion P W (selectedTuplePoint W ω)
   let qB : PauliTuple P → PauliQuestion P := fun ω =>
     ProjectiveSetting.pairWQuestion P W ω.1 ω.2.1 ω.2.2.1 ω.2.2.2
-  let fA : PauliTuple P → PauliAnswer P → ZMod 2 := fun ω A =>
-    pointTraceLabel P W ω A
+  let fA  :=  pointTraceLabel P W 
   let fB : PauliTuple P → PauliAnswer P → ZMod 2 := fun _ =>
     ProjectiveSetting.pairWAnswerOrZero
   have h := consistencyDefect_postprocess_eq_mismatch
@@ -322,9 +290,9 @@ theorem commConsConsistency_eq_mismatch {P : AdmissibleParams} {ε : ℝ}
         (fun ω c => heteroKron 1
           (((S.toStrategy.B (qB ω)).postprocess (fB ω)).effect c))
         S.toStrategy.ψ := consistencyDefect_congr _ _ _ _ _ _ hA hB
-    _ = avgOver (commTupleDist P) (fun ω =>
+    _ = avgOver (commTupleDist P)  fun ω =>
         outcomeEventWeight S.toStrategy (qA ω) (qB ω)
-          (fun A B => fA ω A ≠ fB ω B)) := h
+           fun A B => fA ω A ≠ fB ω B   := h
     _ = _ := by rfl
 
 /-- On commuting tuples, trace-coarse-grained point answers agree with Pair/W
@@ -352,15 +320,15 @@ theorem win_comm_cons_explicit :
       S.toStrategy.ψ ≤ _
   rw [commConsConsistency_eq_mismatch]
   calc
-    _ ≤ 2 * avgOver (uniformDistribution (PauliTuple P)) (fun ω =>
+    _ ≤ 2 * avgOver (uniformDistribution (PauliTuple P))  fun ω =>
         if IsCommuting ω then
           outcomeEventWeight S.toStrategy
             (ProjectiveSetting.pointQuestion P W (selectedTuplePoint W ω))
             (ProjectiveSetting.pairWQuestion P W
               ω.1 ω.2.1 ω.2.2.1 ω.2.2.2)
-            (fun A B => pointTraceLabel P W ω A ≠
-              ProjectiveSetting.pairWAnswerOrZero B)
-        else 0) := by
+             fun A B => pointTraceLabel P W ω A ≠
+              ProjectiveSetting.pairWAnswerOrZero B 
+        else 0  := by
       apply avgOver_comm_le_two_mul_gated
       intro ω
       exact outcome_event_weight_nonneg S.toStrategy _ _ _
@@ -374,12 +342,7 @@ theorem win_comm_cons_explicit :
       by_cases hcomm : IsCommuting (pauliSharedSplit P z).1
       · simp only [if_pos hcomm]
         have hs := pointPairMismatch_le_rejection S W z hcomm
-        rw [pauliCL_point_eq,
-          pauliCL_shared_eq P (.pairW W) rfl] at hs
-        rw [pauliToLd_point_eq_selected] at hs
-        simpa [pauliSharedSplit, selectedTuplePoint,
-          ProjectiveSetting.pointQuestion, ProjectiveSetting.pairWQuestion]
-          using hs
+        aesop
       · simp only [if_neg hcomm]
         exact pauliRejectionAt_nonneg S.toStrategy _ z
     _ ≤ 2 * (Fintype.card PauliEdge : ℝ) * ε := by

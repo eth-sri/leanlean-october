@@ -56,7 +56,7 @@ attribute [instance] Strategy.ιAFintype Strategy.ιBFintype
 noncomputable def reindexState {I J : Type*} [Fintype I] [DecidableEq I]
     [Fintype J] [DecidableEq J] (e : I ≃ J)
     (ψ : EuclideanSpace ℂ I) : EuclideanSpace ℂ J :=
-  (EuclideanSpace.equiv J ℂ).symm (fun j => (EuclideanSpace.equiv I ℂ ψ) (e.symm j))
+  (EuclideanSpace.equiv J ℂ).symm  fun j => (EuclideanSpace.equiv I ℂ ψ) (e.symm j) 
 
 /-- A symmetric finite game. -/
 structure SymmetricGame (X A : Type) [Fintype X] [Fintype A]
@@ -173,8 +173,8 @@ abbrev LowDegreeQuestion (P : LowDegreeParams) (K : Type) :=
 /-- The full three-summand answer alphabet, including malformed answers. -/
 abbrev LowDegreeAnswer (P : LowDegreeParams) (K : Type) :=
   (Fin P.k → K) ⊕
-    ((Fin P.k → Fin (P.d + 1) → K) ⊕
-      (Fin P.k → Fin (P.m * P.d + 1) → K))
+     (Fin P.k → Fin (P.d + 1) → K) ⊕
+      (Fin P.k → Fin (P.m * P.d + 1) → K) 
 
 /-- Simultaneous bounded polynomial representatives used by low-degree soundness. -/
 noncomputable abbrev LowDegreePolynomialTuple (P : LowDegreeParams) (K : Type)
@@ -234,9 +234,11 @@ noncomputable def lowDegreeMap {K : Type} [Field K] [DecidableEq K]
       let direction := lowDegreePrefix (lowDegreeChiIndex P encoding z.1.2) z.2
       ((lowDegreeLineRep z.1.1 direction, z.1.2), direction)
 
+variable {K : Type} [Field K] [Fintype K] [DecidableEq K]
+
 /-- The uniform law on all nine ordered type pairs and the entire ambient space. -/
-noncomputable def lowDegreeQuestionPMF {K : Type} [Field K] [Fintype K]
-    [DecidableEq K] (P : LowDegreeParams) (encoding : K ≃ Fin P.q) :
+noncomputable def lowDegreeQuestionPMF   
+     (P : LowDegreeParams) (encoding : K ≃ Fin P.q) :
     PMF (LowDegreeQuestion P K × LowDegreeQuestion P K) :=
   (PMF.uniformOfFintype ((LowDegreeType × LowDegreeType) × LowDegreeSpace P K)).map
     fun z => ((z.1.1, lowDegreeMap P encoding z.1.1 z.2),
@@ -255,7 +257,7 @@ def validLowDegreeAnswer {P : LowDegreeParams} {K : Type} :
   | _, _ => false
 
 /-- The complete low-degree verifier, including universal zero-direction tests. -/
-noncomputable def lowDegreeWin {K : Type} [Field K] [Fintype K] [DecidableEq K]
+noncomputable def lowDegreeWin    
     (P : LowDegreeParams) (encoding : K ≃ Fin P.q) :
     LowDegreeQuestion P K → LowDegreeQuestion P K →
       LowDegreeAnswer P K → LowDegreeAnswer P K → Bool :=
@@ -280,7 +282,7 @@ noncomputable def lowDegreeWin {K : Type} [Field K] [Fintype K] [DecidableEq K]
     else false
 
 /-- The compact classical low individual degree game. -/
-noncomputable def lowDegreeGame {K : Type} [Field K] [Fintype K] [DecidableEq K]
+noncomputable def lowDegreeGame    
     (P : LowDegreeParams) (encoding : K ≃ Fin P.q) :
     Game (LowDegreeQuestion P K) (LowDegreeQuestion P K)
       (LowDegreeAnswer P K) (LowDegreeAnswer P K) where
@@ -329,8 +331,8 @@ noncomputable def idealExtractionState {X Y A B R : Type}
     [Fintype X] [Fintype Y] [Fintype A] [Fintype B]
     [Fintype R] [DecidableEq R] [Nonempty R] {S : Strategy X Y A B}
     (w : ExtractionWitness (R := R) S) :
-    EuclideanSpace ℂ ((w.ιA' × R) × (w.ιB' × R)) :=
-  (EuclideanSpace.equiv ((w.ιA' × R) × (w.ιB' × R)) ℂ).symm fun p =>
+    EuclideanSpace ℂ ((w.ιA' × R) ×  w.ιB' × R ) :=
+  (EuclideanSpace.equiv ((w.ιA' × R) ×  w.ιB' × R ) ℂ).symm fun p =>
     w.aux (p.1.1, p.2.1) * normalizedEPRState R (p.1.2, p.2.2)
 
 /-- The unsquared norm error between the extracted state and the ideal state. -/
@@ -345,8 +347,8 @@ noncomputable def aliceOperatorError {X Y A B R O : Type}
     [Fintype X] [Fintype Y] [Fintype A] [Fintype B] [Fintype O]
     [Fintype R] [DecidableEq R] [Nonempty R] {S : Strategy X Y A B}
     (w : ExtractionWitness (R := R) S)
-    (actual ideal : O → Matrix ((w.ιA' × R) × (w.ιB' × R))
-      ((w.ιA' × R) × (w.ιB' × R)) ℂ) : ℝ :=
+    (actual ideal : O → Matrix ((w.ιA' × R) ×  w.ιB' × R )
+      ((w.ιA' × R) ×  w.ιB' × R ) ℂ) : ℝ :=
   ∑ o : O, ‖Matrix.toEuclideanLin (actual o - ideal o) (idealExtractionState w)‖ ^ 2
 
 /-- Bob's unaveraged sum of squared operator errors on the ideal state. -/
@@ -354,8 +356,8 @@ noncomputable def bobOperatorError {X Y A B R O : Type}
     [Fintype X] [Fintype Y] [Fintype A] [Fintype B] [Fintype O]
     [Fintype R] [DecidableEq R] [Nonempty R] {S : Strategy X Y A B}
     (w : ExtractionWitness (R := R) S)
-    (actual ideal : O → Matrix ((w.ιA' × R) × (w.ιB' × R))
-      ((w.ιA' × R) × (w.ιB' × R)) ℂ) : ℝ :=
+    (actual ideal : O → Matrix ((w.ιA' × R) ×  w.ιB' × R )
+      ((w.ιA' × R) ×  w.ιB' × R ) ℂ) : ℝ :=
   ∑ o : O, ‖Matrix.toEuclideanLin (actual o - ideal o) (idealExtractionState w)‖ ^ 2
 
 
@@ -375,7 +377,7 @@ abbrev LowDegreePolynomialPOVM (P : LowDegreeParams) (K I : Type)
 def postprocessEffect {A B I : Type*} [Fintype A] [DecidableEq A]
     [DecidableEq B] [Fintype I] [DecidableEq I]
     (M : POVM A I) (f : A → B) (b : B) : Matrix I I ℂ :=
-  ∑ a ∈ Finset.univ.filter (fun a => f a = b), M.effect a
+  ∑ a ∈ Finset.univ.filter  fun a => f a = b , M.effect a
 
 /-- Evaluate every polynomial in a simultaneous tuple at the same point. -/
 def evalLowDegreePolynomialTuple {P : LowDegreeParams} {K : Type}
@@ -406,7 +408,7 @@ def consistencyDefect {X O I J : Type*} [Fintype X] [Fintype O]
         Matrix.kronecker (1 : Matrix I I ℂ) (B x b)).mulVec ψ))).re
 
 /-- Alice's point answers compared with evaluations of Bob's polynomial POVM. -/
-def ldPointPolynomialDefect {K : Type} [Field K] [Fintype K] [DecidableEq K]
+def ldPointPolynomialDefect    
     (P : LowDegreeParams) (S : LowDegreeStrategy P K)
     (GB : LowDegreePolynomialPOVM P K S.ιB) : ℝ :=
   consistencyDefect (PMF.uniformOfFintype (Fin P.m → K))
@@ -417,7 +419,7 @@ def ldPointPolynomialDefect {K : Type} [Field K] [Fintype K] [DecidableEq K]
       postprocessEffect GB (evalLowDegreePolynomialTuple u) a) S.ψ
 
 /-- Evaluations of Alice's polynomial POVM compared with Bob's point answers. -/
-def ldPolynomialPointDefect {K : Type} [Field K] [Fintype K] [DecidableEq K]
+def ldPolynomialPointDefect    
     (P : LowDegreeParams) (S : LowDegreeStrategy P K)
     (GA : LowDegreePolynomialPOVM P K S.ιA) : ℝ :=
   consistencyDefect (PMF.uniformOfFintype (Fin P.m → K))
@@ -428,7 +430,7 @@ def ldPolynomialPointDefect {K : Type} [Field K] [Fintype K] [DecidableEq K]
         (lowDegreePointValuesOrZero (P := P) (K := K)) a) S.ψ
 
 /-- Alice's and Bob's complete polynomial tuples compared with no question law. -/
-def ldPolynomialPolynomialDefect {K : Type} [Field K] [Fintype K] [DecidableEq K]
+def ldPolynomialPolynomialDefect    
     (P : LowDegreeParams) (S : LowDegreeStrategy P K)
     (GA : LowDegreePolynomialPOVM P K S.ιA)
     (GB : LowDegreePolynomialPOVM P K S.ιB) : ℝ :=
@@ -438,7 +440,7 @@ def ldPolynomialPolynomialDefect {K : Type} [Field K] [Fintype K] [DecidableEq K
 
 /-- The error function of low-degree soundness, in argument order `(a,b,ε,q,m,d,k)`. -/
 def deltaLd (a b ε : ℝ) (q m d k : ℕ) : ℝ :=
-  a * Real.rpow (((d * m * k : ℕ) : ℝ)) a *
+  a * Real.rpow  ((d * m * k : ℕ) : ℝ)  a *
     (Real.rpow ε b + Real.rpow (q : ℝ) (-b) +
       Real.rpow 2 (-(b * ((m * d : ℕ) : ℝ))))
 
@@ -555,8 +557,8 @@ def pauliEdges : Finset (Sym2 PauliType) :=
       Sym2.mk (.point W) (.aline W)) ∪
     (Finset.univ : Finset PauliKind).image (fun W =>
       Sym2.mk (.point W) (.dline W)) ∪
-    (Finset.univ : Finset PauliKind).image (fun W =>
-      Sym2.mk (.point W) (.pauli W))
+    (Finset.univ : Finset PauliKind).image  fun W =>
+      Sym2.mk (.point W) (.pauli W) 
   let basis := (Finset.univ : Finset PauliKind).image (fun W =>
       Sym2.mk (.point W) (.pairW W)) ∪
     ({Sym2.mk (.point .X) (.variable 0),
@@ -583,8 +585,8 @@ noncomputable instance instDecidableEqPauliQuestion {P : PauliParams} {K : Type}
     DecidableEq (PauliQuestion P K) := Classical.decEq _
 
 /-- The question law is uniform on all ordered edges and the full seed space. -/
-noncomputable def pauliQuestionPMF {K : Type} [Field K] [Fintype K]
-    [DecidableEq K] (P : PauliParams) (encoding : K ≃ Fin P.q) :
+noncomputable def pauliQuestionPMF   
+     (P : PauliParams) (encoding : K ≃ Fin P.q) :
     PMF (PauliQuestion P K × PauliQuestion P K) :=
   (PMF.uniformOfFintype (PauliEdge × PauliSpace P K)).map fun s =>
     ((s.1.1.1, pauliMap P encoding s.1.1.1 s.2),
@@ -626,7 +628,7 @@ def pauliGamma {P : PauliParams} {K : Type} [CommRing K]
     (z.2.2.2.2.2 • pauliIndicator z.2.1))
 
 /-- The complete Pauli verifier, including gamma gates and off-edge defaults. -/
-noncomputable def pauliWin {K : Type} [Field K] [Fintype K] [DecidableEq K]
+noncomputable def pauliWin    
     (P : PauliParams) (encoding : K ≃ Fin P.q) (trace : K → ZMod 2) :
     PauliQuestion P K → PauliQuestion P K → PauliAnswer P K → PauliAnswer P K → Bool :=
   open Classical in
@@ -664,23 +666,23 @@ noncomputable def pauliWin {K : Type} [Field K] [Fintype K] [DecidableEq K]
             else xA.2.2.2.2.2) = β) else true
       | .constraint i, .variable j, .msTriple bits, .bit β =>
           if ∃ k, magicVariable i k = j then decide (pauliGamma trace xA = 0 ∨
-            (∑ k, bits k) = magicParity i ∧ ∃ k, magicVariable i k = j ∧ bits k = β)
+             ∑ k, bits k  = magicParity i ∧ ∃ k, magicVariable i k = j ∧ bits k = β)
           else true
       | .variable j, .constraint i, .bit β, .msTriple bits =>
           if ∃ k, magicVariable i k = j then decide (pauliGamma trace xB = 0 ∨
-            (∑ k, bits k) = magicParity i ∧ ∃ k, magicVariable i k = j ∧ bits k = β)
+             ∑ k, bits k  = magicParity i ∧ ∃ k, magicVariable i k = j ∧ bits k = β)
           else true
       | .point W, .variable j, .value u, .bit β => decide (pauliGamma trace xB = 0 ∨
-          (j = 0 ∧ W = .X ∧ trace (u * xB.2.2.2.2.1) = β) ∨
-          (j = 4 ∧ W = .Z ∧ trace (u * xB.2.2.2.2.2) = β))
+           j = 0 ∧ W = .X ∧ trace (u * xB.2.2.2.2.1) = β  ∨
+           j = 4 ∧ W = .Z ∧ trace (u * xB.2.2.2.2.2) = β )
       | .variable j, .point W, .bit β, .value u => decide (pauliGamma trace xA = 0 ∨
-          (j = 0 ∧ W = .X ∧ trace (u * xA.2.2.2.2.1) = β) ∨
-          (j = 4 ∧ W = .Z ∧ trace (u * xA.2.2.2.2.2) = β))
+           j = 0 ∧ W = .X ∧ trace (u * xA.2.2.2.2.1) = β  ∨
+           j = 4 ∧ W = .Z ∧ trace (u * xA.2.2.2.2.2) = β )
       | _, _, _, _ => true
     else false
 
 /-- The compact Pauli basis game. -/
-noncomputable def pauliGame {K : Type} [Field K] [Fintype K] [DecidableEq K]
+noncomputable def pauliGame    
     (P : PauliParams) (encoding : K ≃ Fin P.q) (trace : K → ZMod 2) :
     Game (PauliQuestion P K) (PauliQuestion P K) (PauliAnswer P K) (PauliAnswer P K) := by
   classical
@@ -711,8 +713,8 @@ def pauliMeasurementQuestion {K : Type} [Zero K]
 
 /-- The concrete projective, consistent, support-wise commuting predicate for
 the compact Pauli question law. -/
-def SymmetricStrategy.IsPauliSPCC {K : Type} [Field K] [Fintype K]
-    [DecidableEq K] (P : PauliParams) (encoding : K ≃ Fin P.q)
+def SymmetricStrategy.IsPauliSPCC   
+     (P : PauliParams) (encoding : K ≃ Fin P.q)
     (S : SymmetricPauliStrategy P K) : Prop :=
   (∀ x, (S.meas x).IsProjective) ∧ S.IsConsistent ∧
     IsCommutingOn (pauliQuestionPMF P encoding) S.meas S.meas
@@ -728,7 +730,7 @@ noncomputable def pauliPhaseSign (t : ZMod 2) : ℂ :=
   if t = 0 then 1 else -1
 
 /-- One coordinate of a generalized Pauli eigenvector. -/
-noncomputable def singlePauliVec {K : Type} [Field K] [Fintype K] [DecidableEq K]
+noncomputable def singlePauliVec    
     (trace : K → ZMod 2) (W : PauliKind) (e x : K) : ℂ :=
   match W with
   | .Z => if x = e then 1 else 0
@@ -745,7 +747,7 @@ noncomputable def pauliVec {K I : Type} [Field K] [Fintype K] [DecidableEq K]
 noncomputable def pauliProj {K I : Type} [Field K] [Fintype K] [DecidableEq K]
     [Fintype I] (trace : K → ZMod 2) (W : PauliKind)
     (e : I → K) : Matrix (I → K) (I → K) ℂ :=
-  Matrix.vecMulVec (pauliVec trace W e) (fun x => star (pauliVec trace W e x))
+  Matrix.vecMulVec (pauliVec trace W e)  fun x => star (pauliVec trace W e x) 
 
 /-- The binary Pauli projector, using the trace of `ZMod 2` over itself. -/
 noncomputable abbrev qubitPauliProj {I : Type} [Fintype I]
@@ -767,7 +769,7 @@ noncomputable def liftedPauliAliceEffect
     [Fintype R] [DecidableEq R]
     (phi : EuclideanSpace ℂ I →ₗᵢ[ℂ] EuclideanSpace ℂ (I' × R))
     (M : Matrix I I ℂ) :
-    Matrix ((I' × R) × (J' × R)) ((I' × R) × (J' × R)) ℂ :=
+    Matrix ((I' × R) ×  J' × R ) ((I' × R) ×  J' × R ) ℂ :=
   fun p q => if p.2 = q.2 then conjIsometry phi M p.1 q.1 else 0
 
 /-- Lift Bob's conjugated qudit effect to the full extracted target space. -/
@@ -777,7 +779,7 @@ noncomputable def liftedPauliBobEffect
     [Fintype R] [DecidableEq R]
     (phi : EuclideanSpace ℂ I →ₗᵢ[ℂ] EuclideanSpace ℂ (J' × R))
     (M : Matrix I I ℂ) :
-    Matrix ((I' × R) × (J' × R)) ((I' × R) × (J' × R)) ℂ :=
+    Matrix ((I' × R) ×  J' × R ) ((I' × R) ×  J' × R ) ℂ :=
   fun p q => if p.1 = q.1 then conjIsometry phi M p.2 q.2 else 0
 
 /-- Lift Alice's conjugated qubit effect by tensoring with Bob's identity. -/
@@ -787,7 +789,7 @@ noncomputable def liftedQubitAliceEffect
     [Fintype R] [DecidableEq R]
     (phi : EuclideanSpace ℂ I →ₗᵢ[ℂ] EuclideanSpace ℂ (I' × R))
     (M : Matrix I I ℂ) :
-    Matrix ((I' × R) × (J' × R)) ((I' × R) × (J' × R)) ℂ :=
+    Matrix ((I' × R) ×  J' × R ) ((I' × R) ×  J' × R ) ℂ :=
   Matrix.kronecker (conjIsometry phi M) 1
 
 /-- Lift Bob's conjugated qubit effect by tensoring with Alice's identity. -/
@@ -797,21 +799,21 @@ noncomputable def liftedQubitBobEffect
     [Fintype R] [DecidableEq R]
     (phi : EuclideanSpace ℂ I →ₗᵢ[ℂ] EuclideanSpace ℂ (J' × R))
     (M : Matrix I I ℂ) :
-    Matrix ((I' × R) × (J' × R)) ((I' × R) × (J' × R)) ℂ :=
+    Matrix ((I' × R) ×  J' × R ) ((I' × R) ×  J' × R ) ℂ :=
   Matrix.kronecker 1 (conjIsometry phi M)
 
 /-- Place a register projector on Alice's target register. -/
 noncomputable def idealProjectorAlice {I' J' R : Type}
     [DecidableEq I'] [DecidableEq J'] [DecidableEq R]
     (M : Matrix R R ℂ) :
-    Matrix ((I' × R) × (J' × R)) ((I' × R) × (J' × R)) ℂ :=
+    Matrix ((I' × R) ×  J' × R ) ((I' × R) ×  J' × R ) ℂ :=
   fun p q => if p.1.1 = q.1.1 ∧ p.2 = q.2 then M p.1.2 q.1.2 else 0
 
 /-- Place a register projector on Bob's target register. -/
 noncomputable def idealProjectorBob {I' J' R : Type}
     [DecidableEq I'] [DecidableEq J'] [DecidableEq R]
     (M : Matrix R R ℂ) :
-    Matrix ((I' × R) × (J' × R)) ((I' × R) × (J' × R)) ℂ :=
+    Matrix ((I' × R) ×  J' × R ) ((I' × R) ×  J' × R ) ℂ :=
   fun p q => if p.1 = q.1 ∧ p.2.1 = q.2.1 then M p.2.2 q.2.2 else 0
 
 /-- Expand a field-valued register label in fixed binary coordinates. -/
@@ -821,48 +823,48 @@ def binaryRegisterLabel {P : PauliParams} {K : Type} {r : ℕ}
   fun p => coordinates (u p.1) p.2
 
 /-- Alice's raw prescribed-answer qudit operator error. -/
-noncomputable def rawPauliAliceError {K : Type} [Field K] [Fintype K]
-    [DecidableEq K] (P : PauliParams) (S : PauliStrategy P K)
+noncomputable def rawPauliAliceError   
+     (P : PauliParams) (S : PauliStrategy P K)
     (w : ExtractionWitness (R := PauliRegister P K) S)
     (trace : K → ZMod 2) (W : PauliKind) : ℝ :=
   aliceOperatorError w
     (fun u => liftedPauliAliceEffect (J' := w.ιB') w.φA
       ((S.alice (pauliMeasurementQuestion P W)).effect (.pauliOutcome u)))
-    (fun u => idealProjectorAlice (J' := w.ιB') (pauliProj trace W u))
+     fun u => idealProjectorAlice (J' := w.ιB') (pauliProj trace W u) 
 
 /-- Bob's raw prescribed-answer qudit operator error. -/
-noncomputable def rawPauliBobError {K : Type} [Field K] [Fintype K]
-    [DecidableEq K] (P : PauliParams) (S : PauliStrategy P K)
+noncomputable def rawPauliBobError   
+     (P : PauliParams) (S : PauliStrategy P K)
     (w : ExtractionWitness (R := PauliRegister P K) S)
     (trace : K → ZMod 2) (W : PauliKind) : ℝ :=
   bobOperatorError w
     (fun u => liftedPauliBobEffect (I' := w.ιA') w.φB
       ((S.bob (pauliMeasurementQuestion P W)).effect (.pauliOutcome u)))
-    (fun u => idealProjectorBob (I' := w.ιA') (pauliProj trace W u))
+     fun u => idealProjectorBob (I' := w.ιA') (pauliProj trace W u) 
 
 /-- Alice's raw prescribed-answer qubit operator error, summed over the
 original field-valued outcomes. -/
-noncomputable def rawQubitAliceError {K : Type} [Field K] [Fintype K]
-    [DecidableEq K] {r : ℕ} (P : PauliParams) (S : PauliStrategy P K)
+noncomputable def rawQubitAliceError {K : Type} [Field K] [Fintype K] [DecidableEq K]   
+     {r : ℕ} (P : PauliParams) (S : PauliStrategy P K)
     (w : ExtractionWitness (R := QubitRegister P r) S)
     (coordinates : K → Fin r → ZMod 2) (W : PauliKind) : ℝ :=
   aliceOperatorError w
     (fun u => liftedQubitAliceEffect (J' := w.ιB') w.φA
       ((S.alice (pauliMeasurementQuestion P W)).effect (.pauliOutcome u)))
-    (fun u => idealProjectorAlice (J' := w.ιB')
-      (qubitPauliProj W (binaryRegisterLabel coordinates u)))
+     fun u => idealProjectorAlice (J' := w.ιB')
+      (qubitPauliProj W (binaryRegisterLabel coordinates u)) 
 
 /-- Bob's raw prescribed-answer qubit operator error, summed over the
 original field-valued outcomes. -/
-noncomputable def rawQubitBobError {K : Type} [Field K] [Fintype K]
-    [DecidableEq K] {r : ℕ} (P : PauliParams) (S : PauliStrategy P K)
+noncomputable def rawQubitBobError {K : Type} [Field K] [Fintype K] [DecidableEq K]   
+     {r : ℕ} (P : PauliParams) (S : PauliStrategy P K)
     (w : ExtractionWitness (R := QubitRegister P r) S)
     (coordinates : K → Fin r → ZMod 2) (W : PauliKind) : ℝ :=
   bobOperatorError w
     (fun u => liftedQubitBobEffect (I' := w.ιA') w.φB
       ((S.bob (pauliMeasurementQuestion P W)).effect (.pauliOutcome u)))
-    (fun u => idealProjectorBob (I' := w.ιA')
-      (qubitPauliProj W (binaryRegisterLabel coordinates u)))
+     fun u => idealProjectorBob (I' := w.ιA')
+      (qubitPauliProj W (binaryRegisterLabel coordinates u)) 
 
 
 end MIPStarRE.QPBT.Palomar

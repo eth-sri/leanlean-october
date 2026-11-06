@@ -20,7 +20,7 @@ conclusion is global.
 
 @[expose] public section
 
-open scoped BigOperators Matrix MatrixOrder ComplexOrder
+open scoped BigOperators Matrix MatrixOrder ComplexOrder Classical
 
 namespace MIPStarRE.QPBT
 
@@ -32,15 +32,17 @@ noncomputable section
 
 /-! ## The three LDT conclusions in direct coordinates -/
 
+variable (D : DirectLdParams) (S : Strategy (directLdGame D))
+
 /-- The direct single-coordinate point/global defect is exactly the LDT
 defect after the polynomial, point, and scalar equivalences. -/
 theorem directPointPolynomial_consistencyDefect_eq
-    (D : DirectLdParams) (S : Strategy (directLdGame D))
+
     (hS : S.IsProjective) (r : Fin D.k) :
     letI := D.toLDTFieldModel
     ∀ (G : ProjMeas (MIPStarRE.LDT.Polynomial D.toLDTParameters) S.ιB),
       consistencyDefect
-          (uniformDistribution (Fin D.m → DirectScalarQ D))
+          (uniformDistribution (MIPStarRE.QPBT.DirectPoint D))
           (fun u a => heteroKron
             ((directPointCoordinateMeasurementA D S r u).effect a) 1)
           (fun u a => heteroKron 1
@@ -52,13 +54,13 @@ theorem directPointPolynomial_consistencyDefect_eq
   intro G
   calc
     consistencyDefect
-        (uniformDistribution (Fin D.m → DirectScalarQ D))
+        (uniformDistribution (MIPStarRE.QPBT.DirectPoint D))
         (fun u a => heteroKron
           ((directPointCoordinateMeasurementA D S r u).effect a) 1)
         (fun u a => heteroKron 1
           ((directPolynomialEvaluationMeasurement D G u).effect a)) S.ψ =
       consistencyDefect
-        (uniformDistribution (Fin D.m → DirectScalarQ D))
+        (uniformDistribution (MIPStarRE.QPBT.DirectPoint D))
         (fun u a => ldtPointAPlaced D S hS r
           (directPointEquiv D u) (directScalarEquiv D a))
         (fun u a => ldtPolynomialEvaluationRight D G
@@ -85,7 +87,7 @@ theorem directPointPolynomial_consistencyDefect_eq
 for one simultaneous coordinate to the direct QPBT defect, with the identical
 numerical bound. -/
 theorem directPointPolynomial_consistencyDefect_le
-    (D : DirectLdParams) (S : Strategy (directLdGame D))
+
     (hS : S.IsProjective) (r : Fin D.k) :
     letI := D.toLDTFieldModel
     ∀ (G : ProjMeas (MIPStarRE.LDT.Polynomial D.toLDTParameters) S.ιB)
@@ -96,7 +98,7 @@ theorem directPointPolynomial_consistencyDefect_le
             (directCoordinateProjStrat D S hS r).pointMeasurementA)
           (polynomialEvaluationFamily D.toLDTParameters G.toSubMeas) delta →
         consistencyDefect
-          (uniformDistribution (Fin D.m → DirectScalarQ D))
+          (uniformDistribution (MIPStarRE.QPBT.DirectPoint D))
           (fun u a => heteroKron
             ((directPointCoordinateMeasurementA D S r u).effect a) 1)
           (fun u a => heteroKron 1
@@ -105,27 +107,17 @@ theorem directPointPolynomial_consistencyDefect_le
   letI := D.toLDTFieldModel
   intro G delta h
   rw [directPointPolynomial_consistencyDefect_eq D S hS r G]
-  apply strategyConsRel_consistencyDefect_le S
-    (uniformDistribution (Point D.toLDTParameters))
-    (uniformDistribution_isProbability (Point D.toLDTParameters))
-    (ldtCoordinatePointMeasurementA D S hS r)
-    (ldtPolynomialEvaluationMeasurement D G) delta
-  change ConsRel (directCoordinateProjStrat D S hS r).state
-    (uniformDistribution (Point D.toLDTParameters))
-    (IdxProjMeas.toIdxSubMeas
-      (directCoordinateProjStrat D S hS r).pointMeasurementA)
-    (polynomialEvaluationFamily D.toLDTParameters G.toSubMeas) delta
-  exact h
+  solve_by_elim (maxDepth := 6) [uniformDistribution_isProbability, strategyConsRel_consistencyDefect_le]
 
 /-- The direct single-coordinate global/point defect is exactly the LDT
 defect after the polynomial, point, and scalar equivalences. -/
 theorem directPolynomialPoint_consistencyDefect_eq
-    (D : DirectLdParams) (S : Strategy (directLdGame D))
+
     (hS : S.IsProjective) (r : Fin D.k) :
     letI := D.toLDTFieldModel
     ∀ (G : ProjMeas (MIPStarRE.LDT.Polynomial D.toLDTParameters) S.ιA),
       consistencyDefect
-          (uniformDistribution (Fin D.m → DirectScalarQ D))
+          (uniformDistribution (MIPStarRE.QPBT.DirectPoint D))
           (fun u a => heteroKron
             ((directPolynomialEvaluationMeasurement D G u).effect a) 1)
           (fun u a => heteroKron 1
@@ -137,13 +129,13 @@ theorem directPolynomialPoint_consistencyDefect_eq
   intro G
   calc
     consistencyDefect
-        (uniformDistribution (Fin D.m → DirectScalarQ D))
+        (uniformDistribution (MIPStarRE.QPBT.DirectPoint D))
         (fun u a => heteroKron
           ((directPolynomialEvaluationMeasurement D G u).effect a) 1)
         (fun u a => heteroKron 1
           ((directPointCoordinateMeasurementB D S r u).effect a)) S.ψ =
       consistencyDefect
-        (uniformDistribution (Fin D.m → DirectScalarQ D))
+        (uniformDistribution (MIPStarRE.QPBT.DirectPoint D))
         (fun u a => ldtPolynomialEvaluationLeft D G
           (directPointEquiv D u) (directScalarEquiv D a))
         (fun u a => ldtPointBPlaced D S hS r
@@ -170,7 +162,7 @@ theorem directPolynomialPoint_consistencyDefect_eq
 `LDT.Test.mainFormal` for one simultaneous coordinate to the direct QPBT
 defect, with the identical numerical bound. -/
 theorem directPolynomialPoint_consistencyDefect_le
-    (D : DirectLdParams) (S : Strategy (directLdGame D))
+
     (hS : S.IsProjective) (r : Fin D.k) :
     letI := D.toLDTFieldModel
     ∀ (G : ProjMeas (MIPStarRE.LDT.Polynomial D.toLDTParameters) S.ιA)
@@ -181,7 +173,7 @@ theorem directPolynomialPoint_consistencyDefect_le
           (IdxProjMeas.toIdxSubMeas
             (directCoordinateProjStrat D S hS r).pointMeasurementB) delta →
         consistencyDefect
-          (uniformDistribution (Fin D.m → DirectScalarQ D))
+          (uniformDistribution (MIPStarRE.QPBT.DirectPoint D))
           (fun u a => heteroKron
             ((directPolynomialEvaluationMeasurement D G u).effect a) 1)
           (fun u a => heteroKron 1
@@ -189,17 +181,7 @@ theorem directPolynomialPoint_consistencyDefect_le
           S.ψ ≤ delta := by
   letI := D.toLDTFieldModel
   intro G delta h
-  have hbase :
-      ConsRel (strategyQuantumState S)
-        (uniformDistribution (Point D.toLDTParameters))
-        (fun u => (ldtPolynomialEvaluationMeasurement D G u).toSubMeas)
-        (fun u => (ldtCoordinatePointMeasurementB D S hS r u).toSubMeas)
-        delta := by
-    change ConsRel (directCoordinateProjStrat D S hS r).state
-      (uniformDistribution (Point D.toLDTParameters))
-      (polynomialEvaluationFamily D.toLDTParameters G.toSubMeas)
-      (IdxProjMeas.toIdxSubMeas
-        (directCoordinateProjStrat D S hS r).pointMeasurementB) delta
+  have hbase  := by
     exact h
   have hldt := strategyConsRel_consistencyDefect_le S
     (uniformDistribution (Point D.toLDTParameters))
@@ -221,7 +203,7 @@ theorem directPolynomialPoint_consistencyDefect_le
 /-- Relabeling both global polynomial measurements identifies their direct
 QPBT defect with the LDT global/global defect. -/
 theorem directPolynomialPolynomial_consistencyDefect_eq
-    (D : DirectLdParams) (S : Strategy (directLdGame D)) :
+      :
     letI := D.toLDTFieldModel
     ∀ (GA : ProjMeas (MIPStarRE.LDT.Polynomial D.toLDTParameters) S.ιA)
       (GB : ProjMeas (MIPStarRE.LDT.Polynomial D.toLDTParameters) S.ιB),
@@ -242,14 +224,7 @@ theorem directPolynomialPolynomial_consistencyDefect_eq
       consistencyDefect (uniformDistribution Unit)
         (fun _ g => ldtPolynomialLeftPlaced D GA (directPolyEquivPolynomial D g))
         (fun _ g => ldtPolynomialRightPlaced D GB (directPolyEquivPolynomial D g))
-        S.ψ := by
-          apply consistencyDefect_congr
-          · intro _ g
-            unfold ldtPolynomialLeftPlaced
-            rw [directPolynomialMeasurement_effect]
-          · intro _ g
-            unfold ldtPolynomialRightPlaced
-            rw [directPolynomialMeasurement_effect]
+        S.ψ := by bound
     _ = consistencyDefect (uniformDistribution Unit)
         (fun _ g => ldtPolynomialLeftPlaced D GA g)
         (fun _ g => ldtPolynomialRightPlaced D GB g) S.ψ :=
@@ -261,7 +236,7 @@ theorem directPolynomialPolynomial_consistencyDefect_eq
 /-- Convert the global/global conclusion of `LDT.Test.mainFormal` to the direct
 QPBT defect, with the identical numerical bound. -/
 theorem directPolynomialPolynomial_consistencyDefect_le
-    (D : DirectLdParams) (S : Strategy (directLdGame D)) :
+      :
     letI := D.toLDTFieldModel
     ∀ (GA : ProjMeas (MIPStarRE.LDT.Polynomial D.toLDTParameters) S.ιA)
       (GB : ProjMeas (MIPStarRE.LDT.Polynomial D.toLDTParameters) S.ιB)

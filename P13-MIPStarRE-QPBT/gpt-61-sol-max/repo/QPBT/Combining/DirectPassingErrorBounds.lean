@@ -42,7 +42,7 @@ theorem exists_direct_passing_polynomial_bound (pointError : ℝ → ℝ)
   let u := min s 2
   let K := A + C * B
   let D := 3 * (Real.sqrt K + 1) + 1
-  have ht : 0 < t := lt_min hp hr
+  have ht  := lt_min hp hr
   have hu : 0 < u := lt_min hs (by norm_num)
   have hK : 0 ≤ K := by dsimp [K]; positivity
   have hD : 1 ≤ D := by dsimp [D]; nlinarith [Real.sqrt_nonneg K]
@@ -63,11 +63,11 @@ theorem exists_direct_passing_polynomial_bound (pointError : ℝ → ℝ)
       (one_le_mul_of_one_le_of_one_le hD h)
   by_cases herrorOne : error ≤ 1
   · by_cases hratioOne : ratio ≤ 1
-    · have hpointBound : pointError error ≤ A * error ^ t :=
+    · have hpointBound  :=
         (hpoint error herror).2.trans (mul_le_mul_of_nonneg_left
           (Real.rpow_le_rpow_of_exponent_ge' herror herrorOne ht.le
             (min_le_left _ _)) (by linarith))
-      have hlineBound : lineError error ratio ≤ B * (error ^ t + ratio ^ u) :=
+      have hlineBound  :=
         (hline error ratio herror hratio).2.trans (mul_le_mul_of_nonneg_left
           (add_le_add
             (Real.rpow_le_rpow_of_exponent_ge' herror herrorOne ht.le
@@ -99,9 +99,7 @@ theorem exists_direct_passing_polynomial_bound (pointError : ℝ → ℝ)
       have hrootDim : Real.sqrt dimension ≤ dimension := by
         apply (Real.sqrt_le_left hdim).mpr
         nlinarith
-      have hroot : Real.sqrt
-          (pointError error + C * dimension * lineError error ratio) ≤
-          dimension * Real.sqrt K * (error ^ (t / 2) + ratio ^ (u / 2)) := by
+      have hroot  := by
         calc
           _ ≤ Real.sqrt (dimension * K * (error ^ t + ratio ^ u)) :=
             Real.sqrt_le_sqrt hsum
@@ -111,12 +109,12 @@ theorem exists_direct_passing_polynomial_bound (pointError : ℝ → ℝ)
           _ ≤ _ := mul_le_mul
             (mul_le_mul_of_nonneg_right hrootDim (Real.sqrt_nonneg K)) hrootSum
             (Real.sqrt_nonneg _) (mul_nonneg hdim (Real.sqrt_nonneg K))
-      have hratioSmall : ratio ≤ ratio ^ (u / 2) := by
+      have hratioSmall  := by
         simpa using Real.rpow_le_rpow_of_exponent_ge' hratio hratioOne
           (by positivity : 0 ≤ u / 2) (by
             have : u ≤ 2 := min_le_right _ _
             linarith : u / 2 ≤ 1)
-      have hratioDim : ratio ≤ dimension * ratio ^ (u / 2) :=
+      have hratioDim  :=
         hratioSmall.trans (le_mul_of_one_le_left hy hdimension)
       refine (min_le_right _ _).trans ?_
       dsimp [directPassingErrorEnvelope, D]
@@ -150,7 +148,7 @@ private theorem exists_capped_direct_global_pair_error_bound (pointError : ℝ �
                 lineError error ((P.m * P.d : ℕ) / (P.q : ℝ)))
               ((P.m * P.d : ℕ) / (P.q : ℝ))) + error)
             P.q (2 * P.m + 2) P.d 1 + Real.sqrt (pointError error) +
-              ((P.m * P.d : ℕ) / (P.q : ℝ)))) ≤
+               (P.m * P.d : ℕ) / (P.q : ℝ) )) ≤
           deltaQld A B error P.m P.d P.q := by
   obtain ⟨passingError, hpassing, hbound⟩ :=
     exists_direct_passing_polynomial_bound pointError hpoint lineError hline C hC
@@ -202,7 +200,7 @@ theorem exists_direct_global_pair_error_bound (pointError : ℝ → ℝ)
                 lineError error ((P.m * P.d : ℕ) / (P.q : ℝ)))
               ((P.m * P.d : ℕ) / (P.q : ℝ)) + error)
             P.q (2 * P.m + 2) P.d 1 + Real.sqrt (pointError error) +
-              ((P.m * P.d : ℕ) / (P.q : ℝ)))) ≤
+               (P.m * P.d : ℕ) / (P.q : ℝ) )) ≤
           deltaQld A B error P.m P.d P.q := by
   obtain ⟨A, B, hA, hB, hBOne, habs⟩ :=
     exists_capped_direct_global_pair_error_bound pointError hpoint lineError hline
@@ -210,7 +208,7 @@ theorem exists_direct_global_pair_error_bound (pointError : ℝ → ℝ)
   refine ⟨A, B, hA, hB, hBOne, ?_⟩
   intro P error herror
   have haNonneg : 0 ≤ a := by linarith
-  let ratio : ℝ := ((P.m * P.d : ℕ) : ℝ) / (P.q : ℝ)
+  let ratio  := ((P.m * P.d : ℕ) : ℝ) / (P.q : ℝ)
   let passing := directPassingErrorEnvelope
     (pointError error + C * (P.m : ℝ) * lineError error ratio) ratio
   have hratio : 0 ≤ ratio := by dsimp [ratio]; positivity

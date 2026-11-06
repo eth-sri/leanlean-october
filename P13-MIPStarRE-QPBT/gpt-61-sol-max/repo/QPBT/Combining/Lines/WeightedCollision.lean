@@ -35,11 +35,11 @@ theorem linePointDist_nondegenerate_weighted_collision_le {L : LdParams}
     (hne : first ≠ second) :
     avgOver (linePointDist L) (fun sample =>
       if sample.1.direction ≠ 0 then weight sample.1 *
-        (if evalOpt sample.1 sample.2 first = evalOpt sample.1 sample.2 second
-          then 1 else 0) else 0) ≤
+         if evalOpt sample.1 sample.2 first = evalOpt sample.1 sample.2 second
+          then 1 else 0  else 0) ≤
       (bound : ℝ) / Fintype.card (ScalarQ L) *
-        avgOver (linePointDist L) (fun sample =>
-          if sample.1.direction ≠ 0 then weight sample.1 else 0) := by
+        avgOver (linePointDist L)  fun sample =>
+          if sample.1.direction ≠ 0 then weight sample.1 else 0  := by
   classical
   rw [avgOver_linePointDist_resample_parameter]
   rw [← avgOver_const_mul]

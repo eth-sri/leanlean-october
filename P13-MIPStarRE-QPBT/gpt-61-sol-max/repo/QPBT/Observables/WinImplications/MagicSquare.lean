@@ -18,7 +18,7 @@ and blueprint `lem:qld-win-implications` and `lem:qld-win-implications-obs`.
 
 @[expose] public section
 
-open scoped BigOperators Matrix ComplexOrder
+open scoped BigOperators Matrix ComplexOrder Classical
 
 namespace MIPStarRE.QPBT
 
@@ -44,8 +44,8 @@ theorem pointMsLabels_eq_of_win (P : AdmissibleParams) (W : PauliKind)
     (z : PauliSpace P) (A B : PauliAnswer P)
     (hanti : IsAnticommuting (pauliSharedSplit P z).1)
     (hwin : pauliWinPredicate P
-      ((.point W), pauliCL P (.point W) z)
-      ((.ms (.var (selectedMsVar W))),
+      ( .point W , pauliCL P (.point W) z)
+      ( .ms (.var (selectedMsVar W)) ,
         pauliCL P (.ms (.var (selectedMsVar W))) z) A B = true) :
     pointTraceLabel P W (pauliSharedSplit P z).1 A =
       ProjectiveSetting.pairWAnswerOrZero B := by
@@ -57,43 +57,29 @@ theorem pointMsLabels_eq_of_win (P : AdmissibleParams) (W : PauliKind)
   simp only [pointTraceLabel, ProjectiveSetting.pointAnswerOrZero,
     ProjectiveSetting.pairWAnswerOrZero]
   have hgamma : pauliPairGamma P
-      (pauliCL P (.ms (.var (selectedMsVar W))) z) ≠ 0 := by
-    change gammaValue P (pauliXBlock z) (pauliZBlock z)
-      (pauliRXBlock z) (pauliRZBlock z) ≠ 0 at hanti
-    rw [pauliCL_shared_eq P (.ms (.var (selectedMsVar W))) rfl]
-    change gammaValue P (pauliXBlock z) (pauliZBlock z)
-      (pauliRXBlock z) (pauliRZBlock z) ≠ 0
-    exact hanti
+      (pauliCL P (.ms (.var (selectedMsVar W))) z) ≠ 0 := by bound
   rw [pauliCL_shared_eq P (.ms (.var (selectedMsVar W))) rfl] at hgamma
   rw [pauliCL_shared_eq P (.ms (.var (selectedMsVar W))) rfl] at hwin
   cases W with
   | X =>
       simp only [pauliPointVariableCondition] at hwin
-      rcases hwin with hzero | hrest
-      · exact (hgamma hzero).elim
-      · rcases hrest with hX | hZ
-        · simpa [selectedTupleScalar, pauliSharedSplit, pauliRXBlock,
-            ProjectiveSetting.contentOfTuple] using hX.2.2
-        · simp at hZ
+      aesop
   | Z =>
       simp only [pauliPointVariableCondition] at hwin
-      rcases hwin with hzero | hrest
-      · exact (hgamma hzero).elim
-      · rcases hrest with hX | hZ
-        · simp at hX
-        · simpa [selectedTupleScalar, pauliSharedSplit, pauliRZBlock,
-            ProjectiveSetting.contentOfTuple] using hZ.2.2
+      aesop
+
+variable {P : AdmissibleParams} {ε : ℝ} (S : ProjectiveSetting P ε)
 
 /-- Anticommuting point-trace/variable mismatch is contained in rejection. -/
-theorem pointMsMismatch_le_rejection {P : AdmissibleParams} {ε : ℝ}
-    (S : ProjectiveSetting P ε) (W : PauliKind) (z : PauliSpace P)
+theorem pointMsMismatch_le_rejection
+     (W : PauliKind) (z : PauliSpace P)
     (hanti : IsAnticommuting (pauliSharedSplit P z).1) :
     outcomeEventWeight S.toStrategy
-        ((.point W), pauliCL P (.point W) z)
-        ((.ms (.var (selectedMsVar W))),
+        ( .point W , pauliCL P (.point W) z)
+        ( .ms (.var (selectedMsVar W)) ,
           pauliCL P (.ms (.var (selectedMsVar W))) z)
-        (fun A B => pointTraceLabel P W (pauliSharedSplit P z).1 A ≠
-          ProjectiveSetting.pairWAnswerOrZero B) ≤
+         fun A B => pointTraceLabel P W (pauliSharedSplit P z).1 A ≠
+          ProjectiveSetting.pairWAnswerOrZero B  ≤
       pauliRejectionAt S.toStrategy (pointMsImplicationEdge W) z := by
   cases W <;>
     apply outcome_event_weight_mono <;>
@@ -104,8 +90,8 @@ theorem pointMsMismatch_le_rejection {P : AdmissibleParams} {ε : ℝ}
     exact hne (pointMsLabels_eq_of_win P _ z A B hanti htrue)
 
 /-- Point-trace/variable consistency is the mismatch probability of source answers. -/
-theorem msConsConsistency_eq_mismatch {P : AdmissibleParams} {ε : ℝ}
-    (S : ProjectiveSetting P ε) (W : PauliKind) :
+theorem msConsConsistency_eq_mismatch
+     (W : PauliKind) :
     consistencyDefect (anticommTupleDist P)
         (fun ω a => heteroKron
           ((S.pointTraceMeas .alice W (selectedTuplePoint W ω)
@@ -113,20 +99,19 @@ theorem msConsConsistency_eq_mismatch {P : AdmissibleParams} {ε : ℝ}
         (fun ω a => heteroKron 1
           ((S.msVarBitMeas .bob (selectedMsVar W) ω).effect a))
         S.toStrategy.ψ =
-      avgOver (anticommTupleDist P) (fun ω =>
+      avgOver (anticommTupleDist P)  fun ω =>
         outcomeEventWeight S.toStrategy
           (ProjectiveSetting.pointQuestion P W (selectedTuplePoint W ω))
           (ProjectiveSetting.msQuestion P (.var (selectedMsVar W))
             ω.1 ω.2.1 ω.2.2.1 ω.2.2.2)
-          (fun A B => pointTraceLabel P W ω A ≠
-            ProjectiveSetting.pairWAnswerOrZero B)) := by
-  let qA : PauliTuple P → PauliQuestion P := fun ω =>
+           fun A B => pointTraceLabel P W ω A ≠
+            ProjectiveSetting.pairWAnswerOrZero B   := by
+  let qA  := fun ω =>
     ProjectiveSetting.pointQuestion P W (selectedTuplePoint W ω)
   let qB : PauliTuple P → PauliQuestion P := fun ω =>
     ProjectiveSetting.msQuestion P (.var (selectedMsVar W))
       ω.1 ω.2.1 ω.2.2.1 ω.2.2.2
-  let fA : PauliTuple P → PauliAnswer P → ZMod 2 := fun ω A =>
-    pointTraceLabel P W ω A
+  let fA  :=  pointTraceLabel P W 
   let fB : PauliTuple P → PauliAnswer P → ZMod 2 := fun _ =>
     ProjectiveSetting.pairWAnswerOrZero
   have h := consistencyDefect_postprocess_eq_mismatch
@@ -152,8 +137,8 @@ theorem msConsConsistency_eq_mismatch {P : AdmissibleParams} {ε : ℝ}
     congr 1
     unfold ProjectiveSetting.msVarBitMeas ProjectiveSetting.msMeas fB qB
     rw [MIPStarRE.Quantum.Measurement.postprocess_comp]
-    have hmap : (msBitOrZero ∘
-        ProjectiveSetting.msAnswerOrZero (P := P) (.var (selectedMsVar W))) =
+    have hmap :  msBitOrZero ∘
+        ProjectiveSetting.msAnswerOrZero (P := P) (.var (selectedMsVar W))  =
         ProjectiveSetting.pairWAnswerOrZero (P := P) := by
       funext B
       cases B <;> rfl
@@ -167,9 +152,9 @@ theorem msConsConsistency_eq_mismatch {P : AdmissibleParams} {ε : ℝ}
         (fun ω c => heteroKron 1
           (((S.toStrategy.B (qB ω)).postprocess (fB ω)).effect c))
         S.toStrategy.ψ := consistencyDefect_congr _ _ _ _ _ _ hA hB
-    _ = avgOver (anticommTupleDist P) (fun ω =>
+    _ = avgOver (anticommTupleDist P)  fun ω =>
         outcomeEventWeight S.toStrategy (qA ω) (qB ω)
-          (fun A B => fA ω A ≠ fB ω B)) := h
+           fun A B => fA ω A ≠ fB ω B   := h
     _ = _ := by rfl
 
 /-- On anticommuting tuples, the X and Z point traces agree respectively with
@@ -198,15 +183,15 @@ theorem win_ms_cons_explicit :
       S.toStrategy.ψ ≤ _
   rw [msConsConsistency_eq_mismatch]
   calc
-    _ ≤ 16 * avgOver (uniformDistribution (PauliTuple P)) (fun ω =>
+    _ ≤ 16 * avgOver (uniformDistribution (PauliTuple P))  fun ω =>
         if IsAnticommuting ω then
           outcomeEventWeight S.toStrategy
             (ProjectiveSetting.pointQuestion P W (selectedTuplePoint W ω))
             (ProjectiveSetting.msQuestion P (.var (selectedMsVar W))
               ω.1 ω.2.1 ω.2.2.1 ω.2.2.2)
-            (fun A B => pointTraceLabel P W ω A ≠
-              ProjectiveSetting.pairWAnswerOrZero B)
-        else 0) := by
+             fun A B => pointTraceLabel P W ω A ≠
+              ProjectiveSetting.pairWAnswerOrZero B 
+        else 0  := by
       apply avgOver_anticomm_le_sixteen_mul_gated
       intro ω
       exact outcome_event_weight_nonneg S.toStrategy _ _ _
@@ -219,12 +204,7 @@ theorem win_ms_cons_explicit :
       by_cases hanti : IsAnticommuting (pauliSharedSplit P z).1
       · simp only [if_pos hanti]
         have hs := pointMsMismatch_le_rejection S W z hanti
-        rw [pauliCL_point_eq,
-          pauliCL_shared_eq P (.ms (.var (selectedMsVar W))) rfl] at hs
-        rw [pauliToLd_point_eq_selected] at hs
-        simpa [pauliSharedSplit, selectedTuplePoint, selectedMsVar,
-          ProjectiveSetting.pointQuestion, ProjectiveSetting.msQuestion]
-          using hs
+        aesop
       · simp only [if_neg hanti]
         exact pauliRejectionAt_nonneg S.toStrategy _ z
     _ ≤ 16 * (Fintype.card PauliEdge : ℝ) * ε := by
@@ -232,37 +212,37 @@ theorem win_ms_cons_explicit :
       exact mul_le_mul_of_nonneg_left (fixedEdgeRejection_le_error S _) (by norm_num)
 
 /-- Relabeling both Pauli answer measurements gives the induced Magic Square event mass. -/
-theorem msRejection_eq_source {P : AdmissibleParams} {ε : ℝ}
-    (S : ProjectiveSetting P ε) (ω : PauliTuple P) (x y : MsType) :
+theorem msRejection_eq_source
+     (ω : PauliTuple P) (x y : MsType) :
     outcomeEventWeight (S.msStrategyAt ω) x y
-        (fun a b => msWinPredicate x y a b = false) =
+         fun a b => msWinPredicate x y a b = false  =
       outcomeEventWeight S.toStrategy
         (ProjectiveSetting.msQuestion P x ω.1 ω.2.1 ω.2.2.1 ω.2.2.2)
         (ProjectiveSetting.msQuestion P y ω.1 ω.2.1 ω.2.2.1 ω.2.2.2)
-        (fun A B => msWinPredicate x y
+         fun A B => msWinPredicate x y
           (ProjectiveSetting.msAnswerOrZero x A)
-          (ProjectiveSetting.msAnswerOrZero y B) = false) := by
+          (ProjectiveSetting.msAnswerOrZero y B) = false  := by
   let qx := ProjectiveSetting.msQuestion P x
     ω.1 ω.2.1 ω.2.2.1 ω.2.2.2
   let qy := ProjectiveSetting.msQuestion P y
     ω.1 ω.2.1 ω.2.2.1 ω.2.2.2
-  let fA : (pauliBasisTest P).AnswerA → MsAnswer :=
+  let fA  :=
     ProjectiveSetting.msAnswerOrZero (P := P) x
-  let fB : (pauliBasisTest P).AnswerB → MsAnswer :=
+  let fB  :=
     ProjectiveSetting.msAnswerOrZero (P := P) y
   have hmass (a b : MsAnswer) :
       outcomeWeight (S.msStrategyAt ω) x y a b =
-        ∑ A ∈ Finset.univ.filter (fun A => fA A = a),
-          ∑ B ∈ Finset.univ.filter (fun B => fB B = b),
+        ∑ A ∈ Finset.univ.filter  fun A => fA A = a ,
+          ∑ B ∈ Finset.univ.filter  fun B => fB B = b ,
             outcomeWeight S.toStrategy qx qy A B := by
     have hop :
         heteroKron
-            (∑ A ∈ Finset.univ.filter (fun A => fA A = a),
+            (∑ A ∈ Finset.univ.filter  fun A => fA A = a ,
               (S.toStrategy.A qx).effect A)
-            (∑ B ∈ Finset.univ.filter (fun B => fB B = b),
+            (∑ B ∈ Finset.univ.filter  fun B => fB B = b ,
               (S.toStrategy.B qy).effect B) =
-          ∑ A ∈ Finset.univ.filter (fun A => fA A = a),
-            ∑ B ∈ Finset.univ.filter (fun B => fB B = b),
+          ∑ A ∈ Finset.univ.filter  fun A => fA A = a ,
+            ∑ B ∈ Finset.univ.filter  fun B => fB B = b ,
               heteroKron ((S.toStrategy.A qx).effect A)
                 ((S.toStrategy.B qy).effect B) := by
       ext i j
@@ -285,13 +265,12 @@ theorem msRejection_eq_source {P : AdmissibleParams} {ε : ℝ}
   calc
     (∑ A, ∑ B, if msWinPredicate x y (fA A) (fB B) = false then
         outcomeWeight S.toStrategy qx qy A B else 0) =
-        ∑ a : MsAnswer, ∑ A ∈ Finset.univ.filter (fun A => fA A = a),
+        ∑ a : MsAnswer, ∑ A ∈ Finset.univ.filter  fun A => fA A = a ,
           ∑ B, if msWinPredicate x y (fA A) (fB B) = false then
-            outcomeWeight S.toStrategy qx qy A B else 0 := by
-      exact (Finset.sum_fiberwise Finset.univ fA (fun A =>
+            outcomeWeight S.toStrategy qx qy A B else 0 := (Finset.sum_fiberwise Finset.univ fA  fun A =>
         ∑ B, if msWinPredicate x y (fA A) (fB B) = false then
-          outcomeWeight S.toStrategy qx qy A B else 0)).symm
-    _ = ∑ a : MsAnswer, ∑ A ∈ Finset.univ.filter (fun A => fA A = a),
+          outcomeWeight S.toStrategy qx qy A B else 0 ).symm
+    _ = ∑ a : MsAnswer, ∑ A ∈ Finset.univ.filter  fun A => fA A = a ,
         ∑ B, if msWinPredicate x y a (fB B) = false then
           outcomeWeight S.toStrategy qx qy A B else 0 := by
       apply Finset.sum_congr rfl
@@ -299,19 +278,19 @@ theorem msRejection_eq_source {P : AdmissibleParams} {ε : ℝ}
       apply Finset.sum_congr rfl
       intro A hA
       rw [(Finset.mem_filter.mp hA).2]
-    _ = ∑ a : MsAnswer, ∑ A ∈ Finset.univ.filter (fun A => fA A = a),
-        ∑ b : MsAnswer, ∑ B ∈ Finset.univ.filter (fun B => fB B = b),
+    _ = ∑ a : MsAnswer, ∑ A ∈ Finset.univ.filter  fun A => fA A = a ,
+        ∑ b : MsAnswer, ∑ B ∈ Finset.univ.filter  fun B => fB B = b ,
           if msWinPredicate x y a (fB B) = false then
             outcomeWeight S.toStrategy qx qy A B else 0 := by
       apply Finset.sum_congr rfl
       intro a _
       apply Finset.sum_congr rfl
       intro A _
-      exact (Finset.sum_fiberwise Finset.univ fB (fun B =>
+      exact (Finset.sum_fiberwise Finset.univ fB  fun B =>
         if msWinPredicate x y a (fB B) = false then
-          outcomeWeight S.toStrategy qx qy A B else 0)).symm
-    _ = ∑ a : MsAnswer, ∑ A ∈ Finset.univ.filter (fun A => fA A = a),
-        ∑ b : MsAnswer, ∑ B ∈ Finset.univ.filter (fun B => fB B = b),
+          outcomeWeight S.toStrategy qx qy A B else 0 ).symm
+    _ = ∑ a : MsAnswer, ∑ A ∈ Finset.univ.filter  fun A => fA A = a ,
+        ∑ b : MsAnswer, ∑ B ∈ Finset.univ.filter  fun B => fB B = b ,
           if msWinPredicate x y a b = false then
             outcomeWeight S.toStrategy qx qy A B else 0 := by
       apply Finset.sum_congr rfl
@@ -324,8 +303,8 @@ theorem msRejection_eq_source {P : AdmissibleParams} {ε : ℝ}
       intro B hB
       rw [(Finset.mem_filter.mp hB).2]
     _ = ∑ a : MsAnswer, ∑ b : MsAnswer,
-        ∑ A ∈ Finset.univ.filter (fun A => fA A = a),
-          ∑ B ∈ Finset.univ.filter (fun B => fB B = b),
+        ∑ A ∈ Finset.univ.filter  fun A => fA A = a ,
+          ∑ B ∈ Finset.univ.filter  fun B => fB B = b ,
             if msWinPredicate x y a b = false then
               outcomeWeight S.toStrategy qx qy A B else 0 := by
       apply Finset.sum_congr rfl
@@ -333,8 +312,8 @@ theorem msRejection_eq_source {P : AdmissibleParams} {ε : ℝ}
       rw [Finset.sum_comm]
     _ = ∑ a : MsAnswer, ∑ b : MsAnswer,
         if msWinPredicate x y a b = false then
-          ∑ A ∈ Finset.univ.filter (fun A => fA A = a),
-            ∑ B ∈ Finset.univ.filter (fun B => fB B = b),
+          ∑ A ∈ Finset.univ.filter  fun A => fA A = a ,
+            ∑ B ∈ Finset.univ.filter  fun B => fB B = b ,
               outcomeWeight S.toStrategy qx qy A B
         else 0 := by
       apply Finset.sum_congr rfl
@@ -346,8 +325,8 @@ theorem msRejection_eq_source {P : AdmissibleParams} {ε : ℝ}
 /-- Lift a supported Magic Square incidence to the corresponding Pauli verifier edge. -/
 def msImplicationEdge (xy : MsType × MsType)
     (hxy : xy ∈ (graphDistribution msEdges msEdges_nonempty).support) : PauliEdge :=
-  ⟨((.ms xy.1), (.ms xy.2)), by
-    have hedge : Sym2.mk xy.1 xy.2 ∈ msEdges :=
+  ⟨( .ms xy.1 ,  .ms xy.2 ), by
+    have hedge  :=
       (Finset.mem_filter.mp hxy).2
     simp only [pauliEdges, Finset.union_assoc, Fin.zero_eta, Fin.isValue,
       Fin.reduceFinMk, Finset.union_insert, Finset.union_singleton,
@@ -368,9 +347,9 @@ theorem msRejection_implies_pauliRejection
       (ProjectiveSetting.msAnswerOrZero xy.1 A)
       (ProjectiveSetting.msAnswerOrZero xy.2 B) = false) :
     pauliWinPredicate P
-      ((.ms xy.1), pauliCL P (.ms xy.1) z)
-      ((.ms xy.2), pauliCL P (.ms xy.2) z) A B = false := by
-  have hedge : Sym2.mk xy.1 xy.2 ∈ msEdges :=
+      ( .ms xy.1 , pauliCL P (.ms xy.1) z)
+      ( .ms xy.2 , pauliCL P (.ms xy.2) z) A B = false := by
+  have hedge  :=
     (Finset.mem_filter.mp hxy).2
   rcases Finset.mem_image.mp hedge with ⟨ik, _, heq⟩
   have hor :
@@ -379,13 +358,7 @@ theorem msRejection_implies_pauliRejection
         ((.constraint ik.1, .var (msConstraintVars ik.1 ik.2)) :
           MsType × MsType) = xy.swap :=
     (Sym2.mk_eq_mk_iff (α := MsType)).mp heq
-  have hgamma (t : MsType) : pauliPairGamma P (pauliCL P (.ms t) z) ≠ 0 := by
-    change gammaValue P (pauliXBlock z) (pauliZBlock z)
-      (pauliRXBlock z) (pauliRZBlock z) ≠ 0 at hanti
-    rw [pauliCL_shared_eq P (.ms t) rfl]
-    change gammaValue P (pauliXBlock z) (pauliZBlock z)
-      (pauliRXBlock z) (pauliRZBlock z) ≠ 0
-    exact hanti
+  have hgamma (t : MsType) : pauliPairGamma P (pauliCL P (.ms t) z) ≠ 0 := by bound
   rcases hor with hforward | hreverse
   · subst xy
     cases A <;> cases B <;>
@@ -394,9 +367,7 @@ theorem msRejection_implies_pauliRejection
         Bool.and_false, Bool.false_eq_true, ↓reduceIte, PauliType.ms.injEq,
         reduceCtorEq, exists_apply_eq_apply, or_self, decide_false]
   · have hswap := congrArg Prod.swap hreverse
-    have hxy : xy =
-        ((.var (msConstraintVars ik.1 ik.2), .constraint ik.1) :
-          MsType × MsType) := by
+    have hxy  := by
       simpa using hswap.symm
     subst xy
     clear hreverse hswap hedge heq
@@ -408,42 +379,41 @@ theorem msRejection_implies_pauliRejection
 
 /-- At a supported Magic Square incidence, the induced rejection is contained in
 the rejection at the corresponding fixed Pauli edge. -/
-theorem msRejection_le_pauliRejection {P : AdmissibleParams} {ε : ℝ}
-    (S : ProjectiveSetting P ε) (z : PauliSpace P) (xy : MsType × MsType)
+theorem msRejection_le_pauliRejection
+     (z : PauliSpace P) (xy : MsType × MsType)
     (hxy : xy ∈ (graphDistribution msEdges msEdges_nonempty).support)
     (hanti : IsAnticommuting (pauliSharedSplit P z).1) :
     outcomeEventWeight S.toStrategy
-        ((.ms xy.1), pauliCL P (.ms xy.1) z)
-        ((.ms xy.2), pauliCL P (.ms xy.2) z)
-        (fun A B => msWinPredicate xy.1 xy.2
+        ( .ms xy.1 , pauliCL P (.ms xy.1) z)
+        ( .ms xy.2 , pauliCL P (.ms xy.2) z)
+         fun A B => msWinPredicate xy.1 xy.2
           (ProjectiveSetting.msAnswerOrZero xy.1 A)
-          (ProjectiveSetting.msAnswerOrZero xy.2 B) = false) ≤
+          (ProjectiveSetting.msAnswerOrZero xy.2 B) = false  ≤
       pauliRejectionAt S.toStrategy (msImplicationEdge xy hxy) z := by
   apply outcome_event_weight_mono
   intro A B hreject
   exact msRejection_implies_pauliRejection P z xy hxy hanti A B hreject
 
 /-- Rejection mass of the induced Magic Square strategy at one tuple and question pair. -/
-noncomputable def inducedMsRejection {P : AdmissibleParams} {ε : ℝ}
-    (S : ProjectiveSetting P ε) (ω : PauliTuple P) (xy : MsType × MsType) : ℝ :=
+def inducedMsRejection
+     (ω : PauliTuple P) (xy : MsType × MsType) : ℝ :=
   outcomeEventWeight (S.msStrategyAt ω) xy.1 xy.2
-    (fun a b => msWinPredicate xy.1 xy.2 a b = false)
+     fun a b => msWinPredicate xy.1 xy.2 a b = false 
 
 /-- The gated rejection average at a supported Magic Square incidence is bounded by
 the rejection average of its fixed Pauli edge. -/
-theorem gatedMsRejection_le_fixedEdge {P : AdmissibleParams} {ε : ℝ}
-    (S : ProjectiveSetting P ε) (xy : MsType × MsType)
+theorem gatedMsRejection_le_fixedEdge
+     (xy : MsType × MsType)
     (hxy : xy ∈ (graphDistribution msEdges msEdges_nonempty).support) :
     avgOver (uniformDistribution (PauliTuple P)) (fun ω =>
         if IsAnticommuting ω then inducedMsRejection S ω xy else 0) ≤
       (Fintype.card PauliEdge : ℝ) * ε := by
   calc
-    _ = avgOver (uniformDistribution (PauliSpace P)) (fun z =>
+    _ = avgOver (uniformDistribution (PauliSpace P))  fun z =>
         if IsAnticommuting (pauliSharedSplit P z).1 then
           inducedMsRejection S (pauliSharedSplit P z).1 xy
-        else 0) := by
-      exact (avgOver_pauliTuple_uniform P (fun ω =>
-        if IsAnticommuting ω then inducedMsRejection S ω xy else 0)).symm
+        else 0  := (avgOver_pauliTuple_uniform P  fun ω =>
+        if IsAnticommuting ω then inducedMsRejection S ω xy else 0 ).symm
     _ ≤ avgOver (uniformDistribution (PauliSpace P))
         (pauliRejectionAt S.toStrategy (msImplicationEdge xy hxy)) := by
       apply avgOver_mono
@@ -451,10 +421,7 @@ theorem gatedMsRejection_le_fixedEdge {P : AdmissibleParams} {ε : ℝ}
       by_cases hanti : IsAnticommuting (pauliSharedSplit P z).1
       · simp only [if_pos hanti]
         rw [inducedMsRejection, msRejection_eq_source]
-        have hs := msRejection_le_pauliRejection S z xy hxy hanti
-        rw [pauliCL_shared_eq P (.ms xy.1) rfl,
-          pauliCL_shared_eq P (.ms xy.2) rfl] at hs
-        simpa [pauliSharedSplit, ProjectiveSetting.msQuestion] using hs
+        solve_by_elim (maxDepth := 6) [pauliCL_shared_eq, msRejection_le_pauliRejection]
       · simp only [if_neg hanti]
         exact pauliRejectionAt_nonneg S.toStrategy _ z
     _ ≤ (Fintype.card PauliEdge : ℝ) * ε :=
@@ -472,21 +439,10 @@ theorem win_magic_square_explicit :
         16 * (Fintype.card PauliEdge : ℝ) * ε := by
   intro P ε S _
   let ν := graphDistribution msEdges msEdges_nonempty
-  have hpoint (ω : PauliTuple P) :
-      avgOver ν (inducedMsRejection S ω) = 1 - S.msValueAt ω := by
-    change avgOver (graphDistribution msEdges msEdges_nonempty)
-        (fun questions : MsType × MsType =>
-          outcomeEventWeight (S.msStrategyAt ω) questions.1 questions.2
-            (fun a b => msWinPredicate questions.1 questions.2 a b = false)) =
-      1 - S.msValueAt ω
-    convert rejectionEventAverage_eq_one_sub_value (S.msStrategyAt ω) using 1 <;>
-      rfl
-  have hvalue :
-      1 - avgOver (anticommTupleDist P) S.msValueAt =
-        avgOver (anticommTupleDist P) (fun ω =>
-          avgOver ν (inducedMsRejection S ω)) := by
+  have hpoint (ω : PauliTuple P)  := rejectionEventAverage_eq_one_sub_value (S.msStrategyAt ω)
+  have hvalue  := by
     calc
-      _ = avgOver (anticommTupleDist P) (fun ω => 1 - S.msValueAt ω) := by
+      _ = avgOver (anticommTupleDist P)  fun ω => 1 - S.msValueAt ω  := by
         symm
         rw [avgOver_sub, avgOver_const_of_isProbability _
           (anticommTupleDist_isProbability P)]
@@ -498,33 +454,33 @@ theorem win_magic_square_explicit :
   · calc
       avgOver (anticommTupleDist P) (fun ω =>
           avgOver ν (inducedMsRejection S ω)) ≤
-          16 * avgOver (uniformDistribution (PauliTuple P)) (fun ω =>
+          16 * avgOver (uniformDistribution (PauliTuple P))  fun ω =>
             if IsAnticommuting ω then
               avgOver ν (inducedMsRejection S ω)
-            else 0) := by
+            else 0  := by
         apply avgOver_anticomm_le_sixteen_mul_gated
         intro ω
         exact avgOver_nonneg ν _ fun xy =>
           outcome_event_weight_nonneg (S.msStrategyAt ω) xy.1 xy.2 _
-      _ = 16 * avgOver ν (fun xy =>
-          avgOver (uniformDistribution (PauliTuple P)) (fun ω =>
-            if IsAnticommuting ω then inducedMsRejection S ω xy else 0)) := by
+      _ = 16 * avgOver ν  fun xy =>
+          avgOver (uniformDistribution (PauliTuple P))  fun ω =>
+            if IsAnticommuting ω then inducedMsRejection S ω xy else 0   := by
         congr 1
         calc
           avgOver (uniformDistribution (PauliTuple P)) (fun ω =>
               if IsAnticommuting ω then
                 avgOver ν (inducedMsRejection S ω)
               else 0) =
-              avgOver (uniformDistribution (PauliTuple P)) (fun ω =>
-                avgOver ν (fun xy => if IsAnticommuting ω then
-                  inducedMsRejection S ω xy else 0)) := by
+              avgOver (uniformDistribution (PauliTuple P))  fun ω =>
+                avgOver ν  fun xy => if IsAnticommuting ω then
+                  inducedMsRejection S ω xy else 0   := by
             apply avgOver_congr
             intro ω
             by_cases hanti : IsAnticommuting ω <;>
               simp [hanti, avgOver_zero]
           _ = _ := avgOver_comm _ _ _
       _ ≤ 16 * avgOver ν
-          (fun _ => (Fintype.card PauliEdge : ℝ) * ε) := by
+           fun _ => (Fintype.card PauliEdge : ℝ) * ε  := by
         apply mul_le_mul_of_nonneg_left _ (by norm_num)
         apply avgOver_mono_on_support
         intro xy hxy

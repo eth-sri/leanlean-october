@@ -25,9 +25,11 @@ noncomputable section
 
 namespace POVM
 
+variable {A B I : Type*} [Fintype A] [Fintype B] [Fintype I] [DecidableEq I] (e : A ≃ B)
+
 /-- Relabel the outcomes of a compact POVM along an equivalence. -/
-def relabel {A B I : Type*} [Fintype A] [Fintype B] [Fintype I]
-    [DecidableEq I] (e : A ≃ B) (M : POVM A I) : POVM B I where
+def relabel
+      (M : POVM A I) : POVM B I where
   effect := fun b => M.effect (e.symm b)
   pos := fun b => M.pos (e.symm b)
   sum_eq_one := by
@@ -37,14 +39,14 @@ def relabel {A B I : Type*} [Fintype A] [Fintype B] [Fintype I]
       _ = 1 := M.sum_eq_one
 
 /-- Outcome relabeling preserves every POVM effect. -/
-@[simp] theorem relabel_effect {A B I : Type*} [Fintype A] [Fintype B]
-    [Fintype I] [DecidableEq I] (e : A ≃ B) (M : POVM A I) (b : B) :
+@[simp] theorem relabel_effect
+       (M : POVM A I) (b : B) :
     (relabel e M).effect b = M.effect (e.symm b) :=
   rfl
 
 /-- Outcome relabeling preserves projectivity exactly. -/
-theorem relabel_isProjective_iff {A B I : Type*} [Fintype A] [Fintype B]
-    [Fintype I] [DecidableEq I] (e : A ≃ B) (M : POVM A I) :
+theorem relabel_isProjective_iff
+       (M : POVM A I) :
     (relabel e M).IsProjective ↔ M.IsProjective := by
   constructor
   · intro h a
@@ -138,12 +140,12 @@ theorem relabel_isProjective_iff {X Y A B X' Y' A' B' : Type}
 private theorem sum_equiv₂ {A B A' B' : Type*} [Fintype A] [Fintype B]
     [Fintype A'] [Fintype B'] (eA : A ≃ A') (eB : B ≃ B')
     (f : A → B → ℝ) :
-    (∑ a : A', ∑ b : B', f (eA.symm a) (eB.symm b)) =
+     ∑ a : A', ∑ b : B', f (eA.symm a) (eB.symm b)  =
       ∑ a : A, ∑ b : B, f a b := by
   calc
-    (∑ a : A', ∑ b : B', f (eA.symm a) (eB.symm b)) =
+     ∑ a : A', ∑ b : B', f (eA.symm a) (eB.symm b)  =
         ∑ a : A, ∑ b : B', f a (eB.symm b) :=
-      Equiv.sum_comp eA.symm (fun a => ∑ b : B', f a (eB.symm b))
+      Equiv.sum_comp eA.symm  fun a => ∑ b : B', f a (eB.symm b) 
     _ = ∑ a : A, ∑ b : B, f a b := by
       apply Finset.sum_congr rfl
       intro a _
@@ -167,8 +169,8 @@ theorem value_relabel {X Y A B X' Y' A' B' : Type}
   funext xy
   simp only [Game.relabel, Equiv.prodCongr_apply, Prod.map_fst, Prod.map_snd,
     outcomeWeight_relabel, Equiv.symm_apply_apply]
-  exact sum_equiv₂ eA eB (fun a b =>
-    if G.decide xy.1 xy.2 a b then S.outcomeWeight xy.1 xy.2 a b else 0)
+  exact sum_equiv₂ eA eB  fun a b =>
+    if G.decide xy.1 xy.2 a b then S.outcomeWeight xy.1 xy.2 a b else 0 
 
 end Strategy
 
@@ -192,13 +194,15 @@ theorem lowDegreeGame_relabel_eq (P : MIPStarRE.QPBT.LdParams) :
       ((lowDegreeQuestionEquiv P).symm x) ((lowDegreeQuestionEquiv P).symm y)
       ((lowDegreeAnswerEquiv P).symm a) ((lowDegreeAnswerEquiv P).symm b)
 
-/-- Convert a compact low-degree strategy into a strategy for the registered game. -/
-def lowDegreeStrategyToLibrary (P : MIPStarRE.QPBT.LdParams)
-    (S : Strategy
+variable (P : MIPStarRE.QPBT.LdParams) (S : Strategy
       (LowDegreeQuestion (LowDegreeParams.ofLdParams P) (MIPStarRE.QPBT.ScalarQ P))
       (LowDegreeQuestion (LowDegreeParams.ofLdParams P) (MIPStarRE.QPBT.ScalarQ P))
       (LowDegreeAnswer (LowDegreeParams.ofLdParams P) (MIPStarRE.QPBT.ScalarQ P))
-      (LowDegreeAnswer (LowDegreeParams.ofLdParams P) (MIPStarRE.QPBT.ScalarQ P))) :
+      (LowDegreeAnswer (LowDegreeParams.ofLdParams P) (MIPStarRE.QPBT.ScalarQ P)))
+
+/-- Convert a compact low-degree strategy into a strategy for the registered game. -/
+def lowDegreeStrategyToLibrary
+     :
     MIPStarRE.QPBT.Strategy (MIPStarRE.QPBT.ldGame P) :=
   Strategy.toStrategy (G := MIPStarRE.QPBT.ldGame P)
     (Strategy.relabel S
@@ -206,12 +210,8 @@ def lowDegreeStrategyToLibrary (P : MIPStarRE.QPBT.LdParams)
       (lowDegreeAnswerEquiv P) (lowDegreeAnswerEquiv P))
 
 /-- Conversion to the registered low-degree game preserves the strategy value exactly. -/
-theorem lowDegreeStrategyToLibrary_value (P : MIPStarRE.QPBT.LdParams)
-    (S : Strategy
-      (LowDegreeQuestion (LowDegreeParams.ofLdParams P) (MIPStarRE.QPBT.ScalarQ P))
-      (LowDegreeQuestion (LowDegreeParams.ofLdParams P) (MIPStarRE.QPBT.ScalarQ P))
-      (LowDegreeAnswer (LowDegreeParams.ofLdParams P) (MIPStarRE.QPBT.ScalarQ P))
-      (LowDegreeAnswer (LowDegreeParams.ofLdParams P) (MIPStarRE.QPBT.ScalarQ P))) :
+theorem lowDegreeStrategyToLibrary_value
+     :
     (lowDegreeStrategyToLibrary P S).value =
       S.value (lowDegreeGame (LowDegreeParams.ofLdParams P)
         (MIPStarRE.QPBT.binaryRepresentation P.model)) := by
@@ -238,20 +238,9 @@ theorem lowDegreeStrategyToLibrary_value (P : MIPStarRE.QPBT.LdParams)
       Strategy.value_relabel _ _ _ _ _ _
 
 /-- Conversion to the registered low-degree game preserves projectivity exactly. -/
-theorem lowDegreeStrategyToLibrary_isProjective_iff (P : MIPStarRE.QPBT.LdParams)
-    (S : Strategy
-      (LowDegreeQuestion (LowDegreeParams.ofLdParams P) (MIPStarRE.QPBT.ScalarQ P))
-      (LowDegreeQuestion (LowDegreeParams.ofLdParams P) (MIPStarRE.QPBT.ScalarQ P))
-      (LowDegreeAnswer (LowDegreeParams.ofLdParams P) (MIPStarRE.QPBT.ScalarQ P))
-      (LowDegreeAnswer (LowDegreeParams.ofLdParams P) (MIPStarRE.QPBT.ScalarQ P))) :
-    (lowDegreeStrategyToLibrary P S).IsProjective ↔ S.IsProjective := by
-  change (Strategy.toStrategy (G := MIPStarRE.QPBT.ldGame P)
-      (Strategy.relabel S
-        (lowDegreeQuestionEquiv P) (lowDegreeQuestionEquiv P)
-        (lowDegreeAnswerEquiv P) (lowDegreeAnswerEquiv P))).IsProjective ↔
-    S.IsProjective
-  rw [Strategy.isProjective_toStrategy_iff]
-  exact Strategy.relabel_isProjective_iff _ _ _ _ _
+theorem lowDegreeStrategyToLibrary_isProjective_iff
+     :
+    (lowDegreeStrategyToLibrary P S).IsProjective ↔ S.IsProjective := by classical solve_by_elim (maxDepth := 6) [Strategy.isProjective_toStrategy_iff, Strategy.relabel_isProjective_iff]
 
 end
 

@@ -1,5 +1,7 @@
 module
 
+public import QPBT.Algebra.CoordinatePolynomial
+
 public import QPBT.Combining.ExtendedLineGame.ScalarPolynomial
 public import QPBT.Combining.PolynomialImageBounds
 
@@ -20,7 +22,7 @@ and retained overlaps are separate results.
 
 @[expose] public section
 
-open scoped BigOperators Matrix MatrixOrder ComplexOrder
+open scoped BigOperators Matrix MatrixOrder ComplexOrder Classical
 
 namespace MIPStarRE.QPBT
 
@@ -31,24 +33,25 @@ noncomputable section
 
 namespace ExtendedLineGame
 
+variable {P : AdmissibleParams} {ε : ℝ} (S : ProjectiveSetting P ε)
+
 /-- Actual mass of outcomes outside `alpha*g1(x,z) + beta*g2(x,z)`. The
 coefficients may still depend on both base blocks. -/
-def scalarNonlinearMass {P : AdmissibleParams} {ε : ℝ}
-    (S : ProjectiveSetting P ε) (p : Placement)
+def scalarNonlinearMass
+     (p : Placement)
     (R : DirectPolyMeasTuple P.extendedDirectLd (S.ExpandedLocalSpace p.side)) : ℝ := by
-  classical
-  exact ∑ g ∈ Finset.univ.filter (fun g => ¬ ∃ r t : MvPolynomial (Fin (2 * P.m))
+  exact ∑ g ∈ Finset.univ.filter  fun g => ¬ ∃ r t : MIPStarRE.QPBT.CoordinatePolynomial (2 * P.m)
       (PauliScalar P), scalarPolynomial P g =
-        MvPolynomial.C r * MvPolynomial.X 0 + MvPolynomial.C t * MvPolynomial.X 1),
+        MvPolynomial.C r * MvPolynomial.X 0 + MvPolynomial.C t * MvPolynomial.X 1 ,
     ‖applyOperatorToState (S.place p (R.effect g)) S.psiHat‖ ^ 2
 
-private theorem placed_orderedIndicator {P : AdmissibleParams} {ε : ℝ}
-    (S : ProjectiveSetting P ε) (p : Placement) (x : ExtendedPointQuestion P)
+private theorem placed_orderedIndicator
+     (p : Placement) (x : ExtendedPointQuestion P)
     (a : PauliScalar P) :
     orderedIndicator (S.placedMeasurement p (S.pointMeasExp p.side .X x.1.1))
       (S.placedMeasurement p (S.pointMeasExp p.side .Z x.1.2)) x.2.1 x.2.2 a =
-    S.place p (∑ ab ∈ Finset.univ.filter (fun ab : PauliScalar P × PauliScalar P =>
-        x.2.1 * ab.1 + x.2.2 * ab.2 = a),
+    S.place p (∑ ab ∈ Finset.univ.filter  fun ab : PauliScalar P × PauliScalar P =>
+        x.2.1 * ab.1 + x.2.2 * ab.2 = a ,
       (S.pointMeasExp p.side .X x.1.1).effect ab.1 *
         (S.pointMeasExp p.side .Z x.1.2).effect ab.2) := by
   rw [S.place_finsetSum, Finset.sum_filter]
@@ -58,8 +61,8 @@ private theorem placed_orderedIndicator {P : AdmissibleParams} {ε : ℝ}
 /-- Opposite placements commute, identifying the residual on the actual
 projected state with the ordered-error residual. This supports both orders
 of `eq:qld-g-42/43` and blueprint `lem:qld-4-7`. -/
-theorem placed_residual {P : AdmissibleParams} {ε : ℝ}
-    (S : ProjectiveSetting P ε) (p1 p2 : Placement) (hopposite : p1.IsOpposite p2)
+theorem placed_residual
+     (p1 p2 : Placement) (hopposite : p1.IsOpposite p2)
     (R : Op (S.ExpandedLocalSpace p1.side)) (T : Op (S.ExpandedLocalSpace p2.side)) :
     applyOperatorToState (S.place p1 R) S.psiHat -
       applyOperatorToState (S.place p2 T)
@@ -72,59 +75,58 @@ theorem placed_residual {P : AdmissibleParams} {ε : ℝ}
 ordered error plus `2*((2m+2)d+1)/q`. All transports and degree bounds are
 derived internally from the actual singleton outcomes. This auxiliary applies
 to every opposite placement of a complete projective measurement. -/
-theorem scalarNonlinearMass_le_ordered_error {P : AdmissibleParams} {ε : ℝ}
-    (S : ProjectiveSetting P ε) (p1 p2 : Placement) (hopposite : p1.IsOpposite p2)
+theorem scalarNonlinearMass_le_ordered_error
+     (p1 p2 : Placement) (hopposite : p1.IsOpposite p2)
     (R : DirectPolyMeasTuple P.extendedDirectLd (S.ExpandedLocalSpace p1.side))
     (hR : Measurement.IsProjective R) :
     scalarNonlinearMass S p1 R ≤ 2 * extendedPolynomialOrderedError S p1 p2 R false +
       2 * (((2 * P.m + 2) * P.d + 1 : ℕ) : ℝ) / P.q := by
-  classical
-  let s := Finset.univ.filter (fun g => ¬ ∃ r t : MvPolynomial (Fin (2 * P.m))
+  let s := Finset.univ.filter  fun g => ¬ ∃ r t : MIPStarRE.QPBT.CoordinatePolynomial (2 * P.m)
       (PauliScalar P), scalarPolynomial P g =
-        MvPolynomial.C r * MvPolynomial.X 0 + MvPolynomial.C t * MvPolynomial.X 1)
+        MvPolynomial.C r * MvPolynomial.X 0 + MvPolynomial.C t * MvPolynomial.X 1 
   let ψ := fun g => applyOperatorToState (S.place p1 (R.effect g)) S.psiHat
-  let X := fun u : Fin (2 * P.m) → PauliScalar P => S.placedMeasurement p2
-    (S.pointMeasExp p2.side .X (fun i => u ((baseCoordinateEquiv P.m).symm (.inl i))))
-  let Z := fun u : Fin (2 * P.m) → PauliScalar P => S.placedMeasurement p2
-    (S.pointMeasExp p2.side .Z (fun i => u ((baseCoordinateEquiv P.m).symm (.inr i))))
+  let X := fun u : MIPStarRE.QPBT.PauliExtendedPoint P => S.placedMeasurement p2
+    (S.pointMeasExp p2.side .X  fun i => u ((baseCoordinateEquiv P.m).symm (.inl i)) )
+  let Z := fun u : MIPStarRE.QPBT.PauliExtendedPoint P => S.placedMeasurement p2
+    (S.pointMeasExp p2.side .Z  fun i => u ((baseCoordinateEquiv P.m).symm (.inr i)) )
   have hX : ∀ u, Measurement.IsProjective (X u) := fun u =>
     S.placedMeasurement_isProjective p2 _ (S.pointMeasExp_isProjective _ _ _)
   have hZ : ∀ u, Measurement.IsProjective (Z u) := fun u =>
     S.placedMeasurement_isProjective p2 _ (S.pointMeasExp_isProjective _ _ _)
   have h := nonlinear_mass_le_ordered_error s (scalarPolynomial P)
     (fun g hg => (Finset.mem_filter.mp hg).2) X Z hX hZ ψ
-  have hmass : ∑ g, ‖ψ g‖ ^ 2 = 1 := by
+  have hmass  := by
     simpa only [ψ, ProjectiveSetting.placedMeasurement_effect, S.psiHat_norm, one_pow] using
       sum_projective_state_norm_sq (S.placedMeasurement p1 R)
         (S.placedMeasurement_isProjective p1 R hR) S.psiHat
-  have hdegree : (∑ g ∈ s,
+  have hdegree :  ∑ g ∈ s,
       (((scalarPolynomial P g).support.sup fun e =>
           ((scalarPolynomial P g).coeff e).totalDegree) +
         max 1 (scalarPolynomial P g).totalDegree + 1 : ℕ) /
-          (Fintype.card (PauliScalar P) : ℝ) * ‖ψ g‖ ^ 2) ≤
+          (Fintype.card (PauliScalar P) : ℝ) * ‖ψ g‖ ^ 2  ≤
       (((2 * P.m + 2) * P.d + 1 : ℕ) : ℝ) / P.q := by
-    have hcard : Fintype.card (PauliScalar P) = P.q :=
+    have hcard  :=
       @FieldModel.card P.q P.model.toFieldModel
     rw [hcard]
     calc
-      _ ≤ ∑ g ∈ s, ((((2 * P.m + 2) * P.d + 1 : ℕ) : ℝ) / P.q) * ‖ψ g‖ ^ 2 := by
+      _ ≤ ∑ g ∈ s,  (((2 * P.m + 2) * P.d + 1 : ℕ) : ℝ) / P.q  * ‖ψ g‖ ^ 2 := by
         apply Finset.sum_le_sum
         intro g _
         apply mul_le_mul_of_nonneg_right _ (sq_nonneg _)
         apply div_le_div_of_nonneg_right _ (Nat.cast_nonneg _)
         exact_mod_cast scalarPolynomial_degree_term_le P g
-      _ ≤ ∑ g, ((((2 * P.m + 2) * P.d + 1 : ℕ) : ℝ) / P.q) * ‖ψ g‖ ^ 2 :=
+      _ ≤ ∑ g,  (((2 * P.m + 2) * P.d + 1 : ℕ) : ℝ) / P.q  * ‖ψ g‖ ^ 2 :=
         Finset.sum_le_sum_of_subset_of_nonneg (Finset.subset_univ _) (by
           intros; positivity)
       _ = _ := by rw [← Finset.mul_sum, hmass, mul_one]
-  let f := fun (u : Fin (2 * P.m) → PauliScalar P) (v : Fin 2 → PauliScalar P) g =>
+  let f := fun (u : MIPStarRE.QPBT.PauliExtendedPoint P) (v : MIPStarRE.QPBT.PauliCoefficients P) g =>
     ‖ψ g - applyOperatorToState (orderedIndicator (X u) (Z u) (v 0) (v 1)
       (MvPolynomial.eval v (MvPolynomial.map (MvPolynomial.eval u)
         (scalarPolynomial P g)))) (ψ g)‖ ^ 2
-  have hfull : avgOver (uniformDistribution (Fin (2 * P.m) → PauliScalar P)) (fun u =>
-      avgOver (uniformDistribution (Fin 2 → PauliScalar P)) (fun v => ∑ g, f u v g)) =
+  have hfull : avgOver (uniformDistribution (MIPStarRE.QPBT.PauliExtendedPoint P)) (fun u =>
+      avgOver (uniformDistribution (MIPStarRE.QPBT.PauliCoefficients P))  fun v => ∑ g, f u v g ) =
         extendedPolynomialOrderedError S p1 p2 R false := by
-    rw [← avgOver_uniform_prod (fun u v => ∑ g, f u v g)]
+    rw [← avgOver_uniform_prod  fun u v => ∑ g, f u v g ]
     unfold extendedPolynomialOrderedError
     rw [avgOver_uniform_equiv (scalarBaseQuestionEquiv P).symm]
     apply avgOver_congr
@@ -148,8 +150,8 @@ theorem scalarNonlinearMass_le_ordered_error {P : AdmissibleParams} {ε : ℝ}
     dsimp only [ψ]
     rw [placed_residual S p1 p2 hopposite]
     rfl
-  have herror : avgOver (uniformDistribution (Fin (2 * P.m) → PauliScalar P)) (fun u =>
-      avgOver (uniformDistribution (Fin 2 → PauliScalar P)) (fun v => ∑ g ∈ s, f u v g)) ≤
+  have herror : avgOver (uniformDistribution (MIPStarRE.QPBT.PauliExtendedPoint P)) (fun u =>
+      avgOver (uniformDistribution (MIPStarRE.QPBT.PauliCoefficients P))  fun v => ∑ g ∈ s, f u v g ) ≤
         extendedPolynomialOrderedError S p1 p2 R false := by
     rw [← hfull]
     apply avgOver_mono

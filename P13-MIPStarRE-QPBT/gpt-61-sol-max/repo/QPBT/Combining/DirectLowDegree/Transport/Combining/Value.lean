@@ -30,7 +30,7 @@ rejection probability by at most ten.
 
 @[expose] public section
 
-open scoped BigOperators MatrixOrder Matrix ComplexOrder
+open scoped BigOperators MatrixOrder Matrix ComplexOrder Classical
 
 namespace MIPStarRE.QPBT
 
@@ -40,14 +40,16 @@ open MIPStarRE.Quantum
 
 noncomputable section
 
+variable (D : DirectLdParams) (S : Strategy (directLdGame D)) (types : LdType × LdType)
+
 /-- The rejected mass of the original strategy at the pair of questions
 measured by the combined strategy, as a function of the coordinate index and of
 the two point parts of the sample of the combined game.  By
 `lem:ld-combined-question-law` those three data determine the measured pair. -/
-def directCombinedMeasuredRejectedMass (D : DirectLdParams)
-    (S : Strategy (directLdGame D)) (types : LdType × LdType)
+def directCombinedMeasuredRejectedMass
+
     (i : Fin D.combined.m)
-    (pd : (Fin D.m → DirectScalarQ D) × (Fin D.m → DirectScalarQ D)) : ℝ :=
+    (pd :  MIPStarRE.QPBT.DirectPoint D  ×  MIPStarRE.QPBT.DirectPoint D ) : ℝ :=
   match directCombinedIndexSplit D i with
   | .inl j =>
       directRejectedMass D S
@@ -62,8 +64,8 @@ game: the acceptance transport of `directCombinedWinTransport_all` bounds the
 rejected mass of the combined strategy by the rejected mass of the original
 strategy at the measured questions, which `lem:ld-combined-question-law`
 identifies. -/
-theorem directRejectedMass_directCombinedStrategy_le_measured (D : DirectLdParams)
-    (S : Strategy (directLdGame D)) (types : LdType × LdType)
+theorem directRejectedMass_directCombinedStrategy_le_measured
+
     (sample : DirectLdSpace D.combined) :
     directRejectedMass D.combined (directCombinedStrategy D S)
         (types.1, directLdMap D.combined types.1 sample)
@@ -74,13 +76,13 @@ theorem directRejectedMass_directCombinedStrategy_le_measured (D : DirectLdParam
   refine le_trans (directRejectedMass_directCombinedStrategy_le D S _ _
     (directCombinedWinTransport_all D types.1 types.2 sample)) (le_of_eq ?_)
   rcases hsplit : directCombinedIndexSplit D sample.index with j | r
-  · have hindex : sample.index = combinedPointVar D.m D.k j :=
+  · have hindex  :=
       eq_combinedPointVar_of_indexSplit D hsplit
     rw [directCombined_measuredQuestion_of_pointVar D types.1 j sample hindex,
       directCombined_measuredQuestion_of_pointVar D types.2 j sample hindex]
     simp only [directCombinedMeasuredRejectedMass, hsplit,
       directCombinedSampleProjection]
-  · have hindex : sample.index = combinedCoefficientVar D.m D.k r :=
+  · have hindex  :=
       eq_combinedCoefficientVar_of_indexSplit D hsplit
     rw [directCombined_measuredQuestion_of_coefficientVar D types.1 r sample hindex,
       directCombined_measuredQuestion_of_coefficientVar D types.2 r sample hindex]
@@ -89,10 +91,10 @@ theorem directRejectedMass_directCombinedStrategy_le_measured (D : DirectLdParam
 /-- Conditioned on a point coordinate index, the measured pair is the canonical
 pair of the original game at the same ordered type pair attached to a uniform
 sample. -/
-theorem avgOver_directCombinedMeasuredRejectedMass_pointVar (D : DirectLdParams)
-    (S : Strategy (directLdGame D)) (types : LdType × LdType) (j : Fin D.m) :
+theorem avgOver_directCombinedMeasuredRejectedMass_pointVar
+      (j : Fin D.m) :
     avgOver (uniformDistribution
-        ((Fin D.m → DirectScalarQ D) × (Fin D.m → DirectScalarQ D)))
+        ( MIPStarRE.QPBT.DirectPoint D  ×  MIPStarRE.QPBT.DirectPoint D ))
       (directCombinedMeasuredRejectedMass D S types
         (combinedPointVar D.m D.k j)) =
       directLdIndexedBranchRejectionProbability D S types j := by
@@ -105,28 +107,28 @@ theorem avgOver_directCombinedMeasuredRejectedMass_pointVar (D : DirectLdParams)
 the point question at a uniform point, so the branch reduces to the
 point-versus-point branch of the original game. -/
 theorem avgOver_directCombinedMeasuredRejectedMass_coefficientVar
-    (D : DirectLdParams) (S : Strategy (directLdGame D))
-    (types : LdType × LdType) (r : Fin D.k) :
+
+     (r : Fin D.k) :
     avgOver (uniformDistribution
-        ((Fin D.m → DirectScalarQ D) × (Fin D.m → DirectScalarQ D)))
+        ( MIPStarRE.QPBT.DirectPoint D  ×  MIPStarRE.QPBT.DirectPoint D ))
       (directCombinedMeasuredRejectedMass D S types
         (combinedCoefficientVar D.m D.k r)) =
       directLdBranchRejectionProbability D S (.point, .point) := by
   have hcongr : avgOver (uniformDistribution
-        ((Fin D.m → DirectScalarQ D) × (Fin D.m → DirectScalarQ D)))
+        ( MIPStarRE.QPBT.DirectPoint D  ×  MIPStarRE.QPBT.DirectPoint D ))
       (directCombinedMeasuredRejectedMass D S types
         (combinedCoefficientVar D.m D.k r)) =
       avgOver (uniformDistribution
-        ((Fin D.m → DirectScalarQ D) × (Fin D.m → DirectScalarQ D)))
-        (fun pd => (fun (u _ : Fin D.m → DirectScalarQ D) =>
+        ( MIPStarRE.QPBT.DirectPoint D  ×  MIPStarRE.QPBT.DirectPoint D ))
+         fun pd => (fun (u _ : MIPStarRE.QPBT.DirectPoint D) =>
           directRejectedMass D S (directLdPointQuestionOf D u)
-            (directLdPointQuestionOf D u)) pd.1 pd.2) := by
+            (directLdPointQuestionOf D u)) pd.1 pd.2  := by
     apply avgOver_congr
     intro pd
     simp only [directCombinedMeasuredRejectedMass,
       directCombinedIndexSplit_combinedCoefficientVar]
   rw [hcongr, avgOver_uniform_prod
-      (f := fun (u _ : Fin D.m → DirectScalarQ D) =>
+      (f := fun (u _ : MIPStarRE.QPBT.DirectPoint D) =>
         directRejectedMass D S (directLdPointQuestionOf D u)
           (directLdPointQuestionOf D u)),
     directLdBranchRejectionProbability_point_point_eq]
@@ -138,29 +140,26 @@ theorem avgOver_directCombinedMeasuredRejectedMass_coefficientVar
 game is rejected with probability at most the sum of the branch of the original
 game at the same ordered type pair and its point-versus-point branch. -/
 theorem directLdBranchRejectionProbability_directCombinedStrategy_le
-    (D : DirectLdParams) (S : Strategy (directLdGame D))
-    (types : LdType × LdType) :
+
+     :
     directLdBranchRejectionProbability D.combined (directCombinedStrategy D S)
         types ≤
         directLdBranchRejectionProbability D S types +
         directLdBranchRejectionProbability D S (.point, .point) := by
-  classical
-  have hmpos : 0 < D.m := Nat.lt_of_lt_of_le Nat.zero_lt_one D.hm
-  have hkpos : 0 < D.k := Nat.lt_of_lt_of_le Nat.zero_lt_one D.hk
+  have hmpos  := Nat.lt_of_lt_of_le Nat.zero_lt_one D.hm
+  have hkpos  := Nat.lt_of_lt_of_le Nat.zero_lt_one D.hk
   let _ : Nonempty (Fin D.combined.m) :=
     ⟨⟨0, by change 0 < D.m + D.k; exact Nat.add_pos_left hmpos D.k⟩⟩
   have hstep : directLdBranchRejectionProbability D.combined
       (directCombinedStrategy D S) types ≤
       avgOver (uniformDistribution (Fin D.combined.m ×
-        ((Fin D.m → DirectScalarQ D) × (Fin D.m → DirectScalarQ D))))
-        (fun x => directCombinedMeasuredRejectedMass D S types x.1 x.2) := by
+          MIPStarRE.QPBT.DirectPoint D  ×  MIPStarRE.QPBT.DirectPoint D  ))
+         fun x => directCombinedMeasuredRejectedMass D S types x.1 x.2  := by
     rw [directLdBranchRejectionProbability_eq_avgOver,
       ← directCombinedSample_indexPointParts_uniform D, Distribution.avgOver_map]
-    exact avgOver_mono _ _ _ fun sample =>
-      directRejectedMass_directCombinedStrategy_le_measured D S types sample
+    exact avgOver_mono _ _ _ (directRejectedMass_directCombinedStrategy_le_measured D S types)
   refine le_trans hstep ?_
-  rw [avgOver_uniform_prod (f := fun i pd =>
-      directCombinedMeasuredRejectedMass D S types i pd),
+  rw [avgOver_uniform_prod (f :=  directCombinedMeasuredRejectedMass D S types ),
     avgOver_uniform_eq_inv_card_mul_sum, Fintype.card_fin]
   have hmkNat : D.combined.m = D.m + D.k := rfl
   have hcard : (D.m : ℝ) ≠ 0 := Nat.cast_ne_zero.mpr hmpos.ne'
@@ -170,25 +169,24 @@ theorem directLdBranchRejectionProbability_directCombinedStrategy_le
     ring
   have hsum : ∑ i : Fin D.combined.m,
       avgOver (uniformDistribution
-          ((Fin D.m → DirectScalarQ D) × (Fin D.m → DirectScalarQ D)))
-        (fun pd => directCombinedMeasuredRejectedMass D S types i pd) =
-      (∑ j : Fin D.m, directLdIndexedBranchRejectionProbability D S types j) +
+          ( MIPStarRE.QPBT.DirectPoint D  ×  MIPStarRE.QPBT.DirectPoint D ))
+        ( directCombinedMeasuredRejectedMass D S types i ) =
+       ∑ j : Fin D.m, directLdIndexedBranchRejectionProbability D S types j  +
         (D.k : ℝ) * directLdBranchRejectionProbability D S (.point, .point) := by
     show ∑ i : Fin (D.m + D.k),
         avgOver (uniformDistribution
-            ((Fin D.m → DirectScalarQ D) × (Fin D.m → DirectScalarQ D)))
-          (fun pd => directCombinedMeasuredRejectedMass D S types i pd) = _
+            ( MIPStarRE.QPBT.DirectPoint D  ×  MIPStarRE.QPBT.DirectPoint D ))
+          ( directCombinedMeasuredRejectedMass D S types i ) = _
     rw [Fin.sum_univ_add]
     congr 1
     · refine Finset.sum_congr rfl fun j _ => ?_
       exact avgOver_directCombinedMeasuredRejectedMass_pointVar D S types j
     · have hconst : ∀ r : Fin D.k,
           avgOver (uniformDistribution
-              ((Fin D.m → DirectScalarQ D) × (Fin D.m → DirectScalarQ D)))
-            (fun pd => directCombinedMeasuredRejectedMass D S types
-              (Fin.natAdd D.m r) pd) =
-            directLdBranchRejectionProbability D S (.point, .point) := fun r =>
-        avgOver_directCombinedMeasuredRejectedMass_coefficientVar D S types r
+              ( MIPStarRE.QPBT.DirectPoint D  ×  MIPStarRE.QPBT.DirectPoint D ))
+            ( directCombinedMeasuredRejectedMass D S types
+              (Fin.natAdd D.m r) ) =
+            directLdBranchRejectionProbability D S (.point, .point) :=  avgOver_directCombinedMeasuredRejectedMass_coefficientVar D S types 
       simp [hconst, Finset.sum_const, nsmul_eq_mul]
   have hbranch : ∑ j : Fin D.m,
       directLdIndexedBranchRejectionProbability D S types j =
@@ -197,9 +195,9 @@ theorem directLdBranchRejectionProbability_directCombinedStrategy_le
       avgOver_uniform_eq_inv_card_mul_sum, Fintype.card_fin]
     field_simp
   rw [hsum, hbranch, hmk]
-  have hB : 0 ≤ directLdBranchRejectionProbability D S types :=
+  have hB  :=
     directLdBranchRejectionProbability_nonneg D S types
-  have hP : 0 ≤ directLdBranchRejectionProbability D S (.point, .point) :=
+  have hP  :=
     directLdBranchRejectionProbability_nonneg D S (.point, .point)
   have hm : (0 : ℝ) < D.m := by exact_mod_cast hmpos
   have hk : (0 : ℝ) < D.k := by exact_mod_cast hkpos
@@ -222,12 +220,7 @@ theorem directLdRejectionProbability_directCombinedStrategy_le
   have hnn := directLdBranchRejectionProbability_nonneg D S
   rw [directLdRejectionProbability, directLdRejectionProbability,
     avgOver_ldType_pair, avgOver_ldType_pair]
-  linarith [hle (.point, .point), hle (.point, .aline), hle (.point, .dline),
-    hle (.aline, .point), hle (.aline, .aline), hle (.aline, .dline),
-    hle (.dline, .point), hle (.dline, .aline), hle (.dline, .dline),
-    hnn (.point, .point), hnn (.point, .aline), hnn (.point, .dline),
-    hnn (.aline, .point), hnn (.aline, .aline), hnn (.aline, .dline),
-    hnn (.dline, .point), hnn (.dline, .aline), hnn (.dline, .dline)]
+  grind
 
 /-- `lem:ld-combined-value`: if a projective strategy succeeds with probability
 at least `1 - ε` in the directly indexed low-degree game with the original

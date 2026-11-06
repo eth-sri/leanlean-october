@@ -61,11 +61,9 @@ private theorem min_linear_sqrt_le_directPassingErrorEnvelope (x y : ℝ)
       dsimp [directPassingErrorEnvelope]
       nlinarith)
   · have hsqrtOne : 1 ≤ Real.sqrt x := by
-      have hxOne' : 1 ≤ x := le_of_not_ge hxOne
+      have hxOne'  := le_of_not_ge hxOne
       simpa using Real.sqrt_le_sqrt hxOne'
-    exact (min_le_left _ _).trans (by
-      dsimp [directPassingErrorEnvelope]
-      nlinarith [Real.sqrt_nonneg x])
+    exact (min_le_left _ _).trans (by grind [directPassingErrorEnvelope])
 
 /-- After averaging the seven scalar contributions by the nine equally weighted game
 branches and applying the probability cap, the result is bounded by the concrete

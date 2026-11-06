@@ -36,7 +36,7 @@ the powers are real `rpow`s and the asymptotic constants are absorbed into `a`,
 as specified by blueprint `thm:pauli`,
 paper `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:1426-1447`).
 -/
-noncomputable def deltaQld (a b ε : ℝ) (m d q : ℕ) : ℝ :=
+def deltaQld (a b ε : ℝ) (m d q : ℕ) : ℝ :=
   a * Real.rpow ((m * d : ℕ) : ℝ) a *
     (Real.rpow ε b + Real.rpow (q : ℝ) (-b) +
       Real.rpow 2 (-(b * ((m * d : ℕ) : ℝ))))
@@ -61,22 +61,17 @@ theorem deltaQld_mono {P : AdmissibleParams} {a a' b b' ε : ℝ}
     exact_mod_cast Nat.one_le_pow _ _ (by norm_num)
   unfold deltaQld
   simp only [Real.rpow_eq_pow]
-  have h1 : ((P.m * P.d : ℕ) : ℝ) ^ a ≤ ((P.m * P.d : ℕ) : ℝ) ^ a' :=
+  have h1  :=
     Real.rpow_le_rpow_of_exponent_le hmd ha
-  have h2 : ε ^ b ≤ ε ^ b' := Real.rpow_le_rpow_of_exponent_ge' hε0 hε1 hb'.le hb
-  have h3 : (P.q : ℝ) ^ (-b) ≤ (P.q : ℝ) ^ (-b') :=
+  have h2  := Real.rpow_le_rpow_of_exponent_ge' hε0 hε1 hb'.le hb
+  have h3  :=
     Real.rpow_le_rpow_of_exponent_le hq (neg_le_neg hb)
   have h4 : (2 : ℝ) ^ (-(b * ((P.m * P.d : ℕ) : ℝ))) ≤
       (2 : ℝ) ^ (-(b' * ((P.m * P.d : ℕ) : ℝ))) :=
     Real.rpow_le_rpow_of_exponent_le (by norm_num)
       (neg_le_neg (mul_le_mul_of_nonneg_right hb hmd0))
   have hsum : 0 ≤ ε ^ b + (P.q : ℝ) ^ (-b) +
-      (2 : ℝ) ^ (-(b * ((P.m * P.d : ℕ) : ℝ))) := by
-    have := Real.rpow_nonneg hε0 b
-    have := Real.rpow_nonneg (Nat.cast_nonneg P.q) (-b)
-    have := Real.rpow_nonneg (by norm_num : (0 : ℝ) ≤ 2)
-      (-(b * ((P.m * P.d : ℕ) : ℝ)))
-    linarith
+      (2 : ℝ) ^ (-(b * ((P.m * P.d : ℕ) : ℝ))) := by classical bound
   exact mul_le_mul (mul_le_mul ha h1 (Real.rpow_nonneg hmd0 a) (by linarith))
     (add_le_add (add_le_add h2 h3) h4) hsum
     (mul_nonneg (by linarith) (Real.rpow_nonneg hmd0 a'))
@@ -86,28 +81,28 @@ ordering.  The EPR factor is the concrete `eprState` from blueprint
 `def:EPR`; paper
 `references/qpbt-paper/04_preliminaries.tex:946-955`).
 -/
-noncomputable def idealState (P : AdmissibleParams)
+def idealState (P : AdmissibleParams)
     {ιA' ιB' : Type*} [Fintype ιA'] [DecidableEq ιA']
     [Fintype ιB'] [DecidableEq ιB']
-    (aux : EuclideanSpace ℂ (ιA' × ιB')) :
-    EuclideanSpace ℂ ((ιA' × PauliRegister P) × (ιB' × PauliRegister P)) :=
+    (aux : MIPStarRE.QPBT.StateVector (ιA' × ιB')) :
+    MIPStarRE.QPBT.StateVector ((ιA' × PauliRegister P) ×  ιB' × PauliRegister P ) :=
   (EuclideanSpace.equiv ((ιA' × PauliRegister P) ×
-      (ιB' × PauliRegister P)) ℂ).symm
-    (fun p =>
-      ((EuclideanSpace.equiv (ιA' × ιB') ℂ) aux (p.1.1, p.2.1)) *
-        ((EuclideanSpace.equiv (PauliRegister P × PauliRegister P) ℂ)
-          (eprState (PauliRegister P)) (p.1.2, p.2.2)))
+       ιB' × PauliRegister P ) ℂ).symm
+     fun p =>
+       (EuclideanSpace.equiv (ιA' × ιB') ℂ) aux (p.1.1, p.2.1)  *
+         (EuclideanSpace.equiv (PauliRegister P × PauliRegister P) ℂ)
+          (eprState (PauliRegister P)) (p.1.2, p.2.2)  
 
 /-- The A-side ideal Pauli projector, with identities on the auxiliary and
 B-side registers.  This is a concrete matrix form of the operator comparison
 in blueprint `thm:pauli`; paper
 `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:1426-1447`).
 -/
-noncomputable def pauliProjOnA'' (P : AdmissibleParams)
+def pauliProjOnA'' (P : AdmissibleParams)
     {ιA' ιB' : Type*} [Fintype ιA'] [DecidableEq ιA']
     [Fintype ιB'] [DecidableEq ιB'] (W : PauliKind)
     (u : PauliRegister P) :
-    Op ((ιA' × PauliRegister P) × (ιB' × PauliRegister P)) :=
+    Op ((ιA' × PauliRegister P) ×  ιB' × PauliRegister P ) :=
   fun p q =>
     if p.1.1 = q.1.1 ∧ p.2 = q.2 then
       pauliProj W u p.1.2 q.1.2
@@ -117,11 +112,11 @@ noncomputable def pauliProjOnA'' (P : AdmissibleParams)
 `thm:pauli`, paper origin
 `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:1426-1447`.
 -/
-noncomputable def pauliProjOnB'' (P : AdmissibleParams)
+def pauliProjOnB'' (P : AdmissibleParams)
     {ιA' ιB' : Type*} [Fintype ιA'] [DecidableEq ιA']
     [Fintype ιB'] [DecidableEq ιB'] (W : PauliKind)
     (u : PauliRegister P) :
-    Op ((ιA' × PauliRegister P) × (ιB' × PauliRegister P)) :=
+    Op ((ιA' × PauliRegister P) ×  ιB' × PauliRegister P ) :=
   fun p q =>
     if p.1 = q.1 ∧ p.2.1 = q.2.1 then
       pauliProj W u p.2.2 q.2.2
@@ -131,13 +126,13 @@ noncomputable def pauliProjOnB'' (P : AdmissibleParams)
 `thm:pauli`, paper origin
 `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:1426-1447`.
 -/
-noncomputable def liftedAEffect {P : AdmissibleParams} {G : Game}
+def liftedAEffect {P : AdmissibleParams} {G : Game}
     (S : Strategy G) {ιA' ιB' : Type*} [Fintype ιA'] [DecidableEq ιA']
     [Fintype ιB'] [DecidableEq ιB']
-    (φA : EuclideanSpace ℂ S.ιA →ₗᵢ[ℂ]
-      EuclideanSpace ℂ (ιA' × PauliRegister P))
+    (φA : MIPStarRE.QPBT.StateVector S.ιA →ₗᵢ[ℂ]
+      MIPStarRE.QPBT.StateVector (ιA' × PauliRegister P))
     (M : Op S.ιA) :
-    Op ((ιA' × PauliRegister P) × (ιB' × PauliRegister P)) :=
+    Op ((ιA' × PauliRegister P) ×  ιB' × PauliRegister P ) :=
   fun p q =>
     if p.2 = q.2 then
       (conjIsometry φA M) p.1 q.1
@@ -147,13 +142,13 @@ noncomputable def liftedAEffect {P : AdmissibleParams} {G : Game}
 `thm:pauli`, paper origin
 `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:1426-1447`.
 -/
-noncomputable def liftedBEffect {P : AdmissibleParams} {G : Game}
+def liftedBEffect {P : AdmissibleParams} {G : Game}
     (S : Strategy G) {ιA' ιB' : Type*} [Fintype ιA'] [DecidableEq ιA']
     [Fintype ιB'] [DecidableEq ιB']
-    (φB : EuclideanSpace ℂ S.ιB →ₗᵢ[ℂ]
-      EuclideanSpace ℂ (ιB' × PauliRegister P))
+    (φB : MIPStarRE.QPBT.StateVector S.ιB →ₗᵢ[ℂ]
+      MIPStarRE.QPBT.StateVector (ιB' × PauliRegister P))
     (M : Op S.ιB) :
-    Op ((ιA' × PauliRegister P) × (ιB' × PauliRegister P)) :=
+    Op ((ιA' × PauliRegister P) ×  ιB' × PauliRegister P ) :=
   fun p q =>
     if p.1 = q.1 then
       (conjIsometry φB M) p.2 q.2
@@ -173,23 +168,25 @@ structure PauliSoundnessWitness (P : AdmissibleParams)
   [ιBFintype : Fintype ιB']
   [ιADecidableEq : DecidableEq ιA']
   [ιBDecidableEq : DecidableEq ιB']
-  φA : EuclideanSpace ℂ S.ιA →ₗᵢ[ℂ]
-    EuclideanSpace ℂ (ιA' × PauliRegister P)
-  φB : EuclideanSpace ℂ S.ιB →ₗᵢ[ℂ]
-    EuclideanSpace ℂ (ιB' × PauliRegister P)
-  aux : EuclideanSpace ℂ (ιA' × ιB')
+  φA : MIPStarRE.QPBT.StateVector S.ιA →ₗᵢ[ℂ]
+    MIPStarRE.QPBT.StateVector (ιA' × PauliRegister P)
+  φB : MIPStarRE.QPBT.StateVector S.ιB →ₗᵢ[ℂ]
+    MIPStarRE.QPBT.StateVector (ιB' × PauliRegister P)
+  aux : MIPStarRE.QPBT.StateVector (ιA' × ιB')
   aux_norm : ‖aux‖ = 1
 
 attribute [instance] PauliSoundnessWitness.ιAFintype PauliSoundnessWitness.ιBFintype
   PauliSoundnessWitness.ιADecidableEq PauliSoundnessWitness.ιBDecidableEq
 
+variable (P : AdmissibleParams) (S : Strategy (pauliBasisTest P)) (w : PauliSoundnessWitness P S) (W : PauliKind)
+
 /-- The A-side operator distance for the completed Pauli family obtained by
 folding every wrong-form answer into outcome zero. This Lean-only quantity is
 used internally by the extraction and Naimark transfer; the source-facing
 distance is `rawPauliOperatorDistanceA`. -/
-noncomputable def pauliOperatorDistanceA
-    (P : AdmissibleParams) (S : Strategy (pauliBasisTest P))
-    (w : PauliSoundnessWitness P S) (W : PauliKind) : ℝ :=
+def pauliOperatorDistanceA
+
+      : ℝ :=
   ∑ u : PauliRegister P,
       ‖applyOperatorToState (liftedAEffect S w.φA
         (((S.A (pauliQuestion P W)).postprocess pauliAnswerOrZero).effect u) -
@@ -198,9 +195,9 @@ noncomputable def pauliOperatorDistanceA
 /-- The symmetric B-side operator distance for the completed Pauli family.
 This is internal support for the extraction proof; the source-facing distance
 is `rawPauliOperatorDistanceB`. -/
-noncomputable def pauliOperatorDistanceB
-    (P : AdmissibleParams) (S : Strategy (pauliBasisTest P))
-    (w : PauliSoundnessWitness P S) (W : PauliKind) : ℝ :=
+def pauliOperatorDistanceB
+
+      : ℝ :=
   ∑ u : PauliRegister P,
       ‖applyOperatorToState (liftedBEffect S w.φB
         (((S.B (pauliQuestion P W)).postprocess pauliAnswerOrZero).effect u) -
@@ -211,9 +208,9 @@ raw effect of the prescribed answer `.pauliOutcome u`, exactly as in
 `thm:pauli`, paper
 `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:1438-1443`.
 The sum is the finite realization of blueprint `def:povm-distance`. -/
-noncomputable def rawPauliOperatorDistanceA
-    (P : AdmissibleParams) (S : Strategy (pauliBasisTest P))
-    (w : PauliSoundnessWitness P S) (W : PauliKind) : ℝ :=
+def rawPauliOperatorDistanceA
+
+      : ℝ :=
   ∑ u : PauliRegister P,
       ‖applyOperatorToState (liftedAEffect S w.φA
         ((S.A (pauliQuestion P W)).effect (.pauliOutcome u)) -
@@ -223,9 +220,9 @@ noncomputable def rawPauliOperatorDistanceA
 answer effect from `thm:pauli`, paper
 `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:1438-1443`.
 -/
-noncomputable def rawPauliOperatorDistanceB
-    (P : AdmissibleParams) (S : Strategy (pauliBasisTest P))
-    (w : PauliSoundnessWitness P S) (W : PauliKind) : ℝ :=
+def rawPauliOperatorDistanceB
+
+      : ℝ :=
   ∑ u : PauliRegister P,
       ‖applyOperatorToState (liftedBEffect S w.φB
         ((S.B (pauliQuestion P W)).effect (.pauliOutcome u)) -

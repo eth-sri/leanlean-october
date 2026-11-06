@@ -27,33 +27,25 @@ theorem ten_sqrt_deltaLd_le (D : DirectLdParams) {a b ε : ℝ}
   let N : ℝ := (D.d * D.m * D.k : ℕ)
   have hN : 1 ≤ N := by
     change (1 : ℝ) ≤ ((D.d * D.m * D.k : ℕ) : ℝ)
-    exact_mod_cast (show 1 ≤ D.d * D.m * D.k from
-      Nat.mul_pos (Nat.mul_pos D.hd D.hm) D.hk)
+    exact_mod_cast  show 1 ≤ D.d * D.m * D.k from
+      Nat.mul_pos (Nat.mul_pos D.hd D.hm) D.hk 
   have hNa : 1 ≤ N ^ a := Real.one_le_rpow hN (by linarith)
   have hP : 1 ≤ a * N ^ a := by nlinarith
   have hP0 : 0 ≤ a * N ^ a := by linarith
-  have hsP : Real.sqrt (a * N ^ a) ≤ a * N ^ a :=
+  have hsP  :=
     Real.sqrt_le_self_iff.mpr (Or.inr hP)
   have hs (x r : ℝ) (hx : 0 ≤ x) : Real.sqrt (x ^ r) = x ^ (r / 2) := by
     rw [Real.sqrt_eq_rpow, ← Real.rpow_mul hx]
     congr 1
     ring
   have hx : 0 ≤ (ε ^ b : ℝ) := Real.rpow_nonneg hε _
-  have hy : 0 ≤ ((D.q : ℝ) ^ (-b)) := Real.rpow_nonneg (by positivity) _
+  have hy : 0 ≤  (D.q : ℝ) ^ (-b)  := Real.rpow_nonneg (by positivity) _
   have hz : 0 ≤ (2 : ℝ) ^ (-(b * (D.m * D.d : ℕ))) :=
     Real.rpow_nonneg (by norm_num) _
   have hsum : Real.sqrt (ε ^ b + (D.q : ℝ) ^ (-b) +
       (2 : ℝ) ^ (-(b * (D.m * D.d : ℕ)))) ≤
       ε ^ (b / 2) + (D.q : ℝ) ^ (-(b / 2)) +
-        (2 : ℝ) ^ (-((b / 2) * (D.m * D.d : ℕ))) := by
-    calc
-      _ ≤ Real.sqrt (ε ^ b) + Real.sqrt ((D.q : ℝ) ^ (-b)) +
-          Real.sqrt ((2 : ℝ) ^ (-(b * (D.m * D.d : ℕ)))) :=
-        MIPStarRE.LDT.sqrt_add3_le_add3_sqrt hx hy hz
-      _ = _ := by
-        rw [hs ε b hε, hs (D.q : ℝ) (-b) (by positivity),
-          hs 2 (-(b * (D.m * D.d : ℕ))) (by norm_num)]
-        congr 2 <;> congr 1 <;> ring
+        (2 : ℝ) ^ (-( b / 2  * (D.m * D.d : ℕ))) := by grind [MIPStarRE.LDT.sqrt_add3_le_add3_sqrt]
   have hmono : a * N ^ a ≤ a * N ^ (10 * a) := by
     apply mul_le_mul_of_nonneg_left
       (Real.rpow_le_rpow_of_exponent_le hN (by linarith)) (by linarith)
@@ -74,25 +66,25 @@ theorem error_and_collision_le_deltaLd (D : DirectLdParams) {a b ε : ℝ}
   let N : ℝ := (D.d * D.m * D.k : ℕ)
   have hN : 1 ≤ N := by
     change (1 : ℝ) ≤ ((D.d * D.m * D.k : ℕ) : ℝ)
-    exact_mod_cast (show 1 ≤ D.d * D.m * D.k from
-      Nat.mul_pos (Nat.mul_pos D.hd D.hm) D.hk)
-  have hNa : N ≤ N ^ a := by
+    exact_mod_cast  show 1 ≤ D.d * D.m * D.k from
+      Nat.mul_pos (Nat.mul_pos D.hd D.hm) D.hk 
+  have hNa  := by
     simpa using Real.rpow_le_rpow_of_exponent_le hN ha
-  have hP : N ≤ a * N ^ a := hNa.trans
+  have hP  := hNa.trans
     (le_mul_of_one_le_left (by positivity) ha)
   have hmd : (D.m : ℝ) * D.d ≤ N := by
     dsimp [N]
     push_cast
     nlinarith [le_mul_of_one_le_right (by positivity : 0 ≤ (D.d : ℝ) * D.m)
       (show (1 : ℝ) ≤ D.k by exact_mod_cast D.hk)]
-  have he : ε ≤ ε ^ b := by
+  have he  := by
     simpa using Real.rpow_le_rpow_of_exponent_ge hε hε1 hb
   have hq1 : (1 : ℝ) ≤ D.q := by exact_mod_cast D.toLDTParameters.hq
-  have hq : (D.q : ℝ)⁻¹ ≤ (D.q : ℝ) ^ (-b) := by
+  have hq  := by
     simpa only [Real.rpow_neg_one] using
       Real.rpow_le_rpow_of_exponent_le hq1 (neg_le_neg hb)
   have hx : 0 ≤ (ε ^ b : ℝ) := Real.rpow_nonneg hε.le _
-  have hy : 0 ≤ ((D.q : ℝ) ^ (-b)) := Real.rpow_nonneg (by positivity) _
+  have hy : 0 ≤  (D.q : ℝ) ^ (-b)  := Real.rpow_nonneg (by positivity) _
   have hz : 0 ≤ (2 : ℝ) ^ (-(b * (D.m * D.d : ℕ))) :=
     Real.rpow_nonneg (by norm_num) _
   unfold deltaLd

@@ -21,7 +21,7 @@ The restriction on the decoder identity is recorded in
 
 @[expose] public section
 
-open scoped BigOperators Matrix MatrixOrder ComplexOrder
+open scoped BigOperators Matrix MatrixOrder ComplexOrder Classical
 
 namespace MIPStarRE.QPBT
 
@@ -34,8 +34,10 @@ namespace ProjectiveSetting
 
 variable {P : AdmissibleParams} {epsilon : ℝ}
 
+variable (S : ProjectiveSetting P epsilon)
+
 /-- Placing a tensor with an identity on Bob's last register recovers `BB'`. -/
-theorem placeSide_bob_tensor_one (S : ProjectiveSetting P epsilon)
+theorem placeSide_bob_tensor_one
     (B : Op (S.ExpandedLocalSpace .bob)) :
     S.placeSide .bob (heteroKron B (1 : Op (PauliRegister P))) = S.place .BB' B := by
   ext row col
@@ -45,12 +47,11 @@ theorem placeSide_bob_tensor_one (S : ProjectiveSetting P epsilon)
 
 /-- The point factor on `A` and the factors on `BB'B''` can be regrouped as
 the factors on `BB'` and `AB''`, without moving any register. -/
-theorem placePlayer_alice_mul_placeSide_bob_tensor (S : ProjectiveSetting P epsilon)
+theorem placePlayer_alice_mul_placeSide_bob_tensor
     (A : Op S.toStrategy.ιA) (B : Op (S.ExpandedLocalSpace .bob))
     (T : Op (PauliRegister P)) :
     S.placePlayer .alice A * S.placeSide .bob (heteroKron B T) =
       S.place .BB' B * S.place .AB'' (heteroKron A T) := by
-  classical
   ext row col
   simp [placePlayer, placeSide, sixRegExtractionEquiv, reindexOp, heteroKron,
     Matrix.kronecker, place, Matrix.mul_apply, Fintype.sum_prod_type,
@@ -58,26 +59,18 @@ theorem placePlayer_alice_mul_placeSide_bob_tensor (S : ProjectiveSetting P epsi
   split_ifs <;> ac_rfl
 
 /-- Bob's extraction-block placement preserves finite sums. -/
-theorem placeSide_bob_finset_sum (S : ProjectiveSetting P epsilon)
+theorem placeSide_bob_finset_sum
     {I : Type*} (s : Finset I) (B : I → Op (ExtractionBlock P S.toStrategy.ιB)) :
-    S.placeSide .bob (∑ i ∈ s, B i) = ∑ i ∈ s, S.placeSide .bob (B i) := by
-  classical
-  change reindexOp (sixRegExtractionEquiv P S.toStrategy.ιA S.toStrategy.ιB)
-    (heteroKron (1 : Op (ExtractionBlock P S.toStrategy.ιA)) (∑ i ∈ s, B i)) = _
-  rw [heteroKron_finset_sum_right]
-  ext row col
-  simp only [placeSide, reindexOp, Matrix.reindex_apply, Matrix.submatrix_apply,
-    Matrix.sum_apply]
+    S.placeSide .bob (∑ i ∈ s, B i) = ∑ i ∈ s, S.placeSide .bob (B i) := by aesop (add simp [Matrix.sum_apply, placeSide, heteroKron_finset_sum_right, reindexOp])
 
 /-- The convolution formula with its second outcome solved for. This is the
 third line of the overlap calculation in paper lines 1483--1492. -/
-theorem pointMeasExp_effect_eq_sum_sub (S : ProjectiveSetting P epsilon)
-    (side : PlayerSide) (W : PauliKind) (u : Fin P.m → PauliScalar P)
+theorem pointMeasExp_effect_eq_sum_sub
+    (side : PlayerSide) (W : PauliKind) (u : MIPStarRE.QPBT.PauliPoint P)
     (a : PauliScalar P) :
     (S.pointMeasExp side W u).effect a =
       ∑ b : PauliScalar P, heteroKron ((S.pointMeas side W u).effect b)
         (tauDotProj W (indicatorVec u) (a - b)) := by
-  classical
   change S.expPointOp side W u a = _
   rw [S.expPointOp_eq_convolution]
   simp only [Finset.sum_filter, Fintype.sum_prod_type]
@@ -96,13 +89,12 @@ paper lines 1483--1492; it holds for every polynomial outcome. -/
 theorem sum_pointMeas_mul_tildeM_eq_decoded_overlap
     {P : AdmissibleParams} {epsilon deltaG : ℝ} {S : ProjectiveSetting P epsilon}
     (w : GlobalPairWitness S deltaG) (W : PauliKind)
-    (u : Fin P.m → PauliScalar P) :
-    (∑ a : PauliScalar P, S.placePlayer .alice ((S.pointMeas .alice W u).effect a) *
-      S.placeSide .bob (tildeM w .bob W (indicatorVec u) a)) =
+    (u : MIPStarRE.QPBT.PauliPoint P) :
+     ∑ a : PauliScalar P, S.placePlayer .alice ((S.pointMeas .alice W u).effect a) *
+      S.placeSide .bob (tildeM w .bob W (indicatorVec u) a)  =
       ∑ g : Poly P, S.place .BB' ((w.marginalPoly .bob W).effect g) *
         S.place .AB'' ((S.pointMeasExp .alice W u).effect
           (dotProduct (decodeFq g) (indicatorVec u))) := by
-  classical
   simp only [tildeM, S.placeSide_bob_finset_sum, Finset.mul_sum]
   rw [Finset.sum_comm]
   apply Finset.sum_congr rfl
@@ -117,25 +109,23 @@ calculation, still without imposing an encoding restriction. -/
 theorem tildeM_consistencyDefect_eq_one_sub_decoded_overlap
     {P : AdmissibleParams} {epsilon deltaG : ℝ} {S : ProjectiveSetting P epsilon}
     (w : GlobalPairWitness S deltaG) (W : PauliKind) :
-    consistencyDefect (uniformDistribution (Fin P.m → PauliScalar P))
+    consistencyDefect (uniformDistribution (MIPStarRE.QPBT.PauliPoint P))
       (fun u a => S.placePlayer .alice ((S.pointMeas .alice W u).effect a))
       (fun u a => S.placeSide .bob (tildeM w .bob W (indicatorVec u) a)) S.psiHat =
-      1 - avgOver (uniformDistribution (Fin P.m → PauliScalar P)) (fun u =>
+      1 - avgOver (uniformDistribution (MIPStarRE.QPBT.PauliPoint P))  fun u =>
         ∑ g : Poly P, stateQForm S.psiHat
           (S.place .BB' ((w.marginalPoly .bob W).effect g) *
             S.place .AB'' ((S.pointMeasExp .alice W u).effect
-              (dotProduct (decodeFq g) (indicatorVec u))))) := by
-  classical
-  let point := fun u : Fin P.m → PauliScalar P =>
+              (dotProduct (decodeFq g) (indicatorVec u))))  := by
+  let point := fun u : MIPStarRE.QPBT.PauliPoint P =>
     S.placedMeasurement .AA' (leftPlacedMeasurement (S.pointMeas .alice W u))
-  let pulled : (Fin P.m → PauliScalar P) → Measurement (PauliScalar P)
-      (SixReg P S.toStrategy.ιA S.toStrategy.ιB) := fun u =>
+  let pulled  := fun u =>
     Measurement.ofSumEqOne
       (fun a => S.placeSide .bob (tildeM w .bob W (indicatorVec u) a))
-      (fun a => by
+       fun a => by
         apply ProjectiveSetting.reindexOp_nonneg
         exact kronecker_nonneg Matrix.PosSemidef.one.nonneg
-          (tildeM_isProj w .bob W (indicatorVec u) a).nonneg)
+          (tildeM_isProj w .bob W (indicatorVec u) a).nonneg 
       (by
         rw [← S.placeSide_bob_finset_sum, sum_tildeM_eq_one]
         change reindexOp (sixRegExtractionEquiv P S.toStrategy.ιA S.toStrategy.ιB)
@@ -145,12 +135,12 @@ theorem tildeM_consistencyDefect_eq_one_sub_decoded_overlap
         ext row col
         simp [reindexOp, Matrix.one_apply])
   have h := consistencyDefect_eq_one_sub_overlap
-    (uniformDistribution (Fin P.m → PauliScalar P)) point pulled S.psiHat
+    (uniformDistribution (MIPStarRE.QPBT.PauliPoint P)) point pulled S.psiHat
     (uniformDistribution_isProbability _) S.psiHat_norm
-  change consistencyDefect _ _ _ S.psiHat = 1 - avgOver _ (fun u =>
+  change consistencyDefect _ _ _ S.psiHat = 1 - avgOver _  fun u =>
     ∑ a : PauliScalar P, stateQForm S.psiHat
       (S.placePlayer .alice ((S.pointMeas .alice W u).effect a) *
-        S.placeSide .bob (tildeM w .bob W (indicatorVec u) a))) at h
+        S.placeSide .bob (tildeM w .bob W (indicatorVec u) a))  at h
   refine h.trans ?_
   congr 1
   apply avgOver_congr
@@ -165,17 +155,16 @@ for the fourth line of paper lines 1483--1492. No mass estimate is assumed. -/
 theorem marginal_eval_overlap_le_decoded_add_nonencoding
     {P : AdmissibleParams} {epsilon deltaG : ℝ} {S : ProjectiveSetting P epsilon}
     (w : GlobalPairWitness S deltaG) (W : PauliKind)
-    (u : Fin P.m → PauliScalar P) :
-    (∑ g : Poly P, stateQForm S.psiHat
+    (u : MIPStarRE.QPBT.PauliPoint P) :
+     ∑ g : Poly P, stateQForm S.psiHat
       (S.place .BB' ((w.marginalPoly .bob W).effect g) *
-        S.place .AB'' ((S.pointMeasExp .alice W u).effect (MvPolynomial.eval u g.1)))) ≤
-      (∑ g : Poly P, stateQForm S.psiHat
+        S.place .AB'' ((S.pointMeasExp .alice W u).effect (MvPolynomial.eval u g.1)))  ≤
+       ∑ g : Poly P, stateQForm S.psiHat
         (S.place .BB' ((w.marginalPoly .bob W).effect g) *
           S.place .AB'' ((S.pointMeasExp .alice W u).effect
-            (dotProduct (decodeFq g) (indicatorVec u))))) +
-      ∑ g ∈ Finset.univ.filter (fun g : Poly P => ¬ IsEncoding g),
+            (dotProduct (decodeFq g) (indicatorVec u))))  +
+      ∑ g ∈ Finset.univ.filter  fun g : Poly P => ¬ IsEncoding g ,
         stateQForm S.psiHat (S.place .BB' ((w.marginalPoly .bob W).effect g)) := by
-  classical
   have hpos (g : Poly P) (a : PauliScalar P) :
       0 ≤ stateQForm S.psiHat
         (S.place .BB' ((w.marginalPoly .bob W).effect g) *
@@ -183,12 +172,12 @@ theorem marginal_eval_overlap_le_decoded_add_nonencoding
     stateQForm_nonneg _ (S.place_mul_place_nonneg .BB' .AB'' (by trivial)
       ((w.marginalPoly .bob W).pos g) ((S.pointMeasExp .alice W u).pos a))
   have hsum (g : Poly P) :
-      (∑ a : PauliScalar P, stateQForm S.psiHat
+       ∑ a : PauliScalar P, stateQForm S.psiHat
         (S.place .BB' ((w.marginalPoly .bob W).effect g) *
-          S.place .AB'' ((S.pointMeasExp .alice W u).effect a))) =
+          S.place .AB'' ((S.pointMeasExp .alice W u).effect a))  =
         stateQForm S.psiHat (S.place .BB' ((w.marginalPoly .bob W).effect g)) := by
-    have hc : (∑ a : PauliScalar P,
-        S.place .AB'' ((S.pointMeasExp .alice W u).effect a)) = 1 :=
+    have hc :  ∑ a : PauliScalar P,
+        S.place .AB'' ((S.pointMeasExp .alice W u).effect a)  = 1 :=
       (S.placedMeasurement .AB'' (S.pointMeasExp .alice W u)).sum_eq_one
     rw [← stateQForm_finset_sum, ← Finset.mul_sum, hc, mul_one]
   rw [Finset.sum_filter, ← Finset.sum_add_distrib]

@@ -31,6 +31,8 @@ answer sum in the source statement.  The paper source is
 
 @[expose] public section
 
+variable (P : MIPStarRE.QPBT.AdmissibleParams)
+
 namespace MIPStarRE.QPBT
 
 open MIPStarRE.LDT hiding Measurement
@@ -43,14 +45,14 @@ noncomputable section
 /-- Identify the direct extended game's scalar field with the Pauli scalar
 field.  Both are selected by `fixedFieldModel`; only their proof argument for
 admissibility differs. -/
-noncomputable def extendedDirectScalarEquiv (P : AdmissibleParams) :
+def extendedDirectScalarEquiv :
     DirectScalarQ P.extendedDirectLd ≃+* PauliScalar P := by
   have h : P.extendedDirectLd.hq = P.hq := Subsingleton.elim _ _
   cases h
   exact RingEquiv.refl _
 
 /-- Transport an extended direct point into the canonical Pauli scalar field. -/
-def directPointToPauli (P : AdmissibleParams)
+def directPointToPauli
     (u : Fin P.extendedDirectLd.m -> DirectScalarQ P.extendedDirectLd) :
     Fin (2 * P.m + 2) -> PauliScalar P :=
   fun i => extendedDirectScalarEquiv P (u i)
@@ -137,22 +139,22 @@ structure CombinedLinesWitness {P : AdmissibleParams} {ε δQ : ℝ}
 /-! ## The subline distribution -/
 
 /-- A tuple consisting of an extended line and its projected X and Z lines. -/
-abbrev SubLineTriple (P : AdmissibleParams) :=
+abbrev SubLineTriple :=
   DirectLineDesc P.extendedDirectLd ×
-    (LineDesc P.toLdParams × LineDesc P.toLdParams)
+     LineDesc P.toLdParams × LineDesc P.toLdParams 
 
 /-- An extended line tuple together with a point sampled uniformly on it. -/
-abbrev SubLinePointSample (P : AdmissibleParams) :=
+abbrev SubLinePointSample :=
   SubLineTriple P ×
     (Fin P.extendedDirectLd.m -> DirectScalarQ P.extendedDirectLd)
 
 /-- The shared restricted line kind and two coordinate indices in one mixture
 component of the subline law. -/
-abbrev SubLineComponent (P : AdmissibleParams) :=
-  LineKind × (Fin P.m × Fin P.m)
+abbrev SubLineComponent :=
+  LineKind ×  Fin P.m × Fin P.m 
 
 /-- Select the restricted line-point distribution of a given kind and index. -/
-noncomputable def restrictedLinePointDist (P : AdmissibleParams)
+def restrictedLinePointDist
     (kind : LineKind) (i : Fin P.m) :
     Distribution (LineDesc P.toLdParams × (Fin P.m -> PauliScalar P)) :=
   match kind with
@@ -161,7 +163,7 @@ noncomputable def restrictedLinePointDist (P : AdmissibleParams)
 
 /-- Sample a subline tuple and then a uniform affine parameter on its
 extended line. -/
-noncomputable def subLinePointDist (P : AdmissibleParams)
+def subLinePointDist
     (D : Distribution (SubLineTriple P)) :
     Distribution (SubLinePointSample P) :=
   (Distribution.prod D
@@ -181,7 +183,7 @@ def subLineZProjection {P : AdmissibleParams} (sample : SubLinePointSample P) :
   (sample.1.2, projZ (directPointToPauli P sample.2))
 
 /-- The X-point marginal associated with one restricted product component. -/
-noncomputable def subLineXComponentDist (P : AdmissibleParams)
+def subLineXComponentDist
     (component : SubLineComponent P) :
     Distribution
       ((LineDesc P.toLdParams × LineDesc P.toLdParams) ×
@@ -192,7 +194,7 @@ noncomputable def subLineXComponentDist (P : AdmissibleParams)
       fun sample => ((sample.1.1, sample.2), sample.1.2)
 
 /-- The Z-point marginal associated with one restricted product component. -/
-noncomputable def subLineZComponentDist (P : AdmissibleParams)
+def subLineZComponentDist
     (component : SubLineComponent P) :
     Distribution
       ((LineDesc P.toLdParams × LineDesc P.toLdParams) ×
@@ -267,8 +269,8 @@ structure ExtendedLinesWitness {P : AdmissibleParams} {ε δQ : ℝ}
     (directLinePointDist P.extendedDirectLd)
     (fun sample answer => S.place .AA'
       (((Qline .alice sample.1).postprocess
-        (fun f => (directEvalOpt sample.1 sample.2 f).map
-          (extendedDirectScalarEquiv P))).effect answer))
+         fun f => (directEvalOpt sample.1 sample.2 f).map
+          (extendedDirectScalarEquiv P) ).effect answer))
     (fun sample answer => S.place .BA''
       (((points.Q .bob
         (projX (directPointToPauli P sample.2))
@@ -282,8 +284,8 @@ structure ExtendedLinesWitness {P : AdmissibleParams} {ε δQ : ℝ}
     (directLinePointDist P.extendedDirectLd)
     (fun sample answer => S.place .BB'
       (((Qline .bob sample.1).postprocess
-        (fun f => (directEvalOpt sample.1 sample.2 f).map
-          (extendedDirectScalarEquiv P))).effect answer))
+         fun f => (directEvalOpt sample.1 sample.2 f).map
+          (extendedDirectScalarEquiv P) ).effect answer))
     (fun sample answer => S.place .AB''
       (((points.Q .alice
         (projX (directPointToPauli P sample.2))

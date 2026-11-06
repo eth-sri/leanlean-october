@@ -37,17 +37,16 @@ theorem collision_bound_of_fiber_averages {X Y₁ Y₂ R₂ Γ₂ : Type*}
     (eval₂ : Γ₂ → Y₂ → R₂) (eta : ℝ)
     (hbound : ∀ fixed : X × Y₁, ∀ first second : Γ₂, first ≠ second →
       avgOver dist (fun sample => if sample.1 = fixed then
-        (if eval₂ first sample.2 = eval₂ second sample.2 then 1 else 0) else 0) ≤
-      eta * avgOver dist (fun sample => if sample.1 = fixed then 1 else 0)) :
+         if eval₂ first sample.2 = eval₂ second sample.2 then 1 else 0  else 0) ≤
+      eta * avgOver dist  fun sample => if sample.1 = fixed then 1 else 0 ) :
     HasConditionalCollisionBound dist eval₂ eta := by
   classical
   intro question point _ first second hne
-  have havg (value : ((X × Y₁) × Y₂) → ℝ) :
-      avgOver dist value = ∑ sample, dist.weight sample * value sample := by
-    exact (dist.sum_univ_eq_sum_support _ (fun sample hout => by
-      rw [dist.outsideSupport sample hout, zero_mul])).symm
+  have havg (value :  (X × Y₁) × Y₂  → ℝ) :
+      avgOver dist value = ∑ sample, dist.weight sample * value sample := (dist.sum_univ_eq_sum_support _  fun sample hout => by
+      rw [dist.outsideSupport sample hout, zero_mul] ).symm
   have hmass : (dist.map Prod.fst).weight (question, point) =
-      avgOver dist (fun sample => if sample.1 = (question, point) then 1 else 0) := by
+      avgOver dist  fun sample => if sample.1 = (question, point) then 1 else 0  := by
     rw [Distribution.map_weight]
     unfold avgOver
     rw [Finset.sum_filter]

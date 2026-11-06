@@ -49,7 +49,7 @@ theorem CombinedPointsWitness.orderedZX_dist_le {P : AdmissibleParams}
     (points : CombinedPointsWitness S δ) (p : Placement) :
     opFamilyDistSq
         (uniformDistribution
-          ((Fin P.m → PauliScalar P) × (Fin P.m → PauliScalar P)))
+          ( MIPStarRE.QPBT.PauliPoint P  ×  MIPStarRE.QPBT.PauliPoint P ))
         (fun xz ab => S.place p ((points.Q p.side xz.1 xz.2).effect ab))
         (fun xz ab => S.place p
           ((S.pointMeasExp p.side .Z xz.2).effect ab.2 *
@@ -58,7 +58,7 @@ theorem CombinedPointsWitness.orderedZX_dist_le {P : AdmissibleParams}
   obtain ⟨q, hpq, hqp⟩ := p.exists_isOpposite
   have htri := opFamilyDistSq_le_of_le_of_le
     (uniformDistribution
-      ((Fin P.m → PauliScalar P) × (Fin P.m → PauliScalar P)))
+      ( MIPStarRE.QPBT.PauliPoint P  ×  MIPStarRE.QPBT.PauliPoint P ))
     (fun xz ab => S.place p ((points.Q p.side xz.1 xz.2).effect ab))
     (fun xz ab => S.place q ((points.Q q.side xz.1 xz.2).effect ab))
     (fun xz ab => S.place p
@@ -77,7 +77,7 @@ theorem CombinedPointsWitness.orderedXZ_dist_le {P : AdmissibleParams}
     (points : CombinedPointsWitness S δ) (p : Placement) :
     opFamilyDistSq
         (uniformDistribution
-          ((Fin P.m → PauliScalar P) × (Fin P.m → PauliScalar P)))
+          ( MIPStarRE.QPBT.PauliPoint P  ×  MIPStarRE.QPBT.PauliPoint P ))
         (fun xz ab => S.place p ((points.Q p.side xz.1 xz.2).effect ab))
         (fun xz ab => S.place p
           ((S.pointMeasExp p.side .X xz.1).effect ab.1 *
@@ -86,7 +86,7 @@ theorem CombinedPointsWitness.orderedXZ_dist_le {P : AdmissibleParams}
   obtain ⟨q, hpq, hqp⟩ := p.exists_isOpposite
   have htri := opFamilyDistSq_le_of_le_of_le
     (uniformDistribution
-      ((Fin P.m → PauliScalar P) × (Fin P.m → PauliScalar P)))
+      ( MIPStarRE.QPBT.PauliPoint P  ×  MIPStarRE.QPBT.PauliPoint P ))
     (fun xz ab => S.place p ((points.Q p.side xz.1 xz.2).effect ab))
     (fun xz ab => S.place q ((points.Q q.side xz.1 xz.2).effect ab))
     (fun xz ab => S.place p

@@ -35,7 +35,7 @@ two operators being compared is required. -/
 theorem norm_sub_projective_mul_sq_le {α ι : Type*} [Fintype α]
     [Fintype ι] [DecidableEq ι] (M : Quantum.Measurement α ι)
     (hM : Measurement.IsProjective M) (a : α) (A D : Op ι)
-    (ψ : EuclideanSpace ℂ ι) :
+    (ψ : MIPStarRE.QPBT.StateVector ι) :
     ‖applyOperatorToState (A - M.effect a * A) ψ‖ ^ 2 ≤
       ‖applyOperatorToState (A - M.effect a * D) ψ‖ ^ 2 := by
   have hidem := (hM a).isIdempotentElem.eq

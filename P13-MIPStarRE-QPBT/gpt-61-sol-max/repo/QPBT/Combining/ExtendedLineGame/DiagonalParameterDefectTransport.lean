@@ -60,12 +60,12 @@ theorem diagonal_parameter_evaluated_coefficient_defect_eq
     (uniformDistribution (DirectScalarQ P.extendedDirectLd))
   have heffect (side : PlayerSide) (sample : DirectLdSpace P.extendedDirectLd)
       (parameter value : DirectScalarQ P.extendedDirectLd) :
-      ((((lines.Qline side (directDLineDescOf P.extendedDirectLd sample)).postprocess
+       (((lines.Qline side (directDLineDescOf P.extendedDirectLd sample)).postprocess
           (diagonalRead P)).postprocess
-            (fun coefficients => evalCoefficient coefficients parameter)).effect value) =
-        (((answerMeasurement lines side
+             fun coefficients => evalCoefficient coefficients parameter ).effect value  =
+         ((answerMeasurement lines side
           (.dline, directLdMap P.extendedDirectLd .dline sample)).postprocess
-            (fun answer => evalCoefficient (readDiagonal answer) parameter)).effect value) := by
+             fun answer => evalCoefficient (readDiagonal answer) parameter ).effect value  := by
     unfold answerMeasurement
     rw [diagonal_description_canonical]
     rw [MIPStarRE.Quantum.Measurement.postprocess_comp,
@@ -77,11 +77,11 @@ theorem diagonal_parameter_evaluated_coefficient_defect_eq
           (fun sample value => heteroKron
             (((answerMeasurement lines .alice
               (.dline, directLdMap P.extendedDirectLd .dline sample.1)).postprocess
-                (fun answer => evalCoefficient (readDiagonal answer) sample.2)).effect value) 1)
+                 fun answer => evalCoefficient (readDiagonal answer) sample.2 ).effect value) 1)
           (fun sample value => heteroKron 1
             (((answerMeasurement lines .bob
               (.dline, directLdMap P.extendedDirectLd .dline sample.1)).postprocess
-                (fun answer => evalCoefficient (readDiagonal answer) sample.2)).effect value))
+                 fun answer => evalCoefficient (readDiagonal answer) sample.2 ).effect value))
           (pairState setting) := by
     unfold diagonalParameterEvaluatedCoefficientDefect consistencyDefect
     dsimp only [μ]
@@ -101,11 +101,11 @@ theorem diagonal_parameter_evaluated_coefficient_defect_eq
       (fun sample value => heteroKron
         ((((strategy lines).A
           (.dline, directLdMap P.extendedDirectLd .dline sample.1)).postprocess
-            (fun answer => evalCoefficient (readDiagonal answer) sample.2)).effect value) 1)
+             fun answer => evalCoefficient (readDiagonal answer) sample.2 ).effect value) 1)
       (fun sample value => heteroKron 1
         ((((strategy lines).B
           (.dline, directLdMap P.extendedDirectLd .dline sample.1)).postprocess
-            (fun answer => evalCoefficient (readDiagonal answer) sample.2)).effect value))
+             fun answer => evalCoefficient (readDiagonal answer) sample.2 ).effect value))
       (strategy lines).ψ = diagonalParameterEvaluationDefect lines
   rw [WinImplications.consistencyDefect_postprocess_eq_mismatch]
   unfold diagonalParameterEvaluationDefect parameterEvalDefect

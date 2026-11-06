@@ -22,7 +22,7 @@ The source-facing nodes are blueprint `def:lin-reg`, `def:EPR`,
 
 @[expose] public section
 
-open scoped BigOperators Matrix ComplexOrder
+open scoped BigOperators Matrix ComplexOrder Classical
 
 namespace MIPStarRE.QPBT
 
@@ -53,13 +53,7 @@ noncomputable def phaseSign (t : ZMod 2) : ℂ :=
 /-- Formalization-only expansion of a sum over the binary field into its two
 terms. -/
 theorem sum_zmod_two {M : Type*} [AddCommMonoid M] (f : ZMod 2 → M) :
-    ∑ b, f b = f 0 + f 1 := by
-  calc
-    ∑ b, f b = ∑ i : Fin 2, f (ZMod.finEquiv 2 i) := by
-      exact Fintype.sum_equiv (ZMod.finEquiv 2).symm f
-        (fun i : Fin 2 => f (ZMod.finEquiv 2 i)) (fun _ => rfl)
-    _ = f (ZMod.finEquiv 2 0) + f (ZMod.finEquiv 2 1) := Fin.sum_univ_two _
-    _ = f 0 + f 1 := by rfl
+    ∑ b, f b = f 0 + f 1 := by solve_by_elim (maxDepth := 6) [Fin.sum_univ_two, Fintype.sum_equiv]
 
 /-- Formalization-only case split for the binary field: every element is zero
 or one. -/
@@ -67,8 +61,8 @@ theorem zmod_two_eq_zero_or_one (b : ZMod 2) : b = 0 ∨ b = 1 := by
   by_cases hb : b = 0
   · exact Or.inl hb
   · right
-    have hval_ne : b.val ≠ 0 := (ZMod.val_ne_zero b).mpr hb
-    have hval_lt : b.val < 2 := ZMod.val_lt b
+    have hval_ne  := (ZMod.val_ne_zero b).mpr hb
+    have hval_lt  := ZMod.val_lt b
     have hval : b.val = 1 := by omega
     exact (ZMod.val_eq_one (by omega) b).mp hval
 
@@ -81,8 +75,8 @@ theorem phaseSign_eq_ffChar (t : ZMod 2) :
     rw [phaseSign, if_pos rfl]
     exact (ZMod.stdAddChar (N := 2)).map_zero_eq_one.symm
   · have hval : t.val = 1 := by
-      have hval_ne : t.val ≠ 0 := (ZMod.val_ne_zero t).mpr ht
-      have hval_lt : t.val < 2 := ZMod.val_lt t
+      have hval_ne  := (ZMod.val_ne_zero t).mpr ht
+      have hval_lt  := ZMod.val_lt t
       omega
     have ht_one : t = 1 := (ZMod.val_eq_one (by omega) t).mp hval
     subst t
@@ -105,23 +99,17 @@ theorem phaseSign_add (s t : ZMod 2) :
 used by the observable expansions of blueprint
 `def:generalized-pauli`, paper origin
 `references/qpbt-paper/04_preliminaries.tex:1052-1096`. -/
-theorem star_phaseSign (t : ZMod 2) : star (phaseSign t) = phaseSign t := by
-  by_cases ht : t = 0 <;> simp [phaseSign, ht]
+theorem star_phaseSign (t : ZMod 2) : star (phaseSign t) = phaseSign t := by aesop (add simp [phaseSign])
 
 /-- The binary sign character squares to one, since the binary field has
 characteristic two. This is the eigenvalue property used by the observables of
 blueprint `def:generalized-pauli`, paper origin
 `references/qpbt-paper/04_preliminaries.tex:1052-1096`. -/
-theorem phaseSign_mul_self (t : ZMod 2) : phaseSign t * phaseSign t = 1 := by
-  rw [← phaseSign_add]
-  have hzero : t + t = 0 := by
-    rcases zmod_two_eq_zero_or_one t with ht | ht <;> subst ht <;> decide
-  rw [hzero, phaseSign, if_pos rfl]
+theorem phaseSign_mul_self (t : ZMod 2) : phaseSign t * phaseSign t = 1 := by simp_all [phaseSign]
 
 /-- The binary sign character sends sums to products. -/
 theorem phaseSign_sum {ι : Type*} [Fintype ι] (f : ι → ZMod 2) :
     phaseSign (∑ i, f i) = ∏ i, phaseSign (f i) := by
-  classical
   induction (Finset.univ : Finset ι) using Finset.induction_on with
   | empty => simp [phaseSign]
   | @insert i s hi ih =>
@@ -171,7 +159,7 @@ omit [Field K] [DecidableEq K] [Algebra (ZMod 2) K] in
 private theorem pauliNormalizer_mul_self {ι : Type*} [Fintype ι]
     [DecidableEq ι] :
     (∏ _i : ι, (Real.sqrt (Fintype.card K : ℝ) : ℂ)⁻¹) *
-        (∏ _i : ι, (Real.sqrt (Fintype.card K : ℝ) : ℂ)⁻¹) =
+         ∏ _i : ι, (Real.sqrt (Fintype.card K : ℝ) : ℂ)⁻¹  =
       (Fintype.card (ι → K) : ℂ)⁻¹ := by
   simp only [Finset.prod_const, Finset.card_univ]
   rw [← mul_pow, inv_sqrt_natCast_mul_self, inv_pow, Fintype.card_fun]
@@ -195,7 +183,7 @@ private theorem add_add_eq_zero_iff_eq_add {ι : Type*} (a x y : ι → K) :
   constructor
   · intro h
     funext i
-    have hi : a i + (x i + y i) = 0 := by
+    have hi  := by
       simpa only [Pi.add_apply, Pi.zero_apply] using congrFun h i
     have hax : a i + x i = y i := (CharTwo.add_eq_zero).mp (by
       simpa only [add_assoc] using hi)
@@ -205,11 +193,11 @@ private theorem add_add_eq_zero_iff_eq_add {ι : Type*} (a x y : ι → K) :
       _ = y i + a i := add_comm _ _
   · intro h
     funext i
-    have hxi : x i = y i + a i := by
+    have hxi  := by
       simpa only [Pi.add_apply] using congrFun h i
     simp only [Pi.add_apply, Pi.zero_apply, hxi]
     calc
-      a i + (y i + a i + y i) = (a i + a i) + (y i + y i) := by abel
+      a i + (y i + a i + y i) =  a i + a i  + (y i + y i) := by abel
       _ = 0 := by rw [CharTwo.add_self_eq_zero, CharTwo.add_self_eq_zero, zero_add]
 
 private theorem sum_phaseSign_dotProduct {ι : Type*} [Fintype ι]
@@ -225,7 +213,7 @@ private theorem sum_phaseSign_dotProduct {ι : Type*} [Fintype ι]
       rfl
     _ = if v = 0 then (Fintype.card (ι → K) : ℂ) else 0 := by
       simpa only [dotProduct] using
-        (sum_ffChar_sum_mul (p := 2) (F := K) (ι := ι) v)
+         sum_ffChar_sum_mul (p := 2) (F := K) (ι := ι) v 
 
 /--
 The shift operator `τ^X(a)`.  Blueprint `def:generalized-pauli`; paper origin
@@ -273,12 +261,7 @@ theorem binaryTauShift_transpose :
 /-- The binary phase Pauli operator is symmetric.  This formalization-only
 identity supports transport across an EPR state. -/
 theorem binaryTauPhase_transpose :
-    (tauPhase (K := ZMod 2) 1)ᵀ = tauPhase (K := ZMod 2) 1 := by
-  ext i j
-  rcases zmod_two_eq_zero_or_one i with rfl | rfl <;>
-    rcases zmod_two_eq_zero_or_one j with rfl | rfl <;>
-      norm_num [tauPhase, phaseSign, Matrix.transpose_apply,
-        Algebra.trace_self_apply]
+    (tauPhase (K := ZMod 2) 1)ᵀ = tauPhase (K := ZMod 2) 1 := by aesop (add simp [tauPhase, phaseSign])
 
 /-- The binary shift Pauli operator squares to the identity.  This is a
 formalization-only specialization of the generalized Pauli definition. -/
@@ -297,10 +280,7 @@ theorem binaryTauPhase_sq :
     tauPhase (K := ZMod 2) 1 * tauPhase (K := ZMod 2) 1 = 1 := by
   ext i j
   simp only [Matrix.mul_apply]
-  rw [sum_zmod_two]
-  rcases zmod_two_eq_zero_or_one i with rfl | rfl <;>
-    rcases zmod_two_eq_zero_or_one j with rfl | rfl <;>
-      norm_num [tauPhase, phaseSign, Matrix.one_apply, Algebra.trace_self_apply]
+  aesop (add simp [tauPhase, phaseSign])
 
 /-- The binary shift and phase Pauli operators anticommute.  This is a
 formalization-only specialization of their generalized definitions. -/
@@ -309,8 +289,8 @@ theorem binaryTauShift_mul_tauPhase :
       -(tauPhase (K := ZMod 2) 1 * tauShift (K := ZMod 2) 1) := by
   ext i j
   change
-    (∑ k, tauShift (K := ZMod 2) 1 i k * tauPhase (K := ZMod 2) 1 k j) =
-      -(∑ k, tauPhase (K := ZMod 2) 1 i k * tauShift (K := ZMod 2) 1 k j)
+     ∑ k, tauShift (K := ZMod 2) 1 i k * tauPhase (K := ZMod 2) 1 k j  =
+      - ∑ k, tauPhase (K := ZMod 2) 1 i k * tauShift (K := ZMod 2) 1 k j 
   rw [sum_zmod_two, sum_zmod_two]
   rcases zmod_two_eq_zero_or_one i with rfl | rfl <;>
     rcases zmod_two_eq_zero_or_one j with rfl | rfl <;>
@@ -342,7 +322,7 @@ element `τ^W_e` in blueprint `def:generalized-pauli`; paper
 -/
 noncomputable def pauliProj {ι : Type*} [Fintype ι] [DecidableEq ι]
     (W : PauliKind) (e : ι → K) : Op (ι → K) :=
-  Matrix.vecMulVec (pauliVec W e) (fun x => star (pauliVec W e x))
+  Matrix.vecMulVec (pauliVec W e)  fun x => star (pauliVec W e x) 
 
 private theorem pauliProj_X_apply {ι : Type*} [Fintype ι] [DecidableEq ι]
     (e x y : ι → K) :
@@ -402,18 +382,17 @@ theorem pauliProj_mul_pauliProj {ι : Type*} [Fintype ι] [DecidableEq ι]
     (W : PauliKind) (e f : ι → K) :
     pauliProj W e * pauliProj W f =
       if e = f then pauliProj W e else 0 := by
-  classical
   ext x z
   cases W with
   | X =>
       rw [Matrix.mul_apply]
       simp_rw [pauliProj_X_apply]
       have hsum :
-          (∑ y : ι → K,
-              ((Fintype.card (ι → K) : ℂ)⁻¹ *
-                  phaseSign (binTrace K (dotProduct e (x + y)))) *
+           ∑ y : ι → K,
+               (Fintype.card (ι → K) : ℂ)⁻¹ *
+                  phaseSign (binTrace K (dotProduct e (x + y)))  *
                 ((Fintype.card (ι → K) : ℂ)⁻¹ *
-                  phaseSign (binTrace K (dotProduct f (y + z))))) =
+                  phaseSign (binTrace K (dotProduct f (y + z))))  =
             (Fintype.card (ι → K) : ℂ)⁻¹ *
                 (Fintype.card (ι → K) : ℂ)⁻¹ *
               phaseSign (binTrace K (dotProduct e x)) *
@@ -454,7 +433,7 @@ theorem pauliProj_mul_pauliProj {ι : Type*} [Fintype ι] [DecidableEq ι]
       by_cases hef : e = f
       · subst f
         simp [pauliProj, Matrix.mul_apply, Matrix.vecMulVec_apply, hz]
-      · have hfe : f ≠ e := Ne.symm hef
+      · have hfe  := Ne.symm hef
         simp [pauliProj, Matrix.mul_apply, Matrix.vecMulVec_apply, hz, hef, hfe]
 
 /-- A compact operator-valued form of a generalized Pauli observable from
@@ -474,10 +453,10 @@ The EPR vector on a finite label space.  Blueprint `def:EPR`; paper origin
 `references/qpbt-paper/04_preliminaries.tex:946-955`.
 -/
 noncomputable def eprState (V : Type*) [Fintype V] [DecidableEq V] [Nonempty V] :
-    EuclideanSpace ℂ (V × V) :=
+    MIPStarRE.QPBT.StateVector (V × V) :=
   (EuclideanSpace.equiv (V × V) ℂ).symm
-    (fun p : V × V =>
-      if p.1 = p.2 then (Real.sqrt (Fintype.card V : ℝ) : ℂ)⁻¹ else 0)
+     fun p : V × V =>
+      if p.1 = p.2 then (Real.sqrt (Fintype.card V : ℝ) : ℂ)⁻¹ else 0 
 
 /-- The EPR vector is normalized on a nonempty finite carrier; see
 `def:EPR`, `references/qpbt-paper/04_preliminaries.tex:946-955`. -/
@@ -486,8 +465,8 @@ theorem eprState_norm (V : Type*) [Fintype V] [DecidableEq V] [Nonempty V] :
   apply (sq_eq_sq₀ (norm_nonneg _) zero_le_one).mp
   rw [EuclideanSpace.norm_sq_eq]
   change
-    (∑ p : V × V,
-      ‖if p.1 = p.2 then (Real.sqrt (Fintype.card V : ℝ) : ℂ)⁻¹ else 0‖ ^ 2) =
+     ∑ p : V × V,
+      ‖if p.1 = p.2 then (Real.sqrt (Fintype.card V : ℝ) : ℂ)⁻¹ else 0‖ ^ 2  =
       1 ^ 2
   rw [Fintype.sum_prod_type]
   have hcard : 0 < (Fintype.card V : ℝ) := by positivity
@@ -502,12 +481,7 @@ theorem eprState_norm (V : Type*) [Fintype V] [DecidableEq V] [Nonempty V] :
       · intro y _ hy
         simp [hy.symm]
       · simp
-    _ = 1 := by
-      rw [Finset.sum_const, nsmul_eq_mul]
-      simp only [norm_inv, Complex.norm_real, Real.norm_eq_abs,
-        abs_of_nonneg (Real.sqrt_nonneg _)]
-      rw [inv_pow, Real.sq_sqrt hcard.le]
-      norm_num [hcard.ne']
+    _ = 1 := by bound
     _ = 1 ^ 2 := by norm_num
 
 /--
@@ -545,29 +519,16 @@ theorem tauObservable_eq_sum_pauliProj {ι : Type*} [Fintype ι] [DecidableEq ι
           (funext_iff (f := x) (g := y + a)).symm
       simp only [hsupport]
       have hsum :
-          (∑ e : ι → K,
+           ∑ e : ι → K,
             phaseSign (binTrace K (dotProduct a e)) *
               ((Fintype.card (ι → K) : ℂ)⁻¹ *
-                phaseSign (binTrace K (dotProduct e (x + y))))) =
+                phaseSign (binTrace K (dotProduct e (x + y))))  =
             (Fintype.card (ι → K) : ℂ)⁻¹ *
               ∑ e : ι → K,
-                phaseSign (binTrace K (dotProduct e (a + (x + y)))) := by
-        rw [Finset.mul_sum]
-        apply Finset.sum_congr rfl
-        intro e _
-        calc
-          phaseSign (binTrace K (dotProduct a e)) *
-                ((Fintype.card (ι → K) : ℂ)⁻¹ *
-                  phaseSign (binTrace K (dotProduct e (x + y)))) =
-              (Fintype.card (ι → K) : ℂ)⁻¹ *
-                (phaseSign (binTrace K (dotProduct e a)) *
-                  phaseSign (binTrace K (dotProduct e (x + y)))) := by
-            rw [dotProduct_comm a e]
-            ring
-          _ = _ := by rw [phaseSign_binTrace_dotProduct_add]
+                phaseSign (binTrace K (dotProduct e (a + (x + y)))) := by grind [Finset.sum_congr, Finset.mul_sum, dotProduct_comm, phaseSign_binTrace_dotProduct_add]
       rw [hsum, sum_phaseSign_dotProduct]
       by_cases hsupport : x = y + a
-      · have hzero : a + (x + y) = 0 :=
+      · have hzero  :=
           (add_add_eq_zero_iff_eq_add a x y).mpr hsupport
         rw [if_pos hsupport, if_pos hzero]
         exact (inv_mul_cancel₀
@@ -611,23 +572,18 @@ theorem pauliProj_eq_avg_tauObservable {ι : Type*} [Fintype ι] [DecidableEq ι
         if x = e then 1 else 0 := by
     rw [← Finset.mul_sum]
     rw [show
-      (∑ i : ι → K,
+       ∑ i : ι → K,
         phaseSign (binTrace K (dotProduct i e)) *
-          phaseSign (binTrace K (dotProduct i x))) =
+          phaseSign (binTrace K (dotProduct i x))  =
         ∑ i : ι → K, phaseSign (binTrace K (dotProduct i (e + x))) by
           apply Finset.sum_congr rfl
           intro i _
           exact phaseSign_binTrace_dotProduct_add i e x]
     rw [sum_phaseSign_dotProduct]
-    have hzero : e + x = 0 ↔ x = e := by
+    have hzero  := by
       simpa using
-        (add_add_eq_zero_iff_eq_add (K := K) e x (0 : ι → K))
-    by_cases hx : x = e
-    · rw [if_pos hx, if_pos (hzero.mpr hx)]
-      exact inv_mul_cancel₀
-        (show (Fintype.card (ι → K) : ℂ) ≠ 0 by positivity)
-    · rw [if_neg hx, if_neg (fun h => hx (hzero.mp h))]
-      simp
+         add_add_eq_zero_iff_eq_add (K := K) e x (0 : ι → K) 
+    simp_all
   simp_rw [tauObservable_eq_sum_pauliProj]
   simp_rw [Finset.smul_sum, smul_smul]
   rw [Finset.sum_comm]
@@ -640,7 +596,7 @@ omit [Field K] [Fintype K] [Algebra (ZMod 2) K] in
 equality of the two tuples. -/
 private theorem prod_indicator_eq_one_apply {ι : Type*} [Fintype ι]
     (x y : ι → K) :
-    (∏ _i : ι, (if x _i = y _i then (1 : ℂ) else 0)) = if x = y then 1 else 0 := by
+    (∏ _i : ι,  if x _i = y _i then (1 : ℂ) else 0 ) = if x = y then 1 else 0 := by
   by_cases h : x = y
   · subst h
     simp
@@ -667,7 +623,7 @@ effects of a complete measurement.  This is the Fourier expansion
 label, blueprint `lem:pauli-observable-expansion`, paper
 `references/qpbt-paper/04_preliminaries.tex:1151-1161`. -/
 theorem sum_pauliProj_eq_one {ι : Type*} [Fintype ι] [DecidableEq ι] (W : PauliKind) :
-    (∑ e : ι → K, pauliProj W e) = 1 := by
+     ∑ e : ι → K, pauliProj W e  = 1 := by
   have h := tauObservable_eq_sum_pauliProj (K := K) W (0 : ι → K)
   rw [tauObservable_zero] at h
   rw [h]
@@ -681,8 +637,8 @@ theorem sum_pauliProj_eq_one {ι : Type*} [Fintype ι] [DecidableEq ι] (W : Pau
 outer product of the normalized Pauli eigenvector with itself. -/
 theorem posSemidef_pauliProj {ι : Type*} [Fintype ι] [DecidableEq ι]
     (W : PauliKind) (e : ι → K) : (pauliProj W e).PosSemidef := by
-  set A : Matrix Unit (ι → K) ℂ :=
-    Matrix.of (fun (_ : Unit) (x : ι → K) => star (pauliVec W e x)) with hA
+  set A : MIPStarRE.QPBT.CMatrix Unit (ι → K) :=
+    Matrix.of  fun (_ : Unit) (x : ι → K) => star (pauliVec W e x)  with hA
   have h : pauliProj W e = Aᴴ * A := by
     ext x y
     rw [Matrix.mul_apply]

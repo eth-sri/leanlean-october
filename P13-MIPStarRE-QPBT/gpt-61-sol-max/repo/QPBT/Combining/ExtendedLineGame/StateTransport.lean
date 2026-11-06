@@ -42,28 +42,30 @@ namespace ExtendedLineGame
 
 variable {P : AdmissibleParams} {epsilon : Real}
 
+variable (setting : ProjectiveSetting P epsilon)
+
 /-- Regroup the six registers as `(AA', BA'')` and the unused pair `(B', B'')`.
 This is the first opposite-placement partition of `eq:def-psihat`. -/
-def aaBaRegrouping (setting : ProjectiveSetting P epsilon) :
+def aaBaRegrouping  :
     SixReg P setting.toStrategy.ιA setting.toStrategy.ιB ≃
       (setting.ExpandedLocalSpace .alice × setting.ExpandedLocalSpace .bob) ×
-        (PauliRegister P × PauliRegister P) :=
+         PauliRegister P × PauliRegister P  :=
   (aaBaBipartition P setting.toStrategy.ιA setting.toStrategy.ιB).trans
     (Equiv.prodAssoc _ _ _).symm
 
 /-- Regroup the six registers as `(AB'', BB')` and the unused pair `(A', A'')`.
 This is the second opposite-placement partition of `eq:def-psihat`. -/
-def abBbRegrouping (setting : ProjectiveSetting P epsilon) :
+def abBbRegrouping  :
     SixReg P setting.toStrategy.ιA setting.toStrategy.ιB ≃
       (setting.ExpandedLocalSpace .alice × setting.ExpandedLocalSpace .bob) ×
-        (PauliRegister P × PauliRegister P) :=
+         PauliRegister P × PauliRegister P  :=
   (abBbBipartition P setting.toStrategy.ιA setting.toStrategy.ιB).trans
     (Equiv.prodAssoc _ _ _).symm
 
 /-- In the `AA'`--`BA''` grouping, the expanded state is `pairState` tensored
 with the unused EPR pair. This is a coordinate consequence of `eq:def-psihat`,
 not an assumption on the strategy or its measurement effects. -/
-theorem reindexState_aaBaRegrouping_psiHat (setting : ProjectiveSetting P epsilon) :
+theorem reindexState_aaBaRegrouping_psiHat  :
     reindexState (aaBaRegrouping setting) setting.psiHat =
       vecTensor (pairState setting) (eprState (PauliRegister P)) := by
   ext p
@@ -72,7 +74,7 @@ theorem reindexState_aaBaRegrouping_psiHat (setting : ProjectiveSetting P epsilo
 /-- The `AB''`--`BB'` grouping has the same two-player state because an EPR
 pair is invariant under exchanging its registers. The other EPR pair is unused.
 This is a coordinate consequence of `eq:def-psihat`. -/
-theorem reindexState_abBbRegrouping_psiHat (setting : ProjectiveSetting P epsilon) :
+theorem reindexState_abBbRegrouping_psiHat  :
     reindexState (abBbRegrouping setting) setting.psiHat =
       vecTensor (pairState setting) (eprState (PauliRegister P)) := by
   ext p
@@ -82,10 +84,10 @@ theorem reindexState_abBbRegrouping_psiHat (setting : ProjectiveSetting P epsilo
   change eprState (PauliRegister P) (p.1.2.2, p.1.1.2) =
     eprState (PauliRegister P) (p.1.1.2, p.1.2.2) at hswap
   change
-    (setting.toStrategy.ψ (p.1.1.1, p.1.2.1) * eprState (PauliRegister P) p.2) *
+     setting.toStrategy.ψ (p.1.1.1, p.1.2.1) * eprState (PauliRegister P) p.2  *
         eprState (PauliRegister P) (p.1.2.2, p.1.1.2) =
-      (setting.toStrategy.ψ (p.1.1.1, p.1.2.1) *
-        eprState (PauliRegister P) (p.1.1.2, p.1.2.2)) *
+       setting.toStrategy.ψ (p.1.1.1, p.1.2.1) *
+        eprState (PauliRegister P) (p.1.1.2, p.1.2.2)  *
           eprState (PauliRegister P) p.2
   rw [hswap]
   ring
@@ -94,7 +96,7 @@ theorem reindexState_abBbRegrouping_psiHat (setting : ProjectiveSetting P epsilo
 `pairState` as their `AA'`--`BA''` placements on `psiHat`. Hermiticity holds for
 POVM effects; no factorization or consistency hypothesis is required. This
 transports Born correlations in the first proof paragraph of `lem:qld-4-7`. -/
-theorem stateQForm_pairState_eq_AA'_BA'' (setting : ProjectiveSetting P epsilon)
+theorem stateQForm_pairState_eq_AA'_BA''
     (A : Op (setting.ExpandedLocalSpace .alice))
     (B : Op (setting.ExpandedLocalSpace .bob))
     (hA : A.IsHermitian) (hB : B.IsHermitian) :
@@ -135,7 +137,7 @@ theorem stateQForm_pairState_eq_AA'_BA'' (setting : ProjectiveSetting P epsilon)
 `pairState` as their `AB''`--`BB'` placements on `psiHat`. This is the second
 orientation of the Born-correlation transport for `lem:qld-4-7`; EPR symmetry
 reverses the active ancillary registers without transposing either operator. -/
-theorem stateQForm_pairState_eq_AB''_BB' (setting : ProjectiveSetting P epsilon)
+theorem stateQForm_pairState_eq_AB''_BB'
     (A : Op (setting.ExpandedLocalSpace .alice))
     (B : Op (setting.ExpandedLocalSpace .bob))
     (hA : A.IsHermitian) (hB : B.IsHermitian) :

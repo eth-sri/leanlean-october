@@ -31,7 +31,7 @@ theorem actual_rounding_error_le_root {delta point ratio t : ℝ}
     min 1 (32 * delta + 32 * Real.sqrt (220 * delta ^ (1 / 4 : ℝ)) +
       64 * Real.sqrt (2 * delta) + 64 * point + 30 * ratio) ≤
       1024 * Real.sqrt (Real.sqrt (Real.sqrt (min 1 t))) := by
-  have ht : 0 ≤ t := hd.trans hdt
+  have ht  := hd.trans hdt
   by_cases ht1 : t ≤ 1
   · rw [min_eq_right ht1]
     have hroot : Real.sqrt (Real.sqrt (Real.sqrt t)) = t ^ (1 / 8 : ℝ) := by
@@ -106,14 +106,14 @@ theorem exists_actual_rounded_global_pair_error_bound (pointError : ℝ → ℝ)
         let eta := delta + Real.sqrt (220 * delta ^ (1 / 4 : ℝ)) +
           2 * Real.sqrt (2 * delta)
         min 1 (8 * (4 * eta + 8 * pointError epsilon) +
-          (((12 * P.m * P.d + 4 * P.d + 14 : ℕ) : ℝ) / P.q)) ≤
+           ((12 * P.m * P.d + 4 * P.d + 14 : ℕ) : ℝ) / P.q ) ≤
           deltaQld A B epsilon P.m P.d P.q := by
   obtain ⟨A, B, hA, hB, hB1, hbound⟩ :=
     exists_direct_global_pair_error_bound pointError hpoint lineError hline
       C a b 1 hC ha hb hb1 (by norm_num)
   refine ⟨1024 * A, B / 2 / 2 / 2, by linarith, by positivity, by linarith, ?_⟩
   intro P epsilon he delta eta
-  let ratio : ℝ := ((P.m * P.d : ℕ) : ℝ) / P.q
+  let ratio  := ((P.m * P.d : ℕ) : ℝ) / P.q
   let passing := directPassingErrorEnvelope
     (pointError epsilon + C * (P.m : ℝ) * lineError epsilon ratio) ratio
   let slack := deltaLd a b (passing + epsilon) P.q (2 * P.m + 2) P.d 1
@@ -134,7 +134,7 @@ theorem exists_actual_rounded_global_pair_error_bound (pointError : ℝ → ℝ)
   have hdt : delta ≤ t := by dsimp [t]; linarith [Real.sqrt_nonneg (pointError epsilon)]
   have hpt : Real.sqrt (pointError epsilon) ≤ t := by dsimp [t]; linarith
   have hrt : ratio ≤ t := by dsimp [t]; linarith [Real.sqrt_nonneg (pointError epsilon)]
-  have hratio : (((12 * P.m * P.d + 4 * P.d + 14 : ℕ) : ℝ) / P.q) ≤ 30 * ratio := by
+  have hratio :  ((12 * P.m * P.d + 4 * P.d + 14 : ℕ) : ℝ) / P.q  ≤ 30 * ratio := by
     have hm : (1 : ℝ) ≤ P.m := by exact_mod_cast P.one_le_m
     have hd' : (1 : ℝ) ≤ P.d := by exact_mod_cast P.hd
     dsimp [ratio]
@@ -142,7 +142,7 @@ theorem exists_actual_rounded_global_pair_error_bound (pointError : ℝ → ℝ)
     apply div_le_div_of_nonneg_right _ (Nat.cast_nonneg _)
     push_cast
     nlinarith
-  have hcap : min 1 t ≤ deltaQld A B epsilon P.m P.d P.q := by
+  have hcap  := by
     simpa only [one_mul] using hbound P epsilon he
   have hroot := Real.sqrt_le_sqrt (Real.sqrt_le_sqrt (Real.sqrt_le_sqrt hcap))
   have hrootBound := (Real.sqrt_le_sqrt (Real.sqrt_le_sqrt

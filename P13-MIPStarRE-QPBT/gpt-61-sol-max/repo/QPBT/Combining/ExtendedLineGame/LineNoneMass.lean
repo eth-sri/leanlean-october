@@ -25,7 +25,7 @@ bound.
 
 @[expose] public section
 
-open scoped BigOperators MatrixOrder ComplexOrder
+open scoped BigOperators MatrixOrder ComplexOrder Classical
 
 namespace MIPStarRE.QPBT
 
@@ -48,22 +48,23 @@ private theorem pointGameRead_eq_none_iff_invalid
       validDirectLdAnswer (D := P.extendedDirectLd) .point answer = false := by
   cases answer <;> simp [pointGameRead, validDirectLdAnswer]
 
+variable (lines : ExtendedLinesWitness setting points deltaL)
+
 /-- After zero-weight invalid point answers are removed, Alice's line-`none`
 event is the event that the line read is `none` and the point read is not. -/
 private theorem alice_line_none_event_eq_point_some
-    (lines : ExtendedLinesWitness setting points deltaL)
+
     (kind : LdType) (sample : DirectLdSpace P.extendedDirectLd)
     (readLine : DirectLdAnswer P.extendedDirectLd → Option (PauliScalar P)) :
     outcomeEventWeight (strategy lines)
         (kind, directLdMap P.extendedDirectLd kind sample)
         (.point, directLdMap P.extendedDirectLd .point sample)
-        (fun answerA _ => readLine answerA = none) =
+         fun answerA _ => readLine answerA = none  =
       outcomeEventWeight (strategy lines)
         (kind, directLdMap P.extendedDirectLd kind sample)
         (.point, directLdMap P.extendedDirectLd .point sample)
-        (fun answerA answerB =>
-          readLine answerA = none ∧ pointGameRead answerB ≠ none) := by
-  classical
+         fun answerA answerB =>
+          readLine answerA = none ∧ pointGameRead answerB ≠ none  := by
   unfold outcomeEventWeight
   apply Finset.sum_congr rfl
   intro answerA _
@@ -80,19 +81,18 @@ private theorem alice_line_none_event_eq_point_some
 /-- After zero-weight invalid point answers are removed, Bob's line-`none`
 event is the event that the point read is not `none` and the line read is. -/
 private theorem bob_line_none_event_eq_point_some
-    (lines : ExtendedLinesWitness setting points deltaL)
+
     (kind : LdType) (sample : DirectLdSpace P.extendedDirectLd)
     (readLine : DirectLdAnswer P.extendedDirectLd → Option (PauliScalar P)) :
     outcomeEventWeight (strategy lines)
         (.point, directLdMap P.extendedDirectLd .point sample)
         (kind, directLdMap P.extendedDirectLd kind sample)
-        (fun _ answerB => readLine answerB = none) =
+         fun _ answerB => readLine answerB = none  =
       outcomeEventWeight (strategy lines)
         (.point, directLdMap P.extendedDirectLd .point sample)
         (kind, directLdMap P.extendedDirectLd kind sample)
-        (fun answerA answerB =>
-          pointGameRead answerA ≠ none ∧ readLine answerB = none) := by
-  classical
+         fun answerA answerB =>
+          pointGameRead answerA ≠ none ∧ readLine answerB = none  := by
   unfold outcomeEventWeight
   apply Finset.sum_congr rfl
   intro answerA _
@@ -108,48 +108,50 @@ private theorem bob_line_none_event_eq_point_some
 
 /-- Alice's marginal mass of failed completed axis-line evaluation under the
 uniform common direct sample. -/
-noncomputable def axisAliceNoneMass
-    (lines : ExtendedLinesWitness setting points deltaL) : ℝ :=
+def axisAliceNoneMass
+     : ℝ :=
   avgOver (uniformDistribution (DirectLdSpace P.extendedDirectLd)) fun sample =>
     aliceEventWeight (strategy lines)
       (.aline, directLdMap P.extendedDirectLd .aline sample)
-      (fun answer => axisGameRead sample answer = none)
+       fun answer => axisGameRead sample answer = none 
 
 /-- Alice's marginal mass of failed completed diagonal-line evaluation under
 the uniform common direct sample. -/
-noncomputable def diagonalAliceNoneMass
-    (lines : ExtendedLinesWitness setting points deltaL) : ℝ :=
+def diagonalAliceNoneMass
+     : ℝ :=
   avgOver (uniformDistribution (DirectLdSpace P.extendedDirectLd)) fun sample =>
     aliceEventWeight (strategy lines)
       (.dline, directLdMap P.extendedDirectLd .dline sample)
-      (fun answer => diagonalGameRead sample answer = none)
+       fun answer => diagonalGameRead sample answer = none 
 
 /-- Bob's marginal mass of failed completed axis-line evaluation under the
 uniform common direct sample. -/
-noncomputable def axisBobNoneMass
-    (lines : ExtendedLinesWitness setting points deltaL) : ℝ :=
+def axisBobNoneMass
+     : ℝ :=
   avgOver (uniformDistribution (DirectLdSpace P.extendedDirectLd)) fun sample =>
     bobEventWeight (strategy lines)
       (.aline, directLdMap P.extendedDirectLd .aline sample)
-      (fun answer => axisGameRead sample answer = none)
+       fun answer => axisGameRead sample answer = none 
 
 /-- Bob's marginal mass of failed completed diagonal-line evaluation under
 the uniform common direct sample. -/
-noncomputable def diagonalBobNoneMass
-    (lines : ExtendedLinesWitness setting points deltaL) : ℝ :=
+def diagonalBobNoneMass
+     : ℝ :=
   avgOver (uniformDistribution (DirectLdSpace P.extendedDirectLd)) fun sample =>
     bobEventWeight (strategy lines)
       (.dline, directLdMap P.extendedDirectLd .dline sample)
-      (fun answer => diagonalGameRead sample answer = none)
+       fun answer => diagonalGameRead sample answer = none 
+
+variable (sample : DirectLdSpace P.extendedDirectLd)
 
 /-- At a fixed sample, Alice's failed completed axis evaluation is contained
 in the axis-line/point rejection event after zero-mass invalid tags are removed. -/
 private theorem axis_alice_none_mass_at_le_rejectedMass
-    (lines : ExtendedLinesWitness setting points deltaL)
-    (sample : DirectLdSpace P.extendedDirectLd) :
+
+     :
     aliceEventWeight (strategy lines)
         (.aline, directLdMap P.extendedDirectLd .aline sample)
-        (fun answer => axisGameRead sample answer = none) ≤
+         fun answer => axisGameRead sample answer = none  ≤
       directRejectedMass P.extendedDirectLd (strategy lines)
         (.aline, directLdMap P.extendedDirectLd .aline sample)
         (.point, directLdMap P.extendedDirectLd .point sample) := by
@@ -157,18 +159,18 @@ private theorem axis_alice_none_mass_at_le_rejectedMass
     _ = outcomeEventWeight (strategy lines)
         (.aline, directLdMap P.extendedDirectLd .aline sample)
         (.point, directLdMap P.extendedDirectLd .point sample)
-        (fun answerA _ => axisGameRead sample answerA = none) :=
+         fun answerA _ => axisGameRead sample answerA = none  :=
       (outcome_event_weight_left_eq _ _ _ _).symm
     _ = outcomeEventWeight (strategy lines)
         (.aline, directLdMap P.extendedDirectLd .aline sample)
         (.point, directLdMap P.extendedDirectLd .point sample)
-        (fun answerA answerB => axisGameRead sample answerA = none ∧
-          pointGameRead answerB ≠ none) :=
+         fun answerA answerB => axisGameRead sample answerA = none ∧
+          pointGameRead answerB ≠ none  :=
       alice_line_none_event_eq_point_some lines .aline sample (axisGameRead sample)
     _ ≤ outcomeEventWeight (strategy lines)
         (.aline, directLdMap P.extendedDirectLd .aline sample)
         (.point, directLdMap P.extendedDirectLd .point sample)
-        (fun answerA answerB => axisGameRead sample answerA ≠ pointGameRead answerB) := by
+         fun answerA answerB => axisGameRead sample answerA ≠ pointGameRead answerB  := by
       apply outcome_event_weight_mono
       intro answerA answerB hnone heq
       exact hnone.2 (heq.symm.trans hnone.1)
@@ -177,11 +179,11 @@ private theorem axis_alice_none_mass_at_le_rejectedMass
 /-- At a fixed sample, Alice's failed completed diagonal evaluation is
 contained in the diagonal-line/point rejection event after zero-mass invalid tags are removed. -/
 private theorem diagonal_alice_none_mass_at_le_rejectedMass
-    (lines : ExtendedLinesWitness setting points deltaL)
-    (sample : DirectLdSpace P.extendedDirectLd) :
+
+     :
     aliceEventWeight (strategy lines)
         (.dline, directLdMap P.extendedDirectLd .dline sample)
-        (fun answer => diagonalGameRead sample answer = none) ≤
+         fun answer => diagonalGameRead sample answer = none  ≤
       directRejectedMass P.extendedDirectLd (strategy lines)
         (.dline, directLdMap P.extendedDirectLd .dline sample)
         (.point, directLdMap P.extendedDirectLd .point sample) := by
@@ -189,20 +191,20 @@ private theorem diagonal_alice_none_mass_at_le_rejectedMass
     _ = outcomeEventWeight (strategy lines)
         (.dline, directLdMap P.extendedDirectLd .dline sample)
         (.point, directLdMap P.extendedDirectLd .point sample)
-        (fun answerA _ => diagonalGameRead sample answerA = none) :=
+         fun answerA _ => diagonalGameRead sample answerA = none  :=
       (outcome_event_weight_left_eq _ _ _ _).symm
     _ = outcomeEventWeight (strategy lines)
         (.dline, directLdMap P.extendedDirectLd .dline sample)
         (.point, directLdMap P.extendedDirectLd .point sample)
-        (fun answerA answerB => diagonalGameRead sample answerA = none ∧
-          pointGameRead answerB ≠ none) :=
+         fun answerA answerB => diagonalGameRead sample answerA = none ∧
+          pointGameRead answerB ≠ none  :=
       alice_line_none_event_eq_point_some lines .dline sample
         (diagonalGameRead sample)
     _ ≤ outcomeEventWeight (strategy lines)
         (.dline, directLdMap P.extendedDirectLd .dline sample)
         (.point, directLdMap P.extendedDirectLd .point sample)
-        (fun answerA answerB =>
-          diagonalGameRead sample answerA ≠ pointGameRead answerB) := by
+         fun answerA answerB =>
+          diagonalGameRead sample answerA ≠ pointGameRead answerB  := by
       apply outcome_event_weight_mono
       intro answerA answerB hnone heq
       exact hnone.2 (heq.symm.trans hnone.1)
@@ -211,11 +213,11 @@ private theorem diagonal_alice_none_mass_at_le_rejectedMass
 /-- At a fixed sample, Bob's failed completed axis evaluation is contained in
 the point/axis-line rejection event after zero-mass invalid tags are removed. -/
 private theorem axis_bob_none_mass_at_le_rejectedMass
-    (lines : ExtendedLinesWitness setting points deltaL)
-    (sample : DirectLdSpace P.extendedDirectLd) :
+
+     :
     bobEventWeight (strategy lines)
         (.aline, directLdMap P.extendedDirectLd .aline sample)
-        (fun answer => axisGameRead sample answer = none) ≤
+         fun answer => axisGameRead sample answer = none  ≤
       directRejectedMass P.extendedDirectLd (strategy lines)
         (.point, directLdMap P.extendedDirectLd .point sample)
         (.aline, directLdMap P.extendedDirectLd .aline sample) := by
@@ -223,18 +225,18 @@ private theorem axis_bob_none_mass_at_le_rejectedMass
     _ = outcomeEventWeight (strategy lines)
         (.point, directLdMap P.extendedDirectLd .point sample)
         (.aline, directLdMap P.extendedDirectLd .aline sample)
-        (fun _ answerB => axisGameRead sample answerB = none) :=
+         fun _ answerB => axisGameRead sample answerB = none  :=
       (outcome_event_weight_right_eq _ _ _ _).symm
     _ = outcomeEventWeight (strategy lines)
         (.point, directLdMap P.extendedDirectLd .point sample)
         (.aline, directLdMap P.extendedDirectLd .aline sample)
-        (fun answerA answerB => pointGameRead answerA ≠ none ∧
-          axisGameRead sample answerB = none) :=
+         fun answerA answerB => pointGameRead answerA ≠ none ∧
+          axisGameRead sample answerB = none  :=
       bob_line_none_event_eq_point_some lines .aline sample (axisGameRead sample)
     _ ≤ outcomeEventWeight (strategy lines)
         (.point, directLdMap P.extendedDirectLd .point sample)
         (.aline, directLdMap P.extendedDirectLd .aline sample)
-        (fun answerA answerB => pointGameRead answerA ≠ axisGameRead sample answerB) := by
+         fun answerA answerB => pointGameRead answerA ≠ axisGameRead sample answerB  := by
       apply outcome_event_weight_mono
       intro answerA answerB hnone heq
       exact hnone.1 (heq.trans hnone.2)
@@ -243,11 +245,11 @@ private theorem axis_bob_none_mass_at_le_rejectedMass
 /-- At a fixed sample, Bob's failed completed diagonal evaluation is
 contained in the point/diagonal-line rejection event after zero-mass invalid tags are removed. -/
 private theorem diagonal_bob_none_mass_at_le_rejectedMass
-    (lines : ExtendedLinesWitness setting points deltaL)
-    (sample : DirectLdSpace P.extendedDirectLd) :
+
+     :
     bobEventWeight (strategy lines)
         (.dline, directLdMap P.extendedDirectLd .dline sample)
-        (fun answer => diagonalGameRead sample answer = none) ≤
+         fun answer => diagonalGameRead sample answer = none  ≤
       directRejectedMass P.extendedDirectLd (strategy lines)
         (.point, directLdMap P.extendedDirectLd .point sample)
         (.dline, directLdMap P.extendedDirectLd .dline sample) := by
@@ -255,20 +257,20 @@ private theorem diagonal_bob_none_mass_at_le_rejectedMass
     _ = outcomeEventWeight (strategy lines)
         (.point, directLdMap P.extendedDirectLd .point sample)
         (.dline, directLdMap P.extendedDirectLd .dline sample)
-        (fun _ answerB => diagonalGameRead sample answerB = none) :=
+         fun _ answerB => diagonalGameRead sample answerB = none  :=
       (outcome_event_weight_right_eq _ _ _ _).symm
     _ = outcomeEventWeight (strategy lines)
         (.point, directLdMap P.extendedDirectLd .point sample)
         (.dline, directLdMap P.extendedDirectLd .dline sample)
-        (fun answerA answerB => pointGameRead answerA ≠ none ∧
-          diagonalGameRead sample answerB = none) :=
+         fun answerA answerB => pointGameRead answerA ≠ none ∧
+          diagonalGameRead sample answerB = none  :=
       bob_line_none_event_eq_point_some lines .dline sample
         (diagonalGameRead sample)
     _ ≤ outcomeEventWeight (strategy lines)
         (.point, directLdMap P.extendedDirectLd .point sample)
         (.dline, directLdMap P.extendedDirectLd .dline sample)
-        (fun answerA answerB =>
-          pointGameRead answerA ≠ diagonalGameRead sample answerB) := by
+         fun answerA answerB =>
+          pointGameRead answerA ≠ diagonalGameRead sample answerB  := by
       apply outcome_event_weight_mono
       intro answerA answerB hnone heq
       exact hnone.1 (heq.trans hnone.2)
@@ -277,7 +279,7 @@ private theorem diagonal_bob_none_mass_at_le_rejectedMass
 /-- Alice's failed completed axis-evaluation mass is bounded by the
 axis-line/point branch rejection probability. -/
 theorem axis_alice_none_mass_le_rejection
-    (lines : ExtendedLinesWitness setting points deltaL) :
+     :
     axisAliceNoneMass lines ≤
       directLdBranchRejectionProbability P.extendedDirectLd (strategy lines)
         (.aline, .point) := by
@@ -289,7 +291,7 @@ theorem axis_alice_none_mass_le_rejection
 /-- Alice's failed completed diagonal-evaluation mass is bounded by the
 diagonal-line/point branch rejection probability. -/
 theorem diagonal_alice_none_mass_le_rejection
-    (lines : ExtendedLinesWitness setting points deltaL) :
+     :
     diagonalAliceNoneMass lines ≤
       directLdBranchRejectionProbability P.extendedDirectLd (strategy lines)
         (.dline, .point) := by
@@ -301,7 +303,7 @@ theorem diagonal_alice_none_mass_le_rejection
 /-- Bob's failed completed axis-evaluation mass is bounded by the
 point/axis-line branch rejection probability. -/
 theorem axis_bob_none_mass_le_rejection
-    (lines : ExtendedLinesWitness setting points deltaL) :
+     :
     axisBobNoneMass lines ≤
       directLdBranchRejectionProbability P.extendedDirectLd (strategy lines)
         (.point, .aline) := by
@@ -313,7 +315,7 @@ theorem axis_bob_none_mass_le_rejection
 /-- Bob's failed completed diagonal-evaluation mass is bounded by the
 point/diagonal-line branch rejection probability. -/
 theorem diagonal_bob_none_mass_le_rejection
-    (lines : ExtendedLinesWitness setting points deltaL) :
+     :
     diagonalBobNoneMass lines ≤
       directLdBranchRejectionProbability P.extendedDirectLd (strategy lines)
         (.point, .dline) := by

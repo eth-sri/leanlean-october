@@ -66,13 +66,12 @@ open MIPStarRE.Quantum
 
 noncomputable section
 
-local instance pauliEdgeNonemptyLineMeasurement : Nonempty PauliEdge :=
-  pauliEdge_nonempty
+
 
 /-- The square-root error exhibited by the expanded-line consistency proof.
 This is the final quantitative conclusion of `lem:qld-comm-line-cons`, paper
 `14_analysis_of_the_pauli_basis_test.tex:675-677`. -/
-noncomputable def deltaLine (ε : ℝ) : ℝ :=
+def deltaLine (ε : ℝ) : ℝ :=
   Real.sqrt ε
 
 /-- Evaluation classes of expanded line measurements are consistent with the
@@ -96,7 +95,7 @@ theorem exp_line_point_cons_explicit' :
           ((S.pointMeasExpOption p₂.side W sample.2).effect a))
         S.psiHat ≤ 348 * deltaLine ε := by
   intro P ε S p₁ p₂ hopp W
-  have hε : 0 ≤ ε := S.eps_nonneg
+  have hε  := S.eps_nonneg
   have key : ∀ (x a : ℝ), 1 ≤ a → a ≤ 86 + 86 → 0 ≤ x → x ≤ 2 * (a * ε) →
       x ≤ 4 → x ≤ 348 * deltaLine ε := by
     intro x a ha haC hx0 hxa hx4

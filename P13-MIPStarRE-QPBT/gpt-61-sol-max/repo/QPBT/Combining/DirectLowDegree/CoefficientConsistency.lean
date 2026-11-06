@@ -42,7 +42,7 @@ theorem consistencyDefect_directCoefficients_le_evaluated_add
     (D : DirectLdParams) (degree : ℕ) (μ : Distribution X)
     (A : X → Measurement (DirectDegPoly D degree) ιA)
     (B : X → Measurement (DirectDegPoly D degree) ιB)
-    (ψ : EuclideanSpace ℂ (ιA × ιB))
+    (ψ : MIPStarRE.QPBT.StateVector (ιA × ιB))
     (hμ : μ.IsProbability) (hψ : ‖ψ‖ = 1) :
     consistencyDefect μ
         (fun x coefficients => heteroKron ((A x).effect coefficients) 1)
@@ -51,13 +51,13 @@ theorem consistencyDefect_directCoefficients_le_evaluated_add
         (Distribution.prod μ (uniformDistribution (DirectScalarQ D)))
         (fun xt value => heteroKron
           (((A xt.1).postprocess
-            (fun coefficients => evalCoefficient coefficients xt.2)).effect value) 1)
+             fun coefficients => evalCoefficient coefficients xt.2 ).effect value) 1)
         (fun xt value => heteroKron 1
           (((B xt.1).postprocess
-            (fun coefficients => evalCoefficient coefficients xt.2)).effect value)) ψ +
+             fun coefficients => evalCoefficient coefficients xt.2 ).effect value)) ψ +
         (degree : ℝ) / (D.q : ℝ) := by
   apply SandwichProduct.consistencyDefect_codewords_le_evaluated_add
-      μ A B ψ (fun coefficients t => evalCoefficient coefficients t)
+      μ A B ψ evalCoefficient
       ((degree : ℝ) / (D.q : ℝ)) hμ hψ
   · positivity
   · intro a b hne

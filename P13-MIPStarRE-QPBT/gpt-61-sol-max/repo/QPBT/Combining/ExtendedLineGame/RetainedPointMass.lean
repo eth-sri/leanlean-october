@@ -33,11 +33,11 @@ def retainedPointMismatch {P : AdmissibleParams} {ε : ℝ}
     (S : ProjectiveSetting P ε) (p1 p2 : Placement)
     (R : DirectPolyMeasTuple P.extendedDirectLd (S.ExpandedLocalSpace p1.side))
     (W : PauliKind) : ℝ :=
-  avgOver (uniformDistribution (Fin P.m → PauliScalar P)) (fun x =>
+  avgOver (uniformDistribution (MIPStarRE.QPBT.PauliPoint P))  fun x =>
     ∑ pair : PolyPair P, ‖applyOperatorToState
       (1 - S.place p2 ((S.pointMeasExp p2.side W x).effect (evalAt W x pair)))
       (applyOperatorToState (S.place p1 (R.effect (directCombinedEmbedding P pair)))
-        S.psiHat)‖ ^ 2)
+        S.psiHat)‖ ^ 2 
 
 /-- Both retained point mismatches are bounded by their appropriate full
 ordered error. The wrong point projection is the outer factor: `XZ` for X,
@@ -51,23 +51,23 @@ theorem retainedPointMismatch_le_ordered_error {P : AdmissibleParams} {ε : ℝ}
       2 * extendedPolynomialOrderedError S p1 p2 R reverse + 4 / P.q := by
   classical
   let ψ := fun g => applyOperatorToState (S.place p1 (R.effect g)) S.psiHat
-  let X := fun x : Fin P.m → PauliScalar P => S.placedMeasurement p2
+  let X := fun x : MIPStarRE.QPBT.PauliPoint P => S.placedMeasurement p2
     (S.pointMeasExp p2.side (if reverse then .Z else .X) x)
-  let Z := fun z : Fin P.m → PauliScalar P => S.placedMeasurement p2
+  let Z := fun z : MIPStarRE.QPBT.PauliPoint P => S.placedMeasurement p2
     (S.pointMeasExp p2.side (if reverse then .X else .Z) z)
-  let A := fun (z x : Fin P.m → PauliScalar P) (v : Fin 2 → PauliScalar P) g =>
+  let A := fun (z x : MIPStarRE.QPBT.PauliPoint P) (v : MIPStarRE.QPBT.PauliCoefficients P) g =>
     applyOperatorToState (orderedIndicator (X x) (Z z) (v 0) (v 1)
       (extendedPolynomialRead P (fiberQuestionEquiv P reverse ((z, x), v)) g)) (ψ g)
-  have hmass : ∑ g, ‖ψ g‖ ^ 2 = 1 := by
+  have hmass  := by
     simpa only [ψ, ProjectiveSetting.placedMeasurement_effect, S.psiHat_norm, one_pow] using
       sum_projective_state_norm_sq (S.placedMeasurement p1 R)
         (S.placedMeasurement_isProjective p1 R hR) S.psiHat
   have hretained : ∑ pair, ‖ψ (directCombinedEmbedding P pair)‖ ^ 2 ≤ 1 := by
-    rw [← hmass, ← Finset.sum_image (f := fun g => ‖ψ g‖ ^ 2) (fun a _ b _ h =>
-      (directCombinedEmbedding P).injective h)]
+    rw [← hmass, ← Finset.sum_image (f := fun g => ‖ψ g‖ ^ 2)  fun a _ b _ h =>
+      (directCombinedEmbedding P).injective h ]
     exact Finset.sum_le_sum_of_subset_of_nonneg (Finset.subset_univ _) (by
       intros; exact sq_nonneg _)
-  have hread (z x : Fin P.m → PauliScalar P) (v : Fin 2 → PauliScalar P)
+  have hread (z x : MIPStarRE.QPBT.PauliPoint P) (v : MIPStarRE.QPBT.PauliCoefficients P)
       (pair : PolyPair P) :
       extendedPolynomialRead P (fiberQuestionEquiv P reverse ((z, x), v))
         (directCombinedEmbedding P pair) =
@@ -75,11 +75,11 @@ theorem retainedPointMismatch_le_ordered_error {P : AdmissibleParams} {ε : ℝ}
         v 1 * evalAt (if reverse then .X else .Z) z pair := by
     rw [directCombinedEmbedding_read]
     cases reverse <;> simp [fiberQuestionEquiv, finTwoArrowEquiv, add_comm]
-  have hpoint (z x : Fin P.m → PauliScalar P) :
-      (∑ pair : PolyPair P, ‖applyOperatorToState
+  have hpoint (z x : MIPStarRE.QPBT.PauliPoint P) :
+       ∑ pair : PolyPair P, ‖applyOperatorToState
         (1 - (X x).effect (evalAt (if reverse then .Z else .X) x pair))
-          (ψ (directCombinedEmbedding P pair))‖ ^ 2) ≤
-      2 * avgOver (uniformDistribution (Fin 2 → PauliScalar P)) (fun v =>
+          (ψ (directCombinedEmbedding P pair))‖ ^ 2  ≤
+      2 * avgOver (uniformDistribution (MIPStarRE.QPBT.PauliCoefficients P)) (fun v =>
         ∑ g, ‖ψ g - A z x v g‖ ^ 2) + 4 / P.q := by
     have h (pair : PolyPair P) := point_mismatch_le_ordered_error (X x) (Z z)
       (S.placedMeasurement_isProjective p2 _ (S.pointMeasExp_isProjective _ _ _))
@@ -87,20 +87,20 @@ theorem retainedPointMismatch_le_ordered_error {P : AdmissibleParams} {ε : ℝ}
       (evalAt (if reverse then .Z else .X) x pair)
       (evalAt (if reverse then .X else .Z) z pair) (ψ (directCombinedEmbedding P pair))
     simp_rw [← hread z x] at h
-    have hs := Finset.sum_le_sum (s := Finset.univ) (fun pair _ => h pair)
+    have hs := Finset.sum_le_sum (s := Finset.univ)  fun pair _ => h pair 
     simp only [Finset.sum_add_distrib, ← Finset.mul_sum, ← avgOver_sum] at hs
-    have herr : avgOver (uniformDistribution (Fin 2 → PauliScalar P)) (fun v =>
+    have herr : avgOver (uniformDistribution (MIPStarRE.QPBT.PauliCoefficients P)) (fun v =>
         ∑ pair, ‖ψ (directCombinedEmbedding P pair) -
           A z x v (directCombinedEmbedding P pair)‖ ^ 2) ≤
-      avgOver (uniformDistribution (Fin 2 → PauliScalar P)) (fun v =>
-        ∑ g, ‖ψ g - A z x v g‖ ^ 2) := by
+      avgOver (uniformDistribution (MIPStarRE.QPBT.PauliCoefficients P))  fun v =>
+        ∑ g, ‖ψ g - A z x v g‖ ^ 2  := by
       apply avgOver_mono
       intro v
       rw [← Finset.sum_image (f := fun g => ‖ψ g - A z x v g‖ ^ 2)
-        (fun a _ b _ h => (directCombinedEmbedding P).injective h)]
+         fun a _ b _ h => (directCombinedEmbedding P).injective h ]
       exact Finset.sum_le_sum_of_subset_of_nonneg (Finset.subset_univ _) (by
         intros; exact sq_nonneg _)
-    have hcard : Fintype.card (PauliScalar P) = P.q :=
+    have hcard  :=
       @FieldModel.card P.q P.model.toFieldModel
     have hc := mul_le_mul_of_nonneg_left hretained
       (show 0 ≤ 4 * (Fintype.card (PauliScalar P) : ℝ)⁻¹ by positivity)
@@ -113,17 +113,17 @@ theorem retainedPointMismatch_le_ordered_error {P : AdmissibleParams} {ε : ℝ}
     rw [div_eq_mul_inv]
     linarith
   have hfull :
-      avgOver (uniformDistribution (Fin P.m → PauliScalar P)) (fun z =>
-        avgOver (uniformDistribution (Fin P.m → PauliScalar P)) (fun x =>
-          avgOver (uniformDistribution (Fin 2 → PauliScalar P)) (fun v =>
-            ∑ g, ‖ψ g - A z x v g‖ ^ 2))) =
+      avgOver (uniformDistribution (MIPStarRE.QPBT.PauliPoint P)) (fun z =>
+        avgOver (uniformDistribution (MIPStarRE.QPBT.PauliPoint P))  fun x =>
+          avgOver (uniformDistribution (MIPStarRE.QPBT.PauliCoefficients P))  fun v =>
+            ∑ g, ‖ψ g - A z x v g‖ ^ 2  ) =
         extendedPolynomialOrderedError S p1 p2 R reverse := by
-    rw [← avgOver_uniform_prod (fun z x =>
-      avgOver (uniformDistribution (Fin 2 → PauliScalar P)) (fun v =>
-        ∑ g, ‖ψ g - A z x v g‖ ^ 2))]
+    rw [← avgOver_uniform_prod  fun z x =>
+      avgOver (uniformDistribution (MIPStarRE.QPBT.PauliCoefficients P))  fun v =>
+        ∑ g, ‖ψ g - A z x v g‖ ^ 2  ]
     rw [← avgOver_uniform_prod
-      (fun zx : (Fin P.m → PauliScalar P) × (Fin P.m → PauliScalar P) =>
-        fun v => ∑ g, ‖ψ g - A zx.1 zx.2 v g‖ ^ 2)]
+       fun zx :  MIPStarRE.QPBT.PauliPoint P  ×  MIPStarRE.QPBT.PauliPoint P  =>
+        fun v => ∑ g, ‖ψ g - A zx.1 zx.2 v g‖ ^ 2 ]
     unfold extendedPolynomialOrderedError
     rw [avgOver_uniform_equiv (fiberQuestionEquiv P reverse).symm]
     apply avgOver_congr
@@ -135,8 +135,8 @@ theorem retainedPointMismatch_le_ordered_error {P : AdmissibleParams} {ε : ℝ}
     dsimp only [ψ]
     rw [placed_residual S p1 p2 hopposite]
     rfl
-  have h := avgOver_mono (uniformDistribution (Fin P.m → PauliScalar P)) _ _ fun z =>
-    avgOver_mono (uniformDistribution (Fin P.m → PauliScalar P)) _ _ (hpoint z)
+  have h := avgOver_mono (uniformDistribution (MIPStarRE.QPBT.PauliPoint P)) _ _ fun z =>
+    avgOver_mono (uniformDistribution (MIPStarRE.QPBT.PauliPoint P)) _ _ (hpoint z)
   simp only [avgOver_uniform_const, avgOver_add, avgOver_const_mul, hfull] at h
   exact h
 

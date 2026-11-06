@@ -19,7 +19,7 @@ portion of the low-degree consistency transport.
 
 @[expose] public section
 
-open scoped BigOperators Matrix MatrixOrder ComplexOrder
+open scoped BigOperators Matrix MatrixOrder ComplexOrder Classical
 
 namespace MIPStarRE.QPBT
 
@@ -38,7 +38,7 @@ noncomputable section
 -- state; they are stated for an arbitrary finite index type in
 -- `MIPStarRE/QPBT/Games/DistanceTheorems/Support.lean`.
 export MIPStarRE.QPBT.DistanceCalculus (pureStateEuclideanVector
-  pureStateEuclideanVector_apply pureStateEuclideanVector_norm
+  pureStateEuclideanVector_norm
   pureState_stateQForm_eq_ev)
 
 /-- For complete projective families and a pure bipartite state, the LDT
@@ -78,25 +78,25 @@ theorem consRel_iff_consistencyDefect
           (fun x a => heteroKron 1 ((B x).outcome a))
           (pureStateEuclideanVector psi) =
         bipartiteConsError (psi : QuantumState (iotaA × iotaB)) mu
-          (fun x => (A x).toSubMeas) (fun x => (B x).toSubMeas) := by
+          (fun x => (A x).toSubMeas)  fun x => (B x).toSubMeas  := by
     calc
       consistencyDefect mu
           (fun x a => heteroKron ((A x).outcome a) 1)
           (fun x a => heteroKron 1 ((B x).outcome a))
           (pureStateEuclideanVector psi) =
-          1 - avgOver mu (fun x => ∑ a,
+          1 - avgOver mu  fun x => ∑ a,
             DistanceCalculus.stateQForm (pureStateEuclideanVector psi)
-              ((AM x).effect a * (BM x).effect a)) := by
+              ((AM x).effect a * (BM x).effect a)  := by
             simpa only [hAM, hBM] using
               DistanceCalculus.consistencyDefect_eq_one_sub_overlap
                 mu AM BM (pureStateEuclideanVector psi) hmu
                   (pureStateEuclideanVector_norm psi)
-      _ = avgOver mu (fun x => 1 - ∑ a,
+      _ = avgOver mu  fun x => 1 - ∑ a,
             DistanceCalculus.stateQForm (pureStateEuclideanVector psi)
-              ((AM x).effect a * (BM x).effect a)) := by
+              ((AM x).effect a * (BM x).effect a)  := by
             rw [avgOver_sub, avgOver_const_of_isProbability mu hmu]
       _ = bipartiteConsError (psi : QuantumState (iotaA × iotaB)) mu
-          (fun x => (A x).toSubMeas) (fun x => (B x).toSubMeas) := by
+          (fun x => (A x).toSubMeas)  fun x => (B x).toSubMeas  := by
             unfold bipartiteConsError
             apply avgOver_congr
             intro x
@@ -123,6 +123,12 @@ theorem consRel_iff_consistencyDefect
 
 /-! ## Direct-strategy state and point readout -/
 
+
+
+
+
+
+
 /-- The pure state carried by a game strategy, regarded as an LDT pure state. -/
 noncomputable def gameStrategyPureState {G : Game} (S : Strategy G) :
     letI : Nonempty (S.ιA × S.ιB) :=
@@ -131,14 +137,6 @@ noncomputable def gameStrategyPureState {G : Game} (S : Strategy G) :
   letI : Nonempty (S.ιA × S.ιB) :=
     (strategyQuantumState_isNormalized S).nonempty
   exact strategyPureState S
-
-@[simp] theorem gameStrategyPureState_vector {G : Game} (S : Strategy G) :
-    letI : Nonempty (S.ιA × S.ιB) :=
-      (strategyQuantumState_isNormalized S).nonempty
-    (gameStrategyPureState S).vector = S.ψ := by
-  letI : Nonempty (S.ιA × S.ιB) :=
-    (strategyQuantumState_isNormalized S).nonempty
-  rfl
 
 /-- The Euclidean vector of the strategy's pure-state presentation is the
 original game vector. -/
@@ -166,22 +164,10 @@ theorem strategyConsRel_consistencyDefect_le
       (fun x => (A x).toSubMeas) (fun x => (B x).toSubMeas) delta) :
     consistencyDefect mu
       (fun x a => heteroKron ((A x).outcome a) 1)
-      (fun x a => heteroKron 1 ((B x).outcome a)) S.ψ ≤ delta := by
-  letI : Nonempty (S.ιA × S.ιB) :=
-    (strategyQuantumState_isNormalized S).nonempty
-  let pure : PureState (S.ιA × S.ιB) := strategyPureState S
-  have hpure :
-      ConsRel (pure : QuantumState (S.ιA × S.ιB)) mu
-        (fun x => (A x).toSubMeas) (fun x => (B x).toSubMeas) delta := by
-    simpa [pure, strategyQuantumState] using h
-  have hconverted := (consRel_iff_consistencyDefect pure mu hmu A B delta).mp hpure
-  have hv : pureStateEuclideanVector pure = S.ψ := by
-    exact gameStrategyPureState_euclideanVector S
-  rw [hv] at hconverted
-  exact hconverted
+      (fun x a => heteroKron 1 ((B x).outcome a)) S.ψ ≤ delta := by aesop (add simp [Iff.mp, MIPStarRE.LDT.QuantumState.IsNormalized.nonempty, consRel_iff_consistencyDefect, gameStrategyPureState_euclideanVector, strategyQuantumState, strategyQuantumState_isNormalized])
 
 @[simp] theorem directPointQuestionOf_directPointEquiv
-    (D : DirectLdParams) (u : Fin D.m → DirectScalarQ D) :
+    (D : DirectLdParams) (u : MIPStarRE.QPBT.DirectPoint D) :
     directPointQuestionOf D (directPointEquiv D u) =
       directLdPointQuestionOf D u := by
   unfold directPointQuestionOf ldtPointToDirect
@@ -203,91 +189,65 @@ the scalar coding equivalence. -/
   letI := D.toLDTFieldModel
   cases answer <;> rfl
 
+variable (D : DirectLdParams) (S : Strategy (directLdGame D))
+
 /-- At corresponding points and scalar outcomes, the LDT point effect is
 the effect of the direct point measurement followed by coordinate projection. -/
 theorem directCoordinatePointMeasurement_effect_transport
-    (D : DirectLdParams) (S : Strategy (directLdGame D))
+
     (hS : S.IsProjective) (r : Fin D.k)
-    (u : Fin D.m → DirectScalarQ D) (a : DirectScalarQ D) :
+    (u : MIPStarRE.QPBT.DirectPoint D) (a : DirectScalarQ D) :
     letI := D.toLDTFieldModel
     (((directCoordinateProjStrat D S hS r).pointMeasurementA
       (directPointEquiv D u)).outcome (directScalarEquiv D a)) =
       ((S.A (directLdPointQuestionOf D u)).postprocess
-        (fun answer => directLdPointValuesOrZero D answer r)).effect a := by
-  letI := D.toLDTFieldModel
-  classical
-  simp only [directCoordinateProjStrat, directCoordinatePointMeasurement,
-    directLdGame,
-    ProjMeas.postprocess, SubMeas.postprocess_outcome,
-    matrixMeasurementToLDTProjMeas_outcome,
-    directPointQuestionOf_directPointEquiv,
-    MIPStarRE.Quantum.Measurement.postprocess_effect]
-  congr 1
-  ext answer
-  rw [Finset.mem_filter, Finset.mem_filter]
-  simp only [Finset.mem_univ, true_and]
-  simpa only [directPointAnswerReadout_eq] using
-    (directScalarEquiv D).injective.eq_iff
+         fun answer => directLdPointValuesOrZero D answer r ).effect a := by aesop (add simp [directCoordinatePointMeasurement, directCoordinateProjStrat])
 
 /-- Bob's point effects satisfy the same direct-to-LDT readout identity. -/
 theorem directCoordinatePointMeasurementB_effect_transport
-    (D : DirectLdParams) (S : Strategy (directLdGame D))
+
     (hS : S.IsProjective) (r : Fin D.k)
-    (u : Fin D.m → DirectScalarQ D) (a : DirectScalarQ D) :
+    (u : MIPStarRE.QPBT.DirectPoint D) (a : DirectScalarQ D) :
     letI := D.toLDTFieldModel
     (((directCoordinateProjStrat D S hS r).pointMeasurementB
       (directPointEquiv D u)).outcome (directScalarEquiv D a)) =
       ((S.B (directLdPointQuestionOf D u)).postprocess
-        (fun answer => directLdPointValuesOrZero D answer r)).effect a := by
-  letI := D.toLDTFieldModel
-  classical
-  simp only [directCoordinateProjStrat, directCoordinatePointMeasurement,
-    directLdGame,
-    ProjMeas.postprocess, SubMeas.postprocess_outcome,
-    matrixMeasurementToLDTProjMeas_outcome,
-    directPointQuestionOf_directPointEquiv,
-    MIPStarRE.Quantum.Measurement.postprocess_effect]
-  congr 1
-  ext answer
-  rw [Finset.mem_filter, Finset.mem_filter]
-  simp only [Finset.mem_univ, true_and]
-  simpa only [directPointAnswerReadout_eq] using
-    (directScalarEquiv D).injective.eq_iff
+         fun answer => directLdPointValuesOrZero D answer r ).effect a := by aesop (add simp [directCoordinatePointMeasurement, directCoordinateProjStrat])
 
 /-- Alice's direct point measurement followed by projection to coordinate
 `r`. -/
-noncomputable def directPointCoordinateMeasurementA
-    (D : DirectLdParams) (S : Strategy (directLdGame D))
-    (r : Fin D.k) (u : Fin D.m → DirectScalarQ D) :
+def directPointCoordinateMeasurementA
+
+    (r : Fin D.k) (u : MIPStarRE.QPBT.DirectPoint D) :
     MIPStarRE.Quantum.Measurement (DirectScalarQ D) S.ιA :=
   (S.A (directLdPointQuestionOf D u)).postprocess
-    (fun answer => directLdPointValuesOrZero D answer r)
+     fun answer => directLdPointValuesOrZero D answer r 
 
 /-- Bob's direct point measurement followed by projection to coordinate
 `r`. -/
-noncomputable def directPointCoordinateMeasurementB
-    (D : DirectLdParams) (S : Strategy (directLdGame D))
-    (r : Fin D.k) (u : Fin D.m → DirectScalarQ D) :
+def directPointCoordinateMeasurementB
+
+    (r : Fin D.k) (u : MIPStarRE.QPBT.DirectPoint D) :
     MIPStarRE.Quantum.Measurement (DirectScalarQ D) S.ιB :=
   (S.B (directLdPointQuestionOf D u)).postprocess
-    (fun answer => directLdPointValuesOrZero D answer r)
+     fun answer => directLdPointValuesOrZero D answer r 
 
 /-- Evaluate a transported LDT polynomial measurement at a direct point. -/
-noncomputable def directPolynomialEvaluationMeasurement
+def directPolynomialEvaluationMeasurement
     (D : DirectLdParams) :
     letI := D.toLDTFieldModel
     {iota : Type*} → [Fintype iota] → [DecidableEq iota] →
       ProjMeas (MIPStarRE.LDT.Polynomial D.toLDTParameters) iota →
-        (Fin D.m → DirectScalarQ D) →
+         MIPStarRE.QPBT.DirectPoint D  →
           MIPStarRE.Quantum.Measurement (DirectScalarQ D) iota := by
   letI := D.toLDTFieldModel
   intro iota _ _ G u
   exact (directPolynomialMeasurement D G).postprocess
-    (fun g => MvPolynomial.eval u g.1)
+     fun g => MvPolynomial.eval u g.1 
 
 /-- Alice's LDT point family obtained from direct coordinate `r`. -/
-noncomputable def ldtCoordinatePointMeasurementA
-    (D : DirectLdParams) (S : Strategy (directLdGame D))
+def ldtCoordinatePointMeasurementA
+
     (hS : S.IsProjective) (r : Fin D.k) :
     letI := D.toLDTFieldModel
     IdxProjMeas (Point D.toLDTParameters) (Fq D.toLDTParameters) S.ιA := by
@@ -295,8 +255,8 @@ noncomputable def ldtCoordinatePointMeasurementA
   exact (directCoordinateProjStrat D S hS r).pointMeasurementA
 
 /-- Bob's LDT point family obtained from direct coordinate `r`. -/
-noncomputable def ldtCoordinatePointMeasurementB
-    (D : DirectLdParams) (S : Strategy (directLdGame D))
+def ldtCoordinatePointMeasurementB
+
     (hS : S.IsProjective) (r : Fin D.k) :
     letI := D.toLDTFieldModel
     IdxProjMeas (Point D.toLDTParameters) (Fq D.toLDTParameters) S.ιB := by
@@ -305,7 +265,7 @@ noncomputable def ldtCoordinatePointMeasurementB
 
 /-- The LDT projective evaluation family associated with a global
 polynomial projective measurement. -/
-noncomputable def ldtPolynomialEvaluationMeasurement
+def ldtPolynomialEvaluationMeasurement
     (D : DirectLdParams) :
     letI := D.toLDTFieldModel
     {iota : Type*} → [Fintype iota] → [DecidableEq iota] →
@@ -313,11 +273,11 @@ noncomputable def ldtPolynomialEvaluationMeasurement
         IdxProjMeas (Point D.toLDTParameters) (Fq D.toLDTParameters) iota := by
   letI := D.toLDTFieldModel
   intro iota _ _ G u
-  exact ProjMeas.postprocess G (fun g => g u)
+  exact ProjMeas.postprocess G  fun g => g u 
 
 /-- Left placement of Alice's LDT point family. -/
-noncomputable def ldtPointAPlaced
-    (D : DirectLdParams) (S : Strategy (directLdGame D))
+def ldtPointAPlaced
+
     (hS : S.IsProjective) (r : Fin D.k) :
     letI := D.toLDTFieldModel
     Point D.toLDTParameters → Fq D.toLDTParameters → Op (S.ιA × S.ιB) := by
@@ -326,8 +286,8 @@ noncomputable def ldtPointAPlaced
   exact heteroKron ((ldtCoordinatePointMeasurementA D S hS r u).outcome a) 1
 
 /-- Right placement of Bob's LDT point family. -/
-noncomputable def ldtPointBPlaced
-    (D : DirectLdParams) (S : Strategy (directLdGame D))
+def ldtPointBPlaced
+
     (hS : S.IsProjective) (r : Fin D.k) :
     letI := D.toLDTFieldModel
     Point D.toLDTParameters → Fq D.toLDTParameters → Op (S.ιA × S.ιB) := by
@@ -336,7 +296,7 @@ noncomputable def ldtPointBPlaced
   exact heteroKron 1 ((ldtCoordinatePointMeasurementB D S hS r u).outcome a)
 
 /-- Left placement of an LDT polynomial evaluation family. -/
-noncomputable def ldtPolynomialEvaluationLeft
+def ldtPolynomialEvaluationLeft
     (D : DirectLdParams) {iotaA iotaB : Type*}
     [Fintype iotaA] [DecidableEq iotaA]
     [Fintype iotaB] [DecidableEq iotaB] :
@@ -348,7 +308,7 @@ noncomputable def ldtPolynomialEvaluationLeft
   exact heteroKron ((ldtPolynomialEvaluationMeasurement D G u).outcome a) 1
 
 /-- Right placement of an LDT polynomial evaluation family. -/
-noncomputable def ldtPolynomialEvaluationRight
+def ldtPolynomialEvaluationRight
     (D : DirectLdParams) {iotaA iotaB : Type*}
     [Fintype iotaA] [DecidableEq iotaA]
     [Fintype iotaB] [DecidableEq iotaB] :
@@ -360,7 +320,7 @@ noncomputable def ldtPolynomialEvaluationRight
   exact heteroKron 1 ((ldtPolynomialEvaluationMeasurement D G u).outcome a)
 
 /-- Left placement of an LDT global polynomial measurement. -/
-noncomputable def ldtPolynomialLeftPlaced
+def ldtPolynomialLeftPlaced
     (D : DirectLdParams) {iotaA iotaB : Type*}
     [Fintype iotaA] [DecidableEq iotaA]
     [Fintype iotaB] [DecidableEq iotaB] :
@@ -372,7 +332,7 @@ noncomputable def ldtPolynomialLeftPlaced
   exact heteroKron (G.outcome g) 1
 
 /-- Right placement of an LDT global polynomial measurement. -/
-noncomputable def ldtPolynomialRightPlaced
+def ldtPolynomialRightPlaced
     (D : DirectLdParams) {iotaA iotaB : Type*}
     [Fintype iotaA] [DecidableEq iotaA]
     [Fintype iotaB] [DecidableEq iotaB] :

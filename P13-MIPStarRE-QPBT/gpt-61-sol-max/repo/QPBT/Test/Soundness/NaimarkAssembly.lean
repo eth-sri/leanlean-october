@@ -57,8 +57,8 @@ theorem exists_arbitrary_strategy_isometry_bounds :
                 deltaQld a b ε P.m P.d P.q ∧
             (∀ W : PauliKind,
               pauliOperatorDistanceA P S w W ≤ deltaQld a b ε P.m P.d P.q) ∧
-            (∀ W : PauliKind,
-              pauliOperatorDistanceB P S w W ≤ deltaQld a b ε P.m P.d P.q) := by
+             ∀ W : PauliKind,
+              pauliOperatorDistanceB P S w W ≤ deltaQld a b ε P.m P.d P.q  := by
   obtain ⟨a, b, ha, hb, hb1, hproj⟩ := exists_projective_setting_isometry_bounds
   have haa : a ≤ 21 * a ^ 2 := by nlinarith
   refine ⟨21 * a ^ 2, b, by nlinarith, hb, hb1, ?_⟩
@@ -83,8 +83,7 @@ theorem exists_arbitrary_strategy_isometry_bounds :
   · rw [pauli_naimark_witness_state_distance_eq]
     exact hstate'.trans hmono
   · intro W
-    have hA' : pauliOperatorDistanceA P (pauliNaimarkStrategy P S) t W ≤
-        deltaQld a b ε P.m P.d P.q := hA W
+    have hA'  := hA W
     calc pauliOperatorDistanceA P S (pauliNaimarkWitness P S t) W
         ≤ 3 * pauliOperatorDistanceA P (pauliNaimarkStrategy P S) t W +
             6 * ‖isometryTensor t.φA t.φB (pauliNaimarkStrategy P S).ψ -
@@ -94,8 +93,7 @@ theorem exists_arbitrary_strategy_isometry_bounds :
             6 * deltaQld a b ε P.m P.d P.q ^ 2 := by linarith
       _ ≤ deltaQld (21 * a ^ 2) b ε P.m P.d P.q := habsorb
   · intro W
-    have hB' : pauliOperatorDistanceB P (pauliNaimarkStrategy P S) t W ≤
-        deltaQld a b ε P.m P.d P.q := hB W
+    have hB'  := hB W
     calc pauliOperatorDistanceB P S (pauliNaimarkWitness P S t) W
         ≤ 3 * pauliOperatorDistanceB P (pauliNaimarkStrategy P S) t W +
             6 * ‖isometryTensor t.φA t.φB (pauliNaimarkStrategy P S).ψ -

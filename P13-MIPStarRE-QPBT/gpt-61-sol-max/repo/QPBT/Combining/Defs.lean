@@ -1,5 +1,9 @@
 module
 
+public import QPBT.Algebra.CoordinatePolynomial
+
+public import QPBT.Types
+
 public import QPBT.Test.LowDegreeGameMeasurements
 public import QPBT.Test.PauliBasisTest
 
@@ -24,7 +28,7 @@ with paper origin in the same source at lines 1038--1048.
 
 @[expose] public section
 
-open scoped BigOperators
+open scoped BigOperators Classical
 
 namespace MIPStarRE.QPBT
 
@@ -36,19 +40,19 @@ noncomputable section
 /-- The bounded individual-degree polynomial outcome used by the global
 pair measurement.  This is the actual `polyFunc` subtype from
 `def:polyfunc`, not a coefficient-box replacement. -/
-noncomputable abbrev Poly (P : AdmissibleParams) :=
+abbrev Poly (P : AdmissibleParams) :=
   ↥(MIPStarRE.LDT.Preliminaries.polyFunc P.m (PauliScalar P) P.d)
 
 /-- Pairs of bounded polynomial representatives returned by the global
 measurement in `lem:qld-4-7`. -/
-noncomputable abbrev PolyPair (P : AdmissibleParams) := Poly P × Poly P
+abbrev PolyPair (P : AdmissibleParams) := Poly P × Poly P
 
 /-- This equivalence decomposes the extended coordinate set into the `X` block,
     the `Z` block, and the two scalar coordinates.  It supports blueprint
 `def:combine-map`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:970-989`. -/
 def finCombineEquiv (m : ℕ) :
-    Fin (2 * m + 2) ≃ ((Fin m ⊕ Fin m) ⊕ Fin 2) :=
+    Fin (2 * m + 2) ≃  (Fin m ⊕ Fin m) ⊕ Fin 2  :=
   (finCongr (by omega)).trans
     (finSumFinEquiv.symm.trans
       (Equiv.sumCongr finSumFinEquiv.symm (Equiv.refl (Fin 2))))
@@ -70,11 +74,11 @@ def betaVar (m : ℕ) : Fin (2 * m + 2) :=
   (finCombineEquiv m).symm (.inr 1)
 
 /-- Project an extended point onto its `X` coordinate block. -/
-def projX {K : Type*} {m : ℕ} (u : Fin (2 * m + 2) → K) : Fin m → K :=
+def projX {K : Type*} {m : ℕ} (u : MIPStarRE.QPBT.Coordinates (2 * m + 2) K) : MIPStarRE.QPBT.Coordinates m K :=
   fun i => u (embX m i)
 
 /-- Project an extended point onto its `Z` coordinate block. -/
-def projZ {K : Type*} {m : ℕ} (u : Fin (2 * m + 2) → K) : Fin m → K :=
+def projZ {K : Type*} {m : ℕ} (u : MIPStarRE.QPBT.Coordinates (2 * m + 2) K) : MIPStarRE.QPBT.Coordinates m K :=
   fun i => u (embZ m i)
 
 /-- Combine two multivariate polynomials by the formula
@@ -82,21 +86,17 @@ def projZ {K : Type*} {m : ℕ} (u : Fin (2 * m + 2) → K) : Fin m → K :=
 
 Blueprint `def:combine-map`; paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:970-983`. -/
-noncomputable def combinePoly {K : Type*} [CommSemiring K] {m : ℕ}
-    (f g : MvPolynomial (Fin m) K) : MvPolynomial (Fin (2 * m + 2)) K :=
+def combinePoly {K : Type*} [CommSemiring K] {m : ℕ}
+    (f g : MIPStarRE.QPBT.CoordinatePolynomial m K) : MIPStarRE.QPBT.CoordinatePolynomial (2 * m + 2) K :=
   MvPolynomial.X (alphaVar m) * MvPolynomial.rename (embX m) f +
     MvPolynomial.X (betaVar m) * MvPolynomial.rename (embZ m) g
 
 /-- Evaluation of `combinePoly` is the displayed combining formula. -/
 theorem combinePoly_eval {K : Type*} [CommSemiring K] {m : ℕ}
-    (f g : MvPolynomial (Fin m) K) (u : Fin (2 * m + 2) → K) :
+    (f g : MIPStarRE.QPBT.CoordinatePolynomial m K) (u : MIPStarRE.QPBT.Coordinates (2 * m + 2) K) :
     MvPolynomial.eval u (combinePoly f g) =
       u (alphaVar m) * MvPolynomial.eval (projX u) f +
-        u (betaVar m) * MvPolynomial.eval (projZ u) g := by
-  change MvPolynomial.eval u (combinePoly f g) =
-    u (alphaVar m) * MvPolynomial.eval (u ∘ embX m) f +
-      u (betaVar m) * MvPolynomial.eval (u ∘ embZ m) g
-  simp [combinePoly, MvPolynomial.eval_rename]
+        u (betaVar m) * MvPolynomial.eval (projZ u) g := by aesop (add simp [MvPolynomial.eval_rename, combinePoly])
 
 /-- A fresh variable times an injectively renamed bounded polynomial retains
 the same individual-degree bound.  This is a formalization-only auxiliary for
@@ -104,10 +104,9 @@ the same individual-degree bound.  This is a formalization-only auxiliary for
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:970-983`. -/
 private theorem x_mul_rename_mem_polyFunc {K : Type*} [CommSemiring K]
     {m n d : ℕ} (hd : 1 ≤ d) {e : Fin m → Fin n} (he : Function.Injective e)
-    {a : Fin n} (ha : ∀ i, e i ≠ a) {p : MvPolynomial (Fin m) K}
+    {a : Fin n} (ha : ∀ i, e i ≠ a) {p : MIPStarRE.QPBT.CoordinatePolynomial m K}
     (hp : p ∈ polyFunc m K d) :
     MvPolynomial.X a * MvPolynomial.rename e p ∈ polyFunc n K d := by
-  classical
   have hrenOutside {j : Fin n} (hj : j ∉ Set.range e) :
       (MvPolynomial.rename e p).degreeOf j = 0 := by
     apply Nat.le_zero.mp
@@ -151,10 +150,10 @@ blueprint
 boundary-hypothesis discussion in `docs/paper-gaps/qpbt_ld-dimension-divisibility.tex`.
 -/
 theorem combinePoly_mem_polyFunc {K : Type*} [CommSemiring K] {m d : ℕ}
-    (hd : 1 ≤ d) {f g : MvPolynomial (Fin m) K}
+    (hd : 1 ≤ d) {f g : MIPStarRE.QPBT.CoordinatePolynomial m K}
     (hf : f ∈ polyFunc m K d) (hg : g ∈ polyFunc m K d) :
     combinePoly f g ∈ polyFunc (2 * m + 2) K d := by
-  have hsymm : Function.Injective (finCombineEquiv m).symm :=
+  have hsymm  :=
     (finCombineEquiv m).symm.injective
   have hX : Function.Injective (embX m) := by
     intro i j hij
@@ -176,18 +175,20 @@ component by Pauli basis.  This is formalization-only support for
 `lem:qld-4-7`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1267-1274`. -/
 def evalAt {P : AdmissibleParams} (W : PauliKind)
-    (u : Fin P.m → PauliScalar P) (pair : PolyPair P) : PauliScalar P :=
+    (u : MIPStarRE.QPBT.PauliPoint P) (pair : PolyPair P) : PauliScalar P :=
   match W with
   | .X => MvPolynomial.eval u pair.1.1
   | .Z => MvPolynomial.eval u pair.2.1
+
+variable {K : Type*} [CommSemiring K] {c : ℕ} (aX bX aZ bZ uα vα uβ vβ : K) (f g : MIPStarRE.QPBT.Coordinates (c + 1) K)
 
 /-- The univariate polynomial before coefficient extraction in
 `combineLinePoly`.  The four first scalars describe the affine parameters on
 the two projected lines; the last four are the affine `alpha` and `beta`
 coordinates of the extended line. -/
-noncomputable def combineLinePolynomial {K : Type*} [CommSemiring K] {c : ℕ}
-    (aX bX aZ bZ uα vα uβ vβ : K)
-    (f g : Fin (c + 1) → K) : Polynomial K :=
+def combineLinePolynomial
+
+     : Polynomial K :=
   (Polynomial.C uα + Polynomial.C vα * Polynomial.X) *
       (linePolynomialOfCoefficients f).comp
         (Polynomial.C aX + Polynomial.C bX * Polynomial.X) +
@@ -200,8 +201,8 @@ This is the degree assertion accompanying Equation `eq:combine-lines` in
 blueprint
 `def:combine-map`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:984-989`. -/
-theorem combineLinePolynomial_natDegree_le {K : Type*} [CommSemiring K] {c : ℕ}
-    (aX bX aZ bZ uα vα uβ vβ : K) (f g : Fin (c + 1) → K) :
+theorem combineLinePolynomial_natDegree_le
+      :
     (combineLinePolynomial aX bX aZ bZ uα vα uβ vβ f g).natDegree ≤ c + 1 := by
   have affineDegree : ∀ u v : K,
       (Polynomial.C u + Polynomial.C v * Polynomial.X).natDegree ≤ 1 := by
@@ -211,7 +212,7 @@ theorem combineLinePolynomial_natDegree_le {K : Type*} [CommSemiring K] {c : ℕ
     · refine Polynomial.natDegree_mul_le.trans ?_
       rw [Polynomial.natDegree_C]
       simpa using Polynomial.natDegree_X_le (R := K)
-  have summandDegree : ∀ (a b u v : K) (h : Fin (c + 1) → K),
+  have summandDegree : ∀ (a b u v : K) (h : MIPStarRE.QPBT.Coordinates (c + 1) K),
       ((Polynomial.C u + Polynomial.C v * Polynomial.X) *
         (linePolynomialOfCoefficients h).comp
           (Polynomial.C a + Polynomial.C b * Polynomial.X)).natDegree ≤ c + 1 := by
@@ -238,9 +239,9 @@ fallback.
 This is Equation `eq:combine-lines` in blueprint
 `def:combine-map`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:984-989`. -/
-noncomputable def combineLinePoly {K : Type*} [CommSemiring K] {c : ℕ}
-    (aX bX aZ bZ uα vα uβ vβ : K)
-    (f g : Fin (c + 1) → K) : Fin (c + 1 + 1) → K :=
+def combineLinePoly
+
+     : MIPStarRE.QPBT.Coordinates (c + 1 + 1) K :=
   fun i => (combineLinePolynomial aX bX aZ bZ uα vα uβ vβ f g).coeff i.val
 
 /-- Compatibility of an extended line with two projected lines and their
@@ -251,8 +252,8 @@ constructs them from that condition, including zero directions. Compatibility
 alone does not make every coefficient answer a function on a singleton line;
 see issue Dengnifer/MIPStarRE-QPBT-bak#695. -/
 def IsCombineLineCompatible {K : Type*} [Field K] {m : ℕ}
-    (u v : Fin (2 * m + 2) → K)
-    (uX vX uZ vZ : Fin m → K)
+    (u v : MIPStarRE.QPBT.Coordinates (2 * m + 2) K)
+    (uX vX uZ vZ : MIPStarRE.QPBT.Coordinates m K)
     (aX bX aZ bZ uα vα uβ vβ : K) : Prop :=
   u (alphaVar m) = uα ∧ v (alphaVar m) = vα ∧
     u (betaVar m) = uβ ∧ v (betaVar m) = vβ ∧
@@ -267,8 +268,8 @@ blueprint
 `eq:combine-lines`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:984-989`. -/
 theorem combineLinePoly_spec {K : Type*} [Field K] {m c : ℕ}
-    (u v : Fin (2 * m + 2) → K) (uX vX uZ vZ : Fin m → K)
-    (aX bX aZ bZ uα vα uβ vβ : K) (f g : Fin (c + 1) → K)
+    (u v : MIPStarRE.QPBT.Coordinates (2 * m + 2) K) (uX vX uZ vZ : MIPStarRE.QPBT.Coordinates m K)
+    (aX bX aZ bZ uα vα uβ vβ : K) (f g : MIPStarRE.QPBT.Coordinates (c + 1) K)
     (hcompat : IsCombineLineCompatible u v uX vX uZ vZ
       aX bX aZ bZ uα vα uβ vβ) :
     ∀ t : K,
@@ -296,10 +297,12 @@ theorem combineLinePoly_spec {K : Type*} [Field K] {m c : ℕ}
     Polynomial.eval_X, Polynomial.eval_comp, linePolynomialOfCoefficients_eval]
   ring
 
+variable (L : LdParams) (i : Fin L.m)
+
 /-- The seed event defining the `i`-th original-dimensional restricted line
 law.  It is applied before the `LineDesc` decoder, since a geometric line does
 not determine the retained seed. -/
-def restrictedLineSeedEvent (L : LdParams) (i : Fin L.m)
+def restrictedLineSeedEvent
     (sample : LdSpace L × LdSpace L) : Prop :=
   chiIndex L sample.1.seed = i
 
@@ -315,7 +318,7 @@ CL map keeps the shared scalar coordinate, the pre-decoding law it generates
 against the point map gives positive mass to every coordinate-index event.  The
 witness is the constant seed reconstructed from the index by
 `seedOfIndexResidue`. -/
-private theorem clDistribution_seedEvent_positive (L : LdParams) (i : Fin L.m)
+private theorem clDistribution_seedEvent_positive
     (CL : LdSpace L → LdSpace L)
     (hseed : ∀ z : LdSpace L, (CL z).seed = z.seed) :
     0 < ∑ sample ∈
@@ -345,7 +348,7 @@ normalization in `restrictedALinePreDist` explicit.  It belongs to
 blueprint
 `def:ith-restricted-line`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1038-1048`. -/
-theorem restrictedALineSeedEvent_positive (L : LdParams) (i : Fin L.m) :
+theorem restrictedALineSeedEvent_positive   :
     0 < ∑ sample ∈
         (clDistribution (ldALineCL L) (ldPointCL L)).support.filter
           (restrictedLineSeedEvent L i),
@@ -355,7 +358,7 @@ theorem restrictedALineSeedEvent_positive (L : LdParams) (i : Fin L.m) :
 /-- The diagonal-line seed event has positive mass.  This is the corresponding
 normalization obligation from blueprint `def:ith-restricted-line`; paper lines
 1038--1048. -/
-theorem restrictedDLineSeedEvent_positive (L : LdParams) (i : Fin L.m) :
+theorem restrictedDLineSeedEvent_positive   :
     0 < ∑ sample ∈
         (clDistribution (ldDLineCL L) (ldPointCL L)).support.filter
           (restrictedLineSeedEvent L i),
@@ -363,7 +366,7 @@ theorem restrictedDLineSeedEvent_positive (L : LdParams) (i : Fin L.m) :
   clDistribution_seedEvent_positive L i (ldDLineCL L) fun _ => rfl
 
 /-- The normalized pre-decoding axis law conditioned on coordinate `i`. -/
-noncomputable def restrictedALinePreDist (L : LdParams) (i : Fin L.m) :
+def restrictedALinePreDist   :
     Distribution (LdSpace L × LdSpace L) :=
   Distribution.restrict
     (clDistribution (ldALineCL L) (ldPointCL L))
@@ -371,7 +374,7 @@ noncomputable def restrictedALinePreDist (L : LdParams) (i : Fin L.m) :
     (restrictedALineSeedEvent_positive L i)
 
 /-- The normalized pre-decoding diagonal law conditioned on coordinate `i`. -/
-noncomputable def restrictedDLinePreDist (L : LdParams) (i : Fin L.m) :
+def restrictedDLinePreDist   :
     Distribution (LdSpace L × LdSpace L) :=
   Distribution.restrict
     (clDistribution (ldDLineCL L) (ldPointCL L))
@@ -391,8 +394,8 @@ describes the source restriction; identifying this law's push-forward with it
 remains an open obligation recorded in
 `docs/paper-gaps/qpbt_ld-dimension-divisibility.tex`, section
 `sec:auxiliary-subline-scalars`. -/
-noncomputable def restrictedALineDist (L : LdParams) (i : Fin L.m) :
-    Distribution (LineDesc L × (Fin L.m → ScalarQ L)) :=
+def restrictedALineDist   :
+    Distribution (LineDesc L ×  MIPStarRE.QPBT.LdPoint L ) :=
   (restrictedALinePreDist L i).map fun sample =>
     (aLineDescOf L sample.1, sample.2.point)
 
@@ -407,26 +410,18 @@ describes the source restriction; identifying this law's push-forward with it
 remains an open obligation recorded in
 `docs/paper-gaps/qpbt_ld-dimension-divisibility.tex`, section
 `sec:auxiliary-subline-scalars`. -/
-noncomputable def restrictedDLineDist (L : LdParams) (i : Fin L.m) :
-    Distribution (LineDesc L × (Fin L.m → ScalarQ L)) :=
+def restrictedDLineDist   :
+    Distribution (LineDesc L ×  MIPStarRE.QPBT.LdPoint L ) :=
   (restrictedDLinePreDist L i).map fun sample =>
     (dLineDescOf L sample.1, sample.2.point)
 
 /-- Every restricted axis-line law has total mass one. -/
-theorem restrictedALineDist_isProbability (L : LdParams) (i : Fin L.m) :
-    (restrictedALineDist L i).IsProbability := by
-  unfold restrictedALineDist restrictedALinePreDist
-  exact (Distribution.restrict_isProbability
-    (clDistribution (ldALineCL L) (ldPointCL L))
-    (restrictedLineSeedEvent L i) (restrictedALineSeedEvent_positive L i)).map _
+theorem restrictedALineDist_isProbability   :
+    (restrictedALineDist L i).IsProbability := by simp_all [MIPStarRE.LDT.Distribution.IsProbability.map, restrictedALineDist, restrictedALinePreDist, Distribution.restrict_isProbability]
 
 /-- Every restricted diagonal-line law has total mass one. -/
-theorem restrictedDLineDist_isProbability (L : LdParams) (i : Fin L.m) :
-    (restrictedDLineDist L i).IsProbability := by
-  unfold restrictedDLineDist restrictedDLinePreDist
-  exact (Distribution.restrict_isProbability
-    (clDistribution (ldDLineCL L) (ldPointCL L))
-    (restrictedLineSeedEvent L i) (restrictedDLineSeedEvent_positive L i)).map _
+theorem restrictedDLineDist_isProbability   :
+    (restrictedDLineDist L i).IsProbability := by simp_all [MIPStarRE.LDT.Distribution.IsProbability.map, restrictedDLineDist, restrictedDLinePreDist, Distribution.restrict_isProbability]
 
 end
 

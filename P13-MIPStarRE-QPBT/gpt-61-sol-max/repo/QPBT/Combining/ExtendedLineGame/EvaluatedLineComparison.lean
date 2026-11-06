@@ -24,7 +24,7 @@ no coefficient-collision conclusion is asserted here.
 
 @[expose] public section
 
-open scoped BigOperators MatrixOrder ComplexOrder
+open scoped BigOperators MatrixOrder ComplexOrder Classical
 
 namespace MIPStarRE.QPBT
 
@@ -49,13 +49,13 @@ private theorem consistencyDefect_uniform_equiv_fst
     [Fintype Alpha] [DecidableEq Alpha]
     [Fintype I] [DecidableEq I]
     (e : Gamma ≃ X × Y) (A B : X → Alpha → Op I)
-    (psi : EuclideanSpace ℂ I) :
+    (psi : MIPStarRE.QPBT.StateVector I) :
     consistencyDefect (uniformDistribution Gamma)
         (fun sample answer => A (e sample).1 answer)
         (fun sample answer => B (e sample).1 answer) psi =
       consistencyDefect (uniformDistribution X) A B psi := by
   unfold consistencyDefect
-  let f : X → ℝ := fun x =>
+  let f  := fun x =>
     ∑ a : Alpha, ∑ b : Alpha,
       if a = b then 0 else
         (inner ℂ psi ((EuclideanSpace.equiv I ℂ).symm
@@ -64,10 +64,12 @@ private theorem consistencyDefect_uniform_equiv_fst
     avgOver (uniformDistribution X) f
   exact avgOver_uniform_equiv_fst e f
 
+variable (lines : ExtendedLinesWitness setting points deltaL)
+
 /-- The consistency defect of Alice's and Bob's completed axis-line readouts
 on the common direct-game sample. Failed evaluation remains `none`. -/
-noncomputable def axisSameLineEvaluationDefect
-    (lines : ExtendedLinesWitness setting points deltaL) : ℝ :=
+def axisSameLineEvaluationDefect
+     : ℝ :=
   consistencyDefect (uniformDistribution (DirectLdSpace P.extendedDirectLd))
     (fun sample answer =>
       (DistanceCalculus.leftPlacedMeasurement
@@ -85,8 +87,8 @@ noncomputable def axisSameLineEvaluationDefect
 
 /-- The consistency defect of Alice's and Bob's completed diagonal-line
 readouts on the common direct-game sample. Failed evaluation remains `none`. -/
-noncomputable def diagonalSameLineEvaluationDefect
-    (lines : ExtendedLinesWitness setting points deltaL) : ℝ :=
+def diagonalSameLineEvaluationDefect
+     : ℝ :=
   consistencyDefect (uniformDistribution (DirectLdSpace P.extendedDirectLd))
     (fun sample answer =>
       (DistanceCalculus.leftPlacedMeasurement
@@ -105,7 +107,7 @@ noncomputable def diagonalSameLineEvaluationDefect
 /-- The point/point read defect is unchanged when the jointly uniform direct
 sample's unused index and direction are retained. -/
 private theorem point_read_defect_on_direct_samples_eq_rejection
-    (lines : ExtendedLinesWitness setting points deltaL) :
+     :
     consistencyDefect (uniformDistribution (DirectLdSpace P.extendedDirectLd))
         (fun sample answer => heteroKron
           (((answerMeasurement lines .alice
@@ -151,8 +153,7 @@ private theorem point_read_defect_on_direct_samples_eq_rejection
             (projZ (directPointToPauli P point))).postprocess fun values =>
               some (directPointToPauli P point (alphaVar P.m) * values.1 +
                 directPointToPauli P point (betaVar P.m) * values.2)).effect answer))
-        (pairState setting) := by
-      exact consistencyDefect_uniform_equiv_fst
+        (pairState setting) := consistencyDefect_uniform_equiv_fst
         (Gamma := DirectLdSpace P.extendedDirectLd)
         (X := Fin P.extendedDirectLd.m → DirectScalarQ P.extendedDirectLd)
         (Y := Fin P.extendedDirectLd.m ×
@@ -177,7 +178,7 @@ private theorem point_read_defect_on_direct_samples_eq_rejection
 /-- Completed axis-line readouts compare through the two point readouts. This
 uses the consistency triangle and does not assume projectivity of `Qline`. -/
 theorem axis_same_line_evaluation_defect_le_branch_chain
-    (lines : ExtendedLinesWitness setting points deltaL) :
+     :
     axisSameLineEvaluationDefect lines ≤
       directLdBranchRejectionProbability P.extendedDirectLd (strategy lines)
           (.aline, .point) +
@@ -187,9 +188,7 @@ theorem axis_same_line_evaluation_defect_le_branch_chain
             directLdBranchRejectionProbability P.extendedDirectLd (strategy lines)
               (.point, .aline)) := by
   let μ := uniformDistribution (DirectLdSpace P.extendedDirectLd)
-  let A : DirectLdSpace P.extendedDirectLd →
-      Measurement (Option (PauliScalar P))
-        (setting.ExpandedLocalSpace .alice × setting.ExpandedLocalSpace .bob) :=
+  let A  :=
     fun sample => DistanceCalculus.leftPlacedMeasurement
       (ιB := setting.ExpandedLocalSpace .bob)
       ((answerMeasurement lines .alice
@@ -209,9 +208,7 @@ theorem axis_same_line_evaluation_defect_le_branch_chain
       (ιB := setting.ExpandedLocalSpace .bob)
       ((answerMeasurement lines .alice
         (.point, directLdMap P.extendedDirectLd .point sample)).postprocess pointGameRead)
-  let D : DirectLdSpace P.extendedDirectLd →
-      Measurement (Option (PauliScalar P))
-        (setting.ExpandedLocalSpace .alice × setting.ExpandedLocalSpace .bob) :=
+  let D  :=
     fun sample => DistanceCalculus.rightPlacedMeasurement
       (ιA := setting.ExpandedLocalSpace .alice)
       ((answerMeasurement lines .bob
@@ -220,18 +217,7 @@ theorem axis_same_line_evaluation_defect_le_branch_chain
   have hAB : consistencyDefect μ (fun sample answer => (A sample).effect answer)
       (fun sample answer => (B sample).effect answer) (pairState setting) ≤
       directLdBranchRejectionProbability P.extendedDirectLd (strategy lines)
-        (.aline, .point) := by
-    change consistencyDefect μ
-      (fun sample answer => heteroKron
-        (((answerMeasurement lines .alice
-          (.aline, directLdMap P.extendedDirectLd .aline sample)).postprocess
-            (axisGameRead sample)).effect answer) 1)
-      (fun sample answer => heteroKron 1
-        (((answerMeasurement lines .bob
-          (.point, directLdMap P.extendedDirectLd .point sample)).postprocess
-            pointGameRead).effect answer)) (pairState setting) ≤ _
-    rw [← completed_defect_eq_read_defect lines,
-      ← aline_point_rejection_eq_completedLinePointDefect lines]
+        (.aline, .point) := by aesop (add simp [aline_point_rejection_eq_completedLinePointDefect, completed_defect_eq_read_defect])
   have hCB : consistencyDefect μ (fun sample answer => (C sample).effect answer)
       (fun sample answer => (B sample).effect answer) (pairState setting) ≤
       directLdBranchRejectionProbability P.extendedDirectLd (strategy lines)
@@ -269,7 +255,7 @@ theorem axis_same_line_evaluation_defect_le_branch_chain
 /-- Completed diagonal-line readouts compare through the two point readouts.
 This uses the consistency triangle and does not assume projectivity of `Qline`. -/
 theorem diagonal_same_line_evaluation_defect_le_branch_chain
-    (lines : ExtendedLinesWitness setting points deltaL) :
+     :
     diagonalSameLineEvaluationDefect lines ≤
       directLdBranchRejectionProbability P.extendedDirectLd (strategy lines)
           (.dline, .point) +
@@ -279,9 +265,7 @@ theorem diagonal_same_line_evaluation_defect_le_branch_chain
             directLdBranchRejectionProbability P.extendedDirectLd (strategy lines)
               (.point, .dline)) := by
   let μ := uniformDistribution (DirectLdSpace P.extendedDirectLd)
-  let A : DirectLdSpace P.extendedDirectLd →
-      Measurement (Option (PauliScalar P))
-        (setting.ExpandedLocalSpace .alice × setting.ExpandedLocalSpace .bob) :=
+  let A  :=
     fun sample => DistanceCalculus.leftPlacedMeasurement
       (ιB := setting.ExpandedLocalSpace .bob)
       ((answerMeasurement lines .alice
@@ -301,9 +285,7 @@ theorem diagonal_same_line_evaluation_defect_le_branch_chain
       (ιB := setting.ExpandedLocalSpace .bob)
       ((answerMeasurement lines .alice
         (.point, directLdMap P.extendedDirectLd .point sample)).postprocess pointGameRead)
-  let D : DirectLdSpace P.extendedDirectLd →
-      Measurement (Option (PauliScalar P))
-        (setting.ExpandedLocalSpace .alice × setting.ExpandedLocalSpace .bob) :=
+  let D  :=
     fun sample => DistanceCalculus.rightPlacedMeasurement
       (ιA := setting.ExpandedLocalSpace .alice)
       ((answerMeasurement lines .bob
@@ -312,18 +294,7 @@ theorem diagonal_same_line_evaluation_defect_le_branch_chain
   have hAB : consistencyDefect μ (fun sample answer => (A sample).effect answer)
       (fun sample answer => (B sample).effect answer) (pairState setting) ≤
       directLdBranchRejectionProbability P.extendedDirectLd (strategy lines)
-        (.dline, .point) := by
-    change consistencyDefect μ
-      (fun sample answer => heteroKron
-        (((answerMeasurement lines .alice
-          (.dline, directLdMap P.extendedDirectLd .dline sample)).postprocess
-            (diagonalGameRead sample)).effect answer) 1)
-      (fun sample answer => heteroKron 1
-        (((answerMeasurement lines .bob
-          (.point, directLdMap P.extendedDirectLd .point sample)).postprocess
-            pointGameRead).effect answer)) (pairState setting) ≤ _
-    rw [← diagonal_completed_defect_eq_read_defect lines,
-      ← dline_point_rejection_eq_completedLinePointDefect lines]
+        (.dline, .point) := by aesop (add simp [diagonal_completed_defect_eq_read_defect, dline_point_rejection_eq_completedLinePointDefect])
   have hCB : consistencyDefect μ (fun sample answer => (C sample).effect answer)
       (fun sample answer => (B sample).effect answer) (pairState setting) ≤
       directLdBranchRejectionProbability P.extendedDirectLd (strategy lines)
@@ -361,7 +332,7 @@ theorem diagonal_same_line_evaluation_defect_le_branch_chain
 /-- The completed axis-line comparison obtained from the supplied line and
 point witnesses. This remains an `Option`-readout statement. -/
 theorem axis_same_line_evaluation_defect_le
-    (lines : ExtendedLinesWitness setting points deltaL) :
+     :
     axisSameLineEvaluationDefect lines ≤
       2 * deltaL + 2 * Real.sqrt (deltaQ + 2 * deltaL) := by
   have hforward := (completedLinePointDefect_sums_le lines).1
@@ -398,15 +369,14 @@ theorem axis_same_line_evaluation_defect_le
           (directLdBranchRejectionProbability P.extendedDirectLd (strategy lines)
               (.point, .point) +
             directLdBranchRejectionProbability P.extendedDirectLd (strategy lines)
-              (.point, .aline)) := by
-      exact add_le_add hforwardAxis le_rfl
+              (.point, .aline)) := add_le_add hforwardAxis le_rfl
     _ ≤ 2 * deltaL + 2 * Real.sqrt (deltaQ + 2 * deltaL) := by
       gcongr
 
 /-- The completed diagonal-line comparison obtained from the supplied line
 and point witnesses. This remains an `Option`-readout statement. -/
 theorem diagonal_same_line_evaluation_defect_le
-    (lines : ExtendedLinesWitness setting points deltaL) :
+     :
     diagonalSameLineEvaluationDefect lines ≤
       2 * deltaL + 2 * Real.sqrt (deltaQ + 2 * deltaL) := by
   have hforward := (completedLinePointDefect_sums_le lines).1
@@ -443,8 +413,7 @@ theorem diagonal_same_line_evaluation_defect_le
           (directLdBranchRejectionProbability P.extendedDirectLd (strategy lines)
               (.point, .point) +
             directLdBranchRejectionProbability P.extendedDirectLd (strategy lines)
-              (.point, .dline)) := by
-      exact add_le_add hforwardDiagonal le_rfl
+              (.point, .dline)) := add_le_add hforwardDiagonal le_rfl
     _ ≤ 2 * deltaL + 2 * Real.sqrt (deltaQ + 2 * deltaL) := by
       gcongr
 

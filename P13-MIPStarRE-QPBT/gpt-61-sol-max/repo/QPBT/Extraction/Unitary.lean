@@ -59,7 +59,7 @@ structure ExtractionWitness {P : AdmissibleParams} {epsilon deltaS : ℝ}
   swap_left_unitary : ∀ side : PlayerSide,
     (swapUnitary w side)ᴴ * swapUnitary w side = 1
   /-- The auxiliary state on registers `AA'BB'`. -/
-  aux : EuclideanSpace ℂ
+  aux : MIPStarRE.QPBT.StateVector
     (ExtractionAuxRegisters P S.toStrategy.ιA S.toStrategy.ιB)
   /-- The auxiliary state is normalized. -/
   aux_norm : ‖aux‖ = 1
@@ -183,7 +183,7 @@ theorem exists_extraction_witness_of_global_pair_witness_explicit
       (deltaExtract pauliBaselineExtractionConstant
         (deltaConstructPaulis pauliBaselineExtractionConstant
           epsilon deltaG P.m P.d P.q) P.m P.d P.q)) := by
-  let C : ℝ := pauliBaselineExtractionConstant
+  let C  := pauliBaselineExtractionConstant
   have hCE_C : 2 + 4 * Real.sqrt 172 ≤ C := by
     have hroot := Real.sqrt_nonneg (172 : ℝ)
     have hsquare := Real.sq_sqrt (by norm_num : (0 : ℝ) ≤ 172)
@@ -203,9 +203,7 @@ theorem exists_extraction_witness_of_global_pair_witness_explicit
   · obtain ⟨aux, haux, hclose⟩ :=
       exists_extraction_aux_of_global_pair_witness_explicit
         P epsilon deltaG hepsilon hepsilon_one hdeltaG S w
-    have hstate_delta :
-        ‖S.applyBoth (swapUnitary w .alice) (swapUnitary w .bob) S.psiHat -
-          S.idealExpState aux‖ ^ 2 ≤ 16 * delta :=
+    have hstate_delta  :=
       hclose
     have hnorm :
         ‖S.applyBoth (swapUnitary w .alice) (swapUnitary w .bob) S.psiHat -
@@ -284,7 +282,7 @@ theorem delta_extract_le_delta_qld_explicit (C a b : ℝ) (hC : 1 ≤ C) (ha : 1
     have hCsq : 1 ≤ C ^ 2 := by nlinarith
     nlinarith [mul_le_mul_of_nonneg_right hCsq ha0]
   intro params epsilon hepsilon0 hepsilon1
-  let degree : ℝ := ((params.m * params.d : ℕ) : ℝ)
+  let degree  := ((params.m * params.d : ℕ) : ℝ)
   have hdegree1 : 1 ≤ degree :=
     Nat.one_le_cast.mpr (Nat.mul_pos params.one_le_m params.hd)
   have hdegree0 : 0 ≤ degree := by linarith
@@ -293,28 +291,26 @@ theorem delta_extract_le_delta_qld_explicit (C a b : ℝ) (hC : 1 ≤ C) (ha : 1
     rw [hsize]
     exact_mod_cast Nat.one_le_pow _ _ (by norm_num)
   have hfield0 : (0 : ℝ) ≤ (params.q : ℝ) := by positivity
-  let amplitude : ℝ := a * degree ^ a
-  let rate : ℝ := epsilon ^ (b / 8) + (params.q : ℝ) ^ (-(b / 8)) +
-    (2 : ℝ) ^ (-((b / 8) * degree))
-  have hamplitude1 : 1 ≤ amplitude :=
+  let amplitude  := a * degree ^ a
+  let rate  := epsilon ^ (b / 8) + (params.q : ℝ) ^ (-(b / 8)) +
+    (2 : ℝ) ^ (-( b / 8  * degree))
+  have hamplitude1  :=
     one_le_mul_of_one_le_of_one_le ha.le (Real.one_le_rpow hdegree1 ha0)
   have hamplitude0 : 0 ≤ amplitude := by linarith
-  have hdegree_amplitude : degree ≤ amplitude :=
+  have hdegree_amplitude  :=
     (Real.self_le_rpow_of_one_le hdegree1 ha.le).trans
       (le_mul_of_one_le_left (Real.rpow_nonneg hdegree0 a) ha.le)
   have hrate0 : 0 ≤ rate := by dsimp [rate]; positivity
   have hepsilon_rate : epsilon ^ (b / 8) ≤ rate := by
     dsimp [rate]
     linarith [Real.rpow_nonneg hfield0 (-(b / 8)),
-      Real.rpow_nonneg (by norm_num : (0 : ℝ) ≤ 2) (-((b / 8) * degree))]
+      Real.rpow_nonneg (by norm_num : (0 : ℝ) ≤ 2) (-( b / 8  * degree))]
   have hfield_rate : (params.q : ℝ) ^ (-(b / 8)) ≤ rate := by
     dsimp [rate]
     linarith [Real.rpow_nonneg hepsilon0 (b / 8),
-      Real.rpow_nonneg (by norm_num : (0 : ℝ) ≤ 2) (-((b / 8) * degree))]
+      Real.rpow_nonneg (by norm_num : (0 : ℝ) ≤ 2) (-( b / 8  * degree))]
   have hroot_sum {first second third : ℝ}
-      (hfirst : 0 ≤ first) (hsecond : 0 ≤ second) (hthird : 0 ≤ third) :
-      (first + second + third) ^ (1 / 4 : ℝ) ≤
-        first ^ (1 / 4 : ℝ) + second ^ (1 / 4 : ℝ) + third ^ (1 / 4 : ℝ) :=
+      (hfirst : 0 ≤ first) (hsecond : 0 ≤ second) (hthird : 0 ≤ third)  :=
     (Real.rpow_add_le_add_rpow (p := (1 / 4 : ℝ)) (add_nonneg hfirst hsecond) hthird
       (by norm_num) (by norm_num)).trans
       (add_le_add (Real.rpow_add_le_add_rpow (p := (1 / 4 : ℝ)) hfirst hsecond
@@ -334,16 +330,14 @@ theorem delta_extract_le_delta_qld_explicit (C a b : ℝ) (hC : 1 ≤ C) (ha : 1
   have hglobal0 : 0 ≤ deltaQld a b epsilon params.m params.d params.q := by
     simp only [deltaQld, Real.rpow_eq_pow]
     positivity
-  have hglobal_root :
-      (deltaQld a b epsilon params.m params.d params.q) ^ (1 / 4 : ℝ) ≤
-        amplitude * rate := by
+  have hglobal_root  := by
     change (amplitude *
       (epsilon ^ b + (params.q : ℝ) ^ (-b) + (2 : ℝ) ^ (-(b * degree)))) ^
         (1 / 4 : ℝ) ≤ amplitude * rate
     rw [Real.mul_rpow hamplitude0 (by positivity)]
     exact mul_le_mul (Real.rpow_le_self_of_one_le hamplitude1 (by norm_num))
       hrate_root (by positivity) hamplitude0
-  have hsqrt_root : (Real.sqrt epsilon) ^ (1 / 4 : ℝ) ≤ amplitude * rate := by
+  have hsqrt_root :  Real.sqrt epsilon  ^ (1 / 4 : ℝ) ≤ amplitude * rate := by
     rw [Real.sqrt_eq_rpow, ← Real.rpow_mul hepsilon0]
     exact ((Real.rpow_le_rpow_of_exponent_ge' hepsilon0 hepsilon1
       (by positivity) (by linarith)).trans hepsilon_rate).trans
@@ -360,8 +354,8 @@ theorem delta_extract_le_delta_qld_explicit (C a b : ℝ) (hC : 1 ≤ C) (ha : 1
       ((Real.rpow_le_rpow_of_exponent_le hfield1 (by linarith)).trans hfield_rate)
       (by positivity) hamplitude0
   have hconstruct_root :
-      (deltaConstructPaulis C epsilon
-        (deltaQld a b epsilon params.m params.d params.q) params.m params.d params.q) ^
+       deltaConstructPaulis C epsilon
+        (deltaQld a b epsilon params.m params.d params.q) params.m params.d params.q  ^
           (1 / 4 : ℝ) ≤ 3 * C * amplitude * rate := by
     unfold deltaConstructPaulis
     rw [Real.mul_rpow hC0 (by positivity)]
@@ -369,8 +363,8 @@ theorem delta_extract_le_delta_qld_explicit (C a b : ℝ) (hC : 1 ≤ C) (ha : 1
       C ^ (1 / 4 : ℝ) *
           (deltaQld a b epsilon params.m params.d params.q + Real.sqrt epsilon +
             degree / (params.q : ℝ)) ^ (1 / 4 : ℝ) ≤
-          C * ((deltaQld a b epsilon params.m params.d params.q) ^ (1 / 4 : ℝ) +
-            (Real.sqrt epsilon) ^ (1 / 4 : ℝ) +
+          C * ( deltaQld a b epsilon params.m params.d params.q  ^ (1 / 4 : ℝ) +
+             Real.sqrt epsilon  ^ (1 / 4 : ℝ) +
             (degree / (params.q : ℝ)) ^ (1 / 4 : ℝ)) :=
         mul_le_mul (Real.rpow_le_self_of_one_le hC (by norm_num))
           (hroot_sum hglobal0 (by positivity) (by positivity))
@@ -386,10 +380,10 @@ theorem delta_extract_le_delta_qld_explicit (C a b : ℝ) (hC : 1 ≤ C) (ha : 1
         params.m params.d params.q ≤
         C * (3 * C * amplitude * rate + amplitude * rate) :=
       mul_le_mul_of_nonneg_left (add_le_add hconstruct_root hratio) hC0
-    _ = (C * (3 * C + 1)) * (amplitude * rate) := by ring
+    _ =  C * (3 * C + 1)  * (amplitude * rate) := by ring
     _ ≤ 4 * C ^ 2 * (amplitude * rate) :=
       mul_le_mul_of_nonneg_right (by nlinarith) (mul_nonneg hamplitude0 hrate0)
-    _ = (4 * C ^ 2 * a) * degree ^ a * rate := by dsimp [amplitude]; ring
+    _ =  4 * C ^ 2 * a  * degree ^ a * rate := by dsimp [amplitude]; ring
     _ ≤ deltaQld (4 * C ^ 2 * a) (b / 8) epsilon params.m params.d params.q :=
       mul_le_mul_of_nonneg_right
         (mul_le_mul_of_nonneg_left

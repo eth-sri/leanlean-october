@@ -43,13 +43,13 @@ noncomputable section
 for every question `x`. -/
 theorem opFamilyDistSq_uniform_le_four {X α ι : Type*} [Fintype X] [DecidableEq X]
     [Nonempty X] [Fintype α] [Fintype ι] [DecidableEq ι]
-    (A B : X → α → Op ι) (ψ : EuclideanSpace ℂ ι) (hψ : ‖ψ‖ = 1)
+    (A B : X → α → Op ι) (ψ : MIPStarRE.QPBT.StateVector ι) (hψ : ‖ψ‖ = 1)
     (hA : ∀ x, ∑ a, (A x a)ᴴ * A x a ≤ 1) (hB : ∀ x, ∑ a, (B x a)ᴴ * B x a ≤ 1) :
     opFamilyDistSq (uniformDistribution X) A B ψ ≤ 4 := by
   unfold opFamilyDistSq
   calc avgOver (uniformDistribution X) (fun x =>
         ∑ a, ‖applyOperatorToState (A x a - B x a) ψ‖ ^ 2)
-      ≤ avgOver (uniformDistribution X) (fun _ => (4 : ℝ)) := by
+      ≤ avgOver (uniformDistribution X)  fun _ => (4 : ℝ)  := by
         refine avgOver_mono _ _ _ fun x => ?_
         exact sum_norm_sub_apply_sq_le_four (A x) (B x) ψ hψ (hA x) (hB x)
     _ = 4 := avgOver_uniform_const _
@@ -201,15 +201,9 @@ theorem error_terms_le_rpow_eighth {ε C₀ : ℝ} (hε : 0 ≤ ε) (hε1 : ε �
         2 * C₀ * Real.rpow ε (1 / 8 : ℝ) := by
   rcases eq_or_lt_of_le hε with h0 | hpos
   · subst h0
-    have h8 : Real.rpow (0 : ℝ) (1 / 8 : ℝ) = 0 := Real.zero_rpow (by norm_num)
-    have h4 : Real.rpow (C₀ * (0 + Real.sqrt 0)) (1 / 4 : ℝ) = 0 := by
-      rw [Real.sqrt_zero, add_zero, mul_zero]
-      exact Real.zero_rpow (by norm_num)
-    rw [h8, h4, Real.sqrt_zero]
-    refine ⟨le_rfl, le_rfl, ?_⟩
-    positivity
-  · have hsqrt : Real.sqrt ε = Real.rpow ε (1 / 2 : ℝ) := Real.sqrt_eq_rpow ε
-    have hε1' : Real.rpow ε 1 = ε := Real.rpow_one ε
+    classical simp_all
+  · have hsqrt  := Real.sqrt_eq_rpow ε
+    have hε1'  := Real.rpow_one ε
     have hmono : ∀ y z : ℝ, z ≤ y → Real.rpow ε y ≤ Real.rpow ε z := fun y z hyz =>
       Real.rpow_le_rpow_of_exponent_ge hpos hε1 hyz
     refine ⟨?_, ?_, ?_⟩

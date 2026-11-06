@@ -19,7 +19,9 @@ proof of the adopted statement in
 
 @[expose] public section
 
-open scoped BigOperators MatrixOrder Matrix ComplexOrder
+variable {R₁ Γ₂ ι : Type*} [Fintype R₁] [DecidableEq R₁] [Fintype Γ₂] [DecidableEq Γ₂] [Fintype ι] [DecidableEq ι]
+
+open scoped BigOperators MatrixOrder Matrix ComplexOrder Classical
 
 namespace MIPStarRE.QPBT
 
@@ -31,18 +33,17 @@ open DistanceCalculus
 The error is their actual cross distance; no identical-copy or symmetry
 assumption is used. This is the generalization needed for the Schmidt mirror
 in `docs/paper-gaps/qpbt_pasting-product-error.tex`, issue Dengnifer/MIPStarRE-QPBT-bak#201. -/
-theorem abs_cross_move_gap_le_sqrt_distinct_families {R₁ Γ₂ ι : Type*}
-    [Fintype R₁] [DecidableEq R₁] [Fintype Γ₂] [DecidableEq Γ₂]
-    [Fintype ι] [DecidableEq ι]
+theorem abs_cross_move_gap_le_sqrt_distinct_families
+
+
     (P : Measurement R₁ ι) (G opposite : Measurement Γ₂ ι)
-    (ψ : EuclideanSpace ℂ (ι × ι)) (hψ : ‖ψ‖ = 1) :
+    (ψ : MIPStarRE.QPBT.StateVector (ι × ι)) (hψ : ‖ψ‖ = 1) :
     |(∑ a : R₁, ∑ g : Γ₂, stateQForm ψ (heteroKron 1
           (G.effect g * P.effect a * G.effect g * P.effect a))) -
         ∑ g : Γ₂, stateQForm ψ (heteroKron (opposite.effect g)
           (∑ a : R₁, P.effect a * G.effect g * P.effect a))| ≤
       Real.sqrt (∑ g : Γ₂, ‖applyOperatorToState
         (heteroKron 1 (G.effect g) - heteroKron (opposite.effect g) 1) ψ‖ ^ 2) := by
-  classical
   -- the inlined identities of the distance calculus; see issue Dengnifer/MIPStarRE-QPBT-bak#204
   have hqf : ∀ M N : Op (ι × ι), stateQForm ψ (M * N) =
       (inner ℂ (applyOperatorToState Mᴴ ψ) (applyOperatorToState N ψ)).re := by
@@ -66,10 +67,10 @@ theorem abs_cross_move_gap_le_sqrt_distinct_families {R₁ Γ₂ ι : Type*}
     intro M N
     unfold heteroKron
     exact Matrix.conjTranspose_kronecker M N
-  set u : R₁ × Γ₂ → EuclideanSpace ℂ (ι × ι) := fun p =>
+  set u : R₁ × Γ₂ → MIPStarRE.QPBT.StateVector (ι × ι) := fun p =>
     applyOperatorToState (heteroKron 1 (P.effect p.1) *
       (heteroKron 1 (G.effect p.2) - heteroKron (opposite.effect p.2) 1)) ψ with hu
-  set v : R₁ × Γ₂ → EuclideanSpace ℂ (ι × ι) := fun p =>
+  set v : R₁ × Γ₂ → MIPStarRE.QPBT.StateVector (ι × ι) := fun p =>
     applyOperatorToState (heteroKron 1 (G.effect p.2 * P.effect p.1)) ψ with hv
   -- the pointwise gap is the overlap of the moved vector with the cross vector
   have hpt : ∀ (a : R₁) (g : Γ₂),
@@ -120,7 +121,7 @@ theorem abs_cross_move_gap_le_sqrt_distinct_families {R₁ Γ₂ ι : Type*}
       heteroKron 1 (G.effect g) ≤ 1 := by
     simpa using MIPStarRE.QPBT.measurement_sum_adjoint_mul_le_one
       (Measurement.rightPlacement (ιA := ι) G)
-  have hmassU : (∑ p : R₁ × Γ₂, ‖u p‖ ^ 2) ≤
+  have hmassU :  ∑ p : R₁ × Γ₂, ‖u p‖ ^ 2  ≤
       ∑ g : Γ₂, ‖applyOperatorToState
         (heteroKron 1 (G.effect g) - heteroKron (opposite.effect g) 1) ψ‖ ^ 2 := by
     rw [Fintype.sum_prod_type, Finset.sum_comm]
@@ -128,7 +129,7 @@ theorem abs_cross_move_gap_le_sqrt_distinct_families {R₁ Γ₂ ι : Type*}
     simpa [hu] using sum_norm_mul_apply_le
       (fun a : R₁ => heteroKron (1 : Op ι) (P.effect a))
       (heteroKron 1 (G.effect g) - heteroKron (opposite.effect g) 1) ψ hCP
-  have hmassV : (∑ p : R₁ × Γ₂, ‖v p‖ ^ 2) ≤ 1 := by
+  have hmassV :  ∑ p : R₁ × Γ₂, ‖v p‖ ^ 2  ≤ 1 := by
     have hone : applyOperatorToState (1 : Op (ι × ι)) ψ = ψ := by
       simp [applyOperatorToState]
     rw [Fintype.sum_prod_type]
@@ -144,13 +145,13 @@ theorem abs_cross_move_gap_le_sqrt_distinct_families {R₁ Γ₂ ι : Type*}
           rw [hone, hψ, one_pow] at h
           simpa using h
   -- the expansion of the gap over the pairs
-  have hexpand : (∑ a : R₁, ∑ g : Γ₂, stateQForm ψ (heteroKron 1
-        (G.effect g * P.effect a * G.effect g * P.effect a))) -
-      (∑ g : Γ₂, stateQForm ψ (heteroKron (opposite.effect g)
-        (∑ a : R₁, P.effect a * G.effect g * P.effect a))) =
+  have hexpand :  ∑ a : R₁, ∑ g : Γ₂, stateQForm ψ (heteroKron 1
+        (G.effect g * P.effect a * G.effect g * P.effect a))  -
+       ∑ g : Γ₂, stateQForm ψ (heteroKron (opposite.effect g)
+        (∑ a : R₁, P.effect a * G.effect g * P.effect a))  =
       ∑ p : R₁ × Γ₂, (inner ℂ (u p) (v p)).re := by
-    have hB : (∑ g : Γ₂, stateQForm ψ (heteroKron (opposite.effect g)
-        (∑ a : R₁, P.effect a * G.effect g * P.effect a))) =
+    have hB :  ∑ g : Γ₂, stateQForm ψ (heteroKron (opposite.effect g)
+        (∑ a : R₁, P.effect a * G.effect g * P.effect a))  =
         ∑ a : R₁, ∑ g : Γ₂, stateQForm ψ (heteroKron (opposite.effect g)
           (P.effect a * G.effect g * P.effect a)) := by
       rw [Finset.sum_comm]
@@ -168,7 +169,7 @@ theorem abs_cross_move_gap_le_sqrt_distinct_families {R₁ Γ₂ ι : Type*}
     _ ≤ Real.sqrt (∑ p : R₁ × Γ₂, ‖u p‖ ^ 2) *
           Real.sqrt (∑ p : R₁ × Γ₂, ‖v p‖ ^ 2) := by
         simpa using Real.sum_mul_le_sqrt_mul_sqrt
-          (Finset.univ : Finset (R₁ × Γ₂)) (fun p => ‖u p‖) (fun p => ‖v p‖)
+          (Finset.univ : Finset (R₁ × Γ₂)) (fun p => ‖u p‖)  fun p => ‖v p‖ 
     _ ≤ Real.sqrt (∑ g : Γ₂, ‖applyOperatorToState
           (heteroKron 1 (G.effect g) - heteroKron (opposite.effect g) 1) ψ‖ ^ 2) * 1 := by
         refine mul_le_mul (Real.sqrt_le_sqrt hmassU) ?_ (Real.sqrt_nonneg _)
@@ -187,20 +188,19 @@ the first family, minus twice the cross term. This is the term-by-term
 expansion of step 5 of the proof of the adopted statement in
 `docs/paper-gaps/qpbt_pasting-product-error.tex`; blueprint
 `ch12_qpbt_games.tex:960-990`. -/
-theorem commutator_mass_eq_expansion {R₁ Γ₂ ι : Type*}
-    [Fintype R₁] [DecidableEq R₁] [Fintype Γ₂] [DecidableEq Γ₂]
-    [Fintype ι] [DecidableEq ι]
+theorem commutator_mass_eq_expansion
+
+
     (P : Measurement R₁ ι) (G : Measurement Γ₂ ι)
-    (ψ : EuclideanSpace ℂ (ι × ι))
+    (ψ : MIPStarRE.QPBT.StateVector (ι × ι))
     (hG : MIPStarRE.QPBT.Measurement.IsProjective G) :
-    (∑ a : R₁, ∑ g : Γ₂, ‖applyOperatorToState (heteroKron 1
-        (P.effect a * G.effect g - G.effect g * P.effect a)) ψ‖ ^ 2) =
-      (∑ a : R₁, ∑ g : Γ₂, ‖applyOperatorToState
-          (heteroKron 1 (P.effect a * G.effect g)) ψ‖ ^ 2) +
-        (∑ a : R₁, stateQForm ψ (heteroKron 1 (P.effect a * P.effect a))) -
+     ∑ a : R₁, ∑ g : Γ₂, ‖applyOperatorToState (heteroKron 1
+        (P.effect a * G.effect g - G.effect g * P.effect a)) ψ‖ ^ 2  =
+       ∑ a : R₁, ∑ g : Γ₂, ‖applyOperatorToState
+          (heteroKron 1 (P.effect a * G.effect g)) ψ‖ ^ 2  +
+         ∑ a : R₁, stateQForm ψ (heteroKron 1 (P.effect a * P.effect a))  -
         2 * ∑ a : R₁, ∑ g : Γ₂, stateQForm ψ (heteroKron 1
           (G.effect g * P.effect a * G.effect g * P.effect a)) := by
-  classical
   -- the inlined identities of the distance calculus; see issue Dengnifer/MIPStarRE-QPBT-bak#204
   have hqf : ∀ M N : Op (ι × ι), stateQForm ψ (M * N) =
       (inner ℂ (applyOperatorToState Mᴴ ψ) (applyOperatorToState N ψ)).re := by
@@ -279,40 +279,40 @@ theorem commutator_mass_eq_expansion {R₁ Γ₂ ι : Type*}
       hNN, hXN]
   -- the row sum at a fixed answer
   have hrow : ∀ a : R₁,
-      (∑ g : Γ₂, ‖applyOperatorToState (heteroKron 1
-          (P.effect a * G.effect g - G.effect g * P.effect a)) ψ‖ ^ 2) =
-        (∑ g : Γ₂, ‖applyOperatorToState
-            (heteroKron 1 (P.effect a * G.effect g)) ψ‖ ^ 2) +
+       ∑ g : Γ₂, ‖applyOperatorToState (heteroKron 1
+          (P.effect a * G.effect g - G.effect g * P.effect a)) ψ‖ ^ 2  =
+         ∑ g : Γ₂, ‖applyOperatorToState
+            (heteroKron 1 (P.effect a * G.effect g)) ψ‖ ^ 2  +
           stateQForm ψ (heteroKron 1 (P.effect a * P.effect a)) -
           2 * ∑ g : Γ₂, stateQForm ψ (heteroKron 1
             (G.effect g * P.effect a * G.effect g * P.effect a)) := by
     intro a
-    have h2 : (∑ g : Γ₂, stateQForm ψ (heteroKron 1
-        (P.effect a * G.effect g * P.effect a))) =
+    have h2 :  ∑ g : Γ₂, stateQForm ψ (heteroKron 1
+        (P.effect a * G.effect g * P.effect a))  =
         stateQForm ψ (heteroKron 1 (P.effect a * P.effect a)) := by
       rw [← stateQForm_finset_sum, ← heteroKron_finset_sum_right]
       congr 2
       rw [← Finset.sum_mul, ← Finset.mul_sum, G.sum_eq_one, mul_one]
-    calc (∑ g : Γ₂, ‖applyOperatorToState (heteroKron 1
-            (P.effect a * G.effect g - G.effect g * P.effect a)) ψ‖ ^ 2)
+    calc  ∑ g : Γ₂, ‖applyOperatorToState (heteroKron 1
+            (P.effect a * G.effect g - G.effect g * P.effect a)) ψ‖ ^ 2 
         = ∑ g : Γ₂, (‖applyOperatorToState
               (heteroKron 1 (P.effect a * G.effect g)) ψ‖ ^ 2 +
             stateQForm ψ (heteroKron 1 (P.effect a * G.effect g * P.effect a)) -
             2 * stateQForm ψ (heteroKron 1
               (G.effect g * P.effect a * G.effect g * P.effect a))) :=
           Finset.sum_congr rfl fun g _ => hpt a g
-      _ = (∑ g : Γ₂, ‖applyOperatorToState
-              (heteroKron 1 (P.effect a * G.effect g)) ψ‖ ^ 2) +
-            (∑ g : Γ₂, stateQForm ψ
-              (heteroKron 1 (P.effect a * G.effect g * P.effect a))) -
+      _ =  ∑ g : Γ₂, ‖applyOperatorToState
+              (heteroKron 1 (P.effect a * G.effect g)) ψ‖ ^ 2  +
+             ∑ g : Γ₂, stateQForm ψ
+              (heteroKron 1 (P.effect a * G.effect g * P.effect a))  -
             2 * ∑ g : Γ₂, stateQForm ψ (heteroKron 1
               (G.effect g * P.effect a * G.effect g * P.effect a)) := by
           rw [Finset.sum_sub_distrib, Finset.sum_add_distrib, Finset.mul_sum]
       _ = _ := by rw [h2]
-  calc (∑ a : R₁, ∑ g : Γ₂, ‖applyOperatorToState (heteroKron 1
-          (P.effect a * G.effect g - G.effect g * P.effect a)) ψ‖ ^ 2)
-      = ∑ a : R₁, ((∑ g : Γ₂, ‖applyOperatorToState
-            (heteroKron 1 (P.effect a * G.effect g)) ψ‖ ^ 2) +
+  calc  ∑ a : R₁, ∑ g : Γ₂, ‖applyOperatorToState (heteroKron 1
+          (P.effect a * G.effect g - G.effect g * P.effect a)) ψ‖ ^ 2 
+      = ∑ a : R₁, ( ∑ g : Γ₂, ‖applyOperatorToState
+            (heteroKron 1 (P.effect a * G.effect g)) ψ‖ ^ 2  +
           stateQForm ψ (heteroKron 1 (P.effect a * P.effect a)) -
           2 * ∑ g : Γ₂, stateQForm ψ (heteroKron 1
             (G.effect g * P.effect a * G.effect g * P.effect a))) :=
@@ -325,14 +325,13 @@ second tensor factor is at most one. This bounds the first fine term of the
 expansion of step 5 of the proof of the adopted statement in
 `docs/paper-gaps/qpbt_pasting-product-error.tex`; blueprint
 `ch12_qpbt_games.tex:960-990`. -/
-theorem sum_norm_ordered_product_le_one {R₁ Γ₂ ι : Type*}
-    [Fintype R₁] [DecidableEq R₁] [Fintype Γ₂] [DecidableEq Γ₂]
-    [Fintype ι] [DecidableEq ι]
+theorem sum_norm_ordered_product_le_one
+
+
     (P : Measurement R₁ ι) (G : Measurement Γ₂ ι)
-    (ψ : EuclideanSpace ℂ (ι × ι)) (hψ : ‖ψ‖ = 1) :
-    (∑ a : R₁, ∑ g : Γ₂, ‖applyOperatorToState
-      (heteroKron 1 (P.effect a * G.effect g)) ψ‖ ^ 2) ≤ 1 := by
-  classical
+    (ψ : MIPStarRE.QPBT.StateVector (ι × ι)) (hψ : ‖ψ‖ = 1) :
+     ∑ a : R₁, ∑ g : Γ₂, ‖applyOperatorToState
+      (heteroKron 1 (P.effect a * G.effect g)) ψ‖ ^ 2  ≤ 1 := by
   have hone : applyOperatorToState (1 : Op (ι × ι)) ψ = ψ := by
     simp [applyOperatorToState]
   have hCP : ∑ a : R₁, (heteroKron (1 : Op ι) (P.effect a))ᴴ *

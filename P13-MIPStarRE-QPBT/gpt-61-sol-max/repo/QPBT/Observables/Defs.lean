@@ -28,7 +28,7 @@ and answer forms come from blueprint `def:pauli-question-distribution` and
 
 @[expose] public section
 
-open scoped BigOperators Matrix ComplexOrder
+open scoped BigOperators Matrix ComplexOrder Classical
 
 namespace MIPStarRE.QPBT
 
@@ -45,11 +45,7 @@ inductive PlayerSide where
   | bob
   deriving DecidableEq, Repr, Inhabited
 
-instance instFintypePlayerSide : Fintype PlayerSide where
-  elems := {.alice, .bob}
-  complete := by
-    intro side
-    cases side <;> simp
+
 
 /-- A projective strategy satisfying the winning premise used throughout
 Section `sec:commutation`. The structure retains the distinct player spaces and
@@ -80,10 +76,12 @@ instance localSpaceDecidableEq (S : ProjectiveSetting P ε) (side : PlayerSide) 
     DecidableEq (S.LocalSpace side) := by
   cases side <;> simp only [LocalSpace] <;> infer_instance
 
+variable (S : ProjectiveSetting P ε) (side : PlayerSide)
+
 /-- Select the strategy measurement before outcome postprocessing on one
 player side. This is the heterogeneous interpretation of the shared symbol `M` at
 paper `14_analysis_of_the_pauli_basis_test.tex:160-184`. -/
-def strategyMeasurement (S : ProjectiveSetting P ε) (side : PlayerSide)
+def strategyMeasurement
     (question : PauliQuestion P) :
     Measurement (PauliAnswer P) (S.LocalSpace side) := by
   cases side with
@@ -95,7 +93,7 @@ point-question content from `def:pauli-question-distribution`, paper
 `08_classical_and_quantum_low_degree_tests.tex:997-1008`, blueprint
 `def:pauli-question-distribution`. -/
 def contentOfPoint (P : AdmissibleParams) (W : PauliKind)
-    (u : Fin P.m → PauliScalar P) : PauliSpace P :=
+    (u : MIPStarRE.QPBT.PauliPoint P) : PauliSpace P :=
   embedLd P W fun i =>
     match i with
     | .inl (.inl j) => u j
@@ -124,7 +122,7 @@ Square questions. This is the type-4 content of
 `08_classical_and_quantum_low_degree_tests.tex:1030-1120`, blueprint
 `def:pauli-question-distribution`. -/
 def contentOfTuple (P : AdmissibleParams)
-    (uX uZ : Fin P.m → PauliScalar P) (rX rZ : PauliScalar P) : PauliSpace P :=
+    (uX uZ : MIPStarRE.QPBT.PauliPoint P) (rX rZ : PauliScalar P) : PauliSpace P :=
   fun i =>
     match i with
     | .inl (.inl (.inl (.inl (.inl j)))) => uX j
@@ -138,7 +136,7 @@ def contentOfTuple (P : AdmissibleParams)
 `14_analysis_of_the_pauli_basis_test.tex:174-190` and
 blueprint `def:pauli-question-distribution`. -/
 def pointQuestion (P : AdmissibleParams) (W : PauliKind)
-    (u : Fin P.m → PauliScalar P) : PauliQuestion P :=
+    (u : MIPStarRE.QPBT.PauliPoint P) : PauliQuestion P :=
   (.point W, contentOfPoint P W u)
 
 /-- The typed axis or diagonal line question represented by a canonical
@@ -154,21 +152,21 @@ def lineQuestion (P : AdmissibleParams) (W : PauliKind)
 `14_analysis_of_the_pauli_basis_test.tex:210-249`; blueprint
 `lem:qld-win-implications`. -/
 def pairQuestion (P : AdmissibleParams)
-    (uX uZ : Fin P.m → PauliScalar P) (rX rZ : PauliScalar P) : PauliQuestion P :=
+    (uX uZ : MIPStarRE.QPBT.PauliPoint P) (rX rZ : PauliScalar P) : PauliQuestion P :=
   (.pair, contentOfTuple P uX uZ rX rZ)
 
 /-- The typed Pair/W question for a tuple `(u_X,u_Z,r_X,r_Z)`. Paper
 `14_analysis_of_the_pauli_basis_test.tex:210-249`; blueprint
 `lem:qld-win-implications`. -/
 def pairWQuestion (P : AdmissibleParams) (W : PauliKind)
-    (uX uZ : Fin P.m → PauliScalar P) (rX rZ : PauliScalar P) : PauliQuestion P :=
+    (uX uZ : MIPStarRE.QPBT.PauliPoint P) (rX rZ : PauliScalar P) : PauliQuestion P :=
   (.pairW W, contentOfTuple P uX uZ rX rZ)
 
 /-- The typed Magic Square question for a tuple `(u_X,u_Z,r_X,r_Z)`. Paper
 `14_analysis_of_the_pauli_basis_test.tex:213-258`; blueprint
 `lem:qld-win-implications`. -/
 def msQuestion (P : AdmissibleParams) (t : MsType)
-    (uX uZ : Fin P.m → PauliScalar P) (rX rZ : PauliScalar P) : PauliQuestion P :=
+    (uX uZ : MIPStarRE.QPBT.PauliPoint P) (rX rZ : PauliScalar P) : PauliQuestion P :=
   (.ms t, contentOfTuple P uX uZ rX rZ)
 
 -- The support rewrites below elaborate the `Fintype` instance of
@@ -232,12 +230,14 @@ def msAnswerOrZero {P : AdmissibleParams} (t : MsType) : PauliAnswer P → MsAns
       | .bit bit => .bit bit
       | _ => .bit 0
 
+variable (W : PauliKind)
+
 /-- The complete typed point measurement on one player side. It is the
 corresponding strategy measurement postprocessed by `pointAnswerOrZero`; paper
 `14_analysis_of_the_pauli_basis_test.tex:174-190`, blueprint
 `def:strategy-observables`. -/
-noncomputable def pointMeas (S : ProjectiveSetting P ε) (side : PlayerSide)
-    (W : PauliKind) (u : Fin P.m → PauliScalar P) :
+def pointMeas
+     (u : MIPStarRE.QPBT.PauliPoint P) :
     Measurement (PauliScalar P) (S.LocalSpace side) :=
   (S.strategyMeasurement side (pointQuestion P W u)).postprocess pointAnswerOrZero
 
@@ -245,8 +245,8 @@ noncomputable def pointMeas (S : ProjectiveSetting P ε) (side : PlayerSide)
 by degree-`m*d` coefficient lists. Paper
 `14_analysis_of_the_pauli_basis_test.tex:174-184`; blueprint
 `def:ideg-deg-polynomials` and `lem:qld-win-implications`. -/
-noncomputable def lineMeas (S : ProjectiveSetting P ε) (side : PlayerSide)
-    (W : PauliKind) (line : LineDesc P.toLdParams) :
+def lineMeas
+     (line : LineDesc P.toLdParams) :
     Measurement (DegPoly P.toLdParams (P.m * P.d)) (S.LocalSpace side) :=
   (S.strategyMeasurement side (lineQuestion P W line)).postprocess
     (lineAnswerOrZero P line)
@@ -256,25 +256,25 @@ only strategy-side family whose outcome uses `Option`; `none` is precisely the
 non-evaluating class of `def:ideg-deg-polynomials`, paper
 `14_analysis_of_the_pauli_basis_test.tex:51-62`, blueprint
 `def:ideg-deg-polynomials`. -/
-noncomputable def lineEvalMeas (S : ProjectiveSetting P ε) (side : PlayerSide)
-    (W : PauliKind) (line : LineDesc P.toLdParams)
-    (u : Fin P.m → PauliScalar P) :
+def lineEvalMeas
+     (line : LineDesc P.toLdParams)
+    (u : MIPStarRE.QPBT.PauliPoint P) :
     Measurement (Option (PauliScalar P)) (S.LocalSpace side) :=
   (S.lineMeas side W line).postprocess (evalOpt line u)
 
 /-- The complete typed Pair measurement on one player side. Paper
 `14_analysis_of_the_pauli_basis_test.tex:210-249`; blueprint
 `lem:qld-win-implications`. -/
-noncomputable def pairMeas (S : ProjectiveSetting P ε) (side : PlayerSide)
-    (uX uZ : Fin P.m → PauliScalar P) (rX rZ : PauliScalar P) :
+def pairMeas
+    (uX uZ : MIPStarRE.QPBT.PauliPoint P) (rX rZ : PauliScalar P) :
     Measurement (ZMod 2 × ZMod 2) (S.LocalSpace side) :=
   (S.strategyMeasurement side (pairQuestion P uX uZ rX rZ)).postprocess pairAnswerOrZero
 
 /-- The complete typed Pair/W measurement on one player side. Paper
 `14_analysis_of_the_pauli_basis_test.tex:210-263`; blueprint
 `lem:qld-win-implications`. -/
-noncomputable def pairWMeas (S : ProjectiveSetting P ε) (side : PlayerSide)
-    (W : PauliKind) (uX uZ : Fin P.m → PauliScalar P)
+def pairWMeas
+     (uX uZ : MIPStarRE.QPBT.PauliPoint P)
     (rX rZ : PauliScalar P) : Measurement (ZMod 2) (S.LocalSpace side) :=
   (S.strategyMeasurement side (pairWQuestion P W uX uZ rX rZ)).postprocess
     pairWAnswerOrZero
@@ -282,16 +282,16 @@ noncomputable def pairWMeas (S : ProjectiveSetting P ε) (side : PlayerSide)
 /-- The complete typed Pauli/W measurement on one player side. Paper
 `14_analysis_of_the_pauli_basis_test.tex:205-209`; blueprint
 `lem:qld-win-implications`. -/
-noncomputable def pauliMeas (S : ProjectiveSetting P ε) (side : PlayerSide)
-    (W : PauliKind) : Measurement (PauliRegister P) (S.LocalSpace side) :=
+def pauliMeas
+     : Measurement (PauliRegister P) (S.LocalSpace side) :=
   (S.strategyMeasurement side (pauliQuestion P W)).postprocess pauliAnswerOrZero
 
 /-- The complete typed Magic Square measurement on one player side. Its answer
 alphabet is exactly `MsAnswer`; these families therefore define a Magic Square
 strategy. Paper `14_analysis_of_the_pauli_basis_test.tex:213-258`;
 blueprint `lem:qld-win-implications`. -/
-noncomputable def msMeas (S : ProjectiveSetting P ε) (side : PlayerSide)
-    (t : MsType) (uX uZ : Fin P.m → PauliScalar P)
+def msMeas
+    (t : MsType) (uX uZ : MIPStarRE.QPBT.PauliPoint P)
     (rX rZ : PauliScalar P) : Measurement MsAnswer (S.LocalSpace side) :=
   (S.strategyMeasurement side (msQuestion P t uX uZ rX rZ)).postprocess
     (msAnswerOrZero t)
@@ -301,10 +301,12 @@ question type. This mass is kept separate from the fixed valid outcome into
 which typed postprocessing folds it. Paper
 `08_classical_and_quantum_low_degree_tests.tex:1126-1225`, blueprint
 `def:pauli-win-predicate`. -/
-noncomputable def wrongFormEffect {ι : Type*} [Fintype ι] [DecidableEq ι]
+def wrongFormEffect {ι : Type*} [Fintype ι] [DecidableEq ι]
     (t : PauliType) (M : Measurement (PauliAnswer P) ι) : Op ι :=
-  ∑ answer ∈ Finset.univ.filter (fun answer => validPauliAnswer t answer = false),
+  ∑ answer ∈ Finset.univ.filter  fun answer => validPauliAnswer t answer = false ,
     M.effect answer
+
+variable (r : PauliScalar P) (u : MIPStarRE.QPBT.PauliPoint P)
 
 /-- The side-indexed strategy observable
 `W^r(u) = sum_a (-1)^(tr(ar)) M_a^((Point,W),u)`. It uses the canonical
@@ -312,23 +314,23 @@ character `phaseSign` and the fixed trace of `P.model`. This is
 `def:strategy-observables`, paper
 `14_analysis_of_the_pauli_basis_test.tex:174-190`, blueprint
 `def:strategy-observables`. -/
-noncomputable def pointObs (S : ProjectiveSetting P ε) (side : PlayerSide)
-    (W : PauliKind) (r : PauliScalar P) (u : Fin P.m → PauliScalar P) :
+def pointObs
+       :
     Op (S.LocalSpace side) :=
   ∑ a : PauliScalar P,
     phaseSign (fixedBinTrace P.model (a * r)) • (S.pointMeas side W u).effect a
 
 /-- Select projectivity of the strategy POVM on either local space. -/
 private theorem strategyMeasurement_isProjective
-    (S : ProjectiveSetting P ε) (side : PlayerSide) (question : PauliQuestion P) :
+      (question : PauliQuestion P) :
     Measurement.IsProjective (S.strategyMeasurement side question) := by
   cases side with
   | alice => exact S.isProjective.1 question
   | bob => exact S.isProjective.2 question
 
 /-- The typed point measurement remains projective after answer folding. -/
-theorem pointMeas_isProjective (S : ProjectiveSetting P ε)
-    (side : PlayerSide) (W : PauliKind) (u : Fin P.m → PauliScalar P) :
+theorem pointMeas_isProjective
+      (u : MIPStarRE.QPBT.PauliPoint P) :
     Measurement.IsProjective (S.pointMeas side W u) := by
   apply SandwichProduct.postprocess_isProjective
   exact strategyMeasurement_isProjective S side _
@@ -336,18 +338,17 @@ theorem pointMeas_isProjective (S : ProjectiveSetting P ε)
 /-- The point observables form an additive representation, as follows from
 `eq:qld-strat-obs`, paper `14_analysis_of_the_pauli_basis_test.tex:174-190`.
 This multiplication law is a formalization-only consequence of that definition. -/
-theorem pointObs_mul (S : ProjectiveSetting P ε) (side : PlayerSide)
-    (W : PauliKind) (r s : PauliScalar P)
-    (u : Fin P.m → PauliScalar P) :
+theorem pointObs_mul
+     (r s : PauliScalar P)
+    (u : MIPStarRE.QPBT.PauliPoint P) :
     S.pointObs side W r u * S.pointObs side W s u =
       S.pointObs side W (r + s) u := by
-  classical
   let M := S.pointMeas side W u
-  have hM : Measurement.IsProjective M := pointMeas_isProjective S side W u
+  have hM  := pointMeas_isProjective S side W u
   change (∑ a : PauliScalar P,
       phaseSign (fixedBinTrace P.model (a * r)) • M.effect a) *
-      (∑ a : PauliScalar P,
-        phaseSign (fixedBinTrace P.model (a * s)) • M.effect a) =
+       ∑ a : PauliScalar P,
+        phaseSign (fixedBinTrace P.model (a * s)) • M.effect a  =
     ∑ a : PauliScalar P,
       phaseSign (fixedBinTrace P.model (a * (r + s))) • M.effect a
   calc
@@ -378,18 +379,17 @@ theorem pointObs_mul (S : ProjectiveSetting P ε) (side : PlayerSide)
         exact (ha' (Finset.mem_univ a)).elim
 
 /-- The zero-label point observable is the identity by measurement completeness. -/
-theorem pointObs_zero (S : ProjectiveSetting P ε) (side : PlayerSide)
-    (W : PauliKind) (u : Fin P.m → PauliScalar P) :
+theorem pointObs_zero
+     (u : MIPStarRE.QPBT.PauliPoint P) :
     S.pointObs side W 0 u = 1 := by
-  classical
   simpa [pointObs, fixedBinTrace, phaseSign] using (S.pointMeas side W u).sum_eq_one
 
 /-- The point observable squares to the identity. This is the assertion that
 the operator in `def:strategy-observables` has eigenvalues in `{+1,-1}`;
 paper `14_analysis_of_the_pauli_basis_test.tex:174-190`, blueprint
 `def:strategy-observables`. -/
-theorem pointObs_sq_eq_one (S : ProjectiveSetting P ε) (side : PlayerSide)
-    (W : PauliKind) (r : PauliScalar P) (u : Fin P.m → PauliScalar P) :
+theorem pointObs_sq_eq_one
+       :
     S.pointObs side W r u * S.pointObs side W r u = 1 := by
   haveI : CharP (PauliScalar P) 2 :=
     (Algebra.charP_iff (ZMod 2) (PauliScalar P) 2).mp (ZMod.charP 2)
@@ -399,10 +399,9 @@ theorem pointObs_sq_eq_one (S : ProjectiveSetting P ε) (side : PlayerSide)
 observable assertion following `eq:qld-strat-obs`, paper
 `14_analysis_of_the_pauli_basis_test.tex:174-190`, blueprint
 `def:strategy-observables`. -/
-theorem pointObs_isHermitian (S : ProjectiveSetting P ε) (side : PlayerSide)
-    (W : PauliKind) (r : PauliScalar P) (u : Fin P.m → PauliScalar P) :
+theorem pointObs_isHermitian
+       :
     (S.pointObs side W r u).IsHermitian := by
-  classical
   rw [pointObs, Matrix.IsHermitian]
   rw [Matrix.conjTranspose_sum]
   apply Finset.sum_congr rfl

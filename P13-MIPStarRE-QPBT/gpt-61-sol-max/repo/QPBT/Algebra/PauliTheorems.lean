@@ -17,7 +17,7 @@ declarations below are separately named QPBT specializations.
 
 @[expose] public section
 
-open scoped BigOperators Matrix
+open scoped BigOperators Matrix Classical
 
 namespace MIPStarRE.QPBT
 
@@ -36,30 +36,31 @@ noncomputable def primeTauPhase {p : ℕ} {K : Type*} [Field K] [Fintype K]
     (b : K) : Op K := fun i j =>
   if i = j then ffChar (p := p) (F := K) (b * j) else 0
 
+variable {p : ℕ} {K ι : Type*} [Field K] [Fintype K] [DecidableEq K] [Fact p.Prime]
+
 /-- The multi-qudit observable in `lem:twisted-commutation`, with `false`
 denoting phase; blueprint `lem:twisted-commutation`, paper
 `04_preliminaries.tex:1073-1095,1141-1151`. -/
-noncomputable def primeTauObservable {p : ℕ} {K ι : Type*} [Field K] [Fintype K]
-    [DecidableEq K] [Fact p.Prime] [Algebra (ZMod p) K]
+noncomputable def primeTauObservable
+      [Algebra (ZMod p) K]
     [Fintype ι] [DecidableEq ι] (W : Bool) (a : ι → K) : Op (ι → K) :=
   fun x y => ∏ i : ι, if W then primeTauShift (p := p) (a i) (x i) (y i)
     else primeTauPhase (p := p) (a i) (x i) (y i)
 
 /-- The coordinatewise tensor-entry presentation used by the Pauli observables. -/
 private def productMatrix {ι κ : Type*} [Fintype ι]
-    (A : ι → Matrix κ κ ℂ) : Matrix (ι → κ) (ι → κ) ℂ :=
+    (A : ι → MIPStarRE.Quantum.Op κ) : MIPStarRE.Quantum.Op (ι → κ) :=
   fun x y => ∏ i, A i (x i) (y i)
 
 /-- Matrix multiplication distributes over `productMatrix`. -/
 private theorem productMatrix_mul {ι κ : Type*} [Fintype ι] [DecidableEq ι]
     [Fintype κ]
-    (A B : ι → Matrix κ κ ℂ) :
-    (productMatrix A * productMatrix B : Matrix (ι → κ) (ι → κ) ℂ) =
-      productMatrix (fun i => A i * B i) := by
-  classical
+    (A B : ι → MIPStarRE.Quantum.Op κ) :
+    (productMatrix A * productMatrix B : MIPStarRE.Quantum.Op (ι → κ)) =
+      productMatrix  fun i => A i * B i  := by
   ext x y
   simpa only [productMatrix, Matrix.mul_apply, Finset.prod_mul_distrib] using
-    (Fintype.prod_sum (fun i z => A i (x i) z * B i z (y i))).symm
+    (Fintype.prod_sum  fun i z => A i (x i) z * B i z (y i) ).symm
 
 /-- Two single-coordinate shifts compose by adding their displacements. -/
 private theorem primeTauShift_mul {p : ℕ} {K : Type*} [Field K] [Fintype K]
@@ -78,11 +79,10 @@ private theorem primeTauPhase_mul {p : ℕ} {K : Type*} [Field K] [Fintype K]
   simp [Matrix.mul_apply, primeTauPhase, add_mul, AddChar.map_add_eq_mul]
 
 /-- The generalized Pauli observable with zero label is the identity. -/
-private theorem primeTauObservable_zero {p : ℕ} {K ι : Type*} [Field K]
-    [Fintype K] [DecidableEq K] [Fact p.Prime] [Algebra (ZMod p) K]
+private theorem primeTauObservable_zero
+       [Algebra (ZMod p) K]
     [Fintype ι] [DecidableEq ι] (W : Bool) :
     primeTauObservable (p := p) W (0 : ι → K) = 1 := by
-  classical
   ext x y
   cases W <;>
     simp only [primeTauObservable, if_true, Pi.zero_apply, primeTauShift,
@@ -99,8 +99,8 @@ private theorem primeTauObservable_zero {p : ℕ} {K ι : Type*} [Field K]
 
 /-- The product identity blueprint
 `eq:pauli-product-power`, paper `04_preliminaries.tex:1082-1089`. -/
-theorem primeTauObservable_mul {p : ℕ} {K ι : Type*} [Field K] [Fintype K]
-    [DecidableEq K] [Fact p.Prime] [Algebra (ZMod p) K] [Fintype ι]
+theorem primeTauObservable_mul
+      [Algebra (ZMod p) K] [Fintype ι]
     [DecidableEq ι] (W : Bool) (a a' : ι → K) :
     primeTauObservable (p := p) W a * primeTauObservable (p := p) W a' =
       primeTauObservable (p := p) W (a + a') := by
@@ -108,27 +108,27 @@ theorem primeTauObservable_mul {p : ℕ} {K ι : Type*} [Field K] [Fintype K]
   | false =>
       change productMatrix (fun i => primeTauPhase (p := p) (a i)) *
           productMatrix (fun i => primeTauPhase (p := p) (a' i)) =
-        productMatrix (fun i => primeTauPhase (p := p) ((a + a') i))
+        productMatrix  fun i => primeTauPhase (p := p) ((a + a') i) 
       simpa [primeTauPhase_mul] using
-        (productMatrix_mul
+         productMatrix_mul
           (A := fun i => primeTauPhase (p := p) (a i))
-          (B := fun i => primeTauPhase (p := p) (a' i)))
+          (B := fun i => primeTauPhase (p := p) (a' i)) 
   | true =>
       change productMatrix (fun i => primeTauShift (p := p) (a i)) *
           productMatrix (fun i => primeTauShift (p := p) (a' i)) =
-        productMatrix (fun i => primeTauShift (p := p) ((a + a') i))
+        productMatrix  fun i => primeTauShift (p := p) ((a + a') i) 
       simpa [primeTauShift_mul] using
-        (productMatrix_mul
+         productMatrix_mul
           (A := fun i => primeTauShift (p := p) (a i))
-          (B := fun i => primeTauShift (p := p) (a' i)))
+          (B := fun i => primeTauShift (p := p) (a' i)) 
 
 /-- Natural powers of a generalized Pauli observable multiply its label by
 repeated addition. -/
-private theorem primeTauObservable_pow_nat {p : ℕ} {K ι : Type*} [Field K]
-    [Fintype K] [DecidableEq K] [Fact p.Prime] [Algebra (ZMod p) K]
+private theorem primeTauObservable_pow_nat
+       [Algebra (ZMod p) K]
     [Fintype ι] [DecidableEq ι] (W : Bool) (a : ι → K) (n : ℕ) :
-    (primeTauObservable (p := p) W a) ^ n =
-      primeTauObservable (p := p) W (fun i => n • a i) := by
+     primeTauObservable (p := p) W a  ^ n =
+      primeTauObservable (p := p) W  fun i => n • a i  := by
   induction n with
   | zero =>
       rw [pow_zero]
@@ -139,27 +139,27 @@ private theorem primeTauObservable_pow_nat {p : ℕ} {K ι : Type*} [Field K]
       exact (primeTauObservable_zero (p := p) (K := K) (ι := ι) W).symm
   | succ n ih =>
       calc
-        (primeTauObservable (p := p) W a) ^ (n + 1) =
-            (primeTauObservable (p := p) W a) ^ n *
+         primeTauObservable (p := p) W a  ^ (n + 1) =
+             primeTauObservable (p := p) W a  ^ n *
               primeTauObservable (p := p) W a := pow_succ _ _
         _ = primeTauObservable (p := p) W (fun i => n • a i) *
               primeTauObservable (p := p) W a := by rw [ih]
         _ = primeTauObservable (p := p) W ((fun i => n • a i) + a) :=
               primeTauObservable_mul W _ _
-        _ = primeTauObservable (p := p) W (fun i => (n + 1) • a i) := by
-              have hlabels : ((fun i => n • a i) + a) =
-                  (fun i => (n + 1) • a i) := by
+        _ = primeTauObservable (p := p) W  fun i => (n + 1) • a i  := by
+              have hlabels :  (fun i => n • a i) + a  =
+                   fun i => (n + 1) • a i  := by
                 funext i
                 rw [Pi.add_apply, add_nsmul, one_nsmul]
               exact congrArg
-                (fun c => primeTauObservable (p := p) W c) hlabels
+                ( primeTauObservable (p := p) W ) hlabels
 
 /-- The characteristic-`p` consequence of `primeTauObservable_pow`, blueprint
 `eq:pauli-product-power`, paper `04_preliminaries.tex:1088-1089`. -/
-theorem primeTauObservable_pow_char {p : ℕ} {K ι : Type*} [Field K] [Fintype K]
-    [DecidableEq K] [Fact p.Prime] [Algebra (ZMod p) K] [Fintype ι]
+theorem primeTauObservable_pow_char
+      [Algebra (ZMod p) K] [Fintype ι]
     [DecidableEq ι] (W : Bool) (a : ι → K) :
-    (primeTauObservable (p := p) W a) ^ p = 1 := by
+     primeTauObservable (p := p) W a  ^ p = 1 := by
   haveI : CharP K p := (Algebra.charP_iff (ZMod p) K p).mp (ZMod.charP p)
   rw [primeTauObservable_pow_nat]
   have hlabel : (fun i => p • a i) = (0 : ι → K) := by
@@ -173,7 +173,7 @@ private theorem primeTauShift_mul_primeTauPhase {p : ℕ} {K : Type*} [Field K]
     [Fintype K] [DecidableEq K] [Fact p.Prime] [Algebra (ZMod p) K]
     (a b : K) :
     primeTauShift (p := p) a * primeTauPhase (p := p) b =
-      (ffChar (p := p) (F := K) (-a * b)) •
+       ffChar (p := p) (F := K) (-a * b)  •
         (primeTauPhase (p := p) b * primeTauShift (p := p) a) := by
   ext x y
   by_cases hxy : x = y + a
@@ -189,27 +189,27 @@ private theorem primeTauShift_mul_primeTauPhase {p : ℕ} {K : Type*} [Field K]
 
 /-- The source multi-qudit twisted relation blueprint
 `eq:twisted-fq`, paper `04_preliminaries.tex:1090-1095,1141-1151`. -/
-theorem primeTauObservable_X_mul_Z {p : ℕ} {K ι : Type*} [Field K] [Fintype K]
-    [DecidableEq K] [Fact p.Prime] [Algebra (ZMod p) K] [Fintype ι]
+theorem primeTauObservable_X_mul_Z
+      [Algebra (ZMod p) K] [Fintype ι]
     [DecidableEq ι] [Nonempty ι] (a b : ι → K) :
     primeTauObservable (p := p) true a * primeTauObservable (p := p) false b =
-      (ffChar (p := p) (F := K) (-dotProduct a b)) •
+       ffChar (p := p) (F := K) (-dotProduct a b)  •
         (primeTauObservable (p := p) false b * primeTauObservable (p := p) true a) := by
   let ψ := ffChar (p := p) (F := K)
-  have hchar : ψ (-dotProduct a b) = ∏ i, ψ (-(a i) * b i) := by
+  have hchar  := by
     calc
-      ψ (-dotProduct a b) = ψ (∑ i, -(a i) * b i) := by
+      ψ (-dotProduct a b) = ψ (∑ i, - a i  * b i) := by
         congr 1
         simp [dotProduct]
-      _ = ∏ i, ψ (-(a i) * b i) := by
+      _ = ∏ i, ψ (- a i  * b i) := by
         simpa only [AddChar.toMonoidHom_apply, toAdd_prod, toAdd_ofAdd] using
-          (map_prod ψ.toMonoidHom (fun i => Multiplicative.ofAdd (-(a i) * b i))
-            Finset.univ)
+           map_prod ψ.toMonoidHom (fun i => Multiplicative.ofAdd (- a i  * b i))
+            Finset.univ 
   change productMatrix (fun i => primeTauShift (p := p) (a i)) *
       productMatrix (fun i => primeTauPhase (p := p) (b i)) =
     ψ (-dotProduct a b) •
       (productMatrix (fun i => primeTauPhase (p := p) (b i)) *
-        productMatrix (fun i => primeTauShift (p := p) (a i)))
+        productMatrix  fun i => primeTauShift (p := p) (a i) )
   rw [productMatrix_mul, productMatrix_mul]
   ext x y
   simp only [productMatrix, primeTauShift_mul_primeTauPhase, Matrix.smul_apply,
@@ -237,21 +237,13 @@ private theorem tauObservable_eq_primeTauObservable {K ι : Type*} [Field K]
       rfl
   | Z =>
       ext x y
-      simp only [tauObservable, primeTauObservable, Bool.false_eq_true, if_false,
-        tauPhase, primeTauPhase]
-      apply Finset.prod_congr rfl
-      intro i hi
-      by_cases hxy : x i = y i
-      · rw [if_pos hxy, if_pos hxy, ffChar_apply]
-        exact phaseSign_eq_ffChar _
-      · rw [if_neg hxy, if_neg hxy]
+      simp_all only [if_false, Bool.false_eq_true, ffChar_apply, phaseSign_eq_ffChar, tauObservable, tauPhase, primeTauObservable, primeTauPhase]
 
 /-- With no coordinates, every binary Pauli observable is the identity. -/
 private theorem tauObservable_eq_one_of_isEmpty {K ι : Type*} [Field K]
     [DecidableEq K] [Algebra (ZMod 2) K] [Fintype ι]
     [DecidableEq ι] [IsEmpty ι] (W : PauliKind) (a : ι → K) :
     tauObservable W a = 1 := by
-  classical
   ext x y
   have hxy : x = y := Subsingleton.elim _ _
   subst y
@@ -266,14 +258,7 @@ from the general-prime identity as documented in
 theorem tauObservable_mul {K ι : Type*} [Field K] [Fintype K] [DecidableEq K]
     [Algebra (ZMod 2) K] [Fintype ι] [DecidableEq ι]
     (W : PauliKind) (a a' : ι → K) :
-    tauObservable W a * tauObservable W a' = tauObservable W (a + a') := by
-  cases W with
-  | X =>
-      simpa only [tauObservable_eq_primeTauObservable] using
-        (primeTauObservable_mul (p := 2) true a a')
-  | Z =>
-      simpa only [tauObservable_eq_primeTauObservable] using
-        (primeTauObservable_mul (p := 2) false a a')
+    tauObservable W a * tauObservable W a' = tauObservable W (a + a') := by simp_all [primeTauObservable_mul, tauObservable_eq_primeTauObservable]
 
 /-- Binary characteristic-two specialization of blueprint
 `eq:pauli-product-power`, paper `04_preliminaries.tex:1088-1089`.
@@ -287,10 +272,10 @@ theorem tauObservable_sq {K ι : Type*} [Field K] [Fintype K] [DecidableEq K]
   cases W with
   | X =>
       simpa only [tauObservable_eq_primeTauObservable, pow_two] using
-        (primeTauObservable_pow_char (p := 2) true a)
+         primeTauObservable_pow_char (p := 2) true a 
   | Z =>
       simpa only [tauObservable_eq_primeTauObservable, pow_two] using
-        (primeTauObservable_pow_char (p := 2) false a)
+         primeTauObservable_pow_char (p := 2) false a 
 
 /-- Binary specialization of blueprint
 `eq:twisted-fq`, paper `04_preliminaries.tex:1090-1095`.
@@ -301,15 +286,15 @@ from the general-prime identity as documented in
 theorem tauObservable_X_mul_Z {K ι : Type*} [Field K] [Fintype K] [DecidableEq K]
     [Algebra (ZMod 2) K] [Fintype ι] [DecidableEq ι] (a b : ι → K) :
     tauObservable .X a * tauObservable .Z b =
-      (phaseSign (binTrace K (dotProduct a b))) •
+       phaseSign (binTrace K (dotProduct a b))  •
         (tauObservable .Z b * tauObservable .X a) := by
   cases isEmpty_or_nonempty ι with
   | inl hι =>
-      letI : IsEmpty ι := hι
+      letI  := hι
       rw [tauObservable_eq_one_of_isEmpty]
       simp [dotProduct, phaseSign]
   | inr hι =>
-      letI : Nonempty ι := hι
+      letI  := hι
       have hphase : ffChar (p := 2) (F := K) (-dotProduct a b) =
           phaseSign (binTrace K (dotProduct a b)) := by
         rw [ffChar_two_eq_phaseSign]
@@ -317,7 +302,7 @@ theorem tauObservable_X_mul_Z {K ι : Type*} [Field K] [Fintype K] [DecidableEq 
         rw [map_neg]
         exact ZMod.neg_eq_self_mod_two _
       simpa only [tauObservable_eq_primeTauObservable, hphase] using
-        (primeTauObservable_X_mul_Z (p := 2) a b)
+         primeTauObservable_X_mul_Z (p := 2) a b 
 
 /-- Expand every register label in the fixed self-dual binary basis. This
 arbitrary-index construction is the computational-basis identification in the
@@ -325,7 +310,7 @@ proof of `lem:pauli-binary`, shared by the algebra and soundness modules. -/
 noncomputable def quditQubitLabelEquiv {q : ℕ} {ι : Type*}
     (F : FixedFieldModel q) :
     (ι → F.K) ≃ (ι × Fin F.basisDim → ZMod 2) :=
-  (Equiv.piCongrRight (fun _ : ι => F.binaryCoordinates.toEquiv)).trans
+  (Equiv.piCongrRight  fun _ : ι => F.binaryCoordinates.toEquiv ).trans
     (Equiv.curry ι (Fin F.basisDim) (ZMod 2)).symm
 
 /-- The label equivalence is the uncurried form of `kappaVec`. -/
@@ -393,7 +378,6 @@ private theorem tauObservable_reindex_quditQubitLabelEquiv
       Matrix.reindex (quditQubitLabelEquiv F).symm
         (quditQubitLabelEquiv F).symm
         (tauObservable W (quditQubitLabelEquiv F a)) := by
-  classical
   ext x y
   simp only [Matrix.reindex_apply, Matrix.submatrix_apply, Equiv.symm_symm]
   cases W with
@@ -430,7 +414,6 @@ theorem pauliProj_reindex_quditQubitLabelEquiv
       Matrix.reindex (quditQubitLabelEquiv F).symm
         (quditQubitLabelEquiv F).symm
         (pauliProj W (kappaVec F u)) := by
-  classical
   rw [pauliProj_eq_avg_tauObservable, pauliProj_eq_avg_tauObservable]
   ext x y
   simp only [Matrix.smul_apply, Matrix.sum_apply, smul_eq_mul,

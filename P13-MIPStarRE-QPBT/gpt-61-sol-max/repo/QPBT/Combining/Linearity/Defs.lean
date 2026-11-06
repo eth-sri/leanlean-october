@@ -69,9 +69,7 @@ adjoint is its own inverse. -/
 theorem isometry (hX : IsBinaryObservable X) : Xᴴ * X = 1 := by
   rw [hX.conjTranspose_eq, hX.mul_self_eq_one]
 
-/-- The identity is a binary observable. -/
-theorem one : IsBinaryObservable (1 : Op ι) :=
-  ⟨Matrix.isHermitian_one, one_mul 1⟩
+
 
 /-- The product of two commuting binary observables is a binary observable. -/
 theorem mul (hX : IsBinaryObservable X) (hY : IsBinaryObservable Y)

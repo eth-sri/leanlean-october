@@ -40,7 +40,7 @@ variable {ιA ιB κA κB : Type*}
 /-- Joint expectations factor after regrouping an independent pair of bipartite
 states by player. The shuffle sends `((i, j), (k, l))` to `((i, k), (j, l))`. -/
 theorem inner_prodShuffle_vecTensor_heteroKron
-    (ψ : EuclideanSpace ℂ (ιA × ιB)) (φ : EuclideanSpace ℂ (κA × κB))
+    (ψ : MIPStarRE.QPBT.StateVector (ιA × ιB)) (φ : MIPStarRE.QPBT.StateVector (κA × κB))
     (A : Op ιA) (B : Op ιB) (R : Op κA) (T : Op κB) :
     inner ℂ (reindexState prodShuffle (vecTensor ψ φ))
         (applyOperatorToState (heteroKron (heteroKron A R) (heteroKron B T))
@@ -50,14 +50,14 @@ theorem inner_prodShuffle_vecTensor_heteroKron
   simp only [applyOperatorToState, Matrix.toEuclideanLin, Matrix.toLpLin_apply,
     EuclideanSpace.inner_eq_star_dotProduct, dotProduct, Matrix.mulVec]
   simp_rw [Finset.sum_mul, Finset.mul_sum]
-  rw [← (prodShuffle : (ιA × ιB) × (κA × κB) ≃ _).sum_comp]
-  simp_rw [← (prodShuffle : (ιA × ιB) × (κA × κB) ≃ _).sum_comp]
-  change (∑ p : (ιA × ιB) × (κA × κB), ∑ q : (ιA × ιB) × (κA × κB),
-    ((A p.1.1 q.1.1 * R p.2.1 q.2.1) * (B p.1.2 q.1.2 * T p.2.2 q.2.2) *
-      (ψ q.1 * φ q.2)) * star (ψ p.1 * φ p.2)) =
+  rw [← (prodShuffle : (ιA × ιB) ×  κA × κB  ≃ _).sum_comp]
+  simp_rw [← (prodShuffle : (ιA × ιB) ×  κA × κB  ≃ _).sum_comp]
+  change  ∑ p : (ιA × ιB) ×  κA × κB , ∑ q : (ιA × ιB) ×  κA × κB ,
+      A p.1.1 q.1.1 * R p.2.1 q.2.1  * (B p.1.2 q.1.2 * T p.2.2 q.2.2) *
+      (ψ q.1 * φ q.2)  * star (ψ p.1 * φ p.2)  =
     ∑ i : ιA × ιB, ∑ j : ιA × ιB, ∑ k : κA × κB, ∑ l : κA × κB,
-      ((A i.1 j.1 * B i.2 j.2 * ψ j) * star (ψ i)) *
-        ((R k.1 l.1 * T k.2 l.2 * φ l) * star (φ k))
+        A i.1 j.1 * B i.2 j.2 * ψ j  * star (ψ i)  *
+        ( R k.1 l.1 * T k.2 l.2 * φ l  * star (φ k))
   simp only [Fintype.sum_prod_type (α₁ := ιA × ιB) (α₂ := κA × κB), star_mul]
   conv_lhs =>
     arg 2
@@ -69,7 +69,7 @@ theorem inner_prodShuffle_vecTensor_heteroKron
 /-- For positive ancillary effects, the real joint expectation factors on the
 shuffled tensor state. No normalization or positivity of `A` and `B` is needed. -/
 theorem stateQForm_prodShuffle_vecTensor_heteroKron
-    (ψ : EuclideanSpace ℂ (ιA × ιB)) (φ : EuclideanSpace ℂ (κA × κB))
+    (ψ : MIPStarRE.QPBT.StateVector (ιA × ιB)) (φ : MIPStarRE.QPBT.StateVector (κA × κB))
     (A : Op ιA) (B : Op ιB) {R : Op κA} {T : Op κB}
     (hR : 0 ≤ R) (hT : 0 ≤ T) :
     stateQForm (reindexState prodShuffle (vecTensor ψ φ))
@@ -91,8 +91,8 @@ answer alone. This is the finite-fiber form of the expanded point construction. 
 theorem sum_add_fiber_heteroKron {G ι κ : Type*}
     [Fintype G] [DecidableEq G] [AddCommGroup G]
     (A : G → Op ι) (R : G → Op κ) (z : G) :
-    (∑ p ∈ Finset.univ.filter (fun p : G × G => p.1 + p.2 = z),
-      heteroKron (A p.1) (R p.2)) =
+     ∑ p ∈ Finset.univ.filter  fun p : G × G => p.1 + p.2 = z ,
+      heteroKron (A p.1) (R p.2)  =
       ∑ c : G, heteroKron (A (z - c)) (R c) := by
   rw [Finset.sum_filter, Fintype.sum_prod_type, Finset.sum_comm]
   simp only [← eq_sub_iff_add_eq, Finset.sum_ite_eq', Finset.mem_univ, if_true]
@@ -108,7 +108,7 @@ private theorem sum_convolution_off_diagonal_eq {G : Type*}
       ∑ c : G, ∑ d : G, p (z - c) (w - d) * q c d) =
       ∑ a : G, ∑ b : G, if a = b then 0 else p a b := by
   have hinner (z w c : G) :
-      (∑ d : G, p (z - c) (w - d) * q c d) =
+       ∑ d : G, p (z - c) (w - d) * q c d  =
         p (z - c) (w - c) * q c c := by
     apply Finset.sum_eq_single c
     · intro d _ hdc
@@ -163,16 +163,16 @@ theorem consistencyDefect_convolution_eq_of_perfect
     [Fintype κA] [DecidableEq κA] [Fintype κB] [DecidableEq κB]
     (μ : Distribution X) (A : X → Measurement G ιA) (B : X → Measurement G ιB)
     (R : X → Measurement G κA) (T : X → Measurement G κB)
-    (ψ : EuclideanSpace ℂ (ιA × ιB)) (φ : EuclideanSpace ℂ (κA × κB))
+    (ψ : MIPStarRE.QPBT.StateVector (ιA × ιB)) (φ : MIPStarRE.QPBT.StateVector (κA × κB))
     (hφ : ‖φ‖ = 1)
     (hperfect : ∀ x, (∑ c : G, ∑ d : G, if c = d then 0 else
       stateQForm φ (heteroKron ((R x).effect c) ((T x).effect d))) = 0) :
     consistencyDefect μ
         (fun x z => heteroKron
-          (∑ p ∈ Finset.univ.filter (fun p : G × G => p.1 + p.2 = z),
+          (∑ p ∈ Finset.univ.filter  fun p : G × G => p.1 + p.2 = z ,
             heteroKron ((A x).effect p.1) ((R x).effect p.2)) 1)
         (fun x z => heteroKron 1
-          (∑ p ∈ Finset.univ.filter (fun p : G × G => p.1 + p.2 = z),
+          (∑ p ∈ Finset.univ.filter  fun p : G × G => p.1 + p.2 = z ,
             heteroKron ((B x).effect p.1) ((T x).effect p.2)))
         (reindexState prodShuffle (vecTensor ψ φ)) =
       consistencyDefect μ (fun x a => heteroKron ((A x).effect a) 1)
@@ -181,19 +181,19 @@ theorem consistencyDefect_convolution_eq_of_perfect
   simp_rw [consistency_term_eq_stateQForm, placed_product_stateQForm_eq]
   apply avgOver_congr
   intro x
-  let q : G → G → ℝ := fun c d =>
+  let q  := fun c d =>
     stateQForm φ (heteroKron ((R x).effect c) ((T x).effect d))
-  have hnonneg (c d : G) : 0 ≤ q c d :=
+  have hnonneg (c d : G)  :=
     stateQForm_nonneg φ (kronecker_nonneg ((R x).pos c) ((T x).pos d))
-  have hoff (c d : G) : 0 ≤ (if c = d then 0 else q c d) := by
+  have hoff (c d : G) : 0 ≤  if c = d then 0 else q c d  := by
     split_ifs
     · exact le_rfl
     · exact hnonneg c d
   have hzero (c d : G) (hcd : c ≠ d) : q c d = 0 := by
     have hrow := (Finset.sum_eq_zero_iff_of_nonneg
-      (fun c _ => Finset.sum_nonneg (fun d _ => hoff c d))).mp (hperfect x)
+       fun c _ => Finset.sum_nonneg  fun d _ => hoff c d  ).mp (hperfect x)
     have hterm := (Finset.sum_eq_zero_iff_of_nonneg
-      (fun d _ => hoff c d)).mp (hrow c (Finset.mem_univ c)) d (Finset.mem_univ d)
+       fun d _ => hoff c d ).mp (hrow c (Finset.mem_univ c)) d (Finset.mem_univ d)
     simpa only [if_neg hcd] using hterm
   have hdiag : ∑ c : G, q c c = 1 := by
     have h := point_defect_eq (leftPlacedMeasurement (R x))

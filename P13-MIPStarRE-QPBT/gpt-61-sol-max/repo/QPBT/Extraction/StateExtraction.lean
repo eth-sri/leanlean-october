@@ -35,15 +35,14 @@ private theorem reindex_extracted_left (T : Op (PauliRegister P)) :
       (heteroKron (1 : Op (ExtractionAuxRegisters P S.toStrategy.ιA S.toStrategy.ιB))
         (heteroKron T (1 : Op (PauliRegister P)))) =
       S.placeSide .alice (heteroKron (1 : Op (S.ExpandedLocalSpace .alice)) T) := by
-  classical
   ext row col
   change (if ((row.1.1, row.1.2.1), (row.2.1, row.2.2.1)) =
       ((col.1.1, col.1.2.1), (col.2.1, col.2.2.1)) then (1 : ℂ) else 0) *
       (T row.1.2.2 col.1.2.2 * if row.2.2.2 = col.2.2.2 then 1 else 0) =
-    ((if (row.1.1, row.1.2.1) = (col.1.1, col.1.2.1) then 1 else 0) *
-      T row.1.2.2 col.1.2.2) *
-      (if ((row.2.1, row.2.2.1), row.2.2.2) =
-        ((col.2.1, col.2.2.1), col.2.2.2) then 1 else 0)
+     (if (row.1.1, row.1.2.1) = (col.1.1, col.1.2.1) then 1 else 0) *
+      T row.1.2.2 col.1.2.2  *
+       if ((row.2.1, row.2.2.1), row.2.2.2) =
+        ((col.2.1, col.2.2.1), col.2.2.2) then 1 else 0 
   simp only [Prod.mk.injEq, ite_and, ite_mul, mul_ite, one_mul, mul_one, zero_mul, mul_zero]
   split_ifs <;> rfl
 
@@ -52,7 +51,6 @@ private theorem reindex_extracted_right (T : Op (PauliRegister P)) :
       (heteroKron (1 : Op (ExtractionAuxRegisters P S.toStrategy.ιA S.toStrategy.ιB))
         (heteroKron (1 : Op (PauliRegister P)) T)) =
       S.placeSide .bob (heteroKron (1 : Op (S.ExpandedLocalSpace .bob)) T) := by
-  classical
   ext row col
   change (if ((row.1.1, row.1.2.1), (row.2.1, row.2.2.1)) =
       ((col.1.1, col.1.2.1), (col.2.1, col.2.2.1)) then (1 : ℂ) else 0) *
@@ -67,7 +65,7 @@ private theorem reindex_extracted_right (T : Op (PauliRegister P)) :
 /-- Changing to auxiliary/EPR coordinates and multiplying all Pauli labels by
 a nonzero basis element preserve the uniform disagreement distance. -/
 theorem pauli_dist_reindex_extraction
-    (theta : EuclideanSpace ℂ (SixReg P S.toStrategy.ιA S.toStrategy.ιB))
+    (theta : MIPStarRE.QPBT.StateVector (SixReg P S.toStrategy.ιA S.toStrategy.ιB))
     (W : PauliKind) (j : Fin P.model.basisDim) :
     opDistSq (uniformDistribution (PauliRegister P))
       (fun u => heteroKron
@@ -82,19 +80,18 @@ theorem pauli_dist_reindex_extraction
         (tauObservable W (P.model.basis j • u))))
       (fun u => S.placeSide .bob (heteroKron (1 : Op (S.ExpandedLocalSpace .bob))
         (tauObservable W (P.model.basis j • u)))) theta := by
-  classical
   unfold opDistSq opFamilyDistSq
   simp only [Fintype.sum_unique]
   simp_rw [WinImplications.norm_applyOperatorToState_reindexState,
     WinImplications.reindexOp_sub, S.reindex_extracted_left, S.reindex_extracted_right]
   let e : PauliRegister P ≃ PauliRegister P := Equiv.piCongrRight
-    (fun _ => Equiv.mulLeft₀ (P.model.basis j) (P.model.basis.ne_zero j))
+     fun _ => Equiv.mulLeft₀ (P.model.basis j) (P.model.basis.ne_zero j) 
   have he (u : PauliRegister P) : e u = P.model.basis j • u := rfl
   simpa only [Equiv.symm_symm, he] using avgOver_uniform_equiv e.symm
-    (fun u => ‖applyOperatorToState
+     fun u => ‖applyOperatorToState
       (S.placeSide .alice (heteroKron (1 : Op (S.ExpandedLocalSpace .alice)) (tauObservable W u)) -
         S.placeSide .bob (heteroKron (1 : Op (S.ExpandedLocalSpace .bob)) (tauObservable W u)))
-      theta‖ ^ 2)
+      theta‖ ^ 2 
 
 end ProjectiveSetting
 
@@ -114,7 +111,7 @@ theorem exists_extraction_aux_of_global_pair_witness_explicit
     (P : AdmissibleParams) (epsilon deltaG : ℝ)
     (hepsilon : 0 ≤ epsilon) (hepsilon_one : epsilon ≤ 1) (hdeltaG : 0 ≤ deltaG)
     (S : ProjectiveSetting P epsilon) (w : GlobalPairWitness S deltaG) :
-    ∃ aux : EuclideanSpace ℂ
+    ∃ aux : MIPStarRE.QPBT.StateVector
         (ExtractionAuxRegisters P S.toStrategy.ιA S.toStrategy.ιB),
       ‖aux‖ = 1 ∧
         ‖S.applyBoth (swapUnitary w .alice) (swapUnitary w .bob) S.psiHat -
@@ -130,29 +127,21 @@ theorem exists_extraction_aux_of_global_pair_witness_explicit
     positivity
   let j : Fin P.model.basisDim := ⟨0, P.model.basisDimOdd.pos⟩
   have hdist := Extraction.norm_sub_eprProjection_le_of_pauli_dist
-    (reindexState e theta) delta hdelta (fun W => by
-      exact (S.pauli_dist_reindex_extraction theta W j).trans_le
+    (reindexState e theta) delta hdelta  fun W => (S.pauli_dist_reindex_extraction theta W j).trans_le
         (extracted_obs_self_consistent_of_global_pair_witness_explicit
-          P epsilon deltaG hepsilon hepsilon_one hdeltaG S w W j))
+          P epsilon deltaG hepsilon hepsilon_one hdeltaG S w W j) 
   have htransport :
       ‖reindexState e theta - applyOperatorToState
         (heteroKron (1 : Op (ExtractionAuxRegisters P S.toStrategy.ιA S.toStrategy.ιB))
-          (Matrix.vecMulVec (fun x => eprState (PauliRegister P) x)
-            (fun y => star (eprState (PauliRegister P) y)))) (reindexState e theta)‖ =
+          (Matrix.vecMulVec ( eprState (PauliRegister P) )
+             fun y => star (eprState (PauliRegister P) y) )) (reindexState e theta)‖ =
         ‖theta - applyOperatorToState S.extractionEprProjection theta‖ := by
     have h := WinImplications.norm_applyOperatorToState_reindexState e
       (1 - heteroKron (1 : Op (ExtractionAuxRegisters P S.toStrategy.ιA S.toStrategy.ιB))
-        (Matrix.vecMulVec (fun x => eprState (PauliRegister P) x)
-          (fun y => star (eprState (PauliRegister P) y)))) theta
+        (Matrix.vecMulVec ( eprState (PauliRegister P) )
+           fun y => star (eprState (PauliRegister P) y) )) theta
     rw [WinImplications.reindexOp_sub] at h
-    have hone : reindexOp e (1 : Op (ExtractionAuxRegisters P S.toStrategy.ιA
-        S.toStrategy.ιB × (PauliRegister P × PauliRegister P))) = 1 := by
-      ext x y
-      simp [reindexOp, Matrix.one_apply]
-    rw [hone] at h
-    simpa only [MagicSquareRigidity.applyOperatorToState_sub_op,
-      MagicSquareRigidity.applyOperatorToState_one,
-      ProjectiveSetting.extractionEprProjection] using h
+    aesop (add simp [Matrix.one_apply, ProjectiveSetting.extractionEprProjection, reindexOp, MagicSquareRigidity.applyOperatorToState_one, MagicSquareRigidity.applyOperatorToState_sub_op])
   have hprojection := htransport.symm.trans_le hdist
   obtain ⟨aux, haux, hclose⟩ := S.exists_unit_aux_near_eprProjection theta (S.applyBoth_swap_norm w)
   refine ⟨aux, haux, ?_⟩

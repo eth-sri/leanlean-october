@@ -46,12 +46,14 @@ variable {P : AdmissibleParams} {ε : ℝ}
 
 /-! ## The error parameter -/
 
+variable (S : ProjectiveSetting P ε)
+
 /-- The error parameter of a projective setting is nonnegative. Nothing in the
 structure assumes this: it follows from the winning premise `1 - ε ≤ value`
 together with the bound `value ≤ 1` satisfied by the value of every strategy.
 Formalization-only auxiliary supplying the sign condition of the winning
 implications used in items 2 and 3 of `lem:qld-comm-line-cons`. -/
-theorem eps_nonneg (S : ProjectiveSetting P ε) : 0 ≤ ε := by
+theorem eps_nonneg (S : ProjectiveSetting P ε)  : 0 ≤ ε := by
   have hv := WinImplications.strategy_value_le_one S.toStrategy
   have hw := S.win
   linarith
@@ -67,13 +69,13 @@ set_option synthInstance.maxSize 400 in
 of left and right tensor placements. Formalization-only transport for the
 placement pairs of `lem:qld-comm-line-cons`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:527-545`. -/
-theorem norm_place_AA'_sub_place_BA'' (S : ProjectiveSetting P ε)
+theorem norm_place_AA'_sub_place_BA'' 
     (O₁ : Op (S.toStrategy.ιA × PauliRegister P))
     (O₂ : Op (S.toStrategy.ιB × PauliRegister P)) :
     ‖applyOperatorToState (S.place .AA' O₁ - S.place .BA'' O₂) S.psiHat‖ =
       ‖applyOperatorToState
         (heteroKron O₁ (1 : Op ((S.toStrategy.ιB × PauliRegister P) ×
-            (PauliRegister P × PauliRegister P))) -
+             PauliRegister P × PauliRegister P )) -
           heteroKron (1 : Op (S.toStrategy.ιA × PauliRegister P))
             (heteroKron O₂ (1 : Op (PauliRegister P × PauliRegister P))))
         (reindexState (aaBaBipartition P S.toStrategy.ιA S.toStrategy.ιB)
@@ -88,13 +90,13 @@ set_option synthInstance.maxSize 400 in
 left and right tensor placements. Formalization-only transport for the
 placement pairs of `lem:qld-comm-line-cons`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:527-545`. -/
-theorem norm_place_AB''_sub_place_BB' (S : ProjectiveSetting P ε)
+theorem norm_place_AB''_sub_place_BB' 
     (O₁ : Op (S.toStrategy.ιA × PauliRegister P))
     (O₂ : Op (S.toStrategy.ιB × PauliRegister P)) :
     ‖applyOperatorToState (S.place .AB'' O₁ - S.place .BB' O₂) S.psiHat‖ =
       ‖applyOperatorToState
         (heteroKron O₁ (1 : Op ((S.toStrategy.ιB × PauliRegister P) ×
-            (PauliRegister P × PauliRegister P))) -
+             PauliRegister P × PauliRegister P )) -
           heteroKron (1 : Op (S.toStrategy.ιA × PauliRegister P))
             (heteroKron O₂ (1 : Op (PauliRegister P × PauliRegister P))))
         (reindexState (abBbBipartition P S.toStrategy.ιA S.toStrategy.ιB)
@@ -108,11 +110,11 @@ set_option synthInstance.maxSize 400 in
 the six registers leaves it a unit vector. Formalization-only auxiliary
 carrying the normalization of `def:expanded-state` to the two bipartitions
 used by the consistency estimates. -/
-theorem norm_reindexState_psiHat (S : ProjectiveSetting P ε)
+theorem norm_reindexState_psiHat 
     (e : SixReg P S.toStrategy.ιA S.toStrategy.ιB ≃
       (S.toStrategy.ιA × PauliRegister P) ×
-        ((S.toStrategy.ιB × PauliRegister P) ×
-          (PauliRegister P × PauliRegister P))) :
+         (S.toStrategy.ιB × PauliRegister P) ×
+           PauliRegister P × PauliRegister P  ) :
     ‖reindexState e S.psiHat‖ = 1 := by
   rw [reindexState_norm_eq, psiHat_norm]
 

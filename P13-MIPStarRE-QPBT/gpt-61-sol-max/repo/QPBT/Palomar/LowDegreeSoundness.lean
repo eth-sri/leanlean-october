@@ -52,7 +52,7 @@ theorem exists_ld_soundness :
   rintro ⟨q, m, d, k, hm, hd, hk, hq, hdvd⟩ ε hε S hprojective hvalue
   let L : MIPStarRE.QPBT.LdParams :=
     ⟨q, m, d, k, hm, hd, hk, hq, hdvd⟩
-  have hprojective' : (lowDegreeStrategyToLibrary L S).IsProjective :=
+  have hprojective'  :=
     (lowDegreeStrategyToLibrary_isProjective_iff L S).2 hprojective
   have hvalue' : 1 - ε ≤ (lowDegreeStrategyToLibrary L S).value := by
     rw [lowDegreeStrategyToLibrary_value]

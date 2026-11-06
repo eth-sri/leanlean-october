@@ -22,7 +22,9 @@ The source statement is blueprint
 
 @[expose] public section
 
-open scoped BigOperators Matrix MatrixOrder ComplexOrder
+variable {V : Type*} [Fintype V] [DecidableEq V]
+
+open scoped BigOperators Matrix MatrixOrder ComplexOrder Classical
 
 namespace MIPStarRE.QPBT
 
@@ -31,10 +33,12 @@ open MIPStarRE.Quantum
 
 noncomputable section
 
+variable (M N : Measurement (ZMod 2) V)
+
 /-- The joint measurement of two commuting binary projective measurements. -/
-noncomputable def binaryJointMeasurement
-    {V : Type*} [Fintype V] [DecidableEq V]
-    (M N : Measurement (ZMod 2) V)
+def binaryJointMeasurement
+
+
     (hM : MIPStarRE.QPBT.Measurement.IsProjective M)
     (hN : MIPStarRE.QPBT.Measurement.IsProjective N)
     (hcomm : ∀ a b, Commute (M.effect a) (N.effect b)) :
@@ -49,8 +53,8 @@ noncomputable def binaryJointMeasurement
       simp [M.sum_eq_one])
 
 private theorem binaryJointMeasurement_projective
-    {V : Type*} [Fintype V] [DecidableEq V]
-    (M N : Measurement (ZMod 2) V)
+
+
     (hM : MIPStarRE.QPBT.Measurement.IsProjective M)
     (hN : MIPStarRE.QPBT.Measurement.IsProjective N)
     (hcomm : ∀ a b, Commute (M.effect a) (N.effect b)) :
@@ -59,8 +63,8 @@ private theorem binaryJointMeasurement_projective
   fun ab => (hM ab.1).mul (hN ab.2) (hcomm ab.1 ab.2)
 
 private theorem binaryJointMeasurement_mul_first
-    {V : Type*} [Fintype V] [DecidableEq V]
-    (M N : Measurement (ZMod 2) V)
+
+
     (hM : MIPStarRE.QPBT.Measurement.IsProjective M)
     (hN : MIPStarRE.QPBT.Measurement.IsProjective N)
     (hcomm : ∀ a b, Commute (M.effect a) (N.effect b))
@@ -68,14 +72,14 @@ private theorem binaryJointMeasurement_mul_first
     (binaryJointMeasurement M N hM hN hcomm).effect ab * M.effect b =
       if ab.1 = b then
         (binaryJointMeasurement M N hM hN hcomm).effect ab else 0 := by
-  change (M.effect ab.1 * N.effect ab.2) * M.effect b =
+  change  M.effect ab.1 * N.effect ab.2  * M.effect b =
     if ab.1 = b then M.effect ab.1 * N.effect ab.2 else 0
   calc
-    (M.effect ab.1 * N.effect ab.2) * M.effect b =
+     M.effect ab.1 * N.effect ab.2  * M.effect b =
         M.effect ab.1 * (N.effect ab.2 * M.effect b) := mul_assoc _ _ _
     _ = M.effect ab.1 * (M.effect b * N.effect ab.2) := by
       rw [(hcomm b ab.2).symm.eq]
-    _ = (M.effect ab.1 * M.effect b) * N.effect ab.2 :=
+    _ =  M.effect ab.1 * M.effect b  * N.effect ab.2 :=
       (mul_assoc _ _ _).symm
     _ = _ := by
       rw [binary_effect_mul M hM]
@@ -84,8 +88,8 @@ private theorem binaryJointMeasurement_mul_first
       · simp only [if_neg h, zero_mul]
 
 private theorem binaryJointMeasurement_mul_second
-    {V : Type*} [Fintype V] [DecidableEq V]
-    (M N : Measurement (ZMod 2) V)
+
+
     (hM : MIPStarRE.QPBT.Measurement.IsProjective M)
     (hN : MIPStarRE.QPBT.Measurement.IsProjective N)
     (hcomm : ∀ a b, Commute (M.effect a) (N.effect b))
@@ -93,7 +97,7 @@ private theorem binaryJointMeasurement_mul_second
     (binaryJointMeasurement M N hM hN hcomm).effect ab * N.effect b =
       if ab.2 = b then
         (binaryJointMeasurement M N hM hN hcomm).effect ab else 0 := by
-  change (M.effect ab.1 * N.effect ab.2) * N.effect b =
+  change  M.effect ab.1 * N.effect ab.2  * N.effect b =
     if ab.2 = b then M.effect ab.1 * N.effect ab.2 else 0
   rw [mul_assoc, binary_effect_mul N hN]
   by_cases h : ab.2 = b
@@ -165,15 +169,17 @@ private theorem bit_embedding_injective :
   exact MsAnswer.bit.inj h
 
 private theorem triple_embedding_injective (i : Fin 6) :
-    Function.Injective (fun ab => MsAnswer.triple (parityTriple i ab)) := by
+    Function.Injective  fun ab => MsAnswer.triple (parityTriple i ab)  := by
   intro ab cd h
   apply parityTriple_injective i
   exact MsAnswer.triple.inj h
 
+variable (OA OB : Op V)
+
 /-- The binary measurement associated with a cell of the operator table. -/
-noncomputable def msCellMeasurement
-    {V : Type*} [Fintype V] [DecidableEq V]
-    (OA OB : Op V) (hOA : OAᴴ = OA) (hOB : OBᴴ = OB)
+def msCellMeasurement
+
+     (hOA : OAᴴ = OA) (hOB : OBᴴ = OB)
     (hOA_sq : OA * OA = 1) (hOB_sq : OB * OB = 1)
     (hac : OA * OB = -(OB * OA)) (j : Fin 9) :
     Measurement (ZMod 2) (V × ZMod 2) :=
@@ -183,8 +189,8 @@ noncomputable def msCellMeasurement
 
 @[simp]
 private theorem msCellMeasurement_effect
-    {V : Type*} [Fintype V] [DecidableEq V]
-    (OA OB : Op V) (hOA : OAᴴ = OA) (hOB : OBᴴ = OB)
+
+     (hOA : OAᴴ = OA) (hOB : OBᴴ = OB)
     (hOA_sq : OA * OA = 1) (hOB_sq : OB * OB = 1)
     (hac : OA * OB = -(OB * OA)) (j : Fin 9) (b : ZMod 2) :
     (msCellMeasurement OA OB hOA hOB hOA_sq hOB_sq hac j).effect b =
@@ -196,8 +202,8 @@ private theorem msCellMeasurement_effect
 `thm:ms-from-ac`): each of the nine cell measurements of the Magic
 Square strategy is projective. -/
 theorem msCellMeasurement_projective
-    {V : Type*} [Fintype V] [DecidableEq V]
-    (OA OB : Op V) (hOA : OAᴴ = OA) (hOB : OBᴴ = OB)
+
+     (hOA : OAᴴ = OA) (hOB : OBᴴ = OB)
     (hOA_sq : OA * OA = 1) (hOB_sq : OB * OB = 1)
     (hac : OA * OB = -(OB * OA)) (j : Fin 9) :
     MIPStarRE.QPBT.Measurement.IsProjective
@@ -207,19 +213,17 @@ theorem msCellMeasurement_projective
     (msCellObservable_sq OA OB hOA_sq hOB_sq hac j)
 
 private theorem reflectionEffect_transpose
-    {V : Type*} [Fintype V] [DecidableEq V]
+
     (O : Op V) (hO : Oᵀ = O) (b : ZMod 2) :
-    (reflectionEffect O b)ᵀ = reflectionEffect O b := by
-  rcases zmod_two_eq_zero_or_one b with rfl | rfl <;>
-    simp [reflectionEffect, Matrix.transpose_add, Matrix.transpose_sub, hO]
+    (reflectionEffect O b)ᵀ = reflectionEffect O b := by aesop (add simp [reflectionEffect])
 
 /-- Formalization-only auxiliary lemma for
 `exists_ms_perfect_strategy_of_anticommuting` (blueprint
 `thm:ms-from-ac`): every effect of a cell measurement is symmetric
 whenever `OA` and `OB` are symmetric. -/
 theorem msCellMeasurement_transpose
-    {V : Type*} [Fintype V] [DecidableEq V]
-    (OA OB : Op V) (hOA : OAᴴ = OA) (hOB : OBᴴ = OB)
+
+     (hOA : OAᴴ = OA) (hOB : OBᴴ = OB)
     (hOA_sq : OA * OA = 1) (hOB_sq : OB * OB = 1)
     (hOA_t : OAᵀ = OA) (hOB_t : OBᵀ = OB)
     (hac : OA * OB = -(OB * OA)) (j : Fin 9) (b : ZMod 2) :
@@ -229,10 +233,12 @@ theorem msCellMeasurement_transpose
   exact reflectionEffect_transpose _
     (msCellObservable_transpose OA OB hOA_t hOB_t hac j) b
 
+variable (P : Fin 9 → Measurement (ZMod 2) V)
+
 /-- The joint measurement of the first two cells in a Magic Square constraint. -/
-noncomputable def msConstraintJoint
-    {V : Type*} [Fintype V] [DecidableEq V]
-    (P : Fin 9 → Measurement (ZMod 2) V)
+def msConstraintJoint
+
+
     (hP : ∀ j, MIPStarRE.QPBT.Measurement.IsProjective (P j))
     (hcomm : ∀ i k l a b,
       Commute ((P (msConstraintVars i k)).effect a)
@@ -242,9 +248,9 @@ noncomputable def msConstraintJoint
     (P (msConstraintVars i 1)) (hP _) (hP _) (hcomm i 0 1)
 
 /-- The global Magic Square measurement family induced by the nine cell measurements. -/
-noncomputable def msStrategyMeasurement
-    {V : Type*} [Fintype V] [DecidableEq V]
-    (P : Fin 9 → Measurement (ZMod 2) V)
+def msStrategyMeasurement
+
+
     (hP : ∀ j, MIPStarRE.QPBT.Measurement.IsProjective (P j))
     (hcomm : ∀ i k l a b,
       Commute ((P (msConstraintVars i k)).effect a)
@@ -253,7 +259,7 @@ noncomputable def msStrategyMeasurement
   | .var j => (P j).postprocess MsAnswer.bit
   | .constraint i =>
       (msConstraintJoint P hP hcomm i).postprocess
-        (fun ab => .triple (parityTriple i ab))
+         fun ab => .triple (parityTriple i ab) 
 
 /-- Formalization-only auxiliary lemma for
 `exists_ms_perfect_strategy_of_anticommuting` (blueprint
@@ -261,16 +267,15 @@ noncomputable def msStrategyMeasurement
 family reproduces the corresponding cell measurement: its effect at the answer
 `bit b` is the effect of `P j` at `b`. -/
 theorem msStrategyMeasurement_var_bit
-    {V : Type*} [Fintype V] [DecidableEq V]
-    (P : Fin 9 → Measurement (ZMod 2) V)
+
+
     (hP : ∀ j, MIPStarRE.QPBT.Measurement.IsProjective (P j))
     (hcomm : ∀ i k l a b,
       Commute ((P (msConstraintVars i k)).effect a)
         ((P (msConstraintVars i l)).effect b))
     (j : Fin 9) (b : ZMod 2) :
     (msStrategyMeasurement P hP hcomm (.var j)).effect (.bit b) =
-      (P j).effect b := by
-  exact postprocess_effect_of_injective (P j) MsAnswer.bit
+      (P j).effect b := postprocess_effect_of_injective (P j) MsAnswer.bit
     bit_embedding_injective b
 
 /-- Formalization-only auxiliary lemma for
@@ -279,16 +284,15 @@ theorem msStrategyMeasurement_var_bit
 family assigns the zero effect to every answer outside the range of
 `MsAnswer.bit`. -/
 theorem msStrategyMeasurement_var_zero
-    {V : Type*} [Fintype V] [DecidableEq V]
-    (P : Fin 9 → Measurement (ZMod 2) V)
+
+
     (hP : ∀ j, MIPStarRE.QPBT.Measurement.IsProjective (P j))
     (hcomm : ∀ i k l a b,
       Commute ((P (msConstraintVars i k)).effect a)
         ((P (msConstraintVars i l)).effect b))
     (j : Fin 9) {a : MsAnswer}
     (ha : a ∉ Set.range (MsAnswer.bit : ZMod 2 → MsAnswer)) :
-    (msStrategyMeasurement P hP hcomm (.var j)).effect a = 0 := by
-  exact postprocess_effect_eq_zero_of_notMem (P j) MsAnswer.bit ha
+    (msStrategyMeasurement P hP hcomm (.var j)).effect a = 0 := postprocess_effect_eq_zero_of_notMem (P j) MsAnswer.bit ha
 
 /-- Formalization-only auxiliary lemma for
 `exists_ms_perfect_strategy_of_anticommuting` (blueprint
@@ -296,8 +300,8 @@ theorem msStrategyMeasurement_var_zero
 triple encoding the bits `ab` equals the effect at `ab` of the joint measurement
 of the first two cells of that constraint. -/
 theorem msStrategyMeasurement_constraint_triple
-    {V : Type*} [Fintype V] [DecidableEq V]
-    (P : Fin 9 → Measurement (ZMod 2) V)
+
+
     (hP : ∀ j, MIPStarRE.QPBT.Measurement.IsProjective (P j))
     (hcomm : ∀ i k l a b,
       Commute ((P (msConstraintVars i k)).effect a)
@@ -305,8 +309,7 @@ theorem msStrategyMeasurement_constraint_triple
     (i : Fin 6) (ab : ZMod 2 × ZMod 2) :
     (msStrategyMeasurement P hP hcomm (.constraint i)).effect
         (.triple (parityTriple i ab)) =
-      (msConstraintJoint P hP hcomm i).effect ab := by
-  exact postprocess_effect_of_injective (msConstraintJoint P hP hcomm i)
+      (msConstraintJoint P hP hcomm i).effect ab := postprocess_effect_of_injective (msConstraintJoint P hP hcomm i)
     (fun cd => MsAnswer.triple (parityTriple i cd))
     (triple_embedding_injective i) ab
 
@@ -316,16 +319,15 @@ theorem msStrategyMeasurement_constraint_triple
 family assigns the zero effect to every answer that is not a parity triple of
 the constraint. -/
 theorem msStrategyMeasurement_constraint_zero
-    {V : Type*} [Fintype V] [DecidableEq V]
-    (P : Fin 9 → Measurement (ZMod 2) V)
+
+
     (hP : ∀ j, MIPStarRE.QPBT.Measurement.IsProjective (P j))
     (hcomm : ∀ i k l a b,
       Commute ((P (msConstraintVars i k)).effect a)
         ((P (msConstraintVars i l)).effect b))
     (i : Fin 6) {a : MsAnswer}
-    (ha : a ∉ Set.range (fun ab => MsAnswer.triple (parityTriple i ab))) :
-    (msStrategyMeasurement P hP hcomm (.constraint i)).effect a = 0 := by
-  exact postprocess_effect_eq_zero_of_notMem (msConstraintJoint P hP hcomm i)
+    (ha : a ∉ Set.range  fun ab => MsAnswer.triple (parityTriple i ab) ) :
+    (msStrategyMeasurement P hP hcomm (.constraint i)).effect a = 0 := postprocess_effect_eq_zero_of_notMem (msConstraintJoint P hP hcomm i)
     (fun ab => MsAnswer.triple (parityTriple i ab)) ha
 
 /-- Formalization-only auxiliary lemma for
@@ -333,8 +335,8 @@ theorem msStrategyMeasurement_constraint_zero
 `thm:ms-from-ac`): the global Magic Square measurement family is
 projective at every question. -/
 theorem msStrategyMeasurement_projective
-    {V : Type*} [Fintype V] [DecidableEq V]
-    (P : Fin 9 → Measurement (ZMod 2) V)
+
+
     (hP : ∀ j, MIPStarRE.QPBT.Measurement.IsProjective (P j))
     (hcomm : ∀ i k l a b,
       Commute ((P (msConstraintVars i k)).effect a)
@@ -376,8 +378,8 @@ theorem postprocess_effect_transpose
 two cells of a constraint are symmetric whenever the underlying cell effects
 are. -/
 theorem msConstraintJoint_effect_transpose
-    {V : Type*} [Fintype V] [DecidableEq V]
-    (P : Fin 9 → Measurement (ZMod 2) V)
+
+
     (hP : ∀ j, MIPStarRE.QPBT.Measurement.IsProjective (P j))
     (hcomm : ∀ i k l a b,
       Commute ((P (msConstraintVars i k)).effect a)
@@ -386,23 +388,23 @@ theorem msConstraintJoint_effect_transpose
     (i : Fin 6) (ab : ZMod 2 × ZMod 2) :
     ((msConstraintJoint P hP hcomm i).effect ab)ᵀ =
       (msConstraintJoint P hP hcomm i).effect ab := by
-  change (((P (msConstraintVars i 0)).effect ab.1 *
-    (P (msConstraintVars i 1)).effect ab.2)ᵀ) = _
+  change  ((P (msConstraintVars i 0)).effect ab.1 *
+    (P (msConstraintVars i 1)).effect ab.2)ᵀ  = _
   rw [Matrix.transpose_mul, hPt, hPt]
   exact (hcomm i 0 1 ab.1 ab.2).symm.eq
 
 private theorem msConstraintObservable_product_parity
-    {V : Type*} [Fintype V] [DecidableEq V]
-    (OA OB : Op V) (hOA : OA * OA = 1) (hOB : OB * OB = 1)
+
+     (hOA : OA * OA = 1) (hOB : OB * OB = 1)
     (hac : OA * OB = -(OB * OA)) (i : Fin 6) :
-    (msParity i = 0 ∧
+     msParity i = 0 ∧
       msCellObservable OA OB (msConstraintVars i 0) *
           msCellObservable OA OB (msConstraintVars i 1) *
-          msCellObservable OA OB (msConstraintVars i 2) = 1) ∨
-    (msParity i = 1 ∧
+          msCellObservable OA OB (msConstraintVars i 2) = 1  ∨
+     msParity i = 1 ∧
       msCellObservable OA OB (msConstraintVars i 0) *
           msCellObservable OA OB (msConstraintVars i 1) *
-          msCellObservable OA OB (msConstraintVars i 2) = -1) := by
+          msCellObservable OA OB (msConstraintVars i 2) = -1  := by
   have hprod := msConstraintObservable_product OA OB hOA hOB hac i
   fin_cases i <;> simpa [msParity] using hprod
 
@@ -413,8 +415,8 @@ effect of an incident cell measurement at `b` returns the constraint effect when
 `b` is the bit that the parity triple assigns to that cell, and `0` otherwise;
 this is the consistency of the constraint answer with its variable answers. -/
 theorem msCellConstraintJoint_mul
-    {V : Type*} [Fintype V] [DecidableEq V]
-    (OA OB : Op V) (hOA : OAᴴ = OA) (hOB : OBᴴ = OB)
+
+     (hOA : OAᴴ = OA) (hOB : OBᴴ = OB)
     (hOA_sq : OA * OA = 1) (hOB_sq : OB * OB = 1)
     (hac : OA * OB = -(OB * OA))
     (i : Fin 6) (k : Fin 3) (ab : ZMod 2 × ZMod 2) (b : ZMod 2) :
@@ -457,8 +459,8 @@ theorem msCellConstraintJoint_mul
     exact binaryJointMeasurement_mul_second (P (msConstraintVars i 0))
       (P (msConstraintVars i 1)) (hP _) (hP _) (hcomm i 0 1) ab b
   · change
-      (reflectionEffect (msCellObservable OA OB (msConstraintVars i 0)) ab.1 *
-          reflectionEffect (msCellObservable OA OB (msConstraintVars i 1)) ab.2) *
+       reflectionEffect (msCellObservable OA OB (msConstraintVars i 0)) ab.1 *
+          reflectionEffect (msCellObservable OA OB (msConstraintVars i 1)) ab.2  *
           reflectionEffect (msCellObservable OA OB (msConstraintVars i 2)) b =
         if msParity i - ab.1 - ab.2 = b then
           reflectionEffect (msCellObservable OA OB (msConstraintVars i 0)) ab.1 *
@@ -466,16 +468,7 @@ theorem msCellConstraintJoint_mul
         else 0
     by_cases hb : msParity i - ab.1 - ab.2 = b
     · rw [if_pos hb]
-      subst b
-      exact reflection_pair_absorbs_parity_effect
-        (msCellObservable OA OB (msConstraintVars i 0))
-        (msCellObservable OA OB (msConstraintVars i 1))
-        (msCellObservable OA OB (msConstraintVars i 2))
-        (msCellObservable_sq OA OB hOA_sq hOB_sq hac _)
-        (msCellObservable_sq OA OB hOA_sq hOB_sq hac _)
-        (msConstraintObservable_commute OA OB hOA_sq hOB_sq hac i 0 1)
-        (msParity i) ab.1 ab.2
-        (msConstraintObservable_product_parity OA OB hOA_sq hOB_sq hac i)
+      aesop (add simp [msConstraintObservable_product_parity, msCellObservable_sq, msConstraintObservable_commute, reflection_pair_absorbs_parity_effect])
     · rw [if_neg hb]
       have habsorb := reflection_pair_absorbs_parity_effect
         (msCellObservable OA OB (msConstraintVars i 0))

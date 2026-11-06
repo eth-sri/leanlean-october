@@ -2,6 +2,8 @@ module
 
 public import QPBT.Combining.Lines
 
+open scoped Classical
+
 /-!
 # Conditional extended-line measurements
 
@@ -33,7 +35,6 @@ private theorem map_weight_pos_of_weight_pos {Source Target : Type*}
     [DecidableEq Target] (law : Distribution Source) (mapping : Source → Target)
     (sample : Source) (hpositive : 0 < law.weight sample) :
     0 < (law.map mapping).weight (mapping sample) := by
-  classical
   have hmem : sample ∈ law.support := by
     by_contra hnot
     simp [law.outsideSupport sample hnot] at hpositive
@@ -95,23 +96,27 @@ theorem directLinePointDist_line_weight_pos (params : DirectLdParams)
     dsimp only [DirectLineDesc.base]
     linarith
 
+variable {params : AdmissibleParams} (sublines : SubLineWitness params)
+
+variable (line : DirectLineDesc params.extendedDirectLd)
+
 /-- The supported triples over a fixed extended line. Restricting the carrier
 retains the affine compatibility proof without choosing any substitute lines. -/
-abbrev SubLineWitness.Fiber {params : AdmissibleParams} (sublines : SubLineWitness params)
-    (line : DirectLineDesc params.extendedDirectLd) :=
-  ↥(sublines.D.support.filter (fun sample => sample.1 = line))
+abbrev SubLineWitness.Fiber
+     :=
+  ↥(sublines.D.support.filter  fun sample => sample.1 = line )
 
 /-- The mass of a subline fiber is positive by the prescribed extended marginal. -/
-theorem SubLineWitness.fiber_mass_pos {params : AdmissibleParams}
-    (sublines : SubLineWitness params) (line : DirectLineDesc params.extendedDirectLd) :
+theorem SubLineWitness.fiber_mass_pos
+      :
     0 < (sublines.D.map Prod.fst).weight line := by
   rw [sublines.extended_marginal]
   exact directLinePointDist_line_weight_pos _ _
 
 /-- The genuine conditional law of the supported subline triples given their
 extended line, as in paper lines 1118--1132. There is no zero-mass branch. -/
-def SubLineWitness.conditionalLaw {params : AdmissibleParams}
-    (sublines : SubLineWitness params) (line : DirectLineDesc params.extendedDirectLd) :
+def SubLineWitness.conditionalLaw
+      :
     Distribution (sublines.Fiber line) where
   support := Finset.univ
   weight sample := sublines.D.weight sample.val / (sublines.D.map Prod.fst).weight line
@@ -120,18 +125,20 @@ def SubLineWitness.conditionalLaw {params : AdmissibleParams}
   outsideSupport sample hnot := (hnot (Finset.mem_univ sample)).elim
 
 /-- Conditioning on an extended line preserves total mass one. -/
-theorem SubLineWitness.conditionalLaw_isProbability {params : AdmissibleParams}
-    (sublines : SubLineWitness params) (line : DirectLineDesc params.extendedDirectLd) :
+theorem SubLineWitness.conditionalLaw_isProbability
+      :
     (sublines.conditionalLaw line).IsProbability := by
-  change (∑ sample : sublines.Fiber line,
-    sublines.D.weight sample.val / (sublines.D.map Prod.fst).weight line) = 1
+  change  ∑ sample : sublines.Fiber line,
+    sublines.D.weight sample.val / (sublines.D.map Prod.fst).weight line  = 1
   rw [← Finset.sum_div, Finset.sum_coe_sort]
   exact div_self (sublines.fiber_mass_pos line).ne'
 
+variable (sample : SubLineTriple params)
+
 /-- Supported subline triples supply all eight affine coordinates in the
 polynomial combination formula; the choice is only of proved compatible data. -/
-private theorem SubLineWitness.exists_affineData {params : AdmissibleParams}
-    (sublines : SubLineWitness params) (sample : SubLineTriple params)
+private theorem SubLineWitness.exists_affineData
+
     (hsample : sample ∈ sublines.D.support) :
     ∃ data : Fin 8 → PauliScalar params,
       IsCombineLineCompatible (directPointToPauli params sample.1.base)
@@ -143,8 +150,8 @@ private theorem SubLineWitness.exists_affineData {params : AdmissibleParams}
   exact ⟨![offsetX, slopeX, offsetZ, slopeZ, alpha, alphaSlope, beta, betaSlope], hcompat⟩
 
 /-- Affine coordinates for the actual subline triple, not a replacement POVM. -/
-def SubLineWitness.affineData {params : AdmissibleParams}
-    (sublines : SubLineWitness params) (sample : SubLineTriple params)
+def SubLineWitness.affineData
+
     (hsample : sample ∈ sublines.D.support) : Fin 8 → PauliScalar params :=
   Classical.choose (show
     ∃ data : Fin 8 → PauliScalar params,
@@ -155,8 +162,8 @@ def SubLineWitness.affineData {params : AdmissibleParams}
     exact sublines.exists_affineData sample hsample)
 
 /-- The selected coordinates satisfy the source's affine line identities. -/
-theorem SubLineWitness.affineData_compatible {params : AdmissibleParams}
-    (sublines : SubLineWitness params) (sample : SubLineTriple params)
+theorem SubLineWitness.affineData_compatible
+
     (hsample : sample ∈ sublines.D.support) :
     let data := sublines.affineData sample hsample
     IsCombineLineCompatible (directPointToPauli params sample.1.base)
@@ -167,8 +174,8 @@ theorem SubLineWitness.affineData_compatible {params : AdmissibleParams}
 
 /-- The source polynomial combination on a supported triple, transported only
 along the canonical identification of the two scalar models. -/
-def SubLineWitness.combinedPolynomial {params : AdmissibleParams}
-    (sublines : SubLineWitness params) (sample : SubLineTriple params)
+def SubLineWitness.combinedPolynomial
+
     (hsample : sample ∈ sublines.D.support)
     (polynomials : DegPoly params.toLdParams (params.m * params.d) ×
       DegPoly params.toLdParams (params.m * params.d)) :
@@ -191,35 +198,34 @@ def SubLineWitness.extendedMeasurement {params : AdmissibleParams}
     (lines.T side sample.val.2.1 sample.val.2.2).postprocess
       (sublines.combinedPolynomial sample.val (Finset.mem_filter.mp sample.property).1)
   have hsum : (∑ polynomial, averageOperatorOverDistribution (sublines.conditionalLaw line)
-      (fun sample => (family sample).effect polynomial)) = 1 := by
+       fun sample => (family sample).effect polynomial ) = 1 := by
     rw [← averageOperatorOverDistribution_sum]
     simp only [Quantum.Measurement.sum_eq_one]
     exact averageOperatorOverDistribution_const_of_isProbability _
       (sublines.conditionalLaw_isProbability line) 1
   exact { effect := fun polynomial => averageOperatorOverDistribution
-            (sublines.conditionalLaw line) (fun sample => (family sample).effect polynomial)
+            (sublines.conditionalLaw line)  fun sample => (family sample).effect polynomial 
           pos := fun polynomial => averageOperatorOverDistribution_nonneg _ _
-            (fun sample => (family sample).pos polynomial)
+             fun sample => (family sample).pos polynomial 
           sum_le_one := le_of_eq hsum
           sum_eq_one := hsum }
 
 /-- Integrating the conditional law recovers the original subline law.
 This is finite disintegration, not an independence assertion about projections. -/
-theorem SubLineWitness.avgOver_conditionalLaw {params : AdmissibleParams}
-    (sublines : SubLineWitness params) (quantity : SubLineTriple params → ℝ) :
+theorem SubLineWitness.avgOver_conditionalLaw
+     (quantity : SubLineTriple params → ℝ) :
     avgOver (sublines.D.map Prod.fst) (fun line =>
-      avgOver (sublines.conditionalLaw line) (fun sample => quantity sample.val)) =
+      avgOver (sublines.conditionalLaw line)  fun sample => quantity sample.val ) =
         avgOver sublines.D quantity := by
-  classical
   simp only [avgOver, SubLineWitness.conditionalLaw]
   calc
-    (∑ line ∈ (sublines.D.map Prod.fst).support,
+     ∑ line ∈ (sublines.D.map Prod.fst).support,
         (sublines.D.map Prod.fst).weight line *
           ∑ sample : sublines.Fiber line,
-            (sublines.D.weight sample.val / (sublines.D.map Prod.fst).weight line) *
-              quantity sample.val) =
+             sublines.D.weight sample.val / (sublines.D.map Prod.fst).weight line  *
+              quantity sample.val  =
         ∑ line ∈ (sublines.D.map Prod.fst).support,
-          ∑ sample ∈ sublines.D.support.filter (fun sample => sample.1 = line),
+          ∑ sample ∈ sublines.D.support.filter  fun sample => sample.1 = line ,
             sublines.D.weight sample * quantity sample := by
       apply Finset.sum_congr rfl
       intro line _
@@ -230,19 +236,17 @@ theorem SubLineWitness.avgOver_conditionalLaw {params : AdmissibleParams}
         field_simp [(sublines.fiber_mass_pos line).ne']
         exact (div_eq_iff (sublines.fiber_mass_pos line).ne').mpr (by ring)
       · exact Finset.sum_coe_sort
-          (sublines.D.support.filter (fun sample => sample.1 = line))
-          (fun sample => sublines.D.weight sample * quantity sample)
-    _ = ∑ sample ∈ sublines.D.support, sublines.D.weight sample * quantity sample := by
-      exact Finset.sum_fiberwise_of_maps_to
+          (sublines.D.support.filter  fun sample => sample.1 = line )
+           fun sample => sublines.D.weight sample * quantity sample 
+    _ = ∑ sample ∈ sublines.D.support, sublines.D.weight sample * quantity sample := Finset.sum_fiberwise_of_maps_to
         (fun sample hsample => Finset.mem_image.mpr ⟨sample, hsample, rfl⟩) _
 
 /-- A determined direct evaluation gives precisely its completed answer. -/
 private theorem directEvalOpt_eq_some_of_evaluatesTo {params : DirectLdParams} {bound : ℕ}
     (line : DirectLineDesc params) (polynomial : DirectDegPoly params bound)
-    (point : Fin params.m → DirectScalarQ params) (value : DirectScalarQ params)
+    (point : MIPStarRE.QPBT.DirectPoint params) (value : DirectScalarQ params)
     (heval : DirectEvaluatesTo line polynomial point value) :
     directEvalOpt line point polynomial = some value := by
-  classical
   have hexists : ∃ answer, DirectEvaluatesTo line polynomial point answer := ⟨value, heval⟩
   rw [directEvalOpt, dif_pos hexists]
   obtain ⟨parameter, hparameter⟩ := heval.1
@@ -262,8 +266,8 @@ private theorem evalCoefficient_extendedScalar {params : AdmissibleParams} {boun
 polynomial has the required determined value at the extended point. This also
 covers zero-direction lines: every parameter is checked, rather than selecting
 one parameter or assigning a field-valued fallback. -/
-theorem SubLineWitness.combinedPolynomial_evaluatesTo {params : AdmissibleParams}
-    (sublines : SubLineWitness params) (sample : SubLineTriple params)
+theorem SubLineWitness.combinedPolynomial_evaluatesTo
+
     (hsample : sample ∈ sublines.D.support)
     (polynomials : DegPoly params.toLdParams (params.m * params.d) ×
       DegPoly params.toLdParams (params.m * params.d))
@@ -305,8 +309,8 @@ theorem SubLineWitness.combinedPolynomial_evaluatesTo {params : AdmissibleParams
 
 /-- Completed evaluation of the actual combination agrees with the source
 linear combination whenever both source evaluations are defined. -/
-theorem SubLineWitness.combinedPolynomial_evalOpt {params : AdmissibleParams}
-    (sublines : SubLineWitness params) (sample : SubLineTriple params)
+theorem SubLineWitness.combinedPolynomial_evalOpt
+
     (hsample : sample ∈ sublines.D.support)
     (polynomials : DegPoly params.toLdParams (params.m * params.d) ×
       DegPoly params.toLdParams (params.m * params.d))
@@ -325,23 +329,22 @@ theorem SubLineWitness.combinedPolynomial_evalOpt {params : AdmissibleParams}
       ((evalOpt_eq_some_iff _ _ _ _).mp hevalX) ((evalOpt_eq_some_iff _ _ _ _).mp hevalZ))]
   simp
 
+variable {Scalar : Type*} [Field Scalar]
+
 /-- Coefficient support bounds the degree of the represented polynomial. -/
-private theorem linePolynomial_natDegree_le_of_coefficients {Scalar : Type*}
-    [Field Scalar] {bound degree : ℕ} (polynomial : Fin (bound + 1) → Scalar)
+private theorem linePolynomial_natDegree_le_of_coefficients
+     {bound degree : ℕ} (polynomial : Fin (bound + 1) → Scalar)
     (hdegree : ∀ index, degree < index.val → polynomial index = 0) :
     (linePolynomialOfCoefficients polynomial).natDegree ≤ degree := by
   apply Polynomial.natDegree_sum_le_of_forall_le
   intro index _
   by_cases hindex : index.val ≤ degree
   · refine Polynomial.natDegree_mul_le.trans ?_
-    have hpower := Polynomial.natDegree_pow_le
-      (p := (Polynomial.X : Polynomial Scalar)) (n := index.val)
-    simp only [Polynomial.natDegree_X, Nat.mul_one] at hpower
-    simpa using hpower.trans hindex
+    simp_all
   · simp [hdegree index (Nat.lt_of_not_ge hindex)]
 
 /-- Affine substitution preserves a degree bound. -/
-private theorem affine_comp_natDegree_le {Scalar : Type*} [Field Scalar]
+private theorem affine_comp_natDegree_le
     (polynomial : Polynomial Scalar) (offset slope : Scalar) {degree : ℕ}
     (hdegree : polynomial.natDegree ≤ degree) :
     (polynomial.comp (Polynomial.C offset + Polynomial.C slope * Polynomial.X)).natDegree ≤
@@ -355,12 +358,12 @@ private theorem affine_comp_natDegree_le {Scalar : Type*} [Field Scalar]
 /-- The source combination has degree at most `degree` on an axis line:
 either the two scalar coordinates are constant, or both projected parameters
 are constant. This is the algebraic assertion at paper lines 1127--1132. -/
-theorem combineLinePoly_axis_degree {Scalar : Type*} [Field Scalar] {bound degree : ℕ}
+theorem combineLinePoly_axis_degree   {bound degree : ℕ}
     (hdegree : 1 ≤ degree) (data : Fin 8 → Scalar)
     (polynomialX polynomialZ : Fin (bound + 1) → Scalar)
     (hdegreeX : ∀ index, degree < index.val → polynomialX index = 0)
     (hdegreeZ : ∀ index, degree < index.val → polynomialZ index = 0)
-    (haxis : (data 5 = 0 ∧ data 7 = 0) ∨ (data 1 = 0 ∧ data 3 = 0)) :
+    (haxis :  data 5 = 0 ∧ data 7 = 0  ∨  data 1 = 0 ∧ data 3 = 0 ) :
     ∀ index : Fin (bound + 1 + 1), degree < index.val →
       combineLinePoly (data 0) (data 1) (data 2) (data 3)
         (data 4) (data 5) (data 6) (data 7) polynomialX polynomialZ index = 0 := by
@@ -374,10 +377,10 @@ theorem combineLinePoly_axis_degree {Scalar : Type*} [Field Scalar] {bound degre
       refine (Polynomial.natDegree_add_le _ _).trans (max_le ?_ ?_)
       · refine Polynomial.natDegree_mul_le.trans ?_
         simpa only [Polynomial.natDegree_C, Nat.zero_add] using
-          (affine_comp_natDegree_le _ (data 0) (data 1) hpolyX)
+           affine_comp_natDegree_le _ (data 0) (data 1) hpolyX 
       · refine Polynomial.natDegree_mul_le.trans ?_
         simpa only [Polynomial.natDegree_C, Nat.zero_add] using
-          (affine_comp_natDegree_le _ (data 2) (data 3) hpolyZ)
+           affine_comp_natDegree_le _ (data 2) (data 3) hpolyZ 
     · simp only [hparamX, hparamZ, Polynomial.C_0, zero_mul, add_zero, Polynomial.comp_C]
       have hterm (constant slope value : Scalar) :
           ((Polynomial.C constant + Polynomial.C slope * Polynomial.X) *
@@ -401,22 +404,17 @@ private theorem source_axis_direction_ne_zero {params : LdParams}
   | diagonal => cases haxis
 
 /-- Two equal points on a nonzero affine direction force the parameter slope to vanish. -/
-private theorem affine_slope_eq_zero {Scalar : Type*} [Field Scalar] {dimension : ℕ}
+private theorem affine_slope_eq_zero   {dimension : ℕ}
     {point base direction : Fin dimension → Scalar} {offset slope : Scalar}
     (hdirection : direction ≠ 0) (hzero : point = base + offset • direction)
-    (hone : point = base + (offset + slope) • direction) : slope = 0 := by
-  have hequal := add_left_cancel (hzero.symm.trans hone)
-  have hvanish : slope • direction = 0 := by
-    apply add_left_cancel (a := offset • direction)
-    simpa only [add_smul, add_zero] using hequal.symm
-  exact (smul_eq_zero.mp hvanish).resolve_right hdirection
+    (hone : point = base + (offset + slope) • direction) : slope = 0 := by simp_all
 
 /-- Axis subline coordinates satisfy the source's constant-coordinate alternative. -/
-theorem SubLineWitness.affineData_axis {params : AdmissibleParams}
-    (sublines : SubLineWitness params) (sample : SubLineTriple params)
+theorem SubLineWitness.affineData_axis
+
     (hsample : sample ∈ sublines.D.support) (haxis : sample.1.kind = .axis) :
     let data := sublines.affineData sample hsample
-    (data 5 = 0 ∧ data 7 = 0) ∨ (data 1 = 0 ∧ data 3 = 0) := by
+    (data 5 = 0 ∧ data 7 = 0) ∨  data 1 = 0 ∧ data 3 = 0  := by
   let data := sublines.affineData sample hsample
   have hcompat := sublines.affineData_compatible sample hsample
   have hsource := sublines.axis_closure sample hsample haxis
@@ -452,8 +450,8 @@ theorem SubLineWitness.affineData_axis {params : AdmissibleParams}
     simp [coordinateDirection, halpha, hbeta]
 
 /-- The actual polynomial combination preserves the source axis-degree support. -/
-theorem SubLineWitness.combinedPolynomial_axis_degree {params : AdmissibleParams}
-    (sublines : SubLineWitness params) (sample : SubLineTriple params)
+theorem SubLineWitness.combinedPolynomial_axis_degree
+
     (hsample : sample ∈ sublines.D.support) (haxis : sample.1.kind = .axis)
     (polynomials : DegPoly params.toLdParams (params.m * params.d) ×
       DegPoly params.toLdParams (params.m * params.d))
@@ -479,7 +477,6 @@ theorem SubLineWitness.extendedMeasurement_axis_degree {params : AdmissibleParam
     (polynomial : DirectDegPoly params.extendedDirectLd (params.m * params.d + 1))
     (haxis : line.kind = .axis) (hdegree : ¬ ∀ index, params.d < index.val → polynomial index = 0) :
     (sublines.extendedMeasurement lines side line).effect polynomial = 0 := by
-  classical
   change averageOperatorOverDistribution (sublines.conditionalLaw line) (fun sample =>
     ((lines.T side sample.val.2.1 sample.val.2.2).postprocess
       (sublines.combinedPolynomial sample.val

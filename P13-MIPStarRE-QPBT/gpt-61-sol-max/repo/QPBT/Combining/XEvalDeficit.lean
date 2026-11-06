@@ -36,15 +36,15 @@ variable {P : AdmissibleParams} {ε : ℝ}
 and restricts to the ordered product on evaluated pairs. -/
 theorem completedPair_norm_sq_sum_XZ (S : ProjectiveSetting P ε) {δ : ℝ}
     (points : CombinedPointsWitness S δ) (p : Placement)
-    (x z : Fin P.m → PauliScalar P) :
-    (∑ o : Option (PauliScalar P) × Option (PauliScalar P),
+    (x z : MIPStarRE.QPBT.PauliPoint P) :
+     ∑ o : Option (PauliScalar P) × Option (PauliScalar P),
         ‖applyOperatorToState
-          (S.place p (((points.Q p.side x z).postprocess (fun ab =>
-              (some ab.1, some ab.2))).effect o) -
+          (S.place p (((points.Q p.side x z).postprocess  fun ab =>
+              (some ab.1, some ab.2) ).effect o) -
             S.place p
               ((S.pointMeasExpOption p.side .X x).effect o.1 *
                 (S.pointMeasExpOption p.side .Z z).effect o.2))
-          S.psiHat‖ ^ 2) =
+          S.psiHat‖ ^ 2  =
       ∑ ab : PauliScalar P × PauliScalar P,
         ‖applyOperatorToState
           (S.place p ((points.Q p.side x z).effect ab) -
@@ -156,11 +156,7 @@ theorem CombinedLinesWitness.one_sub_X_overlap_le_at
       rw [Matrix.conjTranspose_mul,
         (S.pointMeasExpOption_isProj second.side .X s.1.2 o.1).isSelfAdjoint.isHermitian.eq,
         (S.pointMeasExpOption_isProj second.side .Z s.2.2 o.2).isSelfAdjoint.isHermitian.eq]
-    have hplace : (S.place second
-        ((S.pointMeasExpOption second.side .Z s.2.2).effect o.2 *
-          (S.pointMeasExpOption second.side .X s.1.2).effect o.1))ᴴ =
-        S.place second ((S.pointMeasExpOption second.side .X s.1.2).effect o.1 *
-          (S.pointMeasExpOption second.side .Z s.2.2).effect o.2) :=
+    have hplace  :=
       (ProjectiveSetting.place_conjTranspose S second _).symm.trans
         (congrArg (S.place second) hlocal)
     dsimp only
@@ -206,16 +202,12 @@ theorem CombinedLinesWitness.one_sub_X_overlap_restricted_le_at
     refine le_trans
       (avgOver_prod_restrictedLinePointDist_le _ ?_ kindX kindZ i j) ?_
     · intro sample
-      exact consistencyDefect_integrand_nonneg S first second hopposite
-        ((lines.T first.side sample.1.1 sample.2.1).postprocess fun fs =>
-          (evalOpt sample.1.1 sample.1.2 fs.1, evalOpt sample.2.1 sample.2.2 fs.2))
-        ((points.Q second.side sample.1.2 sample.2.2).postprocess fun ab =>
-          (some ab.1, some ab.2))
+      classical simp_all only [consistencyDefect_integrand_nonneg]
     · exact mul_le_mul_of_nonneg_left (lines.consistent first second hopposite) (by positivity)
   · calc
       _ = opFamilyDistSq
             (uniformDistribution
-              ((Fin P.m → PauliScalar P) × (Fin P.m → PauliScalar P)))
+              ( MIPStarRE.QPBT.PauliPoint P  ×  MIPStarRE.QPBT.PauliPoint P ))
             (fun xz o => S.place second
               (((points.Q second.side xz.1 xz.2).postprocess fun ab =>
                 (some ab.1, some ab.2)).effect o))
@@ -226,7 +218,7 @@ theorem CombinedLinesWitness.one_sub_X_overlap_restricted_le_at
         opFamilyDistSq_prod_restricted_points P kindX kindZ i j _ _ _
       _ = opFamilyDistSq
             (uniformDistribution
-              ((Fin P.m → PauliScalar P) × (Fin P.m → PauliScalar P)))
+              ( MIPStarRE.QPBT.PauliPoint P  ×  MIPStarRE.QPBT.PauliPoint P ))
             (fun xz ab => S.place second ((points.Q second.side xz.1 xz.2).effect ab))
             (fun xz ab => S.place second
               ((S.pointMeasExp second.side .X xz.1).effect ab.1 *

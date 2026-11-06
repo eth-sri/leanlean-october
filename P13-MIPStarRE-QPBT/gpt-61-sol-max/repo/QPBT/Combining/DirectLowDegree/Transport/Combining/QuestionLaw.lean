@@ -1,5 +1,7 @@
 module
 
+public import QPBT.Types
+
 public import QPBT.Combining.DirectLowDegree.Transport.Combining.Strategy
 
 /-!
@@ -39,7 +41,9 @@ after rebasing along the image direction, which is
 
 @[expose] public section
 
-open scoped BigOperators
+variable (D : MIPStarRE.QPBT.DirectLdParams)
+
+open scoped BigOperators Classical
 
 namespace MIPStarRE.QPBT
 
@@ -64,8 +68,7 @@ local instance directCombinedIndexNonempty (D : DirectLdParams) :
 
 /-- The coordinate direction of a point coordinate of the combined dimension
 has point part the corresponding coordinate direction. -/
-@[simp] theorem directCombinedPointPart_coordinateDirection_pointVar
-    (D : DirectLdParams) (j : Fin D.m) :
+@[simp] theorem directCombinedPointPart_coordinateDirection_pointVar (j : Fin D.m) :
     directCombinedPointPart D (coordinateDirection (combinedPointVar D.m D.k j)) =
       coordinateDirection j := by
   funext j'
@@ -82,36 +85,24 @@ has point part the corresponding coordinate direction. -/
 
 /-- The coordinate direction of a combining coordinate of the combined
 dimension has vanishing point part. -/
-@[simp] theorem directCombinedPointPart_coordinateDirection_coefficientVar
-    (D : DirectLdParams) (r : Fin D.k) :
+@[simp] theorem directCombinedPointPart_coordinateDirection_coefficientVar (r : Fin D.k) :
     directCombinedPointPart D
         (coordinateDirection (combinedCoefficientVar D.m D.k r)) = 0 := by
   funext j
-  show (coordinateDirection (combinedCoefficientVar D.m D.k r) :
-      Fin (D.m + D.k) → DirectScalarQ D) (combinedPointVar D.m D.k j) = 0
-  rw [coordinateDirection,
-    Pi.single_eq_of_ne (combinedCoefficientVar_ne_combinedPointVar D.m D.k r j).symm]
+  solve_by_elim (maxDepth := 6) [Ne.symm, Pi.single_eq_of_ne, combinedCoefficientVar_ne_combinedPointVar]
 
 /-- Prefix projection at a point coordinate restricts to prefix projection at
 that coordinate of the point part.  This is the coordinate order of
 `def:ld-combining-map`: the point coordinates precede the combining ones. -/
-@[simp] theorem directCombinedPointPart_directPrefixProjection_pointVar
-    (D : DirectLdParams) (j : Fin D.m)
+@[simp] theorem directCombinedPointPart_directPrefixProjection_pointVar (j : Fin D.m)
     (w : Fin D.combined.m → DirectScalarQ D) :
     directCombinedPointPart D
         (directPrefixProjection (combinedPointVar D.m D.k j) w) =
-      directPrefixProjection j (directCombinedPointPart D w) := by
-  funext j'
-  show (if (combinedPointVar D.m D.k j').val < (combinedPointVar D.m D.k j).val
-      then 0 else w (combinedPointVar D.m D.k j')) =
-    if j'.val < j.val then 0 else directCombinedPointPart D w j'
-  rw [combinedPointVar_val, combinedPointVar_val]
-  rfl
+      directPrefixProjection j (directCombinedPointPart D w) := by rfl
 
 /-- Prefix projection at a combining coordinate annihilates the point part:
 every point coordinate precedes every combining coordinate. -/
-@[simp] theorem directCombinedPointPart_directPrefixProjection_coefficientVar
-    (D : DirectLdParams) (r : Fin D.k)
+@[simp] theorem directCombinedPointPart_directPrefixProjection_coefficientVar (r : Fin D.k)
     (w : Fin D.combined.m → DirectScalarQ D) :
     directCombinedPointPart D
         (directPrefixProjection (combinedCoefficientVar D.m D.k r) w) = 0 := by
@@ -124,7 +115,7 @@ every point coordinate precedes every combining coordinate. -/
 
 /-! ## Canonical bases -/
 
-private theorem directCombinedPointPart_sub_smul (D : DirectLdParams)
+private theorem directCombinedPointPart_sub_smul
     (z V : Fin D.combined.m → DirectScalarQ D) (c : DirectScalarQ D) :
     directCombinedPointPart D (z - c • V) =
       directCombinedPointPart D z - c • directCombinedPointPart D V :=
@@ -133,8 +124,7 @@ private theorem directCombinedPointPart_sub_smul (D : DirectLdParams)
 /-- A line of the combined space whose direction has vanishing point part lies
 in a fiber of the projection to the point coordinates, so its canonical base
 projects to the point part of every one of its points. -/
-theorem directCombinedPointPart_lineRepMap_of_pointPart_eq_zero
-    (D : DirectLdParams) (V z : Fin D.combined.m → DirectScalarQ D)
+theorem directCombinedPointPart_lineRepMap_of_pointPart_eq_zero (V z : Fin D.combined.m → DirectScalarQ D)
     (hV : directCombinedPointPart D V = 0) :
     directCombinedPointPart D (lineRepMap V z) = directCombinedPointPart D z := by
   obtain ⟨c, hc⟩ := Submodule.mem_span_singleton.mp (sub_lineRepMap_mem_span V z)
@@ -147,7 +137,7 @@ the canonical base of the image line.  The canonical base of a line of the
 combined space need not itself project to the canonical base of its image; this
 is why the answer relabellings of `def:ld-combined-strategy` carry the affine
 shift `directCombinedRebaseParameter`. -/
-theorem lineRepMap_directCombinedPointPart_lineRepMap (D : DirectLdParams)
+theorem lineRepMap_directCombinedPointPart_lineRepMap
     (V z : Fin D.combined.m → DirectScalarQ D) :
     lineRepMap (directCombinedPointPart D V)
         (directCombinedPointPart D (lineRepMap V z)) =
@@ -162,7 +152,7 @@ theorem lineRepMap_directCombinedPointPart_lineRepMap (D : DirectLdParams)
 /-- The sample of the original game to which a sample of the combined game
 projects at a point coordinate index: the point part of the sampled point, the
 index, and the point part of the sampled direction. -/
-def directCombinedSampleProjection (D : DirectLdParams) (j : Fin D.m)
+def directCombinedSampleProjection (j : Fin D.m)
     (sample : DirectLdSpace D.combined) : DirectLdSpace D :=
   ⟨directCombinedPointPart D sample.point, j,
     directCombinedPointPart D sample.direction⟩
@@ -171,7 +161,7 @@ def directCombinedSampleProjection (D : DirectLdParams) (j : Fin D.m)
 index is the point coordinate `j`, the combined strategy measures, for every
 question type, the canonical question of that type of the original game
 attached to the projected sample. -/
-theorem directCombined_measuredQuestion_of_pointVar (D : DirectLdParams)
+theorem directCombined_measuredQuestion_of_pointVar
     (t : LdType) (j : Fin D.m) (sample : DirectLdSpace D.combined)
     (hindex : sample.index = combinedPointVar D.m D.k j) :
     directCombinedMeasuredQuestion D (t, directLdMap D.combined t sample) =
@@ -185,7 +175,7 @@ theorem directCombined_measuredQuestion_of_pointVar (D : DirectLdParams)
       simp only [directLdMap, directCombinedMeasuredQuestion, hindex,
         directCombinedIndexSplit_combinedPointVar,
         directCombinedSampleProjection]
-      exact congrArg (fun x : Fin D.m → DirectScalarQ D =>
+      exact congrArg (fun x : MIPStarRE.QPBT.DirectPoint D =>
         ((LdType.aline, ⟨x, j, 0⟩) : DirectLdQuestion D)) hbase
   | dline =>
       have hbase := lineRepMap_directCombinedPointPart_lineRepMap D
@@ -197,18 +187,14 @@ theorem directCombined_measuredQuestion_of_pointVar (D : DirectLdParams)
         directCombinedSampleProjection,
         directCombinedPointPart_directPrefixProjection_pointVar,
         directPrefixProjection_idem]
-      exact congrArg (fun x : Fin D.m → DirectScalarQ D =>
-        ((LdType.dline, ⟨x, j,
-          directPrefixProjection j
-            (directCombinedPointPart D sample.direction)⟩) :
-          DirectLdQuestion D)) hbase
+      simp_all
 
 /-- Second half of `lem:ld-combined-question-law`: on a sample whose coordinate
 index is a combining coordinate, every direction produced by the question
 distribution has vanishing point part, so the combined strategy measures, for
 every question type, the point question at the point part of the sampled
 point. -/
-theorem directCombined_measuredQuestion_of_coefficientVar (D : DirectLdParams)
+theorem directCombined_measuredQuestion_of_coefficientVar
     (t : LdType) (r : Fin D.k) (sample : DirectLdSpace D.combined)
     (hindex : sample.index = combinedCoefficientVar D.m D.k r) :
     directCombinedMeasuredQuestion D (t, directLdMap D.combined t sample) =
@@ -221,8 +207,7 @@ theorem directCombined_measuredQuestion_of_coefficientVar (D : DirectLdParams)
         (directCombinedPointPart_coordinateDirection_coefficientVar D r)
       simp only [directLdMap, directCombinedMeasuredQuestion, hindex,
         directCombinedIndexSplit_combinedCoefficientVar]
-      exact congrArg (fun x : Fin D.m → DirectScalarQ D =>
-        directLdPointQuestionOf D x) hbase
+      exact congrArg ( directLdPointQuestionOf D ) hbase
   | dline =>
       have hbase := directCombinedPointPart_lineRepMap_of_pointPart_eq_zero D
         (directPrefixProjection (combinedCoefficientVar D.m D.k r) sample.direction)
@@ -231,14 +216,13 @@ theorem directCombined_measuredQuestion_of_coefficientVar (D : DirectLdParams)
           sample.direction)
       simp only [directLdMap, directCombinedMeasuredQuestion, hindex,
         directCombinedIndexSplit_combinedCoefficientVar]
-      exact congrArg (fun x : Fin D.m → DirectScalarQ D =>
-        directLdPointQuestionOf D x) hbase
+      exact congrArg ( directLdPointQuestionOf D ) hbase
 
 /-! ## The law of the projected sample -/
 
 /-- A point of the combined space is recovered from its two parts. -/
 @[simp] theorem combinedPoint_combinedPointPart_combinedCoefficientPart
-    {K : Type*} {m k : ℕ} (z : Fin (m + k) → K) :
+    {K : Type*} {m k : ℕ} (z : MIPStarRE.QPBT.Coordinates (m + k) K) :
     combinedPoint (combinedPointPart z) (combinedCoefficientPart z) = z := by
   funext i
   rw [combinedPoint]
@@ -252,11 +236,11 @@ theorem directCombined_measuredQuestion_of_coefficientVar (D : DirectLdParams)
 /-- The decomposition of a sample of the combined game into its coordinate
 index and its two point parts on the one side, and its two combining parts on
 the other. -/
-private def directCombinedSpaceIndexEquiv (D : DirectLdParams) :
+private def directCombinedSpaceIndexEquiv :
     DirectLdSpace D.combined ≃
-      ((Fin D.combined.m ×
-          ((Fin D.m → DirectScalarQ D) × (Fin D.m → DirectScalarQ D))) ×
-        ((Fin D.k → DirectScalarQ D) × (Fin D.k → DirectScalarQ D))) where
+       (Fin D.combined.m ×
+            MIPStarRE.QPBT.DirectPoint D  ×  MIPStarRE.QPBT.DirectPoint D  ) ×
+          MIPStarRE.QPBT.DirectValues D  ×  MIPStarRE.QPBT.DirectValues D    where
   toFun sample :=
     ((sample.index,
         (directCombinedPointPart D sample.point,
@@ -271,14 +255,7 @@ private def directCombinedSpaceIndexEquiv (D : DirectLdParams) :
       first
         | rfl
         | exact combinedPoint_combinedPointPart_combinedCoefficientPart _
-  right_inv x := by
-    obtain ⟨⟨i, u, v⟩, α, w⟩ := x
-    dsimp only
-    simp only [Prod.mk.injEq]
-    exact ⟨⟨trivial, combinedPointPart_combinedPoint u α,
-        combinedPointPart_combinedPoint v w⟩,
-      combinedCoefficientPart_combinedPoint u α,
-      combinedCoefficientPart_combinedPoint v w⟩
+  right_inv x := by bound
 
 /-- The distributional half of `lem:ld-combined-question-law`: the coordinate
 index of a uniform sample of the combined game and the two point parts of that
@@ -294,14 +271,14 @@ the point question at a uniform point.  This single statement subsumes the two
 marginal laws `directCombinedSample_pointParts_uniform` and
 `directCombinedSample_index_uniform`, which it refines by recording that the
 index and the point parts are independent. -/
-theorem directCombinedSample_indexPointParts_uniform (D : DirectLdParams) :
+theorem directCombinedSample_indexPointParts_uniform :
     (uniformDistribution (DirectLdSpace D.combined)).map
         (fun sample => (sample.index,
           (directCombinedPointPart D sample.point,
             directCombinedPointPart D sample.direction))) =
       uniformDistribution
         (Fin D.combined.m ×
-          ((Fin D.m → DirectScalarQ D) × (Fin D.m → DirectScalarQ D))) :=
+            MIPStarRE.QPBT.DirectPoint D  ×  MIPStarRE.QPBT.DirectPoint D  ) :=
   uniformDistribution_map_fst_of_equiv (e := directCombinedSpaceIndexEquiv D) _
     fun _ => rfl
 

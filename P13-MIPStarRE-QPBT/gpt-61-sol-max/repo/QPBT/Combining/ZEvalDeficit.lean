@@ -33,7 +33,9 @@ consistency input is `lem:qld-xz-lines` and the ordered products are those of
 
 @[expose] public section
 
-open scoped BigOperators Matrix MatrixOrder ComplexOrder
+variable {β γ d : Type*} [Fintype β] [Fintype γ] [DecidableEq β] [DecidableEq γ] [Fintype d] [DecidableEq d]
+
+open scoped BigOperators Matrix MatrixOrder ComplexOrder Classical
 
 namespace MIPStarRE.QPBT
 
@@ -49,10 +51,10 @@ classes is the sum over the uncompleted pairs. -/
 theorem sum_option_prod_eq_of_none {β γ : Type*} [Fintype β] [Fintype γ]
     (F : Option β × Option γ → ℝ) (h1 : ∀ o2, F (none, o2) = 0)
     (h2 : ∀ o1, F (o1, none) = 0) :
-    (∑ o, F o) = ∑ bc : β × γ, F (some bc.1, some bc.2) := by
-  calc (∑ o : Option β × Option γ, F o)
+     ∑ o, F o  = ∑ bc : β × γ, F (some bc.1, some bc.2) := by
+  calc  ∑ o : Option β × Option γ, F o 
       = ∑ o1 : Option β, ∑ o2 : Option γ, F (o1, o2) := Fintype.sum_prod_type (f := F)
-    _ = (∑ o2 : Option γ, F (none, o2)) +
+    _ =  ∑ o2 : Option γ, F (none, o2)  +
           ∑ b : β, ∑ o2 : Option γ, F (some b, o2) := Fintype.sum_option _
     _ = ∑ b : β, ∑ o2 : Option γ, F (some b, o2) := by
         rw [Finset.sum_eq_zero fun o2 _ => h1 o2, zero_add]
@@ -66,21 +68,21 @@ theorem sum_option_prod_eq_of_none {β γ : Type*} [Fintype β] [Fintype γ]
 
 /-- The completed joint measurement has the joint effect on a pair of
 evaluations. -/
-theorem completedPair_effect_some {β γ d : Type*} [Fintype β] [Fintype γ]
-    [DecidableEq β] [DecidableEq γ] [Fintype d] [DecidableEq d]
+theorem completedPair_effect_some
+
     (Q : Measurement (β × γ) d) (bc : β × γ) :
     (Q.postprocess fun ab => (some ab.1, some ab.2)).effect (some bc.1, some bc.2) =
       Q.effect bc := by
   rw [MIPStarRE.Quantum.Measurement.postprocess_effect,
-    show (Finset.univ.filter fun cd : β × γ =>
-        (some cd.1, some cd.2) = (some bc.1, some bc.2)) = {bc} by
+    show  Finset.univ.filter fun cd : β × γ =>
+        (some cd.1, some cd.2) = (some bc.1, some bc.2)  = {bc} by
       ext cd; simp [Prod.ext_iff, eq_comm]]
   simp
 
 /-- The completed joint measurement vanishes on outcomes outside the image of
 the completion. -/
-theorem completedPair_effect_eq_zero {β γ d : Type*} [Fintype β] [Fintype γ]
-    [DecidableEq β] [DecidableEq γ] [Fintype d] [DecidableEq d]
+theorem completedPair_effect_eq_zero
+
     (Q : Measurement (β × γ) d) (o : Option β × Option γ)
     (ho : ∀ bc : β × γ, (some bc.1, some bc.2) ≠ o) :
     (Q.postprocess fun ab => (some ab.1, some ab.2)).effect o = 0 := by
@@ -89,8 +91,8 @@ theorem completedPair_effect_eq_zero {β γ d : Type*} [Fintype β] [Fintype γ]
     absurd (Finset.mem_filter.mp hbc).2 (ho bc)
 
 /-- The completion of a projective joint measurement is projective. -/
-theorem completedPair_isProjective {β γ d : Type*} [Fintype β] [Fintype γ]
-    [DecidableEq β] [DecidableEq γ] [Fintype d] [DecidableEq d]
+theorem completedPair_isProjective
+
     (Q : Measurement (β × γ) d) (hQ : Measurement.IsProjective Q) :
     Measurement.IsProjective (Q.postprocess fun ab => (some ab.1, some ab.2)) := by
   intro o
@@ -119,7 +121,7 @@ theorem place_isProj (S : ProjectiveSetting P ε) (p : Placement)
 /-- Every effect of the completed expanded point measurement is a projection,
 the `none` effect being zero. -/
 theorem pointMeasExpOption_isProj (S : ProjectiveSetting P ε)
-    (side : PlayerSide) (W : PauliKind) (u : Fin P.m → PauliScalar P)
+    (side : PlayerSide) (W : PauliKind) (u : MIPStarRE.QPBT.PauliPoint P)
     (o : Option (PauliScalar P)) :
     IsProj ((S.pointMeasExpOption side W u).effect o) := by
   cases o with
@@ -142,20 +144,20 @@ theorem sum_norm_place_completedPair_sub_sq (S : ProjectiveSetting P ε)
     (G : PauliScalar P × PauliScalar P → Op (S.ExpandedLocalSpace p.side))
     (hsome : ∀ ab : PauliScalar P × PauliScalar P, Gc (some ab.1, some ab.2) = G ab)
     (hnone1 : ∀ o2, Gc (none, o2) = 0) (hnone2 : ∀ o1, Gc (o1, none) = 0) :
-    (∑ o : Option (PauliScalar P) × Option (PauliScalar P),
+     ∑ o : Option (PauliScalar P) × Option (PauliScalar P),
         ‖applyOperatorToState
           (S.place p ((Q.postprocess fun ab => (some ab.1, some ab.2)).effect o) -
-            S.place p (Gc o)) S.psiHat‖ ^ 2) =
+            S.place p (Gc o)) S.psiHat‖ ^ 2  =
       ∑ ab : PauliScalar P × PauliScalar P,
         ‖applyOperatorToState (S.place p (Q.effect ab) - S.place p (G ab))
           S.psiHat‖ ^ 2 := by
   refine Eq.trans (sum_option_prod_eq_of_none _ ?_ ?_) ?_
   · intro o2
-    rw [completedPair_effect_eq_zero Q (none, o2) (fun ab => by simp), hnone1,
+    rw [completedPair_effect_eq_zero Q (none, o2)  fun ab => by simp , hnone1,
       place_zero, sub_self]
     simp [applyOperatorToState]
   · intro o1
-    rw [completedPair_effect_eq_zero Q (o1, none) (fun ab => by simp), hnone2,
+    rw [completedPair_effect_eq_zero Q (o1, none)  fun ab => by simp , hnone2,
       place_zero, sub_self]
     simp [applyOperatorToState]
   · refine Finset.sum_congr rfl fun ab _ => ?_
@@ -165,15 +167,15 @@ theorem sum_norm_place_completedPair_sub_sq (S : ProjectiveSetting P ε)
 and restricts to the ordered product on evaluated pairs. -/
 theorem completedPair_norm_sq_sum_ZX (S : ProjectiveSetting P ε) {δ : ℝ}
     (points : CombinedPointsWitness S δ) (p : Placement)
-    (x z : Fin P.m → PauliScalar P) :
-    (∑ o : Option (PauliScalar P) × Option (PauliScalar P),
+    (x z : MIPStarRE.QPBT.PauliPoint P) :
+     ∑ o : Option (PauliScalar P) × Option (PauliScalar P),
         ‖applyOperatorToState
-          (S.place p (((points.Q p.side x z).postprocess (fun ab =>
-              (some ab.1, some ab.2))).effect o) -
+          (S.place p (((points.Q p.side x z).postprocess  fun ab =>
+              (some ab.1, some ab.2) ).effect o) -
             S.place p
               ((S.pointMeasExpOption p.side .Z z).effect o.2 *
                 (S.pointMeasExpOption p.side .X x).effect o.1))
-          S.psiHat‖ ^ 2) =
+          S.psiHat‖ ^ 2  =
       ∑ ab : PauliScalar P × PauliScalar P,
         ‖applyOperatorToState
           (S.place p ((points.Q p.side x z).effect ab) -
@@ -207,7 +209,7 @@ theorem one_sub_overlap_le_of_consistencyDefect {X α ι : Type*}
     [Fintype X] [DecidableEq X] [Fintype α] [DecidableEq α]
     [Fintype ι] [DecidableEq ι]
     (μ : Distribution X) (A Q : X → Measurement α ι) (R W : X → α → Op ι)
-    (ψ : EuclideanSpace ℂ ι) (hμ : μ.IsProbability) (hψ : ‖ψ‖ = 1)
+    (ψ : MIPStarRE.QPBT.StateVector ι) (hμ : μ.IsProbability) (hψ : ‖ψ‖ = 1)
     (hQ : ∀ x, Measurement.IsProjective (Q x)) (hR : ∀ x a, IsProj (R x a))
     (hAQ : ∀ x a, Commute ((A x).effect a) ((Q x).effect a))
     (hAR : ∀ x a, Commute ((A x).effect a) (R x a))
@@ -221,16 +223,16 @@ theorem one_sub_overlap_le_of_consistencyDefect {X α ι : Type*}
       (fun x a => (W x a)ᴴ) ψ ≤ ζ) :
     1 - avgOver μ (fun x => ∑ a, stateQForm ψ ((A x).effect a * R x a)) ≤
       2 * Real.sqrt η + 2 * Real.sqrt ζ := by
-  set ovQ := avgOver μ (fun x =>
-    ∑ a, stateQForm ψ ((A x).effect a * (Q x).effect a)) with hovQ
+  set ovQ := avgOver μ  fun x =>
+    ∑ a, stateQForm ψ ((A x).effect a * (Q x).effect a)  with hovQ
   have h1 : 1 - ovQ ≤ η := by
     rw [← consistencyDefect_eq_one_sub_overlap μ A Q ψ hμ hψ]
     exact hcons
   have hovQ_nonneg : 0 ≤ ovQ :=
     avgOver_nonneg μ _ fun x => Finset.sum_nonneg fun a _ => hnonneg x a
-  have hovQ_le : ovQ ≤ 1 :=
+  have hovQ_le  :=
     avgOver_sum_stateQForm_mul_le_one μ A (fun x a => (Q x).effect a) ψ hμ hψ
-      (fun x a => hQ x a) hAQ
+      hQ hAQ
   have h1' : 1 - ovQ ≤ Real.sqrt η := by
     have h0 : 0 ≤ 1 - ovQ := by linarith
     calc 1 - ovQ = Real.sqrt ((1 - ovQ) ^ 2) := (Real.sqrt_sq h0).symm
@@ -247,18 +249,15 @@ theorem one_sub_overlap_le_of_consistencyDefect {X α ι : Type*}
       measurement_effect_hermitian] at h
     exact h
   have h2 : |ovQ - avgOver μ (fun x =>
-      ∑ a, stateQForm ψ ((A x).effect a * W x a))| ≤ Real.sqrt ζ := by
-    rw [avgOver_congr μ _ _ fun x => Finset.sum_congr rfl fun a _ => hWconj x a]
-    exact abs_overlap_gap_le_sqrt_of_opFamilyDistSq μ A
-      (fun x a => (Q x).effect a) (fun x a => (W x a)ᴴ) ψ hμ hψ ζ hdist
+      ∑ a, stateQForm ψ ((A x).effect a * W x a))| ≤ Real.sqrt ζ := by simp_all [abs_overlap_gap_le_sqrt_of_opFamilyDistSq]
   -- replacing `Q R` by `W R = W`
   have h4 : |avgOver μ (fun x =>
       ∑ a, stateQForm ψ ((A x).effect a * ((Q x).effect a * R x a))) -
         avgOver μ (fun x => ∑ a, stateQForm ψ ((A x).effect a * W x a))| ≤
       Real.sqrt ζ := by
     have hpt : ∀ x,
-        (∑ a, stateQForm ψ ((A x).effect a * ((Q x).effect a * R x a))) -
-          (∑ a, stateQForm ψ ((A x).effect a * W x a)) =
+         ∑ a, stateQForm ψ ((A x).effect a * ((Q x).effect a * R x a))  -
+           ∑ a, stateQForm ψ ((A x).effect a * W x a)  =
         ∑ a, stateQForm ψ ((A x).effect a * (((Q x).effect a - W x a) * R x a)) := by
       intro x
       rw [← Finset.sum_sub_distrib]
@@ -268,10 +267,9 @@ theorem one_sub_overlap_le_of_consistencyDefect {X α ι : Type*}
     rw [← avgOver_sub, avgOver_congr μ _ _ hpt]
     have hcs := abs_avgOver_sum_stateQForm_mul_le_sqrt_of_isProj' μ A
       (fun x a => (Q x).effect a - W x a) R ψ hμ hψ hR hAR
-      (fun x a => (hAQ x a).sub_right (hAW x a))
+       fun x a => (hAQ x a).sub_right (hAW x a) 
     refine hcs.trans (Real.sqrt_le_sqrt ?_)
-    have hdist' : avgOver μ (fun x =>
-        ∑ a, ‖applyOperatorToState ((Q x).effect a - (W x a)ᴴ) ψ‖ ^ 2) ≤ ζ :=
+    have hdist'  :=
       hdist
     refine le_of_eq_of_le ?_ hdist'
     refine avgOver_congr μ _ _ fun x => Finset.sum_congr rfl fun a _ => ?_
@@ -282,8 +280,8 @@ theorem one_sub_overlap_le_of_consistencyDefect {X α ι : Type*}
         avgOver μ (fun x => ∑ a, stateQForm ψ ((A x).effect a * R x a))| ≤
       Real.sqrt η := by
     have hpt : ∀ x,
-        (∑ a, stateQForm ψ ((A x).effect a * R x a)) -
-          (∑ a, stateQForm ψ ((A x).effect a * ((Q x).effect a * R x a))) =
+         ∑ a, stateQForm ψ ((A x).effect a * R x a)  -
+           ∑ a, stateQForm ψ ((A x).effect a * ((Q x).effect a * R x a))  =
         ∑ a, stateQForm ψ ((A x).effect a * ((1 - (Q x).effect a) * R x a)) := by
       intro x
       rw [← Finset.sum_sub_distrib]
@@ -292,11 +290,11 @@ theorem one_sub_overlap_le_of_consistencyDefect {X α ι : Type*}
     rw [abs_sub_comm, ← avgOver_sub, avgOver_congr μ _ _ hpt]
     have hcs := abs_avgOver_sum_stateQForm_mul_mul_le_sqrt_mul_sqrt μ A
       (fun x a => 1 - (Q x).effect a) R ψ (fun x a => (hQ x a).one_sub)
-      (fun x a => (Commute.one_right _).sub_right (hAQ x a))
+       fun x a => (Commute.one_right _).sub_right (hAQ x a) 
     have hfirst : avgOver μ (fun x =>
         ∑ a, stateQForm ψ ((A x).effect a * (1 - (Q x).effect a))) = 1 - ovQ := by
       have hx : ∀ x,
-          (∑ a, stateQForm ψ ((A x).effect a * (1 - (Q x).effect a))) =
+           ∑ a, stateQForm ψ ((A x).effect a * (1 - (Q x).effect a))  =
             1 - ∑ a, stateQForm ψ ((A x).effect a * (Q x).effect a) := by
         intro x
         rw [← sum_stateQForm_effect_eq_one (A x) ψ hψ, ← Finset.sum_sub_distrib]
@@ -327,8 +325,8 @@ theorem one_sub_overlap_le_of_consistencyDefect {X α ι : Type*}
 /-- A pair of line-point pairs of the source space: the sample type of the
 consistency display of `lem:qld-xz-lines`. -/
 abbrev LinePointPairSample (P : AdmissibleParams) :=
-  (LineDesc P.toLdParams × (Fin P.m → PauliScalar P)) ×
-    (LineDesc P.toLdParams × (Fin P.m → PauliScalar P))
+  (LineDesc P.toLdParams ×  MIPStarRE.QPBT.PauliPoint P ) ×
+     LineDesc P.toLdParams ×  MIPStarRE.QPBT.PauliPoint P  
 
 section Placed
 
@@ -426,11 +424,7 @@ theorem CombinedLinesWitness.one_sub_Z_overlap_le_at
       rw [Matrix.conjTranspose_mul,
         (S.pointMeasExpOption_isProj second.side .Z s.2.2 o.2).isSelfAdjoint.isHermitian.eq,
         (S.pointMeasExpOption_isProj second.side .X s.1.2 o.1).isSelfAdjoint.isHermitian.eq]
-    have hplace : (S.place second
-        ((S.pointMeasExpOption second.side .X s.1.2).effect o.1 *
-          (S.pointMeasExpOption second.side .Z s.2.2).effect o.2))ᴴ =
-        S.place second ((S.pointMeasExpOption second.side .Z s.2.2).effect o.2 *
-          (S.pointMeasExpOption second.side .X s.1.2).effect o.1) :=
+    have hplace  :=
       (ProjectiveSetting.place_conjTranspose S second _).symm.trans
         (congrArg (S.place second) hlocal)
     dsimp only
@@ -469,10 +463,7 @@ theorem restrictedLinePointDist_isProbability (P : AdmissibleParams)
 theorem restrictedLinePointDist_map_snd (P : AdmissibleParams) (kind : LineKind)
     (i : Fin P.m) :
     (restrictedLinePointDist P kind i).map Prod.snd =
-      uniformDistribution (Fin P.m → PauliScalar P) := by
-  rw [restrictedLinePointDist_eq_map_prod, Distribution.map_map]
-  exact Distribution.prod_map_fst _ _ (Distribution.prod_isProbability _ _
-    (subLineSeedDist_isProbability P i) (uniformDistribution_isProbability _))
+      uniformDistribution (MIPStarRE.QPBT.PauliPoint P) := by simp_all [uniformDistribution_isProbability, subLineSeedDist_isProbability, restrictedLinePointDist_eq_map_prod, Distribution.map_map, Distribution.prod_isProbability, Distribution.prod_map_fst]
 
 /-- The pair of points of a product of two restricted line-point laws is a
 uniform pair. -/
@@ -481,15 +472,7 @@ theorem prod_restrictedLinePointDist_map_points (P : AdmissibleParams)
     (Distribution.prod (restrictedLinePointDist P kindX i)
         (restrictedLinePointDist P kindZ j)).map (fun s => (s.1.2, s.2.2)) =
       uniformDistribution
-        ((Fin P.m → PauliScalar P) × (Fin P.m → PauliScalar P)) := by
-  have h : Distribution.prod ((restrictedLinePointDist P kindX i).map Prod.snd)
-      ((restrictedLinePointDist P kindZ j).map Prod.snd) =
-      uniformDistribution
-        ((Fin P.m → PauliScalar P) × (Fin P.m → PauliScalar P)) := by
-    rw [restrictedLinePointDist_map_snd, restrictedLinePointDist_map_snd,
-      uniformDistribution_prod]
-  rw [← h, Distribution.prod_map_left, Distribution.prod_map_right,
-    Distribution.map_map]
+        ( MIPStarRE.QPBT.PauliPoint P  ×  MIPStarRE.QPBT.PauliPoint P ) := by grind [restrictedLinePointDist_map_snd, Distribution.map_map, Distribution.prod_map_left, Distribution.prod_map_right, uniformDistribution_prod]
 
 /-- A state-dependent distance between two families depending on the pair of
 points only, averaged over a product of two restricted line-point laws, is the
@@ -497,15 +480,15 @@ distance averaged over a uniform pair of points. -/
 theorem opFamilyDistSq_prod_restricted_points {α ι : Type*} [Fintype α]
     [Fintype ι] [DecidableEq ι] (P : AdmissibleParams) (kindX kindZ : LineKind)
     (i j : Fin P.m)
-    (F G : (Fin P.m → PauliScalar P) × (Fin P.m → PauliScalar P) → α → Op ι)
-    (ψ : EuclideanSpace ℂ ι) :
+    (F G :  MIPStarRE.QPBT.PauliPoint P  ×  MIPStarRE.QPBT.PauliPoint P  → α → Op ι)
+    (ψ : MIPStarRE.QPBT.StateVector ι) :
     opFamilyDistSq
         (Distribution.prod (restrictedLinePointDist P kindX i)
           (restrictedLinePointDist P kindZ j))
         (fun s a => F (s.1.2, s.2.2) a) (fun s a => G (s.1.2, s.2.2) a) ψ =
       opFamilyDistSq
         (uniformDistribution
-          ((Fin P.m → PauliScalar P) × (Fin P.m → PauliScalar P))) F G ψ := by
+          ( MIPStarRE.QPBT.PauliPoint P  ×  MIPStarRE.QPBT.PauliPoint P )) F G ψ := by
   unfold opFamilyDistSq
   rw [← prod_restrictedLinePointDist_map_points P kindX kindZ i j,
     Distribution.avgOver_map]
@@ -540,16 +523,12 @@ theorem CombinedLinesWitness.one_sub_Z_overlap_restricted_le_at
     refine le_trans
       (avgOver_prod_restrictedLinePointDist_le _ ?_ kindX kindZ i j) ?_
     · intro sample
-      exact consistencyDefect_integrand_nonneg S first second hopposite
-        ((lines.T first.side sample.1.1 sample.2.1).postprocess fun fs =>
-          (evalOpt sample.1.1 sample.1.2 fs.1, evalOpt sample.2.1 sample.2.2 fs.2))
-        ((points.Q second.side sample.1.2 sample.2.2).postprocess fun ab =>
-          (some ab.1, some ab.2))
+      simp_all only [consistencyDefect_integrand_nonneg]
     · exact mul_le_mul_of_nonneg_left (lines.consistent first second hopposite) (by positivity)
   · calc
       _ = opFamilyDistSq
             (uniformDistribution
-              ((Fin P.m → PauliScalar P) × (Fin P.m → PauliScalar P)))
+              ( MIPStarRE.QPBT.PauliPoint P  ×  MIPStarRE.QPBT.PauliPoint P ))
             (fun xz o => S.place second
               (((points.Q second.side xz.1 xz.2).postprocess fun ab =>
                 (some ab.1, some ab.2)).effect o))
@@ -560,7 +539,7 @@ theorem CombinedLinesWitness.one_sub_Z_overlap_restricted_le_at
         opFamilyDistSq_prod_restricted_points P kindX kindZ i j _ _ _
       _ = opFamilyDistSq
             (uniformDistribution
-              ((Fin P.m → PauliScalar P) × (Fin P.m → PauliScalar P)))
+              ( MIPStarRE.QPBT.PauliPoint P  ×  MIPStarRE.QPBT.PauliPoint P ))
             (fun xz ab => S.place second ((points.Q second.side xz.1 xz.2).effect ab))
             (fun xz ab => S.place second
               ((S.pointMeasExp second.side .Z xz.2).effect ab.2 *

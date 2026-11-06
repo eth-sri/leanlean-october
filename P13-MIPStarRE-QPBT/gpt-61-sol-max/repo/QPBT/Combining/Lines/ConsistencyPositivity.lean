@@ -32,7 +32,7 @@ blueprint `lem:restricted-line-mixture-bounds`, paper
 
 @[expose] public section
 
-open scoped BigOperators Matrix MatrixOrder ComplexOrder
+open scoped BigOperators Matrix MatrixOrder ComplexOrder Classical
 
 namespace MIPStarRE.QPBT
 
@@ -54,8 +54,7 @@ theorem place_mul_place_nonneg (S : ProjectiveSetting P ε)
     {X : Op (S.ExpandedLocalSpace p₁.side)}
     {Y : Op (S.ExpandedLocalSpace p₂.side)}
     (hX : 0 ≤ X) (hY : 0 ≤ Y) :
-    0 ≤ S.place p₁ X * S.place p₂ Y := by
-  exact Commute.mul_nonneg (S.place_nonneg p₁ hX) (S.place_nonneg p₂ hY)
+    0 ≤ S.place p₁ X * S.place p₂ Y := Commute.mul_nonneg (S.place_nonneg p₁ hX) (S.place_nonneg p₂ hY)
     (S.place_comm p₁ p₂ hopp X Y)
 
 end ProjectiveSetting
@@ -74,7 +73,6 @@ theorem offDiagonalPlacedProduct_nonneg {P : AdmissibleParams} {ε : ℝ}
     0 ≤ ∑ a : α, ∑ b : α,
       if a = b then 0
       else S.place p₁ (M₁.effect a) * S.place p₂ (M₂.effect b) := by
-  classical
   have hcomplement : ∀ a : α,
       0 ≤ ∑ b : α, if a = b then (0 : Op (S.ExpandedLocalSpace p₂.side))
         else M₂.effect b := by
@@ -117,7 +115,6 @@ theorem consistencyDefect_integrand_nonneg {P : AdmissibleParams} {ε : ℝ}
             ℂ).symm
           ((S.place p₁ (M₁.effect a) * S.place p₂ (M₂.effect b)).mulVec
             S.psiHat))).re := by
-  classical
   have hform : (∑ a : α, ∑ b : α,
         if a = b then 0
         else (inner ℂ S.psiHat

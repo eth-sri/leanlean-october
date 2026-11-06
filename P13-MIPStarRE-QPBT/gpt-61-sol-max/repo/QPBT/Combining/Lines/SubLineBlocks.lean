@@ -26,7 +26,7 @@ The restricted laws themselves are `def:ith-restricted-line`, blueprint lines
 
 @[expose] public section
 
-open scoped BigOperators
+open scoped BigOperators Classical
 
 namespace MIPStarRE.QPBT
 
@@ -41,7 +41,7 @@ seed-direction block.  Blueprint `lem:qld-sublines`, paper
 `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:31-391`. -/
 def ldSpaceBlockEquiv (L : LdParams) :
     LdSpace L ≃
-      (Fin L.m → ScalarQ L) × (ScalarQ L × (Fin L.m → ScalarQ L)) where
+       MIPStarRE.QPBT.LdPoint L  ×  ScalarQ L ×  MIPStarRE.QPBT.LdPoint L   where
   toFun z := (LdSpace.point z, LdSpace.seed z, LdSpace.direction z)
   invFun w := fun i =>
     match i with
@@ -53,12 +53,14 @@ def ldSpaceBlockEquiv (L : LdParams) :
     rcases i with (j | u) | j <;> rfl
   right_inv w := rfl
 
+variable (L : LdParams) (i : Fin L.m)
+
 /-- The coordinate-index event of `def:ith-restricted-line` read on the
 seed-direction block of an ambient low-degree vector.  Blueprint
 `def:ith-restricted-line`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1038-1048`. -/
-def ldSeedDirEvent (L : LdParams) (i : Fin L.m)
-    (sw : ScalarQ L × (Fin L.m → ScalarQ L)) : Prop :=
+def ldSeedDirEvent
+    (sw : ScalarQ L ×  MIPStarRE.QPBT.LdPoint L ) : Prop :=
   chiIndex L sw.1 = i
 
 /-- Decidability of the coordinate-index event on the seed-direction block. -/
@@ -73,40 +75,39 @@ instance ldSeedDirEvent_decidablePred (L : LdParams) (i : Fin L.m) :
 `m` coordinate-index fibers are equal.  Blueprint
 `lem:restricted-line-mixture-bounds`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1049-1051`. -/
-theorem ldSeedDirEvent_mass (L : LdParams) (i : Fin L.m) :
+theorem ldSeedDirEvent_mass   :
     ∑ sw ∈ (uniformDistribution
-          (ScalarQ L × (Fin L.m → ScalarQ L))).support.filter
+          (ScalarQ L ×  MIPStarRE.QPBT.LdPoint L )).support.filter
         (ldSeedDirEvent L i),
         (uniformDistribution
-          (ScalarQ L × (Fin L.m → ScalarQ L))).weight sw =
+          (ScalarQ L ×  MIPStarRE.QPBT.LdPoint L )).weight sw =
       1 / (L.m : ℝ) := by
-  classical
   have hmap : (uniformDistribution
-        (ScalarQ L × (Fin L.m → ScalarQ L))).map
+        (ScalarQ L ×  MIPStarRE.QPBT.LdPoint L )).map
         (fun sw => chiIndex L sw.1) = uniformDistribution (Fin L.m) := by
     rw [← Distribution.map_map _ Prod.fst (chiIndex L),
       uniformDistribution_map_fst, uniformDistribution_map_chiIndex]
   rw [Distribution.sum_filter_weight_eq_avgOver,
-    show (fun sw : ScalarQ L × (Fin L.m → ScalarQ L) =>
+    show (fun sw : ScalarQ L ×  MIPStarRE.QPBT.LdPoint L  =>
         if ldSeedDirEvent L i sw then (1 : ℝ) else 0) =
       fun sw => (fun j : Fin L.m => if j = i then (1 : ℝ) else 0)
         (chiIndex L sw.1) from rfl,
     ← Distribution.avgOver_map
-      (uniformDistribution (ScalarQ L × (Fin L.m → ScalarQ L)))
+      (uniformDistribution (ScalarQ L ×  MIPStarRE.QPBT.LdPoint L ))
       (fun sw => chiIndex L sw.1)
-      (fun j : Fin L.m => if j = i then (1 : ℝ) else 0), hmap]
+       fun j : Fin L.m => if j = i then (1 : ℝ) else 0 , hmap]
   unfold avgOver
   simp [uniformDistribution_weight_apply, mul_ite]
 
 /-- Every coordinate-index event of the seed-direction block has positive
 mass.  Blueprint `def:ith-restricted-line`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1038-1048`. -/
-theorem ldSeedDirEvent_positive (L : LdParams) (i : Fin L.m) :
+theorem ldSeedDirEvent_positive   :
     0 < ∑ sw ∈ (uniformDistribution
-          (ScalarQ L × (Fin L.m → ScalarQ L))).support.filter
+          (ScalarQ L ×  MIPStarRE.QPBT.LdPoint L )).support.filter
         (ldSeedDirEvent L i),
       (uniformDistribution
-        (ScalarQ L × (Fin L.m → ScalarQ L))).weight sw := by
+        (ScalarQ L ×  MIPStarRE.QPBT.LdPoint L )).weight sw := by
   rw [ldSeedDirEvent_mass]
   have hm : (0 : ℝ) < (L.m : ℝ) := by
     exact_mod_cast lt_of_lt_of_le Nat.zero_lt_one L.hm
@@ -119,10 +120,10 @@ uniform in the fiber of `i` together with a direction block uniform on the
 whole space.  This is the auxiliary randomness of the sampling procedure of
 blueprint `lem:qld-sublines`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1063-1116`. -/
-noncomputable def freshDiagonalPairDist (L : LdParams) (i : Fin L.m) :
-    Distribution (ScalarQ L × (Fin L.m → ScalarQ L)) :=
+def freshDiagonalPairDist   :
+    Distribution (ScalarQ L ×  MIPStarRE.QPBT.LdPoint L ) :=
   Distribution.restrict
-    (uniformDistribution (ScalarQ L × (Fin L.m → ScalarQ L)))
+    (uniformDistribution (ScalarQ L ×  MIPStarRE.QPBT.LdPoint L ))
     (ldSeedDirEvent L i) (ldSeedDirEvent_positive L i)
 
 /-! ## Independence of the point block under the coordinate-index event -/
@@ -132,23 +133,22 @@ event of its seed leaves the point block uniform and independent of the fresh
 diagonal direction pair carried by the seed-direction block.  Blueprint
 `lem:qld-sublines`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1063-1116`. -/
-theorem restrict_uniform_ldSeedEvent_map_block (L : LdParams) (i : Fin L.m) :
+theorem restrict_uniform_ldSeedEvent_map_block   :
     (Distribution.restrict (uniformDistribution (LdSpace L)) (ldSeedEvent L i)
         (ldSeedEvent_positive L i)).map (ldSpaceBlockEquiv L) =
-      Distribution.prod (uniformDistribution (Fin L.m → ScalarQ L))
+      Distribution.prod (uniformDistribution (MIPStarRE.QPBT.LdPoint L))
         (freshDiagonalPairDist L i) := by
-  classical
   have hequiv := uniformDistribution_map_equiv (ldSpaceBlockEquiv L)
-  have hprod : 0 < ∑ w ∈ (uniformDistribution ((Fin L.m → ScalarQ L) ×
-          (ScalarQ L × (Fin L.m → ScalarQ L)))).support.filter
-        (fun w => ldSeedDirEvent L i w.2),
-      (uniformDistribution ((Fin L.m → ScalarQ L) ×
-        (ScalarQ L × (Fin L.m → ScalarQ L)))).weight w := by
+  have hprod : 0 < ∑ w ∈ (uniformDistribution ( MIPStarRE.QPBT.LdPoint L  ×
+           ScalarQ L ×  MIPStarRE.QPBT.LdPoint L  )).support.filter
+         fun w => ldSeedDirEvent L i w.2 ,
+      (uniformDistribution ( MIPStarRE.QPBT.LdPoint L  ×
+         ScalarQ L ×  MIPStarRE.QPBT.LdPoint L  )).weight w := by
     rw [uniformDistribution_snd_event_mass]
     exact ldSeedDirEvent_positive L i
   have hposA : 0 < ∑ w ∈ ((uniformDistribution (LdSpace L)).map
         (ldSpaceBlockEquiv L)).support.filter
-        (fun w => ldSeedDirEvent L i w.2),
+         fun w => ldSeedDirEvent L i w.2 ,
       ((uniformDistribution (LdSpace L)).map
         (ldSpaceBlockEquiv L)).weight w := by
     rw [hequiv]
@@ -166,13 +166,13 @@ theorem restrict_uniform_ldSeedEvent_map_block (L : LdParams) (i : Fin L.m) :
 
 /-- The axis-line decoder read on the block decomposition. -/
 def aLineDescOfBlock (L : LdParams)
-    (w : (Fin L.m → ScalarQ L) × (ScalarQ L × (Fin L.m → ScalarQ L))) :
+    (w :  MIPStarRE.QPBT.LdPoint L  ×  ScalarQ L ×  MIPStarRE.QPBT.LdPoint L  ) :
     LineDesc L :=
   aLineDescOf L ((ldSpaceBlockEquiv L).symm w)
 
 /-- The diagonal-line decoder read on the block decomposition. -/
 def dLineDescOfBlock (L : LdParams)
-    (w : (Fin L.m → ScalarQ L) × (ScalarQ L × (Fin L.m → ScalarQ L)))  :
+    (w :  MIPStarRE.QPBT.LdPoint L  ×  ScalarQ L ×  MIPStarRE.QPBT.LdPoint L  )  :
     LineDesc L :=
   dLineDescOf L ((ldSpaceBlockEquiv L).symm w)
 
@@ -181,22 +181,15 @@ axis-parallel line through a uniform point block, in the coordinate direction
 named by an independent fresh diagonal direction pair at index `i`, together
 with that same point.  Blueprint `lem:qld-sublines`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1063-1116`. -/
-theorem restrictedALineDist_eq_map_prod (L : LdParams) (i : Fin L.m) :
+theorem restrictedALineDist_eq_map_prod   :
     restrictedALineDist L i =
-      (Distribution.prod (uniformDistribution (Fin L.m → ScalarQ L))
+      (Distribution.prod (uniformDistribution (MIPStarRE.QPBT.LdPoint L))
           (freshDiagonalPairDist L i)).map
-        (fun w => (aLineDescOfBlock L w, w.1)) := by
-  classical
+         fun w => (aLineDescOfBlock L w, w.1)  := by
   have hfun : (fun z : LdSpace L =>
         (aLineDescOfBlock L (ldSpaceBlockEquiv L z),
           (ldSpaceBlockEquiv L z).1)) =
-      fun z : LdSpace L => (aLineDescOf L z, LdSpace.point z) := by
-    funext z
-    have h : (ldSpaceBlockEquiv L).symm (ldSpaceBlockEquiv L z) = z :=
-      (ldSpaceBlockEquiv L).symm_apply_apply z
-    show (aLineDescOf L ((ldSpaceBlockEquiv L).symm (ldSpaceBlockEquiv L z)),
-        LdSpace.point z) = (aLineDescOf L z, LdSpace.point z)
-    rw [h]
+      fun z : LdSpace L => (aLineDescOf L z, LdSpace.point z) := by bound
   rw [restrictedALineDist_eq_map_restrict,
     ← restrict_uniform_ldSeedEvent_map_block, Distribution.map_map, hfun]
 
@@ -205,22 +198,15 @@ diagonal line through a uniform point block, in the prefix-projected direction
 of an independent fresh diagonal direction pair at index `i`, together with
 that same point.  Blueprint `lem:qld-sublines`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1063-1116`. -/
-theorem restrictedDLineDist_eq_map_prod (L : LdParams) (i : Fin L.m) :
+theorem restrictedDLineDist_eq_map_prod   :
     restrictedDLineDist L i =
-      (Distribution.prod (uniformDistribution (Fin L.m → ScalarQ L))
+      (Distribution.prod (uniformDistribution (MIPStarRE.QPBT.LdPoint L))
           (freshDiagonalPairDist L i)).map
-        (fun w => (dLineDescOfBlock L w, w.1)) := by
-  classical
+         fun w => (dLineDescOfBlock L w, w.1)  := by
   have hfun : (fun z : LdSpace L =>
         (dLineDescOfBlock L (ldSpaceBlockEquiv L z),
           (ldSpaceBlockEquiv L z).1)) =
-      fun z : LdSpace L => (dLineDescOf L z, LdSpace.point z) := by
-    funext z
-    have h : (ldSpaceBlockEquiv L).symm (ldSpaceBlockEquiv L z) = z :=
-      (ldSpaceBlockEquiv L).symm_apply_apply z
-    show (dLineDescOf L ((ldSpaceBlockEquiv L).symm (ldSpaceBlockEquiv L z)),
-        LdSpace.point z) = (dLineDescOf L z, LdSpace.point z)
-    rw [h]
+      fun z : LdSpace L => (dLineDescOf L z, LdSpace.point z) := by bound
   rw [restrictedDLineDist_eq_map_restrict,
     ← restrict_uniform_ldSeedEvent_map_block, Distribution.map_map, hfun]
 

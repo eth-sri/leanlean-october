@@ -45,7 +45,7 @@ theorem msWinPredicate_symm (x y : MsType) (a b : MsAnswer) :
     simp [msWinPredicate, and_comm, eq_comm]
 
 /-- The symmetric-game presentation of the Magic Square game. -/
-noncomputable def msGameSymm : SymmetricGame where
+def msGameSymm : SymmetricGame where
   Question := MsType
   Answer := MsAnswer
   μ := msGame.μ

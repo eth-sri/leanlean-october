@@ -28,12 +28,12 @@ theorem sqrt_deltaQld_le {P : AdmissibleParams} {a b epsilon : ℝ}
     (ha : 1 ≤ a) (hepsilon : 0 ≤ epsilon) :
     Real.sqrt (deltaQld a b epsilon P.m P.d P.q) ≤
       deltaQld a (b / 2) epsilon P.m P.d P.q := by
-  let degree : ℝ := ((P.m * P.d : ℕ) : ℝ)
+  let degree  := ((P.m * P.d : ℕ) : ℝ)
   have hdegree : 1 ≤ degree :=
     Nat.one_le_cast.mpr (Nat.mul_pos P.one_le_m P.hd)
-  have ha0 : 0 ≤ a := zero_le_one.trans ha
-  have hdegree0 : 0 ≤ degree := zero_le_one.trans hdegree
-  have hprefactor : 1 ≤ a * degree ^ a :=
+  have ha0  := zero_le_one.trans ha
+  have hdegree0  := zero_le_one.trans hdegree
+  have hprefactor  :=
     one_le_mul_of_one_le_of_one_le ha (Real.one_le_rpow hdegree ha0)
   have hq : (0 : ℝ) ≤ P.q := Nat.cast_nonneg _
   have htwo : (0 : ℝ) ≤ 2 := by norm_num
@@ -45,7 +45,7 @@ theorem sqrt_deltaQld_le {P : AdmissibleParams} {a b epsilon : ℝ}
   have hrate :
       (epsilon ^ b + (P.q : ℝ) ^ (-b) + (2 : ℝ) ^ (-(b * degree))) ^ (1 / 2 : ℝ) ≤
         epsilon ^ (b / 2) + (P.q : ℝ) ^ (-(b / 2)) +
-          (2 : ℝ) ^ (-((b / 2) * degree)) := by
+          (2 : ℝ) ^ (-( b / 2  * degree)) := by
     have h := hroot_sum (Real.rpow_nonneg hepsilon b) (Real.rpow_nonneg hq (-b))
       (Real.rpow_nonneg htwo (-(b * degree)))
     rw [← Real.rpow_mul hepsilon, ← Real.rpow_mul hq, ← Real.rpow_mul htwo] at h

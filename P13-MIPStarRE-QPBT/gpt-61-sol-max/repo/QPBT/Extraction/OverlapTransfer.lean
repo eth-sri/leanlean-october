@@ -34,13 +34,13 @@ noncomputable section
 The estimate applies to the whole sum and has no outcome-cardinality factor. -/
 theorem norm_apply_measurement_sum_le {α ι : Type*} [Fintype α]
     [Fintype ι] [DecidableEq ι] (M : Measurement α ι) (s : Finset α)
-    (psi : EuclideanSpace ℂ ι) :
+    (psi : MIPStarRE.QPBT.StateVector ι) :
     ‖applyOperatorToState (∑ a ∈ s, M.effect a) psi‖ ≤ ‖psi‖ := by
-  have hpos : 0 ≤ ∑ a ∈ s, M.effect a := Finset.sum_nonneg (fun a _ => M.pos a)
+  have hpos : 0 ≤ ∑ a ∈ s, M.effect a := Finset.sum_nonneg  fun a _ => M.pos a 
   have hle : ∑ a ∈ s, M.effect a ≤ 1 := by
     rw [← M.sum_eq_one]
     exact Finset.sum_le_sum_of_subset_of_nonneg (Finset.subset_univ s)
-      (fun a _ _ => M.pos a)
+       fun a _ _ => M.pos a 
   apply MagicSquareRigidity.norm_applyOperatorToState_le
   rw [(Matrix.nonneg_iff_posSemidef.mp hpos).isHermitian.eq]
   exact (MIPStarRE.Quantum.sq_le_self hpos hle).trans hle
@@ -49,8 +49,8 @@ theorem norm_apply_measurement_sum_le {α ι : Type*} [Fintype α]
 twice the vector distance. No positivity or self-adjointness is required. -/
 theorem abs_stateQForm_sub_le_of_contraction {ι : Type*}
     [Fintype ι] [DecidableEq ι] (T : Op ι)
-    (hT : ∀ v : EuclideanSpace ℂ ι, ‖applyOperatorToState T v‖ ≤ ‖v‖)
-    (psi phi : EuclideanSpace ℂ ι) (hpsi : ‖psi‖ = 1) (hphi : ‖phi‖ = 1) :
+    (hT : ∀ v : MIPStarRE.QPBT.StateVector ι, ‖applyOperatorToState T v‖ ≤ ‖v‖)
+    (psi phi : MIPStarRE.QPBT.StateVector ι) (hpsi : ‖psi‖ = 1) (hphi : ‖phi‖ = 1) :
     |stateQForm psi T - stateQForm phi T| ≤ 2 * ‖psi - phi‖ := by
   have hsplit : stateQForm psi T - stateQForm phi T =
       (inner ℂ (psi - phi) (applyOperatorToState T psi)).re +
@@ -74,12 +74,12 @@ change of unit state. The tensor factors can have different dimensions. -/
 theorem abs_diagonal_overlap_state_sub_le {α I J : Type*}
     [Fintype α] [DecidableEq α] [Fintype I] [DecidableEq I]
     [Fintype J] [DecidableEq J] (A : Measurement α I) (B : Measurement α J)
-    (psi phi : EuclideanSpace ℂ (I × J)) (hpsi : ‖psi‖ = 1) (hphi : ‖phi‖ = 1) :
+    (psi phi : MIPStarRE.QPBT.StateVector (I × J)) (hpsi : ‖psi‖ = 1) (hphi : ‖phi‖ = 1) :
     |(∑ a, stateQForm psi (heteroKron (A.effect a) (B.effect a))) -
       ∑ a, stateQForm phi (heteroKron (A.effect a) (B.effect a))| ≤
         2 * ‖psi - phi‖ := by
-  let s := Finset.univ.filter (fun ab : α × α => ab.1 = ab.2)
-  have heq : (∑ ab ∈ s, (tensorMeasurement A B).effect ab) =
+  let s := Finset.univ.filter  fun ab : α × α => ab.1 = ab.2 
+  have heq :  ∑ ab ∈ s, (tensorMeasurement A B).effect ab  =
       ∑ a, heteroKron (A.effect a) (B.effect a) := by
     simp [s, Finset.sum_filter, Fintype.sum_prod_type, tensorMeasurement,
       Measurement.ofSumEqOne]
@@ -95,17 +95,17 @@ theorem evaluated_overlap_state_transfer {Y α R I J : Type*}
     [Fintype α] [DecidableEq α] [Fintype R] [DecidableEq R]
     [Fintype I] [DecidableEq I] [Fintype J] [DecidableEq J]
     (A : Measurement α I) (B : Measurement α J) (eval : α → Y → R)
-    (psi phi : EuclideanSpace ℂ (I × J)) (hpsi : ‖psi‖ = 1) (hphi : ‖phi‖ = 1) :
+    (psi phi : MIPStarRE.QPBT.StateVector (I × J)) (hpsi : ‖psi‖ = 1) (hphi : ‖phi‖ = 1) :
     avgOver (uniformDistribution Y) (fun y => ∑ r, stateQForm psi
-      (heteroKron ((A.postprocess (fun a => eval a y)).effect r)
-        ((B.postprocess (fun a => eval a y)).effect r))) ≤
+      (heteroKron ((A.postprocess  fun a => eval a y ).effect r)
+        ((B.postprocess  fun a => eval a y ).effect r))) ≤
       avgOver (uniformDistribution Y) (fun y => ∑ r, stateQForm phi
-        (heteroKron ((A.postprocess (fun a => eval a y)).effect r)
-          ((B.postprocess (fun a => eval a y)).effect r))) + 2 * ‖psi - phi‖ := by
-  have h := avgOver_mono (uniformDistribution Y) _ _ (fun y =>
+        (heteroKron ((A.postprocess  fun a => eval a y ).effect r)
+          ((B.postprocess  fun a => eval a y ).effect r))) + 2 * ‖psi - phi‖ := by
+  have h := avgOver_mono (uniformDistribution Y) _ _  fun y =>
     (le_abs_self _).trans (abs_diagonal_overlap_state_sub_le
-      (A.postprocess (fun a => eval a y)) (B.postprocess (fun a => eval a y))
-      psi phi hpsi hphi))
+      (A.postprocess  fun a => eval a y ) (B.postprocess  fun a => eval a y )
+      psi phi hpsi hphi) 
   rw [avgOver_sub, avgOver_const_of_isProbability _
     (uniformDistribution_isProbability _)] at h
   linarith
@@ -114,13 +114,13 @@ theorem evaluated_overlap_state_transfer {Y α R I J : Type*}
 fraction of points. Injectivity follows from the exact decoder identity. -/
 theorem pauli_encoding_collision_le {P : AdmissibleParams}
     (h k : PauliRegister P) (hne : h ≠ k) :
-    avgOver (uniformDistribution (Fin P.m → PauliScalar P))
+    avgOver (uniformDistribution (MIPStarRE.QPBT.PauliPoint P))
       (fun u => if evalPoly (encodingPoly h) u = evalPoly (encodingPoly k) u
         then (1 : ℝ) else 0) ≤ (P.m * P.d : ℝ) / P.q := by
   apply poly_eval_collision_le
   intro heq
   apply hne
-  have hd := congrArg (fun g : Poly P => decodeFq g) heq
+  have hd := congrArg decodeFq heq
   simpa only [decodeFq_lowDegreeEncoding] using hd
 
 /-- The unevaluated Pauli overlap on a unit comparison state is bounded below
@@ -130,13 +130,13 @@ errors. This combines paper `eq:qld-unitary-8` with the transfer following
 theorem pauli_overlap_transfer {P : AdmissibleParams} {I J : Type*}
     [Fintype I] [DecidableEq I] [Fintype J] [DecidableEq J]
     (A : Measurement (PauliRegister P) I) (B : Measurement (PauliRegister P) J)
-    (theta ideal : EuclideanSpace ℂ (I × J))
+    (theta ideal : MIPStarRE.QPBT.StateVector (I × J))
     (htheta : ‖theta‖ = 1) (hideal : ‖ideal‖ = 1) :
-    avgOver (uniformDistribution (Fin P.m → PauliScalar P)) (fun u =>
+    avgOver (uniformDistribution (MIPStarRE.QPBT.PauliPoint P)) (fun u =>
       ∑ a : PauliScalar P, stateQForm theta
-        (heteroKron ((A.postprocess (fun h => evalPoly (encodingPoly h) u)).effect a)
-          ((B.postprocess (fun h => evalPoly (encodingPoly h) u)).effect a))) ≤
-      (∑ h, stateQForm ideal (heteroKron (A.effect h) (B.effect h))) +
+        (heteroKron ((A.postprocess  fun h => evalPoly (encodingPoly h) u ).effect a)
+          ((B.postprocess  fun h => evalPoly (encodingPoly h) u ).effect a))) ≤
+       ∑ h, stateQForm ideal (heteroKron (A.effect h) (B.effect h))  +
         (P.m * P.d : ℝ) / P.q + 2 * ‖theta - ideal‖ := by
   have ht := evaluated_overlap_state_transfer A B
     (fun h u => evalPoly (encodingPoly h) u) theta ideal htheta hideal

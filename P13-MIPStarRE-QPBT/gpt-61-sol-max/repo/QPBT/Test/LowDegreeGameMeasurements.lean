@@ -1,5 +1,7 @@
 module
 
+public import QPBT.Types
+
 public import QPBT.Games.Consistency
 public import QPBT.Games.DistributionMarginals
 public import QPBT.Games.StrategyClasses
@@ -26,6 +28,8 @@ The dimension-divisibility hypothesis is documented in
 
 @[expose] public section
 
+variable (L : MIPStarRE.QPBT.LdParams)
+
 open scoped BigOperators
 
 namespace MIPStarRE.QPBT
@@ -42,8 +46,8 @@ noncomputable section
 
 /-- Formalization-only auxiliary equivalence splitting an ambient low-degree
 vector into its point, seed, and direction blocks. -/
-def ldSpaceSplit (L : LdParams) :
-    LdSpace L ≃ ((Fin L.m → ScalarQ L) × ScalarQ L) × (Fin L.m → ScalarQ L) where
+def ldSpaceSplit :
+    LdSpace L ≃ ( MIPStarRE.QPBT.LdPoint L  × ScalarQ L) ×  MIPStarRE.QPBT.LdPoint L  where
   toFun z := ((LdSpace.point z, LdSpace.seed z), LdSpace.direction z)
   invFun p := fun i =>
     match i with
@@ -63,11 +67,11 @@ def ldSpaceSplit (L : LdParams) :
 
 /-- Formalization-only auxiliary lemma: the point block of a uniformly random
 ambient vector is uniform. -/
-private theorem map_uniformDistribution_point (L : LdParams) :
+private theorem map_uniformDistribution_point :
     (uniformDistribution (LdSpace L)).map LdSpace.point =
-      uniformDistribution (Fin L.m → ScalarQ L) := by
+      uniformDistribution (MIPStarRE.QPBT.LdPoint L) := by
   have hsplit : (uniformDistribution (LdSpace L)).map (ldSpaceSplit L) =
-      uniformDistribution (((Fin L.m → ScalarQ L) × ScalarQ L) × (Fin L.m → ScalarQ L)) :=
+      uniformDistribution (( MIPStarRE.QPBT.LdPoint L  × ScalarQ L) ×  MIPStarRE.QPBT.LdPoint L ) :=
     uniformDistribution_map_equiv (ldSpaceSplit L)
   calc
     (uniformDistribution (LdSpace L)).map LdSpace.point
@@ -76,22 +80,22 @@ private theorem map_uniformDistribution_point (L : LdParams) :
           rw [Distribution.map_map, Distribution.map_map]
           rfl
     _ = ((uniformDistribution
-          (((Fin L.m → ScalarQ L) × ScalarQ L) × (Fin L.m → ScalarQ L))).map
+          (( MIPStarRE.QPBT.LdPoint L  × ScalarQ L) ×  MIPStarRE.QPBT.LdPoint L )).map
             Prod.fst).map Prod.fst := by rw [hsplit]
-    _ = (uniformDistribution ((Fin L.m → ScalarQ L) × ScalarQ L)).map Prod.fst := by
+    _ = (uniformDistribution ( MIPStarRE.QPBT.LdPoint L  × ScalarQ L)).map Prod.fst := by
           rw [uniformDistribution_map_fst]
-    _ = uniformDistribution (Fin L.m → ScalarQ L) := uniformDistribution_map_fst
+    _ = uniformDistribution (MIPStarRE.QPBT.LdPoint L) := uniformDistribution_map_fst
 
 /-- Formalization-only auxiliary lemma: the shared scalar coordinate of a
 uniformly random ambient vector is uniform. This is the seed marginal used in
 the proof of `lem:alnf`, paper
 `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:243-257`,
 and in blueprint `def:ith-restricted-line`. -/
-theorem uniformDistribution_map_ldSeed (L : LdParams) :
+theorem uniformDistribution_map_ldSeed :
     (uniformDistribution (LdSpace L)).map LdSpace.seed =
       uniformDistribution (ScalarQ L) := by
   have hsplit : (uniformDistribution (LdSpace L)).map (ldSpaceSplit L) =
-      uniformDistribution (((Fin L.m → ScalarQ L) × ScalarQ L) × (Fin L.m → ScalarQ L)) :=
+      uniformDistribution (( MIPStarRE.QPBT.LdPoint L  × ScalarQ L) ×  MIPStarRE.QPBT.LdPoint L ) :=
     uniformDistribution_map_equiv (ldSpaceSplit L)
   calc
     (uniformDistribution (LdSpace L)).map LdSpace.seed
@@ -100,9 +104,9 @@ theorem uniformDistribution_map_ldSeed (L : LdParams) :
           rw [Distribution.map_map, Distribution.map_map]
           rfl
     _ = ((uniformDistribution
-          (((Fin L.m → ScalarQ L) × ScalarQ L) × (Fin L.m → ScalarQ L))).map
+          (( MIPStarRE.QPBT.LdPoint L  × ScalarQ L) ×  MIPStarRE.QPBT.LdPoint L )).map
             Prod.fst).map Prod.snd := by rw [hsplit]
-    _ = (uniformDistribution ((Fin L.m → ScalarQ L) × ScalarQ L)).map Prod.snd := by
+    _ = (uniformDistribution ( MIPStarRE.QPBT.LdPoint L  × ScalarQ L)).map Prod.snd := by
           rw [uniformDistribution_map_fst]
     _ = uniformDistribution (ScalarQ L) := uniformDistribution_map_snd
 
@@ -111,10 +115,10 @@ balance assertion in `def:ld-question-distribution`, blueprint
 `lem:chi-index-uniform`, paper
 `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:215-221`.
 -/
-theorem uniformDistribution_map_chiIndex (L : LdParams) :
+theorem uniformDistribution_map_chiIndex :
     (uniformDistribution (ScalarQ L)).map (chiIndex L) =
       uniformDistribution (Fin L.m) := by
-  letI : Nonempty (Fin (L.q / L.m)) :=
+  letI  :=
     Fin.pos_iff_nonempty.mp L.seedFiberCard_pos
   exact uniformDistribution_map_fst_of_equiv
     (seedFiberEquiv L) (chiIndex L) fun s => (seedFiberEquiv_fst L s).symm
@@ -122,17 +126,17 @@ theorem uniformDistribution_map_chiIndex (L : LdParams) :
 /-- `lem:alnf`: the point and axis-index marginals of the axis line-point
 distribution are uniform. Blueprint `lem:alnf`, paper
 `08_classical_and_quantum_low_degree_tests.tex:243-257`. -/
-theorem aLinePointDist_point_marginal_uniform (L : LdParams) :
+theorem aLinePointDist_point_marginal_uniform :
     (aLinePointDist L).map Prod.snd =
-        uniformDistribution (Fin L.m → ScalarQ L) ∧
+        uniformDistribution (MIPStarRE.QPBT.LdPoint L) ∧
       (aLinePointDist L).map (fun sample => chiIndex L sample.1.seed) =
         uniformDistribution (Fin L.m) := by
   constructor
   · have hmap : (aLinePointDist L).map Prod.snd
         = (uniformDistribution (LdSpace L)).map LdSpace.point := by
-      change ((((uniformDistribution (LdSpace L)).map
+      change  (((uniformDistribution (LdSpace L)).map
           fun z => (ldALineCL L z, ldPointCL L z)).map
-          fun s => (aLineDescOf L s.1, LdSpace.point s.2)).map Prod.snd) = _
+          fun s => (aLineDescOf L s.1, LdSpace.point s.2)).map Prod.snd  = _
       rw [Distribution.map_map, Distribution.map_map]
       rfl
     rw [hmap, map_uniformDistribution_point]
@@ -149,17 +153,17 @@ theorem aLinePointDist_point_marginal_uniform (L : LdParams) :
 /-- `lem:dlnf`: the point and prefix-index marginals of the diagonal
 line-point distribution are uniform. Blueprint `lem:dlnf`,
 paper `08_classical_and_quantum_low_degree_tests.tex:261-272`. -/
-theorem dLinePointDist_point_marginal_uniform (L : LdParams) :
+theorem dLinePointDist_point_marginal_uniform :
     (dLinePointDist L).map Prod.snd =
-        uniformDistribution (Fin L.m → ScalarQ L) ∧
+        uniformDistribution (MIPStarRE.QPBT.LdPoint L) ∧
       (dLinePointDist L).map (fun sample => chiIndex L sample.1.seed) =
         uniformDistribution (Fin L.m) := by
   constructor
   · have hmap : (dLinePointDist L).map Prod.snd
         = (uniformDistribution (LdSpace L)).map LdSpace.point := by
-      change ((((uniformDistribution (LdSpace L)).map
+      change  (((uniformDistribution (LdSpace L)).map
           fun z => (ldDLineCL L z, ldPointCL L z)).map
-          fun s => (dLineDescOf L s.1, LdSpace.point s.2)).map Prod.snd) = _
+          fun s => (dLineDescOf L s.1, LdSpace.point s.2)).map Prod.snd  = _
       rw [Distribution.map_map, Distribution.map_map]
       rfl
     rw [hmap, map_uniformDistribution_point]
@@ -177,18 +181,18 @@ theorem dLinePointDist_point_marginal_uniform (L : LdParams) :
 semiring. This is the finite outcome set required by blueprint
 `def:ld-meas`, paper
 `08_classical_and_quantum_low_degree_tests.tex:394-408`. -/
-noncomputable instance polyFuncFintype (m : ℕ) (K : Type*)
+instance polyFuncFintype (m : ℕ) (K : Type*)
     [CommSemiring K] [Fintype K] (d : ℕ) : Fintype ↥(polyFunc m K d) := by
   letI : Finite ↥(polyFunc m K d) := Module.finite_of_finite K
   exact Fintype.ofFinite _
 
 /-- A bounded multivariate polynomial outcome over an arbitrary finite
 coefficient semiring. -/
-noncomputable abbrev PolyIndex (m : ℕ) (K : Type*) [CommSemiring K]
+abbrev PolyIndex (m : ℕ) (K : Type*) [CommSemiring K]
     [Fintype K] (d : ℕ) := ↥(polyFunc m K d)
 
 /-- A POVM indexed by one bounded multivariate polynomial. -/
-noncomputable abbrev PolyMeas (m : ℕ) (K : Type*) [CommSemiring K]
+abbrev PolyMeas (m : ℕ) (K : Type*) [CommSemiring K]
     [Fintype K] [DecidableEq K] (d : ℕ) (ι : Type*)
     [Fintype ι] [DecidableEq ι] :=
   MIPStarRE.Quantum.Measurement (PolyIndex m K d) ι
@@ -197,50 +201,50 @@ noncomputable abbrev PolyMeas (m : ℕ) (K : Type*) [CommSemiring K]
 have its own coefficient field, number of variables, and degree bound.
 Blueprint `def:ld-meas`, paper
 `08_classical_and_quantum_low_degree_tests.tex:394-408`. -/
-noncomputable abbrev PolyMeasFamily (k : ℕ) (K : Fin k → Type*)
+abbrev PolyMeasFamily (k : ℕ) (K : Fin k → Type*)
     [∀ i, CommSemiring (K i)] [∀ i, Fintype (K i)]
     [∀ i, DecidableEq (K i)] (m d : Fin k → ℕ) (ι : Type*)
     [Fintype ι] [DecidableEq ι] :=
   MIPStarRE.Quantum.Measurement ((i : Fin k) → PolyIndex (m i) (K i) (d i)) ι
 
 /-- A simultaneous tuple of `L.k` bounded polynomial representatives. -/
-noncomputable abbrev PolyTuple (L : LdParams) :=
+abbrev PolyTuple :=
   Fin L.k → PolyIndex L.m (ScalarQ L) L.d
 
 /-- The constant-family specialization used by `lem:ld-soundness`. -/
-noncomputable abbrev PolyMeasTuple (L : LdParams) (ι : Type*)
+abbrev PolyMeasTuple (ι : Type*)
     [Fintype ι] [DecidableEq ι] :=
   PolyMeasFamily L.k (fun _ => ScalarQ L) (fun _ => L.m) (fun _ => L.d) ι
 
 /-- Evaluate every component of a polynomial tuple at a point. -/
-def evalPolyTupleAt {L : LdParams} (u : Fin L.m → ScalarQ L)
-    (g : PolyTuple L) : Fin L.k → ScalarQ L :=
+def evalPolyTupleAt {L : LdParams} (u : MIPStarRE.QPBT.LdPoint L)
+    (g : PolyTuple L) : MIPStarRE.QPBT.LdValues L :=
   fun j => MvPolynomial.eval u (g j).1
 
 /-- Embed a geometric point into the ambient coefficient space used by a
 point question. -/
-def pointSpaceOf (L : LdParams) (u : Fin L.m → ScalarQ L) : LdSpace L :=
+def pointSpaceOf (u : MIPStarRE.QPBT.LdPoint L) : LdSpace L :=
   fun i => match i with
   | .inl (.inl j) => u j
   | .inl (.inr _) => 0
   | .inr _ => 0
 
 /-- The typed low-degree point question associated with `u`. -/
-def ldPointQuestionOf (L : LdParams) (u : Fin L.m → ScalarQ L) : LdQuestion L :=
+def ldPointQuestionOf (u : MIPStarRE.QPBT.LdPoint L) : LdQuestion L :=
   (.point, pointSpaceOf L u)
 
 /-- Read the point component of a low-degree answer, sending answers of the
 wrong form to the fixed zero tuple. This total relabeling turns the strategy's
 answer measurement into the point POVM used by `lem:ld-soundness`. -/
-def ldPointValuesOrZero (L : LdParams) : LdAnswer L → Fin L.k → ScalarQ L
+def ldPointValuesOrZero : LdAnswer L → MIPStarRE.QPBT.LdValues L
   | .pointVals values => values
   | .alinePolys _ => 0
   | .dlinePolys _ => 0
 
 /-- The quantitative error function in `lem:ld-soundness`.  Its argument order
 is `(a, b, ε, q, m, d, k)`. -/
-noncomputable def deltaLd (a b ε : ℝ) (q m d k : ℕ) : ℝ :=
-  a * Real.rpow (((d * m * k : ℕ) : ℝ)) a *
+def deltaLd (a b ε : ℝ) (q m d k : ℕ) : ℝ :=
+  a * Real.rpow  ((d * m * k : ℕ) : ℝ)  a *
     (Real.rpow ε b + Real.rpow (q : ℝ) (-b) +
       Real.rpow 2 (-(b * ((m * d : ℕ) : ℝ))))
 

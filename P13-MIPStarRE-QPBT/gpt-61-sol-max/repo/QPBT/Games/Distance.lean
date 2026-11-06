@@ -1,5 +1,7 @@
 module
 
+public import QPBT.Upstream
+
 public import QPBT.Games.Defs
 
 /-!
@@ -24,14 +26,7 @@ namespace MIPStarRE.QPBT
 open MIPStarRE.LDT
 open MIPStarRE.Quantum
 
-/--
-Squared Euclidean distance between pure states.  Blueprint `def:state-distance`, paper origin
-`references/qpbt-paper/06_nonlocal_games_and_mipstar.tex:219-271`.
--/
-noncomputable def stateDistSq {ι : Type*} [Fintype ι]
-    [DecidableEq ι]
-    (ψ φ : EuclideanSpace ℂ ι) : ℝ :=
-  ‖ψ - φ‖ ^ 2
+
 
 /--
 Average squared state-dependent distance between two operator families.  This
@@ -41,8 +36,8 @@ with paper origin `references/qpbt-paper/06_nonlocal_games_and_mipstar.tex:219-2
 noncomputable def opFamilyDistSq {X α ι : Type*}
     [Fintype α] [Fintype ι] [DecidableEq ι]
     (μ : Distribution X) (M N : X → α → Op ι)
-    (ψ : EuclideanSpace ℂ ι) : ℝ :=
-  avgOver μ (fun x =>
-    ∑ a : α, ‖applyOperatorToState (M x a - N x a) ψ‖ ^ 2)
+    (ψ : MIPStarRE.QPBT.StateVector ι) : ℝ :=
+  avgOver μ  fun x =>
+    ∑ a : α, ‖applyOperatorToState (M x a - N x a) ψ‖ ^ 2 
 
 end MIPStarRE.QPBT

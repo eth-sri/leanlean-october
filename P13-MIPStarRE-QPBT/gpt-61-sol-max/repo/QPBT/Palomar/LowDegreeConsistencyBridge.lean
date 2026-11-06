@@ -1,5 +1,7 @@
 module
 
+public import QPBT.Types
+
 public import QPBT.Palomar.LowDegreeConsistency
 public import QPBT.Palomar.LowDegreeGameStrategyBridge
 public import QPBT.Test.LowDegreeGameTheorems
@@ -33,29 +35,11 @@ theorem LowDegreeParams.is_admissible_size (P : LowDegreeParams) :
     MIPStarRE.QPBT.IsAdmissibleSize P.q :=
   P.hq
 
-/-- Copy compact numerical parameters into the registered low-degree domain. -/
-def LowDegreeParams.toLdParams (P : LowDegreeParams) : MIPStarRE.QPBT.LdParams where
-  q := P.q
-  m := P.m
-  d := P.d
-  k := P.k
-  hm := P.hm
-  hd := P.hd
-  hk := P.hk
-  hq := P.is_admissible_size
-  hdvd := P.hdvd
 
-/-- Compact parameters are recovered exactly after conversion to the library record. -/
-@[simp] theorem LowDegreeParams.ofLdParams_toLdParams (P : LowDegreeParams) :
-    LowDegreeParams.ofLdParams P.toLdParams = P := by
-  cases P
-  rfl
 
-/-- Library parameters are recovered exactly after conversion to the compact record. -/
-@[simp] theorem LowDegreeParams.toLdParams_ofLdParams (P : MIPStarRE.QPBT.LdParams) :
-    (LowDegreeParams.ofLdParams P).toLdParams = P := by
-  cases P
-  rfl
+
+
+
 
 /-- Compact postprocessing of a converted library measurement has the original effect. -/
 @[simp] theorem postprocessEffect_ofMeasurement {A B I : Type*}
@@ -74,7 +58,7 @@ theorem postprocessEffect_relabel {A B C I : Type*}
       postprocessEffect M (fun a => f (e a)) c := by
   simp only [postprocessEffect, POVM.relabel_effect, Finset.sum_filter]
   rw [← Equiv.sum_comp e.symm
-    (fun a => if f (e a) = c then M.effect a else 0)]
+     fun a => if f (e a) = c then M.effect a else 0 ]
   simp
 
 /-- The library postprocessing of a relabeled compact POVM is the compact effect sum. -/
@@ -89,7 +73,7 @@ theorem toMeasurement_relabel_postprocess_effect {A B C I : Type*}
 
 /-- Compact and library point questions agree under the question equivalence. -/
 @[simp] theorem lowDegreeQuestionEquiv_symm_point (L : MIPStarRE.QPBT.LdParams)
-    (u : Fin L.m → MIPStarRE.QPBT.ScalarQ L) :
+    (u : MIPStarRE.QPBT.LdPoint L) :
     (lowDegreeQuestionEquiv L).symm (MIPStarRE.QPBT.ldPointQuestionOf L u) =
       lowDegreePointQuestion (LowDegreeParams.ofLdParams L) u := by
   rfl
@@ -99,48 +83,42 @@ theorem toMeasurement_relabel_postprocess_effect {A B C I : Type*}
     (a : LowDegreeAnswer (LowDegreeParams.ofLdParams L)
       (MIPStarRE.QPBT.ScalarQ L)) :
     MIPStarRE.QPBT.ldPointValuesOrZero L (lowDegreeAnswerEquiv L a) =
-      lowDegreePointValuesOrZero a := by
-  rcases a with a | (a | a) <;> rfl
+      lowDegreePointValuesOrZero a := by classical aesop
 
-/-- Compact and library polynomial-tuple evaluation are definitionally identical. -/
-@[simp] theorem evalLowDegreePolynomialTuple_eq (L : MIPStarRE.QPBT.LdParams)
-    (u : Fin L.m → MIPStarRE.QPBT.ScalarQ L)
-    (g : LowDegreePolynomialTuple (LowDegreeParams.ofLdParams L)
-      (MIPStarRE.QPBT.ScalarQ L)) :
-    evalLowDegreePolynomialTuple u g = MIPStarRE.QPBT.evalPolyTupleAt u g :=
-  rfl
+
+
+variable (L : MIPStarRE.QPBT.LdParams) (S : LowDegreeStrategy (LowDegreeParams.ofLdParams L)
+      (MIPStarRE.QPBT.ScalarQ L))
 
 /-- Alice's point-answer effect is unchanged by strategy and answer transport. -/
 theorem lowDegreeStrategyToLibrary_alice_point_effect
-    (L : MIPStarRE.QPBT.LdParams)
-    (S : LowDegreeStrategy (LowDegreeParams.ofLdParams L)
-      (MIPStarRE.QPBT.ScalarQ L))
-    (u : Fin L.m → MIPStarRE.QPBT.ScalarQ L) (a : Fin L.k → MIPStarRE.QPBT.ScalarQ L) :
-    ((((lowDegreeStrategyToLibrary L S).A (MIPStarRE.QPBT.ldPointQuestionOf L u)).postprocess
-      (MIPStarRE.QPBT.ldPointValuesOrZero L)).effect a) =
+
+
+    (u : MIPStarRE.QPBT.LdPoint L) (a : MIPStarRE.QPBT.LdValues L) :
+     (((lowDegreeStrategyToLibrary L S).A (MIPStarRE.QPBT.ldPointQuestionOf L u)).postprocess
+      (MIPStarRE.QPBT.ldPointValuesOrZero L)).effect a  =
         postprocessEffect (S.alice (lowDegreePointQuestion
           (LowDegreeParams.ofLdParams L) u)) lowDegreePointValuesOrZero a := by
-  change ((((POVM.relabel (lowDegreeAnswerEquiv L)
+  change  (((POVM.relabel (lowDegreeAnswerEquiv L)
     (S.alice ((lowDegreeQuestionEquiv L).symm
       (MIPStarRE.QPBT.ldPointQuestionOf L u)))).toMeasurement).postprocess
-      (MIPStarRE.QPBT.ldPointValuesOrZero L)).effect a) = _
+      (MIPStarRE.QPBT.ldPointValuesOrZero L)).effect a  = _
   rw [toMeasurement_relabel_postprocess_effect]
   simp
 
 /-- Bob's point-answer effect is unchanged by strategy and answer transport. -/
 theorem lowDegreeStrategyToLibrary_bob_point_effect
-    (L : MIPStarRE.QPBT.LdParams)
-    (S : LowDegreeStrategy (LowDegreeParams.ofLdParams L)
-      (MIPStarRE.QPBT.ScalarQ L))
-    (u : Fin L.m → MIPStarRE.QPBT.ScalarQ L) (a : Fin L.k → MIPStarRE.QPBT.ScalarQ L) :
-    ((((lowDegreeStrategyToLibrary L S).B (MIPStarRE.QPBT.ldPointQuestionOf L u)).postprocess
-      (MIPStarRE.QPBT.ldPointValuesOrZero L)).effect a) =
+
+
+    (u : MIPStarRE.QPBT.LdPoint L) (a : MIPStarRE.QPBT.LdValues L) :
+     (((lowDegreeStrategyToLibrary L S).B (MIPStarRE.QPBT.ldPointQuestionOf L u)).postprocess
+      (MIPStarRE.QPBT.ldPointValuesOrZero L)).effect a  =
         postprocessEffect (S.bob (lowDegreePointQuestion
           (LowDegreeParams.ofLdParams L) u)) lowDegreePointValuesOrZero a := by
-  change ((((POVM.relabel (lowDegreeAnswerEquiv L)
+  change  (((POVM.relabel (lowDegreeAnswerEquiv L)
     (S.bob ((lowDegreeQuestionEquiv L).symm
       (MIPStarRE.QPBT.ldPointQuestionOf L u)))).toMeasurement).postprocess
-      (MIPStarRE.QPBT.ldPointValuesOrZero L)).effect a) = _
+      (MIPStarRE.QPBT.ldPointValuesOrZero L)).effect a  = _
   rw [toMeasurement_relabel_postprocess_effect]
   simp
 
@@ -149,8 +127,8 @@ theorem consistencyDefect_toPMF {X O I J : Type*}
     [Fintype X] [DecidableEq X] [Fintype O] [DecidableEq O]
     [Fintype I] [DecidableEq I] [Fintype J] [DecidableEq J]
     (μ : Distribution X) (hμ : μ.IsProbability)
-    (A : X → O → Matrix I I ℂ) (B : X → O → Matrix J J ℂ)
-    (ψ : EuclideanSpace ℂ (I × J)) :
+    (A : X → O → MIPStarRE.Quantum.Op I) (B : X → O → MIPStarRE.Quantum.Op J)
+    (ψ : MIPStarRE.QPBT.StateVector (I × J)) :
     Palomar.consistencyDefect (μ.toPMF hμ) A B ψ =
       MIPStarRE.QPBT.consistencyDefect μ
         (fun x a => MIPStarRE.QPBT.heteroKron (A x a) 1)
@@ -161,14 +139,13 @@ theorem consistencyDefect_toPMF {X O I J : Type*}
 
 /-- The compact point--polynomial defect is exactly the registered first defect. -/
 theorem ldPointPolynomialDefect_ofMeasurement_eq
-    (L : MIPStarRE.QPBT.LdParams)
-    (S : LowDegreeStrategy (LowDegreeParams.ofLdParams L)
-      (MIPStarRE.QPBT.ScalarQ L))
+
+
     (GB : MIPStarRE.QPBT.PolyMeasTuple L S.ιB) :
     ldPointPolynomialDefect (LowDegreeParams.ofLdParams L) S
         (POVM.ofMeasurement GB) =
       MIPStarRE.QPBT.consistencyDefect
-        (uniformDistribution (Fin L.m → MIPStarRE.QPBT.ScalarQ L))
+        (uniformDistribution (MIPStarRE.QPBT.LdPoint L))
         (fun u outcome => MIPStarRE.QPBT.heteroKron
           ((((lowDegreeStrategyToLibrary L S).A
             (MIPStarRE.QPBT.ldPointQuestionOf L u)).postprocess
@@ -189,14 +166,13 @@ theorem ldPointPolynomialDefect_ofMeasurement_eq
 
 /-- The compact polynomial--point defect is exactly the registered second defect. -/
 theorem ldPolynomialPointDefect_ofMeasurement_eq
-    (L : MIPStarRE.QPBT.LdParams)
-    (S : LowDegreeStrategy (LowDegreeParams.ofLdParams L)
-      (MIPStarRE.QPBT.ScalarQ L))
+
+
     (GA : MIPStarRE.QPBT.PolyMeasTuple L S.ιA) :
     ldPolynomialPointDefect (LowDegreeParams.ofLdParams L) S
         (POVM.ofMeasurement GA) =
       MIPStarRE.QPBT.consistencyDefect
-        (uniformDistribution (Fin L.m → MIPStarRE.QPBT.ScalarQ L))
+        (uniformDistribution (MIPStarRE.QPBT.LdPoint L))
         (fun u outcome => MIPStarRE.QPBT.heteroKron
           ((GA.postprocess (MIPStarRE.QPBT.evalPolyTupleAt u)).effect outcome) 1)
         (fun u outcome => MIPStarRE.QPBT.heteroKron 1
@@ -217,9 +193,8 @@ theorem ldPolynomialPointDefect_ofMeasurement_eq
 
 /-- The compact polynomial--polynomial defect is exactly the registered third defect. -/
 theorem ldPolynomialPolynomialDefect_ofMeasurement_eq
-    (L : MIPStarRE.QPBT.LdParams)
-    (S : LowDegreeStrategy (LowDegreeParams.ofLdParams L)
-      (MIPStarRE.QPBT.ScalarQ L))
+
+
     (GA : MIPStarRE.QPBT.PolyMeasTuple L S.ιA)
     (GB : MIPStarRE.QPBT.PolyMeasTuple L S.ιB) :
     ldPolynomialPolynomialDefect (LowDegreeParams.ofLdParams L) S
@@ -233,10 +208,7 @@ theorem ldPolynomialPolynomialDefect_ofMeasurement_eq
   rw [consistencyDefect_toPMF]
   rfl
 
-/-- The compact error function is definitionally the registered `deltaLd`. -/
-@[simp] theorem deltaLd_eq_library (a b ε : ℝ) (q m d k : ℕ) :
-    Palomar.deltaLd a b ε q m d k = MIPStarRE.QPBT.deltaLd a b ε q m d k :=
-  rfl
+
 
 end
 

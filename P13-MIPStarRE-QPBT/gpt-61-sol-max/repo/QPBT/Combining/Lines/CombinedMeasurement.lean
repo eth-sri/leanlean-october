@@ -52,11 +52,13 @@ def ProjectiveSetting.combinedLineMeasurement {P : AdmissibleParams} {ε : ℝ}
       rw [Finset.sum_comm]
       exact hsum)
 
+variable {P : AdmissibleParams} {ε : ℝ} (S : ProjectiveSetting P ε) (side : PlayerSide) (lineX lineZ : LineDesc P.toLdParams) (fX fZ : DegPoly P.toLdParams (P.m * P.d))
+
 /-- The effects of the paired-line POVM are the source's X-Z-X sandwiches. -/
 @[simp] theorem ProjectiveSetting.combinedLineMeasurement_effect
-    {P : AdmissibleParams} {ε : ℝ} (S : ProjectiveSetting P ε) (side : PlayerSide)
-    (lineX lineZ : LineDesc P.toLdParams)
-    (fX fZ : DegPoly P.toLdParams (P.m * P.d)) :
+
+
+     :
     (S.combinedLineMeasurement side lineX lineZ).effect (fX, fZ) =
       (S.lineMeasExp side .X lineX).effect fX *
         (S.lineMeasExp side .Z lineZ).effect fZ *
@@ -67,9 +69,9 @@ def ProjectiveSetting.combinedLineMeasurement {P : AdmissibleParams} {ε : ℝ}
 the orientation in paper `14_analysis_of_the_pauli_basis_test.tex:943-961`;
 it asserts no unproved consistency relation. -/
 theorem ProjectiveSetting.combinedLineMeasurement_effect_eq_pastedMeasurement
-    {P : AdmissibleParams} {ε : ℝ} (S : ProjectiveSetting P ε) (side : PlayerSide)
-    (lineX lineZ : LineDesc P.toLdParams)
-    (fX fZ : DegPoly P.toLdParams (P.m * P.d)) :
+
+
+     :
     (S.combinedLineMeasurement side lineX lineZ).effect (fX, fZ) =
       pastedMeasurement (S.lineMeasExp side .Z lineZ).effect
         (S.lineMeasExp side .X lineX).effect fZ fX := rfl
@@ -77,9 +79,9 @@ theorem ProjectiveSetting.combinedLineMeasurement_effect_eq_pastedMeasurement
 /-- The X-axis degree bound for the constructed POVM, from the support
 argument at paper `14_analysis_of_the_pauli_basis_test.tex:949`. -/
 theorem ProjectiveSetting.combinedLineMeasurement_axis_degree_X
-    {P : AdmissibleParams} {ε : ℝ} (S : ProjectiveSetting P ε) (side : PlayerSide)
-    (lineX lineZ : LineDesc P.toLdParams)
-    (fX fZ : DegPoly P.toLdParams (P.m * P.d))
+
+
+
     (haxis : lineX.kind = .axis) (hf : ¬ fX.FitsDegree P.d) :
     (S.combinedLineMeasurement side lineX lineZ).effect (fX, fZ) = 0 := by
   simp only [S.combinedLineMeasurement_effect, S.lineMeasExp_effect,
@@ -88,9 +90,9 @@ theorem ProjectiveSetting.combinedLineMeasurement_axis_degree_X
 /-- The Z-axis degree bound for the constructed POVM, from the support
 argument at paper `14_analysis_of_the_pauli_basis_test.tex:949`. -/
 theorem ProjectiveSetting.combinedLineMeasurement_axis_degree_Z
-    {P : AdmissibleParams} {ε : ℝ} (S : ProjectiveSetting P ε) (side : PlayerSide)
-    (lineX lineZ : LineDesc P.toLdParams)
-    (fX fZ : DegPoly P.toLdParams (P.m * P.d))
+
+
+
     (haxis : lineZ.kind = .axis) (hf : ¬ fZ.FitsDegree P.d) :
     (S.combinedLineMeasurement side lineX lineZ).effect (fX, fZ) = 0 := by
   simp only [S.combinedLineMeasurement_effect, S.lineMeasExp_effect,

@@ -26,7 +26,7 @@ The register and state helpers support blueprint `def:tilde-m-measurement`,
 
 @[expose] public section
 
-open scoped BigOperators Matrix
+open scoped BigOperators Matrix Classical
 
 namespace MIPStarRE.QPBT
 
@@ -55,7 +55,7 @@ abbrev ExtractionRegisters (P : AdmissibleParams) (ιA ιB : Type*) :=
 factor in blueprint `lem:qld-unitary`,
 paper `14_analysis_of_the_pauli_basis_test.tex:1666-1685`. -/
 abbrev ExtractionAuxRegisters (P : AdmissibleParams) (ιA ιB : Type*) :=
-  (ιA × PauliRegister P) × (ιB × PauliRegister P)
+  (ιA × PauliRegister P) ×  ιB × PauliRegister P 
 
 /-- Reassociate the six-register order with the two extraction blocks.
 This equivalence identifies the register order in paper
@@ -74,8 +74,8 @@ places the ideal state in the order used in blueprint
 `lem:qld-unitary`, paper
 `14_analysis_of_the_pauli_basis_test.tex:1666-1685`. -/
 def extractionIdealShuffle (P : AdmissibleParams) (ιA ιB : Type*) :
-    (ExtractionAuxRegisters P ιA ιB ×
-      (PauliRegister P × PauliRegister P)) ≃ SixReg P ιA ιB where
+     ExtractionAuxRegisters P ιA ιB ×
+       PauliRegister P × PauliRegister P   ≃ SixReg P ιA ιB where
   toFun p := ((p.1.1.1, (p.1.1.2, p.2.1)),
     (p.1.2.1, (p.1.2.2, p.2.2)))
   invFun p := (((p.1.1, p.1.2.1), (p.2.1, p.2.2.1)),
@@ -87,10 +87,12 @@ namespace ProjectiveSetting
 
 variable {P : AdmissibleParams} {ε : ℝ}
 
+variable (S : ProjectiveSetting P ε)
+
 /-- Place an operator on one complete extraction block, with the identity on
 the other player's block, as in the side-qualified operators of paper
 `14_analysis_of_the_pauli_basis_test.tex:1429-1435,1687-1713`. -/
-noncomputable def placeSide (S : ProjectiveSetting P ε) (side : PlayerSide)
+def placeSide  (side : PlayerSide)
     (O : Op (ExtractionBlock P (S.LocalSpace side))) :
     Op (SixReg P S.toStrategy.ιA S.toStrategy.ιB) := by
   cases side with
@@ -106,7 +108,7 @@ noncomputable def placeSide (S : ProjectiveSetting P ε) (side : PlayerSide)
 /-- Lift an operator on a player's original strategy register to that player's
 full extraction block. This places the Pauli and point measurements appearing
 in blueprint `lem:qld-construct-the-paulis` and `lem:qld-unitary`. -/
-noncomputable def onPlayer (S : ProjectiveSetting P ε) (side : PlayerSide)
+def onPlayer  (side : PlayerSide)
     (O : Op (S.LocalSpace side)) :
     Op (ExtractionBlock P (S.LocalSpace side)) :=
   heteroKron (heteroKron O 1) 1
@@ -114,7 +116,7 @@ noncomputable def onPlayer (S : ProjectiveSetting P ε) (side : PlayerSide)
 /-- Place an operator on the original strategy register of the selected
 player. This is the player-side placement used in blueprint
 `lem:qld-unitary`. -/
-noncomputable def placePlayer (S : ProjectiveSetting P ε) (side : PlayerSide)
+def placePlayer  (side : PlayerSide)
     (O : Op (S.LocalSpace side)) :
     Op (SixReg P S.toStrategy.ιA S.toStrategy.ιB) := by
   cases side with
@@ -126,7 +128,7 @@ The unused strategy register in the crossed placement is assigned the
 identity. This is the placement of the ideal Pauli operators in
 blueprint `lem:qld-unitary`, paper
 `14_analysis_of_the_pauli_basis_test.tex:1666-1685`. -/
-noncomputable def placeExtractedRegister (S : ProjectiveSetting P ε)
+def placeExtractedRegister
     (side : PlayerSide) (O : Op (PauliRegister P)) :
     Op (SixReg P S.toStrategy.ιA S.toStrategy.ιB) := by
   cases side with
@@ -139,7 +141,7 @@ noncomputable def placeExtractedRegister (S : ProjectiveSetting P ε)
 `BB'B''`. This is the simultaneous placement used for the transformed state in
 blueprint `lem:qld-unitary`, paper
 `14_analysis_of_the_pauli_basis_test.tex:1666-1685`. -/
-noncomputable def placeBoth (S : ProjectiveSetting P ε)
+def placeBoth
     (VA : Op (ExtractionBlock P S.toStrategy.ιA))
     (VB : Op (ExtractionBlock P S.toStrategy.ιB)) :
     Op (SixReg P S.toStrategy.ιA S.toStrategy.ιB) :=
@@ -150,23 +152,22 @@ noncomputable def placeBoth (S : ProjectiveSetting P ε)
 witness-independent state transformation used for `V_A tensor V_B` in
 blueprint `lem:qld-unitary`, paper
 `14_analysis_of_the_pauli_basis_test.tex:1666-1685`. -/
-noncomputable def applyBoth (S : ProjectiveSetting P ε)
+def applyBoth
     (VA : Op (ExtractionBlock P S.toStrategy.ιA))
     (VB : Op (ExtractionBlock P S.toStrategy.ιB))
-    (ψ : EuclideanSpace ℂ
+    (ψ : MIPStarRE.QPBT.StateVector
       (SixReg P S.toStrategy.ιA S.toStrategy.ιB)) :
-    EuclideanSpace ℂ (SixReg P S.toStrategy.ιA S.toStrategy.ιB) :=
+    MIPStarRE.QPBT.StateVector (SixReg P S.toStrategy.ιA S.toStrategy.ιB) :=
   applyOperatorToState (S.placeBoth VA VB) ψ
 
 /-- The state `aux tensor EPR_q^{tensor M}` in the six-register order.
 This is the ideal state in Item 1 of blueprint
 `lem:qld-unitary`, paper
 `14_analysis_of_the_pauli_basis_test.tex:1666-1685`. -/
-noncomputable def idealExpState (S : ProjectiveSetting P ε)
-    (aux : EuclideanSpace ℂ
+def idealExpState
+    (aux : MIPStarRE.QPBT.StateVector
       (ExtractionAuxRegisters P S.toStrategy.ιA S.toStrategy.ιB)) :
-    EuclideanSpace ℂ (SixReg P S.toStrategy.ιA S.toStrategy.ιB) := by
-  classical
+    MIPStarRE.QPBT.StateVector (SixReg P S.toStrategy.ιA S.toStrategy.ιB) := by
   exact
     reindexState (extractionIdealShuffle P S.toStrategy.ιA S.toStrategy.ιB)
       (vecTensor aux (eprState (PauliRegister P)))
@@ -179,16 +180,16 @@ end ProjectiveSetting
 operator-valued sum corresponding to `Measurement.postprocess`, used by
 blueprint
 `def:tau-dot-product-projector`. -/
-noncomputable def bracketOp {α β ι : Type*} [Fintype α] [DecidableEq β]
+def bracketOp {α β ι : Type*} [Fintype α] [DecidableEq β]
     (N : α → Op ι) (f : α → β) (b : β) : Op ι :=
-  ∑ a ∈ Finset.univ.filter (fun a => f a = b), N a
+  ∑ a ∈ Finset.univ.filter  fun a => f a = b , N a
 
 /-- The projector obtained by measuring in basis `W` and retaining outcomes
 whose dot product with `u` is `a`. This is Equation `eq:def-tauwu` in
 blueprint
 `def:tau-dot-product-projector`, paper
 `14_analysis_of_the_pauli_basis_test.tex:1426-1429`. -/
-noncomputable def tauDotProj {P : AdmissibleParams} (W : PauliKind)
+def tauDotProj {P : AdmissibleParams} (W : PauliKind)
     (u : PauliRegister P) (a : PauliScalar P) : Op (PauliRegister P) :=
   bracketOp (pauliProj W) (fun h => dotProduct h u) a
 
@@ -202,12 +203,11 @@ operator is the conjugate of the diagonal projector onto the specified outcomes.
 theorem tauDotProj_isProj {P : AdmissibleParams} (W : PauliKind)
     (u : PauliRegister P) (a : PauliScalar P) :
     IsProj (tauDotProj W u a) := by
-  classical
   let basisMatrix : Op (PauliRegister P) := fun row label => pauliVec W label row
   have hbasisMatrix_conjTranspose (label row : PauliRegister P) :
       basisMatrixᴴ label row = star (pauliVec W label row) := by
     rfl
-  have hbasis : basisMatrix * basisMatrixᴴ = 1 := by
+  have hbasis  := by
     calc
       basisMatrix * basisMatrixᴴ = ∑ label : PauliRegister P, pauliProj W label := by
         ext row column
@@ -215,8 +215,8 @@ theorem tauDotProj_isProj {P : AdmissibleParams} (W : PauliKind)
         simp only [basisMatrix, hbasisMatrix_conjTranspose, pauliProj,
           Matrix.sum_apply, Matrix.vecMulVec_apply]
       _ = 1 := sum_pauliProj_eq_one W
-  let diagonalProj : Op (PauliRegister P) :=
-    Matrix.diagonal (fun label => if dotProduct label u = a then (1 : ℂ) else 0)
+  let diagonalProj  :=
+    Matrix.diagonal  fun label => if dotProduct label u = a then (1 : ℂ) else 0 
   have hdiagonal : IsProj diagonalProj := by
     constructor
     · change Matrix.diagonal _ * Matrix.diagonal _ = Matrix.diagonal _
@@ -245,7 +245,6 @@ The dot-product fibers partition the complete Pauli outcome family. -/
 theorem sum_tauDotProj_eq_one {P : AdmissibleParams} (W : PauliKind)
     (u : PauliRegister P) :
     ∑ a : PauliScalar P, tauDotProj W u a = 1 := by
-  classical
   unfold tauDotProj bracketOp
   rw [Finset.sum_fiberwise]
   exact sum_pauliProj_eq_one W
@@ -256,7 +255,7 @@ theorem sum_tauDotProj_eq_one {P : AdmissibleParams} (W : PauliKind)
 conjugation equations in blueprint
 `lem:v-swap-conjugation`, paper
 `14_analysis_of_the_pauli_basis_test.tex:1687-1713`. -/
-noncomputable def conjBy {ι : Type*} [Fintype ι]
+def conjBy {ι : Type*} [Fintype ι]
     (V N : Op ι) : Op ι :=
   V * N * Vᴴ
 
@@ -270,7 +269,7 @@ This makes explicit the enlargement of the error called `deltaS` in
 blueprint
 `lem:qld-construct-the-paulis`, paper
 `14_analysis_of_the_pauli_basis_test.tex:1458-1605`. -/
-noncomputable def deltaConstructPaulis (C epsilon deltaG : ℝ)
+def deltaConstructPaulis (C epsilon deltaG : ℝ)
     (m d q : ℕ) : ℝ :=
   C * (deltaG + Real.sqrt epsilon +
     ((m * d : ℕ) : ℝ) / (q : ℝ))
@@ -279,7 +278,7 @@ noncomputable def deltaConstructPaulis (C epsilon deltaG : ℝ)
 `C * (deltaS^(1/4) + md/q)` from blueprint
 `lem:qld-unitary`, paper
 `14_analysis_of_the_pauli_basis_test.tex:1666-1685`. -/
-noncomputable def deltaExtract (C deltaS : ℝ) (m d q : ℕ) : ℝ :=
+def deltaExtract (C deltaS : ℝ) (m d q : ℕ) : ℝ :=
   C * (Real.rpow deltaS (1 / 4 : ℝ) + ((m * d : ℕ) : ℝ) / (q : ℝ))
 
 end

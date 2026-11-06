@@ -53,17 +53,15 @@ blueprint `def:ms-game`, paper origin
 `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:512-610`.
 -/
 def msEdges : Finset (Sym2 MsType) :=
-  (Finset.univ : Finset (Fin 6 × Fin 3)).image (fun ij =>
-    Sym2.mk (.constraint ij.1) (.var (msConstraintVars ij.1 ij.2)))
+  (Finset.univ : Finset (Fin 6 × Fin 3)).image  fun ij =>
+    Sym2.mk (.constraint ij.1) (.var (msConstraintVars ij.1 ij.2)) 
 
 /-- The Magic Square incidence graph has an edge, as required by the
 nonempty-support API of `graphDistribution`.  This is the finite carrier fact
 used to instantiate blueprint `def:ms-game`,
 paper origin `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:512-610`.
 -/
-theorem msEdges_nonempty : msEdges.Nonempty := by
-  refine ⟨Sym2.mk (.constraint 0) (.var (msConstraintVars 0 0)), ?_⟩
-  exact Finset.mem_image.mpr ⟨(0, 0), Finset.mem_univ _, rfl⟩
+theorem msEdges_nonempty : msEdges.Nonempty := by classical simp_all [msEdges, msConstraintVars]
 
 /-- A Magic Square answer is a parity triple or a single cell bit, as prescribed
 by blueprint `def:ms-game`,
@@ -108,7 +106,7 @@ noncomputable def msAnswerEquiv : MsAnswer ≃ MsAnswerCode where
 noncomputable instance instFintypeMsAnswer : Fintype MsAnswer :=
   Fintype.ofEquiv MsAnswerCode msAnswerEquiv.symm
 
-instance instInhabitedMsAnswer : Inhabited MsAnswer := ⟨.bit 0⟩
+
 
 /-- The Magic Square consistency predicate.  Constructor mismatches are
 rejected, as required by blueprint `def:ms-game`; paper
@@ -122,11 +120,11 @@ def msWinPredicate :
       decide (i = j ∧ γ = γ')
   | .constraint i, .var j, .triple β, .bit γ =>
       decide
-        ((∑ k : Fin 3, β k) = msParity i ∧
+        ( ∑ k : Fin 3, β k  = msParity i ∧
           ∃ k : Fin 3, msConstraintVars i k = j ∧ β k = γ)
   | .var j, .constraint i, .bit γ, .triple β =>
       decide
-        ((∑ k : Fin 3, β k) = msParity i ∧
+        ( ∑ k : Fin 3, β k  = msParity i ∧
           ∃ k : Fin 3, msConstraintVars i k = j ∧ β k = γ)
   | _, _, _, _ => false
 

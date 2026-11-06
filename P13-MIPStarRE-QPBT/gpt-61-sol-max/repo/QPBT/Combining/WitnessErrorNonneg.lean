@@ -37,11 +37,10 @@ noncomputable section
 theorem CombinedPointsWitness.delta_nonneg {P : AdmissibleParams} {epsilon deltaQ : ℝ}
     {setting : ProjectiveSetting P epsilon}
     (points : CombinedPointsWitness setting deltaQ) :
-    0 ≤ deltaQ := by
-  exact le_trans
+    0 ≤ deltaQ := le_trans
     (DistanceCalculus.opFamilyDistSq_nonneg
       (uniformDistribution
-        ((Fin P.m → PauliScalar P) × (Fin P.m → PauliScalar P)))
+        ( MIPStarRE.QPBT.PauliPoint P  ×  MIPStarRE.QPBT.PauliPoint P ))
       (fun xz ab => setting.place .AA' ((points.Q .alice xz.1 xz.2).effect ab))
       (fun xz ab => setting.place .BA'' ((points.Q .bob xz.1 xz.2).effect ab))
       setting.psiHat)
@@ -64,16 +63,16 @@ theorem completedLinePointDefect_aaBa_nonneg
         (Fin P.extendedDirectLd.m → DirectScalarQ P.extendedDirectLd))) :
     0 ≤ completedLinePointDefect lines .AA' .BA'' mu := by
   let lineMeasurement :
-      (DirectLineDesc P.extendedDirectLd ×
-        (Fin P.extendedDirectLd.m → DirectScalarQ P.extendedDirectLd)) →
+       DirectLineDesc P.extendedDirectLd ×
+        (Fin P.extendedDirectLd.m → DirectScalarQ P.extendedDirectLd)  →
         Measurement (Option (PauliScalar P)) (setting.ExpandedLocalSpace .alice) :=
     fun sample =>
       (lines.Qline .alice sample.1).postprocess
-        (fun coeffs => (directEvalOpt sample.1 sample.2 coeffs).map
-          (extendedDirectScalarEquiv P))
+         fun coeffs => (directEvalOpt sample.1 sample.2 coeffs).map
+          (extendedDirectScalarEquiv P) 
   let pointMeasurement :
-      (DirectLineDesc P.extendedDirectLd ×
-        (Fin P.extendedDirectLd.m → DirectScalarQ P.extendedDirectLd)) →
+       DirectLineDesc P.extendedDirectLd ×
+        (Fin P.extendedDirectLd.m → DirectScalarQ P.extendedDirectLd)  →
         Measurement (Option (PauliScalar P)) (setting.ExpandedLocalSpace .bob) :=
     fun sample =>
       (points.Q .bob
@@ -114,8 +113,7 @@ theorem ExtendedLinesWitness.delta_nonneg {P : AdmissibleParams}
     {epsilon deltaQ deltaL : ℝ} {setting : ProjectiveSetting P epsilon}
     {points : CombinedPointsWitness setting deltaQ}
     (lines : ExtendedLinesWitness setting points deltaL) :
-    0 ≤ deltaL := by
-  exact le_trans
+    0 ≤ deltaL := le_trans
     (ExtendedLineGame.completedLinePointDefect_aaBa_nonneg lines
       (directLinePointDist P.extendedDirectLd))
     lines.consistent_alice

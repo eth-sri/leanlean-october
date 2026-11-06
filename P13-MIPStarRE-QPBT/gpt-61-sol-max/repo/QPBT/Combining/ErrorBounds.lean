@@ -130,7 +130,7 @@ theorem exists_conditioned_polynomial_bound (pointError : ℝ → ℝ)
   let powerConstant := (2 * marginalConstant) ^ marginalPower
   let finalConstant := pastingConstant * (1 + powerConstant) + 1
   have hsmall : 0 < smallPower := lt_min hpointPower (by norm_num)
-  have hfinalRatio : 0 < finalRatioPower := lt_min hratioPower zero_lt_one
+  have hfinalRatio  := lt_min hratioPower zero_lt_one
   have hmarginalConstant : 0 ≤ marginalConstant := by dsimp [marginalConstant]; linarith
   have hpowerConstant : 0 ≤ powerConstant := Real.rpow_nonneg (by positivity) _
   have hfinalConstant : 1 ≤ finalConstant := by
@@ -160,11 +160,11 @@ theorem exists_conditioned_polynomial_bound (pointError : ℝ → ℝ)
   by_cases herrorOne : error ≤ 1
   · by_cases hratioOne : ratio ≤ 1
     · have hpointValue := hpointBound error herror
-      have hpointSmall : pointError error ≤ pointConstant * error ^ smallPower :=
+      have hpointSmall  :=
         hpointValue.2.trans (mul_le_mul_of_nonneg_left
           (Real.rpow_le_rpow_of_exponent_ge' herror herrorOne hsmall.le
             (min_le_left _ _)) (by linarith))
-      have herrorSmall : error ≤ error ^ smallPower := by
+      have herrorSmall  := by
         simpa using Real.rpow_le_rpow_of_exponent_ge' herror herrorOne hsmall.le
           (show smallPower ≤ 1 by exact (min_le_right _ _).trans (by norm_num))
       have hsqrtSmall : Real.sqrt error ≤ error ^ smallPower := by
@@ -181,25 +181,23 @@ theorem exists_conditioned_polynomial_bound (pointError : ℝ → ℝ)
         nlinarith [mul_le_mul_of_nonneg_left (add_le_add herrorSmall hsqrtSmall)
           (show 0 ≤ constant by linarith)]
       have hdivSmall : (8 * pointError error + constant * (error + Real.sqrt error)) /
-          mass ≤ (2 * marginalConstant) * error ^ smallPower := by
+          mass ≤  2 * marginalConstant  * error ^ smallPower := by
         apply (div_le_iff₀ hmassPos).mpr
         exact hmarginalSmall.trans (by
           nlinarith [mul_nonneg hmarginalConstant (Real.rpow_nonneg herror smallPower),
             mul_nonneg (show 0 ≤ mass - 1 / 2 by linarith)
               (mul_nonneg hmarginalConstant (Real.rpow_nonneg herror smallPower))])
-      have hdivPower : ((8 * pointError error + constant *
-          (error + Real.sqrt error)) / mass) ^ marginalPower ≤
-          powerConstant * error ^ (smallPower * marginalPower) := by
+      have hdivPower  := by
         calc
-          _ ≤ ((2 * marginalConstant) * error ^ smallPower) ^ marginalPower :=
+          _ ≤ ( 2 * marginalConstant  * error ^ smallPower) ^ marginalPower :=
             Real.rpow_le_rpow (div_nonneg hmarginalNonneg hmassPos.le)
               hdivSmall hmarginalPower.le
           _ = _ := by rw [Real.mul_rpow (by positivity) (Real.rpow_nonneg herror _),
             ← Real.rpow_mul herror]
-      have hratioSmall : ratio ^ ratioPower ≤ ratio ^ finalRatioPower :=
+      have hratioSmall  :=
         Real.rpow_le_rpow_of_exponent_ge' hratio hratioOne hfinalRatio.le
           (min_le_left _ _)
-      have hratioLinear : ratio ≤ ratio ^ finalRatioPower := by
+      have hratioLinear  := by
         simpa using Real.rpow_le_rpow_of_exponent_ge' hratio hratioOne hfinalRatio.le
           (min_le_right _ _)
       have hpastingValue := hpastingBound ratio _ hratio
@@ -235,8 +233,8 @@ theorem exists_combining_polynomial_bound (pointError : ℝ → ℝ)
     (hline : IsPolyErr₂ lineError) (constant : ℝ) (hconstant : 0 ≤ constant) :
     ∃ combinedError : ℝ → ℝ → ℝ, IsPolyErr₂ combinedError ∧
       ∀ error ratio dimension : ℝ, 0 ≤ error → 0 ≤ ratio → 1 ≤ dimension →
-        min 1 (constant * ((pointError error) ^ (1 / 2 : ℝ) + Real.sqrt dimension *
-          ((lineError error ratio) ^ (1 / 4 : ℝ) + (pointError error) ^ (1 / 4 : ℝ) +
+        min 1 (constant * ( pointError error  ^ (1 / 2 : ℝ) + Real.sqrt dimension *
+          ( lineError error ratio  ^ (1 / 4 : ℝ) +  pointError error  ^ (1 / 4 : ℝ) +
             error ^ (1 / 4 : ℝ)))) ≤ dimension * combinedError error ratio := by
   obtain ⟨pointConstant, pointPower, hpointConstant, hpointPower, hpointBound⟩ := hpoint
   obtain ⟨lineConstant, errorPower, ratioPower, hlineConstant,
@@ -265,8 +263,7 @@ theorem exists_combining_polynomial_bound (pointError : ℝ → ℝ)
   · have hpointValue := hpointBound error herror
     have hlineValue := hlineBound error ratio herror hratio
     have hpointRoot (power : ℝ) (hpower : 0 ≤ power)
-        (hsmall : finalPower ≤ pointPower * power) :
-        (pointError error) ^ power ≤ pointConstant ^ power * error ^ finalPower := by
+        (hsmall : finalPower ≤ pointPower * power)  := by
       calc
         _ ≤ (pointConstant * error ^ pointPower) ^ power :=
           Real.rpow_le_rpow hpointValue.1 hpointValue.2 hpower
@@ -286,7 +283,7 @@ theorem exists_combining_polynomial_bound (pointError : ℝ → ℝ)
         have := min_le_left (pointPower / 4) (min (errorPower / 4) (1 / 4 : ℝ))
         dsimp [finalPower]
         linarith)
-    have hlineQuarter : (lineError error ratio) ^ (1 / 4 : ℝ) ≤
+    have hlineQuarter :  lineError error ratio  ^ (1 / 4 : ℝ) ≤
         lineConstant ^ (1 / 4 : ℝ) * (error ^ finalPower + ratio ^ (ratioPower / 4)) := by
       calc
         _ ≤ (lineConstant * (error ^ errorPower + ratio ^ ratioPower)) ^ (1 / 4 : ℝ) :=
@@ -309,17 +306,17 @@ theorem exists_combining_polynomial_bound (pointError : ℝ → ℝ)
           have hsmall : finalPower ≤ errorPower / 4 :=
             (min_le_right _ _).trans (min_le_left _ _)
           linarith
-    have herrorQuarter : error ^ (1 / 4 : ℝ) ≤ error ^ finalPower :=
+    have herrorQuarter  :=
       Real.rpow_le_rpow_of_exponent_ge' herror herrorOne hfinalPower.le
         ((min_le_right _ _).trans (min_le_right _ _))
     have hsqrt : Real.sqrt dimension ≤ dimension := by
       nlinarith [Real.sq_sqrt hdimensionNonneg, Real.sqrt_nonneg dimension]
-    have hsum : (pointError error) ^ (1 / 2 : ℝ) + Real.sqrt dimension *
-        ((lineError error ratio) ^ (1 / 4 : ℝ) + (pointError error) ^ (1 / 4 : ℝ) +
+    have hsum :  pointError error  ^ (1 / 2 : ℝ) + Real.sqrt dimension *
+        ( lineError error ratio  ^ (1 / 4 : ℝ) +  pointError error  ^ (1 / 4 : ℝ) +
           error ^ (1 / 4 : ℝ)) ≤
         dimension * (coefficient * (error ^ finalPower + ratio ^ (ratioPower / 4))) := by
-      have hrootNonneg : 0 ≤ (lineError error ratio) ^ (1 / 4 : ℝ) +
-          (pointError error) ^ (1 / 4 : ℝ) + error ^ (1 / 4 : ℝ) :=
+      have hrootNonneg : 0 ≤  lineError error ratio  ^ (1 / 4 : ℝ) +
+           pointError error  ^ (1 / 4 : ℝ) + error ^ (1 / 4 : ℝ) :=
         add_nonneg (add_nonneg (Real.rpow_nonneg hlineValue.1 _)
           (Real.rpow_nonneg hpointValue.1 _)) (Real.rpow_nonneg herror _)
       have hrootSum := add_le_add (add_le_add hlineQuarter hpointQuarter) herrorQuarter
@@ -396,7 +393,7 @@ theorem global_pair_error_bound_explicit (pointError : ℝ → ℝ)
               (combineConstant * (params.m : ℝ) *
                 combinedError error ((params.m * params.d : ℕ) / (params.q : ℝ)) + error)
               params.q (2 * params.m + 2) params.d 1 +
-            Real.sqrt (pointError error) + ((params.m * params.d : ℕ) / (params.q : ℝ)))) ≤
+            Real.sqrt (pointError error) +  (params.m * params.d : ℕ) / (params.q : ℝ) )) ≤
           deltaQld
             (globalPairBoundConstant pointConstant lineConstant combineConstant
               soundnessConstant soundnessPower ratioPower finalScale)
@@ -436,7 +433,7 @@ theorem global_pair_error_bound_explicit (pointError : ℝ → ℝ)
             (combineConstant * (params.m : ℝ) *
               combinedError error ((params.m * params.d : ℕ) / (params.q : ℝ)) + error)
             params.q (2 * params.m + 2) params.d 1 +
-          Real.sqrt (pointError error) + ((params.m * params.d : ℕ) / (params.q : ℝ)))) ≤
+          Real.sqrt (pointError error) +  (params.m * params.d : ℕ) / (params.q : ℝ) )) ≤
         deltaQld finalConstant finalPower error params.m params.d params.q
   have hlineGrowth : 0 ≤ lineGrowth := by dsimp [lineGrowth]; positivity
   have hgrowth : 1 ≤ growth := by dsimp [growth]; linarith
@@ -447,9 +444,9 @@ theorem global_pair_error_bound_explicit (pointError : ℝ → ℝ)
   have hgrowth_le : growth ≤ finalConstant := by dsimp [finalConstant]; linarith
   refine ⟨hfinalConstant, hfinalPower, by linarith, ?_⟩
   intro params error herror
-  let size : ℝ := ((params.m * params.d : ℕ) : ℝ)
-  let extendedSize : ℝ := (((2 * params.m + 2) * params.d : ℕ) : ℝ)
-  let ratio : ℝ := size / (params.q : ℝ)
+  let size  := ((params.m * params.d : ℕ) : ℝ)
+  let extendedSize  := (((2 * params.m + 2) * params.d : ℕ) : ℝ)
+  let ratio  := size / (params.q : ℝ)
   let envelope := error ^ finalPower + (params.q : ℝ) ^ (-finalPower) +
     (2 : ℝ) ^ (-(finalPower * size))
   have hm : (1 : ℝ) ≤ (params.m : ℝ) := by exact_mod_cast params.one_le_m
@@ -481,15 +478,13 @@ theorem global_pair_error_bound_explicit (pointError : ℝ → ℝ)
       params.q (2 * params.m + 2) params.d 1 + Real.sqrt (pointError error) + ratio)) ≤
     finalConstant * size ^ finalConstant * envelope
   by_cases herrorOne : error ≤ 1
-  · have herrorMono (power : ℝ) (hpower : finalPower ≤ power) :
-        error ^ power ≤ error ^ finalPower :=
+  · have herrorMono (power : ℝ) (hpower : finalPower ≤ power)  :=
       Real.rpow_le_rpow_of_exponent_ge' herror herrorOne hfinalPower.le hpower
-    have hfieldMono (power : ℝ) (hpower : finalPower ≤ power) :
-        (params.q : ℝ) ^ (-power) ≤ (params.q : ℝ) ^ (-finalPower) :=
+    have hfieldMono (power : ℝ) (hpower : finalPower ≤ power)  :=
       Real.rpow_le_rpow_of_exponent_le hq (neg_le_neg hpower)
-    have hsizeRatio : 1 ≤ size ^ (ratioPower * soundnessPower) :=
+    have hsizeRatio  :=
       Real.one_le_rpow hsize (mul_nonneg hratioPower.le hsoundnessPower.le)
-    have hsizeLine : 1 ≤ size ^ lineGrowth := Real.one_le_rpow hsize hlineGrowth
+    have hsizeLine  := Real.one_le_rpow hsize hlineGrowth
     have hpolySum : error ^ (errorPower * soundnessPower) +
         ratio ^ (ratioPower * soundnessPower) ≤
         size ^ (ratioPower * soundnessPower) * envelope := by
@@ -512,7 +507,7 @@ theorem global_pair_error_bound_explicit (pointError : ℝ → ℝ)
     have hbaseNonneg : 0 ≤
         combineConstant * (params.m : ℝ) * combinedError error ratio :=
       mul_nonneg (mul_nonneg hcombineConstant (by positivity)) hcombinedValue.1
-    have hpoly : (combinedError error ratio) ^ soundnessPower ≤
+    have hpoly :  combinedError error ratio  ^ soundnessPower ≤
         lineConstant ^ soundnessPower *
           (size ^ (ratioPower * soundnessPower) * envelope) := by
       calc
@@ -558,7 +553,7 @@ theorem global_pair_error_bound_explicit (pointError : ℝ → ℝ)
       dsimp [size, extendedSize]
       push_cast
       constructor <;> nlinarith
-    have hextended0 : 0 ≤ extendedSize := hsize0.trans hextended.1
+    have hextended0  := hsize0.trans hextended.1
     have hexponential : (2 : ℝ) ^ (-(soundnessPower * extendedSize)) ≤
         (2 : ℝ) ^ (-(finalPower * size)) := by
       apply Real.rpow_le_rpow_of_exponent_le (by norm_num)
@@ -621,7 +616,7 @@ theorem global_pair_error_bound_explicit (pointError : ℝ → ℝ)
         ((hfieldMono 1 (by linarith)).trans henvField) hsize0
     have hsizePower : size ^ (soundnessConstant + lineGrowth) ≤ size ^ growth :=
       Real.rpow_le_rpow_of_exponent_le hsize (by dsimp [growth]; linarith)
-    have hsizeGrowth : size ≤ size ^ growth := by
+    have hsizeGrowth  := by
       simpa only [Real.rpow_one] using Real.rpow_le_rpow_of_exponent_le hsize hgrowth
     have honeGrowth : 1 ≤ size ^ growth := Real.one_le_rpow hsize (by linarith)
     have hldBound := hld.trans (mul_le_mul_of_nonneg_right
@@ -635,19 +630,18 @@ theorem global_pair_error_bound_explicit (pointError : ℝ → ℝ)
         (deltaLd soundnessConstant soundnessPower
           (combineConstant * (params.m : ℝ) * combinedError error ratio + error)
           params.q (2 * params.m + 2) params.d 1 + Real.sqrt (pointError error) + ratio) ≤
-        coefficient * size ^ growth * envelope := by
-      exact hsum.trans_eq (by dsimp [coefficient]; ring)
+        coefficient * size ^ growth * envelope := hsum.trans_eq (by dsimp [coefficient]; ring)
     refine (min_le_right _ _).trans (hfinal.trans ?_)
     exact mul_le_mul_of_nonneg_right
       (mul_le_mul hcoefficient_le
         (Real.rpow_le_rpow_of_exponent_le hsize hgrowth_le)
         (Real.rpow_nonneg hsize0 growth) (by linarith)) henv
-  · have herrorLarge : 1 ≤ error := le_of_not_ge herrorOne
-    have henvOne : 1 ≤ envelope :=
+  · have herrorLarge  := le_of_not_ge herrorOne
+    have henvOne  :=
       (Real.one_le_rpow herrorLarge hfinalPower.le).trans henvError
     have hsizeOne : 1 ≤ size ^ finalConstant :=
       Real.one_le_rpow hsize (by linarith)
-    have hprefactorOne : 1 ≤ finalConstant * size ^ finalConstant := by
+    have hprefactorOne  := by
       simpa only [one_mul] using mul_le_mul hfinalConstant.le hsizeOne
         (by norm_num : (0 : ℝ) ≤ 1) (by linarith : 0 ≤ finalConstant)
     refine (min_le_left _ _).trans ?_
@@ -670,7 +664,7 @@ theorem exists_global_pair_error_bound (pointError : ℝ → ℝ)
               (combineConstant * (params.m : ℝ) *
                 combinedError error ((params.m * params.d : ℕ) / (params.q : ℝ)) + error)
               params.q (2 * params.m + 2) params.d 1 +
-            Real.sqrt (pointError error) + ((params.m * params.d : ℕ) / (params.q : ℝ)))) ≤
+            Real.sqrt (pointError error) +  (params.m * params.d : ℕ) / (params.q : ℝ) )) ≤
           deltaQld finalConstant finalPower error params.m params.d params.q := by
   obtain ⟨pointConstant, pointPower, hpointConstant, hpointPower, hpointBound⟩ := hpoint
   obtain ⟨lineConstant, errorPower, ratioPower, hlineConstant,
@@ -680,9 +674,6 @@ theorem exists_global_pair_error_bound (pointError : ℝ → ℝ)
     lineConstant errorPower ratioPower hlineConstant herrorPower hratioPower hlineBound
     combineConstant soundnessConstant soundnessPower finalScale hcombineConstant
     hsoundnessConstant hsoundnessPower hsoundnessPowerOne hfinalScale
-  exact ⟨globalPairBoundConstant pointConstant lineConstant combineConstant
-      soundnessConstant soundnessPower ratioPower finalScale,
-    globalPairBoundPower pointPower errorPower ratioPower soundnessPower,
-    hA, hB, hBOne, hbound⟩
+  classical grind
 
 end MIPStarRE.QPBT

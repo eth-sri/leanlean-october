@@ -47,19 +47,18 @@ theorem mass_outside_support_le_point_defect
     [Fintype Outcome] [DecidableEq Outcome]
     [Fintype Left] [DecidableEq Left] [Fintype Right] [DecidableEq Right]
     (meas : Measurement Outcome Left) (reference : Measurement Outcome Right)
-    (psi : EuclideanSpace ℂ (Left × Right)) (allowed : Finset Outcome)
+    (psi : MIPStarRE.QPBT.StateVector (Left × Right)) (allowed : Finset Outcome)
     (hsupport : ∀ outcome, outcome ∉ allowed → reference.effect outcome = 0) :
-    (∑ outcome ∈ Finset.univ.filter (fun outcome => outcome ∉ allowed),
-      stateQForm psi (heteroKron (meas.effect outcome) 1)) ≤
+     ∑ outcome ∈ Finset.univ.filter  fun outcome => outcome ∉ allowed ,
+      stateQForm psi (heteroKron (meas.effect outcome) 1)  ≤
       ∑ outcome : Outcome, ∑ other : Outcome, if outcome = other then 0 else
         stateQForm psi (heteroKron (meas.effect outcome) (reference.effect other)) := by
-  have hnonneg (outcome other : Outcome) :
-      0 ≤ stateQForm psi (heteroKron (meas.effect outcome) (reference.effect other)) :=
+  have hnonneg (outcome other : Outcome)  :=
     stateQForm_nonneg psi (kronecker_nonneg (meas.pos outcome) (reference.pos other))
   calc
-    (∑ outcome ∈ Finset.univ.filter (fun outcome => outcome ∉ allowed),
-        stateQForm psi (heteroKron (meas.effect outcome) 1)) =
-        ∑ outcome ∈ Finset.univ.filter (fun outcome => outcome ∉ allowed),
+     ∑ outcome ∈ Finset.univ.filter  fun outcome => outcome ∉ allowed ,
+        stateQForm psi (heteroKron (meas.effect outcome) 1)  =
+        ∑ outcome ∈ Finset.univ.filter  fun outcome => outcome ∉ allowed ,
           ∑ other : Outcome, if outcome = other then 0 else
             stateQForm psi
               (heteroKron (meas.effect outcome) (reference.effect other)) := by

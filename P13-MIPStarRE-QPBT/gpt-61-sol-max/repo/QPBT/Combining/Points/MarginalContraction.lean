@@ -40,30 +40,29 @@ theorem norm_marginal_sub_sq_le {β ι : Type*} [Fintype β]
     (horth : ∀ {b c}, b ≠ c → Q b * Q c = 0)
     (B : Quantum.Measurement β ι) (hB : Measurement.IsProjective B)
     (hcomm : ∀ b, Q b * B.effect b = B.effect b * Q b)
-    (D : Op ι) (ψ : EuclideanSpace ℂ ι) :
-    ‖applyOperatorToState ((∑ b, Q b) - D) ψ‖ ^ 2 ≤
+    (D : Op ι) (ψ : MIPStarRE.QPBT.StateVector ι) :
+    ‖applyOperatorToState ( ∑ b, Q b  - D) ψ‖ ^ 2 ≤
       4 * ∑ b, ‖applyOperatorToState (Q b - B.effect b * D) ψ‖ ^ 2 := by
   classical
-  let U : Op ι := ∑ b, Q b * (Q b - B.effect b * Q b)
-  let V : Op ι := ∑ b, B.effect b * (Q b - B.effect b * D)
+  let U  := ∑ b, Q b * (Q b - B.effect b * Q b)
+  let V  := ∑ b, B.effect b * (Q b - B.effect b * D)
   have hU : ‖applyOperatorToState U ψ‖ ^ 2 ≤
       ∑ b, ‖applyOperatorToState (Q b - B.effect b * D) ψ‖ ^ 2 := by
     refine le_trans (DistanceCalculus.norm_finset_sum_projector_mul_sq_le
       Q (fun b => Q b - B.effect b * Q b) hQ horth Finset.univ ψ) ?_
     exact Finset.sum_le_sum fun b _ => norm_sub_projective_mul_sq_le B hB b (Q b) D ψ
-  have hV : ‖applyOperatorToState V ψ‖ ^ 2 ≤
-      ∑ b, ‖applyOperatorToState (Q b - B.effect b * D) ψ‖ ^ 2 :=
+  have hV  :=
     DistanceCalculus.norm_finset_sum_projector_mul_sq_le B.effect
       (fun b => Q b - B.effect b * D) hB
-      (fun hbc => DistanceCalculus.projective_effect_mul_effect_eq_zero B hB hbc)
+      ( DistanceCalculus.projective_effect_mul_effect_eq_zero B hB )
       Finset.univ ψ
-  have hsum : (∑ b, Q b) - D = U + V := by
+  have hsum :  ∑ b, Q b  - D = U + V := by
     have hfirst : U = ∑ b, (Q b - B.effect b * Q b) := by
       apply Finset.sum_congr rfl
       intro b _
       rw [mul_sub, ← mul_assoc, hcomm b, mul_assoc,
         (hQ b).isIdempotentElem.eq]
-    have hsecond : V = (∑ b, B.effect b * Q b) - D := by
+    have hsecond : V =  ∑ b, B.effect b * Q b  - D := by
       dsimp [V]
       simp only [mul_sub, ← mul_assoc, (hB _).isIdempotentElem.eq,
         Finset.sum_sub_distrib, ← Finset.sum_mul, B.sum_eq_one, one_mul]

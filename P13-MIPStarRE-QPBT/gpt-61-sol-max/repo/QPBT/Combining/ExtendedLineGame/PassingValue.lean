@@ -71,21 +71,8 @@ theorem seven_branch_rejections_le
   rw [diagonal_parameter_evaluated_coefficient_defect_eq] at hdiagonal
   have haxisEval := axis_parameter_evaluation_defect_le lines
   have hdiagonalEval := diagonal_parameter_evaluation_defect_le lines
-  have hcollision :
-      (P.d : Real) / (P.extendedDirectLd.q : Real) +
-          (P.extendedDirectLd.m * P.extendedDirectLd.d : Real) /
-            (P.extendedDirectLd.q : Real) ≤
-        5 * ((P.m * P.d : Real) / (P.q : Real)) := by
-    calc
-      _ = ((P.extendedDirectLd.d : Real) +
-            (P.extendedDirectLd.m * P.extendedDirectLd.d : Real)) /
-          (P.extendedDirectLd.q : Real) := by
-        change
-          (P.extendedDirectLd.d : Real) / (P.extendedDirectLd.q : Real) +
-              (P.extendedDirectLd.m * P.extendedDirectLd.d : Real) /
-                (P.extendedDirectLd.q : Real) = _
-        ring
-      _ ≤ _ := extendedDirectLd_coefficientCollisionLoss_le_five_mul P
+  have hcollision := extendedDirectLd_coefficientCollisionLoss_le_five_mul P
+  rw [add_div] at hcollision
   linarith
 
 /-- The supplied directly indexed strategy passes with error bounded by the
@@ -110,11 +97,8 @@ theorem strategy_value_ge_directPassingErrorEnvelope
           (.dline, .point) +
         directLdBranchRejectionProbability P.extendedDirectLd (strategy lines)
           (.dline, .dline)
-  have hsum : rejection ≤
-      deltaQ + 16 * deltaL + 4 * Real.sqrt (deltaQ + 2 * deltaL) +
-        5 * ((P.m * P.d : Real) / (P.q : Real)) := by
-    exact seven_branch_rejections_le lines
-  have hcap : rejection / 9 ≤ 1 := by
+  have hsum  := seven_branch_rejections_le lines
+  have hcap  := by
     have h := directLdRejectionProbability_le_one P.extendedDirectLd (strategy lines)
     rw [directLdRejectionProbability_eq_one_sub_value, strategy_value_eq lines] at h
     change rejection / 9 ≤ 1
@@ -126,9 +110,7 @@ theorem strategy_value_ge_directPassingErrorEnvelope
   have henvelope := seven_branch_capped_error_le_directPassingErrorEnvelope
     deltaQ deltaL ((P.m * P.d : Real) / (P.q : Real))
     points.delta_nonneg lines.delta_nonneg (by positivity)
-  have hrejection : rejection / 9 ≤
-      directPassingErrorEnvelope (deltaQ + deltaL)
-        ((P.m * P.d : Real) / (P.q : Real)) :=
+  have hrejection  :=
     (le_min hcap hraw).trans henvelope
   rw [strategy_value_eq lines]
   change 1 - _ ≤ 1 - rejection / 9

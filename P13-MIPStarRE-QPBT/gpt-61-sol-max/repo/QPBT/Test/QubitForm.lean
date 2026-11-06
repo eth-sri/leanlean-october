@@ -30,7 +30,7 @@ from `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:1450-1
 
 @[expose] public section
 
-open scoped BigOperators Matrix
+open scoped BigOperators Matrix Classical
 
 namespace MIPStarRE.QPBT
 
@@ -38,25 +38,27 @@ open MIPStarRE.LDT MIPStarRE.Quantum
 
 noncomputable section
 
+variable (P : AdmissibleParams)
+
 /-- The bit register obtained by expanding every Pauli-register field element
 in the basis stored by `P.model`. -/
-abbrev QubitRegister (P : AdmissibleParams) :=
+abbrev QubitRegister  :=
   Cube P.m × Fin P.model.basisDim → ZMod 2
 
 /-- The ideal auxiliary state tensored with the qubit EPR register, in the
 local-player ordering used by `cor:pauli-binary`. -/
-noncomputable def idealQubitState (P : AdmissibleParams)
+def idealQubitState
     {ιA' ιB' : Type*} [Fintype ιA'] [DecidableEq ιA']
     [Fintype ιB'] [DecidableEq ιB']
-    (aux : EuclideanSpace ℂ (ιA' × ιB')) :
-    EuclideanSpace ℂ
-      ((ιA' × QubitRegister P) × (ιB' × QubitRegister P)) :=
+    (aux : MIPStarRE.QPBT.StateVector (ιA' × ιB')) :
+    MIPStarRE.QPBT.StateVector
+      ((ιA' × QubitRegister P) ×  ιB' × QubitRegister P ) :=
   (EuclideanSpace.equiv
-      ((ιA' × QubitRegister P) × (ιB' × QubitRegister P)) ℂ).symm
-    (fun p =>
-      (EuclideanSpace.equiv (ιA' × ιB') ℂ aux (p.1.1, p.2.1)) *
-        (EuclideanSpace.equiv (QubitRegister P × QubitRegister P) ℂ
-          (eprState (QubitRegister P)) (p.1.2, p.2.2)))
+      ((ιA' × QubitRegister P) ×  ιB' × QubitRegister P ) ℂ).symm
+     fun p =>
+       EuclideanSpace.equiv (ιA' × ιB') ℂ aux (p.1.1, p.2.1)  *
+         EuclideanSpace.equiv (QubitRegister P × QubitRegister P) ℂ
+          (eprState (QubitRegister P)) (p.1.2, p.2.2)  
 
 /-- The local isometries, auxiliary spaces, and unit auxiliary state in
 `cor:pauli-binary`; this structure introduces no hypothesis beyond the paper
@@ -69,11 +71,11 @@ structure QubitSoundnessWitness (P : AdmissibleParams)
   [ιBFintype : Fintype ιB']
   [ιADecidableEq : DecidableEq ιA']
   [ιBDecidableEq : DecidableEq ιB']
-  φA : EuclideanSpace ℂ S.ιA →ₗᵢ[ℂ]
-    EuclideanSpace ℂ (ιA' × QubitRegister P)
-  φB : EuclideanSpace ℂ S.ιB →ₗᵢ[ℂ]
-    EuclideanSpace ℂ (ιB' × QubitRegister P)
-  aux : EuclideanSpace ℂ (ιA' × ιB')
+  φA : MIPStarRE.QPBT.StateVector S.ιA →ₗᵢ[ℂ]
+    MIPStarRE.QPBT.StateVector (ιA' × QubitRegister P)
+  φB : MIPStarRE.QPBT.StateVector S.ιB →ₗᵢ[ℂ]
+    MIPStarRE.QPBT.StateVector (ιB' × QubitRegister P)
+  aux : MIPStarRE.QPBT.StateVector (ιA' × ιB')
   aux_norm : ‖aux‖ = 1
 
 attribute [instance] QubitSoundnessWitness.ιAFintype
@@ -81,50 +83,52 @@ attribute [instance] QubitSoundnessWitness.ιAFintype
   QubitSoundnessWitness.ιBDecidableEq
 
 /-- Alice's ideal qubit projector placed on the joint target space. -/
-noncomputable def qubitProjOnA'' (P : AdmissibleParams)
+def qubitProjOnA''
     {ιA' ιB' : Type*} [Fintype ιA'] [DecidableEq ιA']
     [Fintype ιB'] [DecidableEq ιB'] (W : PauliKind)
     (u : PauliRegister P) :
-    Op ((ιA' × QubitRegister P) × (ιB' × QubitRegister P)) :=
+    Op ((ιA' × QubitRegister P) ×  ιB' × QubitRegister P ) :=
   fun p q =>
     if p.1.1 = q.1.1 ∧ p.2 = q.2 then
       qubitPauliProj W (kappaVec P.model u) p.1.2 q.1.2
     else 0
 
 /-- Bob's ideal qubit projector placed on the joint target space. -/
-noncomputable def qubitProjOnB'' (P : AdmissibleParams)
+def qubitProjOnB''
     {ιA' ιB' : Type*} [Fintype ιA'] [DecidableEq ιA']
     [Fintype ιB'] [DecidableEq ιB'] (W : PauliKind)
     (u : PauliRegister P) :
-    Op ((ιA' × QubitRegister P) × (ιB' × QubitRegister P)) :=
+    Op ((ιA' × QubitRegister P) ×  ιB' × QubitRegister P ) :=
   fun p q =>
     if p.1 = q.1 ∧ p.2.1 = q.2.1 then
       qubitPauliProj W (kappaVec P.model u) p.2.2 q.2.2
     else 0
 
 /-- Lift a conjugated Alice effect to the full qubit target space. -/
-noncomputable def liftedQubitAEffect {P : AdmissibleParams} {G : Game}
+def liftedQubitAEffect {P : AdmissibleParams} {G : Game}
     (S : Strategy G) {ιA' ιB' : Type*} [Fintype ιA'] [DecidableEq ιA']
     [Fintype ιB'] [DecidableEq ιB']
-    (φA : EuclideanSpace ℂ S.ιA →ₗᵢ[ℂ]
-      EuclideanSpace ℂ (ιA' × QubitRegister P))
+    (φA : MIPStarRE.QPBT.StateVector S.ιA →ₗᵢ[ℂ]
+      MIPStarRE.QPBT.StateVector (ιA' × QubitRegister P))
     (M : Op S.ιA) :
-    Op ((ιA' × QubitRegister P) × (ιB' × QubitRegister P)) :=
+    Op ((ιA' × QubitRegister P) ×  ιB' × QubitRegister P ) :=
   heteroKron (conjIsometry φA M) 1
 
 /-- Lift a conjugated Bob effect to the full qubit target space. -/
-noncomputable def liftedQubitBEffect {P : AdmissibleParams} {G : Game}
+def liftedQubitBEffect {P : AdmissibleParams} {G : Game}
     (S : Strategy G) {ιA' ιB' : Type*} [Fintype ιA'] [DecidableEq ιA']
     [Fintype ιB'] [DecidableEq ιB']
-    (φB : EuclideanSpace ℂ S.ιB →ₗᵢ[ℂ]
-      EuclideanSpace ℂ (ιB' × QubitRegister P))
+    (φB : MIPStarRE.QPBT.StateVector S.ιB →ₗᵢ[ℂ]
+      MIPStarRE.QPBT.StateVector (ιB' × QubitRegister P))
     (M : Op S.ιB) :
-    Op ((ιA' × QubitRegister P) × (ιB' × QubitRegister P)) :=
+    Op ((ιA' × QubitRegister P) ×  ιB' × QubitRegister P ) :=
   heteroKron 1 (conjIsometry φB M)
 
+variable (S : Strategy (pauliBasisTest P))
+
 /-- Alice's qubit-projector family distance in `cor:pauli-binary`. -/
-noncomputable def qubitOperatorDistanceA
-    (P : AdmissibleParams) (S : Strategy (pauliBasisTest P))
+def qubitOperatorDistanceA
+
     (w : QubitSoundnessWitness P S) (W : PauliKind) : ℝ :=
   ∑ u : PauliRegister P,
     ‖applyOperatorToState
@@ -134,8 +138,8 @@ noncomputable def qubitOperatorDistanceA
       (idealQubitState P w.aux)‖ ^ 2
 
 /-- Bob's qubit-projector family distance in `cor:pauli-binary`. -/
-noncomputable def qubitOperatorDistanceB
-    (P : AdmissibleParams) (S : Strategy (pauliBasisTest P))
+def qubitOperatorDistanceB
+
     (w : QubitSoundnessWitness P S) (W : PauliKind) : ℝ :=
   ∑ u : PauliRegister P,
     ‖applyOperatorToState
@@ -155,37 +159,34 @@ theorem pauli_projector_reindex {q : ℕ} {ι : Type*}
     (W : PauliKind) (label : ι → F.K) :
     Matrix.reindex (quditQubitLabelEquiv F) (quditQubitLabelEquiv F) (pauliProj W label) =
       qubitPauliProj W (kappaVec F label) := by
-  classical
   have hinverse := pauliProj_reindex_quditQubitLabelEquiv F W label
-  ext row col
-  simpa only [Matrix.reindex_apply, Matrix.submatrix_apply,
-    Equiv.symm_symm, Equiv.apply_symm_apply] using
-    congrFun (congrFun hinverse ((quditQubitLabelEquiv F).symm row))
-      ((quditQubitLabelEquiv F).symm col)
+  simp_all
+
+variable {ι κ : Type*} [Fintype ι] [DecidableEq ι] [Fintype κ] [DecidableEq κ] (equiv : ι ≃ κ)
 
 /-- Reindexing a vector agrees with Mathlib's Euclidean permutation isometry. -/
-theorem reindex_state_eq {ι κ : Type*} [Fintype ι] [DecidableEq ι]
-    [Fintype κ] [DecidableEq κ] (equiv : ι ≃ κ) (state : EuclideanSpace ℂ ι) :
+theorem reindex_state_eq
+       (state : MIPStarRE.QPBT.StateVector ι) :
     reindexState equiv state = LinearIsometryEquiv.piLpCongrLeft 2 ℂ ℂ equiv state := rfl
 
 /-- Simultaneous coordinate transport intertwines matrix action on a state. -/
-theorem operator_action_reindex {ι κ : Type*} [Fintype ι] [DecidableEq ι]
-    [Fintype κ] [DecidableEq κ] (equiv : ι ≃ κ) (operator : Op ι)
-    (state : EuclideanSpace ℂ ι) :
+theorem operator_action_reindex
+       (operator : Op ι)
+    (state : MIPStarRE.QPBT.StateVector ι) :
     applyOperatorToState (Matrix.reindex equiv equiv operator) (reindexState equiv state) =
       reindexState equiv (applyOperatorToState operator state) := by
   ext position
   change (operator.submatrix equiv.symm equiv.symm *ᵥ
-      (fun index => state (equiv.symm index))) position =
-    (operator *ᵥ (fun index => state index)) (equiv.symm position)
+       fun index => state (equiv.symm index) ) position =
+    (operator *ᵥ  state ) (equiv.symm position)
   rw [Matrix.submatrix_mulVec_equiv]
   simp [Function.comp_def]
 
 /-- Simultaneous transport of two operators and their reference state preserves
 the norm of their difference applied to that state. -/
-theorem operator_error_reindex {ι κ : Type*} [Fintype ι] [DecidableEq ι]
-    [Fintype κ] [DecidableEq κ] (equiv : ι ≃ κ) (left right : Op ι)
-    (state : EuclideanSpace ℂ ι) :
+theorem operator_error_reindex
+       (left right : Op ι)
+    (state : MIPStarRE.QPBT.StateVector ι) :
     ‖applyOperatorToState (Matrix.reindex equiv equiv left -
         Matrix.reindex equiv equiv right) (reindexState equiv state)‖ =
       ‖applyOperatorToState (left - right) state‖ := by
@@ -212,9 +213,9 @@ theorem tensor_reindex_comp {ιA ιB κA κB νA νB : Type*}
     [Fintype κA] [DecidableEq κA] [Fintype κB] [DecidableEq κB]
     [Fintype νA] [DecidableEq νA] [Fintype νB] [DecidableEq νB]
     (equivA : κA ≃ νA) (equivB : κB ≃ νB)
-    (mapA : EuclideanSpace ℂ ιA →ₗᵢ[ℂ] EuclideanSpace ℂ κA)
-    (mapB : EuclideanSpace ℂ ιB →ₗᵢ[ℂ] EuclideanSpace ℂ κB)
-    (state : EuclideanSpace ℂ (ιA × ιB)) :
+    (mapA : MIPStarRE.QPBT.StateVector ιA →ₗᵢ[ℂ] MIPStarRE.QPBT.StateVector κA)
+    (mapB : MIPStarRE.QPBT.StateVector ιB →ₗᵢ[ℂ] MIPStarRE.QPBT.StateVector κB)
+    (state : MIPStarRE.QPBT.StateVector (ιA × ιB)) :
     isometryTensor
         ((LinearIsometryEquiv.piLpCongrLeft 2 ℂ ℂ equivA).toLinearIsometry.comp mapA)
         ((LinearIsometryEquiv.piLpCongrLeft 2 ℂ ℂ equivB).toLinearIsometry.comp mapB)
@@ -226,7 +227,7 @@ reindexing of the original conjugated effect. -/
 theorem conjugate_reindex_comp {ι κ ν : Type*}
     [Fintype ι] [DecidableEq ι] [Fintype κ] [DecidableEq κ]
     [Fintype ν] [DecidableEq ν] (equiv : κ ≃ ν)
-    (map : EuclideanSpace ℂ ι →ₗᵢ[ℂ] EuclideanSpace ℂ κ) (operator : Op ι) :
+    (map : MIPStarRE.QPBT.StateVector ι →ₗᵢ[ℂ] MIPStarRE.QPBT.StateVector κ) (operator : Op ι) :
     conjIsometry
         ((LinearIsometryEquiv.piLpCongrLeft 2 ℂ ℂ equiv).toLinearIsometry.comp map)
         operator = Matrix.reindex equiv equiv (conjIsometry map operator) := by
@@ -234,24 +235,26 @@ theorem conjugate_reindex_comp {ι κ ν : Type*}
   rfl
 
 /-- The local label equivalence leaves the auxiliary coordinate unchanged. -/
-noncomputable def localEquiv (P : AdmissibleParams) (auxIndex : Type*) :
-    (auxIndex × PauliRegister P) ≃ (auxIndex × QubitRegister P) :=
+def localEquiv  (auxIndex : Type*) :
+     auxIndex × PauliRegister P  ≃  auxIndex × QubitRegister P  :=
   Equiv.prodCongr (Equiv.refl auxIndex) (quditQubitLabelEquiv P.model)
 
 /-- The two local coordinate equivalences, in the existing player ordering. -/
-noncomputable def jointEquiv (P : AdmissibleParams) (auxA auxB : Type*) :
-    ((auxA × PauliRegister P) × (auxB × PauliRegister P)) ≃
-      ((auxA × QubitRegister P) × (auxB × QubitRegister P)) :=
+def jointEquiv  (auxA auxB : Type*) :
+     (auxA × PauliRegister P) ×  auxB × PauliRegister P   ≃
+       (auxA × QubitRegister P) ×  auxB × QubitRegister P   :=
   Equiv.prodCongr (localEquiv P auxA) (localEquiv P auxB)
+
+variable {auxA auxB : Type*} [Fintype auxA] [DecidableEq auxA] [Fintype auxB] [DecidableEq auxB]
 
 /-- Binary reindexing preserves the auxiliary factor and transports the EPR
 factor exactly after the four-factor shuffle into local-player order. -/
-theorem ideal_state_reindex (P : AdmissibleParams)
-    {auxA auxB : Type*} [Fintype auxA] [DecidableEq auxA]
-    [Fintype auxB] [DecidableEq auxB] (aux : EuclideanSpace ℂ (auxA × auxB)) :
+theorem ideal_state_reindex
+
+      (aux : MIPStarRE.QPBT.StateVector (auxA × auxB)) :
     reindexState (jointEquiv P auxA auxB) (idealState P aux) = idealQubitState P aux := by
   ext position
-  exact congrArg (fun state : EuclideanSpace ℂ (QubitRegister P × QubitRegister P) =>
+  exact congrArg (fun state : MIPStarRE.QPBT.StateVector (QubitRegister P × QubitRegister P) =>
     aux (position.1.1, position.2.1) * state (position.1.2, position.2.2))
     (epr_reindex (quditQubitLabelEquiv (ι := Cube P.m) P.model))
 
@@ -260,21 +263,20 @@ on Bob's entire local register. -/
 theorem lifted_effect_a_reindex {P : AdmissibleParams} {G : Game} (S : Strategy G)
     {auxA auxB : Type*} [Fintype auxA] [DecidableEq auxA]
     [Fintype auxB] [DecidableEq auxB]
-    (mapA : EuclideanSpace ℂ S.ιA →ₗᵢ[ℂ] EuclideanSpace ℂ (auxA × PauliRegister P))
+    (mapA : MIPStarRE.QPBT.StateVector S.ιA →ₗᵢ[ℂ] MIPStarRE.QPBT.StateVector (auxA × PauliRegister P))
     (operator : Op S.ιA) :
     Matrix.reindex (jointEquiv P auxA auxB) (jointEquiv P auxA auxB)
         (liftedAEffect S mapA operator) =
       liftedQubitAEffect S
         ((LinearIsometryEquiv.piLpCongrLeft 2 ℂ ℂ
           (localEquiv P auxA)).toLinearIsometry.comp mapA) operator := by
-  classical
   rw [liftedQubitAEffect, conjugate_reindex_comp]
   ext row col
   change (if (localEquiv P auxB).symm row.2 = (localEquiv P auxB).symm col.2 then
       conjIsometry mapA operator ((localEquiv P auxA).symm row.1)
         ((localEquiv P auxA).symm col.1) else 0) =
     conjIsometry mapA operator ((localEquiv P auxA).symm row.1)
-      ((localEquiv P auxA).symm col.1) * (if row.2 = col.2 then 1 else 0)
+      ((localEquiv P auxA).symm col.1) *  if row.2 = col.2 then 1 else 0 
   simp only [Equiv.apply_eq_iff_eq, mul_ite, mul_one, mul_zero]
 
 /-- Forward binary transport of Bob's lifted effect, including the identity
@@ -282,14 +284,13 @@ on Alice's entire local register. -/
 theorem lifted_effect_b_reindex {P : AdmissibleParams} {G : Game} (S : Strategy G)
     {auxA auxB : Type*} [Fintype auxA] [DecidableEq auxA]
     [Fintype auxB] [DecidableEq auxB]
-    (mapB : EuclideanSpace ℂ S.ιB →ₗᵢ[ℂ] EuclideanSpace ℂ (auxB × PauliRegister P))
+    (mapB : MIPStarRE.QPBT.StateVector S.ιB →ₗᵢ[ℂ] MIPStarRE.QPBT.StateVector (auxB × PauliRegister P))
     (operator : Op S.ιB) :
     Matrix.reindex (jointEquiv P auxA auxB) (jointEquiv P auxA auxB)
         (liftedBEffect S mapB operator) =
       liftedQubitBEffect S
         ((LinearIsometryEquiv.piLpCongrLeft 2 ℂ ℂ
           (localEquiv P auxB)).toLinearIsometry.comp mapB) operator := by
-  classical
   rw [liftedQubitBEffect, conjugate_reindex_comp]
   ext row col
   change (if (localEquiv P auxA).symm row.1 = (localEquiv P auxA).symm col.1 then
@@ -302,12 +303,11 @@ theorem lifted_effect_b_reindex {P : AdmissibleParams} {G : Game} (S : Strategy 
 
 /-- Forward binary transport of the ideal projector on Alice's extracted
 register, with the other three tensor factors fixed. -/
-theorem ideal_projector_a_reindex (P : AdmissibleParams)
-    {auxA auxB : Type*} [Fintype auxA] [DecidableEq auxA]
-    [Fintype auxB] [DecidableEq auxB] (W : PauliKind) (label : PauliRegister P) :
+theorem ideal_projector_a_reindex
+
+      (W : PauliKind) (label : PauliRegister P) :
     Matrix.reindex (jointEquiv P auxA auxB) (jointEquiv P auxA auxB)
         (pauliProjOnA'' P W label) = qubitProjOnA'' P W label := by
-  classical
   ext row col
   change (if row.1.1 = col.1.1 ∧
       (localEquiv P auxB).symm row.2 = (localEquiv P auxB).symm col.2 then
@@ -320,12 +320,11 @@ theorem ideal_projector_a_reindex (P : AdmissibleParams)
 
 /-- Forward binary transport of the ideal projector on Bob's extracted
 register, with the other three tensor factors fixed. -/
-theorem ideal_projector_b_reindex (P : AdmissibleParams)
-    {auxA auxB : Type*} [Fintype auxA] [DecidableEq auxA]
-    [Fintype auxB] [DecidableEq auxB] (W : PauliKind) (label : PauliRegister P) :
+theorem ideal_projector_b_reindex
+
+      (W : PauliKind) (label : PauliRegister P) :
     Matrix.reindex (jointEquiv P auxA auxB) (jointEquiv P auxA auxB)
         (pauliProjOnB'' P W label) = qubitProjOnB'' P W label := by
-  classical
   ext row col
   change (if (localEquiv P auxA).symm row.1 = (localEquiv P auxA).symm col.1 ∧
       row.2.1 = col.2.1 then
@@ -342,7 +341,7 @@ end BinaryWitnessTransport
 the fixed binary coordinate permutation. The auxiliary spaces, vector, and
 normalization proof are unchanged. This is the exact given-witness construction
 in the proof of `cor:pauli-binary`, not a proof of soundness existence. -/
-noncomputable def PauliSoundnessWitness.toQubit
+def PauliSoundnessWitness.toQubit
     {P : AdmissibleParams} {S : Strategy (pauliBasisTest P)}
     (w : PauliSoundnessWitness P S) : QubitSoundnessWitness P S where
   ιA' := w.ιA'
@@ -358,7 +357,7 @@ noncomputable def PauliSoundnessWitness.toQubit
 transport identity has no success assumption or error bound and does not assert
 the existence conclusion of `cor:pauli-binary`. -/
 theorem qubit_state_error_to_qubit
-    (P : AdmissibleParams) (S : Strategy (pauliBasisTest P))
+
     (w : PauliSoundnessWitness P S) :
     ‖isometryTensor w.toQubit.φA w.toQubit.φB S.ψ -
         idealQubitState P w.toQubit.aux‖ =
@@ -378,7 +377,7 @@ theorem qubit_state_error_to_qubit
 supplied witness. The answer sum is still field-valued, and both distances are
 evaluated on their ideal auxiliary-EPR state. No soundness bound is assumed. -/
 theorem qubit_operator_distance_a_to_qubit
-    (P : AdmissibleParams) (S : Strategy (pauliBasisTest P))
+
     (w : PauliSoundnessWitness P S) (W : PauliKind) :
     qubitOperatorDistanceA P S w.toQubit W = rawPauliOperatorDistanceA P S w W := by
   unfold qubitOperatorDistanceA rawPauliOperatorDistanceA
@@ -397,7 +396,7 @@ theorem qubit_operator_distance_a_to_qubit
 witness. This is a given-witness transport identity, independent of the open
 existence conclusion of `cor:pauli-binary`. -/
 theorem qubit_operator_distance_b_to_qubit
-    (P : AdmissibleParams) (S : Strategy (pauliBasisTest P))
+
     (w : PauliSoundnessWitness P S) (W : PauliKind) :
     qubitOperatorDistanceB P S w.toQubit W = rawPauliOperatorDistanceB P S w W := by
   unfold qubitOperatorDistanceB rawPauliOperatorDistanceB

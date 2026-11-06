@@ -1,5 +1,9 @@
 module
 
+public import QPBT.Algebra.CoordinatePolynomial
+
+public import QPBT.Types
+
 public import QPBT.Combining.DirectLowDegree.Transport.Combining.Parameters
 
 /-!
@@ -33,7 +37,9 @@ combining map of the surface game.
 
 @[expose] public section
 
-open scoped BigOperators
+variable {K : Type*} [CommSemiring K]
+
+open scoped BigOperators Classical
 
 namespace MIPStarRE.QPBT
 
@@ -45,39 +51,30 @@ noncomputable section
 /-! ## The linear form of a tuple of scalars -/
 
 /-- The linear form `α ↦ ∑_{r < k} c_r α_r` in the combining variables. -/
-def combiningLinearForm {K : Type*} [CommSemiring K] {k : ℕ} (c : Fin k → K) :
-    MvPolynomial (Fin k) K :=
+def combiningLinearForm   {k : ℕ} (c : MIPStarRE.QPBT.Coordinates k K) :
+    MIPStarRE.QPBT.CoordinatePolynomial k K :=
   ∑ r : Fin k, MvPolynomial.C (c r) * MvPolynomial.X r
 
-@[simp] theorem combiningLinearForm_eval {K : Type*} [CommSemiring K] {k : ℕ}
-    (c α : Fin k → K) :
+@[simp] theorem combiningLinearForm_eval   {k : ℕ}
+    (c α : MIPStarRE.QPBT.Coordinates k K) :
     MvPolynomial.eval α (combiningLinearForm c) = ∑ r : Fin k, c r * α r := by
   simp [combiningLinearForm]
 
 /-- A linear form has total degree at most one. -/
-theorem combiningLinearForm_totalDegree_le_one {K : Type*} [CommSemiring K]
-    [Nontrivial K] {k : ℕ} (c : Fin k → K) :
+theorem combiningLinearForm_totalDegree_le_one
+    [Nontrivial K] {k : ℕ} (c : MIPStarRE.QPBT.Coordinates k K) :
     (combiningLinearForm c).totalDegree ≤ 1 := by
   refine le_trans (MvPolynomial.totalDegree_finsetSum _ _) (Finset.sup_le fun r _ => ?_)
   refine le_trans (MvPolynomial.totalDegree_mul _ _) ?_
   simp [MvPolynomial.totalDegree_C, MvPolynomial.totalDegree_X]
 
 /-- The coefficient of the variable `α_r` in a linear form is `c r`. -/
-theorem combiningLinearForm_coeff {K : Type*} [CommSemiring K] {k : ℕ}
-    (c : Fin k → K) (r : Fin k) :
-    (combiningLinearForm c).coeff (Finsupp.single r 1) = c r := by
-  classical
-  rw [combiningLinearForm, MvPolynomial.coeff_sum, Finset.sum_eq_single r]
-  · simp [MvPolynomial.coeff_C_mul, MvPolynomial.coeff_X]
-  · intro s _ hs
-    rw [MvPolynomial.coeff_C_mul, MvPolynomial.coeff_X, if_neg, mul_zero]
-    intro hEq
-    exact hs (Finsupp.single_left_injective one_ne_zero hEq)
-  · intro h
-    exact absurd (Finset.mem_univ r) h
+theorem combiningLinearForm_coeff   {k : ℕ}
+    (c : MIPStarRE.QPBT.Coordinates k K) (r : Fin k) :
+    (combiningLinearForm c).coeff (Finsupp.single r 1) = c r := by simp_all [combiningLinearForm]
 
 /-- A linear form determines its coefficients. -/
-theorem combiningLinearForm_injective {K : Type*} [CommSemiring K] {k : ℕ} :
+theorem combiningLinearForm_injective   {k : ℕ} :
     Function.Injective (combiningLinearForm (K := K) (k := k)) := by
   intro c c' h
   funext r
@@ -87,10 +84,10 @@ theorem combiningLinearForm_injective {K : Type*} [CommSemiring K] {k : ℕ} :
 sampled point with probability at most `1/q`.  This is the Schwartz--Zippel
 bound at total degree one. -/
 theorem combiningLinearForm_agreementProbability_le {K : Type*} [Field K] [Fintype K]
-    [DecidableEq K] {k : ℕ} (c b : Fin k → K) (hne : c ≠ b) :
+    [DecidableEq K] {k : ℕ} (c b : MIPStarRE.QPBT.Coordinates k K) (hne : c ≠ b) :
     polynomialAgreementProbability k K (combiningLinearForm c) (combiningLinearForm b) ≤
       1 / Fintype.card K := by
-  have hpoly : combiningLinearForm c ≠ combiningLinearForm b := fun h =>
+  have hpoly  := fun h =>
     hne (combiningLinearForm_injective h)
   simpa using schwartzZippel_totalDegree (d := 1) hpoly
     (combiningLinearForm_totalDegree_le_one c) (combiningLinearForm_totalDegree_le_one b)
@@ -105,23 +102,22 @@ This is the general form of the computation carried out inline in the proof of
 low individual degree test; the combining variables of the reduction are not a
 point space of that test, so the general form is needed here. -/
 theorem polynomialAgreement_avg_eq_agreementProbability {m : ℕ} {K : Type*} [Field K]
-    [Fintype K] [DecidableEq K] (g h : MvPolynomial (Fin m) K) :
-    avgOver (uniformDistribution (Fin m → K))
+    [Fintype K] [DecidableEq K] (g h : MIPStarRE.QPBT.CoordinatePolynomial m K) :
+    avgOver (uniformDistribution (MIPStarRE.QPBT.Coordinates m K))
         (fun u => if MvPolynomial.eval u g = MvPolynomial.eval u h then (1 : Error) else 0) =
       (polynomialAgreementProbability m K g h : Error) := by
-  classical
   calc
-    avgOver (uniformDistribution (Fin m → K))
+    avgOver (uniformDistribution (MIPStarRE.QPBT.Coordinates m K))
         (fun u => if MvPolynomial.eval u g = MvPolynomial.eval u h then (1 : Error) else 0)
-      = ∑ u : Fin m → K,
+      = ∑ u : MIPStarRE.QPBT.Coordinates m K,
           if MvPolynomial.eval u g = MvPolynomial.eval u h then
             (Fintype.card K ^ m : Error)⁻¹ else 0 := by
         simp [avgOver, uniformDistribution]
-    _ = ∑ u ∈ Finset.univ.filter (fun u : Fin m → K =>
-          MvPolynomial.eval u g = MvPolynomial.eval u h),
+    _ = ∑ u ∈ Finset.univ.filter  fun u : MIPStarRE.QPBT.Coordinates m K =>
+          MvPolynomial.eval u g = MvPolynomial.eval u h ,
           (Fintype.card K ^ m : Error)⁻¹ := by
         rw [← Finset.sum_filter]
-    _ = (((Finset.univ.filter fun u : Fin m → K =>
+    _ = (((Finset.univ.filter fun u : MIPStarRE.QPBT.Coordinates m K =>
           MvPolynomial.eval u g = MvPolynomial.eval u h).card : ℕ) : Error) *
           (Fintype.card K ^ m : Error)⁻¹ := by
         simp
@@ -133,23 +129,19 @@ the consistency calculus of the directly indexed game: if the tuple of values
 `c` differs from the tuple of answers `b`, then the two combinations agree at a
 uniformly sampled combining vector with probability at most `1/q`. -/
 theorem directCombiningCollision_avg_le (D : DirectLdParams)
-    (c b : Fin D.k → DirectScalarQ D) (hne : c ≠ b) :
-    avgOver (uniformDistribution (Fin D.k → DirectScalarQ D))
+    (c b : MIPStarRE.QPBT.DirectValues D) (hne : c ≠ b) :
+    avgOver (uniformDistribution (MIPStarRE.QPBT.DirectValues D))
         (fun α => if ∑ r : Fin D.k, c r * α r = ∑ r : Fin D.k, b r * α r then
           (1 : Error) else 0) ≤
       (1 : Error) / D.q := by
-  classical
   have hagree := combiningLinearForm_agreementProbability_le c b hne
   calc
-    avgOver (uniformDistribution (Fin D.k → DirectScalarQ D))
+    avgOver (uniformDistribution (MIPStarRE.QPBT.DirectValues D))
         (fun α => if ∑ r : Fin D.k, c r * α r = ∑ r : Fin D.k, b r * α r then
           (1 : Error) else 0)
-      = avgOver (uniformDistribution (Fin D.k → DirectScalarQ D))
-          (fun α => if MvPolynomial.eval α (combiningLinearForm c) =
-            MvPolynomial.eval α (combiningLinearForm b) then (1 : Error) else 0) := by
-        apply avgOver_congr
-        intro α
-        rw [combiningLinearForm_eval, combiningLinearForm_eval]
+      = avgOver (uniformDistribution (MIPStarRE.QPBT.DirectValues D))
+           fun α => if MvPolynomial.eval α (combiningLinearForm c) =
+            MvPolynomial.eval α (combiningLinearForm b) then (1 : Error) else 0  := by simp_all
     _ = (polynomialAgreementProbability D.k (DirectScalarQ D)
           (combiningLinearForm c) (combiningLinearForm b) : Error) :=
         polynomialAgreement_avg_eq_agreementProbability _ _

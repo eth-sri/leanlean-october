@@ -28,7 +28,7 @@ noncomputable section
 /-- Coordinate transport preserves the distance between two state vectors. -/
 theorem norm_reindexState_sub_eq {I J : Type*}
     [Fintype I] [DecidableEq I] [Fintype J] [DecidableEq J]
-    (e : I ≃ J) (psi phi : EuclideanSpace ℂ I) :
+    (e : I ≃ J) (psi phi : MIPStarRE.QPBT.StateVector I) :
     ‖reindexState e psi - reindexState e phi‖ = ‖psi - phi‖ := by
   change ‖reindexState e (psi - phi)‖ = _
   exact reindexState_norm_eq e _
@@ -39,18 +39,18 @@ extracted registers; the EPR factor is invariant under this exchange. -/
 theorem pauli_distance_on_ideal_right_le {P : AdmissibleParams} {I J : Type*}
     [Fintype I] [DecidableEq I] [Fintype J] [DecidableEq J]
     (A : Measurement (PauliRegister P) (J × PauliRegister P)) (W : PauliKind)
-    (aux : EuclideanSpace ℂ (I × J)) (haux : ‖aux‖ = 1)
-    (theta : EuclideanSpace ℂ ((I × PauliRegister P) × (J × PauliRegister P)))
+    (aux : MIPStarRE.QPBT.StateVector (I × J)) (haux : ‖aux‖ = 1)
+    (theta : MIPStarRE.QPBT.StateVector ((I × PauliRegister P) ×  J × PauliRegister P ))
     (htheta : ‖theta‖ = 1) :
     let ideal := reindexState prodShuffle (vecTensor aux (eprState (PauliRegister P)))
     let B := rightPlacedMeasurement (ιA := I) (pauliRegisterMeas (params := P) W)
-    (∑ h : PauliRegister P, ‖applyOperatorToState
+     ∑ h : PauliRegister P, ‖applyOperatorToState
       (heteroKron (1 : Op (I × PauliRegister P))
-        (A.effect h - heteroKron (1 : Op J) (pauliProj W h))) ideal‖ ^ 2) ≤
-      2 * (1 - avgOver (uniformDistribution (Fin P.m → PauliScalar P)) (fun u =>
+        (A.effect h - heteroKron (1 : Op J) (pauliProj W h))) ideal‖ ^ 2  ≤
+      2 * (1 - avgOver (uniformDistribution (MIPStarRE.QPBT.PauliPoint P))  fun u =>
         ∑ a : PauliScalar P, stateQForm theta
-          (heteroKron ((B.postprocess (fun h => evalPoly (encodingPoly h) u)).effect a)
-            ((A.postprocess (fun h => evalPoly (encodingPoly h) u)).effect a)))) +
+          (heteroKron ((B.postprocess  fun h => evalPoly (encodingPoly h) u ).effect a)
+            ((A.postprocess  fun h => evalPoly (encodingPoly h) u ).effect a)) ) +
         2 * ((P.m * P.d : ℝ) / P.q) + 4 * ‖theta - ideal‖ := by
   let e := Equiv.prodComm (I × PauliRegister P) (J × PauliRegister P)
   let ideal := reindexState prodShuffle (vecTensor aux (eprState (PauliRegister P)))
@@ -74,21 +74,25 @@ namespace ProjectiveSetting
 variable {P : AdmissibleParams} {epsilon deltaG : ℝ}
     (S : ProjectiveSetting P epsilon)
 
+variable (w : GlobalPairWitness S deltaG)
+
 /-- The evaluated total-Pauli consistency defect against the opposite
 pulled-apart measurement, with the tensor factors in Alice--Bob order. -/
-def evaluatedPauliDefect (w : GlobalPairWitness S deltaG) (side : PlayerSide)
+def evaluatedPauliDefect  (side : PlayerSide)
     (W : PauliKind) : ℝ :=
   match side with
-  | .alice => consistencyDefect (uniformDistribution (Fin P.m → PauliScalar P))
+  | .alice => consistencyDefect (uniformDistribution (MIPStarRE.QPBT.PauliPoint P))
       (fun u a => S.placePlayer .alice ((S.pauliEvalMeas .alice W u).effect a))
       (fun u a => S.placeSide .bob (tildeM w .bob W (indicatorVec u) a)) S.psiHat
-  | .bob => consistencyDefect (uniformDistribution (Fin P.m → PauliScalar P))
+  | .bob => consistencyDefect (uniformDistribution (MIPStarRE.QPBT.PauliPoint P))
       (fun u a => S.placeSide .alice (tildeM w .alice W (indicatorVec u) a))
       (fun u a => S.placePlayer .bob ((S.pauliEvalMeas .bob W u).effect a)) S.psiHat
 
+variable (aux : MIPStarRE.QPBT.StateVector (ExtractionAuxRegisters P S.toStrategy.ιA S.toStrategy.ιB))
+
 /-- The ideal state in local extraction-block order. -/
 theorem reindexState_idealExpState_blocks
-    (aux : EuclideanSpace ℂ (ExtractionAuxRegisters P S.toStrategy.ιA S.toStrategy.ιB)) :
+     :
     reindexState (sixRegExtractionEquiv P S.toStrategy.ιA S.toStrategy.ιB)
       (S.idealExpState aux) = reindexState prodShuffle (vecTensor aux
         (eprState (PauliRegister P))) := by
@@ -106,8 +110,8 @@ theorem placeSide_sub (side : PlayerSide)
 
 /-- The entire answer-summed distance in block coordinates is the distance
 appearing in `ExtractionWitness.pauli_close`, for either player. -/
-theorem extraction_pauli_dist_eq_sum (w : GlobalPairWitness S deltaG)
-    (aux : EuclideanSpace ℂ (ExtractionAuxRegisters P S.toStrategy.ιA S.toStrategy.ιB))
+theorem extraction_pauli_dist_eq_sum
+
     (side : PlayerSide) (W : PauliKind) :
     opFamilyDistSq (uniformDistribution Unit)
       (fun (_ : Unit) (h : PauliRegister P) =>
@@ -116,7 +120,7 @@ theorem extraction_pauli_dist_eq_sum (w : GlobalPairWitness S deltaG)
       (fun (_ : Unit) (h : PauliRegister P) =>
         S.placeExtractedRegister side (pauliProj W h)) (S.idealExpState aux) =
       ∑ h : PauliRegister P, ‖applyOperatorToState
-        (S.placeSide side (((S.swappedPauliMeas w side W).effect h) -
+        (S.placeSide side ( (S.swappedPauliMeas w side W).effect h  -
           heteroKron (1 : Op (S.ExpandedLocalSpace side)) (pauliProj W h)))
         (S.idealExpState aux)‖ ^ 2 := by
   simp_rw [S.placeSide_sub, S.placeSide_swappedPauliMeas, S.placeSide_extracted]
@@ -127,8 +131,8 @@ set_option maxHeartbeats 800000 in
 state is bounded by the evaluated consistency defect and the two established
 comparison losses. This instantiates `eq:qld-unitary-7`--`eq:qld-unitary-9`
 with all six-register placements and both player orientations. -/
-theorem extraction_pauli_dist_le (w : GlobalPairWitness S deltaG)
-    (aux : EuclideanSpace ℂ (ExtractionAuxRegisters P S.toStrategy.ιA S.toStrategy.ιB))
+theorem extraction_pauli_dist_le
+
     (haux : ‖aux‖ = 1) (side : PlayerSide) (W : PauliKind) :
     opFamilyDistSq (uniformDistribution Unit)
       (fun (_ : Unit) (h : PauliRegister P) =>

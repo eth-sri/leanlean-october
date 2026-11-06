@@ -33,7 +33,7 @@ variable {K I R : Type} [Field K] [Fintype K] [DecidableEq K]
 mean squared disagreement between the two players. This is Jensen's inequality
 in the projection argument at paper lines 1715-1750. -/
 theorem norm_sub_pauliCorrelation_sq_le
-    (W : PauliKind) (psi : EuclideanSpace ℂ (R × ((I → K) × (I → K)))) :
+    (W : PauliKind) (psi : MIPStarRE.QPBT.StateVector (R ×  (I → K) × (I → K) )) :
     ‖psi - applyOperatorToState (heteroKron (1 : Op R) (pauliCorrelation W)) psi‖ ^ 2 ≤
       opDistSq (uniformDistribution (I → K))
         (fun u => heteroKron (1 : Op R) (heteroKron (tauObservable W u) 1))
@@ -60,11 +60,11 @@ theorem norm_sub_pauliCorrelation_sq_le
     intro u
     rw [← halg, MagicSquareRigidity.norm_applyOperatorToState_isometry_mul (hL u)]
   have havg : averageOperatorOverDistribution (uniformDistribution (I → K))
-      (fun u => (1 : ℂ) • ((1 : Op (R × ((I → K) × (I → K)))) - C u)) =
+      (fun u => (1 : ℂ) • ((1 : Op (R ×  (I → K) × (I → K) )) - C u)) =
       1 - heteroKron (1 : Op R) (pauliCorrelation W) := by
     simp only [one_smul]
     have hsub : averageOperatorOverDistribution (uniformDistribution (I → K))
-        (fun u => (1 : Op (R × ((I → K) × (I → K)))) - C u) =
+        (fun u => (1 : Op (R ×  (I → K) × (I → K) )) - C u) =
         averageOperatorOverDistribution (uniformDistribution (I → K)) (fun _ => 1) -
           averageOperatorOverDistribution (uniformDistribution (I → K)) C := by
       simp [averageOperatorOverDistribution, smul_sub, Finset.sum_sub_distrib]
@@ -77,7 +77,7 @@ theorem norm_sub_pauliCorrelation_sq_le
     rfl
   have h := avg_closeness (uniformDistribution (I → K))
     (uniformDistribution_isProbability _) (fun _ => 1) C (fun _ => 1)
-    (fun _ => by simp) psi
+     fun _ => by simp  psi
   rw [havg, hdist] at h
   simpa only [MagicSquareRigidity.applyOperatorToState_sub_op,
     MagicSquareRigidity.applyOperatorToState_one] using h
@@ -86,22 +86,22 @@ theorem norm_sub_pauliCorrelation_sq_le
 The auxiliary register is arbitrary, and the estimate requires no division
 by a projection norm or restriction to nonzero projection. -/
 theorem norm_sub_eprProjection_le_of_pauli_dist
-    (psi : EuclideanSpace ℂ (R × ((I → K) × (I → K))))
+    (psi : MIPStarRE.QPBT.StateVector (R ×  (I → K) × (I → K) ))
     (delta : ℝ) (hdelta : 0 ≤ delta)
     (hdist : ∀ W : PauliKind,
       opDistSq (uniformDistribution (I → K))
         (fun u => heteroKron (1 : Op R) (heteroKron (tauObservable W u) 1))
         (fun u => heteroKron (1 : Op R) (heteroKron 1 (tauObservable W u))) psi ≤ delta) :
     ‖psi - applyOperatorToState (heteroKron (1 : Op R)
-      (Matrix.vecMulVec (fun x => eprState (I → K) x)
-        (fun y => star (eprState (I → K) y)))) psi‖ ≤ 2 * Real.sqrt delta := by
+      (Matrix.vecMulVec ( eprState (I → K) )
+         fun y => star (eprState (I → K) y) )) psi‖ ≤ 2 * Real.sqrt delta := by
   let H (W : PauliKind) := heteroKron (1 : Op R) (pauliCorrelation (K := K) (ι := I) W)
-  have hstep (W : PauliKind) : ‖psi - applyOperatorToState (H W) psi‖ ≤ Real.sqrt delta := by
+  have hstep (W : PauliKind)  := by
     have h := (norm_sub_pauliCorrelation_sq_le W psi).trans (hdist W)
     exact (Real.le_sqrt (norm_nonneg _) hdelta).mpr h
   have hprod : H .X * H .Z = heteroKron (1 : Op R)
-      (Matrix.vecMulVec (fun x => eprState (I → K) x)
-        (fun y => star (eprState (I → K) y))) := by
+      (Matrix.vecMulVec ( eprState (I → K) )
+         fun y => star (eprState (I → K) y) ) := by
     dsimp only [H]
     rw [heteroKron_mul, Matrix.one_mul, pauliCorrelation_mul_eq_epr]
   rw [← hprod, applyOperatorToState_mul]

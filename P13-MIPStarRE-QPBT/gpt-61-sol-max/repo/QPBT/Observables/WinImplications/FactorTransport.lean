@@ -1,5 +1,7 @@
 module
 
+public meta import Batteries.Tactic.Alias
+
 public import QPBT.Observables.WinImplications.Interchange
 
 /-!
@@ -25,7 +27,9 @@ is `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:227,309-362`.
 
 @[expose] public section
 
-open scoped BigOperators Matrix ComplexOrder
+variable {ι κ : Type*}
+
+open scoped BigOperators Matrix ComplexOrder Classical
 
 namespace MIPStarRE.QPBT
 
@@ -41,10 +45,8 @@ namespace WinImplications
 /-- Reindexing the identity operator gives the identity operator.
 Formalization-only support for the interchanged conclusions of
 `lem:qld-win-implications`, blueprint `ch14_qpbt_observables.tex:701-703`. -/
-theorem reindexOp_one {ι κ : Type*} [DecidableEq ι] [DecidableEq κ]
-    (e : ι ≃ κ) : reindexOp e (1 : Op κ) = (1 : Op ι) := by
-  ext i j
-  simp [reindexOp, Matrix.one_apply, e.injective.eq_iff]
+theorem reindexOp_one  [DecidableEq ι] [DecidableEq κ]
+    (e : ι ≃ κ) : reindexOp e (1 : Op κ) = (1 : Op ι) := by simp_all [reindexOp]
 
 /-- The interchanged strategy state is again a unit vector.  This is needed to
 chain consistency relations on the interchanged side of
@@ -72,20 +74,17 @@ theorem heteroKron_left_right_comm {ιA ιB : Type*} [Fintype ιA]
 /-- Reindexing an operator along an equivalence is multiplicative.
 Formalization-only support for the interchanged conclusions of
 `lem:qld-win-implications`, blueprint `ch14_qpbt_observables.tex:701-703`. -/
-theorem reindexOp_mul {ι κ : Type*} [Fintype ι] [Fintype κ]
+theorem reindexOp_mul  [Fintype ι] [Fintype κ]
     (e : ι ≃ κ) (M N : Op κ) :
-    reindexOp e (M * N) = reindexOp e M * reindexOp e N := by
-  ext i j
-  change (M * N) (e i) (e j) = ∑ k : ι, M (e i) (e k) * N (e k) (e j)
-  rw [Matrix.mul_apply, ← e.sum_comp (fun l : κ => M (e i) l * N l (e j))]
+    reindexOp e (M * N) = reindexOp e M * reindexOp e N := by simp_all [reindexOp]
 
 /-- The real quadratic form is invariant under simultaneous reindexing of the
 state and operator. Formalization-only support for the interchanged conclusions
 of blueprint `lem:qld-win-implications`; see
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:227`. -/
-theorem stateQForm_reindexState {ι κ : Type*} [Fintype ι] [DecidableEq ι]
+theorem stateQForm_reindexState  [Fintype ι] [DecidableEq ι]
     [Fintype κ] [DecidableEq κ] (e : ι ≃ κ) (T : Op κ)
-    (ψ : EuclideanSpace ℂ ι) :
+    (ψ : MIPStarRE.QPBT.StateVector ι) :
     DistanceCalculus.stateQForm (reindexState e ψ) T =
       DistanceCalculus.stateQForm ψ (reindexOp e T) := by
   have hstate (k : κ) : (reindexState e ψ).ofLp k = ψ.ofLp (e.symm k) := rfl
@@ -95,62 +94,32 @@ theorem stateQForm_reindexState {ι κ : Type*} [Fintype ι] [DecidableEq ι]
   unfold DistanceCalculus.stateQForm applyOperatorToState
   rw [EuclideanSpace.inner_eq_star_dotProduct,
     EuclideanSpace.inner_eq_star_dotProduct]
-  change (Complex.re (∑ k : κ,
+  change  Complex.re (∑ k : κ,
       (∑ l : κ, T k l * (reindexState e ψ).ofLp l) *
-        star (reindexState e ψ).ofLp k)) =
+        star (reindexState e ψ).ofLp k)  =
     Complex.re (∑ i : ι, (∑ l : ι, reindexOp e T i l * ψ.ofLp l) *
       star (ψ.ofLp i))
   simp_rw [hop, hstate, hstate_star]
   apply congrArg Complex.re
-  have hinner (i : ι) : (∑ l : ι, T (e i) (e l) * ψ.ofLp l) =
+  have hinner (i : ι) :  ∑ l : ι, T (e i) (e l) * ψ.ofLp l  =
       ∑ l : κ, T (e i) l * ψ.ofLp (e.symm l) := by
-    rw [← e.sum_comp (fun l : κ => T (e i) l * ψ.ofLp (e.symm l))]
-    exact Finset.sum_congr rfl (fun l _ => by rw [e.symm_apply_apply])
+    rw [← e.sum_comp  fun l : κ => T (e i) l * ψ.ofLp (e.symm l) ]
+    exact Finset.sum_congr rfl  fun l _ => by rw [e.symm_apply_apply] 
   calc
-    (∑ k : κ, (∑ l : κ, T k l * ψ.ofLp (e.symm l)) *
-        star (ψ.ofLp (e.symm k))) =
+     ∑ k : κ, (∑ l : κ, T k l * ψ.ofLp (e.symm l)) *
+        star (ψ.ofLp (e.symm k))  =
         ∑ i : ι, (∑ l : κ, T (e i) l * ψ.ofLp (e.symm l)) *
           star (ψ.ofLp (e.symm (e i))) :=
-      (e.sum_comp (fun k : κ => (∑ l : κ, T k l * ψ.ofLp (e.symm l)) *
-        star (ψ.ofLp (e.symm k)))).symm
-    _ = ∑ i : ι, (∑ l : ι, T (e i) (e l) * ψ.ofLp l) * star (ψ.ofLp i) := by
-      refine Finset.sum_congr rfl ?_
-      intro i _
-      rw [hinner i, e.symm_apply_apply]
+      (e.sum_comp  fun k : κ => (∑ l : κ, T k l * ψ.ofLp (e.symm l)) *
+        star (ψ.ofLp (e.symm k)) ).symm
+    _ = ∑ i : ι, (∑ l : ι, T (e i) (e l) * ψ.ofLp l) * star (ψ.ofLp i) := by simp_all
 
 /-- The consistency defect of two oppositely placed families is unchanged by
 interchanging the tensor factors of both the families and the state.  This is
 the transport carrying the interchanged clause of `lem:qld-win-implications`
 to the interchanged state, blueprint `ch14_qpbt_observables.tex:701-703`,
 paper `14_analysis_of_the_pauli_basis_test.tex:227`. -/
-theorem consistencyDefect_swappedState {X α ιA ιB : Type*}
-    [Fintype X] [DecidableEq X] [Fintype α] [DecidableEq α]
-    [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
-    (μ : Distribution X) (M : X → α → Op ιA) (N : X → α → Op ιB)
-    (ψ : EuclideanSpace ℂ (ιA × ιB)) :
-    consistencyDefect μ (fun x a => heteroKron (N x a) 1)
-        (fun x a => heteroKron 1 (M x a))
-        (reindexState (Equiv.prodComm ιA ιB) ψ) =
-      consistencyDefect μ (fun x a => heteroKron (M x a) 1)
-        (fun x a => heteroKron 1 (N x a)) ψ := by
-  classical
-  unfold consistencyDefect
-  refine avgOver_congr _ _ _ ?_
-  intro x
-  rw [Finset.sum_comm]
-  refine Finset.sum_congr rfl ?_
-  intro a _
-  refine Finset.sum_congr rfl ?_
-  intro b _
-  by_cases hab : b = a
-  · simp [hab]
-  · have hba : a ≠ b := fun h => hab h.symm
-    simp only [if_neg hab, if_neg hba]
-    rw [DistanceCalculus.consistency_term_eq_stateQForm,
-      DistanceCalculus.consistency_term_eq_stateQForm,
-      stateQForm_reindexState, reindexOp_mul,
-      reindexOp_prodComm_heteroKron, reindexOp_prodComm_heteroKron,
-      heteroKron_left_right_comm]
+alias consistencyDefect_swappedState := MIPStarRE.QPBT.consistencyDefect_prodComm
 
 /-! ## Transport of the phase-signed operator distance -/
 
@@ -158,7 +127,7 @@ theorem consistencyDefect_swappedState {X α ιA ιB : Type*}
 Formalization-only support for the second assertion of
 `lem:qld-win-implications-obs`, blueprint
 `ch14_qpbt_observables.tex:761-794`. -/
-theorem reindexOp_smul {ι κ : Type*} (e : ι ≃ κ) (c : ℂ) (M : Op κ) :
+theorem reindexOp_smul  (e : ι ≃ κ) (c : ℂ) (M : Op κ) :
     reindexOp e (c • M) = c • reindexOp e M := rfl
 
 /-- The phase-signed operator distance of two left-placed families is
@@ -171,21 +140,14 @@ theorem opDistSq_smul_swappedState {X ιA ιB : Type*}
     [Fintype X] [DecidableEq X] [Fintype ιA] [DecidableEq ιA]
     [Fintype ιB] [DecidableEq ιB]
     (μ : Distribution X) (c : X → ℂ) (M N : X → Op ιB)
-    (ψ : EuclideanSpace ℂ (ιA × ιB)) :
+    (ψ : MIPStarRE.QPBT.StateVector (ιA × ιB)) :
     opDistSq μ (fun x => heteroKron (M x) (1 : Op ιA))
         (fun x => c x • heteroKron (N x) (1 : Op ιA))
         (reindexState (Equiv.prodComm ιA ιB) ψ) =
       opDistSq μ (fun x => heteroKron (1 : Op ιA) (M x))
         (fun x => c x • heteroKron (1 : Op ιA) (N x)) ψ := by
   unfold opDistSq opFamilyDistSq
-  refine avgOver_congr _ _ _ ?_
-  intro x
-  refine Finset.sum_congr rfl ?_
-  intro _ _
-  rw [norm_applyOperatorToState_reindexState]
-  congr 2
-  rw [reindexOp_sub, reindexOp_smul, reindexOp_prodComm_heteroKron,
-    reindexOp_prodComm_heteroKron]
+  simp_all only [ Finset.sum_congr, reindexOp_smul, norm_applyOperatorToState_reindexState, reindexOp_prodComm_heteroKron, reindexOp_sub]
 
 end WinImplications
 

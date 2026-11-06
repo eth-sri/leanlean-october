@@ -22,7 +22,7 @@ conditioning on an event of one factor preserves the independence of the other.
 
 @[expose] public section
 
-open scoped BigOperators
+open scoped BigOperators Classical
 
 namespace MIPStarRE.QPBT
 
@@ -41,11 +41,10 @@ theorem uniformDistribution_map_fst_of_equiv
     (e : alpha ≃ beta × gamma) (f : alpha → beta)
     (hf : ∀ a, f a = (e a).1) :
     (uniformDistribution alpha).map f = uniformDistribution beta := by
-  classical
-  letI : Fintype gamma := Fintype.ofFinite gamma
+  letI  := Fintype.ofFinite gamma
   calc
     (uniformDistribution alpha).map f =
-        (uniformDistribution alpha).map (fun a => (e a).1) := by
+        (uniformDistribution alpha).map  fun a => (e a).1  := by
       congr 1
       funext a
       exact hf a
@@ -81,53 +80,47 @@ theorem Distribution.prod_map_left {α β γ : Type*} [DecidableEq α]
     [DecidableEq β] [DecidableEq γ] (μ : Distribution α) (ν : Distribution β)
     (f : α → γ) :
     Distribution.prod (μ.map f) ν =
-      (Distribution.prod μ ν).map (fun w => (f w.1, w.2)) := by
-  classical
+      (Distribution.prod μ ν).map  fun w => (f w.1, w.2)  := by
   refine Distribution.ext_of_support_of_weight ?_ ?_
-  · change (μ.support.image f) ×ˢ ν.support =
-      (μ.support ×ˢ ν.support).image (fun w => (f w.1, w.2))
+  · change  μ.support.image f  ×ˢ ν.support =
+      (μ.support ×ˢ ν.support).image  fun w => (f w.1, w.2) 
     ext w
-    obtain ⟨c, y⟩ := w
-    simp only [Finset.mem_product, Finset.mem_image, Prod.mk.injEq, Prod.exists]
-    constructor
-    · rintro ⟨⟨a, ha, rfl⟩, hy⟩
-      exact ⟨a, y, ⟨ha, hy⟩, rfl, rfl⟩
-    · rintro ⟨a, b, ⟨ha, hb⟩, rfl, rfl⟩
-      exact ⟨⟨a, ha, rfl⟩, hb⟩
+    grind [Prod.mk.injEq, Prod.exists, Finset.mem_image, Finset.mem_product]
   · funext w
     obtain ⟨c, y⟩ := w
     have hfilter :
-        (μ.support ×ˢ ν.support).filter (fun p => (f p.1, p.2) = (c, y)) =
-          (μ.support.filter (fun a => f a = c)) ×ˢ
-            (ν.support.filter (fun b => b = y)) := by
+        (μ.support ×ˢ ν.support).filter  fun p => (f p.1, p.2) = (c, y)  =
+          (μ.support.filter  fun a => f a = c ) ×ˢ
+             ν.support.filter  fun b => b = y   := by
       ext p
       simp only [Finset.mem_filter, Finset.mem_product, Prod.mk.injEq]
       tauto
-    have hy : ∑ b ∈ ν.support.filter (fun b => b = y), ν.weight b =
+    have hy : ∑ b ∈ ν.support.filter  fun b => b = y , ν.weight b =
         ν.weight y := by
       rw [Finset.filter_eq' ν.support y]
       by_cases hmem : y ∈ ν.support
       · rw [if_pos hmem, Finset.sum_singleton]
       · rw [if_neg hmem, Finset.sum_empty, ν.outsideSupport y hmem]
     change (μ.map f).weight c * ν.weight y =
-      ∑ p ∈ (μ.support ×ˢ ν.support).filter (fun p => (f p.1, p.2) = (c, y)),
+      ∑ p ∈ (μ.support ×ˢ ν.support).filter  fun p => (f p.1, p.2) = (c, y) ,
         μ.weight p.1 * ν.weight p.2
     rw [hfilter, Finset.sum_product,
       Finset.sum_congr rfl
-        (fun a _ => (Finset.mul_sum (ν.support.filter (fun b => b = y))
-          (fun b => ν.weight b) (μ.weight a)).symm),
+         fun a _ => (Finset.mul_sum (ν.support.filter  fun b => b = y )
+          ν.weight (μ.weight a)).symm ,
       hy, ← Finset.sum_mul]
     rfl
 
 /-! ## The first marginal of a product -/
 
+variable {α β : Type*} [DecidableEq α] [DecidableEq β] (μ : Distribution α) (ν : Distribution β)
+
 /-- The first marginal of a product whose second factor is a probability law
 is the first factor.  Blueprint `lem:qld-sublines`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1063-1116`. -/
-theorem Distribution.prod_map_fst {α β : Type*} [DecidableEq α] [DecidableEq β]
-    (μ : Distribution α) (ν : Distribution β) (hν : ν.IsProbability) :
+theorem Distribution.prod_map_fst
+      (hν : ν.IsProbability) :
     (Distribution.prod μ ν).map Prod.fst = μ := by
-  classical
   obtain ⟨b₀, hb₀⟩ := Distribution.support_nonempty_of_isProbability hν
   refine Distribution.ext_of_support_of_weight ?_ ?_
   · change (μ.support ×ˢ ν.support).image Prod.fst = μ.support
@@ -139,23 +132,23 @@ theorem Distribution.prod_map_fst {α β : Type*} [DecidableEq α] [DecidableEq 
     · intro ha
       exact ⟨a, b₀, ⟨ha, hb₀⟩, rfl⟩
   · funext a
-    have hfilter : (μ.support ×ˢ ν.support).filter (fun p => p.1 = a) =
-        (μ.support.filter (fun x => x = a)) ×ˢ ν.support := by
+    have hfilter : (μ.support ×ˢ ν.support).filter  fun p => p.1 = a  =
+        (μ.support.filter  fun x => x = a ) ×ˢ ν.support := by
       ext p
       simp only [Finset.mem_filter, Finset.mem_product]
       tauto
-    have ha : ∑ x ∈ μ.support.filter (fun x => x = a), μ.weight x =
+    have ha : ∑ x ∈ μ.support.filter  fun x => x = a , μ.weight x =
         μ.weight a := by
       rw [Finset.filter_eq' μ.support a]
       by_cases hmem : a ∈ μ.support
       · rw [if_pos hmem, Finset.sum_singleton]
       · rw [if_neg hmem, Finset.sum_empty, μ.outsideSupport a hmem]
-    change (∑ p ∈ (μ.support ×ˢ ν.support).filter (fun p => p.1 = a),
-      μ.weight p.1 * ν.weight p.2) = μ.weight a
+    change  ∑ p ∈ (μ.support ×ˢ ν.support).filter  fun p => p.1 = a ,
+      μ.weight p.1 * ν.weight p.2  = μ.weight a
     rw [hfilter, Finset.sum_product,
       Finset.sum_congr rfl
-        (fun x _ => (Finset.mul_sum ν.support (fun b => ν.weight b)
-          (μ.weight x)).symm),
+         fun x _ => (Finset.mul_sum ν.support ν.weight
+          (μ.weight x)).symm ,
       hν.weight_sum_eq_one]
     simpa using ha
 
@@ -180,24 +173,16 @@ theorem Distribution.prod_map_eq_bind {α β γ : Type*} [DecidableEq α]
     [DecidableEq β] [DecidableEq γ] (μ : Distribution α) (ν : Distribution β)
     (g : α × β → γ) :
     (Distribution.prod μ ν).map g =
-      Distribution.bind μ (fun a => ν.map (fun b => g (a, b))) := by
-  classical
+      Distribution.bind μ  fun a => ν.map  fun b => g (a, b)   := by
   refine Distribution.ext_of_support_of_weight ?_ ?_
   · change (μ.support ×ˢ ν.support).image g =
-      μ.support.biUnion (fun a => ν.support.image (fun b => g (a, b)))
-    ext c
-    simp only [Finset.mem_image, Finset.mem_biUnion, Finset.mem_product,
-      Prod.exists]
-    constructor
-    · rintro ⟨a, b, ⟨ha, hb⟩, rfl⟩
-      exact ⟨a, ha, b, hb, rfl⟩
-    · rintro ⟨a, ha, b, hb, rfl⟩
-      exact ⟨a, b, ⟨ha, hb⟩, rfl⟩
+      μ.support.biUnion  fun a => ν.support.image  fun b => g (a, b)  
+    grind
   · funext c
-    change (∑ p ∈ (μ.support ×ˢ ν.support).filter (fun p => g p = c),
-        μ.weight p.1 * ν.weight p.2) =
+    change  ∑ p ∈ (μ.support ×ˢ ν.support).filter  fun p => g p = c ,
+        μ.weight p.1 * ν.weight p.2  =
       ∑ a ∈ μ.support, μ.weight a *
-        ∑ b ∈ ν.support.filter (fun b => g (a, b) = c), ν.weight b
+        ∑ b ∈ ν.support.filter  fun b => g (a, b) = c , ν.weight b
     rw [Finset.sum_filter, Finset.sum_product]
     refine Finset.sum_congr rfl fun a _ => ?_
     rw [Finset.sum_filter, Finset.mul_sum]
@@ -212,16 +197,16 @@ theorem Distribution.prod_map_eq_bind {α β γ : Type*} [DecidableEq α]
 `def:line-point-dist`, paper
 `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:274-287`.
 -/
-theorem Distribution.prod_support {α β : Type*} [DecidableEq α]
-    [DecidableEq β] (μ : Distribution α) (ν : Distribution β) :
+theorem Distribution.prod_support
+       :
     (Distribution.prod μ ν).support = μ.support ×ˢ ν.support := rfl
 
 /-- The weight of a product law is the product of the weights.  Blueprint
 `def:line-point-dist`, paper
 `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:274-287`.
 -/
-theorem Distribution.prod_weight {α β : Type*} [DecidableEq α]
-    [DecidableEq β] (μ : Distribution α) (ν : Distribution β) (w : α × β) :
+theorem Distribution.prod_weight
+       (w : α × β) :
     (Distribution.prod μ ν).weight w = μ.weight w.1 * ν.weight w.2 := rfl
 
 /-! ## Push-forward along a bijection -/
@@ -232,13 +217,12 @@ weight to the corresponding weight, and if it has a two-sided inverse, the
 push-forward is the target law.  Blueprint
 `lem:qld-sublines`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1063-1116`. -/
-theorem Distribution.map_bijective_eq {α β : Type*} [DecidableEq α]
-    [DecidableEq β] (μ : Distribution α) (ν : Distribution β) (f : α → β)
+theorem Distribution.map_bijective_eq
+       (f : α → β)
     (g : β → α) (hgf : ∀ a, g (f a) = a) (hfg : ∀ b, f (g b) = b)
     (hs : ∀ a, a ∈ μ.support ↔ f a ∈ ν.support)
     (hw : ∀ a, μ.weight a = ν.weight (f a)) :
     μ.map f = ν := by
-  classical
   refine Distribution.ext_of_support_of_weight ?_ ?_
   · rw [Distribution.map_support]
     ext b
@@ -252,15 +236,8 @@ theorem Distribution.map_bijective_eq {α β : Type*} [DecidableEq α]
       exact hb
   · funext b
     rw [Distribution.map_weight]
-    have hfilter : μ.support.filter (fun a => f a = b) =
-        μ.support.filter (fun a => a = g b) := by
-      ext a
-      simp only [Finset.mem_filter]
-      constructor
-      · rintro ⟨ha, h⟩
-        exact ⟨ha, by rw [← h, hgf]⟩
-      · rintro ⟨ha, h⟩
-        exact ⟨ha, by rw [h, hfg]⟩
+    have hfilter : μ.support.filter  fun a => f a = b  =
+        μ.support.filter  fun a => a = g b  := by grind
     rw [hfilter, Finset.filter_eq' μ.support (g b)]
     by_cases hmem : g b ∈ μ.support
     · rw [if_pos hmem, Finset.sum_singleton, hw (g b), hfg]
@@ -279,41 +256,34 @@ theorem Distribution.prod_map_right {α β γ : Type*} [DecidableEq α]
     [DecidableEq β] [DecidableEq γ] (μ : Distribution α) (ν : Distribution β)
     (g : β → γ) :
     Distribution.prod μ (ν.map g) =
-      (Distribution.prod μ ν).map (fun w => (w.1, g w.2)) := by
-  classical
+      (Distribution.prod μ ν).map  fun w => (w.1, g w.2)  := by
   refine Distribution.ext_of_support_of_weight ?_ ?_
-  · change μ.support ×ˢ (ν.support.image g) =
-      (μ.support ×ˢ ν.support).image (fun w => (w.1, g w.2))
+  · change μ.support ×ˢ  ν.support.image g  =
+      (μ.support ×ˢ ν.support).image  fun w => (w.1, g w.2) 
     ext w
-    obtain ⟨x, c⟩ := w
-    simp only [Finset.mem_product, Finset.mem_image, Prod.mk.injEq, Prod.exists]
-    constructor
-    · rintro ⟨hx, b, hb, rfl⟩
-      exact ⟨x, b, ⟨hx, hb⟩, rfl, rfl⟩
-    · rintro ⟨a, b, ⟨ha, hb⟩, rfl, rfl⟩
-      exact ⟨ha, b, hb, rfl⟩
+    grind [Prod.mk.injEq, Prod.exists, Finset.mem_image, Finset.mem_product]
   · funext w
     obtain ⟨x, c⟩ := w
     have hfilter :
-        (μ.support ×ˢ ν.support).filter (fun p => (p.1, g p.2) = (x, c)) =
-          (μ.support.filter (fun a => a = x)) ×ˢ
-            (ν.support.filter (fun b => g b = c)) := by
+        (μ.support ×ˢ ν.support).filter  fun p => (p.1, g p.2) = (x, c)  =
+          (μ.support.filter  fun a => a = x ) ×ˢ
+             ν.support.filter  fun b => g b = c   := by
       ext p
       simp only [Finset.mem_filter, Finset.mem_product, Prod.mk.injEq]
       tauto
-    have hx : ∑ a ∈ μ.support.filter (fun a => a = x), μ.weight a =
+    have hx : ∑ a ∈ μ.support.filter  fun a => a = x , μ.weight a =
         μ.weight x := by
       rw [Finset.filter_eq' μ.support x]
       by_cases hmem : x ∈ μ.support
       · rw [if_pos hmem, Finset.sum_singleton]
       · rw [if_neg hmem, Finset.sum_empty, μ.outsideSupport x hmem]
     change μ.weight x * (ν.map g).weight c =
-      ∑ p ∈ (μ.support ×ˢ ν.support).filter (fun p => (p.1, g p.2) = (x, c)),
+      ∑ p ∈ (μ.support ×ˢ ν.support).filter  fun p => (p.1, g p.2) = (x, c) ,
         μ.weight p.1 * ν.weight p.2
     rw [hfilter, Finset.sum_product,
-      Finset.sum_congr rfl (fun a _ =>
-        (Finset.mul_sum (ν.support.filter (fun b => g b = c))
-          (fun b => ν.weight b) (μ.weight a)).symm),
+      Finset.sum_congr rfl  fun a _ =>
+        (Finset.mul_sum (ν.support.filter  fun b => g b = c )
+          ν.weight (μ.weight a)).symm ,
       ← Finset.sum_mul, hx]
     rfl
 
@@ -327,7 +297,6 @@ theorem uniformDistribution_prod (α β : Type*) [Fintype α] [DecidableEq α]
     [Nonempty α] [Fintype β] [DecidableEq β] [Nonempty β] :
     uniformDistribution (α × β) =
       Distribution.prod (uniformDistribution α) (uniformDistribution β) := by
-  classical
   have ha : (Fintype.card α : ℝ) ≠ 0 := by
     exact_mod_cast Fintype.card_ne_zero (α := α)
   have hb : (Fintype.card β : ℝ) ≠ 0 := by
@@ -352,11 +321,10 @@ law of that factor.  Blueprint `lem:qld-sublines`, paper
 theorem uniformDistribution_snd_event_mass {α β : Type*} [Fintype α]
     [DecidableEq α] [Nonempty α] [Fintype β] [DecidableEq β] [Nonempty β]
     (p : β → Prop) [DecidablePred p] :
-    ∑ w ∈ (uniformDistribution (α × β)).support.filter (fun w => p w.2),
+    ∑ w ∈ (uniformDistribution (α × β)).support.filter  fun w => p w.2 ,
         (uniformDistribution (α × β)).weight w =
       ∑ b ∈ (uniformDistribution β).support.filter p,
         (uniformDistribution β).weight b := by
-  classical
   rw [Distribution.sum_filter_weight_eq_avgOver,
     Distribution.sum_filter_weight_eq_avgOver,
     ← uniformDistribution_map_snd (α := α) (β := β), Distribution.avgOver_map]
@@ -379,47 +347,46 @@ theorem Distribution.restrict_congr {α : Type*} [DecidableEq α]
 leaves the first factor unchanged and independent of the conditioned second
 factor.  Blueprint `lem:qld-sublines`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1063-1116`. -/
-theorem Distribution.restrict_prod_snd {α β : Type*} [DecidableEq α]
-    [DecidableEq β] (μ : Distribution α) (ν : Distribution β)
+theorem Distribution.restrict_prod_snd
+
     (hμ : μ.IsProbability) (p : β → Prop) [DecidablePred p]
     (hpos : 0 < ∑ b ∈ ν.support.filter p, ν.weight b)
     (hpos' : 0 < ∑ w ∈ (Distribution.prod μ ν).support.filter
-        (fun w => p w.2), (Distribution.prod μ ν).weight w) :
+         fun w => p w.2 , (Distribution.prod μ ν).weight w) :
     Distribution.restrict (Distribution.prod μ ν) (fun w => p w.2) hpos' =
       Distribution.prod μ (Distribution.restrict ν p hpos) := by
-  classical
   have hprodsupp : (Distribution.prod μ ν).support =
       μ.support ×ˢ ν.support := rfl
   have hsupp : (Distribution.prod μ ν).support.filter (fun w => p w.2) =
-      μ.support ×ˢ (ν.support.filter p) := by
+      μ.support ×ˢ  ν.support.filter p  := by
     rw [hprodsupp]
     ext w
     simp only [Finset.mem_filter, Finset.mem_product]
     tauto
-  have hmass : (∑ w ∈ (Distribution.prod μ ν).support.filter
-        (fun w => p w.2), (Distribution.prod μ ν).weight w) =
+  have hmass :  ∑ w ∈ (Distribution.prod μ ν).support.filter
+         fun w => p w.2 , (Distribution.prod μ ν).weight w  =
       ∑ b ∈ ν.support.filter p, ν.weight b := by
     rw [hsupp]
-    have h1 : (∑ w ∈ μ.support ×ˢ (ν.support.filter p),
-        (Distribution.prod μ ν).weight w) =
+    have h1 :  ∑ w ∈ μ.support ×ˢ  ν.support.filter p ,
+        (Distribution.prod μ ν).weight w  =
         ∑ a ∈ μ.support, ∑ b ∈ ν.support.filter p,
           μ.weight a * ν.weight b := by
       rw [Finset.sum_product]
       rfl
     rw [h1, Finset.sum_congr rfl fun a _ =>
-        (Finset.mul_sum (ν.support.filter p) (fun b => ν.weight b)
+        (Finset.mul_sum (ν.support.filter p) ν.weight
           (μ.weight a)).symm,
       ← Finset.sum_mul, hμ.weight_sum_eq_one, one_mul]
   refine Distribution.ext_of_support_of_weight ?_ ?_
   · show (Distribution.prod μ ν).support.filter (fun w => p w.2) =
-      μ.support ×ˢ (ν.support.filter p)
+      μ.support ×ˢ  ν.support.filter p 
     exact hsupp
   · funext w
     show (if p w.2 then (Distribution.prod μ ν).weight w /
-        ∑ c ∈ (Distribution.prod μ ν).support.filter (fun w => p w.2),
+        ∑ c ∈ (Distribution.prod μ ν).support.filter  fun w => p w.2 ,
           (Distribution.prod μ ν).weight c else 0) =
-      μ.weight w.1 * (if p w.2 then ν.weight w.2 /
-        ∑ c ∈ ν.support.filter p, ν.weight c else 0)
+      μ.weight w.1 *  if p w.2 then ν.weight w.2 /
+        ∑ c ∈ ν.support.filter p, ν.weight c else 0 
     rw [hmass]
     by_cases h : p w.2
     · rw [if_pos h, if_pos h]
@@ -437,22 +404,11 @@ theorem restrict_uniform_prod_snd {α β : Type*} [Fintype α] [DecidableEq α]
     (hpos : 0 < ∑ b ∈ (uniformDistribution β).support.filter p,
       (uniformDistribution β).weight b)
     (hpos' : 0 < ∑ w ∈ (uniformDistribution (α × β)).support.filter
-        (fun w => p w.2), (uniformDistribution (α × β)).weight w) :
+         fun w => p w.2 , (uniformDistribution (α × β)).weight w) :
     Distribution.restrict (uniformDistribution (α × β)) (fun w => p w.2)
         hpos' =
       Distribution.prod (uniformDistribution α)
-        (Distribution.restrict (uniformDistribution β) p hpos) := by
-  classical
-  have hpos'' : 0 < ∑ w ∈ (Distribution.prod (uniformDistribution α)
-        (uniformDistribution β)).support.filter (fun w => p w.2),
-      (Distribution.prod (uniformDistribution α)
-        (uniformDistribution β)).weight w := by
-    rw [← uniformDistribution_prod]
-    exact hpos'
-  rw [Distribution.restrict_congr (uniformDistribution_prod α β)
-    (fun w => p w.2) hpos' hpos'']
-  exact Distribution.restrict_prod_snd _ _
-    (uniformDistribution_isProbability α) p hpos hpos''
+        (Distribution.restrict (uniformDistribution β) p hpos) := by simp_all only [uniformDistribution_isProbability, Distribution.restrict_prod_snd, uniformDistribution_prod]
 
 /-! ## Conditioning the first factor of a product -/
 
@@ -460,43 +416,42 @@ theorem restrict_uniform_prod_snd {α β : Type*} [Fintype α] [DecidableEq α]
 leaves the second factor unchanged and independent of the conditioned first
 factor.  Blueprint `lem:qld-sublines`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1063-1116`. -/
-theorem Distribution.restrict_prod_fst {α β : Type*} [DecidableEq α]
-    [DecidableEq β] (μ : Distribution α) (ν : Distribution β)
+theorem Distribution.restrict_prod_fst
+
     (hν : ν.IsProbability) (p : α → Prop) [DecidablePred p]
     (hpos : 0 < ∑ a ∈ μ.support.filter p, μ.weight a)
     (hpos' : 0 < ∑ w ∈ (Distribution.prod μ ν).support.filter
-        (fun w => p w.1), (Distribution.prod μ ν).weight w) :
+         fun w => p w.1 , (Distribution.prod μ ν).weight w) :
     Distribution.restrict (Distribution.prod μ ν) (fun w => p w.1) hpos' =
       Distribution.prod (Distribution.restrict μ p hpos) ν := by
-  classical
   have hsupp : (Distribution.prod μ ν).support.filter (fun w => p w.1) =
-      (μ.support.filter p) ×ˢ ν.support := by
+       μ.support.filter p  ×ˢ ν.support := by
     change (μ.support ×ˢ ν.support).filter (fun w => p w.1) =
-      (μ.support.filter p) ×ˢ ν.support
+       μ.support.filter p  ×ˢ ν.support
     ext w
     simp only [Finset.mem_filter, Finset.mem_product]
     tauto
-  have hmass : (∑ w ∈ (Distribution.prod μ ν).support.filter
-        (fun w => p w.1), (Distribution.prod μ ν).weight w) =
+  have hmass :  ∑ w ∈ (Distribution.prod μ ν).support.filter
+         fun w => p w.1 , (Distribution.prod μ ν).weight w  =
       ∑ a ∈ μ.support.filter p, μ.weight a := by
     rw [hsupp]
-    have h1 : (∑ w ∈ (μ.support.filter p) ×ˢ ν.support,
-        (Distribution.prod μ ν).weight w) =
+    have h1 :  ∑ w ∈  μ.support.filter p  ×ˢ ν.support,
+        (Distribution.prod μ ν).weight w  =
         ∑ a ∈ μ.support.filter p, ∑ b ∈ ν.support,
           μ.weight a * ν.weight b := by
       rw [Finset.sum_product]
       rfl
     rw [h1, Finset.sum_congr rfl fun a _ =>
-        (Finset.mul_sum ν.support (fun b => ν.weight b) (μ.weight a)).symm,
+        (Finset.mul_sum ν.support ν.weight (μ.weight a)).symm,
       hν.weight_sum_eq_one]
     simp
   refine Distribution.ext_of_support_of_weight ?_ ?_
   · change (Distribution.prod μ ν).support.filter (fun w => p w.1) =
-      (μ.support.filter p) ×ˢ ν.support
+       μ.support.filter p  ×ˢ ν.support
     exact hsupp
   · funext w
     change (if p w.1 then (Distribution.prod μ ν).weight w /
-        ∑ c ∈ (Distribution.prod μ ν).support.filter (fun w => p w.1),
+        ∑ c ∈ (Distribution.prod μ ν).support.filter  fun w => p w.1 ,
           (Distribution.prod μ ν).weight c else 0) =
       (if p w.1 then μ.weight w.1 /
         ∑ c ∈ μ.support.filter p, μ.weight c else 0) * ν.weight w.2
@@ -516,23 +471,12 @@ theorem restrict_uniform_prod_fst {α β : Type*} [Fintype α] [DecidableEq α]
     (hpos : 0 < ∑ a ∈ (uniformDistribution α).support.filter p,
       (uniformDistribution α).weight a)
     (hpos' : 0 < ∑ w ∈ (uniformDistribution (α × β)).support.filter
-        (fun w => p w.1), (uniformDistribution (α × β)).weight w) :
+         fun w => p w.1 , (uniformDistribution (α × β)).weight w) :
     Distribution.restrict (uniformDistribution (α × β)) (fun w => p w.1)
         hpos' =
       Distribution.prod
         (Distribution.restrict (uniformDistribution α) p hpos)
-        (uniformDistribution β) := by
-  classical
-  have hpos'' : 0 < ∑ w ∈ (Distribution.prod (uniformDistribution α)
-        (uniformDistribution β)).support.filter (fun w => p w.1),
-      (Distribution.prod (uniformDistribution α)
-        (uniformDistribution β)).weight w := by
-    rw [← uniformDistribution_prod]
-    exact hpos'
-  rw [Distribution.restrict_congr (uniformDistribution_prod α β)
-    (fun w => p w.1) hpos' hpos'']
-  exact Distribution.restrict_prod_fst _ _
-    (uniformDistribution_isProbability β) p hpos hpos''
+        (uniformDistribution β) := by simp_all only [uniformDistribution_isProbability, Distribution.restrict_prod_fst, uniformDistribution_prod]
 
 /-! ## Restriction of a push-forward -/
 
@@ -547,18 +491,9 @@ theorem Distribution.restrict_map {α β : Type*} [DecidableEq α] [DecidableEq 
     (hpos' : 0 < ∑ a ∈ μ.support.filter q, μ.weight a) :
     Distribution.restrict (μ.map f) p hpos =
       (Distribution.restrict μ q hpos').map f := by
-  classical
   have hfiber : ∀ b : β, p b →
-      μ.support.filter (fun a => f a = b) =
-        (μ.support.filter q).filter (fun a => f a = b) := by
-    intro b hb
-    ext a
-    simp only [Finset.mem_filter]
-    constructor
-    · rintro ⟨ha, hab⟩
-      exact ⟨⟨ha, (hq a).mpr (hab ▸ hb)⟩, hab⟩
-    · rintro ⟨⟨ha, -⟩, hab⟩
-      exact ⟨ha, hab⟩
+      μ.support.filter  fun a => f a = b  =
+        (μ.support.filter q).filter  fun a => f a = b  := by grind
   have himg : (μ.map f).support.filter p = (μ.support.filter q).image f := by
     ext b
     simp only [Distribution.map_support, Finset.mem_filter, Finset.mem_image]
@@ -567,7 +502,7 @@ theorem Distribution.restrict_map {α β : Type*} [DecidableEq α] [DecidableEq 
       exact ⟨a, ⟨ha, (hq a).mpr hpb⟩, rfl⟩
     · rintro ⟨a, ⟨ha1, ha2⟩, rfl⟩
       exact ⟨⟨a, ha1, rfl⟩, (hq a).mp ha2⟩
-  have hmass : (∑ b ∈ (μ.map f).support.filter p, (μ.map f).weight b) =
+  have hmass :  ∑ b ∈ (μ.map f).support.filter p, (μ.map f).weight b  =
       ∑ a ∈ μ.support.filter q, μ.weight a := by
     rw [himg]
     rw [← Finset.sum_fiberwise_of_maps_to
@@ -582,8 +517,8 @@ theorem Distribution.restrict_map {α β : Type*} [DecidableEq α] [DecidableEq 
   · funext b
     show (if p b then (μ.map f).weight b /
         ∑ c ∈ (μ.map f).support.filter p, (μ.map f).weight c else 0) =
-      ∑ a ∈ (μ.support.filter q).filter (fun a => f a = b),
-        (if q a then μ.weight a / ∑ c ∈ μ.support.filter q, μ.weight c else 0)
+      ∑ a ∈ (μ.support.filter q).filter  fun a => f a = b ,
+         if q a then μ.weight a / ∑ c ∈ μ.support.filter q, μ.weight c else 0 
     by_cases hb : p b
     · rw [if_pos hb, hmass, Distribution.map_weight, hfiber b hb,
         Finset.sum_div]

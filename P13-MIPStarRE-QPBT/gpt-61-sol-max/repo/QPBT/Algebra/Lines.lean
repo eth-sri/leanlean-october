@@ -1,8 +1,12 @@
 module
 
+public import QPBT.Types
+
 public import Mathlib
 public import QPBT.Algebra.RowEchelon
 public import QPBT.Algebra.Subspaces
+
+open scoped Classical
 
 /-!
 # Lines and canonical representatives
@@ -32,21 +36,23 @@ open scoped BigOperators
 
 variable {K : Type*} [Field K]
 
+variable {m : ℕ}
+
 /--
 The affine line through `u` in direction `v`, including the singleton case
 `v = 0`.  Blueprint `def:line`; paper origin
 `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:106-124`.
 -/
-def linePoints {m : ℕ}
-    (u v : Fin m → K) : Set (Fin m → K) :=
+def linePoints
+    (u v : MIPStarRE.QPBT.Coordinates m K) : Set (MIPStarRE.QPBT.Coordinates m K) :=
   {x | ∃ t : K, x = u + t • v}
 
 /-- The elementary coordinate direction used in the axis-parallel predicate of
 blueprint `def:line`; paper origin
 `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:106-124`.
 -/
-def coordinateDirection {m : ℕ}
-    (i : Fin m) : Fin m → K :=
+def coordinateDirection
+    (i : Fin m) : MIPStarRE.QPBT.Coordinates m K :=
   Pi.single i 1
 
 /--
@@ -54,8 +60,8 @@ Changing the base point to another point on a line leaves the line unchanged.
 This is blueprint `prop:line-equiv`,
 with paper origin `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:128-132`.
 -/
-theorem linePoints_eq_of_mem {m : ℕ}
-    (u v u' : Fin m → K) (h : u' ∈ linePoints u v) :
+theorem linePoints_eq_of_mem
+    (u v u' : MIPStarRE.QPBT.Coordinates m K) (h : u' ∈ linePoints u v) :
     linePoints u v = linePoints u' v := by
   obtain ⟨t, rfl⟩ := h
   ext x
@@ -72,15 +78,14 @@ so the resulting map is the identity.  Blueprint `def:line-representative`;
 paper origin
 `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:143-174`.
 -/
-noncomputable def lineRepMap {m : ℕ}
-    (v : Fin m → K) : (Fin m → K) →ₗ[K] (Fin m → K) :=
-  canonicalProjOfKernel (Submodule.span K ({v} : Set (Fin m → K)))
+noncomputable def lineRepMap
+    (v : MIPStarRE.QPBT.Coordinates m K) :  MIPStarRE.QPBT.Coordinates m K  →ₗ[K]  MIPStarRE.QPBT.Coordinates m K  :=
+  canonicalProjOfKernel (Submodule.span K ({v} : Set (MIPStarRE.QPBT.Coordinates m K)))
 
 /-- The least coordinate at which a nonzero line direction is nonzero. This is
 Lean-only support for the elementary formula for the canonical representative;
 coordinates use the same left-to-right order as paper `def:cl-canonical`. -/
-noncomputable def linePivotIndex {m : ℕ} (v : Fin m → K) (hv : v ≠ 0) : Fin m := by
-  classical
+noncomputable def linePivotIndex  (v : MIPStarRE.QPBT.Coordinates m K) (hv : v ≠ 0) : Fin m := by
   let support := Finset.univ.filter fun j => v j ≠ 0
   have hsupport : support.Nonempty := by
     by_contra h
@@ -94,9 +99,8 @@ noncomputable def linePivotIndex {m : ℕ} (v : Fin m → K) (hv : v ≠ 0) : Fi
   exact support.min' hsupport
 
 /-- The pivot coordinate of a nonzero direction is nonzero. -/
-theorem linePivotIndex_ne_zero {m : ℕ} (v : Fin m → K) (hv : v ≠ 0) :
+theorem linePivotIndex_ne_zero  (v : MIPStarRE.QPBT.Coordinates m K) (hv : v ≠ 0) :
     v (linePivotIndex v hv) ≠ 0 := by
-  classical
   have hmem :
       linePivotIndex v hv ∈ Finset.univ.filter fun j => v j ≠ 0 := by
     unfold linePivotIndex
@@ -104,9 +108,8 @@ theorem linePivotIndex_ne_zero {m : ℕ} (v : Fin m → K) (hv : v ≠ 0) :
   exact (Finset.mem_filter.mp hmem).2
 
 /-- Every coordinate before the pivot coordinate of a nonzero direction vanishes. -/
-theorem linePivotIndex_zero_before {m : ℕ} (v : Fin m → K) (hv : v ≠ 0)
+theorem linePivotIndex_zero_before  (v : MIPStarRE.QPBT.Coordinates m K) (hv : v ≠ 0)
     (i : Fin m) (hi : i < linePivotIndex v hv) : v i = 0 := by
-  classical
   by_contra hvi
   unfold linePivotIndex at hi
   exact (not_le_of_gt hi) (Finset.min'_le _ i (by simp [hvi]))
@@ -118,8 +121,8 @@ of `v` that makes the least nonzero coordinate of `v` vanish. This Lean-only
 formula is used to replace the general canonical-complement construction in the
 compact Palomar statement while preserving paper `def:line-representative`.
 -/
-noncomputable def explicitLineRep {m : ℕ}
-    (u v : Fin m → K) : Fin m → K :=
+noncomputable def explicitLineRep
+    (u v : MIPStarRE.QPBT.Coordinates m K) : MIPStarRE.QPBT.Coordinates m K :=
   open Classical in
     if hv : v = 0 then u
     else
@@ -137,19 +140,15 @@ The canonical representative map is a projection whose kernel is the line
 `K v`, so a point and its canonical representative differ by a scalar multiple
 of the direction.
 -/
-theorem sub_lineRepMap_mem_span {m : ℕ} (v u : Fin m → K) :
-    u - lineRepMap v u ∈ Submodule.span K ({v} : Set (Fin m → K)) := by
-  have hc :
-      IsCompl
-        (registerSubmodule K
-          (canonicalComplement (Submodule.span K ({v} : Set (Fin m → K)))))
-        (Submodule.span K ({v} : Set (Fin m → K))) :=
+theorem sub_lineRepMap_mem_span  (v u : MIPStarRE.QPBT.Coordinates m K) :
+    u - lineRepMap v u ∈ Submodule.span K ({v} : Set (MIPStarRE.QPBT.Coordinates m K)) := by
+  have hc  :=
     (isCompl_registerSubmodule_canonicalComplement
-      (Submodule.span K ({v} : Set (Fin m → K)))).symm
+      (Submodule.span K ({v} : Set (MIPStarRE.QPBT.Coordinates m K)))).symm
   have hrep : lineRepMap v u =
       (registerSubmodule K
-        (canonicalComplement (Submodule.span K ({v} : Set (Fin m → K))))).projection
-        (Submodule.span K ({v} : Set (Fin m → K))) hc u := rfl
+        (canonicalComplement (Submodule.span K ({v} : Set (MIPStarRE.QPBT.Coordinates m K))))).projection
+        (Submodule.span K ({v} : Set (MIPStarRE.QPBT.Coordinates m K))) hc u := rfl
   rw [hrep, ← Submodule.projection_eq_self_sub_projection hc u]
   exact Submodule.projection_apply_mem hc.symm u
 
@@ -159,20 +158,19 @@ formula `explicitLineRep`, for every point and direction, including `v = 0`.
 This is a Lean-only representation theorem for the compact Palomar statement;
 it proves an exact identity and does not alter paper `def:line-representative`.
 -/
-theorem lineRepMap_apply_eq_explicitLineRep {m : ℕ} (v u : Fin m → K) :
+theorem lineRepMap_apply_eq_explicitLineRep  (v u : MIPStarRE.QPBT.Coordinates m K) :
     lineRepMap v u = explicitLineRep u v := by
-  classical
   by_cases hv : v = 0
   · subst v
-    have hspan : Submodule.span K ({0} : Set (Fin m → K)) = ⊥ := by simp
-    have h := sub_lineRepMap_mem_span (0 : Fin m → K) u
+    have hspan : Submodule.span K ({0} : Set (MIPStarRE.QPBT.Coordinates m K)) = ⊥ := by simp
+    have h := sub_lineRepMap_mem_span (0 : MIPStarRE.QPBT.Coordinates m K) u
     rw [hspan, Submodule.mem_bot, sub_eq_zero] at h
     simpa [explicitLineRep] using h.symm
   · let j := linePivotIndex v hv
     have hjv : v j ≠ 0 := linePivotIndex_ne_zero v hv
-    let w : Fin m → K := (v j)⁻¹ • v
-    let B : Matrix (Fin 1) (Fin m) K := Matrix.replicateRow (Fin 1) w
-    let pivot : Fin 1 ↪o Fin m :=
+    let w  := (v j)⁻¹ • v
+    let B  := Matrix.replicateRow (Fin 1) w
+    let pivot  :=
       ({j} : Finset (Fin m)).orderEmbOfFin (Finset.card_singleton j)
     have hpivot (i : Fin 1) : pivot i = j := by
       simp [pivot]
@@ -183,40 +181,29 @@ theorem lineRepMap_apply_eq_explicitLineRep {m : ℕ} (v u : Fin m → K) :
         subst k
         simp [B, w, hpivot, hjv]
       · intro i k hki
-        have hkj : k < j := by simpa [hpivot] using hki
-        have hvk : v k = 0 := linePivotIndex_zero_before v hv k hkj
+        have hkj  := by simpa [hpivot] using hki
+        have hvk  := linePivotIndex_zero_before v hv k hkj
         simp [B, w, hvk]
-    have hrange : Set.range B.row = {w} := by
-      ext x
-      constructor
-      · rintro ⟨i, rfl⟩
-        funext k
-        rfl
-      · intro hx
-        rw [Set.mem_singleton_iff] at hx
-        subst x
-        refine ⟨0, ?_⟩
-        funext k
-        rfl
+    have hrange : Set.range B.row = {w} := by aesop
     have hspan :
         Submodule.span K (Set.range B.row) =
-          Submodule.span K ({v} : Set (Fin m → K)) := by
+          Submodule.span K ({v} : Set (MIPStarRE.QPBT.Coordinates m K)) := by
       rw [hrange, Submodule.span_singleton_eq_span_singleton]
       refine ⟨Units.mk0 (v j) hjv, ?_⟩
       funext k
       simp [w, hjv]
     have hcomplement :
-        canonicalComplement (Submodule.span K ({v} : Set (Fin m → K))) =
+        canonicalComplement (Submodule.span K ({v} : Set (MIPStarRE.QPBT.Coordinates m K))) =
           ({j} : Finset (Fin m))ᶜ := by
       rw [← hspan, hB.canonicalComplement_eq_nonpivot_indices]
       simp [pivot]
     have hrep_mem :
         lineRepMap v u ∈
           registerSubmodule K
-            (canonicalComplement (Submodule.span K ({v} : Set (Fin m → K)))) := by
+            (canonicalComplement (Submodule.span K ({v} : Set (MIPStarRE.QPBT.Coordinates m K)))) := by
       simp [lineRepMap, canonicalProjOfKernel]
     rw [hcomplement, registerSubmodule_eq_spanSubset] at hrep_mem
-    have hrep_zero : lineRepMap v u j = 0 :=
+    have hrep_zero  :=
       Pi.mem_spanSubset_iff.mp hrep_mem j (by simp)
     obtain ⟨t, ht⟩ :=
       Submodule.mem_span_singleton.mp (sub_lineRepMap_mem_span v u)
@@ -237,7 +224,7 @@ Every point lies on the line through its own canonical representative in the
 same direction; this is the incidence property used by the line-versus-point
 samplers.
 -/
-theorem mem_linePoints_lineRepMap {m : ℕ} (v u : Fin m → K) :
+theorem mem_linePoints_lineRepMap  (v u : MIPStarRE.QPBT.Coordinates m K) :
     u ∈ linePoints (lineRepMap v u) v := by
   obtain ⟨t, ht⟩ := Submodule.mem_span_singleton.mp (sub_lineRepMap_mem_span v u)
   exact ⟨t, by rw [ht]; abel⟩

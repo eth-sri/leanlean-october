@@ -70,7 +70,7 @@ theorem exists_directSimultaneousPolynomialMeasurements_combinedError
     ∃ GA : DirectPolyMeasTuple D S.ιA,
       ∃ GB : DirectPolyMeasTuple D S.ιB,
         consistencyDefect
-            (uniformDistribution (Fin D.m → DirectScalarQ D))
+            (uniformDistribution (MIPStarRE.QPBT.DirectPoint D))
             (fun u outcome => heteroKron
               (((S.A (directLdPointQuestionOf D u)).postprocess
                 (directLdPointValuesOrZero D)).effect outcome) 1)
@@ -81,7 +81,7 @@ theorem exists_directSimultaneousPolynomialMeasurements_combinedError
               (directLdAuxParameter D.combined) (3 * (10 * ε)) +
             ((D.combined.m * D.d : ℕ) : ℝ) / D.q ∧
         consistencyDefect
-            (uniformDistribution (Fin D.m → DirectScalarQ D))
+            (uniformDistribution (MIPStarRE.QPBT.DirectPoint D))
             (fun u outcome => heteroKron
               ((GA.postprocess (evalDirectPolyTupleAt u)).effect outcome) 1)
             (fun u outcome => heteroKron 1

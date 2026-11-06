@@ -29,8 +29,7 @@ noncomputable section
 
 namespace WinImplications
 
-local instance pauliEdgeNonemptyPointObs : Nonempty PauliEdge :=
-  pauliEdge_nonempty
+
 
 /-! ## Linearity of the tensor placement -/
 
@@ -58,8 +57,7 @@ theorem heteroKron_right_sum_smul {α ιA ιB : Type*} [Fintype α]
 
 /-- The binary phase character has unit modulus. Paper
 `references/qpbt-paper/04_preliminaries.tex:1052-1081`. -/
-theorem norm_phaseSign (t : ZMod 2) : ‖phaseSign t‖ = 1 := by
-  by_cases ht : t = 0 <;> simp [phaseSign, ht]
+theorem norm_phaseSign (t : ZMod 2) : ‖phaseSign t‖ = 1 := by aesop (add simp [phaseSign])
 
 /-! ## The point observable as a binary observable -/
 
@@ -69,7 +67,7 @@ binary observable of the trace-coarse-grained point measurement. Paper
 `ch14_qpbt_observables.tex:573-610`. -/
 theorem pointObs_eq_traceMeas_obs {P : AdmissibleParams} {ε : ℝ}
     (S : ProjectiveSetting P ε) (side : PlayerSide) (W : PauliKind)
-    (r : PauliScalar P) (u : Fin P.m → PauliScalar P) :
+    (r : PauliScalar P) (u : MIPStarRE.QPBT.PauliPoint P) :
     S.pointObs side W r u =
       ∑ b : ZMod 2, phaseSign b • (S.pointTraceMeas side W u r).effect b := by
   classical

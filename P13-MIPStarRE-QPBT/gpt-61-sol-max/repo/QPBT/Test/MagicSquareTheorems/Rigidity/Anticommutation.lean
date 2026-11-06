@@ -59,9 +59,11 @@ private def AlicePlaced {ιA ιB : Type} [DecidableEq ιB] (Z : Op (ιA × ιB))
 private def BobPlaced {ιA ιB : Type} [DecidableEq ιA] (Z : Op (ιA × ιB)) : Prop :=
   ∃ N : Op ιB, Z = heteroKron 1 N
 
+variable {ιA ιB : Type} [Fintype ιA] [DecidableEq ιA] [Fintype ιB]
+
 /-- Formalization-only: operators of the two players commute. -/
-private theorem AlicePlaced.comm {ιA ιB : Type} [Fintype ιA] [DecidableEq ιA]
-    [Fintype ιB] [DecidableEq ιB] {Z W : Op (ιA × ιB)} (hZ : AlicePlaced Z)
+private theorem AlicePlaced.comm
+     [DecidableEq ιB] {Z W : Op (ιA × ιB)} (hZ : AlicePlaced Z)
     (hW : BobPlaced W) : Z * W = W * Z := by
   obtain ⟨M, rfl⟩ := hZ
   obtain ⟨N, rfl⟩ := hW
@@ -76,38 +78,42 @@ private theorem AlicePlaced.mul {ιA ιB : Type} [Fintype ιA]
   exact ⟨M * M', by rw [heteroKron_mul, mul_one]⟩
 
 /-- Formalization-only: products stay on Bob's tensor factor. -/
-private theorem BobPlaced.mul {ιA ιB : Type} [Fintype ιA] [DecidableEq ιA]
-    [Fintype ιB] {Z W : Op (ιA × ιB)} (hZ : BobPlaced Z)
+private theorem BobPlaced.mul
+     {Z W : Op (ιA × ιB)} (hZ : BobPlaced Z)
     (hW : BobPlaced W) : BobPlaced (Z * W) := by
   obtain ⟨N, rfl⟩ := hZ
   obtain ⟨N', rfl⟩ := hW
   exact ⟨N * N', by rw [heteroKron_mul, mul_one]⟩
 
 /-- Formalization-only: operators of the two players commute. -/
-private theorem BobPlaced.comm {ιA ιB : Type} [Fintype ιA] [DecidableEq ιA]
-    [Fintype ιB] [DecidableEq ιB] {Z W : Op (ιA × ιB)} (hZ : BobPlaced Z)
+private theorem BobPlaced.comm
+     [DecidableEq ιB] {Z W : Op (ιA × ιB)} (hZ : BobPlaced Z)
     (hW : AlicePlaced W) : Z * W = W * Z := (hW.comm hZ).symm
 
+variable (S : Strategy msGame)
+
 /-- Alice's cell reflection acts on her tensor factor alone. -/
-private theorem alicePlaced_msCellObsA (S : Strategy msGame) (i : Fin 6) (k : Fin 3) :
+private theorem alicePlaced_msCellObsA  (i : Fin 6) (k : Fin 3) :
     AlicePlaced (msCellObsA S i k) := ⟨_, rfl⟩
 
 /-- Bob's variable reflection acts on his tensor factor alone. -/
-private theorem bobPlaced_msVarObsB (S : Strategy msGame) (j : Fin 9) :
+private theorem bobPlaced_msVarObsB  (j : Fin 9) :
     BobPlaced (msVarObsB S j) := ⟨_, rfl⟩
 
 /-- Alice's variable reflection acts on her tensor factor alone. -/
-private theorem alicePlaced_msVarObsA (S : Strategy msGame) (j : Fin 9) :
+private theorem alicePlaced_msVarObsA  (j : Fin 9) :
     AlicePlaced (msVarObsA S j) := ⟨_, rfl⟩
 
 /-- Bob's cell reflection acts on his tensor factor alone. -/
-private theorem bobPlaced_msCellObsB (S : Strategy msGame) (i : Fin 6) (k : Fin 3) :
+private theorem bobPlaced_msCellObsB  (i : Fin 6) (k : Fin 3) :
     BobPlaced (msCellObsB S i k) := ⟨_, rfl⟩
 
 /-! ## Isometry bookkeeping -/
 
+variable {ι : Type} [Fintype ι] [DecidableEq ι]
+
 /-- Formalization-only: a product of isometric operators is isometric. -/
-private theorem isometry_mul_isometry {ι : Type} [Fintype ι] [DecidableEq ι]
+private theorem isometry_mul_isometry
     {U V : Op ι} (hU : Uᴴ * U = 1) (hV : Vᴴ * V = 1) : (U * V)ᴴ * (U * V) = 1 := by
   rw [Matrix.conjTranspose_mul]
   calc Vᴴ * Uᴴ * (U * V) = Vᴴ * (Uᴴ * U) * V := by noncomm_ring
@@ -115,12 +121,9 @@ private theorem isometry_mul_isometry {ι : Type} [Fintype ι] [DecidableEq ι]
 
 /-- Formalization-only: a unit scalar multiple of an isometric operator is
 isometric. -/
-private theorem isometry_smul {ι : Type} [Fintype ι] [DecidableEq ι] {c : ℂ}
+private theorem isometry_smul    {c : ℂ}
     (hstar : star c = c) (hsq : c * c = 1) {U : Op ι} (hU : Uᴴ * U = 1) :
-    (c • U)ᴴ * (c • U) = 1 := by
-  have hstarT : (c • U)ᴴ = c • Uᴴ := by
-    rw [← Matrix.star_eq_conjTranspose, star_smul, Matrix.star_eq_conjTranspose, hstar]
-  rw [hstarT, Matrix.smul_mul, Matrix.mul_smul, smul_smul, hU, hsq, one_smul]
+    (c • U)ᴴ *  c • U  = 1 := by classical simp_all [one_smul, smul_smul]
 
 /-- The complex sign of a binary value is fixed by conjugation. -/
 theorem star_bitSign_ofReal (c : ZMod 2) :
@@ -139,14 +142,14 @@ the two constraints share the cell that `X` and `P` are attached to.  The
 conclusion rewrites the product `Y * Q` as the signed product of the two
 remaining reflections.  Formalization-only support for blueprint
 `thm:ms-rigidity`. -/
-private theorem normCloseOn_step {ιA ιB : Type} [Fintype ιA] [DecidableEq ιA]
-    [Fintype ιB] [DecidableEq ιB] {ψ : EuclideanSpace ℂ (ιA × ιB)} {δ : ℝ}
+private theorem normCloseOn_step
+     [DecidableEq ιB] {ψ : MIPStarRE.QPBT.StateVector (ιA × ιB)} {δ : ℝ}
     {X Y W P Q R Pa Ra : Op (ιA × ιB)} {sI sJ : ℂ}
     (hXr : IsBinaryObservable X) (hYr : IsBinaryObservable Y) (hWr : IsBinaryObservable W)
     (hPr : IsBinaryObservable P)
     (hPar : IsBinaryObservable Pa) (hRar : IsBinaryObservable Ra)
-    (hcY : Y * (Ra * Pa) = (Ra * Pa) * Y)
-    (hcXW : (X * W) * (Ra * Pa) = (Ra * Pa) * (X * W))
+    (hcY : Y * (Ra * Pa) =  Ra * Pa  * Y)
+    (hcXW :  X * W  * (Ra * Pa) =  Ra * Pa  * (X * W))
     (hcP : P * Ra = Ra * P) (hcX : X * Ra = Ra * X)
     (hXW : X * W = W * X)
     (hsJnorm : ‖sJ‖ = 1) (hsIstar : star sI = sI) (hsIsq : sI * sI = 1)
@@ -155,38 +158,37 @@ private theorem normCloseOn_step {ιA ιB : Type} [Fintype ιA] [DecidableEq ιA
     (hPPa : NormCloseOn ψ δ P Pa) (hRRa : NormCloseOn ψ δ R Ra)
     (hPX : NormCloseOn ψ (δ + δ) P X) :
     NormCloseOn ψ (10 * δ) (Y * Q) ((sI * sJ) • (W * R)) := by
-  have hPRa : NormCloseOn ψ (δ + δ) (P * R) (Ra * Pa) := by
+  have hPRa  := by
     have s1 : NormCloseOn ψ δ (P * R) (P * Ra) := NormCloseOn.isometry_mul hPr.isometry hRRa
     rw [show P * Ra = Ra * P from hcP] at s1
     exact s1.trans (NormCloseOn.isometry_mul hRar.isometry hPPa)
-  have hRaPa : (Ra * Pa)ᴴ * (Ra * Pa) = 1 :=
+  have hRaPa  :=
     isometry_mul_isometry hRar.isometry hPar.isometry
-  have hXWiso : (X * W)ᴴ * (X * W) = 1 := isometry_mul_isometry hXr.isometry hWr.isometry
-  have hsXWiso : (sI • (X * W))ᴴ * (sI • (X * W)) = 1 :=
+  have hXWiso  := isometry_mul_isometry hXr.isometry hWr.isometry
+  have hsXWiso  :=
     isometry_smul hsIstar hsIsq hXWiso
-  have hcsXW : (sI • (X * W)) * (Ra * Pa) = (Ra * Pa) * (sI • (X * W)) := by
+  have hcsXW :  sI • (X * W)  * (Ra * Pa) =  Ra * Pa  *  sI • (X * W)  := by
     rw [Matrix.smul_mul, Matrix.mul_smul, hcXW]
-  have h2 : NormCloseOn ψ (δ + δ + δ + (δ + δ)) (Y * (P * R)) ((sI • (X * W)) * (P * R)) :=
+  have h2  :=
     NormCloseOn.mul_left_subst hY hPRa hYr.isometry hsXWiso hRaPa hcY hcsXW
-  have hPRXR : NormCloseOn ψ (δ + (δ + δ) + δ) (P * R) (X * R) :=
+  have hPRXR  :=
     NormCloseOn.mul_left_subst hPX hRRa hPr.isometry hXr.isometry hRar.isometry hcP hcX
-  have h3 : NormCloseOn ψ (δ + (δ + δ) + δ)
-      ((sI • (X * W)) * (P * R)) ((sI • (X * W)) * (X * R)) :=
+  have h3  :=
     NormCloseOn.isometry_mul hsXWiso hPRXR
-  have e2 : (sI • (X * W)) * (X * R) = sI • (W * R) := by
+  have e2 :  sI • (X * W)  * (X * R) = sI • (W * R) := by
     rw [Matrix.smul_mul]
     congr 1
-    calc (X * W) * (X * R) = X * (W * X) * R := by noncomm_ring
+    calc  X * W  * (X * R) = X * (W * X) * R := by noncomm_ring
       _ = X * (X * W) * R := by rw [hXW]
-      _ = (X * X) * (W * R) := by noncomm_ring
+      _ =  X * X  * (W * R) := by noncomm_ring
       _ = W * R := by rw [hXr.mul_self_eq_one, one_mul]
   have hA : NormCloseOn ψ δ (Y * Q) (sJ • (Y * (P * R))) := by
-    have h1 : NormCloseOn ψ δ (Y * Q) (Y * (sJ • (P * R))) :=
+    have h1  :=
       NormCloseOn.isometry_mul hYr.isometry hQ
     rwa [Matrix.mul_smul] at h1
   have hB := NormCloseOn.smul hsJnorm h2
   have hC := NormCloseOn.smul hsJnorm h3
-  have e3 : sJ • ((sI • (X * W)) * (X * R)) = (sI * sJ) • (W * R) := by
+  have e3 : sJ • ( sI • (X * W)  * (X * R)) = (sI * sJ) • (W * R) := by
     rw [e2, smul_smul, mul_comm]
   have hfinal := (hA.trans hB).trans hC
   rw [e3] at hfinal
@@ -197,8 +199,8 @@ private theorem normCloseOn_step {ιA ιB : Type} [Fintype ιA] [DecidableEq ιA
 /-- Formalization-only: closeness to a negation is symmetric in the two
 operators, because `M - (-N) = N - (-M)`.  Used by the solution-group
 computations of both logical Pauli pairs. -/
-theorem normCloseOn_neg_swap {ι : Type} [Fintype ι] [DecidableEq ι]
-    {ψ : EuclideanSpace ℂ ι} {δ : ℝ} {M N : Op ι} (h : NormCloseOn ψ δ M (-N)) :
+theorem normCloseOn_neg_swap
+    {ψ : MIPStarRE.QPBT.StateVector ι} {δ : ℝ} {M N : Op ι} (h : NormCloseOn ψ δ M (-N)) :
     NormCloseOn ψ δ N (-M) := by
   change ‖applyOperatorToState (N - -M) ψ‖ ≤ δ
   rw [show N - -M = M - -N by abel]
@@ -210,7 +212,7 @@ theorem normCloseOn_neg_swap {ι : Type} [Fintype ι] [DecidableEq ι]
 two constraints sharing the cell at positions `k₀` and `l₀`, the product of the
 reflections at the positions `k₁` and `l₁` is close to the signed product of the
 reflections at the two remaining positions. -/
-theorem msCellObsB_step (S : Strategy msGame) (ε : ℝ) (hwin : 1 - ε ≤ S.value)
+theorem msCellObsB_step  (ε : ℝ) (hwin : 1 - ε ≤ S.value)
     (I J : Fin 6) (k₀ k₁ k₂ l₀ l₁ l₂ : Fin 3)
     (hI : ∀ a, constraintBitOrZero k₀ a + constraintBitOrZero k₁ a +
       constraintBitOrZero k₂ a = constraintBitSum a)
@@ -245,7 +247,7 @@ theorem msCellObsB_step (S : Strategy msGame) (ε : ℝ) (hwin : 1 - ε ≤ S.va
 
 /-- Replacing both factors of a product of two of Bob's cell reflections by the
 reflections that other constraints attach to the same two cells. -/
-theorem msCellObsB_mul_close_of_same_cells (S : Strategy msGame) (ε : ℝ)
+theorem msCellObsB_mul_close_of_same_cells  (ε : ℝ)
     (hwin : 1 - ε ≤ S.value) (I J I' J' : Fin 6) (k l k' l' : Fin 3)
     (h1 : msConstraintVars I k = msConstraintVars I' k')
     (h2 : msConstraintVars J l = msConstraintVars J' l') :
@@ -278,7 +280,7 @@ blueprint `thm:ms-rigidity`, paper
 `⟨ψ|(M - N)ᴴ (M - N)|ψ⟩ ≤ O(sqrt ε)`.  The squared-distance form on the
 dilated state is `msVarObsA_anticommute_dilated_opDistSq` below, obtained from
 this bound through `NormCloseOn.opDistSq_le`. -/
-theorem msVarObsA_anticommute (S : Strategy msGame) (ε : ℝ) (hwin : 1 - ε ≤ S.value) :
+theorem msVarObsA_anticommute  (ε : ℝ) (hwin : 1 - ε ≤ S.value) :
     NormCloseOn (msDilatedStrategy S).ψ (624 * Real.sqrt ε)
       (msVarObsA S 0 * msVarObsA S 4) (-(msVarObsA S 4 * msVarObsA S 0)) := by
   have hA : ∀ a : MsAnswer, constraintBitOrZero 1 a + constraintBitOrZero 0 a +
@@ -339,7 +341,7 @@ theorem msVarObsA_anticommute (S : Strategy msGame) (ε : ℝ) (hwin : 1 - ε �
 
 /-- One of Alice's three cell reflections of a constraint question is close, on
 the dilated state, to the signed product of the other two. -/
-theorem msCellObsA_single_close (S : Strategy msGame) (ε : ℝ) (hwin : 1 - ε ≤ S.value)
+theorem msCellObsA_single_close  (ε : ℝ) (hwin : 1 - ε ≤ S.value)
     (i : Fin 6) (k₀ k₁ k₂ : Fin 3)
     (hsum : ∀ a, constraintBitOrZero k₀ a + constraintBitOrZero k₁ a +
       constraintBitOrZero k₂ a = constraintBitSum a) :
@@ -347,32 +349,27 @@ theorem msCellObsA_single_close (S : Strategy msGame) (ε : ℝ) (hwin : 1 - ε 
       (((bitSign (msParity i) : ℝ) : ℂ) •
         (msCellObsA S i k₀ * msCellObsA S i k₂)) := by
   have hprod := msCellObsA_prod_close_of S ε hwin i k₀ k₁ k₂ hsum
-  have hX2 : msCellObsA S i k₀ * msCellObsA S i k₀ = 1 :=
+  have hX2  :=
     (isBinaryObservable_msCellObsA S i k₀).mul_self_eq_one
-  have hZ2 : msCellObsA S i k₂ * msCellObsA S i k₂ = 1 :=
+  have hZ2  :=
     (isBinaryObservable_msCellObsA S i k₂).mul_self_eq_one
-  have hZY : msCellObsA S i k₂ * msCellObsA S i k₁ =
-      msCellObsA S i k₁ * msCellObsA S i k₂ := msCellObsA_comm S i k₂ k₁
-  have hZX : msCellObsA S i k₂ * msCellObsA S i k₀ =
-      msCellObsA S i k₀ * msCellObsA S i k₂ := msCellObsA_comm S i k₂ k₀
-  have hU : (msCellObsA S i k₂ * msCellObsA S i k₀)ᴴ *
-      (msCellObsA S i k₂ * msCellObsA S i k₀) = 1 :=
+  have hZY  := msCellObsA_comm S i k₂ k₁
+  have hZX  := msCellObsA_comm S i k₂ k₀
+  have hU  :=
     ((isBinaryObservable_msCellObsA S i k₂).mul
       (isBinaryObservable_msCellObsA S i k₀) hZX).isometry
-  have e1 : (msCellObsA S i k₂ * msCellObsA S i k₀) *
-      (msCellObsA S i k₀ * msCellObsA S i k₁ * msCellObsA S i k₂) =
-      msCellObsA S i k₁ := by
-    calc (msCellObsA S i k₂ * msCellObsA S i k₀) *
+  have e1  := by
+    calc  msCellObsA S i k₂ * msCellObsA S i k₀  *
           (msCellObsA S i k₀ * msCellObsA S i k₁ * msCellObsA S i k₂)
         = msCellObsA S i k₂ *
-            ((msCellObsA S i k₀ * msCellObsA S i k₀) * msCellObsA S i k₁) *
+            ( msCellObsA S i k₀ * msCellObsA S i k₀  * msCellObsA S i k₁) *
             msCellObsA S i k₂ := by noncomm_ring
       _ = msCellObsA S i k₂ * msCellObsA S i k₁ * msCellObsA S i k₂ := by
           rw [hX2, one_mul]
       _ = msCellObsA S i k₁ * msCellObsA S i k₂ * msCellObsA S i k₂ := by rw [hZY]
       _ = msCellObsA S i k₁ := by rw [mul_assoc, hZ2, mul_one]
-  have e2 : (msCellObsA S i k₂ * msCellObsA S i k₀) *
-      (((bitSign (msParity i) : ℝ) : ℂ) • (1 : Op _)) =
+  have e2 :  msCellObsA S i k₂ * msCellObsA S i k₀  *
+       ((bitSign (msParity i) : ℝ) : ℂ) • (1 : Op _)  =
       ((bitSign (msParity i) : ℝ) : ℂ) • (msCellObsA S i k₀ * msCellObsA S i k₂) := by
     rw [Matrix.mul_smul, mul_one, hZX]
   have h := NormCloseOn.isometry_mul hU hprod
@@ -382,14 +379,12 @@ theorem msCellObsA_single_close (S : Strategy msGame) (ε : ℝ) (hwin : 1 - ε 
 /-- A product of two of Alice's cell reflections is close, on the dilated state,
 to the product of Bob's variable reflections at the same two cells, taken in the
 reverse order. -/
-theorem msCellObsA_mul_close (S : Strategy msGame) (ε : ℝ) (hwin : 1 - ε ≤ S.value)
+theorem msCellObsA_mul_close  (ε : ℝ) (hwin : 1 - ε ≤ S.value)
     (I J : Fin 6) (k l : Fin 3) :
     NormCloseOn (msDilatedStrategy S).ψ (12 * Real.sqrt ε + 12 * Real.sqrt ε)
       (msCellObsA S I k * msCellObsA S J l)
       (msVarObsB S (msConstraintVars J l) * msVarObsB S (msConstraintVars I k)) := by
-  have h1 : NormCloseOn (msDilatedStrategy S).ψ (12 * Real.sqrt ε)
-      (msCellObsA S I k * msCellObsA S J l)
-      (msCellObsA S I k * msVarObsB S (msConstraintVars J l)) :=
+  have h1  :=
     NormCloseOn.isometry_mul (isBinaryObservable_msCellObsA S I k).isometry
       (msCellObsA_close_msVarObsB S ε hwin J l)
   rw [show msCellObsA S I k * msVarObsB S (msConstraintVars J l) =
@@ -400,21 +395,19 @@ theorem msCellObsA_mul_close (S : Strategy msGame) (ε : ℝ) (hwin : 1 - ε ≤
 
 /-- Two of Alice's cell reflections attached to a common cell by two different
 constraint questions are close on the dilated state. -/
-theorem msCellObsA_close_of_same_cell (S : Strategy msGame) (ε : ℝ)
+theorem msCellObsA_close_of_same_cell  (ε : ℝ)
     (hwin : 1 - ε ≤ S.value) (I J : Fin 6) (k l : Fin 3)
     (hcell : msConstraintVars I k = msConstraintVars J l) :
     NormCloseOn (msDilatedStrategy S).ψ (12 * Real.sqrt ε + 12 * Real.sqrt ε)
       (msCellObsA S I k) (msCellObsA S J l) := by
-  have p1 : NormCloseOn (msDilatedStrategy S).ψ (12 * Real.sqrt ε) (msCellObsA S I k)
-      (msVarObsB S (msConstraintVars I k)) := msCellObsA_close_msVarObsB S ε hwin I k
-  have p2 : NormCloseOn (msDilatedStrategy S).ψ (12 * Real.sqrt ε)
-      (msVarObsB S (msConstraintVars J l)) (msCellObsA S J l) :=
+  have p1  := msCellObsA_close_msVarObsB S ε hwin I k
+  have p2  :=
     (msCellObsA_close_msVarObsB S ε hwin J l).symm
   rw [hcell] at p1
   exact p1.trans p2
 
 /-- One step of the solution-group computation for Alice's cell reflections. -/
-theorem msCellObsA_step (S : Strategy msGame) (ε : ℝ) (hwin : 1 - ε ≤ S.value)
+theorem msCellObsA_step  (ε : ℝ) (hwin : 1 - ε ≤ S.value)
     (I J : Fin 6) (k₀ k₁ k₂ l₀ l₁ l₂ : Fin 3)
     (hI : ∀ a, constraintBitOrZero k₀ a + constraintBitOrZero k₁ a +
       constraintBitOrZero k₂ a = constraintBitSum a)
@@ -449,7 +442,7 @@ theorem msCellObsA_step (S : Strategy msGame) (ε : ℝ) (hwin : 1 - ε ≤ S.va
 
 /-- Replacing both factors of a product of two of Alice's cell reflections by
 the reflections that other constraints attach to the same two cells. -/
-theorem msCellObsA_mul_close_of_same_cells (S : Strategy msGame) (ε : ℝ)
+theorem msCellObsA_mul_close_of_same_cells  (ε : ℝ)
     (hwin : 1 - ε ≤ S.value) (I J I' J' : Fin 6) (k l k' l' : Fin 3)
     (h1 : msConstraintVars I k = msConstraintVars I' k')
     (h2 : msConstraintVars J l = msConstraintVars J' l') :
@@ -478,7 +471,7 @@ the last conclusion of `thm:ms-rigidity` for the squared distance: blueprint
 `⟨ψ|(M - N)ᴴ (M - N)|ψ⟩ ≤ O(sqrt ε)`.  The squared-distance form on the
 dilated state is `msVarObsB_anticommute_dilated_opDistSq` below, obtained from
 this bound through `NormCloseOn.opDistSq_le`. -/
-theorem msVarObsB_anticommute (S : Strategy msGame) (ε : ℝ) (hwin : 1 - ε ≤ S.value) :
+theorem msVarObsB_anticommute  (ε : ℝ) (hwin : 1 - ε ≤ S.value) :
     NormCloseOn (msDilatedStrategy S).ψ (624 * Real.sqrt ε)
       (msVarObsB S 0 * msVarObsB S 4) (-(msVarObsB S 4 * msVarObsB S 0)) := by
   have hA : ∀ a : MsAnswer, constraintBitOrZero 1 a + constraintBitOrZero 0 a +

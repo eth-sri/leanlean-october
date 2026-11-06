@@ -1,5 +1,7 @@
 module
 
+public import QPBT.Algebra.CoordinatePolynomial
+
 public import QPBT.Algebra.LowDegreeCodeTheorems
 public import QPBT.Combining.Defs
 
@@ -30,12 +32,14 @@ open MIPStarRE.LDT MIPStarRE.LDT.Preliminaries
 
 /-! ## Representative evaluation and decoding -/
 
+variable {P : AdmissibleParams}
+
 /-- Evaluate the polynomial representative carried by `Poly P`.
 
 This is polynomial evaluation on the source's `\ideg_{d,m}(\F_q)` carrier.  It
 does not identify representatives that induce the same polynomial function. -/
-noncomputable def evalPoly {P : AdmissibleParams} (g : Poly P)
-    (x : Fin P.m → PauliScalar P) : PauliScalar P :=
+noncomputable def evalPoly  (g : Poly P)
+    (x : MIPStarRE.QPBT.PauliPoint P) : PauliScalar P :=
   MvPolynomial.eval x g.1
 
 /-- Decode a bounded polynomial while retaining only values in `H`.
@@ -43,16 +47,16 @@ noncomputable def evalPoly {P : AdmissibleParams} (g : Poly P)
 This is the `H`-parameterized form of `def:decoding-map`; `decodeAt` remains
 the decoding map for arbitrary functions.  The Boolean cube is embedded in
 `PauliScalar P` by `cubeEmbed`. -/
-noncomputable def decodeOn {P : AdmissibleParams}
+noncomputable def decodeOn
     (H : Finset (PauliScalar P)) (g : Poly P) : PauliRegister P :=
-  decodeAt H (fun x => evalPoly g x)
+  decodeAt H  (evalPoly g) 
 
 /-- Full-field specialization of `decodeOn` used in Chapter 16.
 
 The retained-value set is `Finset.univ`, so every field value is kept.  This
 choice is the correction recorded in
 `docs/paper-gaps/qpbt_decoding-identity.tex:87-123`. -/
-noncomputable abbrev decodeOnUniv {P : AdmissibleParams} (g : Poly P) :
+noncomputable abbrev decodeOnUniv  (g : Poly P) :
     PauliRegister P :=
   decodeOn (Finset.univ : Finset (PauliScalar P)) g
 
@@ -61,7 +65,7 @@ noncomputable abbrev decodeOnUniv {P : AdmissibleParams} (g : Poly P) :
 The map `decodeFqRep` has the same definition on arbitrary polynomial
 representatives; `decodeFq` restricts its domain to the bounded-degree class
 `Poly P`. -/
-noncomputable abbrev decodeFq {P : AdmissibleParams} (g : Poly P) :
+noncomputable abbrev decodeFq  (g : Poly P) :
     PauliRegister P :=
   decodeOnUniv g
 
@@ -76,7 +80,7 @@ side-condition implicit in the source's `g_h` construction, not an extra
 hypothesis of the decoding identity.  See blueprint
 `def:low-degree-encoding`, and paper
 `references/qpbt-paper/04_preliminaries.tex:832-897`. -/
-theorem lowDegreeEncoding_mem_poly {P : AdmissibleParams}
+theorem lowDegreeEncoding_mem_poly
     (h : PauliRegister P) :
     lowDegreeEncoding h ∈
       MIPStarRE.LDT.Preliminaries.polyFunc P.m (PauliScalar P) P.d := by
@@ -96,7 +100,7 @@ theorem lowDegreeEncoding_mem_poly {P : AdmissibleParams}
   calc
     ∑ j, MvPolynomial.degreeOf i
         (if y j then
-          (MvPolynomial.X j : MvPolynomial (Fin P.m) (PauliScalar P))
+          (MvPolynomial.X j : MIPStarRE.QPBT.CoordinatePolynomial P.m (PauliScalar P))
         else 1 - MvPolynomial.X j) ≤
         ∑ j, if i = j then 1 else 0 := by
       apply Finset.sum_le_sum
@@ -111,7 +115,7 @@ theorem lowDegreeEncoding_mem_poly {P : AdmissibleParams}
 /-- The multilinear encoding as a bounded polynomial representative.
 
 The individual-degree bound is supplied by `lowDegreeEncoding_mem_poly`. -/
-noncomputable def encodingPoly {P : AdmissibleParams} (h : PauliRegister P) :
+noncomputable def encodingPoly  (h : PauliRegister P) :
     Poly P :=
   ⟨lowDegreeEncoding h, lowDegreeEncoding_mem_poly h⟩
 
@@ -122,7 +126,7 @@ This is the explicit support restriction required by the corrected Chapter 16
 decoding argument.  It is the `Poly` view of `IsEncodingRep`; no unrestricted
 decoder/evaluation identity is asserted.  See
 `docs/paper-gaps/qpbt_decoding-identity.tex:87-123`. -/
-def IsEncoding {P : AdmissibleParams} (g : Poly P) : Prop :=
+def IsEncoding  (g : Poly P) : Prop :=
   lowDegreeEncoding (decodeFq g) = g.1
 
 /-! ## Decoder companions -/
@@ -136,16 +140,9 @@ the full-field decoder specified at
 The degree proof is separated into `lowDegreeEncoding_mem_poly`; no additional
 encoding or interpolation hypothesis is introduced.  See
 `docs/paper-gaps/qpbt_decoding-identity.tex:87-123`. -/
-theorem decodeFq_lowDegreeEncoding {P : AdmissibleParams}
+theorem decodeFq_lowDegreeEncoding
     (h : PauliRegister P) :
-    decodeFq (encodingPoly h) = h := by
-  funext y
-  simpa only [decodeFq, decodeOnUniv, decodeOn, decodeAt, evalPoly,
-    encodingPoly, lowDegreeEnc, Finset.mem_univ, if_true] using
-      congrFun
-        (decodeAt_lowDegreeEnc
-          (Finset.univ : Finset (PauliScalar P)) h
-            (fun z => Finset.mem_univ (h z))) y
+    decodeFq (encodingPoly h) = h := by classical solve_by_elim (maxDepth := 6) [if_true, congrFun, Finset.mem_univ, decodeAt_lowDegreeEnc]
 
 /-- Decoder/evaluation agreement for an encoding representative only.
 
@@ -160,8 +157,8 @@ see `docs/paper-gaps/qpbt_decoding-identity.tex:87-123`.
 `g(x) = x^2` over a field with more than two elements.  The encoding restriction
 and representative semantics are documented in
 `docs/paper-gaps/qpbt_decoding-identity.tex:87-123`. -/
-theorem decodeFq_dotProduct_indicatorVec {P : AdmissibleParams}
-    {g : Poly P} (hg : IsEncoding g) (x : Fin P.m → PauliScalar P) :
+theorem decodeFq_dotProduct_indicatorVec
+    {g : Poly P} (hg : IsEncoding g) (x : MIPStarRE.QPBT.PauliPoint P) :
     dotProduct (decodeFq g) (indicatorVec x) = evalPoly g x := by
   unfold IsEncoding at hg
   calc

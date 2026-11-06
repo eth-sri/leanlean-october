@@ -32,15 +32,7 @@ error argument are. The remaining two summands of the error bracket are
 `rpow`s of nonnegative bases, so no admissibility hypothesis is needed. -/
 theorem deltaQld_nonneg {P : AdmissibleParams} {a b epsilon : ℝ}
     (ha : 0 ≤ a) (hepsilon : 0 ≤ epsilon) :
-    0 ≤ deltaQld a b epsilon P.m P.d P.q := by
-  have hdegree0 : (0 : ℝ) ≤ ((P.m * P.d : ℕ) : ℝ) := Nat.cast_nonneg _
-  have h1 := Real.rpow_nonneg hepsilon b
-  have h2 := Real.rpow_nonneg (Nat.cast_nonneg P.q) (-b)
-  have h3 := Real.rpow_nonneg (by norm_num : (0 : ℝ) ≤ 2)
-    (-(b * ((P.m * P.d : ℕ) : ℝ)))
-  unfold deltaQld
-  simp only [Real.rpow_eq_pow]
-  exact mul_nonneg (mul_nonneg ha (Real.rpow_nonneg hdegree0 a)) (by linarith)
+    0 ≤ deltaQld a b epsilon P.m P.d P.q := by classical grind [mul_nonneg, Real.rpow_eq_pow, Real.rpow_nonneg, Nat.cast_nonneg, deltaQld]
 
 /-- The shape of the absorption once the error bracket has been separated:
 doubling the `rpow` exponent is dominated by raising it to `21 * a ^ 2`. -/
@@ -48,11 +40,11 @@ private theorem rpow_absorb_aux {degree tail a : ℝ}
     (hdegree : 1 ≤ degree) (htail : 0 ≤ tail) (ha : 1 ≤ a) :
     21 * (a * degree ^ a) * (a * degree ^ a * tail) ≤
       21 * a ^ 2 * degree ^ (21 * a ^ 2) * tail := by
-  have hdegree0 : (0 : ℝ) < degree := lt_of_lt_of_le zero_lt_one hdegree
+  have hdegree0  := lt_of_lt_of_le zero_lt_one hdegree
   have hexp : a + a ≤ 21 * a ^ 2 := by nlinarith
-  have hsplit : degree ^ (a + a) = degree ^ a * degree ^ a :=
+  have hsplit  :=
     Real.rpow_add hdegree0 a a
-  have hpow : degree ^ (a + a) ≤ degree ^ (21 * a ^ 2) :=
+  have hpow  :=
     Real.rpow_le_rpow_of_exponent_le hdegree hexp
   have hcoeff : (0 : ℝ) ≤ 21 * a ^ 2 := by positivity
   calc 21 * (a * degree ^ a) * (a * degree ^ a * tail)
@@ -80,29 +72,24 @@ theorem three_add_six_sq_deltaQld_le {P : AdmissibleParams} {a b epsilon : ℝ}
       deltaQld (21 * a ^ 2) b epsilon P.m P.d P.q := by
   have hdegree : (1 : ℝ) ≤ ((P.m * P.d : ℕ) : ℝ) :=
     Nat.one_le_cast.mpr (Nat.mul_pos P.one_le_m P.hd)
-  have hdegree0 : (0 : ℝ) ≤ ((P.m * P.d : ℕ) : ℝ) := zero_le_one.trans hdegree
+  have hdegree0  := zero_le_one.trans hdegree
   have hq : (1 : ℝ) ≤ (P.q : ℝ) := by
     obtain ⟨k, -, hk⟩ := P.hq
     rw [hk]
     exact_mod_cast Nat.one_le_pow _ _ (by norm_num)
-  have ha0 : (0 : ℝ) ≤ a := zero_le_one.trans ha
-  have hprefactor : (1 : ℝ) ≤ a * ((P.m * P.d : ℕ) : ℝ) ^ a :=
+  have ha0  := zero_le_one.trans ha
+  have hprefactor  :=
     one_le_mul_of_one_le_of_one_le ha (Real.one_le_rpow hdegree ha0)
-  have hprefactor0 : (0 : ℝ) ≤ a * ((P.m * P.d : ℕ) : ℝ) ^ a :=
+  have hprefactor0  :=
     zero_le_one.trans hprefactor
   -- The error bracket lies in `[0, 3]`: each summand is an `rpow` bounded by
   -- one on the source parameter domain.
   have htail0 : (0 : ℝ) ≤ epsilon ^ b + (P.q : ℝ) ^ (-b) +
-      (2 : ℝ) ^ (-(b * ((P.m * P.d : ℕ) : ℝ))) := by
-    have h1 := Real.rpow_nonneg hepsilon b
-    have h2 := Real.rpow_nonneg (Nat.cast_nonneg P.q) (-b)
-    have h3 := Real.rpow_nonneg (by norm_num : (0 : ℝ) ≤ 2)
-      (-(b * ((P.m * P.d : ℕ) : ℝ)))
-    linarith
+      (2 : ℝ) ^ (-(b * ((P.m * P.d : ℕ) : ℝ))) := by positivity
   have htail3 : epsilon ^ b + (P.q : ℝ) ^ (-b) +
       (2 : ℝ) ^ (-(b * ((P.m * P.d : ℕ) : ℝ))) ≤ 3 := by
-    have h1 : epsilon ^ b ≤ 1 := Real.rpow_le_one hepsilon hepsilon1 hb.le
-    have h2 : (P.q : ℝ) ^ (-b) ≤ 1 :=
+    have h1  := Real.rpow_le_one hepsilon hepsilon1 hb.le
+    have h2  :=
       Real.rpow_le_one_of_one_le_of_nonpos hq (neg_nonpos.mpr hb.le)
     have h3 : (2 : ℝ) ^ (-(b * ((P.m * P.d : ℕ) : ℝ))) ≤ 1 :=
       Real.rpow_le_one_of_one_le_of_nonpos (by norm_num)

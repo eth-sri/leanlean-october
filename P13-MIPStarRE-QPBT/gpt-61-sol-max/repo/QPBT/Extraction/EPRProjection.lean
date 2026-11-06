@@ -18,7 +18,7 @@ Blueprint `lem:qld-unitary`; paper
 
 @[expose] public section
 
-open scoped BigOperators Matrix
+open scoped BigOperators Matrix Classical
 
 namespace MIPStarRE.QPBT.Extraction
 
@@ -70,12 +70,9 @@ theorem pauliCorrelation_Z_apply (x y : (ι → K) × (ι → K)) :
       rw [← phaseSign_add, dotProduct_add, map_add]
     simp_rw [hphase]
     rw [avg_phaseSign_dotProduct]
-    letI : CharP K 2 := (Algebra.charP_iff (ZMod 2) K 2).mp (ZMod.charP 2)
+    letI  := (Algebra.charP_iff (ZMod 2) K 2).mp (ZMod.charP 2)
     simp only [funext_iff, Pi.add_apply, Pi.zero_apply, CharTwo.add_eq_zero]
-  · have h : x.1 ≠ y.1 ∨ x.2 ≠ y.2 := by
-      by_contra h
-      push Not at h
-      exact hxy (Prod.ext h.1 h.2)
+  · have h : x.1 ≠ y.1 ∨ x.2 ≠ y.2 := by grind
     rcases h with h | h <;> simp [h, hxy]
 
 /-- On a diagonal input, the X correlation is uniform over diagonal outputs.
@@ -89,10 +86,7 @@ theorem pauliCorrelation_X_apply_diagonal (x : (ι → K) × (ι → K)) (a : ι
   rw [Finset.sum_eq_single (x.1 - a)]
   · simp [add_sub_cancel, eq_comm]
   · intro u _ hu
-    have h : x.1 ≠ a + u := by
-      intro h
-      apply hu
-      rw [h, add_sub_cancel_left]
+    have h : x.1 ≠ a + u := by aesop
     simp [h]
   · simp
 
@@ -101,8 +95,8 @@ normalized-trace factor. This is the identity at paper lines 1735-1742 used
 to construct the auxiliary state in blueprint `lem:qld-unitary`. -/
 theorem pauliCorrelation_mul_eq_epr :
     pauliCorrelation (K := K) (ι := ι) .X * pauliCorrelation .Z =
-      Matrix.vecMulVec (fun x => eprState (ι → K) x)
-        (fun y => star (eprState (ι → K) y)) := by
+      Matrix.vecMulVec ( eprState (ι → K) )
+         fun y => star (eprState (ι → K) y)  := by
   ext x y
   rw [Matrix.mul_apply]
   simp_rw [pauliCorrelation_Z_apply]
@@ -130,7 +124,7 @@ and the unitarity of its summands justify the norm estimate used in paper
 lines 1743-1750, independently of any strategy-consistency hypothesis. -/
 theorem norm_heteroKron_pauliCorrelation_apply_le {R : Type*}
     [Fintype R] [DecidableEq R] (W : PauliKind)
-    (ψ : EuclideanSpace ℂ (R × ((ι → K) × (ι → K)))) :
+    (ψ : MIPStarRE.QPBT.StateVector (R ×  (ι → K) × (ι → K) )) :
     ‖applyOperatorToState (heteroKron (1 : Op R) (pauliCorrelation W)) ψ‖ ≤ ‖ψ‖ := by
   let U (u : ι → K) :=
     heteroKron (1 : Op R) (heteroKron (tauObservable W u) (tauObservable W u))

@@ -1,5 +1,7 @@
 module
 
+public meta import Batteries.Tactic.Alias
+
 public import QPBT.Games.DistanceTheorems
 public import QPBT.Test.MagicSquareTheorems.Rigidity.Dilation
 
@@ -35,7 +37,9 @@ paper `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:612-6
 
 @[expose] public section
 
-open scoped BigOperators Matrix MatrixOrder ComplexOrder
+variable {ιA ιB κA κB : Type} [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB] [Fintype κA] [DecidableEq κA] [Fintype κB] [DecidableEq κB]
+
+open scoped BigOperators Matrix MatrixOrder ComplexOrder Classical
 
 namespace MIPStarRE.QPBT.MagicSquareRigidity
 
@@ -46,49 +50,50 @@ noncomputable section
 
 /-! ## Contractions and their action on states -/
 
+variable {ι : Type*} [Fintype ι] [DecidableEq ι]
+
 /-- The identity acts trivially. -/
-theorem applyOperatorToState_one {ι : Type*} [Fintype ι] [DecidableEq ι]
-    (v : EuclideanSpace ℂ ι) :
+theorem applyOperatorToState_one
+    (v : MIPStarRE.QPBT.StateVector ι) :
     applyOperatorToState (1 : Op ι) v = v := by
   simp [applyOperatorToState]
 
 /-- Operators act additively on states. -/
-theorem applyOperatorToState_add {ι : Type*} [Fintype ι] [DecidableEq ι]
-    (M : Op ι) (u v : EuclideanSpace ℂ ι) :
+theorem applyOperatorToState_add
+    (M : Op ι) (u v : MIPStarRE.QPBT.StateVector ι) :
     applyOperatorToState M (u + v) =
       applyOperatorToState M u + applyOperatorToState M v := by
   simp [applyOperatorToState]
 
 /-- Operators act additively on differences of states. -/
-theorem applyOperatorToState_sub {ι : Type*} [Fintype ι] [DecidableEq ι]
-    (M : Op ι) (u v : EuclideanSpace ℂ ι) :
+theorem applyOperatorToState_sub
+    (M : Op ι) (u v : MIPStarRE.QPBT.StateVector ι) :
     applyOperatorToState M (u - v) =
       applyOperatorToState M u - applyOperatorToState M v := by
   simp [applyOperatorToState]
 
 /-- The action on states is additive in the operator. -/
-theorem applyOperatorToState_add_op {ι : Type*} [Fintype ι] [DecidableEq ι]
-    (M N : Op ι) (v : EuclideanSpace ℂ ι) :
+theorem applyOperatorToState_add_op
+    (M N : Op ι) (v : MIPStarRE.QPBT.StateVector ι) :
     applyOperatorToState (M + N) v =
       applyOperatorToState M v + applyOperatorToState N v := by
   simp [applyOperatorToState]
 
 /-- Operators annihilate the zero state. -/
-theorem applyOperatorToState_zero {ι : Type*} [Fintype ι] [DecidableEq ι] (M : Op ι) :
-    applyOperatorToState M (0 : EuclideanSpace ℂ ι) = 0 := by
+theorem applyOperatorToState_zero    (M : Op ι) :
+    applyOperatorToState M (0 : MIPStarRE.QPBT.StateVector ι) = 0 := by
   simp [applyOperatorToState]
 
 /-- Applying a product of rectangular matrices is successive application. -/
 theorem toEuclideanLin_mul_apply {m n o : Type*} [Fintype n] [Fintype o]
     [DecidableEq n] [DecidableEq o]
-    (A : Matrix m n ℂ) (B : Matrix n o ℂ) (v : EuclideanSpace ℂ o) :
+    (A : MIPStarRE.QPBT.CMatrix m n) (B : MIPStarRE.QPBT.CMatrix n o) (v : MIPStarRE.QPBT.StateVector o) :
     Matrix.toEuclideanLin (A * B) v =
-      Matrix.toEuclideanLin A (Matrix.toEuclideanLin B v) := by
-  simp [Matrix.toEuclideanLin, Matrix.toLpLin_mul_same]
+      Matrix.toEuclideanLin A (Matrix.toEuclideanLin B v) := by simp_all
 
 /-- The squared norm of `A v` is the quadratic form of `Aᴴ A` at `v`. -/
 theorem norm_toEuclideanLin_sq {m n : Type*} [Fintype m] [Fintype n] [DecidableEq n]
-    (A : Matrix m n ℂ) (v : EuclideanSpace ℂ n) :
+    (A : MIPStarRE.QPBT.CMatrix m n) (v : MIPStarRE.QPBT.StateVector n) :
     ‖Matrix.toEuclideanLin A v‖ ^ 2 =
       (inner ℂ v (Matrix.toEuclideanLin (Aᴴ * A) v)).re := by
   rw [@norm_sq_eq_re_inner ℂ, Matrix.toEuclideanLin_conjTranspose_mul_self]
@@ -98,27 +103,27 @@ theorem norm_toEuclideanLin_sq {m n : Type*} [Fintype m] [Fintype n] [DecidableE
 
 /-- A rectangular matrix `A` with `Aᴴ A = 1` preserves norms. -/
 theorem norm_toEuclideanLin_of_conjTranspose_mul_eq_one {m n : Type*} [Fintype m]
-    [Fintype n] [DecidableEq n] {A : Matrix m n ℂ} (hA : Aᴴ * A = 1)
-    (v : EuclideanSpace ℂ n) :
+    [Fintype n] [DecidableEq n] {A : MIPStarRE.QPBT.CMatrix m n} (hA : Aᴴ * A = 1)
+    (v : MIPStarRE.QPBT.StateVector n) :
     ‖Matrix.toEuclideanLin A v‖ = ‖v‖ := by
   have h := norm_toEuclideanLin_sq A v
   have hv : (inner ℂ v v).re = ‖v‖ ^ 2 := by
     simpa using inner_self_eq_norm_sq (𝕜 := ℂ) v
-  have hone : Matrix.toEuclideanLin (1 : Matrix n n ℂ) v = v := by
+  have hone : Matrix.toEuclideanLin (1 : MIPStarRE.Quantum.Op n) v = v := by
     simp [Matrix.toEuclideanLin]
   rw [hA, hone, hv] at h
   exact (sq_eq_sq₀ (norm_nonneg _) (norm_nonneg _)).1 h
 
 /-- The squared norm of `K v` is the quadratic form of `Kᴴ K` at `v`. -/
-theorem norm_applyOperatorToState_sq {ι : Type*} [Fintype ι] [DecidableEq ι]
-    (K : Op ι) (v : EuclideanSpace ℂ ι) :
+theorem norm_applyOperatorToState_sq
+    (K : Op ι) (v : MIPStarRE.QPBT.StateVector ι) :
     ‖applyOperatorToState K v‖ ^ 2 =
       (inner ℂ v (applyOperatorToState (Kᴴ * K) v)).re :=
   norm_toEuclideanLin_sq K v
 
 /-- An operator `K` with `Kᴴ K ≤ 1` does not increase norms. -/
-theorem norm_applyOperatorToState_le {ι : Type*} [Fintype ι] [DecidableEq ι]
-    {K : Op ι} (hK : Kᴴ * K ≤ 1) (v : EuclideanSpace ℂ ι) :
+theorem norm_applyOperatorToState_le
+    {K : Op ι} (hK : Kᴴ * K ≤ 1) (v : MIPStarRE.QPBT.StateVector ι) :
     ‖applyOperatorToState K v‖ ≤ ‖v‖ := by
   have h := quadratic_form_mono hK v
   have hv : (inner ℂ v v).re = ‖v‖ ^ 2 := by
@@ -127,8 +132,8 @@ theorem norm_applyOperatorToState_le {ι : Type*} [Fintype ι] [DecidableEq ι]
   exact (sq_le_sq₀ (norm_nonneg _) (norm_nonneg _)).1 h
 
 /-- The difference of two contractions at most doubles norms. -/
-theorem norm_applyOperatorToState_sub_le {ι : Type*} [Fintype ι] [DecidableEq ι]
-    {A B : Op ι} (hA : Aᴴ * A ≤ 1) (hB : Bᴴ * B ≤ 1) (v : EuclideanSpace ℂ ι) :
+theorem norm_applyOperatorToState_sub_le
+    {A B : Op ι} (hA : Aᴴ * A ≤ 1) (hB : Bᴴ * B ≤ 1) (v : MIPStarRE.QPBT.StateVector ι) :
     ‖applyOperatorToState (A - B) v‖ ≤ 2 * ‖v‖ := by
   have hsplit : applyOperatorToState (A - B) v =
       applyOperatorToState A v - applyOperatorToState B v := by
@@ -141,7 +146,7 @@ theorem norm_applyOperatorToState_sub_le {ι : Type*} [Fintype ι] [DecidableEq 
     _ = 2 * ‖v‖ := by ring
 
 /-- Orthogonal projections are contractions. -/
-theorem conjTranspose_mul_le_one_of_isProj {ι : Type*} [Fintype ι] [DecidableEq ι]
+theorem conjTranspose_mul_le_one_of_isProj
     {P : Op ι} (hP : IsProj P) : Pᴴ * P ≤ 1 := by
   have hstar : Pᴴ = P := by
     rw [← Matrix.star_eq_conjTranspose]
@@ -150,7 +155,7 @@ theorem conjTranspose_mul_le_one_of_isProj {ι : Type*} [Fintype ι] [DecidableE
   exact sub_nonneg.mp hP.one_sub.nonneg
 
 /-- Products of contractions are contractions. -/
-theorem conjTranspose_mul_le_one_mul {ι : Type*} [Fintype ι] [DecidableEq ι]
+theorem conjTranspose_mul_le_one_mul
     {A B : Op ι} (hA : Aᴴ * A ≤ 1) (hB : Bᴴ * B ≤ 1) :
     (A * B)ᴴ * (A * B) ≤ 1 := by
   have h1 : (1 - Aᴴ * A).PosSemidef := Matrix.le_iff.mp hA
@@ -172,10 +177,10 @@ theorem conjTranspose_mul_le_one_of_effect {α ι : Type*} [Fintype α]
 
 /-- The observable of a binary measurement is a contraction: writing
 `E = M_0`, the observable is `2E - 1` and `1 - (2E - 1)² = 4(E - E²) ≥ 0`. -/
-theorem conjTranspose_mul_le_one_of_obsOf {ι : Type*} [Fintype ι] [DecidableEq ι]
+theorem conjTranspose_mul_le_one_of_obsOf
     (M : MIPStarRE.Quantum.Measurement (ZMod 2) ι) :
     (obsOf M)ᴴ * obsOf M ≤ 1 := by
-  have hsum : M.effect 0 + M.effect 1 = 1 := by
+  have hsum  := by
     calc
       M.effect 0 + M.effect 1 = ∑ a : ZMod 2, M.effect a :=
         (Fin.sum_univ_two _).symm
@@ -184,7 +189,7 @@ theorem conjTranspose_mul_le_one_of_obsOf {ι : Type*} [Fintype ι] [DecidableEq
     unfold obsOf
     rw [← hsum]
     abel
-  have hH : (M.effect 0)ᴴ = M.effect 0 := measurement_effect_hermitian M 0
+  have hH  := measurement_effect_hermitian M 0
   have hsq : 0 ≤ M.effect 0 - M.effect 0 * M.effect 0 :=
     sub_nonneg.mpr (sq_le_self (M.pos 0) (measurement_effect_le_one M 0))
   rw [hobs]
@@ -220,27 +225,18 @@ the additive and difference identities are the shared tensor-placement lemmas of
 finite-sum and scalar facts used by the transfer step. -/
 
 /-- Tensor placement distributes over a finite sum in the left factor. -/
-theorem heteroKron_finset_sum_left {β ιA ιB : Type*} (s : Finset β)
-    (A : β → Op ιA) (C : Op ιB) :
-    heteroKron (∑ b ∈ s, A b) C = ∑ b ∈ s, heteroKron (A b) C :=
-  DistanceCalculus.heteroKron_finset_sum_left s A C
+alias heteroKron_finset_sum_left := MIPStarRE.QPBT.DistanceCalculus.heteroKron_finset_sum_left
 
 /-- Tensor placement distributes over a finite sum in the right factor. -/
-theorem heteroKron_finset_sum_right {β ιA ιB : Type*} (s : Finset β)
-    (A : Op ιA) (C : β → Op ιB) :
-    heteroKron A (∑ b ∈ s, C b) = ∑ b ∈ s, heteroKron A (C b) :=
-  DistanceCalculus.heteroKron_finset_sum_right s A C
+alias heteroKron_finset_sum_right := MIPStarRE.QPBT.DistanceCalculus.heteroKron_finset_sum_right
 
 /-- The state quadratic form is additive over finite sums. -/
-theorem stateQForm_finset_sum {β ι : Type*} [Fintype ι] [DecidableEq ι]
-    (ψ : EuclideanSpace ℂ ι) (s : Finset β) (M : β → Op ι) :
-    stateQForm ψ (∑ b ∈ s, M b) = ∑ b ∈ s, stateQForm ψ (M b) :=
-  DistanceCalculus.stateQForm_finset_sum ψ s M
+alias stateQForm_finset_sum := MIPStarRE.QPBT.DistanceCalculus.stateQForm_finset_sum
 
 /-- The average over the one-point uniform distribution is the sum over the
 outcomes. -/
 theorem opFamilyDistSq_uniform_unit {γ ι : Type*} [Fintype γ] [Fintype ι]
-    [DecidableEq ι] (M N : Unit → γ → Op ι) (ψ : EuclideanSpace ℂ ι) :
+    [DecidableEq ι] (M N : Unit → γ → Op ι) (ψ : MIPStarRE.QPBT.StateVector ι) :
     opFamilyDistSq (uniformDistribution Unit) M N ψ =
       ∑ c : γ, ‖applyOperatorToState (M () c - N () c) ψ‖ ^ 2 := by
   unfold opFamilyDistSq avgOver
@@ -251,30 +247,21 @@ theorem opFamilyDistSq_uniform_unit {γ ι : Type*} [Fintype γ] [Fintype ι]
 /-- The matrix of an isometry is a matrix isometry. -/
 theorem isometryMatrix_conjTranspose_mul {ι ι' : Type} [Fintype ι] [DecidableEq ι]
     [Fintype ι'] [DecidableEq ι']
-    (φ : EuclideanSpace ℂ ι →ₗᵢ[ℂ] EuclideanSpace ℂ ι') :
+    (φ : MIPStarRE.QPBT.StateVector ι →ₗᵢ[ℂ] MIPStarRE.QPBT.StateVector ι') :
     (isometryMatrix φ)ᴴ * isometryMatrix φ = 1 := by
   apply Matrix.toEuclideanLin.injective
   have hM : Matrix.toEuclideanLin (isometryMatrix φ) = φ.toLinearMap :=
     Matrix.toEuclideanLin.apply_symm_apply φ.toLinearMap
-  calc
-    Matrix.toEuclideanLin ((isometryMatrix φ)ᴴ * isometryMatrix φ) =
-        (Matrix.toEuclideanLin (isometryMatrix φ)).adjoint.comp
-          (Matrix.toEuclideanLin (isometryMatrix φ)) :=
-      Matrix.toEuclideanLin_conjTranspose_mul_self _
-    _ = φ.toLinearMap.adjoint.comp φ.toLinearMap := by rw [hM]
-    _ = 1 := φ.adjoint_comp_self'
-    _ = Matrix.toEuclideanLin (1 : Matrix ι ι ℂ) := by
-      rw [Matrix.toEuclideanLin, Matrix.toLpLin_one]
-      rfl
+  simp_all only [Matrix.toEuclideanLin_conjTranspose_mul_self, LinearIsometry.adjoint_comp_self', Matrix.toLpLin_one]
 
 /-- The range projection `V Vᴴ` of a matrix isometry is at most the identity. -/
 theorem isometryMatrix_mul_conjTranspose_le_one {ι ι' : Type} [Fintype ι] [DecidableEq ι]
     [Fintype ι'] [DecidableEq ι']
-    (φ : EuclideanSpace ℂ ι →ₗᵢ[ℂ] EuclideanSpace ℂ ι') :
+    (φ : MIPStarRE.QPBT.StateVector ι →ₗᵢ[ℂ] MIPStarRE.QPBT.StateVector ι') :
     isometryMatrix φ * (isometryMatrix φ)ᴴ ≤ 1 := by
   have hproj : IsProj (isometryMatrix φ * (isometryMatrix φ)ᴴ) := by
     constructor
-    · change (isometryMatrix φ * (isometryMatrix φ)ᴴ) *
+    · change  isometryMatrix φ * (isometryMatrix φ)ᴴ  *
         (isometryMatrix φ * (isometryMatrix φ)ᴴ) = isometryMatrix φ * (isometryMatrix φ)ᴴ
       rw [Matrix.mul_assoc, ← Matrix.mul_assoc (isometryMatrix φ)ᴴ,
         isometryMatrix_conjTranspose_mul, Matrix.one_mul]
@@ -286,7 +273,7 @@ theorem isometryMatrix_mul_conjTranspose_le_one {ι ι' : Type} [Fintype ι] [De
 /-- Conjugation by an isometry preserves contractions. -/
 theorem conjTranspose_mul_le_one_conjIsometry {ι ι' : Type} [Fintype ι] [DecidableEq ι]
     [Fintype ι'] [DecidableEq ι']
-    (φ : EuclideanSpace ℂ ι →ₗᵢ[ℂ] EuclideanSpace ℂ ι') {A : Op ι} (hA : Aᴴ * A ≤ 1) :
+    (φ : MIPStarRE.QPBT.StateVector ι →ₗᵢ[ℂ] MIPStarRE.QPBT.StateVector ι') {A : Op ι} (hA : Aᴴ * A ≤ 1) :
     (conjIsometry φ A)ᴴ * conjIsometry φ A ≤ 1 := by
   rw [conjIsometry_eq]
   have h1 : (isometryMatrix φ * A * (isometryMatrix φ)ᴴ)ᴴ *
@@ -309,7 +296,7 @@ theorem conjTranspose_mul_le_one_conjIsometry {ι ι' : Type} [Fintype ι] [Deci
 /-- Conjugation by an isometry is multiplicative. -/
 theorem conjIsometry_mul {ι ι' : Type} [Fintype ι] [DecidableEq ι]
     [Fintype ι'] [DecidableEq ι']
-    (φ : EuclideanSpace ℂ ι →ₗᵢ[ℂ] EuclideanSpace ℂ ι') (A B : Op ι) :
+    (φ : MIPStarRE.QPBT.StateVector ι →ₗᵢ[ℂ] MIPStarRE.QPBT.StateVector ι') (A B : Op ι) :
     conjIsometry φ A * conjIsometry φ B = conjIsometry φ (A * B) := by
   simp only [conjIsometry_eq, Matrix.mul_assoc]
   rw [← Matrix.mul_assoc (isometryMatrix φ)ᴴ (isometryMatrix φ),
@@ -318,18 +305,20 @@ theorem conjIsometry_mul {ι ι' : Type} [Fintype ι] [DecidableEq ι]
 /-- Conjugation by an isometry is additive. -/
 theorem conjIsometry_sub {ι ι' : Type} [Fintype ι] [DecidableEq ι]
     [Fintype ι'] [DecidableEq ι']
-    (φ : EuclideanSpace ℂ ι →ₗᵢ[ℂ] EuclideanSpace ℂ ι') (A B : Op ι) :
+    (φ : MIPStarRE.QPBT.StateVector ι →ₗᵢ[ℂ] MIPStarRE.QPBT.StateVector ι') (A B : Op ι) :
     conjIsometry φ (A - B) = conjIsometry φ A - conjIsometry φ B := by
   simp only [conjIsometry_eq, Matrix.mul_sub, Matrix.sub_mul]
 
+variable (φA : MIPStarRE.QPBT.StateVector ιA →ₗᵢ[ℂ] MIPStarRE.QPBT.StateVector κA) (φB : MIPStarRE.QPBT.StateVector ιB →ₗᵢ[ℂ] MIPStarRE.QPBT.StateVector κB)
+
 /-- The two-sided isometry image of a state is the action of the Kronecker
 product of the two isometry matrices. -/
-theorem isometryTensor_eq_toEuclideanLin {ιA ιB κA κB : Type}
-    [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
-    [Fintype κA] [DecidableEq κA] [Fintype κB] [DecidableEq κB]
-    (φA : EuclideanSpace ℂ ιA →ₗᵢ[ℂ] EuclideanSpace ℂ κA)
-    (φB : EuclideanSpace ℂ ιB →ₗᵢ[ℂ] EuclideanSpace ℂ κB)
-    (ψ : EuclideanSpace ℂ (ιA × ιB)) :
+theorem isometryTensor_eq_toEuclideanLin
+
+
+
+
+    (ψ : MIPStarRE.QPBT.StateVector (ιA × ιB)) :
     isometryTensor φA φB ψ =
       Matrix.toEuclideanLin
         (Matrix.kronecker (isometryMatrix φA) (isometryMatrix φB)) ψ := by
@@ -338,11 +327,11 @@ theorem isometryTensor_eq_toEuclideanLin {ιA ιB κA κB : Type}
   simp [Matrix.toEuclideanLin, Matrix.mulVec, dotProduct]
 
 /-- The Kronecker product of two matrix isometries is a matrix isometry. -/
-theorem kronecker_isometryMatrix_conjTranspose_mul {ιA ιB κA κB : Type}
-    [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
-    [Fintype κA] [DecidableEq κA] [Fintype κB] [DecidableEq κB]
-    (φA : EuclideanSpace ℂ ιA →ₗᵢ[ℂ] EuclideanSpace ℂ κA)
-    (φB : EuclideanSpace ℂ ιB →ₗᵢ[ℂ] EuclideanSpace ℂ κB) :
+theorem kronecker_isometryMatrix_conjTranspose_mul
+
+
+
+     :
     (Matrix.kronecker (isometryMatrix φA) (isometryMatrix φB))ᴴ *
       Matrix.kronecker (isometryMatrix φA) (isometryMatrix φB) = 1 := by
   unfold Matrix.kronecker
@@ -351,12 +340,12 @@ theorem kronecker_isometryMatrix_conjTranspose_mul {ιA ιB κA κB : Type}
     Matrix.one_kronecker_one]
 
 /-- The two-sided isometry image preserves norms. -/
-theorem norm_isometryTensor {ιA ιB κA κB : Type}
-    [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
-    [Fintype κA] [DecidableEq κA] [Fintype κB] [DecidableEq κB]
-    (φA : EuclideanSpace ℂ ιA →ₗᵢ[ℂ] EuclideanSpace ℂ κA)
-    (φB : EuclideanSpace ℂ ιB →ₗᵢ[ℂ] EuclideanSpace ℂ κB)
-    (ψ : EuclideanSpace ℂ (ιA × ιB)) :
+theorem norm_isometryTensor
+
+
+
+
+    (ψ : MIPStarRE.QPBT.StateVector (ιA × ιB)) :
     ‖isometryTensor φA φB ψ‖ = ‖ψ‖ := by
   rw [isometryTensor_eq_toEuclideanLin]
   exact norm_toEuclideanLin_of_conjTranspose_mul_eq_one
@@ -364,12 +353,12 @@ theorem norm_isometryTensor {ιA ιB κA κB : Type}
 
 /-- A left-placed conjugated operator acts on the transported state as the
 left-placed original operator acts on the original state. -/
-theorem applyOperatorToState_leftTensor_conjIsometry {ιA ιB κA κB : Type}
-    [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
-    [Fintype κA] [DecidableEq κA] [Fintype κB] [DecidableEq κB]
-    (φA : EuclideanSpace ℂ ιA →ₗᵢ[ℂ] EuclideanSpace ℂ κA)
-    (φB : EuclideanSpace ℂ ιB →ₗᵢ[ℂ] EuclideanSpace ℂ κB)
-    (X : Op ιA) (ψ : EuclideanSpace ℂ (ιA × ιB)) :
+theorem applyOperatorToState_leftTensor_conjIsometry
+
+
+
+
+    (X : Op ιA) (ψ : MIPStarRE.QPBT.StateVector (ιA × ιB)) :
     applyOperatorToState (heteroKron (conjIsometry φA X) 1) (isometryTensor φA φB ψ) =
       isometryTensor φA φB (applyOperatorToState (heteroKron X 1) ψ) := by
   rw [isometryTensor_eq_toEuclideanLin, isometryTensor_eq_toEuclideanLin]
@@ -383,12 +372,12 @@ theorem applyOperatorToState_leftTensor_conjIsometry {ιA ιB κA κB : Type}
 
 /-- A right-placed conjugated operator acts on the transported state as the
 right-placed original operator acts on the original state. -/
-theorem applyOperatorToState_rightTensor_conjIsometry {ιA ιB κA κB : Type}
-    [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
-    [Fintype κA] [DecidableEq κA] [Fintype κB] [DecidableEq κB]
-    (φA : EuclideanSpace ℂ ιA →ₗᵢ[ℂ] EuclideanSpace ℂ κA)
-    (φB : EuclideanSpace ℂ ιB →ₗᵢ[ℂ] EuclideanSpace ℂ κB)
-    (Y : Op ιB) (ψ : EuclideanSpace ℂ (ιA × ιB)) :
+theorem applyOperatorToState_rightTensor_conjIsometry
+
+
+
+
+    (Y : Op ιB) (ψ : MIPStarRE.QPBT.StateVector (ιA × ιB)) :
     applyOperatorToState (heteroKron 1 (conjIsometry φB Y)) (isometryTensor φA φB ψ) =
       isometryTensor φA φB (applyOperatorToState (heteroKron 1 Y) ψ) := by
   rw [isometryTensor_eq_toEuclideanLin, isometryTensor_eq_toEuclideanLin]
@@ -422,10 +411,7 @@ theorem naimarkInflation_mul {ι α : Type} [Fintype ι] [DecidableEq ι]
 /-- Inflation commutes with the conjugate transpose. -/
 theorem naimarkInflation_conjTranspose {ι α : Type} [Fintype ι] [DecidableEq ι]
     [Fintype α] [DecidableEq α] (M : Op ι) :
-    (naimarkInflation (α := α) M)ᴴ = naimarkInflation (α := α) Mᴴ := by
-  ext p q
-  simp only [Matrix.conjTranspose_apply, naimarkInflation_apply]
-  by_cases hp : p.2 = none <;> by_cases hq : q.2 = none <;> simp [hp, hq]
+    (naimarkInflation (α := α) M)ᴴ = naimarkInflation (α := α) Mᴴ := by aesop
 
 /-- The ground projection is an orthogonal projection. -/
 theorem isProj_groundProjection (ι α : Type) [Fintype ι] [DecidableEq ι]
@@ -456,10 +442,12 @@ theorem naimarkCompression_finset_sum {ι α β : Type} [Fintype ι] [DecidableE
   ext i j
   simp [Matrix.sum_apply]
 
+variable (α : Type) [Fintype α] [DecidableEq α]
+
 /-- The dilated state lies in the ground slice on Alice's side. -/
-theorem applyOperatorToState_leftTensor_groundProjection (α : Type) [Fintype α]
-    [DecidableEq α] {ιA ιB : Type} [Fintype ιA] [DecidableEq ιA] [Fintype ιB]
-    [DecidableEq ιB] (ψ : EuclideanSpace ℂ (ιA × ιB)) :
+theorem applyOperatorToState_leftTensor_groundProjection
+     {ιA ιB : Type} [Fintype ιA] [DecidableEq ιA] [Fintype ιB]
+    [DecidableEq ιB] (ψ : MIPStarRE.QPBT.StateVector (ιA × ιB)) :
     applyOperatorToState (heteroKron (groundProjection ιA α) 1) (naimarkDilatedState α ψ) =
       naimarkDilatedState α ψ := by
   have hfull : applyOperatorToState
@@ -473,9 +461,9 @@ theorem applyOperatorToState_leftTensor_groundProjection (α : Type) [Fintype α
   exact hfull
 
 /-- The dilated state lies in the ground slice on Bob's side. -/
-theorem applyOperatorToState_rightTensor_groundProjection (α : Type) [Fintype α]
-    [DecidableEq α] {ιA ιB : Type} [Fintype ιA] [DecidableEq ιA] [Fintype ιB]
-    [DecidableEq ιB] (ψ : EuclideanSpace ℂ (ιA × ιB)) :
+theorem applyOperatorToState_rightTensor_groundProjection
+     {ιA ιB : Type} [Fintype ιA] [DecidableEq ιA] [Fintype ιB]
+    [DecidableEq ιB] (ψ : MIPStarRE.QPBT.StateVector (ιA × ιB)) :
     applyOperatorToState (heteroKron 1 (groundProjection ιB α)) (naimarkDilatedState α ψ) =
       naimarkDilatedState α ψ := by
   have hfull : applyOperatorToState
@@ -490,9 +478,9 @@ theorem applyOperatorToState_rightTensor_groundProjection (α : Type) [Fintype �
 
 /-- The complement of the ground slice annihilates the dilated state on Alice's
 side. -/
-theorem applyOperatorToState_leftTensor_one_sub_groundProjection (α : Type) [Fintype α]
-    [DecidableEq α] {ιA ιB : Type} [Fintype ιA] [DecidableEq ιA] [Fintype ιB]
-    [DecidableEq ιB] (ψ : EuclideanSpace ℂ (ιA × ιB)) :
+theorem applyOperatorToState_leftTensor_one_sub_groundProjection
+     {ιA ιB : Type} [Fintype ιA] [DecidableEq ιA] [Fintype ιB]
+    [DecidableEq ιB] (ψ : MIPStarRE.QPBT.StateVector (ιA × ιB)) :
     applyOperatorToState (heteroKron (1 - groundProjection ιA α) 1)
       (naimarkDilatedState α ψ) = 0 := by
   have h : heteroKron (1 - groundProjection ιA α) (1 : Op (ιB × Option α)) =
@@ -509,9 +497,9 @@ theorem applyOperatorToState_leftTensor_one_sub_groundProjection (α : Type) [Fi
 
 /-- The complement of the ground slice annihilates the dilated state on Bob's
 side. -/
-theorem applyOperatorToState_rightTensor_one_sub_groundProjection (α : Type) [Fintype α]
-    [DecidableEq α] {ιA ιB : Type} [Fintype ιA] [DecidableEq ιA] [Fintype ιB]
-    [DecidableEq ιB] (ψ : EuclideanSpace ℂ (ιA × ιB)) :
+theorem applyOperatorToState_rightTensor_one_sub_groundProjection
+     {ιA ιB : Type} [Fintype ιA] [DecidableEq ιA] [Fintype ιB]
+    [DecidableEq ιB] (ψ : MIPStarRE.QPBT.StateVector (ιA × ιB)) :
     applyOperatorToState (heteroKron 1 (1 - groundProjection ιB α))
       (naimarkDilatedState α ψ) = 0 := by
   have h : heteroKron (1 : Op (ιA × Option α)) (1 - groundProjection ιB α) =
@@ -533,16 +521,16 @@ dilated state is at most the intertwining defect of `P ⊗ 1` against any
 right-placed operator `1 ⊗ Q`, because `(1 - Π) ⊗ 1` annihilates `1 ⊗ Q ψ'`.
 This is the estimate replacing the `≈_δ` preservation that Naimark dilation
 lacks (`references/ldt-paper/orthonormalization.tex:82-101`). -/
-theorem norm_leftTensor_one_sub_groundProjection_mul_le (α : Type) [Fintype α]
-    [DecidableEq α] {ιA ιB : Type} [Fintype ιA] [DecidableEq ιA] [Fintype ιB]
-    [DecidableEq ιB] (ψ : EuclideanSpace ℂ (ιA × ιB))
+theorem norm_leftTensor_one_sub_groundProjection_mul_le
+     {ιA ιB : Type} [Fintype ιA] [DecidableEq ιA] [Fintype ιB]
+    [DecidableEq ιB] (ψ : MIPStarRE.QPBT.StateVector (ιA × ιB))
     (P : Op (ιA × Option α)) (Q : Op (ιB × Option α)) :
     ‖applyOperatorToState (heteroKron ((1 - groundProjection ιA α) * P) 1)
         (naimarkDilatedState α ψ)‖ ≤
       ‖applyOperatorToState (heteroKron P 1 - heteroKron 1 Q)
         (naimarkDilatedState α ψ)‖ := by
   set ψ' := naimarkDilatedState α ψ
-  set L : Op ((ιA × Option α) × (ιB × Option α)) :=
+  set L : Op ((ιA × Option α) ×  ιB × Option α ) :=
     heteroKron (1 - groundProjection ιA α) 1
   have hL0 : applyOperatorToState L ψ' = 0 :=
     applyOperatorToState_leftTensor_one_sub_groundProjection α ψ
@@ -571,16 +559,16 @@ theorem norm_leftTensor_one_sub_groundProjection_mul_le (α : Type) [Fintype α]
 /-- The leakage of a right-placed operator `Q` out of the ground slice on the
 dilated state is at most its intertwining defect against any left-placed
 operator. -/
-theorem norm_rightTensor_one_sub_groundProjection_mul_le (α : Type) [Fintype α]
-    [DecidableEq α] {ιA ιB : Type} [Fintype ιA] [DecidableEq ιA] [Fintype ιB]
-    [DecidableEq ιB] (ψ : EuclideanSpace ℂ (ιA × ιB))
+theorem norm_rightTensor_one_sub_groundProjection_mul_le
+     {ιA ιB : Type} [Fintype ιA] [DecidableEq ιA] [Fintype ιB]
+    [DecidableEq ιB] (ψ : MIPStarRE.QPBT.StateVector (ιA × ιB))
     (P : Op (ιA × Option α)) (Q : Op (ιB × Option α)) :
     ‖applyOperatorToState (heteroKron 1 ((1 - groundProjection ιB α) * Q))
         (naimarkDilatedState α ψ)‖ ≤
       ‖applyOperatorToState (heteroKron P 1 - heteroKron 1 Q)
         (naimarkDilatedState α ψ)‖ := by
   set ψ' := naimarkDilatedState α ψ
-  set L : Op ((ιA × Option α) × (ιB × Option α)) :=
+  set L : Op ((ιA × Option α) ×  ιB × Option α ) :=
     heteroKron 1 (1 - groundProjection ιB α)
   have hL0 : applyOperatorToState L ψ' = 0 :=
     applyOperatorToState_rightTensor_one_sub_groundProjection α ψ

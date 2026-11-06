@@ -26,15 +26,7 @@ namespace Strategy
 /-- Every tensor-product strategy has nonnegative value. -/
 theorem value_nonneg {G : Game} (S : Strategy G) : 0 ≤ S.value := by
   unfold value
-  apply avgOver_nonneg
-  intro questions
-  apply Finset.sum_nonneg
-  intro answerA _
-  apply Finset.sum_nonneg
-  intro answerB _
-  split
-  · exact outcomeWeight_nonneg S questions.1 questions.2 answerA answerB
-  · exact le_rfl
+  classical grind [avgOver_nonneg, Finset.sum_nonneg, le_rfl, outcomeWeight_nonneg]
 
 end Strategy
 

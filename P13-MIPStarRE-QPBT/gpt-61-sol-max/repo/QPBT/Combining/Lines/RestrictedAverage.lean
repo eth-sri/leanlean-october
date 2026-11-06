@@ -21,7 +21,7 @@ The estimates are items 1 and 2 of blueprint
 
 @[expose] public section
 
-open scoped BigOperators
+open scoped BigOperators Classical
 
 namespace MIPStarRE.QPBT
 
@@ -36,11 +36,10 @@ index inflates it by at most `2 m`.  This is the pointwise form of item 1 of
 blueprint `lem:restricted-line-mixture-bounds`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1052-1056`. -/
 theorem avgOver_restrictedLinePointDist_le {P : AdmissibleParams}
-    (f : (LineDesc P.toLdParams × (Fin P.m → PauliScalar P)) → ℝ)
+    (f :  LineDesc P.toLdParams ×  MIPStarRE.QPBT.PauliPoint P   → ℝ)
     (hf : ∀ sample, 0 ≤ f sample) (kind : LineKind) (i : Fin P.m) :
     avgOver (restrictedLinePointDist P kind i) f ≤
       2 * (P.m : ℝ) * avgOver (linePointDist P.toLdParams) f := by
-  classical
   haveI : Nonempty (Fin P.m) :=
     Fin.pos_iff_nonempty.mp (lt_of_lt_of_le Nat.zero_lt_one P.one_le_m)
   have hm : (0 : ℝ) < (P.m : ℝ) := by
@@ -69,8 +68,8 @@ theorem avgOver_restrictedLinePointDist_le {P : AdmissibleParams}
     exact le_add_of_nonneg_left hAnonneg
   -- The coordinate index contributes a further factor `m`.
   have hcomponent : ∀ (ν : Fin P.m → Distribution (LineDesc P.toLdParams ×
-      (Fin P.m → PauliScalar P))) (μ : Distribution (LineDesc P.toLdParams ×
-      (Fin P.m → PauliScalar P))),
+       MIPStarRE.QPBT.PauliPoint P )) (μ : Distribution (LineDesc P.toLdParams ×
+       MIPStarRE.QPBT.PauliPoint P )),
       μ = Distribution.bind (uniformDistribution (Fin P.m)) ν →
       avgOver μ f ≤ 2 * avgOver (linePointDist P.toLdParams) f →
       avgOver (ν i) f ≤ 2 * (P.m : ℝ) * avgOver (linePointDist P.toLdParams) f := by
@@ -82,8 +81,7 @@ theorem avgOver_restrictedLinePointDist_le {P : AdmissibleParams}
       rw [mul_comm]
       exact hcomp
     calc avgOver (ν i) f ≤ (P.m : ℝ) * avgOver μ f := hstep
-      _ ≤ (P.m : ℝ) * (2 * avgOver (linePointDist P.toLdParams) f) := by
-          exact mul_le_mul_of_nonneg_left hle (le_of_lt hm)
+      _ ≤ (P.m : ℝ) * (2 * avgOver (linePointDist P.toLdParams) f) := mul_le_mul_of_nonneg_left hle (le_of_lt hm)
       _ = 2 * (P.m : ℝ) * avgOver (linePointDist P.toLdParams) f := by ring
   cases kind with
   | axis =>
@@ -99,44 +97,37 @@ to one kind and coordinate index in each factor inflates it by at most
 blueprint `lem:restricted-line-mixture-bounds`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1056-1058`. -/
 theorem avgOver_prod_restrictedLinePointDist_le {P : AdmissibleParams}
-    (f : ((LineDesc P.toLdParams × (Fin P.m → PauliScalar P)) ×
-      (LineDesc P.toLdParams × (Fin P.m → PauliScalar P))) → ℝ)
+    (f :  (LineDesc P.toLdParams ×  MIPStarRE.QPBT.PauliPoint P ) ×
+       LineDesc P.toLdParams ×  MIPStarRE.QPBT.PauliPoint P    → ℝ)
     (hf : ∀ sample, 0 ≤ f sample) (kindX kindZ : LineKind) (i j : Fin P.m) :
     avgOver (Distribution.prod (restrictedLinePointDist P kindX i)
         (restrictedLinePointDist P kindZ j)) f ≤
       4 * (P.m : ℝ) ^ 2 * avgOver (Distribution.prod
         (linePointDist P.toLdParams) (linePointDist P.toLdParams)) f := by
-  classical
   have hfactor : (0 : ℝ) ≤ 2 * (P.m : ℝ) := by positivity
   rw [SandwichProduct.avgOver_distribution_prod, SandwichProduct.avgOver_distribution_prod]
-  have hinner : ∀ s1 : LineDesc P.toLdParams × (Fin P.m → PauliScalar P),
-      avgOver (restrictedLinePointDist P kindZ j) (fun s2 => f (s1, s2)) ≤
-        2 * (P.m : ℝ) *
-          avgOver (linePointDist P.toLdParams) (fun s2 => f (s1, s2)) :=
+  have hinner  :=
     fun s1 => avgOver_restrictedLinePointDist_le
       (fun s2 => f (s1, s2)) (fun s2 => hf (s1, s2)) kindZ j
   calc avgOver (restrictedLinePointDist P kindX i)
         (fun s1 => avgOver (restrictedLinePointDist P kindZ j)
-          (fun s2 => f (s1, s2)))
+           fun s2 => f (s1, s2) )
       ≤ avgOver (restrictedLinePointDist P kindX i)
-          (fun s1 => 2 * (P.m : ℝ) *
-            avgOver (linePointDist P.toLdParams) (fun s2 => f (s1, s2))) :=
+           fun s1 => 2 * (P.m : ℝ) *
+            avgOver (linePointDist P.toLdParams)  fun s2 => f (s1, s2)   :=
         avgOver_mono _ _ _ hinner
     _ = 2 * (P.m : ℝ) * avgOver (restrictedLinePointDist P kindX i)
-          (fun s1 => avgOver (linePointDist P.toLdParams)
-            (fun s2 => f (s1, s2))) := avgOver_const_mul _ _ _
+           fun s1 => avgOver (linePointDist P.toLdParams)
+             fun s2 => f (s1, s2)   := avgOver_const_mul _ _ _
     _ ≤ 2 * (P.m : ℝ) * (2 * (P.m : ℝ) *
           avgOver (linePointDist P.toLdParams)
-            (fun s1 => avgOver (linePointDist P.toLdParams)
-              (fun s2 => f (s1, s2)))) := by
+             fun s1 => avgOver (linePointDist P.toLdParams)
+               fun s2 => f (s1, s2)  ) := by
         refine mul_le_mul_of_nonneg_left ?_ hfactor
-        exact avgOver_restrictedLinePointDist_le
-          (fun s1 => avgOver (linePointDist P.toLdParams)
-            (fun s2 => f (s1, s2)))
-          (fun s1 => avgOver_nonneg _ _ fun s2 => hf (s1, s2)) kindX i
+        solve_by_elim (maxDepth := 6) [avgOver_nonneg, avgOver_restrictedLinePointDist_le]
     _ = 4 * (P.m : ℝ) ^ 2 * avgOver (linePointDist P.toLdParams)
-          (fun s1 => avgOver (linePointDist P.toLdParams)
-            (fun s2 => f (s1, s2))) := by ring
+           fun s1 => avgOver (linePointDist P.toLdParams)
+             fun s2 => f (s1, s2)   := by ring
 
 end
 

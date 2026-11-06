@@ -47,9 +47,9 @@ noncomputable def tensorMeasurement
       change ∑ ab : α × β, opTensor (A.effect ab.1) (B.effect ab.2) = 1
       rw [Fintype.sum_prod_type]
       calc
-        (∑ a : α, ∑ b : β, opTensor (A.effect a) (B.effect b)) =
+         ∑ a : α, ∑ b : β, opTensor (A.effect a) (B.effect b)  =
             ∑ a : α, leftTensor (A.effect a) *
-              (∑ b : β, rightTensor (B.effect b)) := by
+               ∑ b : β, rightTensor (B.effect b)  := by
           apply Finset.sum_congr rfl
           intro a _
           rw [Matrix.mul_sum]
@@ -78,12 +78,12 @@ theorem tensorMeasurement_postprocess
   apply MIPStarRE.Quantum.Measurement.ext
   intro ⟨firstLabel, secondLabel⟩
   change heteroKron
-      (∑ first ∈ Finset.univ.filter (fun first => firstMap first = firstLabel),
+      (∑ first ∈ Finset.univ.filter  fun first => firstMap first = firstLabel ,
         firstMeas.effect first)
-      (∑ second ∈ Finset.univ.filter (fun second => secondMap second = secondLabel),
+      (∑ second ∈ Finset.univ.filter  fun second => secondMap second = secondLabel ,
         secondMeas.effect second) =
     ∑ outcomes ∈ Finset.univ.filter
-        (fun outcomes => Prod.map firstMap secondMap outcomes = (firstLabel, secondLabel)),
+         fun outcomes => Prod.map firstMap secondMap outcomes = (firstLabel, secondLabel) ,
       heteroKron (firstMeas.effect outcomes.1) (secondMeas.effect outcomes.2)
   rw [heteroKron_finset_sum_left]
   simp_rw [heteroKron_finset_sum_right, Finset.sum_filter]
@@ -117,17 +117,17 @@ inequality for the average. -/
 theorem avg_closeness {X ι : Type*}
     [Fintype X] [DecidableEq X] [Fintype ι] [DecidableEq ι]
     (μ : Distribution X) (hμ : μ.IsProbability) (A B : X → Op ι)
-    (α : X → ℂ) (hα : ∀ x, ‖α x‖ ≤ 1) (ψ : EuclideanSpace ℂ ι) :
+    (α : X → ℂ) (hα : ∀ x, ‖α x‖ ≤ 1) (ψ : MIPStarRE.QPBT.StateVector ι) :
     ‖applyOperatorToState
         (averageOperatorOverDistribution μ fun x =>
           α x • (A x - B x)) ψ‖ ^ 2 ≤
       opDistSq μ A B ψ := by
-  let v : X → EuclideanSpace ℂ ι :=
+  let v  :=
     fun x => applyOperatorToState (A x - B x) ψ
   have happly :
       applyOperatorToState
           (averageOperatorOverDistribution μ fun x => α x • (A x - B x)) ψ =
-        ∑ x ∈ μ.support, μ.weight x • (α x • v x) := by
+        ∑ x ∈ μ.support, μ.weight x •  α x • v x  := by
     unfold averageOperatorOverDistribution applyOperatorToState
     rw [map_sum]
     simp only [LinearMap.sum_apply]
@@ -137,9 +137,7 @@ theorem avg_closeness {X ι : Type*}
     simp only [v, applyOperatorToState, Complex.real_smul, map_sub,
       LinearMap.smul_apply, LinearMap.sub_apply]
     rw [← smul_assoc, Complex.real_smul]
-  have hnorm :
-      ‖∑ x ∈ μ.support, μ.weight x • (α x • v x)‖ ≤
-        ∑ x ∈ μ.support, μ.weight x * ‖v x‖ := by
+  have hnorm  := by
     calc
       ‖∑ x ∈ μ.support, μ.weight x • (α x • v x)‖ ≤
           ∑ x ∈ μ.support, ‖μ.weight x • (α x • v x)‖ :=
@@ -157,19 +155,13 @@ theorem avg_closeness {X ι : Type*}
     Finset.sum_nonneg fun x _ => mul_nonneg (μ.nonnegative x) (sq_nonneg _)
   have havg_norm :
       |avgOver μ (fun x => ‖v x‖)| ≤
-        Real.sqrt (avgOver μ (fun x => ‖v x‖ ^ 2)) := by
-    exact MIPStarRE.LDT.Preliminaries.avgOver_abs_le_sqrt_of_pointwise μ
-      (fun x => ‖v x‖) (fun x => ‖v x‖ ^ 2)
-      (fun x => by rw [abs_norm, Real.sqrt_sq_eq_abs, abs_norm])
-      (fun x => sq_nonneg ‖v x‖) (by rw [hμ.weight_sum_eq_one])
-  have hnorm_sqrt :
-      ‖∑ x ∈ μ.support, μ.weight x • (α x • v x)‖ ≤
-        Real.sqrt (∑ x ∈ μ.support, μ.weight x * ‖v x‖ ^ 2) := by
+        Real.sqrt (avgOver μ  fun x => ‖v x‖ ^ 2 ) := by classical simp_all [MIPStarRE.LDT.Distribution.IsProbability.weight_sum_eq_one, MIPStarRE.LDT.Preliminaries.avgOver_abs_le_sqrt_of_pointwise, abs_norm]
+  have hnorm_sqrt  := by
     calc
       ‖∑ x ∈ μ.support, μ.weight x • (α x • v x)‖ ≤
           ∑ x ∈ μ.support, μ.weight x * ‖v x‖ := hnorm
       _ ≤ |avgOver μ (fun x => ‖v x‖)| := le_abs_self _
-      _ ≤ Real.sqrt (avgOver μ (fun x => ‖v x‖ ^ 2)) := havg_norm
+      _ ≤ Real.sqrt (avgOver μ  fun x => ‖v x‖ ^ 2 ) := havg_norm
   rw [happly]
   unfold opDistSq opFamilyDistSq avgOver
   simp only [Fintype.sum_unique]
@@ -177,7 +169,7 @@ theorem avg_closeness {X ι : Type*}
     ∑ x ∈ μ.support, μ.weight x * ‖v x‖ ^ 2
   calc
     ‖∑ x ∈ μ.support, μ.weight x • (α x • v x)‖ ^ 2 ≤
-        (Real.sqrt (∑ x ∈ μ.support, μ.weight x * ‖v x‖ ^ 2)) ^ 2 :=
+         Real.sqrt (∑ x ∈ μ.support, μ.weight x * ‖v x‖ ^ 2)  ^ 2 :=
       (sq_le_sq₀ (norm_nonneg _) (Real.sqrt_nonneg _)).2 hnorm_sqrt
     _ = ∑ x ∈ μ.support, μ.weight x * ‖v x‖ ^ 2 :=
       Real.sq_sqrt hrhs_nonneg
@@ -191,24 +183,22 @@ theorem povm_to_obs {X α ι : Type*}
     [Fintype X] [DecidableEq X] [Fintype α]
     [Fintype ι] [DecidableEq ι]
     (μ : Distribution X) (A B : X → α → Op ι)
-    (c : α → ℂ) (hc : ∀ a, ‖c a‖ = 1) (ψ : EuclideanSpace ℂ ι) :
+    (c : α → ℂ) (hc : ∀ a, ‖c a‖ = 1) (ψ : MIPStarRE.QPBT.StateVector ι) :
     opDistSq μ (fun x => ∑ a, c a • A x a) (fun x => ∑ a, c a • B x a) ψ ≤
       Fintype.card α * opFamilyDistSq μ A B ψ := by
   have hpoint : ∀ x,
       ‖applyOperatorToState
-          ((∑ a, c a • A x a) - ∑ a, c a • B x a) ψ‖ ^ 2 ≤
+          ( ∑ a, c a • A x a  - ∑ a, c a • B x a) ψ‖ ^ 2 ≤
         (Fintype.card α : ℝ) *
           ∑ a, ‖applyOperatorToState (A x a - B x a) ψ‖ ^ 2 := by
     intro x
     have hrewrite :
         applyOperatorToState
-            ((∑ a, c a • A x a) - ∑ a, c a • B x a) ψ =
+            ( ∑ a, c a • A x a  - ∑ a, c a • B x a) ψ =
           ∑ a, c a • applyOperatorToState (A x a - B x a) ψ := by
       simp [applyOperatorToState, ← Finset.sum_sub_distrib, ← smul_sub]
     rw [hrewrite]
-    have hnorm :
-        ‖∑ a, c a • applyOperatorToState (A x a - B x a) ψ‖ ≤
-          ∑ a, ‖applyOperatorToState (A x a - B x a) ψ‖ := by
+    have hnorm  := by
       calc
         ‖∑ a, c a • applyOperatorToState (A x a - B x a) ψ‖ ≤
             ∑ a, ‖c a • applyOperatorToState (A x a - B x a) ψ‖ :=
@@ -223,21 +213,21 @@ theorem povm_to_obs {X α ι : Type*}
         (sq_le_sq₀ (norm_nonneg _) (Finset.sum_nonneg fun _ _ => norm_nonneg _)).2 hnorm
       _ ≤ (Fintype.card α : ℝ) *
           ∑ a, ‖applyOperatorToState (A x a - B x a) ψ‖ ^ 2 := by
-        simpa using (sq_sum_le_card_mul_sum_sq
+        simpa using  sq_sum_le_card_mul_sum_sq
           (s := Finset.univ)
-          (f := fun a : α => ‖applyOperatorToState (A x a - B x a) ψ‖))
+          (f := fun a : α => ‖applyOperatorToState (A x a - B x a) ψ‖) 
   unfold opDistSq opFamilyDistSq
   simp only [Fintype.sum_unique]
   calc
     avgOver μ (fun x =>
         ‖applyOperatorToState
-          ((∑ a, c a • A x a) - ∑ a, c a • B x a) ψ‖ ^ 2) ≤
-      avgOver μ (fun x =>
+          ( ∑ a, c a • A x a  - ∑ a, c a • B x a) ψ‖ ^ 2) ≤
+      avgOver μ  fun x =>
         (Fintype.card α : ℝ) *
-          ∑ a, ‖applyOperatorToState (A x a - B x a) ψ‖ ^ 2) :=
+          ∑ a, ‖applyOperatorToState (A x a - B x a) ψ‖ ^ 2  :=
       avgOver_mono μ _ _ hpoint
-    _ = (Fintype.card α : ℝ) * avgOver μ (fun x =>
-        ∑ a, ‖applyOperatorToState (A x a - B x a) ψ‖ ^ 2) :=
+    _ = (Fintype.card α : ℝ) * avgOver μ  fun x =>
+        ∑ a, ‖applyOperatorToState (A x a - B x a) ψ‖ ^ 2  :=
       avgOver_const_mul _ _ _
 
 /-- Passing from answer-indexed POVM effects to unit-modulus weighted
@@ -249,12 +239,11 @@ theorem povm_to_obs_of_measurements {X α ι : Type*}
     [Fintype X] [DecidableEq X] [Fintype α]
     [Fintype ι] [DecidableEq ι]
     (μ : Distribution X) (A B : X → Measurement α ι)
-    (c : α → ℂ) (hc : ∀ a, ‖c a‖ = 1) (ψ : EuclideanSpace ℂ ι) :
+    (c : α → ℂ) (hc : ∀ a, ‖c a‖ = 1) (ψ : MIPStarRE.QPBT.StateVector ι) :
     opDistSq μ (fun x => ∑ a, c a • (A x).effect a)
         (fun x => ∑ a, c a • (B x).effect a) ψ ≤
       Fintype.card α * opFamilyDistSq μ
-        (fun x a => (A x).effect a) (fun x a => (B x).effect a) ψ := by
-  exact povm_to_obs μ (fun x a => (A x).effect a)
+        (fun x a => (A x).effect a) (fun x a => (B x).effect a) ψ := povm_to_obs μ (fun x a => (A x).effect a)
     (fun x a => (B x).effect a) c hc ψ
 
 end MIPStarRE.QPBT

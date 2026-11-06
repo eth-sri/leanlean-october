@@ -26,7 +26,7 @@ the complete passing-value estimate.
 
 @[expose] public section
 
-open scoped BigOperators MatrixOrder ComplexOrder
+open scoped BigOperators MatrixOrder ComplexOrder Classical
 
 set_option synthInstance.maxSize 400
 
@@ -52,7 +52,7 @@ variable {points : CombinedPointsWitness setting deltaQ}
 /-- Split a direct extended point into its two Pauli points and two scalar
 coordinates.  This is a single bijection, so uniformity is joint rather than
 an inference from four separate marginals. -/
-noncomputable def directPointExtendedQuestionEquiv (P : AdmissibleParams) :
+def directPointExtendedQuestionEquiv (P : AdmissibleParams) :
     (Fin P.extendedDirectLd.m → DirectScalarQ P.extendedDirectLd) ≃
       ExtendedPointQuestion P :=
   (Equiv.piCongrRight fun _ => (extendedDirectScalarEquiv P).toEquiv).trans <|
@@ -84,15 +84,7 @@ theorem directPointExtendedQuestionEquiv_apply
         (fun j => extendedDirectScalarEquiv P (u j)) (.inl (.inr i)) = _
       rw [piCongrLeft_const_apply]
       rfl
-  · apply Prod.ext
-    · change (finCombineEquiv P.m).piCongrLeft (fun _ => PauliScalar P)
-        (fun j => extendedDirectScalarEquiv P (u j)) (.inr 0) = _
-      rw [piCongrLeft_const_apply]
-      rfl
-    · change (finCombineEquiv P.m).piCongrLeft (fun _ => PauliScalar P)
-        (fun j => extendedDirectScalarEquiv P (u j)) (.inr 1) = _
-      rw [piCongrLeft_const_apply]
-      rfl
+  solve_by_elim (maxDepth := 6) [Prod.ext, piCongrLeft_const_apply]
 
 /-- Question-dependent coarse-graining on opposite tensor factors cannot
 increase their consistency defect. -/
@@ -102,7 +94,7 @@ private theorem consistencyDefect_dependent_postprocess_le
     [Fintype Beta] [DecidableEq Beta]
     [Fintype IA] [DecidableEq IA] [Fintype IB] [DecidableEq IB]
     (mu : Distribution X) (A : X → Measurement Alpha IA)
-    (B : X → Measurement Alpha IB) (psi : EuclideanSpace ℂ (IA × IB))
+    (B : X → Measurement Alpha IB) (psi : MIPStarRE.QPBT.StateVector (IA × IB))
     (f : X → Alpha → Beta) :
     consistencyDefect mu
         (fun x b => heteroKron (((A x).postprocess (f x)).effect b) 1)
@@ -127,22 +119,13 @@ private theorem consistencyDefect_uniform_fst
     [Fintype Alpha] [DecidableEq Alpha]
     [Fintype IA] [DecidableEq IA] [Fintype IB] [DecidableEq IB]
     (A : X → Alpha → Op IA) (B : X → Alpha → Op IB)
-    (psi : EuclideanSpace ℂ (IA × IB)) :
+    (psi : MIPStarRE.QPBT.StateVector (IA × IB)) :
     consistencyDefect (uniformDistribution (X × Y))
         (fun xy a => heteroKron (A xy.1 a) 1)
         (fun xy a => heteroKron 1 (B xy.1 a)) psi =
       consistencyDefect (uniformDistribution X)
         (fun x a => heteroKron (A x a) 1)
-        (fun x a => heteroKron 1 (B x a)) psi := by
-  unfold consistencyDefect
-  let f : X → ℝ := fun x =>
-    ∑ a : Alpha, ∑ b : Alpha,
-      if a = b then 0 else
-        (inner ℂ psi ((EuclideanSpace.equiv (IA × IB) ℂ).symm
-          ((heteroKron (A x a) 1 * heteroKron 1 (B x b)).mulVec psi))).re
-  change avgOver (uniformDistribution (X × Y)) (fun xy => f xy.1) =
-    avgOver (uniformDistribution X) f
-  exact avgOver_uniform_fst f
+        (fun x a => heteroKron 1 (B x a)) psi := by grind [avgOver_uniform_fst, consistencyDefect]
 
 private theorem point_point_win_iff_read_eq
     (sample : DirectLdSpace P.extendedDirectLd)
@@ -172,8 +155,10 @@ private theorem point_point_win_iff_read_eq
     subst i
     exact (extendedDirectScalarEquiv P).injective h
 
+variable (lines : ExtendedLinesWitness setting points deltaL)
+
 private theorem point_rejected_term_eq_read_mismatch
-    (lines : ExtendedLinesWitness setting points deltaL)
+
     (sample : DirectLdSpace P.extendedDirectLd)
     (answerA answerB : DirectLdAnswer P.extendedDirectLd) :
     (if directLdWinPredicate P.extendedDirectLd
@@ -187,7 +172,6 @@ private theorem point_rejected_term_eq_read_mismatch
       else outcomeWeight (strategy lines)
         (.point, directLdMap P.extendedDirectLd .point sample)
         (.point, directLdMap P.extendedDirectLd .point sample) answerA answerB := by
-  classical
   cases answerA with
   | pointVals valuesA =>
       cases answerB with
@@ -208,7 +192,7 @@ private theorem point_rejected_term_eq_read_mismatch
       cases answerB <;> simp [pointGameRead, directLdWinPredicate, validDirectLdAnswer]
 
 private theorem point_rejectedMass_eq_read_mismatch
-    (lines : ExtendedLinesWitness setting points deltaL)
+
     (sample : DirectLdSpace P.extendedDirectLd) :
     directRejectedMass P.extendedDirectLd (strategy lines)
         (.point, directLdMap P.extendedDirectLd .point sample)
@@ -216,32 +200,26 @@ private theorem point_rejectedMass_eq_read_mismatch
       outcomeEventWeight (strategy lines)
         (.point, directLdMap P.extendedDirectLd .point sample)
         (.point, directLdMap P.extendedDirectLd .point sample)
-        (fun answerA answerB => pointGameRead answerA ≠ pointGameRead answerB) := by
-  classical
+         fun answerA answerB => pointGameRead answerA ≠ pointGameRead answerB  := by
   unfold directRejectedMass outcomeEventWeight
   apply Finset.sum_congr rfl
   intro answerA _
   apply Finset.sum_congr rfl
-  intro answerB _
-  have hterm := point_rejected_term_eq_read_mismatch lines sample answerA answerB
-  by_cases hread : pointGameRead answerA = pointGameRead answerB
-  · simpa [hread] using hterm
-  · simpa [hread] using hterm
+  simp_all [point_rejected_term_eq_read_mismatch]
 
 /-- The completed point read of the direct-game answer measurement is the
 corresponding scalar coarse-graining of the supplied joint point measurement. -/
 theorem point_read_effect
-    (lines : ExtendedLinesWitness setting points deltaL) (side : PlayerSide)
+     (side : PlayerSide)
     (sample : DirectLdSpace P.extendedDirectLd) (answer : Option (PauliScalar P)) :
-    (((answerMeasurement lines side
+     ((answerMeasurement lines side
         (.point, directLdMap P.extendedDirectLd .point sample)).postprocess
-      pointGameRead).effect answer) =
+      pointGameRead).effect answer  =
       ((points.Q side
         (projX (directPointToPauli P sample.point))
         (projZ (directPointToPauli P sample.point))).postprocess fun values =>
           some (directPointToPauli P sample.point (alphaVar P.m) * values.1 +
             directPointToPauli P sample.point (betaVar P.m) * values.2)).effect answer := by
-  classical
   unfold answerMeasurement CombinedPointsWitness.extendedQ
   rw [MIPStarRE.Quantum.Measurement.postprocess_comp,
     MIPStarRE.Quantum.Measurement.postprocess_comp]
@@ -250,7 +228,7 @@ theorem point_read_effect
 /-- The point/point branch rejection is exactly the consistency defect of the
 two completed scalar point readouts under the common uniform point question. -/
 theorem point_branch_rejection_eq_consistencyDefect
-    (lines : ExtendedLinesWitness setting points deltaL) :
+     :
     directLdBranchRejectionProbability P.extendedDirectLd (strategy lines)
         (.point, .point) =
       consistencyDefect (uniformDistribution
@@ -272,10 +250,10 @@ theorem point_branch_rejection_eq_consistencyDefect
   calc
     _ = avgOver (uniformDistribution
           (Fin P.extendedDirectLd.m → DirectScalarQ P.extendedDirectLd))
-        (fun u => outcomeEventWeight (strategy lines)
+         fun u => outcomeEventWeight (strategy lines)
           (directLdPointQuestionOf P.extendedDirectLd u)
           (directLdPointQuestionOf P.extendedDirectLd u)
-          (fun answerA answerB => pointGameRead answerA ≠ pointGameRead answerB)) := by
+           fun answerA answerB => pointGameRead answerA ≠ pointGameRead answerB   := by
       apply avgOver_congr
       intro u
       simpa [directLdPointQuestionOf, directLdMap] using
@@ -284,21 +262,21 @@ theorem point_branch_rejection_eq_consistencyDefect
     _ = consistencyDefect (uniformDistribution
           (Fin P.extendedDirectLd.m → DirectScalarQ P.extendedDirectLd))
         (fun u answer => heteroKron
-          ((((answerMeasurement lines .alice
+          ( ((answerMeasurement lines .alice
             (directLdPointQuestionOf P.extendedDirectLd u)).postprocess
-              pointGameRead).effect answer)) 1)
+              pointGameRead).effect answer ) 1)
         (fun u answer => heteroKron 1
-          ((((answerMeasurement lines .bob
+          ( ((answerMeasurement lines .bob
             (directLdPointQuestionOf P.extendedDirectLd u)).postprocess
-              pointGameRead).effect answer)))
+              pointGameRead).effect answer ))
         (pairState setting) :=
       (WinImplications.consistencyDefect_postprocess_eq_mismatch
         (uniformDistribution
           (Fin P.extendedDirectLd.m → DirectScalarQ P.extendedDirectLd))
         (strategy lines)
-        (fun u => directLdPointQuestionOf P.extendedDirectLd u)
-        (fun u => directLdPointQuestionOf P.extendedDirectLd u)
-        (fun _ => pointGameRead) (fun _ => pointGameRead)).symm
+        ( directLdPointQuestionOf P.extendedDirectLd )
+        ( directLdPointQuestionOf P.extendedDirectLd )
+        (fun _ => pointGameRead)  fun _ => pointGameRead ).symm
     _ = _ := by
       apply consistencyDefect_congr <;> intro u answer
       · rw [show directLdPointQuestionOf P.extendedDirectLd u =
@@ -313,7 +291,7 @@ theorem point_branch_rejection_eq_consistencyDefect
 /-- The point/point rejection probability of the supplied extended strategy is
 bounded by the self-consistency error of its joint point measurements. -/
 theorem point_point_rejection_le
-    (lines : ExtendedLinesWitness setting points deltaL) :
+     :
     directLdBranchRejectionProbability P.extendedDirectLd (strategy lines)
         (.point, .point) ≤ deltaQ := by
   rw [point_branch_rejection_eq_consistencyDefect lines]
@@ -336,22 +314,15 @@ theorem point_point_rejection_le
           ((points.Q .alice q.1.1 q.1.2).effect values) 1)
         (fun q values => heteroKron 1
           ((points.Q .bob q.1.1 q.1.2).effect values))
-        (pairState setting) := by
-      exact consistencyDefect_dependent_postprocess_le
-        (uniformDistribution (ExtendedPointQuestion P))
-        (fun q => points.Q .alice q.1.1 q.1.2)
-        (fun q => points.Q .bob q.1.1 q.1.2)
-        (pairState setting)
-        (fun q values => some (q.2.1 * values.1 + q.2.2 * values.2))
+        (pairState setting) := by simp_all only [consistencyDefect_dependent_postprocess_le]
     _ = consistencyDefect (uniformDistribution
-          ((Fin P.m → PauliScalar P) × (Fin P.m → PauliScalar P)))
+          ( MIPStarRE.QPBT.PauliPoint P  ×  MIPStarRE.QPBT.PauliPoint P ))
         (fun xz values => heteroKron
           ((points.Q .alice xz.1 xz.2).effect values) 1)
         (fun xz values => heteroKron 1
           ((points.Q .bob xz.1 xz.2).effect values))
-        (pairState setting) := by
-      exact consistencyDefect_uniform_fst
-        (X := (Fin P.m → PauliScalar P) × (Fin P.m → PauliScalar P))
+        (pairState setting) := consistencyDefect_uniform_fst
+        (X :=  MIPStarRE.QPBT.PauliPoint P  ×  MIPStarRE.QPBT.PauliPoint P )
         (Y := PauliScalar P × PauliScalar P)
         (Alpha := PauliScalar P × PauliScalar P)
         (IA := setting.ExpandedLocalSpace .alice)
@@ -360,7 +331,7 @@ theorem point_point_rejection_le
         (fun xz values => (points.Q .bob xz.1 xz.2).effect values)
         (pairState setting)
     _ = consistencyDefect (uniformDistribution
-          ((Fin P.m → PauliScalar P) × (Fin P.m → PauliScalar P)))
+          ( MIPStarRE.QPBT.PauliPoint P  ×  MIPStarRE.QPBT.PauliPoint P ))
         (fun xz values =>
           (setting.placedMeasurement .AA' (points.Q .alice xz.1 xz.2)).effect values)
         (fun xz values =>
@@ -384,7 +355,7 @@ theorem point_point_rejection_le
         · exact (Matrix.nonneg_iff_posSemidef.mp
             ((points.Q .bob xz.1 xz.2).pos b)).isHermitian
     _ ≤ opFamilyDistSq (uniformDistribution
-          ((Fin P.m → PauliScalar P) × (Fin P.m → PauliScalar P)))
+          ( MIPStarRE.QPBT.PauliPoint P  ×  MIPStarRE.QPBT.PauliPoint P ))
         (fun xz values =>
           (setting.placedMeasurement .AA' (points.Q .alice xz.1 xz.2)).effect values)
         (fun xz values =>
@@ -398,17 +369,12 @@ theorem point_point_rejection_le
         exact setting.placedMeasurement_isProjective .BA''
           (points.Q .bob xz.1 xz.2) (points.projective .bob xz.1 xz.2)
     _ = opFamilyDistSq (uniformDistribution
-          ((Fin P.m → PauliScalar P) × (Fin P.m → PauliScalar P)))
+          ( MIPStarRE.QPBT.PauliPoint P  ×  MIPStarRE.QPBT.PauliPoint P ))
         (fun xz values =>
           setting.place .AA' ((points.Q .alice xz.1 xz.2).effect values))
         (fun xz values =>
           setting.place .BA'' ((points.Q .bob xz.1 xz.2).effect values))
-        setting.psiHat := by
-      apply DistanceCalculus.opFamilyDistSq_congr <;> intro xz values
-      · exact setting.placedMeasurement_effect .AA'
-          (points.Q .alice xz.1 xz.2) values
-      · exact setting.placedMeasurement_effect .BA''
-          (points.Q .bob xz.1 xz.2) values
+        setting.psiHat := by bound
     _ ≤ deltaQ := by
       simpa only [Placement.side] using
         points.self_consistent .AA' .BA'' trivial

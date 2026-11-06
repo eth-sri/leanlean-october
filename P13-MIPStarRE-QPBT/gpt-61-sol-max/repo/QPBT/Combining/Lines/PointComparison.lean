@@ -7,6 +7,8 @@ public import QPBT.Combining.Lines.PointwiseDefect
 public import QPBT.Games.RestrictedAverage
 public import QPBT.Combining.Points.MarginalContraction
 
+open scoped Classical
+
 /-!
 # Point and line marginal comparisons
 
@@ -37,9 +39,9 @@ noncomputable section
 formalization-only averaging step in `eq:pasting-q1`, paper
 `14_analysis_of_the_pauli_basis_test.tex:936-941`, using `lem:alnf` and `lem:dlnf`. -/
 theorem avgOver_linePointDist_point (L : LdParams)
-    (value : (Fin L.m → ScalarQ L) → ℝ) :
+    (value :  MIPStarRE.QPBT.LdPoint L  → ℝ) :
     avgOver (linePointDist L) (fun sample => value sample.2) =
-      avgOver (uniformDistribution (Fin L.m → ScalarQ L)) value := by
+      avgOver (uniformDistribution (MIPStarRE.QPBT.LdPoint L)) value := by
   rw [linePointDist, avgOver_mix]
   rw [← Distribution.avgOver_map (aLinePointDist L) Prod.snd value,
     ← Distribution.avgOver_map (dLinePointDist L) Prod.snd value,
@@ -51,32 +53,27 @@ theorem avgOver_linePointDist_point (L : LdParams)
 This formalization-only identity transports the point estimates in
 `eq:pasting-q1`, paper `14_analysis_of_the_pauli_basis_test.tex:936-941`. -/
 theorem avgOver_prod_linePointDist_points (L : LdParams)
-    (value : (Fin L.m → ScalarQ L) × (Fin L.m → ScalarQ L) → ℝ) :
+    (value :  MIPStarRE.QPBT.LdPoint L  ×  MIPStarRE.QPBT.LdPoint L  → ℝ) :
     avgOver (Distribution.prod (linePointDist L) (linePointDist L))
       (fun sample => value (sample.1.2, sample.2.2)) =
       avgOver (uniformDistribution
-        ((Fin L.m → ScalarQ L) × (Fin L.m → ScalarQ L))) value := by
-  rw [uniformDistribution_prod, SandwichProduct.avgOver_distribution_prod,
-    SandwichProduct.avgOver_distribution_prod]
-  conv_lhs =>
-    arg 2
-    ext sample
-    rw [avgOver_linePointDist_point L (fun point => value (sample.2, point))]
-  exact avgOver_linePointDist_point L
-    (fun point => avgOver (uniformDistribution _) (fun other => value (point, other)))
+        ( MIPStarRE.QPBT.LdPoint L  ×  MIPStarRE.QPBT.LdPoint L )) value := by grind [avgOver_linePointDist_point, uniformDistribution_prod, SandwichProduct.avgOver_distribution_prod]
+
+variable {P : AdmissibleParams} {ε δQ : ℝ} {S : ProjectiveSetting P ε} (points : CombinedPointsWitness S δQ)
+
+variable (side : PlayerSide) (x z : MIPStarRE.QPBT.PauliPoint P)
 
 /-- The first postprocessed joint-point effect is its X marginal sum.
 This is the definition preceding `eq:qld-qxz-close-to-point`, paper
 `14_analysis_of_the_pauli_basis_test.tex:914-926`, not a witness assumption. -/
 theorem CombinedPointsWitness.postprocess_fst_effect
-    {P : AdmissibleParams} {ε δQ : ℝ} {S : ProjectiveSetting P ε}
-    (points : CombinedPointsWitness S δQ) (side : PlayerSide)
-    (x z : Fin P.m → PauliScalar P) (a : PauliScalar P) :
+
+
+     (a : PauliScalar P) :
     ((points.Q side x z).postprocess Prod.fst).effect a =
       ∑ b, (points.Q side x z).effect (a, b) := by
-  classical
-  change (∑ pair ∈ Finset.univ.filter (fun pair => pair.1 = a),
-    (points.Q side x z).effect pair) = _
+  change  ∑ pair ∈ Finset.univ.filter  fun pair => pair.1 = a ,
+    (points.Q side x z).effect pair  = _
   simp only [Finset.sum_filter, Fintype.sum_prod_type]
   rw [Finset.sum_comm]
   simp
@@ -85,22 +82,21 @@ theorem CombinedPointsWitness.postprocess_fst_effect
 Source: `eq:qld-qxz-close-to-point-2`, paper
 `14_analysis_of_the_pauli_basis_test.tex:928-930`. -/
 theorem CombinedPointsWitness.postprocess_snd_effect
-    {P : AdmissibleParams} {ε δQ : ℝ} {S : ProjectiveSetting P ε}
-    (points : CombinedPointsWitness S δQ) (side : PlayerSide)
-    (x z : Fin P.m → PauliScalar P) (b : PauliScalar P) :
+
+
+     (b : PauliScalar P) :
     ((points.Q side x z).postprocess Prod.snd).effect b =
       ∑ a, (points.Q side x z).effect (a, b) := by
-  classical
-  change (∑ pair ∈ Finset.univ.filter (fun pair => pair.2 = b),
-    (points.Q side x z).effect pair) = _
+  change  ∑ pair ∈ Finset.univ.filter  fun pair => pair.2 = b ,
+    (points.Q side x z).effect pair  = _
   simp [Finset.sum_filter, Fintype.sum_prod_type]
 
 /-- X marginal distance on the product line-point law, retaining the supplied
 point error. This is the first transport step of `eq:pasting-q1`, paper
 `14_analysis_of_the_pauli_basis_test.tex:936-941`; no line comparison is assumed. -/
 theorem CombinedPointsWitness.marginal_X_linePoint_distance_le
-    {P : AdmissibleParams} {ε δQ : ℝ} {S : ProjectiveSetting P ε}
-    (points : CombinedPointsWitness S δQ)
+
+
     (p1 p2 : Placement) (hopp : p1.IsOpposite p2) :
     opFamilyDistSq (Distribution.prod (linePointDist P.toLdParams)
       (linePointDist P.toLdParams))
@@ -108,21 +104,20 @@ theorem CombinedPointsWitness.marginal_X_linePoint_distance_le
         (((points.Q p1.side sample.1.2 sample.2.2).postprocess Prod.fst).effect a))
       (fun sample a => S.place p2 ((S.pointMeasExp p2.side .X sample.1.2).effect a))
       S.psiHat ≤ 4 * δQ := by
-  classical
   simp_rw [points.postprocess_fst_effect, S.place_finset_sum]
   unfold opFamilyDistSq
-  rw [avgOver_prod_linePointDist_points P.toLdParams (fun xz =>
+  rw [avgOver_prod_linePointDist_points P.toLdParams  fun xz =>
     ∑ a, ‖applyOperatorToState
-      ((∑ b, S.place p1 ((points.Q p1.side xz.1 xz.2).effect (a, b))) -
-        S.place p2 ((S.pointMeasExp p2.side .X xz.1).effect a)) S.psiHat‖ ^ 2)]
+      ( ∑ b, S.place p1 ((points.Q p1.side xz.1 xz.2).effect (a, b))  -
+        S.place p2 ((S.pointMeasExp p2.side .X xz.1).effect a)) S.psiHat‖ ^ 2 ]
   exact points.marginal_X_distance_le p1 p2 hopp
 
 /-- Z marginal distance on the product line-point law, with the same error as
 the uniform-point estimate. Source: `eq:pasting-q1`, paper
 `14_analysis_of_the_pauli_basis_test.tex:936-941`. -/
 theorem CombinedPointsWitness.marginal_Z_linePoint_distance_le
-    {P : AdmissibleParams} {ε δQ : ℝ} {S : ProjectiveSetting P ε}
-    (points : CombinedPointsWitness S δQ)
+
+
     (p1 p2 : Placement) (hopp : p1.IsOpposite p2) :
     opFamilyDistSq (Distribution.prod (linePointDist P.toLdParams)
       (linePointDist P.toLdParams))
@@ -130,13 +125,12 @@ theorem CombinedPointsWitness.marginal_Z_linePoint_distance_le
         (((points.Q p1.side sample.1.2 sample.2.2).postprocess Prod.snd).effect b))
       (fun sample b => S.place p2 ((S.pointMeasExp p2.side .Z sample.2.2).effect b))
       S.psiHat ≤ 4 * δQ := by
-  classical
   simp_rw [points.postprocess_snd_effect, S.place_finset_sum]
   unfold opFamilyDistSq
-  rw [avgOver_prod_linePointDist_points P.toLdParams (fun xz =>
+  rw [avgOver_prod_linePointDist_points P.toLdParams  fun xz =>
     ∑ b, ‖applyOperatorToState
-      ((∑ a, S.place p1 ((points.Q p1.side xz.1 xz.2).effect (a, b))) -
-        S.place p2 ((S.pointMeasExp p2.side .Z xz.2).effect b)) S.psiHat‖ ^ 2)]
+      ( ∑ a, S.place p1 ((points.Q p1.side xz.1 xz.2).effect (a, b))  -
+        S.place p2 ((S.pointMeasExp p2.side .Z xz.2).effect b)) S.psiHat‖ ^ 2 ]
   exact points.marginal_Z_distance_le p1 p2 hopp
 
 /-- Completing both answer alphabets with a zero outcome preserves placed
@@ -154,7 +148,6 @@ theorem ProjectiveSetting.opFamilyDistSq_postprocess_some
       S.psiHat =
     opFamilyDistSq law (fun sample answer => S.place p1 ((first sample).effect answer))
       (fun sample answer => S.place p2 ((second sample).effect answer)) S.psiHat := by
-  classical
   unfold opFamilyDistSq
   congr 1
   funext sample
@@ -167,8 +160,8 @@ theorem ProjectiveSetting.opFamilyDistSq_postprocess_some
 samples. Source: the first comparison of `eq:pasting-q1`, paper
 `14_analysis_of_the_pauli_basis_test.tex:936-941`, before inserting the line. -/
 theorem CombinedPointsWitness.marginal_X_option_linePoint_distance_le
-    {P : AdmissibleParams} {ε δQ : ℝ} {S : ProjectiveSetting P ε}
-    (points : CombinedPointsWitness S δQ)
+
+
     (p1 p2 : Placement) (hopp : p1.IsOpposite p2) :
     opFamilyDistSq (Distribution.prod (linePointDist P.toLdParams)
       (linePointDist P.toLdParams))
@@ -186,8 +179,8 @@ theorem CombinedPointsWitness.marginal_X_option_linePoint_distance_le
 samples. Source: the second comparison of `eq:pasting-q1`, paper
 `14_analysis_of_the_pauli_basis_test.tex:936-941`, before inserting the line. -/
 theorem CombinedPointsWitness.marginal_Z_option_linePoint_distance_le
-    {P : AdmissibleParams} {ε δQ : ℝ} {S : ProjectiveSetting P ε}
-    (points : CombinedPointsWitness S δQ)
+
+
     (p1 p2 : Placement) (hopp : p1.IsOpposite p2) :
     opFamilyDistSq (Distribution.prod (linePointDist P.toLdParams)
       (linePointDist P.toLdParams))
@@ -216,7 +209,6 @@ theorem exp_line_point_same_placement_distance_le_explicit :
           ((S.pointMeasExpOption p2.side W sample.2).effect answer))
         S.psiHat ≤ 1040 * (ε + deltaLine ε) := by
   intro P ε S p1 p2 hopp W
-  classical
   have hreverse : p2.IsOpposite p1 := by
     cases p1 <;> cases p2 <;> simp_all [Placement.IsOpposite]
   have hpoint : opFamilyDistSq (linePointDist P.toLdParams)
@@ -227,10 +219,10 @@ theorem exp_line_point_same_placement_distance_le_explicit :
     unfold ProjectiveSetting.pointMeasExpOption
     erw [S.opFamilyDistSq_postprocess_some]
     unfold opFamilyDistSq
-    rw [avgOver_linePointDist_point P.toLdParams (fun point =>
+    rw [avgOver_linePointDist_point P.toLdParams  fun point =>
       ∑ answer, ‖applyOperatorToState
         (S.place p1 ((S.pointMeasExp p1.side W point).effect answer) -
-          S.place p2 ((S.pointMeasExp p2.side W point).effect answer)) S.psiHat‖ ^ 2)]
+          S.place p2 ((S.pointMeasExp p2.side W point).effect answer)) S.psiHat‖ ^ 2 ]
     exact exp_point_self_cons_explicit P ε S p1 p2 hopp W
   have htri := opFamilyDistSq_le_of_le_of_le _ _ _ _ S.psiHat _ _
     (exp_line_point_cons_explicit' P ε S p2 p1 hreverse W) hpoint
@@ -264,7 +256,6 @@ theorem combined_points_line_marginal_distance_le_explicit
           (fun sample answer => S.place p2
             ((S.lineEvalMeasExp p2.side .Z sample.2.1 sample.2.2).effect answer))
           S.psiHat ≤ 8 * δQ + 2080 * (ε + deltaLine ε) := by
-  classical
   have hX : opFamilyDistSq (Distribution.prod (linePointDist P.toLdParams)
       (linePointDist P.toLdParams))
       (fun sample answer => S.place p2
@@ -306,13 +297,12 @@ theorem combined_points_line_marginal_distance_le_explicit
 completing the X marginal. This is a formalization-only postprocessing
 identity for `eq:pasting-q1`; it is not an extra marginal hypothesis. -/
 theorem CombinedPointsWitness.completed_fst_effect
-    {P : AdmissibleParams} {ε δQ : ℝ} {S : ProjectiveSetting P ε}
-    (points : CombinedPointsWitness S δQ) (side : PlayerSide)
-    (x z : Fin P.m → PauliScalar P) (answer : Option (PauliScalar P)) :
-    (((points.Q side x z).postprocess (fun pair => (some pair.1, some pair.2))).postprocess
+
+
+     (answer : Option (PauliScalar P)) :
+    (((points.Q side x z).postprocess  fun pair => (some pair.1, some pair.2) ).postprocess
       Prod.fst).effect answer =
       (((points.Q side x z).postprocess Prod.fst).postprocess some).effect answer := by
-  classical
   exact congrArg (fun meas => meas.effect answer)
     ((MIPStarRE.Quantum.Measurement.postprocess_comp (points.Q side x z)
       (fun pair => (some pair.1, some pair.2)) Prod.fst).trans
@@ -322,13 +312,12 @@ theorem CombinedPointsWitness.completed_fst_effect
 completing the Z marginal. Source: `eq:pasting-q1`, with the existing
 completed evaluation convention. -/
 theorem CombinedPointsWitness.completed_snd_effect
-    {P : AdmissibleParams} {ε δQ : ℝ} {S : ProjectiveSetting P ε}
-    (points : CombinedPointsWitness S δQ) (side : PlayerSide)
-    (x z : Fin P.m → PauliScalar P) (answer : Option (PauliScalar P)) :
-    (((points.Q side x z).postprocess (fun pair => (some pair.1, some pair.2))).postprocess
+
+
+     (answer : Option (PauliScalar P)) :
+    (((points.Q side x z).postprocess  fun pair => (some pair.1, some pair.2) ).postprocess
       Prod.snd).effect answer =
       (((points.Q side x z).postprocess Prod.snd).postprocess some).effect answer := by
-  classical
   exact congrArg (fun meas => meas.effect answer)
     ((MIPStarRE.Quantum.Measurement.postprocess_comp (points.Q side x z)
       (fun pair => (some pair.1, some pair.2)) Prod.snd).trans
@@ -347,7 +336,7 @@ theorem combined_points_line_marginal_defect_le_explicit
           (linePointDist P.toLdParams))
           (fun sample answer => S.place p1
             ((((points.Q p1.side sample.1.2 sample.2.2).postprocess
-              (fun pair => (some pair.1, some pair.2))).postprocess Prod.fst).effect answer))
+               fun pair => (some pair.1, some pair.2) ).postprocess Prod.fst).effect answer))
           (fun sample answer => S.place p2
             ((S.lineEvalMeasExp p2.side .X sample.1.1 sample.1.2).effect answer))
           S.psiHat ≤ 8 * δQ + 2080 * (ε + deltaLine ε) ∧
@@ -355,16 +344,15 @@ theorem combined_points_line_marginal_defect_le_explicit
           (linePointDist P.toLdParams))
           (fun sample answer => S.place p1
             ((((points.Q p1.side sample.1.2 sample.2.2).postprocess
-              (fun pair => (some pair.1, some pair.2))).postprocess Prod.snd).effect answer))
+               fun pair => (some pair.1, some pair.2) ).postprocess Prod.snd).effect answer))
           (fun sample answer => S.place p2
             ((S.lineEvalMeasExp p2.side .Z sample.2.1 sample.2.2).effect answer))
           S.psiHat ≤ 8 * δQ + 2080 * (ε + deltaLine ε) := by
-  classical
   simp_rw [points.completed_fst_effect, points.completed_snd_effect]
   have hcompare (coordinate : PauliScalar P × PauliScalar P → PauliScalar P)
-      (sampleLine : (LineDesc P.toLdParams × (Fin P.m → PauliScalar P)) ×
-        (LineDesc P.toLdParams × (Fin P.m → PauliScalar P)) →
-        LineDesc P.toLdParams × (Fin P.m → PauliScalar P)) (W : PauliKind) :=
+      (sampleLine : (LineDesc P.toLdParams ×  MIPStarRE.QPBT.PauliPoint P ) ×
+         LineDesc P.toLdParams ×  MIPStarRE.QPBT.PauliPoint P   →
+        LineDesc P.toLdParams ×  MIPStarRE.QPBT.PauliPoint P ) (W : PauliKind) :=
     consistencyDefect_le_opFamilyDistSq_of_projective
       (Distribution.prod (linePointDist P.toLdParams) (linePointDist P.toLdParams))
       (fun sample => S.placedMeasurement p1
@@ -374,8 +362,8 @@ theorem combined_points_line_marginal_defect_le_explicit
       (fun sample => S.placedMeasurement_isProjective p1 _
         (SandwichProduct.postprocess_isProjective _
           (SandwichProduct.postprocess_isProjective _ (points.projective _ _ _) _) _))
-      (fun sample => S.placedMeasurement_isProjective p2 _
-        (SandwichProduct.postprocess_isProjective _ (S.lineMeasExp_isProjective _ _ _) _))
+       fun sample => S.placedMeasurement_isProjective p2 _
+        (SandwichProduct.postprocess_isProjective _ (S.lineMeasExp_isProjective _ _ _) _) 
   exact ⟨(hcompare Prod.fst Prod.fst .X).trans
       (combined_points_line_marginal_distance_le_explicit P ε δQ S points p1 p2 hopp).1,
     (hcompare Prod.snd Prod.snd .Z).trans

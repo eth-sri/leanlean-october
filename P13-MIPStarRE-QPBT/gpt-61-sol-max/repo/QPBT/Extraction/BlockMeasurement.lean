@@ -31,9 +31,11 @@ namespace ProjectiveSetting
 
 variable {P : AdmissibleParams} {epsilon : ℝ} (S : ProjectiveSetting P epsilon)
 
+variable (side : PlayerSide) {α : Type*} [Fintype α] (A : Measurement α (ExtractionBlock P (S.LocalSpace side)))
+
 /-- Place a complete measurement on a player's full extraction block. -/
-def blockMeasurement (side : PlayerSide) {α : Type*} [Fintype α]
-    (A : Measurement α (ExtractionBlock P (S.LocalSpace side))) :
+def blockMeasurement
+     :
     Measurement α (SixReg P S.toStrategy.ιA S.toStrategy.ιB) := by
   refine Measurement.ofSumEqOne (fun a => S.placeSide side (A.effect a)) ?_ ?_
   · intro a
@@ -55,29 +57,28 @@ def blockMeasurement (side : PlayerSide) {α : Type*} [Fintype α]
       simp [reindexOp, Matrix.one_apply]
 
 /-- The effects of a block measurement use the existing block placement. -/
-@[simp] theorem blockMeasurement_effect (side : PlayerSide) {α : Type*} [Fintype α]
-    (A : Measurement α (ExtractionBlock P (S.LocalSpace side))) (a : α) :
+@[simp] theorem blockMeasurement_effect
+     (a : α) :
     (S.blockMeasurement side A).effect a = S.placeSide side (A.effect a) := by
   rfl
 
 /-- Placing a projective measurement on an extraction block preserves projectivity. -/
-theorem blockMeasurement_isProjective (side : PlayerSide) {α : Type*} [Fintype α]
-    (A : Measurement α (ExtractionBlock P (S.LocalSpace side)))
+theorem blockMeasurement_isProjective
+
     (hA : Measurement.IsProjective A) :
     Measurement.IsProjective (S.blockMeasurement side A) := by
-  classical
   let e := sixRegExtractionEquiv P S.toStrategy.ιA S.toStrategy.ιB
   letI : DecidableEq (ExtractionRegisters P S.toStrategy.ιA S.toStrategy.ιB) :=
     instDecidableEqProd
   cases side
   · have h := reindexMeasurement_isProjective e (leftPlacedMeasurement A)
-      (fun a => MakingMeasurementsProjective.isProj_kronecker (hA a)
-        (IsStarProjection.one _))
+       fun a => MakingMeasurementsProjective.isProj_kronecker (hA a)
+        (IsStarProjection.one _) 
     convert h using 1
     rfl
   · have h := reindexMeasurement_isProjective e (rightPlacedMeasurement A)
-      (fun a => MakingMeasurementsProjective.isProj_kronecker
-        (IsStarProjection.one _) (hA a))
+       fun a => MakingMeasurementsProjective.isProj_kronecker
+        (IsStarProjection.one _) (hA a) 
     convert h using 1
     rfl
 
@@ -88,7 +89,7 @@ theorem stateQForm_placePlayers (A : Op S.toStrategy.ιA) (B : Op S.toStrategy.�
     stateQForm S.psiHat (S.placePlayer .alice A * S.placePlayer .bob B) =
       stateQForm S.toStrategy.ψ (heteroKron A 1 * heteroKron 1 B) := by
   letI : DecidableEq (((S.toStrategy.ιA × S.toStrategy.ιB) ×
-      (PauliRegister P × PauliRegister P)) × (PauliRegister P × PauliRegister P)) :=
+       PauliRegister P × PauliRegister P ) ×  PauliRegister P × PauliRegister P ) :=
     instDecidableEqProd
   have hAB := heteroKron_isHermitian A B hA hB
   rw [placed_product_stateQForm_eq]

@@ -31,10 +31,7 @@ theorem aLinePointDist_zero_direction_mass (L : LdParams) :
   classical
   unfold aLinePointDist
   rw [Distribution.avgOver_map]
-  have hdir (raw : LdSpace L) : (aLineDescOf L raw).direction ≠ 0 := by
-    intro hzero
-    have hcoord := congrFun hzero (chiIndex L raw.seed)
-    simp [aLineDescOf, LineDesc.direction, coordinateDirection] at hcoord
+  have hdir (raw : LdSpace L) : (aLineDescOf L raw).direction ≠ 0 := by simp_all [chiIndex, aLineDescOf, LdSpace.seed, LineDesc.direction, coordinateDirection]
   simp [avgOver, hdir]
 
 end

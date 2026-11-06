@@ -30,6 +30,8 @@ construct the global polynomial-pair measurement.
 
 @[expose] public section
 
+variable {ιA ιB α : Type*} [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB] [Fintype α] [DecidableEq α]
+
 open scoped BigOperators Matrix MatrixOrder ComplexOrder
 
 namespace MIPStarRE.QPBT
@@ -47,7 +49,7 @@ theorem consistencyDefect_postprocess_question_le {X α β ιA ιB : Type*}
     [Fintype β] [DecidableEq β]
     [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
     (μ : Distribution X) (A : X → Measurement α ιA)
-    (B : X → Measurement α ιB) (ψ : EuclideanSpace ℂ (ιA × ιB))
+    (B : X → Measurement α ιB) (ψ : MIPStarRE.QPBT.StateVector (ιA × ιB))
     (f : X → α → β) :
     consistencyDefect μ
         (fun x b => heteroKron (((A x).postprocess (f x)).effect b) 1)
@@ -66,7 +68,7 @@ private theorem consistencyDefect_const_eq {X α ι : Type*}
     [Fintype X] [DecidableEq X] [Fintype α] [DecidableEq α]
     [Fintype ι] [DecidableEq ι]
     (μ : Distribution X) (hμ : μ.IsProbability)
-    (A B : α → Op ι) (ψ : EuclideanSpace ℂ ι) :
+    (A B : α → Op ι) (ψ : MIPStarRE.QPBT.StateVector ι) :
     consistencyDefect μ (fun _ => A) (fun _ => B) ψ =
       consistencyDefect (uniformDistribution Unit) (fun _ => A) (fun _ => B) ψ := by
   unfold consistencyDefect
@@ -77,23 +79,25 @@ private theorem consistencyDefect_placed_eq_one_sub_overlap {X α ιA ιB : Type
     [Fintype X] [DecidableEq X] [Fintype α] [DecidableEq α]
     [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
     (μ : Distribution X) (A : X → Measurement α ιA) (B : X → Measurement α ιB)
-    (ψ : EuclideanSpace ℂ (ιA × ιB)) (hμ : μ.IsProbability) (hψ : ‖ψ‖ = 1) :
+    (ψ : MIPStarRE.QPBT.StateVector (ιA × ιB)) (hμ : μ.IsProbability) (hψ : ‖ψ‖ = 1) :
     consistencyDefect μ (fun x a => heteroKron ((A x).effect a) 1)
         (fun x a => heteroKron 1 ((B x).effect a)) ψ =
-      1 - avgOver μ (fun x => ∑ a, stateQForm ψ
-        (heteroKron ((A x).effect a) ((B x).effect a))) := by
+      1 - avgOver μ  fun x => ∑ a, stateQForm ψ
+        (heteroKron ((A x).effect a) ((B x).effect a))  := by
   simpa only [leftPlacedMeasurement, rightPlacedMeasurement,
     MIPStarRE.Quantum.Measurement.ofSumEqOne, placed_product_stateQForm_eq] using
     consistencyDefect_eq_one_sub_overlap μ
       (fun x => leftPlacedMeasurement (A x)) (fun x => rightPlacedMeasurement (B x))
       ψ hμ hψ
 
+variable (ψ : MIPStarRE.QPBT.StateVector (ιA × ιB))
+
 /-- The overlap estimate converts a same-space squared-distance bound into a
 square-root loss in consistency with the unchanged opposite-player POVM. -/
-private theorem rounding_consistency_le {ιA ιB α : Type*}
-    [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
-    [Fintype α] [DecidableEq α]
-    (ψ : EuclideanSpace ℂ (ιA × ιB)) (hψ : ‖ψ‖ = 1)
+private theorem rounding_consistency_le
+
+
+     (hψ : ‖ψ‖ = 1)
     (P A : Measurement α ιA) (B : Measurement α ιB) (δ r : ℝ)
     (hcons : consistencyDefect (uniformDistribution Unit)
       (fun _ a => heteroKron (A.effect a) 1)
@@ -106,7 +110,7 @@ private theorem rounding_consistency_le {ιA ιB α : Type*}
       (fun _ a => heteroKron 1 (B.effect a)) ψ ≤ δ + Real.sqrt r := by
   letI : Nonempty (ιA × ιB) := by
     by_contra hι
-    letI : IsEmpty (ιA × ιB) := not_nonempty_iff.mp hι
+    letI  := not_nonempty_iff.mp hι
     have hzero : ψ = 0 := Subsingleton.elim _ _
     rw [hzero, norm_zero] at hψ
     norm_num at hψ
@@ -140,10 +144,10 @@ probability hypotheses give total mass one; only `δ ≥ 0` is required of the
 rounding error, and no upper range bound on either error is used. This supports
 the compression step in `lem:qld-4-7`, not its global-witness conclusion. -/
 theorem projective_rounding_preserves_postprocessed_consistency_left
-    {ιA ιB α : Type*}
-    [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
-    [Fintype α] [DecidableEq α]
-    (ψ : EuclideanSpace ℂ (ιA × ιB)) (hψ : ‖ψ‖ = 1)
+
+
+
+     (hψ : ‖ψ‖ = 1)
     (A : Measurement α ιA) (B : Measurement α ιB) (δ : ℝ) (hδ : 0 ≤ δ)
     (hcons : consistencyDefect (uniformDistribution Unit)
       (fun _ a => heteroKron (A.effect a) 1)
@@ -194,7 +198,7 @@ theorem projective_rounding_preserves_postprocessed_consistency_left
 /-- Tensor-factor exchange intertwines the two Kronecker-product actions. -/
 private theorem applyOperatorToState_heteroKron_prodComm {ιA ιB : Type*}
     [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
-    (A : Op ιA) (B : Op ιB) (ψ : EuclideanSpace ℂ (ιA × ιB)) :
+    (A : Op ιA) (B : Op ιB) (ψ : MIPStarRE.QPBT.StateVector (ιA × ιB)) :
     applyOperatorToState (heteroKron B A) (reindexState (Equiv.prodComm ιA ιB) ψ) =
       reindexState (Equiv.prodComm ιA ιB) (applyOperatorToState (heteroKron A B) ψ) := by
   have hop : heteroKron B A =
@@ -202,14 +206,14 @@ private theorem applyOperatorToState_heteroKron_prodComm {ιA ιB : Type*}
     ext i j
     exact mul_comm _ _
   apply (EuclideanSpace.equiv (ιB × ιA) ℂ).injective
-  change heteroKron B A *ᵥ (ψ.ofLp ∘ (Equiv.prodComm ιB ιA)) =
-    (heteroKron A B *ᵥ ψ.ofLp) ∘ (Equiv.prodComm ιB ιA)
+  change heteroKron B A *ᵥ  ψ.ofLp ∘  Equiv.prodComm ιB ιA   =
+    (heteroKron A B *ᵥ ψ.ofLp) ∘  Equiv.prodComm ιB ιA 
   rw [hop, Matrix.submatrix_mulVec_equiv _ _ _ (Equiv.prodComm ιB ιA)]
   rfl
 
 private theorem stateQForm_heteroKron_prodComm {ιA ιB : Type*}
     [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
-    (ψ : EuclideanSpace ℂ (ιA × ιB)) (A : Op ιA) (B : Op ιB) :
+    (ψ : MIPStarRE.QPBT.StateVector (ιA × ιB)) (A : Op ιA) (B : Op ιB) :
     stateQForm (reindexState (Equiv.prodComm ιA ιB) ψ) (heteroKron B A) =
       stateQForm ψ (heteroKron A B) := by
   unfold stateQForm
@@ -225,7 +229,7 @@ theorem consistencyDefect_prodComm {X α ιA ιB : Type*}
     [Fintype X] [DecidableEq X] [Fintype α] [DecidableEq α]
     [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
     (μ : Distribution X) (A : X → α → Op ιA) (B : X → α → Op ιB)
-    (ψ : EuclideanSpace ℂ (ιA × ιB)) :
+    (ψ : MIPStarRE.QPBT.StateVector (ιA × ιB)) :
     consistencyDefect μ (fun x a => heteroKron (B x a) 1)
         (fun x a => heteroKron 1 (A x a)) (reindexState (Equiv.prodComm ιA ιB) ψ) =
       consistencyDefect μ (fun x a => heteroKron (A x a) 1)
@@ -244,7 +248,7 @@ original state. The two local coordinate types may be different. -/
 theorem opFamilyDistSq_left_prodComm {X α ιA ιB : Type*}
     [Fintype α] [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
     (μ : Distribution X) (A B : X → α → Op ιB)
-    (ψ : EuclideanSpace ℂ (ιA × ιB)) :
+    (ψ : MIPStarRE.QPBT.StateVector (ιA × ιB)) :
     opFamilyDistSq μ (fun x a => heteroKron (A x a) 1)
         (fun x a => heteroKron (B x a) 1) (reindexState (Equiv.prodComm ιA ιB) ψ) =
       opFamilyDistSq μ (fun x a => heteroKron 1 (A x a))
@@ -258,10 +262,10 @@ transport for `lem:qld-4-7`. It follows by explicitly exchanging the tensor
 factors and applying the Alice-side theorem to the exchanged state. The error
 and normalization hypotheses are exactly those of the Alice-side form. -/
 theorem projective_rounding_preserves_postprocessed_consistency_right
-    {ιA ιB α : Type*}
-    [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
-    [Fintype α] [DecidableEq α]
-    (ψ : EuclideanSpace ℂ (ιA × ιB)) (hψ : ‖ψ‖ = 1)
+
+
+
+     (hψ : ‖ψ‖ = 1)
     (A : Measurement α ιA) (B : Measurement α ιB) (δ : ℝ) (hδ : 0 ≤ δ)
     (hcons : consistencyDefect (uniformDistribution Unit)
       (fun _ a => heteroKron (A.effect a) 1)
@@ -312,10 +316,10 @@ consistency bound against the corresponding unrounded POVM. The hypotheses are
 `‖ψ‖ = 1`, `δ ≥ 0`, and the original cross-player consistency bound; no range
 restriction on the comparison error or outcome-cardinality factor is imposed. -/
 theorem projective_rounding_preserves_postprocessed_consistency
-    {ιA ιB α : Type*}
-    [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
-    [Fintype α] [DecidableEq α]
-    (ψ : EuclideanSpace ℂ (ιA × ιB)) (hψ : ‖ψ‖ = 1)
+
+
+
+     (hψ : ‖ψ‖ = 1)
     (A : Measurement α ιA) (B : Measurement α ιB) (δ : ℝ) (hδ : 0 ≤ δ)
     (hcons : consistencyDefect (uniformDistribution Unit)
       (fun _ a => heteroKron (A.effect a) 1)
@@ -341,7 +345,7 @@ theorem projective_rounding_preserves_postprocessed_consistency
             (fun x b => heteroKron 1 ((N x).effect b)) ψ ≤
               δ + Real.sqrt (220 * Real.rpow δ (1 / 4 : ℝ)) +
                 2 * Real.sqrt (δ + η)) ∧
-        (∀ (N : X → Measurement β ιA) (η : ℝ),
+         ∀ (N : X → Measurement β ιA) (η : ℝ),
           consistencyDefect μ
             (fun x b => heteroKron ((N x).effect b) 1)
             (fun x b => heteroKron 1 ((B.postprocess (f x)).effect b)) ψ ≤ η →
@@ -349,7 +353,7 @@ theorem projective_rounding_preserves_postprocessed_consistency
             (fun x b => heteroKron ((N x).effect b) 1)
             (fun x b => heteroKron 1 ((PB.postprocess (f x)).effect b)) ψ ≤
               δ + Real.sqrt (220 * Real.rpow δ (1 / 4 : ℝ)) +
-                2 * Real.sqrt (δ + η)) := by
+                2 * Real.sqrt (δ + η)  := by
   obtain ⟨PA, hPA, hAdist, hAtransport⟩ :=
     projective_rounding_preserves_postprocessed_consistency_left ψ hψ A B δ hδ hcons
   obtain ⟨PB, hPB, hBdist, hBtransport⟩ :=

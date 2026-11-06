@@ -1,5 +1,7 @@
 module
 
+public import QPBT.Types
+
 public import QPBT.Combining.DirectLowDegree.Soundness
 public import QPBT.Combining.DirectLowDegree.Transport.PointAgreement
 public import QPBT.Combining.DirectLowDegree.Transport.SeedError
@@ -37,10 +39,10 @@ coordinates collides. This formalization auxiliary for `lem:ld-soundness`
 therefore has the same Schwartz--Zippel bound for every simultaneity parameter. -/
 theorem polyTupleAgreement_avg_le_mdq (L : LdParams)
     (g g' : PolyTuple L) (hne : g ≠ g') :
-    avgOver (uniformDistribution (Fin L.m → ScalarQ L))
+    avgOver (uniformDistribution (MIPStarRE.QPBT.LdPoint L))
         (fun u => if evalPolyTupleAt u g = evalPolyTupleAt u g' then
           (1 : ℝ) else 0) ≤
-      ((L.m : ℝ) * (L.d : ℝ)) / (L.q : ℝ) := by
+       (L.m : ℝ) * (L.d : ℝ)  / (L.q : ℝ) := by
   obtain ⟨i, hi⟩ := Function.ne_iff.mp hne
   refine le_trans (avgOver_mono _ _ _ fun u => ?_)
     (directPolynomialAgreement_avg_le_mdq L.toDirectLdParams (g i) (g' i) hi)
@@ -90,7 +92,7 @@ theorem exists_ld_soundness :
       ∀ (L : LdParams) (ε : ℝ), 0 < ε →
         ∀ S : Strategy (ldGame L), S.IsProjective → 1 - ε ≤ S.value →
           ∃ GA : PolyMeasTuple L S.ιA, ∃ GB : PolyMeasTuple L S.ιB,
-            consistencyDefect (uniformDistribution (Fin L.m → ScalarQ L))
+            consistencyDefect (uniformDistribution (MIPStarRE.QPBT.LdPoint L))
                 (fun u outcome =>
                   heteroKron
                     (((S.A (ldPointQuestionOf L u)).postprocess
@@ -99,7 +101,7 @@ theorem exists_ld_soundness :
                   heteroKron 1
                     ((GB.postprocess (evalPolyTupleAt u)).effect outcome))
                 S.ψ ≤ deltaLd a b ε L.q L.m L.d L.k ∧
-            consistencyDefect (uniformDistribution (Fin L.m → ScalarQ L))
+            consistencyDefect (uniformDistribution (MIPStarRE.QPBT.LdPoint L))
                 (fun u outcome =>
                   heteroKron
                     ((GA.postprocess (evalPolyTupleAt u)).effect outcome) 1)
@@ -122,9 +124,9 @@ theorem exists_ld_soundness :
   obtain ⟨GA₀, GB₀, h1, h2, _⟩ := hs D ε hε (ldStrategyToDirect L S)
     (ldStrategyToDirect_isProjective L S hS)
     (by simpa only [ldStrategyToDirect_value_eq] using hwin)
-  let GA : PolyMeasTuple L S.ιA := seedFiberCompressPolyMeasTuple L GA₀
-  let GB : PolyMeasTuple L S.ιB := seedFiberCompressPolyMeasTuple L GB₀
-  have c1 : consistencyDefect (uniformDistribution (Fin L.m → ScalarQ L))
+  let GA  := seedFiberCompressPolyMeasTuple L GA₀
+  let GB  := seedFiberCompressPolyMeasTuple L GB₀
+  have c1 : consistencyDefect (uniformDistribution (MIPStarRE.QPBT.LdPoint L))
       (fun u outcome => heteroKron
         (((S.A (ldPointQuestionOf L u)).postprocess
           (ldPointValuesOrZero L)).effect outcome) 1)
@@ -133,7 +135,7 @@ theorem exists_ld_soundness :
     rw [show GB = seedFiberCompressPolyMeasTuple L GB₀ from rfl,
       ← ldStrategyToDirect_pointPolynomial_compression L S GB₀]
     exact h1
-  have c2 : consistencyDefect (uniformDistribution (Fin L.m → ScalarQ L))
+  have c2 : consistencyDefect (uniformDistribution (MIPStarRE.QPBT.LdPoint L))
       (fun u outcome => heteroKron
         ((GA.postprocess (evalPolyTupleAt u)).effect outcome) 1)
       (fun u outcome => heteroKron 1
@@ -143,13 +145,13 @@ theorem exists_ld_soundness :
       ← ldStrategyToDirect_polynomialPoint_compression L S GA₀]
     exact h2
   have c3 := ldPointPair_consistencyDefect_le L S hS ε hwin
-  have ctrans : consistencyDefect (uniformDistribution (Fin L.m → ScalarQ L))
+  have ctrans : consistencyDefect (uniformDistribution (MIPStarRE.QPBT.LdPoint L))
       (fun u outcome => heteroKron
         ((GA.postprocess (evalPolyTupleAt u)).effect outcome) 1)
       (fun u outcome => heteroKron 1
         ((GB.postprocess (evalPolyTupleAt u)).effect outcome)) S.ψ ≤
       E + 2 * Real.sqrt (9 * ε + E) :=
-    consistencyDefect_trans_le (uniformDistribution (Fin L.m → ScalarQ L))
+    consistencyDefect_trans_le (uniformDistribution (MIPStarRE.QPBT.LdPoint L))
       (fun u => DistanceCalculus.leftPlacedMeasurement
         (GA.postprocess (evalPolyTupleAt u)))
       (fun u => DistanceCalculus.rightPlacedMeasurement
@@ -167,13 +169,13 @@ theorem exists_ld_soundness :
       (uniformDistribution Unit) (fun _ : Unit => GA) (fun _ : Unit => GB) S.ψ
       (fun g u => evalPolyTupleAt u g) ((L.m : ℝ) * L.d / L.q)
       (uniformDistribution_isProbability _) S.ψ_norm (by positivity)
-      (fun g g' hne => polyTupleAgreement_avg_le_mdq L g g' hne)
-    have hprod : ∀ (A B : Unit × (Fin L.m → ScalarQ L) →
-        (Fin L.k → ScalarQ L) → Op (S.ιA × S.ιB)),
+       (polyTupleAgreement_avg_le_mdq L) 
+    have hprod : ∀ (A B : Unit ×  MIPStarRE.QPBT.LdPoint L  →
+         MIPStarRE.QPBT.LdValues L  → Op (S.ιA × S.ιB)),
         consistencyDefect
           (Distribution.prod (uniformDistribution Unit)
-            (uniformDistribution (Fin L.m → ScalarQ L))) A B S.ψ =
-        consistencyDefect (uniformDistribution (Fin L.m → ScalarQ L))
+            (uniformDistribution (MIPStarRE.QPBT.LdPoint L))) A B S.ψ =
+        consistencyDefect (uniformDistribution (MIPStarRE.QPBT.LdPoint L))
           (fun u => A ((), u)) (fun u => B ((), u)) S.ψ := by
       intro A B
       unfold consistencyDefect
@@ -202,7 +204,7 @@ theorem exists_ld_soundness :
       · obtain ⟨he, hm⟩ := error_and_collision_le_deltaLd D ha hb1 hε hε1
         change ε ≤ E at he
         change (L.m : ℝ) * L.d / L.q ≤ E at hm
-        have hEs : E ≤ Real.sqrt E := le_sqrt_of_le_of_le_one le_rfl hE1
+        have hEs  := le_sqrt_of_le_of_le_one le_rfl hE1
         have hroot : Real.sqrt (9 * ε + E) ≤ 4 * Real.sqrt E := by
           apply (Real.sqrt_le_iff).mpr
           refine ⟨by positivity, ?_⟩
@@ -218,10 +220,10 @@ theorem exists_ld_soundness :
   refine ⟨GA, GB, ?_, ?_, ?_⟩
   · apply hbound
       (fun u => (S.A (ldPointQuestionOf L u)).postprocess (ldPointValuesOrZero L))
-      (fun u => GB.postprocess (evalPolyTupleAt u))
+       fun u => GB.postprocess (evalPolyTupleAt u) 
     exact c1.trans (by linarith)
   · apply hbound (fun u => GA.postprocess (evalPolyTupleAt u))
-      (fun u => (S.B (ldPointQuestionOf L u)).postprocess (ldPointValuesOrZero L))
+       fun u => (S.B (ldPointQuestionOf L u)).postprocess (ldPointValuesOrZero L) 
     exact c2.trans (by linarith)
   · exact hbound (fun _ : Unit => GA) (fun _ : Unit => GB) ccode
 

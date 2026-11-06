@@ -39,7 +39,7 @@ theorem projective_refinement_ordered_dist_le {X Γ α ι : Type*}
     [Fintype α] [DecidableEq α] [Fintype ι] [DecidableEq ι]
     (μ : Distribution X) (R : Measurement Γ ι) (hR : Measurement.IsProjective R)
     (ev : X → Γ → α) (A B : X → Measurement α ι) (T : X → α → Op ι)
-    (ψ : EuclideanSpace ℂ ι) (eta deltaSelf deltaOrder : ℝ)
+    (ψ : MIPStarRE.QPBT.StateVector ι) (eta deltaSelf deltaOrder : ℝ)
     (hpoint : consistencyDefect μ
       (fun x a => (R.postprocess (ev x)).effect a) (fun x a => (B x).effect a) ψ ≤ eta)
     (hself : opFamilyDistSq μ (fun x a => (B x).effect a)
@@ -56,10 +56,9 @@ theorem projective_refinement_ordered_dist_le {X Γ α ι : Type*}
     intro x
     simpa only [mul_sub] using sum_norm_mul_funIndexed_apply_le (ev x) R.effect
       (fun a => U x a - V x a) ψ (measurement_sum_adjoint_mul_le_one R)
-  have hinsert : opFamilyDistSq μ (fun _ g => R.effect g)
-      (fun x g => R.effect g * (B x).effect (ev x g)) ψ ≤ 2 * eta := by
+  have hinsert  := by
     have h := hlift (fun x a => (R.postprocess (ev x)).effect a)
-      (fun x a => (B x).effect a)
+       fun x a => (B x).effect a 
     simp only [effect_mul_postprocess_effect_self R hR] at h
     exact h.trans ((opFamilyDistSq_le_two_mul_consistencyDefect μ
       (fun x => R.postprocess (ev x)) B ψ).trans (mul_le_mul_of_nonneg_left hpoint
@@ -94,30 +93,28 @@ theorem ordered_dist_le {P : AdmissibleParams} {ε δQ : ℝ}
       (fun x a => S.place p1 ((R.postprocess (ev x)).effect a))
       (fun x a => S.place p2
         ((points.extendedQ p2.side x.1.1 x.1.2 x.2.1 x.2.2).effect a)) S.psiHat ≤ eta) :
-    (opFamilyDistSq (uniformDistribution (ExtendedPointQuestion P))
+     opFamilyDistSq (uniformDistribution (ExtendedPointQuestion P))
       (fun _ g => S.place p1 (R.effect g))
       (fun x g => S.place p1 (R.effect g) * S.place p2
-        (∑ ab ∈ Finset.univ.filter (fun ab : PauliScalar P × PauliScalar P =>
-            x.2.1 * ab.1 + x.2.2 * ab.2 = ev x g),
+        (∑ ab ∈ Finset.univ.filter  fun ab : PauliScalar P × PauliScalar P =>
+            x.2.1 * ab.1 + x.2.2 * ab.2 = ev x g ,
           (S.pointMeasExp p2.side .X x.1.1).effect ab.1 *
             (S.pointMeasExp p2.side .Z x.1.2).effect ab.2)) S.psiHat ≤
-        4 * eta + 8 * δQ) ∧
-    (opFamilyDistSq (uniformDistribution (ExtendedPointQuestion P))
+        4 * eta + 8 * δQ  ∧
+     opFamilyDistSq (uniformDistribution (ExtendedPointQuestion P))
       (fun _ g => S.place p1 (R.effect g))
       (fun x g => S.place p1 (R.effect g) * S.place p2
-        (∑ ab ∈ Finset.univ.filter (fun ab : PauliScalar P × PauliScalar P =>
-            x.2.1 * ab.1 + x.2.2 * ab.2 = ev x g),
+        (∑ ab ∈ Finset.univ.filter  fun ab : PauliScalar P × PauliScalar P =>
+            x.2.1 * ab.1 + x.2.2 * ab.2 = ev x g ,
           (S.pointMeasExp p2.side .Z x.1.2).effect ab.2 *
             (S.pointMeasExp p2.side .X x.1.1).effect ab.1)) S.psiHat ≤
-        4 * eta + 8 * δQ) := by
+        4 * eta + 8 * δQ  := by
   classical
   let A (x : ExtendedPointQuestion P) := S.placedMeasurement p1
     (points.extendedQ p1.side x.1.1 x.1.2 x.2.1 x.2.2)
   let B (x : ExtendedPointQuestion P) := S.placedMeasurement p2
     (points.extendedQ p2.side x.1.1 x.1.2 x.2.1 x.2.2)
-  have hpoint' : consistencyDefect (uniformDistribution (ExtendedPointQuestion P))
-      (fun x a => ((S.placedMeasurement p1 R).postprocess (ev x)).effect a)
-      (fun x a => (B x).effect a) S.psiHat ≤ eta := by
+  have hpoint'  := by
     simpa only [Measurement.postprocess_effect, ProjectiveSetting.placedMeasurement_effect,
       ProjectiveSetting.place_finsetSum, B] using hpoint
   have hself : opFamilyDistSq (uniformDistribution (ExtendedPointQuestion P))

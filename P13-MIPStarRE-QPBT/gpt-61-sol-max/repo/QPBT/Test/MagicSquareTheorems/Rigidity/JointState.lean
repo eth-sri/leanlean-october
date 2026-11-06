@@ -58,11 +58,7 @@ variable {ιA ιB : Type} [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [Decidab
 
 /-! ## The second-pair defects on the residual of the first swap -/
 
-section SecondPair
 
-variable {X₁A Z₁A X₂A Z₂A : Op ιA} {X₁B Z₁B X₂B Z₂B : Op ιB} {t : ℝ}
-
-end SecondPair
 
 /-! ## The joint state estimate -/
 
@@ -70,7 +66,7 @@ end SecondPair
 
 /-- The coordinate tensor is homogeneous in its second argument. -/
 theorem vecTensor_smul_right {ι κ : Type} [Fintype ι] [DecidableEq ι]
-    [Fintype κ] [DecidableEq κ] (c : ℂ) (u : EuclideanSpace ℂ ι) (v : EuclideanSpace ℂ κ) :
+    [Fintype κ] [DecidableEq κ] (c : ℂ) (u : MIPStarRE.QPBT.StateVector ι) (v : MIPStarRE.QPBT.StateVector κ) :
     vecTensor u (c • v) = c • vecTensor u v := by
   ext p
   simp [vecTensor, EuclideanSpace.equiv]
@@ -78,40 +74,38 @@ theorem vecTensor_smul_right {ι κ : Type} [Fintype ι] [DecidableEq ι]
 
 /-- Reindexing is homogeneous. -/
 theorem reindexState_smul {ι κ : Type} [Fintype ι] [DecidableEq ι]
-    [Fintype κ] [DecidableEq κ] (e : ι ≃ κ) (c : ℂ) (x : EuclideanSpace ℂ ι) :
-    reindexState e (c • x) = c • reindexState e x := by
-  ext p
-  simp [reindexState, EuclideanSpace.equiv]
+    [Fintype κ] [DecidableEq κ] (e : ι ≃ κ) (c : ℂ) (x : MIPStarRE.QPBT.StateVector ι) :
+    reindexState e (c • x) = c • reindexState e x := by rfl
 
 /-- The residual of the joint state estimate can be replaced by a unit vector at
 twice the cost.  This is the normalization step of the conclusion of
 `thm:ms-rigidity`, whose auxiliary state is required to be a unit vector. -/
 theorem exists_unit_residual {V : Type} [Fintype V] [DecidableEq V] [Nonempty V]
-    (u : EuclideanSpace ℂ ((V × ιA) × (V × ιB))) (hu : ‖u‖ = 1)
-    (ψ : EuclideanSpace ℂ (ιA × ιB)) (hψ : ‖ψ‖ = 1) (c : ℝ)
-    (r0 : EuclideanSpace ℂ (ιA × ιB))
+    (u : MIPStarRE.QPBT.StateVector ((V × ιA) ×  V × ιB )) (hu : ‖u‖ = 1)
+    (ψ : MIPStarRE.QPBT.StateVector (ιA × ιB)) (hψ : ‖ψ‖ = 1) (c : ℝ)
+    (r0 : MIPStarRE.QPBT.StateVector (ιA × ιB))
     (h : ‖u - reindexState prodShuffle (vecTensor (eprState V) r0)‖ ≤ c) :
-    ∃ r : EuclideanSpace ℂ (ιA × ιB), ‖r‖ = 1 ∧
+    ∃ r : MIPStarRE.QPBT.StateVector (ιA × ιB), ‖r‖ = 1 ∧
       ‖u - reindexState prodShuffle (vecTensor (eprState V) r)‖ ≤ 2 * c := by
-  have htarget : ∀ r : EuclideanSpace ℂ (ιA × ιB),
+  have htarget : ∀ r : MIPStarRE.QPBT.StateVector (ιA × ιB),
       ‖reindexState prodShuffle (vecTensor (eprState V) r)‖ = ‖r‖ :=
-    fun r => norm_reindexState_prodShuffle_vecTensor_eprState r
-  have hgap : |1 - ‖r0‖| ≤ c := by
+    norm_reindexState_prodShuffle_vecTensor_eprState
+  have hgap  := by
     have h1 := abs_norm_sub_norm_le u
       (reindexState prodShuffle (vecTensor (eprState V) r0))
     rw [hu, htarget] at h1
     exact le_trans h1 h
-  have hc0 : 0 ≤ c := le_trans (abs_nonneg _) hgap
+  have hc0  := le_trans (abs_nonneg _) hgap
   by_cases h0 : r0 = 0
   · refine ⟨ψ, hψ, ?_⟩
-    have h1 : (1 : ℝ) ≤ c := by
+    have h1  := by
       rw [h0, norm_zero] at hgap
       simpa using hgap
     calc ‖u - reindexState prodShuffle (vecTensor (eprState V) ψ)‖
         ≤ ‖u‖ + ‖reindexState prodShuffle (vecTensor (eprState V) ψ)‖ := norm_sub_le _ _
       _ = 2 := by rw [hu, htarget, hψ]; norm_num
       _ ≤ 2 * c := by linarith
-  · have hN : 0 < ‖r0‖ := norm_pos_iff.mpr h0
+  · have hN  := norm_pos_iff.mpr h0
     refine ⟨((‖r0‖ : ℝ) : ℂ)⁻¹ • r0, ?_, ?_⟩
     · rw [norm_smul, norm_inv, Complex.norm_real, Real.norm_eq_abs, abs_of_pos hN,
         inv_mul_cancel₀ (ne_of_gt hN)]
@@ -129,11 +123,11 @@ theorem exists_unit_residual {V : Type} [Fintype V] [DecidableEq V] [Nonempty V]
               reindexState prodShuffle (vecTensor (eprState V) r0) := by
           module
         have hs : ‖(1 : ℂ) - ((‖r0‖ : ℝ) : ℂ)⁻¹‖ = |1 - ‖r0‖⁻¹| := by
-          rw [show (1 : ℂ) - ((‖r0‖ : ℝ) : ℂ)⁻¹ = (((1 - ‖r0‖⁻¹ : ℝ)) : ℂ) by
+          rw [show (1 : ℂ) - ((‖r0‖ : ℝ) : ℂ)⁻¹ = ( (1 - ‖r0‖⁻¹ : ℝ)  : ℂ) by
             push_cast
             ring]
           rw [Complex.norm_real, Real.norm_eq_abs]
-        have hfin : |1 - ‖r0‖⁻¹| * ‖r0‖ = |1 - ‖r0‖| := by
+        have hfin  := by
           have h1 : (1 - ‖r0‖⁻¹) * ‖r0‖ = -(1 - ‖r0‖) := by
             field_simp
             ring

@@ -83,21 +83,13 @@ postprocessed effect being a sum over a fibre.  The two are kept apart because
 the rigidity assembly of issue Dengnifer/MIPStarRE-QPBT-bak#105 already refers to this name; their
 consolidation is issue Dengnifer/MIPStarRE-QPBT-bak#204. -/
 theorem applyOperatorToState_finset_sum {β ι : Type*} [Fintype ι] [DecidableEq ι]
-    (s : Finset β) (M : β → Op ι) (ψ : EuclideanSpace ℂ ι) :
-    applyOperatorToState (∑ b ∈ s, M b) ψ = ∑ b ∈ s, applyOperatorToState (M b) ψ := by
-  unfold applyOperatorToState
-  simp only [map_sum, LinearMap.sum_apply]
+    (s : Finset β) (M : β → Op ι) (ψ : MIPStarRE.QPBT.StateVector ι) :
+    applyOperatorToState (∑ b ∈ s, M b) ψ = ∑ b ∈ s, applyOperatorToState (M b) ψ := by aesop (add simp [applyOperatorToState])
 
 end
 
 /-! ## Transfer to the dilated reflections -/
 
-namespace MagicSquareRigidity
 
-noncomputable section
-
-end
-
-end MagicSquareRigidity
 
 end MIPStarRE.QPBT

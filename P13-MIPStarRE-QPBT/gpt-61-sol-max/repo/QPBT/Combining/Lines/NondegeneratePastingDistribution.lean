@@ -18,6 +18,8 @@ the normalized question laws from
 
 @[expose] public section
 
+variable (L : MIPStarRE.QPBT.LdParams)
+
 namespace MIPStarRE.QPBT
 
 open MIPStarRE.LDT
@@ -26,29 +28,28 @@ noncomputable section
 
 /-- The first-line nondegeneracy event has positive mass under the product
 line-point law. -/
-theorem prod_linePointDist_nondegenerate_mass_pos (L : LdParams) :
+theorem prod_linePointDist_nondegenerate_mass_pos :
     0 < ∑ samples ∈
         (Distribution.prod (linePointDist L) (linePointDist L)).support.filter
-          (fun samples => samples.1.1.direction ≠ 0),
+           fun samples => samples.1.1.direction ≠ 0 ,
       (Distribution.prod (linePointDist L) (linePointDist L)).weight samples := by
   change 0 < nondegenerateLinePastingMass L
   exact lt_of_lt_of_le (by norm_num) (nondegenerateLinePastingMass_bounds L).1
 
 /-- Proof-only question law obtained by conditioning the product line-point law
 on nonzero first-line direction and relabeling the two samples for pasting. -/
-def nondegenerateLinePastingDist (L : LdParams) :
+def nondegenerateLinePastingDist :
     Distribution (((LineDesc L × LineDesc L) ×
-      (LineDesc L × (Fin L.m → ScalarQ L))) ×
-        (LineDesc L × (Fin L.m → ScalarQ L))) :=
+       LineDesc L ×  MIPStarRE.QPBT.LdPoint L  ) ×
+         LineDesc L ×  MIPStarRE.QPBT.LdPoint L  ) :=
   (Distribution.restrict (Distribution.prod (linePointDist L) (linePointDist L))
     (fun samples => samples.1.1.direction ≠ 0)
     (prod_linePointDist_nondegenerate_mass_pos L)).map
-      (fun samples => (((samples.1.1, samples.2.1), samples.2), samples.1))
+       fun samples => (((samples.1.1, samples.2.1), samples.2), samples.1) 
 
 /-- The proof-only nondegenerate pasting question law is normalized. -/
-theorem nondegenerateLinePastingDist_isProbability (L : LdParams) :
-    (nondegenerateLinePastingDist L).IsProbability := by
-  exact (Distribution.restrict_isProbability _ _
+theorem nondegenerateLinePastingDist_isProbability :
+    (nondegenerateLinePastingDist L).IsProbability := (Distribution.restrict_isProbability _ _
     (prod_linePointDist_nondegenerate_mass_pos L)).map _
 
 end

@@ -19,7 +19,7 @@ whose closing sentences at lines 227 and 263-264 state both companions.
 
 @[expose] public section
 
-open scoped BigOperators Matrix ComplexOrder
+open scoped BigOperators Matrix ComplexOrder Classical
 
 namespace MIPStarRE.QPBT
 
@@ -30,20 +30,22 @@ noncomputable section
 
 namespace WinImplications
 
-local instance pauliEdgeNonemptyApproxLines : Nonempty PauliEdge := pauliEdge_nonempty
+
 
 /-! ## Consistency check -/
 
 /-! ## Low-degree check -/
 
+variable {P : AdmissibleParams} {ε : ℝ} (S : ProjectiveSetting P ε) (W : PauliKind)
+
 /-- Reversed-orientation axis-line mismatch is contained in rejection. Paper
 `14_analysis_of_the_pauli_basis_test.tex:200-204,227`. -/
-theorem alineMismatch_le_rejection_interchanged {P : AdmissibleParams} {ε : ℝ}
-    (S : ProjectiveSetting P ε) (W : PauliKind) (z : PauliSpace P) :
+theorem alineMismatch_le_rejection_interchanged
+      (z : PauliSpace P) :
     outcomeEventWeight S.toStrategy
-        ((.point W), pauliCL P (.point W) z)
-        ((.aline W), pauliCL P (.aline W) z)
-        (fun A B =>
+        ( .point W , pauliCL P (.point W) z)
+        ( .aline W , pauliCL P (.aline W) z)
+         fun A B =>
           some (ProjectiveSetting.pointAnswerOrZero A) ≠
             evalOpt
               (aLineDescOf P.toLdParams
@@ -51,7 +53,7 @@ theorem alineMismatch_le_rejection_interchanged {P : AdmissibleParams} {ε : ℝ
               (pauliToLd P W z).point
               (ProjectiveSetting.lineAnswerOrZero P
                 (aLineDescOf P.toLdParams
-                  (ldALineCL P.toLdParams (pauliToLd P W z))) B)) ≤
+                  (ldALineCL P.toLdParams (pauliToLd P W z))) B)  ≤
       pauliRejectionAt S.toStrategy (pointAlineEdge W) z := by
   apply outcome_event_weight_mono
   intro A B hne
@@ -63,12 +65,12 @@ theorem alineMismatch_le_rejection_interchanged {P : AdmissibleParams} {ε : ℝ
 
 /-- Reversed-orientation diagonal-line mismatch is contained in rejection. Paper
 `14_analysis_of_the_pauli_basis_test.tex:200-204,227`. -/
-theorem dlineMismatch_le_rejection_interchanged {P : AdmissibleParams} {ε : ℝ}
-    (S : ProjectiveSetting P ε) (W : PauliKind) (z : PauliSpace P) :
+theorem dlineMismatch_le_rejection_interchanged
+      (z : PauliSpace P) :
     outcomeEventWeight S.toStrategy
-        ((.point W), pauliCL P (.point W) z)
-        ((.dline W), pauliCL P (.dline W) z)
-        (fun A B =>
+        ( .point W , pauliCL P (.point W) z)
+        ( .dline W , pauliCL P (.dline W) z)
+         fun A B =>
           some (ProjectiveSetting.pointAnswerOrZero A) ≠
             evalOpt
               (dLineDescOf P.toLdParams
@@ -76,7 +78,7 @@ theorem dlineMismatch_le_rejection_interchanged {P : AdmissibleParams} {ε : ℝ
               (pauliToLd P W z).point
               (ProjectiveSetting.lineAnswerOrZero P
                 (dLineDescOf P.toLdParams
-                  (ldDLineCL P.toLdParams (pauliToLd P W z))) B)) ≤
+                  (ldDLineCL P.toLdParams (pauliToLd P W z))) B)  ≤
       pauliRejectionAt S.toStrategy (pointDlineEdge W) z := by
   apply outcome_event_weight_mono
   intro A B hne
@@ -88,27 +90,27 @@ theorem dlineMismatch_le_rejection_interchanged {P : AdmissibleParams} {ε : ℝ
 
 /-- Reversed-orientation source-answer mismatch mass for the completed point and
 line readouts. Paper `14_analysis_of_the_pauli_basis_test.tex:200-204,227`. -/
-noncomputable def lowDegreeMismatchMassInterchanged {P : AdmissibleParams}
-    {ε : ℝ} (S : ProjectiveSetting P ε) (W : PauliKind)
-    (sample : LineDesc P.toLdParams × (Fin P.m → PauliScalar P)) : ℝ :=
+def lowDegreeMismatchMassInterchanged
+
+    (sample : LineDesc P.toLdParams ×  MIPStarRE.QPBT.PauliPoint P ) : ℝ :=
   outcomeEventWeight S.toStrategy
     (ProjectiveSetting.pointQuestion P W sample.2)
     (ProjectiveSetting.lineQuestion P W sample.1)
-    (fun A B =>
+     fun A B =>
       some (ProjectiveSetting.pointAnswerOrZero A) ≠
         evalOpt sample.1 sample.2
-          (ProjectiveSetting.lineAnswerOrZero P sample.1 B))
+          (ProjectiveSetting.lineAnswerOrZero P sample.1 B) 
 
 /-- The reversed axis component of the line sampler is the Pauli axis branch. -/
-theorem avg_alineMismatch_eq_source_interchanged {P : AdmissibleParams} {ε : ℝ}
-    (S : ProjectiveSetting P ε) (W : PauliKind) :
+theorem avg_alineMismatch_eq_source_interchanged
+      :
     avgOver (aLinePointDist P.toLdParams)
         (lowDegreeMismatchMassInterchanged S W) =
-      avgOver (uniformDistribution (PauliSpace P)) (fun z =>
+      avgOver (uniformDistribution (PauliSpace P))  fun z =>
         outcomeEventWeight S.toStrategy
-          ((.point W), pauliCL P (.point W) z)
-          ((.aline W), pauliCL P (.aline W) z)
-          (fun A B =>
+          ( .point W , pauliCL P (.point W) z)
+          ( .aline W , pauliCL P (.aline W) z)
+           fun A B =>
             some (ProjectiveSetting.pointAnswerOrZero A) ≠
               evalOpt
                 (aLineDescOf P.toLdParams
@@ -116,7 +118,7 @@ theorem avg_alineMismatch_eq_source_interchanged {P : AdmissibleParams} {ε : �
                 (pauliToLd P W z).point
                 (ProjectiveSetting.lineAnswerOrZero P
                   (aLineDescOf P.toLdParams
-                    (ldALineCL P.toLdParams (pauliToLd P W z))) B))) := by
+                    (ldALineCL P.toLdParams (pauliToLd P W z))) B)   := by
   unfold aLinePointDist clDistribution
   rw [Distribution.avgOver_map, Distribution.avgOver_map]
   rw [← avgOver_pauliToLd_uniform P W]
@@ -126,15 +128,15 @@ theorem avg_alineMismatch_eq_source_interchanged {P : AdmissibleParams} {ε : �
   rfl
 
 /-- The reversed diagonal component of the line sampler is the Pauli branch. -/
-theorem avg_dlineMismatch_eq_source_interchanged {P : AdmissibleParams} {ε : ℝ}
-    (S : ProjectiveSetting P ε) (W : PauliKind) :
+theorem avg_dlineMismatch_eq_source_interchanged
+      :
     avgOver (dLinePointDist P.toLdParams)
         (lowDegreeMismatchMassInterchanged S W) =
-      avgOver (uniformDistribution (PauliSpace P)) (fun z =>
+      avgOver (uniformDistribution (PauliSpace P))  fun z =>
         outcomeEventWeight S.toStrategy
-          ((.point W), pauliCL P (.point W) z)
-          ((.dline W), pauliCL P (.dline W) z)
-          (fun A B =>
+          ( .point W , pauliCL P (.point W) z)
+          ( .dline W , pauliCL P (.dline W) z)
+           fun A B =>
             some (ProjectiveSetting.pointAnswerOrZero A) ≠
               evalOpt
                 (dLineDescOf P.toLdParams
@@ -142,7 +144,7 @@ theorem avg_dlineMismatch_eq_source_interchanged {P : AdmissibleParams} {ε : �
                 (pauliToLd P W z).point
                 (ProjectiveSetting.lineAnswerOrZero P
                   (dLineDescOf P.toLdParams
-                    (ldDLineCL P.toLdParams (pauliToLd P W z))) B))) := by
+                    (ldDLineCL P.toLdParams (pauliToLd P W z))) B)   := by
   unfold dLinePointDist clDistribution
   rw [Distribution.avgOver_map, Distribution.avgOver_map]
   rw [← avgOver_pauliToLd_uniform P W]
@@ -152,8 +154,8 @@ theorem avg_dlineMismatch_eq_source_interchanged {P : AdmissibleParams} {ε : �
   rfl
 
 /-- Reversed-orientation low-degree consistency is its mismatch mass. -/
-theorem lowDegreeConsistency_eq_mismatch_interchanged {P : AdmissibleParams}
-    {ε : ℝ} (S : ProjectiveSetting P ε) (W : PauliKind) :
+theorem lowDegreeConsistency_eq_mismatch_interchanged
+       :
     consistencyDefect (linePointDist P.toLdParams)
         (fun sample a => heteroKron
           ((S.pointMeasOption .alice W sample.2).effect a) 1)
@@ -162,7 +164,7 @@ theorem lowDegreeConsistency_eq_mismatch_interchanged {P : AdmissibleParams}
         S.toStrategy.ψ =
       avgOver (linePointDist P.toLdParams)
         (lowDegreeMismatchMassInterchanged S W) := by
-  let X := LineDesc P.toLdParams × (Fin P.m → PauliScalar P)
+  let X := LineDesc P.toLdParams ×  MIPStarRE.QPBT.PauliPoint P 
   let qA : X → PauliQuestion P := fun sample =>
     ProjectiveSetting.pointQuestion P W sample.2
   let qB : X → PauliQuestion P := fun sample =>
@@ -201,9 +203,9 @@ theorem lowDegreeConsistency_eq_mismatch_interchanged {P : AdmissibleParams}
         (fun sample c => heteroKron 1
           (((S.toStrategy.B (qB sample)).postprocess (fB sample)).effect c))
         S.toStrategy.ψ := consistencyDefect_congr _ _ _ _ _ _ hA hB
-    _ = avgOver (linePointDist P.toLdParams) (fun sample =>
+    _ = avgOver (linePointDist P.toLdParams)  fun sample =>
         outcomeEventWeight S.toStrategy (qA sample) (qB sample)
-          (fun A B => fA sample A ≠ fB sample B)) := h
+           fun A B => fA sample A ≠ fB sample B   := h
     _ = _ := by rfl
 
 /-- Factor-interchanged form of the low-degree winning implication. Paper
@@ -253,14 +255,14 @@ theorem win_low_degree_interchanged_explicit :
 
 /-- Reversed-orientation Pauli/point mismatch is contained in rejection. Paper
 `14_analysis_of_the_pauli_basis_test.tex:205-209,227`. -/
-theorem pauliBasisMismatch_le_rejection_interchanged {P : AdmissibleParams}
-    {ε : ℝ} (S : ProjectiveSetting P ε) (W : PauliKind) (z : PauliSpace P) :
+theorem pauliBasisMismatch_le_rejection_interchanged
+       (z : PauliSpace P) :
     outcomeEventWeight S.toStrategy
-        ((.pauli W), pauliCL P (.pauli W) z)
-        ((.point W), pauliCL P (.point W) z)
-        (fun A B =>
+        ( .pauli W , pauliCL P (.pauli W) z)
+        ( .point W , pauliCL P (.point W) z)
+         fun A B =>
           lowDegreeEnc (pauliAnswerOrZero A) (pauliToLd P W z).point ≠
-            ProjectiveSetting.pointAnswerOrZero B) ≤
+            ProjectiveSetting.pointAnswerOrZero B  ≤
       pauliRejectionAt S.toStrategy (pauliPointEdge W) z := by
   apply outcome_event_weight_mono
   intro A B hne
@@ -271,44 +273,44 @@ theorem pauliBasisMismatch_le_rejection_interchanged {P : AdmissibleParams}
     ((win_symm_pauli_point P W _ _ A B).symm.trans htrue)).symm
 
 /-- The reversed uniform point average is the sampled Pauli/point branch. -/
-theorem avg_pauliBasisMismatch_eq_source_interchanged {P : AdmissibleParams}
-    {ε : ℝ} (S : ProjectiveSetting P ε) (W : PauliKind) :
-    avgOver (uniformDistribution (Fin P.m → PauliScalar P)) (fun u =>
+theorem avg_pauliBasisMismatch_eq_source_interchanged
+       :
+    avgOver (uniformDistribution (MIPStarRE.QPBT.PauliPoint P)) (fun u =>
         outcomeEventWeight S.toStrategy
           (pauliQuestion P W) (ProjectiveSetting.pointQuestion P W u)
-          (fun A B => lowDegreeEnc (pauliAnswerOrZero A) u ≠
-            ProjectiveSetting.pointAnswerOrZero B)) =
-      avgOver (uniformDistribution (PauliSpace P)) (fun z =>
+           fun A B => lowDegreeEnc (pauliAnswerOrZero A) u ≠
+            ProjectiveSetting.pointAnswerOrZero B ) =
+      avgOver (uniformDistribution (PauliSpace P))  fun z =>
         outcomeEventWeight S.toStrategy
           (pauliQuestion P W)
           (ProjectiveSetting.pointQuestion P W (pauliToLd P W z).point)
-          (fun A B =>
+           fun A B =>
             lowDegreeEnc (pauliAnswerOrZero A) (pauliToLd P W z).point ≠
-              ProjectiveSetting.pointAnswerOrZero B)) := by
-  let f : (Fin P.m → PauliScalar P) → ℝ := fun u =>
+              ProjectiveSetting.pointAnswerOrZero B   := by
+  let f  := fun u =>
     outcomeEventWeight S.toStrategy
       (pauliQuestion P W) (ProjectiveSetting.pointQuestion P W u)
-      (fun A B => lowDegreeEnc (pauliAnswerOrZero A) u ≠
-        ProjectiveSetting.pointAnswerOrZero B)
-  have hld := avgOver_pauliToLd_uniform P W (fun z => f z.point)
+       fun A B => lowDegreeEnc (pauliAnswerOrZero A) u ≠
+        ProjectiveSetting.pointAnswerOrZero B 
+  have hld := avgOver_pauliToLd_uniform P W  fun z => f z.point 
   have hpoint := avgOver_ldPoint_uniform P.toLdParams f
   exact (hld.trans hpoint).symm
 
 /-- Reversed-orientation Pauli-basis consistency is its mismatch mass. -/
-theorem pauliBasisConsistency_eq_mismatch_interchanged {P : AdmissibleParams}
-    {ε : ℝ} (S : ProjectiveSetting P ε) (W : PauliKind) :
-    consistencyDefect (uniformDistribution (Fin P.m → PauliScalar P))
+theorem pauliBasisConsistency_eq_mismatch_interchanged
+       :
+    consistencyDefect (uniformDistribution (MIPStarRE.QPBT.PauliPoint P))
         (fun u a => heteroKron ((S.pauliEvalMeas .alice W u).effect a) 1)
         (fun u a => heteroKron 1 ((S.pointMeas .bob W u).effect a))
         S.toStrategy.ψ =
-      avgOver (uniformDistribution (Fin P.m → PauliScalar P)) (fun u =>
+      avgOver (uniformDistribution (MIPStarRE.QPBT.PauliPoint P))  fun u =>
         outcomeEventWeight S.toStrategy
           (pauliQuestion P W) (ProjectiveSetting.pointQuestion P W u)
-          (fun A B => lowDegreeEnc (pauliAnswerOrZero A) u ≠
-            ProjectiveSetting.pointAnswerOrZero B)) := by
-  let X := Fin P.m → PauliScalar P
+           fun A B => lowDegreeEnc (pauliAnswerOrZero A) u ≠
+            ProjectiveSetting.pointAnswerOrZero B   := by
+  let X := MIPStarRE.QPBT.PauliPoint P
   let qA : X → PauliQuestion P := fun _ => pauliQuestion P W
-  let qB : X → PauliQuestion P := fun u => ProjectiveSetting.pointQuestion P W u
+  let qB  :=  ProjectiveSetting.pointQuestion P W 
   let fA : X → PauliAnswer P → PauliScalar P := fun u A =>
     lowDegreeEnc (pauliAnswerOrZero A) u
   let fB : X → PauliAnswer P → PauliScalar P := fun _ =>
@@ -325,30 +327,14 @@ theorem pauliBasisConsistency_eq_mismatch_interchanged {P : AdmissibleParams}
     unfold ProjectiveSetting.pauliEvalMeas ProjectiveSetting.pauliMeas fA qA
     rw [MIPStarRE.Quantum.Measurement.postprocess_comp]
     rfl
-  have hB : ∀ (u : X) c,
-      heteroKron (1 : Op S.toStrategy.ιA) ((S.pointMeas .bob W u).effect c) =
-        heteroKron (1 : Op S.toStrategy.ιA)
-          (((S.toStrategy.B (qB u)).postprocess (fB u)).effect c) := by
-    intro u c
-    rfl
-  calc
-    _ = consistencyDefect (uniformDistribution X)
-        (fun u c => heteroKron
-          (((S.toStrategy.A (qA u)).postprocess (fA u)).effect c) 1)
-        (fun u c => heteroKron 1
-          (((S.toStrategy.B (qB u)).postprocess (fB u)).effect c))
-        S.toStrategy.ψ := consistencyDefect_congr _ _ _ _ _ _ hA hB
-    _ = avgOver (uniformDistribution X) (fun u =>
-        outcomeEventWeight S.toStrategy (qA u) (qB u)
-          (fun A B => fA u A ≠ fB u B)) := h
-    _ = _ := by rfl
+  aesop
 
 /-- Factor-interchanged form of the Pauli-basis consistency implication. Paper
 `14_analysis_of_the_pauli_basis_test.tex:205-209,227`. -/
 theorem win_pauli_basis_cons_interchanged_explicit :
     ∀ (P : AdmissibleParams) (ε : ℝ) (S : ProjectiveSetting P ε),
       0 ≤ ε → ∀ W : PauliKind,
-      consistencyDefect (uniformDistribution (Fin P.m → PauliScalar P))
+      consistencyDefect (uniformDistribution (MIPStarRE.QPBT.PauliPoint P))
         (fun u a => heteroKron ((S.pauliEvalMeas .alice W u).effect a) 1)
         (fun u a => heteroKron 1 ((S.pointMeas .bob W u).effect a))
         S.toStrategy.ψ ≤ 86 * ε := by
@@ -359,11 +345,7 @@ theorem win_pauli_basis_cons_interchanged_explicit :
     _ ≤ avgOver (uniformDistribution (PauliSpace P))
         (pauliRejectionAt S.toStrategy (pauliPointEdge W)) := by
       apply avgOver_mono
-      intro z
-      have hs := pauliBasisMismatch_le_rejection_interchanged S W z
-      rw [pauliCL_point_eq] at hs
-      simpa only [pauliCL, ProjectiveSetting.pointQuestion, pauliQuestion]
-        using hs
+      solve_by_elim (maxDepth := 6) [pauliBasisMismatch_le_rejection_interchanged, pauliCL_point_eq]
     _ ≤ (Fintype.card PauliEdge : ℝ) * ε := fixedEdgeRejection_le_error S _
     _ = 86 * ε := by rw [pauli_edge_card]; norm_num
 

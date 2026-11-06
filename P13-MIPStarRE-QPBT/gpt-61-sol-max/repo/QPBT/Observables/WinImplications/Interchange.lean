@@ -22,7 +22,7 @@ whose closing sentences at lines 227 and 263-264 state both companions.
 
 @[expose] public section
 
-open scoped BigOperators Matrix ComplexOrder
+open scoped BigOperators Matrix ComplexOrder Classical
 
 namespace MIPStarRE.QPBT
 
@@ -38,9 +38,7 @@ namespace WinImplications
 /-- The identity operator acts trivially on a state. Formalization-only support
 for blueprint `def:strategy-observables`. -/
 theorem applyOperatorToState_one {ι : Type*} [Fintype ι] [DecidableEq ι]
-    (ψ : EuclideanSpace ℂ ι) : applyOperatorToState (1 : Op ι) ψ = ψ := by
-  ext i
-  simp [applyOperatorToState]
+    (ψ : MIPStarRE.QPBT.StateVector ι) : applyOperatorToState (1 : Op ι) ψ = ψ := by simp_all [applyOperatorToState]
 
 /-- Reindexing an operator is computed entrywise, hence commutes with
 subtraction. Formalization-only support for the interchanged conclusions of
@@ -64,28 +62,22 @@ support for the interchanged conclusions of `lem:qld-win-implications`,
 blueprint `ch14_qpbt_observables.tex:701-703`. -/
 theorem applyOperatorToState_reindexState_ofLp {ι κ : Type*}
     [Fintype ι] [DecidableEq ι] [Fintype κ] [DecidableEq κ]
-    (e : ι ≃ κ) (T : Op κ) (ψ : EuclideanSpace ℂ ι) (k : κ) :
+    (e : ι ≃ κ) (T : Op κ) (ψ : MIPStarRE.QPBT.StateVector ι) (k : κ) :
     (applyOperatorToState T (reindexState e ψ)).ofLp k =
-      (applyOperatorToState (reindexOp e T) ψ).ofLp (e.symm k) := by
-  change (T *ᵥ (reindexState e ψ).ofLp) k = (reindexOp e T *ᵥ ψ.ofLp) (e.symm k)
-  rw [Matrix.mulVec, Matrix.mulVec, dotProduct, dotProduct,
-    ← e.sum_comp (fun l : κ => T k l * (reindexState e ψ).ofLp l)]
-  apply Finset.sum_congr rfl
-  intro j _
-  simp [reindexState, reindexOp]
+      (applyOperatorToState (reindexOp e T) ψ).ofLp (e.symm k) := by aesop (add simp [reindexOp, reindexState, applyOperatorToState])
 
 /-- Reindexing a state and its operator preserves the length of the image.
 Formalization-only support for the interchanged conclusions of
 `lem:qld-win-implications`, blueprint `ch14_qpbt_observables.tex:701-703`. -/
 theorem norm_applyOperatorToState_reindexState {ι κ : Type*}
     [Fintype ι] [DecidableEq ι] [Fintype κ] [DecidableEq κ]
-    (e : ι ≃ κ) (T : Op κ) (ψ : EuclideanSpace ℂ ι) :
+    (e : ι ≃ κ) (T : Op κ) (ψ : MIPStarRE.QPBT.StateVector ι) :
     ‖applyOperatorToState T (reindexState e ψ)‖ =
       ‖applyOperatorToState (reindexOp e T) ψ‖ := by
   apply (sq_eq_sq₀ (norm_nonneg _) (norm_nonneg _)).mp
   rw [EuclideanSpace.norm_sq_eq, EuclideanSpace.norm_sq_eq,
-    ← e.symm.sum_comp (fun i : ι =>
-      ‖(applyOperatorToState (reindexOp e T) ψ).ofLp i‖ ^ 2)]
+    ← e.symm.sum_comp  fun i : ι =>
+      ‖(applyOperatorToState (reindexOp e T) ψ).ofLp i‖ ^ 2 ]
   apply Finset.sum_congr rfl
   intro k _
   rw [applyOperatorToState_reindexState_ofLp]
@@ -99,7 +91,7 @@ theorem opFamilyDistSq_placed_le_two_mul_consistencyDefect
     {X α ιA ιB : Type*} [Fintype X] [DecidableEq X] [Fintype α] [DecidableEq α]
     [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
     (μ : Distribution X) (A : X → Measurement α ιA) (B : X → Measurement α ιB)
-    (ψ : EuclideanSpace ℂ (ιA × ιB)) :
+    (ψ : MIPStarRE.QPBT.StateVector (ιA × ιB)) :
     opFamilyDistSq μ (fun x a => heteroKron ((A x).effect a) 1)
         (fun x a => heteroKron 1 ((B x).effect a)) ψ ≤
       2 * consistencyDefect μ (fun x a => heteroKron ((A x).effect a) 1)
@@ -118,7 +110,7 @@ theorem opFamilyDistSq_placed_le_of_consistencyDefect_le
     {X α ιA ιB : Type*} [Fintype X] [DecidableEq X] [Fintype α] [DecidableEq α]
     [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
     (μ : Distribution X) (A : X → Measurement α ιA) (B : X → Measurement α ιB)
-    (ψ : EuclideanSpace ℂ (ιA × ιB)) {c : ℝ}
+    (ψ : MIPStarRE.QPBT.StateVector (ιA × ιB)) {c : ℝ}
     (h : consistencyDefect μ (fun x a => heteroKron ((A x).effect a) 1)
       (fun x a => heteroKron 1 ((B x).effect a)) ψ ≤ c) :
     opFamilyDistSq μ (fun x a => heteroKron ((A x).effect a) 1)
@@ -166,41 +158,43 @@ two questions and the two answers leaves the predicate unchanged. Paper
 `08_classical_and_quantum_low_degree_tests.tex:1126-1225`, blueprint
 `ch13_qpbt_test.tex:410-449`. -/
 
+variable (P : AdmissibleParams) (W : PauliKind) (x y : PauliSpace P) (A B : PauliAnswer P)
+
 /-- Point/axis-line clause symmetry. -/
-theorem win_symm_point_aline (P : AdmissibleParams) (W : PauliKind)
-    (x y : PauliSpace P) (A B : PauliAnswer P) :
+theorem win_symm_point_aline
+      :
     pauliWinPredicate P (.point W, x) (.aline W, y) A B =
       pauliWinPredicate P (.aline W, y) (.point W, x) B A := by
   cases A <;> cases B <;>
     simp [pauliWinPredicate, validPauliAnswer, eq_comm]
 
 /-- Point/diagonal-line clause symmetry. -/
-theorem win_symm_point_dline (P : AdmissibleParams) (W : PauliKind)
-    (x y : PauliSpace P) (A B : PauliAnswer P) :
+theorem win_symm_point_dline
+      :
     pauliWinPredicate P (.point W, x) (.dline W, y) A B =
       pauliWinPredicate P (.dline W, y) (.point W, x) B A := by
   cases A <;> cases B <;>
     simp [pauliWinPredicate, validPauliAnswer, eq_comm]
 
 /-- Pauli/point clause symmetry. -/
-theorem win_symm_pauli_point (P : AdmissibleParams) (W : PauliKind)
-    (x y : PauliSpace P) (A B : PauliAnswer P) :
+theorem win_symm_pauli_point
+      :
     pauliWinPredicate P (.pauli W, x) (.point W, y) A B =
       pauliWinPredicate P (.point W, y) (.pauli W, x) B A := by
   cases A <;> cases B <;>
     simp [pauliWinPredicate, validPauliAnswer, eq_comm]
 
 /-- Pair/Pair-W clause symmetry. -/
-theorem win_symm_pair_pairW (P : AdmissibleParams) (W : PauliKind)
-    (x y : PauliSpace P) (A B : PauliAnswer P) :
+theorem win_symm_pair_pairW
+      :
     pauliWinPredicate P (.pair, x) (.pairW W, y) A B =
       pauliWinPredicate P (.pairW W, y) (.pair, x) B A := by
   cases A <;> cases B <;>
     simp [pauliWinPredicate, validPauliAnswer, eq_comm]
 
 /-- Pair-W/point clause symmetry. -/
-theorem win_symm_pairW_point (P : AdmissibleParams) (W : PauliKind)
-    (x y : PauliSpace P) (A B : PauliAnswer P) :
+theorem win_symm_pairW_point
+      :
     pauliWinPredicate P (.pairW W, x) (.point W, y) A B =
       pauliWinPredicate P (.point W, y) (.pairW W, x) B A := by
   cases A <;> cases B <;>

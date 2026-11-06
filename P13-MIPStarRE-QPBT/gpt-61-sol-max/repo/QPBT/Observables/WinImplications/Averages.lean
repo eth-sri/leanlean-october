@@ -18,7 +18,7 @@ and blueprint `lem:qld-win-implications` and `lem:qld-win-implications-obs`.
 
 @[expose] public section
 
-open scoped BigOperators Matrix ComplexOrder
+open scoped BigOperators Matrix ComplexOrder Classical
 
 namespace MIPStarRE.QPBT
 
@@ -40,7 +40,7 @@ theorem avgOver_uniform_fixed_le_card_mul_prod
     (f : X → Y → ℝ) (hf : ∀ x y, 0 ≤ f x y) (x0 : X) :
     avgOver (uniformDistribution Y) (f x0) ≤
       (Fintype.card X : ℝ) *
-        avgOver (uniformDistribution (X × Y)) (fun xy => f xy.1 xy.2) := by
+        avgOver (uniformDistribution (X × Y))  fun xy => f xy.1 xy.2  := by
   rw [avgOver_uniform_prod]
   have hcard : (Fintype.card X : ℝ) ≠ 0 := by
     exact_mod_cast Fintype.card_ne_zero
@@ -64,9 +64,8 @@ a finite distribution average may be extended to the full finite type. -/
 theorem avgOver_eq_sum_univ {X : Type*} [Fintype X]
     (μ : Distribution X) (f : X → ℝ) :
     avgOver μ f = ∑ x : X, μ.weight x * f x := by
-  classical
   exact (Distribution.sum_univ_eq_sum_support μ (fun x => μ.weight x * f x)
-    (fun x hx => by rw [μ.outsideSupport x hx, zero_mul])).symm
+     fun x hx => by rw [μ.outsideSupport x hx, zero_mul] ).symm
 
 /-- Formalization-only auxiliary for item 2 of `lem:qld-win-implications`:
 averaging against a convex mixture is the corresponding convex combination. -/
@@ -79,13 +78,13 @@ theorem avgOver_mix {X : Type*} [Finite X] [DecidableEq X]
   rw [avgOver_eq_sum_univ, avgOver_eq_sum_univ, avgOver_eq_sum_univ]
   simp only [Distribution.mix]
   calc
-    (∑ x, (t * μ.weight x + (1 - t) * ν.weight x) * f x) =
-        (∑ x, (t * (μ.weight x * f x) + (1 - t) * (ν.weight x * f x))) := by
+     ∑ x, (t * μ.weight x + (1 - t) * ν.weight x) * f x  =
+         ∑ x, (t * (μ.weight x * f x) + (1 - t) * (ν.weight x * f x))  := by
       apply Finset.sum_congr rfl
       intro x _
       ring
-    _ = t * (∑ x, μ.weight x * f x) +
-        (1 - t) * (∑ x, ν.weight x * f x) := by
+    _ = t *  ∑ x, μ.weight x * f x  +
+        (1 - t) *  ∑ x, ν.weight x * f x  := by
       rw [Finset.sum_add_distrib, Finset.mul_sum, Finset.mul_sum]
 
 /-- Formalization-only auxiliary for items 4–7 of `lem:qld-win-implications`:
@@ -96,7 +95,7 @@ theorem cardRatio_mul_avgOver_filter
     (f : X → ℝ) :
     ((Finset.univ.filter p).card : ℝ) / Fintype.card X *
         avgOver (Distribution.uniformOnFinset (Finset.univ.filter p)) f =
-      avgOver (uniformDistribution X) (fun x => if p x then f x else 0) := by
+      avgOver (uniformDistribution X)  fun x => if p x then f x else 0  := by
   have hcardX : (Fintype.card X : ℝ) ≠ 0 := by
     exact_mod_cast Fintype.card_ne_zero
   have hcardp : ((Finset.univ.filter p).card : ℝ) ≠ 0 := by
@@ -106,20 +105,20 @@ theorem cardRatio_mul_avgOver_filter
     Distribution.uniformOnFinset_weight, Finset.mem_filter, Finset.mem_univ,
     true_and, if_true]
   rw [Finset.card_univ]
-  rw [show (∑ x ∈ Finset.univ.filter p,
-      (if p x then 1 / ((Finset.univ.filter p).card : ℝ) else 0) * f x) =
+  rw [show  ∑ x ∈ Finset.univ.filter p,
+      (if p x then 1 / ((Finset.univ.filter p).card : ℝ) else 0) * f x  =
       ∑ x ∈ Finset.univ.filter p,
         1 / ((Finset.univ.filter p).card : ℝ) * f x by
     apply Finset.sum_congr rfl
     intro x hx
     simp [(Finset.mem_filter.mp hx).2]]
-  rw [show (∑ x ∈ Finset.univ.filter p,
-      1 / ((Finset.univ.filter p).card : ℝ) * f x) =
+  rw [show  ∑ x ∈ Finset.univ.filter p,
+      1 / ((Finset.univ.filter p).card : ℝ) * f x  =
       1 / ((Finset.univ.filter p).card : ℝ) *
         ∑ x ∈ Finset.univ.filter p, f x by
     rw [Finset.mul_sum]]
   rw [show (∑ x ∈ Finset.univ,
-      1 / (Fintype.card X : ℝ) * (if p x then f x else 0)) =
+      1 / (Fintype.card X : ℝ) *  if p x then f x else 0 ) =
       1 / (Fintype.card X : ℝ) * ∑ x ∈ Finset.univ.filter p, f x by
     rw [Finset.mul_sum, Finset.sum_filter]
     apply Finset.sum_congr rfl
@@ -132,13 +131,13 @@ theorem avgOver_comm_le_two_mul_gated (P : AdmissibleParams)
     (f : PauliTuple P → ℝ) (hf : ∀ ω, 0 ≤ f ω) :
     avgOver (commTupleDist P) f ≤
       2 * avgOver (uniformDistribution (PauliTuple P))
-        (fun ω => if IsCommuting ω then f ω else 0) := by
+         fun ω => if IsCommuting ω then f ω else 0  := by
   have hnonempty : (Finset.univ.filter (@IsCommuting P)).Nonempty := by
     refine ⟨0, Finset.mem_filter.mpr ⟨Finset.mem_univ _, ?_⟩⟩
     simp [IsCommuting, gammaValue, fixedBinTrace, binTrace, dotProduct]
   have heq := cardRatio_mul_avgOver_filter (@IsCommuting P) hnonempty f
   change commProb P * avgOver (commTupleDist P) f = _ at heq
-  have havg : 0 ≤ avgOver (commTupleDist P) f :=
+  have havg  :=
     avgOver_nonneg (commTupleDist P) f hf
   nlinarith [commProb_ge_half P]
 
@@ -147,10 +146,10 @@ theorem avgOver_anticomm_le_sixteen_mul_gated (P : AdmissibleParams)
     (f : PauliTuple P → ℝ) (hf : ∀ ω, 0 ≤ f ω) :
     avgOver (anticommTupleDist P) f ≤
       16 * avgOver (uniformDistribution (PauliTuple P))
-        (fun ω => if IsAnticommuting ω then f ω else 0) := by
+         fun ω => if IsAnticommuting ω then f ω else 0  := by
   have hnonempty : (Finset.univ.filter (@IsAnticommuting P)).Nonempty := by
     by_contra h
-    have hempty : Finset.univ.filter (@IsAnticommuting P) = ∅ :=
+    have hempty  :=
       Finset.not_nonempty_iff_eq_empty.mp h
     have hprob := anticommTupleDist_isProbability P
     unfold anticommTupleDist Distribution.IsProbability Distribution.totalWeight at hprob
@@ -162,10 +161,10 @@ theorem avgOver_anticomm_le_sixteen_mul_gated (P : AdmissibleParams)
     obtain ⟨k, _, hk⟩ := P.hq
     rw [hk]
     positivity
-  have hmq : P.m ≤ P.q := Nat.le_of_dvd hqpos P.hdvd
+  have hmq  := Nat.le_of_dvd hqpos P.hdvd
   have hprob := anticommProb_ge_of_m_le_q P hmq
   norm_num at hprob
-  have havg : 0 ≤ avgOver (anticommTupleDist P) f :=
+  have havg  :=
     avgOver_nonneg (anticommTupleDist P) f hf
   nlinarith
 
@@ -182,8 +181,8 @@ theorem consistencyDefect_postprocess_eq_mismatch
         (fun x c => heteroKron (((S.A (qA x)).postprocess (fA x)).effect c) 1)
         (fun x c => heteroKron 1 (((S.B (qB x)).postprocess (fB x)).effect c))
         S.ψ =
-      avgOver μ (fun x => outcomeEventWeight S (qA x) (qB x)
-        (fun a b => fA x a ≠ fB x b)) := by
+      avgOver μ  fun x => outcomeEventWeight S (qA x) (qB x)
+         fun a b => fA x a ≠ fB x b   := by
   unfold consistencyDefect outcomeEventWeight
   apply avgOver_congr
   intro x
@@ -193,21 +192,21 @@ theorem consistencyDefect_postprocess_eq_mismatch
   have hmass (c d : β) :
       DistanceCalculus.stateQForm S.ψ
           (heteroKron
-            (∑ a ∈ Finset.univ.filter (fun a => fA x a = c),
+            (∑ a ∈ Finset.univ.filter  fun a => fA x a = c ,
               (S.A (qA x)).effect a)
-            (∑ b ∈ Finset.univ.filter (fun b => fB x b = d),
+            (∑ b ∈ Finset.univ.filter  fun b => fB x b = d ,
               (S.B (qB x)).effect b)) =
-        ∑ a ∈ Finset.univ.filter (fun a => fA x a = c),
-          ∑ b ∈ Finset.univ.filter (fun b => fB x b = d),
+        ∑ a ∈ Finset.univ.filter  fun a => fA x a = c ,
+          ∑ b ∈ Finset.univ.filter  fun b => fB x b = d ,
             outcomeWeight S (qA x) (qB x) a b := by
     have hop :
         heteroKron
-            (∑ a ∈ Finset.univ.filter (fun a => fA x a = c),
+            (∑ a ∈ Finset.univ.filter  fun a => fA x a = c ,
               (S.A (qA x)).effect a)
-            (∑ b ∈ Finset.univ.filter (fun b => fB x b = d),
+            (∑ b ∈ Finset.univ.filter  fun b => fB x b = d ,
               (S.B (qB x)).effect b) =
-          ∑ a ∈ Finset.univ.filter (fun a => fA x a = c),
-            ∑ b ∈ Finset.univ.filter (fun b => fB x b = d),
+          ∑ a ∈ Finset.univ.filter  fun a => fA x a = c ,
+            ∑ b ∈ Finset.univ.filter  fun b => fB x b = d ,
               heteroKron ((S.A (qA x)).effect a) ((S.B (qB x)).effect b) := by
       ext i j
       simp only [Matrix.sum_apply, heteroKron, Matrix.kronecker,
@@ -230,31 +229,30 @@ theorem consistencyDefect_postprocess_eq_mismatch
       apply Finset.sum_congr rfl
       intro b _
       by_cases hab : fA x a = fB x b <;> simp [hab]
-    _ = ∑ c : β, ∑ a ∈ Finset.univ.filter (fun a => fA x a = c),
+    _ = ∑ c : β, ∑ a ∈ Finset.univ.filter  fun a => fA x a = c ,
           ∑ b, if fA x a = fB x b then 0 else
-            outcomeWeight S (qA x) (qB x) a b := by
-      exact (Finset.sum_fiberwise Finset.univ (fA x)
-        (fun a => ∑ b, if fA x a = fB x b then 0 else
-          outcomeWeight S (qA x) (qB x) a b)).symm
-    _ = ∑ c : β, ∑ a ∈ Finset.univ.filter (fun a => fA x a = c),
+            outcomeWeight S (qA x) (qB x) a b := (Finset.sum_fiberwise Finset.univ (fA x)
+         fun a => ∑ b, if fA x a = fB x b then 0 else
+          outcomeWeight S (qA x) (qB x) a b ).symm
+    _ = ∑ c : β, ∑ a ∈ Finset.univ.filter  fun a => fA x a = c ,
           ∑ b, if c = fB x b then 0 else outcomeWeight S (qA x) (qB x) a b := by
       apply Finset.sum_congr rfl
       intro c _
       apply Finset.sum_congr rfl
       intro a ha
       rw [(Finset.mem_filter.mp ha).2]
-    _ = ∑ c : β, ∑ a ∈ Finset.univ.filter (fun a => fA x a = c),
-          ∑ d : β, ∑ b ∈ Finset.univ.filter (fun b => fB x b = d),
+    _ = ∑ c : β, ∑ a ∈ Finset.univ.filter  fun a => fA x a = c ,
+          ∑ d : β, ∑ b ∈ Finset.univ.filter  fun b => fB x b = d ,
             if c = fB x b then 0 else outcomeWeight S (qA x) (qB x) a b := by
       apply Finset.sum_congr rfl
       intro c _
       apply Finset.sum_congr rfl
       intro a _
       exact (Finset.sum_fiberwise Finset.univ (fB x)
-        (fun b => if c = fB x b then 0 else
-          outcomeWeight S (qA x) (qB x) a b)).symm
-    _ = ∑ c : β, ∑ a ∈ Finset.univ.filter (fun a => fA x a = c),
-          ∑ d : β, ∑ b ∈ Finset.univ.filter (fun b => fB x b = d),
+         fun b => if c = fB x b then 0 else
+          outcomeWeight S (qA x) (qB x) a b ).symm
+    _ = ∑ c : β, ∑ a ∈ Finset.univ.filter  fun a => fA x a = c ,
+          ∑ d : β, ∑ b ∈ Finset.univ.filter  fun b => fB x b = d ,
             if c = d then 0 else outcomeWeight S (qA x) (qB x) a b := by
       apply Finset.sum_congr rfl
       intro c _
@@ -266,15 +264,15 @@ theorem consistencyDefect_postprocess_eq_mismatch
       intro b hb
       rw [(Finset.mem_filter.mp hb).2]
     _ = ∑ c : β, ∑ d : β,
-          ∑ a ∈ Finset.univ.filter (fun a => fA x a = c),
-            ∑ b ∈ Finset.univ.filter (fun b => fB x b = d),
+          ∑ a ∈ Finset.univ.filter  fun a => fA x a = c ,
+            ∑ b ∈ Finset.univ.filter  fun b => fB x b = d ,
               if c = d then 0 else outcomeWeight S (qA x) (qB x) a b := by
       apply Finset.sum_congr rfl
       intro c _
       rw [Finset.sum_comm]
     _ = ∑ c : β, ∑ d : β, if c = d then 0 else
-          ∑ a ∈ Finset.univ.filter (fun a => fA x a = c),
-            ∑ b ∈ Finset.univ.filter (fun b => fB x b = d),
+          ∑ a ∈ Finset.univ.filter  fun a => fA x a = c ,
+            ∑ b ∈ Finset.univ.filter  fun b => fB x b = d ,
               outcomeWeight S (qA x) (qB x) a b := by
       apply Finset.sum_congr rfl
       intro c _
@@ -287,18 +285,19 @@ def pauliSourceQuestions (P : AdmissibleParams) (e : PauliEdge)
     (z : PauliSpace P) : PauliQuestion P × PauliQuestion P :=
   ((e.1.1, pauliCL P e.1.1 z), (e.1.2, pauliCL P e.1.2 z))
 
+variable {P : AdmissibleParams}
+
 /-- Rejection mass at a fixed ordered Pauli edge and seed. -/
-noncomputable def pauliRejectionAt {P : AdmissibleParams}
+def pauliRejectionAt
     (S : Strategy (pauliBasisTest P)) (e : PauliEdge) (z : PauliSpace P) : ℝ :=
   let questions := pauliSourceQuestions P e z
   outcomeEventWeight S questions.1 questions.2 fun a b =>
     (pauliBasisTest P).decide questions.1 questions.2 a b = false
 
 /-- Rejection mass at every fixed edge and seed is nonnegative. -/
-theorem pauliRejectionAt_nonneg {P : AdmissibleParams}
+theorem pauliRejectionAt_nonneg
     (S : Strategy (pauliBasisTest P)) (e : PauliEdge) (z : PauliSpace P) :
-    0 ≤ pauliRejectionAt S e z := by
-  exact outcome_event_weight_nonneg S _ _ _
+    0 ≤ pauliRejectionAt S e z := outcome_event_weight_nonneg S _ _ _
 
 /-- Formalization-only auxiliary for items 1–7 of `lem:qld-win-implications`:
 the average rejection mass of a finite game is one minus its value. -/
@@ -307,12 +306,11 @@ theorem rejectionEventAverage_eq_one_sub_value {G : Game} (S : Strategy G) :
       outcomeEventWeight S questions.1 questions.2 fun a b =>
         G.decide questions.1 questions.2 a b = false) =
       1 - S.value := by
-  classical
   simpa only [outcomeEventWeight, Bool.eq_false_iff, ite_not] using
     MIPStarRE.QPBT.rejectionMass_eq_one_sub_value S
 
 /-- Winning bounds the global rejection average. -/
-theorem pauliRejectionAverage_le_error {P : AdmissibleParams} {ε : ℝ}
+theorem pauliRejectionAverage_le_error  {ε : ℝ}
     (S : ProjectiveSetting P ε) :
     avgOver (uniformDistribution (PauliEdge × PauliSpace P))
         (fun ez => pauliRejectionAt S.toStrategy ez.1 ez.2) ≤ ε := by
@@ -327,7 +325,7 @@ theorem pauliRejectionAverage_le_error {P : AdmissibleParams} {ε : ℝ}
   linarith [S.win]
 
 /-- Fixing one verifier edge costs at most the cardinality of the finite edge graph. -/
-theorem fixedEdgeRejection_le_error {P : AdmissibleParams} {ε : ℝ}
+theorem fixedEdgeRejection_le_error  {ε : ℝ}
     (S : ProjectiveSetting P ε) (e : PauliEdge) :
     avgOver (uniformDistribution (PauliSpace P)) (pauliRejectionAt S.toStrategy e) ≤
       (Fintype.card PauliEdge : ℝ) * ε := by
@@ -335,11 +333,9 @@ theorem fixedEdgeRejection_le_error {P : AdmissibleParams} {ε : ℝ}
     avgOver (uniformDistribution (PauliSpace P)) (pauliRejectionAt S.toStrategy e) ≤
         (Fintype.card PauliEdge : ℝ) *
           avgOver (uniformDistribution (PauliEdge × PauliSpace P))
-            (fun ez => pauliRejectionAt S.toStrategy ez.1 ez.2) := by
-      exact avgOver_uniform_fixed_le_card_mul_prod _
-        (fun edge z => pauliRejectionAt_nonneg S.toStrategy edge z) e
-    _ ≤ (Fintype.card PauliEdge : ℝ) * ε := by
-      exact mul_le_mul_of_nonneg_left (pauliRejectionAverage_le_error S)
+             fun ez => pauliRejectionAt S.toStrategy ez.1 ez.2  := avgOver_uniform_fixed_le_card_mul_prod _
+        ( pauliRejectionAt_nonneg S.toStrategy ) e
+    _ ≤ (Fintype.card PauliEdge : ℝ) * ε := mul_le_mul_of_nonneg_left (pauliRejectionAverage_le_error S)
         (Nat.cast_nonneg _)
 
 

@@ -42,7 +42,7 @@ theorem sum_heteroKron_mul_sum_heteroKron
     (hprojective : MIPStarRE.QPBT.Measurement.IsProjective measurement)
     (leftOperators rightOperators : Outcome → Op Target) :
     (∑ outcome, heteroKron (measurement.effect outcome) (leftOperators outcome)) *
-        (∑ outcome, heteroKron (measurement.effect outcome) (rightOperators outcome)) =
+         ∑ outcome, heteroKron (measurement.effect outcome) (rightOperators outcome)  =
       ∑ outcome, heteroKron (measurement.effect outcome)
         (leftOperators outcome * rightOperators outcome) := by
   classical
@@ -76,7 +76,7 @@ theorem sum_heteroKron_mul_conjTranspose
     (hprojective outcome).isSelfAdjoint.star_eq
   calc
     _ = (∑ outcome, heteroKron (measurement.effect outcome) (operators outcome)) *
-        (∑ outcome, heteroKron (measurement.effect outcome) ((operators outcome)ᴴ)) := by
+         ∑ outcome, heteroKron (measurement.effect outcome)  (operators outcome)ᴴ   := by
       simp only [Matrix.conjTranspose_sum, heteroKron, Matrix.kronecker,
         Matrix.conjTranspose_kronecker, hself]
     _ = ∑ outcome, heteroKron (measurement.effect outcome)

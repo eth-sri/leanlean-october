@@ -27,18 +27,18 @@ open MIPStarRE.Quantum
 `04_preliminaries.tex:1163-1208`. -/
 noncomputable def conjIsometry {ι ι' : Type*}
     [Fintype ι] [DecidableEq ι] [Fintype ι'] [DecidableEq ι']
-    (φ : EuclideanSpace ℂ ι →ₗᵢ[ℂ] EuclideanSpace ℂ ι')
+    (φ : MIPStarRE.QPBT.StateVector ι →ₗᵢ[ℂ] MIPStarRE.QPBT.StateVector ι')
     (M : Op ι) : Op ι' :=
-  let U : Matrix ι' ι ℂ := Matrix.toEuclideanLin.symm φ.toLinearMap
+  let U : MIPStarRE.QPBT.CMatrix ι' ι := Matrix.toEuclideanLin.symm φ.toLinearMap
   U * M * Uᴴ
 
 /-- Coordinate transport used by blueprint
 `def:strategy-distance`, paper `06_nonlocal_games_and_mipstar.tex:273-285`. -/
 noncomputable def reindexState {ι ι' : Type*} [Fintype ι] [DecidableEq ι]
     [Fintype ι'] [DecidableEq ι'] (e : ι ≃ ι')
-    (ψ : EuclideanSpace ℂ ι) : EuclideanSpace ℂ ι' :=
+    (ψ : MIPStarRE.QPBT.StateVector ι) : MIPStarRE.QPBT.StateVector ι' :=
   (EuclideanSpace.equiv ι' ℂ).symm
-    (fun j => (EuclideanSpace.equiv ι ℂ ψ) (e.symm j))
+     fun j => (EuclideanSpace.equiv ι ℂ ψ) (e.symm j) 
 
 /-- Apply the two independent local isometries of blueprint
 `thm:ms-rigidity`, paper
@@ -47,28 +47,28 @@ noncomputable def isometryTensor
     {ιA ιB κA κB : Type*}
     [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
     [Fintype κA] [DecidableEq κA] [Fintype κB] [DecidableEq κB]
-    (φA : EuclideanSpace ℂ ιA →ₗᵢ[ℂ] EuclideanSpace ℂ κA)
-    (φB : EuclideanSpace ℂ ιB →ₗᵢ[ℂ] EuclideanSpace ℂ κB)
-    (ψ : EuclideanSpace ℂ (ιA × ιB)) :
-    EuclideanSpace ℂ (κA × κB) :=
+    (φA : MIPStarRE.QPBT.StateVector ιA →ₗᵢ[ℂ] MIPStarRE.QPBT.StateVector κA)
+    (φB : MIPStarRE.QPBT.StateVector ιB →ₗᵢ[ℂ] MIPStarRE.QPBT.StateVector κB)
+    (ψ : MIPStarRE.QPBT.StateVector (ιA × ιB)) :
+    MIPStarRE.QPBT.StateVector (κA × κB) :=
   (EuclideanSpace.equiv (κA × κB) ℂ).symm
-    (fun p =>
+     fun p =>
       ∑ i : ιA, ∑ j : ιB,
-        ((EuclideanSpace.equiv κA ℂ)
-            (φA ((EuclideanSpace.equiv ιA ℂ).symm (Pi.single i 1))) p.1) *
-          ((EuclideanSpace.equiv κB ℂ)
-            (φB ((EuclideanSpace.equiv ιB ℂ).symm (Pi.single j 1))) p.2) *
-          ((EuclideanSpace.equiv (ιA × ιB) ℂ) ψ (i, j)))
+         (EuclideanSpace.equiv κA ℂ)
+            (φA ((EuclideanSpace.equiv ιA ℂ).symm (Pi.single i 1))) p.1  *
+           (EuclideanSpace.equiv κB ℂ)
+            (φB ((EuclideanSpace.equiv ιB ℂ).symm (Pi.single j 1))) p.2  *
+           (EuclideanSpace.equiv (ιA × ιB) ℂ) ψ (i, j)  
 
 /-- Coordinate tensor used in the ideal state of blueprint
 `thm:ms-rigidity`, paper
 `08_classical_and_quantum_low_degree_tests.tex:620-652`. -/
 noncomputable def vecTensor {ι κ : Type*}
     [Fintype ι] [DecidableEq ι] [Fintype κ] [DecidableEq κ]
-    (u : EuclideanSpace ℂ ι) (v : EuclideanSpace ℂ κ) :
-    EuclideanSpace ℂ (ι × κ) :=
+    (u : MIPStarRE.QPBT.StateVector ι) (v : MIPStarRE.QPBT.StateVector κ) :
+    MIPStarRE.QPBT.StateVector (ι × κ) :=
   (EuclideanSpace.equiv (ι × κ) ℂ).symm
-    (fun p => (EuclideanSpace.equiv ι ℂ u) p.1 * (EuclideanSpace.equiv κ ℂ v) p.2)
+     fun p => (EuclideanSpace.equiv ι ℂ u) p.1 * (EuclideanSpace.equiv κ ℂ v) p.2 
 
 /-- Operator transport used by blueprint
 `def:strategy-distance`, paper `06_nonlocal_games_and_mipstar.tex:273-285`. -/
@@ -79,7 +79,7 @@ def reindexOp {ι ι' : Type*} (e : ι ≃ ι') (M : Op ι') : Op ι :=
 `thm:ms-rigidity`, paper
 `08_classical_and_quantum_low_degree_tests.tex:620-652`. -/
 def prodShuffle {α β γ δ : Type*} :
-    (α × β) × (γ × δ) ≃ (α × γ) × (β × δ) where
+    (α × β) ×  γ × δ  ≃ (α × γ) ×  β × δ  where
   toFun p := ((p.1.1, p.2.1), (p.1.2, p.2.2))
   invFun p := ((p.1.1, p.2.1), (p.1.2, p.2.2))
   left_inv p := by cases p; rfl
@@ -93,12 +93,12 @@ theorem reindexState_norm_eq
     {iota kappa : Type*}
     [Fintype iota] [DecidableEq iota]
     [Fintype kappa] [DecidableEq kappa]
-    (e : iota ≃ kappa) (psi : EuclideanSpace ℂ iota) :
+    (e : iota ≃ kappa) (psi : MIPStarRE.QPBT.StateVector iota) :
     ‖reindexState e psi‖ = ‖psi‖ := by
   rw [← sq_eq_sq₀ (norm_nonneg _) (norm_nonneg _)]
   rw [EuclideanSpace.norm_sq_eq, EuclideanSpace.norm_sq_eq]
-  change (∑ j : kappa, ‖psi (e.symm j)‖ ^ 2) = ∑ i : iota, ‖psi i‖ ^ 2
-  exact e.symm.sum_comp (fun i => ‖psi i‖ ^ 2)
+  change  ∑ j : kappa, ‖psi (e.symm j)‖ ^ 2  = ∑ i : iota, ‖psi i‖ ^ 2
+  exact e.symm.sum_comp  fun i => ‖psi i‖ ^ 2 
 
 /-- The coordinate tensor of two Euclidean vectors has the product norm.
 This is a formalization-only auxiliary identity (no source counterpart). -/
@@ -106,12 +106,12 @@ theorem vecTensor_norm_eq
     {iota kappa : Type*}
     [Fintype iota] [DecidableEq iota]
     [Fintype kappa] [DecidableEq kappa]
-    (u : EuclideanSpace ℂ iota) (v : EuclideanSpace ℂ kappa) :
+    (u : MIPStarRE.QPBT.StateVector iota) (v : MIPStarRE.QPBT.StateVector kappa) :
     ‖vecTensor u v‖ = ‖u‖ * ‖v‖ := by
   rw [← sq_eq_sq₀ (norm_nonneg _) (mul_nonneg (norm_nonneg _) (norm_nonneg _))]
   rw [EuclideanSpace.norm_sq_eq, mul_pow, EuclideanSpace.norm_sq_eq,
     EuclideanSpace.norm_sq_eq]
-  change (∑ p : iota × kappa, ‖u p.1 * v p.2‖ ^ 2) =
+  change  ∑ p : iota × kappa, ‖u p.1 * v p.2‖ ^ 2  =
     (∑ i : iota, ‖u i‖ ^ 2) * ∑ j : kappa, ‖v j‖ ^ 2
   simp only [norm_mul, mul_pow]
   rw [← Finset.univ_product_univ, Finset.sum_product, Finset.sum_mul]

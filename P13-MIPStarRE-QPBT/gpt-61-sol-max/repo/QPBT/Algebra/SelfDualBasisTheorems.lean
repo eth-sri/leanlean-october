@@ -32,7 +32,7 @@ theorem trace_mul_eq_dotProduct_basisCoord {F K ι : Type*} [Field F] [Field K]
   calc
     Algebra.trace F K (x * y) = Algebra.traceForm F K x y := rfl
     _ = b.repr x ⬝ᵥ
-        (LinearMap.BilinForm.toMatrix b (Algebra.traceForm F K)) *ᵥ b.repr y :=
+         LinearMap.BilinForm.toMatrix b (Algebra.traceForm F K)  *ᵥ b.repr y :=
       LinearMap.BilinForm.apply_eq_dotProduct_toMatrix_mulVec b
         (Algebra.traceForm F K) x y
     _ = dotProduct (b.equivFun x) (b.equivFun y) := by
@@ -44,8 +44,8 @@ private theorem trace_sq_eq_trace {K : Type*} [Field K] [Finite K]
     [Algebra (ZMod 2) K] (x : K) :
     Algebra.trace (ZMod 2) K (x ^ 2) = Algebra.trace (ZMod 2) K x := by
   simpa [FiniteField.coe_frobeniusAlgEquivOfAlgebraic, ZMod.card] using
-    (Algebra.trace_eq_of_algEquiv
-      (FiniteField.frobeniusAlgEquivOfAlgebraic (ZMod 2) K) x)
+     Algebra.trace_eq_of_algEquiv
+      (FiniteField.frobeniusAlgEquivOfAlgebraic (ZMod 2) K) x 
 
 -- The finite carrier is part of the fixed source-aligned interface for the binary field model.
 set_option linter.unusedFintypeInType false in
@@ -58,12 +58,12 @@ theorem trace_basis_eq_one_of_selfDual_normal {K : Type*} [Field K] [Fintype K]
     Algebra.trace (ZMod 2) K (b i) = 1 := by
   obtain ⟨α, hα⟩ := hnormal
   have htrace_pow (j : ℕ) :
-      Algebra.trace (ZMod 2) K (α ^ (2 ^ j)) = Algebra.trace (ZMod 2) K α := by
+      Algebra.trace (ZMod 2) K (α ^  2 ^ j ) = Algebra.trace (ZMod 2) K α := by
     induction j with
     | zero => simp
     | succ j ih =>
         rw [pow_succ, pow_mul, trace_sq_eq_trace, ih]
-  let c : ZMod 2 := Algebra.trace (ZMod 2) K α
+  let c  := Algebra.trace (ZMod 2) K α
   have htrace_basis (j : Fin k) : Algebra.trace (ZMod 2) K (b j) = c := by
     rw [hα j]
     simpa [ZMod.card, c] using htrace_pow j.1
@@ -76,8 +76,7 @@ theorem trace_basis_eq_one_of_selfDual_normal {K : Type*} [Field K] [Fintype K]
     have h := hself i₀ i₀
     rw [htrace_zero] at h
     simp at h
-  have hc_one : c = 1 := by
-    exact Fin.eq_one_of_ne_zero c hc
+  have hc_one  := Fin.eq_one_of_ne_zero c hc
   exact (htrace_basis i).trans hc_one
 
 -- The finite carrier is part of the fixed source-aligned interface for the binary field model.

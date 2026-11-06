@@ -17,7 +17,9 @@ Blueprint `lem:ld-sandwich` and `lem:pasting`; paper
 
 @[expose] public section
 
-open scoped BigOperators MatrixOrder Matrix ComplexOrder
+variable {α ιA ιB : Type*} [Fintype α] [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
+
+open scoped BigOperators MatrixOrder Matrix ComplexOrder Classical
 
 namespace MIPStarRE.QPBT
 
@@ -25,9 +27,7 @@ open MIPStarRE.LDT hiding Measurement
 open MIPStarRE.Quantum
 open DistanceCalculus
 
-namespace SandwichProduct
 
-end SandwichProduct
 
 /-- The two-family sandwiched product
 `(G₂)_{g₂} (G₁)_{g₁} (G₂)_{g₂}` from blueprint
@@ -63,36 +63,36 @@ measurement, so that the consistency calculus applies to it verbatim. -/
 /-- An alias of `DistanceCalculus.leftPlacedMeasurement`, whose effects are the
 left tensor placements of the effects of `M`. Formalization support for `lem:pasting`, blueprint
 `ch12_qpbt_games.tex:960-990`. -/
-noncomputable def Measurement.leftPlacement {α ιA ιB : Type*} [Fintype α]
-    [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
+noncomputable def Measurement.leftPlacement
+
     (M : Measurement α ιA) : Measurement α (ιA × ιB) :=
   DistanceCalculus.leftPlacedMeasurement M
 
 /-- An alias of `DistanceCalculus.rightPlacedMeasurement`, whose effects are the
 right tensor placements of the effects of `M`. Formalization support for `lem:pasting`, blueprint
 `ch12_qpbt_games.tex:960-990`. -/
-noncomputable def Measurement.rightPlacement {α ιA ιB : Type*} [Fintype α]
-    [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
+noncomputable def Measurement.rightPlacement
+
     (M : Measurement α ιB) : Measurement α (ιA × ιB) :=
   DistanceCalculus.rightPlacedMeasurement M
 
 /-- The effects of the left placement. -/
-@[simp] theorem Measurement.leftPlacement_effect {α ιA ιB : Type*} [Fintype α]
-    [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
+@[simp] theorem Measurement.leftPlacement_effect
+
     (M : Measurement α ιA) (a : α) :
     (Measurement.leftPlacement (ιB := ιB) M).effect a = heteroKron (M.effect a) 1 := rfl
 
 /-- The effects of the right placement. -/
-@[simp] theorem Measurement.rightPlacement_effect {α ιA ιB : Type*} [Fintype α]
-    [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
+@[simp] theorem Measurement.rightPlacement_effect
+
     (M : Measurement α ιB) (a : α) :
     (Measurement.rightPlacement (ιA := ιA) M).effect a = heteroKron 1 (M.effect a) := rfl
 
 /-- The left placement of a projective measurement is projective.
 Formalization support for `lem:pasting`, blueprint
 `ch12_qpbt_games.tex:960-990`. -/
-theorem Measurement.isProjective_leftPlacement {α ιA ιB : Type*} [Fintype α]
-    [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
+theorem Measurement.isProjective_leftPlacement
+
     (M : Measurement α ιA) (hM : MIPStarRE.QPBT.Measurement.IsProjective M) :
     MIPStarRE.QPBT.Measurement.IsProjective (Measurement.leftPlacement (ιB := ιB) M) := by
   intro a
@@ -109,8 +109,8 @@ theorem Measurement.isProjective_leftPlacement {α ιA ιB : Type*} [Fintype α]
 right-factor mirror of the preceding lemma and the second of the four
 properties of the placement collected in the formalization-support node
 `lem:pasting-tensor-placement`, blueprint `ch12_qpbt_games.tex:1063-1071`. -/
-theorem Measurement.isProjective_rightPlacement {α ιA ιB : Type*} [Fintype α]
-    [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
+theorem Measurement.isProjective_rightPlacement
+
     (M : Measurement α ιB) (hM : MIPStarRE.QPBT.Measurement.IsProjective M) :
     MIPStarRE.QPBT.Measurement.IsProjective (Measurement.rightPlacement (ιA := ιA) M) := by
   intro a
@@ -135,7 +135,6 @@ theorem Measurement.leftPlacement_postprocess {α β ιA ιB : Type*}
     (M : Measurement α ιA) (f : α → β) (b : β) :
     (Measurement.leftPlacement (ιB := ιB) (M.postprocess f)).effect b =
       ((Measurement.leftPlacement (ιB := ιB) M).postprocess f).effect b := by
-  classical
   simp only [Measurement.leftPlacement_effect, Measurement.postprocess_effect,
     heteroKron_finset_sum_left]
 
@@ -149,7 +148,6 @@ theorem Measurement.rightPlacement_postprocess {α β ιA ιB : Type*}
     (M : Measurement α ιB) (f : α → β) (b : β) :
     (Measurement.rightPlacement (ιA := ιA) (M.postprocess f)).effect b =
       ((Measurement.rightPlacement (ιA := ιA) M).postprocess f).effect b := by
-  classical
   simp only [Measurement.rightPlacement_effect, Measurement.postprocess_effect,
     heteroKron_finset_sum_right]
 
@@ -184,11 +182,10 @@ theorem Measurement.postprocess_congrAlphabet {α β γ ι : Type*} [Fintype α]
     [Fintype ι] [DecidableEq ι] (e : β ≃ α) (M : Measurement α ι)
     (f : β → γ) (c : γ) :
     ((Measurement.congrAlphabet e M).postprocess f).effect c =
-      (M.postprocess (fun a => f (e.symm a))).effect c := by
-  classical
+      (M.postprocess  fun a => f (e.symm a) ).effect c := by
   simp only [Measurement.postprocess_effect, Measurement.congrAlphabet_effect,
     Finset.sum_filter]
-  rw [← Equiv.sum_comp e (fun a => if f (e.symm a) = c then M.effect a else 0)]
+  rw [← Equiv.sum_comp e  fun a => if f (e.symm a) = c then M.effect a else 0 ]
   simp
 
 end MIPStarRE.QPBT

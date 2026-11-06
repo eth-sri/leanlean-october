@@ -21,7 +21,7 @@ line. These are exact transport identities, not numerical passing bounds.
 
 @[expose] public section
 
-open scoped BigOperators MatrixOrder ComplexOrder
+open scoped BigOperators MatrixOrder ComplexOrder Classical
 
 namespace MIPStarRE.QPBT
 
@@ -36,11 +36,13 @@ variable {P : AdmissibleParams} {epsilon deltaQ deltaL : Real}
 variable {setting : ProjectiveSetting P epsilon}
 variable {points : CombinedPointsWitness setting deltaQ}
 
+variable (lines : ExtendedLinesWitness setting points deltaL)
+
 /-- The consistency defect of the two axis-line coefficient answers on the
 constructed two-player state. The question law is the axis-line marginal of
 the supplied direct line-point distribution. -/
 def axisCoefficientAnswerDefect
-    (lines : ExtendedLinesWitness setting points deltaL) : Real :=
+     : Real :=
   consistencyDefect
     ((directALinePointDist P.extendedDirectLd).map Prod.fst)
     (fun line answer => heteroKron
@@ -53,7 +55,7 @@ def axisCoefficientAnswerDefect
 the constructed two-player state. The question law is the diagonal-line
 marginal of the supplied direct line-point distribution. -/
 def diagonalCoefficientAnswerDefect
-    (lines : ExtendedLinesWitness setting points deltaL) : Real :=
+     : Real :=
   consistencyDefect
     ((directDLinePointDist P.extendedDirectLd).map Prod.fst)
     (fun line answer => heteroKron
@@ -69,8 +71,8 @@ private theorem answer_mismatch_eq_consistency
     consistencyDefect mu
         (fun x answer => heteroKron ((S.A (qA x)).effect answer) 1)
         (fun x answer => heteroKron 1 ((S.B (qB x)).effect answer)) S.ψ =
-      avgOver mu (fun x => outcomeEventWeight S (qA x) (qB x)
-        (fun answerA answerB => answerA ≠ answerB)) := by
+      avgOver mu  fun x => outcomeEventWeight S (qA x) (qB x)
+         fun answerA answerB => answerA ≠ answerB   := by
   unfold consistencyDefect outcomeEventWeight
   apply avgOver_congr
   intro x
@@ -85,7 +87,7 @@ private theorem answer_mismatch_eq_consistency
   · simp [heq, outcomeWeight, DistanceCalculus.stateQForm]
 
 private theorem sameLine_rejectedMass_eq_answer_mismatch
-    (lines : ExtendedLinesWitness setting points deltaL)
+
     (kind : LdType) (hkind : kind = .aline ∨ kind = .dline)
     (sample : DirectLdSpace P.extendedDirectLd) :
     directRejectedMass P.extendedDirectLd (strategy lines)
@@ -94,8 +96,7 @@ private theorem sameLine_rejectedMass_eq_answer_mismatch
       outcomeEventWeight (strategy lines)
         (kind, directLdMap P.extendedDirectLd kind sample)
         (kind, directLdMap P.extendedDirectLd kind sample)
-        (fun answerA answerB => answerA ≠ answerB) := by
-  classical
+         fun answerA answerB => answerA ≠ answerB  := by
   unfold directRejectedMass outcomeEventWeight
   apply Finset.sum_congr rfl
   intro answerA _
@@ -111,13 +112,7 @@ private theorem sameLine_rejectedMass_eq_answer_mismatch
         rcases hkind with rfl | rfl <;> cases answerA <;>
           simp_all [directLdWinPredicate, validDirectLdAnswer]
       simp [hwin]
-    · have hvalidFalse : validDirectLdAnswer kind answerA = false :=
-        Bool.eq_false_of_not_eq_true hvalid
-      have hzero := outcomeWeight_eq_zero_of_invalid lines
-        (kind, directLdMap P.extendedDirectLd kind sample)
-        (kind, directLdMap P.extendedDirectLd kind sample)
-        answerA answerA (Or.inl hvalidFalse)
-      simp [hzero]
+    simp_all [Bool.eq_false_of_not_eq_true, outcomeWeight_eq_zero_of_invalid]
   · have hnotwin : directLdWinPredicate P.extendedDirectLd
         (kind, directLdMap P.extendedDirectLd kind sample)
         (kind, directLdMap P.extendedDirectLd kind sample)
@@ -126,18 +121,10 @@ private theorem sameLine_rejectedMass_eq_answer_mismatch
       apply heq
       rcases hkind with rfl | rfl <;> cases answerA <;> cases answerB <;>
         simp_all [directLdWinPredicate, validDirectLdAnswer]
-    have hwinFalse : directLdWinPredicate P.extendedDirectLd
-        (kind, directLdMap P.extendedDirectLd kind sample)
-        (kind, directLdMap P.extendedDirectLd kind sample)
-        answerA answerB = false := Bool.eq_false_of_not_eq_true hnotwin
-    simp only [hwinFalse, Bool.false_eq_true, if_false]
-    split
-    · rfl
-    · rename_i hnot
-      exact (hnot heq).elim
+    simp_all
 
 private theorem axis_answer_effect
-    (lines : ExtendedLinesWitness setting points deltaL) (side : PlayerSide)
+     (side : PlayerSide)
     (sample : DirectLdSpace P.extendedDirectLd)
     (answer : DirectLdAnswer P.extendedDirectLd) :
     (answerMeasurement lines side
@@ -148,7 +135,7 @@ private theorem axis_answer_effect
   rw [axis_description_canonical]
 
 private theorem diagonal_answer_effect
-    (lines : ExtendedLinesWitness setting points deltaL) (side : PlayerSide)
+     (side : PlayerSide)
     (sample : DirectLdSpace P.extendedDirectLd)
     (answer : DirectLdAnswer P.extendedDirectLd) :
     (answerMeasurement lines side
@@ -161,7 +148,7 @@ private theorem diagonal_answer_effect
 /-- The axis-axis branch rejection is exactly the consistency defect of the
 two typed axis coefficient answers over the axis-line marginal. -/
 theorem aline_aline_rejection_eq_axisCoefficientAnswerDefect
-    (lines : ExtendedLinesWitness setting points deltaL) :
+     :
     directLdBranchRejectionProbability P.extendedDirectLd (strategy lines)
         (.aline, .aline) = axisCoefficientAnswerDefect lines := by
   rw [directLdBranchRejectionProbability_eq_avgOver]
@@ -171,10 +158,10 @@ theorem aline_aline_rejection_eq_axisCoefficientAnswerDefect
           (.aline, directLdMap P.extendedDirectLd .aline sample)
           (.aline, directLdMap P.extendedDirectLd .aline sample)) =
       avgOver (uniformDistribution (DirectLdSpace P.extendedDirectLd))
-        (fun sample => outcomeEventWeight (strategy lines)
+         fun sample => outcomeEventWeight (strategy lines)
           (.aline, directLdMap P.extendedDirectLd .aline sample)
           (.aline, directLdMap P.extendedDirectLd .aline sample)
-          (fun answerA answerB => answerA ≠ answerB)) := by
+           fun answerA answerB => answerA ≠ answerB   := by
       apply avgOver_congr
       exact sameLine_rejectedMass_eq_answer_mismatch lines .aline (Or.inl rfl)
     _ = consistencyDefect (uniformDistribution (DirectLdSpace P.extendedDirectLd))
@@ -187,24 +174,16 @@ theorem aline_aline_rejection_eq_axisCoefficientAnswerDefect
         (pairState setting) :=
       (answer_mismatch_eq_consistency P.extendedDirectLd _ (strategy lines)
         (fun sample => (.aline, directLdMap P.extendedDirectLd .aline sample))
-        (fun sample => (.aline, directLdMap P.extendedDirectLd .aline sample))).symm
+         fun sample => (.aline, directLdMap P.extendedDirectLd .aline sample) ).symm
     _ = axisCoefficientAnswerDefect lines := by
       unfold axisCoefficientAnswerDefect consistencyDefect
       rw [directALinePointDist, Distribution.map_map, Distribution.avgOver_map]
-      apply avgOver_congr
-      intro sample
-      apply Finset.sum_congr rfl
-      intro answerA _
-      apply Finset.sum_congr rfl
-      intro answerB _
-      dsimp only
-      rw [axis_answer_effect lines .alice sample answerA,
-        axis_answer_effect lines .bob sample answerB]
+      simp_all only [axis_answer_effect]
 
 /-- The diagonal-diagonal branch rejection is exactly the consistency defect
 of the two typed diagonal coefficient answers over the diagonal-line marginal. -/
 theorem dline_dline_rejection_eq_diagonalCoefficientAnswerDefect
-    (lines : ExtendedLinesWitness setting points deltaL) :
+     :
     directLdBranchRejectionProbability P.extendedDirectLd (strategy lines)
         (.dline, .dline) = diagonalCoefficientAnswerDefect lines := by
   rw [directLdBranchRejectionProbability_eq_avgOver]
@@ -214,10 +193,10 @@ theorem dline_dline_rejection_eq_diagonalCoefficientAnswerDefect
           (.dline, directLdMap P.extendedDirectLd .dline sample)
           (.dline, directLdMap P.extendedDirectLd .dline sample)) =
       avgOver (uniformDistribution (DirectLdSpace P.extendedDirectLd))
-        (fun sample => outcomeEventWeight (strategy lines)
+         fun sample => outcomeEventWeight (strategy lines)
           (.dline, directLdMap P.extendedDirectLd .dline sample)
           (.dline, directLdMap P.extendedDirectLd .dline sample)
-          (fun answerA answerB => answerA ≠ answerB)) := by
+           fun answerA answerB => answerA ≠ answerB   := by
       apply avgOver_congr
       exact sameLine_rejectedMass_eq_answer_mismatch lines .dline (Or.inr rfl)
     _ = consistencyDefect (uniformDistribution (DirectLdSpace P.extendedDirectLd))
@@ -230,19 +209,11 @@ theorem dline_dline_rejection_eq_diagonalCoefficientAnswerDefect
         (pairState setting) :=
       (answer_mismatch_eq_consistency P.extendedDirectLd _ (strategy lines)
         (fun sample => (.dline, directLdMap P.extendedDirectLd .dline sample))
-        (fun sample => (.dline, directLdMap P.extendedDirectLd .dline sample))).symm
+         fun sample => (.dline, directLdMap P.extendedDirectLd .dline sample) ).symm
     _ = diagonalCoefficientAnswerDefect lines := by
       unfold diagonalCoefficientAnswerDefect consistencyDefect
       rw [directDLinePointDist, Distribution.map_map, Distribution.avgOver_map]
-      apply avgOver_congr
-      intro sample
-      apply Finset.sum_congr rfl
-      intro answerA _
-      apply Finset.sum_congr rfl
-      intro answerB _
-      dsimp only
-      rw [diagonal_answer_effect lines .alice sample answerA,
-        diagonal_answer_effect lines .bob sample answerB]
+      simp_all only [diagonal_answer_effect]
 
 end ExtendedLineGame
 

@@ -22,7 +22,7 @@ is `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:309-362`.
 
 @[expose] public section
 
-open scoped BigOperators Matrix ComplexOrder
+open scoped BigOperators Matrix ComplexOrder Classical
 
 namespace MIPStarRE.QPBT
 
@@ -38,9 +38,11 @@ local instance pauliEdgeNonemptyInterchanged : Nonempty PauliEdge :=
 
 /-! ## The interchanged consistency inputs on the interchanged state -/
 
+variable {P : AdmissibleParams} {ε : ℝ} (S : ProjectiveSetting P ε)
+
 /-- The fixed coefficient in `win_comm_cons_swapped_proof`. -/
-theorem win_comm_cons_swapped_explicit {P : AdmissibleParams} {ε : ℝ}
-    (S : ProjectiveSetting P ε) (hε : 0 ≤ ε) (W : PauliKind) :
+theorem win_comm_cons_swapped_explicit
+     (hε : 0 ≤ ε) (W : PauliKind) :
     consistencyDefect (commTupleDist P)
         (fun ω a => heteroKron
           ((S.pointTraceMeas .bob W (selectedTuplePoint W ω)
@@ -50,17 +52,14 @@ theorem win_comm_cons_swapped_explicit {P : AdmissibleParams} {ε : ℝ}
         S.swappedState ≤ 2 * (Fintype.card PauliEdge : ℝ) * ε := by
   refine le_trans (le_of_eq ?_)
     (win_comm_cons_interchanged_explicit P ε S hε W)
-  exact consistencyDefect_swappedState (commTupleDist P)
-    (fun ω a => (S.pairWMeas .alice W ω.1 ω.2.1 ω.2.2.1 ω.2.2.2).effect a)
-    (fun ω a => (S.pointTraceMeas .bob W (selectedTuplePoint W ω)
-      (selectedTupleScalar W ω)).effect a) S.toStrategy.ψ
+  solve_by_elim (maxDepth := 6) [consistencyDefect_swappedState]
 
 /-- Pair-W self-consistency with Bob on the left factor, transported to the
 interchanged state. Paper
 `14_analysis_of_the_pauli_basis_test.tex:315-320`, blueprint
 `ch14_qpbt_observables.tex:761-794`. -/
-theorem pairW_self_consistency_comm_swapped {P : AdmissibleParams} {ε : ℝ}
-    (S : ProjectiveSetting P ε) (W : PauliKind) :
+theorem pairW_self_consistency_comm_swapped
+     (W : PauliKind) :
     consistencyDefect (commTupleDist P)
         (fun ω a => heteroKron
           ((S.pairWMeas .bob W ω.1 ω.2.1 ω.2.2.1 ω.2.2.2).effect a) 1)
@@ -68,28 +67,22 @@ theorem pairW_self_consistency_comm_swapped {P : AdmissibleParams} {ε : ℝ}
           ((S.pairWMeas .alice W ω.1 ω.2.1 ω.2.2.1 ω.2.2.2).effect a))
         S.swappedState ≤ 2 * (Fintype.card PauliEdge : ℝ) * ε := by
   refine le_trans (le_of_eq ?_) (pairW_self_consistency_comm_le S W)
-  exact consistencyDefect_swappedState (commTupleDist P)
-    (fun ω a => (S.pairWMeas .alice W ω.1 ω.2.1 ω.2.2.1 ω.2.2.2).effect a)
-    (fun ω a => (S.pairWMeas .bob W ω.1 ω.2.1 ω.2.2.1 ω.2.2.2).effect a)
-    S.toStrategy.ψ
+  solve_by_elim (maxDepth := 6) [consistencyDefect_swappedState]
 
 /-- The fixed coefficient in `win_comm_swapped_proof`. -/
-theorem win_comm_swapped_explicit {P : AdmissibleParams} {ε : ℝ}
-    (S : ProjectiveSetting P ε) (hε : 0 ≤ ε) (W : PauliKind) :
+theorem win_comm_swapped_explicit
+     (hε : 0 ≤ ε) (W : PauliKind) :
     consistencyDefect (commTupleDist P)
         (fun ω a => heteroKron
           ((S.pairWMeas .bob W ω.1 ω.2.1 ω.2.2.1 ω.2.2.2).effect a) 1)
         (fun ω a => heteroKron 1 ((S.pairComponentMeas .alice W ω).effect a))
         S.swappedState ≤ 2 * (Fintype.card PauliEdge : ℝ) * ε := by
   refine le_trans (le_of_eq ?_) (win_comm_interchanged_explicit P ε S hε W)
-  exact consistencyDefect_swappedState (commTupleDist P)
-    (fun ω a => (S.pairComponentMeas .alice W ω).effect a)
-    (fun ω a => (S.pairWMeas .bob W ω.1 ω.2.1 ω.2.2.1 ω.2.2.2).effect a)
-    S.toStrategy.ψ
+  solve_by_elim (maxDepth := 6) [consistencyDefect_swappedState]
 
 /-- The fixed coefficient in `win_ms_cons_swapped_proof`. -/
-theorem win_ms_cons_swapped_explicit {P : AdmissibleParams} {ε : ℝ}
-    (S : ProjectiveSetting P ε) (hε : 0 ≤ ε) (W : PauliKind) :
+theorem win_ms_cons_swapped_explicit
+     (hε : 0 ≤ ε) (W : PauliKind) :
     consistencyDefect (anticommTupleDist P)
         (fun ω a => heteroKron
           ((S.pointTraceMeas .bob W (selectedTuplePoint W ω)
@@ -98,10 +91,7 @@ theorem win_ms_cons_swapped_explicit {P : AdmissibleParams} {ε : ℝ}
           ((S.msVarBitMeas .alice (selectedMsVar W) ω).effect a))
         S.swappedState ≤ 16 * (Fintype.card PauliEdge : ℝ) * ε := by
   refine le_trans (le_of_eq ?_) (win_ms_cons_interchanged_explicit P ε S hε W)
-  exact consistencyDefect_swappedState (anticommTupleDist P)
-    (fun ω a => (S.msVarBitMeas .alice (selectedMsVar W) ω).effect a)
-    (fun ω a => (S.pointTraceMeas .bob W (selectedTuplePoint W ω)
-      (selectedTupleScalar W ω)).effect a) S.toStrategy.ψ
+  solve_by_elim (maxDepth := 6) [consistencyDefect_swappedState]
 
 /-! ## The two halves on Bob's factor -/
 
@@ -121,13 +111,12 @@ theorem point_obs_commutator_comm_le_bob_explicit :
         (1024 * (2 * (Fintype.card PauliEdge : ℝ)) +
           1024 * Real.sqrt (4 * (Fintype.card PauliEdge : ℝ))) *
             (ε + Real.sqrt ε) := by
-  classical
   have hcard : (1 : ℝ) ≤ (Fintype.card PauliEdge : ℝ) := by
     exact_mod_cast (Fintype.card_pos : 0 < Fintype.card PauliEdge)
   set K : ℝ := 4 * (Fintype.card PauliEdge : ℝ) with hKdef
   have hK : (0 : ℝ) ≤ K := by rw [hKdef]; linarith
   intro P ε S hε
-  have hsq : (0 : ℝ) ≤ Real.sqrt ε := Real.sqrt_nonneg ε
+  have hsq  := Real.sqrt_nonneg ε
   have hmain := point_obs_commutator_comm_le_explicit
     (ιL := S.toStrategy.ιB) (ιR := S.toStrategy.ιA)
     (fun ω => S.pointTraceMeas .bob .X ω.1 ω.2.2.1)
@@ -162,8 +151,8 @@ theorem point_obs_commutator_comm_le_bob_explicit :
 /-- Alice's Magic Square variable anticommutator read on the interchanged
 state.  Paper `14_analysis_of_the_pauli_basis_test.tex:349-356`, blueprint
 `ch14_qpbt_observables.tex:761-794`. -/
-theorem msVarBitObsA_anticommutator_swapped_le {P : AdmissibleParams} {ε : ℝ}
-    (S : ProjectiveSetting P ε) (ω : PauliTuple P) :
+theorem msVarBitObsA_anticommutator_swapped_le
+     (ω : PauliTuple P) :
     ‖applyOperatorToState
         (heteroKron (ιA := S.toStrategy.ιB) (ιB := S.toStrategy.ιA) 1
           (obsOf (S.msVarBitMeas .alice 0 ω) *
@@ -186,8 +175,7 @@ theorem msVarBitObsA_anticommutator_swapped_le {P : AdmissibleParams} {ε : ℝ}
     heteroKron
       (obsOf (S.msVarBitMeas .alice 0 ω) * obsOf (S.msVarBitMeas .alice 4 ω) +
         obsOf (S.msVarBitMeas .alice 4 ω) * obsOf (S.msVarBitMeas .alice 0 ω))
-      (1 : Op S.toStrategy.ιB) := by
-    exact reindexOp_prodComm_heteroKron _ _
+      (1 : Op S.toStrategy.ιB) := reindexOp_prodComm_heteroKron _ _
   rw [hswap] at htrans
   exact le_of_eq_of_le (congrArg (fun t : ℝ => t ^ 2) htrans)
     (msVarBitObsA_anticommutator_le S ω)
@@ -207,7 +195,6 @@ theorem point_obs_anticommutator_anticomm_le_bob_explicit :
           S.swappedState‖ ^ 2) ≤
         (96 * (16 * (Fintype.card PauliEdge : ℝ)) +
           3551040 * (16 * (Fintype.card PauliEdge : ℝ))) * ε := by
-  classical
   intro P ε S hε
   simp only [pointObs_eq_obsOf]
   have hdist : ∀ W : PauliKind,
@@ -218,43 +205,28 @@ theorem point_obs_anticommutator_anticomm_le_bob_explicit :
           heteroKron (ιA := S.toStrategy.ιB) (ιB := S.toStrategy.ιA) 1
             (obsOf (S.msVarBitMeas .alice (selectedMsVar W) ω)))
         S.swappedState‖ ^ 2) ≤
-          4 * ((16 * (Fintype.card PauliEdge : ℝ)) * ε) := by
+          4 * ( 16 * (Fintype.card PauliEdge : ℝ)  * ε) := by
     intro W
     have h := obsDist_le_of_consistencyDefect
       (ιL := S.toStrategy.ιB) (ιR := S.toStrategy.ιA) (anticommTupleDist P)
       (fun ω => S.pointTraceMeas .bob W (selectedTuplePoint W ω)
         (selectedTupleScalar W ω))
-      (fun ω => S.msVarBitMeas .alice (selectedMsVar W) ω) S.swappedState
+      ( S.msVarBitMeas .alice (selectedMsVar W) ) S.swappedState
       (win_ms_cons_swapped_explicit S hε W)
     rw [opDistSq_eq_avgOver] at h
     exact h
   have hdefect : avgOver (anticommTupleDist P)
       (fun ω => 1 - S.msValueAt ω) ≤
-        (16 * (Fintype.card PauliEdge : ℝ)) * ε := by
-    have hprob := anticommTupleDist_isProbability P
-    have hsplit : avgOver (anticommTupleDist P)
-        (fun ω => 1 - S.msValueAt ω) =
-        1 - avgOver (anticommTupleDist P) S.msValueAt := by
-      rw [avgOver_sub, avgOver_const_of_isProbability _ hprob]
-    rw [hsplit]
-    exact le_of_abs_le (win_magic_square_explicit P ε S hε)
-  have hmsavg : avgOver (anticommTupleDist P) (fun ω =>
-      ‖applyOperatorToState
-        (heteroKron (ιA := S.toStrategy.ιB) (ιB := S.toStrategy.ιA) 1
-          (obsOf (S.msVarBitMeas .alice 0 ω) *
-              obsOf (S.msVarBitMeas .alice 4 ω) +
-            obsOf (S.msVarBitMeas .alice 4 ω) *
-              obsOf (S.msVarBitMeas .alice 0 ω)))
-        S.swappedState‖ ^ 2) ≤
-          1183680 * ((16 * (Fintype.card PauliEdge : ℝ)) * ε) := by
+         16 * (Fintype.card PauliEdge : ℝ)  * ε := by simp_all only [avgOver_const_of_isProbability, avgOver_sub, le_of_abs_le, anticommTupleDist_isProbability, win_magic_square_explicit]
+  have hmsavg  := by
     calc
       _ ≤ avgOver (anticommTupleDist P)
-          (fun ω => 1183680 * (1 - S.msValueAt ω)) :=
+           fun ω => 1183680 * (1 - S.msValueAt ω)  :=
         avgOver_mono _ _ _
-          (fun ω => msVarBitObsA_anticommutator_swapped_le S ω)
+           (msVarBitObsA_anticommutator_swapped_le S) 
       _ = 1183680 * avgOver (anticommTupleDist P)
-          (fun ω => 1 - S.msValueAt ω) := avgOver_const_mul _ _ _
-      _ ≤ 1183680 * ((16 * (Fintype.card PauliEdge : ℝ)) * ε) :=
+           fun ω => 1 - S.msValueAt ω  := avgOver_const_mul _ _ _
+      _ ≤ 1183680 * ( 16 * (Fintype.card PauliEdge : ℝ)  * ε) :=
         mul_le_mul_of_nonneg_left hdefect (by norm_num)
   have hmain := obs_anticommutator_avg_le (ιL := S.toStrategy.ιB)
     (ιR := S.toStrategy.ιA)
@@ -264,8 +236,8 @@ theorem point_obs_anticommutator_anticomm_le_bob_explicit :
     (fun ω => obsOf (S.msVarBitMeas .alice 4 ω)) S.swappedState
     (fun ω => pointTraceObs_conjTranspose_mul_self S .bob .X ω.1 ω.2.2.1)
     (fun ω => pointTraceObs_conjTranspose_mul_self S .bob .Z ω.2.1 ω.2.2.2)
-    (fun ω => msVarBitObs_conjTranspose_mul_self S .alice 0 ω)
-    (fun ω => msVarBitObs_conjTranspose_mul_self S .alice 4 ω)
+    ( msVarBitObs_conjTranspose_mul_self S .alice 0 )
+    ( msVarBitObs_conjTranspose_mul_self S .alice 4 )
     (hdist .X) (hdist .Z) hmsavg
   exact le_trans hmain (le_of_eq (by ring))
 
@@ -292,7 +264,6 @@ theorem point_obs_twisted_commutation_interchanged_explicit :
             (96 * (16 * (Fintype.card PauliEdge : ℝ)) +
               3551040 * (16 * (Fintype.card PauliEdge : ℝ))) + 4) *
             Real.sqrt ε := by
-  classical
   intro P ε S hε
   have hswapped := twisted_commutation_of_halves
     (fun ω => S.pointObs .bob .X ω.2.2.1 ω.1)

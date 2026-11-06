@@ -18,7 +18,7 @@ blueprint `lem:qld-4-7`.
 
 @[expose] public section
 
-open scoped BigOperators MatrixOrder
+open scoped BigOperators MatrixOrder Classical
 
 namespace MIPStarRE.QPBT.ExtendedLineGame
 
@@ -27,46 +27,47 @@ open MIPStarRE.Quantum DistanceCalculus PolynomialImageBounds
 
 noncomputable section
 
-private theorem place_add {P : AdmissibleParams} {ε : ℝ}
-    (S : ProjectiveSetting P ε) (p : Placement)
+variable {P : AdmissibleParams} {ε : ℝ} (S : ProjectiveSetting P ε)
+
+private theorem place_add
+     (p : Placement)
     (A B : Op (S.ExpandedLocalSpace p.side)) :
     S.place p (A + B) = S.place p A + S.place p B := by
   ext i j
   cases p <;> simp only [ProjectiveSetting.place, Matrix.add_apply, add_mul, mul_add]
 
 /-- The retained diagonal overlap with the actual opposite point measurement. -/
-def retainedPointOverlap {P : AdmissibleParams} {ε : ℝ}
-    (S : ProjectiveSetting P ε) (p1 p2 : Placement)
+def retainedPointOverlap
+     (p1 p2 : Placement)
     (R : DirectPolyMeasTuple P.extendedDirectLd (S.ExpandedLocalSpace p1.side))
     (W : PauliKind) : ℝ :=
-  avgOver (uniformDistribution (Fin P.m → PauliScalar P)) (fun x =>
+  avgOver (uniformDistribution (MIPStarRE.QPBT.PauliPoint P))  fun x =>
     ∑ pair : PolyPair P, stateQForm S.psiHat
       (S.place p1 (R.effect (directCombinedEmbedding P pair)) *
-        S.place p2 ((S.pointMeasExp p2.side W x).effect (evalAt W x pair))))
+        S.place p2 ((S.pointMeasExp p2.side W x).effect (evalAt W x pair))) 
 
-private theorem retained_mass_eq {P : AdmissibleParams} {ε : ℝ}
-    (S : ProjectiveSetting P ε) (p : Placement)
+private theorem retained_mass_eq
+     (p : Placement)
     (R : DirectPolyMeasTuple P.extendedDirectLd (S.ExpandedLocalSpace p.side))
     (hR : Measurement.IsProjective R) :
-    (∑ pair : PolyPair P,
+     ∑ pair : PolyPair P,
       ‖applyOperatorToState (S.place p (R.effect (directCombinedEmbedding P pair)))
-        S.psiHat‖ ^ 2) = 1 - separatedPolynomialMass S p R := by
-  classical
+        S.psiHat‖ ^ 2  = 1 - separatedPolynomialMass S p R := by
   let w := fun g => ‖applyOperatorToState (S.place p (R.effect g)) S.psiHat‖ ^ 2
   have hmass : ∑ g, w g = 1 := by
     simpa only [w, ProjectiveSetting.placedMeasurement_effect, S.psiHat_norm, one_pow] using
       sum_projective_state_norm_sq (S.placedMeasurement p R)
         (S.placedMeasurement_isProjective p R hR) S.psiHat
   have hgood : Finset.univ.image (directCombinedEmbedding P) =
-      Finset.univ.filter (fun g => ∃ pair : PolyPair P,
+      Finset.univ.filter  fun g => ∃ pair : PolyPair P,
         MvPolynomial.map (extendedDirectScalarEquiv P).toRingHom (g (0 : Fin 1)).1 =
-          combinePoly pair.1.1 pair.2.1) := by
+          combinePoly pair.1.1 pair.2.1  := by
     ext g
     simp only [Finset.mem_image, Finset.mem_univ, true_and, Finset.mem_filter]
     exact mem_range_directCombinedEmbedding P g
-  change (∑ pair, w (directCombinedEmbedding P pair)) = _
-  rw [← Finset.sum_image (f := w) (fun a _ b _ h =>
-    (directCombinedEmbedding P).injective h), hgood]
+  change  ∑ pair, w (directCombinedEmbedding P pair)  = _
+  rw [← Finset.sum_image (f := w)  fun a _ b _ h =>
+    (directCombinedEmbedding P).injective h , hgood]
   have hsplit := Finset.sum_filter_add_sum_filter_not Finset.univ
     (fun g => ∃ pair : PolyPair P,
       MvPolynomial.map (extendedDirectScalarEquiv P).toRingHom (g (0 : Fin 1)).1 =
@@ -77,13 +78,13 @@ private theorem retained_mass_eq {P : AdmissibleParams} {ε : ℝ}
 /-- Retained mass splits exactly into point overlap and point mismatch.
 This is the normalized good/bad identity of `eq:qld-s-good-and-bad`; the
 individual projected vectors in its proof remain unnormalized. -/
-theorem retainedPointMismatch_eq {P : AdmissibleParams} {ε : ℝ}
-    (S : ProjectiveSetting P ε) (p1 p2 : Placement) (hopposite : p1.IsOpposite p2)
+theorem retainedPointMismatch_eq
+     (p1 p2 : Placement) (hopposite : p1.IsOpposite p2)
     (R : DirectPolyMeasTuple P.extendedDirectLd (S.ExpandedLocalSpace p1.side))
     (hR : Measurement.IsProjective R) (W : PauliKind) :
     retainedPointMismatch S p1 p2 R W =
       1 - separatedPolynomialMass S p1 R - retainedPointOverlap S p1 p2 R W := by
-  have hpoint (x : Fin P.m → PauliScalar P) (pair : PolyPair P) :
+  have hpoint (x : MIPStarRE.QPBT.PauliPoint P) (pair : PolyPair P) :
       ‖applyOperatorToState
         (1 - S.place p2 ((S.pointMeasExp p2.side W x).effect (evalAt W x pair)))
         (applyOperatorToState (S.place p1 (R.effect (directCombinedEmbedding P pair)))
@@ -101,7 +102,7 @@ theorem retainedPointMismatch_eq {P : AdmissibleParams} {ε : ℝ}
       ((S.pointMeasExp p2.side W x).effect (evalAt W x pair))
     rw [MagicSquareRigidity.norm_applyOperatorToState_sq]
     change stateQForm _ _ = _
-    have hsub (ψ : EuclideanSpace ℂ (SixReg P S.toStrategy.ιA S.toStrategy.ιB))
+    have hsub (ψ : MIPStarRE.QPBT.StateVector (SixReg P S.toStrategy.ιA S.toStrategy.ιB))
         (A B : Op (SixReg P S.toStrategy.ιA S.toStrategy.ιB)) :
         stateQForm ψ (A - B) = stateQForm ψ A - stateQForm ψ B := by
       simp [stateQForm, applyOperatorToState]
@@ -115,28 +116,27 @@ theorem retainedPointMismatch_eq {P : AdmissibleParams} {ε : ℝ}
 /-- Completion increases the retained diagonal overlap on any opposite
 placement. This transports the completion estimate to all four directed
 expanded placements, without identifying the player spaces. -/
-theorem directPairMeasurement_consistency_le {P : AdmissibleParams} {ε : ℝ}
-    (S : ProjectiveSetting P ε) (p1 p2 : Placement) (hopposite : p1.IsOpposite p2)
+theorem directPairMeasurement_consistency_le
+     (p1 p2 : Placement) (hopposite : p1.IsOpposite p2)
     (R : DirectPolyMeasTuple P.extendedDirectLd (S.ExpandedLocalSpace p1.side))
     (hR : Measurement.IsProjective R) (pair₀ : PolyPair P) (W : PauliKind) :
-    consistencyDefect (uniformDistribution (Fin P.m → PauliScalar P))
+    consistencyDefect (uniformDistribution (MIPStarRE.QPBT.PauliPoint P))
       (fun x a => S.place p1 (((directPairMeasurement R pair₀).postprocess
         (evalAt W x)).effect a))
       (fun x a => S.place p2 ((S.pointMeasExp p2.side W x).effect a)) S.psiHat ≤
       separatedPolynomialMass S p1 R + retainedPointMismatch S p1 p2 R W := by
-  classical
   let C := directPairMeasurement R pair₀
-  let B := fun x => S.pointMeasExp p2.side W x
-  have hdiag (x : Fin P.m → PauliScalar P) :
-      (∑ a : PauliScalar P, stateQForm S.psiHat
-        (S.place p1 ((C.postprocess (evalAt W x)).effect a) * S.place p2 ((B x).effect a))) =
+  let B :=  S.pointMeasExp p2.side W 
+  have hdiag (x : MIPStarRE.QPBT.PauliPoint P) :
+       ∑ a : PauliScalar P, stateQForm S.psiHat
+        (S.place p1 ((C.postprocess (evalAt W x)).effect a) * S.place p2 ((B x).effect a))  =
       ∑ pair : PolyPair P, stateQForm S.psiHat
         (S.place p1 (C.effect pair) * S.place p2 ((B x).effect (evalAt W x pair))) := by
     simp_rw [Quantum.Measurement.postprocess_effect, S.place_finsetSum, Finset.sum_mul,
       stateQForm_finset_sum]
     calc
       _ = ∑ a : PauliScalar P, ∑ pair ∈ Finset.univ.filter
-          (fun pair => evalAt W x pair = a), stateQForm S.psiHat
+           fun pair => evalAt W x pair = a , stateQForm S.psiHat
           (S.place p1 (C.effect pair) * S.place p2 ((B x).effect (evalAt W x pair))) := by
         apply Finset.sum_congr rfl
         intro a _
@@ -144,10 +144,10 @@ theorem directPairMeasurement_consistency_le {P : AdmissibleParams} {ε : ℝ}
         intro pair hp
         rw [(Finset.mem_filter.mp hp).2]
       _ = _ := Finset.sum_fiberwise Finset.univ (evalAt W x) _
-  have hretained (x : Fin P.m → PauliScalar P) :
-      (∑ pair : PolyPair P, stateQForm S.psiHat
+  have hretained (x : MIPStarRE.QPBT.PauliPoint P) :
+       ∑ pair : PolyPair P, stateQForm S.psiHat
         (S.place p1 (R.effect (directCombinedEmbedding P pair)) *
-          S.place p2 ((B x).effect (evalAt W x pair)))) ≤
+          S.place p2 ((B x).effect (evalAt W x pair)))  ≤
       ∑ pair : PolyPair P, stateQForm S.psiHat
         (S.place p1 (C.effect pair) * S.place p2 ((B x).effect (evalAt W x pair))) := by
     apply Finset.sum_le_sum
@@ -169,19 +169,19 @@ theorem directPairMeasurement_consistency_le {P : AdmissibleParams} {ε : ℝ}
       · exact le_rfl
     · exact S.place_nonneg p2 ((B x).pos _)
     · exact S.place_comm p1 p2 hopposite _ _
-  have hbound : consistencyDefect (uniformDistribution (Fin P.m → PauliScalar P))
+  have hbound : consistencyDefect (uniformDistribution (MIPStarRE.QPBT.PauliPoint P))
       (fun x a => S.place p1 ((C.postprocess (evalAt W x)).effect a))
       (fun x a => S.place p2 ((B x).effect a)) S.psiHat ≤
       1 - retainedPointOverlap S p1 p2 R W := by
     unfold consistencyDefect
     simp_rw [consistency_term_eq_stateQForm]
-    have heq (x : Fin P.m → PauliScalar P) := point_defect_eq
+    have heq (x : MIPStarRE.QPBT.PauliPoint P) := point_defect_eq
       (S.placedMeasurement p1 (C.postprocess (evalAt W x)))
       (S.placedMeasurement p2 (B x)) S.psiHat
     simp only [ProjectiveSetting.placedMeasurement_effect, S.psiHat_norm, one_pow] at heq
     simp_rw [heq, hdiag]
-    have h := avgOver_mono (uniformDistribution (Fin P.m → PauliScalar P)) _ _
-      (fun x => sub_le_sub_left (hretained x) 1)
+    have h := avgOver_mono (uniformDistribution (MIPStarRE.QPBT.PauliPoint P)) _ _
+       fun x => sub_le_sub_left (hretained x) 1 
     simpa only [avgOver_sub, avgOver_uniform_const, retainedPointOverlap, B] using h
   rw [retainedPointMismatch_eq S p1 p2 hopposite R hR W]
   linarith
@@ -189,11 +189,11 @@ theorem directPairMeasurement_consistency_le {P : AdmissibleParams} {ε : ℝ}
 /-- The completed pair measurement has point defect at most bad mass plus
 `2E + 4/q`, for each basis and every opposite placement. -/
 theorem directPairMeasurement_consistency_le_ordered_error
-    {P : AdmissibleParams} {ε : ℝ}
-    (S : ProjectiveSetting P ε) (p1 p2 : Placement) (hopposite : p1.IsOpposite p2)
+
+     (p1 p2 : Placement) (hopposite : p1.IsOpposite p2)
     (R : DirectPolyMeasTuple P.extendedDirectLd (S.ExpandedLocalSpace p1.side))
     (hR : Measurement.IsProjective R) (pair₀ : PolyPair P) (reverse : Bool) :
-    consistencyDefect (uniformDistribution (Fin P.m → PauliScalar P))
+    consistencyDefect (uniformDistribution (MIPStarRE.QPBT.PauliPoint P))
       (fun x a => S.place p1 (((directPairMeasurement R pair₀).postprocess
         (evalAt (if reverse then .Z else .X) x)).effect a))
       (fun x a => S.place p2
@@ -223,7 +223,7 @@ theorem pair_witness_of_points_lines_explicit :
       let eta := delta + Real.sqrt (220 * Real.rpow delta (1 / 4 : ℝ)) +
         2 * Real.sqrt (2 * delta)
       Nonempty (GlobalPairWitness S (8 * (4 * eta + 8 * δQ) +
-        (((12 * P.m * P.d + 4 * P.d + 14 : ℕ) : ℝ) / P.q))) := by
+         ((12 * P.m * P.d + 4 * P.d + 14 : ℕ) : ℝ) / P.q )) := by
   let a := pauliBaselineLowDegreeConstant
   let b := pauliBaselineLowDegreePower
   have h := rounded_polynomial_separated_mass_explicit
@@ -235,9 +235,9 @@ theorem pair_witness_of_points_lines_explicit :
   have hB (reverse : Bool) := directPairMeasurement_consistency_le_ordered_error
     S .BB' .AB'' (by trivial) RB hRB pair₀ reverse
   have hbound :
-      6 * (4 * eta + 8 * δQ) + (((12 * P.m * P.d + 4 * P.d + 10 : ℕ) : ℝ) / P.q) +
+      6 * (4 * eta + 8 * δQ) +  ((12 * P.m * P.d + 4 * P.d + 10 : ℕ) : ℝ) / P.q  +
         2 * (4 * eta + 8 * δQ) + 4 / P.q =
-      8 * (4 * eta + 8 * δQ) + (((12 * P.m * P.d + 4 * P.d + 14 : ℕ) : ℝ) / P.q) := by
+      8 * (4 * eta + 8 * δQ) +  ((12 * P.m * P.d + 4 * P.d + 14 : ℕ) : ℝ) / P.q  := by
     push_cast
     ring
   refine ⟨{
@@ -281,7 +281,7 @@ theorem exists_pairWitness_of_points_lines :
       let eta := delta + Real.sqrt (220 * Real.rpow delta (1 / 4 : ℝ)) +
         2 * Real.sqrt (2 * delta)
       Nonempty (GlobalPairWitness S (8 * (4 * eta + 8 * δQ) +
-        (((12 * P.m * P.d + 4 * P.d + 14 : ℕ) : ℝ) / P.q))) := by
+         ((12 * P.m * P.d + 4 * P.d + 14 : ℕ) : ℝ) / P.q )) := by
   refine ⟨pauliBaselineLowDegreeConstant, pauliBaselineLowDegreePower, ?_, ?_, ?_,
     pair_witness_of_points_lines_explicit⟩
   · unfold pauliBaselineLowDegreeConstant

@@ -29,7 +29,7 @@ restriction in the pasting argument for `lem:qld-xz-lines`. -/
 def nondegenerateLinePastingMass (L : LdParams) : ℝ :=
   ∑ samples ∈
       (Distribution.prod (linePointDist L) (linePointDist L)).support.filter
-        (fun samples => samples.1.1.direction ≠ 0),
+         fun samples => samples.1.1.direction ≠ 0 ,
     (Distribution.prod (linePointDist L) (linePointDist L)).weight samples
 
 /-- The retained product-law mass lies between one half and one. -/
@@ -37,14 +37,14 @@ theorem nondegenerateLinePastingMass_bounds (L : LdParams) :
     1 / 2 ≤ nondegenerateLinePastingMass L ∧
       nondegenerateLinePastingMass L ≤ 1 := by
   classical
-  let indicator := fun sample : LineDesc L × (Fin L.m → ScalarQ L) =>
+  let indicator := fun sample : LineDesc L ×  MIPStarRE.QPBT.LdPoint L  =>
     if sample.1.direction ≠ 0 then (1 : ℝ) else 0
   have hmass : nondegenerateLinePastingMass L =
       avgOver (linePointDist L) indicator := by
     unfold nondegenerateLinePastingMass
     rw [Distribution.sum_filter_weight_eq_avgOver, SandwichProduct.avgOver_distribution_prod]
     change avgOver (linePointDist L) (fun sample =>
-      avgOver (linePointDist L) (fun _ => indicator sample)) = _
+      avgOver (linePointDist L)  fun _ => indicator sample ) = _
     simp_rw [avgOver_const_of_isProbability _ (linePointDist_isProbability L)]
   have haxis : avgOver (aLinePointDist L) indicator = 1 := by
     have hindicator : indicator = fun sample =>
@@ -66,7 +66,7 @@ theorem nondegenerateLinePastingMass_bounds (L : LdParams) :
   refine ⟨hlower, ?_⟩
   calc
     avgOver (linePointDist L) indicator ≤
-      avgOver (linePointDist L) (fun _ => 1) :=
+      avgOver (linePointDist L)  fun _ => 1  :=
       avgOver_mono _ _ _ fun sample => by
         by_cases hzero : sample.1.direction = 0 <;> simp [indicator, hzero]
     _ = 1 := avgOver_const_of_isProbability _ (linePointDist_isProbability L) 1

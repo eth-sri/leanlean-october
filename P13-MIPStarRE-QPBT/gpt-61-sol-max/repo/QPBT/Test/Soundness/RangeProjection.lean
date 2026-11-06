@@ -30,7 +30,7 @@ open DistanceCalculus MagicSquareRigidity
 /-- The identity conjugated by an isometry is its orthogonal range projection. -/
 private theorem conjIsometry_one_isProj {ι κ : Type}
     [Fintype ι] [DecidableEq ι] [Fintype κ] [DecidableEq κ]
-    (phi : EuclideanSpace ℂ ι →ₗᵢ[ℂ] EuclideanSpace ℂ κ) :
+    (phi : MIPStarRE.QPBT.StateVector ι →ₗᵢ[ℂ] MIPStarRE.QPBT.StateVector κ) :
     IsProj (conjIsometry phi 1) := by
   constructor
   · change conjIsometry phi 1 * conjIsometry phi 1 = conjIsometry phi 1
@@ -41,7 +41,7 @@ private theorem conjIsometry_one_isProj {ι κ : Type}
 /-- Intertwining identifies isometry conjugation with insertion of its range projection. -/
 private theorem mul_conjIsometry_one_eq {ι κ : Type}
     [Fintype ι] [DecidableEq ι] [Fintype κ] [DecidableEq κ]
-    (phi : EuclideanSpace ℂ ι →ₗᵢ[ℂ] EuclideanSpace ℂ κ) (M : Op ι) (N : Op κ)
+    (phi : MIPStarRE.QPBT.StateVector ι →ₗᵢ[ℂ] MIPStarRE.QPBT.StateVector κ) (M : Op ι) (N : Op κ)
     (hintertwine : N * isometryMatrix phi = isometryMatrix phi * M) :
     N * conjIsometry phi 1 = conjIsometry phi M := by
   rw [conjIsometry_eq, Matrix.mul_one, ← Matrix.mul_assoc, hintertwine]
@@ -55,10 +55,10 @@ supporting `thm:pauli`. It holds for every complete POVM. -/
 theorem sum_norm_mul_projection_sub_sq_le {α ι : Type*}
     [Fintype α] [Fintype ι] [DecidableEq ι]
     (N : MIPStarRE.Quantum.Measurement α ι) (T : α → Op ι)
-    (Q : Op ι) (hQ : IsProj Q) (theta delta : EuclideanSpace ℂ ι)
+    (Q : Op ι) (hQ : IsProj Q) (theta delta : MIPStarRE.QPBT.StateVector ι)
     (htheta : applyOperatorToState Q theta = theta) :
     ∑ a : α, ‖applyOperatorToState (N.effect a * Q - T a) delta‖ ^ 2 ≤
-      2 * (∑ a : α, ‖applyOperatorToState (N.effect a - T a) delta‖ ^ 2) +
+      2 *  ∑ a : α, ‖applyOperatorToState (N.effect a - T a) delta‖ ^ 2  +
         2 * ‖delta - theta‖ ^ 2 := by
   have hvanish : applyOperatorToState (1 - Q) theta = 0 := by
     have hfix : Matrix.toEuclideanLin Q theta = theta := htheta
@@ -78,7 +78,7 @@ theorem sum_norm_mul_projection_sub_sq_le {α ι : Type*}
       apply Finset.sum_le_sum
       intro a _
       have hsplit : N.effect a * Q - T a =
-          (N.effect a - T a) - N.effect a * (1 - Q) := by
+           N.effect a - T a  - N.effect a * (1 - Q) := by
         rw [mul_sub, mul_one]
         abel
       have hsplit_action : applyOperatorToState (N.effect a * Q - T a) delta =
@@ -94,8 +94,8 @@ theorem sum_norm_mul_projection_sub_sq_le {α ι : Type*}
         ‖applyOperatorToState (N.effect a - T a) delta +
           applyOperatorToState (N.effect a * (1 - Q)) delta‖)).trans_eq
         (hpar.trans (mul_add 2 _ _))
-    _ = 2 * (∑ a : α, ‖applyOperatorToState (N.effect a - T a) delta‖ ^ 2) +
-        2 * (∑ a : α, ‖applyOperatorToState (N.effect a * (1 - Q)) delta‖ ^ 2) := by
+    _ = 2 *  ∑ a : α, ‖applyOperatorToState (N.effect a - T a) delta‖ ^ 2  +
+        2 *  ∑ a : α, ‖applyOperatorToState (N.effect a * (1 - Q)) delta‖ ^ 2  := by
       rw [Finset.sum_add_distrib, Finset.mul_sum, Finset.mul_sum]
     _ ≤ _ := add_le_add le_rfl (mul_le_mul_of_nonneg_left
       (hsum.trans hcomplement) (by norm_num))
@@ -108,16 +108,16 @@ This is blueprint `thm:pauli-isometry-transfer-alice-support`. -/
 theorem sum_norm_leftTensor_conjIsometry_sub_sq_le {α ιA ιB κA κB : Type}
     [Fintype α] [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
     [Fintype κA] [DecidableEq κA] [Fintype κB] [DecidableEq κB]
-    (phiA : EuclideanSpace ℂ ιA →ₗᵢ[ℂ] EuclideanSpace ℂ κA)
-    (phiB : EuclideanSpace ℂ ιB →ₗᵢ[ℂ] EuclideanSpace ℂ κB)
+    (phiA : MIPStarRE.QPBT.StateVector ιA →ₗᵢ[ℂ] MIPStarRE.QPBT.StateVector κA)
+    (phiB : MIPStarRE.QPBT.StateVector ιB →ₗᵢ[ℂ] MIPStarRE.QPBT.StateVector κB)
     (M : α → Op ιA) (N : MIPStarRE.Quantum.Measurement α κA)
     (T : α → Op (κA × κB))
     (hintertwine : ∀ a : α,
       N.effect a * isometryMatrix phiA = isometryMatrix phiA * M a)
-    (psi : EuclideanSpace ℂ (ιA × ιB)) (delta : EuclideanSpace ℂ (κA × κB)) :
+    (psi : MIPStarRE.QPBT.StateVector (ιA × ιB)) (delta : MIPStarRE.QPBT.StateVector (κA × κB)) :
     ∑ a : α, ‖applyOperatorToState
         (heteroKron (conjIsometry phiA (M a)) 1 - T a) delta‖ ^ 2 ≤
-      2 * (∑ a : α, ‖applyOperatorToState (heteroKron (N.effect a) 1 - T a) delta‖ ^ 2) +
+      2 *  ∑ a : α, ‖applyOperatorToState (heteroKron (N.effect a) 1 - T a) delta‖ ^ 2  +
         2 * ‖delta - isometryTensor phiA phiB psi‖ ^ 2 := by
   let Q : Op (κA × κB) := heteroKron (conjIsometry phiA 1) 1
   have hQ : IsProj Q := by
@@ -151,16 +151,16 @@ operator comparison needed in the proof of `thm:pauli`. -/
 theorem sum_norm_rightTensor_conjIsometry_sub_sq_le {α ιA ιB κA κB : Type}
     [Fintype α] [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
     [Fintype κA] [DecidableEq κA] [Fintype κB] [DecidableEq κB]
-    (phiA : EuclideanSpace ℂ ιA →ₗᵢ[ℂ] EuclideanSpace ℂ κA)
-    (phiB : EuclideanSpace ℂ ιB →ₗᵢ[ℂ] EuclideanSpace ℂ κB)
+    (phiA : MIPStarRE.QPBT.StateVector ιA →ₗᵢ[ℂ] MIPStarRE.QPBT.StateVector κA)
+    (phiB : MIPStarRE.QPBT.StateVector ιB →ₗᵢ[ℂ] MIPStarRE.QPBT.StateVector κB)
     (M : α → Op ιB) (N : MIPStarRE.Quantum.Measurement α κB)
     (T : α → Op (κA × κB))
     (hintertwine : ∀ a : α,
       N.effect a * isometryMatrix phiB = isometryMatrix phiB * M a)
-    (psi : EuclideanSpace ℂ (ιA × ιB)) (delta : EuclideanSpace ℂ (κA × κB)) :
+    (psi : MIPStarRE.QPBT.StateVector (ιA × ιB)) (delta : MIPStarRE.QPBT.StateVector (κA × κB)) :
     ∑ a : α, ‖applyOperatorToState
         (heteroKron 1 (conjIsometry phiB (M a)) - T a) delta‖ ^ 2 ≤
-      2 * (∑ a : α, ‖applyOperatorToState (heteroKron 1 (N.effect a) - T a) delta‖ ^ 2) +
+      2 *  ∑ a : α, ‖applyOperatorToState (heteroKron 1 (N.effect a) - T a) delta‖ ^ 2  +
         2 * ‖delta - isometryTensor phiA phiB psi‖ ^ 2 := by
   let Q : Op (κA × κB) := heteroKron 1 (conjIsometry phiB 1)
   have hQ : IsProj Q := by

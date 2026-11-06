@@ -31,14 +31,14 @@ noncomputable section
 
 /-- Simultaneous unitary conjugation preserves the quadratic form of a product. -/
 theorem stateQForm_conjBy_mul_apply {I : Type*} [Fintype I] [DecidableEq I]
-    (U A B : Op I) (hU : Uᴴ * U = 1) (psi : EuclideanSpace ℂ I) :
+    (U A B : Op I) (hU : Uᴴ * U = 1) (psi : MIPStarRE.QPBT.StateVector I) :
     stateQForm (applyOperatorToState U psi) (conjBy U A * conjBy U B) =
       stateQForm psi (A * B) := by
   rw [← stateQForm_conjTranspose_mul_mul]
   congr 1
   simp only [conjBy]
   calc
-    _ = (Uᴴ * U) * A * (Uᴴ * U) * B * (Uᴴ * U) := by noncomm_ring
+    _ =  Uᴴ * U  * A * (Uᴴ * U) * B * (Uᴴ * U) := by noncomm_ring
     _ = A * B := by rw [hU]; simp
 
 namespace ProjectiveSetting
@@ -46,28 +46,30 @@ namespace ProjectiveSetting
 variable {P : AdmissibleParams} {epsilon deltaG : ℝ}
     (S : ProjectiveSetting P epsilon)
 
+variable (w : GlobalPairWitness S deltaG) (side : PlayerSide) (W : PauliKind)
+
 /-- The total Pauli POVM extended to the full local extraction block and
 conjugated by the concrete swap. This is the measurement in `eq:qld-unitary-7`. -/
-def swappedPauliMeas (w : GlobalPairWitness S deltaG) (side : PlayerSide)
-    (W : PauliKind) : Measurement (PauliRegister P) (ExtractionBlock P (S.LocalSpace side)) :=
+def swappedPauliMeas
+     : Measurement (PauliRegister P) (ExtractionBlock P (S.LocalSpace side)) :=
   Measurement.ofSumEqOne
     (fun h => conjBy (swapUnitary w side) (S.onPlayer side ((S.pauliMeas side W).effect h)))
-    (fun h => by
+     fun h => by
       apply star_right_conjugate_nonneg
       exact kronecker_nonneg
         (kronecker_nonneg ((S.pauliMeas side W).pos h) Matrix.PosSemidef.one.nonneg)
-        Matrix.PosSemidef.one.nonneg)
+        Matrix.PosSemidef.one.nonneg 
     (by
       simp only [conjBy, onPlayer, ← Finset.sum_mul, ← Matrix.mul_sum,
         ← heteroKron_finset_sum_left, (S.pauliMeas side W).sum_eq_one,
         heteroKron_one_one, Matrix.mul_one, swapUnitary_mul_conjTranspose])
 
 /-- Coarse-graining commutes with extending and conjugating the Pauli POVM. -/
-theorem swappedPauliMeas_eval_effect (w : GlobalPairWitness S deltaG)
-    (side : PlayerSide) (W : PauliKind) (u : Fin P.m → PauliScalar P)
+theorem swappedPauliMeas_eval_effect
+      (u : MIPStarRE.QPBT.PauliPoint P)
     (a : PauliScalar P) :
     ((S.swappedPauliMeas w side W).postprocess
-      (fun h => evalPoly (encodingPoly h) u)).effect a =
+       fun h => evalPoly (encodingPoly h) u ).effect a =
       conjBy (swapUnitary w side) (S.onPlayer side ((S.pauliEvalMeas side W u).effect a)) := by
   simp only [swappedPauliMeas, Measurement.postprocess_effect, Measurement.ofSumEqOne,
     pauliEvalMeas, conjBy, onPlayer, ← Finset.sum_mul, ← Matrix.mul_sum,
@@ -88,15 +90,15 @@ theorem placeSide_extracted (side : PlayerSide) (T : Op (PauliRegister P)) :
   cases side
   · ext row col
     change
-      ((if (row.1.1, row.1.2.1) = (col.1.1, col.1.2.1) then (1 : ℂ) else 0) *
-        T row.1.2.2 col.1.2.2) *
+       (if (row.1.1, row.1.2.1) = (col.1.1, col.1.2.1) then (1 : ℂ) else 0) *
+        T row.1.2.2 col.1.2.2  *
         (if ((row.2.1, row.2.2.1), row.2.2.2) =
           ((col.2.1, col.2.2.1), col.2.2.2) then 1 else 0) =
       (if row.1.1 = col.1.1 then 1 else 0) *
         (if row.1.2.1 = col.1.2.1 then 1 else 0) *
         ((if row.2.1 = col.2.1 then 1 else 0) * T row.1.2.2 col.1.2.2) *
         (if row.2.2.1 = col.2.2.1 then 1 else 0) *
-        (if row.2.2.2 = col.2.2.2 then 1 else 0)
+         if row.2.2.2 = col.2.2.2 then 1 else 0 
     simp only [Prod.mk.injEq, ite_and, ite_mul, mul_ite, one_mul, mul_one,
       zero_mul, mul_zero]
     split_ifs <;> rfl
@@ -106,11 +108,11 @@ theorem placeSide_extracted (side : PlayerSide) (T : Op (PauliRegister P)) :
         ((col.1.1, col.1.2.1), col.1.2.2) then (1 : ℂ) else 0) *
         ((if (row.2.1, row.2.2.1) = (col.2.1, col.2.2.1) then 1 else 0) *
           T row.2.2.2 col.2.2.2) =
-      ((if row.1.1 = col.1.1 then 1 else 0) * T row.2.2.2 col.2.2.2) *
+       (if row.1.1 = col.1.1 then 1 else 0) * T row.2.2.2 col.2.2.2  *
         (if row.1.2.1 = col.1.2.1 then 1 else 0) *
         (if row.1.2.2 = col.1.2.2 then 1 else 0) *
         (if row.2.1 = col.2.1 then 1 else 0) *
-        (if row.2.2.1 = col.2.2.1 then 1 else 0)
+         if row.2.2.1 = col.2.2.1 then 1 else 0 
     simp only [Prod.mk.injEq, ite_and, ite_mul, mul_ite, one_mul, mul_one,
       zero_mul, mul_zero]
     split_ifs <;> rfl
@@ -122,26 +124,25 @@ theorem placeSide_conjBy (side : PlayerSide)
   cases side <;>
     simp only [placeSide, conjBy, ← reindexOp_conjTranspose,
       ← WinImplications.reindexOp_mul, MagicSquareRigidity.heteroKron_conjTranspose,
-      heteroKron_mul, Matrix.conjTranspose_one, Matrix.mul_one] <;> rfl
+      heteroKron_mul, Matrix.conjTranspose_one, Matrix.mul_one] 
 
 /-- Conjugated total-Pauli effects in block coordinates give exactly the
 six-register operators required by the extraction witness. -/
-theorem placeSide_swappedPauliMeas (w : GlobalPairWitness S deltaG)
-    (side : PlayerSide) (W : PauliKind) (h : PauliRegister P) :
+theorem placeSide_swappedPauliMeas
+      (h : PauliRegister P) :
     S.placeSide side ((S.swappedPauliMeas w side W).effect h) =
       conjBy (S.placeSide side (swapUnitary w side))
-        (S.placePlayer side ((S.pauliMeas side W).effect h)) := by
-  exact (S.placeSide_conjBy side _ _).trans
+        (S.placePlayer side ((S.pauliMeas side W).effect h)) := (S.placeSide_conjBy side _ _).trans
     (congrArg (conjBy (S.placeSide side (swapUnitary w side))) (S.placeSide_onPlayer side _))
 
 /-- The evaluated canonical block measurement is the swap-conjugated
 pulled-apart measurement, by `eq:qld-unitary-6`. -/
-theorem canonical_eval_eq_conj_tildeM (w : GlobalPairWitness S deltaG)
-    (side : PlayerSide) (W : PauliKind) (u : Fin P.m → PauliScalar P)
+theorem canonical_eval_eq_conj_tildeM
+      (u : MIPStarRE.QPBT.PauliPoint P)
     (a : PauliScalar P) :
     ((rightPlacedMeasurement (ιA := S.ExpandedLocalSpace side)
       (pauliRegisterMeas (params := P) W)).postprocess
-      (fun h => evalPoly (encodingPoly h) u)).effect a =
+       fun h => evalPoly (encodingPoly h) u ).effect a =
       conjBy (swapUnitary w side) (tildeM w side W (indicatorVec u) a) := by
   rw [swapUnitary_conj_tildeM]
   simp only [Measurement.postprocess_effect, rightPlacedMeasurement,
@@ -191,45 +192,45 @@ set_option maxHeartbeats 800000 in
 /-- Alice's evaluated swapped total-Pauli overlap with Bob's canonical
 measurement is exactly one minus the evaluated-Pauli/tilde consistency defect. -/
 theorem swapped_pauli_overlap_alice (w : GlobalPairWitness S deltaG) (W : PauliKind) :
-    avgOver (uniformDistribution (Fin P.m → PauliScalar P)) (fun u =>
+    avgOver (uniformDistribution (MIPStarRE.QPBT.PauliPoint P)) (fun u =>
       ∑ a : PauliScalar P, stateQForm
         (reindexState (sixRegExtractionEquiv P S.toStrategy.ιA S.toStrategy.ιB)
           (S.applyBoth (swapUnitary w .alice) (swapUnitary w .bob) S.psiHat))
         (heteroKron (((S.swappedPauliMeas w .alice W).postprocess
-          (fun h => evalPoly (encodingPoly h) u)).effect a)
+           fun h => evalPoly (encodingPoly h) u ).effect a)
           (((rightPlacedMeasurement (ιA := S.ExpandedLocalSpace .bob)
             (pauliRegisterMeas (params := P) W)).postprocess
-            (fun h => evalPoly (encodingPoly h) u)).effect a))) =
-      1 - consistencyDefect (uniformDistribution (Fin P.m → PauliScalar P))
+             fun h => evalPoly (encodingPoly h) u ).effect a))) =
+      1 - consistencyDefect (uniformDistribution (MIPStarRE.QPBT.PauliPoint P))
         (fun u a => S.placePlayer .alice ((S.pauliEvalMeas .alice W u).effect a))
         (fun u a => S.placeSide .bob (tildeM w .bob W (indicatorVec u) a)) S.psiHat := by
   simp only [S.swappedPauliMeas_eval_effect]
   simp_rw [S.canonical_eval_eq_conj_tildeM w .bob]
   have h := S.swapped_block_overlap_eq w _ (uniformDistribution_isProbability _)
     (fun u => leftPlacedMeasurement (leftPlacedMeasurement (S.pauliEvalMeas .alice W u)))
-    (fun u => Measurement.ofSumEqOne (tildeM w .bob W (indicatorVec u))
+     fun u => Measurement.ofSumEqOne (tildeM w .bob W (indicatorVec u))
       (fun a => (tildeM_isProj w .bob W (indicatorVec u) a).nonneg)
-      (sum_tildeM_eq_one w .bob W (indicatorVec u)))
-  have hplace (u : Fin P.m → PauliScalar P) (a : PauliScalar P) :=
+      (sum_tildeM_eq_one w .bob W (indicatorVec u)) 
+  have hplace (u : MIPStarRE.QPBT.PauliPoint P) (a : PauliScalar P) :=
     S.placeSide_onPlayer .alice ((S.pauliEvalMeas .alice W u).effect a)
   convert
-    (h.trans (congrArg (fun f => 1 - consistencyDefect _ f _ S.psiHat)
-      (funext fun u => funext fun a => hplace u a))) using 1 <;> rfl
+     h.trans (congrArg (fun f => 1 - consistencyDefect _ f _ S.psiHat)
+      (funext fun u => funext (hplace u)))  using 1 <;> rfl
 
 set_option maxHeartbeats 800000 in
 /-- Bob's evaluated swapped total-Pauli overlap with Alice's canonical
 measurement satisfies the same exact transport, without strategy symmetry. -/
 theorem swapped_pauli_overlap_bob (w : GlobalPairWitness S deltaG) (W : PauliKind) :
-    avgOver (uniformDistribution (Fin P.m → PauliScalar P)) (fun u =>
+    avgOver (uniformDistribution (MIPStarRE.QPBT.PauliPoint P)) (fun u =>
       ∑ a : PauliScalar P, stateQForm
         (reindexState (sixRegExtractionEquiv P S.toStrategy.ιA S.toStrategy.ιB)
           (S.applyBoth (swapUnitary w .alice) (swapUnitary w .bob) S.psiHat))
         (heteroKron (((rightPlacedMeasurement (ιA := S.ExpandedLocalSpace .alice)
             (pauliRegisterMeas (params := P) W)).postprocess
-            (fun h => evalPoly (encodingPoly h) u)).effect a)
+             fun h => evalPoly (encodingPoly h) u ).effect a)
           (((S.swappedPauliMeas w .bob W).postprocess
-            (fun h => evalPoly (encodingPoly h) u)).effect a))) =
-      1 - consistencyDefect (uniformDistribution (Fin P.m → PauliScalar P))
+             fun h => evalPoly (encodingPoly h) u ).effect a))) =
+      1 - consistencyDefect (uniformDistribution (MIPStarRE.QPBT.PauliPoint P))
         (fun u a => S.placeSide .alice (tildeM w .alice W (indicatorVec u) a))
         (fun u a => S.placePlayer .bob ((S.pauliEvalMeas .bob W u).effect a)) S.psiHat := by
   simp only [S.swappedPauliMeas_eval_effect]
@@ -238,12 +239,12 @@ theorem swapped_pauli_overlap_bob (w : GlobalPairWitness S deltaG) (W : PauliKin
     (fun u => Measurement.ofSumEqOne (tildeM w .alice W (indicatorVec u))
       (fun a => (tildeM_isProj w .alice W (indicatorVec u) a).nonneg)
       (sum_tildeM_eq_one w .alice W (indicatorVec u)))
-    (fun u => leftPlacedMeasurement (leftPlacedMeasurement (S.pauliEvalMeas .bob W u)))
-  have hplace (u : Fin P.m → PauliScalar P) (a : PauliScalar P) :=
+     fun u => leftPlacedMeasurement (leftPlacedMeasurement (S.pauliEvalMeas .bob W u)) 
+  have hplace (u : MIPStarRE.QPBT.PauliPoint P) (a : PauliScalar P) :=
     S.placeSide_onPlayer .bob ((S.pauliEvalMeas .bob W u).effect a)
   convert
-    (h.trans (congrArg (fun f => 1 - consistencyDefect _ _ f S.psiHat)
-      (funext fun u => funext fun a => hplace u a))) using 1 <;> rfl
+     h.trans (congrArg (fun f => 1 - consistencyDefect _ _ f S.psiHat)
+      (funext fun u => funext (hplace u)))  using 1 <;> rfl
 
 end ProjectiveSetting
 

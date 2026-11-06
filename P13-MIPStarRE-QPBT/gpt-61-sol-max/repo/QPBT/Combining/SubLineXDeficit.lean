@@ -41,12 +41,12 @@ theorem SubLineWitness.avgOver_regrouped_eq_at {P : AdmissibleParams}
     {ε δQ δP : ℝ} {S : ProjectiveSetting P ε} {points : CombinedPointsWitness S δQ}
     (sublines : SubLineWitness P) (lines : CombinedLinesWitness S points δP)
     (first second : Placement)
-    (G : (Fin P.m → PauliScalar P) → (Fin P.m → PauliScalar P) →
+    (G :  MIPStarRE.QPBT.PauliPoint P  →  MIPStarRE.QPBT.PauliPoint P  →
       Option (PauliScalar P) → Option (PauliScalar P) →
       Op (S.ExpandedLocalSpace second.side)) :
     avgOver sublines.D (fun sample =>
         avgOver (uniformDistribution (DirectScalarQ P.extendedDirectLd))
-          (fun t =>
+           fun t =>
             let u := directPointToPauli P
               (sample.1.base + t • sample.1.direction)
             let x := projX u
@@ -60,22 +60,22 @@ theorem SubLineWitness.avgOver_regrouped_eq_at {P : AdmissibleParams}
                     S.place second
                       (G x z (evalOpt sample.2.1 x fX)
                         (evalOpt sample.2.2 z fZ))).mulVec
-                          S.psiHat))).re)) =
+                          S.psiHat))).re ) =
       avgOver (Distribution.prod sublines.D
           (uniformDistribution (DirectScalarQ P.extendedDirectLd)))
-        (fun s => ∑ o : Option (PauliScalar P) × Option (PauliScalar P),
+         fun s => ∑ o : Option (PauliScalar P) × Option (PauliScalar P),
           stateQForm S.psiHat
             ((S.placedMeasurement first
-              ((lines.T first.side s.1.2.1 s.1.2.2).postprocess (fun fs =>
+              ((lines.T first.side s.1.2.1 s.1.2.2).postprocess  fun fs =>
                 (evalOpt s.1.2.1 (projX (directPointToPauli P
                     (s.1.1.base + s.2 • s.1.1.direction))) fs.1,
                   evalOpt s.1.2.2 (projZ (directPointToPauli P
-                    (s.1.1.base + s.2 • s.1.1.direction))) fs.2)))).effect o *
+                    (s.1.1.base + s.2 • s.1.1.direction))) fs.2) )).effect o *
               S.place second
                 (G (projX (directPointToPauli P
                     (s.1.1.base + s.2 • s.1.1.direction)))
                   (projZ (directPointToPauli P
-                    (s.1.1.base + s.2 • s.1.1.direction))) o.1 o.2))) := by
+                    (s.1.1.base + s.2 • s.1.1.direction))) o.1 o.2))  := by
   rw [SandwichProduct.avgOver_distribution_prod]
   refine avgOver_congr _ _ _ fun sample => ?_
   refine avgOver_congr _ _ _ fun t => ?_
@@ -90,7 +90,7 @@ two source lines and the `X`-point alone. -/
 def xPointOverlapAt (lines : CombinedLinesWitness S points δP)
     (first second : Placement)
     (w : (LineDesc P.toLdParams × LineDesc P.toLdParams) ×
-      (Fin P.m → PauliScalar P)) : ℝ :=
+       MIPStarRE.QPBT.PauliPoint P ) : ℝ :=
   ∑ fX, ∑ fZ, stateQForm S.psiHat
     (S.place first ((lines.T first.side w.1.1 w.1.2).effect (fX, fZ)) *
       S.place second ((S.pointMeasExpOption second.side .X w.2).effect (evalOpt w.1.1 w.2 fX)))
@@ -109,7 +109,7 @@ theorem xPointOverlap_eq_at (lines : CombinedLinesWitness S points δP)
               (evalOpt w.1.1 w.1.2 fs.1, evalOpt w.2.1 w.2.2 fs.2)).effect o) *
             S.place second ((S.pointMeasExpOption second.side .X w.1.2).effect o.1)) :=
   (regroup_line_answer_sum_at lines first second w.1.1 w.2.1 w.1.2 w.2.2
-    (fun o1 _ => (S.pointMeasExpOption second.side .X w.1.2).effect o1)).symm
+     fun o1 _ => (S.pointMeasExpOption second.side .X w.1.2).effect o1 ).symm
 
 /-- The deficit of the sub-line average of the `X`-point overlap is bounded by
 the inflated line and point consistency errors.  This is the bound on the
@@ -121,8 +121,8 @@ theorem SubLineWitness.one_sub_avgOver_xPointOverlap_le_at
     (first second : Placement) (hopposite : first.IsOpposite second) :
     1 - avgOver sublines.D (fun sample =>
       avgOver (uniformDistribution (DirectScalarQ P.extendedDirectLd))
-        (fun t => xPointOverlapAt lines first second (sample.2, projX (directPointToPauli P
-          (sample.1.base + t • sample.1.direction))))) ≤
+         fun t => xPointOverlapAt lines first second (sample.2, projX (directPointToPauli P
+          (sample.1.base + t • sample.1.direction))) ) ≤
       2 * Real.sqrt (4 * (P.m : ℝ) ^ 2 * δP) + 2 * Real.sqrt (4 * δQ) := by
   obtain ⟨components, hcomp, hmix⟩ :=
     SubLineWitness.exists_avgOver_X_eq_mixture P sublines (xPointOverlapAt lines first second)
@@ -130,18 +130,18 @@ theorem SubLineWitness.one_sub_avgOver_xPointOverlap_le_at
   have hsplit : avgOver components (fun c => 1 -
       avgOver (Distribution.prod (restrictedLinePointDist P c.1 c.2.1)
         (restrictedLinePointDist P c.1 c.2.2))
-        (fun w => xPointOverlapAt lines first second ((w.1.1, w.2.1), w.1.2))) =
-      1 - avgOver components (fun c =>
+         fun w => xPointOverlapAt lines first second ((w.1.1, w.2.1), w.1.2) ) =
+      1 - avgOver components  fun c =>
         avgOver (Distribution.prod (restrictedLinePointDist P c.1 c.2.1)
           (restrictedLinePointDist P c.1 c.2.2))
-          (fun w => xPointOverlapAt lines first second ((w.1.1, w.2.1), w.1.2))) := by
+           fun w => xPointOverlapAt lines first second ((w.1.1, w.2.1), w.1.2)   := by
     rw [avgOver_sub, avgOver_const_of_isProbability components hcomp]
   rw [← hsplit]
   calc
-    _ ≤ avgOver components (fun _ =>
-        2 * Real.sqrt (4 * (P.m : ℝ) ^ 2 * δP) + 2 * Real.sqrt (4 * δQ)) := by
+    _ ≤ avgOver components  fun _ =>
+        2 * Real.sqrt (4 * (P.m : ℝ) ^ 2 * δP) + 2 * Real.sqrt (4 * δQ)  := by
       refine avgOver_mono _ _ _ fun c => ?_
-      rw [avgOver_congr _ _ _ fun w => xPointOverlap_eq_at lines first second w]
+      rw [avgOver_congr _ _ _ (xPointOverlap_eq_at lines first second)]
       exact lines.one_sub_X_overlap_restricted_le_at first second hopposite c.1 c.1 c.2.1 c.2.2
     _ = _ := avgOver_const_of_isProbability components hcomp _
 

@@ -67,7 +67,7 @@ theorem evalCoefficient_ne_imp_directEvalOpt_ne_or_eq_none
       | some answerB =>
           apply Or.inl
           intro hread
-          have hab : answerA = answerB := Option.some.inj hread
+          have hab  := Option.some.inj hread
           apply hne
           calc
             evalCoefficient coeffsA parameter = answerA :=
@@ -78,29 +78,33 @@ theorem evalCoefficient_ne_imp_directEvalOpt_ne_or_eq_none
               (evalCoefficient_eq_of_directEvalOpt_affine_eq_some
                 line coeffsB parameter answerB hreadB).symm
 
+variable {G : Game} {params : DirectLdParams} {degree : ℕ} (S : Strategy G) (questionA : G.QuestionA)
+
+variable (questionB : G.QuestionB) (readA : G.AnswerA → DirectDegPoly params degree) (readB : G.AnswerB → DirectDegPoly params degree)
+
 /-- Born mass of disagreement between the two parameter evaluations. -/
-def parameterEvalDefect {G : Game} {params : DirectLdParams} {degree : ℕ}
-    (S : Strategy G) (questionA : G.QuestionA) (questionB : G.QuestionB)
-    (readA : G.AnswerA → DirectDegPoly params degree)
-    (readB : G.AnswerB → DirectDegPoly params degree)
+def parameterEvalDefect
+
+
+
     (parameter : DirectScalarQ params) : ℝ :=
   outcomeEventWeight S questionA questionB fun answerA answerB =>
     evalCoefficient (readA answerA) parameter ≠
       evalCoefficient (readB answerB) parameter
 
 /-- Born mass of disagreement between the two completed evaluation readouts. -/
-def completedEvalDefect {G : Game} {params : DirectLdParams} {degree : ℕ}
-    (S : Strategy G) (questionA : G.QuestionA) (questionB : G.QuestionB)
-    (readA : G.AnswerA → DirectDegPoly params degree)
-    (readB : G.AnswerB → DirectDegPoly params degree)
+def completedEvalDefect
+
+
+
     (line : DirectLineDesc params) (parameter : DirectScalarQ params) : ℝ :=
   outcomeEventWeight S questionA questionB fun answerA answerB =>
     directEvalOpt line (line.base + parameter • line.direction) (readA answerA) ≠
       directEvalOpt line (line.base + parameter • line.direction) (readB answerB)
 
 /-- Alice's marginal Born mass of a failed completed evaluation. -/
-def completedEvalNoneMassA {G : Game} {params : DirectLdParams} {degree : ℕ}
-    (S : Strategy G) (questionA : G.QuestionA)
+def completedEvalNoneMassA
+
     (readA : G.AnswerA → DirectDegPoly params degree)
     (line : DirectLineDesc params) (parameter : DirectScalarQ params) : ℝ :=
   aliceEventWeight S questionA fun answerA =>
@@ -120,10 +124,10 @@ set_option maxHeartbeats 600000 in
 disagreement plus the two failed-completion marginals.  The result applies to
 arbitrary strategy POVMs and needs no projectivity assumption. -/
 theorem parameterEvalDefect_le_completed_add_none
-    {G : Game} {params : DirectLdParams} {degree : ℕ}
-    (S : Strategy G) (questionA : G.QuestionA) (questionB : G.QuestionB)
-    (readA : G.AnswerA → DirectDegPoly params degree)
-    (readB : G.AnswerB → DirectDegPoly params degree)
+
+
+
+
     (line : DirectLineDesc params) (parameter : DirectScalarQ params) :
     parameterEvalDefect S questionA questionB readA readB parameter ≤
       completedEvalDefect S questionA questionB readA readB line parameter +

@@ -37,6 +37,10 @@ variable {P : AdmissibleParams} {ε : ℝ}
 
 /-! ## Overlaps of the evaluation classes -/
 
+variable (S : ProjectiveSetting P ε) (W : PauliKind)
+
+variable (line : LineDesc P.toLdParams) (u : MIPStarRE.QPBT.PauliPoint P)
+
 /-- Summed over outcomes, the overlap of Alice's expanded evaluation classes
 with Bob's completed expanded point measurement on the expanded state equals
 the corresponding overlap of the strategy's own evaluation classes with its
@@ -44,9 +48,9 @@ completed point measurement on the strategy state. The ancillary Pauli
 projectors cancel because they agree exactly on the EPR pairs. This is the
 identity behind `eq:qld-comm-line-pt-cons2`, paper
 `14_analysis_of_the_pauli_basis_test.tex:540-545`. -/
-theorem sum_stateQForm_evalClass_AA'_BA''_eq (S : ProjectiveSetting P ε)
-    (W : PauliKind) (line : LineDesc P.toLdParams)
-    (u : Fin P.m → PauliScalar P) :
+theorem sum_stateQForm_evalClass_AA'_BA''_eq
+
+     :
     ∑ o : Option (PauliScalar P),
         DistanceCalculus.stateQForm S.psiHat
           (S.place .AA' ((S.lineEvalMeasExp .alice W line u).effect o) *
@@ -59,7 +63,7 @@ theorem sum_stateQForm_evalClass_AA'_BA''_eq (S : ProjectiveSetting P ε)
   calc
     _ = ∑ o : Option (PauliScalar P),
         ∑ f ∈ Finset.univ.filter
-          (fun f : DegPoly P.toLdParams (P.m * P.d) => evalOpt line u f = o),
+           fun f : DegPoly P.toLdParams (P.m * P.d) => evalOpt line u f = o ,
           DistanceCalculus.stateQForm S.psiHat
             (S.place .AA' (S.expLineOp .alice W line f) *
               S.place .BA'' ((S.pointMeasExpOption .bob W u).effect
@@ -74,7 +78,7 @@ theorem sum_stateQForm_evalClass_AA'_BA''_eq (S : ProjectiveSetting P ε)
           (S.place .AA' (S.expLineOp .alice W line f) *
             S.place .BA'' ((S.pointMeasExpOption .bob W u).effect
               (evalOpt line u f))) :=
-      Finset.sum_fiberwise Finset.univ (fun f => evalOpt line u f) _
+      Finset.sum_fiberwise Finset.univ ( evalOpt line u ) _
     _ = _ := by
       simp_rw [pointMeasExpOption_effect_evalOpt]
 
@@ -83,9 +87,9 @@ placements exchanged, so that the evaluation classes are carried by the `BA''`
 registers and the completed point measurement by `AA'`. This is the symmetric equivalent
 of `eq:qld-comm-line-pt-cons2` on the reversed directed pair, paper
 `14_analysis_of_the_pauli_basis_test.tex:540-548`. -/
-theorem sum_stateQForm_evalClass_BA''_AA'_eq (S : ProjectiveSetting P ε)
-    (W : PauliKind) (line : LineDesc P.toLdParams)
-    (u : Fin P.m → PauliScalar P) :
+theorem sum_stateQForm_evalClass_BA''_AA'_eq
+
+     :
     ∑ o : Option (PauliScalar P),
         DistanceCalculus.stateQForm S.psiHat
           (S.place .AA' ((S.pointMeasExpOption .alice W u).effect o) *
@@ -98,7 +102,7 @@ theorem sum_stateQForm_evalClass_BA''_AA'_eq (S : ProjectiveSetting P ε)
   calc
     _ = ∑ o : Option (PauliScalar P),
         ∑ f ∈ Finset.univ.filter
-          (fun f : DegPoly P.toLdParams (P.m * P.d) => evalOpt line u f = o),
+           fun f : DegPoly P.toLdParams (P.m * P.d) => evalOpt line u f = o ,
           DistanceCalculus.stateQForm S.psiHat
             (S.place .BA'' (S.expLineOp .bob W line f) *
               S.place .AA' ((S.pointMeasExpOption .alice W u).effect
@@ -114,7 +118,7 @@ theorem sum_stateQForm_evalClass_BA''_AA'_eq (S : ProjectiveSetting P ε)
           (S.place .BA'' (S.expLineOp .bob W line f) *
             S.place .AA' ((S.pointMeasExpOption .alice W u).effect
               (evalOpt line u f))) :=
-      Finset.sum_fiberwise Finset.univ (fun f => evalOpt line u f) _
+      Finset.sum_fiberwise Finset.univ ( evalOpt line u ) _
     _ = _ := by
       simp_rw [pointMeasExpOption_effect_evalOpt]
 
@@ -122,9 +126,9 @@ theorem sum_stateQForm_evalClass_BA''_AA'_eq (S : ProjectiveSetting P ε)
 bipartition: summed over outcomes, the overlap of Alice's expanded evaluation
 classes on `AB''` with Bob's completed expanded point measurement on `BB'`
 equals the corresponding strategy overlap. -/
-theorem sum_stateQForm_evalClass_AB''_BB'_eq (S : ProjectiveSetting P ε)
-    (W : PauliKind) (line : LineDesc P.toLdParams)
-    (u : Fin P.m → PauliScalar P) :
+theorem sum_stateQForm_evalClass_AB''_BB'_eq
+
+     :
     ∑ o : Option (PauliScalar P),
         DistanceCalculus.stateQForm S.psiHat
           (S.place .AB'' ((S.lineEvalMeasExp .alice W line u).effect o) *
@@ -137,7 +141,7 @@ theorem sum_stateQForm_evalClass_AB''_BB'_eq (S : ProjectiveSetting P ε)
   calc
     _ = ∑ o : Option (PauliScalar P),
         ∑ f ∈ Finset.univ.filter
-          (fun f : DegPoly P.toLdParams (P.m * P.d) => evalOpt line u f = o),
+           fun f : DegPoly P.toLdParams (P.m * P.d) => evalOpt line u f = o ,
           DistanceCalculus.stateQForm S.psiHat
             (S.place .AB'' (S.expLineOp .alice W line f) *
               S.place .BB' ((S.pointMeasExpOption .bob W u).effect
@@ -152,16 +156,16 @@ theorem sum_stateQForm_evalClass_AB''_BB'_eq (S : ProjectiveSetting P ε)
           (S.place .AB'' (S.expLineOp .alice W line f) *
             S.place .BB' ((S.pointMeasExpOption .bob W u).effect
               (evalOpt line u f))) :=
-      Finset.sum_fiberwise Finset.univ (fun f => evalOpt line u f) _
+      Finset.sum_fiberwise Finset.univ ( evalOpt line u ) _
     _ = _ := by
       simp_rw [pointMeasExpOption_effect_evalOpt]
 
 /-- The identity of `sum_stateQForm_evalClass_AB''_BB'_eq` with the two
 placements exchanged, so that the completed point measurement is carried by
 `AB''` and the evaluation classes by `BB'`. -/
-theorem sum_stateQForm_evalClass_BB'_AB''_eq (S : ProjectiveSetting P ε)
-    (W : PauliKind) (line : LineDesc P.toLdParams)
-    (u : Fin P.m → PauliScalar P) :
+theorem sum_stateQForm_evalClass_BB'_AB''_eq
+
+     :
     ∑ o : Option (PauliScalar P),
         DistanceCalculus.stateQForm S.psiHat
           (S.place .AB'' ((S.pointMeasExpOption .alice W u).effect o) *
@@ -174,7 +178,7 @@ theorem sum_stateQForm_evalClass_BB'_AB''_eq (S : ProjectiveSetting P ε)
   calc
     _ = ∑ o : Option (PauliScalar P),
         ∑ f ∈ Finset.univ.filter
-          (fun f : DegPoly P.toLdParams (P.m * P.d) => evalOpt line u f = o),
+           fun f : DegPoly P.toLdParams (P.m * P.d) => evalOpt line u f = o ,
           DistanceCalculus.stateQForm S.psiHat
             (S.place .BB' (S.expLineOp .bob W line f) *
               S.place .AB'' ((S.pointMeasExpOption .alice W u).effect
@@ -190,7 +194,7 @@ theorem sum_stateQForm_evalClass_BB'_AB''_eq (S : ProjectiveSetting P ε)
           (S.place .BB' (S.expLineOp .bob W line f) *
             S.place .AB'' ((S.pointMeasExpOption .alice W u).effect
               (evalOpt line u f))) :=
-      Finset.sum_fiberwise Finset.univ (fun f => evalOpt line u f) _
+      Finset.sum_fiberwise Finset.univ ( evalOpt line u ) _
     _ = _ := by
       simp_rw [pointMeasExpOption_effect_evalOpt]
 
@@ -202,7 +206,7 @@ pair equals the distance of the left- and right-placed families on the
 corresponding bipartition. Formalization-only transport for item 3 of
 `lem:qld-comm-line-cons`, paper
 `14_analysis_of_the_pauli_basis_test.tex:540-545`. -/
-theorem evalClassDist_aaBa_eq (S : ProjectiveSetting P ε) (W : PauliKind) :
+theorem evalClassDist_aaBa_eq   :
     opFamilyDistSq (linePointDist P.toLdParams)
         (fun sample a => S.place .AA'
           ((S.lineEvalMeasExp .alice W sample.1 sample.2).effect a))
@@ -211,7 +215,7 @@ theorem evalClassDist_aaBa_eq (S : ProjectiveSetting P ε) (W : PauliKind) :
         S.psiHat =
       opFamilyDistSq (linePointDist P.toLdParams)
         (fun sample a => heteroKron ((S.lineEvalMeasExp .alice W sample.1 sample.2).effect a)
-          (1 : Op ((S.toStrategy.ιB × PauliRegister P) × (PauliRegister P × PauliRegister P))))
+          (1 : Op ((S.toStrategy.ιB × PauliRegister P) ×  PauliRegister P × PauliRegister P )))
         (fun sample a => heteroKron (1 : Op (S.toStrategy.ιA × PauliRegister P))
           ((DistanceCalculus.leftPlacedMeasurement
             (ιB := PauliRegister P × PauliRegister P)
@@ -236,7 +240,7 @@ at the cost of a square root, paper
 `14_analysis_of_the_pauli_basis_test.tex:598-677`; here it comes directly from
 the exact overlap identity together with `fact:agreement`, so the bound is
 linear in the error of the strategy. -/
-theorem evalClassDist_aaBa_le (S : ProjectiveSetting P ε) (W : PauliKind) :
+theorem evalClassDist_aaBa_le   :
     opFamilyDistSq (linePointDist P.toLdParams)
         (fun sample a => S.place .AA'
           ((S.lineEvalMeasExp .alice W sample.1 sample.2).effect a))
@@ -249,14 +253,14 @@ theorem evalClassDist_aaBa_le (S : ProjectiveSetting P ε) (W : PauliKind) :
         (fun sample a => heteroKron 1
           ((S.pointMeasOption .bob W sample.2).effect a))
         S.toStrategy.ψ := by
-  let X := LineDesc P.toLdParams × (Fin P.m → PauliScalar P)
+  let X := LineDesc P.toLdParams ×  MIPStarRE.QPBT.PauliPoint P 
   let R := PauliRegister P
   let μ := linePointDist P.toLdParams
   let e := aaBaBipartition P S.toStrategy.ιA S.toStrategy.ιB
   let A : X → Measurement (Option (PauliScalar P)) (S.toStrategy.ιA × R) :=
     fun sample => S.lineEvalMeasExp .alice W sample.1 sample.2
   let B : X → Measurement (Option (PauliScalar P))
-      ((S.toStrategy.ιB × R) × (R × R)) := fun sample =>
+      ((S.toStrategy.ιB × R) ×  R × R ) := fun sample =>
     DistanceCalculus.leftPlacedMeasurement (ιB := R × R)
       (S.pointMeasExpOption .bob W sample.2)
   have hμ : μ.IsProbability := linePointDist_isProbability P.toLdParams
@@ -298,7 +302,7 @@ set_option synthInstance.maxSize 400 in
 pair is at most four. This trivial bound supplies the large-`ε` case of the
 common square-root error in item 3 of `lem:qld-comm-line-cons`, paper
 `14_analysis_of_the_pauli_basis_test.tex:540-545`. -/
-theorem evalClassDist_aaBa_le_four (S : ProjectiveSetting P ε) (W : PauliKind) :
+theorem evalClassDist_aaBa_le_four   :
     opFamilyDistSq (linePointDist P.toLdParams)
         (fun sample a => S.place .AA'
           ((S.lineEvalMeasExp .alice W sample.1 sample.2).effect a))
@@ -316,7 +320,7 @@ pair equals the distance of the left- and right-placed families on the
 corresponding bipartition. Formalization-only transport for item 3 of
 `lem:qld-comm-line-cons`, paper
 `14_analysis_of_the_pauli_basis_test.tex:540-545`. -/
-theorem evalClassDist_baAa_eq (S : ProjectiveSetting P ε) (W : PauliKind) :
+theorem evalClassDist_baAa_eq   :
     opFamilyDistSq (linePointDist P.toLdParams)
         (fun sample a => S.place .BA''
           ((S.lineEvalMeasExp .bob W sample.1 sample.2).effect a))
@@ -325,7 +329,7 @@ theorem evalClassDist_baAa_eq (S : ProjectiveSetting P ε) (W : PauliKind) :
         S.psiHat =
       opFamilyDistSq (linePointDist P.toLdParams)
         (fun sample a => heteroKron ((S.pointMeasExpOption .alice W sample.2).effect a)
-          (1 : Op ((S.toStrategy.ιB × PauliRegister P) × (PauliRegister P × PauliRegister P))))
+          (1 : Op ((S.toStrategy.ιB × PauliRegister P) ×  PauliRegister P × PauliRegister P )))
         (fun sample a => heteroKron (1 : Op (S.toStrategy.ιA × PauliRegister P))
           ((DistanceCalculus.leftPlacedMeasurement
             (ιB := PauliRegister P × PauliRegister P)
@@ -345,7 +349,7 @@ set_option synthInstance.maxSize 400 in
 /-- Expanded evaluation-class consistency on the directed `BA''`--`AA'`
 pair, bounded by twice the interchanged strategy line-point inconsistency.
 Paper `14_analysis_of_the_pauli_basis_test.tex:540-545`. -/
-theorem evalClassDist_baAa_le (S : ProjectiveSetting P ε) (W : PauliKind) :
+theorem evalClassDist_baAa_le   :
     opFamilyDistSq (linePointDist P.toLdParams)
         (fun sample a => S.place .BA''
           ((S.lineEvalMeasExp .bob W sample.1 sample.2).effect a))
@@ -358,14 +362,14 @@ theorem evalClassDist_baAa_le (S : ProjectiveSetting P ε) (W : PauliKind) :
         (fun sample a => heteroKron 1
           ((S.lineEvalMeas .bob W sample.1 sample.2).effect a))
         S.toStrategy.ψ := by
-  let X := LineDesc P.toLdParams × (Fin P.m → PauliScalar P)
+  let X := LineDesc P.toLdParams ×  MIPStarRE.QPBT.PauliPoint P 
   let R := PauliRegister P
   let μ := linePointDist P.toLdParams
   let e := aaBaBipartition P S.toStrategy.ιA S.toStrategy.ιB
   let A : X → Measurement (Option (PauliScalar P)) (S.toStrategy.ιA × R) :=
     fun sample => S.pointMeasExpOption .alice W sample.2
   let B : X → Measurement (Option (PauliScalar P))
-      ((S.toStrategy.ιB × R) × (R × R)) := fun sample =>
+      ((S.toStrategy.ιB × R) ×  R × R ) := fun sample =>
     DistanceCalculus.leftPlacedMeasurement (ιB := R × R)
       (S.lineEvalMeasExp .bob W sample.1 sample.2)
   have hμ : μ.IsProbability := linePointDist_isProbability P.toLdParams
@@ -407,7 +411,7 @@ set_option synthInstance.maxSize 400 in
 pair is at most four. This trivial bound supplies the large-`ε` case of the
 common square-root error in item 3 of `lem:qld-comm-line-cons`, paper
 `14_analysis_of_the_pauli_basis_test.tex:540-545`. -/
-theorem evalClassDist_baAa_le_four (S : ProjectiveSetting P ε) (W : PauliKind) :
+theorem evalClassDist_baAa_le_four   :
     opFamilyDistSq (linePointDist P.toLdParams)
         (fun sample a => S.place .BA''
           ((S.lineEvalMeasExp .bob W sample.1 sample.2).effect a))
@@ -425,7 +429,7 @@ pair equals the distance of the left- and right-placed families on the
 corresponding bipartition. Formalization-only transport for item 3 of
 `lem:qld-comm-line-cons`, paper
 `14_analysis_of_the_pauli_basis_test.tex:540-545`. -/
-theorem evalClassDist_abBb_eq (S : ProjectiveSetting P ε) (W : PauliKind) :
+theorem evalClassDist_abBb_eq   :
     opFamilyDistSq (linePointDist P.toLdParams)
         (fun sample a => S.place .AB''
           ((S.lineEvalMeasExp .alice W sample.1 sample.2).effect a))
@@ -434,7 +438,7 @@ theorem evalClassDist_abBb_eq (S : ProjectiveSetting P ε) (W : PauliKind) :
         S.psiHat =
       opFamilyDistSq (linePointDist P.toLdParams)
         (fun sample a => heteroKron ((S.lineEvalMeasExp .alice W sample.1 sample.2).effect a)
-          (1 : Op ((S.toStrategy.ιB × PauliRegister P) × (PauliRegister P × PauliRegister P))))
+          (1 : Op ((S.toStrategy.ιB × PauliRegister P) ×  PauliRegister P × PauliRegister P )))
         (fun sample a => heteroKron (1 : Op (S.toStrategy.ιA × PauliRegister P))
           ((DistanceCalculus.leftPlacedMeasurement
             (ιB := PauliRegister P × PauliRegister P)
@@ -452,7 +456,7 @@ theorem evalClassDist_abBb_eq (S : ProjectiveSetting P ε) (W : PauliKind) :
 set_option synthInstance.maxSize 400 in
 /-- Expanded evaluation-class consistency on the directed `AB''`--`BB'`
 pair. Paper `14_analysis_of_the_pauli_basis_test.tex:540-545`. -/
-theorem evalClassDist_abBb_le (S : ProjectiveSetting P ε) (W : PauliKind) :
+theorem evalClassDist_abBb_le   :
     opFamilyDistSq (linePointDist P.toLdParams)
         (fun sample a => S.place .AB''
           ((S.lineEvalMeasExp .alice W sample.1 sample.2).effect a))
@@ -465,14 +469,14 @@ theorem evalClassDist_abBb_le (S : ProjectiveSetting P ε) (W : PauliKind) :
         (fun sample a => heteroKron 1
           ((S.pointMeasOption .bob W sample.2).effect a))
         S.toStrategy.ψ := by
-  let X := LineDesc P.toLdParams × (Fin P.m → PauliScalar P)
+  let X := LineDesc P.toLdParams ×  MIPStarRE.QPBT.PauliPoint P 
   let R := PauliRegister P
   let μ := linePointDist P.toLdParams
   let e := abBbBipartition P S.toStrategy.ιA S.toStrategy.ιB
   let A : X → Measurement (Option (PauliScalar P)) (S.toStrategy.ιA × R) :=
     fun sample => S.lineEvalMeasExp .alice W sample.1 sample.2
   let B : X → Measurement (Option (PauliScalar P))
-      ((S.toStrategy.ιB × R) × (R × R)) := fun sample =>
+      ((S.toStrategy.ιB × R) ×  R × R ) := fun sample =>
     DistanceCalculus.leftPlacedMeasurement (ιB := R × R)
       (S.pointMeasExpOption .bob W sample.2)
   have hμ : μ.IsProbability := linePointDist_isProbability P.toLdParams
@@ -514,7 +518,7 @@ set_option synthInstance.maxSize 400 in
 pair is at most four. This trivial bound supplies the large-`ε` case of the
 common square-root error in item 3 of `lem:qld-comm-line-cons`, paper
 `14_analysis_of_the_pauli_basis_test.tex:540-545`. -/
-theorem evalClassDist_abBb_le_four (S : ProjectiveSetting P ε) (W : PauliKind) :
+theorem evalClassDist_abBb_le_four   :
     opFamilyDistSq (linePointDist P.toLdParams)
         (fun sample a => S.place .AB''
           ((S.lineEvalMeasExp .alice W sample.1 sample.2).effect a))
@@ -532,7 +536,7 @@ pair equals the distance of the left- and right-placed families on the
 corresponding bipartition. Formalization-only transport for item 3 of
 `lem:qld-comm-line-cons`, paper
 `14_analysis_of_the_pauli_basis_test.tex:540-545`. -/
-theorem evalClassDist_bbAb_eq (S : ProjectiveSetting P ε) (W : PauliKind) :
+theorem evalClassDist_bbAb_eq   :
     opFamilyDistSq (linePointDist P.toLdParams)
         (fun sample a => S.place .BB'
           ((S.lineEvalMeasExp .bob W sample.1 sample.2).effect a))
@@ -541,7 +545,7 @@ theorem evalClassDist_bbAb_eq (S : ProjectiveSetting P ε) (W : PauliKind) :
         S.psiHat =
       opFamilyDistSq (linePointDist P.toLdParams)
         (fun sample a => heteroKron ((S.pointMeasExpOption .alice W sample.2).effect a)
-          (1 : Op ((S.toStrategy.ιB × PauliRegister P) × (PauliRegister P × PauliRegister P))))
+          (1 : Op ((S.toStrategy.ιB × PauliRegister P) ×  PauliRegister P × PauliRegister P )))
         (fun sample a => heteroKron (1 : Op (S.toStrategy.ιA × PauliRegister P))
           ((DistanceCalculus.leftPlacedMeasurement
             (ιB := PauliRegister P × PauliRegister P)
@@ -560,7 +564,7 @@ theorem evalClassDist_bbAb_eq (S : ProjectiveSetting P ε) (W : PauliKind) :
 set_option synthInstance.maxSize 400 in
 /-- Expanded evaluation-class consistency on the directed `BB'`--`AB''`
 pair. Paper `14_analysis_of_the_pauli_basis_test.tex:540-545`. -/
-theorem evalClassDist_bbAb_le (S : ProjectiveSetting P ε) (W : PauliKind) :
+theorem evalClassDist_bbAb_le   :
     opFamilyDistSq (linePointDist P.toLdParams)
         (fun sample a => S.place .BB'
           ((S.lineEvalMeasExp .bob W sample.1 sample.2).effect a))
@@ -573,14 +577,14 @@ theorem evalClassDist_bbAb_le (S : ProjectiveSetting P ε) (W : PauliKind) :
         (fun sample a => heteroKron 1
           ((S.lineEvalMeas .bob W sample.1 sample.2).effect a))
         S.toStrategy.ψ := by
-  let X := LineDesc P.toLdParams × (Fin P.m → PauliScalar P)
+  let X := LineDesc P.toLdParams ×  MIPStarRE.QPBT.PauliPoint P 
   let R := PauliRegister P
   let μ := linePointDist P.toLdParams
   let e := abBbBipartition P S.toStrategy.ιA S.toStrategy.ιB
   let A : X → Measurement (Option (PauliScalar P)) (S.toStrategy.ιA × R) :=
     fun sample => S.pointMeasExpOption .alice W sample.2
   let B : X → Measurement (Option (PauliScalar P))
-      ((S.toStrategy.ιB × R) × (R × R)) := fun sample =>
+      ((S.toStrategy.ιB × R) ×  R × R ) := fun sample =>
     DistanceCalculus.leftPlacedMeasurement (ιB := R × R)
       (S.lineEvalMeasExp .bob W sample.1 sample.2)
   have hμ : μ.IsProbability := linePointDist_isProbability P.toLdParams
@@ -622,7 +626,7 @@ set_option synthInstance.maxSize 400 in
 pair is at most four. This trivial bound supplies the large-`ε` case of the
 common square-root error in item 3 of `lem:qld-comm-line-cons`, paper
 `14_analysis_of_the_pauli_basis_test.tex:540-545`. -/
-theorem evalClassDist_bbAb_le_four (S : ProjectiveSetting P ε) (W : PauliKind) :
+theorem evalClassDist_bbAb_le_four   :
     opFamilyDistSq (linePointDist P.toLdParams)
         (fun sample a => S.place .BB'
           ((S.lineEvalMeasExp .bob W sample.1 sample.2).effect a))

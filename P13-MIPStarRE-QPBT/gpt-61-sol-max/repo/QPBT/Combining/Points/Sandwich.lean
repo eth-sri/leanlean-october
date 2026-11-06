@@ -49,22 +49,24 @@ variable {P : AdmissibleParams} {ε : ℝ}
 
 /-- An expanded point effect is self-adjoint. -/
 theorem pointMeasExp_effect_conjTranspose (S : ProjectiveSetting P ε)
-    (side : PlayerSide) (W : PauliKind) (u : Fin P.m → PauliScalar P)
+    (side : PlayerSide) (W : PauliKind) (u : MIPStarRE.QPBT.PauliPoint P)
     (a : PauliScalar P) :
     ((S.pointMeasExp side W u).effect a)ᴴ = (S.pointMeasExp side W u).effect a :=
   (S.pointMeasExp_isProjective side W u a).isSelfAdjoint.isHermitian.eq
 
 /-- An expanded point effect is idempotent. -/
 theorem pointMeasExp_effect_mul_self (S : ProjectiveSetting P ε)
-    (side : PlayerSide) (W : PauliKind) (u : Fin P.m → PauliScalar P)
+    (side : PlayerSide) (W : PauliKind) (u : MIPStarRE.QPBT.PauliPoint P)
     (a : PauliScalar P) :
     (S.pointMeasExp side W u).effect a * (S.pointMeasExp side W u).effect a =
       (S.pointMeasExp side W u).effect a :=
   (S.pointMeasExp_isProjective side W u a).isIdempotentElem.eq
 
+variable (S : ProjectiveSetting P ε) (side : PlayerSide) (x z : MIPStarRE.QPBT.PauliPoint P)
+
 /-- The sandwich `M^Z_b M^X_a M^Z_b` is `(M^X_a M^Z_b)ᴴ (M^X_a M^Z_b)`. -/
-theorem sandwich_eq_conjTranspose_mul_self (S : ProjectiveSetting P ε)
-    (side : PlayerSide) (x z : Fin P.m → PauliScalar P) (a b : PauliScalar P) :
+theorem sandwich_eq_conjTranspose_mul_self
+      (a b : PauliScalar P) :
     (S.pointMeasExp side .Z z).effect b * (S.pointMeasExp side .X x).effect a *
         (S.pointMeasExp side .Z z).effect b =
       ((S.pointMeasExp side .X x).effect a * (S.pointMeasExp side .Z z).effect b)ᴴ *
@@ -77,8 +79,8 @@ theorem sandwich_eq_conjTranspose_mul_self (S : ProjectiveSetting P ε)
     ← Matrix.mul_assoc]
 
 /-- The sandwich effects resolve the identity. -/
-theorem sum_sandwich_eq_one (S : ProjectiveSetting P ε) (side : PlayerSide)
-    (x z : Fin P.m → PauliScalar P) :
+theorem sum_sandwich_eq_one
+     :
     ∑ ab : PauliScalar P × PauliScalar P,
         (S.pointMeasExp side .Z z).effect ab.2 *
           (S.pointMeasExp side .X x).effect ab.1 *
@@ -103,22 +105,22 @@ first step of the proof of `lem:qld-4-10`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:731-736`,
 formed directly with field-valued outcomes rather than from the binary
 refinements; see `docs/paper-gaps/qpbt_combined-points-field-valued.tex`. -/
-def sandwichPoint (S : ProjectiveSetting P ε) (side : PlayerSide)
-    (x z : Fin P.m → PauliScalar P) :
+def sandwichPoint
+     :
     Measurement (PauliScalar P × PauliScalar P) (S.ExpandedLocalSpace side) :=
   Measurement.ofSumEqOne
     (fun ab => (S.pointMeasExp side .Z z).effect ab.2 *
       (S.pointMeasExp side .X x).effect ab.1 *
       (S.pointMeasExp side .Z z).effect ab.2)
-    (fun ab => by
+     fun ab => by
       rw [sandwich_eq_conjTranspose_mul_self]
       exact Matrix.nonneg_iff_posSemidef.mpr
-        (Matrix.posSemidef_conjTranspose_mul_self _))
+        (Matrix.posSemidef_conjTranspose_mul_self _) 
     (sum_sandwich_eq_one S side x z)
 
 /-- The effects of the sandwich POVM. -/
-@[simp] theorem sandwichPoint_effect (S : ProjectiveSetting P ε)
-    (side : PlayerSide) (x z : Fin P.m → PauliScalar P)
+@[simp] theorem sandwichPoint_effect
+
     (ab : PauliScalar P × PauliScalar P) :
     (S.sandwichPoint side x z).effect ab =
       (S.pointMeasExp side .Z z).effect ab.2 *
@@ -129,8 +131,8 @@ def sandwichPoint (S : ProjectiveSetting P ε) (side : PlayerSide)
 `M^Z_b` times the commutator.  This is the algebra behind display
 `eq:qld-r-2`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:737-742`. -/
-theorem sandwichPoint_effect_sub_ordered (S : ProjectiveSetting P ε)
-    (side : PlayerSide) (x z : Fin P.m → PauliScalar P)
+theorem sandwichPoint_effect_sub_ordered
+
     (ab : PauliScalar P × PauliScalar P) :
     (S.sandwichPoint side x z).effect ab -
         (S.pointMeasExp side .Z z).effect ab.2 *
@@ -165,10 +167,7 @@ theorem sandwich_point_ordered_dist_le_explicit :
   refine avgOver_mono _ _ _ fun xz => Finset.sum_le_sum fun ab _ => ?_
   rw [← place_sub, sandwichPoint_effect_sub_ordered, place_mul,
     DistanceCalculus.applyOperatorToState_mul, ← place_sub]
-  exact pow_le_pow_left₀ (norm_nonneg _)
-    (MagicSquareRigidity.norm_applyOperatorToState_le
-      (S.place_conjTranspose_mul_self_le_one p
-        (S.pointMeasExp_isProjective p.side .Z xz.2 ab.2)) _) 2
+  classical solve_by_elim (maxDepth := 6) [pow_le_pow_left₀, norm_nonneg, ProjectiveSetting.place_conjTranspose_mul_self_le_one, ProjectiveSetting.pointMeasExp_isProjective, MagicSquareRigidity.norm_applyOperatorToState_le]
 
 /-- The ordered product `M^Z_b M^X_a` on one placement is close to the
 reversed ordered product `M^X_a M^Z_b` on the opposite placement, on average
@@ -202,10 +201,10 @@ theorem ordered_cross_dist_le_explicit :
         S.place p₂ ((S.pointMeasExp p₂.side .X xz.1).effect ab.1))
       S.psiHat ≤ 172 * ε := by
     refine le_trans ?_ (le_of_eq_of_le (avgOver_uniform_fst
-      (β := Fin P.m → PauliScalar P)
-      (fun x => ∑ a : PauliScalar P, ‖applyOperatorToState
+      (β := MIPStarRE.QPBT.PauliPoint P)
+       fun x => ∑ a : PauliScalar P, ‖applyOperatorToState
         (S.place p₁ ((S.pointMeasExp p₁.side .X x).effect a) -
-          S.place p₂ ((S.pointMeasExp p₂.side .X x).effect a)) S.psiHat‖ ^ 2)) hX)
+          S.place p₂ ((S.pointMeasExp p₂.side .X x).effect a)) S.psiHat‖ ^ 2 ) hX)
     unfold opFamilyDistSq
     refine avgOver_mono _ _ _ fun xz => ?_
     have hpt : ∀ ab : PauliScalar P × PauliScalar P,
@@ -236,10 +235,10 @@ theorem ordered_cross_dist_le_explicit :
           (S.pointMeasExp p₂.side .Z xz.2).effect ab.2))
       S.psiHat ≤ 172 * ε := by
     refine le_trans ?_ (le_of_eq_of_le (avgOver_uniform_snd
-      (α := Fin P.m → PauliScalar P)
-      (fun z => ∑ b : PauliScalar P, ‖applyOperatorToState
+      (α := MIPStarRE.QPBT.PauliPoint P)
+       fun z => ∑ b : PauliScalar P, ‖applyOperatorToState
         (S.place p₁ ((S.pointMeasExp p₁.side .Z z).effect b) -
-          S.place p₂ ((S.pointMeasExp p₂.side .Z z).effect b)) S.psiHat‖ ^ 2)) hZ)
+          S.place p₂ ((S.pointMeasExp p₂.side .Z z).effect b)) S.psiHat‖ ^ 2 ) hZ)
     unfold opFamilyDistSq
     refine avgOver_mono _ _ _ fun xz => ?_
     have hpt : ∀ ab : PauliScalar P × PauliScalar P,

@@ -35,11 +35,13 @@ noncomputable section
 variable {P : AdmissibleParams} {epsilon deltaG delta : ℝ}
   {S : ProjectiveSetting P epsilon} {w : GlobalPairWitness S deltaG}
 
+variable (v : ExtractionWitness S w delta)
+
 /-- The local isometries and auxiliary state associated to supplied extraction
 data. This is the construction in the final proof of `thm:pauli`, with the
 extraction conclusion explicitly given. No existence assertion is made.
 This construction is part of blueprint `thm:pauli-extraction-isometry-construction-support`. -/
-def ExtractionWitness.toPauliSoundnessWitness (v : ExtractionWitness S w delta) :
+def ExtractionWitness.toPauliSoundnessWitness  :
     PauliSoundnessWitness P S.toStrategy where
   ιA' := S.toStrategy.ιA × PauliRegister P
   ιB' := S.toStrategy.ιB × PauliRegister P
@@ -71,7 +73,7 @@ open Classical in
 swap action, in test register order. This identity precedes every state-error
 estimate and requires no success or consistency bound.
 This identity is part of blueprint `thm:pauli-extraction-isometry-construction-support`. -/
-theorem ExtractionWitness.isometryTensor_eq (v : ExtractionWitness S w delta) :
+theorem ExtractionWitness.isometryTensor_eq  :
     isometryTensor v.toPauliSoundnessWitness.φA v.toPauliSoundnessWitness.φB
         S.toStrategy.ψ =
       reindexState (sixRegExtractionEquiv P S.toStrategy.ιA S.toStrategy.ιB)
@@ -96,7 +98,7 @@ theorem ExtractionWitness.isometryTensor_eq (v : ExtractionWitness S w delta) :
   change ((Matrix.kronecker (swapUnitary w .alice) (swapUnitary w .bob)).submatrix
       (sixRegExtractionEquiv P S.toStrategy.ιA S.toStrategy.ιB)
       (sixRegExtractionEquiv P S.toStrategy.ιA S.toStrategy.ιB) *ᵥ
-        (fun i => S.psiHat i))
+         S.psiHat )
       ((sixRegExtractionEquiv P S.toStrategy.ιA S.toStrategy.ιB).symm p) = _
   erw [Matrix.submatrix_mulVec_equiv]
   rfl
@@ -105,7 +107,7 @@ open Classical in
 /-- The auxiliary-state/EPR vector is unchanged by grouping each player's
 first two registers into that player's auxiliary space.
 This identity is part of blueprint `thm:pauli-extraction-isometry-construction-support`. -/
-theorem ExtractionWitness.idealState_eq (v : ExtractionWitness S w delta) :
+theorem ExtractionWitness.idealState_eq  :
     idealState P v.toPauliSoundnessWitness.aux =
       reindexState (sixRegExtractionEquiv P S.toStrategy.ιA S.toStrategy.ιB)
         (S.idealExpState v.aux) := by
@@ -116,7 +118,7 @@ open Classical in
 /-- The supplied extraction state's squared error is exactly the squared state
 error of its test witness. Only the register order changes.
 This identity is part of blueprint `thm:pauli-extraction-isometry-construction-support`. -/
-theorem ExtractionWitness.state_error_eq (v : ExtractionWitness S w delta) :
+theorem ExtractionWitness.state_error_eq  :
     ‖isometryTensor v.toPauliSoundnessWitness.φA v.toPauliSoundnessWitness.φB
         S.toStrategy.ψ - idealState P v.toPauliSoundnessWitness.aux‖ ^ 2 =
       ‖S.applyBoth (swapUnitary w .alice) (swapUnitary w .bob) S.psiHat -
@@ -124,7 +126,7 @@ theorem ExtractionWitness.state_error_eq (v : ExtractionWitness S w delta) :
   rw [v.isometryTensor_eq, v.idealState_eq]
   dsimp +instances only [ExtractionWitness.toPauliSoundnessWitness, ProjectiveSetting.LocalSpace,
     ProjectiveSetting.localSpaceFintype, ProjectiveSetting.localSpaceDecidableEq]
-  have hsub : ∀ x y : EuclideanSpace ℂ (SixReg P S.toStrategy.ιA S.toStrategy.ιB),
+  have hsub : ∀ x y : MIPStarRE.QPBT.StateVector (SixReg P S.toStrategy.ιA S.toStrategy.ιB),
       reindexState (sixRegExtractionEquiv P S.toStrategy.ιA S.toStrategy.ιB) x -
         reindexState (sixRegExtractionEquiv P S.toStrategy.ιA S.toStrategy.ιB) y =
       reindexState (sixRegExtractionEquiv P S.toStrategy.ιA S.toStrategy.ιB) (x - y) := by
@@ -136,7 +138,7 @@ theorem ExtractionWitness.state_error_eq (v : ExtractionWitness S w delta) :
 data. The paper-facing theorem must still construct that data; see issue
 Dengnifer/MIPStarRE-QPBT-bak#529.
 This is blueprint `lem:pauli-extraction-state-distance-support`. -/
-theorem ExtractionWitness.state_close_ofExtractionWitness (v : ExtractionWitness S w delta) :
+theorem ExtractionWitness.state_close_ofExtractionWitness  :
     ‖isometryTensor v.toPauliSoundnessWitness.φA v.toPauliSoundnessWitness.φB
         S.toStrategy.ψ - idealState P v.toPauliSoundnessWitness.aux‖ ^ 2 ≤ delta := by
   rw [v.state_error_eq]

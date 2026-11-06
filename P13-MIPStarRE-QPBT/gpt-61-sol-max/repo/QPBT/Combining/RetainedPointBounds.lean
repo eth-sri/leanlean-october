@@ -1,5 +1,7 @@
 module
 
+public import QPBT.Types
+
 public import QPBT.Combining.PolynomialFiberBounds
 
 /-!
@@ -18,7 +20,7 @@ blueprint `lem:qld-4-7`.
 
 @[expose] public section
 
-open scoped BigOperators Matrix MatrixOrder ComplexOrder
+open scoped BigOperators Matrix MatrixOrder ComplexOrder Classical
 
 namespace MIPStarRE.QPBT.PolynomialImageBounds
 
@@ -39,13 +41,14 @@ private theorem wrong_mul_effect (X : Quantum.Measurement F ι)
   · rw [sub_mul, one_mul, projective_effect_mul_effect_eq_zero X hX (Ne.symm h)]
     simp [h]
 
-private theorem wrong_ordered_gram (X Z : Quantum.Measurement F ι)
+variable (X Z : Quantum.Measurement F ι)
+
+private theorem wrong_ordered_gram
     (hX : Measurement.IsProjective X) (r α β a : F) (hβ : β ≠ 0) :
     let T := (1 - X.effect r) * orderedIndicator X Z α β a
     Tᴴ * T = ∑ bc : F × F,
       if α * bc.1 + β * bc.2 = a ∧ bc.1 ≠ r then
         Z.effect bc.2 * X.effect bc.1 * Z.effect bc.2 else 0 := by
-  classical
   have hexpand : (1 - X.effect r) * orderedIndicator X Z α β a =
       ∑ bc : F × F, if α * bc.1 + β * bc.2 = a ∧ bc.1 ≠ r then
         X.effect bc.1 * Z.effect bc.2 else 0 := by
@@ -70,7 +73,7 @@ private theorem wrong_ordered_gram (X Z : Quantum.Measurement F ι)
     · by_cases h' : α * bc'.1 + β * bc'.2 = a ∧ bc'.1 ≠ r
       · have hb : bc.1 ≠ bc'.1 := by
           intro hb
-          have hc : bc.2 = bc'.2 := mul_left_cancel₀ hβ (by
+          have hc  := mul_left_cancel₀ hβ (by
             apply add_left_cancel (a := α * bc.1)
             simpa only [hb] using h.1.trans h'.1.symm)
           exact hne (Prod.ext hb hc).symm
@@ -89,14 +92,13 @@ average squared norm at most `2/q` times the actual vector mass. One `1/q`
 comes from scalar collisions and one from the zero second coefficient.
 This is the retained-outcome calculation supporting `eq:qld-sgg-mhat-sandwich`.
 -/
-theorem avg_wrong_ordered_norm_sq_le (X Z : Quantum.Measurement F ι)
+theorem avg_wrong_ordered_norm_sq_le
     (hX : Measurement.IsProjective X) (hZ : Measurement.IsProjective Z)
-    (r t : F) (ψ : EuclideanSpace ℂ ι) :
-    avgOver (uniformDistribution (Fin 2 → F)) (fun v =>
+    (r t : F) (ψ : MIPStarRE.QPBT.StateVector ι) :
+    avgOver (uniformDistribution (MIPStarRE.QPBT.Coordinates 2 F)) (fun v =>
       ‖applyOperatorToState ((1 - X.effect r) *
         orderedIndicator X Z (v 0) (v 1) (v 0 * r + v 1 * t)) ψ‖ ^ 2) ≤
       2 * (Fintype.card F : ℝ)⁻¹ * ‖ψ‖ ^ 2 := by
-  classical
   let w (bc : F × F) := stateQForm ψ
     (Z.effect bc.2 * X.effect bc.1 * Z.effect bc.2)
   have hw (bc : F × F) : 0 ≤ w bc :=
@@ -105,7 +107,7 @@ theorem avg_wrong_ordered_norm_sq_le (X Z : Quantum.Measurement F ι)
     rw [← stateQForm_one ψ, ← (pastedMeasurement_isMeasurement X Z hZ).2,
       stateQForm_finset_sum]
     rfl
-  have hpoint (v : Fin 2 → F) :
+  have hpoint (v : MIPStarRE.QPBT.Coordinates 2 F) :
       ‖applyOperatorToState ((1 - X.effect r) *
         orderedIndicator X Z (v 0) (v 1) (v 0 * r + v 1 * t)) ψ‖ ^ 2 ≤
       (if v 1 = 0 then ‖ψ‖ ^ 2 else 0) + ∑ bc : F × F,
@@ -129,17 +131,17 @@ theorem avg_wrong_ordered_norm_sq_le (X Z : Quantum.Measurement F ι)
       apply Finset.sum_congr rfl
       intro bc _
       split_ifs <;> simp [w, stateQForm, applyOperatorToState]
-  have hexc : avgOver (uniformDistribution (Fin 2 → F))
+  have hexc : avgOver (uniformDistribution (MIPStarRE.QPBT.Coordinates 2 F))
       (fun v => if v 1 = 0 then ‖ψ‖ ^ 2 else 0) =
         (Fintype.card F : ℝ)⁻¹ * ‖ψ‖ ^ 2 := by
-    change avgOver (uniformDistribution (Fin 2 → F))
+    change avgOver (uniformDistribution (MIPStarRE.QPBT.Coordinates 2 F))
       (fun v => if ((finTwoArrowEquiv F) v).2 = 0 then ‖ψ‖ ^ 2 else 0) = _
     rw [avgOver_uniform_equiv (finTwoArrowEquiv F)]
     simp only [Equiv.apply_symm_apply]
-    rw [avgOver_uniform_snd (fun β : F => if β = 0 then ‖ψ‖ ^ 2 else 0)]
+    rw [avgOver_uniform_snd  fun β : F => if β = 0 then ‖ψ‖ ^ 2 else 0 ]
     simp [avgOver_uniform_eq_inv_card_mul_sum]
   have hcollision (bc : F × F) :
-      avgOver (uniformDistribution (Fin 2 → F)) (fun v =>
+      avgOver (uniformDistribution (MIPStarRE.QPBT.Coordinates 2 F)) (fun v =>
         if v 0 * bc.1 + v 1 * bc.2 = v 0 * r + v 1 * t ∧ bc.1 ≠ r
           then (1 : ℝ) else 0) ≤ (Fintype.card F : ℝ)⁻¹ := by
     by_cases hb : bc.1 = r
@@ -148,7 +150,7 @@ theorem avg_wrong_ordered_norm_sq_le (X Z : Quantum.Measurement F ι)
       have h := affine_collision_average bc (r, t)
       have hne : bc ≠ (r, t) := fun h => hb (congrArg Prod.fst h)
       simpa [finTwoArrowEquiv, hb, hne] using h.le
-  have h := avgOver_mono (uniformDistribution (Fin 2 → F)) _ _ hpoint
+  have h := avgOver_mono (uniformDistribution (MIPStarRE.QPBT.Coordinates 2 F)) _ _ hpoint
   simp only [avgOver_add, avgOver_sum, avgOver_mul_const, hexc] at h
   refine h.trans ?_
   have hc := Finset.sum_le_sum (s := Finset.univ) fun bc _ =>
@@ -160,15 +162,15 @@ theorem avg_wrong_ordered_norm_sq_le (X Z : Quantum.Measurement F ι)
 residual plus `4/q` times its unnormalized mass. Reverse the point order to
 obtain the other Pauli marginal. This supports `eq:qld-sgg-mhat-sandwich`.
 -/
-theorem point_mismatch_le_ordered_error (X Z : Quantum.Measurement F ι)
+theorem point_mismatch_le_ordered_error
     (hX : Measurement.IsProjective X) (hZ : Measurement.IsProjective Z)
-    (r t : F) (ψ : EuclideanSpace ℂ ι) :
+    (r t : F) (ψ : MIPStarRE.QPBT.StateVector ι) :
     ‖applyOperatorToState (1 - X.effect r) ψ‖ ^ 2 ≤
-      2 * avgOver (uniformDistribution (Fin 2 → F)) (fun v =>
+      2 * avgOver (uniformDistribution (MIPStarRE.QPBT.Coordinates 2 F)) (fun v =>
         ‖ψ - applyOperatorToState
           (orderedIndicator X Z (v 0) (v 1) (v 0 * r + v 1 * t)) ψ‖ ^ 2) +
       4 * (Fintype.card F : ℝ)⁻¹ * ‖ψ‖ ^ 2 := by
-  have hpoint (v : Fin 2 → F) :
+  have hpoint (v : MIPStarRE.QPBT.Coordinates 2 F) :
       ‖applyOperatorToState (1 - X.effect r) ψ‖ ^ 2 ≤
         2 * ‖ψ - applyOperatorToState
           (orderedIndicator X Z (v 0) (v 1) (v 0 * r + v 1 * t)) ψ‖ ^ 2 +
@@ -177,7 +179,7 @@ theorem point_mismatch_le_ordered_error (X Z : Quantum.Measurement F ι)
     let T := orderedIndicator X Z (v 0) (v 1) (v 0 * r + v 1 * t)
     have h := sum_mass_le_residual_add_image (Finset.univ : Finset Unit)
       (fun _ => applyOperatorToState (1 - X.effect r) ψ)
-      (fun _ => applyOperatorToState ((1 - X.effect r) * T) ψ)
+       fun _ => applyOperatorToState ((1 - X.effect r) * T) ψ 
     simp only [Finset.univ_unique, Finset.sum_singleton] at h
     have hcontract :
         ‖applyOperatorToState (1 - X.effect r) ψ -
@@ -194,7 +196,7 @@ theorem point_mismatch_le_ordered_error (X Z : Quantum.Measurement F ι)
     exact h.trans (add_le_add
       (mul_le_mul_of_nonneg_left (pow_le_pow_left₀ (norm_nonneg _) hcontract 2)
         (by norm_num)) le_rfl)
-  have h := avgOver_mono (uniformDistribution (Fin 2 → F)) _ _ hpoint
+  have h := avgOver_mono (uniformDistribution (MIPStarRE.QPBT.Coordinates 2 F)) _ _ hpoint
   simp only [avgOver_uniform_const, avgOver_add, avgOver_const_mul] at h
   have hm := avg_wrong_ordered_norm_sq_le X Z hX hZ r t ψ
   linarith

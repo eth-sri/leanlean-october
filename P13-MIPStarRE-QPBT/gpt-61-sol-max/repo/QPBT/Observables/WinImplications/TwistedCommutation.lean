@@ -20,7 +20,9 @@ is `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:309-362`.
 
 @[expose] public section
 
-open scoped BigOperators Matrix ComplexOrder
+variable (P : MIPStarRE.QPBT.AdmissibleParams)
+
+open scoped BigOperators Matrix ComplexOrder Classical
 
 namespace MIPStarRE.QPBT
 
@@ -56,7 +58,7 @@ tensor factors and the state. Paper
 `ch14_qpbt_observables.tex:761-794`. -/
 theorem norm_twistedCommutator_sq_le_four {P : AdmissibleParams}
     {ιL ιR : Type} [Fintype ιL] [DecidableEq ιL] [Fintype ιR] [DecidableEq ιR]
-    (OX OZ : PauliTuple P → Op ιL) (χ : EuclideanSpace ℂ (ιL × ιR))
+    (OX OZ : PauliTuple P → Op ιL) (χ : MIPStarRE.QPBT.StateVector (ιL × ιR))
     (hχ : ‖χ‖ = 1) (hOX : ∀ ω, (OX ω)ᴴ * OX ω = 1)
     (hOZ : ∀ ω, (OZ ω)ᴴ * OZ ω = 1) (ω : PauliTuple P) :
     ‖applyOperatorToState
@@ -79,15 +81,7 @@ theorem norm_twistedCommutator_sq_le_four {P : AdmissibleParams}
   have hsub : ‖applyOperatorToState
       (heteroKron (OX ω * OZ ω) (1 : Op ιR) -
         phaseSign (gammaValue P ω.1 ω.2.1 ω.2.2.1 ω.2.2.2) •
-          heteroKron (OZ ω * OX ω) (1 : Op ιR)) χ‖ ≤ 2 := by
-    rw [MagicSquareRigidity.applyOperatorToState_sub_op]
-    calc
-      _ ≤ ‖applyOperatorToState
-            (heteroKron (OX ω * OZ ω) (1 : Op ιR)) χ‖ +
-          ‖applyOperatorToState
-            (phaseSign (gammaValue P ω.1 ω.2.1 ω.2.2.1 ω.2.2.2) •
-              heteroKron (OZ ω * OX ω) (1 : Op ιR)) χ‖ := norm_sub_le _ _
-      _ = 2 := by rw [h1, h2]; norm_num
+          heteroKron (OZ ω * OX ω) (1 : Op ιR)) χ‖ ≤ 2 := by grind [norm_sub_le, MagicSquareRigidity.applyOperatorToState_sub_op]
   nlinarith [hsub, norm_nonneg (applyOperatorToState
     (heteroKron (OX ω * OZ ω) (1 : Op ιR) -
       phaseSign (gammaValue P ω.1 ω.2.1 ω.2.2.1 ω.2.2.2) •
@@ -118,7 +112,7 @@ theorem avgOver_gated_le {X : Type*} [Fintype X] [DecidableEq X] [Nonempty X]
 /-- The commuting event is nonempty. Paper
 `14_analysis_of_the_pauli_basis_test.tex:70-77`, blueprint
 `ch14_qpbt_observables.tex:159-194`. -/
-theorem commuting_filter_nonempty (P : AdmissibleParams) :
+theorem commuting_filter_nonempty :
     (Finset.univ.filter (@IsCommuting P)).Nonempty := by
   refine ⟨0, Finset.mem_filter.mpr ⟨Finset.mem_univ _, ?_⟩⟩
   simp [IsCommuting, gammaValue, fixedBinTrace, binTrace, dotProduct]
@@ -126,10 +120,10 @@ theorem commuting_filter_nonempty (P : AdmissibleParams) :
 /-- The anticommuting event is nonempty. Paper
 `14_analysis_of_the_pauli_basis_test.tex:70-77`, blueprint
 `ch14_qpbt_observables.tex:159-194`. -/
-theorem anticommuting_filter_nonempty (P : AdmissibleParams) :
+theorem anticommuting_filter_nonempty :
     (Finset.univ.filter (@IsAnticommuting P)).Nonempty := by
   by_contra h
-  have hempty : Finset.univ.filter (@IsAnticommuting P) = ∅ :=
+  have hempty  :=
     Finset.not_nonempty_iff_eq_empty.mp h
   have hprob := anticommTupleDist_isProbability P
   unfold anticommTupleDist Distribution.IsProbability
@@ -140,28 +134,19 @@ theorem anticommuting_filter_nonempty (P : AdmissibleParams) :
 /-- Splitting a uniform average over the commuting and anticommuting events.
 Formalization-only support for `eq:pts-obs-commutation`, paper
 `14_analysis_of_the_pauli_basis_test.tex:309-362`. -/
-theorem avgOver_uniform_split_le (P : AdmissibleParams)
+theorem avgOver_uniform_split_le
     (f : PauliTuple P → ℝ) (hf : ∀ ω, 0 ≤ f ω) {Kc Ka : ℝ}
     (hc : avgOver (commTupleDist P) f ≤ Kc)
     (ha : avgOver (anticommTupleDist P) f ≤ Ka) :
     avgOver (uniformDistribution (PauliTuple P)) f ≤ Kc + Ka := by
-  classical
   have hsplit : avgOver (uniformDistribution (PauliTuple P)) f =
       avgOver (uniformDistribution (PauliTuple P))
           (fun ω => if IsCommuting ω then f ω else 0) +
         avgOver (uniformDistribution (PauliTuple P))
-          (fun ω => if IsAnticommuting ω then f ω else 0) := by
+           fun ω => if IsAnticommuting ω then f ω else 0  := by
     rw [← avgOver_add]
     refine avgOver_congr _ _ _ ?_
-    intro ω
-    by_cases h : IsCommuting ω
-    · have hna : ¬ IsAnticommuting ω := by
-        simp only [IsAnticommuting, not_not]
-        exact h
-      simp [h, hna]
-    · have hna : IsAnticommuting ω := by
-        simpa [IsAnticommuting, IsCommuting] using h
-      simp [h, hna]
+    grind [IsCommuting, IsAnticommuting]
   rw [hsplit]
   exact add_le_add
     (avgOver_gated_le (@IsCommuting P) (commuting_filter_nonempty P) f hf hc)
@@ -178,7 +163,7 @@ of `lem:qld-win-implications-obs` use it. Paper
 `ch14_qpbt_observables.tex:761-794`. -/
 theorem twisted_commutation_of_halves {P : AdmissibleParams} {ιL ιR : Type}
     [Fintype ιL] [DecidableEq ιL] [Fintype ιR] [DecidableEq ιR]
-    (OX OZ : PauliTuple P → Op ιL) (χ : EuclideanSpace ℂ (ιL × ιR))
+    (OX OZ : PauliTuple P → Op ιL) (χ : MIPStarRE.QPBT.StateVector (ιL × ιR))
     (hχ : ‖χ‖ = 1) (hOX : ∀ ω, (OX ω)ᴴ * OX ω = 1)
     (hOZ : ∀ ω, (OZ ω)ᴴ * OZ ω = 1) {ε Cc Ca : ℝ}
     (hε : 0 ≤ ε) (hCc : 0 ≤ Cc) (hCa : 0 ≤ Ca)
@@ -194,7 +179,6 @@ theorem twisted_commutation_of_halves {P : AdmissibleParams} {ιL ιR : Type}
       (fun ω => phaseSign (gammaValue P ω.1 ω.2.1 ω.2.2.1 ω.2.2.2) •
         heteroKron (OZ ω * OX ω) (1 : Op ιR)) χ ≤
       (2 * Cc + Ca + 4) * Real.sqrt ε := by
-  classical
   rw [opDistSq_eq_avgOver]
   set f : PauliTuple P → ℝ := fun ω =>
     ‖applyOperatorToState (heteroKron (OX ω * OZ ω) (1 : Op ιR) -
@@ -209,7 +193,7 @@ theorem twisted_commutation_of_halves {P : AdmissibleParams} {ιL ιR : Type}
     refine le_trans (le_of_eq ?_) hcomm
     refine avgOver_congr_on_support _ _ _ ?_
     intro ω hω
-    have hIs : IsCommuting ω := by
+    have hIs  := by
       rw [commTupleDist, Distribution.uniformOnFinset_support,
         Finset.mem_filter] at hω
       exact hω.2
@@ -222,7 +206,7 @@ theorem twisted_commutation_of_halves {P : AdmissibleParams} {ιL ιR : Type}
     refine le_trans (le_of_eq ?_) hanti
     refine avgOver_congr_on_support _ _ _ ?_
     intro ω hω
-    have hIs : IsAnticommuting ω := by
+    have hIs  := by
       rw [anticommTupleDist, Distribution.uniformOnFinset_support,
         Finset.mem_filter] at hω
       exact hω.2
@@ -238,8 +222,7 @@ theorem twisted_commutation_of_halves {P : AdmissibleParams} {ιL ιR : Type}
       simp [phaseSign, show (1 : ZMod 2) ≠ 0 from by decide]
     simp only [hfdef]
     rw [hph, neg_one_smul, sub_neg_eq_add]
-  have hmain : avgOver (uniformDistribution (PauliTuple P)) f ≤
-      Cc * (ε + Real.sqrt ε) + Ca * ε :=
+  have hmain  :=
     avgOver_uniform_split_le P f hfnn hcbound habound
   have htriv : avgOver (uniformDistribution (PauliTuple P)) f ≤ 4 := by
     refine le_trans (avgOver_mono _ _ (fun _ => (4 : ℝ)) ?_) ?_
@@ -258,7 +241,7 @@ theorem twisted_commutation_of_halves {P : AdmissibleParams} {ιL ιR : Type}
     have h2 : (2 * Cc + Ca) * Real.sqrt ε ≤
         (2 * Cc + Ca + 4) * Real.sqrt ε := by nlinarith [hsq]
     linarith
-  · have hgt : (1 : ℝ) < ε := not_le.mp hle
+  · have hgt  := not_le.mp hle
     have hone : (1 : ℝ) ≤ Real.sqrt ε := by
       nlinarith [Real.sq_sqrt hε, Real.sqrt_nonneg ε]
     have h3 : (4 : ℝ) ≤ (2 * Cc + Ca + 4) * Real.sqrt ε := by
@@ -291,7 +274,6 @@ theorem point_obs_commutator_comm_le_alice_explicit :
         (1024 * (2 * (Fintype.card PauliEdge : ℝ)) +
           1024 * Real.sqrt (4 * (Fintype.card PauliEdge : ℝ))) *
             (ε + Real.sqrt ε) := by
-  classical
   have hcard : (1 : ℝ) ≤ (Fintype.card PauliEdge : ℝ) := by
     exact_mod_cast (Fintype.card_pos : 0 < Fintype.card PauliEdge)
   set K : ℝ := 4 * (Fintype.card PauliEdge : ℝ) with hKdef
@@ -348,7 +330,6 @@ theorem point_obs_twisted_commutation_explicit :
             (96 * (16 * (Fintype.card PauliEdge : ℝ)) +
               3551040 * (16 * (Fintype.card PauliEdge : ℝ))) + 4) *
             Real.sqrt ε := by
-  classical
   intro P ε S hε
   exact twisted_commutation_of_halves
     (fun ω => S.pointObs .alice .X ω.2.2.1 ω.1)

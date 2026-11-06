@@ -1,5 +1,7 @@
 module
 
+public import QPBT.Types
+
 public import QPBT.Combining.DirectLowDegree.Transport.Combining.QuestionLaw
 
 /-!
@@ -42,7 +44,9 @@ All declarations below are formalization-only support for
 
 @[expose] public section
 
-open scoped BigOperators
+variable (D : MIPStarRE.QPBT.DirectLdParams)
+
+open scoped BigOperators Classical
 
 namespace MIPStarRE.QPBT
 
@@ -53,37 +57,33 @@ noncomputable section
 
 /-! ## The two parts of a point along a line -/
 
-theorem directCombinedPointPart_add_smul (D : DirectLdParams)
+theorem directCombinedPointPart_add_smul
     (p V : Fin D.combined.m → DirectScalarQ D) (t : DirectScalarQ D) :
     directCombinedPointPart D (p + t • V) =
       directCombinedPointPart D p + t • directCombinedPointPart D V := rfl
 
-theorem directCombinedCoefficientPart_add_smul (D : DirectLdParams)
+theorem directCombinedCoefficientPart_add_smul
     (p V : Fin D.combined.m → DirectScalarQ D) (t : DirectScalarQ D) :
     directCombinedCoefficientPart D (p + t • V) =
       directCombinedCoefficientPart D p + t • directCombinedCoefficientPart D V := rfl
 
 /-- The coordinate direction of a point coordinate of the combined dimension
 has vanishing combining part. -/
-@[simp] theorem directCombinedCoefficientPart_coordinateDirection_pointVar
-    (D : DirectLdParams) (j : Fin D.m) :
+@[simp] theorem directCombinedCoefficientPart_coordinateDirection_pointVar (j : Fin D.m) :
     directCombinedCoefficientPart D
         (coordinateDirection (combinedPointVar D.m D.k j)) = 0 := by
   funext r
-  show (coordinateDirection (combinedPointVar D.m D.k j) :
-      Fin (D.m + D.k) → DirectScalarQ D) (combinedCoefficientVar D.m D.k r) = 0
-  rw [coordinateDirection,
-    Pi.single_eq_of_ne (combinedCoefficientVar_ne_combinedPointVar D.m D.k r j)]
+  solve_by_elim (maxDepth := 6) [Pi.single_eq_of_ne, combinedCoefficientVar_ne_combinedPointVar]
 
 /-! ## Degree bounds at the combined parameters -/
 
-private theorem diagonalDegreeBound (D : DirectLdParams) :
+private theorem diagonalDegreeBound :
     D.m * D.d + 1 ≤ D.combined.m * D.combined.d := by
-  have h1 : 1 ≤ D.k * D.d := by simpa using Nat.mul_le_mul D.hk D.hd
+  have h1  := by simpa using Nat.mul_le_mul D.hk D.hd
   calc D.m * D.d + 1 ≤ D.m * D.d + D.k * D.d := Nat.add_le_add_left h1 _
     _ = (D.m + D.k) * D.d := (Nat.add_mul _ _ _).symm
 
-private theorem oneLeCombinedDlineDegree (D : DirectLdParams) :
+private theorem oneLeCombinedDlineDegree :
     1 ≤ D.combined.m * D.combined.d := by
   simpa using Nat.mul_le_mul D.combined.hm D.combined.hd
 
@@ -94,9 +94,9 @@ along a line contained in a fiber of the projection to the point coordinates,
 the combining part of the point at parameter `t` is `α₀ + t w`, so the affine
 answer built from the measured point answer `b` takes at `t` the combined
 value of `b` at that point. -/
-private theorem fiberAnswerEval (D : DirectLdParams) (n : ℕ) (hn : 1 ≤ n)
+private theorem fiberAnswerEval (n : ℕ) (hn : 1 ≤ n)
     (z base dirn : Fin D.combined.m → DirectScalarQ D)
-    (b : Fin D.k → DirectScalarQ D) (t : DirectScalarQ D)
+    (b : MIPStarRE.QPBT.DirectValues D) (t : DirectScalarQ D)
     (ht : z = base + t • dirn) :
     evalCoefficient
         (coefficientsOfPolynomial n
@@ -118,10 +118,10 @@ axis-parallel line of the combined space with a point coordinate as stored
 index, the combining part of the sampled point equals that of the canonical
 base, and the shifted parameter presents the point part of the sampled point on
 the measured line. -/
-private theorem axisAnswerEval (D : DirectLdParams)
+private theorem axisAnswerEval
     (z base dirn : Fin D.combined.m → DirectScalarQ D)
     (hdir : directCombinedCoefficientPart D dirn = 0) (s t : DirectScalarQ D)
-    (f : Fin D.k → Fin (D.d + 1) → DirectScalarQ D) (c : Fin D.k → DirectScalarQ D)
+    (f : Fin D.k → Fin (D.d + 1) → DirectScalarQ D) (c : MIPStarRE.QPBT.DirectValues D)
     (hf : ∀ r, evalCoefficient (f r) (t + s) = c r)
     (ht : z = base + t • dirn) :
     evalCoefficient
@@ -141,10 +141,10 @@ private theorem axisAnswerEval (D : DirectLdParams)
 diagonal line of the combined space with a point coordinate as stored index,
 the combining part of the point at parameter `t` is `α₀ + t w`, and the shifted
 parameter presents the point part of that point on the measured line. -/
-private theorem diagonalAnswerEval (D : DirectLdParams)
+private theorem diagonalAnswerEval
     (z base dirn : Fin D.combined.m → DirectScalarQ D) (s t : DirectScalarQ D)
     (f : Fin D.k → Fin (D.m * D.d + 1) → DirectScalarQ D)
-    (c : Fin D.k → DirectScalarQ D)
+    (c : MIPStarRE.QPBT.DirectValues D)
     (hf : ∀ r, evalCoefficient (f r) (t + s) = c r)
     (ht : z = base + t • dirn) :
     evalCoefficient
@@ -170,7 +170,7 @@ private theorem diagonalAnswerEval (D : DirectLdParams)
 /-- An answer pair accepted at two equal questions of the directly indexed game
 consists of two equal answers: the three diagonal clauses of
 `def:ld-win-predicate` are equalities of answers. -/
-theorem directLdAnswer_eq_of_win_self (D : DirectLdParams)
+theorem directLdAnswer_eq_of_win_self
     (q : DirectLdQuestion D) {a b : DirectLdAnswer D}
     (hwin : directLdWinPredicate D q q a b = true) : a = b := by
   obtain ⟨t, xq⟩ := q
@@ -179,16 +179,13 @@ theorem directLdAnswer_eq_of_win_self (D : DirectLdParams)
 
 /-- Two equal answers of the correct constructor are accepted at two equal
 questions of the directly indexed game. -/
-theorem directLdWinPredicate_self (D : DirectLdParams) (q : DirectLdQuestion D)
+theorem directLdWinPredicate_self (q : DirectLdQuestion D)
     (a : DirectLdAnswer D) (hvalid : validDirectLdAnswer q.1 a = true) :
-    directLdWinPredicate D q q a a = true := by
-  obtain ⟨t, xq⟩ := q
-  cases t <;> cases a <;>
-    simp_all [directLdWinPredicate, validDirectLdAnswer]
+    directLdWinPredicate D q q a a = true := by aesop (add simp [DirectLdQuestion, validDirectLdAnswer, directLdWinPredicate])
 
 /-- The relabelling of `def:ld-combined-strategy` always produces an answer of
 the constructor required by the type of the combined question. -/
-theorem validDirectLdAnswer_directCombinedAnswerMap (D : DirectLdParams)
+theorem validDirectLdAnswer_directCombinedAnswerMap
     (q : DirectLdQuestion D.combined) (a : DirectLdAnswer D) :
     validDirectLdAnswer q.1 (directCombinedAnswerMap D q a) = true := by
   obtain ⟨t, xq⟩ := q
@@ -202,7 +199,7 @@ theorem validDirectLdAnswer_directCombinedAnswerMap (D : DirectLdParams)
 /-- An ordered pair of a well-formed axis-parallel line answer and a well-formed
 diagonal line answer is accepted: `def:ld-win-predicate` imposes no condition on
 that ordered type pair. -/
-theorem directLdWinPredicate_aline_dline (D : DirectLdParams)
+theorem directLdWinPredicate_aline_dline
     (xq yq : DirectLdSpace D) (a b : DirectLdAnswer D)
     (ha : validDirectLdAnswer LdType.aline a = true)
     (hb : validDirectLdAnswer LdType.dline b = true) :
@@ -210,7 +207,7 @@ theorem directLdWinPredicate_aline_dline (D : DirectLdParams)
   cases a <;> cases b <;> simp_all [directLdWinPredicate, validDirectLdAnswer]
 
 /-- The mirror of `directLdWinPredicate_aline_dline`. -/
-theorem directLdWinPredicate_dline_aline (D : DirectLdParams)
+theorem directLdWinPredicate_dline_aline
     (xq yq : DirectLdSpace D) (a b : DirectLdAnswer D)
     (ha : validDirectLdAnswer LdType.dline a = true)
     (hb : validDirectLdAnswer LdType.aline b = true) :
@@ -219,7 +216,7 @@ theorem directLdWinPredicate_dline_aline (D : DirectLdParams)
 
 /-- A coordinate index of the combined dimension split off as a point
 coordinate is that point coordinate. -/
-theorem eq_combinedPointVar_of_indexSplit (D : DirectLdParams)
+theorem eq_combinedPointVar_of_indexSplit
     {i : Fin D.combined.m} {j : Fin D.m}
     (h : directCombinedIndexSplit D i = Sum.inl j) :
     i = combinedPointVar D.m D.k j := by
@@ -230,7 +227,7 @@ theorem eq_combinedPointVar_of_indexSplit (D : DirectLdParams)
 
 /-- A coordinate index of the combined dimension split off as a combining
 coordinate is that combining coordinate. -/
-theorem eq_combinedCoefficientVar_of_indexSplit (D : DirectLdParams)
+theorem eq_combinedCoefficientVar_of_indexSplit
     {i : Fin D.combined.m} {r : Fin D.k}
     (h : directCombinedIndexSplit D i = Sum.inr r) :
     i = combinedCoefficientVar D.m D.k r := by
@@ -245,14 +242,14 @@ theorem eq_combinedCoefficientVar_of_indexSplit (D : DirectLdParams)
 sampled point: the affine shift `s` relating the two presentations of the image
 line carries the acceptance clause of the original game at the shifted
 parameter to the acceptance clause of the combined game. -/
-theorem directCombinedAxisAnswer_eval (D : DirectLdParams)
+theorem directCombinedAxisAnswer_eval
     (z dir : Fin D.combined.m → DirectScalarQ D)
     (hcoef : directCombinedCoefficientPart D dir = 0) (s T : DirectScalarQ D)
     (hs : directCombinedPointPart D (lineRepMap dir z) =
       lineRepMap (directCombinedPointPart D dir)
           (directCombinedPointPart D (lineRepMap dir z)) +
         s • directCombinedPointPart D dir)
-    (f : Fin D.k → Fin (D.d + 1) → DirectScalarQ D) (c : Fin D.k → DirectScalarQ D)
+    (f : Fin D.k → Fin (D.d + 1) → DirectScalarQ D) (c : MIPStarRE.QPBT.DirectValues D)
     (hT : z = lineRepMap dir z + T • dir)
     (hcond : ∀ t : DirectScalarQ D,
       directCombinedPointPart D z =
@@ -275,14 +272,14 @@ theorem directCombinedAxisAnswer_eval (D : DirectLdParams)
 
 /-- Case 4 of `def:ld-combined-strategy` at the parameter presenting the
 sampled point. -/
-theorem directCombinedDiagonalAnswer_eval (D : DirectLdParams)
+theorem directCombinedDiagonalAnswer_eval
     (z dir : Fin D.combined.m → DirectScalarQ D) (s T : DirectScalarQ D)
     (hs : directCombinedPointPart D (lineRepMap dir z) =
       lineRepMap (directCombinedPointPart D dir)
           (directCombinedPointPart D (lineRepMap dir z)) +
         s • directCombinedPointPart D dir)
     (f : Fin D.k → Fin (D.m * D.d + 1) → DirectScalarQ D)
-    (c : Fin D.k → DirectScalarQ D)
+    (c : MIPStarRE.QPBT.DirectValues D)
     (hT : z = lineRepMap dir z + T • dir)
     (hcond : ∀ t : DirectScalarQ D,
       directCombinedPointPart D z =
@@ -310,7 +307,7 @@ theorem directCombinedDiagonalAnswer_eval (D : DirectLdParams)
 pair: the relabelling of `def:ld-combined-strategy` sends an answer pair
 accepted by the win predicate of the original game at the measured questions to
 an answer pair accepted by the win predicate of the combined game. -/
-def DirectCombinedWinTransport (D : DirectLdParams) (t₁ t₂ : LdType)
+def DirectCombinedWinTransport (t₁ t₂ : LdType)
     (sample : DirectLdSpace D.combined) : Prop :=
   ∀ a b : DirectLdAnswer D,
     directLdWinPredicate D
@@ -322,9 +319,11 @@ def DirectCombinedWinTransport (D : DirectLdParams) (t₁ t₂ : LdType)
         (directCombinedAnswerMap D (t₁, directLdMap D.combined t₁ sample) a)
         (directCombinedAnswerMap D (t₂, directLdMap D.combined t₂ sample) b) = true
 
+variable (sample : DirectLdSpace D.combined)
+
 /-- The axis-parallel-line versus point branch. -/
-theorem directCombinedWinTransport_aline_point (D : DirectLdParams)
-    (sample : DirectLdSpace D.combined) :
+theorem directCombinedWinTransport_aline_point
+     :
     DirectCombinedWinTransport D .aline .point sample := by
   intro a b hwin
   rcases hsplit : directCombinedIndexSplit D sample.index with j | r₀
@@ -380,8 +379,8 @@ theorem directCombinedWinTransport_aline_point (D : DirectLdParams)
                     (directLdMap D.combined LdType.aline sample).point)
                   (directCombinedRebaseParameter D
                     (LdType.aline, directLdMap D.combined LdType.aline sample)) f))
-            (fun _ => ∑ r : Fin D.k, directCombinedCoefficientPart D
-              (directLdMap D.combined LdType.point sample).point r * c r) := by
+             fun _ => ∑ r : Fin D.k, directCombinedCoefficientPart D
+              (directLdMap D.combined LdType.point sample).point r * c r  := by
           intro T hT _
           refine directCombinedAxisAnswer_eval D sample.point
             (coordinateDirection sample.index) hcoef _ T hs f c hT ?_
@@ -389,17 +388,17 @@ theorem directCombinedWinTransport_aline_point (D : DirectLdParams)
           exact hcond
         have hmapA : directCombinedAnswerMap D
             (LdType.aline, directLdMap D.combined LdType.aline sample) (.alinePolys f) =
-            .alinePolys (fun _ => coefficientsOfPolynomial D.combined.d
+            .alinePolys  fun _ => coefficientsOfPolynomial D.combined.d
                 (combinedAxisPolynomial
                   (directCombinedCoefficientPart D
                     (directLdMap D.combined LdType.aline sample).point)
                   (directCombinedRebaseParameter D
-                    (LdType.aline, directLdMap D.combined LdType.aline sample)) f)) := by
+                    (LdType.aline, directLdMap D.combined LdType.aline sample)) f)  := by
           simp only [directCombinedAnswerMap, hsplitL]
         have hmapB : directCombinedAnswerMap D
             (LdType.point, directLdMap D.combined LdType.point sample) (.pointVals c) =
-            .pointVals (fun _ => ∑ r : Fin D.k, directCombinedCoefficientPart D
-              (directLdMap D.combined LdType.point sample).point r * c r) := rfl
+            .pointVals  fun _ => ∑ r : Fin D.k, directCombinedCoefficientPart D
+              (directLdMap D.combined LdType.point sample).point r * c r  := rfl
         rw [hmapA, hmapB]
         simpa [directLdWinPredicate, validDirectLdAnswer] using hgoal
   · have hindex : sample.index = combinedCoefficientVar D.m D.k r₀ :=
@@ -425,8 +424,8 @@ theorem directCombinedWinTransport_aline_point (D : DirectLdParams)
                 (directCombinedCoefficientPart D
                   (directCombinedQuestionDirection D (LdType.aline, directLdMap D.combined
                     LdType.aline sample))) bv))
-          (fun _ => ∑ r : Fin D.k, directCombinedCoefficientPart D
-            (directLdMap D.combined LdType.point sample).point r * bv r) := by
+           fun _ => ∑ r : Fin D.k, directCombinedCoefficientPart D
+            (directLdMap D.combined LdType.point sample).point r * bv r  := by
         intro T hT _
         exact fiberAnswerEval D D.combined.d D.hd
           (directLdMap D.combined LdType.point sample).point
@@ -435,23 +434,23 @@ theorem directCombinedWinTransport_aline_point (D : DirectLdParams)
             sample)) bv T hT
       have hmapA : directCombinedAnswerMap D
           (LdType.aline, directLdMap D.combined LdType.aline sample) (.pointVals bv) =
-          .alinePolys (fun _ => coefficientsOfPolynomial D.combined.d
+          .alinePolys  fun _ => coefficientsOfPolynomial D.combined.d
               (fiberLinePolynomial
                 (directCombinedCoefficientPart D (directLdMap D.combined LdType.aline sample).point)
                 (directCombinedCoefficientPart D
                   (directCombinedQuestionDirection D (LdType.aline, directLdMap D.combined
-                    LdType.aline sample))) bv)) := by
+                    LdType.aline sample))) bv)  := by
         simp only [directCombinedAnswerMap, hsplitL]
       have hmapB : directCombinedAnswerMap D
           (LdType.point, directLdMap D.combined LdType.point sample) (.pointVals bv) =
-          .pointVals (fun _ => ∑ r : Fin D.k, directCombinedCoefficientPart D
-            (directLdMap D.combined LdType.point sample).point r * bv r) := rfl
+          .pointVals  fun _ => ∑ r : Fin D.k, directCombinedCoefficientPart D
+            (directLdMap D.combined LdType.point sample).point r * bv r  := rfl
       rw [hmapA, hmapB]
       simpa [directLdWinPredicate, validDirectLdAnswer] using hgoal
 
 /-- The point versus axis-parallel-line branch. -/
-theorem directCombinedWinTransport_point_aline (D : DirectLdParams)
-    (sample : DirectLdSpace D.combined) :
+theorem directCombinedWinTransport_point_aline
+     :
     DirectCombinedWinTransport D .point .aline sample := by
   intro a b hwin
   rcases hsplit : directCombinedIndexSplit D sample.index with j | r₀
@@ -507,8 +506,8 @@ theorem directCombinedWinTransport_point_aline (D : DirectLdParams)
                     (directLdMap D.combined LdType.aline sample).point)
                   (directCombinedRebaseParameter D
                     (LdType.aline, directLdMap D.combined LdType.aline sample)) f))
-            (fun _ => ∑ r : Fin D.k, directCombinedCoefficientPart D
-              (directLdMap D.combined LdType.point sample).point r * c r) := by
+             fun _ => ∑ r : Fin D.k, directCombinedCoefficientPart D
+              (directLdMap D.combined LdType.point sample).point r * c r  := by
           intro T hT _
           refine directCombinedAxisAnswer_eval D sample.point
             (coordinateDirection sample.index) hcoef _ T hs f c hT ?_
@@ -516,19 +515,9 @@ theorem directCombinedWinTransport_point_aline (D : DirectLdParams)
           exact hcond
         have hmapA : directCombinedAnswerMap D
             (LdType.point, directLdMap D.combined LdType.point sample) (.pointVals c) =
-            .pointVals (fun _ => ∑ r : Fin D.k, directCombinedCoefficientPart D
-              (directLdMap D.combined LdType.point sample).point r * c r) := rfl
-        have hmapB : directCombinedAnswerMap D
-            (LdType.aline, directLdMap D.combined LdType.aline sample) (.alinePolys f) =
-            .alinePolys (fun _ => coefficientsOfPolynomial D.combined.d
-                (combinedAxisPolynomial
-                  (directCombinedCoefficientPart D
-                    (directLdMap D.combined LdType.aline sample).point)
-                  (directCombinedRebaseParameter D
-                    (LdType.aline, directLdMap D.combined LdType.aline sample)) f)) := by
-          simp only [directCombinedAnswerMap, hsplitL]
-        rw [hmapA, hmapB]
-        simpa [directLdWinPredicate, validDirectLdAnswer] using hgoal
+            .pointVals  fun _ => ∑ r : Fin D.k, directCombinedCoefficientPart D
+              (directLdMap D.combined LdType.point sample).point r * c r  := rfl
+        simp_all only [directLdWinPredicate, validDirectLdAnswer, directCombinedAnswerMap]
   · have hindex : sample.index = combinedCoefficientVar D.m D.k r₀ :=
       eq_combinedCoefficientVar_of_indexSplit D hsplit
     rw [directCombined_measuredQuestion_of_coefficientVar D .point r₀ sample hindex,
@@ -552,8 +541,8 @@ theorem directCombinedWinTransport_point_aline (D : DirectLdParams)
                 (directCombinedCoefficientPart D
                   (directCombinedQuestionDirection D (LdType.aline, directLdMap D.combined
                     LdType.aline sample))) bv))
-          (fun _ => ∑ r : Fin D.k, directCombinedCoefficientPart D
-            (directLdMap D.combined LdType.point sample).point r * bv r) := by
+           fun _ => ∑ r : Fin D.k, directCombinedCoefficientPart D
+            (directLdMap D.combined LdType.point sample).point r * bv r  := by
         intro T hT _
         exact fiberAnswerEval D D.combined.d D.hd
           (directLdMap D.combined LdType.point sample).point
@@ -562,23 +551,23 @@ theorem directCombinedWinTransport_point_aline (D : DirectLdParams)
             sample)) bv T hT
       have hmapA : directCombinedAnswerMap D
           (LdType.point, directLdMap D.combined LdType.point sample) (.pointVals bv) =
-          .pointVals (fun _ => ∑ r : Fin D.k, directCombinedCoefficientPart D
-            (directLdMap D.combined LdType.point sample).point r * bv r) := rfl
+          .pointVals  fun _ => ∑ r : Fin D.k, directCombinedCoefficientPart D
+            (directLdMap D.combined LdType.point sample).point r * bv r  := rfl
       have hmapB : directCombinedAnswerMap D
           (LdType.aline, directLdMap D.combined LdType.aline sample) (.pointVals bv) =
-          .alinePolys (fun _ => coefficientsOfPolynomial D.combined.d
+          .alinePolys  fun _ => coefficientsOfPolynomial D.combined.d
               (fiberLinePolynomial
                 (directCombinedCoefficientPart D (directLdMap D.combined LdType.aline sample).point)
                 (directCombinedCoefficientPart D
                   (directCombinedQuestionDirection D (LdType.aline, directLdMap D.combined
-                    LdType.aline sample))) bv)) := by
+                    LdType.aline sample))) bv)  := by
         simp only [directCombinedAnswerMap, hsplitL]
       rw [hmapA, hmapB]
       simpa [directLdWinPredicate, validDirectLdAnswer] using hgoal
 
 /-- The diagonal-line versus point branch. -/
-theorem directCombinedWinTransport_dline_point (D : DirectLdParams)
-    (sample : DirectLdSpace D.combined) :
+theorem directCombinedWinTransport_dline_point
+     :
     DirectCombinedWinTransport D .dline .point sample := by
   intro a b hwin
   rcases hsplit : directCombinedIndexSplit D sample.index with j | r₀
@@ -640,8 +629,8 @@ theorem directCombinedWinTransport_dline_point (D : DirectLdParams)
                       LdType.dline sample)))
                   (directCombinedRebaseParameter D
                     (LdType.dline, directLdMap D.combined LdType.dline sample)) f))
-            (fun _ => ∑ r : Fin D.k, directCombinedCoefficientPart D
-              (directLdMap D.combined LdType.point sample).point r * c r) := by
+             fun _ => ∑ r : Fin D.k, directCombinedCoefficientPart D
+              (directLdMap D.combined LdType.point sample).point r * c r  := by
           intro T hT _
           refine directCombinedDiagonalAnswer_eval D sample.point
             (directPrefixProjection sample.index sample.direction) _ T hs f c hT ?_
@@ -649,7 +638,7 @@ theorem directCombinedWinTransport_dline_point (D : DirectLdParams)
           exact hcond
         have hmapA : directCombinedAnswerMap D
             (LdType.dline, directLdMap D.combined LdType.dline sample) (.dlinePolys f) =
-            .dlinePolys (fun _ => coefficientsOfPolynomial (D.combined.m * D.combined.d)
+            .dlinePolys  fun _ => coefficientsOfPolynomial (D.combined.m * D.combined.d)
                 (combinedDiagonalPolynomial
                   (directCombinedCoefficientPart D (directLdMap D.combined LdType.dline
                     sample).point)
@@ -657,12 +646,12 @@ theorem directCombinedWinTransport_dline_point (D : DirectLdParams)
                     (directCombinedQuestionDirection D (LdType.dline, directLdMap D.combined
                       LdType.dline sample)))
                   (directCombinedRebaseParameter D
-                    (LdType.dline, directLdMap D.combined LdType.dline sample)) f)) := by
+                    (LdType.dline, directLdMap D.combined LdType.dline sample)) f)  := by
           simp only [directCombinedAnswerMap, hsplitL]
         have hmapB : directCombinedAnswerMap D
             (LdType.point, directLdMap D.combined LdType.point sample) (.pointVals c) =
-            .pointVals (fun _ => ∑ r : Fin D.k, directCombinedCoefficientPart D
-              (directLdMap D.combined LdType.point sample).point r * c r) := rfl
+            .pointVals  fun _ => ∑ r : Fin D.k, directCombinedCoefficientPart D
+              (directLdMap D.combined LdType.point sample).point r * c r  := rfl
         rw [hmapA, hmapB]
         simpa [directLdWinPredicate, validDirectLdAnswer] using hgoal
   · have hindex : sample.index = combinedCoefficientVar D.m D.k r₀ :=
@@ -688,8 +677,8 @@ theorem directCombinedWinTransport_dline_point (D : DirectLdParams)
                 (directCombinedCoefficientPart D
                   (directCombinedQuestionDirection D (LdType.dline, directLdMap D.combined
                     LdType.dline sample))) bv))
-          (fun _ => ∑ r : Fin D.k, directCombinedCoefficientPart D
-            (directLdMap D.combined LdType.point sample).point r * bv r) := by
+           fun _ => ∑ r : Fin D.k, directCombinedCoefficientPart D
+            (directLdMap D.combined LdType.point sample).point r * bv r  := by
         intro T hT _
         exact fiberAnswerEval D (D.combined.m * D.combined.d) (oneLeCombinedDlineDegree D)
           (directLdMap D.combined LdType.point sample).point
@@ -698,23 +687,23 @@ theorem directCombinedWinTransport_dline_point (D : DirectLdParams)
             sample)) bv T hT
       have hmapA : directCombinedAnswerMap D
           (LdType.dline, directLdMap D.combined LdType.dline sample) (.pointVals bv) =
-          .dlinePolys (fun _ => coefficientsOfPolynomial (D.combined.m * D.combined.d)
+          .dlinePolys  fun _ => coefficientsOfPolynomial (D.combined.m * D.combined.d)
               (fiberLinePolynomial
                 (directCombinedCoefficientPart D (directLdMap D.combined LdType.dline sample).point)
                 (directCombinedCoefficientPart D
                   (directCombinedQuestionDirection D (LdType.dline, directLdMap D.combined
-                    LdType.dline sample))) bv)) := by
+                    LdType.dline sample))) bv)  := by
         simp only [directCombinedAnswerMap, hsplitL]
       have hmapB : directCombinedAnswerMap D
           (LdType.point, directLdMap D.combined LdType.point sample) (.pointVals bv) =
-          .pointVals (fun _ => ∑ r : Fin D.k, directCombinedCoefficientPart D
-            (directLdMap D.combined LdType.point sample).point r * bv r) := rfl
+          .pointVals  fun _ => ∑ r : Fin D.k, directCombinedCoefficientPart D
+            (directLdMap D.combined LdType.point sample).point r * bv r  := rfl
       rw [hmapA, hmapB]
       simpa [directLdWinPredicate, validDirectLdAnswer] using hgoal
 
 /-- The point versus diagonal-line branch. -/
-theorem directCombinedWinTransport_point_dline (D : DirectLdParams)
-    (sample : DirectLdSpace D.combined) :
+theorem directCombinedWinTransport_point_dline
+     :
     DirectCombinedWinTransport D .point .dline sample := by
   intro a b hwin
   rcases hsplit : directCombinedIndexSplit D sample.index with j | r₀
@@ -776,8 +765,8 @@ theorem directCombinedWinTransport_point_dline (D : DirectLdParams)
                       LdType.dline sample)))
                   (directCombinedRebaseParameter D
                     (LdType.dline, directLdMap D.combined LdType.dline sample)) f))
-            (fun _ => ∑ r : Fin D.k, directCombinedCoefficientPart D
-              (directLdMap D.combined LdType.point sample).point r * c r) := by
+             fun _ => ∑ r : Fin D.k, directCombinedCoefficientPart D
+              (directLdMap D.combined LdType.point sample).point r * c r  := by
           intro T hT _
           refine directCombinedDiagonalAnswer_eval D sample.point
             (directPrefixProjection sample.index sample.direction) _ T hs f c hT ?_
@@ -785,11 +774,11 @@ theorem directCombinedWinTransport_point_dline (D : DirectLdParams)
           exact hcond
         have hmapA : directCombinedAnswerMap D
             (LdType.point, directLdMap D.combined LdType.point sample) (.pointVals c) =
-            .pointVals (fun _ => ∑ r : Fin D.k, directCombinedCoefficientPart D
-              (directLdMap D.combined LdType.point sample).point r * c r) := rfl
+            .pointVals  fun _ => ∑ r : Fin D.k, directCombinedCoefficientPart D
+              (directLdMap D.combined LdType.point sample).point r * c r  := rfl
         have hmapB : directCombinedAnswerMap D
             (LdType.dline, directLdMap D.combined LdType.dline sample) (.dlinePolys f) =
-            .dlinePolys (fun _ => coefficientsOfPolynomial (D.combined.m * D.combined.d)
+            .dlinePolys  fun _ => coefficientsOfPolynomial (D.combined.m * D.combined.d)
                 (combinedDiagonalPolynomial
                   (directCombinedCoefficientPart D (directLdMap D.combined LdType.dline
                     sample).point)
@@ -797,7 +786,7 @@ theorem directCombinedWinTransport_point_dline (D : DirectLdParams)
                     (directCombinedQuestionDirection D (LdType.dline, directLdMap D.combined
                       LdType.dline sample)))
                   (directCombinedRebaseParameter D
-                    (LdType.dline, directLdMap D.combined LdType.dline sample)) f)) := by
+                    (LdType.dline, directLdMap D.combined LdType.dline sample)) f)  := by
           simp only [directCombinedAnswerMap, hsplitL]
         rw [hmapA, hmapB]
         simpa [directLdWinPredicate, validDirectLdAnswer] using hgoal
@@ -824,8 +813,8 @@ theorem directCombinedWinTransport_point_dline (D : DirectLdParams)
                 (directCombinedCoefficientPart D
                   (directCombinedQuestionDirection D (LdType.dline, directLdMap D.combined
                     LdType.dline sample))) bv))
-          (fun _ => ∑ r : Fin D.k, directCombinedCoefficientPart D
-            (directLdMap D.combined LdType.point sample).point r * bv r) := by
+           fun _ => ∑ r : Fin D.k, directCombinedCoefficientPart D
+            (directLdMap D.combined LdType.point sample).point r * bv r  := by
         intro T hT _
         exact fiberAnswerEval D (D.combined.m * D.combined.d) (oneLeCombinedDlineDegree D)
           (directLdMap D.combined LdType.point sample).point
@@ -834,16 +823,16 @@ theorem directCombinedWinTransport_point_dline (D : DirectLdParams)
             sample)) bv T hT
       have hmapA : directCombinedAnswerMap D
           (LdType.point, directLdMap D.combined LdType.point sample) (.pointVals bv) =
-          .pointVals (fun _ => ∑ r : Fin D.k, directCombinedCoefficientPart D
-            (directLdMap D.combined LdType.point sample).point r * bv r) := rfl
+          .pointVals  fun _ => ∑ r : Fin D.k, directCombinedCoefficientPart D
+            (directLdMap D.combined LdType.point sample).point r * bv r  := rfl
       have hmapB : directCombinedAnswerMap D
           (LdType.dline, directLdMap D.combined LdType.dline sample) (.pointVals bv) =
-          .dlinePolys (fun _ => coefficientsOfPolynomial (D.combined.m * D.combined.d)
+          .dlinePolys  fun _ => coefficientsOfPolynomial (D.combined.m * D.combined.d)
               (fiberLinePolynomial
                 (directCombinedCoefficientPart D (directLdMap D.combined LdType.dline sample).point)
                 (directCombinedCoefficientPart D
                   (directCombinedQuestionDirection D (LdType.dline, directLdMap D.combined
-                    LdType.dline sample))) bv)) := by
+                    LdType.dline sample))) bv)  := by
         simp only [directCombinedAnswerMap, hsplitL]
       rw [hmapA, hmapB]
       simpa [directLdWinPredicate, validDirectLdAnswer] using hgoal
@@ -852,7 +841,7 @@ theorem directCombinedWinTransport_point_dline (D : DirectLdParams)
 combined game are equal, so the acceptance clause of the original game at the
 two equal measured questions forces the two measured outcomes to be equal, and
 the relabelling sends them to equal combined outcomes. -/
-theorem directCombinedWinTransport_diagonal (D : DirectLdParams) (t : LdType)
+theorem directCombinedWinTransport_diagonal (t : LdType)
     (sample : DirectLdSpace D.combined) :
     DirectCombinedWinTransport D t t sample := by
   intro a b hwin
@@ -864,8 +853,8 @@ theorem directCombinedWinTransport_diagonal (D : DirectLdParams) (t : LdType)
 
 /-- The axis-parallel-line versus diagonal-line branch: the win predicate of
 the combined game imposes no condition on that ordered type pair. -/
-theorem directCombinedWinTransport_aline_dline (D : DirectLdParams)
-    (sample : DirectLdSpace D.combined) :
+theorem directCombinedWinTransport_aline_dline
+     :
     DirectCombinedWinTransport D .aline .dline sample := by
   intro a b _
   exact directLdWinPredicate_aline_dline D.combined _ _ _ _
@@ -875,8 +864,8 @@ theorem directCombinedWinTransport_aline_dline (D : DirectLdParams)
       (LdType.dline, directLdMap D.combined LdType.dline sample) b)
 
 /-- The diagonal-line versus axis-parallel-line branch. -/
-theorem directCombinedWinTransport_dline_aline (D : DirectLdParams)
-    (sample : DirectLdSpace D.combined) :
+theorem directCombinedWinTransport_dline_aline
+     :
     DirectCombinedWinTransport D .dline .aline sample := by
   intro a b _
   exact directLdWinPredicate_dline_aline D.combined _ _ _ _
@@ -889,7 +878,7 @@ theorem directCombinedWinTransport_dline_aline (D : DirectLdParams)
 nine ordered type pairs of the combined game.  This is the hypothesis of
 `directRejectedMass_directCombinedStrategy_le` at the question pair attached to
 a sample of the combined game. -/
-theorem directCombinedWinTransport_all (D : DirectLdParams) (t₁ t₂ : LdType)
+theorem directCombinedWinTransport_all (t₁ t₂ : LdType)
     (sample : DirectLdSpace D.combined) :
     DirectCombinedWinTransport D t₁ t₂ sample := by
   cases t₁ <;> cases t₂

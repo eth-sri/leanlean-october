@@ -33,7 +33,7 @@ defect, even when the effects do not commute. -/
 theorem consistencyDefect_measurement_symm {X α I : Type*}
     [Fintype X] [DecidableEq X]
     [Fintype α] [DecidableEq α] [Fintype I] [DecidableEq I]
-    (mu : Distribution X) (A B : X → Measurement α I) (psi : EuclideanSpace ℂ I) :
+    (mu : Distribution X) (A B : X → Measurement α I) (psi : MIPStarRE.QPBT.StateVector I) :
     consistencyDefect mu (fun x a => (A x).effect a) (fun x a => (B x).effect a) psi =
       consistencyDefect mu (fun x a => (B x).effect a) (fun x a => (A x).effect a) psi := by
   unfold consistencyDefect
@@ -69,25 +69,25 @@ theorem evaluated_pauli_tilde_consistency_of_global_pair_witness_explicit :
     ∀ (P : AdmissibleParams) (epsilon deltaG : ℝ),
       0 ≤ epsilon → epsilon ≤ 1 → 0 ≤ deltaG →
       ∀ (S : ProjectiveSetting P epsilon) (w : GlobalPairWitness S deltaG) (W : PauliKind),
-      consistencyDefect (uniformDistribution (Fin P.m → PauliScalar P))
+      consistencyDefect (uniformDistribution (MIPStarRE.QPBT.PauliPoint P))
           (fun u a => S.placePlayer .alice ((S.pauliEvalMeas .alice W u).effect a))
           (fun u a => S.placeSide .bob (tildeM w .bob W (indicatorVec u) a)) S.psiHat ≤
         deltaConstructPaulis (2 + 4 * Real.sqrt 172)
           epsilon deltaG P.m P.d P.q ∧
-      consistencyDefect (uniformDistribution (Fin P.m → PauliScalar P))
+      consistencyDefect (uniformDistribution (MIPStarRE.QPBT.PauliPoint P))
           (fun u a => S.placeSide .alice (tildeM w .alice W (indicatorVec u) a))
           (fun u a => S.placePlayer .bob ((S.pauliEvalMeas .bob W u).effect a)) S.psiHat ≤
         deltaConstructPaulis (2 + 4 * Real.sqrt 172)
           epsilon deltaG P.m P.d P.q := by
   intro P epsilon deltaG he he1 hd S w W
-  let mu := uniformDistribution (Fin P.m → PauliScalar P)
+  let mu := uniformDistribution (MIPStarRE.QPBT.PauliPoint P)
   let PA := fun u => S.placedMeasurement .AA' (leftPlacedMeasurement (S.pointMeas .alice W u))
   let PB := fun u => S.placedMeasurement .BB' (leftPlacedMeasurement (S.pointMeas .bob W u))
   let QA := fun u => S.placedMeasurement .AA'
     (leftPlacedMeasurement (S.pauliEvalMeas .alice W u))
   let QB := fun u => S.placedMeasurement .BB'
     (leftPlacedMeasurement (S.pauliEvalMeas .bob W u))
-  let T := fun (side : PlayerSide) (u : Fin P.m → PauliScalar P) =>
+  let T := fun (side : PlayerSide) (u : MIPStarRE.QPBT.PauliPoint P) =>
     S.blockMeasurement side (Measurement.ofSumEqOne
       (tildeM w side W (indicatorVec u))
       (fun a => (tildeM_isProj w side W (indicatorVec u) a).nonneg)
@@ -99,8 +99,7 @@ theorem evaluated_pauli_tilde_consistency_of_global_pair_witness_explicit :
       (fun u a => S.placePlayer .bob _) S.psiHat ≤ _
     rw [S.consistencyDefect_placePlayers]
     exact point_self_consistency_le S W
-  have hpoints : consistencyDefect mu (fun u a => (PA u).effect a)
-      (fun u a => (PB u).effect a) S.psiHat ≤ 86 * epsilon := by
+  have hpoints  := by
     simpa only [pauli_edge_card, Nat.cast_ofNat] using hpointsCard
   have hforward : consistencyDefect mu (fun u a => (PA u).effect a)
       (fun u a => (QB u).effect a) S.psiHat ≤ 86 * epsilon := by

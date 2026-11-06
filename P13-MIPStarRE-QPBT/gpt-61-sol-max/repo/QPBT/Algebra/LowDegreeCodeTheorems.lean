@@ -1,5 +1,7 @@
 module
 
+public import QPBT.Types
+
 public import QPBT.Algebra.LowDegreeCode
 
 /-! # Decoding maps for the low-degree code
@@ -13,6 +15,8 @@ class `Poly` is defined in `Algebra/Decoding`.
 
 @[expose] public section
 
+variable {K : Type*} [Field K]
+
 open scoped BigOperators
 
 namespace MIPStarRE.QPBT
@@ -22,19 +26,19 @@ open MIPStarRE.LDT MIPStarRE.LDT.Preliminaries
 /-- The formalization-only embedding of Boolean coordinates into a field used by
 blueprint `def:decoding-map`, paper
 `04_preliminaries.tex:917-924`. -/
-def boolToScalar {K : Type*} [Field K] : Bool → K
+def boolToScalar   : Bool → K
   | false => 0
   | true => 1
 
 /-- The coordinatewise Boolean-cube embedding used by
 blueprint `def:decoding-map`, paper
 `04_preliminaries.tex:917-924`. -/
-def cubeEmbed {K : Type*} [Field K] {m : ℕ} : Cube m → (Fin m → K) :=
+def cubeEmbed   {m : ℕ} : Cube m →  MIPStarRE.QPBT.Coordinates m K  :=
   fun y i => boolToScalar (y i)
 
 /-- On the Boolean cube, an indicator polynomial evaluates to the corresponding
 Kronecker delta.  This is the interpolation observation at paper lines 880-891. -/
-private theorem eval_indicatorPoly_cubeEmbed {K : Type*} [Field K] {m : ℕ}
+private theorem eval_indicatorPoly_cubeEmbed   {m : ℕ}
     (y z : Cube m) :
     MvPolynomial.eval (cubeEmbed (K := K) z) (indicatorPoly (K := K) y) =
       if y = z then 1 else 0 := by
@@ -43,15 +47,14 @@ private theorem eval_indicatorPoly_cubeEmbed {K : Type*} [Field K] {m : ℕ}
   simp only [apply_ite, MvPolynomial.eval_X, MvPolynomial.eval_sub, map_one]
   have hfactor (i : Fin m) :
       (if y i then cubeEmbed (K := K) z i else 1 - cubeEmbed (K := K) z i) =
-        if y i = z i then 1 else 0 := by
-    cases hy : y i <;> cases hz : z i <;> simp_all [cubeEmbed, boolToScalar]
+        if y i = z i then 1 else 0 := by aesop (add simp [cubeEmbed, boolToScalar])
   simp_rw [hfactor]
   rw [Fintype.prod_boole]
   split_ifs <;> simp_all [funext_iff]
 
 /-- Evaluating a low-degree encoding at an embedded Boolean point recovers its
 coefficient at that point, as stated at paper line 891. -/
-private theorem lowDegreeEnc_cubeEmbed {K : Type*} [Field K] {m : ℕ}
+private theorem lowDegreeEnc_cubeEmbed   {m : ℕ}
     (a : Cube m → K) (z : Cube m) :
     lowDegreeEnc a (cubeEmbed z) = a z := by
   rw [lowDegreeEnc_eq_dotProduct]
@@ -59,13 +62,13 @@ private theorem lowDegreeEnc_cubeEmbed {K : Type*} [Field K] {m : ℕ}
 
 /-- The decoding map blueprint
 `def:decoding-map`, paper `04_preliminaries.tex:917-924`. -/
-noncomputable def decodeAt {K : Type*} [Field K] [DecidableEq K] {m : ℕ}
-    (H : Finset K) (g : (Fin m → K) → K) : Cube m → K :=
+noncomputable def decodeAt   [DecidableEq K] {m : ℕ}
+    (H : Finset K) (g :  MIPStarRE.QPBT.Coordinates m K  → K) : Cube m → K :=
   fun y => if g (cubeEmbed y) ∈ H then g (cubeEmbed y) else 0
 
 /-- The restricted decoding identity in blueprint
 `def:decoding-map`, paper `04_preliminaries.tex:917-924`. -/
-theorem decodeAt_lowDegreeEnc {K : Type*} [Field K] [DecidableEq K] {m : ℕ}
+theorem decodeAt_lowDegreeEnc   [DecidableEq K] {m : ℕ}
     (H : Finset K) (a : Cube m → K) (ha : ∀ y, a y ∈ H) :
     decodeAt H (lowDegreeEnc a) = a := by
   funext y

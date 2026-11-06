@@ -56,7 +56,7 @@ noncomputable section
 is the question pair `(x, z)` of `lem:qld-4-10`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:689-709`. -/
 abbrev PointPair (P : AdmissibleParams) :=
-  (Fin P.m → PauliScalar P) × (Fin P.m → PauliScalar P)
+   MIPStarRE.QPBT.PauliPoint P  ×  MIPStarRE.QPBT.PauliPoint P 
 
 /-! ## Parseval's identity for an orthogonal system of coefficients -/
 
@@ -74,7 +74,7 @@ theorem sum_norm_sum_smul_sq_of_orthogonal {I J E : Type*} [Fintype I]
   have hnorm : ∀ x : E, ‖x‖ ^ 2 = (inner ℂ x x).re := fun x => by
     simpa using (inner_self_eq_norm_sq (𝕜 := ℂ) x).symm
   have hj : ∀ j, ‖∑ i, c j i • v i‖ ^ 2 =
-      (∑ i, ∑ i', ((starRingEnd ℂ) (c j i) * c j i') *
+      (∑ i, ∑ i',  (starRingEnd ℂ) (c j i) * c j i'  *
         inner ℂ (v i) (v i')).re := by
     intro j
     rw [hnorm, sum_inner]
@@ -82,12 +82,12 @@ theorem sum_norm_sum_smul_sq_of_orthogonal {I J E : Type*} [Fintype I]
     congr 1
     refine Finset.sum_congr rfl fun i _ => Finset.sum_congr rfl fun i' _ => ?_
     ring
-  have hsum : ∑ j, ∑ i, ∑ i', ((starRingEnd ℂ) (c j i) * c j i') *
+  have hsum : ∑ j, ∑ i, ∑ i',  (starRingEnd ℂ) (c j i) * c j i'  *
       inner ℂ (v i) (v i') = ∑ i, (N : ℂ) * inner ℂ (v i) (v i) := by
     rw [Finset.sum_comm]
     refine Finset.sum_congr rfl fun i _ => ?_
     rw [Finset.sum_comm]
-    calc ∑ i', ∑ j, ((starRingEnd ℂ) (c j i) * c j i') * inner ℂ (v i) (v i')
+    calc ∑ i', ∑ j,  (starRingEnd ℂ) (c j i) * c j i'  * inner ℂ (v i) (v i')
         = ∑ i', (∑ j, (starRingEnd ℂ) (c j i) * c j i') *
             inner ℂ (v i) (v i') := by
           refine Finset.sum_congr rfl fun i' _ => ?_
@@ -98,7 +98,7 @@ theorem sum_norm_sum_smul_sq_of_orthogonal {I J E : Type*} [Fintype I]
       _ = (N : ℂ) * inner ℂ (v i) (v i) := by
           simp [ite_mul]
   calc ∑ j, ‖∑ i, c j i • v i‖ ^ 2
-      = (∑ j, ∑ i, ∑ i', ((starRingEnd ℂ) (c j i) * c j i') *
+      = (∑ j, ∑ i, ∑ i',  (starRingEnd ℂ) (c j i) * c j i'  *
           inner ℂ (v i) (v i')).re := by
         rw [Complex.re_sum]
         exact Finset.sum_congr rfl fun j _ => hj j
@@ -129,8 +129,7 @@ theorem fixedCharacter_neg (x : PauliScalar P) :
     phaseSign (fixedBinTrace P.model (-x)) =
       phaseSign (fixedBinTrace P.model x) := by
   rw [fixedBinTrace, map_neg]
-  have phaseSign_neg (value : ZMod 2) : phaseSign (-value) = phaseSign value := by
-    exact congrArg phaseSign (ZMod.neg_eq_self_mod_two value)
+  have phaseSign_neg (value : ZMod 2)  := congrArg phaseSign (ZMod.neg_eq_self_mod_two value)
   exact phaseSign_neg _
 
 /-- Fourier cancellation for the fixed trace character: the character sums to
@@ -141,11 +140,11 @@ the one-dimensional space, blueprint
 theorem sum_fixedCharacter_mul (c : PauliScalar P) :
     ∑ a : PauliScalar P, phaseSign (fixedBinTrace P.model (a * c)) =
       if c = 0 then (Fintype.card (PauliScalar P) : ℂ) else 0 := by
-  have h : (𝔼 r : PauliScalar P, phaseSign (fixedBinTrace P.model (r * c))) =
+  have h :  𝔼 r : PauliScalar P, phaseSign (fixedBinTrace P.model (r * c))  =
       if c = 0 then (1 : ℂ) else 0 := by
     simpa only [fixedBinTrace, phaseSign_eq_ffChar,
       MIPStarRE.LDT.Preliminaries.ffChar_apply] using
-      (fourier_fact_scalar (p := 2) (F := PauliScalar P) c)
+       fourier_fact_scalar (p := 2) (F := PauliScalar P) c 
   rw [Finset.expect_eq_sum_div_card] at h
   have hcard : (Fintype.card (PauliScalar P) : ℂ) ≠ 0 :=
     Nat.cast_ne_zero.mpr Fintype.card_ne_zero
@@ -209,11 +208,11 @@ theorem sum_pairCharacter_mul_pairCharacter
         · rw [if_pos h1, if_pos h2, if_pos (Prod.ext h1 h2)]
           push_cast
           ring
-        · rw [if_pos h1, if_neg h2, if_neg (fun h => h2 (congrArg Prod.snd h))]
+        · rw [if_pos h1, if_neg h2, if_neg  fun h => h2 (congrArg Prod.snd h) ]
           simp
-        · rw [if_neg h1, if_pos h2, if_neg (fun h => h1 (congrArg Prod.fst h))]
+        · rw [if_neg h1, if_pos h2, if_neg  fun h => h1 (congrArg Prod.fst h) ]
           simp
-        · rw [if_neg h1, if_neg h2, if_neg (fun h => h1 (congrArg Prod.fst h))]
+        · rw [if_neg h1, if_neg h2, if_neg  fun h => h1 (congrArg Prod.fst h) ]
           simp
 
 end Characters
@@ -225,13 +224,7 @@ theorem averageOperatorOverDistribution_uniform_eq_inv_card_smul_sum
     {α ι : Type*} [Fintype α] [DecidableEq α] [Nonempty α]
     [Fintype ι] [DecidableEq ι] (f : α → Op ι) :
     averageOperatorOverDistribution (uniformDistribution α) f =
-      (Fintype.card α : ℂ)⁻¹ • ∑ a, f a := by
-  ext i j
-  simp only [averageOperatorOverDistribution, uniformDistribution,
-    Distribution.uniformOnFinset, Finset.mem_univ, if_true, Matrix.sum_apply,
-    Matrix.smul_apply, Complex.real_smul, smul_eq_mul,
-    Finset.card_univ, one_div, Complex.ofReal_inv, Complex.ofReal_natCast]
-  rw [Finset.mul_sum]
+      (Fintype.card α : ℂ)⁻¹ • ∑ a, f a := by classical ext <;> simp_all [ Distribution.uniformOnFinset, averageOperatorOverDistribution, uniformDistribution, Finset.mul_sum, smul_eq_mul, one_div, Complex.ofReal_inv, Complex.ofReal_natCast, Complex.real_smul, Finset.card_univ, Finset.mem_univ, Matrix.sum_apply, Matrix.smul_apply]
 
 namespace ProjectiveSetting
 
@@ -242,7 +235,7 @@ sum of the expanded observables.  This is the first display of
 `def:expanded-point-measurement`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:384-418`. -/
 theorem expPointOp_eq_inv_card_smul_sum (S : ProjectiveSetting P ε)
-    (side : PlayerSide) (W : PauliKind) (u : Fin P.m → PauliScalar P)
+    (side : PlayerSide) (W : PauliKind) (u : MIPStarRE.QPBT.PauliPoint P)
     (a : PauliScalar P) :
     S.expPointOp side W u a =
       (Fintype.card (PauliScalar P) : ℂ)⁻¹ •
@@ -254,7 +247,7 @@ theorem expPointOp_eq_inv_card_smul_sum (S : ProjectiveSetting P ε)
 is the normalized double sum of the weighted products, indexed by pairs. -/
 theorem smul_sum_mul_smul_sum {ι K : Type*} [Fintype K] [Fintype ι]
     (c : ℂ) (α β : K → ℂ) (X Z : K → Op ι) :
-    (c • ∑ r, α r • X r) * (c • ∑ s, β s • Z s) =
+    (c • ∑ r, α r • X r) *  c • ∑ s, β s • Z s  =
       (c * c) • ∑ rs : K × K, (α rs.1 * β rs.2) • (X rs.1 * Z rs.2) := by
   rw [Fintype.sum_prod_type, smul_mul_smul_comm, Finset.sum_mul_sum]
   congr 1
@@ -265,7 +258,7 @@ theorem smul_sum_mul_smul_sum {ι K : Type*} [Fintype K] [Fintype ι]
 in the opposite order, indexed by the same pairs. -/
 theorem smul_sum_mul_smul_sum_swap {ι K : Type*} [Fintype K] [Fintype ι]
     (c : ℂ) (α β : K → ℂ) (X Z : K → Op ι) :
-    (c • ∑ s, β s • Z s) * (c • ∑ r, α r • X r) =
+    (c • ∑ s, β s • Z s) *  c • ∑ r, α r • X r  =
       (c * c) • ∑ rs : K × K, (α rs.1 * β rs.2) • (Z rs.2 * X rs.1) := by
   rw [Fintype.sum_prod_type_right, smul_mul_smul_comm, Finset.sum_mul_sum]
   congr 1
@@ -275,7 +268,7 @@ theorem smul_sum_mul_smul_sum_swap {ι K : Type*} [Fintype K] [Fintype ι]
 /-- The commutator of two field-valued point effects is the Fourier transform
 of the commutators of the expanded observables. -/
 theorem expPointOp_commutator_eq (S : ProjectiveSetting P ε) (side : PlayerSide)
-    (x z : Fin P.m → PauliScalar P) (a b : PauliScalar P) :
+    (x z : MIPStarRE.QPBT.PauliPoint P) (a b : PauliScalar P) :
     S.expPointOp side .X x a * S.expPointOp side .Z z b -
         S.expPointOp side .Z z b * S.expPointOp side .X x a =
       ((Fintype.card (PauliScalar P) : ℂ)⁻¹ *
@@ -297,19 +290,19 @@ the placed commutators of the field-valued point effects equal the average over
 `(r, s)` of the squared norms of the placed commutators of the expanded
 observables. -/
 theorem sum_norm_place_expPointOp_commutator_sq (S : ProjectiveSetting P ε)
-    (p : Placement) (x z : Fin P.m → PauliScalar P) :
+    (p : Placement) (x z : MIPStarRE.QPBT.PauliPoint P) :
     ∑ ab : PauliScalar P × PauliScalar P,
         ‖applyOperatorToState (S.place p
           (S.expPointOp p.side .X x ab.1 * S.expPointOp p.side .Z z ab.2 -
             S.expPointOp p.side .Z z ab.2 * S.expPointOp p.side .X x ab.1))
           S.psiHat‖ ^ 2 =
       avgOver (uniformDistribution (PauliScalar P × PauliScalar P))
-        (fun rs => ‖applyOperatorToState (S.place p
+         fun rs => ‖applyOperatorToState (S.place p
           (S.expObs p.side .X rs.1 x * S.expObs p.side .Z rs.2 z -
             S.expObs p.side .Z rs.2 z * S.expObs p.side .X rs.1 x))
-          S.psiHat‖ ^ 2) := by
+          S.psiHat‖ ^ 2  := by
   set v : PauliScalar P × PauliScalar P →
-      EuclideanSpace ℂ (SixReg P S.toStrategy.ιA S.toStrategy.ιB) :=
+      MIPStarRE.QPBT.StateVector (SixReg P S.toStrategy.ιA S.toStrategy.ιB) :=
     fun rs => applyOperatorToState (S.place p
       (S.expObs p.side .X rs.1 x * S.expObs p.side .Z rs.2 z -
         S.expObs p.side .Z rs.2 z * S.expObs p.side .X rs.1 x)) S.psiHat
@@ -333,7 +326,7 @@ theorem sum_norm_place_expPointOp_commutator_sq (S : ProjectiveSetting P ε)
       phaseSign (fixedBinTrace P.model (ab.1 * rs.1)) *
         phaseSign (fixedBinTrace P.model (ab.2 * rs.2)))
     ((Fintype.card (PauliScalar P) : ℝ) ^ 2)
-    (fun rs rs' => sum_pairCharacter_mul_pairCharacter rs rs') v
+    sum_pairCharacter_mul_pairCharacter v
   have hq : (0 : ℝ) < (Fintype.card (PauliScalar P) : ℝ) := by
     exact_mod_cast Fintype.card_pos
   have hcnorm : ‖c * c‖ = ((Fintype.card (PauliScalar P) : ℝ) ^ 2)⁻¹ := by
@@ -350,11 +343,11 @@ theorem sum_norm_place_expPointOp_commutator_sq (S : ProjectiveSetting P ε)
               phaseSign (fixedBinTrace P.model (ab.2 * rs.2))) • v rs‖ ^ 2 := by
         refine Finset.sum_congr rfl fun ab _ => ?_
         rw [hpt, norm_smul, mul_pow]
-    _ = ‖c * c‖ ^ 2 * (((Fintype.card (PauliScalar P) : ℝ) ^ 2) *
+    _ = ‖c * c‖ ^ 2 * ( (Fintype.card (PauliScalar P) : ℝ) ^ 2  *
           ∑ rs, ‖v rs‖ ^ 2) := by
         rw [← Finset.mul_sum, hparseval]
     _ = avgOver (uniformDistribution (PauliScalar P × PauliScalar P))
-          (fun rs => ‖v rs‖ ^ 2) := by
+           fun rs => ‖v rs‖ ^ 2  := by
         rw [avgOver_uniform_eq_inv_card_mul_sum, Fintype.card_prod, hcnorm]
         push_cast
         field_simp
@@ -383,7 +376,7 @@ theorem exp_point_comm_explicit :
     have hv := WinImplications.strategy_value_le_one S.toStrategy
     have hw := S.win
     linarith
-  have hnorm : ∀ (x z : Fin P.m → PauliScalar P)
+  have hnorm : ∀ (x z : MIPStarRE.QPBT.PauliPoint P)
       (rs : PauliScalar P × PauliScalar P),
       ‖applyOperatorToState (S.place p
           (S.expObs p.side .X rs.1 x * S.expObs p.side .Z rs.2 z -
@@ -403,10 +396,10 @@ theorem exp_point_comm_explicit :
         ((S.pointMeasExp p.side .Z xz.2).effect ab.2 *
           (S.pointMeasExp p.side .X xz.1).effect ab.1))
       S.psiHat =
-      avgOver (uniformDistribution (PauliTuple P)) (fun ω =>
+      avgOver (uniformDistribution (PauliTuple P))  fun ω =>
         ‖applyOperatorToState
           (S.placeStrategySide p.side (S.twistedCommutator p.side ω))
-          S.toStrategy.ψ‖ ^ 2) := by
+          S.toStrategy.ψ‖ ^ 2  := by
     unfold opFamilyDistSq
     calc avgOver (uniformDistribution (PointPair P)) (fun xz =>
           ∑ ab : PauliScalar P × PauliScalar P,
@@ -415,34 +408,34 @@ theorem exp_point_comm_explicit :
                   (S.pointMeasExp p.side .Z xz.2).effect ab.2) -
               S.place p ((S.pointMeasExp p.side .Z xz.2).effect ab.2 *
                 (S.pointMeasExp p.side .X xz.1).effect ab.1)) S.psiHat‖ ^ 2)
-        = avgOver (uniformDistribution (PointPair P)) (fun xz =>
+        = avgOver (uniformDistribution (PointPair P))  fun xz =>
             avgOver (uniformDistribution (PauliScalar P × PauliScalar P))
-              (fun rs => ‖applyOperatorToState
+               fun rs => ‖applyOperatorToState
                 (S.placeStrategySide p.side
                   (S.twistedCommutator p.side (xz.1, xz.2, rs.1, rs.2)))
-                S.toStrategy.ψ‖ ^ 2)) := by
+                S.toStrategy.ψ‖ ^ 2   := by
           refine avgOver_congr _ _ _ fun xz => ?_
           rw [← avgOver_congr _ _ _ (hnorm xz.1 xz.2),
             ← sum_norm_place_expPointOp_commutator_sq S p xz.1 xz.2]
           refine Finset.sum_congr rfl fun ab _ => ?_
           rw [place_sub]
           rfl
-      _ = avgOver (uniformDistribution (PointPair P × (PauliScalar P × PauliScalar P)))
-            (fun q => ‖applyOperatorToState
+      _ = avgOver (uniformDistribution (PointPair P ×  PauliScalar P × PauliScalar P ))
+             fun q => ‖applyOperatorToState
               (S.placeStrategySide p.side
                 (S.twistedCommutator p.side (q.1.1, q.1.2, q.2.1, q.2.2)))
-              S.toStrategy.ψ‖ ^ 2) :=
-          (avgOver_uniform_prod (fun (xz : PointPair P)
+              S.toStrategy.ψ‖ ^ 2  :=
+          (avgOver_uniform_prod  fun (xz : PointPair P)
             (rs : PauliScalar P × PauliScalar P) => ‖applyOperatorToState
               (S.placeStrategySide p.side
                 (S.twistedCommutator p.side (xz.1, xz.2, rs.1, rs.2)))
-              S.toStrategy.ψ‖ ^ 2)).symm
-      _ = avgOver (uniformDistribution (PauliTuple P)) (fun ω =>
+              S.toStrategy.ψ‖ ^ 2 ).symm
+      _ = avgOver (uniformDistribution (PauliTuple P))  fun ω =>
             ‖applyOperatorToState
               (S.placeStrategySide p.side (S.twistedCommutator p.side ω))
-              S.toStrategy.ψ‖ ^ 2) := by
-          rw [avgOver_uniform_equiv (Equiv.prodAssoc (Fin P.m → PauliScalar P)
-            (Fin P.m → PauliScalar P) (PauliScalar P × PauliScalar P))]
+              S.toStrategy.ψ‖ ^ 2  := by
+          rw [avgOver_uniform_equiv (Equiv.prodAssoc (MIPStarRE.QPBT.PauliPoint P)
+            (MIPStarRE.QPBT.PauliPoint P) (PauliScalar P × PauliScalar P))]
           rfl
   rw [hfamily]
   have h := twisted_commutator_avg_le_explicit P ε S p.side hε

@@ -31,7 +31,9 @@ blueprint `def:ld-question-distribution`.
 
 @[expose] public section
 
-open scoped BigOperators
+variable (P : MIPStarRE.QPBT.AdmissibleParams)
+
+open scoped BigOperators Classical
 
 namespace MIPStarRE.QPBT
 
@@ -55,42 +57,27 @@ theorem extendedCoordinate_cases (m : ℕ) (k : Fin (2 * m + 2)) :
       rw [embZ_val]
       change k.val = m + (k.val - m)
       omega
-    · have hk3 : k.val < 2 * m + 2 := k.isLt
-      rcases Nat.lt_or_ge k.val (2 * m + 1) with hk4 | hk4
-      · refine Or.inr (Or.inr (Or.inl (Fin.ext ?_)))
-        rw [alphaVar_val]
-        omega
-      · refine Or.inr (Or.inr (Or.inr (Fin.ext ?_)))
-        rw [betaVar_val]
-        omega
+    grind [Fin.ext, Fin.isLt, Nat.lt_or_ge, alphaVar_val, betaVar_val]
 
 /-! ## Linearity of the identification of the two scalar fields -/
 
 /-- The identification of the two scalar fields is additive on extended
 points.  Blueprint `def:combine-map`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:970-989`. -/
-theorem directPointToPauli_add (P : AdmissibleParams)
+theorem directPointToPauli_add
     (u v : Fin P.extendedDirectLd.m → DirectScalarQ P.extendedDirectLd) :
     directPointToPauli P (u + v) =
-      directPointToPauli P u + directPointToPauli P v := by
-  funext i
-  change extendedDirectScalarEquiv P (u i + v i) =
-    extendedDirectScalarEquiv P (u i) + extendedDirectScalarEquiv P (v i)
-  rw [map_add]
+      directPointToPauli P u + directPointToPauli P v := by rfl
 
 /-- The identification of the two scalar fields carries a scalar multiple of
 an extended point to the multiple by the identified scalar.  Blueprint
 `def:combine-map`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:970-989`. -/
-theorem directPointToPauli_smul (P : AdmissibleParams)
+theorem directPointToPauli_smul
     (t : DirectScalarQ P.extendedDirectLd)
     (u : Fin P.extendedDirectLd.m → DirectScalarQ P.extendedDirectLd) :
     directPointToPauli P (t • u) =
-      extendedDirectScalarEquiv P t • directPointToPauli P u := by
-  funext i
-  change extendedDirectScalarEquiv P (t * u i) =
-    extendedDirectScalarEquiv P t * extendedDirectScalarEquiv P (u i)
-  rw [map_mul]
+      extendedDirectScalarEquiv P t • directPointToPauli P u := by rfl
 
 /-! ## The coordinate index carried by each source line -/
 
@@ -98,26 +85,26 @@ theorem directPointToPauli_smul (P : AdmissibleParams)
 `eq:chi-func`, paper
 `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:958-961`.
 -/
-def subLineFirstIndex (P : AdmissibleParams) : Fin P.m :=
+def subLineFirstIndex : Fin P.m :=
   ⟨0, lt_of_lt_of_le Nat.zero_lt_one P.one_le_m⟩
 
 /-- The coordinate index carried by the source `X` line of a branch: the
 stored extended coordinate when it is an `X`-block coordinate, and the first
 coordinate otherwise.  Blueprint `lem:qld-sublines`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1063-1116`. -/
-def subLineXIndex (P : AdmissibleParams) (k : Fin (2 * P.m + 2)) : Fin P.m :=
+def subLineXIndex (k : Fin (2 * P.m + 2)) : Fin P.m :=
   if h : k.val < P.m then ⟨k.val, h⟩ else subLineFirstIndex P
 
 /-- The coordinate index carried by the source `Z` line of a branch: the
 stored extended coordinate when it is a `Z`-block coordinate, and the first
 coordinate otherwise.  Blueprint `lem:qld-sublines`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1063-1116`. -/
-def subLineZIndex (P : AdmissibleParams) (k : Fin (2 * P.m + 2)) : Fin P.m :=
+def subLineZIndex (k : Fin (2 * P.m + 2)) : Fin P.m :=
   if h : P.m ≤ k.val ∧ k.val < 2 * P.m then ⟨k.val - P.m, by omega⟩
   else subLineFirstIndex P
 
 /-- At an `X`-block coordinate the source `X` line carries that coordinate. -/
-theorem subLineXIndex_embX (P : AdmissibleParams) (i : Fin P.m) :
+theorem subLineXIndex_embX (i : Fin P.m) :
     subLineXIndex P (embX P.m i) = i := by
   have h : (embX P.m i).val < P.m := by
     rw [embX_val]
@@ -127,7 +114,7 @@ theorem subLineXIndex_embX (P : AdmissibleParams) (i : Fin P.m) :
 
 /-- At an `X`-block coordinate the source `Z` line carries the first
 coordinate. -/
-theorem subLineZIndex_embX (P : AdmissibleParams) (i : Fin P.m) :
+theorem subLineZIndex_embX (i : Fin P.m) :
     subLineZIndex P (embX P.m i) = subLineFirstIndex P := by
   have h : ¬ (P.m ≤ (embX P.m i).val ∧ (embX P.m i).val < 2 * P.m) := by
     rw [embX_val]
@@ -136,7 +123,7 @@ theorem subLineZIndex_embX (P : AdmissibleParams) (i : Fin P.m) :
   rw [subLineZIndex, dif_neg h]
 
 /-- At a `Z`-block coordinate the source `Z` line carries that coordinate. -/
-theorem subLineZIndex_embZ (P : AdmissibleParams) (j : Fin P.m) :
+theorem subLineZIndex_embZ (j : Fin P.m) :
     subLineZIndex P (embZ P.m j) = j := by
   have hj := j.isLt
   have h : P.m ≤ (embZ P.m j).val ∧ (embZ P.m j).val < 2 * P.m := by
@@ -150,14 +137,16 @@ theorem subLineZIndex_embZ (P : AdmissibleParams) (j : Fin P.m) :
 
 /-! ## The two directions of a branch -/
 
+variable (kind : LineKind) (k : Fin (2 * P.m + 2)) (w : Fin P.extendedDirectLd.m → DirectScalarQ P.extendedDirectLd)
+
 /-- The direction of the extended line of a branch: the elementary direction
 at the stored coordinate in the axis branch, and the extended direction with
 the coordinates preceding the stored coordinate replaced by zero in the
 diagonal branch.  Blueprint `lem:qld-sublines`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1063-1116`. -/
-def subLineExtDirection (P : AdmissibleParams) (kind : LineKind)
-    (k : Fin (2 * P.m + 2))
-    (w : Fin P.extendedDirectLd.m → DirectScalarQ P.extendedDirectLd) :
+def subLineExtDirection
+
+     :
     Fin P.extendedDirectLd.m → DirectScalarQ P.extendedDirectLd :=
   match kind with
   | .axis => coordinateDirection k
@@ -168,8 +157,8 @@ its coordinate index in the axis branch, and the given source block with the
 coordinates preceding that index replaced by zero in the diagonal branch.
 Blueprint `lem:qld-sublines`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1063-1116`. -/
-def subLineSourceDirection (P : AdmissibleParams) (kind : LineKind)
-    (i : Fin P.m) (v : Fin P.m → PauliScalar P) : Fin P.m → PauliScalar P :=
+def subLineSourceDirection (kind : LineKind)
+    (i : Fin P.m) (v : MIPStarRE.QPBT.PauliPoint P) : MIPStarRE.QPBT.PauliPoint P :=
   match kind with
   | .axis => coordinateDirection i
   | .diagonal => prefixProjection (P := P.toLdParams) i v
@@ -180,19 +169,16 @@ def subLineSourceDirection (P : AdmissibleParams) (kind : LineKind)
 the line spanned by the direction of its source `X` line.  Blueprint
 `lem:qld-sublines`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1063-1116`. -/
-theorem projX_subLineExtDirection_mem_span (P : AdmissibleParams)
-    (kind : LineKind) (k : Fin (2 * P.m + 2))
-    (w : Fin P.extendedDirectLd.m → DirectScalarQ P.extendedDirectLd) :
+theorem projX_subLineExtDirection_mem_span
+
+     :
     projX (directPointToPauli P (subLineExtDirection P kind k w)) ∈
       Submodule.span (PauliScalar P)
         (Set.singleton (subLineSourceDirection P kind (subLineXIndex P k)
           (projX (directPointToPauli P w)))) := by
   rcases extendedCoordinate_cases P.m k with ⟨i, rfl⟩ | ⟨j, rfl⟩ | rfl | rfl <;>
     cases kind
-  · have hval : projX (directPointToPauli P
-        (coordinateDirection (embX P.m i))) =
-        (coordinateDirection i : Fin P.m → PauliScalar P) := by
-      exact (congrArg projX
+  · have hval  := (congrArg projX
         (directPointToPauli_coordinateDirection P (embX P.m i))).trans
           (projX_coordinateDirection_embX i)
     rw [subLineXIndex_embX]
@@ -201,13 +187,8 @@ theorem projX_subLineExtDirection_mem_span (P : AdmissibleParams)
     rw [hval]
     exact Submodule.mem_span_singleton_self _
   · rw [subLineXIndex_embX]
-    change projX (directPointToPauli P
-      (directPrefixProjection (D := P.extendedDirectLd) (embX P.m i) w)) ∈ _
-    rw [projX_directPrefixProjection_embX]
-    exact Submodule.mem_span_singleton_self _
-  · have hval : projX (directPointToPauli P
-        (coordinateDirection (embZ P.m j))) = 0 := by
-      exact (congrArg projX
+    aesop
+  · have hval  := (congrArg projX
         (directPointToPauli_coordinateDirection P (embZ P.m j))).trans
           (projX_coordinateDirection_embZ j)
     change projX (directPointToPauli P
@@ -218,9 +199,7 @@ theorem projX_subLineExtDirection_mem_span (P : AdmissibleParams)
       (directPrefixProjection (D := P.extendedDirectLd) (embZ P.m j) w)) ∈ _
     rw [projX_directPrefixProjection_embZ]
     exact Submodule.zero_mem _
-  · have hval : projX (directPointToPauli P
-        (coordinateDirection (alphaVar P.m))) = 0 := by
-      exact (congrArg projX
+  · have hval  := (congrArg projX
         (directPointToPauli_coordinateDirection P (alphaVar P.m))).trans
           projX_coordinateDirection_alphaVar
     change projX (directPointToPauli P
@@ -231,9 +210,7 @@ theorem projX_subLineExtDirection_mem_span (P : AdmissibleParams)
       (directPrefixProjection (D := P.extendedDirectLd) (alphaVar P.m) w)) ∈ _
     rw [projX_directPrefixProjection_alphaVar]
     exact Submodule.zero_mem _
-  · have hval : projX (directPointToPauli P
-        (coordinateDirection (betaVar P.m))) = 0 := by
-      exact (congrArg projX
+  · have hval  := (congrArg projX
         (directPointToPauli_coordinateDirection P (betaVar P.m))).trans
           projX_coordinateDirection_betaVar
     change projX (directPointToPauli P
@@ -251,18 +228,16 @@ branch at an `X`-block coordinate the `Z` block is untruncated, which is why
 the source `Z` line carries the first coordinate there.  Blueprint
 `lem:qld-sublines`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1063-1116`. -/
-theorem projZ_subLineExtDirection_mem_span (P : AdmissibleParams)
-    (kind : LineKind) (k : Fin (2 * P.m + 2))
-    (w : Fin P.extendedDirectLd.m → DirectScalarQ P.extendedDirectLd) :
+theorem projZ_subLineExtDirection_mem_span
+
+     :
     projZ (directPointToPauli P (subLineExtDirection P kind k w)) ∈
       Submodule.span (PauliScalar P)
         (Set.singleton (subLineSourceDirection P kind (subLineZIndex P k)
           (projZ (directPointToPauli P w)))) := by
   rcases extendedCoordinate_cases P.m k with ⟨i, rfl⟩ | ⟨j, rfl⟩ | rfl | rfl <;>
     cases kind
-  · have hval : projZ (directPointToPauli P
-        (coordinateDirection (embX P.m i))) = 0 := by
-      exact (congrArg projZ
+  · have hval  := (congrArg projZ
         (directPointToPauli_coordinateDirection P (embX P.m i))).trans
           (projZ_coordinateDirection_embX i)
     change projZ (directPointToPauli P
@@ -273,16 +248,8 @@ theorem projZ_subLineExtDirection_mem_span (P : AdmissibleParams)
     change projZ (directPointToPauli P
       (directPrefixProjection (D := P.extendedDirectLd) (embX P.m i) w)) ∈ _
     rw [projZ_directPrefixProjection_embX]
-    change _ ∈ Submodule.span (PauliScalar P)
-      (Set.singleton (prefixProjection (P := P.toLdParams) (subLineFirstIndex P)
-        (projZ (directPointToPauli P w))))
-    rw [prefixProjection_of_val_zero (L := P.toLdParams)
-      (i := subLineFirstIndex P) rfl]
-    exact Submodule.mem_span_singleton_self _
-  · have hval : projZ (directPointToPauli P
-        (coordinateDirection (embZ P.m j))) =
-        (coordinateDirection j : Fin P.m → PauliScalar P) := by
-      exact (congrArg projZ
+    aesop
+  · have hval  := (congrArg projZ
         (directPointToPauli_coordinateDirection P (embZ P.m j))).trans
           (projZ_coordinateDirection_embZ j)
     rw [subLineZIndex_embZ]
@@ -295,9 +262,7 @@ theorem projZ_subLineExtDirection_mem_span (P : AdmissibleParams)
       (directPrefixProjection (D := P.extendedDirectLd) (embZ P.m j) w)) ∈ _
     rw [projZ_directPrefixProjection_embZ]
     exact Submodule.mem_span_singleton_self _
-  · have hval : projZ (directPointToPauli P
-        (coordinateDirection (alphaVar P.m))) = 0 := by
-      exact (congrArg projZ
+  · have hval  := (congrArg projZ
         (directPointToPauli_coordinateDirection P (alphaVar P.m))).trans
           projZ_coordinateDirection_alphaVar
     change projZ (directPointToPauli P
@@ -308,9 +273,7 @@ theorem projZ_subLineExtDirection_mem_span (P : AdmissibleParams)
       (directPrefixProjection (D := P.extendedDirectLd) (alphaVar P.m) w)) ∈ _
     rw [projZ_directPrefixProjection_alphaVar]
     exact Submodule.zero_mem _
-  · have hval : projZ (directPointToPauli P
-        (coordinateDirection (betaVar P.m))) = 0 := by
-      exact (congrArg projZ
+  · have hval  := (congrArg projZ
         (directPointToPauli_coordinateDirection P (betaVar P.m))).trans
           projZ_coordinateDirection_betaVar
     change projZ (directPointToPauli P
@@ -330,11 +293,11 @@ of its `X` block in the direction of the source `X` line, as soon as the `X`
 block of the extended direction lies in the line spanned by the source
 direction.  Blueprint `lem:qld-sublines`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1063-1116`. -/
-theorem lineRepMap_projX_directPointToPauli_lineRepMap (P : AdmissibleParams)
+theorem lineRepMap_projX_directPointToPauli_lineRepMap
     (v x : Fin P.extendedDirectLd.m → DirectScalarQ P.extendedDirectLd)
-    (dX : Fin P.m → PauliScalar P)
+    (dX : MIPStarRE.QPBT.PauliPoint P)
     (hdir : projX (directPointToPauli P v) ∈
-      Submodule.span (PauliScalar P) ({dX} : Set (Fin P.m → PauliScalar P))) :
+      Submodule.span (PauliScalar P) ({dX} : Set (MIPStarRE.QPBT.PauliPoint P))) :
     lineRepMap dX (projX (directPointToPauli P (lineRepMap v x))) =
       lineRepMap dX (projX (directPointToPauli P x)) := by
   obtain ⟨t, ht⟩ := Submodule.mem_span_singleton.mp (sub_lineRepMap_mem_span v x)
@@ -357,11 +320,11 @@ of its `Z` block in the direction of the source `Z` line, as soon as the `Z`
 block of the extended direction lies in the line spanned by the source
 direction.  Blueprint `lem:qld-sublines`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1063-1116`. -/
-theorem lineRepMap_projZ_directPointToPauli_lineRepMap (P : AdmissibleParams)
+theorem lineRepMap_projZ_directPointToPauli_lineRepMap
     (v x : Fin P.extendedDirectLd.m → DirectScalarQ P.extendedDirectLd)
-    (dZ : Fin P.m → PauliScalar P)
+    (dZ : MIPStarRE.QPBT.PauliPoint P)
     (hdir : projZ (directPointToPauli P v) ∈
-      Submodule.span (PauliScalar P) ({dZ} : Set (Fin P.m → PauliScalar P))) :
+      Submodule.span (PauliScalar P) ({dZ} : Set (MIPStarRE.QPBT.PauliPoint P))) :
     lineRepMap dZ (projZ (directPointToPauli P (lineRepMap v x))) =
       lineRepMap dZ (projZ (directPointToPauli P x)) := by
   obtain ⟨t, ht⟩ := Submodule.mem_span_singleton.mp (sub_lineRepMap_mem_span v x)

@@ -1,5 +1,7 @@
 module
 
+public meta import Batteries.Tactic.Alias
+
 public import QPBT.Test.SoundnessDefs
 public import QPBT.Test.Soundness.RangeProjection
 public import QPBT.Test.Soundness.Ancilla
@@ -54,18 +56,7 @@ The paper's asymptotic constants are encoded by the explicit `deltaQld`
 functional; the squared operator distances use the quantitative convention of
 blueprint `def:povm-distance`.
 -/
-theorem pauli_soundness :
-    ∃ a b : ℝ, 1 ≤ a ∧ 0 < b ∧ b < 1 ∧
-      ∀ (P : AdmissibleParams) (ε : ℝ), 0 ≤ ε →
-        ∀ S : Strategy (pauliBasisTest P), 1 - ε ≤ S.value →
-          ∃ w : PauliSoundnessWitness P S,
-            ‖isometryTensor w.φA w.φB S.ψ - idealState P w.aux‖ ≤
-                deltaQld a b ε P.m P.d P.q ∧
-            (∀ W : PauliKind,
-              rawPauliOperatorDistanceA P S w W ≤ deltaQld a b ε P.m P.d P.q) ∧
-            (∀ W : PauliKind,
-              rawPauliOperatorDistanceB P S w W ≤ deltaQld a b ε P.m P.d P.q) := by
-  exact exists_arbitrary_strategy_raw_isometry_bounds
+alias pauli_soundness := MIPStarRE.QPBT.exists_arbitrary_strategy_raw_isometry_bounds
 
 end
 

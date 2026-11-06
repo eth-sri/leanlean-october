@@ -17,7 +17,7 @@ proof of the adopted statement in
 
 @[expose] public section
 
-open scoped BigOperators MatrixOrder Matrix ComplexOrder
+open scoped BigOperators MatrixOrder Matrix ComplexOrder Classical
 
 namespace MIPStarRE.QPBT
 
@@ -42,11 +42,10 @@ private theorem pinched_sum_eq_one {Γ₂ R₁ ι : Type*} [Fintype Γ₂]
     [DecidableEq Γ₂] [Fintype R₁] [DecidableEq R₁] [Fintype ι] [DecidableEq ι]
     (G : Measurement Γ₂ ι) (P : Measurement R₁ ι)
     (hG : MIPStarRE.QPBT.Measurement.IsProjective G) :
-    (∑ a : R₁, ∑ g : Γ₂, G.effect g * P.effect a * G.effect g) = 1 := by
-  classical
+     ∑ a : R₁, ∑ g : Γ₂, G.effect g * P.effect a * G.effect g  = 1 := by
   rw [Finset.sum_comm]
   calc
-    (∑ g : Γ₂, ∑ a : R₁, G.effect g * P.effect a * G.effect g) =
+     ∑ g : Γ₂, ∑ a : R₁, G.effect g * P.effect a * G.effect g  =
         ∑ g : Γ₂, G.effect g * (∑ a : R₁, P.effect a) * G.effect g := by
       refine Finset.sum_congr rfl fun g _ => ?_
       rw [Finset.mul_sum, Finset.sum_mul]
@@ -70,40 +69,39 @@ theorem consistencyDefect_pasted_le_marginal_add_pinched
     (D : Distribution ((X × Y₁) × Y₂))
     (eval₁ : Γ₁ → Y₁ → R₁) (eval₂ : Γ₂ → Y₂ → R₂)
     (G₁ : X → Measurement Γ₁ ι) (G₂ : X → Measurement Γ₂ ι)
-    (A : ((X × Y₁) × Y₂) → Measurement (R₁ × R₂) ι)
-    (ψ : EuclideanSpace ℂ (ι × ι)) (hψ : ‖ψ‖ = 1)
+    (A :  (X × Y₁) × Y₂  → Measurement (R₁ × R₂) ι)
+    (ψ : MIPStarRE.QPBT.StateVector (ι × ι)) (hψ : ‖ψ‖ = 1)
     (hG₂ : ∀ x, MIPStarRE.QPBT.Measurement.IsProjective (G₂ x)) :
     consistencyDefect D (fun q a => heteroKron ((A q).effect a) 1)
         (fun q a => heteroKron 1 (∑ g₁ : Γ₁, ∑ g₂ : Γ₂,
           if (eval₁ g₁ q.1.2, eval₂ g₂ q.2) = a then
-            pastedMeasurement (fun g => (G₁ q.1.1).effect g)
-              (fun g => (G₂ q.1.1).effect g) g₁ g₂ else 0)) ψ ≤
+            pastedMeasurement   (G₁ q.1.1).effect  
+                (G₂ q.1.1).effect   g₁ g₂ else 0)) ψ ≤
       consistencyDefect D
         (fun q a₂ => heteroKron (((A q).postprocess Prod.snd).effect a₂) 1)
         (fun q a₂ => heteroKron 1 (((G₂ q.1.1).postprocess
-          (fun g => eval₂ g q.2)).effect a₂)) ψ +
+           fun g => eval₂ g q.2 ).effect a₂)) ψ +
       consistencyDefect D
         (fun q a₁ => heteroKron (((A q).postprocess Prod.fst).effect a₁) 1)
         (fun q a₁ => heteroKron 1 (∑ g : Γ₂, (G₂ q.1.1).effect g *
-          ((G₁ q.1.1).postprocess (fun g' => eval₁ g' q.1.2)).effect a₁ *
+          ((G₁ q.1.1).postprocess  fun g' => eval₁ g' q.1.2 ).effect a₁ *
           (G₂ q.1.1).effect g)) ψ := by
-  classical
-  set Pm : ((X × Y₁) × Y₂) → Measurement R₁ ι :=
-    fun q => (G₁ q.1.1).postprocess (fun g => eval₁ g q.1.2) with hPm
-  set Qm : ((X × Y₁) × Y₂) → Measurement R₂ ι :=
-    fun q => (G₂ q.1.1).postprocess (fun g => eval₂ g q.2) with hQm
-  set paste : ((X × Y₁) × Y₂) → (R₁ × R₂) → Op ι := fun q a =>
+  set Pm :  (X × Y₁) × Y₂  → Measurement R₁ ι :=
+    fun q => (G₁ q.1.1).postprocess  fun g => eval₁ g q.1.2  with hPm
+  set Qm :  (X × Y₁) × Y₂  → Measurement R₂ ι :=
+    fun q => (G₂ q.1.1).postprocess  fun g => eval₂ g q.2  with hQm
+  set paste :  (X × Y₁) × Y₂  →  R₁ × R₂  → Op ι := fun q a =>
     ∑ g₁ : Γ₁, ∑ g₂ : Γ₂,
       if (eval₁ g₁ q.1.2, eval₂ g₂ q.2) = a then
-        pastedMeasurement (fun g => (G₁ q.1.1).effect g)
-          (fun g => (G₂ q.1.1).effect g) g₁ g₂ else 0 with hpaste
-  set pinch : ((X × Y₁) × Y₂) → R₁ → Op ι := fun q a₁ =>
+        pastedMeasurement   (G₁ q.1.1).effect  
+            (G₂ q.1.1).effect   g₁ g₂ else 0 with hpaste
+  set pinch :  (X × Y₁) × Y₂  → R₁ → Op ι := fun q a₁ =>
     ∑ g : Γ₂, (G₂ q.1.1).effect g * (Pm q).effect a₁ * (G₂ q.1.1).effect g
     with hpinch
   -- the pasted family, restricted to a fixed pair, is a conjugated coarse effect
   have hpasteEq : ∀ (q : (X × Y₁) × Y₂) (a₁ : R₁) (a₂ : R₂),
       paste q (a₁, a₂) =
-        ∑ g ∈ Finset.univ.filter (fun g => eval₂ g q.2 = a₂),
+        ∑ g ∈ Finset.univ.filter  fun g => eval₂ g q.2 = a₂ ,
           (G₂ q.1.1).effect g * (Pm q).effect a₁ * (G₂ q.1.1).effect g := by
     intro q a₁ a₂
     simp only [hpaste, pastedMeasurement, hPm, Measurement.postprocess_effect]
@@ -120,17 +118,17 @@ theorem consistencyDefect_pasted_le_marginal_add_pinched
     intro q a₁
     exact Finset.sum_nonneg fun g _ =>
       conj_effect_nonneg (G₂ q.1.1) g ((Pm q).pos a₁)
-  have hpinchSum : ∀ q : (X × Y₁) × Y₂, (∑ a₁ : R₁, pinch q a₁) = 1 := by
+  have hpinchSum : ∀ q : (X × Y₁) × Y₂,  ∑ a₁ : R₁, pinch q a₁  = 1 := by
     intro q
     exact pinched_sum_eq_one (G₂ q.1.1) (Pm q) (hG₂ q.1.1)
-  have hpasteSum : ∀ q : (X × Y₁) × Y₂, (∑ a : R₁ × R₂, paste q a) = 1 := by
+  have hpasteSum : ∀ q : (X × Y₁) × Y₂,  ∑ a : R₁ × R₂, paste q a  = 1 := by
     intro q
     rw [Fintype.sum_prod_type]
-    have h : ∀ a₁ : R₁, (∑ a₂ : R₂, paste q (a₁, a₂)) = pinch q a₁ := by
+    have h : ∀ a₁ : R₁,  ∑ a₂ : R₂, paste q (a₁, a₂)  = pinch q a₁ := by
       intro a₁
       simp only [hpinch]
       rw [← Finset.sum_fiberwise Finset.univ (fun g => eval₂ g q.2)
-        (fun g => (G₂ q.1.1).effect g * (Pm q).effect a₁ * (G₂ q.1.1).effect g)]
+         fun g => (G₂ q.1.1).effect g * (Pm q).effect a₁ * (G₂ q.1.1).effect g ]
       exact Finset.sum_congr rfl fun a₂ _ => hpasteEq q a₁ a₂
     rw [Finset.sum_congr rfl fun a₁ (_ : a₁ ∈ Finset.univ) => h a₁]
     exact hpinchSum q
@@ -143,29 +141,29 @@ theorem consistencyDefect_pasted_le_marginal_add_pinched
   -- the exact operator identity of the reduction
   have hdiff : ∀ (q : (X × Y₁) × Y₂) (a₁ : R₁) (a₂ : R₂),
       (1 : Op ι) + paste q (a₁, a₂) - ((Qm q).effect a₂ + pinch q a₁) =
-        ∑ g ∈ Finset.univ.filter (fun g => ¬ eval₂ g q.2 = a₂),
+        ∑ g ∈ Finset.univ.filter  fun g => ¬ eval₂ g q.2 = a₂ ,
           (G₂ q.1.1).effect g * (1 - (Pm q).effect a₁) * (G₂ q.1.1).effect g := by
     intro q a₁ a₂
     have hsplit1 : (1 : Op ι) =
-        (∑ g ∈ Finset.univ.filter (fun g => eval₂ g q.2 = a₂), (G₂ q.1.1).effect g) +
-        ∑ g ∈ Finset.univ.filter (fun g => ¬ eval₂ g q.2 = a₂), (G₂ q.1.1).effect g := by
+         ∑ g ∈ Finset.univ.filter  fun g => eval₂ g q.2 = a₂ , (G₂ q.1.1).effect g  +
+        ∑ g ∈ Finset.univ.filter  fun g => ¬ eval₂ g q.2 = a₂ , (G₂ q.1.1).effect g := by
       rw [Finset.sum_filter_add_sum_filter_not]
       exact ((G₂ q.1.1).sum_eq_one).symm
     have hQ : (Qm q).effect a₂ =
-        ∑ g ∈ Finset.univ.filter (fun g => eval₂ g q.2 = a₂), (G₂ q.1.1).effect g := by
+        ∑ g ∈ Finset.univ.filter  fun g => eval₂ g q.2 = a₂ , (G₂ q.1.1).effect g := by
       simp only [hQm]
       exact Measurement.postprocess_effect (G₂ q.1.1) (fun g => eval₂ g q.2) a₂
     have hpi : pinch q a₁ =
-        (∑ g ∈ Finset.univ.filter (fun g => eval₂ g q.2 = a₂),
-          (G₂ q.1.1).effect g * (Pm q).effect a₁ * (G₂ q.1.1).effect g) +
-        ∑ g ∈ Finset.univ.filter (fun g => ¬ eval₂ g q.2 = a₂),
+         ∑ g ∈ Finset.univ.filter  fun g => eval₂ g q.2 = a₂ ,
+          (G₂ q.1.1).effect g * (Pm q).effect a₁ * (G₂ q.1.1).effect g  +
+        ∑ g ∈ Finset.univ.filter  fun g => ¬ eval₂ g q.2 = a₂ ,
           (G₂ q.1.1).effect g * (Pm q).effect a₁ * (G₂ q.1.1).effect g := by
       simp only [hpinch]
       rw [Finset.sum_filter_add_sum_filter_not]
-    have hrhs : (∑ g ∈ Finset.univ.filter (fun g => ¬ eval₂ g q.2 = a₂),
-          (G₂ q.1.1).effect g * (1 - (Pm q).effect a₁) * (G₂ q.1.1).effect g) =
-        (∑ g ∈ Finset.univ.filter (fun g => ¬ eval₂ g q.2 = a₂), (G₂ q.1.1).effect g) -
-        ∑ g ∈ Finset.univ.filter (fun g => ¬ eval₂ g q.2 = a₂),
+    have hrhs :  ∑ g ∈ Finset.univ.filter  fun g => ¬ eval₂ g q.2 = a₂ ,
+          (G₂ q.1.1).effect g * (1 - (Pm q).effect a₁) * (G₂ q.1.1).effect g  =
+         ∑ g ∈ Finset.univ.filter  fun g => ¬ eval₂ g q.2 = a₂ , (G₂ q.1.1).effect g  -
+        ∑ g ∈ Finset.univ.filter  fun g => ¬ eval₂ g q.2 = a₂ ,
           (G₂ q.1.1).effect g * (Pm q).effect a₁ * (G₂ q.1.1).effect g := by
       rw [← Finset.sum_sub_distrib]
       refine Finset.sum_congr rfl fun g _ => ?_
@@ -196,7 +194,7 @@ theorem consistencyDefect_pasted_le_marginal_add_pinched
     have hid : applyOperatorToState (1 : Op (ι × ι)) ψ = ψ := by
       simp [applyOperatorToState]
     rw [stateQForm, hid]
-    simpa using (inner_self_eq_norm_sq (𝕜 := ℂ) ψ)
+    simpa using  inner_self_eq_norm_sq (𝕜 := ℂ) ψ 
   have hA1 : ∀ (q : (X × Y₁) × Y₂) (a₁ : R₁),
       ((A q).postprocess Prod.fst).effect a₁ = ∑ a₂ : R₂, (A q).effect (a₁, a₂) := by
     intro q a₁
@@ -213,9 +211,9 @@ theorem consistencyDefect_pasted_le_marginal_add_pinched
     intro q a₂
     rw [Measurement.postprocess_effect, Finset.sum_filter, Fintype.sum_prod_type]
     exact Finset.sum_congr rfl fun b₁ _ => by simp
-  let pasteM : ((X × Y₁) × Y₂) → Measurement (R₁ × R₂) ι := fun q =>
+  let pasteM :  (X × Y₁) × Y₂  → Measurement (R₁ × R₂) ι := fun q =>
     MIPStarRE.Quantum.Measurement.ofSumEqOne (paste q) (hpastePos q) (hpasteSum q)
-  let pinchM : ((X × Y₁) × Y₂) → Measurement R₁ ι := fun q =>
+  let pinchM  := fun q =>
     MIPStarRE.Quantum.Measurement.ofSumEqOne (pinch q) (hpinchPos q) (hpinchSum q)
   have hL := SandwichProduct.consistencyDefect_placed_eq_avg_point D A pasteM ψ
   simp only [pasteM, MIPStarRE.Quantum.Measurement.ofSumEqOne] at hL
@@ -252,24 +250,24 @@ theorem consistencyDefect_pasted_le_marginal_add_pinched
       MIPStarRE.Quantum.Measurement.ofSumEqOne] at e2
     simp_rw [placed_product_stateQForm_eq] at e2
     rw [e0, e1, e2, hψ, one_pow]
-    have hunit : (∑ a : R₁ × R₂, stateQForm ψ (heteroKron ((A q).effect a) 1)) = 1 := by
+    have hunit :  ∑ a : R₁ × R₂, stateQForm ψ (heteroKron ((A q).effect a) 1)  = 1 := by
       rw [← stateQForm_finset_sum, ← heteroKron_finset_sum_left, (A q).sum_eq_one,
         heteroKron_one_one, hone, hψ, one_pow]
     have hpair : ∀ F : R₁ → R₂ → Op ι,
-        (∑ a : R₁ × R₂, stateQForm ψ (heteroKron ((A q).effect a) (F a.1 a.2))) =
+         ∑ a : R₁ × R₂, stateQForm ψ (heteroKron ((A q).effect a) (F a.1 a.2))  =
           ∑ a₁ : R₁, ∑ a₂ : R₂,
             stateQForm ψ (heteroKron ((A q).effect (a₁, a₂)) (F a₁ a₂)) := by
       intro F
       rw [Fintype.sum_prod_type]
-    have hs1 : (∑ a₂ : R₂, stateQForm ψ
-        (heteroKron (((A q).postprocess Prod.snd).effect a₂) ((Qm q).effect a₂))) =
+    have hs1 :  ∑ a₂ : R₂, stateQForm ψ
+        (heteroKron (((A q).postprocess Prod.snd).effect a₂) ((Qm q).effect a₂))  =
         ∑ a₁ : R₁, ∑ a₂ : R₂,
           stateQForm ψ (heteroKron ((A q).effect (a₁, a₂)) ((Qm q).effect a₂)) := by
       rw [Finset.sum_comm]
       refine Finset.sum_congr rfl fun a₂ _ => ?_
       rw [hA2 q a₂, heteroKron_finset_sum_left, stateQForm_finset_sum]
-    have hs2 : (∑ a₁ : R₁, stateQForm ψ
-        (heteroKron (((A q).postprocess Prod.fst).effect a₁) (pinch q a₁))) =
+    have hs2 :  ∑ a₁ : R₁, stateQForm ψ
+        (heteroKron (((A q).postprocess Prod.fst).effect a₁) (pinch q a₁))  =
         ∑ a₁ : R₁, ∑ a₂ : R₂,
           stateQForm ψ (heteroKron ((A q).effect (a₁, a₂)) (pinch q a₁)) := by
       refine Finset.sum_congr rfl fun a₁ _ => ?_
@@ -284,21 +282,21 @@ theorem consistencyDefect_pasted_le_marginal_add_pinched
       rw [heteroKron_add_right, stateQForm_add, heteroKron_add_right,
         stateQForm_add] at hl
       exact hl
-    have hsum : (∑ a₁ : R₁, ∑ a₂ : R₂,
-          stateQForm ψ (heteroKron ((A q).effect (a₁, a₂)) ((Qm q).effect a₂))) +
-        (∑ a₁ : R₁, ∑ a₂ : R₂,
-          stateQForm ψ (heteroKron ((A q).effect (a₁, a₂)) (pinch q a₁))) ≤
-        (∑ a₁ : R₁, ∑ a₂ : R₂,
-          stateQForm ψ (heteroKron ((A q).effect (a₁, a₂)) 1)) +
-        (∑ a₁ : R₁, ∑ a₂ : R₂,
-          stateQForm ψ (heteroKron ((A q).effect (a₁, a₂)) (paste q (a₁, a₂)))) := by
+    have hsum :  ∑ a₁ : R₁, ∑ a₂ : R₂,
+          stateQForm ψ (heteroKron ((A q).effect (a₁, a₂)) ((Qm q).effect a₂))  +
+         ∑ a₁ : R₁, ∑ a₂ : R₂,
+          stateQForm ψ (heteroKron ((A q).effect (a₁, a₂)) (pinch q a₁))  ≤
+         ∑ a₁ : R₁, ∑ a₂ : R₂,
+          stateQForm ψ (heteroKron ((A q).effect (a₁, a₂)) 1)  +
+         ∑ a₁ : R₁, ∑ a₂ : R₂,
+          stateQForm ψ (heteroKron ((A q).effect (a₁, a₂)) (paste q (a₁, a₂)))  := by
       rw [← Finset.sum_add_distrib, ← Finset.sum_add_distrib]
       refine Finset.sum_le_sum fun a₁ _ => ?_
       rw [← Finset.sum_add_distrib, ← Finset.sum_add_distrib]
       exact Finset.sum_le_sum fun a₂ _ => hterm a₁ a₂
     rw [hs1, hs2]
-    rw [hpair (fun _ _ => 1)] at hunit
-    rw [hpair (fun a₁ a₂ => paste q (a₁, a₂))]
+    rw [hpair  fun _ _ => 1 ] at hunit
+    rw [hpair  fun a₁ a₂ => paste q (a₁, a₂) ]
     linarith
   exact hmain
 
@@ -313,7 +311,7 @@ private theorem abs_pinch_overlap_gap_le_sqrt {R₁ Γ₂ ι : Type*}
     [Fintype R₁] [DecidableEq R₁] [Fintype Γ₂] [DecidableEq Γ₂]
     [Fintype ι] [DecidableEq ι]
     (A P : Measurement R₁ ι) (G : Measurement Γ₂ ι)
-    (ψ : EuclideanSpace ℂ (ι × ι)) (hψ : ‖ψ‖ = 1)
+    (ψ : MIPStarRE.QPBT.StateVector (ι × ι)) (hψ : ‖ψ‖ = 1)
     (hA : MIPStarRE.QPBT.Measurement.IsProjective A)
     (hG : MIPStarRE.QPBT.Measurement.IsProjective G) :
     |∑ a : R₁, (stateQForm ψ (heteroKron (A.effect a) (P.effect a)) -
@@ -322,9 +320,8 @@ private theorem abs_pinch_overlap_gap_le_sqrt {R₁ Γ₂ ι : Type*}
       Real.sqrt (∑ a : R₁, ∑ g : Γ₂,
         ‖applyOperatorToState (heteroKron 1
           (P.effect a * G.effect g - G.effect g * P.effect a)) ψ‖ ^ 2) := by
-  classical
   -- the two inlined identities of the distance calculus; see issue Dengnifer/MIPStarRE-QPBT-bak#204
-  have happ : ∀ (M N : Op (ι × ι)) (v : EuclideanSpace ℂ (ι × ι)),
+  have happ : ∀ (M N : Op (ι × ι)) (v : MIPStarRE.QPBT.StateVector (ι × ι)),
       applyOperatorToState (M * N) v =
         applyOperatorToState M (applyOperatorToState N v) := by
     intro M N v
@@ -354,13 +351,13 @@ private theorem abs_pinch_overlap_gap_le_sqrt {R₁ Γ₂ ι : Type*}
     simp [stateQForm, applyOperatorToState]
   -- the commutator rearrangement of the pinching defect
   have hterm : ∀ a : R₁, P.effect a -
-      (∑ g : Γ₂, G.effect g * P.effect a * G.effect g) =
+       ∑ g : Γ₂, G.effect g * P.effect a * G.effect g  =
       ∑ g : Γ₂, (P.effect a * G.effect g - G.effect g * P.effect a) * G.effect g := by
     intro a
-    have h1 : (∑ g : Γ₂, P.effect a * G.effect g) = P.effect a := by
+    have h1 :  ∑ g : Γ₂, P.effect a * G.effect g  = P.effect a := by
       rw [← Finset.mul_sum, G.sum_eq_one, mul_one]
     calc P.effect a - ∑ g : Γ₂, G.effect g * P.effect a * G.effect g
-        = (∑ g : Γ₂, P.effect a * G.effect g) -
+        =  ∑ g : Γ₂, P.effect a * G.effect g  -
             ∑ g : Γ₂, G.effect g * P.effect a * G.effect g := by rw [h1]
       _ = ∑ g : Γ₂, (P.effect a * G.effect g - G.effect g * P.effect a * G.effect g) := by
             rw [← Finset.sum_sub_distrib]
@@ -384,14 +381,14 @@ private theorem abs_pinch_overlap_gap_le_sqrt {R₁ Γ₂ ι : Type*}
       (fun p => kronecker_nonneg (A.pos p.1) (G.pos p.2))
       (by
         rw [Fintype.sum_prod_type]
-        rw [show (∑ a : R₁, ∑ g : Γ₂, heteroKron (A.effect a) (G.effect g)) =
+        rw [show  ∑ a : R₁, ∑ g : Γ₂, heteroKron (A.effect a) (G.effect g)  =
             ∑ a : R₁, heteroKron (A.effect a) (1 : Op ι) from
           Finset.sum_congr rfl fun a _ => by
             rw [← heteroKron_finset_sum_right, G.sum_eq_one]]
         rw [← heteroKron_finset_sum_left, A.sum_eq_one, heteroKron_one_one])
-  have hmass : (∑ p : R₁ × Γ₂,
-      ‖applyOperatorToState (heteroKron (A.effect p.1) (G.effect p.2)) ψ‖ ^ 2) ≤ 1 := by
-    have h := sum_norm_mul_apply_le (fun p : R₁ × Γ₂ => M.effect p) (1 : Op (ι × ι)) ψ
+  have hmass :  ∑ p : R₁ × Γ₂,
+      ‖applyOperatorToState (heteroKron (A.effect p.1) (G.effect p.2)) ψ‖ ^ 2  ≤ 1 := by
+    have h := sum_norm_mul_apply_le M.effect (1 : Op (ι × ι)) ψ
       (MIPStarRE.QPBT.measurement_sum_adjoint_mul_le_one M)
     simp only [M, MIPStarRE.Quantum.Measurement.ofSumEqOne, mul_one] at h
     rw [hone1, hψ, one_pow] at h
@@ -434,17 +431,11 @@ private theorem abs_pinch_overlap_gap_le_sqrt {R₁ Γ₂ ι : Type*}
       ‖applyOperatorToState (heteroKron (A.effect a)
           (P.effect a * G.effect g - G.effect g * P.effect a))ᴴ ψ‖ =
         ‖applyOperatorToState (heteroKron (A.effect a)
-          (P.effect a * G.effect g - G.effect g * P.effect a)) ψ‖ := by
-    intro a g
-    rw [hXH a g, show applyOperatorToState (-(heteroKron (A.effect a)
-        (P.effect a * G.effect g - G.effect g * P.effect a))) ψ =
-        -applyOperatorToState (heteroKron (A.effect a)
-          (P.effect a * G.effect g - G.effect g * P.effect a)) ψ by
-      simp [applyOperatorToState], norm_neg]
+          (P.effect a * G.effect g - G.effect g * P.effect a)) ψ‖ := by simp_all [applyOperatorToState]
   -- the pointwise expansion of the gap
-  have hexpand : (∑ a : R₁, (stateQForm ψ (heteroKron (A.effect a) (P.effect a)) -
+  have hexpand :  ∑ a : R₁, (stateQForm ψ (heteroKron (A.effect a) (P.effect a)) -
       stateQForm ψ (heteroKron (A.effect a)
-        (∑ g : Γ₂, G.effect g * P.effect a * G.effect g)))) =
+        (∑ g : Γ₂, G.effect g * P.effect a * G.effect g)))  =
       ∑ p : R₁ × Γ₂, stateQForm ψ (heteroKron (A.effect p.1)
         ((P.effect p.1 * G.effect p.2 - G.effect p.2 * P.effect p.1) *
           G.effect p.2)) := by
@@ -452,10 +443,10 @@ private theorem abs_pinch_overlap_gap_le_sqrt {R₁ Γ₂ ι : Type*}
     refine Finset.sum_congr rfl fun a _ => ?_
     rw [← hqsub, ← heteroKron_sub_right, hterm a, heteroKron_finset_sum_right,
       stateQForm_finset_sum]
-  set u : R₁ × Γ₂ → EuclideanSpace ℂ (ι × ι) := fun p =>
+  set u : R₁ × Γ₂ → MIPStarRE.QPBT.StateVector (ι × ι) := fun p =>
     applyOperatorToState (heteroKron (A.effect p.1)
       (P.effect p.1 * G.effect p.2 - G.effect p.2 * P.effect p.1)) ψ with hu
-  set v : R₁ × Γ₂ → EuclideanSpace ℂ (ι × ι) := fun p =>
+  set v : R₁ × Γ₂ → MIPStarRE.QPBT.StateVector (ι × ι) := fun p =>
     applyOperatorToState (heteroKron (A.effect p.1) (G.effect p.2)) ψ with hv
   have hpoint : ∀ p : R₁ × Γ₂,
       |stateQForm ψ (heteroKron (A.effect p.1)
@@ -467,8 +458,8 @@ private theorem abs_pinch_overlap_gap_le_sqrt {R₁ Γ₂ ι : Type*}
     refine le_trans (norm_inner_le_norm _ _) ?_
     rw [hu, hv, hnormXH p.1 p.2]
   rw [hexpand]
-  have hsum2 : (∑ a : R₁, ∑ g : Γ₂, ‖applyOperatorToState (heteroKron 1
-      (P.effect a * G.effect g - G.effect g * P.effect a)) ψ‖ ^ 2) =
+  have hsum2 :  ∑ a : R₁, ∑ g : Γ₂, ‖applyOperatorToState (heteroKron 1
+      (P.effect a * G.effect g - G.effect g * P.effect a)) ψ‖ ^ 2  =
       ∑ p : R₁ × Γ₂, ‖applyOperatorToState (heteroKron 1
         (P.effect p.1 * G.effect p.2 - G.effect p.2 * P.effect p.1)) ψ‖ ^ 2 := by
     rw [Fintype.sum_prod_type]
@@ -483,7 +474,7 @@ private theorem abs_pinch_overlap_gap_le_sqrt {R₁ Γ₂ ι : Type*}
     _ ≤ Real.sqrt (∑ p : R₁ × Γ₂, ‖u p‖ ^ 2) *
           Real.sqrt (∑ p : R₁ × Γ₂, ‖v p‖ ^ 2) := by
         simpa using Real.sum_mul_le_sqrt_mul_sqrt
-          (Finset.univ : Finset (R₁ × Γ₂)) (fun p => ‖u p‖) (fun p => ‖v p‖)
+          (Finset.univ : Finset (R₁ × Γ₂)) (fun p => ‖u p‖)  fun p => ‖v p‖ 
     _ ≤ Real.sqrt (∑ p : R₁ × Γ₂, ‖applyOperatorToState (heteroKron 1
           (P.effect p.1 * G.effect p.2 - G.effect p.2 * P.effect p.1)) ψ‖ ^ 2) * 1 := by
         refine mul_le_mul ?_ ?_ (Real.sqrt_nonneg _) (Real.sqrt_nonneg _)
@@ -508,8 +499,8 @@ theorem consistencyDefect_pinched_le_marginal_add_sqrt
     [Fintype Y₂] [DecidableEq Y₂] [Fintype R₁] [DecidableEq R₁]
     [Fintype Γ₂] [DecidableEq Γ₂] [Fintype ι] [DecidableEq ι]
     (D : Distribution ((X × Y₁) × Y₂)) (G₂ : X → Measurement Γ₂ ι)
-    (P A : ((X × Y₁) × Y₂) → Measurement R₁ ι)
-    (ψ : EuclideanSpace ℂ (ι × ι)) (K : ℝ)
+    (P A :  (X × Y₁) × Y₂  → Measurement R₁ ι)
+    (ψ : MIPStarRE.QPBT.StateVector (ι × ι)) (K : ℝ)
     (hD : D.IsProbability) (hψ : ‖ψ‖ = 1)
     (hA : ∀ q, MIPStarRE.QPBT.Measurement.IsProjective (A q))
     (hG₂ : ∀ x, MIPStarRE.QPBT.Measurement.IsProjective (G₂ x))
@@ -521,8 +512,7 @@ theorem consistencyDefect_pinched_le_marginal_add_sqrt
           (G₂ q.1.1).effect g)) ψ ≤
       consistencyDefect D (fun q a => heteroKron ((A q).effect a) 1)
         (fun q a => heteroKron 1 ((P q).effect a)) ψ + Real.sqrt K := by
-  classical
-  let pinchM : ((X × Y₁) × Y₂) → Measurement R₁ ι := fun q =>
+  let pinchM  := fun q =>
     MIPStarRE.Quantum.Measurement.ofSumEqOne
       (fun a => ∑ g : Γ₂, (G₂ q.1.1).effect g * (P q).effect a * (G₂ q.1.1).effect g)
       (fun a => Finset.sum_nonneg fun g _ =>
@@ -538,31 +528,23 @@ theorem consistencyDefect_pinched_le_marginal_add_sqrt
     pinchM, MIPStarRE.Quantum.Measurement.ofSumEqOne] at e1 e2
   simp_rw [placed_product_stateQForm_eq] at e1 e2
   rw [e1, e2]
-  set OP : ((X × Y₁) × Y₂) → ℝ := fun q =>
+  set OP :  (X × Y₁) × Y₂  → ℝ := fun q =>
     ∑ a : R₁, stateQForm ψ (heteroKron ((A q).effect a) ((P q).effect a)) with hOP
-  set OQ : ((X × Y₁) × Y₂) → ℝ := fun q =>
+  set OQ :  (X × Y₁) × Y₂  → ℝ := fun q =>
     ∑ a : R₁, stateQForm ψ (heteroKron ((A q).effect a)
       (∑ g : Γ₂, (G₂ q.1.1).effect g * (P q).effect a * (G₂ q.1.1).effect g)) with hOQ
-  set CM : ((X × Y₁) × Y₂) → ℝ := fun q => ∑ a : R₁, ∑ g : Γ₂,
+  set CM :  (X × Y₁) × Y₂  → ℝ := fun q => ∑ a : R₁, ∑ g : Γ₂,
     ‖applyOperatorToState (heteroKron 1 ((P q).effect a * (G₂ q.1.1).effect g -
       (G₂ q.1.1).effect g * (P q).effect a)) ψ‖ ^ 2 with hCM
   have hf : ∀ q, |OP q - OQ q| ≤ Real.sqrt (CM q) := by
     intro q
     have hpt := abs_pinch_overlap_gap_le_sqrt (A q) (P q) (G₂ q.1.1) ψ hψ
       (hA q) (hG₂ q.1.1)
-    rw [hOP, hOQ, hCM]
-    rw [show (∑ a : R₁, stateQForm ψ (heteroKron ((A q).effect a) ((P q).effect a))) -
-        ∑ a : R₁, stateQForm ψ (heteroKron ((A q).effect a)
-          (∑ g : Γ₂, (G₂ q.1.1).effect g * (P q).effect a * (G₂ q.1.1).effect g)) =
-        ∑ a : R₁, (stateQForm ψ (heteroKron ((A q).effect a) ((P q).effect a)) -
-          stateQForm ψ (heteroKron ((A q).effect a)
-            (∑ g : Γ₂, (G₂ q.1.1).effect g * (P q).effect a *
-              (G₂ q.1.1).effect g))) by rw [Finset.sum_sub_distrib]]
-    exact hpt
+    simp_all only [Finset.sum_sub_distrib]
   have hg : ∀ q, 0 ≤ CM q := by
     intro q
     exact Finset.sum_nonneg fun a _ => Finset.sum_nonneg fun g _ => sq_nonneg _
-  have hjensen : |avgOver D (fun q => OP q - OQ q)| ≤ Real.sqrt (avgOver D CM) :=
+  have hjensen  :=
     MIPStarRE.LDT.Preliminaries.avgOver_abs_le_sqrt_of_pointwise D
       (fun q => OP q - OQ q) CM hf hg (by rw [hD.weight_sum_eq_one])
   have hfinal : avgOver D OP - avgOver D OQ ≤ Real.sqrt K := by

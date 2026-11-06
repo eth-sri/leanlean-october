@@ -1,5 +1,7 @@
 module
 
+public import QPBT.Types
+
 public import QPBT.Observables.WinImplications.LowDegree
 
 /-!
@@ -34,18 +36,20 @@ open MIPStarRE.LDT
 
 /-- Coefficient-list evaluation is additive in the coefficient list. This
 is the additivity behind the convolution of `def:expanded-line-measurement`. -/
-theorem evalCoefficient_add {K : Type*} [Semiring K] {n : ℕ} (c d : Fin n → K)
+theorem evalCoefficient_add {K : Type*} [Semiring K] {n : ℕ} (c d : MIPStarRE.QPBT.Coordinates n K)
     (t : K) : evalCoefficient (c + d) t = evalCoefficient c t + evalCoefficient d t := by
   unfold evalCoefficient
   rw [← Finset.sum_add_distrib]
   refine Finset.sum_congr rfl fun i _ => ?_
   rw [Pi.add_apply, add_mul]
 
+variable {L : LdParams} {c : ℕ} {line : LineDesc L}
+
 /-- The sum of two evaluating line polynomials evaluates to the sum of
 their values. This is why the convolution outcome `f = f' + f''` evaluates
 whenever both convolution factors do. -/
-theorem EvaluatesTo.add {L : LdParams} {c : ℕ} {line : LineDesc L}
-    {f g : DegPoly L c} {u : Fin L.m → ScalarQ L} {a b : ScalarQ L}
+theorem EvaluatesTo.add
+    {f g : DegPoly L c} {u : MIPStarRE.QPBT.LdPoint L} {a b : ScalarQ L}
     (hf : EvaluatesTo line f u a) (hg : EvaluatesTo line g u b) :
     EvaluatesTo line (f + g) u (a + b) :=
   ⟨hf.1, fun t ht => by rw [evalCoefficient_add, hf.2 t ht, hg.2 t ht]⟩
@@ -53,8 +57,8 @@ theorem EvaluatesTo.add {L : LdParams} {c : ℕ} {line : LineDesc L}
 /-- If a sum and its second summand evaluate, the first summand evaluates to
 the difference of their values. This is the converse direction used to identify
 the convolution fibers of an evaluation class. -/
-theorem EvaluatesTo.left_of_add {L : LdParams} {c : ℕ} {line : LineDesc L}
-    {f g : DegPoly L c} {u : Fin L.m → ScalarQ L} {s b : ScalarQ L}
+theorem EvaluatesTo.left_of_add
+    {f g : DegPoly L c} {u : MIPStarRE.QPBT.LdPoint L} {s b : ScalarQ L}
     (hfg : EvaluatesTo line (f + g) u s) (hg : EvaluatesTo line g u b) :
     EvaluatesTo line f u (s - b) :=
   ⟨hfg.1, fun t ht => by
@@ -66,32 +70,26 @@ theorem EvaluatesTo.left_of_add {L : LdParams} {c : ℕ} {line : LineDesc L}
 evaluates to `a`. This is the characterization that makes `evalOpt` the total
 form of the evaluation classes of `def:ideg-deg-polynomials`. -/
 theorem evalOpt_eq_some_iff {L : LdParams} {c : ℕ} (line : LineDesc L)
-    (u : Fin L.m → ScalarQ L) (f : DegPoly L c) (a : ScalarQ L) :
+    (u : MIPStarRE.QPBT.LdPoint L) (f : DegPoly L c) (a : ScalarQ L) :
     evalOpt line u f = some a ↔ EvaluatesTo line f u a := by
   constructor
   · intro h
-    unfold evalOpt at h
-    by_cases hex : ∃ a : ScalarQ L, EvaluatesTo line f u a
-    · rw [dif_pos hex, Option.some_inj] at h
-      rw [← h]
-      exact Classical.choose_spec hex
-    · rw [dif_neg hex] at h
-      exact absurd h (by simp)
+    classical aesop (add simp [Classical.choose_spec, dif_neg, dif_pos, Option.some_inj, evalOpt])
   · exact WinImplications.evalOpt_eq_some_of_evaluatesTo line f u a
 
 /-- The partial evaluation returns `none` exactly when no value is
 determined. This is the outcome that completes the evaluation classes to a
 measurement, written `[eval_u(·) = ⊥]` in `def:ideg-deg-polynomials`. -/
 theorem evalOpt_eq_none_iff {L : LdParams} {c : ℕ} (line : LineDesc L)
-    (u : Fin L.m → ScalarQ L) (f : DegPoly L c) :
+    (u : MIPStarRE.QPBT.LdPoint L) (f : DegPoly L c) :
     evalOpt line u f = none ↔ ¬ ∃ a : ScalarQ L, EvaluatesTo line f u a := by
   unfold evalOpt
   split_ifs with hex <;> simp [hex]
 
 /-- The partial evaluation of a sum of two evaluating line polynomials is
 the sum of their values. -/
-theorem evalOpt_add_of_some {L : LdParams} {c : ℕ} {line : LineDesc L}
-    {u : Fin L.m → ScalarQ L} {f g : DegPoly L c} {a b : ScalarQ L}
+theorem evalOpt_add_of_some
+    {u : MIPStarRE.QPBT.LdPoint L} {f g : DegPoly L c} {a b : ScalarQ L}
     (hf : evalOpt line u f = some a) (hg : evalOpt line u g = some b) :
     evalOpt line u (f + g) = some (a + b) :=
   (evalOpt_eq_some_iff line u _ _).mpr
@@ -100,8 +98,8 @@ theorem evalOpt_add_of_some {L : LdParams} {c : ℕ} {line : LineDesc L}
 
 /-- If a sum and its second summand evaluate, so does the first summand,
 with the difference of the two values. -/
-theorem evalOpt_left_of_add_some {L : LdParams} {c : ℕ} {line : LineDesc L}
-    {u : Fin L.m → ScalarQ L} {f g : DegPoly L c} {s b : ScalarQ L}
+theorem evalOpt_left_of_add_some
+    {u : MIPStarRE.QPBT.LdPoint L} {f g : DegPoly L c} {s b : ScalarQ L}
     (hfg : evalOpt line u (f + g) = some s) (hg : evalOpt line u g = some b) :
     evalOpt line u f = some (s - b) :=
   (evalOpt_eq_some_iff line u _ _).mpr
@@ -110,8 +108,8 @@ theorem evalOpt_left_of_add_some {L : LdParams} {c : ℕ} {line : LineDesc L}
 
 /-- Off the line, no line polynomial evaluates, so every outcome falls in
 the `none` class. -/
-theorem evalOpt_eq_none_of_not_mem {L : LdParams} {c : ℕ} {line : LineDesc L}
-    {u : Fin L.m → ScalarQ L} (hu : u ∉ line.pointSet) (f : DegPoly L c) :
+theorem evalOpt_eq_none_of_not_mem
+    {u : MIPStarRE.QPBT.LdPoint L} (hu : u ∉ line.pointSet) (f : DegPoly L c) :
     evalOpt line u f = none := by
   rw [evalOpt_eq_none_iff]
   rintro ⟨a, ha⟩

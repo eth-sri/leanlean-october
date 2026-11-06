@@ -1,5 +1,7 @@
 module
 
+public meta import Batteries.Tactic.Alias
+
 public import QPBT.Observables.LineMeasurement
 
 /-!
@@ -27,7 +29,7 @@ placement module proves EPR-exchange invariance for the involution
 
 @[expose] public section
 
-open scoped BigOperators Matrix MatrixOrder ComplexOrder
+open scoped BigOperators Matrix MatrixOrder ComplexOrder Classical
 
 namespace MIPStarRE.QPBT
 
@@ -42,20 +44,22 @@ variable {P : AdmissibleParams} {ε : ℝ}
 
 /-! ## Placements as reindexed tensor factors -/
 
+variable (S : ProjectiveSetting P ε)
+
 /-- The `AA'` placement is the reindexed left factor of the
 `AA' | BA''(B'B'')` bipartition. -/
-theorem place_AA'_eq (S : ProjectiveSetting P ε)
+theorem place_AA'_eq
     (O : Op (S.ExpandedLocalSpace Placement.AA'.side)) :
     S.place .AA' O =
       reindexOp (aaBaBipartition P S.toStrategy.ιA S.toStrategy.ιB)
         (heteroKron O
           (1 : Op ((S.toStrategy.ιB × PauliRegister P) ×
-            (PauliRegister P × PauliRegister P)))) :=
+             PauliRegister P × PauliRegister P ))) :=
   (reindexOp_aaBaBipartition_left S O).symm
 
 /-- The `BA''` placement is the reindexed right factor of the
 `AA' | BA''(B'B'')` bipartition. -/
-theorem place_BA''_eq (S : ProjectiveSetting P ε)
+theorem place_BA''_eq
     (O : Op (S.ExpandedLocalSpace Placement.BA''.side)) :
     S.place .BA'' O =
       reindexOp (aaBaBipartition P S.toStrategy.ιA S.toStrategy.ιB)
@@ -65,18 +69,18 @@ theorem place_BA''_eq (S : ProjectiveSetting P ε)
 
 /-- The `AB''` placement is the reindexed left factor of the
 `AB'' | BB'(A'A'')` bipartition. -/
-theorem place_AB''_eq (S : ProjectiveSetting P ε)
+theorem place_AB''_eq
     (O : Op (S.ExpandedLocalSpace Placement.AB''.side)) :
     S.place .AB'' O =
       reindexOp (abBbBipartition P S.toStrategy.ιA S.toStrategy.ιB)
         (heteroKron O
           (1 : Op ((S.toStrategy.ιB × PauliRegister P) ×
-            (PauliRegister P × PauliRegister P)))) :=
+             PauliRegister P × PauliRegister P ))) :=
   (reindexOp_abBbBipartition_left S O).symm
 
 /-- The `BB'` placement is the reindexed right factor of the
 `AB'' | BB'(A'A'')` bipartition. -/
-theorem place_BB'_eq (S : ProjectiveSetting P ε)
+theorem place_BB'_eq
     (O : Op (S.ExpandedLocalSpace Placement.BB'.side)) :
     S.place .BB' O =
       reindexOp (abBbBipartition P S.toStrategy.ιA S.toStrategy.ιB)
@@ -103,35 +107,27 @@ theorem reindexOp_nonneg {ι κ : Type*} [Finite ι] [Finite κ]
 
 set_option synthInstance.maxSize 400 in
 /-- A placement is multiplicative. -/
-theorem place_mul (S : ProjectiveSetting P ε) :
+theorem place_mul  :
     ∀ (p : Placement) (A B : Op (S.ExpandedLocalSpace p.side)),
       S.place p (A * B) = S.place p A * S.place p B
   | .AA', A, B => by
-      classical
       rw [place_AA'_eq, place_AA'_eq, place_AA'_eq,
         ← WinImplications.reindexOp_mul, heteroKron_mul, mul_one]
-      all_goals rfl
   | .BA'', A, B => by
-      classical
       rw [place_BA''_eq, place_BA''_eq, place_BA''_eq,
         ← WinImplications.reindexOp_mul, heteroKron_mul, heteroKron_mul,
         mul_one, mul_one]
-      all_goals rfl
   | .BB', A, B => by
-      classical
       rw [place_BB'_eq, place_BB'_eq, place_BB'_eq,
         ← WinImplications.reindexOp_mul, heteroKron_mul, heteroKron_mul,
         mul_one, mul_one]
-      all_goals rfl
   | .AB'', A, B => by
-      classical
       rw [place_AB''_eq, place_AB''_eq, place_AB''_eq,
         ← WinImplications.reindexOp_mul, heteroKron_mul, mul_one]
-      all_goals rfl
 
 /-- A placement sends the local identity to the identity of the six-register
 space. -/
-theorem place_one (S : ProjectiveSetting P ε) (p : Placement) :
+theorem place_one  (p : Placement) :
     S.place p (1 : Op (S.ExpandedLocalSpace p.side)) = 1 := by
   ext i j
   cases p <;>
@@ -141,75 +137,64 @@ theorem place_one (S : ProjectiveSetting P ε) (p : Placement) :
 /-- A placement is additive over finite sums of local operators.
 Compatibility name for `place_finset_sum`, retained for the combining-point
 proofs that use this spelling. -/
-theorem place_finsetSum (S : ProjectiveSetting P ε) (p : Placement) {γ : Type*}
-    (s : Finset γ) (O : γ → Op (S.ExpandedLocalSpace p.side)) :
-    S.place p (∑ x ∈ s, O x) = ∑ x ∈ s, S.place p (O x) :=
-  S.place_finset_sum p s O
+alias place_finsetSum := MIPStarRE.QPBT.ProjectiveSetting.place_finset_sum
 
 /-- A placement commutes with the conjugate transpose. -/
-theorem place_conjTranspose (S : ProjectiveSetting P ε) :
+theorem place_conjTranspose  :
     ∀ (p : Placement) (A : Op (S.ExpandedLocalSpace p.side)),
       S.place p Aᴴ = (S.place p A)ᴴ
   | .AA', A => by
       rw [place_AA'_eq, place_AA'_eq, ← reindexOp_conjTranspose,
         WinImplications.heteroKron_conjTranspose, Matrix.conjTranspose_one]
-      all_goals rfl
   | .BA'', A => by
       rw [place_BA''_eq, place_BA''_eq, ← reindexOp_conjTranspose,
         WinImplications.heteroKron_conjTranspose,
         WinImplications.heteroKron_conjTranspose, Matrix.conjTranspose_one,
         Matrix.conjTranspose_one]
-      all_goals rfl
   | .BB', A => by
       rw [place_BB'_eq, place_BB'_eq, ← reindexOp_conjTranspose,
         WinImplications.heteroKron_conjTranspose,
         WinImplications.heteroKron_conjTranspose, Matrix.conjTranspose_one,
         Matrix.conjTranspose_one]
-      all_goals rfl
   | .AB'', A => by
       rw [place_AB''_eq, place_AB''_eq, ← reindexOp_conjTranspose,
         WinImplications.heteroKron_conjTranspose, Matrix.conjTranspose_one]
-      all_goals rfl
 
 set_option synthInstance.maxSize 400 in
 /-- A placement preserves positivity. -/
-theorem place_nonneg (S : ProjectiveSetting P ε) :
+theorem place_nonneg  :
     ∀ (p : Placement) {A : Op (S.ExpandedLocalSpace p.side)}, 0 ≤ A →
       0 ≤ S.place p A
   | .AA', A, hA => by
-      classical
       rw [place_AA'_eq]
       exact reindexOp_nonneg _ (MIPStarRE.Quantum.kronecker_nonneg hA
-        (Matrix.PosSemidef.one.nonneg))
+         Matrix.PosSemidef.one.nonneg )
   | .BA'', A, hA => by
-      classical
       rw [place_BA''_eq]
       exact reindexOp_nonneg _ (MIPStarRE.Quantum.kronecker_nonneg
-        (Matrix.PosSemidef.one.nonneg)
-        (MIPStarRE.Quantum.kronecker_nonneg hA (Matrix.PosSemidef.one.nonneg)))
+         Matrix.PosSemidef.one.nonneg 
+        (MIPStarRE.Quantum.kronecker_nonneg hA  Matrix.PosSemidef.one.nonneg ))
   | .BB', A, hA => by
-      classical
       rw [place_BB'_eq]
       exact reindexOp_nonneg _ (MIPStarRE.Quantum.kronecker_nonneg
-        (Matrix.PosSemidef.one.nonneg)
-        (MIPStarRE.Quantum.kronecker_nonneg hA (Matrix.PosSemidef.one.nonneg)))
+         Matrix.PosSemidef.one.nonneg 
+        (MIPStarRE.Quantum.kronecker_nonneg hA  Matrix.PosSemidef.one.nonneg ))
   | .AB'', A, hA => by
-      classical
       rw [place_AB''_eq]
       exact reindexOp_nonneg _ (MIPStarRE.Quantum.kronecker_nonneg hA
-        (Matrix.PosSemidef.one.nonneg))
+         Matrix.PosSemidef.one.nonneg )
 
 /-- The placement of a local operator bounded by the identity is bounded by
 the identity. -/
-theorem place_le_one (S : ProjectiveSetting P ε) (p : Placement)
+theorem place_le_one  (p : Placement)
     {A : Op (S.ExpandedLocalSpace p.side)} (hA : A ≤ 1) :
     S.place p A ≤ 1 := by
-  have h : 0 ≤ S.place p (1 - A) := S.place_nonneg p (sub_nonneg.mpr hA)
+  have h  := S.place_nonneg p (sub_nonneg.mpr hA)
   rw [place_sub, place_one] at h
   exact sub_nonneg.mp h
 
 /-- The placement of a projector is a contraction. -/
-theorem place_conjTranspose_mul_self_le_one (S : ProjectiveSetting P ε)
+theorem place_conjTranspose_mul_self_le_one
     (p : Placement) {E : Op (S.ExpandedLocalSpace p.side)} (hE : IsProj E) :
     (S.place p E)ᴴ * S.place p E ≤ 1 := by
   rw [← place_conjTranspose, ← place_mul, hE.isSelfAdjoint.isHermitian.eq,
@@ -218,28 +203,24 @@ theorem place_conjTranspose_mul_self_le_one (S : ProjectiveSetting P ε)
 
 set_option synthInstance.maxSize 400 in
 /-- Operators placed on opposite register pairs commute. -/
-theorem place_comm (S : ProjectiveSetting P ε) :
+theorem place_comm  :
     ∀ (p₁ p₂ : Placement), p₁.IsOpposite p₂ →
       ∀ (A : Op (S.ExpandedLocalSpace p₁.side))
         (B : Op (S.ExpandedLocalSpace p₂.side)),
         S.place p₁ A * S.place p₂ B = S.place p₂ B * S.place p₁ A
   | .AA', .BA'', _, A, B => by
-      classical
       rw [place_AA'_eq, place_BA''_eq, ← WinImplications.reindexOp_mul,
         ← WinImplications.reindexOp_mul]
       simp only [heteroKron_mul, one_mul, mul_one]
   | .BA'', .AA', _, A, B => by
-      classical
       rw [place_AA'_eq, place_BA''_eq, ← WinImplications.reindexOp_mul,
         ← WinImplications.reindexOp_mul]
       simp only [heteroKron_mul, one_mul, mul_one]
   | .BB', .AB'', _, A, B => by
-      classical
       rw [place_AB''_eq, place_BB'_eq, ← WinImplications.reindexOp_mul,
         ← WinImplications.reindexOp_mul]
       simp only [heteroKron_mul, one_mul, mul_one]
   | .AB'', .BB', _, A, B => by
-      classical
       rw [place_AB''_eq, place_BB'_eq, ← WinImplications.reindexOp_mul,
         ← WinImplications.reindexOp_mul]
       simp only [heteroKron_mul, one_mul, mul_one]
@@ -256,25 +237,27 @@ theorem place_comm (S : ProjectiveSetting P ε) :
   | .AB'', .BA'', h, _, _ => by simp [Placement.IsOpposite] at h
   | .AB'', .AB'', h, _, _ => by simp [Placement.IsOpposite] at h
 
+variable (p : Placement) {α : Type*} [Fintype α] (M : Measurement α (S.ExpandedLocalSpace p.side))
+
 /-- A complete measurement on a local expanded space, placed on one of the
 four register pairs, is a complete measurement on the six-register space. -/
-def placedMeasurement (S : ProjectiveSetting P ε) (p : Placement) {α : Type*}
-    [Fintype α] (M : Measurement α (S.ExpandedLocalSpace p.side)) :
+def placedMeasurement
+      :
     Measurement α (SixReg P S.toStrategy.ιA S.toStrategy.ιB) :=
   Measurement.ofSumEqOne (fun a => S.place p (M.effect a))
     (fun a => S.place_nonneg p (M.pos a))
     (by rw [← place_finsetSum, M.sum_eq_one, place_one])
 
 /-- The effects of a placed measurement are the placed effects. -/
-@[simp] theorem placedMeasurement_effect (S : ProjectiveSetting P ε)
-    (p : Placement) {α : Type*} [Fintype α]
-    (M : Measurement α (S.ExpandedLocalSpace p.side)) (a : α) :
+@[simp] theorem placedMeasurement_effect
+
+     (a : α) :
     (S.placedMeasurement p M).effect a = S.place p (M.effect a) := rfl
 
 /-- A placed projective measurement is projective. -/
-theorem placedMeasurement_isProjective (S : ProjectiveSetting P ε)
-    (p : Placement) {α : Type*} [Fintype α]
-    (M : Measurement α (S.ExpandedLocalSpace p.side))
+theorem placedMeasurement_isProjective
+
+
     (hM : MIPStarRE.QPBT.Measurement.IsProjective M) :
     MIPStarRE.QPBT.Measurement.IsProjective (S.placedMeasurement p M) := by
   intro a

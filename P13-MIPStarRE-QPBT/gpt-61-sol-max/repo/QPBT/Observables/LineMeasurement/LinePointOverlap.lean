@@ -45,7 +45,7 @@ namespace DistanceCalculus
 
 /-- The state quadratic form of the zero operator vanishes. -/
 theorem stateQForm_zero {ι : Type*} [Fintype ι] [DecidableEq ι]
-    (ψ : EuclideanSpace ℂ ι) : stateQForm ψ (0 : Op ι) = 0 := by
+    (ψ : MIPStarRE.QPBT.StateVector ι) : stateQForm ψ (0 : Op ι) = 0 := by
   simp [stateQForm, applyOperatorToState]
 
 end DistanceCalculus
@@ -123,7 +123,7 @@ theorem place_BB'_zero (S : ProjectiveSetting P ε) :
 /-- The completed expanded point measurement agrees with the expanded point
 measurement on proper values. -/
 theorem pointMeasExpOption_effect_some (S : ProjectiveSetting P ε)
-    (side : PlayerSide) (W : PauliKind) (u : Fin P.m → PauliScalar P)
+    (side : PlayerSide) (W : PauliKind) (u : MIPStarRE.QPBT.PauliPoint P)
     (b : PauliScalar P) :
     (S.pointMeasExpOption side W u).effect (some b) =
       (S.pointMeasExp side W u).effect b := by
@@ -133,7 +133,7 @@ theorem pointMeasExpOption_effect_some (S : ProjectiveSetting P ε)
 
 /-- The completed expanded point measurement assigns zero to `none`. -/
 theorem pointMeasExpOption_effect_none (S : ProjectiveSetting P ε)
-    (side : PlayerSide) (W : PauliKind) (u : Fin P.m → PauliScalar P) :
+    (side : PlayerSide) (W : PauliKind) (u : MIPStarRE.QPBT.PauliPoint P) :
     (S.pointMeasExpOption side W u).effect none = 0 := by
   unfold pointMeasExpOption
   rw [MIPStarRE.Quantum.Measurement.postprocess_effect]
@@ -147,7 +147,7 @@ identifies the two presentations of item 2 and item 3 of
 `lem:qld-comm-line-cons`, blueprint `eq:qld-comm-line-pt-cons`, `eq:qld-comm-line-pt-cons2`. -/
 theorem pointMeasExpOption_effect_evalOpt (S : ProjectiveSetting P ε)
     (side : PlayerSide) (W : PauliKind) (line : LineDesc P.toLdParams)
-    (u : Fin P.m → PauliScalar P) (f : DegPoly P.toLdParams (P.m * P.d)) :
+    (u : MIPStarRE.QPBT.PauliPoint P) (f : DegPoly P.toLdParams (P.m * P.d)) :
     (S.pointMeasExpOption side W u).effect (evalOpt line u f) =
       S.expPointEffectAtLineAnswer side W line u f := by
   unfold expPointEffectAtLineAnswer
@@ -159,13 +159,13 @@ theorem pointMeasExpOption_effect_evalOpt (S : ProjectiveSetting P ε)
 convolution form of the expanded point measurement. -/
 theorem expPointEffectAtLineAnswer_eq_elim (S : ProjectiveSetting P ε)
     (side : PlayerSide) (W : PauliKind) (line : LineDesc P.toLdParams)
-    (u : Fin P.m → PauliScalar P) (f : DegPoly P.toLdParams (P.m * P.d)) :
+    (u : MIPStarRE.QPBT.PauliPoint P) (f : DegPoly P.toLdParams (P.m * P.d)) :
     S.expPointEffectAtLineAnswer side W line u f =
-      (evalOpt line u f).elim 0 (fun a =>
+      (evalOpt line u f).elim 0  fun a =>
         ∑ q ∈ Finset.univ.filter
-          (fun q : PauliScalar P × PauliScalar P => q.1 + q.2 = a),
+           fun q : PauliScalar P × PauliScalar P => q.1 + q.2 = a ,
           heteroKron ((S.pointMeas side W u).effect q.1)
-            (tauPointProj W u q.2)) := by
+            (tauPointProj W u q.2)  := by
   unfold expPointEffectAtLineAnswer
   cases evalOpt line u f with
   | none => rfl
@@ -175,14 +175,11 @@ theorem expPointEffectAtLineAnswer_eq_elim (S : ProjectiveSetting P ε)
 line effects. -/
 theorem lineEvalMeasExp_effect (S : ProjectiveSetting P ε) (side : PlayerSide)
     (W : PauliKind) (line : LineDesc P.toLdParams)
-    (u : Fin P.m → PauliScalar P) (o : Option (PauliScalar P)) :
+    (u : MIPStarRE.QPBT.PauliPoint P) (o : Option (PauliScalar P)) :
     (S.lineEvalMeasExp side W line u).effect o =
       ∑ f ∈ Finset.univ.filter
-        (fun f : DegPoly P.toLdParams (P.m * P.d) => evalOpt line u f = o),
-        S.expLineOp side W line f := by
-  unfold lineEvalMeasExp
-  rw [MIPStarRE.Quantum.Measurement.postprocess_effect]
-  rfl
+         fun f : DegPoly P.toLdParams (P.m * P.d) => evalOpt line u f = o ,
+        S.expLineOp side W line f := by rfl
 
 /-! ## Factorization of opposite placements with distinct Pauli factors -/
 
@@ -235,20 +232,7 @@ theorem stateQForm_place_AA'_mul_BA''_two (S : ProjectiveSetting P ε)
         (S.place .AA' (heteroKron A T) * S.place .BA'' (heteroKron B T')) =
       DistanceCalculus.stateQForm S.toStrategy.ψ (heteroKron A B) *
         DistanceCalculus.stateQForm (eprState (PauliRegister P))
-          (heteroKron T T') := by
-  have hAB : (heteroKron A B).IsHermitian :=
-    heteroKron_isHermitian A B hA hB
-  have hTT : (heteroKron T T').IsHermitian :=
-    heteroKron_isHermitian T T' hT hT'
-  have hactive :
-      (heteroKron (heteroKron A B) (heteroKron T T')).IsHermitian :=
-    heteroKron_isHermitian _ _ hAB hTT
-  rw [psiHat_eq_reindexState, WinImplications.stateQForm_reindexState,
-    reindexOp_sixRegShuffle_place_AA'_mul_BA''_two,
-    stateQForm_vecTensor_heteroKron _ _ _ _ hactive Matrix.isHermitian_one,
-    stateQForm_vecTensor_heteroKron _ _ _ _ hAB hTT,
-    stateQForm_one_eq_norm_sq, eprState_norm]
-  ring
+          (heteroKron T T') := by grind [Matrix.isHermitian_one, eprState_norm, psiHat_eq_reindexState, heteroKron_isHermitian, stateQForm_one_eq_norm_sq, stateQForm_vecTensor_heteroKron, reindexOp_sixRegShuffle_place_AA'_mul_BA''_two, WinImplications.stateQForm_reindexState]
 
 set_option synthInstance.maxSize 400 in
 /-- The diagonal quadratic form for the `AB''`--`BB'` product with distinct
@@ -263,21 +247,7 @@ theorem stateQForm_place_AB''_mul_BB'_two (S : ProjectiveSetting P ε)
         (S.place .AB'' (heteroKron A T) * S.place .BB' (heteroKron B T')) =
       DistanceCalculus.stateQForm S.toStrategy.ψ (heteroKron A B) *
         DistanceCalculus.stateQForm (eprState (PauliRegister P))
-          (heteroKron T' T) := by
-  have hAB : (heteroKron A B).IsHermitian :=
-    heteroKron_isHermitian A B hA hB
-  have hpassive :
-      (heteroKron (heteroKron A B)
-        (1 : Op (PauliRegister P × PauliRegister P))).IsHermitian :=
-    heteroKron_isHermitian _ _ hAB Matrix.isHermitian_one
-  have hTT : (heteroKron T' T).IsHermitian :=
-    heteroKron_isHermitian T' T hT' hT
-  rw [psiHat_eq_reindexState, WinImplications.stateQForm_reindexState,
-    reindexOp_sixRegShuffle_place_AB''_mul_BB'_two,
-    stateQForm_vecTensor_heteroKron _ _ _ _ hpassive hTT,
-    stateQForm_vecTensor_heteroKron _ _ _ _ hAB Matrix.isHermitian_one,
-    stateQForm_one_eq_norm_sq, eprState_norm]
-  ring
+          (heteroKron T' T) := by grind [Matrix.isHermitian_one, eprState_norm, psiHat_eq_reindexState, heteroKron_isHermitian, stateQForm_one_eq_norm_sq, stateQForm_vecTensor_heteroKron, reindexOp_sixRegShuffle_place_AB''_mul_BB'_two, WinImplications.stateQForm_reindexState]
 
 set_option synthInstance.maxSize 400 in
 /-- Operators placed on `AA'` and on `BA''` commute. -/
@@ -351,30 +321,30 @@ theorem overlap_identity_of_mem (P : AdmissibleParams) (W : PauliKind)
       Φ (heteroKron (LM.effect f') (tauLineProj P W line f''))
           (heteroKron (PM.effect b') (ProjectiveSetting.tauPointProj W u b'')) =
         Ψ (LM.effect f') (PM.effect b') *
-          (if evalOpt line u f'' = some b'' then
+           if evalOpt line u f'' = some b'' then
             DistanceCalculus.stateQForm (eprState (PauliRegister P))
               (heteroKron (tauLineProj P W line f'') (1 : Op (PauliRegister P)))
-          else 0))
+          else 0 )
     (hΨl : ∀ (s : Finset (DegPoly P.toLdParams (P.m * P.d)))
       (A : DegPoly P.toLdParams (P.m * P.d) → Op ιL) (B : Op ιP),
       Ψ (∑ i ∈ s, A i) B = ∑ i ∈ s, Ψ (A i) B)
     (hΨ0 : ∀ A, Ψ A 0 = 0) :
-    (∑ f : DegPoly P.toLdParams (P.m * P.d),
+     ∑ f : DegPoly P.toLdParams (P.m * P.d),
       Φ (∑ p ∈ Finset.univ.filter
-          (fun p : DegPoly P.toLdParams (P.m * P.d) ×
-            DegPoly P.toLdParams (P.m * P.d) => p.1 + p.2 = f),
+           fun p : DegPoly P.toLdParams (P.m * P.d) ×
+            DegPoly P.toLdParams (P.m * P.d) => p.1 + p.2 = f ,
           heteroKron (LM.effect p.1) (tauLineProj P W line p.2))
-        ((evalOpt line u f).elim 0 (fun a =>
+        ((evalOpt line u f).elim 0  fun a =>
           ∑ q ∈ Finset.univ.filter
-            (fun q : ScalarQ P.toLdParams × ScalarQ P.toLdParams => q.1 + q.2 = a),
-            heteroKron (PM.effect q.1) (ProjectiveSetting.tauPointProj W u q.2)))) =
+             fun q : ScalarQ P.toLdParams × ScalarQ P.toLdParams => q.1 + q.2 = a ,
+            heteroKron (PM.effect q.1) (ProjectiveSetting.tauPointProj W u q.2) )  =
       ∑ o : Option (ScalarQ P.toLdParams),
         Ψ ((LM.postprocess (evalOpt line u)).effect o)
           ((PM.postprocess some).effect o) := by
-  let c : DegPoly P.toLdParams (P.m * P.d) → ℝ := fun f'' =>
+  let c  := fun f'' =>
     DistanceCalculus.stateQForm (eprState (PauliRegister P))
       (heteroKron (tauLineProj P W line f'') (1 : Op (PauliRegister P)))
-  let Pt : Option (ScalarQ P.toLdParams) → Op ιP := fun o => (PM.postprocess some).effect o
+  let Pt  :=  (PM.postprocess some).effect 
   have hPt_none : Pt none = 0 := by
     simp only [Pt]
     rw [MIPStarRE.Quantum.Measurement.postprocess_effect]
@@ -385,7 +355,7 @@ theorem overlap_identity_of_mem (P : AdmissibleParams) (W : PauliKind)
     simp only [Pt]
     rw [MIPStarRE.Quantum.Measurement.postprocess_effect]
     simp [Finset.filter_eq']
-  have hc : ∑ f'', c f'' = 1 := sum_stateQForm_eprState_tauLineProj_one P W line
+  have hc  := sum_stateQForm_eprState_tauLineProj_one P W line
   have hc0 : ∀ f'', evalOpt line u f'' = none → c f'' = 0 := by
     intro f'' h
     simp only [c]
@@ -395,10 +365,10 @@ theorem overlap_identity_of_mem (P : AdmissibleParams) (W : PauliKind)
       (p : DegPoly P.toLdParams (P.m * P.d) × DegPoly P.toLdParams (P.m * P.d)),
       p.1 + p.2 = f →
       Φ (heteroKron (LM.effect p.1) (tauLineProj P W line p.2))
-          ((evalOpt line u f).elim 0 (fun a =>
+          ((evalOpt line u f).elim 0  fun a =>
             ∑ q ∈ Finset.univ.filter
-              (fun q : ScalarQ P.toLdParams × ScalarQ P.toLdParams => q.1 + q.2 = a),
-              heteroKron (PM.effect q.1) (ProjectiveSetting.tauPointProj W u q.2))) =
+               fun q : ScalarQ P.toLdParams × ScalarQ P.toLdParams => q.1 + q.2 = a ,
+              heteroKron (PM.effect q.1) (ProjectiveSetting.tauPointProj W u q.2) ) =
         Ψ (LM.effect p.1) (Pt (evalOpt line u p.1)) * c p.2 := by
     intro f p hp
     rcases hf : evalOpt line u f with _ | a
@@ -429,7 +399,7 @@ theorem overlap_identity_of_mem (P : AdmissibleParams) (W : PauliKind)
         refine Finset.sum_eq_zero fun q _ => ?_
         rw [if_neg (by simp), mul_zero]
       · have hsum : evalOpt line u (p.1 + p.2) = some a := by rw [hp, hf]
-        have h1 : evalOpt line u p.1 = some (a - c'') :=
+        have h1  :=
           evalOpt_left_of_add_some hsum h2
         rw [h1, hPt_some]
         rw [Finset.sum_eq_single (a - c'', c'')]
@@ -441,8 +411,8 @@ theorem overlap_identity_of_mem (P : AdmissibleParams) (W : PauliKind)
           rw [if_neg, mul_zero]
           intro heq
           apply hne
-          have hq2 : q.2 = c'' := (Option.some_inj.mp heq).symm
-          have hq1 : q.1 + q.2 = a := (Finset.mem_filter.mp hq).2
+          have hq2  := (Option.some_inj.mp heq).symm
+          have hq1  := (Finset.mem_filter.mp hq).2
           ext
           · change q.1 = a - c''
             rw [← hq1, hq2, add_sub_cancel_right]
@@ -453,8 +423,8 @@ theorem overlap_identity_of_mem (P : AdmissibleParams) (W : PauliKind)
   calc
     _ = ∑ f : DegPoly P.toLdParams (P.m * P.d),
         ∑ p ∈ Finset.univ.filter
-          (fun p : DegPoly P.toLdParams (P.m * P.d) ×
-            DegPoly P.toLdParams (P.m * P.d) => p.1 + p.2 = f),
+           fun p : DegPoly P.toLdParams (P.m * P.d) ×
+            DegPoly P.toLdParams (P.m * P.d) => p.1 + p.2 = f ,
           Ψ (LM.effect p.1) (Pt (evalOpt line u p.1)) * c p.2 := by
       refine Finset.sum_congr rfl fun f _ => ?_
       rw [hΦl]
@@ -464,7 +434,7 @@ theorem overlap_identity_of_mem (P : AdmissibleParams) (W : PauliKind)
       Finset.sum_fiberwise Finset.univ
         (fun p : DegPoly P.toLdParams (P.m * P.d) ×
           DegPoly P.toLdParams (P.m * P.d) => p.1 + p.2)
-        (fun p => Ψ (LM.effect p.1) (Pt (evalOpt line u p.1)) * c p.2)
+         fun p => Ψ (LM.effect p.1) (Pt (evalOpt line u p.1)) * c p.2 
     _ = ∑ f' : DegPoly P.toLdParams (P.m * P.d),
         Ψ (LM.effect f') (Pt (evalOpt line u f')) := by
       rw [Fintype.sum_prod_type]
@@ -474,10 +444,10 @@ theorem overlap_identity_of_mem (P : AdmissibleParams) (W : PauliKind)
       rw [← Finset.mul_sum, hc, mul_one]
     _ = ∑ o : Option (ScalarQ P.toLdParams),
         ∑ f' ∈ Finset.univ.filter
-          (fun f' : DegPoly P.toLdParams (P.m * P.d) => evalOpt line u f' = o),
+           fun f' : DegPoly P.toLdParams (P.m * P.d) => evalOpt line u f' = o ,
           Ψ (LM.effect f') (Pt o) := by
-      rw [← Finset.sum_fiberwise Finset.univ (fun f' => evalOpt line u f')
-        (fun f' => Ψ (LM.effect f') (Pt (evalOpt line u f')))]
+      rw [← Finset.sum_fiberwise Finset.univ ( evalOpt line u )
+         fun f' => Ψ (LM.effect f') (Pt (evalOpt line u f')) ]
       refine Finset.sum_congr rfl fun o _ => Finset.sum_congr rfl fun f' hf' => ?_
       rw [(Finset.mem_filter.mp hf').2]
     _ = ∑ o : Option (ScalarQ P.toLdParams),
@@ -501,20 +471,20 @@ theorem overlap_identity_of_not_mem (P : AdmissibleParams) (W : PauliKind)
       (A : DegPoly P.toLdParams (P.m * P.d) → Op ιL) (B : Op ιP),
       Ψ (∑ i ∈ s, A i) B = ∑ i ∈ s, Ψ (A i) B)
     (hΨ0 : ∀ A, Ψ A 0 = 0) :
-    (∑ f : DegPoly P.toLdParams (P.m * P.d),
+     ∑ f : DegPoly P.toLdParams (P.m * P.d),
       Φ (∑ p ∈ Finset.univ.filter
-          (fun p : DegPoly P.toLdParams (P.m * P.d) ×
-            DegPoly P.toLdParams (P.m * P.d) => p.1 + p.2 = f),
+           fun p : DegPoly P.toLdParams (P.m * P.d) ×
+            DegPoly P.toLdParams (P.m * P.d) => p.1 + p.2 = f ,
           heteroKron (LM.effect p.1) (tauLineProj P W line p.2))
-        ((evalOpt line u f).elim 0 (fun a =>
+        ((evalOpt line u f).elim 0  fun a =>
           ∑ q ∈ Finset.univ.filter
-            (fun q : ScalarQ P.toLdParams × ScalarQ P.toLdParams => q.1 + q.2 = a),
-            heteroKron (PM.effect q.1) (ProjectiveSetting.tauPointProj W u q.2)))) =
+             fun q : ScalarQ P.toLdParams × ScalarQ P.toLdParams => q.1 + q.2 = a ,
+            heteroKron (PM.effect q.1) (ProjectiveSetting.tauPointProj W u q.2) )  =
       ∑ o : Option (ScalarQ P.toLdParams),
         Ψ ((LM.postprocess (evalOpt line u)).effect o)
           ((PM.postprocess some).effect o) := by
   have hnone : ∀ f : DegPoly P.toLdParams (P.m * P.d), evalOpt line u f = none :=
-    fun f => evalOpt_eq_none_of_not_mem hu f
+     evalOpt_eq_none_of_not_mem hu 
   rw [Finset.sum_eq_zero fun f _ => by rw [hnone f, Option.elim_none, hΦ0]]
   symm
   refine Finset.sum_eq_zero fun o _ => ?_
@@ -526,7 +496,7 @@ theorem overlap_identity_of_not_mem (P : AdmissibleParams) (W : PauliKind)
       exact absurd (Finset.mem_filter.mp ha).2 (by simp)
     rw [hPt, hΨ0]
   · have hempty : Finset.univ.filter
-        (fun f' : DegPoly P.toLdParams (P.m * P.d) => evalOpt line u f' = some b) =
+         fun f' : DegPoly P.toLdParams (P.m * P.d) => evalOpt line u f' = some b  =
           ∅ := by
       apply Finset.filter_eq_empty_iff.mpr
       intro f' _ h
@@ -550,7 +520,7 @@ private theorem lineMeas_effect_isHermitian (S : ProjectiveSetting P ε)
 
 /-- A strategy point effect is Hermitian, being positive semidefinite. -/
 private theorem pointMeas_effect_isHermitian (S : ProjectiveSetting P ε)
-    (side : PlayerSide) (W : PauliKind) (u : Fin P.m → PauliScalar P)
+    (side : PlayerSide) (W : PauliKind) (u : MIPStarRE.QPBT.PauliPoint P)
     (b : PauliScalar P) :
     ((S.pointMeas side W u).effect b).IsHermitian :=
   (Matrix.nonneg_iff_posSemidef.mp ((S.pointMeas side W u).pos b)).isHermitian
@@ -563,7 +533,7 @@ private theorem tauLineProj_isHermitian (W : PauliKind)
 
 /-- A Pauli point projector is Hermitian, being positive semidefinite. -/
 private theorem tauPointProj_isHermitian (W : PauliKind)
-    (u : Fin P.m → PauliScalar P) (b : PauliScalar P) :
+    (u : MIPStarRE.QPBT.PauliPoint P) (b : PauliScalar P) :
     (tauPointProj W u b).IsHermitian :=
   (Matrix.nonneg_iff_posSemidef.mp ((tauPointMeas W u).pos b)).isHermitian
 
@@ -575,7 +545,7 @@ computation `eq:qld-mhat-line-1`--`eq:qld-comm-line-pt-cons-eps` of
 `lem:qld-comm-line-cons`, paper
 `14_analysis_of_the_pauli_basis_test.tex:560-596`. -/
 theorem overlap_AA'_BA''_eq (S : ProjectiveSetting P ε) (W : PauliKind)
-    (line : LineDesc P.toLdParams) (u : Fin P.m → PauliScalar P) :
+    (line : LineDesc P.toLdParams) (u : MIPStarRE.QPBT.PauliPoint P) :
     ∑ f : DegPoly P.toLdParams (P.m * P.d),
         DistanceCalculus.stateQForm S.psiHat
           (S.place .AA' (S.expLineOp .alice W line f) *
@@ -584,8 +554,7 @@ theorem overlap_AA'_BA''_eq (S : ProjectiveSetting P ε) (W : PauliKind)
         DistanceCalculus.stateQForm S.toStrategy.ψ
           (heteroKron ((S.lineEvalMeas .alice W line u).effect o)
             ((S.pointMeasOption .bob W u).effect o)) := by
-  let Φ : Op (S.ExpandedLocalSpace .alice) →
-      Op (S.ExpandedLocalSpace .bob) → ℝ := fun X Y =>
+  let Φ  := fun X Y =>
     DistanceCalculus.stateQForm S.psiHat (S.place .AA' X * S.place .BA'' Y)
   let Ψ : Op S.toStrategy.ιA → Op S.toStrategy.ιB → ℝ := fun L Q =>
     DistanceCalculus.stateQForm S.toStrategy.ψ (heteroKron L Q)
@@ -634,10 +603,10 @@ theorem overlap_AA'_BA''_eq (S : ProjectiveSetting P ε) (W : PauliKind)
             (tauLineProj P W line f''))
           (heteroKron ((S.pointMeas .bob W u).effect b') (tauPointProj W u b'')) =
         Ψ ((S.lineMeas .alice W line).effect f') ((S.pointMeas .bob W u).effect b') *
-          (if evalOpt line u f'' = some b'' then
+           if evalOpt line u f'' = some b'' then
             DistanceCalculus.stateQForm (eprState (PauliRegister P))
               (heteroKron (tauLineProj P W line f'') (1 : Op (PauliRegister P)))
-          else 0) := by
+          else 0  := by
       intro f' f'' b' b''
       simp only [Φ, Ψ]
       have hfac := stateQForm_place_AA'_mul_BA''_two S
@@ -660,7 +629,7 @@ point measurement with Bob's evaluation classes. This is the interchanged
 form of the computation in items 2 and 3 of `lem:qld-comm-line-cons`, paper
 `14_analysis_of_the_pauli_basis_test.tex:560-596`. -/
 theorem overlap_BA''_AA'_eq (S : ProjectiveSetting P ε) (W : PauliKind)
-    (line : LineDesc P.toLdParams) (u : Fin P.m → PauliScalar P) :
+    (line : LineDesc P.toLdParams) (u : MIPStarRE.QPBT.PauliPoint P) :
     ∑ f : DegPoly P.toLdParams (P.m * P.d),
         DistanceCalculus.stateQForm S.psiHat
           (S.place .BA'' (S.expLineOp .bob W line f) *
@@ -669,8 +638,7 @@ theorem overlap_BA''_AA'_eq (S : ProjectiveSetting P ε) (W : PauliKind)
         DistanceCalculus.stateQForm S.toStrategy.ψ
           (heteroKron ((S.pointMeasOption .alice W u).effect o)
             ((S.lineEvalMeas .bob W line u).effect o)) := by
-  let Φ : Op (S.ExpandedLocalSpace .bob) →
-      Op (S.ExpandedLocalSpace .alice) → ℝ := fun X Y =>
+  let Φ  := fun X Y =>
     DistanceCalculus.stateQForm S.psiHat (S.place .BA'' X * S.place .AA' Y)
   let Ψ : Op S.toStrategy.ιB → Op S.toStrategy.ιA → ℝ := fun L Q =>
     DistanceCalculus.stateQForm S.toStrategy.ψ (heteroKron Q L)
@@ -719,10 +687,10 @@ theorem overlap_BA''_AA'_eq (S : ProjectiveSetting P ε) (W : PauliKind)
             (tauLineProj P W line f''))
           (heteroKron ((S.pointMeas .alice W u).effect b') (tauPointProj W u b'')) =
         Ψ ((S.lineMeas .bob W line).effect f') ((S.pointMeas .alice W u).effect b') *
-          (if evalOpt line u f'' = some b'' then
+           if evalOpt line u f'' = some b'' then
             DistanceCalculus.stateQForm (eprState (PauliRegister P))
               (heteroKron (tauLineProj P W line f'') (1 : Op (PauliRegister P)))
-          else 0) := by
+          else 0  := by
       intro f' f'' b' b''
       simp only [Φ, Ψ]
       have hfac := stateQForm_place_AA'_mul_BA''_two S
@@ -746,7 +714,7 @@ set_option synthInstance.maxSize 400 in
 selected point effects on `BB'`, on the second bipartition. Paper
 `14_analysis_of_the_pauli_basis_test.tex:560-596`. -/
 theorem overlap_AB''_BB'_eq (S : ProjectiveSetting P ε) (W : PauliKind)
-    (line : LineDesc P.toLdParams) (u : Fin P.m → PauliScalar P) :
+    (line : LineDesc P.toLdParams) (u : MIPStarRE.QPBT.PauliPoint P) :
     ∑ f : DegPoly P.toLdParams (P.m * P.d),
         DistanceCalculus.stateQForm S.psiHat
           (S.place .AB'' (S.expLineOp .alice W line f) *
@@ -755,8 +723,7 @@ theorem overlap_AB''_BB'_eq (S : ProjectiveSetting P ε) (W : PauliKind)
         DistanceCalculus.stateQForm S.toStrategy.ψ
           (heteroKron ((S.lineEvalMeas .alice W line u).effect o)
             ((S.pointMeasOption .bob W u).effect o)) := by
-  let Φ : Op (S.ExpandedLocalSpace .alice) →
-      Op (S.ExpandedLocalSpace .bob) → ℝ := fun X Y =>
+  let Φ  := fun X Y =>
     DistanceCalculus.stateQForm S.psiHat (S.place .AB'' X * S.place .BB' Y)
   let Ψ : Op S.toStrategy.ιA → Op S.toStrategy.ιB → ℝ := fun L Q =>
     DistanceCalculus.stateQForm S.toStrategy.ψ (heteroKron L Q)
@@ -805,10 +772,10 @@ theorem overlap_AB''_BB'_eq (S : ProjectiveSetting P ε) (W : PauliKind)
             (tauLineProj P W line f''))
           (heteroKron ((S.pointMeas .bob W u).effect b') (tauPointProj W u b'')) =
         Ψ ((S.lineMeas .alice W line).effect f') ((S.pointMeas .bob W u).effect b') *
-          (if evalOpt line u f'' = some b'' then
+           if evalOpt line u f'' = some b'' then
             DistanceCalculus.stateQForm (eprState (PauliRegister P))
               (heteroKron (tauLineProj P W line f'') (1 : Op (PauliRegister P)))
-          else 0) := by
+          else 0  := by
       intro f' f'' b' b''
       simp only [Φ, Ψ]
       have hfac := stateQForm_place_AB''_mul_BB'_two S
@@ -829,7 +796,7 @@ set_option synthInstance.maxSize 400 in
 selected point effects on `AB''`, on the second bipartition. Paper
 `14_analysis_of_the_pauli_basis_test.tex:560-596`. -/
 theorem overlap_BB'_AB''_eq (S : ProjectiveSetting P ε) (W : PauliKind)
-    (line : LineDesc P.toLdParams) (u : Fin P.m → PauliScalar P) :
+    (line : LineDesc P.toLdParams) (u : MIPStarRE.QPBT.PauliPoint P) :
     ∑ f : DegPoly P.toLdParams (P.m * P.d),
         DistanceCalculus.stateQForm S.psiHat
           (S.place .BB' (S.expLineOp .bob W line f) *
@@ -838,8 +805,7 @@ theorem overlap_BB'_AB''_eq (S : ProjectiveSetting P ε) (W : PauliKind)
         DistanceCalculus.stateQForm S.toStrategy.ψ
           (heteroKron ((S.pointMeasOption .alice W u).effect o)
             ((S.lineEvalMeas .bob W line u).effect o)) := by
-  let Φ : Op (S.ExpandedLocalSpace .bob) →
-      Op (S.ExpandedLocalSpace .alice) → ℝ := fun X Y =>
+  let Φ  := fun X Y =>
     DistanceCalculus.stateQForm S.psiHat (S.place .BB' X * S.place .AB'' Y)
   let Ψ : Op S.toStrategy.ιB → Op S.toStrategy.ιA → ℝ := fun L Q =>
     DistanceCalculus.stateQForm S.toStrategy.ψ (heteroKron Q L)
@@ -888,10 +854,10 @@ theorem overlap_BB'_AB''_eq (S : ProjectiveSetting P ε) (W : PauliKind)
             (tauLineProj P W line f''))
           (heteroKron ((S.pointMeas .alice W u).effect b') (tauPointProj W u b'')) =
         Ψ ((S.lineMeas .bob W line).effect f') ((S.pointMeas .alice W u).effect b') *
-          (if evalOpt line u f'' = some b'' then
+           if evalOpt line u f'' = some b'' then
             DistanceCalculus.stateQForm (eprState (PauliRegister P))
               (heteroKron (tauLineProj P W line f'') (1 : Op (PauliRegister P)))
-          else 0) := by
+          else 0  := by
       intro f' f'' b' b''
       simp only [Φ, Ψ]
       have hfac := stateQForm_place_AB''_mul_BB'_two S

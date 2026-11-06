@@ -47,8 +47,8 @@ theorem exists_projective_setting_isometry_bounds :
               deltaQld a b epsilon P.m P.d P.q ∧
             (∀ W : PauliKind, pauliOperatorDistanceA P S.toStrategy t W ≤
               deltaQld a b epsilon P.m P.d P.q) ∧
-            (∀ W : PauliKind, pauliOperatorDistanceB P S.toStrategy t W ≤
-              deltaQld a b epsilon P.m P.d P.q) := by
+             ∀ W : PauliKind, pauliOperatorDistanceB P S.toStrategy t W ≤
+              deltaQld a b epsilon P.m P.d P.q  := by
   obtain ⟨a, b, C, ha, hb, hb1, hC, hextract⟩ := exists_extractionWitness
   obtain ⟨A, B, hA, hB, hB1, htransfer⟩ :=
     pauli_soundness_deltaQld_ofExtractionWitness C a b hC ha hb hb1

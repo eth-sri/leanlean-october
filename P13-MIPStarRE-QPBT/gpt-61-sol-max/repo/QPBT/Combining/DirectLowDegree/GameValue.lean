@@ -22,7 +22,7 @@ choices are specified in `references/ldt-paper/test_definition.tex:10-67`.
 
 @[expose] public section
 
-open scoped BigOperators MatrixOrder Matrix ComplexOrder
+open scoped BigOperators MatrixOrder Matrix ComplexOrder Classical
 
 namespace MIPStarRE.QPBT
 
@@ -31,8 +31,10 @@ open MIPStarRE.Quantum
 
 noncomputable section
 
+variable (D : DirectLdParams) (S : Strategy (directLdGame D))
+
 private theorem directLdAccepted_add_rejected_eq_one
-    (D : DirectLdParams) (S : Strategy (directLdGame D))
+
     (types : LdType × LdType) (sample : DirectLdSpace D) :
     (∑ a : (directLdGame D).AnswerA, ∑ b : (directLdGame D).AnswerB,
         if directLdWinPredicate D
@@ -59,21 +61,15 @@ private theorem directLdAccepted_add_rejected_eq_one
       apply Finset.sum_congr rfl
       intro a _
       rw [← Finset.sum_add_distrib]
-      apply Finset.sum_congr rfl
-      intro b _
-      by_cases h : directLdWinPredicate D
-          (types.1, directLdMap D types.1 sample)
-          (types.2, directLdMap D types.2 sample) a b
-      · simp [h]
-      · simp [h]
+      grind
     _ = 1 := outcomeWeight_sum_eq_one S
       (types.1, directLdMap D types.1 sample)
       (types.2, directLdMap D types.2 sample)
 
 /-- Rejection probability conditioned on an ordered pair of low-degree
 question types, averaged over the common direct sample. -/
-noncomputable def directLdBranchRejectionProbability
-    (D : DirectLdParams) (S : Strategy (directLdGame D))
+def directLdBranchRejectionProbability
+
     (types : LdType × LdType) : ℝ :=
   avgOver (uniformDistribution (DirectLdSpace D)) fun sample =>
     ∑ a : (directLdGame D).AnswerA, ∑ b : (directLdGame D).AnswerB,
@@ -87,15 +83,15 @@ noncomputable def directLdBranchRejectionProbability
 
 /-- Total rejection probability of the directly indexed low-degree game,
 averaged uniformly over its nine ordered type branches. -/
-noncomputable def directLdRejectionProbability
-    (D : DirectLdParams) (S : Strategy (directLdGame D)) : ℝ :=
+def directLdRejectionProbability
+      : ℝ :=
   avgOver (uniformDistribution (LdType × LdType))
     (directLdBranchRejectionProbability D S)
 
 /-- The branch failure probability with the weights used by the low
 individual degree test. -/
-noncomputable def directLdLdtWeightedFailureProbability
-    (D : DirectLdParams) (S : Strategy (directLdGame D)) : ℝ :=
+def directLdLdtWeightedFailureProbability
+      : ℝ :=
   let B := directLdBranchRejectionProbability D S
   ((B (.aline, .point) + B (.point, .aline)) / 2 +
       B (.point, .point) +
@@ -131,28 +127,17 @@ theorem avgOver_ldType_pair (f : LdType × LdType → ℝ) :
 
 /-- Every fixed-type rejection probability is nonnegative. -/
 theorem directLdBranchRejectionProbability_nonneg
-    (D : DirectLdParams) (S : Strategy (directLdGame D))
+
     (types : LdType × LdType) :
     0 ≤ directLdBranchRejectionProbability D S types := by
   apply avgOver_nonneg
-  intro sample
-  apply Finset.sum_nonneg
-  intro a _
-  apply Finset.sum_nonneg
-  intro b _
-  by_cases h : directLdWinPredicate D
-      (types.1, directLdMap D types.1 sample)
-      (types.2, directLdMap D types.2 sample) a b
-  · simp [h]
-  · simpa [h] using outcomeWeight_nonneg S
-      (types.1, directLdMap D types.1 sample)
-      (types.2, directLdMap D types.2 sample) a b
+  grind [Finset.sum_nonneg, outcomeWeight_nonneg]
 
 /-- Total direct-game rejection is one minus the strategy value. -/
 theorem directLdRejectionProbability_eq_one_sub_value
-    (D : DirectLdParams) (S : Strategy (directLdGame D)) :
+      :
     directLdRejectionProbability D S = 1 - S.value := by
-  let accepted : (LdType × LdType) → DirectLdSpace D → ℝ :=
+  let accepted :  LdType × LdType  → DirectLdSpace D → ℝ :=
     fun types sample =>
       ∑ a : (directLdGame D).AnswerA, ∑ b : (directLdGame D).AnswerB,
         if directLdWinPredicate D
@@ -167,7 +152,7 @@ theorem directLdRejectionProbability_eq_one_sub_value
         1 - avgOver (uniformDistribution (DirectLdSpace D)) (accepted types) := by
     rw [show directLdBranchRejectionProbability D S types =
         avgOver (uniformDistribution (DirectLdSpace D))
-          (fun sample => 1 - accepted types sample) by
+           fun sample => 1 - accepted types sample  by
       apply avgOver_congr
       intro sample
       dsimp [accepted]
@@ -175,8 +160,8 @@ theorem directLdRejectionProbability_eq_one_sub_value
     rw [avgOver_sub, avgOver_uniform_const]
   rw [show directLdRejectionProbability D S =
       avgOver (uniformDistribution (LdType × LdType))
-        (fun types => 1 -
-          avgOver (uniformDistribution (DirectLdSpace D)) (accepted types)) by
+         fun types => 1 -
+          avgOver (uniformDistribution (DirectLdSpace D)) (accepted types)  by
     unfold directLdRejectionProbability
     apply avgOver_congr
     exact hbranch]

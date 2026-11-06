@@ -32,7 +32,7 @@ value; none is a paper-labelled result.
 
 @[expose] public section
 
-open scoped BigOperators MatrixOrder Matrix ComplexOrder
+open scoped BigOperators MatrixOrder Matrix ComplexOrder Classical
 
 namespace MIPStarRE.QPBT
 
@@ -44,14 +44,16 @@ noncomputable section
 
 /-! ## The index-conditioned branch rejection probability -/
 
+variable (D : DirectLdParams) (S : Strategy (directLdGame D))
+
 /-- The rejection probability of an ordered pair of low-degree question types
 conditioned on the stored coordinate index of the common sample, averaged over
 the sampled point and the sampled direction alone. -/
 def directLdIndexedBranchRejectionProbability
-    (D : DirectLdParams) (S : Strategy (directLdGame D))
+
     (types : LdType × LdType) (i : Fin D.m) : ℝ :=
   avgOver (uniformDistribution
-      ((Fin D.m → DirectScalarQ D) × (Fin D.m → DirectScalarQ D)))
+      ( MIPStarRE.QPBT.DirectPoint D  ×  MIPStarRE.QPBT.DirectPoint D ))
     fun pd => directRejectedMass D S
       (types.1, directLdMap D types.1 ⟨pd.1, i, pd.2⟩)
       (types.2, directLdMap D types.2 ⟨pd.1, i, pd.2⟩)
@@ -63,7 +65,7 @@ game according to the event of `lem:ld-combined-question-law`, whose two cases
 are the point coordinates and the combining coordinates of the combined
 dimension. -/
 theorem directLdBranchRejectionProbability_eq_avgOver_index
-    (D : DirectLdParams) (S : Strategy (directLdGame D))
+
     (types : LdType × LdType) :
     directLdBranchRejectionProbability D S types =
       avgOver (uniformDistribution (Fin D.m))
@@ -77,19 +79,19 @@ theorem directLdBranchRejectionProbability_eq_avgOver_index
 sampled point, so the index-conditioned rejection probability of that branch is
 the average over the sampled point alone, for every stored coordinate index. -/
 theorem directLdIndexedBranchRejectionProbability_point_point
-    (D : DirectLdParams) (S : Strategy (directLdGame D)) (i : Fin D.m) :
+      (i : Fin D.m) :
     directLdIndexedBranchRejectionProbability D S (.point, .point) i =
-      avgOver (uniformDistribution (Fin D.m → DirectScalarQ D)) fun u =>
+      avgOver (uniformDistribution (MIPStarRE.QPBT.DirectPoint D)) fun u =>
         directRejectedMass D S (directLdPointQuestionOf D u)
           (directLdPointQuestionOf D u) := by
   have hsplit : directLdIndexedBranchRejectionProbability D S (.point, .point) i =
       avgOver (uniformDistribution
-          ((Fin D.m → DirectScalarQ D) × (Fin D.m → DirectScalarQ D)))
-        (fun pd => (fun (u _ : Fin D.m → DirectScalarQ D) =>
+          ( MIPStarRE.QPBT.DirectPoint D  ×  MIPStarRE.QPBT.DirectPoint D ))
+         fun pd => (fun (u _ : MIPStarRE.QPBT.DirectPoint D) =>
           directRejectedMass D S (directLdPointQuestionOf D u)
-            (directLdPointQuestionOf D u)) pd.1 pd.2) := rfl
+            (directLdPointQuestionOf D u)) pd.1 pd.2  := rfl
   rw [hsplit,
-    avgOver_uniform_prod (f := fun (u _ : Fin D.m → DirectScalarQ D) =>
+    avgOver_uniform_prod (f := fun (u _ : MIPStarRE.QPBT.DirectPoint D) =>
       directRejectedMass D S (directLdPointQuestionOf D u)
         (directLdPointQuestionOf D u))]
   apply avgOver_congr
@@ -101,14 +103,14 @@ over the sampled point of the rejected mass at the two equal point questions.
 This is the branch to which the combining coordinates of the combined game
 reduce, by `directCombined_measuredQuestion_of_coefficientVar`. -/
 theorem directLdBranchRejectionProbability_point_point_eq
-    (D : DirectLdParams) (S : Strategy (directLdGame D)) :
+      :
     directLdBranchRejectionProbability D S (.point, .point) =
-      avgOver (uniformDistribution (Fin D.m → DirectScalarQ D)) fun u =>
+      avgOver (uniformDistribution (MIPStarRE.QPBT.DirectPoint D)) fun u =>
         directRejectedMass D S (directLdPointQuestionOf D u)
           (directLdPointQuestionOf D u) := by
   rw [directLdBranchRejectionProbability_eq_avgOver_index,
     show directLdIndexedBranchRejectionProbability D S (.point, .point) =
-      fun _ => avgOver (uniformDistribution (Fin D.m → DirectScalarQ D)) fun u =>
+      fun _ => avgOver (uniformDistribution (MIPStarRE.QPBT.DirectPoint D)) fun u =>
         directRejectedMass D S (directLdPointQuestionOf D u)
           (directLdPointQuestionOf D u) from
       funext (directLdIndexedBranchRejectionProbability_point_point D S)]
@@ -122,15 +124,14 @@ strategy that the relabelling of `def:ld-combined-strategy` sends to it.  Each
 measurement of the combined strategy is a coarse-graining of a measurement of
 the original strategy, so its effects are the fiber sums of the original
 effects. -/
-theorem outcomeWeight_directCombinedStrategy (D : DirectLdParams)
-    (S : Strategy (directLdGame D)) (x y : DirectLdQuestion D.combined)
+theorem outcomeWeight_directCombinedStrategy
+     (x y : DirectLdQuestion D.combined)
     (a' b' : DirectLdAnswer D.combined) :
     outcomeWeight (directCombinedStrategy D S) x y a' b' =
-      ∑ a ∈ Finset.univ.filter (fun a => directCombinedAnswerMap D x a = a'),
-        ∑ b ∈ Finset.univ.filter (fun b => directCombinedAnswerMap D y b = b'),
+      ∑ a ∈ Finset.univ.filter  fun a => directCombinedAnswerMap D x a = a' ,
+        ∑ b ∈ Finset.univ.filter  fun b => directCombinedAnswerMap D y b = b' ,
           outcomeWeight S (directCombinedMeasuredQuestion D x)
             (directCombinedMeasuredQuestion D y) a b := by
-  classical
   show DistanceCalculus.stateQForm S.ψ
       (heteroKron
         (((S.A (directCombinedMeasuredQuestion D x)).postprocess
@@ -152,8 +153,8 @@ combined game, then the rejected mass of the combined strategy at a question
 pair of the combined game is at most the rejected mass of the original strategy
 at the measured question pair.  This reduces the branch-wise estimates of
 `lem:ld-combined-value` to the win-predicate implications of that lemma. -/
-theorem directRejectedMass_directCombinedStrategy_le (D : DirectLdParams)
-    (S : Strategy (directLdGame D)) (x y : DirectLdQuestion D.combined)
+theorem directRejectedMass_directCombinedStrategy_le
+     (x y : DirectLdQuestion D.combined)
     (himp : ∀ a b : DirectLdAnswer D,
       directLdWinPredicate D (directCombinedMeasuredQuestion D x)
           (directCombinedMeasuredQuestion D y) a b = true →
@@ -162,7 +163,6 @@ theorem directRejectedMass_directCombinedStrategy_le (D : DirectLdParams)
     directRejectedMass D.combined (directCombinedStrategy D S) x y ≤
       directRejectedMass D S (directCombinedMeasuredQuestion D x)
         (directCombinedMeasuredQuestion D y) := by
-  classical
   set mx := directCombinedMeasuredQuestion D x with hmx
   set my := directCombinedMeasuredQuestion D y with hmy
   set F : DirectLdAnswer D → DirectLdAnswer D → ℝ := fun a b =>
@@ -174,8 +174,8 @@ theorem directRejectedMass_directCombinedStrategy_le (D : DirectLdParams)
     have step : ∀ a' b' : DirectLdAnswer D.combined,
         (if directLdWinPredicate D.combined x y a' b' then 0
           else outcomeWeight (directCombinedStrategy D S) x y a' b') =
-          ∑ a ∈ Finset.univ.filter (fun a => directCombinedAnswerMap D x a = a'),
-            ∑ b ∈ Finset.univ.filter (fun b => directCombinedAnswerMap D y b = b'),
+          ∑ a ∈ Finset.univ.filter  fun a => directCombinedAnswerMap D x a = a' ,
+            ∑ b ∈ Finset.univ.filter  fun b => directCombinedAnswerMap D y b = b' ,
               F a b := by
       intro a' b'
       by_cases hw : directLdWinPredicate D.combined x y a' b' = true
@@ -191,7 +191,7 @@ theorem directRejectedMass_directCombinedStrategy_le (D : DirectLdParams)
     rw [directRejectedMass]
     simp_rw [step]
     rw [← Finset.sum_fiberwise Finset.univ (directCombinedAnswerMap D x)
-      (fun a => ∑ b : DirectLdAnswer D, F a b)]
+       fun a => ∑ b : DirectLdAnswer D, F a b ]
     refine Finset.sum_congr rfl fun a' _ => ?_
     rw [Finset.sum_comm]
     exact Finset.sum_congr rfl fun a _ =>

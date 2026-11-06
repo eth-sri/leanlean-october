@@ -18,7 +18,7 @@ Paper `eq:qld-sgg-completeness` and the completion paragraph of `lem:qld-4-7`,
 
 @[expose] public section
 
-open scoped BigOperators MatrixOrder
+open scoped BigOperators MatrixOrder Classical
 
 namespace MIPStarRE.QPBT.ExtendedLineGame
 
@@ -46,28 +46,28 @@ def directPolynomialEquiv (P : AdmissibleParams) :
     by exact map_mem_polyFunc _ _⟩
   left_inv g := by
     funext i
-    have hi : i = (0 : Fin 1) := @Subsingleton.elim (Fin 1) _ i 0
+    have hi  := @Subsingleton.elim (Fin 1) _ i 0
     subst i
     apply Subtype.ext
     exact (MvPolynomial.mapEquiv _ (extendedDirectScalarEquiv P)).symm_apply_apply _
-  right_inv p := by
-    apply Subtype.ext
-    exact (MvPolynomial.mapEquiv _ (extendedDirectScalarEquiv P)).apply_symm_apply _
+  right_inv p := by aesop
 
 /-- The actual singleton outcome corresponding to a bounded polynomial pair. -/
 def directCombinedEmbedding (P : AdmissibleParams) :
     PolyPair P ↪ DirectPolyTuple P.extendedDirectLd :=
   (combinedPolyEmbedding P).trans (directPolynomialEquiv P).symm.toEmbedding
 
+variable {P : AdmissibleParams} {ι : Type*} [Fintype ι] [DecidableEq ι] (R : DirectPolyMeasTuple P.extendedDirectLd ι)
+
 /-- Relabel the actual rounded measurement in the canonical coefficient field. -/
-def canonicalPolynomialMeasurement {P : AdmissibleParams} {ι : Type*}
-    [Fintype ι] [DecidableEq ι] (R : DirectPolyMeasTuple P.extendedDirectLd ι) :
+def canonicalPolynomialMeasurement
+       :
     Quantum.Measurement (Preliminaries.polyFunc (2 * P.m + 2) (PauliScalar P) P.d) ι :=
   R.postprocess (directPolynomialEquiv P)
 
 /-- The canonical relabeling retains each original effect exactly. -/
-@[simp] theorem canonicalPolynomialMeasurement_effect {P : AdmissibleParams} {ι : Type*}
-    [Fintype ι] [DecidableEq ι] (R : DirectPolyMeasTuple P.extendedDirectLd ι)
+@[simp] theorem canonicalPolynomialMeasurement_effect
+
     (p : Preliminaries.polyFunc (2 * P.m + 2) (PauliScalar P) P.d) :
     (canonicalPolynomialMeasurement R).effect p =
       R.effect ((directPolynomialEquiv P).symm p) := by
@@ -77,14 +77,14 @@ def canonicalPolynomialMeasurement {P : AdmissibleParams} {ι : Type*}
 
 /-- The complete projective pair construction applied to the actual
 rounded measurement, including all excluded outcomes at one chosen pair. -/
-def directPairMeasurement {P : AdmissibleParams} {ι : Type*}
-    [Fintype ι] [DecidableEq ι] (R : DirectPolyMeasTuple P.extendedDirectLd ι)
+def directPairMeasurement
+
     (pair₀ : PolyPair P) : Quantum.Measurement (PolyPair P) ι :=
   completedPairMeasurement P (canonicalPolynomialMeasurement R) pair₀
 
 /-- Projectivity follows from completion and injective field transport. -/
-theorem directPairMeasurement_projective {P : AdmissibleParams} {ι : Type*}
-    [Fintype ι] [DecidableEq ι] (R : DirectPolyMeasTuple P.extendedDirectLd ι)
+theorem directPairMeasurement_projective
+
     (hR : Measurement.IsProjective R) (pair₀ : PolyPair P) :
     Measurement.IsProjective (directPairMeasurement R pair₀) :=
   completedPairMeasurement_projective P _
@@ -116,21 +116,9 @@ theorem directCombinedEmbedding_read (P : AdmissibleParams)
   let u := (directPointExtendedQuestionEquiv P).symm x
   have hx := directPointExtendedQuestionEquiv_apply P u
   have heval : extendedPolynomialRead P x (directCombinedEmbedding P pair) =
-      MvPolynomial.eval (directPointToPauli P u) (combinedPolyEmbedding P pair).1 := by
-    let p : Preliminaries.polyFunc (2 * P.m + 2) (DirectScalarQ P.extendedDirectLd) P.d :=
-      directCombinedEmbedding P pair (0 : Fin 1)
-    have hp := congrArg Subtype.val ((directPolynomialEquiv P).apply_symm_apply
-      (combinedPolyEmbedding P pair))
-    change MvPolynomial.map (extendedDirectScalarEquiv P).toRingHom p.1 = _ at hp
-    rw [← hp]
-    change extendedDirectScalarEquiv P (MvPolynomial.eval u p.1) = _
-    rw [MvPolynomial.eval_map]
-    exact (MvPolynomial.eval₂_comp (extendedDirectScalarEquiv P).toRingHom u p.1).symm
+      MvPolynomial.eval (directPointToPauli P u) (combinedPolyEmbedding P pair).1 := by solve_by_elim (maxDepth := 8) [MvPolynomial.eval_map]
   rw [heval, combinedPolyEmbedding_eval]
-  have hx' : x = ((projX (directPointToPauli P u), projZ (directPointToPauli P u)),
-      (directPointToPauli P u (alphaVar P.m), directPointToPauli P u (betaVar P.m))) :=
-    ((directPointExtendedQuestionEquiv P).apply_symm_apply x).symm.trans hx
-  rw [hx']
+  grind
 
 end
 

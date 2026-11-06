@@ -30,11 +30,11 @@ noncomputable section
 the joint axis line-point law. This is the axis case of the conditional
 sampling used at paper line 955. -/
 theorem avgOver_aLinePointDist_resample_parameter (L : LdParams)
-    (value : (LineDesc L × (Fin L.m → ScalarQ L)) → ℝ) :
+    (value :  LineDesc L ×  MIPStarRE.QPBT.LdPoint L   → ℝ) :
     avgOver (aLinePointDist L) value =
-    avgOver (aLinePointDist L) (fun sample =>
-      avgOver (uniformDistribution (ScalarQ L)) (fun param =>
-        value (sample.1, sample.1.base + param • sample.1.direction))) := by
+    avgOver (aLinePointDist L)  fun sample =>
+      avgOver (uniformDistribution (ScalarQ L))  fun param =>
+        value (sample.1, sample.1.base + param • sample.1.direction)   := by
   classical
   unfold aLinePointDist clDistribution
   simp only [Distribution.avgOver_map, aLineDescOf_ldALineCL]
@@ -43,23 +43,23 @@ theorem avgOver_aLinePointDist_resample_parameter (L : LdParams)
   simp only [Distribution.avgOver_map]
   rw [uniformDistribution_prod]
   simp only [SandwichProduct.avgOver_distribution_prod]
-  rw [avgOver_comm, avgOver_comm (uniformDistribution (Fin L.m → ScalarQ L))]
+  rw [avgOver_comm, avgOver_comm (uniformDistribution (MIPStarRE.QPBT.LdPoint L))]
   apply congrArg
   funext block
-  let direction : Fin L.m → ScalarQ L :=
+  let direction : MIPStarRE.QPBT.LdPoint L :=
     coordinateDirection (chiIndex L block.1)
-  change avgOver (uniformDistribution (Fin L.m → ScalarQ L)) (fun point =>
+  change avgOver (uniformDistribution (MIPStarRE.QPBT.LdPoint L)) (fun point =>
       value (LineDesc.axis (lineRepMap direction point) block.1
         (lineRepMap_apply_self direction point), point)) =
-    avgOver (uniformDistribution (Fin L.m → ScalarQ L)) (fun point =>
-      avgOver (uniformDistribution (ScalarQ L)) (fun param =>
+    avgOver (uniformDistribution (MIPStarRE.QPBT.LdPoint L))  fun point =>
+      avgOver (uniformDistribution (ScalarQ L))  fun param =>
         value (LineDesc.axis (lineRepMap direction point) block.1
           (lineRepMap_apply_self direction point),
-          lineRepMap direction point + param • direction)))
+          lineRepMap direction point + param • direction)  
   have haxis := avgOver_uniform_lineRepMap_resample_parameter direction
-    (fun base point => value (LineDesc.axis
+     fun base point => value (LineDesc.axis
       (lineRepMap direction base) block.1
-      (lineRepMap_apply_self _ _), point))
+      (lineRepMap_apply_self _ _), point) 
   simpa only [lineRepMap_apply_self] using haxis
 
 end

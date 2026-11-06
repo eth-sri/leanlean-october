@@ -31,11 +31,11 @@ This formalization-only identity combines the axis and diagonal cases of the
 conditional sampling used at paper line 955. It is recorded in blueprint
 `cor:line-point-parameter-resampling`. -/
 theorem avgOver_linePointDist_resample_parameter (L : LdParams)
-    (value : (LineDesc L × (Fin L.m → ScalarQ L)) → ℝ) :
+    (value :  LineDesc L ×  MIPStarRE.QPBT.LdPoint L   → ℝ) :
     avgOver (linePointDist L) value =
-      avgOver (linePointDist L) (fun sample =>
-        avgOver (uniformDistribution (ScalarQ L)) (fun param =>
-          value (sample.1, sample.1.base + param • sample.1.direction))) := by
+      avgOver (linePointDist L)  fun sample =>
+        avgOver (uniformDistribution (ScalarQ L))  fun param =>
+          value (sample.1, sample.1.base + param • sample.1.direction)   := by
   rw [linePointDist, avgOver_mix, avgOver_mix]
   rw [avgOver_aLinePointDist_resample_parameter L value,
     avgOver_dLinePointDist_resample_parameter L value]

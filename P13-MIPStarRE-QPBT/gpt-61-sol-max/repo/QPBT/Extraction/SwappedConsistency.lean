@@ -18,7 +18,7 @@ Blueprint `lem:qld-unitary`; paper
 
 @[expose] public section
 
-open scoped BigOperators Matrix
+open scoped BigOperators Matrix Classical
 
 namespace MIPStarRE.QPBT
 
@@ -28,9 +28,7 @@ noncomputable section
 
 private theorem conjBy_reindexOp {I J : Type} [Fintype I] [Fintype J]
     (e : I ≃ J) (U A : Op J) :
-    conjBy (reindexOp e U) (reindexOp e A) = reindexOp e (conjBy U A) := by
-  rw [conjBy, ← ProjectiveSetting.reindexOp_conjTranspose,
-    ← WinImplications.reindexOp_mul, ← WinImplications.reindexOp_mul, conjBy]
+    conjBy (reindexOp e U) (reindexOp e A) = reindexOp e (conjBy U A) := by simp_all [conjBy, reindexOp]
 
 private theorem conjBy_heteroKron {I J : Type} [Fintype I] [Fintype J]
     (U A : Op I) (V B : Op J) :
@@ -46,7 +44,6 @@ theorem ProjectiveSetting.conjBy_placeBoth_swap_placeSide
     (A : Op (ExtractionBlock P (S.LocalSpace side))) :
     conjBy (S.placeBoth (swapUnitary w .alice) (swapUnitary w .bob)) (S.placeSide side A) =
       S.placeSide side (conjBy (swapUnitary w side) A) := by
-  classical
   cases side <;> simp only [ProjectiveSetting.placeBoth, ProjectiveSetting.placeSide,
     conjBy_reindexOp, conjBy_heteroKron]
   · congr 2
@@ -60,7 +57,7 @@ theorem ProjectiveSetting.conjBy_placeBoth_swap_placeSide
 preserves their state-dependent distance. -/
 theorem opDistSq_conjBy_apply_eq {X I : Type} [Fintype X] [DecidableEq X]
     [Fintype I] [DecidableEq I] (mu : Distribution X) (U : Op I)
-    (hU : Uᴴ * U = 1) (A B : X → Op I) (psi : EuclideanSpace ℂ I) :
+    (hU : Uᴴ * U = 1) (A B : X → Op I) (psi : MIPStarRE.QPBT.StateVector I) :
     opDistSq mu (fun x => conjBy U (A x)) (fun x => conjBy U (B x))
       (applyOperatorToState U psi) = opDistSq mu A B psi := by
   have hterm (M N : Op I) : (conjBy U M - conjBy U N) * U = U * (M - N) := by

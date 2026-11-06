@@ -20,7 +20,7 @@ These bounds justify the large-error case of extraction.
 
 @[expose] public section
 
-open scoped BigOperators Matrix MatrixOrder ComplexOrder
+open scoped BigOperators Matrix MatrixOrder ComplexOrder Classical
 
 namespace MIPStarRE.QPBT
 
@@ -33,12 +33,13 @@ namespace ProjectiveSetting
 variable {P : AdmissibleParams} {epsilon deltaG : ℝ}
 variable (S : ProjectiveSetting P epsilon)
 
+variable (w : GlobalPairWitness S deltaG)
+
 /-- The simultaneous swap is an isometry on the six-register space. This is
 the two-player consequence of the unitarity calculation at paper lines 1693-1700. -/
-theorem placeBoth_swap_left_unitary (w : GlobalPairWitness S deltaG) :
+theorem placeBoth_swap_left_unitary  :
     (S.placeBoth (swapUnitary w .alice) (swapUnitary w .bob))ᴴ *
       S.placeBoth (swapUnitary w .alice) (swapUnitary w .bob) = 1 := by
-  classical
   rw [placeBoth, ← reindexOp_conjTranspose, ← WinImplications.reindexOp_mul,
     MagicSquareRigidity.heteroKron_conjTranspose, heteroKron_mul]
   erw [conjTranspose_mul_swapUnitary, conjTranspose_mul_swapUnitary]
@@ -47,17 +48,16 @@ theorem placeBoth_swap_left_unitary (w : GlobalPairWitness S deltaG) :
   simp [reindexOp, Matrix.one_apply]
 
 /-- Applying the two concrete swap unitaries preserves normalization. -/
-theorem applyBoth_swap_norm (w : GlobalPairWitness S deltaG) :
+theorem applyBoth_swap_norm  :
     ‖S.applyBoth (swapUnitary w .alice) (swapUnitary w .bob) S.psiHat‖ = 1 := by
   rw [applyBoth, MagicSquareRigidity.norm_applyOperatorToState_of_isometry
     (S.placeBoth_swap_left_unitary w), S.psiHat_norm]
 
 /-- Each placed swap is an isometry on the six-register space. -/
-theorem placeSide_swap_left_unitary (w : GlobalPairWitness S deltaG)
+theorem placeSide_swap_left_unitary
     (side : PlayerSide) :
     (S.placeSide side (swapUnitary w side))ᴴ *
       S.placeSide side (swapUnitary w side) = 1 := by
-  classical
   cases side <;>
     simp only [placeSide, ← reindexOp_conjTranspose, ← WinImplications.reindexOp_mul,
       MagicSquareRigidity.heteroKron_conjTranspose, Matrix.conjTranspose_one,
@@ -73,12 +73,13 @@ private theorem sum_place_sq_eq_one {α : Type*} [Fintype α]
   simp only [← S.place_conjTranspose, ← S.place_mul]
   rw [← S.place_finsetSum, hA, S.place_one]
 
+variable (side : PlayerSide) (W : PauliKind)
+
 /-- The original total-Pauli effects remain square-complete after placement.
 This is the completeness used to expand the distance at paper lines 1827-1834. -/
-theorem sum_placePlayer_pauli_sq (side : PlayerSide) (W : PauliKind) :
+theorem sum_placePlayer_pauli_sq   :
     ∑ h, (S.placePlayer side ((S.pauliMeas side W).effect h))ᴴ *
       S.placePlayer side ((S.pauliMeas side W).effect h) = 1 := by
-  classical
   have hlocal : ∑ h, ((S.pauliMeas side W).effect h)ᴴ *
       (S.pauliMeas side W).effect h = 1 := by
     have hproj : Measurement.IsProjective (S.pauliMeas side W) := by
@@ -95,10 +96,9 @@ theorem sum_placePlayer_pauli_sq (side : PlayerSide) (W : PauliKind) :
     erw [hlocal] <;> exact heteroKron_one_one
 
 /-- The ideal total-Pauli effects are square-complete on either extracted register. -/
-theorem sum_placeExtractedRegister_pauli_sq (side : PlayerSide) (W : PauliKind) :
+theorem sum_placeExtractedRegister_pauli_sq   :
     ∑ h : PauliRegister P, (S.placeExtractedRegister side (pauliProj W h))ᴴ *
       S.placeExtractedRegister side (pauliProj W h) = 1 := by
-  classical
   have hlocal : ∑ h : PauliRegister P, (pauliProj W h)ᴴ * pauliProj W h = 1 := by
     simp only [fun h => (posSemidef_pauliProj W h).isHermitian.eq,
       pauliProj_mul_pauliProj, ite_true]
@@ -113,45 +113,38 @@ theorem sum_placeExtractedRegister_pauli_sq (side : PlayerSide) (W : PauliKind) 
 
 /-- The entire conjugated total-Pauli family is square-complete; conjugation
 does not introduce a factor equal to the number of answers. -/
-theorem sum_conj_pauli_sq (w : GlobalPairWitness S deltaG)
-    (side : PlayerSide) (W : PauliKind) :
+theorem sum_conj_pauli_sq
+      :
     ∑ h : PauliRegister P,
       (conjBy (S.placeSide side (swapUnitary w side))
         (S.placePlayer side ((S.pauliMeas side W).effect h)))ᴴ *
       conjBy (S.placeSide side (swapUnitary w side))
         (S.placePlayer side ((S.pauliMeas side W).effect h)) = 1 := by
-  classical
   let U := S.placeSide side (swapUnitary w side)
-  have hU : Uᴴ * U = 1 := S.placeSide_swap_left_unitary w side
-  have hU' : U * Uᴴ = 1 := mul_eq_one_comm.mp hU
+  have hU  := S.placeSide_swap_left_unitary w side
+  have hU'  := mul_eq_one_comm.mp hU
   have hterm (A : Op (SixReg P S.toStrategy.ιA S.toStrategy.ιB)) :
       (conjBy U A)ᴴ * conjBy U A = U * (Aᴴ * A) * Uᴴ := by
     simp only [conjBy, Matrix.conjTranspose_mul, Matrix.conjTranspose_conjTranspose]
     calc
       _ = U * (Aᴴ * (Uᴴ * U) * A) * Uᴴ := by noncomm_ring
       _ = _ := by rw [hU, Matrix.mul_one]
-  change (∑ h, (conjBy U _)ᴴ * conjBy U _) = 1
+  change  ∑ h, (conjBy U _)ᴴ * conjBy U _  = 1
   simp_rw [hterm]
   rw [← Finset.sum_mul, ← Matrix.mul_sum, S.sum_placePlayer_pauli_sq,
     Matrix.mul_one, hU']
 
 /-- On any normalized ideal state the extraction measurement error is at
 most four, uniformly in the local dimensions and number of answers. -/
-theorem extraction_pauli_dist_le_four (w : GlobalPairWitness S deltaG)
-    (aux : EuclideanSpace ℂ (ExtractionAuxRegisters P S.toStrategy.ιA S.toStrategy.ιB))
+theorem extraction_pauli_dist_le_four
+    (aux : MIPStarRE.QPBT.StateVector (ExtractionAuxRegisters P S.toStrategy.ιA S.toStrategy.ιB))
     (haux : ‖aux‖ = 1) (side : PlayerSide) (W : PauliKind) :
     opFamilyDistSq (MIPStarRE.LDT.uniformDistribution Unit)
       (fun (_ : Unit) (h : PauliRegister P) =>
         conjBy (S.placeSide side (swapUnitary w side))
           (S.placePlayer side ((S.pauliMeas side W).effect h)))
       (fun (_ : Unit) (h : PauliRegister P) =>
-        S.placeExtractedRegister side (pauliProj W h)) (S.idealExpState aux) ≤ 4 := by
-  apply opFamilyDistSq_uniform_le_four
-  · rw [S.idealExpState_norm, haux]
-  · intro _
-    exact (S.sum_conj_pauli_sq w side W).le
-  · intro _
-    exact (S.sum_placeExtractedRegister_pauli_sq side W).le
+        S.placeExtractedRegister side (pauliProj W h)) (S.idealExpState aux) ≤ 4 := by simp_all [ opFamilyDistSq_uniform_le_four, ProjectiveSetting.sum_conj_pauli_sq, ProjectiveSetting.sum_placeExtractedRegister_pauli_sq, ProjectiveSetting.idealExpState_norm]
 
 end ProjectiveSetting
 

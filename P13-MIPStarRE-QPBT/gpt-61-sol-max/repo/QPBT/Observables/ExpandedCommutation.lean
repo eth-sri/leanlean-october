@@ -43,7 +43,7 @@ theorem tauObservable_conjTranspose {K ι : Type*} [Field K] [Finite K]
     (tauObservable W v)ᴴ = tauObservable W v := by
   cases nonempty_fintype K
   rw [tauObservable_eq_sum_pauliProj, Matrix.conjTranspose_sum]
-  refine Finset.sum_congr rfl (fun e _ => ?_)
+  refine Finset.sum_congr rfl  fun e _ => ?_ 
   rw [Matrix.conjTranspose_smul, star_phaseSign]
   congr 1
   exact (Matrix.posSemidef_vecMulVec_self_star (pauliVec W e)).isHermitian.eq
@@ -64,14 +64,14 @@ variable {P : AdmissibleParams} {ε : ℝ}
 /-! ## The commutator of two expanded point projections -/
 
 /-- The Pauli-register factor of the expanded `X` observable at a tuple. -/
-noncomputable def tauX (P : AdmissibleParams) (ω : PauliTuple P) :
+def tauX (P : AdmissibleParams) (ω : PauliTuple P) :
     Op (PauliRegister P) :=
-  tauObservable .X (fun h => ω.2.2.1 * indicatorVec ω.1 h)
+  tauObservable .X  fun h => ω.2.2.1 * indicatorVec ω.1 h 
 
 /-- The Pauli-register factor of the expanded `Z` observable at a tuple. -/
-noncomputable def tauZ (P : AdmissibleParams) (ω : PauliTuple P) :
+def tauZ (P : AdmissibleParams) (ω : PauliTuple P) :
     Op (PauliRegister P) :=
-  tauObservable .Z (fun h => ω.2.2.2 * indicatorVec ω.2.1 h)
+  tauObservable .Z  fun h => ω.2.2.2 * indicatorVec ω.2.1 h 
 
 /-- The product of the two Pauli-register factors is an isometry. Blueprint
 `ch11_qpbt_algebra.tex:596-644`, paper
@@ -92,28 +92,19 @@ theorem tauZ_mul_tauX (P : AdmissibleParams) (ω : PauliTuple P) :
         (tauX P ω * tauZ P ω) := by
   have h := tauObservable_X_mul_Z (K := PauliScalar P)
     (fun h => ω.2.2.1 * indicatorVec ω.1 h)
-    (fun h => ω.2.2.2 * indicatorVec ω.2.1 h)
+     fun h => ω.2.2.2 * indicatorVec ω.2.1 h 
   have hg : binTrace (PauliScalar P)
       (dotProduct (fun h => ω.2.2.1 * indicatorVec ω.1 h)
-        (fun h => ω.2.2.2 * indicatorVec ω.2.1 h)) =
+         fun h => ω.2.2.2 * indicatorVec ω.2.1 h ) =
       gammaValue P ω.1 ω.2.1 ω.2.2.1 ω.2.2.2 := rfl
   rw [hg, show (tauObservable .X fun k => ω.2.2.1 * indicatorVec ω.1 k) =
       tauX P ω from rfl,
     show (tauObservable .Z fun k => ω.2.2.2 * indicatorVec ω.2.1 k) =
       tauZ P ω from rfl] at h
-  have hsq := phaseSign_mul_self (gammaValue P ω.1 ω.2.1 ω.2.2.1 ω.2.2.2)
-  calc tauZ P ω * tauX P ω
-      = (phaseSign (gammaValue P ω.1 ω.2.1 ω.2.2.1 ω.2.2.2) *
-          phaseSign (gammaValue P ω.1 ω.2.1 ω.2.2.1 ω.2.2.2)) •
-            (tauZ P ω * tauX P ω) := by rw [hsq, one_smul]
-    _ = phaseSign (gammaValue P ω.1 ω.2.1 ω.2.2.1 ω.2.2.2) •
-          (phaseSign (gammaValue P ω.1 ω.2.1 ω.2.2.1 ω.2.2.2) •
-            (tauZ P ω * tauX P ω)) := by rw [smul_smul]
-    _ = phaseSign (gammaValue P ω.1 ω.2.1 ω.2.2.1 ω.2.2.2) •
-          (tauX P ω * tauZ P ω) := by rw [← h]
+  classical simp_all [one_smul, smul_smul, phaseSign_mul_self]
 
 /-- The twisted commutator of the two point observables at a tuple. -/
-noncomputable def twistedCommutator (S : ProjectiveSetting P ε)
+def twistedCommutator (S : ProjectiveSetting P ε)
     (side : PlayerSide) (ω : PauliTuple P) : Op (S.LocalSpace side) :=
   S.pointObs side .X ω.2.2.1 ω.1 * S.pointObs side .Z ω.2.2.2 ω.2.1 -
     phaseSign (gammaValue P ω.1 ω.2.1 ω.2.2.1 ω.2.2.2) •
@@ -166,13 +157,13 @@ theorem twisted_commutator_avg_le_explicit :
               3551040 * (16 * (Fintype.card PauliEdge : ℝ))) + 4) *
             Real.sqrt ε := by
   intro P ε S side hε
-  have hs : (0 : ℝ) ≤ Real.sqrt ε := Real.sqrt_nonneg ε
+  have hs  := Real.sqrt_nonneg ε
   cases side with
   | alice =>
       have h := WinImplications.point_obs_twisted_commutation_explicit P ε S hε
       rw [WinImplications.opDistSq_eq_avgOver] at h
       refine le_trans (le_of_eq ?_) (le_trans h ?_)
-      · refine avgOver_congr _ _ _ (fun ω => ?_)
+      · refine avgOver_congr _ _ _  fun ω => ?_ 
         have hop : S.placeStrategySide .alice (S.twistedCommutator .alice ω) =
             heteroKron (S.pointObs .alice .X ω.2.2.1 ω.1 *
                 S.pointObs .alice .Z ω.2.2.2 ω.2.1)
@@ -204,7 +195,7 @@ theorem twisted_commutator_avg_le_explicit :
         WinImplications.point_obs_twisted_commutation_interchanged_explicit P ε S hε
       rw [WinImplications.opDistSq_eq_avgOver] at h
       refine le_trans (le_of_eq ?_) (le_trans h ?_)
-      · refine avgOver_congr _ _ _ (fun ω => ?_)
+      · refine avgOver_congr _ _ _  fun ω => ?_ 
         have hop : S.placeStrategySide .bob (S.twistedCommutator .bob ω) =
             heteroKron (1 : Op S.toStrategy.ιA)
                 (S.pointObs .bob .X ω.2.2.1 ω.1 *

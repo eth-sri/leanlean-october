@@ -13,7 +13,9 @@ dependent uniform sampling agrees with push-forward from a product.
 
 @[expose] public section
 
-open scoped BigOperators
+variable {α β : Type*} [Fintype α] [DecidableEq α] [Nonempty α] [Fintype β] [DecidableEq β] [Nonempty β]
+
+open scoped BigOperators Classical
 
 namespace MIPStarRE.QPBT
 
@@ -45,15 +47,14 @@ theorem Distribution.prod_isProbability {α β : Type*}
   simp only [Distribution.IsProbability, Distribution.totalWeight,
     Distribution.prod]
   calc
-    (∑ p ∈ μ.support.product ν.support, μ.weight p.1 * ν.weight p.2) =
-        ∑ a ∈ μ.support, ∑ b ∈ ν.support, μ.weight a * ν.weight b := by
-      exact Finset.sum_product' μ.support ν.support
-        (fun a b => μ.weight a * ν.weight b)
+     ∑ p ∈ μ.support.product ν.support, μ.weight p.1 * ν.weight p.2  =
+        ∑ a ∈ μ.support, ∑ b ∈ ν.support, μ.weight a * ν.weight b := Finset.sum_product' μ.support ν.support
+         fun a b => μ.weight a * ν.weight b 
     _ =
         ∑ a ∈ μ.support, μ.weight a * ∑ b ∈ ν.support, ν.weight b := by
       apply Finset.sum_congr rfl
       intro a _
-      exact (Finset.mul_sum ν.support (fun b => ν.weight b) (μ.weight a)).symm
+      exact (Finset.mul_sum ν.support ν.weight (μ.weight a)).symm
     _ = ∑ a ∈ μ.support, μ.weight a := by
       rw [hν.weight_sum_eq_one]
       simp
@@ -68,14 +69,10 @@ noncomputable def Distribution.mix {α : Type*} [DecidableEq α]
     (μ ν : Distribution α) : Distribution α where
   support := μ.support ∪ ν.support
   weight a := t * μ.weight a + (1 - t) * ν.weight a
-  nonnegative a := by
-    exact add_nonneg
+  nonnegative a := add_nonneg
       (mul_nonneg ht0 (μ.nonnegative a))
       (mul_nonneg (sub_nonneg.mpr ht1) (ν.nonnegative a))
-  outsideSupport a ha := by
-    have hμ : a ∉ μ.support := fun h => ha (Finset.mem_union_left _ h)
-    have hν : a ∉ ν.support := fun h => ha (Finset.mem_union_right _ h)
-    simp [μ.outsideSupport a hμ, ν.outsideSupport a hν]
+  outsideSupport a ha := by simp_all [MIPStarRE.LDT.Distribution.outsideSupport]
 
 /-- A convex mixture of probability distributions is a probability distribution;
 blueprint `def:line-point-dist`, paper
@@ -84,13 +81,11 @@ theorem Distribution.mix_isProbability {α : Type*} [DecidableEq α]
     (t : ℝ) (μ ν : Distribution α) (hμ : μ.IsProbability)
     (hν : ν.IsProbability) (ht0 : 0 ≤ t) (ht1 : t ≤ 1) :
     (Distribution.mix t ht0 ht1 μ ν).IsProbability := by
-  have hμ_union :
-      ∑ a ∈ μ.support ∪ ν.support, μ.weight a = 1 := by
+  have hμ_union  := by
     apply hμ.weight_sum_eq_one_of_subset
     intro a ha
     exact Finset.mem_union_left ν.support ha
-  have hν_union :
-      ∑ a ∈ μ.support ∪ ν.support, ν.weight a = 1 := by
+  have hν_union  := by
     apply hν.weight_sum_eq_one_of_subset
     intro a ha
     exact Finset.mem_union_right μ.support ha
@@ -105,7 +100,7 @@ distributions, blueprint `def:typed-cl-distributions`, paper
 `07_types.tex:84-94`. -/
 noncomputable def Distribution.bind {α β : Type*} [DecidableEq β]
     (μ : Distribution α) (ν : α → Distribution β) : Distribution β where
-  support := μ.support.biUnion (fun a => (ν a).support)
+  support := μ.support.biUnion  fun a => (ν a).support 
   weight b := ∑ a ∈ μ.support, μ.weight a * (ν a).weight b
   nonnegative b := Finset.sum_nonneg fun a _ => mul_nonneg (μ.nonnegative a) ((ν a).nonnegative b)
   outsideSupport b hb := by
@@ -123,9 +118,8 @@ theorem Distribution.bind_isProbability {α β : Type*} [DecidableEq β]
     (μ : Distribution α) (ν : α → Distribution β) (hμ : μ.IsProbability)
     (hν : ∀ a ∈ μ.support, (ν a).IsProbability) :
     (Distribution.bind μ ν).IsProbability := by
-  classical
   have hν_union (a : α) (ha : a ∈ μ.support) :
-      ∑ b ∈ μ.support.biUnion (fun a => (ν a).support), (ν a).weight b = 1 := by
+      ∑ b ∈ μ.support.biUnion  fun a => (ν a).support , (ν a).weight b = 1 := by
     apply (hν a ha).weight_sum_eq_one_of_subset
     intro b hb
     exact Finset.mem_biUnion.mpr ⟨a, ha, hb⟩
@@ -133,16 +127,16 @@ theorem Distribution.bind_isProbability {α β : Type*} [DecidableEq β]
     Distribution.bind]
   rw [Finset.sum_comm]
   calc
-    (∑ a ∈ μ.support,
-        ∑ b ∈ μ.support.biUnion (fun a => (ν a).support),
-          μ.weight a * (ν a).weight b) =
+     ∑ a ∈ μ.support,
+        ∑ b ∈ μ.support.biUnion  fun a => (ν a).support ,
+          μ.weight a * (ν a).weight b  =
         ∑ a ∈ μ.support,
           μ.weight a *
-            ∑ b ∈ μ.support.biUnion (fun a => (ν a).support),
+            ∑ b ∈ μ.support.biUnion  fun a => (ν a).support ,
               (ν a).weight b := by
       apply Finset.sum_congr rfl
       intro a _
-      exact (Finset.mul_sum _ (fun b => (ν a).weight b) (μ.weight a)).symm
+      exact (Finset.mul_sum _   (ν a).weight   (μ.weight a)).symm
     _ = ∑ a ∈ μ.support, μ.weight a := by
       apply Finset.sum_congr rfl
       intro a ha
@@ -165,7 +159,7 @@ noncomputable def Distribution.restrict {α : Type*} [DecidableEq α]
     · exact le_rfl
   outsideSupport a ha := by
     by_cases hp : p a
-    · have hμ : a ∉ μ.support := fun h => ha (Finset.mem_filter.mpr ⟨h, hp⟩)
+    · have hμ  := fun h => ha (Finset.mem_filter.mpr ⟨h, hp⟩)
       simp [hp, μ.outsideSupport a hμ]
     · simp [hp]
 
@@ -211,8 +205,8 @@ theorem Distribution.ext_of_support_of_weight {α : Type*} {μ ν : Distribution
   | mk s w hn ho =>
     cases ν with
     | mk s' w' hn' ho' =>
-      have hs : s = s' := hsupport
-      have hw : w = w' := hweight
+      have hs  := hsupport
+      have hw  := hweight
       subst hs
       subst hw
       rfl
@@ -234,8 +228,8 @@ theorem Distribution.map_map {α β γ : Type*}
       obtain ⟨ha1, ha2⟩ := Finset.mem_filter.mp ha
       exact Finset.mem_filter.mpr ⟨Finset.mem_image_of_mem _ ha1, ha2⟩
     have hkey := Finset.sum_fiberwise_of_maps_to hmaps μ.weight
-    change (∑ b ∈ (μ.support.image e).filter fun b => f b = c,
-        ∑ a ∈ μ.support.filter fun a => e a = b, μ.weight a) =
+    change  ∑ b ∈ (μ.support.image e).filter fun b => f b = c,
+        ∑ a ∈ μ.support.filter fun a => e a = b, μ.weight a  =
       ∑ a ∈ μ.support.filter fun a => f (e a) = c, μ.weight a
     rw [← hkey]
     refine Finset.sum_congr rfl fun b hb => ?_
@@ -265,18 +259,14 @@ theorem uniformDistribution_map_weight {α γ : Type*}
     (e : α → γ) (c : γ) :
     ((uniformDistribution α).map e).weight c =
       (((Finset.univ : Finset α).filter fun x => e x = c).card : Error) *
-        (1 / (Fintype.card α : Error)) := by
-  change (∑ x ∈ (Finset.univ : Finset α).filter (fun x => e x = c),
-      (uniformDistribution α).weight x) = _
-  rw [Finset.sum_congr rfl fun x _ => uniformDistribution_weight_apply α x,
-    Finset.sum_const, nsmul_eq_mul]
+        (1 / (Fintype.card α : Error)) := by simp_all [ Finset.sum_const, nsmul_eq_mul, uniformDistribution_weight_apply]
 
 /-- Formalization-only lemma: a map whose fibers all have the same cardinality
 pushes the uniform distribution forward to the uniform distribution.  This is
 `lem:uniform-map-equal-fibers` in blueprint chapter 13. -/
-theorem uniformDistribution_map_of_card_fiber {α β : Type*}
-    [Fintype α] [DecidableEq α] [Nonempty α]
-    [Fintype β] [DecidableEq β] [Nonempty β]
+theorem uniformDistribution_map_of_card_fiber
+
+
     (e : α → β) (c : ℕ)
     (hc : ∀ b : β, ((Finset.univ : Finset α).filter fun a => e a = b).card = c) :
     (uniformDistribution α).map e = uniformDistribution β := by
@@ -289,7 +279,7 @@ theorem uniformDistribution_map_of_card_fiber {α β : Type*}
   have hcard : Fintype.card α = Fintype.card β * c := by
     have h := Finset.card_eq_sum_card_fiberwise
       (f := e) (s := (Finset.univ : Finset α)) (t := (Finset.univ : Finset β))
-      (fun a _ => Finset.mem_univ _)
+       fun a _ => Finset.mem_univ _ 
     rw [Finset.card_univ] at h
     rw [h, Finset.sum_congr rfl fun b _ => hc b]
     simp [Finset.card_univ, mul_comm]
@@ -306,8 +296,8 @@ theorem uniformDistribution_map_of_card_fiber {α β : Type*}
     have hbeta : (Fintype.card β : Error) ≠ 0 := by
       exact_mod_cast Fintype.card_ne_zero (α := β)
     have hc' : (c : Error) ≠ 0 := by exact_mod_cast hcpos.ne'
-    change (∑ a ∈ (Finset.univ : Finset α).filter fun a => e a = b,
-        (uniformDistribution α).weight a) = (uniformDistribution β).weight b
+    change  ∑ a ∈ (Finset.univ : Finset α).filter fun a => e a = b,
+        (uniformDistribution α).weight a  = (uniformDistribution β).weight b
     rw [Finset.sum_congr rfl fun a _ => uniformDistribution_weight_apply α a,
       uniformDistribution_weight_apply, Finset.sum_const, hc, nsmul_eq_mul, hcard]
     push_cast
@@ -315,13 +305,13 @@ theorem uniformDistribution_map_of_card_fiber {α β : Type*}
 
 /-- Formalization-only lemma: relabelling along a bijection preserves
 uniformity.  This is `lem:uniform-map-equivalence` in blueprint chapter 13. -/
-theorem uniformDistribution_map_equiv {α β : Type*}
-    [Fintype α] [DecidableEq α] [Nonempty α]
-    [Fintype β] [DecidableEq β] [Nonempty β] (E : α ≃ β) :
+theorem uniformDistribution_map_equiv
+
+       (E : α ≃ β) :
     (uniformDistribution α).map E = uniformDistribution β := by
   refine uniformDistribution_map_of_card_fiber _ 1 fun b => ?_
   have hfilter :
-      ((Finset.univ : Finset α).filter fun a => E a = b) = {E.symm b} := by
+       (Finset.univ : Finset α).filter fun a => E a = b  = {E.symm b} := by
     ext a
     simp [Equiv.apply_eq_iff_eq_symm_apply]
   rw [hfilter]
@@ -330,12 +320,12 @@ theorem uniformDistribution_map_equiv {α β : Type*}
 /-- Formalization-only lemma: the first marginal of the uniform distribution on
 a product is uniform.  This is `lem:uniform-product-first-marginal` in blueprint
 chapter 13. -/
-theorem uniformDistribution_map_fst {α β : Type*}
-    [Fintype α] [DecidableEq α] [Nonempty α]
-    [Fintype β] [DecidableEq β] [Nonempty β] :
+theorem uniformDistribution_map_fst
+
+       :
     (uniformDistribution (α × β)).map Prod.fst = uniformDistribution α := by
   refine uniformDistribution_map_of_card_fiber _ (Fintype.card β) fun a => ?_
-  have hfilter : ((Finset.univ : Finset (α × β)).filter fun p => p.1 = a)
+  have hfilter :  (Finset.univ : Finset (α × β)).filter fun p => p.1 = a 
       = ({a} : Finset α) ×ˢ (Finset.univ : Finset β) := by
     ext p
     simp only [Finset.mem_filter, Finset.mem_univ, true_and, Finset.mem_product,
@@ -346,12 +336,12 @@ theorem uniformDistribution_map_fst {α β : Type*}
 /-- Formalization-only lemma: the second marginal of the uniform distribution
 on a product is uniform.  This is `lem:uniform-product-second-marginal` in
 blueprint chapter 13. -/
-theorem uniformDistribution_map_snd {α β : Type*}
-    [Fintype α] [DecidableEq α] [Nonempty α]
-    [Fintype β] [DecidableEq β] [Nonempty β] :
+theorem uniformDistribution_map_snd
+
+       :
     (uniformDistribution (α × β)).map Prod.snd = uniformDistribution β := by
   refine uniformDistribution_map_of_card_fiber _ (Fintype.card α) fun b => ?_
-  have hfilter : ((Finset.univ : Finset (α × β)).filter fun p => p.2 = b)
+  have hfilter :  (Finset.univ : Finset (α × β)).filter fun p => p.2 = b 
       = (Finset.univ : Finset α) ×ˢ ({b} : Finset β) := by
     ext p
     simp only [Finset.mem_filter, Finset.mem_univ, true_and, Finset.mem_product,
@@ -383,15 +373,7 @@ theorem bind_uniformOnFinset_map {α β γ σ : Type*} [DecidableEq α]
   refine Distribution.ext_of_support_of_weight ?_ ?_
   · change s.biUnion (fun a => (Finset.univ : Finset β).image (g a)) =
       (Finset.univ : Finset (σ × β)).image fun q => g (f q.1) q.2
-    ext c
-    simp only [Finset.mem_biUnion, Finset.mem_image, Finset.mem_univ, true_and,
-      Prod.exists]
-    constructor
-    · rintro ⟨a, ha, b, rfl⟩
-      obtain ⟨xx, rfl⟩ := (hmem a).mp ha
-      exact ⟨xx, b, rfl⟩
-    · rintro ⟨xx, b, rfl⟩
-      exact ⟨f xx, (hmem _).mpr ⟨xx, rfl⟩, b, rfl⟩
+    ext <;> simp_all
   · funext c
     have key : ∀ a ∈ s, (Distribution.uniformOnFinset s).weight a *
         ((uniformDistribution β).map (g a)).weight c =
@@ -406,8 +388,8 @@ theorem bind_uniformOnFinset_map {α β γ σ : Type*} [DecidableEq α]
           ∑ x : σ, ((Finset.univ : Finset β).filter fun b => g (f x) b = c).card := by
       simp only [Finset.card_filter]
       rw [Fintype.sum_prod_type]
-    change (∑ a ∈ s, (Distribution.uniformOnFinset s).weight a *
-        ((uniformDistribution β).map (g a)).weight c) =
+    change  ∑ a ∈ s, (Distribution.uniformOnFinset s).weight a *
+        ((uniformDistribution β).map (g a)).weight c  =
       ∑ q ∈ (Finset.univ : Finset (σ × β)).filter fun q => g (f q.1) q.2 = c,
         (uniformDistribution (σ × β)).weight q
     rw [Finset.sum_congr rfl key,
@@ -440,7 +422,7 @@ of its indicator.  Blueprint `lem:restricted-line-mixture-bounds`, paper
 theorem Distribution.sum_filter_weight_eq_avgOver {α : Type*}
     (μ : Distribution α) (p : α → Prop) [DecidablePred p] :
     ∑ a ∈ μ.support.filter p, μ.weight a =
-      avgOver μ (fun a => if p a then 1 else 0) := by
+      avgOver μ  fun a => if p a then 1 else 0  := by
   unfold avgOver
   rw [Finset.sum_filter]
   refine Finset.sum_congr rfl fun a _ => ?_
@@ -452,27 +434,17 @@ bind.  Blueprint `lem:restricted-line-mixture-bounds`, paper
 theorem Distribution.bind_map {α β γ : Type*} [DecidableEq β] [DecidableEq γ]
     (μ : Distribution α) (ν : α → Distribution β) (f : β → γ) :
     (Distribution.bind μ ν).map f =
-      Distribution.bind μ (fun a => (ν a).map f) := by
-  classical
+      Distribution.bind μ  fun a => (ν a).map f  := by
   refine Distribution.ext_of_support_of_weight ?_ ?_
   · change (μ.support.biUnion fun a => (ν a).support).image f =
       μ.support.biUnion fun a => (ν a).support.image f
-    ext c
-    constructor
-    · intro hc
-      obtain ⟨b, hb, rfl⟩ := Finset.mem_image.mp hc
-      obtain ⟨a, ha, hb'⟩ := Finset.mem_biUnion.mp hb
-      exact Finset.mem_biUnion.mpr ⟨a, ha, Finset.mem_image_of_mem f hb'⟩
-    · intro hc
-      obtain ⟨a, ha, hc'⟩ := Finset.mem_biUnion.mp hc
-      obtain ⟨b, hb, rfl⟩ := Finset.mem_image.mp hc'
-      exact Finset.mem_image.mpr ⟨b, Finset.mem_biUnion.mpr ⟨a, ha, hb⟩, rfl⟩
+    grind
   · funext c
-    change (∑ b ∈ (μ.support.biUnion fun a => (ν a).support).filter
-          (fun b => f b = c),
-        ∑ a ∈ μ.support, μ.weight a * (ν a).weight b) =
+    change  ∑ b ∈ (μ.support.biUnion fun a => (ν a).support).filter
+           fun b => f b = c ,
+        ∑ a ∈ μ.support, μ.weight a * (ν a).weight b  =
       ∑ a ∈ μ.support, μ.weight a *
-        ∑ b ∈ (ν a).support.filter (fun b => f b = c), (ν a).weight b
+        ∑ b ∈ (ν a).support.filter  fun b => f b = c , (ν a).weight b
     rw [Finset.sum_comm]
     refine Finset.sum_congr rfl fun a ha => ?_
     rw [Finset.mul_sum]
@@ -482,8 +454,8 @@ theorem Distribution.bind_map {α β γ : Type*} [DecidableEq β] [DecidableEq �
       exact Finset.mem_filter.mpr
         ⟨Finset.mem_biUnion.mpr ⟨a, ha, hb1⟩, hb2⟩
     · intro b hb hbnot
-      have hfb : f b = c := (Finset.mem_filter.mp hb).2
-      have hnot : b ∉ (ν a).support := fun hmem =>
+      have hfb  := (Finset.mem_filter.mp hb).2
+      have hnot  := fun hmem =>
         hbnot (Finset.mem_filter.mpr ⟨hmem, hfb⟩)
       rw [(ν a).outsideSupport b hnot, mul_zero]
 
@@ -501,7 +473,6 @@ theorem Distribution.bind_uniform_restrict_eq {α ι : Type*} [DecidableEq α]
     (hunique : ∀ a, ∃! i, p i a) :
     Distribution.bind (uniformDistribution ι)
         (fun i => Distribution.restrict μ (p i) (hpos i)) = μ := by
-  classical
   have hcard : (0 : ℝ) < (Fintype.card ι : ℝ) := by
     exact_mod_cast Fintype.card_pos
   refine Distribution.ext_of_support_of_weight ?_ ?_
@@ -517,8 +488,8 @@ theorem Distribution.bind_uniform_restrict_eq {α ι : Type*} [DecidableEq α]
       exact Finset.mem_biUnion.mpr
         ⟨i, Finset.mem_univ i, Finset.mem_filter.mpr ⟨ha, hi⟩⟩
   · funext a
-    change (∑ i ∈ (Finset.univ : Finset ι), (uniformDistribution ι).weight i *
-      (Distribution.restrict μ (p i) (hpos i)).weight a) = μ.weight a
+    change  ∑ i ∈ (Finset.univ : Finset ι), (uniformDistribution ι).weight i *
+      (Distribution.restrict μ (p i) (hpos i)).weight a  = μ.weight a
     have hterm : ∀ i : ι, (uniformDistribution ι).weight i *
         (Distribution.restrict μ (p i) (hpos i)).weight a =
         if p i a then μ.weight a else 0 := by
@@ -550,11 +521,10 @@ Blueprint `lem:qld-sublines`, paper
 theorem Distribution.bind_map_left {α β γ : Type*} [DecidableEq β]
     [DecidableEq γ] (μ : Distribution α) (f : α → β) (ν : β → Distribution γ) :
     Distribution.bind (μ.map f) ν =
-      Distribution.bind μ (fun a => ν (f a)) := by
-  classical
+      Distribution.bind μ  fun a => ν (f a)  := by
   refine Distribution.ext_of_support_of_weight ?_ ?_
   · change (μ.support.image f).biUnion (fun b => (ν b).support) =
-      μ.support.biUnion (fun a => (ν (f a)).support)
+      μ.support.biUnion  fun a => (ν (f a)).support 
     ext c
     simp only [Finset.mem_biUnion, Finset.mem_image]
     constructor
@@ -563,12 +533,12 @@ theorem Distribution.bind_map_left {α β γ : Type*} [DecidableEq β]
     · rintro ⟨a, ha, hc⟩
       exact ⟨f a, ⟨a, ha, rfl⟩, hc⟩
   · funext c
-    change (∑ b ∈ μ.support.image f, (μ.map f).weight b * (ν b).weight c) =
+    change  ∑ b ∈ μ.support.image f, (μ.map f).weight b * (ν b).weight c  =
       ∑ a ∈ μ.support, μ.weight a * (ν (f a)).weight c
     rw [← Finset.sum_fiberwise_of_maps_to
       (s := μ.support) (t := μ.support.image f) (g := f)
       (fun a ha => Finset.mem_image_of_mem f ha)
-      (fun a => μ.weight a * (ν (f a)).weight c)]
+       fun a => μ.weight a * (ν (f a)).weight c ]
     refine Finset.sum_congr rfl fun b _ => ?_
     rw [Distribution.map_weight, Finset.sum_mul]
     refine Finset.sum_congr rfl fun a ha => ?_
@@ -583,7 +553,7 @@ theorem Distribution.bind_congr_support {α β : Type*} [DecidableEq β]
     Distribution.bind μ ν = Distribution.bind μ ν' := by
   refine Distribution.ext_of_support_of_weight ?_ ?_
   · change μ.support.biUnion (fun a => (ν a).support) =
-      μ.support.biUnion (fun a => (ν' a).support)
+      μ.support.biUnion  fun a => (ν' a).support 
     exact Finset.biUnion_congr rfl fun a ha => by rw [h a ha]
   · funext b
     exact Finset.sum_congr rfl fun a ha => by rw [h a ha]
@@ -614,7 +584,7 @@ theorem Distribution.bind_const {α β : Type*} [DecidableEq β]
       obtain ⟨a, ha⟩ := hne
       exact ⟨a, ha, hb⟩
   · funext b
-    change (∑ a ∈ μ.support, μ.weight a * ν.weight b) = ν.weight b
+    change  ∑ a ∈ μ.support, μ.weight a * ν.weight b  = ν.weight b
     rw [← Finset.sum_mul, hμ.weight_sum_eq_one, one_mul]
 
 /-! ## Associativity of dependent mixtures -/
@@ -625,12 +595,11 @@ theorem Distribution.bind_const {α β : Type*} [DecidableEq β]
 theorem Distribution.bind_bind {α β γ : Type*} [DecidableEq β] [DecidableEq γ]
     (μ : Distribution α) (ν : α → Distribution β) (ρ : β → Distribution γ) :
     Distribution.bind (Distribution.bind μ ν) ρ =
-      Distribution.bind μ (fun a => Distribution.bind (ν a) ρ) := by
-  classical
+      Distribution.bind μ  fun a => Distribution.bind (ν a) ρ  := by
   refine Distribution.ext_of_support_of_weight ?_ ?_
-  · change (μ.support.biUnion (fun a => (ν a).support)).biUnion
+  · change (μ.support.biUnion  fun a => (ν a).support ).biUnion
         (fun b => (ρ b).support) =
-      μ.support.biUnion (fun a => (ν a).support.biUnion (fun b => (ρ b).support))
+      μ.support.biUnion  fun a => (ν a).support.biUnion  fun b => (ρ b).support  
     ext c
     simp only [Finset.mem_biUnion]
     constructor
@@ -639,17 +608,17 @@ theorem Distribution.bind_bind {α β γ : Type*} [DecidableEq β] [DecidableEq 
     · rintro ⟨a, ha, b, hb, hc⟩
       exact ⟨b, ⟨a, ha, hb⟩, hc⟩
   · funext c
-    change (∑ b ∈ μ.support.biUnion (fun a => (ν a).support),
-        (∑ a ∈ μ.support, μ.weight a * (ν a).weight b) * (ρ b).weight c) =
+    change  ∑ b ∈ μ.support.biUnion  fun a => (ν a).support ,
+        (∑ a ∈ μ.support, μ.weight a * (ν a).weight b) * (ρ b).weight c  =
       ∑ a ∈ μ.support, μ.weight a *
         ∑ b ∈ (ν a).support, (ν a).weight b * (ρ b).weight c
     rw [Finset.sum_congr rfl fun b _ =>
       Finset.sum_mul μ.support (fun a => μ.weight a * (ν a).weight b)
         ((ρ b).weight c), Finset.sum_comm]
     refine Finset.sum_congr rfl fun a ha => ?_
-    have hsub : (ν a).support ⊆ μ.support.biUnion (fun a => (ν a).support) :=
+    have hsub : (ν a).support ⊆ μ.support.biUnion  fun a => (ν a).support  :=
       fun b hb => Finset.mem_biUnion.mpr ⟨a, ha, hb⟩
-    have hzero : ∀ b ∈ μ.support.biUnion (fun a => (ν a).support),
+    have hzero : ∀ b ∈ μ.support.biUnion  fun a => (ν a).support ,
         b ∉ (ν a).support →
         μ.weight a * ((ν a).weight b * (ρ b).weight c) = 0 := by
       intro b _ hbnot
@@ -667,11 +636,10 @@ theorem Distribution.prod_bind_left {α β γ : Type*} [DecidableEq β]
     [DecidableEq γ] (μ : Distribution α) (ν : α → Distribution β)
     (ρ : Distribution γ) :
     Distribution.prod (Distribution.bind μ ν) ρ =
-      Distribution.bind μ (fun a => Distribution.prod (ν a) ρ) := by
-  classical
+      Distribution.bind μ  fun a => Distribution.prod (ν a) ρ  := by
   refine Distribution.ext_of_support_of_weight ?_ ?_
-  · change (μ.support.biUnion (fun a => (ν a).support)) ×ˢ ρ.support =
-      μ.support.biUnion (fun a => (ν a).support ×ˢ ρ.support)
+  · change (μ.support.biUnion  fun a => (ν a).support ) ×ˢ ρ.support =
+      μ.support.biUnion  fun a => (ν a).support ×ˢ ρ.support 
     ext w
     simp only [Finset.mem_product, Finset.mem_biUnion]
     constructor
@@ -695,23 +663,13 @@ theorem Distribution.bind_uniform_fin_two {α : Type*} [DecidableEq α]
     (μ ν : Distribution α) :
     Distribution.bind (uniformDistribution (Fin 2)) ![μ, ν] =
       Distribution.mix (1 / 2) (by norm_num) (by norm_num) μ ν := by
-  classical
   refine Distribution.ext_of_support_of_weight ?_ ?_
   · change (Finset.univ : Finset (Fin 2)).biUnion
         (fun i => (![μ, ν] i).support) = μ.support ∪ ν.support
-    ext a
-    simp only [Finset.mem_biUnion, Finset.mem_univ, true_and, Finset.mem_union]
-    constructor
-    · rintro ⟨i, hi⟩
-      fin_cases i
-      · exact Or.inl hi
-      · exact Or.inr hi
-    · rintro (h | h)
-      · exact ⟨0, h⟩
-      · exact ⟨1, h⟩
+    ext <;> simp_all
   · funext a
-    change (∑ i ∈ (Finset.univ : Finset (Fin 2)),
-        (uniformDistribution (Fin 2)).weight i * (![μ, ν] i).weight a) =
+    change  ∑ i ∈ (Finset.univ : Finset (Fin 2)),
+        (uniformDistribution (Fin 2)).weight i * (![μ, ν] i).weight a  =
       1 / 2 * μ.weight a + (1 - 1 / 2) * ν.weight a
     rw [Fin.sum_univ_two, uniformDistribution_weight_apply,
       uniformDistribution_weight_apply, Fintype.card_fin]
@@ -725,16 +683,15 @@ iterated average.  Blueprint `lem:restricted-line-mixture-bounds`, paper
 theorem avgOver_bind {α β : Type*} [DecidableEq β]
     (μ : Distribution α) (ν : α → Distribution β) (f : β → ℝ) :
     avgOver (Distribution.bind μ ν) f =
-      avgOver μ (fun a => avgOver (ν a) f) := by
-  classical
+      avgOver μ  fun a => avgOver (ν a) f  := by
   unfold avgOver
   have h1 : ∀ b : β, (∑ a ∈ μ.support, μ.weight a * (ν a).weight b) * f b =
       ∑ a ∈ μ.support, μ.weight a * ((ν a).weight b * f b) := by
     intro b
     rw [Finset.sum_mul]
     exact Finset.sum_congr rfl fun a _ => by ring
-  change (∑ b ∈ μ.support.biUnion (fun a => (ν a).support),
-    (∑ a ∈ μ.support, μ.weight a * (ν a).weight b) * f b) = _
+  change  ∑ b ∈ μ.support.biUnion  fun a => (ν a).support ,
+    (∑ a ∈ μ.support, μ.weight a * (ν a).weight b) * f b  = _
   rw [Finset.sum_congr rfl fun b _ => h1 b, Finset.sum_comm]
   refine Finset.sum_congr rfl fun a ha => ?_
   rw [← Finset.mul_sum]
@@ -753,26 +710,25 @@ theorem avgOver_mix {α : Type*} [DecidableEq α] (t : ℝ) (ht0 : 0 ≤ t)
     (ht1 : t ≤ 1) (μ ν : Distribution α) (f : α → ℝ) :
     avgOver (Distribution.mix t ht0 ht1 μ ν) f =
       t * avgOver μ f + (1 - t) * avgOver ν f := by
-  classical
   unfold avgOver
-  have hsplit : (∑ a ∈ μ.support ∪ ν.support,
-        (t * μ.weight a + (1 - t) * ν.weight a) * f a) =
-      t * (∑ a ∈ μ.support ∪ ν.support, μ.weight a * f a) +
-        (1 - t) * (∑ a ∈ μ.support ∪ ν.support, ν.weight a * f a) := by
+  have hsplit :  ∑ a ∈ μ.support ∪ ν.support,
+        (t * μ.weight a + (1 - t) * ν.weight a) * f a  =
+      t *  ∑ a ∈ μ.support ∪ ν.support, μ.weight a * f a  +
+        (1 - t) *  ∑ a ∈ μ.support ∪ ν.support, ν.weight a * f a  := by
     rw [Finset.mul_sum, Finset.mul_sum, ← Finset.sum_add_distrib]
     exact Finset.sum_congr rfl fun a _ => by ring
-  have hμ : (∑ a ∈ μ.support ∪ ν.support, μ.weight a * f a) =
+  have hμ :  ∑ a ∈ μ.support ∪ ν.support, μ.weight a * f a  =
       ∑ a ∈ μ.support, μ.weight a * f a := by
     refine (Finset.sum_subset Finset.subset_union_left ?_).symm
     intro a _ ha
     rw [μ.outsideSupport a ha, zero_mul]
-  have hν : (∑ a ∈ μ.support ∪ ν.support, ν.weight a * f a) =
+  have hν :  ∑ a ∈ μ.support ∪ ν.support, ν.weight a * f a  =
       ∑ a ∈ ν.support, ν.weight a * f a := by
     refine (Finset.sum_subset Finset.subset_union_right ?_).symm
     intro a _ ha
     rw [ν.outsideSupport a ha, zero_mul]
-  change (∑ a ∈ μ.support ∪ ν.support,
-    (t * μ.weight a + (1 - t) * ν.weight a) * f a) = _
+  change  ∑ a ∈ μ.support ∪ ν.support,
+    (t * μ.weight a + (1 - t) * ν.weight a) * f a  = _
   rw [hsplit, hμ, hν]
 
 /-- Formalization-only auxiliary: one component of a uniform mixture carries at
@@ -784,7 +740,6 @@ theorem avgOver_bind_uniform_component_le {ι β : Type*}
     (ν : ι → Distribution β) (f : β → ℝ) (hf : ∀ b, 0 ≤ f b) (i : ι) :
     1 / (Fintype.card ι : ℝ) * avgOver (ν i) f ≤
       avgOver (Distribution.bind (uniformDistribution ι) ν) f := by
-  classical
   rw [avgOver_bind]
   have hterm : ∀ j ∈ (Finset.univ : Finset ι),
       0 ≤ (uniformDistribution ι).weight j * avgOver (ν j) f := fun j _ =>
