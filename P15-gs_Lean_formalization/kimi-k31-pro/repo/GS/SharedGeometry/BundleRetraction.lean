@@ -67,10 +67,4 @@ theorem cayleyRetraction_fibre_mfderiv_zero (X : MatrixOrbit right left P) :
       (0 : HorizontalModel right left P) = ContinuousLinearMap.id ℝ (HorizontalModel right left P) :=
   cayleyFibreRetraction_mfderiv_zero right left P X
 
-@[simp] theorem cayleyRetraction_scaled (X : MatrixOrbit right left P)
-    (v : TangentSpace (𝓘(ℝ, HorizontalModel right left P)) X) (t : ℝ) :
-    cayleyRetraction right left P ⟨X, t • v⟩ = cayleyTangentStep right left P X v t := by
-  change cayleyTangentStep right left P X (t • v) 1 = _
-  simpa only [one_mul] using cayleyTangentStep_smul right left P X v t 1
-
 end GS.SharedGeometry

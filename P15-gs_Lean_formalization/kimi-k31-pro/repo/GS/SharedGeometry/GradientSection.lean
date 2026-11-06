@@ -197,13 +197,4 @@ theorem intrinsicGradientSection_smooth (f : Mat n → ℝ) (hf : ContDiff ℝ �
       (intrinsicGradientSection right left P f) :=
   intrinsicGradientSection_contMDiff_of_order right left P f hf (by simp)
 
-/-- Exact gradient step with arbitrary real step size. Feasibility is automatic. -/
-def gradientUpdate (f : Mat n → ℝ) (p : MatrixOrbit right left P × ℝ) :
-    MatrixOrbit right left P :=
-  cayleyRetraction right left P ⟨p.1, (-p.2) • intrinsicGradient right left P f p.1⟩
-
-@[simp] theorem gradientUpdate_zero (f : Mat n → ℝ) (X : MatrixOrbit right left P) :
-    gradientUpdate right left P f (X, 0) = X := by
-  simp [gradientUpdate]
-
 end GS.SharedGeometry

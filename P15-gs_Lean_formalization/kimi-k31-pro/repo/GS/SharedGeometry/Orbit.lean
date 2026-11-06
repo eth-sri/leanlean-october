@@ -101,15 +101,6 @@ theorem surjective_orbitMapToOrbit (P : Mat n) :
   rintro ⟨X, g, hg⟩
   exact ⟨g, Subtype.ext hg⟩
 
-theorem compact_matrixOrbit (P : Mat n) :
-    IsCompact (MulAction.orbit (Factors right left) P) := by
-  change IsCompact (Set.range (orbitMap right left P))
-  simpa only [Set.image_univ] using
-    (isCompact_univ.image (continuous_orbitMap (right := right) (left := left) P))
-
-instance matrixOrbitCompactSpace (P : Mat n) : CompactSpace (MatrixOrbit right left P) :=
-  isCompact_iff_compactSpace.mp (compact_matrixOrbit P)
-
 theorem action_frobInner (g : Factors right left) (X Y : Mat n) :
     frobInner (g • X) (g • Y) = frobInner X Y :=
   GS.LieAction.action_frobInner (g.1.val, g.2.val) X Y

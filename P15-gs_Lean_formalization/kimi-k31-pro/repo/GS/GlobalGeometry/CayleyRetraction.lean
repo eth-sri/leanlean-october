@@ -34,16 +34,6 @@ def unitCayley (A : Mat n) : Mat n := cayley ((-1/2 : ℝ) • A)
 @[simp] theorem unitCayley_zero : unitCayley (0 : Mat n) = 1 := by
   simp [unitCayley]
 
-theorem unitCayley_supported (b : Fin n → ℕ) (A : Mat n)
-    (hs : Supported b A) (hk : IsSkew A) : Supported b (unitCayley A) := by
-  apply cayley_supported b _ (hs.smul (-1/2))
-  exact admissible_of_isSkew _ (isSkew_smul _ hk)
-
-theorem unitCayley_orthogonal (A : Mat n) (hk : IsSkew A) :
-    Orthogonal (unitCayley A) :=
-  cayley_orthogonal _ (isSkew_smul _ hk)
-    (admissible_of_isSkew _ (isSkew_smul _ hk))
-
 theorem unitCayley_smooth_comp {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
     (A : E → Mat n) (hs : ContDiff ℝ ⊤ A) (hk : ∀ x, IsSkew (A x)) :
     ContDiff ℝ ⊤ (fun x => unitCayley (A x)) := by
@@ -94,16 +84,5 @@ theorem unitCayley_line_derivative (A : Mat n) (hk : IsSkew A) :
     rw [smul_comm]
   rw [hf]
   simpa only [smul_smul, show (-2 : ℝ) * (-1/2) = 1 by norm_num, one_smul] using hd
-
-/-- Globally defined matrix update; Z need not already be tangent. -/
-def pointCayleyStep (b₁ b₂ : Fin n → ℕ) (X Z : Mat n) (t : ℝ) : Mat n :=
-  unitCayley (t • balancedLeft b₁ b₂ X Z) * X *
-    unitCayley (t • balancedRight b₁ b₂ X Z)
-
-@[simp] theorem pointCayleyStep_zero_time (b₁ b₂ : Fin n → ℕ) (X Z : Mat n) :
-    pointCayleyStep b₁ b₂ X Z 0 = X := by simp [pointCayleyStep]
-
-@[simp] theorem pointCayleyStep_zero_vector (b₁ b₂ : Fin n → ℕ) (X : Mat n) (t : ℝ) :
-    pointCayleyStep b₁ b₂ X 0 t = X := by simp [pointCayleyStep]
 
 end GS.GlobalGeometry

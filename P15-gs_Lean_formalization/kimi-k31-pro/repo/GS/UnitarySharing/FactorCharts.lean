@@ -42,9 +42,6 @@ def modelProjection (s : Pattern n) : CMat n →L[ℝ] Generator s :=
        apply Subtype.ext
        exact map_smul _ a A } : CMat n →ₗ[ℝ] Generator s).toContinuousLinearMap
 
-@[simp] theorem modelProjection_val (s : Pattern n) (A : CMat n) :
-    (modelProjection s A).val = cFrobProjection (sharedSkewSpace s.size s.label) A := rfl
-
 theorem modelProjection_val_of_mem (s : Pattern n) (A : CMat n)
     (hA : A ∈ sharedSkewSpace s.size s.label) : (modelProjection s A).val = A :=
   cFrobProjection_of_mem _ _ hA
@@ -116,11 +113,6 @@ theorem reconstruct_factorCoordinates (Q U : Factor s) (hU : U ∈ factorSource 
   apply Factor.matrix_injective
   simp only [reconstruct_matrix, Submodule.coe_zero, cayley_zero, Matrix.mul_one]
 
-@[simp] theorem factorCoordinates_base (Q : Factor s) :
-    factorCoordinates Q (Factor.matrix Q) = 0 := by
-  unfold factorCoordinates
-  rw [(Factor.matrix_unitary Q).1, cayley_one, map_zero]
-
 theorem factorCoordinates_smooth_at (Q : Factor s) (A : CMat n)
     (hA : admissible ((Factor.matrix Q)ᴴ * A)) :
     ContDiffAt ℝ ⊤ (factorCoordinates Q) A :=
@@ -156,105 +148,5 @@ def factorPartialChart (Q : Factor s) : OpenPartialHomeomorph (Factor s) (Genera
     exact ((factorCoordinates_smooth_at Q (Factor.matrix U) hU).continuousAt.comp
       Factor.continuous_matrix.continuousAt).continuousWithinAt
   continuousOn_invFun := (continuous_reconstruct Q).continuousOn
-
-/-- The charted-space structure does not alter the existing topology. -/
-instance factorChartedSpace (s : Pattern n) : ChartedSpace (Generator s) (Factor s) where
-  atlas := Set.range factorPartialChart
-  chartAt := factorPartialChart
-  mem_chart_source := base_mem_factorSource
-  chart_mem_atlas Q := ⟨Q, rfl⟩
-
-theorem factorPartialChart_transition_smooth (Q U : Factor s) :
-    ContDiffOn ℝ ⊤ ((factorPartialChart Q).symm.trans (factorPartialChart U))
-      ((factorPartialChart Q).symm.trans (factorPartialChart U)).source := by
-  intro C hC
-  change C ∈ (Set.univ : Set (Generator s)) ∧ reconstruct Q C ∈ factorSource U at hC
-  exact ((factorCoordinates_smooth_at U (Factor.matrix (reconstruct Q C)) hC.2).comp C
-    (reconstruct_matrix_smooth Q).contDiffAt).contDiffWithinAt
-
-/-- Smooth factor geometry is proved from the rational transitions.  This
-instance does not claim that the two-factor image has already been charted. -/
-instance factorIsManifold (s : Pattern n) : IsManifold (𝓘(ℝ, Generator s)) ⊤ (Factor s) := by
-  apply isManifold_of_contDiffOn
-  intro e e' he he'
-  change e ∈ Set.range factorPartialChart at he
-  change e' ∈ Set.range factorPartialChart at he'
-  obtain ⟨Q, rfl⟩ := he
-  obtain ⟨U, rfl⟩ := he'
-  simpa only [modelWithCornersSelf_coe, modelWithCornersSelf_coe_symm,
-    Function.comp_id, Function.id_comp, Set.preimage_id, Set.range_id,
-    Set.inter_univ] using factorPartialChart_transition_smooth Q U
-
-/-- The smooth inclusion uses the inherited matrix topology. -/
-theorem factor_matrix_contMDiff (s : Pattern n) :
-    ContMDiff (𝓘(ℝ, Generator s)) (𝓘(ℝ, CMat n)) ⊤
-      (Factor.matrix : Factor s → CMat n) := by
-  intro Q
-  rw [contMDiffAt_iff]
-  refine ⟨Factor.continuous_matrix.continuousAt, ?_⟩
-  change ContDiffWithinAt ℝ ⊤
-    (fun x : Generator s => Factor.matrix (reconstruct Q x))
-    (Set.range (id : Generator s → Generator s))
-    (factorCoordinates Q (Factor.matrix Q))
-  exact (reconstruct_matrix_smooth Q).contDiffAt.contDiffWithinAt
-
-section Source
-variable {E H M : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
-  [TopologicalSpace H] {I : ModelWithCorners ℝ E H}
-  [TopologicalSpace M] [ChartedSpace H M]
-
-/-- A criterion for maps valued in this explicitly constructed factor atlas. -/
-theorem contMDiffAt_factor_of_matrix {f : M → Factor s} {x : M}
-    (hf : ContMDiffAt I (𝓘(ℝ, CMat n)) ⊤ (fun y => Factor.matrix (f y)) x) :
-    ContMDiffAt I (𝓘(ℝ, Generator s)) ⊤ f x := by
-  rw [contMDiffAt_iff_target]
-  refine ⟨tendsto_subtype_rng.mpr (tendsto_subtype_rng.mpr hf.continuousAt), ?_⟩
-  change ContMDiffAt I (𝓘(ℝ, Generator s)) ⊤
-    (fun y => factorCoordinates (f x) (Factor.matrix (f y))) x
-  exact ContDiffAt.comp_contMDiffAt (I := I)
-    (g := factorCoordinates (f x)) (f := fun y => Factor.matrix (f y))
-    (factorCoordinates_smooth_at (f x) (Factor.matrix (f x))
-      (base_mem_factorSource (f x))) hf
-
-theorem contMDiff_factor_of_matrix {f : M → Factor s}
-    (hf : ContMDiff I (𝓘(ℝ, CMat n)) ⊤ (fun y => Factor.matrix (f y))) :
-    ContMDiff I (𝓘(ℝ, Generator s)) ⊤ f := by
-  intro x
-  exact contMDiffAt_factor_of_matrix (hf x)
-
-end Source
-
-/-- Group multiplication is smooth for the tied factor atlas itself. -/
-theorem factor_mul_contMDiff (s : Pattern n) :
-    ContMDiff ((𝓘(ℝ, Generator s)).prod (𝓘(ℝ, Generator s)))
-      (𝓘(ℝ, Generator s)) ⊤ (fun p : Factor s × Factor s => p.1 * p.2) := by
-  apply contMDiff_factor_of_matrix
-  have hl : ContMDiff ((𝓘(ℝ, Generator s)).prod (𝓘(ℝ, Generator s)))
-      (𝓘(ℝ, CMat n)) ⊤ (fun p : Factor s × Factor s => Factor.matrix p.1) :=
-    (factor_matrix_contMDiff s).comp contMDiff_fst
-  have hr : ContMDiff ((𝓘(ℝ, Generator s)).prod (𝓘(ℝ, Generator s)))
-      (𝓘(ℝ, CMat n)) ⊤ (fun p : Factor s × Factor s => Factor.matrix p.2) :=
-    (factor_matrix_contMDiff s).comp contMDiff_snd
-  have hm : ContDiff ℝ ⊤ (fun p : CMat n × CMat n => p.1 * p.2) :=
-    contDiff_iff_contDiffAt.mpr (fun _ => smooth_mul_at contDiffAt_fst contDiffAt_snd)
-  simpa only [Factor.matrix_mul, Function.comp_def] using hm.comp_contMDiff (hl.prodMk_space hr)
-
-theorem factor_inv_contMDiff (s : Pattern n) :
-    ContMDiff (𝓘(ℝ, Generator s)) (𝓘(ℝ, Generator s)) ⊤
-      (fun Q : Factor s => Q⁻¹) := by
-  apply contMDiff_factor_of_matrix
-  have ht : ContDiff ℝ ⊤ (fun A : CMat n => Aᴴ) :=
-    contDiff_iff_contDiffAt.mpr (fun _ => smooth_conjTranspose_at contDiffAt_id)
-  simpa only [Factor.matrix_inv, Function.comp_def] using ht.comp_contMDiff (factor_matrix_contMDiff s)
-
-instance factorContMDiffMul (s : Pattern n) :
-    ContMDiffMul (𝓘(ℝ, Generator s)) ⊤ (Factor s) where
-  toIsManifold := factorIsManifold s
-  contMDiff_mul := factor_mul_contMDiff s
-
-/-- Genuine mathlib Lie-group structure on the concrete compact subgroup. -/
-instance factorLieGroup (s : Pattern n) : LieGroup (𝓘(ℝ, Generator s)) ⊤ (Factor s) where
-  toContMDiffMul := factorContMDiffMul s
-  contMDiff_inv := factor_inv_contMDiff s
 
 end GS.UnitarySharing

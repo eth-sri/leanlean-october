@@ -47,38 +47,6 @@ theorem cancel_congruence (A X Y : Mat n) (hA : A.det ≠ 0)
   apply cancel_left Aᵀ X Y (by simpa using hA)
   exact cancel_right A (Aᵀ * X) (Aᵀ * Y) hA h
 
-theorem supported_sub (block : Fin n → ℕ) (A B : Mat n)
-    (hA : Supported block A) (hB : Supported block B) :
-    Supported block (A - B) := by
-  simpa only [sub_eq_add_neg] using hA.add hB.neg
-
-/-- Fixed points of the original block projection are exactly supported matrices. -/
-theorem blockProjection_eq_self (block : Fin n → ℕ) (A : Mat n)
-    (hA : Supported block A) : GS.blockProjection block A = A := by
-  ext i j
-  by_cases h : block i = block j
-  · simp [GS.blockProjection, GS.mask, h]
-  · simp [GS.blockProjection, GS.mask, h, hA i j h]
-
-theorem supported_of_blockProjection_eq (block : Fin n → ℕ) (A : Mat n)
-    (hA : GS.blockProjection block A = A) : Supported block A := by
-  intro i j hij
-  have h := congrArg (fun M : Mat n => M i j) hA
-  simpa [GS.blockProjection, GS.mask, hij] using h.symm
-
-/-- The inverse-support property follows from the already established block
-projection multiplication identity. No extra topology or partition is used. -/
-theorem supported_inverse (block : Fin n → ℕ) (A : Mat n)
-    (hA : Supported block A) (hdet : A.det ≠ 0) : Supported block A⁻¹ := by
-  apply supported_of_blockProjection_eq block A⁻¹
-  apply cancel_left A _ _ hdet
-  calc
-    A * GS.blockProjection block A⁻¹ = GS.blockProjection block (A * A⁻¹) :=
-      (GS.blockProjection_mul_left block A A⁻¹ hA).symm
-    _ = GS.blockProjection block 1 := by rw [mul_inv A hdet]
-    _ = 1 := blockProjection_eq_self block 1 (Supported.one (block := block))
-    _ = A * A⁻¹ := (mul_inv A hdet).symm
-
 def cayley (A : Mat n) : Mat n := (1 - A) * (1 + A)⁻¹
 
 def admissible (A : Mat n) : Prop := (1 + A).det ≠ 0
@@ -112,12 +80,6 @@ theorem cayley_involutive (A : Mat n) (hA : admissible A) :
     _ = A * ((2 : ℝ) • (1 : Mat n)) := by rw [two_smul ℝ]; noncomm_ring
     _ = A * ((1 + cayley A) * (1 + A)) := by rw [one_add_cayley_mul A hA]
     _ = A * (1 + cayley A) * (1 + A) := (Matrix.mul_assoc _ _ _).symm
-
-theorem cayley_supported (block : Fin n → ℕ) (A : Mat n)
-    (hs : Supported block A) (hA : admissible A) :
-    Supported block (cayley A) := by
-  exact (supported_sub block 1 A (Supported.one (block := block)) hs).mul
-    (supported_inverse block (1 + A) ((Supported.one (block := block)).add hs) hA)
 
 theorem cayley_orthogonal (A : Mat n) (hs : GS.IsSkew A)
     (hA : admissible A) : Orthogonal (cayley A) := by
@@ -161,9 +123,6 @@ theorem cayley_isSkew (Q : Mat n) (hQ : Orthogonal Q)
 
 @[simp] theorem admissible_one : admissible (1 : Mat n) := by
   simpa only [cayley_zero] using admissible_cayley (0 : Mat n) admissible_zero
-
-@[simp] theorem cayley_one : cayley (1 : Mat n) = 0 := by
-  simp [cayley]
 
 /-- A real skew matrix has identically zero quadratic form. -/
 theorem skew_dot_mulVec_zero (A : Mat n) (hA : GS.IsSkew A) (v : Fin n → ℝ) :

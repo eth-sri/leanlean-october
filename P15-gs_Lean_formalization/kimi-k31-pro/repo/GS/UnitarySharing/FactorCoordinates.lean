@@ -84,21 +84,11 @@ theorem pairSource_open (g : Factors right left) : IsOpen (pairSource g) :=
 @[simp] theorem self_mem_pairSource (g : Factors right left) : g ∈ pairSource g :=
   ⟨base_mem_factorSource g.1, base_mem_factorSource g.2⟩
 
-@[simp] theorem pairCoordinates_factorLift (g : Factors right left)
-    (v : PairGenerator right left) : pairCoordinates g (factorLift g v) = v := by
-  apply Prod.ext
-  · exact factorCoordinates_reconstruct g.1 v.1
-  · exact factorCoordinates_reconstruct g.2 v.2
-
 theorem factorLift_pairCoordinates (g h : Factors right left)
     (hh : h ∈ pairSource g) : factorLift g (pairCoordinates g h) = h := by
   apply Prod.ext
   · exact reconstruct_factorCoordinates g.1 h.1 hh.1
   · exact reconstruct_factorCoordinates g.2 h.2 hh.2
-
-@[simp] theorem pairCoordinates_self (g : Factors right left) :
-    pairCoordinates g g = 0 := by
-  apply Prod.ext <;> exact factorCoordinates_base _
 
 theorem reconstruct_isOpenMap (Q : Factor s) : IsOpenMap (reconstruct Q) := by
   intro U hU

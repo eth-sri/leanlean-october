@@ -58,57 +58,6 @@ theorem tangentParam_frobSq (B₂ P B₁ C Ω : Mat n)
   rw [hΩ]
   ring
 
-def blockProjection (block : Fin n → ℕ) (A : Mat n) : Mat n :=
-  mask (fun i j => block i = block j) A
-
-/-- Source lemma `block_diag_proj`, left multiplication. -/
-theorem blockProjection_mul_left (block : Fin n → ℕ) (A B : Mat n)
-    (hA : Supported block A) :
-    blockProjection block (A*B) = A * blockProjection block B := by
-  ext i j
-  by_cases hij : block i = block j
-  · simp only [blockProjection,mask,hij,if_pos,Matrix.mul_apply]
-    apply Finset.sum_congr rfl
-    intro k hk
-    by_cases hik : block i = block k
-    · have hkj : block k = block j := hik.symm.trans hij
-      simp [hkj]
-    · rw [hA i k hik]
-      simp
-  · simp only [blockProjection,mask,hij,if_neg,Matrix.mul_apply]
-    symm
-    apply Finset.sum_eq_zero
-    intro k hk
-    by_cases hik : block i = block k
-    · have hkj : block k ≠ block j := fun h => hij (hik.trans h)
-      simp [hkj]
-    · rw [hA i k hik]
-      simp
-
-/-- Source lemma `block_diag_proj`, right multiplication. -/
-theorem blockProjection_mul_right (block : Fin n → ℕ) (A B : Mat n)
-    (hB : Supported block B) :
-    blockProjection block (A*B) = blockProjection block A * B := by
-  ext i j
-  by_cases hij : block i = block j
-  · simp only [blockProjection,mask,hij,if_pos,Matrix.mul_apply]
-    apply Finset.sum_congr rfl
-    intro k hk
-    by_cases hkj : block k = block j
-    · have hik : block i = block k := hij.trans hkj.symm
-      simp [hik, hkj.symm]
-    · rw [hB k j hkj]
-      simp
-  · simp only [blockProjection,mask,hij,if_neg,Matrix.mul_apply]
-    symm
-    apply Finset.sum_eq_zero
-    intro k hk
-    by_cases hkj : block k = block j
-    · have hik : block i ≠ block k := fun h => hij (h.trans hkj)
-      simp [hik]
-    · rw [hB k j hkj]
-      simp
-
 /-- The outer factor normalization used in the paper's m=4 construction. -/
 theorem gram_completion (C H G L W : Mat n)
     (hC : C*H*Cᵀ=G) (hL : L*Lᵀ=H) (hW : W*G*Wᵀ=1) :

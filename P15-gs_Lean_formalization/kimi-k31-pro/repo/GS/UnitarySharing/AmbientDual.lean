@@ -43,9 +43,6 @@ def dualMatrixCLM : (CMat n →L[ℝ] ℝ) →L[ℝ] CMat n :=
        rfl
    } : (CMat n →L[ℝ] ℝ) →ₗ[ℝ] CMat n).toContinuousLinearMap
 
-@[simp] theorem dualMatrixCLM_apply (D : CMat n →L[ℝ] ℝ) :
-    dualMatrixCLM D = dualMatrix D := rfl
-
 theorem ambientGradient_contDiff_of_loss (f : CMat n → ℝ) {r s : WithTop ℕ∞}
     (hf : ContDiff ℝ s f) (hrs : r + 1 ≤ s) : ContDiff ℝ r (ambientGradient f) :=
   (dualMatrixCLM (n := n)).contDiff.comp (hf.fderiv_right hrs)

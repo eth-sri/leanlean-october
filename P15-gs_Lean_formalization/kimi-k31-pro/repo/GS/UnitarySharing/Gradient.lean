@@ -82,14 +82,6 @@ theorem tangentProjection_unique
   apply sub_eq_zero.mpr
   simpa only [tangentPairing, map_sub] using h.trans hg.symm
 
-@[simp] theorem tangentProjection_of_tangent
-    (X : MatrixOrbit right left P)
-    (v : TangentSpace (𝓘(ℝ, HorizontalModel right left P)) X) :
-    tangentProjection right left P X (inclusionDifferential right left P X v) = v := by
-  apply inclusionDifferential_injective right left P X
-  rw [inclusion_tangentProjection]
-  exact (pointProjection_fixed_iff_tangent_image right left P X _).mpr ⟨v, rfl⟩
-
 /-- Linear dependence on the ambient vector, derived from the Riesz identity. -/
 theorem tangentProjection_add (X : MatrixOrbit right left P) (Z W : CMat n) :
     tangentProjection right left P X (Z + W) = tangentProjection right left P X Z + tangentProjection right left P X W := by
@@ -133,12 +125,6 @@ def intrinsicGradient (f : CMat n → ℝ)
     (X : MatrixOrbit right left P) :
     TangentSpace (𝓘(ℝ, HorizontalModel right left P)) X :=
   tangentProjection right left P X (ambientGradient f X.val)
-
-@[simp] theorem intrinsicGradient_ambient (f : CMat n → ℝ)
-    (X : MatrixOrbit right left P) :
-    inclusionDifferential right left P X (intrinsicGradient right left P f X) =
-      pointProjection right left X.val (ambientGradient f X.val) :=
-  inclusion_tangentProjection right left P X _
 
 /-- Riesz characterization against the ACTUAL derivative of f restricted to M. -/
 theorem intrinsicGradient_characterization (f : CMat n → ℝ)

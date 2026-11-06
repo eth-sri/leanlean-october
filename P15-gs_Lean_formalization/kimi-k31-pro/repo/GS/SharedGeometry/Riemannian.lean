@@ -71,32 +71,15 @@ theorem tangentPairing_add_left (X : MatrixOrbit right left P)
   unfold tangentPairing
   rw [map_add, frobInner_add_left]
 
-theorem tangentPairing_add_right (X : MatrixOrbit right left P)
-    (u v w : TangentSpace (𝓘(ℝ, HorizontalModel right left P)) X) :
-    tangentPairing right left P X u (v + w) =
-      tangentPairing right left P X u v + tangentPairing right left P X u w := by
-  unfold tangentPairing
-  rw [map_add, frobInner_add_right]
-
 theorem tangentPairing_smul_left (X : MatrixOrbit right left P)
     (a : ℝ) (v w : TangentSpace (𝓘(ℝ, HorizontalModel right left P)) X) :
     tangentPairing right left P X (a • v) w = a * tangentPairing right left P X v w := by
   unfold tangentPairing
   rw [map_smul, frobInner_smul_left]
 
-theorem tangentPairing_smul_right (X : MatrixOrbit right left P)
-    (a : ℝ) (v w : TangentSpace (𝓘(ℝ, HorizontalModel right left P)) X) :
-    tangentPairing right left P X v (a • w) = a * tangentPairing right left P X v w := by
-  unfold tangentPairing
-  rw [map_smul, frobInner_smul_right]
-
 @[simp] theorem tangentPairing_zero_left (X : MatrixOrbit right left P)
     (v : TangentSpace (𝓘(ℝ, HorizontalModel right left P)) X) :
     tangentPairing right left P X 0 v = 0 := by simp [tangentPairing]
-
-@[simp] theorem tangentPairing_zero_right (X : MatrixOrbit right left P)
-    (v : TangentSpace (𝓘(ℝ, HorizontalModel right left P)) X) :
-    tangentPairing right left P X v 0 = 0 := by simp [tangentPairing]
 
 theorem tangentPairing_self_eq_zero_iff (X : MatrixOrbit right left P)
     (v : TangentSpace (𝓘(ℝ, HorizontalModel right left P)) X) :
@@ -110,47 +93,6 @@ theorem tangentPairing_self_eq_zero_iff (X : MatrixOrbit right left P)
   · rintro rfl
     exact map_zero _
 
--- These local instances expose the already existing horizontal chart norm.
-section Fibrewise
-
-local instance tangentSpaceNormedAddCommGroup (X : MatrixOrbit right left P) :
-    NormedAddCommGroup (TangentSpace (𝓘(ℝ, HorizontalModel right left P)) X) :=
-  inferInstanceAs (NormedAddCommGroup (HorizontalModel right left P))
-
-local instance tangentSpaceNormedSpace (X : MatrixOrbit right left P) :
-    NormedSpace ℝ (TangentSpace (𝓘(ℝ, HorizontalModel right left P)) X) :=
-  inferInstanceAs (NormedSpace ℝ (HorizontalModel right left P))
-
-local instance tangentSpaceFiniteDimensional (X : MatrixOrbit right left P) :
-    FiniteDimensional ℝ (TangentSpace (𝓘(ℝ, HorizontalModel right left P)) X) :=
-  inferInstanceAs (FiniteDimensional ℝ (HorizontalModel right left P))
-
-/-- Fibrewise continuous bilinear metric in the standard nested CLM type. -/
-def tangentMetricCLM (X : MatrixOrbit right left P) :
-    TangentSpace (𝓘(ℝ, HorizontalModel right left P)) X →L[ℝ]
-      TangentSpace (𝓘(ℝ, HorizontalModel right left P)) X →L[ℝ] ℝ :=
-  LinearMap.toContinuousLinearMap
-    { toFun := fun v => LinearMap.toContinuousLinearMap
-        { toFun := fun w => tangentPairing right left P X v w
-          map_add' := tangentPairing_add_right right left P X v
-          map_smul' := by
-            intro a w
-            exact tangentPairing_smul_right right left P X a v w }
-      map_add' := by
-        intro v w
-        ext u
-        exact tangentPairing_add_left right left P X v w u
-      map_smul' := by
-        intro a v
-        ext u
-        exact tangentPairing_smul_left right left P X a v u }
-
-@[simp] theorem tangentMetricCLM_apply (X : MatrixOrbit right left P)
-    (v w : TangentSpace (𝓘(ℝ, HorizontalModel right left P)) X) :
-    tangentMetricCLM right left P X v w = tangentPairing right left P X v w := rfl
-
-end Fibrewise
-
 /-- Ambient realization on the actual total tangent bundle. -/
 def tangentAmbient
     (p : TangentBundle (𝓘(ℝ, HorizontalModel right left P))
@@ -162,30 +104,5 @@ theorem tangentAmbient_contMDiff :
       (tangentAmbient right left P) := by
   exact (contMDiff_snd_tangentBundle_modelSpace (Mat n) (𝓘(ℝ, Mat n))).comp
     ((sharedOrbit_val_contMDiff right left P).contMDiff_tangentMap (by simp))
-
-/-- Smooth metric evaluation, extending to pairs of different fibres. -/
-def tangentMetricExtension
-    (p : TangentBundle (𝓘(ℝ, HorizontalModel right left P))
-      (MatrixOrbit right left P) ×
-      TangentBundle (𝓘(ℝ, HorizontalModel right left P))
-        (MatrixOrbit right left P)) : ℝ :=
-  frobInner (tangentAmbient right left P p.1) (tangentAmbient right left P p.2)
-
-@[simp] theorem tangentMetricExtension_same_base
-    (X : MatrixOrbit right left P)
-    (v w : TangentSpace (𝓘(ℝ, HorizontalModel right left P)) X) :
-    tangentMetricExtension right left P (⟨X, v⟩, ⟨X, w⟩) =
-      tangentPairing right left P X v w := rfl
-
-def tangentEnergy
-    (p : TangentBundle (𝓘(ℝ, HorizontalModel right left P))
-      (MatrixOrbit right left P)) : ℝ :=
-  tangentPairing right left P p.proj p.2 p.2
-
-@[simp] theorem tangentEnergy_eq_zero_iff
-    (p : TangentBundle (𝓘(ℝ, HorizontalModel right left P))
-      (MatrixOrbit right left P)) :
-    tangentEnergy right left P p = 0 ↔ p.2 = 0 :=
-  tangentPairing_self_eq_zero_iff right left P p.proj p.2
 
 end GS.SharedGeometry

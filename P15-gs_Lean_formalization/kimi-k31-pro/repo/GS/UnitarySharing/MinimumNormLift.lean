@@ -36,10 +36,6 @@ def generatorInner (v w : PairGenerator right left) : ℝ :=
 
 def generatorEnergy (v : PairGenerator right left) : ℝ := generatorInner v v
 
-theorem generatorInner_comm (v w : PairGenerator right left) :
-    generatorInner v w = generatorInner w v := by
-  simp only [generatorInner, cFrobInner_comm]
-
 theorem generatorInner_add_left (u v w : PairGenerator right left) :
     generatorInner (u + v) w = generatorInner u w + generatorInner v w := by
   simp only [generatorInner, Prod.fst_add, Prod.snd_add, Submodule.coe_add,
@@ -60,12 +56,6 @@ theorem generatorInner_smul_left (a : ℝ) (v w : PairGenerator right left) :
   rw [cFrobInner_real_smul_left, cFrobInner_real_smul_left]
   unfold generatorInner
   ring
-
-@[simp] theorem generatorInner_zero_left (v : PairGenerator right left) :
-    generatorInner 0 v = 0 := by simp [generatorInner]
-
-@[simp] theorem generatorInner_zero_right (v : PairGenerator right left) :
-    generatorInner v 0 = 0 := by rw [generatorInner_comm]; simp
 
 @[simp] theorem generatorEnergy_eq_zero_iff (v : PairGenerator right left) :
     generatorEnergy v = 0 ↔ v = 0 :=

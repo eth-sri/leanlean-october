@@ -1,6 +1,32 @@
 module
 
-public import GSChecked
+public import GS.Extensions.StructuredRQ
+public import GS.M4Certificate
+public import GS.Unitary.Factorization
+public import GS.Unitary.FourFactorCounterexample
+public import GS.Results.CosineSine
+public import GS.Results.UnitaryCosineSine
+public import GS.Results.Nonmanifold
+public import GS.UnitaryTopology.MatrixNonmanifold
+public import GS.Results.OriginalCellRank
+public import GS.SharedGeometry.GradientSection
+public import GS.SharedGeometry.BundleRetraction
+public import GS.SharedGeometry.OrbitAtlas
+public import GS.SharedGeometry.Differential
+public import GS.SharedGeometry.Projection
+public import GS.SharedGeometry.Directions
+public import GS.SharedGeometry.Orbit
+public import GS.UnitarySharing.GradientSection
+public import GS.UnitarySharing.BundleRetraction
+public import GS.UnitarySharing.OrbitAtlas
+public import GS.UnitarySharing.Differential
+public import GS.UnitarySharing.Projection
+public import GS.UnitarySharing.Directions
+public import GS.UnitarySharing.Orbit
+public import GS.SharedGeodesics.Orthogonal
+public import GS.GlobalGeometry.ExactSharing
+public import GS.SharedGeometry.Factors
+public import GS.Continuation.ExponentialCurves
 
 @[expose] public section
 

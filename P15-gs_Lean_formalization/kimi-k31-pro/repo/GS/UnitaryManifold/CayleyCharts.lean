@@ -32,11 +32,6 @@ variable {n : ℕ} {block : Fin n → ℕ}
 def parameterDomain (block : Fin n → ℕ) : Set (Model block) :=
   {x | admissible x.val}
 
-/-- Skew coordinates require no size restriction: their denominator is always invertible. -/
-@[simp] theorem parameterDomain_eq_univ (block : Fin n → ℕ) :
-    parameterDomain block = Set.univ := by
-  exact Set.eq_univ_iff_forall.mpr (fun x => admissible_model x)
-
 def chartSource (Q : BlockU block) : Set (BlockU block) :=
   {U | admissible (Q.valᴴ * U.val)}
 
@@ -56,9 +51,6 @@ theorem parameterDomain_open (block : Fin n → ℕ) :
 theorem chartSource_open (Q : BlockU block) : IsOpen (chartSource Q) :=
   admissible_open.preimage
     (continuous_matrix_product continuous_const continuous_subtype_val)
-
-@[simp] theorem zero_mem_parameterDomain (block : Fin n → ℕ) :
-    (0 : Model block) ∈ parameterDomain block := admissible_zero
 
 @[simp] theorem base_mem_chartSource (Q : BlockU block) : Q ∈ chartSource Q := by
   change admissible (Q.valᴴ * Q.val)
@@ -90,20 +82,9 @@ theorem chartInv_unitary (Q : BlockU block) (x : Model block)
     (hx : x ∈ parameterDomain block) : Unitary (chartInv Q x) :=
   Q.property.2.mul (cayley_unitary x.val x.property.2 hx)
 
-/-- Every supported unitary factor is represented in its centred chart. -/
-def reconstructBlock (Q : BlockU block) (x : parameterDomain block) : BlockU block :=
-  ⟨chartInv Q x.val, chartInv_supported Q x.val x.property,
-    chartInv_unitary Q x.val x.property⟩
-
 theorem centered_chartInv (Q : BlockU block) (x : Model block) :
     Q.valᴴ * chartInv Q x = cayley x.val := by
   simp only [chartInv, ← Matrix.mul_assoc, Q.property.2.1, Matrix.one_mul]
-
-theorem reconstruct_mem_source (Q : BlockU block) (x : parameterDomain block) :
-    reconstructBlock Q x ∈ chartSource Q := by
-  change admissible (Q.valᴴ * chartInv Q x.val)
-  rw [centered_chartInv]
-  exact admissible_cayley _ x.property
 
 theorem chartMap_chartInv (Q : BlockU block) (x : Model block)
     (hx : x ∈ parameterDomain block) : chartMap Q (chartInv Q x) = x := by
@@ -138,51 +119,11 @@ theorem chartInv_smooth_at (Q : BlockU block) (x : Model block)
 theorem chartInv_smooth (Q : BlockU block) : ContDiff ℝ ⊤ (chartInv Q) := by
   exact contDiff_iff_contDiffAt.mpr (fun x => chartInv_smooth_at Q x (admissible_model x))
 
-theorem continuous_chartMap_restrict (Q : BlockU block) :
-    Continuous (fun U : chartSource Q => chartMap Q U.val.val) := by
-  apply continuous_iff_continuousAt.mpr
-  intro U
-  exact ContinuousAt.comp (f := fun W : chartSource Q => W.val.val) (g := chartMap Q)
-    (chartMap_smooth_at Q U.val.val U.property).continuousAt
-    (continuous_subtype_val.comp continuous_subtype_val).continuousAt
-
-theorem continuous_chartInv_restrict (Q : BlockU block) :
-    Continuous (fun x : parameterDomain block => chartInv Q x.val) := by
-  apply continuous_iff_continuousAt.mpr
-  intro x
-  exact (chartInv_smooth_at Q x.val x.property).continuousAt.comp
-    continuous_subtype_val.continuousAt
-
-/-- The topology on both sides is inherited; the forward and inverse functions
-are the explicit formulas above, not an unspecified bijection. -/
-def blockChartHomeomorph (Q : BlockU block) :
-    chartSource Q ≃ₜ parameterDomain block where
-  toFun U := ⟨chartMap Q U.val.val, chartMap_mem_domain Q U.val U.property⟩
-  invFun x := ⟨reconstructBlock Q x, reconstruct_mem_source Q x⟩
-  left_inv U := by
-    apply Subtype.ext
-    apply Subtype.ext
-    exact chartInv_chartMap Q U.val U.property
-  right_inv x := by
-    apply Subtype.ext
-    exact chartMap_chartInv Q x.val x.property
-  continuous_toFun := (continuous_chartMap_restrict Q).subtype_mk _
-  continuous_invFun := ((continuous_chartInv_restrict Q).subtype_mk _).subtype_mk _
-
-@[simp] theorem blockChartHomeomorph_apply (Q : BlockU block) (U : chartSource Q) :
-    (blockChartHomeomorph Q U).val = chartMap Q U.val.val := rfl
-
-@[simp] theorem blockChartHomeomorph_symm_apply (Q : BlockU block)
-    (x : parameterDomain block) :
-    ((blockChartHomeomorph Q).symm x).val.val = chartInv Q x.val := rfl
-
 /-- Total reconstruction; skew-Hermitian parameters need no domain restriction. -/
 def blockChartInverse (Q : BlockU block) (x : Model block) : BlockU block :=
   ⟨chartInv Q x, chartInv_supported Q x (admissible_model x),
     chartInv_unitary Q x (admissible_model x)⟩
 
-@[simp] theorem blockChartInverse_val_everywhere (Q : BlockU block) (x : Model block) :
-    (blockChartInverse Q x).val = chartInv Q x := rfl
 
 theorem continuous_blockChartInverse (Q : BlockU block) :
     Continuous (blockChartInverse Q) := (chartInv_smooth Q).continuous.subtype_mk _
@@ -210,11 +151,5 @@ def blockPartialChart (Q : BlockU block) :
     exact ((chartMap_smooth_at Q U.val hU).continuousAt.comp
       continuous_subtype_val.continuousAt).continuousWithinAt
   continuousOn_invFun := (continuous_blockChartInverse Q).continuousOn
-
-@[simp] theorem blockPartialChart_source (Q : BlockU block) :
-    (blockPartialChart Q).source = chartSource Q := rfl
-
-@[simp] theorem blockPartialChart_target (Q : BlockU block) :
-    (blockPartialChart Q).target = parameterDomain block := rfl
 
 end GS.UnitaryManifold

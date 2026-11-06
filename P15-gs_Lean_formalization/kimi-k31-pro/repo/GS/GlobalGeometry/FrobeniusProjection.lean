@@ -122,10 +122,6 @@ theorem frobProjection_unique_normal (S : Submodule ℝ (Mat n)) (Z Y : Mat n)
   intro W hW
   simp
 
-@[simp] theorem frobProjection_idempotent (S : Submodule ℝ (Mat n)) (Z : Mat n) :
-    frobProjection S (frobProjection S Z) = frobProjection S Z :=
-  frobProjection_of_mem S _ (frobProjection_mem S Z)
-
 theorem frobProjection_self_adjoint (S : Submodule ℝ (Mat n)) (A B : Mat n) :
     frobInner (frobProjection S A) B = frobInner A (frobProjection S B) := by
   have ha := frobProjection_normal S A _ (frobProjection_mem S B)

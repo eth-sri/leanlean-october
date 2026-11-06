@@ -44,9 +44,5 @@ def orbitHorizontalInverse (right left : Pattern n) (P : Mat n) :
     Mat n →L[ℝ] HorizontalModel right left P :=
   horizontalLeftInverse (orbitDerivative right left P)
 
-@[simp] theorem orbitHorizontalInverse_derivative (right left : Pattern n)
-    (P : Mat n) (h : HorizontalModel right left P) :
-    orbitHorizontalInverse right left P (orbitDerivative right left P h) = h :=
-  horizontalLeftInverse_apply _ h
 
 end GS.SharedGeometry
