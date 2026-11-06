@@ -48,12 +48,12 @@ lemma coeffOf_one_commutator (a b : ℂ) :
   set S := shiftN
   set T := ContinuousLinearMap.adjoint shiftN
   have him : ((a * conj b).im : ℂ) = (a * conj b - conj a * b) / (2 * Complex.I) := by
-    rw [Complex.im_eq_sub_conj]; simp [mul_comm]
+    rw [Complex.im_eq_sub_conj]; simp
   rw [him, ← hD]
   unfold coeffOf
-  simp only [Real.sqrt_one, Complex.ofReal_one, mul_one, add_mul, mul_add,
+  simp [Real.sqrt_one, Complex.ofReal_one, mul_one, add_mul, mul_add,
     smul_add, smul_sub, smul_mul_assoc, mul_smul_comm, smul_smul]
-  match_scalars <;> field_simp <;> ring_nf <;> simp [Complex.I_sq]
+  match_scalars <;> field_simp <;> ring_nf <;> simp
 
 lemma norm_transportCoeff_le_const {γ : ℝ → ℂ} {K : NNReal} (hK : LipschitzWith K γ) (E s : ℝ) :
     ‖transportCoeff γ E s‖ ≤ Real.sqrt E * shiftConst * K := by
@@ -82,7 +82,7 @@ lemma norm_transport_sub_le {γ : ℝ → ℂ} {K : NNReal} (hK : LipschitzWith 
     filter_upwards [hK.ae_differentiableAt (μ := volume)] with θ h1 _
     exact (hasDerivAt_coeffOf h1.hasDerivAt E (γ 0)).sub
       (hasDerivAt_coeffOf h1.hasDerivAt E' (γ 0))
-  have hF0 : F 0 = 0 := by simp [hF, coeffOf_zero]
+
   have hFb : ∀ s ∈ Icc 0 (2 * π), ‖F s‖ ≤ ε := by
     intro s hs
     refine (norm_coeffOf_sub_coeffOf_le E E' _).trans ?_
@@ -91,7 +91,7 @@ lemma norm_transport_sub_le {γ : ℝ → ℂ} {K : NNReal} (hK : LipschitzWith 
     exact hR s hs
   have hvar := volterra_variation_at (transportCoeff_aestronglyMeasurable γ E)
     (transportCoeff_norm_le γ E hK) hW.1 hW.2 (transportCoeff_aestronglyMeasurable γ E')
-    (transportCoeff_norm_le γ E' hK) (transportCoeff_star γ E') hW'.1 hW'.2 hπ hFL hFd hF0 θ hθ
+    (transportCoeff_norm_le γ E' hK) (transportCoeff_star γ E') hW'.1 hW'.2 hπ hFL hFd (by simp [hF, coeffOf_zero]) θ hθ
   have hsub : Icc 0 θ ⊆ Icc 0 (2 * π) := Icc_subset_Icc le_rfl hθ.2
   have hint := norm_volterra_variation_le (transportCoeff_aestronglyMeasurable γ E)
     (transportCoeff_norm_le γ E hK) (transportCoeff_aestronglyMeasurable γ E')
@@ -101,9 +101,9 @@ lemma norm_transport_sub_le {γ : ℝ → ℂ} {K : NNReal} (hK : LipschitzWith 
       (Unitary.star_mem (transport_mem_unitary hK hW' (hsub hs))))
   have hU := transport_mem_unitary hK hW hθ
   have hU' := transport_mem_unitary hK hW' hθ
-  have hn1 : ‖W θ‖ ≤ 1 := norm_le_one_of_mem_unitary hU
-  have hn1' : ‖W' θ‖ ≤ 1 := norm_le_one_of_mem_unitary hU'
-  have hn1s : ‖star (W' θ)‖ ≤ 1 := norm_le_one_of_mem_unitary (Unitary.star_mem hU')
+  have hn1 := norm_le_one_of_mem_unitary hU
+  have hn1' := norm_le_one_of_mem_unitary hU'
+  have hn1s := norm_le_one_of_mem_unitary (Unitary.star_mem hU')
   have hcoef : ∫ s in (0 : ℝ)..θ,
       (‖transportCoeff γ E' s‖ + ‖transportCoeff γ E s‖) ≤
       2 * π * ((Real.sqrt E' + Real.sqrt E) * shiftConst * K) := by
@@ -123,7 +123,7 @@ lemma norm_transport_sub_le {γ : ℝ → ℂ} {K : NNReal} (hK : LipschitzWith 
       _ ≤ _ := by
           gcongr
           exact hθ.2
-  have hε0 : 0 ≤ ε := (norm_nonneg _).trans (hFb 0 ⟨le_rfl, hπ⟩)
+  have hε0 := (norm_nonneg _).trans (hFb 0 ⟨le_rfl, hπ⟩)
   have hkey : ‖star (W' θ) * W θ - 1‖ ≤
       ε * (1 + 2 * π * ((Real.sqrt E' + Real.sqrt E) * shiftConst * K)) := by
     rw [hvar]
@@ -141,7 +141,7 @@ lemma norm_transport_sub_le {γ : ℝ → ℂ} {K : NNReal} (hK : LipschitzWith 
   rw [heq, norm_neg]
   refine (norm_mul_le _ _).trans ?_
   calc ‖W' θ‖ * ‖star (W' θ) * W θ - 1‖ ≤ 1 * ‖star (W' θ) * W θ - 1‖ := by gcongr
-    _ ≤ _ := by rw [one_mul]; exact hkey
+    _ ≤ _ := by simp; exact hkey
 
 /-- The integrand `W'^* (√E' C₁ G - √E G C₁) W` of the energy variation identity, with
 `C₁ = coeffOf 1 γ'` and `G = coeffOf 1 (γ - γ(0))`. -/
@@ -158,7 +158,7 @@ lemma energy_variation {γ : ℝ → ℂ} {K : NNReal} (hK : LipschitzWith K γ)
     star (W' (2 * π)) * W (2 * π) - 1 =
       (Real.sqrt E - Real.sqrt E') •
         ∫ θ in (0 : ℝ)..(2 * π), energyIntegrand γ E E' W W' θ := by
-  have hπ : (0 : ℝ) ≤ 2 * π := by positivity
+
   set F : ℝ → Ell2 →L[ℂ] Ell2 := fun θ => coeffOf E (γ θ - γ 0) - coeffOf E' (γ θ - γ 0)
     with hF
   have hFL : LipschitzOnWith _ F (Icc 0 (2 * π)) :=
@@ -168,18 +168,17 @@ lemma energy_variation {γ : ℝ → ℂ} {K : NNReal} (hK : LipschitzWith K γ)
     filter_upwards [hK.ae_differentiableAt (μ := volume)] with θ h1 _
     exact (hasDerivAt_coeffOf h1.hasDerivAt E (γ 0)).sub
       (hasDerivAt_coeffOf h1.hasDerivAt E' (γ 0))
-  have hF0 : F 0 = 0 := by simp [hF, coeffOf_zero]
-  have hF2 : F (2 * π) = 0 := by simp [hF, hclosed, coeffOf_zero]
+
   rw [volterra_variation (transportCoeff_aestronglyMeasurable γ E) (transportCoeff_norm_le γ E hK)
     hW.1 hW.2 (transportCoeff_aestronglyMeasurable γ E') (transportCoeff_norm_le γ E' hK)
-    (transportCoeff_star γ E') hW'.1 hW'.2 hπ hFL hFd hF0 hF2,
+    (transportCoeff_star γ E') hW'.1 hW'.2 (by positivity) hFL hFd (by simp [hF, coeffOf_zero]) (by simp [hF, hclosed, coeffOf_zero]),
     ← intervalIntegral.integral_smul]
   congr 1
   funext s
-  simp only [hF, energyIntegrand, transportCoeff_eq_coeffOf]
+  simp [hF, energyIntegrand, transportCoeff_eq_coeffOf]
   rw [coeffOf_eq_sqrt_smul E (γ s - γ 0), coeffOf_eq_sqrt_smul E' (γ s - γ 0),
     coeffOf_eq_sqrt_smul E (deriv γ s), coeffOf_eq_sqrt_smul E' (deriv γ s), ← sub_smul]
-  simp only [smul_mul_assoc, mul_smul_comm, smul_sub, smul_smul, mul_sub, sub_mul]
+  simp [smul_mul_assoc, mul_smul_comm, smul_sub, smul_smul, mul_sub, sub_mul]
   congr 1; congr 1; ring
 
 lemma norm_coeffOf_one_mul_le {γ : ℝ → ℂ} {K : NNReal} (hK : LipschitzWith K γ) {R : ℝ}
@@ -217,7 +216,7 @@ lemma norm_energyIntegrand_le {γ : ℝ → ℂ} {K : NNReal} (hK : LipschitzWit
     (hW : IsTransport γ E W) (hW' : IsTransport γ E' W') {θ : ℝ} (hθ : θ ∈ Icc 0 (2 * π)) :
     ‖energyIntegrand γ E E' W W' θ‖ ≤
       (Real.sqrt E' + Real.sqrt E) * (shiftConst * K * (shiftConst * R)) := by
-  have hn1 : ‖W θ‖ ≤ 1 := norm_le_one_of_mem_unitary (transport_mem_unitary hK hW hθ)
+  have hn1 := norm_le_one_of_mem_unitary (transport_mem_unitary hK hW hθ)
   have hn1s : ‖star (W' θ)‖ ≤ 1 :=
     norm_le_one_of_mem_unitary (Unitary.star_mem (transport_mem_unitary hK hW' hθ))
   unfold energyIntegrand
@@ -239,10 +238,10 @@ lemma intervalIntegrable_energyIntegrand {γ : ℝ → ℂ} {K : NNReal} (hK : L
     {E E' : ℝ} {W W' : ℝ → Ell2 →L[ℂ] Ell2}
     (hW : IsTransport γ E W) (hW' : IsTransport γ E' W') :
     IntervalIntegrable (energyIntegrand γ E E' W W') volume 0 (2 * π) := by
-  have hπ : (0 : ℝ) ≤ 2 * π := by positivity
+
   obtain ⟨R, hR⟩ := isCompact_Icc.exists_bound_of_continuousOn (s := Icc 0 (2 * π))
     (f := fun θ => γ θ - γ 0) (hK.continuous.sub continuous_const).continuousOn
-  rw [intervalIntegrable_iff_integrableOn_Icc_of_le hπ]
+  rw [intervalIntegrable_iff_integrableOn_Icc_of_le (by positivity)]
   have hG : Continuous fun θ => coeffOf 1 (γ θ - γ 0) :=
     (lipschitzWith_coeffOf hK 1 (γ 0)).continuous
   haveI : SecondCountableTopologyEither ℝ (Ell2 →L[ℂ] Ell2) :=
@@ -278,21 +277,21 @@ lemma norm_integral_energyIntegrand_sub_le {γ : ℝ → ℂ} {K : NNReal} (hK :
   set a := shiftConst * K * (shiftConst * R)
   set X' := Real.sqrt E' • (coeffOf 1 (deriv γ θ) * coeffOf 1 (γ θ - γ 0)) -
       Real.sqrt E • (coeffOf 1 (γ θ - γ 0) * coeffOf 1 (deriv γ θ))
-  have hX' : ‖X'‖ ≤ (Real.sqrt E' + Real.sqrt E) * a := norm_energyCore_le hK hR E E' hθ'
+  have hX' := norm_energyCore_le hK hR E E' hθ'
   have hXX : energyIntegrand γ E E' W W' θ - energyIntegrand γ E E W W θ =
       (star (W' θ) - star (W θ)) * X' * W θ +
         star (W θ) * ((Real.sqrt E' - Real.sqrt E) •
           (coeffOf 1 (deriv γ θ) * coeffOf 1 (γ θ - γ 0))) * W θ := by
-    simp only [energyIntegrand, X', sub_smul, smul_sub, mul_sub, sub_mul, smul_mul_assoc,
+    simp [energyIntegrand, X', sub_smul, smul_sub, mul_sub, sub_mul, smul_mul_assoc,
       mul_smul_comm]
     abel
   rw [hXX]
   have hd := norm_transport_sub_le hK hR hW hW' hθ'
-  have hn1 : ‖W θ‖ ≤ 1 := norm_le_one_of_mem_unitary (transport_mem_unitary hK hW hθ')
+  have hn1 := norm_le_one_of_mem_unitary (transport_mem_unitary hK hW hθ')
   have hn1s : ‖star (W θ)‖ ≤ 1 :=
     norm_le_one_of_mem_unitary (Unitary.star_mem (transport_mem_unitary hK hW hθ'))
   have ha := (norm_coeffOf_one_mul_le hK hR hθ').1
-  have ha0 : 0 ≤ a := (norm_nonneg _).trans ha
+  have ha0 := (norm_nonneg _).trans ha
   refine (norm_add_le _ _).trans ?_
   have e1 : ‖(star (W' θ) - star (W θ)) * X' * W θ‖ ≤ |Real.sqrt E - Real.sqrt E'| * shiftConst * R *
       (1 + 2 * π * ((Real.sqrt E' + Real.sqrt E) * shiftConst * K)) *
@@ -302,7 +301,7 @@ lemma norm_integral_energyIntegrand_sub_le {γ : ℝ → ℂ} {K : NNReal} (hK :
     rw [← star_sub, norm_star]
     calc ‖W' θ - W θ‖ * ‖X'‖ * ‖W θ‖ ≤ ‖W' θ - W θ‖ * ‖X'‖ * 1 := by gcongr
       _ ≤ _ := by
-        rw [mul_one]
+        simp
         exact mul_le_mul hd hX' (norm_nonneg _) ((norm_nonneg _).trans hd)
   have e2 : ‖star (W θ) * ((Real.sqrt E' - Real.sqrt E) •
       (coeffOf 1 (deriv γ θ) * coeffOf 1 (γ θ - γ 0))) * W θ‖ ≤
@@ -356,12 +355,12 @@ theorem hasDerivAt_transport_energy {γ : ℝ → ℂ} {K : NNReal} (hK : Lipsch
     (hWs : ∀ E, IsTransport γ E (Ws E)) {E : ℝ} (hE : 0 < E) :
     HasDerivAt (fun E => Ws E (2 * π))
       (-(Complex.I • (Ws E (2 * π) * curvatureOp γ (Ws E)))) E := by
-  have hπ : (0 : ℝ) ≤ 2 * π := by positivity
-  have h2π : (2 * π) ∈ Icc 0 (2 * π) := ⟨hπ, le_rfl⟩
+
+  have h2π : (2 * π) ∈ Icc 0 (2 * π) := ⟨(by positivity), le_rfl⟩
   obtain ⟨R, hR⟩ := isCompact_Icc.exists_bound_of_continuousOn (s := Icc 0 (2 * π))
     (f := fun θ => γ θ - γ 0) (hK.continuous.sub continuous_const).continuousOn
   set s := Real.sqrt E with hsdef
-  have hs : 0 < s := Real.sqrt_pos.mpr hE
+  have hs := Real.sqrt_pos.mpr hE
   set V : ℝ → Ell2 →L[ℂ] Ell2 := fun E' => Ws E' (2 * π) with hVdef
   set I : ℝ → Ell2 →L[ℂ] Ell2 :=
     fun E' => ∫ θ in (0 : ℝ)..(2 * π), energyIntegrand γ E E' (Ws E) (Ws E') θ with hIdef
@@ -371,7 +370,7 @@ theorem hasDerivAt_transport_energy {γ : ℝ → ℂ} {K : NNReal} (hK : Lipsch
     simp only [hVdef, hIdef]
     have hvar := energy_variation hK hclosed (hWs E) (hWs E')
     have hU := transport_mem_unitary hK (hWs E') h2π
-    have hVV : Ws E' (2 * π) * star (Ws E' (2 * π)) = 1 := (Unitary.mem_iff.mp hU).2
+    have hVV := (Unitary.mem_iff.mp hU).2
     have hdiff : Ws E' (2 * π) - Ws E (2 * π) = (Real.sqrt E' - s) •
         (Ws E' (2 * π) * ∫ θ in (0 : ℝ)..(2 * π), energyIntegrand γ E E' (Ws E) (Ws E') θ) := by
       have : Ws E' (2 * π) - Ws E (2 * π) =
@@ -384,17 +383,16 @@ theorem hasDerivAt_transport_energy {γ : ℝ → ℂ} {K : NNReal} (hK : Lipsch
       intro h
       apply hne
       have h2 := congrArg (· ^ 2) (sub_eq_zero.mp h)
-      simp only [hsdef, Real.sq_sqrt hpos.le, Real.sq_sqrt hE.le] at h2
+      simp [hsdef, Real.sq_sqrt hpos.le, Real.sq_sqrt hE.le] at h2
       exact h2
-    have hsum : Real.sqrt E' + s ≠ 0 := by positivity
     have hEE : E' - E = (Real.sqrt E' - s) * (Real.sqrt E' + s) := by
       rw [hsdef]
       ring_nf
       rw [Real.sq_sqrt hpos.le, Real.sq_sqrt hE.le]
     rw [hEE]
     field_simp
-  have hV : Tendsto V (𝓝 E) (𝓝 (V E)) := tendsto_transport_energy hK hWs E h2π
-  have hI : Tendsto I (𝓝 E) (𝓝 (I E)) := tendsto_integral_energyIntegrand hK hWs E
+  have hV := tendsto_transport_energy hK hWs E h2π
+  have hI := tendsto_integral_energyIntegrand hK hWs E
   have hsq : Tendsto (fun E' => (Real.sqrt E' + s)⁻¹) (𝓝 E) (𝓝 ((s + s)⁻¹)) :=
     ((Real.continuous_sqrt.tendsto E).add_const s).inv₀ (by positivity)
   have hval : (s + s)⁻¹ • (V E * I E) = -(Complex.I • (Ws E (2 * π) * curvatureOp γ (Ws E))) := by
@@ -405,13 +403,13 @@ theorem hasDerivAt_transport_energy {γ : ℝ → ℂ} {K : NNReal} (hK : Lipsch
       rw [← intervalIntegral.integral_smul]
       congr 1
       funext θ
-      simp only [energyIntegrand]
+      simp [energyIntegrand]
       rw [← smul_sub, coeffOf_one_commutator, areaDensity, mul_comm (conj _) (deriv γ θ)]
-      simp only [smul_mul_assoc, mul_smul_comm, real_smul_eq_coe_smul_clm, smul_smul]
+      simp [smul_mul_assoc, mul_smul_comm, real_smul_eq_coe_smul_clm, smul_smul]
       congr 1
       ring
     rw [hIE, curvatureOp]
-    simp only [mul_smul_comm, real_smul_eq_coe_smul_clm, smul_smul, ← neg_smul]
+    simp [mul_smul_comm, real_smul_eq_coe_smul_clm, smul_smul, ← neg_smul]
     congr 1
     have hs' : (s : ℂ) ≠ 0 := by exact_mod_cast hs.ne'
     push_cast
@@ -451,8 +449,8 @@ lemma intervalIntegrable_conj_diagN {U : ℝ → Ell2 →L[ℂ] Ell2}
     {b : ℝ → ℝ} (hb : AEStronglyMeasurable b volume) {B : ℝ}
     (hbB : ∀ θ ∈ Icc 0 (2 * π), |b θ| ≤ B) :
     IntervalIntegrable (fun θ => b θ • (star (U θ) * diagN * U θ)) volume 0 (2 * π) := by
-  have hπ : (0 : ℝ) ≤ 2 * π := by positivity
-  rw [intervalIntegrable_iff_integrableOn_Icc_of_le hπ]
+
+  rw [intervalIntegrable_iff_integrableOn_Icc_of_le (by positivity)]
   haveI : SecondCountableTopologyEither ℝ (Ell2 →L[ℂ] Ell2) :=
     secondCountableTopologyEither_of_left _ _
   have hm : AEStronglyMeasurable (fun θ => b θ • (star (U θ) * diagN * U θ))
@@ -461,10 +459,10 @@ lemma intervalIntegrable_conj_diagN {U : ℝ → Ell2 →L[ℂ] Ell2}
       (hU.aestronglyMeasurable measurableSet_Icc))
   refine Integrable.of_bound hm (B * ‖diagN‖) ((ae_restrict_iff' measurableSet_Icc).mpr
     (Eventually.of_forall fun θ hθ => ?_))
-  have h1 : ‖U θ‖ ≤ 1 := norm_le_one_of_mem_unitary (hunit θ hθ)
-  have h2 : ‖star (U θ)‖ ≤ 1 := norm_le_one_of_mem_unitary (Unitary.star_mem (hunit θ hθ))
+  have h1 := norm_le_one_of_mem_unitary (hunit θ hθ)
+  have h2 := norm_le_one_of_mem_unitary (Unitary.star_mem (hunit θ hθ))
   rw [norm_smul, Real.norm_eq_abs]
-  have hB : 0 ≤ B := (abs_nonneg _).trans (hbB θ hθ)
+  have hB := (abs_nonneg _).trans (hbB θ hθ)
   gcongr
   · exact hbB θ hθ
   · calc ‖star (U θ) * diagN * U θ‖ ≤ ‖star (U θ)‖ * ‖diagN‖ * ‖U θ‖ :=
@@ -481,7 +479,7 @@ theorem curvatureOp_star {γ : ℝ → ℂ} {K : NNReal} (hK : LipschitzWith K �
   have hint := intervalIntegrable_conj_diagN hW.1 (fun θ hθ => transport_mem_unitary hK hW hθ)
     (areaDensity_aestronglyMeasurable hK.continuous) (fun θ hθ => abs_areaDensity_le hK hR hθ)
   unfold curvatureOp
-  rw [star_smul, star_trivial]
+  simp
   congr 1
   have := (starL' ℝ (A := Ell2 →L[ℂ] Ell2)).toContinuousLinearMap.intervalIntegral_comp_comm hint
   simp only [ContinuousLinearEquiv.coe_coe, starL'_apply] at this
@@ -498,7 +496,7 @@ theorem hasDerivAt_monodromy_energy {γ : ℝ → ℂ} {K : NNReal} (hK : Lipsch
     HasDerivAt (fun E => monodromy (Ws E))
       (Complex.I • (curvatureOp γ (Ws E) * monodromy (Ws E))) E := by
   have h := (hasDerivAt_transport_energy hK hclosed hWs hE).star
-  simp only [monodromy, ← ContinuousLinearMap.star_eq_adjoint]
+  simp [monodromy, ← ContinuousLinearMap.star_eq_adjoint]
   convert h using 1
   rw [star_neg, star_smul, star_mul, curvatureOp_star hK (hWs E), Complex.star_def,
     Complex.conj_I, neg_smul, neg_neg]

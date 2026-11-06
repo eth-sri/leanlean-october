@@ -73,7 +73,7 @@ theorem localConformalVekuaBoundary_average_volterra_hasSum_of_H1
       (hardyFourierTrace (normalizedHardyAverage
         (localConformalVekuaBoundary hR F hFs hb hL hhol hinj hC hK
           e he hsource hes E b)) θ) := by
-  let c : ℂ := (Real.sqrt (2 * Real.pi) : ℂ)⁻¹
+  let c := (Real.sqrt (2 * Real.pi) : ℂ)⁻¹
   have hfun : hardyFourierTrace (normalizedHardyAverage b) =
       fun t => c * hardyFourierTrace (fromL2 (1 / 2 : ℝ) b) t := by
     funext t

@@ -45,8 +45,8 @@ theorem deriv_ne_zero_of_injOn {f : ℂ → ℂ} {U : Set ℂ} (hU : IsOpen U)
     (hf : DifferentiableOn ℂ f U) (hinj : InjOn f U) {a : ℂ} (ha : a ∈ U) :
     deriv f a ≠ 0 := by
   intro h0
-  have hUa : U ∈ 𝓝 a := hU.mem_nhds ha
-  have han : AnalyticAt ℂ f a := (hf.analyticOnNhd hU) a ha
+  have hUa := hU.mem_nhds ha
+  have han := (hf.analyticOnNhd hU) a ha
   set g : ℂ → ℂ := fun z => f z - f a with hg
   have hgan : AnalyticAt ℂ g a := han.sub analyticAt_const
   -- `g` is not identically zero near `a`
@@ -58,15 +58,15 @@ theorem deriv_ne_zero_of_injOn {f : ℂ → ℂ} {U : Set ℂ} (hU : IsOpen U)
         abs_of_pos (by positivity)]
       linarith
     have h1 := hεsub hmem
-    have h2 : f (a + (ε / 2 : ℝ)) = f a := sub_eq_zero.1 h1.1
+    have h2 := sub_eq_zero.1 h1.1
     have := hinj h1.2 ha h2
     have : ((ε / 2 : ℝ) : ℂ) = 0 := by linear_combination this
     have : ε / 2 = 0 := by exact_mod_cast this
     linarith
   obtain ⟨n, h, hhan, hha, hgeq⟩ := hgan.exists_eventuallyEq_pow_smul_nonzero_iff.2 hnz
-  simp only [smul_eq_mul] at hgeq
+  simp at hgeq
   -- `n ≥ 2`
-  have hga : g a = 0 := by simp [hg]
+
   have hderg : deriv g a = 0 := by
     have : deriv g a = deriv f a := by
       rw [hg, deriv_sub_const]
@@ -76,8 +76,8 @@ theorem deriv_ne_zero_of_injOn {f : ℂ → ℂ} {U : Set ℂ} (hU : IsOpen U)
     · exfalso
       interval_cases n
       · have := hgeq.self_of_nhds
-        simp only [pow_zero, one_mul] at this
-        exact hha (this ▸ hga)
+        simp at this
+        exact hha (this ▸ (by simp [hg]))
       · have hd : HasDerivAt (fun z => (z - a) ^ 1 * h z)
             (1 * h a + (a - a) ^ 1 * deriv h a) a := by
           have h1 : HasDerivAt (fun z => (z - a) ^ 1) 1 a := by
@@ -97,7 +97,7 @@ theorem deriv_ne_zero_of_injOn {f : ℂ → ℂ} {U : Set ℂ} (hU : IsOpen U)
     exact hha (by rw [← hc, zero_pow hn0])
   set q : ℂ → ℂ := fun z => h z / h a with hq
   have hqa : q a = 1 := div_self hha
-  have hqan : AnalyticAt ℂ q a := hhan.div analyticAt_const hha
+  have hqan := hhan.div analyticAt_const hha
   have hslit : q a ∈ slitPlane := by rw [hqa]; exact one_mem_slitPlane
   set ψ : ℂ → ℂ := fun z => c * exp (log (q z) / n) with hψ
   have hψan : AnalyticAt ℂ ψ a := by
@@ -108,12 +108,11 @@ theorem deriv_ne_zero_of_injOn {f : ℂ → ℂ} {U : Set ℂ} (hU : IsOpen U)
     have hev : ∀ᶠ z in 𝓝 a, q z ∈ slitPlane :=
       hqan.continuousAt.preimage_mem_nhds (isOpen_slitPlane.mem_nhds hslit)
     filter_upwards [hev] with z hz
-    have hqz : q z ≠ 0 := slitPlane_ne_zero hz
+    have hqz := slitPlane_ne_zero hz
     rw [hψ, mul_pow, hc, ← exp_nat_mul, mul_div_cancel₀ _ (by exact_mod_cast hn0),
       exp_log hqz, hq]
     field_simp
   set φ : ℂ → ℂ := fun z => (z - a) * ψ z with hφ
-  have hφan : AnalyticAt ℂ φ a := (analyticAt_id.sub analyticAt_const).mul hψan
   have hφa : φ a = 0 := by simp [hφ]
   have hψa : ψ a = c := by simp [hψ, hqa]
   have hφd : HasDerivAt φ c a := by
@@ -128,7 +127,7 @@ theorem deriv_ne_zero_of_injOn {f : ℂ → ℂ} {U : Set ℂ} (hU : IsOpen U)
     rw [hφd.deriv] at this
     exact hc0 this
   have hopen : 𝓝 (φ a) ≤ map φ (𝓝 a) :=
-    hφan.eventually_constant_or_nhds_le_map_nhds.resolve_left hφnc
+    ((analyticAt_id.sub analyticAt_const).mul hψan).eventually_constant_or_nhds_le_map_nhds.resolve_left hφnc
   -- a neighbourhood of `a` where `g = φⁿ`
   have hVmem : {z | z ∈ U ∧ g z = φ z ^ n} ∈ 𝓝 a := by
     filter_upwards [hUa, hgeq, hψpow] with z hz h1 h2
@@ -140,16 +139,16 @@ theorem deriv_ne_zero_of_injOn {f : ℂ → ℂ} {U : Set ℂ} (hU : IsOpen U)
   obtain ⟨δ, hδ, hδsub⟩ := Metric.mem_nhds_iff.1 himg
   set ε : ℂ := ((δ / 2 : ℝ) : ℂ) with hε
   set ζ : ℂ := exp (2 * Real.pi * I / n) with hζ
-  have hζprim : IsPrimitiveRoot ζ n := Complex.isPrimitiveRoot_exp n hn0
-  have hζ1 : ζ ≠ 1 := hζprim.ne_one (by omega)
-  have hζn : ζ ^ n = 1 := hζprim.pow_eq_one
-  have hζnorm : ‖ζ‖ = 1 := hζprim.norm'_eq_one hn0
+  have hζprim := Complex.isPrimitiveRoot_exp n hn0
+  have hζ1 := hζprim.ne_one (by omega)
+  have hζn := hζprim.pow_eq_one
+  have hζnorm := hζprim.norm'_eq_one hn0
   have hεnorm : ‖ε‖ = δ / 2 := by
     rw [hε, norm_real, Real.norm_eq_abs, abs_of_pos (by positivity)]
   have hε0 : ε ≠ 0 := by
     intro h; rw [h, norm_zero] at hεnorm; linarith
   have hm1 : ε ∈ ball (0 : ℂ) δ := by
-    rw [mem_ball_zero_iff, hεnorm]; linarith
+    simp; linarith
   have hm2 : ε * ζ ∈ ball (0 : ℂ) δ := by
     rw [mem_ball_zero_iff, norm_mul, hεnorm, hζnorm]; linarith
   obtain ⟨z1, ⟨hz1U, hz1g⟩, hz1⟩ := hδsub hm1
@@ -181,7 +180,7 @@ lemma mob_denom_ne_zero {a z : ℂ} (ha : ‖a‖ < 1) (hz : ‖z‖ < 1) :
   intro h
   have h1 : (starRingEnd ℂ) a * z = 1 := by linear_combination -h
   have : ‖(starRingEnd ℂ) a * z‖ < 1 := by
-    rw [norm_mul, Complex.norm_conj]
+    simp
     calc ‖a‖ * ‖z‖ ≤ ‖a‖ * 1 := by gcongr
       _ < 1 := by linarith
   rw [h1] at this
@@ -191,7 +190,7 @@ lemma mob_denom_ne_zero {a z : ℂ} (ha : ‖a‖ < 1) (hz : ‖z‖ < 1) :
 lemma normSq_identity (a z : ℂ) :
     normSq (1 - (starRingEnd ℂ) a * z) - normSq (z - a) =
       (1 - normSq a) * (1 - normSq z) := by
-  simp only [normSq_apply, sub_re, sub_im, mul_re, mul_im, conj_re, conj_im, one_re, one_im]
+  simp [normSq_apply, sub_re, sub_im, mul_re, mul_im, conj_re, conj_im, one_re, one_im]
   ring
 
 lemma norm_mob_lt_one {a z : ℂ} (ha : ‖a‖ < 1) (hz : ‖z‖ < 1) : ‖mob a z‖ < 1 := by
@@ -219,7 +218,7 @@ lemma mob_mem_ball {a z : ℂ} (ha : a ∈ ball (0 : ℂ) 1) (hz : z ∈ ball (0
 
 lemma mob_neg_mob {a z : ℂ} (ha : ‖a‖ < 1) (hz : ‖z‖ < 1) : mob (-a) (mob a z) = z := by
   have hd := mob_denom_ne_zero ha hz
-  have hna : 1 - (starRingEnd ℂ) a * a ≠ 0 := mob_denom_ne_zero ha ha
+  have hna := mob_denom_ne_zero ha ha
   unfold mob
   rw [map_neg]
   have h2 : 1 - -(starRingEnd ℂ) a * ((z - a) / (1 - (starRingEnd ℂ) a * z)) =
@@ -238,11 +237,11 @@ lemma mob_injOn {a : ℂ} (ha : ‖a‖ < 1) : Set.InjOn (mob a) (ball 0 1) := b
 lemma hasDerivAt_mob {a z : ℂ} (ha : ‖a‖ < 1) (hz : ‖z‖ < 1) :
     HasDerivAt (mob a) ((1 - (starRingEnd ℂ) a * a) / (1 - (starRingEnd ℂ) a * z) ^ 2) z := by
   have hd := mob_denom_ne_zero ha hz
-  have h1 : HasDerivAt (fun w => w - a) 1 z := (hasDerivAt_id z).sub_const a
+
   have h2 : HasDerivAt (fun w => 1 - (starRingEnd ℂ) a * w) (-(starRingEnd ℂ) a) z := by
     simpa using ((hasDerivAt_id z).const_mul ((starRingEnd ℂ) a)).const_sub 1
-  have := h1.div h2 hd
-  simp only [Pi.div_def] at this
+  have := ((hasDerivAt_id z).sub_const a).div h2 hd
+  simp at this
   convert this using 1
   · rfl
   field_simp
@@ -256,7 +255,7 @@ lemma mob_eq_zero_iff {a z : ℂ} (ha : ‖a‖ < 1) (hz : ‖z‖ < 1) : mob a 
   · intro h
     have hd := mob_denom_ne_zero ha hz
     unfold mob at h
-    rw [div_eq_zero_iff] at h
+    simp at h
     rcases h with h | h
     · exact sub_eq_zero.1 h
     · exact absurd h hd
@@ -280,15 +279,14 @@ lemma hasDerivAt_of_sq_eq {g f : ℂ → ℂ} {z : ℂ} {U : Set ℂ} (hU : U �
     have : Tendsto (fun w => g w + g z) (𝓝 z) (𝓝 (g z + g z)) := hg.add tendsto_const_nhds
     rw [two_mul]
     exact this.mono_left nhdsWithin_le_nhds
-  have h2 : (2 * g z) ≠ 0 := mul_ne_zero two_ne_zero hgz
+  have h2 := mul_ne_zero two_ne_zero hgz
   have hlim := hf.hasDerivAt.tendsto_slope.div hsum h2
   refine hlim.congr' ?_
-  have hev1 : ∀ᶠ w in 𝓝[≠] z, g w + g z ≠ 0 := hsum.eventually_ne h2
-  have hev2 : ∀ᶠ w in 𝓝[≠] z, w ∈ U := nhdsWithin_le_nhds hU
-  filter_upwards [hev1, hev2, self_mem_nhdsWithin] with w hw1 hw2 hw3
-  have hzU : z ∈ U := mem_of_mem_nhds hU
+  have hev1 := hsum.eventually_ne h2
+  filter_upwards [hev1, (nhdsWithin_le_nhds hU), self_mem_nhdsWithin] with w hw1 hw2 hw3
+  have hzU := mem_of_mem_nhds hU
   rw [Pi.div_apply, slope_def_field, slope_def_field, ← hsq w hw2, ← hsq z hzU]
-  have hwz : w - z ≠ 0 := sub_ne_zero.2 hw3
+  have hwz := sub_ne_zero.2 hw3
   field_simp
   ring
 
@@ -319,7 +317,7 @@ theorem exists_sqrt_of_simplyConnected {Ω : Set ℂ} (hΩ : IsOpen Ω) [SimplyC
     simpa [hg_def, hz, F] using this
   have hne : ∀ z ∈ Ω, g z ≠ 0 := by
     intro z hz
-    simp only [hg_def, hz, dite_true]
+    simp [hg_def, hz, dite_true]
     exact (G ⟨z, hz⟩).2
   have hcont : ContinuousOn g Ω := by
     rw [continuousOn_iff_continuous_domRestrict]
@@ -330,7 +328,7 @@ theorem exists_sqrt_of_simplyConnected {Ω : Set ℂ} (hΩ : IsOpen Ω) [SimplyC
     exact continuous_subtype_val.comp G.continuous
   refine ⟨g, ?_, hsq⟩
   intro z hz
-  have hU : Ω ∈ 𝓝 z := hΩ.mem_nhds hz
+  have hU := hΩ.mem_nhds hz
   exact (hasDerivAt_of_sq_eq hU (hcont.continuousAt hU) hsq
     (hf.differentiableAt hU) (hne z hz)).differentiableAt.differentiableWithinAt
 
@@ -353,8 +351,8 @@ lemma equicontinuousAt_of_norm_le_one {ι : Type*} {F : ι → ℂ → ℂ} {U :
   have hsub : ∀ y ∈ ball z r, closedBall y r ⊆ U := by
     intro y hy w hw
     apply hεU
-    rw [mem_ball] at hy ⊢
-    rw [mem_closedBall] at hw
+    simp at hy ⊢
+    simp at hw
     calc dist w z ≤ dist w y + dist y z := dist_triangle _ _ _
       _ < r + r := by linarith
       _ < ε := by rw [hr]; linarith
@@ -375,8 +373,8 @@ lemma equicontinuousAt_of_norm_le_one {ι : Type*} {F : ι → ℂ → ℂ} {U :
   rw [Metric.equicontinuousAt_iff]
   intro e he
   refine ⟨min r (e * r / 2), by positivity, fun y hy i => ?_⟩
-  have hy1 : y ∈ ball z r := mem_ball.2 (lt_of_lt_of_le hy (min_le_left _ _))
-  have hy2 : dist y z < e * r / 2 := lt_of_lt_of_le hy (min_le_right _ _)
+  have hy1 := mem_ball.2 (lt_of_lt_of_le hy (min_le_left _ _))
+  have hy2 := lt_of_lt_of_le hy (min_le_right _ _)
   rw [dist_comm, dist_eq_norm]
   calc ‖F i y - F i z‖ ≤ 1 / r * ‖y - z‖ := hlip i y hy1
     _ ≤ 1 / r * (e * r / 2) := by
@@ -396,7 +394,7 @@ theorem montel {ι : Type*} (l : Ultrafilter ι) {F : ι → ℂ → ℂ} {U : S
         (l.map (fun i => F i z)) (by
           rw [Ultrafilter.coe_map]
           refine tendsto_principal.2 (Eventually.of_forall fun i => ?_)
-          rw [mem_closedBall_zero_iff]; exact hb i z hz)
+          simp; exact hb i z hz)
       exact ⟨w, fun _ => by rwa [Ultrafilter.coe_map] at hw⟩
     · exact ⟨0, fun h => absurd h hz⟩
   choose f hf using hpt
@@ -410,7 +408,7 @@ theorem montel {ι : Type*} (l : Ultrafilter ι) {F : ι → ℂ → ℂ} {U : S
     (by simpa using hK) heq (l : Filter ι) f).2 (by
       rw [tendsto_pi_nhds]
       rintro ⟨x, hx⟩
-      simp only [sUnion_singleton] at hx
+      simp at hx
       exact hf x (hKU hx))
   rw [UniformOnFun.tendsto_iff_tendstoUniformlyOn] at key
   exact key K rfl
@@ -432,7 +430,7 @@ theorem hurwitz_ne_zero {ι : Type*} {l : Filter ι} [l.NeBot] {F : ι → ℂ �
   obtain ⟨z1, hz1, hmin⟩ := (isCompact_sphere a r).exists_isMinOn
     (NormedSpace.sphere_nonempty.2 hr.le) hg.norm
   set m := ‖g z1‖ with hm
-  have hm0 : 0 < m := norm_pos_iff.2 (hg0 z1 hz1)
+  have hm0 := norm_pos_iff.2 (hg0 z1 hz1)
   rw [Metric.tendstoUniformlyOn_iff] at hconv
   obtain ⟨i, hi⟩ := (hconv (m / 2) (by positivity)).exists
   have hbd : ∀ z ∈ sphere a r, ‖(F i z)⁻¹‖ ≤ 2 / m := by
@@ -442,11 +440,11 @@ theorem hurwitz_ne_zero {ι : Type*} {l : Filter ι} [l.NeBot] {F : ι → ℂ �
       rw [← dist_eq_norm]; exact hi z (sphere_subset_closedBall hz)
     have h3 : m / 2 ≤ ‖F i z‖ := by
       have := norm_sub_norm_le (g z) (g z - F i z)
-      simp only [sub_sub_cancel] at this
+      simp at this
       linarith
     rw [norm_inv]
     calc ‖F i z‖⁻¹ ≤ (m / 2)⁻¹ := inv_anti₀ (by positivity) h3
-      _ = 2 / m := by rw [inv_div]
+      _ = 2 / m := by simp
   have hd : DiffContOnCl ℂ (fun z => (F i z)⁻¹) (ball a r) := by
     apply DifferentiableOn.diffContOnCl
     rw [closure_ball a hr.ne']
@@ -455,9 +453,9 @@ theorem hurwitz_ne_zero {ι : Type*} {l : Filter ι} [l.NeBot] {F : ι → ℂ �
     norm_le_of_forall_mem_frontier_norm_le isBounded_ball hd
       (by rw [frontier_ball a hr.ne']; exact hbd) (subset_closure (mem_ball_self hr))
   have hFa' : m / 2 ≤ ‖F i a‖ := by
-    have hne : F i a ≠ 0 := hF0 i a (mem_closedBall_self hr.le)
+    have hne := hF0 i a (mem_closedBall_self hr.le)
     rw [norm_inv] at hFa
-    have hpos : 0 < ‖F i a‖ := norm_pos_iff.2 hne
+    have hpos := norm_pos_iff.2 hne
     rw [inv_le_comm₀ hpos (by positivity), inv_div] at hFa
     exact hFa
   have hga : ‖g a - F i a‖ < m / 2 := by
@@ -477,16 +475,16 @@ theorem hurwitz_injOn {ι : Type*} {l : Filter ι} [l.NeBot] {F : ι → ℂ →
   by_contra hne
   have hfd : DifferentiableOn ℂ f U :=
     hconv.differentiableOn (Eventually.of_forall hF) hU
-  have han : AnalyticOnNhd ℂ f U := hfd.analyticOnNhd hU
+  have han := hfd.analyticOnNhd hU
   set g : ℂ → ℂ := fun z => f z - f b with hg
   have hgan : AnalyticOnNhd ℂ g U := fun z hz => (han z hz).sub analyticAt_const
   have hnz : ¬ ∀ᶠ z in 𝓝 a, g z = 0 := by
     intro hev
-    have hEq : EqOn g 0 U := hgan.eqOn_zero_of_preconnected_of_eventuallyEq_zero hUc ha hev
+    have hEq := hgan.eqOn_zero_of_preconnected_of_eventuallyEq_zero hUc ha hev
     have hloc : f =ᶠ[𝓝 z0] fun _ => f b := by
       filter_upwards [hU.mem_nhds hz0] with z hz
       have := hEq hz
-      simp only [hg, Pi.zero_apply, sub_eq_zero] at this
+      simp [hg, Pi.zero_apply, sub_eq_zero] at this
       exact this
     apply hd
     rw [hloc.deriv_eq]
@@ -494,28 +492,26 @@ theorem hurwitz_injOn {ι : Type*} {l : Filter ι} [l.NeBot] {F : ι → ℂ →
   have hev : ∀ᶠ z in 𝓝[≠] a, g z ≠ 0 :=
     ((hgan a ha).eventually_eq_zero_or_eventually_ne_zero).resolve_left hnz
   rw [eventually_nhdsWithin_iff] at hev
-  have hbU : ({b}ᶜ : Set ℂ) ∈ 𝓝 a := isOpen_compl_singleton.mem_nhds hne
+  have hbU := isOpen_compl_singleton.mem_nhds hne
   obtain ⟨ε, hε, hεsub⟩ := Metric.mem_nhds_iff.1
     (inter_mem (inter_mem hev (hU.mem_nhds ha)) hbU)
   set r := ε / 2 with hr
   have hr0 : 0 < r := by positivity
   have hcb : closedBall a r ⊆ ball a ε := closedBall_subset_ball (by rw [hr]; linarith)
   have hcbU : closedBall a r ⊆ U := fun z hz => (hεsub (hcb hz)).1.2
-  have hcbb : ∀ z ∈ closedBall a r, z ≠ b := fun z hz => (hεsub (hcb hz)).2
-  have hcbg : ∀ z ∈ closedBall a r, z ≠ a → g z ≠ 0 := fun z hz => (hεsub (hcb hz)).1.1
   have hunif : TendstoUniformlyOn F f l (closedBall a r) :=
     (tendstoLocallyUniformlyOn_iff_forall_isCompact hU).1 hconv _ hcbU (isCompact_closedBall a r)
-  have hptb : Tendsto (fun i => F i b) l (𝓝 (f b)) := hconv.tendsto_at hb
+  have hptb := hconv.tendsto_at hb
   have hconv' : TendstoUniformlyOn (fun i z => F i z - F i b) g l (closedBall a r) :=
     hunif.sub (hptb.tendstoUniformlyOn_const _)
   have key := hurwitz_ne_zero hr0 (F := fun i z => F i z - F i b) (g := g)
     (fun i => ((hF i).mono hcbU).sub_const _)
-    (fun i z hz h => hcbb z hz (hinj i (hcbU hz) hb (sub_eq_zero.1 h)))
+    (fun i z hz h => (fun z hz => (hεsub (hcb hz)).2) z hz (hinj i (hcbU hz) hb (sub_eq_zero.1 h)))
     hconv' ((hfd.mono hcbU).continuousOn.sub continuousOn_const |>.mono
       sphere_subset_closedBall)
-    (fun z hz => hcbg z (sphere_subset_closedBall hz) (by
+    (fun z hz => (fun z hz => (hεsub (hcb hz)).1.1) z (sphere_subset_closedBall hz) (by
       rintro rfl
-      rw [mem_sphere, dist_self] at hz
+      simp at hz
       exact hr0.ne hz))
   exact key (by simp [hg, hab])
 
@@ -553,7 +549,7 @@ def Admissible (Ω : Set ℂ) (z₀ : ℂ) (f : ℂ → ℂ) : Prop :=
 /-- The admissible family is nonempty (square-root trick). -/
 lemma exists_admissible {Ω : Set ℂ} (hΩ : IsOpen Ω) [SimplyConnectedSpace Ω]
     (hne : Ω ≠ univ) {z₀ : ℂ} (hz₀ : z₀ ∈ Ω) : ∃ f, Admissible Ω z₀ f := by
-  have hUc : IsPreconnected Ω := isPreconnected_iff_preconnectedSpace.2 inferInstance
+
   obtain ⟨a, ha⟩ : ∃ a, a ∉ Ω := by
     by_contra h; push_neg at h; exact hne (eq_univ_of_forall h)
   have hza : ∀ z ∈ Ω, z - a ≠ 0 := fun z hz h => ha (sub_eq_zero.1 h ▸ hz)
@@ -572,7 +568,7 @@ lemma exists_admissible {Ω : Set ℂ} (hΩ : IsOpen Ω) [SimplyConnectedSpace �
     subst hzw
     have : g w = 0 := by linear_combination h / 2
     exact hza w hw (by rw [← hgsq w hw, this]; ring)
-  have hopen : IsOpen (g '' Ω) := isOpen_image_of_injOn hΩ hUc hgd hginj subset_rfl hΩ
+  have hopen := isOpen_image_of_injOn hΩ (isPreconnected_iff_preconnectedSpace.2 inferInstance) hgd hginj subset_rfl hΩ
   obtain ⟨ρ, hρ, hρsub⟩ := Metric.isOpen_iff.1 hopen (g z₀) ⟨z₀, hz₀, rfl⟩
   have hfar : ∀ z ∈ Ω, ρ ≤ ‖g z + g z₀‖ := by
     intro z hz
@@ -587,7 +583,7 @@ lemma exists_admissible {Ω : Set ℂ} (hΩ : IsOpen Ω) [SimplyConnectedSpace �
     have := hfar z hz; rw [h, norm_zero] at this; linarith
   have hinvle : ∀ z ∈ Ω, ‖(g z + g z₀)⁻¹‖ ≤ 1 / ρ := by
     intro z hz
-    rw [norm_inv, one_div]
+    simp
     exact inv_anti₀ hρ (hfar z hz)
   refine ⟨fun z => ((ρ / 4 : ℝ) : ℂ) * ((g z + g z₀)⁻¹ - (g z₀ + g z₀)⁻¹), ?_, ?_, ?_, ?_⟩
   · intro z hz
@@ -601,7 +597,7 @@ lemma exists_admissible {Ω : Set ℂ} (hΩ : IsOpen Ω) [SimplyConnectedSpace �
       exact_mod_cast this
     have h1 := mul_left_cancel₀ hρ4 h
     have h2 : (g z + g z₀)⁻¹ = (g w + g z₀)⁻¹ := by linear_combination h1
-    rw [inv_inj] at h2
+    simp at h2
     exact hginj hz hw (by linear_combination h2)
   · intro z hz
     rw [mem_ball_zero_iff, norm_mul, norm_real, Real.norm_eq_abs, abs_of_pos (by positivity)]
@@ -635,21 +631,20 @@ lemma exists_extremal {Ω : Set ℂ} (hΩ : IsOpen Ω) [SimplyConnectedSpace Ω]
   obtain ⟨r, hr, hrsub⟩ : ∃ r > 0, closedBall z₀ r ⊆ Ω := by
     obtain ⟨ε, hε, hεsub⟩ := Metric.isOpen_iff.1 hΩ z₀ hz₀
     exact ⟨ε / 2, by positivity, (closedBall_subset_ball (by linarith)).trans hεsub⟩
-  set S : Set ℝ := {t | ∃ g, Admissible Ω z₀ g ∧ ‖deriv g z₀‖ = t} with hS
+  set S := {t | ∃ g, Admissible Ω z₀ g ∧ ‖deriv g z₀‖ = t} with hS
   obtain ⟨f₁, hf₁⟩ := exists_admissible hΩ hne hz₀
   have hSne : S.Nonempty := ⟨_, f₁, hf₁, rfl⟩
   have hSbdd : BddAbove S := ⟨1 / r, by
     rintro t ⟨g, hg, rfl⟩
     exact norm_deriv_le_of_admissible hr hrsub hg⟩
   have hMpos : 0 < sSup S := by
-    have h1 : ‖deriv f₁ z₀‖ ≤ sSup S := le_csSup hSbdd ⟨f₁, hf₁, rfl⟩
+    have h1 := le_csSup hSbdd ⟨f₁, hf₁, rfl⟩
     have h2 : 0 < ‖deriv f₁ z₀‖ :=
       norm_pos_iff.2 (deriv_ne_zero_of_injOn hΩ hf₁.1 hf₁.2.1 hz₀)
     linarith
   obtain ⟨u, -, hu, huS⟩ := exists_seq_tendsto_sSup hSne hSbdd
   choose F hF hFu using huS
   set l : Ultrafilter ℕ := Ultrafilter.of atTop
-  have hl : (l : Filter ℕ) ≤ atTop := Ultrafilter.of_le _
   obtain ⟨f, hconv⟩ := montel l hΩ (fun n => (hF n).1)
     (fun n z hz => (mem_ball_zero_iff.1 ((hF n).2.2.1 hz)).le)
   have hfd : DifferentiableOn ℂ f Ω :=
@@ -660,14 +655,14 @@ lemma exists_extremal {Ω : Set ℂ} (hΩ : IsOpen Ω) [SimplyConnectedSpace Ω]
     have h1 : Tendsto (fun n => ‖deriv (F n) z₀‖) (l : Filter ℕ) (𝓝 ‖deriv f z₀‖) :=
       hderiv.norm
     have h2 : Tendsto (fun n => ‖deriv (F n) z₀‖) (l : Filter ℕ) (𝓝 (sSup S)) := by
-      simp_rw [hFu]; exact hu.mono_left hl
+      simp_rw [hFu]; exact hu.mono_left (Ultrafilter.of_le _)
     exact tendsto_nhds_unique h1 h2
   have hd0 : deriv f z₀ ≠ 0 := by
     intro h; rw [h, norm_zero] at hnorm; linarith
   have hfinj : InjOn f Ω :=
     hurwitz_injOn hΩ hUc (fun n => (hF n).1) (fun n => (hF n).2.1) hconv hz₀ hd0
   have hfz₀ : f z₀ = 0 := by
-    have h1 : Tendsto (fun n => F n z₀) (l : Filter ℕ) (𝓝 (f z₀)) := hconv.tendsto_at hz₀
+    have h1 := hconv.tendsto_at hz₀
     have h2 : Tendsto (fun n => F n z₀) (l : Filter ℕ) (𝓝 0) := by
       simp_rw [(hF _).2.2.2]; exact tendsto_const_nhds
     exact tendsto_nhds_unique h1 h2
@@ -677,7 +672,7 @@ lemma exists_extremal {Ω : Set ℂ} (hΩ : IsOpen Ω) [SimplyConnectedSpace Ω]
       (hconv.tendsto_at hz).norm
     exact le_of_tendsto' h1 fun n => (mem_ball_zero_iff.1 ((hF n).2.2.1 hz)).le
   have hmaps : MapsTo f Ω (ball 0 1) := by
-    have hopen : IsOpen (f '' Ω) := isOpen_image_of_injOn hΩ hUc hfd hfinj subset_rfl hΩ
+    have hopen := isOpen_image_of_injOn hΩ hUc hfd hfinj subset_rfl hΩ
     have hsub : f '' Ω ⊆ closedBall 0 1 := by
       rintro _ ⟨z, hz, rfl⟩; exact mem_closedBall_zero_iff.2 (hfle z hz)
     have := hopen.subset_interior_iff.2 hsub
@@ -693,16 +688,16 @@ lemma hasDerivAt_psi {c : ℂ} (hc : ‖c‖ < 1) :
       (2 * c / (1 + (starRingEnd ℂ) c * c)) 0 := by
   have hc' : ‖-c‖ < 1 := by rwa [norm_neg]
   have hw : ‖-(-c ^ 2)‖ < 1 := by
-    rw [neg_neg, norm_pow]; nlinarith [norm_nonneg c]
+    simp; nlinarith [norm_nonneg c]
   have hc2 : ‖c ^ 2‖ < 1 := by rwa [neg_neg] at hw
   have h1 := hasDerivAt_mob hc' (z := 0) (by simp)
   have h2 : HasDerivAt (fun ζ => ζ ^ 2) (2 * mob (-c) 0) (mob (-c) 0) := by
     simpa using hasDerivAt_pow 2 (mob (-c) 0)
   have h3 := hasDerivAt_mob hw (z := mob (-c) 0 ^ 2) (by simpa using hc2)
   have := h3.comp (0 : ℂ) (h2.comp (0 : ℂ) h1)
-  simp only [Function.comp_def] at this
+  simp [Function.comp_def] at this
   convert this using 1
-  simp only [mob_zero, neg_neg, map_neg, map_pow, mul_zero, sub_zero]
+  simp
   have hden : 1 + (starRingEnd ℂ) c * c ≠ 0 := by
     rw [conj_mul']
     have : (0 : ℝ) ≤ ‖c‖ ^ 2 := by positivity
@@ -717,9 +712,7 @@ lemma hasDerivAt_psi {c : ℂ} (hc : ‖c‖ < 1) :
     have : 1 - (starRingEnd ℂ) c ^ 2 * c ^ 2 =
         (1 - (starRingEnd ℂ) c * c) * (1 + (starRingEnd ℂ) c * c) := by ring
     rw [this]; exact mul_ne_zero hden2 hden
-  have hden4 : 1 - -(starRingEnd ℂ) c ^ 2 * -c ^ 2 ≠ 0 := by
-    have : 1 - -(starRingEnd ℂ) c ^ 2 * -c ^ 2 = 1 - (starRingEnd ℂ) c ^ 2 * c ^ 2 := by ring
-    rw [this]; exact hden3
+
   generalize (starRingEnd ℂ) c = d at *
   have hden' : 1 + c * d ≠ 0 := by rwa [mul_comm]
   have hden3' : 1 - c ^ 2 * d ^ 2 ≠ 0 := by rwa [mul_comm]
@@ -735,7 +728,7 @@ lemma norm_psi_deriv_lt_one {c : ℂ} (hc : ‖c‖ < 1) :
   have h1 : (1 + (‖c‖ : ℂ) ^ 2) = ((1 + ‖c‖ ^ 2 : ℝ) : ℂ) := by push_cast; ring
   rw [h1, norm_div, norm_mul, norm_real, Real.norm_eq_abs, abs_of_pos (by positivity),
     div_lt_one (by positivity)]
-  simp only [norm_ofNat]
+  simp
   nlinarith [sq_nonneg (1 - ‖c‖), norm_nonneg c]
 
 /-- An extremal admissible map is onto the unit disk. -/
@@ -745,7 +738,7 @@ lemma surjOn_of_extremal {Ω : Set ℂ} (hΩ : IsOpen Ω) [SimplyConnectedSpace 
     SurjOn f Ω (ball 0 1) := by
   intro w hw
   by_contra hnot
-  have hw1 : ‖w‖ < 1 := mem_ball_zero_iff.1 hw
+  have hw1 := mem_ball_zero_iff.1 hw
   obtain ⟨hfd, hfinj, hfmaps, hfz₀⟩ := hf
   have hfn : ∀ z ∈ Ω, ‖f z‖ < 1 := fun z hz => mem_ball_zero_iff.1 (hfmaps hz)
   -- `h = mob w ∘ f` does not vanish
@@ -768,7 +761,7 @@ lemma surjOn_of_extremal {Ω : Set ℂ} (hΩ : IsOpen Ω) [SimplyConnectedSpace 
     exact hfinj hz hz' (mob_injOn hw1 (mem_ball_zero_iff.2 (hfn z hz))
       (mem_ball_zero_iff.2 (hfn z' hz')) this)
   set c := s z₀ with hc
-  have hcn : ‖c‖ < 1 := hsn z₀ hz₀
+  have hcn := hsn z₀ hz₀
   have hc2 : c ^ 2 = -w := by
     rw [hc, hssq z₀ hz₀, hh]; simp [hfz₀]
   have hwc : w = -c ^ 2 := by rw [hc2, neg_neg]
@@ -790,7 +783,7 @@ lemma surjOn_of_extremal {Ω : Set ℂ} (hΩ : IsOpen Ω) [SimplyConnectedSpace 
   have hFd : HasDerivAt F (deriv F z₀) z₀ :=
     (hFadm.1.differentiableAt (hΩ.mem_nhds hz₀)).hasDerivAt
   have hΨd := hasDerivAt_psi hcn
-  have hFz₀ : F z₀ = 0 := hFadm.2.2.2
+  have hFz₀ := hFadm.2.2.2
   rw [← hFz₀] at hΨd
   have hcomp : HasDerivAt (Ψ ∘ F) (2 * c / (1 + (starRingEnd ℂ) c * c) * deriv F z₀) z₀ :=
     hΨd.comp z₀ hFd
@@ -798,13 +791,13 @@ lemma surjOn_of_extremal {Ω : Set ℂ} (hΩ : IsOpen Ω) [SimplyConnectedSpace 
     filter_upwards [hΩ.mem_nhds hz₀] with z hz using hfΨ z hz
   have hdf : deriv f z₀ = 2 * c / (1 + (starRingEnd ℂ) c * c) * deriv F z₀ := by
     rw [hfeq.deriv_eq, hcomp.deriv]
-  have hfd0 : deriv f z₀ ≠ 0 := deriv_ne_zero_of_injOn hΩ hfd hfinj hz₀
+  have hfd0 := deriv_ne_zero_of_injOn hΩ hfd hfinj hz₀
   have hFd0 : deriv F z₀ ≠ 0 := by
     intro h0; rw [h0, mul_zero] at hdf; exact hfd0 hdf
   have hlt : ‖deriv f z₀‖ < ‖deriv F z₀‖ := by
     rw [hdf, norm_mul]
     have := norm_psi_deriv_lt_one hcn
-    have hpos : 0 < ‖deriv F z₀‖ := norm_pos_iff.2 hFd0
+    have hpos := norm_pos_iff.2 hFd0
     nlinarith
   have := hmax F hFadm
   linarith
@@ -823,15 +816,15 @@ lemma exists_inverse {Ω : Set ℂ} (hΩ : IsOpen Ω) (hUc : IsPreconnected Ω) 
     hfinj (hGmem _ (hmaps hz)).1 hz (hGmem _ (hmaps hz)).2
   refine ⟨G, ?_, ?_, ?_⟩
   · intro w hw
-    have hwn : ball (0 : ℂ) 1 ∈ 𝓝 w := isOpen_ball.mem_nhds hw
+    have hwn := isOpen_ball.mem_nhds hw
     obtain ⟨hGw, hfGw⟩ := hGmem w hw
     have hcont : ContinuousAt G w := by
       rw [ContinuousAt, (nhds_basis_opens (G w)).tendsto_right_iff]
       rintro V ⟨hV, hVo⟩
       have hopen : IsOpen (f '' (V ∩ Ω)) :=
         isOpen_image_of_injOn hΩ hUc hfd hfinj inter_subset_right (hVo.inter hΩ)
-      have hmem : w ∈ f '' (V ∩ Ω) := ⟨G w, ⟨hV, hGw⟩, hfGw⟩
-      filter_upwards [hopen.mem_nhds hmem] with y hy
+
+      filter_upwards [hopen.mem_nhds (⟨G w, ⟨hV, hGw⟩, hfGw⟩)] with y hy
       obtain ⟨z, ⟨hzV, hzΩ⟩, rfl⟩ := hy
       rw [hGf z hzΩ]; exact hzV
     have hfder : HasDerivAt f (deriv f (G w)) (G w) :=
@@ -854,10 +847,10 @@ theorem riemann_mapping_theorem (Ω : Set ℂ) (hopen : IsOpen Ω) [SimplyConnec
     (hne : Ω ≠ univ) :
     ∃ G : ℂ → ℂ, DifferentiableOn ℂ G (ball 0 1) ∧ InjOn G (ball 0 1) ∧
       G '' ball 0 1 = Ω := by
-  have hUc : IsPreconnected Ω := isPreconnected_iff_preconnectedSpace.2 inferInstance
+
   obtain ⟨⟨z₀, hz₀⟩⟩ : Nonempty Ω := inferInstance
   obtain ⟨f, hf, hmax⟩ := exists_extremal hopen hne hz₀
-  exact exists_inverse hopen hUc hf.1 hf.2.1 hf.2.2.1 (surjOn_of_extremal hopen hz₀ hf hmax)
+  exact exists_inverse hopen (isPreconnected_iff_preconnectedSpace.2 inferInstance) hf.1 hf.2.1 hf.2.2.1 (surjOn_of_extremal hopen hz₀ hf hmax)
 
 end
 
@@ -880,15 +873,15 @@ lemma exists_holomorphic_inverse {D : Set ℂ} (hD : IsOpen D) (hDc : IsPreconne
     isOpen_image_of_injOn hD hDc hf hinj subset_rfl hD
   refine ⟨g, ?_, fun w hw => (hgmem w hw).1, hgf, fun w hw => (hgmem w hw).2⟩
   intro w hw
-  have hwn : f '' D ∈ 𝓝 w := hopen.mem_nhds hw
+  have hwn := hopen.mem_nhds hw
   obtain ⟨hgw, hfgw⟩ := hgmem w hw
   have hcont : ContinuousAt g w := by
     rw [ContinuousAt, (nhds_basis_opens (g w)).tendsto_right_iff]
     rintro V ⟨hV, hVo⟩
     have hopen' : IsOpen (f '' (V ∩ D)) :=
       isOpen_image_of_injOn hD hDc hf hinj inter_subset_right (hVo.inter hD)
-    have hmem : w ∈ f '' (V ∩ D) := ⟨g w, ⟨hV, hgw⟩, hfgw⟩
-    filter_upwards [hopen'.mem_nhds hmem] with y hy
+
+    filter_upwards [hopen'.mem_nhds (⟨g w, ⟨hV, hgw⟩, hfgw⟩)] with y hy
     obtain ⟨z, ⟨hzV, hzD⟩, rfl⟩ := hy
     rw [hgf z hzD]; exact hzV
   have hfder : HasDerivAt f (deriv f (g w)) (g w) :=

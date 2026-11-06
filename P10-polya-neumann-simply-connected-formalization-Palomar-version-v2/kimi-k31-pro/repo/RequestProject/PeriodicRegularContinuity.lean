@@ -31,8 +31,7 @@ theorem continuousAt_h1RegularResolvent {Ω : Set ℂ} {E₀ E : ℝ}
 theorem continuousAt_normalizedNeumannRegular {Ω : Set ℂ}
     (Q : NeumannH1 Ω →L[ℂ] L2Z) {E₀ E : ℝ}
     (hu : IsUnit (h1ComplementForm Ω E₀ E)) :
-    ContinuousAt (normalizedNeumannRegular Q E₀) E := by
-  exact continuousAt_const.clm_comp
+    ContinuousAt (normalizedNeumannRegular Q E₀) E := continuousAt_const.clm_comp
     ((continuousAt_h1RegularResolvent hu).clm_comp continuousAt_const)
 
 /-- A total operator used to express a limit. Near a nonzero cut its
@@ -45,7 +44,7 @@ def correctedRemainderOperator (W : ℝ → Ell2 →L[ℂ] Ell2) (δ s : ℝ) : 
 theorem correctedRemainderOperator_eq (W : ℝ → Ell2 →L[ℂ] Ell2) (δ s : ℝ)
     (h : Summable fun p => ‖correctedRemainderMatrix W δ s p‖ ^ 2) :
     correctedRemainderOperator W δ s = hsMatrixOp (correctedRemainderMatrix W δ s) h := by
-  simp only [correctedRemainderOperator, dif_pos h]
+  simp [correctedRemainderOperator, dif_pos h]
 
 theorem continuousAt_correctedRemainderOperator
     {γ : ℝ → ℂ} {K K' : NNReal} {Ws : ℝ → ℝ → Ell2 →L[ℂ] Ell2}
@@ -76,7 +75,7 @@ theorem normalizedPeriodicRegularFamily_eq {Ω : Set ℂ}
     (h : Summable fun p => ‖correctedRemainderMatrix (Ws E) 0 0 p‖ ^ 2) :
     normalizedPeriodicRegularFamily Q E₀ Ws E =
       normalizedPeriodicRegularOperator Q E₀ E (Ws E) h := by
-  simp only [normalizedPeriodicRegularFamily, normalizedPeriodicRegularOperator,
+  simp [normalizedPeriodicRegularFamily, normalizedPeriodicRegularOperator,
     correctedRemainderOperator_eq _ _ _ h]
 
 theorem continuousAt_normalizedPeriodicRegularFamily {Ω : Set ℂ}
@@ -88,8 +87,7 @@ theorem continuousAt_normalizedPeriodicRegularFamily {Ω : Set ℂ}
       ‖deriv γ x - deriv γ y‖ ≤ K' * |x - y|)
     (hWs : ∀ E, IsTransport γ E (Ws E))
     (hc : cutC (Ws E₀ (2 * π)) (basisVec 0) ≠ 0) :
-    ContinuousAt (normalizedPeriodicRegularFamily Q E₀ Ws) E₀ := by
-  exact ((((continuousAt_normalizedNeumannRegular Q hu).sub continuousAt_const).const_smul
+    ContinuousAt (normalizedPeriodicRegularFamily Q E₀ Ws) E₀ := ((((continuousAt_normalizedNeumannRegular Q hu).sub continuousAt_const).const_smul
     (2 : ℂ)).add continuousAt_const).add
     (continuousAt_correctedRemainderOperator hK hγ' hWs E₀ hc
       (le_refl 0) (by norm_num) (le_refl 0) (by norm_num))

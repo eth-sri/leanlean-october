@@ -77,7 +77,7 @@ theorem normalizedNeumannResidue_eq_original_basis {Ω : Set ℂ}
 
 section ActualCoordinates
 
-variable {R C : ℝ} (hR : 1 < R) (F : ℂ → ℂ)
+variable {R C : ℝ} (F : ℂ → ℂ)
     (hFs : ContDiffOn ℝ (⊤ : ℕ∞) F (ball (0 : ℂ) R))
     (hb : Bornology.IsBounded (F '' ball (0 : ℂ) 1))
     (hL : IsLipschitzDomain (F '' ball (0 : ℂ) 1))
@@ -88,8 +88,6 @@ variable {R C : ℝ} (hR : 1 < R) (F : ℂ → ℂ)
     {τ : ℝ → ℝ} {c : ℝ} (hτ : IsC1TraceReparam τ c)
     (hcoord : ∀ θ, F (circleMap 0 1 θ) = γ (τ θ))
 
-local notation "ΩF" => F '' ball (0 : ℂ) 1
-local notation "QF" => localConformalDiskHalfTrace hR F hFs hL
 
 end ActualCoordinates
 

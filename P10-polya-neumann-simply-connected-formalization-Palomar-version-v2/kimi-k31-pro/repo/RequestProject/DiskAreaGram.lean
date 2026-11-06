@@ -39,7 +39,7 @@ theorem disk_gradient_pair_succ_eq_area_monomial (m n : ℕ) (z : ℂ) :
 theorem integral_disk_area_monomials (m n : ℕ) :
     (∫ z in ball (0 : ℂ) 1, z ^ m * conj z ^ n) =
       if m = n then (π : ℂ) / ((m + 1 : ℕ) : ℂ) else 0 := by
-  let c : ℂ := 2 * ((m + 1 : ℕ) : ℂ) * ((n + 1 : ℕ) : ℂ)
+  let c := 2 * ((m + 1 : ℕ) : ℂ) * ((n + 1 : ℕ) : ℂ)
   have hc : c ≠ 0 := by
     dsimp [c]
     exact mul_ne_zero (mul_ne_zero (by norm_num)

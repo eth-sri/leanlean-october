@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.TwoPi
 public import RequestProject.ArcLength
 public import Mathlib.Analysis.Convex.Contractible
 public import Mathlib.Analysis.Convex.PathConnected
@@ -41,7 +42,6 @@ namespace PolyaNeumann
 open MeasureTheory Set Filter
 open scoped Real ComplexConjugate Topology
 
-local instance boundaryParamPeriod_pos : Fact (0 < 2 * Real.pi) := ⟨Real.two_pi_pos⟩
 
 /-- The actual periodic curve descended to the additive circle. -/
 def boundaryParamCircleMap (γ : ℝ → ℂ) : AddCircle (2 * Real.pi) → ℂ :=
@@ -128,8 +128,7 @@ theorem boundaryParamCircleChange_apply {Ω : Set ℂ} {β γ : ℝ → ℂ}
     (hβ : IsBoundaryParam Ω β) (hγ : IsBoundaryParam Ω γ)
     (q : AddCircle (2 * Real.pi)) :
     boundaryParamCircleMap β (boundaryParamCircleChange hβ hγ q) =
-      boundaryParamCircleMap γ q := by
-  exact congrArg Subtype.val
+      boundaryParamCircleMap γ q := congrArg Subtype.val
     ((boundaryParamCircleHomeomorph hβ).apply_symm_apply
       (boundaryParamCircleHomeomorph hγ q))
 
@@ -220,14 +219,14 @@ theorem exists_regularCurve_local_inverse_bound (β : ℝ → ℂ)
     ∃ r : ℝ, 0 < r ∧ ∃ C : ℝ, 0 < C ∧
       ∀ x ∈ Ioo (t - r) (t + r), ∀ y ∈ Ioo (t - r) (t + r),
         |x - y| ≤ C * ‖β x - β y‖ := by
-  let c : ℂ := conj (deriv β t)
-  let D : ℝ := Complex.normSq (deriv β t)
-  let f : ℝ → ℝ := fun x => (c * β x).re
-  have hD : 0 < D := Complex.normSq_pos.mpr ht
+  let c := conj (deriv β t)
+  let D := Complex.normSq (deriv β t)
+  let f := fun x => (c * β x).re
+  have hD := Complex.normSq_pos.mpr ht
   have hc : 0 < ‖c‖ := by
     simpa only [c, Complex.norm_conj] using norm_pos_iff.mpr ht
   have hdt : (c * deriv β t).re = D := by
-    dsimp only [c, D]
+    dsimp [c, D]
     rw [← Complex.normSq_eq_conj_mul_self, Complex.ofReal_re]
   have hdf (x : ℝ) : HasDerivAt f (c * deriv β x).re x := by
     have hd := ((hβ.differentiable_one x).hasDerivAt).const_mul c
@@ -269,7 +268,7 @@ theorem exists_regularCurve_local_inverse_bound (β : ℝ → ℂ)
         _ ≤ f x - f y := hgrowth y hy x hx hyx
         _ ≤ |f x - f y| := le_abs_self _
   have hproj : f x - f y = (c * (β x - β y)).re := by
-    simp only [f, mul_sub, Complex.sub_re]
+    simp [f, mul_sub, Complex.sub_re]
   have hpn : D / 2 * |x - y| ≤ ‖c‖ * ‖β x - β y‖ := by
     calc
       _ ≤ |f x - f y| := hp
@@ -289,7 +288,7 @@ theorem boundaryParamLift_locallyLipschitz {Ω : Set ℂ} {β γ : ℝ → ℂ}
   intro θ
   obtain ⟨r, hr, C, hC, hbound⟩ :=
     exists_regularCurve_local_inverse_bound β hβ (T θ) (hnz (T θ))
-  let U : Set ℝ := T ⁻¹' Ioo (T θ - r) (T θ + r)
+  let U := T ⁻¹' Ioo (T θ - r) (T θ + r)
   have hU : U ∈ 𝓝 θ :=
     T.continuous.continuousAt.preimage_mem_nhds (Ioo_mem_nhds (by linarith) (by linarith))
   refine ⟨Real.toNNReal (C * (K : ℝ)), U, hU, ?_⟩
@@ -321,7 +320,7 @@ theorem boundaryParamLift_ae_deriv_chain {β γ : ℝ → ℂ}
     (hβ : ContDiff ℝ 1 β) (T : ℝ ≃ₜ ℝ)
     (hcomp : ∀ θ : ℝ, γ θ = β (T θ)) :
     ∀ᵐ θ : ℝ ∂volume, deriv γ θ = deriv (T : ℝ → ℝ) θ • deriv β (T θ) := by
-  have hfun : γ = β ∘ T := funext hcomp
+  have hfun := funext hcomp
   filter_upwards [realHomeomorph_ae_differentiable T] with θ hθ
   rw [hfun]
   exact ((hβ.differentiable_one (T θ)).hasDerivAt.scomp θ hθ.hasDerivAt).deriv
@@ -371,7 +370,7 @@ theorem locallyLipschitz_eq_affine_of_ae_deriv {f : ℝ → ℝ} {a : ℝ}
     filter_upwards [hd] with s hs _ using hs
   have hFTC := hK.absolutelyContinuousOnInterval.integral_deriv_eq_sub
   rw [hi, intervalIntegral.integral_const] at hFTC
-  simp only [sub_zero, smul_eq_mul] at hFTC
+  simp at hFTC
   linarith
 
 /-- Constant-speed physical curves force the actual real lift to be affine;
@@ -383,7 +382,7 @@ theorem boundaryParamLift_affine {Ω : Set ℂ} {β γ : ℝ → ℂ}
     ∃ a : ℝ, a ≠ 0 ∧ ∀ θ : ℝ, T θ = a * θ + T 0 := by
   obtain ⟨cβ, hcβ, cγ, hcγ, _, habs⟩ :=
     boundaryParamLift_ae_abs_deriv hβ hβC1 hγ T hcomp
-  have hc : 0 < cγ / cβ := div_pos hcγ hcβ
+  have hc := div_pos hcγ hcβ
   have hLip := boundaryParamLift_locallyLipschitz hβC1 hnz hγ T hcomp
   obtain hmono | hanti := T.continuous.strictMono_of_inj T.injective
   · refine ⟨cγ / cβ, hc.ne', locallyLipschitz_eq_affine_of_ae_deriv hLip ?_⟩
@@ -401,7 +400,7 @@ theorem boundaryParamLift_affine_unit {Ω : Set ℂ} {β γ : ℝ → ℂ}
     (hβ : IsBoundaryParam Ω β) (hγ : IsBoundaryParam Ω γ)
     (T : ℝ ≃ₜ ℝ) (hcomp : ∀ θ : ℝ, γ θ = β (T θ))
     (a : ℝ) (ha : ∀ θ : ℝ, T θ = a * θ + T 0) : a = 1 ∨ a = -1 := by
-  have hperne : 2 * Real.pi ≠ 0 := Real.two_pi_pos.ne'
+  have hperne := Real.two_pi_pos.ne'
   have hβsame : β (T (2 * Real.pi)) = β (T 0) := by
     calc
       β (T (2 * Real.pi)) = γ (2 * Real.pi) := (hcomp (2 * Real.pi)).symm
@@ -416,7 +415,7 @@ theorem boundaryParamLift_affine_unit {Ω : Set ℂ} {β γ : ℝ → ℂ}
   have hmR : (m : ℝ) = a := by
     rw [zsmul_eq_mul] at hm
     exact mul_right_cancel₀ hperne hm
-  let x : ℝ := T.symm (T 0 + 2 * Real.pi)
+  let x := T.symm (T 0 + 2 * Real.pi)
   have hTx : T x = T 0 + 2 * Real.pi := T.apply_symm_apply _
   have hγsame : γ x = γ 0 := by
     rw [hcomp x, hTx, hβ.periodic (T 0), ← hcomp 0]
@@ -435,8 +434,7 @@ theorem boundaryParamLift_affine_unit {Ω : Set ℂ} {β γ : ℝ → ℂ}
         ring
       _ = 2 * Real.pi := hx
       _ = 1 * (2 * Real.pi) := by ring
-  have hmn : m * n = 1 := by exact_mod_cast hmnR
-  obtain hmone | hmneg := Int.eq_one_or_neg_one_of_mul_eq_one hmn
+  obtain hmone | hmneg := Int.eq_one_or_neg_one_of_mul_eq_one (by exact_mod_cast hmnR)
   · left
     rw [← hmR, hmone, Int.cast_one]
   · right
@@ -468,7 +466,7 @@ theorem integral_signedAreaDensity_add_shift {β : ℝ → ℂ}
     _ = ∫ θ in (0 : ℝ)..(2 * Real.pi), signedAreaDensity β (θ + t) := by
       apply intervalIntegral.integral_congr
       intro θ _
-      simp only [signedAreaDensity, deriv_comp_add_const]
+      simp [signedAreaDensity, deriv_comp_add_const]
     _ = ∫ θ in t..t + 2 * Real.pi, signedAreaDensity β θ := by
       rw [intervalIntegral.integral_comp_add_right, zero_add, add_comm (2 * Real.pi) t]
     _ = _ := integral_signedAreaDensity_shift hper t
@@ -487,12 +485,12 @@ theorem integral_signedAreaDensity_reverse_shift {β : ℝ → ℂ}
   have hd (θ : ℝ) :
       signedAreaDensity (fun θ => β (-θ + t)) θ = -signedAreaDensity δ (-θ) := by
     change signedAreaDensity (fun θ => δ (-θ)) θ = -signedAreaDensity δ (-θ)
-    simp only [signedAreaDensity, deriv_comp_neg, mul_neg, Complex.neg_im]
+    simp [signedAreaDensity, deriv_comp_neg, mul_neg, Complex.neg_im]
   simp_rw [hd]
   rw [intervalIntegral.integral_neg,
     intervalIntegral.integral_comp_neg (fun θ => signedAreaDensity δ θ), neg_zero]
   have hshift := integral_signedAreaDensity_shift hδper (-(2 * Real.pi))
-  rw [neg_add_cancel] at hshift
+  simp at hshift
   rw [hshift]
   exact congrArg Neg.neg (integral_signedAreaDensity_add_shift hper t)
 

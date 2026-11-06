@@ -41,9 +41,9 @@ private theorem rough_chart_posProj_eq_zero_of_nonpositive (b : L2Z)
   apply lp.ext
   funext n
   by_cases hn : 0 < n
-  · simp only [posProj, diagOp_apply, if_pos hn, hb n hn, mul_zero,
+  · simp [posProj, diagOp_apply, if_pos hn, hb n hn, mul_zero,
       lp.coeFn_zero, Pi.zero_apply]
-  · simp only [posProj, diagOp_apply, if_neg hn, zero_mul,
+  · simp [posProj, diagOp_apply, if_neg hn, zero_mul,
       lp.coeFn_zero, Pi.zero_apply]
 
 /-- A true L2 Hardy split controls the positive rough primitive. This
@@ -55,8 +55,8 @@ theorem roughNormalizedPrimitive_pos_one_of_hardy_split
     (hsplit : H = -Complex.I • roughNormalizedPrimitive y + K) :
     IsSobolevSeq 1
       (posProj (boundaryFourier (roughNormalizedPrimitive y)) : ℤ → ℂ) := by
-  let p : L2Z := posProj (boundaryFourier (roughNormalizedPrimitive y))
-  let k : L2Z := posProj (boundaryFourier K)
+  let p := posProj (boundaryFourier (roughNormalizedPrimitive y))
+  let k := posProj (boundaryFourier K)
   have hzero := rough_chart_posProj_eq_zero_of_nonpositive (boundaryFourier H) hH
   have hs := congrArg (fun B : BoundaryL2 => posProj (boundaryFourier B)) hsplit
   change posProj (boundaryFourier H) =
@@ -64,7 +64,7 @@ theorem roughNormalizedPrimitive_pos_one_of_hardy_split
   rw [hzero, map_add, map_smul, map_add, map_smul] at hs
   change (0 : L2Z) = -Complex.I • p + k at hs
   have hi := congrArg (fun B : L2Z => Complex.I • B) hs
-  simp only [smul_zero, smul_add, smul_smul, mul_neg,
+  simp [smul_zero, smul_add, smul_smul, mul_neg,
     Complex.I_mul_I, neg_neg, one_smul] at hi
   have hp : p = -Complex.I • k := by
     have h := eq_neg_of_add_eq_zero_left hi.symm

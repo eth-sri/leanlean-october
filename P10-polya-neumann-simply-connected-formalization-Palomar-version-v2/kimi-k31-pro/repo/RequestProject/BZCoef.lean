@@ -38,7 +38,7 @@ lemma sesq_cofMat_chain (a b c d : ℝ) (y0 y1 : ℂ) :
     (∑ i, ∑ k, ((cofMat a b c d) i k : ℂ) * inner ℂ (![a * y0 + c * y1, b * y0 + d * y1] i)
       (![a * y0 + c * y1, b * y0 + d * y1] k)) =
       (((a * d - b * c) ^ 2 : ℝ) : ℂ) * (conj y0 * y0 + conj y1 * y1) := by
-  simp only [Fin.sum_univ_two, cofMat, Matrix.of_apply, Matrix.cons_val', Matrix.cons_val_zero,
+  simp [Fin.sum_univ_two, cofMat, Matrix.of_apply, Matrix.cons_val', Matrix.cons_val_zero,
     Matrix.cons_val_one, Matrix.empty_val', Matrix.cons_val_fin_one,
     RCLike.inner_apply, map_add, map_mul, Complex.conj_ofReal]
   push_cast
@@ -47,22 +47,22 @@ lemma sesq_cofMat_chain (a b c d : ℝ) (y0 y1 : ℂ) :
 lemma sesq_cofMat (a b c d : ℝ) (ξ : Fin 2 → ℂ) :
     (∑ i, ∑ k, ((cofMat a b c d) i k : ℂ) * inner ℂ (ξ i) (ξ k)) =
       ((‖d * ξ 0 - c * ξ 1‖ ^ 2 + ‖b * ξ 0 - a * ξ 1‖ ^ 2 : ℝ) : ℂ) := by
-  simp only [Fin.sum_univ_two, cofMat, Matrix.of_apply, Matrix.cons_val', Matrix.cons_val_zero,
+  simp [Fin.sum_univ_two, cofMat, Matrix.of_apply, Matrix.cons_val', Matrix.cons_val_zero,
     Matrix.cons_val_one, Matrix.empty_val', Matrix.cons_val_fin_one,
     RCLike.inner_apply]
   push_cast
   rw [← Complex.conj_mul', ← Complex.conj_mul']
-  simp only [map_sub, map_mul, Complex.conj_ofReal]
+  simp
   ring
 
 lemma norm_sq_comb_le (a c : ℝ) (P R : ℂ) :
     ‖(a : ℂ) * P - c * R‖ ^ 2 ≤ (a ^ 2 + c ^ 2) * (‖P‖ ^ 2 + ‖R‖ ^ 2) := by
   have h1 : ‖(a : ℂ) * P - c * R‖ ≤ |a| * ‖P‖ + |c| * ‖R‖ := by
     refine (norm_sub_le _ _).trans (le_of_eq ?_)
-    simp [Complex.norm_real]
-  have h2 : 0 ≤ ‖(a : ℂ) * P - c * R‖ := norm_nonneg _
-  have ha : |a| ^ 2 = a ^ 2 := sq_abs a
-  have hc : |c| ^ 2 = c ^ 2 := sq_abs c
+    simp
+
+  have ha := sq_abs a
+  have hc := sq_abs c
   calc ‖(a : ℂ) * P - c * R‖ ^ 2 ≤ (|a| * ‖P‖ + |c| * ‖R‖) ^ 2 := by gcongr
     _ ≤ (a ^ 2 + c ^ 2) * (‖P‖ ^ 2 + ‖R‖ ^ 2) := by
       rw [← ha, ← hc]
@@ -114,10 +114,9 @@ lemma sesq_bzCoef_chain (T : ℂ →L[ℝ] ℂ) (hT : T.det ≠ 0) (y : Fin 2 �
   simp only [bzCoef, Matrix.smul_apply, smul_eq_mul, Complex.ofReal_mul, mul_assoc,
     ← Finset.mul_sum]
   rw [h, ← det_eq_of_clm, Fin.sum_univ_two, Complex.conj_mul', Complex.conj_mul']
-  have hδ : |T.det| ≠ 0 := abs_ne_zero.mpr hT
+  have hδ := abs_ne_zero.mpr hT
   have h2 : ((T.det : ℝ) : ℂ) ^ 2 = ((|T.det| : ℝ) : ℂ) ^ 2 := by
     exact_mod_cast (sq_abs T.det).symm
-  have hδc : ((|T.det| : ℝ) : ℂ) ≠ 0 := by exact_mod_cast hδ
   push_cast
   rw [h2]
   field_simp
@@ -137,7 +136,7 @@ lemma bzCoef_ellip (T : ℂ →L[ℝ] ℂ) (hT : T.det ≠ 0) (ξ : Fin 2 → �
   set c := (T 1).im
   set d := (T Complex.I).im
   set Q := ‖d * ξ 0 - c * ξ 1‖ ^ 2 + ‖b * ξ 0 - a * ξ 1‖ ^ 2
-  have hδ : 0 < |T.det| := abs_pos.mpr hT
+  have hδ := abs_pos.mpr hT
   have hlow := cofMat_lower a b c d ξ
   rw [← det_eq_of_clm, ← sq_abs] at hlow
   have h1 : a ^ 2 + c ^ 2 ≤ ‖T‖ ^ 2 := by
@@ -150,10 +149,7 @@ lemma bzCoef_ellip (T : ℂ →L[ℝ] ℂ) (hT : T.det ≠ 0) (ξ : Fin 2 → �
     have h := Complex.sq_norm (T Complex.I)
     rw [Complex.normSq_apply] at h
     nlinarith [norm_nonneg (T Complex.I)]
-  have hQ : 0 ≤ Q := by positivity
-  have key : |T.det| ^ 2 * (‖ξ 0‖ ^ 2 + ‖ξ 1‖ ^ 2) ≤ 2 * ‖T‖ ^ 2 * Q := by
-    calc _ ≤ (a ^ 2 + b ^ 2 + c ^ 2 + d ^ 2) * Q := hlow
-      _ ≤ 2 * ‖T‖ ^ 2 * Q := by gcongr; linarith
+
   rw [show 2 * ‖T‖ ^ 2 * (|T.det|⁻¹ * Q) = (2 * ‖T‖ ^ 2 * Q) / |T.det| by field_simp]
   rw [le_div_iff₀ hδ]
   nlinarith
@@ -175,11 +171,11 @@ lemma abs_bzCoef_le (T : ℂ →L[ℝ] ℂ) (i k : Fin 2) :
     have h := Complex.sq_norm (T Complex.I)
     rw [Complex.normSq_apply] at h
     nlinarith [norm_nonneg (T Complex.I)]
-  simp only [bzCoef, Matrix.smul_apply, smul_eq_mul, abs_mul, abs_inv, abs_abs]
+  simp [bzCoef, Matrix.smul_apply, smul_eq_mul, abs_mul, abs_inv, abs_abs]
   rw [inv_mul_eq_div]
   gcongr
   fin_cases i <;> fin_cases k <;>
-    simp only [cofMat, Matrix.of_apply, Matrix.cons_val', Matrix.cons_val_zero,
+    simp [cofMat, Matrix.of_apply, Matrix.cons_val', Matrix.cons_val_zero,
       Matrix.cons_val_one, Matrix.empty_val', Matrix.cons_val_fin_one, Fin.zero_eta,
       Fin.mk_one] <;>
     rw [abs_le] <;> constructor <;>
@@ -198,7 +194,7 @@ lemma measurable_bzCoef (i k : Fin 2) : Measurable fun T : ℂ →L[ℝ] ℂ => 
   have hc : Continuous fun T : ℂ →L[ℝ] ℂ =>
       cofMat (T 1).re (T Complex.I).re (T 1).im (T Complex.I).im i k := by
     fin_cases i <;> fin_cases k <;> simp [cofMat] <;> fun_prop
-  simp only [bzCoef, Matrix.smul_apply, smul_eq_mul]
+  simp [bzCoef, Matrix.smul_apply, smul_eq_mul]
   exact hdet.measurable.norm.inv.mul hc.measurable
 
 end PolyaNeumann

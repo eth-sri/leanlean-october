@@ -46,7 +46,7 @@ theorem cayleyRankBound_iff_of_intertwining (e : H ≃ₗᵢ[ℂ] G)
           (hUV (e.symm (v k))).symm
       _ = Complex.exp (t k * Complex.I) • v k := hEig k
       _ = e (Complex.exp (t k * Complex.I) • e.symm (v k)) := by
-        simp only [LinearIsometryEquiv.map_smul, LinearIsometryEquiv.apply_symm_apply]
+        simp
   · intro hV n v t hv ht hEig hA
     refine hV n (fun k => e (v k)) t
       (hv.comp_linearIsometryEquiv e) ht ?_ hA
@@ -65,7 +65,7 @@ theorem cayleyRankBound_unitary_conj_iff (U Q : H →L[ℂ] H)
     CayleyRankBound U A m ↔
       CayleyRankBound (Q * U * ContinuousLinearMap.adjoint Q) A m := by
   let u : unitary (H →L[ℂ] H) := ⟨Q, hQ⟩
-  let e : H ≃ₗᵢ[ℂ] H := Unitary.linearIsometryEquiv u
+  let e := Unitary.linearIsometryEquiv u
   refine cayleyRankBound_iff_of_intertwining e U
     (Q * U * ContinuousLinearMap.adjoint Q) ?_ A m
   intro x

@@ -40,7 +40,7 @@ lemma fourierCoeffOn_comp_add {φ : ℝ → ℂ} (hper : Function.Periodic φ (2
     show (fourier (-n) (((u + 2 * π : ℝ)) : AddCircle (2 * π - 0))) • φ (u + 2 * π) =
       (fourier (-n) ((u : ℝ) : AddCircle (2 * π - 0))) • φ u
     have : ((u + 2 * π : ℝ) : AddCircle (2 * π - 0)) = ((u + (2 * π - 0) : ℝ) : AddCircle _) := by
-      rw [sub_zero]
+      simp
     rw [this, AddCircle.coe_add_period, hper u]
   have hpt : ∀ θ : ℝ, (fourier (-n) (θ : AddCircle (2 * π - 0))) • φ (θ + h) =
       Complex.exp (n * h * Complex.I) * F (θ + h) := by
@@ -59,7 +59,7 @@ lemma fourierCoeffOn_comp_add {φ : ℝ → ℂ} (hper : Function.Periodic φ (2
   have := hFper.intervalIntegral_add_eq h 0
   rw [zero_add, add_comm h (2 * π)] at this
   rw [zero_add, this]
-  simp only [Complex.real_smul]
+  simp
   ring
 
 /-- Fourier coefficients on `[0, 2π]` are additive for continuous functions. -/
@@ -85,7 +85,7 @@ lemma hasSum_sq_fourierCoeffOn_of_continuous {φ : ℝ → ℂ} (hφ : Continuou
     refine MemLp.of_bound hφ.aestronglyMeasurable C ?_
     exact ae_restrict_of_forall_mem measurableSet_Ioc fun x hx => hC x (Set.Ioc_subset_Icc_self hx)
   have := hasSum_sq_fourierCoeffOn two_pi_pos hmem
-  simpa [smul_eq_mul] using this
+  simpa using this
 
 /-- `|e^{ix} - 1|² ≥ 4x²/π²` for `|x| ≤ π`. -/
 lemma sq_le_norm_exp_sub_one_sq {x : ℝ} (hx : |x| ≤ π) :
@@ -100,7 +100,7 @@ lemma sq_le_norm_exp_sub_one_sq {x : ℝ} (hx : |x| ≤ π) :
       rcases abs_choice x with h | h
       · rw [h]
       · rw [h, neg_div, Real.sin_neg, neg_sq]
-    rw [h1]
+    simp
     have h2 : Real.cos x = 1 - 2 * Real.sin (x / 2) ^ 2 := by
       have := Real.cos_two_mul (x / 2)
       rw [show 2 * (x / 2) = x by ring] at this
@@ -109,12 +109,10 @@ lemma sq_le_norm_exp_sub_one_sq {x : ℝ} (hx : |x| ≤ π) :
     nlinarith [h2, h4]
   rw [hnorm]
   have hpos : 0 ≤ |x| / 2 := by positivity
-  have hle : |x| / 2 ≤ π / 2 := by linarith
-  have hs := Real.mul_le_sin hpos hle
-  have hs0 : 0 ≤ 2 / π * (|x| / 2) := by positivity
-  have : (2 / π * (|x| / 2)) ^ 2 ≤ Real.sin (|x| / 2) ^ 2 := pow_le_pow_left₀ hs0 hs 2
-  have hx2 : x ^ 2 = |x| ^ 2 := (sq_abs x).symm
-  have hpi : 0 < π := pi_pos
+  have hs := Real.mul_le_sin hpos (by linarith)
+  have : (2 / π * (|x| / 2)) ^ 2 ≤ Real.sin (|x| / 2) ^ 2 := pow_le_pow_left₀ (by positivity) hs 2
+  have hx2 := (sq_abs x).symm
+
   rw [hx2]
   calc 4 / π ^ 2 * |x| ^ 2 = 4 * (2 / π * (|x| / 2)) ^ 2 := by field_simp
     _ ≤ 4 * Real.sin (|x| / 2) ^ 2 := by linarith
@@ -134,7 +132,7 @@ lemma sum_tsum_diff_le (J : Finset ι) (h : ℝ) :
   have hcont : ∀ j, Continuous fun θ => ⟪r θ, v j⟫_ℂ := fun j =>
     hr.continuous.inner continuous_const
   have hperj : ∀ j, Function.Periodic (fun θ => ⟪r θ, v j⟫_ℂ) (2 * π) := fun j θ => by
-    simp only [hper θ]
+    simp [hper θ]
   -- coefficients of the difference
   have hcoef : ∀ j n, fourierCoeffOn two_pi_pos (fun θ => ⟪r (θ + h) - r θ, v j⟫_ℂ) n =
       (Complex.exp (n * h * Complex.I) - 1) *
@@ -185,7 +183,7 @@ lemma sum_tsum_diff_le (J : Finset ι) (h : ℝ) :
     exact (((hr.continuous.comp ((continuous_id.add continuous_const : Continuous fun x => x + h))).sub hr.continuous).inner
       continuous_const).norm.pow 2
   rw [intervalIntegral.integral_const, smul_eq_mul, sub_zero] at hint
-  have hpi : 0 < 2 * π := two_pi_pos
+  have hpi := two_pi_pos
   calc (2 * π)⁻¹ * ∫ θ in (0 : ℝ)..(2 * π), ∑ j ∈ J, ‖⟪r (θ + h) - r θ, v j⟫_ℂ‖ ^ 2
       ≤ (2 * π)⁻¹ * (2 * π * (K ^ 2 * h ^ 2)) := by gcongr
     _ = K ^ 2 * h ^ 2 := by field_simp
@@ -198,12 +196,10 @@ lemma sum_sq_mul_fourierCoeff_le_of_finite (J : Finset ι) (N : ℕ) :
   rcases Nat.eq_zero_or_pos N with hN | hN
   · subst hN
     simp only [Nat.cast_zero, neg_zero, Finset.Icc_self, Finset.sum_singleton, Int.cast_zero]
-    simp only [ne_eq, OfNat.ofNat_ne_zero, not_false_eq_true, zero_pow, zero_mul,
-      Finset.sum_const_zero]
+    simp
     positivity
-  set h : ℝ := π / N with hh
-  have hNpos : (0 : ℝ) < N := by exact_mod_cast hN
-  have hhpos : 0 < h := div_pos pi_pos hNpos
+  set h := π / N with hh
+  have hhpos : 0 < h := div_pos pi_pos (by exact_mod_cast hN)
   set c : ι → ℤ → ℂ := fun j n => fourierCoeffOn two_pi_pos (fun θ => ⟪r θ, v j⟫_ℂ) n
   have hsumm : ∀ j, Summable fun n : ℤ =>
       ‖Complex.exp (n * h * Complex.I) - 1‖ ^ 2 * ‖c j n‖ ^ 2 := by
@@ -231,9 +227,9 @@ lemma sum_sq_mul_fourierCoeff_le_of_finite (J : Finset ι) (N : ℕ) :
       calc |(n : ℝ)| * (π / N) ≤ N * (π / N) := by gcongr
         _ = π := by field_simp
     have hk := sq_le_norm_exp_sub_one_sq habs
-    have heq : ((n * h : ℝ) : ℂ) * Complex.I = (n : ℂ) * h * Complex.I := by push_cast; ring
-    rw [heq] at hk
-    have hpi : 0 < π := pi_pos
+
+    simp at hk
+    have hpi := pi_pos
     have key : (n : ℝ) ^ 2 ≤ π ^ 2 / (4 * h ^ 2) * ‖Complex.exp (n * h * Complex.I) - 1‖ ^ 2 := by
       rw [div_mul_eq_mul_div, le_div_iff₀ (by positivity)]
       have : 4 / π ^ 2 * ((n : ℝ) * h) ^ 2 * π ^ 2 = 4 * h ^ 2 * (n : ℝ) ^ 2 := by

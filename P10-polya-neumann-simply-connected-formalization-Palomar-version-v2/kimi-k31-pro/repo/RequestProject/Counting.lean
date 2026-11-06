@@ -26,7 +26,7 @@ lemma encard_lt_le_of_monotone (hμ : Monotone μ) (j : ℕ) :
     {i | μ i < μ j}.encard ≤ j := by
   have hsub : {i | μ i < μ j} ⊆ (Finset.range j : Set ℕ) := by
     intro i hi
-    simp only [Set.mem_setOf_eq] at hi
+    simp at hi
     simp only [Finset.coe_range, Set.mem_Iio]
     by_contra h
     exact absurd (hμ (not_lt.mp h)) (not_le.mpr hi)
@@ -55,7 +55,6 @@ theorem count_of_eigen (V : ENNReal) (hV : V ≠ ⊤) (hμ : Monotone μ) (h0 : 
       (({i | μ i < ENNReal.ofReal E}.encard : ℕ∞) : ENNReal) := by
   have h4 : ENNReal.ofReal (4 * π) ≠ 0 := by
     simp only [ne_eq, ENNReal.ofReal_eq_zero, not_le]; positivity
-  have h4' : ENNReal.ofReal (4 * π) ≠ ⊤ := ENNReal.ofReal_ne_top
   by_cases htop : {i | μ i < ENNReal.ofReal E}.encard = ⊤
   · rw [htop, ENat.toENNReal_top]
     exact ENNReal.div_lt_top (ENNReal.mul_ne_top hV ENNReal.ofReal_ne_top) h4
@@ -69,7 +68,7 @@ theorem count_of_eigen (V : ENNReal) (hV : V ≠ ⊤) (hμ : Monotone μ) (h0 : 
       rw [h0] at hm
       exact absurd hm (not_le.mpr (ENNReal.ofReal_pos.mpr hE))
     have key := lt_of_le_of_lt (mul_le_mul_right hm V) (h m hm1)
-    rw [ENNReal.div_lt_iff (Or.inl h4) (Or.inl h4')]
+    rw [ENNReal.div_lt_iff (Or.inl h4) (Or.inl (ENNReal.ofReal_ne_top))]
     simp only [ENat.toENNReal_coe]
     calc V * ENNReal.ofReal E < ENNReal.ofReal (4 * π * m) := key
       _ = (m : ENNReal) * ENNReal.ofReal (4 * π) := by
@@ -84,7 +83,7 @@ theorem eigen_of_count (V : ENNReal) (hμ : Monotone μ)
     (j : ℕ) (hj : 1 ≤ j) : V * μ j < ENNReal.ofReal (4 * π * j) := by
   have h4 : ENNReal.ofReal (4 * π) ≠ 0 := by
     simp only [ne_eq, ENNReal.ofReal_eq_zero, not_le]; positivity
-  have hE : 0 < (μ j).toReal := ENNReal.toReal_pos (hpos j hj).ne' (hfin j hj)
+  have hE := ENNReal.toReal_pos (hpos j hj).ne' (hfin j hj)
   have hh := h _ hE
   rw [ENNReal.ofReal_toReal (hfin j hj)] at hh
   have hc := encard_lt_le_of_monotone μ hμ j

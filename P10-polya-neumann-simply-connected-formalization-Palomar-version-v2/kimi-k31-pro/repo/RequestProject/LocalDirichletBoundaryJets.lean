@@ -182,7 +182,7 @@ theorem dirichlet_boundary_horizontal_hasDerivAt {a b : ℝ} (ha : 0 < a) (hb : 
     {x : ℝ} (hx : x ∈ Ioo (-a) a) :
     HasDerivAt (fun s : ℝ => U (s : ℂ)) (Q (x : ℂ)) x := by
   let q : ℝ → ℂ := fun s => Q ((dirichletBoundaryClamp a s : ℝ) : ℂ)
-  have hqc : Continuous q := continuous_dirichlet_clamped_boundary ha.le hb.le hQ
+  have hqc := continuous_dirichlet_clamped_boundary ha.le hb.le hQ
   let P : ℝ → ℂ := fun s => U (0 : ℂ) + ∫ t in (0 : ℝ)..s, q t
   have hP : HasDerivAt P (q x) x :=
     (intervalIntegral.integral_hasDerivAt_right (hqc.intervalIntegrable 0 x)
@@ -269,8 +269,7 @@ theorem dirichlet_boundary_derivative_chain_contDiffOn {s : Set ℝ} (hs : IsOpe
   induction n generalizing v with
   | zero => exact contDiffOn_zero.mpr (hc 0 (by omega))
   | succ n ih =>
-      have hnext : ContDiffOn ℝ (n : WithTop ℕ∞) (v 1) s := by
-        exact ih (fun j => v (j + 1))
+      have hnext : ContDiffOn ℝ (n : WithTop ℕ∞) (v 1) s := ih (fun j => v (j + 1))
           (fun j hj => hc (j + 1) (by omega))
           (fun j hj x hx => hd (j + 1) (by omega) x hx)
       have hder : EqOn (deriv (v 0)) (v 1) s :=

@@ -62,7 +62,7 @@ theorem exists_periodic_C1_density_lipschitz (K : ℝ → ℂ)
     exact congrArg (fun z : ℂ => ‖z‖) (deriv_periodic hper θ)
   obtain ⟨M, hM⟩ := isCompact_Icc.exists_bound_of_continuousOn
     (s := Icc (0 : ℝ) (2 * Real.pi)) hK.continuous_deriv_one.continuousOn
-  have hM0 : 0 ≤ M := (norm_nonneg (deriv K 0)).trans
+  have hM0 := (norm_nonneg (deriv K 0)).trans
     (hM 0 ⟨le_rfl, Real.two_pi_pos.le⟩)
   have hbound (θ : ℝ) : ‖deriv K θ‖ ≤ M := by
     let θ' := toIcoMod Real.two_pi_pos 0 θ

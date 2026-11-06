@@ -60,10 +60,10 @@ theorem dirichletCoordinateDerivative_iterate (w : ℂ) (k l : ℕ) (u : ℂ →
     dirichletCoordinateDerivative w k (dirichletCoordinateDerivative w l u) =
       dirichletCoordinateDerivative w (k + l) u := by
   induction k with
-  | zero => simp only [dirichletCoordinateDerivative_zero, Nat.zero_add]
+  | zero => simp
   | succ k ih =>
       rw [dirichletCoordinateDerivative_succ, ih]
-      simp only [Nat.succ_add, dirichletCoordinateDerivative_succ]
+      simp [Nat.succ_add, dirichletCoordinateDerivative_succ]
 
 theorem dirichletCoordinateDerivative_contDiffOn {U : Set ℂ} (hU : IsOpen U)
     {u : ℂ → ℂ} (hu : ContDiffOn ℝ (⊤ : ℕ∞) u U) (w : ℂ) (k : ℕ) :
@@ -91,7 +91,7 @@ theorem dirichletCoordinateDerivative_eqOn {U : Set ℂ} (hU : IsOpen U)
     {u v : ℂ → ℂ} (heq : EqOn u v U) (w : ℂ) (k : ℕ) :
     EqOn (dirichletCoordinateDerivative w k u) (dirichletCoordinateDerivative w k v) U := by
   intro z hz
-  have hg : u =ᶠ[𝓝 z] v := Filter.eventuallyEq_iff_exists_mem.mpr ⟨U, hU.mem_nhds hz, heq⟩
+  have hg := Filter.eventuallyEq_iff_exists_mem.mpr ⟨U, hU.mem_nhds hz, heq⟩
   exact (dirichletCoordinateDerivative_eventuallyEq hg w k).self_of_nhds
 
 theorem dirichlet_bootstrap_dirD_eqOn {U : Set ℂ} (hU : IsOpen U)
@@ -173,7 +173,7 @@ theorem dirichletCoordinateDerivative_mul_eqOn_of_dirD_zero {U : Set ℂ}
           (dirichletBootstrap_differentiableAt hU ha hz)
           (dirichletBootstrap_differentiableAt hU
             (dirichletCoordinateDerivative_contDiffOn hU hu w k) hz) w, hzero z hz]
-      simp only [zero_mul, zero_add, dirichletCoordinateDerivative_succ]
+      simp
 
 /-- Coordinate commutation follows from the actual smooth interior germ. -/
 theorem dirichletCoordinateDerivative_dirD_comm_eqOn {U : Set ℂ} (hU : IsOpen U)
@@ -277,7 +277,7 @@ theorem dirichletBootstrap_tangential_mul_memLp {a b : ℝ} {c v : ℂ → ℂ}
   | zero => exact dirichletBootstrap_smooth_mul_memLp hc (hLp 0 le_rfl)
   | succ p ih =>
       let U := smoothDirichletHalfBox a b
-      have hU : IsOpen U := isOpen_smoothDirichletHalfBox a b
+      have hU := isOpen_smoothDirichletHalfBox a b
       have hdv := dirichlet_contDiffOn_dirD hU hv 1
       have hdc := dirichlet_dirD_contDiff hc 1
       have h₀ := ih hdc hv (fun j hj => hLp j (by omega))
@@ -334,8 +334,7 @@ theorem dirichletBootstrap_realCoefficient_dirD_I {r : ℝ → ℝ}
     (hd.hasDerivAt.comp_hasFDerivAt z Complex.reCLM.hasFDerivAt)
   change fderiv ℝ (Complex.ofRealCLM ∘ r ∘ Complex.re) z Complex.I = 0
   rw [hs.fderiv]
-  simp only [ContinuousLinearMap.comp_apply, ContinuousLinearMap.smul_apply,
-    Complex.reCLM_apply, Complex.I_re, smul_zero, map_zero]
+  simp
 
 theorem dirichletGraphCurvature_contDiff {f : ℝ → ℝ}
     (hf : ContDiff ℝ (⊤ : ℕ∞) f) :
@@ -346,8 +345,7 @@ theorem dirichletGraphCurvature_contDiff {f : ℝ → ℝ}
 
 theorem dirD_dirichletGraphCurvature_I {f : ℝ → ℝ}
     (hf : ContDiff ℝ (⊤ : ℕ∞) f) (z : ℂ) :
-    dirD (dirichletGraphCurvature f) Complex.I z = 0 := by
-  exact dirichletBootstrap_realCoefficient_dirD_I
+    dirD (dirichletGraphCurvature f) Complex.I z = 0 := dirichletBootstrap_realCoefficient_dirD_I
     ((contDiff_infty_iff_deriv.mp ((contDiff_infty_iff_deriv.mp hf).2)).2) z
 
 theorem dirichletNormalCoefficientInverse_contDiff {f : ℝ → ℝ}
@@ -409,19 +407,19 @@ theorem dirichletNormalRecoveryExpression_zero_normal_eqOn {U : Set ℂ} (hU : I
     (hu : ContDiffOn ℝ (⊤ : ℕ∞) u U) (hG : ContDiffOn ℝ (⊤ : ℕ∞) G U) (q : ℕ) :
     EqOn (dirichletNormalDerivative q (dirichletNormalRecoveryExpression f 0 u G))
       (dirichletNormalRecoveryExpression f q u G) U := by
-  let t₀ : ℂ → ℂ := fun z => (-1 : ℂ) * G z
-  let t₁ : ℂ → ℂ := fun z => dirichletGraphCurvature f z * dirichletNormalDerivative 1 u z
+  let t₀ := fun z => (-1 : ℂ) * G z
+  let t₁ := fun z => dirichletGraphCurvature f z * dirichletNormalDerivative 1 u z
   let t₂ : ℂ → ℂ := fun z => ((2 : ℂ) * dirichletGraphSlope f z) *
     dirichletMixedDerivative 1 1 u z
   let t₃ := dirichletMixedDerivative 2 0 u
-  have h₀ : ContDiffOn ℝ (⊤ : ℕ∞) t₀ U := dirichletBootstrap_contDiffOn_const_mul hG (-1)
+  have h₀ := dirichletBootstrap_contDiffOn_const_mul hG (-1)
   have h₁ : ContDiffOn ℝ (⊤ : ℕ∞) t₁ U :=
     (dirichletGraphCurvature_contDiff hf).contDiffOn.mul
       (dirichletCoordinateDerivative_contDiffOn hU hu Complex.I 1)
   have h₂ : ContDiffOn ℝ (⊤ : ℕ∞) t₂ U :=
     (dirichletBootstrap_contDiff_const_mul (dirichletGraphSlope_contDiff hf) 2).contDiffOn.mul
       (dirichletMixedDerivative_contDiffOn hU hu 1 1)
-  have h₃ : ContDiffOn ℝ (⊤ : ℕ∞) t₃ U := dirichletMixedDerivative_contDiffOn hU hu 2 0
+  have h₃ := dirichletMixedDerivative_contDiffOn hU hu 2 0
   intro z hz
   change dirichletCoordinateDerivative Complex.I q
     (fun w => (t₀ w + t₁ w) + t₂ w - t₃ w) z = _
@@ -466,7 +464,7 @@ theorem dirichletNormalRecoveryExpression_zero_normal_eqOn {U : Set ℂ} (hU : I
       dirichletCoordinateDerivative Complex.I q (dirichletMixedDerivative 1 1 u) z -
     dirichletCoordinateDerivative Complex.I q t₃ z = _
   rw [hn₁, hmix₁, hmix₂]
-  simp only [Nat.add_zero, dirichletNormalRecoveryExpression, dirichletNormalDerivative]
+  simp [Nat.add_zero, dirichletNormalRecoveryExpression, dirichletNormalDerivative]
 
 /-- Every higher normal formula is derived by differentiating the actual
 second-order equation. All Y derivatives of the graph coefficients vanish. -/
@@ -551,9 +549,9 @@ theorem dirichletNormalRecoveryExpression_tangential_memLp {a b : ℝ}
     MemLp (dirichletTangentialDerivative p (dirichletNormalRecoveryExpression f q u G)) 2
       (volume.restrict (smoothDirichletHalfBox a b)) := by
   let U := smoothDirichletHalfBox a b
-  have hU : IsOpen U := isOpen_smoothDirichletHalfBox a b
-  let t₀ : ℂ → ℂ := fun z => (-1 : ℂ) * dirichletNormalDerivative q G z
-  let t₁ : ℂ → ℂ := fun z => dirichletGraphCurvature f z *
+  have hU := isOpen_smoothDirichletHalfBox a b
+  let t₀ := fun z => (-1 : ℂ) * dirichletNormalDerivative q G z
+  let t₁ := fun z => dirichletGraphCurvature f z *
     dirichletNormalDerivative (q + 1) u z
   let t₂ : ℂ → ℂ := fun z => ((2 : ℂ) * dirichletGraphSlope f z) *
     dirichletMixedDerivative 1 (q + 1) u z
@@ -567,7 +565,7 @@ theorem dirichletNormalRecoveryExpression_tangential_memLp {a b : ℝ}
   have ht₂ : ContDiffOn ℝ (⊤ : ℕ∞) t₂ U :=
     (dirichletBootstrap_contDiff_const_mul (dirichletGraphSlope_contDiff hf) 2).contDiffOn.mul
       (dirichletMixedDerivative_contDiffOn hU hu 1 (q + 1))
-  have ht₃ : ContDiffOn ℝ (⊤ : ℕ∞) t₃ U := dirichletMixedDerivative_contDiffOn hU hu 2 q
+  have ht₃ := dirichletMixedDerivative_contDiffOn hU hu 2 q
   have hm₀ : MemLp (dirichletTangentialDerivative p t₀) 2 (volume.restrict U) :=
     dirichletBootstrap_tangential_const_mul_memLp hU
       (dirichletCoordinateDerivative_contDiffOn hU hG.contDiffOn Complex.I q) (-1) p
@@ -608,7 +606,7 @@ theorem dirichlet_mixed_derivative_memLp_of_tangential_data {a b : ℝ}
     ∀ p q : ℕ, p + q ≤ N → MemLp (dirichletMixedDerivative p q u) 2
       (volume.restrict (smoothDirichletHalfBox a b)) := by
   let U := smoothDirichletHalfBox a b
-  have hU : IsOpen U := isOpen_smoothDirichletHalfBox a b
+  have hU := isOpen_smoothDirichletHalfBox a b
   have hnormal : ∀ q p : ℕ, p + q ≤ N → MemLp (dirichletMixedDerivative p q u) 2
       (volume.restrict U) := by
     intro q

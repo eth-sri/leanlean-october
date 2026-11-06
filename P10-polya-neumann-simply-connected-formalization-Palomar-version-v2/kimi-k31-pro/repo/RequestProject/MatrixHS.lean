@@ -29,7 +29,7 @@ include ha
 /-- The (conjugated) `m`-th row of a square-summable matrix, as a vector of `ℓ²(ℤ)`. -/
 def hsRow (m : ℤ) : L2Z :=
   ⟨fun n => conj (a (m, n)), memℓp_two_iff_summable.mpr (by
-    simpa [Complex.norm_conj] using ha.prod_factor m)⟩
+    simpa using ha.prod_factor m)⟩
 
 lemma hsRow_apply (m n : ℤ) : (hsRow a ha m : ℤ → ℂ) n = conj (a (m, n)) := rfl
 
@@ -70,7 +70,6 @@ lemma hsMatrixLin_apply (f : L2Z) (m : ℤ) :
 
 lemma norm_hsMatrixLin_le (f : L2Z) :
     ‖hsMatrixLin a ha f‖ ≤ Real.sqrt (∑' p, ‖a p‖ ^ 2) * ‖f‖ := by
-  have hS : 0 ≤ ∑' p, ‖a p‖ ^ 2 := tsum_nonneg fun _ => by positivity
   have h2 : ‖hsMatrixLin a ha f‖ ^ 2 ≤ (∑' p, ‖a p‖ ^ 2) * ‖f‖ ^ 2 := by
     rw [norm_sq_L2Z, ← tsum_norm_hsRow_sq a ha, ← tsum_mul_right]
     refine (summable_norm_sq_L2Z _).tsum_le_tsum (fun m => ?_)
@@ -79,7 +78,7 @@ lemma norm_hsMatrixLin_le (f : L2Z) :
     gcongr
     exact norm_inner_le_norm _ _
   have := Real.sqrt_le_sqrt h2
-  rwa [Real.sqrt_sq (norm_nonneg _), Real.sqrt_mul hS, Real.sqrt_sq (norm_nonneg _)] at this
+  rwa [Real.sqrt_sq (norm_nonneg _), Real.sqrt_mul (tsum_nonneg fun _ => by positivity), Real.sqrt_sq (norm_nonneg _)] at this
 
 /-- **The Hilbert–Schmidt matrix operator** `(T f)_m = ∑_n a_{m n} f_n` on `ℓ²(ℤ)`. -/
 def hsMatrixOp : L2Z →L[ℂ] L2Z :=
@@ -99,7 +98,7 @@ lemma hsMatrixOp_stdBasisZ (n : ℤ) :
     (hsMatrixOp a ha (stdBasisZ n) : ℤ → ℂ) = fun m => a (m, n) := by
   funext m
   rw [hsMatrixOp_apply, stdBasisZ_apply, tsum_eq_single n]
-  · simp [lp.single_apply]
+  · simp
   · intro k hk
     simp [lp.single_apply, hk]
 

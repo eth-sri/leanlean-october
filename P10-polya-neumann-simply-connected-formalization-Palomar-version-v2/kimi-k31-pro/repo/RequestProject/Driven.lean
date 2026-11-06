@@ -54,7 +54,7 @@ instance instStarModuleRealCLMComplex {E : Type*} [NormedAddCommGroup E] [InnerP
   ⟨fun r A => by
     have h : ∀ B : E →L[ℂ] E, r • B = (r : ℂ) • B := fun B =>
       RCLike.real_smul_eq_coe_smul (K := ℂ) r B
-    rw [star_trivial r, h, h, star_smul, Complex.star_def, Complex.conj_ofReal]⟩
+    simp⟩
 
 /-- A bounded Lipschitz family of operators applied to a bounded Lipschitz family of vectors
 is Lipschitz. -/
@@ -64,7 +64,7 @@ theorem lipschitzOnWith_apply_of_bounded {E F : Type*} [NormedAddCommGroup E]
     (hg : LipschitzOnWith Kg g s) (hfB : ∀ x ∈ s, ‖f x‖ ≤ B) (hgB : ∀ x ∈ s, ‖g x‖ ≤ B) :
     LipschitzOnWith (Kf * B.toNNReal + B.toNNReal * Kg) (fun x => f x (g x)) s := by
   refine LipschitzOnWith.of_dist_le_mul fun x hx y hy => ?_
-  have hB : 0 ≤ B := (norm_nonneg _).trans (hfB x hx)
+  have hB := (norm_nonneg _).trans (hfB x hx)
   have h1 := hf.dist_le_mul x hx y hy
   have h2 := hg.dist_le_mul x hx y hy
   rw [dist_eq_norm] at h1 h2 ⊢
@@ -101,24 +101,24 @@ theorem driven_eq_transport {γ : ℝ → ℂ} {K : NNReal} (hK : LipschitzWith 
     (ey : ∀ θ ∈ Icc 0 (2 * π), y θ = y 0 + ∫ s in (0 : ℝ)..θ, (transportCoeff γ E s (y s) + f s)) :
     ∀ θ ∈ Icc 0 (2 * π),
       y θ = W θ (y 0 + ∫ s in (0 : ℝ)..θ, ContinuousLinearMap.adjoint (W s) (f s)) := by
-  have hL : (0 : ℝ) ≤ 2 * π := by positivity
-  have h0 : (0 : ℝ) ∈ Icc 0 (2 * π) := ⟨le_rfl, hL⟩
+
+  have h0 : (0 : ℝ) ∈ Icc 0 (2 * π) := ⟨le_rfl, (by positivity)⟩
   set C := transportCoeff γ E with hCdef
   have hC : AEStronglyMeasurable C volume := transportCoeff_aestronglyMeasurable γ E
   have hM := transportCoeff_norm_le γ E hK
   set M := ‖(-(Complex.I * (Real.sqrt E : ℂ)) / 2)‖ *
       (K * ‖(ContinuousLinearMap.adjoint shiftN : Ell2 →L[ℂ] Ell2)‖ + K * ‖shiftN‖)
-  have hM0 : 0 ≤ M := (norm_nonneg _).trans (hM 0)
-  have hB0 : 0 ≤ B := (norm_nonneg _).trans (hfB 0)
+  have hM0 := (norm_nonneg _).trans (hM 0)
+  have hB0 := (norm_nonneg _).trans (hfB 0)
   obtain ⟨Sy, hSy⟩ := isCompact_Icc.exists_bound_of_continuousOn hy
-  have hSy0 : 0 ≤ Sy := (norm_nonneg _).trans (hSy 0 h0)
+  have hSy0 := (norm_nonneg _).trans (hSy 0 h0)
   have happ : Continuous fun p : (Ell2 →L[ℂ] Ell2) × Ell2 => p.1 p.2 := by fun_prop
   -- the integrand of the driven equation
   set G : ℝ → Ell2 := fun s => C s (y s) + f s with hG
   have hGm : AEStronglyMeasurable G (volume.restrict (Icc 0 (2 * π))) :=
     (happ.comp_aestronglyMeasurable₂ hC.restrict
       (hy.aestronglyMeasurable measurableSet_Icc)).add hf.restrict
-  have hGB : ∀ x ∈ Icc 0 (2 * π), ‖G x‖ ≤ M * Sy + B := fun x hx =>
+  have hGB := fun x hx =>
     (norm_add_le _ _).trans (add_le_add ((ContinuousLinearMap.le_opNorm _ _).trans
       (mul_le_mul (hM x) (hSy x hx) (norm_nonneg _) hM0)) (hfB x))
   have hGi : IntegrableOn G (Icc 0 (2 * π)) :=
@@ -140,11 +140,11 @@ theorem driven_eq_transport {γ : ℝ → ℂ} {K : NNReal} (hK : LipschitzWith 
     · exact ⟨hx'.1.trans h.1, h.2.trans hx.2⟩
     · exact ⟨hx.1.trans h.1, h.2.trans hx'.2⟩
   have hyd : ∀ᵐ θ, θ ∈ Ioo 0 (2 * π) → HasDerivAt y (G θ) θ := by
-    set g : ℝ → Ell2 := (Icc 0 (2 * π)).indicator G
+    set g := (Icc 0 (2 * π)).indicator G
     have hgi : Integrable g := hGi.integrable_indicator measurableSet_Icc
     filter_upwards [ae_hasDerivAt_integral_of_locallyIntegrable hgi.locallyIntegrable]
       with θ hθ hmem
-    have hmem' : θ ∈ Icc 0 (2 * π) := Ioo_subset_Icc_self hmem
+    have hmem' := Ioo_subset_Icc_self hmem
     have h1 := (hθ 0).const_add (y 0)
     rw [show g θ = G θ by simp [g, indicator_of_mem hmem']] at h1
     refine h1.congr_of_eventuallyEq ?_
@@ -180,7 +180,7 @@ theorem driven_eq_transport {γ : ℝ → ℂ} {K : NNReal} (hK : LipschitzWith 
     (fun x hx => (hWs1 x hx).trans (le_max_left _ _))
     (fun x hx => (hSy x hx).trans ((le_add_of_nonneg_right zero_le_one).trans (le_max_right _ _)))
   set g : ℝ → Ell2 := fun s => star (W s) (f s) with hg
-  have hgB : ∀ x ∈ Icc 0 (2 * π), ‖g x‖ ≤ B := fun x hx =>
+  have hgB := fun x hx =>
     (ContinuousLinearMap.le_opNorm _ _).trans
       ((mul_le_mul (hWs1 x hx) (hfB x) (norm_nonneg _) zero_le_one).trans_eq (one_mul B))
   haveI : SecondCountableTopologyEither ℝ (Ell2 →L[ℂ] Ell2) :=
@@ -188,8 +188,7 @@ theorem driven_eq_transport {γ : ℝ → ℂ} {K : NNReal} (hK : LipschitzWith 
   have hWm : AEStronglyMeasurable W (volume.restrict (Icc 0 (2 * π))) :=
     hW.1.aestronglyMeasurable measurableSet_Icc
   have hWsm : AEStronglyMeasurable (fun s => star (W s)) (volume.restrict (Icc 0 (2 * π))) := by
-    have hcont : Continuous fun A : Ell2 →L[ℂ] Ell2 => star A := continuous_star
-    exact hcont.comp_aestronglyMeasurable hWm
+    exact (continuous_star).comp_aestronglyMeasurable hWm
   have hgm : AEStronglyMeasurable g (volume.restrict (Icc 0 (2 * π))) :=
     happ.comp_aestronglyMeasurable₂ hWsm hf.restrict
   have hgi : IntegrableOn g (Icc 0 (2 * π)) :=
@@ -218,7 +217,7 @@ lemma intervalIntegrable_smul_of_continuousOn {F : Type*} [NormedAddCommGroup F]
     (hg : AEStronglyMeasurable g volume) {B : ℝ} (hgB : ∀ s, ‖g s‖ ≤ B) {a b : ℝ}
     (ha : a ∈ Icc 0 (2 * π)) (hb : b ∈ Icc 0 (2 * π)) :
     IntervalIntegrable (fun s => g s • u s) volume a b := by
-  have hsub : uIcc a b ⊆ Icc 0 (2 * π) := uIcc_subset_Icc ha hb
+  have hsub := uIcc_subset_Icc ha hb
   obtain ⟨S, hS⟩ := isCompact_Icc.exists_bound_of_continuousOn hu
   have hm : AEStronglyMeasurable (fun s => g s • u s) (volume.restrict (Icc 0 (2 * π))) :=
     hg.restrict.smul (hu.aestronglyMeasurable measurableSet_Icc)
@@ -245,9 +244,9 @@ lemma inner_transport_integral {W : ℝ → Ell2 →L[ℂ] Ell2} (hW : Continuou
       ∫ s in a..b, volterraKernel W θ s * g s := by
   have hi := intervalIntegrable_smul_of_continuousOn (continuousOn_adjoint_apply hW (basisVec 0))
     hg hgB ha hb
-  set Lf : Ell2 →L[ℂ] ℂ := (innerSL ℂ (basisVec 0)).comp (W θ)
+  set Lf := (innerSL ℂ (basisVec 0)).comp (W θ)
   have := Lf.intervalIntegral_comp_comm hi
-  simp only [Lf, ContinuousLinearMap.comp_apply, innerSL_apply_apply, map_smul,
+  simp [Lf, ContinuousLinearMap.comp_apply, innerSL_apply_apply, map_smul,
     smul_eq_mul] at this
   rw [← this]
   refine intervalIntegral.integral_congr fun s _ => ?_
@@ -264,7 +263,7 @@ theorem driven_formula {γ : ℝ → ℂ} {K : NNReal} (hK : LipschitzWith K γ)
       (transportCoeff γ E s (y s) + (-(Complex.I / (Real.sqrt 2 : ℂ)) * g s) • basisVec 0)) :
     ∀ θ ∈ Icc 0 (2 * π), y θ = W θ (y 0) + (-(Complex.I / (Real.sqrt 2 : ℂ))) •
       W θ (∫ s in (0 : ℝ)..θ, g s • ContinuousLinearMap.adjoint (W s) (basisVec 0)) := by
-  set c : ℂ := -(Complex.I / (Real.sqrt 2 : ℂ))
+  set c := -(Complex.I / (Real.sqrt 2 : ℂ))
   have hf : AEStronglyMeasurable (fun s => (c * g s) • basisVec 0) volume :=
     (hg.const_mul c).smul_const _
   have hfB : ∀ s, ‖(c * g s) • basisVec 0‖ ≤ ‖c‖ * B * ‖basisVec 0‖ := fun s => by
@@ -276,7 +275,7 @@ theorem driven_formula {γ : ℝ → ℂ} {K : NNReal} (hK : LipschitzWith K γ)
   congr 2
   rw [← intervalIntegral.integral_smul]
   refine intervalIntegral.integral_congr fun s _ => ?_
-  simp only [map_smul, smul_smul]
+  simp [map_smul, smul_smul]
 
 /-- **Lemma 4.10 (trace identity).**  Let `y` solve the driven equation
 `y' = C_E y - (i/√2) g e₀` on `[0, L]` (in integral form), with `g` bounded and measurable,
@@ -292,9 +291,8 @@ theorem driven_trace {γ : ℝ → ℂ} {K : NNReal} (hK : LipschitzWith K γ) {
   intro θ hθ
   rw [driven_formula hK hW hg hgB hy ey θ hθ, inner_add_right, inner_smul_right,
     inner_transport_integral hW.1 hg hgB θ ⟨le_rfl, hθ.1.trans hθ.2⟩ hθ]
-  have h2 : (Real.sqrt 2 : ℂ) ≠ 0 := by
-    exact_mod_cast (Real.sqrt_pos.mpr (by norm_num : (0 : ℝ) < 2)).ne'
-  simp only [observation, volterraOp]
+
+  simp [observation, volterraOp]
   field_simp
   ring
 
@@ -315,8 +313,7 @@ theorem driven_endpoint {γ : ℝ → ℂ} {K : NNReal} (hK : LipschitzWith K γ
   rw [hper] at hform
   have hform' : y 0 = W (2 * π) (y 0) + (-(Complex.I / (Real.sqrt 2 : ℂ))) •
       W (2 * π) (observationAdj W g) := hform
-  have h2 : (Real.sqrt 2 : ℂ) ≠ 0 := by
-    exact_mod_cast (Real.sqrt_pos.mpr (by norm_num : (0 : ℝ) < 2)).ne'
+
   refine ⟨?_, ?_⟩
   · rw [ContinuousLinearMap.sub_apply, ContinuousLinearMap.one_apply]
     nth_rewrite 1 [hform']
@@ -348,11 +345,11 @@ theorem inner_observationAdj {W : ℝ → Ell2 →L[ℂ] Ell2} (hW : ContinuousO
   have hi := intervalIntegrable_smul_of_continuousOn (continuousOn_adjoint_apply hW (basisVec 0))
     hg hgB ⟨le_rfl, hL⟩ ⟨hL, le_rfl⟩
   have := (innerSL ℂ v).intervalIntegral_comp_comm hi
-  simp only [innerSL_apply_apply] at this
+  simp at this
   rw [observationAdj, ← inner_conj_symm, ← this, intervalIntegral.integral_of_le hL,
     intervalIntegral.integral_of_le hL, ← integral_conj]
   refine integral_congr_ae (Eventually.of_forall fun s => ?_)
-  simp only [inner_smul_right, map_mul, inner_conj_symm,
+  simp [inner_smul_right, map_mul, inner_conj_symm,
     ContinuousLinearMap.adjoint_inner_left, observation]
 
 /-- **Lemma 4.6 (`T_E + T_E^* = O_E O_E^*`).**  The kernels of the Volterra operator and its
@@ -375,14 +372,14 @@ theorem volterraOp_add_adj {W : ℝ → Ell2 →L[ℂ] Ell2} (hW : ContinuousOn 
     simpa only [smul_eq_mul, mul_comm] using this
   have h0 : (0 : ℝ) ∈ Icc 0 (2 * π) := ⟨le_rfl, hL⟩
   have hL' : (2 * π) ∈ Icc 0 (2 * π) := ⟨hL, le_rfl⟩
-  simp only [volterraOpAdj, hk, volterraOp]
+  simp [volterraOpAdj, hk, volterraOp]
   rw [intervalIntegral.integral_add_adjacent_intervals (hint h0 hθ) (hint hθ hL'), observation,
     observationAdj, inner_transport_integral hW hg hgB θ h0 hL']
 
 /-- Complex conjugation commutes with interval integrals. -/
 lemma intervalIntegral_conj {f : ℝ → ℂ} {a b : ℝ} :
     ∫ x in a..b, conj (f x) = conj (∫ x in a..b, f x) := by
-  simp only [intervalIntegral, integral_conj, map_sub]
+  simp [intervalIntegral, integral_conj, map_sub]
 
 end PolyaNeumann
 

@@ -90,8 +90,8 @@ theorem exists_dirichlet_family_gradient_energy {a b ε : ℝ}
   let E := 2 * M * (EQ + (4 * M + 2 * B ^ 2) * EC +
     (32 * B ^ 2 * M ^ 3 + 2) * Ev)
   have hM : 0 < M := by dsimp [M]; positivity
-  have hE : 0 ≤ E := by dsimp [E]; positivity
-  refine ⟨r / 2, E, by linarith, by linarith, by linarith, hE, ?_⟩
+
+  refine ⟨r / 2, E, by linarith, by linarith, by linarith, (by dsimp [E]; positivity), ?_⟩
   intro h hh
   have hFm (i : Fin 2) : MemLp (dirichletShiftedFlux f (s h) (v h) i) 2
       (volume.restrict V) :=
@@ -113,7 +113,7 @@ theorem exists_dirichlet_family_gradient_energy {a b ε : ℝ}
       (∫ z in V, ‖η z‖ ^ 2 * dirichletGradientSq (v h) z) ≤
           (EQ + (4 * M + 2 * B ^ 2) * EC + (32 * B ^ 2 * M ^ 3 + 2) * Ev) *
             (2 * M) := hd
-      _ = E := by dsimp only [E]; ring
+      _ = E := by dsimp [E]; ring
   let W := smoothDirichletHalfBox (r / 2) (r / 2)
   have hWsub : W ⊆ V := fun z hzW =>
     ⟨hzW.1.trans (by linarith), hzW.2.1, hzW.2.2.trans (by linarith)⟩
@@ -129,7 +129,7 @@ theorem exists_dirichlet_family_gradient_energy {a b ε : ℝ}
     filter_upwards with z
     change ‖η z * dirD (v h) 1 z‖ ^ 2 + ‖η z * dirD (v h) Complex.I z‖ ^ 2 =
       ‖η z‖ ^ 2 * dirichletGradientSq (v h) z
-    simp only [dirichletGradientSq, norm_mul, mul_pow]
+    simp [dirichletGradientSq, norm_mul, mul_pow]
     ring
   have hW : (∫ z in W, dirichletGradientSq (v h) z) =
       ∫ z in W, ‖η z‖ ^ 2 * dirichletGradientSq (v h) z := by
@@ -137,7 +137,7 @@ theorem exists_dirichlet_family_gradient_energy {a b ε : ℝ}
     intro z hzW
     change dirichletGradientSq (v h) z = ‖η z‖ ^ 2 * dirichletGradientSq (v h) z
     rw [hηone z hzW, norm_one]
-    simp only [one_pow, one_mul]
+    simp
   rw [hW]
   exact (setIntegral_mono_set hJi
     (Eventually.of_forall fun z => mul_nonneg (sq_nonneg _)
@@ -153,8 +153,8 @@ theorem dirichletTangentialDifferenceIter_congr_on_halfBox {A a b h : ℝ}
       dirichletTangentialDifferenceIter h k v z := by
   induction k generalizing a z with
   | zero =>
-      have ha : a ≤ A := by simpa using hmargin
-      exact heq ⟨hz.1.trans_le ha, hz.2⟩
+
+      exact heq ⟨hz.1.trans_le (by simpa using hmargin), hz.2⟩
   | succ k ih =>
       have hm : (a + |h|) + (k : ℝ) * |h| ≤ A := by
         rw [Nat.cast_add, Nat.cast_one] at hmargin
@@ -187,7 +187,7 @@ theorem dirichletTangentialDifferenceIter_weak_equation {A a b h : ℝ}
         dirichletTangentialDifferenceIter h k G z * φ z := by
   let U := smoothDirichletHalfBox A b
   let V := smoothDirichletHalfBox a b
-  let H : Fin 2 → ℂ → ℂ := fun i =>
+  let H := fun i =>
     dirichletTangentialDifferenceIter h k (dirichletFlattenedFlux f u i)
   have hU := isOpen_smoothDirichletHalfBox A b
   have hV := isOpen_smoothDirichletHalfBox a b
@@ -204,7 +204,7 @@ theorem dirichletTangentialDifferenceIter_weak_equation {A a b h : ℝ}
       dirichletTangentialDifferenceIter_dirD k hmargin (hflux i) hz _
     simp_rw [hd]
     rw [Fin.sum_univ_two]
-    simp only [coordDir, Matrix.cons_val_zero, Matrix.cons_val_one]
+    simp [coordDir, Matrix.cons_val_zero, Matrix.cons_val_one]
     rw [← congrFun (dirichletTangentialDifferenceIter_add h k
       (dirD (dirichletFlattenedFlux f u 0) 1)
       (dirD (dirichletFlattenedFlux f u 1) Complex.I)) z]
@@ -226,8 +226,7 @@ theorem dirichletTangentialDifferenceIter_weak_equation {A a b h : ℝ}
     have hibp (i : Fin 2) :=
       dirichlet_local_smooth_field_test_eq_neg_dirD hV (hH i) hφ i
     have hsum : (∑ i : Fin 2, ∫ z in V, H i z * dirD φ (coordDir i) z) =
-        ∑ i : Fin 2, -(∫ z in V, dirD (H i) (coordDir i) z * φ z) := by
-      exact Finset.sum_congr rfl (fun i _ => hibp i)
+        ∑ i : Fin 2, -(∫ z in V, dirD (H i) (coordDir i) z * φ z) := Finset.sum_congr rfl (fun i _ => hibp i)
     rw [hsum, Finset.sum_neg_distrib, ← integral_finset_sum _ (fun i _ => hDI i)]
     congr 1
     apply integral_congr_ae
@@ -329,20 +328,18 @@ theorem dirichletHigherCoefficientDifferenceFlux_sq_bound
       (3 * M ^ 2 * ∑ j ∈ Finset.range k, (k.choose j : ℝ) ^ 2) *
         ∑ j ∈ Finset.range k,
           dirichletGradientSq (dirichletTangentialDifferenceIter h j u) z := by
-  let vx : ℕ → ℝ := fun j => ‖dirD (dirichletTangentialDifferenceIter h j u) 1 z‖
-  let vy : ℕ → ℝ := fun j => ‖dirD (dirichletTangentialDifferenceIter h j u) Complex.I z‖
+  let vx := fun j => ‖dirD (dirichletTangentialDifferenceIter h j u) 1 z‖
+  let vy := fun j => ‖dirD (dirichletTangentialDifferenceIter h j u) Complex.I z‖
   let Sx := ∑ j ∈ Finset.range k, (k.choose j : ℝ) * vx j
   let Sy := ∑ j ∈ Finset.range k, (k.choose j : ℝ) * vy j
   let P := ∑ j ∈ Finset.range k, (k.choose j : ℝ) ^ 2
-  have hSx : 0 ≤ Sx := Finset.sum_nonneg fun j _ => mul_nonneg (Nat.cast_nonneg _) (norm_nonneg _)
-  have hSy : 0 ≤ Sy := Finset.sum_nonneg fun j _ => mul_nonneg (Nat.cast_nonneg _) (norm_nonneg _)
+
   have hdir (j : ℕ) (hj : j ∈ Finset.range k) (w : ℂ) :
       dirichletTangentialDifferenceIter h j (dirD u w) z =
         dirD (dirichletTangentialDifferenceIter h j u) w z := by
-    have hjk : j ≤ k := (Finset.mem_range.mp hj).le
-    have hm : a + (j : ℝ) * |h| ≤ A := by
-      exact (add_le_add le_rfl (mul_le_mul_of_nonneg_right
-        (by exact_mod_cast hjk) (abs_nonneg h))).trans hmargin
+
+    have hm : a + (j : ℝ) * |h| ≤ A := (add_le_add le_rfl (mul_le_mul_of_nonneg_right
+        (by exact_mod_cast ((Finset.mem_range.mp hj).le)) (abs_nonneg h))).trans hmargin
     exact (dirichletTangentialDifferenceIter_dirD j hm hs hz w).symm
   have hclosed : z ∈ smoothDirichletClosedHalfBox a b := ⟨hz.1.le, hz.2.1.le, hz.2.2.le⟩
   have hcx : ‖dirichletHigherCoefficientCommutator h k (dirichletGraphSlope f)
@@ -405,9 +402,9 @@ theorem dirichletHigherCoefficientDifferenceFlux_memLp
       (volume.restrict (smoothDirichletHalfBox a b)) := by
   let V := smoothDirichletHalfBox a b
   let μ := volume.restrict V
-  let vx : ℕ → ℂ → ℝ := fun j z => ‖dirichletTangentialDifferenceIter h j (dirD u 1) z‖
-  let vy : ℕ → ℂ → ℝ := fun j z => ‖dirichletTangentialDifferenceIter h j (dirD u Complex.I) z‖
-  let B : ℂ → ℝ := fun z => M * ∑ j ∈ Finset.range k,
+  let vx := fun j z => ‖dirichletTangentialDifferenceIter h j (dirD u 1) z‖
+  let vy := fun j z => ‖dirichletTangentialDifferenceIter h j (dirD u Complex.I) z‖
+  let B := fun z => M * ∑ j ∈ Finset.range k,
     (k.choose j : ℝ) * (vx j z + vy j z)
   have hux : MemLp (dirD u 1) 2 (volume.restrict (smoothDirichletHalfBox A b)) := by
     simpa only [coordDir, Matrix.cons_val_zero] using hg 0
@@ -417,9 +414,9 @@ theorem dirichletHigherCoefficientDifferenceFlux_memLp
     apply MemLp.const_mul _ M
     apply memLp_finset_sum
     intro j hj
-    have hjk : j ≤ k := (Finset.mem_range.mp hj).le
+
     have hm : a + (j : ℝ) * |h| ≤ A :=
-      (add_le_add le_rfl (mul_le_mul_of_nonneg_right (by exact_mod_cast hjk)
+      (add_le_add le_rfl (mul_le_mul_of_nonneg_right (by exact_mod_cast ((Finset.mem_range.mp hj).le))
         (abs_nonneg h))).trans hmargin
     exact ((dirichletTangentialDifferenceIter_memLp j hm hux).norm.add
       (dirichletTangentialDifferenceIter_memLp j hm huy).norm).const_mul (k.choose j : ℝ)
@@ -431,11 +428,9 @@ theorem dirichletHigherCoefficientDifferenceFlux_memLp
   let Sy := ∑ j ∈ Finset.range k, (k.choose j : ℝ) * vy j z
   have hSx : 0 ≤ Sx := Finset.sum_nonneg fun j _ => mul_nonneg (Nat.cast_nonneg _) (norm_nonneg _)
   have hBS : B z = M * (Sx + Sy) := by
-    simp only [B, Sx, Sy, mul_add, Finset.sum_add_distrib]
-  have hcx : ‖dirichletHigherCoefficientCommutator h k (dirichletGraphSlope f)
-      (dirD u 1) z‖ ≤ M * Sx := (hbound (dirD u 1) z hz').1
-  have hcy : ‖dirichletHigherCoefficientCommutator h k (dirichletGraphSlope f)
-      (dirD u Complex.I) z‖ ≤ M * Sy := (hbound (dirD u Complex.I) z hz').1
+    simp [B, Sx, Sy, mul_add, Finset.sum_add_distrib]
+  have hcx := (hbound (dirD u 1) z hz').1
+  have hcy := (hbound (dirD u Complex.I) z hz').1
   have hsy : ‖dirichletHigherCoefficientCommutator h k
       (fun w => 1 + dirichletGraphSlope f w ^ 2) (dirD u Complex.I) z‖ ≤ M * Sy :=
     (hbound (dirD u Complex.I) z hz').2
@@ -489,9 +484,9 @@ theorem dirichletHigherCoefficientDifferenceFlux_energy_le
     ((hCm 1).integrable_norm_pow (by norm_num : (2 : ℕ) ≠ 0))
   have hgi (j : ℕ) (hj : j ∈ Finset.range k) : IntegrableOn
       (dirichletGradientSq (dirichletTangentialDifferenceIter h j u)) V := by
-    have hjk : j ≤ k := (Finset.mem_range.mp hj).le
+
     have hm : a + (j : ℝ) * |h| ≤ A :=
-      (add_le_add le_rfl (mul_le_mul_of_nonneg_right (by exact_mod_cast hjk)
+      (add_le_add le_rfl (mul_le_mul_of_nonneg_right (by exact_mod_cast ((Finset.mem_range.mp hj).le))
         (abs_nonneg h))).trans hmargin
     exact dirichletGradientSq_integrable
       (fun i => dirichletTangentialDifferenceIter_gradient_memLp j hm hs (hg i))
@@ -536,18 +531,18 @@ theorem exists_dirichlet_halfBox_higher_difference_gradient_energy
       let ρ := min A b / 4
       have hρ : 0 < ρ := div_pos (lt_min hA hb) (by norm_num)
       have hρA : ρ < A / 2 := by
-        dsimp only [ρ]
+        dsimp [ρ]
         linarith [min_le_left A b]
       have hρb : ρ < b := by
-        dsimp only [ρ]
+        dsimp [ρ]
         linarith [min_le_right A b]
       let E := ∫ z in U, dirichletGradientSq u z
-      have hE : 0 ≤ E := integral_nonneg (dirichletGradientSq_nonneg u)
+
       have hsub : smoothDirichletHalfBox ρ ρ ⊆ U := fun z hz' =>
         ⟨hz'.1.trans (by linarith), hz'.2.1, hz'.2.2.trans hρb⟩
-      refine ⟨ρ, 1, E, hρ, hρA, hρb, by norm_num, hE, ?_⟩
+      refine ⟨ρ, 1, E, hρ, hρA, hρb, by norm_num, (integral_nonneg (dirichletGradientSq_nonneg u)), ?_⟩
       intro h hh j hj
-      have hj0 : j = 0 := Nat.eq_zero_of_le_zero hj
+      have hj0 := Nat.eq_zero_of_le_zero hj
       subst j
       exact setIntegral_mono_set (dirichletGradientSq_integrable hg)
         (Eventually.of_forall (dirichletGradientSq_nonneg u)) hsub.eventuallyLE
@@ -557,7 +552,7 @@ theorem exists_dirichlet_halfBox_higher_difference_gradient_energy
       let W := smoothDirichletHalfBox ρ ρ
       let V := smoothDirichletHalfBox (ρ / 2) ρ
       let ε := min ε₀ (ρ / (4 * ((k : ℝ) + 1)))
-      have hε : 0 < ε := lt_min hε₀ (div_pos hρ (by positivity))
+
       have hVW : V ⊆ W := fun z hz' => ⟨hz'.1.trans (by linarith), hz'.2⟩
       have hsteps (h : ℝ) (hh : h ∈ Ioo 0 ε) :
           h ∈ Ioo 0 ε₀ ∧ ρ / 2 + (k : ℝ) * |h| ≤ ρ ∧
@@ -567,7 +562,6 @@ theorem exists_dirichlet_halfBox_higher_difference_gradient_energy
         have hkh : ((k : ℝ) + 1) * h < ρ / 4 := by
           have hh' := (lt_div_iff₀ (show 0 < 4 * ((k : ℝ) + 1) by positivity)).mp hhs
           nlinarith
-        have hkh₀ : 0 ≤ (k : ℝ) * h := mul_nonneg (Nat.cast_nonneg _) hh.1.le
         rw [abs_of_pos hh.1]
         refine ⟨⟨hh.1, hh₀⟩, ?_, ?_, ?_⟩ <;>
           nlinarith
@@ -596,9 +590,9 @@ theorem exists_dirichlet_halfBox_higher_difference_gradient_energy
         exact (setIntegral_mono_set hi
           (Eventually.of_forall (dirichletGradientSq_nonneg _)) hVW.eventuallyLE).trans
           (hprev h (hsteps h hh).1 j hj)
-      let v : ℝ → ℂ → ℂ := fun h => dirichletTangentialDifferenceIter h k u
-      let Q : ℝ → ℂ → ℂ := fun h => dirichletTangentialDifferenceIter h k G
-      let C : ℝ → Fin 2 → ℂ → ℂ := fun h =>
+      let v := fun h => dirichletTangentialDifferenceIter h k u
+      let Q := fun h => dirichletTangentialDifferenceIter h k G
+      let C := fun h =>
         dirichletHigherCoefficientDifferenceFlux f h k u
       have hvc (h : ℝ) (hh : h ∈ Ioo 0 ε) :
           ContinuousOn (v h) (smoothDirichletClosedHalfBox (ρ / 2) ρ) :=
@@ -673,7 +667,7 @@ theorem exists_dirichlet_halfBox_higher_difference_gradient_energy
           (∫ z in V, ‖C h 0 z‖ ^ 2 + ‖C h 1 z‖ ^ 2) ≤ EC :=
         dirichletHigherCoefficientDifferenceFlux_energy_le k (hmargin h hh) hf hus hMC
           (hCb h hh) hug (fun j hj => hlower h hh j (by
-            dsimp only [k] at hj
+            dsimp [k] at hj
             exact Nat.le_of_lt_succ (Finset.mem_range.mp hj)))
       have hweak (h : ℝ) (hh : h ∈ Ioo 0 ε) (φ : ℂ → ℂ) (hφ : TestFunction V φ) :
           (∫ z in V, ∑ i : Fin 2,
@@ -688,7 +682,7 @@ theorem exists_dirichlet_halfBox_higher_difference_gradient_energy
       let E := max E₀ E₁
       have hrW : smoothDirichletHalfBox r r ⊆ W := fun z hz' =>
         ⟨hz'.1.trans hrρ, hz'.2.1, hz'.2.2.trans hrρ⟩
-      refine ⟨r, ε, E, hr, by linarith, hrρ.trans hρb, hε,
+      refine ⟨r, ε, E, hr, by linarith, hrρ.trans hρb, (lt_min hε₀ (div_pos hρ (by positivity))),
         hE₀.trans (le_max_left _ _), ?_⟩
       intro h hh j hj
       rcases Nat.eq_or_lt_of_le hj with hjk | hjk
@@ -780,16 +774,15 @@ theorem exists_dirichlet_halfBox_higher_tangential_gradient_memLp
     ⟨hz'.1.trans (by linarith), hz'.2.1, hz'.2.2.trans hρb⟩
   refine ⟨ρ, hρ, hρA, hρb, ?_⟩
   intro j hj i
-  let F : ℝ → ℂ → ℂ := fun h => dirD (dirichletTangentialDifferenceIter h j u) (coordDir i)
+  let F := fun h => dirD (dirichletTangentialDifferenceIter h j u) (coordDir i)
   let g := dirichletTangentialDerivative j (dirD u (coordDir i))
   have hstep (h : ℝ) (hh : h ∈ Ioo 0 ε) :
       h ∈ Ioo 0 ε₀ ∧ ρ + (j : ℝ) * |h| ≤ A := by
     have hh₀ := hh.2.trans_le (min_le_left _ _)
     have hhs := hh.2.trans_le (min_le_right _ _)
     have hh' := (lt_div_iff₀ (show 0 < (n : ℝ) + 1 by positivity)).mp hhs
-    have hj' : (j : ℝ) ≤ (n : ℝ) := by exact_mod_cast hj
     have hjh : (j : ℝ) * h ≤ (n : ℝ) * h :=
-      mul_le_mul_of_nonneg_right hj' hh.1.le
+      mul_le_mul_of_nonneg_right (by exact_mod_cast hj) hh.1.le
     rw [abs_of_pos hh.1]
     refine ⟨⟨hh.1, hh₀⟩, ?_⟩
     nlinarith

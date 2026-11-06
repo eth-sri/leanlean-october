@@ -22,7 +22,7 @@ theorem continuous_eq_zero_of_norm_le_volterra
     {T C : ℝ} (hC : 0 ≤ C)
     (hbound : ∀ t ∈ Icc 0 T, ‖h t‖ ≤ C * ∫ s in (0 : ℝ)..t, ‖h s‖) :
     ∀ t ∈ Icc 0 T, h t = 0 := by
-  let G : ℝ → ℝ := fun t => ∫ s in (0 : ℝ)..t, ‖h s‖
+  let G := fun t => ∫ s in (0 : ℝ)..t, ‖h s‖
   have hcont : Continuous G :=
     intervalIntegral.continuous_primitive (fun x y => hh.norm.intervalIntegrable x y) 0
   have hderiv (t : ℝ) : HasDerivAt G ‖h t‖ t :=

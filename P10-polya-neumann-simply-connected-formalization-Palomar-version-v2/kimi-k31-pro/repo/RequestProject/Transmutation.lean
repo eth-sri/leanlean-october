@@ -50,7 +50,7 @@ theorem alternating_factorial_sum (l : ℕ) :
   have key : ∀ n ∈ Finset.range (l + 1), ((-1 : ℚ) ^ n / (n.factorial * (l - n).factorial)) =
       ((-1) ^ n * (l.choose n : ℚ)) / l.factorial := by
     intro n hn
-    rw [Finset.mem_range] at hn
+    simp at hn
     rw [div_eq_div_iff (by positivity) (by positivity),
       ← Nat.choose_mul_factorial_mul_factorial (show n ≤ l by omega)]
     push_cast; ring
@@ -63,6 +63,5 @@ theorem alternating_factorial_sum (l : ℕ) :
 
 variable {R : Type*} [CommRing R] [Algebra ℚ R]
 
-variable {D Dbar : Derivation ℚ R R} {z : R} {J : R →ₗ[ℚ] R} {A : Submodule ℚ R}
 
 end PolyaNeumann

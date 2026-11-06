@@ -73,8 +73,7 @@ private theorem affine_test_mul_fderiv {Ω : Set ℂ} {φ : ℂ → ℂ}
     ((hasFDerivAt_id z).sub_const p).mul
       (hφ.1.differentiable (by simp) z).hasFDerivAt
   rw [hd.fderiv]
-  simp only [ContinuousLinearMap.add_apply,
-    ContinuousLinearMap.smul_apply, ContinuousLinearMap.id_apply, smul_eq_mul]
+  simp
   ring
 
 /-- The affine weak product rule follows from the original weak-gradient
@@ -125,9 +124,9 @@ theorem isWeakGradient_neumannAffineL2Multiplier {Ω : Set ℂ} (p : ℂ) {B : �
         filter_upwards [Lp.coeFn_add (neumannAffineL2Multiplier p hB (g i))
             (coordDir i • u), Lp.coeFn_smul (coordDir i) u] with z hadd hsmul
         rw [hadd]
-        simp only [Pi.add_apply]
+        simp
         rw [hsmul]
-        simp only [Pi.smul_apply, smul_eq_mul]
+        simp
         ring
       _ = _ := by rw [integral_add hig (hiu.const_mul _), integral_const_mul]
   rw [hleft, hright] at hweak
@@ -166,15 +165,15 @@ def affineH1Lin {Ω : Set ℂ} (p : ℂ) {B : ℝ}
   toFun := affineH1Vector p hB
   map_add' u v := by
     apply affine_h1_ext
-    · simp only [affineH1Vector_value, map_add]
+    · simp [affineH1Vector_value, map_add]
     · intro i
-      simp only [affineH1Vector_gradient, map_add, smul_add]
+      simp [affineH1Vector_gradient, map_add, smul_add]
       abel
   map_smul' c u := by
     apply affine_h1_ext
-    · simp only [affineH1Vector_value, map_smul, RingHom.id_apply]
+    · simp [affineH1Vector_value, map_smul, RingHom.id_apply]
     · intro i
-      simp only [affineH1Vector_gradient, map_smul, smul_add, RingHom.id_apply]
+      simp [affineH1Vector_gradient, map_smul, smul_add, RingHom.id_apply]
       rw [smul_comm]
 
 private theorem affineH1Lin_value {Ω : Set ℂ} (p : ℂ) {B : ℝ}
@@ -223,9 +222,9 @@ private theorem affine_real_three_component_norm_le {r a b c A : ℝ}
     (hs : r ^ 2 = a ^ 2 + (b ^ 2 + c ^ 2))
     (hva : a ≤ A) (hvb : b ≤ A) (hvc : c ≤ A) :
     r ≤ Real.sqrt 3 * A := by
-  have hsa : a ^ 2 ≤ A ^ 2 := pow_le_pow_left₀ ha hva 2
-  have hsb : b ^ 2 ≤ A ^ 2 := pow_le_pow_left₀ hb hvb 2
-  have hsc : c ^ 2 ≤ A ^ 2 := pow_le_pow_left₀ hc hvc 2
+  have hsa := pow_le_pow_left₀ ha hva 2
+  have hsb := pow_le_pow_left₀ hb hvb 2
+  have hsc := pow_le_pow_left₀ hc hvc 2
   apply (sq_le_sq₀ hr (mul_nonneg (Real.sqrt_nonneg _) hA)).mp
   rw [mul_pow, Real.sq_sqrt (by norm_num : (0 : ℝ) ≤ 3)]
   nlinarith
@@ -264,12 +263,12 @@ theorem affineH1Lin_norm_le {Ω : Set ℂ} (p : ℂ) {B : ℝ}
     (hB0 : 0 ≤ B) (hB : ∀ z ∈ Ω, ‖z - p‖ ≤ B) (u : NeumannH1 Ω) :
     ‖affineH1Lin p hB u‖ ≤ (Real.sqrt 3 * (B + 1)) * ‖u‖ := by
   have hv : ‖h1Value Ω (affineH1Lin p hB u)‖ ≤ (B + 1) * ‖u‖ := by
-    rw [affineH1Lin_value]
+    simp
     exact affine_real_value_norm_bound hB0 (norm_nonneg u)
       (norm_neumannAffineL2Multiplier_apply_le p hB (h1Value Ω u))
       (affine_h1_value_norm_le u)
   have hg (i : Fin 2) : ‖h1Gradient Ω i (affineH1Lin p hB u)‖ ≤ (B + 1) * ‖u‖ := by
-    rw [affineH1Lin_gradient]
+    simp
     exact affine_gradient_norm_bound (V := L2 Ω) (neumannAffineL2Multiplier p hB)
       (h1Gradient Ω i u) (h1Value Ω u) (coordDir i) hB0
       (norm_neumannAffineL2Multiplier_apply_le p hB (h1Gradient Ω i u))
@@ -282,8 +281,7 @@ theorem affineH1Lin_norm_le {Ω : Set ℂ} (p : ℂ) {B : ℝ}
 
 /-- Affine multiplication in genuine H¹ from a specified physical bound. -/
 def neumannH1AffineMultiplierOfBound {Ω : Set ℂ} (p : ℂ) {B : ℝ}
-    (hB0 : 0 ≤ B) (hB : ∀ z ∈ Ω, ‖z - p‖ ≤ B) : NeumannH1 Ω →L[ℂ] NeumannH1 Ω := by
-  exact (affineH1Lin p hB).mkContinuous (Real.sqrt 3 * (B + 1))
+    (hB0 : 0 ≤ B) (hB : ∀ z ∈ Ω, ‖z - p‖ ≤ B) : NeumannH1 Ω →L[ℂ] NeumannH1 Ω := (affineH1Lin p hB).mkContinuous (Real.sqrt 3 * (B + 1))
     (affineH1Lin_norm_le p hB0 hB)
 
 theorem neumannH1AffineMultiplierOfBound_apply {Ω : Set ℂ} (p : ℂ) {B : ℝ}

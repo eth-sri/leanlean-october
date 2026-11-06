@@ -101,13 +101,12 @@ theorem rectangular_interval_point_norm_sq_le {a b : ℝ} (hab : a < b)
     {t : ℝ} (ht : t ∈ Ioo a b) :
     ‖v t‖ ^ 2 ≤ (2 / (b - a)) * (∫ s in Ioo a b, ‖v s‖ ^ 2) +
       2 * (b - a) * (∫ s in Ioo a b, ‖dv s‖ ^ 2) := by
-  have hE : 0 ≤ ∫ s in Ioo a b, ‖dv s‖ ^ 2 := integral_nonneg (fun _ => sq_nonneg _)
   have hp (s : ℝ) (hs : s ∈ Ioo a b) :
       ‖v t‖ ^ 2 ≤ 2 * ‖v s‖ ^ 2 +
         2 * (b - a) * (∫ r in Ioo a b, ‖dv r‖ ^ 2) := by
     have hdiff := rectangular_interval_sub_norm_sq_le hv hdv hd hmd hs ht
     have habs : |t - s| ≤ b - a := abs_le.mpr (by constructor <;> linarith [hs.1, hs.2, ht.1, ht.2])
-    have hdiff' := hdiff.trans (mul_le_mul_of_nonneg_right habs hE)
+    have hdiff' := hdiff.trans (mul_le_mul_of_nonneg_right habs (integral_nonneg (fun _ => sq_nonneg _)))
     have hsum := rectangular_norm_add_sq_le (v s) (v t - v s)
     have heq : v s + (v t - v s) = v t := by abel
     rw [heq] at hsum
@@ -140,8 +139,7 @@ theorem rectangularL2Energy_nonneg (a b c d : ℝ) (f : ℝ × ℝ → ℂ) :
     0 ≤ rectangularL2Energy a b c d f := integral_nonneg (fun _ => sq_nonneg _)
 
 theorem rectangularL2Energy_swap (a b c d : ℝ) (f : ℝ × ℝ → ℂ) :
-    rectangularL2Energy c d a b (fun p => f (p.2, p.1)) = rectangularL2Energy a b c d f := by
-  exact integral_prod_swap (fun p => ‖f p‖ ^ 2)
+    rectangularL2Energy c d a b (fun p => f (p.2, p.1)) = rectangularL2Energy a b c d f := integral_prod_swap (fun p => ‖f p‖ ^ 2)
 
 /-- Every vertical slice has finite energy, including the slices which
 Fubini alone does not select. The horizontal FTC bounds remove the
@@ -313,12 +311,11 @@ theorem rectangular_mixed_uniformContinuousOn {a b c d : ℝ} (hab : a < b) (hcd
   have hEx := rectangularL2Energy_nonneg a b c d ux
   have hEy := rectangularL2Energy_nonneg a b c d uy
   have hExy := rectangularL2Energy_nonneg a b c d uxy
-  have hX : 0 < b - a := sub_pos.mpr hab
-  have hY : 0 < d - c := sub_pos.mpr hcd
+  have hX := sub_pos.mpr hab
+  have hY := sub_pos.mpr hcd
   have hBx : 0 ≤ Bx := by dsimp [Bx]; positivity
   have hBy : 0 ≤ By := by dsimp [By]; positivity
   let C := 2 * Bx + 2 * By
-  have hC : 0 ≤ C := by dsimp [C]; positivity
   rw [Metric.uniformContinuousOn_iff]
   intro ε hε
   refine ⟨ε ^ 2 / (C + 1), div_pos (sq_pos_of_pos hε) (by positivity), ?_⟩
@@ -330,11 +327,8 @@ theorem rectangular_mixed_uniformContinuousOn {a b c d : ℝ} (hab : a < b) (hcd
   have hsnd : |p.2 - q.2| ≤ dist p q := by
     rw [Prod.dist_eq, ← Real.dist_eq]
     exact le_max_right _ _
-  have hquad : ‖u p - u q‖ ^ 2 ≤ C * dist p q := by
-    change ‖u p - u q‖ ^ 2 ≤ (2 * Bx + 2 * By) * dist p q
-    change ‖u p - u q‖ ^ 2 ≤ 2 * |p.1 - q.1| * Bx + 2 * |p.2 - q.2| * By at hsub
-    nlinarith [mul_le_mul_of_nonneg_right hfst hBx, mul_le_mul_of_nonneg_right hsnd hBy]
-  have hsmall : dist p q * (C + 1) < ε ^ 2 := (lt_div_iff₀ (by positivity)).mp hpq
+
+  have hsmall := (lt_div_iff₀ (by positivity)).mp hpq
   rw [dist_eq_norm]
   nlinarith [(dist_nonneg : 0 ≤ dist p q), norm_nonneg (u p - u q)]
 
@@ -357,8 +351,8 @@ theorem rectangular_mixed_exists_continuous_extension {a b c d : ℝ} (hab : a <
   have hdense : DenseRange e := (denseRange_inclusion_iff subset_closure).mpr subset_rfl
   have huc : UniformContinuous (fun p : R => u p) :=
     uniformContinuousOn_iff_restrict.mp (rectangular_mixed_uniformContinuousOn hab hcd h hx hy hxy)
-  let V : closure R → ℂ := (he.isDenseInducing hdense).extend (fun p : R => u p)
-  have hV : Continuous V := (uniformContinuous_uniformly_extend he hdense huc).continuous
+  let V := (he.isDenseInducing hdense).extend (fun p : R => u p)
+  have hV := (uniformContinuous_uniformly_extend he hdense huc).continuous
   have hVe (p : R) : V (e p) = u p := uniformly_extend_of_ind he hdense huc p
   have hclosed : closure R = Icc a b ×ˢ Icc c d := by
     dsimp [R]
@@ -386,10 +380,9 @@ theorem rectangular_mixed_exists_continuous_extension {a b c d : ℝ} (hab : a <
   refine ⟨v, hclosed ▸ hv, ?_, ?_⟩
   · intro p hp
     have hpc : p ∈ closure R := subset_closure hp
-    have hep : e ⟨p, hp⟩ = ⟨p, hpc⟩ := rfl
-    simpa only [v, dif_pos hpc, hep] using hVe ⟨p, hp⟩
+    simpa only [v, dif_pos hpc, (rfl)] using hVe ⟨p, hp⟩
   · intro p hp
-    have hpc : p ∈ closure R := hclosed.symm ▸ hp
+    have hpc := hclosed.symm ▸ hp
     simpa only [v, dif_pos hpc] using hbound ⟨p, hpc⟩
 
 /-- The genuine real-coordinate map, without an artificial measure scale. -/

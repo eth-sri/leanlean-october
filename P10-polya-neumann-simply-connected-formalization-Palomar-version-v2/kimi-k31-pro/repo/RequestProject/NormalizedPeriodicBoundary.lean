@@ -28,7 +28,7 @@ private theorem periodic_projected_trace_gram
     exact_mod_cast Real.mul_self_sqrt hc
   have hgram : Q ∘L S.starProjection ∘L adjoint Q =
       (Q.comp S.subtypeL).comp (adjoint (Q.comp S.subtypeL)) := by
-    simp only [adjoint_comp, Submodule.adjoint_subtypeL,
+    simp [adjoint_comp, Submodule.adjoint_subtypeL,
       Submodule.starProjection, comp_assoc]
   rw [hgram]
   apply ContinuousLinearMap.ext
@@ -38,7 +38,7 @@ private theorem periodic_projected_trace_gram
   simp_rw [ContinuousLinearMap.sum_apply, InnerProductSpace.rankOne_apply, inner_smul_left,
     Complex.conj_ofReal, smul_smul]
   rw [← hre]
-  simp only [Submodule.coe_sum, Submodule.coe_smul, map_sum, map_smul,
+  simp [Submodule.coe_sum, Submodule.coe_smul, map_sum, map_smul,
     adjoint_inner_right, ContinuousLinearMap.comp_apply, Submodule.subtypeL_apply,
     Finset.smul_sum, smul_smul]
   apply Finset.sum_congr rfl
@@ -54,8 +54,7 @@ theorem normalizedNeumannResidue_eq_sum_rankOne {Ω : Set ℂ}
     {ι : Type*} [Fintype ι] (b : OrthonormalBasis ι ℂ (h1ResonantSpace Ω E₀)) :
     normalizedNeumannResidue Q E₀ = ∑ i,
       InnerProductSpace.rankOne ℂ ((Real.sqrt (E₀ + 1) : ℂ) • Q (b i))
-        ((Real.sqrt (E₀ + 1) : ℂ) • Q (b i)) := by
-  exact periodic_projected_trace_gram (h1ResonantSpace Ω E₀) b Q (E₀ + 1)
+        ((Real.sqrt (E₀ + 1) : ℂ) • Q (b i)) := periodic_projected_trace_gram (h1ResonantSpace Ω E₀) b Q (E₀ + 1)
     (by linarith)
 
 theorem h1Resonant_starProjection_eq_zero_of_form_isUnit {Ω : Set ℂ} {E₀ : ℝ}
@@ -90,7 +89,7 @@ theorem normalizedNeumannBoundary_eq_pole_add_regular_on_nonresonant_set
   · exact normalizedNeumannBoundary_eq_pole_add_regular Q hb hL hE₀ hne hunit
   · have heq : E = E₀ := not_ne_iff.mp hne
     subst E
-    simp only [sub_self, Complex.ofReal_zero, inv_zero, neg_zero, zero_smul, zero_add]
+    simp
     rw [normalizedNeumannBoundary_eq_regular_at_nonresonant_reference Q hb hL hE₀ hfull]
     ext x
     simp
@@ -106,7 +105,7 @@ theorem normalizedPeriodicBoundaryFamily_eq_regular_at_nonresonant_reference
     (hL : IsLipschitzDomain Ω) (Ws : ℝ → ℝ → Ell2 →L[ℂ] Ell2)
     {E₀ : ℝ} (hE₀ : 0 ≤ E₀) (hunit : IsUnit (h1HelmholtzForm Ω E₀)) :
     normalizedPeriodicBoundaryFamily Q Ws E₀ = normalizedPeriodicRegularFamily Q E₀ Ws E₀ := by
-  simp only [normalizedPeriodicBoundaryFamily, normalizedPeriodicRegularFamily,
+  simp [normalizedPeriodicBoundaryFamily, normalizedPeriodicRegularFamily,
     normalizedNeumannBoundary_eq_regular_at_nonresonant_reference Q hb hL hE₀ hunit]
 
 theorem normalizedPeriodicBoundaryFamily_isSelfAdjoint {Ω : Set ℂ}

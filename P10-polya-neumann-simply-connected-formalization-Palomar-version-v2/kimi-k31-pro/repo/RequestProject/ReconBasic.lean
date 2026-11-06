@@ -53,7 +53,7 @@ def IsWeakGradOn (D : Set ℂ) (w : ℂ → ℂ) (g : Fin 2 → ℂ → ℂ) : P
 /-- A smooth compactly supported function is in every `Lᵖ`. -/
 lemma TestFunction.memLp' {D : Set ℂ} {φ : ℂ → ℂ} (hφ : TestFunction D φ) (p : ENNReal)
     {μ : Measure ℂ} [IsFiniteMeasureOnCompacts μ] : MemLp φ p μ :=
-  (hφ.1.continuous).memLp_of_hasCompactSupport hφ.2.1
+  hφ.1.continuous.memLp_of_hasCompactSupport hφ.2.1
 
 lemma TestFunction.mono {D D' : Set ℂ} {φ : ℂ → ℂ} (hφ : TestFunction D φ) (h : D ⊆ D') :
     TestFunction D' φ := ⟨hφ.1, hφ.2.1, hφ.2.2.trans h⟩
@@ -75,7 +75,7 @@ lemma TestFunction.add {D : Set ℂ} {φ ψ : ℂ → ℂ} (hφ : TestFunction D
 
 lemma TestFunction.const_mul {D : Set ℂ} {φ : ℂ → ℂ} (hφ : TestFunction D φ) (c : ℂ) :
     TestFunction D (fun z => c * φ z) :=
-  ⟨contDiff_const.mul hφ.1, hφ.2.1.mul_left, (tsupport_mul_subset_right).trans hφ.2.2⟩
+  ⟨contDiff_const.mul hφ.1, hφ.2.1.mul_left, tsupport_mul_subset_right.trans hφ.2.2⟩
 
 /-- The Laplacian of a test function is a test function. -/
 lemma TestFunction.lap {D : Set ℂ} {φ : ℂ → ℂ} (hφ : TestFunction D φ) :
@@ -126,8 +126,8 @@ lemma ae_eq_zero_of_integral_mul_test {U : Set ℂ} (hU : IsOpen U) {f : ℂ →
 lemma lipschitzWith_mul_of_bounded {f g : ℂ → ℂ} {Kf Kg : NNReal} (hf : LipschitzWith Kf f)
     (hg : LipschitzWith Kg g) {Cf Cg : ℝ} (hCf : ∀ z, ‖f z‖ ≤ Cf) (hCg : ∀ z, ‖g z‖ ≤ Cg) :
     ∃ K : NNReal, LipschitzWith K (fun z => f z * g z) := by
-  have hCf0 : 0 ≤ Cf := (norm_nonneg _).trans (hCf 0)
-  have hCg0 : 0 ≤ Cg := (norm_nonneg _).trans (hCg 0)
+  have hCf0 := (norm_nonneg _).trans (hCf 0)
+  have hCg0 := (norm_nonneg _).trans (hCg 0)
   refine ⟨⟨Cf * Kg + Cg * Kf, by positivity⟩, LipschitzWith.of_dist_le_mul fun x y => ?_⟩
   rw [dist_eq_norm, dist_eq_norm]
   change _ ≤ (Cf * Kg + Cg * Kf) * _
@@ -136,7 +136,7 @@ lemma lipschitzWith_mul_of_bounded {f g : ℂ → ℂ} {Kf Kg : NNReal} (hf : Li
   calc ‖f x * (g x - g y) + g y * (f x - f y)‖
       ≤ ‖f x‖ * ‖g x - g y‖ + ‖g y‖ * ‖f x - f y‖ := by
         refine (norm_add_le _ _).trans ?_
-        rw [norm_mul, norm_mul]
+        simp
     _ ≤ Cf * (Kg * ‖x - y‖) + Cg * (Kf * ‖x - y‖) := by
         have h1 := hg.dist_le_mul x y
         have h2 := hf.dist_le_mul x y

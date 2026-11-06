@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.TwoPi
 public import RequestProject.RoughVekuaTransport
 public import RequestProject.PhysicalDrivenReconstruction
 
@@ -22,7 +23,6 @@ open MeasureTheory Set Filter Metric
 open AbsolutelyContinuousOnInterval
 open scoped Topology ComplexConjugate
 
-local instance roughGaugeTwoPiPos : Fact (0 < 2 * Real.pi) := ⟨Real.two_pi_pos⟩
 local notation "μB" => volume.restrict (Ioc (0 : ℝ) (2 * Real.pi))
 
 private theorem roughGauge_c1_ac {f : ℝ → ℂ} (hf : ContDiff ℝ 1 f) :
@@ -81,7 +81,7 @@ theorem roughVekuaGauge_scaledRow_zero_split (p : BoundaryL2) (m α : ℂ) (θ :
 theorem roughVekuaGauge_scaledRow_succ_eq (p : BoundaryL2) (m α : ℂ) (n : ℕ) (θ : ℝ) :
     physicalDrivenScaledRow E (roughVekuaDrivenVector γ E W p m α) (n + 1) θ =
       physicalDrivenScaledRow E (roughVekuaRegularCorrection γ E W p m α) (n + 1) θ := by
-  simp only [physicalDrivenScaledRow, physicalDrivenRow, Nat.succ_ne_zero, if_false,
+  simp [physicalDrivenScaledRow, physicalDrivenRow, Nat.succ_ne_zero, if_false,
     roughVekuaDrivenVector_positive_coord]
 
 theorem roughVekuaGauge_partial_succ_eq (p : BoundaryL2) (m α : ℂ) (j N : ℕ) (θ : ℝ) :
@@ -116,7 +116,7 @@ theorem roughVekuaGauge_zero_split (p : BoundaryL2) (m α : ℂ) (θ : ℝ) :
     funext l
     simp only [physicalDrivenGaugeTerm, Nat.add_zero, roughVekuaGauge_scaledRow_succ_eq]
   rw [he]
-  simp only [physicalDrivenGaugeTerm, physicalDrivenPower, pow_zero, Nat.factorial_zero,
+  simp [physicalDrivenGaugeTerm, physicalDrivenPower, pow_zero, Nat.factorial_zero,
     Nat.cast_one, div_one, one_mul, Nat.zero_add, roughVekuaGauge_scaledRow_zero_split]
   ring
 
@@ -129,7 +129,7 @@ theorem roughVekuaGauge_partial_zero_split (p : BoundaryL2) (m α : ℂ) (N : �
     simpa [physicalDrivenGaugePartial, physicalDrivenGaugeTerm, physicalDrivenPower] using
       roughVekuaGauge_scaledRow_zero_split p m α θ
   | succ N ih =>
-    simp only [physicalDrivenGaugePartial, Finset.sum_range_succ] at ih ⊢
+    simp [physicalDrivenGaugePartial, Finset.sum_range_succ] at ih ⊢
     rw [ih]
     simp only [physicalDrivenGaugeTerm, Nat.add_zero, roughVekuaGauge_scaledRow_succ_eq]
     ring
@@ -139,8 +139,7 @@ variable {K : NNReal} (hK : LipschitzWith K γ) (hγ : ContDiff ℝ 1 γ)
 
 include hK hγ hW in
 theorem roughVekuaGauge_regular_memLp (p : BoundaryL2) (m α : ℂ) (j : ℕ) :
-    MemLp (physicalDrivenGauge γ E (roughVekuaRegularCorrection γ E W p m α) j) 2 μB := by
-  exact roughGauge_continuous_memLp (physicalDrivenGauge_continuousOn γ hγ.continuous E _
+    MemLp (physicalDrivenGauge γ E (roughVekuaRegularCorrection γ E W p m α) j) 2 μB := roughGauge_continuous_memLp (physicalDrivenGauge_continuousOn γ hγ.continuous E _
     (roughVekuaRegularCorrection_continuousOn hK hγ hW p m α) j)
 
 include hK hγ hW in
@@ -164,11 +163,11 @@ private theorem roughGauge_regular_row_ac (p : BoundaryL2) (m α : ℂ) (n : ℕ
   · subst n
     convert hc.const_smul (Real.sqrt 2 : ℂ) using 1 <;>
       ext θ <;>
-      simp only [physicalDrivenScaledRow, physicalDrivenRow, pow_zero, one_mul,
+      simp [physicalDrivenScaledRow, physicalDrivenRow, pow_zero, one_mul,
         if_true, innerSL_apply_apply, inner_basisVec, smul_eq_mul]
   · convert hc.const_smul (physicalDrivenQ E ^ n) using 1 <;>
       ext θ <;>
-      simp only [physicalDrivenScaledRow, physicalDrivenRow, hn, if_false,
+      simp [physicalDrivenScaledRow, physicalDrivenRow, hn, if_false,
         innerSL_apply_apply, inner_basisVec, smul_eq_mul]
 
 include hK hγ hW in
@@ -248,10 +247,10 @@ theorem roughVekuaGauge_partial_succ_ae_hasDerivAt (p : BoundaryL2) (m α : ℂ)
     rw [he]
     convert (hθ hmem).add (hp.mul (hd hmem)) using 1
     · funext s
-      simp only [physicalDrivenGaugeTerm, Nat.add_assoc, Nat.add_comm, Nat.add_left_comm,
+      simp [physicalDrivenGaugeTerm, Nat.add_assoc, Nat.add_comm, Nat.add_left_comm,
         Pi.add_apply, Pi.mul_apply]
     · rw [he]
-      simp only [physicalDrivenGaugeTerm, Nat.add_assoc, Nat.add_comm, Nat.add_left_comm]
+      simp [physicalDrivenGaugeTerm, Nat.add_assoc, Nat.add_comm, Nat.add_left_comm]
       ring
 
 include hK hγ hW in
@@ -360,7 +359,7 @@ theorem roughVekuaGauge_momentPartial_recurrence (p : BoundaryL2) (m α : ℂ)
         ((hγ.differentiable_one θ).hasDerivAt.sub_const (γ 0)).star
     convert (hθ hmem).mul (hdz.pow k) using 1
     · dsimp only [r, a, b, t, s, f]
-      simp only [Pi.pow_apply]
+      simp
       ring
   have hri : IntegrableOn r (Icc 0 (2 * Real.pi)) := by
     rw [integrableOn_Icc_iff_integrableOn_Ioc]
@@ -369,7 +368,7 @@ theorem roughVekuaGauge_momentPartial_recurrence (p : BoundaryL2) (m α : ℂ)
     hsz' hri hd (2 * Real.pi) ⟨Real.two_pi_pos.le, le_rfl⟩
   have hs0 : s 0 = 0 := roughGauge_partial_succ_zero hW p m α j N
   have hsT : s (2 * Real.pi) = 0 := roughGauge_partial_succ_endpoint p m α hα j N
-  simp only [hs0, hsT, zero_mul, zero_add] at he
+  simp [hs0, hsT, zero_mul, zero_add] at he
   have hia := intervalIntegrable_boundary_of_memLp a ha
   have hib := intervalIntegrable_boundary_of_memLp b hb
   have hit := intervalIntegrable_boundary_of_memLp t ht
@@ -407,7 +406,7 @@ theorem roughVekuaGauge_momentPartial_tendsto (p : BoundaryL2) (m α : ℂ) (j k
     simpa only [he, he'] using physicalDrivenMomentPartial_tendsto γ hγ E v hv (j + 1) k
   | zero =>
     let w : ℝ → ℂ := fun θ => conj (deriv γ θ) * conj (physicalDrivenCentered γ θ) ^ k
-    let c : ℂ := ∫ θ in (0 : ℝ)..(2 * Real.pi), w θ * (-Complex.I * p θ)
+    let c := ∫ θ in (0 : ℝ)..(2 * Real.pi), w θ * (-Complex.I * p θ)
     have hw : Continuous w := (Complex.continuous_conj.comp hγ.continuous_deriv_one).mul
       ((Complex.continuous_conj.comp (hγ.continuous.sub continuous_const)).pow k)
     have hbase : MemLp (fun θ : ℝ => w θ * (-Complex.I * p θ)) 2 μB := by
@@ -536,7 +535,7 @@ private theorem roughGauge_regular_zero_ae_hasDerivAt (p : BoundaryL2) (m α : �
       fun t : ℝ => (Real.sqrt 2 : ℂ) *
         (roughVekuaRegularCorrection γ E W p m α t : ℕ → ℂ) 0 := by
     funext t
-    simp only [physicalDrivenScaledRow, physicalDrivenRow, pow_zero, one_mul, if_true]
+    simp [physicalDrivenScaledRow, physicalDrivenRow, pow_zero, one_mul, if_true]
   rw [he]
   apply hd.congr_deriv
   simp only [lp.coeFn_add, Pi.add_apply, lp.coeFn_smul, Pi.smul_apply,
@@ -567,7 +566,7 @@ private theorem roughGauge_regular_positive_ae_hasDerivAt
   convert hθ hmem using 1
   cases n with
   | zero => rw [roughVekuaGauge_scaledRow_succ_eq, roughVekuaGauge_scaledRow_zero_split]; rfl
-  | succ n => simp only [Nat.succ_ne_zero, if_false, zero_add, roughVekuaGauge_scaledRow_succ_eq]
+  | succ n => simp [Nat.succ_ne_zero, if_false, zero_add, roughVekuaGauge_scaledRow_succ_eq]
 
 /-- The actual L2 derivative of the continuous correction gauge. The
 rough primitive occurs only multiplied by a true continuous coefficient. -/
@@ -650,11 +649,11 @@ private theorem roughGauge_regular_partial_zero_ae_hasDerivAt
       simpa only using hweighted
     convert (hθ hmem).add ((physicalDrivenPower_hasDerivAt_succ hγ (N + 1) θ).mul (hd hmem)) using 1
     · funext t
-      simp only [Pi.add_apply, Pi.mul_apply, physicalDrivenGaugeTerm]
+      simp [Pi.add_apply, Pi.mul_apply, physicalDrivenGaugeTerm]
     · rw [hweighted']
-      simp only [physicalDrivenGaugeTerm, physicalDrivenShiftedGaugeTerm,
+      simp [physicalDrivenGaugeTerm, physicalDrivenShiftedGaugeTerm,
         Nat.succ_ne_zero, if_false, zero_add, Nat.add_assoc, Nat.add_comm, Nat.add_left_comm]
-      simp only [physicalDrivenPower, physicalDrivenCentered, physicalDrivenScaledRow,
+      simp [physicalDrivenPower, physicalDrivenCentered, physicalDrivenScaledRow,
         physicalDrivenRow]
       rw [show N + 2 = (N + 1) + 1 by omega, Nat.factorial_succ]
       have hf : ((N + 1).factorial : ℂ) ≠ 0 := by
@@ -745,8 +744,8 @@ private theorem roughGauge_regular_partial_zero_primitive
       exact ha.integrable (by norm_num)
     exact (hI.mono_set hsub).intervalIntegrable
   have hti : IntervalIntegrable t volume 0 θ := (ht.mono hsub).intervalIntegrable
-  have hbi : IntervalIntegrable b volume 0 θ := (hb.mono hsub).intervalIntegrable
-  rw [intervalIntegral.integral_add (hai.add hti) (hbi.const_mul _),
+
+  rw [intervalIntegral.integral_add (hai.add hti) (((hb.mono hsub).intervalIntegrable).const_mul _),
     intervalIntegral.integral_add hai hti, intervalIntegral.integral_const_mul] at he
   simpa only [a, t, b, v, add_assoc] using he
 
@@ -887,8 +886,7 @@ derivative of the rough primitive is assumed. -/
 theorem roughVekuaGauge_regular_isSobolevSeq_one (p : BoundaryL2) (m α : ℂ)
     (hα : roughVekuaRegularCorrection γ E W p m α (2 * Real.pi) = α • basisVec 0) :
     IsSobolevSeq 1 (fourierCoeffOn Real.two_pi_pos
-      (physicalDrivenGauge γ E (roughVekuaRegularCorrection γ E W p m α) 0)) := by
-  exact isSobolevSeq_one_fourierCoeffOn_of_ac_ae_hasDerivAt
+      (physicalDrivenGauge γ E (roughVekuaRegularCorrection γ E W p m α) 0)) := isSobolevSeq_one_fourierCoeffOn_of_ac_ae_hasDerivAt
     (roughVekuaGauge_regular_absolutelyContinuous hK hγ hW p m α)
     (roughVekuaGauge_regular_derivative_memLp hK hγ hW p m α)
     (roughVekuaGauge_regular_ae_hasDerivAt hK hγ hW p m α)

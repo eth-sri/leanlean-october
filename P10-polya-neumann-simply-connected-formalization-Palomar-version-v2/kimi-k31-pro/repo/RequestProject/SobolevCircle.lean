@@ -66,7 +66,7 @@ def diagLin : L2Z →ₗ[ℂ] L2Z where
     simp [mul_add]
   map_smul' c f := by
     ext n
-    simp only [lp.coeFn_smul, Pi.smul_apply, smul_eq_mul, RingHom.id_apply]
+    simp
     show w n * (c * f n) = c * (w n * f n)
     ring
 
@@ -143,12 +143,12 @@ theorem isCompactOperator_diagOp (w : ℤ → ℂ) (C : ℝ) (hw : ∀ n, ‖w n
   rw [dist_eq_norm]
   have hd : ∀ n, ‖w n - w' n‖ ≤ ε / 2 := fun n => by
     by_cases h : n ∈ S
-    · simp only [w', h, if_true, sub_self, norm_zero]
+    · simp [w', h, if_true, sub_self, norm_zero]
       positivity
     · have : ¬ (ε / 2 ≤ ‖w n‖) := by
         intro h'
         exact h (by simpa [S] using h')
-      simp only [w', h, if_false, sub_zero]
+      simp [w', h, if_false, sub_zero]
       exact (not_le.mp this).le
   have hle : ‖diagOp w C hw - diagOp w' C hw'‖ ≤ ε / 2 := by
     refine ContinuousLinearMap.opNorm_le_bound _ (by positivity) fun f => ?_
@@ -214,7 +214,7 @@ def principalSymbol (n : ℤ) : ℂ :=
 lemma principalSymbol_pos {n : ℤ} (hn : 0 < n) : principalSymbol n = 4 + 4 / (n : ℂ) := by
   have hn' : (0 : ℝ) < n := by exact_mod_cast hn
   have hc : (n : ℂ) ≠ 0 := by exact_mod_cast hn.ne'
-  simp only [principalSymbol, hn.ne', if_false, sobWeight, abs_of_pos hn']
+  simp [principalSymbol, hn.ne', if_false, sobWeight, abs_of_pos hn']
   push_cast
   field_simp
   ring
@@ -235,7 +235,7 @@ lemma norm_principalSymbol_le (n : ℤ) : ‖principalSymbol n‖ ≤ 8 := by
         gcongr
         · simp
         · rw [norm_div, Complex.norm_intCast]
-          simp only [Complex.norm_ofNat]
+          simp
           rw [abs_of_pos (by linarith)]
           rw [div_le_iff₀ (by linarith)]
           nlinarith
@@ -277,7 +277,7 @@ theorem principal_normalized_sub_four_posProj_compact :
   refine squeeze_zero_norm (fun n => ?_) h2
   split_ifs with h
   · simp
-  · simp only [norm_zero]
+  · simp
     positivity
 
 end PolyaNeumann

@@ -66,8 +66,8 @@ lemma fourierCoeffOn_deriv {f f' : ℝ → ℂ} (hf : ∀ x, HasDerivAt f (f' x)
       (hf'.intervalIntegrable _ _), ← hper, sub_self, smul_zero]
   · rw [fourierCoeffOn_of_hasDerivAt two_pi_pos' hk (fun x _ => hf x) (hf'.intervalIntegrable _ _),
       ← hper, sub_self, mul_zero, zero_sub]
-    have hk' : (k : ℂ) ≠ 0 := Int.cast_ne_zero.mpr hk
-    have hπ : (π : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr Real.pi_ne_zero
+
+    have hπ := Complex.ofReal_ne_zero.mpr Real.pi_ne_zero
     push_cast
     field_simp
     ring_nf
@@ -78,9 +78,8 @@ lemma hasSum_fourierCoeffOn {f : ℝ → ℂ} (hc : Continuous f) (hper : f 0 = 
     HasSum (fun k : ℤ => fourierCoeffOn two_pi_pos' f k * Complex.exp (k * t * Complex.I))
       (f t) := by
   haveI : Fact (0 < 2 * π) := ⟨two_pi_pos'⟩
-  have hper' : f 0 = f (0 + 2 * π) := by rw [zero_add]; exact hper
   set F : C(AddCircle (2 * π), ℂ) :=
-    ⟨AddCircle.liftIco (2 * π) 0 f, AddCircle.liftIco_continuous hper' hc.continuousOn⟩ with hF
+    ⟨AddCircle.liftIco (2 * π) 0 f, AddCircle.liftIco_continuous (by simp; exact hper) hc.continuousOn⟩ with hF
   have hcoef : fourierCoeff F = fourierCoeffOn two_pi_pos' f := by
     funext k
     have key : ∀ (b : ℝ) (hb : 0 < b), b = 2 * π →
@@ -105,7 +104,7 @@ lemma fourierCoeffOn_neg_of_real (g : ℝ → ℝ) (k : ℤ) :
     Complex.real_smul, map_mul, Complex.conj_ofReal, ← integral_conj]
   congr 2
   funext x
-  rw [smul_eq_mul, smul_eq_mul, map_mul, Complex.conj_ofReal, fourier_neg, Complex.conj_conj]
+  simp
 
 /-- Absolute summability of the Fourier coefficients of the derivative of a periodic function with
 three continuous derivatives (periodic up to order two). -/
@@ -113,8 +112,8 @@ lemma summable_norm_fourierCoeffOn_deriv {f f1 f2 f3 : ℝ → ℂ} (h1 : ∀ x,
     (h2 : ∀ x, HasDerivAt f1 (f2 x) x) (h3 : ∀ x, HasDerivAt f2 (f3 x) x) (hc3 : Continuous f3)
     (p0 : f 0 = f (2 * π)) (p1 : f1 0 = f1 (2 * π)) (p2 : f2 0 = f2 (2 * π)) :
     Summable (fun k => ‖fourierCoeffOn two_pi_pos' f1 k‖) := by
-  have hc1 : Continuous f1 := continuous_iff_continuousAt.mpr fun x => (h2 x).continuousAt
-  have hc2 : Continuous f2 := continuous_iff_continuousAt.mpr fun x => (h3 x).continuousAt
+  have hc1 := continuous_iff_continuousAt.mpr fun x => (h2 x).continuousAt
+  have hc2 := continuous_iff_continuousAt.mpr fun x => (h3 x).continuousAt
   obtain ⟨M, hM⟩ := isCompact_Icc.exists_bound_of_continuousOn (s := Icc 0 (2 * π)) hc3.continuousOn
   have hb : ∀ k : ℤ, ‖fourierCoeffOn two_pi_pos' f1 k‖ ≤ M * (1 / (k : ℝ) ^ 2) := by
     intro k
@@ -127,8 +126,8 @@ lemma summable_norm_fourierCoeffOn_deriv {f f1 f2 f3 : ℝ → ℂ} (h1 : ∀ x,
     · have hk' : (k : ℝ) ≠ 0 := Int.cast_ne_zero.mpr hk
       have hb3 := norm_fourierCoeffOn_le hM k
       rw [e3, e2] at hb3
-      simp only [norm_mul, Complex.norm_I, Complex.norm_intCast, one_mul] at hb3
-      have hpos : 0 < |(k : ℝ)| := abs_pos.mpr hk'
+      simp at hb3
+      have hpos := abs_pos.mpr hk'
       rw [one_div, ← div_eq_mul_inv, le_div_iff₀ (by positivity), ← sq_abs]
       have : ‖fourierCoeffOn two_pi_pos' f1 k‖ * |(k : ℝ)| ^ 2 =
           |(k : ℝ)| * (|(k : ℝ)| * ‖fourierCoeffOn two_pi_pos' f1 k‖) := by ring
@@ -153,11 +152,10 @@ lemma exists_cut_bump {ε δ : ℝ} (hδ : 0 < δ) (hδε : δ < ε) (hεδ : ε
     exact ht ⟨by linarith [hb.1], by linarith [hb.2]⟩
   · rw [← notMem_tsupport_iff_eventuallyEq, f.tsupport_normed_eq]
     simp only [Metric.mem_closedBall, Real.dist_eq, zero_sub, abs_neg, not_le]
-    show f.rOut < |ε|
     rw [abs_of_pos (by linarith)]
     exact hδε
   · rw [← notMem_tsupport_iff_eventuallyEq, f.tsupport_normed_eq]
-    simp only [Metric.mem_closedBall, Real.dist_eq, not_le]
+    simp
     show f.rOut < |2 * π - ε|
     rw [abs_of_pos (by linarith)]
     linarith
@@ -191,10 +189,10 @@ theorem exists_cutFourier {ε r : ℝ} (hε0 : 0 < ε) (hε : ε < 2 * π) (hr :
   have hεδ : ε + δ < 2 * π := by
     have := min_le_right ε (2 * π - ε); have := lt_min hε0 (sub_pos.mpr hε); linarith
   obtain ⟨ρ, hρ, hρ0, hρint, hρe0, hρe2⟩ := exists_cut_bump hδ hδε hεδ
-  have hρd : Differentiable ℝ ρ := hρ.differentiable (by simp)
-  have hρ' : ContDiff ℝ (⊤ : ℕ∞) (deriv ρ) := (contDiff_infty_iff_deriv.mp hρ).2
-  have hρd' : Differentiable ℝ (deriv ρ) := hρ'.differentiable (by simp)
-  have hρc'' : Continuous (deriv (deriv ρ)) := (contDiff_infty_iff_deriv.mp hρ').2.continuous
+  have hρd := hρ.differentiable (by simp)
+  have hρ' := (contDiff_infty_iff_deriv.mp hρ).2
+  have hρd' := hρ'.differentiable (by simp)
+  have hρc'' := (contDiff_infty_iff_deriv.mp hρ').2.continuous
   set h : ℝ → ℝ := fun t => t - 2 * π * ∫ s in (0 : ℝ)..t, ρ s with hh
   set F : ℝ → ℂ := fun t => (h t : ℂ) with hF
   set F1 : ℝ → ℂ := fun t => ((1 - 2 * π * ρ t : ℝ) : ℂ) with hF1
@@ -205,19 +203,19 @@ theorem exists_cutFourier {ε r : ℝ} (hε0 : 0 < ε) (hε : ε < 2 * π) (hr :
       (2 * π))).ofReal_comp
   have d2 : ∀ x, HasDerivAt F1 (F2 x) x := fun x =>
     ((((hρd x).hasDerivAt).const_mul (2 * π)).const_sub 1).ofReal_comp
-  have d3 : ∀ x, HasDerivAt F2 (F3 x) x := fun x =>
+  have d3 := fun x =>
     (((hρd' x).hasDerivAt).const_mul (2 * π)).neg.ofReal_comp
-  have hc1 : Continuous F1 := continuous_iff_continuousAt.mpr fun x => (d2 x).continuousAt
+  have hc1 := continuous_iff_continuousAt.mpr fun x => (d2 x).continuousAt
   have hc3 : Continuous F3 := by rw [hF3]; fun_prop
   have hdρ0 : deriv ρ 0 = 0 := by rw [hρe0.deriv_eq]; simp
   have hdρ2 : deriv ρ (2 * π) = 0 := by rw [hρe2.deriv_eq]; simp
   have p0 : F 0 = F (2 * π) := by
     simp only [hF, hh, intervalIntegral.integral_same, hρint]; push_cast; ring
   have p1 : F1 0 = F1 (2 * π) := by
-    simp only [hF1, hρe0.eq_of_nhds, hρe2.eq_of_nhds, Pi.zero_apply]
-  have p2 : F2 0 = F2 (2 * π) := by simp only [hF2, hdρ0, hdρ2]
-  have hs1 := summable_norm_fourierCoeffOn_deriv d1 d2 d3 hc3 p0 p1 p2
-  set C : ℤ → ℂ := fourierCoeffOn two_pi_pos' F with hC
+    simp [hF1, hρe0.eq_of_nhds, hρe2.eq_of_nhds, Pi.zero_apply]
+
+  have hs1 := summable_norm_fourierCoeffOn_deriv d1 d2 d3 hc3 p0 p1 (by simp [hF2, hdρ0, hdρ2])
+  set C := fourierCoeffOn two_pi_pos' F with hC
   have hC1 : ∀ k : ℤ, fourierCoeffOn two_pi_pos' F1 k = (Complex.I * k) * C k :=
     fourierCoeffOn_deriv d1 hc1 p0
   have hCneg : ∀ k : ℤ, C (-k) = conj (C k) := fun k => fourierCoeffOn_neg_of_real h k
@@ -236,7 +234,7 @@ theorem exists_cutFourier {ε r : ℝ} (hε0 : 0 < ε) (hε : ε < 2 * π) (hr :
   · have := hs1.comp_injective Nat.cast_injective
     refine this.congr (fun n => ?_)
     simp only [Function.comp, hC1, norm_mul, Complex.norm_I, one_mul]
-    rw [Int.cast_natCast, Complex.norm_natCast]
+    simp
   -- the angle of `z`
   set t := argNeg z + 2 * π with ht
   have hz_exp : Complex.exp (t * Complex.I) = z := by
@@ -256,10 +254,10 @@ theorem exists_cutFourier {ε r : ℝ} (hε0 : 0 < ε) (hε : ε < 2 * π) (hr :
     rw [hz_exp] at this
     linarith
   -- values of `h` and `h'` at `t`
-  have hρt : ρ t = 0 := hρ0 t htε
+  have hρt := hρ0 t htε
   have hF1t : F1 t = 1 := by simp [hF1, hρt]
   have hFt : F t = (argCut ε z : ℂ) := by
-    simp only [hF]
+    simp [hF]
     congr 1
     rw [argCut, ← ht]
     split_ifs with hlt
@@ -269,7 +267,7 @@ theorem exists_cutFourier {ε r : ℝ} (hε0 : 0 < ε) (hε : ε < 2 * π) (hr :
         refine intervalIntegral.integral_zero_ae (Eventually.of_forall fun s hs => ?_)
         rw [uIoc_of_le ht_mem.1] at hs
         exact hρ0 s (by rw [abs_sub_comm, abs_of_pos (by linarith [hs.2])]; linarith [hs.2])
-      rw [hh]; simp only [this, mul_zero, sub_zero]
+      rw [hh]; simp [this, mul_zero, sub_zero]
     · have hge : ε + δ ≤ t := by
         rcases le_abs'.mp htε with h1 | h1
         · exfalso; linarith
@@ -282,10 +280,10 @@ theorem exists_cutFourier {ε r : ℝ} (hε0 : 0 < ε) (hε : ε < 2 * π) (hr :
         (hρ.continuous.intervalIntegrable (μ := volume) 0 t)
         (hρ.continuous.intervalIntegrable (μ := volume) t (2 * π))
       rw [hρint, h2, add_zero] at hsplit
-      rw [hh]; simp only [hsplit, mul_one]
+      rw [hh]; simp [hsplit, mul_one]
       rw [ht]; ring
   -- Fourier series
-  have hcF : Continuous F := continuous_iff_continuousAt.mpr fun x => (d1 x).continuousAt
+  have hcF := continuous_iff_continuousAt.mpr fun x => (d1 x).continuousAt
   have hpow : ∀ n : ℕ, Complex.exp (((n : ℤ) : ℂ) * t * Complex.I) = z ^ n := by
     intro n
     rw [← hz_exp, ← Complex.exp_nat_mul]
@@ -305,7 +303,7 @@ theorem exists_cutFourier {ε r : ℝ} (hε0 : 0 < ε) (hε : ε < 2 * π) (hr :
   have hB := (hasSum_fourierCoeffOn hcF p0 hsC ⟨le_rfl, two_pi_pos'⟩).nat_add_neg
   rw [← hC] at hA hB
   simp only [hpow, hpowneg, hCneg] at hA
-  simp only [hpow0, hpowneg0, hCneg, mul_one] at hB
+  simp [hpow0, hpowneg0, hCneg, mul_one] at hB
   have hF0 : F 0 = 0 := by simp [hF, hh]
   refine ⟨?_, ?_⟩
   · have hD := hA.sub hB
@@ -318,7 +316,7 @@ theorem exists_cutFourier {ε r : ℝ} (hε0 : 0 < ε) (hε : ε < 2 * π) (hr :
     funext n
     rw [← map_mul, Complex.add_conj, Complex.add_conj]
     push_cast
-    simp only [mul_sub, mul_one, Complex.sub_re]
+    simp
     push_cast
     ring
   · have hsC1 : Summable (fourierCoeffOn two_pi_pos' F1) := hs1.of_norm

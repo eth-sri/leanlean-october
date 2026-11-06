@@ -54,7 +54,7 @@ theorem isWeakGradient_of_contDiffOn {U : Set ℂ} (hU : IsOpen U) {F : ℂ → 
     rw [hz]
     by_cases hzs : z ∈ tsupport φ
     · rw [(hGF z hzs).self_of_nhds]
-    · simp only [fderiv_of_notMem_tsupport (𝕜 := ℝ) hzs,
+    · simp [fderiv_of_notMem_tsupport (𝕜 := ℝ) hzs,
         ContinuousLinearMap.zero_apply, mul_zero]
   have hright :
       (fun z => (((hGg i).toLp _ : L2 U) : ℂ → ℂ) z * φ z)
@@ -64,7 +64,7 @@ theorem isWeakGradient_of_contDiffOn {U : Set ℂ} (hU : IsOpen U) {F : ℂ → 
     rw [hz]
     by_cases hzs : z ∈ tsupport φ
     · rw [(hGF z hzs).fderiv_eq (𝕜 := ℝ)]
-    · simp only [image_eq_zero_of_notMem_tsupport hzs, mul_zero]
+    · simp [image_eq_zero_of_notMem_tsupport hzs, mul_zero]
   rw [integral_congr_ae hleft, integral_congr_ae hright] at hweak
   have huleft :
       (fun z => ((hu.toLp F : L2 U) : ℂ → ℂ) z *

@@ -25,10 +25,7 @@ namespace PolyaNeumann
 def signedDist (Ω : Set ℂ) (z : ℂ) : ℝ := infDist z Ωᶜ - infDist z Ω
 
 lemma lipschitzWith_signedDist (Ω : Set ℂ) : LipschitzWith 2 (signedDist Ω) := by
-  have h := (lipschitz_infDist_pt (Ωᶜ)).sub (lipschitz_infDist_pt Ω)
-  have : ((1 : NNReal) + 1) = 2 := by norm_num
-  rw [this] at h
-  exact h
+  convert (lipschitz_infDist_pt (Ωᶜ)).sub (lipschitz_infDist_pt Ω) using 1 <;> norm_num <;> rfl
 
 lemma continuous_signedDist (Ω : Set ℂ) : Continuous (signedDist Ω) :=
   (lipschitzWith_signedDist Ω).continuous
@@ -54,15 +51,13 @@ lemma signedDist_pos_iff {Ω : Set ℂ} (hΩo : IsOpen Ω) (hΩu : Ωᶜ.Nonempt
 
 lemma signedDist_eq_zero_of_frontier {Ω : Set ℂ} (hΩo : IsOpen Ω) {z : ℂ}
     (hz : z ∈ frontier Ω) : signedDist Ω z = 0 := by
-  have hz' : z ∉ Ω := fun h => (hΩo.frontier_eq ▸ hz).2 (hΩo.interior_eq.symm ▸ h)
-  rw [signedDist_of_notMem hz', ← infDist_closure,
+  rw [signedDist_of_notMem (fun h => (hΩo.frontier_eq ▸ hz).2 (hΩo.interior_eq.symm ▸ h)), ← infDist_closure,
     infDist_zero_of_mem (frontier_subset_closure hz), neg_zero]
 
 /-- `|d_Ω(z)| ≤ |z - p|` for a boundary point `p` (both distances are dominated). -/
 lemma infDist_compl_le_of_frontier {Ω : Set ℂ} (hΩo : IsOpen Ω) {p z : ℂ}
     (hp : p ∈ frontier Ω) : infDist z Ωᶜ ≤ ‖z - p‖ := by
-  have hp' : p ∈ Ωᶜ := fun h => (hΩo.frontier_eq ▸ hp).2 (hΩo.interior_eq.symm ▸ h)
-  rw [← dist_eq_norm]; exact infDist_le_dist_of_mem hp'
+  rw [← dist_eq_norm]; exact infDist_le_dist_of_mem (fun h => (hΩo.frontier_eq ▸ hp).2 (hΩo.interior_eq.symm ▸ h))
 
 lemma infDist_le_of_frontier {Ω : Set ℂ} {p z : ℂ} (hp : p ∈ frontier Ω) :
     infDist z Ω ≤ ‖z - p‖ := by
@@ -95,10 +90,9 @@ lemma signedDist_add_le_of_chart_mem {Ω : Set ℂ} (hΩo : IsOpen Ω) (hΩu : �
     signedDist Ω z + t / (2 * (K + 1)) ≤ signedDist Ω (z + t * (conj c * Complex.I)) := by
   set n : ℂ := conj c * Complex.I
   set κ : ℝ := 1 / (2 * (K + 1)) with hκ
-  have hK0 : (0 : ℝ) ≤ K := K.2
-  have hκ0 : 0 < κ := by positivity
-  have hκ1 : κ ≤ 1 / 2 := by
-    rw [hκ]; apply div_le_div_of_nonneg_left <;> nlinarith
+
+
+
   set e := infDist z Ωᶜ with he
   have he0 : 0 < e := (hΩo.isClosed_compl.notMem_iff_infDist_pos hΩu).mp (fun h => h hzΩ)
   have hep : e ≤ ‖z - p‖ := infDist_compl_le_of_frontier hΩo hp
@@ -141,7 +135,7 @@ lemma signedDist_add_le_of_chart_mem {Ω : Set ℂ} (hΩo : IsOpen Ω) (hΩu : �
       exact mul_le_mul_of_nonneg_left hq.le (by positivity)
     have := chart_shift_mem hch htp htr hth hq'Ω hq'p hs
     simpa using this
-  have hcen : z + t * n ∈ Ω := hball (mem_ball_self (by positivity))
+  have hcen := hball (mem_ball_self (by positivity))
   rw [signedDist_of_mem hzΩ, signedDist_of_mem hcen]
   rw [le_infDist hΩu]
   intro y hy
@@ -161,8 +155,8 @@ lemma signedDist_add_le_of_chart_notMem {Ω : Set ℂ} (hΩne : Ω.Nonempty)
   have hn1 : ‖n‖ = 1 := by
     simp [n, hch.1]
   set κ : ℝ := 1 / (2 * (K + 1)) with hκ
-  have hK0 : (0 : ℝ) ≤ K := K.2
-  have hκ0 : 0 < κ := by positivity
+
+
   have hκ1 : κ ≤ 1 / 2 := by
     rw [hκ]; apply div_le_div_of_nonneg_left <;> nlinarith
   have htdiv : t / (2 * (K + 1)) = κ * t := by rw [hκ]; ring
@@ -173,7 +167,7 @@ lemma signedDist_add_le_of_chart_notMem {Ω : Set ℂ} (hΩne : Ω.Nonempty)
   set e := infDist w Ω with he
   have he0 : 0 ≤ e := infDist_nonneg
   have hwp : ‖w - p‖ ≤ ‖z - p‖ + t := by
-    have : w - p = (z - p) + t * n := by simp only [w]; ring
+    have : w - p = (z - p) + t * n := by simp [w]; ring
     rw [this]
     refine (norm_add_le _ _).trans ?_
     rw [norm_mul, hn1, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg ht0, mul_one]
@@ -214,10 +208,8 @@ lemma signedDist_add_le_of_chart_notMem {Ω : Set ℂ} (hΩne : Ω.Nonempty)
       rw [hqq, norm_neg, norm_mul, Complex.norm_real, Real.norm_eq_abs,
         abs_of_nonneg (by positivity), htdiv, div_mul_eq_mul_div, div_le_iff₀ hpos]
       exact mul_le_mul_of_nonneg_left hq.le (by positivity)
-    have htr' : t ≤ r := by linarith [min_le_left r h]
-    have hth' : t ≤ h / 3 := by linarith [min_le_right r h]
-    have := chart_shift_mem hch htp htr' hth' hqΩ hqp hs
-    simp only [add_sub_cancel] at this
+    have := chart_shift_mem hch htp (by linarith [min_le_left r h]) (by linarith [min_le_right r h]) hqΩ hqp hs
+    simp at this
     exact hq'Ω this
   have : e + κ * t ≤ infDist z Ω := by
     rw [le_infDist hΩne]
@@ -239,8 +231,8 @@ theorem signedDist_add_le_of_chart {Ω : Set ℂ} (hΩo : IsOpen Ω) (hΩne : Ω
   have hn1 : ‖n‖ = 1 := by simp [n, hch.1]
   have hr := hch.2.1
   have hh := hch.2.2.1
-  have hmin : 0 < min r h := lt_min hr hh
-  have hK0 : (0 : ℝ) ≤ K := K.2
+  have hmin := lt_min hr hh
+
   have hpt : ∀ s : ℝ, 0 ≤ s → ‖z + s * n - p‖ ≤ ‖z - p‖ + s := fun s hs => by
     have : z + s * n - p = (z - p) + s * n := by ring
     rw [this]
@@ -257,17 +249,16 @@ theorem signedDist_add_le_of_chart {Ω : Set ℂ} (hΩo : IsOpen Ω) (hΩne : Ω
   have hSc : IsClosed S := by
     refine isClosed_Icc.inter ?_
     exact hΩo.isClosed_compl.preimage (by fun_prop)
-  have hS0 : (0 : ℝ) ∈ S := ⟨⟨le_rfl, ht0⟩, by simpa using hzΩ⟩
   have hSb : BddAbove S := ⟨t, fun s hs => hs.1.2⟩
   set t₁ := sSup S
-  have ht₁S : t₁ ∈ S := hSc.csSup_mem ⟨0, hS0⟩ hSb
-  have ht₁0 : 0 ≤ t₁ := ht₁S.1.1
-  have ht₁t : t₁ ≤ t := ht₁S.1.2
-  have hlt : t₁ < t := lt_of_le_of_ne ht₁t (fun h => ht₁S.2 (h ▸ hwΩ))
+  have ht₁S : t₁ ∈ S := hSc.csSup_mem ⟨0, (⟨⟨le_rfl, ht0⟩, by simpa using hzΩ⟩)⟩ hSb
+  have ht₁0 := ht₁S.1.1
+  have ht₁t := ht₁S.1.2
+  have hlt := lt_of_le_of_ne ht₁t (fun h => ht₁S.2 (h ▸ hwΩ))
   -- outside part
   have h1 : signedDist Ω z + t₁ / (2 * (K + 1)) ≤ signedDist Ω (z + t₁ * n) :=
     signedDist_add_le_of_chart_notMem hΩne hch hp hzΩ ht₁S.2 hz ht₁0 (by linarith)
-  have h1' : signedDist Ω (z + t₁ * n) ≤ 0 := signedDist_nonpos_of_notMem ht₁S.2
+  have h1' := signedDist_nonpos_of_notMem ht₁S.2
   -- inside part: from every later time
   have h2 : ∀ s ∈ Ioc t₁ t, (t - s) / (2 * (K + 1)) ≤ signedDist Ω (z + t * n) := by
     intro s hs

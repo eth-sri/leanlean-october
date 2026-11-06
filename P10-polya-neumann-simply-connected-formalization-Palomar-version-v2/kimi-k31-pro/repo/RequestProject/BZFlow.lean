@@ -62,7 +62,7 @@ lemma IsShortFlow.norm_sub_le (hΦ : IsShortFlow X Φ) (hM : ∀ z, ‖X z‖ �
   have := (convex_Ioo (-3 : ℝ) 3).norm_image_sub_le_of_norm_hasDerivWithin_le
     (f := fun u => Φ u x) (fun u hu => (hΦ.deriv x u hu).hasDerivWithinAt)
     (fun u _ => hM _) hs ht
-  simpa [Real.norm_eq_abs] using this
+  simpa using this
 
 lemma IsShortFlow.norm_sub_self_le (hΦ : IsShortFlow X Φ) (hM : ∀ z, ‖X z‖ ≤ M) (x : ℂ) {t : ℝ}
     (ht : t ∈ Ioo (-3 : ℝ) 3) : ‖Φ t x - x‖ ≤ M * |t| := by
@@ -140,12 +140,12 @@ lemma IsShortFlow.norm_sub_sub_le (hΦ : IsShortFlow X Φ) (hX : LipschitzWith L
         rw [abs_of_nonneg hu.1, abs_of_nonneg h]; exact hu.2
       · rw [uIcc_of_ge h] at hu
         rw [abs_of_nonpos hu.2, abs_of_nonpos h]; linarith [hu.1]
-    have hM0 : 0 ≤ M := (norm_nonneg _).trans (hM 0)
+    have hM0 := (norm_nonneg _).trans (hM 0)
     calc ‖X (Φ u x) - X x‖ ≤ LX * (M * |u|) := h1.trans (by gcongr)
       _ ≤ LX * M * |t| := by rw [← mul_assoc]; gcongr
   have := (convex_uIcc (0 : ℝ) t).norm_image_sub_le_of_norm_hasDerivWithin_le hd hb
     left_mem_uIcc right_mem_uIcc
-  simp only [hΦ.zero, Complex.ofReal_zero, zero_mul, sub_zero, Real.norm_eq_abs] at this
+  simp [hΦ.zero, Complex.ofReal_zero, zero_mul, sub_zero, Real.norm_eq_abs] at this
   calc ‖Φ t x - x - t * X x‖ = ‖Φ t x - t * X x - x‖ := by ring_nf
     _ ≤ LX * M * |t| * |t| := this
     _ = LX * M * t ^ 2 := by rw [mul_assoc, ← sq, sq_abs]

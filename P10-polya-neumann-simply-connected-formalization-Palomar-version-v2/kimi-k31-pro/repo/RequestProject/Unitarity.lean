@@ -63,8 +63,8 @@ theorem eq_add_integral_of_ae_hasDerivAt {E : Type*} [NormedAddCommGroup E]
     (hgB : ∀ x ∈ Icc 0 L, ‖g x‖ ≤ B)
     (hd : ∀ᵐ x, x ∈ Ioo 0 L → HasDerivAt f (g x) x) :
     ∀ θ ∈ Icc 0 L, f θ = f 0 + ∫ s in (0 : ℝ)..θ, g s := by
-  set G : ℝ → E := (Icc 0 L).indicator g
-  have hGi : Integrable G := hg.integrable_indicator measurableSet_Icc
+  set G := (Icc 0 L).indicator g
+  have hGi := hg.integrable_indicator measurableSet_Icc
   have hGB : ∀ x, ‖G x‖ ≤ max B 0 := fun x => by
     by_cases hx : x ∈ Icc 0 L
     · simp only [G, indicator_of_mem hx]; exact le_max_of_le_left (hgB x hx)
@@ -100,7 +100,7 @@ theorem eq_add_integral_of_ae_hasDerivAt {E : Type*} [NormedAddCommGroup E]
   intro θ hθ
   have h0 := hc 0 (by rw [uIcc_of_le hL]; exact ⟨le_rfl, hL⟩)
   have hθ' := hc θ (by rw [uIcc_of_le hL]; exact hθ)
-  simp only [Pi.sub_apply, F, intervalIntegral.integral_same, sub_zero] at h0 hθ'
+  simp [Pi.sub_apply, F, intervalIntegral.integral_same, sub_zero] at h0 hθ'
   rw [← hFeq θ hθ, h0, ← hθ']
   simp only [F]
   abel
@@ -139,7 +139,7 @@ theorem eq_zero_of_norm_le_integral {E : Type*} [NormedAddCommGroup E] {D : ℝ 
       (nhds 0) := by
     have := (FloorSemiring.tendsto_pow_div_factorial_atTop (K * θ)).const_mul S
     simpa [mul_div_assoc] using this
-  have h0 : ‖D θ‖ ≤ 0 := ge_of_tendsto' hlim fun n => hbound n θ hθ
+  have h0 := ge_of_tendsto' hlim fun n => hbound n θ hθ
   exact norm_le_zero_iff.mp h0
 
 /-- A product of bounded Lipschitz functions is Lipschitz. -/
@@ -148,7 +148,7 @@ theorem lipschitzOnWith_mul_of_bounded {A : Type*} [NormedRing A] {f g : ℝ →
     (hg : LipschitzOnWith Kg g s) (hfB : ∀ x ∈ s, ‖f x‖ ≤ B) (hgB : ∀ x ∈ s, ‖g x‖ ≤ B) :
     LipschitzOnWith (Kf * B.toNNReal + B.toNNReal * Kg) (fun x => f x * g x) s := by
   refine LipschitzOnWith.of_dist_le_mul fun x hx y hy => ?_
-  have hB : 0 ≤ B := (norm_nonneg _).trans (hfB x hx)
+  have hB := (norm_nonneg _).trans (hfB x hx)
   have h1 := hf.dist_le_mul x hx y hy
   have h2 := hg.dist_le_mul x hx y hy
   rw [dist_eq_norm] at h1 h2 ⊢
@@ -176,7 +176,7 @@ theorem volterra_ae_hasDerivAt (hC : AEStronglyMeasurable C volume) (hM : ∀ s,
   rcases lt_or_ge L 0 with hL | hL
   · exact Filter.Eventually.of_forall fun θ hθ =>
       absurd (hθ.1.trans hθ.2) (not_lt.mpr hL.le)
-  set g : ℝ → A := (Icc 0 L).indicator (fun s => C s * W s)
+  set g := (Icc 0 L).indicator (fun s => C s * W s)
   have hgi : Integrable g := by
     have h1 := intervalIntegrable_mul_of_continuousOn hC hM hW (θ := L) ⟨hL, le_rfl⟩
     rw [intervalIntegrable_iff_integrableOn_Ioc_of_le hL,
@@ -184,7 +184,7 @@ theorem volterra_ae_hasDerivAt (hC : AEStronglyMeasurable C volume) (hM : ∀ s,
     exact h1.integrable_indicator measurableSet_Icc
   filter_upwards [ae_hasDerivAt_integral_of_locallyIntegrable hgi.locallyIntegrable]
     with θ hθ hmem
-  have hmem' : θ ∈ Icc 0 L := Ioo_subset_Icc_self hmem
+  have hmem' := Ioo_subset_Icc_self hmem
   have h1 := (hθ 0).const_add (1 : A)
   rw [show g θ = C θ * W θ by simp [g, indicator_of_mem hmem']] at h1
   refine h1.congr_of_eventuallyEq ?_
@@ -230,13 +230,13 @@ theorem volterra_unitary (hC : AEStronglyMeasurable C volume) (hM : ∀ s, ‖C 
   have hM0 : 0 ≤ M := (norm_nonneg _).trans (hM 0)
   have hW0 : W 0 = 1 := by simpa using eW 0 ⟨le_rfl, hL⟩
   obtain ⟨S, hS⟩ := isCompact_Icc.exists_bound_of_continuousOn hW
-  have hS0 : 0 ≤ S := (norm_nonneg _).trans (hS 0 ⟨le_rfl, hL⟩)
+  have hS0 := (norm_nonneg _).trans (hS 0 ⟨le_rfl, hL⟩)
   obtain ⟨K, hK⟩ := volterra_lipschitzOn hC hM hW eW
   have hKs : LipschitzOnWith K (fun θ => star (W θ)) (Icc 0 L) :=
     LipschitzOnWith.of_dist_le_mul fun x hx y hy => by
-      rw [dist_eq_norm, ← star_sub, norm_star, ← dist_eq_norm]
+      simp
       exact hK.dist_le_mul x hx y hy
-  have hSs : ∀ x ∈ Icc 0 L, ‖star (W x)‖ ≤ S := fun x hx => by rw [norm_star]; exact hS x hx
+  have hSs : ∀ x ∈ Icc 0 L, ‖star (W x)‖ ≤ S := fun x hx => by simp; exact hS x hx
   have hd := volterra_ae_hasDerivAt hC hM hW eW
   have hds : ∀ᵐ θ, θ ∈ Ioo 0 L →
       HasDerivAt (fun θ => star (W θ)) (-(star (W θ) * C θ)) θ := by
@@ -254,8 +254,8 @@ theorem volterra_unitary (hC : AEStronglyMeasurable C volume) (hM : ∀ s, ‖C 
         noncomm_ring)
     simpa [hW0] using hP θ hθ
   · set Q : ℝ → A := fun θ => W θ * star (W θ)
-    have hQc : ContinuousOn Q (Icc 0 L) := hW.mul hW.star
-    have hQB : ∀ x ∈ Icc 0 L, ‖Q x‖ ≤ S * S := fun x hx =>
+    have hQc := hW.mul hW.star
+    have hQB := fun x hx =>
       (norm_mul_le _ _).trans (mul_le_mul (hS x hx) (hSs x hx) (norm_nonneg _) hS0)
     set g : ℝ → A := fun s => C s * Q s - Q s * C s
     have hgm : AEStronglyMeasurable g (volume.restrict (Icc 0 L)) :=
@@ -277,14 +277,14 @@ theorem volterra_unitary (hC : AEStronglyMeasurable C volume) (hM : ∀ s, ‖C 
         filter_upwards [hd, hds] with θ h1 h2 hmem
         have := (h1 hmem).mul (h2 hmem)
         convert this using 1
-        simp only [g, Q]
+        simp [g, Q]
         noncomm_ring)
     set D : ℝ → A := fun θ => Q θ - 1
     have hDc : ContinuousOn D (Icc 0 L) := hQc.sub continuousOn_const
     have hDeq : ∀ θ ∈ Icc 0 L, D θ = ∫ s in (0 : ℝ)..θ, g s := fun θ hθ => by
-      simp only [D, Q]; rw [hQ θ hθ, hW0, star_one, one_mul, add_sub_cancel_left]
+      simp [D, Q]; rw [hQ θ hθ, hW0, star_one, one_mul, add_sub_cancel_left]
     have hgD : ∀ s, ‖g s‖ ≤ 2 * M * ‖D s‖ := fun s => by
-      have : g s = C s * D s - D s * C s := by simp only [g, D]; noncomm_ring
+      have : g s = C s * D s - D s * C s := by simp [g, D]; noncomm_ring
       rw [this]
       calc ‖C s * D s - D s * C s‖ ≤ ‖C s * D s‖ + ‖D s * C s‖ := norm_sub_le _ _
         _ ≤ M * ‖D s‖ + ‖D s‖ * M :=

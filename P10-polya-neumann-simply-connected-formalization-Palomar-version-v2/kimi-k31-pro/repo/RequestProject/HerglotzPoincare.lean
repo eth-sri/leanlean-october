@@ -49,7 +49,7 @@ lemma isWeakGradient_of_contDiff_one {f : ℂ → ℂ} (hf : ContDiff ℝ 1 f)
   have hφd : Continuous fun w => fderiv ℝ φ w (coordDir i) :=
     (hs.continuous_fderiv (by simp)).clm_apply continuous_const
   exact integral_mul_fderiv_eq_neg_fderiv_mul_of_integrable
-    ((hfd.mul hs.continuous).integrable_of_hasCompactSupport (hφc.mul_left))
+    ((hfd.mul hs.continuous).integrable_of_hasCompactSupport hφc.mul_left)
     ((hf.continuous.mul hφd).integrable_of_hasCompactSupport
       ((hφc.fderiv_apply (𝕜 := ℝ) _).mul_left))
     ((hf.continuous.mul hs.continuous).integrable_of_hasCompactSupport hφc.mul_left)
@@ -82,7 +82,7 @@ theorem poincare_C1 (hb : Bornology.IsBounded Ω) (hL : IsLipschitzDomain Ω) :
   refine ⟨C, hC, fun f hf ⟨B, hB⟩ ⟨B', hB'⟩ h0 => ?_⟩
   haveI : IsFiniteMeasure (volume.restrict Ω) :=
     isFiniteMeasure_restrict.mpr hb.measure_lt_top.ne
-  have hu : MemLp f 2 (volume.restrict Ω) := memLp_of_continuous_bounded hb hf.continuous hB
+  have hu := memLp_of_continuous_bounded hb hf.continuous hB
   have hdc : ∀ v : ℂ, Continuous fun w => fderiv ℝ f w v := fun v =>
     (hf.continuous_fderiv (by simp)).clm_apply continuous_const
   have hdB : ∀ v : ℂ, ∀ w, ‖fderiv ℝ f w v‖ ≤ B' * ‖v‖ := fun v w =>
@@ -114,10 +114,10 @@ lemma sq_integral_norm_le {s : Set ℂ} (hs : volume s < ⊤) {g : ℂ → ℂ} 
     {B : ℝ} (hB : ∀ z, ‖g z‖ ≤ B) :
     (∫ z in s, ‖g z‖) ^ 2 ≤ (volume s).toReal * ∫ z in s, ‖g z‖ ^ 2 := by
   haveI : IsFiniteMeasure (volume.restrict s) := isFiniteMeasure_restrict.mpr hs.ne
-  have hB0 : 0 ≤ B := (norm_nonneg _).trans (hB 0)
+
   have i1 : Integrable (fun z => ‖g z‖) (volume.restrict s) :=
     Integrable.of_bound hgc.norm.aestronglyMeasurable B
-      (Eventually.of_forall fun z => by rw [norm_norm]; exact hB z)
+      (Eventually.of_forall fun z => by simp; exact hB z)
   have i2 : Integrable (fun z => ‖g z‖ ^ 2) (volume.restrict s) :=
     Integrable.of_bound (hgc.norm.pow 2).aestronglyMeasurable (B ^ 2)
       (Eventually.of_forall fun z => by
@@ -149,11 +149,10 @@ lemma sq_integral_norm_le {s : Set ℂ} (hs : volume s < ⊤) {g : ℂ → ℂ} 
   · rw [← h]; nlinarith [mul_nonneg hV0 hS0]
   have ht : 0 < X / (S + ε / (V + 1)) := by positivity
   have h1 := hamgm _ ht
-  have hSε : 0 < S + ε / (V + 1) := by positivity
   have h2 : X ≤ (X + V * (S + ε / (V + 1)) / X) / 2 := by
     refine h1.trans ?_
     have : X / (S + ε / (V + 1)) * S ≤ X := by
-      rw [div_mul_eq_mul_div, div_le_iff₀ hSε]
+      rw [div_mul_eq_mul_div, div_le_iff₀ (by positivity)]
       nlinarith [mul_pos h (div_pos hε (by linarith : (0:ℝ) < V + 1))]
     have : V / (X / (S + ε / (V + 1))) = V * (S + ε / (V + 1)) / X := by
       field_simp
@@ -169,7 +168,7 @@ lemma integrable_norm_sq_of_bounded {s : Set ℂ} (hs : volume s < ⊤) {g : ℂ
     (hgc : Continuous g) {B : ℝ} (hB : ∀ z, ‖g z‖ ≤ B) :
     Integrable (fun z => ‖g z‖ ^ 2) (volume.restrict s) := by
   haveI : IsFiniteMeasure (volume.restrict s) := isFiniteMeasure_restrict.mpr hs.ne
-  have hB0 : 0 ≤ B := (norm_nonneg _).trans (hB 0)
+
   exact Integrable.of_bound (hgc.norm.pow 2).aestronglyMeasurable (B ^ 2)
     (Eventually.of_forall fun z => by
       rw [Real.norm_eq_abs, abs_of_nonneg (by positivity)]
@@ -187,10 +186,10 @@ theorem poincare_C1_ball (hb : Bornology.IsBounded Ω) (hL : IsLipschitzDomain �
   have hBfin : volume (ball z₁ r) < ⊤ := measure_ball_lt_top
   set VΩ := (volume Ω).toReal with hVΩ
   set VB := (volume (ball z₁ r)).toReal with hVB
-  have hVB : 0 < VB := ENNReal.toReal_pos (measure_ball_pos volume z₁ hr).ne' hBfin.ne
+  have hVB := ENNReal.toReal_pos (measure_ball_pos volume z₁ hr).ne' hBfin.ne
   have hVΩ0 : 0 ≤ VΩ := ENNReal.toReal_nonneg
   refine ⟨(2 + 2 * VΩ / VB) * CP, by positivity, fun f hf ⟨B, hB⟩ hd h0 => ?_⟩
-  have hB0 : 0 ≤ B := (norm_nonneg _).trans (hB 0)
+
   haveI : IsFiniteMeasure (volume.restrict Ω) := isFiniteMeasure_restrict.mpr hΩfin.ne
   haveI : IsFiniteMeasure (volume.restrict (ball z₁ r)) := isFiniteMeasure_restrict.mpr hBfin.ne
   set μ : ℂ := (∫ z in Ω, f z) / (VΩ : ℂ) with hμ
@@ -201,8 +200,8 @@ theorem poincare_C1_ball (hb : Bornology.IsBounded Ω) (hL : IsLipschitzDomain �
     haveI : IsFiniteMeasure (volume.restrict s) := isFiniteMeasure_restrict.mpr hs.ne
     exact Integrable.of_bound hf.continuous.aestronglyMeasurable B (Eventually.of_forall hB)
   have hgd : ∀ z, fderiv ℝ g z = fderiv ℝ f z := fun z => by
-    simp only [hg]; exact fderiv_sub_const _
-  have hgrad : ∀ z, gradSq g z = gradSq f z := fun z => by simp only [gradSq, hgd]
+    simp [hg]; exact fderiv_sub_const _
+  have hgrad : ∀ z, gradSq g z = gradSq f z := fun z => by simp [gradSq, hgd]
   have hint_const : ∀ s : Set ℂ, ∫ _ in s, μ = (volume s).toReal * μ := fun s => by
     rw [integral_const, Measure.real_def, Measure.restrict_apply MeasurableSet.univ, univ_inter,
       Complex.real_smul]
@@ -218,7 +217,7 @@ theorem poincare_C1_ball (hb : Bornology.IsBounded Ω) (hL : IsLipschitzDomain �
     · have hne : (VΩ : ℂ) ≠ 0 := by exact_mod_cast h.ne'
       rw [← hVΩ, hμ, mul_div_cancel₀ _ hne, sub_self]
   have hS := hP g (hf.sub contDiff_const) ⟨_, hgB⟩ ⟨_, fun z => (hgd z).symm ▸ hd.choose_spec z⟩ hg0
-  simp only [hgrad] at hS
+  simp [hgrad] at hS
   set S := ∫ z in Ω, ‖g z‖ ^ 2 with hSdef
   have hgB0 : ∫ z in ball z₁ r, g z = -(VB * μ) := by
     rw [hg, integral_sub (hfi _ hBfin) (integrable_const _), hint_const, h0, zero_sub]
@@ -252,7 +251,7 @@ theorem poincare_C1_ball (hb : Bornology.IsBounded Ω) (hL : IsLipschitzDomain �
             (integrable_const _), integral_const_mul, integral_const, smul_eq_mul,
             Measure.real_def, Measure.restrict_apply MeasurableSet.univ, univ_inter]
           ring
-  have hS0 : 0 ≤ S := integral_nonneg fun _ => by positivity
+
   have hμ2' : ‖μ‖ ^ 2 ≤ S / VB := by rw [le_div_iff₀ hVB]; exact hμ2
   calc ∫ z in Ω, ‖f z‖ ^ 2 ≤ 2 * S + 2 * ‖μ‖ ^ 2 * VΩ := hfg
     _ ≤ 2 * S + 2 * (S / VB) * VΩ := by gcongr
@@ -275,9 +274,7 @@ lemma contDiff_herglotzCoeff (ha : IntervalIntegrable a volume 0 (2 * π)) (k : 
     funext z
     ext1 w
     rw [fderiv_herglotzCoeff_apply ha]
-    simp only [ContinuousLinearMap.add_apply, ContinuousLinearMap.smul_apply,
-      ContinuousLinearMap.id_apply, smul_eq_mul, ContinuousLinearEquiv.coe_coe,
-      Complex.conjCLE_apply]
+    simp
     ring
   rw [hfd]
   have h1 := continuous_herglotzCoeff ha k (m + 1)
@@ -295,12 +292,12 @@ lemma gradSq_herglotzCoeff (ha : IntervalIntegrable a volume 0 (2 * π)) (k : �
     rw [norm_neg, norm_div, norm_mul, Complex.norm_I, one_mul, Complex.norm_real,
       Real.norm_eq_abs]; norm_num
   have e2 : Complex.I * A + conj Complex.I * B = Complex.I * (A - B) := by
-    rw [Complex.conj_I]; ring
+    simp; ring
   simp only [one_mul, map_one, norm_mul, hc, e2, Complex.norm_I]
   have hpar : ‖A + B‖ ^ 2 + ‖A - B‖ ^ 2 = 2 * (‖A‖ ^ 2 + ‖B‖ ^ 2) := by
     have := parallelogram_law_with_norm ℝ A B
     nlinarith
-  have hk : |k| ^ 2 = k ^ 2 := sq_abs k
+  have hk := sq_abs k
   nlinarith
 
 /-- **Poincaré for Herglotz coefficients** (zero mean over `Ω`). -/

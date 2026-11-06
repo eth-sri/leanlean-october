@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.TwoPi
 public import RequestProject.PhysicalDrivenKernelRealization
 public import RequestProject.PhysicalDrivenRowsReconstruction
 public import RequestProject.LocalConformalVekuaConormalBridge
@@ -8,7 +9,7 @@ public import RequestProject.LocalConformalVekuaConormalBridge
 # The genuine coordinate load of an observation-kernel vector
 
 The angular variable is the conformal circle parameter, with its actual
-variable velocity. Each positive Vekua term has a genuine Volterra
+variable velocity. a
 derivative. Fourier integration by parts and the convergent actual H¹
 trace series identify the coordinate conormal, including frequency zero.
 The exceptional actual driven row then identifies this load with the
@@ -29,7 +30,6 @@ namespace PolyaNeumann
 open MeasureTheory Set Metric Filter
 open scoped Topology ComplexConjugate InnerProductSpace
 
-local instance kernelConormalTwoPiPos : Fact (0 < 2 * Real.pi) := ⟨Real.two_pi_pos⟩
 
 private theorem kernel_conormal_basis (n : ℤ) (b : L2Z) :
     ⟪stdBasisZ n, b⟫_ℂ = b n := by
@@ -79,7 +79,6 @@ variable {R C K : ℝ} (hR : 1 < R) (F : ℂ → ℂ)
     (hsource : closedBall (0 : ℂ) 1 ⊆ e.source)
     (hes : ContDiffOn ℝ (⊤ : ℕ∞) e.symm e.target)
 
-local notation "ΩF" => F '' ball (0 : ℂ) 1
 local notation "ΓF" => physicalCircleTrace F
 local notation "hΓF" => contDiff_physicalCircleTrace_of_neighborhood hR F
   (hFs.of_le (by simp))
@@ -160,7 +159,7 @@ theorem localConformalHardy_affine_primitive_trace_ae (b : L2Z)
     ((localConformalCenteredCircle hR F hFs) ^ j) (TF (UF ((JF ^ k) b)))]
     with θ hu hm
   rw [hm, hu]
-  simp only [ContinuousMap.pow_apply, localConformalCenteredCircle_apply,
+  simp [ContinuousMap.pow_apply, localConformalCenteredCircle_apply,
     physicalCircleTrace]
 
 theorem kernel_conormal_primitive_deriv (hhol : DifferentiableOn ℂ F (ball (0 : ℂ) 1))
@@ -214,15 +213,15 @@ theorem localConformalVekua_trace_term_fourier_derivative (b : L2Z)
     convert (hg.pow (j + 1)).mul
       (kernel_conormal_primitive_deriv hR F hFs hhol b hbn hb1 j θ) using 1 ;
       dsimp only [f, d, hj] ;
-        simp only [Nat.add_sub_cancel, Pi.pow_apply] ; ring_nf
+        simp ; ring_nf
   have hdc : Continuous d := by
     exact (((continuous_const.mul (hΓF).continuous_deriv_one).mul
       (((hΓF).continuous.sub continuous_const).pow j |>.mul (hc (j + 1)))).add
       ((Complex.continuous_conj.comp (hΓF).continuous_deriv_one).mul
         (((hΓF).continuous.sub continuous_const).pow (j + 1) |>.mul (hc j))))
-  have hf1 : ContDiff ℝ 1 f := contDiff_one_iff_deriv.mpr
+  have hf1 := contDiff_one_iff_deriv.mpr
     ⟨fun θ => (hd θ).differentiableAt, by
-      have he : deriv f = d := funext fun θ => (hd θ).deriv
+      have he := funext fun θ => (hd θ).deriv
       rw [he]
       exact hdc⟩
   have hp : f 0 = f (2 * Real.pi) := by
@@ -341,9 +340,9 @@ private theorem kernel_conormal_principal_coeff (b : L2Z)
       ((sobWeight n ^ (-(1 / 2 : ℝ)) : ℝ) : ℂ) *
         (-(n : ℂ) * fromL2 (1 / 2 : ℝ) b n) := by
   by_cases hn : 0 < n
-  · simp only [normalizedConormal_principal_apply, hbn n hn, mul_zero, fromL2]
+  · simp [normalizedConormal_principal_apply, hbn n hn, mul_zero, fromL2]
   · have hn0 : (n : ℝ) ≤ 0 := by exact_mod_cast (le_of_not_gt hn)
-    have habs : |(n : ℝ)| = -(n : ℝ) := abs_of_nonpos hn0
+    have habs := abs_of_nonpos hn0
     rw [normalizedConormal_principal_apply, fromL2]
     have hw : sobWeight n ^ (-(1 / 2 : ℝ)) *
         sobWeight n ^ (-(1 / 2 : ℝ)) = (sobWeight n)⁻¹ := by
@@ -379,7 +378,7 @@ theorem localConformalVekua_normalizedConormal_fourier (E : ℂ) (b : L2Z)
     rw [← fromL2_half_localConformalDiskHalfTrace,
       localConformalDiskHalfTrace_hardyExtension_eq_of_nonpositive hR F hFs hb hL hhol
         hinj hC hK e he hsource hes b hbn]
-  simp only [localConformalVekuaRemainder_apply, map_sub, lp.coeFn_sub,
+  simp [localConformalVekuaRemainder_apply, map_sub, lp.coeFn_sub,
     Pi.sub_apply, map_add, lp.coeFn_add, Pi.add_apply] at hdiff
   rw [hbase] at hdiff
   have hdiff' := congrArg (fun z : ℂ => Complex.I * z) hdiff
@@ -396,8 +395,7 @@ theorem localConformalVekua_normalizedConormal_fourier (E : ℂ) (b : L2Z)
   have hpow : sobWeight n ^ ((-1 : ℝ) / 2) =
       sobWeight n ^ (-(1 / 2 : ℝ)) := by
     congr 1; ring
-  simp only [ContinuousLinearMap.comp_apply, ContinuousLinearMap.smul_apply,
-    map_smul, lp.coeFn_smul, Pi.smul_apply, smul_eq_mul]
+  simp
   ring_nf at hdiff' ⊢
   rw [hpow]
   linear_combination -((sobWeight n ^ (-(1 / 2 : ℝ)) : ℝ) : ℂ) * hdiff'
@@ -505,7 +503,7 @@ theorem physicalDrivenKernelH1_gradientA_coordinate_trace_ae :
   filter_upwards [hs, ht, ae_restrict_mem measurableSet_Ioc]
     with θ hs ht hθ
   rw [hs]
-  simp only [Pi.smul_apply, smul_eq_mul, ht]
+  simp [Pi.smul_apply, smul_eq_mul, ht]
   exact hpoint (Ioc_subset_Icc_self hθ)
 
 /-- The original L² forcing, regarded as the genuine ordinary coordinate
@@ -551,7 +549,7 @@ private theorem kernel_conormal_row_fourier_derivative (n : ℤ) :
   have hzero : physicalDrivenScaledRow E (physicalDrivenVector W g) 0 =
       physicalDrivenRow (physicalDrivenVector W g) 0 := by
     funext θ
-    simp only [physicalDrivenScaledRow, pow_zero, one_mul]
+    simp [physicalDrivenScaledRow, pow_zero, one_mul]
   rw [hzero] at h
   exact h
 
@@ -565,7 +563,7 @@ theorem physicalDrivenKernelH1_normalizedConormal_eq_coordinateLoad :
   have hbn := physicalDrivenKernelInput_nonpositive hR F hFs hb hL hhol hC
     e he hsource hΓLip hE hW g hg hO
   have hb1 := fromL2_physicalDrivenKernelInput_isSobolevSeq_one hΓLip hΓF hW g hg hO
-  let A : BoundaryL2 := boundaryContinuousMultiplier (localConformalVelocityCircle F)
+  let A := boundaryContinuousMultiplier (localConformalVelocityCircle F)
     (TF (AF (F 1) (E : ℂ) bF))
   have hA : (A : ℝ → ℂ) =ᵐ[volume.restrict (Ioc 0 (2 * Real.pi))]
       fun θ => deriv ΓF θ * physicalDrivenScaledRow E (physicalDrivenVector W g) 1 θ := by
@@ -574,7 +572,7 @@ theorem physicalDrivenKernelH1_normalizedConormal_eq_coordinateLoad :
       physicalDrivenKernelH1_gradientA_coordinate_trace_ae hR F hFs hb hL hhol hinj hC hK
         e he hsource hes hΓLip hE hW g hg hO] with θ hm hr
     rw [hm, hr, localConformalVelocityCircle_apply hR F hFs]
-  let d : BoundaryL2 := (2 : ℂ) • A - Complex.I • physicalDrivenKernelCoordinateLoad g hg
+  let d := (2 : ℂ) • A - Complex.I • physicalDrivenKernelCoordinateLoad g hg
   have hd : (d : ℝ → ℂ) =ᵐ[volume.restrict (Ioc 0 (2 * Real.pi))]
       fun θ => 2 * deriv ΓF θ * physicalDrivenScaledRow E (physicalDrivenVector W g) 1 θ -
         Complex.I * g θ := by
@@ -584,9 +582,9 @@ theorem physicalDrivenKernelH1_normalizedConormal_eq_coordinateLoad :
       Lp.coeFn_smul Complex.I (physicalDrivenKernelCoordinateLoad g hg), hA,
       physicalDrivenKernelCoordinateLoad_ae g hg] with θ hs h2 hi hA hg
     rw [hs]
-    simp only [Pi.sub_apply]
+    simp
     rw [h2, hi]
-    simp only [Pi.smul_apply, smul_eq_mul, hA, hg]
+    simp [Pi.smul_apply, smul_eq_mul, hA, hg]
     ring
   have ht := physicalDrivenKernelH1_coordinate_trace_ae hR F hFs hb hL hhol hinj hC hK
     e he hsource hes hΓLip hE hW g hg hO

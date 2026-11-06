@@ -70,7 +70,7 @@ theorem exists_regular_periodic_speed_bounds {γ : ℝ → ℂ}
     (hnz : ∀ θ, deriv γ θ ≠ 0) :
     ∃ m M : ℝ, 0 < m ∧ 0 ≤ M ∧
       ∀ θ, m ≤ ‖deriv γ θ‖ ∧ ‖deriv γ θ‖ ≤ M := by
-  have hs : Continuous (fun θ => ‖deriv γ θ‖) := hγ.continuous_deriv_one.norm
+  have hs := hγ.continuous_deriv_one.norm
   have hsp : Function.Periodic (fun θ => ‖deriv γ θ‖) (2 * Real.pi) := by
     intro θ
     change ‖deriv γ (θ + 2 * Real.pi)‖ = ‖deriv γ θ‖
@@ -85,7 +85,7 @@ theorem exists_regular_periodic_speed_bounds {γ : ℝ → ℂ}
   have hθ' : θ' ∈ Ico 0 (2 * Real.pi) := by
     simpa only [zero_add, θ'] using toIcoMod_mem_Ico Real.two_pi_pos 0 θ
   have heq : ‖deriv γ θ'‖ = ‖deriv γ θ‖ := by
-    dsimp only [θ']
+    dsimp [θ']
     rw [toIcoMod, hsp.sub_zsmul_eq]
   rw [← heq]
   exact ⟨hmlocal θ' (Ico_subset_Icc_self hθ'), hmax (Ico_subset_Icc_self hθ')⟩
@@ -108,7 +108,7 @@ theorem normalizedArcReparam_add_period {γ : ℝ → ℂ} {K : NNReal}
     (hL : 0 < arcLen γ (2 * Real.pi)) (θ : ℝ) :
     normalizedArcReparam γ (θ + 2 * Real.pi) =
       normalizedArcReparam γ θ + 2 * Real.pi := by
-  simp only [normalizedArcReparam]
+  simp [normalizedArcReparam]
   rw [arcLen_add_period hK hper, mul_add, div_mul_cancel₀ _ hL.ne']
 
 /-- Construction of all seven fields of the genuine trace-reparametrization
@@ -130,7 +130,7 @@ theorem exists_isC1TraceReparam_normalizedArc {γ : ℝ → ℂ}
     exact (hbounds θ).2
   have hL := arcLen_period_pos_of_regular hγ hnz
   let a := 2 * Real.pi / arcLen γ (2 * Real.pi)
-  have ha : 0 < a := div_pos Real.two_pi_pos hL
+  have ha := div_pos Real.two_pi_pos hL
   have hτlip : LipschitzWith (Real.toNNReal a * Real.toNNReal M)
       (normalizedArcReparam γ) := by
     refine LipschitzWith.of_dist_le_mul fun x y => ?_

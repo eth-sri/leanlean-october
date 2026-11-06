@@ -51,8 +51,8 @@ theorem physicalExteriorCauchy_eq_zero_of_moments
     (hbound : ∀ θ ∈ Icc (0 : ℝ) (2 * Real.pi), ‖γ θ - γ 0‖ ≤ R)
     {w : ℂ} (hw : R < ‖w - γ 0‖) :
     physicalExteriorCauchy γ H w = 0 := by
-  let g : ℝ → ℂ := fun θ => conj (deriv γ θ) * H θ
-  let z : ℝ → ℂ := fun θ => conj (γ θ) - conj (γ 0)
+  let g := fun θ => conj (deriv γ θ) * H θ
+  let z := fun θ => conj (γ θ) - conj (γ 0)
   let ξ : ℂ := conj w - conj (γ 0)
   have hg : Continuous g :=
     (Complex.continuous_conj.comp hγ.continuous_deriv_one).mul hH
@@ -62,26 +62,26 @@ theorem physicalExteriorCauchy_eq_zero_of_moments
     dsimp only [ξ]
     rw [← map_sub, Complex.norm_conj]
   have hwξ : R < ‖ξ‖ := by simpa only [hξnorm] using hw
-  have hξpos : 0 < ‖ξ‖ := lt_of_le_of_lt hR hwξ
-  have hξ : ξ ≠ 0 := norm_pos_iff.mp hξpos
+  have hξpos := lt_of_le_of_lt hR hwξ
+  have hξ := norm_pos_iff.mp hξpos
   have hzbound (θ : ℝ) (hθ : θ ∈ Icc (0 : ℝ) (2 * Real.pi)) : ‖z θ‖ ≤ R := by
     dsimp only [z]
     rw [← map_sub, Complex.norm_conj]
     exact hbound θ hθ
   obtain ⟨M, hM⟩ := isCompact_Icc.exists_bound_of_continuousOn
     (s := Icc (0 : ℝ) (2 * Real.pi)) hg.continuousOn
-  have hM0 : 0 ≤ M := (norm_nonneg (g 0)).trans
+  have hM0 := (norm_nonneg (g 0)).trans
     (hM 0 ⟨le_rfl, Real.two_pi_pos.le⟩)
-  let q : ℝ := R / ‖ξ‖
-  have hq0 : 0 ≤ q := div_nonneg hR hξpos.le
-  have hq1 : q < 1 := (div_lt_one hξpos).mpr hwξ
+  let q := R / ‖ξ‖
+  have hq0 := div_nonneg hR hξpos.le
+  have hq1 := (div_lt_one hξpos).mpr hwξ
   have hqsum : Summable (fun m : ℕ => (M / ‖ξ‖) * q ^ m) :=
     (summable_geometric_of_lt_one hq0 hq1).mul_left (M / ‖ξ‖)
   have hseries (θ : ℝ) (hθ : θ ∈ Icc (0 : ℝ) (2 * Real.pi)) :
       HasSum (fun m : ℕ => (g θ / ξ) * (z θ / ξ) ^ m)
         (g θ / (conj w - conj (γ θ))) := by
     have hratio : ‖z θ / ξ‖ < 1 := by
-      rw [norm_div]
+      simp
       exact lt_of_le_of_lt (div_le_div_of_nonneg_right (hzbound θ hθ) hξpos.le) hq1
     have hs := (hasSum_geometric_of_norm_lt_one hratio).mul_left (g θ / ξ)
     have hden : ξ * (1 - z θ / ξ) = ξ - z θ := by
@@ -105,7 +105,7 @@ theorem physicalExteriorCauchy_eq_zero_of_moments
     · have hθ' : θ ∈ Icc (0 : ℝ) (2 * Real.pi) := by
         rw [uIoc_of_le Real.two_pi_pos.le] at hθ
         exact ⟨hθ.1.le, hθ.2⟩
-      rw [norm_mul, norm_div, norm_pow, norm_div]
+      simp
       dsimp only [q]
       gcongr
       · exact hM θ hθ'
@@ -119,7 +119,7 @@ theorem physicalExteriorCauchy_eq_zero_of_moments
     have heq : (fun θ => (g θ / ξ) * (z θ / ξ) ^ m) =
         (fun θ => (ξ⁻¹ * (ξ⁻¹) ^ m) * (g θ * z θ ^ m)) := by
       funext θ
-      simp only [div_eq_mul_inv, mul_pow]
+      simp
       ring
     rw [heq, intervalIntegral.integral_const_mul]
     change (ξ⁻¹ * (ξ⁻¹) ^ m) *

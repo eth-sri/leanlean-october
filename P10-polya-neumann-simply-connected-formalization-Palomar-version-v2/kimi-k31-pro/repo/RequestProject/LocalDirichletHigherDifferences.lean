@@ -132,10 +132,6 @@ def dirichletHigherCoefficientCommutator (h : ℝ) (k : ℕ)
     dirichletTangentialTranslate ((k : ℝ) * h) a z *
       dirichletTangentialDifferenceIter h k v z
 
-@[simp] theorem dirichletHigherCoefficientCommutator_zero
-    (h : ℝ) (a v : ℂ → ℂ) (z : ℂ) :
-    dirichletHigherCoefficientCommutator h 0 a v z = 0 := by
-  simp [dirichletHigherCoefficientCommutator, dirichletTangentialTranslate]
 
 theorem dirichletTangentialDifferenceIter_mul_eq_shift_add_commutator
     (h : ℝ) (k : ℕ) (a v : ℂ → ℂ) (z : ℂ) :
@@ -163,8 +159,8 @@ theorem dirichletTangentialDifferenceIter_continuousOn
       (smoothDirichletClosedHalfBox a b) := by
   induction k generalizing a with
   | zero =>
-      have ha : a ≤ A := by simpa using hmargin
-      exact hu.mono (fun z hz => ⟨hz.1.trans ha, hz.2⟩)
+
+      exact hu.mono (fun z hz => ⟨hz.1.trans (by simpa using hmargin), hz.2⟩)
   | succ k ih =>
       have hm : (a + |h|) + (k : ℝ) * |h| ≤ A := by
         rw [Nat.cast_add, Nat.cast_one] at hmargin
@@ -179,8 +175,8 @@ theorem dirichletTangentialDifferenceIter_contDiffOn
       (smoothDirichletHalfBox a b) := by
   induction k generalizing a with
   | zero =>
-      have ha : a ≤ A := by simpa using hmargin
-      exact hu.mono (fun z hz => ⟨hz.1.trans_le ha, hz.2⟩)
+
+      exact hu.mono (fun z hz => ⟨hz.1.trans_le (by simpa using hmargin), hz.2⟩)
   | succ k ih =>
       have hm : (a + |h|) + (k : ℝ) * |h| ≤ A := by
         rw [Nat.cast_add, Nat.cast_one] at hmargin
@@ -195,8 +191,8 @@ theorem dirichletTangentialDifferenceIter_zero_bottom
     dirichletTangentialDifferenceIter h k u (x : ℂ) = 0 := by
   induction k generalizing a x with
   | zero =>
-      have ha : a ≤ A := by simpa using hmargin
-      exact hu x (hx.trans_le ha)
+
+      exact hu x (hx.trans_le (by simpa using hmargin))
   | succ k ih =>
       have hm : (a + |h|) + (k : ℝ) * |h| ≤ A := by
         rw [Nat.cast_add, Nat.cast_one] at hmargin
@@ -250,11 +246,11 @@ theorem dirichletTangentialDifferenceIter_memLp
       (volume.restrict (smoothDirichletHalfBox a b)) := by
   induction k generalizing a with
   | zero =>
-      have ha : a ≤ A := by simpa using hmargin
+
       apply hu.mono_measure
       exact Measure.restrict_mono_set volume
         (show smoothDirichletHalfBox a b ⊆ smoothDirichletHalfBox A b from
-          fun z hz => ⟨hz.1.trans_le ha, hz.2⟩)
+          fun z hz => ⟨hz.1.trans_le (by simpa using hmargin), hz.2⟩)
   | succ k ih =>
       have hm : (a + |h|) + (k : ℝ) * |h| ≤ A := by
         rw [Nat.cast_add, Nat.cast_one] at hmargin
@@ -313,7 +309,7 @@ theorem dirichletTangentialDifferenceIter_mul
       have hK (j : ℕ) (hj : j ∈ Finset.range (k + 1)) :
           dirichletTangentialDifference h (K j (k - j)) z =
             K j (k + 1 - j) z + K (j + 1) (k - j) z := by
-        have hjk : j ≤ k := Nat.le_of_lt_succ (Finset.mem_range.mp hj)
+        have hjk := Nat.le_of_lt_succ (Finset.mem_range.mp hj)
         have hnat : k - j + 1 = k + 1 - j := by omega
         have hd : dirichletTangentialDifference h
             (dirichletTangentialDifferenceIter h (k - j) a) =
@@ -335,8 +331,7 @@ theorem dirichletTangentialDifferenceIter_mul
             dirichletTangentialDifference_sum]
           simp only [dirichletTangentialDifference_const_mul]
         _ = ∑ j ∈ Finset.range (k + 1), (k.choose j : ℂ) *
-            (K j (k + 1 - j) z + K (j + 1) (k - j) z) := by
-          exact Finset.sum_congr rfl (fun j hj => congrArg (fun t => (k.choose j : ℂ) * t)
+            (K j (k + 1 - j) z + K (j + 1) (k - j) z) := Finset.sum_congr rfl (fun j hj => congrArg (fun t => (k.choose j : ℂ) * t)
             (hK j hj))
         _ = ∑ j ∈ Finset.range (k + 2), ((k + 1).choose j : ℂ) *
             K j (k + 1 - j) z := by
@@ -528,7 +523,7 @@ theorem dirichletTangentialDifference_norm_le
       (show |z.re + t| ≤ A ∧ 0 ≤ z.im ∧ z.im ≤ b from ⟨hx, hz.2⟩)
   have hd (t : ℝ) : HasDerivAt v (dv t) t := by
     have ht : HasDerivAt (fun s : ℝ => z + (s : ℂ)) (1 : ℂ) t :=
-      (Complex.ofRealCLM.hasDerivAt).const_add z
+      Complex.ofRealCLM.hasDerivAt.const_add z
     exact (hc.differentiable (by simp) (z + (t : ℂ))).hasFDerivAt.comp_hasDerivAt t ht
   have hp := (convex_Icc (0 : ℝ) h).norm_image_sub_le_of_norm_hasDerivWithin_le
     (fun t _ => (hd t).hasDerivWithinAt) (fun t ht => hM _ (hmap t ht))
@@ -553,8 +548,8 @@ theorem dirichletTangentialDifferenceIter_norm_le
     ‖dirichletTangentialDifferenceIter h k c z‖ ≤ M := by
   induction k generalizing a c z with
   | zero =>
-      have ha : a ≤ A := by simpa using hmargin
-      exact hM z ⟨hz.1.trans ha, hz.2⟩
+
+      exact hM z ⟨hz.1.trans (by simpa using hmargin), hz.2⟩
   | succ k ih =>
       have hm : (a + h) + (k : ℝ) * h ≤ A := by
         rw [Nat.cast_add, Nat.cast_one] at hmargin
@@ -593,7 +588,7 @@ theorem exists_dirichletTangentialDerivative_upto_bound
       obtain ⟨M, hM⟩ := (isCompact_smoothDirichletClosedHalfBox A b).exists_bound_of_continuousOn
         hc.continuous.continuousOn
       refine ⟨max M 0, le_max_right _ _, fun l hl z hz => ?_⟩
-      have hl0 : l = 0 := Nat.eq_zero_of_le_zero hl
+      have hl0 := Nat.eq_zero_of_le_zero hl
       subst l
       exact (hM z hz).trans (le_max_left _ _)
   | succ k ih =>
@@ -621,16 +616,15 @@ theorem norm_dirichletHigherCoefficientCommutator_le_of_derivative_bounds
   rw [Finset.mul_sum]
   apply Finset.sum_le_sum
   intro j hj
-  have hjk : j ≤ k := (Finset.mem_range.mp hj).le
-  have hnat : ((k - j : ℕ) : ℝ) = (k : ℝ) - (j : ℝ) := Nat.cast_sub hjk
+  have hjk := (Finset.mem_range.mp hj).le
+
   have hm : (a + (j : ℝ) * h) + ((k - j : ℕ) : ℝ) * h ≤ A := by
-    rw [hnat]
+    rw [(Nat.cast_sub hjk)]
     nlinarith
   have hshift : z + (((j : ℝ) * h : ℝ) : ℂ) ∈
       smoothDirichletClosedHalfBox (a + (j : ℝ) * h) b := by
-    have hjh : 0 ≤ (j : ℝ) * h := mul_nonneg (Nat.cast_nonneg _) hh.le
     have hx := (abs_add_le z.re ((j : ℝ) * h)).trans
-      (add_le_add hz.1 (le_of_eq (abs_of_nonneg hjh)))
+      (add_le_add hz.1 (le_of_eq (abs_of_nonneg (mul_nonneg (Nat.cast_nonneg _) hh.le))))
     simpa only [smoothDirichletClosedHalfBox, mem_setOf_eq, Complex.add_re,
       Complex.ofReal_re, Complex.add_im, Complex.ofReal_im, add_zero] using
       (show |z.re + (j : ℝ) * h| ≤ a + (j : ℝ) * h ∧
@@ -690,10 +684,10 @@ theorem dirichletTangentialDifferenceIter_centered_norm_le
         dirichletTangentialDifferenceIter h k (dirD c 1) (z + (t : ℂ)) - C
       have hd (t : ℝ) : HasDerivAt v (dv t) t := by
         have ht : HasDerivAt (fun s : ℝ => z + (s : ℂ)) (1 : ℂ) t :=
-          (Complex.ofRealCLM.hasDerivAt).const_add z
+          Complex.ofRealCLM.hasDerivAt.const_add z
         have hs := dirichletTangentialDifferenceIter_contDiff hc h k
         have hg := ((hs.differentiable (by simp) (z + (t : ℂ))).hasFDerivAt.comp_hasDerivAt
-          t ht).sub ((Complex.ofRealCLM.hasDerivAt).mul_const C)
+          t ht).sub (Complex.ofRealCLM.hasDerivAt.mul_const C)
         have heq := congrFun (dirichletTangentialDifferenceIter_dirD_global hc h k 1)
           (z + (t : ℂ))
         have hgrad : fderiv ℝ (dirichletTangentialDifferenceIter h k c)
@@ -727,12 +721,11 @@ theorem dirichletTangentialDifferenceIter_centered_norm_le
         rw [norm_div, Complex.norm_real, Real.norm_eq_abs, abs_of_pos hh]
         apply (div_le_iff₀ hh).mpr
         simpa only [sub_zero, Real.norm_eq_abs, abs_of_pos hh] using hp
-      have hhC : (h : ℂ) ≠ 0 := by exact_mod_cast hh.ne'
       have heq : (v h - v 0) / (h : ℂ) =
           dirichletTangentialDifferenceIter h (k + 1) c z - C := by
         simp only [v, Complex.ofReal_zero, zero_mul, sub_zero, add_zero,
           dirichletTangentialDifferenceIter_succ, dirichletTangentialDifference]
-        field_simp [hhC]
+        field_simp [(by exact_mod_cast hh.ne')]
         ring
       rw [heq] at hp'
       exact hp'
@@ -752,17 +745,16 @@ theorem dirichletTangentialDifferenceIter_tendsto
   have hsmall : ∀ᶠ h : ℝ in 𝓝[Ioi (0 : ℝ)] 0, h < δ / ((k : ℝ) + 1) :=
     (eventually_lt_nhds (div_pos hδ hk)).filter_mono nhdsWithin_le_nhds
   filter_upwards [self_mem_nhdsWithin, hsmall] with h hh hs
-  have hhpos : 0 < h := hh
+  have hhpos := hh
   have hbound : ∀ t ∈ Icc (0 : ℝ) ((k : ℝ) * h),
       ‖dirichletTangentialDerivative k c (z + (t : ℂ)) -
         dirichletTangentialDerivative k c z‖ ≤ ε / 2 := by
     intro t ht
     have hkh : ((k : ℝ) + 1) * h < δ := by
       simpa only [mul_comm] using (lt_div_iff₀ hk).mp hs
-    have htδ : t < δ := by nlinarith [ht.2]
     have hd : dist (z + (t : ℂ)) z < δ := by
       simpa only [dist_eq_norm, add_sub_cancel_left, Complex.norm_real,
-        Real.norm_eq_abs, abs_of_nonneg ht.1] using htδ
+        Real.norm_eq_abs, abs_of_nonneg ht.1] using (by nlinarith [ht.2])
     exact (show ‖dirichletTangentialDerivative k c (z + (t : ℂ)) -
         dirichletTangentialDerivative k c z‖ < ε / 2 by
       simpa only [dist_eq_norm] using hclose hd).le
@@ -820,7 +812,7 @@ theorem dirichletTangentialDifferenceIter_tendsto_of_contDiffOn
       (𝓝[Ioi (0 : ℝ)] 0) (𝓝 (dirichletTangentialDerivative k c z)) := by
   obtain ⟨d, hd, hdc⟩ := exists_smooth_compact_extension
     (isCompact_singleton (x := z)) hU (singleton_subset_iff.mpr hz) hc
-  have heq : d =ᶠ[𝓝 z] c := hdc z (mem_singleton z)
+  have heq := hdc z (mem_singleton z)
   have hall : ∀ᶠ h : ℝ in 𝓝 (0 : ℝ), ∀ j ∈ Finset.range (k + 1),
       d (z + (((j : ℝ) * h : ℝ) : ℂ)) = c (z + (((j : ℝ) * h : ℝ) : ℂ)) := by
     apply (Filter.eventually_all_finset _).mpr

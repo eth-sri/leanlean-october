@@ -80,7 +80,6 @@ lemma rowAnalysisLin_apply (v : H) (n : ℤ) :
 
 lemma norm_rowAnalysisLin_le (v : H) :
     ‖rowAnalysisLin ρ hρ v‖ ≤ Real.sqrt (∑' n, ‖ρ n‖ ^ 2) * ‖v‖ := by
-  have hS : 0 ≤ ∑' n, ‖ρ n‖ ^ 2 := tsum_nonneg fun _ => by positivity
   have h2 : ‖rowAnalysisLin ρ hρ v‖ ^ 2 ≤ (∑' n, ‖ρ n‖ ^ 2) * ‖v‖ ^ 2 := by
     rw [norm_sq_L2Z, ← tsum_mul_right]
     refine (summable_norm_sq_L2Z _).tsum_le_tsum (fun n => ?_) (hρ.mul_right _)
@@ -88,7 +87,7 @@ lemma norm_rowAnalysisLin_le (v : H) :
     gcongr
     exact norm_inner_le_norm _ _
   have := Real.sqrt_le_sqrt h2
-  rwa [Real.sqrt_sq (norm_nonneg _), Real.sqrt_mul hS, Real.sqrt_sq (norm_nonneg _)] at this
+  rwa [Real.sqrt_sq (norm_nonneg _), Real.sqrt_mul (tsum_nonneg fun _ => by positivity), Real.sqrt_sq (norm_nonneg _)] at this
 
 /-- The analysis operator `v ↦ (⟨ρₙ, v⟩)ₙ : H → ℓ²(ℤ)`. -/
 def rowAnalysis : H →L[ℂ] L2Z :=
@@ -114,7 +113,7 @@ lemma inner_rowSynth (v : H) (f : L2Z) :
 lemma rowSynth_stdBasisZ (n : ℤ) : rowSynth ρ hρ (stdBasisZ n) = ρ n := by
   refine ext_inner_left ℂ fun v => ?_
   rw [inner_rowSynth, stdBasisZ_apply, tsum_eq_single n]
-  · simp [lp.single_apply]
+  · simp
   · intro k hk
     simp [lp.single_apply, hk]
 
@@ -161,17 +160,15 @@ theorem summable_weight_norm_sq_of_basis
     have := mul_le_mul_of_nonneg_right hw (sq_nonneg ‖⟪R p.2, b p.1⟫_ℂ‖)
     simp only [hg]
     linarith
-  have hf : Summable fun p : ι × ℤ => ((p.2 : ℝ)) ^ 2 * ‖⟪R p.2, b p.1⟫_ℂ‖ ^ 2 +
-      2 * ‖⟪R p.2, b p.1⟫_ℂ‖ ^ 2 := h1.add (h2.mul_left 2)
-  have hg0 : ∀ p, 0 ≤ g p := fun p => by simp only [hg]; positivity
-  have hgs : Summable g := Summable.of_nonneg_of_le hg0 hle hf
+  have hf := h1.add (h2.mul_left 2)
+  have hgs := Summable.of_nonneg_of_le (fun p => by simp only [hg]; positivity) hle hf
   have hgs' : Summable fun q : ℤ × ι => g q.swap :=
     (Equiv.prodComm ℤ ι).summable_iff.mpr hgs
   have hrow : ∀ n : ℤ, HasSum (fun j => g (n, j).swap) ((1 + |(n : ℝ)|) * ‖R n‖ ^ 2) := by
     intro n
     have hp := (hasSum_norm_inner_sq_hilbertBasis b (R n)).mul_left (1 + |(n : ℝ)|)
     refine hp.congr_fun fun j => ?_
-    simp only [hg, Prod.swap_prod_mk]
+    simp
     rw [norm_inner_symm]
   have hsum : Summable fun n : ℤ => (1 + |(n : ℝ)|) * ‖R n‖ ^ 2 :=
     hgs'.prod.congr fun n => (hrow n).tsum_eq
@@ -196,7 +193,7 @@ lemma fourierCoeffOn_congr_Icc {F : Type*} [NormedAddCommGroup F] [NormedSpace �
   congr 1
   refine intervalIntegral.integral_congr fun θ hθ => ?_
   rw [uIcc_of_le two_pi_pos.le] at hθ
-  simp only [h hθ]
+  simp [h hθ]
 
 /-- Fourier coefficients on `[0, 2π]` are additive for functions continuous on `[0, 2π]`. -/
 lemma fourierCoeffOn_sub_of_continuousOn {F : Type*} [NormedAddCommGroup F] [NormedSpace ℂ F]
@@ -238,7 +235,7 @@ lemma inner_fourierCoeffOn_neg {r : ℝ → Ell2} (hr : ContinuousOn r (Icc 0 (2
   rw [intervalIntegral.integral_of_le two_pi_pos.le,
     intervalIntegral.integral_of_le two_pi_pos.le, ← integral_conj]
   simp only [inner_smul_right, map_mul, inner_conj_symm, ← fourier_neg]
-  simp [smul_eq_mul, Complex.real_smul]
+  simp
   exact Or.inl (map_ofNat (starRingEnd ℂ) 2)
 
 section Concrete
@@ -268,7 +265,7 @@ lemma norm_projObsRow_le (hK : LipschitzWith K γ) (hW : IsTransport γ E W) {θ
   unfold projObsRow
   refine (norm_cutProj_apply_le _ _).trans ?_
   refine ((ContinuousLinearMap.adjoint (W θ)).le_opNorm _).trans ?_
-  rw [LinearIsometryEquiv.norm_map, show ‖basisVec 0‖ = 1 by simp [basisVec], mul_one]
+  simp
   exact norm_transport_le_one hK hW hθ
 
 /-- The vector Fourier coefficient `r̂_E(-n)` of the projected observation row
@@ -290,7 +287,7 @@ lemma inner_projObsCoeffVec_periodize (hK : LipschitzWith K γ) (hW : IsTranspor
       fourierCoeffOn two_pi_pos (fun θ => ⟪periodize (projObsRow W) θ, v⟫_ℂ) n := by
   rw [projObsCoeffVec, inner_fourierCoeffOn_neg (continuousOn_projObsRow hK hW)]
   exact fourierCoeffOn_congr_Icc (fun θ hθ => by
-    simp only [periodize_projObsRow_eqOn hW hθ]) n
+    simp [periodize_projObsRow_eqOn hW hθ]) n
 
 /-- The normalized rows `ρₙ = λₙ^{1/2} r̂_E(-n)`, `λₙ = 1 + |n|`. -/
 def normProjObsRow (W : ℝ → Ell2 →L[ℂ] Ell2) (n : ℤ) : Ell2 :=
@@ -376,7 +373,7 @@ theorem tendsto_projObsDual_energy (hK : LipschitzWith K γ)
   have hA := tendsto_projected_observation_H1_energy hK hWs E₀ hc stdBasisN.orthonormal
   have hB := tendsto_projected_observation_L2_energy hK hWs E₀ hc stdBasisN.orthonormal
   have hlim := ((hA.add (hB.const_mul 2)).sqrt)
-  rw [mul_zero, add_zero, Real.sqrt_zero] at hlim
+  simp at hlim
   refine squeeze_zero (fun E => norm_nonneg _) (fun E => ?_) hlim
   rw [projObsDual_eq hK (hWs E), projObsDual_eq hK (hWs E₀)]
   refine (norm_rowSynth_sub_le _ _ _ _).trans (Real.sqrt_le_sqrt ?_)
@@ -391,10 +388,10 @@ theorem tendsto_projObsDual_energy (hK : LipschitzWith K γ)
   have h2 := summable_mul_norm_sub_sq (w := fun _ : ℕ × ℤ => (1 : ℝ)) (fun _ => zero_le_one)
     (by simpa using (summable_inner_projObsCoeffVec hK (hWs E)).2)
     (by simpa using (summable_inner_projObsCoeffVec hK (hWs E₀)).2)
-  simp only [one_mul, ← inner_sub_left] at h1 h2
+  simp [one_mul, ← inner_sub_left] at h1 h2
   have key := (summable_weight_norm_sq_of_basis stdBasisN
     (fun n => projObsCoeffVec (Ws E) n - projObsCoeffVec (Ws E₀) n) h1 h2).2
-  simp only [inner_projObsCoeffVec_sub hK hWs] at key
+  simp [inner_projObsCoeffVec_sub hK hWs] at key
   exact key
 
 end Energy
@@ -405,19 +402,6 @@ section Identification
 
 variable {γ : ℝ → ℂ} {K : NNReal} {E : ℝ} {W : ℝ → Ell2 →L[ℂ] Ell2}
 
-/-- The normalized coefficients `2π λₙ^{-1/2} ĝ(n)` of a continuous function form an `ℓ²(ℤ)`
-sequence. -/
-lemma memℓp_normalizedCoeff {g : ℝ → ℂ} (hg : Continuous g) :
-    Memℓp (fun n : ℤ => ((2 * π / Real.sqrt (1 + |(n : ℝ)|) : ℝ) : ℂ) *
-      fourierCoeffOn two_pi_pos g n) 2 := by
-  refine memℓp_two_iff_summable.mpr ?_
-  refine Summable.of_nonneg_of_le (fun n => by positivity) (fun n => ?_)
-    ((hasSum_sq_fourierCoeffOn_of_continuous hg).summable.mul_left ((2 * π) ^ 2))
-  rw [norm_mul, mul_pow, Complex.norm_real, Real.norm_eq_abs, sq_abs]
-  gcongr
-  have h1 : 1 ≤ Real.sqrt (1 + |(n : ℝ)|) := by
-    rw [Real.one_le_sqrt]; linarith [abs_nonneg (n : ℝ)]
-  exact div_le_self (by positivity) h1
 
 end Identification
 

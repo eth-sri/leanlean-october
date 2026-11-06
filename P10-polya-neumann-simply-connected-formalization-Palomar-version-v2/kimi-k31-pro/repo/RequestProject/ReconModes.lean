@@ -67,10 +67,10 @@ lemma hasDerivAt_angChar (n : ℤ) (θ : ℝ) :
   have h := (((hasDerivAt_id θ).ofReal_comp.const_mul (n : ℂ)).mul_const Complex.I).neg.cexp
   convert h using 1
   · funext x; simp [angChar]
-  · simp only [angChar, Pi.neg_apply, id, Complex.ofReal_one]; ring
+  · simp [angChar, Pi.neg_apply, id, Complex.ofReal_one]; ring
 
 lemma angChar_two_pi (n : ℤ) : angChar n (2 * π) = angChar n 0 := by
-  simp only [angChar, Complex.ofReal_zero, mul_zero, zero_mul, neg_zero, Complex.exp_zero]
+  simp [angChar, Complex.ofReal_zero, mul_zero, zero_mul, neg_zero, Complex.exp_zero]
   rw [Complex.exp_eq_one_iff]
   exact ⟨-n, by push_cast; ring⟩
 
@@ -115,7 +115,7 @@ lemma continuous_fderiv_fderiv_of_two : Continuous (fderiv ℝ (fderiv ℝ v)) :
   (contDiff_fderiv_of_two hv).continuous_fderiv one_ne_zero
 
 lemma hasDerivAt_angMode (r : ℝ) : HasDerivAt (angMode v x₀ n) (angMode1 v x₀ n r) r := by
-  have hd : Differentiable ℝ v := hv.differentiable (by norm_num)
+  have hd := hv.differentiable (by norm_num)
   refine hasDerivAt_intervalIntegral_param (F := fun r θ => angChar n θ * v (circPt x₀ r θ))
     (F' := fun r θ => angChar n θ * fderiv ℝ v (circPt x₀ r θ) (eI θ)) (fun r θ => ?_) ?_ ?_ _ _ r
   · exact ((hd _).hasFDerivAt.comp_hasDerivAt r (hasDerivAt_circPt_r x₀ r θ)).const_mul _
@@ -125,14 +125,14 @@ lemma hasDerivAt_angMode (r : ℝ) : HasDerivAt (angMode v x₀ n) (angMode1 v x
         (continuous_eI.comp continuous_snd))
 
 lemma hasDerivAt_angMode1 (r : ℝ) : HasDerivAt (angMode1 v x₀ n) (angMode2 v x₀ n r) r := by
-  have hd : Differentiable ℝ (fderiv ℝ v) := (contDiff_fderiv_of_two hv).differentiable one_ne_zero
+  have hd := (contDiff_fderiv_of_two hv).differentiable one_ne_zero
   refine hasDerivAt_intervalIntegral_param
     (F := fun r θ => angChar n θ * fderiv ℝ v (circPt x₀ r θ) (eI θ))
     (F' := fun r θ => angChar n θ * fderiv ℝ (fderiv ℝ v) (circPt x₀ r θ) (eI θ) (eI θ))
     (fun r θ => ?_) ?_ ?_ _ _ r
   · have h1 := (hd _).hasFDerivAt.comp_hasDerivAt r (hasDerivAt_circPt_r x₀ r θ)
     have h2 := h1.clm_apply (hasDerivAt_const r (eI θ))
-    simp only [ContinuousLinearMap.map_zero, add_zero] at h2
+    simp at h2
     exact h2.const_mul _
   · exact ((continuous_angChar n).comp continuous_snd).mul
       (((hv.continuous_fderiv (by norm_num)).comp (continuous_circPt x₀)).clm_apply
@@ -144,7 +144,7 @@ lemma hasDerivAt_angMode1 (r : ℝ) : HasDerivAt (angMode1 v x₀ n) (angMode2 v
 /-- `Δv = D²v(1,1) + D²v(i,i)`. -/
 lemma lap_eq_fderiv_fderiv (p : ℂ) :
     lap v p = fderiv ℝ (fderiv ℝ v) p 1 1 + fderiv ℝ (fderiv ℝ v) p Complex.I Complex.I := by
-  have hd : Differentiable ℝ (fderiv ℝ v) := (contDiff_fderiv_of_two hv).differentiable one_ne_zero
+  have hd := (contDiff_fderiv_of_two hv).differentiable one_ne_zero
   have key : ∀ w : ℂ, dirD (dirD v w) w p = fderiv ℝ (fderiv ℝ v) p w w := fun w => by
     unfold dirD
     rw [fderiv_clm_apply (hd p) (differentiableAt_const w)]
@@ -160,11 +160,11 @@ lemma fderiv_fderiv_rot (p : ℂ) (θ : ℝ) :
     fderiv ℝ (fderiv ℝ v) p 1 1 + fderiv ℝ (fderiv ℝ v) p Complex.I Complex.I := by
   set D := fderiv ℝ (fderiv ℝ v) p
   have he : eI θ = (Real.cos θ) • (1 : ℂ) + (Real.sin θ) • Complex.I := by
-    simp only [eI, Complex.exp_mul_I, Complex.real_smul, mul_one, ← Complex.ofReal_cos,
+    simp [eI, Complex.exp_mul_I, Complex.real_smul, mul_one, ← Complex.ofReal_cos,
       ← Complex.ofReal_sin]
   have hie : Complex.I * eI θ = (-Real.sin θ) • (1 : ℂ) + (Real.cos θ) • Complex.I := by
     rw [he]
-    simp only [Complex.real_smul, mul_one, Complex.ofReal_neg]
+    simp
     ring_nf
     rw [Complex.I_sq]; ring
   rw [hie, he]
@@ -198,10 +198,10 @@ lemma continuous_angChar_mul {f : ℝ → ℂ} (hf : Continuous f) :
 theorem angMode_lap {r : ℝ} (hr : r ≠ 0) :
     angMode2 v x₀ n r + angMode1 v x₀ n r / r - ((n : ℂ) ^ 2 / (r : ℂ) ^ 2) * angMode v x₀ n r =
       ∫ θ in (0 : ℝ)..2 * π, angChar n θ * lap v (circPt x₀ r θ) := by
-  have hd : Differentiable ℝ v := hv.differentiable (by norm_num)
-  have hd1 : Differentiable ℝ (fderiv ℝ v) := (contDiff_fderiv_of_two hv).differentiable one_ne_zero
-  have hc1 : Continuous (fderiv ℝ v) := hv.continuous_fderiv (by norm_num)
-  have hc2 : Continuous (fderiv ℝ (fderiv ℝ v)) := continuous_fderiv_fderiv_of_two hv
+  have hd := hv.differentiable (by norm_num)
+  have hd1 := (contDiff_fderiv_of_two hv).differentiable one_ne_zero
+  have hc1 := hv.continuous_fderiv (by norm_num)
+  have hc2 := continuous_fderiv_fderiv_of_two hv
   have hcp : Continuous fun θ => circPt x₀ r θ :=
     (continuous_circPt x₀).comp (continuous_const.prodMk continuous_id)
   set D := fderiv ℝ (fderiv ℝ v)
@@ -226,12 +226,11 @@ theorem angMode_lap {r : ℝ} (hr : r ≠ 0) :
       ((hc1.comp hcp).clm_apply (continuous_const.mul (continuous_const.mul
         (continuous_const.mul continuous_eI))))
   have hper : ∀ f : ℂ → ℂ, (fun θ => f (circPt x₀ r θ)) (2 * π) =
-      (fun θ => f (circPt x₀ r θ)) 0 := fun f => by simp only [circPt, eI_two_pi]
-  have hg1per : g1 (2 * π) = g1 0 := by simp only [g1, circPt, eI_two_pi]
+      (fun θ => f (circPt x₀ r θ)) 0 := fun f => by simp [circPt, eI_two_pi]
   -- two periodic integrations by parts
   have hI2 : ∫ θ in (0 : ℝ)..2 * π, angChar n θ * g2 θ =
       -((n : ℂ) ^ 2) * angMode v x₀ n r := by
-    rw [integral_angChar_mul_deriv n hg1 hg2c hg1per,
+    rw [integral_angChar_mul_deriv n hg1 hg2c (by simp [g1, circPt, eI_two_pi]),
       integral_angChar_mul_deriv n hg hg1c (hper v)]
     simp only [angMode]
     ring_nf
@@ -250,7 +249,7 @@ theorem angMode_lap {r : ℝ} (hr : r ≠ 0) :
         rw [← Complex.real_smul, map_smul, ContinuousLinearMap.smul_apply, Complex.real_smul]
     have hII : Complex.I * (Complex.I * eI θ) = -eI θ := by
       rw [← mul_assoc, Complex.I_mul_I]; ring
-    simp only [g2, D]
+    simp [g2, D]
     rw [hsm2, hsm, hsm, hII, map_neg]
     field_simp
     ring
@@ -267,7 +266,7 @@ theorem angMode_lap {r : ℝ} (hr : r ≠ 0) :
   rw [intervalIntegral.integral_congr (fun θ _ => hpt θ), intervalIntegral.integral_add
     (hi1.add hi2) hi3, intervalIntegral.integral_add hi1 hi2, intervalIntegral.integral_div,
     intervalIntegral.integral_div, hI2]
-  simp only [angMode2, angMode1, D]
+  simp [angMode2, angMode1, D]
   field_simp
   ring
 

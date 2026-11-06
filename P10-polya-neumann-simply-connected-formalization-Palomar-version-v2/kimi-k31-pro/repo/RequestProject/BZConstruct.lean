@@ -53,7 +53,7 @@ theorem exists_bzSetting {Ω : Set ℂ} (hb : Bornology.IsBounded Ω) (hL : IsLi
     (hΩne : Ω.Nonempty) (hΩu : Ωᶜ.Nonempty) : Nonempty (BZSetting Ω) := by
   obtain ⟨X, LX, M, r₀, τ, κ, hX, hM, hr₀, hτ, hκ, hQ⟩ :=
     exists_transversalField hb hL hΩne hΩu
-  have hM0 : 0 ≤ M := (norm_nonneg _).trans (hM 0)
+  have hM0 := (norm_nonneg _).trans (hM 0)
   obtain ⟨Φ, hΦ⟩ := exists_isShortFlow hX hM
   exact ⟨⟨X, LX, M + κ, r₀, τ, κ, Φ, hX, fun z => (hM z).trans (by linarith), hκ,
     by linarith, hr₀, hτ, fun z hz t ht0 htτ => hQ z hz t ht0 htτ, hΦ⟩⟩
@@ -185,7 +185,7 @@ lemma T₁_pos : 0 < D.T₁ := by
 
 lemma T₁_le : D.T₁ ≤ 1 / 8 := by
   have hA := S.A₁_ge
-  have h1 : D.T ≤ 1 / (8 * S.A₁) := D.T_le.trans (min_le_left _ _)
+  have h1 := D.T_le.trans (min_le_left _ _)
   unfold T₁
   rw [le_div_iff₀ (by positivity)] at h1
   nlinarith
@@ -199,7 +199,7 @@ lemma κT₁ : S.κ₀ * D.T₁ = 64 * S.M * D.T := by
 lemma path_bound : 4 * S.M * D.T + 2 * (S.M * (2 * D.T₁)) < S.r₀ / 2 := by
   have hA := S.A₁_ge
   have hMp := S.M_pos
-  have h1 : D.T ≤ S.r₀ / (16 * S.M * (1 + S.A₁)) := D.T_le.trans (min_le_right _ _)
+  have h1 := D.T_le.trans (min_le_right _ _)
   rw [le_div_iff₀ (by positivity)] at h1
   unfold T₁
   have e : 4 * S.M * D.T + 2 * (S.M * (2 * (S.A₁ * D.T))) =
@@ -291,10 +291,10 @@ lemma abs_d_le {x : ℂ} (hx : x ∈ D.C) : |signedDist Ω x| ≤ 2 * (S.M * |D.
 lemma mem_iff_a_pos (hΩo : IsOpen Ω) (hΩu : Ωᶜ.Nonempty) {x : ℂ} (hx : x ∈ D.C) :
     x ∈ Ω ↔ 0 < D.a x := by
   obtain ⟨hu, h0⟩ := D.cross_d_spec hx
-  have hx' : |signedDist Ω x| < 4 * S.M * D.T := hx
+
   have hT1 := D.T₁_le
   have hpath : ∀ v, |v| ≤ D.T₁ → S.Φ v x ∈ S.U₁ := fun v hv =>
-    D.flow_mem_U₁ hx' (by linarith [D.T₁_pos])
+    D.flow_mem_U₁ (hx) (by linarith [D.T₁_pos])
   rw [← signedDist_pos_iff hΩo hΩu]
   rcases lt_trichotomy (D.a x) 0 with hneg | hzero | hpos
   · -- the crossing time `-a x` is positive: `d x < 0`
@@ -414,10 +414,10 @@ lemma flow_collar {x : ℂ} (hx : x ∈ D.C) (hax : |D.a x| < D.T) {u : ℝ} (hu
 
 lemma a_lip {x : ℂ} (hx : x ∈ D.C) {y : ℂ} (hy : y ∈ D.C) :
     |D.a x - D.a y| ≤ S.La * ‖x - y‖ := by
-  have hy' : |signedDist Ω y| < 4 * S.M * D.T := hy
+
   have := S.hΦ.abs_crossing_sub_le S.hX S.hM (lipschitzWith_signedDist Ω) S.hτ₀ S.hκ₀ S.hQ₁
     (by linarith [D.T₁_le]) (x := x) (y := y)
-    (fun v hv => D.flow_mem_U₁ hy' (abs_le.mpr ⟨by linarith [hv.1, D.T₁_pos],
+    (fun v hv => D.flow_mem_U₁ (hy) (abs_le.mpr ⟨by linarith [hv.1, D.T₁_pos],
       by linarith [hv.2, D.T₁_pos]⟩))
     (D.cross_d_spec hx).1 (D.cross_d_spec hy).1 (D.cross_d_spec hx).2 (D.cross_d_spec hy).2
   rw [show -D.a x - -D.a y = -(D.a x - D.a y) by ring, abs_neg] at this
@@ -429,10 +429,10 @@ lemma a_lip {x : ℂ} (hx : x ∈ D.C) {y : ℂ} (hy : y ∈ D.C) :
 
 lemma s_lip {x : ℂ} (hx : x ∈ D.C) {y : ℂ} (hy : y ∈ D.C) :
     |D.s x - D.s y| ≤ 8 * Real.exp S.LX / S.κ₀ * ‖x - y‖ := by
-  have hy' : |signedDist Ω y| < 4 * S.M * D.T := hy
+
   have := S.hΦ.abs_crossing_sub_le S.hX S.hM D.lip S.hτ₀ (by linarith [S.hκ₀]) D.trans
     (by linarith [D.T₁_le]) (x := x) (y := y)
-    (fun v hv => D.flow_mem_U₁ hy' (abs_le.mpr ⟨by linarith [hv.1, D.T₁_pos],
+    (fun v hv => D.flow_mem_U₁ (hy) (abs_le.mpr ⟨by linarith [hv.1, D.T₁_pos],
       by linarith [hv.2, D.T₁_pos]⟩))
     (D.cross_ρ_spec hx).1 (D.cross_ρ_spec hy).1 (D.cross_ρ_spec hx).2 (D.cross_ρ_spec hy).2
   have hκ := S.hκ₀

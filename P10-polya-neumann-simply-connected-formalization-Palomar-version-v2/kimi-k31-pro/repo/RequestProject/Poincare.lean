@@ -51,19 +51,19 @@ theorem poincare_wirtinger {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
     rw [h, norm_zero] at this
     have : 0 ≤ ((n : ℝ) + 1) * ∑ i, ‖g n i‖ ^ 2 := by positivity
     linarith
-  have hpos : ∀ n, 0 < ‖u n‖ := fun n => norm_pos_iff.mpr (hune n)
+  have hpos := fun n => norm_pos_iff.mpr (hune n)
   -- normalize
   set v : ℕ → L2 Ω := fun n => ((‖u n‖⁻¹ : ℝ) : ℂ) • u n with hv
   set h : ℕ → Fin 2 → L2 Ω := fun n => ((‖u n‖⁻¹ : ℝ) : ℂ) • g n with hh
   have hvg : ∀ n, IsWeakGradient Ω (v n) (h n) := fun n => isWeakGradient_smul (hg n) _
   have hvnorm : ∀ n, ‖v n‖ = 1 := by
     intro n
-    simp only [hv, norm_smul, Complex.norm_real, Real.norm_eq_abs, abs_inv, abs_norm]
+    simp [hv, norm_smul, Complex.norm_real, Real.norm_eq_abs, abs_inv, abs_norm]
     exact inv_mul_cancel₀ (hpos n).ne'
   have hhsum : ∀ n, ∑ i, ‖h n i‖ ^ 2 < 1 / ((n : ℝ) + 1) := by
     intro n
     have e : ∑ i, ‖h n i‖ ^ 2 = (∑ i, ‖g n i‖ ^ 2) / ‖u n‖ ^ 2 := by
-      simp only [hh, Pi.smul_apply, norm_smul, Complex.norm_real, Real.norm_eq_abs, abs_inv,
+      simp [hh, Pi.smul_apply, norm_smul, Complex.norm_real, Real.norm_eq_abs, abs_inv,
         abs_norm, mul_pow, inv_pow, ← Finset.mul_sum]
       field_simp
     have hp := hpos n
@@ -89,9 +89,9 @@ theorem poincare_wirtinger {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
     have h1 := tendsto_integral_of_tendsto hV
     have h2 : ∀ n, ∫ w in Ω, (v ∘ φ) n w = 0 := by
       intro n
-      simp only [Function.comp_apply, hv]
+      simp
       rw [integral_congr_ae (Lp.coeFn_smul _ (u (φ n)))]
-      simp only [Pi.smul_apply, smul_eq_mul]
+      simp
       rw [integral_const_mul, hmean, mul_zero]
     simp only [h2, tendsto_const_nhds_iff] at h1
     exact h1.symm
@@ -148,9 +148,8 @@ lemma exists_mean_zero (Ω : Set ℂ) [IsFiniteMeasure (volume.restrict Ω)]
   have h1 := LinearMap.finrank_range_add_finrank_ker ℓ
   have h2 : Module.finrank ℂ (LinearMap.range ℓ) ≤ 1 := by
     simpa using Submodule.finrank_le (LinearMap.range ℓ)
-  have h3 : 0 < Module.finrank ℂ (LinearMap.ker ℓ) := by omega
   obtain ⟨x, hx⟩ :=
-    (Module.finrank_pos_iff_exists_ne_zero (R := ℂ) (M := LinearMap.ker ℓ)).mp (by exact h3)
+    (Module.finrank_pos_iff_exists_ne_zero (R := ℂ) (M := LinearMap.ker ℓ)).mp (by exact (by omega))
   refine ⟨((x : S) : L2 Ω), (x : S).2, ?_, ?_⟩
   · exact fun h => hx (Subtype.ext (Subtype.ext h))
   · have := x.2
@@ -164,9 +163,7 @@ lemma rayleigh_ge_of_poincare {Ω : Set ℂ} {C : ℝ} (hC : 0 < C)
       ∫ w in Ω, u w = 0 → ‖u‖ ^ 2 ≤ C * ∑ i, ‖g i‖ ^ 2)
     (u : L2 Ω) (hu : u ≠ 0) (h0 : ∫ w in Ω, u w = 0) :
     ENNReal.ofReal C⁻¹ ≤ rayleigh Ω u := by
-  have hn : (‖u‖₊ : ENNReal) ^ 2 ≠ 0 := by simpa using hu
-  have hn' : (‖u‖₊ : ENNReal) ^ 2 ≠ ⊤ := by simp
-  rw [rayleigh, ENNReal.le_div_iff_mul_le (Or.inl hn) (Or.inl hn')]
+  rw [rayleigh, ENNReal.le_div_iff_mul_le (Or.inl (by simpa using hu)) (Or.inl (by simp))]
   refine le_iInf₂ fun g hg => ?_
   have hreal := hP u g hg h0
   have e1 : (‖u‖₊ : ENNReal) ^ 2 = ENNReal.ofReal (‖u‖ ^ 2) := by

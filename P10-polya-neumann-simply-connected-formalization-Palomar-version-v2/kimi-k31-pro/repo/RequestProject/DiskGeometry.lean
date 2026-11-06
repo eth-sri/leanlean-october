@@ -88,7 +88,7 @@ theorem isSmoothDomain_unitDisk : IsSmoothDomain (ball (0 : ℂ) 1) := by
   have hp1 : ‖p‖ = 1 := by
     simpa only [mem_sphere, dist_zero_right] using hp
   obtain ⟨K, F, hFc, hFl, hF0, hFb, hFiff⟩ := exists_unitDisk_graph
-  let c : ℂ := -Complex.I * conj p
+  let c := -Complex.I * conj p
   have hc : ‖c‖ = 1 := by simp [c, hp1]
   have hcp : c * p = -Complex.I := by
     have hpp : conj p * p = (1 : ℂ) := by
@@ -99,7 +99,7 @@ theorem isSmoothDomain_unitDisk : IsSmoothDomain (ball (0 : ℂ) 1) := by
   refine ⟨c, 1 / 8, 1 / 2, K, F, hc, by norm_num, by norm_num,
     hFc, hFl, hF0, hFb, ?_⟩
   intro w hwx hwy
-  let q : ℂ := c * (w - p)
+  let q := c * (w - p)
   change |q.re| < (1 / 8 : ℝ) at hwx
   change |q.im| < (1 / 2 : ℝ) at hwy
   change w ∈ ball (0 : ℂ) 1 ↔ F q.re < q.im
@@ -113,7 +113,7 @@ theorem isSmoothDomain_unitDisk : IsSmoothDomain (ball (0 : ℂ) 1) := by
       _ = Complex.normSq (c * w) := (Complex.normSq_eq_norm_sq _).symm
       _ = q.re ^ 2 + (q.im - 1) ^ 2 := by
         rw [hcw, Complex.normSq_apply]
-        simp only [Complex.sub_re, Complex.sub_im, Complex.I_re, Complex.I_im]
+        simp
         ring
   rw [mem_ball_zero_iff, ← sq_lt_one_iff₀ (norm_nonneg w), ← hFiff q.re hwx q.im hwy]
   constructor <;> intro h <;> nlinarith [hnorm]
@@ -126,8 +126,7 @@ theorem unitDisk_bounded : Bornology.IsBounded (ball (0 : ℂ) 1) :=
   Metric.isBounded_ball
 
 theorem unitDisk_volume_toReal : (volume (ball (0 : ℂ) 1)).toReal = π := by
-  simp only [Complex.volume_ball, ENNReal.ofReal_one, one_pow, one_mul,
-    ENNReal.coe_toReal, NNReal.coe_real_pi]
+  simp
 
 /-- The standard positively oriented circle is a genuine boundary parameter for the disk. -/
 theorem unitCircle_isBoundaryParam :
@@ -149,7 +148,7 @@ theorem unitCircle_isBoundaryParam :
         simpa only [image_circleMap_Ioc, abs_one] using hw
       exact (image_mono Ioc_subset_Icc_self) hw'
   · refine ⟨1, by norm_num, ae_of_all _ fun θ => ?_⟩
-    simp [deriv_circleMap]
+    simp
   · have him : ∀ θ : ℝ,
         (conj (circleMap 0 1 θ) * deriv (circleMap 0 1) θ).im = 1 := by
       intro θ

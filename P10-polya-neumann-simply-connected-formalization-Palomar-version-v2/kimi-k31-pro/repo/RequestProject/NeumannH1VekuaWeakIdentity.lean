@@ -58,7 +58,7 @@ theorem h1WirtingerDbar_eq_value_of_components (Ω : Set ℂ) (u v : NeumannH1 �
     (hy : h1Gradient Ω 1 u = -Complex.I • h1Value Ω v) :
     h1WirtingerDbar Ω u = h1Value Ω v := by
   rw [h1WirtingerDbar_apply, hx, hy]
-  simp only [smul_smul, mul_neg, Complex.I_mul_I, neg_neg, one_smul]
+  simp [smul_smul, mul_neg, Complex.I_mul_I, neg_neg, one_smul]
   module
 
 /-- The affine H¹ product rule for the actual first Wirtinger derivative. -/
@@ -69,7 +69,7 @@ theorem h1WirtingerD_neumannH1AffineMultiplier {Ω : Set ℂ}
         (h1WirtingerD Ω u) + h1Value Ω u := by
   rw [h1WirtingerD_apply, h1Gradient_neumannH1AffineMultiplier_x,
     h1Gradient_neumannH1AffineMultiplier_y, h1WirtingerD_apply]
-  simp only [map_smul, map_sub, smul_add, smul_smul, Complex.I_mul_I,
+  simp [map_smul, map_sub, smul_add, smul_smul, Complex.I_mul_I,
     neg_smul, one_smul]
   module
 
@@ -81,7 +81,7 @@ theorem h1WirtingerDbar_neumannH1AffineMultiplier {Ω : Set ℂ}
         (h1WirtingerDbar Ω u) := by
   rw [h1WirtingerDbar_apply, h1Gradient_neumannH1AffineMultiplier_x,
     h1Gradient_neumannH1AffineMultiplier_y, h1WirtingerDbar_apply]
-  simp only [map_smul, map_add, smul_add, smul_smul, Complex.I_mul_I,
+  simp [map_smul, map_add, smul_add, smul_smul, Complex.I_mul_I,
     neg_smul, one_smul]
   module
 
@@ -93,7 +93,7 @@ theorem h1Value_neumannH1AffineMultiplier_pow {Ω : Set ℂ}
       (neumannAffineL2Multiplier p (neumannH1AffineBound_spec hb p) ^ j)
         (h1Value Ω u) := by
   induction j with
-  | zero => simp only [pow_zero, ContinuousLinearMap.one_apply]
+  | zero => simp [pow_zero, ContinuousLinearMap.one_apply]
   | succ j ih =>
     calc
       _ = neumannAffineL2Multiplier p (neumannH1AffineBound_spec hb p)
@@ -107,7 +107,7 @@ theorem h1WirtingerDbar_affine_pow {Ω : Set ℂ}
       (neumannAffineL2Multiplier p (neumannH1AffineBound_spec hb p) ^ j)
         (h1WirtingerDbar Ω u) := by
   induction j with
-  | zero => simp only [pow_zero, ContinuousLinearMap.one_apply]
+  | zero => simp [pow_zero, ContinuousLinearMap.one_apply]
   | succ j ih =>
     calc
       _ = neumannAffineL2Multiplier p (neumannH1AffineBound_spec hb p)
@@ -120,7 +120,7 @@ private theorem vekua_nat_succ_smul {V : Type*} [AddCommGroup V] [Module ℂ V]
     (j : ℕ) (x : V) :
     ((j + 1 : ℕ) : ℂ) • x + x = ((j + 1 + 1 : ℕ) : ℂ) • x := by
   have hc : ((j + 1 + 1 : ℕ) : ℂ) = ((j + 1 : ℕ) : ℂ) + 1 := by
-    simp only [Nat.cast_add, Nat.cast_one]
+    simp
   rw [hc, add_smul, one_smul]
 
 private theorem vekua_affine_successor {V : Type*} [NormedAddCommGroup V]
@@ -139,7 +139,7 @@ theorem h1WirtingerD_affine_pow_of_antiholomorphic {Ω : Set ℂ}
   have hzero := h1WirtingerD_eq_zero_of_antiholomorphic u hu
   induction j with
   | zero =>
-    simp only [zero_add, pow_one, pow_zero, ContinuousLinearMap.one_apply,
+    simp [zero_add, pow_one, pow_zero, ContinuousLinearMap.one_apply,
       h1WirtingerD_neumannH1AffineMultiplier, hzero, map_zero, zero_add,
       Nat.cast_one, one_smul]
   | succ j ih =>

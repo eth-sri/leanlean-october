@@ -35,7 +35,7 @@ lemma integrable_weight_inner {ρ : ℂ → ℝ} {C : ℝ}
     Integrable (fun w => (ρ w : ℂ) * inner ℂ ((u : ℂ → ℂ) w) ((v : ℂ → ℂ) w))
       (volume.restrict Ω) :=
   (L2.integrable_inner u v).bdd_mul (Complex.continuous_ofReal.comp_aestronglyMeasurable hρm)
-    (hρb.mono fun w hw => by simpa [Complex.norm_real] using hw)
+    (hρb.mono fun w hw => by simpa using hw)
 
 /-- The weighted sesquilinear form `(u, v) ↦ ∫_Ω ρ ⟨u, v⟩` on a submodule of `L²(Ω)`. -/
 def weightedSesq (S : Submodule ℂ (L2 Ω)) {ρ : ℂ → ℝ} {C : ℝ}
@@ -55,7 +55,7 @@ def weightedSesq (S : Submodule ℂ (L2 Ω)) {ρ : ℂ → ℝ} {C : ℝ}
       refine integral_congr_ae ?_
       filter_upwards [Lp.coeFn_smul c (u : L2 Ω)] with w hw
       rw [Submodule.coe_smul, hw, Pi.smul_apply, inner_smul_left]
-      simp only [starRingEnd_apply]
+      simp
       ring)
     (fun u v₁ v₂ => by
       rw [← integral_add (integrable_weight_inner hρm hρb _ _)
@@ -102,7 +102,7 @@ theorem tendstoUniformlyOn_weightedMass (ρ : ℕ → ℂ → ℝ) (C : ℝ)
   have hentries : ∀ r s, Tendsto (fun n => Bn n (b r) (b s)) atTop (𝓝 (B (b r) (b s))) := by
     intro r s
     have hB : B (b r) (b s) = ∫ w in Ω, inner ℂ (((b r : S) : L2 Ω) w) (((b s : S) : L2 Ω) w) := by
-      simp only [B, innerₛₗ_apply_apply, Submodule.coe_inner, L2.inner_def]
+      simp [B, innerₛₗ_apply_apply, Submodule.coe_inner, L2.inner_def]
     rw [hB]
     refine tendsto_integral_of_dominated_convergence
       (fun w => C * ‖inner ℂ (((b r : S) : L2 Ω) w) (((b s : S) : L2 Ω) w)‖)
@@ -117,7 +117,7 @@ theorem tendstoUniformlyOn_weightedMass (ρ : ℕ → ℂ → ℝ) (C : ℝ)
       simpa using this
   have hK : Bornology.IsBounded {u : S | ‖u‖ = 1} :=
     (Metric.isBounded_closedBall (x := (0 : S)) (r := 1)).subset fun u hu => by
-      simp only [Set.mem_setOf_eq] at hu
+      simp at hu
       simp [hu]
   have hU := tendstoUniformlyOn_sesq_of_basis b Bn B hentries hK
   have hU' := Complex.uniformContinuous_re.comp_tendstoUniformlyOn hU

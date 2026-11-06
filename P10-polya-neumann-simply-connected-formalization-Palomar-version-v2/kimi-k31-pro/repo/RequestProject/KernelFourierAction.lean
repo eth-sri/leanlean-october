@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.TwoPi
 public import Mathlib.Analysis.Fourier.AddCircle
 public import Mathlib.Analysis.Normed.Operator.Compact
 public import Mathlib.Analysis.SpecialFunctions.Pow.Real
@@ -39,7 +40,6 @@ namespace PolyaNeumann
 open Real MeasureTheory Set
 open scoped ComplexConjugate InnerProductSpace
 
-local instance factTwoPiPosKFA : Fact (0 < 2 * π) := ⟨two_pi_pos⟩
 
 /-- The unnormalized coordinate Fourier mode `e^{inθ}`. -/
 def kernelFourierMode (n : ℤ) (θ : ℝ) : ℂ :=
@@ -50,7 +50,7 @@ lemma fourier_two_pi_eq_kernelFourierMode (n : ℤ) (θ : ℝ) :
   rw [fourier_coe_apply]
   unfold kernelFourierMode
   congr 1
-  have hpi : (π : ℂ) ≠ 0 := by exact_mod_cast pi_ne_zero
+
   push_cast
   field_simp
 
@@ -61,7 +61,7 @@ lemma integral_kernelFourierMode_eq_coeff (r : ℝ → ℂ) (n : ℤ) :
       (2 * π : ℂ) * fourierCoeffOn two_pi_pos r (-n) := by
   rw [fourierCoeffOn_eq_integral]
   simp only [sub_zero, neg_neg, Complex.real_smul, smul_eq_mul]
-  have hpi : (2 * π : ℂ) ≠ 0 := by exact_mod_cast two_pi_pos.ne'
+
   push_cast
   have hnorm : (2 * π : ℂ) * (1 / (2 * π) : ℂ) = 1 := by field_simp
   rw [← mul_assoc, hnorm, one_mul]
@@ -96,7 +96,7 @@ lemma two_pi_mul_integral_liftIco (f : ℝ → ℂ) :
     simp [fourierCoeff]
   rw [← hzero, fourierCoeff_liftIco_two_pi, fourierCoeffOn_eq_integral]
   simp only [neg_zero, fourier_zero, one_smul, sub_zero, Complex.real_smul]
-  have hpi : (2 * π : ℂ) ≠ 0 := by exact_mod_cast two_pi_pos.ne'
+
   push_cast
   have hnorm : (2 * π : ℂ) * (1 / (2 * π) : ℂ) = 1 := by field_simp
   rw [← mul_assoc, hnorm, one_mul]
@@ -153,7 +153,7 @@ def kernelL2Action (g : L2Circ) (θ : ℝ) : ℂ :=
 
 lemma norm_kernelL2Action_le (g : L2Circ) (θ : ℝ) :
     ‖kernelL2Action hmeas hbd g θ‖ ≤ 2 * π * M * ‖g‖ := by
-  have hM : 0 ≤ M := (norm_nonneg _).trans (hbd 0 0)
+
   have hnorm : ‖(2 * π : ℂ)‖ = 2 * π := by
     rw [norm_mul, Complex.norm_two, Complex.norm_real, Real.norm_eq_abs, abs_of_pos pi_pos]
   rw [kernelL2Action, norm_mul, hnorm]
@@ -204,7 +204,7 @@ theorem kernelL2Action_toLp {f : ℝ → ℂ} (hf : Measurable f) {B : ℝ}
     simp [fourierCoeff]
   rw [← hzero, fourierCoeff_liftIco_two_pi, fourierCoeffOn_eq_integral]
   simp only [neg_zero, fourier_zero, one_smul, sub_zero, Complex.real_smul]
-  have hpi : (2 * π : ℂ) ≠ 0 := by exact_mod_cast two_pi_pos.ne'
+
   push_cast
   have hnorm : (2 * π : ℂ) * (1 / (2 * π) : ℂ) = 1 := by field_simp
   rw [← mul_assoc, hnorm, one_mul]

@@ -44,7 +44,7 @@ theorem chart_reduced_boundary_bound_on_energy_set {m : ℕ} (J : ℝ → H₀ �
       ∃ ℓ : H →ₗ[ℂ] (Fin m → ℂ), ∀ y, ℓ y = 0 →
         -(A₀ * ‖S E y‖ ^ 2) ≤ (⟪y, P E y⟫_ℂ).re := by
   set η : Fin m → H₀ᗮ := fun j => adjoint R (w j) with hη
-  set Z : Submodule ℂ H₀ᗮ := (Submodule.span ℂ (Set.range η))ᗮ with hZ
+  set Z := (Submodule.span ℂ (Set.range η))ᗮ with hZ
   have hmemZ : ∀ z, z ∈ Z ↔ ∀ j, ⟪η j, z⟫_ℂ = 0 := by
     intro z
     constructor
@@ -65,7 +65,7 @@ theorem chart_reduced_boundary_bound_on_energy_set {m : ℕ} (J : ℝ → H₀ �
   refine ⟨A₀, hA₀, _, hev, ?_⟩
   intro E hE hEU
   obtain ⟨u, hu⟩ := hunit E hEU
-  set zc : H →L[ℂ] H₀ᗮ := H₀ᗮ.orthogonalProjection ∘L (↑u⁻¹ : H →L[ℂ] H) with hzc
+  set zc := H₀ᗮ.orthogonalProjection ∘L (↑u⁻¹ : H →L[ℂ] H) with hzc
   refine ⟨LinearMap.pi fun j => (((innerSL ℂ (η j)) ∘L zc : H →L[ℂ] ℂ) : H →ₗ[ℂ] ℂ), ?_⟩
   intro y hy
   set x := (↑u⁻¹ : H →L[ℂ] H) y with hx
@@ -81,7 +81,7 @@ theorem chart_reduced_boundary_bound_on_energy_set {m : ℕ} (J : ℝ → H₀ �
     rfl
   have hSy : S E y = S E (R z) := by
     have := congrArg (fun T => T a) (hnullS E hEU)
-    simp only [ContinuousLinearMap.comp_apply, ContinuousLinearMap.zero_apply] at this
+    simp at this
     rw [hyx, map_add, this, zero_add]
   have hPJa : P E (J E a) = 0 := by
     have := congrArg (fun T => T a) (hnullP E hEU)

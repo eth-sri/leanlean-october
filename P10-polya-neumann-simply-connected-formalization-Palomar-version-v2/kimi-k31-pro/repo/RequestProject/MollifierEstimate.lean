@@ -50,13 +50,13 @@ lemma norm_setIntegral_mul_le {Ω : Set ℂ} (g : L2 Ω) {ψ : ℂ → ℂ} (hψ
     rw [L2.inner_def]
     refine integral_congr_ae ?_
     filter_upwards [hψ'.coeFn_toLp] with w hw
-    simp only [Ψ, hw, RCLike.inner_apply, Complex.conj_conj, mul_comm]
+    simp [Ψ, hw, RCLike.inner_apply, Complex.conj_conj, mul_comm]
   rw [key]
   refine (norm_inner_le_norm _ _).trans ?_
   rw [mul_comm]
   gcongr
   rw [Lp.norm_toLp, l2norm]
-  refine ENNReal.toReal_mono (hψ.eLpNorm_ne_top) ?_
+  refine ENNReal.toReal_mono hψ.eLpNorm_ne_top ?_
   calc eLpNorm (fun w => (starRingEnd ℂ) (ψ w)) 2 (volume.restrict Ω)
       = eLpNorm ψ 2 (volume.restrict Ω) := by
         refine eLpNorm_congr_norm_ae hψ'.aestronglyMeasurable
@@ -155,8 +155,8 @@ theorem pairing_translate_le {Ω : Set ℂ} (hΩ : IsOpen Ω) {u : L2 Ω} {g : F
     have h0 := norm_setIntegral_mul_le (g 0) hmem
     have h1 := norm_setIntegral_mul_le (g 1) hmem
     rw [hn] at h0 h1
-    have hre : |z.re| ≤ ‖z‖ := Complex.abs_re_le_norm z
-    have him : |z.im| ≤ ‖z‖ := Complex.abs_im_le_norm z
+    have hre := Complex.abs_re_le_norm z
+    have him := Complex.abs_im_le_norm z
     have hl : 0 ≤ l2norm φ := ENNReal.toReal_nonneg
     calc _ ≤ ‖(z.re : ℂ) * ∫ w in Ω, g 0 w * φ (w + s • z)‖ +
           ‖(z.im : ℂ) * ∫ w in Ω, g 1 w * φ (w + s • z)‖ := norm_add_le _ _
@@ -170,14 +170,14 @@ theorem pairing_translate_le {Ω : Set ℂ} (hΩ : IsOpen Ω) {u : L2 Ω} {g : F
   set ν : Measure ℝ := volume.restrict (Ioc (0 : ℝ) 1)
   have hU : LocallyIntegrable (extZero Ω u) volume :=
     locallyIntegrable_indicator_L2 hΩ.measurableSet u
-  set L : Set ℂ := (fun p : ℂ × ℝ => p.1 - p.2 • z) '' (tsupport φ ×ˢ Icc 0 1)
+  set L := (fun p : ℂ × ℝ => p.1 - p.2 • z) '' (tsupport φ ×ˢ Icc 0 1)
   have hL : IsCompact L := (hφs.prod isCompact_Icc).image (by fun_prop)
   obtain ⟨M, hM⟩ := (hφs.fderiv ℝ).exists_bound_of_continuous (hφ.continuous_fderiv (by simp))
   have hDb : ∀ t, ∀ s ∈ Icc (0 : ℝ) 1,
       ‖D t s‖ ≤ M * ‖z‖ * ‖L.indicator (fun _ => (1 : ℝ)) t‖ := by
     intro t s hs
     by_cases ht : t ∈ L
-    · simp only [ht, indicator_of_mem, norm_one, mul_one]
+    · simp [ht, indicator_of_mem, norm_one, mul_one]
       exact (ContinuousLinearMap.le_opNorm _ _).trans (by gcongr; exact hM _)
     · have : t + s • z ∉ tsupport (fderiv ℝ φ) := by
         intro h
@@ -199,7 +199,7 @@ theorem pairing_translate_le {Ω : Set ℂ} (hΩ : IsOpen Ω) {u : L2 Ω} {g : F
       have := hDb p.1 p.2 (Ioc_subset_Icc_self hp)
       by_cases ht : p.1 ∈ L
       · simp only [ht, indicator_of_mem, norm_mul] at this ⊢
-        simp only [norm_one, mul_one] at this
+        simp at this
         calc ‖extZero Ω u p.1‖ * ‖D p.1 p.2‖ ≤ ‖extZero Ω u p.1‖ * (M * ‖z‖) := by gcongr
           _ = _ := by ring
       · simp only [ht, not_false_eq_true, indicator_of_notMem, norm_zero, mul_zero] at this ⊢
@@ -232,13 +232,13 @@ theorem pairing_mollify_le {Ω : Set ℂ} (hΩ : IsOpen Ω) {u : L2 Ω} {g : Fin
   have hUφ : Integrable (fun t => U t * φ t) :=
     hU.integrable_smul_right_of_hasCompactSupport hφ.continuous hφs
   have hmφ : Integrable (fun t => mollify ρ U t * φ t) :=
-    (hmc.mul hφ.continuous).integrable_of_hasCompactSupport (hφs.mul_left)
+    (hmc.mul hφ.continuous).integrable_of_hasCompactSupport hφs.mul_left
   have hUφz : ∀ z, Integrable (fun t => U t * φ (t + z)) := fun z =>
     hU.integrable_smul_right_of_hasCompactSupport (hφ.continuous.comp ((continuous_id.add continuous_const : Continuous fun x => x + z)))
       (hφs.comp_homeomorph (Homeomorph.addRight z))
   have hρi : Integrable ρ := hρc.integrable_of_hasCompactSupport hρs
   -- Fubini
-  set L' : Set ℂ := (fun p : ℂ × ℂ => p.1 - p.2) '' (tsupport φ ×ˢ tsupport ρ)
+  set L' := (fun p : ℂ × ℂ => p.1 - p.2) '' (tsupport φ ×ˢ tsupport ρ)
   have hL' : IsCompact L' := (hφs.prod hρs).image (by fun_prop)
   set F : ℂ → ℂ → ℂ := fun x z => ρ z • U (x - z) * φ x with hF
   have hFeq : ∀ x z, F x z = ρ z • L'.indicator U (x - z) * φ x := by
@@ -270,11 +270,11 @@ theorem pairing_mollify_le {Ω : Set ℂ} (hΩ : IsOpen Ω) {u : L2 Ω} {g : Fin
   have hGi : Integrable (fun z => ρ z • ∫ t, U t * φ (t + z)) := by
     have := hFint.integral_prod_right
     refine this.congr (Eventually.of_forall fun z => ?_)
-    simpa [Function.uncurry] using hG z
+    simpa using hG z
   have hm : ∫ x, mollify ρ U x * φ x = ∫ z, ρ z • ∫ t, U t * φ (t + z) := by
     have h1 : ∀ x, mollify ρ U x * φ x = ∫ z, F x z := by
       intro x
-      simp only [mollify, convolution_def, hF, ContinuousLinearMap.lsmul_apply]
+      simp [mollify, convolution_def, hF, ContinuousLinearMap.lsmul_apply]
       rw [integral_mul_const]
     simp_rw [h1]
     rw [integral_integral_swap hFint]
@@ -288,7 +288,7 @@ theorem pairing_mollify_le {Ω : Set ℂ} (hΩ : IsOpen Ω) {u : L2 Ω} {g : Fin
     refine integral_congr_ae (Eventually.of_forall fun z => ?_)
     simp only [mul_sub]
     rw [integral_sub (hUφz z) hUφ, smul_sub, ← smul_sub]
-    simp only [smul_sub, neg_sub]
+    simp [smul_sub, neg_sub]
   rw [hdiff, norm_neg]
   calc ‖∫ z, ρ z • ∫ t, U t * (φ (t + z) - φ t)‖ ≤ ∫ z, ρ z * (R * C) := by
         refine norm_integral_le_of_norm_le (hρi.mul_const _) (Eventually.of_forall fun z => ?_)
@@ -315,10 +315,10 @@ lemma norm_integral_mul_le_l2 {A B : ℂ → ℂ} (hA : MemLp A 2 volume) (hB : 
     rw [L2.inner_def]
     refine integral_congr_ae ?_
     filter_upwards [hA'.coeFn_toLp, hB.coeFn_toLp] with x h1 h2
-    simp only [h1, h2, RCLike.inner_apply, Complex.conj_conj, mul_comm]
+    simp [h1, h2, RCLike.inner_apply, Complex.conj_conj, mul_comm]
   rw [key]
   refine (norm_inner_le_norm _ _).trans (le_of_eq ?_)
-  rw [Lp.norm_toLp, Lp.norm_toLp, l2norm, l2norm]
+  simp
   congr 2
   refine eLpNorm_congr_norm_ae hA'.aestronglyMeasurable hA.aestronglyMeasurable ?_
   filter_upwards with w; simp
@@ -348,7 +348,7 @@ lemma l2norm_indicator_le_of_pairing {W K : Set ℂ} (hW : IsOpen W) (hK : IsCom
   obtain ⟨δ, hδ, hδW⟩ := hK.exists_cthickening_subset_open hW hKW
   obtain ⟨χ, hχ, hχr, hχs, hχ1⟩ := exists_contMDiff_support_eq_eq_one_iff (𝓘(ℝ, ℂ))
     (n := (⊤ : ℕ∞)) (isOpen_thickening (δ := δ) (E := K)) hK.isClosed (self_subset_thickening hδ K)
-  have hχ' : ContDiff ℝ (⊤ : ℕ∞) χ := contMDiff_iff_contDiff.mp hχ
+  have hχ' := contMDiff_iff_contDiff.mp hχ
   have hχt : tsupport χ ⊆ cthickening δ K := by
     rw [tsupport, hχs]; exact closure_thickening_subset_cthickening δ K
   have hχb : ∀ x, ‖(χ x : ℂ)‖ ≤ 1 := fun x => by
@@ -357,9 +357,9 @@ lemma l2norm_indicator_le_of_pairing {W K : Set ℂ} (hW : IsOpen W) (hK : IsCom
   have hχm : AEStronglyMeasurable (fun x => (χ x : ℂ)) volume :=
     (Complex.continuous_ofReal.comp hχ'.continuous).aestronglyMeasurable
   set FK := K.indicator F
-  have hFK : MemLp FK 2 volume := hF.indicator hK.measurableSet
+  have hFK := hF.indicator hK.measurableSet
   set H : ℂ → ℂ := fun x => (starRingEnd ℂ) (FK x)
-  have hH : MemLp H 2 volume := hFK.star
+  have hH := hFK.star
   set a := l2norm FK
   have hHa : l2norm H = a := by
     unfold l2norm; congr 1
@@ -421,13 +421,13 @@ lemma l2norm_indicator_le_of_pairing {W K : Set ℂ} (hW : IsOpen W) (hK : IsCom
     have hsplit : ∫ x, F x * ((χ x : ℂ) * H x) = (∫ x, F x * ((χ x : ℂ) * g x)) -
         ∫ x, F x * ((χ x : ℂ) * (g - H) x) := by
       rw [← integral_sub (hint (hφ.continuous.memLp_of_hasCompactSupport hφs)) (hint hm)]
-      congr 1; ext x; simp only [Pi.sub_apply]; ring
+      congr 1; ext x; simp; ring
     have : a ^ 2 = ‖∫ x, F x * ((χ x : ℂ) * H x)‖ := by
       rw [hkey, Complex.norm_real, Real.norm_of_nonneg (sq_nonneg _)]
     rw [this, hsplit]
     refine (norm_sub_le _ _).trans ((add_le_add h1 hrest).trans ?_)
     gcongr
-  have ha : 0 ≤ a := l2norm_nonneg _
+
   have ha2 : a ^ 2 ≤ C * a := by
     refine le_of_forall_pos_lt_add fun ε hε => ?_
     have hF0 := l2norm_nonneg F

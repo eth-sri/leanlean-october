@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.TwoPi
 public import RequestProject.FractionalInterp
 public import RequestProject.CorrectedKernelSymm
 public import RequestProject.CorrectedKernelCont
@@ -34,7 +35,6 @@ namespace PolyaNeumann
 open Real Filter MeasureTheory Topology Set
 open scoped InnerProductSpace ComplexConjugate
 
-local instance factTwoPiPosCKE : Fact (0 < 2 * π) := ⟨two_pi_pos⟩
 
 /-! ### Fourier coefficients on `[0, 2π]` -/
 
@@ -50,10 +50,10 @@ lemma norm_fourierCoeffOn_le_of_bound {f : ℝ → ℂ} {M : ℝ}
     rw [norm_smul, fourier_apply, Circle.norm_coe, one_mul]
     exact hM x (Ioc_subset_Icc_self hx)
   have := intervalIntegral.norm_integral_le_of_norm_le_const hb
-  have h2 : (0 : ℝ) < 2 * π - 0 := by rw [sub_zero]; exact two_pi_pos
-  rw [abs_of_pos h2] at this
+
+  rw [abs_of_pos (by rw [sub_zero]; exact two_pi_pos)] at this
   refine (mul_le_mul_of_nonneg_left this (norm_nonneg ((1 : ℝ) / (2 * π - 0)))).trans (le_of_eq ?_)
-  rw [Real.norm_eq_abs, abs_of_pos (by positivity)]
+  simp
   field_simp
 
 /-- Fourier coefficients on `[0, 2π]` are additive on integrable functions. -/
@@ -132,7 +132,7 @@ lemma ckPer_apply (W : ℝ → Ell2 →L[ℂ] Ell2) (θ t : ℝ) :
 
 lemma toIcoMod_mem_Icc_two_pi (θ : ℝ) : toIcoMod two_pi_pos 0 θ ∈ Icc 0 (2 * π) := by
   have := toIcoMod_mem_Ico two_pi_pos 0 θ
-  simp only [zero_add] at this
+  simp at this
   exact ⟨this.1, this.2.le⟩
 
 lemma measurable_ckPer (hW : IsTransport γ E W) (θ : ℝ) : Measurable (ckPer W θ) :=
@@ -184,7 +184,7 @@ lemma ckPer_second (hK : LipschitzWith K γ)
     ⟨by linarith, by linarith⟩
   have heq : secondDiff (fun θ => ckPer W θ t) h θ =
       secondDiff (fun θ => correctedKernel W θ (clampTwoPi t)) h θ := by
-    simp only [secondDiff, ckPer]
+    simp [secondDiff, ckPer]
     rw [periodize_eqOn_Icc hend (hm (2 * h) (by linarith) le_rfl),
       periodize_eqOn_Icc hend (hm h hh.le (by linarith)),
       periodize_eqOn_Icc hend (by simpa using hm 0 le_rfl (by linarith))]
@@ -229,27 +229,27 @@ theorem correctedKernelCoeff_sub_le {E₀ : ℝ} {W₀ : ℝ → Ell2 →L[ℂ] 
       interpBound (2 * A) ((2 * C : NNReal) : ℝ) ε δ ∧
     ∀ p, ‖doubleCoeff (correctedKernel W) p - doubleCoeff (correctedKernel W₀) p‖ ≤ ε := by
   set d : ℝ → ℝ → ℂ := fun θ t => ckPer W θ t - ckPer W₀ θ t with hd
-  have hAnn : 0 ≤ A := le_trans (by unfold ckSecond; have := shiftConst_nonneg; positivity) hA
-  have hmeas : ∀ θ, Measurable (d θ) := fun θ =>
+  have hAnn := le_trans (by unfold ckSecond; have := shiftConst_nonneg; positivity) hA
+  have hmeas := fun θ =>
     (measurable_ckPer hW θ).sub (measurable_ckPer hW₀ θ)
   have hbd : ∀ θ t, ‖d θ t‖ ≤ ε := fun θ t => by
-    simp only [hd, ckPer_apply]
+    simp [hd, ckPer_apply]
     exact hε _ (toIcoMod_mem_Icc_two_pi θ) _ (clampTwoPi_mem t)
   have hlip : ∀ θ θ' t, t ∈ Ico 0 (2 * π) → ‖d θ t - d θ' t‖ ≤ ((2 * C : NNReal) : ℝ) * |θ - θ'| := by
     intro θ θ' t _
     have e1 := ckPer_lip hK hW hc θ θ' t
     have e2 := ckPer_lip hK hW₀ hc₀ θ θ' t
-    have hC' : (ckLip K E W : ℝ) ≤ C := hC
-    have hC₀' : (ckLip K E₀ W₀ : ℝ) ≤ C := hC₀
+    have hC' := hC
+    have hC₀' := hC₀
     have : ‖d θ t - d θ' t‖ ≤ ‖ckPer W θ t - ckPer W θ' t‖ + ‖ckPer W₀ θ t - ckPer W₀ θ' t‖ := by
       rw [show d θ t - d θ' t = (ckPer W θ t - ckPer W θ' t) - (ckPer W₀ θ t - ckPer W₀ θ' t) by
-        simp only [hd]; ring]
+        simp [hd]; ring]
       exact norm_sub_le _ _
     push_cast
     have h0 := abs_nonneg (θ - θ')
     nlinarith
   have hper : ∀ θ t, t ∈ Ico 0 (2 * π) → d (θ + 2 * π) t = d θ t := fun θ t _ => by
-    simp only [hd, ckPer_periodic]
+    simp [hd, ckPer_periodic]
   have hsecond : ∀ h : ℝ, 0 < h → h ≤ π / 2 → ∀ θ ∈ Icc 0 (2 * π - 2 * h),
       ∀ t ∈ Ico 0 (2 * π), ‖secondDiff (fun θ => d θ t) h θ‖ ≤ (2 * A) * h ^ 2 := by
     intro h hh _ θ hθ t _
@@ -278,7 +278,7 @@ theorem correctedKernelCoeff_sub_le {E₀ : ℝ} {W₀ : ℝ → Ell2 →L[ℂ] 
         linarith)) p
   change Summable (fun p : ℤ × ℤ => |(p.2 : ℝ)| ^ (2 + 2 * δ) * ‖doubleCoeff d p‖ ^ 2) at hs
   change ∑' p : ℤ × ℤ, |(p.2 : ℝ)| ^ (2 + 2 * δ) * ‖doubleCoeff d p‖ ^ 2 ≤ _ at hle
-  simp only [hcoeff] at hs hle
+  simp [hcoeff] at hs hle
   exact ⟨hs, hle, fun p => hcoeff p ▸ norm_doubleCoeff_le (fun θ _ t _ => hbd θ t) p⟩
 
 /-- Uniform regularity constants near `E₀`: an upper bound for `ckSecond`. -/
@@ -293,12 +293,12 @@ def ckLipBar (K : NNReal) (E₀ b : ℝ) (hb : 0 ≤ b) : NNReal :=
 lemma ck_consts_le {E₀ b : ℝ} (hb : 0 ≤ b) (hE : E ≤ E₀ + 1) (hB : ‖cutBE W‖ ≤ b) :
     ckSecond K K' E W ≤ ckSecondBar K K' E₀ b ∧ ckLip K E W ≤ ckLipBar K E₀ b hb := by
   have hκ := shiftConst_nonneg
-  have hs : Real.sqrt E ≤ Real.sqrt (E₀ + 1) := Real.sqrt_le_sqrt hE
+  have hs := Real.sqrt_le_sqrt hE
   constructor
   · unfold ckSecond ckSecondBar
     gcongr
   · rw [← NNReal.coe_le_coe]
-    simp only [ckLip, ckLipBar]
+    simp
     change √E * shiftConst * K * (2 + ‖cutBE W‖) + 1 / π ≤
       √(E₀ + 1) * shiftConst * K * (2 + b) + 1 / π
     gcongr
@@ -309,8 +309,7 @@ variable {Ws : ℝ → ℝ → Ell2 →L[ℂ] Ell2}
 lemma eventually_cutC_ne (hK : LipschitzWith K γ) (hWs : ∀ E, IsTransport γ E (Ws E)) (E₀ : ℝ)
     (hc : cutC (Ws E₀ (2 * π)) (basisVec 0) ≠ 0) :
     ∀ᶠ E in 𝓝 E₀, cutC (Ws E (2 * π)) (basisVec 0) ≠ 0 := by
-  have h2π : (2 * π) ∈ Icc 0 (2 * π) := ⟨by positivity, le_rfl⟩
-  have hV := tendsto_transport_energy hK hWs E₀ h2π
+  have hV := tendsto_transport_energy hK hWs E₀ (⟨by positivity, le_rfl⟩)
   have hVa : Tendsto (fun E => ContinuousLinearMap.adjoint (Ws E (2 * π)) (basisVec 0)) (𝓝 E₀)
       (𝓝 (ContinuousLinearMap.adjoint (Ws E₀ (2 * π)) (basisVec 0))) :=
     ((continuous_eval_const (basisVec 0)).tendsto _).comp
@@ -336,7 +335,7 @@ lemma exists_correctedKernelCoeff_bounds (hK : LipschitzWith K γ)
         interpBound A C ε δ ∧
       ∀ p, ‖doubleCoeff (correctedKernel (Ws E)) p - doubleCoeff (correctedKernel (Ws E₀)) p‖ ≤
         ε := by
-  set b : ℝ := ‖cutBE (Ws E₀)‖ + 1 with hbdef
+  set b := ‖cutBE (Ws E₀)‖ + 1 with hbdef
   have hb : 0 ≤ b := by positivity
   have hcE := eventually_cutC_ne hK hWs E₀ hc
   have hBE : ∀ᶠ E in 𝓝 E₀, ‖cutBE (Ws E)‖ ≤ b :=
@@ -440,13 +439,13 @@ lemma mixed_weight_le {a : ℝ} (ha : 0 ≤ a) {s α β : ℝ} (hα : 0 ≤ α) 
     (hαβ : α + β = s) (p : ℤ × ℤ) :
     (1 + |(p.2 : ℝ)|) ^ α * (1 + |(p.1 : ℝ)|) ^ β * a ≤
       2 ^ s * (|(p.1 : ℝ)| ^ s * a + |(p.2 : ℝ)| ^ s * a + if p = 0 then a else 0) := by
-  have hs : 0 ≤ s := hαβ ▸ add_nonneg hα hβ
+  have hs := hαβ ▸ add_nonneg hα hβ
   set x := |(p.1 : ℝ)| with hxdef
   set y := |(p.2 : ℝ)| with hydef
   have hx : 0 ≤ x := abs_nonneg _
   have hy : 0 ≤ y := abs_nonneg _
   set M := max x y
-  have hM : 0 ≤ M := le_max_of_le_left hx
+
   have hw : (1 + y) ^ α * (1 + x) ^ β ≤ (1 + M) ^ s := by
     rw [← hαβ, Real.rpow_add (by positivity)]
     gcongr
@@ -465,7 +464,7 @@ lemma mixed_weight_le {a : ℝ} (ha : 0 ≤ a) {s α β : ℝ} (hα : 0 ≤ α) 
     · subst hp
       simp only [x, y, M, Prod.fst_zero, Prod.snd_zero, Int.cast_zero, abs_zero, max_self,
         if_true]
-      rw [max_eq_left zero_le_one, Real.one_rpow]
+      simp
       have := Real.rpow_nonneg (le_refl (0:ℝ)) s
       linarith
     · rw [if_neg hp, add_zero]
@@ -565,7 +564,7 @@ lemma hsMatrixOp_sub (a b : ℤ × ℤ → ℂ) (ha : Summable fun p => ‖a p�
     (hb : Summable fun p => ‖b p‖ ^ 2) (hab : Summable fun p => ‖a p - b p‖ ^ 2) :
     hsMatrixOp a ha - hsMatrixOp b hb = hsMatrixOp (fun p => a p - b p) hab := by
   refine ContinuousLinearMap.ext fun f => lp.ext (funext fun m => ?_)
-  rw [ContinuousLinearMap.sub_apply, lp.coeFn_sub, Pi.sub_apply]
+  simp
   change ⟪hsRow a ha m, f⟫_ℂ - ⟪hsRow b hb m, f⟫_ℂ = ⟪hsRow (fun p => a p - b p) hab m, f⟫_ℂ
   have : hsRow (fun p => a p - b p) hab m = hsRow a ha m - hsRow b hb m :=
     lp.ext (funext fun n => by
@@ -608,12 +607,12 @@ theorem tendsto_correctedRemainder_energy (hK : LipschitzWith K γ)
       correctedRemainderMatrix (Ws E₀) δ s p‖ ^ 2) = fun p => (2 * π) ^ 2 * m E (σ p) := by
     intro E
     funext p
-    have h1 : 0 ≤ (1 + |(p.1 : ℝ)|) := by positivity
-    have h2 : 0 ≤ (1 + |(p.2 : ℝ)|) := by positivity
+
+
     rw [correctedRemainderMatrix, correctedRemainderMatrix, ← mul_sub, norm_mul,
       Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg (by positivity), mul_pow,
-      mul_pow, mul_pow, hsq _ h1, hsq _ h2]
-    simp only [hm, σ, Equiv.coe_fn_mk, Int.cast_neg, abs_neg, doubleCoeff]
+      mul_pow, mul_pow, hsq _ (by positivity), hsq _ (by positivity)]
+    simp [hm, σ, Equiv.coe_fn_mk, Int.cast_neg, abs_neg, doubleCoeff]
     ring
   have hlim : Tendsto (fun E => (2 * π) ^ 2 * ∑' p, m E p) (𝓝 E₀) (𝓝 0) := by
     simpa using htm.const_mul ((2 * π) ^ 2)

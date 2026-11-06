@@ -41,8 +41,7 @@ theorem localConformalH1Pullback_smooth {R : ℝ} (hR : 1 < R) (F : ℂ → ℂ)
     (hC : ∀ z ∈ ball (0 : ℂ) 1, 1 ≤ C * ‖deriv F z‖ ^ 2)
     (f : smoothTraceTests) :
     localConformalH1Pullback hR F hFs hL (smoothTraceH1 (F '' ball (0 : ℂ) 1) f) =
-      smoothTraceH1 (ball (0 : ℂ) 1) (smoothDiskCompositionLin hR F hFs f) := by
-  exact LinearMap.extendOfNorm_eq (denseRange_smoothTraceH1Lin hb hL)
+      smoothTraceH1 (ball (0 : ℂ) 1) (smoothDiskCompositionLin hR F hFs f) := LinearMap.extendOfNorm_eq (denseRange_smoothTraceH1Lin hb hL)
     ⟨Real.sqrt (max C 1), norm_smoothDiskCompositionH1_le hR F hFs hhol hinj hC⟩ f
 
 theorem gradient_energy_smoothTraceH1 (U : Set ℂ) (f : smoothTraceTests) :

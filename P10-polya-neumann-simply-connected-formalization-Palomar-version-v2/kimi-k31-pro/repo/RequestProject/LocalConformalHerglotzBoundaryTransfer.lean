@@ -185,8 +185,7 @@ private theorem herglotz_transfer_kernel_summable
     Summable fun p => ‖correctedRemainderMatrix W 0 0 p‖ ^ 2 := by
   have hΓ4 := contDiff_physicalCircleTrace_four_of_neighborhood hR F
     (hFs.of_le (WithTop.coe_le_coe.mpr le_top))
-  have hΓ2 : ContDiff ℝ ((1 : WithTop ℕ∞) + 1) ΓF := hΓ4.of_le (by norm_num)
-  obtain ⟨B, hB⟩ := hΓ2.deriv'.contDiffOn.exists_lipschitzOnWith
+  obtain ⟨B, hB⟩ := (hΓ4.of_le (by norm_num)).deriv'.contDiffOn.exists_lipschitzOnWith
     (by norm_num : (1 : WithTop ℕ∞) ≠ 0) (convex_Icc 0 (2 * Real.pi)) isCompact_Icc
   have hdiff : ∀ x ∈ Icc 0 (2 * Real.pi), ∀ y ∈ Icc 0 (2 * Real.pi),
       ‖deriv ΓF x - deriv ΓF y‖ ≤ B * |x - y| := by
@@ -368,11 +367,10 @@ theorem exists_originalHerglotz_boundary_conditions_of_normalized
   obtain ⟨Kγ, hKγ⟩ := hγ.lipschitz
   obtain ⟨Kτ, hKτ⟩ := hτ.lipschitz
   have hΓ : ΓF = γ ∘ τ := by funext θ; exact hcoord θ
-  have hWcomp : IsTransport (γ ∘ τ) E (Ws E) := by rw [← hΓ]; exact hW
   refine ⟨L, ?_⟩
   apply herglotz_density_lower_bound_of_comp hKγ
     (by simpa only [zero_add] using hγ.periodic 0) hτ.monotone hKτ
-    hτ.zero hτ.endpoint hWγ hWcomp L
+    hτ.zero hτ.endpoint hWγ (by rw [← hΓ]; exact hW) L
   rw [← hΓ]
   exact hconditions
 

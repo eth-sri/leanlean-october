@@ -35,8 +35,8 @@ theorem intervalIntegral_mem_of_isClosed (K : Submodule ℂ X) (hK : IsClosed (K
   have hp : ∀ x, p x = 0 ↔ x ∈ K := fun x => Submodule.Quotient.mk_eq_zero K
   by_cases hi : IntervalIntegrable f volume a b
   · have h := p.intervalIntegral_comp_comm hi
-    have h0 : ∀ t, p (f t) = 0 := fun t => (hp _).mpr (hf t)
-    simp only [h0, intervalIntegral.integral_zero] at h
+
+    simp [(fun t => (hp _).mpr (hf t)), intervalIntegral.integral_zero] at h
     exact (hp _).mp h.symm
   · rw [intervalIntegral.integral_undef hi]; exact K.zero_mem
 
@@ -53,7 +53,7 @@ theorem sub_mem_of_hasDerivAt (K : Submodule ℂ X) (hK : IsClosed (K : Set X)) 
     fun t ht => ((p.restrictScalars ℝ).hasFDerivAt.comp_hasDerivAt t (hf t ht)).hasDerivWithinAt
   have hb := norm_image_sub_le_of_norm_deriv_le_segment' hd
     (fun t ht => by rw [(hp _).mpr (hf' t (Ico_subset_Icc_self ht)), norm_zero]) b ⟨hab, le_rfl⟩
-  rw [zero_mul, norm_le_zero_iff, ← map_sub] at hb
+  simp at hb
   exact (hp _).mp hb
 
 end ClosedSubspace
@@ -99,7 +99,7 @@ theorem isCompactOperator_transport_sub_one {γ : ℝ → ℂ} {K : NNReal} (hK 
   rw [← mem_compactOps]
   have h2π : (2 * π) ∈ Icc 0 (2 * π) := ⟨by positivity, le_rfl⟩
   choose Ws hWs using fun E' : ℝ => transport_exists_of_lipschitz γ hK E'
-  have hWE : W (2 * π) = Ws E (2 * π) := transport_unique_of_lipschitz γ hK E hW (hWs E) h2π
+  have hWE := transport_unique_of_lipschitz γ hK E hW (hWs E) h2π
   rw [hWE]
   rcases eq_or_lt_of_le hE with rfl | hEpos
   · rw [transport_zero_energy (hWs 0), sub_self]; exact compactOps.zero_mem
@@ -128,7 +128,7 @@ theorem isCompactOperator_monodromy_sub_one {γ : ℝ → ℂ} {K : NNReal} (hK 
     (hclosed : γ (2 * π) = γ 0) {E : ℝ} (hE : 0 ≤ E) {W : ℝ → Ell2 →L[ℂ] Ell2}
     (hW : IsTransport γ E W) : IsCompactOperator ⇑(monodromy W - 1) := by
   have hU := transport_mem_unitary hK hW ⟨by positivity, le_rfl⟩
-  have hVV : star (W (2 * π)) * W (2 * π) = 1 := (Unitary.mem_iff.mp hU).1
+  have hVV := (Unitary.mem_iff.mp hU).1
   have heq : monodromy W - 1 = -(star (W (2 * π)) * (W (2 * π) - 1)) := by
     rw [monodromy, ← ContinuousLinearMap.star_eq_adjoint, mul_sub, hVV, mul_one, neg_sub]
   rw [heq]

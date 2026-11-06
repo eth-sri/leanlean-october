@@ -64,7 +64,7 @@ theorem volterraPrimitiveIterate_bound_mul
       simpa [volterraPrimitiveIterate] using hH t ht
   | succ n ih =>
       intro t ht
-      simp only [volterraPrimitiveIterate]
+      simp [volterraPrimitiveIterate]
       refine (intervalIntegral.norm_integral_le_integral_norm ht.1).trans ?_
       have hint1 :
           IntervalIntegrable (fun s => ‖a s * volterraPrimitiveIterate a h n s‖)

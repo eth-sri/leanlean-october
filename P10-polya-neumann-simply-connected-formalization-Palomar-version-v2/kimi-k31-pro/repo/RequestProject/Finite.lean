@@ -117,7 +117,7 @@ lemma isWeakGradient_of_smooth {f : ℂ → ℂ} (hf : ContDiff ℝ (⊤ : ℕ�
   have hφd : Continuous fun w => fderiv ℝ φ w (coordDir i) :=
     (hs.continuous_fderiv (by simp)).clm_apply continuous_const
   exact integral_mul_fderiv_eq_neg_fderiv_mul_of_integrable
-    ((hfd.mul hs.continuous).integrable_of_hasCompactSupport (hφc.mul_left))
+    ((hfd.mul hs.continuous).integrable_of_hasCompactSupport hφc.mul_left)
     ((hf.continuous.mul hφd).integrable_of_hasCompactSupport
       ((hφc.fderiv_apply (𝕜 := ℝ) _).mul_left))
     ((hf.continuous.mul hs.continuous).integrable_of_hasCompactSupport hφc.mul_left)
@@ -129,9 +129,9 @@ lemma neumannEigenvalue_lt_top_of_family (j : ℕ) (u : Fin (j + 1) → L2 Ω)
     (hg : ∀ k, IsWeakGradient Ω (u k) (g k)) : neumannEigenvalue Ω j < ⊤ := by
   set T := Fintype.linearCombination ℂ u
   set Gr := Fintype.linearCombination ℂ g
-  have hinj : Function.Injective T := hli.fintypeLinearCombination_injective
+  have hinj := hli.fintypeLinearCombination_injective
   set e := LinearEquiv.ofInjective T hinj
-  let L : LinearMap.range T →ₗ[ℂ] (Fin 2 → L2 Ω) := Gr ∘ₗ e.symm.toLinearMap
+  let L := Gr ∘ₗ e.symm.toLinearMap
   let Lc := LinearMap.toContinuousLinearMap L
   have hrank : Module.finrank ℂ (LinearMap.range T) = j + 1 := by
     rw [← e.finrank_eq]; simp
@@ -140,13 +140,13 @@ lemma neumannEigenvalue_lt_top_of_family (j : ℕ) (u : Fin (j + 1) → L2 Ω)
     intro v hv _
     obtain ⟨a, rfl⟩ := hv
     have hgrad : IsWeakGradient Ω (T a) (Gr a) := by
-      simp only [T, Gr, Fintype.linearCombination_apply]
+      simp [T, Gr, Fintype.linearCombination_apply]
       exact IsWeakGradient.sum _ _ _ fun k _ => (hg k).smul (a k)
     have hL : Gr a = Lc ⟨T a, a, rfl⟩ := by
       change Gr a = Gr (e.symm ⟨T a, a, rfl⟩)
       congr 1
       apply e.injective
-      rw [LinearEquiv.apply_symm_apply]
+      simp
       ext1; simp [e]
     have hnorm : ∀ i, ‖Gr a i‖ ≤ ‖Lc‖ * ‖T a‖ := by
       intro i
@@ -155,7 +155,7 @@ lemma neumannEigenvalue_lt_top_of_family (j : ℕ) (u : Fin (j + 1) → L2 Ω)
       exact (Lc.le_opNorm _).trans_eq (by rfl)
     have henergy : neumannEnergy Ω (T a) ≤ 2 * (‖Lc‖₊ : ENNReal) ^ 2 * (‖T a‖₊ : ENNReal) ^ 2 := by
       refine (iInf₂_le (Gr a) hgrad).trans ?_
-      rw [Fin.sum_univ_two]
+      simp
       have h' : ∀ i, (‖Gr a i‖₊ : ENNReal) ^ 2 ≤ (‖Lc‖₊ : ENNReal) ^ 2 * (‖T a‖₊ : ENNReal) ^ 2 := by
         intro i
         rw [← mul_pow]
@@ -194,16 +194,16 @@ theorem neumannEigenvalue_lt_top_of_isOpen (hΩ : IsOpen Ω) (hne : Ω.Nonempty)
     neumannEigenvalue Ω j < ⊤ := by
   obtain ⟨z, hz⟩ := hne
   obtain ⟨r, hr, hball⟩ := Metric.isOpen_iff.mp hΩ z hz
-  set n : ℕ := j + 1
+  set n := j + 1
   have hn : (0 : ℝ) < n := by positivity
   set δ : ℝ := r / n
-  have hδ : 0 < δ := div_pos hr hn
-  let c : Fin n → ℂ := fun k => z + (((k : ℕ) : ℝ) * δ : ℝ)
+  have hδ := div_pos hr hn
+  let c := fun k => z + (((k : ℕ) : ℝ) * δ : ℝ)
   let b : ∀ k, ContDiffBump (c k) := fun k => ⟨δ / 4, δ / 2, by positivity, by linarith⟩
-  let f : Fin n → ℂ → ℂ := fun k w => ((b k w : ℝ) : ℂ)
+  let f := fun k w => ((b k w : ℝ) : ℂ)
   have hf : ∀ k, ContDiff ℝ (⊤ : ℕ∞) (f k) := fun k =>
     Complex.ofRealCLM.contDiff.comp (b k).contDiff
-  have hfc : ∀ k, HasCompactSupport (f k) := fun k =>
+  have hfc := fun k =>
     (b k).hasCompactSupport.comp_left Complex.ofReal_zero
   have hu : ∀ k, MemLp (f k) 2 (volume.restrict Ω) := fun k =>
     ((hf k).continuous.memLp_of_hasCompactSupport (hfc k)).restrict Ω
@@ -247,12 +247,12 @@ theorem neumannEigenvalue_lt_top_of_isOpen (hΩ : IsOpen Ω) (hne : Ω.Nonempty)
   have hcmem : ∀ m : Fin n, c m ∈ Ω := by
     intro m
     apply hball
-    rw [Metric.mem_ball]
-    simp only [c, dist_eq_norm, add_sub_cancel_left, Complex.norm_real, Real.norm_eq_abs]
+    simp
+    simp [c, dist_eq_norm, add_sub_cancel_left, Complex.norm_real, Real.norm_eq_abs]
     rw [abs_of_nonneg (by positivity)]
     have hm : ((m : ℕ) : ℝ) < n := by exact_mod_cast m.2
     calc ((m : ℕ) : ℝ) * δ < n * δ := by gcongr
-      _ = r := by simp only [δ]; field_simp
+      _ = r := by simp [δ]; field_simp
   apply neumannEigenvalue_lt_top_of_family j (fun k => (hu k).toLp _)
     (fun k i => (hg k i).toLp _) _ (fun k => isWeakGradient_of_smooth (hf k) (hu k) (hg k))
   rw [Fintype.linearIndependent_iff]
@@ -264,13 +264,13 @@ theorem neumannEigenvalue_lt_top_of_isOpen (hΩ : IsOpen Ω) (hne : Ω.Nonempty)
   have hF : (fun w => ∑ k, a k * f k w) =ᵐ[volume.restrict Ω] fun _ => 0 := by
     filter_upwards [hae, hall, Lp.coeFn_zero ℂ 2 (volume.restrict Ω)] with w h1 h2 h3
     have h4 := h1.symm.trans h3
-    simp only [h2] at h4
+    simp [h2] at h4
     simpa using h4
   have hcont : Continuous fun w => ∑ k, a k * f k w :=
     continuous_finset_sum _ fun k _ => continuous_const.mul (hf k).continuous
   have heq := Measure.eqOn_open_of_ae_eq hF hΩ hcont.continuousOn continuousOn_const
     (hcmem m)
-  simp only [hval] at heq
+  simp [hval] at heq
   simpa using heq
 
 end PolyaNeumann

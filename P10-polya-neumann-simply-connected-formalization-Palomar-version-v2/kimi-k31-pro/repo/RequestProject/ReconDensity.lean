@@ -48,15 +48,14 @@ theorem tendsto_approx_of_closure_subset {Ω U : Set ℂ} (hb : Bornology.IsBoun
         atTop (𝓝 0) ∧
       ∀ i, Tendsto (fun k => eLpNorm (fun z => fderiv ℝ (φ k) z (coordDir i) -
         extZero U (G i) z) 2 (volume.restrict Ω)) atTop (𝓝 0) := by
-  have hUm : MeasurableSet U := hU.measurableSet
+  have hUm := hU.measurableSet
   -- a uniform margin around `Ω̄` inside `U`
-  have hcpt : IsCompact (closure Ω) := hb.isCompact_closure
+  have hcpt := hb.isCompact_closure
   obtain ⟨δ, hδ, hδsub⟩ := hcpt.exists_cthickening_subset_open hU hΩU
   -- a cutoff equal to `1` near `Ω̄`
   obtain ⟨R, hR⟩ := hb.subset_closedBall (0 : ℂ)
   set R' : ℝ := |R| + 1
-  have hR' : 0 < R' := by positivity
-  set χ : ContDiffBump (0 : ℂ) := ⟨R', R' + 1, hR', by linarith⟩
+  set χ : ContDiffBump (0 : ℂ) := ⟨R', R' + 1, (by positivity), by linarith⟩
   have hχ1 : ∀ z ∈ ball (0 : ℂ) R', χ z = 1 := fun z hz =>
     χ.one_of_mem_closedBall (ball_subset_closedBall hz)
   have hΩball : closure Ω ⊆ ball (0 : ℂ) R' := by
@@ -66,7 +65,6 @@ theorem tendsto_approx_of_closure_subset {Ω U : Set ℂ} (hb : Bornology.IsBoun
   set V := extZero U w
   set Gx : Fin 2 → ℂ → ℂ := fun j => extZero U (G j)
   have hV : MemLp V 2 volume := memLp_extZero hUm w
-  have hGx : ∀ j, MemLp (Gx j) 2 volume := fun j => memLp_extZero hUm (G j)
   set ψ : ℕ → ℂ → ℂ := fun k => mollify ((stdBump k).normed volume) V
   have hψs : ∀ k, ContDiff ℝ (⊤ : ℕ∞) (ψ k) := fun k =>
     HasCompactSupport.contDiff_convolution_left _ ((stdBump k).hasCompactSupport_normed)
@@ -90,7 +88,7 @@ theorem tendsto_approx_of_closure_subset {Ω U : Set ℂ} (hb : Bornology.IsBoun
     refine le_trans (le_of_eq (eLpNorm_congr_ae ?_)) (eLpNorm_mono_measure _ Measure.restrict_le_self)
     filter_upwards [ae_restrict_mem hΩm] with z hz
     simp only [Pi.sub_apply, (hloc k z hz).eq_of_nhds, ψ]
-  · refine hsq (tendsto_mollify_L2 tendsto_stdBump_rOut (hGx i)) ?_
+  · refine hsq (tendsto_mollify_L2 tendsto_stdBump_rOut ((fun j => memLp_extZero hUm (G j)) i)) ?_
     filter_upwards [tendsto_stdBump_rOut.eventually (gt_mem_nhds hδ)] with k hk
     refine le_trans (le_of_eq (eLpNorm_congr_ae ?_)) (eLpNorm_mono_measure _ Measure.restrict_le_self)
     filter_upwards [ae_restrict_mem hΩm] with z hz
@@ -110,7 +108,7 @@ lemma BallZarnescuApprox.map_mem_collar {n : ℕ} {x : ℂ} (hx : x ∈ A.collar
     A.map n x ∈ A.collar n := by
   by_contra h
   have h1 := A.eq_self n _ h
-  have h2 : A.map n x = x := (A.map n).injective h1
+  have h2 := (A.map n).injective h1
   rw [h2] at h
   exact h hx
 
@@ -119,7 +117,7 @@ lemma eLpNorm_indicator_comp_le (hΩ : IsOpen Ω) (n : ℕ) (P : ℂ → ℂ)
       (volume.restrict Ω)) :
     eLpNorm ((A.collar n).indicator (fun x => P (A.map n x))) 2 (volume.restrict Ω) ≤
       A.lip * eLpNorm ((A.collar n).indicator P) 2 (volume.restrict Ω) := by
-  have hf : LipschitzOnWith A.lip (A.map n) Ω := (A.lipschitzWith n).lipschitzOnWith
+
   have hg : LipschitzOnWith A.lip (A.map n).symm (A.map n '' Ω) :=
     (A.lipschitzWith_symm n).lipschitzOnWith
   calc _ ≤ eLpNorm (fun x => (A.collar n).indicator P (A.map n x)) 2 (volume.restrict Ω) := by
@@ -128,7 +126,7 @@ lemma eLpNorm_indicator_comp_le (hΩ : IsOpen Ω) (n : ℕ) (P : ℂ → ℂ)
         · rw [indicator_of_mem hx, indicator_of_mem (A.map_mem_collar hx)]
         · rw [indicator_of_notMem hx, norm_zero]; exact norm_nonneg _
     _ ≤ A.lip * eLpNorm ((A.collar n).indicator P) 2 (volume.restrict (A.map n '' Ω)) :=
-        eLpNorm_comp_bilip_le hΩ A.lip_pos hf hg _
+        eLpNorm_comp_bilip_le hΩ A.lip_pos ((A.lipschitzWith n).lipschitzOnWith) hg _
     _ ≤ _ := by
         gcongr
         exact A.subset n
@@ -223,10 +221,9 @@ lemma chainGrad_eq_of_notMem_collar {n : ℕ} {x : ℂ} (hx : x ∉ A.collar n)
 
 lemma norm_chainGrad_le (n : ℕ) (G : Fin 2 → ℂ → ℂ) (i : Fin 2) (x : ℂ) :
     ‖chainGrad (A.map n) G i x‖ ≤ A.lip * (‖G 0 (A.map n x)‖ + ‖G 1 (A.map n x)‖) := by
-  have hd : ‖fderiv ℝ (A.map n) x‖ ≤ A.lip := norm_fderiv_le_of_lipschitz ℝ (A.lipschitzWith n)
   have hc : ∀ j, |coordRe j (fderiv ℝ (A.map n) x (coordDir i))| ≤ A.lip := fun j =>
     (abs_coordRe_le j _).trans ((ContinuousLinearMap.le_opNorm _ _).trans
-      (by rw [norm_coordDir, mul_one]; exact hd))
+      (by rw [norm_coordDir, mul_one]; exact (norm_fderiv_le_of_lipschitz ℝ (A.lipschitzWith n))))
   simp only [chainGrad, Fin.sum_univ_two]
   refine (norm_add_le _ _).trans ?_
   rw [norm_mul, norm_mul, Complex.norm_real, Complex.norm_real, Real.norm_eq_abs,
@@ -313,8 +310,8 @@ theorem exists_testFunction_approx {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
       ∀ i, Tendsto (fun n => eLpNorm (fun z => fderiv ℝ (φ n) z (coordDir i) - g i z) 2
         (volume.restrict Ω)) atTop (𝓝 0) := by
   refine exists_seq_of_forall_eps fun ε hε => ?_
-  have hΩ : IsOpen Ω := hL.1.1
-  have hΩm : MeasurableSet Ω := hΩ.measurableSet
+  have hΩ := hL.1.1
+  have hΩm := hΩ.measurableSet
   obtain ⟨A⟩ := exists_ballZarnescu hb hL
   have hε2 : (0 : ℝ≥0∞) < ENNReal.ofReal (ε / 2) := ENNReal.ofReal_pos.mpr (by linarith)
   obtain ⟨n, hn1, hn2⟩ : ∃ n, eLpNorm (fun z => (u : ℂ → ℂ) (A.map n z) - u z) 2
@@ -327,10 +324,10 @@ theorem exists_testFunction_approx {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
     exact ⟨n, hn.1, fun i => by fin_cases i; exacts [hn.2.1, hn.2.2]⟩
   set f := A.map n
   set U := f ⁻¹' Ω with hUdef
-  have hU : IsOpen U := hΩ.preimage f.continuous
+  have hU := hΩ.preimage f.continuous
   have hΩU : closure Ω ⊆ U := fun x hx => A.closure_subset n ⟨x, hx, rfl⟩
-  have hΩU' : Ω ⊆ U := subset_closure.trans hΩU
-  have himg : f '' U = Ω := f.image_preimage Ω
+  have hΩU' := subset_closure.trans hΩU
+  have himg := f.image_preimage Ω
   have hf : LipschitzOnWith A.lip f U := (A.lipschitzWith n).lipschitzOnWith
   have hfs : LipschitzOnWith A.lip f.symm Ω := (A.lipschitzWith_symm n).lipschitzOnWith
   have hum : MemLp (fun x => (u : ℂ → ℂ) (f x)) 2 (volume.restrict U) :=
@@ -348,7 +345,6 @@ theorem exists_testFunction_approx {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
     exact ⟨k, hk.1, fun i => by fin_cases i; exacts [hk.2.1, hk.2.2]⟩
   have hsum : ENNReal.ofReal (ε / 2) + ENNReal.ofReal (ε / 2) = ENNReal.ofReal ε := by
     rw [← ENNReal.ofReal_add (by linarith) (by linarith)]; ring_nf
-  have hrestr : volume.restrict Ω ≤ volume.restrict U := Measure.restrict_mono hΩU' le_rfl
   refine ⟨φ k, hφt k, ?_, fun i => ?_⟩
   · have hae : (fun z => φ k z - (u : ℂ → ℂ) z) =ᵐ[volume.restrict Ω]
         (fun z => φ k z - extZero U w z) + (fun z => (u : ℂ → ℂ) (f z) - u z) := by

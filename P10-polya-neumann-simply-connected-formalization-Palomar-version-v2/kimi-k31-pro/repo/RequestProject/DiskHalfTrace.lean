@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.TwoPi
 public import Mathlib.Topology.Algebra.InfiniteSum.Constructions
 public import Mathlib.Topology.Algebra.InfiniteSum.NatInt
 public import Mathlib.Analysis.SpecialFunctions.Pow.Real
@@ -34,7 +35,6 @@ namespace PolyaNeumann
 open MeasureTheory Set Metric Filter Real
 open scoped Real ComplexConjugate InnerProductSpace Topology
 
-local instance factTwoPiPosDHT : Fact (0 < 2 * π) := ⟨two_pi_pos⟩
 
 /-- The already constructed physical trace, specialized to the unit disk. -/
 def diskH1Trace : NeumannH1 (ball (0 : ℂ) 1) →L[ℂ] BoundaryL2 :=
@@ -68,9 +68,8 @@ private lemma disk_integral_fourier (r : ℝ → ℂ) (n : ℤ) :
         (2 * π : ℂ) * fourierCoeffOn two_pi_pos r n := by
   rw [← intervalIntegral.integral_of_le two_pi_pos.le,
     ← coeffIntegral_eq_fourierCoeffOn]
-  have hpi : (2 * π : ℂ) ≠ 0 := by exact_mod_cast two_pi_pos.ne'
   push_cast
-  rw [← mul_assoc, mul_inv_cancel₀ hpi, one_mul]
+  rw [← mul_assoc, mul_inv_cancel₀ (by exact_mod_cast two_pi_pos.ne'), one_mul]
   apply intervalIntegral.integral_congr
   intro θ _
   dsimp only
@@ -96,7 +95,7 @@ private lemma inner_diskHolomorphicGradient_h1 (m : ℕ)
   rw [L2.inner_def]
   apply integral_congr_ae
   filter_upwards [diskHolomorphicGradient_ae m i] with z hz
-  simp only [RCLike.inner_apply, hz, diskH1Gradient, PiLp.toLp_apply,
+  simp [RCLike.inner_apply, hz, diskH1Gradient, PiLp.toLp_apply,
     conj_dirD_diskHolomorphicMode]
 
 private lemma inner_diskAntiholomorphicGradient_h1 (m : ℕ)
@@ -111,7 +110,7 @@ private lemma inner_diskAntiholomorphicGradient_h1 (m : ℕ)
   rw [L2.inner_def]
   apply integral_congr_ae
   filter_upwards [diskAntiholomorphicGradient_ae m i] with z hz
-  simp only [RCLike.inner_apply, hz, diskH1Gradient, PiLp.toLp_apply,
+  simp [RCLike.inner_apply, hz, diskH1Gradient, PiLp.toLp_apply,
     conj_dirD_diskAntiholomorphicMode]
 
 /-- Fourier--Green for every actual H¹ vector, proved with the antiholomorphic test. -/
@@ -154,7 +153,7 @@ theorem disk_h1_fourier_green_pos (m : ℕ) (u : NeumannH1 (ball (0 : ℂ) 1)) :
     dsimp only
     rw [fderiv_diskHarmonicCutoff_eq (unitCircle_mem_cutoff_ball θ),
       conormal_diskAntiholomorphicMode, diskAntiholomorphicMode_unitCircle]
-    simp only [Int.cast_natCast]
+    simp
     ring
   change _ = ∫ θ in Ioc (0 : ℝ) (2 * π), diskH1Trace u θ * _ at hgreen
   rw [hmass, zero_add, hgrad, hboundary] at hgreen
@@ -200,7 +199,7 @@ theorem disk_h1_fourier_green_neg (m : ℕ) (u : NeumannH1 (ball (0 : ℂ) 1)) :
     dsimp only
     rw [fderiv_diskHarmonicCutoff_eq (unitCircle_mem_cutoff_ball θ),
       conormal_diskHolomorphicMode, diskHolomorphicMode_unitCircle]
-    simp only [Int.cast_neg, Int.cast_natCast, neg_mul, neg_neg]
+    simp
     ring
   change _ = ∫ θ in Ioc (0 : ℝ) (2 * π), diskH1Trace u θ * _ at hgreen
   rw [hmass, zero_add, hgrad, hboundary] at hgreen
@@ -328,13 +327,13 @@ def diskHalfTraceLin : NeumannH1 (ball (0 : ℂ) 1) →ₗ[ℂ] L2Z where
     change (Real.sqrt (sobWeight n) : ℂ) * diskH1Fourier (u + v) n =
       (Real.sqrt (sobWeight n) : ℂ) * diskH1Fourier u n +
         (Real.sqrt (sobWeight n) : ℂ) * diskH1Fourier v n
-    simp only [map_add, lp.coeFn_add, Pi.add_apply, mul_add]
+    simp [map_add, lp.coeFn_add, Pi.add_apply, mul_add]
   map_smul' c u := by
     apply lp.ext
     funext n
     change (Real.sqrt (sobWeight n) : ℂ) * diskH1Fourier (c • u) n =
       c * ((Real.sqrt (sobWeight n) : ℂ) * diskH1Fourier u n)
-    simp only [map_smul, lp.coeFn_smul, Pi.smul_apply, smul_eq_mul]
+    simp
     ring
 
 theorem norm_diskHalfTraceLin_le (u : NeumannH1 (ball (0 : ℂ) 1)) :

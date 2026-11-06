@@ -66,8 +66,8 @@ theorem tsum_sq_fourierCoeff_rows_le (hv : Orthonormal ℂ v) (hr : Continuous r
               Finset.sum_congr rfl fun j _ => by rw [norm_inner_symm]
           _ ≤ ‖r θ‖ ^ 2 := hv.sum_inner_products_le (r θ)
           _ ≤ B ^ 2 := pow_le_pow_left₀ (norm_nonneg _) (hB θ hθ) 2
-    rw [intervalIntegral.integral_const, smul_eq_mul, sub_zero] at hint
-    have hpi : 0 < 2 * π := two_pi_pos
+    simp at hint
+    have hpi := two_pi_pos
     calc (2 * π)⁻¹ * ∫ θ in (0 : ℝ)..(2 * π), ∑ j ∈ J, ‖⟪r θ, v j⟫_ℂ‖ ^ 2
         ≤ (2 * π)⁻¹ * (2 * π * B ^ 2) := by gcongr
       _ = B ^ 2 := by field_simp
@@ -201,7 +201,7 @@ lemma norm_projObsRow_diff_le (hK : LipschitzWith K γ) {E : ℝ}
     (ContinuousLinearMap.le_opNorm _ _).trans
       (mul_le_mul_of_nonneg_left ((hadj _).trans (norm_transport_le_one hK hW hθ))
         (norm_nonneg _))
-  rw [mul_one] at t2
+  simp at t2
   exact (norm_add_le _ _).trans (add_le_add t1 t2)
 
 /-- Continuity of the projection `Π^c_E` in the energy at `E₀` when `c_{E₀} ≠ 0`. -/
@@ -209,8 +209,7 @@ theorem tendsto_cutProj_energy (hK : LipschitzWith K γ) (hWs : ∀ E, IsTranspo
     (E₀ : ℝ) (hc : cutC (Ws E₀ (2 * π)) (basisVec 0) ≠ 0) :
     Tendsto (fun E => cutProj (cutC (Ws E (2 * π)) (basisVec 0))) (𝓝 E₀)
       (𝓝 (cutProj (cutC (Ws E₀ (2 * π)) (basisVec 0)))) := by
-  have h2π : (2 * π) ∈ Icc 0 (2 * π) := ⟨by positivity, le_rfl⟩
-  have hV := tendsto_transport_energy hK hWs E₀ h2π
+  have hV := tendsto_transport_energy hK hWs E₀ (⟨by positivity, le_rfl⟩)
   have hVa : Tendsto (fun E => ContinuousLinearMap.adjoint (Ws E (2 * π)) (basisVec 0)) (𝓝 E₀)
       (𝓝 (ContinuousLinearMap.adjoint (Ws E₀ (2 * π)) (basisVec 0))) :=
     ((continuous_eval_const (basisVec 0)).tendsto _).comp
@@ -246,7 +245,7 @@ lemma fourierCoeffOn_observation_diff (hWs : ∀ E, IsTransport γ E (Ws E)) (E�
   congr 1
   refine intervalIntegral.integral_congr fun θ hθ => ?_
   rw [Set.uIcc_of_le two_pi_pos.le] at hθ
-  simp only [observation_cutProj_eq, periodize_eqOn_Icc hend hθ, projObsRowDiff, inner_sub_left]
+  simp [observation_cutProj_eq, periodize_eqOn_Icc hend hθ, projObsRowDiff, inner_sub_left]
 
 /-- The row difference has a Lipschitz periodization and a sup bound, both with constants
 tending to `0` as `E → E₀`. -/

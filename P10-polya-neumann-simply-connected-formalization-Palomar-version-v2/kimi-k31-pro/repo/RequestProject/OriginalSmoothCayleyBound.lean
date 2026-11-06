@@ -46,16 +46,16 @@ theorem uniform_cayley_rank_bound_of_original_smooth_domain
       (∀ j, neumannEigenvalue Ω j ≠ ENNReal.ofReal E) →
       CayleyRankBound (monodromyAt γ E) A m := by
   obtain ⟨Kγ, hKγ⟩ := hγ.lipschitz
-  let Ws : ℝ → ℝ → Ell2 →L[ℂ] Ell2 := fun E =>
+  let Ws := fun E =>
     Classical.choose (transport_exists_of_lipschitz γ hKγ E)
-  have hWs : ∀ E, IsTransport γ E (Ws E) := fun E =>
+  have hWs := fun E =>
     Classical.choose_spec (transport_exists_of_lipschitz γ hKγ E)
   have hU : monodromy (Ws E₀) ≠ 1 := by
     simpa only [monodromyAt_eq hKγ (hWs E₀)] using hU₀
   obtain ⟨t, ht, ε, hε, _hεE, hcut⟩ :=
     exists_boundary_origin_of_boundaryParam hγ hWs hE₀ hU
   let γt : ℝ → ℂ := fun θ => γ (θ + t)
-  have hγt : IsBoundaryParam Ω γt := hγ.shift t
+  have hγt := hγ.shift t
 
   obtain ⟨R, C, K, F, e, hR, _hCpos, _hKpos, hFs, hhol, _hinj, himage,
     _hnz, hC, hK, he, hsource, hes, _hclosed, _hsphere⟩ :=
@@ -77,13 +77,13 @@ theorem uniform_cayley_rank_bound_of_original_smooth_domain
   let τ : ℝ → ℝ :=
     localConformalRotateTraceReparam (normalizedArcReparam (physicalCircleTrace F)) φ
   let Γ : ℝ → ℂ := physicalCircleTrace (localConformalRotate F φ)
-  have hτ' : IsC1TraceReparam τ c := hτ
+  have hτ' := hτ
   have hcomp : Γ = γt ∘ τ := by
     funext θ
     exact hcoord θ
-  let WΓ : ℝ → ℝ → Ell2 →L[ℂ] Ell2 := fun E =>
+  let WΓ := fun E =>
     Classical.choose (transport_exists_of_lipschitz Γ hΓLip E)
-  have hWΓ : ∀ E, IsTransport Γ E (WΓ E) := fun E =>
+  have hWΓ := fun E =>
     Classical.choose_spec (transport_exists_of_lipschitz Γ hΓLip E)
   obtain ⟨Kγt, hKγt⟩ := hγt.lipschitz
   obtain ⟨Wt, hWt⟩ := transport_exists_of_lipschitz γt hKγt E₀

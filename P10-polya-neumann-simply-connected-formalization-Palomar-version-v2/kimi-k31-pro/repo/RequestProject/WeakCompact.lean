@@ -40,9 +40,9 @@ theorem exists_weak_subseq {H : Type*} [NormedAddCommGroup H] [InnerProductSpace
   · ext n
     simp only [Function.comp_apply]
     show _ = (starRingEnd ℂ) ((InnerProductSpace.toDual ℂ H (x (φ n))) z)
-    rw [InnerProductSpace.toDual_apply_apply, inner_conj_symm]
+    simp
   · rw [← inner_conj_symm]
-    simp [InnerProductSpace.toDual_symm_apply]
+    simp
 
 /-- `L²(Ω)` is separable. -/
 instance separableSpace_L2 (Ω : Set ℂ) : TopologicalSpace.SeparableSpace (L2 Ω) := by

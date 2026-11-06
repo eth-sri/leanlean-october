@@ -64,7 +64,7 @@ theorem volterra_jump {W : ℝ → Ell2 →L[ℂ] Ell2} (hW : ContinuousOn W (Ic
   rw [hT0, zero_add] at h0
   rw [hT1, add_zero] at h1
   rw [hT0, hT1, h0, h1]
-  simp only [observation, hW0, ContinuousLinearMap.one_apply, cutS, inner_add_left,
+  simp [observation, hW0, ContinuousLinearMap.one_apply, cutS, inner_add_left,
     ContinuousLinearMap.adjoint_inner_left]
   ring
 
@@ -97,7 +97,7 @@ theorem periodicP_periodic {γ : ℝ → ℂ} {K : NNReal} (hK : LipschitzWith K
       (Complex.I • cutS (W (2 * π)) (basisVec 0)) (observationAdj W g))
   rw [inner_cutC_cutB hU _ hc] at hO
   rw [← sub_eq_zero]
-  simp only [periodicP]
+  simp [periodicP]
   linear_combination hA + hO
 
 /-! ### The small-energy Schur complement (Definition 8.1, Lemma 8.3) -/
@@ -111,7 +111,7 @@ lemma inner_observationAdj_right {W : ℝ → Ell2 →L[ℂ] Ell2} (hW : Continu
     ⟪x, observationAdj W g⟫_ℂ = l2Inner (observation W x) g := by
   rw [← inner_conj_symm, inner_observationAdj hW hg hgB, ← intervalIntegral_conj, l2Inner]
   refine intervalIntegral.integral_congr fun s _ => ?_
-  simp only [map_mul, Complex.conj_conj]
+  simp
   ring
 
 end PolyaNeumann

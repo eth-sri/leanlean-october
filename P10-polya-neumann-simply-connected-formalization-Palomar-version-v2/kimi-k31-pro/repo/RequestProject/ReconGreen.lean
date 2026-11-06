@@ -56,7 +56,7 @@ theorem integral_comp_mul_deriv_eq_wind {γ : ℝ → ℂ} {Kγ : NNReal} (hγ :
   obtain ⟨M, hM⟩ := isCompact_Icc.exists_bound_of_continuousOn (s := Icc (0 : ℝ) (2 * π))
     hγ.continuous.continuousOn
   set R := max (max R₀ M) 1 with hR
-  have hR0 : 0 ≤ R := le_trans zero_le_one (le_max_right _ _)
+
   have hγR : ∀ θ ∈ Icc (0 : ℝ) (2 * π), ‖γ θ‖ ≤ R := fun θ hθ =>
     (hM θ hθ).trans ((le_max_right _ _).trans (le_max_left _ _))
   have hout : ∀ z, z ∉ ball (0 : ℂ) R → dbar F z = 0 := fun z hz =>
@@ -76,7 +76,7 @@ theorem integral_comp_mul_deriv_eq_wind {γ : ℝ → ℂ} {Kγ : NNReal} (hγ :
       calc ∫⁻ z in ball (0 : ℂ) R, ‖Function.uncurry H (z, θ)‖ₑ
           ≤ ∫⁻ z in ball (0 : ℂ) R, (K : ENNReal) * ((Kγ : ENNReal) * ‖γ θ - z‖ₑ⁻¹) := by
             refine lintegral_mono fun z => ?_
-            simp only [Function.uncurry_apply_pair, hH, enorm_mul]
+            simp [Function.uncurry_apply_pair, hH, enorm_mul]
             gcongr
             · rw [← ofReal_norm, ← ENNReal.ofReal_coe_nnreal]
               exact ENNReal.ofReal_le_ofReal (norm_dbar_le hF z)
@@ -88,7 +88,7 @@ theorem integral_comp_mul_deriv_eq_wind {γ : ℝ → ℂ} {Kγ : NNReal} (hγ :
               lintegral_const_mul' _ _ ENNReal.coe_ne_top]
         _ ≤ (K : ENNReal) * ((Kγ : ENNReal) * ENNReal.ofReal (4 * π * R)) := by
             gcongr
-            exact lintegral_ball_inv_norm_sub_le hR0 (hγR θ ⟨hθ.1.le, hθ.2⟩)
+            exact lintegral_ball_inv_norm_sub_le (le_trans zero_le_one (le_max_right _ _)) (hγR θ ⟨hθ.1.le, hθ.2⟩)
     calc ∫⁻ θ in Ioc 0 (2 * π), ∫⁻ z in ball (0 : ℂ) R, ‖Function.uncurry H (z, θ)‖ₑ
         ≤ ∫⁻ θ in Ioc 0 (2 * π), (K : ENNReal) * ((Kγ : ENNReal) * ENNReal.ofReal (4 * π * R)) :=
           setLIntegral_mono' measurableSet_Ioc hbd
@@ -96,7 +96,7 @@ theorem integral_comp_mul_deriv_eq_wind {γ : ℝ → ℂ} {Kγ : NNReal} (hγ :
           rw [setLIntegral_const, Real.volume_Ioc]
           exact ENNReal.mul_lt_top (ENNReal.mul_lt_top ENNReal.coe_lt_top
             (ENNReal.mul_lt_top ENNReal.coe_lt_top ENNReal.ofReal_lt_top)) ENNReal.ofReal_lt_top
-  have hpi0 : (π : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr Real.pi_ne_zero
+  have hpi0 := Complex.ofReal_ne_zero.mpr Real.pi_ne_zero
   -- Cauchy–Pompeiu at the boundary points
   have hCP : ∀ θ ∈ Ioc 0 (2 * π), F (γ θ) * deriv γ θ =
       (π : ℂ)⁻¹ * ∫ z in ball (0 : ℂ) R, H z θ := by
@@ -115,7 +115,7 @@ theorem integral_comp_mul_deriv_eq_wind {γ : ℝ → ℂ} {Kγ : NNReal} (hγ :
     field_simp
   rw [intervalIntegral.integral_of_le hpi, setIntegral_congr_fun measurableSet_Ioc hCP,
     integral_const_mul, ← integral_integral_swap hHi]
-  have h2 : (2 * π * Complex.I : ℂ) ≠ 0 := by simp [Real.pi_ne_zero]
+
   have hin : ∀ z, ∫ θ in Ioc 0 (2 * π), H z θ =
       (2 * π * Complex.I) * (windingNumber γ z * dbar F z) := by
     intro z
@@ -123,7 +123,7 @@ theorem integral_comp_mul_deriv_eq_wind {γ : ℝ → ℂ} {Kγ : NNReal} (hγ :
     rw [integral_const_mul, windingNumber, intervalIntegral.integral_of_le hpi]
     simp only [div_eq_mul_inv]
     rw [← mul_assoc (2 * π * Complex.I : ℂ), ← mul_assoc (2 * π * Complex.I : ℂ),
-      mul_inv_cancel₀ h2, one_mul]
+      mul_inv_cancel₀ (by simp [Real.pi_ne_zero]), one_mul]
     ring
   simp_rw [hin]
   rw [integral_const_mul, setIntegral_eq_integral_of_forall_compl_eq_zero
@@ -208,7 +208,7 @@ theorem doubleLayer_eq_integral_of_hasCompactSupport {Ω : Set ℂ} (hb : Bornol
     doubleLayer γ h φ =
       ∫ z in Ω, (V z * lap φ z + ∑ i : Fin 2, dirD V (coordDir i) z * dirD φ (coordDir i) z) := by
   obtain ⟨Kγ, hKγ⟩ := hγ.lipschitz
-  have hΩo : IsOpen Ω := hL.1.1
+
   have h2π : (0 : ℝ) ≤ 2 * π := by positivity
   have hφt : TestFunction univ φ := ⟨hφ, hφc, subset_univ _⟩
   set p : ℂ → ℂ := fun z => (1 / 2 : ℂ) * dirD φ 1 z + (-Complex.I / 2) * dirD φ Complex.I z
@@ -227,10 +227,9 @@ theorem doubleLayer_eq_integral_of_hasCompactSupport {Ω : Set ℂ} (hb : Bornol
   set F1 : ℂ → ℂ := fun z => V z * p z with hF1
   set F2 : ℂ → ℂ := fun z => conj (V z * q z) with hF2
   have hK2 : LipschitzWith (1 * K2') F2 := Complex.isometry_conj.lipschitz.comp hK2'
-  have hF1c : HasCompactSupport F1 := hVc.mul_right
   have hF2c : HasCompactSupport F2 :=
     (hVc.mul_right (f' := q)).comp_left (g := fun z => conj z) (map_zero _)
-  have g1 := integral_boundary_eq_dbar hb hL hγ hK1 hF1c
+  have g1 := integral_boundary_eq_dbar hb hL hγ hK1 (hVc.mul_right)
   have g2 := integral_boundary_eq_dbar hb hL hγ hK2 hF2c
   -- the boundary side
   have hi1 := intervalIntegrable_comp_mul_deriv hKγ hK1.continuous
@@ -245,9 +244,9 @@ theorem doubleLayer_eq_integral_of_hasCompactSupport {Ω : Set ℂ} (hb : Bornol
       ← intervalIntegral.integral_add (hi1.const_mul _) ?_, doubleLayer]
     · refine intervalIntegral.integral_congr fun θ hθ => ?_
       rw [uIcc_of_le h2π] at hθ
-      simp only [hF1, hF2, hp, hq, dirD]
+      simp [hF1, hF2, hp, hq, dirD]
       rw [← hVh θ hθ, clm_apply_wirtinger]
-      simp only [map_mul, map_neg, Complex.conj_conj, Complex.conj_I]
+      simp
       ring
     · have : IntervalIntegrable (fun θ => conj (F2 (γ θ) * deriv γ θ)) volume 0 (2 * π) := by
         rw [intervalIntegrable_iff] at hi2 ⊢
@@ -256,12 +255,10 @@ theorem doubleLayer_eq_integral_of_hasCompactSupport {Ω : Set ℂ} (hb : Bornol
       exact this.const_mul _
   rw [hdl, g1, g2]
   -- the interior side
-  have hΩfin : volume Ω < ⊤ := hb.measure_lt_top
   have hdi : ∀ {F : ℂ → ℂ} {K : NNReal}, LipschitzWith K F → IntegrableOn (dbar F) Ω := by
     intro F K hF
-    exact Measure.integrableOn_of_bounded hΩfin.ne (measurable_dbar F).aestronglyMeasurable
+    exact Measure.integrableOn_of_bounded (hb.measure_lt_top).ne (measurable_dbar F).aestronglyMeasurable
       (Eventually.of_forall (norm_dbar_le hF))
-  have hcj : conj (∫ z in Ω, dbar F2 z) = ∫ z in Ω, conj (dbar F2 z) := integral_conj.symm
   have hc2 : IntegrableOn (fun z => conj (dbar F2 z)) Ω :=
     (hdi hK2).norm.mono' (Complex.continuous_conj.comp_aestronglyMeasurable
       (hdi hK2).aestronglyMeasurable) (Eventually.of_forall fun z => by simp)
@@ -269,18 +266,18 @@ theorem doubleLayer_eq_integral_of_hasCompactSupport {Ω : Set ℂ} (hb : Bornol
       Complex.I * conj (2 * Complex.I * ∫ z in Ω, dbar F2 z) =
       ∫ z in Ω, (2 * dbar F1 z + 2 * conj (dbar F2 z)) := by
     rw [integral_add ((hdi hK1).const_mul _) (hc2.const_mul _), integral_const_mul,
-      integral_const_mul, map_mul, hcj]
-    simp only [map_mul, map_ofNat, Complex.conj_I]
+      integral_const_mul, map_mul, (integral_conj.symm)]
+    simp [map_mul, map_ofNat, Complex.conj_I]
     ring_nf
     rw [Complex.I_sq]
     ring
   rw [e]
-  refine setIntegral_congr_ae hΩo.measurableSet ?_
+  refine setIntegral_congr_ae (hL.1.1).measurableSet ?_
   filter_upwards [hV.ae_differentiableAt] with z hz _
-  have hd1 : Differentiable ℝ (dirD φ 1) := (hφt.dirD 1).1.differentiable (by simp)
-  have hdI : Differentiable ℝ (dirD φ Complex.I) := (hφt.dirD Complex.I).1.differentiable (by simp)
-  have hpd : DifferentiableAt ℝ p z := hpt.1.differentiable (by simp) z
-  have hqd : DifferentiableAt ℝ q z := hqt.1.differentiable (by simp) z
+  have hd1 := (hφt.dirD 1).1.differentiable (by simp)
+  have hdI := (hφt.dirD Complex.I).1.differentiable (by simp)
+  have hpd := hpt.1.differentiable (by simp) z
+  have hqd := hqt.1.differentiable (by simp) z
   have hfp : fderiv ℝ p z = (1 / 2 : ℂ) • fderiv ℝ (dirD φ 1) z +
       (-Complex.I / 2) • fderiv ℝ (dirD φ Complex.I) z := by
     rw [hp, fderiv_fun_add ((hd1 z).const_mul _) ((hdI z).const_mul _), fderiv_const_mul (hd1 z),
@@ -290,13 +287,13 @@ theorem doubleLayer_eq_integral_of_hasCompactSupport {Ω : Set ℂ} (hb : Bornol
     rw [hq, fderiv_fun_add ((hd1 z).const_mul _) ((hdI z).const_mul _), fderiv_const_mul (hd1 z),
       fderiv_const_mul (hdI z)]
   have hf1 : fderiv ℝ F1 z = V z • fderiv ℝ p z + p z • fderiv ℝ V z := fderiv_fun_mul hz hpd
-  have hVq : DifferentiableAt ℝ (fun z => V z * q z) z := hz.mul hqd
+  have hVq := hz.mul hqd
   have hf2 : fderiv ℝ F2 z = Complex.conjCLE.toContinuousLinearMap.comp
       (V z • fderiv ℝ q z + q z • fderiv ℝ V z) := by
     rw [← fderiv_fun_mul hz hqd]
     exact (Complex.conjCLE.toContinuousLinearMap.hasFDerivAt.comp z hVq.hasFDerivAt).fderiv
-  simp only [dbar, lap, hf1, hf2, hfp, hfq, Fin.sum_univ_two]
-  simp only [ContinuousLinearMap.add_apply, ContinuousLinearMap.smul_apply,
+  simp [dbar, lap, hf1, hf2, hfp, hfq, Fin.sum_univ_two]
+  simp [ContinuousLinearMap.add_apply, ContinuousLinearMap.smul_apply,
     ContinuousLinearMap.comp_apply, ContinuousLinearEquiv.coe_coe, Complex.conjCLE_apply,
     smul_eq_mul, map_add, map_mul, map_neg, map_div₀, Complex.conj_conj, Complex.conj_I,
     map_ofNat, map_one, neg_neg,
@@ -316,12 +313,12 @@ theorem doubleLayer_eq_integral {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
     doubleLayer γ h φ =
       ∫ z in Ω, (V z * lap φ z + ∑ i : Fin 2, dirD V (coordDir i) z * dirD φ (coordDir i) z) := by
   have hΩo : IsOpen Ω := hL.1.1
-  have h2π : (0 : ℝ) ≤ 2 * π := by positivity
+
   obtain ⟨R₀, hR₀⟩ := hb.closure.subset_ball (0 : ℂ)
   set R := max R₀ 1 with hR
-  have hR0 : 0 < R := lt_of_lt_of_le one_pos (le_max_right _ _)
+
   have hcl : closure Ω ⊆ ball (0 : ℂ) R := hR₀.trans (ball_subset_ball (le_max_left _ _))
-  let b : ContDiffBump (0 : ℂ) := ⟨R, R + 1, hR0, by linarith⟩
+  let b : ContDiffBump (0 : ℂ) := ⟨R, R + 1, (lt_of_lt_of_le one_pos (le_max_right _ _)), by linarith⟩
   set φ' : ℂ → ℂ := fun z => (b z : ℂ) * φ z with hφ'
   have hφ'd : ContDiff ℝ (⊤ : ℕ∞) φ' :=
     (Complex.ofRealCLM.contDiff.comp b.contDiff).mul hφ
@@ -336,22 +333,22 @@ theorem doubleLayer_eq_integral {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
   have hdirD : ∀ v, ∀ z ∈ ball (0 : ℂ) R, dirD φ' v =ᶠ[nhds z] dirD φ v := by
     intro v z hz
     filter_upwards [isOpen_ball.mem_nhds hz] with w hw
-    simp only [dirD, hD w hw]
+    simp [dirD, hD w hw]
   have hDD : ∀ v w, ∀ z ∈ ball (0 : ℂ) R, dirD (dirD φ' v) w z = dirD (dirD φ v) w z :=
-    fun v w z hz => by simp only [dirD]; rw [(hdirD v z hz).fderiv_eq]
+    fun v w z hz => by simp [dirD]; rw [(hdirD v z hz).fderiv_eq]
   have key := doubleLayer_eq_integral_of_hasCompactSupport hb hL hγ hV hVc hVh hφ'd hφ'c
   have hl : doubleLayer γ h φ' = doubleLayer γ h φ := by
     unfold doubleLayer
     refine intervalIntegral.integral_congr fun θ hθ => ?_
-    rw [uIcc_of_le h2π] at hθ
+    rw [uIcc_of_le (by positivity)] at hθ
     have : γ θ ∈ ball (0 : ℂ) R := hcl (frontier_subset_closure
       (hγ.image ▸ mem_image_of_mem γ hθ))
-    simp only [hD _ this]
+    simp [hD _ this]
   rw [← hl, key]
   refine setIntegral_congr_fun hΩo.measurableSet fun z hz => ?_
-  have hz' : z ∈ ball (0 : ℂ) R := hcl (subset_closure hz)
+  have hz' := hcl (subset_closure hz)
   have hlap : lap φ' z = lap φ z := by
     unfold lap; rw [hDD 1 1 z hz', hDD _ _ z hz']
-  simp only [hlap, dirD, hD z hz']
+  simp [hlap, dirD, hD z hz']
 
 end PolyaNeumann

@@ -68,18 +68,18 @@ theorem exists_localConformal_normalized_reduced_boundary_bound
   obtain ⟨d, u, v, _, hv, hinjS, Vchart, hVchart, hchart, _⟩ :=
     exists_localConformal_fixed_fourier_complement_projectedObservation_injective
       hR F hFs hb hL hhol hinj hC hK e he hsource hes hΓLip hE₀ (hWs E₀) hcut
-  let T : H₀ᗮ →L[ℂ] L2Z := finiteFourierChart u v
+  let T := finiteFourierChart u v
   let J : ℝ → H₀ →L[ℂ] L2Z := fun E => (NF (E : ℂ)).comp (H₀).subtypeL
-  let P : ℝ → L2Z →L[ℂ] L2Z := normalizedPeriodicBoundaryFamily QF Ws
-  let Preg : ℝ → L2Z →L[ℂ] L2Z := normalizedPeriodicRegularFamily QF E₀ Ws
-  let S : ℝ → L2Z →L[ℂ] Ell2 := fun E => projObsDual (Ws E)
+  let P := normalizedPeriodicBoundaryFamily QF Ws
+  let Preg := normalizedPeriodicRegularFamily QF E₀ Ws
+  let S := fun E => projObsDual (Ws E)
   let w := normalizedNeumannResonanceMode QF hb hL hE₀.le
   obtain ⟨Vcomp, hVcomp, hcomp, _⟩ := h1ComplementForm_isUnit_near hb hL hE₀.le
   have hcutNear := (reduced_cutC_continuousAt_energy hΓLip hWs E₀).eventually_ne hcut
-  let Vbase : Set ℝ := Vchart ∩ Vcomp ∩
+  let Vbase := Vchart ∩ Vcomp ∩
     {E | cutC (Ws E (2 * Real.pi)) (basisVec 0) ≠ 0}
-  have hVbase : Vbase ∈ 𝓝 E₀ := inter_mem (inter_mem hVchart hVcomp) hcutNear
-  let U : Set ℝ := {E | E ∈ Vbase ∧ 0 < E ∧
+  have hVbase := inter_mem (inter_mem hVchart hVcomp) hcutNear
+  let U := {E | E ∈ Vbase ∧ 0 < E ∧
     ∀ j, neumannEigenvalue ΩF j ≠ ENNReal.ofReal E}
   have hbase (E : ℝ) (hEU : E ∈ U) :
       Summable fun p => ‖correctedRemainderMatrix (Ws E) 0 0 p‖ ^ 2 :=
@@ -106,8 +106,7 @@ theorem exists_localConformal_normalized_reduced_boundary_bound
       normalizedNeumannResidue_eq_original_basis QF hb hL hE₀.le]
   have hΓ4 := contDiff_physicalCircleTrace_four_of_neighborhood hR F
     (hFs.of_le (WithTop.coe_le_coe.mpr le_top))
-  have hΓ2 : ContDiff ℝ ((1 : WithTop ℕ∞) + 1) ΓF := hΓ4.of_le (by norm_num)
-  obtain ⟨B, hB⟩ := hΓ2.deriv'.contDiffOn.exists_lipschitzOnWith
+  obtain ⟨B, hB⟩ := (hΓ4.of_le (by norm_num)).deriv'.contDiffOn.exists_lipschitzOnWith
     (by norm_num : (1 : WithTop ℕ∞) ≠ 0) (convex_Icc 0 (2 * Real.pi)) isCompact_Icc
   have hΓ' : ∀ x ∈ Icc 0 (2 * Real.pi), ∀ y ∈ Icc 0 (2 * Real.pi),
       ‖deriv ΓF x - deriv ΓF y‖ ≤ B * |x - y| := by
@@ -117,7 +116,7 @@ theorem exists_localConformal_normalized_reduced_boundary_bound
   have hu₀ := h1ComplementForm_isUnit hb hL hE₀.le
   have hPreg : ContinuousAt Preg E₀ :=
     continuousAt_normalizedPeriodicRegularFamily QF hu₀ hΓLip hΓ' hWs hcut
-  have hS : ContinuousAt S E₀ := tendsto_projObsDual_energy hΓLip hWs E₀ hcut
+  have hS := tendsto_projObsDual_energy hΓLip hWs E₀ hcut
   have hbase₀ := localConformal_correctedRemainderMatrix_summable hR F hFs hΓLip (hWs E₀) hcut
   obtain ⟨D, hD, hreg⟩ := localConformal_finiteFourierChart_regular_compression
     hR F hFs hb hL hhol hinj hC e he hsource hes hE₀.le hu₀ (Ws E₀) hbase₀ u v
@@ -139,8 +138,7 @@ theorem exists_localConformal_normalized_reduced_boundary_bound
   obtain ⟨δ, hδ, hδsub⟩ := Metric.mem_nhds_iff.mp (inter_mem hV hVbase)
   refine ⟨A, δ, hA, hδ, ?_⟩
   intro E hE hnear hnr
-  have hball : E ∈ ball E₀ δ := mem_ball.mpr (by simpa only [Real.dist_eq] using hnear)
-  obtain ⟨hEV, hEbase⟩ := hδsub hball
+  obtain ⟨hEV, hEbase⟩ := hδsub (mem_ball.mpr (by simpa only [Real.dist_eq] using hnear))
   exact hbound E hEV ⟨hEbase, hE, hnr⟩
 
 end SuppliedCoordinates

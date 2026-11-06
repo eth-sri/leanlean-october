@@ -46,12 +46,11 @@ theorem secondDiff_integral_le {E : Type*} [NormedAddCommGroup E] {r : ℝ → E
   have hFc : Continuous F := by
     refine (((hr.comp (continuous_id.add continuous_const)).sub (hr.comp (continuous_id.add continuous_const))).sub
       ((hr.comp (continuous_id.add continuous_const)).sub hr)).norm.pow 2
-  have hpi : 0 < π := pi_pos
-  set a : ℝ := 2 * π - 2 * h with ha
-  have ha0 : 0 ≤ a := by rw [ha]; linarith
+  have hpi := pi_pos
+  set a := 2 * π - 2 * h with ha
   have ha2 : a ≤ 2 * π := by rw [ha]; linarith
   have hI1 : ∫ θ in (0 : ℝ)..a, F θ ≤ a * (A * h ^ 2) ^ 2 := by
-    have := intervalIntegral.integral_mono_on (μ := volume) ha0 (hFc.intervalIntegrable _ _)
+    have := intervalIntegral.integral_mono_on (μ := volume) (by rw [ha]; linarith) (hFc.intervalIntegrable _ _)
       intervalIntegrable_const fun θ hθ => pow_le_pow_left₀ (norm_nonneg _) (hgood θ hθ) 2
     simpa [intervalIntegral.integral_const] using this
   have hI2 : ∫ θ in a..(2 * π), F θ ≤ (2 * π - a) * (B * h) ^ 2 := by
@@ -60,8 +59,8 @@ theorem secondDiff_integral_le {E : Type*} [NormedAddCommGroup E] {r : ℝ → E
     simpa [intervalIntegral.integral_const] using this
   rw [← intervalIntegral.integral_add_adjacent_intervals (hFc.intervalIntegrable 0 a)
     (hFc.intervalIntegrable a (2 * π))]
-  have h3 : h ^ (3 : ℝ) = h ^ 3 := by exact_mod_cast Real.rpow_natCast h 3
-  rw [h3]
+
+  simp
   have hA : a * (A * h ^ 2) ^ 2 ≤ π ^ 2 * A ^ 2 * h ^ 3 := by
     have e : a * (A * h ^ 2) ^ 2 = a * h * (A ^ 2 * h ^ 3) := by ring
     have e' : π ^ 2 * A ^ 2 * h ^ 3 = π ^ 2 * (A ^ 2 * h ^ 3) := by ring
@@ -69,7 +68,6 @@ theorem secondDiff_integral_le {E : Type*} [NormedAddCommGroup E] {r : ℝ → E
     refine mul_le_mul_of_nonneg_right ?_ (by positivity)
     have : a * h ≤ 2 * π * (π / 2) := mul_le_mul ha2 hh' hh.le (by positivity)
     nlinarith
-  have hB : (2 * π - a) * (B * h) ^ 2 = 2 * B ^ 2 * h ^ 3 := by rw [ha]; ring
   nlinarith
 
 section Rows
@@ -86,18 +84,18 @@ lemma sum_tsum_secondDiff_le (J : Finset ι) (h : ℝ) :
     ∑ j ∈ J, ∑' n : ℤ, ‖Complex.exp (n * h * Complex.I) - 1‖ ^ (2 * 2) *
         ‖fourierCoeffOn two_pi_pos (fun θ => ⟪r θ, v j⟫_ℂ) n‖ ^ 2 ≤
       (2 * π)⁻¹ * ∫ θ in (0 : ℝ)..(2 * π), ‖secondDiff r h θ‖ ^ 2 := by
-  have hcont : ∀ j, Continuous fun θ => ⟪r θ, v j⟫_ℂ := fun j => hr.inner continuous_const
+
   have hperj : ∀ j, Function.Periodic (fun θ => ⟪r θ, v j⟫_ℂ) (2 * π) := fun j θ => by
-    simp only [hper θ]
+    simp [hper θ]
   have hsd : Continuous fun θ => secondDiff r h θ :=
     ((hr.comp (continuous_id.add continuous_const)).sub (hr.comp (continuous_id.add continuous_const))).sub
       ((hr.comp (continuous_id.add continuous_const)).sub hr)
   have hinner : ∀ j θ, ⟪r (θ + 2 * h), v j⟫_ℂ - 2 * ⟪r (θ + h), v j⟫_ℂ + ⟪r θ, v j⟫_ℂ =
       ⟪secondDiff r h θ, v j⟫_ℂ := by
     intro j θ
-    simp only [secondDiff, inner_sub_left]
+    simp [secondDiff, inner_sub_left]
     ring
-  simp_rw [fun j => tsum_second_diff_eq_integral (hcont j) (hperj j) h, hinner]
+  simp_rw [fun j => tsum_second_diff_eq_integral ((fun j => hr.inner continuous_const) j) (hperj j) h, hinner]
   rw [← Finset.mul_sum, ← intervalIntegral.integral_finset_sum]
   swap
   · intro j _
@@ -120,18 +118,17 @@ theorem summable_rpow_mul_fourierCoeff_rows {C β s : ℝ} (hs : 0 < s) (hsβ : 
       ‖fourierCoeffOn two_pi_pos (fun θ => ⟪r θ, v p.1⟫_ℂ) p.2‖ ^ 2 := by
   classical
   set c : ι → ℤ → ℂ := fun j n => fourierCoeffOn two_pi_pos (fun θ => ⟪r θ, v j⟫_ℂ) n with hc
-  have hcont : ∀ j, Continuous fun θ => ⟪r θ, v j⟫_ℂ := fun j => hr.inner continuous_const
+
   have hsumj : ∀ j, Summable fun n => ‖c j n‖ ^ 2 := fun j =>
-    (hasSum_sq_fourierCoeffOn_of_continuous (hcont j)).summable
-  set Cb : ℝ := (2 * π)⁻¹ * C * (π / 2) ^ β with hCb
-  set bound : ℝ := |Cb| * 2 ^ (2 * s) * (1 - (2 : ℝ) ^ (2 * s - β))⁻¹ with hbound
+    (hasSum_sq_fourierCoeffOn_of_continuous ((fun j => hr.inner continuous_const) j)).summable
+  set Cb := (2 * π)⁻¹ * C * (π / 2) ^ β with hCb
+  set bound := |Cb| * 2 ^ (2 * s) * (1 - (2 : ℝ) ^ (2 * s - β))⁻¹ with hbound
   have hfin : ∀ (J : Finset ι) (U : Finset ℤ),
       ∑ n ∈ U, |(n : ℝ)| ^ (2 * s) * ∑ j ∈ J, ‖c j n‖ ^ 2 ≤ bound := by
     intro J U
     set aJ : ℤ → ℝ := fun n => ∑ j ∈ J, ‖c j n‖ ^ 2 with haJ
     have haJ0 : ∀ n, 0 ≤ aJ n := fun n => Finset.sum_nonneg fun j _ => by positivity
-    have haJs : Summable aJ := summable_sum fun j _ => hsumj j
-    have hblock := fun N hN u hu => block_bound_of_diff_bound haJ0 haJs 2
+    have hblock := fun N hN u hu => block_bound_of_diff_bound haJ0 (summable_sum fun j _ => hsumj j) 2
       (C := (2 * π)⁻¹ * C) (β := β) (fun h h0 h1 => ?_) N hN u hu
     · have := sum_rpow_mul_le_of_block_bound haJ0 hs.le hsβ hblock U
       rwa [Real.zero_rpow (by positivity), zero_mul, zero_add] at this
@@ -151,12 +148,12 @@ theorem summable_rpow_mul_fourierCoeff_rows {C β s : ℝ} (hs : 0 < s) (hsβ : 
       rw [mul_assoc]
       exact mul_le_mul_of_nonneg_left (hdiff h h0 h1) (by positivity)
   refine summable_of_sum_le (c := bound) (fun p => by positivity) fun u => ?_
-  set J : Finset ι := u.image Prod.fst
-  set U : Finset ℤ := u.image Prod.snd
+  set J := u.image Prod.fst
+  set U := u.image Prod.snd
   calc ∑ p ∈ u, |(p.2 : ℝ)| ^ (2 * s) * ‖c p.1 p.2‖ ^ 2
       ≤ ∑ p ∈ J ×ˢ U, |(p.2 : ℝ)| ^ (2 * s) * ‖c p.1 p.2‖ ^ 2 := by
         refine Finset.sum_le_sum_of_subset_of_nonneg (fun p hp => ?_) fun p _ _ => by positivity
-        rw [Finset.mem_product]
+        simp
         exact ⟨Finset.mem_image_of_mem _ hp, Finset.mem_image_of_mem _ hp⟩
     _ = ∑ n ∈ U, |(n : ℝ)| ^ (2 * s) * ∑ j ∈ J, ‖c j n‖ ^ 2 := by
         rw [Finset.sum_product_right]

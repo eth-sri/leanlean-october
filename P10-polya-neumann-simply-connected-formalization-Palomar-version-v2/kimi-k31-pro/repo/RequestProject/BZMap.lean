@@ -53,11 +53,11 @@ lemma C_sub_U₁ {x : ℂ} (hx : x ∈ D.C) : x ∈ S.U₁ := by
 /-- Points of the collar lie above the level `ρ = ε` exactly when the crossing time is negative. -/
 lemma lt_ρ_iff_s_neg {x : ℂ} (hx : x ∈ D.C) : D.ε < D.ρ x ↔ D.s x < 0 := by
   obtain ⟨hu, h0⟩ := D.cross_ρ_spec hx
-  have hx' : |signedDist Ω x| < 4 * S.M * D.T := hx
+
   have hT1 := D.T₁_le
-  have hκ : 0 < S.κ₀ / 2 := half_pos S.hκ₀
+  have hκ := half_pos S.hκ₀
   have hpath : ∀ v, |v| ≤ D.T₁ → S.Φ v x ∈ S.U₁ := fun v hv =>
-    D.flow_mem_U₁ hx' (by linarith [D.T₁_pos])
+    D.flow_mem_U₁ (hx) (by linarith [D.T₁_pos])
   rcases lt_trichotomy (D.s x) 0 with hneg | hzero | hpos
   · have := S.hΦ.lt_of_transversal S.hX S.hM D.lip S.hτ₀ hκ D.trans x
       (s := D.s x) (t := 0) (by linarith [hu.1]) hneg (by norm_num)
@@ -144,7 +144,7 @@ lemma f_mem (hΩo : IsOpen Ω) (hΩu : Ωᶜ.Nonempty) {x : ℂ} (hx : x ∈ Ω)
   · obtain ⟨hxC, hax⟩ := h
     have hT := D.T_pos
     set u := collarShift D.C D.a D.b D.T x
-    have hu : |u| ≤ D.T / 2 := hc.abs_collarShift_le x
+    have hu := hc.abs_collarShift_le x
     have hueq : u = D.b x * tentθ D.T (D.a x) := by simp [u, collarShift, hxC]
     obtain ⟨hyC, hya, -⟩ := hc.flow x hxC hax u (by linarith)
     have hpos := (D.mem_iff_a_pos hΩo hΩu hxC).mp hx
@@ -179,7 +179,7 @@ lemma f_mem_of_frontier (hΩo : IsOpen Ω) (hΩu : Ωᶜ.Nonempty) {q : ℂ} (hq
     D.f q ∈ Ω := by
   have hT := D.T_pos
   have hM := S.M_pos
-  have hd : signedDist Ω q = 0 := signedDist_eq_zero_of_frontier hΩo hq
+  have hd := signedDist_eq_zero_of_frontier hΩo hq
   have hqC : q ∈ D.C := by
     show |signedDist Ω q| < 4 * S.M * D.T
     rw [hd, abs_zero]; positivity
@@ -220,7 +220,7 @@ theorem isSmoothDomain_image (hΩ : IsDomain Ω) (hΩu : Ωᶜ.Nonempty) :
   rw [← D.coe_homeo, ← Homeomorph.image_frontier] at hp
   obtain ⟨q, hq, rfl⟩ := hp
   rw [D.coe_homeo]
-  have hd : signedDist Ω q = 0 := signedDist_eq_zero_of_frontier hΩ.1 hq
+  have hd := signedDist_eq_zero_of_frontier hΩ.1 hq
   have hqC : q ∈ D.C := by
     show |signedDist Ω q| < 4 * S.M * D.T
     rw [hd, abs_zero]; positivity
@@ -230,7 +230,7 @@ theorem isSmoothDomain_image (hΩ : IsDomain Ω) (hΩu : Ωᶜ.Nonempty) :
   have hshift : collarShift D.C D.a D.b D.T q = D.s q := by
     simp only [collarShift, if_pos hqC, haq, tentθ_zero, mul_one, b, zero_add]
   have hfq : D.f q = S.Φ (D.s q) q := by simp only [f, collarMap, hshift]
-  have hρp : D.ρ (D.f q) = D.ε := by rw [hfq]; exact (D.cross_ρ_spec hqC).2
+
   have hbq := D.b_mem hqC
   have hbs : D.b q = D.s q := by simp only [b, haq, zero_add]
   obtain ⟨hpC, hpa, -⟩ := hc.flow q hqC (by rw [haq, abs_zero]; exact hT) (D.s q)
@@ -238,7 +238,6 @@ theorem isSmoothDomain_image (hΩ : IsDomain Ω) (hΩu : Ωᶜ.Nonempty) :
   rw [← hfq] at hpC hpa
   rw [haq, zero_add, ← hbs] at hpa
   set R : ℝ := min (S.M * D.T) (D.T / (2 * S.La + 1))
-  have hR : 0 < R := lt_min (by positivity) (by positivity)
   have hball : ∀ w ∈ ball (D.f q) R, w ∈ D.C ∧ |D.a w| < D.T := by
     intro w hw
     have hw' : ‖w - D.f q‖ < R := by rwa [mem_ball, dist_eq_norm] at hw
@@ -257,15 +256,15 @@ theorem isSmoothDomain_image (hΩ : IsDomain Ω) (hΩu : Ωᶜ.Nonempty) :
     refine ⟨hwC, ?_⟩
     have h4 := hc.a_lip w hwC (D.f q) hpC
     rw [hpa] at h4
-    have h5 : S.La * ‖w - D.f q‖ ≤ S.La * R := mul_le_mul_of_nonneg_left hw'.le hLa
+    have h5 := mul_le_mul_of_nonneg_left hw'.le hLa
     have h6 : S.La * (D.T / (2 * S.La + 1)) ≤ D.T / 2 := by
       rw [mul_div_assoc', div_le_div_iff₀ (by positivity) (by norm_num)]; nlinarith
-    have h7 : S.La * R ≤ S.La * (D.T / (2 * S.La + 1)) := mul_le_mul_of_nonneg_left hR2 hLa
+    have h7 := mul_le_mul_of_nonneg_left hR2 hLa
     have h8 := abs_sub_abs_le_abs_sub (D.a w) (D.b q)
     rw [abs_of_nonneg hbq.1] at h8
     linarith [hbq.2]
-  exact smoothChart_of_level D.smooth D.lip S.hX S.hτ₀ (half_pos S.hκ₀) D.trans hR
-    (fun w hw => D.C_sub_U₁ (hball w hw).1) hρp
+  exact smoothChart_of_level D.smooth D.lip S.hX S.hτ₀ (half_pos S.hκ₀) D.trans (lt_min (by positivity) (by positivity))
+    (fun w hw => D.C_sub_U₁ (hball w hw).1) (by rw [hfq]; exact (D.cross_ρ_spec hqC).2)
     (fun w hw => D.mem_image_iff hΩ.1 hΩu (hball w hw).1 (hball w hw).2)
 
 end BZLevelData

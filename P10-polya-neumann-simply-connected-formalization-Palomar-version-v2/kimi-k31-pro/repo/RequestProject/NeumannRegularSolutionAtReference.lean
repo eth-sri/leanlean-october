@@ -32,7 +32,7 @@ private theorem regular_inverse_apply_form
     (hunit : IsUnit B) (u : H) :
     ((Ring.inverse B) (Sᗮ.orthogonalProjection (A u)) : H) =
       (Sᗮ.orthogonalProjection u : H) := by
-  let v : Sᗮ := Sᗮ.orthogonalProjection u
+  let v := Sᗮ.orthogonalProjection u
   have hAu : A u = A (v : H) := by
     have h := congrArg A (S.starProjection_add_starProjection_orthogonal u)
     simp only [map_add, Submodule.starProjection_apply] at h
@@ -53,8 +53,7 @@ theorem h1RegularResolvent_form_at_reference {Ω : Set ℂ}
     (hb : Bornology.IsBounded Ω) (hL : IsLipschitzDomain Ω)
     {E₀ : ℝ} (hE₀ : 0 ≤ E₀) (u : NeumannH1 Ω) :
     h1RegularResolvent Ω E₀ E₀ (h1HelmholtzForm Ω E₀ u) =
-      (h1ResonantSpace Ω E₀)ᗮ.starProjection u := by
-  exact regular_inverse_apply_form (H := NeumannH1 Ω) (h1ResonantSpace Ω E₀)
+      (h1ResonantSpace Ω E₀)ᗮ.starProjection u := regular_inverse_apply_form (H := NeumannH1 Ω) (h1ResonantSpace Ω E₀)
     (h1HelmholtzForm Ω E₀) (h1ComplementForm Ω E₀ E₀)
     (fun _ hs => hs) (h1ComplementForm_coe_eq hE₀ E₀)
     (h1ComplementForm_isUnit hb hL hE₀) u

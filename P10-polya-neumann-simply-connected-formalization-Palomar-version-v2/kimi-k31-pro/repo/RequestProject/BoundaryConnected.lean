@@ -49,7 +49,7 @@ theorem windingNumber_eq_zero_of_lift {γ : ℝ → ℂ} {K : NNReal} (hK : Lips
       (by rw [uIcc_of_le h2π]; exact (intervalIntegrable_iff_integrableOn_Icc_of_le h2π).mp hint)
     rwa [uIcc_of_le h2π] at this
   have hexpI := exp_neg_integral_mul_eq hK h2π hz
-  have h0 : γ 0 - z ≠ 0 := sub_ne_zero.mpr (hz 0 ⟨le_rfl, h2π⟩)
+  have h0 := sub_ne_zero.mpr (hz 0 ⟨le_rfl, h2π⟩)
   set D : ℝ → ℂ := fun θ => (G θ - I θ - G 0) / (2 * π * Complex.I) with hD
   have hDint : ∀ θ ∈ Icc 0 (2 * π), D θ ∈ range ((↑) : ℤ → ℂ) := by
     intro θ hθ
@@ -91,15 +91,14 @@ lemma exists_small_chart {Ω : Set ℂ} (hL : IsLipschitzDomain Ω) {p : ℂ} (h
   set H' := min (h / 2) (d / 2) with hH'
   have hH'0 : 0 < H' := lt_min (by linarith) (by linarith)
   set ρ' := min (r / 2) (H' / (2 * (K + 1))) with hρ'
-  have hρ'0 : 0 < ρ' := lt_min (by linarith) (by positivity)
-  have hK0 : (0 : ℝ) ≤ K := K.coe_nonneg
+  have hK0 := K.coe_nonneg
   have hρ'H : ρ' ≤ H' / (2 * (K + 1)) := min_le_right _ _
   have hKρ : (K : ℝ) * ρ' < H' := by
     calc (K : ℝ) * ρ' ≤ K * (H' / (2 * (K + 1))) := mul_le_mul_of_nonneg_left hρ'H hK0
       _ < H' := by rw [mul_div_assoc', div_lt_iff₀ (by positivity)]; nlinarith
   have hp0 : c * (p - p) = 0 := by simp
   have hrec := isChartAt_recenter hL.1.1 hch hp (by rw [hp0]; simp; linarith)
-    (by rw [hp0]; simp; linarith) hρ'0 hH'0 (min_le_left _ _) (min_le_left _ _) le_rfl hKρ
+    (by rw [hp0]; simp; linarith) (lt_min (by linarith) (by positivity)) hH'0 (min_le_left _ _) (min_le_left _ _) le_rfl hKρ
   refine ⟨c, ρ', H', K, _, hrec, fun w hw => ?_⟩
   rw [mem_ball, dist_eq_norm, ← norm_mul_sub hch.1]
   have h1 := Complex.norm_le_abs_re_add_abs_im (c * (w - p))
@@ -131,7 +130,7 @@ lemma isPreconnected_chart_inter {Ω : Set ℂ} {p c : ℂ} {r h : ℝ} {K : NNR
       set X := (c * (w - p)).re
       set Y := (c * (w - p)).im
       have hfX := (abs_lt.mp (hfb X hw1))
-      have hlt : f X < Y := (hΩ w hw1 hw2).mp hwΩ
+      have hlt := (hΩ w hw1 hw2).mp hwΩ
       have hY := abs_lt.mp hw2
       have hpos : 0 < h - f X := by linarith
       refine ⟨(X, (Y - f X) / (h - f X)), ⟨abs_lt.mp hw1, div_pos (by linarith) hpos,
@@ -143,7 +142,7 @@ lemma isPreconnected_chart_inter {Ω : Set ℂ} {p c : ℂ} {r h : ℝ} {K : NNR
       have hfq := abs_lt.mp (hfb q.1 (abs_lt.mpr hq1))
       have h1 : |(c * (Φ q - p)).re| < r := by rw [hre]; exact abs_lt.mpr hq1
       have hpos : 0 < h - f q.1 := by linarith
-      have hm1 : 0 < q.2 * (h - f q.1) := mul_pos hq2.1 hpos
+      have hm1 := mul_pos hq2.1 hpos
       have hm2 : q.2 * (h - f q.1) < h - f q.1 := by nlinarith [hq2.2]
       have h2 : |(c * (Φ q - p)).im| < h := by
         rw [him, abs_lt]; constructor <;> linarith
@@ -189,7 +188,7 @@ theorem exists_log_closure {Ω : Set ℂ} (hL : IsLipschitzDomain Ω) (hsc : Sim
       ContinuousOn ℓ U ∧ (∀ w ∈ U, Complex.exp (ℓ w) = w - z) ∧ EqOn L₀ ℓ (Ω ∩ U) := by
     intro p hp
     have hpz : p - z ≠ 0 := sub_ne_zero.mpr fun h => hz (h ▸ frontier_subset_closure hp)
-    have hd : 0 < ‖p - z‖ := norm_pos_iff.mpr hpz
+    have hd := norm_pos_iff.mpr hpz
     obtain ⟨c, r, h, K, f, hch, hball⟩ := exists_small_chart hL hp hd
     set B := chartBox p c r h
     have hBo : IsOpen B := isOpen_chartBox _ _ _ _
@@ -244,7 +243,7 @@ theorem exists_log_closure {Ω : Set ℂ} (hL : IsLipschitzDomain Ω) (hsc : Sim
   have hcons : ∀ p ∈ frontier Ω, ∀ w ∈ frontier Ω ∩ U p, ℓ w w = ℓ p w := by
     intro p hp w hw
     set S := Ω ∩ (U w ∩ U p)
-    have hUw : U w ∩ U p ∈ 𝓝 w := ((hUo w hw.1).inter (hUo p hp)).mem_nhds ⟨hpU w hw.1, hw.2⟩
+    have hUw := ((hUo w hw.1).inter (hUo p hp)).mem_nhds ⟨hpU w hw.1, hw.2⟩
     have hwS : w ∈ closure S := by
       rw [mem_closure_iff_nhds]
       intro t ht
@@ -306,9 +305,9 @@ theorem exists_windingNumber_ne_of_frontier {Ω : Set ℂ} (hL : IsLipschitzDoma
     {γ : ℝ → ℂ} {K : NNReal} (hK : LipschitzWith K γ) (hper : Function.Periodic γ (2 * π))
     (hinj : InjOn γ (Ico 0 (2 * π))) (hsub : γ '' Icc 0 (2 * π) ⊆ frontier Ω) :
     ∃ z₁ ∈ Ω, ∃ z₂, z₂ ∉ closure Ω ∧ windingNumber γ z₁ ≠ windingNumber γ z₂ := by
-  have hpi : 0 < π := Real.pi_pos
+  have hpi := Real.pi_pos
   have h2pi : (0 : ℝ) < 2 * π := by positivity
-  have hΩo : IsOpen Ω := hL.1.1
+  have hΩo := hL.1.1
   have hfront : ∀ θ, γ θ ∈ frontier Ω := fun θ => hsub (mem_image_Icc_of_periodic hper θ)
   set p := γ 0 with hpdef
   obtain ⟨c, r, h, K', f, hc, hr, hh, hf, hf0, -, hΩ⟩ := hL.2 p (hfront 0)
@@ -319,20 +318,18 @@ theorem exists_windingNumber_ne_of_frontier {Ω : Set ℂ} (hL : IsLipschitzDoma
     simp only [hγ', dist_eq_norm, ← mul_sub, norm_mul, hc, one_mul, sub_sub_sub_cancel_right]
     rw [← dist_eq_norm]
     exact hK.dist_le_mul x y
-  have hper' : Function.Periodic γ' (2 * π) := fun θ => by simp only [hγ', hper θ]
   have h0' : γ' 0 = 0 := by simp [hγ', hpdef]
   set m := min r h with hm
-  have hm0 : 0 < m := lt_min hr hh
+  have hm0 := lt_min hr hh
   set η := min (π / 2) (m / (2 * (K + 1))) with hη
   have hη0 : 0 < η := lt_min (by positivity) (by positivity)
   have hηπ2 : η ≤ π / 2 := min_le_left _ _
-  have hηπ : η < π := hηπ2.trans_lt (by linarith)
   have hsmall : ∀ θ ∈ Icc (-η) η, ‖γ' θ‖ < m := by
     intro θ hθ
     have h1 : ‖γ' θ‖ ≤ K * |θ| := by
       have := hK'.dist_le_mul θ 0
       rwa [h0', dist_zero_right, Real.dist_eq, sub_zero] at this
-    have h2 : |θ| ≤ η := abs_le.mpr ⟨hθ.1, hθ.2⟩
+    have h2 := abs_le.mpr ⟨hθ.1, hθ.2⟩
     have h3 : (K : ℝ) * η ≤ K * (m / (2 * (K + 1))) :=
       mul_le_mul_of_nonneg_left (min_le_right _ _) K.coe_nonneg
     have h4 : (K : ℝ) * (m / (2 * (K + 1))) < m := by
@@ -360,11 +357,9 @@ theorem exists_windingNumber_ne_of_frontier {Ω : Set ℂ} (hL : IsLipschitzDoma
     rw [zsmul_eq_mul] at hn
     have hb1 : θ₂ - θ₁ ≤ π := by linarith [h₁.1, h₂.2]
     have hb2 : -π ≤ θ₂ - θ₁ := by linarith [h₁.2, h₂.1]
-    have hn1 : (n : ℝ) < 1 := by nlinarith
-    have hn2 : (-1 : ℝ) < n := by nlinarith
     have hn0 : n = 0 := by
-      have := Int.cast_lt.mp (show ((n : ℤ) : ℝ) < ((1 : ℤ) : ℝ) by simpa using hn1)
-      have := Int.cast_lt.mp (show ((-1 : ℤ) : ℝ) < ((n : ℤ) : ℝ) by simpa using hn2)
+      have := Int.cast_lt.mp (show ((n : ℤ) : ℝ) < ((1 : ℤ) : ℝ) by simpa using (by nlinarith))
+      have := Int.cast_lt.mp (show ((-1 : ℤ) : ℝ) < ((n : ℤ) : ℝ) by simpa using (by nlinarith))
       omega
     rw [hn0, Int.cast_zero, zero_mul, sub_eq_zero] at hn
     exact hn.symm
@@ -377,12 +372,11 @@ theorem exists_windingNumber_ne_of_frontier {Ω : Set ℂ} (hL : IsLipschitzDoma
       · exact sub_eq_zero.mp h1
     have := hinj ⟨by linarith [hθ.1], by linarith [hθ.2]⟩ ⟨le_rfl, h2pi⟩ hγθ
     linarith [hθ.1]
-  obtain ⟨σ', hσ', hlim⟩ := windingNumber_jump hK' hper' hη0 hηπ h0' hgraph hinj' hfar'
+  obtain ⟨σ', hσ', hlim⟩ := windingNumber_jump hK' (fun θ => by simp only [hγ', hper θ]) hη0 (hηπ2.trans_lt (by linarith)) h0' hgraph hinj' hfar'
   have hcz : ∀ x : ℂ, c * (p + c⁻¹ * x - p) = x := fun x => by field_simp; ring
-  have hσ0 : σ' ≠ 0 := by rcases hσ' with h1 | h1 <;> simp [h1]
   have hev : ∀ᶠ s : ℝ in 𝓝[>] 0, windingNumber γ' ((s : ℂ) * Complex.I) -
       windingNumber γ' (-((s : ℂ) * Complex.I)) ≠ 0 :=
-    hlim.eventually (isOpen_ne.mem_nhds hσ0)
+    hlim.eventually (isOpen_ne.mem_nhds (by rcases hσ' with h1 | h1 <;> simp [h1]))
   obtain ⟨s, hsne, hs⟩ := (hev.and (Ioo_mem_nhdsGT hh)).exists
   rw [windingNumber_affine γ hc0, windingNumber_affine γ hc0] at hsne
   have hin' : p + c⁻¹ * ((s : ℂ) * Complex.I) ∈ Ω := by
@@ -426,9 +420,8 @@ theorem isPreconnected_frontier_of_simplyConnected {Ω : Set ℂ} (hb : Bornolog
       (fun θ _ => hLexp _ (hγcl θ)) (by simp only [Function.comp, hclosed])
   obtain ⟨z₁, hz₁, z₂, hz₂, hne⟩ := exists_windingNumber_ne_of_frontier hL hK hper hinj hsub
   -- a disc around `q` missing the loop
-  have hSc : IsClosed S := (isCompact_Icc.image hK.continuous).isClosed
-  obtain ⟨ε, hε, hball⟩ := Metric.isOpen_iff.mp hSc.isOpen_compl q hqS
-  have hdisj : Disjoint (ball q ε) S := disjoint_left.mpr fun x hx hxS => hball hx hxS
+  obtain ⟨ε, hε, hball⟩ := Metric.isOpen_iff.mp ((isCompact_Icc.image hK.continuous).isClosed).isOpen_compl q hqS
+  have hdisj := disjoint_left.mpr fun x hx hxS => hball hx hxS
   obtain ⟨a, haΩ, haB⟩ := mem_closure_iff.mp (frontier_subset_closure hqf) ε hε
   obtain ⟨b, hbΩ, hbB⟩ := mem_closure_iff.mp (mem_closure_compl_closure hL hqf) ε hε
   have hab : windingNumber γ a = windingNumber γ b :=

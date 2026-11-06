@@ -63,8 +63,6 @@ def smoothTraceTestsH1Coefficient (a : smoothTraceTests) : SmoothH1Coefficient w
   value_bound := (Classical.choose_spec (smoothTraceTests_exists_h1Coefficient_bound a)).2.1
   derivative_bound := (Classical.choose_spec (smoothTraceTests_exists_h1Coefficient_bound a)).2.2
 
-@[simp] theorem smoothTraceTestsH1Coefficient_apply (a : smoothTraceTests) (z : ℂ) :
-    smoothTraceTestsH1Coefficient a z = a z := rfl
 
 theorem coefficient_derivative_continuous (a : SmoothH1Coefficient) (i : Fin 2) :
     Continuous (fun z => fderiv ℝ (a : ℂ → ℂ) z (coordDir i)) :=
@@ -116,7 +114,7 @@ private theorem coefficient_test_mul_fderiv (a : SmoothH1Coefficient)
         a z * fderiv ℝ φ z (coordDir i) := by
   rw [fderiv_fun_mul (a.smooth.differentiable (by simp) z)
     (hφ.1.differentiable (by simp) z)]
-  simp only [ContinuousLinearMap.add_apply, ContinuousLinearMap.smul_apply, smul_eq_mul]
+  simp
   ring
 
 /-- The genuine weak product rule, with both derivative terms in actual L². -/
@@ -166,7 +164,7 @@ theorem isWeakGradient_h1SmoothCoefficientL2 {Ω : Set ℂ} (a : SmoothH1Coeffic
         filter_upwards [Lp.coeFn_add (h1SmoothCoefficientL2 Ω a (g i))
           (h1SmoothCoefficientDerivativeL2 Ω a i u)] with z hz
         rw [hz]
-        simp only [Pi.add_apply, add_mul]
+        simp [Pi.add_apply, add_mul]
       _ = _ := integral_add hig hid
   rw [hleft, hright] at hweak
   rw [hout]
@@ -203,15 +201,15 @@ def smoothCoefficientH1Lin (Ω : Set ℂ) (a : SmoothH1Coefficient) :
   toFun := smoothCoefficientH1Vector Ω a
   map_add' u v := by
     apply smooth_coefficient_h1_ext
-    · simp only [smoothCoefficientH1Vector_value, map_add]
+    · simp [smoothCoefficientH1Vector_value, map_add]
     · intro i
-      simp only [smoothCoefficientH1Vector_gradient, map_add]
+      simp [smoothCoefficientH1Vector_gradient, map_add]
       abel
   map_smul' c u := by
     apply smooth_coefficient_h1_ext
-    · simp only [smoothCoefficientH1Vector_value, map_smul, RingHom.id_apply]
+    · simp [smoothCoefficientH1Vector_value, map_smul, RingHom.id_apply]
     · intro i
-      simp only [smoothCoefficientH1Vector_gradient, map_smul, smul_add, RingHom.id_apply]
+      simp [smoothCoefficientH1Vector_gradient, map_smul, smul_add, RingHom.id_apply]
 
 private theorem smoothCoefficientH1Lin_value (Ω : Set ℂ) (a : SmoothH1Coefficient)
     (u : NeumannH1 Ω) :
@@ -255,9 +253,9 @@ private theorem smooth_real_three_component_norm_le {r a b c A : ℝ}
     (hs : r ^ 2 = a ^ 2 + (b ^ 2 + c ^ 2))
     (hva : a ≤ A) (hvb : b ≤ A) (hvc : c ≤ A) :
     r ≤ Real.sqrt 3 * A := by
-  have hsa : a ^ 2 ≤ A ^ 2 := pow_le_pow_left₀ ha hva 2
-  have hsb : b ^ 2 ≤ A ^ 2 := pow_le_pow_left₀ hb hvb 2
-  have hsc : c ^ 2 ≤ A ^ 2 := pow_le_pow_left₀ hc hvc 2
+  have hsa := pow_le_pow_left₀ ha hva 2
+  have hsb := pow_le_pow_left₀ hb hvb 2
+  have hsc := pow_le_pow_left₀ hc hvc 2
   apply (sq_le_sq₀ hr (mul_nonneg (Real.sqrt_nonneg _) hA)).mp
   rw [mul_pow, Real.sq_sqrt (by norm_num : (0 : ℝ) ≤ 3)]
   nlinarith
@@ -319,8 +317,6 @@ def smoothCoefficientTestProduct (a : SmoothH1Coefficient) (f : smoothTraceTests
     smoothTraceTests :=
   ⟨fun z => a z * f z, coefficient_test_mul a f.property⟩
 
-@[simp] theorem smoothCoefficientTestProduct_apply (a : SmoothH1Coefficient)
-    (f : smoothTraceTests) (z : ℂ) : smoothCoefficientTestProduct a f z = a z * f z := rfl
 
 /-- The completed product agrees with the actual compact smooth product. -/
 theorem neumannH1SmoothMultiplier_smooth {Ω : Set ℂ} (hΩ : IsOpen Ω)
@@ -328,13 +324,13 @@ theorem neumannH1SmoothMultiplier_smooth {Ω : Set ℂ} (hΩ : IsOpen Ω)
     neumannH1SmoothMultiplier Ω a (smoothTraceH1 Ω f) =
       smoothTraceH1 Ω (smoothCoefficientTestProduct a f) := by
   apply h1Value_injective hΩ
-  simp only [h1Value_neumannH1SmoothMultiplier, h1Value_smoothTraceH1]
+  simp [h1Value_neumannH1SmoothMultiplier, h1Value_smoothTraceH1]
   apply Lp.ext
   filter_upwards [h1SmoothCoefficientL2_ae Ω a (h1Value Ω (smoothTraceH1 Ω f)),
     (smoothTraceTests_memLp Ω f).coeFn_toLp,
     (smoothTraceTests_memLp Ω (smoothCoefficientTestProduct a f)).coeFn_toLp]
     with z hm hf hp
-  simp only [h1Value_smoothTraceH1] at hm
+  simp at hm
   rw [hm, hf, hp]
   rfl
 

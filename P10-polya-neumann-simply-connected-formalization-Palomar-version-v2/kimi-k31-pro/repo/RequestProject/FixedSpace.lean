@@ -51,7 +51,7 @@ def compatibleTraces (γ : ℝ → ℂ) (E : ℝ) : Submodule ℂ (ℝ → ℂ) 
     have heq : (fun s => conj (herglotzConormal (Real.sqrt E) a γ s) * (h₁ + h₂) s) =
         fun s => conj (herglotzConormal (Real.sqrt E) a γ s) * h₁ s +
           conj (herglotzConormal (Real.sqrt E) a γ s) * h₂ s := by
-      funext s; simp only [Pi.add_apply]; ring
+      funext s; simp; ring
     rw [heq]
     exact ⟨hI₁.add hI₂, by rw [intervalIntegral.integral_add hI₁ hI₂, hZ₁, hZ₂, add_zero]⟩
   smul_mem' := by
@@ -64,7 +64,7 @@ def compatibleTraces (γ : ℝ → ℂ) (E : ℝ) : Submodule ℂ (ℝ → ℂ) 
     · obtain ⟨hI, hZ⟩ := hi a ha
       have heq : (fun s => conj (herglotzConormal (Real.sqrt E) a γ s) * (c • h) s) =
           fun s => c * (conj (herglotzConormal (Real.sqrt E) a γ s) * h s) := by
-        funext s; simp only [Pi.smul_apply, smul_eq_mul]; ring
+        funext s; simp; ring
       rw [heq]
       exact ⟨hI.const_mul c, by rw [intervalIntegral.integral_const_mul, hZ, mul_zero]⟩
 
@@ -76,26 +76,25 @@ theorem observation_mem_compatibleTraces {γ : ℝ → ℂ} {K : NNReal} (hK : L
   have hπ : (0 : ℝ) ≤ 2 * π := by positivity
   obtain ⟨KW, hKW⟩ := volterra_lipschitzOn (transportCoeff_aestronglyMeasurable γ E)
     (transportCoeff_norm_le γ E hK) hW.1 hW.2
-  have hW0 : W 0 = 1 := by simpa using hW.2 0 ⟨le_rfl, hπ⟩
   have hcont : ContinuousOn (observation W v) (Icc 0 (2 * π)) :=
     continuousOn_const.inner (hW.1.clm_apply continuousOn_const)
   refine ⟨⟨KW * ‖v‖₊, LipschitzOnWith.of_dist_le_mul fun x hx y hy => ?_⟩, ?_, fun a ha => ?_⟩
   · rw [dist_eq_norm, observation, observation, ← inner_sub_right, ← ContinuousLinearMap.sub_apply]
     refine (norm_inner_le_norm _ _).trans ?_
-    have hb : ‖basisVec 0‖ = 1 := by simp [basisVec]
-    rw [hb, one_mul, NNReal.coe_mul, coe_nnnorm]
+
+    simp
     refine ((W x - W y).le_opNorm v).trans ?_
     rw [← dist_eq_norm]
     rw [mul_right_comm]
     exact mul_le_mul_of_nonneg_right (hKW.dist_le_mul x hx y hy) (norm_nonneg v)
-  · simp only [observation, hv, hW0, ContinuousLinearMap.one_apply]
+  · simp [observation, hv, (by simpa using hW.2 0 ⟨le_rfl, hπ⟩), ContinuousLinearMap.one_apply]
   · obtain ⟨hgm, B, hgB⟩ := herglotzConormal_bounded ha.intervalIntegrable (Real.sqrt E) hK
     refine ⟨?_, integral_conj_herglotzConormal_mul_observation hK hclosed hW hv ha⟩
     have := intervalIntegrable_smul_of_continuousOn hcont
       (g := fun s => conj (herglotzConormal (Real.sqrt E) a γ s))
       (Complex.continuous_conj.comp_aestronglyMeasurable hgm)
-      (B := B) (fun s => by rw [Complex.norm_conj]; exact hgB s) ⟨le_rfl, hπ⟩ ⟨hπ, le_rfl⟩
-    simpa [smul_eq_mul] using this
+      (B := B) (fun s => by simp; exact hgB s) ⟨le_rfl, hπ⟩ ⟨hπ, le_rfl⟩
+    simpa using this
 
 /-- The observation map restricted to the fixed space `ker(V_E - I)`, with values in the
 compatible traces. -/
@@ -130,9 +129,9 @@ theorem fixedSpace_to_neumannEigenspace_of_reconstruction {Ω : Set ℂ} {γ : �
     ∃ T : LinearMap.ker ((W (2 * π) - 1 : Ell2 →L[ℂ] Ell2) : Ell2 →ₗ[ℂ] Ell2) →ₗ[ℂ]
       neumannEigenspace Ω E, Function.Injective T := by
   obtain ⟨K, hK⟩ := hγ.lipschitz
-  have hclosed : γ (2 * π) = γ 0 := by simpa using hγ.periodic 0
+
   obtain ⟨R, hR⟩ := hR
-  refine ⟨R ∘ₗ observationFixed hK hclosed hW, ?_⟩
+  refine ⟨R ∘ₗ observationFixed hK (by simpa using hγ.periodic 0) hW, ?_⟩
   rw [← LinearMap.ker_eq_bot, LinearMap.ker_eq_bot']
   intro v hv
   have h0 := hR _ hv

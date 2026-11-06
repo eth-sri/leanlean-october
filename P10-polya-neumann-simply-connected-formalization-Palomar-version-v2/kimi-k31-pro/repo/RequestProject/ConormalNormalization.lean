@@ -50,17 +50,17 @@ lemma isSobolevSeq_add {s : ℝ} {f f' : ℤ → ℂ} (hf : IsSobolevSeq s f) (h
   refine Summable.of_nonneg_of_le (fun n => sq_nonneg _) (fun n => ?_)
     ((hf.mul_left 2).add (hf'.mul_left 2))
   have hw : 0 ≤ sobWeight n ^ s := by have := sobWeight_pos n; positivity
-  have h1 : ‖(f + f') n‖ ≤ ‖f n‖ + ‖f' n‖ := norm_add_le _ _
+
   have h2 : sobWeight n ^ s * ‖(f + f') n‖ ≤
       sobWeight n ^ s * ‖f n‖ + sobWeight n ^ s * ‖f' n‖ := by
-    rw [← mul_add]; exact mul_le_mul_of_nonneg_left h1 hw
+    rw [← mul_add]; exact mul_le_mul_of_nonneg_left (norm_add_le _ _) hw
   have h3 : 0 ≤ sobWeight n ^ s * ‖(f + f') n‖ := by positivity
   nlinarith [sq_nonneg (sobWeight n ^ s * ‖f n‖ - sobWeight n ^ s * ‖f' n‖)]
 
 lemma isSobolevSeq_smul {s : ℝ} (c : ℂ) {f : ℤ → ℂ} (hf : IsSobolevSeq s f) :
     IsSobolevSeq s (c • f) := by
   refine (hf.mul_left (‖c‖ ^ 2)).congr fun n => ?_
-  simp only [Pi.smul_apply, smul_eq_mul, norm_mul]; ring
+  simp; ring
 
 lemma sobVec_congr {s : ℝ} {f f' : ℤ → ℂ} (e : f = f') (hf : IsSobolevSeq s f)
     (hf' : IsSobolevSeq s f') : sobVec s f hf = sobVec s f' hf' := by
@@ -79,7 +79,7 @@ lemma sobVec_smul {s : ℝ} (c : ℂ) {f : ℤ → ℂ} (hf : IsSobolevSeq s f)
     (hcf : IsSobolevSeq s (c • f)) :
     sobVec s (c • f) hcf = c • sobVec s f hf := by
   ext n
-  simp only [sobVec_apply, Pi.smul_apply, smul_eq_mul, lp.coeFn_smul]
+  simp
   ring
 
 lemma sobWeight_rpow_mul_neg (s : ℝ) (n : ℤ) : sobWeight n ^ s * sobWeight n ^ (-s) = 1 := by
@@ -114,7 +114,7 @@ lemma fromL2_add (s : ℝ) (f f' : L2Z) : fromL2 s (f + f') = fromL2 s f + fromL
 
 lemma fromL2_smul (s : ℝ) (c : ℂ) (f : L2Z) : fromL2 s (c • f) = c • fromL2 s f := by
   funext n
-  simp only [fromL2, lp.coeFn_smul, Pi.smul_apply, smul_eq_mul]
+  simp [fromL2, lp.coeFn_smul, Pi.smul_apply, smul_eq_mul]
   ring
 
 /-! ### Bounded linear maps of coefficient sequences -/
@@ -144,9 +144,9 @@ lemma comp (H : SeqOpBound s t C Φ) (H' : SeqOpBound t u D Ψ) :
       _ ≤ D * (C * Real.sqrt (sobNormSq s h)) :=
           mul_le_mul_of_nonneg_left (H.bound h hh) H'.nonneg
       _ = _ := by ring
-  · simp only [Function.comp, H.map_add h h' hh hh',
+  · simp [Function.comp, H.map_add h h' hh hh',
       H'.map_add _ _ (H.maps h hh) (H.maps h' hh')]
-  · simp only [Function.comp, H.map_smul c h hh, H'.map_smul c _ (H.maps h hh)]
+  · simp [Function.comp, H.map_smul c h hh, H'.map_smul c _ (H.maps h hh)]
 
 lemma add (H : SeqOpBound s t C Φ) (H' : SeqOpBound s t D Ψ) :
     SeqOpBound s t (C + D) (fun h => Φ h + Ψ h) := by
@@ -173,7 +173,7 @@ lemma smul (c : ℂ) (H : SeqOpBound s t C Φ) :
 
 lemma id_mono (hst : s ≤ t) : SeqOpBound t s 1 id :=
   ⟨zero_le_one, fun _ hh => (sobNormSq_mono hst hh).1,
-    fun _ hh => by rw [one_mul]; exact Real.sqrt_le_sqrt (sobNormSq_mono hst hh).2,
+    fun _ hh => by simp; exact Real.sqrt_le_sqrt (sobNormSq_mono hst hh).2,
     fun _ _ _ _ => rfl, fun _ _ _ => rfl⟩
 
 /-- The bounded operator on `ℓ²(ℤ)` given by `Φ` in normalized coordinates:
@@ -215,11 +215,11 @@ theorem seqOpBound_seqConv {s : ℝ} (hs : 0 ≤ s) {c : ℤ → ℂ} (hc : IsWL
           Real.sqrt_le_sqrt (sobNormSq_seqConv_le hs hc hh).2.2
       _ = _ := by rw [Real.sqrt_mul (sq_nonneg _), Real.sqrt_sq h0]
   · funext n
-    simp only [seqConv, Pi.add_apply, mul_add]
+    simp [seqConv, Pi.add_apply, mul_add]
     exact Summable.tsum_add ((sobNormSq_seqConv_le hs hc hh).1 n)
       ((sobNormSq_seqConv_le hs hc hh').1 n)
   · funext n
-    simp only [seqConv, Pi.smul_apply, smul_eq_mul]
+    simp [seqConv, Pi.smul_apply, smul_eq_mul]
     rw [← tsum_mul_left]
     exact tsum_congr fun k => by ring
 
@@ -243,7 +243,7 @@ theorem seqOpBound_antiPrim {s : ℝ} (hs : 0 ≤ s) {a : ℤ → ℂ} (ha : IsW
   · have hc := (seqOpBound_seqConv hs ha).map_add h h' hh hh'
     funext n
     by_cases hn : n = 0
-    · simp only [antiPrim, hn, if_true, Pi.add_apply, hc, primSeq_add]
+    · simp [antiPrim, hn, if_true, Pi.add_apply, hc, primSeq_add]
       rw [Summable.tsum_add (summable_primSeq_seqConv hs ha hh)
         (summable_primSeq_seqConv hs ha hh'), neg_add]
     · simp [antiPrim, hn, hc, primSeq_add]
@@ -270,10 +270,9 @@ theorem seqOpBound_conv_pow {s : ℝ} (hs : 0 ≤ s) {c g : ℤ → ℂ} (hc : I
     (hg : IsWL1 s g) (j : ℕ) :
     SeqOpBound s s (wl1Norm s c * wl1Norm s g ^ j)
       (fun h => seqConv c (seqConv (seqConvPow g j) h)) := by
-  have hc0 : 0 ≤ wl1Norm s c := tsum_nonneg fun k => by have := sobWeight_pos k; positivity
   exact ((seqOpBound_seqConv hs (wl1Norm_seqConvPow_le hs hg j).1).comp
     (seqOpBound_seqConv hs hc)).mono_const
-    (mul_le_mul_of_nonneg_left (wl1Norm_seqConvPow_le hs hg j).2 hc0)
+    (mul_le_mul_of_nonneg_left (wl1Norm_seqConvPow_le hs hg j).2 (tsum_nonneg fun k => by have := sobWeight_pos k; positivity))
 
 /-! ### The conormal remainder `𝒥_E − |D|` -/
 
@@ -320,13 +319,10 @@ lemma norm_conormalCoeff_smul_le {s : ℝ} (hs : 0 ≤ s) {b a g : ℤ → ℂ} 
   set M := wl1Norm s a
   set R := wl1Norm s g
   set q := Real.sqrt (primConst s a) with hq
-  have hB0 : 0 ≤ B := tsum_nonneg fun k => by have := sobWeight_pos k; positivity
   have hM0 : 0 ≤ M := tsum_nonneg fun k => by have := sobWeight_pos k; positivity
   have hR0 : 0 ≤ R := tsum_nonneg fun k => by have := sobWeight_pos k; positivity
-  have hq0 : 0 ≤ q := Real.sqrt_nonneg _
-  have hr0 : 0 ≤ r := (norm_nonneg E).trans hE
+  have hr0 := (norm_nonneg E).trans hE
   set e := r / 4 with he
-  have he0 : 0 ≤ e := by positivity
   have hT : ‖conormalTermOp hs hb ha hg j‖ ≤
       (j + 1) * (B * R ^ j * q ^ (j + 1)) + M * R ^ (j + 1) * q ^ j :=
     (seqOpBound_conormalTerm hs hb ha hg j).norm_toCLM_le
@@ -337,7 +333,6 @@ lemma norm_conormalCoeff_smul_le {s : ℝ} (hs : 0 ≤ s) {b a g : ℤ → ℂ} 
     rw [he]; linarith
   have hf : ((j + 1).factorial : ℝ) = (j + 1) * j.factorial := by
     push_cast [Nat.factorial_succ]; ring
-  have hfp : (0 : ℝ) < j.factorial := by exact_mod_cast Nat.factorial_pos j
   rw [norm_smul]
   calc ‖conormalCoeff E j‖ * ‖conormalTermOp hs hb ha hg j‖
       ≤ e ^ (j + 1) / ((j + 1).factorial : ℝ) *
@@ -389,13 +384,13 @@ def normalizedConormalPrincipal : L2Z →L[ℂ] L2Z :=
 /-- The principal part is the Fourier multiplier `|n| / (1 + |n|)`. -/
 lemma normalizedConormal_principal_apply (f : L2Z) (n : ℤ) :
     (normalizedConormalPrincipal f : ℤ → ℂ) n = ((|(n : ℝ)| / (1 + |(n : ℝ)|) : ℝ) : ℂ) * f n := by
-  have hw : (0 : ℝ) < 1 + |(n : ℝ)| := by positivity
+
   have key : (|(n : ℝ)| / (1 + |(n : ℝ)|) : ℝ) = 1 - sobWeight n ^ (-(1 : ℝ)) := by
     rw [Real.rpow_neg_one, sobWeight]
     field_simp
     ring
   rw [key]
-  simp only [normalizedConormalPrincipal, ContinuousLinearMap.sub_apply,
+  simp [normalizedConormalPrincipal, ContinuousLinearMap.sub_apply,
     ContinuousLinearMap.one_apply, lp.coeFn_sub, Pi.sub_apply, sobolevSmoothing, diagOp_apply]
   push_cast
   ring

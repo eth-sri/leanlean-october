@@ -26,7 +26,7 @@ namespace PolyaNeumann
 /-- Lebesgue differentiation for the primitive of a bounded measurable complex function. -/
 lemma ae_hasDerivAt_primitive_of_bounded {f : ℝ → ℂ} {M : ℝ} (hfm : Measurable f)
     (hB : ∀ x, ‖f x‖ ≤ M) : ∀ᵐ x, HasDerivAt (fun x => ∫ t in (0 : ℝ)..x, f t) (f x) x := by
-  have hf : LocallyIntegrable f volume := locallyIntegrable_of_bounded hfm.aestronglyMeasurable hB
+  have hf := locallyIntegrable_of_bounded hfm.aestronglyMeasurable hB
   have hre : LocallyIntegrable (fun t => (f t).re) volume :=
     locallyIntegrable_of_bounded (Complex.measurable_re.comp hfm).aestronglyMeasurable
       (fun x => (Complex.abs_re_le_norm _).trans (hB x))
@@ -73,7 +73,7 @@ theorem windingNumber_mem_range_intCast {γ : ℝ → ℂ} {K : NNReal} (hK : Li
     by_contra h
     push_neg at h
     exact hball (mem_ball_iff_norm.mpr h) (mem_image_of_mem γ hθ)
-  set f : ℝ → ℂ := (Icc 0 (2 * π)).indicator (fun s => deriv γ s / (γ s - z)) with hf
+  set f := (Icc 0 (2 * π)).indicator (fun s => deriv γ s / (γ s - z)) with hf
   have hfm : Measurable f := ((measurable_deriv γ).div
     (hK.continuous.measurable.sub measurable_const)).indicator measurableSet_Icc
   have hfB : ∀ s, ‖f s‖ ≤ K / ε := by
@@ -82,12 +82,12 @@ theorem windingNumber_mem_range_intCast {γ : ℝ → ℂ} {K : NNReal} (hK : Li
     · rw [hf, indicator_of_mem hs, norm_div]
       exact div_le_div₀ K.coe_nonneg (norm_deriv_le_of_lipschitzWith hK s) hε (hfar s hs)
     · rw [hf, indicator_of_notMem hs, norm_zero]; positivity
-  set L : NNReal := Real.toNNReal (K / ε) with hL
+  set L := Real.toNNReal (K / ε) with hL
   have hfB' : ∀ s, ‖f s‖ ≤ L := fun s => by
     rw [hL, Real.coe_toNNReal _ (by positivity)]; exact hfB s
   set h : ℝ → ℂ := fun t => ∫ s in (0 : ℝ)..t, f s with hh
   have hhlip : LipschitzWith L h := lipschitzWith_primitive hfm.aestronglyMeasurable hfB' 0
-  have hderiv : ∀ᵐ x, HasDerivAt h (f x) x := ae_hasDerivAt_primitive_of_bounded hfm hfB
+  have hderiv := ae_hasDerivAt_primitive_of_bounded hfm hfB
   set φ : ℝ → ℂ := fun t => Complex.exp (-h t) * (γ t - z) with hφ
   have hφ0 : ∀ᵐ x, x ∈ uIcc 0 (2 * π) → HasDerivAt φ 0 x := by
     filter_upwards [hderiv, hK.ae_differentiableAt_real] with x h1 h2 hx
@@ -98,7 +98,7 @@ theorem windingNumber_mem_range_intCast {γ : ℝ → ℂ} {K : NNReal} (hK : Li
       have := hfar x hx
       rw [h0, norm_zero] at this
       linarith
-    have := (h1.neg.cexp).mul (h2.hasDerivAt.sub_const z)
+    have := h1.neg.cexp.mul (h2.hasDerivAt.sub_const z)
     convert this using 1
     rw [hfx]
     field_simp
@@ -106,9 +106,9 @@ theorem windingNumber_mem_range_intCast {γ : ℝ → ℂ} {K : NNReal} (hK : Li
   have hR : ∀ t ∈ uIcc 0 (2 * π), -h t ∈ closedBall (0 : ℂ) (L * (2 * π)) := by
     intro t ht
     rw [uIcc_of_le hpi.le] at ht
-    rw [mem_closedBall_zero_iff, norm_neg]
+    simp
     have := hhlip.dist_le_mul t 0
-    have h0 : h 0 = 0 := by simp only [hh, intervalIntegral.integral_same]
+    have h0 : h 0 = 0 := by simp [hh, intervalIntegral.integral_same]
     rw [dist_eq_norm, h0, sub_zero, Real.dist_eq, sub_zero, abs_of_nonneg ht.1] at this
     exact this.trans (by gcongr; exact ht.2)
   have hexpAC : AbsolutelyContinuousOnInterval (fun t => Complex.exp (-h t)) 0 (2 * π) :=
@@ -119,7 +119,7 @@ theorem windingNumber_mem_range_intCast {γ : ℝ → ℂ} {K : NNReal} (hK : Li
   have hAC : AbsolutelyContinuousOnInterval φ 0 (2 * π) := hexpAC.smul hγAC
   obtain ⟨C, hC⟩ := hAC.const_of_ae_hasDerivAt_zero hφ0
   have heq : φ (2 * π) = φ 0 := by rw [hC _ right_mem_uIcc, hC _ left_mem_uIcc]
-  simp only [hφ, hh, intervalIntegral.integral_same, neg_zero, Complex.exp_zero, one_mul,
+  simp [hφ, hh, intervalIntegral.integral_same, neg_zero, Complex.exp_zero, one_mul,
     hclosed] at heq
   have hne0 : γ 0 - z ≠ 0 := by
     intro h0
@@ -137,8 +137,7 @@ theorem windingNumber_mem_range_intCast {γ : ℝ → ℂ} {K : NNReal} (hK : Li
   refine ⟨-n, ?_⟩
   rw [windingNumber, hint, show (∫ s in (0 : ℝ)..(2 * π), f s) = -(n * (2 * π * Complex.I)) by
     rw [← hn, neg_neg]]
-  have h2 : (2 * π * Complex.I : ℂ) ≠ 0 := by
-    simp [Real.pi_ne_zero, Complex.I_ne_zero]
+
   push_cast
   field_simp
 
@@ -156,12 +155,12 @@ theorem continuousOn_windingNumber {γ : ℝ → ℂ} {K : NNReal} (hK : Lipschi
       by_contra h
       push_neg at h
       exact hball (mem_ball_iff_norm.mpr h) (mem_image_of_mem γ hθ)
-    have h2 : ‖z - z₀‖ < ε / 2 := mem_ball_iff_norm.mp hz
+    have h2 := mem_ball_iff_norm.mp hz
     calc ε / 2 = ε - ε / 2 := by ring
       _ ≤ ‖γ θ - z₀‖ - ‖z - z₀‖ := by linarith
       _ ≤ ‖γ θ - z‖ := by
           have := norm_sub_norm_le (γ θ - z₀) (z - z₀)
-          rw [show γ θ - z₀ - (z - z₀) = γ θ - z by ring] at this
+          simp at this
           linarith
   refine ContinuousAt.continuousWithinAt ?_
   unfold windingNumber
@@ -190,11 +189,11 @@ theorem continuousOn_windingNumber {γ : ℝ → ℂ} {K : NNReal} (hK : Lipschi
 theorem windingNumber_eq_zero_of_far {γ : ℝ → ℂ} {K : NNReal} (hK : LipschitzWith K γ)
     (hclosed : γ (2 * π) = γ 0) {z : ℂ} {d : ℝ} (hd : (K : ℝ) < d)
     (hzd : ∀ θ ∈ Icc 0 (2 * π), d ≤ ‖γ θ - z‖) : windingNumber γ z = 0 := by
-  have hd0 : 0 < d := lt_of_le_of_lt K.coe_nonneg hd
+  have hd0 := lt_of_le_of_lt K.coe_nonneg hd
   have hz : z ∉ γ '' Icc 0 (2 * π) := by
     rintro ⟨θ, hθ, rfl⟩
     have := hzd θ hθ
-    rw [sub_self, norm_zero] at this
+    simp at this
     linarith
   obtain ⟨n, hn⟩ := windingNumber_mem_range_intCast hK hclosed hz
   have hbound : ‖windingNumber γ z‖ < 1 := by

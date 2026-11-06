@@ -50,7 +50,7 @@ theorem dirichlet_bilinear_rotated_trace (T : ℂ →L[ℝ] ℂ →L[ℝ] ℂ)
   rw [hT, hTI]
   simp only [map_add, ContinuousLinearMap.map_smul, ContinuousLinearMap.add_apply,
     ContinuousLinearMap.smul_apply]
-  simp only [Complex.real_smul, Complex.ofReal_neg]
+  simp
   calc
     _ = ((a : ℂ) ^ 2 + (b : ℂ) ^ 2) * (T 1 1 + T Complex.I Complex.I) := by ring
     _ = _ := by rw [hsC, one_mul]
@@ -63,9 +63,7 @@ theorem dirichlet_rotated_lap {v : ℂ → ℂ} {z e : ℂ}
   have hD (w : ℂ) : dirD (dirD v w) w z = fderiv ℝ (fderiv ℝ v) z w w := by
     change fderiv ℝ (fun u => fderiv ℝ v u w) z w = _
     rw [fderiv_clm_apply hd (differentiableAt_const w)]
-    simp only [fderiv_const_apply, ContinuousLinearMap.add_apply,
-      ContinuousLinearMap.comp_apply, ContinuousLinearMap.flip_apply,
-      ContinuousLinearMap.zero_apply, map_zero, zero_add]
+    simp
   rw [hD, hD, lap, hD, hD]
   exact dirichlet_bilinear_rotated_trace _ he
 
@@ -86,8 +84,7 @@ theorem dirichletGraphSlope_contDiff {f : ℝ → ℝ}
     (hd.hasDerivAt.comp_hasFDerivAt z Complex.reCLM.hasFDerivAt)
   change fderiv ℝ (Complex.ofRealCLM ∘ (deriv f ∘ Complex.re)) z Complex.I = 0
   rw [hs.fderiv]
-  simp only [ContinuousLinearMap.comp_apply, ContinuousLinearMap.smul_apply,
-    Complex.reCLM_apply, Complex.I_re, smul_zero, map_zero]
+  simp
 
 /-- The flux of the actual graph coefficient matrix. -/
 def dirichletFlattenedFlux (f : ℝ → ℝ) (u : ℂ → ℂ) (i : Fin 2) (z : ℂ) : ℂ :=
@@ -137,12 +134,11 @@ theorem dirichletFlattenedDivergence_pullback {Ω : Set ℂ} (hΩ : IsOpen Ω)
   let g₀ := dirD v (1 / c)
   let g₁ := dirD v (Complex.I / c)
   have hvc := hv.contDiffAt (hΩ.mem_nhds hz)
-  have hv₂ : ContDiffAt ℝ 2 v (Ψ z) := hvc.of_le (WithTop.coe_le_coe.mpr le_top)
   have hdg (w : ℂ) : DifferentiableAt ℝ (dirD v w) (Ψ z) :=
     ((hvc.fderiv_right (m := (⊤ : ℕ∞)) le_rfl).clm_apply contDiffAt_const).differentiableAt
       (by simp)
   have hdΨ := (smoothDirichletGraphChart_hasFDerivAt p c hc hf z).differentiableAt
-  have hn : ∀ᶠ w in 𝓝 z, Ψ w ∈ Ω := Ψ.continuous.continuousAt.eventually (hΩ.mem_nhds hz)
+  have hn := Ψ.continuous.continuousAt.eventually (hΩ.mem_nhds hz)
   have h₀ : dirichletFlattenedFlux f u 0 =ᶠ[𝓝 z] g₀ ∘ Ψ := by
     filter_upwards [hn] with w hw
     exact (dirichletFlattenedFlux_pullback p c hc hf
@@ -172,8 +168,8 @@ theorem dirichletFlattenedDivergence_pullback {Ω : Set ℂ} (hΩ : IsOpen Ω)
       dirD g₁ (Complex.I / c) (Ψ z) -
         dirichletGraphSlope f z * dirD g₀ (Complex.I / c) (Ψ z) := by
     have hgs := (dirichletGraphSlope_contDiff hf).differentiable (by simp)
-    have hd₀ : DifferentiableAt ℝ (g₀ ∘ Ψ) z := (hdg (1 / c)).comp z hdΨ
-    have hd₁ : DifferentiableAt ℝ (g₁ ∘ Ψ) z := (hdg (Complex.I / c)).comp z hdΨ
+    have hd₀ := (hdg (1 / c)).comp z hdΨ
+    have hd₁ := (hdg (Complex.I / c)).comp z hdΨ
     have hdm : DifferentiableAt ℝ (dirichletGraphSlope f * (g₀ ∘ Ψ)) z :=
       (hgs z).mul hd₀
     change fderiv ℝ (dirichletFlattenedFlux f u 1) z Complex.I = _
@@ -193,7 +189,7 @@ theorem dirichletFlattenedDivergence_pullback {Ω : Set ℂ} (hΩ : IsOpen Ω)
       rw [dirichletFlattenedDivergence, hD₀, hD₁]
       ring
     _ = lap v (Ψ z) := by
-      simpa only [g₀, g₁, one_div, div_eq_mul_inv, one_mul] using dirichlet_rotated_lap hv₂ he
+      simpa only [g₀, g₁, one_div, div_eq_mul_inv, one_mul] using dirichlet_rotated_lap (hvc.of_le (WithTop.coe_le_coe.mpr le_top)) he
 
 /-- Total directional derivatives of a function smooth on an open
 set are again smooth on that same open set. -/
@@ -233,7 +229,7 @@ theorem dirichlet_local_smooth_field_test_eq_neg_dirD {U : Set ℂ} (hU : IsOpen
     rw [hzG]
     by_cases hz : z ∈ tsupport φ
     · rw [(hGg z hz).self_of_nhds]
-    · simp only [dirD, fderiv_of_notMem_tsupport (𝕜 := ℝ) hz,
+    · simp [dirD, fderiv_of_notMem_tsupport (𝕜 := ℝ) hz,
         ContinuousLinearMap.zero_apply, mul_zero]
   have hr : (fun z => ((hgrad i).toLp _ : L2 U) z * φ z) =ᵐ[volume.restrict U]
       (fun z => dirD g (coordDir i) z * φ z) := by
@@ -310,7 +306,7 @@ theorem dirichlet_localized_dirD {U : Set ℂ} (hU : IsOpen U) (η : smoothTrace
   have hgz := (hg.differentiableOn (by simp)).differentiableAt (hU.mem_nhds hz)
   change fderiv ℝ ((η : ℂ → ℂ) * g) z w = _
   rw [fderiv_mul (hη z) hgz]
-  simp only [ContinuousLinearMap.add_apply, ContinuousLinearMap.smul_apply, smul_eq_mul, dirD]
+  simp [ContinuousLinearMap.add_apply, ContinuousLinearMap.smul_apply, smul_eq_mul, dirD]
   ring
 
 theorem dirichlet_localized_gradient_memLp {U : Set ℂ} (hU : IsOpen U)
@@ -351,7 +347,7 @@ theorem dirichlet_localized_zero_boundary_test_approximation {a b : ℝ}
     η.property.1.contDiffOn.mul hs
   have hvz : ∀ x : ℝ, |x| < a → v (x : ℂ) = 0 := by
     intro x hx
-    simp only [v, hz x hx, mul_zero]
+    simp [v, hz x hx, mul_zero]
   have hvm := dirichlet_localized_memLp η hm
   have hvg (i : Fin 2) := dirichlet_localized_gradient_memLp
     (isOpen_smoothDirichletHalfBox a b) η hs hm (hg i)
@@ -457,7 +453,7 @@ theorem dirichlet_weak_equation_localized_zero_boundary_test {a b : ℝ}
   let vε : ℝ → ℂ → ℂ := fun ε z => dirichletNormalCutoff ε z * v z
   obtain ⟨htest, hvalue, hgradient⟩ :=
     dirichlet_localized_zero_boundary_test_approximation hb η hη hc hs hz hm hg
-  have hvm : MemLp v 2 μ := dirichlet_localized_memLp η hm
+  have hvm := dirichlet_localized_memLp η hm
   have hvg (i : Fin 2) : MemLp (dirD v (coordDir i)) 2 μ :=
     dirichlet_localized_gradient_memLp (isOpen_smoothDirichletHalfBox a b) η hs hm (hg i)
   have hεm : ∀ᶠ ε : ℝ in 𝓝[>] (0 : ℝ), MemLp (vε ε) 2 μ := by
@@ -530,7 +526,6 @@ theorem dirichlet_interval_difference_energy_le {a h : ℝ}
     (∫ x in (-a)..a, ‖(v (x + h) - v x) / (h : ℂ)‖ ^ 2) ≤
       ∫ x in (-a)..(a + h), ‖dv x‖ ^ 2 := by
   have haa : -a ≤ a := by linarith
-  have haah : -a ≤ a + h := by linarith
   have hmap (x : ℝ) (hx : x ∈ Icc (-a) a) :
       MapsTo (fun s : ℝ => x + s) (Icc 0 h) (Icc (-a) (a + h)) := by
     intro s hs
@@ -551,7 +546,7 @@ theorem dirichlet_interval_difference_energy_le {a h : ℝ}
     have hp := dirichlet_zero_endpoint_norm_sq_le hvs
       (by simp) hds (dirichlet_continuousOn_memLp_Ioc hdvs)
       (show h ∈ Ioc (0 : ℝ) h from ⟨hh, le_rfl⟩)
-    simp only [norm_div, Complex.norm_real, Real.norm_eq_abs, abs_of_pos hh, div_pow] at hp ⊢
+    simp [norm_div, Complex.norm_real, Real.norm_eq_abs, abs_of_pos hh, div_pow] at hp ⊢
     apply (div_le_iff₀ (sq_pos_of_pos hh)).mpr
     calc
       ‖v (x + h) - v x‖ ^ 2 ≤ h * ∫ s in (0 : ℝ)..h, ‖dv (x + s)‖ ^ 2 := hp
@@ -589,10 +584,10 @@ theorem dirichlet_interval_difference_energy_le {a h : ℝ}
     exact hpoint x (Ioc_subset_Icc_self hx)
   have hswap : (∫ x in (-a)..a, ∫ s in (0 : ℝ)..h, E (x, s)) =
       ∫ s in (0 : ℝ)..h, ∫ x in (-a)..a, E (x, s) := by
-    simp only [intervalIntegral.integral_of_le haa, intervalIntegral.integral_of_le hh.le]
+    simp [intervalIntegral.integral_of_le haa, intervalIntegral.integral_of_le hh.le]
     exact integral_integral_swap hiE
   have hwide : IntervalIntegrable (fun x : ℝ => ‖dv x‖ ^ 2) volume (-a) (a + h) :=
-    (hdv.norm.pow 2).intervalIntegrable_of_Icc haah
+    (hdv.norm.pow 2).intervalIntegrable_of_Icc (by linarith)
   have hlast : (∫ s in (0 : ℝ)..h, ∫ x in (-a)..a, E (x, s)) ≤
       h * ∫ x in (-a)..(a + h), ‖dv x‖ ^ 2 := by
     have hi : IntervalIntegrable (fun s : ℝ => ∫ x in (-a)..a, E (x, s))
@@ -624,7 +619,7 @@ theorem dirichlet_halfBox_translation_memLp {A a b h : ℝ}
     (hm : MemLp u 2 (volume.restrict (smoothDirichletHalfBox A b))) :
     MemLp (fun z => u (z + (h : ℂ))) 2
       (volume.restrict (smoothDirichletHalfBox a b)) := by
-  let T : ℂ ≃ₜ ℂ := Homeomorph.addRight (h : ℂ)
+  let T := Homeomorph.addRight (h : ℂ)
   have hT : Isometry T := by
     apply Isometry.of_dist_eq
     intro z w
@@ -665,7 +660,7 @@ theorem dirichletTangentialDifference_memLp {A a b h : ℝ}
   have he : ((h : ℂ)⁻¹ • ((fun z => u (z + (h : ℂ))) - u)) =
       dirichletTangentialDifference h u := by
     funext z
-    simp only [Pi.smul_apply, Pi.sub_apply, smul_eq_mul,
+    simp [Pi.smul_apply, Pi.sub_apply, smul_eq_mul,
       dirichletTangentialDifference, div_eq_mul_inv]
     ring
   rw [he] at hq
@@ -696,7 +691,7 @@ theorem dirichlet_halfBox_tangential_difference_energy_le {A a b h : ℝ}
     (hDx : MemLp (dirD u 1) 2 (volume.restrict (smoothDirichletHalfBox A b))) :
     (∫ z in smoothDirichletHalfBox a b, ‖dirichletTangentialDifference h u z‖ ^ 2) ≤
       ∫ z in smoothDirichletHalfBox A b, ‖dirD u 1 z‖ ^ 2 := by
-  have hA : 0 < A := lt_trans ha (lt_trans (by linarith : a < a + h) hmargin)
+  have hA := lt_trans ha (lt_trans (by linarith : a < a + h) hmargin)
   have hq := dirichletTangentialDifference_memLp
     (show a + |h| ≤ A by rw [abs_of_pos hh]; exact hmargin.le) hm
   have hprodQ := dirichlet_halfBox_sq_integrable_real_prod hq
@@ -724,7 +719,7 @@ theorem dirichlet_halfBox_tangential_difference_energy_le {A a b h : ℝ}
     have hLc : Continuous L := Complex.ofRealCLM.continuous.add continuous_const
     have hmap : MapsTo L (Icc (-a) (a + h)) (smoothDirichletHalfBox A b) := by
       intro x hx
-      have hxA : |x| < A := abs_lt.mpr ⟨by linarith [hx.1], hx.2.trans_lt hmargin⟩
+      have hxA := abs_lt.mpr ⟨by linarith [hx.1], hx.2.trans_lt hmargin⟩
       simpa [L, smoothDirichletHalfBox] using
         (show |x| < A ∧ 0 < y ∧ y < b from ⟨hxA, hy⟩)
     have huv : ContinuousOn (u ∘ L) (Icc (-a) (a + h)) :=
@@ -736,9 +731,7 @@ theorem dirichlet_halfBox_tangential_difference_energy_le {A a b h : ℝ}
       have hdu := ((hs.contDiffAt
         ((isOpen_smoothDirichletHalfBox A b).mem_nhds (hmap hx))).differentiableAt
         (by simp)).hasFDerivAt
-      have hL : HasDerivAt L 1 x := by
-        exact ((hasDerivAt_id x).ofReal_comp).add_const ((y : ℂ) * Complex.I)
-      exact hdu.comp_hasDerivAt x hL
+      exact hdu.comp_hasDerivAt x (((hasDerivAt_id x).ofReal_comp).add_const ((y : ℂ) * Complex.I))
     have hi := dirichlet_interval_difference_energy_le ha hh huv hdv hd
     have hDfull : IntervalIntegrable (fun x : ℝ => ‖dirD u 1 (L x)‖ ^ 2)
         volume (-A) A := by
@@ -772,14 +765,14 @@ theorem dirichletTangentialDifference_dirD {h : ℝ} {u : ℂ → ℂ} {z : ℂ}
     have hfun : dirichletTangentialDifference h u =
         fun y => ((u ∘ fun z => z + (h : ℂ)) - u) y * (h : ℂ)⁻¹ := by
       funext y
-      simp only [dirichletTangentialDifference, div_eq_mul_inv, Pi.sub_apply,
+      simp [dirichletTangentialDifference, div_eq_mul_inv, Pi.sub_apply,
         Function.comp_apply]
     rw [hfun]
     simpa only [ContinuousLinearMap.comp_id] using
       ((hzh.hasFDerivAt.comp z hT).sub hz.hasFDerivAt).mul_const ((h : ℂ)⁻¹)
   change fderiv ℝ (dirichletTangentialDifference h u) z w = _
   rw [hq.fderiv]
-  simp only [ContinuousLinearMap.smul_apply, ContinuousLinearMap.sub_apply,
+  simp [ContinuousLinearMap.smul_apply, ContinuousLinearMap.sub_apply,
     smul_eq_mul, dirichletTangentialDifference, dirD, div_eq_mul_inv]
   ring
 
@@ -832,7 +825,7 @@ theorem dirichletTangentialDifference_zero_bottom {A a h : ℝ}
     (abs_add_le x h).trans_lt
       ((show |x| + |h| < a + |h| from
         add_lt_add_of_lt_of_le hx le_rfl).trans_le hmargin)
-  simp only [dirichletTangentialDifference, ← Complex.ofReal_add,
+  simp [dirichletTangentialDifference, ← Complex.ofReal_add,
     hz x hxA, hz (x + h) hxh, sub_self, zero_div]
 
 /-- The actual coefficient matrix at the shifted horizontal point,
@@ -845,13 +838,13 @@ def dirichletShiftedFlux (f : ℝ → ℝ) (h : ℝ) (v : ℂ → ℂ)
 
 private theorem dirichlet_energy_young {M : ℝ} (hM : 0 < M) (Y S : ℝ) :
     Y * S ≤ Y ^ 2 / (4 * M) + M * S ^ 2 := by
-  have hfourM : 0 < 4 * M := mul_pos (by norm_num) hM
+
   have hpoly : 4 * M * Y * S ≤ Y ^ 2 + 4 * M ^ 2 * S ^ 2 := by
     nlinarith only [sq_nonneg (Y - 2 * M * S)]
   calc
     Y * S = (4 * M * Y * S) / (4 * M) := by field_simp [hM.ne']
     _ ≤ (Y ^ 2 + 4 * M ^ 2 * S ^ 2) / (4 * M) :=
-      div_le_div_of_nonneg_right hpoly hfourM.le
+      div_le_div_of_nonneg_right hpoly (mul_pos (by norm_num) hM).le
     _ = _ := by field_simp [hM.ne']
 
 /-- The pointwise absorption estimate for a complex-valued
@@ -886,9 +879,7 @@ theorem dirichlet_localized_energy_absorption {M B : ℝ}
   let err := (F₀ * b₀ + F₁ * b₁) * conj v +
     ρ * (C₀ * conj x + C₁ * conj y) +
     (C₀ * b₀ + C₁ * b₁) * conj v - G * ρ * conj v
-  have hX₀ : 0 ≤ X := add_nonneg (norm_nonneg _) (norm_nonneg _)
-  have hc₀ : 0 ≤ c := add_nonneg (norm_nonneg _) (norm_nonneg _)
-  have hρnorm : ‖ρ‖ = ‖η‖ ^ 2 := by simp only [ρ, norm_mul, norm_conj, pow_two]
+  have hρnorm : ‖ρ‖ = ‖η‖ ^ 2 := by simp [ρ, norm_mul, norm_conj, pow_two]
   have hρ : ρ = ((‖η‖ ^ 2 : ℝ) : ℂ) := by
     simpa only [← Complex.ofReal_pow] using Complex.mul_conj' η
   have hb₀ : ‖b₀‖ ≤ 2 * B * ‖η‖ := by
@@ -924,7 +915,7 @@ theorem dirichlet_localized_energy_absorption {M B : ℝ}
     rw [norm_mul, hρnorm]
     calc
       _ ≤ ‖η‖ ^ 2 * (c * X) := mul_le_mul_of_nonneg_left hCdot (sq_nonneg _)
-      _ ≤ ‖η‖ * (c * X) := mul_le_mul_of_nonneg_right hηsq (mul_nonneg hc₀ hX₀)
+      _ ≤ ‖η‖ * (c * X) := mul_le_mul_of_nonneg_right hηsq (mul_nonneg (add_nonneg (norm_nonneg _) (norm_nonneg _)) (add_nonneg (norm_nonneg _) (norm_nonneg _)))
       _ = _ := by dsimp [Y]; ring
   have hCerr : ‖(C₀ * b₀ + C₁ * b₁) * conj v‖ ≤ 2 * B * c * ‖v‖ := by
     rw [norm_mul, norm_conj]
@@ -938,7 +929,7 @@ theorem dirichlet_localized_energy_absorption {M B : ℝ}
       _ = _ := by ring
   have hGerr : ‖G * ρ * conj v‖ ≤ ‖G‖ * ‖v‖ := by
     rw [norm_mul, norm_mul, hρnorm, norm_conj]
-    have hηsq₁ : ‖η‖ ^ 2 ≤ 1 := hηsq.trans hη
+    have hηsq₁ := hηsq.trans hη
     calc
       _ ≤ ‖G‖ * 1 * ‖v‖ := by gcongr
       _ = _ := by ring
@@ -998,7 +989,7 @@ theorem dirichlet_localized_energy_absorption {M B : ℝ}
   have hmainBound : main.re ≤ (L - G * ρ * conj v).re + ‖err‖ := by
     rw [heq, Complex.add_re]
     have h := Complex.re_le_norm (-err)
-    simp only [Complex.neg_re, norm_neg] at h
+    simp at h
     linarith only [h]
   have hTsplit : T / M = T / (2 * M) + T / (2 * M) := by
     field_simp [hM.ne']; ring
@@ -1028,7 +1019,7 @@ theorem dirichletCutoffWeight_dirD (η : smoothTraceTests) (w z : ℂ) :
   have hd := (hη.mul hc).fderiv
   change fderiv ℝ ((η : ℂ → ℂ) * (Complex.conjCLE ∘ (η : ℂ → ℂ))) z w = _
   rw [hd]
-  simp only [ContinuousLinearMap.add_apply, ContinuousLinearMap.smul_apply,
+  simp [ContinuousLinearMap.add_apply, ContinuousLinearMap.smul_apply,
     ContinuousLinearMap.comp_apply, ContinuousLinearEquiv.coe_apply,
     Function.comp_apply, Complex.conjCLE_apply,
     smul_eq_mul, dirD]
@@ -1045,8 +1036,7 @@ theorem dirichlet_cutoff_conj_product_dirD (η : smoothTraceTests)
   have hd := (hweight.hasFDerivAt.mul hc).fderiv
   change fderiv ℝ ((dirichletCutoffWeight η : ℂ → ℂ) * (Complex.conjCLE ∘ v)) z w = _
   rw [hd]
-  simp only [ContinuousLinearMap.add_apply, ContinuousLinearMap.smul_apply,
-    ContinuousLinearMap.comp_apply, Function.comp_apply, Complex.conjCLE_apply, smul_eq_mul]
+  simp
   change dirichletCutoffWeight η z * conj (dirD v w z) +
     conj (v z) * dirD (dirichletCutoffWeight η : ℂ → ℂ) w z = _
   rw [dirichletCutoffWeight_dirD]
@@ -1095,14 +1085,14 @@ theorem dirichlet_localized_boundary_energy_bound {a b M B : ℝ}
     ‖η z‖ ^ 2 * (‖dirD v 1 z‖ ^ 2 + ‖dirD v Complex.I z‖ ^ 2)
   let R : ℂ → ℂ := fun z =>
     (∑ i : Fin 2, (F i z + C i z) * dirD φ (coordDir i) z) - G z * φ z
-  have hU : IsOpen U := isOpen_smoothDirichletHalfBox a b
+  have hU := isOpen_smoothDirichletHalfBox a b
   have hvc : ContinuousOn (fun z => conj (v z)) (smoothDirichletClosedHalfBox a b) :=
     Complex.conjCLE.continuous.comp_continuousOn hc
   have hvs : ContDiffOn ℝ (⊤ : ℕ∞) (fun z => conj (v z)) U :=
     Complex.conjCLE.contDiff.comp_contDiffOn hs
   have hvz : ∀ x : ℝ, |x| < a → conj (v (x : ℂ)) = 0 := by
     intro x hx
-    simp only [hz x hx, map_zero]
+    simp [hz x hx, map_zero]
   have hvg (i : Fin 2) : MemLp (dirD (fun z => conj (v z)) (coordDir i)) 2 μ := by
     apply (hg i).star.ae_eq
     filter_upwards [ae_restrict_mem hU.measurableSet] with z hzU
@@ -1110,7 +1100,7 @@ theorem dirichlet_localized_boundary_energy_bound {a b M B : ℝ}
       ((hs.contDiffAt (hU.mem_nhds hzU)).differentiableAt (by simp)) _).symm
   have hweightSupp : tsupport (dirichletCutoffWeight η : ℂ → ℂ) ⊆
       {z : ℂ | |z.re| < a ∧ z.im < b} := tsupport_mul_subset_left.trans hηsupp
-  have hφ : MemLp φ 2 μ := dirichlet_localized_memLp (dirichletCutoffWeight η) hm.star
+  have hφ := dirichlet_localized_memLp (dirichletCutoffWeight η) hm.star
   have hφg (i : Fin 2) : MemLp (dirD φ (coordDir i)) 2 μ :=
     dirichlet_localized_gradient_memLp hU (dirichletCutoffWeight η) hvs hm.star (hvg i)
   have heq : (∫ z, ∑ i : Fin 2, (F i z + C i z) * dirD φ (coordDir i) z ∂μ) =
@@ -1130,7 +1120,7 @@ theorem dirichlet_localized_boundary_energy_bound {a b M B : ℝ}
     have hR : (∫ z, R z ∂μ) = 0 := by
       dsimp only [R]
       rw [integral_sub hFluxInt hLoadInt, heq, sub_self]
-    simp only [hR, RCLike.zero_re]
+    simp [hR, RCLike.zero_re]
   have hηDx := dirichlet_localized_memLp η
     (show MemLp (dirD v 1) 2 μ by simpa only [coordDir, Matrix.cons_val_zero] using hg 0)
   have hηDy := dirichlet_localized_memLp η
@@ -1142,7 +1132,7 @@ theorem dirichlet_localized_boundary_energy_bound {a b M B : ℝ}
     filter_upwards with z
     change ‖η z * dirD v 1 z‖ ^ 2 + ‖η z * dirD v Complex.I z‖ ^ 2 =
       ‖η z‖ ^ 2 * (‖dirD v 1 z‖ ^ 2 + ‖dirD v Complex.I z‖ ^ 2)
-    simp only [norm_mul, mul_pow]
+    simp
     ring
   have hGsq := hG.integrable_norm_pow (by norm_num : (2 : ℕ) ≠ 0)
   have hCsq : Integrable (fun z => ‖C 0 z‖ ^ 2 + ‖C 1 z‖ ^ 2) μ :=
@@ -1181,7 +1171,7 @@ theorem dirichlet_localized_boundary_energy_bound {a b M B : ℝ}
         G z * dirichletCutoffWeight η z * conj (v z) := by
       dsimp only [R]
       rw [Fin.sum_univ_two]
-      simp only [coordDir, Matrix.cons_val_zero, Matrix.cons_val_one]
+      simp [coordDir, Matrix.cons_val_zero, Matrix.cons_val_one]
       rw [dirichlet_cutoff_conj_product_dirD η hdv 1,
         dirichlet_cutoff_conj_product_dirD η hdv Complex.I]
       dsimp only [φ]
@@ -1202,9 +1192,7 @@ theorem dirichlet_graph_flux_conj_pair (d : ℝ) (x y : ℂ) :
       ‖x - (d : ℂ) * y‖ ^ 2 + ‖y‖ ^ 2 := by
   rw [Complex.sq_norm, Complex.normSq_apply, Complex.sq_norm, Complex.normSq_apply]
   simp only [pow_two]
-  simp only [Complex.add_re, Complex.add_im, Complex.mul_re, Complex.mul_im, Complex.sub_re,
-    Complex.sub_im, Complex.neg_re, Complex.neg_im, Complex.conj_re, Complex.conj_im,
-    Complex.ofReal_re, Complex.ofReal_im, Complex.one_re, Complex.one_im]
+  simp
   ring
 
 theorem dirichletShiftedFlux_coercive {f : ℝ → ℝ} {K : NNReal}
@@ -1235,8 +1223,8 @@ theorem dirichletShiftedFlux_norm_sum_bound {f : ℝ → ℝ} {K : NNReal}
       _ ≤ ‖(1 : ℂ)‖ + ‖d ^ 2‖ := norm_add_le _ _
       _ = 1 + ‖d‖ ^ 2 := by rw [norm_one, norm_pow]
       _ ≤ _ := add_le_add le_rfl (pow_le_pow_left₀ (norm_nonneg _) hd 2)
-  have hdM : ‖d‖ ≤ M := hd.trans hK
-  have haM : ‖(1 : ℂ) + d ^ 2‖ ≤ M := ha.trans hKK
+  have hdM := hd.trans hK
+  have haM := ha.trans hKK
   have hx : ‖x - d * y‖ ≤ M * (‖x‖ + ‖y‖) := by
     calc
       _ ≤ ‖x‖ + ‖d * y‖ := norm_sub_le _ _
@@ -1249,7 +1237,7 @@ theorem dirichletShiftedFlux_norm_sum_bound {f : ℝ → ℝ} {K : NNReal}
     calc
       _ ≤ ‖-d * x‖ + ‖(1 + d ^ 2) * y‖ := norm_add_le _ _
       _ ≤ M * ‖x‖ + M * ‖y‖ := by
-        simp only [norm_mul, norm_neg]
+        simp
         exact add_le_add (mul_le_mul_of_nonneg_right hdM (norm_nonneg x))
           (mul_le_mul_of_nonneg_right haM (norm_nonneg y))
       _ = _ := by ring
@@ -1357,8 +1345,7 @@ theorem exists_dirichlet_boundary_energy_cutoff {a b : ℝ} (ha : 0 < a) (hb : 0
     have hzn : ‖z‖ ≤ 2 * r := by simpa only [mem_closedBall, dist_zero_right] using hzκ
     exact ⟨((Complex.abs_re_le_norm z).trans hzn).trans_lt h2a,
       ((le_abs_self z.im).trans ((Complex.abs_im_le_norm z).trans hzn)).trans_lt h2b⟩
-  have hη (z : ℂ) : ‖η z‖ ≤ 1 := by
-    exact dirichletComplexBumpTest_norm_le_one κ z
+  have hη (z : ℂ) : ‖η z‖ ≤ 1 := dirichletComplexBumpTest_norm_le_one κ z
   have hηone (z : ℂ) (hz : z ∈ smoothDirichletHalfBox (r / 2) (r / 2)) : η z = 1 := by
     have hzn : ‖z‖ ≤ r := by
       calc

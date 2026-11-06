@@ -57,7 +57,7 @@ theorem WalkData.exists_return (hw : WalkData Ω ρ H K ch ℓ p₀) {s₀ t₀ 
     ∃ T, 0 < T ∧ T ≤ t₀ ∧ walk ch ℓ p₀ T = walk ch ℓ p₀ 0 := by
   have hρ := hw.ρ_pos
   set γ := walk ch ℓ p₀ with hγ
-  have hγc : Continuous γ := hw.continuous_walk
+  have hγc := hw.continuous_walk
   set A : Set ℝ := {s | 0 ≤ s ∧ ∃ t, s < t ∧ t ≤ t₀ ∧ γ s = γ t} with hA
   have hs₀A : s₀ ∈ A := ⟨hs₀, t₀, hst, le_rfl, heq⟩
   have hbdd : BddBelow A := ⟨0, fun s hs => hs.1⟩
@@ -67,21 +67,21 @@ theorem WalkData.exists_return (hw : WalkData Ω ρ H K ch ℓ p₀) {s₀ t₀ 
   choose t ht using fun n => (huA n).2
   have htI : ∀ n, t n ∈ Icc 0 t₀ := fun n => ⟨by linarith [(huA n).1, (ht n).1], (ht n).2.1⟩
   obtain ⟨t₁, ht₁I, φ, hφ, htφ⟩ := isCompact_Icc.tendsto_subseq htI
-  have huφ : Tendsto (u ∘ φ) atTop (𝓝 s₁) := hu.comp hφ.tendsto_atTop
+  have huφ := hu.comp hφ.tendsto_atTop
   have hγeq : γ s₁ = γ t₁ := by
     have h1 := (hγc.tendsto s₁).comp huφ
     have h2 := (hγc.tendsto t₁).comp htφ
     have : (γ ∘ (u ∘ φ)) = (γ ∘ (t ∘ φ)) := funext fun n => (ht (φ n)).2.2
     rw [this] at h1
     exact tendsto_nhds_unique h1 h2
-  have hle : s₁ ≤ t₁ := le_of_tendsto_of_tendsto' huφ htφ fun n => (ht (φ n)).1.le
+  have hle := le_of_tendsto_of_tendsto' huφ htφ fun n => (ht (φ n)).1.le
   have hlt : s₁ < t₁ := by
     refine lt_of_le_of_ne hle fun hEq => ?_
     obtain ⟨ε, hε, hinj⟩ := hw.locally_injective hs₁0
     have hI : Icc (s₁ - ε) (s₁ + ε) ∈ 𝓝 s₁ := Icc_mem_nhds (by linarith) (by linarith)
     rw [← hEq] at htφ
     have e1 : ∀ᶠ n in atTop, (u ∘ φ) n ∈ Icc (s₁ - ε) (s₁ + ε) := huφ hI
-    have e2 : ∀ᶠ n in atTop, (t ∘ φ) n ∈ Icc (s₁ - ε) (s₁ + ε) := htφ hI
+    have e2 := htφ hI
     obtain ⟨n, hn1, hn2⟩ := (e1.and e2).exists
     have := hinj hn1 hn2 (ht (φ n)).2.2
     exact absurd this (ht (φ n)).1.ne
@@ -91,10 +91,10 @@ theorem WalkData.exists_return (hw : WalkData Ω ρ H K ch ℓ p₀) {s₀ t₀ 
   exfalso
   -- backward step at the pair `(s₁, t₁)`
   set P := γ s₁ with hP
-  have hPf : P ∈ frontier Ω := hw.walk_mem_frontier (by linarith)
-  have hch := hw.chart P hPf
+
+  have hch := hw.chart P (hw.walk_mem_frontier (by linarith))
   set c := (ch P).1
-  have hboxs : γ s₁ ∈ chartBox P c ρ H := hch.center_mem_box
+  have hboxs := hch.center_mem_box
   have hboxt : γ t₁ ∈ chartBox P c ρ H := by rw [← hγeq]; exact hboxs
   obtain ⟨ε₁, hε₁, hm₁⟩ := hw.walk_local_strictMono hs₁0 hch hboxs
   obtain ⟨ε₂, hε₂, hm₂⟩ := hw.walk_local_strictMono (by linarith) hch hboxt
@@ -120,16 +120,14 @@ theorem WalkData.exists_return (hw : WalkData Ω ρ H K ch ℓ p₀) {s₀ t₀ 
     (by linarith)
   have hev1 : ∀ᶠ s in 𝓝 s₁, L < g s :=
     (hgc.tendsto s₁).eventually (lt_mem_nhds (by rw [hgst]; exact hLt))
-  have hev2 : ∀ᶠ s in 𝓝[<] s₁, s ∈ Ioo (s₁ - ε) s₁ := Ioo_mem_nhdsLT (by linarith)
   have hev : ∀ᶠ s in 𝓝[<] s₁, L < g s ∧ s ∈ Ioo (s₁ - ε) s₁ :=
-    (eventually_nhdsWithin_of_eventually_nhds hev1).and hev2
+    (eventually_nhdsWithin_of_eventually_nhds hev1).and (Ioo_mem_nhdsLT (by linarith))
   obtain ⟨s', hs'L, hs'I⟩ := hev.exists
-  have hgs' : g s' < g s₁ := hm₁ ⟨by linarith [hs'I.1], by linarith [hs'I.2]⟩
+  have hgs' := hm₁ ⟨by linarith [hs'I.1], by linarith [hs'I.2]⟩
     ⟨by linarith, by linarith⟩ hs'I.2
-  have hs'f : γ s' ∈ frontier Ω := hw.walk_mem_frontier (by linarith [hs'I.1])
-  have hs'b : γ s' ∈ chartBox P c ρ H := hb₃ s' ⟨by linarith [hs'I.1], by linarith [hs'I.2]⟩
+  have hs'b := hb₃ s' ⟨by linarith [hs'I.1], by linarith [hs'I.2]⟩
   obtain ⟨t', ht'I, ht'eq⟩ := hw.capture (α := t₁ - ε) (β := t₁) (by linarith) (by linarith)
-    hch (fun s hs => hb₄ s ⟨by linarith [hs.1], by linarith [hs.2]⟩) hs'f hs'b hs'L.le
+    hch (fun s hs => hb₄ s ⟨by linarith [hs.1], by linarith [hs.2]⟩) (hw.walk_mem_frontier (by linarith [hs'I.1])) hs'b hs'L.le
     (by change g s' ≤ g t₁; rw [← hgst]; exact hgs'.le)
   have hs'A : s' ∈ A := ⟨by linarith [hs'I.1], t', by linarith [ht'I.1, hs'I.2], by
     linarith [ht'I.2, ht₁I.2], ht'eq.symm⟩
@@ -148,13 +146,12 @@ theorem WalkData.exists_loop (hw : WalkData Ω ρ H K ch ℓ p₀) {s₀ t₀ : 
     have := hinj₀ ⟨by linarith, by linarith⟩ ⟨by linarith, by linarith⟩ hTeq
     linarith
   obtain ⟨T₁, hT₁, -, hT₁eq⟩ := hw.exists_return hs₀ hst heq
-  have hSne : S.Nonempty := ⟨T₁, hmemS T₁ hT₁ hT₁eq⟩
   have hSbdd : BddBelow S := ⟨ε₀, fun t ht => ht.1⟩
   have hScl : IsClosed S :=
     (isClosed_le continuous_const continuous_id).inter
       (isClosed_eq hw.continuous_walk continuous_const)
   set T := sInf S
-  have hTS : T ∈ S := hScl.csInf_mem hSne hSbdd
+  have hTS := hScl.csInf_mem (⟨T₁, hmemS T₁ hT₁ hT₁eq⟩) hSbdd
   refine ⟨T, by linarith [hTS.1], hTS.2, fun a ha b hb hab => ?_⟩
   by_contra hne
   rcases lt_or_gt_of_ne hne with hlt | hlt
@@ -180,8 +177,7 @@ theorem WalkData.exists_pair (hw : WalkData Ω ρ H K ch ℓ p₀) (hcpt : IsCom
   have hm₀pos : 0 < m₀ := lt_min hw.ρ_pos (by linarith [hch.2.2.1])
   have hball : ball P m₀ ⊆ chartBox P c ρ H := ball_subset_chartBox hch.1
   set δ := min (m₀ / 4) (ℓ / (2 * (1 + K))) with hδ
-  have hδpos : 0 < δ := lt_min (by positivity) (by positivity)
-  obtain ⟨N, hN⟩ := Metric.tendsto_atTop.mp hqφ δ hδpos
+  obtain ⟨N, hN⟩ := Metric.tendsto_atTop.mp hqφ δ (lt_min (by positivity) (by positivity))
   set n := φ (N + 1) with hn
   set m := φ (N + 3) with hm
   have hn1 : 1 ≤ n := by
@@ -233,7 +229,7 @@ theorem WalkData.exists_pair (hw : WalkData Ω ρ H K ch ℓ p₀) (hcpt : IsCom
     intro s₁ s₂ hs₁ hs₂ h12
     have := norm_sub_le_of_frontier hw.isOpen hch (hfr s₂ (by linarith [hs₂.1]))
       (hfr s₁ (by linarith [hs₁.1])) (hbox s₂ hs₂) (hbox s₁ hs₁)
-    have hlt : g s₁ < g s₂ := hmono hs₁ hs₂ h12
+    have hlt := hmono hs₁ hs₂ h12
     rwa [abs_of_pos (by simp only [hg, walkX] at hlt ⊢; linarith)] at this
   have hright : ℓ / (1 + K) ≤ g (n * ℓ + ℓ) - g (n * ℓ) := by
     have h1 := hw.le_norm_walk_sub n (u := 0) (u' := ℓ) ⟨le_rfl, hℓ.le⟩ ⟨hℓ.le, le_rfl⟩
@@ -252,8 +248,8 @@ theorem WalkData.exists_pair (hw : WalkData Ω ρ H K ch ℓ p₀) (hcpt : IsCom
       (by linarith)
     rw [div_le_iff₀ hK1]; nlinarith
   -- the abscissa of `q m` is close to that of `q n`
-  have hqmf : q m ∈ frontier Ω := hw.walkPt_mem m
-  have hqmb : q m ∈ chartBox P c ρ H := hball (lt_of_lt_of_le hqm (by
+  have hqmf := hw.walkPt_mem m
+  have hqmb := hball (lt_of_lt_of_le hqm (by
     have := min_le_left (m₀ / 4) (ℓ / (2 * (1 + K))); linarith))
   have hXclose : |(c * (q m - P)).re - g (n * ℓ)| ≤ 2 * δ := by
     have hgn : g (n * ℓ) = (c * (q n - P)).re := by simp only [hg, walkX, hwn]
@@ -301,16 +297,15 @@ theorem WalkData.image_eq (hw : WalkData Ω ρ H K ch ℓ p₀) {T : ℝ} (hT : 
   have hsub : Im ⊆ frontier Ω := by
     rintro _ ⟨t, ht, rfl⟩; exact hw.walk_mem_frontier (by linarith [ht.1])
   refine subset_antisymm hsub ?_
-  have hImc : IsClosed Im := (isCompact_Icc.image hw.continuous_walk).isClosed
   -- every point of the loop has a neighbourhood whose boundary points are on the loop
   have hloc : ∀ t ∈ Icc 0 T, ∃ V : Set ℂ, IsOpen V ∧ γ t ∈ V ∧ frontier Ω ∩ V ⊆ Im := by
     intro t ht
-    have hPf : γ t ∈ frontier Ω := hsub ⟨t, ht, rfl⟩
+    have hPf := hsub ⟨t, ht, rfl⟩
     set P := γ t
     have hch := hw.chart P hPf
     set c := (ch P).1
     set g := walkX ch ℓ p₀ P c with hg
-    have hPb : P ∈ chartBox P c ρ H := hch.center_mem_box
+    have hPb := hch.center_mem_box
     by_cases hend : t = 0 ∨ t = T
     · -- the starting point: forward from `0` and backward from `T`
       have hP0 : γ 0 = P := by rcases hend with h | h <;> simp only [P, h, hTeq]
@@ -321,7 +316,7 @@ theorem WalkData.image_eq (hw : WalkData Ω ρ H K ch ℓ p₀) {T : ℝ} (hT : 
       obtain ⟨ε₃, hε₃, hm₃⟩ := hw.walk_local_strictMono hT.le hch hbT
       obtain ⟨ε₄, hε₄, hb₄⟩ := hw.eventually_box hbT
       set ε := min (min ε₁ ε₂) (min (min ε₃ ε₄) T) with hε
-      have hεpos : 0 < ε := lt_min (lt_min hε₁ hε₂) (lt_min (lt_min hε₃ hε₄) hT)
+      have hεpos := lt_min (lt_min hε₁ hε₂) (lt_min (lt_min hε₃ hε₄) hT)
       have hε1 : ε ≤ ε₁ := le_trans (min_le_left _ _) (min_le_left _ _)
       have hε2 : ε ≤ ε₂ := le_trans (min_le_left _ _) (min_le_right _ _)
       have hε3 : ε ≤ ε₃ :=
@@ -330,7 +325,7 @@ theorem WalkData.image_eq (hw : WalkData Ω ρ H K ch ℓ p₀) {T : ℝ} (hT : 
         le_trans (min_le_right _ _) (le_trans (min_le_left _ _) (min_le_right _ _))
       have hεT : ε ≤ T := le_trans (min_le_right _ _) (min_le_right _ _)
       have hg0 : g 0 = g T := by simp only [hg, walkX, ← hγ, hTeq]
-      have hgε : g 0 < g ε := hm₁ ⟨by linarith, by linarith⟩ ⟨by linarith, by linarith⟩ hεpos
+      have hgε := hm₁ ⟨by linarith, by linarith⟩ ⟨by linarith, by linarith⟩ hεpos
       have hgT : g (T - ε) < g T := hm₃ ⟨by linarith, by linarith⟩ ⟨by linarith, by linarith⟩
         (by linarith)
       have hgP : g 0 = (c * (P - P)).re := by simp only [hg, walkX, ← hγ, hP0]
@@ -348,8 +343,8 @@ theorem WalkData.image_eq (hw : WalkData Ω ρ H K ch ℓ p₀) {T : ℝ} (hT : 
             (by change _ ≤ g T; rw [← hg0]; exact hlt.le)
           exact ⟨s, ⟨by linarith [hs.1], hs.2⟩, hseq⟩
     · push_neg at hend
-      have ht0 : 0 < t := lt_of_le_of_ne ht.1 (Ne.symm hend.1)
-      have htT : t < T := lt_of_le_of_ne ht.2 hend.2
+      have ht0 := lt_of_le_of_ne ht.1 (Ne.symm hend.1)
+      have htT := lt_of_le_of_ne ht.2 hend.2
       obtain ⟨ε₁, hε₁, hm₁⟩ := hw.walk_local_strictMono ht.1 hch hPb
       obtain ⟨ε₂, hε₂, hb₂⟩ := hw.eventually_box (s := t) hPb
       set ε := min (min ε₁ ε₂) (min t (T - t)) with hε
@@ -372,7 +367,7 @@ theorem WalkData.image_eq (hw : WalkData Ω ρ H K ch ℓ p₀) {T : ℝ} (hT : 
         exact ⟨s, ⟨by linarith [hs.1], by linarith [hs.2]⟩, hseq⟩
   choose! V hVo hVmem hVsub using hloc
   set U := ⋃ t ∈ Icc 0 T, V t with hU
-  have hUo : IsOpen U := isOpen_biUnion fun t ht => hVo t ht
+  have hUo := isOpen_biUnion fun t ht => hVo t ht
   have hcover : frontier Ω ⊆ U ∪ Imᶜ := fun x hx => by
     by_cases hxI : x ∈ Im
     · obtain ⟨t, ht, rfl⟩ := hxI
@@ -384,7 +379,7 @@ theorem WalkData.image_eq (hw : WalkData Ω ρ H K ch ℓ p₀) {T : ℝ} (hT : 
     intro hx hxU hxI
     obtain ⟨t, ht, hxV⟩ := mem_iUnion₂.mp hxU
     exact hxI (hVsub t ht ⟨hx, hxV⟩)
-  rcases (isPreconnected_iff_subset_of_disjoint.mp hconn) U Imᶜ hUo hImc.isOpen_compl hcover
+  rcases (isPreconnected_iff_subset_of_disjoint.mp hconn) U Imᶜ hUo ((isCompact_Icc.image hw.continuous_walk).isClosed).isOpen_compl hcover
     hdisj with h | h
   · intro x hx
     obtain ⟨t, ht, hxV⟩ := mem_iUnion₂.mp (h hx)
@@ -476,17 +471,16 @@ theorem exists_jordanLoop_frontier {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
     have := hb
     rw [huniv] at this
     exact NormedSpace.unbounded_univ ℝ ℂ this
-  have hK1 : (0 : ℝ) < 1 + K := by positivity
+
   set ℓ : ℝ := min ρ H / (2 * (1 + K)) with hℓ
-  have hm : 0 < min ρ H := lt_min hρ hH
-  have hℓpos : 0 < ℓ := by positivity
+  have hm := lt_min hρ hH
   have hℓρ : ℓ < ρ := by
     have : ℓ ≤ min ρ H / 2 := by
       rw [hℓ]; apply div_le_div_of_nonneg_left hm.le (by norm_num); linarith [NNReal.coe_nonneg K]
     have := min_le_left ρ H
     linarith
   have hw : WalkData Ω ρ H K ch ℓ p₀ :=
-    ⟨hL.1.1, fun p hp => hcf p hp, hℓpos, hℓρ, hp₀⟩
+    ⟨hL.1.1, fun p hp => hcf p hp, (by positivity), hℓρ, hp₀⟩
   have hsmall : (1 + K) * ℓ ≤ min ρ H / 2 := by
     rw [hℓ, mul_div_assoc', div_le_div_iff₀ (by positivity) (by norm_num)]; nlinarith
   obtain ⟨s₀, t₀, hs₀, hst, heq⟩ := hw.exists_pair (frontier_isCompact hb) hsmall

@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.TwoPi
 public import RequestProject.PhysicalCauchyBoundaryExtension
 public import Mathlib.Analysis.Calculus.ContDiff.Comp
 public import Mathlib.Analysis.Calculus.FDeriv.RestrictScalars
@@ -35,8 +36,6 @@ namespace PolyaNeumann
 open MeasureTheory Set Metric
 open scoped ComplexConjugate Topology
 
-local instance physicalMomentCriterionTwoPiPos : Fact (0 < 2 * Real.pi) :=
-  ⟨Real.two_pi_pos⟩
 
 /-- The actual complex-linear coefficient of the supplied real differential. -/
 def physicalMomentDifferential (F : ℂ → ℂ) (z : ℂ) : ℂ := fderiv ℝ F z 1
@@ -100,8 +99,7 @@ theorem physicalMomentQuotient_contDiffAt_closedDisk {R : ℝ} (hR : 1 < R) (F :
     ContDiffAt ℝ (⊤ : ℕ∞) (physicalMomentQuotient F m) z := by
   have hD := (physicalMomentDifferential_contDiffOn F hFs).contDiffAt
     (isOpen_ball.mem_nhds (closedBall_subset_ball hR hz))
-  have hp : ContDiffAt ℝ (⊤ : ℕ∞) (fun w : ℂ => w ^ m) z := contDiffAt_id.pow m
-  have h := hp.mul (hD.inv (hnz z hz))
+  have h := (contDiffAt_id.pow m).mul (hD.inv (hnz z hz))
   show ContDiffAt ℝ (⊤ : ℕ∞) (fun w => w ^ m / physicalMomentDifferential F w) z
   simp only [div_eq_mul_inv]
   exact h
@@ -188,14 +186,14 @@ theorem physicalMomentDensity_circle_moment_eq_zero_of_primitive_extension
   have hγ : ContDiff ℝ 1 γ :=
     contDiff_physicalCircleTrace_of_neighborhood hR F
       (hFs.of_le (WithTop.coe_le_coe.mpr le_top))
-  have hK : ContDiff ℝ 1 K := contDiff_physicalMomentPrimitive γ H hγ hH
+  have hK := contDiff_physicalMomentPrimitive γ H hγ hH
   have hu : Continuous u := Complex.continuous_conj.comp hK.continuous
   have hu' : Continuous u' :=
     hγ.continuous_deriv_one.mul (Complex.continuous_conj.comp hH)
   have hdu (θ : ℝ) : HasDerivAt u (u' θ) θ := by
     simpa only [u, u', Complex.star_def, map_mul, Complex.conj_conj] using
       (physicalMomentPrimitive_hasDerivAt γ H hγ hH θ).star
-  have hv : ContDiff ℝ 1 v := physicalMomentQuotient_circle_contDiff hR F hFs hnz m
+  have hv := physicalMomentQuotient_circle_contDiff hR F hFs hnz m
   have hdv (θ : ℝ) : HasDerivAt v (v' θ) θ :=
     physicalMomentQuotient_circle_hasDerivAt hR F hFs hhol hnz m θ
   have hveq : deriv v = v' := by
@@ -229,7 +227,7 @@ theorem physicalMomentDensity_circle_moment_eq_zero_of_primitive_extension
     hu.continuousOn hv.continuous.continuousOn (fun θ _ => hdu θ) (fun θ _ => hdv θ)
     (hu'.intervalIntegrable 0 (2 * Real.pi)) (hv'.intervalIntegrable 0 (2 * Real.pi))
   simp only [hcauchy, huL, hu0, zero_mul, sub_self, zero_sub] at hi
-  have hJ : (∫ θ in (0 : ℝ)..(2 * Real.pi), u' θ * v θ) = 0 := neg_eq_zero.mp hi.symm
+  have hJ := neg_eq_zero.mp hi.symm
   have heq : (fun θ => u' θ * v θ) =
       (fun θ => Complex.I * (conj (H θ) * (circleMap 0 1 θ) ^ (m + 1))) := by
     funext θ

@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.TwoPi
 public import RequestProject.DiskHalfTrace
 
 /-!
@@ -21,7 +22,6 @@ namespace PolyaNeumann
 open MeasureTheory Set Metric Real
 open scoped ComplexConjugate InnerProductSpace
 
-local instance diskWeakModeTwoPiPos : Fact (0 < 2 * π) := ⟨two_pi_pos⟩
 
 def diskHolomorphicH1Test (m : ℕ) : NeumannH1 (ball (0 : ℂ) 1) :=
   smoothTraceH1 (ball (0 : ℂ) 1)
@@ -82,7 +82,7 @@ theorem fourierCoeffOn_twoPi_exp (n k : ℤ) :
     exact congrArg (fourier n) ((AddCircle.equivIoc (2 * π) 0).symm_apply_apply q)
   have hc := fourierCoeff_liftIoc_eq (T := 2 * π) (a := 0)
     (fun θ => Complex.exp ((n : ℂ) * Complex.I * θ)) k
-  simp only [zero_add] at hc
+  simp at hc
   rw [← hc, hm, hl, fourierCoeff_fourier]
 
 theorem diskHalfTrace_smooth_fourier_test (f : smoothTraceTests) (n : ℤ)
@@ -99,7 +99,7 @@ theorem diskHalfTrace_smooth_fourier_test (f : smoothTraceTests) (n : ℤ)
   have hc := fourierCoeffOn_congr_ae two_pi_pos hae
   apply lp.ext
   funext k
-  simp only [diskHalfTrace_apply, boundaryFourier_apply,
+  simp [diskHalfTrace_apply, boundaryFourier_apply,
     congrFun hc k, fourierCoeffOn_twoPi_exp, stdBasisZ_apply,
     lp.coeFn_smul, Pi.smul_apply, smul_eq_mul, lp.single_apply]
   by_cases hkn : k = n
@@ -117,7 +117,7 @@ theorem diskHalfTrace_holomorphicTest (m : ℕ) :
   rw [diskHarmonicCutoff_eq_closedDisk _
     (sphere_subset_closedBall (circleMap_mem_sphere (0 : ℂ) (by norm_num) θ)),
     diskHolomorphicMode_unitCircle]
-  simp only [Int.cast_natCast]
+  simp
 
 theorem diskHalfTrace_antiholomorphicTest (m : ℕ) :
     diskHalfTrace (diskAntiholomorphicH1Test m) =

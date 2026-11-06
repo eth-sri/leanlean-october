@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.TwoPi
 public import RequestProject.FractionalKernel
 
 /-!
@@ -31,7 +32,6 @@ namespace PolyaNeumann
 open Real Filter MeasureTheory Topology
 open scoped InnerProductSpace ComplexConjugate
 
-local instance factTwoPiPosFI : Fact (0 < 2 * π) := ⟨two_pi_pos⟩
 
 /-- `min a b ≤ a^τ b^{1-τ}` for `a, b ≥ 0` and `0 ≤ τ ≤ 1`. -/
 lemma min_le_rpow_mul_rpow {a b τ : ℝ} (ha : 0 ≤ a) (hb : 0 ≤ b) (hτ0 : 0 ≤ τ) (hτ1 : τ ≤ 1) :
@@ -66,18 +66,17 @@ theorem sum_rpow_mul_fourierCoeff_rows_le {C β s : ℝ} (hs : 0 < s) (hsβ : 2 
       |(2 * π)⁻¹ * C * (π / 2) ^ β| * 2 ^ (2 * s) * (1 - (2 : ℝ) ^ (2 * s - β))⁻¹ := by
   classical
   set c : ι → ℤ → ℂ := fun j n => fourierCoeffOn two_pi_pos (fun θ => ⟪r θ, v j⟫_ℂ) n with hc
-  have hcont : ∀ j, Continuous fun θ => ⟪r θ, v j⟫_ℂ := fun j => hr.inner continuous_const
+
   have hsumj : ∀ j, Summable fun n => ‖c j n‖ ^ 2 := fun j =>
-    (hasSum_sq_fourierCoeffOn_of_continuous (hcont j)).summable
-  set Cb : ℝ := (2 * π)⁻¹ * C * (π / 2) ^ β with hCb
-  set bound : ℝ := |Cb| * 2 ^ (2 * s) * (1 - (2 : ℝ) ^ (2 * s - β))⁻¹ with hbound
+    (hasSum_sq_fourierCoeffOn_of_continuous ((fun j => hr.inner continuous_const) j)).summable
+  set Cb := (2 * π)⁻¹ * C * (π / 2) ^ β with hCb
+  set bound := |Cb| * 2 ^ (2 * s) * (1 - (2 : ℝ) ^ (2 * s - β))⁻¹ with hbound
   have hfin : ∀ (J : Finset ι) (U : Finset ℤ),
       ∑ n ∈ U, |(n : ℝ)| ^ (2 * s) * ∑ j ∈ J, ‖c j n‖ ^ 2 ≤ bound := by
     intro J U
     set aJ : ℤ → ℝ := fun n => ∑ j ∈ J, ‖c j n‖ ^ 2 with haJ
     have haJ0 : ∀ n, 0 ≤ aJ n := fun n => Finset.sum_nonneg fun j _ => by positivity
-    have haJs : Summable aJ := summable_sum fun j _ => hsumj j
-    have hblock := fun N hN u hu => block_bound_of_diff_bound haJ0 haJs 2
+    have hblock := fun N hN u hu => block_bound_of_diff_bound haJ0 (summable_sum fun j _ => hsumj j) 2
       (C := (2 * π)⁻¹ * C) (β := β) (fun h h0 h1 => ?_) N hN u hu
     · have := sum_rpow_mul_le_of_block_bound haJ0 hs.le hsβ hblock U
       rwa [Real.zero_rpow (by positivity), zero_mul, zero_add] at this
@@ -96,12 +95,12 @@ theorem sum_rpow_mul_fourierCoeff_rows_le {C β s : ℝ} (hs : 0 < s) (hsβ : 2 
       refine (sum_tsum_secondDiff_le hv hr hper J h).trans ?_
       rw [mul_assoc]
       exact mul_le_mul_of_nonneg_left (hdiff h h0 h1) (by positivity)
-  set J : Finset ι := u.image Prod.fst
-  set U : Finset ℤ := u.image Prod.snd
+  set J := u.image Prod.fst
+  set U := u.image Prod.snd
   calc ∑ p ∈ u, |(p.2 : ℝ)| ^ (2 * s) * ‖c p.1 p.2‖ ^ 2
       ≤ ∑ p ∈ J ×ˢ U, |(p.2 : ℝ)| ^ (2 * s) * ‖c p.1 p.2‖ ^ 2 := by
         refine Finset.sum_le_sum_of_subset_of_nonneg (fun p hp => ?_) fun p _ _ => by positivity
-        rw [Finset.mem_product]
+        simp
         exact ⟨Finset.mem_image_of_mem _ hp, Finset.mem_image_of_mem _ hp⟩
     _ = ∑ n ∈ U, |(n : ℝ)| ^ (2 * s) * ∑ j ∈ J, ‖c j n‖ ^ 2 := by
         rw [Finset.sum_product_right]
@@ -122,7 +121,7 @@ theorem secondDiff_integral_le_interp {A B M τ h : ℝ} (hτ0 : 0 ≤ τ) (hτ1
   have hFc : Continuous fun θ => ‖secondDiff r h θ‖ ^ 2 :=
     (((hr.comp (continuous_id.add continuous_const)).sub (hr.comp (continuous_id.add continuous_const))).sub
       ((hr.comp (continuous_id.add continuous_const)).sub hr)).norm.pow 2
-  have hM0 : 0 ≤ M := (norm_nonneg _).trans (hM 0)
+  have hM0 := (norm_nonneg _).trans (hM 0)
   have h1 := secondDiff_integral_le hr hh hh' hgood hbad
   have h4 : ∀ θ, ‖secondDiff r h θ‖ ≤ 4 * M := by
     intro θ
@@ -136,7 +135,7 @@ theorem secondDiff_integral_le_interp {A B M τ h : ℝ} (hτ0 : 0 ≤ τ) (hτ1
     have := intervalIntegral.integral_mono_on (μ := volume) two_pi_pos.le
       (hFc.intervalIntegrable _ _) intervalIntegrable_const
       fun θ _ => pow_le_pow_left₀ (norm_nonneg _) (h4 θ) 2
-    simp only [intervalIntegral.integral_const, sub_zero, smul_eq_mul] at this
+    simp at this
     linarith
   have hX : 0 ≤ π ^ 2 * A ^ 2 + 2 * B ^ 2 := by positivity
   have hm := min_le_rpow_mul_rpow (mul_nonneg hX (by positivity : (0 : ℝ) ≤ h ^ (3 : ℝ)))
@@ -183,7 +182,7 @@ variable {k : ℝ → ℝ → ℂ} {M : ℝ} (hmeas : ∀ θ, Measurable (k θ))
 
 include hmeas hbd in
 lemma norm_kernelRow_le (θ : ℝ) : ‖kernelRow hmeas hbd θ‖ ≤ M := by
-  have hM0 : 0 ≤ M := (norm_nonneg _).trans (hbd 0 0)
+  have hM0 := (norm_nonneg _).trans (hbd 0 0)
   unfold kernelRow
   have h := Lp.norm_le_of_ae_bound (μ := (@AddCircle.haarAddCircle (2 * π) _)) (p := 2)
     (f := MemLp.toLp _ (memLp_liftIco_two_pi (hmeas θ) (hbd θ))) (C := M) hM0 ?_
@@ -227,12 +226,12 @@ theorem kernelCoeff_interp {K : NNReal} {A : ℝ} (hA : 0 ≤ A)
   have hgood : ∀ h : ℝ, 0 < h → h ≤ π / 2 → ∀ θ ∈ Set.Icc 0 (2 * π - 2 * h),
       ‖secondDiff (kernelRow hmeas hbd) h θ‖ ≤ A * h ^ 2 := fun h h0 h1 θ hθ =>
     norm_secondDiff_kernelRow_le hmeas hbd (by positivity) (hsecond h h0 h1 θ hθ)
-  have hτ0 : 0 ≤ interpExp δ := by unfold interpExp; linarith
-  have hτ1 : interpExp δ ≤ 1 := by unfold interpExp; linarith
+
+
   have hfin := sum_rpow_mul_fourierCoeff_rows_le (fourierBasis (T := 2 * π)).orthonormal
     hL.continuous (kernelRow_periodic hmeas hbd hper) (s := 1 + δ) (β := 3 * interpExp δ)
     (by linarith) (by unfold interpExp; linarith) fun h h0 h1 =>
-      secondDiff_integral_le_interp hL.continuous hτ0 hτ1 h0 h1 (hgood h h0 h1) (hbad h h0 h1)
+      secondDiff_integral_le_interp hL.continuous (by unfold interpExp; linarith) (by unfold interpExp; linarith) h0 h1 (hgood h h0 h1) (hbad h h0 h1)
         (norm_kernelRow_le hmeas hbd)
   simp_rw [inner_kernelRow_fourierBasis, fourierCoeffOn_conj, Complex.norm_conj] at hfin
   set f : ℤ × ℤ → ℝ := fun p => |(p.2 : ℝ)| ^ (2 + 2 * δ) *
@@ -242,9 +241,8 @@ theorem kernelCoeff_interp {K : NNReal} {A : ℝ} (hA : 0 ≤ A)
     intro u
     refine le_of_eq_of_le (Finset.sum_congr rfl fun p _ => ?_) (hfin u)
     simp [hf, σ, show 2 * (1 + δ) = 2 + 2 * δ by ring]
-  have hs : Summable (f ∘ σ) := summable_of_sum_le (fun p => by simp only [Function.comp_apply, hf]; positivity) hfσ
-  have hs' : Summable f := (Equiv.summable_iff σ).mp hs
-  refine ⟨hs', ?_⟩
+  have hs := summable_of_sum_le (fun p => by simp; positivity) hfσ
+  refine ⟨((Equiv.summable_iff σ).mp hs), ?_⟩
   rw [← Equiv.tsum_eq σ]
   exact hs.tsum_le_of_sum_le hfσ
 

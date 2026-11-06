@@ -27,7 +27,7 @@ theorem memLp_bounded_mul (v : Lp ℂ 2 μ) : MemLp (fun x => a x * v x) 2 μ :=
   apply (Lp.memLp v).of_le_mul (c := C) (ha.mul (Lp.aestronglyMeasurable v))
   filter_upwards [hbound] with x hx
   change ‖a x * v x‖ ≤ C * ‖v x‖
-  rw [norm_mul]
+  simp
   exact mul_le_mul_of_nonneg_right hx (norm_nonneg _)
 
 def lpBoundedMulLin : Lp ℂ 2 μ →ₗ[ℂ] Lp ℂ 2 μ where
@@ -42,7 +42,7 @@ def lpBoundedMulLin : Lp ℂ 2 μ →ₗ[ℂ] Lp ℂ 2 μ where
         ((memLp_bounded_mul a ha hbound w).toLp _)] with x hsum hv hw hvw hout
     change ((memLp_bounded_mul a ha hbound (v + w)).toLp _) x = _
     rw [hsum, hvw, hout]
-    simp only [Pi.add_apply]
+    simp
     rw [hv, hw, mul_add]
   map_smul' c v := by
     apply Lp.ext
@@ -54,7 +54,7 @@ def lpBoundedMulLin : Lp ℂ 2 μ →ₗ[ℂ] Lp ℂ 2 μ where
     change ((memLp_bounded_mul a ha hbound (c • v)).toLp _) x =
       (c • (memLp_bounded_mul a ha hbound v).toLp (fun x => a x * v x)) x
     rw [hcv, hin, hout]
-    simp only [Pi.smul_apply, smul_eq_mul]
+    simp
     rw [hv]
     ring
 

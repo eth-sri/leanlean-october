@@ -125,7 +125,7 @@ lemma integral_norm_primitive_sub_le (ha : IntervalIntegrable a volume 0 (2 * π
             -Complex.I * herglotzCoeff k a 0 (γ θ) + k * herglotzQ k a γ θ := by ring
         rw [he]
         refine (norm_add_le _ _).trans (add_le_add ?_ ?_)
-        · rw [norm_mul, norm_neg, Complex.norm_I, one_mul]
+        · simp
         · rw [norm_mul, Complex.norm_real, Real.norm_eq_abs]
           exact mul_le_mul_of_nonneg_left (norm_herglotzQ_le ha k hK hθ) (abs_nonneg _)
     _ = _ := by
@@ -145,7 +145,7 @@ theorem trace_herglotzCoeff (hb : Bornology.IsBounded Ω) (hL : IsLipschitzDomai
   refine ⟨C, hC0, fun a ha k m => ?_⟩
   obtain ⟨⟨Kf, hKf⟩, hB⟩ := herglotzCoeff_bounded_lipschitz ha k m
   have h := hC _ Kf hKf _ hB
-  simp only [gradSq_herglotzCoeff ha] at h
+  simp [gradSq_herglotzCoeff ha] at h
   rwa [integral_const_mul, integral_add (integrable_herglotzCoeff_sq hb ha k _)
     (integrable_herglotzCoeff_sq hb ha k _)] at h
 
@@ -162,15 +162,10 @@ lemma schur_numeric {E A I0 Im1 Im2 T0 T1 S G C₁ CT CS K : ℝ} (hE : 0 < E) (
   set b0 := CT * (2 * C₁ + 1) with hb0
   set cq := 2 * π * K ^ 2 * (2 * CT * C₁) with hcq
   set cG := 4 * π * b0 + 8 * π ^ 2 * cq with hcG
-  have hb00 : 0 ≤ b0 := by positivity
-  have hcq0 : 0 ≤ cq := by positivity
-  have hcG0 : 0 ≤ cG := by positivity
   have hE2 : E ^ 2 ≤ E := by nlinarith
   have hE32 : E ^ 3 ≤ E ^ 2 := by nlinarith
   have hCA : 0 ≤ C₁ * A := by positivity
   have hEA : 0 ≤ E * A := by positivity
-  have hCEA : 0 ≤ C₁ * E * A := by positivity
-  have hCE2A : 0 ≤ C₁ * E ^ 2 * A := by positivity
   have hIm1b : Im1 ≤ C₁ * E ^ 2 * A := by linarith
   have hIm2b : Im2 ≤ C₁ * E ^ 2 * A := by linarith
   have hEIm1 : E * Im1 ≤ C₁ * E ^ 3 * A := by
@@ -236,8 +231,6 @@ lemma schur_numeric {E A I0 Im1 Im2 T0 T1 S G C₁ CT CS K : ℝ} (hE : 0 < E) (
     rw [hcG]; linarith [show (4 * π * b0 + 8 * π ^ 2 * cq) * E * A =
       4 * π * b0 * E * A + 8 * π ^ 2 * cq * E * A by ring]
   -- final
-  have t1 : 6 * E * I0 ≤ 6 * C₁ * E ^ 2 * A := by linarith
-  have t2 : 2 * E * S ^ 2 ≤ 2 * cq * E ^ 2 * A := by linarith
   have t3 : CS * E * G ^ 2 ≤ CS * cG * E ^ 2 * A := by
     have := mul_le_mul_of_nonneg_left hGsq (show 0 ≤ CS * E by positivity)
     linarith [show CS * E * (cG * E * A) = CS * cG * E ^ 2 * A by ring]
@@ -260,22 +253,21 @@ theorem herglotz_imSchur_nonneg (hb : Bornology.IsBounded Ω) (hL : IsLipschitzD
   obtain ⟨C₁, δ₁, hC₁, hδ₁, hmodes⟩ := herglotz_modes_small hb hL hr hball
   obtain ⟨CT, hCT0, htrace⟩ := trace_herglotzCoeff hb hL hγ
   obtain ⟨CS, δS, hδS, hS⟩ := imSchur_herglotzVec_sub_principal_le hb hL hγ
-  have hCS'0 : 0 ≤ max CS 0 := le_max_right _ _
   obtain ⟨D, hD, hD0⟩ : ∃ D : ℝ, D = 6 * C₁ + 2 * (2 * π * (Kγ : ℝ) ^ 2 * (2 * CT * C₁)) +
       max CS 0 * (4 * π * (CT * (2 * C₁ + 1)) + 8 * π ^ 2 * (2 * π * (Kγ : ℝ) ^ 2 *
         (2 * CT * C₁))) + 1 ∧ 0 < D := ⟨_, rfl, by positivity⟩
   refine ⟨min (min 1 δ₁) (min δS (1 / D)), by positivity,
     fun E hE hEδ W hW a ha hz hmean => ?_⟩
-  have hE1 : E ≤ 1 := (hEδ.trans_le ((min_le_left _ _).trans (min_le_left _ _))).le
-  have hEδ₁ : E ≤ δ₁ := (hEδ.trans_le ((min_le_left _ _).trans (min_le_right _ _))).le
-  have hEδS : E < δS := hEδ.trans_le ((min_le_right _ _).trans (min_le_left _ _))
+  have hE1 := (hEδ.trans_le ((min_le_left _ _).trans (min_le_left _ _))).le
+  have hEδ₁ := (hEδ.trans_le ((min_le_left _ _).trans (min_le_right _ _))).le
+  have hEδS := hEδ.trans_le ((min_le_right _ _).trans (min_le_left _ _))
   have hED : E * D ≤ 1 := by
     have : E ≤ 1 / D := (hEδ.trans_le ((min_le_right _ _).trans (min_le_right _ _))).le
     rwa [le_div_iff₀ hD0] at this
   rw [hD] at hED
   have hai := ha.intervalIntegrable
-  have hk0 : 0 ≤ Real.sqrt E := Real.sqrt_nonneg E
-  have hk2 : Real.sqrt E ^ 2 = E := Real.sq_sqrt hE.le
+  have hk0 := Real.sqrt_nonneg E
+  have hk2 := Real.sq_sqrt hE.le
   have hk4 : Real.sqrt E ^ 4 = E ^ 2 := by
     rw [show Real.sqrt E ^ 4 = (Real.sqrt E ^ 2) ^ 2 by ring, hk2]
   obtain ⟨hm0, hm12⟩ := hmodes a ha (Real.sqrt E) (by rw [hk2]; exact hEδ₁) hz hmean
@@ -364,7 +356,7 @@ theorem herglotz_imSchur_nonneg (hb : Bornology.IsBounded Ω) (hL : IsLipschitzD
         herglotzConormal (Real.sqrt E) a γ s) -
           Complex.I * herglotzCoeff (Real.sqrt E) a 0 (γ 0)‖) ^ 2 := by
     gcongr; exact le_max_left _ _
-  have hnum := schur_numeric hE hE1 hC₁.le hCT0 hCS'0 (integral_nonneg fun _ => by positivity)
+  have hnum := schur_numeric hE hE1 hC₁.le hCT0 (le_max_right _ _) (integral_nonneg fun _ => by positivity)
     (integral_nonneg fun _ => by positivity) (integral_nonneg fun _ => by positivity)
     (integral_nonneg fun _ => by positivity) hED hm0 (by linarith) hT0 hT1 hSq hGsq
   linarith

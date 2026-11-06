@@ -47,7 +47,7 @@ theorem imSchur_herglotzVec_eq (hb : Bornology.IsBounded Ω) (hL : IsLipschitzDo
           ∫ s in (0 : ℝ)..(2 * π), schurKernel W θ s *
             herglotzConormal (Real.sqrt E) a γ s).re := by
   obtain ⟨K, hK⟩ := hγ.lipschitz
-  have hclosed : γ (2 * π) = γ 0 := by simpa using hγ.periodic 0
+
   have hai := ha.intervalIntegrable
   obtain ⟨hgm, Bg, hgB⟩ := herglotzConormal_bounded hai (Real.sqrt E) hK
   have hG : ∫ θ in (0 : ℝ)..(2 * π), herglotzConormal (Real.sqrt E) a γ θ = 0 := by
@@ -63,7 +63,7 @@ theorem imSchur_herglotzVec_eq (hb : Bornology.IsBounded Ω) (hL : IsLipschitzDo
   have hh : IntervalIntegrable (fun θ => conj (herglotzConormal (Real.sqrt E) a γ θ) *
       herglotzWave (Real.sqrt E) a (γ θ)) volume 0 (2 * π) :=
     (intervalIntegrable_conj' hgi).mul_continuousOn hhc
-  rw [imSchur_herglotzVec hK hclosed hW ha, herglotzForm,
+  rw [imSchur_herglotzVec hK (by simpa using hγ.periodic 0) hW ha, herglotzForm,
     re_volterra_sub_schur_eq hK hE hW ha0 hgm hgB hG hh,
     re_integral_herglotz_principal hb hL hγ hai _ h0, herglotzPrincipal]
 
@@ -73,17 +73,17 @@ theorem smallA_le_neg (hb : Bornology.IsBounded Ω) (hL : IsLipschitzDomain Ω)
     ∃ δ > 0, δ ≤ 1 ∧ ∀ E, 0 < E → E < δ → ∀ W : ℝ → Ell2 →L[ℂ] Ell2, IsTransport γ E W →
       smallA W ≤ -((volume Ω).toReal * E) := by
   obtain ⟨K, hK⟩ := hγ.lipschitz
-  have hclosed : γ (2 * π) = γ 0 := by simpa using hγ.periodic 0
+
   obtain ⟨C, hC0, hC⟩ := smallA_approx hK
   set v := (volume Ω).toReal with hv
   have hvpos : 0 < v := ENNReal.toReal_pos
     (hL.1.1.measure_pos volume hL.1.2.nonempty).ne' hb.measure_lt_top.ne
   have harea : ∫ θ in (0 : ℝ)..(2 * π), areaDensity γ θ = 2 * v := by
-    rw [integral_areaDensity_eq hK hclosed]; exact hγ.area
+    rw [integral_areaDensity_eq hK (by simpa using hγ.periodic 0)]; exact hγ.area
   refine ⟨min 1 ((v / (C + 1)) ^ 2), lt_min one_pos (by positivity), min_le_left _ _,
     fun E hE hEδ W hW => ?_⟩
-  have hE1 : E ≤ 1 := (hEδ.trans_le (min_le_left _ _)).le
-  have hE2 : E < (v / (C + 1)) ^ 2 := hEδ.trans_le (min_le_right _ _)
+  have hE1 := (hEδ.trans_le (min_le_left _ _)).le
+  have hE2 := hEδ.trans_le (min_le_right _ _)
   have hs : Real.sqrt E < v / (C + 1) := by
     rw [show v / (C + 1) = Real.sqrt ((v / (C + 1)) ^ 2) from
       (Real.sqrt_sq (by positivity)).symm]
@@ -118,7 +118,7 @@ theorem imSchur_herglotzVec_sub_principal_le (hb : Bornology.IsBounded Ω)
     (hL.1.1.measure_pos volume hL.1.2.nonempty).ne' hb.measure_lt_top.ne
   refine ⟨K * (shiftConst * K) + C₁ * C₁ / v, δ, hδ,
     fun E hE hEδ W hW a ha h0 c => ?_⟩
-  have hE1 : E ≤ 1 := (hEδ.trans_le hδ1).le
+  have hE1 := (hEδ.trans_le hδ1).le
   have hAE := hA E hE hEδ W hW
   have hApos : v * E ≤ |smallA W| := by
     rw [abs_of_neg (by nlinarith)]; linarith

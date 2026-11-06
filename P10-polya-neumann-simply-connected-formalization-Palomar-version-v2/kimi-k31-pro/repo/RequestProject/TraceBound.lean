@@ -48,13 +48,13 @@ lemma TraceBound.zero : TraceBound (0 : H →L[ℂ] H) 0 := by
 lemma TraceBound.add {S T : H →L[ℂ] H} {C D : ℝ} (hS : TraceBound S C) (hT : TraceBound T D) :
     TraceBound (S + T) (C + D) := by
   intro ι _ e f he hf
-  simp only [ContinuousLinearMap.add_apply, inner_add_right, Finset.sum_add_distrib]
+  simp [ContinuousLinearMap.add_apply, inner_add_right, Finset.sum_add_distrib]
   exact (norm_add_le _ _).trans (add_le_add (hS ι e f he hf) (hT ι e f he hf))
 
 lemma TraceBound.smul {T : H →L[ℂ] H} {C : ℝ} (hT : TraceBound T C) (c : ℂ) :
     TraceBound (c • T) (‖c‖ * C) := by
   intro ι _ e f he hf
-  simp only [ContinuousLinearMap.smul_apply, inner_smul_right, ← Finset.mul_sum, norm_mul]
+  simp [ContinuousLinearMap.smul_apply, inner_smul_right, ← Finset.mul_sum, norm_mul]
   exact mul_le_mul_of_nonneg_left (hT ι e f he hf) (norm_nonneg _)
 
 lemma TraceBound.neg {T : H →L[ℂ] H} {C : ℝ} (hT : TraceBound T C) : TraceBound (-T) C := by
@@ -95,19 +95,18 @@ lemma TraceBound.isometry_comp {T V : H →L[ℂ] H} {C : ℝ} (hT : TraceBound 
 lemma TraceBound.rankOne (x y : H) :
     TraceBound ((ContinuousLinearMap.toSpanSingleton ℂ x).comp (innerSL ℂ y)) (‖x‖ * ‖y‖) := by
   intro ι _ e f he hf
-  simp only [ContinuousLinearMap.comp_apply, innerSL_apply_apply,
+  simp [ContinuousLinearMap.comp_apply, innerSL_apply_apply,
     ContinuousLinearMap.toSpanSingleton_apply, inner_smul_right]
   refine (norm_sum_le _ _).trans ?_
-  simp only [norm_mul]
+  simp
   have hCS := Real.sum_mul_le_sqrt_mul_sqrt Finset.univ
     (fun i => ‖inner ℂ (f i) x‖) (fun i => ‖inner ℂ y (e i)‖)
   have hy : ∑ i, ‖inner ℂ y (e i)‖ ^ 2 ≤ ‖y‖ ^ 2 := by
     have := he.sum_inner_products_le y (s := Finset.univ)
     refine le_of_eq_of_le (Finset.sum_congr rfl fun i _ => ?_) this
     rw [← inner_conj_symm, RCLike.norm_conj]
-  have hx : ∑ i, ‖inner ℂ (f i) x‖ ^ 2 ≤ ‖x‖ ^ 2 := hf.sum_inner_products_le x
   refine le_trans (le_of_eq (Finset.sum_congr rfl fun i _ => mul_comm _ _)) (hCS.trans ?_)
-  exact mul_le_mul (Real.sqrt_le_iff.mpr ⟨norm_nonneg _, hx⟩)
+  exact mul_le_mul (Real.sqrt_le_iff.mpr ⟨norm_nonneg _, (hf.sum_inner_products_le x)⟩)
     (Real.sqrt_le_iff.mpr ⟨norm_nonneg _, hy⟩) (Real.sqrt_nonneg _) (norm_nonneg _)
 
 /-- The trace-norm bound also controls the sum of the absolute values of the diagonal terms. -/
@@ -135,9 +134,9 @@ lemma TraceBound.sum_norm_le {T : H →L[ℂ] H} {C : ℝ} (h : TraceBound T C)
     · subst hij; rw [mul_one, mul_comm, Complex.mul_conj, Complex.normSq_eq_norm_sq, hc]; simp
     · simp
   have := h ι e _ he hf'
-  simp only [inner_smul_left] at this
+  simp [inner_smul_left] at this
   have h2 : ∀ x, (starRingEnd ℂ) (c x) * inner ℂ (f x) (T (e x)) = ‖w x‖ := hcw
-  simp only [h2, ← Complex.ofReal_sum, Complex.norm_real, Real.norm_eq_abs] at this
+  simp [h2, ← Complex.ofReal_sum, Complex.norm_real, Real.norm_eq_abs] at this
   exact (le_abs_self _).trans this
 
 /-- The functional `T ↦ ∑ᵢ ⟨fᵢ, T eᵢ⟩`. -/
@@ -156,7 +155,7 @@ lemma TraceBound.of_tendsto {α : Type*} {T : α → H →L[ℂ] H} {T₀ : H �
   have hc : Tendsto (fun n => ‖∑ i, inner ℂ (f i) (T n (e i))‖) l
       (𝓝 ‖∑ i, inner ℂ (f i) (T₀ (e i))‖) := by
     have := ((diagFunctional e f).continuous.tendsto T₀).comp hT
-    simp only [Function.comp_def, diagFunctional_apply] at this
+    simp [Function.comp_def, diagFunctional_apply] at this
     exact this.norm
   exact le_of_tendsto hc (h.mono fun n hn => hn ι e f he hf)
 
@@ -248,14 +247,14 @@ theorem summable_eigenMult_mul_norm {U : H →L[ℂ] H} (hU : U ∈ unitary (H �
     by_cases hzz : z = z'
     · subst hzz
       have := (orthonormal_iff_ite.mp (b z).orthonormal) k k'
-      simp only [e]
+      simp
       rw [← Submodule.coe_inner, this]
       congr 1
       exact propext ⟨fun h => by subst h; rfl, fun h => by cases h; rfl⟩
     · have hv : e ⟨⟨z, hz⟩, k⟩ ≠ 0 := by
         have := (b z).orthonormal.ne_zero k
         simpa [e] using this
-      have hz1 : ‖(z : ℂ)‖ = 1 := norm_eq_one_of_eigen hU hv (heig _)
+      have hz1 := norm_eq_one_of_eigen hU hv (heig _)
       rw [inner_eq_zero_of_eigen_unitary hU (heig _) (heig ⟨⟨z', hz'⟩, k'⟩)
         (fun h => hzz (Subtype.ext h)) hz1, if_neg]
       intro h; apply hzz; exact congrArg (fun p : ι => p.1.1) h
@@ -303,8 +302,8 @@ theorem summable_phaseTerm_of_upper_finite {U : H →L[ℂ] H} (hU : U ∈ unita
   haveI := Module.finite_of_finrank_pos hm'
   obtain ⟨⟨v, hv⟩, hv0⟩ := Module.finrank_pos_iff_exists_ne_zero.mp hm'
   have hv0' : v ≠ 0 := fun h => hv0 (by simp [h])
-  have hveig : U v = (z : ℂ) • v := Module.End.mem_eigenspace_iff.mp hv
-  have hz1 : ‖(z : ℂ)‖ = 1 := norm_eq_one_of_eigen hU hv0' hveig
+  have hveig := Module.End.mem_eigenspace_iff.mp hv
+  have hz1 := norm_eq_one_of_eigen hU hv0' hveig
   by_cases him : (z : ℂ).im ≤ 0
   · have := abs_argNeg_le_of_im_nonpos hz1 z.2 him
     have h1 : (eigenMult U z : ℝ) * |argNeg z| ≤
@@ -332,9 +331,8 @@ lemma cot_gt_of_norm_exp_sub_one_lt {t A : ℝ} (ht0 : 0 < t) (htπ : t < π)
   rw [hn] at h
   have hs : 0 < Real.sin (t / 2) := Real.sin_pos_of_pos_of_lt_pi (by linarith) (by linarith)
   have hc : 0 < Real.cos (t / 2) := Real.cos_pos_of_mem_Ioo ⟨by linarith, by linarith⟩
-  have hA1 : 0 < |A| + 1 := by positivity
   have hs2 : Real.sin (t / 2) * (|A| + 1) < 1 / 2 := by
-    rw [lt_div_iff₀ hA1] at h; linarith
+    rw [lt_div_iff₀ (by positivity)] at h; linarith
   have hs1 : Real.sin (t / 2) < 1 / 2 := by nlinarith [abs_nonneg A]
   have hsq := Real.sin_sq_add_cos_sq (t / 2)
   have hc2 : 1 / 2 < Real.cos (t / 2) := by nlinarith
@@ -352,17 +350,17 @@ theorem upper_eigen_finite_of_cot_bound {U : H →L[ℂ] H} (hU : U ∈ unitary 
     (A : ℝ) (hA : ∀ t : ℝ, 0 < t → t < 2 * π → ∀ v : H, v ≠ 0 →
       U v = Complex.exp (t * Complex.I) • v → Real.cot (t / 2) ≤ A) :
     {z : ℂ | 0 < z.im ∧ ∃ v : H, v ≠ 0 ∧ U v = z • v}.Finite := by
-  set c : ℝ := 1 / (|A| + 1) with hcdef
+  set c := 1 / (|A| + 1) with hcdef
   have hc : 0 < c := by positivity
   have hS : {z : {z : ℂ // z ≠ 1} | c ≤ (eigenMult U z : ℝ) * ‖(z : ℂ) - 1‖}.Finite := by
     have := hs.tendsto_cofinite_zero.eventually (gt_mem_nhds hc)
-    rw [Filter.eventually_cofinite] at this
+    simp at this
     simpa only [not_lt] using this
   refine (hS.image Subtype.val).subset ?_
   rintro z ⟨him, v, hv0, hv⟩
   have hz1 : z ≠ 1 := by rintro rfl; simp at him
   refine ⟨⟨z, hz1⟩, ?_, rfl⟩
-  have hnorm : ‖z‖ = 1 := norm_eq_one_of_eigen hU hv0 hv
+  have hnorm := norm_eq_one_of_eigen hU hv0 hv
   haveI := finiteDimensional_eigenspace hC hz1
   have hmult : 1 ≤ eigenMult U z := by
     refine Nat.one_le_iff_ne_zero.mpr (Nat.pos_iff_ne_zero.mp ?_)
@@ -392,7 +390,6 @@ theorem upper_eigen_finite_of_cot_bound {U : H →L[ℂ] H} (hU : U ∈ unitary 
     have h1 := cot_gt_of_norm_exp_sub_one_lt ht0 htπ hlt
     have h2 := hA t ht0 (by linarith [Real.pi_pos]) v hv0 hv
     linarith
-  show c ≤ (eigenMult U z : ℝ) * ‖z - 1‖
   calc c ≤ ‖z - 1‖ := hfar
     _ = 1 * ‖z - 1‖ := (one_mul _).symm
     _ ≤ (eigenMult U z : ℝ) * ‖z - 1‖ :=
@@ -421,7 +418,7 @@ theorem traceBound_curvatureOp {γ : ℝ → ℂ} {K : NNReal} (hK : LipschitzWi
     (hR : ∀ θ ∈ Icc 0 (2 * π), ‖γ θ - γ 0‖ ≤ R) {E : ℝ} {W : ℝ → Ell2 →L[ℂ] Ell2}
     (hW : IsTransport γ E W) :
     TraceBound (curvatureOp γ W) (1 / 4 * ((R * K * 3) * (2 * π))) := by
-  have hR0 : 0 ≤ R := (norm_nonneg _).trans (hR 0 ⟨le_rfl, by positivity⟩)
+  have hR0 := (norm_nonneg _).trans (hR 0 ⟨le_rfl, by positivity⟩)
   have hint : TraceBound (∫ θ in (0 : ℝ)..(2 * π), areaDensity γ θ • (star (W θ) * diagN * W θ))
       ((R * K * 3) * |2 * π - 0|) := by
     refine TraceBound.intervalIntegral (fun θ hθ => ?_) (by positivity)
@@ -429,7 +426,7 @@ theorem traceBound_curvatureOp {γ : ℝ → ℂ} {K : NNReal} (hK : LipschitzWi
       rw [uIoc_of_le (by positivity)] at hθ; exact ⟨hθ.1.le, hθ.2⟩
     refine ((traceBound_conj_diagN (transport_mem_unitary hK hW hθ')).real_smul _).mono ?_
     exact mul_le_mul_of_nonneg_right (abs_areaDensity_le hK hR hθ') (by norm_num)
-  rw [sub_zero, abs_of_pos (by positivity)] at hint
+  simp at hint
   have := hint.real_smul (1 / 4)
   rwa [abs_of_pos (by norm_num : (0 : ℝ) < 1 / 4)] at this
 
@@ -441,13 +438,13 @@ theorem exists_traceBound_transport_sub_one {γ : ℝ → ℂ} {K : NNReal} (hK 
   have h2π : (2 * π) ∈ Icc 0 (2 * π) := ⟨by positivity, le_rfl⟩
   obtain ⟨R, hR⟩ := isCompact_Icc.exists_bound_of_continuousOn (s := Icc 0 (2 * π))
     (f := fun θ => γ θ - γ 0) (hK.continuous.sub continuous_const).continuousOn
-  set Cq : ℝ := 1 / 4 * ((R * K * 3) * (2 * π)) with hCq
+  set Cq := 1 / 4 * ((R * K * 3) * (2 * π)) with hCq
   choose Ws hWs using fun E' : ℝ => transport_exists_of_lipschitz γ hK E'
-  have hWE : W (2 * π) = Ws E (2 * π) := transport_unique_of_lipschitz γ hK E hW (hWs E) h2π
+  have hWE := transport_unique_of_lipschitz γ hK E hW (hWs E) h2π
   rw [hWE]
   rcases eq_or_lt_of_le hE with rfl | hEpos
   · rw [transport_zero_energy (hWs 0), sub_self]; exact ⟨0, TraceBound.zero⟩
-  have hCq0 : 0 ≤ Cq := (traceBound_curvatureOp hK hR (hWs 0)).nonneg
+  have hCq0 := (traceBound_curvatureOp hK hR (hWs 0)).nonneg
   -- increments `V_E - V_δ` for `0 < δ ≤ E`
   have hinc : ∀ δ ∈ Ioc 0 E, TraceBound (Ws E (2 * π) - Ws δ (2 * π)) (Cq * (E - δ)) := by
     intro δ hδ
@@ -476,7 +473,7 @@ theorem exists_traceBound_monodromy_sub_one {γ : ℝ → ℂ} {K : NNReal} (hK 
     (hW : IsTransport γ E W) : ∃ C, TraceBound (monodromy W - 1) C := by
   obtain ⟨C, hC⟩ := exists_traceBound_transport_sub_one hK hclosed hE hW
   have hU := transport_mem_unitary hK hW ⟨by positivity, le_rfl⟩
-  have hVV : star (W (2 * π)) * W (2 * π) = 1 := (Unitary.mem_iff.mp hU).1
+  have hVV := (Unitary.mem_iff.mp hU).1
   have heq : monodromy W - 1 = -(star (W (2 * π)) * (W (2 * π) - 1)) := by
     rw [monodromy, ← ContinuousLinearMap.star_eq_adjoint, mul_sub, hVV, mul_one, neg_sub]
   rw [heq]

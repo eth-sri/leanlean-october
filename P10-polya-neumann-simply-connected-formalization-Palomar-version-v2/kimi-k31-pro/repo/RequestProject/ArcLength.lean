@@ -61,7 +61,7 @@ theorem integral_deriv_of_lipschitz {γ : ℝ → ℂ} {K : NNReal} (hK : Lipsch
       (norm_deriv_le_of_lipschitzWith hK)
   have hF := lipschitzWith_primitive (measurable_deriv γ).aestronglyMeasurable
       (norm_deriv_le_of_lipschitzWith hK) a
-  have hg : LipschitzWith (K + K) (fun x => γ x - ∫ t in a..x, deriv γ t) := hK.sub hF
+  have hg := hK.sub hF
   have g_ac : AbsolutelyContinuousOnInterval (fun x => γ x - ∫ t in a..x, deriv γ t) a b :=
     (hg.lipschitzOnWith (s := uIcc a b)).absolutelyContinuousOnInterval
   have g_ae : ∀ᵐ x, x ∈ uIcc a b →
@@ -69,12 +69,12 @@ theorem integral_deriv_of_lipschitz {γ : ℝ → ℂ} {K : NNReal} (hK : Lipsch
     filter_upwards [hK.ae_differentiableAt (μ := volume),
       ae_hasDerivAt_integral_of_locallyIntegrable hloc] with x hx₁ hx₂ _
     have := hx₁.hasDerivAt.sub (hx₂ a)
-    rw [sub_self] at this
+    simp at this
     exact this
   obtain ⟨C, hC⟩ := g_ac.const_of_ae_hasDerivAt_zero g_ae
   have h1 := hC a (by simp)
   have h2 := hC b (by simp)
-  simp only [intervalIntegral.integral_same, sub_zero] at h1 h2
+  simp at h1 h2
   rw [← h1] at h2
   linear_combination -h2
 
@@ -90,7 +90,7 @@ lemma aestronglyMeasurable_norm_deriv (γ : ℝ → ℂ) :
   (measurable_deriv γ).norm.aestronglyMeasurable
 
 lemma norm_norm_deriv_le (hK : LipschitzWith K γ) (t : ℝ) : ‖‖deriv γ t‖‖ ≤ K := by
-  rw [norm_norm]; exact norm_deriv_le_of_lipschitzWith hK t
+  simp; exact norm_deriv_le_of_lipschitzWith hK t
 
 lemma intervalIntegrable_norm_deriv (hK : LipschitzWith K γ) (a b : ℝ) :
     IntervalIntegrable (fun t => ‖deriv γ t‖) volume a b :=
@@ -159,11 +159,11 @@ lemma arcLen_strictMono (hK : LipschitzWith K γ) (hper : Function.Periodic γ (
     have := min_le_left (b - a) (2 * π - x0); linarith
   have hδ2 : δ < 2 * π - x0 := by
     have := min_le_right (b - a) (2 * π - x0); linarith
-  have hmem : x0 + δ ∈ Ico 0 (2 * π) := ⟨by linarith [hx0mem.1], by linarith⟩
+
   have heq : γ (x0 + δ) = γ x0 := by
     rw [hshift δ, ← add_zero x0, hshift 0, add_zero,
       hconst (a + δ) ⟨by linarith, by linarith⟩]
-  have := hinj hmem hx0mem heq
+  have := hinj (⟨by linarith [hx0mem.1], by linarith⟩) hx0mem heq
   linarith
 
 lemma ae_hasDerivAt_arcLen (hK : LipschitzWith K γ) :
@@ -180,7 +180,7 @@ lemma volume_image_eq_zero_of_lipschitz {f : ℝ → ℝ} {Kf : NNReal} (hf : Li
     {B : Set ℝ} (hB : volume B = 0) : volume (f '' B) = 0 := by
   have h := hf.hausdorffMeasure_image_le (d := 1) zero_le_one B
   rw [hausdorffMeasure_real, hB, mul_zero] at h
-  exact le_antisymm h (zero_le)
+  exact le_antisymm h zero_le
 
 /-- A function of `ℝ` sends the set where its derivative vanishes to a null set. -/
 lemma volume_image_eq_zero_of_hasDerivAt_zero {f : ℝ → ℝ} {A : Set ℝ}
@@ -207,7 +207,7 @@ lemma integral_comp_orderIso {e : ℝ ≃o ℝ} {Ke : NNReal} (he : LipschitzWit
     ∫ t in (0 : ℝ)..(2 * π), F t = ∫ θ in (0 : ℝ)..(2 * π), deriv e θ * F (e θ) := by
   have hp : (0 : ℝ) ≤ 2 * π := by positivity
   set D := {θ : ℝ | DifferentiableAt ℝ e θ} with hD
-  have hDm : MeasurableSet D := measurableSet_of_differentiableAt ℝ e
+  have hDm := measurableSet_of_differentiableAt ℝ e
   have hDc : volume Dᶜ = 0 := by
     have := he.ae_differentiableAt (μ := volume)
     rw [ae_iff] at this
@@ -215,7 +215,7 @@ lemma integral_comp_orderIso {e : ℝ ≃o ℝ} {Ke : NNReal} (he : LipschitzWit
   set S := Ioo 0 (2 * π) ∩ D with hS
   have hSm : MeasurableSet S := measurableSet_Ioo.inter hDm
   have hcv := integral_image_eq_integral_abs_deriv_smul hSm
-    (fun x hx => (hx.2.hasDerivAt).hasDerivWithinAt) (e.injective.injOn) F
+    (fun x hx => hx.2.hasDerivAt.hasDerivWithinAt) e.injective.injOn F
   have hmaps : ∀ x ∈ Ioo 0 (2 * π), e x ∈ Ioo 0 (2 * π) := fun x hx =>
     ⟨h0 ▸ e.strictMono hx.1, h2 ▸ e.strictMono hx.2⟩
   have himg : e '' S =ᵐ[volume] Ioo 0 (2 * π) := by
@@ -244,7 +244,7 @@ lemma integral_comp_orderIso {e : ℝ ≃o ℝ} {Ke : NNReal} (he : LipschitzWit
     ← setIntegral_congr_set himg, hcv, setIntegral_congr_set hSae]
   refine setIntegral_congr_fun measurableSet_Ioo fun x _ => ?_
   simp only [smul_eq_mul]
-  rw [abs_of_nonneg (e.monotone.deriv_nonneg)]
+  rw [abs_of_nonneg e.monotone.deriv_nonneg]
 
 /-- Rescaled-arclength reparametrization of a Lipschitz closed curve that is injective on
 `[0, 2π)`; the original curve is recovered as `γ = γ' ∘ τ` with `τ` the (monotone, Lipschitz)
@@ -263,7 +263,7 @@ theorem exists_constSpeed_reparam {γ : ℝ → ℂ} {K : NNReal} (hK : Lipschit
   have hℓ0 : arcLen γ 0 = 0 := by simp [arcLen]
   set L := arcLen γ (2 * π) with hL
   have hLpos : 0 < L := by have := hsm hp; rwa [hℓ0] at this
-  set a : ℝ := 2 * π / L with ha
+  set a := 2 * π / L with ha
   have hapos : 0 < a := by positivity
   set s : ℝ → ℝ := fun θ => a * arcLen γ θ with hs
   have hs_mono : StrictMono s := fun x y h => mul_lt_mul_of_pos_left (hsm h) hapos
@@ -281,12 +281,12 @@ theorem exists_constSpeed_reparam {γ : ℝ → ℂ} {K : NNReal} (hK : Lipschit
     rw [arcLen_add_period hK hper, mul_add, ← hL, ha]
     field_simp
   have hs0 : s 0 = 0 := by simp [hs, hℓ0]
-  have hs2 : s (2 * π) = 2 * π := by simp only [hs, ← hL, ha]; field_simp
+  have hs2 : s (2 * π) = 2 * π := by simp [hs, ← hL, ha]; field_simp
   have hs_bound : ∀ θ, |s θ - θ| ≤ 2 * π := by
     refine abs_le_of_periodic (g := fun θ => s θ - θ) (fun θ => ?_) (fun x hx => ?_)
     · simp only; rw [hs_add]; ring
     · have h1 : s 0 ≤ s x := hs_mono.monotone hx.1
-      have h2 : s x ≤ s (2 * π) := hs_mono.monotone hx.2.le
+      have h2 := hs_mono.monotone hx.2.le
       rw [hs0] at h1; rw [hs2] at h2
       rw [abs_le]; constructor <;> linarith [hx.1, hx.2]
   have hsurj : Function.Surjective s := by
@@ -297,7 +297,7 @@ theorem exists_constSpeed_reparam {γ : ℝ → ℂ} {K : NNReal} (hK : Lipschit
     · refine tendsto_atBot_mono (fun θ => ?_) (tendsto_atBot_add_const_right _ (2 * π)
         tendsto_id)
       have := hs_bound θ; rw [abs_le] at this; simp only [id]; linarith
-  set e : ℝ ≃o ℝ := StrictMono.orderIsoOfSurjective s hs_mono hsurj with he
+  set e := StrictMono.orderIsoOfSurjective s hs_mono hsurj with he
   have hes : ∀ θ, e θ = s θ := fun θ => rfl
   have hσs : ∀ θ, e.symm (s θ) = θ := e.symm_apply_apply
   have hsσ : ∀ t, s (e.symm t) = t := e.apply_symm_apply
@@ -325,14 +325,14 @@ theorem exists_constSpeed_reparam {γ : ℝ → ℂ} {K : NNReal} (hK : Lipschit
     rcases le_total y x with hyx | hxy
     · rw [abs_of_nonneg (sub_nonneg.mpr hyx)]; exact key y x hyx
     · rw [abs_of_nonpos (sub_nonpos.mpr hxy), norm_sub_rev, neg_sub]; exact key x y hxy
-  have hcomp : γ' ∘ s = γ := funext fun θ => by simp only [Function.comp, hγ', hσs]
+  have hcomp : γ' ∘ s = γ := funext fun θ => by simp [Function.comp, hγ', hσs]
   have hchain := ae_deriv_comp hγ'lip hs_mono.monotone hs_lip
   rw [hcomp] at hchain
   have hsd : ∀ᵐ θ, HasDerivAt s (a * ‖deriv γ θ‖) θ :=
     (ae_hasDerivAt_arcLen hK).mono fun θ h => h.const_mul a
   refine ⟨γ', ⟨_, hγ'lip⟩, fun t => ?_, fun x hx y hy hxy => ?_, ?_,
     ⟨L / (2 * π), by positivity, ?_⟩, ?_, s, hs_mono.monotone, ⟨_, hs_lip⟩, hs0, hs2, hcomp⟩
-  · simp only [hγ']; rw [hσ_add, hper]
+  · simp [hγ']; rw [hσ_add, hper]
   · have hmem : ∀ z ∈ Ico 0 (2 * π), e.symm z ∈ Ico 0 (2 * π) := fun z hz =>
       ⟨hσ0 ▸ e.symm.monotone hz.1, hσ2 ▸ e.symm.strictMono hz.2⟩
     exact e.symm.injective (hinj (hmem x hx) (hmem y hy) hxy)
@@ -340,7 +340,7 @@ theorem exists_constSpeed_reparam {γ : ℝ → ℂ} {K : NNReal} (hK : Lipschit
   · rw [ae_iff]
     set B := {θ | ¬ (deriv γ θ = ((deriv s θ : ℝ) : ℂ) * deriv γ' (s θ) ∧
       HasDerivAt s (a * ‖deriv γ θ‖) θ)} with hB
-    have hB0 : volume B = 0 := ae_iff.mp (hchain.and hsd)
+    have hB0 := ae_iff.mp (hchain.and hsd)
     set A := {θ | HasDerivAt s 0 θ} with hA
     refine measure_mono_null (t := s '' A ∪ s '' B) ?_
       (measure_union_null (volume_image_eq_zero_of_hasDerivAt_zero fun x hx => hx)
@@ -358,7 +358,7 @@ theorem exists_constSpeed_reparam {γ : ℝ → ℂ} {K : NNReal} (hK : Lipschit
         rw [h2.deriv, hsσ] at h1
         have h3 := congrArg norm h1
         rw [norm_mul, Complex.norm_real, Real.norm_eq_abs, abs_of_pos (by positivity)] at h3
-        have hn : 0 < ‖deriv γ (e.symm t)‖ := norm_pos_iff.mpr hz
+        have hn := norm_pos_iff.mpr hz
         have : a * ‖deriv γ' t‖ = 1 := by
           have := h3.symm
           field_simp at this
@@ -384,7 +384,7 @@ lemma deriv_periodic {γ : ℝ → ℂ} (hper : Function.Periodic γ (2 * π)) :
 
 lemma signedAreaDensity_periodic {γ : ℝ → ℂ} (hper : Function.Periodic γ (2 * π)) :
     Function.Periodic (signedAreaDensity γ) (2 * π) := fun t => by
-  simp only [signedAreaDensity, hper t, deriv_periodic hper t]
+  simp [signedAreaDensity, hper t, deriv_periodic hper t]
 
 lemma integral_signedAreaDensity_shift {γ : ℝ → ℂ} (hper : Function.Periodic γ (2 * π))
     (a : ℝ) : ∫ θ in a..a + 2 * π, signedAreaDensity γ θ =
@@ -430,7 +430,7 @@ theorem exists_reverse_param {γ : ℝ → ℂ} {K : NNReal} (hK : LipschitzWith
     · exfalso; linarith [hx.2]
     · linarith
   · ext z
-    simp only [mem_image, mem_Icc]
+    simp
     constructor
     · rintro ⟨θ, ⟨h1, h2⟩, rfl⟩
       exact ⟨2 * π - θ, ⟨by linarith, by linarith⟩, (hrev θ).symm⟩
@@ -443,12 +443,11 @@ theorem exists_reverse_param {γ : ℝ → ℂ} {K : NNReal} (hK : LipschitzWith
     rw [deriv_comp_neg, norm_neg, hθ]
   · have hd : ∀ θ, signedAreaDensity (fun θ => γ (-θ)) θ = -signedAreaDensity γ (-θ) := by
       intro θ
-      simp only [signedAreaDensity, deriv_comp_neg, mul_neg, Complex.neg_im]
+      simp [signedAreaDensity, deriv_comp_neg, mul_neg, Complex.neg_im]
     simp_rw [hd]
-    rw [intervalIntegral.integral_neg, intervalIntegral.integral_comp_neg
-      (fun θ => signedAreaDensity γ θ), neg_zero]
+    simp
     have := integral_signedAreaDensity_shift hper (-(2 * π))
-    rw [neg_add_cancel] at this
+    simp at this
     rw [this]
 
 end PolyaNeumann

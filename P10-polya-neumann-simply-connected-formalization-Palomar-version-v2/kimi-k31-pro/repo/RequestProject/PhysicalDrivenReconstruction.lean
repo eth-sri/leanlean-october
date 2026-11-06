@@ -28,7 +28,7 @@ theorem physicalDrivenQ_sq {E : ℝ} (hE : 0 ≤ E) :
     physicalDrivenQ E ^ 2 = -(E : ℂ) / 4 := by
   have hs : (Real.sqrt E : ℂ) ^ 2 = (E : ℂ) := by
     exact_mod_cast Real.sq_sqrt hE
-  simp only [physicalDrivenQ, div_pow, neg_sq, mul_pow, Complex.I_sq, hs]
+  simp [physicalDrivenQ, div_pow, neg_sq, mul_pow, Complex.I_sq, hs]
   ring
 
 theorem physicalDrivenGauge_weightedIntegral_hasSum_to
@@ -41,7 +41,7 @@ theorem physicalDrivenGauge_weightedIntegral_hasSum_to
       (∫ s in (0 : ℝ)..θ, w s * physicalDrivenGauge γ E y j s) := by
   obtain ⟨u, hu, hbd⟩ := exists_physicalDrivenGaugeTerm_majorant γ hγ E y hy j
   obtain ⟨C, hC⟩ := isCompact_Icc.exists_bound_of_continuousOn hw
-  have hC0 : 0 ≤ C := (norm_nonneg _).trans (hC 0 ⟨le_rfl, Real.two_pi_pos.le⟩)
+  have hC0 := (norm_nonneg _).trans (hC 0 ⟨le_rfl, Real.two_pi_pos.le⟩)
   have hsub : uIoc (0 : ℝ) θ ⊆ Icc 0 (2 * Real.pi) := by
     rw [uIoc_of_le hθ.1]
     exact Ioc_subset_Icc_self.trans (Icc_subset_Icc le_rfl hθ.2)
@@ -79,7 +79,7 @@ theorem physicalDrivenGaugePartial_weightedIntegral_tendsto_to
     exact intervalIntegral.integral_finset_sum (fun l _ =>
       ((hw.mul (physicalDrivenGaugeTerm_continuousOn γ hγ E y hy j l)).mono hsub).intervalIntegrable)
   have h_simpa := hs.tendsto_sum_nat.comp (tendsto_add_atTop_nat 1)
-  simp only [Function.comp_apply, he, Function.comp_def] at h_simpa ⊢
+  simp [Function.comp_apply, he, Function.comp_def] at h_simpa ⊢
   exact h_simpa
 
 end PolyaNeumann

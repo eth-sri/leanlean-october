@@ -56,7 +56,7 @@ omit [CompleteSpace H] in
 /-- **Lemma 6.3.** `Π^c` is the orthogonal projection onto `c^⊥`. -/
 theorem cutProj_eq_starProjection (c : H) : cutProj c = (ℂ ∙ c)ᗮ.starProjection := by
   ext x
-  rw [Submodule.starProjection_orthogonal']
+  simp
   simp only [cutProj, ContinuousLinearMap.sub_apply, ContinuousLinearMap.one_apply,
     ContinuousLinearMap.smul_apply, rankOne_apply, Submodule.starProjection_singleton, smul_smul]
   rw [div_eq_inv_mul]
@@ -66,7 +66,7 @@ theorem cutProj_eq_starProjection (c : H) : cutProj c = (ℂ ∙ c)ᗮ.starProje
 theorem cutB_isSelfAdjoint {c d : H} (hcd : ⟪d, c⟫_ℂ = ⟪c, d⟫_ℂ) : IsSelfAdjoint (cutB c d) := by
   rw [ContinuousLinearMap.isSelfAdjoint_iff_isSymmetric]
   intro x y
-  simp only [ContinuousLinearMap.coe_coe, cutB_apply, inner_sub_left, inner_sub_right,
+  simp [ContinuousLinearMap.coe_coe, cutB_apply, inner_sub_left, inner_sub_right,
     inner_add_left, inner_add_right, inner_smul_left, inner_smul_right, map_inv₀, map_mul,
     map_div₀, Complex.conj_ofReal, inner_conj_symm]
   rw [hcd]
@@ -88,9 +88,9 @@ theorem cutB_apply_self {c d : H} (hc : c ≠ 0) (hcd : ⟪d, c⟫_ℂ = ⟪c, d
 /-- **Lemma 6.3.** For unitary `V`, `⟨c, d⟩ = -2 Im ⟨e₀, V e₀⟩` with `d = i s`. -/
 theorem inner_cutC_cutD {V : H →L[ℂ] H} (hV : V ∈ unitary (H →L[ℂ] H)) (e₀ : H) :
     ⟪cutC V e₀, Complex.I • cutS V e₀⟫_ℂ = ((-2 * (⟪e₀, V e₀⟫_ℂ).im : ℝ) : ℂ) := by
-  have hVV : V * star V = 1 := Unitary.mul_star_self_of_mem hV
+  have hVV := Unitary.mul_star_self_of_mem hV
   rw [ContinuousLinearMap.star_eq_adjoint] at hVV
-  have h1 : ⟪adjoint V e₀, e₀⟫_ℂ = ⟪e₀, V e₀⟫_ℂ := adjoint_inner_left V e₀ e₀
+  have h1 := adjoint_inner_left V e₀ e₀
   have h2 : ⟪e₀, adjoint V e₀⟫_ℂ = conj ⟪e₀, V e₀⟫_ℂ := by
     rw [adjoint_inner_right, inner_conj_symm]
   have h3 : ⟪adjoint V e₀, adjoint V e₀⟫_ℂ = ⟪e₀, e₀⟫_ℂ := by
@@ -121,7 +121,7 @@ theorem inner_cutC_cutB {V : H →L[ℂ] H} (hV : V ∈ unitary (H →L[ℂ] H))
   obtain ⟨hsa, hBc⟩ := cutB_transport hV e₀ hc
   rw [ContinuousLinearMap.isSelfAdjoint_iff_isSymmetric] at hsa
   have := hsa (cutC V e₀) x
-  simp only [ContinuousLinearMap.coe_coe] at this
+  simp at this
   rw [← this, hBc, inner_smul_left, Complex.conj_I]
 
 /-! ### Specialization to the boundary transport -/

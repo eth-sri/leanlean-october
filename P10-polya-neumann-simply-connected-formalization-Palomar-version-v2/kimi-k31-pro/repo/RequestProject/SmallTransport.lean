@@ -40,8 +40,7 @@ lemma isTransport_zero (γ : ℝ → ℂ) : IsTransport γ 0 (fun _ => 1) := by
 lemma norm_transport_sub_one_le {γ : ℝ → ℂ} {K : NNReal} (hK : LipschitzWith K γ) :
     ∃ c : ℝ, 0 ≤ c ∧ ∀ E, 0 ≤ E → E ≤ 1 → ∀ W : ℝ → Ell2 →L[ℂ] Ell2, IsTransport γ E W →
       ∀ θ ∈ Icc 0 (2 * π), ‖W θ - 1‖ ≤ c * Real.sqrt E := by
-  set R : ℝ := K * (2 * π) with hR
-  have hR0 : 0 ≤ R := by positivity
+  set R := K * (2 * π) with hR
   have hRb : ∀ θ ∈ Icc 0 (2 * π), ‖γ θ - γ 0‖ ≤ R := fun θ hθ => by
     have := hK.dist_le_mul θ 0
     rw [dist_eq_norm, Real.dist_eq, sub_zero, abs_of_nonneg hθ.1] at this
@@ -50,9 +49,9 @@ lemma norm_transport_sub_one_le {γ : ℝ → ℂ} {K : NNReal} (hK : LipschitzW
   refine ⟨shiftConst * R * (1 + 2 * π * (1 * shiftConst * K)), by positivity,
     fun E hE0 hE1 W hW θ hθ => ?_⟩
   have h := norm_transport_sub_le hK hRb (isTransport_zero γ) hW hθ
-  have hs1 : Real.sqrt E ≤ 1 := Real.sqrt_le_one.mpr hE1
-  have hs0 : 0 ≤ Real.sqrt E := Real.sqrt_nonneg E
-  simp only [Real.sqrt_zero, zero_sub, abs_neg, abs_of_nonneg hs0, add_zero] at h
+  have hs1 := Real.sqrt_le_one.mpr hE1
+
+  simp [Real.sqrt_zero, zero_sub, abs_neg, abs_of_nonneg (Real.sqrt_nonneg E), add_zero] at h
   calc ‖W θ - 1‖ ≤ Real.sqrt E * shiftConst * R *
         (1 + 2 * π * (Real.sqrt E * shiftConst * K)) := h
     _ ≤ Real.sqrt E * shiftConst * R * (1 + 2 * π * (1 * shiftConst * K)) := by gcongr
@@ -115,7 +114,7 @@ lemma transport_coord_zero {γ : ℝ → ℂ} {K : NNReal} (hK : LipschitzWith K
       (-(Complex.I * (Real.sqrt E : ℂ)) / 2) *
         (deriv γ s * ((Real.sqrt 2 : ℂ) * (W s x : ℕ → ℂ) 1)) := by
   rw [transport_coord_eq hK hW x 0 hθ]
-  simp only [transportCoeff_coord_zero]
+  simp [transportCoeff_coord_zero]
 
 /-- The first row of the transport equation. -/
 lemma transport_coord_one {γ : ℝ → ℂ} {K : NNReal} (hK : LipschitzWith K γ) {E : ℝ}
@@ -125,15 +124,15 @@ lemma transport_coord_one {γ : ℝ → ℂ} {K : NNReal} (hK : LipschitzWith K 
       (-(Complex.I * (Real.sqrt E : ℂ)) / 2) * (deriv γ s * (W s x : ℕ → ℂ) 2 +
         conj (deriv γ s) * ((Real.sqrt 2 : ℂ) * (W s x : ℕ → ℂ) 0)) := by
   rw [transport_coord_eq hK hW x 1 hθ]
-  simp only [transportCoeff_coord_one]
+  simp [transportCoeff_coord_one]
 
 /-- `⟨e_n, x⟩` is the `n`-th coordinate. -/
 lemma inner_basisVec (x : Ell2) (n : ℕ) : ⟪basisVec n, x⟫_ℂ = (x : ℕ → ℂ) n := by
-  simp only [basisVec, inner_single]
+  simp [basisVec, inner_single]
 
 /-- The coordinates of `e_n`. -/
 lemma basisVec_coord (n m : ℕ) : (basisVec n : ℕ → ℂ) m = if m = n then 1 else 0 := by
-  simp only [basisVec, lp.single_apply, Pi.single_apply]
+  simp [basisVec, lp.single_apply, Pi.single_apply]
 
 /-- The size of the transport coefficient term. -/
 lemma norm_coeffTerm_le {E : ℝ} {d z : ℂ} {K : ℝ} (hd : ‖d‖ ≤ K) :
@@ -148,7 +147,7 @@ lemma norm_coeffTerm_le {E : ℝ} {d z : ℂ} {K : ℝ} (hd : ‖d‖ ≤ K) :
     simp
   rw [norm_mul, norm_mul, norm_mul, hE]
   have : 0 ≤ Real.sqrt E := Real.sqrt_nonneg _
-  have hK : 0 ≤ K := (norm_nonneg _).trans hd
+  have hK := (norm_nonneg _).trans hd
   calc Real.sqrt E / 2 * (‖d‖ * (‖(Real.sqrt 2 : ℂ)‖ * ‖z‖)) ≤
       Real.sqrt E / 2 * (K * (2 * ‖z‖)) := by gcongr
     _ = _ := by ring
@@ -189,7 +188,7 @@ lemma norm_radialVec_le {γ : ℝ → ℂ} {K : NNReal} (hK : LipschitzWith K γ
     {W : ℝ → Ell2 →L[ℂ] Ell2} (hW : IsTransport γ E W) : ‖radialVec W‖ ≤ 2 := by
   have h1 : ‖basisVec 0‖ = 1 := by simp [basisVec]
   have hV : ‖ContinuousLinearMap.adjoint (W (2 * π))‖ ≤ 1 := by
-    rw [ContinuousLinearMap.adjoint.norm_map]
+    simp
     exact norm_transport_le_one hK hW ⟨by positivity, le_rfl⟩
   unfold radialVec
   refine (norm_add_le _ _).trans ?_
@@ -204,7 +203,7 @@ lemma norm_smallBDer_le {γ : ℝ → ℂ} {K : NNReal} (hK : LipschitzWith K γ
   obtain ⟨c, hc0, hc⟩ := norm_transport_sub_one_le hK
   refine ⟨K * (3 * c), by positivity, fun E hE0 hE1 W hW t ht => ?_⟩
   refine (norm_coeffTerm_le (norm_deriv_le_of_lipschitz hK)).trans ?_
-  have hL : (2 * π) ∈ Icc 0 (2 * π) := ⟨by positivity, le_rfl⟩
+
   have hs1 : (radialVec W : ℕ → ℂ) 1 =
       ((ContinuousLinearMap.adjoint (W (2 * π)) - 1) (basisVec 0) : ℕ → ℂ) 1 := by
     simp [radialVec, basisVec_coord]
@@ -222,7 +221,7 @@ lemma norm_smallBDer_le {γ : ℝ → ℂ} {K : NNReal} (hK : LipschitzWith K γ
         c * Real.sqrt E := by
       refine (norm_coord_le _ _).trans (((_ : Ell2 →L[ℂ] Ell2).le_opNorm _).trans ?_)
       rw [show ‖basisVec 0‖ = 1 by simp [basisVec], mul_one, norm_adjoint_sub_one]
-      exact hc E hE0 hE1 W hW _ hL
+      exact hc E hE0 hE1 W hW _ (⟨by positivity, le_rfl⟩)
     linarith
   have : Real.sqrt E * Real.sqrt E = E := Real.mul_self_sqrt hE0
   calc Real.sqrt E * K * ‖(W t (radialVec W) : ℕ → ℂ) 1‖ ≤
@@ -248,22 +247,22 @@ lemma smallA_approx {γ : ℝ → ℂ} {K : NNReal} (hK : LipschitzWith K γ) :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ E, 0 ≤ E → E ≤ 1 → ∀ W : ℝ → Ell2 →L[ℂ] Ell2, IsTransport γ E W →
       |smallA W + E * ∫ θ in (0 : ℝ)..(2 * π), areaDensity γ θ| ≤ C * E * Real.sqrt E := by
   obtain ⟨c₁, hc₁0, hc₁⟩ := norm_transport_sub_one_le hK
-  set C₂ : ℝ := π * (K * c₁ + K * 2 * c₁) with hC₂
-  have hγc : Continuous γ := hK.continuous
+  set C₂ := π * (K * c₁ + K * 2 * c₁) with hC₂
+  have hγc := hK.continuous
   have hconjc : Continuous fun t => conj (γ t - γ 0) :=
     Complex.continuous_conj.comp (hγc.sub continuous_const)
   refine ⟨2 * ((2 * π) * (K * C₂)), by positivity, fun E hE0 hE1 W hW => ?_⟩
   have hL : (2 * π) ∈ Icc 0 (2 * π) := ⟨by positivity, le_rfl⟩
-  have hsE : Real.sqrt E * Real.sqrt E = E := Real.mul_self_sqrt hE0
-  have hs0 : 0 ≤ Real.sqrt E := Real.sqrt_nonneg E
-  set c : ℂ := -(Complex.I * (Real.sqrt E : ℂ)) / 2 with hc
+  have hsE := Real.mul_self_sqrt hE0
+
+  set c := -(Complex.I * (Real.sqrt E : ℂ)) / 2 with hc
   have hc2 : c * c = -(E : ℂ) / 4 := by
     rw [hc]
     have : ((Real.sqrt E : ℂ)) * (Real.sqrt E : ℂ) = (E : ℂ) := by exact_mod_cast hsE
     linear_combination ((Real.sqrt E : ℂ) ^ 2 / 4) * Complex.I_sq + (-(1 : ℂ) / 4) * this
   have hcn : ‖c‖ = Real.sqrt E / 2 := by
     rw [hc, norm_div, norm_neg, norm_mul, Complex.norm_I, one_mul, Complex.norm_real,
-      Real.norm_eq_abs, abs_of_nonneg hs0]
+      Real.norm_eq_abs, abs_of_nonneg (Real.sqrt_nonneg E)]
     simp
   have hdK := fun t => norm_deriv_le_of_lipschitz hK (x₀ := t)
   have h2 : ‖(Real.sqrt 2 : ℂ)‖ ≤ 2 := by
@@ -302,8 +301,7 @@ lemma smallA_approx {γ : ℝ → ℂ} {K : NNReal} (hK : LipschitzWith K γ) :
           Real.sqrt E / 2 * (K * (c₁ * Real.sqrt E) + K * (2 * (c₁ * Real.sqrt E))) := by
       intro s hs
       rw [uIoc_of_le ht.1] at hs
-      have hs' : s ∈ Icc 0 (2 * π) := ⟨hs.1.le, hs.2.trans ht.2⟩
-      have hWs := hc₁ E hE0 hE1 W hW s hs'
+      have hWs := hc₁ E hE0 hE1 W hW s (⟨hs.1.le, hs.2.trans ht.2⟩)
       have hb1 : ‖basisVec 0‖ = 1 := by simp [basisVec]
       have e2 : ‖(W s (basisVec 0) : ℕ → ℂ) 2‖ ≤ c₁ * Real.sqrt E := by
         have : (W s (basisVec 0) : ℕ → ℂ) 2 = ((W s - 1) (basisVec 0) : ℕ → ℂ) 2 := by
@@ -402,14 +400,14 @@ lemma smallA_approx {γ : ℝ → ℂ} {K : NNReal} (hK : LipschitzWith K γ) :
       gcongr
       exact hP1 t ⟨ht.1.le, ht.2⟩
     refine (intervalIntegral.norm_integral_le_of_norm_le_const hb).trans (le_of_eq ?_)
-    rw [sub_zero, abs_of_nonneg (by positivity)]
+    simp
     linear_combination (2 * π * K * C₂ * Real.sqrt E) * hsE
   have him := (Complex.abs_im_le_norm _).trans hdiff
   rw [Complex.sub_im, Complex.sub_im, Complex.one_im, sub_zero] at him
   have hcalc : (-(E : ℂ) / 2 * ∫ t in (0 : ℝ)..(2 * π), conj (γ t - γ 0) * deriv γ t).im =
       -E / 2 * ∫ θ in (0 : ℝ)..(2 * π), areaDensity γ θ := by
     rw [← himA]
-    simp [Complex.mul_im]
+    simp
   rw [hcalc] at him
   unfold smallA
   rw [show 2 * ((W (2 * π) (basisVec 0) : ℕ → ℂ) 0).im + E * ∫ θ in (0 : ℝ)..(2 * π),
@@ -460,7 +458,7 @@ lemma norm_kernelRho_sub_le {γ : ℝ → ℂ} {K : NNReal} (hK : LipschitzWith 
   have hz : (W t (ContinuousLinearMap.adjoint (W θ₁) (basisVec 0)) : ℕ → ℂ) 1 -
       (W t (ContinuousLinearMap.adjoint (W θ₂) (basisVec 0)) : ℕ → ℂ) 1 =
       (W t (ContinuousLinearMap.adjoint (W θ₁ - W θ₂) (basisVec 0)) : ℕ → ℂ) 1 := by
-    simp [map_sub]
+    simp
   rw [hz]
   have hb1 : ‖basisVec 0‖ = 1 := by simp [basisVec]
   have h1 : ‖(W t (ContinuousLinearMap.adjoint (W θ₁ - W θ₂) (basisVec 0)) : ℕ → ℂ) 1‖ ≤
@@ -470,7 +468,7 @@ lemma norm_kernelRho_sub_le {γ : ℝ → ℂ} {K : NNReal} (hK : LipschitzWith 
       ((ContinuousLinearMap.adjoint (W θ₁ - W θ₂)).le_opNorm _) (norm_nonneg _) zero_le_one).trans ?_
     rw [one_mul, hb1, mul_one, ContinuousLinearMap.adjoint.norm_map]
     exact norm_transport_sub_le_lip hK hW h₁ h₂
-  have hsE : Real.sqrt E * Real.sqrt E = E := Real.mul_self_sqrt hE
+  have hsE := Real.mul_self_sqrt hE
   calc Real.sqrt E * K * ‖(W t (ContinuousLinearMap.adjoint (W θ₁ - W θ₂) (basisVec 0)) :
         ℕ → ℂ) 1‖ ≤ Real.sqrt E * K * (Real.sqrt E * shiftConst * K * |θ₁ - θ₂|) := by
         gcongr

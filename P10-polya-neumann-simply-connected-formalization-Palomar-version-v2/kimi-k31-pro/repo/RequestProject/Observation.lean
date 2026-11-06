@@ -71,7 +71,7 @@ lemma transport_coord_eq {γ : ℝ → ℂ} {K : NNReal} (hK : LipschitzWith K �
   have hint := intervalIntegrable_mul_of_continuousOn (transportCoeff_aestronglyMeasurable γ E)
     (transportCoeff_norm_le γ E hK) hW.1 hθ
   rw [← hΦa, hW.2 θ hθ, map_add, hΦa, ← Φ.intervalIntegral_comp_comm hint]
-  simp only [hΦa, ContinuousLinearMap.one_apply, ContinuousLinearMap.mul_apply]
+  simp [hΦa, ContinuousLinearMap.one_apply, ContinuousLinearMap.mul_apply]
 
 /-- The rows of the transport equation have integrable right-hand sides. -/
 lemma transport_coord_intervalIntegrable {γ : ℝ → ℂ} {K : NNReal} (hK : LipschitzWith K γ)
@@ -97,12 +97,11 @@ theorem observation_injective {γ : ℝ → ℂ} {K : NNReal} (hK : LipschitzWit
   set f : ℕ → ℝ → ℂ := fun n θ => (W θ v : ℕ → ℂ) n with hf
   have hfi : ∀ n θ, f n θ = inner ℂ (basisVec n) (W θ v) := fun n θ => by
     simp [hf, basisVec, inner_single]
-  have hcont : ∀ n, ContinuousOn (f n) (Icc 0 (2 * π)) := fun n => by
+  have hcont := fun n => by
     have : ContinuousOn (fun θ => inner ℂ (basisVec n) (W θ v)) (Icc 0 (2 * π)) :=
       continuousOn_const.inner (hW.1.clm_apply continuousOn_const)
     exact this.congr fun θ _ => hfi n θ
-  have hW0 : W 0 = 1 := by simpa using hW.2 0 ⟨le_rfl, hπ⟩
-  have hf0 : ∀ n, f n 0 = (v : ℕ → ℂ) n := fun n => by simp [hf, hW0]
+  have hf0 : ∀ n, f n 0 = (v : ℕ → ℂ) n := fun n => by simp [hf, (by simpa using hW.2 0 ⟨le_rfl, hπ⟩)]
   have ha : (-(Complex.I * (Real.sqrt E : ℂ)) / 2) ≠ 0 := by
     have : (Real.sqrt E : ℂ) ≠ 0 := by exact_mod_cast (Real.sqrt_pos.mpr hE).ne'
     simp [this, Complex.I_ne_zero]

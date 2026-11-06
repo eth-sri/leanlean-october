@@ -176,7 +176,7 @@ theorem riemannMappingGreen_graph_fderiv_apply
       v = (c * v) / c := (mul_div_cancel_left₀ v hc).symm
       _ = (((c * v).re : ℂ) + ((c * v).im : ℂ) * Complex.I) / c := by
         rw [Complex.re_add_im]
-      _ = _ := by simp only [Complex.real_smul, div_eq_mul_inv]; ring
+      _ = _ := by simp; ring
   change T v = ((c * v).re : ℂ) * dirD G 1 z +
     (((c * v).im - deriv f z.re * (c * v).re : ℝ) : ℂ) * dirD G Complex.I z
   calc
@@ -393,7 +393,7 @@ theorem riemannMappingFlattenedGreen_eq_remainder_add_datum {Ω : Set ℂ}
 theorem riemannMappingGraph_origin (p c : ℂ) (hc : c ≠ 0) {f : ℝ → ℝ}
     (hf : ContDiff ℝ (⊤ : ℕ∞) f) (hf₀ : f 0 = 0) :
     smoothDirichletGraphChart p c hc f hf.continuous 0 = p := by
-  simp only [smoothDirichletGraphChart_apply, smoothDirichletGraphShear,
+  simp [smoothDirichletGraphChart_apply, smoothDirichletGraphShear,
     Complex.zero_re, hf₀, Complex.ofReal_zero, zero_mul, zero_div, add_zero]
 
 section NonzeroBoundaryTransfer
@@ -426,8 +426,8 @@ theorem riemannMappingGreen_graph_vertical_field_ne_zero
       (smoothDirichletHalfBox a b))
     (hP₀ : P 0 = 0) : Q 0 ≠ 0 := by
   let Ψ := smoothDirichletGraphChart p c hc f hf.continuous
-  have hΨ₀ : Ψ 0 = p := riemannMappingGraph_origin p c hc hf hf₀
-  have hpin : p ∈ closure Ω := frontier_subset_closure hp
+  have hΨ₀ := riemannMappingGraph_origin p c hc hf hf₀
+  have hpin := frontier_subset_closure hp
   have hpne : p ≠ F 0 := by
     intro he
     rw [he, hS.1.1.frontier_eq] at hp
@@ -458,23 +458,22 @@ theorem riemannMappingGreen_graph_vertical_field_ne_zero
     filter_upwards [self_mem_nhdsWithin, hrelim.eventually_lt_const ha,
       himlim.eventually_lt_const hb,
       (eventually_lt_nhds hδ).filter_mono nhdsWithin_le_nhds] with t ht htr hti htδ
-    have hwt : w t ∈ Ω := (hray t ht htδ).1
-    have hpos : 0 < (ζ t).im := (hchart (ζ t) htr hti).mp (by
+    have hwt := (hray t ht htδ).1
+    have hpos := (hchart (ζ t) htr hti).mp (by
       change Ψ (ζ t) ∈ Ω
       rw [show Ψ (ζ t) = w t from Ψ.apply_symm_apply (w t)]
       exact hwt)
     exact ⟨htr, hpos, lt_of_le_of_lt (le_abs_self _) hti⟩
   have hzclosed : ∀ᶠ t in 𝓝[>] (0 : ℝ), ζ t ∈ smoothDirichletClosedHalfBox a b :=
     hζbox.mono fun t ht => ⟨ht.1.le, ht.2.1.le, ht.2.2.le⟩
-  have hz₀ : (0 : ℂ) ∈ smoothDirichletClosedHalfBox a b := by
-    exact ⟨by simpa using ha.le, by simp, by simpa using hb.le⟩
+  have hz₀ : (0 : ℂ) ∈ smoothDirichletClosedHalfBox a b := ⟨by simpa using ha.le, by simp, by simpa using hb.le⟩
   have hζwithin := tendsto_nhdsWithin_of_tendsto_nhds_of_eventually_within
     ζ hζlim hzclosed
   have hpLim : Tendsto (fun t : ℝ => P (ζ t)) (𝓝[>] (0 : ℝ)) (𝓝 (P 0)) :=
     (hPc 0 hz₀).tendsto.comp hζwithin
   have hqLim : Tendsto (fun t : ℝ => Q (ζ t)) (𝓝[>] (0 : ℝ)) (𝓝 (Q 0)) :=
     (hQc 0 hz₀).tendsto.comp hζwithin
-  have hdc : Continuous (deriv f) := (contDiff_infty_iff_deriv.mp hf).2.continuous
+  have hdc := (contDiff_infty_iff_deriv.mp hf).2.continuous
   have hcoef : Continuous (fun z : ℂ =>
       (((c * v).im - deriv f z.re * (c * v).re : ℝ) : ℂ)) :=
     Complex.continuous_ofReal.comp
@@ -497,7 +496,7 @@ theorem riemannMappingGreen_graph_vertical_field_ne_zero
     have hdR := hdG.hasFDerivAt.comp_hasDerivAt t hdw
     change HasDerivAt R
       (fderiv ℝ (fun z : ℂ => (riemannMappingGreen F z : ℂ)) (w t) v) t at hdR
-    have he : Ψ (ζ t) = w t := Ψ.apply_symm_apply (w t)
+    have he := Ψ.apply_symm_apply (w t)
     have hfd := riemannMappingGreen_graph_fderiv_apply hbΩ hS hsc F hF hinj himage
       p c hc hf (z := ζ t) (by
         change Ψ (ζ t) ∈ Ω
@@ -552,13 +551,13 @@ theorem riemannMappingGreen_graph_vertical_field_ne_zero
   have hsl := (hasDerivWithinAt_iff_tendsto_slope'
     (show (0 : ℝ) ∉ Ioi (0 : ℝ) by simp)).mp (hd₀.mono Ioi_subset_Ici_self)
   have hR₀ : R 0 = 0 := by
-    simp only [R, hw₀, riemannMappingGreen_frontier hbΩ hS hsc F hF hinj himage hp,
+    simp [R, hw₀, riemannMappingGreen_frontier hbΩ hS hsc F hF hinj himage hp,
       Complex.ofReal_zero]
   have hlower : ∀ᶠ t in 𝓝[>] (0 : ℝ), A ≤ (slope R 0 t).re := by
     filter_upwards [self_mem_nhdsWithin,
       (eventually_lt_nhds hδ).filter_mono nhdsWithin_le_nhds] with t ht htδ
     have hlow := (hray t ht htδ).2.2
-    simp only [slope_def_module, hR₀, sub_zero, Complex.smul_re, smul_eq_mul,
+    simp [slope_def_module, hR₀, sub_zero, Complex.smul_re, smul_eq_mul,
       R, Complex.ofReal_re]
     simpa only [w, div_eq_mul_inv, mul_comm] using (le_div_iff₀ ht).mpr hlow
   have hbad : A ≤ (0 : ℂ).re :=
@@ -599,7 +598,7 @@ theorem riemannMappingBoundaryTrace_deriv_ne_zero_of_green_fields
       riemannMappingFlattenedGreen F
         (smoothDirichletGraphChart p c hc f hf.continuous) (x : ℂ) = 0 := by
     intro x hx
-    have hx' : |x| < a := abs_lt.mpr hx
+    have hx' := abs_lt.mpr hx
     have hp' := smoothDirichletGraphChart_mem_frontier hS.1.1 p c hc f hf.continuous
       hb hchart hx'
     simp only [riemannMappingFlattenedGreen,

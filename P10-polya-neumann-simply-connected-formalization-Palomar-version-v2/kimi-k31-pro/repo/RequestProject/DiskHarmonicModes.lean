@@ -51,8 +51,7 @@ theorem fderiv_diskHolomorphicMode (m : ℕ) (z v : ℂ) :
     fderiv ℝ (diskHolomorphicMode m) z v = (m : ℂ) * z ^ (m - 1) * v := by
   change fderiv ℝ (fun w : ℂ => w ^ m) z v = _
   rw [(hasFDerivAt_pow (𝕜 := ℝ) (x := z) m).fderiv]
-  simp only [ContinuousLinearMap.smul_apply, ContinuousLinearMap.id_apply,
-    nsmul_eq_mul, smul_eq_mul]
+  simp
 
 theorem fderiv_diskAntiholomorphicMode (m : ℕ) (z v : ℂ) :
     fderiv ℝ (diskAntiholomorphicMode m) z v =
@@ -78,23 +77,23 @@ private lemma disk_dirD_const_mul (a : ℂ) {φ : ℂ → ℂ} {z : ℂ}
     dirD (fun w => a * φ w) v z = a * dirD φ v z := by
   unfold dirD
   rw [fderiv_const_mul hφ a]
-  simp only [ContinuousLinearMap.smul_apply, smul_eq_mul]
+  simp
 
 theorem lap_diskHolomorphicMode (m : ℕ) (z : ℂ) :
     lap (diskHolomorphicMode m) z = 0 := by
   have h1 : dirD (diskHolomorphicMode m) 1 =
       fun w => (m : ℂ) * diskHolomorphicMode (m - 1) w := by
     funext w
-    simp only [dirD_diskHolomorphicMode, mul_one, diskHolomorphicMode]
+    simp [dirD_diskHolomorphicMode, mul_one, diskHolomorphicMode]
   have hI : dirD (diskHolomorphicMode m) Complex.I =
       fun w => ((m : ℂ) * Complex.I) * diskHolomorphicMode (m - 1) w := by
     funext w
-    simp only [dirD_diskHolomorphicMode, diskHolomorphicMode]
+    simp [dirD_diskHolomorphicMode, diskHolomorphicMode]
     ring
   have hd : DifferentiableAt ℝ (diskHolomorphicMode (m - 1)) z :=
     (contDiff_diskHolomorphicMode (m - 1)).differentiable (by simp) z
   rw [lap, h1, hI, disk_dirD_const_mul _ hd 1, disk_dirD_const_mul _ hd Complex.I]
-  simp only [dirD_diskHolomorphicMode, mul_one]
+  simp [dirD_diskHolomorphicMode, mul_one]
   calc
     _ = ((m : ℂ) * (m - 1 : ℕ) * z ^ ((m - 1) - 1)) *
         (1 + Complex.I ^ 2) := by ring
@@ -105,16 +104,16 @@ theorem lap_diskAntiholomorphicMode (m : ℕ) (z : ℂ) :
   have h1 : dirD (diskAntiholomorphicMode m) 1 =
       fun w => (m : ℂ) * diskAntiholomorphicMode (m - 1) w := by
     funext w
-    simp only [dirD_diskAntiholomorphicMode, map_one, mul_one, diskAntiholomorphicMode]
+    simp [dirD_diskAntiholomorphicMode, map_one, mul_one, diskAntiholomorphicMode]
   have hI : dirD (diskAntiholomorphicMode m) Complex.I =
       fun w => ((m : ℂ) * (-Complex.I)) * diskAntiholomorphicMode (m - 1) w := by
     funext w
-    simp only [dirD_diskAntiholomorphicMode, Complex.conj_I, diskAntiholomorphicMode]
+    simp [dirD_diskAntiholomorphicMode, Complex.conj_I, diskAntiholomorphicMode]
     ring
   have hd : DifferentiableAt ℝ (diskAntiholomorphicMode (m - 1)) z :=
     (contDiff_diskAntiholomorphicMode (m - 1)).differentiable (by simp) z
   rw [lap, h1, hI, disk_dirD_const_mul _ hd 1, disk_dirD_const_mul _ hd Complex.I]
-  simp only [dirD_diskAntiholomorphicMode, map_one, mul_one, Complex.conj_I]
+  simp [dirD_diskAntiholomorphicMode, map_one, mul_one, Complex.conj_I]
   calc
     _ = ((m : ℂ) * (m - 1 : ℕ) * conj z ^ ((m - 1) - 1)) *
         (1 + Complex.I ^ 2) := by ring
@@ -150,7 +149,7 @@ theorem conormal_diskAntiholomorphicMode (m : ℕ) (θ : ℝ) :
 theorem diskHolomorphicMode_unitCircle (m : ℕ) (θ : ℝ) :
     diskHolomorphicMode m (circleMap 0 1 θ) =
       Complex.exp ((m : ℂ) * Complex.I * θ) := by
-  simp only [diskHolomorphicMode, circleMap, Complex.ofReal_one, one_mul, zero_add]
+  simp [diskHolomorphicMode, circleMap, Complex.ofReal_one, one_mul, zero_add]
   rw [← Complex.exp_nat_mul]
   congr 1
   ring
@@ -158,7 +157,7 @@ theorem diskHolomorphicMode_unitCircle (m : ℕ) (θ : ℝ) :
 theorem diskAntiholomorphicMode_unitCircle (m : ℕ) (θ : ℝ) :
     diskAntiholomorphicMode m (circleMap 0 1 θ) =
       Complex.exp (-((m : ℂ) * Complex.I * θ)) := by
-  simp only [diskAntiholomorphicMode, circleMap, Complex.ofReal_one, one_mul, zero_add,
+  simp [diskAntiholomorphicMode, circleMap, Complex.ofReal_one, one_mul, zero_add,
     ← Complex.exp_conj, map_mul, Complex.conj_ofReal, Complex.conj_I]
   rw [← Complex.exp_nat_mul]
   congr 1
@@ -167,7 +166,7 @@ theorem diskAntiholomorphicMode_unitCircle (m : ℕ) (θ : ℝ) :
 theorem disk_antiholomorphic_gradient_bilinear_zero (m n : ℕ) (z : ℂ) :
     (∑ i : Fin 2, dirD (diskAntiholomorphicMode m) (coordDir i) z *
       dirD (diskAntiholomorphicMode n) (coordDir i) z) = 0 := by
-  simp only [Fin.sum_univ_two, show coordDir 0 = (1 : ℂ) from rfl,
+  simp [Fin.sum_univ_two, show coordDir 0 = (1 : ℂ) from rfl,
     show coordDir 1 = Complex.I from rfl, dirD_diskAntiholomorphicMode,
     map_one, mul_one, Complex.conj_I]
   calc
@@ -192,14 +191,14 @@ theorem diskHarmonicCutoff_testFunction {φ : ℂ → ℂ}
 theorem diskHarmonicCutoff_eventuallyEq {φ : ℂ → ℂ} {z : ℂ}
     (hz : z ∈ ball (0 : ℂ) 2) : diskHarmonicCutoff φ =ᶠ[𝓝 z] φ := by
   filter_upwards [isOpen_ball.mem_nhds hz] with w hw
-  simp only [diskHarmonicCutoff,
+  simp [diskHarmonicCutoff,
     diskHarmonicCutoffBump.one_of_mem_closedBall (ball_subset_closedBall hw),
     Complex.ofReal_one, one_mul]
 
 theorem diskHarmonicCutoff_eq_closedDisk (φ : ℂ → ℂ) {z : ℂ}
     (hz : z ∈ closedBall (0 : ℂ) 1) : diskHarmonicCutoff φ z = φ z := by
-  have hz' : z ∈ ball (0 : ℂ) 2 := closedBall_subset_ball (by norm_num) hz
-  exact (diskHarmonicCutoff_eventuallyEq hz').self_of_nhds
+
+  exact (diskHarmonicCutoff_eventuallyEq (closedBall_subset_ball (by norm_num) hz)).self_of_nhds
 
 theorem fderiv_diskHarmonicCutoff_eq {φ : ℂ → ℂ} {z : ℂ}
     (hz : z ∈ ball (0 : ℂ) 2) :
@@ -288,9 +287,9 @@ theorem integral_disk_holomorphic_antiholomorphic_gradients (m n : ℕ) :
             dirD (diskAntiholomorphicMode n) (coordDir i) z) := by
       apply setIntegral_congr_fun measurableSet_ball
       intro z hz
-      have hz' : z ∈ ball (0 : ℂ) 2 := ball_subset_ball (by norm_num) hz
-      simp only [lap_diskAntiholomorphicMode, mul_zero, zero_add,
-        dirD_diskHarmonicCutoff_eq hz']
+
+      simp [lap_diskAntiholomorphicMode, mul_zero, zero_add,
+        dirD_diskHarmonicCutoff_eq (ball_subset_ball (by norm_num) hz)]
     _ = doubleLayer (circleMap 0 1)
         (fun θ => diskHolomorphicMode m (circleMap 0 1 θ))
         (diskAntiholomorphicMode n) := hgreen.symm
@@ -311,13 +310,13 @@ theorem conj_dirD_diskHolomorphicMode (m : ℕ) (v z : ℂ) :
     conj (dirD (diskHolomorphicMode m) v z) =
       dirD (diskAntiholomorphicMode m) v z := by
   rw [dirD_diskHolomorphicMode, dirD_diskAntiholomorphicMode]
-  simp only [map_mul, map_pow, map_natCast]
+  simp
 
 theorem conj_dirD_diskAntiholomorphicMode (m : ℕ) (v z : ℂ) :
     conj (dirD (diskAntiholomorphicMode m) v z) =
       dirD (diskHolomorphicMode m) v z := by
   rw [dirD_diskAntiholomorphicMode, dirD_diskHolomorphicMode]
-  simp only [map_mul, map_pow, map_natCast, Complex.conj_conj]
+  simp
 
 /-- The actual Hilbert space of the two disk-gradient components. -/
 abbrev DiskGradientSpace := PiLp 2 (fun _ : Fin 2 => L2 (ball (0 : ℂ) 1))
@@ -388,14 +387,14 @@ theorem inner_diskHolomorphicGradient (m n : ℕ) :
           dirD (diskAntiholomorphicMode m) (coordDir i) z := by
       apply setIntegral_congr_fun measurableSet_ball
       intro z hz
-      have hz' : z ∈ ball (0 : ℂ) 2 := ball_subset_ball (by norm_num) hz
-      simp only [dirD_diskHarmonicCutoff_eq hz', conj_dirD_diskHolomorphicMode]
+
+      simp only [dirD_diskHarmonicCutoff_eq (ball_subset_ball (by norm_num) hz), conj_dirD_diskHolomorphicMode]
       apply Finset.sum_congr rfl
       intro i _
       ring
     _ = _ := by
       rw [integral_disk_holomorphic_antiholomorphic_gradients]
-      simp only [eq_comm]
+      simp [eq_comm]
 
 theorem inner_diskAntiholomorphicGradient (m n : ℕ) :
     ⟪diskAntiholomorphicGradient m, diskAntiholomorphicGradient n⟫_ℂ =
@@ -408,8 +407,8 @@ theorem inner_diskAntiholomorphicGradient (m n : ℕ) :
           dirD (diskAntiholomorphicMode n) (coordDir i) z := by
       apply setIntegral_congr_fun measurableSet_ball
       intro z hz
-      have hz' : z ∈ ball (0 : ℂ) 2 := ball_subset_ball (by norm_num) hz
-      simp only [dirD_diskHarmonicCutoff_eq hz', conj_dirD_diskAntiholomorphicMode]
+
+      simp [dirD_diskHarmonicCutoff_eq (ball_subset_ball (by norm_num) hz), conj_dirD_diskAntiholomorphicMode]
     _ = _ := by
       rw [integral_disk_holomorphic_antiholomorphic_gradients]
       split_ifs with hmn
@@ -424,8 +423,8 @@ theorem inner_diskHolomorphicGradient_antiholomorphicGradient (m n : ℕ) :
     _ = ∫ _z in ball (0 : ℂ) 1, (0 : ℂ) := by
       apply setIntegral_congr_fun measurableSet_ball
       intro z hz
-      have hz' : z ∈ ball (0 : ℂ) 2 := ball_subset_ball (by norm_num) hz
-      simp only [dirD_diskHarmonicCutoff_eq hz', conj_dirD_diskHolomorphicMode]
+
+      simp only [dirD_diskHarmonicCutoff_eq (ball_subset_ball (by norm_num) hz), conj_dirD_diskHolomorphicMode]
       exact disk_antiholomorphic_gradient_bilinear_zero m n z
     _ = 0 := by simp
 
@@ -449,7 +448,7 @@ private lemma diskHarmonicGradientScale_normalizes (m : ℕ) :
         (2 * π * ((m + 1 : ℕ) : ℝ))) = 1 := by
     field_simp [hs]
     nlinarith [hsq]
-  simp only [diskHarmonicGradientScale, Complex.conj_ofReal]
+  simp [diskHarmonicGradientScale, Complex.conj_ofReal]
   exact_mod_cast hr
 
 /-- Nonzero harmonic modes, normalized in the actual two-component

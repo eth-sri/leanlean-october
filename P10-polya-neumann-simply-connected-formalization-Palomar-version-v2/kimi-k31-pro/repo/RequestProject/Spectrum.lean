@@ -21,7 +21,7 @@ lemma exists_submodule_finrank_succ {V : Type*} [AddCommGroup V] [Module ℂ V]
     ∃ T : Submodule ℂ V, T ≤ S ∧ Module.finrank ℂ T = j + 1 := by
   haveI : Module.Finite ℂ S := Module.finite_of_finrank_pos (by omega)
   let b := Module.finBasisOfFinrankEq ℂ S hS
-  let v : Fin (j + 1) → V := fun i => (b (Fin.castSucc i) : V)
+  let v := fun i => (b (Fin.castSucc i) : V)
   have hli : LinearIndependent ℂ v := by
     have h1 := b.linearIndependent.comp _ (Fin.castSucc_injective _)
     exact h1.map' S.subtype (Submodule.ker_subtype S)
@@ -66,7 +66,7 @@ lemma isWeakGradient_const (Ω : Set ℂ) [IsFiniteMeasure (volume.restrict Ω)]
     intro w hw
     have : w ∉ tsupport φ := fun h => hw (hsupp h)
     simp [fderiv_of_notMem_tsupport (𝕜 := ℝ) this]
-  have hdiff : Differentiable ℝ φ := hsmooth.differentiable (by simp)
+  have hdiff := hsmooth.differentiable (by simp)
   have hcont : Continuous fun w => fderiv ℝ φ w (coordDir i) :=
     ((hsmooth.continuous_fderiv (by simp)).clm_apply continuous_const :)
   have hcs : HasCompactSupport fun w => fderiv ℝ φ w (coordDir i) :=
@@ -76,14 +76,14 @@ lemma isWeakGradient_const (Ω : Set ℂ) [IsFiniteMeasure (volume.restrict Ω)]
     (by simp) (by simpa using hcont.integrable_of_hasCompactSupport hcs)
     (by simpa using hsmooth.continuous.integrable_of_hasCompactSupport hcpt)
     (fun _ _ => differentiableAt_const _) (fun x _ => hdiff x)
-  simp only [one_mul] at hibp
+  simp at hibp
   rw [hsub, hibp]
   simp
 
 /-- The energy of a constant function is zero. -/
 lemma neumannEnergy_const (Ω : Set ℂ) [IsFiniteMeasure (volume.restrict Ω)] (c : ℂ) :
     neumannEnergy Ω (Lp.const 2 (volume.restrict Ω) c) = 0 := by
-  apply le_antisymm _ (zero_le)
+  apply le_antisymm _ zero_le
   refine (iInf₂_le 0 (isWeakGradient_const Ω c)).trans ?_
   simp
 
@@ -93,19 +93,19 @@ theorem neumannEigenvalue_zero (Ω : Set ℂ) (hΩ : IsOpen Ω) (hne : Ω.Nonemp
   haveI : Fact (volume Ω < ⊤) := ⟨hb.measure_lt_top⟩
   haveI : IsFiniteMeasure (volume.restrict Ω) := isFiniteMeasure_restrict.mpr
     hb.measure_lt_top.ne
-  apply le_antisymm _ (zero_le)
-  have hpos : 0 < volume Ω := hΩ.measure_pos volume hne
+  apply le_antisymm _ zero_le
+  have hpos := hΩ.measure_pos volume hne
   have hone : Lp.const 2 (volume.restrict Ω) (1 : ℂ) ≠ 0 := by
     intro h
     have h1 : ‖Lp.const 2 (volume.restrict Ω) (1 : ℂ)‖ = 0 := by rw [h]; simp
     haveI : NeZero (volume.restrict Ω) := ⟨by
       intro h0
-      rw [Measure.restrict_eq_zero] at h0
+      simp at h0
       exact hpos.ne' h0⟩
     rw [Lp.norm_const 2 (volume.restrict Ω) (1 : ℂ) (by norm_num)] at h1
     simp only [norm_one, one_mul] at h1
     have : (volume.restrict Ω).real Set.univ ≠ 0 := by
-      rw [measureReal_def, Measure.restrict_apply_univ]
+      simp
       exact ENNReal.toReal_ne_zero.mpr ⟨hpos.ne', hb.measure_lt_top.ne⟩
     exact this (by
       have h2 := h1

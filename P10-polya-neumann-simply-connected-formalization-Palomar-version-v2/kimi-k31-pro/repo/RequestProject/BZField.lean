@@ -72,7 +72,7 @@ lemma le_comp_add_sum {ι : Type*} (φ : ℂ → ℝ) (F : Finset ι) (w : ι �
     | empty => intro _; simp
     | insert a G ha ih =>
       intro hGF
-      have haF : a ∈ F := hGF (Finset.mem_insert_self a G)
+      have haF := hGF (Finset.mem_insert_self a G)
       have hG : G ⊆ F := fun x hx => hGF (Finset.mem_insert_of_mem hx)
       have ih' := ih hG
       rw [Finset.sum_insert ha, Finset.sum_insert ha]
@@ -147,7 +147,6 @@ theorem exists_transversalField {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
   obtain ⟨ρ, H, K, hρ, hH, -, hch⟩ := exists_uniform_charts hb hL
   choose! c f hcf using hch
   set R : ℝ := min ρ H / 10 with hR
-  have hR0 : 0 < R := by positivity
   obtain ⟨T, hTsub, hTfin, hTcov⟩ :=
     finite_cover_balls_of_compact (frontier_isCompact hb) (show 0 < R / 16 by positivity)
   set F := hTfin.toFinset
@@ -185,11 +184,10 @@ theorem exists_transversalField {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
           exact abs_tentBump_sub_le hR2 z y
       _ = m * (1 / (R / 2)) * ‖z - y‖ := by simp [m]; ring
   set κ : ℝ := 1 / (2 * (K + 1))
-  have hK0 : (0 : ℝ) ≤ K := K.2
+  have hK0 := K.2
   have hκ0 : 0 < κ := by positivity
   set τ : ℝ := R / (2 * m + 2)
-  have hτ0 : 0 < τ := by positivity
-  refine ⟨X, _, m, R / 16, τ, κ / 2, hXl, hXb, by positivity, hτ0, by positivity, ?_⟩
+  refine ⟨X, _, m, R / 16, τ, κ / 2, hXl, hXb, by positivity, (by positivity), by positivity, ?_⟩
   intro z hz t ht0 htτ
   obtain ⟨q, hq, hzq⟩ := exists_frontier_near_of_abs_signedDist_lt hΩne hΩu hz
   obtain ⟨p₀, hp₀T, hqp₀⟩ := mem_iUnion₂.mp (hTcov hq)
@@ -212,7 +210,7 @@ theorem exists_transversalField {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
   have hchain := le_comp_add_sum (signedDist Ω) F (fun p => ψ p z) n κ z ht0
     (fun p _ => tentBump_nonneg _ _ _) (by
       intro p hp hpos y hy
-      have hzp : ‖z - p‖ < R / 2 := norm_sub_lt_of_tentBump_pos hR2 hpos
+      have hzp := norm_sub_lt_of_tentBump_pos hR2 hpos
       have hyz : ‖y - z‖ ≤ R / 2 := by
         refine hy.trans ?_
         calc t * ∑ j ∈ F, ψ j z * ‖n j‖ ≤ t * m := by
@@ -226,14 +224,13 @@ theorem exists_transversalField {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
         have : ‖y - p‖ ≤ ‖y - z‖ + ‖z - p‖ := by
           rw [← dist_eq_norm, ← dist_eq_norm, ← dist_eq_norm]; exact dist_triangle _ _ _
         rw [← hR]; linarith
-      have htw0 : 0 ≤ t * ψ p z := mul_nonneg ht0 (tentBump_nonneg _ _ _)
       have htw : t * ψ p z ≤ min ρ H / 10 := by
         have h1 : t * ψ p z ≤ t := mul_le_of_le_one_right ht0 (tentBump_le_one hR2 z)
         have h2 : τ ≤ R := by
           simp only [τ]; rw [div_le_iff₀ (by positivity)]; nlinarith
         rw [← hR]; linarith
       have := signedDist_add_le_of_chart hΩo hΩne hΩu (hcf p (hFsub p hp)) (hFsub p hp) hyp
-        htw0 htw
+        (mul_nonneg ht0 (tentBump_nonneg _ _ _)) htw
       convert this using 2
       simp only [κ]; ring)
   have : κ / 2 * t ≤ κ * t * ∑ p ∈ F, ψ p z := by

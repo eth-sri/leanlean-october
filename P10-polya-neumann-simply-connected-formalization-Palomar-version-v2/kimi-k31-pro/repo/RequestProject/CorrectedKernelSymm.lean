@@ -15,7 +15,7 @@ because `w_E(θ, t) = conj (w_E(t, θ))` and `B_E` is self-adjoint (Lemma 6.3). 
 jointly measurable Hermitian kernel on `[0, L]²` the double Fourier coefficients satisfy
 `k_{n m} = conj (k_{-m, -n})` (`doubleCoeff_conj_symm`, by Fubini). Hence the fractional
 gain of `summable_rpow_mul_correctedKernelCoeff` in the first variable transfers to the second
-variable (`summable_rpow_mul_correctedKernelCoeff_snd`), as in the paper:
+variable (`summable_rpow_mul_correctedKernelCoeff_snd`) , in
 
   `∑_{n, m} |n|^{2+2δ} |r_{n m}|² < ∞`  for `0 ≤ δ < 1/2`.
 -/
@@ -55,7 +55,7 @@ lemma doubleIntegral_conj_symm {k : ℝ → ℝ → ℂ} {C : ℝ}
     simp only [μ]; rw [Measure.prod_restrict]
     exact ae_restrict_mem (measurableSet_Ioc.prod measurableSet_Ioc)
   have hmS : AEStronglyMeasurable (fun p : ℝ × ℝ => k p.2 p.1) (μ.prod μ) :=
-    hm.comp_measurePreserving (Measure.measurePreserving_swap)
+    hm.comp_measurePreserving Measure.measurePreserving_swap
   have hint : Integrable (Function.uncurry fun θ t =>
       e (-m) θ * (e (-n) t * conj (k t θ))) (μ.prod μ) := by
     refine Integrable.of_bound (C := C) ?_ ?_
@@ -63,7 +63,7 @@ lemma doubleIntegral_conj_symm {k : ℝ → ℝ → ℂ} {C : ℝ}
         (((hec _).comp continuous_snd).aestronglyMeasurable.mul
           (Complex.continuous_conj.comp_aestronglyMeasurable hmS))
     · filter_upwards [hae] with p hp
-      simp only [Function.uncurry, norm_mul, hen, Complex.norm_conj, one_mul]
+      simp [Function.uncurry, norm_mul, hen, Complex.norm_conj, one_mul]
       exact hb _ (Ioc_subset_Icc_self hp.2) _ (Ioc_subset_Icc_self hp.1)
   have h1 : ∫ θ, ∫ t, e (-m) θ * (e (-n) t * k θ t) ∂μ ∂μ =
       ∫ θ, ∫ t, e (-m) θ * (e (-n) t * conj (k t θ)) ∂μ ∂μ := by
@@ -79,7 +79,7 @@ lemma doubleIntegral_conj_symm {k : ℝ → ℝ → ℂ} {C : ℝ}
   dsimp only
   rw [← integral_conj]
   refine integral_congr_ae (Filter.Eventually.of_forall fun t => ?_)
-  simp only [map_mul, hconj]
+  simp [map_mul, hconj]
   ring
 
 /-- **Double Fourier coefficients of a Hermitian kernel.** For a bounded, jointly measurable
@@ -94,7 +94,7 @@ theorem doubleCoeff_conj_symm {k : ℝ → ℝ → ℂ} {C : ℝ}
       conj (fourierCoeffOn two_pi_pos (fun θ => fourierCoeffOn two_pi_pos (k θ) (-m)) (-n)) := by
   simp only [fourierCoeffOn_eq_integral, intervalIntegral.integral_of_le two_pi_pos.le,
     smul_eq_mul, neg_neg, Complex.real_smul]
-  set c : ℂ := ((1 / (2 * π - 0) : ℝ) : ℂ)
+  set c := ((1 / (2 * π - 0) : ℝ) : ℂ)
   simp only [mul_left_comm _ c, integral_const_mul]
   rw [doubleIntegral_conj_symm hm hb hs n m]
   simp only [map_mul, c, Complex.conj_ofReal]
@@ -114,7 +114,7 @@ theorem correctedKernel_conj_symm (hK : LipschitzWith K γ) (hW : IsTransport γ
     simp only [volterraKernel]
     rw [inner_conj_symm, ← ContinuousLinearMap.adjoint_inner_left,
       ← ContinuousLinearMap.adjoint_inner_left]
-    simp only [ContinuousLinearMap.adjoint_adjoint]
+    simp
   have hb : ⟪basisVec 0, W θ (cutBE W (ContinuousLinearMap.adjoint (W t) (basisVec 0)))⟫_ℂ =
       conj ⟪basisVec 0, W t (cutBE W (ContinuousLinearMap.adjoint (W θ) (basisVec 0)))⟫_ℂ := by
     rw [inner_conj_symm, ← ContinuousLinearMap.adjoint_inner_left,
@@ -122,7 +122,7 @@ theorem correctedKernel_conj_symm (hK : LipschitzWith K γ) (hW : IsTransport γ
       ContinuousLinearMap.adjoint_inner_right]
   have hsign : Real.sign (θ - t) = -Real.sign (t - θ) := by
     rw [← Real.sign_neg, neg_sub]
-  simp only [correctedKernel, map_add, map_mul, map_sub, Complex.conj_I, Complex.conj_ofReal,
+  simp [correctedKernel, map_add, map_mul, map_sub, Complex.conj_I, Complex.conj_ofReal,
     map_div₀, map_one, hw, hb, hsign, Complex.ofReal_neg]
   ring
 
@@ -164,7 +164,7 @@ lemma aestronglyMeasurable_correctedKernel (hW : IsTransport γ E W) :
     rw [Measure.prod_restrict]
     exact ae_restrict_mem (measurableSet_Ioc.prod measurableSet_Ioc)
   filter_upwards [hae] with p hp
-  simp only [Function.uncurry]
+  simp [Function.uncurry]
   rw [clampTwoPi_of_mem (Ioc_subset_Icc_self hp.1), clampTwoPi_of_mem (Ioc_subset_Icc_self hp.2)]
 
 /-- The double Fourier coefficients of the corrected kernel satisfy `r_{n m} = conj (r_{-m,-n})`. -/
@@ -205,7 +205,7 @@ lemma summable_mixed_weight {a : ℤ × ℤ → ℝ} (ha : ∀ p, 0 ≤ a p) {s 
     (h1 : Summable fun p : ℤ × ℤ => |(p.1 : ℝ)| ^ s * a p)
     (h2 : Summable fun p : ℤ × ℤ => |(p.2 : ℝ)| ^ s * a p) :
     Summable fun p : ℤ × ℤ => (1 + |(p.2 : ℝ)|) ^ α * (1 + |(p.1 : ℝ)|) ^ β * a p := by
-  have hs : 0 ≤ s := hαβ ▸ add_nonneg hα hβ
+  have hs := hαβ ▸ add_nonneg hα hβ
   have h0 : Summable fun p : ℤ × ℤ => if p = 0 then a p else 0 :=
     summable_of_ne_finset_zero (s := {0}) fun p hp => by simp_all
   refine Summable.of_nonneg_of_le (fun p => mul_nonneg (by positivity) (ha p)) (fun p => ?_)
@@ -215,7 +215,6 @@ lemma summable_mixed_weight {a : ℤ × ℤ → ℝ} (ha : ∀ p, 0 ≤ a p) {s 
   have hx : 0 ≤ x := abs_nonneg _
   have hy : 0 ≤ y := abs_nonneg _
   set M := max x y
-  have hM : 0 ≤ M := le_max_of_le_left hx
   have hw : (1 + y) ^ α * (1 + x) ^ β ≤ (1 + M) ^ s := by
     rw [← hαβ, Real.rpow_add (by positivity)]
     gcongr
@@ -234,7 +233,7 @@ lemma summable_mixed_weight {a : ℤ × ℤ → ℝ} (ha : ∀ p, 0 ≤ a p) {s 
     · subst hp
       simp only [x, y, M, Prod.fst_zero, Prod.snd_zero, Int.cast_zero, abs_zero, max_self,
         if_true]
-      rw [max_eq_left zero_le_one, Real.one_rpow]
+      simp
       have := Real.rpow_nonneg (le_refl (0:ℝ)) s
       linarith
     · rw [if_neg hp, add_zero]
@@ -301,8 +300,8 @@ theorem summable_correctedRemainderMatrix (hK : LipschitzWith K γ)
     rw [← Real.rpow_natCast, ← Real.rpow_mul hx]
     norm_num
   refine ((σ.summable_iff).mpr h).congr fun p => ?_
-  have h1 : 0 ≤ (1 + |(p.1 : ℝ)|) := by positivity
-  have h2 : 0 ≤ (1 + |(p.2 : ℝ)|) := by positivity
+
+
   have hn : ‖correctedRemainderMatrix W δ s p‖ ^ 2 =
       ((1 + |(p.1 : ℝ)|) ^ ((1 + 2 * s + 2 * δ) / 2)) ^ 2 *
         ((1 + |(p.2 : ℝ)|) ^ ((1 - 2 * s) / 2)) ^ 2 * (2 * π) ^ 2 *
@@ -311,7 +310,7 @@ theorem summable_correctedRemainderMatrix (hK : LipschitzWith K γ)
     rw [correctedRemainderMatrix, norm_mul, Complex.norm_real, Real.norm_eq_abs,
       abs_of_nonneg (by positivity)]
     ring
-  rw [hn, hsq _ h1, hsq _ h2]
+  rw [hn, hsq _ (by positivity), hsq _ (by positivity)]
   simp only [Function.comp_apply, σ, Equiv.coe_fn_mk, Int.cast_neg, abs_neg]
   ring
 

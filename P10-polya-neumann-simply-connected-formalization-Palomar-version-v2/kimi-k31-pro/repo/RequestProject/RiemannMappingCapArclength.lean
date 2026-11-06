@@ -45,25 +45,23 @@ theorem exists_lipschitz_reparam_of_length {G : ℝ → ℂ} {ℓ : ℝ → ℝ}
   let f : Icc a b → Icc 0 (ℓ b) := fun θ =>
     ⟨ℓ θ, ⟨by rw [← hℓa]; exact hℓs.monotoneOn ⟨le_rfl, hab.le⟩ θ.property θ.property.1,
       hℓs.monotoneOn θ.property ⟨hab.le, le_rfl⟩ θ.property.2⟩⟩
-  have hfs : StrictMono f := fun θ ψ hθψ => hℓs θ.property ψ.property hθψ
   have hfo : Function.Surjective f := by
     intro u
     have hu : (u : ℝ) ∈ Icc (ℓ a) (ℓ b) := by simpa only [hℓa] using u.property
     obtain ⟨θ, hθ, heq⟩ := intermediate_value_Icc hab.le hℓc hu
     exact ⟨⟨θ, hθ⟩, Subtype.ext heq⟩
-  let e : Icc a b ≃o Icc 0 (ℓ b) := StrictMono.orderIsoOfSurjective f hfs hfo
+  let e := StrictMono.orderIsoOfSurjective f (fun θ ψ hθψ => hℓs θ.property ψ.property hθψ) hfo
   let τ : ℝ → ℝ := fun u => (e.symm (projIcc 0 (ℓ b) hL.le u) : ℝ)
-  let H : ℝ → ℂ := fun u => G (τ u)
-  have hτc : Continuous τ := continuous_subtype_val.comp
+  let H := fun u => G (τ u)
+  have hτc := continuous_subtype_val.comp
     (e.symm.continuous.comp (LipschitzWith.projIcc hL.le).continuous)
   have hτmem (u : ℝ) : τ u ∈ Icc a b := (e.symm _).property
-  have hτℓ (u : ℝ) : ℓ (τ u) = (projIcc 0 (ℓ b) hL.le u : ℝ) := by
-    exact congrArg (fun x : Icc 0 (ℓ b) => (x : ℝ))
+  have hτℓ (u : ℝ) : ℓ (τ u) = (projIcc 0 (ℓ b) hL.le u : ℝ) := congrArg (fun x : Icc 0 (ℓ b) => (x : ℝ))
       (e.apply_symm_apply (projIcc 0 (ℓ b) hL.le u))
   have hτright (u : ℝ) (hu : u ∈ Icc 0 (ℓ b)) : ℓ (τ u) = u := by
     rw [hτℓ, projIcc_of_mem _ hu]
   have hτleft (θ : ℝ) (hθ : θ ∈ Icc a b) : τ (ℓ θ) = θ := by
-    have hℓθ : ℓ θ ∈ Icc 0 (ℓ b) := (f ⟨θ, hθ⟩).property
+    have hℓθ := (f ⟨θ, hθ⟩).property
     have hp : projIcc 0 (ℓ b) hL.le (ℓ θ) = e ⟨θ, hθ⟩ := by
       rw [projIcc_of_mem _ hℓθ]
       rfl
@@ -94,7 +92,7 @@ theorem exists_lipschitz_reparam_of_length {G : ℝ → ℂ} {ℓ : ℝ → ℝ}
     exact ⟨τ u, hτmem u, rfl⟩
   · rintro ⟨θ, hθ, rfl⟩
     refine ⟨ℓ θ, (f ⟨θ, hθ⟩).property, ?_⟩
-    simp only [H, hτleft θ hθ]
+    simp [H, hτleft θ hθ]
 
 /-- The actual angular arclength, with its prescribed starting point. -/
 def riemannCapArcLength (F : ℂ → ℂ) (c : ℂ) (r a θ : ℝ) : ℝ :=
@@ -135,7 +133,7 @@ theorem riemannCapArcLength_strictMonoOn (F : ℂ → ℂ)
     (hGeq : EqOn G (fun θ => F (circleMap c r θ)) (Ioo a b)) :
     StrictMonoOn (riemannCapArcLength F c r a) (Icc a b) := by
   let ℓ := riemannCapArcLength F c r a
-  have hm : Monotone ℓ := riemannCapArcLength_monotone F c r a hi
+  have hm := riemannCapArcLength_monotone F c r a hi
   have hGi : InjOn G (Ioo a b) := by
     intro θ hθ ψ hψ he
     apply injOn_circleMap_of_abs_sub_le' hr hwidth
@@ -143,7 +141,7 @@ theorem riemannCapArcLength_strictMonoOn (F : ℂ → ℂ)
     exact hinj (harc hθ) (harc hψ) ((hGeq hθ).symm.trans (he.trans (hGeq hψ)))
   intro θ hθ ψ hψ hθψ
   by_contra h
-  have he : ℓ θ = ℓ ψ := le_antisymm (hm hθψ.le) (le_of_not_gt h)
+  have he := le_antisymm (hm hθψ.le) (le_of_not_gt h)
   let v := (2 * θ + ψ) / 3
   let w := (θ + 2 * ψ) / 3
   have hvθ : θ < v := by dsimp [v]; linarith
@@ -183,7 +181,7 @@ theorem riemannMapping_cap_arclength_reparam (F : ℂ → ℂ)
   refine exists_lipschitz_reparam_of_length hab
     (riemannCapArcLength_continuous F c r a hi).continuousOn
     (riemannCapArcLength_strictMonoOn F hF hinj c hr hwidth hi harc hGc hGeq)
-    (by simp only [riemannCapArcLength, intervalIntegral.integral_same]) ?_
+    (by simp [riemannCapArcLength, intervalIntegral.integral_same]) ?_
   intro θ hθ ψ hψ hθψ
   rw [riemannCapArcLength_sub F c r a θ ψ hi]
   exact riemannMapping_cap_extension_subarc_displacement F hF c r hi harc hGc hGeq
@@ -225,7 +223,7 @@ theorem riemannCapDerivative_continuousAt_interior (F : ℂ → ℂ)
   filter_upwards [(continuous_circleMap c r).continuousAt.preimage_mem_nhds
     (isOpen_ball.mem_nhds hθ)] with t ht
   have htDisk : circleMap c r t ∈ ball (0 : ℂ) 1 := ht
-  simp only [riemannCapDerivative, riemannInteriorDerivative, indicator_of_mem htDisk]
+  simp [riemannCapDerivative, riemannInteriorDerivative, indicator_of_mem htDisk]
 
 theorem riemannCapDerivative_ne_zero_interior (F : ℂ → ℂ)
     (hF : DifferentiableOn ℂ F (ball (0 : ℂ) 1))
@@ -234,7 +232,7 @@ theorem riemannCapDerivative_ne_zero_interior (F : ℂ → ℂ)
     riemannCapDerivative F c r θ ≠ 0 := by
   apply norm_pos_iff.mp
   rw [norm_riemannCapDerivative F c hr.le θ]
-  simp only [riemannInteriorDerivative, indicator_of_mem hθ]
+  simp [riemannInteriorDerivative, indicator_of_mem hθ]
   exact mul_pos hr (norm_pos_iff.mpr
     (RiemannInterior.deriv_ne_zero_of_injOn isOpen_ball hF hinj hθ))
 
@@ -285,7 +283,7 @@ theorem riemannMapping_exists_small_lipschitz_cap (F : ℂ → ℂ)
       (((continuous_circleMap ζ r).tendsto b).mono_left nhdsWithin_le_nhds) hGbLim
   have hℓs : StrictMonoOn ℓ (Icc a b) :=
     riemannCapArcLength_strictMonoOn F hF hinj ζ hr.1.ne' hwidth' hi harc hGc hGeq
-  have hℓa : ℓ a = 0 := by simp only [ℓ, riemannCapArcLength, intervalIntegral.integral_same]
+  have hℓa : ℓ a = 0 := by simp [ℓ, riemannCapArcLength, intervalIntegral.integral_same]
   have hL : 0 < ℓ b := by
     rw [← hℓa]
     exact hℓs ⟨le_rfl, hab.le⟩ ⟨hab.le, le_rfl⟩ hab
@@ -297,14 +295,14 @@ theorem riemannMapping_exists_small_lipschitz_cap (F : ℂ → ℂ)
     have h := hτl a ⟨le_rfl, hab.le⟩
     change τ (ℓ a) = a at h
     simpa only [hℓa] using h
-  have hτL : τ (ℓ b) = b := hτl b ⟨hab.le, le_rfl⟩
-  have hH0 : H 0 = G a := (hH 0).trans (congrArg G hτ0)
-  have hHL : H (ℓ b) = G b := (hH _).trans (congrArg G hτL)
+  have hτL := hτl b ⟨hab.le, le_rfl⟩
+  have hH0 := (hH 0).trans (congrArg G hτ0)
+  have hHL := (hH _).trans (congrArg G hτL)
   have hGi := riemannMapping_cap_injOn_Ico F hF hinj hr.1.ne' hwidth' harc hGeq hGa
   have hHi : InjOn H (Ico 0 (ℓ b)) := by
     intro u hu v hv heq
-    have huc : u ∈ Icc 0 (ℓ b) := Ico_subset_Icc_self hu
-    have hvc : v ∈ Icc 0 (ℓ b) := Ico_subset_Icc_self hv
+    have huc := Ico_subset_Icc_self hu
+    have hvc := Ico_subset_Icc_self hv
     have hτi (s : ℝ) (hs : s ∈ Ico 0 (ℓ b)) : τ s ∈ Ico a b := by
       refine ⟨(hτm s).1, ?_⟩
       apply lt_of_le_of_ne (hτm s).2
@@ -312,7 +310,7 @@ theorem riemannMapping_exists_small_lipschitz_cap (F : ℂ → ℂ)
       have h := hτr s (Ico_subset_Icc_self hs)
       rw [hsb] at h
       linarith [hs.2]
-    have hτuv : τ u = τ v := hGi (hτi u hu) (hτi v hv)
+    have hτuv := hGi (hτi u hu) (hτi v hv)
       ((hH u).symm.trans (heq.trans (hH v)))
     have hru := hτr u huc
     rw [hτuv] at hru

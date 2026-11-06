@@ -241,7 +241,7 @@ theorem shift_commutator :
   rw [← shiftNAdj_eq_adjoint]
   ext1 f
   apply lp.ext; funext n
-  simp only [ContinuousLinearMap.sub_apply, ContinuousLinearMap.mul_apply, lp.coeFn_sub,
+  simp [ContinuousLinearMap.sub_apply, ContinuousLinearMap.mul_apply, lp.coeFn_sub,
     Pi.sub_apply, diagN_apply, shiftNAdj_apply, shiftN_apply_succ]
   rcases n with _ | _ | n
   · simp [shiftWeight_mul_self, diagEntry, ← mul_assoc]
@@ -256,6 +256,9 @@ def Gx : Ell2 →L[ℂ] Ell2 :=
 
 /-- The standard basis vector `e_n` of `ℓ²(ℕ₀)`. -/
 def basisVec (n : ℕ) : Ell2 := lp.single 2 n (1 : ℂ)
+
+@[simp] lemma norm_basisVec (n : ℕ) : ‖basisVec n‖ = 1 := by
+  simp [basisVec, lp.norm_single]
 
 end PolyaNeumann
 

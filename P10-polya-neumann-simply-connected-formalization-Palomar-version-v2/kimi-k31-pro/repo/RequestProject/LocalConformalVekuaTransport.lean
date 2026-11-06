@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.TwoPi
 public import RequestProject.PhysicalDrivenRowsReconstruction
 public import RequestProject.LocalConformalVekuaConormalBridge
 public import RequestProject.LocalConformalVekuaInjectivity
@@ -43,7 +44,6 @@ namespace PolyaNeumann
 open Set MeasureTheory Filter Metric
 open scoped Topology ComplexConjugate
 
-local instance vekuaTransportTwoPiPos : Fact (0 < 2 * Real.pi) := ⟨Real.two_pi_pos⟩
 
 /-- The actual interval-integral series defining row n of a Vekua trace. -/
 def volterraVekuaTraceRowTerm (γ : ℝ → ℂ) (E : ℂ) (h : ℝ → ℂ)
@@ -76,7 +76,7 @@ private theorem volterraVekuaTraceRowTerm_bound
     hM hH (j + n) θ hθ
   have hfact : (n.factorial : ℝ) ≤ ((j + n).factorial : ℝ) := by
     exact_mod_cast Nat.factorial_le (by omega : n ≤ j + n)
-  simp only [volterraVekuaTraceRowTerm, norm_mul, norm_pow, transport_norm_physicalVekuaCoeff]
+  simp [volterraVekuaTraceRowTerm, norm_mul, norm_pow, transport_norm_physicalVekuaCoeff]
   calc
     _ ≤ ((‖E‖ / 4) ^ j / (j.factorial : ℝ)) * R ^ j *
         (H * (M * (2 * Real.pi)) ^ (j + n) / ((j + n).factorial : ℝ)) := by
@@ -85,13 +85,12 @@ private theorem volterraVekuaTraceRowTerm_bound
         (H * (M * (2 * Real.pi)) ^ (j + n) / (n.factorial : ℝ)) := by
       gcongr
     _ = _ := by
-      simp only [pow_add, mul_pow]
+      simp [pow_add, mul_pow]
       ring
 
 theorem volterraVekuaTraceRowTerm_continuous
     {γ h : ℝ → ℂ} (hγ : ContDiff ℝ 1 γ) (hh : Continuous h)
-    (E : ℂ) (n j : ℕ) : Continuous (volterraVekuaTraceRowTerm γ E h n j) := by
-  exact (continuous_const.mul ((hγ.continuous.sub continuous_const).pow j)).mul
+    (E : ℂ) (n j : ℕ) : Continuous (volterraVekuaTraceRowTerm γ E h n j) := (continuous_const.mul ((hγ.continuous.sub continuous_const).pow j)).mul
     (continuous_volterraPrimitiveIterate
       (Complex.continuous_conj.comp hγ.continuous_deriv_one) hh (j + n))
 
@@ -113,10 +112,9 @@ theorem exists_volterraVekuaTraceRow_factorial_bound
   have hR0 : 0 ≤ R := (norm_nonneg _).trans (hR 0 hzero)
   let B := M * (2 * Real.pi)
   let r := ‖E‖ / 4 * R * B
-  let S : ℝ := ∑' j : ℕ, r ^ j / (j.factorial : ℝ)
-  have hr : 0 ≤ r := by dsimp only [r, B]; positivity
-  have hB : 0 ≤ B := by dsimp only [B]; positivity
-  have hS : 0 ≤ S := tsum_nonneg fun _ => by positivity
+  let S := ∑' j : ℕ, r ^ j / (j.factorial : ℝ)
+
+
   have hs : Summable (fun j : ℕ => r ^ j / (j.factorial : ℝ)) :=
     Real.summable_pow_div_factorial r
   have hmaj (n : ℕ) : Summable (fun j : ℕ =>
@@ -126,7 +124,7 @@ theorem exists_volterraVekuaTraceRow_factorial_bound
       ‖volterraVekuaTraceRowTerm γ E h n j θ‖ ≤
         (H * B ^ n / (n.factorial : ℝ)) * (r ^ j / (j.factorial : ℝ)) :=
     volterraVekuaTraceRowTerm_bound hγ hh E hM0 hH0 hR0 hM hH hR n j hθ
-  refine ⟨H * S, B, mul_nonneg hH0 hS, hB, ?_, ?_⟩
+  refine ⟨H * S, B, mul_nonneg hH0 (tsum_nonneg fun _ => by positivity), (by dsimp only [B]; positivity), ?_, ?_⟩
   · intro n θ hθ
     have hn : Summable (fun j => ‖volterraVekuaTraceRowTerm γ E h n j θ‖) :=
       Summable.of_nonneg_of_le (fun _ => norm_nonneg _) (fun j => hbd n j θ hθ) (hmaj n)
@@ -217,7 +215,7 @@ private theorem volterraVekuaTraceRowTerm_hasDerivAt_succ_succ
       _ = _ := by rw [physicalVekuaCoeff_succ]; ring
   convert hd.const_mul (physicalVekuaCoeff E (j + 1)) using 1
   · funext x
-    simp only [volterraVekuaTraceRowTerm, Pi.pow_apply, Pi.mul_apply]
+    simp [volterraVekuaTraceRowTerm, Pi.pow_apply, Pi.mul_apply]
     ring
   · simpa only [Nat.add_sub_cancel, hidx, Pi.pow_apply] using he.symm
 
@@ -244,7 +242,7 @@ theorem volterraVekuaTraceRow_hasDerivAt_succ
       (-E / 4) * deriv γ x * volterraVekuaTraceRowTerm γ E h (n + 2) j x
   let u : ℕ → ℝ := fun j =>
     (M * k n * r + ‖-E / 4‖ * M * k (n + 2)) * (r ^ j / (j.factorial : ℝ))
-  have hu : Summable u := (Real.summable_pow_div_factorial r).mul_left _
+
   have hd (j : ℕ) (x : ℝ) (_hx : x ∈ Ioo 0 (2 * Real.pi)) :
       HasDerivAt (volterraVekuaTraceRowTerm γ E h (n + 1) (j + 1)) (d j x) x :=
     volterraVekuaTraceRowTerm_hasDerivAt_succ_succ hγ hh E n j x
@@ -269,7 +267,7 @@ theorem volterraVekuaTraceRow_hasDerivAt_succ
         gcongr
       _ = u j := by dsimp only [u]; rw [pow_succ]; ring
   have hxcc := Ioo_subset_Icc_self hθ
-  have hds := hasDerivAt_tsum_of_isPreconnected hu isOpen_Ioo (convex_Ioo _ _).isPreconnected
+  have hds := hasDerivAt_tsum_of_isPreconnected ((Real.summable_pow_div_factorial r).mul_left _) isOpen_Ioo (convex_Ioo _ _).isPreconnected
     hd hdb hθ ((summable_nat_add_iff 1).2 (hs (n + 1) hxcc)) hθ
   have ha : Continuous (fun s => conj (deriv γ s)) :=
     Complex.continuous_conj.comp hγ.continuous_deriv_one
@@ -358,12 +356,12 @@ theorem localConformalVekuaTraceRow_eq_volterra (E : ℂ) (b : L2Z)
         (hardyFourierTrace (normalizedHardyAverage b)) n θ := by
   have hpn := localConformalHardyPrimitive_pow_nonpositive hR F hFs hhol b hbn n
   have hp1 := localConformalHardyPrimitive_pow_raw_H1 hR F hFs b hb1 n
-  have havg : IsSobolevSeq 1 (normalizedHardyAverage b) := isSobolevSeq_smul _ hb1
+
   have hfun : hardyFourierTrace (normalizedHardyAverage ((JF ^ n) b)) =
       volterraPrimitiveIterate (fun s => conj (deriv (physicalCircleTrace F) s))
         (hardyFourierTrace (normalizedHardyAverage b)) n := by
     funext s
-    exact localConformalHardyPrimitive_pow_volterra_of_H1 hR F hFs hhol b hbn havg n s
+    exact localConformalHardyPrimitive_pow_volterra_of_H1 hR F hFs hhol b hbn (isSobolevSeq_smul _ hb1) n s
   have hs := localConformalVekuaBoundary_average_volterra_hasSum_of_H1 hR F hFs hb hL
     hhol hinj hC hK e he hsource hes E ((JF ^ n) b) hpn hp1 θ
   rw [hfun] at hs
@@ -505,9 +503,9 @@ theorem exists_localConformalVekuaTransportCoordinate_factorial_bound (E : ℝ) 
   · intro n
     unfold localConformalVekuaTransportCoordinate
     by_cases hn : n = 0
-    · simp only [hn, if_true]
+    · simp [hn, if_true]
       exact (hc 0).div_const _
-    · simp only [hn, if_false]
+    · simp [hn, if_false]
       exact continuousOn_const.mul (hc n)
 
 /-- The coordinates form a genuinely absolutely summable sequence. -/
@@ -527,10 +525,6 @@ def localConformalVekuaTransportVector (E : ℝ) (b : L2Z) (θ : ℝ) : Ell2 :=
   ∑' n : ℕ, localConformalVekuaTransportCoordinate hR F hFs hb hL hhol hinj hC hK
     e he hsource hes E b n θ • basisVec n
 
-private theorem vekuaTransport_norm_basisVec (n : ℕ) : ‖basisVec n‖ = 1 := by
-  rw [basisVec, lp.norm_single (by norm_num)]
-  simp
-
 theorem localConformalVekuaTransportVector_hasSum (E : ℝ) (b : L2Z)
     (hbn : IsNonpositiveFourierSupport b)
     (hb1 : IsSobolevSeq 1 (fromL2 (1 / 2 : ℝ) b))
@@ -541,7 +535,7 @@ theorem localConformalVekuaTransportVector_hasSum (E : ℝ) (b : L2Z)
         e he hsource hes E b θ) := by
   apply Summable.hasSum
   apply Summable.of_norm
-  simpa only [norm_smul, vekuaTransport_norm_basisVec, mul_one] using
+  simpa only [norm_smul, norm_basisVec, mul_one] using
     summable_norm_localConformalVekuaTransportCoordinate hR F hFs hb hL hhol hinj hC hK
       e he hsource hes E b hbn hb1 hθ
 
@@ -592,7 +586,7 @@ theorem localConformalVekuaTransportVector_continuousOn (E : ℝ) (b : L2Z)
       (Icc 0 (2 * Real.pi)) := by
     apply HasSumUniformlyOn.of_norm_le_summable (summable_volterraPrimitive_majorant A B)
     intro n θ hθ
-    simpa only [norm_smul, vekuaTransport_norm_basisVec, mul_one] using hbd n θ hθ
+    simpa only [norm_smul, norm_basisVec, mul_one] using hbd n θ hθ
   apply hu.tendstoUniformlyOn.continuousOn
   refine (Eventually.of_forall fun s : Finset ℕ => ?_).frequently
   apply continuousOn_finset_sum s
@@ -624,12 +618,12 @@ theorem localConformalVekuaTransportVector_origin (E : ℝ) (b : L2Z)
     e he hsource hes E b hbn hb1 ⟨le_rfl, Real.two_pi_pos.le⟩]
   cases n with
   | zero =>
-      simp only [localConformalVekuaTransportCoordinate, if_true,
+      simp [localConformalVekuaTransportCoordinate, if_true,
         localConformalVekuaTraceRow_zero_origin hR F hFs hb hL hhol hinj hC hK
           e he hsource hes (E : ℂ) b hbn hb1,
         lp.coeFn_smul, Pi.smul_apply, smul_eq_mul, basisVec_coord, if_true, mul_one]
   | succ n =>
-      simp only [localConformalVekuaTransportCoordinate, Nat.succ_ne_zero, if_false,
+      simp [localConformalVekuaTransportCoordinate, Nat.succ_ne_zero, if_false,
         localConformalVekuaTraceRow_succ_origin hR F hFs hb hL hhol hinj hC hK
           e he hsource hes (E : ℂ) b hbn hb1, mul_zero,
         lp.coeFn_smul, Pi.smul_apply, smul_eq_mul, basisVec_coord, if_false]
@@ -682,7 +676,7 @@ theorem exists_localConformalVekuaPositiveTransportDerivative_majorant (E : ℝ)
   intro n θ hθ
   have hfact : (n.factorial : ℝ) ≤ ((n + 2).factorial : ℝ) := by
     exact_mod_cast Nat.factorial_le (by omega : n ≤ n + 2)
-  simp only [localConformalVekuaPositiveTransportDerivative, norm_mul, norm_pow]
+  simp [localConformalVekuaPositiveTransportDerivative, norm_mul, norm_pow]
   calc
     _ ≤ ‖physicalDrivenQ E‖ ^ (n + 1) *
         (‖(-(E : ℂ) / 4) * deriv (physicalCircleTrace F) θ *
@@ -704,23 +698,19 @@ theorem exists_localConformalVekuaPositiveTransportDerivative_majorant (E : ℝ)
                   e he hsource hes (E : ℂ) b (n + 2) θ‖
                 ≤ ‖-(E : ℂ) / 4‖ * M *
                     ‖localConformalVekuaTraceRow hR F hFs hb hL hhol hinj hC hK
-                      e he hsource hes (E : ℂ) b (n + 2) θ‖ := by
-                  exact mul_le_mul_of_nonneg_right
+                      e he hsource hes (E : ℂ) b (n + 2) θ‖ := mul_le_mul_of_nonneg_right
                     (mul_le_mul_of_nonneg_left (hM θ hθ) (norm_nonneg _))
                     (norm_nonneg _)
             _ ≤ ‖-(E : ℂ) / 4‖ * M *
-                (A * B ^ (n + 2) / ((n + 2).factorial : ℝ)) := by
-                  exact mul_le_mul_of_nonneg_left (hbd (n + 2) θ hθ)
+                (A * B ^ (n + 2) / ((n + 2).factorial : ℝ)) := mul_le_mul_of_nonneg_left (hbd (n + 2) θ hθ)
                     (mul_nonneg (norm_nonneg _) hM0)
         · calc
             ‖deriv (physicalCircleTrace F) θ‖ *
                 ‖localConformalVekuaTraceRow hR F hFs hb hL hhol hinj hC hK
                   e he hsource hes (E : ℂ) b n θ‖
                 ≤ M * ‖localConformalVekuaTraceRow hR F hFs hb hL hhol hinj hC hK
-                  e he hsource hes (E : ℂ) b n θ‖ := by
-                  exact mul_le_mul_of_nonneg_right (hM θ hθ) (norm_nonneg _)
-            _ ≤ M * (A * B ^ n / (n.factorial : ℝ)) := by
-                  exact mul_le_mul_of_nonneg_left (hbd n θ hθ) hM0
+                  e he hsource hes (E : ℂ) b n θ‖ := mul_le_mul_of_nonneg_right (hM θ hθ) (norm_nonneg _)
+            _ ≤ M * (A * B ^ n / (n.factorial : ℝ)) := mul_le_mul_of_nonneg_left (hbd n θ hθ) hM0
       · positivity
     _ ≤ ‖physicalDrivenQ E‖ ^ (n + 1) *
         (‖-(E : ℂ) / 4‖ * M * (A * B ^ (n + 2) / (n.factorial : ℝ)) +
@@ -775,7 +765,7 @@ theorem localConformalVekuaPositiveTransportVector_hasDerivAt (E : ℝ) (b : L2Z
   have hgb (n : ℕ) (x : ℝ) (hx : x ∈ Ioo 0 (2 * Real.pi)) :
       ‖localConformalVekuaPositiveTransportDerivative hR F hFs hb hL hhol hinj hC hK
           e he hsource hes E b n x • basisVec (n + 1)‖ ≤ u n := by
-    simpa only [norm_smul, vekuaTransport_norm_basisVec, mul_one] using
+    simpa only [norm_smul, norm_basisVec, mul_one] using
       hbd n x (Ioo_subset_Icc_self hx)
   have hs := (localConformalVekuaTransportVector_hasSum hR F hFs hb hL hhol hinj hC hK
     e he hsource hes E b hbn hb1 (Ioo_subset_Icc_self hθ)).summable
@@ -810,7 +800,7 @@ theorem localConformalVekuaPositiveTransportDerivative_eq_transportCoeff_coord
       field_simp [hs0]
       <;> ring
   | succ n =>
-      simp only [localConformalVekuaTransportCoordinate, shiftWeight, Nat.succ_ne_zero,
+      simp [localConformalVekuaTransportCoordinate, shiftWeight, Nat.succ_ne_zero,
         if_false, one_mul, pow_succ, pow_zero, mul_one]
       ring
 
@@ -827,7 +817,7 @@ theorem summable_localConformalVekuaPositiveTransportDerivative (E : ℝ) (b : L
   apply Summable.of_norm
   apply Summable.of_nonneg_of_le (fun _ => norm_nonneg _) _ hu
   intro n
-  simpa only [norm_smul, vekuaTransport_norm_basisVec, mul_one] using hbd n θ hθ
+  simpa only [norm_smul, norm_basisVec, mul_one] using hbd n θ hθ
 
 /-- The positive derivative is the genuine physical transport term with
 its exceptional zeroth coordinate removed. -/
@@ -921,12 +911,12 @@ theorem localConformalVekuaConormal_kernel_hasDerivAt_zero (E : ℂ) (b : L2Z)
         localConformalVekuaTraceRow hR F hFs hb hL hhol hinj hC hK
           e he hsource hes E b 1 θ) θ := by
   have hb1 := localConformalVekuaConormal_kernel_raw_H1 hR F hFs E b hker
-  let v : ℝ → ℂ := localConformalVekuaTraceRow hR F hFs hb hL hhol hinj hC hK
+  let v := localConformalVekuaTraceRow hR F hFs hb hL hhol hinj hC hK
     e he hsource hes E b 0
   let d : ℝ → ℂ := fun t => 2 * (-E / 4) * deriv (physicalCircleTrace F) t *
     localConformalVekuaTraceRow hR F hFs hb hL hhol hinj hC hK
       e he hsource hes E b 1 t
-  have hv : Continuous v := localConformalVekuaTraceRow_continuous hR F hFs hb hL hhol
+  have hv := localConformalVekuaTraceRow_continuous hR F hFs hb hL hhol
     hinj hC hK e he hsource hes E b hbn hb1 0
   have hΓ : ContDiff ℝ 1 (physicalCircleTrace F) :=
     contDiff_physicalCircleTrace_of_neighborhood hR F
@@ -946,8 +936,8 @@ theorem localConformalVekuaConormal_kernel_hasDerivAt_zero (E : ℂ) (b : L2Z)
   let TF := localConformalDiskH1Trace hR F hFs hL
   let VF := localConformalVekuaH1 hR F hFs hb hL hhol hinj hC hK e he hsource hes
   let Vel := boundaryContinuousMultiplier (localConformalVelocityCircle F)
-  let G : BoundaryL2 := Vel (TF (VF (F 1) E (JF b)))
-  let L : BoundaryL2 := (2 * (-E / 4)) • G
+  let G := Vel (TF (VF (F 1) E (JF b)))
+  let L := (2 * (-E / 4)) • G
   have hJbn := localConformalHardyPrimitive_nonpositive hR F hFs hhol b hbn
   have hJ1 : IsSobolevSeq 1 (fromL2 (1 / 2 : ℝ) (JF b)) := by
     simpa only [pow_one] using localConformalHardyPrimitive_pow_raw_H1 hR F hFs b hb1 1
@@ -965,7 +955,7 @@ theorem localConformalVekuaConormal_kernel_hasDerivAt_zero (E : ℂ) (b : L2Z)
       boundaryContinuousMultiplier_ae (localConformalVelocityCircle F) (TF (VF (F 1) E (JF b))),
       ht1] with t hL hG ht
     rw [hL]
-    simp only [Pi.smul_apply, smul_eq_mul, G, Vel, TF, VF, hG, ht,
+    simp [Pi.smul_apply, smul_eq_mul, G, Vel, TF, VF, hG, ht,
       localConformalVelocityCircle_apply hR F hFs, d, localConformalVekuaTraceRow, pow_one]
     ring
   have hc (n : ℤ) : fourierCoeffOn Real.two_pi_pos d n =
@@ -985,10 +975,9 @@ theorem localConformalVekuaConormal_kernel_hasDerivAt_zero (E : ℂ) (b : L2Z)
     calc
       _ = boundaryFourier L n := (transport_fourier_coeff_ae L hLae n).symm
       _ = (Complex.I * (n : ℂ)) * boundaryFourier (TF (VF (F 1) E b)) n := by
-        simp only [L, map_smul, lp.coeFn_smul, Pi.smul_apply, smul_eq_mul]
+        simp [L, map_smul, lp.coeFn_smul, Pi.smul_apply, smul_eq_mul]
         have h2 : 2 * Complex.I * ((-E / 4) * boundaryFourier G n) =
-            -(n : ℂ) * boundaryFourier (TF (VF (F 1) E b)) n := by
-          exact (sub_eq_zero.mp hn).symm
+            -(n : ℂ) * boundaryFourier (TF (VF (F 1) E b)) n := (sub_eq_zero.mp hn).symm
         have hrel : 2 * (-E / 4) * boundaryFourier G n =
             Complex.I * (n : ℂ) * boundaryFourier (TF (VF (F 1) E b)) n := by
           have hI : Complex.I ^ 2 = (-1 : ℂ) := by norm_num
@@ -1042,7 +1031,7 @@ theorem localConformalVekuaConormal_kernel_transport_hasDerivAt
     rw [transportCoeff_coord_zero,
       localConformalVekuaTransportVector_coord hR F hFs hb hL hhol hinj hC hK
         e he hsource hes E b hbn hb1 hxcc 1]
-    simp only [localConformalVekuaTransportCoordinate, if_false, Nat.one_ne_zero, pow_one]
+    simp [localConformalVekuaTransportCoordinate, if_false, Nat.one_ne_zero, pow_one]
     change _ = physicalDrivenQ E * _
     rw [← physicalDrivenQ_sq hE]
     have hs : (Real.sqrt 2 : ℂ) ^ 2 = 2 := by
@@ -1137,7 +1126,7 @@ theorem localConformalVekuaConormal_eq_zero_imp_of_cutC_ne_zero
     {W : ℝ → Ell2 →L[ℂ] Ell2} (hW : IsTransport (physicalCircleTrace F) E W)
     (hcut : cutC (W (2 * Real.pi)) (basisVec 0) ≠ 0) : b = 0 := by
   have hb1 := localConformalVekuaConormal_kernel_raw_H1 hR F hFs (E : ℂ) b hker
-  let s : ℂ := hardyFourierTrace (normalizedHardyAverage b) 0 / (Real.sqrt 2 : ℂ)
+  let s := hardyFourierTrace (normalizedHardyAverage b) 0 / (Real.sqrt 2 : ℂ)
   let y := localConformalVekuaTransportVector hR F hFs hb hL hhol hinj hC hK
     e he hsource hes E b
   have hinit : y 0 = s • basisVec 0 :=
@@ -1165,7 +1154,7 @@ theorem localConformalVekuaConormal_eq_zero_imp_of_cutC_ne_zero
   rw [map_smul, ← ContinuousLinearMap.mul_apply, hu, ContinuousLinearMap.one_apply] at hadj
   have hscut : s • cutC (W (2 * Real.pi)) (basisVec 0) = 0 := by
     simpa only [cutC, smul_sub, sub_eq_zero] using hadj
-  have hs : s = 0 := (smul_eq_zero.mp hscut).resolve_right hcut
+  have hs := (smul_eq_zero.mp hscut).resolve_right hcut
   have hinit0 : y 0 = 0 := by rw [hinit, hs, zero_smul]
   have hyzero {t : ℝ} (ht : t ∈ Icc 0 (2 * Real.pi)) : y t = 0 := by
     have he := localConformalVekuaConormal_kernel_transport_eq hR F hFs hb hL hhol hinj hC hK
@@ -1181,7 +1170,7 @@ theorem localConformalVekuaConormal_eq_zero_imp_of_cutC_ne_zero
       e he hsource hes E b hbn hb1 ht 0
     change (y t : ℕ → ℂ) 0 = _ at he
     rw [hyzero ht] at he
-    simp only [lp.coeFn_zero, Pi.zero_apply, localConformalVekuaTransportCoordinate, if_true] at he
+    simp [lp.coeFn_zero, Pi.zero_apply, localConformalVekuaTransportCoordinate, if_true] at he
     have hh := congrArg (fun z : ℂ => z * (Real.sqrt 2 : ℂ)) he.symm
     simpa only [div_mul_cancel₀ _ hsqrt, zero_mul] using hh
   apply localConformalVekuaH1_eq_zero_input_of_coordinate_trace_zero hR F hFs hb hL hhol hinj
@@ -1191,7 +1180,7 @@ theorem localConformalVekuaConormal_eq_zero_imp_of_cutC_ne_zero
       hC hK e he hsource hes (E : ℂ) b hbn hb1,
     ae_restrict_mem measurableSet_Ioc,
     Lp.coeFn_zero ℂ 2 (volume.restrict (Ioc (0 : ℝ) (2 * Real.pi)))] with t ht hmem hzero
-  simp only [localConformalVekuaH1AtBoundaryOrigin]
+  simp [localConformalVekuaH1AtBoundaryOrigin]
   rw [ht]
   have hz : hardyFourierTrace (normalizedHardyAverage (VB (E : ℂ) b)) t = 0 := by
     simpa only [localConformalVekuaTraceRow, pow_zero, ContinuousLinearMap.one_apply] using

@@ -51,7 +51,7 @@ lemma planeWave_add (k : ℝ) (z w : ℂ) (φ : ℝ) :
   unfold planeWave
   rw [← Complex.exp_add]
   congr 1
-  rw [add_mul, Complex.add_re]
+  simp
   push_cast
   ring
 
@@ -62,7 +62,7 @@ lemma herglotzCoeff_shift (k : ℝ) (a : ℝ → ℂ) (m : ℤ) (z : ℂ) :
   congr 2
   funext φ
   have h := planeWave_add k (-z) z φ
-  rw [neg_add_cancel] at h
+  simp at h
   rw [mul_assoc (a φ), ← h]
 
 /-- Every vector of `ℓ²` is the Herglotz vector `y_a(z)` of some `L²` density, at any base
@@ -76,9 +76,9 @@ theorem exists_herglotzVec_eq (k : ℝ) (z : ℂ) (v : Ell2) :
   refine ⟨_, ha, ?_⟩
   rw [← hv]
   refine lp.ext (funext fun n => ?_)
-  rw [herglotzVec_apply, herglotzVec_apply]
+  simp
   unfold herglotzSeq
-  simp only [herglotzCoeff_shift]
+  simp [herglotzCoeff_shift]
 
 /-- Linearity of the Herglotz vector in the density. -/
 theorem herglotzVec_sum {n : ℕ} (c : Fin n → ℂ) (a : Fin n → ℝ → ℂ)
@@ -95,17 +95,17 @@ theorem herglotzVec_sum {n : ℕ} (c : Fin n → ℂ) (a : Fin n → ℝ → ℂ
         ((∑ i, c i • a i) φ * planeWave k z φ)) = fun φ : ℝ => ∑ i, c i *
           (Complex.exp (-((m : ℂ) * φ * Complex.I)) * (a i φ * planeWave k z φ)) := by
       funext φ
-      simp only [Finset.sum_apply, Pi.smul_apply, smul_eq_mul, Finset.sum_mul, Finset.mul_sum]
+      simp [Finset.sum_apply, Pi.smul_apply, smul_eq_mul, Finset.sum_mul, Finset.mul_sum]
       refine Finset.sum_congr rfl fun i _ => by ring
     rw [heq, intervalIntegral.integral_finset_sum hint, Finset.mul_sum]
     refine Finset.sum_congr rfl fun i _ => ?_
-    rw [intervalIntegral.integral_const_mul]
+    simp
     ring
   refine lp.ext (funext fun n => ?_)
   simp only [AddSubgroup.val_finset_sum]
   erw [Finset.sum_apply]
   rw [herglotzVec_apply]
-  simp only [lp.coeFn_smul, Pi.smul_apply, herglotzVec_apply, smul_eq_mul]
+  simp
   unfold herglotzSeq
   split_ifs
   · rw [hcoef, Finset.sum_div]
@@ -119,7 +119,7 @@ lemma exp_mul_I_ne_one {t : ℝ} (h0 : 0 < t) (h1 : t < 2 * π) :
   obtain ⟨n, hn⟩ := Complex.exp_eq_one_iff.mp h
   have htn : t = n * (2 * π) := by
     have := congrArg Complex.im hn
-    simpa [Complex.mul_im] using this
+    simpa using this
   have hp := Real.pi_pos
   have hn1 : (0 : ℝ) < n := by
     by_contra hcon; push_neg at hcon; nlinarith
@@ -138,18 +138,17 @@ lemma cot_half_eq {t : ℝ} (h0 : 0 < t) (h1 : t < 2 * π) :
     ((Real.cot (t / 2) : ℝ) : ℂ) = Complex.I * ((Complex.exp (t * Complex.I) + 1) /
       (Complex.exp (t * Complex.I) - 1)) := by
   have he1 := exp_mul_I_ne_one h0 h1
-  set w : ℂ := Complex.exp (((t / 2 : ℝ) : ℂ) * Complex.I) with hwdef
-  have hw0 : w ≠ 0 := Complex.exp_ne_zero _
+  set w := Complex.exp (((t / 2 : ℝ) : ℂ) * Complex.I) with hwdef
   have hew : Complex.exp (t * Complex.I) = w * w := by
     rw [hwdef, ← Complex.exp_add]; congr 1; push_cast; ring
   rw [hew] at he1 ⊢
-  have hd2 : w * w - 1 ≠ 0 := sub_ne_zero.mpr he1
+  have hd2 := sub_ne_zero.mpr he1
   have hd3 : w⁻¹ - w ≠ 0 := by
     rw [show w⁻¹ - w = -(w * w - 1) / w by field_simp; ring]
-    exact div_ne_zero (neg_ne_zero.mpr hd2) hw0
+    exact div_ne_zero (neg_ne_zero.mpr hd2) (Complex.exp_ne_zero _)
   rw [Complex.ofReal_cot, Complex.cot_eq_cos_div_sin, Complex.cos, Complex.sin, ← hwdef,
       neg_mul, Complex.exp_neg, ← hwdef]
-  rw [div_div_div_cancel_right₀ (two_ne_zero), eq_comm, mul_div_assoc',
+  rw [div_div_div_cancel_right₀ two_ne_zero, eq_comm, mul_div_assoc',
     div_eq_div_iff hd2 (mul_ne_zero hd3 Complex.I_ne_zero)]
   field_simp
   rw [Complex.I_sq]
@@ -186,11 +185,10 @@ theorem herglotzForm_eq {γ : ℝ → ℂ} {K : NNReal} (hK : LipschitzWith K γ
     have htr := driven_trace hK hW hgm hgB hy ey θ hθ
     have hadd := volterraOp_add_adj hW.1 hgm hgB hθ
     rw [hO] at hadd
-    have hr : (Real.sqrt 2 : ℂ) ≠ 0 := by
-      exact_mod_cast (Real.sqrt_pos.mpr (by norm_num : (0 : ℝ) < 2)).ne'
+
     have hw : herglotzWave (Real.sqrt E) a (γ θ) =
         (Real.sqrt 2 : ℂ) * inner ℂ (basisVec 0) (herglotzVec ha (Real.sqrt E) (γ θ)) := by
-      simp only [basisVec, inner_single, herglotzVec_apply, herglotzSeq, if_true,
+      simp [basisVec, inner_single, herglotzVec_apply, herglotzSeq, if_true,
         herglotzWave_eq]
       field_simp
     rw [hw]
@@ -202,12 +200,11 @@ theorem herglotzForm_eq {γ : ℝ → ℂ} {K : NNReal} (hK : LipschitzWith K γ
         inner ℂ (basisVec 0) ((W θ) ((ContinuousLinearMap.adjoint V) v)))) * Complex.I_sq
   unfold herglotzForm
   rw [← hgdef]
-  have hL : (0 : ℝ) ≤ 2 * π := by positivity
   rw [intervalIntegral.integral_congr (g := fun θ => conj (g θ) *
       observation W ((Real.sqrt 2 : ℂ) • (v + ContinuousLinearMap.adjoint V v)) θ)
       (fun θ hθ => by
-        rw [uIcc_of_le hL] at hθ
-        simp only [hpt θ hθ]),
+        rw [uIcc_of_le (by positivity)] at hθ
+        simp [hpt θ hθ]),
     ← inner_observationAdj hW.1 hgm hgB]
 
 /-- On Herglotz data the form depends only on the monodromy `U_E = V_E^*`:
@@ -238,9 +235,9 @@ theorem herglotzForm_eq_im {γ : ℝ → ℂ} {K : NNReal} (hK : LipschitzWith K
   simp only [map_mul, Complex.conj_ofReal, Complex.conj_I]
   have e : -(((Real.sqrt 2 : ℂ)) * Complex.I) * ((Real.sqrt 2 : ℂ) *
       (conj w + ⟪y, y⟫_ℂ - (⟪y, y⟫_ℂ + w))) = -(2 * Complex.I) * (conj w - w) := by
-    linear_combination (-(Complex.I) * (conj w - w)) * h2
+    linear_combination (-Complex.I * (conj w - w)) * h2
   rw [show ((Real.sqrt 2 : ℂ)) * -Complex.I = -(((Real.sqrt 2 : ℂ)) * Complex.I) by ring, e]
-  simp [Complex.mul_re, Complex.sub_re, Complex.sub_im, Complex.conj_re, Complex.conj_im]
+  simp
   ring
 
 /-- On combinations of eigenvectors of `U = V^*` with eigenvalues `e^{it_k}`, the Cayley pairing
@@ -263,14 +260,13 @@ theorem re_inner_eigen_sum {H : Type*} [NormedAddCommGroup H] [InnerProductSpace
     rw [map_sum, ← Finset.sum_add_distrib, Finset.smul_sum]
     refine Finset.sum_congr rfl fun k _ => ?_
     rw [map_smul, map_smul, hU k]
-    simp only [μ]
+    simp
     module
   rw [hsum, hv.inner_sum c _ Finset.univ, Complex.re_sum, ← Finset.sum_neg_distrib]
   refine Finset.sum_congr rfl fun k _ => ?_
   have hcot := cot_half_eq (ht k).1 (ht k).2
-  have hμ1 : μ k - 1 ≠ 0 := sub_ne_zero.mpr (exp_mul_I_ne_one (ht k).1 (ht k).2)
-  have hr : (Real.sqrt 2 : ℂ) ≠ 0 := by
-    exact_mod_cast (Real.sqrt_pos.mpr (by norm_num : (0 : ℝ) < 2)).ne'
+  have hμ1 := sub_ne_zero.mpr (exp_mul_I_ne_one (ht k).1 (ht k).2)
+
   have hc : conj (c k) * c k = ((‖c k‖ ^ 2 : ℝ) : ℂ) := by
     rw [Complex.conj_mul']; push_cast; ring
   have key : conj (c k) * ((Real.sqrt 2 : ℂ) * (c k * (s * (μ k - 1))⁻¹ * (1 + μ k))) =
@@ -313,22 +309,22 @@ theorem cayleyRankBound_of_herglotzForm_bound {γ : ℝ → ℂ} {K : NNReal}
   let φ : (Fin n → ℂ) →ₗ[ℂ] (Fin m → ℂ) := L ∘ₗ Fintype.linearCombination ℂ as
   have hker : LinearMap.ker φ ≠ ⊥ := LinearMap.ker_ne_bot_of_finrank_lt (by simpa using hlt)
   obtain ⟨c, hc, hc0⟩ := Submodule.exists_mem_ne_zero_of_ne_bot hker
-  set a : ℝ → ℂ := ∑ k, c k • as k with hadef
+  set a := ∑ k, c k • as k with hadef
   have ha : IsDirDensity a := memLp_finset_sum' _ fun k _ => (has k).const_smul (c k)
   have hLa : L a = 0 := by
     simpa [φ, Fintype.linearCombination_apply, hadef] using hc
   obtain ⟨hO, hF⟩ := herglotzForm_eq hK hclosed hW ha
   have hy : herglotzVec ha (Real.sqrt E) (γ 0) = ∑ k, c k • y k := by
     rw [herglotzVec_sum c as has ha]
-    simp only [hasy]
-  have hμ1 : ∀ k, μ k - 1 ≠ 0 := fun k =>
+    simp [hasy]
+  have hμ1 := fun k =>
     sub_ne_zero.mpr (exp_mul_I_ne_one (ht k).1 (ht k).2)
   have hs0 : s ≠ 0 := sqrt_two_mul_I_ne_zero
   have hx : observationAdj W (herglotzConormal (Real.sqrt E) a γ) = ∑ k, c k • v k := by
     rw [hO, hy, map_sum, Finset.smul_sum]
     refine Finset.sum_congr rfl fun k _ => ?_
     rw [map_smul, smul_comm, hydef]
-    simp only [map_smul, ContinuousLinearMap.sub_apply, ContinuousLinearMap.one_apply]
+    simp
     have hU := hUv k
     rw [monodromy] at hU
     have e : Complex.exp (t k * Complex.I) • v k - v k =
@@ -337,7 +333,7 @@ theorem cayleyRankBound_of_herglotzForm_bound {γ : ℝ → ℂ} {K : NNReal}
     rw [smul_smul]
     refine congrArg (fun r : ℂ => r • v k) ?_
     have h1 := hμ1 k
-    simp only [hμ] at h1 ⊢
+    simp [hμ] at h1 ⊢
     rw [← hs]
     field_simp
   have hb := hbound a ha hLa

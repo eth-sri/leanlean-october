@@ -40,9 +40,9 @@ theorem exists_tendsto_subseq_of_compact_approx {X : Type*} [MetricSpace X] [Com
     obtain ⟨y, hyS, hy⟩ := hSu n
     obtain ⟨z, hz, hyz⟩ := mem_iUnion₂.mp (htS hyS)
     refine mem_iUnion₂.mpr ⟨z, hz, ?_⟩
-    rw [mem_ball] at hyz ⊢
+    simp at hyz ⊢
     linarith [dist_triangle (u n) y z]
-  have hc : IsCompact (closure (range u)) := htb.closure.isCompact_of_isClosed isClosed_closure
+  have hc := htb.closure.isCompact_of_isClosed isClosed_closure
   obtain ⟨v, -, φ, hφ, hlim⟩ := hc.tendsto_subseq (x := u) fun n => subset_closure ⟨n, rfl⟩
   exact ⟨φ, hφ, v, hlim⟩
 
@@ -75,7 +75,7 @@ lemma exists_mem_partPiece {m : ℕ} (W : Fin m → Set ℂ) {x : ℂ} (hx : x �
     have := Finset.min'_mem _ hne
     simpa using this
   refine ⟨j0, hj0, ?_⟩
-  simp only [mem_iUnion, not_exists]
+  simp
   intro i hi hxi
   have : j0 ≤ i := Finset.min'_le _ i (by simp [hxi])
   exact absurd hi (not_lt.mpr this)
@@ -128,7 +128,7 @@ lemma memLp_sum_piece {Ω K : Set ℂ} (hK : IsClosed K) (hΩK : Ω ⊆ K) (hΩ 
   refine MemLp.of_bound ((aestronglyMeasurable_extBCF hK hΩK (f j)).indicator (hQ j)) ‖f j‖
     (Eventually.of_forall fun x => ?_)
   by_cases hx : x ∈ Q j
-  · simp only [hx, indicator_of_mem]; exact norm_extBCF_le _ _
+  · simp [hx, indicator_of_mem]; exact norm_extBCF_le _ _
   · simp [hx]
 
 /-- The map `(f_j)_j ↦ ∑_j 1_{Q_j} f_j` into `L²(Ω)`. -/
@@ -153,7 +153,7 @@ lemma continuous_pieceMap {Ω K : Set ℂ} (hK : IsClosed K) (hΩK : Ω ⊆ K) (
         dist f f' := by
       intro j
       by_cases hx : x ∈ Q j
-      · simp only [hx, indicator_of_mem, extBCF_sub]
+      · simp [hx, indicator_of_mem, extBCF_sub]
         refine (norm_extBCF_le _ _).trans ?_
         rw [← dist_eq_norm]; exact dist_le_pi_dist f f' j
       · simp [hx, dist_nonneg]
@@ -185,7 +185,7 @@ lemma mollify_bounds {ρ : ℂ → ℝ} (hρ : ContDiff ℝ (⊤ : ℕ∞) ρ) (
       (∀ x y, ‖mollify ρ U x - mollify ρ U y‖ ≤ L * (∫ t, ‖U t‖) * ‖x - y‖) := by
   obtain ⟨M, hM⟩ := hρs.exists_bound_of_continuous hρ.continuous
   obtain ⟨L, hL⟩ := hρ.lipschitzWith_of_hasCompactSupport hρs (by simp)
-  have hM0 : 0 ≤ M := (norm_nonneg _).trans (hM 0)
+  have hM0 := (norm_nonneg _).trans (hM 0)
   refine ⟨M, L, hM0, L.2, fun U hU => ⟨fun x => ?_, fun x y => ?_⟩⟩
   · rw [mollify_eq_flip]
     calc ‖∫ t, ρ (x - t) • U t‖ ≤ ∫ t, M * ‖U t‖ := by
@@ -213,13 +213,13 @@ lemma integral_norm_extZero_le {Ω : Set ℂ} (hΩ : MeasurableSet Ω) (hΩf : v
     (u : L2 Ω) : Integrable (extZero Ω u) ∧
       ∫ t, ‖extZero Ω u t‖ ≤ (volume Ω).toReal ^ (1 / 2 : ℝ) * ‖u‖ := by
   haveI : IsFiniteMeasure (volume.restrict Ω) := isFiniteMeasure_restrict.mpr hΩf
-  have hu1 : Integrable (fun x => u x) (volume.restrict Ω) := (Lp.memLp u).integrable one_le_two
-  have hint : Integrable (extZero Ω u) := (integrable_indicator_iff hΩ).mpr hu1
+  have hu1 := (Lp.memLp u).integrable one_le_two
+  have hint := (integrable_indicator_iff hΩ).mpr hu1
   refine ⟨hint, ?_⟩
   have heq : ∫ t, ‖extZero Ω u t‖ = ∫ t in Ω, ‖u t‖ := by
     rw [← integral_indicator hΩ]
     congr 1; ext t; by_cases ht : t ∈ Ω <;> simp [extZero, ht]
-  rw [heq]
+  simp
   have h1 := eLpNorm_le_eLpNorm_mul_rpow_measure_univ (μ := volume.restrict Ω)
     (p := 1) (q := 2) (by norm_num) (Lp.memLp u).aestronglyMeasurable
   rw [Measure.restrict_apply_univ] at h1
@@ -228,10 +228,9 @@ lemma integral_norm_extZero_le {Ω : Set ℂ} (hΩ : MeasurableSet Ω) (hΩf : v
       (by norm_num)]
     simp
   rw [h2] at h1
-  have hnn : 0 ≤ ∫ t in Ω, ‖u t‖ := integral_nonneg fun _ => norm_nonneg _
   have := ENNReal.toReal_mono (ENNReal.mul_ne_top (Lp.memLp u).eLpNorm_ne_top
     (ENNReal.rpow_ne_top_of_nonneg (by norm_num) hΩf)) h1
-  rw [ENNReal.toReal_ofReal hnn, ENNReal.toReal_mul, ← ENNReal.toReal_rpow] at this
+  rw [ENNReal.toReal_ofReal (integral_nonneg fun _ => norm_nonneg _), ENNReal.toReal_mul, ← ENNReal.toReal_rpow] at this
   rw [Lp.norm_def]
   norm_num at this ⊢
   linarith
@@ -262,13 +261,13 @@ theorem rellich_of_cover {Ω : Set ℂ} (hΩ : IsOpen Ω) (hb : Bornology.IsBoun
   have hΩm := hΩ.measurableSet
   have hΩf : volume Ω ≠ ⊤ := hb.measure_lt_top.ne
   set K := closure Ω
-  have hKc : IsCompact K := hb.isCompact_closure
+  have hKc := hb.isCompact_closure
   haveI : CompactSpace K := isCompact_iff_compactSpace.mp hKc
   have hKcl : IsClosed K := isClosed_closure
   have hΩK : Ω ⊆ K := subset_closure
-  have hC0 : 0 ≤ C := (norm_nonneg _).trans (hu 0)
+  have hC0 := (norm_nonneg _).trans (hu 0)
   set Q := partPiece W
-  have hQm : ∀ j, MeasurableSet (Q j) := measurableSet_partPiece fun j => (hWo j).measurableSet
+  have hQm := measurableSet_partPiece fun j => (hWo j).measurableSet
   refine exists_tendsto_subseq_of_compact_approx u fun ε hε => ?_
   set η := ε / ((m + 1) * (2 * C + 1))
   have hη : 0 < η := by positivity
@@ -281,9 +280,9 @@ theorem rellich_of_cover {Ω : Set ℂ} (hΩ : IsOpen Ω) (hb : Bornology.IsBoun
   have hρt : ∀ j, tsupport (ρ j) = closedBall (a j) (r j) := fun j => (bump j).tsupport_normed_eq
   choose M L hM0 hL0 hML using fun j => mollify_bounds (hρd j) (hρs j)
   set U : ℕ → ℂ → ℂ := fun n => extZero Ω (u n)
-  have hUi : ∀ n, Integrable (U n) := fun n => (integral_norm_extZero_le hΩm hΩf (u n)).1
+  have hUi := fun n => (integral_norm_extZero_le hΩm hΩf (u n)).1
   set I0 := (volume Ω).toReal ^ (1 / 2 : ℝ) * C
-  have hUI : ∀ n, ∫ t, ‖U n t‖ ≤ I0 := fun n =>
+  have hUI := fun n =>
     (integral_norm_extZero_le hΩm hΩf (u n)).2.trans
       (mul_le_mul_of_nonneg_left (hu n) (by positivity))
   have hmc : ∀ j n, Continuous (mollify (ρ j) (U n)) := fun j n =>
@@ -356,20 +355,17 @@ theorem rellich_of_cover {Ω : Set ℂ} (hΩ : IsOpen Ω) (hb : Bornology.IsBoun
   have hsum : eLpNorm (∑ j, D j) 2 (volume.restrict Ω) ≤ ENNReal.ofReal (m * (η * (2 * C))) := by
     calc eLpNorm (∑ j, D j) 2 (volume.restrict Ω) ≤ eLpNorm (∑ j, D j) 2 volume :=
           eLpNorm_mono_measure _ Measure.restrict_le_self
-      _ ≤ ∑ j, eLpNorm (D j) 2 volume := by
-          exact eLpNorm_sum_le (by norm_num)
+      _ ≤ ∑ j, eLpNorm (D j) 2 volume := eLpNorm_sum_le (by norm_num)
       _ ≤ ∑ _j : Fin m, ENNReal.ofReal (η * (2 * C)) := Finset.sum_le_sum fun j _ => hest j
       _ = ENNReal.ofReal (m * (η * (2 * C))) := by
-          rw [Finset.sum_const, Finset.card_univ, Fintype.card_fin, nsmul_eq_mul,
-            ← ENNReal.ofReal_natCast, ← ENNReal.ofReal_mul (Nat.cast_nonneg _)]
+          simp
   refine (ENNReal.toReal_mono ENNReal.ofReal_ne_top hsum).trans ?_
   rw [ENNReal.toReal_ofReal (by positivity)]
-  have hm0 : (0 : ℝ) ≤ m := Nat.cast_nonneg m
   have : (m : ℝ) * (2 * C) ≤ (m + 1) * (2 * C + 1) := by nlinarith
   calc (m : ℝ) * (η * (2 * C)) = η * (m * (2 * C)) := by ring
     _ ≤ η * ((m + 1) * (2 * C + 1)) := by gcongr
     _ = ε := by
-        simp only [η]
+        simp [η]
         field_simp
 
 end PolyaNeumann

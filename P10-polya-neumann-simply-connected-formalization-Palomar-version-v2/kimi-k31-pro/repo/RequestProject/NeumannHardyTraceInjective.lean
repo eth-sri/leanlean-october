@@ -43,7 +43,7 @@ private theorem hardyL2TestPair_apply (Ω : Set ℂ) {φ : ℂ → ℂ}
   rw [L2.inner_def]
   apply integral_congr_ae
   filter_upwards [(hφ.conj.memLp' 2 (μ := volume.restrict Ω)).coeFn_toLp] with z hz
-  simp only [RCLike.inner_apply, hz, Complex.conj_conj]
+  simp [RCLike.inner_apply, hz, Complex.conj_conj]
 
 theorem hardyConjugateVelocityTest_memLp {Ω : Set ℂ} {γ : ℝ → ℂ}
     (hγ : IsBoundaryParam Ω γ) {φ : ℂ → ℂ} (hφ : TestFunction univ φ) :
@@ -51,7 +51,7 @@ theorem hardyConjugateVelocityTest_memLp {Ω : Set ℂ} {γ : ℝ → ℂ}
       (volume.restrict (Ioc (0 : ℝ) (2 * π))) := by
   obtain ⟨Kγ, hKγ⟩ := hγ.lipschitz
   obtain ⟨C, hC⟩ := hφ.2.1.exists_bound_of_continuous hφ.1.continuous
-  have hC0 : 0 ≤ C := (norm_nonneg (φ 0)).trans (hC 0)
+  have hC0 := (norm_nonneg (φ 0)).trans (hC 0)
   have hm : AEStronglyMeasurable
       (fun θ => φ (γ θ) * conj (deriv γ θ)) volume :=
     (hφ.1.continuous.comp hKγ.continuous).aestronglyMeasurable.mul
@@ -61,7 +61,7 @@ theorem hardyConjugateVelocityTest_memLp {Ω : Set ℂ} {γ : ℝ → ℂ}
     (Complex.continuous_conj.comp_aestronglyMeasurable hm).restrict (C * Kγ)
   apply Eventually.of_forall
   intro θ
-  simp only [Complex.norm_conj, norm_mul]
+  simp
   exact mul_le_mul (hC (γ θ)) (norm_deriv_le_of_lipschitz hKγ)
     (norm_nonneg _) hC0
 
@@ -130,12 +130,12 @@ private theorem smooth_conjugate_firstOrder_green {Ω : Set ℂ}
     change conj ((dirD (fun w => conj (p w)) 1 z +
       Complex.I * dirD (fun w => conj (p w)) Complex.I z) / 2) = _
     rw [dirD_conj (hp.1.of_le (by simp)), dirD_conj (hp.1.of_le (by simp))]
-    simp only [map_div₀, map_add, map_mul, Complex.conj_conj, Complex.conj_I, map_ofNat]
+    simp [map_div₀, map_add, map_mul, Complex.conj_conj, Complex.conj_I, map_ofNat]
     ring
   calc
     _ = conj (∫ θ in Ioc (0 : ℝ) (2 * π), conj (p (γ θ)) * deriv γ θ) := by
       rw [← integral_conj]
-      simp only [map_mul, Complex.conj_conj]
+      simp
     _ = conj (2 * Complex.I * ∫ z in Ω, dbar (fun w => conj (p w)) z) := congrArg conj hg
     _ = -2 * Complex.I * ∫ z in Ω, conj (dbar (fun w => conj (p w)) z) := by
       rw [map_mul, ← integral_conj]
@@ -191,7 +191,7 @@ private theorem h1FirstOrderConjugate_green_smooth {Ω : Set ℂ}
       dirD p v z = dirD (f : ℂ → ℂ) v z * φ z + f z * dirD φ v z := by
     rw [dirD, fderiv_fun_mul (f.property.1.differentiable (by simp) z)
       (hφ.1.differentiable (by simp) z)]
-    simp only [ContinuousLinearMap.add_apply, ContinuousLinearMap.smul_apply, smul_eq_mul]
+    simp
     dsimp only [dirD]
     ring
   have hproduct_integral (v : ℂ) :
@@ -335,7 +335,7 @@ theorem h1_antiholomorphic_global_lap_test_of_zero_trace {Ω : Set ℂ}
   calc
     _ = (∫ z in Ω, h1Value Ω u z * dirD (dirD φ 1) 1 z) +
         ∫ z in Ω, h1Value Ω u z * dirD (dirD φ Complex.I) Complex.I z := by
-      simp only [lap, mul_add]
+      simp [lap, mul_add]
       exact integral_add hix hiy
     _ = Complex.I * (Complex.I * ∫ z in Ω,
         h1Value Ω u z * dirD (dirD φ Complex.I) Complex.I z) +
@@ -404,7 +404,7 @@ theorem neumannH1_eq_zero_of_antiholomorphic_zero_trace {Ω : Set ℂ}
     rw [← h1BoundaryTrace_h1Constant hb hL hγ c, ← hcu]
     exact ht
   apply h1Value_injective hL.1.1
-  simp only [hcu, h1Value_h1Constant, hc, map_zero]
+  simp [hcu, h1Value_h1Constant, hc, map_zero]
 
 /-- Equal actual traces identify actual weak antiholomorphic H¹ vectors. -/
 theorem neumannH1_eq_of_antiholomorphic_same_trace {Ω : Set ℂ}

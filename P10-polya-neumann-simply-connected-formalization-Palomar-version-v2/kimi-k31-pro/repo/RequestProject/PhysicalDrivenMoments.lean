@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.TwoPi
 public import RequestProject.PhysicalMomentHardyCriterion
 public import RequestProject.CorrectedKernelSmooth
 public import Mathlib.Topology.Algebra.InfiniteSum.TsumUniformlyOn
@@ -33,7 +34,6 @@ namespace PolyaNeumann
 open MeasureTheory Set Metric Filter
 open scoped ComplexConjugate Topology
 
-local instance physicalDrivenTwoPiPos : Fact (0 < 2 * Real.pi) := ⟨Real.two_pi_pos⟩
 
 /-- The actual wave-number scalar in the transport coefficient. -/
 def physicalDrivenQ (E : ℝ) : ℂ := -(Complex.I * (Real.sqrt E : ℂ)) / 2
@@ -87,7 +87,7 @@ theorem physicalDrivenRow_hasDerivAt_succ
   simp only [inner_basisVec] at hd
   have he : physicalDrivenRow y (n + 1) = fun s : ℝ => (y s : ℕ → ℂ) (n + 1) := by
     funext s
-    simp only [physicalDrivenRow, Nat.succ_ne_zero, if_false]
+    simp [physicalDrivenRow, Nat.succ_ne_zero, if_false]
   rw [he]
   apply hd.congr_deriv
   simp only [lp.coeFn_add, Pi.add_apply, lp.coeFn_smul, Pi.smul_apply, smul_eq_mul,
@@ -108,7 +108,7 @@ theorem physicalDrivenScaledRow_hasDerivAt_succ
   convert (physicalDrivenRow_hasDerivAt_succ γ E g y hy n).const_mul
     (physicalDrivenQ E ^ (n + 1)) using 1
   · funext t; rfl
-  simp only [physicalDrivenScaledRow, pow_succ]
+  simp [physicalDrivenScaledRow, pow_succ]
   ring
 
 theorem norm_physicalDrivenRow_le (y : ℝ → Ell2) (n : ℕ) (θ : ℝ) :
@@ -155,13 +155,11 @@ theorem physicalDrivenPower_hasDerivAt_succ
     (ℓ + 1)).div_const ((ℓ + 1).factorial : ℂ)
   convert hd using 1
   · funext t; rfl
-  simp only [physicalDrivenPower, physicalDrivenCentered, Pi.neg_apply,
+  simp [physicalDrivenPower, physicalDrivenCentered, Pi.neg_apply,
     Nat.add_sub_cancel]
   rw [Nat.factorial_succ]
-  have hn : ((ℓ + 1 : ℕ) : ℂ) ≠ 0 := by exact_mod_cast (by omega : ℓ + 1 ≠ 0)
-  have hf : (ℓ.factorial : ℂ) ≠ 0 := by exact_mod_cast (Nat.factorial_ne_zero ℓ)
   push_cast
-  field_simp [hn, hf]
+  field_simp [(by exact_mod_cast (by omega : ℓ + 1 ≠ 0)), (by exact_mod_cast (Nat.factorial_ne_zero ℓ))]
 
 theorem norm_physicalDrivenGaugeTerm_le
     (γ : ℝ → ℂ) (E : ℝ) (y : ℝ → Ell2) (j ℓ : ℕ) (θ : ℝ) :
@@ -176,7 +174,7 @@ theorem norm_physicalDrivenGaugeTerm_le
       mul_le_mul_of_nonneg_left (norm_physicalDrivenScaledRow_le E y (ℓ + j) θ)
         (norm_nonneg _)
     _ = _ := by
-      simp only [physicalDrivenPower, norm_div, norm_pow, norm_neg, Complex.norm_natCast,
+      simp [physicalDrivenPower, norm_div, norm_pow, norm_neg, Complex.norm_natCast,
         pow_add, mul_pow]
       ring
 
@@ -184,8 +182,7 @@ theorem norm_physicalDrivenGaugeTerm_le
 for every actual Hilbert-space vector; no assumed row summability is used. -/
 theorem summable_norm_physicalDrivenGaugeTerm
     (γ : ℝ → ℂ) (E : ℝ) (y : ℝ → Ell2) (j : ℕ) (θ : ℝ) :
-    Summable (fun ℓ : ℕ => ‖physicalDrivenGaugeTerm γ E y j ℓ θ‖) := by
-  exact Summable.of_nonneg_of_le (fun _ => norm_nonneg _)
+    Summable (fun ℓ : ℕ => ‖physicalDrivenGaugeTerm γ E y j ℓ θ‖) := Summable.of_nonneg_of_le (fun _ => norm_nonneg _)
     (norm_physicalDrivenGaugeTerm_le γ E y j · θ)
     ((Real.summable_pow_div_factorial
       (‖physicalDrivenCentered γ θ‖ * ‖physicalDrivenQ E‖)).mul_left
@@ -200,11 +197,10 @@ theorem exists_physicalDrivenGaugeTerm_majorant
       ‖physicalDrivenGaugeTerm γ E y j ℓ θ‖ ≤ u ℓ := by
   have h0 : (0 : ℝ) ∈ Icc 0 (2 * Real.pi) := ⟨le_rfl, Real.two_pi_pos.le⟩
   obtain ⟨M, hM⟩ := isCompact_Icc.exists_bound_of_continuousOn hy
-  have hz : Continuous (physicalDrivenCentered γ) := hγ.sub continuous_const
   obtain ⟨R, hR⟩ := isCompact_Icc.exists_bound_of_continuousOn
-    hz.continuousOn
-  have hM0 : 0 ≤ M := (norm_nonneg _).trans (hM 0 h0)
-  have hR0 : 0 ≤ R := (norm_nonneg _).trans (hR 0 h0)
+    (hγ.sub continuous_const).continuousOn
+  have hM0 := (norm_nonneg _).trans (hM 0 h0)
+  have hR0 := (norm_nonneg _).trans (hR 0 h0)
   refine ⟨fun ℓ => (2 * M * ‖physicalDrivenQ E‖ ^ j) *
     ((R * ‖physicalDrivenQ E‖) ^ ℓ / (ℓ.factorial : ℝ)),
     (Real.summable_pow_div_factorial _).mul_left _, ?_⟩
@@ -322,8 +318,8 @@ theorem physicalDrivenGauge_weightedIntegral_hasSum
       (∫ θ in (0 : ℝ)..(2 * Real.pi), w θ * physicalDrivenGauge γ E y j θ) := by
   obtain ⟨u, hu, hbd⟩ := exists_physicalDrivenGaugeTerm_majorant γ hγ E y hy j
   obtain ⟨C, hC⟩ := isCompact_Icc.exists_bound_of_continuousOn hw
-  have h0 : (0 : ℝ) ∈ Icc 0 (2 * Real.pi) := ⟨le_rfl, Real.two_pi_pos.le⟩
-  have hC0 : 0 ≤ C := (norm_nonneg _).trans (hC 0 h0)
+
+  have hC0 := (norm_nonneg _).trans (hC 0 (⟨le_rfl, Real.two_pi_pos.le⟩))
   have hsub : uIoc (0 : ℝ) (2 * Real.pi) ⊆ Icc 0 (2 * Real.pi) := by
     rw [uIoc_of_le Real.two_pi_pos.le]
     exact Ioc_subset_Icc_self

@@ -105,12 +105,12 @@ theorem isCompactOperator_zeroModeProjection : IsCompactOperator zeroModeProject
   unfold zeroModeProjection
   apply isCompactOperator_diagOp_of_finite _ _ _ ({0} : Finset ℤ)
   intro n hn
-  simp only [Finset.mem_singleton] at hn
+  simp at hn
   simp [hn]
 
 section
 
-variable {R : ℝ} (hR : 1 < R) (F : ℂ → ℂ)
+variable {R : ℝ} (F : ℂ → ℂ)
     (hFs : ContDiffOn ℝ (⊤ : ℕ∞) F (ball (0 : ℂ) R))
     (hb : Bornology.IsBounded (F '' ball (0 : ℂ) 1))
     (hL : IsLipschitzDomain (F '' ball (0 : ℂ) 1))

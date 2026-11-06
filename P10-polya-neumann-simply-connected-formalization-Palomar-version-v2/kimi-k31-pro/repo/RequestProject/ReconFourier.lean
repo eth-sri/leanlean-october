@@ -58,7 +58,7 @@ def symD (E : ℝ) (ξ : ℂ) : ℂ := ((E - 4 * π ^ 2 * ‖ξ‖ ^ 2 : ℝ) : 
 
 lemma symS_eq (E : ℝ) (F : ℂ → ℂ) (F' : Fin 2 → ℂ → ℂ) (ξ : ℂ) :
     symS E F F' ξ = symN F F' ξ - symD E ξ * F ξ := by
-  simp only [symS, symN, symD]; push_cast; ring
+  simp [symS, symN, symD]; push_cast; ring
 
 lemma norm_symD (E : ℝ) (ξ : ℂ) : ‖symD E ξ‖ = |E - 4 * π ^ 2 * ‖ξ‖ ^ 2| := by
   rw [symD, Complex.norm_real, Real.norm_eq_abs]
@@ -70,7 +70,7 @@ lemma norm_mul_sub_mul_le {a f : ℂ → ℂ} {A B Ka Kf : ℝ} (ξ η : ℂ)
   have e : a ξ * f ξ - a η * f η = (a ξ - a η) * f ξ + a η * (f ξ - f η) := by ring
   rw [e]
   refine (norm_add_le _ _).trans ?_
-  rw [norm_mul, norm_mul]
+  simp
   have h1 : ‖a ξ - a η‖ * ‖f ξ‖ ≤ Ka * ‖ξ - η‖ * B :=
     mul_le_mul ha hfξ (norm_nonneg _) (le_trans (norm_nonneg _) ha)
   have h2 : ‖a η‖ * ‖f ξ - f η‖ ≤ A * (Kf * ‖ξ - η‖) :=
@@ -88,7 +88,7 @@ lemma symN_lipschitz {F : ℂ → ℂ} {F' : Fin 2 → ℂ → ℂ} {B K R : ℝ
         ‖ξ - η‖ := by
   set a : ℂ → ℂ := fun ζ => -((4 * π ^ 2 * ‖ζ‖ ^ 2 : ℝ) : ℂ)
   set b : Fin 2 → ℂ → ℂ := fun i ζ => -(2 * π * Complex.I) * cdir i ζ
-  have hR : 0 ≤ R := (norm_nonneg _).trans hξ
+  have hR := (norm_nonneg _).trans hξ
   have ha : ‖a ξ - a η‖ ≤ (8 * π ^ 2 * R) * ‖ξ - η‖ := by
     have e : a ξ - a η = ((-(4 * π ^ 2) * ((‖ξ‖ - ‖η‖) * (‖ξ‖ + ‖η‖)) : ℝ) : ℂ) := by
       simp only [a]; push_cast; ring
@@ -96,14 +96,14 @@ lemma symN_lipschitz {F : ℂ → ℂ} {F' : Fin 2 → ℂ → ℂ} {B K R : ℝ
       abs_of_pos (by positivity : (0 : ℝ) < 4 * π ^ 2),
       abs_of_nonneg (by positivity : (0 : ℝ) ≤ ‖ξ‖ + ‖η‖)]
     have h1 := abs_norm_sub_norm_le ξ η
-    have h2 : ‖ξ‖ + ‖η‖ ≤ 2 * R := by linarith
+
     have h3 : |‖ξ‖ - ‖η‖| * (‖ξ‖ + ‖η‖) ≤ ‖ξ - η‖ * (2 * R) :=
-      mul_le_mul h1 h2 (by positivity) (norm_nonneg _)
+      mul_le_mul h1 (by linarith) (by positivity) (norm_nonneg _)
     have h4 := mul_le_mul_of_nonneg_left h3 (by positivity : (0 : ℝ) ≤ 4 * π ^ 2)
     linarith
   have haη : ‖a η‖ ≤ 4 * π ^ 2 * R ^ 2 := by
     simp only [a]
-    rw [norm_neg, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg (by positivity)]
+    simp
     have : ‖η‖ ^ 2 ≤ R ^ 2 := pow_le_pow_left₀ (norm_nonneg _) hη 2
     nlinarith [Real.pi_pos]
   have hb : ∀ i, ‖b i ξ - b i η‖ ≤ (2 * π) * ‖ξ - η‖ := fun i => by
@@ -113,11 +113,11 @@ lemma symN_lipschitz {F : ℂ → ℂ} {F' : Fin 2 → ℂ → ℂ} {B K R : ℝ
     exact mul_le_mul_of_nonneg_left (abs_cdir_le i _) (by positivity)
   have hbη : ∀ i, ‖b i η‖ ≤ 2 * π * R := fun i => by
     simp only [b]
-    rw [norm_two_pi_I_mul]
+    simp
     exact mul_le_mul_of_nonneg_left ((abs_cdir_le i _).trans hη) (by positivity)
   have e : symN F F' ξ - symN F F' η = (a ξ * F ξ - a η * F η) +
       ((b 0 ξ * F' 0 ξ - b 0 η * F' 0 η) + (b 1 ξ * F' 1 ξ - b 1 η * F' 1 η)) := by
-    simp only [symN, Fin.sum_univ_two, a, b]; ring
+    simp [symN, Fin.sum_univ_two, a, b]; ring
   rw [e]
   have t1 := norm_mul_sub_mul_le ξ η ha (hFl ξ η) haη (hFb ξ)
   have t2 := norm_mul_sub_mul_le ξ η (hb 0) (hF'l 0 ξ η) (hbη 0) (hF'b 0 ξ)
@@ -167,7 +167,7 @@ lemma norm_symN_div_symD_le {F : ℂ → ℂ} {F' : Fin 2 → ℂ → ℂ} {B K 
       mul_le_mul_of_nonneg_left (by linarith [norm_nonneg ξ]) (abs_nonneg _)
     have h2 := mul_le_mul_of_nonneg_left this (by positivity : (0 : ℝ) ≤ 4 * π ^ 2)
     linarith
-  rw [norm_div]
+  simp
   refine div_le_of_le_mul₀ (norm_nonneg _) (by positivity) ?_
   calc ‖symN F F' ξ‖ ≤ L * |‖ξ‖ - k| := hL
     _ = L / (4 * π ^ 2 * k) * (4 * π ^ 2 * k * |‖ξ‖ - k|) := by
@@ -197,7 +197,7 @@ lemma norm_symS_div_symD_far {F : ℂ → ℂ} {F' : Fin 2 → ℂ → ℂ} {k E
     have := norm_nonneg (F' 1 ξ)
     have : 2 * π * |cdir 0 ξ| * ‖F' 0 ξ‖ ≤ 2 * π * r * ‖F' 0 ξ‖ := by gcongr
     have : 2 * π * |cdir 1 ξ| * ‖F' 1 ξ‖ ≤ 2 * π * r * ‖F' 1 ξ‖ := by gcongr
-    simp only [t]
+    simp
     nlinarith
   have hD : 3 * π ^ 2 * r ^ 2 ≤ ‖symD E ξ‖ := by
     rw [norm_symD, ← hk]
@@ -206,9 +206,8 @@ lemma norm_symS_div_symD_far {F : ℂ → ℂ} {F' : Fin 2 → ℂ → ℂ} {k E
     rw [abs_sub_comm]
     refine le_trans ?_ (le_abs_self _)
     linarith
-  have hDpos : 0 < ‖symD E ξ‖ := lt_of_lt_of_le (by positivity) hD
-  have hsum : ∑ i, ‖F' i ξ‖ = t := Fin.sum_univ_two _
-  rw [hsum, norm_div, div_mul_eq_mul_div, div_le_iff₀ hDpos]
+  have hDpos := lt_of_lt_of_le (by positivity) hD
+  rw [(Fin.sum_univ_two _), norm_div, div_mul_eq_mul_div, div_le_iff₀ hDpos]
   have h1 : 1 ≤ r ^ 2 / (4 * k ^ 2) := by
     rw [le_div_iff₀ (by positivity)]; nlinarith
   have h2 : r ≤ r ^ 2 / (2 * k) := by
@@ -228,7 +227,6 @@ lemma norm_symS_div_symD_far {F : ℂ → ℂ} {F' : Fin 2 → ℂ → ℂ} {k E
         ((E / (4 * k ^ 2) + E / (2 * k)) * s + (π / k + 2 * π) * t) * r ^ 2 := by
       field_simp; ring
     nlinarith
-  have hQ : 0 ≤ E / (4 * k ^ 2) + E / (2 * k) + π / k + 2 * π := by positivity
   calc ‖symS E F F' ξ‖ * (1 + r) ≤ (E * s + 2 * π * r * t) * (1 + r) :=
         mul_le_mul_of_nonneg_right hS (by positivity)
     _ ≤ ((E / (4 * k ^ 2) + E / (2 * k)) * s + (π / k + 2 * π) * t) * r ^ 2 := key
@@ -311,11 +309,10 @@ lemma fourierInv_helm {φ : ℂ → ℂ} (hφ : TestFunction univ φ) (E : ℝ) 
     𝓕⁻ (fun z => lap φ z + E * φ z) ξ = symD E ξ * 𝓕⁻ φ ξ := by
   have hi1 : Integrable (lap φ) :=
     hφ.lap.1.continuous.integrable_of_hasCompactSupport hφ.lap.2.1
-  have hi2 : Integrable φ := hφ.1.continuous.integrable_of_hasCompactSupport hφ.2.1
   have e : 𝓕⁻ (fun z => lap φ z + E * φ z) ξ = 𝓕⁻ (lap φ) ξ + E * 𝓕⁻ φ ξ := by
     rw [fourierInv_eq_ePlane, fourierInv_eq_ePlane, fourierInv_eq_ePlane, ← integral_const_mul,
       ← integral_add (integrable_conj_ePlane_mul hi1 ξ)
-        ((integrable_conj_ePlane_mul hi2 ξ).const_mul _)]
+        ((integrable_conj_ePlane_mul (hφ.1.continuous.integrable_of_hasCompactSupport hφ.2.1) ξ).const_mul _)]
     congr 1; funext x; ring
   rw [e, fourierInv_lap hφ, symD]; push_cast; ring
 
@@ -330,7 +327,7 @@ lemma integral_helm_ePlane {G : ℂ → ℂ} {G' : Fin 2 → ℂ → ℂ} (hG : 
           (-(2 * π * Complex.I) * cdir 1 ξ) * (ePlane ξ z * G' 1 z)) := by
     intro z
     rw [lap_ePlane, Fin.sum_univ_two, dirD_ePlane, dirD_ePlane]
-    simp only [cdir]
+    simp [cdir]
     push_cast
     ring
   simp_rw [e]
@@ -396,17 +393,16 @@ theorem exists_helmholtz_solution {E : ℝ} (hE : 0 < E) {G : ℂ → ℂ} {G' :
         ∫ z, (G z + w z) * (lap φ z + E * φ z) =
           ∫ z, (G z * lap φ z + ∑ i : Fin 2, G' i z * dirD φ (coordDir i) z) := by
   -- the data and their Fourier transforms
-  have hG1 : Integrable G := integrable_of_memLp_two_hasCompactSupport hG hGc
-  have hG'1 : ∀ i, Integrable (G' i) := fun i =>
+  have hG1 := integrable_of_memLp_two_hasCompactSupport hG hGc
+  have hG'1 := fun i =>
     integrable_of_memLp_two_hasCompactSupport (hG' i) (hG'c i)
   have hGm := integrable_norm_mul_of_hasCompactSupport hG1 hGc
   have hG'm := fun i => integrable_norm_mul_of_hasCompactSupport (hG'1 i) (hG'c i)
-  set F : ℂ → ℂ := 𝓕 G with hFdef
+  set F := 𝓕 G with hFdef
   set F' : Fin 2 → ℂ → ℂ := fun i => 𝓕 (G' i) with hF'def
-  have hFc : Continuous F := continuous_fourier_of_moment hG1 hGm
-  have hF'c : ∀ i, Continuous (F' i) := fun i => continuous_fourier_of_moment (hG'1 i) (hG'm i)
-  have hF2 : MemLp F 2 volume := memLp_fourier hG hG1 hGm
-  have hF'2 : ∀ i, MemLp (F' i) 2 volume := fun i => memLp_fourier (hG' i) (hG'1 i) (hG'm i)
+  have hFc := continuous_fourier_of_moment hG1 hGm
+  have hF'c := fun i => continuous_fourier_of_moment (hG'1 i) (hG'm i)
+  have hF2 := memLp_fourier hG hG1 hGm
   set B := (∫ x, ‖G x‖) + ∑ i, ∫ x, ‖G' i x‖ with hBdef
   set K := 2 * π * ((∫ x, ‖x‖ * ‖G x‖) + ∑ i, ∫ x, ‖x‖ * ‖G' i x‖) with hKdef
   have hI0 : 0 ≤ ∫ x, ‖G x‖ := integral_nonneg fun x => norm_nonneg _
@@ -415,8 +411,8 @@ theorem exists_helmholtz_solution {E : ℝ} (hE : 0 < E) {G : ℂ → ℂ} {G' :
   have hJ'0 : ∀ i, 0 ≤ ∫ x, ‖x‖ * ‖G' i x‖ := fun i => integral_nonneg fun x => by positivity
   have hS0 : 0 ≤ ∑ i, ∫ x, ‖G' i x‖ := Finset.sum_nonneg fun i _ => hI'0 i
   have hT0 : 0 ≤ ∑ i, ∫ x, ‖x‖ * ‖G' i x‖ := Finset.sum_nonneg fun i _ => hJ'0 i
-  have hB : 0 ≤ B := by positivity
-  have hK : 0 ≤ K := by positivity
+
+
   have hFb : ∀ ξ, ‖F ξ‖ ≤ B := fun ξ => (norm_fourier_le G ξ).trans (by linarith)
   have hF'b : ∀ i ξ, ‖F' i ξ‖ ≤ B := fun i ξ => by
     refine (norm_fourier_le (G' i) ξ).trans ?_
@@ -441,7 +437,7 @@ theorem exists_helmholtz_solution {E : ℝ} (hE : 0 < E) {G : ℂ → ℂ} {G' :
   have hN : ∀ ξ, ‖ξ‖ = k → symN F F' ξ = 0 := fun ξ hξ => by
     rw [← integral_helm_ePlane hG1 hG'1 ξ]
     exact hvan ξ (by rw [hξ, hk])
-  obtain ⟨M, hM⟩ := symS_div_bound hk0 hk hB hK hFb hF'b hFl hF'l hN
+  obtain ⟨M, hM⟩ := symS_div_bound hk0 hk (by positivity) (by positivity) hFb hF'b hFl hF'l hN
   -- the Fourier transform of the solution and of its gradient
   set wh : ℂ → ℂ := fun ξ => symS E F F' ξ / symD E ξ with hwhdef
   set gwh : Fin 2 → ℂ → ℂ := fun i ξ => (2 * π * Complex.I * cdir i ξ) * wh ξ with hgwhdef
@@ -451,10 +447,10 @@ theorem exists_helmholtz_solution {E : ℝ} (hE : 0 < E) {G : ℂ → ℂ} {G' :
     refine MemLp.const_mul ?_ M
     refine ((memLp_indicator_const 2 Metric.isClosed_closedBall.measurableSet (1 : ℝ)
       (Or.inr measure_closedBall_lt_top.ne)).add hF2.norm).add ?_
-    exact memLp_finset_sum _ fun i _ => (hF'2 i).norm
+    exact memLp_finset_sum _ fun i _ => ((fun i => memLp_fourier (hG' i) (hG'1 i) (hG'm i)) i).norm
   have hwhm : AEStronglyMeasurable wh volume :=
     ((continuous_symS hFc hF'c).measurable.div (continuous_symD E).measurable).aestronglyMeasurable
-  have hwhD : ∀ ξ, ‖wh ξ‖ * (1 + ‖ξ‖) ≤ D ξ := hM
+  have hwhD := hM
   have hwh2 : MemLp wh 2 volume := by
     refine hD2.of_le hwhm (Eventually.of_forall fun ξ => ?_)
     refine le_trans ?_ (Real.le_norm_self _)
@@ -467,16 +463,15 @@ theorem exists_helmholtz_solution {E : ℝ} (hE : 0 < E) {G : ℂ → ℂ} {G' :
         (continuous_cdir i))).aestronglyMeasurable).mul hwhm)
     · refine le_trans ?_ (Real.le_norm_self _)
       simp only [hgwhdef]
-      have e : (2 * π * Complex.I * (cdir i ξ : ℂ)) = -(-(2 * π * Complex.I) * (cdir i ξ : ℂ)) := by
-        ring
-      rw [norm_mul, e, norm_neg, norm_two_pi_I_mul]
+
+      simp
       have h1 := abs_cdir_le i ξ
       have h2 := hwhD ξ
       have h3 := norm_nonneg (wh ξ)
       have h4 : |cdir i ξ| * ‖wh ξ‖ ≤ ‖wh ξ‖ * (1 + ‖ξ‖) := by nlinarith [norm_nonneg ξ]
       nlinarith [Real.pi_pos]
   -- the solution
-  set W : Lp ℂ 2 (volume : Measure ℂ) := 𝓕⁻ (hwh2.toLp wh) with hWdef
+  set W := 𝓕⁻ (hwh2.toLp wh) with hWdef
   set GW : Fin 2 → Lp ℂ 2 (volume : Measure ℂ) := fun i => 𝓕⁻ ((hgwh2 i).toLp (gwh i))
     with hGWdef
   have hpair : ∀ (A : ℂ → ℂ) (hA : MemLp A 2 volume) {ψ : ℂ → ℂ}, TestFunction univ ψ →
@@ -491,17 +486,17 @@ theorem exists_helmholtz_solution {E : ℝ} (hE : 0 < E) {G : ℂ → ℂ} {G' :
     intro φ hφ i
     have h1 : ∫ z, W z * fderiv ℝ φ z (coordDir i) =
         ∫ ξ, wh ξ * 𝓕⁻ (dirD φ (coordDir i)) ξ := hpair wh hwh2 (hφ.dirD _)
-    have h2 : ∫ z, GW i z * φ z = ∫ ξ, gwh i ξ * 𝓕⁻ φ ξ := hpair (gwh i) (hgwh2 i) hφ
+    have h2 := hpair (gwh i) (hgwh2 i) hφ
     rw [h1, h2, ← integral_neg]
     congr 1
     funext ξ
     rw [fourierInv_dirD hφ]
-    simp only [hgwhdef, cdir]
+    simp [hgwhdef, cdir]
     ring
   · -- the Helmholtz equation
     intro φ hφ
     set H : ℂ → ℂ := fun z => lap φ z + E * φ z with hHdef
-    have hH : TestFunction univ H := hφ.helm E
+    have hH := hφ.helm E
     have hFH : Integrable fun ξ => F ξ * 𝓕⁻ H ξ :=
       (integrable_fourierInv_test hH).bdd_mul (c := B) hFc.aestronglyMeasurable
         (Eventually.of_forall hFb)
@@ -513,19 +508,18 @@ theorem exists_helmholtz_solution {E : ℝ} (hE : 0 < E) {G : ℂ → ℂ} {G' :
     have hF'd : ∀ i, Integrable fun ξ => F' i ξ * 𝓕⁻ (dirD φ (coordDir i)) ξ := fun i =>
       (integrable_fourierInv_test (hφ.dirD _)).bdd_mul (c := B) (hF'c i).aestronglyMeasurable
         (Eventually.of_forall (hF'b i))
-    have hGH : Integrable fun z => G z * H z := integrable_mul_test hG hH
-    have hWH : Integrable fun z => W z * H z := integrable_mul_test (Lp.memLp _) hH
-    have hGL : Integrable fun z => G z * lap φ z := integrable_mul_test hG hφ.lap
+    have hGH := integrable_mul_test hG hH
+    have hGL := integrable_mul_test hG hφ.lap
     have hG'd : ∀ i, Integrable fun z => G' i z * dirD φ (coordDir i) z := fun i =>
       integrable_mul_test (hG' i) (hφ.dirD _)
     have eL : ∫ z, (G z + W z) * H z = ∫ ξ, (F ξ * 𝓕⁻ H ξ + wh ξ * 𝓕⁻ H ξ) := by
       simp_rw [add_mul]
-      rw [integral_add hGH hWH, integral_add hFH hwH, hpair wh hwh2 hH,
+      rw [integral_add hGH (integrable_mul_test (Lp.memLp _) hH), integral_add hFH hwH, hpair wh hwh2 hH,
         ← integral_fourier_mul_fourierInv hG1 hH]
     have eR : ∫ z, (G z * lap φ z + ∑ i : Fin 2, G' i z * dirD φ (coordDir i) z) =
         ∫ ξ, (F ξ * 𝓕⁻ (lap φ) ξ + (F' 0 ξ * 𝓕⁻ (dirD φ (coordDir 0)) ξ +
           F' 1 ξ * 𝓕⁻ (dirD φ (coordDir 1)) ξ)) := by
-      simp only [Fin.sum_univ_two]
+      simp
       have hs1 : Integrable fun z => G' 0 z * dirD φ (coordDir 0) z +
           G' 1 z * dirD φ (coordDir 1) z := (hG'd 0).add (hG'd 1)
       have hs2 : Integrable fun ξ => F' 0 ξ * 𝓕⁻ (dirD φ (coordDir 0)) ξ +
@@ -539,12 +533,12 @@ theorem exists_helmholtz_solution {E : ℝ} (hE : 0 < E) {G : ℂ → ℂ} {G' :
     refine integral_congr_ae (Eventually.of_forall fun ξ => ?_)
     have hwD := symS_div_mul_symD hk0 hk hN ξ
     have e1 := fourierInv_helm hφ E ξ
-    simp only [hHdef] at e1 ⊢
+    simp at e1 ⊢
     rw [e1, fourierInv_lap hφ, fourierInv_dirD hφ, fourierInv_dirD hφ]
     have e2 : wh ξ * (symD E ξ * 𝓕⁻ φ ξ) = symS E F F' ξ * 𝓕⁻ φ ξ := by
       rw [← mul_assoc, hwhdef]; simp only; rw [hwD]
     rw [e2, symS_eq]
-    simp only [symN, symD, Fin.sum_univ_two, cdir]
+    simp [symN, symD, Fin.sum_univ_two, cdir]
     push_cast
     ring
 

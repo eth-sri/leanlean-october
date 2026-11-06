@@ -35,7 +35,7 @@ private theorem shift_param_mem_frontier {Ω : Set ℂ} {γ : ℝ → ℂ}
 private theorem shift_param_eq_of_eq {Ω : Set ℂ} {γ : ℝ → ℂ}
     (hγ : IsBoundaryParam Ω γ) {x y : ℝ} (hxy : γ x = γ y)
     (hlt : |x - y| < 2 * π) : x = y := by
-  have hmem : ∀ z, toIcoMod Real.two_pi_pos 0 z ∈ Ico 0 (2 * π) := fun z => by
+  have hmem := fun z => by
     have := toIcoMod_mem_Ico Real.two_pi_pos 0 z
     rwa [zero_add] at this
   have hval : ∀ z, γ (toIcoMod Real.two_pi_pos 0 z) = γ z := fun z => by
@@ -45,7 +45,7 @@ private theorem shift_param_eq_of_eq {Ω : Set ℂ} {γ : ℝ → ℂ}
   set n := toIcoDiv Real.two_pi_pos 0 x
   set m := toIcoDiv Real.two_pi_pos 0 y
   have hd : x - y = ((n - m : ℤ) : ℝ) * (2 * π) := by
-    rw [zsmul_eq_mul, zsmul_eq_mul] at h
+    simp at h
     push_cast
     linarith
   have hk : n - m = 0 := by
@@ -54,7 +54,7 @@ private theorem shift_param_eq_of_eq {Ω : Set ℂ} {γ : ℝ → ℂ}
       by_contra hc
       push_neg at hc
       nlinarith [Real.two_pi_pos]
-    rw [← Int.cast_abs] at h1
+    simp at h1
     have : |n - m| < 1 := by exact_mod_cast h1
     exact Int.abs_lt_one_iff.mp this
   rw [hk] at hd
@@ -80,7 +80,7 @@ theorem IsBoundaryParam.shift {Ω : Set ℂ} {γ : ℝ → ℂ}
       γ (toIcoMod Real.two_pi_pos 0 s + t) = γ (s + t) := by
     change (fun θ : ℝ => γ (θ + t)) (toIcoMod Real.two_pi_pos 0 s) =
       (fun θ : ℝ => γ (θ + t)) s
-    rw [toIcoMod]
+    simp
     exact hper.sub_zsmul_eq (toIcoDiv Real.two_pi_pos 0 s)
   refine ⟨⟨K, hKt⟩, hper, ?_, ?_, ?_, ?_⟩
   · intro x hx y hy hxy
@@ -102,7 +102,7 @@ theorem IsBoundaryParam.shift {Ω : Set ℂ} {γ : ℝ → ℂ}
       refine ⟨toIcoMod Real.two_pi_pos 0 (s - t), hmem, ?_⟩
       calc
         _ = γ ((s - t) + t) := hval (s - t)
-        _ = γ s := by rw [sub_add_cancel]
+        _ = γ s := by simp
         _ = z := hsz
   · obtain ⟨c, hc, hspeed⟩ := hγ.const_speed
     have hspeed_shift : ∀ᵐ θ ∂volume, ‖deriv γ (θ + t)‖ = c :=
@@ -115,7 +115,7 @@ theorem IsBoundaryParam.shift {Ω : Set ℂ} {γ : ℝ → ℂ}
       _ = ∫ θ in (0 : ℝ)..(2 * π), signedAreaDensity γ (θ + t) := by
         apply intervalIntegral.integral_congr
         intro θ _
-        simp only [signedAreaDensity, deriv_comp_add_const]
+        simp [signedAreaDensity, deriv_comp_add_const]
       _ = ∫ θ in t..t + 2 * π, signedAreaDensity γ θ := by
         rw [intervalIntegral.integral_comp_add_right, zero_add, add_comm (2 * π) t]
       _ = ∫ θ in (0 : ℝ)..(2 * π), signedAreaDensity γ θ :=

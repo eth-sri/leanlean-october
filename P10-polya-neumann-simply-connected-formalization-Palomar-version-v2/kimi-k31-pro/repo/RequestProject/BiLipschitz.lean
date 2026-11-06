@@ -89,11 +89,11 @@ lemma image_ae_eq_image_differentiable (hΩ : IsOpen Ω) (hf : LipschitzOnWith K
 lemma lintegral_image_bilip (hΩ : IsOpen Ω) (hf : LipschitzOnWith K f Ω) (g : ℂ → ENNReal) :
     ∫⁻ y in f '' Ω, g y = ∫⁻ x in Ω, ENNReal.ofReal |(fderiv ℝ f x).det| * g (f x) := by
   set s' := Ω ∩ {x | DifferentiableAt ℝ f x}
-  have hD : MeasurableSet {x | DifferentiableAt ℝ f x} := measurableSet_of_differentiableAt ℝ f
+
   have hder : ∀ x ∈ s', HasFDerivWithinAt f (fderiv ℝ f x) s' x := fun x hx =>
     hx.2.hasFDerivAt.hasFDerivWithinAt
-  have h1 := lintegral_image_eq_lintegral_abs_det_fderiv_mul volume (hΩ.measurableSet.inter hD)
-    hder (f.injective.injOn) g
+  have h1 := lintegral_image_eq_lintegral_abs_det_fderiv_mul volume (hΩ.measurableSet.inter (measurableSet_of_differentiableAt ℝ f))
+    hder f.injective.injOn g
   rw [setLIntegral_congr (image_ae_eq_image_differentiable hΩ hf).symm, h1]
   refine setLIntegral_congr (ae_eq_set.mpr ⟨?_, volume_diff_differentiable hΩ hf⟩)
   rw [diff_eq_empty.mpr inter_subset_left, measure_empty]
@@ -102,11 +102,11 @@ lemma lintegral_image_bilip (hΩ : IsOpen Ω) (hf : LipschitzOnWith K f Ω) (g :
 lemma integral_image_bilip (hΩ : IsOpen Ω) (hf : LipschitzOnWith K f Ω) (g : ℂ → ℂ) :
     ∫ y in f '' Ω, g y = ∫ x in Ω, |(fderiv ℝ f x).det| • g (f x) := by
   set s' := Ω ∩ {x | DifferentiableAt ℝ f x}
-  have hD : MeasurableSet {x | DifferentiableAt ℝ f x} := measurableSet_of_differentiableAt ℝ f
+
   have hder : ∀ x ∈ s', HasFDerivWithinAt f (fderiv ℝ f x) s' x := fun x hx =>
     hx.2.hasFDerivAt.hasFDerivWithinAt
-  have h1 := integral_image_eq_integral_abs_det_fderiv_smul volume (hΩ.measurableSet.inter hD)
-    hder (f.injective.injOn) g
+  have h1 := integral_image_eq_integral_abs_det_fderiv_smul volume (hΩ.measurableSet.inter (measurableSet_of_differentiableAt ℝ f))
+    hder f.injective.injOn g
   rw [setIntegral_congr_set (image_ae_eq_image_differentiable hΩ hf).symm, h1]
   refine setIntegral_congr_set (ae_eq_set.mpr ⟨?_, volume_diff_differentiable hΩ hf⟩)
   rw [diff_eq_empty.mpr inter_subset_left, measure_empty]
@@ -115,15 +115,15 @@ lemma integral_image_bilip (hΩ : IsOpen Ω) (hf : LipschitzOnWith K f Ω) (g : 
 lemma ae_inv_sq_le_abs_det (hΩ : IsOpen Ω) (hf : LipschitzOnWith K f Ω)
     (hg : LipschitzOnWith K f.symm (f '' Ω)) :
     ∀ᵐ x ∂(volume.restrict Ω), ((K : ℝ) ^ 2)⁻¹ ≤ |(fderiv ℝ f x).det| := by
-  have hU : IsOpen (f '' Ω) := f.isOpenMap _ hΩ
+  have hU := f.isOpenMap _ hΩ
   have h2 := (quasiMeasurePreserving_restrict hg).ae
     (ae_differentiableAt_of_lipschitzOnWith hU hg)
   filter_upwards [ae_differentiableAt_of_lipschitzOnWith hΩ hf, h2,
     ae_restrict_mem hΩ.measurableSet] with x h1 h2 hx
   have hcomp : (fderiv ℝ f.symm (f x)).comp (fderiv ℝ f x) = ContinuousLinearMap.id ℝ ℂ := by
     have h := h2.hasFDerivAt.comp x h1.hasFDerivAt
-    have hid : (f.symm ∘ f : ℂ → ℂ) = id := funext f.symm_apply_apply
-    rw [hid] at h
+
+    simp at h
     exact h.unique (hasFDerivAt_id x)
   have hdet : (fderiv ℝ f.symm (f x)).det * (fderiv ℝ f x).det = 1 := by
     have h := congrArg ContinuousLinearMap.det hcomp
@@ -180,7 +180,7 @@ lemma memLp_comp_symm_bilip (hΩ : IsOpen Ω) (hf : LipschitzOnWith K f Ω) (u :
       = ∫⁻ x in Ω, ENNReal.ofReal |(fderiv ℝ f x).det| *
           ENNReal.ofReal (‖(u : ℂ → ℂ) x‖ ^ 2) := by
         rw [lintegral_image_bilip hΩ hf]
-        simp only [Homeomorph.symm_apply_apply]
+        simp
     _ ≤ ∫⁻ x in Ω, ENNReal.ofReal ((K : ℝ) ^ 2) * ENNReal.ofReal (‖(u : ℂ → ℂ) x‖ ^ 2) := by
         refine setLIntegral_mono' hΩ.measurableSet fun x hx => ?_
         exact mul_le_mul_left (ENNReal.ofReal_le_ofReal (abs_det_fderiv_le hΩ hf hx)) _

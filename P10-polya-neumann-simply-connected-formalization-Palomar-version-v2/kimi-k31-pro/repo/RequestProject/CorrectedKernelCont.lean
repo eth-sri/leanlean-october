@@ -67,8 +67,7 @@ variable {γ : ℝ → ℂ} {K : NNReal} {Ws : ℝ → ℝ → Ell2 →L[ℂ] El
 theorem tendsto_cutBE_energy (hK : LipschitzWith K γ) (hWs : ∀ E, IsTransport γ E (Ws E))
     (E₀ : ℝ) (hc : cutC (Ws E₀ (2 * π)) (basisVec 0) ≠ 0) :
     Tendsto (fun E => cutBE (Ws E)) (𝓝 E₀) (𝓝 (cutBE (Ws E₀))) := by
-  have h2π : (2 * π) ∈ Icc 0 (2 * π) := ⟨by positivity, le_rfl⟩
-  have hV := tendsto_transport_energy hK hWs E₀ h2π
+  have hV := tendsto_transport_energy hK hWs E₀ (⟨by positivity, le_rfl⟩)
   have hVa : Tendsto (fun E => ContinuousLinearMap.adjoint (Ws E (2 * π)) (basisVec 0)) (𝓝 E₀)
       (𝓝 (ContinuousLinearMap.adjoint (Ws E₀ (2 * π)) (basisVec 0))) :=
     ((continuous_eval_const (basisVec 0)).tendsto _).comp
@@ -94,16 +93,16 @@ lemma norm_inner_sandwich_sub_le {P Q P' Q' X X' : Ell2 →L[ℂ] Ell2}
     refine (ContinuousLinearMap.le_opNorm _ _).trans ?_
     rw [LinearIsometryEquiv.norm_map, norm_basisVec_zero, mul_one]; exact hQ
   have huu : ‖u - u'‖ ≤ ‖Q - Q'‖ := by
-    simp only [u, u', ← ContinuousLinearMap.sub_apply, ← map_sub]
+    simp [u, u', ← ContinuousLinearMap.sub_apply, ← map_sub]
     refine (ContinuousLinearMap.le_opNorm _ _).trans ?_
     rw [LinearIsometryEquiv.norm_map, norm_basisVec_zero, mul_one]
   rw [← inner_sub_right]
   refine (norm_inner_le_norm _ _).trans ?_
-  rw [norm_basisVec_zero, one_mul]
+  simp
   have e : P (X u) - P' (X' u') = (P - P') (X u) + P' ((X - X') u) + P' (X' (u - u')) := by
     simp only [ContinuousLinearMap.sub_apply, map_sub]; abel
   rw [e]
-  refine (norm_add₃_le).trans ?_
+  refine norm_add₃_le.trans ?_
   have t1 : ‖(P - P') (X u)‖ ≤ ‖P - P'‖ * ‖X‖ := by
     refine (ContinuousLinearMap.le_opNorm _ _).trans ?_
     calc ‖P - P'‖ * ‖X u‖ ≤ ‖P - P'‖ * (‖X‖ * 1) := by
@@ -131,16 +130,16 @@ lemma norm_correctedKernel_sub_correctedKernel_le {W W' : ℝ → Ell2 →L[ℂ]
     (P' := W θ) (Q' := W t) hWθ hW't
   have k2 := norm_inner_sandwich_sub_le (X := cutBE W') (X' := cutBE W) (P := W' θ) (Q := W' t)
     (P' := W θ) (Q' := W t) hWθ hW't
-  simp only [ContinuousLinearMap.one_apply, sub_self, norm_zero, add_zero] at k1
+  simp at k1
   have hone : ‖(1 : Ell2 →L[ℂ] Ell2)‖ ≤ 1 :=
     ContinuousLinearMap.opNorm_le_bound _ zero_le_one fun x => by simp
   have e : correctedKernel W' θ t - correctedKernel W θ t =
       Complex.I * Real.sign (θ - t) * (volterraKernel W' θ t - volterraKernel W θ t) +
       (⟪basisVec 0, W' θ (cutBE W' (ContinuousLinearMap.adjoint (W' t) (basisVec 0)))⟫_ℂ -
         ⟪basisVec 0, W θ (cutBE W (ContinuousLinearMap.adjoint (W t) (basisVec 0)))⟫_ℂ) := by
-    simp only [correctedKernel]; ring
+    simp [correctedKernel]; ring
   have hs : ‖Complex.I * (Real.sign (θ - t) : ℂ)‖ ≤ 1 := by
-    rw [norm_mul, Complex.norm_I, one_mul, Complex.norm_real, Real.norm_eq_abs]
+    simp
     exact abs_real_sign_le _
   rw [e]
   refine (norm_add_le _ _).trans ?_
@@ -149,7 +148,7 @@ lemma norm_correctedKernel_sub_correctedKernel_le {W W' : ℝ → Ell2 →L[ℂ]
     rw [norm_mul]
     calc _ ≤ 1 * ‖volterraKernel W' θ t - volterraKernel W θ t‖ := by gcongr
       _ ≤ ‖W' θ - W θ‖ * ‖(1 : Ell2 →L[ℂ] Ell2)‖ + ‖(1 : Ell2 →L[ℂ] Ell2)‖ * ‖W' t - W t‖ := by
-          rw [one_mul]; unfold volterraKernel; exact k1
+          simp; unfold volterraKernel; exact k1
       _ ≤ _ := by gcongr
   have hB := norm_nonneg (cutBE W')
   have hB' := norm_nonneg (cutBE W)
@@ -195,7 +194,6 @@ theorem tendsto_correctedKernel_energy (hK : LipschitzWith K γ)
     norm_transport_sub_le hK hR (hWs E₀) (hWs E) hθ
   have d2 : ‖Ws E t - Ws E₀ t‖ ≤ transportDist K R E₀ E :=
     norm_transport_sub_le hK hR (hWs E₀) (hWs E) ht
-  have hpos : 0 ≤ 1 + ‖cutBE (Ws E)‖ + ‖cutBE (Ws E₀)‖ := by positivity
   gcongr
 
 end PolyaNeumann

@@ -33,7 +33,7 @@ namespace PolyaNeumann
 lemma inner_diagN (x y : Ell2) :
     inner ℂ x (diagN y) = 2 * (inner ℂ (basisVec 0) y * inner ℂ x (basisVec 0)) -
       inner ℂ (basisVec 1) y * inner ℂ x (basisVec 1) := by
-  simp only [diagN, ContinuousLinearMap.sub_apply, ContinuousLinearMap.smul_apply,
+  simp [diagN, ContinuousLinearMap.sub_apply, ContinuousLinearMap.smul_apply,
     ContinuousLinearMap.comp_apply, innerSL_apply_apply, ContinuousLinearMap.toSpanSingleton_apply,
     inner_sub_right, inner_smul_right, basisVec]
 
@@ -88,9 +88,9 @@ lemma hasSum_integral_inner_mul_inner {v w : ℝ → Ell2} (hv : ContinuousOn v 
     (e : HilbertBasis ι ℂ Ell2) :
     HasSum (fun n => ∫ θ in (0 : ℝ)..(2 * π), (b θ : ℂ) * (inner ℂ (v θ) (e n) * inner ℂ (e n) (w θ)))
       (∫ θ in (0 : ℝ)..(2 * π), (b θ : ℂ) * inner ℂ (v θ) (w θ)) := by
-  have hπ : (0 : ℝ) ≤ 2 * π := by positivity
+
   have hsub : uIoc 0 (2 * π) ⊆ Icc 0 (2 * π) := by
-    rw [uIoc_of_le hπ]; exact Ioc_subset_Icc_self
+    rw [uIoc_of_le (by positivity)]; exact Ioc_subset_Icc_self
   haveI : SecondCountableTopologyEither ℝ Ell2 := secondCountableTopologyEither_of_left _ _
   have hgs : ∀ θ, HasSum (fun n => |b θ| * ((‖inner ℂ (e n) (v θ)‖ ^ 2 +
       ‖inner ℂ (e n) (w θ)‖ ^ 2) / 2)) (|b θ| * ((‖v θ‖ ^ 2 + ‖w θ‖ ^ 2) / 2)) := fun θ =>
@@ -212,7 +212,7 @@ lemma traceForm_mul_star {W : ℝ → Ell2 →L[ℂ] Ell2} {b : ℝ → ℝ} {V 
   have key : ∀ u : Ell2, inner ℂ (star (W θ * star V) u) (X (star (W θ * star V) u)) =
       inner ℂ (star (W θ) u) (X (star (W θ) u)) := by
     intro u
-    rw [star_mul, star_star, ContinuousLinearMap.mul_apply]
+    simp
     rw [← ContinuousLinearMap.mul_apply X V, ← hVX, ContinuousLinearMap.mul_apply,
       ← ContinuousLinearMap.adjoint_inner_left, ← ContinuousLinearMap.star_eq_adjoint,
       ← ContinuousLinearMap.mul_apply (star V) V, Unitary.star_mul_self_of_mem hV,
@@ -230,9 +230,9 @@ theorem hasSum_trace_pow_mul_curvatureOp_mul_pow {γ : ℝ → ℂ} {K : NNReal}
   obtain ⟨R, hR⟩ := isCompact_Icc.exists_bound_of_continuousOn (s := Icc 0 (2 * π))
     (f := fun θ => γ θ - γ 0) (hK.continuous.sub continuous_const).continuousOn
   set U := monodromy W with hUdef
-  have hU : U ∈ unitary (Ell2 →L[ℂ] Ell2) := monodromy_mem_unitary' hK hW
+  have hU := monodromy_mem_unitary' hK hW
   set V := U ^ j with hVdef
-  have hV : V ∈ unitary (Ell2 →L[ℂ] Ell2) := pow_mem hU j
+  have hV := pow_mem hU j
   have hVX : V * U ^ n = U ^ n * V := by rw [hVdef, ← pow_add, ← pow_add, add_comm]
   have hpow : U ^ (n - j) = star V * U ^ n := by
     rw [hVdef, ← Nat.add_sub_cancel' hjn, pow_add, ← mul_assoc, ← hVdef,
@@ -257,7 +257,7 @@ theorem hasSum_trace_pow_mul_curvatureOp_mul_pow {γ : ℝ → ℂ} {K : NNReal}
     funext θ
     rw [hL, smul_mul_assoc, mul_smul_comm]
     congr 1
-    simp only [hW', star_mul, star_star, mul_assoc]
+    simp [hW', star_mul, star_star, mul_assoc]
   rw [hconj]
   have h := (hasSum_trace_integral_conj_diagN_mul hW'c hW'u
     (areaDensity_aestronglyMeasurable hK.continuous) (fun θ hθ => abs_areaDensity_le hK hR hθ)
@@ -282,16 +282,16 @@ theorem hasDerivAt_monodromy_pow {γ : ℝ → ℂ} {K : NNReal} (hK : Lipschitz
     have h := ih.mul (hasDerivAt_monodromy_energy hK hclosed hWs hE)
     have hf : (fun E => monodromy (Ws E) ^ n) * (fun E => monodromy (Ws E)) =
         fun E => monodromy (Ws E) ^ (n + 1) := by
-      funext E'; simp only [Pi.mul_apply, pow_succ]
+      funext E'; simp [Pi.mul_apply, pow_succ]
     rw [hf] at h
     refine h.congr_deriv (Eq.symm ?_)
     rw [Finset.sum_range_succ, smul_add, Finset.smul_sum, Finset.smul_sum, Finset.sum_mul,
       Nat.add_sub_cancel_left, pow_one]
     congr 1
     · refine Finset.sum_congr rfl (fun j hj => ?_)
-      have hj' : j ≤ n := (Finset.mem_range.mp hj).le
+      have hj' := (Finset.mem_range.mp hj).le
       rw [Nat.sub_add_comm hj', pow_succ]
-      simp only [smul_mul_assoc, mul_assoc]
+      simp [smul_mul_assoc, mul_assoc]
     · rw [mul_smul_comm, mul_assoc]
 
 /-- Trace-norm bound for `∑_{j < n} U^j Q U^{n-j}`. -/
@@ -379,10 +379,10 @@ theorem trace_monodromy_pow_sub {γ : ℝ → ℂ} {K : NNReal} (hK : LipschitzW
     refine (stronglyMeasurable_deriv (g m)).aestronglyMeasurable.congr ?_
     exact (ae_restrict_iff' measurableSet_uIoc).mpr
       (Eventually.of_forall fun E hE => (hgd m E (hpos E hE)).deriv)
-  have hdi : ∀ m, IntervalIntegrable (d m) volume E₁ E₂ := fun m =>
+  have hdi := fun m =>
     IntervalIntegrable.mono_fun' (intervalIntegrable_const (c := (n : ℝ) * C0)) (hdm m)
       (Eventually.of_forall fun E => hone m E)
-  have hftc : ∀ m, ∫ E in E₁..E₂, d m E = g m E₂ - g m E₁ := fun m =>
+  have hftc := fun m =>
     intervalIntegral.integral_eq_sub_of_hasDerivAt (fun E hE => hgd m E (hposc E hE)) (hdi m)
   -- partial sums
   have hS : ∀ M : ℕ, ∫ E in E₁..E₂, (∑ m ∈ Finset.range M, d m E) =
@@ -436,7 +436,7 @@ lemma cutPhaseSum_eq_tsum_eigIdx {U : H →L[ℂ] H} {ε : ℝ}
   congr 1
   funext z
   rw [tsum_fintype, cutPhaseTerm]
-  simp only [Finset.sum_const, Finset.card_univ, Fintype.card_fin, nsmul_eq_mul]
+  simp
 
 omit [CompleteSpace H] in
 /-- Exchange of the eigenvalue sum and the Fourier sum. -/
@@ -488,12 +488,12 @@ lemma hasSum_re_inner_pow {U : H →L[ℂ] H} (hU : U ∈ unitary (H →L[ℂ] H
     HasSum (fun n : ℕ => 2 * (a n * inner ℂ u ((U ^ n) u)).re) (‖u‖ ^ 2) := by
   have he := orthonormal_eigVec hU
   set w : EigIdx U → ℝ := fun p => ‖inner ℂ (eigVec U p) u‖ ^ 2 with hw
-  have hws : Summable w := he.inner_products_summable u
+  have hws := he.inner_products_summable u
   have hprod : ∀ p : EigIdx U, inner ℂ (eigVec U p) u * inner ℂ u (eigVec U p) = (w p : ℂ) := by
     intro p
     rw [hw, ← inner_conj_symm u (eigVec U p), Complex.mul_conj, Complex.normSq_eq_norm_sq]
   set F : ℕ × EigIdx U → ℝ := fun q => 2 * (a q.1 * ((q.2.1 : ℂ) ^ q.1 - 1)).re * w q.2 with hF
-  have hzn : ∀ p : EigIdx U, ‖(p.1 : ℂ)‖ = 1 := norm_eigVal hU
+  have hzn := norm_eigVal hU
   have hFb : ∀ q, ‖F q‖ ≤ 4 * (‖a q.1‖ * w q.2) := by
     intro q
     rw [hF, Real.norm_eq_abs, abs_mul, abs_mul, abs_two, abs_of_nonneg (by positivity : 0 ≤ w q.2)]
@@ -512,9 +512,9 @@ lemma hasSum_re_inner_pow {U : H →L[ℂ] H} (hU : U ∈ unitary (H →L[ℂ] H
   have hfibp : ∀ p : EigIdx U, HasSum (fun n => F (n, p)) 0 := by
     intro p
     have := ((hz p).sub h1).mul_right (w p)
-    simp only [sub_self, zero_mul] at this
+    simp at this
     convert this using 2 with n
-    simp only [hF, mul_sub, mul_one, Complex.sub_re]
+    simp [hF, mul_sub, mul_one, Complex.sub_re]
   have hfibn : ∀ n : ℕ, HasSum (fun p => F (n, p))
       (2 * (a n * (inner ℂ u ((U ^ n) u) - ((‖u‖ ^ 2 : ℝ) : ℂ))).re) := by
     intro n
@@ -557,14 +557,14 @@ theorem hasSum_re_tauE {γ : ℝ → ℂ} {K : NNReal} (hK : LipschitzWith K γ)
       ((1 / 4) * ∫ θ in (0 : ℝ)..(2 * π), areaDensity γ θ) := by
   obtain ⟨R, hR⟩ := isCompact_Icc.exists_bound_of_continuousOn (s := Icc 0 (2 * π))
     (f := fun θ => γ θ - γ 0) (hK.continuous.sub continuous_const).continuousOn
-  have hπ : (0 : ℝ) ≤ 2 * π := by positivity
+
   have hsub : uIoc 0 (2 * π) ⊆ Icc 0 (2 * π) := by
-    rw [uIoc_of_le hπ]; exact Ioc_subset_Icc_self
+    rw [uIoc_of_le (by positivity)]; exact Ioc_subset_Icc_self
   set W := Ws E with hWdef
   set U := monodromy W with hUdef
   set b := areaDensity γ with hbdef
-  have hU : U ∈ unitary (Ell2 →L[ℂ] Ell2) := monodromy_mem_unitary' hK (hWs E)
-  have hb : AEStronglyMeasurable b volume := areaDensity_aestronglyMeasurable hK.continuous
+  have hU := monodromy_mem_unitary' hK (hWs E)
+  have hb := areaDensity_aestronglyMeasurable hK.continuous
   have hbB : ∀ θ ∈ Icc 0 (2 * π), |b θ| ≤ R * K := fun θ hθ => abs_areaDensity_le hK hR hθ
   set a : ℕ → ℂ := fun n => Complex.I * n * c n with ha
   have has : Summable (fun n => ‖a n‖) := by
@@ -598,7 +598,7 @@ theorem hasSum_re_tauE {γ : ℝ → ℂ} {K : NNReal} (hK : LipschitzWith K γ)
     rw [hGi, tauE]
     have : c n * (Complex.I * n * ((1 / 4 : ℂ) * traceForm (Ws E) (areaDensity γ)
         (monodromy (Ws E) ^ n))) = ((1 / 4 : ℝ) : ℂ) * (a n * traceForm W b (U ^ n)) := by
-      rw [ha]; push_cast; ring
+      simp; push_cast; ring
     rw [this, Complex.re_ofReal_mul]
     ring
   simp_rw [hterm]
@@ -618,8 +618,7 @@ theorem hasSum_re_tauE {γ : ℝ → ℂ} {K : NNReal} (hK : LipschitzWith K γ)
           inner ℂ (u 1 θ) ((U ^ n) (u 1 θ)))) = ((b θ : ℝ) : ℂ) *
           (2 * (a n * inner ℂ (u 0 θ) ((U ^ n) (u 0 θ))) -
             a n * inner ℂ (u 1 θ) ((U ^ n) (u 1 θ))) by ring]
-      simp only [Complex.sub_re, Complex.mul_re, Complex.mul_im, Complex.re_ofNat,
-        Complex.im_ofNat, Complex.ofReal_re, Complex.ofReal_im, Complex.sub_im]
+      simp
       ring
     · ring
   have hGb : ∀ n, ∀ θ ∈ Icc 0 (2 * π), ‖G n θ‖ ≤ |b θ| * (6 * ‖a n‖) := by
@@ -643,12 +642,12 @@ theorem hasSum_re_tauE {γ : ℝ → ℂ} {K : NNReal} (hK : LipschitzWith K γ)
       rw [norm_mul, Complex.norm_real, Real.norm_eq_abs]
       exact mul_le_mul_of_nonneg_left h3 (abs_nonneg _)
     calc ‖G n θ‖ = 2 * |(a n * f n θ).re| := by
-          simp only [hG, Real.norm_eq_abs, abs_mul, abs_two]
+          simp [hG, Real.norm_eq_abs, abs_mul, abs_two]
       _ ≤ 2 * (‖a n‖ * ‖f n θ‖) := by
           gcongr; exact (Complex.abs_re_le_norm _).trans (norm_mul_le _ _)
       _ ≤ 2 * (‖a n‖ * (|b θ| * 3)) := by gcongr
       _ = |b θ| * (6 * ‖a n‖) := by ring
-  have hGm : ∀ n, AEStronglyMeasurable (G n) (volume.restrict (uIoc 0 (2 * π))) := fun n =>
+  have hGm := fun n =>
     ((Complex.continuous_re.comp_aestronglyMeasurable
       ((intervalIntegrable_iff.mp ((hfi n).const_mul (a n))).aestronglyMeasurable)).const_mul 2)
   have hsumb : ∀ θ, HasSum (fun n => |b θ| * (6 * ‖a n‖)) (|b θ| * (6 * ∑' n, ‖a n‖)) :=
@@ -693,19 +692,18 @@ lemma exists_cut_radius {γ : ℝ → ℂ} {K : NNReal} (hK : LipschitzWith K γ
   set G : ℝ × ℂ → Ell2 →L[ℂ] Ell2 := fun q => algebraMap ℂ _ q.2 - monodromyAt γ q.1 with hG
   have hGc : ContinuousOn G (Ioi 0 ×ˢ univ) := by
     intro q hq
-    have hq1 : 0 < q.1 := hq.1
+    have hq1 := hq.1
     refine ContinuousAt.continuousWithinAt ?_
     exact ((continuous_algebraMap ℂ (Ell2 →L[ℂ] Ell2)).continuousAt.comp continuousAt_snd).sub
       ((continuousAt_monodromyAt hK hclosed hq1).comp continuousAt_fst)
   have hO := hGc.isOpen_inter_preimage (isOpen_Ioi.prod isOpen_univ) Units.isOpen
-  have hKc : IsCompact (Icc E₁ E₂ ×ˢ ({w} : Set ℂ)) := isCompact_Icc.prod isCompact_singleton
   have hKO : Icc E₁ E₂ ×ˢ ({w} : Set ℂ) ⊆ (Ioi 0 ×ˢ univ) ∩ G ⁻¹' {x | IsUnit x} := by
     rintro ⟨E, z⟩ ⟨hE, hz⟩
-    rw [mem_singleton_iff] at hz
+    simp at hz
     subst hz
     refine ⟨⟨h1.trans_le hE.1, mem_univ _⟩, ?_⟩
     exact spectrum.notMem_iff.mp (hcut E hE)
-  obtain ⟨δ, hδ, hδO⟩ := hKc.exists_thickening_subset_open hO hKO
+  obtain ⟨δ, hδ, hδO⟩ := (isCompact_Icc.prod isCompact_singleton).exists_thickening_subset_open hO hKO
   have hw1 : 0 < ‖1 - w‖ := by
     rw [norm_pos_iff, sub_ne_zero]
     intro h
@@ -731,7 +729,7 @@ lemma exists_cut_radius {γ : ℝ → ℂ} {K : NNReal} (hK : LipschitzWith K γ
     simpa using hlt
   obtain ⟨u, hu⟩ := (hδO hmem).2
   have h0 : G (E, z) v = 0 := by
-    simp only [hG, ContinuousLinearMap.sub_apply, Algebra.algebraMap_eq_smul_one,
+    simp [hG, ContinuousLinearMap.sub_apply, Algebra.algebraMap_eq_smul_one,
       ContinuousLinearMap.smul_apply, ContinuousLinearMap.one_apply, hUv, sub_self]
   apply hv
   calc v = ((↑u⁻¹ : Ell2 →L[ℂ] Ell2) * ↑u) v := by rw [Units.inv_mul]; rfl
@@ -747,7 +745,7 @@ lemma summable_norm_eigIdx_sub_one {γ : ℝ → ℂ} {K : NNReal} (hK : Lipschi
   refine ⟨fun _ => (hasSum_fintype _).summable, ?_⟩
   refine (summable_eigenMult_monodromy hK hclosed hE hW).congr (fun z => ?_)
   rw [tsum_fintype]
-  simp [Finset.sum_const, nsmul_eq_mul]
+  simp
 
 /-- **Per-energy Fourier expansion of the cut phase sum.** If the eigenvalues of `U_E` avoid the
 `r`-neighbourhood of `e^{iε}` on which the Fourier series of `argCut ε` converges, then the cut phase
@@ -821,7 +819,7 @@ theorem cutPhaseSum_monodromyAt_sub' {γ : ℝ → ℂ} {K : NNReal} (hK : Lipsc
     have h := Complex.reCLM.intervalIntegral_comp_comm ((hint n).1.const_mul (c n))
     simp only [Complex.reCLM_apply] at h
     rw [h, intervalIntegral.integral_const_mul, ← (hint n).2]
-    rw [mul_sub, Complex.sub_re]
+    simp
     ring
   -- right side: dominated convergence
   have huIoc : ∀ E ∈ uIoc E₁ E₂, E ∈ Icc E₁ E₂ := fun E hE => by

@@ -47,7 +47,7 @@ theorem normalizedArcReparam_surjective {γ : ℝ → ℂ}
   have hbound : ∀ θ, |normalizedArcReparam γ θ - θ| ≤ 2 * Real.pi := by
     refine abs_le_of_periodic
       (g := fun θ => normalizedArcReparam γ θ - θ) (fun θ => ?_) (fun x hx => ?_)
-    · simp only
+    · simp
       rw [hperiod]
       ring
     · have h0 := hτ.monotone hx.1
@@ -61,13 +61,13 @@ theorem normalizedArcReparam_surjective {γ : ℝ → ℂ}
       (tendsto_atTop_add_const_right _ (-(2 * Real.pi)) tendsto_id)
     have h := hbound θ
     rw [abs_le] at h
-    simp only [id]
+    simp [id]
     linarith
   · refine tendsto_atBot_mono (fun θ => ?_)
       (tendsto_atBot_add_const_right _ (2 * Real.pi) tendsto_id)
     have h := hbound θ
     rw [abs_le] at h
-    simp only [id]
+    simp [id]
     linarith
 
 section RegularCurve
@@ -80,8 +80,6 @@ def normalizedArcOrderIso : ℝ ≃o ℝ :=
   StrictMono.orderIsoOfSurjective (normalizedArcReparam γ)
     (normalizedArcReparam_strictMono hγ hnz) (normalizedArcReparam_surjective hγ hper hnz)
 
-@[simp] theorem normalizedArcOrderIso_apply (θ : ℝ) :
-    normalizedArcOrderIso hγ hper hnz θ = normalizedArcReparam γ θ := rfl
 
 @[simp] theorem normalizedArcOrderIso_zero : normalizedArcOrderIso hγ hper hnz 0 = 0 :=
   normalizedArcReparam_zero γ
@@ -126,7 +124,7 @@ theorem normalizedArcCurve_factorization (θ : ℝ) :
 theorem normalizedArcCurve_periodic :
     Function.Periodic (normalizedArcCurve hγ hper hnz) (2 * Real.pi) := by
   intro t
-  simp only [normalizedArcCurve, normalizedArcOrderIso_symm_add_period]
+  simp [normalizedArcCurve, normalizedArcOrderIso_symm_add_period]
   exact hper _
 
 /-- The true derivative of the inverse map, obtained from its proved inverse

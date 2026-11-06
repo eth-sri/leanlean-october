@@ -42,9 +42,6 @@ theorem localConformalRotationLIE_coe (t : ℝ) :
     (localConformalRotationLIE t : ℂ → ℂ) = localConformalRotation t :=
   funext (localConformalRotationLIE_apply t)
 
-@[simp] theorem localConformalRotation_zero (t : ℝ) :
-    localConformalRotation t 0 = 0 := by
-  simp [localConformalRotation]
 
 @[simp] theorem localConformalRotation_norm (t : ℝ) (z : ℂ) :
     ‖localConformalRotation t z‖ = ‖z‖ := by
@@ -59,9 +56,6 @@ theorem localConformalRotationLIE_coe (t : ℝ) :
       z ∈ closedBall (0 : ℂ) r := by
   simp only [mem_closedBall, dist_zero_right, localConformalRotation_norm]
 
-@[simp] theorem localConformalRotation_mem_sphere (t : ℝ) (z : ℂ) (r : ℝ) :
-    localConformalRotation t z ∈ sphere (0 : ℂ) r ↔ z ∈ sphere (0 : ℂ) r := by
-  simp only [mem_sphere, dist_zero_right, localConformalRotation_norm]
 
 @[simp] theorem localConformalRotation_neg_left (t : ℝ) (z : ℂ) :
     localConformalRotation (-t) (localConformalRotation t z) = z := by
@@ -161,8 +155,7 @@ theorem localConformalRotate_injOn_closedBall {F : ℂ → ℂ} {r : ℝ}
 theorem localConformalRotate_hasDerivAt {F : ℂ → ℂ} (t : ℝ) {z : ℂ}
     (hF : DifferentiableAt ℂ F (localConformalRotation t z)) :
     HasDerivAt (localConformalRotate F t)
-      (deriv F (localConformalRotation t z) * circleMap 0 1 t) z := by
-  exact hF.hasDerivAt.comp z (localConformalRotation_hasDerivAt t z)
+      (deriv F (localConformalRotation t z) * circleMap 0 1 t) z := hF.hasDerivAt.comp z (localConformalRotation_hasDerivAt t z)
 
 theorem localConformalRotate_deriv_norm {F : ℂ → ℂ} {r : ℝ}
     (hF : DifferentiableOn ℂ F (ball (0 : ℂ) r)) (t : ℝ)
@@ -228,9 +221,6 @@ theorem physicalCircleTrace_localConformalRotate_lipschitz
   simpa [physicalCircleTrace_localConformalRotate, Real.dist_eq] using
     hΓ.dist_le_mul (x + t) (y + t)
 
-@[simp] theorem physicalCircleTrace_localConformalRotate_zero (F : ℂ → ℂ) (t : ℝ) :
-    physicalCircleTrace (localConformalRotate F t) 0 = physicalCircleTrace F t := by
-  rw [physicalCircleTrace_localConformalRotate, zero_add]
 
 @[simp] theorem localConformalRotationLIE_symm (t : ℝ) :
     (localConformalRotationLIE t).symm = localConformalRotationLIE (-t) := by

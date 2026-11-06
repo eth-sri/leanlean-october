@@ -24,8 +24,7 @@ lemma herglotzCoeff_zero_eq_herglotzVec {a : ℝ → ℂ} (ha : IsDirDensity a) 
   rw [herglotzVec_apply]
   unfold herglotzSeq
   rw [if_pos rfl]
-  have hr : (Real.sqrt 2 : ℂ) ≠ 0 := by
-    exact_mod_cast (Real.sqrt_pos.mpr (by norm_num : (0:ℝ) < 2)).ne'
+
   field_simp
 
 /-- The mean functional `v ↦ ∫_Ω u_{a_v}`. -/
@@ -44,7 +43,7 @@ lemma synthMean_add (hb : Bornology.IsBounded Ω) (k : ℝ) (z₁ : ℂ) (v w : 
     herglotzCoeff_zero_eq_herglotzVec (isDirDensity_synthDens k z₁ v),
     herglotzCoeff_zero_eq_herglotzVec (isDirDensity_synthDens k z₁ w),
     herglotzVec_synthDens_add]
-  simp only [lp.coeFn_add, Pi.add_apply]
+  simp
   ring
 
 lemma synthMean_smul (k : ℝ) (z₁ : ℂ) (c : ℂ) (v : Ell2) :
@@ -56,7 +55,7 @@ lemma synthMean_smul (k : ℝ) (z₁ : ℂ) (c : ℂ) (v : Ell2) :
   rw [herglotzCoeff_zero_eq_herglotzVec (isDirDensity_synthDens k z₁ _),
     herglotzCoeff_zero_eq_herglotzVec (isDirDensity_synthDens k z₁ v),
     herglotzVec_synthDens_smul]
-  simp only [lp.coeFn_smul, Pi.smul_apply, smul_eq_mul]
+  simp
   ring
 
 lemma norm_synthMean_sub_le (hb : Bornology.IsBounded Ω) {R : ℝ} {z₁ : ℂ}
@@ -74,7 +73,6 @@ lemma norm_synthMean_sub_le (hb : Bornology.IsBounded Ω) {R : ℝ} {z₁ : ℂ}
     (f := fun z => herglotzCoeff k (synthDens k z₁ v) 0 z - (Real.sqrt 2 : ℂ) * (v : ℕ → ℂ) 0)
     (hb.measure_lt_top (μ := volume)) (Eventually.of_forall fun z hz => ?_)
   · simpa [Measure.real_def] using this
-  show ‖herglotzCoeff k (synthDens k z₁ v) 0 z - (Real.sqrt 2 : ℂ) * (v : ℕ → ℂ) 0‖ ≤ _
   rw [herglotzCoeff_zero_eq_herglotzVec (isDirDensity_synthDens k z₁ v), ← mul_sub, norm_mul,
     Complex.norm_real, Real.norm_of_nonneg (Real.sqrt_nonneg _)]
   have h1 : ‖(herglotzVec (isDirDensity_synthDens k z₁ v) k z : ℕ → ℂ) 0 - (v : ℕ → ℂ) 0‖ ≤
@@ -85,10 +83,9 @@ lemma norm_synthMean_sub_le (hb : Bornology.IsBounded Ω) {R : ℝ} {z₁ : ℂ}
   have h2 := norm_herglotzVec_synthDens_sub_le k z₁ z v
   have h3 : ‖z - z₁‖ ≤ R := by simpa [dist_eq_norm] using hR hz
   have hs2 : Real.sqrt 2 * Real.sqrt 2 = 2 := Real.mul_self_sqrt (by norm_num)
-  have hs0 : 0 ≤ Real.sqrt 2 := Real.sqrt_nonneg _
   calc Real.sqrt 2 * ‖(herglotzVec (isDirDensity_synthDens k z₁ v) k z : ℕ → ℂ) 0 -
         (v : ℕ → ℂ) 0‖ ≤ Real.sqrt 2 * (|k| * Real.sqrt 2 * ‖v‖ * ‖z - z₁‖) :=
-        mul_le_mul_of_nonneg_left (h1.trans h2) hs0
+        mul_le_mul_of_nonneg_left (h1.trans h2) (Real.sqrt_nonneg _)
     _ = 2 * |k| * ‖v‖ * ‖z - z₁‖ := by linear_combination (|k| * ‖v‖ * ‖z - z₁‖) * hs2
     _ ≤ 2 * |k| * ‖v‖ * R := by gcongr
 
@@ -104,15 +101,13 @@ theorem exists_admissible_herglotzVec (hb : Bornology.IsBounded Ω)
       ∫ z in Ω, herglotzCoeff k a 0 z = 0 := by
   obtain ⟨R₀, hR₀⟩ := hb.subset_closedBall z₁
   set R := max R₀ 0 with hRdef
-  have hR0 : 0 ≤ R := le_max_right _ _
   have hR : Ω ⊆ closedBall z₁ R := hR₀.trans (closedBall_subset_closedBall (le_max_left _ _))
   set d := ‖z₀ - z₁‖ with hd
-  have hd0 : 0 ≤ d := norm_nonneg _
   have hs2 : 0 < Real.sqrt 2 := Real.sqrt_pos.mpr (by norm_num)
   refine ⟨min (1 / (4 * Real.sqrt 2 * (d + 1))) (1 / (4 * (R + 1))), by positivity,
     fun k hk w => ?_⟩
-  have hk1 : |k| ≤ 1 / (4 * Real.sqrt 2 * (d + 1)) := (hk.trans_le (min_le_left _ _)).le
-  have hk2 : |k| ≤ 1 / (4 * (R + 1)) := (hk.trans_le (min_le_right _ _)).le
+  have hk1 := (hk.trans_le (min_le_left _ _)).le
+  have hk2 := (hk.trans_le (min_le_right _ _)).le
   have hε : |k| * Real.sqrt 2 * d ≤ 1 / 4 := by
     rw [le_div_iff₀ (by positivity)] at hk1
     nlinarith [abs_nonneg k]
@@ -124,7 +119,7 @@ theorem exists_admissible_herglotzVec (hb : Bornology.IsBounded Ω)
   obtain ⟨v₂, hv₂⟩ := hsurj (basisVec 0)
   have hT2 := norm_herglotzVec_synthDens_sub_le k z₁ z₀ v₂
   rw [← synthOp_apply, hv₂, ← hd] at hT2
-  have he0 : ‖basisVec 0‖ = 1 := by simp [basisVec, lp.norm_single]
+  have he0 : ‖basisVec 0‖ = 1 := by simp
   have hv2n : ‖v₂‖ ≤ 4 / 3 := by
     have := norm_le_insert' v₂ (basisVec 0)
     rw [he0, norm_sub_rev] at this
@@ -153,7 +148,7 @@ theorem exists_admissible_herglotzVec (hb : Bornology.IsBounded Ω)
     nlinarith
   -- the preimage of `w`
   obtain ⟨v₁, hv₁⟩ := hsurj w
-  set t : ℂ := -(synthMean Ω k z₁ v₁ / synthMean Ω k z₁ v₂) with ht
+  set t := -(synthMean Ω k z₁ v₁ / synthMean Ω k z₁ v₂) with ht
   refine ⟨t, synthDens k z₁ (v₁ + t • v₂), isDirDensity_synthDens k z₁ _, ?_, fun j hj =>
     herglotzCoeff_synthDens_neg k z₁ _ j hj, ?_⟩
   · rw [← synthOp_apply, map_add, map_smul, hv₁, hv₂]

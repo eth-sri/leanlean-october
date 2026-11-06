@@ -89,7 +89,7 @@ lemma dirD_reflK {g : ℂ → ℝ} (hg : ContDiff ℝ (⊤ : ℕ∞) g) (x v : �
   funext t
   have hρ : HasFDerivAt g (fderiv ℝ g (x - t)) (x - t) :=
     ((hg.differentiable (by simp)) _).hasFDerivAt
-  have h := (Complex.ofRealCLM.hasFDerivAt).comp t (hρ.comp t ((hasFDerivAt_id t).const_sub x))
+  have h := Complex.ofRealCLM.hasFDerivAt.comp t (hρ.comp t ((hasFDerivAt_id t).const_sub x))
   have : reflK g x = Complex.ofRealCLM ∘ g ∘ (fun t => x - t) := rfl
   simp only [dirD]
   rw [this, h.fderiv]
@@ -185,7 +185,7 @@ lemma ae_eq_zero_of_mollify_eq_zero {u : ℂ → ℂ} (hu : MemLp u 2 volume) {W
     refine (ae_restrict_iff' hW).2 (Eventually.of_forall fun z hz => ?_)
     simp [hk z hz]
   have h0 : eLpNorm u 2 (volume.restrict W) = 0 :=
-    le_antisymm (ge_of_tendsto hlim hle) (zero_le)
+    le_antisymm (ge_of_tendsto hlim hle) zero_le
   have := (eLpNorm_eq_zero_iff two_ne_zero).mp h0
   exact this
 
@@ -196,7 +196,7 @@ theorem ae_eq_zero_of_helmholtz {E : ℝ} (hE : 0 < E) {D : Set ℂ} (hDo : IsOp
     (hu : MemLp u 2 volume)
     (hhelm : ∀ φ : ℂ → ℂ, TestFunction D φ → ∫ z, u z * (lap φ z + E * φ z) = 0) :
     ∀ᵐ z ∂(volume.restrict D), u z = 0 := by
-  have hul : LocallyIntegrable u volume := hu.locallyIntegrable one_le_two
+  have hul := hu.locallyIntegrable one_le_two
   set uk : ℕ → ℂ → ℂ := fun k => mollify ((stdBump k).normed volume) u with huk
   have hsm : ∀ k, ContDiff ℝ 2 (uk k) := fun k => contDiff_mollify_bump _ hul
   have hrk : ∀ k, (stdBump k).rOut ≤ 1 := fun k => by
@@ -206,10 +206,9 @@ theorem ae_eq_zero_of_helmholtz {E : ℝ} (hE : 0 < E) {D : Set ℂ} (hDo : IsOp
     linarith
   -- vanishing outside a large disc
   set R' : ℝ := max R 0 + 1 with hR'
-  have hR'0 : 0 < R' := by positivity
   have hout : ∀ k, ∀ z : ℂ, R' < ‖z‖ → uk k z = 0 := by
     intro k
-    refine eq_zero_outside_of_helmholtz (hsm k) (memLp_mollify _ hu) hE hR'0 fun x hx => ?_
+    refine eq_zero_outside_of_helmholtz (hsm k) (memLp_mollify _ hu) hE (by positivity) fun x hx => ?_
     refine mollify_helmholtz hul hhelm _ fun w hw => hR w ?_
     have h1 := norm_sub_norm_le x w
     rw [mem_closedBall, dist_eq_norm, norm_sub_rev] at hw
@@ -265,7 +264,7 @@ theorem ae_eq_zero_of_helmholtz {E : ℝ} (hE : 0 < E) {D : Set ℂ} (hDo : IsOp
       (ae_eq_zero_of_mollify_eq_zero hu measurableSet_ball hk)⟩
     rw [mem_ball] at hw ⊢
     linarith [dist_triangle w x y]
-  have hDS : D ⊆ S := hDc.isPreconnected.subset_of_closure_inter_subset hSo hne hcl
+  have hDS := hDc.isPreconnected.subset_of_closure_inter_subset hSo hne hcl
   rw [ae_restrict_iff' hDo.measurableSet]
   have hnull : volume (D ∩ {z | u z ≠ 0}) = 0 := by
     refine measure_null_of_locally_null _ fun x hx => ?_

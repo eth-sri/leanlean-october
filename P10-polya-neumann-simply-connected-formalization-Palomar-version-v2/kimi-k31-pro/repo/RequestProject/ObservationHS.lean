@@ -44,13 +44,13 @@ omit [NormedAddCommGroup H] in
 lemma periodic_periodize (f : ℝ → H) : Function.Periodic (periodize f) (2 * π) := by
   intro θ
   unfold periodize
-  rw [toIcoMod_add_right]
+  simp
 
 omit [NormedAddCommGroup H] in
 lemma periodize_apply_two_pi {f : ℝ → H} (hend : f (2 * π) = f 0) :
     periodize f (2 * π) = f (2 * π) := by
   have := periodic_periodize f 0
-  rw [zero_add] at this
+  simp at this
   rw [this, periodize_apply_of_mem ⟨le_rfl, two_pi_pos⟩, hend]
 
 omit [NormedAddCommGroup H] in
@@ -122,7 +122,7 @@ theorem lipschitzWith_periodize {f : ℝ → H} {K : NNReal}
         push_neg at hneg
         have : q • (2 * π) ≤ -(2 * π) := by
           have : q ≤ -1 := by omega
-          rw [zsmul_eq_mul]
+          simp
           have : (q : ℝ) ≤ -1 := by exact_mod_cast this
           nlinarith [two_pi_pos]
         have : y - x = d + q • (2 * π) := by rw [hyd]; abel
@@ -189,7 +189,7 @@ lemma norm_projObsRow_sub_le {γ : ℝ → ℂ} {K : NNReal} (hK : LipschitzWith
   rw [← map_sub, ← ContinuousLinearMap.sub_apply, ← map_sub]
   refine (norm_cutProj_apply_le _ _).trans ?_
   refine (ContinuousLinearMap.le_opNorm _ _).trans ?_
-  rw [LinearIsometryEquiv.norm_map, show ‖basisVec 0‖ = 1 by simp [basisVec], mul_one]
+  rw [LinearIsometryEquiv.norm_map, show ‖basisVec 0‖ = 1 by simp, mul_one]
   exact norm_transport_sub_le_lip hK hW h₁ h₂
 
 /-- **Lemma 6.3 (Hilbert–Schmidt part).** For a transport `W` of a Lipschitz curve and an

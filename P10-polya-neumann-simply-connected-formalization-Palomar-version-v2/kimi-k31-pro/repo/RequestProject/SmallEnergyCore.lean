@@ -29,7 +29,7 @@ theorem small_energy_schur_core {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
         ∃ t : ℂ, 0 ≤ imSchur (monodromy W) (basisVec 0) (v + t • basisVec 0) := by
   obtain ⟨z₁, hz₁⟩ := hL.1.2.nonempty
   obtain ⟨r, hr, hball⟩ := Metric.isOpen_iff.mp hL.1.1 z₁ hz₁
-  have hΩ : 0 < (volume Ω).toReal := ENNReal.toReal_pos
+  have hΩ := ENNReal.toReal_pos
     (hL.1.1.measure_pos volume hL.1.2.nonempty).ne' hb.measure_lt_top.ne
   obtain ⟨δ₅, hδ₅, h₅⟩ := herglotz_imSchur_nonneg hb hL hγ hr hball
   obtain ⟨δa, hδa, hadm⟩ := exists_admissible_herglotzVec hb hΩ (γ 0) z₁
@@ -66,7 +66,6 @@ theorem small_energy_herglotz_bound' {Ω : Set ℂ} (hb : Bornology.IsBounded Ω
         0 ≤ herglotzForm W γ E a := by
   obtain ⟨δ, hδ, h⟩ := small_energy_imForm_nonneg hb hL hγ
   obtain ⟨K, hK⟩ := hγ.lipschitz
-  have hclosed : γ (2 * π) = γ 0 := by simpa using hγ.periodic 0
   refine ⟨δ, hδ, fun E hE hEδ W hW => ?_⟩
   set U := monodromy W
   set ℓ : Ell2 →ₗ[ℂ] ℂ :=
@@ -81,7 +80,7 @@ theorem small_energy_herglotz_bound' {Ω : Set ℂ} (hb : Bornology.IsBounded Ω
   have h0 : g a = 0 := by
     have := congrFun hLa 0
     simpa using this
-  rw [herglotzForm_eq_im hK hclosed hW ha]
+  rw [herglotzForm_eq_im hK (by simpa using hγ.periodic 0) hW ha]
   have := h E hE hEδ W hW (herglotzVec ha (Real.sqrt E) (γ 0)) (by rw [← hga, h0])
   unfold imForm at this
   exact this

@@ -35,12 +35,11 @@ theorem normalizedArcCurve_contDiff {Γ : ℝ → ℂ}
     (hnz : ∀ θ, deriv Γ θ ≠ 0) :
     ContDiff ℝ 1 (normalizedArcCurve hΓ hper hnz) := by
   let σ : ℝ → ℝ := (normalizedArcOrderIso hΓ hper hnz).symm
-  let a : ℝ := 2 * Real.pi / arcLen Γ (2 * Real.pi)
-  have ha : 0 < a := div_pos Real.two_pi_pos (arcLen_period_pos_of_regular hΓ hnz)
-  have hσ : Continuous σ := (normalizedArcOrderIso hΓ hper hnz).symm.continuous
+  let a := 2 * Real.pi / arcLen Γ (2 * Real.pi)
+  have ha := div_pos Real.two_pi_pos (arcLen_period_pos_of_regular hΓ hnz)
+  have hσ := (normalizedArcOrderIso hΓ hper hnz).symm.continuous
   have hv : Continuous (fun t : ℝ => deriv Γ (σ t)) :=
     hΓ.continuous_deriv_one.comp hσ
-  have hd : Continuous (fun t : ℝ => a * ‖deriv Γ (σ t)‖) := continuous_const.mul hv.norm
   have hdne (t : ℝ) : a * ‖deriv Γ (σ t)‖ ≠ 0 :=
     (mul_pos ha (norm_pos_iff.mpr (hnz (σ t)))).ne'
   have hformula : deriv (normalizedArcCurve hΓ hper hnz) =
@@ -49,7 +48,7 @@ theorem normalizedArcCurve_contDiff {Γ : ℝ → ℂ}
   refine contDiff_one_iff_deriv.mpr ⟨?_, ?_⟩
   · exact fun t => (normalizedArcCurve_hasDerivAt hΓ hper hnz t).differentiableAt
   · rw [hformula]
-    exact (hd.inv₀ hdne).smul hv
+    exact ((continuous_const.mul hv.norm).inv₀ hdne).smul hv
 
 /-- The canonical arc curve has a genuinely nonzero velocity everywhere. -/
 theorem normalizedArcCurve_deriv_ne_zero {Γ : ℝ → ℂ}
@@ -75,7 +74,7 @@ theorem localConformal_normalizedArcCurve_isBoundaryParam
     let hp := physicalCircleTrace_periodic F
     let hv := localConformal_circleTrace_deriv_ne_zero hR F hFs hhol hnz
     IsBoundaryParam (F '' ball (0 : ℂ) 1) (normalizedArcCurve hΓ hp hv) := by
-  dsimp only
+  dsimp
   let hΓ : ContDiff ℝ 1 (physicalCircleTrace F) :=
     contDiff_physicalCircleTrace_of_neighborhood hR F (hFs.of_le (WithTop.coe_le_coe.mpr le_top))
   let hp := physicalCircleTrace_periodic F
@@ -133,7 +132,7 @@ theorem exists_normalizedArc_origin_sync {Ω : Set ℂ} {Γ γ : ℝ → ℂ}
     _ = normalizedArcCurve hΓ hper hnz
         (localConformalRotateTraceReparam (normalizedArcReparam Γ) φ θ + t) := by
       congr 1
-      simp only [localConformalRotateTraceReparam, hφval, sub_add_cancel]
+      simp [localConformalRotateTraceReparam, hφval, sub_add_cancel]
     _ = γ (localConformalRotateTraceReparam (normalizedArcReparam Γ) φ θ) :=
       (hshift _).symm
 

@@ -34,7 +34,7 @@ lemma dbar_eq_of_hasFDerivAt {F : ℂ → ℂ} {L : ℂ →L[ℝ] ℂ} {z α β 
     (hL : ∀ w, L w = α * w + β * conj w) : dbar F z = β := by
   unfold dbar
   rw [hF.fderiv, hL, hL]
-  simp only [map_one, mul_one, Complex.conj_I]
+  simp
   ring_nf
   rw [Complex.I_sq]
   ring
@@ -49,14 +49,13 @@ theorem integral_boundary_eq_dbar_of_bounded {Ω : Set ℂ} (hb : Bornology.IsBo
     exact ⟨max R 1, by positivity, hR.trans (ball_subset_ball (le_max_left _ _))⟩
   obtain ⟨χ, hχs, hχc, hχ1⟩ := exists_cutoff_one_on_ball R hR0
   set χc : ℂ → ℂ := fun z => (χ z : ℂ) with hχc_def
-  have hχcs : ContDiff ℝ (⊤ : ℕ∞) χc := Complex.ofRealCLM.contDiff.comp hχs
+  have hχcs := Complex.ofRealCLM.contDiff.comp hχs
   have hχcc : HasCompactSupport χc := hχc.comp_left (g := fun x : ℝ => (x : ℂ)) (by simp)
   obtain ⟨Kχ, hKχ⟩ := ContDiff.lipschitzWith_of_hasCompactSupport hχcc hχcs (by simp)
   obtain ⟨Cχ, hCχ⟩ := hχcc.exists_bound_of_continuous hχcs.continuous
   obtain ⟨KG, hKG⟩ := lipschitzWith_mul_of_bounded hKχ hF hCχ hC
   set G : ℂ → ℂ := fun z => χc z * F z with hG
-  have hGc : HasCompactSupport G := hχcc.mul_right
-  have hgreen := integral_boundary_eq_dbar hb hL hγ hKG hGc
+  have hgreen := integral_boundary_eq_dbar hb hL hγ hKG (hχcc.mul_right)
   have hone : ∀ z ∈ ball (0 : ℂ) R, G z = F z := fun z hz => by
     simp [hG, hχc_def, hχ1 z (ball_subset_closedBall hz)]
   have hbdry : ∀ θ ∈ Icc (0 : ℝ) (2 * π), G (γ θ) = F (γ θ) := fun θ hθ => by
@@ -66,11 +65,11 @@ theorem integral_boundary_eq_dbar_of_bounded {Ω : Set ℂ} (hb : Bornology.IsBo
   have hint : ∀ z ∈ Ω, dbar G z = dbar F z := fun z hz => by
     have hev : G =ᶠ[𝓝 z] F :=
       eventually_of_mem (isOpen_ball.mem_nhds (hR (subset_closure hz))) hone
-    simp only [dbar, hev.fderiv_eq]
+    simp [dbar, hev.fderiv_eq]
   rw [← setIntegral_congr_fun hL.1.1.measurableSet hint, ← hgreen]
   refine intervalIntegral.integral_congr fun θ hθ => ?_
   rw [uIcc_of_le (by positivity)] at hθ
-  simp only [hbdry θ hθ]
+  simp [hbdry θ hθ]
 
 /-- The derivative of a Herglotz coefficient in Wirtinger form. -/
 lemma herglotzCoeff_hasFDerivAt' {a : ℝ → ℂ} (ha : IntervalIntegrable a volume 0 (2 * π))
@@ -95,8 +94,7 @@ lemma dbar_conj_mul {F G : ℂ → ℂ} {LF LG : ℂ →L[ℝ] ℂ} {z αF βF �
   refine dbar_eq_of_hasFDerivAt (α := conj (F z) * αG + G z * conj βF) hP fun w => ?_
   simp only [ContinuousLinearMap.add_apply, ContinuousLinearMap.smul_apply,
     ContinuousLinearMap.comp_apply, hFL, hGL, smul_eq_mul]
-  simp only [ContinuousLinearEquiv.coe_coe, Complex.conjCLE_apply, map_add, map_mul,
-    Complex.conj_conj]
+  simp
   ring
 
 /-- `∂̄` of `F conj(G)`. -/
@@ -124,7 +122,7 @@ lemma dbar_herglotz_one {a : ℝ → ℂ} (ha : IntervalIntegrable a volume 0 (2
   obtain ⟨h1, h1L⟩ := herglotzCoeff_hasFDerivAt' ha k (-1) z
   obtain ⟨h0, h0L⟩ := herglotzCoeff_hasFDerivAt' ha k 0 z
   rw [dbar_conj_mul h1 h1L h0 h0L]
-  simp only [show (-1 : ℤ) + 1 = 0 by norm_num, show (0 : ℤ) - 1 = -1 by norm_num]
+  simp
   simp only [map_mul, map_neg, map_div₀, Complex.conj_I, Complex.conj_ofReal, map_ofNat]
   push_cast
   rw [← Complex.mul_conj', ← Complex.mul_conj']
@@ -139,7 +137,7 @@ lemma dbar_herglotz_two {a : ℝ → ℂ} (ha : IntervalIntegrable a volume 0 (2
   obtain ⟨h1, h1L⟩ := herglotzCoeff_hasFDerivAt' ha k 1 z
   obtain ⟨h0, h0L⟩ := herglotzCoeff_hasFDerivAt' ha k 0 z
   rw [dbar_mul_conj h1 h1L h0 h0L]
-  simp only [show (0 : ℤ) + 1 = 1 by norm_num, show (1 : ℤ) - 1 = 0 by norm_num]
+  simp
   simp only [map_mul, map_neg, map_div₀, Complex.conj_I, Complex.conj_ofReal, map_ofNat]
   push_cast
   rw [← Complex.mul_conj', ← Complex.mul_conj']
@@ -186,7 +184,7 @@ theorem integral_conj_herglotzConormal_mul_wave {Ω : Set ℂ} (hb : Bornology.I
   have hpt : ∀ θ, conj (herglotzConormal k a γ θ) * herglotzWave k a (γ θ) =
       (k / 2 : ℂ) * (Φ₁ (γ θ) * deriv γ θ - conj (Φ₂ (γ θ) * deriv γ θ)) := fun θ => by
     rw [herglotzConormal_eq ha, herglotzWave_eq]
-    simp only [hΦ₁, hΦ₂, hF, map_mul, map_sub, map_div₀, Complex.conj_ofReal, map_ofNat,
+    simp [hΦ₁, hΦ₂, hF, map_mul, map_sub, map_div₀, Complex.conj_ofReal, map_ofNat,
       Complex.conj_conj]
     ring
   have hconj : ∫ θ in (0 : ℝ)..(2 * π), conj (Φ₂ (γ θ) * deriv γ θ) =
@@ -223,7 +221,7 @@ theorem integral_conj_herglotzConormal_mul_wave {Ω : Set ℂ} (hb : Bornology.I
     · exact (hI 1).add (hI (-1))
     · exact (hI 0).const_mul 2
   rw [integral_sub (hI 0) (hI (-1)), integral_sub (hI 1) (hI 0), hR]
-  simp only [map_mul, map_div₀, Complex.conj_I, Complex.conj_ofReal, map_ofNat]
+  simp [map_mul, map_div₀, Complex.conj_I, Complex.conj_ofReal, map_ofNat]
   push_cast
   ring_nf
   rw [Complex.I_sq]

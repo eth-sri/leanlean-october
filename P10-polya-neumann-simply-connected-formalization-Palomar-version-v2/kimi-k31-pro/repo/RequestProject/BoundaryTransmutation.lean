@@ -71,14 +71,14 @@ theorem antiPrim_bound {s : ℝ} (hs : 0 ≤ s) {a h : ℤ → ℂ} (ha : IsWL1 
     by_cases hn : n = 0
     · subst hn
       have hw : sobWeight 0 = 1 := by simp [sobWeight]
-      simp only [antiPrim, if_true, hw, Real.one_rpow, one_mul, norm_neg]
-      have h1 : ‖∑' m, p m‖ ≤ P := norm_tsum_le_tsum_norm hps
+      simp [antiPrim, if_true, hw, Real.one_rpow, one_mul, norm_neg]
+      have h1 := norm_tsum_le_tsum_norm hps
       have h2 := sq_nonneg ‖p 0‖
       nlinarith [norm_nonneg (∑' m, p m)]
     · simp [antiPrim, hn, hpdef]
   have hind : Summable fun n : ℤ => if n = 0 then P ^ 2 else 0 :=
     summable_of_ne_finset_zero (s := {0}) fun n hn => by
-      simp only [Finset.mem_singleton] at hn; simp [hn]
+      simp at hn; simp [hn]
   have hsum : IsSobolevSeq (s + 1) (antiPrim a h) :=
     Summable.of_nonneg_of_le (fun n => sq_nonneg _) hpt (hp.add hind)
   refine ⟨hsum, ?_⟩
@@ -193,10 +193,9 @@ theorem vekuaBdry_sub_one_bound {s : ℝ} (hs : 0 ≤ s) {g a h : ℤ → ℂ} (
   set K := primConst s a with hK
   set S := sobNormSq s h with hS
   have hR0 : 0 ≤ R := tsum_nonneg fun k => by have := sobWeight_pos k; positivity
-  have hK0 : 0 ≤ K := primConst_nonneg s a
-  have hS0 : 0 ≤ S := sobNormSq_nonneg s h
+  have hK0 := primConst_nonneg s a
+  have hS0 := sobNormSq_nonneg s h
   set x := ‖E‖ * R * Real.sqrt K / 4 with hx
-  have hx0 : 0 ≤ x := by positivity
   have hterm : ∀ j : ℕ, ‖((-E / 4) ^ (j + 1) / (j + 1).factorial) •
       sobVec (s + 1) _ (hT j)‖ ≤ x ^ (j + 1) / (j + 1).factorial * Real.sqrt S := by
     intro j
@@ -210,8 +209,8 @@ theorem vekuaBdry_sub_one_bound {s : ℝ} (hs : 0 ≤ s) {g a h : ℤ → ℂ} (
       calc _ ≤ Real.sqrt ((R ^ 2 * K) ^ (j + 1) * S) := Real.sqrt_le_sqrt hb
         _ = _ := by
           rw [e, Real.sqrt_mul (by positivity), Real.sqrt_sq (by positivity)]
-    have h4 : ‖(4 : ℂ)‖ = 4 := by norm_num
-    rw [h4]
+
+    simp
     calc (‖E‖ / 4) ^ (j + 1) / ((j + 1).factorial : ℝ) *
           Real.sqrt (sobNormSq (s + 1) (vekuaBdryTerm g a h (j + 1)))
         ≤ (‖E‖ / 4) ^ (j + 1) / ((j + 1).factorial : ℝ) *

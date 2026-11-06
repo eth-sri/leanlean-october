@@ -52,7 +52,7 @@ theorem exists_smooth_compact_cutoff {K U : Set ℂ} (hK : IsCompact K)
   have hχSupp : Function.support χ = interior M := by
     have hsum : Function.support (fun x => f x + g x) = univ :=
       eq_univ_of_forall (fun x => (hden x).ne')
-    simp only [χ, Function.support_div, hfSupp, hsum, inter_univ]
+    simp [χ, Function.support_div, hfSupp, hsum, inter_univ]
   have hχts : tsupport χ ⊆ M := by
     rw [tsupport, hχSupp]
     exact hM.isClosed.closure_subset_iff.mpr interior_subset
@@ -74,7 +74,7 @@ theorem exists_smooth_compact_extension {K U : Set ℂ} (hK : IsCompact K)
     (hφ : ContDiffOn ℝ (⊤ : ℕ∞) φ U) :
     ∃ f : ℂ → ℂ, TestFunction univ f ∧ ∀ x ∈ K, f =ᶠ[𝓝 x] φ := by
   obtain ⟨χ, hχ, hχc, hχU, hχone⟩ := exists_smooth_compact_cutoff hK hU hKU
-  let f : ℂ → ℂ := fun x => (χ x : ℂ) * φ x
+  let f := fun x => (χ x : ℂ) * φ x
   have hfs : ContDiff ℝ (⊤ : ℕ∞) f := by
     rw [contDiff_iff_contDiffAt]
     intro x
@@ -84,13 +84,13 @@ theorem exists_smooth_compact_extension {K U : Set ℂ} (hK : IsCompact K)
     · have hx' : x ∉ tsupport χ := fun h => hx (hχU h)
       apply (contDiffAt_const (c := (0 : ℂ))).congr_of_eventuallyEq
       filter_upwards [notMem_tsupport_iff_eventuallyEq.mp hx'] with y hy
-      simp only [f, hy, Pi.zero_apply, Complex.ofReal_zero, zero_mul]
+      simp [f, hy, Pi.zero_apply, Complex.ofReal_zero, zero_mul]
   refine ⟨f, ⟨hfs,
     (hχc.comp_left (g := fun t : ℝ => (t : ℂ)) Complex.ofReal_zero).mul_right,
     subset_univ _⟩, ?_⟩
   intro x hx
   filter_upwards [hχone x hx] with y hy
-  simp only [f, hy, Complex.ofReal_one, one_mul]
+  simp [f, hy, Complex.ofReal_one, one_mul]
 
 end PolyaNeumann
 

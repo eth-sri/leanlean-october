@@ -52,7 +52,6 @@ given null set. -/
 theorem ae_deriv_eq_zero_of_preimage_null {τ : ℝ → ℝ} (hm : Monotone τ) {N : Set ℝ}
     (hN : volume N = 0) : ∀ᵐ s, τ s ∈ N → deriv τ s = 0 := by
   set N' := toMeasurable volume N
-  have hN' : volume N' = 0 := by rw [measure_toMeasurable]; exact hN
   set S := {s | DifferentiableAt ℝ τ s} ∩ ({s | deriv τ s ≠ 0} ∩ τ ⁻¹' N')
   have hS : MeasurableSet S :=
     (measurableSet_of_differentiableAt ℝ τ).inter
@@ -71,8 +70,8 @@ theorem ae_deriv_eq_zero_of_preimage_null {τ : ℝ → ℝ} (hm : Monotone τ) 
     rintro _ ⟨x, hx, rfl⟩; exact hx.2.2
   have h0 : ∫⁻ x in S, ENNReal.ofReal |deriv τ x| * 1 = 0 := by
     rw [← himg]
-    simp only [lintegral_const, one_mul, Measure.restrict_apply MeasurableSet.univ, univ_inter]
-    exact measure_mono_null hsub hN'
+    simp
+    exact measure_mono_null hsub (by rw [measure_toMeasurable]; exact hN)
   rw [lintegral_eq_zero_iff (by fun_prop)] at h0
   have h1 := (ae_restrict_iff' hS).mp h0
   have hτd : ∀ᵐ s, s ∉ S := by
@@ -92,9 +91,9 @@ lemma hasDerivAt_comp_zero_of_lipschitzOnWith {F : Type*} [NormedAddCommGroup F]
     [NormedSpace ℝ F] {g : ℝ → F} {τ : ℝ → ℝ} {S : Set ℝ} {K : NNReal} {x : ℝ}
     (hg : LipschitzOnWith K g S) (hτ : HasDerivAt τ 0 x) (hmap : ∀ᶠ y in 𝓝 x, τ y ∈ S) :
     HasDerivAt (fun y => g (τ y)) 0 x := by
-  have hx : τ x ∈ S := hmap.self_of_nhds
+  have hx := hmap.self_of_nhds
   rw [hasDerivAt_iff_isLittleO] at hτ ⊢
-  simp only [smul_zero, sub_zero] at hτ ⊢
+  simp at hτ ⊢
   refine IsBigO.trans_isLittleO ?_ hτ
   refine IsBigO.of_bound K ?_
   filter_upwards [hmap] with y hy
@@ -118,7 +117,7 @@ theorem volterra_reparam (hC : StronglyMeasurable C) (hM : ∀ s, ‖C s‖ ≤ 
   obtain ⟨S, hS⟩ := isCompact_Icc.exists_bound_of_continuousOn hW
   have hf : LipschitzOnWith (KW * Kτ) (fun u => W (τ u)) (Icc 0 L') :=
     hKW.comp hτ.lipschitzOnWith hmap
-  have hWτ : ContinuousOn (fun u => W (τ u)) (Icc 0 L') := hW.comp hτ.continuous.continuousOn hmap
+  have hWτ := hW.comp hτ.continuous.continuousOn hmap
   have hgB : ∀ x ∈ Icc 0 L', ‖(deriv τ x • C (τ x)) * W (τ x)‖ ≤ Kτ * M * S := by
     intro x hx
     refine (norm_mul_le _ _).trans ?_
@@ -154,7 +153,7 @@ theorem volterra_reparam (hC : StronglyMeasurable C) (hM : ∀ s, ‖C s‖ ≤ 
         by_contra hc
         exact hz (hxN fun h => hc (h hτx))
       have := hWd.scomp x hxd.hasDerivAt
-      rw [smul_mul_assoc]
+      simp
       exact this
   have key := eq_add_integral_of_ae_hasDerivAt hf hg hgB hd s hs
   have hW0 : W 0 = 1 := by
@@ -188,7 +187,7 @@ lemma transportCoeff_comp_of_deriv {γ : ℝ → ℂ} {τ : ℝ → ℝ} {E s : 
   unfold transportCoeff
   rw [h, map_mul, Complex.conj_ofReal]
   ext1 v
-  simp only [ContinuousLinearMap.smul_apply, ContinuousLinearMap.add_apply]
+  simp
   module
 
 lemma transportCoeff_stronglyMeasurable (γ : ℝ → ℂ) (E : ℝ) :

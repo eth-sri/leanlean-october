@@ -31,23 +31,23 @@ lemma chart_segment {Ω : Set ℂ} {p c : ℂ} {r h : ℝ} {K : NNReal} {f : ℝ
     {z : ℂ} (hz : z ∈ closedBall (-(starRingEnd ℂ c) * Complex.I * δ) (δ / (2 * (K + 1))))
     {s : ℝ} (hs : s ∈ Icc (0 : ℝ) 1) :
     t - s • z ∈ Ω := by
-  set a : ℂ := -(starRingEnd ℂ c) * Complex.I * δ
-  set r' : ℝ := δ / (2 * (K + 1))
+  set a := -(starRingEnd ℂ c) * Complex.I * δ
+  set r' := δ / (2 * (K + 1))
   have hK0 : (0 : ℝ) ≤ K := K.2
   have hr'0 : 0 ≤ r' := by positivity
   have hr'δ : ((K : ℝ) + 1) * r' = δ / 2 := by
-    simp only [r']; field_simp
+    simp [r']; field_simp
   have hr'2 : r' ≤ δ / 2 := by nlinarith
-  set e : ℂ := c * (z - a)
+  set e := c * (z - a)
   have he : ‖e‖ ≤ r' := by
-    simp only [e, norm_mul, hc, one_mul]; rw [← dist_eq_norm]; exact hz
+    simp [e, norm_mul, hc, one_mul]; rw [← dist_eq_norm]; exact hz
   have hcc : c * (starRingEnd ℂ c) = 1 := by
     rw [Complex.mul_conj, Complex.normSq_eq_norm_sq, hc]; norm_num
   have hcz : c * z = -Complex.I * δ + e := by
-    simp only [e, a]
+    simp
     linear_combination (-(Complex.I * δ)) * hcc
   have hζ : c * (t - s • z - p) = c * (t - p) + s * (Complex.I * δ - e) := by
-    rw [Complex.real_smul]
+    simp
     linear_combination (-(s:ℂ)) * hcz
   set X := (c * (t - p)).re
   set Y := (c * (t - p)).im
@@ -55,21 +55,21 @@ lemma chart_segment {Ω : Set ℂ} {p c : ℂ} {r h : ℝ} {K : NNReal} {f : ℝ
     rw [hζ]; simp [X]; ring
   have hY' : (c * (t - s • z - p)).im = Y + s * (δ - e.im) := by
     rw [hζ]; simp [Y]
-  have hre : |e.re| ≤ r' := (Complex.abs_re_le_norm e).trans he
-  have him : |e.im| ≤ r' := (Complex.abs_im_le_norm e).trans he
+  have hre := (Complex.abs_re_le_norm e).trans he
+  have him := (Complex.abs_im_le_norm e).trans he
   obtain ⟨hs0, hs1⟩ := hs
-  have hfX : f X < Y := (hΩ t (by linarith [abs_nonneg X]) (by linarith [abs_nonneg Y])).mp ht
+  have hfX := (hΩ t (by linarith [abs_nonneg X]) (by linarith [abs_nonneg Y])).mp ht
   have hsre : |s * e.re| ≤ s * r' := by
     rw [abs_mul, abs_of_nonneg hs0]; exact mul_le_mul_of_nonneg_left hre hs0
-  have hsr : s * r' ≤ r' := mul_le_of_le_one_left hr'0 hs1
+  have hsr := mul_le_of_le_one_left hr'0 hs1
   have hXa := abs_le.mp hsre
   have hXb := abs_lt.mp htX
   have hYb := abs_lt.mp htY
   have heim := abs_le.mp him
   have hd1 : 0 ≤ δ - e.im := by linarith
   have hd2 : δ - e.im ≤ 3 * δ / 2 := by linarith
-  have hsd1 : 0 ≤ s * (δ - e.im) := mul_nonneg hs0 hd1
-  have hsd2 : s * (δ - e.im) ≤ 3 * δ / 2 := (mul_le_of_le_one_left hd1 hs1).trans hd2
+  have hsd1 := mul_nonneg hs0 hd1
+  have hsd2 := (mul_le_of_le_one_left hd1 hs1).trans hd2
   have hmemX : |X - s * e.re| < r := by
     rw [abs_lt]; constructor <;> linarith
   have hmemY : |Y + s * (δ - e.im)| < h := by
@@ -80,13 +80,12 @@ lemma chart_segment {Ω : Set ℂ} {p c : ℂ} {r h : ℝ} {K : NNReal} {f : ℝ
     rw [Real.dist_eq, Real.dist_eq] at h1
     have h2 : |X - s * e.re - X| ≤ s * r' := by simpa using hsre
     have h3 := (le_abs_self _).trans h1
-    have h4 : (K : ℝ) * |X - s * e.re - X| ≤ K * (s * r') := mul_le_mul_of_nonneg_left h2 hK0
+    have h4 := mul_le_mul_of_nonneg_left h2 hK0
     linarith
   have hkey : (K : ℝ) * (s * r') ≤ s * (δ - e.im) := by
     have : (K : ℝ) * r' + r' = δ / 2 := by linarith
-    have h5 : (K : ℝ) * r' ≤ δ - e.im := by linarith
     calc (K : ℝ) * (s * r') = s * (K * r') := by ring
-      _ ≤ s * (δ - e.im) := mul_le_mul_of_nonneg_left h5 hs0
+      _ ≤ s * (δ - e.im) := mul_le_mul_of_nonneg_left (by linarith) hs0
   linarith
 
 /-- The cover, indexed by a finite type. -/
@@ -95,7 +94,7 @@ lemma lipschitz_cover_aux {Ω : Set ℂ} (hb : Bornology.IsBounded Ω) (hL : IsL
       Ω ⊆ ⋃ j, W j ∧ ∀ η > 0, ∀ j, ∃ a : ℂ, ∃ r > 0, ‖a‖ + r ≤ η ∧
         ∀ t ∈ W j, ∀ z ∈ closedBall a r, ∀ s ∈ Icc (0 : ℝ) 1, t - s • z ∈ Ω := by
   classical
-  have hΩo : IsOpen Ω := hL.1.1
+  have hΩo := hL.1.1
   choose! c r h K f hc hr hh hf _ _ hΩ using hL.2
   set O : ℂ → Set ℂ := fun p =>
     {w | |(c p * (w - p)).re| < r p / 2 ∧ |(c p * (w - p)).im| < h p / 2}
@@ -159,7 +158,7 @@ lemma lipschitz_cover_aux {Ω : Set ℂ} (hb : Bornology.IsBounded Ω) (hL : IsL
     · have hqf : q.1 ∈ frontier Ω := q.2
       set δ := min (min (r q) (h q / 3)) (η / 2)
       have hδ : 0 < δ := lt_min (lt_min (hr _ hqf) (by linarith [hh _ hqf])) (by linarith)
-      have hK0 : (0 : ℝ) ≤ K q := (K q).2
+      have hK0 := (K q).2
       refine ⟨-(starRingEnd ℂ (c q)) * Complex.I * δ, δ / (2 * (K q + 1)), by positivity, ?_, ?_⟩
       · have hn : ‖-(starRingEnd ℂ (c q)) * Complex.I * (δ : ℂ)‖ = δ := by
           rw [norm_mul, norm_mul, norm_neg, Complex.norm_conj, hc _ hqf, Complex.norm_I,

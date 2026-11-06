@@ -36,10 +36,9 @@ private theorem conormal_coeff_succ_bound (E : ℂ) (j : ℕ) :
     ‖physicalVekuaCoeff E (j + 1)‖ ≤ ‖-E / 4‖ * ‖physicalVekuaCoeff E j‖ := by
   have h := congrArg norm (physicalVekuaCoeff_succ E j)
   simp only [norm_mul, Complex.norm_natCast] at h
-  have hj : (1 : ℝ) ≤ ((j + 1 : ℕ) : ℝ) := by exact_mod_cast (by omega : 1 ≤ j + 1)
   calc
     _ ≤ ‖physicalVekuaCoeff E (j + 1)‖ * ((j + 1 : ℕ) : ℝ) :=
-      le_mul_of_one_le_right (norm_nonneg _) hj
+      le_mul_of_one_le_right (norm_nonneg _) (by exact_mod_cast (by omega : 1 ≤ j + 1))
     _ = _ := h
 
 section BoundedSeries
@@ -67,7 +66,7 @@ theorem norm_boundedPhysicalVekuaGradientBTerm_le (M : H →L[ℂ] H)
     (U : X →L[ℂ] H) (J : X →L[ℂ] X) (E : ℂ) (j : ℕ) :
     ‖boundedPhysicalVekuaGradientBTerm M U J E j‖ ≤
       (‖-E / 4‖ * ‖M‖) * ‖boundedPhysicalVekuaTerm M U J E j‖ := by
-  let T : X →L[ℂ] H := (M ^ j).comp (U.comp (J ^ j))
+  let T := (M ^ j).comp (U.comp (J ^ j))
   change ‖physicalVekuaCoeff E (j + 1) • M.comp T‖ ≤
     (‖-E / 4‖ * ‖M‖) * ‖physicalVekuaCoeff E j • T‖
   rw [norm_smul, norm_smul]
@@ -297,8 +296,7 @@ private theorem conormal_term_gradient_x (p : ℂ) (b : L2Z)
     (hbn : IsNonpositiveFourierSupport b) (j : ℕ) :
     h1Gradient ΩF 0 (((MF p) ^ (j + 1)) (UF ((JF ^ (j + 1)) b))) =
       h1Value ΩF (((j + 1 : ℕ) : ℂ) • ((MF p) ^ j) (UF ((JF ^ (j + 1)) b)) +
-        ((MF p) ^ (j + 1)) (UF ((JF ^ j) b))) := by
-  exact conormal_affine_gradient_x hb p
+        ((MF p) ^ (j + 1)) (UF ((JF ^ j) b))) := conormal_affine_gradient_x hb p
     (UF ((JF ^ (j + 1)) b)) (UF ((JF ^ j) b)) j
     (localConformalHardyH1Extension_cauchyRiemann hR F hFs hb hL hhol hinj hC hK
       e he hsource hes _)
@@ -310,8 +308,7 @@ private theorem conormal_term_gradient_y (p : ℂ) (b : L2Z)
     h1Gradient ΩF 1 (((MF p) ^ (j + 1)) (UF ((JF ^ (j + 1)) b))) =
       h1Value ΩF (Complex.I •
         (((j + 1 : ℕ) : ℂ) • ((MF p) ^ j) (UF ((JF ^ (j + 1)) b)) -
-          ((MF p) ^ (j + 1)) (UF ((JF ^ j) b)))) := by
-  exact conormal_affine_gradient_y hb p
+          ((MF p) ^ (j + 1)) (UF ((JF ^ j) b)))) := conormal_affine_gradient_y hb p
     (UF ((JF ^ (j + 1)) b)) (UF ((JF ^ j) b)) j
     (localConformalHardyH1Extension_cauchyRiemann hR F hFs hb hL hhol hinj hC hK
       e he hsource hes _)
@@ -327,8 +324,7 @@ theorem localConformalVekuaRemainder_gradient_x (p E : ℂ) (b : L2Z)
       h1Value ΩF
         ((physicalVekuaCoeff E (j + 1) * ((j + 1 : ℕ) : ℂ)) •
           ((MF p) ^ j) (UF ((JF ^ (j + 1)) b)) +
-          physicalVekuaCoeff E (j + 1) • ((MF p) ^ (j + 1)) (UF ((JF ^ j) b))) := by
-    exact conormal_scaled_map_add (h1Gradient ΩF 0) (h1Value ΩF)
+          physicalVekuaCoeff E (j + 1) • ((MF p) ^ (j + 1)) (UF ((JF ^ j) b))) := conormal_scaled_map_add (h1Gradient ΩF 0) (h1Value ΩF)
       (physicalVekuaCoeff E (j + 1)) ((j + 1 : ℕ) : ℂ)
       (((MF p) ^ (j + 1)) (UF ((JF ^ (j + 1)) b)))
       (((MF p) ^ j) (UF ((JF ^ (j + 1)) b)))
@@ -359,8 +355,7 @@ theorem localConformalVekuaRemainder_gradient_y (p E : ℂ) (b : L2Z)
       h1Value ΩF (Complex.I •
         ((physicalVekuaCoeff E (j + 1) * ((j + 1 : ℕ) : ℂ)) •
           ((MF p) ^ j) (UF ((JF ^ (j + 1)) b)) -
-          physicalVekuaCoeff E (j + 1) • ((MF p) ^ (j + 1)) (UF ((JF ^ j) b)))) := by
-    exact conormal_scaled_map_sub (h1Gradient ΩF 1) (h1Value ΩF)
+          physicalVekuaCoeff E (j + 1) • ((MF p) ^ (j + 1)) (UF ((JF ^ j) b)))) := conormal_scaled_map_sub (h1Gradient ΩF 1) (h1Value ΩF)
       (physicalVekuaCoeff E (j + 1)) ((j + 1 : ℕ) : ℂ) Complex.I
       (((MF p) ^ (j + 1)) (UF ((JF ^ (j + 1)) b)))
       (((MF p) ^ j) (UF ((JF ^ (j + 1)) b)))
@@ -436,7 +431,7 @@ theorem localConformalVekuaConormalRemainder_apply (p E : ℂ) (b : L2Z) :
       (AF p E b + BF p E b) (Complex.I • (AF p E b - BF p E b)) := rfl
 
 private theorem conormal_phase_identity (z A B : ℂ) :
-    (z.im : ℂ) * (A + B) + (-(z.re) : ℂ) * (Complex.I * (A - B)) =
+    (z.im : ℂ) * (A + B) + (-z.re : ℂ) * (Complex.I * (A - B)) =
       -Complex.I * z * A + Complex.I * conj z * B := by
   apply Complex.ext <;> simp <;> ring
 

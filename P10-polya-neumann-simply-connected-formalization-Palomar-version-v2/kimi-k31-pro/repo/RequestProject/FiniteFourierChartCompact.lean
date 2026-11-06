@@ -17,8 +17,7 @@ local notation "H₁" => nonpositiveFourierSubspaceᗮ
 private theorem chart_rankOne_compact
     {X Y : Type*} [NormedAddCommGroup X] [InnerProductSpace ℂ X]
     [NormedAddCommGroup Y] [NormedSpace ℂ Y] (v : Y) (u : X) :
-    IsCompactOperator (InnerProductSpace.rankOne ℂ v u) := by
-  exact (isCompactOperator_of_finiteDimensional_range
+    IsCompactOperator (InnerProductSpace.rankOne ℂ v u) := (isCompactOperator_of_finiteDimensional_range
     (ContinuousLinearMap.toSpanSingleton ℂ v)).comp_clm (innerSL ℂ u)
 
 private theorem chart_compact_sum

@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.TwoPi
 public import RequestProject.HerglotzSchurPos
 
 /-!
@@ -21,7 +22,6 @@ open scoped ComplexConjugate Real Topology
 noncomputable section
 namespace PolyaNeumann
 
-local instance factTwoPiPos : Fact (0 < 2 * π) := ⟨Real.two_pi_pos⟩
 
 lemma herglotzCoeff_congr_ae {a b : ℝ → ℂ} (h : a =ᵐ[volume.restrict (Ioc 0 (2 * π))] b)
     (k : ℝ) (m : ℤ) (z : ℂ) : herglotzCoeff k a m z = herglotzCoeff k b m z := by
@@ -145,8 +145,7 @@ lemma herglotzVec_synthDens (k : ℝ) (z₁ : ℂ) (v : Ell2) :
   split_ifs with hn
   · subst hn
     rw [herglotzCoeff_synthDens, synthCoeff, if_pos rfl]
-    have hr : (Real.sqrt 2 : ℂ) ≠ 0 := by
-      exact_mod_cast (Real.sqrt_pos.mpr (by norm_num : (0:ℝ) < 2)).ne'
+
     field_simp
   · rw [herglotzCoeff_synthDens, synthCoeff, if_neg (by exact_mod_cast hn),
       if_pos (by omega), Int.toNat_natCast]

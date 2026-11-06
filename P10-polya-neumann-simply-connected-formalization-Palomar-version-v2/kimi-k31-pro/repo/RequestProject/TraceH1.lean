@@ -144,10 +144,8 @@ lemma smoothTraceBoundary_memLp {Ω : Set ℂ} {γ : ℝ → ℂ}
 def smoothTraceBoundaryLin {Ω : Set ℂ} {γ : ℝ → ℂ} (hγ : IsBoundaryParam Ω γ) :
     smoothTraceTests →ₗ[ℂ] BoundaryL2 where
   toFun f := (smoothTraceBoundary_memLp hγ f).toLp (fun θ => f (γ θ))
-  map_add' f g := by
-    exact MemLp.toLp_add (smoothTraceBoundary_memLp hγ f) (smoothTraceBoundary_memLp hγ g)
-  map_smul' c f := by
-    exact MemLp.toLp_const_smul c (smoothTraceBoundary_memLp hγ f)
+  map_add' f g := MemLp.toLp_add (smoothTraceBoundary_memLp hγ f) (smoothTraceBoundary_memLp hγ g)
+  map_smul' c f := MemLp.toLp_const_smul c (smoothTraceBoundary_memLp hγ f)
 
 lemma norm_sq_toLp_eq_integral {α : Type*} [MeasurableSpace α] {μ : Measure α}
     {f : α → ℂ} (hf : MemLp f 2 μ) :
@@ -243,8 +241,7 @@ def h1BoundaryLoad {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
 theorem h1BoundaryLoad_inner {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
     (hL : IsLipschitzDomain Ω) {γ : ℝ → ℂ} (hγ : IsBoundaryParam Ω γ)
     (u : NeumannH1 Ω) (g : BoundaryL2) :
-    ⟪u, h1BoundaryLoad hb hL hγ g⟫_ℂ = ⟪h1BoundaryTrace hb hL hγ u, g⟫_ℂ := by
-  exact ContinuousLinearMap.adjoint_inner_right _ _ _
+    ⟪u, h1BoundaryLoad hb hL hγ g⟫_ℂ = ⟪h1BoundaryTrace hb hL hγ u, g⟫_ℂ := ContinuousLinearMap.adjoint_inner_right _ _ _
 
 end PolyaNeumann
 

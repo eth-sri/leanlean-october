@@ -46,9 +46,7 @@ theorem contDiff_herglotzCoeff_infty {a : ℝ → ℂ}
           funext z
           ext1 w
           rw [fderiv_herglotzCoeff_apply ha]
-          simp only [ContinuousLinearMap.add_apply, ContinuousLinearMap.smul_apply,
-            ContinuousLinearMap.id_apply, ContinuousLinearEquiv.coe_coe,
-            Complex.conjCLE_apply, smul_eq_mul]
+          simp
           ring
         rw [hfd]
         exact ((contDiff_const.mul (ih (m + 1))).smul_const _).add
@@ -147,7 +145,7 @@ private lemma mixedHerglotzGreen_pointwise {a : ℝ → ℂ}
       (∑ i : Fin 2, conj (fderiv ℝ (f : ℂ → ℂ) z (coordDir i)) *
         fderiv ℝ (herglotzCoeff k a 0) z (coordDir i)) -
           ((k ^ 2 : ℝ) : ℂ) * (conj (f z) * herglotzCoeff k a 0 z) := by
-  have hf : DifferentiableAt ℝ (f : ℂ → ℂ) z := f.property.1.differentiable (by simp) z
+  have hf := f.property.1.differentiable (by simp) z
   have h1 := differentiable_herglotzCoeff ha k 1 z
   have hm := differentiable_herglotzCoeff ha k (-1) z
   have hcf : DifferentiableAt ℝ (fun x => conj (f x)) z :=
@@ -155,16 +153,16 @@ private lemma mixedHerglotzGreen_pointwise {a : ℝ → ℂ}
   have hcm : DifferentiableAt ℝ (fun x => conj (herglotzCoeff k a (-1) x)) z :=
     Complex.conjCLE.toContinuousLinearMap.differentiableAt.comp z hm
   unfold dbar
-  simp only [fderiv_fun_mul hcf h1, fderiv_fun_mul hf hcm,
+  simp [fderiv_fun_mul hcf h1, fderiv_fun_mul hf hcm,
     ContinuousLinearMap.add_apply, ContinuousLinearMap.smul_apply, smul_eq_mul,
     fderiv_conj_apply hf, fderiv_conj_apply hm, fderiv_herglotzCoeff_apply ha,
     Fin.sum_univ_two, coordDir, Matrix.cons_val_zero, Matrix.cons_val_one]
   norm_num only [Int.reduceAdd, Int.reduceSub]
-  simp only [map_add, map_mul, map_div₀, map_neg, map_one, map_ofNat,
+  simp [map_add, map_mul, map_div₀, map_neg, map_one, map_ofNat,
     Complex.conj_I, Complex.conj_conj, Complex.conj_ofReal]
   push_cast
   ring_nf
-  simp only [Complex.I_sq, Complex.I_pow_four]
+  simp
   ring
 
 /-- Mixed Green identity between a genuine Herglotz wave and a smooth test
@@ -184,7 +182,7 @@ theorem integral_test_mul_herglotzConormal {Ω : Set ℂ} (hb : Bornology.IsBoun
   obtain ⟨Km, hKm⟩ := lipschitzWith_herglotzCoeff ha.intervalIntegrable k (-1)
   let A := (2 * π)⁻¹ * ∫ φ in (0 : ℝ)..(2 * π), ‖a φ‖
   have hA : ∀ m z, ‖herglotzCoeff k a m z‖ ≤ A := fun m z => norm_herglotzCoeff_le k m z
-  have hB0 : 0 ≤ B := (norm_nonneg _).trans (hB 0)
+  have hB0 := (norm_nonneg _).trans (hB 0)
   have hcfB : ∀ z, ‖conj (f z)‖ ≤ B := fun z => by rw [Complex.norm_conj]; exact hB z
   have hcmB : ∀ z, ‖conj (herglotzCoeff k a (-1) z)‖ ≤ A := fun z => by
     rw [Complex.norm_conj]
@@ -219,7 +217,7 @@ theorem integral_test_mul_herglotzConormal {Ω : Set ℂ} (hb : Bornology.IsBoun
       (k / 2 : ℂ) * (conj (Q (γ θ) * deriv γ θ) - P (γ θ) * deriv γ θ) := by
     intro θ
     rw [herglotzConormal_eq ha.intervalIntegrable]
-    simp only [P, Q, map_mul, Complex.conj_conj]
+    simp [P, Q, map_mul, Complex.conj_conj]
     ring
   have hconj : ∫ θ in (0 : ℝ)..(2 * π), conj (Q (γ θ) * deriv γ θ) =
       conj (∫ θ in (0 : ℝ)..(2 * π), Q (γ θ) * deriv γ θ) := by
@@ -239,7 +237,7 @@ theorem integral_test_mul_herglotzConormal {Ω : Set ℂ} (hb : Bornology.IsBoun
       simp_rw [hpt]
       rw [intervalIntegral.integral_const_mul, intervalIntegral.integral_sub hiQc hiP,
         hconj, gQ, gP]
-      simp only [map_mul, map_ofNat, Complex.conj_I]
+      simp [map_mul, map_ofNat, Complex.conj_I]
       rw [← integral_conj]
       ring
     _ = ∫ z in Ω, -(Complex.I * k) * (dbar P z + conj (dbar Q z)) := by

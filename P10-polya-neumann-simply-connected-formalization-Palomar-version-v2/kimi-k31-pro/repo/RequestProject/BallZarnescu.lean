@@ -109,7 +109,7 @@ theorem exists_ballZarnescu {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
         rw [hD n]; exact not_le.mp hx
       exact (D n).f_eq_self hx'
     collar_shrink := fun x hx => by
-      have hd : 0 < signedDist Ω x := (signedDist_pos_iff hL.1.1 hΩu).mpr hx
+      have hd := (signedDist_pos_iff hL.1.1 hΩu).mpr hx
       have h1 : Tendsto (fun n => 2 * S.M * T n) atTop (𝓝 0) := by
         have h := hTlim.const_mul (2 * S.M)
         rwa [mul_zero] at h
@@ -179,8 +179,8 @@ theorem eventually_boundaryParam_ballZarnescu {Ω : Set ℂ} (hb : Bornology.IsB
       hb.measure_lt_top.ne
     positivity
   filter_upwards [hconv.eventually (Ioi_mem_nhds hpos)] with n hn
-  have hLn : IsLipschitzDomain (A.map n '' Ω) := (A.smooth n).isLipschitzDomain
-  have hbn : Bornology.IsBounded (A.map n '' Ω) := hb.subset (A.subset n)
+  have hLn := (A.smooth n).isLipschitzDomain
+  have hbn := hb.subset (A.subset n)
   have hext : IsConnected (closure (A.map n '' Ω))ᶜ :=
     isConnected_compl_closure_of_frontier hbn hLn (by
       rw [← hαim n]; exact isPreconnected_Icc.image _ (hαL n).continuous.continuousOn)
@@ -193,7 +193,7 @@ theorem eventually_boundaryParam_ballZarnescu {Ω : Set ℂ} (hb : Bornology.IsB
     τ, hτm, hτL, hτ0, hτ2, hτc⟩
   show ∫ θ in (0 : ℝ)..(2 * π), signedAreaDensity γ1 θ = _
   rw [harea1, harea]
-  have hn' : 0 < ∫ θ in (0 : ℝ)..(2 * π), signedAreaDensity (A.map n ∘ γ) θ := hn
+  have hn' := hn
   rcases hσ with rfl | rfl
   · ring
   · rw [harea] at hn'

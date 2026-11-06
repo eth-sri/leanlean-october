@@ -36,15 +36,15 @@ lemma integral_primitive_mul_eq {L : ℝ} (hL : 0 ≤ L) {f g : ℝ → ℂ}
       ∫ t in (0 : ℝ)..L, f t * ∫ s in t..L, g s := by
   set μ : Measure ℝ := volume.restrict (Icc 0 L) with hμ
   set Φ : ℝ → ℝ → ℂ := fun s t => if t ≤ s then f t * g s else 0 with hΦdef
-  have hBf : 0 ≤ Bf := (norm_nonneg _).trans (hfB 0 ⟨le_rfl, hL⟩)
-  have hBg : 0 ≤ Bg := (norm_nonneg _).trans (hgB 0 ⟨le_rfl, hL⟩)
+  have hBf := (norm_nonneg _).trans (hfB 0 ⟨le_rfl, hL⟩)
+  have hBg := (norm_nonneg _).trans (hgB 0 ⟨le_rfl, hL⟩)
   have hΦ : Integrable (Function.uncurry Φ) (μ.prod μ) := by
     have hm0 : AEStronglyMeasurable (fun p : ℝ × ℝ => f p.2 * g p.1) (μ.prod μ) :=
       hf.comp_snd.mul hg.comp_fst
     have heq : Function.uncurry Φ = {p : ℝ × ℝ | p.2 ≤ p.1}.indicator
         (fun p : ℝ × ℝ => f p.2 * g p.1) := by
       funext p
-      simp only [Function.uncurry, Φ, Set.indicator, mem_setOf_eq]
+      simp [Function.uncurry, Φ, Set.indicator, mem_setOf_eq]
     have hm : AEStronglyMeasurable (Function.uncurry Φ) (μ.prod μ) := by
       rw [heq]
       exact hm0.indicator (measurableSet_le measurable_snd measurable_fst)
@@ -53,16 +53,16 @@ lemma integral_primitive_mul_eq {L : ℝ} (hL : 0 ≤ L) {f g : ℝ → ℂ}
     rw [hμ, Measure.prod_restrict]
     refine (ae_restrict_iff' (measurableSet_Icc.prod measurableSet_Icc)).mpr
       (Eventually.of_forall fun p hp => ?_)
-    simp only [Function.uncurry, Φ]
+    simp [Function.uncurry, Φ]
     split_ifs
     · rw [norm_mul]; exact mul_le_mul (hfB _ hp.2) (hgB _ hp.1) (norm_nonneg _) hBf
-    · rw [norm_zero]; positivity
+    · simp; positivity
   have key := integral_integral_swap hΦ
   have hlhs : ∫ s in (0 : ℝ)..L, (∫ t in (0 : ℝ)..s, f t) * g s = ∫ s, ∫ t, Φ s t ∂μ ∂μ := by
     rw [intervalIntegral.integral_of_le hL, ← integral_Icc_eq_integral_Ioc]
     refine setIntegral_congr_fun measurableSet_Icc fun s hs => ?_
     have e : (fun t => Φ s t) = (Iic s).indicator (fun t => f t * g s) := by
-      funext t; simp only [Φ, Set.indicator, mem_Iic]
+      funext t; simp [Φ, Set.indicator, mem_Iic]
     have e2 : Icc 0 L ∩ Iic s = Icc 0 s := by
       ext x; simp only [mem_inter_iff, mem_Icc, mem_Iic]
       constructor
@@ -75,9 +75,9 @@ lemma integral_primitive_mul_eq {L : ℝ} (hL : 0 ≤ L) {f g : ℝ → ℂ}
     rw [intervalIntegral.integral_of_le hL, ← integral_Icc_eq_integral_Ioc]
     refine setIntegral_congr_fun measurableSet_Icc fun t ht => ?_
     have e : (fun s => Φ s t) = (Ici t).indicator (fun s => f t * g s) := by
-      funext s; simp only [Φ, Set.indicator, mem_Ici]
+      funext s; simp [Φ, Set.indicator, mem_Ici]
     have e2 : Icc 0 L ∩ Ici t = Icc t L := by
-      ext x; simp only [mem_inter_iff, mem_Icc, mem_Ici]
+      ext x; simp
       constructor
       · rintro ⟨⟨_, h2⟩, h3⟩; exact ⟨h3, h2⟩
       · rintro ⟨h1, h2⟩; exact ⟨⟨ht.1.trans h1, h2⟩, h1⟩
@@ -103,7 +103,7 @@ lemma intervalIntegrable_of_restrict_bound {L : ℝ} {f : ℝ → ℂ}
     (hf : AEStronglyMeasurable f (volume.restrict (Icc 0 L))) {B : ℝ}
     (hB : ∀ t ∈ Icc 0 L, ‖f t‖ ≤ B) {a b : ℝ} (ha : a ∈ Icc 0 L) (hb : b ∈ Icc 0 L) :
     IntervalIntegrable f volume a b := by
-  have hsub : uIcc a b ⊆ Icc 0 L := uIcc_subset_Icc ha hb
+  have hsub := uIcc_subset_Icc ha hb
   refine (IntegrableOn.mono_set ?_ hsub).intervalIntegrable
   haveI : IsFiniteMeasure (volume.restrict (Icc (0 : ℝ) L)) := by infer_instance
   exact Integrable.of_bound hf B ((ae_restrict_iff' measurableSet_Icc).mpr
@@ -112,7 +112,7 @@ lemma intervalIntegrable_of_restrict_bound {L : ℝ} {f : ℝ → ℂ}
 /-- Bound for a primitive of a bounded function. -/
 lemma norm_primitive_le {L : ℝ} {f : ℝ → ℂ} {B : ℝ} (hB : ∀ t ∈ Icc 0 L, ‖f t‖ ≤ B) {s : ℝ}
     (hs : s ∈ Icc 0 L) : ‖∫ t in (0 : ℝ)..s, f t‖ ≤ B * L := by
-  have hB0 : 0 ≤ B := (norm_nonneg _).trans (hB 0 ⟨le_rfl, hs.1.trans hs.2⟩)
+  have hB0 := (norm_nonneg _).trans (hB 0 ⟨le_rfl, hs.1.trans hs.2⟩)
   have h : ‖∫ t in (0 : ℝ)..s, f t‖ ≤ B * |s - 0| :=
     intervalIntegral.norm_integral_le_of_norm_le_const fun t ht => by
       rw [uIoc_of_le hs.1] at ht; exact hB t ⟨ht.1.le, ht.2.trans hs.2⟩
@@ -139,7 +139,7 @@ lemma kernel_integral_eq {L : ℝ} (hL : 0 ≤ L) {r ρ : ℝ → ℝ → ℂ} {
       ∫ s in (0 : ℝ)..L, (r θ 0 * g s + (∫ t in (0 : ℝ)..s, ρ θ t) * g s) := by
     refine intervalIntegral.integral_congr fun s hs => ?_
     rw [uIcc_of_le hL] at hs
-    simp only [hr s hs]; ring
+    simp [hr s hs]; ring
   have hint2 : IntervalIntegrable (fun s => (∫ t in (0 : ℝ)..s, ρ θ t) * g s) volume 0 L := by
     refine intervalIntegrable_of_restrict_bound
       ((hPc.aestronglyMeasurable measurableSet_Icc).mul hg) (B := Bρ * L * Bg)
@@ -199,7 +199,7 @@ theorem norm_kernel_form_le {L : ℝ} (hL : 0 ≤ L) {r ρ : ℝ → ℝ → ℂ
   have hGcc : ContinuousOn Gc (Icc 0 L) :=
     (continuousOn_primitive_of_bound hL hgr hgBr).sub continuousOn_const
   obtain ⟨BG, hBG⟩ := isCompact_Icc.exists_bound_of_continuousOn hGcc
-  set N : ℝ := ∫ t in (0 : ℝ)..L, ‖Gc t‖ with hN
+  set N := ∫ t in (0 : ℝ)..L, ‖Gc t‖ with hN
   have hN0 : 0 ≤ N := intervalIntegral.integral_nonneg hL fun t _ => norm_nonneg _
   have hNi : IntervalIntegrable (fun t => ‖Gc t‖) volume 0 L :=
     (hGcc.norm.intervalIntegrable_of_Icc hL)
@@ -218,7 +218,7 @@ theorem norm_kernel_form_le {L : ℝ} (hL : 0 ≤ L) {r ρ : ℝ → ℝ → ℂ
     intro θ₁ h₁ θ₂ h₂
     have e : Φ θ₁ - Φ θ₂ = -∫ t in (0 : ℝ)..L, (ρ θ₁ t - ρ θ₂ t) * Gc t := by
       have := intervalIntegral.integral_sub (hρGi θ₁ h₁) (hρGi θ₂ h₂)
-      simp only [hΦ]
+      simp [hΦ]
       rw [show (fun t => (ρ θ₁ t - ρ θ₂ t) * Gc t) =
         fun t => ρ θ₁ t * Gc t - ρ θ₂ t * Gc t from funext fun t => by ring, this]
       ring
@@ -229,12 +229,12 @@ theorem norm_kernel_form_le {L : ℝ} (hL : 0 ≤ L) {r ρ : ℝ → ℝ → ℂ
             (Eventually.of_forall fun t ht => ?_) (hNi.const_mul _)
           rw [norm_mul]
           exact mul_le_mul_of_nonneg_right (hρL θ₁ h₁ θ₂ h₂ t ⟨ht.1.le, ht.2⟩) (norm_nonneg _)
-      _ = M * N * |θ₁ - θ₂| := by rw [intervalIntegral.integral_const_mul, hN]; ring
+      _ = M * N * |θ₁ - θ₂| := by simp; ring
   have hper : Φ L = Φ 0 := by
     rw [← hA L hL', ← hA 0 h0]
     refine intervalIntegral.integral_congr fun s hs => ?_
     rw [uIcc_of_le hL] at hs
-    simp only [hper_θ s hs]
+    simp [hper_θ s hs]
   set Ψ : ℝ → ℂ := fun θ => Φ (projIcc 0 L hL θ) with hΨ
   have hΨL : LipschitzWith (M * N).toNNReal Ψ := by
     refine LipschitzWith.of_dist_le_mul fun x y => ?_
@@ -242,16 +242,16 @@ theorem norm_kernel_form_le {L : ℝ} (hL : 0 ≤ L) {r ρ : ℝ → ℝ → ℂ
     refine (hΦlip _ (projIcc 0 L hL x).2 _ (projIcc 0 L hL y).2).trans ?_
     exact mul_le_mul_of_nonneg_left (abs_projIcc_sub_projIcc hL) (mul_nonneg hM hN0)
   have hΨeq : ∀ θ ∈ Icc 0 L, Ψ θ = Φ θ := fun θ hθ => by
-    simp only [hΨ, projIcc_of_mem hL hθ]
+    simp [hΨ, projIcc_of_mem hL hθ]
   have hΨd : ∀ θ, Ψ θ = Ψ 0 + ∫ t in (0 : ℝ)..θ, deriv Ψ t := fun θ => by
     rw [integral_deriv_of_lipschitz hΨL]; ring
-  have hdB : ∀ t, ‖deriv Ψ t‖ ≤ M * N := fun t => by
+  have hdB := fun t => by
     have := norm_deriv_le_of_lipschitz hΨL (x₀ := t)
     rwa [Real.coe_toNNReal _ (mul_nonneg hM hN0)] at this
   have hdm : AEStronglyMeasurable (deriv Ψ) volume := (measurable_deriv Ψ).aestronglyMeasurable
   have hcg : AEStronglyMeasurable (fun t => conj (g t)) volume :=
     Complex.continuous_conj.comp_aestronglyMeasurable hg
-  have hcgB : ∀ t, ‖conj (g t)‖ ≤ Bg := fun t => by rw [Complex.norm_conj]; exact hgB t
+  have hcgB : ∀ t, ‖conj (g t)‖ ≤ Bg := fun t => by simp; exact hgB t
   have hgi := intervalIntegrable_of_restrict_bound hgr hgBr h0 hL'
   have hcgi : IntervalIntegrable (fun t => conj (g t)) volume 0 L :=
     intervalIntegrable_of_restrict_bound hcg.restrict (fun t _ => hcgB t) h0 hL'
@@ -308,7 +308,7 @@ theorem norm_kernel_form_le {L : ℝ} (hL : 0 ≤ L) {r ρ : ℝ → ℝ → ℂ
           (Eventually.of_forall fun t _ => ?_) (hNi.const_mul _)
         rw [norm_mul, Complex.norm_conj]
         exact mul_le_mul_of_nonneg_right (hdB t) (norm_nonneg _)
-    _ = M * N ^ 2 := by rw [intervalIntegral.integral_const_mul, ← hN]; ring
+    _ = M * N ^ 2 := by simp; ring
 
 end PolyaNeumann
 

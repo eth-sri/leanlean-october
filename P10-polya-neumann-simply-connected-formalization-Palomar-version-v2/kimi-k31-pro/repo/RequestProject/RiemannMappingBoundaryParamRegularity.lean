@@ -40,9 +40,8 @@ theorem riemannMappingBoundaryPhase_contDiffAt {α : ℝ → ℂ} {t₀ : ℝ}
     ContDiffAt ℝ (⊤ : ℕ∞) (riemannMappingBoundaryPhase α t₀) t₀ := by
   have hratio : ContDiffAt ℝ (⊤ : ℕ∞) (fun t => α t / α t₀) t₀ :=
     hα.div_const _
-  have hslit : α t₀ / α t₀ ∈ Complex.slitPlane := by simp [h₀]
   have hlogOuter : ContDiffAt ℝ (⊤ : ℕ∞) Complex.log (α t₀ / α t₀) :=
-    (Complex.contDiffAt_log hslit).restrict_scalars ℝ
+    (Complex.contDiffAt_log (by simp [h₀])).restrict_scalars ℝ
   have hlog : ContDiffAt ℝ (⊤ : ℕ∞)
       (fun t => Complex.log (α t / α t₀)) t₀ :=
     hlogOuter.comp (f := fun t : ℝ => α t / α t₀) (g := Complex.log) t₀ hratio
@@ -112,14 +111,14 @@ theorem exists_riemannMappingBoundaryAngularInverse {α : ℝ → ℂ} {t₀ θ�
     simpa [h] using hcircle.self_of_nhds
   have hφ : ContDiffAt ℝ (⊤ : ℕ∞) φ t₀ :=
     riemannMappingBoundaryPhase_contDiffAt hα hn₀
-  have hc : deriv φ t₀ ≠ 0 := riemannMappingBoundaryPhase_deriv_ne_zero hα hcircle hd
+  have hc := riemannMappingBoundaryPhase_deriv_ne_zero hα hcircle hd
   have hdφ : HasDerivAt φ (deriv φ t₀) t₀ :=
     (hφ.differentiableAt (by simp)).hasDerivAt
   have hfd := hdφ.hasFDerivAt_equiv hc
   have hn : ((⊤ : ℕ∞) : WithTop ℕ∞) ≠ 0 := by simp
   let e := hφ.toOpenPartialHomeomorph φ hfd hn
   have he : (e : ℝ → ℝ) = φ := rfl
-  have hs : t₀ ∈ e.source := hφ.mem_toOpenPartialHomeomorph_source hfd hn
+  have hs := hφ.mem_toOpenPartialHomeomorph_source hfd hn
   have hφ₀ : φ t₀ = 0 := riemannMappingBoundaryPhase_zero hn₀
   have ht : (0 : ℝ) ∈ e.target := by
     simpa only [hφ₀] using hφ.image_mem_toOpenPartialHomeomorph_target hfd hn
@@ -334,9 +333,9 @@ theorem exists_riemannMapping_halfBox_avoiding {Ψ : ℂ → ℂ} {w : ℂ}
     hΨ.eventually (eventually_ne_nhds hne)
   obtain ⟨ε, hε, hball⟩ := Metric.mem_nhds_iff.mp hev
   let r := min ρ (ε / 4)
-  have hr : 0 < r := lt_min hρ (by positivity)
+
   have hrε : r ≤ ε / 4 := min_le_right _ _
-  refine ⟨r, hr, min_le_left _ _, ?_⟩
+  refine ⟨r, (lt_min hρ (by positivity)), min_le_left _ _, ?_⟩
   intro z hz
   apply hball
   rw [mem_ball_zero_iff]
@@ -392,7 +391,7 @@ theorem exists_riemannMapping_genuine_green_smooth_boundary_fields {Ω : Set ℂ
   let U := smoothDirichletHalfBox r r
   let V := smoothDirichletClosedHalfBox r r
   have hrA : r < A := hrρ.trans_lt (hρA.trans (by linarith))
-  have hrb : r < b := hrρ.trans_lt hρb
+  have hrb := hrρ.trans_lt hρb
   have hUρ : U ⊆ smoothDirichletHalfBox ρ ρ := by
     intro z hz
     exact ⟨hz.1.trans_le hrρ, hz.2.1, hz.2.2.trans_le hrρ⟩
@@ -409,10 +408,8 @@ theorem exists_riemannMapping_genuine_green_smooth_boundary_fields {Ω : Set ℂ
     intro z hz
     exact ⟨hz.1.le, hz.2.1.le, hz.2.2.le⟩
   have hclosed' : MapsTo Ψ V (closure Ω) := fun z hz => hclosed (hVA hz)
-  have hmap' : MapsTo Ψ U Ω := fun z hz => hmap (hUA hz)
   have hLs (z : ℂ) (hz : z ∈ V) : ContDiffAt ℝ (⊤ : ℕ∞) L z :=
     riemannMappingGreenLogDatum_contDiffAt F d hΨ.contDiffAt (hne z hz)
-  have hLc : ContinuousOn L V := fun z hz => (hLs z hz).continuousAt.continuousWithinAt
   have hDs (w : ℂ) (z : ℂ) (hz : z ∈ V) : ContDiffAt ℝ (⊤ : ℕ∞) (dirD L w) z :=
     contDiffAt_infty_dirD (hLs z hz) w
   have hDc (w : ℂ) : ContinuousOn (dirD L w) V :=
@@ -431,13 +428,13 @@ theorem exists_riemannMapping_genuine_green_smooth_boundary_fields {Ω : Set ℂ
     intro z hz
     exact riemannMappingFlattenedGreen_eq_remainder_add_datum
       hb hS hsc F hF hinj himage d Ψ (hclosed' hz) (hne z hz)
-  have hGc : ContinuousOn G V := ((huc.mono hVA).add hLc).congr hsum
-  have hus' : ContDiffOn ℝ (⊤ : ℕ∞) u U := hus.mono hUA
+  have hGc := ((huc.mono hVA).add (fun z hz => (hLs z hz).continuousAt.continuousWithinAt)).congr hsum
+  have hus' := hus.mono hUA
   have hLs' : ContDiffOn ℝ (⊤ : ℕ∞) L U :=
     fun z hz => (hLs z (hUV hz)).contDiffWithinAt
   have hGs : ContDiffOn ℝ (⊤ : ℕ∞) G U :=
     (hus'.add hLs').congr (hsum.mono hUV)
-  have hU : IsOpen U := isOpen_smoothDirichletHalfBox r r
+  have hU := isOpen_smoothDirichletHalfBox r r
   have hd (w : ℂ) : EqOn (dirD G w)
       (fun z => dirD u w z + dirD L w z) U := by
     intro z hz
@@ -455,7 +452,7 @@ theorem exists_riemannMapping_genuine_green_smooth_boundary_fields {Ω : Set ℂ
     rw [hd Complex.I hz]
     change Y z + dirD L Complex.I z = _
     rw [hYu (hUρ hz)]
-  refine ⟨c, hc, f, hf, r, P, Q, hf₀, hr, ?_, hmap', hne,
+  refine ⟨c, hc, f, hf, r, P, Q, hf₀, hr, ?_, (fun z hz => hmap (hUA hz)), hne,
     (riemannMappingClosedInverse_continuousOn hb hS hsc F hF hinj himage).comp
       Ψ.continuous.continuousOn hclosed',
     hGc, hGs, (hXc.mono hVρ).add (hDc 1),

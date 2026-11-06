@@ -32,7 +32,7 @@ private theorem projected_mass_from_kernel
     {H : Type*} [NormedAddCommGroup H] [NormedSpace ℂ H]
     (M : H →L[ℂ] H) (c : ℂ) (hc : c ≠ 0) (u : H)
     (hu : ((1 : H →L[ℂ] H) - c • M) u = 0) : M u = c⁻¹ • u := by
-  have heq : u = c • M u := sub_eq_zero.mp (by
+  have heq := sub_eq_zero.mp (by
     simpa only [ContinuousLinearMap.sub_apply, ContinuousLinearMap.one_apply,
       ContinuousLinearMap.smul_apply] using hu)
   calc
@@ -46,11 +46,11 @@ private theorem projected_mass_preserves_orthogonal
     (hS : ∀ v ∈ S, M v = c • v) {u : H} (hu : u ∈ Sᗮ) : M u ∈ Sᗮ := by
   rw [Submodule.mem_orthogonal]
   intro v hv
-  have hzero : ⟪v, u⟫_ℂ = 0 := (S.mem_orthogonal u).1 hu v hv
+  have hzero := (S.mem_orthogonal u).1 hu v hv
   calc
     ⟪v, M u⟫_ℂ = ⟪M v, u⟫_ℂ := (hM.isSymmetric v u).symm
     _ = ⟪c • v, u⟫_ℂ := congrArg (fun w : H => ⟪w, u⟫_ℂ) (hS v hv)
-    _ = 0 := by simp only [inner_smul_left, hzero, mul_zero]
+    _ = 0 := by simp [inner_smul_left, hzero, mul_zero]
 
 private theorem projected_compression_apply
     {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
@@ -68,7 +68,7 @@ private theorem projected_form_coe
     (hC : ∀ u : S, (C u : H) = M u) (c : ℂ) (u : S) :
     (((1 : S →L[ℂ] S) - c • C) u : H) =
       ((1 : H →L[ℂ] H) - c • M) u := by
-  simp only [ContinuousLinearMap.sub_apply, ContinuousLinearMap.one_apply,
+  simp [ContinuousLinearMap.sub_apply, ContinuousLinearMap.one_apply,
     ContinuousLinearMap.smul_apply, Submodule.coe_sub, Submodule.coe_smul, hC]
 
 private theorem projected_inverse_apply
@@ -136,8 +136,7 @@ theorem h1ResonantMass_eq_inverse_smul {Ω : Set ℂ} {E₀ : ℝ} (hE₀ : 0 �
 fixed orthogonal complement is invariant under the mass operator. -/
 theorem h1MassOperator_preserves_resonantComplement {Ω : Set ℂ} {E₀ : ℝ}
     (hE₀ : 0 ≤ E₀) {u : NeumannH1 Ω} (hu : u ∈ (h1ResonantSpace Ω E₀)ᗮ) :
-    h1MassOperator Ω u ∈ (h1ResonantSpace Ω E₀)ᗮ := by
-  exact projected_mass_preserves_orthogonal (h1ResonantSpace Ω E₀)
+    h1MassOperator Ω u ∈ (h1ResonantSpace Ω E₀)ᗮ := projected_mass_preserves_orthogonal (h1ResonantSpace Ω E₀)
     (h1MassOperator Ω) (h1MassOperator_isSelfAdjoint Ω)
     (((E₀ + 1 : ℝ) : ℂ)⁻¹)
     (fun _ hv => h1ResonantMass_eq_inverse_smul hE₀ hv) hu
@@ -146,16 +145,14 @@ theorem h1MassOperator_preserves_resonantComplement {Ω : Set ℂ} {E₀ : ℝ}
 invariant complement, including after embedding into the full H¹ space. -/
 theorem h1ComplementMass_coe_eq {Ω : Set ℂ} {E₀ : ℝ} (hE₀ : 0 ≤ E₀)
     (u : (h1ResonantSpace Ω E₀)ᗮ) :
-    (h1ComplementMass Ω E₀ u : NeumannH1 Ω) = h1MassOperator Ω u := by
-  exact projected_compression_apply (h1ResonantSpace Ω E₀)ᗮ (h1MassOperator Ω)
+    (h1ComplementMass Ω E₀ u : NeumannH1 Ω) = h1MassOperator Ω u := projected_compression_apply (h1ResonantSpace Ω E₀)ᗮ (h1MassOperator Ω)
     (fun _ hv => h1MassOperator_preserves_resonantComplement hE₀ hv) u
 
 /-- The genuine complement form embeds as the actual full Helmholtz
 form, at every energy. -/
 theorem h1ComplementForm_coe_eq {Ω : Set ℂ} {E₀ : ℝ} (hE₀ : 0 ≤ E₀)
     (E : ℝ) (u : (h1ResonantSpace Ω E₀)ᗮ) :
-    (h1ComplementForm Ω E₀ E u : NeumannH1 Ω) = h1HelmholtzForm Ω E u := by
-  exact projected_form_coe (h1ResonantSpace Ω E₀)ᗮ (h1MassOperator Ω)
+    (h1ComplementForm Ω E₀ E u : NeumannH1 Ω) = h1HelmholtzForm Ω E u := projected_form_coe (h1ResonantSpace Ω E₀)ᗮ (h1MassOperator Ω)
     (h1ComplementMass Ω E₀) (h1ComplementMass_coe_eq hE₀)
     ((E + 1 : ℝ) : ℂ) u
 
@@ -164,8 +161,7 @@ gives exactly the orthogonal-complement projection of the original load. -/
 theorem h1RegularResolvent_projected_solve {Ω : Set ℂ} {E₀ : ℝ} (hE₀ : 0 ≤ E₀)
     {E : ℝ} (hunit : IsUnit (h1ComplementForm Ω E₀ E)) (u : NeumannH1 Ω) :
     h1HelmholtzForm Ω E (h1RegularResolvent Ω E₀ E u) =
-      (h1ResonantSpace Ω E₀)ᗮ.starProjection u := by
-  exact projected_regular_solve (h1ResonantSpace Ω E₀)ᗮ (h1HelmholtzForm Ω E)
+      (h1ResonantSpace Ω E₀)ᗮ.starProjection u := projected_regular_solve (h1ResonantSpace Ω E₀)ᗮ (h1HelmholtzForm Ω E)
     (h1ComplementForm Ω E₀ E) (fun v => (h1ComplementForm_coe_eq hE₀ E v).symm)
     hunit u
 
@@ -184,8 +180,7 @@ theorem h1Resonant_weak_pairing {Ω : Set ℂ} {E₀ : ℝ}
 mass pairing multiplied by `E₀ + 1`. -/
 theorem h1Resonant_inner_eq_mass {Ω : Set ℂ} {E₀ : ℝ}
     {w : NeumannH1 Ω} (hw : w ∈ h1ResonantSpace Ω E₀) (v : NeumannH1 Ω) :
-    ⟪v, w⟫_ℂ = ((E₀ + 1 : ℝ) : ℂ) * ⟪h1Value Ω v, h1Value Ω w⟫_ℂ := by
-  exact (h1_inner Ω v w).trans
+    ⟪v, w⟫_ℂ = ((E₀ + 1 : ℝ) : ℂ) * ⟪h1Value Ω v, h1Value Ω w⟫_ℂ := (h1_inner Ω v w).trans
     (projected_shifted_mass_scalar _ _ E₀ (h1Resonant_weak_pairing hw v))
 
 /-- The all-test-vector weak equation for the genuine regular resolvent.

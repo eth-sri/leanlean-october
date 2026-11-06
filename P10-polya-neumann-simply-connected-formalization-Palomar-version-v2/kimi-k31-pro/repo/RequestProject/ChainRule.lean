@@ -74,7 +74,7 @@ lemma fderiv_mollify_extZero {Ω : Set ℂ} (hΩ : IsOpen Ω) {v : L2 Ω} {G : F
   simp only [sub_sub_cancel]
   rw [integral_fderiv_bump_smul_eq hΩ hG φ x hx i, convolution_def,
     ← integral_sub_left_eq_self _ volume x]
-  simp [sub_sub_cancel]
+  simp
 
 /-! ### Integration by parts for Lipschitz functions -/
 
@@ -92,8 +92,8 @@ lemma integral_fderiv_mul_real {C : ℝ≥0} {F θ : ℂ → ℝ} (hF : Lipschit
   have h2 : ∫ x, lineDeriv ℝ θ x (-e) * F x = -∫ x, F x * fderiv ℝ θ x e := by
     rw [← integral_neg]
     refine integral_congr_ae (Eventually.of_forall fun x => ?_)
-    have hx : DifferentiableAt ℝ θ x := (hθ.differentiable one_ne_zero) x
-    simp only [hx.lineDeriv_eq_fderiv, map_neg]
+    have hx := (hθ.differentiable one_ne_zero) x
+    simp [hx.lineDeriv_eq_fderiv, map_neg]
     ring
   rw [← h1, h, h2]
 
@@ -110,17 +110,17 @@ lemma integral_mul_fderiv_of_lipschitz {C : ℝ≥0} {F θ : ℂ → ℂ} (hF : 
   have hFi : LipschitzWith _ Fi := Complex.imCLM.lipschitz.comp hF
   have hθr : ContDiff ℝ 1 θr := Complex.reCLM.contDiff.comp hθ
   have hθi : ContDiff ℝ 1 θi := Complex.imCLM.contDiff.comp hθ
-  have hθrs : HasCompactSupport θr := hθs.comp_left (g := Complex.re) (by simp)
-  have hθis : HasCompactSupport θi := hθs.comp_left (g := Complex.im) (by simp)
-  have hdθ : ∀ x, DifferentiableAt ℝ θ x := fun x => hθ.differentiable one_ne_zero x
+  have hθrs := hθs.comp_left (g := Complex.re) (by simp)
+  have hθis := hθs.comp_left (g := Complex.im) (by simp)
+  have hdθ := fun x => hθ.differentiable one_ne_zero x
   have dθr : ∀ x, fderiv ℝ θr x e = (fderiv ℝ θ x e).re := fun x => by
-    exact DFunLike.congr_fun ((Complex.reCLM.hasFDerivAt).comp x (hdθ x).hasFDerivAt).fderiv e
+    exact DFunLike.congr_fun (Complex.reCLM.hasFDerivAt.comp x (hdθ x).hasFDerivAt).fderiv e
   have dθi : ∀ x, fderiv ℝ θi x e = (fderiv ℝ θ x e).im := fun x => by
-    exact DFunLike.congr_fun ((Complex.imCLM.hasFDerivAt).comp x (hdθ x).hasFDerivAt).fderiv e
+    exact DFunLike.congr_fun (Complex.imCLM.hasFDerivAt.comp x (hdθ x).hasFDerivAt).fderiv e
   have dF : ∀ᵐ x, fderiv ℝ Fr x e = (fderiv ℝ F x e).re ∧ fderiv ℝ Fi x e = (fderiv ℝ F x e).im := by
     filter_upwards [hF.ae_differentiableAt] with x hx
-    exact ⟨DFunLike.congr_fun ((Complex.reCLM.hasFDerivAt).comp x hx.hasFDerivAt).fderiv e,
-      DFunLike.congr_fun ((Complex.imCLM.hasFDerivAt).comp x hx.hasFDerivAt).fderiv e⟩
+    exact ⟨DFunLike.congr_fun (Complex.reCLM.hasFDerivAt.comp x hx.hasFDerivAt).fderiv e,
+      DFunLike.congr_fun (Complex.imCLM.hasFDerivAt.comp x hx.hasFDerivAt).fderiv e⟩
   -- integrability
   have hcs : ∀ g : ℂ → ℝ, Continuous g → HasCompactSupport g → Integrable g :=
     fun g hg hgs => hg.integrable_of_hasCompactSupport hgs
@@ -202,21 +202,20 @@ lemma setIntegral_comp_mul_fderiv {U : Set ℂ} (hU : IsOpen U) {f : ℂ → ℂ
     ∫ x in U, ψ (f x) * fderiv ℝ θ x e =
       -∫ x in U, fderiv ℝ ψ (f x) (fderiv ℝ f x e) * θ x := by
   obtain ⟨hθc, hθs, hθU⟩ := hθ
-  have hθ1 : ContDiff ℝ 1 θ := hθc.of_le (by norm_num)
   obtain ⟨R, hR⟩ := hθs.isCompact.isBounded.subset_ball 0
   obtain ⟨f', hf', hff'⟩ := hf.extend_finite_dimension
   obtain ⟨R', hR'⟩ := (hf'.isBounded_image (isBounded_ball (x := (0 : ℂ)) (r := R))).subset_closedBall 0
   obtain ⟨Kψ, hKψ⟩ := (hψ.contDiffOn (s := closedBall (0 : ℂ) R')).exists_lipschitzOnWith
     (by norm_num) (convex_closedBall 0 R') (isCompact_closedBall 0 R')
   have hcomp : LipschitzOnWith (Kψ * _) (ψ ∘ f') (ball 0 R) :=
-    hKψ.comp (hf'.lipschitzOnWith) (fun x hx => hR' (mem_image_of_mem f' hx))
+    hKψ.comp hf'.lipschitzOnWith (fun x hx => hR' (mem_image_of_mem f' hx))
   obtain ⟨F, hF, hFeq⟩ := hcomp.extend_finite_dimension
   set W := U ∩ ball (0 : ℂ) R
-  have hW : IsOpen W := hU.inter isOpen_ball
-  have hKW : tsupport θ ⊆ W := subset_inter hθU hR
+
+  have hKW := subset_inter hθU hR
   have hFW : ∀ x ∈ W, F x = ψ (f x) := fun x hx => by
     rw [← hFeq hx.2]; simp [hff' hx.1]
-  have hIBP := integral_mul_fderiv_of_lipschitz hF hθ1 hθs e
+  have hIBP := integral_mul_fderiv_of_lipschitz hF (hθc.of_le (by norm_num)) hθs e
   have hdθ0 : ∀ x ∉ tsupport θ, fderiv ℝ θ x e = 0 := fun x hx => by
     rw [show fderiv ℝ θ x = 0 from Function.notMem_support.mp
       (fun h => hx (support_fderiv_subset ℝ h))]
@@ -239,7 +238,7 @@ lemma setIntegral_comp_mul_fderiv {U : Set ℂ} (hU : IsOpen U) {f : ℂ → ℂ
     filter_upwards [hd] with x hdx hxU
     by_cases hx : x ∈ tsupport θ
     · have hev : F =ᶠ[𝓝 x] ψ ∘ f :=
-        Filter.eventually_of_mem (hW.mem_nhds (hKW hx)) fun y hy => hFW y hy
+        Filter.eventually_of_mem ((hU.inter isOpen_ball).mem_nhds (hKW hx)) fun y hy => hFW y hy
       rw [hev.fderiv_eq, fderiv_comp x ((hψ.differentiable one_ne_zero) _) (hdx hxU)]
       rfl
     · simp [hθ0 x hx]
@@ -263,7 +262,7 @@ lemma lintegral_comp_bilip_le (hΩ : IsOpen Ω) (hK : 0 < K) (hf : LipschitzOnWi
           (inv_le_iff_one_le_mul₀' hK2).mp hx
         have h2 : (1 : ℝ≥0∞) ≤ (K : ℝ≥0∞) ^ 2 * ENNReal.ofReal |(fderiv ℝ f x).det| := by
           rw [show (K : ℝ≥0∞) ^ 2 = ENNReal.ofReal ((K : ℝ) ^ 2) by
-            rw [ENNReal.ofReal_pow (NNReal.coe_nonneg K), ENNReal.ofReal_coe_nnreal],
+            simp,
             ← ENNReal.ofReal_mul hK2.le]
           simpa using ENNReal.ofReal_le_ofReal h1
         calc h (f x) = 1 * h (f x) := (one_mul _).symm
@@ -309,7 +308,7 @@ lemma norm_integral_mul_le_eLpNorm {μ : Measure ℂ} {A B : ℂ → ℂ} (hA : 
     rw [L2.inner_def]
     refine integral_congr_ae ?_
     filter_upwards [hA'.coeFn_toLp, hB.coeFn_toLp] with x h1 h2
-    simp only [h1, h2, RCLike.inner_apply, Complex.conj_conj, mul_comm]
+    simp [h1, h2, RCLike.inner_apply, Complex.conj_conj, mul_comm]
   rw [key]
   refine (norm_inner_le_norm _ _).trans (le_of_eq ?_)
   rw [Lp.norm_toLp, Lp.norm_toLp]
@@ -397,11 +396,11 @@ theorem integral_comp_mul_fderiv_bilip (hΩ : IsOpen Ω) (hK : 0 < K) (hf : Lips
     (hG : IsWeakGradient (f '' Ω) v G) {θ : ℂ → ℂ} (hθ : TestFunction Ω θ) (i : Fin 2) :
     ∫ x in Ω, (v : ℂ → ℂ) (f x) * fderiv ℝ θ x (coordDir i) =
       -∫ x in Ω, chainGrad f (fun j => (G j : ℂ → ℂ)) i x * θ x := by
-  have hΩ' : IsOpen (f '' Ω) := f.isOpenMap Ω hΩ
+  have hΩ' := f.isOpenMap Ω hΩ
   set V := extZero (f '' Ω) v
   set Gx : Fin 2 → ℂ → ℂ := fun j => extZero (f '' Ω) (G j)
-  have hV : MemLp V 2 volume := memLp_extZero hΩ'.measurableSet v
-  have hGx : ∀ j, MemLp (Gx j) 2 volume := fun j => memLp_extZero hΩ'.measurableSet (G j)
+  have hV := memLp_extZero hΩ'.measurableSet v
+  have hGx := fun j => memLp_extZero hΩ'.measurableSet (G j)
   set r : ℕ → ℝ := fun k => 1 / ((k : ℝ) + 1)
   have hr : ∀ k, 0 < r k := fun k => by positivity
   set φ : ℕ → ContDiffBump (0 : ℂ) := fun k => ⟨r k / 2, r k, by linarith [hr k], by linarith [hr k]⟩
@@ -509,7 +508,7 @@ theorem isWeakGradient_comp_bilip (hΩ : IsOpen Ω) (hK : 0 < K) (hf : Lipschitz
   intro θ hθ i
   have e : ∫ x in Ω, (u : ℂ → ℂ) x * fderiv ℝ θ x (coordDir i) =
       ∫ x in Ω, (v : ℂ → ℂ) (f x) * fderiv ℝ θ x (coordDir i) :=
-    integral_congr_ae (hu.mono fun x hx => by simp only [hx])
+    integral_congr_ae (hu.mono fun x hx => by simp [hx])
   rw [e, integral_comp_mul_fderiv_bilip hΩ hK hf hg hG hθ i]
   congr 1
   refine integral_congr_ae ?_

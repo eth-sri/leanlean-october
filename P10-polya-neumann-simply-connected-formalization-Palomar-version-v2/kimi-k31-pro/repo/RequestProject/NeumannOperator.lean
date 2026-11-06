@@ -26,8 +26,6 @@ namespace PolyaNeumann
 def neumannResolvent (Ω : Set ℂ) : L2 Ω →L[ℂ] L2 Ω :=
   (h1Value Ω).comp (ContinuousLinearMap.adjoint (h1Value Ω))
 
-@[simp] theorem neumannResolvent_apply (Ω : Set ℂ) (f : L2 Ω) :
-    neumannResolvent Ω f = h1Value Ω (ContinuousLinearMap.adjoint (h1Value Ω) f) := rfl
 
 theorem neumannResolvent_inner (Ω : Set ℂ) (f g : L2 Ω) :
     ⟪neumannResolvent Ω f, g⟫_ℂ =
@@ -92,8 +90,6 @@ theorem neumannShiftedOperator_domain (Ω : Set ℂ) :
 def neumannShiftedVector (Ω : Set ℂ) (f : L2 Ω) : (neumannShiftedOperator Ω).domain :=
   ⟨neumannResolvent Ω f, by rw [neumannShiftedOperator_domain]; exact ⟨f, rfl⟩⟩
 
-@[simp] theorem neumannShiftedVector_coe (Ω : Set ℂ) (f : L2 Ω) :
-    (neumannShiftedVector Ω f : L2 Ω) = neumannResolvent Ω f := rfl
 
 theorem neumannShiftedOperator_apply_vector {Ω : Set ℂ} (hΩ : IsOpen Ω) (f : L2 Ω) :
     neumannShiftedOperator Ω (neumannShiftedVector Ω f) = f := by
@@ -102,7 +98,7 @@ theorem neumannShiftedOperator_apply_vector {Ω : Set ℂ} (hΩ : IsOpen Ω) (f 
     intro u hu
     apply Subtype.ext
     exact (neumannResolvent_injective hΩ).eq_iff.mp
-      (by rw [ZeroMemClass.coe_zero, map_zero]; exact hu)
+      (by simp; exact hu)
   exact LinearPMap.inverse_apply_eq hker (x := ⟨f, Submodule.mem_top⟩) rfl
 
 theorem neumannResolvent_shiftedOperator {Ω : Set ℂ} (hΩ : IsOpen Ω)
@@ -171,7 +167,7 @@ theorem neumannOperator_form_representation {Ω : Set ℂ} (hΩ : IsOpen Ω)
         neumannShiftedOperator Ω ⟨h1Value Ω u, hu⟩ = f + h1Value Ω u) := by
     change (∃ hu : h1Value Ω u ∈ (neumannShiftedOperator Ω).domain,
       neumannShiftedOperator Ω ⟨h1Value Ω u, hu⟩ - h1Value Ω u = f) ↔ _
-    simp only [sub_eq_iff_eq_add]
+    simp [sub_eq_iff_eq_add]
   rw [hl, hshift]
   apply forall_congr'
   intro v
@@ -242,12 +238,10 @@ theorem neumannOperator_nonneg {Ω : Set ℂ} (hΩ : IsOpen Ω)
 def neumannOperatorVector (Ω : Set ℂ) (f : L2 Ω) : (neumannOperator Ω).domain :=
   neumannShiftedVector Ω f
 
-@[simp] theorem neumannOperatorVector_coe (Ω : Set ℂ) (f : L2 Ω) :
-    (neumannOperatorVector Ω f : L2 Ω) = neumannResolvent Ω f := rfl
 
 theorem neumannOperator_apply_vector {Ω : Set ℂ} (hΩ : IsOpen Ω) (f : L2 Ω) :
     neumannOperator Ω (neumannOperatorVector Ω f) = f - neumannResolvent Ω f := by
-  rw [neumannOperator_apply]
+  simp
   exact congrArg (fun x => x - neumannResolvent Ω f)
     (neumannShiftedOperator_apply_vector hΩ f)
 
@@ -255,7 +249,7 @@ theorem neumannOperator_apply_vector {Ω : Set ℂ} (hΩ : IsOpen Ω) (f : L2 Ω
 theorem neumannResolvent_operator {Ω : Set ℂ} (hΩ : IsOpen Ω)
     (u : (neumannOperator Ω).domain) :
     neumannResolvent Ω (neumannOperator Ω u + (u : L2 Ω)) = (u : L2 Ω) := by
-  rw [neumannOperator_apply, sub_add_cancel]
+  simp
   exact neumannResolvent_shiftedOperator hΩ u
 
 /-- The inverse spectral parameter is proved from both resolvent identities. -/

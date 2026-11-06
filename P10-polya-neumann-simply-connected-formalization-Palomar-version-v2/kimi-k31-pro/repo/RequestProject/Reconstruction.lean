@@ -173,9 +173,8 @@ lemma IsReconSol.ae_eq_zero_exterior (hb : Bornology.IsBounded Ω) (hL : IsLipsc
   rw [intervalIntegral.integral_congr (g := fun _ => (0 : ℂ)), intervalIntegral.integral_zero]
   intro θ hθ
   rw [uIcc_of_le (by positivity)] at hθ
-  have hmem : γ θ ∈ closure Ω := frontier_subset_closure (hγ.image ▸ mem_image_of_mem γ hθ)
-  have hnot : γ θ ∉ tsupport φ := fun h' => hφ.2.2 h' hmem
-  simp [fderiv_of_notMem_tsupport (𝕜 := ℝ) hnot]
+  have hmem := frontier_subset_closure (hγ.image ▸ mem_image_of_mem γ hθ)
+  simp [fderiv_of_notMem_tsupport (𝕜 := ℝ) (fun h' => hφ.2.2 h' hmem)]
 
 lemma contDiff_ePlane (ξ : ℂ) : ContDiff ℝ (⊤ : ℕ∞) (ePlane ξ) := by
   unfold ePlane
@@ -193,7 +192,7 @@ lemma memLp_indicator_of_bound {Ω : Set ℂ} (hb : Bornology.IsBounded Ω) (hΩ
 lemma hasCompactSupport_indicator_of_bounded {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
     (f : ℂ → ℂ) : HasCompactSupport (Ω.indicator f) :=
   IsCompact.of_isClosed_subset hb.isCompact_closure (isClosed_tsupport _)
-    (closure_mono (support_indicator_subset))
+    (closure_mono support_indicator_subset)
 
 lemma integral_indicator_combo {Ω : Set ℂ} (hΩ : MeasurableSet Ω) (V : ℂ → ℂ)
     (G' : Fin 2 → ℂ → ℂ) (L : ℂ → ℂ) (M : Fin 2 → ℂ → ℂ) :
@@ -213,7 +212,7 @@ theorem exists_reconSol (hb : Bornology.IsBounded Ω) (hL : IsLipschitzDomain Ω
         HasCompactSupport V ∧ (∀ θ ∈ Icc 0 (2 * π), V (γ θ) = h θ) ∧ MemLp w 2 volume ∧
         (∀ i, MemLp (gw i) 2 volume) ∧ IsWeakGradOn univ w gw ∧
         (u : ℂ → ℂ) =ᵐ[volume] fun z => Ω.indicator V z + w z := by
-  have hΩm : MeasurableSet Ω := hL.1.1.measurableSet
+  have hΩm := hL.1.1.measurableSet
   obtain ⟨⟨Kh, hKh⟩, hper, -⟩ := id hh
   obtain ⟨V, ⟨KV, hV⟩, hVc, hVh⟩ := exists_lipschitz_extension_of_trace hL hγ hKh hper
   obtain ⟨CV, hCV⟩ := hVc.exists_bound_of_continuous hV.continuous
@@ -297,7 +296,7 @@ lemma MemLp.locallyIntegrable_two {f : ℂ → ℂ} (hf : MemLp f 2 volume) :
 lemma integrable_bdd_mul_test {f : ℂ → ℂ} {μ : Measure ℂ} [IsFiniteMeasureOnCompacts μ]
     (hf : AEStronglyMeasurable f μ) {C : ℝ} (hC : ∀ z, ‖f z‖ ≤ C) {D : Set ℂ} {φ : ℂ → ℂ}
     (hφ : TestFunction D φ) : Integrable (fun z => f z * φ z) μ :=
-  ((hφ.1.continuous).integrable_of_hasCompactSupport hφ.2.1).bdd_mul hf
+  (hφ.1.continuous.integrable_of_hasCompactSupport hφ.2.1).bdd_mul hf
     (Eventually.of_forall hC)
 
 lemma norm_dirD_le_of_lipschitz {V : ℂ → ℂ} {K : NNReal} (hV : LipschitzWith K V) (v z : ℂ) :
@@ -350,12 +349,12 @@ lemma recon_key_identity (hb : Bornology.IsBounded Ω) (hL : IsLipschitzDomain �
       E * ∫ z in Ω, ψ z * u z := by
   have hΩo : IsOpen Ω := hL.1.1
   have hΩm : MeasurableSet Ω := hΩo.measurableSet
-  have hU : MeasurableSet (closure Ω)ᶜ := isClosed_closure.isOpen_compl.measurableSet
+
   obtain ⟨CV, hCV⟩ := hVc.exists_bound_of_continuous hV.continuous
   have h1 := hu ψ hψ
   rw [doubleLayer_eq_integral hb hL hγ hV hVc hVh hψ.1] at h1
   -- split the left side
-  have hiu : Integrable (fun z => u z * lap ψ z) := integrable_mul_test (Lp.memLp u) hψ.lap
+  have hiu := integrable_mul_test (Lp.memLp u) hψ.lap
   have hiu' : Integrable (fun z => u z * (E * ψ z)) :=
     integrable_mul_test (Lp.memLp u) (hψ.const_mul _)
   rw [show (fun z => u z * (lap ψ z + E * ψ z)) =
@@ -370,7 +369,7 @@ lemma recon_key_identity (hb : Bornology.IsBounded Ω) (hL : IsLipschitzDomain �
           by_cases hz : z ∈ Ω
           · simp [hz, hCV z]
           · simp [hz]; exact (norm_nonneg _).trans (hCV z)) hψ.lap
-    have hiw : Integrable (fun z => w z * lap ψ z) := integrable_mul_test hw hψ.lap
+    have hiw := integrable_mul_test hw hψ.lap
     rw [integral_congr_ae (g := fun z => Ω.indicator V z * lap ψ z + w z * lap ψ z),
       integral_add hiV hiw]
     swap
@@ -435,9 +434,9 @@ theorem IsReconSol.restrict_mem (hb : Bornology.IsBounded Ω) (hL : IsLipschitzD
     (hγ : IsBoundaryParam Ω γ) (hE : 0 < E) {h : ℝ → ℂ}
     (hh : h ∈ compatibleTraces γ E) {u : Lp ℂ 2 (volume : Measure ℂ)}
     (hu : IsReconSol γ E h u) : restrictL2 Ω u ∈ neumannEigenspace Ω E := by
-  have hΩo : IsOpen Ω := hL.1.1
-  have hΩm : MeasurableSet Ω := hΩo.measurableSet
-  have hUm : MeasurableSet (closure Ω)ᶜ := isClosed_closure.isOpen_compl.measurableSet
+
+  have hΩm : MeasurableSet Ω := (hL.1.1).measurableSet
+
   haveI : IsFiniteMeasure (volume.restrict Ω) := ⟨by
     rw [Measure.restrict_apply_univ]; exact hb.measure_lt_top⟩
   obtain ⟨u', hu', V, KV, w, gw, hV, hVc, hVh, hw, hgw, hwg, hue⟩ :=
@@ -446,7 +445,7 @@ theorem IsReconSol.restrict_mem (hb : Bornology.IsBounded Ω) (hL : IsLipschitzD
   obtain ⟨CV, hCV⟩ := hVc.exists_bound_of_continuous hV.continuous
   have hext := hu'.ae_eq_zero_exterior hb hL hγ hE
   have hw0 : ∀ᵐ z ∂(volume.restrict (closure Ω)ᶜ), w z = 0 := by
-    filter_upwards [hext, ae_restrict_of_ae hue, ae_restrict_mem hUm] with z h1 h2 h3
+    filter_upwards [hext, ae_restrict_of_ae hue, ae_restrict_mem (isClosed_closure.isOpen_compl.measurableSet)] with z h1 h2 h3
     have hzΩ : z ∉ Ω := fun h' => h3 (subset_closure h')
     rw [h2] at h1
     simpa [hzΩ] using h1
@@ -474,7 +473,7 @@ theorem IsReconSol.restrict_mem (hb : Bornology.IsBounded Ω) (hL : IsLipschitzD
       integrable_mul_test hw (hφ'.dirD (coordDir i))
     have hiDV : Integrable (fun z => dirD V (coordDir i) z * φ z) :=
       integrable_bdd_mul_test (aestronglyMeasurable_dirD V _) (norm_dirD_le_of_lipschitz hV _) hφ'
-    have hig : Integrable (fun z => gw i z * φ z) := integrable_mul_test (hgw i) hφ'
+    have hig := integrable_mul_test (hgw i) hφ'
     have e1 : ∫ z in Ω, (restrictL2 Ω u' : ℂ → ℂ) z * fderiv ℝ φ z (coordDir i) =
         ∫ z, (V z * fderiv ℝ φ z (coordDir i) + w z * fderiv ℝ φ z (coordDir i)) := by
       rw [integral_congr_ae (g := fun z => V z * fderiv ℝ φ z (coordDir i) +
@@ -591,7 +590,7 @@ theorem IsReconSol.trace_eq_zero (hb : Bornology.IsBounded Ω) (hL : IsLipschitz
       · simp [hzΩ]
       · have : z ∉ tsupport χ := fun h' => hzΩ (hχ.2.2 h')
         simp [fderiv_of_notMem_tsupport (𝕜 := ℝ) this]
-    have hig : Integrable (fun z => gw i z * χ z) := integrable_mul_test (hgw i) hχ'
+    have hig := integrable_mul_test (hgw i) hχ'
     have hiV : Integrable (fun z => dirD V (coordDir i) z * χ z) :=
       integrable_bdd_mul_test (aestronglyMeasurable_dirD V _) (norm_dirD_le_of_lipschitz hV _)
         hχ'
@@ -643,7 +642,7 @@ theorem IsReconSol.trace_eq_zero (hb : Bornology.IsBounded Ω) (hL : IsLipschitz
       simp
     · refine ae_restrict_of_ae ?_
       filter_upwards [hV.ae_differentiableAt] with z hz
-      have hφd : DifferentiableAt ℝ φ z := (hφ.1.differentiable (by simp)) z
+      have hφd := (hφ.1.differentiable (by simp)) z
       unfold dbar dirD
       rw [fderiv_fun_mul hz hφd]
       simp only [ContinuousLinearMap.add_apply, ContinuousLinearMap.smul_apply, smul_eq_mul,
@@ -656,7 +655,7 @@ theorem IsReconSol.trace_eq_zero (hb : Bornology.IsBounded Ω) (hL : IsLipschitz
     obtain ⟨Cφ, hCφ⟩ := hφ.2.1.exists_bound_of_continuous hφ.1.continuous
     obtain ⟨Kφ, hKφ⟩ := ContDiff.lipschitzWith_of_hasCompactSupport hφ.2.1 hφ.1 (by simp)
     obtain ⟨Kp, hKp⟩ := lipschitzWith_mul_of_bounded hV hKφ hCV hCφ
-    have hg := integral_boundary_eq_dbar hb hL hγ hKp (hVc.mul_right)
+    have hg := integral_boundary_eq_dbar hb hL hγ hKp hVc.mul_right
     rw [hdbar φ hφ, mul_zero] at hg
     rw [← hg]
     refine intervalIntegral.integral_congr fun θ hθ => ?_
@@ -696,7 +695,7 @@ theorem neumann_reconstruction_of_compatible (hb : Bornology.IsBounded Ω)
         Integrable (fun z => u z * (lap φ z + E * φ z)) := fun u =>
       integrable_mul_test (Lp.memLp u)
         (⟨hφ.lap.1.add (contDiff_const.mul hφ.1), (hφ.lap.2.1.add
-          (hφ.2.1.mul_left)), subset_univ _⟩ : TestFunction univ (fun z => lap φ z + E * φ z))
+          hφ.2.1.mul_left), subset_univ _⟩ : TestFunction univ (fun z => lap φ z + E * φ z))
     rw [integral_congr_ae (g := fun z => F h₁ z * (lap φ z + E * φ z) +
         F h₂ z * (lap φ z + E * φ z)), integral_add (hi _) (hi _), e1, e2,
       Submodule.coe_add, doubleLayer_add hK (continuousOn_of_mem_compatibleTraces h₁.2)

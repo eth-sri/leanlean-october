@@ -63,7 +63,7 @@ lemma eLpNorm_mollify_le (φ : ContDiffBump (0 : ℂ)) {H : ℂ → ℂ}
   have hρ1 : ∫⁻ t, ρ t = 1 := by
     rw [← ofReal_integral_eq_lintegral_ofReal φ.integrable_normed
       (Eventually.of_forall φ.nonneg_normed), φ.integral_normed, ENNReal.ofReal_one]
-  have hHm : AEMeasurable (fun t => ‖H t‖ₑ) volume := hH.enorm
+  have hHm := hH.enorm
   have hsub : AEMeasurable (fun p : ℂ × ℂ => ‖H (p.1 - p.2)‖ₑ) (volume.prod volume) :=
     hHm.comp_quasiMeasurePreserving (quasiMeasurePreserving_sub_of_right_invariant volume volume)
   have key : ∫⁻ x, ‖mollify (φ.normed volume) H x‖ₑ ^ 2 ≤ ∫⁻ x, ‖H x‖ₑ ^ 2 := by
@@ -76,7 +76,7 @@ lemma eLpNorm_mollify_le (φ : ContDiffBump (0 : ℂ)) {H : ℂ → ℂ}
             (hHm.comp_quasiMeasurePreserving (quasiMeasurePreserving_sub_left_of_right_invariant volume x)) hρ1
       _ = ∫⁻ t, ∫⁻ x, ρ t * ‖H (x - t)‖ₑ ^ 2 := by
           refine lintegral_lintegral_swap ?_
-          exact (hρm.aemeasurable.comp_snd).mul (hsub.pow_const 2)
+          exact hρm.aemeasurable.comp_snd.mul (hsub.pow_const 2)
       _ = ∫⁻ t, ρ t * ∫⁻ x, ‖H x‖ₑ ^ 2 := by
           refine lintegral_congr fun t => ?_
           rw [lintegral_const_mul' _ _ ENNReal.ofReal_ne_top,
@@ -88,7 +88,7 @@ lemma eLpNorm_mollify_le (φ : ContDiffBump (0 : ℂ)) {H : ℂ → ℂ}
       φ.continuous_normed.aestronglyMeasurable hH
   rw [eLpNorm_eq_lintegral_rpow_enorm_toReal (by norm_num) (by norm_num) hmm,
     eLpNorm_eq_lintegral_rpow_enorm_toReal (by norm_num) (by norm_num) hH]
-  simp only [ENNReal.toReal_ofNat, ENNReal.rpow_two]
+  simp
   gcongr
 lemma integrable_mollify_integrand (φ : ContDiffBump (0 : ℂ)) {H : ℂ → ℂ}
     (h : LocallyIntegrable H volume) (x : ℂ) :
@@ -101,7 +101,7 @@ lemma mollify_sub (φ : ContDiffBump (0 : ℂ)) {H₁ H₂ : ℂ → ℂ} (h1 : 
     mollify (φ.normed volume) (H₁ - H₂) =
       mollify (φ.normed volume) H₁ - mollify (φ.normed volume) H₂ := by
   ext x
-  simp only [mollify_apply, Pi.sub_apply, smul_sub]
+  simp [mollify_apply, Pi.sub_apply, smul_sub]
   exact integral_sub (integrable_mollify_integrand φ h1 x) (integrable_mollify_integrand φ h2 x)
 
 lemma continuous_mollify (φ : ContDiffBump (0 : ℂ)) {H : ℂ → ℂ}
@@ -140,10 +140,9 @@ lemma tendsto_mollify_L2_of_continuous {φ : ℕ → ContDiffBump (0 : ℂ)}
     Tendsto (fun k => eLpNorm (mollify ((φ k).normed volume) F - F) 2 volume) atTop (𝓝 0) := by
   set S := cthickening 1 (tsupport F)
   have hS : IsCompact S := hFs.isCompact.cthickening
-  have hSf : volume S ≠ ⊤ := hS.measure_lt_top.ne
   set C := volume S ^ (1 / (2 : ℝ≥0∞).toReal)
-  have hC : C ≠ ⊤ := ENNReal.rpow_ne_top_of_nonneg (by norm_num) hSf
-  have hU : UniformContinuous F := hFs.uniformContinuous_of_continuous hF
+
+  have hU := hFs.uniformContinuous_of_continuous hF
   have bound : ∀ ε > 0, ∀ᶠ k in atTop,
       eLpNorm (mollify ((φ k).normed volume) F - F) 2 volume ≤ ENNReal.ofReal ε * C := by
     intro ε hε
@@ -158,7 +157,7 @@ lemma tendsto_mollify_L2_of_continuous {φ : ℕ → ContDiffBump (0 : ℂ)}
       refine hx (mollify_eq_zero_of_notMem _ fun h => hxS ?_)
       exact cthickening_mono ((lt_min_iff.mp hk).2.le) _ h
     · exact self_subset_cthickening _ (subset_tsupport F hx)
-  exact tendsto_zero_of_eventually_le_mul hC bound
+  exact tendsto_zero_of_eventually_le_mul (ENNReal.rpow_ne_top_of_nonneg (by norm_num) (hS.measure_lt_top.ne)) bound
 /-- Mollifications of an `L²` function converge to it in `L²`. -/
 theorem tendsto_mollify_L2 {φ : ℕ → ContDiffBump (0 : ℂ)}
     (hφ : Tendsto (fun k => (φ k).rOut) atTop (𝓝 0)) {H : ℂ → ℂ} (hH : MemLp H 2 volume) :
@@ -166,8 +165,8 @@ theorem tendsto_mollify_L2 {φ : ℕ → ContDiffBump (0 : ℂ)}
   refine tendsto_zero_of_eventually_le_mul (C := 3) (by norm_num) fun ε hε => ?_
   obtain ⟨G, hGs, hHG, hG, hGL⟩ := hH.exists_hasCompactSupport_eLpNorm_sub_le (by norm_num)
     (ENNReal.ofReal_pos.mpr hε).ne'
-  have hHl : LocallyIntegrable H volume := hH.locallyIntegrable (by norm_num)
-  have hGl : LocallyIntegrable G volume := hGL.locallyIntegrable (by norm_num)
+  have hHl := hH.locallyIntegrable (by norm_num)
+  have hGl := hGL.locallyIntegrable (by norm_num)
   filter_upwards [(tendsto_mollify_L2_of_continuous hφ hG hGs).eventually
     (eventually_le_nhds (ENNReal.ofReal_pos.mpr hε))] with k hk
   have e : mollify ((φ k).normed volume) H - H =
@@ -175,7 +174,7 @@ theorem tendsto_mollify_L2 {φ : ℕ → ContDiffBump (0 : ℂ)}
     rw [mollify_sub _ hHl hGl]; abel
   have m1 := (continuous_mollify (φ k) (hHl.sub hGl)).aestronglyMeasurable (μ := volume)
   have m2 := ((continuous_mollify (φ k) hGl).sub hG).aestronglyMeasurable (μ := volume)
-  have m3 : AEStronglyMeasurable (G - H) volume := hG.aestronglyMeasurable.sub hH.aestronglyMeasurable
+  have m3 := hG.aestronglyMeasurable.sub hH.aestronglyMeasurable
   rw [e]
   calc eLpNorm (mollify ((φ k).normed volume) (H - G) + (mollify ((φ k).normed volume) G - G)
         + (G - H)) 2 volume

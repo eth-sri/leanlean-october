@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.TwoPi
 public import RequestProject.HardyPrimitiveTrace
 public import RequestProject.VolterraIterateBound
 
@@ -32,7 +33,6 @@ namespace PolyaNeumann
 open MeasureTheory
 open scoped InnerProductSpace
 
-local instance hardyVolterraTwoPiPos : Fact (0 < 2 * Real.pi) := ⟨Real.two_pi_pos⟩
 
 /-- Uniform Fourier synthesis as an actual continuous circle function. -/
 def hardyCircleReconstruction (c : ℤ → ℂ) : C(AddCircle (2 * Real.pi), ℂ) :=
@@ -146,7 +146,7 @@ theorem hardyFourierTrace_antiPrimIter_eq_volterraPrimitiveIterate
   induction j with
   | zero =>
       intro θ
-      simp only [antiPrimIter, Function.iterate_zero, id_eq, volterraPrimitiveIterate]
+      simp [antiPrimIter, Function.iterate_zero, id_eq, volterraPrimitiveIterate]
   | succ j ih =>
       intro θ
       have hj : antiPrimIter (fourierCoeff A) (j + 1) h =
@@ -163,7 +163,7 @@ theorem hardyFourierTrace_antiPrimIter_eq_volterraPrimitiveIterate
         hAn (antiPrimIter_nonpositive hAn hhn j) θ]
       apply intervalIntegral.integral_congr
       intro s _
-      dsimp only
+      dsimp
       rw [ih s]
 
 /-- The genuine derivative of each reconstructed successor iterate. -/

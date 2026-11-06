@@ -86,7 +86,7 @@ lemma norm_planeWave_sub_le (k : ℝ) (z w : ℂ) (φ : ℝ) :
       (Complex.exp (Complex.I * ((-(k * ((z - w) * e).re) : ℝ) : ℂ)) - 1) := by
     rw [planeWave_eq, planeWave_eq, mul_sub, mul_one, ← Complex.exp_add]
     congr 2
-    simp only [sub_mul, Complex.sub_re]
+    simp
     push_cast
     ring
   rw [h, norm_mul, norm_planeWave, one_mul]
@@ -120,8 +120,8 @@ lemma coeffIntegral_eq_fourierCoeffOn (f : ℝ → ℂ) (m : ℤ) :
     rw [fourier_coe_apply]
     congr 2
     have : (2 * π - 0 : ℝ) = 2 * π := by ring
-    rw [this]
-    have hπ : (π : ℂ) ≠ 0 := by exact_mod_cast Real.pi_ne_zero
+    simp
+
     push_cast
     field_simp
 
@@ -131,7 +131,7 @@ lemma intervalIntegrable_herglotz {a : ℝ → ℂ} (ha : IntervalIntegrable a v
       (a φ * planeWave k z φ)) volume 0 (2 * π) := by
   have := ha.continuousOn_mul
     ((continuous_exp_neg_mul m).mul (continuous_planeWave k z)).continuousOn
-  exact this.congr fun φ _ => by simp only [Pi.mul_apply]; ring
+  exact this.congr fun φ _ => by simp; ring
 
 lemma herglotzCoeff_eq_fourierCoeffOn (k : ℝ) (a : ℝ → ℂ) (m : ℤ) (z : ℂ) :
     herglotzCoeff k a m z =
@@ -175,7 +175,7 @@ lemma hasSum_sq_herglotzCoeff_sub {a : ℝ → ℂ} (ha : IsDirDensity a) (k : �
   rw [smul_eq_mul, sub_zero]
   congr 1
   refine intervalIntegral.integral_congr fun φ _ => ?_
-  simp only [norm_mul, mul_pow]
+  simp [norm_mul, mul_pow]
 
 lemma summable_sq_herglotzCoeff {a : ℝ → ℂ} (ha : IsDirDensity a) (k : ℝ) (z : ℂ) :
     Summable (fun m : ℤ => ‖herglotzCoeff k a m z‖ ^ 2) := by
@@ -244,7 +244,7 @@ lemma norm_herglotzVec_sub_le {a : ℝ → ℂ} (ha : IsDirDensity a) (k : ℝ) 
   have hsumZ := hasSum_sq_herglotzCoeff_sub ha k z w
   have hcoord : ∀ n, ((herglotzVec ha k z - herglotzVec ha k w : Ell2) : ℕ → ℂ) n =
       herglotzSeq k a z n - herglotzSeq k a w n := fun n => by
-    rw [lp.coeFn_sub, Pi.sub_apply, herglotzVec_apply, herglotzVec_apply]
+    simp
   have hsq : ‖herglotzVec ha k z - herglotzVec ha k w‖ ^ 2 ≤ k ^ 2 * A * ‖z - w‖ ^ 2 := by
     rw [← tsum_sq_eq_norm_sq]
     simp_rw [hcoord]
@@ -253,7 +253,7 @@ lemma norm_herglotzVec_sub_le {a : ℝ → ℂ} (ha : IsDirDensity a) (k : ℝ) 
           refine Summable.tsum_le_tsum (fun n => norm_herglotzSeq_le k a z w n) ?_
             (hsumZ.summable.comp_injective Nat.cast_injective)
           have := summable_sq (herglotzVec ha k z - herglotzVec ha k w)
-          simpa [hcoord] using this
+          simpa using this
       _ ≤ ∑' m : ℤ, ‖herglotzCoeff k a m z - herglotzCoeff k a m w‖ ^ 2 :=
           Summable.tsum_le_tsum_of_inj ((↑) : ℕ → ℤ) Nat.cast_injective
             (fun _ _ => by positivity) (fun _ => le_rfl)
@@ -271,15 +271,14 @@ lemma norm_herglotzVec_sub_le {a : ℝ → ℂ} (ha : IsDirDensity a) (k : ℝ) 
       _ = k ^ 2 * A * ‖z - w‖ ^ 2 := by
           rw [intervalIntegral.integral_mul_const, hA, mul_pow, sq_abs]
           ring
-  have hR : 0 ≤ |k| * Real.sqrt A * ‖z - w‖ := by positivity
-  refine (pow_le_pow_iff_left₀ (norm_nonneg _) hR two_ne_zero).mp (hsq.trans (le_of_eq ?_))
+  refine (pow_le_pow_iff_left₀ (norm_nonneg _) (by positivity) two_ne_zero).mp (hsq.trans (le_of_eq ?_))
   rw [mul_pow, mul_pow, sq_abs, Real.sq_sqrt hA0]
 
 lemma continuous_herglotzVec {a : ℝ → ℂ} (ha : IsDirDensity a) (k : ℝ) :
     Continuous (herglotzVec ha k) := by
   set C := |k| * Real.sqrt ((2 * π)⁻¹ * ∫ φ in (0 : ℝ)..(2 * π), ‖a φ‖ ^ 2)
-  have hC : 0 ≤ C := by positivity
-  refine (LipschitzWith.of_dist_le_mul (K := ⟨C, hC⟩) fun z w => ?_).continuous
+
+  refine (LipschitzWith.of_dist_le_mul (K := ⟨C, (by positivity)⟩) fun z w => ?_).continuous
   rw [dist_eq_norm, dist_eq_norm]
   exact norm_herglotzVec_sub_le ha k z w
 
@@ -291,7 +290,7 @@ lemma norm_herglotzCoeff_le {a : ℝ → ℂ} (k : ℝ) (m : ℤ) (z : ℂ) :
   gcongr
   refine (intervalIntegral.norm_integral_le_integral_norm (by positivity)).trans (le_of_eq ?_)
   refine intervalIntegral.integral_congr fun φ _ => ?_
-  simp only [norm_mul, norm_planeWave, mul_one]
+  simp [norm_mul, norm_planeWave, mul_one]
   rw [Complex.norm_exp]
   simp
 
@@ -345,21 +344,21 @@ lemma hasFDerivAt_herglotzCoeff {a : ℝ → ℂ} (ha : IntervalIntegrable a vol
     ∃ L : ℂ →L[ℝ] ℂ, HasFDerivAt (herglotzCoeff k a m) L z ∧ ∀ w, L w =
       -(Complex.I * k / 2) * (w * herglotzCoeff k a (m + 1) z +
         conj w * herglotzCoeff k a (m - 1) z) := by
-  set c : ℂ := -(Complex.I * k)
+  set c := -(Complex.I * k)
   set ex : ℝ → ℂ := fun φ => Complex.exp (-((m : ℂ) * φ * Complex.I)) with hex
   set F : ℂ → ℝ → ℂ := fun z φ => ex φ * (a φ * planeWave k z φ) with hF
   set F' : ℂ → ℝ → ℂ →L[ℝ] ℂ := fun z φ => (ex φ * a φ * planeWave k z φ * c) • reMulCLM φ
     with hF'
   have ham : AEStronglyMeasurable a (volume.restrict (Ι 0 (2 * π))) :=
     (intervalIntegrable_iff.mp ha).aestronglyMeasurable
-  have hexc : Continuous ex := continuous_exp_neg_mul m
+  have hexc := continuous_exp_neg_mul m
   have hnex : ∀ φ, ‖ex φ‖ = 1 := fun φ => by rw [hex, Complex.norm_exp]; simp
-  have hF'meas : ∀ z, AEStronglyMeasurable (F' z) (volume.restrict (Ι 0 (2 * π))) := fun z =>
+  have hF'meas := fun z =>
     (((hexc.aestronglyMeasurable.mul ham).mul
       (continuous_planeWave k z).aestronglyMeasurable).mul_const c).smul
         continuous_reMulCLM.aestronglyMeasurable
   have hbound : ∀ z φ, ‖F' z φ‖ ≤ |k| * ‖a φ‖ := fun z φ => by
-    simp only [hF', norm_smul, norm_mul, hnex, norm_planeWave, one_mul, mul_one]
+    simp [hF', norm_smul, norm_mul, hnex, norm_planeWave, one_mul, mul_one]
     have hc : ‖c‖ = |k| := by simp [c, Complex.norm_real]
     rw [hc, mul_comm (‖a φ‖)]
     calc |k| * ‖a φ‖ * ‖reMulCLM φ‖ ≤ |k| * ‖a φ‖ * 1 := by gcongr; exact norm_reMulCLM_le φ
@@ -373,7 +372,7 @@ lemma hasFDerivAt_herglotzCoeff {a : ℝ → ℂ} (ha : IntervalIntegrable a vol
     have := (hasFDerivAt_planeWave k z φ).const_mul (ex φ * a φ)
     rw [smul_smul] at this
     convert this using 1
-    · funext z; simp only [hF]; ring
+    · funext z; simp [hF]; ring
     · simp only [hF']; congr 1; ring
   have hint : HasFDerivAt (fun z => ∫ φ in (0 : ℝ)..(2 * π), F z φ)
       (∫ φ in (0 : ℝ)..(2 * π), F' z φ) z :=
@@ -391,7 +390,7 @@ lemma hasFDerivAt_herglotzCoeff {a : ℝ → ℂ} (ha : IntervalIntegrable a vol
   rw [show ∀ A B : ℂ, -(Complex.I * k / 2) * (w * (((2 * π : ℝ) : ℂ)⁻¹ * A) +
       conj w * (((2 * π : ℝ) : ℂ)⁻¹ * B)) =
       ((2 * π : ℝ) : ℂ)⁻¹ * ((c / 2 * w) * A + (c / 2 * conj w) * B) from fun A B => by
-        simp only [c]; ring]
+        simp; ring]
   congr 1
   rw [← intervalIntegral.integral_const_mul, ← intervalIntegral.integral_const_mul,
     ← intervalIntegral.integral_add (h1.const_mul _) (h2.const_mul _)]
@@ -403,7 +402,7 @@ lemma hasFDerivAt_herglotzCoeff {a : ℝ → ℂ} (ha : IntervalIntegrable a vol
   have e2 : Complex.exp (-((m : ℂ) * φ * Complex.I)) * conj (Complex.exp (-(φ * Complex.I))) =
       Complex.exp (-(((m - 1 : ℤ) : ℂ) * φ * Complex.I)) := by
     rw [← Complex.exp_conj, ← Complex.exp_add]; congr 1
-    simp only [map_neg, map_mul, Complex.conj_ofReal, Complex.conj_I]; push_cast; ring
+    simp; push_cast; ring
   rw [← e1, ← e2]
   ring
 
@@ -430,10 +429,8 @@ lemma norm_fderiv_herglotzCoeff_le {a : ℝ → ℂ} (ha : IntervalIntegrable a 
     positivity
   refine ContinuousLinearMap.opNorm_le_bound _ (by positivity) fun w => ?_
   rw [fderiv_herglotzCoeff_apply ha, norm_mul]
-  have hc : ‖-(Complex.I * k / 2)‖ = |k| / 2 := by
-    rw [norm_neg, norm_div, norm_mul, Complex.norm_I, one_mul, Complex.norm_real,
-      Real.norm_eq_abs]; norm_num
-  rw [hc]
+
+  simp
   have h1 := norm_herglotzCoeff_le (a := a) k (m + 1) z
   have h2 := norm_herglotzCoeff_le (a := a) k (m - 1) z
   calc |k| / 2 * ‖w * herglotzCoeff k a (m + 1) z + conj w * herglotzCoeff k a (m - 1) z‖
@@ -465,11 +462,11 @@ lemma herglotzConormal_eq {a : ℝ → ℂ} (ha : IntervalIntegrable a volume 0 
     (k : ℝ) (γ : ℝ → ℂ) (θ : ℝ) :
     herglotzConormal k a γ θ = (k / 2 : ℂ) * (conj (deriv γ θ) * herglotzCoeff k a (-1) (γ θ) -
       deriv γ θ * herglotzCoeff k a 1 (γ θ)) := by
-  have hw : herglotzWave k a = herglotzCoeff k a 0 := funext (herglotzWave_eq k a)
+  have hw := funext (herglotzWave_eq k a)
   rw [herglotzConormal, hw, fderiv_herglotzCoeff_apply ha]
-  simp only [zero_add, zero_sub, map_neg, map_mul, Complex.conj_I]
+  simp
   ring_nf
-  rw [Complex.I_sq]
+  simp
   ring
 
 /-- Along a Lipschitz curve, `F_m ∘ γ` is the primitive of
@@ -514,16 +511,15 @@ lemma herglotzConormal_bounded {a : ℝ → ℂ} (ha : IntervalIntegrable a volu
     exact (((Complex.continuous_conj.comp_aestronglyMeasurable hd).mul hc1).sub
       (hd.mul hc2)).const_mul _
   · rw [hf, norm_mul]
-    have hk : ‖(k / 2 : ℂ)‖ = |k| / 2 := by
-      rw [norm_div, Complex.norm_real, Real.norm_eq_abs]; norm_num
-    rw [hk]
+
+    simp
     have hγ' := norm_deriv_le_of_lipschitzWith hK s
     have h1 := norm_herglotzCoeff_le (a := a) k (-1) (γ s)
     have h2 := norm_herglotzCoeff_le (a := a) k 1 (γ s)
     gcongr
     refine (norm_sub_le _ _).trans ?_
     rw [norm_mul, norm_mul, Complex.norm_conj]
-    have hA : 0 ≤ A := (norm_nonneg _).trans h1
+    have hA := (norm_nonneg _).trans h1
     gcongr
 
 /-- **Lemma 4.4 (driven equation of the Herglotz data).** For a Lipschitz curve `γ`, `E ≥ 0`
@@ -536,7 +532,7 @@ theorem herglotz_driven {a : ℝ → ℂ} (ha : IsDirDensity a) {γ : ℝ → �
         (-(Complex.I / (Real.sqrt 2 : ℂ)) * herglotzConormal (Real.sqrt E) a γ s) •
           basisVec 0) := by
   have hai := ha.intervalIntegrable
-  set c : ℂ := -(Complex.I / (Real.sqrt 2 : ℂ)) with hc
+  set c := -(Complex.I / (Real.sqrt 2 : ℂ)) with hc
   obtain ⟨hgm, B, hgB⟩ := herglotzConormal_bounded hai (Real.sqrt E) hK
   have hyc : Continuous fun s => herglotzVec ha (Real.sqrt E) (γ s) :=
     (continuous_herglotzVec ha _).comp hK.continuous
@@ -561,7 +557,7 @@ theorem herglotz_driven {a : ℝ → ℂ} (ha : IsDirDensity a) {γ : ℝ → �
   have hcoordInt : ∀ n, ((∫ s in (0 : ℝ)..θ, G s : Ell2) : ℕ → ℂ) n =
       ∫ s in (0 : ℝ)..θ, (G s : ℕ → ℂ) n := fun n => by
     have := (innerSL ℂ (basisVec n)).intervalIntegral_comp_comm hGint
-    simp only [innerSL_apply_apply, basisVec, inner_single] at this
+    simp [innerSL_apply_apply, basisVec, inner_single] at this
     exact this.symm
   have hr2 : (Real.sqrt 2 : ℂ) * (Real.sqrt 2 : ℂ) = 2 := by
     rw [← Complex.ofReal_mul, Real.mul_self_sqrt (by norm_num)]; norm_num
@@ -573,7 +569,7 @@ theorem herglotz_driven {a : ℝ → ℂ} (ha : IsDirDensity a) {γ : ℝ → �
     split_ifs with h
     · subst h; rw [div_eq_mul_inv, hrinv, Nat.cast_zero]
       linear_combination (herglotzCoeff (Real.sqrt E) a 0 z / 2) * hr2
-    · rw [one_mul]
+    · simp
   have hGn : ∀ s n, (G s : ℕ → ℂ) n = (-(Complex.I * (Real.sqrt E : ℂ)) / 2) *
       (deriv γ s * (shiftWeight n * herglotzSeq (Real.sqrt E) a (γ s) (n + 1)) +
         conj (deriv γ s) * (shiftN (herglotzVec ha (Real.sqrt E) (γ s)) : ℕ → ℂ) n) +
@@ -587,13 +583,13 @@ theorem herglotz_driven {a : ℝ → ℂ} (ha : IsDirDensity a) {γ : ℝ → �
       herglotzCoeff (Real.sqrt E) a ((j + 1 : ℕ) : ℤ) z := fun j z => if_neg (Nat.succ_ne_zero j)
   refine lp.ext (funext fun n => ?_)
   rw [lp.coeFn_add, Pi.add_apply, hcoordInt n]
-  simp only [hGn, herglotzVec_apply]
+  simp [hGn, herglotzVec_apply]
   rcases n with _ | j
-  · simp only [shiftN_apply_zero, mul_zero, add_zero, hs0, hs1]
+  · simp [shiftN_apply_zero, mul_zero, add_zero, hs0, hs1]
     rw [herglotzCoeff_comp_eq hai _ 0 hK θ, add_div, ← intervalIntegral.integral_div]
     congr 1
     refine intervalIntegral.integral_congr fun s _ => ?_
-    simp only [hc, herglotzConormal_eq hai, shiftWeight, zero_add, zero_sub,
+    simp [hc, herglotzConormal_eq hai, shiftWeight, zero_add, zero_sub,
       Nat.cast_one, if_true, mul_one]
     rw [div_eq_mul_inv, div_eq_mul_inv _ (Real.sqrt 2 : ℂ), hrinv]
     ring_nf
@@ -603,7 +599,7 @@ theorem herglotz_driven {a : ℝ → ℂ} (ha : IsDirDensity a) {γ : ℝ → �
     rw [herglotzCoeff_comp_eq hai _ ((j + 1 : ℕ) : ℤ) hK θ, e1, e2]
     congr 1
     refine intervalIntegral.integral_congr fun s _ => ?_
-    simp only [shiftWeight, Nat.succ_ne_zero, if_false, one_mul]
+    simp [shiftWeight, Nat.succ_ne_zero, if_false, one_mul]
     push_cast
     ring
 
@@ -623,7 +619,7 @@ lemma herglotzCoeff_zero_eq_fourierCoeff [Fact (0 < 2 * π)] (f : AddCircle (2 *
     simp only [planeWave_zero, mul_one, smul_eq_mul]
     rw [fourier_coe_apply]
     congr 2
-    have hπ : (π : ℂ) ≠ 0 := by exact_mod_cast Real.pi_ne_zero
+
     push_cast
     field_simp
 
@@ -632,10 +628,8 @@ direction density `a` with `y_a(0) = v` (the value at the boundary origin `γ(0)
 theorem exists_herglotzVec_zero_eq (k : ℝ) (v : Ell2) :
     ∃ (a : ℝ → ℂ) (ha : IsDirDensity a), herglotzVec ha k 0 = v := by
   haveI : Fact (0 < 2 * π) := ⟨Real.two_pi_pos⟩
-  set r : ℂ := (Real.sqrt 2 : ℂ)
-  have hr2 : r * r = 2 := by
-    simp only [r]; rw [← Complex.ofReal_mul, Real.mul_self_sqrt (by norm_num)]; norm_num
-  have hr0 : r ≠ 0 := by intro h; rw [h, zero_mul] at hr2; norm_num at hr2
+  set r := (Real.sqrt 2 : ℂ)
+
   set c : ℤ → ℂ := fun m => if m = 0 then r * (v : ℕ → ℂ) 0 else
     if 0 < m then (v : ℕ → ℂ) m.toNat else 0 with hc
   have hnr : ‖r‖ ^ 2 = 2 := by
@@ -661,7 +655,7 @@ theorem exists_herglotzVec_zero_eq (k : ℝ) (v : Ell2) :
       ((hsv.mul_left 2).of_nonneg_of_le (fun _ => by positivity) fun n => (hbound n).2)
   have hcm : Memℓp c 2 := by
     rw [memℓp_gen_iff (by simp)]
-    simpa [two_toReal] using hcs
+    simpa using hcs
   set f : Lp ℂ 2 (@AddCircle.haarAddCircle (2 * π) _) :=
     fourierBasis.repr.symm ⟨c, hcm⟩ with hf
   have hfc : ∀ m, fourierCoeff f m = c m := fun m => by
@@ -670,15 +664,15 @@ theorem exists_herglotzVec_zero_eq (k : ℝ) (v : Ell2) :
     memLp_haarAddCircle_iff.mp (Lp.memLp f)
   have ha : IsDirDensity fun φ : ℝ => (f : AddCircle (2 * π) → ℂ) φ := by
     have := hfm.comp_measurePreserving (AddCircle.measurePreserving_mk (2 * π) 0)
-    rw [zero_add] at this
+    simp at this
     exact this
   refine ⟨_, ha, lp.ext (funext fun n => ?_)⟩
-  rw [herglotzVec_apply]
+  simp
   unfold herglotzSeq
   split_ifs with hn
   · subst hn
     rw [herglotzCoeff_zero_eq_fourierCoeff, hfc]
-    simp only [hc, if_true]
+    simp [hc, if_true]
     field_simp
     simp only [r]
     ring

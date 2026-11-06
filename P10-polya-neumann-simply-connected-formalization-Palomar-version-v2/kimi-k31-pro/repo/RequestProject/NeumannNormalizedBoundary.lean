@@ -77,7 +77,7 @@ private theorem normalized_trace_sandwich_pole
       c • (d • (Q.comp (P.comp (ContinuousLinearMap.adjoint Q)))) +
         Q.comp (R.comp (ContinuousLinearMap.adjoint Q)) := by
   rw [hA, ha]
-  simp only [ContinuousLinearMap.add_comp, ContinuousLinearMap.comp_add,
+  simp [ContinuousLinearMap.add_comp, ContinuousLinearMap.comp_add,
     ContinuousLinearMap.smul_comp, ContinuousLinearMap.comp_smul, smul_smul]
 
 end HilbertBarriers
@@ -99,8 +99,7 @@ def IsNormalizedNeumannSolution (E : ℝ) (b : L2Z) (u : NeumannH1 Ω) : Prop :=
 
 theorem isNormalizedNeumannSolution_iff (E : ℝ) (b : L2Z) (u : NeumannH1 Ω) :
     IsNormalizedNeumannSolution Q E b u ↔
-      h1HelmholtzForm Ω E u = ContinuousLinearMap.adjoint Q b := by
-  exact normalized_trace_weak_iff (H := NeumannH1 Ω) (G := L2Z) Q
+      h1HelmholtzForm Ω E u = ContinuousLinearMap.adjoint Q b := normalized_trace_weak_iff (H := NeumannH1 Ω) (G := L2Z) Q
     (h1HelmholtzForm Ω E)
     (fun v w => (∑ i, ⟪h1Gradient Ω i v, h1Gradient Ω i w⟫_ℂ) -
       (E : ℂ) * ⟪h1Value Ω v, h1Value Ω w⟫_ℂ)
@@ -108,8 +107,7 @@ theorem isNormalizedNeumannSolution_iff (E : ℝ) (b : L2Z) (u : NeumannH1 Ω) :
 
 theorem normalizedNeumannPoisson_isSolution {E : ℝ}
     (hE : IsUnit (h1HelmholtzForm Ω E)) (b : L2Z) :
-    IsNormalizedNeumannSolution Q E b (normalizedNeumannPoisson Q E b) := by
-  exact normalized_trace_inverse_solution (H := NeumannH1 Ω) (G := L2Z) Q
+    IsNormalizedNeumannSolution Q E b (normalizedNeumannPoisson Q E b) := normalized_trace_inverse_solution (H := NeumannH1 Ω) (G := L2Z) Q
     (h1HelmholtzForm Ω E)
     (fun v w => (∑ i, ⟪h1Gradient Ω i v, h1Gradient Ω i w⟫_ℂ) -
       (E : ℂ) * ⟪h1Value Ω v, h1Value Ω w⟫_ℂ)

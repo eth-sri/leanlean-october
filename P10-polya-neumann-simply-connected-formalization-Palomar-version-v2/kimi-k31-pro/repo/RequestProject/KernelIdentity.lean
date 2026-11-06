@@ -99,14 +99,14 @@ lemma volterra_sub_adj_eq_integral (hW : ContinuousOn W (Icc 0 (2 * π)))
       IntervalIntegrable (fun s => volterraKernel W θ s * g s) volume a b := fun ha hb => by
     have := intervalIntegrable_smul_of_continuousOn hkc hg hgB ha hb
     simpa only [smul_eq_mul, mul_comm] using this
-  have h0 : (0 : ℝ) ∈ Icc 0 (2 * π) := ⟨le_rfl, hL⟩
-  have hL' : (2 * π) ∈ Icc 0 (2 * π) := ⟨hL, le_rfl⟩
-  have key := intervalIntegral_sign_mul_of_integrable hθ (hint h0 hθ) (hint hθ hL')
+
+
+  have key := intervalIntegral_sign_mul_of_integrable hθ (hint (⟨le_rfl, hL⟩) hθ) (hint hθ (⟨hL, le_rfl⟩))
   have e : ∀ s, Complex.I * Real.sign (θ - s) * volterraKernel W θ s * g s =
       Complex.I * ((Real.sign (θ - s) : ℂ) * (volterraKernel W θ s * g s)) := fun s => by ring
   simp_rw [e]
   rw [intervalIntegral.integral_const_mul, key]
-  simp only [volterraOpAdj, hk, volterraOp]
+  simp [volterraOpAdj, hk, volterraOp]
 
 /-- `O_E B_E O_E^*` has the kernel `⟨e₀, W(θ) B_E W(s)^* e₀⟩`. -/
 lemma observation_cutBE_observationAdj_eq_integral (hW : ContinuousOn W (Icc 0 (2 * π)))
@@ -117,9 +117,9 @@ lemma observation_cutBE_observationAdj_eq_integral (hW : ContinuousOn W (Icc 0 (
   have hL : (0 : ℝ) ≤ 2 * π := by positivity
   have hi := intervalIntegrable_smul_of_continuousOn (continuousOn_adjoint_apply hW (basisVec 0))
     hg hgB (⟨le_rfl, hL⟩ : (0 : ℝ) ∈ Icc 0 (2 * π)) (⟨hL, le_rfl⟩ : 2 * π ∈ Icc 0 (2 * π))
-  set Lf : Ell2 →L[ℂ] ℂ := (innerSL ℂ (basisVec 0)).comp ((W θ).comp (cutBE W))
+  set Lf := (innerSL ℂ (basisVec 0)).comp ((W θ).comp (cutBE W))
   have := Lf.intervalIntegral_comp_comm hi
-  simp only [Lf, ContinuousLinearMap.comp_apply, innerSL_apply_apply, map_smul,
+  simp [Lf, ContinuousLinearMap.comp_apply, innerSL_apply_apply, map_smul,
     smul_eq_mul] at this
   rw [observation, observationAdj, ← this]
   refine intervalIntegral.integral_congr fun s _ => ?_
@@ -130,7 +130,7 @@ lemma sawtoothKernel_add_correctedKernel (θ s : ℝ) :
     sawtoothKernel θ s + correctedKernel W θ s =
       Complex.I * Real.sign (θ - s) * volterraKernel W θ s +
         ⟪basisVec 0, W θ (cutBE W (ContinuousLinearMap.adjoint (W s) (basisVec 0)))⟫_ℂ := by
-  simp only [sawtoothKernel, correctedKernel]
+  simp [sawtoothKernel, correctedKernel]
   ring
 
 /-- The kernel `(σ + r_E)(θ, ·) g` is integrable on `[0, L]` (the two pieces separately). -/
@@ -178,7 +178,7 @@ lemma intervalIntegrable_sawtooth_add_corrected_mul (hW : ContinuousOn W (Icc 0 
       volume 0 (2 * π) := by
   obtain ⟨i1, i2⟩ := intervalIntegrable_kernel_pieces hW hg hgB hθ
   refine (i1.add i2).congr fun s _ => ?_
-  simp only [sawtoothKernel_add_correctedKernel]
+  simp [sawtoothKernel_add_correctedKernel]
   ring
 
 /-- **Lemma 6.6 (kernel identity).** For bounded measurable `g` and `θ ∈ [0, L]`,
@@ -204,7 +204,7 @@ lemma intervalIntegrable_sawtoothKernel_mul {f : ℝ → ℂ} (hf : Continuous f
     (by fun_prop : Continuous fun s : ℝ => Complex.I * (((θ - s : ℝ) : ℂ) / π) * f s)
       |>.intervalIntegrable _ _
   refine (h1.sub h2).congr fun s _ => ?_
-  simp only [sawtoothKernel, Complex.ofReal_sub]
+  simp [sawtoothKernel, Complex.ofReal_sub]
   ring
 
 /-- `s ↦ r_E(θ, s) f(s)` is integrable on `[0, L]` for continuous `f`. -/

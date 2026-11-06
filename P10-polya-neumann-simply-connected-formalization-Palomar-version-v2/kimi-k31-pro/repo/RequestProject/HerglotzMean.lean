@@ -39,14 +39,14 @@ lemma continuous_planeWave_uncurry (k : ℝ) :
 lemma setIntegral_ball_translate (f : ℂ → ℂ) (z₁ : ℂ) (r : ℝ) :
     ∫ z in ball z₁ r, f z = ∫ u in ball (0 : ℂ) r, f (z₁ + u) := by
   have hpre : (fun u => z₁ + u) ⁻¹' ball z₁ r = ball (0 : ℂ) r := by
-    ext u; simp [dist_eq_norm]
+    ext u; simp
   rw [← hpre, (measurePreserving_add_left volume z₁).setIntegral_preimage_emb
     (measurableEmbedding_addLeft z₁) f (ball z₁ r)]
 
 /-- Rotation invariance of the disc integral of a plane wave. -/
 lemma integral_ball_planeWave_zero (k r : ℝ) (φ : ℝ) :
     ∫ u in ball (0 : ℂ) r, planeWave k u φ = ballMean k r := by
-  set c : Circle := Circle.exp (-φ)
+  set c := Circle.exp (-φ)
   have hrot : ∀ u, rotation c u = u * Complex.exp (-(φ * Complex.I)) := fun u => by
     rw [rotation_apply, Circle.coe_exp]
     push_cast
@@ -91,22 +91,21 @@ theorem integral_ball_herglotzCoeff {a : ℝ → ℂ} (ha : IntervalIntegrable a
     · have h1 : AEStronglyMeasurable (fun p : ℂ × ℝ => a p.2)
           ((volume.restrict (ball z₁ r)).prod (volume.restrict (Ioc 0 (2 * π)))) :=
         hai.aestronglyMeasurable.comp_snd
-      have h2 : Continuous fun p : ℂ × ℝ => e p.2 := hec.comp continuous_snd
       have h3 := continuous_planeWave_uncurry k
-      exact h2.aestronglyMeasurable.mul (h1.mul h3.aestronglyMeasurable)
-    · simp only [Function.uncurry, hF, norm_mul, hen, norm_planeWave, one_mul, mul_one, le_refl]
+      exact (hec.comp continuous_snd).aestronglyMeasurable.mul (h1.mul h3.aestronglyMeasurable)
+    · simp [Function.uncurry, hF, norm_mul, hen, norm_planeWave, one_mul, mul_one, le_refl]
   have hswap := integral_integral_swap hFi
   unfold herglotzCoeff
   simp_rw [intervalIntegral.integral_of_le h2π]
   rw [integral_const_mul, hswap]
   have hin : ∀ φ, ∫ z in ball z₁ r, F z φ = e φ * (a φ * (planeWave k z₁ φ * ballMean k r)) :=
     fun φ => by
-      simp only [hF]
+      simp [hF]
       rw [integral_const_mul, integral_const_mul, integral_ball_planeWave]
   have hre : ∀ φ, e φ * (a φ * (planeWave k z₁ φ * ballMean k r)) =
       (e φ * (a φ * planeWave k z₁ φ)) * ballMean k r := fun φ => by ring
   simp_rw [hin, hre, integral_mul_const]
-  simp only [he]
+  simp
   ring
 
 end PolyaNeumann

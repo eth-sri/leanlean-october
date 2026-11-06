@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.TwoPi
 public import RequestProject.ConormalNormalization
 public import RequestProject.PhysicalHardyWeights
 public import RequestProject.HardyPrimitiveTrace
@@ -36,7 +37,6 @@ namespace PolyaNeumann
 open MeasureTheory Set Metric Filter
 open scoped Topology ComplexConjugate
 
-local instance hardyPrimitiveCircleTwoPiPos : Fact (0 < 2 * Real.pi) := ⟨Real.two_pi_pos⟩
 
 /-- Averaged coefficients of an actual half-trace vector. -/
 def normalizedHardyAverage (b : L2Z) (n : ℤ) : ℂ :=
@@ -137,7 +137,7 @@ private theorem hardy_coefficient_derivative_CR (a : SmoothH1Coefficient)
     Lp.coeFn_smul Complex.I (h1SmoothCoefficientDerivativeL2 (ball (0 : ℂ) 1) a 1 u),
     ae_restrict_mem measurableSet_ball] with z hx hy hs hz
   rw [hx, hs]
-  simp only [Pi.smul_apply, smul_eq_mul]
+  simp
   rw [hy]
   change fderiv ℝ (a : ℂ → ℂ) z 1 * u z =
     Complex.I * (fderiv ℝ (a : ℂ → ℂ) z Complex.I * u z)
@@ -209,7 +209,7 @@ theorem localConformalHardyDerivativeCoefficient_cauchyRiemann {R : ℝ} (hR : 1
         (localConformalHardyDerivativeCoefficient hR F hFs : ℂ → ℂ) z Complex.I := by
   rw [localConformalHardyDerivativeCoefficient_fderiv hR F hFs hhol hz 1,
     localConformalHardyDerivativeCoefficient_fderiv hR F hFs hhol hz Complex.I]
-  simp only [mul_one, map_mul, Complex.conj_I]
+  simp
   calc
     conj (deriv (deriv F) z) = -(Complex.I * Complex.I) * conj (deriv (deriv F) z) := by
       rw [Complex.I_mul_I]
@@ -251,7 +251,7 @@ def localConformalHardyPrimitive {R : ℝ} (hR : 1 < R) (F : ℂ → ℂ)
 private theorem hardy_fourier_one_circle (θ : ℝ) :
     fourier (T := 2 * Real.pi) 1 (θ : AddCircle (2 * Real.pi)) = circleMap 0 1 θ := by
   rw [fourier_coe_two_pi, circleMap_zero]
-  simp only [Int.cast_one, one_mul, Complex.ofReal_one]
+  simp
 
 /-- The actual boundary coefficient as a continuous circle function. -/
 def diskSmoothCoefficientCircle (a : SmoothH1Coefficient) :
@@ -325,12 +325,12 @@ theorem localConformalHardyPrimitiveMultiplier_shift {R : ℝ} (hR : 1 < R)
       fourierCoeff (diskSmoothCoefficientCircle
         (localConformalHardyDerivativeCoefficient hR F hFs)) (n + 1) := by
   let C := diskSmoothCoefficientCircle (localConformalHardyDerivativeCoefficient hR F hFs)
-  let B : C(AddCircle (2 * Real.pi), ℂ) := (-Complex.I) •
+  let B := (-Complex.I) •
     ((fourier (T := 2 * Real.pi) (-1)) * C)
   have he (θ : ℝ) : conj (deriv (physicalCircleTrace F) θ) =
       B (θ : AddCircle (2 * Real.pi)) := by
     rw [localConformal_circleTrace_deriv hR F hFs hhol]
-    simp only [map_mul, Complex.conj_I]
+    simp
     simp only [B, ContinuousMap.smul_apply, ContinuousMap.mul_apply, smul_eq_mul]
     rw [fourier_neg, hardy_fourier_one_circle, diskSmoothCoefficientCircle_apply,
       localConformalHardyDerivativeCoefficient_closedDisk hR F hFs
@@ -389,7 +389,7 @@ private theorem hardy_seqConv_shift {a c : ℤ → ℂ}
 
 private theorem hardy_sobWeight_neg_nat (k : ℕ) :
     sobWeight (-(k : ℤ)) = ((k + 1 : ℕ) : ℝ) := by
-  simp only [sobWeight, Int.cast_neg, Int.cast_natCast, abs_neg,
+  simp [sobWeight, Int.cast_neg, Int.cast_natCast, abs_neg,
     abs_of_nonneg (show (0 : ℝ) ≤ (k : ℝ) from Nat.cast_nonneg k),
     Nat.cast_add, Nat.cast_one]
   ring
@@ -411,14 +411,13 @@ private theorem hardy_primitive_derivative_scale (k : ℕ) :
     rw [hi, Real.rpow_add (by positivity), Real.rpow_one, ← Real.sqrt_eq_rpow]
   rw [hy, ← Real.sqrt_eq_rpow]
   simp only [diskHardyDerivativeWeight, Real.sqrt_div (by positivity : (0 : ℝ) ≤ ((k + 1 : ℕ) : ℝ))]
-  have hx : ((k + 1 : ℕ) : ℂ) ≠ 0 := by exact_mod_cast (by omega : k + 1 ≠ 0)
-  have hy0 : ((k + 2 : ℕ) : ℂ) ≠ 0 := by exact_mod_cast (by omega : k + 2 ≠ 0)
+
   have hsy : (Real.sqrt ((k + 2 : ℕ) : ℝ) : ℂ) ≠ 0 := by
     exact_mod_cast (Real.sqrt_pos.mpr (by positivity : (0 : ℝ) < ((k + 2 : ℕ) : ℝ))).ne'
   simpa only [Complex.ofReal_mul, Complex.ofReal_div, Complex.ofReal_natCast] using
     hardy_primitive_derivative_scalar ((k + 1 : ℕ) : ℂ) ((k + 2 : ℕ) : ℂ)
       (Real.sqrt ((k + 1 : ℕ) : ℝ) : ℂ) (Real.sqrt ((k + 2 : ℕ) : ℝ) : ℂ)
-      hx hy0 hsy
+      (by exact_mod_cast (by omega : k + 1 ≠ 0)) (by exact_mod_cast (by omega : k + 2 ≠ 0)) hsy
 
 /-- The actual derivative-data operator on a normalized primitive is the
 actual normalized product data. The input and product retain frequency zero. -/
@@ -440,8 +439,7 @@ theorem diskHardyDerivativeData_normalizedPrimitiveGain
     have hnk : n = -(k : ℤ) := by dsimp [k]; omega
     rw [hnk, diskHardyDerivativeData_apply_neg, normalizedHardyPrimitiveGain_apply,
       normalizedHardyMultiplier_apply]
-    have hne : -((k + 1 : ℕ) : ℤ) ≠ 0 := by omega
-    rw [antiPrim, if_neg hne, primSeq]
+    rw [antiPrim, if_neg (by omega), primSeq]
     have hi : -(k : ℤ) - 1 = -((k + 1 : ℕ) : ℤ) := by omega
     have hconv := hardy_seqConv_shift hshift (fromL2 (1 / 2 : ℝ) b) (-(k : ℤ))
     rw [hi] at hconv

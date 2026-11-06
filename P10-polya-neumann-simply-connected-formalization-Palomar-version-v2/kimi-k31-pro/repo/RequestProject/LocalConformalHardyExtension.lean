@@ -46,8 +46,7 @@ def localConformalHardyH1Extension :
 @[simp] theorem localConformalH1Pullback_hardyExtension (b : L2Z) :
     localConformalH1Pullback hR F hFs hL
       (localConformalHardyH1Extension hR F hFs hb hL hhol hinj hC hK e he hsource hes b) =
-        diskHardyExtension b := by
-  exact localConformalH1Pullback_pushforward hR F hFs hb hL hhol hinj hC hK e he hsource hes
+        diskHardyExtension b := localConformalH1Pullback_pushforward hR F hFs hb hL hhol hinj hC hK e he hsource hes
     (diskHardyExtension b)
 
 theorem localConformalDiskHalfTrace_hardyExtension_eq_of_nonpositive (b : L2Z)

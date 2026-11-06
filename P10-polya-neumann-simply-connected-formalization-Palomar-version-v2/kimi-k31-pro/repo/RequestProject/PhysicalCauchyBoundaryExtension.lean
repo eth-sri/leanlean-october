@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.TwoPi
 public import RequestProject.PhysicalCauchyBase
 public import RequestProject.LocalConformalBoundaryLipschitz
 public import RequestProject.LocalConformalBoundaryGeometry
@@ -26,13 +27,10 @@ namespace PolyaNeumann
 open MeasureTheory Set Filter Metric
 open scoped ComplexConjugate Topology
 
-local instance physicalBoundaryExtensionTwoPiPos : Fact (0 < 2 * Real.pi) :=
-  ⟨Real.two_pi_pos⟩
 
 theorem exists_nearestPhysicalBoundaryParam (γ : ℝ → ℂ) (hγ : Continuous γ) (w : ℂ) :
     ∃ τ ∈ Icc (0 : ℝ) (2 * Real.pi),
-      ∀ θ ∈ Icc (0 : ℝ) (2 * Real.pi), ‖γ τ - w‖ ≤ ‖γ θ - w‖ := by
-  exact isCompact_Icc.exists_isMinOn ⟨0, le_rfl, Real.two_pi_pos.le⟩
+      ∀ θ ∈ Icc (0 : ℝ) (2 * Real.pi), ‖γ τ - w‖ ≤ ‖γ θ - w‖ := isCompact_Icc.exists_isMinOn ⟨0, le_rfl, Real.two_pi_pos.le⟩
     (hγ.sub continuous_const).norm.continuousOn
 
 /-- A choice of an actual nearest physical boundary parameter.  Continuity
@@ -124,7 +122,7 @@ theorem physicalNearestCauchyCommutator_tendsto
         (deriv γ θ * (K θ - K t)) / (γ θ - γ t))) := by
   obtain ⟨M, hM⟩ := isCompact_Icc.exists_bound_of_continuousOn
     (s := Icc (0 : ℝ) (2 * Real.pi)) hγ.continuous_deriv_one.continuousOn
-  have hM0 : 0 ≤ M := (norm_nonneg (deriv γ 0)).trans
+  have hM0 := (norm_nonneg (deriv γ 0)).trans
     (hM 0 ⟨le_rfl, Real.two_pi_pos.le⟩)
   have hbound (w : ℂ) (θ : ℝ) (hθ : θ ∈ Icc (0 : ℝ) (2 * Real.pi)) :
       ‖(deriv γ θ * (K θ - nearestPhysicalBoundaryDensity γ hγ.continuous K w)) /
@@ -166,7 +164,7 @@ theorem physicalNearestCauchyCommutator_tendsto
     rw [uIoc_of_le Real.two_pi_pos.le] at hθ
     have hθ' : θ ∈ Ico (0 : ℝ) (2 * Real.pi) :=
       ⟨hθ.1.le, lt_of_le_of_ne hθ.2 hθL⟩
-    have hd : γ θ - γ t ≠ 0 := sub_ne_zero.mpr
+    have hd := sub_ne_zero.mpr
       (fun he => hθt (hinj hθ' ht he))
     have hden : Tendsto (fun w : ℂ => γ θ - w) (𝓝 (γ t)) (𝓝 (γ θ - γ t)) :=
       (continuous_const.sub continuous_id).tendsto (γ t)
@@ -179,8 +177,8 @@ theorem physicalWeightedCauchy_eq_subtract_constant
     physicalWeightedCauchy γ K w =
       (∫ θ in (0 : ℝ)..(2 * Real.pi), (deriv γ θ * (K θ - c)) / (γ θ - w)) +
         (2 * Real.pi * Complex.I) * c * windingNumber γ w := by
-  let f : ℝ → ℂ := fun θ => (deriv γ θ * (K θ - c)) / (γ θ - w)
-  let q : ℝ → ℂ := fun θ => deriv γ θ / (γ θ - w)
+  let f := fun θ => (deriv γ θ * (K θ - c)) / (γ θ - w)
+  let q := fun θ => deriv γ θ / (γ θ - w)
   have hf : IntervalIntegrable f volume 0 (2 * Real.pi) := by
     apply ContinuousOn.intervalIntegrable_of_Icc Real.two_pi_pos.le
     exact (hγ.continuous_deriv_one.mul (hK.sub continuous_const)).continuousOn.div
@@ -194,7 +192,7 @@ theorem physicalWeightedCauchy_eq_subtract_constant
   have heq : (fun θ => (deriv γ θ * K θ) / (γ θ - w)) =
       (fun θ => f θ + c * q θ) := by
     funext θ
-    dsimp only [f, q]
+    dsimp [f, q]
     ring
   have ha : (2 * Real.pi * Complex.I : ℂ) ≠ 0 := by
     simp [Real.pi_ne_zero, Complex.I_ne_zero]
@@ -226,7 +224,7 @@ theorem physicalWeightedCauchy_differentiableAt
       fun z => -physicalOrdinaryCauchy γ (fun θ => conj (K θ)) z := by
     funext z
     rw [physicalOrdinaryCauchy_eq_neg_weighted]
-    simp only [Complex.conj_conj, neg_neg]
+    simp
   rw [heq]
   exact (physicalOrdinaryCauchy_hasDerivAt γ (fun θ => conj (K θ)) hγ
     (Complex.continuous_conj.comp hK) havoid).differentiableAt.neg
@@ -292,8 +290,7 @@ theorem physicalNearestCauchyCommutator_tendsto_zero_of_exterior
       fun _ => 0 := by
     filter_upwards [self_mem_nhdsWithin] with w hw
     exact hRzero w hw
-  have hout : Tendsto (physicalNearestCauchyCommutator γ hγ.continuous K)
-      (𝓝[(closure Ω)ᶜ] (γ t)) (𝓝 0) := tendsto_const_nhds.congr' heq.symm
+  have hout := tendsto_const_nhds.congr' heq.symm
   have hz := tendsto_nhds_unique (hlim.mono_left nhdsWithin_le_nhds) hout
   rw [hz] at hlim
   exact hlim
@@ -322,11 +319,11 @@ theorem exists_physicalCauchy_boundary_extension
     rcases hσ with hσ | hσ <;> simp [hσ]
   have hA : (2 * Real.pi * Complex.I : ℂ) ≠ 0 := by
     simp [Real.pi_ne_zero, Complex.I_ne_zero]
-  let a : ℂ := (2 * Real.pi * Complex.I) * (σ : ℂ)
-  let N : ℂ → ℂ := nearestPhysicalBoundaryDensity γ hγ.continuous K
-  let R : ℂ → ℂ := physicalNearestCauchyCommutator γ hγ.continuous K
-  let G : ℂ → ℂ := fun w => if w ∈ Ω then physicalWeightedCauchy γ K w / a else N w
-  have hΩo : IsOpen Ω := hΩ.1.1
+  let a := (2 * Real.pi * Complex.I) * (σ : ℂ)
+  let N := nearestPhysicalBoundaryDensity γ hγ.continuous K
+  let R := physicalNearestCauchyCommutator γ hγ.continuous K
+  let G := fun w => if w ∈ Ω then physicalWeightedCauchy γ K w / a else N w
+  have hΩo := hΩ.1.1
   have hav (w : ℂ) (hw : w ∈ Ω) :
       ∀ θ ∈ Icc (0 : ℝ) (2 * Real.pi), γ θ ≠ w := by
     apply physicalCurve_avoid_of_notMem_frontier γ him
@@ -337,7 +334,7 @@ theorem exists_physicalCauchy_boundary_extension
     have hd := (physicalWeightedCauchy_differentiableAt γ hγ K hK w (hav w hw)).div_const a
     apply hd.congr_of_eventuallyEq
     filter_upwards [hΩo.mem_nhds hw] with z hz
-    simp only [G, if_pos hz]
+    simp [G, if_pos hz]
   have htrace (θ : ℝ) (hθ : θ ∈ Icc (0 : ℝ) (2 * Real.pi)) : G (γ θ) = K θ := by
     have hp : γ θ ∈ frontier Ω := by
       rw [← him]
@@ -345,7 +342,7 @@ theorem exists_physicalCauchy_boundary_extension
     have hpnot : γ θ ∉ Ω := by
       rw [hΩo.frontier_eq] at hp
       exact hp.2
-    simp only [G, if_neg hpnot]
+    simp [G, if_neg hpnot]
     exact nearestPhysicalBoundaryDensity_at_trace γ hγ.continuous K hL hchord θ hθ
   refine ⟨G, ⟨fun w hw => (hdiff w hw).differentiableWithinAt, ?_⟩, htrace⟩
   intro p hpcl
@@ -368,7 +365,7 @@ theorem exists_physicalCauchy_boundary_extension
       have heq := physicalWeightedCauchy_eq_nearestCommutator_add_winding
         γ hγ K hK w (hav w hw.2)
       rw [heq, hinside w hw.2]
-      dsimp only [R, N, a]
+      dsimp [R, N, a]
       field_simp [hA, hσC]
     have hg : Tendsto N (𝓝[closure Ω ∩ Ωᶜ] (γ t)) (𝓝 (K t)) :=
       hN.mono_left nhdsWithin_le_nhds
@@ -402,12 +399,12 @@ theorem exists_localConformal_physicalMomentPrimitive_extension
   have hγ : ContDiff ℝ 1 γ :=
     contDiff_physicalCircleTrace_of_neighborhood hR F
       (hFs.of_le (WithTop.coe_le_coe.mpr le_top))
-  have hpγ : Function.Periodic γ (2 * Real.pi) := physicalCircleTrace_periodic F
-  have hK : ContDiff ℝ 1 K := contDiff_physicalMomentPrimitive γ H hγ hH
+  have hpγ := physicalCircleTrace_periodic F
+  have hK := contDiff_physicalMomentPrimitive γ H hγ hH
   have hpK : Function.Periodic K (2 * Real.pi) := by
     apply physicalMomentPrimitive_periodic γ H hγ hH hpγ hpH
     simpa only [pow_zero, mul_one] using hmom 0
-  have hΩimage : IsOpen (F '' ball (0 : ℂ) 1) := himage.symm ▸ hΩ.1.1
+  have hΩimage := himage.symm ▸ hΩ.1.1
   have him : γ '' Icc (0 : ℝ) (2 * Real.pi) = frontier Ω := by
     simpa only [himage] using localConformal_circleTrace_image_frontier hR F hFs hinj hΩimage
   have hfc : IsPreconnected (frontier Ω) := by

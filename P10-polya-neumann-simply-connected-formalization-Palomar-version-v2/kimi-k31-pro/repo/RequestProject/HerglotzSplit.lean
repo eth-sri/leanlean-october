@@ -33,7 +33,7 @@ lemma dbar_conj_of_hasFDerivAt {F : ℂ → ℂ} {L : ℂ →L[ℝ] ℂ} {z α �
       (Complex.conjCLE.toContinuousLinearMap.comp L) z :=
     Complex.conjCLE.toContinuousLinearMap.hasFDerivAt.comp z hF
   refine dbar_eq_of_hasFDerivAt (α := conj β) hcF fun w => ?_
-  simp only [ContinuousLinearMap.comp_apply, hL, ContinuousLinearEquiv.coe_coe,
+  simp [ContinuousLinearMap.comp_apply, hL, ContinuousLinearEquiv.coe_coe,
     Complex.conjCLE_apply, map_add, map_mul, Complex.conj_conj]
   ring
 
@@ -95,10 +95,10 @@ lemma integral_conj_deriv_mul_herglotzCoeff_neg_one (hb : Bornology.IsBounded Ω
     rw [intervalIntegral.integral_of_le h2π, intervalIntegral.integral_of_le h2π,
       ← integral_conj]
     refine integral_congr_ae (Eventually.of_forall fun θ => ?_)
-    simp only [map_mul, Complex.conj_conj]
+    simp
     ring
   rw [e, hg, integral_conj, map_mul, Complex.conj_conj, integral_const_mul]
-  simp only [map_mul, map_ofNat, Complex.conj_I]
+  simp [map_mul, map_ofNat, Complex.conj_I]
   ring_nf
   rw [Complex.I_sq]
   ring
@@ -156,8 +156,8 @@ theorem integral_conj_wave_mul_herglotzQ' (hb : Bornology.IsBounded Ω)
     obtain ⟨h0, h0L⟩ := herglotzCoeff_hasFDerivAt' ha k 0 z
     obtain ⟨h1, h1L⟩ := herglotzCoeff_hasFDerivAt' ha k (-1) z
     rw [dbar_mul_conj h0 h0L h1 h1L]
-    simp only [show (-1 : ℤ) + 1 = 0 by norm_num, show (0 : ℤ) - 1 = -1 by norm_num]
-    simp only [map_mul, map_neg, map_div₀, Complex.conj_I, Complex.conj_ofReal, map_ofNat]
+    simp
+    simp [map_mul, map_neg, map_div₀, Complex.conj_I, Complex.conj_ofReal, map_ofNat]
     push_cast
     rw [← Complex.mul_conj', ← Complex.mul_conj']
     ring
@@ -168,7 +168,7 @@ theorem integral_conj_wave_mul_herglotzQ' (hb : Bornology.IsBounded Ω)
     rw [intervalIntegral.integral_of_le h2π, intervalIntegral.integral_of_le h2π,
       ← integral_conj]
     refine integral_congr_ae (Eventually.of_forall fun θ => ?_)
-    simp only [hΦ, map_mul, Complex.conj_conj]
+    simp [hΦ, map_mul, Complex.conj_conj]
     ring
   have hcont : ∀ m, Continuous fun z => ‖F m z‖ ^ 2 := fun m =>
     ((continuous_herglotzCoeff ha k m).norm).pow 2
@@ -180,7 +180,7 @@ theorem integral_conj_wave_mul_herglotzQ' (hb : Bornology.IsBounded Ω)
   change ∫ θ in (0 : ℝ)..(2 * π), conj (F 0 (γ θ)) * (conj (deriv γ θ) * F (-1) (γ θ)) = _
   rw [e, hg, integral_const_mul, integral_complex_ofReal, integral_sub (hI 0) (hI (-1)),
     integral_sub (hI (-1)) (hI 0)]
-  simp only [map_mul, map_div₀, Complex.conj_I, Complex.conj_ofReal, map_ofNat]
+  simp [map_mul, map_div₀, Complex.conj_I, Complex.conj_ofReal, map_ofNat]
   push_cast
   ring_nf
   rw [Complex.I_sq]

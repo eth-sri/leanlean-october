@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.TwoPi
 public import Mathlib.MeasureTheory.Function.L1Space.Integrable
 public import RequestProject.BoundaryFourier
 public import RequestProject.ObservationDual
@@ -22,7 +23,6 @@ namespace PolyaNeumann
 open MeasureTheory Set Filter Topology Real
 open scoped Real ComplexConjugate InnerProductSpace
 
-local instance factTwoPiPosOLp : Fact (0 < 2 * π) := ⟨two_pi_pos⟩
 
 private lemma smoothing_half_apply (f : L2Z) (n : ℤ) :
     sobolevSmoothing (1 / 2 : ℝ) (by norm_num) f n =

@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.TwoPi
 public import RequestProject.BoundaryFourier
 public import RequestProject.SobolevMultiplier
 public import RequestProject.LpBoundedMultiplier
@@ -26,7 +27,6 @@ namespace PolyaNeumann
 
 open MeasureTheory Set Filter
 
-local instance boundaryMultiplierTwoPiPos : Fact (0 < 2 * Real.pi) := ⟨Real.two_pi_pos⟩
 
 /-- Multiplication by an actual continuous periodic circle function. -/
 def boundaryContinuousMultiplier (A : C(AddCircle (2 * Real.pi), ℂ)) :
@@ -64,7 +64,7 @@ theorem boundaryFourier_eq_sqrt_mul_circleLift (g : BoundaryL2) (n : ℤ) :
       fourierCoeff (boundaryCircleLift g) n := by
   rw [boundaryFourier_apply,
     fourierCoeff_congr_ae (boundaryCircleLift_coe g), fourierCoeff_liftIoc_eq]
-  simp only [zero_add]
+  simp
 
 /-- Exact convolution for arbitrary actual boundary L² input. -/
 theorem boundaryFourier_continuousMultiplier (A : C(AddCircle (2 * Real.pi), ℂ))
@@ -141,7 +141,7 @@ theorem diskHalfTrace_smoothMultiplier (a : SmoothH1Coefficient)
         seqConv (fourierCoeff A) (boundaryFourier (diskH1Trace u)) n := by
     rw [diskHalfTrace_apply, diskH1Trace_smoothMultiplier a A hA,
       boundaryFourier_continuousMultiplier A hsum]
-    simp only [sobWeight]
+    simp [sobWeight]
   have hR : (seqOpBound_seqConv (s := (1 / 2 : ℝ)) (c := fourierCoeff A)
       (by norm_num : (0 : ℝ) ≤ 1 / 2) hc).toCLM (diskHalfTrace u) n =
       ((sobWeight n ^ (1 / 2 : ℝ) : ℝ) : ℂ) *

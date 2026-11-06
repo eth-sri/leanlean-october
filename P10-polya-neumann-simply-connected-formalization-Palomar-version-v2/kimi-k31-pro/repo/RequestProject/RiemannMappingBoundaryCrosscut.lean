@@ -55,8 +55,8 @@ theorem jordanParam_eq_of_eq_of_abs_sub_lt {γ : ℝ → ℂ}
       push_neg at hc
       nlinarith [Real.two_pi_pos]
     rw [← Int.cast_abs] at h1
-    have h2 : |n - m| < 1 := by exact_mod_cast h1
-    exact Int.abs_lt_one_iff.mp h2
+
+    exact Int.abs_lt_one_iff.mp (by exact_mod_cast h1)
   rw [hk] at hd
   simp only [Int.cast_zero, zero_mul] at hd
   linarith
@@ -138,15 +138,15 @@ theorem jordanParam_exists_short_arc {γ : ℝ → ℂ} {K : NNReal}
         (∀ u ∈ Icc 0 1, ∀ v ∈ Icc 0 1, ‖A u - A v‖ < ε) ∧
         (p ≠ q → InjOn A (Icc 0 1)) := by
   let η : ℝ := min Real.pi (ε / ((K : ℝ) + 1))
-  have hη : 0 < η := lt_min Real.pi_pos (div_pos hε (by positivity))
+
   have hηπ : η < 2 * Real.pi :=
     (min_le_left _ _).trans_lt (by linarith [Real.pi_pos])
-  obtain ⟨δ, hδ, hmod⟩ := jordanParam_uniform_cyclic_inverse hK.continuous hper hinj hη hηπ
+  obtain ⟨δ, hδ, hmod⟩ := jordanParam_uniform_cyclic_inverse hK.continuous hper hinj (lt_min Real.pi_pos (div_pos hε (by positivity))) hηπ
   refine ⟨δ, hδ, ?_⟩
   rintro p ⟨s, hs, hsp⟩ q ⟨t, ht, htq⟩ hpq
   obtain ⟨d, hd, hend⟩ := hmod s hs t ht (by simpa only [hsp, htq] using hpq)
   let A : ℝ → ℂ := fun u => γ (s + d * u)
-  let C : NNReal := K * Real.toNNReal |d|
+  let C := K * Real.toNNReal |d|
   have hAC : LipschitzWith C A := by
     refine LipschitzWith.of_dist_le_mul fun u v => ?_
     have h := hK.dist_le_mul (s + d * u) (s + d * v)
@@ -271,9 +271,9 @@ theorem windingNumber_eq_zero_of_image_ball {γ : ℝ → ℂ} {K : NNReal}
     {p z : ℂ} {R : ℝ}
     (hball : ∀ θ ∈ Icc 0 (2 * Real.pi), ‖γ θ - p‖ < R)
     (hfar : R ≤ ‖p - z‖) : windingNumber γ z = 0 := by
-  have hR : 0 < R := (norm_nonneg _).trans_lt (hball 0 ⟨le_rfl, Real.two_pi_pos.le⟩)
-  have hdpos : 0 < ‖p - z‖ := hR.trans_le hfar
-  have hd : p - z ≠ 0 := norm_pos_iff.mp hdpos
+  have hR := (norm_nonneg _).trans_lt (hball 0 ⟨le_rfl, Real.two_pi_pos.le⟩)
+  have hdpos := hR.trans_le hfar
+  have hd := norm_pos_iff.mp hdpos
   have hslit : ∀ θ ∈ Icc 0 (2 * Real.pi),
       (p - z)⁻¹ * (γ θ - z) ∈ Complex.slitPlane := by
     intro θ hθ

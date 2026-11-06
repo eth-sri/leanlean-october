@@ -45,18 +45,18 @@ is weakly null. -/
 lemma tendsto_inner_of_dense {u : ℕ → Z} {R : ℝ} (hu : ∀ n, ‖u n‖ ≤ R) {D : Set Z}
     (hD : Dense D) (h : ∀ y ∈ D, Tendsto (fun n => ⟪y, u n⟫_ℂ) atTop (𝓝 0)) (y : Z) :
     Tendsto (fun n => ⟪y, u n⟫_ℂ) atTop (𝓝 0) := by
-  have hR : 0 ≤ R := (norm_nonneg _).trans (hu 0)
+  have hR := (norm_nonneg _).trans (hu 0)
   rw [Metric.tendsto_atTop]
   intro ε hε
   obtain ⟨d, hd, hdD⟩ := Metric.dense_iff.1 hD y (ε / (2 * (R + 1))) (by positivity)
   obtain ⟨N, hN⟩ := Metric.tendsto_atTop.1 (h d hdD) (ε / 2) (by positivity)
   refine ⟨N, fun n hn => ?_⟩
   have h1 := hN n hn
-  rw [dist_zero_right] at h1 ⊢
+  simp at h1 ⊢
   rw [Metric.mem_ball, dist_comm, dist_eq_norm] at hd
   have h2 : ‖⟪y - d, u n⟫_ℂ‖ ≤ ‖y - d‖ * R :=
     (norm_inner_le_norm _ _).trans (mul_le_mul_of_nonneg_left (hu n) (norm_nonneg _))
-  have h3 : ‖y - d‖ * R ≤ ε / (2 * (R + 1)) * R := mul_le_mul_of_nonneg_right hd.le hR
+  have h3 := mul_le_mul_of_nonneg_right hd.le hR
   have h4 : ε / (2 * (R + 1)) * R ≤ ε / 2 := by
     rw [div_mul_eq_mul_div, div_le_div_iff₀ (by positivity) (by positivity)]
     nlinarith
@@ -76,7 +76,7 @@ lemma IsCompactOperator.tendsto_of_weak {C : Z →L[ℂ] Y} (hC : IsCompactOpera
   have hK := hC.isCompact_closure_image_closedBall R
   obtain ⟨a, -, φ, hφ, ha⟩ := hK.tendsto_subseq (x := fun n => C (u (ns n)))
     (fun n => subset_closure ⟨u (ns n), by simpa using hu (ns n), rfl⟩)
-  have hsub : Tendsto (ns ∘ φ) atTop atTop := hns.comp hφ.tendsto_atTop
+  have hsub := hns.comp hφ.tendsto_atTop
   have ha0 : a = 0 := by
     have hy : ∀ y, ⟪y, a⟫_ℂ = 0 := by
       intro y
@@ -103,7 +103,7 @@ lemma tendsto_inner_of_injective {S : Z →L[ℂ] Y} (hS : Function.Injective S)
       exact hS (by rw [h0, map_zero])
     exact Submodule.dense_iff_topologicalClosure_eq_top.2 this
   · rintro _ ⟨x, rfl⟩
-    simp only [ContinuousLinearMap.coe_coe, adjoint_inner_left]
+    simp [ContinuousLinearMap.coe_coe, adjoint_inner_left]
     have := ((innerSL ℂ x).continuous.tendsto 0).comp h
     simpa [Function.comp_def] using this
 
@@ -125,7 +125,7 @@ lemma exists_coercive (α : ℝ) (hα : 0 < α) (C : Z →L[ℂ] Z) (hC : IsComp
     intro t v
     constructor
     · rw [map_smul, inner_smul_left, inner_smul_right]
-      simp [Complex.conj_ofReal]
+      simp
       ring
     · rw [map_smul, norm_smul, mul_pow]
       simp
@@ -174,7 +174,7 @@ lemma exists_coercive (α : ℝ) (hα : 0 < α) (C : Z →L[ℂ] Z) (hC : IsComp
     rw [tendsto_zero_iff_norm_tendsto_zero] at hCw ⊢
     refine squeeze_zero (fun n => norm_nonneg _) (fun n => ?_) hCw
     calc ‖(⟪w n, C (w n)⟫_ℂ).re‖ ≤ ‖⟪w n, C (w n)⟫_ℂ‖ := by
-          rw [Real.norm_eq_abs]; exact Complex.abs_re_le_norm _
+          simp; exact Complex.abs_re_le_norm _
       _ ≤ ‖w n‖ * ‖C (w n)‖ := norm_inner_le_norm _ _
       _ = ‖C (w n)‖ := by rw [hwn, one_mul]
   have hHw : ∀ n, (⟪w n, H (w n)⟫_ℂ).re = α + (⟪w n, C (w n)⟫_ℂ).re := by
@@ -230,10 +230,9 @@ theorem compact_perturbation_coercive (α : ℝ) (hα : 0 < α) (C : Z →L[ℂ]
   have b1 := re_inner_ge_neg (H' - H) z
   have b2 := re_inner_ge_neg (adjoint S' ∘L S' - adjoint S ∘L S) z
   have hz := h z
-  have hz2 : 0 ≤ ‖z‖ ^ 2 := by positivity
-  rw [e1, e2]
+  simp
   have : (‖H' - H‖ + A * ‖adjoint S' ∘L S' - adjoint S ∘L S‖) * ‖z‖ ^ 2 ≤ ε / 2 * ‖z‖ ^ 2 :=
-    mul_le_mul_of_nonneg_right hsmall.le hz2
+    mul_le_mul_of_nonneg_right hsmall.le (by positivity)
   nlinarith
 
 /-- **Lemma 7.6, perturbation form.** With `H`, `S` as in `compact_perturbation_coercive`,
@@ -251,11 +250,11 @@ theorem compact_perturbation_coercive_nhds (α : ℝ) (hα : 0 < α) (C : Z →L
   have hδ1 : min 1 (ε / (4 * K)) ≤ 1 := min_le_left _ _
   have hδ2 : min 1 (ε / (4 * K)) ≤ ε / (4 * K) := min_le_right _ _
   set δ := min 1 (ε / (4 * K))
-  have hδ0 : 0 ≤ δ := le_trans (norm_nonneg _) hS'.le
+  have hδ0 := le_trans (norm_nonneg _) hS'.le
   have hadj : ‖adjoint S' ∘L S' - adjoint S ∘L S‖ ≤ (2 * ‖S‖ + 1) * δ := by
     have e : adjoint S' ∘L S' - adjoint S ∘L S =
         adjoint S' ∘L (S' - S) + (adjoint (S' - S)) ∘L S := by
-      rw [map_sub]; simp [comp_sub, sub_comp]
+      rw [map_sub]; simp
     rw [e]
     have hS'n : ‖S'‖ ≤ ‖S‖ + δ := by
       have := norm_sub_norm_le S' S; linarith
@@ -269,7 +268,7 @@ theorem compact_perturbation_coercive_nhds (α : ℝ) (hα : 0 < α) (C : Z →L
       A * ‖adjoint S' ∘L S' - adjoint S ∘L S‖ < δ + A * ((2 * ‖S‖ + 1) * δ) := by
     have := mul_le_mul_of_nonneg_left hadj hA.le
     linarith
-  have h2 : δ + A * ((2 * ‖S‖ + 1) * δ) = K * δ := by ring
+
   have h3 : K * δ ≤ ε / 4 := by
     calc K * δ ≤ K * (ε / (4 * K)) := by gcongr
       _ = ε / 4 := by field_simp

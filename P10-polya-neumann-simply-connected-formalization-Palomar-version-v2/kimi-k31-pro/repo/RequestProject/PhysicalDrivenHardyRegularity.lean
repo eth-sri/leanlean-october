@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.TwoPi
 public import RequestProject.PhysicalDrivenIntegrable
 public import RequestProject.PhysicalDrivenReconstruction
 public import RequestProject.FourierLipschitz
@@ -32,8 +33,6 @@ namespace PolyaNeumann
 open MeasureTheory Set Filter Metric
 open scoped Topology ComplexConjugate
 
-local instance physicalDrivenRegularityTwoPiPos : Fact (0 < 2 * Real.pi) :=
-  ⟨Real.two_pi_pos⟩
 
 /-- The exceptional physical row contains twice the positive-row coupling
 and the actual unscaled forcing `-i g`. -/
@@ -64,7 +63,7 @@ theorem physicalDrivenScaledRow_hasDerivAt_zero
   have he : physicalDrivenScaledRow E y 0 =
       fun s : ℝ => (Real.sqrt 2 : ℂ) * (y s : ℕ → ℂ) 0 := by
     funext s
-    simp only [physicalDrivenScaledRow, physicalDrivenRow, pow_zero, one_mul, if_true]
+    simp [physicalDrivenScaledRow, physicalDrivenRow, pow_zero, one_mul, if_true]
   rw [he]
   apply hd.congr_deriv
   simp only [lp.coeFn_add, Pi.add_apply, lp.coeFn_smul, Pi.smul_apply,
@@ -101,12 +100,12 @@ private theorem physicalDrivenShiftedGaugeTerm_mul_nat
     (γ : ℝ → ℂ) (E : ℝ) (y : ℝ → Ell2) (l : ℕ) (θ : ℝ) :
     physicalDrivenShiftedGaugeTerm γ E y l θ * ((l + 1 : ℕ) : ℂ) =
       -physicalDrivenCentered γ θ * physicalDrivenGaugeTerm γ E y 0 l θ := by
-  simp only [physicalDrivenShiftedGaugeTerm, physicalDrivenGaugeTerm,
+  simp [physicalDrivenShiftedGaugeTerm, physicalDrivenGaugeTerm,
     Nat.add_zero, physicalDrivenPower, Nat.factorial_succ, pow_succ]
-  have hn : ((l + 1 : ℕ) : ℂ) ≠ 0 := by exact_mod_cast (by omega : l + 1 ≠ 0)
-  have hf : (l.factorial : ℂ) ≠ 0 := by exact_mod_cast Nat.factorial_ne_zero l
+
+
   push_cast
-  field_simp [hn, hf]
+  field_simp [(by exact_mod_cast (by omega : l + 1 ≠ 0)), (by exact_mod_cast Nat.factorial_ne_zero l)]
 
 theorem norm_physicalDrivenShiftedGaugeTerm_le
     (γ : ℝ → ℂ) (E : ℝ) (y : ℝ → Ell2) (l : ℕ) (θ : ℝ) :
@@ -136,7 +135,7 @@ theorem exists_physicalDrivenShiftedGaugeTerm_majorant
   obtain ⟨u, hu, hbd⟩ := exists_physicalDrivenGaugeTerm_majorant γ hγ E y hy 0
   obtain ⟨R, hR⟩ := isCompact_Icc.exists_bound_of_continuousOn
     (hγ.sub continuous_const : Continuous (physicalDrivenCentered γ)).continuousOn
-  have hR0 : 0 ≤ R := (norm_nonneg _).trans (hR 0 ⟨le_rfl, Real.two_pi_pos.le⟩)
+  have hR0 := (norm_nonneg _).trans (hR 0 ⟨le_rfl, Real.two_pi_pos.le⟩)
   refine ⟨fun l => R * u l, hu.mul_left R, ?_⟩
   intro l θ hθ
   exact (norm_physicalDrivenShiftedGaugeTerm_le γ E y l θ).trans
@@ -164,7 +163,7 @@ theorem physicalDrivenShiftedGauge_weightedIntegral_hasSum_to
       (∫ s in (0 : ℝ)..θ, w s * physicalDrivenShiftedGauge γ E y s) := by
   obtain ⟨u, hu, hbd⟩ := exists_physicalDrivenShiftedGaugeTerm_majorant γ hγ E y hy
   obtain ⟨C, hC⟩ := isCompact_Icc.exists_bound_of_continuousOn hw
-  have hC0 : 0 ≤ C := (norm_nonneg _).trans (hC 0 ⟨le_rfl, Real.two_pi_pos.le⟩)
+  have hC0 := (norm_nonneg _).trans (hC 0 ⟨le_rfl, Real.two_pi_pos.le⟩)
   have hsub : uIoc (0 : ℝ) θ ⊆ Icc 0 (2 * Real.pi) := by
     rw [uIoc_of_le hθ.1]
     exact Ioc_subset_Icc_self.trans (Icc_subset_Icc le_rfl hθ.2)
@@ -217,7 +216,7 @@ theorem physicalDrivenGaugePartial_zero_absolutelyContinuous_of_intervalIntegrab
       exact ((hγ.sub contDiff_const).neg.pow l).div_const _
     have h_simpa := (driven_c1_absolutelyContinuous hp).smul
       (physicalDrivenScaledRow_absolutelyContinuous_of_intervalIntegrable hK hW g hg l)
-    simp only [physicalDrivenGaugeTerm, Nat.add_zero, Pi.smul_apply, smul_eq_mul] at h_simpa ⊢
+    simp at h_simpa ⊢
     exact h_simpa
   induction N with
   | zero =>
@@ -254,7 +253,7 @@ theorem physicalDrivenGaugePartial_zero_hasDerivAt
         simp [physicalDrivenGaugePartial, physicalDrivenGaugeTerm, physicalDrivenPower]
       rw [he]
       apply (physicalDrivenScaledRow_hasDerivAt_zero γ E g y hy).congr_deriv
-      simp only [Finset.range_zero, Finset.sum_empty, mul_zero, add_zero,
+      simp [Finset.range_zero, Finset.sum_empty, mul_zero, add_zero,
         physicalDrivenGaugeTerm, physicalDrivenPower, pow_zero, Nat.factorial_zero,
         Nat.cast_one, div_one, one_mul, Nat.zero_add]
       ring
@@ -271,11 +270,11 @@ theorem physicalDrivenGaugePartial_zero_hasDerivAt
           physicalDrivenGaugePartial γ E y 0 N +
             physicalDrivenPower γ (N + 1) * physicalDrivenScaledRow E y (N + 1) := by
         funext s
-        simp only [physicalDrivenGaugeTerm, Nat.add_zero, Pi.add_apply, Pi.mul_apply]
+        simp [physicalDrivenGaugeTerm, Nat.add_zero, Pi.add_apply, Pi.mul_apply]
       rw [he, hf]
       apply (ih.add (hp.mul hd)).congr_deriv
       rw [Finset.sum_range_succ]
-      simp only [physicalDrivenGaugeTerm, physicalDrivenShiftedGaugeTerm]
+      simp [physicalDrivenGaugeTerm, physicalDrivenShiftedGaugeTerm]
       ring
 
 /-- The continuous part of the actual derivative of gauge zero. -/
@@ -287,8 +286,7 @@ def physicalDrivenGaugeZeroContinuousPart (γ : ℝ → ℂ) (E : ℝ)
 theorem physicalDrivenGaugeZeroContinuousPart_continuousOn
     {γ : ℝ → ℂ} (hγ : ContDiff ℝ 1 γ) (E : ℝ) (y : ℝ → Ell2)
     (hy : ContinuousOn y (Icc 0 (2 * Real.pi))) :
-    ContinuousOn (physicalDrivenGaugeZeroContinuousPart γ E y) (Icc 0 (2 * Real.pi)) := by
-  exact (hγ.continuous_deriv_one.continuousOn.mul
+    ContinuousOn (physicalDrivenGaugeZeroContinuousPart γ E y) (Icc 0 (2 * Real.pi)) := (hγ.continuous_deriv_one.continuousOn.mul
     (continuousOn_const.mul (physicalDrivenRow_continuousOn y hy 1))).add
       ((continuousOn_const.mul
         (Complex.continuous_conj.comp hγ.continuous_deriv_one).continuousOn).mul
@@ -353,11 +351,10 @@ private theorem physicalDrivenGaugePartial_zero_primitive
   have hsub : uIcc 0 θ ⊆ Icc 0 (2 * Real.pi) := by
     rw [uIcc_of_le hθ.1]
     exact Icc_subset_Icc le_rfl hθ.2
-  have hia : IntervalIntegrable a volume 0 θ := (ha.mono_set hsub).intervalIntegrable
+  have hia := (ha.mono_set hsub).intervalIntegrable
   have hit : IntervalIntegrable t volume 0 θ := (ht.mono hsub).intervalIntegrable
-  have hib : IntervalIntegrable b volume 0 θ := (hb.mono hsub).intervalIntegrable
-  simp only [Pi.add_apply] at he
-  rw [intervalIntegral.integral_add (hia.add hit) (hib.const_mul _),
+  simp at he
+  rw [intervalIntegral.integral_add (hia.add hit) (((hb.mono hsub).intervalIntegrable).const_mul _),
     intervalIntegral.integral_add hia hit, intervalIntegral.integral_const_mul] at he
   exact he
 
@@ -380,7 +377,7 @@ theorem physicalDrivenGauge_zero_primitive_of_intervalIntegrable
       (𝓝 (physicalDrivenGauge γ E y 0 θ)) := by
     have h_simpa := ((summable_norm_physicalDrivenGaugeTerm γ E y 0 θ).of_norm.hasSum.tendsto_sum_nat).comp
       (tendsto_add_atTop_nat 1)
-    simp only [physicalDrivenGaugePartial, Function.comp_apply, Function.comp_def] at h_simpa ⊢
+    simp at h_simpa ⊢
     exact h_simpa
   have ht := (physicalDrivenGauge_weightedIntegral_hasSum_to γ hγ.continuous E y hy 1
     (deriv γ) hγ.continuous_deriv_one.continuousOn hθ).summable.tendsto_atTop_zero
@@ -420,7 +417,7 @@ theorem physicalDrivenGauge_zero_primitive_of_intervalIntegrable
     have hc : ContinuousOn (fun s => deriv γ s * physicalDrivenScaledRow E y 1 s)
         (Icc 0 (2 * Real.pi)) := hγ.continuous_deriv_one.continuousOn.mul
       (continuousOn_const.mul (physicalDrivenRow_continuousOn y hy 1))
-    have hgt : IntervalIntegrable g volume 0 θ := hg.mono_set (by
+    have hgt := hg.mono_set (by
       simpa only [uIcc_of_le Real.two_pi_pos.le] using hsub)
     exact ((hc.mono hsub).intervalIntegrable).sub (hgt.const_mul Complex.I)
   have hbi : IntervalIntegrable b volume 0 θ :=
@@ -518,18 +515,16 @@ theorem fourierCoeffOn_of_ac_ae_hasDerivAt
     simpa only [hα] using hasDerivAt_fourier_neg (2 * Real.pi) n θ
   have hfC : ContinuousOn f (Icc 0 (2 * Real.pi)) := by
     simpa only [uIcc_of_le Real.two_pi_pos.le] using hf.continuousOn
-  have hfi : IntegrableOn f (Icc 0 (2 * Real.pi)) := hfC.integrableOn_Icc
   have hf'i : IntegrableOn f' (Icc 0 (2 * Real.pi)) := by
     rw [integrableOn_Icc_iff_integrableOn_Ioc]
     exact MemLp.integrable (by norm_num : (1 : ENNReal) ≤ 2) hf'
   have hfe : IntegrableOn (fun θ => f θ * e θ) (Icc 0 (2 * Real.pi)) :=
-    hfi.mul_bdd hec.aestronglyMeasurable.restrict
+    (hfC.integrableOn_Icc).mul_bdd hec.aestronglyMeasurable.restrict
       (Eventually.of_forall fun θ => (hen θ).le)
   have hf'e : IntegrableOn (fun θ => f' θ * e θ) (Icc 0 (2 * Real.pi)) :=
     hf'i.mul_bdd hec.aestronglyMeasurable.restrict
       (Eventually.of_forall fun θ => (hen θ).le)
-  have hprodAC : AbsolutelyContinuousOnInterval (fun θ => f θ * e θ) 0 (2 * Real.pi) := by
-    exact hf.smul (driven_c1_absolutelyContinuous he1)
+  have hprodAC : AbsolutelyContinuousOnInterval (fun θ => f θ * e θ) 0 (2 * Real.pi) := hf.smul (driven_c1_absolutelyContinuous he1)
   have hprodD : ∀ᵐ θ, θ ∈ Ioo 0 (2 * Real.pi) →
       HasDerivAt (fun θ => f θ * e θ) (f' θ * e θ + α * (f θ * e θ)) θ := by
     filter_upwards [hd] with θ hθ hmem
@@ -591,14 +586,14 @@ theorem isSobolevSeq_one_fourierCoeffOn_of_ac_ae_hasDerivAt
   have hdn (n : ℤ) : ‖fourierCoeffOn Real.two_pi_pos f' n‖ ^ 2 =
       (n : ℝ) ^ 2 * ‖fourierCoeffOn Real.two_pi_pos f n‖ ^ 2 := by
     rw [fourierCoeffOn_of_ac_ae_hasDerivAt hf hf' hd hp n]
-    simp only [norm_mul, Complex.norm_I, one_mul, Complex.norm_intCast,
+    simp [norm_mul, Complex.norm_I, one_mul, Complex.norm_intCast,
       mul_pow, sq_abs]
   change Summable (fun n : ℤ => (sobWeight n ^ (1 : ℝ) *
     ‖fourierCoeffOn Real.two_pi_pos f n‖) ^ 2)
   refine Summable.of_nonneg_of_le (fun _ => by positivity) (fun n => ?_)
     ((hs.mul_left 2).add (hs'.mul_left 2))
   rw [hdn]
-  simp only [sobWeight, Real.rpow_one]
+  simp [sobWeight, Real.rpow_one]
   have h0 := norm_nonneg (fourierCoeffOn Real.two_pi_pos f n)
   have ha := abs_nonneg (n : ℝ)
   have hsq := sq_nonneg ((|(n : ℝ)| - 1) * ‖fourierCoeffOn Real.two_pi_pos f n‖)

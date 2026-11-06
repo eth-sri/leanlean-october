@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.TwoPi
 public import RequestProject.FractionalRows
 public import RequestProject.KernelRows
 
@@ -30,7 +31,6 @@ namespace PolyaNeumann
 open Real MeasureTheory
 open scoped InnerProductSpace ComplexConjugate
 
-local instance factTwoPiPosFK : Fact (0 < 2 * π) := ⟨two_pi_pos⟩
 
 section Kernel
 
@@ -54,7 +54,7 @@ lemma norm_secondDiff_kernelRow_le {h θ D : ℝ} (hD : 0 ≤ D)
   · filter_upwards [MemLp.coeFn_toLp
       (((hm (θ + 2 * h)).sub (hm (θ + h))).sub ((hm (θ + h)).sub (hm θ)))] with x hx
     rw [hx]
-    simp only [Pi.sub_apply, liftIco_eq_comp]
+    simp
     exact hpt _ (circRep_mem x)
 
 include hmeas hbd in

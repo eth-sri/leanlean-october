@@ -45,7 +45,7 @@ def physicalMomentPrimitive (γ H : ℝ → ℂ) (θ : ℝ) : ℂ :=
 
 @[simp] theorem physicalMomentPrimitive_zero (γ H : ℝ → ℂ) :
     physicalMomentPrimitive γ H 0 = 0 := by
-  simp only [physicalMomentPrimitive, intervalIntegral.integral_same]
+  simp [physicalMomentPrimitive, intervalIntegral.integral_same]
 
 /-- The primitive has the actual physical differentiated density at every point. -/
 theorem physicalMomentPrimitive_hasDerivAt (γ H : ℝ → ℂ)
@@ -84,12 +84,12 @@ theorem physicalMomentPrimitive_periodic (γ H : ℝ → ℂ)
     (hpH : Function.Periodic H (2 * Real.pi))
     (hmom0 : (∫ θ in (0 : ℝ)..(2 * Real.pi), conj (deriv γ θ) * H θ) = 0) :
     Function.Periodic (physicalMomentPrimitive γ H) (2 * Real.pi) := by
-  let g : ℝ → ℂ := fun θ => conj (deriv γ θ) * H θ
+  let g := fun θ => conj (deriv γ θ) * H θ
   have hg : Continuous g :=
     (Complex.continuous_conj.comp hγ.continuous_deriv_one).mul hH
   have hgp : Function.Periodic g (2 * Real.pi) := by
     intro θ
-    simp only [g, deriv_periodic hpγ θ, hpH θ]
+    simp [g, deriv_periodic hpγ θ, hpH θ]
   intro θ
   change (∫ s in (0 : ℝ)..(θ + 2 * Real.pi), g s) = ∫ s in (0 : ℝ)..θ, g s
   calc
@@ -111,10 +111,10 @@ theorem physicalMomentPrimitive_moments (γ H : ℝ → ℂ)
     (∫ θ in (0 : ℝ)..(2 * Real.pi),
       (conj (deriv γ θ) * physicalMomentPrimitive γ H θ) *
         (conj (γ θ) - conj (γ 0)) ^ m) = 0 := by
-  let a : ℝ → ℂ := fun θ => conj (deriv γ θ)
-  let z : ℝ → ℂ := fun θ => conj (γ θ) - conj (γ 0)
+  let a := fun θ => conj (deriv γ θ)
+  let z := fun θ => conj (γ θ) - conj (γ 0)
   let K := physicalMomentPrimitive γ H
-  have ha : Continuous a := Complex.continuous_conj.comp hγ.continuous_deriv_one
+  have ha := Complex.continuous_conj.comp hγ.continuous_deriv_one
   have hz : Continuous z :=
     (Complex.continuous_conj.comp hγ.continuous).sub continuous_const
   have hK : ContDiff ℝ 1 K := contDiff_physicalMomentPrimitive γ H hγ hH
@@ -122,8 +122,7 @@ theorem physicalMomentPrimitive_moments (γ H : ℝ → ℂ)
     simpa only [Complex.star_def] using
       ((hγ.differentiable_one θ).hasDerivAt.star).sub_const (conj (γ 0))
   have dv (θ : ℝ) : HasDerivAt (fun s => z s ^ (m + 1))
-      (((m + 1 : ℕ) : ℂ) * z θ ^ m * a θ) θ := by
-    exact (dz θ).pow (m + 1)
+      (((m + 1 : ℕ) : ℂ) * z θ ^ m * a θ) θ := (dz θ).pow (m + 1)
   have hK0 : K 0 = 0 := physicalMomentPrimitive_zero γ H
   have hKL : K (2 * Real.pi) = 0 := by
     apply physicalMomentPrimitive_endpoint
@@ -158,7 +157,7 @@ def physicalOrdinaryCauchy (γ H : ℝ → ℂ) (w : ℂ) : ℂ :=
 theorem physicalOrdinaryCauchy_eq_conj (γ H : ℝ → ℂ) (w : ℂ) :
     physicalOrdinaryCauchy γ H w = conj (physicalExteriorCauchy γ H w) := by
   rw [physicalOrdinaryCauchy, physicalExteriorCauchy, ← intervalIntegral_conj]
-  simp only [map_div₀, map_sub, map_mul, Complex.conj_conj]
+  simp
 
 /-- Differentiation of the actual boundary integral away from the physical
 curve.  Compact positive separation supplies an integrable uniform bound. -/
@@ -168,8 +167,8 @@ theorem physicalOrdinaryCauchy_hasDerivAt
     HasDerivAt (physicalOrdinaryCauchy γ H)
       (∫ θ in (0 : ℝ)..(2 * Real.pi),
         -(deriv γ θ * conj (H θ)) / (w₀ - γ θ) ^ 2) w₀ := by
-  let g : ℝ → ℂ := fun θ => deriv γ θ * conj (H θ)
-  have hg : Continuous g := hγ.continuous_deriv_one.mul (Complex.continuous_conj.comp hH)
+  let g := fun θ => deriv γ θ * conj (H θ)
+  have hg := hγ.continuous_deriv_one.mul (Complex.continuous_conj.comp hH)
   obtain ⟨d, hd, hdθ⟩ := exists_pos_le_norm_sub hγ.continuous havoid
   have hsep (θ : ℝ) (hθ : θ ∈ Icc (0 : ℝ) (2 * Real.pi))
       (w : ℂ) (hw : w ∈ Metric.ball w₀ (d / 2)) : d / 2 ≤ ‖w - γ θ‖ := by
@@ -184,7 +183,7 @@ theorem physicalOrdinaryCauchy_hasDerivAt
     linarith
   obtain ⟨M, hM⟩ := isCompact_Icc.exists_bound_of_continuousOn
     (s := Icc (0 : ℝ) (2 * Real.pi)) hg.continuousOn
-  have hM0 : 0 ≤ M := (norm_nonneg (g 0)).trans (hM 0 ⟨le_rfl, Real.two_pi_pos.le⟩)
+  have hM0 := (norm_nonneg (g 0)).trans (hM 0 ⟨le_rfl, Real.two_pi_pos.le⟩)
   have hFi : IntervalIntegrable (fun θ => g θ / (w₀ - γ θ)) volume 0 (2 * Real.pi) := by
     apply ContinuousOn.intervalIntegrable_of_Icc Real.two_pi_pos.le
     exact hg.continuousOn.div (continuous_const.sub hγ.continuous).continuousOn
@@ -207,10 +206,10 @@ theorem physicalOrdinaryCauchy_hasDerivAt
     filter_upwards [ae_restrict_mem measurableSet_Ioc] with θ hθ
     intro w hw
     have hθ' : θ ∈ Icc (0 : ℝ) (2 * Real.pi) := ⟨hθ.1.le, hθ.2⟩
-    have hne : w - γ θ ≠ 0 := norm_pos_iff.mp
+    have hne := norm_pos_iff.mp
       (lt_of_lt_of_le (half_pos hd) (hsep θ hθ' w hw))
     convert (hasDerivAt_const w (g θ)).div ((hasDerivAt_id w).sub_const (γ θ)) hne using 1 <;>
-      first | rfl | simp [Pi.div_apply, zero_mul, mul_one, zero_sub]
+      first | rfl | simp
   have hdiff := hasDerivAt_integral_of_dominated_loc_of_deriv_le
     (μ := volume.restrict (Ioc (0 : ℝ) (2 * Real.pi)))
     (F := fun w θ => g θ / (w - γ θ))
@@ -253,19 +252,19 @@ theorem physicalExteriorCauchy_eq_zero_on_exterior_of_moments
   obtain ⟨R, hR0, hfar⟩ :=
     exists_radius_physicalExteriorCauchy_eq_zero_of_moments γ H hγ hH hmom
   obtain ⟨B, hB⟩ := hb.closure.subset_ball (γ 0)
-  let T : ℝ := max B R + 1
-  let w₀ : ℂ := γ 0 + (T : ℂ)
+  let T := max B R + 1
+  let w₀ := γ 0 + (T : ℂ)
   have hT : 0 < T := by
     have := le_max_right B R
-    dsimp only [T]
+    dsimp [T]
     linarith
   have hw₀norm : ‖w₀ - γ 0‖ = T := by
-    dsimp only [w₀]
+    dsimp [w₀]
     rw [add_sub_cancel_left, Complex.norm_of_nonneg hT.le]
   have hw₀R : R < ‖w₀ - γ 0‖ := by
     rw [hw₀norm]
     have := le_max_right B R
-    dsimp only [T]
+    dsimp [T]
     linarith
   have hw₀E : w₀ ∈ (closure Ω)ᶜ := by
     intro hw₀
@@ -273,7 +272,7 @@ theorem physicalExteriorCauchy_eq_zero_on_exterior_of_moments
       simpa only [Metric.mem_ball, dist_eq_norm] using hB hw₀
     rw [hw₀norm] at hnorm
     have := le_max_left B R
-    dsimp only [T] at hnorm
+    dsimp [T] at hnorm
     linarith
   have hopen : IsOpen {w : ℂ | R < ‖w - γ 0‖} :=
     isOpen_lt continuous_const (continuous_id.sub continuous_const).norm

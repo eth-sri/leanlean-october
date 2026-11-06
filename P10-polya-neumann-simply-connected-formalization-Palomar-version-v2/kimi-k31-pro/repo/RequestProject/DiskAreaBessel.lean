@@ -105,7 +105,7 @@ def diskAreaScale (m : ℕ) : ℂ := (Real.sqrt (((m + 1 : ℕ) : ℝ) / π) : �
 private theorem diskAreaScale_normalizes (m : ℕ) :
     conj (diskAreaScale m) *
       (diskAreaScale m * ((π : ℂ) / ((m + 1 : ℕ) : ℂ))) = 1 := by
-  have hm : ((m + 1 : ℕ) : ℝ) ≠ 0 := by positivity
+
   have hsq := Real.sq_sqrt
     (show 0 ≤ ((m + 1 : ℕ) : ℝ) / π by positivity)
   have hr : Real.sqrt (((m + 1 : ℕ) : ℝ) / π) *
@@ -113,8 +113,8 @@ private theorem diskAreaScale_normalizes (m : ℕ) :
     calc
       _ = (Real.sqrt (((m + 1 : ℕ) : ℝ) / π) ^ 2 * π) /
           ((m + 1 : ℕ) : ℝ) := by ring
-      _ = 1 := by rw [(eq_div_iff Real.pi_ne_zero).mp hsq, div_self hm]
-  simp only [diskAreaScale, Complex.conj_ofReal]
+      _ = 1 := by rw [(eq_div_iff Real.pi_ne_zero).mp hsq, div_self (by positivity)]
+  simp [diskAreaScale, Complex.conj_ofReal]
   exact_mod_cast hr
 
 def diskNormalizedHolomorphicArea (m : ℕ) : L2 (ball (0 : ℂ) 1) :=

@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.TwoPi
 public import RequestProject.PhysicalDrivenL2Reconstruction
 public import RequestProject.PhysicalDrivenHardyRegularity
 public import RequestProject.LocalConformalVekuaTrace
@@ -30,8 +31,6 @@ namespace PolyaNeumann
 open MeasureTheory Set Filter Metric
 open scoped Topology ComplexConjugate
 
-local instance drivenRealizationTwoPiPos : Fact (0 < 2 * Real.pi) :=
-  ⟨Real.two_pi_pos⟩
 
 private theorem driven_realization_circle_coeff
     (H : C(AddCircle (2 * Real.pi), ℂ)) :
@@ -94,7 +93,7 @@ theorem physicalDrivenKernelInput_apply
     physicalDrivenKernelInput hγLip hγ hW g hg hO n =
       (Real.sqrt (2 * Real.pi) : ℂ) * ((sobWeight n ^ (1 / 2 : ℝ) : ℝ) : ℂ) *
         fourierCoeffOn Real.two_pi_pos (physicalDrivenPeriodicGauge γ E W g 0) n := by
-  simp only [physicalDrivenKernelInput, lp.coeFn_smul, Pi.smul_apply, smul_eq_mul,
+  simp [physicalDrivenKernelInput, lp.coeFn_smul, Pi.smul_apply, smul_eq_mul,
     sobVec_apply, mul_assoc]
 
 theorem fromL2_physicalDrivenKernelInput
@@ -171,7 +170,7 @@ private theorem driven_realization_volterra_congrOn
       apply intervalIntegral.integral_congr
       intro s hs
       rw [uIcc_of_le hθ.1] at hs
-      dsimp only
+      dsimp
       rw [ih s ⟨hs.1, hs.2.trans hθ.2⟩]
 
 theorem driven_realization_continuousOn_memLp
@@ -198,8 +197,8 @@ theorem boundaryL2_ae_hardyFourierTrace_of_H1
   let f : ℝ → ℂ := fun θ => H (θ : AddCircle (2 * Real.pi))
   have hfc : Continuous f := H.continuous.comp (AddCircle.continuous_mk' _)
   have hfm := driven_realization_continuousOn_memLp hfc.continuousOn
-  let w : BoundaryL2 := hfm.toLp f
-  have haw : (w : ℝ → ℂ) =ᵐ[volume.restrict (Ioc 0 (2 * Real.pi))] f := hfm.coeFn_toLp
+  let w := hfm.toLp f
+  have haw := hfm.coeFn_toLp
   have hcoef : fourierCoeffOn Real.two_pi_pos (w : ℝ → ℂ) = c := by
     rw [fourierCoeffOn_congr_ae Real.two_pi_pos haw]
     change fourierCoeffOn Real.two_pi_pos
@@ -209,7 +208,7 @@ theorem boundaryL2_ae_hardyFourierTrace_of_H1
     apply lp.ext
     funext n
     rw [boundaryFourier_apply, boundaryFourier_apply, hcoef]
-  have he : v = w := boundaryFourier.injective hF
+  have he := boundaryFourier.injective hF
   have hav : (v : ℝ → ℂ) =ᵐ[volume.restrict (Ioc 0 (2 * Real.pi))] f := by
     rw [he]
     exact haw

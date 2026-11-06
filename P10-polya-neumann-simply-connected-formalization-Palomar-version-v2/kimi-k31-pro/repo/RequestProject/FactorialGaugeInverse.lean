@@ -34,10 +34,10 @@ theorem summable_norm_factorialGaugeInverseTerm
     (z : ℂ) (d : ℕ → ℂ) {C a : ℝ} (ha : 0 ≤ a)
     (hd : ∀ n, ‖d n‖ ≤ C * a ^ n) :
     Summable (fun p : ℕ × ℕ => ‖factorialGaugeInverseTerm z d p‖) := by
-  let r : ℕ → ℝ := fun n => (‖z‖ * a) ^ n / (n.factorial : ℝ)
-  have hr₀ (n : ℕ) : 0 ≤ r n := by dsimp only [r]; positivity
+  let r := fun n => (‖z‖ * a) ^ n / (n.factorial : ℝ)
+  have hr₀ (n : ℕ) : 0 ≤ r n := by dsimp [r]; positivity
   have hr : Summable (fun n => ‖r n‖) := by
-    simp only [Real.norm_eq_abs, abs_of_nonneg (hr₀ _)]
+    simp [Real.norm_eq_abs, abs_of_nonneg (hr₀ _)]
     exact Real.summable_pow_div_factorial (‖z‖ * a)
   have hp : Summable (fun p : ℕ × ℕ => C * (r p.1 * r p.2)) :=
     (summable_mul_of_summable_norm (R := ℝ) hr hr).mul_left C
@@ -51,8 +51,7 @@ theorem summable_norm_factorialGaugeInverseTerm
       gcongr
       exact hd _
     _ = _ := by
-      simp only [norm_div, norm_pow, norm_neg, Complex.norm_natCast, r,
-        pow_add, mul_pow]
+      simp
       ring
 
 private theorem complex_alternating_factorial_sum (n : ℕ) :
@@ -75,10 +74,10 @@ private theorem factorialGaugeInverseTerm_antidiagonal
         (z ^ n * d n) * ((-1 : ℂ) ^ l /
           ((l.factorial : ℂ) * ((n - l).factorial : ℂ))) := by
     have hln : l ≤ n := by have := mem_range.mp hl; omega
-    have hadd : n - l + l = n := Nat.sub_add_cancel hln
+    have hadd := Nat.sub_add_cancel hln
     have hpow : z ^ (n - l) * z ^ l = z ^ n := by rw [← pow_add, hadd]
     unfold factorialGaugeInverseTerm
-    simp only [Prod.swap]
+    simp
     rw [show -z = (-1 : ℂ) * z by ring, mul_pow,
       show l + (n - l) = n by omega]
     calc
@@ -94,7 +93,7 @@ theorem factorialGauge_inverse
     (z : ℂ) (d : ℕ → ℂ) {C a : ℝ} (ha : 0 ≤ a)
     (hd : ∀ n, ‖d n‖ ≤ C * a ^ n) :
     (∑' j : ℕ, z ^ j / (j.factorial : ℂ) * factorialGauge z d j) = d 0 := by
-  let T : ℕ × ℕ → ℂ := factorialGaugeInverseTerm z d
+  let T := factorialGaugeInverseTerm z d
   have hs : Summable T :=
     (summable_norm_factorialGaugeInverseTerm z d ha hd).of_norm
   have hg : (∑' j : ℕ, z ^ j / (j.factorial : ℂ) * factorialGauge z d j) =

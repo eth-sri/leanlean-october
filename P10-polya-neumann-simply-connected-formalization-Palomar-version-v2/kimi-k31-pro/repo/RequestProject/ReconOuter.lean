@@ -32,15 +32,15 @@ lemma sq_intervalIntegral_le {f : ℝ → ℝ} (hf : Continuous f) {a b : ℝ} (
     simp_rw [h1]
     rw [intervalIntegral.integral_add, intervalIntegral.integral_sub,
       intervalIntegral.integral_const_mul, intervalIntegral.integral_const]
-    · simp [smul_eq_mul]; ring
+    · simp; ring
     all_goals first
       | exact (hf.pow 2).intervalIntegrable _ _
       | exact (continuous_const.mul hf).intervalIntegrable _ _
       | exact ((hf.pow 2).sub (continuous_const.mul hf)).intervalIntegrable _ _
       | exact continuous_const.intervalIntegrable _ _
   rw [e] at h0
-  have hc : (∫ x in a..b, f x) = c * (b - a) := by simp only [c]; field_simp
-  rw [hc] at h0 ⊢
+  have hc : (∫ x in a..b, f x) = c * (b - a) := by simp [c]; field_simp
+  simp at h0 ⊢
   nlinarith
 
 lemma norm_angChar (n : ℤ) (θ : ℝ) : ‖angChar n θ‖ = 1 := by
@@ -57,7 +57,7 @@ lemma norm_angMode_sq_le {v : ℂ → ℂ} (hv : Continuous v) (x₀ : ℂ) (n :
     congr 1; funext θ
     rw [norm_mul, norm_angChar, one_mul]
   have h2 := sq_intervalIntegral_le hc (show (0 : ℝ) < 2 * π by positivity)
-  rw [sub_zero] at h2
+  simp at h2
   exact (pow_le_pow_left₀ (norm_nonneg _) h1 2).trans h2
 
 lemma polarCoord_symm_eq_circPt (p : ℝ × ℝ) : Complex.polarCoord.symm p = circPt 0 p.1 p.2 := by
@@ -68,13 +68,13 @@ lemma polarCoord_symm_eq_circPt (p : ℝ × ℝ) : Complex.polarCoord.symm p = c
 /-- The circle masses `r ∫₀^{2π} |v(r e^{iθ})|² dθ` of an `L²` function are integrable. -/
 lemma integrableOn_circleMass {v : ℂ → ℂ} (hv : Continuous v) (hL2 : MemLp v 2 volume) :
     IntegrableOn (fun r => r * ∫ θ in (0 : ℝ)..2 * π, ‖v (circPt 0 r θ)‖ ^ 2) (Ioi 0) := by
-  have hcp : Continuous fun p : ℝ × ℝ => v (circPt 0 p.1 p.2) := hv.comp (continuous_circPt 0)
+  have hcp := hv.comp (continuous_circPt 0)
   set g : ℝ × ℝ → ℝ≥0∞ := fun p => ENNReal.ofReal p.1 * ‖v (circPt 0 p.1 p.2)‖ₑ ^ 2 with hg
   have hgm : Measurable g :=
     (ENNReal.measurable_ofReal.comp measurable_fst).mul (hcp.measurable.enorm.pow_const 2)
   have hpolar := Complex.lintegral_comp_polarCoord_symm (fun z => ‖v z‖ₑ ^ 2)
   simp only [polarCoord_symm_eq_circPt, smul_eq_mul] at hpolar
-  rw [polarCoord_target] at hpolar
+  simp at hpolar
   have hfin : ∫⁻ z, ‖v z‖ₑ ^ 2 < ∞ := by
     have := (hL2.integrable_norm_pow two_ne_zero).hasFiniteIntegral
     simpa [HasFiniteIntegral, enorm_pow] using this
@@ -88,14 +88,14 @@ lemma integrableOn_circleMass {v : ℂ → ℂ} (hv : Continuous v) (hL2 : MemLp
       change ∫⁻ r in Ioi 0, K r ≠ ⊤
       rw [hpolar]; exact hfin.ne)
   refine hKi.congr_fun (fun r hr => ?_) measurableSet_Ioi
-  have hr0 : 0 ≤ r := le_of_lt hr
+  have hr0 := le_of_lt hr
   have hc : Continuous fun θ => r * ‖v (circPt 0 r θ)‖ ^ 2 :=
     continuous_const.mul ((hv.comp ((continuous_circPt 0).comp
       (Continuous.prodMk_right r))).norm.pow 2)
   have e1 : K r = ENNReal.ofReal (∫ θ in Ioo (-π) π, r * ‖v (circPt 0 r θ)‖ ^ 2) := by
     rw [ofReal_integral_eq_lintegral_ofReal]
     · refine lintegral_congr fun θ => ?_
-      simp only [g]
+      simp [g]
       rw [ENNReal.ofReal_mul hr0, ENNReal.ofReal_pow (norm_nonneg _), ofReal_norm_eq_enorm]
     · exact (hc.integrableOn_Icc (a := -π) (b := π)).mono_set Ioo_subset_Icc_self
     · exact Eventually.of_forall fun θ => by positivity
@@ -122,7 +122,7 @@ theorem eq_zero_outside_of_helmholtz {v : ℂ → ℂ} (hv : ContDiff ℝ 2 v) (
     refine bessel_rellich (c := (n : ℝ) ^ 2) hE hR (fun r _ => hasDerivAt_angMode hv 0 n r)
       ?_ ?_
     · intro r hr
-      have hr0 : 0 < r := hR.trans hr
+      have hr0 := hR.trans hr
       have hb := angMode_bessel hv 0 n (E := E) hr0.ne' (fun θ => hhelm _ (by
         rw [← dist_zero_right, dist_circPt 0 hr0.le θ]; exact hr))
       rw [← hb]
@@ -131,7 +131,7 @@ theorem eq_zero_outside_of_helmholtz {v : ℂ → ℂ} (hv : ContDiff ℝ 2 v) (
         (Ioi_subset_Ioi hR.le)).const_mul (2 * π)) ?_ ?_
       · exact (continuous_id.mul (hmc.norm.pow 2)).aestronglyMeasurable
       · refine (ae_restrict_iff' measurableSet_Ioi).2 (Eventually.of_forall fun r hr => ?_)
-        have hr0 : 0 ≤ r := (hR.trans hr).le
+        have hr0 := (hR.trans hr).le
         rw [Real.norm_eq_abs, abs_of_nonneg (by positivity)]
         have := norm_angMode_sq_le hv.continuous 0 n r
         nlinarith

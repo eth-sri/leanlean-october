@@ -42,7 +42,7 @@ theorem observationAdj_herglotz_comp {γ : ℝ → ℂ} {K : NNReal}
       (herglotzVec ha (Real.sqrt E) ((γ ∘ τ) 0)) =
     ((Real.sqrt 2 : ℂ) * Complex.I) • (monodromy W - 1)
       (herglotzVec ha (Real.sqrt E) (γ 0))
-  simp only [Function.comp_apply, h0, hU]
+  simp [Function.comp_apply, h0, hU]
 
 /-- The genuine Herglotz form is unchanged by the same reparametrization. -/
 theorem herglotzForm_comp {γ : ℝ → ℂ} {K : NNReal}
@@ -59,7 +59,7 @@ theorem herglotzForm_comp {γ : ℝ → ℂ} {K : NNReal}
   have hU := monodromy_comp hK hm hτ h0 hL hW hW'
   rw [herglotzForm_eq_im (hK.comp hτ) hclosed' hW' ha,
     herglotzForm_eq_im hK hclosed hW ha]
-  simp only [Function.comp_apply, h0, hU]
+  simp [Function.comp_apply, h0, hU]
 
 /-- The same equality also transfers a density bound back to the original
 curve. No Lipschitz estimate for the inverse change of parameter is needed. -/

@@ -56,8 +56,8 @@ theorem integral_sq_comp_traceReparam_le {τ : ℝ → ℝ} {c : ℝ}
     (∫ θ in (0 : ℝ)..(2 * π), ‖q (τ θ)‖ ^ 2) ≤
       (1 / c) * ∫ s in (0 : ℝ)..(2 * π), ‖q s‖ ^ 2 := by
   have hQ : Continuous (fun s => ‖q s‖ ^ 2) := hq.norm.pow 2
-  have hQt : Continuous (fun θ => ‖q (τ θ)‖ ^ 2) := hQ.comp hτ.continuous
-  have hd : Continuous (deriv τ) := hτ.contDiff.continuous_deriv_one
+  have hQt := hQ.comp hτ.continuous
+  have hd := hτ.contDiff.continuous_deriv_one
   have hJ : (∫ θ in (0 : ℝ)..(2 * π), ‖q (τ θ)‖ ^ 2 * deriv τ θ) =
       ∫ s in (0 : ℝ)..(2 * π), ‖q s‖ ^ 2 := by
     have h := intervalIntegral.integral_comp_mul_deriv (a := (0 : ℝ)) (b := 2 * π)
@@ -144,7 +144,7 @@ theorem exists_bound_smoothReparamBoundary {Ω : Set ℂ} (hb : Bornology.IsBoun
     ∃ C : ℝ, 0 ≤ C ∧ ∀ f : smoothTraceTests,
       ‖smoothReparamBoundaryLin hβ hτ f‖ ≤ C * ‖smoothTraceH1Lin hL.1.1 f‖ := by
   obtain ⟨C, hC, hbound⟩ := trace_sq_le_reparam hb hL hβ hτ
-  have hCc : 0 ≤ C / c := div_nonneg hC hτ.lower_pos.le
+  have hCc := div_nonneg hC hτ.lower_pos.le
   refine ⟨Real.sqrt (C / c), Real.sqrt_nonneg _, fun f => ?_⟩
   have hs := hbound f
   rw [← norm_sq_smoothReparamBoundary hβ hτ f, ← norm_sq_smoothTraceH1 Ω f] at hs

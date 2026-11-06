@@ -19,14 +19,13 @@ theorem mem_neumannEigenspace_zero_iff {Ω : Set ℂ} (hΩ : IsDomain Ω)
   constructor
   · rintro ⟨g, hg, hweak⟩
     have h := hweak u g hg
-    simp only [inner_self_eq_norm_sq_to_K, Fin.sum_univ_two, Complex.ofReal_zero,
-      zero_mul] at h
+    simp at h
     have hnorm : ‖g 0‖ ^ 2 + ‖g 1‖ ^ 2 = 0 :=
       Complex.ofReal_injective (by push_cast; exact h)
     have hg0 : g = 0 := by
-      have hzero0 : g 0 = 0 := norm_eq_zero.mp (by
+      have hzero0 := norm_eq_zero.mp (by
         nlinarith [sq_nonneg ‖g 1‖, norm_nonneg (g 0)])
-      have hzero1 : g 1 = 0 := norm_eq_zero.mp (by
+      have hzero1 := norm_eq_zero.mp (by
         nlinarith [sq_nonneg ‖g 0‖, norm_nonneg (g 1)])
       funext i
       fin_cases i <;> simp [hzero0, hzero1]

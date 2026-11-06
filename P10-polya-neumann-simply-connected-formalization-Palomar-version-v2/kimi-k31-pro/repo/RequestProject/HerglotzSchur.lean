@@ -69,14 +69,14 @@ theorem imPair_herglotzVec {γ : ℝ → ℂ} {K : NNReal} (hK : LipschitzWith K
       ∫ θ in (0 : ℝ)..(2 * π), conj (smallB W θ) * g θ := by
     unfold l2Inner
     refine intervalIntegral.integral_congr fun θ _ => ?_
-    simp only [observation_radialVec]
+    simp [observation_radialVec]
   rw [hint] at hR
   have hrad : radialVec W = basisVec 0 + ContinuousLinearMap.adjoint V (basisVec 0) := rfl
   have hkey := inner_adjoint_sub_eq hV (basisVec 0) v
   rw [← hrad] at hkey
   have hU : monodromy W - ContinuousLinearMap.adjoint (monodromy W) =
       ContinuousLinearMap.adjoint V - V := by
-    simp only [monodromy, ContinuousLinearMap.adjoint_adjoint, hVdef]
+    simp [monodromy, ContinuousLinearMap.adjoint_adjoint, hVdef]
   unfold imPair
   rw [hU, hkey, ← hR]
   have h2 : ((Real.sqrt 2 : ℂ)) * (Real.sqrt 2 : ℂ) = 2 := by

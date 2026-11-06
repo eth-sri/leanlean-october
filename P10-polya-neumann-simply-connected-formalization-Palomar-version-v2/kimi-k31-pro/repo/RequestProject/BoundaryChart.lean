@@ -47,7 +47,7 @@ lemma mul_chartPt_sub {p c : ℂ} (hc : ‖c‖ = 1) (f : ℝ → ℝ) (x : ℝ)
     c * (chartPt p c f x - p) = (x : ℂ) + (f x : ℂ) * Complex.I := by
   have : c * conj c = 1 := by
     rw [Complex.mul_conj, Complex.normSq_eq_norm_sq, hc]; simp
-  simp only [chartPt, add_sub_cancel_left, ← mul_assoc, this, one_mul]
+  simp [chartPt, add_sub_cancel_left, ← mul_assoc, this, one_mul]
 
 lemma re_mul_chartPt_sub {p c : ℂ} (hc : ‖c‖ = 1) (f : ℝ → ℝ) (x : ℝ) :
     (c * (chartPt p c f x - p)).re = x := by
@@ -66,8 +66,7 @@ lemma norm_mul_sub {c : ℂ} (hc : ‖c‖ = 1) (w p : ℂ) : ‖c * (w - p)‖ 
 /-- A point is determined by its chart coordinates. -/
 lemma eq_of_mul_sub_eq {c p w w' : ℂ} (hc : ‖c‖ = 1) (h : c * (w - p) = c * (w' - p)) :
     w = w' := by
-  have hc0 : c ≠ 0 := by intro h0; rw [h0, norm_zero] at hc; exact zero_ne_one hc
-  have := mul_left_cancel₀ hc0 h
+  have := mul_left_cancel₀ (by intro h0; rw [h0, norm_zero] at hc; exact zero_ne_one hc) h
   linear_combination this
 
 lemma eq_of_re_im_eq {c p w w' : ℂ} (hc : ‖c‖ = 1) (hre : (c * (w - p)).re = (c * (w' - p)).re)
@@ -155,7 +154,7 @@ lemma chartPt_mem_frontier {Ω : Set ℂ} (hΩo : IsOpen Ω) {p c : ℂ} {r h : 
       rw [hcoord]; simp
     have him : (c * (chartPt p c f x + (s : ℂ) * (conj c * Complex.I) - p)).im = f x + s := by
       rw [hcoord]; simp
-    have hspos' : (0 : ℝ) < s := hspos
+    have hspos' := hspos
     have hfx' := abs_lt.mp hfx
     have habs : |f x + s| < h := by
       rw [abs_lt]; constructor
@@ -209,15 +208,15 @@ lemma isChartAt_recenter {Ω : Set ℂ} (hΩo : IsOpen Ω) {p c : ℂ} {r h : �
       (fun x => f (x + (c * (q - p)).re) - f (c * (q - p)).re) := by
   obtain ⟨hc, hr, hh, hf, hf0, hfb, hΩ⟩ := hch
   set X := (c * (q - p)).re with hX
-  have hfK' : LipschitzWith K' f := hf.weaken hKK
+  have hfK' := hf.weaken hKK
   have hlip : LipschitzWith K' (fun x => f (x + X) - f X) := by
     refine LipschitzWith.of_dist_le_mul fun x y => ?_
     have := hfK'.dist_le_mul (x + X) (y + X)
-    simp only [Real.dist_eq, sub_sub_sub_cancel_right, add_sub_add_right_eq_sub] at this ⊢
+    simp at this ⊢
     exact this
   refine ⟨hc, hρ, hH, hlip, by simp, fun x hx => ?_, fun w hw1 hw2 => ?_⟩
   · have := hlip.dist_le_mul x 0
-    simp only [Real.dist_eq, sub_zero, zero_add, sub_self] at this
+    simp at this
     calc |f (x + X) - f X| ≤ K' * |x| := this
       _ ≤ K' * ρ := mul_le_mul_of_nonneg_left hx.le K'.2
       _ < H := hKρ
@@ -249,13 +248,12 @@ theorem exists_uniform_charts {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
   have hΩo := hL.1.1
   choose! c r h K f hch using fun p (hp : p ∈ frontier Ω) => hL.exists_chart hp
   set U : ℂ → Set ℂ := fun p => chartBox p (c p) (r p / 2) (h p / 2) with hU
-  have hUo : ∀ p, IsOpen (U p) := fun p => isOpen_chartBox _ _ _ _
   have hcover : frontier Ω ⊆ ⋃ p ∈ frontier Ω, U p := fun q hq => by
     refine mem_biUnion hq ?_
     obtain ⟨-, hr, hh, -⟩ := hch q hq
     simp [hU, chartBox, hr, hh]
   obtain ⟨t, htΩ, htfin, hcov⟩ := (frontier_isCompact hb).elim_finite_subcover_image
-    (fun p _ => hUo p) hcover
+    (fun p _ => (fun p => isOpen_chartBox _ _ _ _) p) hcover
   by_cases hte : t.Nonempty
   swap
   · -- empty boundary: any constants work
@@ -279,9 +277,9 @@ theorem exists_uniform_charts {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
   set ρ : ℝ := min Rt (Ht / (2 * (Kt + 1))) with hρ
   have hρ0 : 0 < ρ := lt_min hRt0 (by positivity)
   have hKρ : (Kt : ℝ) * ρ < Ht := by
-    have h1 : ρ ≤ Ht / (2 * (Kt + 1)) := min_le_right _ _
-    have hK0 : (0 : ℝ) ≤ Kt := Kt.2
-    calc (Kt : ℝ) * ρ ≤ Kt * (Ht / (2 * (Kt + 1))) := mul_le_mul_of_nonneg_left h1 hK0
+
+    have hK0 := Kt.2
+    calc (Kt : ℝ) * ρ ≤ Kt * (Ht / (2 * (Kt + 1))) := mul_le_mul_of_nonneg_left (min_le_right _ _) hK0
       _ < Ht := by
         rw [mul_div_assoc']
         rw [div_lt_iff₀ (by positivity)]
@@ -302,23 +300,22 @@ lemma strictMonoOn_of_local_left {g : ℝ → ℝ} {J : Set ℝ} (hJ : J.OrdConn
     (hloc : ∀ y ∈ J, ∃ ε > 0, ∀ y' ∈ J, y - ε < y' → y' < y → g y' < g y) :
     StrictMonoOn g J := by
   intro y1 hy1 y2 hy2 h12
-  have hsub : Icc y1 y2 ⊆ J := hJ.out hy1 hy2
+  have hsub := hJ.out hy1 hy2
   obtain ⟨m, hm, hmin⟩ := (isCompact_Icc (a := y1) (b := y2)).exists_isMinOn
     (nonempty_Icc.mpr h12.le) (hg.mono hsub)
   have key : ∀ m' ∈ Icc y1 y2, y1 < m' → ¬ IsMinOn g (Icc y1 y2) m' := by
     intro m' hm' hlt hmin'
     obtain ⟨ε, hε, hε'⟩ := hloc m' (hsub hm')
     set y' := max (m' - ε / 2) ((y1 + m') / 2)
-    have hy'1 : y1 < y' := lt_of_lt_of_le (by linarith) (le_max_right _ _)
     have hy'2 : y' < m' := max_lt (by linarith) (by linarith)
-    have hy'm : y' ∈ Icc y1 y2 := ⟨hy'1.le, by linarith [hm'.2]⟩
+    have hy'm : y' ∈ Icc y1 y2 := ⟨(lt_of_lt_of_le (by linarith) (le_max_right _ _)).le, by linarith [hm'.2]⟩
     have := hε' y' (hsub hy'm) (lt_of_lt_of_le (by linarith) (le_max_left _ _)) hy'2
     exact absurd (hmin' hy'm) (not_le.mpr this)
   have hm1 : m = y1 := by
     by_contra hne
     exact key m hm (lt_of_le_of_ne hm.1 (Ne.symm hne)) hmin
   subst hm1
-  have hle : g m ≤ g y2 := hmin ⟨h12.le, le_rfl⟩
+  have hle := hmin ⟨h12.le, le_rfl⟩
   rcases lt_or_eq_of_le hle with hlt | heq
   · exact hlt
   · exfalso
@@ -332,7 +329,7 @@ lemma strictAntiOn_of_local_right {g : ℝ → ℝ} {J : Set ℝ} (hJ : J.OrdCon
     (hloc : ∀ y ∈ J, ∃ ε > 0, ∀ y' ∈ J, y < y' → y' < y + ε → g y' < g y) :
     StrictAntiOn g J := by
   have hJ' : (Neg.neg ⁻¹' J).OrdConnected := ⟨fun a ha b hb x hx => by
-    simp only [Set.mem_preimage] at *
+    simp at *
     exact hJ.out hb ha ⟨by linarith [hx.2], by linarith [hx.1]⟩⟩
   have hg' : ContinuousOn (fun y => g (-y)) (Neg.neg ⁻¹' J) :=
     hg.comp continuous_neg.continuousOn (fun y hy => hy)
@@ -361,7 +358,6 @@ theorem chart_orient {Ω : Set ℂ} (hΩo : IsOpen Ω) {p₁ c₁ p₂ c₂ : �
   set σ₁ := chartPt p₁ c₁ f₁ with hσ₁
   set σ₂ := chartPt p₂ c₂ f₂ with hσ₂
   have hσ₁c : Continuous σ₁ := continuous_chartPt hf₁.continuous
-  have hσ₂c : Continuous σ₂ := continuous_chartPt hf₂.continuous
   -- a small closed interval around `x₀` on which everything is inside both boxes
   set O : Set ℝ := {x | |x| < r₁} ∩ σ₁ ⁻¹' chartBox p₂ c₂ r₂ h₂ with hO
   have hOo : IsOpen O := (isOpen_lt continuous_abs continuous_const).inter
@@ -372,7 +368,7 @@ theorem chart_orient {Ω : Set ℂ} (hΩo : IsOpen Ω) {p₁ c₁ p₂ c₂ : �
   have hIO : I ⊆ O := fun x hx => hball (by
     rw [mem_ball, Real.dist_eq, abs_lt]; constructor <;> linarith [hx.1, hx.2])
   set ψ : ℝ → ℝ := fun x => (c₂ * (σ₁ x - p₂)).re with hψ
-  have hψc : Continuous ψ := by simp only [hψ]; fun_prop
+  have hψc : Continuous ψ := by simp [hψ]; fun_prop
   set J := ψ '' I with hJ
   have hJo : J.OrdConnected :=
     (isPreconnected_Icc.image ψ hψc.continuousOn).ordConnected
@@ -398,9 +394,7 @@ theorem chart_orient {Ω : Set ℂ} (hΩo : IsOpen Ω) {p₁ c₁ p₂ c₂ : �
         conj v * ((y : ℂ) + (f₂ y : ℂ) * Complex.I) + c₁ * (p₂ - p₁) := by
       rw [hv, map_mul, Complex.conj_conj]; ring
     rw [this, Complex.add_re]
-    simp only [Complex.mul_re, Complex.conj_re, Complex.conj_im, Complex.add_re,
-      Complex.ofReal_re, Complex.mul_im, Complex.I_re, Complex.I_im, Complex.add_im,
-      Complex.ofReal_im]
+    simp
     ring
   -- the key inequality: points above the chart-1 graph are in `Ω`
   have hkey : ∀ y ∈ J, ∀ᶠ s : ℝ in 𝓝[>] 0, f₂ (y - s * b) < f₂ y + s * a := by
@@ -418,8 +412,8 @@ theorem chart_orient {Ω : Set ℂ} (hΩo : IsOpen Ω) {p₁ c₁ p₂ c₂ : �
     have hc2 : ∀ s : ℝ, c₂ * (σ₁ x + (s : ℂ) * e - p₂) =
         c₂ * (σ₁ x - p₂) + (s : ℂ) * (v * Complex.I) := fun s => by
       rw [he, hv]; ring
-    have hvI_re : (v * Complex.I).re = -b := Complex.mul_I_re v
-    have hvI_im : (v * Complex.I).im = a := Complex.mul_I_im v
+    have hvI_re := Complex.mul_I_re v
+    have hvI_im := Complex.mul_I_im v
     have hgr : (c₂ * (σ₁ x - p₂)).im = f₂ (ψ x) := by
       have := congrArg (fun w => (c₂ * (w - p₂)).im) (hσeq x hx)
       rw [this, hσ₂, im_mul_chartPt_sub hc₂]
@@ -484,8 +478,7 @@ theorem chart_orient {Ω : Set ℂ} (hΩo : IsOpen Ω) {p₁ c₁ p₂ c₂ : �
       obtain ⟨ε, hε, h⟩ := hev_eps y₀ hy₀
       have := h (ε / 2) (by positivity) (by linarith)
       rw [hb] at this
-      simp only [mul_zero, sub_zero] at this
-      have ha0 : 0 < a := by nlinarith
+      simp at this
       have ha1 : a = 1 := by nlinarith
       intro y1 _ y2 _ h12
       rw [hφform, hφform, hb, ha1]; linarith

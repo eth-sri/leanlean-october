@@ -47,7 +47,7 @@ lemma exists_smooth_extension {f₀ : ℝ → ℝ} {r r₂ : ℝ} (hr : 0 < r) (
       exact contDiffAt_const.congr_of_eventuallyEq hev
   have hsupp : HasCompactSupport F := by
     refine HasCompactSupport.intro (isCompact_closedBall (0 : ℝ) ((r + r₂) / 2)) fun x hx => ?_
-    rw [mem_closedBall, Real.dist_eq, sub_zero, not_le] at hx
+    simp at hx
     simp [F, hzero x hx.le]
   refine ⟨F, hF, ContDiff.lipschitzWith_of_hasCompactSupport hsupp hF (by simp), fun x hx => ?_⟩
   have : χ x = 1 := χ.one_of_mem_closedBall (by rwa [mem_closedBall, Real.dist_eq, sub_zero])
@@ -92,7 +92,7 @@ theorem exists_level_graph {G : ℝ → ℝ → ℝ} (hG : ContDiff ℝ ∞ (fun
   classical
   set f₀ : ℝ → ℝ := fun x => if hx : |x| < r₂ then (hex x hx).choose else 0
   have hf₀ : ∀ x, |x| < r₂ → |f₀ x| < h' ∧ G x (f₀ x) = ε := fun x hx => by
-    simp only [f₀, dif_pos hx]; exact (hex x hx).choose_spec
+    simp [f₀, dif_pos hx]; exact (hex x hx).choose_spec
   refine ⟨f₀, hf₀, ?_, ?_⟩
   · intro x hx y hy
     obtain ⟨h1, h2⟩ := hf₀ x hx
@@ -108,15 +108,14 @@ theorem exists_level_graph {G : ℝ → ℝ → ℝ} (hG : ContDiff ℝ ∞ (fun
   · intro x₀ hx₀
     obtain ⟨hb₀, hG₀⟩ := hf₀ x₀ hx₀
     set Gt : ℝ × ℝ → ℝ := fun q => G q.1 q.2
-    set a : ℝ × ℝ := (x₀, f₀ x₀)
-    have hdiff : DifferentiableAt ℝ Gt a := (hG.differentiable (by simp)).differentiableAt
+    set a := (x₀, f₀ x₀)
     set G' := fderiv ℝ Gt a
     -- the partial derivative in `y` is at least `κ`
     have hpart : κ ≤ G' (0, 1) := by
       have hcomp : HasDerivAt (fun y => G x₀ y) (G' (0, 1)) (f₀ x₀) := by
         have h1 : HasDerivAt (fun y : ℝ => ((x₀, y) : ℝ × ℝ)) ((0, 1) : ℝ × ℝ) (f₀ x₀) :=
           (hasDerivAt_const _ x₀).prodMk (hasDerivAt_id _)
-        have := hdiff.hasFDerivAt.comp_hasDerivAt (f₀ x₀) h1
+        have := ((hG.differentiable (by simp)).differentiableAt).hasFDerivAt.comp_hasDerivAt (f₀ x₀) h1
         simpa [Gt, a, Function.comp_def] using this
       refine le_deriv_of_slope hcomp (δ := h - h') (by linarith) fun y hy1 hy2 => ?_
       have := hmono x₀ hx₀ (f₀ x₀) y (by linarith [(abs_lt.mp hb₀).1]) hy1.le
@@ -126,8 +125,7 @@ theorem exists_level_graph {G : ℝ → ℝ → ℝ} (hG : ContDiff ℝ ∞ (fun
       have hne : G' (0, 1) ≠ 0 := by linarith
       have hlin : ∀ y : ℝ, (G'.comp (ContinuousLinearMap.inr ℝ ℝ ℝ)) y = y * G' (0, 1) := by
         intro y
-        simp only [ContinuousLinearMap.coe_comp', Function.comp_apply,
-          ContinuousLinearMap.inr_apply]
+        simp
         rw [show ((0 : ℝ), y) = y • ((0 : ℝ), (1 : ℝ)) by simp, map_smul, smul_eq_mul]
       refine ⟨fun y₁ y₂ hy => ?_, fun z => ⟨z / G' (0, 1), ?_⟩⟩
       · rw [hlin, hlin] at hy
@@ -139,7 +137,7 @@ theorem exists_level_graph {G : ℝ → ℝ → ℝ} (hG : ContDiff ℝ ∞ (fun
       ⟨(LinearEquiv.ofBijective (G'.comp (ContinuousLinearMap.inr ℝ ℝ ℝ)).toLinearMap
         hbij).toContinuousLinearEquiv, by ext x; rfl⟩
     set φ := cdf.implicitFunction pn if₂
-    have hφc : ContDiffAt ℝ ∞ φ x₀ := cdf.contDiffAt_implicitFunction pn if₂
+    have hφc := cdf.contDiffAt_implicitFunction pn if₂
     have hφ₀ : φ x₀ = f₀ x₀ := cdf.implicitFunction_apply_self pn if₂
     have hφeq := cdf.eventually_apply_implicitFunction pn if₂
     have hφnear : ∀ᶠ x in 𝓝 x₀, |φ x| < h := by
@@ -159,9 +157,9 @@ def chartMap (p c : ℂ) (x y : ℝ) : ℂ := p + conj c * ((x : ℂ) + (y : ℂ
 
 lemma norm_chartMap_sub {p c : ℂ} (hc : ‖c‖ = 1) (x y : ℝ) :
     ‖chartMap p c x y - p‖ ≤ |x| + |y| := by
-  simp only [chartMap, add_sub_cancel_left, norm_mul, Complex.norm_conj, hc, one_mul]
+  simp [chartMap, add_sub_cancel_left, norm_mul, Complex.norm_conj, hc, one_mul]
   refine (norm_add_le _ _).trans ?_
-  simp [Complex.norm_real]
+  simp
 
 lemma chartMap_of_coords {p c : ℂ} (hc : ‖c‖ = 1) (w : ℂ) :
     chartMap p c (c * (w - p)).re (c * (w - p)).im = w := by
@@ -183,7 +181,7 @@ theorem smoothChart_of_level {ρ : ℂ → ℝ} (hρ : ContDiff ℝ ∞ ρ) (hρ
         (w ∈ D ↔ f (c * (w - p)).re < (c * (w - p)).im) := by
   have hLX := LX.2
   -- the field does not vanish at `p`
-  set m : ℝ := ‖X p‖
+  set m := ‖X p‖
   have hm : 0 < m := by
     have h1 := hQ p (hpU (mem_ball_self hR)) τ hτ.le le_rfl
     rcases (norm_nonneg (X p)).eq_or_lt with h0 | h0
@@ -192,11 +190,11 @@ theorem smoothChart_of_level {ρ : ℂ → ℝ} (hρ : ContDiff ℝ ∞ ρ) (hρ
       nlinarith
     · exact h0
   -- uniform transversality along the fixed direction `X p`
-  set rb : ℝ := min R (κ / (4 * LX + 1))
-  have hrb : 0 < rb := lt_min hR (by positivity)
+  set rb := min R (κ / (4 * LX + 1))
+  have hrb := lt_min hR (by positivity)
   have hfix : ∀ z ∈ ball p rb, ∀ t, 0 ≤ t → t ≤ τ → ρ z + κ / 2 * t ≤ ρ (z + t * X p) := by
     intro z hz t ht0 htτ
-    have hzU : z ∈ U := hpU (ball_subset_ball (min_le_left _ _) hz)
+    have hzU := hpU (ball_subset_ball (min_le_left _ _) hz)
     have h1 := hQ z hzU t ht0 htτ
     have h2 : |ρ (z + t * X p) - ρ (z + t * X z)| ≤ 2 * (t * (LX * rb)) := by
       have := hρL.dist_le_mul (z + t * X p) (z + t * X z)
@@ -218,10 +216,10 @@ theorem smoothChart_of_level {ρ : ℂ → ℝ} (hρ : ContDiff ℝ ∞ ρ) (hρ
     have := (abs_le.mp h2).1
     nlinarith
   -- the unit direction and the rotation
-  have hmC : (m : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hm.ne'
-  set e : ℂ := X p * ((m : ℂ))⁻¹
+  have hmC := Complex.ofReal_ne_zero.mpr hm.ne'
+  set e := X p * ((m : ℂ))⁻¹
   have he : X p = (m : ℂ) * e := by
-    simp only [e]; rw [mul_left_comm, mul_inv_cancel₀ hmC, mul_one]
+    simp [e]; rw [mul_left_comm, mul_inv_cancel₀ hmC, mul_one]
   have hdir : ∀ z ∈ ball p rb, ∀ s, 0 ≤ s → s ≤ τ * m →
       ρ z + κ / (2 * m) * s ≤ ρ (z + s * e) := by
     intro z hz s hs0 hsτ
@@ -230,17 +228,17 @@ theorem smoothChart_of_level {ρ : ℂ → ℝ} (hρ : ContDiff ℝ ∞ ρ) (hρ
       rw [← mul_assoc]; congr 1; push_cast; field_simp] at this
     have : κ / 2 * (s / m) = κ / (2 * m) * s := by field_simp
     linarith
-  set c : ℂ := Complex.I * conj e
+  set c := Complex.I * conj e
   have hc : ‖c‖ = 1 := by
-    simp only [c, e, norm_mul, Complex.norm_I, Complex.norm_conj, one_mul, norm_inv,
+    simp [c, e, norm_mul, Complex.norm_I, Complex.norm_conj, one_mul, norm_inv,
       Complex.norm_real, Real.norm_eq_abs, abs_of_pos hm]
     exact mul_inv_cancel₀ hm.ne'
   have hshift : ∀ x y₁ y₂ : ℝ, chartMap p c x y₂ = chartMap p c x y₁ + ((y₂ - y₁ : ℝ) : ℂ) * e := by
     intro x y₁ y₂
-    simp only [chartMap, c, map_mul, Complex.conj_I, Complex.conj_conj]
+    simp [chartMap, c, map_mul, Complex.conj_I, Complex.conj_conj]
     push_cast
     ring_nf
-    rw [Complex.I_sq]; ring
+    simp; ring
   -- the graph function
   set G : ℝ → ℝ → ℝ := fun x y => ρ (chartMap p c x y)
   have hG : ContDiff ℝ ∞ (fun q : ℝ × ℝ => G q.1 q.2) := by
@@ -249,11 +247,10 @@ theorem smoothChart_of_level {ρ : ℂ → ℝ} (hρ : ContDiff ℝ ∞ ρ) (hρ
     have h2 : ContDiff ℝ ∞ fun q : ℝ × ℝ => (q.2 : ℂ) :=
       Complex.ofRealCLM.contDiff.comp contDiff_snd
     exact hρ.comp (contDiff_const.add (contDiff_const.mul (h1.add (h2.mul contDiff_const))))
-  set h : ℝ := min (rb / 4) (τ * m / 4)
+  set h := min (rb / 4) (τ * m / 4)
   have hh : 0 < h := lt_min (by positivity) (by positivity)
   set κ'' : ℝ := κ / (2 * m)
-  have hκ'' : 0 < κ'' := by positivity
-  set r₂ : ℝ := min (κ'' * h / 4) (h / 2)
+  set r₂ := min (κ'' * h / 4) (h / 2)
   have hr₂ : 0 < r₂ := lt_min (by positivity) (by positivity)
   have hr₂h : r₂ ≤ h / 2 := min_le_right _ _
   have hr₂κ : r₂ ≤ κ'' * h / 4 := min_le_left _ _
@@ -262,7 +259,7 @@ theorem smoothChart_of_level {ρ : ℂ → ℝ} (hρ : ContDiff ℝ ∞ ρ) (hρ
   have hmono : ∀ x, |x| < r₂ → ∀ y₁ y₂, -h < y₁ → y₁ ≤ y₂ → y₂ < h →
       G x y₁ + κ'' * (y₂ - y₁) ≤ G x y₂ := by
     intro x hx y₁ y₂ h1 h12 h2
-    simp only [G]
+    simp [G]
     rw [hshift x y₁ y₂]
     refine hdir _ ?_ _ (by linarith) (by linarith)
     rw [mem_ball, dist_eq_norm]
@@ -275,7 +272,7 @@ theorem smoothChart_of_level {ρ : ℂ → ℝ} (hρ : ContDiff ℝ ∞ ρ) (hρ
     rw [Real.dist_eq, dist_eq_norm, hp] at this
     refine this.trans ?_
     have := norm_chartMap_sub (p := p) hc x 0
-    simp only [abs_zero, add_zero] at this
+    simp at this
     push_cast; linarith
   have hlo : ∀ x, |x| < r₂ → G x (-(h / 2)) < ε := by
     intro x hx
@@ -288,7 +285,7 @@ theorem smoothChart_of_level {ρ : ℂ → ℝ} (hρ : ContDiff ℝ ∞ ρ) (hρ
     have h2 := (abs_le.mp (hG0 x)).1
     nlinarith
   obtain ⟨f₀, hf₀, hf₀iff, hf₀c⟩ :=
-    exists_level_graph hG hκ'' (by linarith : (0 : ℝ) < h / 2) (by linarith) hmono hlo hhi
+    exists_level_graph hG (by positivity) (by linarith : (0 : ℝ) < h / 2) (by linarith) hmono hlo hhi
   obtain ⟨F, hFc, ⟨K, hFl⟩, hFf⟩ :=
     exists_smooth_extension (r := r₂ / 2) (by positivity) (by linarith) hf₀c
   have hf00 : f₀ 0 = 0 := by

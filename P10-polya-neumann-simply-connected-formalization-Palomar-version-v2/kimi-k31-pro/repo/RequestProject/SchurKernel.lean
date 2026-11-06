@@ -235,9 +235,9 @@ lemma schurKernel_end_left (hK : LipschitzWith K γ) (hW : IsTransport γ E W)
   have ha' : (smallA W : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr ha
   have hb := smallB_end_sub hK hW
   have hk := volterraKernel_end_add hW s
-  have h0 : (0 : ℝ) ∈ Icc 0 (2 * π) := ⟨le_rfl, by positivity⟩
+
   unfold schurKernel
-  rw [schurKernel0_of_le hK hW h0 hs.1, show schurKernel0 W (2 * π) s =
+  rw [schurKernel0_of_le hK hW (⟨le_rfl, by positivity⟩) hs.1, show schurKernel0 W (2 * π) s =
     Complex.I * (volterraKernel W (2 * π) s - 1) from if_pos hs.2]
   field_simp
   unfold schurBeta
@@ -267,7 +267,7 @@ lemma norm_schurRho0_sub_le (hK : LipschitzWith K γ) (hE : 0 ≤ E) (hW : IsTra
     intro θ hθ
     have := norm_kernelRho_sub_le hK hE hW hθ ht ht
     rwa [kernelRho_diag hK hW ht, sub_zero] at this
-  have hI : ‖Complex.I‖ = 1 := Complex.norm_I
+  have hI := Complex.norm_I
   unfold schurRho0
   split_ifs with ha hb hb
   · rw [← mul_sub, norm_mul, hI, one_mul]; exact norm_kernelRho_sub_le hK hE hW h₁ h₂ ht
@@ -320,7 +320,7 @@ lemma norm_schurRho_le (hK : LipschitzWith K γ) (hE : 0 ≤ E) (hW : IsTranspor
     {θ t : ℝ} (hθ : θ ∈ Icc 0 (2 * π)) (ht : t ∈ Icc 0 (2 * π)) :
     ‖schurRho γ E W θ t‖ ≤ K * (shiftConst * K) * E * (2 * π) +
       (‖schurBeta W 0‖ + B * (2 * π)) * B / |smallA W| := by
-  have h0 : (0 : ℝ) ∈ Icc 0 (2 * π) := ⟨le_rfl, by positivity⟩
+
   have hB0 : 0 ≤ B := (norm_nonneg _).trans (hB t ht)
   have hdist : |θ - t| ≤ 2 * π := by
     rw [abs_le]; constructor <;> linarith [hθ.1, hθ.2, ht.1, ht.2]
@@ -333,7 +333,7 @@ lemma norm_schurRho_le (hK : LipschitzWith K γ) (hE : 0 ≤ E) (hW : IsTranspor
     unfold schurRho0
     split_ifs <;> simpa [norm_mul, Complex.norm_I] using hk
   have hβ : ‖schurBeta W θ‖ ≤ ‖schurBeta W 0‖ + B * (2 * π) := by
-    have := norm_schurBeta_sub_le hK hW hB hθ h0
+    have := norm_schurBeta_sub_le hK hW hB hθ (⟨le_rfl, by positivity⟩)
     rw [sub_zero, abs_of_nonneg hθ.1] at this
     have h3 : ‖schurBeta W θ‖ ≤ ‖schurBeta W 0‖ + ‖schurBeta W θ - schurBeta W 0‖ := by
       have := norm_add_le (schurBeta W 0) (schurBeta W θ - schurBeta W 0)
@@ -366,7 +366,7 @@ theorem norm_schurKernel_form_le (hK : LipschitzWith K γ) (hE : 0 ≤ E) (hW : 
     ‖∫ θ in (0 : ℝ)..(2 * π), conj (g θ) * ∫ s in (0 : ℝ)..(2 * π), schurKernel W θ s * g s‖ ≤
       (K * (shiftConst * K) * E + B * B / |smallA W|) *
         (∫ t in (0 : ℝ)..(2 * π), ‖(∫ u in (0 : ℝ)..t, g u) - c‖) ^ 2 := by
-  have hB0 : 0 ≤ B := (norm_nonneg _).trans (hB 0 ⟨le_rfl, by positivity⟩)
+  have hB0 := (norm_nonneg _).trans (hB 0 ⟨le_rfl, by positivity⟩)
   have hM : 0 ≤ (K : ℝ) * (shiftConst * K) * E + B * B / |smallA W| := by
     have := shiftConst_nonneg; positivity
   exact norm_kernel_form_le (by positivity) hM hg hgB
@@ -407,8 +407,8 @@ lemma integral_schurKernel_mul_eq (hK : LipschitzWith K γ) (hW : IsTransport γ
     rw [uIcc_of_le hθ.2, uIcc_of_le hL.1]; exact Icc_subset_Icc hθ.1 le_rfl
   have hwc := volterraKernel_continuousOn hW θ
   rw [← uIcc_of_le hL.1] at hwc
-  have hg1 : IntervalIntegrable g volume 0 θ := hgi.mono_set hsub1
-  have hg2 : IntervalIntegrable g volume θ (2 * π) := hgi.mono_set hsub2
+  have hg1 := hgi.mono_set hsub1
+  have hg2 := hgi.mono_set hsub2
   have hw1 : IntervalIntegrable (fun s => volterraKernel W θ s * g s) volume 0 θ :=
     hg1.continuousOn_mul (hwc.mono hsub1)
   have hw2 : IntervalIntegrable (fun s => volterraKernel W θ s * g s) volume θ (2 * π) :=
@@ -486,8 +486,7 @@ lemma continuousOn_integral_schurKernel_mul (hK : LipschitzWith K γ) (hE : 0 �
     (hG : ∫ t in (0 : ℝ)..(2 * π), g t = 0) :
     ContinuousOn (fun θ => ∫ s in (0 : ℝ)..(2 * π), schurKernel W θ s * g s) (Icc 0 (2 * π)) := by
   have hL : (0 : ℝ) ≤ 2 * π := by positivity
-  have h0 : (0 : ℝ) ∈ Icc 0 (2 * π) := ⟨le_rfl, hL⟩
-  have hL' : (2 * π) ∈ Icc 0 (2 * π) := ⟨hL, le_rfl⟩
+
   set B := Real.sqrt E * K * 2 with hBdef
   have hB : ∀ t ∈ Icc 0 (2 * π), ‖smallBDer γ E W t‖ ≤ B := fun t ht =>
     norm_smallBDer_le_sqrt hK hW ht
@@ -508,12 +507,12 @@ lemma continuousOn_integral_schurKernel_mul (hK : LipschitzWith K γ) (hE : 0 �
     refine intervalIntegrable_of_restrict_bound
       ((schurRho_aestronglyMeasurable hK hW hθ).mul
         ((hGc.sub continuousOn_const).aestronglyMeasurable measurableSet_Icc))
-      (B := Bρ * (Bg * (2 * π))) (fun t ht => ?_) h0 hL'
+      (B := Bρ * (Bg * (2 * π))) (fun t ht => ?_) (⟨le_rfl, hL⟩) (⟨hL, le_rfl⟩)
     simp only [Pi.mul_apply, Pi.sub_apply, sub_zero]
     rw [norm_mul]
     exact mul_le_mul (norm_schurRho_le hK hE hW hB hθ ht) (norm_primitive_le hgBr ht)
       (norm_nonneg _) ((norm_nonneg _).trans (norm_schurRho_le hK hE hW hB hθ ht))
-  have hBg : 0 ≤ Bg := (norm_nonneg _).trans (hgB 0)
+  have hBg := (norm_nonneg _).trans (hgB 0)
   have hM0 : 0 ≤ M := by have := shiftConst_nonneg; positivity
   refine (LipschitzOnWith.of_dist_le_mul (K := (M * (Bg * (2 * π)) * (2 * π)).toNNReal)
     fun θ₁ h₁ θ₂ h₂ => ?_).continuousOn

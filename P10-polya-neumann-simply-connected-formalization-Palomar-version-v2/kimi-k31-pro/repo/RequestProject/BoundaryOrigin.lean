@@ -52,7 +52,7 @@ theorem exists_basepoint_cutC_ne_zero {γ : ℝ → ℂ} {K : NNReal} (hK : Lips
     unfold cutC at h1
     rw [sub_eq_zero] at h1
     have h2 := congrArg (ContinuousLinearMap.adjoint (W θ)) h1
-    simp only [ContinuousLinearMap.adjoint_comp, ContinuousLinearMap.adjoint_adjoint,
+    simp [ContinuousLinearMap.adjoint_comp, ContinuousLinearMap.adjoint_adjoint,
       ContinuousLinearMap.mul_def, ContinuousLinearMap.comp_apply] at h2
     have h3 : ∀ x, ContinuousLinearMap.adjoint (W θ) (W θ x) = x := fun x => by
       rw [← ContinuousLinearMap.mul_apply, hu, ContinuousLinearMap.one_apply]
@@ -74,7 +74,6 @@ theorem exists_boundary_origin {γ : ℝ → ℂ} {K : NNReal} (hK : LipschitzWi
     ∃ t ∈ Icc 0 (2 * π), ∃ ε > 0, ε ≤ E₀ ∧ ∀ E ∈ Ioo (E₀ - ε) (E₀ + ε),
       ∀ W' : ℝ → Ell2 →L[ℂ] Ell2, IsTransport (fun θ => γ (θ + t)) E W' →
         cutC (W' (2 * π)) (basisVec 0) ≠ 0 := by
-  have hπ : (0 : ℝ) ≤ 2 * π := by positivity
   have hV : Ws E₀ (2 * π) ≠ 1 := by
     intro h1
     apply hU
@@ -86,7 +85,7 @@ theorem exists_boundary_origin {γ : ℝ → ℂ} {K : NNReal} (hK : LipschitzWi
     (ContinuousLinearMap.adjoint (𝕜 := ℂ) (E := Ell2) (F := Ell2)).continuous
   have hFt : Tendsto F (𝓝 E₀) (𝓝 (F E₀)) := by
     have h1 := tendsto_transport_energy hK hWs E₀ ht
-    have h2 := tendsto_transport_energy hK hWs E₀ ⟨hπ, le_rfl⟩
+    have h2 := tendsto_transport_energy hK hWs E₀ ⟨(by positivity), le_rfl⟩
     have h3 : Tendsto (fun E => Ws E t * Ws E (2 * π) * ContinuousLinearMap.adjoint (Ws E t))
         (𝓝 E₀) (𝓝 (Ws E₀ t * Ws E₀ (2 * π) * ContinuousLinearMap.adjoint (Ws E₀ t))) :=
       (h1.mul h2).mul ((hadj.tendsto _).comp h1)
@@ -94,7 +93,7 @@ theorem exists_boundary_origin {γ : ℝ → ℂ} {K : NNReal} (hK : LipschitzWi
       unfold cutC
       exact (hadj.clm_apply continuous_const).sub continuous_const
     exact (h4.tendsto _).comp h3
-  have hev : ∀ᶠ E in 𝓝 E₀, F E ≠ 0 := hFt.eventually_ne hc
+  have hev := hFt.eventually_ne hc
   obtain ⟨δ, hδ, hδF⟩ := Metric.eventually_nhds_iff.mp hev
   refine ⟨t, ht, min δ E₀, lt_min hδ hE₀, min_le_right _ _, fun E hE W' hW' => ?_⟩
   have hdist : dist E E₀ < δ := by

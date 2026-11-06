@@ -67,7 +67,7 @@ theorem exp_argNeg {z : ℂ} (hz : ‖z‖ = 1) : Complex.exp (argNeg z * Comple
   · exact h
   · rw [Complex.ofReal_sub, sub_mul, Complex.exp_sub, h]
     push_cast
-    rw [Complex.exp_two_pi_mul_I, div_one]
+    simp
 
 /-- **Lemma 9.2 (scalar inequality).**  `|z - 1| ≤ -Arg₋ z` on the unit circle. -/
 theorem norm_sub_one_le_neg_argNeg {z : ℂ} (hz : ‖z‖ = 1) : ‖z - 1‖ ≤ -argNeg z := by
@@ -98,11 +98,11 @@ theorem abs_argNeg_le_of_im_nonpos {z : ℂ} (hz : ‖z‖ = 1) (h1 : z ≠ 1) (
         by_contra hre
         push_neg at hre
         apply h1
-        have h0 : Complex.arg z = 0 := Complex.arg_eq_zero_iff.mpr ⟨hre, h⟩
+        have h0 := Complex.arg_eq_zero_iff.mpr ⟨hre, h⟩
         have := Complex.norm_mul_exp_arg_mul_I z
         rw [hz, h0] at this
         simpa using this.symm
-      have hpi : Complex.arg z = π := Complex.arg_eq_pi_iff.mpr ⟨hre, h⟩
+      have hpi := Complex.arg_eq_pi_iff.mpr ⟨hre, h⟩
       unfold argNeg
       rw [if_neg (by rw [hpi]; exact not_lt.mpr Real.pi_pos.le), hpi]
       exact ⟨by linarith, by linarith [Real.pi_pos]⟩

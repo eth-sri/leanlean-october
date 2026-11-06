@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.TwoPi
 public import RequestProject.NormalizedPeriodicBoundary
 public import RequestProject.LocalConformalRegularObservation
 public import RequestProject.LocalConformalVekuaForward
@@ -28,7 +29,6 @@ namespace PolyaNeumann
 open Set MeasureTheory Filter Metric Real
 open scoped Topology InnerProductSpace ComplexConjugate
 
-local instance periodicNullTwoPiPos : Fact (0 < 2 * Real.pi) := ⟨Real.two_pi_pos⟩
 local notation "μB" => volume.restrict (Ioc (0 : ℝ) (2 * Real.pi))
 
 private theorem periodic_null_halfSmoothing_injective :
@@ -169,7 +169,7 @@ theorem periodicP_eq_kernel_integrals_boundaryL2
       (fun s => g s • ContinuousLinearMap.adjoint (W s) (basisVec 0)) volume 0 (2 * Real.pi) :=
     (intervalIntegrable_iff_integrableOn_Ioc_of_le Real.two_pi_pos.le).mpr
       (integrable_boundary_observation_load hγLip hW g)
-  let A : Ell2 →L[ℂ] ℂ := (innerSL ℂ (basisVec 0)).comp ((W θ).comp (cutBE W))
+  let A := (innerSL ℂ (basisVec 0)).comp ((W θ).comp (cutBE W))
   have hobs := A.intervalIntegral_comp_comm hbi
   simp only [A, ContinuousLinearMap.comp_apply, innerSL_apply_apply,
     map_smul, smul_eq_mul] at hobs
@@ -257,10 +257,10 @@ theorem localConformalRegularPeriodicOperator_apply_ae_boundaryL2 (E₀ E : ℝ)
         (TP (h1RegularResolvent ΩP E₀ E (ContinuousLinearMap.adjoint QP
           (sobolevSmoothing (1 / 2) (by norm_num) (boundaryFourier g)))) : ℝ → ℂ)
         (g : ℝ → ℂ) := by
-  let t : BoundaryL2 := TP (h1RegularResolvent ΩP E₀ E (ContinuousLinearMap.adjoint QP
+  let t := TP (h1RegularResolvent ΩP E₀ E (ContinuousLinearMap.adjoint QP
     (sobolevSmoothing (1 / 2) (by norm_num) (boundaryFourier g))))
   have hfI := (Lp.memLp g).integrable (by norm_num : (1 : ENNReal) ≤ 2)
-  let k : BoundaryL2 := (memLp_regularCorrectedAction hγLip hW hfI).toLp _
+  let k := (memLp_regularCorrectedAction hγLip hW hfI).toLp _
   have hop : localConformalRegularPeriodicOperator hR F hFs hL E₀ E hγLip hW hc g =
       (2 : ℂ) • t + sawtoothBoundaryAction g + k := by
     change (2 : ℂ) • t + sawtoothBoundaryOperator g +
@@ -321,8 +321,7 @@ theorem localConformal_correctedRemainderMatrix_summable
     Summable fun p => ‖correctedRemainderMatrix W 0 0 p‖ ^ 2 := by
   have hΓ4 := contDiff_physicalCircleTrace_four_of_neighborhood hR F
     (hFs.of_le (WithTop.coe_le_coe.mpr le_top))
-  have hΓ2 : ContDiff ℝ ((1 : WithTop ℕ∞) + 1) ΓF := hΓ4.of_le (by norm_num)
-  obtain ⟨B, hB⟩ := hΓ2.deriv'.contDiffOn.exists_lipschitzOnWith
+  obtain ⟨B, hB⟩ := (hΓ4.of_le (by norm_num)).deriv'.contDiffOn.exists_lipschitzOnWith
     (by norm_num : (1 : WithTop ℕ∞) ≠ 0) (convex_Icc 0 (2 * Real.pi)) isCompact_Icc
   have hdiff : ∀ x ∈ Icc 0 (2 * Real.pi), ∀ y ∈ Icc 0 (2 * Real.pi),
       ‖deriv ΓF x - deriv ΓF y‖ ≤ B * |x - y| := by
@@ -397,7 +396,7 @@ theorem localConformalPeriodicBoundaryNull_of_half_regular
     (b : L2Z) (hbn : IsNonpositiveFourierSupport b)
     (hbhalf : IsSobolevSeq (1 / 2 : ℝ) (b : ℤ → ℂ)) :
     normalizedPeriodicBoundaryFamily QF Ws E (NF (E : ℂ) b) = 0 := by
-  let g : BoundaryL2 := localConformalVekuaForwardLoad hR F hFs (E : ℂ) b hbhalf
+  let g := localConformalVekuaForwardLoad hR F hFs (E : ℂ) b hbhalf
   have hload : sobolevSmoothing (1 / 2) (by norm_num) (boundaryFourier g) = NF (E : ℂ) b :=
     localConformalVekuaForwardLoad_normalized hR F hFs (E : ℂ) b hbhalf
   have hbase := localConformal_correctedRemainderMatrix_summable hR F hFs hΓLip hW hc
@@ -433,8 +432,8 @@ private theorem periodic_null_stdBasis_half_regular (n : ℤ) :
     IsSobolevSeq (1 / 2 : ℝ) (stdBasisZ n : ℤ → ℂ) := by
   apply summable_of_ne_finset_zero (s := {n})
   intro k hk
-  have hkn : k ≠ n := by simpa only [Finset.mem_singleton] using hk
-  simp [stdBasisZ_apply, lp.single_apply, hkn]
+
+  simp [stdBasisZ_apply, lp.single_apply, (by simpa only [Finset.mem_singleton] using hk)]
 
 include hb hhol hinj hC hK e he hsource hes hγ hτ hcoord in
 /-- The true normalized periodic boundary family annihilates the
@@ -451,7 +450,7 @@ theorem localConformalPeriodicBoundaryNull
     (normalizedPeriodicBoundaryFamily QF Ws E).comp (NF (E : ℂ))
   have hop : A.comp (1 - posProj) = 0 := by
     apply ContinuousLinearMap.ext_on
-      ((Submodule.dense_iff_topologicalClosure_eq_top).2 stdBasisZ.dense_span)
+      (Submodule.dense_iff_topologicalClosure_eq_top.2 stdBasisZ.dense_span)
     rintro _ ⟨n, rfl⟩
     simp only [ContinuousLinearMap.comp_apply, ContinuousLinearMap.zero_apply]
     by_cases hn : 0 < n

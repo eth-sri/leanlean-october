@@ -46,7 +46,7 @@ theorem localConformalH1Pullback_reverse_norm_sq
     (u : NeumannH1 (F '' ball (0 : ℂ) 1)) :
     ‖u‖ ^ 2 ≤ max (K ^ 2) 1 * ‖localConformalH1Pullback hR F hFs hL u‖ ^ 2 := by
   let v := localConformalH1Pullback hR F hFs hL u
-  have hK0 : 0 ≤ K := (norm_nonneg _).trans
+  have hK0 := (norm_nonneg _).trans
     (hK 0 (by norm_num [Metric.mem_ball]))
   have hm := norm_sq_localConformalMassPullback hR F hFs hb hL hhol hinj hC hK u
   have hg := localConformalH1Pullback_gradient_energy hR F hFs hb hL hhol hinj hC u
@@ -187,10 +187,6 @@ def localConformalH1Equiv :
     (LinearMap.range_eq_top.mpr
       (localConformalH1Pullback_surjective hR F hFs hb hL hhol hinj hC hK e he hsource hes))
 
-@[simp] theorem localConformalH1Equiv_apply
-    (u : NeumannH1 (F '' ball (0 : ℂ) 1)) :
-    localConformalH1Equiv hR F hFs hb hL hhol hinj hC hK e he hsource hes u =
-      localConformalH1Pullback hR F hFs hL u := rfl
 
 /-- The actual continuous inverse, taking a disk H¹ vector to its physical vector. -/
 def localConformalH1Pushforward :
@@ -203,11 +199,6 @@ def localConformalH1Pushforward :
       (localConformalH1Pushforward hR F hFs hb hL hhol hinj hC hK e he hsource hes v) = v :=
   (localConformalH1Equiv hR F hFs hb hL hhol hinj hC hK e he hsource hes).apply_symm_apply v
 
-@[simp] theorem localConformalH1Pushforward_pullback
-    (u : NeumannH1 (F '' ball (0 : ℂ) 1)) :
-    localConformalH1Pushforward hR F hFs hb hL hhol hinj hC hK e he hsource hes
-      (localConformalH1Pullback hR F hFs hL u) = u :=
-  (localConformalH1Equiv hR F hFs hb hL hhol hinj hC hK e he hsource hes).symm_apply_apply u
 
 end Equivalence
 

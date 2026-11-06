@@ -62,12 +62,11 @@ theorem tendstoUniformlyOn_sesq_of_basis (b : Module.Basis ι ℂ V)
     (h : ∀ r s, Tendsto (fun n => Bn n (b r) (b s)) atTop (𝓝 (B (b r) (b s))))
     {K : Set V} (hK : Bornology.IsBounded K) :
     TendstoUniformlyOn (fun n u => Bn n u u) (fun u => B u u) atTop K := by
-  set cL : V →L[ℂ] (ι → ℂ) := LinearMap.toContinuousLinearMap b.equivFun.toLinearMap
+  set cL := LinearMap.toContinuousLinearMap b.equivFun.toLinearMap
   obtain ⟨R0, hR0⟩ := hK.exists_norm_le
-  set R : ℝ := ‖cL‖ * max R0 0
-  have hR : 0 ≤ R := by positivity
+  set R := ‖cL‖ * max R0 0
   -- the coefficients are bounded on `K`
-  have hcoef : ∀ u ∈ K, ∀ r, ‖b.equivFun u r‖ ≤ R := fun u hu r =>
+  have hcoef := fun u hu r =>
     calc ‖b.equivFun u r‖ ≤ ‖cL u‖ := norm_le_pi_norm (cL u) r
       _ ≤ ‖cL‖ * ‖u‖ := cL.le_opNorm u
       _ ≤ R := mul_le_mul_of_nonneg_left ((hR0 u hu).trans (le_max_left _ _)) (norm_nonneg _)
@@ -93,7 +92,7 @@ theorem tendstoUniformlyOn_sesq_of_basis (b : Module.Basis ι ℂ V)
         gcongr
         · exact hcoef u hu r
         · exact hcoef u hu s
-    _ = R ^ 2 * D n := by simp only [D, Finset.mul_sum]
+    _ = R ^ 2 * D n := by simp [D, Finset.mul_sum]
     _ ≤ R ^ 2 * (ε / (R ^ 2 + 1)) := by gcongr
     _ < ε := by
         rw [mul_div_assoc', div_lt_iff₀ (by positivity)]
@@ -151,7 +150,7 @@ theorem limsup_le_neumannEigenvalue (j : ℕ) (μ : ℕ → ENNReal) (q m : ℕ 
     obtain ⟨S, hS⟩ := iInf_lt_iff.mp hlt
     obtain ⟨hS', hlt'⟩ := iInf_lt_iff.mp hS
     exact ⟨S, hS', hlt'⟩
-  have hray : ∀ v ∈ S, v ≠ 0 → rayleigh Ω v < ENNReal.ofReal (M + ε) := fun v hv hv0 =>
+  have hray := fun v hv hv0 =>
     lt_of_le_of_lt (le_iSup₂_of_le v hv (le_iSup (fun _ : v ≠ 0 => rayleigh Ω v) hv0)) hSlt
   -- it lies in `H¹(Ω)`
   have hH1 : (S : Set (L2 Ω)) ⊆ H1 Ω := by
@@ -167,7 +166,7 @@ theorem limsup_le_neumannEigenvalue (j : ℕ) (μ : ℕ → ENNReal) (q m : ℕ 
     have hv0 : v ≠ 0 := by rintro rfl; simp at h1
     have := hray v hv hv0
     have hn : (‖v‖₊ : ENNReal) = 1 := by
-      rw [← ENNReal.coe_one, ENNReal.coe_inj]; exact Subtype.ext h1
+      simp; exact Subtype.ext h1
     rw [rayleigh, hn, one_pow, div_one] at this
     exact ENNReal.toReal_le_of_le_ofReal (by positivity) this.le
   -- uniform convergence on its unit sphere
@@ -186,9 +185,8 @@ theorem limsup_le_neumannEigenvalue (j : ℕ) (μ : ℕ → ENNReal) (q m : ℕ 
       have h := hmn v hvs
       rw [Real.dist_eq] at h
       linarith [(abs_lt.mp h).2]
-    have hmpos : 0 < m n v := by linarith
     have hquot : q n v / m n v ≤ M + δ := by
-      rw [div_le_iff₀ hmpos]
+      rw [div_le_iff₀ (by linarith)]
       nlinarith
     calc ENNReal.ofReal (q n v / m n v) ≤ ENNReal.ofReal (M + δ) := ENNReal.ofReal_le_ofReal hquot
       _ = μj + δ := by
@@ -211,14 +209,13 @@ theorem neumannEigenvalue_le_of_orthonormal (j : ℕ) (u : Fin (j + 1) → L2 Ω
   have hn : ‖∑ r, a r • u r‖ ^ 2 = ∑ r, ‖a r‖ ^ 2 := by
     rw [@norm_sq_eq_re_inner ℂ, hu.inner_sum]
     simp only [Complex.conj_mul']
-    rw [map_sum]
+    simp
     refine Finset.sum_congr rfl fun r _ => ?_
     norm_cast
   have e1 : (‖∑ r, a r • u r‖₊ : ENNReal) ^ 2 = ENNReal.ofReal (∑ r, ‖a r‖ ^ 2) := by
     rw [← hn, ENNReal.ofReal_pow (norm_nonneg _), ofReal_norm_eq_enorm, enorm_eq_nnnorm]
-  have hne : (‖∑ r, a r • u r‖₊ : ENNReal) ^ 2 ≠ 0 := by simpa using hv0
   unfold rayleigh
-  rw [ENNReal.div_le_iff hne (by simp), e1]
+  rw [ENNReal.div_le_iff (by simpa using hv0) (by simp), e1]
   exact h a
 
 /-- **Lemma 10.13 (convergence of eigenvalues).** Under the hypotheses of Lemma 10.12, and
@@ -246,8 +243,8 @@ theorem tendsto_neumannEigenvalue (j : ℕ) (μ : ℕ → ENNReal)
   obtain ⟨φ, hφ, hφc⟩ :=
     extraction_of_frequently_atTop (frequently_lt_of_liminf_lt (by isBoundedDefault) hc1)
   obtain ⟨lam, ψ, hψ, hlim⟩ := SeqCompactSpace.tendsto_subseq (μ ∘ φ)
-  have hlam : lam ≤ c := le_of_tendsto' hlim fun n => (hφc (ψ n)).le
-  have hlamtop : lam < ⊤ := lt_of_le_of_lt hlam (lt_of_lt_of_le hc2 le_top)
+  have hlam := le_of_tendsto' hlim fun n => (hφc (ψ n)).le
+  have hlamtop := lt_of_le_of_lt hlam (lt_of_lt_of_le hc2 le_top)
   obtain ⟨u, hu, hE⟩ := hcpt (φ ∘ ψ) (hφ.comp hψ) lam hlamtop hlim
   exact absurd ((neumannEigenvalue_le_of_orthonormal j u hu lam hE).trans hlam) (not_le.mpr hc2)
 
@@ -263,7 +260,7 @@ theorem tendsto_volume_of_density (hfin : volume Ω ≠ ⊤) (Ωs : ℕ → Set 
   haveI : IsFiniteMeasure (volume.restrict Ω) := isFiniteMeasure_restrict.mpr hfin
   have h1 : Tendsto (fun n => ∫ w in Ω, ρ n w) atTop (𝓝 (∫ w in Ω, (1 : ℝ))) :=
     tendsto_integral_of_dominated_convergence (fun _ => C) hmeas (integrable_const C)
-      (fun n => by simpa [Real.norm_eq_abs] using hbound n) hlim
+      (fun n => by simpa using hbound n) hlim
   have h2 : (∫ w in Ω, (1 : ℝ)) = (volume Ω).toReal := by simp [Measure.real]
   rw [h2] at h1
   simp_rw [hvol]

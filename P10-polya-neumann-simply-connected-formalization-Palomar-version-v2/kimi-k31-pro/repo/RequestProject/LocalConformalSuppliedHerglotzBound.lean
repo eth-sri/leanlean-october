@@ -46,8 +46,7 @@ theorem exists_localConformal_original_herglotz_boundary_bound
         ∃ ℓ : (ℝ → ℂ) →ₗ[ℂ] (Fin (originalNeumannMultiplicity ΩF E₀) → ℂ),
           ∀ a, IsDirDensity a → ℓ a = 0 →
             -(A * ‖observationAdj W (herglotzConormal (Real.sqrt E) a γ)‖ ^ 2) ≤
-              herglotzForm W γ E a := by
-  exact exists_uniform_originalHerglotz_bound_of_normalized hR F hFs hb hL hhol hinj hC
+              herglotzForm W γ E a := exists_uniform_originalHerglotz_bound_of_normalized hR F hFs hb hL hhol hinj hC
     hγ hτ hcoord hΓLip Ws hWs E₀ hcut
     (exists_localConformal_normalized_reduced_boundary_bound hR F hFs hb hL hhol hinj hC hK
       e he hsource hes hγ hτ hcoord hΓLip Ws hWs hE₀ hcut)

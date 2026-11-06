@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.TwoPi
 public import RequestProject.LocalConformalVekuaConormal
 public import RequestProject.LocalConformalVekuaTrace
 public import RequestProject.DiskWeakModes
@@ -31,7 +32,6 @@ namespace PolyaNeumann
 open MeasureTheory Set Metric Filter
 open scoped Topology InnerProductSpace ComplexConjugate
 
-local instance conormalBridgeTwoPiPos : Fact (0 < 2 * Real.pi) := ⟨Real.two_pi_pos⟩
 
 private theorem bridge_summable_coeff {s : ℝ} (hs : 0 ≤ s) {a : ℤ → ℂ}
     (ha : IsWL1 s a) : Summable a := by
@@ -97,8 +97,8 @@ theorem localConformalVelocityCircle_isWL1_half {R : ℝ} (hR : 1 < R)
 
 private def bridge_physicalVelocity {Ω : Set ℂ} {γ : ℝ → ℂ}
     (hγ : IsBoundaryParam Ω γ) (conjugated : Bool) : BoundaryL2 →L[ℂ] BoundaryL2 :=
-  let B : NNReal := Classical.choose hγ.lipschitz
-  let hB : LipschitzWith B γ := Classical.choose_spec hγ.lipschitz
+  let B := Classical.choose hγ.lipschitz
+  let hB := Classical.choose_spec hγ.lipschitz
   lpBoundedMultiplier
     (fun θ => if conjugated then conj (deriv γ θ) else deriv γ θ)
     (by cases conjugated
@@ -166,7 +166,7 @@ private theorem bridge_velocity_jacobian (conjugated : Bool) :
   have he : γ ∘ τ = physicalCircleTrace F := funext fun θ => (hcoord θ).symm
   rw [he] at hchain
   filter_upwards [hchain] with θ hθ
-  cases conjugated <;> simp only [Bool.false_eq_true, ↓reduceIte,
+  cases conjugated <;> simp [Bool.false_eq_true, ↓reduceIte,
     localConformalPrimitiveCircle_apply hR F hFs,
     localConformalVelocityCircle_apply hR F hFs, hθ,
     Complex.real_smul, map_mul, Complex.conj_ofReal]
@@ -201,7 +201,7 @@ private theorem bridge_velocity_pairing (conjugated : Bool)
           (if conjugated then localConformalPrimitiveCircle F else
             localConformalVelocityCircle F)).continuous.comp (TF).continuous))
     · intro g
-      simp only [smoothTraceH1Lin_apply]
+      simp
       rw [L2.inner_def, L2.inner_def]
       calc
         _ = ∫ s in Ioc (0 : ℝ) (2 * Real.pi), conj (f (γ s)) *
@@ -228,8 +228,8 @@ private theorem bridge_velocity_pairing (conjugated : Bool)
             with θ hf hg hm hj
           cases conjugated <;>
             simp only [Bool.false_eq_true, ↓reduceIte] at * <;>
-            simp only [RCLike.inner_apply', hf, hm, hg, hcoord] <;>
-            rw [hj] <;> simp only [Complex.real_smul] <;> ring
+            simp [RCLike.inner_apply', hf, hm, hg, hcoord] <;>
+            rw [hj] <;> simp <;> ring
 
 end CoordinatePairing
 
@@ -362,8 +362,8 @@ theorem localConformalVekuaNormalizedConormalRemainder_eq_coordinate (E : ℂ) (
       (localConformalVelocityCircle F) (TF (AF (F 1) E b)) +
     Complex.I • boundaryContinuousMultiplier (localConformalPrimitiveCircle F)
       (TF (BF (F 1) E b))⟫_ℂ
-  let uA : NeumannH1 ΩF := AF (F 1) E b
-  let uB : NeumannH1 ΩF := BF (F 1) E b
+  let uA := AF (F 1) E b
+  let uB := BF (F 1) E b
   have hA := bridge_velocity_pairing hR F hFs hb hL hhol hinj hC
     hγ hτ hcoord false w uA
   have hB := bridge_velocity_pairing hR F hFs hb hL hhol hinj hC
@@ -439,7 +439,7 @@ theorem localConformalVekuaConormal_coordinate_term (E : ℂ) (b : L2Z)
             (MF ^ (j + 1)) (UF ((JF ^ j) b))))) =
       conormalCoeff E j • sobolevSmoothing 1 zero_le_one
         (conormalTermOp (by norm_num) hβF haF hgF j b) := by
-  have hβ : Summable βF := bridge_summable_coeff (by norm_num) hβF
+  have hβ := bridge_summable_coeff (by norm_num) hβF
   have ha : Summable (fourierCoeff (localConformalPrimitiveCircle F)) := by
     rw [localConformalPrimitiveCircle_coeff hR F hFs]
     exact bridge_summable_coeff (by norm_num) haF
@@ -455,7 +455,7 @@ theorem localConformalVekuaConormal_coordinate_term (E : ℂ) (b : L2Z)
     localConformalVekuaConormal_trace_term hR F hFs hb hL hhol hinj hC hK
       e he hsource hes b hbn,
     bridge_smoothed_conormalTerm_apply hR F hFs j b n]
-  simp only [conormalTermMap, Pi.add_apply, Pi.smul_apply, smul_eq_mul,
+  simp [conormalTermMap, Pi.add_apply, Pi.smul_apply, smul_eq_mul,
     conormalCoeff, physicalVekuaCoeff]
   ring
 
@@ -487,7 +487,7 @@ theorem localConformalVekuaCoordinateConormalRemainder_eq_conormalRemOp
       (sobolevSmoothing (1 / 2 : ℝ) (by norm_num) (boundaryFourier (CCF E b))) := by
     have hl0 := hl.congr_fun (fun j => (heq j).symm)
     have h_simpa := hl0
-    simp only [P, Q, bridge_coordinateNormalizer, localConformalVekuaCoordinateConormalRemainder, ContinuousLinearMap.comp_apply, ContinuousLinearMap.add_apply, ContinuousLinearMap.smul_apply, LinearIsometry.coe_toContinuousLinearMap] at h_simpa ⊢
+    simp [P, Q, bridge_coordinateNormalizer, localConformalVekuaCoordinateConormalRemainder, ContinuousLinearMap.comp_apply, ContinuousLinearMap.add_apply, ContinuousLinearMap.smul_apply, LinearIsometry.coe_toContinuousLinearMap] at h_simpa ⊢
     exact h_simpa
   have hr := (sobolevSmoothing 1 zero_le_one).hasSum
     ((ContinuousLinearMap.apply ℂ L2Z b).hasSum
@@ -531,7 +531,7 @@ theorem localConformalVekuaH1_normalizedConormal_weak_form (E : ℂ) (b : L2Z)
     hhol hinj hC hK e he hsource hes hγ hτ hcoord E b hbn] at h
   have hbproj : (1 - posProj) b = b := by
     ext n
-    simp only [ContinuousLinearMap.sub_apply, ContinuousLinearMap.one_apply,
+    simp [ContinuousLinearMap.sub_apply, ContinuousLinearMap.one_apply,
       lp.coeFn_sub, Pi.sub_apply, posProj, diagOp_apply]
     by_cases hn : 0 < n
     · simp [hn, hbn n hn]

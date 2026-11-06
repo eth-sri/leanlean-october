@@ -70,13 +70,13 @@ theorem exists_smooth_transversal {d : ℂ → ℝ} (hd : LipschitzWith 2 d) {X 
   refine ⟨ρ, ?_, ?_, ?_, ?_⟩
   · rw [hρeq]
     exact η.hasCompactSupport_normed.contDiff_convolution_left _ η.contDiff_normed
-      (hdc.locallyIntegrable)
+      hdc.locallyIntegrable
   · have hle : ∀ x y, ρ x ≤ ρ y + 2 * dist x y := fun x y => by
       have := integral_normed_mul_le η (A := fun t => d (x - t))
         (B := fun t => d (y - t) + 2 * dist x y) (hcont x) ((hcont y).add continuous_const)
         (fun t _ => by
           have h1 := hd.dist_le_mul (x - t) (y - t)
-          rw [Real.dist_eq, dist_sub_right] at h1
+          simp at h1
           have := (le_abs_self _).trans h1
           push_cast at this ⊢
           linarith)
@@ -105,7 +105,7 @@ theorem exists_smooth_transversal {d : ℂ → ℝ} (hd : LipschitzWith 2 d) {X 
     have e2 : ∫ t, η.normed volume t * (d x - 2 * δ) = d x - 2 * δ := by
       rw [integral_mul_const, η.integral_normed, one_mul]
     rw [e1] at hup; rw [e2] at hlo
-    rw [abs_le]; constructor <;> simp only [ρ] <;> linarith
+    rw [abs_le]; constructor <;> simp <;> linarith
   · intro z hz s hs0 hsτ
     have := integral_normed_mul_le η (A := fun t => d (z - t) + (κ - 2 * LX * δ) * s)
       (B := fun t => d (z + s * X z - t)) ((hcont z).add continuous_const) (hcont (z + s * X z))
@@ -120,14 +120,14 @@ theorem exists_smooth_transversal {d : ℂ → ℝ} (hd : LipschitzWith 2 d) {X 
         have h3 : ‖X z - X (z - t)‖ ≤ LX * δ := by
           rw [← dist_eq_norm]
           refine (hX.dist_le_mul _ _).trans ?_
-          rw [dist_eq_norm, show z - (z - t) = t by ring]
+          simp
           exact mul_le_mul_of_nonneg_left ht.le LX.2
         have h4 := (neg_abs_le _).trans' (neg_le_neg h2)
-        have h5 : s * ‖X z - X (z - t)‖ ≤ s * (LX * δ) := mul_le_mul_of_nonneg_left h3 hs0
+        have h5 := mul_le_mul_of_nonneg_left h3 hs0
         push_cast at h4 ⊢
         nlinarith)
     rw [integral_normed_mul_add_const η (hcont z)] at this
-    simp only [ρ]
+    simp
     convert this using 2
 
 end PolyaNeumann

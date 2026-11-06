@@ -90,10 +90,8 @@ theorem nonpositiveFourierSubspace_starProjection :
   ext1 b
   apply nonpositiveFourierSubspace.eq_starProjection_of_mem_orthogonal
     (one_sub_posProj_mem_nonpositive b)
-  have heq : b - (1 - posProj) b = posProj b := by
-    simp only [ContinuousLinearMap.sub_apply, ContinuousLinearMap.one_apply]
-    abel
-  rw [heq]
+
+  simp
   exact posProj_mem_nonpositive_orthogonal b
 
 end PolyaNeumann

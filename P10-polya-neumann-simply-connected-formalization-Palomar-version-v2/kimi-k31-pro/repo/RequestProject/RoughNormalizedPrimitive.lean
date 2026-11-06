@@ -47,7 +47,7 @@ def roughNormalizedPrimitiveCore : L2Z →L[ℂ] L2Z :=
 @[simp] theorem roughNormalizedPrimitiveCore_apply (y : L2Z) (n : ℤ) :
     roughNormalizedPrimitiveCore y n =
       roughPrimitivePhase n * normalizedInverseAbsSymbol n * y n := by
-  simp only [roughNormalizedPrimitiveCore, ContinuousLinearMap.comp_apply,
+  simp [roughNormalizedPrimitiveCore, ContinuousLinearMap.comp_apply,
     roughPrimitivePhaseOperator, diagOp_apply, normalizedInverseAbsOperator_apply]
   ring
 
@@ -61,8 +61,7 @@ def roughNormalizedPrimitive : L2Z →L[ℂ] BoundaryL2 :=
     roughNormalizedPrimitiveFourier
 
 @[simp] theorem boundaryFourier_roughNormalizedPrimitive (y : L2Z) :
-    boundaryFourier (roughNormalizedPrimitive y) = roughNormalizedPrimitiveFourier y := by
-  exact boundaryFourier.apply_symm_apply _
+    boundaryFourier (roughNormalizedPrimitive y) = roughNormalizedPrimitiveFourier y := boundaryFourier.apply_symm_apply _
 
 theorem roughNormalizedPrimitiveFourier_apply (y : L2Z) (n : ℤ) :
     roughNormalizedPrimitiveFourier y n =
@@ -71,10 +70,6 @@ theorem roughNormalizedPrimitiveFourier_apply (y : L2Z) (n : ℤ) :
   change fromL2 (1 / 2 : ℝ) (roughNormalizedPrimitiveCore y) n = _
   rw [fromL2, roughNormalizedPrimitiveCore_apply]
 
-@[simp] theorem roughNormalizedPrimitive_zero_mode (y : L2Z) :
-    boundaryFourier (roughNormalizedPrimitive y) 0 = 0 := by
-  rw [boundaryFourier_roughNormalizedPrimitive, roughNormalizedPrimitiveFourier_apply]
-  simp [normalizedInverseAbsSymbol]
 
 /-- Genuine negative-half-order load coefficients, in unitary Fourier
 normalization. This definition makes no ordinary L2 load assertion. -/
@@ -85,9 +80,6 @@ theorem roughNormalizedLoadCoeff_apply (y : L2Z) (n : ℤ) :
   unfold roughNormalizedLoadCoeff fromL2
   rw [neg_neg, ← Real.sqrt_eq_rpow]
 
-@[simp] theorem roughNormalizedLoadCoeff_zero (y : L2Z) :
-    roughNormalizedLoadCoeff y 0 = y 0 := by
-  simp [roughNormalizedLoadCoeff, fromL2, sobWeight]
 
 private theorem rough_frequency_phase (n : ℤ) :
     (Complex.I * (n : ℂ)) * roughPrimitivePhase n = ((|(n : ℝ)| : ℝ) : ℂ) := by
@@ -147,7 +139,7 @@ theorem roughNormalizedPrimitive_derivative (y : L2Z) (n : ℤ) :
   · subst n
     simp [roughNormalizedLoadCoeff, fromL2, zeroModeProjection_apply]
   · rw [roughNormalizedPrimitive_derivative_ne_zero y n hn]
-    simp only [roughNormalizedLoadCoeff, fromL2, lp.coeFn_sub, Pi.sub_apply,
+    simp [roughNormalizedLoadCoeff, fromL2, lp.coeFn_sub, Pi.sub_apply,
       zeroModeProjection_apply, if_neg hn, zero_mul, sub_zero]
 
 theorem rough_test_derivative_memℓp (t : L2Z)
@@ -155,7 +147,7 @@ theorem rough_test_derivative_memℓp (t : L2Z)
     Memℓp (fun n : ℤ => (Complex.I * (n : ℂ)) * t n) 2 := by
   refine memℓp_two_iff_summable.mpr ?_
   refine Summable.of_nonneg_of_le (fun n => sq_nonneg _) (fun n => ?_) ht
-  simp only [norm_mul, Complex.norm_I, one_mul, Complex.norm_intCast, Real.rpow_one]
+  simp
   exact pow_le_pow_left₀ (by positivity)
     (mul_le_mul_of_nonneg_right (by unfold sobWeight; linarith [abs_nonneg (n : ℝ)])
       (norm_nonneg _)) 2
@@ -241,7 +233,7 @@ private theorem rough_nonpositive_part_support {b : L2Z}
   refine hb.subset ?_
   intro n hn
   by_contra hb0
-  have hbz : b n = 0 := not_not.mp hb0
+  have hbz := not_not.mp hb0
   exact hn (by simp [ContinuousLinearMap.sub_apply, ContinuousLinearMap.one_apply,
     posProj, diagOp_apply, hbz])
 

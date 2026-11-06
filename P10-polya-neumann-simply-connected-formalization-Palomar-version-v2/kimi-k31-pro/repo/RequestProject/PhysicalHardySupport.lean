@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.TwoPi
 public import RequestProject.HardyAntiderivative
 public import RequestProject.Driven
 public import Mathlib.Analysis.Complex.CauchyIntegral
@@ -34,7 +35,6 @@ namespace PolyaNeumann
 open MeasureTheory Set Metric
 open scoped ComplexConjugate
 
-local instance physicalHardyTwoPiPos : Fact (0 < 2 * Real.pi) := ⟨Real.two_pi_pos⟩
 
 /-- The actual given map restricted to the unit circle in its usual angular parameter. -/
 def physicalCircleTrace (F : ℂ → ℂ) (θ : ℝ) : ℂ := F (circleMap 0 1 θ)
@@ -48,7 +48,7 @@ private theorem physicalHardy_fourier_natCast (m : ℕ) (θ : ℝ) :
     fourier (T := 2 * Real.pi) (m : ℤ) (θ : AddCircle (2 * Real.pi)) =
       (circleMap 0 1 θ) ^ m := by
   rw [fourier_coe_apply, circleMap_zero_pow]
-  simp only [one_pow, circleMap_zero, Complex.ofReal_one, one_mul]
+  simp [one_pow, circleMap_zero, Complex.ofReal_one, one_mul]
   congr 1
   push_cast
   field_simp [Real.pi_ne_zero]
@@ -90,7 +90,7 @@ theorem physicalCircleTrace_fourierCoeffOn_eq_zero_of_neg
         Int.natCast_nonneg m) hn).elim
   | negSucc m =>
       have hi : Int.negSucc m = -((m + 1 : ℕ) : ℤ) := by
-        simp only [Int.negSucc_eq, Nat.cast_add, Nat.cast_one]
+        simp [Int.negSucc_eq, Nat.cast_add, Nat.cast_one]
       have hmoment := physicalCircleTrace_negative_moment_eq_zero F hF m
       simp only [fourier_coe_apply] at hmoment
       rw [hi, fourierCoeffOn_eq_integral]
@@ -110,10 +110,9 @@ private theorem physicalHardy_fourierCoeffOn_derivative
       (hb.intervalIntegrable _ _), ← hper, sub_self, smul_zero]
   · rw [fourierCoeffOn_of_hasDerivAt Real.two_pi_pos hn (fun θ _ => hd θ)
       (hb.intervalIntegrable _ _), ← hper, sub_self, mul_zero, zero_sub]
-    have hnC : (n : ℂ) ≠ 0 := Int.cast_ne_zero.mpr hn
-    have hpi : (Real.pi : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr Real.pi_ne_zero
+    have hpi := Complex.ofReal_ne_zero.mpr Real.pi_ne_zero
     push_cast
-    field_simp [hnC, hpi]
+    field_simp [(Int.cast_ne_zero.mpr hn), hpi]
     ring
 
 /-- Integration by parts for the actual derivative of a C¹ circle trace. -/
@@ -126,12 +125,6 @@ theorem physicalCircleTrace_deriv_fourierCoeffOn
     (fun θ => (hγ.differentiable_one θ).hasDerivAt) hγ.continuous_deriv_one
   simpa only [zero_add] using ((physicalCircleTrace_periodic F) 0).symm
 
-/-- The actual periodic boundary derivative has zero averaged coefficient. -/
-@[simp] theorem physicalCircleTrace_deriv_fourierCoeffOn_zero
-    (F : ℂ → ℂ) (hγ : ContDiff ℝ 1 (physicalCircleTrace F)) :
-    fourierCoeffOn Real.two_pi_pos (deriv (physicalCircleTrace F)) 0 = 0 := by
-  rw [physicalCircleTrace_deriv_fourierCoeffOn F hγ]
-  simp only [Int.cast_zero, mul_zero, zero_mul]
 
 private theorem physicalHardy_fourierCoeffOn_conj (g : ℝ → ℂ) (n : ℤ) :
     fourierCoeffOn Real.two_pi_pos (fun θ => conj (g θ)) n =
@@ -156,7 +149,7 @@ theorem physicalCircleTrace_conj_deriv_strictNegative
   rw [physicalHardy_fourierCoeffOn_conj, physicalCircleTrace_deriv_fourierCoeffOn F hγ]
   by_cases hn0 : n = 0
   · subst n
-    simp only [neg_zero, Int.cast_zero, mul_zero, zero_mul, map_zero]
+    simp
   · have hneg : -n < 0 := by omega
     rw [physicalCircleTrace_fourierCoeffOn_eq_zero_of_neg F hF hneg, mul_zero, map_zero]
 

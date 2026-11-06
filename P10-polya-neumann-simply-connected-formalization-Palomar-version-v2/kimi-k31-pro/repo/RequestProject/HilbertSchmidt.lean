@@ -49,7 +49,7 @@ lemma norm_tsum_subtype_le (b : HilbertBasis ι 𝕜 H) (T : H →L[𝕜] K) (s 
     (fun i => norm_nonneg _) (fun i => norm_nonneg _) hf2 hg2
   have hsumf : ∑' i : s, f i ^ (2 : ℝ) ≤ ‖x‖ ^ 2 := by
     have h1 : ∑' i : s, f i ^ (2 : ℝ) ≤ ∑' i : ι, ‖⟪b i, x⟫_𝕜‖ ^ 2 := by
-      simp only [f, Real.rpow_two]
+      simp
       exact hbessel.tsum_subtype_le _ s (fun i => by positivity)
     exact h1.trans (b.orthonormal.tsum_inner_products_le x)
   have hnorm : Summable fun i : s => ‖⟪b i, x⟫_𝕜 • T (b i)‖ := by
@@ -112,7 +112,7 @@ lemma norm_sub_hsTrunc_le (b : HilbertBasis ι 𝕜 H) (T : H →L[𝕜] K)
   rw [hs.tsum_eq] at hsplit
   have : (T - hsTrunc b T F) x = ∑' i : {i // i ∉ F}, ⟪b i, x⟫_𝕜 • T (b i) := by
     rw [ContinuousLinearMap.sub_apply, hsTrunc_apply, ← hsplit]
-    simp only [add_sub_cancel_left]
+    simp
     rfl
   rw [this]
   exact norm_tsum_subtype_le b T {i | i ∉ F} hT x

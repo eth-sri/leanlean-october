@@ -29,8 +29,7 @@ private theorem gradient_extendOfNorm_eq
     [NormedAddCommGroup Y] [NormedSpace ℂ Y] [CompleteSpace Y]
     (V : H →L[ℂ] X) (M : H →L[ℂ] Y) (hd : DenseRange V)
     (hn : ∀ u, ‖M u‖ = ‖V u‖) (u : H) :
-    M.toLinearMap.extendOfNorm V.toLinearMap (V u) = M u := by
-  exact LinearMap.extendOfNorm_eq (f := M.toLinearMap) (e := V.toLinearMap) hd
+    M.toLinearMap.extendOfNorm V.toLinearMap (V u) = M u := LinearMap.extendOfNorm_eq (f := M.toLinearMap) (e := V.toLinearMap) hd
     ⟨1, fun w => by rw [one_mul]; exact (hn w).le⟩ u
 
 private theorem gradient_norm_extendOfNorm
@@ -40,7 +39,7 @@ private theorem gradient_norm_extendOfNorm
     (V : H →L[ℂ] X) (M : H →L[ℂ] Y) (hd : DenseRange V)
     (hn : ∀ u, ‖M u‖ = ‖V u‖) (v : X) :
     ‖M.toLinearMap.extendOfNorm V.toLinearMap v‖ = ‖v‖ := by
-  let A : X →L[ℂ] Y := M.toLinearMap.extendOfNorm V.toLinearMap
+  let A := M.toLinearMap.extendOfNorm V.toLinearMap
   refine hd.induction_on (p := fun w => ‖A w‖ = ‖w‖) v ?_ ?_
   · exact isClosed_eq A.continuous.norm continuous_norm
   · intro u
@@ -50,8 +49,7 @@ private theorem gradient_eq_of_dense
     {S H Y : Type*} [TopologicalSpace H] [TopologicalSpace Y] [T2Space Y]
     (ι : S → H) (hd : DenseRange ι) (A B : H → Y)
     (hA : Continuous A) (hB : Continuous B)
-    (he : ∀ s, A (ι s) = B (ι s)) (u : H) : A u = B u := by
-  exact hd.induction_on u (isClosed_eq hA hB) he
+    (he : ∀ s, A (ι s) = B (ι s)) (u : H) : A u = B u := hd.induction_on u (isClosed_eq hA hB) he
 
 section Coordinates
 
@@ -389,7 +387,7 @@ private theorem antiholomorphicPhaseMultiplier_eq_ratios (F : ℂ → ℂ)
   rw [hd, ha]
   simp only [Pi.add_apply]
   rw [hs]
-  simp only [Pi.smul_apply, smul_eq_mul]
+  simp
   rw [h₀, h₁, antiholomorphicPhase_eq_ratios]
   ring
 

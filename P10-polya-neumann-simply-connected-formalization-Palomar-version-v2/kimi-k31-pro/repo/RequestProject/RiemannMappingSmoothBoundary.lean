@@ -69,8 +69,8 @@ private theorem fderiv_neg_log_norm_holomorphic
     {f : ℂ → ℂ} {z : ℂ} (hf : DifferentiableAt ℂ f z) (hne : f z ≠ 0) (v : ℂ) :
     fderiv ℝ (fun w => -Real.log ‖f w‖) z v =
       -⟪f z, deriv f z * v⟫_ℝ / ‖f z‖ ^ 2 := by
-  have hr : DifferentiableAt ℝ f z := hf.restrictScalars ℝ
-  have hn : ‖f z‖ ^ 2 ≠ 0 := pow_ne_zero 2 (norm_ne_zero_iff.mpr hne)
+  have hr := hf.restrictScalars ℝ
+  have hn := pow_ne_zero 2 (norm_ne_zero_iff.mpr hne)
   have ht := (hr.hasFDerivAt.norm_sq.log hn).const_mul (-(1 / 2 : ℝ))
   have heq : (fun w => -(1 / 2 : ℝ) * Real.log (‖f w‖ ^ 2)) =
       (fun w => -Real.log ‖f w‖) := by
@@ -94,7 +94,7 @@ private theorem norm_fderiv_neg_log_norm_holomorphic_le
     {f : ℂ → ℂ} {z : ℂ} (hf : DifferentiableAt ℂ f z) (hne : f z ≠ 0) (v : ℂ) :
     ‖fderiv ℝ (fun w => -Real.log ‖f w‖) z v‖ ≤
       ‖deriv f z‖ * ‖v‖ / ‖f z‖ := by
-  have hn : 0 < ‖f z‖ := norm_pos_iff.mpr hne
+  have hn := norm_pos_iff.mpr hne
   rw [fderiv_neg_log_norm_holomorphic hf hne, norm_div, norm_neg,
     Real.norm_of_nonneg (sq_nonneg _)]
   calc
@@ -104,7 +104,7 @@ private theorem norm_fderiv_neg_log_norm_holomorphic_le
 
 private theorem disk_mobius_norm_sq_difference (a b : ℂ) :
     ‖1 - star a * b‖ ^ 2 - ‖b - a‖ ^ 2 = (1 - ‖a‖ ^ 2) * (1 - ‖b‖ ^ 2) := by
-  simp only [← Complex.normSq_eq_norm_sq, Complex.normSq_apply, Complex.sub_re,
+  simp [← Complex.normSq_eq_norm_sq, Complex.normSq_apply, Complex.sub_re,
     Complex.sub_im, Complex.mul_re, Complex.mul_im, Complex.conj_re, Complex.conj_im,
     Complex.one_re, Complex.one_im, star_def]
   ring
@@ -115,10 +115,10 @@ private theorem disk_mobius_denominator_and_norm {a b : ℂ} (ha : ‖a‖ < 1) 
   have hb2 : 0 < 1 - ‖b‖ ^ 2 := by nlinarith [norm_nonneg b]
   have hh := disk_mobius_norm_sq_difference a b
   have hprod := mul_pos ha2 hb2
-  have hsq : ‖b - a‖ ^ 2 < ‖1 - star a * b‖ ^ 2 := by linarith
+
   have hnorm : ‖b - a‖ < ‖1 - star a * b‖ :=
-    (sq_lt_sq₀ (norm_nonneg _) (norm_nonneg _)).mp hsq
-  have hd : 0 < ‖1 - star a * b‖ := (norm_nonneg _).trans_lt hnorm
+    (sq_lt_sq₀ (norm_nonneg _) (norm_nonneg _)).mp (by linarith)
+  have hd := (norm_nonneg _).trans_lt hnorm
   refine ⟨norm_ne_zero_iff.mp hd.ne', ?_⟩
   rw [norm_div]
   exact (div_lt_one hd).mpr hnorm
@@ -127,8 +127,8 @@ private theorem disk_mobius_norm_defect {a b : ℂ} {t : ℝ}
     (ha : ‖a‖ < 1) (hb : ‖b‖ < 1) (ht0 : 0 ≤ t) (ht1 : t ≤ 1)
     (hbound : ‖(b - a) / (1 - star a * b)‖ ≤ t) :
     (1 - ‖a‖) ^ 2 / 2 * (1 - t) ≤ 1 - ‖b‖ := by
-  let d : ℝ := ‖1 - star a * b‖
-  have hdpos : 0 < d := norm_pos_iff.mpr (disk_mobius_denominator_and_norm ha hb).1
+  let d := ‖1 - star a * b‖
+  have hdpos := norm_pos_iff.mpr (disk_mobius_denominator_and_norm ha hb).1
   have hnle : ‖b - a‖ ≤ t * d := by
     rw [norm_div] at hbound
     exact (div_le_iff₀ hdpos).mp hbound
@@ -145,15 +145,15 @@ private theorem disk_mobius_norm_defect {a b : ℂ} {t : ℝ}
     linarith
   have ht2 : t ^ 2 ≤ t := by
     simpa only [pow_two, mul_one] using mul_le_mul_of_nonneg_left ht1 ht0
-  have ht2one : t ^ 2 ≤ 1 := ht2.trans ht1
+  have ht2one := ht2.trans ht1
   have hsq : (1 - ‖a‖) ^ 2 ≤ d ^ 2 :=
     (sq_le_sq₀ (sub_nonneg.mpr ha.le) hdpos.le).mpr hlow
   have hmul := mul_le_mul_of_nonneg_right hsq (sub_nonneg.mpr ht2one)
   have hid := disk_mobius_norm_sq_difference a b
-  have hb2 : 0 ≤ 1 - ‖b‖ ^ 2 := by nlinarith [norm_nonneg b]
+
   have hup : (1 - ‖a‖ ^ 2) * (1 - ‖b‖ ^ 2) ≤ 1 - ‖b‖ ^ 2 := by
     simpa only [one_mul] using mul_le_mul_of_nonneg_right
-      (show 1 - ‖a‖ ^ 2 ≤ 1 by nlinarith [sq_nonneg ‖a‖]) hb2
+      (show 1 - ‖a‖ ^ 2 ≤ 1 by nlinarith [sq_nonneg ‖a‖]) (by nlinarith [norm_nonneg b])
   have hlast : (1 - ‖a‖) ^ 2 * (1 - t) ≤ (1 - ‖a‖) ^ 2 * (1 - t ^ 2) :=
     mul_le_mul_of_nonneg_left (sub_le_sub_left ht2 1) (sq_nonneg _)
   have hfirst : (1 - ‖a‖) ^ 2 * (1 - t ^ 2) ≤ 1 - ‖b‖ ^ 2 := by
@@ -314,7 +314,7 @@ theorem riemannMappingGreen_harmonicOnNhd :
     (riemannMappingClosedInverse_nonzero hb hS hsc F hF hinj himage (subset_closure hw.1) hw.2)
   have he : (-1 : ℝ) • (fun x : ℂ => Real.log ‖J x‖) = riemannMappingGreen F := by
     funext x
-    simp only [Pi.smul_apply, smul_eq_mul, neg_one_mul, riemannMappingGreen]
+    simp [Pi.smul_apply, smul_eq_mul, neg_one_mul, riemannMappingGreen]
   have hh := ha.const_smul (c := (-1 : ℝ))
   rw [he] at hh
   exact hh
@@ -336,9 +336,9 @@ theorem exists_riemannMappingGreen_ball_lower_barrier {v : ℂ} {R : ℝ}
     (hR : 0 < R) (hball : ball v R ⊆ Ω) :
     ∃ A : ℝ, 0 < A ∧ ∀ w ∈ ball v R, w ≠ F 0 →
       A * (R - ‖w - v‖) ≤ riemannMappingGreen F w := by
-  let a : ℂ := J v
-  have hv : v ∈ Ω := hball (mem_ball_self hR)
-  have ha : ‖a‖ < 1 := mem_ball_zero_iff.mp
+  let a := J v
+  have hv := hball (mem_ball_self hR)
+  have ha := mem_ball_zero_iff.mp
     (riemannMappingClosedInverse_mem_disk hb hS hsc F hF hinj himage hv)
   let M : ℂ → ℂ := fun w => (J w - a) / (1 - star a * J w)
   have hJb : DifferentiableOn ℂ J (ball v R) :=
@@ -359,20 +359,20 @@ theorem exists_riemannMappingGreen_ball_lower_barrier {v : ℂ} {R : ℝ}
     exact mem_closedBall_zero_iff.mpr
       (disk_mobius_denominator_and_norm ha (mem_ball_zero_iff.mp
         (riemannMappingClosedInverse_mem_disk hb hS hsc F hF hinj himage (hball hw)))).2.le
-  let A : ℝ := (1 - ‖a‖) ^ 2 / (2 * R)
-  have hA : 0 < A := div_pos (sq_pos_of_pos (sub_pos.mpr ha)) (by positivity)
-  refine ⟨A, hA, ?_⟩
+  let A := (1 - ‖a‖) ^ 2 / (2 * R)
+
+  refine ⟨A, (div_pos (sq_pos_of_pos (sub_pos.mpr ha)) (by positivity)), ?_⟩
   intro w hw hne
-  have hn : ‖J w‖ < 1 := mem_ball_zero_iff.mp
+  have hn := mem_ball_zero_iff.mp
     (riemannMappingClosedInverse_mem_disk hb hS hsc F hF hinj himage (hball hw))
-  have hd : ‖w - v‖ < R := by simpa only [mem_ball, dist_eq_norm] using hw
+
   have hschwarz := Complex.dist_le_div_mul_dist_of_mapsTo_ball hM hmaps hw
   rw [hM0, dist_zero_right, dist_eq_norm] at hschwarz
   have hbound : ‖(J w - a) / (1 - star a * J w)‖ ≤ ‖w - v‖ / R := by
     simpa only [M, one_div, div_eq_mul_inv, mul_comm, mul_one, one_mul] using hschwarz
   have hdefect := disk_mobius_norm_defect ha hn (div_nonneg (norm_nonneg _) hR.le)
-    ((div_lt_one hR).mpr hd).le hbound
-  have hJe : 0 < ‖J w‖ := norm_pos_iff.mpr
+    ((div_lt_one hR).mpr (by simpa only [mem_ball, dist_eq_norm] using hw)).le hbound
+  have hJe := norm_pos_iff.mpr
     (riemannMappingClosedInverse_nonzero hb hS hsc F hF hinj himage (subset_closure (hball hw)) hne)
   have hlog := Real.log_le_sub_one_of_pos hJe
   have halg : A * (R - ‖w - v‖) = (1 - ‖a‖) ^ 2 / 2 * (1 - ‖w - v‖ / R) := by
@@ -392,7 +392,7 @@ theorem riemannMappingInversePoleQuotient_differentiableOn :
 
 theorem riemannMappingInversePoleQuotient_continuousOn :
     ContinuousOn (riemannMappingInversePoleQuotient F) (closure Ω) := by
-  have hcl : closure Ω ∈ 𝓝 (F 0) := mem_of_superset
+  have hcl := mem_of_superset
     (hS.1.1.mem_nhds (riemannMapping_pole_mem F himage)) subset_closure
   have hj : DifferentiableAt ℂ J (F 0) :=
     (riemannMappingClosedInverse_differentiableOn hb hS hsc F hF hinj himage).differentiableAt
@@ -435,7 +435,7 @@ theorem riemannMappingGreenCorrection_harmonicOnNhd :
   have he : (-1 : ℝ) • (fun x : ℂ => Real.log ‖riemannMappingInversePoleQuotient F x‖) =
       riemannMappingGreenCorrection F := by
     funext x
-    simp only [Pi.smul_apply, smul_eq_mul, neg_one_mul, riemannMappingGreenCorrection]
+    simp [Pi.smul_apply, smul_eq_mul, neg_one_mul, riemannMappingGreenCorrection]
   have hh := ha.const_smul (c := (-1 : ℝ))
   rw [he] at hh
   exact hh
@@ -464,14 +464,14 @@ theorem riemannMappingInversePoleQuotient_deriv {w : ℂ} (hw : w ∈ Ω) (hne :
     rw [riemannMappingInversePoleQuotient, dslope_of_ne _ hz, slope,
       riemannMappingClosedInverse_zero hb hS hsc F hF hinj himage,
       vsub_eq_sub, sub_zero, smul_eq_mul]
-    simp only [div_eq_mul_inv, mul_comm]
+    simp [div_eq_mul_inv, mul_comm]
   rw [heq.deriv_eq]
   have hdj : DifferentiableAt ℂ J w :=
     (riemannMappingClosedInverse_differentiableOn hb hS hsc F hF hinj himage).differentiableAt
       (hS.1.1.mem_nhds hw)
   have hj := hdj.hasDerivAt
   have h := (hj.div ((hasDerivAt_id w).sub_const (F 0)) (sub_ne_zero.mpr hne)).deriv
-  simp only [mul_one, id] at h
+  simp at h
   exact h
 
 /-- The actual pole quotient has an L² derivative on the whole
@@ -482,7 +482,7 @@ theorem riemannMappingInversePoleQuotient_deriv_memLp :
     MemLp (deriv (riemannMappingInversePoleQuotient F)) 2 (volume.restrict Ω) := by
   let Q := riemannMappingInversePoleQuotient F
   have hQ := riemannMappingInversePoleQuotient_differentiableOn hb hS hsc F hF hinj himage
-  have hQc : ContinuousOn (deriv Q) Ω := (hQ.deriv hS.1.1).continuousOn
+  have hQc := (hQ.deriv hS.1.1).continuousOn
   obtain ⟨r, hr, hball⟩ := Metric.nhds_basis_closedBall.mem_iff.mp
     (hS.1.1.mem_nhds (riemannMapping_pole_mem F himage))
   have hDbounded : Bornology.IsBounded ((deriv Q) '' closedBall (F 0) r) :=
@@ -512,9 +512,9 @@ theorem riemannMappingInversePoleQuotient_deriv_memLp :
       have hh : r < dist w (F 0) := lt_of_not_ge hwball
       have hh' : r < ‖w - F 0‖ := by simpa only [dist_eq_norm] using hh
       exact hh'.le
-    have hdpos : 0 < ‖w - F 0‖ := hr.trans_le hdist
-    have hne : w ≠ F 0 := sub_ne_zero.mp (norm_ne_zero_iff.mp hdpos.ne')
-    have hJn : ‖J w‖ ≤ 1 := mem_closedBall_zero_iff.mp
+    have hdpos := hr.trans_le hdist
+    have hne := sub_ne_zero.mp (norm_ne_zero_iff.mp hdpos.ne')
+    have hJn := mem_closedBall_zero_iff.mp
       (riemannMappingClosedInverse_mem_right hb hS hsc F hF hinj himage (subset_closure hw)).1
     have hstep : ‖deriv Q w‖ ≤ ‖deriv J w‖ / r + 1 / r ^ 2 := by
       rw [riemannMappingInversePoleQuotient_deriv hb hS hsc F hF hinj himage hw hne,
@@ -595,8 +595,7 @@ private theorem riemannMappingGreenCorrection_complex_fderiv {w : ℂ} (hw : w �
       (by simp)).differentiableAt (hS.1.1.mem_nhds hw)
   change fderiv ℝ (Complex.ofRealCLM ∘ riemannMappingGreenCorrection F) w v = _
   rw [fderiv_comp w Complex.ofRealCLM.differentiableAt hd]
-  simp only [ContinuousLinearMap.fderiv, ContinuousLinearMap.comp_apply,
-    Complex.ofRealCLM_apply]
+  simp
 
 private theorem riemannMappingGreenCorrection_complex_value_memLp :
     MemLp (fun w => (riemannMappingGreenCorrection F w : ℂ)) 2 (volume.restrict Ω) := by
@@ -648,9 +647,9 @@ theorem exists_riemannMappingGreenCorrectionH1 :
 fundamental logarithmic singularity away from the actual pole. -/
 theorem riemannMappingGreenCorrection_eq {w : ℂ} (hw : w ∈ closure Ω) (hne : w ≠ F 0) :
     riemannMappingGreenCorrection F w = riemannMappingGreen F w + Real.log ‖w - F 0‖ := by
-  have hnJ : ‖J w‖ ≠ 0 := norm_ne_zero_iff.mpr
+  have hnJ := norm_ne_zero_iff.mpr
     (riemannMappingClosedInverse_nonzero hb hS hsc F hF hinj himage hw hne)
-  have hnd : ‖w - F 0‖ ≠ 0 := norm_ne_zero_iff.mpr (sub_ne_zero.mpr hne)
+  have hnd := norm_ne_zero_iff.mpr (sub_ne_zero.mpr hne)
   rw [riemannMappingGreenCorrection, riemannMappingInversePoleQuotient,
     dslope_of_ne _ hne, slope, riemannMappingClosedInverse_zero hb hS hsc F hF hinj himage,
     vsub_eq_sub, sub_zero, smul_eq_mul, norm_mul, norm_inv, Real.log_mul (inv_ne_zero hnd) hnJ, Real.log_inv,
@@ -675,7 +674,7 @@ neighborhood of the entire frontier, because the pole is interior. -/
 theorem riemannMappingGreenBoundaryData_contDiffOn :
     ContDiffOn ℝ (⊤ : ℕ∞) (fun w : ℂ => Real.log ‖w - F 0‖) {F 0}ᶜ := by
   intro w hw
-  have hne : w - F 0 ≠ 0 := sub_ne_zero.mpr hw
+  have hne := sub_ne_zero.mpr hw
   exact (((contDiffAt_id.sub contDiffAt_const).norm ℝ hne).log
     (norm_ne_zero_iff.mpr hne)).contDiffWithinAt
 
@@ -686,11 +685,11 @@ frontier, not the unknown Riemann-map boundary jets. -/
 theorem exists_riemannMappingGreenCorrection_smooth_boundary_data :
     ∃ b : smoothTraceTests, ∀ w ∈ frontier Ω,
       riemannMappingGreenCorrection F w = (b w).re := by
-  have hk : IsCompact (frontier Ω) := hb.isCompact_closure.of_isClosed_subset
+  have hk := hb.isCompact_closure.of_isClosed_subset
     isClosed_frontier frontier_subset_closure
   have hku : frontier Ω ⊆ ({F 0} : Set ℂ)ᶜ := by
     intro w hw he
-    have hwe : w = F 0 := he
+    have hwe := he
     rw [hwe, hS.1.1.frontier_eq] at hw
     exact hw.2 (riemannMapping_pole_mem F himage)
   have hs : ContDiffOn ℝ (⊤ : ℕ∞) (fun w : ℂ => (Real.log ‖w - F 0‖ : ℂ)) {F 0}ᶜ :=
@@ -711,14 +710,14 @@ private theorem exists_quadratic_smooth_graph_bound {f : ℝ → ℝ}
       |f x - f 0 - deriv f 0 * x| ≤ M * x ^ 2 := by
   have hf2 : ContDiff ℝ (1 + 1 : ℕ) f :=
     hf.of_le (WithTop.coe_le_coe.mpr le_top)
-  have hd : ContDiff ℝ 1 (deriv f) := hf2.deriv'
-  obtain ⟨K, hK⟩ := hd.contDiffOn.exists_lipschitzOnWith one_ne_zero
+
+  obtain ⟨K, hK⟩ := (hf2.deriv').contDiffOn.exists_lipschitzOnWith one_ne_zero
     (convex_Icc (-1 : ℝ) 1) (isCompact_Icc : IsCompact (Icc (-1 : ℝ) 1))
   refine ⟨K, K.coe_nonneg, ?_⟩
   intro x hx
-  have hxI : x ∈ Icc (-1 : ℝ) 1 := abs_le.mp hx
+  have hxI := abs_le.mp hx
   have h0I : (0 : ℝ) ∈ Icc (-1 : ℝ) 1 := by norm_num
-  have hsub : uIcc (0 : ℝ) x ⊆ Icc (-1 : ℝ) 1 := uIcc_subset_Icc h0I hxI
+  have hsub := uIcc_subset_Icc h0I hxI
   have hsmall (y : ℝ) (hy : y ∈ uIcc (0 : ℝ) x) : |y| ≤ |x| := by
     apply abs_le.mpr
     have hxlo := neg_abs_le x
@@ -728,7 +727,7 @@ private theorem exists_quadratic_smooth_graph_bound {f : ℝ → ℝ}
   have hg (y : ℝ) : HasDerivAt g (deriv f y - deriv f 0) y := by
     have h := ((hf.differentiable (by simp) y).hasDerivAt.sub_const (f 0)).sub
         ((hasDerivAt_id y).const_mul (deriv f 0))
-    simp only [mul_one] at h
+    simp at h
     exact h
   have hb (y : ℝ) (hy : y ∈ uIcc (0 : ℝ) x) :
       ‖deriv g y‖ ≤ (K : ℝ) * |x| := by
@@ -751,9 +750,9 @@ theorem exists_smoothDomain_interior_tangent_ball {Ω : Set ℂ} (hS : IsSmoothD
     ∃ v : ℂ, ∃ R : ℝ, 0 < R ∧ ball v R ⊆ Ω ∧ p ∈ sphere v R := by
   obtain ⟨c, r, h, K, f, hc, hr, hh, hf, _, hf0, _, hgraph⟩ := hS.2 p hp
   obtain ⟨M, hM, hquad⟩ := exists_quadratic_smooth_graph_bound hf
-  let a : ℝ := deriv f 0
-  let n : ℂ := -(a : ℂ) + Complex.I
-  let C : ℝ := ‖n‖
+  let a := deriv f 0
+  let n := -(a : ℂ) + Complex.I
+  let C := ‖n‖
   have hC : 0 < C := by
     apply norm_pos_iff.mpr
     intro he
@@ -761,11 +760,11 @@ theorem exists_smoothDomain_interior_tangent_ball {Ω : Set ℂ} (hS : IsSmoothD
     norm_num [n] at him
   have hCsq : C ^ 2 = a ^ 2 + 1 := by
     rw [← Complex.normSq_eq_norm_sq]
-    simp only [n, Complex.normSq_apply, Complex.add_re, Complex.neg_re, Complex.ofReal_re,
+    simp [n, Complex.normSq_apply, Complex.add_re, Complex.neg_re, Complex.ofReal_re,
       Complex.I_re, add_zero, Complex.add_im, Complex.neg_im, Complex.ofReal_im,
       neg_zero, Complex.I_im, zero_add]
     ring
-  let e : ℝ := min (min (r / (2 * C)) (h / (2 * C)))
+  let e := min (min (r / (2 * C)) (h / (2 * C)))
     (min (1 / (2 * C)) (1 / (2 * (M + 1))))
   have he : 0 < e := by dsimp [e]; positivity
   obtain ⟨ρ, hρ, hρe⟩ := exists_between he
@@ -785,13 +784,13 @@ theorem exists_smoothDomain_interior_tangent_ball {Ω : Set ℂ} (hS : IsSmoothD
     have ht := (lt_div_iff₀ (show 0 < 2 * (M + 1) by positivity)).mp
       (lt_of_lt_of_le hρe ((min_le_right _ _).trans (min_le_right _ _)))
     nlinarith
-  let v : ℂ := p + (ρ : ℂ) * n / c
-  let R : ℝ := ρ * C
-  have hR : 0 < R := mul_pos hρ hC
+  let v := p + (ρ : ℂ) * n / c
+  let R := ρ * C
+  have hR := mul_pos hρ hC
   have hvc : ‖v - p‖ = R := by
-    simp only [v, add_sub_cancel_left, norm_div, norm_mul, hc, div_one,
+    simp [v, add_sub_cancel_left, norm_div, norm_mul, hc, div_one,
       Complex.norm_real, Real.norm_of_nonneg hρ.le, R, C]
-  have hcne : c ≠ 0 := norm_ne_zero_iff.mp (by rw [hc]; norm_num)
+  have hcne := norm_ne_zero_iff.mp (by rw [hc]; norm_num)
   refine ⟨v, R, hR, ?_, ?_⟩
   · intro w hw
     have hwR : ‖w - v‖ < R := by simpa only [mem_ball, dist_eq_norm] using hw
@@ -800,10 +799,10 @@ theorem exists_smoothDomain_interior_tangent_ball {Ω : Set ℂ} (hS : IsSmoothD
         _ ≤ ‖w - v‖ + ‖v - p‖ := norm_sub_le_norm_sub_add_norm_sub w v p
         _ < R + R := by rw [hvc]; linarith only [hwR]
         _ = _ := by dsimp [R]; ring
-    let z : ℂ := c * (w - p)
+    let z := c * (w - p)
     have hz : ‖z‖ = ‖w - p‖ := by dsimp [z]; rw [norm_mul, hc, one_mul]
-    have hzr : |z.re| < r := (Complex.abs_re_le_norm z).trans_lt (by rw [hz]; exact hwp.trans hρr)
-    have hzh : |z.im| < h := (Complex.abs_im_le_norm z).trans_lt (by rw [hz]; exact hwp.trans hρh)
+    have hzr := (Complex.abs_re_le_norm z).trans_lt (by rw [hz]; exact hwp.trans hρr)
+    have hzh := (Complex.abs_im_le_norm z).trans_lt (by rw [hz]; exact hwp.trans hρh)
     apply (hgraph w hzr hzh).mpr
     have hx1 : |z.re| ≤ 1 :=
       ((Complex.abs_re_le_norm z).trans_lt (by rw [hz]; exact hwp.trans hρ1)).le
@@ -830,7 +829,7 @@ theorem exists_smoothDomain_interior_tangent_ball {Ω : Set ℂ} (hS : IsSmoothD
     have hprod := mul_nonneg (show 0 ≤ 1 - 2 * ρ * M by linarith) (sq_nonneg z.re)
     have hy : a * z.re + M * z.re ^ 2 < z.im := by
       by_contra hn
-      have hny : z.im ≤ a * z.re + M * z.re ^ 2 := le_of_not_gt hn
+      have hny := le_of_not_gt hn
       have hmul := mul_le_mul_of_nonneg_left hny (show 0 ≤ 2 * ρ by positivity)
       nlinarith [sq_nonneg z.im]
     exact hfx.trans_lt hy
@@ -868,7 +867,7 @@ theorem exists_riemannMappingGreen_inward_ray_lower {Ω : Set ℂ}
   obtain ⟨v, R, A, hR, hA, hball, hpR, hbarrier⟩ :=
     exists_riemannMappingGreen_boundary_lower_barrier hb hS hsc F hF hinj himage hp
   have hvp : ‖v - p‖ = R := by simpa only [mem_sphere, dist_eq_norm, norm_sub_rev] using hpR
-  let b : ℂ := (R : ℂ)⁻¹ * (v - p)
+  let b := (R : ℂ)⁻¹ * (v - p)
   have hb1 : ‖b‖ = 1 := by
     dsimp [b]
     rw [norm_mul, norm_inv, Complex.norm_real, Real.norm_of_nonneg hR.le, hvp,
@@ -878,12 +877,11 @@ theorem exists_riemannMappingGreen_inward_ray_lower {Ω : Set ℂ}
     rw [he, hS.1.1.frontier_eq] at hp
     exact hp.2 (riemannMapping_pole_mem F himage)
   let δ : ℝ := min R (‖p - F 0‖ / 2)
-  have hδ : 0 < δ := lt_min hR (div_pos (norm_pos_iff.mpr (sub_ne_zero.mpr hpne)) (by norm_num))
-  refine ⟨b, δ, A, hb1, hδ, hA, ?_⟩
+  refine ⟨b, δ, A, hb1, (lt_min hR (div_pos (norm_pos_iff.mpr (sub_ne_zero.mpr hpne)) (by norm_num))), hA, ?_⟩
   intro t ht htδ
-  have htR : t < R := lt_of_lt_of_le htδ (min_le_left _ _)
-  have htP : t < ‖p - F 0‖ / 2 := lt_of_lt_of_le htδ (min_le_right _ _)
-  have htd : t / R < 1 := (div_lt_one hR).mpr htR
+  have htR := lt_of_lt_of_le htδ (min_le_left _ _)
+  have htP := lt_of_lt_of_le htδ (min_le_right _ _)
+  have htd := (div_lt_one hR).mpr htR
   have hdist : ‖p + (t : ℂ) * b - v‖ = R - t := by
     have he : p + (t : ℂ) * b - v = ((t / R - 1 : ℝ) : ℂ) * (v - p) := by
       dsimp [b]

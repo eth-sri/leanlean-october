@@ -26,7 +26,7 @@ private theorem matrix_adjoint_coefficient (A : L2Z →L[ℂ] L2Z) (m n : ℤ) :
 private theorem matrix_operator_ext (A B : L2Z →L[ℂ] L2Z)
     (h : ∀ n, A (stdBasisZ n) = B (stdBasisZ n)) : A = B := by
   apply ContinuousLinearMap.ext_on
-    ((Submodule.dense_iff_topologicalClosure_eq_top).2 stdBasisZ.dense_span)
+    (Submodule.dense_iff_topologicalClosure_eq_top.2 stdBasisZ.dense_span)
   rintro _ ⟨n, rfl⟩
   exact h n
 
@@ -40,7 +40,7 @@ theorem hsMatrixOp_isSelfAdjoint (a : ℤ × ℤ → ℂ)
   apply lp.ext
   funext m
   rw [matrix_adjoint_coefficient]
-  simp only [hsMatrixOp_stdBasisZ]
+  simp [hsMatrixOp_stdBasisZ]
   exact (hs m n).symm
 
 theorem diagOp_isSelfAdjoint (w : ℤ → ℂ) (C : ℝ)
@@ -52,7 +52,7 @@ theorem diagOp_isSelfAdjoint (w : ℤ → ℂ) (C : ℝ)
   apply lp.ext
   funext m
   rw [matrix_adjoint_coefficient]
-  simp only [diagOp_apply, stdBasisZ_apply, lp.single_apply]
+  simp [diagOp_apply, stdBasisZ_apply, lp.single_apply]
   by_cases hmn : m = n
   · subst m
     simp [hs]

@@ -93,7 +93,7 @@ lemma strictMonoOn_Icc_union {g : ℝ → ℝ} {a t b : ℝ} (h1 : StrictMonoOn 
   · exact h2 ⟨htx, hx.2⟩ ⟨hyt, hy.2⟩ hxy
   rcases lt_or_eq_of_le htx with htx' | htx'
   · calc g x < g t := h1 ⟨hx.1, htx⟩ ⟨by linarith [hx.1], le_rfl⟩ htx'
-      _ ≤ g y := (h2.monotoneOn) ⟨le_rfl, by linarith [hy.2]⟩ ⟨hyt, hy.2⟩ hyt
+      _ ≤ g y := h2.monotoneOn ⟨le_rfl, by linarith [hy.2]⟩ ⟨hyt, hy.2⟩ hyt
   · rw [htx']; exact h2 ⟨le_rfl, by linarith [hy.2]⟩ ⟨hyt, hy.2⟩ (by rw [← htx']; exact hxy)
 
 /-! ### The walk -/
@@ -223,8 +223,7 @@ def walkX (ch : ℂ → ℂ × (ℝ → ℝ)) (ℓ : ℝ) (p₀ : ℂ) (p c : �
   (c * (walk ch ℓ p₀ s - p)).re
 
 lemma WalkData.continuous_walkX (hw : WalkData Ω ρ H K ch ℓ p₀) (p c : ℂ) :
-    Continuous (walkX ch ℓ p₀ p c) := by
-  exact Complex.continuous_re.comp (continuous_const.mul (hw.continuous_walk.sub continuous_const))
+    Continuous (walkX ch ℓ p₀ p c) := Complex.continuous_re.comp (continuous_const.mul (hw.continuous_walk.sub continuous_const))
 
 /-- Where the walk follows a single chart graph, its abscissa in any other chart is locally
 strictly increasing. -/
@@ -260,7 +259,6 @@ theorem WalkData.walk_local_strictMono (hw : WalkData Ω ρ H K ch ℓ p₀) {t 
   rw [div_lt_iff₀ hℓ] at h2
   set u := t - n * ℓ with hu
   have hu0 : 0 ≤ u := by linarith
-  have huℓ : u < ℓ := by linarith
   have hwt : walk ch ℓ p₀ t = stepCurve ch (walkPt ch ℓ p₀ n) u :=
     hw.walk_eq_step' n t ⟨h1, by linarith⟩
   -- the right part (and the middle of a step)
@@ -319,7 +317,7 @@ theorem WalkData.strictMonoOn_walkX (hw : WalkData Ω ρ H K ch ℓ p₀) {α β
     {p c : ℂ} {r h : ℝ} {K' : NNReal} {f : ℝ → ℝ} (hch : IsChartAt Ω p c r h K' f)
     (hbox : ∀ s ∈ Icc α β, walk ch ℓ p₀ s ∈ chartBox p c r h) :
     StrictMonoOn (walkX ch ℓ p₀ p c) (Icc α β) := by
-  refine strictMonoOn_of_local_left (ordConnected_Icc) (hw.continuous_walkX p c).continuousOn
+  refine strictMonoOn_of_local_left ordConnected_Icc (hw.continuous_walkX p c).continuousOn
     fun y hy => ?_
   obtain ⟨ε, hε, hmono⟩ := hw.walk_local_strictMono (le_trans hα hy.1) hch (hbox y hy)
   exact ⟨ε, hε, fun y' _ h1 h2 => hmono ⟨by linarith, by linarith⟩ ⟨by linarith, by linarith⟩ h2⟩

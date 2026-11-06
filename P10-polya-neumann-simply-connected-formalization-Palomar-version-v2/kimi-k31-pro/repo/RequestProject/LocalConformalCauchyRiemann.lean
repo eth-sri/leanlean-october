@@ -52,9 +52,7 @@ theorem realCLM_antiholomorphic_factor (A : ℂ →L[ℝ] ℂ) (c : ℂ) :
       c * (A 1 - Complex.I * A Complex.I) := by
   rw [cr_realCLM_apply_complex A c, cr_realCLM_apply_complex A (c * Complex.I)]
   apply Complex.ext <;>
-    simp only [Complex.sub_re, Complex.sub_im, Complex.add_re, Complex.add_im,
-      Complex.mul_re, Complex.mul_im, Complex.ofReal_re, Complex.ofReal_im,
-      Complex.I_re, Complex.I_im] <;> ring
+    simp <;> ring
 
 /-- The smooth H¹ defect has its genuine almost-everywhere representative. -/
 theorem h1AntiholomorphicDefect_smooth_ae (Ω : Set ℂ) (f : smoothTraceTests) :
@@ -73,9 +71,9 @@ theorem h1AntiholomorphicDefect_smooth_ae (Ω : Set ℂ) (f : smoothTraceTests) 
   filter_upwards [Lp.coeFn_sub (h1Gradient Ω 0 u) (Complex.I • h1Gradient Ω 1 u),
     Lp.coeFn_smul Complex.I (h1Gradient Ω 1 u), h0, h1] with z hsub hsmul hx hy
   rw [hsub]
-  simp only [Pi.sub_apply]
+  simp
   rw [hsmul]
-  simp only [Pi.smul_apply, smul_eq_mul]
+  simp
   rw [hx, hy]
   rfl
 
@@ -100,7 +98,7 @@ theorem antiholomorphicDifferential_smoothDiskComposition {R : ℝ} (hR : 1 < R)
     exact fderiv_eq_deriv_mul
   unfold antiholomorphicDifferential
   rw [fderiv_smoothDiskCompositionLin hR F hFs f (ball_subset_closedBall hz)]
-  simp only [ContinuousLinearMap.comp_apply, hfd, mul_one]
+  simp [ContinuousLinearMap.comp_apply, hfd, mul_one]
   exact realCLM_antiholomorphic_factor _ _
 
 theorem norm_sq_antiholomorphicDifferential_smoothDiskComposition {R : ℝ}

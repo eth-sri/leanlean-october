@@ -137,7 +137,7 @@ theorem fourierCollarTerm_eq_pow_on_closedDisk (n : ℕ) {z : ℂ} (hz : z ∈ c
   have hq : fourierCollarScaledDefect n z ≤ 0 := by
     dsimp [fourierCollarScaledDefect, fourierCollarRadialDefect]
     exact mul_nonpos_of_nonneg_of_nonpos (Nat.cast_nonneg _) (by nlinarith [norm_nonneg z])
-  simp only [fourierCollarTerm, fourierCollarCutoff_one hq, Complex.ofReal_one, mul_one]
+  simp [fourierCollarTerm, fourierCollarCutoff_one hq, Complex.ofReal_one, mul_one]
 
 /-- The support radius remains in a fixed compact ball. -/
 theorem fourierCollar_support_radius {n : ℕ} (hn : 1 ≤ n) {z : ℂ}
@@ -150,9 +150,9 @@ theorem fourierCollar_support_radius {n : ℕ} (hn : 1 ≤ n) {z : ℂ}
     change (‖z‖ ^ 2 - 1) * (n : ℝ) ≤ 1
     rw [mul_comm]
     exact hz
-  have hinv : 1 / (n : ℝ) ≤ 1 := (div_le_one hn0).mpr hn1
+  have hinv := (div_le_one hn0).mpr hn1
   refine ⟨by linarith, ?_⟩
-  rw [mem_closedBall, dist_zero_right]
+  simp
   nlinarith [norm_nonneg z]
 
 /-- The shrinking support compensates exactly for monomial growth.
@@ -170,16 +170,15 @@ theorem fourierCollar_support_pow_le_exp_half {n m : ℕ} (hn : 1 ≤ n) (hm : m
   · have hlog : (2 : ℝ) * Real.log ‖z‖ ≤ ‖z‖ ^ 2 - 1 := by
       simpa only [Real.log_pow, Nat.cast_ofNat] using
         Real.log_le_sub_one_of_pos (sq_pos_of_pos (lt_trans zero_lt_one hr))
-    have hlog' : 2 * Real.log ‖z‖ ≤ 1 / (n : ℝ) := by linarith
-    have hmul := mul_le_mul_of_nonneg_right hlog' hn0.le
+
+    have hmul := mul_le_mul_of_nonneg_right (by linarith) hn0.le
     have hcancel : (1 / (n : ℝ)) * (n : ℝ) = 1 := by field_simp [hn0.ne']
-    rw [hcancel] at hmul
-    have hne : (n : ℝ) * Real.log ‖z‖ ≤ 1 / 2 := by nlinarith
+    simp at hmul
     have hnpow : ‖z‖ ^ n ≤ Real.exp (1 / 2 : ℝ) := by
       have heq : ‖z‖ ^ n = Real.exp ((n : ℝ) * Real.log ‖z‖) := by
         rw [Real.exp_nat_mul, Real.exp_log (lt_trans zero_lt_one hr)]
       rw [heq]
-      exact Real.exp_le_exp.mpr hne
+      exact Real.exp_le_exp.mpr (by nlinarith)
     exact (pow_le_pow_right₀ hr.le hm).trans hnpow
 
 /-- The exact real derivative norm of a holomorphic monomial. -/
@@ -188,7 +187,7 @@ theorem fourierCollar_pow_iteratedFDeriv_norm (n k : ℕ) (z : ℂ) :
       (n.descFactorial k : ℝ) * ‖z‖ ^ (n - k) := by
   have hp : ContDiffAt ℂ k (fun w : ℂ => w ^ n) z := (contDiff_id.pow n).contDiffAt
   rw [← hp.restrictScalars_iteratedFDeriv (𝕜 := ℝ)]
-  simp only [Function.comp_apply, ContinuousMultilinearMap.norm_restrictScalars,
+  simp [Function.comp_apply, ContinuousMultilinearMap.norm_restrictScalars,
     norm_iteratedFDeriv_eq_norm_iteratedDeriv, iteratedDeriv_pow, norm_mul,
     Complex.norm_natCast, norm_pow]
 
@@ -254,10 +253,9 @@ theorem fourierCollarTerm_exists_iteratedFDeriv_bound (k : ℕ) :
     rw [hBdef, Finset.sum_mul]
     apply Finset.sum_le_sum
     intro i hi
-    have hik : i ≤ k := Nat.le_of_lt_succ (Finset.mem_range.mp hi)
-    have hkmi : k - i ≤ k := Nat.sub_le _ _
+    have hik := Nat.le_of_lt_succ (Finset.mem_range.mp hi)
     have hpow := fourierCollar_pow_iteratedFDeriv_le hn i hz
-    have hcut' := hcut (k - i) hkmi
+    have hcut' := hcut (k - i) (Nat.sub_le _ _)
     have hmul := mul_le_mul hpow hcut' (norm_nonneg _) (by positivity)
     have hchosen := mul_le_mul_of_nonneg_left hmul (show (0 : ℝ) ≤ k.choose i from Nat.cast_nonneg _)
     calc
@@ -268,7 +266,7 @@ theorem fourierCollarTerm_exists_iteratedFDeriv_bound (k : ℕ) :
             (((k - i).factorial : ℝ) * C * ((n : ℝ) * D) ^ (k - i)) := by
         simpa only [mul_assoc] using hchosen
       _ = ((k.choose i : ℝ) * Real.exp (1 / 2 : ℝ) * ((k - i).factorial : ℝ) * C * D ^ (k - i)) *
-          ((n : ℝ) ^ i * (n : ℝ) ^ (k - i)) := by rw [mul_pow]; ring
+          ((n : ℝ) ^ i * (n : ℝ) ^ (k - i)) := by simp; ring
       _ = ((k.choose i : ℝ) * Real.exp (1 / 2 : ℝ) * ((k - i).factorial : ℝ) * C * D ^ (k - i)) *
           (n : ℝ) ^ k := by rw [← pow_add, Nat.add_sub_of_le hik]
   · have hgt : 1 < fourierCollarScaledDefect n z := lt_of_not_ge hz
@@ -276,10 +274,10 @@ theorem fourierCollarTerm_exists_iteratedFDeriv_bound (k : ℕ) :
       have hopen : {w : ℂ | 1 < fourierCollarScaledDefect n w} ∈ 𝓝 z :=
         (isOpen_lt continuous_const (fourierCollarScaledDefect_contDiff (0 : ℕ∞) n).continuous).mem_nhds hgt
       filter_upwards [hopen] with w hw
-      simp only [fourierCollarTerm, fourierCollarCutoff_zero hw.le, Complex.ofReal_zero, mul_zero]
+      simp [fourierCollarTerm, fourierCollarCutoff_zero hw.le, Complex.ofReal_zero, mul_zero]
     have hd := (heq.iteratedFDeriv ℝ k).eq_of_nhds
     rw [hd]
-    simp only [iteratedFDeriv_zero_fun, Pi.zero_apply, norm_zero]
+    simp
     exact mul_nonneg hB (pow_nonneg hn0.le _)
 
 /-- All polynomially weighted ordinary Taylor coefficients are absolutely

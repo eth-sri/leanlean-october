@@ -44,7 +44,7 @@ lemma tendsto_integral_mul {Ω : Set ℂ} {ψ : ℂ → ℂ}
     rw [L2.inner_def]
     refine integral_congr_ae ?_
     filter_upwards [hψ.coeFn_toLp] with w hw
-    simp only [Ψ, hw, RCLike.inner_apply, Complex.conj_conj]
+    simp [Ψ, hw, RCLike.inner_apply, Complex.conj_conj]
   simp_rw [key]
   exact (continuous_const.inner continuous_id).continuousAt.tendsto.comp hf
 

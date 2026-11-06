@@ -45,11 +45,11 @@ private theorem joinCapArc_lipschitz {P A : ℝ → ℂ} {KP KA : NNReal}
     intro x y hxy
     by_cases hy1 : y ≤ 1
     · have hx1 := hxy.trans hy1
-      simp only [joinCapArc, if_pos hx1, if_pos hy1]
+      simp [joinCapArc, if_pos hx1, if_pos hy1]
       exact (hP.dist_le_mul x y).trans
         (mul_le_mul_of_nonneg_right hPK dist_nonneg)
     · by_cases hx1 : x ≤ 1
-      · simp only [joinCapArc, if_pos hx1, if_neg hy1]
+      · simp [joinCapArc, if_pos hx1, if_neg hy1]
         have hPx := hP.dist_le_mul x 1
         have hAy := hA.dist_le_mul 0 (y - 1)
         rw [Real.dist_eq, abs_of_nonpos (sub_nonpos.mpr hx1)] at hPx
@@ -65,7 +65,7 @@ private theorem joinCapArc_lipschitz {P A : ℝ → ℂ} {KP KA : NNReal}
           _ = (max KP KA : NNReal) * dist x y := by
             rw [Real.dist_eq, abs_of_nonpos (sub_nonpos.mpr hxy)]
             ring
-      · simp only [joinCapArc, if_neg hx1, if_neg hy1]
+      · simp [joinCapArc, if_neg hx1, if_neg hy1]
         have h := hA.dist_le_mul (x - 1) (y - 1)
         rw [Real.dist_eq, sub_sub_sub_cancel_right, ← Real.dist_eq] at h
         exact h.trans (mul_le_mul_of_nonneg_right hAK dist_nonneg)
@@ -95,14 +95,14 @@ private theorem joinCapArc_injOn {P A : ℝ → ℂ}
   intro u hu v hv he
   by_cases hu1 : u ≤ 1
   · by_cases hv1 : v ≤ 1
-    · simp only [joinCapArc, if_pos hu1, if_pos hv1] at he
+    · simp [joinCapArc, if_pos hu1, if_pos hv1] at he
       exact hP ⟨hu.1, hu1⟩ ⟨hv.1, hv1⟩ he
-    · simp only [joinCapArc, if_pos hu1, if_neg hv1] at he
+    · simp [joinCapArc, if_pos hu1, if_neg hv1] at he
       exact False.elim (hcross u ⟨hu.1, hu1⟩ v ⟨lt_of_not_ge hv1, hv.2⟩ he)
   · by_cases hv1 : v ≤ 1
-    · simp only [joinCapArc, if_neg hu1, if_pos hv1] at he
+    · simp [joinCapArc, if_neg hu1, if_pos hv1] at he
       exact False.elim (hcross v ⟨hv.1, hv1⟩ u ⟨lt_of_not_ge hu1, hu.2⟩ he.symm)
-    · simp only [joinCapArc, if_neg hu1, if_neg hv1] at he
+    · simp [joinCapArc, if_neg hu1, if_neg hv1] at he
       have h := hA ⟨by linarith [lt_of_not_ge hu1], by linarith [hu.2]⟩
         ⟨by linarith [lt_of_not_ge hv1], by linarith [hv.2]⟩ he
       linarith
@@ -173,15 +173,14 @@ theorem riemannMapping_exists_small_lipschitz_cap_loop (F : ℂ → ℂ)
   let Ω := F '' ball (0 : ℂ) 1
   have hopen : IsOpen Ω := RiemannInterior.isOpen_image_of_injOn isOpen_ball
     (convex_ball (0 : ℂ) 1).isPreconnected hF hinj Subset.rfl isOpen_ball
-  have hF0 : F 0 ∈ Ω := ⟨0, by simp, rfl⟩
-  obtain ⟨ρ, hρ, hball⟩ := Metric.isOpen_iff.mp hopen (F 0) hF0
+  obtain ⟨ρ, hρ, hball⟩ := Metric.isOpen_iff.mp hopen (F 0) (⟨0, by simp, rfl⟩)
   let R := min ε ρ / 2
-  have hR : 0 < R := half_pos (lt_min hε hρ)
+  have hR := half_pos (lt_min hε hρ)
   have hRε : R < ε := by have h := min_le_left ε ρ; dsimp [R]; linarith
   have hRρ : R ≤ ρ := by have h := min_le_right ε ρ; dsimp [R]; linarith
   obtain ⟨η, hη, hshort⟩ := jordanParam_exists_short_arc hK hper hγinj hR
   let ξ := min (η / 2) R
-  have hξ : 0 < ξ := lt_min (half_pos hη) hR
+  have hξ := lt_min (half_pos hη) hR
   obtain ⟨r, G, τ, H, hr, hrδ, hr1, hGc, _hτc, hHlip, _hi, hL, hLξ,
     hGeq, hGa, hGb, hτm, hτr, _hτl, hH, hH0, hHL, hHim, hHi⟩ :=
     riemannMapping_exists_small_lipschitz_cap F hF hinj hb hζ hδ hξ
@@ -189,8 +188,7 @@ theorem riemannMapping_exists_small_lipschitz_cap_loop (F : ℂ → ℂ)
   let b := riemannCapCenterAngle ζ + riemannCapHalfAngle r
   let L := riemannCapArcLength F ζ r a b
   obtain ⟨hab, hwidth, harc, _, _⟩ := riemannCap_geometry hζ hr hr1
-  have hwidth' : b - a ≤ 2 * Real.pi := by linarith
-  have hLR : L < R := hLξ.trans_le (min_le_right _ _)
+  have hLR := hLξ.trans_le (min_le_right _ _)
   have hLp : R ≤ ‖G a - F 0‖ := by
     have hnot : G a ∉ Ω := by rw [hopen.frontier_eq] at hGa; exact hGa.2
     have hρp : ρ ≤ ‖G a - F 0‖ := by
@@ -238,7 +236,7 @@ theorem riemannMapping_exists_small_lipschitz_cap_loop (F : ℂ → ℂ)
       hshort (G b) (by simpa only [himage] using hGb)
         (G a) (by simpa only [himage] using hGa) hnear
     have hAf : MapsTo A (Icc 0 1) (frontier Ω) := by simpa only [himage] using hAm
-    have hGi := riemannMapping_cap_injOn_Icc F hF hinj hr.ne' hwidth' harc hGeq hGa hGb hend
+    have hGi := riemannMapping_cap_injOn_Icc F hF hinj hr.ne' (by linarith) harc hGeq hGa hGb hend
     have hHic : InjOn H (Icc 0 L) := by
       intro u hu v hv he
       have hτuv := hGi (hτm u) (hτm v) ((hH u).symm.trans (he.trans (hH v)))
@@ -249,7 +247,6 @@ theorem riemannMapping_exists_small_lipschitz_cap_loop (F : ℂ → ℂ)
     have hP0 : P 0 = G a := by simpa only [P, mul_zero] using hH0
     have hP1 : P 1 = G b := by simpa only [P, mul_one] using hHL
     have hPlip := normalized_lipschitz_cap hHlip hL
-    have hPim : P '' Icc 0 1 = H '' Icc 0 L := normalized_lipschitz_cap_image hL
     have hPic : InjOn P (Icc 0 1) := by
       intro u hu v hv he
       have h := hHic ⟨mul_nonneg hL.le hu.1, mul_le_of_le_one_right hL.le hu.2⟩
@@ -274,24 +271,24 @@ theorem riemannMapping_exists_small_lipschitz_cap_loop (F : ℂ → ℂ)
       have hzΩ : z ∈ Ω := by
         refine ⟨circleMap ζ r (τ (L * u)), harc hθi, ?_⟩
         exact (hGeq hθi).symm.trans ((hH _).symm.trans hPu)
-      have hzf : z ∈ frontier Ω := hAv ▸ hAf hv
+      have hzf := hAv ▸ hAf hv
       rw [hopen.frontier_eq] at hzf
       exact hzf.2 hzΩ
     let Γ := joinCapArc P A
     have hΓlip := joinCapArc_lipschitz hPlip hA (hA0.trans hP1.symm)
     have hΓcl : Γ 2 = Γ 0 := by
-      simp only [Γ, joinCapArc, if_neg (by norm_num : ¬(2 : ℝ) ≤ 1),
+      simp [Γ, joinCapArc, if_neg (by norm_num : ¬(2 : ℝ) ≤ 1),
         if_pos (by norm_num : (0 : ℝ) ≤ 1), show (2 : ℝ) - 1 = 1 by norm_num, hA1, hP0]
-    have hΓi : InjOn Γ (Ico 0 2) := joinCapArc_injOn hPic (hAi (Ne.symm hend))
+    have hΓi := joinCapArc_injOn hPic (hAi (Ne.symm hend))
       (hA0.trans hP1.symm) (hA1.trans hP0.symm) hdisj
     have hΓim : Γ '' Icc 0 2 = G '' Icc a b ∪ A '' Icc 0 1 := by
-      rw [joinCapArc_image (hA0.trans hP1.symm), hPim, hHim]
+      rw [joinCapArc_image (hA0.trans hP1.symm), (normalized_lipschitz_cap_image hL), hHim]
     have hΓsmall : ∀ u ∈ Icc 0 2, ‖Γ u - G a‖ < R := by
       intro u hu
       by_cases hu1 : u ≤ 1
-      · simp only [Γ, joinCapArc, if_pos hu1, P]
+      · simp [Γ, joinCapArc, if_pos hu1, P]
         exact hHsmall (L * u) ⟨mul_nonneg hL.le hu.1, mul_le_of_le_one_right hL.le hu1⟩
-      · simp only [Γ, joinCapArc, if_neg hu1]
+      · simp [Γ, joinCapArc, if_neg hu1]
         rw [← hA1]
         exact hAd (u - 1) ⟨by linarith [lt_of_not_ge hu1], by linarith [hu.2]⟩ 1 (by norm_num)
     obtain ⟨β, KB, hKB, hp, hii, hcap, hsub, hsmall, hw⟩ := hfinish hΓlip
@@ -374,12 +371,11 @@ theorem riemannMapping_winding_eq_at_zero_of_radial_side (F : ℂ → ℂ)
     rw [mem_ball_zero_iff, norm_smul, Real.norm_eq_abs, abs_of_nonneg ht.1]
     exact (mul_le_of_le_one_left (norm_nonneg z) ht.2).trans_lt (mem_ball_zero_iff.mp hz)
   let P : ℝ → ℂ := fun t => F (t • z)
-  have hPc : ContinuousOn P (Icc 0 1) := hF.continuousOn.comp
+  have hPc := hF.continuousOn.comp
     (continuous_id.smul continuous_const).continuousOn hm
   have hdisj : Disjoint (P '' Icc 0 1) (β '' Icc 0 (2 * Real.pi)) := by
     apply Set.disjoint_left.mpr
     rintro w ⟨t, ht, htw⟩ hwβ
-    have htΩ : w ∈ Ω := ⟨t • z, hm ht, htw⟩
     rcases hsub hwβ with hwcap | hwfront
     · have htr : r < ‖t • z - ζ‖ := hfar.trans_le (norm_sub_le_norm_radial_sub hdot ht.1 ht.2)
       apply riemannMapping_notMem_cap_of_source_radius_ne F hF hinj hr harc hGeq hGa hGb
@@ -388,7 +384,7 @@ theorem riemannMapping_winding_eq_at_zero_of_radial_side (F : ℂ → ℂ)
       rw [htw]
       exact hwcap
     · rw [hopen.frontier_eq] at hwfront
-      exact hwfront.2 htΩ
+      exact hwfront.2 (⟨t • z, hm ht, htw⟩)
   apply windingNumber_const_of_isPreconnected hKB hclosed
     (isPreconnected_Icc.image P hPc) hdisj
   · exact ⟨1, by norm_num, by simp [P]⟩
@@ -449,7 +445,7 @@ theorem riemannCap_circle_midpoint {ζ : ℂ} (hζ : ‖ζ‖ = 1) (r : ℝ) :
   have he : Complex.exp ((riemannCapCenterAngle ζ : ℂ) * Complex.I) = -ζ := by
     simpa only [riemannCapCenterAngle, norm_neg, hζ, Complex.ofReal_one, one_mul]
       using Complex.norm_mul_exp_arg_mul_I (-ζ)
-  simp only [circleMap, he, riemannCapMidpoint, Complex.real_smul, Complex.ofReal_sub,
+  simp [circleMap, he, riemannCapMidpoint, Complex.real_smul, Complex.ofReal_sub,
     Complex.ofReal_one]
   ring
 
@@ -467,7 +463,7 @@ theorem riemannCapNormal_eq_I_mul_tangent (F : ℂ → ℂ) {ζ : ℂ}
   rw [riemannCap_circle_midpoint hζ r]
   unfold riemannInteriorDerivative
   rw [indicator_of_mem hmid]
-  simp only [circleMap, zero_add, he, riemannCapNormal]
+  simp [circleMap, zero_add, he, riemannCapNormal]
   calc
     _ = -(Complex.I * Complex.I) * ((r : ℂ) * deriv F (riemannCapMidpoint ζ r) * ζ) := by
       rw [Complex.I_mul_I]
@@ -480,9 +476,9 @@ private theorem eventually_lt_of_hasDerivAt_neg {f : ℝ → ℝ} {d : ℝ}
   have he := hd.tendsto_slope_zero_right.eventually (eventually_lt_nhds hdneg)
   filter_upwards [he, self_mem_nhdsWithin] with s hs hspos
   simp only [zero_add, smul_eq_mul] at hs
-  have hspos' : 0 < s := hspos
+
   have hsub : f s - f 0 < 0 :=
-    (mul_lt_mul_iff_right₀ (inv_pos.mpr hspos')).mp (by simpa only [mul_zero] using hs)
+    (mul_lt_mul_iff_right₀ (inv_pos.mpr (hspos))).mp (by simpa only [mul_zero] using hs)
   exact sub_neg.mp hsub
 
 private theorem eventually_gt_of_hasDerivAt_pos {f : ℝ → ℝ} {d : ℝ}
@@ -491,9 +487,9 @@ private theorem eventually_gt_of_hasDerivAt_pos {f : ℝ → ℝ} {d : ℝ}
   have he := hd.tendsto_slope_zero_right.eventually (eventually_gt_nhds hdpos)
   filter_upwards [he, self_mem_nhdsWithin] with s hs hspos
   simp only [zero_add, smul_eq_mul] at hs
-  have hspos' : 0 < s := hspos
+
   have hsub : 0 < f s - f 0 :=
-    (mul_lt_mul_iff_right₀ (inv_pos.mpr hspos')).mp (by simpa only [mul_zero] using hs)
+    (mul_lt_mul_iff_right₀ (inv_pos.mpr (hspos))).mp (by simpa only [mul_zero] using hs)
   exact sub_pos.mp hsub
 
 /-- Genuine local normal crossing of the actual circular source cap.
@@ -519,21 +515,20 @@ theorem riemannMapping_exists_inverse_normal_crossing (F : ℂ → ℂ)
   let z₀ := riemannCapMidpoint ζ r
   let q := F z₀
   let N := riemannCapNormal F ζ r
-  have hz₀ : z₀ ∈ ball (0 : ℂ) 1 := riemannCapMidpoint_mem_disk hζ hr hr1
+  have hz₀ := riemannCapMidpoint_mem_disk hζ hr hr1
   have hq : q ∈ Ω := ⟨z₀, hz₀, rfl⟩
   have hopen : IsOpen Ω := RiemannInterior.isOpen_image_of_injOn isOpen_ball
     (convex_ball (0 : ℂ) 1).isPreconnected hF hinj Subset.rfl isOpen_ball
   obtain ⟨J, hJ, hJm, hJF, hFJ⟩ := RiemannInterior.exists_holomorphic_inverse
     isOpen_ball (convex_ball (0 : ℂ) 1).isPreconnected hF hinj
-  have hJq : J q = z₀ := hJF z₀ hz₀
+  have hJq := hJF z₀ hz₀
   have hDF : deriv F z₀ ≠ 0 :=
     RiemannInterior.deriv_ne_zero_of_injOn isOpen_ball hF hinj hz₀
   have hζne : ζ ≠ 0 := by
     intro h
-    have hn : ‖ζ‖ = 0 := norm_eq_zero.mpr h
+    have hn := norm_eq_zero.mpr h
     linarith
-  have hN : N ≠ 0 := mul_ne_zero (mul_ne_zero (by exact_mod_cast hr.ne') hDF) hζne
-  have hJc : ContinuousAt J q := (hJ.differentiableAt (hopen.mem_nhds hq)).continuousAt
+  have hJc := (hJ.differentiableAt (hopen.mem_nhds hq)).continuousAt
   have hdF : HasDerivAt F (deriv F z₀) (J q) := by
     rw [hJq]
     exact (hF.differentiableAt (isOpen_ball.mem_nhds hz₀)).hasDerivAt
@@ -570,7 +565,7 @@ theorem riemannMapping_exists_inverse_normal_crossing (F : ℂ → ℂ)
     have h := hsqD.comp_of_eq 0 (hasDerivAt_neg (0 : ℝ)) (by simp)
     convert h using 1
     · funext s
-      simp only [Function.comp_def, neg_smul, sub_eq_add_neg]
+      simp [Function.comp_def, neg_smul, sub_eq_add_neg]
     · ring
   have hsqMinus0 : ‖J (q - (0 : ℝ) • N) - ζ‖ ^ 2 = r ^ 2 := by
     simpa only [zero_smul, add_zero, sub_zero] using hsq0
@@ -604,7 +599,7 @@ theorem riemannMapping_exists_inverse_normal_crossing (F : ℂ → ℂ)
     have hpt : Tendsto (fun s : ℝ => q - s • N) (𝓝 0) (𝓝 q) := by
       simpa only [zero_smul, sub_zero] using hp.tendsto
     exact hpt.eventually (hopen.mem_nhds hq)
-  refine ⟨J, hJ, hJm, hJF, hFJ, hN, hdJP, ?_⟩
+  refine ⟨J, hJ, hJm, hJF, hFJ, (mul_ne_zero (mul_ne_zero (by exact_mod_cast hr.ne') hDF) hζne), hdJP, ?_⟩
   filter_upwards [hplus, hminus, hdotE.filter_mono nhdsWithin_le_nhds,
     hΩplus.filter_mono nhdsWithin_le_nhds, hΩminus.filter_mono nhdsWithin_le_nhds]
     with s hsplus hsminus hsdot hsΩplus hsΩminus
@@ -713,11 +708,10 @@ private theorem exists_graph_of_local_regular_arc {G V : ℝ → ℂ}
   apply hgraph
   constructor
   · by_contra hn
-    have hθl : θ ∈ Icc a (t - η) := ⟨hθ.1, (lt_of_not_ge hn).le⟩
-    exact not_lt_of_ge (hfar₁ θ hθl) (hsmall.trans_le (min_le_left _ _))
+    exact not_lt_of_ge (hfar₁ θ (⟨hθ.1, (lt_of_not_ge hn).le⟩)) (hsmall.trans_le (min_le_left _ _))
   · by_contra hn
-    have hθr : θ ∈ Icc (t + η) b := ⟨(lt_of_not_ge hn).le, hθ.2⟩
-    exact not_lt_of_ge (hfar₂ θ hθr) (hsmall.trans_le (min_le_right _ _))
+
+    exact not_lt_of_ge (hfar₂ θ (⟨(lt_of_not_ge hn).le, hθ.2⟩)) (hsmall.trans_le (min_le_right _ _))
 
 /-- The actual cap loop is a local graph at its genuine physical
 midpoint. The closing boundary arc stays away from this interior point;
@@ -750,15 +744,15 @@ theorem riemannMapping_cap_loop_local_graph (F : ℂ → ℂ)
   have hα : 0 < riemannCapHalfAngle r := Real.arccos_pos.mpr (by linarith)
   have ht : t ∈ Ioo a b := ⟨by dsimp [a, t]; linarith, by dsimp [b, t]; linarith⟩
   obtain ⟨_, hwidth, harc, _, _⟩ := riemannCap_geometry hζ hr hr1
-  have htm : circleMap ζ r t ∈ ball (0 : ℂ) 1 := harc ht
-  have hT : T ≠ 0 := riemannCapDerivative_ne_zero_interior F hF hinj ζ hr t htm
-  have hGq : G t = q := (hGeq ht).trans (congrArg F (riemannCap_circle_midpoint hζ r))
+  have htm := harc ht
+  have hT := riemannCapDerivative_ne_zero_interior F hF hinj ζ hr t htm
+  have hGq := (hGeq ht).trans (congrArg F (riemannCap_circle_midpoint hζ r))
   have hopen : IsOpen (F '' ball (0 : ℂ) 1) :=
     RiemannInterior.isOpen_image_of_injOn isOpen_ball (convex_ball (0 : ℂ) 1).isPreconnected
       hF hinj Subset.rfl isOpen_ball
   have hq : q ∈ F '' ball (0 : ℂ) 1 :=
     ⟨riemannCapMidpoint ζ r, riemannCapMidpoint_mem_disk hζ hr hr1, rfl⟩
-  have hGinj : InjOn G (Ico a b) := riemannMapping_cap_injOn_Ico F hF hinj hr.ne'
+  have hGinj := riemannMapping_cap_injOn_Ico F hF hinj hr.ne'
     (by linarith) harc hGeq hGa
   have havoid : ∀ θ ∈ Icc a b, θ ≠ t → G θ ≠ G t := by
     intro θ hθ hθt he
@@ -791,7 +785,7 @@ theorem riemannMapping_cap_loop_local_graph (F : ℂ → ℂ)
 private theorem windingNumber_shift {β : ℝ → ℂ}
     (hper : Function.Periodic β (2 * Real.pi)) (t : ℝ) (w : ℂ) :
     windingNumber (fun θ => β (θ + t)) w = windingNumber β w := by
-  have hdper : Function.Periodic (deriv β) (2 * Real.pi) := deriv_periodic hper
+  have hdper := deriv_periodic hper
   have hp : Function.Periodic (fun θ => deriv β θ / (β θ - w)) (2 * Real.pi) := by
     intro θ
     change deriv β (θ + 2 * Real.pi) / (β (θ + 2 * Real.pi) - w) =
@@ -838,29 +832,27 @@ private theorem windingNumber_jump_of_local_image_graph {β : ℝ → ℂ} {KB :
     calc
       _ ≤ ‖T⁻¹‖ * ((KB : ℝ) * dist x y) :=
         mul_le_mul_of_nonneg_left hb (norm_nonneg _)
-      _ = _ := by simp only [NNReal.coe_mul, coe_nnnorm]; ring
+      _ = _ := by simp; ring
   have hρper : Function.Periodic ρ (2 * Real.pi) := by
     intro θ
     dsimp [ρ]
     rw [show (θ + 2 * Real.pi) + t = (θ + t) + 2 * Real.pi by ring, hper]
-  have hρ0 : ρ 0 = 0 := by simp only [ρ, zero_add, ht, sub_self, mul_zero]
-  have hβc : Continuous β := hKB.continuous
+  have hβc := hKB.continuous
   have hn : ContinuousAt (fun θ : ℝ => ‖β (θ + t) - q‖) 0 := by
     fun_prop
-  have hn0 : ‖β ((0 : ℝ) + t) - q‖ = 0 := by simp only [zero_add, ht, sub_self, norm_zero]
+  have hn0 : ‖β ((0 : ℝ) + t) - q‖ = 0 := by simp [zero_add, ht, sub_self, norm_zero]
   have he : ∀ᶠ θ in 𝓝 (0 : ℝ), ‖β (θ + t) - q‖ < d :=
     hn.tendsto.eventually (eventually_lt_nhds (by rw [hn0]; exact hd))
   obtain ⟨δ, hδ, hδsub⟩ := Metric.mem_nhds_iff.mp he
   let η := min (δ / 2) (Real.pi / 2)
-  have hη : 0 < η := lt_min (half_pos hδ) (half_pos Real.pi_pos)
-  have hηδ : η < δ := (min_le_left _ _).trans_lt (by linarith)
+  have hη := lt_min (half_pos hδ) (half_pos Real.pi_pos)
   have hηπ : η < Real.pi := (min_le_right _ _).trans_lt (by linarith [Real.pi_pos])
   have hg : ∀ θ ∈ Icc (-η) η, (ρ θ).im = f (ρ θ).re := by
     intro θ hθ
     apply hgraph _ (periodic_curve_mem_image hper (θ + t))
     apply hδsub
     rw [mem_ball, Real.dist_eq, sub_zero]
-    exact (abs_le.mpr ⟨hθ.1, hθ.2⟩).trans_lt hηδ
+    exact (abs_le.mpr ⟨hθ.1, hθ.2⟩).trans_lt ((min_le_left _ _).trans_lt (by linarith))
   have hρinj : InjOn ρ (Icc (-η) η) := by
     intro x hx y hy heq
     have heq' : β (x + t) = β (y + t) := by
@@ -875,15 +867,15 @@ private theorem windingNumber_jump_of_local_image_graph {β : ℝ → ℂ} {KB :
     linarith
   have hfar : ∀ θ ∈ Icc η (2 * Real.pi - η), ρ θ ≠ 0 := by
     intro θ hθ heq
-    have hh : β (θ + t) = q := sub_eq_zero.mp
+    have hh := sub_eq_zero.mp
       ((mul_eq_zero.mp heq).resolve_left (inv_ne_zero hT))
-    have hθpos : 0 < θ := hη.trans_le hθ.1
+    have hθpos := hη.trans_le hθ.1
     have habs : |(θ + t) - t| < 2 * Real.pi := by
       rw [add_sub_cancel_right, abs_of_pos hθpos]
       linarith [hθ.2]
     have hh' := jordanParam_eq_of_eq_of_abs_sub_lt hper hinj (hh.trans ht.symm) habs
     linarith
-  obtain ⟨σ, hσ, hlim⟩ := windingNumber_jump hρK hρper hη hηπ hρ0 hg hρinj hfar
+  obtain ⟨σ, hσ, hlim⟩ := windingNumber_jump hρK hρper hη hηπ (by simp [ρ, zero_add, ht, sub_self, mul_zero]) hg hρinj hfar
   have hw (s : ℝ) : windingNumber ρ ((s : ℂ) * Complex.I) =
       windingNumber β (q + s • (Complex.I * T)) := by
     rw [windingNumber_affine _ (inv_ne_zero hT), windingNumber_shift hper, inv_inv]
@@ -939,9 +931,9 @@ theorem riemannMapping_cap_winding_pm_one (F : ℂ → ℂ)
   obtain ⟨hT, d, hd, f, hg⟩ :=
     riemannMapping_cap_loop_local_graph F hF hinj hζ hr hr1 hGc hGeq hGa hGb hsub
   obtain ⟨σ, hσ, hlim⟩ := windingNumber_jump_of_local_image_graph hKB hper hβinj hβt hT hd hg
-  have hclosed : β (2 * Real.pi) = β 0 := by simpa only [zero_add] using hper 0
+
   have he := riemannMapping_winding_normal_values F hF hinj hζ hr hr1
-    hGeq hGa hGb hKB hclosed hsub hz
+    hGeq hGa hGb hKB (by simpa only [zero_add] using hper 0) hsub hz
   change ∀ᶠ s in 𝓝[>] (0 : ℝ),
     windingNumber β (q + s • riemannCapNormal F ζ r) = windingNumber β (F z) ∧
     windingNumber β (q - s • riemannCapNormal F ζ r) = windingNumber β (F 0) at he
@@ -957,7 +949,7 @@ theorem riemannMapping_cap_winding_pm_one (F : ℂ → ℂ)
       (𝓝 (windingNumber β (F z))) := by
     apply tendsto_const_nhds.congr'
     filter_upwards [heq] with s hs using hs.symm
-  have hvalue : windingNumber β (F z) = σ := tendsto_nhds_unique hconst hlim
+  have hvalue := tendsto_nhds_unique hconst hlim
   exact hσ.imp (fun h => hvalue.trans h) (fun h => hvalue.trans h)
 
 /-- A genuine cap loop contained in a physical ball confines the
@@ -1036,7 +1028,7 @@ theorem riemannMapping_exists_small_cap_region_of_simplyConnected
   obtain ⟨γ, ⟨K, hK⟩, hper, hγinj, hγimage⟩ :=
     exists_jordanParam_of_isPreconnected_frontier hb hL
       (isPreconnected_frontier_of_simplyConnected hb hL hsc)
-  have hbF : Bornology.IsBounded (F '' ball (0 : ℂ) 1) := himage.symm ▸ hb
+  have hbF := himage.symm ▸ hb
   have hγF : γ '' Icc 0 (2 * Real.pi) = frontier (F '' ball (0 : ℂ) 1) := by
     simpa only [himage] using hγimage
   simpa only [himage] using riemannMapping_exists_small_cap_region F hF hinj hbF

@@ -34,9 +34,8 @@ lemma norm_exp_mul_I' (φ : ℝ) : ‖Complex.exp (φ * Complex.I)‖ = 1 :=
 lemma norm_pwQ_le (k : ℝ) (γ : ℝ → ℂ) (θ φ : ℝ) : ‖pwQ k γ θ φ‖ ≤ |k| * ‖deriv γ θ‖ := by
   unfold pwQ
   rw [norm_mul, norm_planeWave, one_mul, norm_mul]
-  have hk : ‖(k / 2 : ℂ)‖ = |k| / 2 := by
-    rw [norm_div, Complex.norm_real, Real.norm_eq_abs]; norm_num
-  rw [hk]
+
+  simp
   calc |k| / 2 * ‖conj (deriv γ θ) * Complex.exp (φ * Complex.I) -
         deriv γ θ * Complex.exp (-(φ * Complex.I))‖
       ≤ |k| / 2 * (‖deriv γ θ‖ + ‖deriv γ θ‖) := by
@@ -81,7 +80,7 @@ lemma herglotzConormal_eq_integral {a : ℝ → ℂ} (ha : IntervalIntegrable a 
     have e2 : Complex.exp (-(((1 : ℤ) : ℂ) * φ * Complex.I)) =
         Complex.exp (-(φ * Complex.I)) := by
       congr 1; push_cast; ring
-    simp only [pwQ, e1, e2]
+    simp [pwQ, e1, e2]
     ring
   rw [key]
   ring
@@ -102,8 +101,7 @@ lemma ePlane_eq_conj_planeWave (k ψ : ℝ) (z : ℂ) :
     rw [mul_left_comm, Complex.re_ofReal_mul]
     ring
   rw [hre]
-  simp only [map_mul, map_neg, Complex.conj_I, Complex.conj_ofReal]
-  have hπ : (π : ℂ) ≠ 0 := by exact_mod_cast Real.pi_ne_zero
+  simp
   push_cast
   field_simp
 
@@ -128,9 +126,9 @@ lemma fderiv_ePlane_conormal (k ψ : ℝ) (γ : ℝ → ℂ) (θ : ℝ) :
   have hc : conj (Complex.exp (-(ψ * Complex.I))) = Complex.exp (ψ * Complex.I) := by
     rw [← Complex.exp_conj]; simp
   rw [hc]
-  simp only [pwQ, map_neg, map_mul, Complex.conj_I]
+  simp [pwQ, map_neg, map_mul, Complex.conj_I]
   ring_nf
-  rw [Complex.I_sq]
+  simp
   ring
 
 private theorem recon_continuous_kernel_pairing {μ : Measure ℝ}
@@ -146,7 +144,7 @@ private theorem recon_continuous_kernel_pairing {μ : Measure ℝ}
     (fun φ => Eventually.of_forall fun θ => ?_) (hhi.norm.const_mul B)
     (Eventually.of_forall fun θ =>
       (Complex.continuous_conj.comp (hQc θ)).mul continuous_const)
-  rw [norm_mul, Complex.norm_conj]
+  simp
   exact mul_le_mul_of_nonneg_right (hQb θ φ) (norm_nonneg _)
 
 private theorem recon_pairing_product_integrable {μ : Measure ℝ} [SFinite μ]
@@ -161,7 +159,7 @@ private theorem recon_pairing_product_integrable {μ : Measure ℝ} [SFinite μ]
       hai.aestronglyMeasurable.comp_snd).mul
       ((Complex.continuous_conj.measurable.comp hQm).aestronglyMeasurable.mul
         hhi.aestronglyMeasurable.comp_fst)
-  · simp only [norm_mul, Complex.norm_conj]
+  · simp
     calc
       ‖a p.2‖ * (‖Q p.1 p.2‖ * ‖h p.1‖) ≤
           ‖a p.2‖ * (B * ‖h p.1‖) :=
@@ -189,7 +187,7 @@ private theorem recon_herglotz_pairing_superposition {a : ℝ → ℂ} (ha : IsD
     Complex.conj_ofReal, ← integral_conj, mul_assoc, ← integral_mul_const]
   congr 2
   funext φ
-  rw [map_mul]
+  simp
   ring
 
 private theorem recon_continuous_dirDensity {G : ℝ → ℂ} (hGc : Continuous G) :
@@ -254,9 +252,9 @@ theorem doubleLayer_ePlane_eq_zero {γ : ℝ → ℂ} {K : NNReal} (hK : Lipschi
   set μ := volume.restrict (Ioc (0 : ℝ) (2 * π)) with hμ
   have h2π : (0 : ℝ) < 2 * π := by positivity
   haveI : IsFiniteMeasure μ := isFiniteMeasure_restrict.mpr measure_Ioc_lt_top.ne
-  have hhc : ContinuousOn h (Icc 0 (2 * π)) := hKh.continuousOn
-  have hhi : Integrable h μ := (hhc.integrableOn_Icc).mono_set Ioc_subset_Icc_self
-  have hγc : Continuous γ := hK.continuous
+  have hhc := hKh.continuousOn
+  have hhi : Integrable h μ := hhc.integrableOn_Icc.mono_set Ioc_subset_Icc_self
+  have hγc := hK.continuous
   have hQm := measurable_pwQ k hγc
   have hbd : ∀ θ φ, ‖pwQ k γ θ φ‖ ≤ |k| * K := fun θ φ =>
     (norm_pwQ_le k γ θ φ).trans (by gcongr; exact norm_deriv_le_of_lipschitz hK)
@@ -268,7 +266,7 @@ theorem doubleLayer_ePlane_eq_zero {γ : ℝ → ℂ} {K : NNReal} (hK : Lipschi
   have hfub : ∀ a, IsDirDensity a → ∫ φ, conj (a φ) * G φ ∂μ = 0 := by
     intro a ha
     obtain ⟨-, hz⟩ := hcomp a ha
-    have hai : Integrable a μ := ha.integrable (by norm_num)
+    have hai := ha.integrable (by norm_num)
     rw [intervalIntegral.integral_of_le h2π.le] at hz
     simp_rw [recon_herglotz_pairing_superposition ha k γ h] at hz
     rw [integral_const_mul, mul_eq_zero] at hz

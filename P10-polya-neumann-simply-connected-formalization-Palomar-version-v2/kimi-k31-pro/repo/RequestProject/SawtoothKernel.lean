@@ -35,7 +35,7 @@ lemma intervalIntegrable_sign (θ a b : ℝ) :
   · exact (Complex.measurable_ofReal.comp (measurable_real_sign.comp
       (measurable_const.sub measurable_id))).aestronglyMeasurable
   · refine ae_of_all _ fun x => ?_
-    rw [Complex.norm_real, Real.norm_eq_abs]
+    simp
     exact abs_real_sign_le _
 
 lemma intervalIntegral_sign_mul {f : ℝ → ℂ} (hf : Continuous f) {θ : ℝ}
@@ -67,10 +67,9 @@ theorem integral_sawtoothKernel_mul_exp {θ : ℝ} (hθ : θ ∈ Set.Icc 0 (2 * 
     (hn : n ≠ 0) :
     ∫ s in (0 : ℝ)..(2 * π), sawtoothKernel θ s * Complex.exp (n * Complex.I * s) =
       2 / n * Complex.exp (n * Complex.I * θ) := by
-  set c : ℂ := n * Complex.I with hc
+  set c := n * Complex.I with hc
   have hc0 : c ≠ 0 := mul_ne_zero (by exact_mod_cast hn) Complex.I_ne_zero
-  have hpi : (π : ℂ) ≠ 0 := by exact_mod_cast pi_ne_zero
-  have hn' : (n : ℂ) ≠ 0 := by exact_mod_cast hn
+
   have hexp2π : Complex.exp (c * (2 * π : ℝ)) = 1 := by
     rw [hc, show (n : ℂ) * Complex.I * ((2 * π : ℝ) : ℂ) = n * (2 * π * Complex.I) by
       push_cast; ring]
@@ -90,17 +89,17 @@ theorem integral_sawtoothKernel_mul_exp {θ : ℝ} (hθ : θ ∈ Set.Icc 0 (2 * 
       intro x _
       have h1 : HasDerivAt (fun s : ℝ => c * (s : ℂ)) c x := by
         simpa using (Complex.ofRealCLM.hasDerivAt (x := x)).const_mul c
-      have := (h1.cexp).div_const c
+      have := h1.cexp.div_const c
       convert this using 1
       field_simp
     have hu : ∀ x ∈ Set.uIcc (0 : ℝ) (2 * π), HasDerivAt (fun s : ℝ => (s : ℂ)) 1 x :=
       fun x _ => by simpa using (hasDerivAt_id x).ofReal_comp
     rw [intervalIntegral.integral_mul_deriv_eq_deriv_mul hu hd
-      (intervalIntegrable_const) (hcont.intervalIntegrable _ _)]
+      intervalIntegrable_const (hcont.intervalIntegrable _ _)]
     simp only [one_mul]
     rw [intervalIntegral.integral_div, hE3, hexp2π]
     push_cast
-    simp only [zero_div, sub_zero, zero_mul]
+    simp
     ring
   -- assemble
   have hsplit : ∫ s in (0 : ℝ)..(2 * π), sawtoothKernel θ s * Complex.exp (c * s) =
@@ -111,8 +110,7 @@ theorem integral_sawtoothKernel_mul_exp {θ : ℝ} (hθ : θ ∈ Set.Icc 0 (2 * 
         ((Real.sign (θ - s) : ℂ) * Complex.exp (c * s))) volume 0 (2 * π) :=
       ((intervalIntegrable_sign θ 0 (2 * π)).mul_continuousOn hcont.continuousOn).const_mul _
     have hi2 : IntervalIntegrable (fun s : ℝ => Complex.I / π *
-        ((θ : ℂ) * Complex.exp (c * s) - (s : ℂ) * Complex.exp (c * s))) volume 0 (2 * π) := by
-      exact (Continuous.intervalIntegrable (by fun_prop) _ _)
+        ((θ : ℂ) * Complex.exp (c * s) - (s : ℂ) * Complex.exp (c * s))) volume 0 (2 * π) := (Continuous.intervalIntegrable (by fun_prop) _ _)
     have e : (fun s => sawtoothKernel θ s * Complex.exp (c * s)) = fun s =>
         Complex.I * ((Real.sign (θ - s) : ℂ) * Complex.exp (c * s)) -
         Complex.I / π * ((θ : ℂ) * Complex.exp (c * s) - (s : ℂ) * Complex.exp (c * s)) := by
@@ -129,16 +127,16 @@ theorem integral_sawtoothKernel_mul_exp {θ : ℝ} (hθ : θ ∈ Set.Icc 0 (2 * 
   have hfun : (fun s : ℝ => sawtoothKernel θ s * Complex.exp (n * Complex.I * s)) =
       fun s => sawtoothKernel θ s * Complex.exp (c * s) := rfl
   rw [hfun, hsplit, intervalIntegral_sign_mul hcont hθ, hE1, hE2, hE3, hE4]
-  rw [hc]
+  simp
   field_simp
   ring
 
 /-- `∫₀^{2π} σ(θ, s) ds = 0` for `θ ∈ [0, 2π]`: `2D^{-1}` kills the constant mode. -/
 theorem integral_sawtoothKernel {θ : ℝ} (hθ : θ ∈ Set.Icc 0 (2 * π)) :
     ∫ s in (0 : ℝ)..(2 * π), sawtoothKernel θ s = 0 := by
-  have hpi : (π : ℂ) ≠ 0 := by exact_mod_cast pi_ne_zero
+
   have h1 := intervalIntegral_sign_mul (f := fun _ => (1 : ℂ)) continuous_const hθ
-  simp only [mul_one] at h1
+  simp at h1
   have e : (fun s => sawtoothKernel θ s) = fun s =>
       Complex.I * (Real.sign (θ - s) : ℂ) - Complex.I / π * ((θ : ℂ) - (s : ℂ)) := by
     funext s
@@ -153,7 +151,7 @@ theorem integral_sawtoothKernel {θ : ℝ} (hθ : θ ∈ Set.Icc 0 (2 * π)) :
   have hid : ∫ x in (0 : ℝ)..(2 * π), (x : ℂ) = ((2 * π) ^ 2 / 2 : ℝ) := by
     rw [intervalIntegral.integral_ofReal, integral_id]; norm_num
   rw [hid]
-  simp only [intervalIntegral.integral_const, Complex.real_smul, mul_one]
+  simp
   push_cast
   field_simp
   ring

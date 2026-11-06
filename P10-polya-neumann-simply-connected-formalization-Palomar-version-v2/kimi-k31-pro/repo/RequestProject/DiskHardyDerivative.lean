@@ -35,7 +35,6 @@ theorem diskHardyDerivativeWeight_nonneg (k : ℕ) :
 
 theorem diskHardyDerivativeWeight_le_one (k : ℕ) :
     diskHardyDerivativeWeight k ≤ 1 := by
-  have hr0 : 0 ≤ (((k + 1 : ℕ) : ℝ) / ((k + 2 : ℕ) : ℝ)) := by positivity
   have hr1 : (((k + 1 : ℕ) : ℝ) / ((k + 2 : ℕ) : ℝ)) ≤ 1 := by
     rw [div_le_one (by positivity)]
     exact_mod_cast Nat.le_add_right (k + 1) 1
@@ -66,8 +65,7 @@ private theorem derivative_shift_injective :
   omega
 
 theorem derivative_shift_memℓp (b : L2Z) :
-    Memℓp (fun n : ℤ => b (n - 1)) 2 := by
-  exact memℓp_two_iff_summable.mpr
+    Memℓp (fun n : ℤ => b (n - 1)) 2 := memℓp_two_iff_summable.mpr
     ((summable_norm_sq_L2Z b).comp_injective derivative_shift_injective)
 
 def derivativeShiftLin : L2Z →ₗ[ℂ] L2Z where
@@ -96,34 +94,34 @@ theorem diskHardyDerivativeData_apply (b : L2Z) (n : ℤ) :
 
 theorem diskHardyDerivativeData_apply_pos (b : L2Z) {n : ℤ} (hn : 0 < n) :
     diskHardyDerivativeData b n = 0 := by
-  simp only [diskHardyDerivativeData_apply, diskHardyDerivativeSymbol, hn,
+  simp [diskHardyDerivativeData_apply, diskHardyDerivativeSymbol, hn,
     ite_true, zero_mul]
 
 theorem diskHardyDerivativeData_apply_neg (b : L2Z) (k : ℕ) :
     diskHardyDerivativeData b (-(k : ℤ)) =
       (diskHardyDerivativeWeight k : ℂ) * b (-((k + 1 : ℕ) : ℤ)) := by
-  have hn : ¬ (0 : ℤ) < -(k : ℤ) := by omega
+
   have hi : -(k : ℤ) - 1 = -((k + 1 : ℕ) : ℤ) := by omega
-  simp only [diskHardyDerivativeData_apply, diskHardyDerivativeSymbol, hn,
+  simp [diskHardyDerivativeData_apply, diskHardyDerivativeSymbol, (by omega),
     ite_false, neg_neg, Int.toNat_natCast, hi]
 
 private theorem derivative_sobWeight_neg_nat (m : ℕ) :
     sobWeight (-(m : ℤ)) = ((m + 1 : ℕ) : ℝ) := by
-  simp only [sobWeight, Int.cast_neg, Int.cast_natCast, abs_neg,
+  simp [sobWeight, Int.cast_neg, Int.cast_natCast, abs_neg,
     abs_of_nonneg (Nat.cast_nonneg m : (0 : ℝ) ≤ m), Nat.cast_add, Nat.cast_one]
   ring
 
 private theorem derivative_smoothing_one_apply (b : L2Z) (n : ℤ) :
     sobolevSmoothing 1 (by norm_num) b n = (sobWeight n : ℂ)⁻¹ * b n := by
-  simp only [sobolevSmoothing, diagOp_apply, Real.rpow_neg_one, Complex.ofReal_inv]
+  simp [sobolevSmoothing, diagOp_apply, Real.rpow_neg_one, Complex.ofReal_inv]
 
 private theorem derivative_sqrt_ratio_scale {a c : ℝ} (ha : 0 < a)
     (b : ℝ) (hb : 0 < b) (hc : 0 < c) :
     (a / b * Real.sqrt (a / b)) / (Real.sqrt a * c) =
       (a / b) / (Real.sqrt b * c) := by
   rw [Real.sqrt_div ha.le]
-  have hsa : Real.sqrt a ≠ 0 := (Real.sqrt_pos.mpr ha).ne'
-  have hsb : Real.sqrt b ≠ 0 := (Real.sqrt_pos.mpr hb).ne'
+  have hsa := (Real.sqrt_pos.mpr ha).ne'
+  have hsb := (Real.sqrt_pos.mpr hb).ne'
   field_simp [hsa, hsb, hb.ne', hc.ne']
 
 private theorem derivative_weight_over_traceScale (k : ℕ) :
@@ -178,7 +176,7 @@ theorem diskAntiholomorphicH1Test_gradient_zero :
   filter_upwards [diskAntiholomorphicGradient_ae 0 0,
     Lp.coeFn_zero ℂ 2 (volume.restrict (ball (0 : ℂ) 1))] with z hz hzero
   rw [hz, hzero]
-  simp only [dirD_diskAntiholomorphicMode, Nat.cast_zero, zero_mul,
+  simp [dirD_diskAntiholomorphicMode, Nat.cast_zero, zero_mul,
     Pi.zero_apply]
 
 /-- Actual weak `x` derivative of a nonconstant disk mode. -/
@@ -194,7 +192,7 @@ theorem diskAntiholomorphicH1Test_gradient_succ (k : ℕ) :
   change dirD (diskAntiholomorphicMode (k + 1)) (coordDir 0) z =
     ((k + 1 : ℕ) : ℂ) * ((diskAntiholomorphicArea k : ℂ → ℂ) z)
   rw [ha]
-  simp only [dirD_diskAntiholomorphicMode,
+  simp [dirD_diskAntiholomorphicMode,
     show coordDir 0 = (1 : ℂ) from rfl,
     Nat.add_sub_cancel, map_one, mul_one]
 
@@ -221,7 +219,7 @@ theorem diskHardyExtension_smoothing_gradient (b : L2Z) :
       (h1Gradient (ball (0 : ℂ) 1) 0).hasSum
         (diskHardyExtension_hasSum (sobolevSmoothing 1 (by norm_num) b))
   have hz : f 0 = 0 := by
-    simp only [f, diskAntiholomorphicH1Test_gradient_zero, smul_zero]
+    simp [f, diskAntiholomorphicH1Test_gradient_zero, smul_zero]
   have ht := derivative_hasSum_tail f _ hz hs
   have hv := (h1Value (ball (0 : ℂ) 1)).hasSum
     (diskHardyExtension_hasSum (diskHardyDerivativeData b))

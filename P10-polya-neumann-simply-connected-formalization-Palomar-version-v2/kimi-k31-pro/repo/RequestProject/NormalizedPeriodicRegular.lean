@@ -25,15 +25,14 @@ open Set Metric
 private theorem normalizedAbs_symbol_sub_one {n : ℤ} (hn : n ≠ 0) :
     normalizedInverseAbsSymbol n - 1 =
       ((sobWeight n ^ (-(1 : ℝ)) : ℝ) : ℂ) * normalizedInverseAbsSymbol n := by
-  have hw : sobWeight n ≠ 0 := (sobWeight_pos n).ne'
-  have habs : |(n : ℝ)| ≠ 0 := abs_ne_zero.mpr (Int.cast_ne_zero.mpr hn)
+  have hw := (sobWeight_pos n).ne'
   have hr : sobWeight n / |(n : ℝ)| - 1 =
       sobWeight n ^ (-(1 : ℝ)) * (sobWeight n / |(n : ℝ)|) := by
     rw [Real.rpow_neg (sobWeight_pos n).le, Real.rpow_one]
-    field_simp [hw, habs]
+    field_simp [hw, (abs_ne_zero.mpr (Int.cast_ne_zero.mpr hn))]
     simp only [sobWeight]
     ring
-  simp only [normalizedInverseAbsSymbol, if_neg hn]
+  simp [normalizedInverseAbsSymbol, if_neg hn]
   exact_mod_cast hr
 
 theorem normalizedInverseAbsOperator_sub_one_factorization :
@@ -44,14 +43,14 @@ theorem normalizedInverseAbsOperator_sub_one_factorization :
   intro b
   apply lp.ext
   funext n
-  simp only [ContinuousLinearMap.sub_apply, ContinuousLinearMap.one_apply,
+  simp [ContinuousLinearMap.sub_apply, ContinuousLinearMap.one_apply,
     ContinuousLinearMap.comp_apply, lp.coeFn_sub, Pi.sub_apply,
     normalizedInverseAbsOperator_apply, sobolevSmoothing, diagOp_apply,
     zeroModeProjection_apply]
   by_cases hn : n = 0
   · subst n
     simp [normalizedInverseAbsSymbol]
-  · simp only [if_neg hn, zero_mul, sub_zero]
+  · simp [if_neg hn, zero_mul, sub_zero]
     calc
       _ = (normalizedInverseAbsSymbol n - 1) * b n := by ring
       _ = _ := by rw [normalizedAbs_symbol_sub_one hn]; ring
@@ -113,8 +112,7 @@ theorem localConformal_normalizedPeriodicRegular_sub_four_posProj_compact
     (W : ℝ → Ell2 →L[ℂ] Ell2)
     (hbase : Summable fun p => ‖correctedRemainderMatrix W 0 0 p‖ ^ 2) :
     IsCompactOperator (normalizedPeriodicRegularOperator
-      (localConformalDiskHalfTrace hR F hFs hL) E₀ E W hbase - (4 : ℂ) • posProj) := by
-  exact normalizedPeriodicRegularOperator_sub_four_posProj_compact
+      (localConformalDiskHalfTrace hR F hFs hL) E₀ E W hbase - (4 : ℂ) • posProj) := normalizedPeriodicRegularOperator_sub_four_posProj_compact
     (localConformalDiskHalfTrace hR F hFs hL) E₀ E W hbase
     (isCompactOperator_localConformal_normalizedNeumannRegular_sub_one
       hR F hFs hb hL hhol hinj hC e he hsource hes hE₀ hunit)

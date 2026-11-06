@@ -41,8 +41,7 @@ lemma volterraExt_of_ge (hW0 : W 0 = 1) {θ : ℝ} (h : L ≤ θ) :
 
 lemma volterraExt_continuousOn (hL : 0 ≤ L) (hW : ContinuousOn W (Icc 0 L)) (hW0 : W 0 = 1) :
     ContinuousOn (volterraExt W L) (Icc 0 (2 * L)) := by
-  have hU : Icc 0 (2 * L) = Icc 0 L ∪ Icc L (2 * L) := (Icc_union_Icc_eq_Icc hL (by linarith)).symm
-  rw [hU]
+  rw [((Icc_union_Icc_eq_Icc hL (by linarith)).symm)]
   refine ContinuousOn.union_of_isClosed ?_ ?_ isClosed_Icc isClosed_Icc
   · exact hW.congr fun θ hθ => volterraExt_of_le hθ.2
   · refine ContinuousOn.congr (f := fun θ => W (θ - L) * W L) ?_
@@ -109,13 +108,12 @@ theorem volterra_basepoint (hC : AEStronglyMeasurable C volume) (hM : ∀ s, ‖
     (hW' : ContinuousOn W' (Icc 0 L))
     (eW' : ∀ θ ∈ Icc 0 L, W' θ = 1 + ∫ s in (0 : ℝ)..θ, C (s + t) * W' s) :
     W' L = W t * W L * Winv := by
-  have hL : 0 ≤ L := ht.1.trans ht.2
+  have hL := ht.1.trans ht.2
   have hW0 : W 0 = 1 := by simpa using eW 0 ⟨le_rfl, hL⟩
   have hXc := volterraExt_continuousOn hL hW hW0
   have eX := volterraExt_eq hC hM hper hL hW eW
   have hCt : AEStronglyMeasurable (fun s => C (s + t)) volume :=
     hC.comp_measurePreserving (measurePreserving_add_right volume t)
-  have hMt : ∀ s, ‖C (s + t)‖ ≤ M := fun s => hM (s + t)
   set Z : ℝ → A := fun θ => volterraExt W L (θ + t) * Winv with hZ
   have hZc : ContinuousOn Z (Icc 0 L) := by
     refine ContinuousOn.mul ?_ continuousOn_const
@@ -135,10 +133,10 @@ theorem volterra_basepoint (hC : AEStronglyMeasurable C volume) (hM : ∀ s, ‖
       rw [eX _ hθt, ← intervalIntegral.integral_add_adjacent_intervals i1 (i1.symm.trans i2),
         intervalIntegral.integral_comp_add_right (fun s => C s * volterraExt W L s) t, zero_add, ← add_assoc,
         ← eX t htm, volterraExt_of_le ht.2]
-    simp only [hZ]
+    simp [hZ]
     rw [e1, add_mul, hinv, ← intervalIntegral_mul_const_right i3]
-    simp only [mul_assoc]
-  have := volterra_unique hCt hMt L hW' hZc eW' eZ ⟨hL, le_rfl⟩
+    simp [mul_assoc]
+  have := volterra_unique hCt (fun s => hM (s + t)) L hW' hZc eW' eZ ⟨hL, le_rfl⟩
   rw [this, hZ]
   simp only
   rw [volterraExt_of_ge hW0 (by linarith [ht.1]), show L + t - L = t by ring]

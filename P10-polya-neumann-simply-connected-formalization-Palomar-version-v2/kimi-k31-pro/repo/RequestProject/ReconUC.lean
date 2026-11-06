@@ -39,7 +39,7 @@ theorem eq_zero_of_angModes {f : ℝ → ℂ} (hf : Continuous f) (hper : Functi
     rw [this, h n, smul_zero]
   have hs := has_pointwise_sum_fourier_series_of_summable (f := F)
     (by rw [show fourierCoeff (⇑F) = 0 from funext hc]; exact summable_zero) (θ : AddCircle (2 * π))
-  simp only [hc, zero_smul] at hs
+  simp [hc, zero_smul] at hs
   rw [← hF]
   exact (hasSum_zero.unique hs).symm
 
@@ -51,7 +51,7 @@ lemma dist_circPt (x₀ : ℂ) {r : ℝ} (hr : 0 ≤ r) (θ : ℝ) : dist (circP
 
 lemma eI_periodic : Function.Periodic eI (2 * π) := by
   intro θ
-  simp only [eI]
+  simp [eI]
   push_cast
   rw [add_mul, Complex.exp_add]
   simp
@@ -64,7 +64,7 @@ theorem eq_zero_on_ball_of_helmholtz {v : ℂ → ℂ} (hv : ContDiff ℝ 2 v) {
   intro z hz
   by_cases hzδ : z ∈ ball y δ
   · exact h0 z hzδ
-  have hδρ : δ < ρ := lt_of_le_of_lt (not_lt.mp hzδ) (mem_ball.mp hz)
+  have hδρ := lt_of_le_of_lt (not_lt.mp hzδ) (mem_ball.mp hz)
   set a := δ / 4
   have ha : 0 < a := by positivity
   -- vanishing of the modes on `(a, ρ)`
@@ -72,7 +72,7 @@ theorem eq_zero_on_ball_of_helmholtz {v : ℂ → ℂ} (hv : ContDiff ℝ 2 v) {
     intro n
     have hloc : ∀ r ∈ Ioo a δ, angMode v y n r = 0 := by
       intro r hr
-      simp only [angMode]
+      simp [angMode]
       refine intervalIntegral.integral_zero_ae (Eventually.of_forall fun θ _ => ?_)
       rw [h0, mul_zero]
       rw [mem_ball, dist_circPt y (by linarith [hr.1]) θ]; exact hr.2
@@ -86,14 +86,14 @@ theorem eq_zero_on_ball_of_helmholtz {v : ℂ → ℂ} (hv : ContDiff ℝ 2 v) {
       exact one_div_le_one_div_of_le ha hr.1.le
     · intro r hr
       rw [Complex.norm_real, Real.norm_eq_abs]
-      have hr0 : 0 < r := ha.trans hr.1
+      have hr0 := ha.trans hr.1
       refine (abs_sub _ _).trans ?_
       gcongr
       rw [abs_of_nonneg (by positivity)]
       gcongr
       exact hr.1.le
     · intro r hr
-      have hr0 : 0 < r := ha.trans hr.1
+      have hr0 := ha.trans hr.1
       have hb := angMode_bessel hv y n (E := E) hr0.ne' (fun θ => hhelm _ (by
         rw [mem_ball, dist_circPt y hr0.le θ]; exact hr.2))
       convert hasDerivAt_angMode1 hv y n r using 1
@@ -116,7 +116,7 @@ theorem eq_zero_on_ball_of_helmholtz {v : ℂ → ℂ} (hv : ContDiff ℝ 2 v) {
   have hf : Continuous fun θ => v (circPt y r θ) :=
     hv.continuous.comp ((continuous_circPt y).comp (Continuous.prodMk_right r))
   have hper : Function.Periodic (fun θ => v (circPt y r θ)) (2 * π) := by
-    intro θ; simp only [circPt, eI_periodic θ]
+    intro θ; simp [circPt, eI_periodic θ]
   have := eq_zero_of_angModes hf hper (fun n => hmode n r hr) (Complex.arg (z - y))
   have hz' : circPt y r (Complex.arg (z - y)) = z := by
     simp only [circPt, eI, r]

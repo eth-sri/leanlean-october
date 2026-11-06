@@ -31,33 +31,31 @@ open scoped Real InnerProductSpace ComplexConjugate
 
 private theorem regular_sobolevSmoothing_one_apply (b : L2Z) (n : ℤ) :
     sobolevSmoothing 1 (by norm_num) b n = (sobWeight n : ℂ)⁻¹ * b n := by
-  simp only [sobolevSmoothing, diagOp_apply, Real.rpow_neg_one, Complex.ofReal_inv]
+  simp [sobolevSmoothing, diagOp_apply, Real.rpow_neg_one, Complex.ofReal_inv]
 
 private theorem forced_remainder_scalar {s k : ℝ}
     (hk : k ≠ 0) (hs : s ≠ 0) (hsk : s = k + 1)
     {t b d : ℂ} (h : t - ((s / k : ℝ) : ℂ) * b = d) :
     t - b = (s : ℂ)⁻¹ *
       (((s / k : ℝ) : ℂ) * b + (s : ℂ) * d) := by
-  have hkc : (k : ℂ) ≠ 0 := by exact_mod_cast hk
   have hsc : (s : ℂ) ≠ 0 := by exact_mod_cast hs
   have hskc : (s : ℂ) = (k : ℂ) + 1 := by exact_mod_cast hsk
-  have hsc' : (k : ℂ) + 1 ≠ 0 := by rwa [hskc] at hsc
   calc
     t - b = ((s / k : ℝ) : ℂ) * b - b + d := by linear_combination h
     _ = _ := by
-      simp only [Complex.ofReal_div, hskc]
-      field_simp [hkc, hsc']
+      simp [Complex.ofReal_div, hskc]
+      field_simp [(by exact_mod_cast hk), (by rwa [hskc] at hsc)]
       ring
 
 private theorem forced_remainder_mode (n : ℤ) (hn : n ≠ 0)
     {t b d : ℂ} (h : t - normalizedInverseAbsSymbol n * b = d) :
     t - b = (sobWeight n : ℂ)⁻¹ *
       (normalizedInverseAbsSymbol n * b + (sobWeight n : ℂ) * d) := by
-  have hk : |(n : ℝ)| ≠ 0 := abs_ne_zero.mpr (by exact_mod_cast hn)
-  have hs : sobWeight n ≠ 0 := (sobWeight_pos n).ne'
-  have hsk : sobWeight n = |(n : ℝ)| + 1 := by unfold sobWeight; ring
+
+  have hs := (sobWeight_pos n).ne'
+
   simp only [normalizedInverseAbsSymbol, if_neg hn] at h ⊢
-  exact forced_remainder_scalar hk hs hsk h
+  exact forced_remainder_scalar (abs_ne_zero.mpr (by exact_mod_cast hn)) hs (by unfold sobWeight; ring) h
 
 private theorem forced_principal_factorization_of_modes
     (T M : L2Z →L[ℂ] L2Z) (d : L2Z → ℤ → ℂ)
@@ -139,9 +137,9 @@ theorem localConformal_regular_principal_factorization {E₀ E : ℝ} (hE₀ : 0
     (fun b n => diskMassForcingCoeff (localConformalMassForcing hR F hFs hL hK
       (localConformalRegularMassInput hR F hFs hL E₀ E b)) n) ?_ ?_ ?_
   · intro b n
-    simp only [ContinuousLinearMap.comp_apply, localConformalMassFourierH1_apply]
+    simp
   · intro b
-    simp only [diskMassForcingCoeff]
+    simp [diskMassForcingCoeff]
   · intro b n hn
     have hforced := localConformalRegular_isForcedSolution hR F hFs hL hE₀ hunit b
     have hm := localConformal_forced_principal_mode_ne_zero hR F hFs hb hL hhol hinj hC hK

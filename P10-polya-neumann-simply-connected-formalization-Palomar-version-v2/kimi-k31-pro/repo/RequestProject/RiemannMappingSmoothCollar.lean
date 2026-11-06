@@ -63,8 +63,7 @@ theorem smoothCollar_fderiv_one_ne_zero_on_closedDisk {R : ℝ} (hR : 1 < R)
     (hΓnz : ∀ θ : ℝ, deriv (physicalCircleTrace F) θ ≠ 0) :
     ∀ z ∈ closedBall (0 : ℂ) 1, fderiv ℝ G z 1 ≠ 0 := by
   intro z hz
-  have hzNorm : ‖z‖ ≤ 1 := by simpa only [mem_closedBall, dist_zero_right] using hz
-  rcases lt_or_eq_of_le hzNorm with hzlt | hzeq
+  rcases lt_or_eq_of_le (by simpa only [mem_closedBall, dist_zero_right] using hz) with hzlt | hzeq
   · have hzD : z ∈ ball (0 : ℂ) 1 := by
       simpa only [mem_ball, dist_zero_right] using hzlt
     rw [smoothCollar_fderiv_one_eq_deriv hhol hzD]
@@ -92,12 +91,12 @@ theorem exists_smoothCollar_closed_differential_bounds (G : ℂ → ℂ)
     ((hGs.continuous_fderiv (by simp)).clm_apply continuous_const).norm.continuousOn
   obtain ⟨z₀, hz₀, hmin⟩ := (isCompact_closedBall (0 : ℂ) 1).exists_isMinOn
     ⟨0, by simp⟩ hcont
-  have hp : 0 < ‖fderiv ℝ G z₀ 1‖ := norm_pos_iff.mpr (hnz z₀ hz₀)
+  have hp := norm_pos_iff.mpr (hnz z₀ hz₀)
   obtain ⟨B, hB⟩ := (isCompact_closedBall (0 : ℂ) 1).exists_bound_of_continuousOn hcont
   refine ⟨(‖fderiv ℝ G z₀ 1‖ ^ 2)⁻¹, max B 1, by positivity,
     lt_of_lt_of_le (by norm_num : (0 : ℝ) < 1) (le_max_right _ _), ?_, ?_⟩
   · intro z hz
-    have hle : ‖fderiv ℝ G z₀ 1‖ ≤ ‖fderiv ℝ G z 1‖ := hmin hz
+    have hle := hmin hz
     calc
       1 = (‖fderiv ℝ G z₀ 1‖ ^ 2)⁻¹ * ‖fderiv ℝ G z₀ 1‖ ^ 2 :=
         (inv_mul_cancel₀ (by positivity)).symm
@@ -218,13 +217,13 @@ theorem exists_supplied_conformal_coordinates_of_genuine_inverse_graphs {Ω : Se
       G '' closedBall (0 : ℂ) 1 = closure Ω ∧
       G '' sphere (0 : ℂ) 1 = frontier Ω := by
   let H := riemannMappingClosedExtension F
-  have hHF : EqOn H F (ball (0 : ℂ) 1) := riemannMappingClosedExtension_eqOn F hF
+  have hHF := riemannMappingClosedExtension_eqOn F hF
   have hHs : DiffContOnCl ℂ H (ball (0 : ℂ) 1) :=
     DiffContOnCl.mk_ball (hF.congr fun z hz => hHF hz)
       (riemannMappingClosedExtension_continuousOn hb hS.isLipschitzDomain hsc F hF hinj himage)
   have hHinj : InjOn H (closedBall (0 : ℂ) 1) :=
     riemannMappingClosedExtension_injOn hb hS.isLipschitzDomain hsc F hF hinj himage
-  have hHimage : H '' ball (0 : ℂ) 1 = Ω := hHF.image_eq.trans himage
+  have hHimage := hHF.image_eq.trans himage
   obtain ⟨hΓ, hΓnz⟩ := riemannMapping_circleTrace_contDiff_of_genuine_inverse_graphs
     hb hS hsc F hF hinj himage hgraphs
   obtain ⟨R, C, K, G, e, hR, hC, hK, hGs, hhol, hGinj, hGimage,
@@ -258,8 +257,7 @@ theorem exists_supplied_conformal_coordinates_of_interior_map {Ω : Set ℂ}
       EqOn G (riemannMappingClosedExtension F) (closedBall (0 : ℂ) 1) ∧
       EqOn G F (ball (0 : ℂ) 1) ∧
       G '' closedBall (0 : ℂ) 1 = closure Ω ∧
-      G '' sphere (0 : ℂ) 1 = frontier Ω := by
-  exact exists_supplied_conformal_coordinates_of_genuine_inverse_graphs
+      G '' sphere (0 : ℂ) 1 = frontier Ω := exists_supplied_conformal_coordinates_of_genuine_inverse_graphs
     hb hS hsc F hF hinj himage
     (fun _ hp => exists_riemannMapping_genuine_regular_inverse_graph
       hb hS hsc F hF hinj himage hp)

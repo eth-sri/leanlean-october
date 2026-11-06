@@ -43,7 +43,7 @@ theorem localConformal_integral_image {U : Set ℂ} (hU : IsOpen U) {F : ℂ →
     fun z hz => ((hF.differentiableAt (hU.mem_nhds hz)).hasDerivAt.hasFDerivAt
       |>.restrictScalars ℝ).hasFDerivWithinAt
   rw [integral_image_eq_integral_abs_det_fderiv_smul volume hU.measurableSet hfd hinj a]
-  simp only [abs_det_complex_deriv, smul_eq_mul]
+  simp [abs_det_complex_deriv, smul_eq_mul]
 
 theorem localConformal_integrable_weight {U : Set ℂ} (hU : IsOpen U) {F : ℂ → ℂ}
     (hF : DifferentiableOn ℂ F U) (hinj : InjOn F U) {a : ℂ → ℝ}
@@ -69,7 +69,7 @@ private theorem realCLM_conformal_energy (A : ℂ →L[ℝ] ℂ) (c : ℂ) :
     ‖A c‖ ^ 2 + ‖A (c * Complex.I)‖ ^ 2 =
       ‖c‖ ^ 2 * (‖A 1‖ ^ 2 + ‖A Complex.I‖ ^ 2) := by
   rw [realCLM_apply_complex A c, realCLM_apply_complex A (c * Complex.I)]
-  simp only [← Complex.normSq_eq_norm_sq, Complex.normSq_apply, Complex.add_re,
+  simp [← Complex.normSq_eq_norm_sq, Complex.normSq_apply, Complex.add_re,
     Complex.add_im, Complex.mul_re, Complex.mul_im, Complex.ofReal_re,
     Complex.ofReal_im, Complex.I_re, Complex.I_im]
   ring
@@ -87,7 +87,7 @@ theorem gradSq_smoothDiskComposition {R : ℝ} (hR : 1 < R) (F : ℂ → ℂ)
     exact fderiv_eq_deriv_mul
   unfold gradSq
   rw [fderiv_smoothDiskCompositionLin hR F hFs f (ball_subset_closedBall hz)]
-  simp only [ContinuousLinearMap.comp_apply, hfd, mul_one]
+  simp [ContinuousLinearMap.comp_apply, hfd, mul_one]
   exact realCLM_conformal_energy _ _
 
 theorem integral_gradSq_smoothDiskComposition {R : ℝ} (hR : 1 < R) (F : ℂ → ℂ)
@@ -140,10 +140,7 @@ theorem norm_smoothDiskCompositionH1_le {R : ℝ} (hR : 1 < R) (F : ℂ → ℂ)
   have hs := norm_sq_smoothTraceH1 (F '' ball (0 : ℂ) 1) f
   have hv' := mul_le_mul_of_nonneg_right (le_max_left C 1) hval
   have hg' := mul_le_mul_of_nonneg_right (le_max_right C 1) hgrad
-  have hbound : ‖smoothTraceH1 (ball (0 : ℂ) 1) (smoothDiskCompositionLin hR F hFs f)‖ ^ 2 ≤
-      (Real.sqrt (max C 1) * ‖smoothTraceH1 (F '' ball (0 : ℂ) 1) f‖) ^ 2 := by
-    rw [mul_pow, hsq, ht, hg, hs]
-    nlinarith
+
   have hn : 0 ≤ Real.sqrt (max C 1) * ‖smoothTraceH1 (F '' ball (0 : ℂ) 1) f‖ := by
     positivity
   nlinarith [norm_nonneg (smoothTraceH1 (ball (0 : ℂ) 1)

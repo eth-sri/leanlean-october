@@ -29,7 +29,7 @@ lemma chart_notMem_closure {Ω : Set ℂ} {c p : ℂ} {r h : ℝ} {K : NNReal} {
     {w : ℂ} (hr : |(c * (w - p)).re| < r) (hh : |(c * (w - p)).im| < h)
     (hlt : (c * (w - p)).im < f (c * (w - p)).re) : w ∉ closure Ω := by
   have hg : Continuous fun v : ℂ => c * (v - p) := by fun_prop
-  set U : Set ℂ := {v | |(c * (v - p)).re| < r} ∩ {v | |(c * (v - p)).im| < h} ∩
+  set U := {v | |(c * (v - p)).re| < r} ∩ {v | |(c * (v - p)).im| < h} ∩
     {v | (c * (v - p)).im < f (c * (v - p)).re} with hU
   have hUo : IsOpen U := by
     refine ((isOpen_lt ?_ continuous_const).inter (isOpen_lt ?_ continuous_const)).inter
@@ -69,7 +69,7 @@ lemma windingNumber_affine (γ : ℝ → ℂ) {c : ℂ} (hc : c ≠ 0) (p w : �
   have he : c * (γ θ - p) - w = c * (γ θ - (p + c⁻¹ * w)) := by
     field_simp
     ring
-  simp only [hd, he]
+  simp [hd, he]
   exact mul_div_mul_left _ _ hc
 
 /-- **Orientation of a Lipschitz Jordan boundary.** For a bounded Lipschitz domain `Ω` with a
@@ -82,7 +82,7 @@ theorem windingNumber_pm_one_of_jordan {Ω : Set ℂ} (hb : Bornology.IsBounded 
     (him : γ '' Set.Icc 0 (2 * π) = frontier Ω) (hext : IsConnected (closure Ω)ᶜ) :
     ∃ σ : ℝ, (σ = 1 ∨ σ = -1) ∧ (∀ z ∈ Ω, windingNumber γ z = σ) ∧
       ∀ z, z ∉ closure Ω → windingNumber γ z = 0 := by
-  have hpi : 0 < π := Real.pi_pos
+  have hpi := Real.pi_pos
   have h2pi : (0 : ℝ) < 2 * π := by positivity
   have hclosed : γ (2 * π) = γ 0 := by simpa using hper 0
   have hΩo : IsOpen Ω := hL.1.1
@@ -94,9 +94,9 @@ theorem windingNumber_pm_one_of_jordan {Ω : Set ℂ} (hb : Bornology.IsBounded 
     windingNumber_const_of_isPreconnected hK hclosed hL.1.2.isPreconnected hΩdisj hz hz₀
   -- the winding number vanishes on the exterior
   obtain ⟨R, hR⟩ := hb.closure.subset_ball (0 : ℂ)
-  have hR0 : 0 ≤ R := le_trans (norm_nonneg z₀)
+  have hR0 := le_trans (norm_nonneg z₀)
     (mem_ball_zero_iff.mp (hR (subset_closure hz₀))).le
-  set w : ℂ := ((R + K + 1 : ℝ) : ℂ) with hw
+  set w := ((R + K + 1 : ℝ) : ℂ) with hw
   have hwn : ‖w‖ = R + K + 1 := by
     rw [hw, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg (by positivity)]
   have hwext : w ∉ closure Ω := fun h => by
@@ -120,7 +120,7 @@ theorem windingNumber_pm_one_of_jordan {Ω : Set ℂ} (hb : Bornology.IsBounded 
     rw [← him, ← hper.sub_zsmul_eq (toIcoDiv h2pi 0 θ)]
     refine Set.mem_image_of_mem γ ?_
     have := toIcoMod_mem_Ico h2pi 0 θ
-    rw [zero_add] at this
+    simp at this
     exact ⟨this.1, this.2.le⟩
   set p := γ 0 with hpdef
   obtain ⟨c, r, h, K', f, hc, hr, hh, hf, hf0, -, hΩ⟩ := hL.2 p (hfront 0)
@@ -128,23 +128,21 @@ theorem windingNumber_pm_one_of_jordan {Ω : Set ℂ} (hb : Bornology.IsBounded 
     intro h0; rw [h0, norm_zero] at hc; exact zero_ne_one hc
   set γ' : ℝ → ℂ := fun θ => c * (γ θ - p) with hγ'
   have hK' : LipschitzWith K γ' := LipschitzWith.of_dist_le_mul fun x y => by
-    simp only [hγ', dist_eq_norm, ← mul_sub, norm_mul, hc, one_mul, sub_sub_sub_cancel_right]
+    simp [hγ', dist_eq_norm, ← mul_sub, norm_mul, hc, one_mul, sub_sub_sub_cancel_right]
     rw [← dist_eq_norm]
     exact hK.dist_le_mul x y
-  have hper' : Function.Periodic γ' (2 * π) := fun θ => by simp only [hγ', hper θ]
   have h0' : γ' 0 = 0 := by simp [hγ', hpdef]
   set m := min r h with hm
-  have hm0 : 0 < m := lt_min hr hh
+  have hm0 := lt_min hr hh
   set η := min (π / 2) (m / (2 * (K + 1))) with hη
   have hη0 : 0 < η := lt_min (by positivity) (by positivity)
   have hηπ2 : η ≤ π / 2 := min_le_left _ _
-  have hηπ : η < π := hηπ2.trans_lt (by linarith)
   have hsmall : ∀ θ ∈ Icc (-η) η, ‖γ' θ‖ < m := by
     intro θ hθ
     have h1 : ‖γ' θ‖ ≤ K * |θ| := by
       have := hK'.dist_le_mul θ 0
       rwa [h0', dist_zero_right, Real.dist_eq, sub_zero] at this
-    have h2 : |θ| ≤ η := abs_le.mpr ⟨hθ.1, hθ.2⟩
+    have h2 := abs_le.mpr ⟨hθ.1, hθ.2⟩
     have h3 : (K : ℝ) * η ≤ K * (m / (2 * (K + 1))) :=
       mul_le_mul_of_nonneg_left (min_le_right _ _) K.coe_nonneg
     have h4 : (K : ℝ) * (m / (2 * (K + 1))) < m := by
@@ -156,7 +154,7 @@ theorem windingNumber_pm_one_of_jordan {Ω : Set ℂ} (hb : Bornology.IsBounded 
   have hbox : ∀ θ ∈ Icc (-η) η, |(γ' θ).re| < r ∧ |(γ' θ).im| < h := fun θ hθ =>
     ⟨(Complex.abs_re_le_norm _).trans_lt ((hsmall θ hθ).trans_le (min_le_left _ _)),
       (Complex.abs_im_le_norm _).trans_lt ((hsmall θ hθ).trans_le (min_le_right _ _))⟩
-  have hgraph : ∀ θ ∈ Icc (-η) η, (γ' θ).im = f (γ' θ).re := fun θ hθ =>
+  have hgraph := fun θ hθ =>
     chart_frontier_graph hΩo hf hΩ (hfront θ) (hbox θ hθ).1 (hbox θ hθ).2
   have hinj' : InjOn γ' (Icc (-η) η) := by
     intro θ₁ h₁ θ₂ h₂ he
@@ -164,19 +162,17 @@ theorem windingNumber_pm_one_of_jordan {Ω : Set ℂ} (hb : Bornology.IsBounded 
       have := mul_left_cancel₀ hc0 he
       simpa using this
     have hmod : ∀ θ, γ (toIcoMod h2pi 0 θ) = γ θ := fun θ => hper.sub_zsmul_eq _
-    have hmem : ∀ θ, toIcoMod h2pi 0 θ ∈ Ico 0 (2 * π) := fun θ => by
+    have hmem := fun θ => by
       have := toIcoMod_mem_Ico h2pi 0 θ
       rwa [zero_add] at this
     have heq := hinj (hmem θ₁) (hmem θ₂) (by rw [hmod, hmod, he'])
     obtain ⟨n, hn⟩ := (toIcoMod_eq_toIcoMod h2pi).mp heq
-    rw [zsmul_eq_mul] at hn
+    simp at hn
     have hb1 : θ₂ - θ₁ ≤ π := by linarith [h₁.1, h₂.2]
     have hb2 : -π ≤ θ₂ - θ₁ := by linarith [h₁.2, h₂.1]
-    have hn1 : (n : ℝ) < 1 := by nlinarith
-    have hn2 : (-1 : ℝ) < n := by nlinarith
     have hn0 : n = 0 := by
-      have := Int.cast_lt.mp (show ((n : ℤ) : ℝ) < ((1 : ℤ) : ℝ) by simpa using hn1)
-      have := Int.cast_lt.mp (show ((-1 : ℤ) : ℝ) < ((n : ℤ) : ℝ) by simpa using hn2)
+      have := Int.cast_lt.mp (show ((n : ℤ) : ℝ) < ((1 : ℤ) : ℝ) by simpa using (by nlinarith))
+      have := Int.cast_lt.mp (show ((-1 : ℤ) : ℝ) < ((n : ℤ) : ℝ) by simpa using (by nlinarith))
       omega
     rw [hn0, Int.cast_zero, zero_mul, sub_eq_zero] at hn
     exact hn.symm
@@ -189,7 +185,7 @@ theorem windingNumber_pm_one_of_jordan {Ω : Set ℂ} (hb : Bornology.IsBounded 
       · exact sub_eq_zero.mp h1
     have := hinj ⟨by linarith [hθ.1], by linarith [hθ.2]⟩ ⟨le_rfl, h2pi⟩ hγθ
     linarith [hθ.1]
-  obtain ⟨σ', hσ', hlim⟩ := windingNumber_jump hK' hper' hη0 hηπ h0' hgraph hinj' hfar'
+  obtain ⟨σ', hσ', hlim⟩ := windingNumber_jump hK' (fun θ => by simp [hγ', hper θ]) hη0 (hηπ2.trans_lt (by linarith)) h0' hgraph hinj' hfar'
   -- identify the limit
   have hcz : ∀ x : ℂ, c * (p + c⁻¹ * x - p) = x := fun x => by field_simp; ring
   have hev : ∀ᶠ s : ℝ in 𝓝[>] 0, windingNumber γ' ((s : ℂ) * Complex.I) -

@@ -105,13 +105,13 @@ private theorem area_cutoff_gradient_density {R : ℝ} (hR : 1 < R) (F : ℂ →
       dirD (smoothDiskCutoff R hR F) (coordDir i) z) =
         ((2 * ‖deriv F z‖ ^ 2 : ℝ) : ℂ) := by
   have hφ := contDiff_smoothDiskCutoff hR hFs
-  simp only [Fin.sum_univ_two, show coordDir 0 = 1 from rfl,
+  simp [Fin.sum_univ_two, show coordDir 0 = 1 from rfl,
     show coordDir 1 = Complex.I from rfl,
     dirD_conj (hφ.of_le (by simp))]
   rw [area_conj_mul_self, area_conj_mul_self,
     area_cutoff_dirD_disk hR F hhol hz 1,
     area_cutoff_dirD_disk hR F hhol hz Complex.I]
-  simp only [mul_one, norm_mul, Complex.norm_I]
+  simp
   push_cast
   ring
 
@@ -210,8 +210,7 @@ theorem localConformal_circleTrace_signedArea {R : ℝ} (hR : 1 < R) (F : ℂ �
     rw [show conj (physicalCircleTrace F θ) *
         (-(Complex.I * deriv (physicalCircleTrace F) θ)) =
       -(Complex.I * (conj (physicalCircleTrace F θ) * deriv (physicalCircleTrace F) θ)) by ring]
-    simp only [Complex.neg_re, Complex.mul_re, Complex.I_re, Complex.I_im,
-      zero_mul, one_mul, zero_sub, neg_neg]
+    simp
   have he := congrArg Complex.re (localConformal_disk_green_energy hR F hFs hhol hinj)
   rw [hbd, hre, Complex.ofReal_re] at he
   exact he
@@ -224,7 +223,7 @@ theorem normalizedArcCurve_signedArea {γ : ℝ → ℂ} (hγ : ContDiff ℝ 1 �
   obtain ⟨c, hτ, _, _⟩ := exists_isC1TraceReparam_normalizedArc hγ hper hnz
   obtain ⟨K, hK⟩ := hτ.lipschitz
   let e := normalizedArcOrderIso hγ hper hnz
-  have he : LipschitzWith K e := hK
+  have he := hK
   have hcomp : normalizedArcCurve hγ hper hnz ∘ e = γ :=
     funext fun θ => (normalizedArcCurve_factorization hγ hper hnz θ).symm
   have hchain := ae_deriv_comp (normalizedArcCurve_lipschitz hγ hper hnz) e.monotone he

@@ -38,13 +38,13 @@ lemma hasSum_sq_herglotzCoeff (ha : IsDirDensity a) (k : ℝ) (z : ℂ) :
     have := ha.mul' (r := 2) hb
     refine this.congr_norm (ha.aestronglyMeasurable.mul hb.aestronglyMeasurable)
       (Eventually.of_forall fun φ => ?_)
-    simp only [norm_mul, mul_comm]
+    simp
   simp_rw [herglotzCoeff_eq_fourierCoeffOn]
   convert hasSum_sq_fourierCoeffOn Real.two_pi_pos hm using 1
   rw [smul_eq_mul, sub_zero]
   congr 1
   refine intervalIntegral.integral_congr fun φ _ => ?_
-  simp only [norm_mul, norm_planeWave, mul_one]
+  simp [norm_mul, norm_planeWave, mul_one]
 
 /-- `N_j = ∫_Ω |F_{-j}|²`. -/
 def negModeNorm (Ω : Set ℂ) (k : ℝ) (a : ℝ → ℂ) (j : ℕ) : ℝ :=
@@ -71,7 +71,7 @@ lemma summable_negModeNorm (hb : Bornology.IsBounded Ω) (ha : IsDirDensity a) (
     have e : ∑ j ∈ Finset.range N, ‖herglotzCoeff k a (-(j : ℤ)) z‖ ^ 2 =
         ∑ m ∈ (Finset.range N).map ⟨fun j : ℕ => -(j : ℤ), fun i j h => by simpa using h⟩,
           ‖herglotzCoeff k a m z‖ ^ 2 := by
-      rw [Finset.sum_map]; rfl
+      simp; rfl
     rw [e]
     exact sum_le_hasSum _ (fun _ _ => by positivity) (hasSum_sq_herglotzCoeff ha k z)
   haveI : IsFiniteMeasure (volume.restrict Ω) :=
@@ -120,15 +120,14 @@ theorem herglotz_modes_small (hb : Bornology.IsBounded Ω) (hL : IsLipschitzDoma
   have hai := ha.intervalIntegrable
   set N := negModeNorm Ω k a with hN
   set A1 := ∫ z in Ω, ‖herglotzCoeff k a 1 z‖ ^ 2 with hA1
-  have hA10 : 0 ≤ A1 := integral_nonneg fun _ => by positivity
   have hN0 : ∀ j, 0 ≤ N j := negModeNorm_nonneg k a
-  have hk2 : 0 ≤ k ^ 2 := sq_nonneg k
-  have hkδ1 : k ^ 2 ≤ 1 := hk.trans (min_le_left _ _)
-  have hkδ2 : k ^ 2 ≤ 1 / (4 * c) := hk.trans ((min_le_right _ _).trans (min_le_left _ _))
-  have hkδ3 : k ^ 2 ≤ 1 / (2 * c * cP) := hk.trans ((min_le_right _ _).trans (min_le_right _ _))
+  have hk2 := sq_nonneg k
+  have hkδ1 := hk.trans (min_le_left _ _)
+  have hkδ2 := hk.trans ((min_le_right _ _).trans (min_le_left _ _))
+  have hkδ3 := hk.trans ((min_le_right _ _).trans (min_le_right _ _))
   have hck : c * k ^ 2 ≤ 1 / 4 := by
     rw [le_div_iff₀ (by positivity : (0 : ℝ) < 4 * c)] at hkδ2
-    rw [le_div_iff₀ (by norm_num : (0 : ℝ) < 4)]; nlinarith
+    simp; nlinarith
   -- the summed chain
   set T : ℕ → ℝ := fun n => ∑ i ∈ Finset.range n, N (i + 1) with hT
   have hTbound : ∀ n, T n ≤ 2 * (c * k ^ 2) * (N 0 + N (n + 1)) := by
@@ -151,14 +150,14 @@ theorem herglotz_modes_small (hb : Bornology.IsBounded Ω) (hL : IsLipschitzDoma
   have h12 : N 1 + N 2 ≤ 2 * (c * k ^ 2) * N 0 := by
     have hsum := summable_negModeNorm hb ha k
     have ht : Tendsto (fun n => N (n + 1)) atTop (nhds 0) :=
-      (hsum.tendsto_atTop_zero).comp (tendsto_add_atTop_nat 1)
+      hsum.tendsto_atTop_zero.comp (tendsto_add_atTop_nat 1)
     have hlim : Tendsto (fun n => 2 * (c * k ^ 2) * (N 0 + N (n + 1))) atTop
         (nhds (2 * (c * k ^ 2) * (N 0 + 0))) := (ht.const_add _).const_mul _
-    rw [add_zero] at hlim
+    simp at hlim
     refine ge_of_tendsto hlim (eventually_atTop.mpr ⟨2, fun n hn => ?_⟩)
     have : N 1 + N 2 ≤ T n := by
       obtain ⟨m, rfl⟩ : ∃ m, n = m + 2 := ⟨n - 2, by omega⟩
-      simp only [hT, Finset.sum_range_succ', zero_add]
+      simp [hT, Finset.sum_range_succ', zero_add]
       have : 0 ≤ ∑ i ∈ Finset.range m, N (i + 1 + 1 + 1) := Finset.sum_nonneg fun i _ => hN0 _
       linarith
     exact this.trans (hTbound n)
@@ -166,11 +165,10 @@ theorem herglotz_modes_small (hb : Bornology.IsBounded Ω) (hL : IsLipschitzDoma
   have hF0 := hP a hai k 0 hmean
   rw [integral_add (integrable_herglotzCoeff_sq hb hai k _)
     (integrable_herglotzCoeff_sq hb hai k _)] at hF0
-  have eN1 : ∫ z in Ω, ‖herglotzCoeff k a (0 - 1) z‖ ^ 2 = N 1 := by
-    simp [hN, negModeNorm]
+
   have eN0 : ∫ z in Ω, ‖herglotzCoeff k a 0 z‖ ^ 2 = N 0 := by simp [hN, negModeNorm]
   simp only [zero_add] at hF0
-  rw [eN1, eN0] at hF0
+  simp at hF0
   have hcc : cP * c * k ^ 4 ≤ 1 / 2 := by
     rw [le_div_iff₀ (by positivity : (0 : ℝ) < 2 * c * cP)] at hkδ3
     have : k ^ 4 ≤ k ^ 2 := by nlinarith
@@ -189,7 +187,7 @@ theorem herglotz_modes_small (hb : Bornology.IsBounded Ω) (hL : IsLipschitzDoma
           have : 0 ≤ 2 * c * cP * k ^ 2 * A1 := by positivity
           nlinarith
   · calc _ = N 1 + N 2 := by
-          simp only [hN, negModeNorm, Nat.cast_one, Nat.cast_ofNat]
+          simp [hN, negModeNorm, Nat.cast_one, Nat.cast_ofNat]
       _ ≤ 2 * (c * k ^ 2) * N 0 := h12
       _ ≤ 2 * (c * k ^ 2) * (cP * k ^ 2 * A1) := by gcongr
       _ = 2 * c * cP * k ^ 4 * A1 := by ring

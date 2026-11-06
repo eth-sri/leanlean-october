@@ -30,7 +30,7 @@ namespace PolyaNeumann
 /-- A Lipschitz map of the plane sends null sets to null sets. -/
 lemma volume_image_eq_zero_of_lipschitzOnWith {f : ℂ → ℂ} {K : NNReal} {s : Set ℂ}
     (hf : LipschitzOnWith K f s) (hs : volume s = 0) : volume (f '' s) = 0 := by
-  set P : ℂ ≃L[ℝ] ℝ × ℝ := Complex.equivRealProdCLM
+  set P := Complex.equivRealProdCLM
   have hpre : ∀ t : Set ℂ, volume t = (volume : Measure (ℝ × ℝ)) (P '' t) := by
     intro t
     have : (P : ℂ → ℝ × ℝ) '' t = Complex.measurableEquivRealProd.symm ⁻¹' t := by
@@ -50,15 +50,15 @@ lemma volume_image_eq_zero_of_lipschitzOnWith {f : ℂ → ℂ} {K : NNReal} {s 
     congr 1
   have hle := hg.hausdorffMeasure_image_le (d := ((2 : NNReal) : ℝ)) (by positivity)
   rw [himg, h2, ← hpre, ← hpre, hs, mul_zero] at hle
-  exact le_antisymm hle (zero_le)
+  exact le_antisymm hle zero_le
 
 /-- `|det A| ≤ ‖A‖²` for a real-linear map of the plane. -/
 lemma abs_det_le_sq_norm (A : ℂ →L[ℝ] ℂ) : |A.det| ≤ ‖A‖ ^ 2 := by
   have h1 := Measure.addHaar_image_continuousLinearMap (volume : Measure ℂ) A (Metric.ball 0 1)
   have hsub : (A : ℂ → ℂ) '' Metric.ball 0 1 ⊆ Metric.closedBall 0 ‖A‖ := by
     rintro _ ⟨z, hz, rfl⟩
-    rw [mem_ball_zero_iff] at hz
-    rw [mem_closedBall_zero_iff]
+    simp at hz
+    simp
     calc ‖A z‖ ≤ ‖A‖ * ‖z‖ := A.le_opNorm z
       _ ≤ ‖A‖ * 1 := by gcongr
       _ = ‖A‖ := mul_one _
@@ -66,8 +66,8 @@ lemma abs_det_le_sq_norm (A : ℂ →L[ℝ] ℂ) : |A.det| ≤ ‖A‖ ^ 2 := by
   rw [h1, Measure.addHaar_closedBall _ _ (norm_nonneg _), Complex.finrank_real_complex] at h2
   have hpos : (volume : Measure ℂ) (Metric.ball 0 1) ≠ 0 :=
     (Metric.measure_ball_pos _ _ one_pos).ne'
-  have hfin : (volume : Measure ℂ) (Metric.ball 0 1) ≠ ⊤ := measure_ball_lt_top.ne
-  have h3 := (ENNReal.mul_le_mul_iff_left hpos hfin).mp h2
+
+  have h3 := (ENNReal.mul_le_mul_iff_left hpos (measure_ball_lt_top.ne)).mp h2
   rw [ENNReal.ofReal_le_ofReal_iff (by positivity)] at h3
   exact h3
 
@@ -85,7 +85,7 @@ theorem volume_image_eq_lintegral {Ω : Set ℂ} (hΩ : IsOpen Ω) {f : ℂ → 
     volume (f '' Ω) =
       ∫⁻ x in Ω, ENNReal.ofReal |(fderiv ℝ f x).det| := by
   set s' := Ω ∩ {x | DifferentiableAt ℝ f x} with hs'
-  have hD : MeasurableSet {x | DifferentiableAt ℝ f x} := measurableSet_of_differentiableAt ℝ f
+  have hD := measurableSet_of_differentiableAt ℝ f
   have hnull : volume (Ω \ s') = 0 := by
     have h := hf.ae_differentiableWithinAt_of_mem (μ := volume)
     rw [ae_iff] at h
@@ -136,8 +136,8 @@ lemma integral_conj_mul_deriv_periodic {β δ : ℝ → ℂ} {Kβ Kδ : NNReal}
       -∫ θ in (0 : ℝ)..(2 * π), conj (deriv β θ) * δ θ := by
   obtain ⟨Mβ, hMβ⟩ := exists_bound_of_periodic hβ.continuous hβp
   obtain ⟨Mδ, hMδ⟩ := exists_bound_of_periodic hδ.continuous hδp
-  have hMβ0 : 0 ≤ Mβ := (norm_nonneg _).trans (hMβ 0)
-  have hMδ0 : 0 ≤ Mδ := (norm_nonneg _).trans (hMδ 0)
+  have hMβ0 := (norm_nonneg _).trans (hMβ 0)
+  have hMδ0 := (norm_nonneg _).trans (hMδ 0)
   set P : ℝ → ℂ := fun θ => conj (β θ) * δ θ with hPdef
   have hP : LipschitzWith (Mβ.toNNReal * Kδ + Kβ * Mδ.toNNReal) P := by
     refine LipschitzWith.of_dist_le_mul fun x y => ?_
@@ -145,7 +145,7 @@ lemma integral_conj_mul_deriv_periodic {β δ : ℝ → ℂ} {Kβ Kδ : NNReal}
     have h2 := hβ.dist_le_mul x y
     rw [dist_eq_norm] at h1 h2 ⊢
     have e : P x - P y = conj (β x) * (δ x - δ y) + conj (β x - β y) * δ y := by
-      simp only [hPdef, map_sub]; ring
+      simp; ring
     rw [e]
     push_cast
     rw [Real.coe_toNNReal _ hMβ0, Real.coe_toNNReal _ hMδ0]
@@ -171,7 +171,7 @@ lemma integral_conj_mul_deriv_periodic {β δ : ℝ → ℂ} {Kβ Kδ : NNReal}
       (intervalIntegrable_conj_mul hβ.continuous.aestronglyMeasurable
         (measurable_deriv δ).aestronglyMeasurable hMβ (fun _ => norm_deriv_le_of_lipschitz hδ) _ _)] at hFTC
   have hP2 : P (2 * π) = P 0 := by
-    simp only [hPdef]; rw [show (2 * π : ℝ) = 0 + 2 * π by ring, hβp, hδp]
+    simp [hPdef]; rw [show (2 * π : ℝ) = 0 + 2 * π by ring, hβp, hδp]
   rw [hP2, sub_self] at hFTC
   linear_combination hFTC
 
@@ -203,15 +203,15 @@ theorem tendsto_integral_signedAreaDensity {α : ℕ → ℝ → ℂ} {β : ℝ 
   have hη : 0 < η := by positivity
   filter_upwards [Metric.tendstoUniformlyOn_iff.mp h η hη] with n hn
   set δ : ℝ → ℂ := fun θ => α n θ - β θ with hδdef
-  have hδL : LipschitzWith (K + K) δ := (hα n).sub hβ
-  have hδp : Function.Periodic δ (2 * π) := fun θ => by simp only [hδdef, hαp n θ, hβp θ]
+  have hδL := (hα n).sub hβ
+  have hδp : Function.Periodic δ (2 * π) := fun θ => by simp [hδdef, hαp n θ, hβp θ]
   have hδd : ∀ᵐ θ, θ ∈ Ι (0 : ℝ) (2 * π) →
       conj (α n θ) * deriv (α n) θ - conj (β θ) * deriv β θ =
         conj (δ θ) * deriv (α n) θ + conj (β θ) * deriv δ θ := by
     filter_upwards [(hα n).ae_differentiableAt (μ := volume),
       hβ.ae_differentiableAt (μ := volume)] with θ h1 h2 _
     have hd : deriv δ θ = deriv (α n) θ - deriv β θ := deriv_sub h1 h2
-    rw [hd]; simp only [hδdef, map_sub]; ring
+    rw [hd]; simp [hδdef, map_sub]; ring
   obtain ⟨Mβ, hMβ⟩ := exists_bound_of_periodic hβ.continuous hβp
   obtain ⟨Mδ, hMδ⟩ := exists_bound_of_periodic hδL.continuous hδp
   have i1 : IntervalIntegrable (fun θ => conj (δ θ) * deriv (α n) θ) volume 0 (2 * π) :=
@@ -242,7 +242,7 @@ theorem tendsto_integral_signedAreaDensity {α : ℕ → ℝ → ℂ} {β : ℝ 
     intervalIntegral.norm_integral_le_of_norm_le_const fun θ hθ => by
       rw [norm_mul, Complex.norm_conj]
       exact mul_le_mul (norm_deriv_le_of_lipschitz hβ) (hδη θ hθ) (norm_nonneg _) K.2
-  rw [sub_zero, abs_of_pos Real.two_pi_pos] at b1 b2
+  simp at b1 b2
   have hfin : 4 * π * K * η < ε := by
     rw [hηdef, mul_div_assoc', div_lt_iff₀ (by positivity)]
     nlinarith [Real.pi_pos, K.2]

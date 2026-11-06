@@ -69,7 +69,7 @@ lemma sigmaMap_sub_ge (hT : 0 < T) (hb : |b| ≤ T / 2) {a a' : ℝ} (h : a' ≤
   unfold sigmaMap
   have h1 := abs_tentθ_sub_le hT a a'
   have h2 : |b * (tentθ T a - tentθ T a')| ≤ (a - a') / 2 := by
-    rw [abs_mul]
+    simp
     calc |b| * |tentθ T a - tentθ T a'| ≤ (T / 2) * (|a - a'| / T) :=
           mul_le_mul hb h1 (abs_nonneg _) (by positivity)
       _ = (a - a') / 2 := by rw [abs_of_nonneg (by linarith)]; field_simp
@@ -113,7 +113,7 @@ def sigmaInv (T b w : ℝ) : ℝ :=
 
 lemma sigmaMap_sigmaInv (hT : 0 < T) (hb : |b| ≤ T / 2) (w : ℝ) :
     sigmaMap T b (sigmaInv T b w) = w := by
-  simp only [sigmaInv, dif_pos (And.intro hT hb)]
+  simp [sigmaInv, dif_pos (And.intro hT hb)]
   exact (existsUnique_sigmaMap_eq hT hb w).exists.choose_spec
 
 lemma sigmaInv_sigmaMap (hT : 0 < T) (hb : |b| ≤ T / 2) (a : ℝ) :

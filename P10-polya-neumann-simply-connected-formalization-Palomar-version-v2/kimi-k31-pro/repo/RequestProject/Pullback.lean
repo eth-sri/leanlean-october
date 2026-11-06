@@ -79,7 +79,7 @@ lemma bzChainRule_of_bilip {Ω : Set ℂ} (hΩ : IsOpen Ω) {f : ℂ ≃ₜ ℂ}
       ∀ g : Fin 2 → L2 Ω, IsWeakGradient Ω u g →
         neumannEnergy (f '' Ω) v =
           ENNReal.ofReal (gradForm Ω (fun w => bzCoef (fderiv ℝ f w)) g) := by
-  have hΩ' : IsOpen (f '' Ω) := f.isOpenMap Ω hΩ
+  have hΩ' := f.isOpenMap Ω hΩ
   -- the converse direction: `u ∈ H¹(Ω) → v ∈ H¹(f(Ω))`
   have hback : u ∈ H1 Ω → v ∈ H1 (f '' Ω) := by
     rintro ⟨g, hg'⟩
@@ -98,7 +98,7 @@ lemma bzChainRule_of_bilip {Ω : Set ℂ} (hΩ : IsOpen Ω) {f : ℂ ≃ₜ ℂ}
   refine ⟨⟨hfwd, hback⟩, fun g hgu => ?_⟩
   obtain ⟨G, hG⟩ := hback ⟨g, hgu⟩
   obtain ⟨g', hg', hg'eq⟩ := exists_isWeakGradient_comp_bilip rfl hΩ hK hf hg hG hu
-  have hgg : g = g' := hgu.unique hΩ hg'
+  have hgg := hgu.unique hΩ hg'
   subst hgg
   rw [neumannEnergy_eq_of_isWeakGradient hΩ' hG]
   have hdet : ∀ᵐ w ∂(volume.restrict Ω), (fderiv ℝ f w).det ≠ 0 :=
@@ -150,7 +150,7 @@ theorem exists_bzChainRule {Ω : Set ℂ} (hL : IsLipschitzDomain Ω) (A : BallZ
   have hΩ : IsOpen Ω := hL.1.1
   set K : NNReal := max A.lip 1
   have hK : 0 < K := lt_of_lt_of_le one_pos (le_max_right _ _)
-  have hK' : (0 : ℝ) < K := hK
+  have hK' := hK
   have hf : ∀ n, LipschitzOnWith K (A.map n) Ω := fun n =>
     lipschitzOnWith_weaken ((A.lipschitz n).mono subset_closure) (le_max_left _ _)
   have hg : ∀ n, LipschitzOnWith K (A.map n).symm (A.map n '' Ω) := fun n =>
@@ -175,15 +175,14 @@ theorem exists_bzChainRule {Ω : Set ℂ} (hL : IsLipschitzDomain Ω) (A : BallZ
       with w hw hwΩ ξ
     set T := fderiv ℝ (A.map n) w
     have hpos : 0 < ((K : ℝ) ^ 2)⁻¹ := by positivity
-    have hT : T.det ≠ 0 := abs_pos.mp (hpos.trans_le hw)
+    have hT := abs_pos.mp (hpos.trans_le hw)
     have e := bzCoef_ellip T hT ξ
     have hre := re_sesq_bzCoef_nonneg T ξ
-    have hTK : ‖T‖ ^ 2 ≤ (K : ℝ) ^ 2 := pow_le_pow_left₀ (norm_nonneg _) (hnorm n w hwΩ) 2
-    have hsum : 0 ≤ ∑ i, ‖ξ i‖ ^ 2 := Finset.sum_nonneg fun i _ => sq_nonneg _
+    have hTK := pow_le_pow_left₀ (norm_nonneg _) (hnorm n w hwΩ) 2
     change _ ≤ (∑ i, ∑ k, ((bzCoef T) i k : ℂ) * inner ℂ (ξ i) (ξ k)).re
     set R := (∑ i, ∑ k, ((bzCoef T) i k : ℂ) * inner ℂ (ξ i) (ξ k)).re
     have h1 : ((K : ℝ) ^ 2)⁻¹ * ∑ i, ‖ξ i‖ ^ 2 ≤ 2 * (K : ℝ) ^ 2 * R :=
-      (mul_le_mul_of_nonneg_right hw hsum).trans (e.trans (by gcongr))
+      (mul_le_mul_of_nonneg_right hw (Finset.sum_nonneg fun i _ => sq_nonneg _)).trans (e.trans (by gcongr))
     rw [inv_mul_le_iff₀ (by positivity)]
     rw [inv_mul_le_iff₀ (by positivity)] at h1
     nlinarith
@@ -209,14 +208,14 @@ theorem exists_pullbackData {Ω : Set ℂ} (hL : IsLipschitzDomain Ω) (A : Ball
   have hg : ∀ n, LipschitzOnWith K (A.map n).symm (A.map n '' Ω) := fun n =>
     lipschitzOnWith_weaken ((A.lipschitz_symm n).mono subset_closure) (le_max_left _ _)
   set e := min ellip ((K : ℝ) ^ 2)⁻¹
-  have he : 0 < e := lt_min hell (by positivity)
+
   exact ⟨{
     coef := coef
     coef_meas := hm
     bound := bound
     coef_bound := hbd
     ellip := e
-    ellip_pos := he
+    ellip_pos := (lt_min hell (by positivity))
     coef_ellip := fun n => (hel n).mono fun w hw ξ =>
       le_trans (mul_le_mul_of_nonneg_right (min_le_left _ _)
         (Finset.sum_nonneg fun i _ => sq_nonneg _)) (hw ξ)
@@ -743,7 +742,7 @@ theorem minmax (hΩ : IsOpen Ω) (j n : ℕ) (S : Submodule ℂ (L2 Ω))
   have hu0 : u ≠ 0 := by
     rintro rfl
     exact hv0 (map_zero _)
-  have hnu : 0 < ‖u‖ := norm_pos_iff.mpr hu0
+  have hnu := norm_pos_iff.mpr hu0
   set c : ℂ := ((‖u‖⁻¹ : ℝ) : ℂ)
   have hc : ‖c‖ = ‖u‖⁻¹ := by
     rw [Complex.norm_real, Real.norm_eq_abs, abs_of_pos (inv_pos.mpr hnu)]
@@ -754,7 +753,7 @@ theorem minmax (hΩ : IsOpen Ω) (j n : ℕ) (S : Submodule ℂ (L2 Ω))
     P.pull_energy n (e u) g (by rw [hpu]; exact hg)
   have hwm : weightedMass Ω (bzDensity A n) u = ‖e u‖ ^ 2 := by
     rw [← P.weightedMass_pull hΩ n (e u), hpu]
-  have hev : 0 < ‖e u‖ := norm_pos_iff.mpr hv0
+  have hev := norm_pos_iff.mpr hv0
   have hq : P.formQ n (c • u) / weightedMass Ω (bzDensity A n) (c • u) =
       gradForm Ω (P.coef n) g / ‖e u‖ ^ 2 := by
     rw [P.formQ_eq hΩ n (hg.smul c), gradForm_smul (P.coef_meas n) (P.coef_bound n),
@@ -829,7 +828,6 @@ theorem exists_orthonormal_energy_le (D : Set ℂ) (j : ℕ) (hμ : neumannEigen
     exact orthonormal_iff_ite.mp ob.orthonormal r s
   refine ⟨fun r => (ob r : L2 D), hon, fun a => ?_⟩
   set v := ∑ r, a r • (ob r : L2 D)
-  have hvS : v ∈ S := S.sum_mem fun r _ => S.smul_mem _ (ob r).2
   have hn : ‖v‖ ^ 2 = ∑ r, ‖a r‖ ^ 2 := by
     rw [@norm_sq_eq_re_inner ℂ, hon.inner_sum]
     simp only [Complex.conj_mul']
@@ -841,12 +839,11 @@ theorem exists_orthonormal_energy_le (D : Set ℂ) (j : ℕ) (hμ : neumannEigen
     refine le_trans (iInf₂_le 0 isWeakGradient_zero) ?_
     simp
   · have hr : rayleigh D v ≤ neumannEigenvalue D j + ENNReal.ofReal ε :=
-      (le_iSup₂_of_le v hvS (le_iSup (fun _ : v ≠ 0 => rayleigh D v) hv)).trans hsup.le
-    have hne : (‖v‖₊ : ENNReal) ^ 2 ≠ 0 := by simpa using hv
+      (le_iSup₂_of_le v (S.sum_mem fun r _ => S.smul_mem _ (ob r).2) (le_iSup (fun _ : v ≠ 0 => rayleigh D v) hv)).trans hsup.le
     have e1 : (‖v‖₊ : ENNReal) ^ 2 = ENNReal.ofReal (∑ r, ‖a r‖ ^ 2) := by
       rw [← hn, ENNReal.ofReal_pow (norm_nonneg _), ofReal_norm_eq_enorm, enorm_eq_nnnorm]
     unfold rayleigh at hr
-    rw [ENNReal.div_le_iff hne (by simp), e1] at hr
+    rw [ENNReal.div_le_iff (by simpa using hv) (by simp), e1] at hr
     refine hr.trans (le_of_eq ?_)
     rw [ENNReal.ofReal_mul (by positivity), ENNReal.ofReal_add ENNReal.toReal_nonneg hε.le,
       ENNReal.ofReal_toReal hμ]
@@ -941,7 +938,7 @@ theorem limits_of_almostMinimizers (hb : Bornology.IsBounded Ω) (hL : IsLipschi
       neumannEnergy Ω (∑ r, a r • U r) ≤ ENNReal.ofReal (B * ∑ r, ‖a r‖ ^ 2) := by
   have hΩ : IsOpen Ω := hL.1.1
   set c := P.ellip
-  have hc : 0 < c := P.ellip_pos
+  have hc := P.ellip_pos
   -- uniform bounds in `H¹`
   have hmass : ∀ n r, weightedMass Ω (bzDensity A (ψ n)) (u n r) = 1 := by
     intro n r
@@ -965,7 +962,6 @@ theorem limits_of_almostMinimizers (hb : Bornology.IsBounded Ω) (hL : IsLipschi
     have h2 : ‖u n r‖ ^ 2 ≤ 1 / c := by rw [le_div_iff₀ hc]; linarith
     simpa using Real.abs_le_sqrt h2
   obtain ⟨Bm, hBm⟩ := hbB.bddAbove_range
-  have hBm' : ∀ n, b n ≤ Bm := fun n => hBm ⟨n, rfl⟩
   have hGb : ∀ n r i, ‖G n r i‖ ≤ Real.sqrt (Bm / c) := by
     intro n r i
     have h1 := hq n (Pi.single r 1)
@@ -983,7 +979,7 @@ theorem limits_of_almostMinimizers (hb : Bornology.IsBounded Ω) (hL : IsLipschi
         (Finset.mem_univ i)
     have h4 : ‖G n r i‖ ^ 2 ≤ Bm / c := by
       rw [le_div_iff₀ hc]
-      nlinarith [hBm' n]
+      nlinarith [(fun n => hBm ⟨n, rfl⟩) n]
     simpa using Real.abs_le_sqrt h4
   set R := max (Real.sqrt (1 / c)) (Real.sqrt (Bm / c))
   -- a common subsequence
@@ -1015,7 +1011,7 @@ theorem limits_of_almostMinimizers (hb : Bornology.IsBounded Ω) (hL : IsLipschi
   choose Γ hΓ using fun ri : Fin (j + 1) × Fin 2 => hP (Sum.inr ri)
   have hUG : ∀ r, IsWeakGradient Ω (U r) (fun i => Γ (r, i)) := fun r =>
     isWeakGradient_of_weak_tendsto (fun n => hG (θ n) r) (hU r) (fun i z => hΓ (r, i) z)
-  have hψθ : Tendsto (fun n => ψ (θ n)) atTop atTop := hψ.comp hθ.tendsto_atTop
+  have hψθ := hψ.comp hθ.tendsto_atTop
   refine ⟨U, ?_, fun a => ?_⟩
   · -- orthonormality of the limits
     rw [orthonormal_iff_ite]

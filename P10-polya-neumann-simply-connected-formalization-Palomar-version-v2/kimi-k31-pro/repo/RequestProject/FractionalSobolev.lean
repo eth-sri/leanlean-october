@@ -45,13 +45,10 @@ theorem sum_rpow_mul_le_of_block_bound {a : ℤ → ℝ} (ha : ∀ n, 0 ≤ a n)
       (0 : ℝ) ^ (2 * s) * a 0 + |C| * 2 ^ (2 * s) * (1 - (2 : ℝ) ^ (2 * s - β))⁻¹ := by
   classical
   set f : ℤ → ℝ := fun n => |(n : ℝ)| ^ (2 * s) * a n with hf
-  have hf0 : ∀ n, 0 ≤ f n := fun n => mul_nonneg (by positivity) (ha n)
-  set r : ℝ := (2 : ℝ) ^ (2 * s - β) with hr
+  set r := (2 : ℝ) ^ (2 * s - β) with hr
   have hr0 : 0 ≤ r := by positivity
   have hr1 : r < 1 := Real.rpow_lt_one_of_one_lt_of_neg one_lt_two (by linarith)
   set b : ℕ → ℝ := fun j => |C| * (2 : ℝ) ^ (2 * s) * r ^ j with hbdef
-  have hb0 : ∀ j, 0 ≤ b j := fun j => by positivity
-  have hb : Summable b := (summable_geometric_of_lt_one hr0 hr1).mul_left _
   have hpow : ∀ (j : ℕ) (x : ℝ), ((2 : ℝ) ^ j) ^ x = ((2 : ℝ) ^ x) ^ j := by
     intro j x
     rw [← Real.rpow_natCast, ← Real.rpow_natCast, ← Real.rpow_mul (by norm_num),
@@ -65,7 +62,7 @@ theorem sum_rpow_mul_le_of_block_bound {a : ℤ → ℝ} (ha : ∀ n, 0 ≤ a n)
       intro n hn
       obtain ⟨hn0, hgn⟩ := hv n hn
       have habs : |(n : ℝ)| = (n.natAbs : ℝ) := by
-        rw [Nat.cast_natAbs, Int.cast_abs]
+        simp
       have h1 : 2 ^ j ≤ n.natAbs := hgn ▸ Nat.pow_log_le_self 2 (Int.natAbs_ne_zero.2 hn0)
       have h2 : n.natAbs < 2 ^ (j + 1) := hgn ▸ Nat.lt_pow_succ_log_self one_lt_two _
       rw [habs]
@@ -74,10 +71,9 @@ theorem sum_rpow_mul_le_of_block_bound {a : ℤ → ℝ} (ha : ∀ n, 0 ≤ a n)
       · have : (n.natAbs : ℝ) < 2 ^ (j + 1) := by exact_mod_cast h2
         rw [pow_succ] at this
         linarith
-    have hblk := hblock (2 ^ j) (Nat.one_le_two_pow) v (by
+    have hblk := hblock (2 ^ j) Nat.one_le_two_pow v (by
       intro n hn; push_cast; exact hrange n hn)
     push_cast at hblk
-    have hsa : 0 ≤ ∑ n ∈ v, a n := Finset.sum_nonneg fun n _ => ha n
     calc ∑ n ∈ v, f n ≤ ∑ n ∈ v, (2 * 2 ^ j : ℝ) ^ (2 * s) * a n := by
           refine Finset.sum_le_sum fun n hn => mul_le_mul_of_nonneg_right ?_ (ha n)
           exact Real.rpow_le_rpow (abs_nonneg _) (hrange n hn).2 (by linarith)
@@ -87,7 +83,7 @@ theorem sum_rpow_mul_le_of_block_bound {a : ℤ → ℝ} (ha : ∀ n, 0 ≤ a n)
           exact mul_le_mul_of_nonneg_right (le_abs_self C) (by positivity)
       _ = b j := by
           rw [Real.mul_rpow (by norm_num) (by positivity), hpow, hpow, hbdef, hr]
-          simp only
+          simp
           rw [show (2 : ℝ) ^ (2 * s - β) = 2 ^ (2 * s) * 2 ^ (-β) by
             rw [sub_eq_add_neg, Real.rpow_add two_pos], mul_pow]
           ring
@@ -96,20 +92,20 @@ theorem sum_rpow_mul_le_of_block_bound {a : ℤ → ℝ} (ha : ∀ n, 0 ≤ a n)
   rw [← htsum, ← Finset.sum_filter_add_sum_filter_not u (fun n => n = 0)]
   gcongr
   · calc ∑ n ∈ u with n = 0, f n ≤ ∑ n ∈ ({0} : Finset ℤ), f n := by
-          refine Finset.sum_le_sum_of_subset_of_nonneg (fun n hn => ?_) fun n _ _ => hf0 n
-          rw [Finset.mem_filter] at hn
+          refine Finset.sum_le_sum_of_subset_of_nonneg (fun n hn => ?_) fun n _ _ => (fun n => mul_nonneg (by positivity) (ha n)) n
+          simp at hn
           simp [hn.2]
       _ = (0 : ℝ) ^ (2 * s) * a 0 := by
-          simp only [Finset.sum_singleton, hf, Int.cast_zero, abs_zero]
+          simp [Finset.sum_singleton, hf, Int.cast_zero, abs_zero]
   · rw [← Finset.sum_fiberwise_of_maps_to (g := g) (t := (u.filter fun n => ¬n = 0).image g)
       (fun n hn => Finset.mem_image_of_mem g hn)]
     calc ∑ j ∈ (u.filter fun n => ¬n = 0).image g,
           ∑ n ∈ (u.filter fun n => ¬n = 0) with g n = j, f n
         ≤ ∑ j ∈ (u.filter fun n => ¬n = 0).image g, b j := by
           refine Finset.sum_le_sum fun j _ => hfiber j _ fun n hn => ?_
-          simp only [Finset.mem_filter] at hn
+          simp at hn
           exact ⟨hn.1.2, hn.2⟩
-      _ ≤ ∑' j, b j := hb.sum_le_tsum _ fun j _ => hb0 j
+      _ ≤ ∑' j, b j := ((summable_geometric_of_lt_one hr0 hr1).mul_left _).sum_le_tsum _ fun j _ => (fun j => by positivity) j
 
 /-- **Dyadic block bounds from a difference estimate.** If `aₙ ≥ 0` is summable and
 `∑ₙ |e^{inh} - 1|^{2k} aₙ ≤ C h^β` for all `0 < h ≤ π/2`, then
@@ -122,7 +118,7 @@ theorem block_bound_of_diff_bound {a : ℤ → ℝ} (ha : ∀ n, 0 ≤ a n) (hsu
     (hu : ∀ n ∈ u, (N : ℝ) ≤ |(n : ℝ)| ∧ |(n : ℝ)| ≤ 2 * N) :
     ∑ n ∈ u, a n ≤ (C * (π / 2) ^ β) * (N : ℝ) ^ (-β) := by
   have hNpos : (0 : ℝ) < N := by exact_mod_cast hN
-  set h : ℝ := π / (2 * N) with hh
+  set h := π / (2 * N) with hh
   have hhpos : 0 < h := by positivity
   have hhle : h ≤ π / 2 := by
     rw [hh, div_le_div_iff₀ (by positivity) two_pos]
@@ -157,12 +153,12 @@ theorem block_bound_of_diff_bound {a : ℤ → ℝ} (ha : ∀ n, 0 ≤ a n) (hsu
       have hsq : (π / 2) ^ 2 ≤ ((n : ℝ) * h) ^ 2 := by
         rw [← sq_abs ((n : ℝ) * h)]
         exact pow_le_pow_left₀ (by positivity) hlow 2
-      have hpi : 0 < π := pi_pos
+      have hpi := pi_pos
       have : 4 / π ^ 2 * (π / 2) ^ 2 = 1 := by field_simp; ring
       nlinarith [div_pos (by norm_num : (0:ℝ) < 4) (pow_pos hpi 2)]
     have : 1 ≤ ‖Complex.exp (n * h * Complex.I) - 1‖ ^ (2 * k) := by
       rw [pow_mul]; exact one_le_pow₀ hone
-    simpa [hw] using mul_le_mul_of_nonneg_right this (ha n)
+    simpa using mul_le_mul_of_nonneg_right this (ha n)
   calc ∑ n ∈ u, a n ≤ ∑ n ∈ u, w n := Finset.sum_le_sum hpt
     _ ≤ ∑' n, w n := hwsum.sum_le_tsum _ fun n _ => mul_nonneg (by positivity) (ha n)
     _ ≤ C * h ^ β := hdiff h hhpos hhle
@@ -204,10 +200,10 @@ lemma tsum_second_diff_eq_integral {φ : ℝ → ℂ} (hφ : Continuous φ)
   set ψ : ℝ → ℂ := fun θ => φ (θ + h) - φ θ with hψ
   have hψc : Continuous ψ := (hφ.comp ((continuous_id.add continuous_const : Continuous fun x => x + h))).sub hφ
   have hψp : Function.Periodic ψ (2 * π) := fun θ => by
-    simp only [hψ, show θ + 2 * π + h = θ + h + 2 * π by ring, hper (θ + h), hper θ]
+    simp [hψ, show θ + 2 * π + h = θ + h + 2 * π by ring, hper (θ + h), hper θ]
   have heq : ∀ θ, φ (θ + 2 * h) - 2 * φ (θ + h) + φ θ = ψ (θ + h) - ψ θ := by
     intro θ
-    simp only [hψ, show θ + h + h = θ + 2 * h by ring]
+    simp [hψ, show θ + h + h = θ + 2 * h by ring]
     ring
   simp_rw [heq]
   rw [← tsum_diff_eq_integral hψc hψp h]

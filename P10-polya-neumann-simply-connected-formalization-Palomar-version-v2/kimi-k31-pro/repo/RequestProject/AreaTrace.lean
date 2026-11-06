@@ -28,17 +28,9 @@ namespace PolyaNeumann
 lemma norm_adjoint_unitary_basisVec {U : Ell2 →L[ℂ] Ell2}
     (hU : U ∈ unitary (Ell2 →L[ℂ] Ell2)) (k : ℕ) :
     ‖ContinuousLinearMap.adjoint U (basisVec k)‖ = 1 := by
-  have h1 : U * ContinuousLinearMap.adjoint U = 1 := by
-    rw [← ContinuousLinearMap.star_eq_adjoint]; exact (Unitary.mem_iff.mp hU).2
-  have h2 : ‖ContinuousLinearMap.adjoint U (basisVec k)‖ ^ 2 = ‖basisVec k‖ ^ 2 := by
-    rw [← inner_self_eq_norm_sq (𝕜 := ℂ), ← inner_self_eq_norm_sq (𝕜 := ℂ),
-      ContinuousLinearMap.adjoint_inner_left, ← ContinuousLinearMap.mul_apply, h1,
-      ContinuousLinearMap.one_apply]
-  have h3 : ‖basisVec k‖ = 1 := by
-    rw [basisVec, lp.norm_single (by norm_num)]; simp
-  rw [h3, one_pow] at h2
-  have := norm_nonneg (ContinuousLinearMap.adjoint U (basisVec k))
-  nlinarith
+  have h := ContinuousLinearMap.norm_map_of_mem_unitary (Unitary.star_mem hU) (basisVec k)
+  rw [ContinuousLinearMap.star_eq_adjoint] at h
+  simpa using h
 
 end PolyaNeumann
 

@@ -42,7 +42,7 @@ def roughBoundaryOneReal : Lp ℝ 2 μB :=
 
 private theorem rough_boundary_integral_norm_le (p : BoundaryL2) :
     (∫ θ, ‖p θ‖ ∂μB) ≤ ‖roughBoundaryOneReal‖ * ‖p‖ := by
-  let a : Lp ℝ 2 μB := (Lp.memLp p).norm.toLp (fun θ => ‖p θ‖)
+  let a := (Lp.memLp p).norm.toLp (fun θ => ‖p θ‖)
   have he : ⟪roughBoundaryOneReal, a⟫_ℝ = ∫ θ, ‖p θ‖ ∂μB := by
     rw [L2.inner_def]
     apply integral_congr_ae
@@ -157,7 +157,7 @@ theorem roughNormalizedMean_apply (y : L2Z) :
   have h : ⟪stdBasisZ 0, y⟫_ℂ = y 0 := by
     rw [stdBasisZ_apply, lp.inner_single_left]
     simp
-  simp only [roughNormalizedMean, ContinuousLinearMap.smul_apply, innerSL_apply_apply,
+  simp [roughNormalizedMean, ContinuousLinearMap.smul_apply, innerSL_apply_apply,
     h, smul_eq_mul]
   ring
 
@@ -256,8 +256,7 @@ theorem roughVekuaRegularCorrection_absolutelyContinuous (p : BoundaryL2) (m α 
     (roughVekuaRegularIntegrand_intervalIntegrable hK hγ hW p m)
     (by rw [uIcc_of_le Real.two_pi_pos.le]; exact ⟨le_rfl, Real.two_pi_pos.le⟩)
   have hconst : AbsolutelyContinuousOnInterval
-      (fun _ : ℝ => α • basisVec 0) 0 (2 * Real.pi) := by
-    exact (LipschitzWith.const (α • basisVec 0)).lipschitzOnWith.absolutelyContinuousOnInterval
+      (fun _ : ℝ => α • basisVec 0) 0 (2 * Real.pi) := (LipschitzWith.const (α • basisVec 0)).lipschitzOnWith.absolutelyContinuousOnInterval
   exact absolutelyContinuousOnInterval_clm_apply hWA
     (hconst.add (hp.const_smul _))
 
@@ -286,11 +285,10 @@ theorem roughVekuaRegularCorrection_ae_hasDerivAt (p : BoundaryL2) (m α : ℂ) 
             (∫ s in (0 : ℝ)..θ,
               ContinuousLinearMap.adjoint (W s) (roughVekuaRegularForce γ E p m s))) +
         W θ (0 + (-(Complex.I / (Real.sqrt 2 : ℂ))) •
-          (ContinuousLinearMap.adjoint (W θ)) (roughVekuaRegularForce γ E p m θ))) θ := by
-    exact hd
+          (ContinuousLinearMap.adjoint (W θ)) (roughVekuaRegularForce γ E p m θ))) θ := hd
   convert hd' using 1
   dsimp only [roughVekuaRegularCorrection]
-  simp only [ContinuousLinearMap.mul_apply, map_zero, add_zero, zero_add,
+  simp [ContinuousLinearMap.mul_apply, map_zero, add_zero, zero_add,
     map_smul, hcancel]
 
 include hγ hW in
@@ -308,7 +306,7 @@ private theorem rough_adjoint_transport_row_hasDerivAt {θ : ℝ}
     have hstar := hdW.star
     rw [star_mul, hs, ContinuousLinearMap.star_eq_adjoint] at hstar
     have h_simpa := hstar
-    simp only [mul_neg] at h_simpa ⊢
+    simp at h_simpa ⊢
     exact h_simpa
   simpa only [ContinuousLinearMap.neg_apply, ContinuousLinearMap.mul_apply,
     map_zero, add_zero] using
@@ -396,7 +394,7 @@ theorem roughProjectedObservation_fourier_derivative (v : Ell2) :
   apply lp.ext
   funext n
   rw [roughFourierTestDerivative_apply]
-  simp only [boundaryFourier_apply]
+  simp [boundaryFourier_apply]
   rw [fourierCoeffOn_congr_ae Real.two_pi_pos
       (roughProjectedObservationDerivative_memLp hγ hW v).coeFn_toLp,
     fourierCoeffOn_of_ac_ae_hasDerivAt
@@ -417,8 +415,7 @@ theorem rough_endpoint_kernel_continuousOn :
 include hγ hW in
 /-- The endpoint source is a bounded operator of the arbitrary normalized
 input. This permits a genuine finite-mode density argument. -/
-def roughVekuaEndpointCore : L2Z →L[ℂ] Ell2 := by
-  exact (roughBoundaryVectorIntegral
+def roughVekuaEndpointCore : L2Z →L[ℂ] Ell2 := (roughBoundaryVectorIntegral
     (fun θ => ContinuousLinearMap.adjoint (W θ) (transportCoeff γ E θ (basisVec 0)))
     (rough_endpoint_kernel_continuousOn hγ hW)).comp roughNormalizedPrimitive +
   (ContinuousLinearMap.toSpanSingleton ℂ (∫ θ in (0 : ℝ)..(2 * Real.pi),
@@ -435,16 +432,16 @@ theorem roughVekuaEndpointCore_apply (y : L2Z) :
       ContinuousLinearMap.adjoint (W θ) (basisVec 0)) volume 0 (2 * Real.pi) := by
     apply ContinuousOn.intervalIntegrable
     have h_simpa := h0.const_smul (roughNormalizedMean y)
-    simp only [uIcc_of_le Real.two_pi_pos.le] at h_simpa ⊢
+    simp [uIcc_of_le Real.two_pi_pos.le] at h_simpa ⊢
     exact h_simpa
-  simp only [roughVekuaEndpointCore, ContinuousLinearMap.add_apply,
+  simp [roughVekuaEndpointCore, ContinuousLinearMap.add_apply,
     ContinuousLinearMap.comp_apply, roughBoundaryVectorIntegral_apply,
     ContinuousLinearMap.toSpanSingleton_apply]
   rw [← intervalIntegral.integral_smul, ← intervalIntegral.integral_add
     (roughBoundaryVectorProduct_intervalIntegrable _ hk (roughNormalizedPrimitive y)) hi0]
   apply intervalIntegral.integral_congr
   intro θ _
-  simp only [roughVekuaRegularForce, map_add, map_smul]
+  simp [roughVekuaRegularForce, map_add, map_smul]
 
 include hK hγ hW in
 private theorem rough_projectedObservation_weightedFourier (v : Ell2) :
@@ -496,7 +493,7 @@ private theorem rough_endpoint_mean_pairing (y : L2Z) (v : Ell2) :
   simp_rw [hinner]
   rw [intervalIntegral_conj, zeroModeProjection_eq_single, lp.inner_single_right,
     RCLike.inner_apply', sobVec_apply]
-  simp only [sobWeight, Int.cast_zero, abs_zero, add_zero, Real.one_rpow,
+  simp [sobWeight, Int.cast_zero, abs_zero, add_zero, Real.one_rpow,
     Complex.ofReal_one, one_mul]
   rw [boundaryFourier_apply,
     fourierCoeffOn_congr_ae Real.two_pi_pos (projectedObservationBoundary_coe hK hW v),
@@ -506,10 +503,9 @@ private theorem rough_endpoint_mean_pairing (y : L2Z) (v : Ell2) :
   rw [roughNormalizedMean_apply]
   have hs : (Real.sqrt (2 * Real.pi) : ℂ) ≠ 0 := by
     exact_mod_cast (Real.sqrt_pos.mpr Real.two_pi_pos).ne'
-  have hT : ((2 * Real.pi : ℝ) : ℂ) ≠ 0 := by exact_mod_cast Real.two_pi_pos.ne'
   have hsq : (Real.sqrt (2 * Real.pi) : ℂ) ^ 2 = ((2 * Real.pi : ℝ) : ℂ) := by
     exact_mod_cast Real.sq_sqrt Real.two_pi_pos.le
-  field_simp [hs, hT, Real.pi_ne_zero]
+  field_simp [hs, (by exact_mod_cast Real.two_pi_pos.ne'), Real.pi_ne_zero]
   rw [hsq]
   have hprod : ((Real.pi * 2 : ℝ) : ℂ) *
       ((Real.pi⁻¹ * (1 / 2) : ℝ) : ℂ) = 1 := by
@@ -649,7 +645,7 @@ theorem roughVekuaRegularCorrection_derivative_eq_transportCoeff
       (-(Complex.I / (Real.sqrt 2 : ℂ))) • roughVekuaRegularForce γ E p m θ =
     transportCoeff γ E θ (roughVekuaDrivenVector γ E W p m α θ) +
       (-(Complex.I / (Real.sqrt 2 : ℂ)) * m) • basisVec 0 := by
-  simp only [roughVekuaRegularForce, roughVekuaDrivenVector, map_add, map_smul,
+  simp [roughVekuaRegularForce, roughVekuaDrivenVector, map_add, map_smul,
     smul_add, smul_smul, smul_eq_mul]
   abel
 
@@ -670,7 +666,7 @@ theorem roughVekuaDrivenRow_succ_ae_hasDerivAt (p : BoundaryL2) (m α : ℂ) (n 
   rw [roughVekuaRegularCorrection_derivative_eq_transportCoeff] at hd
   convert hd using 1
   · funext t
-    simp only [Function.comp_apply, physicalDrivenRow, Nat.succ_ne_zero, if_false,
+    simp [Function.comp_apply, physicalDrivenRow, Nat.succ_ne_zero, if_false,
       roughVekuaDrivenVector_positive_coord]
     change (roughVekuaRegularCorrection γ E W p m α t : ℕ → ℂ) (n + 1) =
       ⟪basisVec (n + 1), roughVekuaRegularCorrection γ E W p m α t⟫_ℂ
@@ -694,20 +690,20 @@ theorem roughVekuaDrivenScaledRow_succ_ae_hasDerivAt (p : BoundaryL2) (m α : �
   convert (hθ hmem).const_mul (physicalDrivenQ E ^ (n + 1)) using 1
   · funext t
     rfl
-  · simp only [physicalDrivenScaledRow]
+  · simp [physicalDrivenScaledRow]
     ring
 
 include hW in
 theorem roughVekuaDrivenRow_succ_zero (p : BoundaryL2) (m α : ℂ) (n : ℕ) :
     physicalDrivenRow (roughVekuaDrivenVector γ E W p m α) (n + 1) 0 = 0 := by
-  simp only [physicalDrivenRow, Nat.succ_ne_zero, if_false,
+  simp [physicalDrivenRow, Nat.succ_ne_zero, if_false,
     roughVekuaDrivenVector_positive_coord, roughVekuaRegularCorrection_zero hW,
     lp.coeFn_smul, Pi.smul_apply, basisVec_coord, if_false, smul_eq_mul, mul_zero]
 
 theorem roughVekuaDrivenRow_succ_endpoint (p : BoundaryL2) (m α : ℂ)
     (hα : roughVekuaRegularCorrection γ E W p m α (2 * Real.pi) = α • basisVec 0) (n : ℕ) :
     physicalDrivenRow (roughVekuaDrivenVector γ E W p m α) (n + 1) (2 * Real.pi) = 0 := by
-  simp only [physicalDrivenRow, Nat.succ_ne_zero, if_false,
+  simp [physicalDrivenRow, Nat.succ_ne_zero, if_false,
     roughVekuaDrivenVector_positive_coord, hα, lp.coeFn_smul,
     Pi.smul_apply, basisVec_coord, Nat.succ_ne_zero, if_false, smul_eq_mul, mul_zero]
 

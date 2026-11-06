@@ -34,14 +34,14 @@ theorem finiteFourierChart_correction_sobolev {d : ℕ}
     IsSobolevSeq s ((finiteFourierChart u v z - (z : L2Z) : L2Z) : ℤ → ℂ) := by
   have heq : finiteFourierChart u v z - (z : L2Z) =
       (∑ r, InnerProductSpace.rankOne ℂ (v r) (u r)) z := by
-    simp only [finiteFourierChart, ContinuousLinearMap.add_apply,
+    simp [finiteFourierChart, ContinuousLinearMap.add_apply,
       Submodule.subtypeL_apply, add_sub_cancel_left]
   rw [heq]
   change _ ∈ fourierSobolevSubmodule s
   rw [ContinuousLinearMap.sum_apply]
   apply Submodule.sum_mem
   intro r _
-  rw [InnerProductSpace.rankOne_apply]
+  simp
   exact (fourierSobolevSubmodule s).smul_mem _
     (isSobolevSeq_of_finite_fourier_support s (hv r))
 

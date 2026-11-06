@@ -64,7 +64,7 @@ lemma planeWave_eq_exp_mul (k : ℝ) (z : ℂ) (φ : ℝ) :
   rw [← Complex.exp_add]
   congr 1
   rw [Complex.re_eq_add_conj, map_mul, ← Complex.exp_conj]
-  simp only [map_neg, map_mul, Complex.conj_ofReal, Complex.conj_I]
+  simp
   ring_nf
 
 /-- The terms of the double expansion of `e^{-imφ} exp(α e^{-iφ}) exp(β e^{iφ})`. -/
@@ -79,7 +79,7 @@ lemma hasSum_exp_series (w : ℂ) :
 
 lemma summable_norm_exp_series (w : ℂ) :
     Summable (fun n : ℕ => ‖w ^ n / (n.factorial : ℂ)‖) := by
-  simpa [norm_pow] using Real.summable_pow_div_factorial ‖w‖
+  simpa using Real.summable_pow_div_factorial ‖w‖
 
 lemma hasSum_exp_mul_exp (u v : ℂ) : HasSum (fun x : ℕ × ℕ =>
       (u ^ x.1 / (x.1.factorial : ℂ)) * (v ^ x.2 / (x.2.factorial : ℂ)))
@@ -163,15 +163,14 @@ theorem hasSum_herglotzWave_monoDensity (k : ℝ) (m : ℕ) (z : ℂ) :
         (Complex.exp (α * Complex.exp (-(φ * Complex.I))) *
           Complex.exp (β * Complex.exp (φ * Complex.I))) := by
     unfold herglotzWave monoDensity
-    simp only [planeWave_eq_exp_mul, α, β]
+    simp [planeWave_eq_exp_mul, α, β]
   rw [hw]
-  have hπ : ((2 * π : ℝ) : ℂ) ≠ 0 := by exact_mod_cast Real.two_pi_pos.ne'
   simp only [integral_monoTerm] at h
   rw [← (show Function.Injective (fun p : ℕ => (p, p + m)) from
     fun a b hab => (Prod.mk.inj hab).1).hasSum_iff] at h
   · convert h using 1
     funext p
-    simp only [Function.comp, if_true]
+    simp
     field_simp
   · rintro ⟨p, q⟩ hpq
     rw [if_neg, mul_zero]
@@ -197,7 +196,7 @@ theorem hasSum_vekuaMonoTerm {k : ℝ} (hk : k ≠ 0) (m : ℕ) (z : ℂ) :
   funext j
   unfold vekuaMonoTerm
   have hsq : (-(Complex.I * k / 2)) ^ 2 = -((k ^ 2 : ℝ) : ℂ) / 4 := by
-    push_cast; ring_nf; rw [Complex.I_sq]; ring
+    push_cast; ring_nf; simp; ring
   rw [mul_pow, mul_pow, pow_add, ← hsq, ← pow_mul]
   field_simp
   ring_nf
@@ -292,14 +291,14 @@ theorem herglotzVec_polyDensity_zero {k : ℝ} (s : Finset ℕ) (c : ℕ → ℂ
       rw [herglotzCoeff_monoDensity, herglotzWave_monoDensity_zero, if_neg (by omega), mul_zero]
   apply lp.ext
   funext n
-  simp only [herglotzVec_apply, herglotzSeq, lp.coeFn_smul, Pi.smul_apply, basisVec,
+  simp [herglotzVec_apply, herglotzSeq, lp.coeFn_smul, Pi.smul_apply, basisVec,
     lp.single_apply, smul_eq_mul]
   rcases Nat.eq_zero_or_pos n with rfl | hn
   · have := hsum 0
     push_cast at this
     simp [this]
   · have := hsum n
-    simp only [if_neg hn.ne'] at this
+    simp [if_neg hn.ne'] at this
     simp [hn.ne', this]
 
 /-! ### The Cauchy test for the kernel of `O_E^*` (Lemma 5.11, compatibility part) -/

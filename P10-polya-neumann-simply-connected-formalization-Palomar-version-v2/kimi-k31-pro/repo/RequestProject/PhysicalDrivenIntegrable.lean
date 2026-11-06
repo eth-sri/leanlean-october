@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.TwoPi
 public import RequestProject.PhysicalDrivenMoments
 public import RequestProject.Unitarity
 
@@ -29,8 +30,6 @@ open MeasureTheory Set Filter Metric
 open AbsolutelyContinuousOnInterval
 open scoped Topology ComplexConjugate
 
-local instance physicalDrivenIntegrableTwoPiPos : Fact (0 < 2 * Real.pi) :=
-  ⟨Real.two_pi_pos⟩
 
 /-- A Banach-valued primitive is genuinely absolutely continuous. This is
 the norm-increment version of Mathlib's real-valued primitive proof. -/
@@ -54,7 +53,7 @@ theorem absolutelyContinuousOnInterval_intervalIntegral_banach
       E ∈ disjWithin a b := eventually_inf_principal.mpr (by simp)
   filter_upwards [hmem] with E hE
   obtain ⟨hE1, hE2⟩ := mem_setOf_eq ▸ hE
-  rw [← integral_norm_eq_lintegral_enorm (hf.aestronglyMeasurable_restrict_uIoc.restrict),
+  rw [← integral_norm_eq_lintegral_enorm hf.aestronglyMeasurable_restrict_uIoc.restrict,
     integral_biUnion_finset _ (by simp +contextual [uIoc]) hE2]
   · refine Finset.sum_le_sum (fun i hi => ?_)
     rw [dist_eq_norm, intervalIntegral.integral_interval_sub_left
@@ -104,7 +103,7 @@ theorem eq_add_intervalIntegral_of_ac_ae_hasDerivAt
     (hd : ∀ᵐ x, x ∈ Ioo 0 L → HasDerivAt f (g x) x) :
     ∀ θ ∈ Icc 0 L, f θ = f 0 + ∫ s in (0 : ℝ)..θ, g s := by
   let G := (Icc 0 L).indicator g
-  have hGi : Integrable G := hg.integrable_indicator measurableSet_Icc
+  have hGi := hg.integrable_indicator measurableSet_Icc
   let P : ℝ → V := fun x => ∫ s in (0 : ℝ)..x, G s
   have hP : AbsolutelyContinuousOnInterval P 0 L :=
     absolutelyContinuousOnInterval_intervalIntegral_banach hGi.intervalIntegrable
@@ -482,7 +481,7 @@ theorem physicalDrivenMomentPartial_recurrence_of_intervalIntegrable
   let t : ℝ → ℂ := fun θ => deriv γ θ * physicalDrivenPower γ N θ *
     physicalDrivenScaledRow E y (N + j + 2) θ * z θ ^ m
   let r : ℝ → ℂ := fun θ => physicalDrivenQ E ^ 2 * a θ + (m : ℂ) * b θ + t θ
-  have hy : ContinuousOn y (Icc 0 (2 * Real.pi)) := physicalDrivenVector_continuousOn_of_intervalIntegrable hW.1 g hg
+  have hy := physicalDrivenVector_continuousOn_of_intervalIntegrable hW.1 g hg
   have hz : Continuous z := Complex.continuous_conj.comp (hγ.continuous.sub continuous_const)
   have hp := physicalDrivenGaugePartial_continuousOn γ hγ.continuous E y hy (j + 1) N
   have ha : ContinuousOn a (Icc 0 (2 * Real.pi)) :=

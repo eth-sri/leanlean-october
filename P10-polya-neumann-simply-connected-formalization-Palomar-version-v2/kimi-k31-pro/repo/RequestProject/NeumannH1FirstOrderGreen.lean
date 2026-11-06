@@ -40,7 +40,7 @@ private theorem firstOrderL2TestPair_apply (Ω : Set ℂ) {φ : ℂ → ℂ}
   rw [L2.inner_def]
   apply integral_congr_ae
   filter_upwards [(hφ.conj.memLp' 2 (μ := volume.restrict Ω)).coeFn_toLp] with z hz
-  simp only [RCLike.inner_apply, hz, Complex.conj_conj]
+  simp [RCLike.inner_apply, hz, Complex.conj_conj]
 
 private theorem firstOrder_boundary_coefficient_memLp {Ω : Set ℂ} {γ : ℝ → ℂ}
     (hγ : IsBoundaryParam Ω γ) {φ : ℂ → ℂ} (hφ : TestFunction univ φ)
@@ -50,7 +50,7 @@ private theorem firstOrder_boundary_coefficient_memLp {Ω : Set ℂ} {γ : ℝ �
       (volume.restrict (Ioc (0 : ℝ) (2 * π))) := by
   obtain ⟨Kγ, hKγ⟩ := hγ.lipschitz
   obtain ⟨C, hC⟩ := hφ.2.1.exists_bound_of_continuous hφ.1.continuous
-  have hC0 : 0 ≤ C := (norm_nonneg (φ 0)).trans (hC 0)
+  have hC0 := (norm_nonneg (φ 0)).trans (hC 0)
   apply MemLp.of_bound
     ((hφ.1.continuous.comp hKγ.continuous).aestronglyMeasurable.mul ha).restrict (C * K)
   apply Eventually.of_forall
@@ -189,7 +189,7 @@ private theorem h1FirstOrder_green_smooth {Ω : Set ℂ}
       dirD p v z = dirD (f : ℂ → ℂ) v z * φ z + f z * dirD φ v z := by
     rw [dirD, fderiv_fun_mul (f.property.1.differentiable (by simp) z)
       (hφ.1.differentiable (by simp) z)]
-    simp only [ContinuousLinearMap.add_apply, ContinuousLinearMap.smul_apply, smul_eq_mul]
+    simp
     dsimp only [dirD]
     ring
   have hproduct_integral (v : ℂ) :
@@ -338,8 +338,7 @@ theorem firstOrder_normalX_measurable (γ : ℝ → ℂ) :
     (Complex.imCLM.continuous.comp_aestronglyMeasurable (measurable_deriv γ).aestronglyMeasurable)
 
 theorem firstOrder_normalY_measurable (γ : ℝ → ℂ) :
-    AEStronglyMeasurable (fun θ => (-(deriv γ θ).re : ℂ)) volume := by
-  exact (Complex.continuous_ofReal.comp_aestronglyMeasurable
+    AEStronglyMeasurable (fun θ => (-(deriv γ θ).re : ℂ)) volume := (Complex.continuous_ofReal.comp_aestronglyMeasurable
       (Complex.continuous_re.comp_aestronglyMeasurable
         (measurable_deriv γ).aestronglyMeasurable)).neg
 
@@ -353,7 +352,7 @@ theorem firstOrder_normalX_bound {Ω : Set ℂ} {γ : ℝ → ℂ}
 theorem firstOrder_normalY_bound {Ω : Set ℂ} {γ : ℝ → ℂ}
     (hγ : IsBoundaryParam Ω γ) (θ : ℝ) :
     ‖(-(deriv γ θ).re : ℂ)‖ ≤ firstOrderBoundarySpeedBound hγ := by
-  simp only [norm_neg, Complex.norm_real, Real.norm_eq_abs]
+  simp
   exact (Complex.abs_re_le_norm _).trans
     (norm_deriv_le_of_lipschitz (firstOrderBoundarySpeedBound_spec hγ))
 
@@ -406,7 +405,7 @@ theorem h1GradientConormalDensity_ae {Ω : Set ℂ} (hb : Bornology.IsBounded Ω
     h1BoundaryNormalYMultiplier_ae hγ (h1BoundaryTrace hb hL hγ g1)] with θ ha hx hy
   change (_ + _ : BoundaryL2) θ = _
   rw [ha]
-  simp only [Pi.add_apply, hx, hy]
+  simp [Pi.add_apply, hx, hy]
 
 /-- The divergence is the sum of actual weak derivative components. -/
 def h1GradientDivergence (Ω : Set ℂ) (g0 g1 : NeumannH1 Ω) : L2 Ω :=
@@ -466,14 +465,14 @@ private theorem firstOrder_inner_toLp {α : Type*} [MeasurableSpace α]
   rw [L2.inner_def, ← integral_conj]
   apply integral_congr_ae
   filter_upwards [hφ.coeFn_toLp] with z hz
-  simp only [RCLike.inner_apply, hz, map_mul, Complex.conj_conj]
+  simp [RCLike.inner_apply, hz, map_mul, Complex.conj_conj]
   exact mul_comm _ _
 
 private theorem firstOrder_inner_conjugate_integral {α : Type*} [MeasurableSpace α]
     {μ : Measure α} (u v : Lp ℂ 2 μ) :
     ⟪u, v⟫_ℂ = conj (∫ z, u z * conj (v z) ∂μ) := by
   rw [L2.inner_def, ← integral_conj]
-  simp only [RCLike.inner_apply, map_mul, Complex.conj_conj, mul_comm]
+  simp [RCLike.inner_apply, map_mul, Complex.conj_conj, mul_comm]
 
 /-- A bounded functional in the H¹ test input; its first argument is fixed. -/
 def h1ConormalGreenInteriorFunctional (Ω : Set ℂ) (u g0 g1 : NeumannH1 Ω) :
@@ -491,7 +490,7 @@ theorem h1ConormalGreenInteriorFunctional_apply (Ω : Set ℂ)
     h1ConormalGreenInteriorFunctional Ω u g0 g1 w =
       (∑ i : Fin 2, ⟪h1Gradient Ω i u, h1Gradient Ω i w⟫_ℂ) +
         ⟪h1GradientDivergence Ω g0 g1, h1Value Ω w⟫_ℂ := by
-  simp only [h1ConormalGreenInteriorFunctional, ContinuousLinearMap.add_apply,
+  simp [h1ConormalGreenInteriorFunctional, ContinuousLinearMap.add_apply,
     ContinuousLinearMap.sum_apply, ContinuousLinearMap.comp_apply, innerSL_apply_apply]
 
 theorem h1ConormalGreenBoundaryFunctional_apply {Ω : Set ℂ}

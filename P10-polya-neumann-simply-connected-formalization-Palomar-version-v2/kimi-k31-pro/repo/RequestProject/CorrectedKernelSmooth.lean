@@ -53,7 +53,7 @@ lemma norm_secondDiff_le_of_lipschitz_deriv {f f' : ℝ → ℂ} {M : ℝ}
       (hasDerivAt_id u).const_add θ |>.hasDerivWithinAt
     have e1 := (hderiv _ (hmaps1 hu)).scomp u h1 hmaps1
     have e2 := (hderiv _ (hmaps2 hu)).scomp u h2 hmaps2
-    simp only [one_smul] at e1 e2
+    simp at e1 e2
     exact e1.sub e2
   have hbd : ∀ u ∈ Set.Ico 0 h, ‖f' (θ + h + u) - f' (θ + u)‖ ≤ M * h := by
     intro u hu
@@ -61,7 +61,7 @@ lemma norm_secondDiff_le_of_lipschitz_deriv {f f' : ℝ → ℂ} {M : ℝ}
     rwa [show θ + h + u - (θ + u) = h by ring, abs_of_pos hh] at this
   have key := norm_image_sub_le_of_norm_deriv_le_segment' hgd hbd h ⟨hh.le, le_rfl⟩
   have hval : g h - g 0 = secondDiff f h θ := by
-    simp only [hgdef, secondDiff, add_zero, show θ + h + h = θ + 2 * h by ring]
+    simp [hgdef, secondDiff, add_zero, show θ + h + h = θ + 2 * h by ring]
   rw [hval, sub_zero] at key
   nlinarith
 
@@ -76,9 +76,9 @@ lemma hasDerivWithinAt_transport
   have hco : Continuous (coeffOf E) := by
     unfold coeffOf
     fun_prop
-  have hC : ContinuousOn (transportCoeff γ E) (Set.Icc 0 (2 * π)) := hco.comp_continuousOn hγ'
+  have hC := hco.comp_continuousOn hγ'
   set F : ℝ → Ell2 →L[ℂ] Ell2 := fun s => transportCoeff γ E s * W s with hFdef
-  have hF : ContinuousOn F (Set.Icc 0 (2 * π)) := hC.mul hW.1
+  have hF := hC.mul hW.1
   have hsub : Set.uIcc 0 θ ⊆ Set.Icc 0 (2 * π) := by
     rw [Set.uIcc_of_le hθ.1]; exact Set.Icc_subset_Icc le_rfl hθ.2
   haveI : Fact (θ ∈ Set.Icc 0 (2 * π)) := ⟨hθ⟩
@@ -164,7 +164,7 @@ lemma hasDerivWithinAt_sign_mul {g g' : ℝ → ℂ} {t : ℝ}
       rw [Real.sign_of_neg (sub_neg.2 hu), Real.sign_of_neg (sub_neg.2 hxt)]
     exact ((hg x hx).const_mul _).congr_of_eventuallyEq hev rfl
   · subst hxt
-    rw [sub_self, Real.sign_zero, Complex.ofReal_zero, zero_mul]
+    simp
     have h0 := hg x hx
     rw [hg't, hasDerivWithinAt_iff_isLittleO] at h0
     rw [hasDerivWithinAt_iff_isLittleO]
@@ -172,7 +172,7 @@ lemma hasDerivWithinAt_sign_mul {g g' : ℝ → ℂ} {t : ℝ}
     simp only [sub_self, Real.sign_zero, Complex.ofReal_zero, zero_mul, smul_zero, sub_zero, hgt]
     rw [norm_mul]
     exact mul_le_of_le_one_left (norm_nonneg _) (by
-      rw [Complex.norm_real, Real.norm_eq_abs]; exact abs_real_sign_le _)
+      simp; exact abs_real_sign_le _)
   · have hev : (fun u => (Real.sign (u - t) : ℂ) * g u) =ᶠ[nhdsWithin x (Set.Icc 0 (2 * π))]
         fun u => (Real.sign (x - t) : ℂ) * g u := by
       filter_upwards [mem_nhdsWithin_of_mem_nhds (Ioi_mem_nhds hxt)] with u hu
@@ -201,10 +201,10 @@ lemma hasDerivWithinAt_correctedKernel (hK : LipschitzWith K γ)
   have hgt : g t = 0 := by
     have := volterraKernel_self hK hW ht
     unfold volterraKernel at this
-    simp only [hgdef]
+    simp [hgdef]
     rw [hx, this, sub_self]
   have hg't : g' t = 0 := by
-    simp only [hg'def, hx, ContinuousLinearMap.mul_apply]
+    simp [hg'def, hx, ContinuousLinearMap.mul_apply]
     rw [← ContinuousLinearMap.mul_apply (W t), transport_mul_adjoint hK hW ht,
       ContinuousLinearMap.one_apply, inner_basisVec_transportCoeff_basisVec]
   have h1 := (hasDerivWithinAt_sign_mul hg ht hgt hg't hθ).const_mul Complex.I
@@ -215,10 +215,10 @@ lemma hasDerivWithinAt_correctedKernel (hK : LipschitzWith K γ)
   have hsum := (h1.add h2).add h3
   convert hsum using 1
   · funext u
-    simp only [correctedKernel, volterraKernel, hgdef, hx, Pi.add_apply]
+    simp [correctedKernel, volterraKernel, hgdef, hx, Pi.add_apply]
     push_cast
     ring
-  · simp only [correctedKernelDeriv, hg'def, hx]
+  · simp [correctedKernelDeriv, hg'def, hx]
     push_cast
     ring
 
@@ -233,9 +233,8 @@ lemma norm_correctedKernelDeriv_sub_le (hK : LipschitzWith K γ)
         (1 + ‖cutBE W‖) * |θ - θ'| := by
   set L0 := Real.sqrt E * shiftConst * K' + (Real.sqrt E * shiftConst * K) ^ 2 with hL0
   have hκ := shiftConst_nonneg
-  have hL0nn : 0 ≤ L0 := by positivity
   set x := ContinuousLinearMap.adjoint (W t) (basisVec 0) with hx
-  have hx1 : ‖x‖ ≤ 1 := norm_adjoint_transport_e0_le hK hW ht
+  have hx1 := norm_adjoint_transport_e0_le hK hW ht
   set a : ℝ → ℂ := fun u => ⟪basisVec 0, (transportCoeff γ E u * W u) x⟫_ℂ with hadef
   have ha : ∀ u ∈ Set.Icc 0 (2 * π), ∀ u' ∈ Set.Icc 0 (2 * π),
       ‖a u - a u'‖ ≤ L0 * |u - u'| := by
@@ -244,10 +243,10 @@ lemma norm_correctedKernelDeriv_sub_le (hK : LipschitzWith K γ)
     calc L0 * ‖x‖ * |u - u'| ≤ L0 * 1 * |u - u'| := by gcongr
       _ = _ := by ring
   have hat : a t = 0 := by
-    simp only [hadef, hx, ContinuousLinearMap.mul_apply]
+    simp [hadef, hx, ContinuousLinearMap.mul_apply]
     rw [← ContinuousLinearMap.mul_apply (W t), transport_mul_adjoint hK hW ht,
       ContinuousLinearMap.one_apply, inner_basisVec_transportCoeff_basisVec]
-  have ha0 : ∀ u ∈ Set.Icc 0 (2 * π), ‖a u‖ ≤ L0 * |u - t| := fun u hu => by
+  have ha0 := fun u hu => by
     simpa [hat] using ha u hu t ht
   have h1 : ‖(Real.sign (θ - t) : ℂ) * a θ - (Real.sign (θ' - t) : ℂ) * a θ'‖ ≤
       L0 * |θ - θ'| :=
@@ -264,7 +263,7 @@ lemma norm_correctedKernelDeriv_sub_le (hK : LipschitzWith K γ)
       Complex.I * ((Real.sign (θ - t) : ℂ) * a θ - (Real.sign (θ' - t) : ℂ) * a θ') +
       (⟪basisVec 0, (transportCoeff γ E θ * W θ) (cutBE W x)⟫_ℂ -
         ⟪basisVec 0, (transportCoeff γ E θ' * W θ') (cutBE W x)⟫_ℂ) := by
-    simp only [correctedKernelDeriv, hadef, hx]
+    simp [correctedKernelDeriv, hadef, hx]
     ring
   rw [e]
   refine (norm_add_le _ _).trans ?_
@@ -288,9 +287,8 @@ theorem summable_rpow_mul_correctedKernelCoeff (hK : LipschitzWith K γ)
       rw [dist_eq_norm, Real.dist_eq]; exact hγ' x hx y hy).continuousOn
   set C : NNReal := ⟨Real.sqrt E * shiftConst * K * (2 + ‖cutBE W‖) + 1 / π, by
     have := shiftConst_nonneg; have := pi_pos; positivity⟩ with hCdef
-  set A : ℝ := (Real.sqrt E * shiftConst * K' + (Real.sqrt E * shiftConst * K) ^ 2) *
+  set A := (Real.sqrt E * shiftConst * K' + (Real.sqrt E * shiftConst * K) ^ 2) *
     (1 + ‖cutBE W‖) with hAdef
-  have hA : 0 ≤ A := by have := shiftConst_nonneg; positivity
   set k : ℝ → ℝ → ℂ := fun θ t => periodize (fun θ' => correctedKernel W θ' (clampTwoPi t)) θ
   have hlipIcc : ∀ t, ∀ x ∈ Set.Icc 0 (2 * π), ∀ y ∈ Set.Icc 0 (2 * π),
       ‖correctedKernel W x (clampTwoPi t) - correctedKernel W y (clampTwoPi t)‖ ≤ C * |x - y| :=
@@ -301,9 +299,9 @@ theorem summable_rpow_mul_correctedKernelCoeff (hK : LipschitzWith K γ)
     measurable_correctedKernel_clamp hW (toIcoMod two_pi_pos 0 θ)
   have hrep : ∀ θ, toIcoMod two_pi_pos 0 θ ∈ Set.Icc 0 (2 * π) := fun θ => by
     have := toIcoMod_mem_Ico two_pi_pos 0 θ
-    simp only [zero_add] at this
+    simp at this
     exact ⟨this.1, this.2.le⟩
-  have hbd : ∀ θ t, ‖k θ t‖ ≤ 4 + ‖cutBE W‖ := fun θ t =>
+  have hbd := fun θ t =>
     norm_correctedKernel_le hK hW (hrep θ) (clampTwoPi_mem t)
   have hlip : ∀ θ θ' t, t ∈ Set.Ico 0 (2 * π) → ‖k θ t - k θ' t‖ ≤ C * |θ - θ'| := by
     intro θ θ' t _
@@ -320,7 +318,7 @@ theorem summable_rpow_mul_correctedKernelCoeff (hK : LipschitzWith K γ)
       ⟨by linarith, by linarith⟩
     have heq : secondDiff (fun θ => k θ t) h θ =
         secondDiff (fun θ => correctedKernel W θ (clampTwoPi t)) h θ := by
-      simp only [secondDiff, k]
+      simp [secondDiff, k]
       rw [periodize_eqOn_Icc (hend t) (hm (2 * h) (by linarith) le_rfl),
         periodize_eqOn_Icc (hend t) (hm h hh.le (by linarith)),
         periodize_eqOn_Icc (hend t) (by simpa using hm 0 le_rfl (by linarith))]
@@ -329,7 +327,7 @@ theorem summable_rpow_mul_correctedKernelCoeff (hK : LipschitzWith K γ)
       (fun x hx => hasDerivWithinAt_correctedKernel hK hγc hW (clampTwoPi_mem t) hx)
       (fun x hx y hy => norm_correctedKernelDeriv_sub_le hK hγ' hW (clampTwoPi_mem t) hx hy)
       hh ⟨hθ0, hθ1⟩
-  have h := summable_kernelCoeff_three_halves hmeas hbd hA hlip hper hsecond hδ hδ'
+  have h := summable_kernelCoeff_three_halves hmeas hbd (by have := shiftConst_nonneg; positivity) hlip hper hsecond hδ hδ'
   refine h.congr fun p => ?_
   congr 3
   rw [fourierCoeffOn_eq_integral, fourierCoeffOn_eq_integral]
@@ -341,7 +339,7 @@ theorem summable_rpow_mul_correctedKernelCoeff (hK : LipschitzWith K γ)
   congr 1
   refine intervalIntegral.integral_congr fun t ht => ?_
   rw [Set.uIcc_of_le two_pi_pos.le] at ht
-  simp only [k]
+  simp [k]
   rw [periodize_eqOn_Icc (hend t) hθ, clampTwoPi_of_mem ht]
 
 end PolyaNeumann

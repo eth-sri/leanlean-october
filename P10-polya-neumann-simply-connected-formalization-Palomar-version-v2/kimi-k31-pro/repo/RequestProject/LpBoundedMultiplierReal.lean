@@ -27,7 +27,7 @@ theorem inner_lpBoundedMultiplier_real
   apply integral_congr_ae
   filter_upwards [lpBoundedMultiplier_ae a ha hbound v,
     lpBoundedMultiplier_ae a ha hbound w, hreal] with x hv hw hr
-  simp only [RCLike.inner_apply', hv, hw, map_mul, hr]
+  simp [RCLike.inner_apply', hv, hw, map_mul, hr]
   ring
 
 end PolyaNeumann

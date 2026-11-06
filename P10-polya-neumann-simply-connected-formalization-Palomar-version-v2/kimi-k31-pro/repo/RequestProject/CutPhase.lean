@@ -67,19 +67,18 @@ lemma cutPhaseTerm_eq (ε : ℝ) (U : H →L[ℂ] H) (z : {z : ℂ // z ≠ 1}) 
 /-- `cot(t/2)` is antitone in `t ∈ (0, π)`. -/
 lemma cot_half_le_cot_half {t s : ℝ} (ht : 0 < t) (hts : t ≤ s) (hs : s < π) :
     Real.cot (s / 2) ≤ Real.cot (t / 2) := by
-  have hs2 : 0 < Real.sin (s / 2) := Real.sin_pos_of_pos_of_lt_pi (by linarith) (by linarith)
   have ht2 : 0 < Real.sin (t / 2) := Real.sin_pos_of_pos_of_lt_pi (by linarith) (by linarith)
   have hsin : Real.sin (t / 2) ≤ Real.sin (s / 2) :=
     Real.sin_le_sin_of_le_of_le_pi_div_two (by linarith) (by linarith) (by linarith)
   have hcos : Real.cos (s / 2) ≤ Real.cos (t / 2) :=
     Real.cos_le_cos_of_nonneg_of_le_pi (by linarith) (by linarith) (by linarith)
   have hc : 0 < Real.cos (s / 2) := Real.cos_pos_of_mem_Ioo ⟨by linarith, by linarith⟩
-  rw [Real.cot_eq_cos_div_sin, Real.cot_eq_cos_div_sin, div_le_div_iff₀ hs2 ht2]
+  rw [Real.cot_eq_cos_div_sin, Real.cot_eq_cos_div_sin, div_le_div_iff₀ (Real.sin_pos_of_pos_of_lt_pi (by linarith) (by linarith)) ht2]
   nlinarith [mul_le_mul hcos hsin ht2.le (by linarith : (0:ℝ) ≤ Real.cos (t/2))]
 
 /-- For every `A` there is `ε ∈ (0, π)` with `cot(ε/2) > A`. -/
 lemma exists_cot_half_gt (A : ℝ) : ∃ ε, 0 < ε ∧ ε < π ∧ A < Real.cot (ε / 2) := by
-  set y : ℝ := 1 / (|A| + 1) with hy
+  set y := 1 / (|A| + 1) with hy
   have hy0 : 0 < y := by positivity
   refine ⟨2 * Real.arctan y, by have := Real.arctan_pos.mpr hy0; linarith, ?_, ?_⟩
   · have := Real.arctan_lt_pi_div_two y; linarith
@@ -150,7 +149,7 @@ lemma exists_orthonormal_eigen_family {U : H →L[ℂ] H} (hU : U ∈ unitary (H
   · have hv : e ⟨⟨z, hz⟩, k⟩ ≠ 0 := by
       have := (b z).orthonormal.ne_zero k
       simpa [e] using this
-    have hz1 : ‖(z : ℂ)‖ = 1 := norm_eq_one_of_eigen hU hv (heig _)
+    have hz1 := norm_eq_one_of_eigen hU hv (heig _)
     rw [inner_eq_zero_of_eigen_unitary hU (heig _) (heig ⟨⟨z', hz'⟩, k'⟩)
       (fun h => hzz (Subtype.ext h)) hz1, if_neg]
     intro h; apply hzz; exact congrArg (fun p : ι => p.1.1) h
@@ -176,7 +175,7 @@ lemma exp_mul_I_notMem_spectrum {U : H →L[ℂ] H} (hC : IsCompactOperator ⇑(
   have hne : Complex.exp (ε * Complex.I) ≠ 1 := by
     intro h1
     have := congrArg Complex.im h1
-    rw [Complex.exp_ofReal_mul_I_im, Complex.one_im] at this
+    simp at this
     linarith [Real.sin_pos_of_pos_of_lt_pi hε0 hε]
   obtain ⟨v, hv0, hv⟩ := exists_eigen_of_mem_spectrum hC hmem hne
   exact hno v hv0 hv
@@ -189,12 +188,12 @@ lemma arcTerm_eq_zero {U : H →L[ℂ] H} (hU : U ∈ unitary (H →L[ℂ] H))
   unfold arcTerm
   split_ifs with h
   · by_contra hm
-    have hm' : 0 < eigenMult U z := Nat.pos_of_ne_zero (by exact_mod_cast hm)
+    have hm' := Nat.pos_of_ne_zero (by exact_mod_cast hm)
     haveI := finiteDimensional_eigenspace hC z.2
     obtain ⟨⟨v, hv⟩, hv0⟩ := Module.finrank_pos_iff_exists_ne_zero.mp hm'
     have hv0' : v ≠ 0 := fun h => hv0 (by simp [h])
     have hveig : U v = (z : ℂ) • v := Module.End.mem_eigenspace_iff.mp hv
-    have hz1 : ‖(z : ℂ)‖ = 1 := norm_eq_one_of_eigen hU hv0' hveig
+    have hz1 := norm_eq_one_of_eigen hU hv0' hveig
     have hI := argNeg_mem_Ioo hz1 z.2
     refine hno (argNeg z + 2 * π) (by linarith [hI.1]) h v hv0' ?_
     rw [hveig]
@@ -230,9 +229,9 @@ lemma arcCount_le {U : H →L[ℂ] H} (hU : U ∈ unitary (H →L[ℂ] H))
       rw [hs', Finset.sum_filter]
       rfl
     obtain ⟨e, he, heig⟩ := exists_orthonormal_eigen_family hU hC s'
-    have hne : ∀ p, e p ≠ 0 := fun p => he.ne_zero p
+
     have hz1 : ∀ p : (Σ z : s', Fin (eigenMult U z)), ‖((p.1 : {z : ℂ // z ≠ 1}) : ℂ)‖ = 1 :=
-      fun p => norm_eq_one_of_eigen hU (hne p) (heig p)
+      fun p => norm_eq_one_of_eigen hU ((fun p => he.ne_zero p) p) (heig p)
     have hP : ∀ p : (Σ z : s', Fin (eigenMult U z)),
         argNeg ((p.1 : {z : ℂ // z ≠ 1}) : ℂ) + 2 * π < ε := fun p =>
       (Finset.mem_filter.mp p.1.2).2
@@ -240,7 +239,7 @@ lemma arcCount_le {U : H →L[ℂ] H} (hU : U ∈ unitary (H →L[ℂ] H))
     have ht0 : ∀ p, 0 < t p := fun p => by
       have := argNeg_mem_Ioo (hz1 p) p.1.1.2
       simp only [ht]; linarith [this.1]
-    have htε : ∀ p, t p < ε := hP
+    have htε := hP
     have hexp : ∀ p, Complex.exp (t p * Complex.I) = ((p.1 : {z : ℂ // z ≠ 1}) : ℂ) := by
       intro p
       simp only [ht]
@@ -249,7 +248,7 @@ lemma arcCount_le {U : H →L[ℂ] H} (hU : U ∈ unitary (H →L[ℂ] H))
     set f := Fintype.equivFin (Σ z : s', Fin (eigenMult U z)) with hf
     have hcard := h _ (e ∘ f.symm) (t ∘ f.symm) (he.comp _ f.symm.injective)
       (fun k => ⟨ht0 _, show t (f.symm k) < 2 * π by linarith [htε (f.symm k)]⟩)
-      (fun k => by simp only [Function.comp_apply]; rw [hexp, heig])
+      (fun k => by simp; rw [hexp, heig])
       (fun k => hA _ (ht0 _) (htε _))
     rw [hsum]
     have : (Fintype.card (Σ z : s', Fin (eigenMult U z)) : ℝ) = ∑ z ∈ s', (eigenMult U z : ℝ) := by
@@ -275,7 +274,7 @@ lemma cutPhaseSum_eq_add {U : H →L[ℂ] H} {ε : ℝ} (hs : Summable (phaseTer
     (ha : Summable (arcTerm ε U)) :
     cutPhaseSum ε U = phaseSum U + 2 * π * arcCount ε U := by
   unfold cutPhaseSum phaseSum arcCount
-  simp only [cutPhaseTerm_eq]
+  simp [cutPhaseTerm_eq]
   rw [hs.tsum_add (ha.mul_left _), tsum_mul_left]
 
 end General

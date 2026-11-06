@@ -51,19 +51,17 @@ theorem volterra_variation_at (hC : AEStronglyMeasurable C volume) (hM : ∀ s, 
     (hFd : ∀ᵐ θ, θ ∈ Ioo 0 L → HasDerivAt F (C θ - C' θ) θ) (hF0 : F 0 = 0) :
     ∀ θ ∈ Icc 0 L, star (W' θ) * W θ - 1 = star (W' θ) * F θ * W θ +
       ∫ s in (0 : ℝ)..θ, star (W' s) * (C' s * F s - F s * C s) * W s := by
-  have hM0 : 0 ≤ M := (norm_nonneg _).trans (hM 0)
-  have hM0' : 0 ≤ M' := (norm_nonneg _).trans (hM' 0)
-  have hW0 : W 0 = 1 := by simpa using eW 0 ⟨le_rfl, hL⟩
-  have hW0' : W' 0 = 1 := by simpa using eW' 0 ⟨le_rfl, hL⟩
-  have hFc : ContinuousOn F (Icc 0 L) := hF.continuousOn
+  have hM0 := (norm_nonneg _).trans (hM 0)
+  have hM0' := (norm_nonneg _).trans (hM' 0)
+  have hFc := hF.continuousOn
   obtain ⟨S1, hS1⟩ := isCompact_Icc.exists_bound_of_continuousOn hW
   obtain ⟨S2, hS2⟩ := isCompact_Icc.exists_bound_of_continuousOn hW'
   obtain ⟨S3, hS3⟩ := isCompact_Icc.exists_bound_of_continuousOn hFc
   have h0 : (0 : ℝ) ∈ Icc 0 L := ⟨le_rfl, hL⟩
-  have hS1' : 0 ≤ S1 := (norm_nonneg _).trans (hS1 0 h0)
-  have hS2' : 0 ≤ S2 := (norm_nonneg _).trans (hS2 0 h0)
-  have hS3' : 0 ≤ S3 := (norm_nonneg _).trans (hS3 0 h0)
-  set B : ℝ := (1 + S1 + S2 + S3) * (1 + S1 + S2 + S3) with hB
+  have hS1' := (norm_nonneg _).trans (hS1 0 h0)
+  have hS2' := (norm_nonneg _).trans (hS2 0 h0)
+  have hS3' := (norm_nonneg _).trans (hS3 0 h0)
+  set B := (1 + S1 + S2 + S3) * (1 + S1 + S2 + S3) with hB
   have hB1 : 1 + S1 + S2 + S3 ≤ B := by nlinarith
   have hb1 : ∀ x ∈ Icc 0 L, ‖W x‖ ≤ B := fun x hx => by linarith [hS1 x hx]
   have hb2 : ∀ x ∈ Icc 0 L, ‖star (W' x)‖ ≤ B := fun x hx => by
@@ -80,7 +78,7 @@ theorem volterra_variation_at (hC : AEStronglyMeasurable C volume) (hM : ∀ s, 
   obtain ⟨K2, hK2⟩ := volterra_lipschitzOn hC' hM' hW' eW'
   have hK2s : LipschitzOnWith K2 (fun θ => star (W' θ)) (Icc 0 L) :=
     LipschitzOnWith.of_dist_le_mul fun x hx y hy => by
-      rw [dist_eq_norm, ← star_sub, norm_star, ← dist_eq_norm]
+      simp
       exact hK2.dist_le_mul x hx y hy
   have hd := volterra_ae_hasDerivAt hC hM hW eW
   have hd' := volterra_ae_hasDerivAt hC' hM' hW' eW'
@@ -96,12 +94,11 @@ theorem volterra_variation_at (hC : AEStronglyMeasurable C volume) (hM : ∀ s, 
         hb23 hb1)
   set g : ℝ → A := fun s => star (W' s) * (C' s * F s - F s * C s) * W s with hg
   have hgm : AEStronglyMeasurable g (volume.restrict (Icc 0 L)) :=
-    (((hW'.star).aestronglyMeasurable measurableSet_Icc).mul
+    ((hW'.star.aestronglyMeasurable measurableSet_Icc).mul
       ((hC'.restrict.mul (hFc.aestronglyMeasurable measurableSet_Icc)).sub
         ((hFc.aestronglyMeasurable measurableSet_Icc).mul hC.restrict))).mul
       (hW.aestronglyMeasurable measurableSet_Icc)
   have hgB : ∀ x ∈ Icc 0 L, ‖g x‖ ≤ B * (M' * B + B * M) * B := fun x hx => by
-    have hB0 : 0 ≤ B := by positivity
     calc ‖g x‖ ≤ ‖star (W' x)‖ * ‖C' x * F x - F x * C x‖ * ‖W x‖ := by
           refine (norm_mul_le _ _).trans ?_
           exact mul_le_mul_of_nonneg_right (norm_mul_le _ _) (norm_nonneg _)
@@ -110,7 +107,7 @@ theorem volterra_variation_at (hC : AEStronglyMeasurable C volume) (hM : ∀ s, 
           · exact hb2 x hx
           · refine (norm_sub_le _ _).trans (add_le_add ?_ ?_)
             · exact (norm_mul_le _ _).trans (mul_le_mul (hM' x) (hb3 x hx) (norm_nonneg _) hM0')
-            · exact (norm_mul_le _ _).trans (mul_le_mul (hb3 x hx) (hM x) (norm_nonneg _) hB0)
+            · exact (norm_mul_le _ _).trans (mul_le_mul (hb3 x hx) (hM x) (norm_nonneg _) (by positivity))
           · exact hb1 x hx
   have hgi : IntegrableOn g (Icc 0 L) :=
     Integrable.of_bound hgm (B * (M' * B + B * M) * B)
@@ -119,11 +116,11 @@ theorem volterra_variation_at (hC : AEStronglyMeasurable C volume) (hM : ∀ s, 
     filter_upwards [hd, hds, hFd] with θ h1 h2 h3 hmem
     have := ((h2 hmem).mul (h1 hmem)).sub (((h2 hmem).mul (h3 hmem)).mul (h1 hmem))
     convert this using 1
-    simp only [g, Pi.mul_apply]
+    simp [g, Pi.mul_apply]
     noncomm_ring)
   intro θ hθ
   have := hP θ hθ
-  simp only [hG, hW0, hW0', hF0, star_one, one_mul, mul_zero, zero_mul, sub_zero] at this
+  simp [hG, (by simpa using eW 0 ⟨le_rfl, hL⟩), (by simpa using eW' 0 ⟨le_rfl, hL⟩), hF0, star_one, one_mul, mul_zero, zero_mul, sub_zero] at this
   calc star (W' θ) * W θ - 1
       = (star (W' θ) * W θ - star (W' θ) * F θ * W θ) + star (W' θ) * F θ * W θ - 1 := by abel
     _ = _ := by rw [this]; abel
@@ -159,8 +156,8 @@ theorem norm_volterra_variation_le (hC : AEStronglyMeasurable C volume) (hM : �
   rw [← intervalIntegral.integral_const_mul]
   refine intervalIntegral.norm_integral_le_of_norm_le hL
     (Eventually.of_forall fun t ht => ?_) (hi.const_mul ε)
-  have ht' : t ∈ Icc 0 L := Ioc_subset_Icc_self ht
-  have hε : 0 ≤ ε := (norm_nonneg _).trans (hFε t ht')
+  have ht' := Ioc_subset_Icc_self ht
+  have hε := (norm_nonneg _).trans (hFε t ht')
   calc ‖star (W' t) * (C' t * F t - F t * C t) * W t‖
       ≤ ‖star (W' t)‖ * ‖C' t * F t - F t * C t‖ * ‖W t‖ := by
         refine (norm_mul_le _ _).trans ?_
@@ -194,7 +191,7 @@ lemma shiftConst_nonneg : 0 ≤ shiftConst := by unfold shiftConst; positivity
 
 lemma coeffOf_sub (E : ℝ) (z w : ℂ) : coeffOf E z - coeffOf E w = coeffOf E (z - w) := by
   unfold coeffOf
-  rw [map_sub]
+  simp
   module
 
 lemma coeffOf_zero (E : ℝ) : coeffOf E 0 = 0 := by
@@ -237,7 +234,7 @@ lemma norm_coeffOf_sub_coeffOf_le (E E' : ℝ) (z : ℂ) :
 lemma hasDerivAt_coeffOf {γ : ℝ → ℂ} {γ' : ℂ} {θ : ℝ} (h : HasDerivAt γ γ' θ) (E : ℝ) (c : ℂ) :
     HasDerivAt (fun θ => coeffOf E (γ θ - c)) (coeffOf E γ') θ := by
   have h1 := h.sub_const c
-  have h2 : HasDerivAt (fun θ => conj (γ θ - c)) (conj γ') θ := h1.star
+  have h2 := h1.star
   exact ((h1.smul_const (ContinuousLinearMap.adjoint shiftN)).add
     (h2.smul_const shiftN)).const_smul (-(Complex.I * (Real.sqrt E : ℂ)) / 2)
 
@@ -249,14 +246,14 @@ lemma lipschitzWith_coeffOf {γ : ℝ → ℂ} {K : NNReal} (hK : LipschitzWith 
   rw [mul_assoc _ (K : ℝ)]
   have := hK.dist_le_mul x y
   rw [dist_eq_norm] at this
-  have h0 : 0 ≤ Real.sqrt E * shiftConst := mul_nonneg (Real.sqrt_nonneg E) shiftConst_nonneg
+  have h0 := mul_nonneg (Real.sqrt_nonneg E) shiftConst_nonneg
   exact mul_le_mul_of_nonneg_left this h0
 
 /-- Unitary operators have norm at most one. -/
 lemma norm_le_one_of_mem_unitary {U : Ell2 →L[ℂ] Ell2} (hU : U ∈ unitary (Ell2 →L[ℂ] Ell2)) :
     ‖U‖ ≤ 1 := by
   have h1 := CStarRing.norm_coe_unitary_mul (⟨U, hU⟩ : unitary (Ell2 →L[ℂ] Ell2)) 1
-  simp only [mul_one] at h1
+  simp at h1
   rw [h1]
   exact ContinuousLinearMap.norm_id_le
 
@@ -274,12 +271,12 @@ lemma integral_norm_transportCoeff_le {γ : ℝ → ℂ} {K : NNReal} (hK : Lips
     ∫ θ in (0 : ℝ)..(2 * π), ‖transportCoeff γ E θ‖ ≤
       Real.sqrt E * shiftConst * ∫ θ in (0 : ℝ)..(2 * π), ‖deriv γ θ‖ := by
   rw [← intervalIntegral.integral_const_mul]
-  have hd : ∀ s, ‖deriv γ s‖ ≤ K := fun s => norm_deriv_le_of_lipschitz hK
+
   refine intervalIntegral.integral_mono_on (by positivity) ?_ ?_ fun θ _ => ?_
   · exact intervalIntegrable_of_bounded (transportCoeff_aestronglyMeasurable γ E).norm
       (fun s => by rw [norm_norm]; exact transportCoeff_norm_le γ E hK s) _ _
   · refine (intervalIntegrable_of_bounded (measurable_deriv γ).aestronglyMeasurable.norm
-      (B := K) (fun s => by rw [norm_norm]; exact hd s) _ _).const_mul _
+      (B := K) (fun s => by rw [norm_norm]; exact (fun s => norm_deriv_le_of_lipschitz hK) s) _ _).const_mul _
   · exact norm_coeffOf_le E _
 
 /-- The values of the transport of a Lipschitz curve are unitary. -/
@@ -311,11 +308,10 @@ theorem norm_transport_variation_le {γ γ' : ℝ → ℂ} {K K' : NNReal} (hK :
       hK'.ae_differentiableAt (μ := volume)] with θ h1 h2 _
     exact (hasDerivAt_coeffOf h1.hasDerivAt E (γ 0)).sub
       (hasDerivAt_coeffOf h2.hasDerivAt E' (γ' 0))
-  have hF0 : F 0 = 0 := by simp [hF, coeffOf_zero]
-  have hF2 : F (2 * π) = 0 := by simp [hF, hclosed, hclosed', coeffOf_zero]
+
   rw [volterra_variation (transportCoeff_aestronglyMeasurable γ E) (transportCoeff_norm_le γ E hK)
     hW.1 hW.2 (transportCoeff_aestronglyMeasurable γ' E') (transportCoeff_norm_le γ' E' hK')
-    (transportCoeff_star γ' E') hW'.1 hW'.2 hπ hFL hFd hF0 hF2]
+    (transportCoeff_star γ' E') hW'.1 hW'.2 hπ hFL hFd (by simp [hF, coeffOf_zero]) (by simp [hF, hclosed, hclosed', coeffOf_zero])]
   refine norm_volterra_variation_le (transportCoeff_aestronglyMeasurable γ E)
     (transportCoeff_norm_le γ E hK) (transportCoeff_aestronglyMeasurable γ' E')
     (transportCoeff_norm_le γ' E' hK') hπ hε
@@ -341,19 +337,17 @@ theorem monodromy_tendsto_of_tendstoUniformlyOn {γ : ℝ → ℂ} {γs : ℕ �
   have h0mem : (0 : ℝ) ∈ Icc 0 (2 * π) := ⟨le_rfl, hπ⟩
   obtain ⟨R, hR⟩ := isCompact_Icc.exists_bound_of_continuousOn
     (s := Icc 0 (2 * π)) hK.continuous.continuousOn
-  have hR0 : 0 ≤ R := (norm_nonneg _).trans (hR 0 h0mem)
+  have hR0 := (norm_nonneg _).trans (hR 0 h0mem)
   have hκ := shiftConst_nonneg
   set κ := shiftConst
   set s0 := Real.sqrt E with hs0
-  have hs00 : 0 ≤ s0 := Real.sqrt_nonneg E
+  have hs00 := Real.sqrt_nonneg E
   set A0 := ∫ θ in (0 : ℝ)..(2 * π), ‖transportCoeff γ E θ‖ with hA0def
   have hA0 : 0 ≤ A0 := intervalIntegral.integral_nonneg hπ fun _ _ => norm_nonneg _
   set B' := max B 0
-  have hB' : 0 ≤ B' := le_max_right _ _
   set c1 := 2 * κ * (R + s0 + 1) with hc1def
   set c2 := (s0 + 1) * κ * B' + A0 with hc2def
   have hc1 : 0 ≤ c1 := by positivity
-  have hc2 : 0 ≤ c2 := by positivity
   have hbound : ∀ n, ∀ η, 0 ≤ η → η ≤ 1 → |s0 - Real.sqrt (Es n)| ≤ η →
       (∀ θ ∈ Icc 0 (2 * π), ‖γ θ - γs n θ‖ ≤ η) →
       ‖monodromy (Ws n) - monodromy W‖ ≤ η * c1 * c2 := by
@@ -389,10 +383,10 @@ theorem monodromy_tendsto_of_tendstoUniformlyOn {γ : ℝ → ℂ} {γs : ℕ �
           (s0 + 1) * κ * B' := by
         gcongr
         exact (hB n).trans (le_max_left _ _)
-      rw [hc2def]
+      simp
       linarith
     have hV := transport_mem_unitary hK hW (θ := 2 * π) ⟨hπ, le_rfl⟩
-    have hVV : W (2 * π) * star (W (2 * π)) = 1 := (Unitary.mem_iff.mp hV).2
+    have hVV := (Unitary.mem_iff.mp hV).2
     have heq : monodromy (Ws n) - monodromy W =
         (star (Ws n (2 * π)) * W (2 * π) - 1) * star (W (2 * π)) := by
       unfold monodromy
@@ -404,7 +398,7 @@ theorem monodromy_tendsto_of_tendstoUniformlyOn {γ : ℝ → ℂ} {γs : ℕ �
           (norm_mul_le _ _).trans (mul_le_mul_of_nonneg_left
             (norm_le_one_of_mem_unitary (Unitary.star_mem hV)) (norm_nonneg _))
       _ ≤ η * c1 * c2 := by
-          rw [mul_one]
+          simp
           refine hvar.trans ?_
           exact mul_le_mul_of_nonneg_left hint (mul_nonneg hη0 hc1)
   rw [Metric.tendsto_nhds]
@@ -415,7 +409,7 @@ theorem monodromy_tendsto_of_tendstoUniformlyOn {γ : ℝ → ℂ} {γs : ℕ �
   have hηε : η * c1 * c2 < ε := by
     have h1 : η ≤ ε / (2 * (c1 * c2 + 1)) := min_le_right _ _
     rw [le_div_iff₀ (by positivity)] at h1
-    nlinarith [mul_nonneg hc1 hc2]
+    nlinarith [mul_nonneg hc1 (by positivity)]
   have hsqrt : Tendsto (fun n => Real.sqrt (Es n)) atTop (𝓝 s0) :=
     (Real.continuous_sqrt.tendsto E).comp hE
   filter_upwards [Metric.tendsto_nhds.mp hsqrt η hηpos,

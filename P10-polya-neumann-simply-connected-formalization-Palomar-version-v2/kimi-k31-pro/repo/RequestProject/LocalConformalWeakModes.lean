@@ -39,7 +39,7 @@ theorem h1Value_diskAntiholomorphicH1Test (m : ℕ) :
 
 section
 
-variable {R : ℝ} (hR : 1 < R) (F : ℂ → ℂ)
+variable {R : ℝ} (F : ℂ → ℂ)
     (hFs : ContDiffOn ℝ (⊤ : ℕ∞) F (ball (0 : ℂ) R))
     (hb : Bornology.IsBounded (F '' ball (0 : ℂ) 1))
     (hL : IsLipschitzDomain (F '' ball (0 : ℂ) 1))

@@ -87,7 +87,6 @@ lemma lower_bound_of_cone {Kγ : NNReal} (hK : LipschitzWith Kγ γ) {a b : ℝ}
       linarith
     · refine (isClosed_le continuous_const hcre).mem_of_tendsto ht ?_
       filter_upwards [hev, self_mem_nhdsWithin] with t ht1 ht0
-      show 0 ≤ (c * (t⁻¹ • (γ (u + t) - γ u))).re
       rw [Complex.real_smul, mul_left_comm, Complex.re_ofReal_mul, mul_sub, Complex.sub_re]
       rcases lt_or_gt_of_ne (show t ≠ 0 from ht0) with hneg | hpos
       · have : (c * γ (u + t)).re < (c * γ u).re := hmono ht1 hu (by linarith)
@@ -132,9 +131,9 @@ lemma local_chord_arc (hL : IsLipschitzDomain Ω) (hγ : IsBoundaryParam Ω γ) 
       c1 * |s - s'| ≤ ‖γ s - γ s'‖ := by
   obtain ⟨Kγ, hKγ⟩ := hγ.lipschitz
   obtain ⟨c0, hc0, hspeed⟩ := hγ.const_speed
-  have hΩo : IsOpen Ω := hL.1.1
+  have hΩo := hL.1.1
   obtain ⟨c, r, h, K, f, hch⟩ := hL.exists_chart (hγ.mem_frontier θ₀)
-  have hc : ‖c‖ = 1 := hch.1
+  have hc := hch.1
   have hbox : γ ⁻¹' chartBox (γ θ₀) c r h ∈ 𝓝 θ₀ :=
     hKγ.continuous.continuousAt.preimage_mem_nhds ((isOpen_chartBox _ _ _ _).mem_nhds
       ⟨by simp [hch.2.1], by simp [hch.2.2.1]⟩)
@@ -218,8 +217,8 @@ theorem chord_arc (hL : IsLipschitzDomain Ω) (hγ : IsBoundaryParam Ω γ) :
       cmin * |θ - θ''| ≤ ‖γ θ - γ θ''‖ := by
     intro θ hθ θ'' hθ''
     obtain ⟨i, hi⟩ := hleb θ hθ
-    have h1 : θ ∈ U i := hi (mem_ball_self hδ)
-    have h2 : θ'' ∈ U i := hi (by rw [mem_ball, Real.dist_eq, abs_sub_comm]; exact hθ'')
+    have h1 := hi (mem_ball_self hδ)
+    have h2 := hi (by rw [mem_ball, Real.dist_eq, abs_sub_comm]; exact hθ'')
     exact (mul_le_mul_of_nonneg_right (Finset.inf'_le _ i.2) (abs_nonneg _)).trans
       (hloc i θ h1 θ'' h2)
   -- far pairs
@@ -238,7 +237,7 @@ theorem chord_arc (hL : IsLipschitzDomain Ω) (hγ : IsBoundaryParam Ω γ) :
     rcases (norm_nonneg (γ q.1 - γ q.2)).lt_or_eq with hpos | hzero
     · exact hpos
     exfalso
-    have he : γ q.1 = γ q.2 := sub_eq_zero.mp (norm_eq_zero.mp hzero.symm)
+    have he := sub_eq_zero.mp (norm_eq_zero.mp hzero.symm)
     obtain ⟨⟨hq1, hq2⟩, hqδ⟩ := hq
     simp only [mem_setOf_eq, circDist] at hqδ
     have habs : |q.1 - q.2| ≤ 2 * π := by
@@ -331,14 +330,12 @@ theorem exists_lipschitz_extension_of_trace {Ω : Set ℂ} (hL : IsLipschitzDoma
   classical
   obtain ⟨Kγ, hKγ⟩ := hγ.lipschitz
   obtain ⟨c, hc, hca⟩ := chord_arc hL hγ
-  have h2π : (0 : ℝ) < 2 * π := by positivity
+
   set S : Set ℂ := γ '' Icc 0 (2 * π) with hS
-  have hSc : IsCompact S := isCompact_Icc.image hKγ.continuous
-  obtain ⟨R, hR⟩ := hSc.isBounded.subset_closedBall (0 : ℂ)
+  obtain ⟨R, hR⟩ := (isCompact_Icc.image hKγ.continuous).isBounded.subset_closedBall (0 : ℂ)
   obtain ⟨Mh, hMh⟩ := isCompact_Icc.exists_bound_of_continuousOn hK.continuousOn
   -- `h` is Lipschitz with respect to the chord
   set Lc : ℝ := K / c with hLc
-  have hLc0 : 0 ≤ Lc := by positivity
   have hchord : ∀ θ ∈ Icc (0 : ℝ) (2 * π), ∀ θ' ∈ Icc (0 : ℝ) (2 * π),
       ‖h θ - h θ'‖ ≤ Lc * ‖γ θ - γ θ'‖ := by
     intro θ hθ θ' hθ'
@@ -358,7 +355,7 @@ theorem exists_lipschitz_extension_of_trace {Ω : Set ℂ} (hL : IsLipschitzDoma
   set T : Set ℂ := S ∪ {z | R + 1 ≤ ‖z‖} with hT
   set V0 : ℂ → ℂ := fun z => if z ∈ S then h (θof z) else 0 with hV0
   set L : ℝ := max Lc Mh with hL'
-  have hL0 : 0 ≤ L := le_max_of_le_left hLc0
+  have hL0 : 0 ≤ L := le_max_of_le_left (by positivity)
   have hfarS : ∀ z ∈ S, ∀ w : ℂ, R + 1 ≤ ‖w‖ → 1 ≤ ‖z - w‖ := by
     intro z hz w hw
     have := hR hz

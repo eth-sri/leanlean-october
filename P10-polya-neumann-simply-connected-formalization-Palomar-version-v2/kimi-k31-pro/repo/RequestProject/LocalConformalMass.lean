@@ -42,8 +42,7 @@ def localConformalMassDensity (F : ℂ → ℂ) (z : ℂ) : ℂ :=
 
 theorem localConformalMassDensity_continuousOn {R : ℝ} (hR : 1 < R)
     (F : ℂ → ℂ) (hFs : ContDiffOn ℝ (⊤ : ℕ∞) F (ball (0 : ℂ) R)) :
-    ContinuousOn (localConformalMassDensity F) (closedBall (0 : ℂ) 1) := by
-  exact Complex.ofRealCLM.continuous.comp_continuousOn
+    ContinuousOn (localConformalMassDensity F) (closedBall (0 : ℂ) 1) := Complex.ofRealCLM.continuous.comp_continuousOn
     ((((hFs.continuousOn_fderiv_of_isOpen isOpen_ball (by simp)).clm_apply
       continuousOn_const).norm).mono (closedBall_subset_ball hR))
 
@@ -98,8 +97,7 @@ theorem norm_sq_L2_eq_integral {U : Set ℂ} (v : L2 U) :
 
 private theorem norm_sq_L2_eq_of_ae {U : Set ℂ} (v : L2 U)
     (g : ℂ → ℂ) (h : (v : ℂ → ℂ) =ᵐ[volume.restrict U] g) :
-    ‖v‖ ^ 2 = ∫ z in U, ‖g z‖ ^ 2 := by
-  exact (norm_sq_L2_eq_integral v).trans
+    ‖v‖ ^ 2 = ∫ z in U, ‖g z‖ ^ 2 := (norm_sq_L2_eq_integral v).trans
     (integral_congr_ae (h.fun_comp (fun w : ℂ => ‖w‖ ^ 2)))
 
 private theorem norm_sq_lpBoundedMultiplier_toLp {U : Set ℂ}
@@ -240,8 +238,7 @@ theorem localConformalMassPullback_inner {R : ℝ} (hR : 1 < R) (F : ℂ → ℂ
     (u v : NeumannH1 (F '' ball (0 : ℂ) 1)) :
     ⟪localConformalMassPullback hR F hFs hL hK u,
       localConformalMassPullback hR F hFs hL hK v⟫_ℂ =
-      ⟪h1Value (F '' ball (0 : ℂ) 1) u, h1Value (F '' ball (0 : ℂ) 1) v⟫_ℂ := by
-  exact mass_inner_eq_of_linear_norm_sq
+      ⟪h1Value (F '' ball (0 : ℂ) 1) u, h1Value (F '' ball (0 : ℂ) 1) v⟫_ℂ := mass_inner_eq_of_linear_norm_sq
     (localConformalMassPullback hR F hFs hL hK).toLinearMap
     (h1Value (F '' ball (0 : ℂ) 1)).toLinearMap
     (norm_sq_localConformalMassPullback hR F hFs hb hL hhol hinj hC hK) u v

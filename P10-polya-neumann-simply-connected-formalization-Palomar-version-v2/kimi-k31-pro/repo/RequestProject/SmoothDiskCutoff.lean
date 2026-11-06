@@ -50,7 +50,7 @@ theorem contDiff_smoothDiskCutoff {R : ℝ} (hR : 1 < R) {φ : ℂ → ℂ}
       fun h => hz (smoothDiskCutoffBump_tsupport_subset R hR h)
     apply (contDiffAt_const (c := (0 : ℂ))).congr_of_eventuallyEq
     filter_upwards [notMem_tsupport_iff_eventuallyEq.mp hz'] with w hw
-    simp only [smoothDiskCutoff, hw, Pi.zero_apply, Complex.ofReal_zero, zero_mul]
+    simp [smoothDiskCutoff, hw, Pi.zero_apply, Complex.ofReal_zero, zero_mul]
 
 theorem smoothDiskCutoff_testFunction {R : ℝ} (hR : 1 < R) {φ : ℂ → ℂ}
     (hφ : ContDiffOn ℝ (⊤ : ℕ∞) φ (ball (0 : ℂ) R)) :
@@ -63,14 +63,13 @@ theorem smoothDiskCutoff_eventuallyEq {R : ℝ} (hR : 1 < R) (φ : ℂ → ℂ)
     {z : ℂ} (hz : z ∈ ball (0 : ℂ) ((R + 1) / 2)) :
     smoothDiskCutoff R hR φ =ᶠ[𝓝 z] φ := by
   filter_upwards [isOpen_ball.mem_nhds hz] with w hw
-  simp only [smoothDiskCutoff,
+  simp [smoothDiskCutoff,
     (smoothDiskCutoffBump R hR).one_of_mem_closedBall (ball_subset_closedBall hw),
     Complex.ofReal_one, one_mul]
 
 theorem smoothDiskCutoff_eq_closedDisk {R : ℝ} (hR : 1 < R) (φ : ℂ → ℂ)
     {z : ℂ} (hz : z ∈ closedBall (0 : ℂ) 1) :
-    smoothDiskCutoff R hR φ z = φ z := by
-  exact (smoothDiskCutoff_eventuallyEq hR φ
+    smoothDiskCutoff R hR φ z = φ z := (smoothDiskCutoff_eventuallyEq hR φ
     (closedBall_subset_ball (show (1 : ℝ) < (R + 1) / 2 by linarith) hz)).self_of_nhds
 
 theorem fderiv_smoothDiskCutoff_eq {R : ℝ} (hR : 1 < R) (φ : ℂ → ℂ)

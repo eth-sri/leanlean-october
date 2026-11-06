@@ -85,7 +85,7 @@ private theorem reduced_observationAdj_sub_smul
         smul_eq_mul]
     _ = _ := by
       have hsplit := integral_sub hg (hr.smul t)
-      simp only [Pi.smul_apply] at hsplit
+      simp at hsplit
       rw [integral_smul] at hsplit
       simpa only [smul_smul] using hsplit
 
@@ -140,10 +140,10 @@ theorem localConformal_projectedObservation_L2_kernel_mem_conormal_range
     ∃ b : L2Z, IsNonpositiveFourierSupport b ∧
       NF (E : ℂ) b = sobolevSmoothing (1 / 2 : ℝ) (by norm_num)
         (boundaryFourier g) := by
-  let c : Ell2 := cutC (W (2 * Real.pi)) (basisVec 0)
+  let c := cutC (W (2 * Real.pi)) (basisVec 0)
   let α : ℂ := (((‖c‖ ^ 2 : ℝ) : ℂ)⁻¹ * ⟪c, observationAdj W (g : ℝ → ℂ)⟫_ℂ)
-  let t : ℂ := -Complex.I * α
-  let r : BoundaryL2 := localConformalRadialCoordinateLoad F hΓLip E 1
+  let t := -Complex.I * α
+  let r := localConformalRadialCoordinateLoad F hΓLip E 1
   have hspan : observationAdj W (g : ℝ → ℂ) = α • c :=
     reduced_eq_smul_of_cutProj_eq_zero c _ hproj
   have hrad : observationAdj W (r : ℝ → ℂ) = Complex.I • c := by
@@ -154,12 +154,12 @@ theorem localConformal_projectedObservation_L2_kernel_mem_conormal_range
     calc
       (-Complex.I * α) * Complex.I = -(Complex.I * Complex.I) * α := by ring
       _ = α := by rw [Complex.I_mul_I]; ring
-  let g₀ : BoundaryL2 := g - t • r
+  let g₀ := g - t • r
   have hO : observationAdj W (g₀ : ℝ → ℂ) = 0 := by
     dsimp only [g₀]
     rw [reduced_observationAdj_sub_smul hΓLip hW, hspan, hrad,
       smul_smul, hti, sub_self]
-  let b₀ : L2Z := physicalDrivenKernelInput hΓLip hΓF hW
+  let b₀ := physicalDrivenKernelInput hΓLip hΓF hW
     (g₀ : ℝ → ℂ) (Lp.memLp g₀) hO
   have hb₀ : IsNonpositiveFourierSupport b₀ :=
     physicalDrivenKernelInput_nonpositive hR F hFs hb hL hhol hC e he hsource
@@ -218,7 +218,7 @@ theorem localConformal_fixed_complement_half_regular_kernel_eq_zero
     localConformal_projectedObservation_half_regular_kernel_mem_conormal_range hR F hFs hb hL
       hhol hinj hC hK e he hsource hes hΓLip hE hW (T z) hz hobs
   let a : H₀ := ⟨b, hbn⟩
-  have heq : T z = ((NF (E : ℂ)).comp (H₀).subtypeL) a := hb'.symm
+  have heq := hb'.symm
   exact (chart_range_inter_eq_zero H₀ ((NF (E : ℂ)).comp (H₀).subtypeL) T
     (reduced_injective_of_isUnit _ hunit) a z heq).1
 

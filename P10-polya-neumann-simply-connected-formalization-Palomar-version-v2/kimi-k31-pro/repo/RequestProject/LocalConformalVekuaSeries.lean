@@ -43,10 +43,8 @@ theorem physicalVekuaCoeff_zero (E : ℂ) : physicalVekuaCoeff E 0 = 1 := by
 theorem physicalVekuaCoeff_succ (E : ℂ) (j : ℕ) :
     physicalVekuaCoeff E (j + 1) * ((j + 1 : ℕ) : ℂ) =
       (-E / 4) * physicalVekuaCoeff E j := by
-  have hj : (j.factorial : ℂ) ≠ 0 := by exact_mod_cast Nat.factorial_ne_zero j
-  have hjs : ((j + 1 : ℕ) : ℂ) ≠ 0 := by exact_mod_cast (by omega : j + 1 ≠ 0)
   simp only [physicalVekuaCoeff, Nat.factorial_succ, Nat.cast_mul, pow_succ]
-  field_simp [hj, hjs]
+  field_simp [(by exact_mod_cast Nat.factorial_ne_zero j), (by exact_mod_cast (by omega : j + 1 ≠ 0))]
 
 theorem norm_physicalVekuaCoeff (E : ℂ) (j : ℕ) :
     ‖physicalVekuaCoeff E j‖ = ‖-E / 4‖ ^ j / (j.factorial : ℝ) := by
@@ -104,8 +102,7 @@ theorem norm_boundedPhysicalVekuaTerm_le (M : H →L[ℂ] H) (U : X →L[ℂ] H)
 omit [CompleteSpace H] in
 theorem summable_norm_boundedPhysicalVekuaTerm (M : H →L[ℂ] H) (U : X →L[ℂ] H)
     (J : X →L[ℂ] X) (E : ℂ) :
-    Summable (fun j : ℕ => ‖boundedPhysicalVekuaTerm M U J E j‖) := by
-  exact Summable.of_nonneg_of_le (fun j => norm_nonneg _)
+    Summable (fun j : ℕ => ‖boundedPhysicalVekuaTerm M U J E j‖) := Summable.of_nonneg_of_le (fun j => norm_nonneg _)
     (norm_boundedPhysicalVekuaTerm_le M U J E)
     ((Real.summable_pow_div_factorial (‖-E / 4‖ * ‖M‖ * ‖J‖)).mul_left ‖U‖)
 
@@ -305,7 +302,7 @@ theorem localConformalVekuaH1_wirtingerDbar_primitive (p E : ℂ) (b : L2Z)
         (localConformalVekuaH1 hR F hFs hb hL hhol hinj hC hK e he hsource hes p E b) := by
   apply vekua_series_Dbar_primitive
   intro j
-  let q : L2Z := ((localConformalHardyPrimitive hR F hFs) ^ j) b
+  let q := ((localConformalHardyPrimitive hR F hFs) ^ j) b
   let u : NeumannH1 (F '' ball (0 : ℂ) 1) :=
     localConformalHardyH1Extension hR F hFs hb hL hhol hinj hC hK e he hsource hes
       (localConformalHardyPrimitive hR F hFs q)

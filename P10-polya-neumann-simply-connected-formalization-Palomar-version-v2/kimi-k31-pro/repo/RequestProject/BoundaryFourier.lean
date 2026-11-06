@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.TwoPi
 public import RequestProject.TraceH1
 public import RequestProject.SobolevCircle
 public import Mathlib.Analysis.Fourier.AddCircle
@@ -23,11 +24,10 @@ namespace PolyaNeumann
 open MeasureTheory Set Filter Real
 open scoped InnerProductSpace ComplexConjugate
 
-local instance boundaryFourierTwoPiPos : Fact (0 < 2 * π) := ⟨two_pi_pos⟩
 
 /-- Circle L² with Haar measure of total mass one. -/
 abbrev BoundaryCircleHaarL2 := Lp ℂ 2
-  (@AddCircle.haarAddCircle (2 * π) boundaryFourierTwoPiPos)
+  (@AddCircle.haarAddCircle (2 * π) factTwoPiPos)
 
 private theorem boundaryCircle_ae_volume_iff {p : AddCircle (2 * π) → Prop} :
     (∀ᵐ q ∂(volume : Measure (AddCircle (2 * π))), p q) ↔
@@ -137,7 +137,7 @@ theorem boundaryCircleLift_surjective : Function.Surjective boundaryCircleLift :
       (volume.restrict (Ioc 0 (2 * π))) := by
     simpa only [zero_add, Function.comp_def] using
       hf.comp_measurePreserving (AddCircle.measurePreserving_mk (2 * π) 0)
-  let g : BoundaryL2 := hgp.toLp (fun θ : ℝ => f (θ : AddCircle (2 * π)))
+  let g := hgp.toLp (fun θ : ℝ => f (θ : AddCircle (2 * π)))
   refine ⟨g, Lp.ext ?_⟩
   exact (boundaryCircleLift_coe g).trans
     ((boundary_liftIoc_congr_ae hgp.coeFn_toLp).trans
@@ -205,7 +205,7 @@ theorem boundary_liftIoc_eq_liftIco_ae (f : ℝ → ℂ) :
   filter_upwards [hne] with q hq
   obtain ⟨θ, hθ, rfl⟩ := AddCircle.eq_coe_Ico q
   have hθ0 : θ ≠ 0 := fun h => hq (by rw [h]; rfl)
-  have hθpos : 0 < θ := lt_of_le_of_ne hθ.1 hθ0.symm
+  have hθpos := lt_of_le_of_ne hθ.1 hθ0.symm
   rw [AddCircle.liftIoc_zero_coe_apply ⟨hθpos, hθ.2.le⟩,
     AddCircle.liftIco_zero_coe_apply hθ]
 

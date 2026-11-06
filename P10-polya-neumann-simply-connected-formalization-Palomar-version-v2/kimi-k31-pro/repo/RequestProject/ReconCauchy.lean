@@ -75,8 +75,8 @@ lemma exp_mul_dbar (F : ℂ → ℂ) (z : ℂ) (t : ℝ) :
 /-- Points of differentiability of a Lipschitz function, in polar coordinates. -/
 lemma ae_differentiableAt_polar {F : ℂ → ℂ} {K : NNReal} (hF : LipschitzWith K F) :
     ∀ᵐ p ∂(volume.restrict polarCoord.target), DifferentiableAt ℝ F (circleMap 0 p.1 p.2) := by
-  set S : Set ℂ := {z | DifferentiableAt ℝ F z}ᶜ with hS
-  have hSm : MeasurableSet S := (measurableSet_of_differentiableAt ℝ F).compl
+  set S := {z | DifferentiableAt ℝ F z}ᶜ with hS
+  have hSm := (measurableSet_of_differentiableAt ℝ F).compl
   have hS0 : volume S = 0 := ae_iff.mp (hF.ae_differentiableAt (μ := volume))
   have hl := Complex.lintegral_comp_polarCoord_symm (S.indicator (1 : ℂ → ENNReal))
   rw [lintegral_indicator_one hSm, hS0] at hl
@@ -103,11 +103,11 @@ theorem integral_dbar_div_eq {F : ℂ → ℂ} {K : NNReal} (hF : LipschitzWith 
   have hR0 : 0 < R := lt_of_lt_of_le one_pos (le_max_right _ _)
   have hsupp : ∀ z : ℂ, R ≤ ‖z‖ → z ∉ tsupport F := fun z hz hzs => by
     have := hR₀ hzs
-    rw [mem_ball, dist_zero_right] at this
+    simp at this
     linarith [le_max_left R₀ 1]
-  have hD0 : ∀ z : ℂ, R ≤ ‖z‖ → fderiv ℝ F z = 0 := fun z hz =>
+  have hD0 := fun z hz =>
     fderiv_of_notMem_tsupport (𝕜 := ℝ) (hsupp z hz)
-  have hF0 : ∀ z : ℂ, R ≤ ‖z‖ → F z = 0 := fun z hz =>
+  have hF0 := fun z hz =>
     image_eq_zero_of_notMem_tsupport (hsupp z hz)
   have hnorm : ∀ r t : ℝ, 0 ≤ r → ‖circleMap 0 r t‖ = r := fun r t hr => by
     simp [abs_of_nonneg hr]
@@ -142,23 +142,22 @@ theorem integral_dbar_div_eq {F : ℂ → ℂ} {K : NNReal} (hF : LipschitzWith 
         hDI)
   have hAb : ∀ p, ‖A p‖ ≤ K := fun p => by
     refine (ContinuousLinearMap.le_opNorm _ _).trans ?_
-    rw [Complex.norm_exp_ofReal_mul_I, mul_one]
+    simp
     exact norm_fderiv_le_of_lipschitz ℝ hF
   have hBb : ∀ p, ‖B p‖ ≤ K := fun p => by
     refine (ContinuousLinearMap.le_opNorm _ _).trans ?_
-    rw [norm_mul, Complex.norm_I, Complex.norm_exp_ofReal_mul_I, mul_one, mul_one]
+    simp
     exact norm_fderiv_le_of_lipschitz ℝ hF
   -- the box
-  set Q : Set (ℝ × ℝ) := Ioc 0 R ×ˢ Ioo (-π) π with hQ
-  have hQm : MeasurableSet Q := measurableSet_Ioc.prod measurableSet_Ioo
+  set Q := Ioc 0 R ×ˢ Ioo (-π) π with hQ
   have hQt : Q ⊆ polarCoord.target := by
     rw [polarCoord_target]; exact prod_mono Ioc_subset_Ioi_self subset_rfl
   have hQfin : volume Q < ⊤ := by
     rw [hQ, Measure.volume_eq_prod, Measure.prod_prod]
     exact ENNReal.mul_lt_top measure_Ioc_lt_top measure_Ioo_lt_top
-  have hAi : IntegrableOn A Q := Measure.integrableOn_of_bounded hQfin.ne
+  have hAi := Measure.integrableOn_of_bounded hQfin.ne
     hAm.aestronglyMeasurable (Eventually.of_forall hAb)
-  have hBi : IntegrableOn B Q := Measure.integrableOn_of_bounded hQfin.ne
+  have hBi := Measure.integrableOn_of_bounded hQfin.ne
     hBm.aestronglyMeasurable (Eventually.of_forall hBb)
   -- polar coordinates
   rw [← Complex.integral_comp_polarCoord_symm]
@@ -166,12 +165,12 @@ theorem integral_dbar_div_eq {F : ℂ → ℂ} {K : NNReal} (hF : LipschitzWith 
       Complex.polarCoord.symm p) = (A p + Complex.I * B p) / 2 := by
     intro p hp
     rw [polarCoord_target] at hp
-    have hr : (p.1 : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hp.1.ne'
+    have hr := Complex.ofReal_ne_zero.mpr hp.1.ne'
     have key : (A p + Complex.I * B p) / 2 =
         Complex.exp (-(p.2 * Complex.I)) * dbar F (circleMap 0 p.1 p.2) := by
-      simp only [hA, hB]; exact (exp_mul_dbar F _ p.2).symm
+      simp [hA, hB]; exact (exp_mul_dbar F _ p.2).symm
     rw [key, polarCoord_symm_eq_circleMap, circleMap_zero_eq', Complex.real_smul]
-    have he : Complex.exp (p.2 * Complex.I) ≠ 0 := Complex.exp_ne_zero _
+
     have hee : Complex.exp (-(p.2 * Complex.I)) * Complex.exp (p.2 * Complex.I) = 1 := by
       rw [← Complex.exp_add]; simp
     field_simp
@@ -239,16 +238,15 @@ theorem integral_dbar_div_eq {F : ℂ → ℂ} {K : NNReal} (hF : LipschitzWith 
       rw [(ht.hasFDerivAt.comp_hasDerivAt t (hasDerivAt_circleMap 0 r t)).deriv, hB]
       simp only
       rw [circleMap_zero_eq', show (r : ℂ) * Complex.exp (t * Complex.I) * Complex.I =
-        (r : ℝ) • (Complex.I * Complex.exp (t * Complex.I)) by rw [Complex.real_smul]; ring,
+        (r : ℝ) • (Complex.I * Complex.exp (t * Complex.I)) by simp; ring,
         map_smul, Complex.real_smul]
-    have hr0 : (r : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hrI.1.ne'
+    have hr0 := Complex.ofReal_ne_zero.mpr hrI.1.ne'
     have hpi : -π ≤ π := by linarith [Real.pi_pos]
     rw [← integral_Ioc_eq_integral_Ioo, ← intervalIntegral.integral_of_le hpi]
     have hcongr : ∫ t in (-π)..π, B (r, t) = ∫ t in (-π)..π, (r : ℂ)⁻¹ * deriv k t := by
       refine intervalIntegral.integral_congr_ae ?_
       rw [uIoc_of_le hpi]
-      have h' : ∀ᵐ t ∂(volume : Measure ℝ), t ∈ Ioo (-π) π →
-          DifferentiableAt ℝ F (circleMap 0 r t) := (ae_restrict_iff' measurableSet_Ioo).mp hr
+      have h' := (ae_restrict_iff' measurableSet_Ioo).mp hr
       have hpt : ∀ᵐ t ∂(volume : Measure ℝ), t ≠ π := by
         simp [ae_iff, measure_singleton]
       filter_upwards [h', hpt] with t ht htπ htI
@@ -279,15 +277,15 @@ theorem integral_dbar_div_sub {F : ℂ → ℂ} {K : NNReal} (hF : LipschitzWith
   have hGl : LipschitzWith K G := by
     refine LipschitzWith.of_dist_le_mul fun z z' => ?_
     have := hF.dist_le_mul (z + w) (z' + w)
-    simpa [hG, dist_add_right] using this
-  have hGc : HasCompactSupport G := hFc.comp_homeomorph (Homeomorph.addRight w)
+    simpa using this
+  have hGc := hFc.comp_homeomorph (Homeomorph.addRight w)
   have hdb : ∀ z, dbar G z = dbar F (z + w) := fun z => by
-    simp only [dbar, hG]
+    simp [dbar, hG]
     rw [fderiv_comp_add_right]
   have h := integral_dbar_div_eq hGl hGc
   have e1 : ∫ z, dbar G z / z = ∫ z, dbar F (z + w) / z := by simp_rw [hdb]
   rw [e1] at h
-  simp only [hG, zero_add] at h
+  simp [hG, zero_add] at h
   rw [← h, ← integral_add_right_eq_self (fun z => dbar F z / (z - w)) w]
   simp
 

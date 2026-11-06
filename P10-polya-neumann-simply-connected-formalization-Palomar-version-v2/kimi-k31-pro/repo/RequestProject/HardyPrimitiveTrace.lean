@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.TwoPi
 public import RequestProject.HardyAntiderivative
 public import Mathlib.Analysis.Normed.Group.FunctionSeries
 public import Mathlib.Analysis.SpecialFunctions.Integrals.Basic
@@ -31,7 +32,6 @@ namespace PolyaNeumann
 open MeasureTheory Filter
 open scoped Real
 
-local instance hardyPrimitiveTwoPiPos : Fact (0 < 2 * Real.pi) := ⟨Real.two_pi_pos⟩
 
 /-- Pointwise Fourier reconstruction in the averaged coefficient convention. -/
 def hardyFourierTrace (c : ℤ → ℂ) (θ : ℝ) : ℂ :=
@@ -40,14 +40,14 @@ def hardyFourierTrace (c : ℤ → ℂ) (θ : ℝ) : ℂ :=
 theorem hardyFourierTrace_periodic (c : ℤ → ℂ) :
     Function.Periodic (hardyFourierTrace c) (2 * Real.pi) := by
   intro θ
-  simp only [hardyFourierTrace, AddCircle.coe_add_period]
+  simp [hardyFourierTrace, AddCircle.coe_add_period]
 
 private theorem hardy_fourier_exp (n : ℤ) (θ : ℝ) :
     fourier (T := 2 * Real.pi) n (θ : AddCircle (2 * Real.pi)) =
       Complex.exp ((n : ℂ) * θ * Complex.I) := by
-  rw [fourier_coe_apply]
+  simp
   congr 1
-  have hpi : (Real.pi : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr Real.pi_ne_zero
+  have hpi := Complex.ofReal_ne_zero.mpr Real.pi_ne_zero
   push_cast
   field_simp [hpi]
 
@@ -108,13 +108,13 @@ theorem hardyFourierTrace_antiPrim_eq_integral
   have hpN : Summable fun n => ‖p n‖ :=
     Summable.of_nonneg_of_le (fun n => norm_nonneg (p n))
       (fun n => hardy_norm_primSeq_le ψ n) hψ
-  have hp : Summable p := hpN.of_norm
+  have hp := hpN.of_norm
   have hpθN : Summable fun n => ‖p n * Complex.exp ((n : ℂ) * θ * Complex.I)‖ := by
     simpa only [norm_mul, hardy_norm_exp, mul_one] using hpN
-  have hpθ : Summable fun n => p n * Complex.exp ((n : ℂ) * θ * Complex.I) := hpθN.of_norm
+  have hpθ := hpθN.of_norm
   have hδ : Summable fun n : ℤ => if n = 0 then ∑' m, p m else 0 :=
     summable_of_ne_finset_zero (s := {0}) fun n hn => by
-      simp only [Finset.mem_singleton] at hn
+      simp at hn
       simp [hn]
   have heq (n : ℤ) :
       antiPrim (fourierCoeff A) (fourierCoeff H) n *
@@ -124,14 +124,14 @@ theorem hardyFourierTrace_antiPrim_eq_integral
     by_cases hn : n = 0
     · subst n
       simp [antiPrim, p, ψ, primSeq]
-    · simp only [antiPrim, if_neg hn, sub_zero]
+    · simp [antiPrim, if_neg hn, sub_zero]
       rfl
   have htrace :
       hardyFourierTrace (antiPrim (fourierCoeff A) (fourierCoeff H)) θ =
         (∑' n, p n * Complex.exp ((n : ℂ) * θ * Complex.I)) - ∑' n, p n := by
     simp only [hardyFourierTrace, hardy_fourier_exp, heq]
     rw [Summable.tsum_sub hpθ hδ, tsum_ite_eq]
-  let F : C(AddCircle (2 * Real.pi), ℂ) := A * H
+  let F := A * H
   have hHi : Integrable H AddCircle.haarAddCircle := by
     have hHi' : IntegrableOn H Set.univ AddCircle.haarAddCircle :=
       H.continuous.continuousOn.integrableOn_compact isCompact_univ
@@ -169,11 +169,11 @@ theorem hardyFourierTrace_antiPrim_eq_integral
     · subst n
       simp [hψ0, p, primSeq]
     · have hnC : (n : ℂ) ≠ 0 := Int.cast_ne_zero.mpr hn
-      rw [intervalIntegral.integral_const_mul]
+      simp
       simp_rw [show ∀ s : ℝ, (n : ℂ) * s * Complex.I = ((n : ℂ) * Complex.I) * s
         from fun s => by ring]
       rw [integral_exp_mul_complex (mul_ne_zero hnC Complex.I_ne_zero)]
-      simp only [Complex.ofReal_zero, mul_zero, Complex.exp_zero]
+      simp
       dsimp only [p, primSeq]
       field_simp [hnC, Complex.I_ne_zero]
   simp_rw [hint] at hi

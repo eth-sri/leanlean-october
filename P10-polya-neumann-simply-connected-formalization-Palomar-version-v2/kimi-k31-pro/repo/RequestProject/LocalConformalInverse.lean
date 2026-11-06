@@ -39,7 +39,7 @@ theorem localConformal_fderiv_closedDisk {R : ℝ} (hR : 1 < R) (F : ℂ → ℂ
       rw [(hhol.differentiableAt (isOpen_ball.mem_nhds hw)).fderiv_restrictScalars ℝ]
       change fderiv ℂ F w a = _
       exact fderiv_eq_deriv_mul
-    dsimp only
+    dsimp
     rw [hfd v, hfd 1, mul_one]
   exact heq.of_subset_closure
     ((hc.clm_apply continuousOn_const).mono (closedBall_subset_ball hR))

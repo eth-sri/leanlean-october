@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.TwoPi
 public import RequestProject.LocalConformalVekuaSeries
 public import RequestProject.HardyVolterraBridge
 public import RequestProject.VolterraUniqueness
@@ -33,7 +34,6 @@ namespace PolyaNeumann
 open MeasureTheory Set Metric Filter
 open scoped Topology ComplexConjugate
 
-local instance vekuaTraceTwoPiPos : Fact (0 < 2 * Real.pi) := ⟨Real.two_pi_pos⟩
 
 private def vekuaAffineTraceTest (p : ℂ) (f : smoothTraceTests) : smoothTraceTests :=
   ⟨fun z => (z - p) * f z,
@@ -141,7 +141,7 @@ private theorem vekua_boundaryMultiplier_pow (A : C(AddCircle (2 * Real.pi), ℂ
       boundaryContinuousMultiplier_ae (A ^ j) g,
       boundaryContinuousMultiplier_ae (A ^ (j + 1)) g] with θ ha hj hs
     rw [ha, hj, hs]
-    simp only [ContinuousMap.pow_apply, pow_succ', ContinuousMap.mul_apply]
+    simp
     ring
 
 private theorem vekua_circle_coeff_pow (A : C(AddCircle (2 * Real.pi), ℂ))
@@ -195,13 +195,13 @@ theorem vekua_reconstruction_add {c d : ℤ → ℂ}
     (hc : Summable (fun n => ‖c n‖)) (hd : Summable (fun n => ‖d n‖)) :
     hardyCircleReconstruction (c + d) = hardyCircleReconstruction c + hardyCircleReconstruction d := by
   unfold hardyCircleReconstruction
-  simp only [Pi.add_apply, add_smul]
+  simp [Pi.add_apply, add_smul]
   exact (vekua_summable_circle_terms hc).tsum_add (vekua_summable_circle_terms hd)
 
 theorem vekua_reconstruction_smul (a : ℂ) (c : ℤ → ℂ) :
     hardyCircleReconstruction (a • c) = a • hardyCircleReconstruction c := by
   unfold hardyCircleReconstruction
-  simp only [Pi.smul_apply, smul_eq_mul, ← smul_smul]
+  simp [Pi.smul_apply, smul_eq_mul, ← smul_smul]
   exact tsum_const_smul'' a
 
 def vekuaStrongReconstructionLin : L2Z →ₗ[ℂ] C(AddCircle (2 * Real.pi), ℂ) where
@@ -617,7 +617,7 @@ private theorem vekua_smoothing_strong_term (E : ℂ) (b : L2Z) (j : ℕ)
       (physicalVekuaCoeff E (j + 1) • sobVec ((1 / 2 : ℝ) + 1) _ ht) =
       localConformalVekuaBoundaryTerm hR F hFs E (j + 1) b := by
   ext n
-  simp only [map_smul, lp.coeFn_smul, Pi.smul_apply, smul_eq_mul,
+  simp [map_smul, lp.coeFn_smul, Pi.smul_apply, smul_eq_mul,
     sobolevSmoothing, diagOp_apply, sobVec_apply, localConformalVekuaBoundaryTerm_apply]
   have he : -(1 : ℝ) + ((1 / 2 : ℝ) + 1) = 1 / 2 := by ring
   have hw : ((sobWeight n ^ (-(1 : ℝ)) : ℝ) : ℂ) *
@@ -650,8 +650,7 @@ theorem localConformalVekuaBoundary_strong_remainder_hasSum (E : ℂ) (b : L2Z)
     (isSobolevSeq_fromL2 (1 / 2 : ℝ) b) E
   let f : ℕ → L2Z := fun j => physicalVekuaCoeff E (j + 1) •
     sobVec ((1 / 2 : ℝ) + 1) _ (hT j)
-  have hs : HasSum f (∑' j : ℕ, f j) := by
-    exact (show Summable (fun j => ‖f j‖) from hN).of_norm.hasSum
+  have hs : HasSum f (∑' j : ℕ, f j) := (show Summable (fun j => ‖f j‖) from hN).of_norm.hasSum
   have hmap := (sobolevSmoothing 1 (by norm_num)).hasSum hs
   have hm : HasSum (fun j : ℕ => localConformalVekuaBoundaryTerm hR F hFs E (j + 1) b)
       (sobolevSmoothing 1 (by norm_num) (∑' j : ℕ, f j)) := by
@@ -660,7 +659,7 @@ theorem localConformalVekuaBoundary_strong_remainder_hasSum (E : ℂ) (b : L2Z)
     (f := fun j : ℕ => localConformalVekuaBoundaryTerm hR F hFs E j b) 1).2
       (localConformalVekuaBoundary_hasSum hR F hFs hb hL hhol hinj hC hK e he hsource hes
         E b hbn)
-  simp only [Finset.sum_range_one,
+  simp [Finset.sum_range_one,
     localConformalVekuaBoundaryTerm_zero hR F hFs hb hL hhol hinj hC hK e he hsource hes
       E b hbn] at ht
   exact ⟨hT, ∑' j : ℕ, f j, hs, ht.unique hm⟩
@@ -817,7 +816,7 @@ private theorem vekua_volterra_next_bound
     ‖volterraPrimitiveIterate (fun s => A (s : AddCircle (2 * Real.pi))) h (j + 1) t‖ ≤
       (‖A‖ * ∫ s in (0 : ℝ)..t, ‖h s‖) * (‖A‖ * T) ^ j / (j.factorial : ℝ) := by
   let a : ℝ → ℂ := fun s => A (s : AddCircle (2 * Real.pi))
-  have ha : Continuous a := A.continuous.comp (AddCircle.continuous_mk' _)
+  have ha := A.continuous.comp (AddCircle.continuous_mk' _)
   have hi : 0 ≤ ∫ s in (0 : ℝ)..t, ‖h s‖ :=
     intervalIntegral.integral_nonneg ht.1 (fun s _ => norm_nonneg _)
   have hfirst (s : ℝ) (hs : s ∈ Icc 0 t) :
@@ -833,8 +832,7 @@ private theorem vekua_volterra_next_bound
         rw [norm_mul]
         exact mul_le_mul_of_nonneg_right (A.norm_coe_le_norm _) (norm_nonneg _)
       _ = ‖A‖ * ∫ x in (0 : ℝ)..s, ‖h x‖ := intervalIntegral.integral_const_mul _ _
-      _ ≤ ‖A‖ * ∫ x in (0 : ℝ)..t, ‖h x‖ := by
-        exact mul_le_mul_of_nonneg_left
+      _ ≤ ‖A‖ * ∫ x in (0 : ℝ)..t, ‖h x‖ := mul_le_mul_of_nonneg_left
           (intervalIntegral.integral_mono_interval le_rfl hs.1 hs.2
             (Eventually.of_forall (fun x => norm_nonneg (h x))) (hh.norm.intervalIntegrable 0 t))
           (norm_nonneg A)
@@ -861,13 +859,10 @@ private theorem vekua_volterra_kernel_unique
   let M := ‖A‖
   let x := K * B * M * T
   have hK : 0 ≤ K := norm_nonneg _
-  have hB : 0 ≤ B := norm_nonneg _
-  have hM : 0 ≤ M := norm_nonneg _
   have hC : 0 ≤ K * B * M * Real.exp x := by positivity
   apply continuous_eq_zero_of_norm_le_volterra hh hC
   intro t ht
   let I := ∫ s in (0 : ℝ)..t, ‖h s‖
-  have hI : 0 ≤ I := intervalIntegral.integral_nonneg ht.1 (fun s _ => norm_nonneg _)
   let f : ℕ → ℂ := fun j => physicalVekuaCoeff E (j + 1) *
     G (t : AddCircle (2 * Real.pi)) ^ (j + 1) *
     volterraPrimitiveIterate (fun s => A (s : AddCircle (2 * Real.pi))) h (j + 1) t
@@ -884,8 +879,8 @@ private theorem vekua_volterra_kernel_unique
       _ ≤ (K ^ (j + 1) * B ^ (j + 1)) * ((M * I) * (M * T) ^ j / (j.factorial : ℝ)) := by
         simp only [f, norm_mul]
         exact mul_le_mul (mul_le_mul hc hg (norm_nonneg _) (pow_nonneg hK _)) hj
-          (norm_nonneg _) (mul_nonneg (pow_nonneg hK _) (pow_nonneg hB _))
-      _ = _ := by simp only [x, pow_succ, mul_pow]; ring
+          (norm_nonneg _) (mul_nonneg (pow_nonneg hK _) (pow_nonneg (norm_nonneg _) _))
+      _ = _ := by simp [x, pow_succ, mul_pow]; ring
   have hmaj : Summable (fun j : ℕ => (K * B * M * I) * (x ^ j / (j.factorial : ℝ))) :=
     (Real.summable_pow_div_factorial x).mul_left _
   have hn : Summable (fun j => ‖f j‖) :=
@@ -939,7 +934,7 @@ theorem localConformalVekuaBoundary_kernel_volterra_hasSum (E : ℂ) (b : L2Z)
   rw [hz, zero_sub] at hr
   have hb3 := localConformalVekuaBoundary_kernel_raw_threeHalves hR F hFs hb hL hhol hinj hC hK
     e he hsource hes E b hbn hz
-  have hb1 : IsSobolevSeq 1 (fromL2 (1 / 2 : ℝ) b) := (sobNormSq_mono (by norm_num) hb3).1
+
   have hbs : Summable (fun n => ‖fromL2 (1 / 2 : ℝ) b n‖) :=
     (sq_tsum_norm_le (by norm_num : (0 : ℝ) ≤ 1 / 2) hb3).1
   have hrseq : fromL2 ((1 / 2 : ℝ) + 1) r = -fromL2 (1 / 2 : ℝ) b := by
@@ -958,7 +953,7 @@ theorem localConformalVekuaBoundary_kernel_volterra_hasSum (E : ℂ) (b : L2Z)
     rw [map_smul, vekuaStrongCircleReconstruction_sobVec, ContinuousMap.smul_apply,
       smul_eq_mul, hardyCircleReconstruction_coe
         (sq_tsum_norm_le (by norm_num : (0 : ℝ) ≤ 1 / 2) (hT j)).1,
-      vekua_trace_term_volterra hR F hFs hhol b hbn hb1]
+      vekua_trace_term_volterra hR F hFs hhol b hbn ((sobNormSq_mono (by norm_num) hb3).1)]
     ring
   have hval : vekuaStrongCircleReconstruction r (θ : AddCircle (2 * Real.pi)) =
       -hardyFourierTrace (fromL2 (1 / 2 : ℝ) b) θ := by
@@ -989,7 +984,7 @@ theorem localConformalVekuaBoundary_eq_zero_imp (E : ℂ) (b : L2Z)
     e he hsource hes E b hbn hz
   have hbs : Summable (fun n => ‖fromL2 (1 / 2 : ℝ) b n‖) :=
     (sq_tsum_norm_le (by norm_num : (0 : ℝ) ≤ 1 / 2) hb3).1
-  have hh : Continuous (hardyFourierTrace (fromL2 (1 / 2 : ℝ) b)) := continuous_hardyFourierTrace hbs
+  have hh := continuous_hardyFourierTrace hbs
   have hs : ∀ θ ∈ Icc (0 : ℝ) (2 * Real.pi), HasSum (fun j : ℕ =>
       physicalVekuaCoeff E (j + 1) *
         localConformalCenteredCircle hR F hFs (θ : AddCircle (2 * Real.pi)) ^ (j + 1) *

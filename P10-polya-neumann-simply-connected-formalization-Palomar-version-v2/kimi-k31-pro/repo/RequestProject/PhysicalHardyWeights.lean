@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.TwoPi
 public import RequestProject.PhysicalHardySupport
 public import RequestProject.CutFourier
 public import RequestProject.ArcLength
@@ -31,7 +32,6 @@ namespace PolyaNeumann
 open MeasureTheory Set Metric
 open scoped ComplexConjugate
 
-local instance physicalWeightsTwoPiPos : Fact (0 < 2 * Real.pi) := ⟨Real.two_pi_pos⟩
 
 /-- Periodic real C⁴ regularity gives the two weighted estimates needed for
 the physical primitive multiplier and the centered boundary coordinate. -/
@@ -82,7 +82,7 @@ theorem periodic_contDiff_four_fourier_weights {f : ℝ → ℂ}
     · subst n
       simp
     · rw [if_neg hn, add_zero, e1]
-      simp only [norm_mul, Complex.norm_I, one_mul, Complex.norm_intCast]
+      simp
       have hn' : (1 : ℝ) ≤ |(n : ℝ)| := by
         rw [← Int.cast_abs, ← Int.cast_one, Int.cast_le]
         exact Int.one_le_abs hn
@@ -92,7 +92,7 @@ theorem periodic_contDiff_four_fourier_weights {f : ℝ → ℂ}
       ‖fourierCoeffOn Real.two_pi_pos (deriv f) n‖)
     refine (hs1.add hs2).congr fun n => ?_
     rw [e2]
-    simp only [norm_mul, Complex.norm_I, one_mul, Complex.norm_intCast,
+    simp [norm_mul, Complex.norm_I, one_mul, Complex.norm_intCast,
       Real.rpow_one, sobWeight]
     ring
   · change Summable (fun n => sobWeight n ^ (2 : ℝ) *
@@ -101,7 +101,7 @@ theorem periodic_contDiff_four_fourier_weights {f : ℝ → ℂ}
       (fun n => mul_nonneg (Real.rpow_nonneg (sobWeight_pos n).le _)
         (norm_nonneg _)) (fun n => ?_) ((hs0.mul_left 2).add (hs2.mul_left 2))
     rw [e2, e1]
-    simp only [norm_mul, Complex.norm_I, one_mul, Complex.norm_intCast,
+    simp [norm_mul, Complex.norm_I, one_mul, Complex.norm_intCast,
       Real.rpow_two, sobWeight]
     have hnonneg : 0 ≤ (|(n : ℝ)| - 1) ^ 2 *
         ‖fourierCoeffOn Real.two_pi_pos f n‖ :=
@@ -130,7 +130,7 @@ theorem isWL1_fourierCoeffOn_conj {s : ℝ} {g : ℝ → ℂ}
   have hs := hg.comp_injective
     (show Function.Injective (fun n : ℤ => -n) from neg_injective)
   refine hs.congr fun n => ?_
-  simp only [Function.comp_apply, physicalWeights_fourierCoeffOn_conj,
+  simp [Function.comp_apply, physicalWeights_fourierCoeffOn_conj,
     Complex.norm_conj, sobWeight, Int.cast_neg, abs_neg]
 
 /-- The supplied real C⁴ map is C⁴ along the actual circle. -/
@@ -188,8 +188,8 @@ theorem hardyFourierTrace_fourierCoeffOn_of_periodic {f : ℝ → ℂ}
       f (u : ℝ) = hp.lift ((u : ℝ) : AddCircle (2 * Real.pi)) := (hp.lift_coe _).symm
       _ = hp.lift (θ : AddCircle (2 * Real.pi)) := congrArg hp.lift hu
       _ = f θ := hp.lift_coe θ
-  have p0 : f 0 = f (2 * Real.pi) := by simpa only [zero_add] using (hp 0).symm
-  have hsum := hasSum_fourierCoeffOn hf p0 hs.of_norm hut
+
+  have hsum := hasSum_fourierCoeffOn hf (by simpa only [zero_add] using (hp 0).symm) hs.of_norm hut
   have hsum' : HasSum (fun n : ℤ => fourierCoeffOn Real.two_pi_pos f n *
       fourier (T := 2 * Real.pi) n (θ : AddCircle (2 * Real.pi))) (f θ) := by
     simpa only [← fourier_coe_two_pi, hu, huv] using hsum
@@ -205,8 +205,7 @@ theorem hardyFourierTrace_physical_conj_deriv_of_neighborhood
   have hγ := contDiff_physicalCircleTrace_four_of_neighborhood hR F hFs
   have hc : Continuous (fun s => conj (deriv (physicalCircleTrace F) s)) :=
     Complex.continuous_conj.comp (hγ.continuous_deriv (by norm_num))
-  have hp : Function.Periodic (fun s => conj (deriv (physicalCircleTrace F) s))
-      (2 * Real.pi) := (deriv_periodic (physicalCircleTrace_periodic F)).comp conj
+  have hp := (deriv_periodic (physicalCircleTrace_periodic F)).comp conj
   have hw := (physicalCircleTrace_fourier_weights_of_neighborhood hR F hFs).1
   have hs : Summable (fun n => ‖fourierCoeffOn Real.two_pi_pos
       (fun s => conj (deriv (physicalCircleTrace F) s)) n‖) := by

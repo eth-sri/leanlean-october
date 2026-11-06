@@ -56,8 +56,8 @@ theorem riemannInteriorDerivative_sq_integrable (F : ℂ → ℂ)
     measurableSet_ball
   refine h.congr (Eventually.of_forall fun z => ?_)
   by_cases hz : z ∈ ball (0 : ℂ) 1
-  · simp only [riemannInteriorDerivative, indicator_of_mem hz]
-  · simp only [riemannInteriorDerivative, indicator_of_notMem hz, norm_zero,
+  · simp [riemannInteriorDerivative, indicator_of_mem hz]
+  · simp [riemannInteriorDerivative, indicator_of_notMem hz, norm_zero,
       zero_pow (by decide : (2 : ℕ) ≠ 0)]
 
 /-- The true angular derivative of `F ∘ circleMap c r` on its portions
@@ -66,8 +66,7 @@ def riemannCapDerivative (F : ℂ → ℂ) (c : ℂ) (r θ : ℝ) : ℂ :=
   riemannInteriorDerivative F (circleMap c r θ) * (circleMap 0 r θ * Complex.I)
 
 theorem riemannCapDerivative_measurable (F : ℂ → ℂ) (c : ℂ) (r : ℝ) :
-    Measurable (riemannCapDerivative F c r) := by
-  exact ((riemannInteriorDerivative_measurable F).comp
+    Measurable (riemannCapDerivative F c r) := ((riemannInteriorDerivative_measurable F).comp
     (continuous_circleMap c r).measurable).mul
       ((continuous_circleMap 0 r).measurable.mul_const Complex.I)
 
@@ -75,7 +74,7 @@ theorem norm_riemannCapDerivative (F : ℂ → ℂ) (c : ℂ) {r : ℝ}
     (hr : 0 ≤ r) (θ : ℝ) :
     ‖riemannCapDerivative F c r θ‖ =
       r * ‖riemannInteriorDerivative F (circleMap c r θ)‖ := by
-  simp only [riemannCapDerivative, norm_mul, norm_circleMap_zero,
+  simp [riemannCapDerivative, norm_mul, norm_circleMap_zero,
     abs_of_nonneg hr, Complex.norm_I, mul_one, mul_comm]
 
 theorem riemannCapDerivative_hasDerivAt (F : ℂ → ℂ)
@@ -95,7 +94,7 @@ private theorem translated_polar_integrable {g : ℂ → ℝ}
     IntegrableOn (fun p : ℝ × ℝ =>
       p.1 * g (c + Complex.polarCoord.symm p))
       (Ioi (0 : ℝ) ×ˢ Ioo (-Real.pi) Real.pi) := by
-  have ht : Integrable (fun z : ℂ => g (c + z)) := hg.comp_add_left c
+  have ht := hg.comp_add_left c
   have hm : Measurable (fun p : ℝ × ℝ =>
       p.1 * g (c + Complex.polarCoord.symm p)) :=
     measurable_fst.mul (hgm.comp (measurable_const.add measurable_complexPolarCoord_symm))
@@ -171,12 +170,12 @@ theorem riemannMapping_exists_small_cap_energy (F : ℂ → ℂ)
   rw [IntegrableOn, Measure.volume_eq_prod, ← Measure.prod_restrict] at hgp
   let R : ℝ → ℝ := fun r => ∫ θ in Ioo (-Real.pi) Real.pi,
     r * g (circleMap c r θ)
-  have hR : IntegrableOn R (Ioi (0 : ℝ)) := hgp.integral_prod_left
+  have hR := hgp.integral_prod_left
   have hslice : ∀ᵐ r ∂volume.restrict (Ioi (0 : ℝ)),
       IntegrableOn (fun θ => g (circleMap c r θ)) (Ioo (-Real.pi) Real.pi) := by
     filter_upwards [hgp.prod_right_ae, ae_restrict_mem measurableSet_Ioi] with r hr hr0
     have h := hr.const_mul r⁻¹
-    have hrpos : 0 < r := hr0
+    have hrpos := hr0
     simpa only [IntegrableOn, ← mul_assoc, inv_mul_cancel₀ hrpos.ne', one_mul] using h
   obtain ⟨r, hr, hs, hsmall⟩ := exists_small_radius_of_integrable hR hslice hδ hε
   refine ⟨r, hr, hs, ?_⟩
@@ -210,8 +209,8 @@ theorem riemannMapping_exists_small_cap_length (F : ℂ → ℂ)
     ∃ r ∈ Ioo (0 : ℝ) δ,
       IntegrableOn (riemannCapDerivative F c r) (Ioo (-Real.pi) Real.pi) ∧
       (∫ θ in Ioo (-Real.pi) Real.pi, ‖riemannCapDerivative F c r θ‖) < ε := by
-  let a : ℝ := ε / (4 * Real.pi)
-  have ha : 0 < a := div_pos hε (by positivity)
+  let a := ε / (4 * Real.pi)
+  have ha := div_pos hε (by positivity)
   obtain ⟨r, hr, hs, hsmall⟩ := riemannMapping_exists_small_cap_energy
     F hF hinj hb c hδ (show 0 < 2 * a * ε by positivity)
   have hi := riemannCapDerivative_integrable F c hr.1.le hs
@@ -255,7 +254,7 @@ theorem riemannMapping_exists_small_cap_length (F : ℂ → ℂ)
 theorem riemannCapDerivative_periodic (F : ℂ → ℂ) (c : ℂ) (r : ℝ) :
     Function.Periodic (riemannCapDerivative F c r) (2 * Real.pi) := by
   intro θ
-  simp only [riemannCapDerivative, periodic_circleMap c r θ,
+  simp [riemannCapDerivative, periodic_circleMap c r θ,
     periodic_circleMap 0 r θ]
 
 /-- A good polar slice is integrable on every finite angular interval,
@@ -279,8 +278,7 @@ private theorem riemannCapDerivative_continuousAt (F : ℂ → ℂ)
     (c : ℂ) (r θ : ℝ) (hθ : circleMap c r θ ∈ ball (0 : ℂ) 1) :
     ContinuousAt (riemannCapDerivative F c r) θ := by
   have hcont : ContinuousAt (fun t =>
-      deriv F (circleMap c r t) * (circleMap 0 r t * Complex.I)) θ := by
-    exact (((hF.deriv isOpen_ball).continuousOn.continuousAt
+      deriv F (circleMap c r t) * (circleMap 0 r t * Complex.I)) θ := (((hF.deriv isOpen_ball).continuousOn.continuousAt
       (isOpen_ball.mem_nhds hθ)).comp (continuous_circleMap c r).continuousAt).mul
         ((continuous_circleMap 0 r).continuousAt.mul_const Complex.I)
   apply hcont.congr
@@ -288,7 +286,7 @@ private theorem riemannCapDerivative_continuousAt (F : ℂ → ℂ)
     (continuous_circleMap c r).continuousAt.preimage_mem_nhds
       (isOpen_ball.mem_nhds hθ)
   filter_upwards [hmem] with t ht
-  simp only [riemannCapDerivative, riemannInteriorDerivative, indicator_of_mem ht]
+  simp [riemannCapDerivative, riemannInteriorDerivative, indicator_of_mem ht]
 
 /-- The actual image of every open circular arc has finite endpoint
 limits at a good radius. The continuous function is explicitly obtained
@@ -304,9 +302,9 @@ theorem riemannMapping_cap_continuous_extension (F : ℂ → ℂ)
       EqOn G (fun θ => F (circleMap c r θ)) (Ioo a b) ∧
       Tendsto (fun θ => F (circleMap c r θ)) (𝓝[Ioo a b] a) (𝓝 (G a)) ∧
       Tendsto (fun θ => F (circleMap c r θ)) (𝓝[Ioo a b] b) (𝓝 (G b)) := by
-  let t : ℝ := (a + b) / 2
+  let t := (a + b) / 2
   have ht : t ∈ Ioo a b := by dsimp [t]; constructor <;> linarith
-  let V : ℝ → ℂ := riemannCapDerivative F c r
+  let V := riemannCapDerivative F c r
   have hVi : ∀ s u : ℝ, IntervalIntegrable V volume s u :=
     riemannCapDerivative_intervalIntegrable F c r hi
   let G : ℝ → ℂ := fun θ => F (circleMap c r t) + ∫ s in t..θ, V s
@@ -326,7 +324,7 @@ theorem riemannMapping_cap_continuous_extension (F : ℂ → ℂ)
       (fun θ hθ => (hGd θ hθ).differentiableAt.differentiableWithinAt)
       (fun θ hθ => (hfd θ hθ).differentiableAt.differentiableWithinAt)
       (fun θ hθ => by rw [(hGd θ hθ).deriv, (hfd θ hθ).deriv]) ht
-    simp only [G, intervalIntegral.integral_same, add_zero]
+    simp [G, intervalIntegral.integral_same, add_zero]
   refine ⟨G, hGc, heq, ?_, ?_⟩
   · refine ((hGc.tendsto a).mono_left nhdsWithin_le_nhds).congr' ?_
     filter_upwards [self_mem_nhdsWithin] with θ hθ
@@ -386,8 +384,8 @@ theorem riemannMapping_limit_mem_frontier {A : Type*} {l : Filter A} [NeBot l]
     hzin.mono fun x hx => mem_image_of_mem F hx
   have hJlim : Tendsto (fun x => J (F (z x))) l (𝓝 (J w)) :=
     (hJ.continuousOn w hwin).tendsto.comp (tendsto_nhdsWithin_iff.2 ⟨hw, him⟩)
-  have hJz : Tendsto z l (𝓝 (J w)) := hJlim.congr' (hzin.mono fun x hx => hJF _ hx)
-  have heq : ζ = J w := tendsto_nhds_unique hz hJz
+  have hJz := hJlim.congr' (hzin.mono fun x hx => hJF _ hx)
+  have heq := tendsto_nhds_unique hz hJz
   have hmem := hJmap hwin
   rw [mem_ball_zero_iff, ← heq, hζ] at hmem
   linarith
@@ -403,7 +401,7 @@ private theorem riemannCap_circle_eq {ζ : ℂ} (hζ : ‖ζ‖ = 1) (r θ : ℝ
   have he : Complex.exp ((riemannCapCenterAngle ζ : ℂ) * Complex.I) = -ζ := by
     simpa only [riemannCapCenterAngle, norm_neg, hζ, Complex.ofReal_one, one_mul]
       using Complex.norm_mul_exp_arg_mul_I (-ζ)
-  simp only [circleMap, zero_add, Complex.ofReal_add, add_mul, Complex.exp_add, he]
+  simp [circleMap, zero_add, Complex.ofReal_add, add_mul, Complex.exp_add, he]
   ring
 
 private theorem riemannCap_circle_norm_sq {ζ : ℂ} (hζ : ‖ζ‖ = 1) (r θ : ℝ) :

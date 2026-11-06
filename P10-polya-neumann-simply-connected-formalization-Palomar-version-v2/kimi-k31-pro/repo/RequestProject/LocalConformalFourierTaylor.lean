@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.TwoPi
 public import RequestProject.LocalConformalFourierCollar
 public import RequestProject.PhysicalHardySupport
 public import RequestProject.CutFourier
@@ -28,7 +29,6 @@ namespace PolyaNeumann
 open MeasureTheory Set Metric
 open scoped Topology ComplexConjugate
 
-local instance fourierTaylorTwoPiPos : Fact (0 < 2 * Real.pi) := ⟨Real.two_pi_pos⟩
 
 /-- The actual averaged, rather than orthonormal, nonnegative circle coefficients. -/
 def localConformalFourierTaylorCoefficients (F : ℂ → ℂ) (n : ℕ) : ℂ :=
@@ -64,7 +64,7 @@ theorem periodic_contDiff_infty_fourierCoeffOn_iteratedDeriv {f : ℝ → ℂ}
     fourierCoeffOn Real.two_pi_pos (iteratedDeriv k f) n =
       (Complex.I * (n : ℂ)) ^ k * fourierCoeffOn Real.two_pi_pos f n := by
   induction k with
-  | zero => simp only [iteratedDeriv_zero, pow_zero, one_mul]
+  | zero => simp
   | succ k ih =>
       have hend : iteratedDeriv k f 0 = iteratedDeriv k f (2 * Real.pi) := by
         simpa only [zero_add] using (periodic_iteratedDeriv_two_pi hp k 0).symm
@@ -139,7 +139,7 @@ private theorem fourierTaylor_fourier_natCast (n : ℕ) (θ : ℝ) :
     fourier (T := 2 * Real.pi) (n : ℤ) (θ : AddCircle (2 * Real.pi)) =
       (circleMap 0 1 θ) ^ n := by
   rw [fourier_coe_apply, circleMap_zero_pow]
-  simp only [one_pow, circleMap_zero, Complex.ofReal_one, one_mul]
+  simp [one_pow, circleMap_zero, Complex.ofReal_one, one_mul]
   congr 1
   push_cast
   field_simp [Real.pi_ne_zero]
@@ -149,7 +149,7 @@ private theorem fourierTaylor_fourier_neg_natCast (n : ℕ) (θ : ℝ) :
       (circleMap 0 1 θ)⁻¹ ^ n := by
   rw [fourier_neg, fourierTaylor_fourier_natCast, map_pow,
     ← Complex.inv_eq_conj (z := circleMap 0 1 θ)
-      (by simp only [norm_circleMap_zero, abs_one])]
+      (by simp)]
 
 /-- The Cauchy coefficient is exactly the averaged angular coefficient.
 This calculation does not require any holomorphicity hypothesis. -/
@@ -174,14 +174,14 @@ theorem cauchyPowerSeries_unitDisk_coefficient_eq_fourier
       Complex.I * (fourier (T := 2 * Real.pi) (-(n : ℤ))
         (θ : AddCircle (2 * Real.pi)) * physicalCircleTrace F θ)
     rw [fourierTaylor_fourier_neg_natCast]
-    simp only [deriv_circleMap, smul_eq_mul, physicalCircleTrace]
+    simp [deriv_circleMap, smul_eq_mul, physicalCircleTrace]
     field_simp [hz]
   simp only [cauchyPowerSeries, ContinuousMultilinearMap.mkPiRing_apply,
     Fin.prod_const, one_pow, sub_zero, smul_eq_mul]
   rw [hcircle, localConformalFourierTaylorCoefficients, fourierCoeffOn_eq_integral]
   simp only [sub_zero, smul_eq_mul, Complex.real_smul]
   rw [sub_zero]
-  have hπ : (Real.pi : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr Real.pi_ne_zero
+  have hπ := Complex.ofReal_ne_zero.mpr Real.pi_ne_zero
   push_cast
   field_simp [hπ, Complex.I_ne_zero]
 
@@ -190,8 +190,7 @@ theorem cauchyPowerSeries_unitDisk_apply_eq_fourier
     cauchyPowerSeries F 0 1 n (fun _ => z) =
       localConformalFourierTaylorCoefficients F n * z ^ n := by
   have hcoef := cauchyPowerSeries_unitDisk_coefficient_eq_fourier F n
-  simp only [cauchyPowerSeries, ContinuousMultilinearMap.mkPiRing_apply,
-    Fin.prod_const, one_pow, one_smul] at hcoef ⊢
+  simp at hcoef ⊢
   rw [hcoef]
   exact mul_comm (z ^ n) (localConformalFourierTaylorCoefficients F n)
 

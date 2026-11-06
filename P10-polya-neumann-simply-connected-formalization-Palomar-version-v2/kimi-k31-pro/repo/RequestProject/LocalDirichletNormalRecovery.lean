@@ -43,7 +43,7 @@ theorem dirichlet_normal_dirD_mul {a b : ℂ → ℂ} {z : ℂ}
     dirD (fun w => a w * b w) v z = dirD a v z * b z + a z * dirD b v z := by
   change fderiv ℝ (fun w => a w * b w) z v = _
   rw [fderiv_fun_mul ha hb]
-  simp only [ContinuousLinearMap.add_apply, ContinuousLinearMap.smul_apply, smul_eq_mul]
+  simp
   change a z * dirD b v z + b z * dirD a v z = _
   ring
 
@@ -59,7 +59,7 @@ theorem dirD_dirichletGraphSlope_one {f : ℝ → ℝ}
     (hd.hasDerivAt.comp_hasFDerivAt z Complex.reCLM.hasFDerivAt)
   change fderiv ℝ (Complex.ofRealCLM ∘ (deriv f ∘ Complex.re)) z 1 = _
   rw [hs.fderiv]
-  simp only [ContinuousLinearMap.comp_apply, ContinuousLinearMap.smul_apply,
+  simp [ContinuousLinearMap.comp_apply, ContinuousLinearMap.smul_apply,
     Complex.reCLM_apply, Complex.one_re, smul_eq_mul, mul_one,
     Complex.ofRealCLM_apply, dirichletGraphCurvature]
 
@@ -104,8 +104,8 @@ theorem dirichletFlattenedDivergence_normal_expansion {U : Set ℂ} (hU : IsOpen
   have hy : DifferentiableAt ℝ y z :=
     ((dirichlet_contDiffOn_dirD hU hu Complex.I).differentiableOn (by simp)).differentiableAt
       (hU.mem_nhds hz)
-  have hdx : dirD d 1 z = dirichletGraphCurvature f z := dirD_dirichletGraphSlope_one hf z
-  have hdy : dirD d Complex.I z = 0 := dirD_dirichletGraphSlope_I hf z
+  have hdx := dirD_dirichletGraphSlope_one hf z
+  have hdy := dirD_dirichletGraphSlope_I hf z
   have haI : dirD (fun w => (1 : ℂ) + d w ^ 2) Complex.I z = 0 := by
     have heq : (fun w => (1 : ℂ) + d w ^ 2) = fun w => 1 + d w * d w := by
       funext w
@@ -148,12 +148,11 @@ def dirichletNormalCoefficientInverse (f : ℝ → ℝ) (z : ℂ) : ℂ :=
 
 theorem dirichletNormalCoefficientInverse_mul (f : ℝ → ℝ) (z : ℂ) :
     dirichletNormalCoefficientInverse f z * (1 + dirichletGraphSlope f z ^ 2) = 1 := by
-  have hpos : (1 + (deriv f z.re) ^ 2 : ℝ) ≠ 0 := by positivity
   have heq : (1 + dirichletGraphSlope f z ^ 2 : ℂ) =
       ((1 + (deriv f z.re) ^ 2 : ℝ) : ℂ) := by
     simp [dirichletGraphSlope]
   rw [heq, dirichletNormalCoefficientInverse, ← Complex.ofReal_mul,
-    inv_mul_cancel₀ hpos, Complex.ofReal_one]
+    inv_mul_cancel₀ (by positivity), Complex.ofReal_one]
 
 theorem dirichlet_normal_derivative_recovery {U : Set ℂ} (hU : IsOpen U)
     {f : ℝ → ℝ} (hf : ContDiff ℝ (⊤ : ℕ∞) f) {u G : ℂ → ℂ}

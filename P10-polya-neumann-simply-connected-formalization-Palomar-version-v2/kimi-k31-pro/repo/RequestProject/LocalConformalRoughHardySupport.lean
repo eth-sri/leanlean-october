@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.TwoPi
 public import RequestProject.PhysicalMomentHardyCriterion
 public import RequestProject.PhysicalDrivenHardyRegularity
 public import RequestProject.BoundaryFourierMultiplier
@@ -37,7 +38,6 @@ open MeasureTheory Set Metric Filter
 open AbsolutelyContinuousOnInterval
 open scoped Topology ComplexConjugate
 
-local instance roughHardyTwoPiPos : Fact (0 < 2 * Real.pi) := ⟨Real.two_pi_pos⟩
 
 private theorem rough_c1_absolutelyContinuous {f : ℝ → ℂ} (hf : ContDiff ℝ 1 f) :
     AbsolutelyContinuousOnInterval f 0 (2 * Real.pi) := by
@@ -84,8 +84,7 @@ private theorem rough_memLp_intervalIntegrable {f : ℝ → ℂ}
 theorem physicalMomentPrimitive_absolutelyContinuous (γ H : ℝ → ℂ)
     (hγ : ContDiff ℝ 1 γ)
     (hH : MemLp H 2 (volume.restrict (Ioc 0 (2 * Real.pi)))) :
-    AbsolutelyContinuousOnInterval (physicalMomentPrimitive γ H) 0 (2 * Real.pi) := by
-  exact absolutelyContinuousOnInterval_intervalIntegral_banach
+    AbsolutelyContinuousOnInterval (physicalMomentPrimitive γ H) 0 (2 * Real.pi) := absolutelyContinuousOnInterval_intervalIntegral_banach
     (rough_memLp_intervalIntegrable (physicalMomentDensity_memLp γ H hγ hH))
     (by rw [uIcc_of_le Real.two_pi_pos.le]; exact ⟨le_rfl, Real.two_pi_pos.le⟩)
 
@@ -152,17 +151,15 @@ theorem physicalMomentPrimitive_moments_of_memLp (γ H : ℝ → ℂ)
   let K := physicalMomentPrimitive γ H
   let ν : ℝ → ℂ := fun θ => a θ * H θ
   let c : ℂ := (m + 1 : ℕ)
-  have ha : Continuous a := Complex.continuous_conj.comp hγ.continuous_deriv_one
+  have ha := Complex.continuous_conj.comp hγ.continuous_deriv_one
   have hγconj : ContDiff ℝ 1 (fun θ => conj (γ θ)) := by
     simpa only [Function.comp_def, Complex.conjCLE_apply] using Complex.conjCLE.contDiff.comp hγ
-  have hz : ContDiff ℝ 1 z := by
-    exact hγconj.sub (contDiff_const (c := conj (γ 0)))
+  have hz : ContDiff ℝ 1 z := hγconj.sub (contDiff_const (c := conj (γ 0)))
   have dz (θ : ℝ) : HasDerivAt z (a θ) θ := by
     simpa only [Complex.star_def] using
       ((hγ.differentiable_one θ).hasDerivAt.star).sub_const (conj (γ 0))
   have dv (θ : ℝ) : HasDerivAt (fun s => z s ^ (m + 1))
-      (c * z θ ^ m * a θ) θ := by
-    exact (dz θ).pow (m + 1)
+      (c * z θ ^ m * a θ) θ := (dz θ).pow (m + 1)
   have hKAC : AbsolutelyContinuousOnInterval K 0 (2 * Real.pi) :=
     physicalMomentPrimitive_absolutelyContinuous γ H hγ hH
   have hKC : ContinuousOn K (Icc 0 (2 * Real.pi)) := by
@@ -177,8 +174,7 @@ theorem physicalMomentPrimitive_moments_of_memLp (γ H : ℝ → ℂ)
       (Icc 0 (2 * Real.pi)) :=
     ((ha.continuousOn.mul hKC).mul (hz.continuous.pow m).continuousOn).integrableOn_Icc
   have hprodAC : AbsolutelyContinuousOnInterval (fun θ => K θ * z θ ^ (m + 1))
-      0 (2 * Real.pi) := by
-    exact hKAC.smul (rough_c1_absolutelyContinuous (hz.pow (m + 1)))
+      0 (2 * Real.pi) := hKAC.smul (rough_c1_absolutelyContinuous (hz.pow (m + 1)))
   have hprodD : ∀ᵐ θ, θ ∈ Ioo 0 (2 * Real.pi) →
       HasDerivAt (fun θ => K θ * z θ ^ (m + 1))
         (ν θ * z θ ^ (m + 1) + c * ((a θ * K θ) * z θ ^ m)) θ := by
@@ -211,7 +207,6 @@ theorem physicalMomentPrimitive_moments_of_memLp (γ H : ℝ → ℂ)
     intro hc
     have hre := congrArg Complex.re hc
     norm_num at hre
-    have hpos : (0 : ℝ) < (m : ℝ) + 1 := by positivity
     linarith
   exact (mul_eq_zero.mp hFTC.symm).resolve_left hc
 
@@ -429,7 +424,7 @@ theorem physicalMomentRecoveryCoefficient_mul_density {R : ℝ} (hR : 1 < R) (F 
       H θ := by
   let z := circleMap 0 1 θ
   let D := fderiv ℝ F z 1
-  have hD : D ≠ 0 := hnz z (circleMap_mem_closedBall 0 (by norm_num) θ)
+  have hD := hnz z (circleMap_mem_closedBall 0 (by norm_num) θ)
   have hz : z * conj z = 1 := by
     rw [Complex.mul_conj]
     have hnorm : ‖z‖ = 1 := by simp [z, norm_circleMap_zero]
@@ -482,7 +477,7 @@ theorem localConformal_physicalMoments_nonpositive_of_memLp
   let ν : ℝ → ℂ := fun θ => conj (deriv (physicalCircleTrace F) θ) * H θ
   have hν : MemLp ν 2 (volume.restrict (Ioc 0 (2 * Real.pi))) :=
     physicalMomentDensity_memLp _ H hγ hH
-  let v : BoundaryL2 := hν.toLp ν
+  let v := hν.toLp ν
   let A := physicalMomentRecoveryCircle hR F hFs hnz
   have hrecover : boundaryContinuousMultiplier A v = hH.toLp H := by
     apply Lp.ext
@@ -494,7 +489,7 @@ theorem localConformal_physicalMoments_nonpositive_of_memLp
     intro n hn
     rw [boundaryFourier_apply, fourierCoeffOn_congr_ae Real.two_pi_pos hν.coeFn_toLp,
       hνsupport n hn, mul_zero]
-  have hsA : Summable (fourierCoeff A) := physicalMomentRecoveryCircle_summable hR F hFs hnz
+  have hsA := physicalMomentRecoveryCircle_summable hR F hFs hnz
   have hBF : IsNonpositiveFourierSupport (boundaryFourier (hH.toLp H)) := by
     intro n hn
     rw [← hrecover, boundaryFourier_continuousMultiplier A hsA]

@@ -29,7 +29,7 @@ lemma abs_sub_le_of_piecewise {C : Set ℂ} {F : ℂ → ℝ} {L B γ : ℝ} (h�
     (hoff : ∀ x ∉ C, F x = 0) (hon : ∀ x ∈ C, ∀ y ∈ C, |F x - F y| ≤ L * ‖x - y‖)
     (hB : ∀ x, |F x| ≤ B) (hgap : ∀ x ∈ C, F x ≠ 0 → ∀ y ∉ C, γ ≤ ‖x - y‖) (x y : ℂ) :
     |F x - F y| ≤ (L + B / γ) * ‖x - y‖ := by
-  have hB0 : 0 ≤ B := (abs_nonneg _).trans (hB x)
+  have hB0 := (abs_nonneg _).trans (hB x)
   have hBγ : 0 ≤ B / γ := by positivity
   have key : ∀ x y, x ∈ C → y ∉ C → |F x - F y| ≤ (L + B / γ) * ‖x - y‖ := by
     intro x y hx hy
@@ -115,7 +115,7 @@ lemma collarShiftInv_eq (hc : IsFlowCollar Φ C a b T La Lb γ) {y : ℂ} (hy : 
     collarShiftInv C a b T y = -(b y * tentθ T (sigmaInv T (b y) (a y))) := by
   have h := sigmaMap_sigmaInv hc.T_pos (hc.b_le y hy) (a y)
   unfold sigmaMap at h
-  simp only [collarShiftInv, if_pos hy]
+  simp [collarShiftInv, if_pos hy]
   linarith
 
 lemma abs_collarShiftInv_le (hc : IsFlowCollar Φ C a b T La Lb γ) (y : ℂ) :
@@ -131,7 +131,7 @@ lemma collarShift_lip (hc : IsFlowCollar Φ C a b T La Lb γ) (x y : ℂ) :
   refine abs_sub_le_of_piecewise hc.γ_pos (by have := hc.La_nonneg; have := hc.Lb_nonneg; positivity)
     (fun x hx => hc.collarShift_eq_zero (Or.inl hx)) ?_ hc.abs_collarShift_le ?_ x y
   · intro x hx y hy
-    simp only [collarShift, if_pos hx, if_pos hy]
+    simp [collarShift, if_pos hx, if_pos hy]
     have h1 := abs_tentθ_sub_le hc.T_pos (a x) (a y)
     have h2 : |b x * tentθ T (a x) - b y * tentθ T (a y)| ≤
         |b x - b y| * 1 + |b y| * (|a x - a y| / T) := by
@@ -140,7 +140,7 @@ lemma collarShift_lip (hc : IsFlowCollar Φ C a b T La Lb γ) (x y : ℂ) :
       refine (abs_add_le _ _).trans (add_le_add ?_ ?_)
       · rw [abs_mul, abs_of_nonneg (tentθ_nonneg _)]
         exact mul_le_mul_of_nonneg_left (tentθ_le_one hc.T_pos _) (abs_nonneg _)
-      · rw [abs_mul]; exact mul_le_mul_of_nonneg_left h1 (abs_nonneg _)
+      · simp; exact mul_le_mul_of_nonneg_left h1 (abs_nonneg _)
     have h3 : |b y| * (|a x - a y| / T) ≤ La / 2 * ‖x - y‖ := by
       have hby := hc.b_le y hy
       have hT := hc.T_pos
@@ -162,7 +162,7 @@ lemma collarShiftInv_lip (hc : IsFlowCollar Φ C a b T La Lb γ) (x y : ℂ) :
   refine abs_sub_le_of_piecewise hc.γ_pos (by have := hc.La_nonneg; have := hc.Lb_nonneg; positivity)
     (fun x hx => hc.collarShiftInv_eq_zero (Or.inl hx)) ?_ hc.abs_collarShiftInv_le ?_ x y
   · intro x hx y hy
-    simp only [collarShiftInv, if_pos hx, if_pos hy]
+    simp [collarShiftInv, if_pos hx, if_pos hy]
     have h1 := abs_sigmaInv_sub_le hc.T_pos (hc.b_le x hx) (hc.b_le y hy) (a x) (a y)
     have h2 := hc.a_lip x hx y hy
     have h3 := hc.b_lip x hx y hy
@@ -189,12 +189,12 @@ lemma collarMapInv_collarMap (hc : IsFlowCollar Φ C a b T La Lb γ) (x : ℂ) :
   by_cases hx : x ∈ C ∧ |a x| < T
   · obtain ⟨hxC, hax⟩ := hx
     set u := collarShift C a b T x
-    have hu : |u| ≤ T / 2 := hc.abs_collarShift_le x
+    have hu := hc.abs_collarShift_le x
     have hueq : u = b x * tentθ T (a x) := by simp [u, collarShift, hxC]
     obtain ⟨hyC, hya, hyb⟩ := hc.flow x hxC hax u (by linarith)
     have hσ : a (Φ u x) = sigmaMap T (b x) (a x) := by rw [hya, hueq]; rfl
     have hinv : collarShiftInv C a b T (Φ u x) = -u := by
-      simp only [collarShiftInv, if_pos hyC]
+      simp [collarShiftInv, if_pos hyC]
       rw [hyb, hσ, sigmaInv_sigmaMap hT (hc.b_le x hxC)]
       simp only [sigmaMap]
       rw [hueq]; ring
@@ -206,11 +206,11 @@ lemma collarMapInv_collarMap (hc : IsFlowCollar Φ C a b T La Lb γ) (x : ℂ) :
       by_cases h : x ∈ C
       · exact Or.inr (by push_neg at hx; exact hx h)
       · exact Or.inl h)
-    have h0' : collarShiftInv C a b T x = 0 := hc.collarShiftInv_eq_zero (by
+    have h0' := hc.collarShiftInv_eq_zero (by
       by_cases h : x ∈ C
       · exact Or.inr (by push_neg at hx; exact hx h)
       · exact Or.inl h)
-    simp only [collarMapInv, collarMap, h0, hΦ.zero, h0']
+    simp [collarMapInv, collarMap, h0, hΦ.zero, h0']
 
 lemma collarMap_collarMapInv (hc : IsFlowCollar Φ C a b T La Lb γ) (y : ℂ) :
     collarMap Φ C a b T (collarMapInv Φ C a b T y) = y := by
@@ -219,14 +219,14 @@ lemma collarMap_collarMapInv (hc : IsFlowCollar Φ C a b T La Lb γ) (y : ℂ) :
   by_cases hy : y ∈ C ∧ |a y| < T
   · obtain ⟨hyC, hay⟩ := hy
     set u := collarShiftInv C a b T y
-    have hu : |u| ≤ T / 2 := hc.abs_collarShiftInv_le y
+    have hu := hc.abs_collarShiftInv_le y
     have hueq : u = sigmaInv T (b y) (a y) - a y := by simp [u, collarShiftInv, hyC]
     obtain ⟨hxC, hxa, hxb⟩ := hc.flow y hyC hay u (by linarith)
     have hxa' : a (Φ u y) = sigmaInv T (b y) (a y) := by rw [hxa, hueq]; ring
     have hshift : collarShift C a b T (Φ u y) = -u := by
       have h := sigmaMap_sigmaInv hT (hc.b_le y hyC) (a y)
       unfold sigmaMap at h
-      simp only [collarShift, if_pos hxC]
+      simp [collarShift, if_pos hxC]
       rw [hxb, hxa', hueq]
       linarith
     simp only [collarMapInv, collarMap]
@@ -237,7 +237,7 @@ lemma collarMap_collarMapInv (hc : IsFlowCollar Φ C a b T La Lb γ) (y : ℂ) :
       by_cases h : y ∈ C
       · exact Or.inr (by push_neg at hy; exact hy h)
       · exact Or.inl h
-    simp only [collarMapInv, collarMap, hc.collarShiftInv_eq_zero hc0, hΦ.zero,
+    simp [collarMapInv, collarMap, hc.collarShiftInv_eq_zero hc0, hΦ.zero,
       hc.collarShift_eq_zero hc0]
 
 include hM in
@@ -245,7 +245,7 @@ include hM in
 lemma dist_flow_shift_le {g : ℂ → ℝ} {Lg : ℝ} (hg : ∀ x y, |g x - g y| ≤ Lg * ‖x - y‖)
     (hgb : ∀ x, |g x| ≤ 1) (x y : ℂ) :
     dist (Φ (g x) x) (Φ (g y) y) ≤ (M * Lg + Real.exp LX) * dist x y := by
-  have hM0 : 0 ≤ M := (norm_nonneg _).trans (hM 0)
+  have hM0 := (norm_nonneg _).trans (hM 0)
   have h1 : dist (Φ (g x) x) (Φ (g y) x) ≤ M * (Lg * ‖x - y‖) := by
     rw [dist_eq_norm]
     refine (hΦ.norm_sub_le hM x ⟨by linarith [(abs_le.mp (hgb y)).1], by
@@ -285,7 +285,7 @@ lemma a_collarMapInv (hc : IsFlowCollar Φ C a b T La Lb γ) {y : ℂ} (hyC : y 
   have hu := hc.abs_collarShiftInv_le y
   obtain ⟨hxC, hxa, -⟩ := hc.flow y hyC hay (collarShiftInv C a b T y) (by linarith)
   refine ⟨hxC, ?_⟩
-  simp only [collarMapInv]
+  simp [collarMapInv]
   rw [hxa]; simp [collarShiftInv, hyC]
 
 end IsFlowCollar

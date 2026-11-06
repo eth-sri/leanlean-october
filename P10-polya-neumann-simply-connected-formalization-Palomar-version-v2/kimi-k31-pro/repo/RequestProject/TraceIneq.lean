@@ -74,17 +74,14 @@ lemma abs_transGap_ge {X : ℂ → ℂ} {r₀ τ κ c : ℝ} (hr₀ : 0 < r₀) 
   set g := |transGap X γ θ| with hgdef
   by_contra hcon
   push_neg at hcon
-  have hg0 : 0 ≤ g := abs_nonneg _
+
   have hη : 0 < (c * κ - 2 * g) / (4 * (‖x‖ + 1)) := by
     apply div_pos <;> [linarith; positivity]
   set η := (c * κ - 2 * g) / (4 * (‖x‖ + 1)) with hηdef
   have hlo := (hasDerivAt_iff_isLittleO_nhds_zero.mp hγd).def hη
   obtain ⟨δ, hδ, hδb⟩ := Metric.eventually_nhds_iff.mp hlo
-  have hv0 : v ≠ 0 := by rw [← norm_ne_zero_iff, hc]; exact hc0.ne'
   set t := min τ (δ * c / (2 * (‖x‖ + 1))) with htdef
   have ht0 : 0 < t := lt_min hτ (by positivity)
-  have htτ : t ≤ τ := min_le_left _ _
-  have htδ : t ≤ δ * c / (2 * (‖x‖ + 1)) := min_le_right _ _
   set s := t * (conj v * x).re / c ^ 2 with hs
   have hre : |(conj v * x).re| ≤ c * ‖x‖ := by
     refine (Complex.abs_re_le_norm _).trans ?_
@@ -98,17 +95,17 @@ lemma abs_transGap_ge {X : ℂ → ℂ} {r₀ τ κ c : ℝ} (hr₀ : 0 < r₀) 
     refine hsabs.trans_lt ?_
     rw [div_lt_iff₀ hc0]
     have h1 : t * ‖x‖ ≤ δ * c / (2 * (‖x‖ + 1)) * ‖x‖ :=
-      mul_le_mul_of_nonneg_right htδ (norm_nonneg _)
+      mul_le_mul_of_nonneg_right (min_le_right _ _) (norm_nonneg _)
     have h2 : δ * c / (2 * (‖x‖ + 1)) * ‖x‖ < δ * c := by
       rw [div_mul_eq_mul_div, div_lt_iff₀ (by positivity)]
       nlinarith [norm_nonneg x, mul_pos hδ hc0]
     linarith
   have hrem := hδb (y := s) (by simpa [Real.dist_eq] using hsδ)
-  have hfl := hflow (γ θ) (by rw [hd θ]; simpa using hr₀) t ht0.le htτ
+  have hfl := hflow (γ θ) (by rw [hd θ]; simpa using hr₀) t ht0.le (min_le_left _ _)
   rw [hd θ, zero_add] at hfl
   have hlip := (lipschitzWith_signedDist Ω).dist_le_mul (γ θ + t * x) (γ (θ + s))
   rw [hd (θ + s), Real.dist_eq, sub_zero] at hlip
-  have hproj := norm_mul_norm_sub_proj hv0 t (x := x)
+  have hproj := norm_mul_norm_sub_proj (by rw [← norm_ne_zero_iff, hc]; exact hc0.ne') t (x := x)
   rw [hc, hg, abs_of_pos ht0] at hproj
   have hsplit : γ θ + t * x - γ (θ + s) = ((t : ℂ) * x - (s : ℂ) * v) -
       (γ (θ + s) - γ θ - s • v) := by
@@ -155,7 +152,7 @@ lemma re_conj_mul_dbar_ofReal {u : ℂ → ℝ} {z : ℂ} (hu : DifferentiableAt
     ((Complex.ofRealCLM.hasFDerivAt (x := u z)).comp z hu.hasFDerivAt).fderiv
   unfold dbar
   rw [h]
-  have hw : w = (w.re : ℂ) + (w.im : ℂ) * Complex.I := (Complex.re_add_im w).symm
+  have hw := (Complex.re_add_im w).symm
   have hlin : fderiv ℝ u z w = w.re * fderiv ℝ u z 1 + w.im * fderiv ℝ u z Complex.I := by
     conv_lhs => rw [show w = w.re • (1 : ℂ) + w.im • Complex.I by
       rw [Complex.real_smul, Complex.real_smul]; simp [← hw]]
@@ -188,7 +185,6 @@ lemma ae_nonpos_of_integral_comp_nonpos (hγ : IsBoundaryParam Ω γ) {g : ℝ �
     ∀ᵐ θ ∂(volume.restrict (Ioc 0 (2 * π))), g θ ≤ 0 := by
   obtain ⟨Kγ, hKγ⟩ := hγ.lipschitz
   set S := {θ | 0 < g θ} ∩ Ioo 0 (2 * π) with hSdef
-  have hSm : MeasurableSet S := (measurableSet_lt measurable_const hgm).inter measurableSet_Ioo
   suffices hS : volume S = 0 by
     rw [ae_restrict_iff' measurableSet_Ioc]
     have h2 : ∀ᵐ θ ∂volume, θ ≠ 2 * π := by
@@ -197,11 +193,10 @@ lemma ae_nonpos_of_integral_comp_nonpos (hγ : IsBoundaryParam Ω γ) {g : ℝ �
     by_contra hneg; push_neg at hneg
     exact h1 ⟨hneg, hθ.1, lt_of_le_of_ne hθ.2 h2⟩
   by_contra hS
-  obtain ⟨K, hKS, hKc, hKpos⟩ := hSm.exists_lt_isCompact (pos_iff_ne_zero.mpr hS)
-  have hKne : K.Nonempty := nonempty_of_measure_ne_zero hKpos.ne'
+  obtain ⟨K, hKS, hKc, hKpos⟩ := ((measurableSet_lt measurable_const hgm).inter measurableSet_Ioo).exists_lt_isCompact (pos_iff_ne_zero.mpr hS)
+  have hKne := nonempty_of_measure_ne_zero hKpos.ne'
   set T := γ '' K with hT
-  have hTc : IsClosed T := (hKc.image hKγ.continuous).isClosed
-  have hTne : T.Nonempty := hKne.image _
+  have hTc := (hKc.image hKγ.continuous).isClosed
   set ψ : ℕ → ℂ → ℝ := fun n z => max (1 - (n : ℝ) * infDist z T) 0 with hψ
   have hψlip : ∀ n : ℕ, LipschitzWith (n : NNReal) (ψ n) := fun n => by
     refine LipschitzWith.of_dist_le_mul fun z w => ?_
@@ -229,13 +224,13 @@ lemma ae_nonpos_of_integral_comp_nonpos (hγ : IsBoundaryParam Ω γ) {g : ℝ �
       simp [this, indicator_of_mem hθK]
     · have hnot : γ θ ∉ T := by
         rintro ⟨k, hk, hkθ⟩
-        have hkI : k ∈ Ioo 0 (2 * π) := (hKS hk).2
+        have hkI := (hKS hk).2
         rcases lt_or_eq_of_le hθ.2 with hlt | heq
         · exact hθK (hγ.injOn ⟨hkI.1.le, hkI.2⟩ ⟨hθ.1.le, hlt⟩ hkθ ▸ hk)
         · have : γ k = γ 0 := by rw [hkθ, heq]; simpa using hγ.periodic 0
           have := hγ.injOn ⟨hkI.1.le, hkI.2⟩ ⟨le_refl _, by positivity⟩ this
           linarith [hkI.1]
-      have hpos : 0 < infDist (γ θ) T := (hTc.notMem_iff_infDist_pos hTne).mp hnot
+      have hpos := (hTc.notMem_iff_infDist_pos (hKne.image _)).mp hnot
       rw [indicator_of_notMem hθK]
       refine tendsto_const_nhds.congr' ?_
       obtain ⟨N, hN⟩ := exists_nat_gt (1 / infDist (γ θ) T)
@@ -340,7 +335,7 @@ theorem integral_comp_transGap_nonpos (hb : Bornology.IsBounded Ω) (hL : IsLips
   have hΩu : Ωᶜ.Nonempty := compl_nonempty_of_isBounded hb
   have hΩfin : volume Ω < ⊤ := hb.measure_lt_top
   obtain ⟨Kγ, hKγ⟩ := hγ.lipschitz
-  have hM0 : 0 ≤ M := (norm_nonneg _).trans (hXM 0)
+
   -- the function `P = ψ X̄`
   have hψc : LipschitzWith Kψ (fun z => (ψ z : ℂ)) :=
     Complex.isometry_ofReal.lipschitz.comp hψ |>.weaken (by simp)
@@ -376,7 +371,7 @@ theorem integral_comp_transGap_nonpos (hb : Bornology.IsBounded Ω) (hL : IsLips
       exact distCutoff_le_one _ _
     obtain ⟨KΦ, hKΦ⟩ := lipschitzWith_mul_of_bounded hKP hVlip hPb hVb
     have hΦb : ∀ z, ‖P z * V z‖ ≤ M * 1 := fun z => by
-      rw [norm_mul]; exact mul_le_mul (hPb z) (hVb z) (norm_nonneg _) hM0
+      rw [norm_mul]; exact mul_le_mul (hPb z) (hVb z) (norm_nonneg _) ((norm_nonneg _).trans (hXM 0))
     have hG := integral_boundary_eq_dbar_of_bounded hb hL hγ hKΦ hΦb
     have hbd : ∀ θ, P (γ θ) * V (γ θ) * deriv γ θ = P (γ θ) * deriv γ θ := fun θ => by
       have h0 : signedDist Ω (γ θ) = 0 :=
@@ -410,7 +405,7 @@ theorem integral_comp_transGap_nonpos (hb : Bornology.IsBounded Ω) (hL : IsLips
       rw [dbar_mul_of_differentiableAt hPd hVd, Complex.add_re]
       -- the transport term has a sign
       have hmono : ∀ᶠ t : ℝ in 𝓝[>] (0 : ℝ), -distCutoff Ω ε z ≤ -distCutoff Ω ε (z + (t : ℂ) * X z) := by
-        have hdz : 0 < signedDist Ω z := signedDist_pos_of_mem hΩo hΩu hz
+        have hdz := signedDist_pos_of_mem hΩo hΩu hz
         rcases lt_or_ge (signedDist Ω z) r₀ with hlt | hge
         · filter_upwards [Ioo_mem_nhdsGT hτ] with t ht
           have := hflow z (by rw [abs_of_pos hdz]; exact hlt) t ht.1.le ht.2.le
@@ -451,7 +446,7 @@ theorem integral_comp_transGap_nonpos (hb : Bornology.IsBounded Ω) (hL : IsLips
     · rw [Real.norm_eq_abs, abs_mul, abs_of_nonneg (distCutoff_nonneg _ _), NNReal.abs_eq]
       nlinarith [distCutoff_le_one (Ω := Ω) (r₀ / (n + 2)) z, KP.coe_nonneg]
     · filter_upwards [ae_restrict_mem hΩo.measurableSet] with z hz
-      have hdz : 0 < signedDist Ω z := signedDist_pos_of_mem hΩo hΩu hz
+      have hdz := signedDist_pos_of_mem hΩo hΩu hz
       have ht : Tendsto (fun n : ℕ => r₀ / ((n : ℝ) + 2)) atTop (𝓝 0) := by
         have := tendsto_const_div_atTop_nhds_zero_nat r₀
         have h2 := (tendsto_add_atTop_iff_nat 2).mpr this
@@ -473,9 +468,9 @@ theorem transGap_le_ae (hb : Bornology.IsBounded Ω) (hL : IsLipschitzDomain Ω)
     (hc0 : 0 < c) (hc : ∀ᵐ θ, ‖deriv γ θ‖ = c) :
     ∀ᵐ θ ∂(volume.restrict (Ioc 0 (2 * π))), transGap X γ θ ≤ -(c * κ / 2) := by
   obtain ⟨Kγ, hKγ⟩ := hγ.lipschitz
-  have hΩo : IsOpen Ω := hL.1.1
+
   have hd : ∀ θ, signedDist Ω (γ θ) = 0 := fun θ =>
-    signedDist_eq_zero_of_frontier hΩo (boundaryParam_mem_frontier hγ θ)
+    signedDist_eq_zero_of_frontier (hL.1.1) (boundaryParam_mem_frontier hγ θ)
   have hgm : Measurable (transGap X γ) := by
     unfold transGap
     exact Complex.measurable_im.comp
@@ -518,17 +513,17 @@ lemma norm_dbar_normSq_mul_le {f Y : ℂ → ℂ} {z : ℂ} {LY : NNReal} {M : �
     ‖dbar (fun x => (f x * conj (f x)) * Y x) z‖ ≤
       ‖f z‖ ^ 2 * LY + M * (‖f z‖ ^ 2 / 2 + gradSq f z) := by
   have hcf : DifferentiableAt ℝ (fun x => conj (f x)) z :=
-    (Complex.conjCLE.toContinuousLinearMap.differentiableAt).comp z hf
+    Complex.conjCLE.toContinuousLinearMap.differentiableAt.comp z hf
   have hN : DifferentiableAt ℝ (fun x => f x * conj (f x)) z := hf.mul hcf
   rw [dbar_mul_of_differentiableAt hN hY, dbar_mul_of_differentiableAt hf hcf]
   set a := ‖fderiv ℝ f z 1‖
   set b := ‖fderiv ℝ f z Complex.I‖
-  have h1 : ‖dbar f z‖ ≤ (a + b) / 2 := norm_dbar_le_half f z
+  have h1 := norm_dbar_le_half f z
   have h2 : ‖dbar (fun x => conj (f x)) z‖ ≤ (a + b) / 2 := by
     refine (norm_dbar_le_half _ z).trans ?_
     rw [fderiv_conj_apply hf, fderiv_conj_apply hf, Complex.norm_conj, Complex.norm_conj]
-  have h3 : ‖dbar Y z‖ ≤ LY := norm_dbar_le hYL z
-  have hM0 : 0 ≤ M := (norm_nonneg _).trans hYM
+  have h3 := norm_dbar_le hYL z
+  have hM0 := (norm_nonneg _).trans hYM
   have hgs : gradSq f z = a ^ 2 + b ^ 2 := rfl
   have hfz : ‖f z * conj (f z)‖ = ‖f z‖ ^ 2 := by rw [norm_mul, Complex.norm_conj]; ring
   calc ‖f z * conj (f z) * dbar Y z + Y z * (f z * dbar (fun x => conj (f x)) z +
@@ -554,17 +549,17 @@ theorem trace_sq_le (hb : Bornology.IsBounded Ω) (hL : IsLipschitzDomain Ω)
       (∀ z, ‖f z‖ ≤ B) →
       ∫ θ in (0:ℝ)..(2 * π), ‖f (γ θ)‖ ^ 2 ≤
         C * ((∫ z in Ω, ‖f z‖ ^ 2) + ∫ z in Ω, gradSq f z) := by
-  have hΩo : IsOpen Ω := hL.1.1
-  have hΩu : Ωᶜ.Nonempty := compl_nonempty_of_isBounded hb
+
+
   have hΩfin : volume Ω < ⊤ := hb.measure_lt_top
   obtain ⟨X, LX, M, r₀, τ, κ, hX, hXM, hr₀, hτ, hκ, hflow⟩ :=
-    exists_transversalField hb hL hL.1.2.nonempty hΩu
+    exists_transversalField hb hL hL.1.2.nonempty (compl_nonempty_of_isBounded hb)
   obtain ⟨c, hc0, hc⟩ := hγ.const_speed
   obtain ⟨Kγ, hKγ⟩ := hγ.lipschitz
   have hg := transGap_le_ae hb hL hγ hX hXM hr₀ hτ hκ hflow hc0 hc
   have hM0 : 0 ≤ M := (norm_nonneg _).trans (hXM 0)
   refine ⟨4 * (LX + M) / (c * κ), by positivity, fun f Kf hf B hB => ?_⟩
-  have hB0 : 0 ≤ B := (norm_nonneg _).trans (hB 0)
+  have hB0 := (norm_nonneg _).trans (hB 0)
   set Y : ℂ → ℂ := fun z => conj (X z) with hYdef
   have hYL : LipschitzWith LX Y := (Complex.isometry_conj.lipschitz.comp hX).weaken (by simp)
   have hYM : ∀ z, ‖Y z‖ ≤ M := fun z => by rw [hYdef, Complex.norm_conj]; exact hXM z
@@ -623,7 +618,7 @@ theorem trace_sq_le (hb : Bornology.IsBounded Ω) (hL : IsLipschitzDomain Ω)
   have hmaj : ∫ z in Ω, ‖dbar (fun x => f x * conj (f x) * Y x) z‖ ≤
       (LX + M) * ((∫ z in Ω, ‖f z‖ ^ 2) + ∫ z in Ω, gradSq f z) := by
     have hI1 : IntegrableOn (fun z => ‖f z‖ ^ 2 * LX) Ω := hfsq.mul_const _
-    have hI3 : IntegrableOn (fun z => ‖f z‖ ^ 2 / 2) Ω := hfsq.div_const 2
+    have hI3 := hfsq.div_const 2
     have hI2 : IntegrableOn (fun z => M * (‖f z‖ ^ 2 / 2 + gradSq f z)) Ω :=
       (hI3.add hgsq).const_mul M
     have hle : ∫ z in Ω, ‖dbar (fun x => f x * conj (f x) * Y x) z‖ ≤
@@ -644,7 +639,7 @@ theorem trace_sq_le (hb : Bornology.IsBounded Ω) (hL : IsLipschitzDomain Ω)
       -(c * κ / 2) * ∫ θ in (0:ℝ)..(2 * π), ‖f (γ θ)‖ ^ 2 := by
     rw [← intervalIntegral.integral_const_mul]
     simp_rw [intervalIntegral.integral_of_le (by positivity : (0:ℝ) ≤ 2 * π)]
-    have hcont : Continuous fun θ => ‖f (γ θ)‖ ^ 2 := (hf.continuous.comp hKγ.continuous).norm.pow 2
+    have hcont := (hf.continuous.comp hKγ.continuous).norm.pow 2
     refine integral_mono_ae ?_ ?_ ?_
     · have hgm : Measurable (transGap X γ) := by
         unfold transGap
@@ -665,10 +660,8 @@ theorem trace_sq_le (hb : Bornology.IsBounded Ω) (hL : IsLipschitzDomain Ω)
       have := mul_le_mul_of_nonneg_left hθ (by positivity : (0:ℝ) ≤ ‖f (γ θ)‖ ^ 2)
       linarith
   rw [hG] at hIm
-  have hck : 0 < c * κ := mul_pos hc0 hκ
-  have key : c * κ / 2 * ∫ θ in (0:ℝ)..(2 * π), ‖f (γ θ)‖ ^ 2 ≤
-      2 * ((LX + M) * ((∫ z in Ω, ‖f z‖ ^ 2) + ∫ z in Ω, gradSq f z)) := by
-    linarith
+  have hck := mul_pos hc0 hκ
+
   rw [div_mul_eq_mul_div, le_div_iff₀ hck]
   nlinarith
 end PolyaNeumann

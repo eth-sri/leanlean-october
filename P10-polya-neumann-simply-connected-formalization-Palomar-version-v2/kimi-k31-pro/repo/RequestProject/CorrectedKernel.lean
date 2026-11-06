@@ -46,7 +46,7 @@ lemma norm_sign_mul_sub_le {g : ℝ → ℂ} {L t θ θ' : ℝ}
     (hg : ‖g θ - g θ'‖ ≤ L * |θ - θ'|) (hgθ : ‖g θ‖ ≤ L * |θ - t|)
     (hgθ' : ‖g θ'‖ ≤ L * |θ' - t|) :
     ‖(Real.sign (θ - t) : ℂ) * g θ - (Real.sign (θ' - t) : ℂ) * g θ'‖ ≤ L * |θ - θ'| := by
-  have hL : 0 ≤ L * |θ - t| := (norm_nonneg _).trans hgθ
+  have hL := (norm_nonneg _).trans hgθ
   have hcross : ∀ a b : ℂ, ‖a‖ ≤ 1 → ‖b‖ ≤ 1 → (θ - t) * (θ' - t) ≤ 0 →
       ‖a * g θ - b * g θ'‖ ≤ L * |θ - θ'| := by
     intro a b ha hb hprod
@@ -68,15 +68,15 @@ lemma norm_sign_mul_sub_le {g : ℝ → ℂ} {L t θ θ' : ℝ}
       _ ≤ L * |θ - t| + L * |θ' - t| := by linarith
       _ = L * |θ - θ'| := by rw [habs]; ring
   have hs : ∀ x : ℝ, ‖(Real.sign x : ℂ)‖ ≤ 1 := fun x => by
-    rw [Complex.norm_real, Real.norm_eq_abs]; exact abs_real_sign_le x
+    simp; exact abs_real_sign_le x
   rcases lt_trichotomy θ t with h1 | h1 | h1 <;> rcases lt_trichotomy θ' t with h2 | h2 | h2
   · rw [Real.sign_of_neg (by linarith), Real.sign_of_neg (by linarith)]
-    simp only [Complex.ofReal_neg, Complex.ofReal_one, neg_mul, one_mul, sub_neg_eq_add]
+    simp
     rw [show -g θ + g θ' = -(g θ - g θ') by ring, norm_neg]; exact hg
   all_goals first
     | exact hcross _ _ (hs _) (hs _) (by nlinarith)
     | (rw [Real.sign_of_pos (by linarith), Real.sign_of_pos (by linarith)]
-       simp only [Complex.ofReal_one, one_mul]; exact hg)
+       simp; exact hg)
 
 variable (W : ℝ → Ell2 →L[ℂ] Ell2)
 
@@ -91,12 +91,12 @@ def correctedKernel (θ t : ℝ) : ℂ :=
 
 variable {W} {γ : ℝ → ℂ} {K : NNReal} {E : ℝ}
 
-lemma norm_basisVec_zero : ‖basisVec 0‖ = 1 := by simp [basisVec]
+lemma norm_basisVec_zero : ‖basisVec 0‖ = 1 := norm_basisVec 0
 
 lemma norm_adjoint_transport_e0_le (hK : LipschitzWith K γ) (hW : IsTransport γ E W) {t : ℝ}
     (ht : t ∈ Set.Icc 0 (2 * π)) : ‖ContinuousLinearMap.adjoint (W t) (basisVec 0)‖ ≤ 1 := by
   refine (ContinuousLinearMap.le_opNorm _ _).trans ?_
-  rw [LinearIsometryEquiv.norm_map, norm_basisVec_zero, mul_one]
+  simp
   exact norm_transport_le_one hK hW ht
 
 lemma volterraKernel_self (hK : LipschitzWith K γ) (hW : IsTransport γ E W) {t : ℝ}
@@ -131,14 +131,14 @@ theorem norm_correctedKernel_sub_le (hK : LipschitzWith K γ) (hW : IsTransport 
   have hg : ∀ u ∈ Set.Icc 0 (2 * π), ∀ u' ∈ Set.Icc 0 (2 * π),
       ‖g u - g u'‖ ≤ L * |u - u'| := by
     intro u hu u' hu'
-    simp only [g, sub_sub_sub_cancel_right]
+    simp [g, sub_sub_sub_cancel_right]
     have := norm_inner_transport_sub_le hK hW hu hu' x
     unfold volterraKernel
     calc _ ≤ L * |u - u'| * ‖x‖ := this
       _ ≤ L * |u - u'| * 1 := by gcongr
       _ = _ := mul_one _
   have hgt : g t = 0 := by simp [g, volterraKernel_self hK hW ht]
-  have hg0 : ∀ u ∈ Set.Icc 0 (2 * π), ‖g u‖ ≤ L * |u - t| := fun u hu => by
+  have hg0 := fun u hu => by
     simpa [hgt] using hg u hu t ht
   have h1 : ‖(Real.sign (θ - t) : ℂ) * g θ - (Real.sign (θ' - t) : ℂ) * g θ'‖ ≤ L * |θ - θ'| :=
     norm_sign_mul_sub_le (hg θ hθ θ' hθ') (hg0 θ hθ) (hg0 θ' hθ')
@@ -160,7 +160,7 @@ theorem norm_correctedKernel_sub_le (hK : LipschitzWith K γ) (hW : IsTransport 
       Complex.I * ((Real.sign (θ - t) : ℂ) * g θ - (Real.sign (θ' - t) : ℂ) * g θ') +
       (Complex.I * ((θ - t) / π : ℝ) - Complex.I * ((θ' - t) / π : ℝ)) +
       (⟪basisVec 0, W θ (cutBE W x)⟫_ℂ - ⟪basisVec 0, W θ' (cutBE W x)⟫_ℂ) := by
-    simp only [correctedKernel, g, x]
+    simp [correctedKernel, g, x]
     push_cast
     ring
   rw [e]
@@ -212,8 +212,7 @@ theorem correctedKernel_endpoint (hK : LipschitzWith K γ) (hW : IsTransport γ 
         Complex.I * ((Real.sign (0 - t) : ℂ) * (volterraKernel W 0 t - 1)) +
         Complex.I * 2 +
         (⟪basisVec 0, V (cutBE W x)⟫_ℂ - ⟪basisVec 0, W 0 (cutBE W x)⟫_ℂ) := by
-      simp only [correctedKernel, x, V]
-      have hpi : (π : ℂ) ≠ 0 := by exact_mod_cast pi_ne_zero
+      simp [correctedKernel, x, V]
       push_cast
       field_simp
       ring
@@ -229,7 +228,7 @@ lemma norm_correctedKernel_le (hK : LipschitzWith K γ) (hW : IsTransport γ E W
     ‖correctedKernel W θ t‖ ≤ 4 + ‖cutBE W‖ := by
   set x := ContinuousLinearMap.adjoint (W t) (basisVec 0)
   have hx : ‖x‖ ≤ 1 := norm_adjoint_transport_e0_le hK hW ht
-  have hWθ : ‖W θ‖ ≤ 1 := norm_transport_le_one hK hW hθ
+  have hWθ := norm_transport_le_one hK hW hθ
   have hw : ‖volterraKernel W θ t‖ ≤ 1 := by
     unfold volterraKernel
     refine (norm_inner_le_norm _ _).trans ?_
@@ -238,7 +237,7 @@ lemma norm_correctedKernel_le (hK : LipschitzWith K γ) (hW : IsTransport γ E W
       _ ≤ 1 * 1 := by gcongr
       _ = 1 := one_mul 1
   have h1 : ‖Complex.I * Real.sign (θ - t) * (volterraKernel W θ t - 1)‖ ≤ 2 := by
-    rw [norm_mul, norm_mul, Complex.norm_I, one_mul, Complex.norm_real, Real.norm_eq_abs]
+    simp
     calc |Real.sign (θ - t)| * ‖volterraKernel W θ t - 1‖ ≤ 1 * (1 + 1) := by
           gcongr
           · exact abs_real_sign_le _
@@ -261,7 +260,7 @@ lemma norm_correctedKernel_le (hK : LipschitzWith K γ) (hW : IsTransport γ E W
       Complex.I * (((θ - t) / π : ℝ) : ℂ) + ⟪basisVec 0, W θ (cutBE W x)⟫_ℂ := by
     simp only [correctedKernel, x]; push_cast; ring
   rw [e]
-  refine (norm_add₃_le).trans ?_
+  refine norm_add₃_le.trans ?_
   linarith
 
 end PolyaNeumann

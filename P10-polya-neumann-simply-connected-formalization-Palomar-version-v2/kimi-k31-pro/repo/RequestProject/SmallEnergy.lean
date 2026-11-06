@@ -37,19 +37,18 @@ lemma abs_arg_le_of_norm_eq_one {z : ℂ} (hz : ‖z‖ = 1) :
   have hlo := Complex.neg_pi_lt_arg z
   have hhi := Complex.arg_le_pi z
   rw [hexp, Complex.norm_exp_I_mul_ofReal_sub_one, Real.norm_eq_abs, abs_mul, abs_two]
-  have hu0 : 0 ≤ |t| / 2 := by positivity
   have hu1 : |t| / 2 ≤ π / 2 := by
     have : |t| ≤ π := abs_le.mpr ⟨by linarith, hhi⟩
     linarith
-  have hs := Real.mul_le_sin hu0 hu1
+  have hs := Real.mul_le_sin (by positivity) hu1
   have hsin : |Real.sin (t / 2)| = Real.sin (|t| / 2) := by
     rcases le_total 0 t with h | h
     · rw [abs_of_nonneg h, abs_of_nonneg
         (Real.sin_nonneg_of_nonneg_of_le_pi (by linarith) (by linarith))]
     · rw [abs_of_nonpos h, neg_div, Real.sin_neg, abs_of_nonpos]
       have := Real.sin_nonneg_of_nonneg_of_le_pi (x := -(t / 2)) (by linarith) (by linarith)
-      rw [Real.sin_neg] at this; linarith
-  rw [hsin]
+      simp at this; linarith
+  simp
   have hpi := Real.pi_pos
   have h2 : 2 / π * (|t| / 2) * π = |t| := by field_simp
   nlinarith
@@ -97,8 +96,8 @@ lemma cutPhaseSum_pi_bound {U : H →L[ℂ] H} (hU : U ∈ unitary (H →L[ℂ] 
     Summable (cutPhaseTerm π U) ∧ |cutPhaseSum π U| ≤ π / 2 * C := by
   set g : {z : ℂ // z ≠ 1} → ℝ := fun z => (eigenMult U z : ℝ) * ‖(z : ℂ) - 1‖ with hg
   have hgnn : ∀ z, 0 ≤ g z := fun z => by positivity
-  have hgs : Summable g := summable_of_sum_le hgnn (sum_eigenMult_mul_norm_le hU hC hT)
-  have hgt : ∑' z, g z ≤ C := Real.tsum_le_of_sum_le hgnn (sum_eigenMult_mul_norm_le hU hC hT)
+  have hgs := summable_of_sum_le hgnn (sum_eigenMult_mul_norm_le hU hC hT)
+  have hgt := Real.tsum_le_of_sum_le hgnn (sum_eigenMult_mul_norm_le hU hC hT)
   have hb : ∀ z, ‖cutPhaseTerm π U z‖ ≤ π / 2 * g z := by
     intro z
     rw [cutPhaseTerm, norm_mul, Real.norm_natCast, Real.norm_eq_abs]
@@ -108,15 +107,14 @@ lemma cutPhaseSum_pi_bound {U : H →L[ℂ] H} (hU : U ∈ unitary (H →L[ℂ] 
       Nat.pos_of_ne_zero hm
     haveI := Module.finite_of_finrank_pos hm'
     obtain ⟨⟨v, hv⟩, hv0⟩ := Module.finrank_pos_iff_exists_ne_zero.mp hm'
-    have hv0' : v ≠ 0 := fun h => hv0 (by simp [h])
     have hz1 : ‖(z : ℂ)‖ = 1 :=
-      norm_eq_one_of_eigen hU hv0' (Module.End.mem_eigenspace_iff.mp hv)
+      norm_eq_one_of_eigen hU (fun h => hv0 (by simp [h])) (Module.End.mem_eigenspace_iff.mp hv)
     rw [abs_argCut_pi]
     calc (eigenMult U z : ℝ) * |Complex.arg z|
         ≤ (eigenMult U z : ℝ) * (π / 2 * ‖(z : ℂ) - 1‖) :=
           mul_le_mul_of_nonneg_left (abs_arg_le_of_norm_eq_one hz1) (Nat.cast_nonneg _)
-      _ = π / 2 * g z := by rw [hg]; ring
-  have hs : Summable (cutPhaseTerm π U) := Summable.of_norm_bounded (hgs.mul_left (π / 2)) hb
+      _ = π / 2 * g z := by simp; ring
+  have hs := Summable.of_norm_bounded (hgs.mul_left (π / 2)) hb
   refine ⟨hs, ?_⟩
   calc |cutPhaseSum π U| = ‖∑' z, cutPhaseTerm π U z‖ := by rw [cutPhaseSum, Real.norm_eq_abs]
     _ ≤ ∑' z, ‖cutPhaseTerm π U z‖ := norm_tsum_le_tsum_norm hs.norm
@@ -154,11 +152,11 @@ theorem exists_linear_traceBound_transport {γ : ℝ → ℂ} {K : NNReal} (hK :
   have h2π : (2 * π) ∈ Icc 0 (2 * π) := ⟨by positivity, le_rfl⟩
   obtain ⟨R, hR⟩ := isCompact_Icc.exists_bound_of_continuousOn (s := Icc 0 (2 * π))
     (f := fun θ => γ θ - γ 0) (hK.continuous.sub continuous_const).continuousOn
-  set Cq : ℝ := 1 / 4 * ((R * K * 3) * (2 * π)) with hCq
+  set Cq := 1 / 4 * ((R * K * 3) * (2 * π)) with hCq
   choose Ws hWs using fun E' : ℝ => transport_exists_of_lipschitz γ hK E'
-  have hCq0 : 0 ≤ Cq := (traceBound_curvatureOp hK hR (hWs 0)).nonneg
+  have hCq0 := (traceBound_curvatureOp hK hR (hWs 0)).nonneg
   refine ⟨Cq, hCq0, fun E hE W hW => ?_⟩
-  have hWE : W (2 * π) = Ws E (2 * π) := transport_unique_of_lipschitz γ hK E hW (hWs E) h2π
+  have hWE := transport_unique_of_lipschitz γ hK E hW (hWs E) h2π
   rw [hWE]
   rcases eq_or_lt_of_le hE with rfl | hEpos
   · rw [transport_zero_energy (hWs 0), sub_self, mul_zero]; exact TraceBound.zero
@@ -190,7 +188,7 @@ theorem exists_linear_traceBound_monodromyAt {γ : ℝ → ℂ} {K : NNReal} (hK
   refine ⟨C, hC0, fun E hE => ?_⟩
   obtain ⟨W, hW⟩ := transport_exists_of_lipschitz γ hK E
   have hU := transport_mem_unitary hK hW ⟨by positivity, le_rfl⟩
-  have hVV : star (W (2 * π)) * W (2 * π) = 1 := (Unitary.mem_iff.mp hU).1
+  have hVV := (Unitary.mem_iff.mp hU).1
   have heq : monodromy W - 1 = -(star (W (2 * π)) * (W (2 * π) - 1)) := by
     rw [monodromy, ← ContinuousLinearMap.star_eq_adjoint, mul_sub, hVV, mul_one, neg_sub]
   rw [monodromyAt_eq hK hW, heq]

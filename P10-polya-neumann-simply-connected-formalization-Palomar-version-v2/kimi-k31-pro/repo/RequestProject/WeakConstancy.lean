@@ -65,7 +65,7 @@ lemma fderiv_reflBump (φ : ContDiffBump (0 : ℂ)) (x t v : ℂ) :
     fderiv ℝ (reflBump φ x) t v = -((fderiv ℝ (φ.normed volume) (x - t) v : ℝ) : ℂ) := by
   have hρ : HasFDerivAt (φ.normed volume) (fderiv ℝ (φ.normed volume) (x - t)) (x - t) :=
     ((φ.contDiff_normed (n := 1)).differentiable (by simp) _).hasFDerivAt
-  have h := (Complex.ofRealCLM.hasFDerivAt).comp t (hρ.comp t ((hasFDerivAt_id t).const_sub x))
+  have h := Complex.ofRealCLM.hasFDerivAt.comp t (hρ.comp t ((hasFDerivAt_id t).const_sub x))
   have : reflBump φ x = Complex.ofRealCLM ∘ (φ.normed volume) ∘ (fun t => x - t) := rfl
   rw [this, h.fderiv]
   simp
@@ -146,7 +146,7 @@ lemma ae_const_on_ball_of_weakGradient_zero {Ω : Set ℂ} (hΩ : IsOpen Ω) (u 
       have := dist_triangle z y x₀
       show dist z x₀ ≤ 2 * r
       linarith [hεr n]
-    have hd : ∀ y ∈ ball x₀ r, HasFDerivAt (conv n) (0 : ℂ →L[ℝ] ℂ) y := fun y hy =>
+    have hd := fun y hy =>
       hasFDerivAt_mollify_zero hΩ u hu (φ n) y (hsub y hy)
     exact isOpen_ball.is_const_of_fderiv_eq_zero (convex_ball x₀ r).isPreconnected
       (fun y hy => (hd y hy).differentiableAt.differentiableWithinAt)
@@ -157,7 +157,7 @@ lemma ae_const_on_ball_of_weakGradient_zero {Ω : Set ℂ} (hΩ : IsOpen Ω) (u 
       have := (tendsto_const_div_atTop_nhds_zero_nat r).comp (tendsto_add_atTop_nat 1)
       simpa [Function.comp_def, φ] using this
     have hK : ∀ᶠ n in atTop, (φ n).rOut ≤ 2 * (φ n).rIn :=
-      Eventually.of_forall fun n => by simp only [φ]; linarith
+      Eventually.of_forall fun n => by simp [φ]; linarith
     have := ContDiffBump.ae_convolution_tendsto_right_of_locallyIntegrable h0 hK hU
     filter_upwards [this] with x hx
     simpa [hconv, convolution_flip] using hx
@@ -170,7 +170,7 @@ lemma ae_const_on_ball_of_weakGradient_zero {Ω : Set ℂ} (hΩ : IsOpen Ω) (u 
     rw [← hxU]
     exact hx.congr fun n => hconst n x hxb
   haveI : (ae (volume.restrict (ball x₀ r))).NeBot := by
-    rw [ae_neBot, Ne, Measure.restrict_eq_zero]
+    simp
     exact (isOpen_ball.measure_pos volume ⟨x₀, mem_ball_self hr⟩).ne'
   obtain ⟨x₁, hx₁⟩ := hlim'.exists
   refine ⟨u x₁, ?_⟩
@@ -187,7 +187,7 @@ lemma eq_of_ae_const_inter {f : ℂ → ℂ} {B B' : Set ℂ} (hB : IsOpen B) (h
   have h3 : ∀ᵐ z ∂(volume.restrict (B ∩ B')), False := by
     filter_upwards [h1, h2] with z hz hz' using hcc (hz ▸ hz')
   rw [ae_iff, Measure.restrict_apply' (hB.inter hB').measurableSet] at h3
-  simp only [not_false_eq_true, Set.setOf_true, Set.univ_inter] at h3
+  simp at h3
   exact ((hB.inter hB').measure_pos volume hne).ne' h3
 
 /-- A function that is a.e. constant near every point of a domain is a.e. constant. -/
@@ -202,15 +202,15 @@ lemma ae_const_of_locally_ae_const {Ω : Set ℂ} (hΩ : IsDomain Ω) (f : ℂ �
     rw [Metric.isOpen_iff]
     rintro x ⟨r, hr, hb, hPx⟩
     refine ⟨r, hr, fun y hy => ?_⟩
-    have hs : 0 < r - dist y x := sub_pos.mpr (mem_ball.mp hy)
+    have hs := sub_pos.mpr (mem_ball.mp hy)
     have hsub : ball y (r - dist y x) ⊆ ball x r := ball_subset_ball' (by linarith)
     exact ⟨_, hs, hsub.trans hb, hP _ _ hsub hPx⟩
   set S := {x | ∃ r > 0, ball x r ⊆ Ω ∧ ∀ᵐ z ∂(volume.restrict (ball x r)), f z = c₀}
   set T := {x | ∃ r > 0, ball x r ⊆ Ω ∧
     ∃ c ≠ c₀, ∀ᵐ z ∂(volume.restrict (ball x r)), f z = c}
-  have hS : IsOpen S := hopen (fun B => ∀ᵐ z ∂(volume.restrict B), f z = c₀)
+  have hS := hopen (fun B => ∀ᵐ z ∂(volume.restrict B), f z = c₀)
     (fun B B' h hB => ae_restrict_of_ae_restrict_of_subset h hB)
-  have hT : IsOpen T := hopen (fun B => ∃ c ≠ c₀, ∀ᵐ z ∂(volume.restrict B), f z = c)
+  have hT := hopen (fun B => ∃ c ≠ c₀, ∀ᵐ z ∂(volume.restrict B), f z = c)
     (fun B B' h ⟨c, hc, hB⟩ => ⟨c, hc, ae_restrict_of_ae_restrict_of_subset h hB⟩)
   have hdisj : Disjoint S T := by
     rw [Set.disjoint_left]
@@ -223,7 +223,7 @@ lemma ae_const_of_locally_ae_const {Ω : Set ℂ} (hΩ : IsDomain Ω) (f : ℂ �
     by_cases h : c = c₀
     · exact Or.inl ⟨r, hr, hb, h ▸ hc⟩
     · exact Or.inr ⟨r, hr, hb, c, h, hc⟩
-  have hΩS : Ω ⊆ S := IsPreconnected.subset_left_of_subset_union hS hT hdisj hcover
+  have hΩS := IsPreconnected.subset_left_of_subset_union hS hT hdisj hcover
     ⟨x₀, hx₀, r₀, hr₀, hb₀, hc₀⟩ hΩ.2.isPreconnected
   have hΩS' : ∀ x ∈ Ω, ∃ r > 0, ball x r ⊆ Ω ∧
       ∀ᵐ z ∂(volume.restrict (ball x r)), f z = c₀ := hΩS

@@ -28,8 +28,7 @@ variable {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteS
 theorem exists_eigenvector_of_mem_spectrum {T : H →L[ℂ] H} (hT : IsCompactOperator T)
     {k : ℂ} (hk : k ∈ spectrum ℂ T) (hk0 : k ≠ 0) :
     ∃ v : H, v ≠ 0 ∧ T v = k • v := by
-  let C : H →L[ℂ] H := (-k⁻¹) • T
-  have hC : IsCompactOperator C := hT.smul _
+  let C := (-k⁻¹) • T
   have hrel : algebraMap ℂ (H →L[ℂ] H) k - T = k • ((1 : H →L[ℂ] H) + C) := by
     dsimp [C]
     rw [smul_add, smul_smul, mul_neg, mul_inv_cancel₀ hk0, neg_one_smul,
@@ -46,8 +45,8 @@ theorem exists_eigenvector_of_mem_spectrum {T : H →L[ℂ] H} (hT : IsCompactOp
     have h2 : k • (v + (-k⁻¹) • T v) = 0 := by rw [h1, smul_zero]
     rw [smul_add, smul_smul, mul_neg, mul_inv_cancel₀ hk0, neg_one_smul] at h2
     exact (eq_of_sub_eq_zero (by rw [← h2]; abel)).symm
-  have hsurj := (injective_iff_surjective_one_add hC).mp hinj
-  have hunit : IsUnit ((1 : H →L[ℂ] H) + C) := isUnit_of_bijective _ ⟨hinj, hsurj⟩
+  have hsurj := (injective_iff_surjective_one_add (hT.smul _)).mp hinj
+  have hunit := isUnit_of_bijective _ ⟨hinj, hsurj⟩
   apply hk
   show IsUnit _
   rw [hrel, Algebra.smul_def]
@@ -67,14 +66,14 @@ theorem exists_top_eigenvector {T : H →L[ℂ] H} (hT : IsCompactOperator T)
   obtain ⟨k, hk, hkn⟩ := spectrum.exists_nnnorm_eq_spectralRadius T
   have hRadius : spectralRadius ℂ T = (‖T‖₊ : ENNReal) :=
     hP.isSelfAdjoint.spectralRadius_eq_nnnorm
-  have hknNN : ‖k‖₊ = ‖T‖₊ := ENNReal.coe_inj.mp (hkn.trans hRadius)
+  have hknNN := ENNReal.coe_inj.mp (hkn.trans hRadius)
   have hkn' : ‖k‖ = ‖T‖ := congrArg NNReal.toReal hknNN
   have hk0 : k ≠ 0 := by
     intro hk0
     rw [hk0, norm_zero, eq_comm, norm_eq_zero] at hkn'
     exact hT0 hkn'
   obtain ⟨v, hv0, hv⟩ := exists_eigenvector_of_mem_spectrum hT hk hk0
-  have hkreal : k = (k.re : ℂ) := hP.isSelfAdjoint.mem_spectrum_eq_re hk
+  have hkreal := hP.isSelfAdjoint.mem_spectrum_eq_re hk
   have hkpos : 0 ≤ k.re := by
     have hp := hP.re_inner_nonneg_left v
     rw [hv, inner_smul_left, hkreal, inner_self_eq_norm_sq_to_K] at hp
@@ -83,9 +82,9 @@ theorem exists_top_eigenvector {T : H →L[ℂ] H} (hT : IsCompactOperator T)
     exact nonneg_of_mul_nonneg_left hp' (sq_pos_of_pos (norm_pos_iff.mpr hv0))
   have hkeq : k = (‖T‖ : ℂ) := by
     rw [hkreal] at hkn'
-    simp only [Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg hkpos] at hkn'
+    simp [Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg hkpos] at hkn'
     rw [hkreal, hkn']
-  let x : H := (‖v‖⁻¹ : ℂ) • v
+  let x := (‖v‖⁻¹ : ℂ) • v
   refine ⟨x, ?_, ?_, fun y => ?_⟩
   · rw [norm_smul, norm_inv, Complex.norm_real, Real.norm_eq_abs, abs_norm,
       inv_mul_cancel₀ (norm_ne_zero_iff.mpr hv0)]
@@ -173,7 +172,7 @@ theorem exists_positive_eigenfamily {T : H →L[ℂ] H}
              maximal := by simp }⟩
   | succ n ih =>
     obtain ⟨f⟩ := ih
-    let Q : H →L[ℂ] H := 1 - ∑ l ∈ Finset.range n,
+    let Q := 1 - ∑ l ∈ Finset.range n,
       (innerSL ℂ (f.vectors l)).smulRight (f.vectors l)
     have hQapp : ∀ x, Q x = x - ∑ l ∈ Finset.range n,
         ⟪f.vectors l, x⟫_ℂ • f.vectors l := by
@@ -198,7 +197,7 @@ theorem exists_positive_eigenfamily {T : H →L[ℂ] H}
         ⟪f.vectors k, T (Q x)⟫_ℂ = ⟪T (f.vectors k), Q x⟫_ℂ :=
           (hP.inner_left_eq_inner_right _ _).symm
         _ = 0 := by rw [f.eigenvector k hk, inner_smul_left, hQorth x k hk, mul_zero]
-    let T' : H →L[ℂ] H := T.comp Q
+    let T' := T.comp Q
     have hsub : ∀ y, y - Q y = ∑ l ∈ Finset.range n,
         ⟪f.vectors l, y⟫_ℂ • f.vectors l := by
       intro y; rw [hQapp]; abel
@@ -207,7 +206,7 @@ theorem exists_positive_eigenfamily {T : H →L[ℂ] H}
       rw [hsub, inner_sum]
       apply Finset.sum_eq_zero
       intro l hl
-      rw [inner_smul_right, (inner_eq_zero_symm).mpr (hTe x l (Finset.mem_range.mp hl)),
+      rw [inner_smul_right, inner_eq_zero_symm.mpr (hTe x l (Finset.mem_range.mp hl)),
         mul_zero]
     have hTq : ∀ x y, ⟪T' x, y⟫_ℂ = ⟪T (Q x), Q y⟫_ℂ := by
       intro x y
@@ -226,7 +225,7 @@ theorem exists_positive_eigenfamily {T : H →L[ℂ] H}
       change 0 ≤ (⟪T' x, x⟫_ℂ).re
       rw [hTq]
       exact hP.re_inner_nonneg_left _⟩
-    have hCompact' : IsCompactOperator T' := hCompact.comp_clm Q
+    have hCompact' := hCompact.comp_clm Q
     obtain ⟨y, hy0, hy⟩ := exists_nonzero_orthogonal hInfinite f.vectors n
     have hT'0 : T' ≠ 0 := by
       intro hz
@@ -236,7 +235,7 @@ theorem exists_positive_eigenfamily {T : H →L[ℂ] H}
       rw [hTy0, inner_zero_left, Complex.zero_re] at h
       exact lt_irrefl 0 h
     obtain ⟨x, hx1, hTx, hmax⟩ := exists_top_eigenvector hCompact' hP' hT'0
-    have hM : 0 < ‖T'‖ := norm_pos_iff.mpr hT'0
+    have hM := norm_pos_iff.mpr hT'0
     have hxperp : ∀ k < n, ⟪f.vectors k, x⟫_ℂ = 0 := by
       intro k hk
       have hx : x = ((‖T'‖ : ℂ)⁻¹) • T' x := by
@@ -244,7 +243,7 @@ theorem exists_positive_eigenfamily {T : H →L[ℂ] H}
       rw [hx, inner_smul_right]
       change (‖T'‖ : ℂ)⁻¹ * ⟪f.vectors k, T (Q x)⟫_ℂ = 0
       rw [hTe x k hk, mul_zero]
-    have hQx : Q x = x := hQfix x hxperp
+    have hQx := hQfix x hxperp
     refine ⟨{ vectors := Function.update f.vectors n x
               values := Function.update f.values n ‖T'‖
               orthogonal := ?_
@@ -279,7 +278,7 @@ theorem exists_positive_eigenfamily {T : H →L[ℂ] H}
           rwa [Function.update_of_ne (hl.trans hi').ne] at h
       · subst i
         rw [Function.update_self]
-        have hz' : ∀ l < n, ⟪f.vectors l, z⟫_ℂ = 0 := fun l hl => by
+        have hz' := fun l hl => by
           have h := hz l hl
           rwa [Function.update_of_ne hl.ne] at h
         simpa only [T', ContinuousLinearMap.comp_apply, hQfix z hz'] using hmax z
@@ -312,7 +311,7 @@ theorem quadratic_sum_eigenvectors {T : H →L[ℂ] H} {n : ℕ}
     intro i _
     calc
       conj (c i * (ν i : ℂ)) * c i = (ν i : ℂ) * (conj (c i) * c i) := by
-        rw [map_mul, Complex.conj_ofReal]; ring
+        simp; ring
       _ = ((ν i * ‖c i‖ ^ 2 : ℝ) : ℂ) := by
         rw [← Complex.normSq_eq_conj_mul_self, Complex.normSq_eq_norm_sq, Complex.ofReal_mul]
   rw [h, Complex.re_sum]
@@ -337,7 +336,7 @@ omit [CompleteSpace H] in
 theorem threshold_le_last (f : PositiveEigenFamily T j) (hj : 0 < j)
     {s : ℝ} (hs : s ∈ SpectralThreshold T j) : s ≤ f.values (j - 1) := by
   obtain ⟨_, e, he, ν, hν⟩ := hs
-  let W : Submodule ℂ H := Submodule.span ℂ (Set.range e)
+  let W := Submodule.span ℂ (Set.range e)
   have hWdim : Module.finrank ℂ W = j := by
     rw [finrank_span_eq_card he.linearIndependent, Fintype.card_fin]
   letI : Module.Finite ℂ W := Module.finite_of_finrank_pos (by rw [hWdim]; exact hj)
@@ -346,9 +345,8 @@ theorem threshold_le_last (f : PositiveEigenFamily T j) (hj : 0 < j)
       map_add' := by intro x y; ext i; simp [inner_add_right]
       map_smul' := by intro c x; ext i; simp [inner_smul_right] }
   have hker : LinearMap.ker coordinates ≠ ⊥ :=
-    LinearMap.ker_ne_bot_of_finrank_lt (by simp [hWdim]; omega)
+    LinearMap.ker_ne_bot_of_finrank_lt (by simp; omega)
   obtain ⟨x, hx, hx0⟩ := Submodule.exists_mem_ne_zero_of_ne_bot hker
-  have hx0' : (x : H) ≠ 0 := fun h => hx0 (Subtype.ext h)
   have hxorth : ∀ l < j - 1, ⟪f.vectors l, (x : H)⟫_ℂ = 0 := by
     intro l hl
     have h := congrFun (LinearMap.mem_ker.mp hx) (⟨l, hl⟩ : Fin (j - 1))
@@ -356,7 +354,7 @@ theorem threshold_le_last (f : PositiveEigenFamily T j) (hj : 0 < j)
   have hLower : s * ‖(x : H)‖ ^ 2 ≤ (⟪T (x : H), (x : H)⟫_ℂ).re :=
     quadratic_lower_on_eigenspan he ν (fun i => (hν i).1) (fun i => (hν i).2) x.property
   have hUpper := f.maximal (j - 1) (by omega) (x : H) hxorth
-  exact le_of_mul_le_mul_right (hLower.trans hUpper) (sq_pos_of_pos (norm_pos_iff.mpr hx0'))
+  exact le_of_mul_le_mul_right (hLower.trans hUpper) (sq_pos_of_pos (norm_pos_iff.mpr (fun h => hx0 (Subtype.ext h))))
 
 omit [CompleteSpace H] in
 theorem last_mem_threshold (f : PositiveEigenFamily T j) (hj : 0 < j) :
@@ -444,8 +442,8 @@ theorem neumann_rayleigh_lower_of_orthogonality {Ω : Set ℂ} (hΩ : IsOpen Ω)
   obtain ⟨g, hg⟩ := exists_grad_of_rayleigh_ne_top hR
   let v := h1Vector hg
   let a := ContinuousLinearMap.adjoint (h1Value Ω) u
-  have hU : 0 < ‖u‖ ^ 2 := sq_pos_of_pos (norm_pos_iff.mpr hu0)
-  have heigenCoefficient : 0 < f.values j := f.positive j (by omega)
+  have hU := sq_pos_of_pos (norm_pos_iff.mpr hu0)
+  have heigenCoefficient := f.positive j (by omega)
   have hc : ‖u‖ ^ 2 ≤ ‖v‖ * ‖a‖ := by
     have h := norm_inner_le_norm (𝕜 := ℂ) v a
     rw [ContinuousLinearMap.adjoint_inner_right, h1Value_h1Vector,
@@ -467,7 +465,7 @@ theorem neumann_rayleigh_lower_of_orthogonality {Ω : Set ℂ} (hΩ : IsOpen Ω)
   have hV : (f.values j)⁻¹ * ‖u‖ ^ 2 ≤ ‖v‖ ^ 2 := by
     rw [← div_eq_inv_mul, div_le_iff₀ heigenCoefficient]
     simpa only [mul_comm] using hUV
-  have hnorm : ‖v‖ ^ 2 = ‖u‖ ^ 2 + ∑ i, ‖g i‖ ^ 2 := h1Vector_norm_sq hg
+  have hnorm := h1Vector_norm_sq hg
   have hq : ((f.values j)⁻¹ - 1) * ‖u‖ ^ 2 ≤ ∑ i, ‖g i‖ ^ 2 := by
     rw [hnorm] at hV
     nlinarith
@@ -491,7 +489,7 @@ theorem neumannEigenvalue_lower_of_eigenfamily {Ω : Set ℂ} (hΩ : IsOpen Ω)
   have hker : LinearMap.ker coordinates ≠ ⊥ :=
     LinearMap.ker_ne_bot_of_finrank_lt (by simp [hS])
   obtain ⟨u, hu, hu0⟩ := Submodule.exists_mem_ne_zero_of_ne_bot hker
-  have hu0' : (u : L2 Ω) ≠ 0 := fun h => hu0 (Subtype.ext h)
+  have hu0' := fun h => hu0 (Subtype.ext h)
   have horth : ∀ i < j, ⟪f.vectors i, (u : L2 Ω)⟫_ℂ = 0 := by
     intro i hi
     have h := congrFun (LinearMap.mem_ker.mp hu) (⟨i, hi⟩ : Fin j)
@@ -520,7 +518,7 @@ theorem neumann_operator_eigenpair_of_resolvent {Ω : Set ℂ} (hΩ : IsOpen Ω)
     ring
   apply (neumannOperator_eigen_iff_resolvent hΩ _ (by
     rw [hparam]; exact inv_ne_zero (by exact_mod_cast heigenCoefficient.ne')) u).mpr
-  rw [hparam, inv_inv]
+  simp
   exact hu
 
 /-- The span of the actual first `j + 1` eigenvectors yields the original
@@ -531,7 +529,7 @@ theorem neumannEigenvalue_upper_of_eigenfamily {Ω : Set ℂ} (hΩ : IsOpen Ω)
   classical
   let e : Fin (j + 1) → L2 Ω := fun i => f.vectors i
   let E : Fin (j + 1) → ℝ := fun i => (f.values i)⁻¹ - 1
-  have he : Orthonormal ℂ e := f.orthonormal
+  have he := f.orthonormal
   have heig : ∀ i : Fin (j + 1), ∃ hu : e i ∈ (neumannOperator Ω).domain,
       neumannOperator Ω ⟨e i, hu⟩ = (E i : ℂ) • e i := fun i =>
     neumann_operator_eigenpair_of_resolvent hΩ (f.positive i i.isLt) (f.eigenvector i i.isLt)
@@ -543,13 +541,13 @@ theorem neumannEigenvalue_upper_of_eigenfamily {Ω : Set ℂ} (hΩ : IsOpen Ω)
       (f.value_le i.isLt (by omega) (by omega))
     dsimp [E]
     simpa only [one_div] using sub_le_sub_right h 1
-  let S : Submodule ℂ (L2 Ω) := Submodule.span ℂ (Set.range e)
+  let S := Submodule.span ℂ (Set.range e)
   have hS : Module.finrank ℂ S = j + 1 := by
     rw [finrank_span_eq_card he.linearIndependent, Fintype.card_fin]
   unfold neumannEigenvalue
   refine (iInf₂_le S hS).trans (iSup₂_le fun u hu => iSup_le fun hu0 => ?_)
   obtain ⟨c, hc⟩ := (Submodule.mem_span_range_iff_exists_fun ℂ).mp hu
-  let v : (neumannOperator Ω).domain := ∑ i, c i • ed i
+  let v := ∑ i, c i • ed i
   have hvsum : (v : L2 Ω) = ∑ i, c i • e i := by simp [v, ed]
   have hv : (v : L2 Ω) = u := by simpa only [v, Submodule.coe_sum, Submodule.coe_smul] using hc
   have hAv : neumannOperator Ω v = ∑ i, (c i * (E i : ℂ)) • e i := by
@@ -557,7 +555,7 @@ theorem neumannEigenvalue_upper_of_eigenfamily {Ω : Set ℂ} (hΩ : IsOpen Ω)
     rw [map_sum]
     apply Finset.sum_congr rfl
     intro i _
-    rw [map_smul]
+    simp
     change c i • neumannOperator Ω ⟨e i, hd i⟩ = _
     rw [hEigen i, smul_smul]
   have hquadratic : (⟪(v : L2 Ω), neumannOperator Ω v⟫_ℂ).re =
@@ -637,7 +635,7 @@ theorem neumannEigenvalue_multiplicity_le_finrank {Ω : Set ℂ}
     {j : ℕ | neumannEigenvalue Ω j = ENNReal.ofReal E}.encard ≤
       (Module.finrank ℂ (neumannEigenspace Ω E) : ℕ∞) := by
   classical
-  let S : Set ℕ := {j : ℕ | neumannEigenvalue Ω j = ENNReal.ofReal E}
+  let S := {j : ℕ | neumannEigenvalue Ω j = ENNReal.ofReal E}
   have hlt : ENNReal.ofReal E < ENNReal.ofReal (E + 1) :=
     (ENNReal.ofReal_lt_ofReal_iff_of_nonneg hE).mpr (by linarith)
   have hS : S.Finite :=

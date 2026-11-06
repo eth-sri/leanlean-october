@@ -52,7 +52,7 @@ lemma integral_comp_mul_deriv_eq_zero_of_continuous {K : NNReal} (hK : Lipschitz
     {Ψ : ℂ → ℂ} (hΨ : Continuous Ψ) (hΨc : HasCompactSupport Ψ) :
     ∫ θ in (0 : ℝ)..(2 * π), h θ * Ψ (γ θ) * deriv γ θ = 0 := by
   obtain ⟨Mh, hMh⟩ := isCompact_Icc.exists_bound_of_continuousOn hh
-  have hMh0 : 0 ≤ Mh := (norm_nonneg _).trans (hMh 0 ⟨le_rfl, by positivity⟩)
+  have hMh0 := (norm_nonneg _).trans (hMh 0 ⟨le_rfl, by positivity⟩)
   obtain ⟨R, hR0, hR⟩ : ∃ R, 0 < R ∧ ∀ θ ∈ Icc (0 : ℝ) (2 * π), γ θ ∈ closedBall (0 : ℂ) R := by
     obtain ⟨R, hR⟩ := (isCompact_Icc.image hK.continuous).isBounded.subset_closedBall (0 : ℂ)
     exact ⟨max R 1, by positivity, fun θ hθ =>
@@ -60,8 +60,8 @@ lemma integral_comp_mul_deriv_eq_zero_of_continuous {K : NNReal} (hK : Lipschitz
   obtain ⟨χ, hχ, hχc, hχ1⟩ := exists_cutoff_one_on_ball R hR0
   have hu := HasCompactSupport.uniformContinuous_of_continuous hΨc hΨ
   refine norm_le_zero_iff.mp (le_of_forall_pos_le_add fun ε hε => ?_)
-  rw [zero_add]
-  set C : ℝ := Mh * K * (2 * π) + 1 with hC
+  simp
+  set C := Mh * K * (2 * π) + 1 with hC
   have hCpos : 0 < C := by positivity
   obtain ⟨g, hg, hgΨ⟩ := hu.exists_contDiff_dist_le (div_pos hε hCpos)
   set φ : ℂ → ℂ := fun z => (χ z : ℂ) * g z with hφ
@@ -81,13 +81,13 @@ lemma integral_comp_mul_deriv_eq_zero_of_continuous {K : NNReal} (hK : Lipschitz
   refine (intervalIntegral.norm_integral_le_of_norm_le_const (C := Mh * (ε / C) * K)
     fun θ hθ => ?_).trans ?_
   · rw [uIoc_of_le (by positivity)] at hθ
-    have hθ' : θ ∈ Icc (0 : ℝ) (2 * π) := Ioc_subset_Icc_self hθ
+    have hθ' := Ioc_subset_Icc_self hθ
     rw [← sub_mul, ← mul_sub, hφγ θ hθ', norm_mul, norm_mul]
     gcongr
     · exact hMh θ hθ'
     · rw [← dist_eq_norm, dist_comm]; exact (hgΨ _).le
     · exact norm_deriv_le_of_lipschitz hK
-  · rw [sub_zero, abs_of_pos (by positivity)]
+  · simp
     calc Mh * (ε / C) * K * (2 * π) = ε * (Mh * K * (2 * π) / C) := by ring
       _ ≤ ε * 1 := by
           gcongr
@@ -100,8 +100,8 @@ lemma exists_continuous_comp_eq (hγ : IsBoundaryParam Ω γ) {g : ℝ → ℂ}
     (hg : ContinuousOn g (Icc 0 (2 * π))) (hg0 : g 0 = g (2 * π)) :
     ∃ Ψ : ℂ → ℂ, Continuous Ψ ∧ HasCompactSupport Ψ ∧ ∀ θ ∈ Icc 0 (2 * π), Ψ (γ θ) = g θ := by
   obtain ⟨K, hK⟩ := hγ.lipschitz
-  have h2π : (0 : ℝ) < 2 * π := by positivity
-  set S : Set ℂ := γ '' Icc 0 (2 * π) with hS
+
+  set S := γ '' Icc 0 (2 * π) with hS
   have hSc : IsCompact S := isCompact_Icc.image hK.continuous
   -- well-definedness on `S`
   have hwd : ∀ θ ∈ Icc (0 : ℝ) (2 * π), ∀ θ' ∈ Icc (0 : ℝ) (2 * π), γ θ = γ θ' → g θ = g θ' := by
@@ -113,7 +113,7 @@ lemma exists_continuous_comp_eq (hγ : IsBoundaryParam Ω γ) {g : ℝ → ℂ}
       · rw [hγ.injOn ⟨hθ.1, hlt⟩ ⟨hθ'.1, h'⟩ he]
       · subst h'
         rw [hend] at he
-        rw [hγ.injOn ⟨hθ.1, hlt⟩ ⟨le_rfl, h2π⟩ he, hg0]
+        rw [hγ.injOn ⟨hθ.1, hlt⟩ ⟨le_rfl, (by positivity)⟩ he, hg0]
     intro θ hθ θ' hθ' he
     rcases lt_or_eq_of_le hθ.2 with h | h
     · exact key θ hθ h θ' hθ' he
@@ -124,14 +124,14 @@ lemma exists_continuous_comp_eq (hγ : IsBoundaryParam Ω γ) {g : ℝ → ℂ}
   set Ψ₀ : S → ℂ := fun p => g (θof p) with hΨ₀
   have hΨ₀q : ∀ θ (hθ : θ ∈ Icc (0 : ℝ) (2 * π)), Ψ₀ ⟨γ θ, mem_image_of_mem γ hθ⟩ = g θ := by
     intro θ hθ
-    have hm : γ θ ∈ S := mem_image_of_mem γ hθ
+    have hm := mem_image_of_mem γ hθ
     exact hwd _ (hθof _ hm).1 _ hθ (hθof _ hm).2
   set q : Icc (0 : ℝ) (2 * π) → S := fun θ => ⟨γ θ, mem_image_of_mem γ θ.2⟩ with hq
   have hqc : Continuous q := (hK.continuous.comp continuous_subtype_val).subtype_mk _
   have hqs : Function.Surjective q := by
     rintro ⟨p, θ, hθ, rfl⟩
     exact ⟨⟨θ, hθ⟩, rfl⟩
-  have hqq : Topology.IsQuotientMap q := hqc.isClosedMap.isQuotientMap hqc hqs
+  have hqq := hqc.isClosedMap.isQuotientMap hqc hqs
   have hΨ₀c : Continuous Ψ₀ := by
     rw [hqq.continuous_iff]
     have : Ψ₀ ∘ q = fun θ : Icc (0 : ℝ) (2 * π) => g θ := funext fun θ => hΨ₀q θ θ.2
@@ -145,11 +145,11 @@ lemma exists_continuous_comp_eq (hγ : IsBoundaryParam Ω γ) {g : ℝ → ℂ}
   refine ⟨fun z => (χ z : ℂ) * G z, (Complex.continuous_ofReal.comp hχ.continuous).mul
     G.continuous, (hχc.comp_left (g := fun x : ℝ => (x : ℂ)) Complex.ofReal_zero).mul_right,
     fun θ hθ => ?_⟩
-  have hm : γ θ ∈ S := mem_image_of_mem γ hθ
+  have hm := mem_image_of_mem γ hθ
   have hGθ : G (γ θ) = Ψ₀ ⟨γ θ, hm⟩ := by
     have := congrArg (fun F : C(S, ℂ) => F ⟨γ θ, hm⟩) hG
     simpa using this
-  simp only [hχ1 _ (hR hm), Complex.ofReal_one, one_mul, hGθ]
+  simp [hχ1 _ (hR hm), Complex.ofReal_one, one_mul, hGθ]
   exact hΨ₀q θ hθ
 
 /-- A continuous boundary density orthogonal to `φ ∘ γ · γ'` for every test function `φ`
@@ -167,14 +167,14 @@ theorem eq_zero_of_integral_comp_mul_deriv (hγ : IsBoundaryParam Ω γ)
     have hi : IntegrableOn (fun θ => h θ * deriv γ θ) (Ioc 0 (2 * π)) volume := by
       have := intervalIntegrable_mul_comp_mul_deriv hK hh (F := fun _ => (1 : ℂ))
         continuous_const
-      simp only [mul_one] at this
+      simp at this
       exact (intervalIntegrable_iff_integrableOn_Ioc_of_le h2π.le).mp this
     exact (hi.mono_set Ioo_subset_Ioc_self).locallyIntegrableOn
   have hae := isOpen_Ioo.ae_eq_zero_of_integral_contDiff_smul_eq_zero hloc
     (fun g hg hgc hgs => by
       obtain ⟨Ψ, hΨ, hΨc, hΨγ⟩ := exists_continuous_comp_eq hγ (g := fun θ => (g θ : ℂ))
         (Complex.continuous_ofReal.comp hg.continuous).continuousOn (by
-          have h0 : g 0 = 0 := image_eq_zero_of_notMem_tsupport (fun h' => (hgs h').1.false)
+          have h0 := image_eq_zero_of_notMem_tsupport (fun h' => (hgs h').1.false)
           have h1 : g (2 * π) = 0 :=
             image_eq_zero_of_notMem_tsupport (fun h' => (hgs h').2.false)
           simp [h0, h1])
@@ -182,7 +182,7 @@ theorem eq_zero_of_integral_comp_mul_deriv (hγ : IsBoundaryParam Ω γ)
       rw [intervalIntegral.integral_of_le h2π.le] at e
       rw [← e, ← setIntegral_eq_integral_of_forall_compl_eq_zero (s := Ioc 0 (2 * π))]
       · refine setIntegral_congr_fun measurableSet_Ioc fun θ hθ => ?_
-        simp only [hΨγ θ (Ioc_subset_Icc_self hθ), Complex.real_smul]
+        simp [hΨγ θ (Ioc_subset_Icc_self hθ), Complex.real_smul]
         ring
       · intro θ hθ
         have : θ ∉ tsupport g := fun h' => hθ (Ioo_subset_Ioc_self (hgs h'))
@@ -210,7 +210,7 @@ theorem eq_zero_of_integral_comp_mul_deriv (hγ : IsBoundaryParam Ω γ)
   -- and on the closed interval
   have heq : EqOn h (fun _ => (0 : ℂ)) (Icc 0 (2 * π)) :=
     EqOn.of_subset_closure (s := Ioo 0 (2 * π)) hIoo hh continuousOn_const
-      Ioo_subset_Icc_self (by rw [closure_Ioo h2π.ne])
+      Ioo_subset_Icc_self (by simp)
   exact fun θ hθ => heq hθ
 
 end PolyaNeumann

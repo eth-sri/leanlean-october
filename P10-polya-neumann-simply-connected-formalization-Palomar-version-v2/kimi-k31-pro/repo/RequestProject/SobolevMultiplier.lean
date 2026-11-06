@@ -55,8 +55,8 @@ lemma sobWeight_rpow_le_mul {s : ℝ} (hs : 0 ≤ s) (n k : ℤ) :
 theorem ennreal_tsum_cs {ι : Type*} [Countable ι] [MeasurableSpace ι]
     [MeasurableSingletonClass ι] (C G : ι → ℝ≥0∞) :
     (∑' k, C k * G k) ^ 2 ≤ (∑' k, C k) * ∑' k, C k * G k ^ 2 := by
-  have hpq : (2:ℝ).HolderConjugate 2 := Real.HolderConjugate.two_two
-  have h := ENNReal.lintegral_mul_le_Lp_mul_Lq (MeasureTheory.Measure.count) hpq
+  have hpq := Real.HolderConjugate.two_two
+  have h := ENNReal.lintegral_mul_le_Lp_mul_Lq MeasureTheory.Measure.count hpq
     (f := fun k => C k ^ (1/2:ℝ)) (g := fun k => C k ^ (1/2:ℝ) * G k)
     (measurable_of_countable _).aemeasurable (measurable_of_countable _).aemeasurable
   simp only [MeasureTheory.lintegral_count, Pi.mul_apply] at h
@@ -121,27 +121,26 @@ theorem sobNormSq_seqConv_le {s : ℝ} (hs : 0 ≤ s) {c f : ℤ → ℂ} (hc : 
   have ha0 : ∀ k, 0 ≤ a k := fun k => by have := sobWeight_pos k; positivity
   have hb0 : ∀ n, 0 ≤ b n := fun n => by have := sobWeight_pos n; positivity
   have hw1 : ∀ n, 1 ≤ sobWeight n ^ s := fun n => Real.one_le_rpow (one_le_sobWeight n) hs
-  have hca : ∀ k, ‖c k‖ ≤ a k := fun k => le_mul_of_one_le_left (norm_nonneg _) (hw1 k)
-  have hfb : ∀ n, ‖f n‖ ≤ b n := fun n => le_mul_of_one_le_left (norm_nonneg _) (hw1 n)
+
   set S := sobNormSq s f with hS
   set M := wl1Norm s c with hM
-  have hbB : ∀ n, b n ≤ Real.sqrt S := fun n =>
+  have hbB := fun n =>
     Real.le_sqrt_of_sq_le (hf.le_tsum n fun m _ => sq_nonneg _)
   have hsum : ∀ n, Summable fun k => c k * f (n - k) := fun n =>
     Summable.of_norm_bounded (hc.mul_right (Real.sqrt S)) fun k => by
       rw [norm_mul]
-      exact mul_le_mul (hca k) ((hfb _).trans (hbB _)) (norm_nonneg _) (ha0 k)
+      exact mul_le_mul ((fun k => le_mul_of_one_le_left (norm_nonneg _) (hw1 k)) k) (((fun n => le_mul_of_one_le_left (norm_nonneg _) (hw1 n)) _).trans (hbB _)) (norm_nonneg _) (ha0 k)
   have hab : ∀ n, Summable fun k => a k * b (n - k) := fun n =>
     Summable.of_nonneg_of_le (fun k => mul_nonneg (ha0 k) (hb0 _))
       (fun k => mul_le_mul_of_nonneg_left (hbB _) (ha0 k)) (hc.mul_right (Real.sqrt S))
   -- pointwise bound by the convolution of the weighted sequences
   have hpt : ∀ n, sobWeight n ^ s * ‖seqConv c f n‖ ≤ ∑' k, a k * b (n - k) := by
     intro n
-    have hn1 : Summable fun k => ‖c k * f (n - k)‖ := (hsum n).norm
+    have hn1 := (hsum n).norm
     calc sobWeight n ^ s * ‖seqConv c f n‖
         ≤ sobWeight n ^ s * ∑' k, ‖c k * f (n - k)‖ :=
           mul_le_mul_of_nonneg_left (norm_tsum_le_tsum_norm hn1) (by linarith [hw1 n])
-      _ = ∑' k, sobWeight n ^ s * ‖c k * f (n - k)‖ := (tsum_mul_left).symm
+      _ = ∑' k, sobWeight n ^ s * ‖c k * f (n - k)‖ := tsum_mul_left.symm
       _ ≤ ∑' k, a k * b (n - k) := by
           refine Summable.tsum_le_tsum (fun k => ?_) (hn1.mul_left _) (hab n)
           rw [norm_mul, ha, hb]
@@ -201,25 +200,24 @@ theorem wl1Norm_seqConv_le {s : ℝ} (hs : 0 ≤ s) {c d : ℤ → ℂ} (hc : Is
   have ha0 : ∀ k, 0 ≤ a k := fun k => by have := sobWeight_pos k; positivity
   have hb0 : ∀ n, 0 ≤ b n := fun n => by have := sobWeight_pos n; positivity
   have hw1 : ∀ n, 1 ≤ sobWeight n ^ s := fun n => Real.one_le_rpow (one_le_sobWeight n) hs
-  have hca : ∀ k, ‖c k‖ ≤ a k := fun k => le_mul_of_one_le_left (norm_nonneg _) (hw1 k)
-  have hdb : ∀ n, ‖d n‖ ≤ b n := fun n => le_mul_of_one_le_left (norm_nonneg _) (hw1 n)
+
   set N := wl1Norm s d with hN
   set M := wl1Norm s c with hM
-  have hbB : ∀ n, b n ≤ N := fun n => hd.le_tsum n fun m _ => hb0 m
+  have hbB := fun n => hd.le_tsum n fun m _ => hb0 m
   have hsum : ∀ n, Summable fun k => c k * d (n - k) := fun n =>
     Summable.of_norm_bounded (hc.mul_right N) fun k => by
       rw [norm_mul]
-      exact mul_le_mul (hca k) ((hdb _).trans (hbB _)) (norm_nonneg _) (ha0 k)
+      exact mul_le_mul ((fun k => le_mul_of_one_le_left (norm_nonneg _) (hw1 k)) k) (((fun n => le_mul_of_one_le_left (norm_nonneg _) (hw1 n)) _).trans (hbB _)) (norm_nonneg _) (ha0 k)
   have hab : ∀ n, Summable fun k => a k * b (n - k) := fun n =>
     Summable.of_nonneg_of_le (fun k => mul_nonneg (ha0 k) (hb0 _))
       (fun k => mul_le_mul_of_nonneg_left (hbB _) (ha0 k)) (hc.mul_right N)
   have hpt : ∀ n, sobWeight n ^ s * ‖seqConv c d n‖ ≤ ∑' k, a k * b (n - k) := by
     intro n
-    have hn1 : Summable fun k => ‖c k * d (n - k)‖ := (hsum n).norm
+    have hn1 := (hsum n).norm
     calc sobWeight n ^ s * ‖seqConv c d n‖
         ≤ sobWeight n ^ s * ∑' k, ‖c k * d (n - k)‖ :=
           mul_le_mul_of_nonneg_left (norm_tsum_le_tsum_norm hn1) (by linarith [hw1 n])
-      _ = ∑' k, sobWeight n ^ s * ‖c k * d (n - k)‖ := (tsum_mul_left).symm
+      _ = ∑' k, sobWeight n ^ s * ‖c k * d (n - k)‖ := tsum_mul_left.symm
       _ ≤ ∑' k, a k * b (n - k) := by
           refine Summable.tsum_le_tsum (fun k => ?_) (hn1.mul_left _) (hab n)
           rw [norm_mul, ha, hb]
@@ -315,10 +313,9 @@ lemma sobWeight_rpow_mul_norm_primSeq_le (s : ℝ) (ψ : ℤ → ℂ) (n : ℤ) 
     simp [primSeq, Complex.norm_intCast]
   rw [hnorm, Real.rpow_add hw, Real.rpow_one]
   have hle : sobWeight n ≤ 2 * |(n : ℝ)| := by unfold sobWeight; linarith
-  have hpos : 0 < |(n : ℝ)| := by linarith
   have h1 := norm_nonneg (ψ n)
-  have h2 : 0 ≤ sobWeight n ^ s := by positivity
-  rw [mul_div_assoc', div_le_iff₀ hpos]
+
+  rw [mul_div_assoc', div_le_iff₀ (by linarith)]
   calc sobWeight n ^ s * sobWeight n * ‖ψ n‖
       ≤ sobWeight n ^ s * (2 * |(n : ℝ)|) * ‖ψ n‖ := by gcongr
     _ = _ := by ring
@@ -382,7 +379,7 @@ theorem fourierCoeff_mul_hasSum {T : ℝ} [Fact (0 < T)] (c : C(AddCircle T, ℂ
       map_smul' := fun a ψ => by
         rw [RingHom.id_apply, smul_eq_mul, ← integral_const_mul]
         congr 1; ext t; simp; ring }
-  let L : C(AddCircle T, ℂ) →L[ℂ] ℂ := Lin.mkContinuous (∫ t, ‖φ t‖ ∂AddCircle.haarAddCircle)
+  let L := Lin.mkContinuous (∫ t, ‖φ t‖ ∂AddCircle.haarAddCircle)
     (fun ψ => by
       change ‖∫ t, fourier (-n) t * (ψ t * φ t) ∂AddCircle.haarAddCircle‖ ≤ _
       calc _ ≤ ∫ t, ‖fourier (-n) t * (ψ t * φ t)‖ ∂AddCircle.haarAddCircle :=
@@ -390,7 +387,7 @@ theorem fourierCoeff_mul_hasSum {T : ℝ} [Fact (0 < T)] (c : C(AddCircle T, ℂ
         _ ≤ ∫ t, ‖ψ‖ * ‖φ t‖ ∂AddCircle.haarAddCircle := by
             refine integral_mono (hint ψ).norm (hφ.norm.const_mul _) fun t => ?_
             simp only [norm_mul]
-            rw [show ‖fourier (-n) t‖ = 1 by simp, one_mul]
+            simp
             exact mul_le_mul_of_nonneg_right (ψ.norm_coe_le_norm t) (norm_nonneg _)
         _ = _ := by rw [integral_const_mul]; ring)
   have hs := (hasSum_fourier_series_of_summable hc).mapL L
@@ -432,10 +429,10 @@ theorem sobNormSq_mono {s t : ℝ} (hst : s ≤ t) {f : ℤ → ℂ} (hf : IsSob
     IsSobolevSeq s f ∧ sobNormSq s f ≤ sobNormSq t f := by
   have hpt : ∀ n, (sobWeight n ^ s * ‖f n‖) ^ 2 ≤ (sobWeight n ^ t * ‖f n‖) ^ 2 := by
     intro n
-    have h0 : 0 ≤ sobWeight n ^ s * ‖f n‖ := by have := sobWeight_pos n; positivity
-    exact pow_le_pow_left₀ h0
+
+    exact pow_le_pow_left₀ (by have := sobWeight_pos n; positivity)
       (mul_le_mul_of_nonneg_right (sobWeight_rpow_mono hst n) (norm_nonneg _)) 2
-  have hs : IsSobolevSeq s f := Summable.of_nonneg_of_le (fun n => sq_nonneg _) hpt hf
+  have hs := Summable.of_nonneg_of_le (fun n => sq_nonneg _) hpt hf
   exact ⟨hs, Summable.tsum_le_tsum hpt hs hf⟩
 
 /-- The constant `Z = ∑ₙ λₙ^{-2}` controlling point evaluation on `H^1`. -/
@@ -464,17 +461,17 @@ theorem sq_tsum_norm_le {s : ℝ} (hs : 0 ≤ s) {p : ℤ → ℂ} (hp : IsSobol
   set w : ℤ → ℝ := fun n => sobWeight n ^ (s + 1) with hw
   have hw1 : ∀ n, 1 ≤ w n := fun n => Real.one_le_rpow (one_le_sobWeight n) (by linarith)
   have hw0 : ∀ n, 0 < w n := fun n => by linarith [hw1 n]
-  have hwge : ∀ n, sobWeight n ≤ w n := fun n => by
+  have hwge := fun n => by
     have := Real.rpow_le_rpow_of_exponent_le (one_le_sobWeight n) (by linarith : (1:ℝ) ≤ s + 1)
-    simpa [hw] using this
+    simpa using this
   set C : ℤ → ℝ := fun n => 1 / w n ^ 2 with hC
   set G : ℤ → ℝ := fun n => w n ^ 2 * ‖p n‖ with hG
   have hC0 : ∀ n, 0 ≤ C n := fun n => by have := hw0 n; positivity
   have hG0 : ∀ n, 0 ≤ G n := fun n => by have := hw0 n; positivity
-  have hCle : ∀ n, C n ≤ 1 / sobWeight n ^ 2 := fun n => by
+  have hCle := fun n => by
     have := sobWeight_pos n
     exact one_div_le_one_div_of_le (by positivity) (pow_le_pow_left₀ this.le (hwge n) 2)
-  have hCs : Summable C := Summable.of_nonneg_of_le hC0 hCle summable_inv_sobWeight_sq
+  have hCs := Summable.of_nonneg_of_le hC0 hCle summable_inv_sobWeight_sq
   have hCG : ∀ n, C n * G n = ‖p n‖ := fun n => by
     have := (hw0 n).ne'; simp only [hC, hG]; field_simp
   have hCG2 : ∀ n, C n * G n ^ 2 = (w n * ‖p n‖) ^ 2 := fun n => by
@@ -489,7 +486,7 @@ theorem sq_tsum_norm_le {s : ℝ} (hs : 0 ≤ s) {p : ℤ → ℂ} (hp : IsSobol
     exact ENNReal.mul_ne_top ENNReal.ofReal_ne_top ENNReal.ofReal_ne_top (top_le_iff.mp hcs)
   have hps : Summable fun n => ‖p n‖ := by
     have := ENNReal.summable_toReal hfin
-    simpa [ENNReal.toReal_ofReal (norm_nonneg _)] using this
+    simpa using this
   refine ⟨hps, ?_⟩
   rw [← ENNReal.ofReal_tsum_of_nonneg (fun n => norm_nonneg _) hps,
     ← ENNReal.ofReal_pow (tsum_nonneg fun n => norm_nonneg _),

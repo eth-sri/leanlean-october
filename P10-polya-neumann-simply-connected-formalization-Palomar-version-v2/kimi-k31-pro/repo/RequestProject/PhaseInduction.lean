@@ -54,7 +54,7 @@ theorem phase_le_count_of_jumps (lam : ℕ → ℝ) (h0 : lam 0 = 0) (M : ℝ �
     have hE'le : E' ≤ E := min_le_right _ _
     have hno : ∀ j, lam j ∉ Icc E' E := by
       intro j hj
-      have hlt : lam j < E := lt_of_le_of_ne hj.2 (hnr j)
+      have hlt := lt_of_le_of_ne hj.2 (hnr j)
       have : lam j ∈ P := ⟨j, ⟨hE'pos.trans_le hj.1, hlt⟩, rfl⟩
       rw [hPe] at this; exact this
     have h1 := hconst E' E hE'pos hE'le hno
@@ -63,18 +63,17 @@ theorem phase_le_count_of_jumps (lam : ℕ → ℝ) (h0 : lam 0 = 0) (M : ℝ �
     linarith
   · have hne : hPfin.toFinset.Nonempty := by simpa using hPne
     set e := hPfin.toFinset.max' hne with he
-    have heP : e ∈ P := by simpa using hPfin.toFinset.max'_mem hne
-    have hemax : ∀ x ∈ P, x ≤ e := fun x hx =>
+    have hemax := fun x hx =>
       hPfin.toFinset.le_max' x (by simpa using hx)
     set A := insert (0 : ℝ) (hPfin.toFinset.erase e) with hA
     have hAne : A.Nonempty := Finset.insert_nonempty _ _
     set a := A.max' hAne with ha
-    have ha0 : 0 ≤ a := A.le_max' 0 (Finset.mem_insert_self _ _)
-    have haP : ∀ x ∈ P, x ≠ e → x ≤ a := fun x hx hxe =>
+    have ha0 := A.le_max' 0 (Finset.mem_insert_self _ _)
+    have haP := fun x hx hxe =>
       A.le_max' x (Finset.mem_insert_of_mem (Finset.mem_erase.2 ⟨hxe, by simpa using hx⟩))
-    obtain ⟨j0, ⟨hj0pos, hj0E⟩, hj0e⟩ := heP
-    have hepos : 0 < e := hj0e ▸ hj0pos
-    have heE : e < E := hj0e ▸ hj0E
+    obtain ⟨j0, ⟨hj0pos, hj0E⟩, hj0e⟩ := (by simpa using hPfin.toFinset.max'_mem hne)
+    have hepos := hj0e ▸ hj0pos
+    have heE := hj0e ▸ hj0E
     have hae : a < e := by
       have hmem := A.max'_mem hAne
       rw [← ha] at hmem
@@ -84,8 +83,8 @@ theorem phase_le_count_of_jumps (lam : ℕ → ℝ) (h0 : lam 0 = 0) (M : ℝ �
         exact lt_of_le_of_ne (hemax a (by simpa using hm)) hne'
     -- the multiplicity of `e`
     have hsub : {i | lam i = e} ⊆ {j | lam j < E} := fun i hi => by
-      simp only [mem_setOf_eq] at hi ⊢; rw [hi]; exact heE
-    have hmfin : {i | lam i = e}.Finite := hfin.subset hsub
+      simp at hi ⊢; rw [hi]; exact heE
+    have hmfin := hfin.subset hsub
     have hm := hmfin.cast_ncard_eq
     obtain ⟨δ, hδ, hjump⟩ := hjump j0 hj0pos _ (by rw [hj0e]; exact hm.symm)
     rw [hj0e] at hjump
@@ -94,14 +93,14 @@ theorem phase_le_count_of_jumps (lam : ℕ → ℝ) (h0 : lam 0 = 0) (M : ℝ �
     have hmax : max a (e - δ) < e := max_lt hae (by linarith)
     have hE₁lo : max a (e - δ) < E₁ := by rw [hE₁]; linarith
     have hE₁hi : E₁ < e := by rw [hE₁]; linarith
-    have haE₁ : a < E₁ := lt_of_le_of_lt (le_max_left _ _) hE₁lo
-    have hδE₁ : e - δ < E₁ := lt_of_le_of_lt (le_max_right _ _) hE₁lo
-    have hE₁pos : 0 < E₁ := lt_of_le_of_lt ha0 haE₁
+    have haE₁ := lt_of_le_of_lt (le_max_left _ _) hE₁lo
+    have hδE₁ := lt_of_le_of_lt (le_max_right _ _) hE₁lo
+    have hE₁pos := lt_of_le_of_lt ha0 haE₁
     have hmin : e < min (e + δ) E := lt_min (by linarith) heE
     have hE₂lo : e < E₂ := by rw [hE₂]; linarith
     have hE₂hi : E₂ < min (e + δ) E := by rw [hE₂]; linarith
-    have hE₂δ : E₂ < e + δ := lt_of_lt_of_le hE₂hi (min_le_left _ _)
-    have hE₂E : E₂ < E := lt_of_lt_of_le hE₂hi (min_le_right _ _)
+    have hE₂δ := lt_of_lt_of_le hE₂hi (min_le_left _ _)
+    have hE₂E := lt_of_lt_of_le hE₂hi (min_le_right _ _)
     have hnr₁ : ∀ i, lam i ≠ E₁ := by
       intro i hi
       have hiP : lam i ∈ P := ⟨i, ⟨hi ▸ hE₁pos, hi ▸ hE₁hi.trans heE⟩, rfl⟩
@@ -109,12 +108,11 @@ theorem phase_le_count_of_jumps (lam : ℕ → ℝ) (h0 : lam 0 = 0) (M : ℝ �
       linarith
     have hno₂ : ∀ i, lam i ∉ Icc E₂ E := by
       intro i hi
-      have hlt : lam i < E := lt_of_le_of_ne hi.2 (hnr i)
+      have hlt := lt_of_le_of_ne hi.2 (hnr i)
       have hiP : lam i ∈ P := ⟨i, ⟨by linarith [hi.1], hlt⟩, rfl⟩
       have := hemax _ hiP
       linarith [hi.1]
-    have hnr₂ : ∀ i, lam i ≠ E₂ := fun i hi => hno₂ i (by rw [hi]; exact ⟨le_rfl, hE₂E.le⟩)
-    have hjmp := hjump E₁ E₂ hE₁pos hδE₁ hE₁hi hE₂lo hE₂δ hnr₁ hnr₂
+    have hjmp := hjump E₁ E₂ hE₁pos hδE₁ hE₁hi hE₂lo hE₂δ hnr₁ (fun i hi => hno₂ i (by rw [hi]; exact ⟨le_rfl, hE₂E.le⟩))
     -- the induction hypothesis at `E₁`
     have hfin₁ : {j | lam j < E₁}.Finite :=
       hfin.subset fun j hj => lt_trans hj (hE₁hi.trans heE)
@@ -131,7 +129,7 @@ theorem phase_le_count_of_jumps (lam : ℕ → ℝ) (h0 : lam 0 = 0) (M : ℝ �
     -- the count splits at `e`
     have hsplit : {j | lam j < E} = {j | lam j < E₁} ∪ {i | lam i = e} := by
       ext j
-      simp only [mem_setOf_eq, mem_union]
+      simp
       constructor
       · intro hj
         by_cases hj0 : lam j ≤ 0
@@ -146,13 +144,13 @@ theorem phase_le_count_of_jumps (lam : ℕ → ℝ) (h0 : lam 0 = 0) (M : ℝ �
     have hdisj : Disjoint {j | lam j < E₁} {i | lam i = e} := by
       rw [Set.disjoint_left]
       intro j hj1 hj2
-      simp only [mem_setOf_eq] at hj1 hj2
+      simp at hj1 hj2
       linarith
     have hcount : ({j | lam j < E}.ncard : ℝ) =
         {j | lam j < E₁}.ncard + {i | lam i = e}.ncard := by
       rw [hsplit, Set.ncard_union_eq hdisj hfin₁ hmfin]; push_cast; ring
     have hc := hconst E₂ E (hE₁pos.trans (hE₁hi.trans hE₂lo)) hE₂E.le hno₂
-    rw [hcount]
+    simp
     linarith
 
 end PolyaNeumann

@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.TwoPi
 public import RequestProject.ObservationHS
 
 /-!
@@ -26,7 +27,6 @@ namespace PolyaNeumann
 open Real MeasureTheory
 open scoped InnerProductSpace ComplexConjugate
 
-local instance factTwoPiPosKR : Fact (0 < 2 * π) := ⟨two_pi_pos⟩
 
 /-- `L²(𝕋)` with the normalized Haar measure on `ℝ / 2πℤ`. -/
 abbrev L2Circ := Lp ℂ 2 (@AddCircle.haarAddCircle (2 * π) _)
@@ -54,7 +54,7 @@ lemma memLp_liftIco_two_pi {f : ℝ → ℂ} (hf : Measurable f) {M : ℝ} (hM :
 lemma fourierCoeff_liftIco_two_pi (f : ℝ → ℂ) (n : ℤ) :
     fourierCoeff (AddCircle.liftIco (2 * π) 0 f) n = fourierCoeffOn two_pi_pos f n := by
   rw [fourierCoeff_liftIco_eq, fourierCoeffOn_eq_integral, fourierCoeffOn_eq_integral]
-  simp only [fourier_coe_apply, zero_add, sub_zero]
+  simp
 
 /-- Fourier coefficients of a complex conjugate. -/
 lemma fourierCoeffOn_conj (g : ℝ → ℂ) (m : ℤ) :
@@ -69,8 +69,7 @@ lemma fourierCoeffOn_conj (g : ℝ → ℂ) (m : ℤ) :
   congr 1
   rw [fourier_coe_apply, fourier_coe_apply, ← Complex.exp_conj]
   congr 1
-  have h2 : (starRingEnd ℂ) 2 = 2 := map_ofNat _ 2
-  simp [Complex.conj_ofReal, h2]
+  simp [Complex.conj_ofReal, (map_ofNat _ 2)]
 
 section Kernel
 

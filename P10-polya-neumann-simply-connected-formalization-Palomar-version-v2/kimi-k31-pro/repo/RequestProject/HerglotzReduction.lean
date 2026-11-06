@@ -35,7 +35,7 @@ lemma herglotzCoeff_add_density {a b : ℝ → ℂ} (ha : IsDirDensity a)
     (hb : IsDirDensity b) (k : ℝ) (m : ℤ) (z : ℂ) :
     herglotzCoeff k (a + b) m z = herglotzCoeff k a m z + herglotzCoeff k b m z := by
   unfold herglotzCoeff
-  simp only [Pi.add_apply, add_mul, mul_add]
+  simp [Pi.add_apply, add_mul, mul_add]
   rw [intervalIntegral.integral_add
     (intervalIntegrable_herglotz ha.intervalIntegrable k m z)
     (intervalIntegrable_herglotz hb.intervalIntegrable k m z), mul_add]
@@ -43,7 +43,7 @@ lemma herglotzCoeff_add_density {a b : ℝ → ℂ} (ha : IsDirDensity a)
 lemma herglotzCoeff_smul_density (a : ℝ → ℂ) (c : ℂ) (k : ℝ) (m : ℤ) (z : ℂ) :
     herglotzCoeff k (c • a) m z = c * herglotzCoeff k a m z := by
   unfold herglotzCoeff
-  simp only [Pi.smul_apply, smul_eq_mul]
+  simp
   have h : (fun φ : ℝ => Complex.exp (-((m : ℂ) * φ * Complex.I)) *
       (c * a φ * planeWave k z φ)) = fun φ : ℝ => c *
         (Complex.exp (-((m : ℂ) * φ * Complex.I)) * (a φ * planeWave k z φ)) := by
@@ -55,20 +55,20 @@ lemma herglotzConormal_add_density {a b : ℝ → ℂ} (ha : IsDirDensity a)
     (hb : IsDirDensity b) (k : ℝ) (γ : ℝ → ℂ) :
     herglotzConormal k (a + b) γ = herglotzConormal k a γ + herglotzConormal k b γ := by
   funext θ
-  simp only [Pi.add_apply]
+  simp
   rw [herglotzConormal_eq (IsDirDensity.intervalIntegrable (ha.add hb)),
     herglotzConormal_eq ha.intervalIntegrable, herglotzConormal_eq hb.intervalIntegrable]
-  simp only [herglotzCoeff_add_density ha hb]
+  simp [herglotzCoeff_add_density ha hb]
   ring
 
 lemma herglotzConormal_smul_density {a : ℝ → ℂ} (ha : IsDirDensity a)
     (c : ℂ) (k : ℝ) (γ : ℝ → ℂ) :
     herglotzConormal k (c • a) γ = c • herglotzConormal k a γ := by
   funext θ
-  simp only [Pi.smul_apply]
+  simp
   rw [herglotzConormal_eq (IsDirDensity.intervalIntegrable (ha.const_smul c)),
     herglotzConormal_eq ha.intervalIntegrable]
-  simp only [herglotzCoeff_smul_density, smul_eq_mul]
+  simp [herglotzCoeff_smul_density, smul_eq_mul]
   ring
 
 /-- The actual conormal trace is in `L²` of the parameter interval for every
@@ -79,98 +79,16 @@ theorem memLp_herglotzConormal {a : ℝ → ℂ} (ha : IsDirDensity a) (k : ℝ)
   obtain ⟨hgm, B, hgB⟩ := herglotzConormal_bounded ha.intervalIntegrable k hK
   exact MemLp.of_bound hgm.restrict B (Eventually.of_forall hgB)
 
-/-- Parseval puts the Fourier coefficients of a physical `L²` trace in `H^s`
-for every `s ≤ 0`. This is independent of the origin of the trace. -/
-theorem isSobolevSeq_fourierCoeffOn_of_memLp {g : ℝ → ℂ}
-    (hg : MemLp g 2 (volume.restrict (Ioc 0 (2 * π)))) {s : ℝ} (hs : s ≤ 0) :
-    IsSobolevSeq s (fourierCoeffOn Real.two_pi_pos g) := by
-  have h0 : IsSobolevSeq 0 (fourierCoeffOn Real.two_pi_pos g) := by
-    simpa only [IsSobolevSeq, Real.rpow_zero, one_mul] using
-      (hasSum_sq_fourierCoeffOn Real.two_pi_pos hg).summable
-  exact (sobNormSq_mono hs h0).1
 
-/-- The Fourier coefficients of the actual conormal density belong to `H⁻¹ᐟ²`.
-In particular this applies to a genuine Lipschitz conformal boundary chart if one
-has been constructed; no assertion about its Hardy subspace is made here. -/
-theorem isSobolevSeq_herglotzConormal {a : ℝ → ℂ} (ha : IsDirDensity a) (k : ℝ)
-    {γ : ℝ → ℂ} {K : NNReal} (hK : LipschitzWith K γ) :
-    IsSobolevSeq (-(1 / 2 : ℝ))
-      (fourierCoeffOn Real.two_pi_pos (herglotzConormal k a γ)) :=
-  isSobolevSeq_fourierCoeffOn_of_memLp (memLp_herglotzConormal ha k hK) (by norm_num)
 
-lemma sobWeight_rpow_neg_half (n : ℤ) :
-    sobWeight n ^ (-(1 / 2 : ℝ)) = (Real.sqrt (1 + |(n : ℝ)|))⁻¹ := by
-  rw [Real.rpow_neg (sobWeight_pos n).le, ← Real.sqrt_eq_rpow]
-  rfl
 
-/-- Physical Fourier coordinates of a Herglotz conormal trace on any Lipschitz
-curve. The `2π` is required by the unnormalized boundary integral in `observationAdj`. -/
-def physicalHerglotzConormalVec {γ : ℝ → ℂ} {K : NNReal} (hK : LipschitzWith K γ)
-    (k : ℝ) (a : dirDensities) : L2Z :=
-  (2 * π : ℂ) • sobVec (-(1 / 2 : ℝ))
-    (fourierCoeffOn Real.two_pi_pos (herglotzConormal k a.1 γ))
-    (isSobolevSeq_herglotzConormal a.2 k hK)
 
-@[simp] lemma physicalHerglotzConormalVec_apply {γ : ℝ → ℂ} {K : NNReal}
-    (hK : LipschitzWith K γ) (k : ℝ) (a : dirDensities) (n : ℤ) :
-    physicalHerglotzConormalVec hK k a n =
-      ((2 * π / Real.sqrt (1 + |(n : ℝ)|) : ℝ) : ℂ) *
-        fourierCoeffOn Real.two_pi_pos (herglotzConormal k a.1 γ) n := by
-  simp only [physicalHerglotzConormalVec, lp.coeFn_smul, Pi.smul_apply,
-    sobVec_apply, smul_eq_mul, sobWeight_rpow_neg_half]
-  push_cast
-  ring
 
-/-- Smoothness of the boundary makes the actual conormal trace continuous on the
-parameter interval. This uses the regularity of the constant-speed parametrization. -/
-theorem continuousOn_herglotzConormal_smooth {Ω : Set ℂ} (hS : IsSmoothDomain Ω)
-    {γ : ℝ → ℂ} (hγ : IsBoundaryParam Ω γ) {a : ℝ → ℂ} (ha : IsDirDensity a) (k : ℝ) :
-    ContinuousOn (herglotzConormal k a γ) (Icc 0 (2 * π)) := by
-  obtain ⟨K, hK⟩ := hγ.lipschitz
-  obtain ⟨K', hK'⟩ := hγ.deriv_lipschitz hS
-  have hd : ContinuousOn (deriv γ) (Icc 0 (2 * π)) := by
-    exact (LipschitzOnWith.of_dist_le_mul (K := K') fun x hx y hy =>
-      by simpa only [dist_eq_norm, Real.dist_eq, Real.norm_eq_abs] using hK' x hx y hy).continuousOn
-  have hm (m : ℤ) : ContinuousOn (fun θ => herglotzCoeff k a m (γ θ)) (Icc 0 (2 * π)) :=
-    ((continuous_herglotzCoeff ha.intervalIntegrable k m).comp hK.continuous).continuousOn
-  have : ContinuousOn (fun θ => (k / 2 : ℂ) *
-      (conj (deriv γ θ) * herglotzCoeff k a (-1) (γ θ) -
-        deriv γ θ * herglotzCoeff k a 1 (γ θ))) (Icc 0 (2 * π)) :=
-    continuousOn_const.mul ((hd.star.mul (hm (-1))).sub (hd.mul (hm 1)))
-  exact this.congr fun θ _ => herglotzConormal_eq ha.intervalIntegrable k γ θ
 
-/-- A continuous extension of the trace, used only to feed the interval Fourier map.
-Clamping preserves every value on the integration interval. -/
-def clampedHerglotzConormal (k : ℝ) (γ : ℝ → ℂ) (a : ℝ → ℂ) : ℝ → ℂ :=
-  fun θ => herglotzConormal k a γ (clampTwoPi θ)
 
-lemma clampedHerglotzConormal_eq {k : ℝ} {γ a : ℝ → ℂ} {θ : ℝ}
-    (hθ : θ ∈ Icc 0 (2 * π)) :
-    clampedHerglotzConormal k γ a θ = herglotzConormal k a γ θ := by
-  rw [clampedHerglotzConormal, clampTwoPi_of_mem hθ]
 
-theorem continuous_clampedHerglotzConormal {Ω : Set ℂ} (hS : IsSmoothDomain Ω)
-    {γ : ℝ → ℂ} (hγ : IsBoundaryParam Ω γ) {a : ℝ → ℂ} (ha : IsDirDensity a) (k : ℝ) :
-    Continuous (clampedHerglotzConormal k γ a) :=
-  (continuousOn_herglotzConormal_smooth hS hγ ha k).comp_continuous
-    continuous_clampTwoPi clampTwoPi_mem
 
-/-- Actual normalized Herglotz conormal coordinates `2π λ⁻¹ᐟ² ĝ`, with the Fourier
-normalization used by `projObsDual`. -/
-def normalizedHerglotzConormal {Ω : Set ℂ} (hS : IsSmoothDomain Ω) {γ : ℝ → ℂ}
-    (hγ : IsBoundaryParam Ω γ) (k : ℝ) (a : dirDensities) : L2Z :=
-  ⟨fun n => ((2 * π / Real.sqrt (1 + |(n : ℝ)|) : ℝ) : ℂ) *
-      fourierCoeffOn Real.two_pi_pos (clampedHerglotzConormal k γ a.1) n,
-    memℓp_normalizedCoeff (continuous_clampedHerglotzConormal hS hγ a.2 k)⟩
 
-@[simp] lemma normalizedHerglotzConormal_apply {Ω : Set ℂ} (hS : IsSmoothDomain Ω)
-    {γ : ℝ → ℂ} (hγ : IsBoundaryParam Ω γ) (k : ℝ) (a : dirDensities) (n : ℤ) :
-    normalizedHerglotzConormal hS hγ k a n =
-      ((2 * π / Real.sqrt (1 + |(n : ℝ)|) : ℝ) : ℂ) *
-        fourierCoeffOn Real.two_pi_pos (herglotzConormal k a.1 γ) n := by
-  change _ * _ = _ * _
-  congr 1
-  exact fourierCoeffOn_congr_Icc (fun θ hθ => clampedHerglotzConormal_eq hθ) n
 
 /-- The pointwise Cayley factorization of the uncorrected boundary expression.
 It supplies the actual boundary expression, not merely its integral quadratic form. -/
@@ -191,11 +109,10 @@ theorem periodicA_herglotz_eq_observation {γ : ℝ → ℂ} {K : NNReal}
   have htr := driven_trace hK hW hgm hgB hy ey θ hθ
   have hadd := volterraOp_add_adj hW.1 hgm hgB hθ
   rw [(herglotzForm_eq hK hclosed hW ha).1] at hadd
-  have hr : (Real.sqrt 2 : ℂ) ≠ 0 := by
-    exact_mod_cast (Real.sqrt_pos.mpr (by norm_num : (0 : ℝ) < 2)).ne'
+
   have hw : herglotzWave (Real.sqrt E) a (γ θ) =
       (Real.sqrt 2 : ℂ) * inner ℂ (basisVec 0) (herglotzVec ha (Real.sqrt E) (γ θ)) := by
-    simp only [basisVec, inner_single, herglotzVec_apply, herglotzSeq, if_true,
+    simp [basisVec, inner_single, herglotzVec_apply, herglotzSeq, if_true,
       herglotzWave_eq]
     field_simp
   rw [periodicA, hw]
@@ -233,7 +150,7 @@ theorem herglotzForm_eq_periodicP_sub_cutBE {γ : ℝ → ℂ} {K : NNReal}
     refine intervalIntegral.integral_congr fun θ hθ => ?_
     rw [uIcc_of_le Real.two_pi_pos.le] at hθ
     rw [periodicP, periodicA_herglotz_eq_observation hK hclosed hW ha hθ]
-    simp only [v, x, cutBE, observation, map_add, inner_add_right]
+    simp [v, x, cutBE, observation, map_add, inner_add_right]
   rw [hP, inner_add_right, Complex.add_re, add_sub_cancel_right]
   exact (herglotzForm_eq hK hclosed hW ha).2
 
@@ -286,6 +203,6 @@ theorem herglotzVec_centeredPolyDensity (k : ℝ) (z : ℂ) (s : Finset ℕ) (c 
       herglotzCoeff k (polyDensity k s c) m 0 := by
     change herglotzCoeff k (fun φ : ℝ => polyDensity k s c φ * planeWave k (-z) φ) m z = _
     exact herglotzCoeff_shift k (polyDensity k s c) m z
-  simp only [herglotzVec_apply, herglotzSeq, hcoeff]
+  simp [herglotzVec_apply, herglotzSeq, hcoeff]
 
 end PolyaNeumann
