@@ -18,17 +18,6 @@ namespace HK
 
 open Filter Topology
 
-theorem sbc5Family_r_pos (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1) :
-    ∀ i, 0 < sbc5Family_r δ i := by
-  intro i
-  fin_cases i <;> simp [sbc5Family_r] <;> linarith
-
-/-- The family is genuinely heterogeneous whenever the amplitude is positive. -/
-theorem sbc5Family_r_strict (δ : ℝ) (hδ0 : 0 < δ) :
-    sbc5Family_r δ 0 < sbc5Family_r δ 1 := by
-  simp only [sbc5Family_r, Matrix.cons_val_zero, Matrix.cons_val_one]
-  linarith
-
 /-- The fixed table holds throughout the whole interval `-δ ≤ u ≤ δ`. -/
 theorem sbc5Family_table (δ u : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1)
     (hu0 : -δ ≤ u) (hu1 : u ≤ δ) :
@@ -41,8 +30,7 @@ theorem sbc5Family_table (δ u : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1)
   have hδs := mul_le_mul_of_nonneg_left hs2.le hδ0.le
   have hp0 : -(3 / 2) * δ ≤ u * Real.sqrt 2 := by nlinarith
   have hp1 : u * Real.sqrt 2 ≤ (3 / 2) * δ := by nlinarith
-  funext i
-  ext j
+  ext i j
   fin_cases i <;> fin_cases j <;>
     simp [neighbors, Model.bound, sbc5Family_r, sbc5_lim, sbc5_v, abs_le] <;>
     (try constructor) <;> (try intro) <;> linarith
@@ -52,24 +40,18 @@ theorem sbc5Family_step (δ u : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1)
     step .sbc (sbc5Family_r δ) (fun i => sbc5_lim i + u * sbc5_v i) =
       fun i => sbc5_lim i + (sbc5Rate * u) * sbc5_v i := by
   have h2 := sbc_sqrt_two_sq
+  have h2u := congrArg (fun x : ℝ => u * x) h2
   funext i
   rw [step_apply, sbc5Family_table δ u hδ0 hδ1 hu0 hu1]
-  fin_cases i
-  · simp [sbc5_lim, sbc5_v]
-  · simp [Finset.sum_insert, sbc5_lim, sbc5_v, sbc5Rate]; ring
-  · simp [Finset.sum_insert, sbc5_lim, sbc5_v, sbc5Rate]
-    linear_combination (-u / 3) * h2
-  · simp [Finset.sum_insert, sbc5_lim, sbc5_v, sbc5Rate]; ring
-  · simp [sbc5_lim, sbc5_v]
+  fin_cases i <;> simp [Finset.sum_insert, sbc5_lim, sbc5_v, sbc5Rate] <;> nlinarith [h2u]
 
 theorem sbc5Family_pow_bounds (δ : ℝ) (hδ0 : 0 < δ) (t : ℕ) :
     -δ ≤ sbc5Rate ^ t * δ ∧ sbc5Rate ^ t * δ ≤ δ := by
   obtain ⟨h0, h1⟩ := sbc_pow_bounds t
   have hr := sbc_rate_gt
-  have hlo : -1 ≤ sbc5Rate ^ t := by linarith
   constructor <;> nlinarith
 
-theorem sbc5Family_closed_form_internal (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1)
+theorem sbc5Family_closed_form (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1)
     (t : ℕ) :
     traj .sbc (sbc5Family_r δ) (sbc5Family_x0 δ) t =
       fun i => sbc5_lim i + (sbc5Rate ^ t * δ) * sbc5_v i := by
@@ -78,24 +60,19 @@ theorem sbc5Family_closed_form_internal (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ �
     funext i
     simp [traj, sbc5Family_x0]
   | succ t ih =>
-    have h : traj .sbc (sbc5Family_r δ) (sbc5Family_x0 δ) (t + 1) =
-        step .sbc (sbc5Family_r δ)
-          (traj .sbc (sbc5Family_r δ) (sbc5Family_x0 δ) t) := by
-      simp only [traj]
-      exact Function.iterate_succ_apply' _ _ _
     obtain ⟨h0, h1⟩ := sbc5Family_pow_bounds δ hδ0 t
-    rw [h, ih, sbc5Family_step δ _ hδ0 hδ1 h0 h1]
+    rw [traj_succ, ih, sbc5Family_step δ _ hδ0 hδ1 h0 h1]
     funext i
     rw [pow_succ]
     ring
 
-theorem sbc5Family_neighbors_internal (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1)
+theorem sbc5Family_neighbors (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1)
     (t : ℕ) :
     neighbors .sbc (sbc5Family_r δ)
       (traj .sbc (sbc5Family_r δ) (sbc5Family_x0 δ) t) =
       ![{0}, {0, 1, 2}, {1, 2, 3}, {2, 3, 4}, {4}] := by
   obtain ⟨h0, h1⟩ := sbc5Family_pow_bounds δ hδ0 t
-  rw [sbc5Family_closed_form_internal δ hδ0 hδ1,
+  rw [sbc5Family_closed_form δ hδ0 hδ1,
     sbc5Family_table δ _ hδ0 hδ1 h0 h1]
 
 theorem sbc5Family_rate_tendsto (δ : ℝ) :
@@ -103,39 +80,10 @@ theorem sbc5Family_rate_tendsto (δ : ℝ) :
   simpa using
     (tendsto_pow_atTop_nhds_zero_of_abs_lt_one abs_sbc5Rate_lt_one).mul_const δ
 
-theorem sbc5Family_tendsto (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1) :
-    Tendsto (traj .sbc (sbc5Family_r δ) (sbc5Family_x0 δ)) atTop (𝓝 sbc5_lim) :=
-  tendsto_of_closed_form _ _ sbc5_v _ (sbc5Family_rate_tendsto δ)
-    (sbc5Family_closed_form_internal δ hδ0 hδ1)
-
-theorem sbc5Family_digraph_constant (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1)
-    (t : ℕ) :
-    proximityDigraph .sbc (sbc5Family_r δ)
-        (traj .sbc (sbc5Family_r δ) (sbc5Family_x0 δ) t) =
-      proximityDigraph .sbc (sbc5Family_r δ) (sbc5Family_x0 δ) := by
-  have h0 : traj .sbc (sbc5Family_r δ) (sbc5Family_x0 δ) 0 = sbc5Family_x0 δ := rfl
-  have ht0 := sbc5Family_neighbors_internal δ hδ0 hδ1 0
-  rw [h0] at ht0
-  simp only [proximityDigraph, sbc5Family_neighbors_internal δ hδ0 hδ1, ht0]
-
-theorem sbc5Family_not_fixedFrom (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1)
-    (τ : ℕ) :
-    ¬ FixedFrom (traj .sbc (sbc5Family_r δ) (sbc5Family_x0 δ)) τ :=
-  not_fixedFrom_of_closed_form _ _ sbc5_v _
-    (sbc5Family_closed_form_internal δ hδ0 hδ1)
-    (alternating _ _ sbc5Rate_neg hδ0.ne') 1 (by simp [sbc5_v]) τ
-
-theorem sbc5Family_not_pseudoStableAfter (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1)
-    (xinf : Fin 5 → ℝ) (τ : ℕ) :
-    ¬ PseudoStableAfter (traj .sbc (sbc5Family_r δ) (sbc5Family_x0 δ)) xinf τ :=
-  not_pseudoStable_of_closed_form _ _ sbc5_v _ (sbc5Family_rate_tendsto δ)
-    (sbc5Family_closed_form_internal δ hδ0 hδ1)
-    (alternating _ _ sbc5Rate_neg hδ0.ne') xinf τ
-
 /-- No positive bound on relative radius spread restores eventual pseudo-stability, even
 for a constant-digraph SBC system on five agents. The pairwise inequalities express that
 the largest radius divided by the smallest is strictly below `1+ε`. -/
-theorem sbc5_near_homogeneous_internal (ε : ℝ) (hε : 0 < ε) :
+theorem sbc5_near_homogeneous (ε : ℝ) (hε : 0 < ε) :
     ∃ r x₀ : Fin 5 → ℝ,
       (∀ i, 0 < r i) ∧
       (∀ i j, r i < (1 + ε) * r j) ∧
@@ -152,10 +100,18 @@ theorem sbc5_near_homogeneous_internal (ε : ℝ) (hε : 0 < ε) :
   have hδ1 : δ ≤ 1 := by linarith
   have hεδ := mul_le_mul_of_nonneg_left hδhalf hε.le
   have hspread : 6 + 3 * δ < (1 + ε) * (6 - 3 * δ) := by nlinarith
-  refine ⟨sbc5Family_r δ, sbc5Family_x0 δ, sbc5Family_r_pos δ hδ0 hδ1, ?_,
-    sbc5Family_r_strict δ hδ0, sbc5Family_digraph_constant δ hδ0 hδ1,
-    sbc5Family_tendsto δ hδ0 hδ1, sbc5Family_not_fixedFrom δ hδ0 hδ1,
-    sbc5Family_not_pseudoStableAfter δ hδ0 hδ1⟩
+  refine ⟨sbc5Family_r δ, sbc5Family_x0 δ, (by
+    intro i
+    fin_cases i <;> simp [sbc5Family_r] <;> linarith), ?_, (by
+    simp only [sbc5Family_r, Matrix.cons_val_zero, Matrix.cons_val_one]
+    linarith),
+    digraph_constant_of_neighbors _ _ _ _ (sbc5Family_neighbors δ hδ0 hδ1),
+    tendsto_of_closed_form _ _ sbc5_v _ (sbc5Family_rate_tendsto δ)
+      (sbc5Family_closed_form δ hδ0 hδ1),
+    not_fixedFrom_of_closed_form _ _ sbc5_v _ (sbc5Family_closed_form δ hδ0 hδ1)
+      (alternating _ _ sbc5Rate_neg hδ0.ne') 1 (by simp [sbc5_v]),
+    not_pseudoStable_of_closed_form _ _ sbc5_v _ (sbc5Family_rate_tendsto δ)
+      (sbc5Family_closed_form δ hδ0 hδ1) (alternating _ _ sbc5Rate_neg hδ0.ne')⟩
   intro i j
   have hi : sbc5Family_r δ i ≤ 6 + 3 * δ := by
     fin_cases i <;> simp [sbc5Family_r] <;> linarith
