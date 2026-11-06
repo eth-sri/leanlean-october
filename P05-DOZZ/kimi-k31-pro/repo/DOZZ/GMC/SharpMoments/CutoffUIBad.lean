@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.SharpMoments.CutoffUIBound
-public import DOZZ.GMC.SharpMoments.CutoffConvergence
+import DOZZ.GMC.SharpMoments.CutoffUIBound
+import DOZZ.GMC.SharpMoments.CutoffConvergence
 
 /-! # The bad region of regularized Coulomb masses
 
@@ -14,7 +13,6 @@ cutoff scale is below the disk radius, the cutoff Coulomb mass of the bad region
 moment, uniformly over compact parameter sets: the root disks are cutoff weighted masses of small
 disks, and the far exterior decays by exact exterior scaling. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology Metric
 open scoped ENNReal NNReal
@@ -33,7 +31,7 @@ theorem measurableSet_coulombBadRegion {N : ℕ} (z : Fin N → ℂ) (ρ : ℝ) 
 
 theorem mem_coulombBadRegion_compl {N : ℕ} (z : Fin N → ℂ) (ρ : ℝ) (x : ℂ) :
     x ∈ (coulombBadRegion z ρ)ᶜ ↔ ‖x‖ ≤ 1 / ρ ∧ ∀ k, ρ ≤ ‖x - z k‖ := by
-  simp only [coulombBadRegion, Set.mem_compl_iff, Set.mem_union, Set.mem_iUnion,
+  simp [coulombBadRegion, Set.mem_compl_iff, Set.mem_union, Set.mem_iUnion,
     Metric.mem_ball, dist_eq_norm, not_or, not_exists, not_lt, Set.mem_ofPred_eq]
   tauto
 
@@ -70,7 +68,7 @@ theorem lintegral_coulombBadRegion_le {N : ℕ} (μ : Measure ℂ) (G : ℂ → 
     _ = _ := by
         rw [lintegral_add_left hS, lintegral_finsetSum _ fun k _ => hG.indicator (hBm k),
           lintegral_indicator hEm]
-        simp only [lintegral_indicator (hBm _)]
+        simp [lintegral_indicator (hBm _)]
 
 /-- The far exterior coefficient: `(2/ρ)^{βt} (ρ R₀)^{ξ} ≤ 2^{Et} R₀^{4t} ρ^κ`. -/
 theorem farExterior_coeff_le {ρ R0 β E t ξ κ : ℝ} (hρ : 0 < ρ) (hρ1 : ρ ≤ 1) (hR0 : 1 ≤ R0)

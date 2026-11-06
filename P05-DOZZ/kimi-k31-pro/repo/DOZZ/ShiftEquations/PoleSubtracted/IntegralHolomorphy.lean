@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import Mathlib.Analysis.Complex.Liouville
-public import Mathlib.Analysis.Calculus.ParametricIntegral
+import Mathlib.Analysis.Complex.Liouville
+import Mathlib.Analysis.Calculus.ParametricIntegral
 
 /-!
 # Holomorphy of parametric integrals
@@ -21,7 +20,6 @@ the integrand by `2 g ω / r`, and then differentiates under the integral sign
 obtained as an almost everywhere limit of difference quotients.
 -/
 
-@[expose] public section
 
 open MeasureTheory Filter Topology Set Metric
 
@@ -109,4 +107,3 @@ theorem differentiableOn_integral_of_locally_dominated {Ω : Type*} [MeasurableS
 
 end DOZZ.Proofs
 
-end

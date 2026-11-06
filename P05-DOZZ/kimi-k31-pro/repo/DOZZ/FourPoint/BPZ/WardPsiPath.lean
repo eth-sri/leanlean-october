@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.BPZ.WardPsiKernel
+import DOZZ.FourPoint.BPZ.WardPsiKernel
 
 /-! # The pathwise root derivative of the rooted mixed mass
 
@@ -12,7 +11,6 @@ For fixed measures, the rooted mixed mass is differentiable in its root at every
 distance `2δ` from the limit region, provided the cutoff measure has no atom at the root. The
 derivative is the integral of the kernel derivatives. -/
 
-@[expose] public section
 
 open MeasureTheory Filter Topology
 open scoped ENNReal NNReal
@@ -70,7 +68,6 @@ theorem bpzCutRootKernel_le (γ r : ℝ) (x y : ℂ) :
   rw [← Real.exp_add]
   apply Real.exp_le_exp.mpr
   have := bpzLam_le r (x - y)
-  have hγ := sq_nonneg γ
   nlinarith
 
 /-- The cutoff part of the rooted mixed mass is differentiable at a non-atom. -/
@@ -135,8 +132,6 @@ theorem hasFDerivAt_bpz_lim_part {γ r δ : ℝ} {ρ k₂ : ℂ → ℝ} {m₂ :
         bpzTruncLogDeriv r (x₀ - y) ∂m₂) x₀ := by
   set R : ℝ := ‖x₀‖ + δ with hR
   set B : ℝ := (1 + (1 + R) / δ) ^ (γ ^ 2) with hB
-  have hR0 : 0 ≤ R := by positivity
-  have hB0 : 0 ≤ B := Real.rpow_nonneg (by positivity) _
   have hw : ∀ y, 0 ≤ (1 - ρ y) * k₂ y := fun y => mul_nonneg (by linarith [hρ1 y]) (hk₂0 y)
   have hball : ∀ x ∈ Metric.ball x₀ δ, ∀ y, ρ y < 1 → ‖x‖ ≤ R ∧ δ ≤ ‖x - y‖ := by
     intro x hx y hy
@@ -194,7 +189,7 @@ theorem hasFDerivAt_bpz_lim_part {γ r δ : ℝ} {ρ k₂ : ℂ → ℝ} {m₂ :
           linarith
         have h := (hasFDerivAt_bpzLimRootKernel γ r hne).const_mul ((1 - ρ y) * k₂ y)
         simpa [smul_smul, mul_assoc] using h
-      · simp only [hy, sub_self, zero_mul, zero_smul]
+      · simp [hy, sub_self, zero_mul, zero_smul]
         exact hasFDerivAt_const 0 x₀)
   exact hmain.2
 

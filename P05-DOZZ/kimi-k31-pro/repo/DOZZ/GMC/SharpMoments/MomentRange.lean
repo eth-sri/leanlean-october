@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.SharpMoments.BallScaling
-public import DOZZ.Statements.GMC.GmcMassMoment
+import DOZZ.GMC.SharpMoments.BallScaling
+import DOZZ.Statements.GMC.GmcMassMoment
 
 /-! # The sharp unweighted moment range
 
@@ -16,7 +15,6 @@ threshold comes from the critical endpoint on the logarithmic chart. At an arbit
 divergence is transported by the location transfer at subcritical orders `p' ↑ 4/γ²`, whose
 constants stay bounded, and Fatou. See [KRV, (condmom)]. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped ENNReal NNReal

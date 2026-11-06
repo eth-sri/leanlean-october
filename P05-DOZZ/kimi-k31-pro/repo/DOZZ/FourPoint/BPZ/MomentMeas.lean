@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.BPZ.SoftLimitC
+import DOZZ.FourPoint.BPZ.SoftLimitC
 
 /-! # Measurability of the derivative masses in the measure
 
@@ -14,7 +13,6 @@ the measurable set of measures for which the function is integrable, and zero el
 consequence the softened mass and its first and second derivatives are strongly measurable
 functions of a measurable random measure. -/
 
-@[expose] public section
 
 open MeasureTheory Filter Topology
 open scoped ENNReal

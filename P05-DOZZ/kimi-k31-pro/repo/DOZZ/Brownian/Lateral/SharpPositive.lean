@@ -2,11 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.Annulus.ReferenceIntensity
-public import DOZZ.Brownian.Lateral.PositiveUniform
-public import DOZZ.Brownian.Lateral.RadialWindowUniform
+import DOZZ.GMC.Annulus.ReferenceIntensity
+import DOZZ.Brownian.Lateral.PositiveUniform
+import DOZZ.Brownian.Lateral.RadialWindowUniform
 
 /-!
 # Positive lateral moments from the proved sharp reference induction
@@ -17,7 +16,6 @@ subcritical moment range is now proved. Radial independence then transfers that 
 to the given lateral measure. No moment assumption is added to its source predicate.
 -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Set Filter Topology
 open scoped ENNReal NNReal Distributions

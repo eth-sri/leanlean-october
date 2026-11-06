@@ -2,15 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.KahaneAffineSoftMax
-public import Mathlib.Topology.Order.Lattice
-public import Mathlib.Analysis.SpecificLimits.Normed
+import DOZZ.GMC.KahaneAffineSoftMax
+import Mathlib.Topology.Order.Lattice
+import Mathlib.Analysis.SpecificLimits.Normed
 
 /-! Uniform bounds and convergence for finite affine soft maxima. -/
 
-@[expose] public section
 
 open Filter Topology
 open scoped BigOperators
@@ -57,7 +55,7 @@ theorem affineSoftMax_bounds {ι : Type*} [Fintype ι] [Nonempty ι]
           intro i hi
           exact Real.exp_le_exp.mpr
             (mul_le_mul_of_nonneg_left (affineMax_le a b x i) hβ.le)
-        _ = _ := by simp only [Finset.sum_const, Finset.card_univ, nsmul_eq_mul]
+        _ = _ := by simp [Finset.sum_const, Finset.card_univ, nsmul_eq_mul]
     have h := Real.log_le_log hSpos hsum
     rw [Real.log_mul hcard.ne' (Real.exp_pos _).ne', Real.log_exp] at h
     apply (div_le_iff₀ hβ).mpr
@@ -107,7 +105,7 @@ theorem affineSoftMax_tendsto {ι : Type*} [Fintype ι] [Nonempty ι]
   have herr := hden.const_div_atTop (Real.log (Fintype.card ι : ℝ))
   have hu : Tendsto (fun n : ℕ => affineMax a b x +
       Real.log (Fintype.card ι : ℝ) / ((n : ℝ) + 1)) atTop (𝓝 (affineMax a b x)) := by
-    simpa only [add_zero] using tendsto_const_nhds.add herr
+    simpa [add_zero] using tendsto_const_nhds.add herr
   exact tendsto_of_tendsto_of_tendsto_of_le_of_le tendsto_const_nhds hu
     (fun n => (affineSoftMax_bounds a b _ x (by positivity)).1)
     (fun n => (affineSoftMax_bounds a b _ x (by positivity)).2)

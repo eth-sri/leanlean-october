@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.GMC.IsGaussianL2Limit
-public import DOZZ.GMC.FiniteGaussianTilt
+import DOZZ.Statements.GMC.IsGaussianL2Limit
+import DOZZ.GMC.FiniteGaussianTilt
 
 /-! Signed finite tilting follows from positive tilting and integrability. -/
 
-public section
 
 open MeasureTheory ProbabilityTheory ENNReal
 open scoped Distributions ENNReal NNReal
@@ -18,32 +16,27 @@ namespace DOZZ.Proofs
 
 private lemma ennreal_ofReal_max_zero (x : ℝ) :
     ENNReal.ofReal (max x 0) = ENNReal.ofReal x := by
-  by_cases hx : 0 ≤ x
-  · simp [max_eq_left hx]
-  · have hx' : x ≤ 0 := le_of_not_ge hx
-    simp only [ENNReal.ofReal, max_eq_right hx']
-    rw [Real.toNNReal_of_nonpos hx']
-    simp
+  simp
 
 /-- Signed finite-dimensional Cameron--Martin tilt, derived by applying the nonnegative identity
 to the positive and negative parts. -/
 theorem finite_gaussian_tilt_signed
     {Ω : Type*} [MeasurableSpace Ω] {ι : Type*} [Fintype ι]
     (P : Measure Ω) (Z : Ω → ι → ℝ)
-    (hZ : DOZZ.IsCenteredJointlyGaussian P Z) (a : ι → ℝ)
+    (hZ : IsCenteredJointlyGaussian P Z) (a : ι → ℝ)
     (F : (ι → ℝ) → ℝ) (hF : Measurable F)
     (hI : Integrable (fun ω => F (fun i => Z ω i +
-      ∑ j, DOZZ.gaussianCovariance P (fun ω => Z ω i) (fun ω => Z ω j) * a j)) P) :
+      ∑ j, gaussianCovariance P (fun ω => Z ω i) (fun ω => Z ω j) * a j)) P) :
     ∫ ω, Real.exp ((∑ i, a i * Z ω i) -
-        (∑ i, ∑ j, a i * DOZZ.gaussianCovariance P (fun ω => Z ω i)
+        (∑ i, ∑ j, a i * gaussianCovariance P (fun ω => Z ω i)
           (fun ω => Z ω j) * a j) / 2) * F (Z ω) ∂P =
       ∫ ω, F (fun i => Z ω i +
-        ∑ j, DOZZ.gaussianCovariance P (fun ω => Z ω i) (fun ω => Z ω j) * a j) ∂P := by
+        ∑ j, gaussianCovariance P (fun ω => Z ω i) (fun ω => Z ω j) * a j) ∂P := by
   classical
   let shift : (ι → ℝ) → (ι → ℝ) := fun y i => y i +
-    ∑ j, DOZZ.gaussianCovariance P (fun ω => Z ω i) (fun ω => Z ω j) * a j
+    ∑ j, gaussianCovariance P (fun ω => Z ω i) (fun ω => Z ω j) * a j
   let tiltExp : Ω → ℝ := fun ω => Real.exp ((∑ i, a i * Z ω i) -
-    (∑ i, ∑ j, a i * DOZZ.gaussianCovariance P (fun ω => Z ω i)
+    (∑ i, ∑ j, a i * gaussianCovariance P (fun ω => Z ω i)
       (fun ω => Z ω j) * a j) / 2)
   let G : Ω → ℝ := fun ω => tiltExp ω * F (Z ω)
   let pos : (ι → ℝ) → ℝ≥0∞ := fun y => ENNReal.ofReal (max (F y) 0)
@@ -55,11 +48,10 @@ theorem finite_gaussian_tilt_signed
     exact hZ.2.1 i
   have hFZ : AEMeasurable (fun ω => F (Z ω)) P := hF.aemeasurable.comp_aemeasurable hZae
   have hlinAE : AEMeasurable (fun ω => ∑ i, a i * Z ω i) P := by
-    have hcoord : ∀ i, AEMeasurable (fun ω => Z ω i) P := hZ.2.1
     fun_prop
   have hTiltExp : AEMeasurable tiltExp P := by
     have hlog : AEMeasurable (fun ω => (∑ i, a i * Z ω i) -
-        (∑ i, ∑ j, a i * DOZZ.gaussianCovariance P (fun ω => Z ω i)
+        (∑ i, ∑ j, a i * gaussianCovariance P (fun ω => Z ω i)
           (fun ω => Z ω j) * a j) / 2) P := by
       exact measurable_sub.comp_aemeasurable
         (hlinAE.prodMk (measurable_const.aemeasurable))

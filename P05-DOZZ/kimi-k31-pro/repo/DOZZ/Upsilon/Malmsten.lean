@@ -2,22 +2,20 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import Mathlib.Basic.Real.Basic
-public import Mathlib.Analysis.Complex.Exponential
-public import Mathlib.Analysis.SpecialFunctions.Gamma.Basic
-public import Mathlib.Analysis.SpecialFunctions.Gamma.BohrMollerup
-public import Mathlib.Analysis.SpecialFunctions.FrullaniIntegral
-public import Mathlib.Analysis.Calculus.Taylor
-public import Mathlib.MeasureTheory.Integral.Bochner.Basic
-public import Mathlib.MeasureTheory.Integral.IntegrableOn
+import Mathlib.Basic.Real.Basic
+import Mathlib.Analysis.Complex.Exponential
+import Mathlib.Analysis.SpecialFunctions.Gamma.Basic
+import Mathlib.Analysis.SpecialFunctions.Gamma.BohrMollerup
+import Mathlib.Analysis.SpecialFunctions.FrullaniIntegral
+import Mathlib.Analysis.Calculus.Taylor
+import Mathlib.MeasureTheory.Integral.Bochner.Basic
+import Mathlib.MeasureTheory.Integral.IntegrableOn
 
 /-!
 # Malmsten representation and Gamma identification
 -/
 
-@[expose] public section
 
 open MeasureTheory Set Filter Topology
 
@@ -75,8 +73,7 @@ private lemma malmstenRealNumerator_taylorWithinEval_zero (x u : ℝ) :
 private lemma exists_malmstenRealNumerator_taylor_bound (x : ℝ) :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ u ∈ Icc 0 1,
       |malmstenRealNumerator x u| ≤ C * u ^ 2 := by
-  have hcont : ContDiffOn ℝ (1 + 1) (malmstenRealNumerator x) (Icc 0 1) := by
-    exact (malmstenRealNumerator_contDiff x).contDiffOn.mono (Set.subset_univ _)
+  have hcont : ContDiffOn ℝ (1 + 1) (malmstenRealNumerator x) (Icc 0 1) := (malmstenRealNumerator_contDiff x).contDiffOn.mono (Set.subset_univ _)
   obtain ⟨C, hC⟩ := exists_taylor_mean_remainder_bound
     (f := malmstenRealNumerator x) (a := 0) (b := 1) (n := 1) (by norm_num) hcont
   refine ⟨C, ?_, ?_⟩
@@ -108,8 +105,7 @@ private lemma malmstenRealIntegrand_norm_le_local {x u C : ℝ}
     (hTaylor : ∀ u ∈ Icc 0 1, |malmstenRealNumerator x u| ≤ C * u ^ 2)
     (hu : 0 < u) (hu1 : u ≤ 1) :
     |malmstenRealIntegrand x u| ≤ C / (1 - Real.exp (-1)) := by
-  have hc : 0 < 1 - Real.exp (-1) := by
-    exact sub_pos.mpr (Real.exp_lt_one_iff.mpr (by norm_num))
+  have hc : 0 < 1 - Real.exp (-1) := sub_pos.mpr (Real.exp_lt_one_iff.mpr (by norm_num))
   have hden : 0 < u * (1 - Real.exp (-u)) := by
     apply mul_pos hu
     exact sub_pos.mpr (Real.exp_lt_one_iff.mpr (by linarith))
@@ -118,8 +114,7 @@ private lemma malmstenRealIntegrand_norm_le_local {x u C : ℝ}
     calc
       (1 - Real.exp (-1)) * u ^ 2 = u * ((1 - Real.exp (-1)) * u) := by ring
       _ ≤ u * (1 - Real.exp (-u)) := mul_le_mul_of_nonneg_left hlinear hu.le
-  rw [malmstenRealIntegrand_eq_num hu]
-  rw [abs_div, abs_of_pos hden]
+  rw [malmstenRealIntegrand_eq_num hu, abs_div, abs_of_pos hden]
   apply (div_le_iff₀ hden).2
   have hnum := hTaylor u ⟨hu.le, hu1⟩
   calc
@@ -141,8 +136,6 @@ private lemma malmstenRealIntegrand_aestronglyMeasurable (x : ℝ) :
 private lemma malmstenRealIntegrand_integrableOn_Ioc {x : ℝ} (_hx : 0 < x) :
     IntegrableOn (malmstenRealIntegrand x) (Ioc 0 1) := by
   obtain ⟨C, hC, hTaylor⟩ := exists_malmstenRealNumerator_taylor_bound x
-  have hc : 0 < 1 - Real.exp (-1) := by
-    exact sub_pos.mpr (Real.exp_lt_one_iff.mpr (by norm_num))
   have hmeas := malmstenRealIntegrand_aestronglyMeasurable x
   apply Measure.integrableOn_of_bounded (s := Ioc 0 1) (μ := volume) (by simp) hmeas
   filter_upwards [ae_restrict_mem measurableSet_Ioc] with u hu
@@ -154,8 +147,7 @@ private lemma malmstenRealIntegrand_norm_le_tail {x u : ℝ} (_hx : 0 < x)
     |malmstenRealIntegrand x u| ≤
       ((|x - 1| + 1) / (1 - Real.exp (-1))) * Real.exp (-u) +
         (1 / (1 - Real.exp (-1))) * Real.exp (-x * u) := by
-  have hc : 0 < 1 - Real.exp (-1) := by
-    exact sub_pos.mpr (Real.exp_lt_one_iff.mpr (by norm_num))
+  have hc : 0 < 1 - Real.exp (-1) := sub_pos.mpr (Real.exp_lt_one_iff.mpr (by norm_num))
   have huPos : 0 < u := by linarith
   have hexp : Real.exp (-u) ≤ Real.exp (-1) :=
     Real.exp_le_exp.mpr (by linarith)
@@ -216,12 +208,8 @@ private lemma malmstenRealIntegrand_norm_le_tail {x u : ℝ} (_hx : 0 < x)
 
 private lemma malmstenRealIntegrand_integrableOn_Ioi_one {x : ℝ} (hx : 0 < x) :
     IntegrableOn (malmstenRealIntegrand x) (Ioi 1) := by
-  have hc : 0 < 1 - Real.exp (-1) := by
-    exact sub_pos.mpr (Real.exp_lt_one_iff.mpr (by norm_num))
   let A : ℝ := (|x - 1| + 1) / (1 - Real.exp (-1))
   let B : ℝ := 1 / (1 - Real.exp (-1))
-  have hA : 0 ≤ A := by dsimp [A]; positivity
-  have hB : 0 ≤ B := by dsimp [B]; positivity
   have hmajor1 : IntegrableOn (fun u : ℝ => A * Real.exp (-u)) (Ioi 1) := by
     change Integrable (fun u : ℝ => A * Real.exp (-u)) (volume.restrict (Ioi 1))
     simpa [mul_comm] using (exp_neg_integrableOn_Ioi 1 (b := 1) (by norm_num)).const_mul A
@@ -443,4 +431,3 @@ theorem malmstenRealH_exp_eq_Gamma {x : ℝ} (hx : 0 < x) :
 
 end DOZZ.Proofs
 
-end

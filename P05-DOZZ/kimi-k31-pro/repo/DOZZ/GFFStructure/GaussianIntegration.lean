@@ -2,8 +2,7 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.GFFStructure.CircleContinuity
+import DOZZ.GFFStructure.CircleContinuity
 import Mathlib.Analysis.Convex.Integral
 import Mathlib.Analysis.InnerProductSpace.Projection.Basic
 import Mathlib.Topology.Sequences
@@ -17,7 +16,6 @@ keep deterministic integrals in that span. Scalar product Fubini identifies the 
 representative with the literal samplewise integral used in the off-center decomposition.
 -/
 
-@[expose] public section
 
 open Filter MeasureTheory ProbabilityTheory Set
 open scoped Topology ENNReal NNReal
@@ -37,7 +35,7 @@ theorem hasGaussianLaw_of_mem_span {Z : T → Lp ℝ 2 P}
   obtain ⟨a, ha⟩ := Finsupp.mem_span_range_iff_exists_finsupp.mp hU
   have he : U = ∑ i : a.support, a i • Z i := by
     rw [← ha]
-    simpa only [Finsupp.sum] using (Finset.sum_coe_sort a.support (fun i => a i • Z i)).symm
+    simpa [Finsupp.sum] using (Finset.sum_coe_sort a.support (fun i => a i • Z i)).symm
   rw [he]
   exact (gaussianProcess_linearCombination hZ a.support (fun i => a i)).congr
     (coeFn_L2_linearCombination (fun i : a.support => a i) (fun i => Z i)).symm
@@ -79,7 +77,7 @@ theorem integral_mem_closedSubmodule {A E : Type*} [MeasurableSpace A]
     (hK : IsClosed (K : Set E)) (F : A → E) (hF : Integrable F μ)
     (hmem : ∀ᵐ a ∂μ, F a ∈ K) : (∫ a, F a ∂μ) ∈ K := by
   by_cases hμ : μ = 0
-  · simp only [hμ, integral_zero_measure, Submodule.zero_mem]
+  · simp [hμ, integral_zero_measure]
   · let _ : NeZero μ := ⟨hμ⟩
     have hav := K.convex.average_mem hK hmem hF
     have h := K.smul_mem (μ.real univ) hav
@@ -102,7 +100,7 @@ theorem integral_mean_L2_integral {A : Type*} [MeasurableSpace A]
   have hi := ((innerSL ℝ V).integral_comp_comm hF).symm
   change inner ℝ V (∫ a, F a ∂μ) = ∫ a, inner ℝ V (F a) ∂μ at hi
   change inner ℝ (∫ a, F a ∂μ) V = ∫ a, inner ℝ (F a) V ∂μ
-  simpa only [real_inner_comm V] using hi
+  simpa [real_inner_comm V] using hi
 
 /-- Centering passes from the deterministic parameter family to its L² integral. -/
 theorem integral_mean_L2_integral_eq_zero {A : Type*} [MeasurableSpace A]
@@ -122,7 +120,7 @@ theorem covariance_L2_integral_left {A : Type*} [MeasurableSpace A]
   simp_rw [covariance_L2_eq, hzero, zero_mul, sub_zero]
   have hi := ((innerSL ℝ V).integral_comp_comm hF).symm
   change inner ℝ V (∫ a, F a ∂μ) = ∫ a, inner ℝ V (F a) ∂μ at hi
-  simpa only [real_inner_comm V] using hi
+  simpa [real_inner_comm V] using hi
 
 /-- Closed Hilbert subspaces contain Bochner integrals for arbitrary measures. -/
 theorem integral_mem_closedHilbertSubmodule {A E : Type*} [MeasurableSpace A]
@@ -168,14 +166,14 @@ omit [IsProbabilityMeasure P] in
 theorem integral_mean_L2_smul (a : ℝ) (U : Lp ℝ 2 P) :
     (∫ ω, (a • U) ω ∂P) = a * (∫ ω, U ω ∂P) := by
   rw [integral_congr_ae (Lp.coeFn_smul a U)]
-  simpa only [Pi.smul_apply, smul_eq_mul] using integral_const_mul a (fun ω => U ω)
+  simpa [Pi.smul_apply, smul_eq_mul] using integral_const_mul a (fun ω => U ω)
 
 omit [IsProbabilityMeasure P] in
 /-- Scalar multiplication commutes with covariance of L² representatives. -/
 theorem covariance_L2_smul_left (a : ℝ) (U V : Lp ℝ 2 P) :
     covariance (⇑(a • U)) V P = a * covariance U V P := by
   rw [covariance_congr_ae (Lp.coeFn_smul a U) (EventuallyEq.rfl : (⇑V) =ᵐ[P] V)]
-  simpa only [Pi.smul_def, smul_eq_mul] using covariance_const_mul_left a
+  simpa [Pi.smul_def, smul_eq_mul] using covariance_const_mul_left a
 
 /-- On a probability space, the L¹ norm of an L² representative is bounded by its L² norm. -/
 theorem integral_norm_L2_le (U : Lp ℝ 2 P) : (∫ ω, ‖U ω‖ ∂P) ≤ ‖U‖ := by

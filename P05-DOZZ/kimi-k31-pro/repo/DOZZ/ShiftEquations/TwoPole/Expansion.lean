@@ -2,13 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.ShiftEquations.TwoPole.MellinLocal
-public import DOZZ.ShiftEquations.TwoPole.Coefficients
-public import DOZZ.ShiftEquations.TwoPole.RealFrame
-public import DOZZ.Statements.Brownian.IsSourceLateralProjection
-public import DOZZ.Statements.Correlations.UniformPositiveC1Family
+import DOZZ.ShiftEquations.TwoPole.MellinLocal
+import DOZZ.ShiftEquations.TwoPole.Coefficients
+import DOZZ.ShiftEquations.TwoPole.RealFrame
+import DOZZ.Statements.Brownian.IsSourceLateralProjection
+import DOZZ.Statements.Correlations.UniformPositiveC1Family
 import DOZZ.ShiftEquations.PoleSubtracted.Holomorphy
 import DOZZ.Brownian.Reflection.PositiveFinite
 import Mathlib.Analysis.Complex.RemovableSingularity
@@ -29,7 +28,6 @@ The two-insertion tail estimate `twoInsertion_tail_sum_uniform` enters as the hy
 its conclusion at the given field and chaos.
 -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
@@ -138,8 +136,7 @@ theorem structureConstant_two_pole_expansion_of_tail
     intro x hx
     have h := hC 2 rfl (-2) rfl (2 / γ + η) rfl (Q γ - η - γ / 2) rfl (poleFactorTwo γ η) rfl
       (poleFactorNegTwo γ η) rfl x hx
-    rw [hR₂def, hR₃def, hQ] at h
-    exact h
+    rwa [hR₂def, hR₃def, hQ] at h
   have hβ : reflectionExponent γ (2 / γ - η) <
       twoInsertionTailCeiling γ (2 / γ + η) (2 / γ - η) - θ := by
     rw [reflectionExponent_pole_neg hγ η]
@@ -316,4 +313,3 @@ theorem structureConstant_two_pole_expansion_of_tail
 
 end DOZZ.Proofs
 
-end

@@ -2,12 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.Correlations.Symmetry.ReflectionTest
-public import DOZZ.GMC.CircleAverageLimits
-public import DOZZ.GFFStructure.CirclePotential
-public import Mathlib.MeasureTheory.Group.Integral
-@[expose] public section
+import DOZZ.Correlations.Symmetry.ReflectionTest
+import DOZZ.GMC.CircleAverageLimits
+import DOZZ.GFFStructure.CirclePotential
+import Mathlib.MeasureTheory.Group.Integral
 open MeasureTheory Set
 open scoped Distributions
 namespace DOZZ.Proofs
@@ -27,7 +25,7 @@ theorem reflection_source_circle_potential (x : ℂ) :
     (∫ w, gffKernel (1 - x) w ∂circleMeasure 1 0) =
       symmetryReflectionPotential x + symmetryReflectionKappa := by
   rw [integral_gffKernel_circleMeasure]
-  simp only [neg_zero, Real.exp_zero,
+  simp [neg_zero, Real.exp_zero,
     show (1 : ℂ) - (1 - x) = x by ring]
   unfold symmetryReflectionPotential symmetryReflectionKappa normPlus
   ring
@@ -68,7 +66,7 @@ theorem reflection_normalization_variance
   rw [isCircleAverage_covariance P X hX Xc hXc]
   change circleSelfEnergy 1 0 = 2 * symmetryReflectionKappa
   rw [circleSelfEnergy_eq]
-  simp only [zero_add, symmetryReflectionKappa]
+  simp [zero_add, symmetryReflectionKappa]
 
 /-- The correlated normalization is in the actual source field's Gaussian closure. -/
 theorem reflection_normalization_gaussianL2

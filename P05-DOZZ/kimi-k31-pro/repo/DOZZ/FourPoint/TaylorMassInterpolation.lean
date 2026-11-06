@@ -2,13 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.TaylorKernelMass
+import DOZZ.FourPoint.TaylorKernelMass
 
 /-! Positive square interpolation with every extended-mass endpoint retained. -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -51,7 +49,7 @@ theorem square_inverse_mass_bound (A I : ℝ≥0∞) (k p : ℝ)
     (hk : 0 ≤ k) (hp : 0 ≤ p) (hA : A ≤ ENNReal.ofReal k * I) :
     A ^ 2 * I ^ (-p - 2) ≤ ENNReal.ofReal (k ^ 2) * I ^ (-p) := by
   by_cases hI0 : I = 0
-  · have hA0 : A = 0 := le_zero_iff.mp (by simpa only [hI0, mul_zero] using hA)
+  · have hA0 : A = 0 := le_zero_iff.mp (by simpa [hI0, mul_zero] using hA)
     simp only [hA0, zero_pow (by norm_num : (2 : ℕ) ≠ 0), zero_mul]
     exact zero_le
   by_cases hItop : I = ⊤

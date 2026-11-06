@@ -1,11 +1,9 @@
-module
 
-public import DOZZ.GMC.WeightedCutoff.RootUniform
-public import DOZZ.GMC.WeightedCutoff.AnnularRoot
+import DOZZ.GMC.WeightedCutoff.RootUniform
+import DOZZ.GMC.WeightedCutoff.AnnularRoot
 
 /-! # Uniform positive-charge weighted cutoff estimates -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs

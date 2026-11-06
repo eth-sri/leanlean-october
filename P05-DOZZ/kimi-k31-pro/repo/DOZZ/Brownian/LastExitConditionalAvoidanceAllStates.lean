@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Brownian.LastExitConditionalAvoidance
-public import DOZZ.Brownian.LastExitStateNoAtoms
+import DOZZ.Brownian.LastExitConditionalAvoidance
+import DOZZ.Brownian.LastExitStateNoAtoms
 
 /-!
 # Full deterministic-time avoidance identity
@@ -15,7 +14,6 @@ makes strict future avoidance impossible. Atomlessness of the deterministic entr
 the endpoint equality case, yielding the full a.e. conditional identity.
 -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Set Filter Topology
 open scoped ENNReal NNReal
@@ -44,8 +42,7 @@ private theorem conditionedPositiveFutureAvoidance_implies_state_ge
     exact congrArg (fun s : ℝ≥0 => -(p s)) (add_zero t)
   have hopen : IsOpen (F ⁻¹' Set.Iio (c : ℝ)) := isOpen_Iio.preimage hF
   have hmem : (0 : ℝ) ∈ F ⁻¹' Set.Iio (c : ℝ) := by
-    rw [Set.mem_preimage, hFzero]
-    exact hxc
+    rwa [Set.mem_preimage, hFzero]
   obtain ⟨δ, hδ, hball⟩ := Metric.mem_nhds_iff.mp (hopen.mem_nhds hmem)
   obtain ⟨q, hq0, hqδ⟩ := exists_rat_btwn (show (0 : ℝ) < δ by positivity)
   have hdist : dist (q : ℝ) 0 < δ := by
@@ -120,8 +117,7 @@ theorem conditionedPositiveHistory_condExp_rationalFuture_avoidance_shift_on_bel
   have hEmeas : MeasurableSet E :=
     measurableSet_le measurable_const
       ((measurable_conditionedPositiveStateAt t).comp measurable_id)
-  have hgInt : Integrable g P := by
-    exact (integrable_const (1 : ℝ)).indicator hEmeas
+  have hgInt : Integrable g P := (integrable_const (1 : ℝ)).indicator hEmeas
   have hstateFil : Measurable[conditionedPositiveNaturalFiltration t]
       (conditionedPositiveStateAt t) := by
     apply Measurable.of_comap_le
@@ -130,8 +126,7 @@ theorem conditionedPositiveHistory_condExp_rationalFuture_avoidance_shift_on_bel
     exact le_iSup_of_le t (le_iSup_of_le le_rfl le_rfl)
   have hEfil : MeasurableSet[conditionedPositiveNaturalFiltration t] E :=
     measurableSet_le measurable_const hstateFil
-  have hgFil : StronglyMeasurable[conditionedPositiveNaturalFiltration t] g := by
-    exact (measurable_const.indicator hEfil).stronglyMeasurable
+  have hgFil : StronglyMeasurable[conditionedPositiveNaturalFiltration t] g := (measurable_const.indicator hEfil).stronglyMeasurable
   have hfg : f ≤ᵐ[P] g := by
     apply Filter.Eventually.of_forall
     intro p
@@ -157,11 +152,8 @@ theorem conditionedPositiveHistory_condExp_rationalFuture_avoidance_shift_on_bel
     refine iSup_le fun s => iSup_le fun _ => ?_
     exact (measurable_conditionedPositiveProcessValue s).comap_le
   have hgCE := condExp_of_stronglyMeasurable (μ := P) hfilLe hgFil hgInt
-  have hgCEae : P[g | conditionedPositiveNaturalFiltration t] =ᵐ[P] g := by
-    filter_upwards [] with p
-    exact congrFun hgCE p
-  have hcondLe : P[f | conditionedPositiveNaturalFiltration t] ≤ᵐ[P] g := by
-    exact hcondMono.trans_eq hgCEae
+  have hgCEae : P[g | conditionedPositiveNaturalFiltration t] =ᵐ[P] g := ae_of_all _ fun p => congrFun hgCE p
+  have hcondLe : P[f | conditionedPositiveNaturalFiltration t] ≤ᵐ[P] g := hcondMono.trans_eq hgCEae
   have hfNonneg : 0 ≤ᵐ[P] f := by
     apply Filter.Eventually.of_forall
     intro p
@@ -171,8 +163,7 @@ theorem conditionedPositiveHistory_condExp_rationalFuture_avoidance_shift_on_bel
         · simp [test, lastExitShiftedFutureTest, shiftedEval, shift, eval, hq]
         · simp [test, lastExitShiftedFutureTest, shiftedEval, shift, eval, hq]
       change 0 ≤ avoid.indicator (fun q => test (eval q)) p
-      rw [Set.indicator_of_mem hp]
-      exact htest0
+      rwa [Set.indicator_of_mem hp]
     · change 0 ≤ avoid.indicator (fun q => test (eval q)) p
       simp [Set.indicator_of_notMem hp]
   have hcondNonneg := condExp_nonneg (m := conditionedPositiveNaturalFiltration t)
@@ -260,4 +251,3 @@ theorem conditionedPositiveHistory_condExp_rationalFuture_avoidance_probability
 
 end DOZZ.Proofs
 
-end

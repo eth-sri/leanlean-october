@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.Moments.ExactScaleBallMoment
-public import Mathlib.Topology.MetricSpace.HausdorffDistance
+import DOZZ.GMC.Moments.ExactScaleBallMoment
+import Mathlib.Topology.MetricSpace.HausdorffDistance
 
 /-! # Exact affine scaling of open-set masses
 
@@ -15,7 +14,6 @@ affine image `y ↦ a + c • y`, not only for balls. The only ball-specific ing
 continuous inner approximants: for an open set `U` they are `min 1 (n * infDist x Uᶜ)`, which vanish
 off `U` and increase to the indicator of `U`. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped Distributions ENNReal NNReal
@@ -93,9 +91,7 @@ theorem openSetScale_integral_tendsto_of_pointwise
   have hconv := tendsto_integral_of_dominated_convergence (fun _ : ℂ => (1 : ℝ))
     (fun n => (f n).continuous.measurable.aestronglyMeasurable)
     (integrable_const 1) hdom (ae_of_all _ hlim)
-  rw [← integral_indicator_one hA]
-  exact hconv
-
+  rwa [← integral_indicator_one hA]
 /-- Integrals of the open-set cutoffs converge to the mass of the open set. -/
 theorem openSetApprox_integral_tendsto {U : Set ℂ} (hU : IsOpen U) (hne : Uᶜ.Nonempty)
     (μ : Measure ℂ) [IsFiniteMeasure μ] :
@@ -167,9 +163,7 @@ theorem openSetAffineApprox_integral_tendsto {U : Set ℂ} (hU : IsOpen U) (hne 
   have hind : ((fun y : ℂ => c⁻¹ • (y - a)) ⁻¹' U).indicator (fun _ => (1 : ℝ)) y =
       U.indicator (fun _ => (1 : ℝ)) (c⁻¹ • (y - a)) :=
     Set.indicator_comp_right (s := U) (g := fun _ => (1 : ℝ)) (fun y : ℂ => c⁻¹ • (y - a))
-  rw [openSetScale_image_eq_preimage hc a U, hind]
-  exact h
-
+  rwa [openSetScale_image_eq_preimage hc a U, hind]
 /-! ### Passing the cutoff laws to the limit -/
 
 /-- Compactly supported test integrals of an `IsGMCOf` version are a.e. measurable, since they are
@@ -181,13 +175,7 @@ theorem openSetScale_test_integral_aemeasurable
     (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
     (K : Set ℂ) (hK : MeasurableSet K) (hKunit : ∀ x ∈ K, ‖x‖ ≤ 1)
     (f : BoundedContinuousFunction ℂ ℝ) (hfzero : ∀ x, x ∉ K → f x = 0) :
-    AEMeasurable (fun ω => ∫ x, f x ∂M ω) P := by
-  obtain ⟨Xc, hXc, hMlim⟩ := hM.2
-  have hcut (n : ℕ) : AEMeasurable (fun ω => ∫ x, f x ∂regularizedGMC P Xc γ n ω) P :=
-    regularizedGMC_test_integral_aemeasurable P X hX Xc hXc γ n K hK hKunit f
-      f.continuous.measurable hfzero
-  exact ((hMlim f).comp
-    (tendsto_natCast_atTop_atTop : Tendsto (fun n : ℕ => (n : ℝ)) atTop atTop)).aemeasurable hcut
+    AEMeasurable (fun ω => ∫ x, f x ∂M ω) P := DOZZ.Proofs.gmc_test_integral_aemeasurable_of_support P X hX γ M hM K hK hKunit f hfzero
 
 /-- Cutoffs supported in a closed ball inside the unit disk have a.e. measurable test integrals,
 and these converge in measure to the real mass of the limit set. -/
@@ -289,7 +277,7 @@ theorem openSetScale_mass_law_of_approx
     hc hc1 hR hRsmall hTsmall (fun _ : Fin 1 => f n) (fun _ x => hfNonneg n x)
     (fun _ => hfSupport n)
   simp only [hfg] at h
-  exact h
+  assumption
 
 /-! ### The exact affine mass law for open sets -/
 

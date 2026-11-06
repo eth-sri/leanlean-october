@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.BPZ.SoftLimitA
+import DOZZ.FourPoint.BPZ.SoftLimitA
 
 /-! # Real forms of rooted bounds for the softened four-point mass
 
@@ -12,7 +11,6 @@ public import DOZZ.FourPoint.BPZ.SoftLimitA
 number. A bound on the lintegral `E[bpzMass^{-p} ∫⁻ f dM]` gives integrability and the same bound
 for the real expectation `E[I^{-p} ∫ f dM]`. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped ENNReal NNReal

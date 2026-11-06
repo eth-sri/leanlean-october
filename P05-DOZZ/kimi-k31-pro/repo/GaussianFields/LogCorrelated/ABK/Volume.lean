@@ -3,10 +3,9 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Scott Armstrong, Amélie Loher
 -/
-module
 
-public import Mathlib.MeasureTheory.Measure.Lebesgue.VolumeOfBalls
-public import GaussianFields.LogCorrelated.ABK.Constants
+import Mathlib.MeasureTheory.Measure.Lebesgue.VolumeOfBalls
+import GaussianFields.LogCorrelated.ABK.Constants
 
 /-!
 # GaussianFields.LogCorrelated/ABK/Volume
@@ -14,7 +13,6 @@ public import GaussianFields.LogCorrelated.ABK.Constants
 Port of the corresponding GaussianFields source module.
 -/
 
-public section
 
 open MeasureTheory
 open scoped ENNReal Topology
@@ -40,8 +38,7 @@ theorem preimage_toLp_two_unitBall (d : Nat) :
   ext x
   simp only [Set.mem_preimage, Metric.mem_ball, abkUnitBall, abkBall,
     Set.mem_ofPred_eq]
-  rw [dist_eq_norm, sub_zero]
-  rw [norm_toLp_two_eq_euclideanNorm]
+  rw [dist_eq_norm, sub_zero, norm_toLp_two_eq_euclideanNorm]
 
 /-- Exact Lebesgue volume of the ABK Euclidean unit ball, in `ENNReal` form. -/
 theorem volume_abkUnitBall (d : Nat) (hd : 0 < d) :
@@ -139,4 +136,3 @@ theorem abkNormalizationRadicand_nonneg {d : Nat} (ζ : ABKCutoff d) :
 
 end GaussianFields
 
-end

@@ -2,13 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.Tails.LogarithmicCutRate
+import DOZZ.Correlations.Tails.LogarithmicCutRate
 
 /-! The scalar Williams model tail, with its moment and last-cut inputs explicit. -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory
 
 namespace DOZZ.Proofs

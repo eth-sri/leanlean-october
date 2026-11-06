@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.BPZ.WardTilt
+import DOZZ.FourPoint.BPZ.WardTilt
 
 /-! # The mixed cutoff mass of the Ward identity
 
@@ -14,7 +13,6 @@ against the cutoff chaos, and elsewhere against the limit chaos. Rooting the mix
 the translation kernels `e^{γ² Λ_r(x - ·)}` and `e^{γ² Λ¹_r(x - ·)}`; the factor `e^{γ² h_r(x)}`
 is the only dependence on the pinning at the root. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped ENNReal NNReal

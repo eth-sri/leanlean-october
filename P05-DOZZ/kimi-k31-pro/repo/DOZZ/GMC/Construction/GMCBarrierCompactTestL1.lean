@@ -2,21 +2,19 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.GMC.IsCenteredJointlyGaussian
-public import DOZZ.Statements.GMC.GaussianVariance
-public import DOZZ.Statements.GMC.IsAdmissibleLogRegularization
-public import Mathlib.MeasureTheory.Integral.DominatedConvergence
-public import Mathlib.MeasureTheory.Measure.Lebesgue.Basic
-public import Mathlib.Analysis.Real.Pi.Bounds
-public import Mathlib.Topology.UniformSpace.HeineCantor
+import DOZZ.Statements.GMC.IsCenteredJointlyGaussian
+import DOZZ.Statements.GMC.GaussianVariance
+import DOZZ.Statements.GMC.IsAdmissibleLogRegularization
+import Mathlib.MeasureTheory.Integral.DominatedConvergence
+import Mathlib.MeasureTheory.Measure.Lebesgue.Basic
+import Mathlib.Analysis.Real.Pi.Bounds
+import Mathlib.Topology.UniformSpace.HeineCantor
 import Mathlib.Analysis.SpecialFunctions.Log.Basic
 import DOZZ.GMC.FiniteChaosMean
 
 /-! Uniform-barrier cutoff construction for compact GMC tests. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped ENNReal NNReal
@@ -137,7 +135,6 @@ private theorem gaussianRectangleShiftBandIndicator_pointwise
       simpa [gaussianRectangleIndicator, hc, hd] using hsum
   · by_cases hd : ∀ i, Z ω i + d i ≤ b i
     · obtain ⟨i, hi⟩ := not_forall.mp hc
-      have hgt : b i < Z ω i + c i := lt_of_not_ge hi
       have hupper : Z ω i ≤ b i - d i := by linarith [hd i]
       have hlower : b i - c i < Z ω i := by linarith
       have hmem : Z ω i ∈ Set.Icc (min (b i - c i) (b i - d i))
@@ -182,14 +179,12 @@ theorem gaussianReal_interval_le_length_of_variance_ge_one
       simpa using h
     have hdenpos : 0 < Real.sqrt (2 * Real.pi * (v : ℝ)) := by positivity
     have hinv : (Real.sqrt (2 * Real.pi * (v : ℝ)))⁻¹ ≤ 1 := by
-      rw [inv_le_one₀ hdenpos]
-      exact hden
+      rwa [inv_le_one₀ hdenpos]
     have hargExp : -(x - μ) ^ 2 / (2 * (v : ℝ)) ≤ 0 := by
       have hnum : -(x - μ) ^ 2 ≤ 0 := neg_nonpos.mpr (sq_nonneg (x - μ))
       have hdenExp : 0 < 2 * (v : ℝ) := by positivity
       exact div_nonpos_of_nonpos_of_nonneg hnum hdenExp.le
-    have hexp : Real.exp (-(x - μ) ^ 2 / (2 * (v : ℝ))) ≤ 1 := by
-      exact (Real.exp_le_one_iff.mpr hargExp)
+    have hexp : Real.exp (-(x - μ) ^ 2 / (2 * (v : ℝ))) ≤ 1 := (Real.exp_le_one_iff.mpr hargExp)
     calc
       (Real.sqrt (2 * Real.pi * (v : ℝ)))⁻¹ *
           Real.exp (-(x - μ) ^ 2 / (2 * (v : ℝ))) ≤
@@ -249,8 +244,7 @@ theorem finite_gaussian_rectangle_probability_shift_lipschitz
     refine ⟨?_⟩
     rw [hZ.1.measure_univ]
     exact ENNReal.one_lt_top
-  have hone : Integrable (fun _ : Ω => (1 : ℝ)) P := by
-    exact (integrable_const_iff (μ := P) (c := (1 : ℝ))).2 (Or.inr hPfinite)
+  have hone : Integrable (fun _ : Ω => (1 : ℝ)) P := (integrable_const_iff (μ := P) (c := (1 : ℝ))).2 (Or.inr hPfinite)
   have hrectAEM (e : ι → ℝ) :
       AEStronglyMeasurable (gaussianRectangleIndicator Z b e) P :=
     gaussianRectangleIndicator_aestronglyMeasurable P Z hZ b e
@@ -322,7 +316,7 @@ theorem finite_gaussian_rectangle_probability_shift_lipschitz
     have hreal := ENNReal.toReal_mono ENNReal.ofReal_ne_top hprob'
     rw [ENNReal.toReal_ofReal (abs_nonneg (c i - d i))] at hreal
     change (P {ω | Z ω i ∈ Set.Icc lo hi}).toReal ≤ |c i - d i|
-    exact hreal
+    assumption
   have hsumInt : Integrable
       (fun ω => ∑ i, gaussianRectangleShiftBandIndicator Z b c d i ω) P :=
     integrable_finsetSum Finset.univ (fun i _ => hbandInt i)
@@ -397,7 +391,7 @@ theorem finite_gaussian_rectangle_probability_two_shift_tendsto_uniformly
   have hnorm : ‖c ε ε' γ a - d γ a‖ ≤ η' := by
     rw [pi_norm_le_iff_of_nonneg (le_of_lt hη')]
     intro i
-    simpa only [Pi.sub_apply, Real.norm_eq_abs] using
+    simpa [Pi.sub_apply, Real.norm_eq_abs] using
       (hcoord ε ε' hε hεcut hε' hε'cut γ hγ a ha i).le
   have hprob := finite_gaussian_rectangle_probability_shift_lipschitz
     P (Z a) (hZ a ha) b (hv a ha) (c ε ε' γ a) (d γ a)

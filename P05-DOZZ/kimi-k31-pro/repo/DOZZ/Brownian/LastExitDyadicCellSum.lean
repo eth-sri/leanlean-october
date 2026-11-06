@@ -2,11 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Brownian.LastExitDyadicCellFormula
-public import DOZZ.Brownian.LastExitDyadicIntegral
-public import DOZZ.Brownian.LastExitPostPathMeasurability
+import DOZZ.Brownian.LastExitDyadicCellFormula
+import DOZZ.Brownian.LastExitDyadicIntegral
+import DOZZ.Brownian.LastExitPostPathMeasurability
 
 /-!
 # Summing the deterministic dyadic last-exit cells
@@ -16,7 +15,6 @@ so the measurable rational-future event is the corresponding cell event. This mo
 cell formula over the countable partition.
 -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Set Function
 open scoped NNReal
@@ -76,7 +74,7 @@ theorem negativeConditionedLastExitTimeCell_iff_dyadicLastExitCell
     ((k : ℝ) / (2 : ℝ) ^ n ≤ (negativeLastExitTime p (c : ℝ) : ℝ) ∧
       (negativeLastExitTime p (c : ℝ) : ℝ) <
         ((k + 1 : ℕ) : ℝ) / (2 : ℝ) ^ n)
-  simp only [dyadicLastExitCellStartTime, dyadicLastExitCellEndTime]
+  simp [dyadicLastExitCellStartTime, dyadicLastExitCellEndTime]
   norm_cast
 
 /-- On its own dyadic cell, the rational future at the deterministic endpoint equals the selected
@@ -203,4 +201,3 @@ theorem negativeConditionedDyadicLastExitEvent_measure_eq_tsum
 
 end DOZZ.Proofs
 
-end

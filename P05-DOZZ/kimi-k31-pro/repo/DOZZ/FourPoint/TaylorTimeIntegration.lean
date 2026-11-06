@@ -2,15 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.DualFusionRadialThreeCase
-public import DOZZ.FourPoint.TwoRootedDomination
-public import DOZZ.Statements.FourPoint.IsComplexLittleOAtZero
+import DOZZ.FourPoint.DualFusionRadialThreeCase
+import DOZZ.FourPoint.TwoRootedDomination
+import DOZZ.Statements.FourPoint.IsComplexLittleOAtZero
 
 /-! Integrating an absolute Taylor majorant and turning a strict power margin into little-o. -/
 
-@[expose] public section
 open MeasureTheory Filter Topology Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -22,7 +20,7 @@ theorem time_rpow_integral (e : ℝ) (he : -1 < e) :
   refine ⟨(intervalIntegrable_iff_integrableOn_Icc_of_le (by norm_num)).mp
     (intervalIntegral.intervalIntegrable_rpow' he), ?_⟩
   rw [integral_Icc_eq_integral_Ioc, ← intervalIntegral.integral_of_le (by norm_num : (0 : ℝ) ≤ 1)]
-  simpa only [Real.one_rpow, Real.zero_rpow (by linarith only [he] : e + 1 ≠ 0), sub_zero]
+  simpa [Real.one_rpow, Real.zero_rpow (by linarith only [he] : e + 1 ≠ 0), sub_zero]
     using integral_rpow (a := 0) (b := 1) (Or.inl he)
 
 /-- The time integration requires neither continuity nor a value for the integrand at t=0. -/
@@ -41,7 +39,6 @@ theorem time_integral_bound (F : ℂ → ℂ) (C e r : ℝ)
   have hdom : ∀ᵐ t ∂volume.restrict (Icc (0 : ℝ) 1),
       ‖(1 - t : ℝ) * F ((t : ℂ) * z)‖ ≤ (C * ‖z‖ ^ e) * t ^ e := by
     filter_upwards [ae_restrict_mem measurableSet_Icc, ae_restrict_of_ae hae] with t ht ht0
-    have htpos : 0 < t := lt_of_le_of_ne ht.1 (Ne.symm ht0)
     have htz : ‖(t : ℂ) * z‖ = t * ‖z‖ := by
       rw [norm_mul, Complex.norm_real, Real.norm_of_nonneg ht.1]
     have htr : ‖(t : ℂ) * z‖ ≤ r := by
@@ -68,21 +65,19 @@ theorem power_bound_littleO (f : ℂ → ℂ) (κ η C r : ℝ)
       (nhdsWithin (0 : ℂ) {z : ℂ | z ≠ 0}) (nhds 0) := by
     have h := ((Real.continuous_rpow_const hη.le).continuousAt.tendsto.comp
       (tendsto_norm_zero : Tendsto (fun z : ℂ => ‖z‖) (nhds 0) (nhds 0))).const_mul C
-    simpa only [Function.comp_apply, Real.zero_rpow hη.ne', mul_zero] using h.mono_left nhdsWithin_le_nhds
+    simpa [Function.comp_apply, Real.zero_rpow hη.ne', mul_zero] using h.mono_left nhdsWithin_le_nhds
   apply tendsto_of_tendsto_of_tendsto_of_le_of_le' tendsto_const_nhds hlim
   · exact Eventually.of_forall (fun z => div_nonneg (norm_nonneg _) (Real.rpow_nonneg (norm_nonneg _) _))
   · have hradius : ∀ᶠ z : ℂ in nhds (0 : ℂ), ‖z‖ < r := by
       have hball : ∀ᶠ z : ℂ in nhds (0 : ℂ), z ∈ Metric.ball 0 r :=
         Metric.ball_mem_nhds (0 : ℂ) hr
       filter_upwards [hball] with z hz
-      simpa only [Metric.mem_ball, dist_zero_right] using hz
+      simpa [Metric.mem_ball, dist_zero_right] using hz
     filter_upwards [hradius.filter_mono nhdsWithin_le_nhds, self_mem_nhdsWithin] with z hzr hz
     have hnz : 0 < ‖z‖ := norm_pos_iff.mpr hz
     have h := div_le_div_of_nonneg_right (hf z hz hzr.le) (Real.rpow_pos_of_pos hnz κ).le
     rw [Real.rpow_add hnz] at h
     have heq : C * (‖z‖ ^ κ * ‖z‖ ^ η) / ‖z‖ ^ κ = C * ‖z‖ ^ η := by
       field_simp [(Real.rpow_pos_of_pos hnz κ).ne']
-    rw [heq] at h
-    exact h
-
+    rwa [heq] at h
 end DOZZ.Proofs

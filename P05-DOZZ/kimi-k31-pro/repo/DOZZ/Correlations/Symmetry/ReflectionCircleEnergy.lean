@@ -2,10 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.Correlations.Symmetry.ReflectionCircleTransport
-public import DOZZ.Correlations.Symmetry.ReflectionTestCovariance
-@[expose] public section
+import DOZZ.Correlations.Symmetry.ReflectionCircleTransport
+import DOZZ.Correlations.Symmetry.ReflectionTestCovariance
 open MeasureTheory Filter
 open scoped Topology
 namespace DOZZ.Proofs
@@ -33,12 +31,12 @@ theorem reflection_circle_cross (x : ℂ) (r : ℝ) (f : TestFn) :
     ∫ w, gffKernel z w ∂circleMeasure (1 - x) r)]
   change (∫ z, f (1 - (1 - z)) *
     ∫ w, gffKernel (1 - z) w ∂circleMeasure (1 - x) r) = _
-  simp only [show ∀ z : ℂ, 1 - (1 - z) = z from symmetryReflection_involutive]
+  simp [show ∀ z : ℂ, 1 - (1 - z) = z from symmetryReflection_involutive]
   simp_rw [symmetryReflection_circle_kernel, mul_add]
   have ho := integral_add (hi.add hd)
     (hm.mul_const (∫ w, symmetryReflectionPotential w ∂circleMeasure x r))
   have hin := integral_add hi hd
-  simp only [Pi.add_def] at ho hin
+  simp [] at ho hin
   rw [ho, hin, integral_mul_const]
   rfl
 

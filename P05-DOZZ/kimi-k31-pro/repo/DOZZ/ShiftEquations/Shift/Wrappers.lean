@@ -2,12 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.ShiftEquations.Shift.FirstShift
-public import DOZZ.Correlations.Analytic.StructureConstantHolomorphic
-public import DOZZ.Correlations.Residue.Assembly
-public import DOZZ.Correlations.SumTail.Assembly
+import DOZZ.ShiftEquations.Shift.FirstShift
+import DOZZ.Correlations.Analytic.StructureConstantHolomorphic
+import DOZZ.Correlations.Residue.Assembly
+import DOZZ.Correlations.SumTail.Assembly
 
 /-!
 # The `R̄` representation and the first shift, with the holomorphic extension discharged
@@ -18,7 +17,6 @@ only the γ/2 crossing (`gammaHalf_crossing`), the residue bridge, and (for the 
 estimate `twoInsertion_tail_sum_uniform`.
 -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology Set
 
@@ -196,4 +194,3 @@ theorem reflectionR_first_shift_meromorphic_of_crossing
 
 end DOZZ.Proofs
 
-end

@@ -2,11 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.Correlations.Symmetry.RepinnedCovariance
-public import DOZZ.Correlations.Symmetry.ReflectionTestCovariance
-public import DOZZ.GMC.GaussianInputs
-@[expose] public section
+import DOZZ.Correlations.Symmetry.RepinnedCovariance
+import DOZZ.Correlations.Symmetry.ReflectionTestCovariance
+import DOZZ.GMC.GaussianInputs
 open MeasureTheory ProbabilityTheory
 open scoped Distributions
 namespace DOZZ.Proofs
@@ -28,12 +26,12 @@ theorem reflection_repinned_variance
   have hLmean : ∫ ω, L ω ∂P = 0 := (circleAverage_isGaussianProcess P X Xc hX hXc).2 1 0
   have hvarL : variance L P = 2 * symmetryReflectionKappa := by
     rw [variance_eq_integral hL.aemeasurable, hLmean]
-    simp only [sub_zero, pow_two]
+    simp [sub_zero, pow_two]
     exact reflection_normalization_variance P X hX Xc hXc
   have hcov : covariance A L P =
       ∫ x, f x * (symmetryReflectionPotential x + symmetryReflectionKappa) := by
     have he : covariance A L P = gaussianCovariance P A L := by
-      simp only [covariance, hAmean, hLmean, sub_zero, gaussianCovariance]
+      simp [covariance, hAmean, hLmean, sub_zero, gaussianCovariance]
     rw [he]
     exact reflection_test_normalization_covariance P X hX Xc hXc f
   have hi : Integrable (fun x : ℂ => f x) volume :=
@@ -83,7 +81,7 @@ theorem isEquatorGFF_symmetryRepinnedField
       | some _ => X ω (symmetryReflectionTest f))) =
       fun ω => symmetryRepinnedField X (fun ω' => Xc ω' 1 0) ω f := by
     funext ω
-    simp only [Fintype.sum_option, a, Fin.sum_univ_one, one_mul, neg_mul,
+    simp [Fintype.sum_option, a, one_mul, neg_mul,
       symmetryRepinnedField_apply]
     ring
   change P.map (fun ω => ∑ i, a i * (match i with

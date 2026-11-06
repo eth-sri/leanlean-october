@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.ShiftEquations.Shift.Multiplier3
-public import DOZZ.ShiftEquations.Rbar.Continuation
+import DOZZ.ShiftEquations.Shift.Multiplier3
+import DOZZ.ShiftEquations.Rbar.Continuation
 import Mathlib.Analysis.Complex.CauchyIntegral
 
 /-!
@@ -21,7 +20,6 @@ the crossing `C̄(Q - η - γ/2, x, 2/γ + η) = T(Q - η, x, 2/γ + η) C̄(Q -
 `2η < x < 2/γ` ([KRV, §10.2]).
 -/
 
-@[expose] public section
 
 open Filter Topology Set
 
@@ -106,7 +104,7 @@ theorem one_sub_crossC3_re (γ : ℝ) (a' : ℂ) :
   simp [Complex.mul_re]
 
 theorem one_sub_mul_half_re (γ : ℝ) (e : ℂ) : (1 - (γ : ℂ) * e / 2).re = 1 - γ * e.re / 2 := by
-  simp [Complex.mul_re]
+  simp
 
 /-- The basic window facts for the slice `(Q - η, ·, 2/γ + η)`. -/
 theorem slice_facts {γ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2) :
@@ -211,11 +209,11 @@ theorem unitVolume_crossing_sliceA {Ω : Type*} [MeasurableSpace Ω]
       ?_ ?_ ?_ ?_
     · rw [crossA3_add_one_re, hu₂, Complex.ofReal_re, Complex.ofReal_re]
       have : 0 < γ / 4 * (Q γ - η + ε + (id z).re - Q γ - γ) :=
-        mul_pos (by positivity) (by simp only [id]; linarith)
+        mul_pos (by positivity) (by simp [id]; linarith)
       linarith
     · rw [crossB3_re, hu₂, Complex.ofReal_re, Complex.ofReal_re]
       have h1 := quarter_mul_lt (u := -(2 / γ)) (v := Q γ - η + ε - (id z).re - Q γ) hγ
-        (by simp only [id]; linarith)
+        (by simp [id]; linarith)
       have h2' : γ / 4 * -(2 / γ) = -(1 / 2) := by field_simp; ring
       linarith
     · rw [one_sub_crossC3_re, hu₂, Complex.ofReal_re]
@@ -311,17 +309,16 @@ theorem unitVolume_crossing_slice {Ω : Type*} [MeasurableSpace Ω]
     · rw [crossA3_add_one_re, hu₂, hw, Complex.ofReal_re, Complex.ofReal_re]
       have : 0 < γ / 4 * (Q γ - η + (id z).re + (2 / γ + η) - Q γ - γ) + 1 / 2 := by
         have h1 := quarter_mul_lt (u := -(2 / γ)) (v := Q γ - η + (id z).re + (2 / γ + η) - Q γ - γ)
-          hγ (by simp only [id]; linarith)
+          hγ (by simp [id]; linarith)
         have h2' : γ / 4 * -(2 / γ) = -(1 / 2) := by field_simp; ring
         linarith
-      exact this
+      assumption
     · rw [crossB3_re, hu₂, hw, Complex.ofReal_re, Complex.ofReal_re]
       have : 0 < γ / 4 * (Q γ - η + (id z).re - (2 / γ + η) - Q γ + 2 / γ) := mul_pos
-        (by positivity) (by simp only [id]; linarith)
+        (by positivity) (by simp [id]; linarith)
       have h2' : γ / 4 * (Q γ - η + (id z).re - (2 / γ + η) - Q γ) + 1 / 2 =
           γ / 4 * (Q γ - η + (id z).re - (2 / γ + η) - Q γ + 2 / γ) := by field_simp; ring
-      rw [h2']
-      exact this
+      rwa [h2']
     · rw [one_sub_crossC3_re, hu₂, Complex.ofReal_re]
       exact mul_pos (by positivity) (by linarith)
     · rw [one_sub_mul_half_re]
@@ -348,4 +345,3 @@ theorem unitVolume_crossing_slice {Ω : Type*} [MeasurableSpace Ω]
 
 end DOZZ.Proofs
 
-end

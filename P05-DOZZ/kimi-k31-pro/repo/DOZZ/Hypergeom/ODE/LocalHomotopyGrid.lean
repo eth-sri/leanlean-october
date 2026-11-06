@@ -2,15 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Hypergeom.ODE.FiniteGridTransferBounded
-public import DOZZ.Hypergeom.ODE.LocalTransfer
+import DOZZ.Hypergeom.ODE.FiniteGridTransferBounded
+import DOZZ.Hypergeom.ODE.LocalTransfer
 
 /-! A grid of local Picard transfers is homotopy invariant when each cell lies near its lower-left
 vertex and the two vertical boundary paths are constant. -/
 
-@[expose] public section
 
 namespace DOZZ.Proofs
 

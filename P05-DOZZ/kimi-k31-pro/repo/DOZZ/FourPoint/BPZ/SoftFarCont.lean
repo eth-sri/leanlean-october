@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.BPZ.SoftUniform
+import DOZZ.FourPoint.BPZ.SoftUniform
 
 /-! # Continuity of the softened masses at `ε = 0`, jointly in the root
 
@@ -22,7 +21,6 @@ bound by the softened weight itself of the derivatives away from the root. We al
 uniform far bounds of the derivative masses by multiples of the softened mass, for roots within
 `r / 2` of `z₀`. -/
 
-@[expose] public section
 
 open MeasureTheory Filter Topology
 

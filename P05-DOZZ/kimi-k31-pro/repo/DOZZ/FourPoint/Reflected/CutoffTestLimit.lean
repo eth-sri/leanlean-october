@@ -2,21 +2,19 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.Brownian.Lateral.UniformWeightLimit
-public import DOZZ.GMC.AdmissibleGMCRestriction
-public import DOZZ.Statements.GMC.FieldChaosMass
+import DOZZ.Brownian.Lateral.UniformWeightLimit
+import DOZZ.GMC.AdmissibleGMCRestriction
+import DOZZ.Statements.GMC.FieldChaosMass
 import Mathlib.Tactic
 /-! Actual compact admissible chaos tests in the field-mass limit Kahane interface. -/
-@[expose] public section
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
-open DOZZ.Assembly
+open Assembly
 
 /-- The actual compact admissible chaos convergence supplies exactly the finite-field mass
 convergence required by the limiting negative-power Kahane comparison
-`DOZZ.kahane_limit_field_negative_power`. -/
+`kahane_limit_field_negative_power`. -/
 theorem reflected_admissible_field_test_limit
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) [IsProbabilityMeasure P]
     (U : Set ℂ) (dens : ℂ → ℝ) (ε₀ : ℝ) (Y : Ω → ℝ → ℂ → ℝ)
@@ -34,7 +32,7 @@ theorem reflected_admissible_field_test_limit
       (fun ω => ∫ x, f x ∂N ω) := by
   have hσ := admissible_logRegularization_reference_measure_ne_top P U dens ε₀ Y hY K hK hKU
   have hfin : IsFiniteMeasure ((logRegularizationReference U dens).restrict K) :=
-    ⟨by simpa only [Measure.restrict_apply_univ] using lt_top_iff_ne_top.mpr hσ⟩
+    ⟨by simpa [Measure.restrict_apply_univ] using lt_top_iff_ne_top.mpr hσ⟩
   refine ⟨hfin, ?_⟩
   have hf0 : ∀ x ∉ K, f x = 0 := fun x hx =>
     image_eq_zero_of_notMem_tsupport (fun h => hx (hfK h))
@@ -42,7 +40,7 @@ theorem reflected_admissible_field_test_limit
     (Real.exp_le_exp.mpr (neg_le_neg (le_max_right _ _))).trans hR₀
   have hi (r : ℝ) := admissibleCutoff_integrand_integrable_ae P U dens ε₀ Y hY K hK hKU
     γ (max r R₀) (hr r) ‖f‖ f f.continuous.measurable
-    (fun x => by simpa only [Real.norm_eq_abs] using f.norm_coe_le_norm x) hf0
+    (fun x => by simpa [Real.norm_eq_abs] using f.norm_coe_le_norm x) hf0
   have he (r : ℝ) : (fun ω => regularizedLogChaosTestMass P U dens Y γ (max r R₀) ω f) =ᵐ[P]
       (fun ω => (fieldChaosMass P (fun ω x => Y ω (Real.exp (-max r R₀)) x)
         ((logRegularizationReference U dens).restrict K)

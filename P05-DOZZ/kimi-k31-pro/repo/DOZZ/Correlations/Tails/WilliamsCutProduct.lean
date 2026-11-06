@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.Tails.WilliamsCutMonotonicity
-public import DOZZ.Correlations.Tails.WilliamsMaximumTail
+import DOZZ.Correlations.Tails.WilliamsCutMonotonicity
+import DOZZ.Correlations.Tails.WilliamsMaximumTail
 
 /-! Last-cut ordering when the cut level is the independent Williams maximum. -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal NNReal
 
@@ -18,7 +16,7 @@ namespace DOZZ.Proofs
 theorem williams_maximum_pos_ae (ν : ℝ) :
     ∀ᵐ m ∂brownianMaximumReferenceLaw ν, 0 < m := by
   rw [ae_iff]
-  simp only [not_lt]
+  simp [not_lt]
   change brownianMaximumReferenceLaw ν (Iic 0) = 0
   rw [brownianMaximumReferenceLaw, withDensity_apply _ measurableSet_Iic]
   apply lintegral_eq_zero_of_ae_eq_zero

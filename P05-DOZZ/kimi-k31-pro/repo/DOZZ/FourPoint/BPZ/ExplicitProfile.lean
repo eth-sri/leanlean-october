@@ -2,13 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import Mathlib.Analysis.Calculus.ContDiff.Deriv
-public import Mathlib.Analysis.Calculus.MeanValue
-public import Mathlib.Analysis.SpecialFunctions.Pow.Deriv
-public import Mathlib.Analysis.SpecialFunctions.Integrability.Basic
-public import Mathlib.MeasureTheory.Function.LocallyIntegrable
+import Mathlib.Analysis.Calculus.ContDiff.Deriv
+import Mathlib.Analysis.Calculus.MeanValue
+import Mathlib.Analysis.SpecialFunctions.Pow.Deriv
+import Mathlib.Analysis.SpecialFunctions.Integrability.Basic
+import Mathlib.MeasureTheory.Function.LocallyIntegrable
 
 /-! # The explicit profile `A₀ (φ(u) + ρ u^κ ψ(u))` near `0⁺`
 
@@ -17,7 +16,6 @@ derivatives on `(0, 1)`; the profile and its first derivative have limits at `0�
 derivative is integrable near `0`, and the Taylor remainder `φ(t) - φ(0) - φ'(0) t` is
 `o(t^κ)`. -/
 
-@[expose] public section
 
 open MeasureTheory Filter Topology Set
 

@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.Brownian.Williams.EntranceLimit
-public import Mathlib.MeasureTheory.Measure.HasOuterApproxClosedProd
+import DOZZ.Brownian.Williams.EntranceLimit
+import Mathlib.MeasureTheory.Measure.HasOuterApproxClosedProd
 /-!
 # Williams disintegration on bounded continuous finite cylinders
 
@@ -25,7 +24,6 @@ entrance-cylinder test. The exponential maximum reference law absorbs the rate
 factor. This proves the full source factorization on bounded continuous prefix
 tests and finite future cylinders.
 -/
-@[expose] public section
 open MeasureTheory ProbabilityTheory Filter Set
 open scoped NNReal ENNReal Topology
 namespace DOZZ.Proofs
@@ -40,7 +38,7 @@ private theorem affine_lintegral (M ε : ℝ) (hε : 0 < ε) (H : ℝ → ℝ≥
       have hm : Measurable (fun x : ℝ => -ε*x) := measurable_const.mul measurable_id
       rw [lintegral_smul_measure,lintegral_map hS hm]
       rfl
-    _ = _ := by simp only [abs_neg,abs_of_pos hε,neg_mul,← sub_eq_add_neg]
+    _ = _ := by simp [abs_neg,abs_of_pos hε,neg_mul,← sub_eq_add_neg]
 
 private theorem affine_band_iff (M ε u : ℝ) (hε : 0 < ε) :
     (0 < M-ε*u ∧ M-ε*u ≤ M ∧ M < (M-ε*u)+ε) ↔
@@ -55,19 +53,19 @@ private theorem harmonic_band_ratio_limit (ν : ℝ) (hν : 0 < ν) :
     Tendsto (fun ε => conditionedH ν ε/ε) (𝓝[>] (0 : ℝ)) (𝓝 (2*ν)) := by
   have hd : HasDerivAt (conditionedH ν) (2*ν) 0 := by
     have harg : HasDerivAt (fun x : ℝ => Real.exp (-2*ν*x)) (-2*ν) 0 := by
-      simpa only [id_eq,mul_zero,Real.exp_zero,mul_one,one_mul] using
+      simpa [id_eq,mul_zero,Real.exp_zero,mul_one,one_mul] using
         ((hasDerivAt_id (0 : ℝ)).const_mul (-2*ν)).exp
     convert (hasDerivAt_const (0 : ℝ) 1).sub harg using 1
     · funext x
-      simp only [conditionedH,ite_eq_right hν.ne',Pi.sub_apply]
+      simp [conditionedH,ite_eq_right hν.ne',Pi.sub_apply]
     · ring
   have hh := hd.tendsto_slope_zero_right
-  simp only [zero_add,smul_eq_mul] at hh
+  simp [zero_add,smul_eq_mul] at hh
   change Tendsto (fun t : ℝ => t⁻¹*(conditionedH ν t-conditionedH ν 0)) (𝓝[>] 0) (𝓝 (2*ν)) at hh
-  simp only [conditionedH,ite_eq_right hν.ne',mul_zero,Real.exp_zero,sub_self,sub_zero] at hh
+  simp [conditionedH,ite_eq_right hν.ne',mul_zero,Real.exp_zero,sub_self,sub_zero] at hh
   convert hh using 1
   funext t
-  simp only [conditionedH,ite_eq_right hν.ne',div_eq_mul_inv]
+  simp [conditionedH,ite_eq_right hν.ne',div_eq_mul_inv]
   ring
 
 noncomputable def brownianFirstHitFuture (ν m : ℝ) (p : BrownianPath) : BrownianPath :=
@@ -183,15 +181,15 @@ private theorem band_integral (P : Measure BrownianPath)
           {p | m ≤ driftedBrownianMaximum ν p ∧ driftedBrownianMaximum ν p < m+ε}.indicator
             (fun p => F (m,positiveDriftFirstHitSegment (-ν) m p)*G (brownianFirstHitFuture ν m p)) := by
         funext p
-        simp only [brownianWilliamsBandTest,brownianWilliamsLevelTest,Set.indicator_apply,
+        simp [brownianWilliamsBandTest,brownianWilliamsLevelTest,Set.indicator_apply,
           Set.mem_ofPred_eq,hm,true_and]
       rw [hb,lintegral_indicator₀ hs]
-      dsimp only [brownianFirstHitFuture]
+      dsimp [brownianFirstHitFuture]
       rw [brownianPath_williams_thinBand_lintegral P hB ν m ε hν hm hε
         (fun z => F (m,z)) (hF.comp (measurable_const.prodMk measurable_id)) G hG,
           Set.indicator_of_mem (show m ∈ Ioi (0 : ℝ) from hm)]
       ring
-    · simp only [brownianWilliamsBandTest,Set.indicator_apply,Set.mem_ofPred_eq,hm,false_and,
+    · simp [brownianWilliamsBandTest,Set.indicator_apply,Set.mem_ofPred_eq,hm,false_and,
         ite_false,lintegral_zero,Set.mem_Ioi]
   simp_rw [he]
   rw [lintegral_indicator measurableSet_Ioi,lintegral_const_mul _ hv]
@@ -230,7 +228,7 @@ private theorem maximum_positive_ae (P : Measure BrownianPath)
   change P ((driftedBrownianMaximum ν) ⁻¹' Ioi (0 : ℝ)) = 1
   rw [← Measure.map_apply_of_aemeasurable hm measurableSet_Ioi,
     brownianPath_globalMaximum_Ioi P hB ν 0 hν le_rfl]
-  simp only [mul_zero,Real.exp_zero,ENNReal.ofReal_one]
+  simp [mul_zero,Real.exp_zero,ENNReal.ofReal_one]
 
 /-- The complete actual thin-band average converges to the maximum split. -/
 theorem brownianPath_williams_bandAverage_limit (P : Measure BrownianPath)
@@ -315,7 +313,7 @@ private theorem maximum_reference_lintegral (ν : ℝ) (hν : 0 < ν)
     · rw [ite_eq_left hm,ENNReal.ofReal_mul (by positivity : 0 ≤ 2*ν),
         Set.indicator_of_mem (show m ∈ Ioi (0 : ℝ) from hm)]
       ring
-    · simp only [hm,ite_false,ENNReal.ofReal_zero,zero_mul,
+    · simp [hm,ite_false,ENNReal.ofReal_zero,zero_mul,
         Set.indicator_of_notMem (show m ∉ Ioi (0 : ℝ) from hm)]
   change (∫⁻ m, ENNReal.ofReal (if 0 < m then 2*ν*Real.exp (-2*ν*m) else 0)*H m) = _
   rw [he,lintegral_indicator measurableSet_Ioi]
@@ -404,6 +402,6 @@ theorem brownianPath_williams_continuous_ordered_lintegral (P : Measure Brownian
   have hh := brownianPath_williams_continuous_cylinder_lintegral P hB ν hν Q hQ F hF
     (n+1) (brownianFirstHitElapsed (n+1) ts)
     (brownianFirstHitElapsed_pos (n+1) ts ht0 hts) φ hφ KF KG hKF hKG hFb hGb
-  simpa only [brownianFirstHitTimes_elapsed n ts hts.monotone] using hh
+  simpa [brownianFirstHitTimes_elapsed n ts hts.monotone] using hh
 
 end DOZZ.Proofs

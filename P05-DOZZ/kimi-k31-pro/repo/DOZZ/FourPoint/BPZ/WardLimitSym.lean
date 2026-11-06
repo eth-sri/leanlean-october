@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.BPZ.WardLimitKernel
-public import DOZZ.FourPoint.BPZ.WeakConvGMC
+import DOZZ.FourPoint.BPZ.WardLimitKernel
+import DOZZ.FourPoint.BPZ.WeakConvGMC
 
 /-! # Symmetrization of the cutoff Ward identity
 
@@ -16,7 +15,6 @@ integral of the antisymmetrized kernel `(φ(x)ρ(y) − φ(y)ρ(x)) k₁(x) k₁
 which is bounded uniformly in the cutoff because `φ(x)ρ(y) − φ(y)ρ(x) = φ(x) − φ(y)` near the
 diagonal. The far-region part is a test function of `x` built from the limit chaos. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped ENNReal NNReal

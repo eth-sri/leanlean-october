@@ -1,4 +1,3 @@
-module
-public import DOZZ.Brownian.LastExitAvoidance
-public import DOZZ.Brownian.Barrier.Restart
-public import DOZZ.Statements.Brownian.NegativeConditionedPostLastExitPath
+import DOZZ.Brownian.LastExitAvoidance
+import DOZZ.Brownian.Barrier.Restart
+import DOZZ.Statements.Brownian.NegativeConditionedPostLastExitPath

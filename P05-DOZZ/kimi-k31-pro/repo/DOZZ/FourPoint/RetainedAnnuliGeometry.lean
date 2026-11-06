@@ -2,13 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.RetainedAnnuliAllocation
+import DOZZ.FourPoint.RetainedAnnuliAllocation
 
 /-! Uniform retained disks for the local freezing estimate. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
@@ -25,7 +23,7 @@ theorem retained_disk_radial_bounds (z : ℂ) (s ρ : ℝ) (hs : 0 ≤ s)
     (x : ℂ) (hx : x ∈ Metric.ball (z + (s : ℂ)) ρ) :
     s - ρ < ‖x - z‖ ∧ ‖x - z‖ < s + ρ := by
   have hx' : ‖x - (z + (s : ℂ))‖ < ρ := by
-    simpa only [Metric.mem_ball, dist_eq_norm] using hx
+    simpa [Metric.mem_ball, dist_eq_norm] using hx
   have hu := real_displacement_norm z s hs
   have hupper := norm_add_le (x - (z + (s : ℂ))) ((z + (s : ℂ)) - z)
   have hlower := norm_add_le ((z + (s : ℂ)) - x) (x - z)

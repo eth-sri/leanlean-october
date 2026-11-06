@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Brownian.Williams.StoppedPreterminalCylinders
+import DOZZ.Brownian.Williams.StoppedPreterminalCylinders
 
 /-!
 # Uniqueness of stopped continuous path laws
@@ -14,7 +13,6 @@ whole stopped-path measure. Finite evaluation cylinders generate the process sig
 and the continuous-path measurable structure is the pullback of that process structure.
 -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory Set
 open scoped NNReal ENNReal
 namespace DOZZ.Proofs
@@ -91,7 +89,7 @@ theorem SameStoppedPreterminalLaws.measure_eq
         Measure.restrict_apply (hW.preimage measurable_snd)]
       have he : Prod.snd ⁻¹' W ∩ (U ×ˢ univ) = U ×ˢ W := by
         ext z
-        simp only [mem_inter_iff, mem_preimage, mem_prod, mem_univ, true_and, and_comm]
+        simp [mem_inter_iff, mem_preimage, mem_prod, mem_univ, true_and, and_comm]
       rw [he, Measure.map_apply hf (hU.prod hW)]
     have heq : μU = ηU := by
       apply ext_of_generate_finite
@@ -99,7 +97,7 @@ theorem SameStoppedPreterminalLaws.measure_eq
         generateFrom_squareCylinders.symm
         (isPiSystem_squareCylinders (fun _ => MeasurableSpace.isPiSystem_measurableSet) (by simp))
       · rintro W ⟨I, S, hS, rfl⟩
-        have hmS : ∀ t, MeasurableSet (S t) := by simpa only [mem_univ_pi, mem_ofPred_eq] using hS
+        have hmS : ∀ t, MeasurableSet (S t) := by simpa [mem_univ_pi, mem_ofPred_eq] using hS
         have hmW : MeasurableSet ((I : Set ℝ≥0).pi S) :=
           MeasurableSet.pi (Finset.countable_toSet _) (fun t _ => hmS t)
         rw [hslice _ _ hmW, hslice _ _ hmW]
@@ -128,9 +126,8 @@ theorem SameStoppedPreterminalLaws.measure_eq
   have hpre : f ⁻¹' (U ×ˢ V) = A ×ˢ B := by
     rw [← hBW]
     ext z
-    simp only [mem_preimage, mem_prod, f, U, V, Real.toNNReal_coe, neg_neg]
+    simp [mem_preimage, mem_prod, f, U, V, Real.toNNReal_coe, neg_neg]
   have heq := congrArg (fun M : Measure (ℝ × (ℝ≥0 → ℝ)) => M (U ×ˢ V)) hprocess
   rwa [Measure.map_apply hf (hU.prod hV), Measure.map_apply hf (hU.prod hV), hpre] at heq
 
 end DOZZ.Proofs
-end

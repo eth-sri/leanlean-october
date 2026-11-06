@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GFF.HaarCommonLimit
+import DOZZ.GFF.HaarCommonLimit
 import Mathlib.Analysis.Normed.Lp.lpSpace
 
 /-!
@@ -14,7 +13,6 @@ Square-summable random Fourier coordinates are packaged as concrete `ℓ²` vect
 products provide the continuous local Sobolev-dual functionals used by the distribution version.
 -/
 
-@[expose] public section
 
 open MeasureTheory
 open scoped ENNReal InnerProductSpace Topology lp
@@ -101,14 +99,14 @@ noncomputable def equatorLocalModePairingCLM (R : ℕ)
     { toFun := fun c => ⟪bcos, c.1⟫_ℝ + ⟪bsin, c.2⟫_ℝ
       map_add' := by
         intro c d
-        simp only [Prod.fst_add, Prod.snd_add, inner_add_right]
+        simp [Prod.fst_add, Prod.snd_add, inner_add_right]
         abel
       map_smul' := by
         intro a c
         change ⟪bcos, a • c.1⟫_ℝ + ⟪bsin, a • c.2⟫_ℝ =
           a • (⟪bcos, c.1⟫_ℝ + ⟪bsin, c.2⟫_ℝ)
         rw [inner_smul_right, inner_smul_right]
-        simp only [smul_eq_mul]
+        simp [smul_eq_mul]
         ring }
   have hcont : Continuous F := by
     have h₁ : Continuous fun c :
@@ -137,4 +135,3 @@ theorem equatorLocalModePairingCLM_apply (R : ℕ)
 
 end DOZZ
 
-end

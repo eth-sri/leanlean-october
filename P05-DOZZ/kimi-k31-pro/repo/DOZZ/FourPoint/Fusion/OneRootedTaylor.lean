@@ -2,13 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.Fusion.FullTaylorLimit
+import DOZZ.FourPoint.Fusion.FullTaylorLimit
 
 /-! # The one-rooted Taylor asymptotic -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology TopologicalSpace Set
 open scoped ENNReal NNReal Topology
@@ -41,7 +39,7 @@ theorem gammaHalf_oneRooted_Taylor_asymptotic {Ω : Type*} [MeasurableSpace Ω]
     change F z = C * (‖z‖ ^ κ : ℝ) + (F z - C * (‖z‖ ^ κ : ℝ))
     ring
   · apply fusion_littleO_of_normalized_tendsto κ F C
-    simpa only [F, C, κ, neg_mul, Complex.ofReal_neg, Complex.ofReal_mul] using
+    simpa [F, C, κ, neg_mul, Complex.ofReal_neg, Complex.ofReal_mul] using
       fusionFullOneRooted_normalized_tendsto P X hX γ hγ hγ2 M hM α₁ α₂ α₃
         hα₁ hγsq hα₁₂ hα₂ hα₃ p hp
 

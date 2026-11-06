@@ -2,11 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Brownian.Williams.FirstHitReversal
-public import DOZZ.Brownian.Williams.ConditionedBandFinite
-public import DOZZ.Brownian.ConditionedFDDMeasure
+import DOZZ.Brownian.LastExitReferenceKernel
+import DOZZ.Brownian.Williams.FirstHitReversal
+import DOZZ.Brownian.Williams.ConditionedBandFinite
+import DOZZ.Brownian.ConditionedFDDMeasure
 
 /-!
 # Harmonic cancellation in the first-hit reversal density
@@ -15,15 +15,12 @@ Transposing each killed transition and telescoping the Doob harmonic factors giv
 exactly the conditioned entrance density with its final last-exit boundary factor.
 -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory Set
 open scoped NNReal ENNReal
 namespace DOZZ.Proofs
 
 private theorem harmonic_pos {ν x : ℝ} (hν : 0 < ν) (hx : 0 < x) :
-    0 < conditionedH ν x := by
-  rw [conditionedH, ite_eq_right hν.ne']
-  exact sub_pos.mpr (Real.exp_lt_one_iff.mpr (by nlinarith only [hν, hx]))
+    0 < conditionedH ν x := DOZZ.Proofs.conditionedH_pos_ref hν hx
 
 /-- Appending an observation multiplies an entrance FDD by the final transition. -/
 theorem conditionedPositiveFDDDensity_ofFn_snoc (ν : ℝ) (n : ℕ)
@@ -32,12 +29,12 @@ theorem conditionedPositiveFDDDensity_ofFn_snoc (ν : ℝ) (n : ℕ)
       conditionedPositiveFDDDensity ν (List.ofFn ts) (List.ofFn xs) *
         conditionedPositiveTransitionDensity ν (t-ts (Fin.last n)) (xs (Fin.last n)) x := by
   rw [List.ofFn_succ (f := ts), List.ofFn_succ (f := xs)]
-  simp only [List.cons_append]
+  simp [List.cons_append]
   rw [conditionedPositiveFDDDensity_append_split ν (ts 0) (xs 0)
     (List.ofFn fun i : Fin n => ts i.succ) (List.ofFn fun i : Fin n => xs i.succ)
     [t] [x] (by simp)]
   rw [conditionedPositiveLastTime_ofFn_tail, conditionedPositiveLastState_ofFn_tail]
-  simp only [conditionedPositiveTimeChainDensity, mul_one]
+  simp [conditionedPositiveTimeChainDensity, mul_one]
 
 /-- The finite killed/hitting density equals the entrance chain in reversed order, including
 the last-exit boundary factor. All observation coordinates are kept. -/
@@ -54,7 +51,7 @@ theorem brownianFirstHitFinitePDF_reverse_cancel
   induction n generalizing c t with
   | zero =>
     have ht' : 0 < t-(ds 0 : ℝ) := by
-      simpa only [brownianFirstHitHorizon, add_zero] using sub_pos.mpr ht
+      simpa [brownianFirstHitHorizon, add_zero] using sub_pos.mpr ht
     have hH := (harmonic_pos hν (hxs 0)).ne'
     have hC := (harmonic_pos hν hc).ne'
     simp only [brownianFirstHitFinitePDF, List.ofFn_succ, List.ofFn_zero,
@@ -102,7 +99,6 @@ theorem brownianFirstHitFinitePDF_reverse_cancel
       conditionedPositiveTransitionDensity ν (ds 1) (xs 1) (xs 0) * ν / conditionedH ν (xs 0))) = _
     rw [conditionedPositiveTransitionDensity_eq_killed ν hν (ds 0) (hds 0) (xs 0) c (hxs 0)]
     congr 1
-    have hH := (harmonic_pos hν (hxs 0)).ne'
     have hC := (harmonic_pos hν hc).ne'
     field_simp
 
@@ -121,7 +117,7 @@ theorem conditionedPositiveFDDDensity_ofFn_of_state_le_zero
     revert hi
     refine Fin.lastCases ?_ (fun j => ?_) i
     · intro hlast
-      simp only [conditionedPositiveTransitionDensity, not_lt.mpr hlast, and_false,
+      simp [conditionedPositiveTransitionDensity, not_lt.mpr hlast, and_false,
         ite_false, mul_zero]
     · intro hj
       rw [ih (fun j => ts j.castSucc) (fun j => xs j.castSucc) j hj, zero_mul]
@@ -177,4 +173,3 @@ theorem brownianFirstHitReversedPDF_eq_lastExitDensity
     simp
 
 end DOZZ.Proofs
-end

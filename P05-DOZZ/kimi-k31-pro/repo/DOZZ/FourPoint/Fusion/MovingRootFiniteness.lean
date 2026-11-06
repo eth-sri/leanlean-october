@@ -2,16 +2,14 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.Fusion.RootedMass
+import DOZZ.FourPoint.Fusion.RootedMass
 import DOZZ.GMC.SharpMoments.SeibergMoment
-public import DOZZ.FourPoint.Fusion.Kernel
+import DOZZ.FourPoint.Fusion.Kernel
 import DOZZ.GMC.Construction.RootedMeasureKernel
 
 /-! # Finiteness of the limiting rooted mass -/
 
-@[expose] public section
 open MeasureTheory Filter Topology
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -61,9 +59,7 @@ theorem fusion_rootedMass_finite_ae {Ω : Type*} [MeasurableSpace Ω]
   filter_upwards [fusion_gammaHalfRootedMass_eq_ae P X hX γ hγ hγ2 M hM α₁ α₂ α₃,
     fusion_coulombMass_finite_ae P X hX γ hγ hγ2 M hM ![α₁ + γ / 2, α₂] ![0, 1]
       hz α₃ ha hα₃] with ω he hf
-  rw [he]
-  exact hf
-
+  rwa [he]
 /-- The real limiting rooted kernel is integrable almost surely, as required by exterior DCT. -/
 theorem fusion_limitingRootedKernel_finite_ae {Ω : Type*} [MeasurableSpace Ω]
     (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
@@ -93,7 +89,5 @@ theorem fusion_limitingRootedKernel_finite_ae {Ω : Type*} [MeasurableSpace Ω]
     apply lintegral_congr
     intro x
     rw [mul_comm, ENNReal.ofReal_mul (Real.exp_nonneg _)]
-  rw [he]
-  exact hf
-
+  rwa [he]
 end DOZZ.Proofs

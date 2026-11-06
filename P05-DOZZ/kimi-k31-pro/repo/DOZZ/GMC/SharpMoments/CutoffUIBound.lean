@@ -2,14 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.SharpMoments.CoulombCutoffBounds
-public import DOZZ.GMC.SharpMoments.CutoffPieces
-public import DOZZ.GMC.SharpMoments.PiecesMoment
-public import DOZZ.GMC.SharpMoments.WeightedCutoffCompact
-public import DOZZ.GMC.SharpMoments.ExteriorMoment
-public import DOZZ.GMC.SharpMoments.SeibergUniform
+import DOZZ.GMC.SharpMoments.CoulombCutoffBounds
+import DOZZ.GMC.SharpMoments.CutoffPieces
+import DOZZ.GMC.SharpMoments.PiecesMoment
+import DOZZ.GMC.SharpMoments.WeightedCutoffCompact
+import DOZZ.GMC.SharpMoments.ExteriorMoment
+import DOZZ.GMC.SharpMoments.SeibergUniform
 
 /-! # Uniform positive moments of regularized Coulomb masses
 
@@ -19,7 +18,6 @@ uniformly in the parameters and the cutoff: the root pieces are cutoff weighted 
 by the γ-uniform weighted cutoff bound, the bulk piece is a cutoff disk mass, and the exterior
 piece is summed over dyadic annuli by exact exterior scaling. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology Metric
 open scoped ENNReal NNReal
@@ -50,7 +48,6 @@ theorem geometric_factor_le {ζ ζ0 t tm : ℝ} (hζ0 : 0 < ζ0) (hζ : ζ0 ≤ 
   set m : ℝ := max 1 t with hm
   set mm : ℝ := max 1 tm with hmm
   have hm1 : 1 ≤ m := le_max_left _ _
-  have hmm1 : 1 ≤ mm := le_max_left _ _
   have hmmm : m ≤ mm := max_le_max le_rfl htm
   have hqq0 : q ≤ q0 := ENNReal.ofReal_le_ofReal
     (Real.rpow_le_rpow_of_exponent_ge (by norm_num) (by norm_num) hζ)
@@ -69,7 +66,6 @@ theorem geometric_factor_le {ζ ζ0 t tm : ℝ} (hζ0 : 0 < ζ0) (hζ : ζ0 ≤ 
 
 theorem geometric_factor_lt_top {ζ0 tm : ℝ} (hζ0 : 0 < ζ0) :
     ((1 - ENNReal.ofReal ((1 / 2 : ℝ) ^ ζ0) ^ (1 / max 1 tm)) ^ (max 1 tm))⁻¹ < ⊤ := by
-  have hmm : 0 < max 1 tm := lt_of_lt_of_le one_pos (le_max_left _ _)
   have hq0 : ENNReal.ofReal ((1 / 2 : ℝ) ^ ζ0) < 1 :=
     ENNReal.ofReal_lt_one.mpr (Real.rpow_lt_one (by norm_num) (by norm_num) hζ0)
   have hroot : ENNReal.ofReal ((1 / 2 : ℝ) ^ ζ0) ^ (1 / max 1 tm) < 1 :=
@@ -100,7 +96,7 @@ theorem measurable_cutoffWeightedGmcBallMass
     (regularizedGMC_measurable P X hX Xc hXc γ (Real.log (1 / δ)))
   convert h using 1
   funext ω
-  simp only [Function.comp_apply, cutoffWeightedGmcBallMass, lintegral_indicator hB]
+  simp [Function.comp_apply, cutoffWeightedGmcBallMass, lintegral_indicator hB]
 
 /-- Uniform positive moments of regularized Coulomb masses over a compact parameter set. -/
 theorem regularizedCoulombMass_moment_uniform_pos

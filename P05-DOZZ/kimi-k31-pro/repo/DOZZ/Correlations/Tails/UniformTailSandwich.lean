@@ -2,13 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.Tails.PolynomialShiftParameters
+import DOZZ.Correlations.Tails.PolynomialShiftParameters
 
 /-! Uniform tail errors from the two localization comparisons and their moment bounds. -/
 
-@[expose] public section
 open Set
 
 namespace DOZZ.Proofs
@@ -36,7 +34,7 @@ theorem uniform_tail_sandwich_bound
   have hCl : 0 ≤ Cshift := by dsimp [Cshift]; positivity
   have hCe : 0 ≤ Cerr := by dsimp [Cerr]; positivity
   suffices H : |T x-c*x^(-p)| ≤ (Csmall+Cshift+Cerr)*x^(-p-η) by
-    simpa only [Csmall,Cshift,Cerr,add_assoc] using H
+    simpa [Csmall,Cshift,Cerr,add_assoc] using H
   by_cases hx2 : 2 ≤ x
   · let h := x^(1-a)/4
     have hs := hSand x hx2
@@ -52,8 +50,7 @@ theorem uniform_tail_sandwich_bound
         nlinarith only [hb,hx2]
       have hb := uniform_power_tail_shift L x y p P η a c cmax E hx hy.1
         hp hpP hη ha hc hcc hE hy.2 (hL (x*y) hxy1)
-      rw [hxy] at hb
-      exact hb
+      rwa [hxy] at hb
     have hupper := (abs_le.mp (hshift (-2) (by norm_num))).2
     have hlower := (abs_le.mp (hshift 1 (by norm_num))).1
     rw [one_mul] at hlower
@@ -63,12 +60,12 @@ theorem uniform_tail_sandwich_bound
         _ ≤ (K₁+K₂)*(4^R*x^(-p-η)) := mul_le_mul_of_nonneg_left hrate (add_nonneg hK₁ hK₂)
         _ = _ := by dsimp [Cerr]; ring
     have herr₂ : (K₁+K₂)*h^(-r) ≤ Cerr*x^(-p-η) := by
-      simpa only [Cerr,mul_assoc] using mul_le_mul_of_nonneg_left hrate (add_nonneg hK₁ hK₂)
+      simpa [Cerr,mul_assoc] using mul_le_mul_of_nonneg_left hrate (add_nonneg hK₁ hK₂)
     have hsmall : 0 ≤ Csmall*x^(-p-η) := mul_nonneg hCs (Real.rpow_nonneg hx0.le _)
     have hU : L (x-2*h)-c*x^(-p) ≤ Cshift*x^(-p-η) := by
-      simpa only [neg_mul,sub_eq_add_neg] using hupper
+      simpa [neg_mul,sub_eq_add_neg] using hupper
     apply abs_le.mpr
-    constructor <;> rw [add_mul,add_mul] <;> dsimp only at hs <;> linarith only [hs.1,hs.2,hlower,hU,herr₁,herr₂,hsmall]
+    constructor <;> rw [add_mul,add_mul] <;> dsimp at hs <;> linarith only [hs.1,hs.2,hlower,hU,herr₁,herr₂,hsmall]
   · have hx2' : x ≤ 2 := le_of_not_ge hx2
     have hpone : x^(-p) ≤ 1 := Real.rpow_le_one_of_one_le_of_nonpos hx (neg_nonpos.mpr hp)
     have hcx : c*x^(-p) ≤ cmax := (mul_le_of_le_one_right hc hpone).trans hcc
@@ -86,8 +83,7 @@ theorem uniform_tail_sandwich_bound
     have hmain : 1+cmax ≤ Csmall*x^(-p-η) := by
       have h := mul_le_mul_of_nonneg_left hpow
         (mul_nonneg (show 0 ≤ 1+cmax by linarith only [hcm]) (Real.rpow_nonneg zero_le_two (P+η)))
-      rw [mul_assoc,hid,mul_one] at h
-      exact h
+      rwa [mul_assoc,hid,mul_one] at h
     exact hrough.trans (hmain.trans (mul_le_mul_of_nonneg_right
       (by linarith only [hCl,hCe] : Csmall ≤ Csmall+Cshift+Cerr) (Real.rpow_nonneg hx0.le _)))
 

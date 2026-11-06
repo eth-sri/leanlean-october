@@ -2,11 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.Roots.CubeContinuation
-public import DOZZ.Statements.ShiftEquations.TwoPoleWindow
+import DOZZ.Roots.CubeContinuation
+import DOZZ.Statements.ShiftEquations.TwoPoleWindow
 /-! # Irrational-gamma root assembly from the calibrated residual identity -/
-@[expose] public section
 open MeasureTheory Set
 namespace DOZZ.Proofs
 /-- The source's sufficiently small cube can always be chosen in the first-case regime. -/
@@ -45,7 +43,7 @@ theorem roots_main_of_calibrated_residual {Ω : Type*} [MeasurableSpace Ω]
       Q γ - η < c → c < Q γ → (unitVolumeStructureConstant P M γ a b c : ℂ) =
         ((μ : ℂ) ^ (sExp γ a b c : ℂ) / Complex.Gamma (sExp γ a b c)) * dozzFormula γ μ U a b c := by
     intro a b c ha haQ hb hbQ hc hcQ
-    simpa only [hcγ, one_mul] using hcube a b c ha haQ hb hbQ hc hcQ
+    simpa [hcγ, one_mul] using hcube a b c ha haQ hb hbQ hc hcQ
   exact roots_structureConstant_of_unitVolume_value P M γ μ a b c hμ hs _
     (roots_unitVolume_of_cube P X M γ μ η hγ hγ2 hμ hη hηQ U hU hX hM hcube' a b c hα hs)
 end DOZZ.Proofs

@@ -2,11 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.Brownian.ReflectionMassLastCutBound
-public import DOZZ.Statements.Brownian.ReflectionBarR
-public import DOZZ.FourPoint.Reflected.RadialTilt
+import DOZZ.Statements.Brownian.ReflectionMassLastCutBound
+import DOZZ.Statements.Brownian.ReflectionBarR
+import DOZZ.FourPoint.Reflected.RadialTilt
 import Mathlib.Tactic
 
 /-! # Ordered removal of the reflected maximum cutoff
@@ -15,7 +14,6 @@ The actual supplied reflection data satisfy the last-cut bound `DOZZ.reflectionM
 This proves the `H → ∞` moment limit, which is used after the spatial limit.
 -/
 
-public section
 
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal
@@ -36,7 +34,7 @@ theorem reflected_cut_moment_tendsto {Ω : Type*} [MeasurableSpace Ω]
   have hbulk : 1 < 4 / γ ^ 2 := by
     rw [lt_div_iff₀ (sq_pos_of_pos hγ)]
     nlinarith only [hγ, hγ₂]
-  obtain ⟨C, -, hb⟩ := DOZZ.reflectionMass_lastCut_bound P γ hγ hγ₂
+  obtain ⟨C, -, hb⟩ := reflectionMass_lastCut_bound P γ hγ hγ₂
     {Q γ - α} {reflectionExponent γ α} isCompact_singleton isCompact_singleton
     (fun _ => B) (by
       intro ν hνmem
@@ -44,13 +42,12 @@ theorem reflected_cut_moment_tendsto {Ω : Type*} [MeasurableSpace Ω]
       subst ν
       exact ⟨hν, hData.1⟩) Z hData.2.1 (fun _ _ => hData.2.2) (by
       intro p hpmem
-      have he : p = reflectionExponent γ α := mem_singleton_iff.mp hpmem
       subst p
       exact ⟨ha.1, ha.2.trans hbulk⟩)
   have ht : Tendsto (fun H : ℝ => C * Real.exp (-γ * H)) atTop (nhds 0) := by
     have hexp := Real.tendsto_exp_neg_atTop_nhds_zero.comp
       (tendsto_id.const_mul_atTop hγ)
-    simpa only [Function.comp_def, id_eq, neg_mul, mul_zero] using hexp.const_mul C
+    simpa [Function.comp_def, id_eq, neg_mul, mul_zero] using hexp.const_mul C
   have hdiff : Tendsto (fun H : ℝ => reflectionBarR P γ α B Z -
       (∫⁻ ω, (twoSidedReflectionCutMass γ H B Z ω) ^ (reflectionExponent γ α) ∂P).toReal)
       atTop (nhds 0) := by
@@ -61,6 +58,6 @@ theorem reflected_cut_moment_tendsto {Ω : Type*} [MeasurableSpace Ω]
       exact (hb _ (mem_singleton _) _ (mem_singleton _) H hH).2
     · exact ht
   have hlimit := (tendsto_const_nhds (x := reflectionBarR P γ α B Z)).sub hdiff
-  simpa only [sub_sub_cancel, sub_zero] using hlimit
+  simpa [sub_sub_cancel, sub_zero] using hlimit
 
 end DOZZ.Proofs

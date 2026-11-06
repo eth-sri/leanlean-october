@@ -2,15 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.Analytic.FiniteVertexHolomorphy
-public import DOZZ.Correlations.Analytic.RetainedRegions
-public import DOZZ.Correlations.Analytic.EquatorCorrectionBounds
+import DOZZ.Correlations.Analytic.FiniteVertexHolomorphy
+import DOZZ.Correlations.Analytic.RetainedRegions
+import DOZZ.Correlations.Analytic.EquatorCorrectionBounds
 
 /-! Joint Wick normalization and the exact equator pin correction for mixed frames. -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -96,12 +94,12 @@ theorem normalized_vertex_moment_holomorphic
   · intro β hβ
     have hb' : -(↑(-2 * Q γ / γ) + ((γ : ℂ)⁻¹ • chargeSumCLM (N + 1)) β).re <
         4 / γ ^ 2 := by
-      simpa only [complexMomentPower, smul_apply, smul_eq_mul,
+      simpa [complexMomentPower, smul_apply, smul_eq_mul,
         chargeSumCLM_apply, Complex.neg_re] using hβ
-    simpa only [complexMomentPower, A, smul_apply, smul_eq_mul,
+    simpa [complexMomentPower, A, smul_apply, smul_eq_mul,
       chargeSumCLM_apply] using hd.1 β ⟨mem_univ β, hb'⟩
   · change DifferentiableOn ℂ (fun β => normalizedVertexMoment P Xc M O γ z r β) _
-    simpa only [normalizedVertexMoment, complexMomentPower, A,
+    simpa [normalizedVertexMoment, complexMomentPower, A,
       smul_apply, smul_eq_mul, chargeSumCLM_apply, mem_univ, true_and,
       Complex.neg_re] using hd.2
 

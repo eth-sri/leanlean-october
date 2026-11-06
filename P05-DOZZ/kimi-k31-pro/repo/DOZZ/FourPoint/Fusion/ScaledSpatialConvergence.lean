@@ -2,15 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.Fusion.ScaledFactor
+import DOZZ.FourPoint.Fusion.ScaledFactor
 import Mathlib.MeasureTheory.Integral.DominatedConvergence
 import Mathlib.MeasureTheory.Integral.Prod
 
 /-! # Dominated convergence for the signed rescaled spatial integral -/
 
-@[expose] public section
 open MeasureTheory Filter Topology
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -37,8 +35,7 @@ theorem fusionScaledIntegral_tendsto {Ω : Type*} [MeasurableSpace Ω]
       ((Complex.measurable_ofReal.comp (hmeas.comp (measurable_id.prodMk measurable_const))).aestronglyMeasurable)
   have hdom : ∀ᶠ z : ℂ in nhds 0, ∀ᵐ y : ℂ ∂volume,
       ‖K y * (fusionScaledFactor P M γ α₁ α₂ α₃ s y z : ℂ)‖ ≤ ‖K y‖ * B := by
-    have hz : ∀ᶠ z : ℂ in nhds 0, ‖z‖ ≤ 1 := by
-      exact ((continuous_norm.tendsto (0 : ℂ)).eventually_lt_const (by simp)).mono fun z h => h.le
+    have hz : ∀ᶠ z : ℂ in nhds 0, ‖z‖ ≤ 1 := ((continuous_norm.tendsto (0 : ℂ)).eventually_lt_const (by simp)).mono fun z h => h.le
     filter_upwards [hz] with z hz
     exact ae_of_all _ fun y => by
       rw [norm_mul, Complex.norm_real, Real.norm_eq_abs]
@@ -51,12 +48,12 @@ theorem fusionScaledIntegral_tendsto {Ω : Type*} [MeasurableSpace Ω]
       hα hα₁ hα₂ hα₃ y hy s hs
     have he : (∫⁻ ω, fusionMovingMass γ α₁ α₂ α₃ y 0 (M ω) ^ s ∂P) =
         ∫⁻ ω, fusionMovingMass γ α₁ α₂ α₃ 1 0 (M ω) ^ s ∂P := by
-      simp only [fusionMovingMass, fusionMovingKernel, mul_zero]
+      simp [fusionMovingMass, fusionMovingKernel, mul_zero]
     rw [he] at hf
     exact tendsto_const_nhds.mul (Complex.continuous_ofReal.continuousAt.tendsto.comp hf)
   have h := tendsto_integral_filter_of_dominated_convergence (fun y => ‖K y‖ * B)
     hF hdom (hK.norm.mul_const B) hlim
-  simpa only [integral_mul_const] using h
+  simpa [integral_mul_const] using h
 
 /-- Joint measurability makes the spatial integral a measurable function of the moving point. -/
 theorem fusionScaledIntegral_measurable {Ω : Type*} [MeasurableSpace Ω]

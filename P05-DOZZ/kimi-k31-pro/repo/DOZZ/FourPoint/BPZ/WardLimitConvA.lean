@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.BPZ.WardLimitBounds
+import DOZZ.FourPoint.BPZ.WardLimitBounds
 
 /-! # Limits of the single integrals of the cutoff Ward identity
 
@@ -13,7 +12,6 @@ Along integer cutoffs, the cutoff part `∫ ρ k₁ dM_n` of the mixed mass conv
 `∫ ∂_v(φ k̃) |x|₊^{4+γ²q} dM`, where `k = k̃ |x|₊^{4+γ²q}`. Both follow from the convergence of
 random test functions, since the pinned weights converge uniformly on the cutoff region. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped ENNReal NNReal
@@ -159,7 +157,7 @@ theorem conv_left (hd : BPZLimitData γ q δ ρ kt k₂ φ D) (hp : BPZWardProb 
     intro r x hx
     have hkt : kt x ≠ 0 := (lt_of_lt_of_le hc (hck x hx)).ne'
     unfold bpzWardLeftWeight bpzWardCutWeight
-    simp only [hf']
+    simp [hf']
     field_simp
   have hrel₀ : ∀ x, x ∈ tsupport φ →
       f' x * normPlus x ^ (4 + γ ^ 2 * q) = f' x / kt x * (kt x * normPlus x ^ (4 + γ ^ 2 * q)) := by
@@ -190,7 +188,7 @@ theorem conv_left (hd : BPZLimitData γ q δ ρ kt k₂ φ D) (hp : BPZWardProb 
         _ ≤ A + 1 := by linarith
     · unfold bpzWardLeftWeight
       rw [bpz_fderiv_mul_zero_of_notMem v hx]
-      simp only [zero_mul, abs_zero]
+      simp [zero_mul, abs_zero]
       exact hV.le
   have hg₀b : ∀ x, |f' x * normPlus x ^ (4 + γ ^ 2 * q)| ≤ A + 1 := by
     intro x
@@ -243,7 +241,7 @@ theorem conv_left (hd : BPZLimitData γ q δ ρ kt k₂ φ D) (hp : BPZWardProb 
             mul_le_mul (by linarith) h2 (abs_nonneg _) (by positivity)
         _ = ε * (A + 1) := by field_simp
     · have h0 : fderiv ℝ (fun x => φ x * kt x) x v = 0 := bpz_fderiv_mul_zero_of_notMem v hx
-      simp only [bpzWardLeftWeight, hf', h0, zero_mul, sub_zero, abs_zero]
+      simp [bpzWardLeftWeight, hf', h0, zero_mul, sub_zero, abs_zero]
       positivity
 
 end BPZLimitData

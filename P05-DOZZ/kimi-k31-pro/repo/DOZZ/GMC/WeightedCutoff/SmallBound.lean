@@ -1,11 +1,9 @@
-module
 
-public import DOZZ.GMC.WeightedCutoff.ChartUniform
-public import DOZZ.GMC.WeightedCutoff.CompactLocation
+import DOZZ.GMC.WeightedCutoff.ChartUniform
+import DOZZ.GMC.WeightedCutoff.CompactLocation
 
 /-! # The weighted cutoff bound at small radii and arbitrary compact centers -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs

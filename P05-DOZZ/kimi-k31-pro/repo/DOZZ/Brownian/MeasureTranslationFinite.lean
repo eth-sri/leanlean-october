@@ -2,12 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import Mathlib.MeasureTheory.Measure.FiniteMeasure
-public import Mathlib.MeasureTheory.Measure.Prod
-public import Mathlib.MeasureTheory.Measure.Restrict
-public import Mathlib.Order.Disjointed
+import Mathlib.MeasureTheory.Measure.FiniteMeasure
+import Mathlib.MeasureTheory.Measure.Prod
+import Mathlib.MeasureTheory.Measure.Restrict
+import Mathlib.Order.Disjointed
 
 /-!
 # Joint integration against a finite measure parameter
@@ -17,7 +16,6 @@ It expresses a parameter-dependent integral through the product of a Dirac measu
 varying finite measure, then extends from measurable indicators by `ennreal_induction`.
 -/
 
-@[expose] public section
 
 open MeasureTheory
 open Function
@@ -38,8 +36,7 @@ theorem measurable_lintegral_finiteMeasure_parameter
   have hdirac : Measurable diracFinite := by
     apply Measurable.subtype_mk
     exact Measure.measurable_dirac
-  have hpair : Measurable (fun z : X × FiniteMeasure β => (diracFinite z.1, z.2)) := by
-    exact hdirac.comp measurable_fst |>.prodMk measurable_snd
+  have hpair : Measurable (fun z : X × FiniteMeasure β => (diracFinite z.1, z.2)) := hdirac.comp measurable_fst |>.prodMk measurable_snd
   have hprod : Measurable (fun z : X × FiniteMeasure β =>
       (diracFinite z.1).toMeasure.prod z.2.toMeasure) := by
     exact (FiniteMeasure.measurable_fun_prod).comp hpair
@@ -62,15 +59,15 @@ theorem measurable_lintegral_finiteMeasure_parameter
     have hformula (x : X) (μ : FiniteMeasure β) :
         ∫⁻ y, (s.indicator fun _ => c) (x, y) ∂(μ : Measure β) =
           c * ((Measure.dirac x).prod (μ : Measure β) s) := by
-      simp only [← Set.indicator_comp_right]
+      simp [← Set.indicator_comp_right]
       change ∫⁻ y, (Prod.mk x ⁻¹' s).indicator (fun _ => c) y ∂(μ : Measure β) = _
       rw [lintegral_indicator_const (hsec x) c, hprodSection]
     have hmeas : Measurable (fun z : X × FiniteMeasure β =>
         c * ((Measure.dirac z.1).prod (z.2 : Measure β) s)) := by
       exact measurable_const.mul (hprodEval s hs)
-    simpa only [hformula] using hmeas
+    simpa [hformula] using hmeas
   · rintro g k - hg hk hgm hkm
-    simp only [Pi.add_apply]
+    simp [Pi.add_apply]
     have hsection_meas (z : X × FiniteMeasure β) : Measurable (fun y : β => g (z.1, y)) :=
       hg.comp (measurable_const.prodMk measurable_id)
     have hEq : (fun z : X × FiniteMeasure β =>
@@ -105,8 +102,7 @@ theorem measurable_translateFiniteMeasure :
     intro A hA
     let integrand : ℝ × ℝ → ℝ≥0∞ := fun z => A.indicator (fun _ => 1) (z.2 + z.1)
     have htrans : Measurable (fun z : ℝ × ℝ => z.2 + z.1) := by fun_prop
-    have hintegrand : Measurable integrand := by
-      exact (measurable_const.indicator hA).comp htrans
+    have hintegrand : Measurable integrand := (measurable_const.indicator hA).comp htrans
     have hint := measurable_lintegral_finiteMeasure_parameter (f := integrand) hintegrand
     have hEq (t : ℝ) (μ : FiniteMeasure ℝ) :
         ((μ : Measure ℝ).map (fun s => s + t)) A =
@@ -126,8 +122,7 @@ theorem measurable_translateFiniteMeasure :
             rfl
           have hind := Set.indicator_comp_right (s := A) (fun u : ℝ => u + t)
             (g := fun _ : ℝ => (1 : ℝ≥0∞)) (x := s)
-          rw [hcomp] at hind
-          exact hind
+          rwa [hcomp] at hind
     convert hint using 1
     funext z
     exact hEq z.1 z.2
@@ -148,8 +143,7 @@ theorem measurableSet_locallyFiniteOnTranslationWindows :
         simp [LocallyFiniteOnTranslationWindows]]
   apply MeasurableSet.iInter
   intro n
-  have hwindow : MeasurableSet (translationWindow n) := by
-    exact measurableSet_Icc
+  have hwindow : MeasurableSet (translationWindow n) := measurableSet_Icc
   exact (measurableSet_Iio : MeasurableSet (Set.Iio (⊤ : ℝ≥0∞))).preimage
     (Measure.measurable_coe hwindow)
 
@@ -168,7 +162,7 @@ theorem translationShell_iUnion : (⋃ n, translationShell n) = Set.univ := by
   change (⋃ n, disjointed translationWindow n) = Set.univ
   rw [iUnion_disjointed]
   ext x
-  simp only [Set.mem_iUnion, Set.mem_univ, iff_true]
+  simp [Set.mem_iUnion, Set.mem_univ, iff_true]
   obtain ⟨n, hn⟩ := exists_nat_gt |x|
   refine ⟨n, ?_⟩
   have hbound : |x| ≤ (n : ℝ) := le_of_lt (by exact_mod_cast hn)
@@ -196,14 +190,6 @@ theorem measurable_finiteRestrictionOnSet (A : Set ℝ) (hA : MeasurableSet A) :
   have hgood : MeasurableSet {μ : Measure ℝ | μ A < ⊤} :=
     (measurableSet_Iio : MeasurableSet (Set.Iio (⊤ : ℝ≥0∞))).preimage
       (Measure.measurable_coe hA)
-  have hrestricted : Measurable (fun μ : Measure ℝ => μ.restrict A) := by
-    apply Measure.measurable_of_measurable_coe
-    intro s hs
-    have heq : (fun μ : Measure ℝ => μ.restrict A s) = fun μ => μ (s ∩ A) := by
-      funext μ
-      exact Measure.restrict_apply hs
-    rw [heq]
-    exact Measure.measurable_coe (hs.inter hA)
   have hbase : Measurable (fun μ : Measure ℝ => (finiteRestrictionOnSet A μ : Measure ℝ)) := by
     apply Measure.measurable_of_measurable_coe
     intro s hs
@@ -274,7 +260,7 @@ theorem locallyFiniteTranslation_eq_map
   calc
     locallyFiniteTranslation (t, μ) =
         Measure.sum (fun n => (μ.restrict (D n)).map (fun s => s + t)) := by
-          simp only [locallyFiniteTranslation, D]
+          simp [locallyFiniteTranslation, D]
           congr 1
           funext n
           exact hterm n
@@ -284,4 +270,3 @@ theorem locallyFiniteTranslation_eq_map
 
 end DOZZ.Proofs
 
-end

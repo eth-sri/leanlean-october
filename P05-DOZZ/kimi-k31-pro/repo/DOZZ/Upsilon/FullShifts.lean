@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.Defs.DualMu
+import DOZZ.Statements.Defs.DualMu
 import DOZZ.Upsilon.StripShifts
 import DOZZ.Upsilon.StripShiftsDual
 import Mathlib.Analysis.Analytic.Uniqueness
@@ -23,7 +22,6 @@ exclusions in the statements of `DOZZ.IsUpsilon.shift_b` and `DOZZ.IsUpsilon.shi
 then permit pointwise inversion there.
 -/
 
-@[expose] public section
 
 open Complex Set Filter Topology
 
@@ -52,19 +50,13 @@ private noncomputable def upsilonBinvInverseMultiplier (γ : ℝ) (z : ℂ) : �
     (Complex.Gamma ((2 / γ : ℂ) * z))⁻¹
 
 private theorem complex_half_re (γ : ℝ) : ((γ / 2 : ℂ)).re = γ / 2 := by
-  rw [Complex.div_ofNat_re, Complex.ofReal_re]
+  simp
 
 private theorem complex_half_cast (γ : ℝ) :
-    ((γ / 2 : ℝ) : ℂ) = (γ / 2 : ℂ) := by
-  exact Complex.ofReal_div γ 2
+    ((γ / 2 : ℝ) : ℂ) = (γ / 2 : ℂ) := Complex.ofReal_div γ 2
 
 private theorem complex_dual_re (γ : ℝ) : ((2 / γ : ℂ)).re = 2 / γ := by
-  by_cases hγ : γ = 0
-  · simp [hγ]
-  · rw [Complex.div_re, Complex.normSq_ofReal, Complex.ofReal_re, Complex.ofReal_im]
-    field_simp [hγ]
-    norm_num
-    ring_nf
+  simp
 
 private theorem differentiableOn_eqOn_of_open
     {s o : Set ℂ} {f g : ℂ → ℂ}
@@ -129,8 +121,7 @@ private theorem differentiableAt_upsilonBInverseMultiplier
     have hmul := mul_lt_mul_of_pos_left hz hbR
     have hcancel : (γ / 2) * (2 / γ) = 1 := by
       field_simp [hγ.ne']
-    rw [hcancel] at hmul
-    exact hmul
+    rwa [hcancel] at hmul
   have hArgRe : 0 < (1 - b * z).re := by
     rw [Complex.sub_re, Complex.one_re, hbzre]
     linarith
@@ -212,8 +203,7 @@ private theorem differentiableAt_upsilonBinvInverseMultiplier
     have hmul := mul_lt_mul_of_pos_left hz hcR
     have hcancel : (2 / γ) * (γ / 2) = 1 := by
       field_simp [hγ.ne']
-    rw [hcancel] at hmul
-    exact hmul
+    rwa [hcancel] at hmul
   have hArgRe : 0 < (1 - c * z).re := by
     rw [Complex.sub_re, Complex.one_re, hczre]
     linarith
@@ -258,8 +248,7 @@ private theorem upsilonBMultipliers_cancel_of_nonzero
   have hpow : ((γ / 2 : ℝ) : ℂ) ^ (1 - (γ : ℂ) * z) ≠ 0 :=
     Complex.cpow_ne_zero_iff.mpr (Or.inl hb)
   have hpowC : ((γ / 2 : ℂ) ^ (1 - (γ : ℂ) * z)) ≠ 0 := by
-    rw [← complex_half_cast]
-    exact hpow
+    rwa [← complex_half_cast]
   change
     (((γ / 2 : ℝ) : ℂ) ^ (-(1 - (γ : ℂ) * z)) *
       Complex.Gamma (1 - (γ / 2 : ℂ) * z) *
@@ -288,8 +277,7 @@ private theorem upsilonBinvMultipliers_cancel_of_nonzero
   have hpow : ((γ / 2 : ℝ) : ℂ) ^ (4 / (γ : ℂ) * z - 1) ≠ 0 :=
     Complex.cpow_ne_zero_iff.mpr (Or.inl hb)
   have hpowC : ((γ / 2 : ℂ) ^ (4 / (γ : ℂ) * z - 1)) ≠ 0 := by
-    rw [← complex_half_cast]
-    exact hpow
+    rwa [← complex_half_cast]
   change
     (((γ / 2 : ℝ) : ℂ) ^ (-(4 / (γ : ℂ) * z - 1)) *
       Complex.Gamma (1 - (2 / γ : ℂ) * z) *
@@ -315,10 +303,8 @@ private theorem upsilonB_shift_on_right
   let o : Set ℂ := {z | 0 < z.re ∧ z.re < 2 / γ}
   let f : ℂ → ℂ := fun z => U (z + (γ / 2 : ℂ))
   let g : ℂ → ℂ := fun z => upsilonBForwardMultiplier γ z * U z
-  have hsOpen : IsOpen s := by
-    exact Complex.isOpen_re_gt 0
-  have hsConn : IsPreconnected s := by
-    exact (convex_halfSpace_re_gt 0).isPreconnected
+  have hsOpen : IsOpen s := Complex.isOpen_re_gt 0
+  have hsConn : IsPreconnected s := (convex_halfSpace_re_gt 0).isPreconnected
   have hoOpen : IsOpen o := by
     change IsOpen ((Complex.re ⁻¹' Set.Ioi (0 : ℝ)) ∩
       (Complex.re ⁻¹' Set.Iio (2 / γ)))
@@ -347,7 +333,6 @@ private theorem upsilonB_shift_on_right
     dsimp [f, g, o] at hz ⊢
     have hzQ : z.re < Q γ := by
       unfold Q
-      have hpos : 0 < γ / 2 := by positivity
       linarith
     have hzbQ : (z + (γ / 2 : ℂ)).re < Q γ := by
       rw [Complex.add_re, complex_half_re]
@@ -379,10 +364,8 @@ private theorem upsilonB_shift_reciprocal_on_left
     U (z + (γ / 2 : ℂ))
   let g : ℂ → ℂ := U
   have hsOpen : IsOpen s := Complex.isOpen_re_lt (2 / γ)
-  have hsConn : IsPreconnected s := by
-    exact (convex_halfSpace_re_lt (2 / γ)).isPreconnected
-  have hoOpen : IsOpen o := by
-    exact (Complex.isOpen_re_gt 0).inter (Complex.isOpen_re_lt (2 / γ))
+  have hsConn : IsPreconnected s := (convex_halfSpace_re_lt (2 / γ)).isPreconnected
+  have hoOpen : IsOpen o := (Complex.isOpen_re_gt 0).inter (Complex.isOpen_re_lt (2 / γ))
   have hoSub : o ⊆ s := fun _ hz => hz.2
   have hf : DifferentiableOn ℂ f s := by
     intro z hz
@@ -436,8 +419,7 @@ private theorem upsilonBinv_shift_on_right
   let g : ℂ → ℂ := fun z => upsilonBinvForwardMultiplier γ z * U z
   have hsOpen : IsOpen s := Complex.isOpen_re_gt 0
   have hsConn : IsPreconnected s := (convex_halfSpace_re_gt 0).isPreconnected
-  have hoOpen : IsOpen o := by
-    exact (Complex.isOpen_re_gt 0).inter (Complex.isOpen_re_lt (γ / 2))
+  have hoOpen : IsOpen o := (Complex.isOpen_re_gt 0).inter (Complex.isOpen_re_lt (γ / 2))
   have hoSub : o ⊆ s := fun _ hz => hz.1
   have hf : DifferentiableOn ℂ f s := by
     intro z hz
@@ -493,8 +475,7 @@ private theorem upsilonBinv_shift_reciprocal_on_left
   let g : ℂ → ℂ := U
   have hsOpen : IsOpen s := Complex.isOpen_re_lt (γ / 2)
   have hsConn : IsPreconnected s := (convex_halfSpace_re_lt (γ / 2)).isPreconnected
-  have hoOpen : IsOpen o := by
-    exact (Complex.isOpen_re_gt 0).inter (Complex.isOpen_re_lt (γ / 2))
+  have hoOpen : IsOpen o := (Complex.isOpen_re_gt 0).inter (Complex.isOpen_re_lt (γ / 2))
   have hoSub : o ⊆ s := fun _ hz => hz.2
   have hf : DifferentiableOn ℂ f s := by
     intro z hz
@@ -514,14 +495,6 @@ private theorem upsilonBinv_shift_reciprocal_on_left
   have heq : EqOn f g o := by
     intro z hz
     dsimp [f, g, o] at hz ⊢
-    have hzQ : z.re < Q γ := by
-      unfold Q
-      have hpos : 0 < 2 / γ := by positivity
-      linarith
-    have hzbQ : (z + (2 / γ : ℂ)).re < Q γ := by
-      rw [Complex.add_re, complex_dual_re]
-      unfold Q
-      linarith
     have hΓ : Complex.Gamma ((2 / γ : ℂ) * z) ≠ 0 :=
       Complex.Gamma_ne_zero_of_re_pos (by
         have hcre : ((2 / γ : ℂ) * z).re = (2 / γ) * z.re := by simp
@@ -572,7 +545,6 @@ theorem IsUpsilon.shift_b {U : ℂ → ℂ} (hγ : 0 < γ) (hγ2 : γ < 2) (hU :
       Complex.Gamma_ne_zero_of_re_pos (by
         have hbzre : ((γ / 2 : ℂ) * z).re = (γ / 2) * z.re := by simp
         rw [Complex.sub_re, Complex.one_re, hbzre]
-        have hb : 0 < γ / 2 := by positivity
         nlinarith)
     have hcancel := upsilonBMultipliers_cancel_of_nonzero hγ hΓ hΓ1
     have hmulNe : upsilonBInverseMultiplier γ z ≠ 0 := by
@@ -607,7 +579,6 @@ theorem IsUpsilon.shift_binv {U : ℂ → ℂ} (hγ : 0 < γ) (hγ2 : γ < 2) (h
     simpa [upsilonBinvForwardMultiplier, lFun, div_eq_mul_inv, mul_assoc] using h
   · have hzRe' : z.re ≤ 0 := le_of_not_gt hzRe
     have hrecip := upsilonBinv_shift_reciprocal_on_left hγ hγ2 hU z (by
-      have hbound : 0 < γ / 2 := by positivity
       linarith)
     have hΓ : Complex.Gamma ((2 / γ : ℂ) * z) ≠ 0 := Complex.Gamma_ne_zero hz
     have hΓ1 : Complex.Gamma (1 - (2 / γ : ℂ) * z) ≠ 0 :=

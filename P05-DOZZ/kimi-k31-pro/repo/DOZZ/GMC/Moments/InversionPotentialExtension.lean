@@ -2,13 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.Moments.InversionMixedPotential
+import DOZZ.GMC.Moments.InversionMixedPotential
 
 /-! Continuous extension of the inverse point/source-circle potential across zero. -/
 
-@[expose] public section
 
 open MeasureTheory
 open DOZZ.Proofs.CirclePotential
@@ -46,7 +44,7 @@ theorem inversionCirclePotential_eq_innerPot (y : ℂ) (s : ℝ) {x : ℂ} (hx :
     have he := congrArg norm hm
     rw [norm_mul] at he
     apply (eq_div_iff hn.ne').mpr
-    simpa only [mul_comm] using he
+    simpa [mul_comm] using he
   have hmax : max ‖x⁻¹ - y‖ (Real.exp (-s)) =
       max ‖1 - x * y‖ (Real.exp (-s) * ‖x‖) / ‖x‖ := by
     rw [hdist, ← max_div_div_right hn.le, mul_div_cancel_right₀ _ hn.ne']

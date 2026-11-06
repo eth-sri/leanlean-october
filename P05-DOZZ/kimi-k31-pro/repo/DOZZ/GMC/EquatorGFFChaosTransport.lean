@@ -2,24 +2,22 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.CircleAverage
-public import DOZZ.GMC.CircleAverageLimits
-public import DOZZ.GMC.EquatorGFFFiniteFDD
-public import DOZZ.GFFStructure.PoissonL2
-public import DOZZ.GMC.Moments.GaussianFDD
-public import DOZZ.GMC.Moments.CircleScaleWick
-public import DOZZ.GMC.Moments.ChaosLawFDD
-public import DOZZ.GMC.Moments.ChaosLawFDDLimit
-public import DOZZ.GMC.Moments.ReferenceFinite
+import DOZZ.GMC.CircleAverage
+import DOZZ.GMC.CircleAverageLimits
+import DOZZ.GMC.EquatorGFFFiniteFDD
+import DOZZ.GFFStructure.PoissonL2
+import DOZZ.GMC.Moments.GaussianFDD
+import DOZZ.GMC.Moments.CircleScaleWick
+import DOZZ.GMC.Moments.ChaosLawFDD
+import DOZZ.GMC.Moments.ChaosLawFDDLimit
+import DOZZ.GMC.Moments.ReferenceFinite
 import DOZZ.GMC.Construction.RegularizedGMCExpectedMeasure
 import DOZZ.GMC.Construction.GMCMeasurableVersion
 import Mathlib.MeasureTheory.Integral.Bochner.ContinuousLinearMap
 
 /-! Finite joint laws of the field and arbitrary circle-average regularizations. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped Distributions ENNReal NNReal
@@ -103,7 +101,7 @@ theorem equatorGFF_test_circle_fdd_law
     | inl i =>
       cases j with
       | inl j =>
-        simp only [U, U']
+        simp [U, U']
         have hXcov (g h : TestFn) :
             gaussianCovariance P (fun ω => X ω g) (fun ω => X ω h) = gffCov g h := by
           unfold gaussianCovariance
@@ -126,21 +124,20 @@ theorem equatorGFF_test_circle_fdd_law
       | inr j =>
         have hx := isCircleAverage_cross_covariance P X hX Xc hXc (z j) (r j) (f i)
         have hy := isCircleAverage_cross_covariance P' X' hX' Xc' hXc' (z j) (r j) (f i)
-        simp only [U, U']
+        simp [U, U']
         rw [hx, hy]
     | inr i =>
       cases j with
       | inl j =>
         have hx := isCircleAverage_cross_covariance P X hX Xc hXc (z i) (r i) (f j)
         have hy := isCircleAverage_cross_covariance P' X' hX' Xc' hXc' (z i) (r i) (f j)
-        simp only [U, U']
+        simp [U, U']
         rw [hsymX, hx, hsymY, hy]
       | inr j =>
-        simp only [U, U']
+        simp [U, U']
         rw [isCircleAverage_covariance P X hX Xc hXc,
           isCircleAverage_covariance P' X' hX' Xc' hXc']
-  have hUlaw : Measure.map U P = Measure.map U' P' := by
-    exact map_eq_of_centeredJointlyGaussian_of_covariance_eq P P' U U' hUX hUY hcov
+  have hUlaw : Measure.map U P = Measure.map U' P' := map_eq_of_centeredJointlyGaussian_of_covariance_eq P P' U U' hUX hUY hcov
   let π : (T → ℝ) → (Fin k → ℝ) × (Fin m → ℝ) := fun w =>
     (fun i => w (Sum.inl i), fun j => w (Sum.inr j))
   have hπ : Measurable π := by
@@ -193,12 +190,8 @@ theorem regularizedGMC_test_integral_eq_reference_wick
   have hG : Measurable G := by
     dsimp [G]
     fun_prop
-  have hDtop : ∀ᵐ x ∂volume, D x < ∞ := by
-    filter_upwards [] with x
-    exact ENNReal.ofReal_lt_top
-  have hGtop : ∀ᵐ x ∂volume, G x < ∞ := by
-    filter_upwards [] with x
-    exact ENNReal.ofReal_lt_top
+  have hDtop : ∀ᵐ x ∂volume, D x < ∞ := ae_of_all _ fun x => ENNReal.ofReal_lt_top
+  have hGtop : ∀ᵐ x ∂volume, G x < ∞ := ae_of_all _ fun x => ENNReal.ofReal_lt_top
   have hnormpos (x : ℂ) : 0 < normPlus x :=
     lt_of_lt_of_le one_pos (le_max_left _ _)
   have hfactor (x : ℂ) :
@@ -225,7 +218,7 @@ theorem regularizedGMC_test_integral_eq_reference_wick
             funext x
             simp [D, V]]
       rw [integral_withDensity_eq_integral_toReal_smul hD hDtop]
-      simp only [smul_eq_mul]
+      simp [smul_eq_mul]
     _ = ∫ x, (G x).toReal * (f x *
         Real.exp (γ * Xc ω x r - γ ^ 2 / 2 * gaussianVariance P
           (fun ω' => Xc ω' x r))) ∂volume := by
@@ -236,7 +229,7 @@ theorem regularizedGMC_test_integral_eq_reference_wick
       rw [gmcReferenceMeasure, show
           (fun x => ENNReal.ofReal (normPlus x ^ (-4 : ℝ))) = G by rfl]
       rw [integral_withDensity_eq_integral_toReal_smul hG hGtop]
-      simp only [smul_eq_mul]
+      simp [smul_eq_mul]
 
 
 /-- Any finite vector of cutoff test masses has the same law jointly with finitely many field
@@ -290,10 +283,8 @@ theorem equatorGFF_regularized_test_vector_law
     apply measurable_pi_iff.2
     intro i
     exact (hX'.2 (tests i)).1
-  have hFX : Measurable (fun p : Ω × ℂ => FX p.1 p.2) := by
-    exact hXc.1 r
-  have hFY : Measurable (fun p : Ω' × ℂ => FY p.1 p.2) := by
-    exact hXc'.1 r
+  have hFX : Measurable (fun p : Ω × ℂ => FX p.1 p.2) := hXc.1 r
+  have hFY : Measurable (fun p : Ω' × ℂ => FY p.1 p.2) := hXc'.1 r
   have hvariance : Measurable variance := by
     exact measurable_real_toNNReal.comp
       (@circleAverage_variance_measurable Ω _ P hX.1 Xc hXc.1 r)
@@ -310,10 +301,6 @@ theorem equatorGFF_regularized_test_vector_law
     have hleft := isCircleAverage_covariance P X hX Xc hXc x x r r
     have hright := isCircleAverage_covariance P' X' hX' Xc' hXc' x x r r
     simpa [gaussianVariance] using hleft.trans hright.symm
-  have hvarianceY_nonneg (x : ℂ) :
-      0 ≤ gaussianVariance P' (fun ω => Xc' ω x r) := by
-    rw [← hvariance_eq x]
-    exact hvariance_nonneg x
   have hvarianceY_real (x : ℂ) : (variance x : ℝ) =
       gaussianVariance P' (fun ω => Xc' ω x r) := by
     calc
@@ -324,7 +311,7 @@ theorem equatorGFF_regularized_test_vector_law
     simp [weight, weightBCF, Fin.addCases_left]
   have hweightNat (j : Fin m) : weight (Fin.natAdd m j) = wNeg j := by
     funext x
-    simpa only [weight, weightBCF] using
+    simpa [weight, weightBCF] using
       congrArg (fun g : BoundedContinuousFunction ℂ ℝ => g x)
         (Fin.addCases_right (m := m) (n := m)
           (motive := fun _ => BoundedContinuousFunction ℂ ℝ)
@@ -384,10 +371,6 @@ theorem equatorGFF_regularized_test_vector_law
     simpa [V, V', FX, FY] using
       (equatorGFF_test_circle_fdd_law P X hX P' X' hX' Xc hXc Xc' hXc'
         tests xs (fun _ => r))
-  have hvarianceXJoint : Measurable (fun p : Ω × ℂ => variance p.2) :=
-    hvariance.comp measurable_snd
-  have hvarianceYJoint : Measurable (fun p : Ω' × ℂ => variance p.2) :=
-    hvariance.comp measurable_snd
   have hWickXmeas (i : Fin N) : Measurable
       (fun ω => ∫ x, weight i x * Real.exp
         (γ * FX ω x - γ ^ 2 / 2 * (variance x : ℝ)) ∂(ν : Measure ℂ)) := by
@@ -437,8 +420,7 @@ theorem equatorGFF_regularized_test_vector_law
       _ = Measure.map A (Measure.map LY P') := congrArg (Measure.map A) hLaw
       _ = Measure.map (A ∘ LY) P' :=
         Measure.map_map hA hLYmeas
-  have hνeq : (ν : Measure ℂ) = (ν.mass : ℝ≥0) • (ν.normalize : Measure ℂ) := by
-    exact congrArg (fun μ : FiniteMeasure ℂ => (μ : Measure ℂ)) ν.self_eq_mass_smul_normalize
+  have hνeq : (ν : Measure ℂ) = (ν.mass : ℝ≥0) • (ν.normalize : Measure ℂ) := congrArg (fun μ : FiniteMeasure ℂ => (μ : Measure ℂ)) ν.self_eq_mass_smul_normalize
   have hWickIntXNorm : ∀ i, ∀ᵐ ω ∂P, Integrable (fun x => weight i x *
       Real.exp (γ * FX ω x - γ ^ 2 / 2 * (variance x : ℝ))) (ν.normalize : Measure ℂ) := by
     intro i
@@ -551,23 +533,13 @@ theorem regularizedGMC_test_integral_aemeasurable_EquatorGFFChaosTransport
   have hμ : Measurable μ := regularizedGMC_measurable P X hX Xc hXc γ r
   let pos : Ω → ℝ≥0∞ := fun ω => ∫⁻ x, (f.nnrealPart x : ℝ≥0∞) ∂μ ω
   let neg : Ω → ℝ≥0∞ := fun ω => ∫⁻ x, ((-f).nnrealPart x : ℝ≥0∞) ∂μ ω
-  have hpos : Measurable pos := by
-    dsimp [pos]
-    exact (Measure.measurable_lintegral
-      (BoundedContinuousFunction.measurable_coe_ennreal_comp f.nnrealPart)).comp hμ
-  have hneg : Measurable neg := by
-    dsimp [neg]
-    exact (Measure.measurable_lintegral
-      (BoundedContinuousFunction.measurable_coe_ennreal_comp (-f).nnrealPart)).comp hμ
   have hproxy : Measurable (fun ω => (pos ω).toReal - (neg ω).toReal) := by
     fun_prop
   have hfinite := regularizedGMC_finite_ae P X hX Xc hXc γ r
   have heq : (fun ω => ∫ x, f x ∂μ ω) =ᵐ[P]
       fun ω => (pos ω).toReal - (neg ω).toReal := by
     filter_upwards [hfinite] with ω hω
-    rw [BoundedContinuousFunction.integral_eq_integral_nnrealPart_sub (μ := μ ω) f]
-    rw [← BoundedContinuousFunction.toReal_lintegral_coe_eq_integral f.nnrealPart (μ ω)]
-    rw [← BoundedContinuousFunction.toReal_lintegral_coe_eq_integral (-f).nnrealPart (μ ω)]
+    rw [BoundedContinuousFunction.integral_eq_integral_nnrealPart_sub (μ := μ ω) f, ← BoundedContinuousFunction.toReal_lintegral_coe_eq_integral f.nnrealPart (μ ω), ← BoundedContinuousFunction.toReal_lintegral_coe_eq_integral (-f).nnrealPart (μ ω)]
   exact hproxy.aemeasurable.congr heq.symm
 
 theorem gmc_test_integral_aemeasurable_of_IsGMCOf
@@ -791,8 +763,7 @@ theorem gmcOpenApprox_tendsto (U : Set ℂ) (hU : IsOpen U) (x : ℂ) :
       have hev : ∀ᶠ n : ℕ in atTop,
           gmcOpenApprox U hU n x = 1 := by
         filter_upwards [eventually_ge_atTop N] with n hn
-        have hn' : d⁻¹ < (n : ℝ) := by
-          exact lt_of_lt_of_le hN (by exact_mod_cast hn)
+        have hn' : d⁻¹ < (n : ℝ) := lt_of_lt_of_le hN (by exact_mod_cast hn)
         have hmul : 1 ≤ (n : ℝ) * d := by
           have hlt := mul_lt_mul_of_pos_right hn' hd
           have hinv : d⁻¹ * d = 1 := by field_simp
@@ -822,8 +793,7 @@ theorem gmcOpenApprox_integral_tendsto
     exact (gmcOpenApprox_bounds U hU n x).2
   have hpoint : ∀ᵐ x ∂μ,
       Tendsto (fun n => gmcOpenApprox U hU n x) atTop (𝓝 (F x)) := by
-    filter_upwards [] with x
-    exact gmcOpenApprox_tendsto U hU x
+    exact ae_of_all _ fun x => gmcOpenApprox_tendsto U hU x
   have hDCT := tendsto_integral_of_dominated_convergence
     (bound := fun _ : ℂ => (1 : ℝ))
     (fun n => (gmcOpenApprox U hU n).continuous.aestronglyMeasurable)

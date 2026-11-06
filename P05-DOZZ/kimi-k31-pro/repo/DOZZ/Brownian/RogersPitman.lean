@@ -2,11 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.Brownian.BrownianPath
-public import Mathlib.Analysis.InnerProductSpace.PiL2
-public import Mathlib.MeasureTheory.Measure.ProbabilityMeasure
+import DOZZ.Statements.Brownian.BrownianPath
+import Mathlib.Analysis.InnerProductSpace.PiL2
+import Mathlib.MeasureTheory.Measure.ProbabilityMeasure
 
 /-!
 # The Rogers--Pitman radial path map
@@ -16,7 +15,6 @@ continuous coordinate paths `V`, form `t ↦ |V_t + μ t e₁|`. Continuity is b
 resulting `BrownianPath`; no extension of the conditioned finite-dimensional laws is involved.
 -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory
 open scoped NNReal ENNReal
@@ -94,8 +92,7 @@ noncomputable def negativeRogersPitmanPath (μ : ℝ) (V : BrownianTriple) : Bro
   -(rogersPitmanPath μ V)
 
 theorem measurable_negativeRogersPitmanPath (μ : ℝ) :
-    Measurable (fun V : BrownianTriple => negativeRogersPitmanPath μ V) := by
-  exact (measurable_rogersPitmanPath μ).neg
+    Measurable (fun V : BrownianTriple => negativeRogersPitmanPath μ V) := (measurable_rogersPitmanPath μ).neg
 
 /-- The negative entrance candidate is the pushforward under `-R`. -/
 noncomputable def negativeRogersPitmanEntranceMeasure (μ : ℝ) (W : Measure BrownianPath) :
@@ -115,4 +112,3 @@ theorem negativeRogersPitmanPath_zero (μ : ℝ) (V : BrownianTriple)
 
 end DOZZ.Proofs
 
-end

@@ -2,15 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.Tails.CanonicalSourceWilliamsLaw
-public import DOZZ.Correlations.Tails.IndependentProductLaw
-public import DOZZ.Correlations.Tails.SingularMassMeasurability
+import DOZZ.Correlations.Tails.CanonicalSourceWilliamsLaw
+import DOZZ.Correlations.Tails.IndependentProductLaw
+import DOZZ.Correlations.Tails.SingularMassMeasurability
 
 /-! The canonical leading mass has the prefactored Williams law on the source witness. -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal NNReal
 
@@ -94,8 +92,7 @@ theorem prefactored_canonical_source_williams_law
     (hPin.mul hCut).mul ((measurable_fst.const_mul γ).exp.ennreal_ofReal).aemeasurable
   have hT := measurePreserving_prodAssoc μ P P
   have hF' : AEMeasurable F (((μ.prod P).prod P).map MeasurableEquiv.prodAssoc) := by
-    rw [hT.map_eq]
-    exact hF
+    rwa [hT.map_eq]
   change (P.prod P).map (fun q => S q.2*mass q.1) = (μ.prod (P.prod P)).map F
   rw [← hT.map_eq,AEMeasurable.map_map_of_aemeasurable hF' hT.aemeasurable]
   convert hprod using 1

@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.Construction.CircleEnergyGapPositivity
-public import DOZZ.GFFStructure.DirichletCircleVersion
+import DOZZ.GMC.Construction.CircleEnergyGapPositivity
+import DOZZ.GFFStructure.DirichletCircleVersion
 
 /-!
 # L² limits of smooth circle tests
@@ -15,7 +14,6 @@ probability space. Their limits have measurable representatives in the raw distr
 sigma algebra.
 -/
 
-@[expose] public section
 
 open Filter MeasureTheory ProbabilityTheory
 open scoped Topology
@@ -64,8 +62,7 @@ theorem equatorGFF_testL2_tendsto_to_circle_limit
   have hδ : 0 < η ^ 2 / 8 := by positivity
   have hq0 : ∀ᶠ m in atTop, circleEnergyGap x r (f₀ m) < η ^ 2 / 8 :=
     hgap₀.eventually (gt_mem_nhds hδ)
-  have hnear : ∀ᶠ m in atTop, dist (V m) W < ε / 2 := by
-    exact hW.eventually (Metric.ball_mem_nhds W (by positivity))
+  have hnear : ∀ᶠ m in atTop, dist (V m) W < ε / 2 := hW.eventually (Metric.ball_mem_nhds W (by positivity))
   obtain ⟨m, hm⟩ := (hq0.and hnear).exists
   have hq : ∀ᶠ n in atTop, circleEnergyGap x r (f n) < η ^ 2 / 8 :=
     hgap.eventually (gt_mem_nhds hδ)
@@ -103,7 +100,7 @@ theorem exists_measurable_equatorGFF_circle_L2_limit
   let : MeasurableSpace Ω := mΩ
   let U : ℕ → Lp ℝ 2 P := fun n =>
     (equatorGFF_test_memLp X hX (f n)).toLp (fun ω => X ω (f n))
-  have hWT : Tendsto U atTop (𝓝 W) := by simpa only [U] using hW
+  have hWT : Tendsto U atTop (𝓝 W) := by simpa [U] using hW
   let u : ℕ → Ω → ℝ := fun n ω => X ω (f n)
   have hlim : Tendsto (fun n => eLpNorm (fun ω => u n ω - W ω) 2 P) atTop (𝓝 0) := by
     exact tendsto_eLpNorm_sub_of_L2_versions P U W u (fun ω => W ω)
@@ -127,7 +124,7 @@ theorem exists_measurable_equatorGFF_circle_L2_limit
       apply eLpNorm_congr_ae
       filter_upwards [hYae] with ω hω
       rw [hω]
-    simpa only [he] using hlim
+    simpa [he] using hlim
   exact ⟨Y, hYm0, hYm, hYmem, hYae, hYlim⟩
 
 end DOZZ.Proofs

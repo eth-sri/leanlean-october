@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import Mathlib.MeasureTheory.Function.LpSpace.InfiniteSum
+import Mathlib.MeasureTheory.Function.LpSpace.InfiniteSum
 
 /-!
 # DOZZ.GFF.AELpSquareSummability
@@ -12,7 +11,6 @@ public import Mathlib.MeasureTheory.Function.LpSpace.InfiniteSum
 Finite total second moment of a countable family implies almost-sure square summability.
 -/
 
-@[expose] public section
 
 open MeasureTheory
 open scoped ENNReal
@@ -40,9 +38,8 @@ theorem ae_summable_sq_of_tsum_eLpNorm_sq_ne_top {Ω ι : Type*}
     (f := fun i ω => (f i ω) ^ 2) hfinite
   filter_upwards [hsum] with ω hω
   have hω' : Summable (fun i => |(f i ω) ^ 2|) := by
-    simpa only [Real.norm_eq_abs] using hω
+    simpa [Real.norm_eq_abs] using hω
   exact hω'.congr fun i => abs_of_nonneg (sq_nonneg (f i ω))
 
 end DOZZ
 
-end

@@ -2,16 +2,14 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.Residue.AffineWeight
+import DOZZ.Correlations.Residue.AffineWeight
 import DOZZ.GMC.EquatorGFFChaosTransportLaw
 import DOZZ.GMC.Construction.GMCGeneralTiltLimit
 import DOZZ.ShiftEquations.Mobius.InversionMoment
 
 /-! Affine moment covariance in the finite-root chart used for the three-to-two residue limit. -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -33,8 +31,6 @@ theorem residue_coulombMass_affine_moment {Ω : Type*} [MeasurableSpace Ω] (P :
   set VL : ℝ := ∫ ω, L ω ^ 2 ∂P with hVLdef
   set κ := repinKappa a b with hκ
   have hapos : 0 < ‖a‖ := norm_pos_iff.mpr ha
-  have hLmeas : Measurable L :=
-    (hXc.1 (-Real.log ‖a‖)).comp (measurable_id.prodMk measurable_const)
   have hVL : VL = 2 * κ := by
     have h := isCircleAverage_covariance P X hX Xc hXc b b (-Real.log ‖a‖) (-Real.log ‖a‖)
     rw [repin_selfEnergy a b ha] at h

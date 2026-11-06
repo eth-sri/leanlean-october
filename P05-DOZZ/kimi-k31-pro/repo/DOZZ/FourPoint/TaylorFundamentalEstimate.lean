@@ -2,17 +2,15 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.TaylorAnnular
-public import DOZZ.FourPoint.TaylorNear
-public import DOZZ.FourPoint.TaylorIntermediateOptimized
-public import DOZZ.FourPoint.TaylorRegionCover
-public import DOZZ.FourPoint.TaylorPowerTransport
+import DOZZ.FourPoint.TaylorAnnular
+import DOZZ.FourPoint.TaylorNear
+import DOZZ.FourPoint.TaylorIntermediateOptimized
+import DOZZ.FourPoint.TaylorRegionCover
+import DOZZ.FourPoint.TaylorPowerTransport
 
 /-! The positive fundamental estimate on the actual supplied GMC, with a strict Taylor gain. -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -43,7 +41,7 @@ theorem twoRooted_fundamental_estimate
     α₁ α₂ α₃ p q hα₁ hα₁2 hp hq
   obtain ⟨Cn, hCn, hn⟩ := twoRooted_near_bound P X hX γ hγ hγ2 M hM α₁ α₂ α₃ p hp
   let C : ℝ := 16 * (Ce + Ca + Cs + Cn)
-  refine ⟨η, C, r₀, hη, by dsimp only [C]; positivity, hr₀, ?_⟩
+  refine ⟨η, C, r₀, hη, by dsimp [C]; positivity, hr₀, ?_⟩
   intro z hz hzr
   have hr : 0 < ‖z‖ := norm_pos_iff.mpr hz
   have hr4 : ‖z‖ ≤ 1 / 4 := hzr.trans hr₀4
@@ -76,8 +74,8 @@ theorem twoRooted_fundamental_estimate
     · exact ⟨0, hxhalf⟩
   let E : ℝ := κ - 2 + η
   have hpow : 1 ≤ ‖z‖ ^ E := by
-    have hE : E ≤ 0 := by dsimp only [E]; linarith only [hηκ]
-    simpa only [Real.rpow_zero] using Real.rpow_le_rpow_of_exponent_ge hr hr1 hE
+    have hE : E ≤ 0 := by dsimp [E]; linarith only [hηκ]
+    simpa [Real.rpow_zero] using Real.rpow_le_rpow_of_exponent_ge hr hr1 hE
   obtain ⟨hpa, hps, hpn⟩ := taylor_regional_powers γ α₁ δ ε η W q ‖z‖ hγ hr hr1 hηd hηnear hmid
   let Creg : Fin 4 → ℝ := ![Ce, Ca, Cs, Cn]
   have hregions (i : Fin 4) :
@@ -114,7 +112,7 @@ theorem twoRooted_fundamental_estimate
       have h16 : (16 : ℝ≥0∞) = ENNReal.ofReal (16 : ℝ) := by norm_num
       rw [h16, ← ENNReal.ofReal_mul (by norm_num : (0 : ℝ) ≤ 16)]
       congr 1
-      dsimp only [C, E, κ]
+      dsimp [C, E, κ]
       ring
 
 end DOZZ.Proofs

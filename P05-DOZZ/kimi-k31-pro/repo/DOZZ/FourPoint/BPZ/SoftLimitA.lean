@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.BPZ.SoftNear
-public import DOZZ.FourPoint.BPZ.SoftMomentDeriv
+import DOZZ.FourPoint.BPZ.SoftNear
+import DOZZ.FourPoint.BPZ.SoftMomentDeriv
 
 /-! # Approximation of expectations and real forms of the near-root bounds
 
@@ -14,7 +13,6 @@ An abstract approximation lemma: expectations converge if, for every tolerance, 
 converted to bounds on real expectations `E[I^{-p} ∫ w |x − z|^β dM]`, where `I` is the softened
 four-point mass as a real number. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped ENNReal NNReal

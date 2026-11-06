@@ -2,13 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.Tails.OffCenterMultiplier
+import DOZZ.Correlations.Tails.OffCenterMultiplier
 
 /-! A bounded continuous extension of the local pin coefficient. -/
 
-@[expose] public section
 open Set
 
 namespace DOZZ.Proofs
@@ -33,7 +31,7 @@ theorem bounded_pin_coefficient_eq (z x : ℂ) (hz : 2 ≤ ‖z‖) (hx : ‖x�
   have hv := offCenter_pin_variance_pos z hz
   have hnorm : 1 ≤ ‖z+x‖ := by
     have h := norm_sub_norm_le z (z+x)
-    simp only [sub_add_cancel_left, norm_neg] at h
+    simp [sub_add_cancel_left, norm_neg] at h
     linarith
   have hc := local_pin_coefficient_bound z x hz hx
   have hcb : |localPinCoefficient z x| ≤ 1 / (2 * Real.log ‖z‖) :=

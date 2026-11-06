@@ -2,11 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.GFFStructure.CircleCovariance
-public import Mathlib.Probability.Process.Kolmogorov
-public import DOZZ.GFFStructure.HolderVersions
-public import Mathlib.Analysis.InnerProductSpace.ProdL2
+import DOZZ.GFFStructure.CircleCovariance
+import Mathlib.Probability.Process.Kolmogorov
+import DOZZ.GFFStructure.HolderVersions
+import Mathlib.Analysis.InnerProductSpace.ProdL2
 /-!
 # Continuous circle-average versions
 
@@ -19,7 +18,6 @@ admit Hölder modifications in a three-dimensional Hilbert carrier. A countable 
 one measurable agreement event give a jointly measurable global version retaining the given witness.
 -/
 
-@[expose] public section
 
 open Filter MeasureTheory ProbabilityTheory Set Metric
 open scoped Topology ENNReal NNReal
@@ -88,7 +86,7 @@ theorem circleAverage_increment_variance_le {Ω : Type*} [MeasurableSpace Ω]
   have h := integral_circle_logmax_sub_le x y r s
   rw [Real.log_exp] at h
   have hab := le_abs_self (r - s)
-  simp only [div_eq_mul_inv] at h ⊢
+  simp [div_eq_mul_inv] at h ⊢
   linarith
 
 /-- The original circle witness as an element of the given probability space's L². -/
@@ -147,15 +145,15 @@ theorem continuous_circleAverageL2 {Ω : Type*} [MeasurableSpace Ω]
     have h : Continuous (fun q : ℂ × ℝ =>
       |q.2 - p.2| + 2 * (‖q.1 - p.1‖ + |Real.exp (-q.2) - Real.exp (-p.2)|) /
         Real.exp (-p.2)) := by fun_prop
-    simpa only [sub_self, norm_zero, abs_zero, zero_add, mul_zero, zero_div, add_zero]
+    simpa [sub_self, norm_zero, abs_zero, zero_add, mul_zero, zero_div, add_zero]
       using h.continuousAt.tendsto (x := p)
   have hs := squeeze_zero (fun q : ℂ × ℝ => sq_nonneg ‖circleAverageL2 hc q - circleAverageL2 hc p‖)
     hbound hb
   apply tendsto_iff_norm_sub_tendsto_zero.mpr
   have hn := Real.continuous_sqrt.continuousAt.tendsto.comp hs
-  simpa only [Function.comp_def, Real.sqrt_sq_eq_abs, abs_norm, Real.sqrt_zero] using hn
+  simpa [Function.comp_def, Real.sqrt_sq_eq_abs, abs_norm, Real.sqrt_zero] using hn
 
-/-- Coordinatewise modifications preserve the energy-limit clause of `DOZZ.IsCircleAverage` and L²
+/-- Coordinatewise modifications preserve the energy-limit clause of `IsCircleAverage` and L²
 membership; the only separate requirement is its literal measurability clause. -/
 theorem isCircleAverage_of_ae_eq {Ω : Type*} [MeasurableSpace Ω]
     (P : Measure Ω) (X : Ω → Distr) (Xc Y : Ω → ℂ → ℝ → ℝ)
@@ -170,17 +168,16 @@ theorem isCircleAverage_of_ae_eq {Ω : Type*} [MeasurableSpace Ω]
     apply eLpNorm_congr_ae
     filter_upwards [heq x r] with ω hω
     rw [hω]
-  simpa only [hn] using hc.2.2 x r f hf
+  simpa [hn] using hc.2.2 x r f hf
 
 /-- Relative radius error is controlled locally by logarithmic radius error. -/
 theorem exp_neg_relative_error_le {r s : ℝ} (hrs : |r - s| ≤ 1) :
     |Real.exp (-r) - Real.exp (-s)| / Real.exp (-s) ≤ 2 * |r - s| := by
   have he : (Real.exp (-r) - Real.exp (-s)) / Real.exp (-s) = Real.exp (s - r) - 1 := by
-    rw [sub_div, div_self (Real.exp_ne_zero _), ← Real.exp_sub]
-    rw [show -r - -s = s - r by ring]
-  have h := Real.abs_exp_sub_one_le (x := s - r) (by simpa only [abs_sub_comm] using hrs)
+    rw [sub_div, div_self (Real.exp_ne_zero _), ← Real.exp_sub, show -r - -s = s - r by ring]
+  have h := Real.abs_exp_sub_one_le (x := s - r) (by simpa [abs_sub_comm] using hrs)
   rw [← he, abs_div, abs_of_pos (Real.exp_pos _)] at h
-  simpa only [abs_sub_comm] using h
+  simpa [abs_sub_comm] using h
 
 /-- A uniform local variance bound on each bounded logarithmic-radius strip. -/
 theorem circleAverage_increment_variance_le_on_strip {Ω : Type*} [MeasurableSpace Ω]
@@ -293,7 +290,7 @@ theorem circleAverage_isKolmogorovProcess_on_strip {Ω : Type*} [MeasurableSpace
     change _ ≤ (C * dist p q) ^ 4 * A at hm
     exact hm.trans_eq (by ring)
   have hi : Integrable (fun ω => |U ω| ^ 8) P := by
-    simpa only [Real.norm_eq_abs] using
+    simpa [Real.norm_eq_abs] using
       (hG.memLp (p := (8 : ℝ≥0∞)) (by norm_num)).integrable_norm_pow'
   have hlin := ofReal_integral_eq_lintegral_ofReal hi
     (Eventually.of_forall (fun ω => pow_nonneg (abs_nonneg (U ω)) 8))
@@ -303,15 +300,13 @@ theorem circleAverage_isKolmogorovProcess_on_strip {Ω : Type*} [MeasurableSpace
     apply lintegral_congr
     intro ω
     rw [edist_dist, Real.dist_eq]
-    simpa only [ENNReal.rpow_ofNat, U] using (ENNReal.ofReal_pow (abs_nonneg (U ω)) 8).symm
+    simpa [ENNReal.rpow_ofNat, U] using (ENNReal.ofReal_pow (abs_nonneg (U ω)) 8).symm
   rw [hconv]
   have hb := ENNReal.ofReal_le_ofReal hmoment
   rw [ENNReal.ofReal_mul (mul_nonneg (pow_nonneg hC _) hA),
     ENNReal.ofReal_pow (dist_nonneg : 0 ≤ dist p q) 4] at hb
   change _ ≤ ENNReal.ofReal (C ^ 4 * A) * ENNReal.ofReal (dist p q) ^ 4 at hb
-  rw [edist_dist, ENNReal.rpow_ofNat, ← ENNReal.ofReal_coe_nnreal (p := M)]
-  exact hb
-
+  rwa [edist_dist, ENNReal.rpow_ofNat, ← ENNReal.ofReal_coe_nnreal (p := M)]
 /-- Every L² circle representative has zero expectation. -/
 theorem circleAverageL2_integral_eq_zero {Ω : Type*} [MeasurableSpace Ω]
     (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
@@ -321,7 +316,7 @@ theorem circleAverageL2_integral_eq_zero {Ω : Type*} [MeasurableSpace Ω]
   exact (circleAverage_isGaussianProcess P X Xc hX hc).2 p.1 p.2
 
 /-- Once a jointly measurable continuous coordinatewise version has been constructed, it satisfies
-every clause of the conclusion of `DOZZ.exists_continuous_circleAverage`. -/
+every clause of the conclusion of `exists_continuous_circleAverage`. -/
 theorem continuous_circleAverage_version_spec {Ω : Type*} [MeasurableSpace Ω]
     (P : Measure Ω) (X : Ω → Distr) (Xc Y : Ω → ℂ → ℝ → ℝ)
     (hc : IsCircleAverage P X Xc)
@@ -353,11 +348,11 @@ theorem circleStripParameter_lipschitz (S : ℝ) :
   have hs : LipschitzWith 1 (fun p : CircleParameter => p.snd) :=
     LipschitzWith.of_edist_le (WithLp.edist_snd_le (p := 2))
   have hclip : LipschitzWith 1 (fun p : CircleParameter => max S (min p.snd (S+1))) := by
-    simpa only [max_comm] using (hs.min_const (S+1)).max_const S
+    simpa [max_comm] using (hs.min_const (S+1)).max_const S
   intro p q
   change edist (p.fst, max S (min p.snd (S+1)))
     (q.fst, max S (min q.snd (S+1))) ≤ (1 : ℝ≥0∞) * edist p q
-  simpa only [max_self, ENNReal.coe_one] using (hf.prodMk hclip) p q
+  simpa [max_self, ENNReal.coe_one] using (hf.prodMk hclip) p q
 
 /-- Pulling a Kolmogorov process back through a contraction preserves its constants. -/
 theorem IsKolmogorovProcess.comp_one {T U Ω E : Type*} [PseudoEMetricSpace T]
@@ -369,7 +364,7 @@ theorem IsKolmogorovProcess.comp_one {T U Ω E : Type*} [PseudoEMetricSpace T]
   intro s t
   apply (hX.kolmogorovCondition (f s) (f t)).trans
   have hdist : edist (f s) (f t) ≤ edist s t := by
-    simpa only [ENNReal.coe_one, one_mul] using hf s t
+    simpa [ENNReal.coe_one, one_mul] using hf s t
   exact mul_le_mul le_rfl (ENNReal.rpow_le_rpow hdist hX.q_pos.le) zero_le zero_le
 
 /-- The Hilbert parameter carrier has real dimension three. -/
@@ -386,7 +381,7 @@ theorem exists_continuous_clamped_circleAverage {Ω : Type*} [MeasurableSpace Ω
       ∀ p, Z p =ᵐ[P] fun ω => Xc ω p.1 (max S (min p.2 (S+1))) := by
   let _ := hX.1
   obtain ⟨M, hM⟩ := circleAverage_isKolmogorovProcess_on_strip P X Xc hX hc S
-  have hK := DOZZ.Proofs.IsKolmogorovProcess.comp_one hM (circleStripParameter_lipschitz S)
+  have hK := IsKolmogorovProcess.comp_one hM (circleStripParameter_lipschitz S)
   have hcover := isCoverWithBoundedCoveringNumber_balls CircleParameter
   rw [finrank_circleParameter] at hcover
   obtain ⟨Y, hYmeas, hYeq, hYholder⟩ := exists_modification_holder' hcover

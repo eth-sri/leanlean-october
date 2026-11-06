@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.ShiftEquations.DualR.SwitchPoint
+import DOZZ.ShiftEquations.DualR.SwitchPoint
 import DOZZ.Correlations.Analytic.StructureConstantHolomorphic
 import DOZZ.ShiftEquations.Rbar.Continuation
 import DOZZ.Brownian.Reflection.RtheorAnalytic
@@ -19,7 +18,6 @@ continues along the segment to any end point where both shifted triples are in t
 Seiberg domain (a convex condition) and all factors are analytic.
 -/
 
-@[expose] public section
 
 open MeasureTheory Filter Topology Set
 
@@ -137,15 +135,14 @@ theorem starG_segment {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω
         2 * Q γ - (es + t * (ef - es)) - 2 / γ - γ by ring,
       show 2 * Q γ - as - 2 / γ + t * (2 * Q γ - af - 2 / γ - (2 * Q γ - as - 2 / γ)) =
         2 * Q γ - (as + t * (af - as)) - 2 / γ by ring]
-    exact ht
+    assumption
   have hF1 : AnalyticAt ℂ F 1 := by
     refine (segR_analyticAt_one hRef).mul ((analyticAt_const.mul (analyticAt_shiftCoeffA_comp
       (f₁ := fun t => segC (2 * Q γ - es - 2 / γ) (2 * Q γ - ef - 2 / γ) t - γ / 2)
       ((analyticAt_segC _ _ 1).sub analyticAt_const) (analyticAt_segC as af 1)
       (analyticAt_segC a's a'f 1) ?_)).mul
       (segH_analyticAt_one hV₃ hf₃ hμ (hV₃mem ![2 * Q γ - ef - 2 / γ - γ, af, a'f] hP1) hsP1))
-    rw [segC_one, segC_one, segC_one]
-    exact hAP
+    rwa [segC_one, segC_one, segC_one]
   have hG1 : AnalyticAt ℂ G 1 := by
     refine ((analyticAt_dualLC_comp (analyticAt_segC es ef 1) (analyticAt_segC as af 1)
       (analyticAt_segC a's a'f 1) ?_ ?_ ?_ ?_).mul (segR_analyticAt_one hRaf)).mul
@@ -158,8 +155,7 @@ theorem starG_segment {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω
   simp only [hF, hG] at key
   rw [segH_one P M hμ hf₃eq hP1, segH_one P M hμ hf₃eq hP2, segC_one, segC_one, segC_one,
     segC_one] at key
-  exact key
+  assumption
 
 end DOZZ.Proofs
 
-end

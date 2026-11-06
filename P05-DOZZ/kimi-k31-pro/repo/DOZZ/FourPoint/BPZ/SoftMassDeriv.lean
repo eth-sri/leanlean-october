@@ -2,11 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.BPZ.SoftCalculus
-public import Mathlib.Analysis.Calculus.ParametricIntegral
-public import Mathlib.MeasureTheory.Integral.Bochner.ContinuousLinearMap
+import DOZZ.FourPoint.BPZ.SoftCalculus
+import Mathlib.Analysis.Calculus.ParametricIntegral
+import Mathlib.MeasureTheory.Integral.Bochner.ContinuousLinearMap
 
 /-! # Differentiating the softened mass under the integral
 
@@ -22,7 +21,6 @@ function for the derivatives on the unit ball about `z₀`. The derivative bound
 `‖D_z N^a‖ ≤ (2|a|/ε) N^a` and `‖D_z² N^a‖ ≤ ((4|a(a−1)| + 2|a|)/ε²) N^a` (from `N ≥ ε²` and
 `|x − z| ≤ N^{1/2}`) then show that the derivatives are also bounded by multiples of the mass. -/
 
-@[expose] public section
 
 open MeasureTheory Filter Topology
 
@@ -70,7 +68,6 @@ theorem bpzSoft_base_pos {ε : ℝ} (hε : 0 < ε) (x z : ℂ) :
 theorem bpzSoft_comp_le {ε : ℝ} (hε : 0 < ε) (z z' x : ℂ) :
     Complex.normSq (x - z') + ε ^ 2 ≤
       2 * (1 + ‖z - z'‖ ^ 2 / ε ^ 2) * (Complex.normSq (x - z) + ε ^ 2) := by
-  have hε2 : 0 < ε ^ 2 := pow_pos hε 2
   have htri : ‖x - z'‖ ≤ ‖x - z‖ + ‖z - z'‖ := by
     calc ‖x - z'‖ = ‖(x - z) + (z - z')‖ := by rw [sub_add_sub_cancel]
       _ ≤ ‖x - z‖ + ‖z - z'‖ := norm_add_le _ _
@@ -181,8 +178,7 @@ theorem bpzSoftDeriv2_norm_le_rpow (a : ℝ) {ε : ℝ} (hε : 0 < ε) (x z : �
 /-- Measurability of the softened power in `x`. -/
 theorem bpzSoft_measurable_rpow (a ε : ℝ) (z : ℂ) :
     Measurable (fun x : ℂ => (Complex.normSq (x - z) + ε ^ 2) ^ a) := by
-  have h : Measurable (fun x : ℂ => Complex.normSq (x - z) + ε ^ 2) := by fun_prop
-  exact h.pow_const a
+  fun_prop
 
 /-- Continuity of the first derivative in the integration variable `x`. -/
 theorem bpzSoftDeriv_continuous_left (a : ℝ) {ε : ℝ} (hε : 0 < ε) (z : ℂ) :

@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.Fusion.LocalR2Scaling
-public import DOZZ.Statements.FourPoint.GammaHalfRootedCoefficient
+import DOZZ.FourPoint.Fusion.LocalR2Scaling
+import DOZZ.Statements.FourPoint.GammaHalfRootedCoefficient
 
 /-! # The normalized local pure derivative limit -/
 
-@[expose] public section
 open MeasureTheory Filter Topology Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -43,7 +41,7 @@ theorem fusionLocalR2_normalized_tendsto {Ω : Type*} [MeasurableSpace Ω]
       (continuous_norm.tendsto (0 : ℂ)).eventually_lt_const (by simp)
     exact (h.filter_mono nhdsWithin_le_nhds).mono fun _ h => h.le
   filter_upwards [hz4, self_mem_nhdsWithin] with z hz4 hz
-  have hz0 : z ≠ 0 := by simpa only [mem_compl_iff, mem_singleton_iff] using hz
+  have hz0 : z ≠ 0 := by simpa [mem_compl_iff, mem_singleton_iff] using hz
   rw [fusionLocalR2_scaled P X hX γ hγ hγ2 M hM α₁ α₂ α₃ hβ hα₁ hα₂ hα₃ p hp z hz0 hz4]
   have hr : (‖z‖ ^ (γ * (Q γ - α₁)) : ℝ) ≠ 0 :=
     (Real.rpow_pos_of_pos (norm_pos_iff.mpr hz0) _).ne'

@@ -2,10 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Fusion.RootOnlyInverseMoments
+import DOZZ.FourPoint.Fusion.RootOnlyInverseMoments
 /-! # Positive segments of extended masses -/
-@[expose] public section
 open MeasureTheory Set Filter Topology
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -36,7 +34,7 @@ theorem fusion_convexMass_pos_finite (a b : ℝ≥0∞) (t : ℝ) (ht : t ∈ Ic
   refine ⟨?_, ENNReal.add_ne_top.mpr ⟨ENNReal.mul_ne_top ENNReal.ofReal_ne_top hat,
     ENNReal.mul_ne_top ENNReal.ofReal_ne_top hbt⟩⟩
   by_cases ht0 : t = 0
-  · simpa only [ht0, ENNReal.ofReal_zero, zero_mul, sub_zero, ENNReal.ofReal_one, one_mul, zero_add] using hb0
+  · simpa [ht0, ENNReal.ofReal_zero, zero_mul, sub_zero, ENNReal.ofReal_one, one_mul, zero_add] using hb0
   · exact ne_of_gt ((ENNReal.mul_pos (ENNReal.ofReal_pos.mpr
       (lt_of_le_of_ne ht.1 (Ne.symm ht0))).ne' ha0).trans_le le_self_add)
 
@@ -68,12 +66,11 @@ theorem fusion_convexMass_tendstoInMeasure {Ω : Type*} [MeasurableSpace Ω]
     filter_upwards [hua, hvb] with ω hωa hωb
     have h := ((hωa.comp hv.tendsto_atTop).const_mul t).add (hωb.const_mul (1 - t))
     have he : t * (g ω).toReal + (1 - t) * (g ω).toReal = (g ω).toReal := by ring
-    rw [he] at h
-    exact h
+    rwa [he] at h
   apply TendstoInMeasure.congr_left _ hc
   intro n
   filter_upwards [haf n, hbf n] with ω hωa hωb
-  simp only [f, ENNReal.toReal_add (ENNReal.mul_ne_top ENNReal.ofReal_ne_top hωa)
+  simp [f, ENNReal.toReal_add (ENNReal.mul_ne_top ENNReal.ofReal_ne_top hωa)
     (ENNReal.mul_ne_top ENNReal.ofReal_ne_top hωb), ENNReal.toReal_mul,
     ENNReal.toReal_ofReal ht.1, ENNReal.toReal_ofReal (sub_nonneg.mpr ht.2)]
 end DOZZ.Proofs

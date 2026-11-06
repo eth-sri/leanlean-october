@@ -1,4 +1,3 @@
-module
-public import DOZZ.Statements.Brownian.ReflectionR
-public import DOZZ.Statements.Brownian.ReflectionPoleFree
-public import DOZZ.Statements.Defs.ReflectionDOZZ
+import DOZZ.Statements.Brownian.ReflectionR
+import DOZZ.Statements.Brownian.ReflectionPoleFree
+import DOZZ.Statements.Defs.ReflectionDOZZ

@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.Brownian.IsReflectionData
-public import DOZZ.Statements.Brownian.ReflectionR
+import DOZZ.Statements.Brownian.IsReflectionData
+import DOZZ.Statements.Brownian.ReflectionR
 import DOZZ.Brownian.Reflection.MomentAssembly
 import DOZZ.Brownian.Reflection.Moments
 import DOZZ.Brownian.ReflectionRLimit
@@ -20,7 +19,6 @@ coefficient to `-1` as `α ↑ Q`. The moment limit is the zero-drift small-powe
 inverse moments.
 -/
 
-public section
 
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal Topology
@@ -53,7 +51,7 @@ theorem reflectionBarR_tendsto_one_Q {Ω : Type*} [MeasurableSpace Ω] (P : Meas
     · have hcont : ContinuousAt (fun α : ℝ => Q γ - α) (Q γ) := by fun_prop
       simpa using hcont.tendsto.mono_left nhdsWithin_le_nhds
     · filter_upwards [self_mem_nhdsWithin] with α hα
-      exact sub_pos.mpr hα
+      exact Set.mem_Ioi.mpr (sub_pos.mpr hα)
   have hEq : (fun α : ℝ => reflectionBarR P γ α (B α) Z) =
       (fun α => (∫⁻ ω, ENNReal.rpow (twoSidedReflectionMass γ
         (B (Q γ - (Q γ - α))) Z ω) (2 * (Q γ - α) / γ) ∂P).toReal) := by
@@ -74,4 +72,3 @@ theorem reflection_endpoint_limits {Ω : Type*} [MeasurableSpace Ω] (P : Measur
 
 end DOZZ.Proofs
 
-end

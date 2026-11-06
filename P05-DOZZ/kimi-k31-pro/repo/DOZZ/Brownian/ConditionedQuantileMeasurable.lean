@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Brownian.ConditionedKernelCDFOrder
+import DOZZ.Brownian.ConditionedKernelCDFOrder
 import Mathlib.MeasureTheory.Constructions.BorelSpace.Order
 
 /-!
@@ -15,7 +14,6 @@ makes the one-dimensional sampling map measurable with respect to the restricted
 Joint measurability in a transition kernel's starting state is a separate requirement.
 -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Set
 open Topology
@@ -68,4 +66,3 @@ theorem aemeasurable_cdfGeneralizedQuantile_Ioo
 
 end DOZZ.Proofs
 
-end

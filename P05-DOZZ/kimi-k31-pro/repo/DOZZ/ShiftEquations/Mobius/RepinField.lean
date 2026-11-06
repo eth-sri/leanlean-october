@@ -2,14 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.ShiftEquations.Mobius.AffinePush
-public import DOZZ.ShiftEquations.Mobius.RepinPotential
-public import DOZZ.ShiftEquations.Mobius.RepinChaos
-public import DOZZ.Statements.Defs.IsEquatorGFF
-public import DOZZ.Statements.Defs.IsCircleAverage
-public import DOZZ.GFFStructure.MarkovCommonEvents
+import DOZZ.ShiftEquations.Mobius.AffinePush
+import DOZZ.ShiftEquations.Mobius.RepinPotential
+import DOZZ.ShiftEquations.Mobius.RepinChaos
+import DOZZ.Statements.Defs.IsEquatorGFF
+import DOZZ.Statements.Defs.IsCircleAverage
+import DOZZ.GFFStructure.MarkovCommonEvents
 import DOZZ.ShiftEquations.Mobius.RepinCovariance
 import DOZZ.GFFStructure.GaussianClosure
 import DOZZ.GFFStructure.CircleCovariance
@@ -27,7 +26,6 @@ circle-average process for it. All covariances reduce to those of `X` through th
 `G(ψy, ψy') = G(y,y') + d(y) + d(y')`.
 -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped ENNReal NNReal
@@ -61,7 +59,7 @@ theorem covariance_circleAverage_eq (hX : IsEquatorGFF P X) (hXc : IsCircleAvera
       ∫ u, ∫ v, gffKernel u v ∂circleMeasure y s ∂circleMeasure x r := by
   obtain ⟨_, hMean⟩ := circleAverage_isGaussianProcess P X Xc hX hXc
   rw [← isCircleAverage_covariance P X hX Xc hXc x y r s]
-  simp only [covariance, gaussianCovariance, hMean, sub_zero]
+  simp [covariance, gaussianCovariance, hMean, sub_zero]
 
 /-- A circle average and the unit-circle average are uncorrelated (the equator pin). -/
 theorem integral_integral_gffKernel_unit_right (y : ℂ) (r : ℝ) :
@@ -93,7 +91,7 @@ theorem covariance_repin_circle (hX : IsEquatorGFF P X) (hXc : IsCircleAverage P
       repinKappa a b + ∫ u, affineDefect a b u ∂circleMeasure y r := by
   rw [covariance_circleAverage_eq P X Xc hX hXc]
   have h := circleEnergy_affine a b ha 0 y 0 r
-  simp only [mul_zero, zero_add, zero_sub] at h
+  simp [mul_zero, zero_add, zero_sub] at h
   rw [h, integral_integral_gffKernel_unit_left P X Xc hX hXc y r, zero_add]
   rfl
 
@@ -143,7 +141,7 @@ theorem isEquatorGFF_repinField (hX : IsEquatorGFF P X) (hXc : IsCircleAverage P
       congr 1
       funext ω
       rw [Fintype.sum_option, Fintype.sum_unique, repinField_apply]
-      simp only
+      simp
       ring
     refine ⟨v, ?_, hv'⟩
     have hmeas : AEMeasurable (fun ω => repinField X (Lr) a b ω f) P := by
@@ -167,7 +165,7 @@ theorem covariance_repinField_repinCircle (hX : IsEquatorGFF P X)
     rw [repinField_apply]
     ring
   rw [hY]
-  simp only [repinCircle]
+  simp [repinCircle]
   rw [covariance_fun_sub_fun_sub hXm (hLm.const_mul _) hCm hLm,
     covariance_const_mul_left, covariance_const_mul_left,
     covariance_comm (X := fun ω => X ω (affinePushTestFn a b g)),
@@ -189,7 +187,7 @@ theorem variance_repinCircle (hX : IsEquatorGFF P X) (hXc : IsCircleAverage P X 
   have hm : AEMeasurable (fun ω => repinCircle Xc (Lr) a b ω y r) P :=
     (hCm.sub hLm).aestronglyMeasurable.aemeasurable
   rw [← covariance_self hm]
-  simp only [repinCircle]
+  simp [repinCircle]
   rw [covariance_fun_sub_fun_sub hCm hLm hCm hLm,
     covariance_comm (X := fun ω => Xc ω (a * y + b) (r - Real.log ‖a‖))
       (Y := fun ω => Xc ω b (-Real.log ‖a‖)),
@@ -221,7 +219,7 @@ theorem isCircleAverage_repinField (hX : IsEquatorGFF P X) (hXc : IsCircleAverag
         circleEnergyGap y r g := by
     intro g
     have hmean : ∫ ω, (repinField X (Lr) a b ω g - repinCircle Xc (Lr) a b ω y r) ∂P = 0 := by
-      simp only [repinField_apply, repinCircle]
+      simp [repinField_apply, repinCircle]
       have i1 : Integrable (fun ω => X ω (affinePushTestFn a b g)) P :=
         (equatorGFF_test_memLp X hX _).integrable one_le_two
       have i2 : Integrable (fun ω => Xc ω b (-Real.log ‖a‖) * ∫ z, g z) P :=
@@ -266,11 +264,8 @@ theorem isCircleAverage_repinField (hX : IsEquatorGFF P X) (hXc : IsCircleAverag
     rw [Real.zero_rpow (by norm_num : (1 / 2 : ℝ) ≠ 0)] at hc
     exact hc.comp hf
   have h1 := (ENNReal.continuous_ofReal.tendsto 0).comp h0
-  rw [ENNReal.ofReal_zero] at h1
-  exact h1
-
+  rwa [ENNReal.ofReal_zero] at h1
 end Repin
 
 end DOZZ.Proofs
 
-end

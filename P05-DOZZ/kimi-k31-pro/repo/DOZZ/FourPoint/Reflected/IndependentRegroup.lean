@@ -2,10 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import Mathlib.Probability.Independence.Basic
+import Mathlib.Probability.Independence.Basic
 /-! Regrouping the independent past and lateral inputs in the reflected comparison. -/
-@[expose] public section
 open MeasureTheory ProbabilityTheory
 namespace DOZZ.Proofs
 

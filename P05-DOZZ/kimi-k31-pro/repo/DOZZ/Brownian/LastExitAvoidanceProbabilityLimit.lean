@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Brownian.LastExitCellHistory
-public import DOZZ.Brownian.LastExitAvoidanceStateLimit
+import DOZZ.Brownian.LastExitCellHistory
+import DOZZ.Brownian.LastExitAvoidanceStateLimit
 
 /-!
 # Late-time rational survival probability
@@ -14,7 +13,6 @@ The full-history avoidance identity identifies the probability of staying above 
 all positive rational future offsets with the mean Doob avoidance factor.
 -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped NNReal Topology
@@ -110,4 +108,3 @@ theorem conditionedPositiveFutureRationalAvoidance_realMeasure_tendsto_one_atTop
 
 end DOZZ.Proofs
 
-end

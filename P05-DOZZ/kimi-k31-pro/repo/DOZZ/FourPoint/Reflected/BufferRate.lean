@@ -2,12 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Reflected.BufferWeight
-public import DOZZ.FourPoint.ReflectedOuter.Rates
+import DOZZ.FourPoint.Reflected.BufferWeight
+import DOZZ.FourPoint.ReflectedOuter.Rates
 import Mathlib.Tactic
 /-! The literal intermediate spatial buffer has a negligible first-order expectation. -/
-@[expose] public section
 open MeasureTheory Set Filter Topology
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -37,18 +35,18 @@ theorem reflected_spatial_buffer_first_order_littleO {Ω : Type*} [MeasurableSpa
     (measurableSet_lt measurable_norm measurable_const)
   have hball : U ⊆ Metric.ball 0 (‖z‖^(1-ξ)) := by
     intro x hx
-    simpa only [Metric.mem_ball,dist_zero_right] using hx.2
+    simpa [Metric.mem_ball,dist_zero_right] using hx.2
   have hsep : ∀ x ∈ U, 0 < ‖x‖ ∧ ‖z‖ ≤ Real.exp h*‖x‖ := by
     intro x hx
     have hn : 0 < ‖z‖ := norm_pos_iff.mpr hz0
     refine ⟨(mul_pos (Real.exp_pos _) hn).trans_le hx.1, ?_⟩
     have hh := mul_le_mul_of_nonneg_left hx.1 (Real.exp_pos h).le
     have he : Real.exp h*Real.exp (-h) = 1 := by rw [← Real.exp_add,add_neg_cancel,Real.exp_zero]
-    simpa only [← mul_assoc,he,one_mul] using hh
+    simpa [← mul_assoc,he,one_mul] using hh
   have hh := hb z ξ U hU hball hsep hz.1 hz.2.2.2.2 hz.2.2.2.1
   have ht := ENNReal.toReal_mono ENNReal.ofReal_ne_top hh
   have hc : 0 ≤ C*(‖z‖^(1-ξ))^e := mul_nonneg hC.le (Real.rpow_nonneg hz.1.le _)
-  simpa only [Complex.norm_real,Real.norm_eq_abs,abs_of_nonneg ENNReal.toReal_nonneg,
+  simpa [Complex.norm_real,Real.norm_eq_abs,abs_of_nonneg ENNReal.toReal_nonneg,
     ENNReal.toReal_ofReal hc,zero_mul,zero_add,U,show γ*(Q γ-α₁)+(α₁+γ/2-Q γ)^2/2 = e from rfl] using ht
 
 end DOZZ.Proofs

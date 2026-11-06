@@ -1,2 +1,1 @@
-module
-public import DOZZ.Statements.FourPoint.FourFusionMass
+import DOZZ.Statements.FourPoint.FourFusionMass

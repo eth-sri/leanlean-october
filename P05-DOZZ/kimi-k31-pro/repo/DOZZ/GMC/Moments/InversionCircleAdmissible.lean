@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.Moments.InversionCircleFamily
-public import DOZZ.GMC.CircleAverage
+import DOZZ.GMC.Moments.InversionCircleFamily
+import DOZZ.GMC.CircleAverage
 
 /-! Admissibility of the coupled transformed-circle regularization. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Set
 open scoped Distributions Topology
@@ -39,11 +37,11 @@ theorem isAdmissibleLogRegularization_of_covariance_eq
       coarseMixedBound := ?_
       offDiagonalLimit := ?_
       fixedCoarseLimit := ?_ }
-  · simpa only [hc] using hY.covarianceBound
-  · simpa only [gaussianVariance, hc] using hY.coarseVarianceBound
-  · simpa only [hc] using hY.coarseMixedBound
-  · simpa only [hc] using hY.offDiagonalLimit
-  · simpa only [hc] using hY.fixedCoarseLimit
+  · simpa [hc] using hY.covarianceBound
+  · simpa [gaussianVariance, hc] using hY.coarseVarianceBound
+  · simpa [hc] using hY.coarseMixedBound
+  · simpa [hc] using hY.offDiagonalLimit
+  · simpa [hc] using hY.fixedCoarseLimit
 
 /-- A jointly measurable centered Gaussian family with ordinary circle covariance is admissible
 on every open chart, even when constructed by inversion on the source probability space. -/

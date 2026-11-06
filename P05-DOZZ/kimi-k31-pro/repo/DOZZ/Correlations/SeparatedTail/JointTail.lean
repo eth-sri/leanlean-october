@@ -2,16 +2,14 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.SeparatedTail.LocalWeights
-public import DOZZ.Correlations.SeparatedTail.JointMarkov
+import DOZZ.Correlations.SeparatedTail.LocalWeights
+import DOZZ.Correlations.SeparatedTail.JointMarkov
 
 /-! The separated joint-tail inequality `DOZZ.separatedSingularMass_joint_tail` for the
 two-insertion tail [KRV, Lemma 7.3] (erratum K9, see docs/ERRATA-AND-DEVIATIONS.md), proved here
 with its literal statement. -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory Filter Topology TopologicalSpace Set
 open scoped ENNReal NNReal Topology
 namespace DOZZ.Proofs
@@ -47,11 +45,10 @@ theorem separatedSingularMass_joint_tail
   obtain ⟨B,hB,hbound⟩ := separatedTail_singular_mixed_moment_uniform P X hX γ hγ hγ2 M hM
     K2 K3 hK2 hK3 hsep A2 A3 hA2 hA3 hα2 hα3 ε hε hε2 hε3
   let T : ℝ := 4/γ^2
-  have hT : 0 < T := by dsimp [T]; positivity
   let S : ℝ≥0∞ := ENNReal.ofReal (max supBound 1)
   have hS : S ≠ ⊤ := ENNReal.ofReal_ne_top
   have hS1 : 1 ≤ S := by
-    simpa only [S, ENNReal.ofReal_one] using
+    simpa [S, ENNReal.ofReal_one] using
       ENNReal.ofReal_le_ofReal (le_max_right supBound 1)
   let Bfinal := S^(2*T)*B
   have hBfinal : Bfinal ≠ ⊤ := (ENNReal.mul_lt_top
@@ -85,6 +82,6 @@ theorem separatedSingularMass_joint_tail
   have he2 : -(reflectionExponent γ α2-ε) = -reflectionExponent γ α2+ε := by ring
   have he3 : -(reflectionExponent γ α3-ε) = -reflectionExponent γ α3+ε := by ring
   rw [he2,he3] at ht
-  simpa only [Real.rpow_eq_pow] using ht
+  simpa [Real.rpow_eq_pow] using ht
 
 end DOZZ.Proofs

@@ -2,13 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.Complex.TwoTailRational
+import DOZZ.Statements.Complex.TwoTailRational
 
 /-! The definition `DOZZ.horizontalStrip`. -/
 
-@[expose] public section
 
 open MeasureTheory Filter Topology Set
 open scoped ENNReal

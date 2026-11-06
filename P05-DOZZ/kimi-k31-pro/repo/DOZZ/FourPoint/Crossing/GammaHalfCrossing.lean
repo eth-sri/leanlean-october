@@ -2,12 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.Crossing.BPZReduction
-public import DOZZ.Statements.Hypergeom.GaussHypergeometricExists
-public import DOZZ.Statements.FourPoint.DegenerateFourPointBPZ
-public import DOZZ.Statements.FourPoint.GammaHalfFullUnreflectedFormula
+import DOZZ.FourPoint.Crossing.BPZReduction
+import DOZZ.Statements.Hypergeom.GaussHypergeometricExists
+import DOZZ.Statements.FourPoint.DegenerateFourPointBPZ
+import DOZZ.Statements.FourPoint.GammaHalfFullUnreflectedFormula
 import Mathlib.Tactic
 
 /-! # The half-charge crossing reduction
@@ -19,12 +18,11 @@ which gives the unconditional theorem `gammaHalf_crossing`. The target is the ex
 `DOZZ.gammaHalf_crossing`.
 -/
 
-public section
 open MeasureTheory
 namespace DOZZ.Proofs
 
-/-- The conclusion of `DOZZ.gammaHalf_crossing` follows from the two exact theorem inputs
-`DOZZ.degenerateFourPoint_BPZ` and `DOZZ.gammaHalf_full_unreflected_formula`. The Gauss family,
+/-- The conclusion of `gammaHalf_crossing` follows from the two exact theorem inputs
+`degenerateFourPoint_BPZ` and `gammaHalf_full_unreflected_formula`. The Gauss family,
 physical guards, normalization and coefficient extraction are all discharged. -/
 theorem gammaHalf_crossing_of_unreflected {Ω : Type*} [MeasurableSpace Ω]
     (P : Measure Ω) (X : Ω → Distr) (M : Ω → Measure ℂ) (γ μ α' ε α : ℝ)
@@ -70,7 +68,7 @@ theorem gammaHalf_crossing_of_unreflected {Ω : Type*} [MeasurableSpace Ω]
       unitVolumeStructureConstant P M γ (α' - γ / 2) ε α =
         gammaHalfUnitCrossingMultiplier γ μ α' ε α *
           unitVolumeStructureConstant P M γ α' (ε + γ / 2) α := by
-  obtain ⟨H, hH⟩ := DOZZ.gauss_hypergeometric_exists
+  obtain ⟨H, hH⟩ := gauss_hypergeometric_exists
   have hεQ : ε < Q γ := by unfold Q; linarith only [hεhi, hγ]
   have hsum : 2 * Q γ + γ / 2 < α' + ε + α := by linarith only [hs]
   have hsum' : 2 * Q γ + γ / 2 < ε + α' + α := by linarith only [hs]
@@ -79,9 +77,9 @@ theorem gammaHalf_crossing_of_unreflected {Ω : Type*} [MeasurableSpace Ω]
   have hformula := hUnreflected hH P X M γ μ ε α' α hγ hγ₂ hμ
     hεlo hεhi hα' hα hsum' hX hM
   exact gammaHalf_crossing_of_BPZ_and_unreflected hH P X M γ μ α' ε α
-    hγ hγ₂ hμ hεhi hα hα' hs hX hM (by simpa only [neg_div] using hbpz) hformula
+    hγ hγ₂ hμ hεhi hα hα' hs hX hM (by simpa [neg_div] using hbpz) hformula
 
-/-- Unconditional crossing theorem, with precisely the statement of `DOZZ.gammaHalf_crossing`. -/
+/-- Unconditional crossing theorem, with precisely the statement of `gammaHalf_crossing`. -/
 theorem gammaHalf_crossing {Ω : Type*} [MeasurableSpace Ω]
     (P : Measure Ω) (X : Ω → Distr) (M : Ω → Measure ℂ) (γ μ α' ε α : ℝ)
     (hγ : 0 < γ) (hγ₂ : γ < 2) (hμ : 0 < μ)
@@ -97,7 +95,7 @@ theorem gammaHalf_crossing {Ω : Type*} [MeasurableSpace Ω]
           unitVolumeStructureConstant P M γ α' (ε + γ / 2) α := by
   exact gammaHalf_crossing_of_unreflected P X M γ μ α' ε α
     hγ hγ₂ hμ hεlo hεhi hα hα' hs hX hM
-    DOZZ.degenerateFourPoint_BPZ DOZZ.gammaHalf_full_unreflected_formula
+    degenerateFourPoint_BPZ gammaHalf_full_unreflected_formula
 
 
 end DOZZ.Proofs

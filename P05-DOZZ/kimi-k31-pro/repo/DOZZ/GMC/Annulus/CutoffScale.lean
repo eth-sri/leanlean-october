@@ -2,22 +2,20 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.Defs.IsGMCOf
-public import DOZZ.GMC.AdmissibleGMCRestriction
-public import DOZZ.GMC.Moments.RegularizedScale
-public import DOZZ.GMC.Moments.ChaosLawFDDLimit
-public import DOZZ.GMC.Moments.ScaleLimit
-public import DOZZ.GMC.Construction.RegularizedGMCExpectedMeasure
-public import DOZZ.GMC.Moments.OpenBallApproximation
-public import DOZZ.GMC.Moments.ExactScaleBallMoment
-public import DOZZ.GMC.Annulus.PositiveRoot
-public import Mathlib.MeasureTheory.Integral.MeanInequalities
+import DOZZ.Statements.Defs.IsGMCOf
+import DOZZ.GMC.AdmissibleGMCRestriction
+import DOZZ.GMC.Moments.RegularizedScale
+import DOZZ.GMC.Moments.ChaosLawFDDLimit
+import DOZZ.GMC.Moments.ScaleLimit
+import DOZZ.GMC.Construction.RegularizedGMCExpectedMeasure
+import DOZZ.GMC.Moments.OpenBallApproximation
+import DOZZ.GMC.Moments.ExactScaleBallMoment
+import DOZZ.GMC.Annulus.PositiveRoot
+import Mathlib.MeasureTheory.Integral.MeanInequalities
 
 /-! Exact affine scaling of actual finite-cutoff open-ball masses. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped Distributions ENNReal NNReal BoundedContinuousFunction
@@ -178,16 +176,12 @@ theorem regularizedGMC_affine_openBall_mass_law_CutoffScale
     exact tendstoInMeasure_of_tendsto_ae
       (fun n => (hsourceIntMeas n).aestronglyMeasurable)
       ((regularizedGMC_finite_ae P X hX Xc hXc γ r).mono hpoint)
-  have htargetConv : TendstoInMeasure P targetCutoff atTop targetLimit :=
-    tendstoInMeasure_pi_finite P targetCutoff targetLimit htargetCoordConv
   have hsourceProductCoordConv (j : Fin 1) :
       TendstoInMeasure (P.prod G) (fun n p => sourceCutoff n p j) atTop
       (fun p => sourceLimit p j) := by
     exact tendstoInMeasure_mul_snd_of_tendstoInMeasure
       (fun n ω => ∫ x, g n x ∂regularizedGMC P Xc γ r ω)
       (fun ω => (regularizedGMC P Xc γ r ω (Metric.ball 0 R)).toReal) scaleFactor hscaleFactor hsourceConv
-  have hsourceProductConv : TendstoInMeasure (P.prod G) sourceCutoff atTop sourceLimit :=
-    tendstoInMeasure_pi_finite (P.prod G) sourceCutoff sourceLimit hsourceProductCoordConv
   have hcutoffLaw (n : ℕ) : Measure.map (targetCutoff n) P =
       Measure.map (sourceCutoff n) (P.prod G) := by
     let fvec : Fin 1 → BoundedContinuousFunction ℂ ℝ := fun _ => f n
@@ -198,8 +192,7 @@ theorem regularizedGMC_affine_openBall_mass_law_CutoffScale
       c ^ 2 * Real.exp (γ * p.2 - γ ^ 2 / 2 * σ) *
           ∫ x, fvec j (a + c • x) ∂regularizedGMC P Xc γ r p.1) = sourceCutoff n := by
       funext p j
-      have htest (x : ℂ) : f n (a + c • x) = g n x := by
-        exact openBallAffineApprox_comp_affine a c R hc.ne' n x
+      have htest (x : ℂ) : f n (a + c • x) = g n x := openBallAffineApprox_comp_affine a c R hc.ne' n x
       change c ^ 2 * Real.exp (γ * p.2 - γ ^ 2 / 2 * σ) *
         ∫ x, f n (a + c • x) ∂regularizedGMC P Xc γ r p.1 =
           scaleFactor p.2 * ∫ x, g n x ∂regularizedGMC P Xc γ r p.1
@@ -455,7 +448,7 @@ theorem regularizedGMC_coarse_chart_moment_upper
       rw [regularizedGMC_mass_eq_wick_lintegral P X Xc hXc γ r O hO ω]
       have h := ennreal_lintegral_rpow_le_mass_rpow_mul_lintegral_rpow
         (gmcReferenceMeasure.restrict O) (gmcCircleWickDensity P Xc γ r ω) (hf ω) p hp
-      simpa only [Measure.restrict_apply_univ] using h
+      simpa [Measure.restrict_apply_univ] using h
     _ = (gmcReferenceMeasure O) ^ (p - 1) *
         ∫⁻ x in O, ∫⁻ ω, (gmcCircleWickDensity P Xc γ r ω x) ^ p ∂P ∂gmcReferenceMeasure := by
       rw [lintegral_const_mul' _ _ (ENNReal.rpow_ne_top_of_nonneg (by linarith)

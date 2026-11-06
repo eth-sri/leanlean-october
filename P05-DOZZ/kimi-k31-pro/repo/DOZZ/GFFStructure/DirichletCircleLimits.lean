@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.GFFStructure.HarmonicMoments
-public import Mathlib.MeasureTheory.Function.FactorsThrough
-public import Mathlib.Analysis.Normed.Module.Dual
+import DOZZ.GFFStructure.HarmonicMoments
+import Mathlib.MeasureTheory.Function.FactorsThrough
+import Mathlib.Analysis.Normed.Module.Dual
 /-!
 # Raw circle versions and interior Banach limits
 
@@ -17,7 +16,6 @@ The scalar annular transport extends to Banach observables by separating duals;
 radial concentration and uniform smoothing give norm convergence of circle averages.
 -/
 
-@[expose] public section
 open Filter MeasureTheory ProbabilityTheory Set Metric TopologicalSpace
 open scoped Topology ENNReal NNReal
 namespace DOZZ.Proofs
@@ -95,10 +93,10 @@ theorem exists_raw_distribution_limit_version {Ω : Type*} [MeasurableSpace Ω]
 theorem circleAnnularDensity_radius_le (x : ℂ) (r : ℝ) (n : ℕ) (z : ℂ)
     (hz : circleAnnularDensity x r n z ≠ 0) :
     ‖z-x‖ ≤ Real.exp (-r)+Real.exp (-r)/((n : ℝ)+2) := by
-  have hne : DOZZ.annularProbabilityDensity n ((Real.exp (-r))⁻¹ • (z-x)) ≠ 0 := by
+  have hne : annularProbabilityDensity n ((Real.exp (-r))⁻¹ • (z-x)) ≠ 0 := by
     intro h
     exact hz (by rw [circleAnnularDensity,h,mul_zero])
-  have hnear := DOZZ.annularProbabilityDensity_radius_bound n _ hne
+  have hnear := annularProbabilityDensity_radius_bound n _ hne
   rw [norm_smul,Real.norm_eq_abs,abs_of_pos (inv_pos.mpr (Real.exp_pos _))] at hnear
   have hup : (Real.exp (-r))⁻¹*‖z-x‖ ≤ 1+1/((n : ℝ)+2) := by
     linarith only [le_abs_self ((Real.exp (-r))⁻¹*‖z-x‖-1),hnear]
@@ -123,11 +121,11 @@ theorem eventually_circleAnnularDensity_support_inner (c x : ℂ) (r b : ℝ)
     convert (tendsto_const_div_atTop_nhds_zero_nat (Real.exp (-r))).comp
       (tendsto_add_atTop_nat 2) using 1
     ext n
-    simp only [Function.comp_def,Nat.cast_add,Nat.cast_ofNat]
+    simp [Function.comp_def,Nat.cast_add,Nat.cast_ofNat]
   filter_upwards [ht.eventually_lt_const (by linarith : 0 < b-(‖x-c‖+Real.exp (-r)))] with n hn
   intro z hz
   have hz' := mem_closedBall_iff_norm.mp (tsupport_circleAnnularDensity_radius_subset x r n hz)
-  have htri : ‖z-c‖ ≤ ‖z-x‖+‖x-c‖ := by simpa only [sub_add_sub_cancel] using norm_add_le (z-x) (x-c)
+  have htri : ‖z-c‖ ≤ ‖z-x‖+‖x-c‖ := by simpa [sub_add_sub_cancel] using norm_add_le (z-x) (x-c)
   exact mem_closedBall_iff_norm.mpr (by linarith only [hz',htri,hn])
 
 /-- Smooth circle approximants can retain the exact cubic energy contract and eventually lie inside their disk. -/
@@ -182,8 +180,7 @@ theorem measurable_extend_interior_circle_field {Ω : Type*} [MeasurableSpace Ω
       if hp : ‖p.2.1-c‖+Real.exp (-p.2.2) < ρ then G p.1 ⟨p.2,hp⟩ else 0) := by
   classical
   let S : Set (Ω × (ℂ × ℝ)) := {p | ‖p.2.1-c‖+Real.exp (-p.2.2) < ρ}
-  have hS : MeasurableSet S := by
-    exact measurableSet_lt (by fun_prop) measurable_const
+  have hS : MeasurableSet S := measurableSet_lt (by fun_prop) measurable_const
   have hbranch : Measurable (fun p : S => G p.1.1 ⟨p.1.2,p.2⟩) := by
     have hm : Measurable (fun p : S =>
         (⟨p.1.2,p.2⟩ : {p : ℂ × ℝ // ‖p.1-c‖+Real.exp (-p.2) < ρ})) :=
@@ -210,7 +207,7 @@ theorem exists_raw_joint_circle_modification {Ω : Type*} [mΩ : MeasurableSpace
     exact measurable_extend_interior_circle_field c ρ G hG
   · filter_upwards [hGe] with ω hω
     intro x r hx
-    simp only [Dc,dite_eq_left hx]
+    simp [Dc,dite_eq_left hx]
     exact hω ⟨(x,r),hx⟩
 
 section Vector
@@ -219,84 +216,67 @@ omit [CompleteSpace E] in
 /-- Bounded continuous Banach observables have circle averages continuous in radius. -/
 theorem continuous_circleAverage_radius_vector (h : ℂ → E) (hh : Continuous h)
     {M : ℝ} (hb : ∀ z, ‖h z‖ ≤ M) : Continuous (fun t : ℝ => Real.circleAverage h 0 t) := by
-  let μ : Measure ℝ := volume.restrict (Ioc 0 (2*Real.pi))
-  have hμ : IsFiniteMeasure μ := by
-    dsimp [μ]
-    exact isFiniteMeasure_restrict.mpr (by simp only [Real.volume_Ioc]; finiteness)
-  let _ := hμ
-  have hc : Continuous (fun t : ℝ => ∫ θ, h (circleMap 0 t θ) ∂μ) := by
-    apply continuous_of_dominated
-      (fun t => (hh.stronglyMeasurable.comp_measurable (measurable_circleMap 0 t)).aestronglyMeasurable)
-      (fun t => Eventually.of_forall (fun θ => hb (circleMap 0 t θ))) (integrable_const M)
-    filter_upwards with θ
-    apply hh.comp
-    simp only [circleMap]
-    fun_prop
-  have he t : Real.circleAverage h 0 t = (2*Real.pi)⁻¹ • (∫ θ, h (circleMap 0 t θ) ∂μ) := by
-    rw [Real.circleAverage_def,intervalIntegral.integral_of_le Real.two_pi_pos.le]
-  simp_rw [he]
-  exact hc.const_smul _
+  fun_prop
 
 /-- Banach annular averages have the same literal radial mixture as scalar averages. -/
 theorem integral_annular_smul_eq_radial_average (n : ℕ) (h : ℂ → E) (hh : Continuous h)
     {M : ℝ} (hb : ∀ z, ‖h z‖ ≤ M) :
-    (∫ z, DOZZ.annularProbabilityDensity n z • h z) =
-      ∫ t in Ioi (0 : ℝ), DOZZ.annularRadiusLaw n t • Real.circleAverage h 0 t := by
-  have hi : Integrable (fun z => DOZZ.annularProbabilityDensity n z • h z) :=
-    ((DOZZ.continuous_annularProbabilityDensity n).smul hh).integrable_of_hasCompactSupport
-      (DOZZ.hasCompactSupport_annularProbabilityDensity n).smul_right
+    (∫ z, annularProbabilityDensity n z • h z) =
+      ∫ t in Ioi (0 : ℝ), annularRadiusLaw n t • Real.circleAverage h 0 t := by
+  have hi : Integrable (fun z => annularProbabilityDensity n z • h z) :=
+    ((continuous_annularProbabilityDensity n).smul hh).integrable_of_hasCompactSupport
+      (hasCompactSupport_annularProbabilityDensity n).smul_right
   have ha := continuous_circleAverage_radius_vector h hh hb
-  have hj : Integrable (fun t => DOZZ.annularRadiusLaw n t • Real.circleAverage h 0 t)
+  have hj : Integrable (fun t => annularRadiusLaw n t • Real.circleAverage h 0 t)
       (volume.restrict (Ioi (0 : ℝ))) :=
-    (((DOZZ.continuous_annularRadiusLaw n).smul ha).integrable_of_hasCompactSupport
-      (DOZZ.hasCompactSupport_annularRadiusLaw n).smul_right).restrict
+    (((continuous_annularRadiusLaw n).smul ha).integrable_of_hasCompactSupport
+      (hasCompactSupport_annularRadiusLaw n).smul_right).restrict
   apply (SeparatingDual.eq_iff_forall_dual_eq (R := ℝ)).mpr
   intro L
   rw [← L.integral_comp_comm hi,← L.integral_comp_comm hj]
-  simp only [map_smul,smul_eq_mul]
-  have hc t : L (Real.circleAverage h 0 t) = Real.circleAverage (L ∘ h) 0 t := by
-    exact (L.circleAverage_comp_comm hh.continuousOn.circleIntegrable').symm
+  simp [map_smul,smul_eq_mul]
+  have hc t : L (Real.circleAverage h 0 t) = Real.circleAverage (L ∘ h) 0 t := (L.circleAverage_comp_comm hh.continuousOn.circleIntegrable').symm
   simp_rw [hc]
   exact integral_annular_mul_eq_radial_average n (L ∘ h) (L.continuous.comp hh)
 
 /-- Radial annular probabilities concentrate in norm for continuous Banach observables. -/
 theorem tendsto_integral_annularRadiusLaw_smul (a : ℝ → E) (ha : Continuous a) :
-    Tendsto (fun n => ∫ t in Ioi (0 : ℝ), DOZZ.annularRadiusLaw n t • a t)
+    Tendsto (fun n => ∫ t in Ioi (0 : ℝ), annularRadiusLaw n t • a t)
       atTop (𝓝 (a 1)) := by
   apply tendsto_iff_norm_sub_tendsto_zero.mpr
   have hlim := tendsto_integral_annularRadiusLaw_mul (fun t => ‖a t-a 1‖) (by fun_prop)
-  simp only [sub_self,norm_zero] at hlim
+  simp [sub_self,norm_zero] at hlim
   apply tendsto_of_tendsto_of_tendsto_of_le_of_le tendsto_const_nhds hlim
   · intro n
     exact norm_nonneg _
   · intro n
-    have hi : Integrable (fun t => DOZZ.annularRadiusLaw n t • a t)
+    have hi : Integrable (fun t => annularRadiusLaw n t • a t)
         (volume.restrict (Ioi (0 : ℝ))) :=
-      (((DOZZ.continuous_annularRadiusLaw n).smul ha).integrable_of_hasCompactSupport
-        (DOZZ.hasCompactSupport_annularRadiusLaw n).smul_right).restrict
-    have hconst : (∫ t in Ioi (0 : ℝ), DOZZ.annularRadiusLaw n t • a 1) = a 1 := by
-      rw [integral_smul_const,DOZZ.integral_annularRadiusLaw,one_smul]
-    have hsub : (∫ t in Ioi (0 : ℝ), DOZZ.annularRadiusLaw n t • a t)-a 1 =
-        ∫ t in Ioi (0 : ℝ), DOZZ.annularRadiusLaw n t • (a t-a 1) := by
+      (((continuous_annularRadiusLaw n).smul ha).integrable_of_hasCompactSupport
+        (hasCompactSupport_annularRadiusLaw n).smul_right).restrict
+    have hconst : (∫ t in Ioi (0 : ℝ), annularRadiusLaw n t • a 1) = a 1 := by
+      rw [integral_smul_const,integral_annularRadiusLaw,one_smul]
+    have hsub : (∫ t in Ioi (0 : ℝ), annularRadiusLaw n t • a t)-a 1 =
+        ∫ t in Ioi (0 : ℝ), annularRadiusLaw n t • (a t-a 1) := by
       calc
-        _ = (∫ t in Ioi (0 : ℝ), DOZZ.annularRadiusLaw n t • a t)-
-            (∫ t in Ioi (0 : ℝ), DOZZ.annularRadiusLaw n t • a 1) := by rw [hconst]
-        _ = ∫ t in Ioi (0 : ℝ), DOZZ.annularRadiusLaw n t • a t-DOZZ.annularRadiusLaw n t • a 1 :=
-          (integral_sub hi ((DOZZ.integrable_annularRadiusLawOn n).smul_const (a 1))).symm
+        _ = (∫ t in Ioi (0 : ℝ), annularRadiusLaw n t • a t)-
+            (∫ t in Ioi (0 : ℝ), annularRadiusLaw n t • a 1) := by rw [hconst]
+        _ = ∫ t in Ioi (0 : ℝ), annularRadiusLaw n t • a t-annularRadiusLaw n t • a 1 :=
+          (integral_sub hi ((integrable_annularRadiusLawOn n).smul_const (a 1))).symm
         _ = _ := by
           apply integral_congr_ae
-          exact ae_of_all _ (fun t => (smul_sub (DOZZ.annularRadiusLaw n t) (a t) (a 1)).symm)
-    dsimp only
+          exact ae_of_all _ (fun t => (smul_sub (annularRadiusLaw n t) (a t) (a 1)).symm)
+    dsimp
     rw [hsub]
     apply (norm_integral_le_integral_norm _).trans_eq
     apply integral_congr_ae
     filter_upwards [ae_restrict_mem measurableSet_Ioi] with t ht
-    rw [norm_smul,Real.norm_eq_abs,abs_of_nonneg (DOZZ.annularRadiusLaw_nonneg n ht)]
+    rw [norm_smul,Real.norm_eq_abs,abs_of_nonneg (annularRadiusLaw_nonneg n ht)]
 
 /-- Unit annular averages converge in Banach norm to their circle average. -/
 theorem tendsto_integral_annular_smul (h : ℂ → E) (hh : Continuous h)
     {M : ℝ} (hb : ∀ z, ‖h z‖ ≤ M) :
-    Tendsto (fun n => ∫ z, DOZZ.annularProbabilityDensity n z • h z)
+    Tendsto (fun n => ∫ z, annularProbabilityDensity n z • h z)
       atTop (𝓝 (Real.circleAverage h 0 1)) := by
   simp_rw [integral_annular_smul_eq_radial_average _ h hh hb]
   exact tendsto_integral_annularRadiusLaw_smul _ (continuous_circleAverage_radius_vector h hh hb)
@@ -304,13 +284,13 @@ theorem tendsto_integral_annular_smul (h : ℂ → E) (hh : Continuous h)
 theorem integral_circleAnnularDensity_smul (x : ℂ) (r : ℝ) (n : ℕ)
     (h : ℂ → E) (hh : Continuous h) :
     (∫ z, circleAnnularDensity x r n z • h z) =
-      ∫ z, DOZZ.annularProbabilityDensity n z • h (Real.exp (-r) • z+x) := by
+      ∫ z, annularProbabilityDensity n z • h (Real.exp (-r) • z+x) := by
   have hi : Integrable (fun z => circleAnnularDensity x r n z • h z) :=
     ((continuous_circleAnnularDensity x r n).smul hh).integrable_of_hasCompactSupport
       (hasCompactSupport_circleAnnularDensity x r n).smul_right
-  have hj : Integrable (fun z => DOZZ.annularProbabilityDensity n z • h (Real.exp (-r) • z+x)) :=
-    ((DOZZ.continuous_annularProbabilityDensity n).smul (by fun_prop)).integrable_of_hasCompactSupport
-      (DOZZ.hasCompactSupport_annularProbabilityDensity n).smul_right
+  have hj : Integrable (fun z => annularProbabilityDensity n z • h (Real.exp (-r) • z+x)) :=
+    ((continuous_annularProbabilityDensity n).smul (by fun_prop)).integrable_of_hasCompactSupport
+      (hasCompactSupport_annularProbabilityDensity n).smul_right
   apply (SeparatingDual.eq_iff_forall_dual_eq (R := ℝ)).mpr
   intro L
   rw [← L.integral_comp_comm hi,← L.integral_comp_comm hj]
@@ -325,7 +305,7 @@ theorem circleAverage_affine_unit_vector (x : ℂ) (r : ℝ) (h : ℂ → E) :
   congr 1
   apply intervalIntegral.integral_congr
   intro θ _
-  simp only [circleMap,zero_add,Complex.ofReal_one,one_mul,Complex.real_smul]
+  simp [circleMap,zero_add,Complex.ofReal_one,one_mul,Complex.real_smul]
   congr 1
   ring
 
@@ -385,19 +365,19 @@ theorem tendsto_integral_testFn_smul_of_circleAnnular_approx
         apply integral_mono_ae hei.norm (hbi.const_mul (ε n))
         apply ae_of_all
         intro z
-        dsimp only
+        dsimp
         rw [norm_smul,Real.norm_eq_abs,← mul_assoc]
         exact mul_le_mul_of_nonneg_right
           (abs_le_bump_of_support hR (hε n) e hes (he n) z) (norm_nonneg _)
       _ = _ := integral_const_mul _ _
   have hzero : Tendsto (fun n => (∫ z, f n z • h z)-(∫ z, circleAnnularDensity x r n z • h z)) atTop (𝓝 0) := by
     apply tendsto_iff_norm_sub_tendsto_zero.mpr
-    simp only [sub_zero]
-    have ht : Tendsto (fun n => ε n*B) atTop (𝓝 0) := by simpa only [zero_mul] using hεlim.mul_const B
+    simp [sub_zero]
+    have ht : Tendsto (fun n => ε n*B) atTop (𝓝 0) := by simpa [zero_mul] using hεlim.mul_const B
     exact tendsto_of_tendsto_of_tendsto_of_le_of_le tendsto_const_nhds ht
       (fun n => norm_nonneg _) hbound
   have ht := hzero.add (tendsto_integral_circleAnnular_smul x r h hh hb)
-  simpa only [sub_add_cancel,zero_add] using ht
+  simpa [sub_add_cancel,zero_add] using ht
 
 end Vector
 end DOZZ.Proofs

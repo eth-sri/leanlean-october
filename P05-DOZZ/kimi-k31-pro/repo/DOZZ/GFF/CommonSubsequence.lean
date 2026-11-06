@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import Mathlib.MeasureTheory.Function.ConvergenceInMeasure
+import Mathlib.MeasureTheory.Function.ConvergenceInMeasure
 
 /-!
 # DOZZ.GFF.CommonSubsequence
@@ -13,7 +12,6 @@ Diagonal extraction for countably many scalar limits in measure. This is the pro
 bookkeeping needed to put all local Fourier-mode limits on one full-measure event.
 -/
 
-@[expose] public section
 
 open MeasureTheory Filter
 open scoped Topology
@@ -177,4 +175,3 @@ theorem exists_common_subseq_tendsto_ae {Ω : Type*} [MeasurableSpace Ω]
 
 end DOZZ
 
-end

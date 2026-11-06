@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.Fusion.LocalSecondKernel
-public import DOZZ.FourPoint.Fusion.ComplexScaling
+import DOZZ.FourPoint.Fusion.LocalSecondKernel
+import DOZZ.FourPoint.Fusion.ComplexScaling
 
 /-! # Exact scaling of the local pure derivative kernel -/
 
-@[expose] public section
 open MeasureTheory
 namespace DOZZ.Proofs
 
@@ -32,7 +30,7 @@ theorem fusion_gammaHalfKernel_scaled (γ α₁ α₂ α₃ : ℝ) (y z : ℂ)
     Real.mul_rpow (norm_nonneg _) (norm_nonneg _),
     Real.mul_rpow (norm_nonneg _) (norm_nonneg _),
     Real.rpow_sub hr, neg_mul γ α₂, Real.rpow_neg h1.le]
-  simp only [div_eq_mul_inv, mul_inv_rev]
+  simp [div_eq_mul_inv, mul_inv_rev]
   ring
 
 /-- The pure derivative contributes the phase `z⁻²` in addition to its real scaling degree. -/
@@ -48,7 +46,7 @@ theorem fusion_localR1_kernel_scaled (γ α₁ α₂ α₃ : ℝ) (y z : ℂ)
   have hs : (1 - y) ^ 2 = (y - 1) ^ 2 := by ring
   rw [hsub, hs]
   push_cast
-  simp only [mul_pow, div_eq_mul_inv, mul_inv_rev]
+  simp [mul_pow, div_eq_mul_inv, mul_inv_rev]
   ring
 
 /-- The mixed derivative has the same absolute scaling, without a complex phase. -/
@@ -64,6 +62,6 @@ theorem fusion_localR2_kernel_scaled (γ α₁ α₂ α₃ : ℝ) (y z : ℂ)
     norm_planarWirtingerKernel_eq _ _ _ _ hy0 hy1,
     Complex.norm_real, Real.norm_of_nonneg (Real.rpow_nonneg (norm_nonneg _) _)] at h
   have hc := congrArg Complex.ofReal h
-  simpa only [Complex.ofReal_div, Complex.ofReal_mul, planarMixedKernel] using hc
+  simpa [Complex.ofReal_div, Complex.ofReal_mul, planarMixedKernel] using hc
 
 end DOZZ.Proofs

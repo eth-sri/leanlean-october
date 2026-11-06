@@ -2,12 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.Statements.Defs.Rho
-public import DOZZ.Statements.Defs.ExtendedSeiberg3
-public import DOZZ.Statements.GMC.CoulombMass
-public import DOZZ.GMC.Construction.RootedCircleMassLimit
-@[expose] public section
+import DOZZ.Correlations.Residue.ChartMass
+import DOZZ.Statements.Defs.Rho
+import DOZZ.Statements.Defs.ExtendedSeiberg3
+import DOZZ.Statements.GMC.CoulombMass
+import DOZZ.GMC.Construction.RootedCircleMassLimit
 open MeasureTheory Set
 open scoped Distributions ENNReal
 namespace DOZZ.Proofs
@@ -22,29 +21,20 @@ theorem rho_coulomb_weight (γ α₁ α₂ α₃ : ℝ) (x : ℂ) (hx0 : x ≠ 0
   have hn : 0 < normPlus x := lt_of_lt_of_le zero_lt_one (le_max_left 1 ‖x‖)
   have h0 : 0 < ‖x‖ := norm_pos_iff.mpr hx0
   have h1 : 0 < ‖x - 1‖ := norm_pos_iff.mpr (sub_ne_zero.mpr hx1)
-  simp only [ENNReal.rpow_eq_pow]
+  simp [ENNReal.rpow_eq_pow]
   rw [ENNReal.ofReal_rpow_of_pos (p := γ * α₁) (div_pos hn h0),
     ENNReal.ofReal_rpow_of_pos (p := γ * α₂) (div_pos hn h1), ENNReal.ofReal_rpow_of_pos (p := γ * α₃) hn]
   rw [← ENNReal.ofReal_mul (Real.rpow_nonneg (div_pos hn h0).le _),
     ← ENNReal.ofReal_mul (mul_nonneg (Real.rpow_nonneg (div_pos hn h0).le _)
       (Real.rpow_nonneg (div_pos hn h1).le _))]
   congr 1
-  rw [Real.div_rpow hn.le h0.le, Real.div_rpow hn.le h1.le]
-  rw [mul_add, mul_add, Real.rpow_add hn, Real.rpow_add hn]
+  rw [Real.div_rpow hn.le h0.le, Real.div_rpow hn.le h1.le, mul_add, mul_add, Real.rpow_add hn, Real.rpow_add hn]
   ring
 
 /-- Rho agrees with the two finite roots and one infinity-root Coulomb mass for atomless roots. -/
 theorem rho_eq_coulombMass (γ α₁ α₂ α₃ : ℝ) (μ : Measure ℂ)
     (h0 : μ {0} = 0) (h1 : μ {1} = 0) :
-    rho γ μ α₁ α₂ α₃ = coulombMass γ μ ![α₁, α₂] ![0, 1] α₃ := by
-  have ha0 : ∀ᵐ x ∂μ, x ≠ 0 := by
-    rw [ae_iff]; simpa only [not_not, ofPred_eq_eq_singleton] using h0
-  have ha1 : ∀ᵐ x ∂μ, x ≠ 1 := by
-    rw [ae_iff]; simpa only [not_not, ofPred_eq_eq_singleton] using h1
-  apply lintegral_congr_ae
-  filter_upwards [ha0, ha1] with x hx0 hx1
-  simpa only [Fin.prod_univ_two, Matrix.cons_val_zero, Matrix.cons_val_one,
-    sub_zero] using rho_coulomb_weight γ α₁ α₂ α₃ x hx0 hx1
+    rho γ μ α₁ α₂ α₃ = coulombMass γ μ ![α₁, α₂] ![0, 1] α₃ := DOZZ.Proofs.residue_rho_eq_coulombMass γ α₁ α₂ α₃ μ h0 h1
 
 /-- Every GMC version has the rho/Coulomb identity almost surely. -/
 theorem gmc_rho_eq_coulombMass_ae
@@ -72,7 +62,7 @@ theorem extendedSeiberg3_coulomb_parameters (γ α₁ α₂ α₃ : ℝ)
   obtain ⟨h₁, h₂, h₃, hp⟩ := hα
   have he : (2 * Q γ - ((∑ k : Fin 2, (![α₁, α₂] : Fin 2 → ℝ) k) + α₃)) / γ =
       -sExp γ α₁ α₂ α₃ := by
-    simp only [Fin.sum_univ_two, Matrix.cons_val_zero, Matrix.cons_val_one, sExp]
+    simp [Fin.sum_univ_two, Matrix.cons_val_zero, Matrix.cons_val_one, sExp]
     ring
   refine ⟨?_, ?_, h₃, he, ?_, ?_, ?_⟩
   · intro i j hij
@@ -102,7 +92,7 @@ theorem rho_moment_eq_coulomb_moment
       ((2 * Q γ - ((∑ k : Fin 2, (![α₁, α₂] : Fin 2 → ℝ) k) + α₃)) / γ) ∂P := by
   have he : (2 * Q γ - ((∑ k : Fin 2, (![α₁, α₂] : Fin 2 → ℝ) k) + α₃)) / γ =
       -sExp γ α₁ α₂ α₃ := by
-    simp only [Fin.sum_univ_two, Matrix.cons_val_zero, Matrix.cons_val_one, sExp]
+    simp [Fin.sum_univ_two, Matrix.cons_val_zero, Matrix.cons_val_one, sExp]
     ring
   rw [he]
   apply lintegral_congr_ae

@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GFFStructure.GaussianClosure
-public import DOZZ.GFFStructure.CircleLogSeries
+import DOZZ.GFFStructure.GaussianClosure
+import DOZZ.GFFStructure.CircleLogSeries
 
 /-!
 # Identification of circle covariances
@@ -14,7 +13,6 @@ Absolute logarithmic section bounds justify the mixed planar/arclength Fubini ex
 The smooth energy and weak limits then identify the covariances of the given witness.
 -/
 
-@[expose] public section
 
 open Filter MeasureTheory ProbabilityTheory Set Metric
 open scoped Topology ENNReal NNReal Interval
@@ -29,7 +27,7 @@ theorem integral_abs_log_circle_le (x z : ℂ) (r R : ℝ) (hz : ‖z‖ ≤ R) 
   let L := Real.log (max 1 (R + ‖x‖ + Real.exp (-r)))
   have hL : 0 ≤ L := Real.log_nonneg (le_max_left _ _)
   have hi : Integrable (fun w => Real.log ‖z - w‖) (circleMeasure x r) := by
-    simpa only [norm_sub_rev z] using integrable_log_norm_sub_circleMeasure x z r
+    simpa [norm_sub_rev z] using integrable_log_norm_sub_circleMeasure x z r
   have hup : ∀ᵐ w ∂circleMeasure x r, |Real.log ‖z - w‖| ≤ 2 * L - Real.log ‖z - w‖ := by
     filter_upwards [ae_norm_sub_center_circleMeasure x r] with w hw
     have hwbound : ‖w‖ ≤ ‖x‖ + Real.exp (-r) := by
@@ -39,10 +37,10 @@ theorem integral_abs_log_circle_le (x z : ℂ) (r R : ℝ) (hz : ‖z‖ ≤ R) 
         _ = _ := by rw [hw]; ring
     have hd : ‖z - w‖ ≤ max 1 (R + ‖x‖ + Real.exp (-r)) := by
       exact (norm_sub_le _ _).trans ((add_le_add hz hwbound).trans
-        (by simpa only [add_assoc] using le_max_right 1 (R + ‖x‖ + Real.exp (-r))))
+        (by simpa [add_assoc] using le_max_right 1 (R + ‖x‖ + Real.exp (-r))))
     have hlog : Real.log ‖z - w‖ ≤ L := by
       by_cases hzero : ‖z - w‖ = 0
-      · simpa only [hzero, Real.log_zero] using hL
+      · simpa [hzero, Real.log_zero] using hL
       · exact Real.log_le_log (lt_of_le_of_ne (norm_nonneg _) (Ne.symm hzero)) hd
     rcases le_total 0 (Real.log ‖z - w‖) with h | h
     · rw [abs_of_nonneg h]
@@ -51,7 +49,7 @@ theorem integral_abs_log_circle_le (x z : ℂ) (r R : ℝ) (hz : ‖z‖ ≤ R) 
       linarith
   have hbound := integral_mono_ae hi.norm ((integrable_const (2 * L)).sub hi) hup
   have hsub := integral_sub (integrable_const (2 * L)) hi
-  simp only [Pi.sub_apply, Real.norm_eq_abs] at hbound
+  simp [Pi.sub_apply, Real.norm_eq_abs] at hbound
   rw [hsub, integral_const, probReal_univ, one_smul,
     integral_log_norm_rev_sub_circleMeasure] at hbound
   have hlow := Real.log_le_log (Real.exp_pos (-r)) (le_max_left (Real.exp (-r)) ‖x - z‖)
@@ -66,7 +64,7 @@ theorem integral_abs_gffKernel_circle_le (x z : ℂ) (r R : ℝ) (hz : ‖z‖ �
         Real.log (max 1 R) + (∫ w, Real.log (normPlus w) ∂circleMeasure x r) := by
   let _ := circleMeasure_isProbability x r
   have hlog : Integrable (fun w => Real.log ‖z - w‖) (circleMeasure x r) := by
-    simpa only [norm_sub_rev z] using integrable_log_norm_sub_circleMeasure x z r
+    simpa [norm_sub_rev z] using integrable_log_norm_sub_circleMeasure x z r
   have hpin := integrable_log_normPlus_circleMeasure x r
   have hzc : Integrable (fun _ : ℂ => Real.log (normPlus z)) (circleMeasure x r) := integrable_const _
   have hznon : 0 ≤ Real.log (normPlus z) := Real.log_nonneg (le_max_left _ _)
@@ -154,7 +152,7 @@ theorem gffCov_eq_integral_testKernel (f g : TestFn) :
   funext w
   ring
 
-/-- Every mixed circle/test covariance is the mixed energy `DOZZ.circleCross`, on the given
+/-- Every mixed circle/test covariance is the mixed energy `circleCross`, on the given
 probability space and for the original distribution-valued realization. -/
 theorem circleAverage_test_covariance {Ω : Type*} [MeasurableSpace Ω]
     (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
@@ -165,7 +163,7 @@ theorem circleAverage_test_covariance {Ω : Type*} [MeasurableSpace Ω]
   have hweak := hw _ (continuous_testKernelPotential g)
   simp_rw [← gffCov_eq_integral_testKernel] at hweak
   have hzero : Tendsto (fun _ : ℕ => eLpNorm (fun ω => X ω g - X ω g) 2 P) atTop (𝓝 0) := by
-    simpa only [sub_self, ← Pi.zero_def, eLpNorm_zero] using
+    simpa [sub_self, ← Pi.zero_def, eLpNorm_zero] using
       (tendsto_const_nhds : Tendsto (fun _ : ℕ => (0 : ℝ≥0∞)) atTop (𝓝 0))
   have hcov := tendsto_covariance_of_eLpNorm_sub
     (fun n => equatorGFF_test_memLp X hX (f n)) (fun _ => equatorGFF_test_memLp X hX g)
@@ -184,7 +182,7 @@ theorem circleAverage_covariance_integral {Ω : Type*} [MeasurableSpace Ω]
   let _ := hX.1
   obtain ⟨f, hg, hcross⟩ := exists_testFn_circleEnergyGap_and_cross_tendsto x r
   have hzero : Tendsto (fun _ : ℕ => eLpNorm (fun ω => Xc ω y s - Xc ω y s) 2 P) atTop (𝓝 0) := by
-    simpa only [sub_self, ← Pi.zero_def, eLpNorm_zero] using
+    simpa [sub_self, ← Pi.zero_def, eLpNorm_zero] using
       (tendsto_const_nhds : Tendsto (fun _ : ℕ => (0 : ℝ≥0∞)) atTop (𝓝 0))
   have hl := tendsto_covariance_of_eLpNorm_sub
     (fun n => equatorGFF_test_memLp X hX (f n)) (fun _ => hc.2.1 y s)
@@ -207,7 +205,7 @@ theorem circleCross_origin_exterior_eq_zero {r : ℝ} (hr : 0 ≤ r) (f : TestFn
   · simp [hz]
   · have hn : 1 ≤ ‖z‖ := hs (subset_tsupport f hz)
     have he : Real.exp (-r) ≤ ‖z‖ := (exp_neg_le_one hr).trans hn
-    simp only [zero_sub, norm_neg, Pi.zero_apply, max_eq_right he, normPlus, max_eq_right hn, neg_add_cancel,
+    simp [zero_sub, norm_neg, Pi.zero_apply, max_eq_right he, normPlus, max_eq_right hn, neg_add_cancel,
       add_zero, mul_zero]
 
 /-- Two independent radial finite-dimensional Brownian laws for every witness, and the inner path
@@ -225,9 +223,9 @@ theorem circleAverage_origin_preBrownian {Ω : Type*} [MeasurableSpace Ω]
   have hG := (circleAverage_isGaussianProcess P X Xc hX hc).1
   have hmean := (circleAverage_isGaussianProcess P X Xc hX hc).2
   have hin : IsGaussianProcess (fun t : ℝ≥0 => fun ω => Xc ω 0 t) P := by
-    simpa only [Function.comp_def] using hG.comp_right (fun t : ℝ≥0 => ((0 : ℂ), (t : ℝ)))
+    simpa [Function.comp_def] using hG.comp_right (fun t : ℝ≥0 => ((0 : ℂ), (t : ℝ)))
   have hout : IsGaussianProcess (fun t : ℝ≥0 => fun ω => Xc ω 0 (-(t : ℝ))) P := by
-    simpa only [Function.comp_def] using hG.comp_right (fun t : ℝ≥0 => ((0 : ℂ), -(t : ℝ)))
+    simpa [Function.comp_def] using hG.comp_right (fun t : ℝ≥0 => ((0 : ℂ), -(t : ℝ)))
   refine ⟨preBrownian_of_gaussian_min_covariance _ hin (fun t => hmean 0 t) ?_,
     preBrownian_of_gaussian_min_covariance _ hout (fun t => hmean 0 (-(t : ℝ))) ?_, ?_, ?_⟩
   · intro t u
@@ -288,9 +286,9 @@ theorem circleAverage_covariance_exterior {Ω : Type*} [MeasurableSpace Ω]
     covariance (fun ω => Xc ω x r) (fun ω => Xc ω x s) P = min r s + 2 * Real.log ‖x‖ := by
   let _ := circleMeasure_isProbability x r
   have hpR := integral_log_normPlus_circleMeasure_exterior
-    ((add_le_add le_rfl (exp_neg_le_one hr)).trans (by simpa only [one_add_one_eq_two] using hx))
+    ((add_le_add le_rfl (exp_neg_le_one hr)).trans (by simpa [one_add_one_eq_two] using hx))
   have hpS := integral_log_normPlus_circleMeasure_exterior
-    ((add_le_add le_rfl (exp_neg_le_one hs)).trans (by simpa only [one_add_one_eq_two] using hx))
+    ((add_le_add le_rfl (exp_neg_le_one hs)).trans (by simpa [one_add_one_eq_two] using hx))
   rw [circleAverage_covariance_integral P X Xc hX hc]
   simp_rw [integral_gffKernel_circleMeasure, hpS]
   have heq : (fun z : ℂ => -Real.log (max (Real.exp (-s)) ‖x - z‖) +
@@ -333,7 +331,7 @@ theorem gffCov_sub_potential_integral (f g : TestFn) (p : ℂ → ℝ) (hp : Con
     have hfirst := integral_sub hkg (hgi.const_mul (p z))
     have hsecond := integral_sub (hkg.sub (hgi.const_mul (p z))) hgp
     have hthird := integral_add ((hkg.sub (hgi.const_mul (p z))).sub hgp) (hgi.const_mul C)
-    simp only [Pi.sub_apply] at hfirst hsecond hthird
+    simp [Pi.sub_apply] at hfirst hsecond hthird
     rw [hthird, hsecond, hfirst, integral_const_mul, integral_const_mul]
   have hA : Integrable (fun z => f z * (∫ w, gffKernel z w * g w)) :=
     (f.continuous.mul (continuous_testKernelPotential g)).integrable_of_hasCompactSupport
@@ -344,7 +342,7 @@ theorem gffCov_sub_potential_integral (f g : TestFn) (p : ℂ → ℝ) (hp : Con
     (hfi.mul_const (∫ w, p w * g w))
   have hthird := integral_add ((hA.sub (hfp.mul_const (∫ w, g w))).sub
     (hfi.mul_const (∫ w, p w * g w))) ((hfi.mul_const C).mul_const (∫ w, g w))
-  simp only [Pi.sub_apply] at hfirst hsecond hthird
+  simp [Pi.sub_apply] at hfirst hsecond hthird
   rw [hthird, hsecond, hfirst, integral_mul_const, integral_mul_const, integral_mul_const,
     integral_mul_const, ← gffCov_eq_integral_testKernel]
   have hpg : (∫ w, p w * g w) = ∫ w, g w * p w := by
@@ -360,7 +358,7 @@ theorem integral_gffKernel_exterior_origin (R : ℝ) (hR : 1 < R) (z : ℂ) :
       -Real.log (max R ‖z‖) + Real.log (normPlus z) + Real.log R := by
   rw [integral_gffKernel_circleMeasure, integral_log_normPlus_circleMeasure_origin,
     neg_neg, Real.exp_log (zero_lt_one.trans hR), max_eq_right hR.le]
-  simp only [zero_sub, norm_neg]
+  simp [zero_sub, norm_neg]
 
 /-- The self-energy of the exterior origin pin is `log R`. -/
 theorem circleSelfEnergy_exterior_origin (R : ℝ) (hR : 1 < R) :
@@ -472,11 +470,11 @@ theorem integral_clipped_circleLog_full (d a : ℝ) {b : ℝ} (hb : 0 < b) :
     intro t
     exact (hb.trans_le (le_max_left _ _)).ne'
   have hreflect t : f (2*Real.pi-t) = f t := by
-    dsimp only [f]
+    dsimp [f]
     rw [norm_circleLogSection_reflection]
   have hi : (∫ t in Real.pi..2*Real.pi, f t) = ∫ t in 0..Real.pi, f t := by
     have h := intervalIntegral.integral_comp_sub_left f (a := 0) (b := Real.pi) (2*Real.pi)
-    simp only [show 2*Real.pi-Real.pi = Real.pi by ring, sub_zero, hreflect] at h
+    simp [show 2*Real.pi-Real.pi = Real.pi by ring, sub_zero, hreflect] at h
     exact h.symm
   change (∫ t in 0..2*Real.pi, f t) = 2*(∫ t in 0..Real.pi, f t)
   rw [← intervalIntegral.integral_add_adjacent_intervals (hf.intervalIntegrable 0 Real.pi)
@@ -518,7 +516,7 @@ theorem ae_abs_center_sub_radius_le_circleMeasure (x y : ℂ) (r : ℝ) :
   rwa [heq] at h
 
 /-- Every clipped one-circle logarithmic potential agrees with the literal formula
-`DOZZ.circleLogPotential`. -/
+`circleLogPotential`. -/
 theorem integral_logmax_circleMeasure_eq_closed (x y : ℂ) (r : ℝ) {b : ℝ} (hb : 0 < b) :
     (∫ w, Real.log (max b ‖w-y‖) ∂circleMeasure x r) =
       circleLogPotential ‖x-y‖₊ ⟨Real.exp (-r), Real.exp_pos _⟩ ⟨b, hb⟩ := by
@@ -548,18 +546,18 @@ theorem integral_logmax_circleMeasure_eq_closed (x y : ℂ) (r : ℝ) {b : ℝ} 
       filter_upwards [ae_abs_center_sub_radius_le_circleMeasure x y r] with w hw
       rw [max_eq_right (hnon.trans hw)]
     rw [integral_congr_ae heq, integral_log_norm_sub_circleMeasure, max_comm]
-    simp only [coe_nnnorm]
+    simp [coe_nnnorm]
   · rw [integral_logmax_circleMeasure_eq_semicircle x y r hb,
       clipped_circleLog_integral_intersection (lt_of_le_of_ne (norm_nonneg _) (Ne.symm hd))
         (Real.exp_pos _) hb (lt_of_not_ge hcontain) (lt_of_not_ge hnon)]
-    simp only [circleLogPotential, coe_nnnorm, hd, hcontain, hnon, ↓reduceIte,
+    simp [circleLogPotential, coe_nnnorm, hd, hcontain, hnon, ↓reduceIte,
       circleLogSeriesTerm]
 
 /-- The regular equator pin is the same clipped circle potential with unit clipping radius. -/
 theorem integral_log_normPlus_circleMeasure_eq_closed (x : ℂ) (r : ℝ) :
     (∫ w, Real.log (normPlus w) ∂circleMeasure x r) =
       circleLogPotential ‖x‖₊ ⟨Real.exp (-r), Real.exp_pos _⟩ ⟨1, by norm_num⟩ := by
-  simpa only [sub_zero, normPlus] using
+  simpa [sub_zero, normPlus] using
     integral_logmax_circleMeasure_eq_closed x 0 r zero_lt_one
 
 /-- The exact all-center circle-average covariance, including intersecting and tangent circles. -/

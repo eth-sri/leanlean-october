@@ -2,12 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Reflected.SourcePastOuterMass
-public import DOZZ.FourPoint.Reflected.LeadingRadialMoment
+import DOZZ.FourPoint.Reflected.SourcePastOuterMass
+import DOZZ.FourPoint.Reflected.LeadingRadialMoment
 import Mathlib.Tactic
 /-! The actual retained outer mass and radial likelihood are independent of the restarted future. -/
-@[expose] public section
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -56,7 +54,7 @@ theorem reflected_source_outer_past_indep
       rw [min_self]
     change Real.exp (γ*(stopBrownianPath (radialPositiveHalf (A ω)) T T)-γ*ν*T-γ^2/2*(-Real.log ‖z‖)) = _
     rw [heT]
-    dsimp only [reflected_radial_scale]
+    dsimp [reflected_radial_scale]
     rw [hev,hcoord]
   exact hiΦ.congr (ae_of_all P fun _ => rfl) he
 

@@ -2,12 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Dual.SourceRadialMoments
-public import DOZZ.FourPoint.Reflected.ParetoProductIncrement
+import DOZZ.FourPoint.Dual.SourceRadialMoments
+import DOZZ.FourPoint.Reflected.ParetoProductIncrement
 import Mathlib.Tactic
 /-! The actual source parameters supply both moment inputs of the signed Pareto estimate. -/
-@[expose] public section
 open MeasureTheory Set Filter
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -34,13 +32,13 @@ theorem dual_source_pareto_weights_integrable
   let a := 2*ν/γ
   have ha : 0 < a := div_pos (mul_pos (by norm_num) hν) hγ
   have hr : ‖z‖^(1-ξ) ≤ 1 := by
-    simpa only [Real.one_rpow] using Real.rpow_le_rpow (norm_nonneg z) hz (sub_nonneg.mpr hξ1.le)
+    simpa [Real.one_rpow] using Real.rpow_le_rpow (norm_nonneg z) hz (sub_nonneg.mpr hξ1.le)
   have hpos : ∀ᵐ ω ∂P, 0 < A ω :=
     (dual_source_outerMass_positive_finite_ae P X hX γ hγ hγ₂ M hM
       α₁ α₂ α₃ ξ hα₁ hα₂ hα₃ z hz0 hz1 hz hr).mono
         fun ω hω => ENNReal.toReal_pos hω.1.ne' hω.2.ne
   have hβ (ω : Ω) : 0 ≤ b ω := by
-    dsimp only [b,dual_radial_scale]
+    dsimp [b,dual_radial_scale]
     exact (Real.exp_pos _).le
   have h0 := (dual_radial_scale_real_expectation P X hX γ hγ hγ₂ M hM Xc hc
     ν h a α₁ α₂ α₃ ξ (p+a) hh hξ hξ1 (add_pos hp ha).le z hz0 hz).1
@@ -48,8 +46,8 @@ theorem dual_source_pareto_weights_integrable
     ν h 1 α₁ α₂ α₃ ξ (p+1) hh hξ hξ1 (by linarith only [hp]) z hz0 hz).1
   have he0 : -(p+a) = -p-a := by ring
   have he1 : -(p+1) = -p-1 := by ring
-  simp only [he0] at h0
-  simp only [he1,Real.rpow_one] at h1
+  simp [he0] at h0
+  simp [he1,Real.rpow_one] at h1
   refine ⟨hpos, h0.congr ?_, h1.congr ?_⟩
   · filter_upwards [hpos] with ω hω
     exact (reflected_pareto_parameter_weights p a (A ω) (b ω) hω (hβ ω)).1.symm

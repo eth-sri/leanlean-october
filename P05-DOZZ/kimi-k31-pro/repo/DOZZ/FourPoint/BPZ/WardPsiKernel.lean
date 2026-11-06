@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.BPZ.WardDeroot
+import DOZZ.FourPoint.BPZ.WardDeroot
 
 /-! # Kernel estimates for the rooted mixed mass
 
@@ -14,7 +13,6 @@ and log-Lipschitz in `x` uniformly in `y`. The limit-region kernel
 kept at distance `δ` from the limit region it is differentiable and Lipschitz in `x` with a
 constant independent of `y`. -/
 
-@[expose] public section
 
 open MeasureTheory Filter Topology
 open scoped ENNReal NNReal
@@ -110,7 +108,7 @@ theorem abs_bpzCutRootKernel_sub_le (γ r : ℝ) (x x' y : ℂ) :
 
 theorem bpzTruncLog_eq_of_le (r : ℝ) {w : ℂ} (hw : Real.exp (-r) ≤ ‖w‖) :
     bpzTruncLog r w = -Real.log ‖w‖ := by
-  simp only [bpzTruncLog, max_eq_right hw]
+  simp [bpzTruncLog, max_eq_right hw]
 
 /-- Away from the truncation radius the limit-region kernel is an explicit power. -/
 theorem bpzLimRootKernel_eq (γ r : ℝ) {x y : ℂ} (hxy : Real.exp (-r) ≤ ‖x - y‖) :
@@ -179,7 +177,7 @@ theorem abs_bpzLimRootKernel_sub_le (γ r : ℝ) {δ R : ℝ} (hδ : 0 < δ) (h�
       have := abs_norm_sub_norm_le (x - y) (x' - y)
       rwa [show x - y - (x' - y) = x - x' by ring] at this
     have : a - b = γ ^ 2 * (Real.log ‖x' - y‖ - Real.log ‖x - y‖) := by
-      simp only [a, b, bpzTruncLog_eq_of_le r (le_trans hδr hxy),
+      simp [a, b, bpzTruncLog_eq_of_le r (le_trans hδr hxy),
         bpzTruncLog_eq_of_le r (le_trans hδr hxy')]
       ring
     rw [this, abs_mul, abs_of_nonneg (sq_nonneg γ), abs_sub_comm]

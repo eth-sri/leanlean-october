@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.Crossing.ConnectionDet
-public import DOZZ.FourPoint.Crossing.ConnectionRatio
+import DOZZ.FourPoint.Crossing.ConnectionDet
+import DOZZ.FourPoint.Crossing.ConnectionRatio
 import Mathlib.Tactic
 
 /-! # Crossing from the two diagonal coefficients
@@ -15,7 +14,6 @@ hypotheses describe two diagonal quadratic forms related by the literal connecti
 matrix; the conclusion identifies their zero-channel and one-channel coefficients.
 -/
 
-public section
 namespace DOZZ.Proofs
 
 /-- The zero-channel first coefficient is the exact l-ratio times the
@@ -75,7 +73,5 @@ theorem crossing_diagonal_coefficient_extraction (a b c d₀ d₁ E : ℝ)
   rw [← hE, hdet] at hex
   have hratio := crossing_connection_first_ratio a b c ha ha1 hb hb1 hc hc1 hδ hδ1
   change -w / (v * ((c - 1) / (c - a - b))) = _ at hratio
-  rw [hratio] at hex
-  exact hex
-
+  rwa [hratio] at hex
 end DOZZ.Proofs

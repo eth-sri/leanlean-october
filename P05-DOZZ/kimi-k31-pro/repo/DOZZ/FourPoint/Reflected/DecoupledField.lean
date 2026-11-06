@@ -2,13 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.SharpMoments.GluedFieldGaussian
+import DOZZ.GMC.SharpMoments.GluedFieldGaussian
 
 /-! # The actual independent-copy field on the two fusion regions -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Set
 open scoped Classical ENNReal NNReal
@@ -42,9 +40,7 @@ theorem reflected_decoupled_field_gaussian {Ω S : Type*} [MeasurableSpace Ω]
       funext ω i
       unfold reflected_decoupled_field
       rw [gluedField_indicator_eq_mul A, gluedField_indicator_eq_mul Aᶜ]
-    rw [he]
-    exact h
-
+    rwa [he]
 /-- Within either region the covariance is unchanged; across the regions it is zero. -/
 theorem reflected_decoupled_field_covariance {Ω S : Type*} [MeasurableSpace Ω]
     [MeasurableSpace S] (P : Measure Ω) (Φ : Ω → S → ℝ)
@@ -67,9 +63,9 @@ theorem reflected_decoupled_field_covariance {Ω S : Type*} [MeasurableSpace Ω]
   rw [h]
   unfold gaussianCovariance
   by_cases hx : x ∈ A <;> by_cases hy : y ∈ A <;>
-    simp only [hx, hy, mem_compl_iff, Set.indicator_of_mem, Set.indicator_of_notMem,
-      iff_self, iff_false, false_iff, not_true_eq_false, not_false_eq_true,
-      ite_true, ite_false, zero_mul, mul_zero, integral_zero, add_zero, zero_add]
+    simp [hx, hy, mem_compl_iff, Set.indicator_of_mem, Set.indicator_of_notMem,
+      iff_self, iff_false, not_true_eq_false, not_false_eq_true,
+      zero_mul, mul_zero, integral_zero, add_zero, zero_add]
 
 /-- The independent-copy Wick mass is the sum of the two independent regional masses. -/
 theorem reflected_decoupled_field_mass {Ω S : Type*} [MeasurableSpace Ω]
@@ -82,18 +78,18 @@ theorem reflected_decoupled_field_mass {Ω S : Type*} [MeasurableSpace Ω]
   have hvar (x : S) : (∫ q, (reflected_decoupled_field Φ A q x) ^ 2 ∂P.prod P) =
       ∫ q, (Φ q x) ^ 2 ∂P := by
     have hc := reflected_decoupled_field_covariance P Φ hΦ A x x
-    simpa only [iff_self, ite_true, gaussianCovariance, pow_two] using hc
+    simpa [iff_self, ite_true, gaussianCovariance, pow_two] using hc
   unfold fieldChaosMass
   refine (lintegral_add_compl _ hA).symm.trans ?_
   congr 1
   · apply setLIntegral_congr_fun hA
     intro x hx
-    dsimp only
+    dsimp
     rw [hvar, reflected_decoupled_field, Set.indicator_of_mem hx,
       Set.indicator_of_notMem (show x ∉ Aᶜ from fun hn => hn hx), add_zero]
   · apply setLIntegral_congr_fun hA.compl
     intro x hx
-    dsimp only
+    dsimp
     rw [hvar, reflected_decoupled_field, Set.indicator_of_notMem (show x ∉ A from hx),
       Set.indicator_of_mem hx, zero_add]
 

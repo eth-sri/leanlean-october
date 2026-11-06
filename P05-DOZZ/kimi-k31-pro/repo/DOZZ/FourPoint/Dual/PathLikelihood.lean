@@ -2,11 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Dual.PastObservable
-public import DOZZ.FourPoint.Dual.LeadingRadialMoment
+import DOZZ.FourPoint.Dual.PastObservable
+import DOZZ.FourPoint.Dual.LeadingRadialMoment
 /-! Identifying the actual likelihood with its radial-path and stopped-past observables. -/
-@[expose] public section
 open MeasureTheory
 open scoped NNReal
 namespace DOZZ.Proofs

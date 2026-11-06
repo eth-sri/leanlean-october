@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.GFFStructure.DirichletDistribution
-public import Mathlib.Topology.ContinuousMap.SecondCountableSpace
-public import Mathlib.LinearAlgebra.Multilinear.FiniteDimensional
+import DOZZ.GFFStructure.DirichletDistribution
+import Mathlib.Topology.ContinuousMap.SecondCountableSpace
+import Mathlib.LinearAlgebra.Multilinear.FiniteDimensional
 /-!
 # Common events for harmonic and finite Markov identities
 
@@ -16,7 +15,6 @@ distribution gives simultaneous decomposition and restoration, measurable
 centered L² evaluations, and harmonic identification on separated disks.
 -/
 
-@[expose] public section
 open Filter MeasureTheory ProbabilityTheory Set Metric TopologicalSpace
 open scoped Topology ENNReal NNReal InnerProductSpace lp Distributions BoundedContinuousFunction
 namespace DOZZ.Proofs
@@ -112,7 +110,7 @@ theorem separableSpace_interiorDiskTest (c : ℂ) (ρ : ℝ) (hρ : 0 < ρ) :
   let e j : 𝓓_{K j}(ℂ,ℝ) →L[ℝ] InteriorDiskTest c ρ := TestFunction.ofSupportedInCLM ℝ (hK j)
   have hsep j : IsSeparable (Set.range (e j)) := by
     let _ : SecondCountableTopology 𝓓_{K j}(ℂ,ℝ) := secondCountable_compactTestSpace (K j)
-    simpa only [Set.image_univ] using (IsSeparable.of_separableSpace Set.univ).image (e j).continuous
+    simpa [Set.image_univ] using (IsSeparable.of_separableSpace Set.univ).image (e j).continuous
   have huniv : (⋃ j, Set.range (e j)) = Set.univ := by
     apply eq_univ_of_forall
     intro f
@@ -133,7 +131,7 @@ theorem interiorDiskTestToGlobalCLM_apply (c : ℂ) (ρ : ℝ) (f : InteriorDisk
     interiorDiskTestToGlobalCLM c ρ f z = f z := by
   change ((TestFunction.monoCLM ℝ f : TestFn) : ℂ → ℝ) z = f z
   rw [TestFunction.monoCLM_apply]
-  simp only [le_rfl,le_top,and_self,ite_true]
+  simp [le_rfl,le_top,and_self,ite_true]
 
 /-- The global inclusion retains strict interior support. -/
 theorem interiorDiskTestToGlobalCLM_tsupport (c : ℂ) (ρ : ℝ) (f : InteriorDiskTest c ρ) :
@@ -159,7 +157,7 @@ noncomputable def testAreaIntegralCLM : TestFn →L[ℝ] ℝ :=
 theorem testAreaIntegralCLM_apply (f : TestFn) : testAreaIntegralCLM f = ∫ z : ℂ, f z := by
   rw [testAreaIntegralCLM,TestFunction.integralAgainstBilinCLM_eq_integral
     (continuous_const.continuousOn.locallyIntegrableOn MeasurableSet.univ)]
-  simp only [ContinuousLinearMap.lsmul_apply,smul_eq_mul,mul_one]
+  simp [ContinuousLinearMap.lsmul_apply,smul_eq_mul,mul_one]
 
 /-- View a distribution as its continuous linear test functional. -/
 noncomputable def distributionToTestCLM (D : Distr) : TestFn →L[ℝ] ℝ :=
@@ -179,7 +177,7 @@ noncomputable def exteriorPinnedDistribution {Ω : Type*}
   exteriorPinnedDistributionCLM X Xc R hR
 
 /-- Pinned distribution evaluation agrees with the literal pinned evaluation
-`DOZZ.exteriorPinnedEvaluation`. -/
+`exteriorPinnedEvaluation`. -/
 theorem exteriorPinnedDistribution_apply {Ω : Type*}
     (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ) (R : ℝ) (hR : 0 < R) (ω : Ω) (f : TestFn) :
     exteriorPinnedDistribution X Xc R hR ω f = exteriorPinnedEvaluation X Xc R hR ω f := by
@@ -290,7 +288,7 @@ theorem ae_dirichletDistribution_interior_harmonic_agreement {Ω : Type*} [Measu
       filter_upwards [dirichletDistribution_interior_apply_ae_eq P X Xc hX hc c R ρ ε hR hρ hε hpin V hV hmean hU hcov hlim hm f hf] with ω hω
       rw [exteriorPinnedDistribution_apply,hω]
       ring)
-  simpa only [exteriorPinnedDistribution_apply] using h
+  simpa [exteriorPinnedDistribution_apply] using h
 
 
 /-- The finite global complementary field as a continuous samplewise test functional. -/
@@ -367,7 +365,7 @@ theorem finiteMarkovComplement_apply_integral_zero {Ω : Type*} [MeasurableSpace
     ((memLp_finsetSum Finset.univ (fun i _ => hD i f)).integrable (by norm_num)),
     exteriorPinnedEvaluation_integral_zero P X Xc hX hc R hR,
     integral_finsetSum Finset.univ (fun i _ => (hD i f).integrable (by norm_num))]
-  simp only [hmean,Finset.sum_const_zero,sub_zero]
+  simp [hmean,Finset.sum_const_zero,sub_zero]
 
 /-- Local harmonic agreements and exterior supports assemble into one finite-family event. -/
 theorem ae_finiteMarkovComplement_harmonic_agreement {Ω : Type*} [MeasurableSpace Ω] {n : ℕ}
@@ -395,10 +393,10 @@ theorem interior_disk_subset_exterior_closed_disk (c d : ℂ) (ρ δ : ℝ) (hδ
   have hc := mem_ball.mp hz
   have hd := mem_closedBall.mp hzd
   have ht : dist c d ≤ dist z c+dist z d := by
-    simpa only [dist_comm c z] using dist_triangle c z d
+    simpa [dist_comm c z] using dist_triangle c z d
   linarith
 
-/-- The finite-center separation hypothesis of `DOZZ.exists_exteriorPinned_markov_uniform` implies
+/-- The finite-center separation hypothesis of `exists_exteriorPinned_markov_uniform` implies
 the support condition for harmonic assembly. -/
 theorem separated_interior_test_support_exterior {n : ℕ} (c : Fin n → ℂ) (ρ δ : ℝ)
     (hδ : 0 < δ) (hsep : ∀ i j, i ≠ j → 2*ρ+δ ≤ dist (c i) (c j))

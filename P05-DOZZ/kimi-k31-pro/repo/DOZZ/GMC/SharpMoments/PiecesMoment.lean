@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.SharpMoments.SeibergMomentBound
+import DOZZ.GMC.SharpMoments.SeibergMomentBound
 
 /-! # Moments of a quantity dominated by root, bulk and exterior pieces
 
@@ -12,7 +11,6 @@ A positive moment of a random variable bounded almost surely by a combination of
 root pieces, a bulk piece and an exterior piece is bounded by the same combination of the moments
 of the pieces, with factors `2 ^ t` and `N ^ t`. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped ENNReal NNReal
@@ -46,7 +44,7 @@ theorem lintegral_rpow_le_of_le_pieces
           gcongr
           rw [← hcard]
           exact ennreal_finset_sum_rpow_le_card_rpow_sum_of_pos _ _ ht
-      _ = _ := by simp only [ENNReal.mul_rpow_of_nonneg _ _ ht.le]
+      _ = _ := by simp [ENNReal.mul_rpow_of_nonneg _ _ ht.le]
   have hXk : ∀ k ∈ (Finset.univ : Finset (Fin N)),
       AEMeasurable (fun ω => a k ^ t * Xr k ω ^ t) P := fun k _ =>
     aemeasurable_const.mul ((hXr k).pow_const t)
@@ -67,7 +65,7 @@ theorem lintegral_rpow_le_of_le_pieces
     lintegral_const_mul'' _ (hB.pow_const t), lintegral_const_mul'' _ (hV.pow_const t)]
   have hk : ∀ k, ∫⁻ ω, a k ^ t * Xr k ω ^ t ∂P = a k ^ t * ∫⁻ ω, Xr k ω ^ t ∂P := fun k =>
     lintegral_const_mul'' _ ((hXr k).pow_const t)
-  simp only [hk]
+  simp [hk]
 
 /-- A power with exponent in `[0, tm]` is at most the `tm`th power of the larger of the base and
 one. -/

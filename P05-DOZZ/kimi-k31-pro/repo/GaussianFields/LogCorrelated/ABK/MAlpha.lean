@@ -3,9 +3,8 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Scott Armstrong, Amélie Loher
 -/
-module
 
-public import GaussianFields.LogCorrelated.ABK.Power
+import GaussianFields.LogCorrelated.ABK.Power
 
 /-!
 # GaussianFields.LogCorrelated/ABK/MAlpha
@@ -13,7 +12,6 @@ public import GaussianFields.LogCorrelated.ABK.Power
 Port of the corresponding GaussianFields source module.
 -/
 
-public section
 
 open Filter MeasureTheory
 open scoped ENNReal Topology
@@ -51,9 +49,6 @@ theorem abs_alpha_mul_integral_interval_rpow_mul_le {α a b C : ℝ}
     (intervalIntegral.intervalIntegrable_rpow' (by linarith : -1 < α - 1)).const_mul C
   have hnorm :=
     intervalIntegral.norm_integral_le_of_norm_le (μ := volume) hab hbound_ae hg_int
-  have hnonneg_mass : 0 ≤ b ^ α - a ^ α := by
-    have hmono := Real.rpow_le_rpow ha hab hα.le
-    exact sub_nonneg.mpr hmono
   have hmass :
       ∫ t in a..b, C * t ^ (α - 1) ∂(volume : Measure ℝ) =
         C * ((b ^ α - a ^ α) / α) := by
@@ -274,7 +269,7 @@ theorem continuous_abkCutoffSelfConvolution_radialProfile {d : Nat}
     refine continuous_pi ?_
     intro i
     by_cases hi : (i : Nat) = 0
-    · simp only [abkRadialPoint, ite_eq_left hi]
+    · simp [abkRadialPoint, ite_eq_left hi]
       continuity
     · simpa [abkRadialPoint, hi] using continuous_const)
 
@@ -389,4 +384,3 @@ theorem tendsto_rpow_neg_sub_one_div_nhdsGT_zero {ρ : ℝ} (hρ : 0 < ρ) :
 
 end GaussianFields
 
-end

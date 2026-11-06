@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Brownian.Lateral.WickReinsertion
-public import DOZZ.GMC.CompatibleAdmissibleGMCUnique
+import DOZZ.Brownian.Lateral.WickReinsertion
+import DOZZ.GMC.CompatibleAdmissibleGMCUnique
 
 /-!
 # Uniform compact changes of a Wick test
@@ -15,14 +14,13 @@ scale. Consequently uniform changes of a test on a common compact support can be
 through the chaos limit. This is the finite radial-factor step in local reinsertion.
 -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal Distributions InnerProductSpace RealInnerProductSpace
 
 namespace DOZZ.Proofs
 
-open DOZZ.Assembly
+open Assembly
 
 /-- The cutoff expectation controls a uniform change of compact continuous tests, at
 every allowed cutoff, with exactly the reference mass of their common support. -/
@@ -43,9 +41,9 @@ theorem regularizedLogChaosTestMass_L1_test_difference_le
   have hg0 : ∀ x ∉ K, g x = 0 := fun x hx =>
     image_eq_zero_of_notMem_tsupport (fun h => hx (hgK h))
   have hfI := admissibleCutoff_integrand_integrable_ae P U dens ε₀ Y hY K hK hKU γ r hr
-    ‖f‖ f f.continuous.measurable (fun x => by simpa only [Real.norm_eq_abs] using f.norm_coe_le_norm x) hf0
+    ‖f‖ f f.continuous.measurable (fun x => by simpa [Real.norm_eq_abs] using f.norm_coe_le_norm x) hf0
   have hgI := admissibleCutoff_integrand_integrable_ae P U dens ε₀ Y hY K hK hKU γ r hr
-    ‖g‖ g g.continuous.measurable (fun x => by simpa only [Real.norm_eq_abs] using g.norm_coe_le_norm x) hg0
+    ‖g‖ g g.continuous.measurable (fun x => by simpa [Real.norm_eq_abs] using g.norm_coe_le_norm x) hg0
   have hb : ∀ᵐ ω ∂P, ENNReal.ofReal |regularizedLogChaosTestMass P U dens Y γ r ω f -
       regularizedLogChaosTestMass P U dens Y γ r ω g| ≤
         chartMass P U dens K Y γ r (fun x => |f x - g x|) ω := by
@@ -67,7 +65,7 @@ theorem regularizedLogChaosTestMass_L1_test_difference_le
     simp only [Real.enorm_eq_ofReal_abs, abs_mul, abs_of_pos (Real.exp_pos _)] at he
     rw [lintegral_cutoff_integrand_eq_chartMass P U dens Y K γ r _ (fun x => abs_nonneg _)
       (fun x hx => by rw [hf0 x hx, hg0 x hx, sub_self, abs_zero]) ω] at he
-    exact he
+    assumption
   exact (lintegral_mono_ae hb).trans
     (lintegral_chartMass_le P U dens ε₀ Y hY K γ r hr δ
       (fun x => |f x - g x|)
@@ -139,14 +137,14 @@ theorem regularizedLogChaosTestMass_varying_test_tendstoInMeasure
     apply tendstoInMeasure_of_tendsto_lintegral_ofReal_abs P _ _
       (fun r => ((hmG r).sub (hmF r)).aestronglyMeasurable) aestronglyMeasurable_const
     change Tendsto (fun r => ∫⁻ ω, ENNReal.ofReal |G r ω - F r ω - 0| ∂P) atTop (𝓝 0)
-    simpa only [sub_zero, abs_sub_comm] using hl1
+    simpa [sub_zero, abs_sub_comm] using hl1
   have hg : TendstoInMeasure P G atTop H :=
     hN.2.2.2 g (hK.of_isClosed_subset (isClosed_tsupport _) hgK) (hgK.trans hKU)
   have ht := tendstoInMeasure_sub P G (fun r ω => G r ω - F r ω) H (fun _ => 0) hg hz
   have heq : (fun r ω => G r ω - (G r ω - F r ω)) = F := by
     funext r ω
     ring
-  simpa only [heq, sub_zero] using ht
+  simpa [heq, sub_zero] using ht
 
 /-- Exponentiation preserves uniform convergence on a compact set when the limiting
 exponent is continuous. Compactness keeps both exponents in one bounded interval. -/
@@ -172,8 +170,8 @@ theorem uniform_exp_approx_on_compact
       _ = B := by dsimp [B]; ring
   have hFmem : F r x ∈ Icc (-B) B := abs_le.mp hFbound
   have hGmem : G x ∈ Icc (-B) B := abs_le.mp ((hGB x hx).trans (by dsimp [B]; linarith))
-  have h := hclose (F r x) hFmem (G x) hGmem (by simpa only [Real.dist_eq] using hdiff)
-  simpa only [Real.dist_eq] using h
+  have h := hclose (F r x) hFmem (G x) hGmem (by simpa [Real.dist_eq] using hdiff)
+  simpa [Real.dist_eq] using h
 
 /-- For every fixed continuous radial path the finite radial factor converges uniformly
 on any compact local chart, with its literal Gaussian variance and reference correction. -/
@@ -211,16 +209,16 @@ theorem originRadialCutoffReinsertionWeight_uniform_approx
     have hr₂ : Real.exp (-r) ≤ min ε₂ ρ := hr.le.trans (min_le_right _ _)
     have hb₁ : |(∫ z, A (clampedLogRadius ρ z) ∂circleMeasure x r) -
         A (clampedLogRadius ρ x)| < δ := by
-      simpa only [Real.norm_eq_abs] using hrad r hr₁ x hx
+      simpa [Real.norm_eq_abs] using hrad r hr₁ x hx
     have hb₂ := hvar (Real.exp (-r)) (Real.exp_pos _) hr₂ x hx
-    simp only [one_div, Real.log_inv, Real.log_exp, neg_neg] at hb₂
+    simp [one_div, Real.log_inv, Real.log_exp, neg_neg] at hb₂
     have hxρ : ρ ≤ ‖x‖ := by
       have hxU : 2 * ρ < ‖x‖ := hKU hx
       linarith only [hxU, hρ]
     have heq : F r x - G x =
         γ * ((∫ z, A (clampedLogRadius ρ z) ∂circleMeasure x r) - A (clampedLogRadius ρ x)) -
         γ ^ 2 / 2 * (gaussianVariance P (originCircleRadialL2 hc ρ x r) - |Real.log ‖x‖|) := by
-      dsimp only [F, G]
+      dsimp [F, G]
       rw [clampedLogRadius_eq ρ x hxρ, abs_neg, gamma_mul_Q_eq γ hγ]
       ring
     rw [heq]
@@ -329,7 +327,7 @@ theorem originRadialCutoffWeightedTest_uniform_approx
   by_cases hx : x ∈ tsupport (f : ℂ → ℝ)
   · rw [← mul_sub, abs_mul]
     calc _ ≤ ‖f‖ * (η / (‖f‖ + 1)) := mul_le_mul
-           (by simpa only [Real.norm_eq_abs] using f.norm_coe_le_norm x) (hr x hx).le
+           (by simpa [Real.norm_eq_abs] using f.norm_coe_le_norm x) (hr x hx).le
            (abs_nonneg _) (norm_nonneg _)
       _ ≤ (‖f‖ + 1) * (η / (‖f‖ + 1)) :=
         mul_le_mul_of_nonneg_right (le_add_of_nonneg_right zero_le_one) hδ.le

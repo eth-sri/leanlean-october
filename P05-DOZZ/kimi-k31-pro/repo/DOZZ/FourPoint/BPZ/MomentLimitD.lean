@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.BPZ.MomentLimitC
+import DOZZ.FourPoint.BPZ.MomentLimitC
 
 /-! # Limits of the moments of the softened four-point mass
 
@@ -15,7 +14,6 @@ are small in expectation uniformly along the sequence (rooted bound), and the fa
 by dominated convergence. The same estimates give bounds on the expectations of the moment fields
 that are uniform near `z₀` and in the softening. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped ENNReal NNReal

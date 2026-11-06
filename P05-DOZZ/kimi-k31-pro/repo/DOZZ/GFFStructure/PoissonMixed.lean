@@ -2,8 +2,7 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.GFFStructure.PoissonHarmonic
+import DOZZ.GFFStructure.PoissonHarmonic
 /-!
 # Poisson/test covariance and Green cancellation
 
@@ -15,7 +14,6 @@ diagonal convention of `DOZZ.diskGreenKernel` is handled by the area-null single
 Gaussianity of the harmonic family and all pinned tests is retained on the given realization.
 -/
 
-@[expose] public section
 open Filter MeasureTheory ProbabilityTheory Set Metric
 open scoped Topology ENNReal NNReal
 namespace DOZZ.Proofs
@@ -36,7 +34,7 @@ theorem tendsto_integral_canonicalPoissonCollarTest_mul (c z : ℂ) (ρ ε : ℝ
       fun w => canonicalPoissonCollarTest c z ρ ε hρ hε hz k w*h w := by
     funext w
     by_cases hw : canonicalPoissonCollarTest c z ρ ε hρ hε hz k w = 0
-    · simp only [hw, zero_mul]
+    · simp [hw, zero_mul]
     · have hs : w ∈ tsupport (canonicalPoissonCollarTest c z ρ ε hρ hε hz k) := subset_closure hw
       have ha := tsupport_poissonCollarValue_annulus c z ρ (ε/((k : ℝ)+1)) hρ hz
         (poissonCollarDensity ε hε k) (tsupport_poissonCollarDensity_subset ε hε k) hs
@@ -79,7 +77,7 @@ theorem integrable_exteriorPinned_testKernel_section (R : ℝ) (hR : 0 < R) (f :
     (hfi.const_mul (Real.log R))
   convert hi using 1
   funext w
-  simp only [Pi.sub_apply, Pi.add_apply, exteriorPinnedKernel_eq_gffKernel_add, p]
+  simp [Pi.sub_apply, Pi.add_apply, exteriorPinnedKernel_eq_gffKernel_add, p]
   ring
 
 /-- Continuous test potentials for the literal exterior-pinned kernel. -/
@@ -94,14 +92,14 @@ theorem continuous_exteriorPinned_testKernelPotential (R : ℝ) (hR : 0 < R) (f 
     have he' w : exteriorPinnedKernel R hR z w*f w =
       (gffKernel z w*f w+p z*f w)+p w*f w-Real.log R*f w := by
       rw [exteriorPinnedKernel_eq_gffKernel_add]
-      dsimp only [p]
+      dsimp [p]
       ring
     simp_rw [he']
     have h₁ := integral_sub (((integrable_testKernel_section f z).add (hfi.const_mul (p z))).add hp)
       (hfi.const_mul (Real.log R))
     have h₂ := integral_add ((integrable_testKernel_section f z).add (hfi.const_mul (p z))) hp
     have h₃ := integral_add (integrable_testKernel_section f z) (hfi.const_mul (p z))
-    simp only [Pi.add_apply] at h₁ h₂ h₃
+    simp [Pi.add_apply] at h₁ h₂ h₃
     rw [h₁,h₂,h₃,integral_const_mul,integral_const_mul]
   simp_rw [he]
   exact (((continuous_testKernelPotential f).add ((continuous_exteriorPinDifference R hR).mul
@@ -126,13 +124,13 @@ theorem exteriorPinned_poisson_rawLimit_test_covariance {Ω : Type*} [Measurable
   have hconst : Tendsto (fun k : ℕ => eLpNorm
       (fun ω => exteriorPinnedEvaluation X Xc R (by linarith) ω f-
         exteriorPinnedEvaluation X Xc R (by linarith) ω f) 2 P) atTop (𝓝 0) := by
-    simpa only [sub_self, ← Pi.zero_def, eLpNorm_zero] using (tendsto_const_nhds (x := (0 : ℝ≥0∞)))
+    simpa [sub_self, ← Pi.zero_def, eLpNorm_zero] using (tendsto_const_nhds (x := (0 : ℝ≥0∞)))
   have hl := tendsto_covariance_of_eLpNorm_sub (fun k => hY (p k)) (fun _ => hY f) hH (hY f) hlim hconst
   have hw := tendsto_integral_canonicalPoissonCollarTest_mul c z ρ ε hρ hε hz
     (fun v => ∫ w, exteriorPinnedKernel R (zero_lt_one.trans hR) v w*f w)
     (continuous_exteriorPinned_testKernelPotential R (zero_lt_one.trans hR) f)
   apply tendsto_nhds_unique hl
-  simpa only [(exteriorPinnedEvaluation_covariance P X Xc hX hc R hR (p _) f).2, p] using hw
+  simpa [(exteriorPinnedEvaluation_covariance P X Xc hX hc R hR (p _) f).2, p] using hw
 
 /-- The full physical Poisson kernel is Borel measurable. -/
 theorem measurable_poissonKernel (c z : ℂ) : Measurable (poissonKernel c z) := by
@@ -150,7 +148,7 @@ theorem integrable_poissonKernel_mul_circle (c z : ℂ) (ρ : ℝ) (hρ : 0 < ρ
   apply hf.bdd_mul (measurable_poissonKernel c z).aestronglyMeasurable
   filter_upwards [ae_mem_sphere_circleMeasure c (-Real.log ρ)] with v hv
   apply hM
-  simpa only [neg_neg, Real.exp_log hρ] using hv
+  simpa [neg_neg, Real.exp_log hρ] using hv
 
 /-- Boundary logarithms at exterior poles are reproduced by the Poisson kernel. -/
 theorem circleAverage_poisson_exterior_log (c z w : ℂ) (ρ : ℝ) (_hρ : 0 < ρ)
@@ -170,7 +168,7 @@ theorem exteriorPinnedKernel_of_first_inside (R : ℝ) (hR : 0 < R) (v w : ℂ) 
   ring
 
 /-- The Poisson average of the pinned kernel removes exactly the disk Green kernel. The diagonal is
-omitted here because `DOZZ.diskGreenKernel` is zero on it. -/
+omitted here because `diskGreenKernel` is zero on it. -/
 theorem integral_poisson_exteriorPinnedKernel_eq_sub_Green (c z w : ℂ) (R ρ : ℝ)
     (hR : 0 < R) (hρ : 0 < ρ) (hpin : ‖c‖+ρ ≤ R) (hz : z ∈ ball c ρ) (hzw : z ≠ w) :
     (∫ v, poissonKernel c z v*exteriorPinnedKernel R hR v w ∂circleMeasure c (-Real.log ρ)) =
@@ -179,7 +177,7 @@ theorem integral_poisson_exteriorPinnedKernel_eq_sub_Green (c z w : ℂ) (R ρ :
   let _ := circleMeasure_isProbability c (-Real.log ρ)
   have hzi : ‖z‖ ≤ R := by
     calc
-      _ ≤ ‖z-c‖+‖c‖ := by simpa only [sub_add_cancel] using norm_add_le (z-c) c
+      _ ≤ ‖z-c‖+‖c‖ := by simpa [sub_add_cancel] using norm_add_le (z-c) c
       _ ≤ ρ+‖c‖ := add_le_add_left (mem_ball_iff_norm.mp hz).le _
       _ ≤ R := by linarith
   have hl : Integrable (fun v => Real.log ‖v-w‖) μ :=
@@ -190,10 +188,10 @@ theorem integral_poisson_exteriorPinnedKernel_eq_sub_Green (c z w : ℂ) (R ρ :
   have he : (fun v => poissonKernel c z v*exteriorPinnedKernel R hR v w) =ᵐ[μ]
       (fun v => poissonKernel c z v*Real.log (max ‖w‖ R)-poissonKernel c z v*Real.log ‖v-w‖) := by
     filter_upwards [ae_norm_sub_center_circleMeasure c (-Real.log ρ)] with v hv
-    have hv' : ‖v-c‖ = ρ := by simpa only [neg_neg, Real.exp_log hρ] using hv
+    have hv' : ‖v-c‖ = ρ := by simpa [neg_neg, Real.exp_log hρ] using hv
     have hvR : ‖v‖ ≤ R := by
       calc
-        _ ≤ ‖v-c‖+‖c‖ := by simpa only [sub_add_cancel] using norm_add_le (v-c) c
+        _ ≤ ‖v-c‖+‖c‖ := by simpa [sub_add_cancel] using norm_add_le (v-c) c
         _ ≤ R := by rw [hv']; linarith
     rw [exteriorPinnedKernel_of_first_inside R hR v w hvR]
     ring
@@ -202,34 +200,34 @@ theorem integral_poisson_exteriorPinnedKernel_eq_sub_Green (c z w : ℂ) (R ρ :
   rw [hsub, integral_mul_const]
   have hmass : (∫ v, poissonKernel c z v ∂μ) = 1 := by
     rw [integral_circleMeasure_eq_circleAverage c (-Real.log ρ) _ (measurable_poissonKernel c z)]
-    simp only [neg_neg, Real.exp_log hρ]
+    simp [neg_neg, Real.exp_log hρ]
     exact circleAverage_poissonKernel_eq_one c z ρ hz
   rw [hmass, one_mul, exteriorPinnedKernel_of_first_inside R hR z w hzi]
   have hlog : (∫ v, poissonKernel c z v*Real.log ‖v-w‖ ∂μ) =
       Real.circleAverage (poissonKernel c z*(fun v : ℂ => Real.log ‖v-w‖)) c ρ := by
     rw [integral_circleMeasure_eq_circleAverage c (-Real.log ρ) (fun v : ℂ => poissonKernel c z v*Real.log ‖v-w‖)
       ((measurable_poissonKernel c z).mul (show Measurable (fun v : ℂ => Real.log ‖v-w‖) by fun_prop))]
-    simp only [neg_neg, Real.exp_log hρ]
+    simp [neg_neg, Real.exp_log hρ]
     rfl
   rw [hlog]
   by_cases hw : w ∈ ball c ρ
   · have hwR : ‖w‖ ≤ R := by
       calc
-        _ ≤ ‖w-c‖+‖c‖ := by simpa only [sub_add_cancel] using norm_add_le (w-c) c
+        _ ≤ ‖w-c‖+‖c‖ := by simpa [sub_add_cancel] using norm_add_le (w-c) c
         _ ≤ R := by linarith [mem_ball_iff_norm.mp hw]
     rw [max_eq_right hwR, diskGreenKernel_eq_log_parts c z w ρ hρ hz hw hzw]
     have hi := integral_unitPoissonWeight_interior_log c z w ρ hρ hz hw
     rw [integral_unitPoissonWeight_mul_eq_circleAverage c z ρ hρ (fun v : ℂ => Real.log ‖v-w‖) (by fun_prop)] at hi
     rw [hi]
     ring
-  · have hg : diskGreenKernel c ρ hρ z w = 0 := by simp only [diskGreenKernel, hw, and_false, false_and, ite_false]
+  · have hg : diskGreenKernel c ρ hρ z w = 0 := by simp [diskGreenKernel, hw, and_false, false_and]
     rw [hg, sub_zero]
     by_cases hws : w ∈ closedBall c ρ
     · have hboundary : w ∈ sphere c ρ := by
         rw [mem_sphere_iff_norm]
         exact le_antisymm (mem_closedBall_iff_norm.mp hws) (not_lt.mp (fun h => hw (mem_ball_iff_norm.mpr h)))
       have hi := circleAverage_re_herglotzRieszKernel_mul_log hboundary hz
-      simp only [← poissonKernel_eq_re_herglotzRieszKernel] at hi
+      simp [← poissonKernel_eq_re_herglotzRieszKernel] at hi
       rw [hi]
     · rw [circleAverage_poisson_exterior_log c z w ρ hρ hz hws]
 
@@ -252,7 +250,7 @@ theorem integrable_exteriorPinned_test_circleKernel (R : ℝ) (hR : 0 < R)
     (hpf.mul_prod hc)).sub ((hfi.const_mul (Real.log R)).mul_prod hc)
   convert hi using 1
   funext a
-  simp only [Pi.sub_apply, Pi.add_apply, mul_one, exteriorPinnedKernel_eq_gffKernel_add, gffKernel_comm, p]
+  simp [Pi.sub_apply, Pi.add_apply, mul_one, exteriorPinnedKernel_eq_gffKernel_add, gffKernel_comm, p]
   ring
 
 /-- Physical Poisson weights retain the absolute planar/circle test pairing. -/
@@ -270,12 +268,12 @@ theorem integrable_poisson_exteriorPinned_test_circleKernel (R : ℝ) (hR : 0 < 
     intro w
     filter_upwards [ae_mem_sphere_circleMeasure c (-Real.log ρ)] with v hv
     apply hM
-    simpa only [neg_neg, Real.exp_log hρ] using hv
+    simpa [neg_neg, Real.exp_log hρ] using hv
   have hi := (integrable_exteriorPinned_test_circleKernel R hR c (-Real.log ρ) f).bdd_mul
     ((measurable_poissonKernel c z).comp measurable_snd).aestronglyMeasurable hb
   convert hi using 1
   funext p
-  simp only [Function.comp_def]
+  simp []
   ring
 
 /-- Singular planar/circle Fubini identifies the Poisson-averaged test potential. -/
@@ -292,7 +290,7 @@ theorem integral_poisson_exteriorPinned_testPotential (R : ℝ) (hR : 0 < R)
       ∫ v, poissonKernel c z v*(∫ w, exteriorPinnedKernel R hR v w*f w)
         ∂circleMeasure c (-Real.log ρ) := by
     rw [integral_circleMeasure_eq_circleAverage c (-Real.log ρ) (fun v => poissonKernel c z v*(∫ w, exteriorPinnedKernel R hR v w*f w)) ((measurable_poissonKernel c z).mul hp.measurable)]
-    simp only [neg_neg, Real.exp_log hρ]
+    simp [neg_neg, Real.exp_log hρ]
     rfl
   rw [he]
   have hi := integrable_poisson_exteriorPinned_test_circleKernel R hR c z ρ hρ hz f
@@ -323,7 +321,7 @@ theorem integrable_diskGreen_test_section (c z : ℂ) (R ρ : ℝ) (hR : 0 < R)
   have hd := hi.congr he
   convert (integrable_exteriorPinned_testKernel_section R hR f z).sub hd using 1
   funext w
-  simp only [Pi.sub_apply]
+  simp [Pi.sub_apply]
   ring
 
 /-- The first Poisson/test covariance equals the pinned kernel minus the Green correction. -/
@@ -378,7 +376,7 @@ theorem exteriorPinned_poisson_tests_isGaussianProcess {Ω : Type*} [MeasurableS
     (fun t => Sum.elim (fun z => fun ω => V ω z.1)
       (fun f => fun ω => exteriorPinnedEvaluation X Xc R hR ω f) t)
   · intro k
-    simpa only [Function.comp_def] using
+    simpa [Function.comp_def] using
       (exteriorPinnedEvaluation_isGaussianProcess P X Xc hX hc R hR).comp_right (F k)
   · intro t
     cases t with
@@ -388,7 +386,7 @@ theorem exteriorPinned_poisson_tests_isGaussianProcess {Ω : Type*} [MeasurableS
     cases t with
     | inl z => exact hlim z.1 z.2
     | inr f =>
-      simpa only [F, Sum.elim_inr, id_eq, sub_self, ← Pi.zero_def, eLpNorm_zero] using
+      simpa [F, Sum.elim_inr, id_eq, sub_self, ← Pi.zero_def, eLpNorm_zero] using
         (tendsto_const_nhds : Tendsto (fun _ : ℕ => (0 : ℝ≥0∞)) atTop (𝓝 0))
 
 end DOZZ.Proofs

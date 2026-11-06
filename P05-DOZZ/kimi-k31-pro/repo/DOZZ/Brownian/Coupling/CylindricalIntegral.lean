@@ -2,14 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import Mathlib.Analysis.SpecialFunctions.PolarCoord
-public import Mathlib.Analysis.SpecialFunctions.Sqrt
-public import Mathlib.MeasureTheory.Function.JacobianOneDim
-public import Mathlib.Analysis.SpecialFunctions.Integrals.Basic
-public import Mathlib.MeasureTheory.Measure.Lebesgue.Complex
-public import Mathlib.Analysis.InnerProductSpace.PiL2
+import Mathlib.Analysis.SpecialFunctions.PolarCoord
+import Mathlib.Analysis.SpecialFunctions.Sqrt
+import Mathlib.MeasureTheory.Function.JacobianOneDim
+import Mathlib.Analysis.SpecialFunctions.Integrals.Basic
+import Mathlib.MeasureTheory.Measure.Lebesgue.Complex
+import Mathlib.Analysis.InnerProductSpace.PiL2
 
 /-!
 # Cylindrical integration for three-dimensional radial tests
@@ -19,7 +18,6 @@ Use the ordinary complex-plane polar formula on the transverse plane. The remain
 The origin and zero-tilt endpoint are retained explicitly.
 -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal Topology Classical
@@ -82,7 +80,7 @@ theorem hasDerivAt_cylindricalRadius (x : ℝ) {ρ : ℝ} (hρ : 0 < ρ) :
     have hpos : 0 < x ^ 2 + ρ ^ 2 := by nlinarith only [sq_nonneg x, sq_pos_of_pos hρ]
     exact hpos.ne'
   have hder := (((hasDerivAt_id ρ).pow 2).const_add (x ^ 2)).sqrt hnonzero
-  simp only [Pi.pow_apply, id_eq, Nat.cast_ofNat, Nat.reduceSub, pow_one, mul_one] at hder
+  simp [Pi.pow_apply, id_eq, Nat.cast_ofNat, Nat.reduceSub, pow_one, mul_one] at hder
   change HasDerivAt (cylindricalRadius x) (2 * ρ / (2 * cylindricalRadius x ρ)) ρ at hder
   convert hder using 1
   ring
@@ -99,7 +97,7 @@ theorem lintegral_cylindricalRadius (x : ℝ) (F : ℝ → ℝ≥0∞) :
   apply setLIntegral_congr_fun measurableSet_Ioi
   intro ρ hρ
   have hy := cylindricalRadius_pos x hρ
-  dsimp only
+  dsimp
   rw [abs_of_pos (div_pos hρ hy), ← mul_assoc, ← ENNReal.ofReal_mul (div_nonneg hρ.le hy.le),
     div_mul_cancel₀ _ hy.ne']
 
@@ -165,7 +163,7 @@ theorem lintegral_cylindricalStrip_left (F H : ℝ → ℝ≥0∞) (hH : Measura
     _ = ∫⁻ x, (Ioo (-y) y).indicator (fun x => (ENNReal.ofReal y * F y) * H x) x := by
       apply lintegral_congr
       intro x
-      simp only [cylindricalStrip, indicator, mem_Ioo, abs_lt]
+      simp [cylindricalStrip, indicator, mem_Ioo, abs_lt]
     _ = ∫⁻ x in Ioo (-y) y, (ENNReal.ofReal y * F y) * H x :=
       lintegral_indicator measurableSet_Ioo _
     _ = _ := lintegral_const_mul _ hH
@@ -191,7 +189,7 @@ theorem lintegral_cylindrical_tails (F H : ℝ → ℝ≥0∞)
       have hy0 : y ≤ 0 := le_of_not_gt hpos
       have hempty : Ioo (-y) y = ∅ := Ioo_eq_empty_of_le (by linarith only [hy0])
       apply hy
-      simp only [hempty, Measure.restrict_empty, lintegral_zero_measure, mul_zero]
+      simp [hempty, Measure.restrict_empty, lintegral_zero_measure, mul_zero]
 
 /-- Cylindrical integration on `ℝ × ℂ`: an arbitrary longitudinal weight is integrated on each
 radial cross-section, without spherical coordinates or an angular disintegration theorem. -/
@@ -225,7 +223,7 @@ theorem integral_exp_longitudinal (c y : ℝ) (hc : c ≠ 0) (hy : 0 ≤ y) :
   rw [← integral_Ioc_eq_integral_Ioo, ← intervalIntegral.integral_of_le (by linarith only [hy]),
     intervalIntegral.integral_comp_mul_left Real.exp hc, integral_exp]
   rw [Real.sinh_eq]
-  simp only [smul_eq_mul, mul_neg]
+  simp [smul_eq_mul, mul_neg]
   ring
 
 /-- The exponential is integrable on every bounded longitudinal section. -/
@@ -267,9 +265,8 @@ theorem lintegral_radial_exp (F : ℝ → ℝ≥0∞) (hF : Measurable F)
     rw [← lintegral_const_mul' _ _ ENNReal.ofReal_ne_top]
     apply setLIntegral_congr_fun measurableSet_Ioi
     intro y hy
-    dsimp only
+    dsimp
     rw [lintegral_exp_longitudinal c y hc hy.le]
-    have hn := sinh_div_nonneg_longitudinal c y hc hy.le
     have heq : 2 * Real.sinh (c * y) / c = 2 * (Real.sinh (c * y) / c) := by ring
     have heq' : y * Real.sinh (c * y) / c = y * (Real.sinh (c * y) / c) := by ring
     rw [heq, heq', ENNReal.ofReal_mul (by norm_num : (0 : ℝ) ≤ 2),
@@ -341,8 +338,7 @@ theorem lintegral_three_radial_exp (F : ℝ → ℝ≥0∞) (hF : Measurable F)
     (∫⁻ z : Fin 3 → ℝ, F ‖WithLp.toLp 2 z‖ * ENNReal.ofReal (Real.exp (c * z 0))) =
       ENNReal.ofReal (4 * Real.pi) * ∫⁻ y in Ioi (0 : ℝ),
         F y * ENNReal.ofReal (y * Real.sinh (c * y) / c) := by
-  rw [← lintegral_radial_exp F hF c hc]
-  rw [← lintegral_cylindricalCoordinates]
+  rw [← lintegral_radial_exp F hF c hc, ← lintegral_cylindricalCoordinates]
   apply lintegral_congr
   intro z
   rw [cylindricalCoordinates_radius, cylindricalCoordinates_fst]

@@ -2,11 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.ShiftEquations.Residual.Joint
-public import DOZZ.Statements.Defs.DozzFormula
-public import DOZZ.Statements.Defs.IsUpsilon
+import DOZZ.ShiftEquations.Residual.Joint
+import DOZZ.Statements.Defs.DozzFormula
+import DOZZ.Statements.Defs.IsUpsilon
 import DOZZ.ShiftEquations.Quotient.RemovablePeriodic
 import DOZZ.Complex.Basic
 import DOZZ.ShiftEquations.Shift.Reflection
@@ -21,7 +20,6 @@ gives, through the removable-periodic quotient
 `c`, and `C(t, α₂, α₃) = c D(t, α₂, α₃)` near every point of `(2η, Q)`.
 -/
 
-@[expose] public section
 
 open MeasureTheory Filter Topology Set
 
@@ -90,4 +88,3 @@ theorem slice_constant_of_joint {Ω : Type*} [MeasurableSpace Ω] (P : Measure �
 
 end DOZZ.Proofs
 
-end

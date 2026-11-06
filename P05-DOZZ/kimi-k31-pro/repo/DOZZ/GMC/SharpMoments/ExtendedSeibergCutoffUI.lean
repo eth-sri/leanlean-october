@@ -2,11 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.SharpMoments.CutoffUIConvergence
-public import DOZZ.Statements.GMC.RegularizedCoulombMass
-public import DOZZ.Statements.GMC.CoulombMass
+import DOZZ.GMC.SharpMoments.CutoffUIConvergence
+import DOZZ.Statements.GMC.RegularizedCoulombMass
+import DOZZ.Statements.GMC.CoulombMass
 
 /-! # Uniform integrability of the regularized extended Seiberg masses
 
@@ -14,7 +13,6 @@ The regularized Coulomb masses converge in probability to the Coulomb masses of 
 uniformly on compact admissible sets of couplings, roots and charges, and a common higher moment
 is bounded uniformly there and in the cutoff. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology TopologicalSpace Set
 open scoped Distributions ENNReal NNReal

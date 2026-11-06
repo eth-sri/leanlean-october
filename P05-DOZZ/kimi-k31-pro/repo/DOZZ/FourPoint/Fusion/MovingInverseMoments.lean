@@ -2,15 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.Fusion.MovingMassConvergence
-public import DOZZ.FourPoint.Fusion.RootedLowerBound
+import DOZZ.FourPoint.Fusion.MovingMassConvergence
+import DOZZ.FourPoint.Fusion.RootedLowerBound
 import DOZZ.GMC.SharpMoments.MomentConvergence
 
 /-! # Convergence of the inverse moments of the moving rooted mass -/
 
-@[expose] public section
 open MeasureTheory Filter Topology
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -57,7 +55,7 @@ theorem fusionMovingMass_inverse_expectation_seq {Ω : Type*} [MeasurableSpace �
     α₁ α₂ α₃ (2 * s) (by linarith)
   have hn : ∀ᶠ n in atTop, ‖z n‖ ≤ 1 := by
     have h : Tendsto (fun n => ‖z n‖) atTop (nhds 0) := by
-      simpa only [Function.comp_def, norm_zero] using continuous_norm.continuousAt.tendsto.comp hz
+      simpa [Function.comp_def, norm_zero] using continuous_norm.continuousAt.tendsto.comp hz
     exact (h.eventually_lt_const zero_lt_one).mono fun _ h => h.le
   obtain ⟨N, hN⟩ := eventually_atTop.mp hn
   let f : ℕ → Ω → ℝ≥0∞ := fun n ω => fusionMovingMass γ α₁ α₂ α₃ y (z (n + N)) (M ω)
@@ -67,7 +65,7 @@ theorem fusionMovingMass_inverse_expectation_seq {Ω : Type*} [MeasurableSpace �
   have hg : AEMeasurable g P := fusionMovingMass_aemeasurable P X hX γ hγ hγ2 M hM α₁ α₂ α₃ y 0
   have hgb : ∫⁻ ω, g ω ^ (2 * s) ∂P ≤ C := hbound y 0 (by simp)
   have hgfin : ∀ᵐ ω ∂P, g ω ≠ ⊤ := by
-    simpa only [g, fusionMovingMass, fusionMovingKernel, mul_zero] using
+    simpa [g, fusionMovingMass, fusionMovingKernel, mul_zero] using
       (fusion_limitingRootedKernel_finite_ae P X hX γ hγ hγ2 M hM α₁ α₂ α₃ hα₁ hα₂ hα₃).mono
         fun _ h => h.ne
   have hfb : ∀ n, ∫⁻ ω, f n ω ^ (2 * s) ∂P ≤ C := fun n =>

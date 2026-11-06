@@ -2,11 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.ShiftEquations.Gluing.BandLine
-public import DOZZ.Statements.Defs.ExtendedSeiberg3
-public import DOZZ.Statements.Defs.LFun
+import DOZZ.ShiftEquations.Gluing.BandLine
+import DOZZ.Statements.Defs.ExtendedSeiberg3
+import DOZZ.Statements.Defs.LFun
 import DOZZ.ShiftEquations.Gluing.BandNear
 import DOZZ.ShiftEquations.Shift.ShiftGluing
 import DOZZ.ShiftEquations.Shift.Reflection
@@ -27,7 +26,6 @@ segments of convex domains of charges. This file collects the general tools:
   possibly the point itself.
 -/
 
-@[expose] public section
 
 open Filter Topology Set
 
@@ -148,10 +146,6 @@ theorem extendedSeiberg3_segment {γ a₁ a₂ a₃ b₁ b₂ b₃ t : ℝ} (hγ
             (2 * Q γ - (a₁ + a₂ + a₃) - 2 * (Q γ - a₂))) := by ring
     linarith
   · have h := add_mul_sub_lt_of_lt (sub_neg.mpr a7) (sub_neg.mpr b7) ht0 ht1
-    have e : 2 * Q γ - (a₁ + t * (b₁ - a₁) + (a₂ + t * (b₂ - a₂)) + (a₃ + t * (b₃ - a₃))) -
-        2 * (Q γ - (a₃ + t * (b₃ - a₃))) = 2 * Q γ - (a₁ + a₂ + a₃) - 2 * (Q γ - a₃) +
-          t * (2 * Q γ - (b₁ + b₂ + b₃) - 2 * (Q γ - b₃) -
-            (2 * Q γ - (a₁ + a₂ + a₃) - 2 * (Q γ - a₃))) := by ring
     linarith
 
 /-! ### Analyticity of `Γ`, `l` and `1/l` -/
@@ -181,7 +175,7 @@ theorem analyticAt_Gamma_ofReal_neg_one_lt {r : ℝ} (h1 : -1 < r) (h2 : r < 0) 
   have h : r = -(n : ℝ) := by exact_mod_cast hn
   rcases Nat.lt_or_ge n 1 with hn1 | hn1
   · interval_cases n
-    simp only [Nat.cast_zero, neg_zero] at h
+    simp [neg_zero] at h
     linarith
   · have : (1 : ℝ) ≤ n := by exact_mod_cast hn1
     linarith
@@ -268,10 +262,10 @@ theorem eventually_analyticAt_affine {φ : ℂ → ℂ} {z₀ a : ℂ} (hφ : Me
     refine tendsto_nhdsWithin_of_tendsto_nhds_of_eventually_within _ ?_ ?_
     · have hc : Continuous fun u : ℝ => z₀ + (u : ℂ) * a := by fun_prop
       have h0 := hc.tendsto 0
-      simp only [Complex.ofReal_zero, zero_mul, add_zero] at h0
+      simp [Complex.ofReal_zero, zero_mul, add_zero] at h0
       exact h0.mono_left nhdsWithin_le_nhds
     · refine eventually_nhdsWithin_of_forall fun u hu => ?_
-      simp only [mem_compl_iff, mem_singleton_iff, add_eq_left, mul_eq_zero,
+      simp [mem_compl_iff, mem_singleton_iff, add_eq_left, mul_eq_zero,
         Complex.ofReal_eq_zero, not_or]
       exact ⟨hu, ha⟩
   exact ht.eventually hφ.eventually_analyticAt
@@ -307,10 +301,10 @@ theorem tendsto_affine_nhdsNE {z₀ a : ℂ} (ha : a ≠ 0) :
   refine tendsto_nhdsWithin_of_tendsto_nhds_of_eventually_within _ ?_ ?_
   · have hc : Continuous fun u : ℝ => z₀ + (u : ℂ) * a := by fun_prop
     have h0 := hc.tendsto 0
-    simp only [Complex.ofReal_zero, zero_mul, add_zero] at h0
+    simp [Complex.ofReal_zero, zero_mul, add_zero] at h0
     exact h0.mono_left nhdsWithin_le_nhds
   · refine eventually_nhdsWithin_of_forall fun u hu => ?_
-    simp only [mem_compl_iff, mem_singleton_iff, add_eq_left, mul_eq_zero,
+    simp [mem_compl_iff, mem_singleton_iff, add_eq_left, mul_eq_zero,
       Complex.ofReal_eq_zero, not_or]
     exact ⟨hu, ha⟩
 
@@ -320,9 +314,6 @@ theorem eventually_ofReal_affine {p : ℂ → Prop} {x₀ s : ℝ} (hs : s ≠ 0
   have ht := tendsto_affine_nhdsNE (z₀ := (x₀ : ℂ)) (a := (s : ℂ)) (Complex.ofReal_ne_zero.mpr hs)
   filter_upwards [ht.eventually h] with u hu
   have e : ((x₀ + u * s : ℝ) : ℂ) = (x₀ : ℂ) + (u : ℂ) * (s : ℂ) := by push_cast; ring
-  rw [e]
-  exact hu
-
+  rwa [e]
 end DOZZ.Proofs
 
-end

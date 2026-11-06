@@ -2,13 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.Hypergeom.WirtingerZ
-public import Mathlib.Analysis.Calculus.FDeriv.Measurable
-public import Mathlib.Analysis.Calculus.ContDiff.Defs
-public import Mathlib.MeasureTheory.Integral.IntervalIntegral.FundThmCalculus
-public import Mathlib.MeasureTheory.Integral.DominatedConvergence
+import DOZZ.Statements.Hypergeom.WirtingerZ
+import Mathlib.Analysis.Calculus.FDeriv.Measurable
+import Mathlib.Analysis.Calculus.ContDiff.Defs
+import Mathlib.MeasureTheory.Integral.IntervalIntegral.FundThmCalculus
+import Mathlib.MeasureTheory.Integral.DominatedConvergence
 
 /-! # Derivatives of limits, Wirtinger derivatives, and a `C²` criterion
 
@@ -22,7 +21,6 @@ public import Mathlib.MeasureTheory.Integral.DominatedConvergence
   derivatives `∂_z` of a real function, in terms of its real derivatives.
 * `bpz_contDiffOn_two_of`: a `C²` criterion on an open set. -/
 
-@[expose] public section
 
 open MeasureTheory Filter Topology
 

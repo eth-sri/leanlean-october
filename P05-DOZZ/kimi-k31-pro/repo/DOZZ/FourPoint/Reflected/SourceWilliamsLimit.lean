@@ -2,16 +2,14 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Reflected.SourceWilliamsSqueeze
-public import DOZZ.FourPoint.Reflected.SourceWilliamsParetoIntegral
-public import DOZZ.FourPoint.Reflected.SourceParetoLimit
-public import DOZZ.FourPoint.Reflected.SourceParetoCutLimit
-public import DOZZ.FourPoint.Reflected.CutMoment
-public import DOZZ.FourPoint.Reflected.OrderedCutSqueeze
+import DOZZ.FourPoint.Reflected.SourceWilliamsSqueeze
+import DOZZ.FourPoint.Reflected.SourceWilliamsParetoIntegral
+import DOZZ.FourPoint.Reflected.SourceParetoLimit
+import DOZZ.FourPoint.Reflected.SourceParetoCutLimit
+import DOZZ.FourPoint.Reflected.CutMoment
+import DOZZ.FourPoint.Reflected.OrderedCutSqueeze
 import Mathlib.Tactic
 /-! Ordered removal of the maximum cutoff in the actual source Williams expectation. -/
-@[expose] public section
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -84,7 +82,7 @@ theorem reflected_source_williams_increment_tendsto
     filter_upwards [hsmall] with z hz
     have hbnd := (reflected_source_williams_expectation_squeeze P X hX γ hγ hγ₂ M hM Xc hc
       α₁ α₂ α₃ ξ h p hα₁ hα₂ hα₃ hh hp hξ hξ₁ B Z hData B₀ hB₀
-        (Real.toNNReal H) (by simpa only [Real.coe_toNNReal H hH.le] using hH)
+        (Real.toNNReal H) (by simpa [Real.coe_toNNReal H hH.le] using hH)
         z hz.1 hz.2.1 hz.2.2).2
     have heJ := reflected_source_williams_pareto_integral P X hX γ hγ hγ₂ M hM Xc hc
       α₁ α₂ α₃ ξ h p hα₁ hα₂ hα₃ hh hp hξ hξ₁ B₀ hB₀
@@ -95,8 +93,7 @@ theorem reflected_source_williams_increment_tendsto
         (fun ω => (twoSidedReflectionCutMass γ H B Z ω).toReal)
         (ae_of_all P fun _ => ENNReal.toReal_nonneg) (hKm H) z hz.1 hz.2.1 hz.2.2
     simp only [Real.coe_toNNReal H hH.le] at hbnd
-    rw [heJ,heK] at hbnd
-    exact hbnd
+    rwa [heJ,heK] at hbnd
   have hG : Tendsto (fun z : ℂ => G z/‖z‖^κ) (𝓝[≠] (0 : ℂ))
       (𝓝 (c*Λ*reflectionBarR P γ α₁ B Z)) := by
     exact reflected_source_pareto_increment_tendsto P X hX γ hγ hγ₂ M hM Xc hc
@@ -104,8 +101,7 @@ theorem reflected_source_williams_increment_tendsto
   have hK (H : ℝ) : Tendsto (fun z : ℂ => K H z/‖z‖^κ) (𝓝[≠] (0 : ℂ)) (𝓝 (Lcut H)) := by
     exact reflected_source_pareto_cut_increment_tendsto P X hX γ hγ hγ₂ M hM Xc hc
       α₁ α₂ α₃ ξ h H hα₁ hreflect hα₂ hα₃ hh hs hξ hξ₁ B Z hData
-  have hL : Tendsto Lcut atTop (𝓝 (c*Λ*reflectionBarR P γ α₁ B Z)) := by
-    exact (reflected_cut_moment_tendsto P γ α₁ B Z hγ hγ₂ hα₁ hreflect hData).const_mul (c*Λ)
+  have hL : Tendsto Lcut atTop (𝓝 (c*Λ*reflectionBarR P γ α₁ B Z)) := (reflected_cut_moment_tendsto P γ α₁ B Z hγ hγ₂ hα₁ hreflect hData).const_mul (c*Λ)
   have hF : Tendsto (fun z : ℂ => F z/‖z‖^κ) (𝓝[≠] (0 : ℂ)) (𝓝 0) :=
     (isComplexLittleOAtZero_ofReal_iff (γ*(Q γ-α₁)) _).mp
       (reflected_first_order_radial_error_littleO P X hX γ hγ hγ₂ M hM Xc hc
@@ -124,6 +120,6 @@ theorem reflected_source_williams_increment_tendsto
   · intro H hH
     filter_upwards [hsand H hH] with z hz
     have ht := div_le_div_of_nonneg_right hz.2 (Real.rpow_nonneg (norm_nonneg z) κ)
-    simpa only [add_div] using ht
+    simpa [add_div] using ht
 
 end DOZZ.Proofs

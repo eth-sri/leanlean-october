@@ -2,15 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Hypergeom.ODE.ParameterSeriesBounds
+import DOZZ.Hypergeom.ODE.ParameterSeriesBounds
 import Mathlib.Analysis.Calculus.FDeriv.Mul
 import Mathlib.Analysis.SpecialFunctions.OrdinaryHypergeometric
 
 /-! Fréchet derivatives of the successive-term multiplier in the Gauss parameter series. -/
 
-@[expose] public section
 
 namespace DOZZ.Proofs
 
@@ -68,7 +66,7 @@ theorem gaussParameterSeriesRatio_hasFDerivAt
       rfl
     · apply ContinuousLinearMap.ext
       intro v
-      simp only [ContinuousLinearMap.comp_apply, neg_apply,
+      simp [ContinuousLinearMap.comp_apply, neg_apply,
         ContinuousLinearMap.mulLeftRight_apply, smul_apply]
       ring
   have hAB := hA.mul hB
@@ -125,8 +123,7 @@ theorem gaussParameterSeriesRatioDeriv_norm_le
   have hC_inv : ‖C⁻¹‖ ≤ 1 / (x - R) := by
     rw [norm_inv]
     simpa [one_div] using one_div_le_one_div_of_le hxmR hC_lower
-  have heA : ‖eA‖ ≤ 1 := by
-    exact ContinuousLinearMap.norm_fst_le ℂ ℂ (ℂ × ℂ)
+  have heA : ‖eA‖ ≤ 1 := ContinuousLinearMap.norm_fst_le ℂ ℂ (ℂ × ℂ)
   have heB : ‖eB‖ ≤ 1 := by
     dsimp [eB]
     calc

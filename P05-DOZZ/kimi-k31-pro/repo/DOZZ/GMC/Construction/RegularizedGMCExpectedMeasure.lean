@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.Defs.RegularizedGMC
-public import DOZZ.Statements.GMC.GmcReferenceMeasure
+import DOZZ.Statements.Defs.RegularizedGMC
+import DOZZ.Statements.GMC.GmcReferenceMeasure
 import DOZZ.GMC.CircleAverageCutoffIntensity
 import DOZZ.GMC.Construction.ReferenceMeasureFinite
 import Mathlib.MeasureTheory.Measure.GiryMonad
@@ -13,7 +12,6 @@ import Mathlib.MeasureTheory.Measure.Prod
 
 /-! The expected finite-cutoff circle chaos is the deterministic reference measure. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory
 open scoped Distributions ENNReal NNReal
@@ -50,9 +48,6 @@ theorem regularizedGMC_measurable
     (Real.exp (γ * Xc p.1 p.2 r - γ ^ 2 / 2 * V p.2) * normPlus p.2 ^ (-4 : ℝ))
   have hdensity : Measurable density := by
     have hfield : Measurable (fun p : Ω × ℂ => Xc p.1 p.2 r) := hXc.1 r
-    have hnorm : Measurable (fun p : Ω × ℂ => normPlus p.2) :=
-      hnormPlus.comp measurable_snd
-    have hvariance : Measurable (fun p : Ω × ℂ => V p.2) := hVmeas.comp measurable_snd
     dsimp [density]
     fun_prop
   apply Measure.measurable_of_measurable_coe

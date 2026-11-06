@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Brownian.ConditionedKernelStartRatio
-public import Mathlib.Probability.CDF
+import DOZZ.Brownian.ConditionedKernelStartRatio
+import Mathlib.Probability.CDF
 
 /-!
 # CDF comparison from a monotone likelihood ratio
@@ -15,7 +14,6 @@ single-step stochastic order needed for the ordered coupling. It is stated for g
 supported on the positive half-line so entrance and transition densities can use the same result.
 -/
 
-@[expose] public section
 
 open Filter MeasureTheory Set Topology
 open scoped Topology
@@ -202,8 +200,7 @@ theorem integral_Iic_ge_of_shiftedAntitoneDensityRatio
       ∫ x in Set.Iic z, g x ∂(volume : Measure ℝ) := by
   let gpos : ℝ → ℝ := Set.Ioi 0 |>.indicator (fun x => g x / m)
   have hgdiv : Integrable (fun x : ℝ => g x / m) (volume : Measure ℝ) := hg.div_const m
-  have hgpos : Integrable gpos (volume : Measure ℝ) := by
-    exact hgdiv.indicator measurableSet_Ioi
+  have hgpos : Integrable gpos (volume : Measure ℝ) := hgdiv.indicator measurableSet_Ioi
   have hngpos : ∀ x, 0 ≤ gpos x := by
     intro x
     by_cases hx : 0 < x
@@ -297,4 +294,3 @@ theorem integral_Iic_ge_of_shiftedAntitoneDensityRatio
 
 end DOZZ.Proofs
 
-end

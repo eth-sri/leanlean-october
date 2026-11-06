@@ -2,18 +2,17 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.ShiftEquations.Gluing.Coefficient
-public import DOZZ.ShiftEquations.Gluing.CoefficientAlgebra
-public import DOZZ.ShiftEquations.Gluing.Meromorphy
-public import DOZZ.ShiftEquations.Gluing.RealPoint
-public import DOZZ.Statements.Brownian.ReflectionR
-public import DOZZ.Statements.Brownian.IsSourceLateralProjection
-public import DOZZ.Statements.Brownian.IsReflectionData
-public import DOZZ.Statements.Defs.IsEquatorGFF
-public import DOZZ.Statements.Defs.IsGMCOf
-public import DOZZ.Statements.Defs.LFun
+import DOZZ.ShiftEquations.Gluing.Coefficient
+import DOZZ.ShiftEquations.Gluing.CoefficientAlgebra
+import DOZZ.ShiftEquations.Gluing.Meromorphy
+import DOZZ.ShiftEquations.Gluing.RealPoint
+import DOZZ.Statements.Brownian.ReflectionR
+import DOZZ.Statements.Brownian.IsSourceLateralProjection
+import DOZZ.Statements.Brownian.IsReflectionData
+import DOZZ.Statements.Defs.IsEquatorGFF
+import DOZZ.Statements.Defs.IsGMCOf
+import DOZZ.Statements.Defs.LFun
 import DOZZ.ShiftEquations.Shift.ShiftGluing
 import DOZZ.ShiftEquations.Shift.Reflection
 import DOZZ.ShiftEquations.Rbar.Multiplier
@@ -35,7 +34,6 @@ at `z - γ/2` it gives the gluing `C(z) = R(z) C(2Q - z)` ([KRV, Lemma 10.5]). C
 off outside a thinner strip makes both identities hold along the codiscrete filter of `ℂ`.
 -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology Set
 
@@ -46,13 +44,10 @@ theorem gaussParameterC_half_mem {γ α₁ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2)
     (h1 : Q γ - γ / 16 < α₁) (h2 : α₁ < Q γ) :
     0 < gaussParameterC γ (γ / 2) α₁ ∧ gaussParameterC γ (γ / 2) α₁ < 1 := by
   unfold gaussParameterC
-  have hpos : 0 < γ / 2 * (Q γ - α₁) := mul_pos (by positivity) (by linarith)
-  have hlt : γ / 2 * (Q γ - α₁) < γ / 2 * (γ / 16) :=
-    mul_lt_mul_of_pos_left (by linarith) (by positivity)
   constructor <;> nlinarith
 
 /-- **The reflected coefficient at real charges near `Q`**
-(`DOZZ.degenerateFourPoint_diagonal_classification` and `DOZZ.gammaHalf_reflected_formula` at the
+(`degenerateFourPoint_diagonal_classification` and `gammaHalf_reflected_formula` at the
 same charges): `R(α₁) C(2Q - α₁ - γ/2) = ρ C(α₁ - γ/2)`. -/
 theorem reflected_coefficient_real {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
     (X : Ω → Distr) (M : Ω → Measure ℂ) {γ μ α₂ α₃ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2)
@@ -121,4 +116,3 @@ theorem reflected_coefficient_real {Ω : Type*} [MeasurableSpace Ω] (P : Measur
 
 end DOZZ.Proofs
 
-end

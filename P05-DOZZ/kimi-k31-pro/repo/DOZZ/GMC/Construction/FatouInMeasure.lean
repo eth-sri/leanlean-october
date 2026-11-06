@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import Mathlib.MeasureTheory.Function.ConvergenceInMeasure
-public import Mathlib.MeasureTheory.Integral.Lebesgue.Add
+import Mathlib.MeasureTheory.Function.ConvergenceInMeasure
+import Mathlib.MeasureTheory.Integral.Lebesgue.Add
 
 /-! Fatou's lemma transfers uniform nonnegative expectation bounds through convergence in measure. -/
 
-@[expose] public section
 
 open MeasureTheory Filter Topology
 open scoped ENNReal

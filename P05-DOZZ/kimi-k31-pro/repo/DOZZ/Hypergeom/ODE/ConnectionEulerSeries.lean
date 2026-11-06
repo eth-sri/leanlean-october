@@ -2,17 +2,15 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Hypergeom.ODE.ConnectionEulerEndpoint
-public import DOZZ.Hypergeom.Series
-public import Mathlib.Analysis.SpecialFunctions.OrdinaryHypergeometric
-public import Mathlib.RingTheory.Binomial
+import DOZZ.Hypergeom.ODE.ConnectionEulerEndpoint
+import DOZZ.Hypergeom.Series
+import Mathlib.Analysis.SpecialFunctions.OrdinaryHypergeometric
+import Mathlib.RingTheory.Binomial
 import Mathlib.Analysis.Analytic.Binomial
 
 /-! Coefficient identities for matching Euler's binomial expansion with the Gauss series. -/
 
-@[expose] public section
 
 namespace DOZZ.Proofs
 
@@ -43,7 +41,7 @@ theorem realGamma_add_nat_div_Gamma_eq (x : ℝ) (n : ℕ) (hx : 0 < x) :
     Complex.Gamma_ofReal, Complex.Gamma_ofReal,
     ← ofReal_ascPochhammer_eval x n] at h
   apply Complex.ofReal_injective
-  simpa only [Complex.ofReal_div] using h
+  simpa [Complex.ofReal_div] using h
 
 /-- Scaling the beta moment with its Euler normalization gives the ratio of rising factorials. -/
 theorem realEulerBetaMoment_scaled (b c : ℝ) (n : ℕ)
@@ -60,13 +58,12 @@ theorem realEulerBetaMoment_scaled (b c : ℝ) (n : ℕ)
       (∫ t : ℝ in Ioc 0 1,
         t ^ (b + n - 1) * (1 - t) ^ (c - b - 1)) =
         Real.Gamma (b + n) * Real.Gamma (c - b) / Real.Gamma (c + n) := by
-    simpa only [show b + (n : ℝ) + (c - b) = c + n by ring] using hbeta
+    simpa [show b + (n : ℝ) + (c - b) = c + n by ring] using hbeta
   have hshiftB := realGamma_add_nat_div_Gamma_eq b n hb
   have hshiftC := realGamma_add_nat_div_Gamma_eq c n hc
   have hΓb : 0 < Real.Gamma b := Real.Gamma_pos_of_pos hb
   have hΓq : 0 < Real.Gamma (c - b) := Real.Gamma_pos_of_pos hcb
   have hΓc : 0 < Real.Gamma c := Real.Gamma_pos_of_pos hc
-  have hΓbn : 0 < Real.Gamma (b + n) := Real.Gamma_pos_of_pos hbn
   have hΓcn : 0 < Real.Gamma (c + n) := Real.Gamma_pos_of_pos hcn
   have hPochC : 0 < (ascPochhammer ℝ n).eval c := by
     rw [← hshiftC]
@@ -122,9 +119,6 @@ theorem realGaussEulerBinomialTerm_integral (a b c x : ℝ) (n : ℕ)
   let s : Set ℝ := Ioc 0 1
   let w : ℝ → ℝ := fun t => t ^ (b + n - 1) * (1 - t) ^ (c - b - 1)
   let C : ℝ := Ring.choose (a + n - 1) n * x ^ n
-  have hchoose : 0 < Ring.choose (a + n - 1) n := by
-    rw [realBinomialCoefficient_eq_ascPochhammer]
-    exact div_pos (realAscPochhammer_eval_pos ha n) (by positivity)
   have hweight : IntegrableOn w s := by
     simpa [w, s] using
       (realEulerBetaWeight_integrable (b + n) (c - b) (by positivity) hcb)
@@ -150,10 +144,6 @@ theorem realGaussEulerBinomialTerm_integral (a b c x : ℝ) (n : ℕ)
               ring
       _ = Ring.choose (a + n - 1) n * x ^ n *
             (t ^ (b + n - 1) * (1 - t) ^ (c - b - 1)) := by rw [hrpowAdd]
-  have hterm_int : IntegrableOn
-      (realGaussEulerBinomialTerm a b c x n) s := by
-    have hC : IntegrableOn (fun t => C * w t) s := hweight.const_mul C
-    exact hC.congr_fun_ae hpowEq.symm
   have hterm_integral :
       (∫ t : ℝ in s, realGaussEulerBinomialTerm a b c x n t) =
         C * (∫ t : ℝ in s, w t) := by
@@ -237,8 +227,7 @@ theorem realGaussEulerBinomialTerm_hasSum (a b c x t : ℝ)
   have hu0 : 0 ≤ x * t := mul_nonneg hx.le ht0.le
   have hu1 : x * t < 1 := by nlinarith [mul_le_mul_of_nonneg_left ht1 hx.le]
   have huNorm : ‖x * t‖ < 1 := by
-    rw [Real.norm_eq_abs, abs_of_nonneg hu0]
-    exact hu1
+    rwa [Real.norm_eq_abs, abs_of_nonneg hu0]
   have huBall : (x * t : ℝ) ∈ Metric.eball (0 : ℝ) 1 := by
     have hnn : ‖(x * t : ℝ)‖₊ < 1 := by exact_mod_cast huNorm
     simpa [Metric.mem_eball, edist_eq_enorm_sub, enorm_eq_nnnorm, dist_zero_right] using
@@ -267,15 +256,13 @@ theorem realGaussEulerBinomialTerm_hasSum (a b c x t : ℝ)
     dsimp [W]
     rw [hpow]
     ring
-  rw [hrewrite] at hterms
-  exact hterms
-
+  rwa [hrewrite] at hterms
 /-- Casting the real coefficient gives Mathlib's complex ordinary Gauss coefficient. -/
 theorem ofReal_realOrdinaryHypergeometricCoefficient (a b c : ℝ) (n : ℕ) :
     (realOrdinaryHypergeometricCoefficient a b c n : ℂ) =
       ordinaryHypergeometricCoefficient (a : ℂ) (b : ℂ) (c : ℂ) n := by
-  simp only [realOrdinaryHypergeometricCoefficient, ordinaryHypergeometricCoefficient]
-  push_cast
+  simp [realOrdinaryHypergeometricCoefficient, ordinaryHypergeometricCoefficient]
+
   rw [ofReal_ascPochhammer_eval a n, ofReal_ascPochhammer_eval b n,
     ofReal_ascPochhammer_eval c n]
 
@@ -289,8 +276,7 @@ theorem realOrdinaryHypergeometricTerm_summable (a b c x : ℝ)
     intro n hn
     have hreal : c = -(n : ℝ) := by exact_mod_cast hn
     linarith
-  have hrad : (1 : ENNReal) ≤ P.radius := by
-    exact ordinaryHypergeometricSeries_one_le_radius (a : ℂ) (b : ℂ) (c : ℂ) hcC
+  have hrad : (1 : ENNReal) ≤ P.radius := ordinaryHypergeometricSeries_one_le_radius (a : ℂ) (b : ℂ) (c : ℂ) hcC
   have hxnorm : ‖(x : ℂ)‖ < 1 := by
     calc
       ‖(x : ℂ)‖ = |x| := Complex.norm_real x
@@ -356,8 +342,7 @@ theorem realGaussEulerIntegral_eq_tsum (a b c x : ℝ)
       rw [Real.norm_eq_abs, abs_of_nonneg ht]
     rw [integral_congr_ae hnorm]
     exact hFval n
-  have hFsum : Summable fun n : ℕ => ∫ t : ℝ in Ioc 0 1, ‖F n t‖ := by
-    exact hcoeff.congr fun n => (hFnorm n).symm
+  have hFsum : Summable fun n : ℕ => ∫ t : ℝ in Ioc 0 1, ‖F n t‖ := hcoeff.congr fun n => (hFnorm n).symm
   have hpoint : ∀ᵐ t ∂volume.restrict (Ioc 0 1),
       (∑' n : ℕ, F n t) =
         N * (t ^ (b - 1) * (1 - t) ^ (c - b - 1) * (1 - x * t) ^ (-a)) := by
@@ -387,7 +372,6 @@ theorem realGaussEulerIntegral_eq_family
           t ^ (b - 1) * (1 - t) ^ (c - b - 1) * (1 - x * t) ^ (-a)) =
       H (a : ℂ) (b : ℂ) (c : ℂ) (x : ℂ) := by
   let N : ℝ := Real.Gamma c / (Real.Gamma b * Real.Gamma (c - b))
-  have hc : 0 < c := by linarith
   have hcC : ∀ n : ℕ, (c : ℂ) ≠ -(n : ℂ) := by
     intro n hn
     have hreal : c = -(n : ℝ) := by exact_mod_cast hn
@@ -406,7 +390,7 @@ theorem realGaussEulerIntegral_eq_family
     rw [ordinaryHypergeometric_eq_tsum]
     apply tsum_congr
     intro n
-    simp only [Complex.ofReal_mul, Complex.ofReal_pow,
+    simp [Complex.ofReal_mul, Complex.ofReal_pow,
       ofReal_realOrdinaryHypergeometricCoefficient, smul_eq_mul]
   have hchar := hH (a : ℂ) (b : ℂ) (c : ℂ) hcC
   have hseriesValue := hchar.2 (x : ℂ) hxnorm

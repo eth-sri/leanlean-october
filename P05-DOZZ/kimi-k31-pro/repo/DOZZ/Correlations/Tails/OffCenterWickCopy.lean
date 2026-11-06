@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.Tails.OffCenterPinCopy
-public import DOZZ.Correlations.Tails.OffCenterWickLaw
+import DOZZ.Correlations.Tails.OffCenterPinCopy
+import DOZZ.Correlations.Tails.OffCenterWickLaw
 
 /-! The independent pin copy at the level of weighted regularized masses. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal NNReal
@@ -71,9 +69,7 @@ theorem copied_circle_fdd_law
   have h := congrArg (fun μ => μ.map E)
     (offCenter_circle_pin_copy_law P X Xc hX hc hm z hz)
   change (P.map S).map E = ((P.prod P).map T).map E at h
-  rw [Measure.map_map hE hS, Measure.map_map hE hT] at h
-  exact h
-
+  rwa [Measure.map_map hE hS, Measure.map_map hE hT] at h
 /-- The copied circle has the original scalar Gaussian law. -/
 theorem copied_circle_hasLaw
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)

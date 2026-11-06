@@ -2,13 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.Analytic.NormalizedIncrementTilt
+import DOZZ.Correlations.Analytic.NormalizedIncrementTilt
 
 /-! The deterministic factor in the complex tilt depends only on imaginary charges. -/
 
-@[expose] public section
 open MeasureTheory
 namespace DOZZ.Proofs
 
@@ -24,9 +22,9 @@ theorem jointVertexPolynomial_re
   rw [vertex_variance_expansion P _ hm (fun i => (β i).re),
     vertex_variance_expansion P _ hm (fun i => (β i).im)]
   unfold jointVertexPolynomial
-  simp only [Complex.div_ofNat_re, Complex.neg_re, Complex.re_sum,
+  simp [Complex.div_ofNat_re, Complex.neg_re, Complex.re_sum,
     Complex.mul_re, Complex.ofReal_re, Complex.ofReal_im, mul_zero, sub_zero]
-  simp only [sub_mul, Finset.sum_sub_distrib]
+  simp [sub_mul, Finset.sum_sub_distrib]
   ring
 
 /-- The real charge and real mass-power contributions cancel exactly in the norm tilt. -/
@@ -46,7 +44,7 @@ theorem normalized_imaginary_factor
           ∑ i, (β i.castSucc).im * equatorCircleMean (z i) r := by
   unfold normalizedVertexPolynomial
   rw [Complex.sub_re, jointVertexPolynomial_re P Xc _ _ (fun i => hm _ _) β]
-  simp only [Complex.mul_re, Complex.mul_im, Complex.ofReal_re, Complex.ofReal_im,
+  simp [Complex.mul_re, Complex.mul_im, Complex.ofReal_re, Complex.ofReal_im,
     Complex.re_sum, Complex.im_sum, mul_zero, sub_zero, zero_add]
   ring
 

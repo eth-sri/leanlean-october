@@ -2,12 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.Statements.Defs.UnitVolumeStructureConstant
-public import DOZZ.GMC.Moments.InversionLaw
-public import DOZZ.GMC.Moments.InfinityChart
-public import DOZZ.GMC.Construction.RootedCircleMassLimit
-@[expose] public section
+import DOZZ.Statements.Defs.UnitVolumeStructureConstant
+import DOZZ.GMC.Moments.InversionLaw
+import DOZZ.GMC.Moments.InfinityChart
+import DOZZ.GMC.Construction.RootedCircleMassLimit
 open MeasureTheory Set
 open scoped Distributions ENNReal
 namespace DOZZ.Proofs
@@ -45,9 +43,9 @@ theorem rho_map_inversion (γ α₁ α₂ α₃ : ℝ) (μ : Measure ℂ)
   unfold rho
   rw [lintegral_map hw measurable_inv]
   have ha0 : ∀ᵐ x ∂μ, x ≠ 0 := by
-    rw [ae_iff]; simpa only [not_not, ofPred_eq_eq_singleton] using h0
+    rw [ae_iff]; simpa [not_not, ofPred_eq_eq_singleton] using h0
   have ha1 : ∀ᵐ x ∂μ, x ≠ 1 := by
-    rw [ae_iff]; simpa only [not_not, ofPred_eq_eq_singleton] using h1
+    rw [ae_iff]; simpa [not_not, ofPred_eq_eq_singleton] using h1
   apply lintegral_congr_ae
   filter_upwards [ha0, ha1] with x hx0 hx1
   rw [rho_inversion_density γ α₁ α₂ α₃ x hx0 hx1]
@@ -59,7 +57,7 @@ theorem rho_measure_measurable (γ α₁ α₂ α₃ : ℝ) :
   unfold normPlus
   fun_prop
 
-/-- The GMC inversion law `DOZZ.equatorGFF_GMC_inversion_law` proves the exchange of the first and
+/-- The GMC inversion law `equatorGFF_GMC_inversion_law` proves the exchange of the first and
 third charges. -/
 theorem unitVolumeStructureConstant_swap13
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
@@ -70,7 +68,7 @@ theorem unitVolumeStructureConstant_swap13
   have hs : sExp γ α₃ α₂ α₁ = sExp γ α₁ α₂ α₃ := by unfold sExp; ring
   have hH : Measurable (fun μ : Measure ℂ =>
       ENNReal.rpow (rho γ μ α₁ α₂ α₃) (-sExp γ α₁ α₂ α₃)) := by
-    simpa only [ENNReal.rpow_eq_pow, Function.comp_def] using
+    simpa [ENNReal.rpow_eq_pow, Function.comp_def] using
       ENNReal.continuous_rpow_const.measurable.comp (rho_measure_measurable γ α₁ α₂ α₃)
   have hlaw := equatorGFF_GMC_inversion_law P X hX γ hγ hγ2 M hM
     (fun μ => ENNReal.rpow (rho γ μ α₁ α₂ α₃) (-sExp γ α₁ α₂ α₃)) hH
@@ -84,5 +82,5 @@ theorem unitVolumeStructureConstant_swap13
   unfold unitVolumeStructureConstant
   rw [hs]
   congr 2
-  simpa only [ENNReal.rpow_eq_pow] using (he.symm.trans hlaw).symm
+  simpa [ENNReal.rpow_eq_pow] using (he.symm.trans hlaw).symm
 end DOZZ.Proofs

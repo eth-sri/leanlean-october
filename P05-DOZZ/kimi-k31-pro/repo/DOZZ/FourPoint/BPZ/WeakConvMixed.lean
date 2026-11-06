@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.BPZ.WeakConvDouble
+import DOZZ.FourPoint.BPZ.WeakConvDouble
 
 /-! # Random test functions under weak convergence in probability
 
@@ -14,7 +13,6 @@ by a finite random variable `V`, and converging uniformly in the same scale. Thi
 integrands that depend on the sample through another random measure, such as
 `x ↦ ∫ A(x, y) dν(y)`. The proof compares with grid sums `∑ μ(Q_i) g₀(c_i)`. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped ENNReal NNReal
@@ -139,7 +137,7 @@ theorem tendstoInMeasure_random_test [IsProbabilityMeasure P] (hμ : BPZWeakConv
         (‖c i‖ + 2 * h) (fun x => bpz_indicator_one_abs_le _ x)
         (fun x hx => bpz_indicator_one_eq_zero_of_subset (bpzGrid_cell_subset h hh0 i) x hx)
       simp only [integral_indicator_one (hcellm i)] at h
-      exact h
+      assumption
     exact bpz_tendstoInMeasure_mul (fun n => (hmassm _ (hcellm i) n).aestronglyMeasurable)
       (fun _ => (hg₀pt (c i)).aestronglyMeasurable) hmass
       (tendstoInMeasure_of_tendsto_ae (fun _ => (hg₀pt (c i)).aestronglyMeasurable)
@@ -153,7 +151,7 @@ theorem tendstoInMeasure_random_test [IsProbabilityMeasure P] (hμ : BPZWeakConv
         (fun x => bpz_indicator_one_abs_le _ x)
         (fun x hx => bpz_indicator_one_eq_zero_of_subset subset_rfl x hx)
       simp only [integral_indicator_one hB₂m] at h
-      exact h
+      assumption
     have hV2 : TendstoInMeasure P (fun (_ : ℕ) ω => 2 * ε₁ * V ω) atTop
         (fun ω => 2 * ε₁ * V ω) :=
       tendstoInMeasure_of_tendsto_ae (fun _ => (hVm.const_mul _).aestronglyMeasurable)
@@ -190,7 +188,7 @@ theorem tendstoInMeasure_random_test [IsProbabilityMeasure P] (hμ : BPZWeakConv
       (lt_of_le_of_lt hP₀ ((ENNReal.ofReal_lt_ofReal_iff hε).2 (by linarith)))
     filter_upwards [hfin, eventually_ge_atTop n₀] with n hn hn'
     simp only [hE, ite_eq_left hn'] at hn
-    exact hn
+    assumption
   · have hle : ∀ᵐ ω ∂P, |(∫ x, g₀ ω x ∂μ₀ ω) - A₀ ω| ≤ B₀ ω := by
       filter_upwards [hg₀b, hcδ] with ω h2 h3
       have := hμ.fin₀ ω

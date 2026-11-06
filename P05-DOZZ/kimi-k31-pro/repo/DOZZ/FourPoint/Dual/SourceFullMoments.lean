@@ -2,11 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Dual.SourceOuterMoments
+import DOZZ.FourPoint.Dual.SourceOuterMoments
 import Mathlib.Tactic
 /-! Finiteness of the literal full dual kernel on the supplied ordinary chaos. -/
-@[expose] public section
 open MeasureTheory Set
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -40,7 +38,5 @@ theorem dual_full_kernel_finite_ae
     gmc_atomless_at_root_of_isGMCOf P X hX γ hγ hγ₂ M hM z,
     gmc_atomless_at_root_of_isGMCOf P X hX γ hγ hγ₂ M hM 0,
     gmc_atomless_at_root_of_isGMCOf P X hX γ hγ hγ₂ M hM 1] with ω hf hz h0 h1
-  rw [dual_kernel_integral_eq_coulombMass γ α₁ α₂ α₃ hγ.ne' z (M ω) hz h0 h1]
-  exact hf
-
+  rwa [dual_kernel_integral_eq_coulombMass γ α₁ α₂ α₃ hγ.ne' z (M ω) hz h0 h1]
 end DOZZ.Proofs

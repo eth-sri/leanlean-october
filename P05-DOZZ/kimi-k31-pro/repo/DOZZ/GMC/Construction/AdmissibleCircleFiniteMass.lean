@@ -2,22 +2,20 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.Construction.AdmissibleCircleTestFatou
-public import DOZZ.GMC.Construction.ReferenceMeasureFinite
-public import DOZZ.GMC.Construction.FiniteMeasureTotalize
-public import DOZZ.GMC.Construction.ReferenceMeasureTight
-public import DOZZ.GMC.Construction.RegularizedGMCExpectedMeasure
-public import DOZZ.GMC.Construction.CircleCutoffTestMass
-public import DOZZ.GMC.CircleAverageCutoffIntensity
+import DOZZ.GMC.Construction.AdmissibleCircleTestFatou
+import DOZZ.GMC.Construction.ReferenceMeasureFinite
+import DOZZ.GMC.Construction.FiniteMeasureTotalize
+import DOZZ.GMC.Construction.ReferenceMeasureTight
+import DOZZ.GMC.Construction.RegularizedGMCExpectedMeasure
+import DOZZ.GMC.Construction.CircleCutoffTestMass
+import DOZZ.GMC.CircleAverageCutoffIntensity
 import Mathlib.MeasureTheory.Function.LocallyIntegrable
 import Mathlib.MeasureTheory.Integral.Lebesgue.Add
 import Mathlib.Topology.ContinuousMap.CompactlySupported
 
 /-! An admissible whole-plane circle-chaos version has finite expected total mass. -/
 
-@[expose] public section
 
 open MeasureTheory Filter Topology Set
 open scoped ENNReal NNReal Distributions CompactlySupported
@@ -59,15 +57,14 @@ private def massCutoff (n : ℕ) : BoundedContinuousFunction ℂ ℝ :=
   (massCutoffCc n).toBoundedContinuousFunction
 
 private theorem massCutoff_hasCompactSupport (n : ℕ) :
-    HasCompactSupport (massCutoff n : ℂ → ℝ) := by
-  exact (massCutoffCc n).hasCompactSupport
+    HasCompactSupport (massCutoff n : ℂ → ℝ) := (massCutoffCc n).hasCompactSupport
 
 private theorem massCutoff_nonneg (n : ℕ) (x : ℂ) : 0 ≤ massCutoff n x := by
   simp [massCutoff, massCutoffCc, massCutoffFun,
     CompactlySupportedContinuousMap.toBoundedContinuousFunction]
 
 private theorem massCutoff_le_one (n : ℕ) (x : ℂ) : massCutoff n x ≤ 1 := by
-  simp only [massCutoff, massCutoffCc,
+  simp [massCutoff, massCutoffCc,
     CompactlySupportedContinuousMap.toBoundedContinuousFunction]
   change max 0 (min 1 ((n : ℝ) + 1 - ‖x‖)) ≤ 1
   exact max_le_iff.mpr ⟨by norm_num, min_le_left _ _⟩
@@ -97,9 +94,6 @@ private def cutoffTest (f : BoundedContinuousFunction ℂ ℝ) (R : ℕ) :
 private theorem cutoffTest_hasCompactSupport (f : BoundedContinuousFunction ℂ ℝ) (R : ℕ) :
     HasCompactSupport (cutoffTest f R : ℂ → ℝ) := by
   let g : ℂ → ℝ := fun x => f x * massCutoff R x
-  have hgcont : Continuous g := by
-    dsimp [g]
-    exact f.continuous.mul (massCutoff R).continuous
   have hgsupport : Function.support g ⊆ Metric.closedBall (0 : ℂ) ((R : ℝ) + 1) := by
     intro x hx
     change g x ≠ 0 at hx
@@ -167,14 +161,13 @@ private theorem circleIntegral_cutoff_error_le
     _ ≤ ∫ x, tail.indicator (fun _ : ℂ => ‖f‖) x ∂μ :=
       integral_mono hdint.norm htailConst hpoint
     _ = ‖f‖ * (μ tail).toReal := by
-      rw [integral_indicator_const ‖f‖ htail]
-      rw [Measure.real_def]
+      rw [integral_indicator_const ‖f‖ htail, Measure.real_def]
       simp [tail, smul_eq_mul]
       ring
 
 private theorem massCutoff_mono (x : ℂ) : Monotone fun n => massCutoff n x := by
   intro n m hnm
-  simp only [massCutoff, massCutoffCc,
+  simp [massCutoff, massCutoffCc,
     CompactlySupportedContinuousMap.toBoundedContinuousFunction]
   change max 0 (min 1 ((n : ℝ) + 1 - ‖x‖)) ≤
     max 0 (min 1 ((m : ℝ) + 1 - ‖x‖))
@@ -187,10 +180,7 @@ private theorem massCutoff_tendsto_one (x : ℂ) :
   obtain ⟨N, hN⟩ := exists_nat_gt ‖x‖
   have hEvent : ∀ᶠ n : ℕ in atTop, (n : ℝ) + 1 - ‖x‖ ≥ 1 := by
     exact Filter.eventually_atTop.2 ⟨N, fun n hn => by
-      have hnorm : ‖x‖ < (N : ℝ) := by exact_mod_cast hN
       have hnReal : (N : ℝ) ≤ (n : ℝ) := by exact_mod_cast hn
-      have hle : ‖x‖ ≤ (n : ℝ) := le_trans hnorm.le hnReal
-      have hnonneg : 0 ≤ (n : ℝ) - ‖x‖ := sub_nonneg.mpr hle
       linarith⟩
   have hEq : ∀ᶠ n : ℕ in atTop, massCutoff n x = 1 := by
     filter_upwards [hEvent] with n hn
@@ -203,8 +193,7 @@ private theorem massCutoff_tendsto_one (x : ℂ) :
 private theorem massCutoff_lintegral_tendsto (μ : Measure ℂ) :
     Tendsto (fun n => ∫⁻ x, ENNReal.ofReal (massCutoff n x) ∂μ) atTop
       (𝓝 (μ Set.univ)) := by
-  have hmeas (n : ℕ) : AEMeasurable (fun x => ENNReal.ofReal (massCutoff n x)) μ := by
-    exact (ENNReal.measurable_ofReal.comp (massCutoff n).continuous.measurable).aemeasurable
+  have hmeas (n : ℕ) : AEMeasurable (fun x => ENNReal.ofReal (massCutoff n x)) μ := (ENNReal.measurable_ofReal.comp (massCutoff n).continuous.measurable).aemeasurable
   have hmono : ∀ᵐ x ∂μ, Monotone fun n => ENNReal.ofReal (massCutoff n x) :=
     ae_of_all _ fun x n m hnm => ENNReal.ofReal_le_ofReal (massCutoff_mono x hnm)
   have hlim : ∀ᵐ x ∂μ, Tendsto (fun n => ENNReal.ofReal (massCutoff n x)) atTop
@@ -225,14 +214,12 @@ private theorem tailInnerFun_nonneg (R : ℕ) (x : ℂ) : 0 ≤ tailInnerFun R x
   le_max_left _ _
 
 private theorem tailInnerFun_le_one (R : ℕ) (x : ℂ) : tailInnerFun R x ≤ 1 := by
-  dsimp [tailInnerFun]
-  exact max_le_iff.mpr ⟨by norm_num, min_le_left _ _⟩
+  simp [tailInnerFun]
 
 private def tailTestFun (R n : ℕ) (x : ℂ) : ℝ :=
   tailInnerFun R x * massCutoffFun n x
 
-private theorem tailTestFun_continuous (R n : ℕ) : Continuous (tailTestFun R n) := by
-  exact (tailInnerFun_continuous R).mul (massCutoffFun_continuous n)
+private theorem tailTestFun_continuous (R n : ℕ) : Continuous (tailTestFun R n) := (tailInnerFun_continuous R).mul (massCutoffFun_continuous n)
 
 private theorem tailTestFun_support (R n : ℕ) :
     Function.support (tailTestFun R n) ⊆ Metric.closedBall (0 : ℂ) ((n : ℝ) + 1) := by
@@ -265,23 +252,19 @@ private theorem tailTest_nonneg (R n : ℕ) (x : ℂ) : 0 ≤ tailTest R n x := 
 
 private theorem tailTest_le_inner (R n : ℕ) (x : ℂ) :
     tailTest R n x ≤ tailInnerFun R x := by
-  simp only [tailTest, tailTestCc, CompactlySupportedContinuousMap.toBoundedContinuousFunction]
+  simp [tailTest, tailTestCc, CompactlySupportedContinuousMap.toBoundedContinuousFunction]
   change tailInnerFun R x * massCutoffFun n x ≤ tailInnerFun R x
   have hleft := tailInnerFun_nonneg R x
   have hcut := massCutoff_le_one n x
-  have hnonneg := massCutoff_nonneg n x
   have hcut' : massCutoffFun n x ≤ 1 := by
     simpa [massCutoff, massCutoffCc,
       CompactlySupportedContinuousMap.toBoundedContinuousFunction] using hcut
-  have hnonneg' : 0 ≤ massCutoffFun n x := by
-    simpa [massCutoff, massCutoffCc,
-      CompactlySupportedContinuousMap.toBoundedContinuousFunction] using hnonneg
   linarith only [mul_nonneg hleft (sub_nonneg.mpr hcut')]
 
 private theorem tailTest_mono (R : ℕ) (x : ℂ) :
     Monotone fun n => tailTest R n x := by
   intro n m hnm
-  simp only [tailTest, tailTestCc,
+  simp [tailTest, tailTestCc,
     CompactlySupportedContinuousMap.toBoundedContinuousFunction]
   change tailInnerFun R x * massCutoffFun n x ≤
     tailInnerFun R x * massCutoffFun m x
@@ -306,8 +289,7 @@ private theorem tailTest_lintegral_tendsto (R : ℕ) (μ : Measure ℂ) :
   have hlim : ∀ᵐ x ∂μ,
       Tendsto (fun n => ENNReal.ofReal (tailTest R n x)) atTop
         (𝓝 (ENNReal.ofReal (tailInnerFun R x))) := by
-    filter_upwards [] with x
-    exact ENNReal.tendsto_ofReal (tailTest_tendsto_inner R x)
+    exact ae_of_all _ fun x => ENNReal.tendsto_ofReal (tailTest_tendsto_inner R x)
   exact lintegral_tendsto_of_tendsto_of_monotone hmeas hmono hlim
 
 private theorem tailInner_zero_of_mem_closedBall (R : ℕ) (x : ℂ)
@@ -400,8 +382,7 @@ theorem admissibleCircleVersion_finite_ae
       (fun ω ε x => Xc ω x (Real.log (1 / ε))) γ M) :
     ∀ᵐ ω ∂P, IsFiniteMeasure (M ω) := by
   have htotal := admissibleCircleVersion_expected_total_le P X hX Xc hXc γ M hM
-  have hEfin : (∫⁻ ω, M ω Set.univ ∂P) < ∞ := by
-    exact lt_of_le_of_lt htotal (lt_top_iff_ne_top.mpr gmcReferenceMeasure_univ_ne_top)
+  have hEfin : (∫⁻ ω, M ω Set.univ ∂P) < ∞ := lt_of_le_of_lt htotal (lt_top_iff_ne_top.mpr gmcReferenceMeasure_univ_ne_top)
   have hmassMeas : Measurable (fun ω => M ω Set.univ) :=
     (Measure.measurable_coe MeasurableSet.univ).comp hM.1
   filter_upwards [ae_lt_top hmassMeas (ne_of_lt hEfin)] with ω hω
@@ -421,10 +402,8 @@ theorem admissibleCircleVersion_expected_tail_le
   classical
   let tail : Set ℂ := (Metric.closedBall (0 : ℂ) (R : ℝ))ᶜ
   let tailLarge : Set ℂ := (Metric.closedBall (0 : ℂ) ((R : ℝ) + 1))ᶜ
-  have htail : MeasurableSet tail := by
-    exact (Metric.isClosed_closedBall (x := (0 : ℂ)) (ε := (R : ℝ))).measurableSet.compl
-  have htailLarge : MeasurableSet tailLarge := by
-    exact (Metric.isClosed_closedBall (x := (0 : ℂ)) (ε := (R : ℝ) + 1)).measurableSet.compl
+  have htail : MeasurableSet tail := (Metric.isClosed_closedBall (x := (0 : ℂ)) (ε := (R : ℝ))).measurableSet.compl
+  have htailLarge : MeasurableSet tailLarge := (Metric.isClosed_closedBall (x := (0 : ℂ)) (ε := (R : ℝ) + 1)).measurableSet.compl
   let A : ℕ → Ω → ℝ≥0∞ := fun n ω =>
     ∫⁻ x, ENNReal.ofReal (tailTest R n x) ∂M ω
   let B : Ω → ℝ≥0∞ := fun ω => ∫⁻ x, ENNReal.ofReal (tailInnerFun R x) ∂M ω
@@ -533,7 +512,6 @@ theorem admissibleCircleVersion_to_IsGMCOf
     intro ε hε
     let B : ℝ := ‖f‖ + 1
     let q : ℝ≥0∞ := ENNReal.ofReal (ε / (3 * B))
-    have hB : 0 < B := by dsimp [B]; linarith [norm_nonneg f]
     have hqpos : 0 < q := ENNReal.ofReal_pos.mpr (div_pos hε (by positivity))
     have hq0 : q ≠ 0 := ne_of_gt hqpos
     have hqtop : q ≠ ∞ := ENNReal.ofReal_ne_top
@@ -607,14 +585,12 @@ theorem admissibleCircleVersion_to_IsGMCOf
         have herr := @circleIntegral_cutoff_error_le
           (regularizedGMC P Xc γ r ω) hfinite f (n + 1)
         have hreal : ε / (3 * B) ≤ (cutoffTail n r ω).toReal := by
-          have hlarge : ε / 3 ≤ ‖f‖ * (cutoffTail n r ω).toReal := by
-            exact hω.trans (by simpa [cutoffTail, tail] using herr)
+          have hlarge : ε / 3 ≤ ‖f‖ * (cutoffTail n r ω).toReal := hω.trans (by simpa [cutoffTail, tail] using herr)
           apply (div_le_iff₀ (by positivity)).2
           dsimp [B]
           have ht : 0 ≤ (cutoffTail n r ω).toReal := ENNReal.toReal_nonneg
           linarith only [hlarge, ht]
-        have htailtop : cutoffTail n r ω ≠ ∞ := by
-          exact measure_ne_top _ _
+        have htailtop : cutoffTail n r ω ≠ ∞ := measure_ne_top _ _
         exact (ENNReal.ofReal_le_iff_le_toReal htailtop).2 hreal
       calc
         P {ω | ε / 3 ≤ ‖
@@ -643,10 +619,9 @@ theorem admissibleCircleVersion_to_IsGMCOf
         have herr := @circleIntegral_cutoff_error_le (N ω) (hNfinite ω) f (n + 1)
         have herr' : ‖(∫ x, cutoffTest f (n + 1) x ∂N ω) -
             (∫ x, f x ∂N ω)‖ ≤ ‖f‖ * (N ω (tail n)).toReal := by
-          simpa only [norm_sub_rev, tail, Nat.cast_add, Nat.cast_one] using herr
+          simpa [norm_sub_rev, tail, Nat.cast_add, Nat.cast_one] using herr
         have hreal : ε / (3 * B) ≤ (N ω (tail n)).toReal := by
-          have hlarge : ε / 3 ≤ ‖f‖ * (N ω (tail n)).toReal := by
-            exact hω.trans (by simpa [tail] using herr')
+          have hlarge : ε / 3 ≤ ‖f‖ * (N ω (tail n)).toReal := hω.trans (by simpa [tail] using herr')
           apply (div_le_iff₀ (by positivity)).2
           dsimp [B]
           have ht : 0 ≤ (N ω (tail n)).toReal := ENNReal.toReal_nonneg
@@ -745,7 +720,7 @@ theorem admissibleCircleVersion_to_IsGMCOf
                     (le_refl _)
         have hmain : ε ≤ ‖
             (∫ x, f x ∂regularizedGMC P Xc γ r ω) - (∫ x, f x ∂N ω)‖ := by
-          simpa only [Set.mem_ofPred_eq] using hω
+          simpa [Set.mem_ofPred_eq] using hω
         exact (not_lt_of_ge hmain) (lt_of_le_of_lt htriangle hsum)
       have hmeasE (s t : Set Ω) : P (s ∪ t) ≤ P s + P t := measure_union_le _ _
       calc
@@ -798,7 +773,7 @@ theorem admissibleCircleVersion_to_IsGMCOf
       have heventually := hcoreEvent.eventually (Iio_mem_nhds hn')
       filter_upwards [heventually] with r hr
       exact le_of_lt (lt_of_le_of_lt (hEventBound n r) hr)
-    exact hFinal
+    assumption
   refine ⟨N, hNfinite, ⟨hNfinite, ⟨Xc, hXc, hGlobal⟩⟩, hNM⟩
 
 end DOZZ.Proofs

@@ -2,12 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Dual.MaximumSandwich
-public import Mathlib.MeasureTheory.Integral.Prod
+import DOZZ.FourPoint.Dual.MaximumSandwich
+import Mathlib.MeasureTheory.Integral.Prod
 import Mathlib.Tactic
 /-! Integrability of signed inverse-power increments from the retained inverse moment. -/
-@[expose] public section
 open MeasureTheory ProbabilityTheory
 namespace DOZZ.Proofs
 
@@ -42,7 +40,7 @@ theorem dual_negative_increment_integrable
   filter_upwards [measurePreserving_fst.quasiMeasurePreserving.ae hA,
     measurePreserving_fst.quasiMeasurePreserving.ae hb,
     measurePreserving_snd.quasiMeasurePreserving.ae hS] with v hAv hbv hSv
-  simpa only [Real.norm_eq_abs] using
+  simpa [Real.norm_eq_abs] using
     dual_negative_increment_abs_le p (A v.1) (b v.1*S v.2) hp hAv (mul_nonneg hbv hSv)
 
 end DOZZ.Proofs

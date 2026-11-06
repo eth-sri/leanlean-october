@@ -2,12 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.Brownian.Williams.MaximumGeometry
-public import Mathlib.Probability.Distributions.Pareto
+import DOZZ.Brownian.Williams.MaximumGeometry
+import Mathlib.Probability.Distributions.Pareto
 import Mathlib.Tactic
 /-! # The actual negative-drift maximum has the Pareto law after exponentiation -/
-public section
 open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -37,7 +35,7 @@ theorem reflected_pareto_tail (a v : ℝ) (ha : 0 < a) (hv : 1 ≤ v) :
 /-- The Pareto variable is at least one almost surely. -/
 theorem reflected_pareto_ge_one_ae (a : ℝ) : ∀ᵐ v ∂paretoMeasure 1 a, 1 ≤ v := by
   rw [ae_iff]
-  simp only [not_le]
+  simp [not_le]
   change paretoMeasure 1 a (Iio 1) = 0
   rw [paretoMeasure, withDensity_apply _ measurableSet_Iio]
   exact lintegral_paretoPDF_of_le le_rfl
@@ -64,7 +62,7 @@ theorem reflected_brownian_maximum_pareto_law
       have he : (fun p => Real.exp (γ * driftedBrownianMaximum ν p)) ⁻¹' Ioi v =
           (driftedBrownianMaximum ν) ⁻¹' Ioi (Real.log v / γ) := by
         ext p
-        simp only [mem_preimage, mem_Ioi, ← Real.log_lt_iff_lt_exp hp,
+        simp [mem_preimage, mem_Ioi, ← Real.log_lt_iff_lt_exp hp,
           div_lt_iff₀ hγ, mul_comm γ]
       rw [he, ← Measure.map_apply_of_aemeasurable hmax measurableSet_Ioi,
         brownianPath_globalMaximum_Ioi P hB ν (Real.log v / γ) hν

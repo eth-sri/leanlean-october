@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.Moments.InversionCircleL2
-public import DOZZ.GMC.Construction.CircleAverageJointVersion
+import DOZZ.GMC.Moments.InversionCircleL2
+import DOZZ.GMC.Construction.CircleAverageJointVersion
 
 /-! Coupled Gaussian circle limits for the inverted local field. -/
 
-@[expose] public section
 
 open Filter MeasureTheory ProbabilityTheory
 open scoped Topology Distributions
@@ -130,7 +128,7 @@ theorem exists_equatorGFF_inversion_circle_joint_version
       apply eLpNorm_congr_ae
       filter_upwards [hZae p] with ω hω
       rw [hω]
-    simpa only [he] using (hY p).2.2.2
+    simpa [he] using (hY p).2.2.2
   · exact hproc.congr (fun p => (hZae p).symm)
   · intro p
     exact (integral_congr_ae (hZae p)).trans (hmean p)

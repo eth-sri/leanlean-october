@@ -2,19 +2,17 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.Moments.RegularizedScale
-public import DOZZ.GMC.Moments.OpenBallApproximation
-public import DOZZ.GMC.Moments.CutoffSubunit
-public import DOZZ.GMC.Construction.RegularizedGMCExpectedMeasure
-public import DOZZ.GMC.Moments.ChaosLawFDDLimit
-public import DOZZ.GMC.Moments.ScaleLimit
-public import DOZZ.GMC.Moments.ExactScaleBallMoment
+import DOZZ.GMC.Moments.RegularizedScale
+import DOZZ.GMC.Moments.OpenBallApproximation
+import DOZZ.GMC.Moments.CutoffSubunit
+import DOZZ.GMC.Construction.RegularizedGMCExpectedMeasure
+import DOZZ.GMC.Moments.ChaosLawFDDLimit
+import DOZZ.GMC.Moments.ScaleLimit
+import DOZZ.GMC.Moments.ExactScaleBallMoment
 
 /-! Exact affine scaling for open-ball masses of the finite circle-cutoff chaos. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped Distributions ENNReal NNReal BoundedContinuousFunction
@@ -83,8 +81,7 @@ theorem regularizedGMC_affine_openBall_mass_law
   let sourceCutoff : ℕ → Ω × ℝ → Fin 1 → ℝ := fun n q _ =>
     c ^ 2 * Real.exp (γ * q.2 - γ ^ 2 / 2 * (-Real.log c)) *
       ∫ x, g n x ∂regularizedGMC P Xc γ r q.1
-  have htargetCutoffMeas (n : ℕ) : AEMeasurable (targetCutoff n) P := by
-    exact aemeasurable_pi_iff.2 (fun _ => by simpa [targetCutoff] using htargetMeas n)
+  have htargetCutoffMeas (n : ℕ) : AEMeasurable (targetCutoff n) P := aemeasurable_pi_iff.2 (fun _ => by simpa [targetCutoff] using htargetMeas n)
   have hsourceCutoffMeas (n : ℕ) : AEMeasurable (sourceCutoff n) (P.prod G) := by
     apply aemeasurable_pi_iff.2
     intro j
@@ -262,10 +259,6 @@ theorem regularizedGMC_affine_openBall_moment_scale
   have hG : IsProbabilityMeasure G := by
     simpa [G] using (ProbabilityTheory.instIsProbabilityMeasureGaussianReal 0
       ⟨-Real.log c, neg_nonneg.mpr (Real.log_nonpos hc.le hc1)⟩)
-  have hPG : IsProbabilityMeasure (P.prod G) := by
-    let hP : IsProbabilityMeasure P := hX.1
-    let hG' : IsProbabilityMeasure G := hG
-    infer_instance
   let targetMass : Ω → ℝ≥0∞ := fun ω =>
     regularizedGMC P Xc γ (r - Real.log c) ω (Metric.ball a (c * R))
   let sourceMass : Ω → ℝ≥0∞ := fun ω =>
@@ -304,7 +297,6 @@ theorem regularizedGMC_affine_openBall_moment_scale
   let ψ : ℝ → ℝ≥0∞ := fun x => ENNReal.rpow (ENNReal.ofReal x) p
   have hψ : Measurable ψ := by dsimp [ψ]; fun_prop
   have htargetFinite := regularizedGMC_finite_ae P X hX Xc hXc γ (r - Real.log c)
-  have hsourceFinite := regularizedGMC_finite_ae P X hX Xc hXc γ r
   have hleft : ∫⁻ ω, ENNReal.rpow (targetMass ω) p ∂P =
       ∫⁻ y, ψ y ∂Measure.map targetCoord P := by
     calc
@@ -344,7 +336,6 @@ theorem regularizedGMC_affine_openBall_moment_scale
         have hnotTop : sourceMass q.1 ≠ ∞ := by
           let _ := hq
           exact measure_ne_top _ _
-        have hscalePos : 0 < scaleFactor q.2 := by dsimp [scaleFactor]; positivity
         change ENNReal.rpow
           (ENNReal.ofReal (scaleFactor q.2 * (sourceMass q.1).toReal)) p = _
         rw [ENNReal.ofReal_mul' ENNReal.toReal_nonneg,
@@ -436,8 +427,7 @@ theorem regularizedGMC_openBall_subunit_scale_bound
     have hx'' : ‖x - z‖ ≤ s := by
       have hx' : ‖x - z‖ ≤ c * (1 / 2 : ℝ) := by
         simpa [Metric.mem_closedBall, dist_eq_norm] using hx
-      rw [hrad] at hx'
-      exact hx'
+      rwa [hrad] at hx'
     have hnorm : ‖x‖ ≤ ‖z‖ + s := by
       calc
         ‖x‖ = ‖(x - z) + z‖ := by congr 1; ring

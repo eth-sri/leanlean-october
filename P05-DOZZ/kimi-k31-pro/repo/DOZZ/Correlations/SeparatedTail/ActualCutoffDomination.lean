@@ -2,21 +2,19 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.SeparatedTail.DirichletMoment
-public import DOZZ.Correlations.SeparatedTail.WickDomination
+import DOZZ.Correlations.SeparatedTail.DirichletMoment
+import DOZZ.Correlations.SeparatedTail.WickDomination
 
 /-! The domination step of `DOZZ.separatedSingularMass_joint_tail` applied to the literal equator
 weighted cutoff mass. -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory Metric Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
 
 /-- The circle split and Green covariance in the exterior-pinned Markov theorem
-`DOZZ.exists_exteriorPinned_markov_uniform` supply the actual weighted-cutoff comparison, with
+`exists_exteriorPinned_markov_uniform` supply the actual weighted-cutoff comparison, with
 its correlated scalar retained. -/
 theorem separatedTail_actual_cutoff_mass_le
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)

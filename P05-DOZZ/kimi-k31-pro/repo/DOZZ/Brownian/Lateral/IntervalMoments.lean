@@ -2,12 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Brownian.LateralMomentConcave
-public import Mathlib.MeasureTheory.Measure.GiryMonad
-public import Mathlib.MeasureTheory.Measure.Lebesgue.Basic
-public import Mathlib.MeasureTheory.Constructions.BorelSpace.Order
+import DOZZ.Brownian.LateralMomentConcave
+import Mathlib.MeasureTheory.Measure.GiryMonad
+import Mathlib.MeasureTheory.Measure.Lebesgue.Basic
+import Mathlib.MeasureTheory.Constructions.BorelSpace.Order
 
 /-!
 # Intensity and translated moments of the lateral measure
@@ -19,7 +18,6 @@ real exponent. Bounding a compact exponent range reduces to bounding its two end
 the reduction covers negative orders and the extended-real values zero and infinity.
 -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Set
 open scoped ENNReal NNReal Topology
@@ -76,7 +74,7 @@ theorem lateralGMC_Icc_eq_Ioc_ae {Ω : Type*} [MeasurableSpace Ω]
   filter_upwards [lateralGMC_singleton_ae P γ Z hZ a] with ω hω
   have hset : Icc a b = {a} ∪ Ioc a b := by
     ext x
-    simp only [mem_Icc, mem_union, mem_singleton_iff, mem_Ioc]
+    simp [mem_Icc, mem_union, mem_singleton_iff, mem_Ioc]
     constructor
     · intro hx
       rcases eq_or_lt_of_le hx.1 with he | he

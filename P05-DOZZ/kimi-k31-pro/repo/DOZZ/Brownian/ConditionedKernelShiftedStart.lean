@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Brownian.ConditionedKernelShiftedRatio
-public import DOZZ.Brownian.ConditionedKernelProbability
+import DOZZ.Brownian.ConditionedKernelShiftedRatio
+import DOZZ.Brownian.ConditionedKernelProbability
 import Mathlib.MeasureTheory.Measure.Haar.NormedSpace
 import Mathlib.MeasureTheory.Measure.Lebesgue.Basic
 
@@ -17,7 +16,6 @@ endpoint left by the difference in starting states. The shifted likelihood ratio
 the shifted law's mass below zero supplies the other half of the single-crossing argument.
 -/
 
-@[expose] public section
 
 open MeasureTheory Filter ProbabilityTheory Set Topology
 open scoped ENNReal
@@ -52,6 +50,10 @@ private theorem conditionedKernelShiftedStartDensityRatio_hasDerivAt
   · dsimp [conditionedKernelShiftedStartDensityRatio]
     ring_nf
 
+private theorem continuousOn_sinhShift_ratio {c c' d : ℝ} (hc' : 0 < c') :
+    ContinuousOn (fun y : ℝ => Real.sinh (c * (y + d)) / Real.sinh (c' * y)) (Set.Ioi 0) := by
+  fun_prop (disch := aesop)
+
 /-- The shifted start likelihood ratio is antitone when `d = x - x'`. Its derivative is bounded
 by `-d/t + (x-x')/t = 0`, using the score's state monotonicity and parameter Lipschitz bound. -/
 theorem conditionedKernelShiftedStartDensityRatio_antitoneOn
@@ -67,21 +69,8 @@ theorem conditionedKernelShiftedStartDensityRatio_antitoneOn
           (Real.sinh (c * (y + d)) / Real.sinh (c' * y))) (Set.Ioi 0)
     have hExp : Continuous (fun y : ℝ =>
         Real.exp (-(d / t) * y - d ^ 2 / (2 * t))) := by fun_prop
-    have hnum1 : Continuous (fun y : ℝ => Real.sinh (ν * (y + d))) := by fun_prop
-    have hden1 : Continuous (fun y : ℝ => Real.sinh (ν * y)) := by fun_prop
-    have hratio1 : ContinuousOn (fun y : ℝ =>
-        Real.sinh (ν * (y + d)) / Real.sinh (ν * y)) (Set.Ioi 0) := by
-      apply hnum1.continuousOn.div hden1.continuousOn
-      intro y hy
-      exact (Real.sinh_pos_iff.mpr (mul_pos hν (by simpa using hy))).ne'
-    have hnum2 : Continuous (fun y : ℝ => Real.sinh (c * (y + d))) := by fun_prop
-    have hden2 : Continuous (fun y : ℝ => Real.sinh (c' * y)) := by fun_prop
-    have hratio2 : ContinuousOn (fun y : ℝ =>
-        Real.sinh (c * (y + d)) / Real.sinh (c' * y)) (Set.Ioi 0) := by
-      apply hnum2.continuousOn.div hden2.continuousOn
-      intro y hy
-      exact (Real.sinh_pos_iff.mpr (mul_pos hc' (by simpa using hy))).ne'
-    exact (hExp.continuousOn.mul hratio1).mul hratio2
+    exact (hExp.continuousOn.mul (continuousOn_sinhShift_ratio hν)).mul
+      (continuousOn_sinhShift_ratio hc')
   apply antitoneOn_of_deriv_nonpos (convex_Ioi 0) hcont
   · intro y hy
     exact (conditionedKernelShiftedStartDensityRatio_hasDerivAt hν hc' hc
@@ -115,19 +104,11 @@ private theorem hasDerivAt_linearShiftRatio
     {y d : ℝ} (hy : 0 < y) (hd : 0 ≤ d) :
     HasDerivAt (fun z : ℝ => (z + d) / z)
       (((y + d) / y) * (1 / (y + d) - 1 / y)) y := by
-  have hnum : HasDerivAt (fun z : ℝ => z + d) 1 y := by
-    convert (hasDerivAt_id y).add_const d using 1
-    simp
-  have hquot := hnum.div (hasDerivAt_id y) hy.ne'
-  have hquot' : HasDerivAt (fun z : ℝ => (z + d) / z)
-      ((1 * y - (y + d) * 1) / y ^ 2) y := by
-    exact hquot
-  have hyD : y + d ≠ 0 := ne_of_gt (by linarith [hy, hd])
-  have halg : (1 * y - (y + d) * 1) / y ^ 2 =
-      ((y + d) / y) * (1 / (y + d) - 1 / y) := by
-    field_simp [hy.ne', hyD]
-  convert hquot' using 1
-  exact halg.symm
+  have hyD : y + d ≠ 0 := ne_of_gt (by linarith)
+  convert ((hasDerivAt_id y).add_const d).div (hasDerivAt_id y) hy.ne' using 1
+  · ext z; rfl
+  · field_simp [hy.ne', hyD]
+    simp [id_eq, mul_comm]
 
 private theorem conditionedKernelZeroShiftedStartDensityRatio_hasDerivAt
     {c c' t d y : ℝ} (hc' : 0 < c') (hc : 0 < c) (hy : 0 < y)
@@ -166,14 +147,7 @@ theorem conditionedKernelZeroShiftedStartDensityRatio_antitoneOn
       apply (continuous_id.add continuous_const).continuousOn.div continuous_id.continuousOn
       intro y hy
       exact ne_of_gt (by simpa using hy)
-    have hnum : Continuous (fun y : ℝ => Real.sinh (c * (y + d))) := by fun_prop
-    have hden : Continuous (fun y : ℝ => Real.sinh (c' * y)) := by fun_prop
-    have hratio : ContinuousOn (fun y : ℝ =>
-        Real.sinh (c * (y + d)) / Real.sinh (c' * y)) (Set.Ioi 0) := by
-      apply hnum.continuousOn.div hden.continuousOn
-      intro y hy
-      exact (Real.sinh_pos_iff.mpr (mul_pos hc' (by simpa using hy))).ne'
-    exact (hExp.continuousOn.mul hlin).mul hratio
+    exact (hExp.continuousOn.mul hlin).mul (continuousOn_sinhShift_ratio hc')
   apply antitoneOn_of_deriv_nonpos (convex_Ioi 0) hcont
   · intro y hy
     exact (conditionedKernelZeroShiftedStartDensityRatio_hasDerivAt hc' hc
@@ -282,8 +256,7 @@ theorem conditionedPositiveTransitionDensity_start_shift_cdf_ge
   have hg : Integrable g (volume : Measure ℝ) := by
     have hmapInt : Integrable (conditionedPositiveTransitionDensity ν t x)
         ((volume : Measure ℝ).map (fun y : ℝ => y + d)) := by
-      rw [hmap]
-      exact hfx
+      rwa [hmap]
     exact he.integrable_map_iff.mp hmapInt
   have hunitf : ∫ y, f y = 1 :=
     conditionedPositiveTransitionDensity_integral_eq_one hν.le ht hx'
@@ -324,8 +297,6 @@ theorem conditionedPositiveTransitionDensity_start_shift_cdf_ge
     have hnonneg : 0 ≤ ∫ y in Set.Iic 0, g y ∂(volume : Measure ℝ) :=
       setIntegral_nonneg measurableSet_Iic (fun y _ => hng y)
     rw [Set.compl_Ioi, hunitg] at hsplit
-    have hsplit' : m + ∫ y in Set.Iic 0, g y ∂(volume : Measure ℝ) = 1 := by
-      simpa [m] using hsplit
     linarith [hnonneg]
   have hmass : (∫ y in Set.Ioi 0, g y ∂(volume : Measure ℝ)) = m := rfl
   have hcoef : 0 < conditionedKernelShiftCoefficient ν t x x' d := by
@@ -342,9 +313,6 @@ theorem conditionedPositiveTransitionDensity_start_shift_cdf_ge
     dsimp [r]
     apply mul_pos hcoef
     dsimp [conditionedKernelShiftedStartDensityRatio]
-    have hcy : 0 < x / t := div_pos hx ht
-    have hcx' : 0 < x' / t := div_pos hx' ht
-    have hyD : 0 < y + d := by linarith [hd]
     positivity
   have hratio : AntitoneOn r (Set.Ioi 0) := by
     intro y₁ hy₁ y₂ hy₂ hy₁₂
@@ -421,8 +389,6 @@ theorem conditionedPositiveTransitionDensity_shifted_drift_cdf_ge
     have hnonneg : 0 ≤ ∫ y in Set.Iic 0, g y ∂(volume : Measure ℝ) :=
       setIntegral_nonneg measurableSet_Iic (fun y _ => hng y)
     rw [Set.compl_Ioi, hunitg] at hsplit
-    have hsplit' : m + ∫ y in Set.Iic 0, g y ∂(volume : Measure ℝ) = 1 := by
-      simpa [m] using hsplit
     linarith
   have hmass : (∫ y in Set.Ioi 0, g y ∂(volume : Measure ℝ)) = m := rfl
   have hfp : ∀ y, 0 < y → 0 < f y := by
@@ -570,8 +536,7 @@ theorem conditionedPositiveTransitionDensity_zero_start_shift_cdf_ge
   have hg : Integrable g (volume : Measure ℝ) := by
     have hbase : Integrable (conditionedPositiveTransitionDensity 0 t x)
         ((volume : Measure ℝ).map (fun y : ℝ => y + d)) := by
-      rw [hmap]
-      exact hfx
+      rwa [hmap]
     exact he.integrable_map_iff.mp hbase
   have hunitf : ∫ y, f y = 1 :=
     conditionedPositiveTransitionDensity_integral_eq_one (by norm_num) ht hx'
@@ -719,14 +684,7 @@ private theorem cdf_superlevel_nonempty
 private theorem cdf_superlevel_bddBelow
     {μ : Measure ℝ} [IsProbabilityMeasure μ] {u : ℝ} (hu : 0 < u)
     (hzero : ∀ x ≤ 0, ProbabilityTheory.cdf μ x = 0) :
-    BddBelow {x | u ≤ ProbabilityTheory.cdf μ x} := by
-  refine ⟨0, ?_⟩
-  intro x hx
-  change u ≤ ProbabilityTheory.cdf μ x at hx
-  by_contra hxlt
-  have hxnonpos : x ≤ 0 := le_of_lt (lt_of_not_ge hxlt)
-  rw [hzero x hxnonpos] at hx
-  linarith
+    BddBelow {x | u ≤ ProbabilityTheory.cdf μ x} := DOZZ.Proofs.probability_cdf_superlevel_bddBelow_of_zero hu hzero
 
 /-- The common-uniform upper start bound for positive-drift conditioned transitions:
 increasing the initial state by `d` raises the endpoint quantile by at most `d`. -/
@@ -807,16 +765,13 @@ theorem conditionedPositiveTransitionQuantile_start_add
         exact ⟨y, hy, by rw [OrderIso.addRight_apply]; ring⟩
       · rintro ⟨y, hy, hz⟩
         refine ⟨y, hy, ?_⟩
-        rw [OrderIso.addRight_apply] at hz
-        exact hz
+        rwa [OrderIso.addRight_apply] at hz
     have hmap := (OrderIso.addRight (-d)).map_csInf' hSnonempty hSbdd
     have hmap' : sInf ((fun z : ℝ => z - d) '' S) = sInf S - d := by
-      rw [himage]
-      rw [← hmap, OrderIso.addRight_apply]
+      rw [himage, ← hmap, OrderIso.addRight_apply]
       ring
     unfold cdfGeneralizedQuantile
-    rw [hset]
-    exact hmap'
+    rwa [hset]
   have hzeroShift (z : ℝ) (hz : z ≤ -d) : ProbabilityTheory.cdf μshift z = 0 := by
     rw [conditionedPositiveTransitionShiftedMeasure_cdf_eq_shifted_integral
       hν.le ht (lt_of_lt_of_le hx' hxx')]
@@ -922,16 +877,13 @@ theorem conditionedPositiveTransitionQuantile_start_add_zero
         exact ⟨y, hy, by rw [OrderIso.addRight_apply]; ring⟩
       · rintro ⟨y, hy, hz⟩
         refine ⟨y, hy, ?_⟩
-        rw [OrderIso.addRight_apply] at hz
-        exact hz
+        rwa [OrderIso.addRight_apply] at hz
     have hmap := (OrderIso.addRight (-d)).map_csInf' hSnonempty hSbdd
     have hmap' : sInf ((fun z : ℝ => z - d) '' S) = sInf S - d := by
-      rw [himage]
-      rw [← hmap, OrderIso.addRight_apply]
+      rw [himage, ← hmap, OrderIso.addRight_apply]
       ring
     unfold cdfGeneralizedQuantile
-    rw [hset]
-    exact hmap'
+    rwa [hset]
   have hzeroShift (z : ℝ) (hz : z ≤ -d) : ProbabilityTheory.cdf μshift z = 0 := by
     rw [conditionedPositiveTransitionShiftedMeasure_cdf_eq_shifted_integral
       hν ht (lt_of_lt_of_le hx' hxx')]
@@ -1034,15 +986,13 @@ theorem conditionedPositiveTransitionQuantile_drift_add
         exact ⟨y, hy, by rw [OrderIso.addRight_apply]; ring⟩
       · rintro ⟨y, hy, hz⟩
         refine ⟨y, hy, ?_⟩
-        rw [OrderIso.addRight_apply] at hz
-        exact hz
+        rwa [OrderIso.addRight_apply] at hz
     have hmap := (OrderIso.addRight (-d)).map_csInf' hSnonempty hSbdd
     have hmap' : sInf ((fun z : ℝ => z - d) '' S) = sInf S - d := by
       rw [himage, ← hmap, OrderIso.addRight_apply]
       ring
     unfold cdfGeneralizedQuantile
-    rw [hset]
-    exact hmap'
+    rwa [hset]
   have hzeroShift (z : ℝ) (hz : z ≤ -d) : ProbabilityTheory.cdf μshift z = 0 := by
     rw [conditionedPositiveTransitionShiftedMeasure_cdf_eq_shifted_integral hb.le ht hx]
     have hzero : ∀ y, y ∈ Set.Iic z →
@@ -1143,7 +1093,7 @@ theorem conditionedPositiveTransitionQuantile_drift_add_zero
     have hsubset : Set.Ioi (0 : ℝ) ⊆ Function.support g ∩ Set.Ioi 0 := by
       intro y hy
       refine ⟨?_, hy⟩
-      simp only [Function.mem_support, ne_eq]
+      simp [Function.mem_support, ne_eq]
       exact (ne_of_gt (hgpos y hy))
     have hsupport : 0 < volume (Function.support g ∩ Set.Ioi 0) :=
       lt_of_lt_of_le hIoi (measure_mono hsubset)
@@ -1212,15 +1162,13 @@ theorem conditionedPositiveTransitionQuantile_drift_add_zero
         exact ⟨y, hy, by rw [OrderIso.addRight_apply]; ring⟩
       · rintro ⟨y, hy, hz⟩
         refine ⟨y, hy, ?_⟩
-        rw [OrderIso.addRight_apply] at hz
-        exact hz
+        rwa [OrderIso.addRight_apply] at hz
     have hmap := (OrderIso.addRight (-d)).map_csInf' hSnonempty hSbdd
     have hmap' : sInf ((fun z : ℝ => z - d) '' S) = sInf S - d := by
       rw [himage, ← hmap, OrderIso.addRight_apply]
       ring
     unfold cdfGeneralizedQuantile
-    rw [hset]
-    exact hmap'
+    rwa [hset]
   have hzeroShift (z : ℝ) (hz : z ≤ -d) : ProbabilityTheory.cdf μshift z = 0 := by
     rw [conditionedPositiveTransitionShiftedMeasure_cdf_eq_shifted_integral hb.le ht hx]
     have hzero : ∀ y, y ∈ Set.Iic z →
@@ -1244,4 +1192,3 @@ theorem conditionedPositiveTransitionQuantile_drift_add_zero
 
 end DOZZ.Proofs
 
-end

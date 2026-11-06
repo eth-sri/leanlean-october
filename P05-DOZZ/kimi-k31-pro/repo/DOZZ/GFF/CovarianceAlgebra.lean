@@ -2,11 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GFF.Potential
-public import DOZZ.GFF.ComplexBridge
-public import GaussianFields
+import DOZZ.GFF.Potential
+import DOZZ.GFF.ComplexBridge
+import GaussianFields
 
 /-!
 # DOZZ.GFF.CovarianceAlgebra
@@ -15,7 +14,6 @@ The deterministic test-function transport and covariance identities for the pinn
 kernel.
 -/
 
-@[expose] public section
 
 open Filter MeasureTheory
 open ProbabilityTheory
@@ -27,11 +25,9 @@ namespace DOZZ
 noncomputable def testFnVec (f : TestFn) : GaussianFields.Vec 2 → ℝ :=
   fun x => f (complexLinearEquivVecTwo.symm x)
 
-theorem continuous_testFnVec (f : TestFn) : Continuous (testFnVec f) := by
-  exact f.continuous.comp complexLinearEquivVecTwo.symm.continuous
+theorem continuous_testFnVec (f : TestFn) : Continuous (testFnVec f) := f.continuous.comp complexLinearEquivVecTwo.symm.continuous
 
-theorem hasCompactSupport_testFnVec (f : TestFn) : HasCompactSupport (testFnVec f) := by
-  exact f.hasCompactSupport.comp_homeomorph complexLinearEquivVecTwo.symm.toHomeomorph
+theorem hasCompactSupport_testFnVec (f : TestFn) : HasCompactSupport (testFnVec f) := f.hasCompactSupport.comp_homeomorph complexLinearEquivVecTwo.symm.toHomeomorph
 
 theorem integrable_testFnVec (f : TestFn) :
     Integrable (testFnVec f) (volume : Measure (GaussianFields.Vec 2)) :=
@@ -72,8 +68,7 @@ noncomputable def abkUnitMassBump : GaussianFields.Vec 2 → ℝ := fun x =>
   (∫ y : GaussianFields.Vec 2, GaussianFields.abkStandardCutoff 2 y)⁻¹ *
     GaussianFields.abkStandardCutoff 2 x
 
-theorem continuous_abkUnitMassBump : Continuous abkUnitMassBump := by
-  exact continuous_const.mul (GaussianFields.abkStandardCutoff 2).continuous
+theorem continuous_abkUnitMassBump : Continuous abkUnitMassBump := continuous_const.mul (GaussianFields.abkStandardCutoff 2).continuous
 
 theorem hasCompactSupport_abkUnitMassBump : HasCompactSupport abkUnitMassBump := by
   have hfun : abkUnitMassBump =
@@ -136,8 +131,7 @@ noncomputable def abkUnitMassBumpAt (a : GaussianFields.Vec 2) :
     GaussianFields.Vec 2 → ℝ := fun x => abkUnitMassBump (x - a)
 
 theorem continuous_abkUnitMassBumpAt (a : GaussianFields.Vec 2) :
-    Continuous (abkUnitMassBumpAt a) := by
-  exact continuous_abkUnitMassBump.comp (continuous_id.sub continuous_const)
+    Continuous (abkUnitMassBumpAt a) := continuous_abkUnitMassBump.comp (continuous_id.sub continuous_const)
 
 theorem hasCompactSupport_abkUnitMassBumpAt (a : GaussianFields.Vec 2) :
     HasCompactSupport (abkUnitMassBumpAt a) := by
@@ -197,7 +191,7 @@ theorem centeredTestFnAt_eq_testFnVec_of_bump_zero
     (f : TestFn) (a x : GaussianFields.Vec 2)
     (hη : abkUnitMassBumpAt a x = 0) :
     centeredTestFnAt f a x = testFnVec f x := by
-  simp [centeredTestFnAt, hη]
+  grind [centeredTestFnAt]
 
 theorem abkUnitMassBump_support_subset_unitBall :
     Function.support abkUnitMassBump ⊆
@@ -270,7 +264,6 @@ theorem integrable_abkLogCovarianceKernel_integrand
   have hαpos (n : ℕ) : 0 < α n := inv_pos.mpr (by positivity)
   have hαle (n : ℕ) : α n ≤ 1 / 2 := by
     have hden_le : (2 : ℝ) ≤ (n : ℝ) + 2 := by
-      have hn0 : (0 : ℝ) ≤ (n : ℝ) := Nat.cast_nonneg n
       linarith
     dsimp [α]
     calc
@@ -355,7 +348,6 @@ theorem integrable_testFnVec_logKernel_pair (f g : TestFn) :
   rcases exists_ball_testFnVec f with ⟨Rf, hRf, hfball⟩
   rcases exists_ball_testFnVec g with ⟨Rg, hRg, hgball⟩
   let R := max Rf Rg
-  have hR : 0 ≤ R := le_max_of_le_left hRf
   have hRfR : Rf ≤ R := le_max_left _ _
   have hRgR : Rg ≤ R := le_max_right _ _
   let a : GaussianFields.Vec 2 := GaussianFields.abkRadialPoint 2 (R + 2)
@@ -562,13 +554,6 @@ theorem integral_gffKernelVec_pair (f g : TestFn) :
       (fun p : GaussianFields.Vec 2 × GaussianFields.Vec 2 =>
         testFnVec f p.1 * (testFnVec g p.2 * logNormPlusVec p.2)) μ := by
     simpa [μ] using hpoty
-  have hsum : Integrable
-      (fun p : GaussianFields.Vec 2 × GaussianFields.Vec 2 =>
-        testFnVec f p.1 * testFnVec g p.2 *
-            GaussianFields.abkLogCovarianceKernel p.1 p.2 +
-          (testFnVec f p.1 * logNormPlusVec p.1) * testFnVec g p.2 +
-          testFnVec f p.1 * (testFnVec g p.2 * logNormPlusVec p.2)) μ :=
-    (hlog.add hpotx').add hpoty'
   have hsplit :
       (∫ p : GaussianFields.Vec 2 × GaussianFields.Vec 2,
         testFnVec f p.1 * gffKernelVec p.1 p.2 * testFnVec g p.2 ∂μ) =
@@ -742,4 +727,3 @@ theorem abkLogCovariancePairing_self_nonneg
 
 end DOZZ
 
-end

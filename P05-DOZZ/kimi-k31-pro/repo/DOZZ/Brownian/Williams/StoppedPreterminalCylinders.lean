@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Brownian.Williams.StoppedPaths
-public import Mathlib.MeasureTheory.Constructions.Cylinders
+import DOZZ.Brownian.Williams.StoppedPaths
+import Mathlib.MeasureTheory.Constructions.Cylinders
 
 /-!
 # Recovering stopped-path cylinders from preterminal marked laws
@@ -16,7 +15,6 @@ its largest observation: before the lifetime it is given by the marked law; at o
 lifetime its terminal value is fixed, and that observation can be removed.
 -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory Set Filter Topology
 open scoped NNReal ENNReal
 namespace DOZZ.Proofs
@@ -63,7 +61,7 @@ theorem SameStoppedPreterminalLaws.lifetime_event_eq
         {z : StoppedBrownianPath | s < z.1} = {z | (z.1 : ℝ) ∈ U ∧ s < z.1} := by
       ext z
       simp [stoppedPreterminalObservation]
-    simpa only [Fin.last_zero, hevent] using he
+    simpa [Fin.last_zero, hevent] using he
   let E : ℕ → Set StoppedBrownianPath := fun n =>
     {z | (z.1 : ℝ) ∈ U ∧ 1/(n+1 : ℝ≥0) < z.1}
   have hmono : Monotone E := by
@@ -125,7 +123,7 @@ theorem SameStoppedPreterminalLaws.preterminal_cylinder_eq
     hlast] at he
   have hpre : stoppedPreterminalObservation n ss ⁻¹' (A ×ˢ U) = stoppedPathCylinder U I S := by
     ext z
-    simp only [mem_preimage, mem_prod, stoppedPreterminalObservation, A,
+    simp [mem_preimage, mem_prod, stoppedPreterminalObservation, A,
       stoppedPathCylinder, mem_ofPred_eq]
     constructor
     · rintro ⟨hx, hu⟩
@@ -133,7 +131,7 @@ theorem SameStoppedPreterminalLaws.preterminal_cylinder_eq
       intro t ht
       obtain ⟨i, hi⟩ := e.surjective ⟨t, ht⟩
       have hi' : ss i = t := congrArg Subtype.val hi
-      simpa only [hi'] using hx i
+      simpa [hi'] using hx i
     · rintro ⟨hu, hx⟩
       exact ⟨fun i => hx _ (e i).property, hu⟩
   rwa [hpre] at he
@@ -178,13 +176,13 @@ theorem SameStoppedPreterminalLaws.positive_cylinder_eq
       have hF : MeasurableSet F := measurableSet_le measurable_fst measurable_const
       have hsplit : E = (E ∩ {z : StoppedBrownianPath | t < z.1}) ∪ (E ∩ F) := by
         ext z
-        simp only [mem_union, mem_inter_iff, F, mem_ofPred_eq]
+        simp [mem_union, mem_inter_iff, F, mem_ofPred_eq]
         exact ⟨fun hz => (lt_or_ge t z.1).elim (fun ht => Or.inl ⟨hz, ht⟩)
           (fun ht => Or.inr ⟨hz, ht⟩), fun hz => hz.elim And.left And.left⟩
       have hdisj : Disjoint (E ∩ {z : StoppedBrownianPath | t < z.1}) (E ∩ F) := by
         apply Set.disjoint_left.mpr
         intro z hz hz'
-        exact (not_lt_of_ge hz'.2) hz.2
+        exact (not_lt_of_ge hz'.2) (by simpa using hz.2)
       have hpre := h.preterminal_cylinder_eq U hU I hI hpos S hS
       have hpost : μ (E ∩ F) = η (E ∩ F) := by
         by_cases hc : c ∈ S t
@@ -193,7 +191,7 @@ theorem SameStoppedPreterminalLaws.positive_cylinder_eq
               (E ∩ F) =ᵐ[M] stoppedPathCylinder (U ∩ Iic (t : ℝ)) J S := by
             filter_upwards [hend] with z hz
             apply propext
-            simp only [E, F, stoppedPathCylinder, mem_inter_iff, mem_ofPred_eq, mem_Iic,
+            simp [E, F, stoppedPathCylinder, mem_inter_iff, mem_ofPred_eq, mem_Iic,
               NNReal.coe_le_coe]
             constructor
             · rintro ⟨⟨hU, hI⟩, hzt⟩
@@ -224,4 +222,3 @@ theorem SameStoppedPreterminalLaws.positive_cylinder_eq
       simpa [stoppedPathCylinder] using h.lifetime_event_eq hμpos hηpos U hU
 
 end DOZZ.Proofs
-end

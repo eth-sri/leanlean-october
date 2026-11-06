@@ -2,16 +2,14 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.SumTail.VariableRate
-public import DOZZ.Correlations.SumTail.Ceiling
-public import DOZZ.Correlations.Tails.ReflectionWitness
-public import DOZZ.Brownian.Reflection.WitnessIndependence
+import DOZZ.Correlations.SumTail.VariableRate
+import DOZZ.Correlations.SumTail.Ceiling
+import DOZZ.Correlations.Tails.ReflectionWitness
+import DOZZ.Brownian.Reflection.WitnessIndependence
 
 /-! The literal one-insertion input yields variable-rate estimates for one common witness. -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -65,7 +63,7 @@ theorem sumtail_uniform_one_tail_for_common_witness
     have hr := reflectionBarR_eq_of_isReflectionData P P γ α (B' α) Z' (B α) Z
       (hB' α hαL) (hB α (hLK hαL))
     rw [hr] at hb
-    simpa only [err,Real.rpow_eq_pow] using hb
+    simpa [err,Real.rpow_eq_pow] using hb
   obtain ⟨C,hC,hCb⟩ := sumtail_uniform_variable_rate Kα hKα (oneInsertionErrorCeiling γ)
     (reflectionExponent γ) (sumtail_one_error_continuousOn γ Kα hγ hα)
     (fun α ha => residue_oneInsertionErrorCeiling_pos γ α hγ (hα α ha).1 (hα α ha).2)

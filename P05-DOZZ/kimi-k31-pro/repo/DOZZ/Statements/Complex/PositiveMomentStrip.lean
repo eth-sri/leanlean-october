@@ -1,2 +1,1 @@
-module
-public import DOZZ.Statements.Complex.ComplexPolydisc
+import DOZZ.Statements.Complex.ComplexPolydisc

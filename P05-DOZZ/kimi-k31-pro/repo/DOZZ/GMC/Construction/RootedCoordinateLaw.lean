@@ -1,14 +1,12 @@
 /-
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 -/
-module
 
-public import DOZZ.GMC.Construction.RootedFiniteCoordinateIdentity
-public import Mathlib.MeasureTheory.Measure.HasOuterApproxClosed
+import DOZZ.GMC.Construction.RootedFiniteCoordinateIdentity
+import Mathlib.MeasureTheory.Measure.HasOuterApproxClosed
 
 /-! Rooted laws of the determining field and measure coordinates. -/
 
-@[expose] public section
 
 open MeasureTheory Filter Topology
 open scoped Distributions ENNReal NNReal BoundedContinuousFunction
@@ -67,8 +65,7 @@ theorem rooted_finite_coordinate_law
       (measurable_pointRootedCoordinatePath P X hX γ M hMmeas hM.1)
   apply ext_of_forall_lintegral_eq_of_IsFiniteMeasure
   intro φ
-  rw [lintegral_map (by fun_prop) hl, lintegral_map (by fun_prop) hr]
-  rw [lintegral_withDensity_eq_lintegral_mul _ hmass (by fun_prop)]
+  rw [lintegral_map (by fun_prop) hl, lintegral_map (by fun_prop) hr, lintegral_withDensity_eq_lintegral_mul _ hmass (by fun_prop)]
   have hj : AEMeasurable (fun q : ℂ × Ω => (φ (gmcTiltFiniteCoordinatePath s
       (fun f => X q.2 f + γ * gffRootCovariance q.1 f)
       (gmcRootedMeasure γ q.1 (M q.2))) : ℝ≥0∞))
@@ -78,7 +75,7 @@ theorem rooted_finite_coordinate_law
   let ψ := φ.comp ((↑) : ℝ≥0 → ℝ) NNReal.isometry_coe.lipschitzWith
   have heq := rooted_finite_coordinate_identity P X hX γ hγ hγ2 M hM hMmeas
     Xc hXc A hA R hAR hRoot s ψ (fun q => (φ q).coe_nonneg)
-  simpa only [ψ, BoundedContinuousFunction.comp_apply, ENNReal.ofReal_coe_nnreal,
+  simpa [ψ, BoundedContinuousFunction.comp_apply, ENNReal.ofReal_coe_nnreal,
     Pi.mul_apply, mul_comm] using heq
 
 /-- Finite measures on a product sigma algebra are determined by all finite-coordinate maps. -/
@@ -93,8 +90,7 @@ theorem measure_eq_of_finite_coordinate_map_eq
     have hm : Measurable (fun q : ι → ℝ => fun i : {i // i ∈ s} => q i.1) :=
       measurable_pi_iff.mpr fun i => measurable_pi_apply i.1
     have heq := congrArg (fun m : Measure (∀ _i : {i // i ∈ s}, ℝ) => m S) (h s)
-    rw [Measure.map_apply hm hS, Measure.map_apply hm hS] at heq
-    exact heq
+    rwa [Measure.map_apply hm hS, Measure.map_apply hm hS] at heq
   exact ext_of_generate_finite C
     (generateFrom_measurableCylinders (α := fun _ : ι => ℝ)).symm
     isPiSystem_measurableCylinders hC

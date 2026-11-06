@@ -2,20 +2,18 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.Analytic.MixedRadiusTiltPotential
-public import DOZZ.GMC.Construction.GMCGeneralTiltLimit
+import DOZZ.Correlations.Analytic.MixedRadiusTiltPotential
+import DOZZ.GMC.Construction.GMCGeneralTiltLimit
 
 /-! Real vertex tilting with mixed inward and outward circle radii. -/
 
-@[expose] public section
 open MeasureTheory
 open scoped ENNReal
 namespace DOZZ.Proofs
 
 /-- Inward and outward vertices at different radii tilt the same retained mass by the sum of their
-exact averaged Green kernels. This applies the general GMC tilt `DOZZ.equatorGFF_GMC_tilt` with
+exact averaged Green kernels. This applies the general GMC tilt `equatorGFF_GMC_tilt` with
 proved premises. -/
 theorem mixed_vertex_tilt_retained_mass
     {Ω : Type*} [MeasurableSpace Ω] {N : ℕ}
@@ -35,6 +33,6 @@ theorem mixed_vertex_tilt_retained_mass
   have hH : Measurable (fun q : (TestFn → ℝ) × Measure ℂ => H q.1 q.2) :=
     ((Measure.measurable_coe ho).comp measurable_snd).pow_const p
   have ht := equatorGFF_GMC_tilt P X hX γ hγ hγ2 M hM Xc hXc L hL c hcov H hH
-  simpa only [L, H, hc] using ht
+  simpa [L, H, hc] using ht
 
 end DOZZ.Proofs

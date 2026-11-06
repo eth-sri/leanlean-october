@@ -2,11 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.SharpMoments.CoulombCutoffDefs
-public import DOZZ.GMC.SharpMoments.SeibergWeight
-public import DOZZ.GMC.Moments.InfinityChart
+import DOZZ.Correlations.Tails.PinWickBound
+import DOZZ.GMC.SharpMoments.CoulombCutoffDefs
+import DOZZ.GMC.SharpMoments.SeibergWeight
+import DOZZ.GMC.Moments.InfinityChart
 
 /-! # Convergence of the single-chart regularized Coulomb weight
 
@@ -16,7 +16,6 @@ away from the roots and from infinity every softened factor is the unsoftened fa
 `exp w` with `|w|` controlled by `exp (-r)`, which gives the uniform convergence with an explicit
 rate. -/
 
-@[expose] public section
 
 open MeasureTheory Filter Topology
 open scoped ENNReal NNReal
@@ -53,22 +52,7 @@ theorem coulombInfinityWeight_inv_eq_coulombWeight {N : ℕ} (γ : ℝ) (α : Fi
 
 /-- `|exp w - 1| ≤ |w| exp |w|`. -/
 theorem coulombCutoffLimit_abs_exp_sub_one_le (w : ℝ) :
-    |Real.exp w - 1| ≤ |w| * Real.exp |w| := by
-  rcases le_total 0 w with hw | hw
-  · rw [abs_of_nonneg hw]
-    have h1 : 1 ≤ Real.exp w := Real.one_le_exp hw
-    have h2 : (-w + 1) * Real.exp w ≤ 1 := by
-      calc (-w + 1) * Real.exp w ≤ Real.exp (-w) * Real.exp w :=
-            mul_le_mul_of_nonneg_right (Real.add_one_le_exp (-w)) (Real.exp_pos w).le
-        _ = 1 := by rw [← Real.exp_add]; simp
-    rw [abs_of_nonneg (by linarith)]
-    linarith only [h2]
-  · rw [abs_of_nonpos hw]
-    have h1 : Real.exp w ≤ 1 := Real.exp_le_one_iff.mpr hw
-    have h2 : w + 1 ≤ Real.exp w := Real.add_one_le_exp w
-    have h3 : 1 ≤ Real.exp (-w) := Real.one_le_exp (by linarith)
-    rw [abs_of_nonpos (by linarith)]
-    linarith only [h2, mul_nonneg (neg_nonneg.2 hw) (sub_nonneg.2 h3)]
+    |Real.exp w - 1| ≤ |w| * Real.exp |w| := DOZZ.Proofs.exp_sub_one_bound w
 
 /-- Softening one factor `n / d` to `n / (d + δ)` multiplies it by an exponential `exp w` with
 `|w| ≤ |e| δ / ρ2` as soon as `d ≥ ρ2 > 0`. -/
@@ -235,7 +219,7 @@ theorem coulombCutoffLimit_combine_sub {W : ℝ≥0∞} {Wb c δ wF wG : ℝ} {f
       ≤ |(fw : ℝ) * W.toReal * (Real.exp wF - 1)| +
         |(iw : ℝ) * W.toReal * (Real.exp wG - 1)| := abs_add_le _ _
     _ = (fw : ℝ) * W.toReal * |Real.exp wF - 1| + (iw : ℝ) * W.toReal * |Real.exp wG - 1| := by
-        simp only [abs_mul, abs_of_nonneg hfw, abs_of_nonneg hiw, abs_of_nonneg hWr0]
+        simp [abs_mul, abs_of_nonneg hfw, abs_of_nonneg hiw, abs_of_nonneg hWr0]
     _ ≤ (fw : ℝ) * W.toReal * (c * δ * Real.exp c) +
         (iw : ℝ) * W.toReal * (c * δ * Real.exp c) := by
         gcongr
@@ -324,7 +308,7 @@ theorem coulombCutoffWeight_sub_coulombWeight_le (partition : GMCChartPartition)
   · have : L₀ ^ S * Real.exp c ≤ L₀ ^ S * (Real.exp c + c * Real.exp c) := by
       gcongr
       linarith
-    exact this
+    assumption
   · have : L₀ ^ S * 1 ≤ L₀ ^ S * (Real.exp c + c * Real.exp c) := by
       gcongr
       linarith

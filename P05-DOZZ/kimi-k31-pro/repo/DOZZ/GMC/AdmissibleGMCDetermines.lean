@@ -2,16 +2,14 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.AdmissibleGMCCountableTests
-public import DOZZ.GMC.AdmissibleGMCRestriction
-public import Mathlib.MeasureTheory.Integral.RieszMarkovKakutani.Real
-public import Mathlib.Topology.Algebra.Support
+import DOZZ.GMC.AdmissibleGMCCountableTests
+import DOZZ.GMC.AdmissibleGMCRestriction
+import Mathlib.MeasureTheory.Integral.RieszMarkovKakutani.Real
+import Mathlib.Topology.Algebra.Support
 
 /-! Countable dense compact tests determine locally finite measures carried by an open chart. -/
 
-@[expose] public section
 
 open MeasureTheory Set Topology
 open scoped Topology CompactlySupported ENNReal
@@ -96,7 +94,7 @@ theorem admissible_countable_tests_determine_chart_measures
         ext x
         constructor
         · rintro ⟨y, hy, rfl⟩
-          exact hy
+          assumption
         · intro hx
           exact ⟨⟨x, hKU n hx⟩, hx, rfl⟩
       rw [himage]
@@ -107,7 +105,7 @@ theorem admissible_countable_tests_determine_chart_measures
         ext x
         constructor
         · rintro ⟨y, hy, rfl⟩
-          exact hy
+          assumption
         · intro hx
           exact ⟨⟨x, hKU n hx⟩, hx, rfl⟩
       rw [himage]
@@ -119,13 +117,7 @@ theorem admissible_countable_tests_determine_chart_measures
     let qg : BoundedContinuousFunction ℂ ℝ := gCc.toBoundedContinuousFunction
     have hqgSupport : tsupport (qg : ℂ → ℝ) ⊆ U := by
       change tsupport gext ⊆ U
-      exact hgextSupport
-    have hqgK : tsupport (qg : ℂ → ℝ) ⊆ K n := by
-      change tsupport gext ⊆ K n
-      exact hgnK
-    have hqgOnU (x : ↥U) : qg x = g x := by
-      change gC x.1 = g x
-      simpa [gC] using hgextval x
+      assumption
     have hlift (lam : Measure ℂ) (lamU : Measure (↥U))
         (hlam : lamU = lam.comap Subtype.val) (q : BoundedContinuousFunction ℂ ℝ)
         (hq : tsupport (q : ℂ → ℝ) ⊆ U) :
@@ -133,16 +125,6 @@ theorem admissible_countable_tests_determine_chart_measures
       rw [hlam, integral_subtype_comap hU.measurableSet]
       exact integral_restrict_eq_integral_of_zero_on_compl lam U hU.measurableSet q
         (boundedContinuousFunction_eq_zero_off_tsupport_subset q U hq)
-    have hqgμ : ∫ x : ↥U, qg x ∂μU = ∫ x, qg x ∂μ :=
-      hlift μ μU rfl qg hqgSupport
-    have hqgν : ∫ x : ↥U, qg x ∂νU = ∫ x, qg x ∂ν :=
-      hlift ν νU rfl qg hqgSupport
-    have hgμ : ∫ x : ↥U, g x ∂μU = ∫ x, qg x ∂μU := by
-      apply integral_congr_ae
-      exact ae_of_all _ fun x => (hqgOnU x).symm
-    have hgν : ∫ x : ↥U, g x ∂νU = ∫ x, qg x ∂νU := by
-      apply integral_congr_ae
-      exact ae_of_all _ fun x => (hqgOnU x).symm
     have hfamilyU (m : ℕ) :
         ∫ x : ↥U, f (n, m) x ∂μU = ∫ x : ↥U, f (n, m) x ∂νU := by
       have hμ := hlift μ μU rfl (f (n, m)) ((hfK n m).2.trans (hKU n))
@@ -151,8 +133,6 @@ theorem admissible_countable_tests_determine_chart_measures
         ∫ x : ↥U, f (n, m) x ∂μU = ∫ x, f (n, m) x ∂μ := hμ
         _ = ∫ x, f (n, m) x ∂ν := hfamily n m
         _ = ∫ x : ↥U, f (n, m) x ∂νU := hν.symm
-    have hgμInt : Integrable g μU := g.continuous.integrable_of_hasCompactSupport g.hasCompactSupport'
-    have hgνInt : Integrable g νU := g.continuous.integrable_of_hasCompactSupport g.hasCompactSupport'
     have hclose (lamU : Measure (↥U)) (hlamfin : IsFiniteMeasureOnCompacts lamU)
         (hlamW : lamU W < ∞) (q : BoundedContinuousFunction ℂ ℝ)
         (hqK : tsupport (q : ℂ → ℝ) ⊆ K n) (δ : ℝ) (hδ : 0 < δ)
@@ -218,11 +198,8 @@ theorem admissible_countable_tests_determine_chart_measures
       exact hclose lamU hlamfin hlamW (f (n, m)) (hfK n m).2 δ hδ happrox
     let Mμ : ℝ := μU.real W
     let Mν : ℝ := νU.real W
-    have hMμ : 0 ≤ Mμ := by simp [Mμ]
-    have hMν : 0 ≤ Mν := by simp [Mν]
     by_contra hne
-    have hD : 0 < ‖(∫ x : ↥U, g x ∂μU) - ∫ x : ↥U, g x ∂νU‖ := by
-      exact norm_pos_iff.mpr (sub_ne_zero.mpr hne)
+    have hD : 0 < ‖(∫ x : ↥U, g x ∂μU) - ∫ x : ↥U, g x ∂νU‖ := norm_pos_iff.mpr (sub_ne_zero.mpr hne)
     let δ : ℝ := ‖(∫ x : ↥U, g x ∂μU) - ∫ x : ↥U, g x ∂νU‖ /
       (2 * (Mμ + Mν + 1))
     have hδ : 0 < δ := by dsimp [δ]; positivity

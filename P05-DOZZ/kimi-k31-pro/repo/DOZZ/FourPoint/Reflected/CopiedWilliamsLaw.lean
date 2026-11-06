@@ -2,10 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Reflected.RestartPast
+import DOZZ.FourPoint.Reflected.RestartPast
 /-! The Williams inner copy retains its joint law with the actual outer past. -/
-@[expose] public section
 open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -89,8 +87,7 @@ theorem reflected_copied_williams_joint_law
   have he' : (fun ω => F (D ω,Z ω)) =ᵐ[P] fun ω => ∫⁻ t,
       (if 0 < t then ENNReal.ofReal (Real.exp (γ * (D ω (Real.toNNReal t)-ν*t))) else 0) ∂Z ω :=
     hZ.2.2.2.2.1.mono fun ω hω => reflected_inwardPolarMassCode_eq γ ν (D ω) (Z ω) hω
-  simp only [Function.comp_def]
-  rw [Measure.map_congr he']
-  rw [williams_polar_mass_law P D hD hB γ Z hZ hDZ ν hν Qν hQν]
+  simp [Function.comp_def]
+  rw [Measure.map_congr he', williams_polar_mass_law P D hD hB γ Z hZ hDZ ν hν Qν hQν]
 
 end DOZZ.Proofs

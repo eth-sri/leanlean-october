@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.BPZ.WardLimit
+import DOZZ.FourPoint.BPZ.WardLimit
 
 /-! # The Ward identity without the auxiliary cutoff
 
@@ -16,7 +15,6 @@ the cutoff function `ρ`:
 
 with `I = ∫ k dM`. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped ENNReal NNReal
@@ -36,7 +34,7 @@ theorem abs_diffKer_le (hd : BPZLimitData γ q δ ρ kt k₂ φ D) {Lφ : ℝ≥
       (Lφ : ℝ) * ‖v‖ / 2 * (k₂ x * k₂ y) := by
   have hk : 0 ≤ k₂ x * k₂ y := mul_nonneg (hd.k₂_nonneg x) (hd.k₂_nonneg y)
   rcases eq_or_ne x y with rfl | hxy
-  · simp only [sub_self, zero_mul, zero_div, abs_zero]; positivity
+  · simp [sub_self, zero_mul, zero_div, abs_zero]; positivity
   have hxy' : 0 < ‖x - y‖ := norm_pos_iff.mpr (sub_ne_zero.mpr hxy)
   have hlip : |φ x - φ y| ≤ Lφ * ‖x - y‖ := by
     rw [← Real.dist_eq, ← dist_eq_norm]; exact hLφ.dist_le_mul x y
@@ -112,7 +110,7 @@ theorem sym_add_mix_eq (hd : BPZLimitData γ q δ ρ kt k₂ φ D) (v : ℂ) {m 
     ← integral_prod (fun p : ℂ × ℂ => G p.1 p.2) hGi, ← integral_add hSi hFs]
   congr 1
   funext p
-  simp only [hSdef, hF, hG, bpzSymKer]
+  simp [hSdef, hF, hG, bpzSymKer]
   rw [show p.2 - p.1 = -(p.1 - p.2) by ring, bpzKern_neg]
   ring
 

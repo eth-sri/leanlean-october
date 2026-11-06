@@ -2,13 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Hypergeom.ClassificationHermitianWirtingerExpansion
+import DOZZ.Hypergeom.ClassificationHermitianWirtingerExpansion
 
 /-! The conjugated PDE and its `∂z` derivative separate the two Cramer coefficients. -/
 
-@[expose] public section
 
 namespace DOZZ.Proofs
 
@@ -56,8 +54,7 @@ theorem realGaussCramer_conjugate_residuals_eq_zero
   have hzReg : z ∈ gaussRegularPlane := gaussCutPlane_subset_regularPlane hz
   have hden : z * (1 - z) ≠ 0 :=
     mul_ne_zero hzReg.1 (sub_ne_zero.mpr (Ne.symm hzReg.2))
-  have hdenAt : DifferentiableAt ℂ (fun w : ℂ => w * (1 - w)) z := by
-    exact differentiableAt_id.mul (differentiableAt_id.const_sub 1)
+  have hdenAt : DifferentiableAt ℂ (fun w : ℂ => w * (1 - w)) z := differentiableAt_id.mul (differentiableAt_id.const_sub 1)
   have hpAt : DifferentiableAt ℂ p z := by
     have hmul : DifferentiableAt ℂ
         (fun w : ℂ => w * ((a : ℂ) + b + 1)) z :=
@@ -146,7 +143,7 @@ theorem realGaussCramer_conjugate_residuals_eq_zero
     change wirtingerZ A z + wirtingerZ B z - wirtingerZ C z = 0
     change wirtingerZ B z = 0 at hR₁pZ
     rw [hR₁pZ]
-    simp only [add_zero]
+    simp [add_zero]
     change wirtingerZ A z = 0 at hαBarBarZ
     change wirtingerZ C z = 0 at hR₁qZ
     rw [hαBarBarZ, hR₁qZ]
@@ -166,7 +163,7 @@ theorem realGaussCramer_conjugate_residuals_eq_zero
     change wirtingerZ A z + wirtingerZ B z - wirtingerZ C z = 0
     change wirtingerZ B z = 0 at hR₂pZ
     rw [hR₂pZ]
-    simp only [add_zero]
+    simp [add_zero]
     change wirtingerZ A z = 0 at hβBarBarZ
     change wirtingerZ C z = 0 at hR₂qZ
     rw [hβBarBarZ, hR₂qZ]
@@ -205,10 +202,10 @@ theorem realGaussCramer_conjugate_residuals_eq_zero
     ring
   have hleftDerivFun : wirtingerZ (f * R₁) z = deriv f z * R₁ z := by
     change wirtingerZ (fun w => f w * R₁ w) z = _
-    exact hleftDeriv
+    assumption
   have hrightDerivFun : wirtingerZ (g * R₂) z = deriv g z * R₂ z := by
     change wirtingerZ (fun w => g w * R₂ w) z = _
-    exact hrightDeriv
+    assumption
   have hE1 : deriv f z * R₁ z + deriv g z * R₂ z = 0 := by
     change wirtingerZ (fun w => (f * R₁) w + (g * R₂) w) z = 0 at hEderivSum
     rw [wirtingerZ_add

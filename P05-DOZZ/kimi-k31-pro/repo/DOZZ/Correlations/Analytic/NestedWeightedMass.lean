@@ -2,13 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.Analytic.RetainedComplement
+import DOZZ.Correlations.Analytic.RetainedComplement
 
 /-! Exact additive mass increments on nested measurable retained sets. -/
 
-@[expose] public section
 open MeasureTheory
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -20,7 +18,7 @@ theorem nested_weighted_mass_add (μ : Measure ℂ) (w : ℂ → ℝ≥0∞)
   have he := measure_inter_add_sdiff (μ := μ.withDensity w) O₁ h₀
   rw [Set.inter_eq_right.mpr hsub,
     withDensity_apply _ h₀, withDensity_apply _ (h₁.diff h₀), withDensity_apply _ h₁] at he
-  exact he
+  assumption
 
 /-- Finite full mass makes the nested mass decomposition valid after taking real values. -/
 theorem nested_weighted_mass_real (μ : Measure ℂ) (w : ℂ → ℝ≥0∞)

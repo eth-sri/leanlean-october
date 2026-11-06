@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Brownian.Lateral.Field
+import DOZZ.Brownian.Lateral.Field
 import Mathlib.Tactic
 
 /-! # Separated-region lateral covariance bounds
@@ -13,7 +12,6 @@ The plane-coordinate form of [KRV, (majkah)]. The estimate is
 uniform in both angular variables and applies throughout the ξ window.
 -/
 
-public section
 
 namespace DOZZ.Proofs
 
@@ -44,13 +42,12 @@ theorem reflected_lateral_cross_bound (w v : ℂ) (hw : w ≠ 0) (hv : v ≠ 0)
   have hq₂ : ‖v‖ / ‖w‖ ≤ 1 / 2 := (div_le_iff₀ hwpos).mpr (by linarith only [hsep])
   have hupper := norm_sub_le w v
   have hlower : ‖w‖ ≤ ‖w - v‖ + ‖v‖ := by
-    simpa only [sub_add_cancel] using norm_add_le (w - v) v
+    simpa [sub_add_cancel] using norm_add_le (w - v) v
   have hxlo : 1 - ‖v‖ / ‖w‖ ≤ ‖w - v‖ / ‖w‖ := by
     rw [← div_self hwpos.ne', ← sub_div, div_le_div_iff_of_pos_right hwpos]
     linarith only [hlower]
   have hxhi : ‖w - v‖ / ‖w‖ ≤ 1 + ‖v‖ / ‖w‖ := by
-    rw [← div_self hwpos.ne', ← add_div, div_le_div_iff_of_pos_right hwpos]
-    exact hupper
+    rwa [← div_self hwpos.ne', ← add_div, div_le_div_iff_of_pos_right hwpos]
   have hlog := reflected_log_near_one_bound (‖w - v‖ / ‖w‖)
     (‖v‖ / ‖w‖) hq hq₂ hxlo hxhi
   rw [origin_lateralKernel_cancellation hw hv, max_eq_left hnorm.le]
@@ -58,9 +55,7 @@ theorem reflected_lateral_cross_bound (w v : ℂ) (hw : w ≠ 0) (hv : v ≠ 0)
       -Real.log (‖w - v‖ / ‖w‖) := by
     rw [Real.log_div hdpos.ne' hwpos.ne']
     ring
-  rw [he, abs_neg]
-  exact hlog
-
+  rwa [he, abs_neg]
 /-- Relative-radius separation gives the cross-covariance error used by Kahane. -/
 theorem reflected_lateral_cross_bound_relative (w v : ℂ) (ρ : ℝ)
     (hw : w ≠ 0) (hv : v ≠ 0) (hρ : ρ ≤ 1 / 2) (hsep : ‖v‖ ≤ ρ * ‖w‖) :

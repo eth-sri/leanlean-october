@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.Dual.Kernel
+import DOZZ.FourPoint.Dual.Kernel
 import DOZZ.FourPoint.Reflected.InnerKernelSqueeze
 import Mathlib.Tactic
 
@@ -13,7 +12,6 @@ import Mathlib.Tactic
 The deterministic k=2 squeeze used in the dual inner-limit comparison.
 -/
 
-public section
 
 namespace DOZZ.Proofs
 
@@ -34,6 +32,6 @@ theorem dual_inner_kernel_squeeze (γ α₁ α₂ α₃ R η : ℝ) (hγ : γ �
   rw [show (2 : ℝ) ^ 2 / 2 = 2 by norm_num,
     show 2 * (γ * α₁ / 2) = γ * α₁ by ring,
     show 2 * (γ * α₂ / 2) = γ * α₂ by ring] at hh
-  exact hh
+  assumption
 
 end DOZZ.Proofs

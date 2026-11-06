@@ -2,12 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Reflected.SourceCopiedWilliamsLaw
-public import DOZZ.FourPoint.Reflected.SourceRadialRestart
-public import DOZZ.FourPoint.Reflected.TranslatedPolarMeasurable
+import DOZZ.FourPoint.Reflected.SourceCopiedWilliamsLaw
+import DOZZ.FourPoint.Reflected.SourceRadialRestart
+import DOZZ.FourPoint.Reflected.TranslatedPolarMeasurable
 /-! Exact joint law of the radial inner mass and the retained source mass. -/
-@[expose] public section
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs

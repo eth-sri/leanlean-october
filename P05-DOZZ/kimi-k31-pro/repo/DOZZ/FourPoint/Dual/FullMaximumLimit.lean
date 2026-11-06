@@ -2,16 +2,14 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Dual.SourceParetoLimit
-public import DOZZ.FourPoint.Dual.SourceParetoIncrement
-public import DOZZ.FourPoint.Dual.SourceMaximumPareto
-public import DOZZ.Statements.Brownian.EquatorGFFLateralGMCDecomposition
-public import DOZZ.FourPoint.Reflected.RestartedWilliams
-public import DOZZ.FourPoint.Dual.RadialFirstOrder
+import DOZZ.FourPoint.Dual.SourceParetoLimit
+import DOZZ.FourPoint.Dual.SourceParetoIncrement
+import DOZZ.FourPoint.Dual.SourceMaximumPareto
+import DOZZ.Statements.Brownian.EquatorGFFLateralGMCDecomposition
+import DOZZ.FourPoint.Reflected.RestartedWilliams
+import DOZZ.FourPoint.Dual.RadialFirstOrder
 import Mathlib.Tactic
 /-! The Williams reference-maximum expectation has its normalized source limit. -/
-@[expose] public section
 open MeasureTheory ProbabilityTheory Set Filter Topology
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -47,7 +45,7 @@ theorem dual_source_full_maximum_increment_tendsto
   let p := (α₁+α₂+α₃-2/γ-2*Q γ)/γ
   have hp : 0 < p := div_pos (by linarith only [hs]) hγ
   obtain ⟨A, _, hA, _, hB, _, _, _, _, _⟩ :=
-    DOZZ.equatorGFF_lateral_GMC_decomposition P X M γ hγ hγ₂ hX hM
+    equatorGFF_lateral_GMC_decomposition P X M γ hγ hγ₂ hX hM
   let W := P.map (fun ω => radialPositiveHalf (A ω))
   have hW : IsBrownianReal (fun t p => p t) W :=
     radialPositiveHalf_map_isBrownian P A hA hB

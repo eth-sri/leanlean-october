@@ -1,11 +1,10 @@
 /-
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 -/
-module
 
-public import DOZZ.Brownian.ConditionedKernelProbability
-public import Mathlib.Probability.Distributions.Gaussian.Real
-public import Mathlib.MeasureTheory.Function.L2Space
+import DOZZ.Brownian.ConditionedKernelProbability
+import Mathlib.Probability.Distributions.Gaussian.Real
+import Mathlib.MeasureTheory.Function.L2Space
 
 /-!
 # Probability laws for the conditioned entrance densities
@@ -14,7 +13,6 @@ The entrance density is a translated zero-drift Doob kernel when the drift is po
 drift it is the Maxwell density, whose normalization is the half-line second moment of a Gaussian.
 -/
 
-@[expose] public section
 
 open Filter MeasureTheory ProbabilityTheory Set Topology
 open scoped ENNReal NNReal
@@ -56,7 +54,7 @@ private theorem brownianHeatDensity_eq_gaussianPDFReal {t : ℝ} (ht : 0 < t) :
       (Real.sqrt (2 * Real.pi * t))⁻¹ * Real.exp (-(x ^ 2) / (2 * t)) := by
     rw [gaussianPDFReal_def]
     simp [hv, sub_zero]
-  simp only [brownianHeatDensity, ite_eq_left ht]
+  simp [brownianHeatDensity, ite_eq_left ht]
   change Real.exp (-(x ^ 2) / (2 * t)) / Real.sqrt (2 * Real.pi * t) =
     gaussianPDFReal 0 v x
   rw [hpdf, div_eq_mul_inv]
@@ -74,8 +72,7 @@ private theorem integrable_sq_mul_brownianHeatDensity {t : ℝ} (ht : 0 < t) :
     simp [gaussianPDF]
   have hsq' : Integrable (fun x : ℝ => x ^ 2)
       ((volume : Measure ℝ).withDensity (gaussianPDF 0 v)) := by
-    rw [← gaussianReal_of_var_ne_zero 0 hv]
-    exact hsq
+    rwa [← gaussianReal_of_var_ne_zero 0 hv]
   have hmul := (integrable_withDensity_iff hpdf hpdf_top).mp hsq'
   apply hmul.congr
   filter_upwards [] with x
@@ -96,8 +93,7 @@ private theorem integral_sq_mul_brownianHeatDensity {t : ℝ} (ht : 0 < t) :
     filter_upwards [] with x
     simp [gaussianPDF]
   have hmoment' : ∫ x : ℝ, x ^ 2 ∂((volume : Measure ℝ).withDensity (gaussianPDF 0 v)) = t := by
-    rw [← gaussianReal_of_var_ne_zero 0 hv]
-    exact hmoment
+    rwa [← gaussianReal_of_var_ne_zero 0 hv]
   rw [integral_withDensity_eq_integral_toReal_smul hpdf hpdf_top (fun x : ℝ => x ^ 2)] at hmoment'
   have hEq : (∫ x : ℝ, (gaussianPDF 0 v x).toReal • x ^ 2) =
       ∫ x : ℝ, x ^ 2 * brownianHeatDensity t x := by
@@ -105,9 +101,7 @@ private theorem integral_sq_mul_brownianHeatDensity {t : ℝ} (ht : 0 < t) :
     filter_upwards [] with x
     rw [smul_eq_mul, toReal_gaussianPDF, ← brownianHeatDensity_eq_gaussianPDFReal ht]
     ring
-  rw [hEq] at hmoment'
-  exact hmoment'
-
+  rwa [hEq] at hmoment'
 private theorem integral_sq_mul_brownianHeatDensity_Ioi {t : ℝ} (ht : 0 < t) :
     ∫ x in Set.Ioi 0, x ^ 2 * brownianHeatDensity t x = t / 2 := by
   have hInt := integrable_sq_mul_brownianHeatDensity ht
@@ -190,8 +184,7 @@ theorem conditionedPositiveEntranceDensity_zero_eq_heat
       Real.exp (-(y ^ 2) / (2 * t)) =
       (Real.sqrt (2 / Real.pi) * t ^ (-(3 / 2 : ℝ))) *
         (y ^ 2 * Real.exp (-(y ^ 2) / (2 * t))) := by
-    rw [div_eq_mul_inv]
-    rw [← Real.rpow_neg (le_of_lt ht)]
+    rw [div_eq_mul_inv, ← Real.rpow_neg (le_of_lt ht)]
     ring
   have hR : (2 / t) * y ^ 2 * brownianHeatDensity t y =
       (2 / (t * Real.sqrt (2 * Real.pi * t))) *
@@ -245,8 +238,7 @@ theorem integrable_conditionedPositiveEntranceDensity
       ring
     · have hy' : y ≤ 0 := le_of_not_gt hy
       have hnot : y ∉ Set.Ioi (0 : ℝ) := by simpa using hy
-      rw [Set.indicator_of_notMem hnot]
-      rw [conditionedPositiveEntranceDensity_eq_zero_of_nonpos (by norm_num) ht hy']
+      rw [Set.indicator_of_notMem hnot, conditionedPositiveEntranceDensity_eq_zero_of_nonpos (by norm_num) ht hy']
   · have hνpos : 0 < ν := lt_of_le_of_ne hν (Ne.symm hνzero)
     have hx : 0 < ν * t := mul_pos hνpos ht
     have htransition := integrable_conditionedPositiveTransitionDensity
@@ -325,7 +317,7 @@ theorem isProbabilityMeasure_conditionedPositiveEntranceMeasure
             positivity
         · rw [conditionedPositiveEntranceDensity_eq_zero_of_nonpos (by norm_num) ht
             (le_of_not_gt hy)]
-          exact le_rfl
+          assumption
       · have hνpos : 0 < ν := lt_of_le_of_ne hν (Ne.symm hνzero)
         rw [conditionedPositiveEntranceDensity_eq_zeroDriftTransition_all hνpos ht]
         exact conditionedPositiveTransitionDensity_nonneg (by norm_num) ht
@@ -363,7 +355,7 @@ theorem conditionedPositiveEntranceMeasure_cdf_eq_integral
             positivity
         · rw [conditionedPositiveEntranceDensity_eq_zero_of_nonpos (by norm_num) ht
             (le_of_not_gt hy)]
-          exact le_rfl
+          assumption
       · have hνpos : 0 < ν := lt_of_le_of_ne hν (Ne.symm hνzero)
         rw [conditionedPositiveEntranceDensity_eq_zeroDriftTransition_all hνpos ht]
         exact conditionedPositiveTransitionDensity_nonneg (by norm_num) ht
@@ -431,10 +423,10 @@ theorem conditionedPositiveEntranceDensity_drift_cdf_le
         field_simp [hpy.ne', hpz.ne']
         norm_num
       · have hν'pos : 0 < ν' := lt_of_le_of_ne hν' (Ne.symm hν'zero)
-        simpa only [r] using
+        simpa [r] using
           conditionedPositiveEntranceDensity_zero_ratio_monotoneOn_state hν'pos ht
     · have hνpos : 0 < ν := lt_of_le_of_ne hν (Ne.symm hνzero)
-      simpa only [r] using conditionedPositiveEntranceDensity_ratio_monotoneOn_state
+      simpa [r] using conditionedPositiveEntranceDensity_ratio_monotoneOn_state
         hνpos hνν' ht
   exact integral_Iic_le_of_monotoneDensityRatio hf hg hfnonneg
     hzeroF hzeroG hunitF hunitG hfactor hratio z
@@ -452,14 +444,7 @@ private theorem entrance_cdf_superlevel_nonempty
 private theorem entrance_cdf_superlevel_bddBelow
     {μ : Measure ℝ} [IsProbabilityMeasure μ] {u : ℝ} (hu : 0 < u)
     (hzero : ∀ x ≤ 0, ProbabilityTheory.cdf μ x = 0) :
-    BddBelow {x | u ≤ ProbabilityTheory.cdf μ x} := by
-  refine ⟨0, ?_⟩
-  intro x hx
-  change u ≤ ProbabilityTheory.cdf μ x at hx
-  by_contra hxlt
-  have hxnonpos : x ≤ 0 := le_of_lt (lt_of_not_ge hxlt)
-  rw [hzero x hxnonpos] at hx
-  linarith
+    BddBelow {x | u ≤ ProbabilityTheory.cdf μ x} := DOZZ.Proofs.probability_cdf_superlevel_bddBelow_of_zero hu hzero
 
 private theorem conditionedPositiveEntranceMeasure_cdf_eq_zero_of_nonpos
     {ν t z : ℝ} (hν : 0 ≤ ν) (ht : 0 < t) (hz : z ≤ 0) :
@@ -511,4 +496,3 @@ theorem conditionedPositiveEntranceQuantile_drift_le
 
 end DOZZ.Proofs
 
-end

@@ -2,12 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Reflected.ReferenceParetoLaw
-public import DOZZ.FourPoint.Reflected.InverseIncrementIntegrable
+import DOZZ.FourPoint.Reflected.ReferenceParetoLaw
+import DOZZ.FourPoint.Reflected.InverseIncrementIntegrable
 import Mathlib.Tactic
 /-! The full and fixed-cut Williams expectations are the literal source Pareto expectations. -/
-@[expose] public section
 open MeasureTheory ProbabilityTheory
 namespace DOZZ.Proofs
 
@@ -60,7 +58,7 @@ theorem reflected_williams_pareto_integral
     filter_upwards [hbq,hSq] with v hv hSv
     exact mul_nonneg (mul_nonneg hv hSv) (Real.exp_pos _).le
   have hInvq : Integrable (fun v : (Ω × Λ) × ℝ => (A v.1.1)^(-p)) Q := by
-    simpa only [mul_one] using
+    simpa [mul_one] using
       (hInv.mul_prod (integrable_const (1 : ℝ))).mul_prod (integrable_const (1 : ℝ))
   have hf : Integrable f Q := reflected_inverse_increment_integrable Q p hp _ _ hAq hT hAmq
     ((hbmq.mul hSmq).mul

@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.EquatorGFFChaosTransportLaw
-public import DOZZ.GMC.SharpMoments.WeightedUniformGrid
+import DOZZ.GMC.EquatorGFFChaosTransportLaw
+import DOZZ.GMC.SharpMoments.WeightedUniformGrid
 
 /-! One fixed equator GMC model supplies uniform moments for translated models. -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal
 
@@ -30,7 +28,7 @@ theorem weighted_moment_model_law
         (ENNReal.measurable_ofReal.comp (measurable_id.sub_const z).norm)
     have hb : MeasurableSet (Metric.ball z ρ) := Metric.isOpen_ball.measurableSet
     have hm := Measure.measurable_lintegral (hk.indicator hb)
-    simpa only [lintegral_indicator hb,
+    simpa [lintegral_indicator hb,
       weightedGmcBallMass, ENNReal.rpow_eq_pow] using hm
   exact equatorGFF_GMC_law_transport P X hX P' X' hX' γ hγ hγ2 M hM M' hM'
     (fun _ μ => weightedGmcBallMass γ μ α z ρ ^ t)

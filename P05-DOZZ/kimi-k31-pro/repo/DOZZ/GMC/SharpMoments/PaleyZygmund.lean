@@ -2,12 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import Mathlib.MeasureTheory.Integral.MeanInequalities
-public import Mathlib.MeasureTheory.Integral.Lebesgue.Basic
-public import Mathlib.MeasureTheory.Measure.Typeclasses.Probability
-public import Mathlib.MeasureTheory.Constructions.BorelSpace.Order
+import Mathlib.MeasureTheory.Integral.MeanInequalities
+import Mathlib.MeasureTheory.Integral.Lebesgue.Basic
+import Mathlib.MeasureTheory.Measure.Typeclasses.Probability
+import Mathlib.MeasureTheory.Constructions.BorelSpace.Order
 
 /-! # Paley–Zygmund for nonnegative extended random variables
 
@@ -16,7 +15,6 @@ variable `Z` give a quantitative lower bound on the probability that `Z` exceeds
 mean bound. The proof splits `Z` at the level `θ m` and applies Hölder's inequality to the part of
 `Z` above the level. -/
 
-@[expose] public section
 
 open MeasureTheory
 open scoped ENNReal NNReal
@@ -93,7 +91,7 @@ theorem paleyZygmund_rpow_step {p a K : ℝ} (hp : 1 < p) (ha : 0 ≤ a) (hK : 0
   rw [ENNReal.mul_rpow_of_nonneg _ _ hq.le, ← ENNReal.rpow_mul, ← ENNReal.rpow_mul, e1, e2,
     ENNReal.rpow_one, ENNReal.ofReal_rpow_of_nonneg hK (one_div_nonneg.2 hp1.le),
     ENNReal.ofReal_rpow_of_nonneg ha hq.le] at h1
-  exact h1
+  assumption
 
 /-- Paley–Zygmund with a `p`-th moment: a lower bound `m` on the mean and an upper bound `K` on the
 `p`-th moment give a quantitative lower bound on the probability of exceeding `θ m`. -/

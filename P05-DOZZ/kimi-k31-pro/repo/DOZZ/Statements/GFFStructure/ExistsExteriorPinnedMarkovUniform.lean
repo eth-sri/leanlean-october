@@ -2,15 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.GFFStructure.PoissonCollarValue
+import DOZZ.Statements.GFFStructure.PoissonCollarValue
 import DOZZ.GFFStructure.MarkovAssembly
 
 /-! The statement `DOZZ.exists_exteriorPinned_markov_uniform`,
 proved by `DOZZ.Proofs.exists_exteriorPinned_markov_uniform`. -/
 
-public section
 
 open MeasureTheory ProbabilityTheory Filter Topology Set Metric
 open scoped ENNReal NNReal
@@ -97,6 +95,6 @@ theorem exists_exteriorPinned_markov_uniform
       (∀ i (x y : ℂ) (r s : ℝ), ‖x - c i‖ + Real.exp (-r) < ρ →
         ‖y - c i‖ + Real.exp (-s) < ρ →
         covariance (fun ω => Dc i ω x r) (fun ω => Dc i ω y s) P =
-          ∫ v, ∫ w, diskGreenKernel (c i) ρ hρ v w ∂circleMeasure y s ∂circleMeasure x r) := by exact DOZZ.Proofs.exists_exteriorPinned_markov_uniform n R ρ a δ hR hρ haρ hδ
+          ∫ v, ∫ w, diskGreenKernel (c i) ρ hρ v w ∂circleMeasure y s ∂circleMeasure x r) := Proofs.exists_exteriorPinned_markov_uniform n R ρ a δ hR hρ haρ hδ
 
 end DOZZ

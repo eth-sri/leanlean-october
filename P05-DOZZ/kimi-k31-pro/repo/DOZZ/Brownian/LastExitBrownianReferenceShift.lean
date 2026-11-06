@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Brownian.LastExitKernel
-public import DOZZ.Brownian.Williams.ConditionedBandFinite
+import DOZZ.Brownian.LastExitKernel
+import DOZZ.Brownian.Williams.ConditionedBandFinite
 
 /-!
 # Full-future avoidance shift for the Brownian reference law
@@ -16,7 +15,6 @@ shift identity directly from the actual infinite-survival measures, without rest
 random last-exit time.
 -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal NNReal
@@ -86,7 +84,7 @@ theorem brownianBelowConditionedLaw_avoidance_shift_integral
       {p : BrownianPath | ∀ t : ℝ≥0,
         driftedBrownianPath (-ν) p t < x} := by
     intro p hp
-    simp only [Set.mem_ofPred_eq] at hp ⊢
+    simp [Set.mem_ofPred_eq] at hp ⊢
     intro t
     exact (hp t).trans (by linarith)
   have hrawIntegrand :
@@ -138,11 +136,9 @@ theorem brownianBelowConditionedLaw_avoidance_shift_integral
           driftedBrownianPath (-ν) p t < x - c},
             F (brownianUpperConditionedPositivePath (x - c)
               (driftedBrownianPath (-ν) p)) ∂B := by
-        rw [lintegral_brownianBelowConditionedLaw B ν x _ htest]
-        rw [← lintegral_indicator (hraw x)]
+        rw [lintegral_brownianBelowConditionedLaw B ν x _ htest, ← lintegral_indicator (hraw x)]
         congr 1
-        rw [hrawIntegrand]
-        rw [lintegral_indicator (hraw (x - c))]
+        rw [hrawIntegrand, lintegral_indicator (hraw (x - c))]
     _ = (ENNReal.ofReal hx)⁻¹ *
         ((ENNReal.ofReal hxc) *
           ∫⁻ q, F (brownianUpperConditionedPositivePath (x - c) q) ∂
@@ -190,4 +186,3 @@ theorem brownianBelowConditionedLaw_avoidance_shift_integral
 
 end DOZZ.Proofs
 
-end

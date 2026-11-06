@@ -2,13 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.FiniteChaosLaplaceLinearChain
+import DOZZ.GMC.FiniteChaosLaplaceLinearChain
 
 /-! Scaled covariance integration by parts for one block of a finite interpolation. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory
 
@@ -95,7 +93,7 @@ theorem finiteChaos_laplace_score_scaled_shifted_standardGaussian_ibp
           ∑ k, scale ^ 2 * (A i k * A j k) := by
             apply Finset.sum_congr rfl
             intro k hk
-            simp only [B]
+            simp [B]
             ring
       _ = scale ^ 2 * ∑ k, A i k * A j k := by rw [Finset.mul_sum]
   have hbase0 :

@@ -3,16 +3,15 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Scott Armstrong, Amélie Loher
 -/
-module
 
-public import Mathlib.MeasureTheory.Function.StronglyMeasurable.Basic
-public import Mathlib.MeasureTheory.Function.L2Space
-public import Mathlib.MeasureTheory.Group.Integral
-public import Mathlib.MeasureTheory.Integral.Indicator
-public import Mathlib.MeasureTheory.Integral.Pi
-public import Mathlib.MeasureTheory.Measure.Haar.NormedSpace
-public import Mathlib.MeasureTheory.Measure.Lebesgue.Basic
-public import GaussianFields.Ambient.Euclidean
+import Mathlib.MeasureTheory.Function.StronglyMeasurable.Basic
+import Mathlib.MeasureTheory.Function.L2Space
+import Mathlib.MeasureTheory.Group.Integral
+import Mathlib.MeasureTheory.Integral.Indicator
+import Mathlib.MeasureTheory.Integral.Pi
+import Mathlib.MeasureTheory.Measure.Haar.NormedSpace
+import Mathlib.MeasureTheory.Measure.Lebesgue.Basic
+import GaussianFields.Ambient.Euclidean
 
 /-!
 # GaussianFields Haar basic atoms
@@ -20,7 +19,6 @@ public import GaussianFields.Ambient.Euclidean
 Port of the corresponding GaussianFields source module.
 -/
 
-public section
 
 open MeasureTheory
 open scoped BigOperators ENNReal InnerProductSpace
@@ -96,7 +94,7 @@ noncomputable instance instEncodable_haarWaveletIndex (d : Nat) :
   Encodable.ofCountable (HaarWaveletIndex d)
 
 /-- Forget the nonzero-signature proof and view a wavelet index as a raw Haar packet index. -/
-@[expose]
+
 def HaarWaveletIndex.toHaarIndex {d : Nat} (idx : HaarWaveletIndex d) : HaarIndex d where
   scale := idx.scale
   cell := idx.cell
@@ -119,7 +117,7 @@ theorem HaarWaveletIndex.toHaarIndex_injective {d : Nat} :
   rfl
 
 /-- The dyadic dilation `2^j`. -/
-@[expose]
+
 noncomputable def dyadicPower (j : ℤ) : ℝ :=
   (2 : ℝ) ^ j
 
@@ -137,7 +135,7 @@ theorem dyadicPower_add_one (j : ℤ) :
   ring
 
 /-- The one-dimensional `L^2` normalization factor `2^(j/2)`. -/
-@[expose]
+
 noncomputable def haarScaleFactor (j : ℤ) : ℝ :=
   (2 : ℝ) ^ ((j : ℝ) / 2)
 
@@ -148,8 +146,7 @@ theorem haarScaleFactor_pos (j : ℤ) : 0 < haarScaleFactor j := by
 theorem haarScaleFactor_sq (j : ℤ) :
     haarScaleFactor j ^ (2 : Nat) = dyadicPower j := by
   unfold haarScaleFactor dyadicPower
-  rw [← Real.rpow_natCast]
-  rw [← Real.rpow_mul (by norm_num : 0 ≤ (2 : ℝ))]
+  rw [← Real.rpow_natCast, ← Real.rpow_mul (by norm_num : 0 ≤ (2 : ℝ))]
   have hmul : (↑j / 2) * ((2 : ℕ) : ℝ) = (j : ℝ) := by norm_num
   rw [hmul, Real.rpow_intCast]
 
@@ -159,18 +156,16 @@ theorem haarScaleFactor_add_one (j : ℤ) :
   have hexp : (((j + 1 : ℤ) : ℝ) / 2) = (j : ℝ) / 2 + (1 / 2 : ℝ) := by
     norm_num
     ring
-  rw [hexp]
-  rw [Real.rpow_add (by norm_num : 0 < (2 : ℝ))]
-  rw [← Real.sqrt_eq_rpow]
+  rw [hexp, Real.rpow_add (by norm_num : 0 < (2 : ℝ)), ← Real.sqrt_eq_rpow]
   ring
 
 /-- The one-dimensional Haar father function `1_[0,1)`. -/
-@[expose]
+
 noncomputable def haarFather1D : ℝ → ℝ :=
   Set.indicator (Set.Ico (0 : ℝ) 1) fun _ => (1 : ℝ)
 
 /-- The one-dimensional Haar mother function `1_[0,1/2) - 1_[1/2,1)`. -/
-@[expose]
+
 noncomputable def haarMother1D : ℝ → ℝ :=
   Set.indicator (Set.Ico (0 : ℝ) (1 / 2)) (fun _ => (1 : ℝ)) -
     Set.indicator (Set.Ico (1 / 2 : ℝ) 1) fun _ => (1 : ℝ)
@@ -600,7 +595,7 @@ theorem integral_haarMother1D_mul_right_child :
           rw [h, integral_haarMother1D, mul_zero, neg_zero]
 
 /-- Select the father or mother Haar function from a Boolean signature. -/
-@[expose]
+
 noncomputable def haarAtom1D (signature : Bool) : ℝ → ℝ :=
   if signature then haarMother1D else haarFather1D
 
@@ -754,4 +749,3 @@ theorem integrable_haarAtom1D_mul_haarAtom1D (signature₁ signature₂ : Bool) 
 
 end GaussianFields
 
-end

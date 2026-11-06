@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import Mathlib.MeasureTheory.Function.ConvergenceInMeasure
-public import Mathlib.MeasureTheory.Integral.DominatedConvergence
+import Mathlib.MeasureTheory.Function.ConvergenceInMeasure
+import Mathlib.MeasureTheory.Integral.DominatedConvergence
 
 /-! # Convergence in probability toolkit
 
@@ -16,7 +15,7 @@ lemma, a lemma turning domination by a sequence converging in measure into small
 probability, and the dominated convergence theorem for convergence in measure.  The proofs go
 through the subsequence criterion `MeasureTheory.exists_seq_tendstoInMeasure_atTop_iff`. -/
 
-@[expose] public section
+section
 
 open MeasureTheory Filter Topology
 open scoped ENNReal
@@ -74,11 +73,11 @@ theorem bpz_tendstoInMeasure_finset_sum {ι : Type*} (s : Finset ι) {f : ι →
   classical
   induction s using Finset.induction_on with
   | empty =>
-    simp only [Finset.sum_empty]
+    simp [Finset.sum_empty]
     exact tendstoInMeasure_of_tendsto_ae (fun _ => aestronglyMeasurable_const)
       (Eventually.of_forall fun _ => tendsto_const_nhds)
   | insert a s ha ih =>
-    simp only [Finset.sum_insert ha]
+    simp [Finset.sum_insert ha]
     exact bpz_tendstoInMeasure_add (hf a)
       (fun n => Finset.aestronglyMeasurable_fun_sum s fun i _ => hf i n)
       (hc a (Finset.mem_insert_self a s))
@@ -109,7 +108,7 @@ theorem bpz_tendstoInMeasure_of_approx {Z : ℕ → Ω → ℝ} {Z₀ : Ω → �
         {ω | min (ε / 3) (r / 3) ≤ |Z₀ ω - A₀ ω|} := by
     intro ω hω
     by_contra hcon
-    simp only [Set.mem_union, Set.mem_ofPred_eq, not_or, not_le, Real.norm_eq_abs] at hcon hω
+    simp [Set.mem_union, Set.mem_ofPred_eq, not_or, not_le, Real.norm_eq_abs] at hcon hω
     obtain ⟨⟨h1, h2⟩, h3⟩ := hcon
     rw [abs_sub_comm] at h3
     have htri : |Z n ω - Z₀ ω| ≤ |Z n ω - A n ω| + |A n ω - A₀ ω| + |A₀ ω - Z₀ ω| := by
@@ -153,7 +152,7 @@ theorem bpz_eventually_measure_le_of_le_tendstoInMeasure {E B : ℕ → Ω → �
       ({ω | ε / 2 ≤ B₀ ω} ∪ {ω | ε / 2 ≤ ‖B n ω - B₀ ω‖} : Set Ω) := by
     filter_upwards [hEB n] with ω hω hεω
     by_contra hcon
-    simp only [Set.mem_union, Set.mem_ofPred_eq, not_or, not_le, Real.norm_eq_abs] at hcon
+    simp [Set.mem_union, Set.mem_ofPred_eq, not_or, not_le, Real.norm_eq_abs] at hcon
     obtain ⟨h1, h2⟩ := hcon
     have h3 : B n ω - B₀ ω ≤ |B n ω - B₀ ω| := le_abs_self _
     linarith
@@ -171,7 +170,7 @@ theorem bpz_tendsto_integral_of_tendstoInMeasure {Z : ℕ → Ω → ℝ} {Z₀ 
   refine tendsto_of_subseq_tendsto fun ns hns => ?_
   obtain ⟨ms, -, hae⟩ := (hc.comp hns).exists_seq_tendsto_ae
   exact ⟨ms, tendsto_integral_of_dominated_convergence W (fun k => hZm (ns (ms k))) hW
-    (fun k => by simpa only [Real.norm_eq_abs] using hb (ns (ms k))) hae⟩
+    (fun k => by simpa [Real.norm_eq_abs] using hb (ns (ms k))) hae⟩
 
 /-- Two sequences with equal expectations and dominated, in-measure convergent integrands have
 limits with equal expectations. -/

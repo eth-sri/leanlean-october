@@ -2,15 +2,14 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.Brownian.Foundations
-public import DOZZ.Statements.Brownian.BrownianPath
-public import Mathlib.Probability.Independence.Integration
-public import Mathlib.MeasureTheory.Integral.Bochner.Set
-public import Mathlib.MeasureTheory.Function.FactorsThrough
-public import Mathlib.MeasureTheory.Integral.DominatedConvergence
-public import Mathlib.Probability.Process.FiniteDimensionalLaws
-public import Mathlib.MeasureTheory.Measure.HasOuterApproxClosed
+import DOZZ.Brownian.Foundations
+import DOZZ.Statements.Brownian.BrownianPath
+import Mathlib.Probability.Independence.Integration
+import Mathlib.MeasureTheory.Integral.Bochner.Set
+import Mathlib.MeasureTheory.Function.FactorsThrough
+import Mathlib.MeasureTheory.Integral.DominatedConvergence
+import Mathlib.Probability.Process.FiniteDimensionalLaws
+import Mathlib.MeasureTheory.Measure.HasOuterApproxClosed
 /-!
 # Brownian restart at bounded raw stopping times
 
@@ -21,7 +20,6 @@ The construction stays on the original sample space and identifies the actual co
 path law on the `BrownianPath` carrier.
 -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory Filter Set
 open scoped Topology ENNReal NNReal
 namespace DOZZ.Proofs
@@ -40,8 +38,7 @@ theorem measurable_brownian_random_increment {Ω : Type*} [mΩ : MeasurableSpace
     (B : ℝ≥0 → Ω → ℝ) (hBm : Measurable (fun p : ℝ≥0 × Ω => B p.1 p.2))
     (τ : Ω → ℝ≥0) (hτm : Measurable τ) (t : ℝ≥0) :
     Measurable (fun ω => B (τ ω+t) ω-B (τ ω) ω) := by
-  exact (hBm.comp ((hτm.add_const t).prodMk measurable_id)).sub
-    (hBm.comp (hτm.prodMk measurable_id))
+  fun_prop
 
 /-- Every finite raw stopping time is a measurable real-time random variable. -/
 theorem measurable_finite_brownian_stoppingTime {Ω : Type*} [mΩ : MeasurableSpace Ω]
@@ -96,7 +93,7 @@ theorem brownian_finite_increment_setIntegral {Ω : Type*} [MeasurableSpace Ω]
   congr 1
   calc
     _ = ∫ f, G f ∂P.map (fun ω t => B (s+t) ω-B s ω) := by
-      simpa only [Pi.sub_apply] using (integral_map
+      simpa [Pi.sub_apply] using (integral_map
         ((Measurable.of_eval (fun t => (hm (s+t)).sub (hm s))).aemeasurable) hG.aestronglyMeasurable).symm
     _ = ∫ f, G f ∂P.map (fun ω t => B t ω) := by rw [brownian_shift_process_map_eq hB hm s]
     _ = _ := by
@@ -206,7 +203,7 @@ theorem brownian_bounded_stopped_finite_restrict_map {Ω : Type*} [mΩ : Measura
   intro F
   rw [integral_map hV.aemeasurable F.continuous.measurable.aestronglyMeasurable,
     integral_smul_measure,integral_map hU.aemeasurable F.continuous.measurable.aestronglyMeasurable]
-  simp only [smul_eq_mul]
+  simp [smul_eq_mul]
   exact brownian_bounded_stopped_finite_setIntegral hB hm hBm τ hτ T hτT A hA times
     F F.continuous ‖F‖ F.norm_coe_le_norm
 
@@ -242,7 +239,7 @@ theorem brownian_bounded_stopped_process_map_eq {Ω : Type*} [mΩ : MeasurableSp
     (T : ℝ≥0) (hτT : ∀ ω, τ ω ≤ T) :
     P.map (fun ω t => B (τ ω+t) ω-B (τ ω) ω) = P.map (fun ω t => B t ω) := by
   let _ := (hB.hasLaw_eval 0).isProbabilityMeasure
-  simpa only [Measure.restrict_univ,measure_univ,one_smul] using
+  simpa [Measure.restrict_univ,measure_univ,one_smul] using
     brownian_bounded_stopped_process_restrict_map hB hm hBm τ hτ T hτT univ MeasurableSet.univ
 
 /-- The raw stopped sigma algebra is independent of the entire future process after bounded restart. -/
@@ -264,9 +261,7 @@ theorem brownian_bounded_stopped_process_indep {Ω : Type*} [mΩ : MeasurableSpa
   rw [Measure.map_apply hV hS,Measure.restrict_apply (hS.preimage hV),Measure.smul_apply] at he
   rw [inter_comm] at he
   change P (A ∩ V ⁻¹' S) = P A*P (V ⁻¹' S)
-  rw [← Measure.map_apply hV hS,brownian_bounded_stopped_process_map_eq hB hm hBm τ hτ T hτT]
-  exact he
-
+  rwa [← Measure.map_apply hV hS,brownian_bounded_stopped_process_map_eq hB hm hBm τ hτ T hτT]
 /-- The continuous-path sigma algebra is the pullback of the evaluation-generated process sigma algebra. -/
 theorem brownianPath_measurableSpace_eq_comap :
     (inferInstance : MeasurableSpace BrownianPath) =

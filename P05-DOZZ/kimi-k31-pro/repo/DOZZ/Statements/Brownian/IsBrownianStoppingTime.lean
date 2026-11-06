@@ -1,2 +1,1 @@
-module
-public import DOZZ.Statements.Brownian.BrownianNaturalSigma
+import DOZZ.Statements.Brownian.BrownianNaturalSigma

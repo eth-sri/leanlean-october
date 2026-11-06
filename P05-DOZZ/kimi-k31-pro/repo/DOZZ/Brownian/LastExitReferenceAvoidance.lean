@@ -2,11 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Brownian.LastExitReferenceKernel
-public import DOZZ.Brownian.ConditionedFutureHistoryAvoidance
-public import DOZZ.Brownian.Williams.MaximumGeometry
+import DOZZ.Brownian.LastExitReferenceKernel
+import DOZZ.Brownian.ConditionedFutureHistoryAvoidance
+import DOZZ.Brownian.Williams.MaximumGeometry
 
 /-!
 # The deterministic-time avoidance identity
@@ -17,7 +16,6 @@ kernel; the only distinction between rational and real-time strict avoidance is 
 level, excluded by the atomless drifted-maximum law.
 -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal NNReal
@@ -81,12 +79,11 @@ private theorem rational_strict_below_implies_weak_all_times
   have htU : (t : ℝ) ∈ U := by
     change 0 < (t : ℝ) ∧ a < F (t : ℝ)
     refine ⟨htpos, ?_⟩
-    rw [hF_eval (t : ℝ) t.2]
-    exact hgt
+    rwa [hF_eval (t : ℝ) t.2]
   obtain ⟨r, hrU⟩ := Rat.denseRange_cast.exists_mem_open hU ⟨t, htU⟩
   have hr : 0 < (r : ℝ) ∧ a < F (r : ℝ) := by
     change (r : ℝ) ∈ U at hrU
-    exact hrU
+    assumption
   have hr0 : 0 ≤ (r : ℝ) := hr.1.le
   have hrat := hq r hr.1
   have heval : F (r : ℝ) = q ⟨(r : ℝ), hr0⟩ := hF_eval (r : ℝ) hr0
@@ -120,10 +117,10 @@ theorem brownianBelowConditionedLaw_rational_below_ae
   have hmaxzero : B {p | driftedBrownianMaximum ν p = a} = 0 := by
     have hsingle := congrArg (fun m : Measure ℝ => m {a}) hmap
     rw [Measure.map_apply_of_aemeasurable hM (measurableSet_singleton a)] at hsingle
-    simpa only [Set.preimage, mem_singleton_iff, eq_comm, measure_singleton] using hsingle
+    simpa [Set.preimage, mem_singleton_iff, eq_comm, measure_singleton] using hsingle
   have hmaxae : ∀ᵐ p ∂B, driftedBrownianMaximum ν p ≠ a := by
     apply ae_iff.mpr
-    simpa only [not_not] using hmaxzero
+    simpa [not_not] using hmaxzero
   have hrawae : ∀ᵐ p ∂B, p ∉ D ⁻¹' (R \ S) := by
     filter_upwards [hmaxae, hB.eval_zero_ae_eq_zero] with p hmax hp0
     intro hp
@@ -133,11 +130,11 @@ theorem brownianBelowConditionedLaw_rational_below_ae
       have hforall : ∀ r : ℚ, D p ∈
           (if hr : 0 < (r : ℝ) then
             {q | q ⟨(r : ℝ), hr.le⟩ < a} else Set.univ) := by
-        simpa only [R, brownianPositiveRationalBelow, Set.mem_iInter] using hp.1
+        simpa [R, brownianPositiveRationalBelow, Set.mem_iInter] using hp.1
       intro r hr
       have h := hforall r
       simp only [hr, dite_eq_left, Set.mem_ofPred_eq] at h
-      exact h
+      assumption
     have hweak := rational_strict_below_implies_weak_all_times (D p) ha (by
       simp [D, driftedBrownianPath, hp0]) hrat
     have ⟨t, ht⟩ : ∃ t : ℝ≥0, a ≤ D p t := by
@@ -178,8 +175,7 @@ theorem brownianBelowConditionedLaw_rational_below_ae
     have hset : {p | ¬ p ∉ D ⁻¹' (R \ S)} = D ⁻¹' (R \ S) := by
       ext p
       simp
-    rw [hset] at hraw'
-    exact hraw'
+    rwa [hset] at hraw'
   have hzeroLaw : brownianBelowConditionedLaw B ν x (R \ S) = 0 := by
     rw [brownianBelowConditionedLaw, Measure.smul_apply, smul_eq_mul,
       Measure.map_apply hD hdiff, Measure.restrict_apply (hD hdiff)]
@@ -187,22 +183,12 @@ theorem brownianBelowConditionedLaw_rational_below_ae
       measure_mono_null (Set.inter_subset_left) hraw
     rw [hsmall]
     simp
-  have hSR : S ⊆ R := by
-    intro q hq
-    simp only [R, brownianPositiveRationalBelow, Set.mem_iInter]
-    simp only [S, brownianPathStrictlyBelow, Set.mem_ofPred_eq] at hq
-    intro r
-    by_cases hr : 0 < (r : ℝ)
-    · simp only [hr, dite_eq_left, Set.mem_ofPred_eq]
-      exact hq ⟨(r : ℝ), hr.le⟩
-    · simp [hr]
   have hsetNot : {q | ¬ q ∉ R \ S} = R \ S := by
     ext q
     simp
   have hnot : ∀ᵐ q ∂brownianBelowConditionedLaw B ν x, q ∉ R \ S := by
     apply ae_iff.mpr
-    rw [hsetNot]
-    exact hzeroLaw
+    rwa [hsetNot]
   filter_upwards [hnot] with q hq
   constructor
   · intro hR
@@ -218,4 +204,3 @@ theorem brownianBelowConditionedLaw_rational_below_ae
 
 end DOZZ.Proofs
 
-end

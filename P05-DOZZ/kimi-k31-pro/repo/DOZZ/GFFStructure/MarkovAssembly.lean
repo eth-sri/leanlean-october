@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GFFStructure.DirichletCircleVersion
+import DOZZ.GFFStructure.DirichletCircleVersion
 
 /-!
 # Exterior-pinned finite Markov assembly
@@ -15,7 +14,6 @@ Dirichlet blocks and a harmonic complement, with one common test event, raw circ
 versions and an explicit positive uniform bound preceding every realization and center.
 -/
 
-@[expose] public section
 open Filter MeasureTheory ProbabilityTheory Set Metric
 open scoped Topology ENNReal NNReal
 universe u
@@ -25,7 +23,7 @@ namespace DOZZ.Proofs
 theorem norm_diskGreen_numerator_comm (c z w : ℂ) (ρ : ℝ) :
     ‖(ρ : ℂ)^2-(z-c)*star (w-c)‖ = ‖(ρ : ℂ)^2-(w-c)*star (z-c)‖ := by
   have he : (ρ : ℂ)^2-(w-c)*star (z-c) = star ((ρ : ℂ)^2-(z-c)*star (w-c)) := by
-    simp only [Complex.star_def,map_sub,map_pow,map_mul,Complex.conj_conj,Complex.conj_ofReal]
+    simp [Complex.star_def,map_sub,map_pow,map_mul,Complex.conj_conj,Complex.conj_ofReal]
     ring
   rw [he,norm_star]
 
@@ -52,7 +50,7 @@ theorem ae_mem_ball_of_interior_circle (c x : ℂ) (ρ r : ℝ)
     (hx : ‖x-c‖+Real.exp (-r) < ρ) : ∀ᵐ z ∂circleMeasure x r, z ∈ ball c ρ := by
   filter_upwards [ae_mem_sphere_circleMeasure x r] with z hz
   exact interior_circle_closedBall_subset c x ρ r hx
-    (by simpa only [abs_of_pos (Real.exp_pos _)] using sphere_subset_closedBall hz)
+    (by simpa [abs_of_pos (Real.exp_pos _)] using sphere_subset_closedBall hz)
 
 /-- A Green circle section is its regular harmonic mean minus the logarithmic circle potential. -/
 theorem integral_diskGreenKernel_circle (c x w : ℂ) (ρ r : ℝ) (hρ : 0 < ρ)
@@ -69,7 +67,7 @@ theorem integral_diskGreenKernel_circle (c x w : ℂ) (ρ r : ℝ) (hρ : 0 < ρ
       norm_diskGreen_numerator_comm c w z ρ]
   have hi := integrable_diskGreen_regular_circle c x w ρ r hρ hx hw
   have hl : Integrable (fun z : ℂ => Real.log ‖w-z‖) (circleMeasure x r) := by
-    simpa only [norm_sub_rev w] using integrable_log_norm_sub_circleMeasure x w r
+    simpa [norm_sub_rev w] using integrable_log_norm_sub_circleMeasure x w r
   have hsub := integral_sub (hi.sub (integrable_const (Real.log ρ))) hl
   have hsub2 := integral_sub hi (integrable_const (Real.log ρ))
   simp only [Pi.sub_apply] at hsub hsub2
@@ -204,7 +202,7 @@ theorem dirichletCircleResidualL2_covariance {Ω : Type*} [MeasurableSpace Ω]
   ring
 
 /-- The actual raw distribution sigma algebra supports every Dirichlet circle clause of
-`DOZZ.exists_exteriorPinned_markov_uniform`. -/
+`exists_exteriorPinned_markov_uniform`. -/
 theorem exists_dirichletDistribution_circle_green {Ω : Type*} [MeasurableSpace Ω]
     (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
@@ -256,7 +254,7 @@ theorem continuousOn_poissonFamilyL2_of_covariance {Ω : Type*} [MeasurableSpace
     (fun z w => hcov z.1 w.1 z.2 w.2) using 1
   funext z
   change (if hz : z.1 ∈ ball c ρ then (hV z.1 hz).toLp (fun ω => V ω z.1) else 0) = _
-  simp only [dite_eq_left z.2]
+  simp [dite_eq_left z.2]
 
 /-- Supported versions assemble the jointly Gaussian complement and mutually independent blocks. -/
 theorem finiteMarkovComplement_gaussian_independence {Ω I : Type*} [MeasurableSpace Ω] {n : ℕ}
@@ -472,7 +470,7 @@ theorem exists_exteriorPinned_markov_uniform
       ((poissonCollarWidth_le ε hε k).trans_lt hεδ2) hsep i z hz _
       (poissonCollarDensity_contDiff ε hε k) (tsupport_poissonCollarDensity_subset ε hε k)
   · intro i z hz
-    simpa only [hp i z hz] using hHilim i z hz
+    simpa [hp i z hz] using hHilim i z hz
   · intro i
     exact ⟨hDG i,fun f => ⟨hDm i f,hDmem i f,hDmean i f⟩,hDcov i⟩
   · intro f

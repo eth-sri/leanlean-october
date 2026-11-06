@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.GFFStructure.DiskFourierDistribution
-public import Mathlib.Topology.ContinuousMap.SecondCountableSpace
+import DOZZ.GFFStructure.DiskFourierDistribution
+import Mathlib.Topology.ContinuousMap.SecondCountableSpace
 /-!
 # Supported versions of the actual Dirichlet completion
 
@@ -15,7 +14,6 @@ provides one event on which all exterior tests vanish. Gaussianity, Green
 covariance, centering and independence transfer to this supported version.
 -/
 
-@[expose] public section
 open Filter MeasureTheory ProbabilityTheory Set Metric TopologicalSpace
 open scoped Topology ENNReal NNReal InnerProductSpace lp
 namespace DOZZ.Proofs
@@ -33,14 +31,14 @@ noncomputable def diskDistributionChartSide (c : ℂ) (ρ : ℝ) : ℝ := 2*(dis
 
 /-- A fixed smooth cutoff which equals one on the closed target disk. -/
 noncomputable def diskDistributionCutoff (c : ℂ) (ρ : ℝ) : ContDiffBump (0 : ℂ) :=
-  DOZZ.localTorusCutoff (‖c‖+|ρ|+1) (by positivity)
+  localTorusCutoff (‖c‖+|ρ|+1) (by positivity)
 
 /-- The fixed cutoff is one throughout the target disk. -/
 theorem diskDistributionCutoff_eq_one (c : ℂ) (ρ : ℝ) (z : ℂ) (hz : z ∈ ball c ρ) :
     diskDistributionCutoff c ρ z = 1 := by
-  apply DOZZ.localTorusCutoff_eq_one
+  apply localTorusCutoff_eq_one
   rw [mem_closedBall_iff_norm,sub_zero]
-  have hbound : ‖z‖ ≤ ‖z-c‖+‖c‖ := by simpa only [sub_add_cancel] using norm_add_le (z-c) c
+  have hbound : ‖z‖ ≤ ‖z-c‖+‖c‖ := by simpa [sub_add_cancel] using norm_add_le (z-c) c
   have hz' := mem_ball_iff_norm.mp hz
   linarith [le_abs_self ρ]
 
@@ -60,7 +58,7 @@ theorem diskDistributionCutoffCLM_support_subset (c : ℂ) (ρ : ℝ) (f : TestF
     change tsupport (fun z => f z*diskDistributionCutoff c ρ z) ⊆ _
     exact tsupport_mul_subset_right
   rw [show tsupport (diskDistributionCutoff c ρ) = closedBall (0 : ℂ) (‖c‖+|ρ|+1+2) from
-    DOZZ.localTorusCutoff_tsupport _ _] at hs
+    localTorusCutoff_tsupport _ _] at hs
   exact subset_tsupport _ |>.trans (hs.trans (closedBall_subset_ball (by
     unfold diskDistributionChartRadius; linarith)))
 
@@ -161,7 +159,7 @@ theorem ae_forall_continuous_eq_zero {Ω E : Type*} [MeasurableSpace Ω]
 /-- The coefficient map through which the global disk distribution factors. -/
 noncomputable def completedDiskFourierCoeffCLM (c : ℂ) (ρ : ℝ) :
     TestFn →L[ℝ] lp (fun _ : Fin 2 → ℤ => ℂ) (2 : ℝ≥0∞) :=
-  (DOZZ.torusH2WeightedFourierCoeffCLM (diskDistributionChartSide c ρ)).comp (diskDistributionCutoffCLM c ρ)
+  (torusH2WeightedFourierCoeffCLM (diskDistributionChartSide c ρ)).comp (diskDistributionCutoffCLM c ρ)
 
 /-- The selected random continuous functional on the Fourier coefficient space. -/
 noncomputable def completedDiskFourierPairingCLM {Ω : Type*} [MeasurableSpace Ω]
@@ -251,7 +249,7 @@ theorem dirichletDistribution_apply_integral_zero {Ω : Type*} [MeasurableSpace 
     (fun f => dirichletCompletedL2Map_integral_zero P X Xc hX hc c R ρ ε hR hρ hε hpin V hV hmean hU hcov hlim _) f
 
 /-- The actual supported Dirichlet distribution has exactly the Green covariance
-`DOZZ.diskGreenCovariance`. -/
+`diskGreenCovariance`. -/
 theorem dirichletDistribution_covariance {Ω : Type*} [MeasurableSpace Ω]
     (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)

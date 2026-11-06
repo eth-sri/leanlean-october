@@ -2,10 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.GMC.Moments.InversionOpenMassLaw
-public import DOZZ.GMC.EquatorGFFChaosTransportLaw
-@[expose] public section
+import DOZZ.GMC.Moments.InversionOpenMassLaw
+import DOZZ.GMC.EquatorGFFChaosTransportLaw
 open Filter MeasureTheory Set
 open scoped Topology Distributions ENNReal
 namespace DOZZ.Proofs
@@ -86,16 +84,14 @@ theorem finite_random_measure_law_of_open_fdd
       have hv := hfdd s (fun j => j.1.1) (fun j => j.1.2)
       have hp : P (vm ⁻¹' As) = P (vn ⁻¹' As) := by
         have h := congrArg (fun μ => μ As) hv
-        rw [Measure.map_apply hm hAs, Measure.map_apply hn hAs] at h
-        exact h
+        rwa [Measure.map_apply hm hAs, Measure.map_apply hn hAs] at h
       have hs : MeasurableSet (inversionMeasureCode ⁻¹' cylinder s As) := by
         apply hcode
         rw [← generateFrom_measurableCylinders]
         exact MeasurableSpace.measurableSet_generateFrom
           (cylinder_mem_measurableCylinders (α := fun _ : InversionOpen => ℝ≥0∞) s As hAs)
-      rw [Measure.map_apply hom hs, Measure.map_apply hon hs]
-      exact hp
-    · simp only [Measure.map_apply hom MeasurableSet.univ,
+      rwa [Measure.map_apply hom hs, Measure.map_apply hon hs]
+    · simp [Measure.map_apply hom MeasurableSet.univ,
         Measure.map_apply hon MeasurableSet.univ, preimage_univ]
   have hh := hH.comp hforget
   calc

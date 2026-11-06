@@ -3,9 +3,8 @@ Copyright (c) 2025 Rémy Degenne. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Rémy Degenne
 -/
-module
 
-public import DOZZ.GFFStructure.DenseHolder
+import DOZZ.GFFStructure.DenseHolder
 
 /-!
 # Measurable Hölder limit modifications
@@ -15,7 +14,6 @@ Degenne and collaborators (github.com/RemyDegenne/brownian-motion). Limits are t
 countable dense set; agreement with the original process is proved in measure.
 -/
 
-@[expose] public section
 
 open MeasureTheory Filter _root_.ProbabilityTheory
 open scoped ENNReal NNReal Topology Asymptotics
@@ -49,7 +47,7 @@ lemma IsKolmogorovProcess.tendstoInMeasure (hX : IsKolmogorovProcess X P p q M)
   suffices Tendsto (fun n ↦ P {ω | ε ^ p ≤ edist (X (u n) ω) (X t ω) ^ p}) atTop (𝓝 0) by
     convert this using 3 with n
     ext ω
-    simp only [Set.mem_ofPred_eq]
+    simp [Set.mem_ofPred_eq]
     rw [ENNReal.rpow_le_rpow_iff hX.p_pos]
   refine tendsto_of_tendsto_of_tendsto_of_le_of_le tendsto_const_nhds ?_ (fun _ ↦ zero_le) ?_
     (h := fun n ↦ (ε ^ p)⁻¹ * ∫⁻ ω, edist (X (u n) ω) (X t ω) ^ p ∂P)
@@ -78,7 +76,7 @@ lemma isLimitOfIndicator_holderModification
     (hc : c ≠ ∞) (hd_pos : 0 < d) (hdq_lt : d < q) (hβ_pos : 0 < β) (hβ_lt : β < (q - d) / p) :
     IsLimitOfIndicator (holderModification X β p U) X P U := by
   let A := holderSet X (denseCountable T) p β U
-  have hA_meas : MeasurableSet A := DOZZ.Proofs.IsKolmogorovProcess.measurableSet_holderSet hX countable_denseCountable
+  have hA_meas : MeasurableSet A := IsKolmogorovProcess.measurableSet_holderSet hX countable_denseCountable
   have hA_ae : ∀ᵐ ω ∂P, ω ∈ A := ae_mem_holderSet hT hX hc hd_pos hdq_lt hβ_pos hβ_lt
     countable_denseCountable
   refine ⟨A, hA_meas, hA_ae, fun t htU ω hω ↦ ?_, fun t htU ω ↦ ?_, fun t htUc ω ↦ ?_⟩
@@ -104,7 +102,7 @@ lemma holderOnWith_holderModification
     ∃ C : ℝ≥0, HolderOnWith C β (holderModification X β p U · ω) U := by
   let C ω := ⨆ (s : (denseCountable T ∩ U : Set T)) (t : (denseCountable T ∩ U : Set T)),
     edist (X s ω) (X t ω) ^ p / edist s t ^ (β * p)
-  simp only [holderModification]
+  simp [holderModification]
   suffices ∃ C, HolderOnWith C β
       (fun x ↦ limUnder (comap Subtype.val (𝓝 x))
         fun t' : denseCountable T ↦ indicatorProcess X (holderSet X (denseCountable T) p β U) t' ω)
@@ -114,16 +112,16 @@ lemma holderOnWith_holderModification
     -- missing congr lemma?
     intro s hs t ht
     specialize hHolder s hs t ht
-    simpa only [hs, ↓reduceIte, ht]
+    simpa [hs, ↓reduceIte, ht]
   classical
   by_cases hω : ω ∈ holderSet X (denseCountable T) p β U
-  · simp only [hω, ↓reduceIte, indicatorProcess_apply]
+  · simp [hω, ↓reduceIte, indicatorProcess_apply]
     refine ⟨(C ω ^ p⁻¹).toNNReal, ?_⟩
-    refine DOZZ.Proofs.Dense.holderOnWith_extend hU dense_denseCountable ?_ hβ_pos
+    refine Dense.holderOnWith_extend hU dense_denseCountable ?_ hβ_pos
     exact holderOnWith_of_mem_holderSet hT hX.p_pos hβ_pos hω
-  · simp only [hω, ↓reduceIte, indicatorProcess_apply]
+  · simp [hω, ↓reduceIte, indicatorProcess_apply]
     refine ⟨0, HolderWith.holderOnWith ?_ _⟩
-    exact DOZZ.Proofs.Dense.holderWith_extend dense_denseCountable (by simp [HolderWith]) hβ_pos
+    exact Dense.holderWith_extend dense_denseCountable (by simp [HolderWith]) hβ_pos
 
 omit [MeasurableSpace E] [BorelSpace E] in
 lemma uniformContinuousOn_holderModification
@@ -183,7 +181,7 @@ lemma edist_holderModification_eq_zero (hT : HasBoundedCoveringNumber U c d) (hU
     {ω : Ω} (hω : ω ∈ holderSet X (denseCountable T) p β U) :
     edist (holderModification X β p U t' ω) (X t' ω) = 0 := by
   classical
-  simp only [holderModification, ht'U, ↓reduceIte, indicatorProcess_apply, hω]
+  simp [holderModification, ht'U, ↓reduceIte, indicatorProcess_apply, hω]
   have : @NeBot { x // x ∈ denseCountable T } (comap Subtype.val (𝓝 t')) := by
     rw [← nhds_subtype]
     infer_instance
@@ -224,8 +222,6 @@ lemma edist_modification_holderModification (hT : HasBoundedCoveringNumber U c d
       edist (Y t ω) (X t ω) = 0 := by
     exact edist_holderModification_eq_zero hT hU hX hβ_pos t htU hω
   classical
-  have hY_unif ω : UniformContinuousOn (fun t ↦ Y t ω) U :=
-    uniformContinuousOn_holderModification hT hU hX hβ_pos ω
   have hY_cont ω : ContinuousOn (fun t ↦ Y t ω) U :=
     continuousOn_holderModification hT hU hX hβ_pos ω
   -- Main proof
@@ -241,7 +237,7 @@ lemma edist_modification_holderModification (hT : HasBoundedCoveringNumber U c d
       obtain ⟨t', ht'⟩ := dense_denseCountable.exists_mem_open hU ⟨t, htU⟩
       exact ⟨⟨t', ht'.1⟩, ht'.2⟩
     refine ⟨fun n ↦ if u' n ∈ U then ⟨u' n, hu'_mem n⟩ else t₀, fun n ↦ ?_, ?_⟩
-    · simp only
+    · simp
       split_ifs with hmem
       · simp [hmem]
       · simp [ht₀]
@@ -255,7 +251,7 @@ lemma edist_modification_holderModification (hT : HasBoundedCoveringNumber U c d
     simp [hY_eq hω (u n) (huU n)]
   -- `X (u n)` converges in measure to `X t`
   have h_tendsto_X : TendstoInMeasure P (fun n ↦ X (u n)) atTop (X t) :=
-    DOZZ.Proofs.IsKolmogorovProcess.tendstoInMeasure hX (hd_pos.trans hdq_lt) hu
+    IsKolmogorovProcess.tendstoInMeasure hX (hd_pos.trans hdq_lt) hu
   -- `Y (u n)` converges in measure to `Y t`
   have h_tendsto_Y : TendstoInMeasure P (fun n ↦ Y (u n)) atTop (Y t) := by
     have h_ae ω : Tendsto (fun n ↦ Y (u n) ω) atTop (𝓝 (Y t ω)) := by
@@ -273,7 +269,7 @@ lemma edist_modification_holderModification (hT : HasBoundedCoveringNumber U c d
     _ = P ({ω | ε ≤ edist (Y t ω) (X t ω)} ∩ A) := by rw [hPA]
     _ ≤ P ({ω | ε ≤ edist (Y (u n) ω) (Y t ω) + edist (X (u n) ω) (X t ω)} ∩ A) := by
       refine measure_mono fun ω ↦ ?_
-      simp only [Set.mem_inter_iff, Set.mem_ofPred_eq, and_imp]
+      simp [Set.mem_inter_iff, Set.mem_ofPred_eq, and_imp]
       refine fun hε_le hω ↦ ⟨(hε_le.trans (h_le n hω)).trans_eq ?_, hω⟩
       rw [edist_comm]
     _ = P {ω | ε ≤ edist (Y (u n) ω) (Y t ω) + edist (X (u n) ω) (X t ω)} := by rw [hPA]
@@ -322,7 +318,7 @@ lemma exists_modification_holder_aux' (hT : HasBoundedCoveringNumber U c d)
   · specialize hY_holder ω
     obtain ⟨C, hC⟩ := hY_holder
     refine ⟨C, ?_⟩
-    refine DOZZ.Proofs.HolderOnWith.congr_edist (fun s t hs ht ↦ ?_) hC
+    refine HolderOnWith.congr_edist (fun s t hs ht ↦ ?_) hC
     rw [edist_congr_left (hZ_edist t ω), edist_congr_right (hZ_edist s ω)]
   · obtain ⟨A, hA_meas, hA_ae, hY_tendsto, hYU, hYUc⟩ := hY_limit
     refine ⟨A, hA_meas, hA_ae, hY_tendsto, fun t htU ω ↦ ?_, fun t htU ω ↦ ?_⟩

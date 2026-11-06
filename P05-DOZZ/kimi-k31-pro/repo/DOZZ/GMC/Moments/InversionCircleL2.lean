@@ -2,18 +2,16 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.Moments.InversionCovariance
-public import DOZZ.GMC.Moments.InversionPuncturedApproximation
-public import DOZZ.GMC.Construction.CircleEnergyGapPositivity
-public import DOZZ.GMC.Moments.InversionFieldLaw
-public import DOZZ.GMC.Moments.ChaosLawFDDLimit
-public import DOZZ.Statements.Defs.IsCircleAverage
+import DOZZ.GMC.Moments.InversionCovariance
+import DOZZ.GMC.Moments.InversionPuncturedApproximation
+import DOZZ.GMC.Construction.CircleEnergyGapPositivity
+import DOZZ.GMC.Moments.InversionFieldLaw
+import DOZZ.GMC.Moments.ChaosLawFDDLimit
+import DOZZ.Statements.Defs.IsCircleAverage
 
 /-! Actual random L² limits of circle tests transported through inversion. -/
 
-@[expose] public section
 
 open Filter MeasureTheory ProbabilityTheory Metric
 open scoped Topology Distributions ENNReal
@@ -102,8 +100,7 @@ theorem equatorGFF_inversion_testL2_tendsto_to_circle_limit
   have hδ : 0 < η ^ 2 / 8 := by positivity
   have hq0 : ∀ᶠ m in atTop, circleEnergyGap x r (f₀ m) < η ^ 2 / 8 :=
     hgap₀.eventually (gt_mem_nhds hδ)
-  have hnear : ∀ᶠ m in atTop, dist (V m) W < ε / 2 := by
-    exact hW.eventually (Metric.ball_mem_nhds W (by positivity))
+  have hnear : ∀ᶠ m in atTop, dist (V m) W < ε / 2 := hW.eventually (Metric.ball_mem_nhds W (by positivity))
   obtain ⟨m, hm⟩ := (hq0.and hnear).exists
   have hq : ∀ᶠ n in atTop, circleEnergyGap x r (f n) < η ^ 2 / 8 :=
     hgap.eventually (gt_mem_nhds hδ)

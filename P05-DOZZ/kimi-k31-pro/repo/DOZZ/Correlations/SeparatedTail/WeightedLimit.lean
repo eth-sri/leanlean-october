@@ -2,15 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.SeparatedTail.MixedFatou
-public import DOZZ.GMC.SharpMoments.LimitWeightedFatou
-public import DOZZ.GMC.SharpMoments.WeightedLocalRange
+import DOZZ.Correlations.SeparatedTail.MixedFatou
+import DOZZ.GMC.SharpMoments.LimitWeightedFatou
+import DOZZ.GMC.SharpMoments.WeightedLocalRange
 
 /-! Mixed moments of two bounded weights pass from regularized GMC to the actual GMC. -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory Filter Topology Metric Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -40,7 +38,7 @@ theorem separatedTail_bounded_weight_mixed_moment_limit_le
         (fun x => (w (x-z) : ℝ≥0∞)) x ∂regularizedGMC P Xc γ ((n+n₀ : ℕ) : ℝ) ω) :=
       (Measure.measurable_lintegral (hwm.indicator isOpen_ball.measurableSet)).comp
         (regularizedGMC_measurable P X hX Xc hXc γ _)
-    simpa only [lintegral_indicator isOpen_ball.measurableSet] using h.aemeasurable
+    simpa [lintegral_indicator isOpen_ball.measurableSet] using h.aemeasurable
   have hfin (z : ℂ) (w : ℂ → ℝ≥0) (b : ℝ≥0) (hb : ∀ y, w y ≤ b) (n : ℕ) :
       ∀ᵐ ω ∂P, (∫⁻ x in ball z 1, (w (x-z) : ℝ≥0∞)
         ∂regularizedGMC P Xc γ ((n+n₀ : ℕ) : ℝ) ω) ≠ ⊤ := by

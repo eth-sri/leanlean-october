@@ -2,12 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.GMC.RegularizedCoulombMass
-public import DOZZ.Statements.GMC.CoulombMass
-public import DOZZ.GMC.Moments.InversionCutoff
-public import DOZZ.GMC.SharpMoments.LocationTransfer
+import DOZZ.Statements.GMC.RegularizedCoulombMass
+import DOZZ.Statements.GMC.CoulombMass
+import DOZZ.GMC.Moments.InversionCutoff
+import DOZZ.GMC.SharpMoments.LocationTransfer
 
 /-! # The regularized Coulomb mass as a single-chart integral
 
@@ -16,7 +15,6 @@ inversion, so the regularized Coulomb mass is the integral of one explicit weigh
 circle-average cutoff chaos: the finite-chart weight times the finite partition function plus the
 inverted-chart weight, evaluated at the inverted point, times the inverted partition function. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped ENNReal NNReal
@@ -45,7 +43,7 @@ noncomputable def coulombCutoffWeight (partition : GMCChartPartition) {N : ℕ} 
 theorem measurable_coulombCutoffFiniteWeight {N : ℕ} (γ : ℝ) (α : Fin N → ℝ) (z : Fin N → ℂ)
     (αinf r : ℝ) : Measurable (coulombCutoffFiniteWeight γ α z αinf r) := by
   unfold coulombCutoffFiniteWeight
-  simp only [ENNReal.rpow_eq_pow]
+  simp [ENNReal.rpow_eq_pow]
   refine Measurable.mul (Finset.measurable_prod _ fun k _ => ?_) ?_
   · exact (ENNReal.measurable_ofReal.comp (measurable_normPlus.div
       ((measurable_id.sub_const (z k)).norm.add_const _))).pow_const _
@@ -54,7 +52,7 @@ theorem measurable_coulombCutoffFiniteWeight {N : ℕ} (γ : ℝ) (α : Fin N �
 theorem measurable_coulombCutoffInfinityWeight {N : ℕ} (γ : ℝ) (α : Fin N → ℝ) (z : Fin N → ℂ)
     (αinf r : ℝ) : Measurable (coulombCutoffInfinityWeight γ α z αinf r) := by
   unfold coulombCutoffInfinityWeight
-  simp only [ENNReal.rpow_eq_pow]
+  simp [ENNReal.rpow_eq_pow]
   refine Measurable.mul (Finset.measurable_prod _ fun k _ => ?_) ?_
   · exact (ENNReal.measurable_ofReal.comp (measurable_normPlus.div
       ((measurable_const.sub (measurable_const.mul measurable_id)).norm.add_const _))).pow_const _

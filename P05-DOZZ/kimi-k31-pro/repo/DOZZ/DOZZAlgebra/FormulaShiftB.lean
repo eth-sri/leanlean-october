@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.Defs.DualMu
+import DOZZ.Statements.Defs.DualMu
 import DOZZ.DOZZAlgebra.GenericLocus
 import DOZZ.Upsilon.FullShifts
 import DOZZ.Upsilon.StripIdentities
@@ -15,7 +14,6 @@ import Mathlib.Analysis.SpecialFunctions.Pow.Real
 # The first DOZZ formula shift on its finite generic locus
 -/
 
-@[expose] public section
 
 open Complex Filter Set Topology
 
@@ -196,34 +194,15 @@ theorem dozzFormula_shift_b {U : ℂ → ℂ} (hγ : 0 < γ) (hγ2 : γ < 2) {μ
     with α hpa hpam hp₀ hp₁ hp₂ hp₃ hu₀ hu₀p hu₁ hu₁p hu₂ hu₂p hu₃ hu₃p hl₀ hl₂ hl₃
   have hnotA : ∀ n : ℕ, b * α ≠ -(n : ℂ) := by simpa using hpa
   have hnotAm : ∀ n : ℕ, b * (α - b) ≠ -(n : ℂ) := by
-    intro n hn
-    apply hpam n
-    convert hn using 1
-    ring
+    intro n; convert hpam n using 1 <;> ring
   have hnotV₀ : ∀ n : ℕ, b * v₀ α ≠ -(n : ℂ) := by
-    intro n hn
-    apply hp₀ n
-    convert hn using 1
-    simp [v₀]
-    ring
+    intro n; convert hp₀ n using 1 <;> simp [v₀] <;> ring
   have hnotV₁ : ∀ n : ℕ, b * v₁ α ≠ -(n : ℂ) := by
-    intro n hn
-    apply hp₁ n
-    convert hn using 1
-    simp [v₁]
-    ring
+    intro n; convert hp₁ n using 1 <;> simp [v₁] <;> ring
   have hnotV₂ : ∀ n : ℕ, b * v₂ α ≠ -(n : ℂ) := by
-    intro n hn
-    apply hp₂ n
-    convert hn using 1
-    simp [v₂]
-    ring
+    intro n; convert hp₂ n using 1 <;> simp [v₂] <;> ring
   have hnotV₃ : ∀ n : ℕ, b * v₃ α ≠ -(n : ℂ) := by
-    intro n hn
-    apply hp₃ n
-    convert hn using 1
-    simp [v₃]
-    ring
+    intro n; convert hp₃ n using 1 <;> simp [v₃] <;> ring
   have hsA := IsUpsilon.shift_b hγ hγ2 hU α hnotA
   have hsAm := IsUpsilon.shift_b hγ hγ2 hU (α - b) hnotAm
   have hs₀ := IsUpsilon.shift_b hγ hγ2 hU (v₀ α) hnotV₀
@@ -252,30 +231,12 @@ theorem dozzFormula_shift_b {U : ℂ → ℂ} (hγ : 0 < γ) (hγ2 : γ < 2) {μ
   have hv₁p : v₁p α = v₁ α + b := by dsimp [v₁p, v₁]; ring
   have hv₂p : v₂p α = v₂ α + b := by dsimp [v₂p, v₂]; ring
   have hv₃p : v₃p α = v₃ α + b := by dsimp [v₃p, v₃]; ring
-  have hdenPlus : U (v₀ α + b) * U (v₁ α) * U (v₂ α + b) * U (v₃ α + b) ≠ 0 := by
-    apply mul_ne_zero
-    · apply mul_ne_zero
-      · apply mul_ne_zero
-        · have h₀ : U (v₀ α + b) ≠ 0 := by rw [← hv₀p]; exact hu₀p
-          exact h₀
-        · exact hu₁
-      · have h₂ : U (v₂ α + b) ≠ 0 := by rw [← hv₂p]; exact hu₂p
-        exact h₂
-    · have h₃ : U (v₃ α + b) ≠ 0 := by rw [← hv₃p]; exact hu₃p
-      exact h₃
-  have hdenMinus : U (v₀ α) * U (v₁ α + b) * U (v₂ α) * U (v₃ α) ≠ 0 := by
-    apply mul_ne_zero
-    · apply mul_ne_zero
-      · apply mul_ne_zero
-        · exact hu₀
-        · have h₁ : U (v₁ α + b) ≠ 0 := by rw [← hv₁p]; exact hu₁p
-          exact h₁
-      · exact hu₂
-    · exact hu₃
   have hUv₀p : U (v₀ α + b) ≠ 0 := by rw [← hv₀p]; exact hu₀p
   have hUv₁p : U (v₁ α + b) ≠ 0 := by rw [← hv₁p]; exact hu₁p
   have hUv₂p : U (v₂ α + b) ≠ 0 := by rw [← hv₂p]; exact hu₂p
   have hUv₃p : U (v₃ α + b) ≠ 0 := by rw [← hv₃p]; exact hu₃p
+  have hdenPlus := mul_ne_zero (mul_ne_zero (mul_ne_zero hUv₀p hu₁) hUv₂p) hUv₃p
+  have hdenMinus := mul_ne_zero (mul_ne_zero (mul_ne_zero hu₀ hUv₁p) hu₂) hu₃
   have hargL₀ : b * v₀ α = b / 2 * α + b * d₀ := by dsimp [v₀]; ring
   have hargL₂ : b * v₂ α = b / 2 * α + b * d₂ := by dsimp [v₂]; ring
   have hargL₃ : b * v₃ α = b / 2 * α + b * d₃ := by dsimp [v₃]; ring
@@ -330,8 +291,7 @@ theorem dozzFormula_shift_b {U : ℂ → ℂ} (hγ : 0 < γ) (hγ2 : γ < 2) {μ
           lFun (b / 2 * ((α + α₂ + α₃) - 2 * α₃ - b)) *
           lFun (b / 2 * ((α + α₂ + α₃) - 2 * α₂ - b))) = _
     rw [show -b ^ 2 = -q by dsimp [q]]
-    rw [show b * α - b ^ 2 = b * (α - b) by ring]
-    rw [hCoeffArg₁, hCoeffArg₀, hCoeffArg₃, hCoeffArg₂]
+    rw [show b * α - b ^ 2 = b * (α - b) by ring, hCoeffArg₁, hCoeffArg₀, hCoeffArg₃, hCoeffArg₂]
   have hscalar : Tc ^ pplus α * k α * k (α - b) * k (v₁ α) =
       -(1 / (Real.pi * μ)) * shiftCoeffA γ (γ / 2) α α₂ α₃ *
         Tc ^ pminus α * k (v₀ α) * k (v₂ α) * k (v₃ α) := by
@@ -401,32 +361,22 @@ theorem dozzFormula_shift_b {U : ℂ → ℂ} (hγ : 0 < γ) (hγ2 : γ < 2) {μ
           b ^ ((1 - (γ : ℂ) * v₀ α) + (1 - (γ : ℂ) * v₂ α) +
             (1 - (γ : ℂ) * v₃ α))) * (-(Tc * lFun (-q))) := by rw [hbaseDiv]
       _ = _ := by ring
+  have hbaseT : Tc = ((dozzBase γ μ * (γ / 2) ^ (2 - γ ^ 2 / 2) : ℝ) : ℂ) := by
+    simp [Tc, T, Complex.ofReal_mul]
   have hpowplus : Tc ^ pplus α =
       ((dozzBase γ μ * (γ / 2) ^ (2 - γ ^ 2 / 2) : ℝ) : ℂ) ^
-        ((2 * Q γ - (α + γ / 2 + α₂ + α₃)) / γ) := by
-    have hbaseT : Tc =
-        ((dozzBase γ μ * (γ / 2) ^ (2 - γ ^ 2 / 2) : ℝ) : ℂ) := by
-      simp [Tc, T, Complex.ofReal_mul]
-    rw [hbaseT]
+        ((2 * Q γ - (α + γ / 2 + α₂ + α₃)) / γ) := by rw [hbaseT]
   have hpowminus : Tc ^ pminus α =
       ((dozzBase γ μ * (γ / 2) ^ (2 - γ ^ 2 / 2) : ℝ) : ℂ) ^
-        ((2 * Q γ - (α - γ / 2 + α₂ + α₃)) / γ) := by
-    have hbaseT : Tc =
-        ((dozzBase γ μ * (γ / 2) ^ (2 - γ ^ 2 / 2) : ℝ) : ℂ) := by
-      simp [Tc, T, Complex.ofReal_mul]
-    rw [hbaseT]
+        ((2 * Q γ - (α - γ / 2 + α₂ + α₃)) / γ) := by rw [hbaseT]
   unfold dozzFormula
   rw [← hpowplus, ← hpowminus]
   rw [hWplus0, hWminus0, hUplus1, hUminus1,
     hUplus2, hUminus2, hUplus3, hUminus3]
-  rw [hv₀p, hv₁p, hv₂p, hv₃p]
-  rw [← mul_div_assoc]
-  rw [div_eq_div_iff hdenPlus hdenMinus]
-  rw [hαm α, hnum, hu₀', hu₁', hu₂', hu₃']
+  rw [hv₀p, hv₁p, hv₂p, hv₃p, ← mul_div_assoc, div_eq_div_iff hdenPlus hdenMinus, hαm α, hnum, hu₀', hu₁', hu₂', hu₃']
   linear_combination
     (deriv U 0 * U (α - b) * U α₂ * U α₃ *
       U (v₀ α) * U (v₁ α) * U (v₂ α) * U (v₃ α)) * hscalar
 
 end DOZZ.Proofs
 
-end

@@ -2,15 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Dual.DiscardedAnnulus
-public import DOZZ.FourPoint.Dual.SourceFullMoments
-public import DOZZ.FourPoint.Dual.SeparatedSplit
-public import DOZZ.FourPoint.Dual.SourceDecouplingLimit
-public import DOZZ.FourPoint.ReflectedOuter.InverseDifference
+import DOZZ.FourPoint.Dual.DiscardedAnnulus
+import DOZZ.FourPoint.Dual.SourceFullMoments
+import DOZZ.FourPoint.Dual.SeparatedSplit
+import DOZZ.FourPoint.Dual.SourceDecouplingLimit
+import DOZZ.FourPoint.ReflectedOuter.InverseDifference
 import Mathlib.Tactic
 /-! Removing the actual intermediate annulus from the full inverse expectation. -/
-@[expose] public section
 open MeasureTheory Set Filter Topology
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -42,16 +40,16 @@ theorem dual_full_separated_inverse_littleO
   let R := fun z ω => ENNReal.ofReal p*(I z ω*B z ω^(-(p+1)))
   have ht := (dual_discarded_annulus_rooted_littleO P X hX γ hγ hγ₂ M hM
     α₁ α₂ α₃ (p+1) ξ κ h (by linarith only [hp]) hβ hξ1 hslack).const_mul p
-  simp only [mul_zero] at ht
+  simp [mul_zero] at ht
   rw [tendsto_zero_iff_norm_tendsto_zero]
   apply squeeze_zero' (Eventually.of_forall fun z => norm_nonneg _) ?_ ht
   have hn : Tendsto (fun z : ℂ => ‖z‖) (𝓝[≠] (0 : ℂ)) (𝓝 0) := by
-    simpa only [norm_zero] using (continuous_norm.tendsto (0 : ℂ)).mono_left nhdsWithin_le_nhds
+    simpa [norm_zero] using (continuous_norm.tendsto (0 : ℂ)).mono_left nhdsWithin_le_nhds
   have hpow (v : ℝ) (hv : 0 < v) : Tendsto (fun z : ℂ => ‖z‖^v) (𝓝[≠] (0 : ℂ)) (𝓝 0) := by
-    simpa only [Function.comp_def, Real.zero_rpow hv.ne'] using
+    simpa [Function.comp_def, Real.zero_rpow hv.ne'] using
       ((Real.continuous_rpow_const hv.le).tendsto (0 : ℝ)).comp hn
   have hratio := (hpow ξ hξ).const_mul (Real.exp (-h))
-  simp only [mul_zero] at hratio
+  simp [mul_zero] at hratio
   obtain ⟨Cb, _, hbi⟩ := dual_outerMass_inverse_moment_uniform P X hX γ hγ hγ₂ M hM
     α₁ α₂ α₃ p hp.le
   obtain ⟨Cd, _, hdb⟩ := dual_deleted_disk_rooted_bound P X hX γ hγ hγ₂ M hM
@@ -64,11 +62,11 @@ theorem dual_full_separated_inverse_littleO
   have hr : 0 < r z := Real.rpow_pos_of_pos (norm_pos_iff.mpr hz0) _
   have hs : 0 < s z := mul_pos (Real.exp_pos _) (norm_pos_iff.mpr hz0)
   have hsr' : s z ≤ r z := by
-    have hh : s z/r z < 1 := by simpa only [s,r,dual_restart_radius_ratio z hz0 h ξ] using hsr
+    have hh : s z/r z < 1 := by simpa [s,r,dual_restart_radius_ratio z hz0 h ξ] using hsr
     exact ((div_lt_one hr).mp hh).le
   have hzsep : ‖z‖ < r z := by
     have he : ‖z‖ = r z*‖z‖^ξ := by
-      dsimp only [r]; rw [← Real.rpow_add (norm_pos_iff.mpr hz0), sub_add_cancel, Real.rpow_one]
+      dsimp [r]; rw [← Real.rpow_add (norm_pos_iff.mpr hz0), sub_add_cancel, Real.rpow_one]
     calc
       _ = _ := he
       _ < r z*1 := mul_lt_mul_of_pos_left hsmall hr
@@ -83,7 +81,7 @@ theorem dual_full_separated_inverse_littleO
     have he := dual_kernel_separated_split γ α₁ α₂ α₃ (s z) (r z) hs hsr' z (M ω) h0 h1 hc
     have hB := dual_outerMass_eq_comparison_region γ α₁ α₂ α₃ ξ hγ.ne' z (M ω) h0 h1 hzsep hc
     refine ⟨hb.1,hf,he,?_⟩
-    dsimp only [B,S]
+    dsimp [B,S]
     rw [hB]
     exact le_add_left le_rfl
   have hmM := gmc_measure_aemeasurable_of_isGMCOf P X hX γ hγ hγ₂ M hM
@@ -100,7 +98,7 @@ theorem dual_full_separated_inverse_littleO
     have hmo := (Measure.measurable_lintegral (hk.indicator ho)).comp_aemeasurable hmM
     convert hmi.add hmo using 1
     funext ω
-    simp only [S, Pi.add_apply, Function.comp_apply, lintegral_indicator hi, lintegral_indicator ho]
+    simp [S, Pi.add_apply, Function.comp_apply, lintegral_indicator hi, lintegral_indicator ho]
   have hSt : (∫⁻ ω, S z ω^(-p) ∂P) ≠ ⊤ := by
     apply ne_top_of_le_ne_top ENNReal.ofReal_ne_top
     apply le_trans (lintegral_mono_ae (hsource.mono fun ω hh =>
@@ -126,7 +124,7 @@ theorem dual_full_separated_inverse_littleO
     exact ne_top_of_le_ne_top (ENNReal.mul_ne_top ENNReal.ofReal_ne_top
       (ne_top_of_le_ne_top ENNReal.ofReal_ne_top hb)) hd
   have hRt : (∫⁻ ω, R z ω ∂P) ≠ ⊤ := by
-    dsimp only [R]
+    dsimp [R]
     rw [lintegral_const_mul' _ _ ENNReal.ofReal_ne_top]
     exact ENNReal.mul_ne_top ENNReal.ofReal_ne_top hIB
   have hSF : ∀ᵐ ω ∂P, S z ω^(-p) ≤ F z ω^(-p)+R z ω := by
@@ -139,7 +137,7 @@ theorem dual_full_separated_inverse_littleO
     have hb := reflected_ennreal_inverse_add_bound p hp (S z ω) (I z ω) hS0 hSt0 hIt
     rw [← hh.2.2.1] at hb
     exact hb.trans (add_le_add le_rfl (by
-      dsimp only [R]
+      dsimp [R]
       rw [mul_assoc]
       exact mul_le_mul' le_rfl (mul_le_mul' le_rfl
         (ennreal_rpow_antitone_of_nonpos hh.2.2.2 (by linarith only [hp] : -(p+1) ≤ 0)))))
@@ -148,11 +146,11 @@ theorem dual_full_separated_inverse_littleO
       (le_self_add.trans_eq hh.2.2.1.symm) (neg_nonpos.mpr hp.le)).trans le_self_add
   have hb := reflected_lintegral_toReal_difference_bound P (fun ω => F z ω^(-p))
     (fun ω => S z ω^(-p)) (R z) (hFm.pow_const _) (hSm.pow_const _) hFt hSt hRt hFS hSF
-  dsimp only [R] at hb
+  dsimp [R] at hb
   rw [lintegral_const_mul' _ _ ENNReal.ofReal_ne_top, ENNReal.toReal_mul,
     ENNReal.toReal_ofReal hp.le] at hb
   rw [Real.norm_eq_abs, abs_div, abs_of_nonneg (Real.rpow_nonneg (norm_nonneg z) κ)]
   have hdiv := div_le_div_of_nonneg_right hb (Real.rpow_nonneg (norm_nonneg z) κ)
-  simpa only [dualSeparatedInverseMoment, F, S, I, B, s, r, mul_div_assoc] using hdiv
+  simpa [dualSeparatedInverseMoment, F, S, I, B, s, r, mul_div_assoc] using hdiv
 
 end DOZZ.Proofs

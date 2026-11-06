@@ -2,12 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Dual.CopyOrdering
-public import DOZZ.FourPoint.Dual.SourceDecouplingBound
+import DOZZ.FourPoint.Dual.CopyOrdering
+import DOZZ.FourPoint.Dual.SourceDecouplingBound
 import Mathlib.Tactic
 /-! The literal copied inverse expectation in source radial/outer/inner coordinates. -/
-@[expose] public section
 open MeasureTheory Set
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -46,7 +44,7 @@ theorem dual_copied_inverse_moment_triple
     intro x hx hx0
     have he : x = 0 := mem_singleton_iff.mp hx0
     have hxpos : 0 < ‖x‖ := hx.1
-    simp only [he, norm_zero, lt_self_iff_false] at hxpos
+    simp [he, norm_zero, lt_self_iff_false] at hxpos
   have ho : Measurable (fun v : TwoSidedPath × Ω => J (reflected_outerRegion r) v.1 v.2) := by
     apply hm _ ((isOpen_lt continuous_const continuous_norm).inter
       (Set.toFinite ({0,1} : Set ℂ)).isClosed.isOpen_compl)

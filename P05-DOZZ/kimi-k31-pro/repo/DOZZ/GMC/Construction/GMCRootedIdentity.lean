@@ -2,20 +2,18 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.Defs.RegularizedGMC
-public import DOZZ.Statements.GMC.GffRootCovariance
-public import DOZZ.Statements.GMC.GmcReferenceMeasure
-public import DOZZ.GMC.EquatorGFFCameronMartin
-public import DOZZ.GMC.CircleAverageLimits
+import DOZZ.Statements.Defs.RegularizedGMC
+import DOZZ.Statements.GMC.GffRootCovariance
+import DOZZ.Statements.GMC.GmcReferenceMeasure
+import DOZZ.GMC.EquatorGFFCameronMartin
+import DOZZ.GMC.CircleAverageLimits
 import DOZZ.GMC.Construction.RegularizedGMCExpectedMeasure
 import DOZZ.GFFStructure.AnnularWeakLimit
 import Mathlib.MeasureTheory.Measure.Prod
 
 /-! The finite-cutoff rooted identity for functionals of the field coordinates. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory
 open scoped Distributions ENNReal NNReal

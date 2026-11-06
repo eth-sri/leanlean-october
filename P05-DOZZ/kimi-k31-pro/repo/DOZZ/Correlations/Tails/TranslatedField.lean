@@ -2,17 +2,15 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.ShiftEquations.Mobius.RepinField
-public import DOZZ.Correlations.Tails.UnpinnedMeasureIdentification
-public import DOZZ.GMC.Moments.InversionAdmissibleVersion
-public import DOZZ.Statements.GMC.EquatorGFFCircleAverageGMCExists
+import DOZZ.ShiftEquations.Mobius.RepinField
+import DOZZ.Correlations.Tails.UnpinnedMeasureIdentification
+import DOZZ.GMC.Moments.InversionAdmissibleVersion
+import DOZZ.Statements.GMC.EquatorGFFCircleAverageGMCExists
 
 /-! Realizing the translated unpinned field as an equator GFF, and identifying its GMC
 on the unit disk with the transported source measure. -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal
 
@@ -27,7 +25,7 @@ theorem translated_field_isEquatorGFF
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
     (Xc : Ω → ℂ → ℝ → ℝ) (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
     (z : ℂ) : IsEquatorGFF P (translatedField X Xc z) := by
-  simpa only [translatedField, norm_one, Real.log_one, neg_zero] using
+  simpa [translatedField, norm_one, Real.log_one, neg_zero] using
     isEquatorGFF_repinField P X Xc 1 z hX hc one_ne_zero
 
 theorem translated_field_circleAverage
@@ -38,10 +36,10 @@ theorem translated_field_circleAverage
   have he : repinCircle Xc (fun ω => Xc ω z (-Real.log ‖(1 : ℂ)‖)) 1 z =
       (fun ω x r => Xc ω (z+x) r - Xc ω z 0) := by
     funext ω x r
-    simp only [repinCircle, norm_one, Real.log_one, neg_zero, one_mul, sub_zero, add_comm]
+    simp [repinCircle, norm_one, Real.log_one, neg_zero, one_mul, sub_zero, add_comm]
   have hh := isCircleAverage_repinField P X Xc 1 z hX hc one_ne_zero
   rw [he] at hh
-  simpa only [translatedField, norm_one, Real.log_one, neg_zero] using hh
+  simpa [translatedField, norm_one, Real.log_one, neg_zero] using hh
 
 /-- Any GMC of the realized translated field has the literal transported source restriction.
 This equality is on one event for all measurable integrands, including singular masses. -/

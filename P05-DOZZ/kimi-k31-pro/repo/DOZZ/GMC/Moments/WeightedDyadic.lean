@@ -2,21 +2,19 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import Mathlib.Analysis.MeanInequalitiesPow
-public import Mathlib.Analysis.SpecialFunctions.Pow.Continuity
-public import Mathlib.Order.Filter.AtTopBot.Ring
-public import Mathlib.Order.Filter.AtTopBot.Archimedean
-public import Mathlib.Topology.Order.Monotone
-public import DOZZ.Statements.GMC.WeightedGmcBallMass
-public import DOZZ.GMC.Moments.ExactScaleBallMoment
-public import DOZZ.GMC.Moments.SubunitSet
-public import DOZZ.GMC.Moments.WeightedExponent
+import Mathlib.Analysis.MeanInequalitiesPow
+import Mathlib.Analysis.SpecialFunctions.Pow.Continuity
+import Mathlib.Order.Filter.AtTopBot.Ring
+import Mathlib.Order.Filter.AtTopBot.Archimedean
+import Mathlib.Topology.Order.Monotone
+import DOZZ.Statements.GMC.WeightedGmcBallMass
+import DOZZ.GMC.Moments.ExactScaleBallMoment
+import DOZZ.GMC.Moments.SubunitSet
+import DOZZ.GMC.Moments.WeightedExponent
 
 /-! Countable subadditivity for nonnegative powers at orders at most one. -/
 
-@[expose] public section
 
 open Filter
 open MeasureTheory
@@ -71,7 +69,7 @@ theorem exists_dyadic_shell_index {R d : ℝ}
       (lt_div_iff₀ (by positivity)).2 (by linarith only [hprev'])
     simpa using hbound
 
-private theorem ennreal_ofReal_rpow_of_pos {x p : ℝ} (hx : 0 < x) :
+theorem ennreal_ofReal_rpow_of_pos {x p : ℝ} (hx : 0 < x) :
     ENNReal.rpow (ENNReal.ofReal x) p = ENNReal.ofReal (x ^ p) := by
   have hx0 : ENNReal.ofReal x ≠ 0 := ne_of_gt (ENNReal.ofReal_pos.mpr hx)
   have hleft : ENNReal.rpow (ENNReal.ofReal x) p ≠ ⊤ :=
@@ -85,7 +83,7 @@ private theorem ennreal_ofReal_rpow_of_pos {x p : ℝ} (hx : 0 < x) :
     _ = (ENNReal.ofReal (x ^ p)).toReal := by
         rw [ENNReal.toReal_ofReal (Real.rpow_nonneg hx.le p)]
 
-private theorem ennreal_rpow_finset_sum_le_tsum_rpow
+theorem ennreal_rpow_finset_sum_le_tsum_rpow
     {ι : Type*} (s : Finset ι) (a : ι → ℝ≥0∞) {p : ℝ}
     (hp : 0 < p) (hp1 : p ≤ 1) :
     (∑ i ∈ s, a i) ^ p ≤ ∑ i ∈ s, (a i) ^ p := by
@@ -171,7 +169,6 @@ theorem weightedGmcBallMass_root_le_dyadic_charge
       · subst x
         have hcoef (n : ℕ) : 1 ≤ ENNReal.rpow
             (ENNReal.ofReal (R / (2 : ℝ) ^ (n + 1))) (-γ * α) := by
-          have hradpos : 0 < R / (2 : ℝ) ^ (n + 1) := by positivity
           have hradle : R / (2 : ℝ) ^ (n + 1) ≤ 1 := by
             calc
               R / (2 : ℝ) ^ (n + 1) ≤ R := by
@@ -190,7 +187,7 @@ theorem weightedGmcBallMass_root_le_dyadic_charge
         have hsumLower : (∑' _n : ℕ, (1 : ℝ≥0∞)) ≤
             ∑' n : ℕ, coverTerm n 0 := ENNReal.tsum_le_tsum fun n => by
           have hball : (0 : ℂ) ∈ Metric.ball 0 (R / (2 : ℝ) ^ n) := by
-            simp only [Metric.mem_ball, dist_self]
+            simp [Metric.mem_ball, dist_self]
             positivity
           simpa [coverTerm, hball] using hcoef n
         have hsum : ∑' n : ℕ, coverTerm n 0 = ⊤ := by
@@ -299,6 +296,6 @@ theorem weightedGmcBallMass_le_dyadic_charge_center
   have hroot := weightedGmcBallMass_root_le_dyadic_charge
     (Measure.map (fun x : ℂ => x - z) μ) γ α R hγ hα hR hR1
   rw [htranslate]
-  simpa only [measure_sub_pushforward_ball] using hroot
+  simpa [measure_sub_pushforward_ball] using hroot
 
 end DOZZ.Proofs

@@ -2,12 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Dual.PastExteriorIdentity
-public import DOZZ.FourPoint.Dual.PathLikelihood
+import DOZZ.FourPoint.Dual.PastExteriorIdentity
+import DOZZ.FourPoint.Dual.PathLikelihood
 import Mathlib.Tactic
 /-! Source-space future independence of the actual dual exterior and restart likelihood. -/
-@[expose] public section
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs

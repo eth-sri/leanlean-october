@@ -1,2 +1,1 @@
-module
-public import DOZZ.Brownian.LastExitKernel
+import DOZZ.Brownian.LastExitKernel

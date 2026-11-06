@@ -2,8 +2,7 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.GFFStructure.PoissonMixed
+import DOZZ.GFFStructure.PoissonMixed
 /-!
 # Interior Dirichlet residuals
 
@@ -15,7 +14,6 @@ interior harmonic averages and a bounded disk L² estimate. Global restriction c
 supported samplewise distribution versions remain separate constructions.
 -/
 
-@[expose] public section
 open Filter MeasureTheory ProbabilityTheory Set Metric
 open scoped Topology ENNReal NNReal
 namespace DOZZ.Proofs
@@ -80,7 +78,7 @@ theorem poissonTestIntegralL2_ae_eq {Ω : Type*} [MeasurableSpace Ω] (P : Measu
     · have hf0 : f z = 0 := by
         by_contra h
         exact hz (hf (subset_closure h))
-      simp only [hf0, zero_smul, zero_mul]
+      simp [hf0, zero_smul, zero_mul]
       exact Lp.coeFn_zero ℝ 2 P
 
 /-- All zero-extended harmonic L² coordinates are centered. -/
@@ -132,13 +130,13 @@ theorem integral_diskGreen_test_restrict_eq (c z : ℂ) (ρ : ℝ) (hρ : 0 < ρ
       ∫ w, diskGreenKernel c ρ hρ z w*f w := by
   apply setIntegral_eq_integral_of_forall_compl_eq_zero
   intro w hw
-  simp only [diskGreenKernel,hw,and_false,false_and,ite_false,zero_mul]
+  simp [diskGreenKernel,hw,and_false,false_and,ite_false,zero_mul]
 
 /-- The outer Green test potential is zero away from its disk. -/
 theorem diskGreen_testPotential_eq_zero_of_notMem (c z : ℂ) (ρ : ℝ) (hρ : 0 < ρ)
     (hz : z ∉ ball c ρ) (f g : TestFn) :
     f z*(∫ w, diskGreenKernel c ρ hρ z w*g w) = 0 := by
-  simp only [diskGreenKernel,hz,false_and,ite_false,zero_mul,integral_zero,mul_zero]
+  simp [diskGreenKernel,hz,false_and,ite_false,zero_mul,integral_zero,mul_zero]
 
 /-- Global tests paired against the zero-extended Green potential are integrable. -/
 theorem integrable_diskGreen_testPotential_global (c : ℂ) (ρ : ℝ) (hρ : 0 < ρ) (f g : TestFn) :
@@ -149,13 +147,13 @@ theorem integrable_diskGreen_testPotential_global (c : ℂ) (ρ : ℝ) (hρ : 0 
     exact hz (diskGreen_testPotential_eq_zero_of_notMem c z ρ hρ he f g)
   apply (integrableOn_iff_integrable_of_support_subset hs).mp
   change Integrable (fun z => f z*(∫ w, diskGreenKernel c ρ hρ z w*g w)) (volume.restrict (ball c ρ))
-  simpa only [integral_diskGreen_test_restrict_eq] using integrable_diskGreenPotential_test c ρ hρ f g
+  simpa [integral_diskGreen_test_restrict_eq] using integrable_diskGreenPotential_test c ρ hρ f g
 
-/-- The restricted Green covariance `DOZZ.diskGreenCovariance` equals the literal globally
+/-- The restricted Green covariance `diskGreenCovariance` equals the literal globally
 zero-extended pairing. -/
 theorem diskGreenCovariance_eq_global_pair (c : ℂ) (ρ : ℝ) (hρ : 0 < ρ) (f g : TestFn) :
     diskGreenCovariance c ρ hρ f g = ∫ z, f z*(∫ w, diskGreenKernel c ρ hρ z w*g w) := by
-  simp only [diskGreenCovariance,integral_diskGreen_test_restrict_eq]
+  simp [diskGreenCovariance,integral_diskGreen_test_restrict_eq]
   apply setIntegral_eq_integral_of_forall_compl_eq_zero
   intro z hz
   exact diskGreen_testPotential_eq_zero_of_notMem c z ρ hρ hz f g
@@ -191,7 +189,7 @@ theorem poissonTestIntegralL2_test_covariance {Ω : Type*} [MeasurableSpace Ω]
         f z*(∫ w, diskGreenKernel c ρ hρ z w*g w) := by
     funext z
     by_cases h0 : f z = 0
-    · simp only [h0,zero_mul,sub_zero]
+    · simp [h0,zero_mul,sub_zero]
     · have hz := hf (subset_closure h0)
       rw [covariance_congr_ae (poissonFamilyL2_ae_eq P c ρ V hV z hz)
         (exteriorPinnedTestL2_ae_eq P X Xc hX hc R (by linarith) g),
@@ -279,7 +277,7 @@ theorem poissonFamilyL2_covariance_test_eq_integral {Ω : Type*} [MeasurableSpac
       apply integral_congr_ae
       filter_upwards [(volume : Measure ℂ).ae_ne z] with w hwz
       by_cases h0 : g w = 0
-      · simp only [h0,mul_zero,zero_mul,sub_zero]
+      · simp [h0,mul_zero,zero_mul,sub_zero]
       · have hw := hg (subset_closure h0)
         rw [covariance_comm, covariance_congr_ae (poissonFamilyL2_ae_eq P c ρ V hV z hz)
           (poissonFamilyL2_ae_eq P c ρ V hV w hw),hcov z w hz hw,
@@ -313,9 +311,9 @@ theorem poissonTestIntegralL2_covariance_integral_eq_test {Ω : Type*} [Measurab
   apply ae_of_all
   intro z
   by_cases h0 : f z = 0
-  · simp only [h0,zero_mul]
+  · simp [h0,zero_mul]
   · have hz := hf (subset_closure h0)
-    dsimp only
+    dsimp
     rw [poissonFamilyL2_covariance_test_eq_integral P X Xc hX hc c z R ρ ε hR hρ hε hpin
       V hV hmean hU hcov hlim hz g hg]
 
@@ -367,7 +365,7 @@ theorem dirichletResidualL2_harmonic_covariance_zero {Ω : Type*} [MeasurableSpa
       V hV hmean hU hcov hlim g f hg hf,sub_self]
 
 /-- The literal interior residual has exactly the disk Green test covariance
-`DOZZ.diskGreenCovariance`. -/
+`diskGreenCovariance`. -/
 theorem dirichletResidualL2_covariance {Ω : Type*} [MeasurableSpace Ω]
     (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
@@ -489,7 +487,7 @@ theorem dirichletResidualL2_norm_sq {Ω : Type*} [MeasurableSpace Ω]
   have h := dirichletResidualL2_covariance P X Xc hX hc c R ρ ε hR hρ hε hpin V hV hmean hU hcov hlim f f hf hf
   rw [covariance_L2_eq,dirichletResidualL2_integral_zero P X Xc hX hc c R ρ (by linarith) V hV hmean hU f hf,
     zero_mul,sub_zero,real_inner_self_eq_norm_sq] at h
-  exact h
+  assumption
 
 /-- The interior residual has the actual bounded Green L² estimate required for completion. -/
 theorem dirichletResidualL2_norm_sq_le {Ω : Type*} [MeasurableSpace Ω]

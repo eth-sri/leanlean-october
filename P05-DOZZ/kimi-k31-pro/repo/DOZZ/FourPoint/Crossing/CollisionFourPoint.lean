@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.Crossing.CollisionExpectation
-public import DOZZ.FourPoint.FourPointTZeroEqStructureConstant
+import DOZZ.FourPoint.Crossing.CollisionExpectation
+import DOZZ.FourPoint.FourPointTZeroEqStructureConstant
 import Mathlib.Tactic
 
 /-! # The normalized zero-channel coefficient
@@ -15,7 +14,6 @@ four-point Seiberg domain, independently of hypergeometric nonresonance or diago
 classification hypotheses.
 -/
 
-public section
 open MeasureTheory Filter Topology
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -46,7 +44,7 @@ theorem gammaHalf_fourPoint_collision_limit {Ω : Type*} [MeasurableSpace Ω]
     (lt_of_le_of_lt (hbound 0 (by simp)) hC).ne
   have hr := (ENNReal.continuousAt_toReal hfin).tendsto.comp ht
   unfold fourPointT
-  simpa only [ENNReal.rpow_eq_pow, neg_div, Function.comp_def] using
+  simpa [ENNReal.rpow_eq_pow, neg_div, Function.comp_def] using
     hr.const_mul (2 * μ ^ (-fourPointSExp γ (-γ / 2) a b c) / γ *
       Real.Gamma (fourPointSExp γ (-γ / 2) a b c))
 

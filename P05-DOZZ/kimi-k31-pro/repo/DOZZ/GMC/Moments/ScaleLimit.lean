@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import Mathlib.MeasureTheory.Function.ConvergenceInMeasure
-public import Mathlib.MeasureTheory.Measure.Prod
+import Mathlib.MeasureTheory.Function.ConvergenceInMeasure
+import Mathlib.MeasureTheory.Measure.Prod
 
 /-! Convergence in measure is stable under an independent finite scalar multiplier. -/
 
-@[expose] public section
 
 open MeasureTheory Filter Topology
 
@@ -49,8 +47,7 @@ theorem tendstoInMeasure_mul_snd_of_tendstoInMeasure
     have h := tendsto_measure_iInter_atTop (μ := Q) (s := T)
       (fun n => (hTmeas n).nullMeasurableSet) hTanti ⟨0, measure_ne_top Q _⟩
     change Tendsto (fun n => Q (T n)) atTop (𝓝 (Q (⋂ n, T n))) at h
-    rw [hTinter, measure_empty] at h
-    exact h
+    rwa [hTinter, measure_empty] at h
   obtain ⟨N₁, hN₁⟩ := (ENNReal.tendsto_atTop_zero.mp hTlimit) (δ / 2)
     (ENNReal.div_pos_iff.mpr ⟨hδ.ne', by simp⟩)
   let K : ℝ := (N₁ : ℝ) + 1
@@ -87,7 +84,7 @@ theorem tendstoInMeasure_mul_snd_of_tendstoInMeasure
         W p.2 * (f n p.1 - g p.1) := by ring
     rw [hfactor, Real.norm_eq_abs, abs_mul] at hp
     have hmul' : |W p.2| * |f n p.1 - g p.1| < ε := by
-      simpa only [Real.norm_eq_abs] using hmul
+      simpa [Real.norm_eq_abs] using hmul
     exact (not_le_of_gt hmul') hp
   calc
     (P.prod Q) bad ≤ (P.prod Q)

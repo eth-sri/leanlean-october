@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.BPZ.Weight
-public import DOZZ.FourPoint.Reflected.OuterKernelLimit
+import DOZZ.FourPoint.BPZ.Weight
+import DOZZ.FourPoint.Reflected.OuterKernelLimit
 import Mathlib.Tactic
 
 /-! # The actual dual fusion kernel
@@ -15,7 +14,6 @@ reused at parameter 2 after scaling the charges; this identity makes no claim th
 chaos has parameter 2.
 -/
 
-@[expose] public section
 
 open MeasureTheory Filter Topology Set
 open scoped ENNReal
@@ -45,8 +43,8 @@ theorem dual_kernel_eq_bpzWeight (γ α₁ α₂ α₃ : ℝ) (hγ : γ ≠ 0) (
   have he : γ * (2 / γ) / 2 = 1 := by field_simp
   unfold dualFusionKernel bpzSoftWeight bpzBaseWeight
   rw [he]
-  simp only [zero_pow (by norm_num : 2 ≠ 0), add_zero, Real.rpow_one,
-    Real.rpow_two, Real.rpow_neg (norm_nonneg x), Real.rpow_neg (norm_nonneg (x - 1)),
+  simp [zero_pow (by norm_num : 2 ≠ 0), add_zero, Real.rpow_one,
+    Real.rpow_neg (norm_nonneg x), Real.rpow_neg (norm_nonneg (x - 1)),
     Complex.normSq_eq_norm_sq]
   ring
 
@@ -55,8 +53,8 @@ theorem dual_kernel_integral_eq_coulombMass (γ α₁ α₂ α₃ : ℝ) (hγ : 
     (z : ℂ) (μ : Measure ℂ) (hz : μ {z} = 0) (h0 : μ {0} = 0) (h1 : μ {1} = 0) :
     (∫⁻ x, ENNReal.ofReal (dualFusionKernel γ α₁ α₂ α₃ z x) ∂μ) =
       coulombMass γ μ ![-2 / γ, α₁, α₂] ![z, 0, 1] α₃ := by
-  simp only [dual_kernel_eq_bpzWeight γ α₁ α₂ α₃ hγ]
-  simpa only [neg_div] using (coulombMass_eq_lintegral_bpzSoftWeight (γ := γ) (χ := 2 / γ)
+  simp [dual_kernel_eq_bpzWeight γ α₁ α₂ α₃ hγ]
+  simpa [neg_div] using (coulombMass_eq_lintegral_bpzSoftWeight (γ := γ) (χ := 2 / γ)
     (α₁ := α₁) (α₂ := α₂) (α₃ := α₃) μ z hz h0 h1).symm
 
 /-- The zero density has the exact shifted first charge. -/
@@ -73,9 +71,6 @@ theorem dual_zero_kernel_weight (γ α₁ α₂ α₃ : ℝ) (hγ : γ ≠ 0) (x
   unfold dualFusionKernel
   rw [sub_zero, hprod,
     show α₁ + α₂ + α₃ - 2 / γ = (α₁ - 2 / γ) + α₂ + α₃ by ring]
-  have h0 := (Real.rpow_pos_of_pos hxpos 2).ne'
-  have h1 := (Real.rpow_pos_of_pos hxpos (γ * (α₁ - 2 / γ))).ne'
-  have h2 := (Real.rpow_pos_of_pos hx1pos (γ * α₂)).ne'
   field_simp
 
 /-- Measurability of the literal dual density, including its root values. -/
@@ -92,7 +87,7 @@ theorem dual_outer_kernel_integral_tendsto (γ α₁ α₂ α₃ ξ : ℝ) (hγ 
       ENNReal.ofReal (dualFusionKernel γ α₁ α₂ α₃ z x) ∂μ)
       (nhdsWithin (0 : ℂ) {z : ℂ | z ≠ 0})
       (nhds (∫⁻ x, ENNReal.ofReal (dualFusionKernel γ α₁ α₂ α₃ 0 x) ∂μ)) := by
-  simp only [dual_kernel_eq_scaled_half γ α₁ α₂ α₃ hγ] at hfin ⊢
+  simp [dual_kernel_eq_scaled_half γ α₁ α₂ α₃ hγ] at hfin ⊢
   exact reflected_outer_kernel_integral_tendsto 2 (γ * α₁ / 2) (γ * α₂ / 2)
     (γ * α₃ / 2) ξ μ hξ hξ₁ h0 hfin
 

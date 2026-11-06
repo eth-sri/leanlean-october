@@ -2,24 +2,22 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.SumTail.OneTail
-public import DOZZ.Correlations.SumTail.Sandwich
-public import DOZZ.Correlations.SumTail.ExtendedEvents
-public import DOZZ.Statements.Correlations.SeparatedSingularMassJointTail
+import DOZZ.Correlations.SumTail.OneTail
+import DOZZ.Correlations.SumTail.Sandwich
+import DOZZ.Correlations.SumTail.ExtendedEvents
+import DOZZ.Statements.Correlations.SeparatedSingularMassJointTail
 
 /-! `DOZZ.twoInsertion_tail_sum_uniform` reduced to precisely the one-insertion input
 `DOZZ.oneInsertion_tail_uniform`, with its full ceiling retained. -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory Filter Topology TopologicalSpace Set
 open scoped ENNReal NNReal Topology
 namespace DOZZ.Proofs
 
 /-- The sole hypothesis is the literal uniform one-insertion conclusion (the statement
-`DOZZ.oneInsertion_tail_uniform`). The joint-tail inequality
-`DOZZ.separatedSingularMass_joint_tail`, all localization and power estimates, and the common
+`oneInsertion_tail_uniform`). The joint-tail inequality
+`separatedSingularMass_joint_tail`, all localization and power estimates, and the common
 reflection witness are supplied here. -/
 theorem sumtail_twoInsertion_tail_sum_uniform_of_oneInsertion_tail
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
@@ -109,12 +107,11 @@ theorem sumtail_twoInsertion_tail_sum_uniform_of_oneInsertion_tail
     have hb := min_le_left (θ/4) (m/2)
     dsimp [ε]
     linarith only [hb,hθ]
-  obtain ⟨D,hD,hDb⟩ := DOZZ.separatedSingularMass_joint_tail P X M γ hγ hγ2 hX hM
+  obtain ⟨D,hD,hDb⟩ := separatedSingularMass_joint_tail P X M γ hγ hγ2 hX hM
     K2 K3 hK2 hK3 hpos2 hpos3 hsep A2 A3 hA2 hA3 hα2 hα3
     F2s F3s radius supBound derivBound lowerBound hF2 hF3 ε hε
     (fun α ha => hεK α (Or.inl ha)) (fun α ha => hεK α (Or.inr ha))
   let T : ℝ := 4/γ^2
-  have hT : 0 ≤ T := by dsimp [T]; positivity
   refine ⟨(1+2*H)*4^(T+1)+(2*C+D+2*((C+H*T)*2^(T+1))+2*D*2^T),by positivity,?_⟩
   intro z2 hz2 z3 hz3 α2 hα2mem α3 hα3mem F2 hF2mem F3 hF3mem x hx
   let W2 := localSingularMass M F2 z2 γ α2
@@ -133,17 +130,17 @@ theorem sumtail_twoInsertion_tail_sum_uniform_of_oneInsertion_tail
     have hb := hCb z2 (Or.inl hz2) α2 (Or.inl hα2mem) F2 (Or.inl ⟨hz2,hF2mem⟩) t ht
     change |P.real {ω | ENNReal.ofReal t < W2 ω}-c2*t^(-reflectionExponent γ α2)| ≤ _ at hb
     rw [sumtail_extended_event_eq_real P W2 hfin2 t (by linarith only [ht])] at hb
-    exact hb
+    assumption
   have hone3 (t : ℝ) (ht : 1 ≤ t) :
       |P.real {ω | t < (W3 ω).toReal}-c3*t^(-reflectionExponent γ α3)| ≤
         C*t^(-reflectionExponent γ α3-oneInsertionErrorCeiling γ α3+d) := by
     have hb := hCb z3 (Or.inr hz3) α3 (Or.inr hα3mem) F3 (Or.inr ⟨hz3,hF3mem⟩) t ht
     change |P.real {ω | ENNReal.ofReal t < W3 ω}-c3*t^(-reflectionExponent γ α3)| ≤ _ at hb
     rw [sumtail_extended_event_eq_real P W3 hfin3 t (by linarith only [ht])] at hb
-    exact hb
+    assumption
   have hcoeff (c p e : ℝ) (W : Ω → ℝ≥0∞)
       (hb : |P.real {ω | 1 < (W ω).toReal}-c*1^(-p)| ≤ C*1^(-p-e+d)) : |c| ≤ H := by
-    simp only [Real.one_rpow,mul_one] at hb
+    simp [Real.one_rpow,mul_one] at hb
     have hh := abs_le.mp hb
     have hn : 0 ≤ P.real {ω | 1 < (W ω).toReal} := measureReal_nonneg
     have hp : P.real {ω | 1 < (W ω).toReal} ≤ 1 := measureReal_le_one
@@ -159,7 +156,7 @@ theorem sumtail_twoInsertion_tail_sum_uniform_of_oneInsertion_tail
     change P.real {ω | ENNReal.ofReal u < W2 ω ∧ ENNReal.ofReal v < W3 ω} ≤ _ at hb
     rw [sumtail_extended_joint_eq_real P W2 W3 hfin2 hfin3 u v
       (by linarith only [hu]) (by linarith only [hv])] at hb
-    simpa only [Real.rpow_eq_pow] using hb
+    simpa [Real.rpow_eq_pow] using hb
   obtain ⟨hp2,hp2T⟩ := residue_critical_order_bounds γ α2 hγ (hα2 α2 hα2mem).1 (hα2 α2 hα2mem).2
   obtain ⟨hp3,hp3T⟩ := residue_critical_order_bounds γ α3 hγ (hα3 α3 hα3mem).1 (hα3 α3 hα3mem).2
   obtain ⟨hb2,hb3,hs2,hs3,hj2,hj3⟩ := sumtail_ceiling_bounds γ α2 α3
@@ -174,6 +171,6 @@ theorem sumtail_twoInsertion_tail_sum_uniform_of_oneInsertion_tail
     hd.le hdθ hε.le hεθ hC hH hD hc2 hc3 hb2 hb3 hs2 hs3 hj2 hj3 hone2 hone3 hjoint x hx
   rw [← sumtail_extended_sum_eq_real P W2 W3 hfin2 hfin3 x (by linarith only [hx])] at hb
   have he : -(twoInsertionTailCeiling γ α2 α3-θ) = -twoInsertionTailCeiling γ α2 α3+θ := by ring
-  simpa only [W2,W3,c2,c3,Measure.real,Real.rpow_eq_pow,he] using hb
+  simpa [W2,W3,c2,c3,Measure.real,Real.rpow_eq_pow,he] using hb
 
 end DOZZ.Proofs

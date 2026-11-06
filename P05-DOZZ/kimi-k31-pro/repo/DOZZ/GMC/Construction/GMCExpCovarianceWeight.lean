@@ -2,13 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.Construction.CircleCovarianceL2Limit
+import DOZZ.GMC.Construction.CircleCovarianceL2Limit
 
 /-! Uniform bounded-continuous approximants for exponential circle-covariance weights. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped Distributions ENNReal NNReal BoundedContinuousFunction
@@ -60,11 +58,9 @@ theorem equatorGFF_circleCovariance_exp_weight_family
   let covCont (r : ℝ) : C(ℂ, ℝ) :=
     ⟨cov r, continuous_gaussianCovariance_circle_of_IsGaussianL2Limit
       P X hX Xc hXc L hL r⟩
-  have hnear : ∀ᶠ r : ℝ in atTop, ∀ x : ℂ, dist (c x) (cov r x) < 1 := by
-    exact (Metric.tendstoUniformly_iff.mp hc) 1 zero_lt_one
+  have hnear : ∀ᶠ r : ℝ in atTop, ∀ x : ℂ, dist (c x) (cov r x) < 1 := (Metric.tendstoUniformly_iff.mp hc) 1 zero_lt_one
   obtain ⟨R, hR⟩ := Filter.eventually_atTop.mp hnear
   let K : ℝ := ‖c‖ + 1
-  have hK : 0 ≤ K := by dsimp [K]; positivity
   have hcBound (x : ℂ) : |c x| ≤ K := by
     calc
       |c x| = ‖c x‖ := (Real.norm_eq_abs _).symm
@@ -94,7 +90,7 @@ theorem equatorGFF_circleCovariance_exp_weight_family
             _ = 2 * K := by ring⟩
     else c
   have hcovBCF_bound (r : ℝ) (x : ℂ) : |covBCF r x| ≤ K := by
-    dsimp only [covBCF]
+    dsimp [covBCF]
     by_cases hr : R ≤ r
     · rw [dite_eq_left hr]
       exact hcovBound r hr x

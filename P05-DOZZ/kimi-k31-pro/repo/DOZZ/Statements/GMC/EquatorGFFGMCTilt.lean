@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.GMC.GffRootCovariance
+import DOZZ.Statements.GMC.GffRootCovariance
 import DOZZ.GMC.Construction.GMCGeneralTiltLimit
 
 /-! The statement `DOZZ.equatorGFF_GMC_tilt`, proved by `DOZZ.Proofs.equatorGFF_GMC_tilt`. -/
 
-public section
 
 open MeasureTheory ProbabilityTheory Filter Topology TopologicalSpace Set
 open scoped Distributions ENNReal NNReal
@@ -32,6 +30,6 @@ theorem equatorGFF_GMC_tilt
     (∫⁻ ω, ENNReal.ofReal (Real.exp (L ω - gaussianVariance P L / 2)) *
         H (fun f => X ω f) (M ω) ∂P) =
       ∫⁻ ω, H (fun f => X ω f + gaussianCovariance P (fun ω => X ω f) L)
-        ((M ω).withDensity (fun x => ENNReal.ofReal (Real.exp (γ * c x)))) ∂P := by exact DOZZ.Proofs.equatorGFF_GMC_tilt P X hX γ hγ hγ2 M hM Xc hXc L hL c hc H hH
+        ((M ω).withDensity (fun x => ENNReal.ofReal (Real.exp (γ * c x)))) ∂P := Proofs.equatorGFF_GMC_tilt P X hX γ hγ hγ2 M hM Xc hXc L hL c hc H hH
 
 end DOZZ

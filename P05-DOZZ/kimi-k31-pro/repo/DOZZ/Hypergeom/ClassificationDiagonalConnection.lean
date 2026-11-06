@@ -2,17 +2,15 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Hypergeom.ConnectionDiagonalAlgebra
-public import DOZZ.Hypergeom.ODE.ConnectionGammaCoefficients
-public import DOZZ.Hypergeom.GaussConnectionMinus
-public import DOZZ.Hypergeom.GaussConnectionPlus
+import DOZZ.Hypergeom.ConnectionDiagonalAlgebra
+import DOZZ.Hypergeom.ODE.ConnectionGammaCoefficients
+import DOZZ.Hypergeom.GaussConnectionMinus
+import DOZZ.Hypergeom.GaussConnectionPlus
 import Mathlib.Analysis.SpecialFunctions.Gamma.Beta
 
 /-! Undivided coefficient transfer for the real Gauss connection matrix. -/
 
-@[expose] public section
 
 namespace DOZZ.Proofs
 

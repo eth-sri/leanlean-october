@@ -2,15 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.FourPoint.ThreePointFiniteCorrelation
+import DOZZ.Statements.FourPoint.ThreePointFiniteCorrelation
 import DOZZ.FourPoint.BPZ.DegenerateFourPointBPZ
 
 /-! The statement `DOZZ.degenerateFourPoint_BPZ`,
 proved by `DOZZ.Proofs.degenerateFourPoint_BPZ`. -/
 
-public section
 
 open MeasureTheory ProbabilityTheory Filter Topology TopologicalSpace Set
 open scoped ENNReal NNReal Topology
@@ -31,6 +29,6 @@ theorem degenerateFourPoint_BPZ {Ω : Type*} [MeasurableSpace Ω]
       (gaussParameterA γ χ α₁ α₂ α₃)
       (gaussParameterB γ χ α₁ α₂ α₃)
       (gaussParameterC γ χ α₁)
-      (fun z => fourPointT P M γ μ (-χ) α₁ α₂ α₃ z) := by exact DOZZ.Proofs.degenerateFourPoint_BPZ P X M γ μ χ α₁ α₂ α₃ hγ hγ₂ hμ hχ hα₁ hα₂ hα₃ hs hX hM
+      (fun z => fourPointT P M γ μ (-χ) α₁ α₂ α₃ z) := Proofs.degenerateFourPoint_BPZ P X M γ μ χ α₁ α₂ α₃ hγ hγ₂ hμ hχ hα₁ hα₂ hα₃ hs hX hM
 
 end DOZZ

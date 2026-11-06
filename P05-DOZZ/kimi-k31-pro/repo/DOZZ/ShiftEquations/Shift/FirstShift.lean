@@ -2,11 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.ShiftEquations.Shift.FullShift
-public import DOZZ.ShiftEquations.Shift.ShiftGluing
-public import DOZZ.ShiftEquations.Rbar.Representation
+import DOZZ.ShiftEquations.Shift.FullShift
+import DOZZ.ShiftEquations.Shift.ShiftGluing
+import DOZZ.ShiftEquations.Rbar.Representation
 
 /-!
 # `DOZZ.reflectionR_first_shift_meromorphic` from its inputs
@@ -20,7 +19,6 @@ point of the strip; extending it by `0` off a thinner strip makes the shift hold
 codiscrete filter of `ℂ`.
 -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology Set
 
@@ -49,9 +47,6 @@ theorem rbarShiftMultiplier_analyticAt_ne_zero {γ : ℝ} (hγ : 0 < γ) (hγ2 :
   rw [rbarShiftMultiplier_ofReal, Complex.ofReal_ne_zero]
   unfold rbarShiftMultiplierReal
   have hγQ' : γ * Q γ = 2 + γ ^ 2 / 2 := by rw [hQ]; field_simp
-  have hu1 : γ * γ < γ * a₁ := mul_lt_mul_of_pos_left ha₁1 hγ
-  have hu2 : γ * a₁ < γ * Q γ := mul_lt_mul_of_pos_left ha₁2 hγ
-  have hγsq : γ ^ 2 < 4 := by nlinarith
   refine div_ne_zero (mul_ne_zero (div_ne_zero (mul_ne_zero two_ne_zero (by linarith))
     hγ.ne') Real.pi_ne_zero) (mul_ne_zero (mul_ne_zero ?_ ?_) ?_)
   · exact lR_ne_zero_of_mem_neg (by nlinarith) (by nlinarith)
@@ -65,7 +60,7 @@ theorem eventually_ne_nhdsNE_any (x c : ℂ) : ∀ᶠ w in 𝓝[≠] x, w ≠ c 
     exact self_mem_nhdsWithin
   · exact nhdsWithin_le_nhds (eventually_ne_nhds hxc)
 
-/-- **`DOZZ.reflectionR_first_shift_meromorphic` from its inputs.** The hypotheses are, at the given
+/-- **`reflectionR_first_shift_meromorphic` from its inputs.** The hypotheses are, at the given
 field and chaos, the unit-volume conjunct of `gammaHalf_crossing`, the conclusions of
 `unitVolumeStructureConstant_threeToTwo_residue_bridge`, of `twoInsertion_tail_sum_uniform` (through
 the two-pole expansion) and of `unitVolumeStructureConstant_holomorphic_near_extended_domain`. -/
@@ -222,4 +217,3 @@ theorem reflectionR_first_shift_meromorphic_of_deps
 
 end DOZZ.Proofs
 
-end

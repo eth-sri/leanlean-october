@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.BPZ.WardStar
+import DOZZ.FourPoint.BPZ.WardStar
 
 /-! # The rooted moment of the cutoff Ward data
 
@@ -12,7 +11,6 @@ For the cutoff Ward data, the rooted moment `Ψ(x) = E[J_x^{-q}]` has a line der
 point of the support of the test function, given by `E[-q J_x^{-q-1} S_x]` with the scalar root
 derivative `S_x`. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped ENNReal NNReal
@@ -105,9 +103,7 @@ theorem bpzWard_hasLineDerivAt_Psi (hd : BPZWardData γ q r δ ρ kt k₂ φ D)
           (regularizedGMC P Xc γ r ω) (M ω) := by
     filter_upwards [hDeq] with ω hω
     rw [hω]
-  rw [integral_congr_ae hcongr] at hderiv
-  exact hderiv
-
+  rwa [integral_congr_ae hcongr] at hderiv
 /-- A pointwise bound by a multiple of an integrable nonnegative weight bounds the lintegral. -/
 theorem bpz_lintegral_ofReal_abs_le {m : Measure ℂ} {F w : ℂ → ℝ} {C : ℝ} (hC : 0 ≤ C)
     (hw : Integrable w m) (hw0 : ∀ y, 0 ≤ w y) (hF : ∀ y, |F y| ≤ C * w y) :
@@ -140,7 +136,6 @@ theorem bpzWard_left_weight_bound (hd : BPZWardData γ q r δ ρ kt k₂ φ D) (
       rw [sub_self, norm_zero] at h
       linarith [hd.δ_pos]
     have hkx := hck x hx
-    have hkpos : 0 < kt x := lt_of_lt_of_le hc hkx
     unfold bpzWardLeftWeight bpzWardCutWeight
     rw [hρx, one_mul]
     have hn : 0 ≤ normPlus x ^ (4 : ℝ) * Real.exp (γ ^ 2 * q * bpzPin r x) :=
@@ -166,7 +161,7 @@ theorem bpzWard_left_weight_bound (hd : BPZWardData γ q r δ ρ kt k₂ φ D) (
         (tsupport_mul_subset_left (f := φ) (g := kt)) h)
     unfold bpzWardLeftWeight
     rw [hfx]
-    simp only [zero_apply, zero_mul, abs_zero]
+    simp [zero_apply, zero_mul, abs_zero]
     exact mul_nonneg (by positivity) (mul_nonneg (hd.ρ_nonneg x)
       (bpzWardCutWeight_nonneg hd x))
 
@@ -217,7 +212,6 @@ theorem bpzWard_left_deroot (hd : BPZWardData γ q r δ ρ kt k₂ φ D)
   set k₁ := bpzWardCutWeight γ q r kt with hk₁def
   have hk₁m : Measurable k₁ := measurable_bpzWardCutWeight hd
   have hk₁0 : ∀ y, 0 ≤ k₁ y := bpzWardCutWeight_nonneg hd
-  have hq0 : 0 ≤ q := le_trans zero_le_one hd.q_ge
   set wL : ℂ → ℝ := bpzWardLeftWeight γ q r kt φ v with hwL
   have hwLc : Continuous wL := by
     have h1 : Continuous fun x => fderiv ℝ (fun x => φ x * kt x) x v :=
@@ -334,7 +328,7 @@ theorem abs_bpzMixedDerivReal_le {γ r : ℝ} {ρ k₁ k₂ : ℂ → ℝ} (hρ0
       (Eventually.of_forall fun y => abs_nonneg _) (h₁.const_mul K)
       (Eventually.of_forall fun y => ?_))
     have hw := mul_nonneg (hρ0 y) (hk₁0 y)
-    dsimp only
+    dsimp
     rw [abs_mul, abs_of_nonneg hw, abs_mul, abs_of_nonneg (sq_nonneg γ)]
     have hL : |bpzLamDeriv r (x - y) v| ≤ Real.exp r * ‖v‖ := by
       rw [← Real.norm_eq_abs]
@@ -348,7 +342,7 @@ theorem abs_bpzMixedDerivReal_le {γ r : ℝ} {ρ k₁ k₂ : ℂ → ℝ} (hρ0
       (Eventually.of_forall fun y => abs_nonneg _) (h₂.const_mul K)
       (Eventually.of_forall fun y => ?_))
     have hw : 0 ≤ (1 - ρ y) * k₂ y := mul_nonneg (by linarith [hρ1 y]) (hk₂0 y)
-    dsimp only
+    dsimp
     rw [abs_mul, abs_of_nonneg hw, abs_mul, abs_of_nonneg (sq_nonneg γ)]
     have hT : |bpzTruncLogDeriv r (x - y) v| ≤ Real.exp r * ‖v‖ := by
       rw [← Real.norm_eq_abs]
@@ -380,7 +374,7 @@ theorem abs_bpzRootedMixedDerivApply_le {γ r : ℝ} {ρ k₁ k₂ : ℂ → ℝ
       rw [← Real.norm_eq_abs]
       exact ((bpzLamDeriv r (x - y)).le_opNorm v).trans
         (mul_le_mul_of_nonneg_right (norm_bpzLamDeriv_le_exp r _) (norm_nonneg v))
-    dsimp only
+    dsimp
     rw [abs_mul, abs_of_nonneg ha]
     calc ρ y * k₁ y * (bpzCutRootKernel γ r x y * γ ^ 2) * |bpzLamDeriv r (x - y) v|
         ≤ ρ y * k₁ y * (bpzCutRootKernel γ r x y * γ ^ 2) * (Real.exp r * ‖v‖) :=
@@ -397,7 +391,7 @@ theorem abs_bpzRootedMixedDerivApply_le {γ r : ℝ} {ρ k₁ k₂ : ℂ → ℝ
       rw [← Real.norm_eq_abs]
       exact ((bpzTruncLogDeriv r (x - y)).le_opNorm v).trans
         (mul_le_mul_of_nonneg_right (norm_bpzTruncLogDeriv_le r _).1 (norm_nonneg v))
-    dsimp only
+    dsimp
     rw [abs_mul, abs_of_nonneg ha]
     calc (1 - ρ y) * k₂ y * (bpzLimRootKernel γ r x y * γ ^ 2) * |bpzTruncLogDeriv r (x - y) v|
         ≤ (1 - ρ y) * k₂ y * (bpzLimRootKernel γ r x y * γ ^ 2) * (Real.exp r * ‖v‖) :=

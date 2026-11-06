@@ -2,16 +2,14 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.Construction.RootedContinuousCutoff
-public import DOZZ.GMC.Construction.RootedCutoffTransport
-public import Mathlib.MeasureTheory.Constructions.Projective
+import DOZZ.GMC.Construction.RootedContinuousCutoff
+import DOZZ.GMC.Construction.RootedCutoffTransport
+import Mathlib.MeasureTheory.Constructions.Projective
 
 /-! A law bridge from test evaluations and a measurable continuous circle profile to their
 joint product law. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory
 open MeasurableSpace
@@ -187,9 +185,7 @@ theorem continuousCircleCutoffMeasure_shift_ae_eq_regularizedGMC_withDensity
     simp [regularizedGMC, rawDensity, V]
   have hmul := withDensity_withDensity_eq_mul volume
     (fun x => rawDensity (ω, x)) insertWeight (hrawMeas ω) hweightMeas
-  rw [continuousCircleCutoffMeasure, hbaseMeasure, hmul]
-  exact hprofileMeasure
-
+  rwa [continuousCircleCutoffMeasure, hbaseMeasure, hmul]
 theorem rootedPairPath_measurableSpace_comap :
     MeasurableSpace.comap rootedPairPath MeasurableSpace.pi =
       MeasurableSpace.prod (inferInstance : MeasurableSpace (TestFn → ℝ))
@@ -198,10 +194,9 @@ theorem rootedPairPath_measurableSpace_comap :
   change _ = MeasurableSpace.comap Prod.fst
       (inferInstance : MeasurableSpace (TestFn → ℝ)) ⊔
     MeasurableSpace.comap Prod.snd (borel C(ℂ, ℝ))
-  simp only [rootedPairPath]
-  rw [← (inferInstance : BorelSpace C(ℂ, ℝ)).measurable_eq]
-  rw [MeasurableSpace.pi, ContinuousMap.measurableSpace_eq_iSup_comap_eval]
-  simp only [MeasurableSpace.comap_iSup, MeasurableSpace.comap_comp,
+  simp [rootedPairPath]
+  rw [← (inferInstance : BorelSpace C(ℂ, ℝ)).measurable_eq, MeasurableSpace.pi, ContinuousMap.measurableSpace_eq_iSup_comap_eval]
+  simp [MeasurableSpace.comap_iSup, MeasurableSpace.comap_comp,
     Function.comp_def]
   rw [sup_comm]
 
@@ -298,10 +293,6 @@ theorem equatorGFF_tilted_test_continuousCircle_pair_law
     rw [measurable_pi_iff]
     intro c
     exact ((measurable_pi_iff.mp hEvalOrig c).add measurable_const)
-  have hEvalProfile : Measurable evalProfile := by
-    exact measurable_rootedPairPath.comp hpairLeft
-  have hEvalProfileShift : Measurable evalProfileShift := by
-    exact measurable_rootedPairPath.comp hpairRight
   have hLaw : Measure.map evalOrig (P.withDensity density) = Measure.map evalShift P := by
     simpa [evalOrig, evalShift, density] using
       equatorGFF_tilted_test_circle_law P X hX Xc hXc r t L hL
@@ -382,7 +373,7 @@ theorem equatorGFF_tilted_test_continuousCircle_pair_law
               m (MeasureTheory.cylinder s S)) hLaw
             rw [Measure.map_apply hEvalOrig hS.cylinder,
               Measure.map_apply hEvalShift hS.cylinder] at h
-            exact h
+            assumption
       _ = P (evalProfileShift ⁻¹' MeasureTheory.cylinder s S) :=
             (measure_congr hEventRight).symm
       _ = ν (rootedPairPath ⁻¹' MeasureTheory.cylinder s S) := by
@@ -407,7 +398,7 @@ theorem equatorGFF_tilted_test_continuousCircle_pair_law
       have h := congrArg (fun m : Measure (ℂ ⊕ TestFn → ℝ) => m Set.univ) hLaw
       rw [Measure.map_apply hEvalOrig MeasurableSet.univ,
         Measure.map_apply hEvalShift MeasurableSet.univ] at h
-      exact h
+      assumption
     calc
       μ Set.univ = (P.withDensity density) (pairLeft ⁻¹' Set.univ) := by
         change Measure.map pairLeft (P.withDensity density) Set.univ = _

@@ -2,13 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.TwoRootedExponents
+import DOZZ.FourPoint.TwoRootedExponents
 
 /-! Strict positive-moment and spatial margins in the intermediate Taylor region. -/
 
-@[expose] public section
 open Set
 namespace DOZZ.Proofs
 
@@ -29,7 +27,6 @@ theorem twoRooted_optimized_order (γ α q : ℝ)
   have hαmult : γ * α > γ ^ 2 / 2 := by
     have hh := mul_lt_mul_of_pos_left hα hγ
     nlinarith only [hh]
-  have hαupper : γ * α < 2 := by simpa only [mul_comm] using (lt_div_iff₀ hγ).mp hα2
   have ha : 0 < γ / 2 + Q γ - α := by unfold Q; linarith only [hα2, hγ]
   have hrpos : 0 < (γ / 2 + Q γ - α) / (γ * q) := div_pos ha (mul_pos hγ hqpos)
   have horder : q * ((γ / 2 + Q γ - α) / (γ * q)) = (γ / 2 + Q γ - α) / γ := by
@@ -47,7 +44,7 @@ theorem twoRooted_optimized_order (γ α q : ℝ)
     have hh : γ / 2 + Q γ - α < 2 * γ := by
       apply (mul_lt_mul_iff_right₀ hγ).mp
       nlinarith only [hQmult, hαmult, hγsq]
-    simpa only [mul_comm] using hh
+    simpa [mul_comm] using hh
   refine ⟨hrpos, ?_, ?_, ?_⟩
   · have hh : (γ / 2 + Q γ - α) / (γ * q) < q * ((γ / 2 + Q γ - α) / (γ * q)) := by
       exact lt_mul_of_one_lt_left hrpos hq
@@ -66,14 +63,14 @@ theorem taylor_region_margins (κ W d n : ℝ)
         κ - 2 + η ≤ -2 - 2 * ε + (1 - δ) * W / (2 * q) := by
   let q : ℝ := (W + 2 * κ) / (4 * κ)
   have hq : 1 < q := by
-    dsimp only [q]
+    dsimp [q]
     apply (lt_div_iff₀ (by positivity : 0 < 4 * κ)).mpr
     linarith only [hW]
   have hqpos : 0 < q := zero_lt_one.trans hq
   let E : ℝ := W / (2 * q)
   have hE : κ < E := by
     apply (lt_div_iff₀ (mul_pos (by norm_num) hqpos)).mpr
-    have heq : κ * (2 * q) = (W + 2 * κ) / 2 := by dsimp only [q]; field_simp; ring
+    have heq : κ * (2 * q) = (W + 2 * κ) / 2 := by dsimp [q]; field_simp; ring
     rw [heq]
     linarith only [hW]
   have hEpos : 0 < E := hκ.trans hE
@@ -101,9 +98,9 @@ theorem taylor_region_margins (κ W d n : ℝ)
   · have hh : 0 < δ * d := mul_pos hδ hd
     linarith only [hηd, hh]
   · linarith only [hηn, hn]
-  · have heq : (1 - δ) * W / (2 * q) = E - δ * E := by dsimp only [E]; ring
+  · have heq : (1 - δ) * W / (2 * q) = E - δ * E := by dsimp [E]; ring
     rw [heq]
-    dsimp only [ε, g] at hηg hδE ⊢
+    dsimp [ε, g] at hηg hδE ⊢
     linarith only [hηg, hδE, hE]
 
 end DOZZ.Proofs

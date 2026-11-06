@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.ShiftEquations.DualR.SeedFull
-public import DOZZ.ShiftEquations.DualR.FirstShiftFull
+import DOZZ.ShiftEquations.DualR.SeedFull
+import DOZZ.ShiftEquations.DualR.FirstShiftFull
 
 /-!
 # The second dual crossing seed in shifted form
@@ -18,7 +17,6 @@ source's use of the gluing lemma in the proof of the `2/γ` shift equation. The 
 holds near every point where all its ingredients are analytic.
 -/
 
-@[expose] public section
 
 open MeasureTheory Filter Topology Set
 
@@ -161,4 +159,3 @@ theorem starG_eventually {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X :
 
 end DOZZ.Proofs
 
-end

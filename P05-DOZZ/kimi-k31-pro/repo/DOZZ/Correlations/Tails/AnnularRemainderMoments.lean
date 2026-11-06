@@ -2,15 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.Tails.WeightedMomentModelLaw
-public import DOZZ.GMC.BallAnnulus.Ball
-public import DOZZ.GMC.WeightedCutoff.ReferenceUniform
+import DOZZ.Correlations.Tails.WeightedMomentModelLaw
+import DOZZ.GMC.BallAnnulus.Ball
+import DOZZ.GMC.WeightedCutoff.ReferenceUniform
 
 /-! Uniform moments of insertion weights away from their singular center. -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal
 
@@ -25,7 +23,7 @@ theorem annular_kernel_le (γ α A ρ : ℝ) (hγ : 0 < γ)
   calc ‖x-z‖^(-γ*α) ≤ ρ^(-γ*α) :=
       Real.rpow_le_rpow_of_nonpos hρ hx (mul_nonpos_of_nonpos_of_nonneg (neg_nonpos.mpr hγ.le) hα)
     _ ≤ ρ^(-γ*A) := Real.rpow_le_rpow_of_exponent_ge hρ (hρ1)
-      (by simpa only [neg_mul] using neg_le_neg (mul_le_mul_of_nonneg_left hαA hγ.le))
+      (by simpa [neg_mul] using neg_le_neg (mul_le_mul_of_nonneg_left hαA hγ.le))
 
 theorem annular_remainder_moment_uniform
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
@@ -73,7 +71,7 @@ theorem annular_remainder_moment_uniform
   have hsmall := lintegral_rpow_le_measure_add_larger_order P _ hm hr.le hrR
   have hmass : (∫⁻ ω, (M ω (Metric.ball z 1))^r ∂P) ≤ 1+ENNReal.ofReal D := by
     have hbig := (hbound z hzk 1 zero_lt_one le_rfl).2
-    simp only [Real.rpow_eq_pow,Real.one_rpow,mul_one,gmcMassMoment,ENNReal.rpow_eq_pow] at hbig
+    simp [Real.rpow_eq_pow,Real.one_rpow,mul_one,gmcMassMoment,ENNReal.rpow_eq_pow] at hbig
     exact hsmall.trans (by simpa only [measure_univ,ENNReal.rpow_eq_pow] using add_le_add le_rfl hbig)
   calc _ ≤ ∫⁻ ω, (k*M ω (Metric.ball z 1))^r ∂P :=
         lintegral_mono fun ω => ENNReal.rpow_le_rpow (hpoint ω) hr.le
@@ -108,7 +106,7 @@ theorem annular_remainder_moment_uniform_models
       (∫⁻ x in Metric.ball z 1 \ Metric.ball z ρ,
         ENNReal.ofReal (F x)*(ENNReal.ofReal ‖x-z‖)^(-γ*α) ∂μ)^r) := by
     have h := (Measure.measurable_lintegral (hw.indicator hd)).pow_const r
-    simpa only [lintegral_indicator hd] using h
+    simpa [lintegral_indicator hd] using h
   have hl := equatorGFF_GMC_law_transport P X hX P' X' hX' γ hγ hγ2 M hM N hN
     (fun _ μ => (∫⁻ x in Metric.ball z 1 \ Metric.ball z ρ,
       ENNReal.ofReal (F x)*(ENNReal.ofReal ‖x-z‖)^(-γ*α) ∂μ)^r)

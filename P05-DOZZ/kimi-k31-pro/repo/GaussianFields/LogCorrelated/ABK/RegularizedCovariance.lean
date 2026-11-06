@@ -3,9 +3,8 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Scott Armstrong, Amélie Loher
 -/
-module
 
-public import GaussianFields.LogCorrelated.ABK.LogLimit
+import GaussianFields.LogCorrelated.ABK.LogLimit
 
 /-!
 # GaussianFields.LogCorrelated/ABK/RegularizedCovariance
@@ -13,7 +12,6 @@ public import GaussianFields.LogCorrelated.ABK.LogLimit
 Port of the corresponding GaussianFields source module.
 -/
 
-public section
 
 open MeasureTheory
 open scoped ENNReal Topology
@@ -137,4 +135,3 @@ theorem integral_integral_abkPowerDecomposition_kernel_eq_riesz_pairing {d : Nat
 
 end GaussianFields
 
-end

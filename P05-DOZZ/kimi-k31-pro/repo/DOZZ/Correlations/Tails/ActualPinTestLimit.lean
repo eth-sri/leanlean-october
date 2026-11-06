@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.Tails.ProbabilityPullback
-public import DOZZ.Correlations.Tails.CompactPinMoment
+import DOZZ.Correlations.Tails.ProbabilityPullback
+import DOZZ.Correlations.Tails.CompactPinMoment
 
 /-! The copied-pin compact-test limit on the actual product probability space. -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped ENNReal
 
@@ -73,15 +71,15 @@ theorem actual_copied_pin_test_limit
   have h1 := hNlaw.comp (measurePreserving_fst (μ := P) (ν := P)).hasLaw
   have h2 := hNlaw.comp (measurePreserving_snd (μ := P) (ν := P)).hasLaw
   have hmean1 : (∫ q : Ω × Ω, Xc q.1 z 0 ∂P.prod P) = 0 := by
-    simpa only [Function.comp_def, integral_id_gaussianReal] using h1.integral_eq
+    simpa [Function.comp_def, integral_id_gaussianReal] using h1.integral_eq
   have hmean2 : (∫ q : Ω × Ω, Xc q.2 z 0 ∂P.prod P) = 0 := by
-    simpa only [Function.comp_def, integral_id_gaussianReal] using h2.integral_eq
+    simpa [Function.comp_def, integral_id_gaussianReal] using h2.integral_eq
   have h := gmc_correlated_exponential_test_limit (P.prod P) (Y ∘ Prod.fst)
     hY' (Yc ∘ Prod.fst) hYc' γ hγ hγ2 (N ∘ Prod.fst) hN' f c hfc _ hθ
       (fun l => pin_difference_exp_abs_moment (P.prod P) _ _
         h2.hasGaussianLaw h1.hasGaussianLaw hmean2 hmean1 l)
-  simp only [regularizedGMC_measurePreserving P (P.prod P) Prod.fst hfst Y Yc hYc] at h
-  simpa only [Function.comp_def] using h
+  simp [regularizedGMC_measurePreserving P (P.prod P) Prod.fst hfst Y Yc hYc] at h
+  simpa [Function.comp_def] using h
 
 
 end DOZZ.Proofs

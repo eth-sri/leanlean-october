@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.KahaneConvexAffineApproximation
-public import DOZZ.GMC.KahaneFiniteAffineMax
+import DOZZ.GMC.KahaneConvexAffineApproximation
+import DOZZ.GMC.KahaneFiniteAffineMax
 
 /-! Closure of affine-maximum comparison under arbitrary integrable convex tests. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal
@@ -55,7 +53,7 @@ theorem initialAffineMax_tendsto
       affineMax_le (fun i : Fin (n + 1) => a i.val)
         (fun i : Fin (n + 1) => b i.val) x ⟨n, by omega⟩
     exact hn.trans (le_ciSup hbdd n)
-  simpa only [hHeq] using tendsto_atTop_ciSup (initialAffineMax_mono a b x) hbdd
+  simpa [hHeq] using tendsto_atTop_ciSup (initialAffineMax_mono a b x) hbdd
 
 /-- On positive integrable masses of equal mean, affine-maximum order implies comparison and
 integrability for every convex test whose expectation on the larger side is integrable. -/

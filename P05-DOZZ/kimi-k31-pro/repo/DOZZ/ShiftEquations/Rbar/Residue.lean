@@ -2,11 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.ShiftEquations.Rbar.Multiplier
-public import DOZZ.Statements.ShiftEquations.RbarCoefficient
-public import DOZZ.Statements.Brownian.ReflectionExponent
+import DOZZ.ShiftEquations.Rbar.Multiplier
+import DOZZ.Statements.ShiftEquations.RbarCoefficient
+import DOZZ.Statements.Brownian.ReflectionExponent
 
 /-!
 # The residue of the γ/2-crossing multiplier at `ε = γ/2`
@@ -18,7 +17,6 @@ twice the reflection exponent times the coefficient of [KRV, (formulaforbarR)] (
 see docs/ERRATA-AND-DEVIATIONS.md).
 -/
 
-@[expose] public section
 
 open Filter Topology Set
 
@@ -62,9 +60,7 @@ theorem ne_neg_nat_of_re_mem_neg {w : ℂ} (h1 : -1 < w.re) (h2 : w.re < 0) :
     ∀ m : ℕ, w ≠ -m := by
   intro m hm
   rw [hm] at h1 h2
-  simp only [Complex.neg_re, Complex.natCast_re] at h1 h2
-  have h3 : m < 1 := by exact_mod_cast (show (m : ℝ) < 1 by linarith)
-  have h4 : 0 < m := by exact_mod_cast (show (0 : ℝ) < m by linarith)
+  simp [Complex.neg_re, Complex.natCast_re] at h1 h2
   omega
 
 /-- `Γ ∘ φ` converges where `φ` does, off the poles. -/
@@ -171,7 +167,7 @@ theorem tendsto_sub_mul_crossingMultiplierReal {γ a : ℝ} (hγ : 0 < γ) (hγ2
     ring
   rw [← hL]
   refine Tendsto.congr (fun ε => ?_) hprod
-  simp only [Function.comp_apply]
+  simp [Function.comp_apply]
   unfold crossingMultiplierReal
   ring
 
@@ -227,4 +223,3 @@ theorem differentiableOn_rbarCoefficient {γ : ℝ} (hγ : 0 < γ) :
 
 end DOZZ.Proofs
 
-end

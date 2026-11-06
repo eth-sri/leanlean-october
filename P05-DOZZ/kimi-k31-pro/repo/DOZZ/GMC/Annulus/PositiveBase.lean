@@ -2,11 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.Annulus.ClippedDyadic
-public import DOZZ.GMC.Moments.LimitFatou
-public import Mathlib.MeasureTheory.Integral.BoundedContinuousFunction
+import DOZZ.GMC.Annulus.ClippedDyadic
+import DOZZ.GMC.Moments.LimitFatou
+import Mathlib.MeasureTheory.Integral.BoundedContinuousFunction
 
 /-!
 # The first sharp positive-moment induction step
@@ -16,7 +15,6 @@ outer mass, and the geometric dyadic sum. All constants are independent of the r
 and cutoff. The input at order `p-1` in this first step is the proved first moment.
 -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Set Filter Topology
 open scoped ENNReal NNReal Distributions
@@ -163,7 +161,7 @@ theorem regularizedGMC_root_clipped_moment_uniform
   have hb : (∫⁻ ω, (O ω) ^ q ∂P) ≤
       ENNReal.ofReal (R ^ (-γ ^ 2 * q)) * gmcRootSubunitReference R := by
     have hc : 0 < R ^ (-γ ^ 2) := Real.rpow_pos_of_pos hR _
-    simp only [O, ENNReal.mul_rpow_of_nonneg _ _ hq.le,
+    simp [O, ENNReal.mul_rpow_of_nonneg _ _ hq.le,
       ENNReal.ofReal_rpow_of_pos hc, ← Real.rpow_mul hR.le]
     rw [lintegral_const_mul' _ _ ENNReal.ofReal_ne_top]
     exact mul_le_mul' le_rfl (regularizedGMC_subunit_moment_uniform P X hX Xc hXc γ t q
@@ -202,10 +200,10 @@ theorem regularizedGMC_reference_positive_moment_fine_upto_two
         (gmcRootClippedConstant γ (p - 1) R * gmcReferenceMeasure (Metric.ball 0 R)) := by
   have hq : 0 < p - 1 := by linarith
   have hq1 : p - 1 ≤ 1 := by linarith
-  have hc : (p - 1) + 1 < 4 / γ ^ 2 := by simpa only [sub_add_cancel] using hcrit
+  have hc : (p - 1) + 1 < 4 / γ ^ 2 := by simpa [sub_add_cancel] using hcrit
   have hchart : ∀ x ∈ Metric.ball (0 : ℂ) R, ‖x‖ ≤ R := by
     intro x hx
-    exact (show ‖x‖ < R by simpa only [Metric.mem_ball, dist_zero_right] using hx).le
+    exact (show ‖x‖ < R by simpa [Metric.mem_ball, dist_zero_right] using hx).le
   have h := regularizedGMC_positive_moment_le_clipped P X hX Xc hXc γ R t p hR.le ht hp
     (Metric.ball 0 R) Metric.isOpen_ball.measurableSet hchart
   change gmcMassMoment P (regularizedGMC P Xc γ t) (Metric.ball 0 R) p ≤ _ at h
@@ -241,7 +239,7 @@ theorem regularizedGMC_reference_positive_moment_uniform_upto_two
     ENNReal.ofReal (Real.exp (γ ^ 2 * (p ^ 2 - p) / 2 * (T + gmcCircleChartRemainder R)))
   have hF : F < ∞ := ENNReal.mul_lt_top ENNReal.ofReal_lt_top
     (ENNReal.mul_lt_top (gmcRootClippedConstant_lt_top γ (p - 1) R hγ (by linarith)
-      (by simpa only [sub_add_cancel] using hcrit)) (measure_lt_top _ _))
+      (by simpa [sub_add_cancel] using hcrit)) (measure_lt_top _ _))
   have hB : B < ∞ := ENNReal.mul_lt_top
     (lt_top_iff_ne_top.mpr (ENNReal.rpow_ne_top_of_nonneg (by linarith) (measure_ne_top _ _)))
     ENNReal.ofReal_lt_top
@@ -259,7 +257,7 @@ theorem regularizedGMC_reference_positive_moment_uniform_upto_two
       exact (neg_lt_neg_iff.mp (Real.exp_lt_exp.mp hexp)).le
     have hchart : ∀ x ∈ Metric.ball (0 : ℂ) R, ‖x‖ ≤ R := by
       intro x hx
-      exact (show ‖x‖ < R by simpa only [Metric.mem_ball, dist_zero_right] using hx).le
+      exact (show ‖x‖ < R by simpa [Metric.mem_ball, dist_zero_right] using hx).le
     exact (regularizedGMC_coarse_chart_moment_upper P X hX Xc hXc γ R T p hR.le hp.le
       (Metric.ball 0 R) Metric.isOpen_ball.measurableSet hchart t ht htT).trans
         (le_add_of_nonneg_left zero_le)
@@ -274,7 +272,7 @@ theorem gmc_ball_approx_ofReal_integral_le_mass
     by_cases hx : x ∈ Metric.ball z R
     · rw [Set.indicator_of_mem hx]
       exact ENNReal.ofReal_le_one.mpr (openBallApproxFun_bounds z R n x).2
-    · have hn : R ≤ ‖x - z‖ := le_of_not_gt (by simpa only [Metric.mem_ball, dist_eq_norm] using hx)
+    · have hn : R ≤ ‖x - z‖ := le_of_not_gt (by simpa [Metric.mem_ball, dist_eq_norm] using hx)
       have hm : min 1 ((n : ℝ) * (R - ‖x - z‖)) ≤ 0 :=
         (min_le_right _ _).trans (mul_nonpos_of_nonneg_of_nonpos (Nat.cast_nonneg n) (sub_nonpos.mpr hn))
       change ENNReal.ofReal (max 0 (min 1 ((n : ℝ) * (R - ‖x - z‖)))) ≤ _

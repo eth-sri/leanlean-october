@@ -2,16 +2,14 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import Mathlib.MeasureTheory.Integral.Lebesgue.Markov
-public import Mathlib.MeasureTheory.Measure.Real
-public import Mathlib.Analysis.SpecialFunctions.Pow.NNReal
-public import Mathlib.MeasureTheory.Function.SpecialFunctions.Basic
+import Mathlib.MeasureTheory.Integral.Lebesgue.Markov
+import Mathlib.MeasureTheory.Measure.Real
+import Mathlib.Analysis.SpecialFunctions.Pow.NNReal
+import Mathlib.MeasureTheory.Function.SpecialFunctions.Basic
 
 /-! Moment bounds for the literal extended-real remainder events. -/
 
-@[expose] public section
 open MeasureTheory Set
 open scoped ENNReal
 

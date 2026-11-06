@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.BPZ.UnreflectedA
-public import DOZZ.FourPoint.BPZ.StructureConstantAnalytic
+import DOZZ.FourPoint.BPZ.UnreflectedA
+import DOZZ.FourPoint.BPZ.StructureConstantAnalytic
 
 /-! # The shift relation for `γ² < 2` by analytic continuation in `α₁`
 
@@ -16,7 +15,6 @@ interval `J = {γ/2 < α₁ < 2/γ, 2Q + γ/2 < α₁ + α₂ + α₃}`: the str
 are positive (respectively non-integer) there. They agree on the KRV subinterval
 `α₁ > γ/2 + 1/γ`, which is nonempty, so they agree on `J` by the identity theorem. -/
 
-@[expose] public section
 
 open MeasureTheory Filter Topology Set
 
@@ -69,7 +67,7 @@ theorem bpz_gauss_args_pos {γ t α₂ α₃ : ℝ} (hγ : 0 < γ) (hlo : γ / 2
   have hα₂'' : γ * γ < γ * α₂ := mul_lt_mul_of_pos_left hα₂γ hγ
   have hα₃'' : γ * γ < γ * α₃ := mul_lt_mul_of_pos_left hα₃γ hγ
   have hγsq : γ ^ 2 < 4 := by linarith only [hα₂'', hα₂', hγQ]
-  simp only [a, b, c, ha, hb, hc]
+  simp [a, b, c, ha, hb, hc]
   refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;>
     linarith only [hγQ, ht2, ht1, hsum, hα₂', hα₃', hα₂'', hα₃'', hγsq, sq_nonneg γ, hγ]
 
@@ -135,8 +133,6 @@ theorem bpz_analyticAt_shift_rhs {Ω : Type*} [MeasurableSpace Ω] (P : Measure 
   have hγsq : γ ^ 2 < 4 := by linarith only [hγt0, hγt1]
   have hpos : 0 < γ ^ 2 / 4 := by positivity
   -- the three arguments of `lFun` are not integers
-  have hnot : ∀ {x : ℝ} {n : ℤ}, (n : ℝ) < x → x < n + 1 → x ≠ n := fun h1 _ h => by
-    rw [h] at h1; exact lt_irrefl _ h1
   have harg1 : ∀ n : ℤ, γ * t / 2 ≠ n := by
     intro n hn
     have h0 : (0 : ℝ) < n := by rw [← hn]; linarith only [hγt0, hpos]
@@ -207,11 +203,6 @@ theorem bpz_shift_small_gamma {Ω : Type*} [MeasurableSpace Ω] {H : ℂ → ℂ
           structureConstant P M γ μ (α₁ + γ / 2) α₂ α₃ := by
   have hγ2 : γ < 2 := lt_of_pow_lt_pow_left₀ 2 zero_le_two (by linarith only [hγsq])
   set J : Set ℝ := {t | γ / 2 < t ∧ t < 2 / γ ∧ 2 * Q γ + γ / 2 < t + α₂ + α₃} with hJ
-  have hJo : IsOpen J :=
-    (isOpen_lt (f := fun _ : ℝ => γ / 2) (g := fun t : ℝ => t) continuous_const
-      continuous_id).inter ((isOpen_lt (f := fun t : ℝ => t) (g := fun _ : ℝ => 2 / γ)
-        continuous_id continuous_const).inter (isOpen_lt (f := fun _ : ℝ => 2 * Q γ + γ / 2)
-          (g := fun t : ℝ => t + α₂ + α₃) continuous_const (by fun_prop)))
   have hJc : IsPreconnected J := by
     have hord : J.OrdConnected := ⟨fun x hx y hy z hz =>
       ⟨lt_of_lt_of_le hx.1 hz.1, lt_of_le_of_lt hz.2 hy.2.1, by linarith only [hx.2.2, hz.1]⟩⟩

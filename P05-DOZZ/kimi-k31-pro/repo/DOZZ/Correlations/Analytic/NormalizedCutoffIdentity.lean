@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.Analytic.NormalizedRealValue
-public import DOZZ.Complex.Identity
+import DOZZ.Correlations.Analytic.NormalizedRealValue
+import DOZZ.Complex.Identity
 
 /-! The exact fixed-region cutoff identity, extended from real to complex charges. -/
 
-@[expose] public section
 open MeasureTheory
 namespace DOZZ.Proofs
 

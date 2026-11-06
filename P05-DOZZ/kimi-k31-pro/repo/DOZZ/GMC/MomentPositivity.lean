@@ -1,2 +1,1 @@
-module
-public import DOZZ.Statements.GMC.GmcMassMoment
+import DOZZ.Statements.GMC.GmcMassMoment

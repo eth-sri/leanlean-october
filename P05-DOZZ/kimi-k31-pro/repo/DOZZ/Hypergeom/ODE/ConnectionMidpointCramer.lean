@@ -2,15 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Hypergeom.ODE.ConnectionMidpointDerivatives
-public import DOZZ.Hypergeom.BasisWronskians
-public import DOZZ.Hypergeom.BasisSpanning
+import DOZZ.Hypergeom.ODE.ConnectionMidpointDerivatives
+import DOZZ.Hypergeom.BasisWronskians
+import DOZZ.Hypergeom.BasisSpanning
 
 /-! Holomorphic midpoint Cramer coefficients for the connection expansions. -/
 
-@[expose] public section
 
 open scoped Topology
 
@@ -251,8 +249,7 @@ theorem gaussFMinus_eq_connectionMidpointCramer
         deriv (gaussGPlus H p.1 p.2.1 p.2.2) (1 / 2 : ℂ) -
       deriv (gaussGMinus H p.1 p.2.1 p.2.2) (1 / 2 : ℂ) *
         gaussGPlus H p.1 p.2.1 p.2.2 (1 / 2 : ℂ) ≠ 0 := by
-    rw [← hW]
-    exact hwne
+    rwa [← hW]
   have hWneComm : gaussGMinus H p.1 p.2.1 p.2.2 (1 / 2 : ℂ) *
         deriv (gaussGPlus H p.1 p.2.1 p.2.2) (1 / 2 : ℂ) -
       gaussGPlus H p.1 p.2.1 p.2.2 (1 / 2 : ℂ) *
@@ -260,14 +257,12 @@ theorem gaussFMinus_eq_connectionMidpointCramer
     convert hWne using 1; ring
   have hcoeff₁ : connectionMinusFirstCramerCoefficient H p = v.1 := by
     unfold connectionMinusFirstCramerCoefficient
-    rw [hFmid, hFmid']
-    rw [hW]
+    rw [hFmid, hFmid', hW]
     field_simp [hWneComm]
     ring_nf
   have hcoeff₂ : connectionMinusSecondCramerCoefficient H p = v.2 := by
     unfold connectionMinusSecondCramerCoefficient
-    rw [hFmid, hFmid']
-    rw [hW]
+    rw [hFmid, hFmid', hW]
     field_simp [hWneComm]
     ring_nf
   intro z hz
@@ -323,8 +318,7 @@ theorem gaussFPlus_eq_connectionMidpointCramer
         deriv (gaussGPlus H p.1 p.2.1 p.2.2) (1 / 2 : ℂ) -
       deriv (gaussGMinus H p.1 p.2.1 p.2.2) (1 / 2 : ℂ) *
         gaussGPlus H p.1 p.2.1 p.2.2 (1 / 2 : ℂ) ≠ 0 := by
-    rw [← hW]
-    exact hwne
+    rwa [← hW]
   have hWneComm : gaussGMinus H p.1 p.2.1 p.2.2 (1 / 2 : ℂ) *
         deriv (gaussGPlus H p.1 p.2.1 p.2.2) (1 / 2 : ℂ) -
       gaussGPlus H p.1 p.2.1 p.2.2 (1 / 2 : ℂ) *

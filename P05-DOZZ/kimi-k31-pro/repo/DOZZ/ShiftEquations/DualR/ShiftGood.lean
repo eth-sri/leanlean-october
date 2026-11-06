@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.ShiftEquations.DualR.Segment
-public import DOZZ.Statements.Defs.ShiftCoeffA
+import DOZZ.ShiftEquations.DualR.Segment
+import DOZZ.Statements.Defs.ShiftCoeffA
 
 /-!
 # Analyticity of the γ/2 shift coefficient
@@ -16,7 +15,6 @@ numerator arguments other than the constant `-γ²/4` and at `1 - y` for the thr
 arguments `y` (`ShiftCoeffGood`). At real charges these are positivity conditions.
 -/
 
-@[expose] public section
 
 open Filter Topology Set
 
@@ -191,4 +189,3 @@ theorem eventually_shiftCoeffGood {γ : ℝ} {f₁ f₂ f₃ : ℝ → ℂ} {t�
 
 end DOZZ.Proofs
 
-end

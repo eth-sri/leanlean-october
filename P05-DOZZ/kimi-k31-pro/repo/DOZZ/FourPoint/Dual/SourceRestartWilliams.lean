@@ -2,13 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Dual.SourcePastIndependence
-public import DOZZ.FourPoint.Reflected.CopiedPolarTransport
-public import DOZZ.Correlations.Tails.WilliamsSourceInputLaw
+import DOZZ.FourPoint.Dual.SourcePastIndependence
+import DOZZ.FourPoint.Reflected.CopiedPolarTransport
+import DOZZ.Correlations.Tails.WilliamsSourceInputLaw
 import Mathlib.Tactic
 /-! Exact source joint Williams law, including the translated inner lateral copy. -/
-@[expose] public section
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -53,8 +51,7 @@ theorem dual_source_restart_outer_williams_law
     exact radialPositiveHalf_map_isBrownian P A hA hB
   have hDZ := hiZ.comp₀ hA hZ.2.2.2.1 hs.aemeasurable measurable_id.aemeasurable
   have hcoord := (hc.2.1 0 (-Real.log ‖z‖+h)).aemeasurable
-  have hβ : AEMeasurable (dual_radial_scale γ (Q γ-α₁) h Xc z) P := by
-    exact ((hcoord.const_mul γ).sub aemeasurable_const).sub aemeasurable_const |>.exp
+  have hβ : AEMeasurable (dual_radial_scale γ (Q γ-α₁) h Xc z) P := ((hcoord.const_mul γ).sub aemeasurable_const).sub aemeasurable_const |>.exp
   have hYm := hβ.prodMk (((dual_outerMass_measure_measurable γ α₁ α₂ α₃ ξ z).comp_aemeasurable
     (equatorGFF_GMC_aemeasurable P X hX γ hγ hγ₂ M hM)).ennreal_toReal)
   have hYD := (dual_source_future_indep_outer_restart P X Xc hX hc hm hcont γ hγ hγ₂ M hM
@@ -65,6 +62,6 @@ theorem dual_source_restart_outer_williams_law
     _ hYm hYD (Q γ-α₁) (sub_pos.mpr hα₁) Qν hQν T
   rw [isLateralGMCOf_map_eq P P γ Z Z₀ hZ hData.2.1,
     williams_source_input_law P γ α₁ hα₁ B Z₀ hData Qν hQν] at hl
-  exact hl
+  assumption
 
 end DOZZ.Proofs

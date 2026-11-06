@@ -2,12 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.FourPoint.GammaHalfReflectedOuterLittleO
-public import DOZZ.Statements.FourPoint.FourPointTZeroEqStructureConstant
-public import DOZZ.FourPoint.Reflected.Normalization
-public import DOZZ.FourPoint.Reflected.Remainder
+import DOZZ.Statements.FourPoint.GammaHalfReflectedOuterLittleO
+import DOZZ.Statements.FourPoint.FourPointTZeroEqStructureConstant
+import DOZZ.FourPoint.Reflected.Normalization
+import DOZZ.FourPoint.Reflected.Remainder
 import Mathlib.Tactic
 
 /-! # Reflected fusion from the inner-limit conclusion
@@ -16,7 +15,6 @@ The conditional reduction takes the literal inner-limit conclusion as an explici
 input.
 -/
 
-@[expose] public section
 open MeasureTheory Filter Topology Set
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -36,7 +34,7 @@ theorem reflected_real_part_remainder (κ : ℝ) (r : ℂ → ℂ)
     (fun z => div_le_div_of_nonneg_right (Complex.abs_re_le_norm (r z))
       (Real.rpow_nonneg (norm_nonneg _) _)) hr
 
-/-- Adding the outer remainder `DOZZ.gammaHalf_reflected_outer_littleO` to the exact inner
+/-- Adding the outer remainder `gammaHalf_reflected_outer_littleO` to the exact inner
 conclusion gives the full reflected fusion statement, with the same supplied-space reflection
 witness. -/
 theorem gammaHalf_reflected_fusion_asymptotic_of_inner_limit {Ω : Type*} [MeasurableSpace Ω]
@@ -93,7 +91,7 @@ theorem gammaHalf_reflected_fusion_asymptotic_of_inner_limit {Ω : Type*} [Measu
     simpa only [neg_div] using fourPointT_eq_gammaHalfMoment P M γ μ α₁ α₂ α₃ z
   have hzero : N * gammaHalfMoment P M γ α₁ α₂ α₃ p 0 = C₀ := by
     rw [← hT 0]
-    simpa only [neg_div] using DOZZ.fourPointT_zero_eq_structureConstant P X M γ μ (γ / 2) α₁ α₂ α₃
+    simpa only [neg_div] using fourPointT_zero_eq_structureConstant P X M γ μ (γ / 2) α₁ α₂ α₃
       hγ hγ₂ hμ (by linarith only [hα₁, hγ]) hα₂ hα₃ (by linarith only [hs]) hX hM
   have hcancel := reflected_prefactor_cancel γ μ p
     (reflectionR P γ μ α₁ (B α₁) Z)
@@ -102,7 +100,7 @@ theorem gammaHalf_reflected_fusion_asymptotic_of_inner_limit {Ω : Type*} [Measu
       (gammaHalfOuterMoment P M γ α₁ α₂ α₃ p z ξ -
         gammaHalfMoment P M γ α₁ α₂ α₃ p 0 + (rI z).re) := by
     have hh := congrArg Complex.re (hI z)
-    simp only [Complex.ofReal_re, Complex.add_re, Complex.mul_re,
+    simp [Complex.ofReal_re, Complex.add_re, Complex.mul_re,
       Complex.ofReal_im, mul_zero, sub_zero] at hh
     dsimp only [r]
     rw [hT z, ← hzero]
@@ -111,12 +109,12 @@ theorem gammaHalf_reflected_fusion_asymptotic_of_inner_limit {Ω : Type*} [Measu
   · intro z
     dsimp only [r, C₀, D]
     ring
-  · have ho := DOZZ.gammaHalf_reflected_outer_littleO P X M γ α₁ α₂ α₃ ξ
+  · have ho := gammaHalf_reflected_outer_littleO P X M γ α₁ α₂ α₃ ξ
       hγ hγ₂ hξ hξ₂ hα₂ hα₃ hs hα₁ hreflect hslack hfreeze hX hM
     have hor := (isComplexLittleOAtZero_ofReal_iff κ _).mp ho
     have hir := reflected_real_part_remainder κ rI hrI
     have ht := (hor.add hir).const_mul N
-    simp only [add_zero, mul_zero] at ht
+    simp [add_zero, mul_zero] at ht
     apply ht.congr'
     filter_upwards [] with z
     rw [hr z]

@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.SharpMoments.LaplaceTail
-public import DOZZ.GMC.SharpMoments.ReverseJensen
+import DOZZ.GMC.SharpMoments.LaplaceTail
+import DOZZ.GMC.SharpMoments.ReverseJensen
 
 /-! # Gaussian decay of cutoff Laplace transforms at bounded cutoff
 
@@ -15,7 +14,6 @@ Chernoff bound turns this into a Gaussian small-value tail, which gives Gaussian
 logarithmic level of the Laplace transform of the cutoff mass, with constants uniform in the
 cutoff. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped ENNReal NNReal
@@ -29,8 +27,6 @@ theorem laplaceBase_exp_neg_exp_half_le {x : ℝ} (hx : 0 ≤ x) :
     Real.exp (-Real.exp (x / 2)) ≤ Real.exp (-(x ^ 2 / 8)) := by
   refine Real.exp_le_exp.mpr ?_
   have h := Real.quadratic_le_exp_of_nonneg (show 0 ≤ x / 2 by linarith)
-  have e : (x / 2) ^ 2 / 2 = x ^ 2 / 8 := by ring
-  have h2 : 0 ≤ x / 2 := by linarith
   linarith
 
 /-- A shifted Gaussian is bounded by a constant multiple of a Gaussian of smaller variance. -/

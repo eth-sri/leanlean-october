@@ -1,10 +1,8 @@
-module
 
-public import DOZZ.GMC.WeightedCutoff.UniformGamma
+import DOZZ.GMC.WeightedCutoff.UniformGamma
 
 /-! # Weighted cutoff bounds at a fixed subcritical coupling -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -32,9 +30,8 @@ theorem equatorGFF_GMC_weighted_cutoff_bound
   have hadm : ∀ g ∈ ({γ} : Set ℝ), ∀ t ∈ T, t.1 < Q g ∧ 0 < t.2 ∧
       t.2 < min (4 / g ^ 2) (2 / g * (Q g - t.1)) := by
     intro g hg
-    have hg' : g = γ := Set.mem_singleton_iff.mp hg
     subst g
-    exact hTadm
+    assumption
   obtain ⟨C, hC, hbound⟩ := equatorGFF_GMC_weighted_cutoff_bound_uniform_gamma
     P X hX {γ} isCompact_singleton hΓ2 Xc hXc T hT hadm K hK r₀ hr₀
   refine ⟨C, hC, ?_⟩

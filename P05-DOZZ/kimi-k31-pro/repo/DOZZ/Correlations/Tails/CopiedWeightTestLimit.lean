@@ -2,15 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.Tails.ActualPinTestLimit
-public import DOZZ.Correlations.Tails.BoundedPinCoefficient
-public import DOZZ.Correlations.Tails.TranslatedField
+import DOZZ.Correlations.Tails.ActualPinTestLimit
+import DOZZ.Correlations.Tails.BoundedPinCoefficient
+import DOZZ.Correlations.Tails.TranslatedField
 
 /-! The literal copied local pin weight in the actual translated GMC cutoff limit. -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal
 
@@ -37,15 +35,15 @@ theorem copied_pin_weight_test_limit
   have hfun (t : ℝ) (x : ℂ) : f x * Real.exp (cγ x*t) =
       f x * Real.exp (γ * localPinCoefficient z x * t) := by
     by_cases hx : f x = 0
-    · simp only [hx, zero_mul]
+    · simp [hx, zero_mul]
     · have hs : x ∈ Metric.closedBall (0 : ℂ) 1 :=
         hfs (subset_tsupport _ (Function.mem_support.mpr hx))
-      have hn : ‖x‖ ≤ 1 := by simpa only [Metric.mem_closedBall, dist_zero_right] using hs
+      have hn : ‖x‖ ≤ 1 := by simpa [Metric.mem_closedBall, dist_zero_right] using hs
       change f x * Real.exp ((γ * boundedPinCoefficient z x)*t) = _
       rw [bounded_pin_coefficient_eq z x hz hn]
   have h := actual_copied_pin_test_limit P X Xc hX hc Y Yc hY hYc γ hγ hγ2 N hN
     z hz f cγ hfc
-  simpa only [hfun] using h
+  simpa [hfun] using h
 
 /-- Specialization to the actual translated and re-pinned source GMC, with its literal
 circle averages `Xc(z+x,r)-Xc(z,0)`. -/

@@ -2,16 +2,14 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import Mathlib.Analysis.SpecialFunctions.Pow.Deriv
-public import Mathlib.Analysis.Complex.Norm
-public import Mathlib.Analysis.Calculus.Taylor
-public import DOZZ.Hypergeom.Planar.TaylorTail
+import Mathlib.Analysis.SpecialFunctions.Pow.Deriv
+import Mathlib.Analysis.Complex.Norm
+import Mathlib.Analysis.Calculus.Taylor
+import DOZZ.Hypergeom.Planar.TaylorTail
 
 /-! Smooth radial-power calculations away from the moving singularity. -/
 
-@[expose] public section
 
 open Filter
 open Set
@@ -40,7 +38,7 @@ theorem hasDerivAt_radialShiftSq (x : ℂ) (t : ℝ) :
     · norm_num
   convert (hasDerivAt_const t (‖x‖ ^ 2)).add (hlin.add hsq) using 1
   · ext s
-    simp only [Pi.add_apply]
+    simp [Pi.add_apply]
     ring
   · ring
 
@@ -89,7 +87,7 @@ theorem hasDerivAt_radialShiftFirstDerivative (p : ℝ) (x : ℂ) (hx : x ≠ 0)
     convert (hasDerivAt_const (0 : ℝ) (‖x‖ ^ 2)).add (hlin.add hsq)
       using 1
     · ext t
-      simp only [Pi.add_apply]
+      simp [Pi.add_apply]
       ring
     · ring
   have hq0 : q 0 = ‖x‖ ^ 2 := by simp [q, radialShiftSq]
@@ -111,7 +109,7 @@ theorem hasDerivAt_radialShiftFirstDerivative (p : ℝ) (x : ℂ) (hx : x ≠ 0)
   rw [hform]
   convert hprod using 1
   · ext t
-    simp only [Pi.mul_apply]
+    simp [Pi.mul_apply]
     ring
   · rw [hq0]
     ring
@@ -222,10 +220,6 @@ theorem norm_rpow_centered_difference_le (k : ℝ) (hk : 0 < k) (hk₂ : k < 2)
     rw [hminus, norm_mul, Real.mul_rpow (norm_nonneg x) (norm_nonneg (1 - q))]
   have hremMinus := norm_unit_taylor_remainder_le k hk hk₂ q hq
   have hremPlus := norm_unit_taylor_remainder_le k hk hk₂ (-q) (by simpa using hq)
-  have hC : 0 ≤ C := by
-    dsimp [C]
-    have hfactor : 0 ≤ 1 - k / 2 := by linarith
-    positivity
   have hCnorm : |‖1 - q‖ ^ k - 1 + k * q.re| ≤ C * ‖q‖ ^ 2 := by
     simpa [C] using hremMinus
   have hCnorm' : |‖1 + q‖ ^ k - 1 - k * q.re| ≤ C * ‖q‖ ^ 2 := by
@@ -233,7 +227,7 @@ theorem norm_rpow_centered_difference_le (k : ℝ) (hk : 0 < k) (hk₂ : k < 2)
       |‖1 + q‖ ^ k - 1 - k * q.re| =
           |‖1 - -q‖ ^ k - 1 + k * (-q).re| := by
             congr 1
-            simp only [sub_neg_eq_add, Complex.neg_re]
+            simp [sub_neg_eq_add, Complex.neg_re]
             ring
       _ ≤ C * ‖-q‖ ^ 2 := by simpa [C] using hremPlus
       _ = C * ‖q‖ ^ 2 := by simp
@@ -506,8 +500,7 @@ theorem norm_rpow_real_centered_difference_tendsto (k : ℝ) (x : ℂ) (hx : x �
       have hnormt : ‖-(t : ℂ)‖ = |t| := by
         rw [norm_neg, Complex.norm_real, Real.norm_eq_abs]
       have hadd : x - -(t : ℂ) = x + (t : ℂ) := by ring
-      rw [hnormt, hadd] at h
-      exact h
+      rwa [hnormt, hadd] at h
     have hpositive : 0 < ‖x + (t : ℂ)‖ := by
       have : 0 < ‖x‖ - |t| := by dsimp [ρ] at htAbs; linarith
       exact lt_of_lt_of_le this hnormLower

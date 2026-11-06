@@ -2,11 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Brownian.Lateral.Field
-public import DOZZ.GMC.Assembly.AdmissibleGMC
-public import DOZZ.GMC.GaussianInputs
+import DOZZ.Brownian.Lateral.Field
+import DOZZ.GMC.Assembly.AdmissibleGMC
+import DOZZ.GMC.GaussianInputs
 
 /-!
 # Orthogonal radial projection of circle cutoffs
@@ -17,7 +16,6 @@ with the radial path at finite cutoff. The Bochner construction here keeps the e
 average in the original Gaussian Hilbert space.
 -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal Distributions
@@ -52,7 +50,7 @@ theorem continuous_clampedLogRadius (ρ : ℝ) (hρ : 0 < ρ) :
 /-- Above the clamping radius, the coordinate is the genuine logarithmic radius. -/
 theorem clampedLogRadius_eq (ρ : ℝ) (z : ℂ) (hz : ρ ≤ ‖z‖) :
     clampedLogRadius ρ z = -Real.log ‖z‖ := by
-  rw [clampedLogRadius, max_eq_right hz]
+  simp_all [clampedLogRadius]
 
 /-- Circle radii bounded away from the origin also bound every point of the circle away
 from the origin. This bound is valid without any angular coordinate choice. -/
@@ -115,7 +113,7 @@ theorem originCircleRadialL2_integral_eq_zero
   rw [originCircleRadialL2, integral_mean_L2_integral _ _
     (integrable_clampedRadialCircleL2 P X Xc hX hc ρ hρ x r)]
   simp_rw [circleAverageL2_integral_eq_zero P X Xc hX hc]
-  simp only [integral_zero]
+  simp [integral_zero]
 
 /-- Covariance of the circle radial average is the average of the radial covariances. -/
 theorem originCircleRadialL2_covariance
@@ -375,7 +373,7 @@ theorem originCircleLateralL2_variance_split
         gaussianVariance P (originCircleRadialL2 hc ρ x r) := by
   have h := originCircleLateralL2_covariance_expansion
     P X Xc hX hc ρ ρ hρ hρ x x r r hx hx
-  simp only [ProbabilityTheory.covariance,
+  simp [ProbabilityTheory.covariance,
     circleAverageL2_integral_eq_zero P X Xc hX hc,
     originCircleLateralL2_integral_eq_zero P X Xc hX hc ρ hρ x r,
     originCircleRadialL2_integral_eq_zero P X Xc hX hc ρ hρ x r,
@@ -663,7 +661,7 @@ theorem integral_circleMeasure_uniform_approx
       ∫ z, F z - F x ∂circleMeasure x r := by
     rw [integral_sub (integrable_continuous_circleMeasure x r F hF) (integrable_const (F x)),
       integral_const]
-    simp only [probReal_univ, one_smul]
+    simp [probReal_univ, one_smul]
   rw [heq]
   exact hnorm.trans_lt (half_lt_self hη)
 

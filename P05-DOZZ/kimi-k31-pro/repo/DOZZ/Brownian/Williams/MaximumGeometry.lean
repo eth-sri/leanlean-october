@@ -2,11 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.Brownian.Barrier.KilledMarkov
-public import DOZZ.Brownian.WilliamsMaximumLaw
-public import DOZZ.Statements.Brownian.BrownianPostMaximumPath
-public import Mathlib.MeasureTheory.OuterMeasure.BorelCantelli
+import DOZZ.Brownian.Barrier.KilledMarkov
+import DOZZ.Brownian.WilliamsMaximumLaw
+import DOZZ.Statements.Brownian.BrownianPostMaximumPath
+import Mathlib.MeasureTheory.OuterMeasure.BorelCantelli
 /-!
 # The actual negative-drift maximum and its unique split
 
@@ -22,7 +21,6 @@ measurable. These are the geometric inputs for the thin-band proof; this
 module does not assert the Williams disintegration itself.
 -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory Filter Set
 open scoped NNReal ENNReal Topology
 namespace DOZZ.Proofs
@@ -103,7 +101,7 @@ private theorem maximum_attained_of_escape (ν : ℝ) (p : BrownianPath)
   · have hh := le_ciSup (brownianPath_Iic_bddAbove X T) (⟨t,ht⟩ : Iic T)
     rw [hσ] at hh
     change p t+(-ν)*(t : ℝ) ≤ p σ.1+(-ν)*(σ.1 : ℝ) at hh
-    simpa only [neg_mul,sub_eq_add_neg] using hh
+    simpa [neg_mul,sub_eq_add_neg] using hh
   · have hh0 := le_ciSup (brownianPath_Iic_bddAbove X T) (⟨(0 : ℝ≥0),(zero_le : (0 : ℝ≥0) ≤ T)⟩ : Iic T)
     rw [hσ] at hh0
     have hh : p t-ν*(t : ℝ) ≤ p 0 := hT t (le_of_lt (lt_of_not_ge ht))
@@ -112,7 +110,7 @@ private theorem maximum_attained_of_escape (ν : ℝ) (p : BrownianPath)
       rw [mul_zero,add_zero]
     rw [hzero] at hh0
     change p 0 ≤ p σ.1+(-ν)*(σ.1 : ℝ) at hh0
-    exact hh.trans (by simpa only [neg_mul,sub_eq_add_neg] using hh0)
+    exact hh.trans (by simpa [neg_mul,sub_eq_add_neg] using hh0)
 
 /-- The global negative-drift maximum is attained and its entire range is bounded above almost surely. -/
 theorem brownianPath_negativeDrift_maximum_attained_ae (P : Measure BrownianPath)
@@ -128,7 +126,7 @@ theorem brownianPath_negativeDrift_maximum_attained_ae (P : Measure BrownianPath
   apply le_antisymm (le_csSup hb (mem_range_self σ))
   exact csSup_le (range_nonempty _) (by rintro y ⟨t,rfl⟩; exact hσ t)
 
-/-- The maximum `DOZZ.driftedBrownianMaximum` is measurable under any positive-drift Brownian
+/-- The maximum `driftedBrownianMaximum` is measurable under any positive-drift Brownian
 law. -/
 theorem aemeasurable_driftedBrownianMaximum (P : Measure BrownianPath)
     (hB : IsBrownianReal (fun t p => p t) P) (ν : ℝ) (hν : 0 < ν) :
@@ -152,7 +150,7 @@ theorem firstPassageTime_globalMaximum (ν : ℝ) (p : BrownianPath)
   change driftedBrownianMaximum ν p ≤ p t+(-ν)*(t : ℝ) ↔
     p t-ν*(t : ℝ) = driftedBrownianMaximum ν p
   have hh : p t-ν*(t : ℝ) ≤ driftedBrownianMaximum ν p := le_csSup hb (mem_range_self t)
-  simp only [neg_mul,← sub_eq_add_neg]
+  simp [neg_mul,← sub_eq_add_neg]
   exact ⟨fun h => le_antisymm hh h,fun h => h.ge⟩
 
 /-- The actual global maximizing time is measurable under the Brownian law. -/
@@ -176,7 +174,7 @@ theorem aemeasurable_brownianPreMaximumSegment (P : Measure BrownianPath)
   convert hσ.prodMk (continuous_stopBrownianPath.measurable.comp_aemeasurable
     (hσ.prodMk hd.aemeasurable)) using 1
   funext p
-  dsimp only [brownianPreMaximumSegment,Function.comp_def]
+  dsimp [brownianPreMaximumSegment,Function.comp_def]
   congr 1
   congr 1
   apply ContinuousMap.ext
@@ -235,7 +233,7 @@ theorem brownianPath_globalMaximum_nonneg_ae (P : Measure BrownianPath)
     hB.eval_zero_ae_eq_zero] with p hp hp0
   have hh := le_csSup hp.1 (mem_range_self (0 : ℝ≥0))
   change p 0-ν*(0 : ℝ) ≤ driftedBrownianMaximum ν p at hh
-  simpa only [mul_zero,sub_zero,hp0] using hh
+  simpa [mul_zero,sub_zero,hp0] using hh
 
 /-- The literal maximum has the Williams reference law. -/
 theorem brownianPath_globalMaximum_map (P : Measure BrownianPath)
@@ -260,7 +258,7 @@ theorem brownianPath_globalMaximum_map (P : Measure BrownianPath)
       exact hp.trans_lt (lt_of_not_ge hx)
     · have hh : ∀ᵐ p ∂P, ¬driftedBrownianMaximum ν p < 0 :=
         (brownianPath_globalMaximum_nonneg_ae P hB ν hν).mono (fun p hp => not_lt.mpr hp)
-      simpa only [ae_iff,Classical.not_not] using hh
+      simpa [ae_iff,Classical.not_not] using hh
 
 /-- The maximum law has no atoms; ties against an independent past maximum have zero probability. -/
 theorem noAtoms_brownianMaximumReferenceLaw (ν : ℝ) : NullSingletonClass (brownianMaximumReferenceLaw ν) := by
@@ -291,7 +289,7 @@ theorem measurable_brownianPastMaximumGap_raw (ν : ℝ) (s : ℝ≥0) :
   have hb : BddAbove (range (fun u : Iic s => p u-ν*(u : ℝ))) := by
     have hh := brownianPath_Iic_bddAbove (driftedBrownianPath (-ν) p) s
     change BddAbove (range (fun u : Iic s => p u+(-ν)*(u : ℝ))) at hh
-    simpa only [neg_mul,← sub_eq_add_neg] using hh
+    simpa [neg_mul,← sub_eq_add_neg] using hh
   exact (hDd.ciSup ((p.continuous.sub (continuous_const.mul NNReal.continuous_coe)).comp
     continuous_subtype_val) hb).symm
 
@@ -310,7 +308,7 @@ theorem brownianPath_no_maximum_tie_at_cut (P : Measure BrownianPath)
   have hsingle (x : ℝ) : P {p | x = M p} = 0 := by
     have hh := congrArg (fun μ : Measure ℝ => μ {x}) hMM
     rw [Measure.map_apply hmM (measurableSet_singleton x)] at hh
-    simpa only [Set.preimage,mem_singleton_iff,eq_comm,measure_singleton] using hh
+    simpa [Set.preimage,mem_singleton_iff,eq_comm,measure_singleton] using hh
   let D := brownianPastMaximumGap ν s
   have hD := measurable_brownianPastMaximumGap_raw ν s
   have hmD : Measurable D := hD.mono ((brownianRawFiltration _ _).le s) le_rfl
@@ -326,7 +324,7 @@ theorem brownianPath_no_maximum_tie_at_cut (P : Measure BrownianPath)
         rw [brownianPath_deterministic_restart_joint_map P hB s D hD]
       _ = 0 := by
         rw [Measure.prod_apply hE]
-        simp only [E,Set.preimage,mem_ofPred_eq,hsingle,lintegral_zero]
+        simp [E,Set.preimage,mem_ofPred_eq,hsingle,lintegral_zero]
   have heq : ∀ᵐ p ∂P, driftedBrownianMaximum ν (brownianShiftPath s p) = M (brownianShiftPath s p) := by
     have hj := brownianPath_bounded_restart_map P hB (fun _ => s)
       (isStoppingTime_const _ s) s (fun _ => le_rfl)
@@ -335,7 +333,7 @@ theorem brownianPath_no_maximum_tie_at_cut (P : Measure BrownianPath)
       exact hM.ae_eq_mk
     exact ae_eq_comp hmS.aemeasurable hh
   have hne : ∀ᵐ p ∂P, D p ≠ M (brownianShiftPath s p) := by
-    simpa only [ae_iff,Classical.not_not] using hz
+    simpa [ae_iff,Classical.not_not] using hz
   filter_upwards [hne,heq] with p hp heq
   change ¬D p = M (brownianShiftPath s p) at hp
   rwa [heq]
@@ -364,7 +362,7 @@ theorem brownianPath_maximum_tie_of_two_hits (ν : ℝ) (p : BrownianPath) (s u 
     have hbI : BddAbove (range (fun u : Iic s => p u-ν*(u : ℝ))) := by
       have hh := brownianPath_Iic_bddAbove X s
       change BddAbove (range (fun u : Iic s => p u+(-ν)*(u : ℝ))) at hh
-      simpa only [neg_mul,← sub_eq_add_neg] using hh
+      simpa [neg_mul,← sub_eq_add_neg] using hh
     exact le_ciSup hbI (⟨u,hu⟩ : Iic s)
   have hfuture : driftedBrownianMaximum ν (brownianShiftPath s p) = M-(p s-ν*(s : ℝ)) := by
     apply le_antisymm (csSup_le (range_nonempty _) (by
@@ -393,7 +391,7 @@ theorem brownianPath_globalMaximumTime_attains_ae (P : Measure BrownianPath)
       obtain ⟨t,ht⟩ := hp.2
       refine ⟨t,?_⟩
       change driftedBrownianMaximum ν p ≤ p t+(-ν)*(t : ℝ)
-      simpa only [neg_mul,← sub_eq_add_neg] using ht.ge)
+      simpa [neg_mul,← sub_eq_add_neg] using ht.ge)
   rw [firstPassageTime_globalMaximum ν p hp.1] at hh
   have hl := le_csSup hp.1 (mem_range_self (driftedBrownianMaximumTime ν p))
   change p (driftedBrownianMaximumTime ν p)-ν*(driftedBrownianMaximumTime ν p : ℝ) ≤
@@ -401,7 +399,7 @@ theorem brownianPath_globalMaximumTime_attains_ae (P : Measure BrownianPath)
   apply le_antisymm hl
   change driftedBrownianMaximum ν p ≤ p (driftedBrownianMaximumTime ν p)+
     (-ν)*(driftedBrownianMaximumTime ν p : ℝ) at hh
-  simpa only [neg_mul,← sub_eq_add_neg] using hh
+  simpa [neg_mul,← sub_eq_add_neg] using hh
 
 /-- Negative-drift Brownian paths have a unique global maximizing time almost surely. -/
 theorem brownianPath_globalMaximum_unique_ae (P : Measure BrownianPath)
@@ -484,13 +482,13 @@ theorem brownianPath_firstPassageTime_tendsto_globalMaximumTime_ae (P : Measure 
     have hh := le_csSup hp.1 (mem_range_self t)
     change p t-ν*(t : ℝ) ≤ driftedBrownianMaximum ν p at hh
     change p t+(-ν)*(t : ℝ) ≤ driftedBrownianMaximum ν p
-    simpa only [neg_mul,← sub_eq_add_neg] using hh
+    simpa [neg_mul,← sub_eq_add_neg] using hh
   · change p (driftedBrownianMaximumTime ν p)+(-ν)*(driftedBrownianMaximumTime ν p : ℝ) = _
-    simpa only [neg_mul,← sub_eq_add_neg] using hσ
+    simpa [neg_mul,← sub_eq_add_neg] using hσ
   · intro t ht
     apply hu t
     change p t+(-ν)*(t : ℝ) = driftedBrownianMaximum ν p at ht
-    simpa only [neg_mul,← sub_eq_add_neg] using ht
+    simpa [neg_mul,← sub_eq_add_neg] using ht
 
 /-- The actual lower-level lifetime-marked prefixes converge in the stopped-path topology. -/
 theorem brownianPath_firstHitSegment_tendsto_preMaximum_ae (P : Measure BrownianPath)
@@ -535,7 +533,7 @@ theorem brownianPath_firstHitFuture_tendsto_postMaximum_ae (P : Measure Brownian
   have hs' : Tendsto (fun n => driftedBrownianPath (-ν)
       (brownianShiftPath (firstPassageTime (driftedBrownianPath (-ν) p) (cs n)) p))
       atTop (𝓝 (driftedBrownianPath (-ν) (brownianShiftPath (driftedBrownianMaximumTime ν p) p))) := by
-    simpa only [Function.comp_def,brownianShiftPath_drift] using hs
+    simpa [Function.comp_def,brownianShiftPath_drift] using hs
   convert hs' using 1
   apply congrArg nhds
   apply ContinuousMap.ext

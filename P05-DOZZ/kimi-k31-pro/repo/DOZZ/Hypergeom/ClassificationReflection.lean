@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Hypergeom.ClassificationWirtingerC2
-public import DOZZ.Hypergeom.ODE.GaussSystem
+import DOZZ.Hypergeom.ClassificationWirtingerC2
+import DOZZ.Hypergeom.ODE.GaussSystem
 
 /-! Reflection of the real Gauss PDE under `z ↦ 1-z`. -/
 
-@[expose] public section
 
 open Filter
 open scoped Topology
@@ -34,9 +32,9 @@ theorem wirtingerZ_reflection {f : ℂ → ℂ} {z : ℂ}
   have hcomp := hf.hasFDerivAt.comp z hmap
   have hfd : fderiv ℝ (fun w => f (1 - w)) z =
       (fderiv ℝ f (1 - z)).comp (-ContinuousLinearMap.id ℝ ℂ) := by
-    simpa only [Function.comp_def, hmap.fderiv] using hcomp.fderiv
+    simpa [Function.comp_def, hmap.fderiv] using hcomp.fderiv
   rw [wirtingerZ, wirtingerZ, hfd]
-  simp only [ContinuousLinearMap.comp_apply, neg_apply, ContinuousLinearMap.id_apply,
+  simp [neg_apply,
     map_neg]
   ring
 
@@ -52,7 +50,7 @@ private theorem gaussRegularPlane_reflection (z : ℂ)
     apply hz.1
     have hzero : z = 0 := by
       simpa using congrArg (fun w : ℂ => (1 : ℂ) - w) h
-    exact hzero
+    assumption
 
 /-- The second `∂z` derivative is invariant under reflection on an open domain stable
 under `z ↦ 1-z`. -/

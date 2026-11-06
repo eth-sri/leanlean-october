@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.Correlations.Symmetry.ReflectionMomentSwap
-@[expose] public section
+import DOZZ.Correlations.Symmetry.ReflectionMomentSwap
 open MeasureTheory
 namespace DOZZ.Proofs
 
 /-- Extended-domain permutation symmetry, with affine re-pinning and correlated Gaussian tilt
-for the first--second swap, and the inversion law `DOZZ.equatorGFF_GMC_inversion_law` for the
+for the first--second swap, and the inversion law `equatorGFF_GMC_inversion_law` for the
 first--third swap. -/
 theorem unitVolumeStructureConstant_symmetric_extended
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)

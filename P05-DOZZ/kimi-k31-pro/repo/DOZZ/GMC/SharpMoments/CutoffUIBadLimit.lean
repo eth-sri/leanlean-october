@@ -2,12 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.SharpMoments.CutoffUIBad
-public import DOZZ.GMC.SharpMoments.LimitWeightedFatou
-public import DOZZ.GMC.SharpMoments.LimitExteriorFatou
-public import DOZZ.GMC.SharpMoments.WeightedUniformGrid
+import DOZZ.GMC.SharpMoments.CutoffUIBad
+import DOZZ.GMC.SharpMoments.LimitWeightedFatou
+import DOZZ.GMC.SharpMoments.LimitExteriorFatou
+import DOZZ.GMC.SharpMoments.WeightedUniformGrid
 
 /-! # The bad region of limiting Coulomb masses
 
@@ -17,7 +16,6 @@ the root disks are weighted local masses, whose moments are bounded by the unifo
 bounds through Fatou's lemma; the far exterior is bounded by the far exterior cutoff moments in
 the same way. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology Metric
 open scoped ENNReal NNReal
@@ -387,7 +385,7 @@ theorem cutoffUI_bad_limit_moment_le
         rw [← ENNReal.ofReal_mul (hCkpos k).le]
         refine ENNReal.ofReal_le_ofReal (mul_le_mul_of_nonneg_left ?_ (hCkpos k).le)
         exact Real.rpow_le_rpow_of_exponent_ge hρ hρ1' ((min_le_left _ _).trans (hκr k c hc)))
-    exact h
+    assumption
   have hVb : ∫⁻ ω, V ω ^ tst ∂P ≤ Ae * ENNReal.ofReal (ρ ^ κ) := by
     have h := gmc_exterior_power_moment_le_of_cutoff P X hX c.1 hγ0 hγ2 M hM Xc hXc
       (R := 1 / ρ) (le_max_right (c.1 * c.2.2.2) 0) htst (Ae * ENNReal.ofReal (ρ ^ κe))

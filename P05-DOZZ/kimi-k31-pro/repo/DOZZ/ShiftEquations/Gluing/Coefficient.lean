@@ -2,15 +2,14 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.ShiftEquations.Gluing.DiagonalUnique
-public import DOZZ.Statements.FourPoint.FourPointT
-public import DOZZ.Statements.Defs.StructureConstant
-public import DOZZ.Statements.Hypergeom.GaussCoefficientRatio
-public import DOZZ.Statements.Hypergeom.GaussParameterA
-public import DOZZ.Statements.Hypergeom.GaussParameterB
-public import DOZZ.Statements.Hypergeom.GaussParameterC
+import DOZZ.ShiftEquations.Gluing.DiagonalUnique
+import DOZZ.Statements.FourPoint.FourPointT
+import DOZZ.Statements.Defs.StructureConstant
+import DOZZ.Statements.Hypergeom.GaussCoefficientRatio
+import DOZZ.Statements.Hypergeom.GaussParameterA
+import DOZZ.Statements.Hypergeom.GaussParameterB
+import DOZZ.Statements.Hypergeom.GaussParameterC
 
 /-!
 # The reflected coefficient from two diagonal representations
@@ -21,7 +20,6 @@ coefficient `K` hold on the cut plane, uniqueness of diagonal Gauss representati
 `K = C(α₁ - χ, α₂, α₃) ρ(a, b, c)`, with `ρ` the Gauss coefficient ratio.
 -/
 
-@[expose] public section
 
 open MeasureTheory
 
@@ -67,4 +65,3 @@ theorem second_coefficient_of_classification {Ω : Type*} [MeasurableSpace Ω] (
 
 end DOZZ.Proofs
 
-end

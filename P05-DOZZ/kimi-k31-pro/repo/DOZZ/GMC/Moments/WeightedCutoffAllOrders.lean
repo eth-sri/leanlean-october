@@ -1,4 +1,3 @@
-module
-public import DOZZ.GMC.Annulus.HigherScales
-public import DOZZ.GMC.Moments.WeightedCutoffBallMomentUpToTwo
-public import DOZZ.GMC.Moments.WeightedCutoffCompactSlack
+import DOZZ.GMC.Annulus.HigherScales
+import DOZZ.GMC.Moments.WeightedCutoffBallMomentUpToTwo
+import DOZZ.GMC.Moments.WeightedCutoffCompactSlack

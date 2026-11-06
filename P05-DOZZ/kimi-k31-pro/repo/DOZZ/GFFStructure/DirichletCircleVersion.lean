@@ -2,8 +2,7 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.GFFStructure.DirichletCircleLimits
+import DOZZ.GFFStructure.DirichletCircleLimits
 /-!
 # Actual Dirichlet circle versions
 
@@ -12,7 +11,6 @@ The raw distribution sigma algebra supports a jointly measurable Gaussian versio
 and the completed test and circle variables are orthogonal to the harmonic field.
 -/
 
-@[expose] public section
 open Filter MeasureTheory ProbabilityTheory Set Metric TopologicalSpace
 open scoped Topology ENNReal NNReal
 namespace DOZZ.Proofs
@@ -20,7 +18,7 @@ namespace DOZZ.Proofs
 theorem interior_circle_closedBall_subset (c x : ℂ) (ρ r : ℝ)
     (hx : ‖x-c‖+Real.exp (-r) < ρ) : closedBall x |Real.exp (-r)| ⊆ ball c ρ := by
   intro z hz
-  have htri : ‖z-c‖ ≤ ‖z-x‖+‖x-c‖ := by simpa only [sub_add_sub_cancel] using norm_add_le (z-x) (x-c)
+  have htri : ‖z-c‖ ≤ ‖z-x‖+‖x-c‖ := by simpa [sub_add_sub_cancel] using norm_add_le (z-x) (x-c)
   have hn := mem_closedBall_iff_norm.mp hz
   rw [abs_of_pos (Real.exp_pos _)] at hn
   exact mem_ball_iff_norm.mpr (by linarith only [htri,hn,hx])
@@ -42,7 +40,7 @@ theorem poissonFamilyL2_circleAverage_eq {Ω : Type*} [MeasurableSpace Ω]
   have hae := circleAverage_L2_ae_eq P x (Real.exp (-r)) (Real.exp_pos _).le _ hcircle
     (fun z ω => V ω z) (hVm.comp measurable_swap)
     (fun z hz => poissonFamilyL2_ae_eq P c ρ V hV z
-      (hsub (by simpa only [abs_of_pos (Real.exp_pos _)] using sphere_subset_closedBall hz)))
+      (hsub (by simpa [abs_of_pos (Real.exp_pos _)] using sphere_subset_closedBall hz)))
   apply Lp.ext
   filter_upwards [hae,poissonFamilyL2_ae_eq P c ρ V hV x hxs,hVh] with ω hav hxv hω
   rw [hav,hxv]
@@ -76,9 +74,9 @@ theorem exists_interior_circle_testFn_poisson_integral_limit {Ω : Type*} [Measu
   have hδ : Tendsto (fun n : ℕ => 1/((n : ℝ)+2)) atTop (𝓝 (0 : ℝ)) := by
     convert (tendsto_const_div_atTop_nhds_zero_nat (1 : ℝ)).comp (tendsto_add_atTop_nat 2) using 1
     ext n
-    simp only [Function.comp_def,Nat.cast_add,Nat.cast_ofNat]
+    simp [Function.comp_def,Nat.cast_add,Nat.cast_ofNat]
   have hε : Tendsto (fun n : ℕ => 1/((n : ℝ)+2)^3) atTop (𝓝 (0 : ℝ)) := by
-    simpa only [div_pow,one_pow,zero_pow (by norm_num : (3 : ℕ) ≠ 0)] using hδ.pow 3
+    simpa [div_pow,one_pow,zero_pow (by norm_num : (3 : ℕ) ≠ 0)] using hδ.pow 3
   have hρs n : Function.support (circleAnnularDensity x r n) ⊆
       closedBall (0 : ℂ) (‖x‖+2*Real.exp (-r)+1) :=
     (support_circleAnnularDensity_subset x r n).trans
@@ -92,8 +90,8 @@ theorem exists_interior_circle_testFn_poisson_integral_limit {Ω : Type*} [Measu
     apply Real.circleAverage_congr_sphere
     intro z hz
     have hz' : z ∈ closedBall c b := by
-      have hn : ‖z-x‖ = Real.exp (-r) := by simpa only [mem_sphere_iff_norm,abs_of_pos (Real.exp_pos _)] using hz
-      have htri : ‖z-c‖ ≤ ‖z-x‖+‖x-c‖ := by simpa only [sub_add_sub_cancel] using norm_add_le (z-x) (x-c)
+      have hn : ‖z-x‖ = Real.exp (-r) := by simpa [mem_sphere_iff_norm,abs_of_pos (Real.exp_pos _)] using hz
+      have htri : ‖z-c‖ ≤ ‖z-x‖+‖x-c‖ := by simpa [sub_add_sub_cancel] using norm_add_le (z-x) (x-c)
       exact mem_closedBall_iff_norm.mpr (by linarith only [hn,htri,hxb])
     change φ z • U z = U z
     rw [φ.one_of_mem_closedBall hz',one_smul]
@@ -103,7 +101,7 @@ theorem exists_interior_circle_testFn_poisson_integral_limit {Ω : Type*} [Measu
     apply congrArg (fun F : ℂ → Lp ℝ 2 P => ∫ z, F z)
     funext z
     by_cases hz : f n z = 0
-    · simp only [hz,zero_smul]
+    · simp [hz,zero_smul]
     · have hz' := ball_subset_closedBall (hn (subset_closure hz))
       change f n z • (φ z • U z) = f n z • U z
       rw [φ.one_of_mem_closedBall hz',one_smul]
@@ -113,7 +111,7 @@ theorem exists_interior_circle_testFn_poisson_integral_limit {Ω : Type*} [Measu
   have hmass := tendsto_integral_testFn_mul_of_circleAnnular_approx x r f _ (fun n => by positivity) hε
     (by positivity : 0 < ‖x‖+2*Real.exp (-r)+1) (fun n => (subset_tsupport _).trans (hs n)) hρs
     (fun n z => (he n z).le) (fun _ => 1) continuous_const
-  simpa only [mul_one,integral_const,probReal_univ,one_smul] using hmass
+  simpa [mul_one,integral_const,probReal_univ,one_smul] using hmass
 /-- Circle residuals in the original random L² space, with the literal exterior pin subtracted. -/
 noncomputable def dirichletCircleResidualL2 {Ω : Type*} [MeasurableSpace Ω]
     (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
@@ -165,7 +163,7 @@ theorem tendsto_exteriorPinnedTestL2_circle {Ω : Type*} [MeasurableSpace Ω]
   simp_rw [he]
   have hpin := hmass.smul
     (tendsto_const_nhds : Tendsto (fun _ : ℕ => circleAverageL2 hc (0,-Real.log R)) atTop (𝓝 _))
-  simpa only [circleAverageL2,one_smul] using htest.sub hpin
+  simpa [circleAverageL2,one_smul] using htest.sub hpin
 
 /-- Actual completed Dirichlet test variables converge to the literal interior circle residual. -/
 theorem exists_dirichletCompletedL2Map_circle_limit {Ω : Type*} [MeasurableSpace Ω]
@@ -200,8 +198,7 @@ theorem exists_dirichletCompletedL2Map_circle_limit {Ω : Type*} [MeasurableSpac
         poissonFamilyL2 P c ρ V hV x = dirichletCircleResidualL2 P X Xc hc c R ρ V hV x r := by
       unfold dirichletCircleResidualL2
       abel
-    rw [he] at ht
-    exact ht
+    rwa [he] at ht
   refine ⟨f,hf,henergy,hres.congr' ?_⟩
   filter_upwards [hf] with n hn
   exact (dirichletCompletedL2Map_apply_interior P X Xc hX hc c R ρ ε hR hρ hε hpin
@@ -219,7 +216,7 @@ theorem tendsto_eLpNorm_sub_of_L2_versions {Ω : Type*} [MeasurableSpace Ω]
     apply eLpNorm_congr_ae
     exact (hu n).sub hw
   simp_rw [he]
-  exact ht
+  assumption
 
 /-- The actual Dirichlet distribution admits a joint circle version for its raw evaluation sigma algebra. -/
 theorem exists_dirichletDistribution_raw_circle_version {Ω : Type*} [mΩ : MeasurableSpace Ω]

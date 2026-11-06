@@ -3,9 +3,8 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Scott Armstrong, Amélie Loher
 -/
-module
 
-public import GaussianFields.LogCorrelated.ABK.Kernel
+import GaussianFields.LogCorrelated.ABK.Kernel
 
 /-!
 # GaussianFields ABK canonical field and covariance
@@ -13,7 +12,6 @@ public import GaussianFields.LogCorrelated.ABK.Kernel
 Port of the corresponding GaussianFields source module.
 -/
 
-public section
 
 open MeasureTheory ProbabilityTheory
 open scoped Convolution ENNReal InnerProductSpace NNReal ProbabilityTheory Topology
@@ -21,7 +19,7 @@ open scoped Convolution ENNReal InnerProductSpace NNReal ProbabilityTheory Topol
 namespace GaussianFields
 
 /-- The ABK deterministic kernel as a function on the concrete scale-space `R^{1+d}`. -/
-@[expose]
+
 noncomputable def abkLogKernel {d : Nat} (normalization : ℝ)
     (ζ : ABKCutoff d) (ψ : MeanZeroTestFunction d) : ScaleSpace d → ℝ :=
   abkLogKernelProd normalization ζ ψ ∘ scaleSpaceMeasurableEquiv d
@@ -57,9 +55,7 @@ theorem memLp_abkLogKernelProd_of_integrable_sq {d : Nat} {normalization : ℝ}
         (volume : Measure (ℝ × Vec d))) :
     MemLp (abkLogKernelProd normalization ζ ψ) 2
       (volume : Measure (ℝ × Vec d)) := by
-  rw [memLp_two_iff_integrable_sq hmeas]
-  exact hint
-
+  rwa [memLp_two_iff_integrable_sq hmeas]
 /-- Fubini bookkeeping for product kernels on `R × R^d`: integrable sections plus an integrable
 majorant for the spatial norm integrals imply product integrability. -/
 theorem integrable_prod_of_integrable_norm_integral {d : Nat} {f : ℝ × Vec d → ℝ}
@@ -85,8 +81,7 @@ theorem integrable_prod_of_integrable_norm_integral {d : Nat} {f : ℝ × Vec d 
     filter_upwards [hbound] with r hr
     have hnonneg : 0 ≤ ∫ y : Vec d, ‖f (r, y)‖ ∂(volume : Measure (Vec d)) :=
       integral_nonneg fun y => norm_nonneg (f (r, y))
-    rw [Real.norm_eq_abs, abs_of_nonneg hnonneg]
-    exact hr
+    rwa [Real.norm_eq_abs, abs_of_nonneg hnonneg]
   exact ⟨hsections, Integrable.mono' hg hscaleMeas hbound_norm⟩
 
 /-- Square-integrability of the ABK product kernel follows from sectionwise square-integrability
@@ -120,7 +115,7 @@ theorem integrable_sq_abkLogKernelProd_of_scale_majorant {d : Nat} {normalizatio
 
 /-- The ABK scale majorant obtained from the squared small- and large-scale estimates:
 `r^(d-1)` on `(0,1]` and `r^-3` on `(1,∞)`. -/
-@[expose]
+
 noncomputable def abkScaleMajorant (d : Nat) (C0 Cinf : ℝ) : ℝ → ℝ :=
   (Set.Ioc (0 : ℝ) 1).indicator (fun r : ℝ => C0 * r ^ ((d : ℝ) - 1)) +
     (Set.Ioi (1 : ℝ)).indicator (fun r : ℝ => Cinf * r ^ (-3 : ℝ))
@@ -249,9 +244,7 @@ theorem memLp_abkLogKernelProd_of_weighted_spatial_bounds {d : Nat}
     integrable_sq_abkLogKernelProd_of_weighted_spatial_bounds
       (d := d) (normalization := normalization) (ζ := ζ) (ψ := ψ)
       hd hsqMeas hsections hscaleMeas C0 Cinf hsmall hlarge
-  rw [← Measure.volume_eq_prod ℝ (Vec d)] at hint
-  exact hint
-
+  rwa [← Measure.volume_eq_prod ℝ (Vec d)] at hint
 /-- The proved ABK small- and large-scale estimates put the deterministic product-coordinate
 kernel in `L²`. -/
 theorem memLp_abkLogKernelProd_of_abk_estimates {d : Nat}
@@ -297,7 +290,7 @@ theorem memLp_abkLogKernelProd_of_abk_estimates {d : Nat}
       (integrable_sq_abkSpatialConvolution ζ ψ (lt_trans zero_lt_one hrlarge))
 
 /-- The deterministic `L²(R^{1+d})` vector sent into white noise by ABK's formula. -/
-@[expose]
+
 noncomputable def abkLogKernelLp {d : Nat} (normalization : ℝ)
     (ζ : ABKCutoff d) (ψ : MeanZeroTestFunction d)
     (hprod :
@@ -308,7 +301,7 @@ noncomputable def abkLogKernelLp {d : Nat} (normalization : ℝ)
     (abkLogKernel normalization ζ ψ)
 
 /-- The ABK log-correlated Gaussian field evaluated at a mean-zero test function. -/
-@[expose]
+
 noncomputable def abkLogCorrelatedFieldL2 {d : Nat} (normalization : ℝ)
     (ζ : ABKCutoff d) (ψ : MeanZeroTestFunction d)
     (hprod :
@@ -318,7 +311,7 @@ noncomputable def abkLogCorrelatedFieldL2 {d : Nat} (normalization : ℝ)
   scaleSpaceWhiteNoiseL2 d (abkLogKernelLp normalization ζ ψ hprod)
 
 /-- Function representative of the ABK log-correlated field evaluation. -/
-@[expose]
+
 noncomputable def abkLogCorrelatedField {d : Nat} (normalization : ℝ)
     (ζ : ABKCutoff d) (ψ : MeanZeroTestFunction d)
     (hprod :
@@ -406,4 +399,3 @@ theorem covariance_abkLogCorrelatedFieldL2_eq_prod_integral {d : Nat}
 
 end GaussianFields
 
-end

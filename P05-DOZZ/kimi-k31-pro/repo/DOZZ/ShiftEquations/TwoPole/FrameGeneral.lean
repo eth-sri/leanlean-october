@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.ShiftEquations.TwoPole.Frame
-public import DOZZ.Statements.Correlations.UnitVolumeNPointCorrelation
+import DOZZ.ShiftEquations.TwoPole.Frame
+import DOZZ.Statements.Correlations.UnitVolumeNPointCorrelation
 import DOZZ.GMC.Moments.RhoCoulomb
 
 /-!
@@ -18,7 +17,6 @@ unit-volume moment at `(0, 2, -2)`:
 `C̄(α₁, α₂, α₃) = 2^{γ(α₂+α₃)(-s)} / C(α, z) · C̄_{(0,2,-2)}(α)`.
 -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
@@ -43,7 +41,7 @@ theorem frame_infSExp_gen (γ α₁ α₂ α₃ : ℝ) :
     -infSExp γ (![α₂, α₃] : Fin 2 → ℝ) α₁ = -sExp γ α₁ α₂ α₃ := by
   unfold infSExp sExp
   rw [Fin.sum_univ_two]
-  simp only [Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.cons_val_fin_one]
+  simp [Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.cons_val_fin_one]
   ring
 
 /-- **The general frame identity** `E[I_{(0,2,-2)}^q] = 2^{-γ(α₂+α₃)q} E[ρ^q]`, `q = -s`. -/
@@ -131,4 +129,3 @@ theorem unitVolumeStructureConstant_eq_nPoint {Ω : Type*} [MeasurableSpace Ω] 
 
 end DOZZ.Proofs
 
-end

@@ -2,16 +2,15 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Brownian.Coupling.CountableLimit
-public import DOZZ.Brownian.WienerExists
-public import Mathlib.MeasureTheory.Integral.DominatedConvergence
-public import Mathlib.Data.Rat.Denumerable
-public import Mathlib.Topology.Instances.Rat
-public import Mathlib.Topology.UniformSpace.UniformEmbedding
-public import Mathlib.MeasureTheory.Function.Floor
-public import Mathlib.MeasureTheory.Constructions.BorelSpace.Metrizable
+import DOZZ.Brownian.Coupling.CountableLimit
+import DOZZ.Brownian.WienerExists
+import Mathlib.MeasureTheory.Integral.DominatedConvergence
+import Mathlib.Data.Rat.Denumerable
+import Mathlib.Topology.Instances.Rat
+import Mathlib.Topology.UniformSpace.UniformEmbedding
+import Mathlib.MeasureTheory.Function.Floor
+import Mathlib.MeasureTheory.Constructions.BorelSpace.Metrizable
 
 /-!
 # Extension of an ordered rational-drift family
@@ -22,7 +21,6 @@ rational floor approximations transfer both order bounds and provide a jointly m
 real-parameter family, with the zero family used outside the measurable order event.
 -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology TopologicalSpace Set
 open scoped ENNReal NNReal Topology Uniformity Classical
@@ -36,7 +34,7 @@ noncomputable def couplingRationalApprox (n : ℕ) (a : ℝ) : ℚ :=
 theorem couplingRationalApprox_cast (n : ℕ) (a : ℝ) :
     (couplingRationalApprox n a : ℝ) =
       (⌊((n : ℝ) + 1) * a⌋ : ℝ) / ((n : ℝ) + 1) := by
-  simp only [couplingRationalApprox, Rat.cast_div, Rat.cast_intCast, Rat.cast_add,
+  simp [couplingRationalApprox, Rat.cast_div, Rat.cast_intCast, Rat.cast_add,
     Rat.cast_natCast, Rat.cast_one]
 
 /-- The deterministic mesh error is bounded independently of the drift. -/
@@ -48,7 +46,7 @@ theorem couplingRationalApprox_error (n : ℕ) (a : ℝ) :
   have hlo := Int.floor_le (((n : ℝ) + 1) * a)
   have hhi := Int.lt_floor_add_one (((n : ℝ) + 1) * a)
   constructor
-  · exact sub_nonneg.mpr ((div_le_iff₀ hn).mpr (by simpa only [mul_comm] using hlo))
+  · exact sub_nonneg.mpr ((div_le_iff₀ hn).mpr (by simpa [mul_comm] using hlo))
   · apply (lt_div_iff₀ hn).mpr
     have he : (a - (⌊((n : ℝ) + 1) * a⌋ : ℝ) / ((n : ℝ) + 1)) *
         ((n : ℝ) + 1) = ((n : ℝ) + 1) * a - (⌊((n : ℝ) + 1) * a⌋ : ℝ) := by
@@ -97,7 +95,7 @@ theorem uniformContinuous_rationalPaths_of_drift_bound
   apply hεV
   rw [Real.dist_eq]
   have hsource : |(p.1 : ℝ) - (p.2 : ℝ)| < ε / T := by
-    simpa only [Rat.dist_eq] using hp
+    simpa [Rat.dist_eq] using hp
   have hbound := (hF p.1 p.2 t).trans
     (mul_le_mul_of_nonneg_left (hT t ht) (abs_nonneg _))
   exact hbound.trans_lt ((lt_div_iff₀ hTpos).mp hsource)
@@ -125,7 +123,7 @@ theorem rationalPathExtension_approx_tendsto
       (𝓝 (rationalPathExtension F a)) := by
   have h := (uniformContinuous_rationalPathExtension hF).continuous.continuousAt.tendsto.comp
     (couplingRationalApprox_tendsto a)
-  simpa only [Function.comp_def, rationalPathExtension_rat hF] using h
+  simpa [Function.comp_def, rationalPathExtension_rat hF] using h
 
 /-- Global rational order and drift-gap estimates persist under the extension. -/
 theorem rationalPathExtension_order
@@ -171,7 +169,7 @@ theorem clippedRationalPathFamily_order
     by_cases hq : q ≤ 0
     · have hqR : (q : ℝ) ≤ 0 := by exact_mod_cast hq
       have hrR : 0 ≤ (r : ℝ) := by exact_mod_cast hr0
-      have h := hF 0 r (by norm_num) (by simpa only [Rat.cast_zero] using hrR) t
+      have h := hF 0 r (by norm_num) (by simpa [Rat.cast_zero] using hrR) t
       simp only [clippedRationalPathFamily, max_eq_left hr0, max_eq_right hq]
       constructor
       · exact h.1
@@ -180,7 +178,7 @@ theorem clippedRationalPathFamily_order
         nlinarith
     · have hq0 : 0 ≤ q := (lt_of_not_ge hq).le
       have hqR : 0 ≤ (q : ℝ) := by exact_mod_cast hq0
-      simpa only [clippedRationalPathFamily, max_eq_left hr0, max_eq_left hq0]
+      simpa [clippedRationalPathFamily, max_eq_left hr0, max_eq_left hq0]
         using hF q r hqR hqrR t
 
 /-- The clipped rational family's drift difference bounds its path difference. -/
@@ -217,7 +215,7 @@ theorem orderedRationalPathExtension_order (F : ℚ → BrownianPath) :
   classical
   by_cases hF : F ∈ negativeEntranceOrderSet ((↑) : ℚ → ℝ)
   · intro a b _ hab t
-    simpa only [orderedRationalPathExtension, ite_eq_left hF] using
+    simpa [orderedRationalPathExtension, ite_eq_left hF] using
       rationalPathExtension_order (uniformContinuous_clippedRationalPathFamily hF)
         (clippedRationalPathFamily_order hF) a b hab t
   · intro a b _ hab t
@@ -231,7 +229,7 @@ theorem orderedRationalPathExtension_approx_tendsto (F : ℚ → BrownianPath) (
       (𝓝 (orderedRationalPathExtension F a)) := by
   classical
   by_cases hF : F ∈ negativeEntranceOrderSet ((↑) : ℚ → ℝ)
-  · simpa only [orderedRationalPathExtension, ite_eq_left hF] using
+  · simpa [orderedRationalPathExtension, ite_eq_left hF] using
       rationalPathExtension_approx_tendsto (uniformContinuous_clippedRationalPathFamily hF) a
   · simp only [orderedRationalPathExtension, ite_eq_right hF]
     exact tendsto_const_nhds
@@ -341,7 +339,7 @@ theorem couplingRationalReindex_mem_orderSet (x : ℕ → BrownianPath)
     simp [couplingEnumeratedDrift, max_eq_left hr]
   have h := hx (couplingRationalEnumeration q) (couplingRationalEnumeration r)
     (by rw [hq']; exact hq) (by rw [hq', hr']; exact hqr) t
-  simpa only [couplingRationalReindex, hq', hr'] using h
+  simpa [couplingRationalReindex, hq', hr'] using h
 
 /-- Almost-sure convergence of measurable random paths gives convergence of their full path laws. -/
 theorem coupling_probabilityMap_tendsto_of_ae
@@ -438,14 +436,14 @@ theorem orderedRationalPathExtension_map_eq_radial
         apply Subtype.ext
         apply Measure.map_congr
         exact hgood.mono fun F hF => by
-          dsimp only
+          dsimp
           rw [ite_eq_left hF]
           rfl
       _ = _ := hrational _ (le_max_right _ _)
   have hparameter : Tendsto (fun n => ((max (couplingRationalApprox n a) 0 : ℚ) : ℝ)) atTop
       (𝓝 a) := by
-    simp only [Rat.cast_max, Rat.cast_zero]
-    simpa only [max_eq_left ha] using
+    simp [Rat.cast_max, Rat.cast_zero]
+    simpa [max_eq_left ha] using
       (couplingRationalApprox_tendsto a).max (tendsto_const_nhds (x := (0 : ℝ)))
   have hradial := negativeRogersPitmanWienerProbability_tendsto hparameter
   simp_rw [← hmap] at hradial

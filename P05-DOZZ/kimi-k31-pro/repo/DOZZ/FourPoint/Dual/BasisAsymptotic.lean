@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.Reflected.Remainder
-public import DOZZ.Hypergeom.ODE.ConnectionEndpointLimits
+import DOZZ.FourPoint.Reflected.Remainder
+import DOZZ.Hypergeom.ODE.ConnectionEndpointLimits
 import Mathlib.Analysis.InnerProductSpace.Calculus
 import Mathlib.Tactic
 
@@ -15,7 +14,6 @@ The regular basis has squared norm 1+O(|z|). Since κ<1 on the dual
 window, that error vanishes after division by |z|^κ.
 -/
 
-public section
 
 open Filter Topology Set
 
@@ -48,7 +46,7 @@ theorem dual_gauss_regular_origin {H : ℂ → ℂ → ℂ → ℂ → ℂ}
     intro z hz
     exact Or.inr hz
   refine ⟨hchar.1.differentiableAt hmem, ?_⟩
-  simpa only [ordinaryHypergeometric_zero] using hchar.2 0 (by norm_num)
+  simpa [ordinaryHypergeometric_zero] using hchar.2 0 (by norm_num)
 
 /-- The actual first Gauss basis has its required sublinear squared-norm remainder. -/
 theorem dual_gauss_norm_sq_littleO {H : ℂ → ℂ → ℂ → ℂ → ℂ}
@@ -73,12 +71,12 @@ theorem dual_gauss_plus_norm_sq_ratio {H : ℂ → ℂ → ℂ → ℂ → ℂ}
   have hnorm := hseed.norm.pow 2
   have ht : Tendsto (fun t : ℝ => ‖H (a - c + 1) (b - c + 1) (2 - c) (t : ℂ)‖ ^ 2)
       (nhdsWithin 0 (Ioi 0)) (nhds 1) := by
-    simpa only [Function.comp_def, norm_one, one_pow] using hnorm
+    simpa [Function.comp_def, norm_one, one_pow] using hnorm
   apply ht.congr'
   filter_upwards [self_mem_nhdsWithin] with t ht0
   unfold gaussFPlus
   rw [norm_mul, mul_pow, Complex.norm_cpow_eq_rpow_re_of_pos ht0]
-  simp only [Complex.sub_re, Complex.one_re, Complex.ofReal_re]
+  simp [Complex.sub_re, Complex.one_re, Complex.ofReal_re]
   have he : (t ^ (1 - c)) ^ (2 : ℕ) = t ^ (2 * (1 - c)) := by
     rw [← Real.rpow_two, ← Real.rpow_mul ht0.le]
     congr 1

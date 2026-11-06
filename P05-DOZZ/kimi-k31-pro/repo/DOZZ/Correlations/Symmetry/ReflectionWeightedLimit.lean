@@ -2,10 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.Correlations.Symmetry.CorrelatedScalarLimit
-public import DOZZ.GMC.Construction.GMCVaryingWeightedTotalMassLimit
-@[expose] public section
+import DOZZ.Correlations.Symmetry.CorrelatedScalarLimit
+import DOZZ.GMC.Construction.GMCVaryingWeightedTotalMassLimit
 open MeasureTheory Filter Set
 open scoped Distributions ENNReal Topology
 namespace DOZZ.Proofs
@@ -27,18 +25,8 @@ theorem symmetry_bcf_withDensity_finite (μ : Measure ℂ) [IsFiniteMeasure μ]
 /-- The real total mass of a nonnegative bounded density is its Bochner integral. -/
 theorem symmetry_weighted_total_eq_integral (μ : Measure ℂ) [IsFiniteMeasure μ]
     (w : BoundedContinuousFunction ℂ ℝ) (hw : ∀ z, 0 ≤ w z) :
-    ((μ.withDensity (fun z => ENNReal.ofReal (w z))) univ).toReal = ∫ z, w z ∂μ := by
-  let := symmetry_bcf_withDensity_finite μ w
-  have hm : Measurable (fun z => ENNReal.ofReal (w z)) :=
-    ENNReal.measurable_ofReal.comp w.continuous.measurable
-  have hf : ∀ᵐ z ∂μ, ENNReal.ofReal (w z) < ∞ := ae_of_all _ (fun _ => ENNReal.ofReal_lt_top)
-  have h := integral_withDensity_eq_integral_toReal_smul hm hf (fun _ : ℂ => (1 : ℝ))
-  simp only [integral_const, Measure.real_def, smul_eq_mul, mul_one] at h
-  rw [h]
-  apply integral_congr_ae
-  exact ae_of_all _ (fun z => by
-    change (ENNReal.ofReal (w z)).toReal = w z
-    exact ENNReal.toReal_ofReal (hw z))
+    ((μ.withDensity (fun z => ENNReal.ofReal (w z))) univ).toReal = ∫ z, w z ∂μ :=
+  weightedTotal_eq_integral μ (by infer_instance) w hw
 
 /-- Uniformly convergent nonnegative weights give convergence of actual real integrals. -/
 theorem regularizedGMC_varying_bcf_integral

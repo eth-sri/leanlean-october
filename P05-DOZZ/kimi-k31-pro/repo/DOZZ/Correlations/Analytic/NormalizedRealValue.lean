@@ -2,13 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.Analytic.NormalizedRealPolynomial
+import DOZZ.Correlations.Analytic.NormalizedRealPolynomial
 
 /-! Real restriction of the holomorphic normalized cutoff is the retained Coulomb moment. -/
 
-@[expose] public section
 open MeasureTheory
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -38,7 +36,7 @@ theorem normalized_vertex_moment_ofReal
       (F ω : ℂ) := by
     rw [normalizedVertexPolynomial_ofReal P Xc hXc.2.1,
       complexMomentPower_ofReal, ← Complex.ofReal_cpow ENNReal.toReal_nonneg]
-    dsimp only [F, L, p]
+    dsimp [F, L, p]
     push_cast
     congr 2
     ring
@@ -58,7 +56,7 @@ theorem normalized_vertex_moment_ofReal
         p * γ * ∑ i, β i.castSucc * equatorCircleMean (z i) r)) * M ω O ^ p ∂P := by
     apply lintegral_congr_ae
     filter_upwards [hmass] with ω hω
-    dsimp only [F]
+    dsimp [F]
     rw [ENNReal.ofReal_mul (Real.exp_nonneg _),
       ← ENNReal.ofReal_rpow_of_pos (ENNReal.toReal_pos hω.1 hω.2), ENNReal.ofReal_toReal hω.2]
   unfold normalizedVertexMoment

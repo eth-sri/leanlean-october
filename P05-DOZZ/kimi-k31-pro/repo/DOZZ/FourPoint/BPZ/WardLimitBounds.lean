@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.BPZ.WardLimitSym
+import DOZZ.FourPoint.BPZ.WardLimitSym
 
 /-! # Uniform bounds for the symmetrized kernels
 
@@ -15,7 +14,6 @@ kernel built from any kernel `L` with `|L(w)| ≤ c|v|/|w|` is bounded by a mult
 singularity. The far-region test function is bounded by a multiple of `ρ(x)|k(x)|` times the
 far mass. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped ENNReal NNReal
@@ -68,7 +66,7 @@ theorem abs_symKer_le (hd : BPZLimitData γ q δ ρ kt k₂ φ D) {B : ℝ} (hB 
   have hC : 0 ≤ c * ‖v‖ * ((Lφ : ℝ) + B / δ) := by positivity
   unfold bpzSymKer
   rcases eq_or_ne x y with rfl | hxy
-  · simp only [sub_self, zero_mul, zero_div, abs_zero]
+  · simp [sub_self, zero_mul, zero_div, abs_zero]
     exact mul_nonneg hC hP
   have hxy' : 0 < ‖x - y‖ := norm_pos_iff.mpr (sub_ne_zero.mpr hxy)
   rw [abs_div, abs_two, abs_mul, abs_mul, abs_mul]
@@ -150,8 +148,8 @@ theorem abs_mixTest_le (hd : BPZLimitData γ q δ ρ kt k₂ φ D) {B : ℝ} (hB
     positivity
   by_cases hφx : φ x = 0
   · rw [hφx]
-    simp only [zero_mul, abs_zero, mul_zero]
-    exact hR0
+    simp [zero_mul, abs_zero, mul_zero]
+    assumption
   by_cases hρy : ρ y = 1
   · rw [hρy]
     simp

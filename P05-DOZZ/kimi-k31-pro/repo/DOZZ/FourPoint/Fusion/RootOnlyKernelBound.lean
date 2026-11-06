@@ -2,16 +2,14 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.Fusion.RootedKernelBound
-public import DOZZ.FourPoint.Fusion.Kernel
+import DOZZ.FourPoint.Fusion.RootedKernelBound
+import DOZZ.FourPoint.Fusion.Kernel
 import DOZZ.GMC.SharpMoments.SeibergWeight
-public import DOZZ.Statements.GMC.WeightedGmcBallMass
+import DOZZ.Statements.GMC.WeightedGmcBallMass
 
 /-! # Fused-charge domination of the local rooted kernel -/
 
-@[expose] public section
 open MeasureTheory
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -38,8 +36,7 @@ theorem fusion_rootOnlyKernel_local_bound (γ α₁ α₂ α₃ : ℝ) (hγ : 0 
   have hfactor := fusion_oneRoot_factor_bound x hsmall (γ * α₂)
   have hβ : γ ^ 2 / 2 ≤ γ * α₁ := by nlinarith [mul_le_mul_of_nonneg_left hα hγ.le]
   have hL : 0 < 1 + 2 / ‖y‖ := by positivity
-  have hcb : ‖x‖ ≤ (1 + 2 / ‖y‖) * max ‖x‖ ‖x - y * z‖ := by
-    exact (le_max_left _ _).trans (le_mul_of_one_le_left (le_trans (norm_nonneg _) (le_max_left _ _)) (le_add_of_nonneg_right (div_nonneg (by norm_num) (norm_nonneg _))))
+  have hcb : ‖x‖ ≤ (1 + 2 / ‖y‖) * max ‖x‖ ‖x - y * z‖ := (le_max_left _ _).trans (le_mul_of_one_le_left (le_trans (norm_nonneg _) (le_max_left _ _)) (le_add_of_nonneg_right (div_nonneg (by norm_num) (norm_nonneg _))))
   have hmix := fusion_mixed_power_bound ‖x‖ ‖x - y * z‖ ‖x‖
     (1 + 2 / ‖y‖) (γ ^ 2 / 2) (γ * α₁)
     (norm_pos_iff.mpr hx) (norm_pos_iff.mpr (sub_ne_zero.mpr hxu)) (norm_nonneg _)

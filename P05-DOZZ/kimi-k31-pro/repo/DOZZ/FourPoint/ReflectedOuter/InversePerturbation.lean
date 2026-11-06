@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.ReflectedOuter.InverseDifference
+import DOZZ.FourPoint.ReflectedOuter.InverseDifference
 import Mathlib.Tactic
 
 /-! # Relative inverse-power comparison for positive finite ENNReal masses -/
 
-@[expose] public section
 open MeasureTheory Set
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -25,7 +23,7 @@ theorem reflected_ennreal_inverse_relative_comparison (p d : ℝ) (hp : 0 < p) (
     S ^ (-p) ≤ T ^ (-p) +
       ENNReal.ofReal (p * (1 / 4 : ℝ) ^ (-(p + 1)) * d) * S ^ (-p) := by
   let L : ℝ := p * (1 / 4 : ℝ) ^ (-(p + 1)) * d
-  have hL : 0 ≤ L := by dsimp only [L]; positivity
+  have hL : 0 ≤ L := by dsimp [L]; positivity
   have hT : T ≠ 0 := ne_zero_of_lt ((ENNReal.mul_pos
     (ENNReal.ofReal_pos.mpr (by norm_num : (0 : ℝ) < 1 / 4)).ne' hS).trans_le hl)
   have hTt : T ≠ ⊤ := ne_top_of_le_ne_top

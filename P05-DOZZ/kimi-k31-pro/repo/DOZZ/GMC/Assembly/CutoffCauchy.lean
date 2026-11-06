@@ -2,13 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.Assembly.KernelCauchy
+import DOZZ.GMC.Assembly.KernelCauchy
 
 /-! Good and bad cutoff masses of bounded nonnegative Borel tests and the cutoff `L¹` Cauchy estimate on a charge interval. -/
 
-@[expose] public section
 
 /-! ### Good masses
 
@@ -23,7 +21,7 @@ open scoped ENNReal NNReal
 
 namespace DOZZ.Assembly
 
-open DOZZ.Proofs
+open Proofs
 
 /-- The Wick weight is jointly measurable in the sample and the point. -/
 theorem admissibleLogWickWeight_measurable_joint
@@ -131,7 +129,7 @@ theorem lintegral_wickEventMass_mul
           rw [← lintegral_const_mul _ hmeasW]
           apply lintegral_congr
           intro ω
-          simp only [F, G]
+          simp [F, G]
           ring
 
 /-- The growing-barrier kernel is the two-root event kernel of the growing barrier events. -/
@@ -144,8 +142,7 @@ theorem growingPairKernel_eq_event_kernel
         Set.indicator (admissibleGrowingBarrierSet Y a k₀ r) (fun _ => (1 : ℝ≥0∞)) (ω, p.1) *
         Set.indicator (admissibleGrowingBarrierSet Y a k₀ s) (fun _ => (1 : ℝ≥0∞))
           (ω, p.2) ∂P := by
-  unfold growingPairKernel compatibleAdmissibleSelectedMixedGrowingBarrierPairKernel
-  simp only [ite_self]
+  aesop
 
 /-- The squared symmetric difference plus twice the product is at most the sum of squares. -/
 theorem ennDist_sq_add_two_mul_le (a b : ℝ≥0∞) :
@@ -202,7 +199,7 @@ theorem lintegral_le_rpow_lintegral_sq
   simp only [Pi.mul_apply, mul_one, ENNReal.one_rpow, lintegral_const, measure_univ,
     ENNReal.one_rpow] at h
   have hsq : ∀ ω, X ω ^ (2 : ℝ) = X ω ^ 2 := fun ω => ENNReal.rpow_two (X ω)
-  simp only [hsq] at h
+  simp [hsq] at h
   simpa using h
 
 /-- The barrier-good cutoff mass of a test on the compact chart `K`. -/
@@ -311,9 +308,6 @@ theorem goodMass_L1_uniform_cauchy
   have h₂ := hcompare s s r s
   rw [← hmom, ← hmom] at h₁
   rw [← hmom, ← hmom] at h₂
-  have hsym : ∫⁻ ω, goodMass P U dens K Y g a k₀ s f ω *
-      goodMass P U dens K Y g a k₀ s f ω ∂P = ∫⁻ ω, goodMass P U dens K Y g a k₀ s f ω *
-      goodMass P U dens K Y g a k₀ s f ω ∂P := rfl
   have hsq := lintegral_ennDist_sq_le P _ _ (hmeasJ r) (hmeasJ s) hABfin _ _ h₁ h₂
   have hD₁ := hR₁ r r r s hR₁r hR₁r hR₁r hR₁s g hg
   have hD₂ := hR₁ s s r s hR₁s hR₁s hR₁r hR₁s g hg
@@ -330,7 +324,6 @@ theorem goodMass_L1_uniform_cauchy
           ring
       _ < ENNReal.ofReal (ε ^ 2) := by
           rw [ENNReal.ofReal_lt_ofReal_iff (by positivity), hε'def]
-          have hden : 0 < 2 * (L ^ 2 + 1) := by positivity
           rw [show L ^ 2 * (2 * (ε ^ 2 / (2 * (L ^ 2 + 1)))) = ε ^ 2 * (L ^ 2 / (L ^ 2 + 1)) by
             field_simp]
           have hfrac : L ^ 2 / (L ^ 2 + 1) < 1 := by
@@ -348,7 +341,7 @@ theorem goodMass_L1_uniform_cauchy
         rw [ENNReal.ofReal_rpow_of_nonneg (by positivity) (by norm_num), ← Real.sqrt_eq_rpow,
           Real.sqrt_sq hε.le]
 
-end DOZZ.Assembly
+end Assembly
 
 /-! ### Full cutoff masses on a charge interval
 
@@ -361,9 +354,9 @@ scale; the good mass is Cauchy for each fixed start. -/
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
 
-namespace DOZZ.Assembly
+namespace Assembly
 
-open DOZZ.Proofs
+open Proofs
 
 /-- The full cutoff mass of a test on the compact chart `K`. -/
 noncomputable abbrev chartMass {Ω : Type*} [MeasurableSpace Ω]

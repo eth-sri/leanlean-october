@@ -2,16 +2,14 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.ShiftEquations.Strip.ComparisonLimit
-public import DOZZ.ShiftEquations.Strip.ZeroMode
-public import DOZZ.GMC.Moments.RhoCoulomb
-public import DOZZ.Correlations.Symmetry.ReflectionMomentSwap
+import DOZZ.ShiftEquations.Strip.ComparisonLimit
+import DOZZ.ShiftEquations.Strip.ZeroMode
+import DOZZ.GMC.Moments.RhoCoulomb
+import DOZZ.Correlations.Symmetry.ReflectionMomentSwap
 
 /-! The lastone Coulomb small-power limit on the supplied equator-GMC probability space. -/
 
-@[expose] public section
 open MeasureTheory Filter Topology Set
 open scoped ENNReal NNReal Classical
 namespace DOZZ.Proofs
@@ -114,7 +112,7 @@ theorem lastone_rho_smallPower_limit
   apply (lastone_coulomb_smallPower_limit P X M γ ε hγ hγ2 hε hX hM).congr
   intro ν
   have hswap := rho_moment_swap12 P X M γ ε (Q γ - ν) (Q γ - ε) hγ hγ2 hX hM
-  simp only [lastone_sExp, neg_div, neg_neg] at hswap
+  simp [lastone_sExp, neg_div, neg_neg] at hswap
   rw [hswap]
   congr 1
   apply lintegral_congr_ae

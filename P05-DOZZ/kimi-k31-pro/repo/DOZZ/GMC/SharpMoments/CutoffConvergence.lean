@@ -2,11 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.SharpMoments.WeightedTransfer
-public import DOZZ.GMC.SharpMoments.ExteriorMoment
-public import DOZZ.GMC.SharpMoments.SeibergMoment
+import DOZZ.GMC.SharpMoments.WeightedTransfer
+import DOZZ.GMC.SharpMoments.ExteriorMoment
+import DOZZ.GMC.SharpMoments.SeibergMoment
 
 /-! # Convergence of bounded cutoff integrals and far exterior cutoff moments
 
@@ -15,7 +14,6 @@ the integer cutoffs, by the uniform `L¹` convergence. Exact exterior scaling mo
 annulus of the exterior dyadic bound out to any radius, so the cutoff moments of a power weight
 outside a large disk decay like a negative power of the radius. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology Metric
 open scoped ENNReal NNReal
@@ -40,7 +38,7 @@ theorem regularizedGMC_lintegral_tendstoInMeasure
     have h := integral_toReal (μ := μ) hfm.aemeasurable
       (Eventually.of_forall fun x => ENNReal.coe_lt_top)
     rw [← h]
-    simp only [ENNReal.coe_toReal]
+    simp [ENNReal.coe_toReal]
   have hL1 := regularizedGMC_integral_l1_tendsto P X hX γ hγ hγ2 M hM Xc hXc (fun x => (f x : ℝ))
     hfr b (fun x => by rw [NNReal.abs_eq]; exact_mod_cast hfb x) R
     (fun x hx => by simp [hfR x hx])
@@ -51,9 +49,9 @@ theorem regularizedGMC_lintegral_tendstoInMeasure
   have hG : AEStronglyMeasurable (fun ω => (∫⁻ x, (f x : ℝ≥0∞) ∂M ω).toReal) P :=
     (ENNReal.measurable_toReal.comp_aemeasurable
       (gmc_lintegral_aemeasurable P X hX γ hγ hγ2 M hM _ hfm)).aestronglyMeasurable
-  refine DOZZ.Assembly.tendstoInMeasure_of_tendsto_lintegral_ofReal_abs P _ _ hF hG ?_
+  refine Assembly.tendstoInMeasure_of_tendsto_lintegral_ofReal_abs P _ _ hF hG ?_
   refine (hL1.comp tendsto_natCast_atTop_atTop).congr fun n => ?_
-  simp only [Function.comp_apply, hid]
+  simp [Function.comp_apply, hid]
 
 /-- The base annulus of the exterior dyadic bound can be moved out to any radius by exact
 exterior scaling. -/

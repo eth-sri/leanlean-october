@@ -2,17 +2,15 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.Defs.IsCircleAverage
-public import DOZZ.Statements.Defs.IsEquatorGFF
-public import DOZZ.Statements.GMC.GaussianCovariance
-public import DOZZ.Statements.GMC.IsGaussianL2Limit
-public import DOZZ.GFFStructure.CircleVersion
+import DOZZ.Statements.Defs.IsCircleAverage
+import DOZZ.Statements.Defs.IsEquatorGFF
+import DOZZ.Statements.GMC.GaussianCovariance
+import DOZZ.Statements.GMC.IsGaussianL2Limit
+import DOZZ.GFFStructure.CircleVersion
 
 /-! Continuity of the circle covariance potential for every Gaussian L² limit. -/
 
-@[expose] public section
 
 open Filter MeasureTheory ProbabilityTheory
 open scoped Distributions Topology
@@ -33,7 +31,7 @@ private theorem gaussianL2Limit_mean_zero
     exact eLpNorm_sub_comm _ _ _ _
   have happrox : Tendsto
       (fun n => eLpNorm (fun ω => X ω (f n) - L ω) 2 P) atTop (𝓝 0) := by
-    simpa only [hcomm] using hLapprox
+    simpa [hcomm] using hLapprox
   exact integral_eq_zero_of_eLpNorm_sub
     (fun n => equatorGFF_test_memLp X hX (f n)) hLmem
     (fun n => equatorGFF_test_integral X hX (f n)) happrox
@@ -73,6 +71,6 @@ theorem continuous_gaussianCovariance_circle_of_IsGaussianL2Limit
     continuous_id.prodMk continuous_const
   have hcircle : Continuous (fun x : ℂ => circleAverageL2 hXc (x, r)) :=
     (continuous_circleAverageL2 P X Xc hX hXc).comp hparam
-  simpa only [hpair] using hcircle.inner continuous_const
+  simpa [hpair] using hcircle.inner continuous_const
 
 end DOZZ.Proofs

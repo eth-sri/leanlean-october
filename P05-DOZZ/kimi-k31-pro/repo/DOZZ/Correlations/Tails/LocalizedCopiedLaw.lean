@@ -2,13 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.Tails.LocalizedFamilyTest
+import DOZZ.Correlations.Tails.LocalizedFamilyTest
 
 /-! The localized original insertion law with the literal copied multiplier. -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal
 
@@ -66,8 +64,7 @@ theorem localized_copied_singular_law
       rw [hgeq, hn]
       unfold copiedMultiplier
       simp only [mul_assoc]
-      rw [← Real.exp_add]
-      rw [mul_comm (Real.exp (-γ^2*Real.log ‖z‖)), mul_assoc]
+      rw [← Real.exp_add, mul_comm (Real.exp (-γ^2*Real.log ‖z‖)), mul_assoc]
       simp only [mul_assoc, ← Real.exp_add]
       congr 2
       ring_nf

@@ -2,15 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.Correlations.OneInsertionTailCoefficient
+import DOZZ.Statements.Correlations.OneInsertionTailCoefficient
 import DOZZ.Correlations.Tails.OneInsertionTail
 
 /-! The statement `DOZZ.oneInsertion_tail_uniform`,
 proved by `DOZZ.Proofs.oneInsertion_tail_uniform`. -/
 
-public section
 
 open MeasureTheory ProbabilityTheory Filter Topology TopologicalSpace Set
 open scoped ENNReal NNReal Topology
@@ -38,6 +36,6 @@ theorem oneInsertion_tail_uniform
               |(P {ω | ENNReal.ofReal x < localSingularMass M F z γ α ω}).toReal -
                 oneInsertionTailCoefficient γ α z (F z) (reflectionBarR P γ α (B α) Z) *
                   Real.rpow x (-reflectionExponent γ α)| ≤
-                C * Real.rpow x (-reflectionExponent γ α - η) := by exact DOZZ.Proofs.oneInsertion_tail_uniform P X M γ hγ hγ2 hX hM Kz hKz hz Kα hKα hα Family radius supBound derivBound lowerBound hFamily
+                C * Real.rpow x (-reflectionExponent γ α - η) := DOZZ.Proofs.oneInsertion_tail_uniform P X M γ hγ hγ2 hX hM Kz hKz hz Kα hKα hα Family radius supBound derivBound lowerBound hFamily
 
 end DOZZ

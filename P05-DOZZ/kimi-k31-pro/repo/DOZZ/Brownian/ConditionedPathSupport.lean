@@ -2,9 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Brownian.LastExitFDDMarkov
+import DOZZ.Brownian.Reflection.Entrance
+import DOZZ.Brownian.LastExitFDDMarkov
 
 /-!
 # Path support from the conditioned entrance FDDs
@@ -15,7 +15,6 @@ in the closed negative half-line for all times. This argument does not assert th
 touch zero at an irrational time.
 -/
 
-@[expose] public section
 
 open MeasureTheory Set
 open scoped ENNReal NNReal Topology
@@ -80,32 +79,7 @@ an irrational time. -/
 theorem ae_negativeConditionedPath_nonpos_all_times
     {ν : ℝ} {P : Measure BrownianPath}
     (hP : IsNegativeConditionedBrownianLaw ν P) :
-    ∀ᵐ p ∂P, ∀ t : ℝ≥0, p t ≤ 0 := by
-  let PosRat := {q : ℚ // 0 < (q : ℝ)}
-  have hrat : ∀ᵐ p ∂P, ∀ q : PosRat,
-      p ⟨(q : ℝ), q.property.le⟩ < 0 := by
-    rw [ae_all_iff]
-    intro q
-    exact ae_negativeConditionedPath_eval_lt_zero hP
-      ⟨(q : ℝ), q.property.le⟩ q.property
-  filter_upwards [hrat, hP.2.2.1] with p hpRat hp0
-  intro t
-  by_cases ht : t = 0
-  · subst t
-    simp [hp0]
-  · have htpos : 0 < (t : ℝ) := by exact_mod_cast (pos_iff_ne_zero.mpr ht)
-    have hpositive : ∀ q : ℚ, ∀ hq : 0 < (q : ℝ),
-        0 ≤ (-p) ⟨(q : ℝ), hq.le⟩ := by
-      intro q hq
-      have hq' := hpRat ⟨q, hq⟩
-      exact neg_nonneg.mpr hq'.le
-    have hcont := (continuous_path_ge_iff_rational_ge (-p) 0 0 (by norm_num)).2
-      (by
-        intro q hq
-        exact hpositive q hq)
-    have hval := hcont t htpos
-    exact neg_nonneg.mp hval
+    ∀ᵐ p ∂P, ∀ t : ℝ≥0, p t ≤ 0 := DOZZ.Proofs.isNegativeConditionedBrownianLaw_ae_nonpos hP
 
 end DOZZ.Proofs
 
-end

@@ -2,11 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.Statements.Defs.ExtendedSeiberg3
-public import DOZZ.Upsilon.ZeroStructure
+import DOZZ.Statements.Defs.ExtendedSeiberg3
+import DOZZ.Upsilon.ZeroStructure
 /-! # The extended charge domain and the finite DOZZ denominator -/
-@[expose] public section
 namespace DOZZ.Proofs
 /-- The extended moment bounds imply the three strict triangle inequalities. -/
 theorem roots_extended_triangle {γ a b c : ℝ} (hγ : 0 < γ)
@@ -42,16 +40,16 @@ theorem roots_upsilon_zeroMode_ne_zero {γ a b c : ℝ} (hγ : 0 < γ) (hγ2 : �
     rw [he'] at hb'
     have he'' : 4 / γ = 2 * (2 / γ) := by ring
     rw [he''] at hb'
-    dsimp only [w]
+    dsimp [w]
     linarith only [hb']
   have hwQ : w < Q γ := by
     have hQ : 0 < Q γ := by unfold Q; positivity
-    dsimp only [w]
+    dsimp [w]
     linarith only [h.1, h.2.1, h.2.2.1, hQ]
   intro hz
   obtain ⟨m, n, hn | hn⟩ := (IsUpsilon.eq_zero_iff hγ hγ2 hU (w : ℂ)).mp hz
   · have he : w = -((m : ℝ) * (γ / 2) + (n : ℝ) * (2 / γ)) :=
-      Complex.ofReal_inj.mp (by simpa only [Complex.ofReal_neg] using hn)
+      Complex.ofReal_inj.mp (by simpa [Complex.ofReal_neg] using hn)
     have hn0 : n = 0 := by
       by_contra hne
       have hn1 : (1 : ℝ) ≤ (n : ℝ) := by exact_mod_cast Nat.one_le_iff_ne_zero.mpr hne
@@ -59,11 +57,11 @@ theorem roots_upsilon_zeroMode_ne_zero {γ a b c : ℝ} (hγ : 0 < γ) (hγ2 : �
       have hmul := mul_le_mul_of_nonneg_right hn1 (show (0 : ℝ) ≤ 2 / γ by positivity)
       linarith only [hwlo, he, hm0, hmul]
     subst n
-    simp only [Nat.cast_zero, zero_mul, add_zero] at he
+    simp [zero_mul, add_zero] at he
     apply hs m
     unfold sExp
     apply (div_eq_iff hγ.ne').mpr
-    dsimp only [w] at he
+    dsimp [w] at he
     linarith only [he]
   · have he : w = Q γ + (m : ℝ) * (γ / 2) + (n : ℝ) * (2 / γ) := Complex.ofReal_inj.mp hn
     have hm0 : 0 ≤ (m : ℝ) * (γ / 2) := by positivity

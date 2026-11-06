@@ -2,23 +2,21 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Dual.WilliamsCutLimit
-public import DOZZ.FourPoint.Dual.SourceRestartWilliams
-public import DOZZ.FourPoint.Dual.JointLawExpectation
-public import DOZZ.FourPoint.Dual.FullMaximumLimit
-public import DOZZ.FourPoint.Dual.FixedCutMaximumLimit
-public import DOZZ.FourPoint.Dual.SourceWilliamsSandwich
-public import DOZZ.FourPoint.Dual.CutSqueezeLimit
-public import DOZZ.FourPoint.Dual.SourceParetoLimit
-public import DOZZ.FourPoint.Dual.SourceParetoIncrement
-public import DOZZ.FourPoint.Dual.SourceMaximumPareto
-public import DOZZ.Statements.Brownian.EquatorGFFLateralGMCDecomposition
-public import DOZZ.FourPoint.Reflected.RestartedWilliams
-public import DOZZ.FourPoint.Dual.RadialFirstOrder
+import DOZZ.FourPoint.Dual.WilliamsCutLimit
+import DOZZ.FourPoint.Dual.SourceRestartWilliams
+import DOZZ.FourPoint.Dual.JointLawExpectation
+import DOZZ.FourPoint.Dual.FullMaximumLimit
+import DOZZ.FourPoint.Dual.FixedCutMaximumLimit
+import DOZZ.FourPoint.Dual.SourceWilliamsSandwich
+import DOZZ.FourPoint.Dual.CutSqueezeLimit
+import DOZZ.FourPoint.Dual.SourceParetoLimit
+import DOZZ.FourPoint.Dual.SourceParetoIncrement
+import DOZZ.FourPoint.Dual.SourceMaximumPareto
+import DOZZ.Statements.Brownian.EquatorGFFLateralGMCDecomposition
+import DOZZ.FourPoint.Reflected.RestartedWilliams
+import DOZZ.FourPoint.Dual.RadialFirstOrder
 import Mathlib.Tactic
 /-! The actual translated restarted polar mass has the same-witness dual leading coefficient. -/
-@[expose] public section
 open MeasureTheory ProbabilityTheory Set Filter Topology
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -77,13 +75,13 @@ theorem dual_source_restarted_polar_increment_tendsto
   let T := Real.toNNReal (-Real.log ‖z‖+h)
   have hT : (T : ℝ) = -Real.log ‖z‖+h := Real.coe_toNNReal _ htime
   have hstrict : ‖z‖ < ‖z‖^(1-ξ) := by
-    simpa only [Real.rpow_one] using Real.rpow_lt_rpow_of_exponent_gt hn0 hz
+    simpa [Real.rpow_one] using Real.rpow_lt_rpow_of_exponent_gt hn0 hz
       (by linarith only [hξ] : 1-ξ < 1)
   have hr : Real.exp (-(T : ℝ)) ≤ ‖z‖^(1-ξ) := by
     apply le_trans ?_ hstrict.le
     rw [hT]
     have he : -(-Real.log ‖z‖+h) ≤ Real.log ‖z‖ := by linarith only [hh]
-    simpa only [Real.exp_log hn0] using Real.exp_le_exp.mpr he
+    simpa [Real.exp_log hn0] using Real.exp_le_exp.mpr he
   let D := fun ω => brownianShiftPath T (radialPositiveHalf (A ω))
   have hDm : AEMeasurable D P :=
     (continuous_brownianShiftPath.measurable.comp
@@ -114,7 +112,7 @@ theorem dual_source_restarted_polar_increment_tendsto
   let G : (ℝ × ℝ) × ℝ≥0∞ → ℝ := fun v => (v.1.2+v.1.1*v.2.toReal)^(-p)-v.1.2^(-p)
   have hG : Measurable G := by unfold G; fun_prop
   have he := dual_copied_joint_law_integral P R Y hYm V hVm J hJm hLaw G hG
-  simp only [G, Y, J, ENNReal.toReal_mul, ENNReal.toReal_ofReal (Real.exp_pos _).le] at he
+  simp [G, Y, J, ENNReal.toReal_mul, ENNReal.toReal_ofReal (Real.exp_pos _).le] at he
   exact congrArg (fun t : ℝ => t/‖z‖^((4/γ)*ν)) he.symm
 
 end DOZZ.Proofs

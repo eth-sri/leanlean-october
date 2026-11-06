@@ -3,11 +3,10 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Scott Armstrong, Amélie Loher
 -/
-module
 
-public import GaussianFields.LogCorrelated.ABK.Volume
-public import Mathlib.Analysis.InnerProductSpace.Projection.Reflection
-public import Mathlib.MeasureTheory.Measure.Haar.InnerProductSpace
+import GaussianFields.LogCorrelated.ABK.Volume
+import Mathlib.Analysis.InnerProductSpace.Projection.Reflection
+import Mathlib.MeasureTheory.Measure.Haar.InnerProductSpace
 
 /-!
 # GaussianFields.LogCorrelated/ABK/Radial
@@ -15,7 +14,6 @@ public import Mathlib.MeasureTheory.Measure.Haar.InnerProductSpace
 Port of the corresponding GaussianFields source module.
 -/
 
-public section
 
 open MeasureTheory
 open scoped Convolution ENNReal Topology
@@ -99,7 +97,7 @@ theorem euclideanNorm_abkRadialPoint {d : Nat} (hd : 0 < d) (s : ℝ) :
                 intro hi0
                 apply hne
                 ext
-                exact hi0
+                assumption
               simp [abkRadialPoint, hi]
             · intro hi
               simp at hi
@@ -172,4 +170,3 @@ theorem abkCutoffSelfConvolution_radial {d : Nat} (ζ : ABKCutoff d) {x y : Vec 
 
 end GaussianFields
 
-end

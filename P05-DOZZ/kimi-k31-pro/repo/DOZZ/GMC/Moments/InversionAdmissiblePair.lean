@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.Moments.InversionCompatibility
-public import DOZZ.Brownian.Lateral.CutoffLaw
+import DOZZ.GMC.Moments.InversionCompatibility
+import DOZZ.Brownian.Lateral.CutoffLaw
 
 /-! Actual compatible admissible pairs for inversion on bounded annular charts. -/
 
-@[expose] public section
 
 open Filter MeasureTheory ProbabilityTheory Set
 open scoped Topology Distributions ENNReal
@@ -68,7 +66,7 @@ theorem exists_equatorGFF_inversion_admissible_pair
       circleKernel x r y s := by
     have hz : gaussianCovariance P (fun ω => Z ω x r) (fun ω => Z ω y s) =
         covariance (fun ω => Z ω x r) (fun ω => Z ω y s) P := by
-      simp only [gaussianCovariance, covariance, hmean (x, r), hmean (y, s), sub_zero]
+      simp [gaussianCovariance, covariance, hmean (x, r), hmean (y, s), sub_zero]
     rw [hz, covariance_comm]
     exact hcov (y, s) (x, r)
   have hYinv := isAdmissibleLogRegularization_complexInv P

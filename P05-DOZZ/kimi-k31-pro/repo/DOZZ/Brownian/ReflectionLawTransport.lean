@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.Brownian.ReflectionR
+import DOZZ.Statements.Brownian.ReflectionR
 
 /-!
 # Reflection moment transport under joint-law equality
@@ -14,7 +13,6 @@ paths and the lateral measure. This file proves that transport statement; source
 of the lateral law and the conditioned path law remain separate inputs.
 -/
 
-@[expose] public section
 
 open MeasureTheory
 open scoped ENNReal NNReal
@@ -49,8 +47,7 @@ theorem reflectionBarR_eq_of_joint_input_law
   let f : (BrownianPath × BrownianPath) × Measure ℝ → ℝ≥0∞ := fun z =>
     ENNReal.rpow (twoSidedReflectionMassInput γ z) (reflectionExponent γ α)
   have hMassMoment' : AEMeasurable f (P'.map pair') := by
-    rw [← hLaw]
-    exact hMassMoment
+    rwa [← hLaw]
   have hmoment :
       (∫⁻ ω, ENNReal.rpow (twoSidedReflectionMass γ B Z ω)
         (reflectionExponent γ α) ∂P) =
@@ -73,4 +70,3 @@ theorem reflectionBarR_eq_of_joint_input_law
 
 end DOZZ.Proofs
 
-end

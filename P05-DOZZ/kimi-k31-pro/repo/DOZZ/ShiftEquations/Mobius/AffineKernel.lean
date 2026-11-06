@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.Defs.GffKernel
-public import DOZZ.Statements.Defs.CircleMeasure
+import DOZZ.Statements.Defs.GffKernel
+import DOZZ.Statements.Defs.CircleMeasure
 import DOZZ.GFFStructure.CirclePotential
 
 /-!
@@ -19,7 +18,6 @@ metric defect `d`, the boundedness and continuity of `d`, the vanishing of the u
 average of the kernel, and the fact that affine images of circle measures are circle measures.
 -/
 
-@[expose] public section
 
 open MeasureTheory Set
 
@@ -97,9 +95,7 @@ theorem exists_abs_affineDefect_le (a b : ℂ) (ha : a ≠ 0) :
 
 /-- The equator kernel has vanishing average over the unit circle (radius `e^0 = 1`). -/
 theorem integral_gffKernel_circleMeasure_unit (y : ℂ) :
-    ∫ u, gffKernel y u ∂circleMeasure 0 0 = 0 := by
-  rw [integral_gffKernel_circleMeasure, integral_log_normPlus_circleMeasure_origin_eq_max]
-  simp [normPlus]
+    ∫ u, gffKernel y u ∂circleMeasure 0 0 = 0 := DOZZ.integral_gffKernel_circleMeasure y
 
 namespace AffineKernel
 
@@ -107,7 +103,7 @@ namespace AffineKernel
 theorem affine_circleMap (a b y : ℂ) (R θ : ℝ) :
     a * circleMap y R θ + b = circleMap (a * y + b) (‖a‖ * R) (θ + Complex.arg a) := by
   have h := Complex.norm_mul_exp_arg_mul_I a
-  simp only [circleMap]
+  simp [circleMap]
   push_cast
   rw [add_mul, Complex.exp_add]
   linear_combination (-(R * Complex.exp (θ * Complex.I))) * h
@@ -138,9 +134,7 @@ theorem map_restrict_Ioc_add_periodic {β : Type*} [MeasurableSpace β] {g : ℝ
   rw [hset, measure_preimage_add_right]
   have h := (isAddFundamentalDomain_Ioc hT φ).measure_set_eq
     (isAddFundamentalDomain_Ioc hT 0) hA hinv
-  rw [zero_add] at h
-  exact h
-
+  rwa [zero_add] at h
 end AffineKernel
 
 /-- Affine images of circle measures are circle measures. -/
@@ -164,4 +158,3 @@ theorem circleMeasure_map_affine (a b : ℂ) (ha : a ≠ 0) (y : ℂ) (r : ℝ) 
 
 end DOZZ.Proofs
 
-end

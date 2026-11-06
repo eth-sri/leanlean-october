@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GFF.AnnularEnergyConvergence
-public import GaussianFields.LogCorrelated.ABK.TestFunctionAlgebra
+import DOZZ.GFF.AnnularEnergyConvergence
+import GaussianFields.LogCorrelated.ABK.TestFunctionAlgebra
 
 /-!
 # DOZZ.GFF.EquatorField
@@ -13,7 +12,6 @@ public import GaussianFields.LogCorrelated.ABK.TestFunctionAlgebra
 The annular finite-energy realization of the equator-pinned Gaussian field.
 -/
 
-@[expose] public section
 
 open Filter MeasureTheory ProbabilityTheory
 open scoped ENNReal InnerProductSpace NNReal ProbabilityTheory Topology
@@ -33,8 +31,6 @@ theorem testMass_add (f g : TestFn) :
 
 theorem testMass_smul (a : ℝ) (f : TestFn) :
     testMass (a • f) = a * testMass f := by
-  have hf : Integrable f (volume : Measure ℂ) :=
-    f.continuous.integrable_of_hasCompactSupport f.hasCompactSupport
   change (∫ z : ℂ, a * f z) = a * (∫ z : ℂ, f z)
   exact integral_const_mul a f
 
@@ -97,7 +93,7 @@ theorem annularABKKernel_add (f g : TestFn) (n : ℕ) :
       (GaussianFields.abkLogKernelProd (GaussianFields.abkNormalization ζ) ζ
         (annularCenteredTestFn f n + annularCenteredTestFn g n)) 2
       (volume : Measure (ℝ × GaussianFields.Vec 2)) := by
-    simpa only [← annularCenteredTestFn_add] using hsum
+    simpa [← annularCenteredTestFn_add] using hsum
   simpa [annularABKKernel, annularCenteredTestFn_add] using
     (GaussianFields.abkLogKernelLp_add (GaussianFields.abkNormalization ζ) ζ
       (annularCenteredTestFn f n) (annularCenteredTestFn g n) hψ hφ hsum')
@@ -113,7 +109,7 @@ theorem annularABKKernel_smul (a : ℝ) (f : TestFn) (n : ℕ) :
       (GaussianFields.abkLogKernelProd (GaussianFields.abkNormalization ζ) ζ
         (a • annularCenteredTestFn f n)) 2
       (volume : Measure (ℝ × GaussianFields.Vec 2)) := by
-    simpa only [← annularCenteredTestFn_smul] using hsmul
+    simpa [← annularCenteredTestFn_smul] using hsmul
   simpa [annularABKKernel, annularCenteredTestFn_smul] using
     (GaussianFields.abkLogKernelLp_smul (GaussianFields.abkNormalization ζ) ζ a
       (annularCenteredTestFn f n) hψ hsmul')
@@ -136,10 +132,6 @@ theorem inner_annularABKKernel_eq_covarianceConstant_pairing (f g : TestFn)
         GaussianFields.abkLogCovariancePairing
           (annularCenteredTestFn f n) (annularCenteredTestFn g k) := by
   let ζ := GaussianFields.abkStandardCutoff 2
-  have hψ := GaussianFields.memLp_abkLogKernelProd_canonical
-    (by norm_num : 0 < 2) ζ (annularCenteredTestFn f n)
-  have hφ := GaussianFields.memLp_abkLogKernelProd_canonical
-    (by norm_num : 0 < 2) ζ (annularCenteredTestFn g k)
   have hcov := GaussianFields.covariance_abkLogCorrelatedFieldL2Canonical_eq_logCovariancePairing
     (by norm_num : 0 < 2) ζ (annularCenteredTestFn f n) (annularCenteredTestFn g k)
   calc
@@ -164,8 +156,7 @@ theorem inner_equatorKernelApprox_eq_pairing (f g : TestFn) (n k : ℕ) :
         (annularCenteredTestFn f n) (annularCenteredTestFn g k) := by
   have hscale : (Real.sqrt (2 * Real.pi)) ^ 2 *
       GaussianFields.abkLGFCovarianceConstant 2 = 1 := by
-    rw [abkLGFCovarianceConstant_two_eq_one_div_two_pi]
-    rw [Real.sq_sqrt (by positivity : 0 ≤ 2 * Real.pi)]
+    rw [abkLGFCovarianceConstant_two_eq_one_div_two_pi, Real.sq_sqrt (by positivity : 0 ≤ 2 * Real.pi)]
     field_simp [ne_of_gt Real.pi_pos]
   rw [equatorKernelApprox, equatorKernelApprox,
     inner_smul_left, inner_smul_right]
@@ -299,8 +290,7 @@ noncomputable def equatorKernelLimit (f : TestFn) :
   limUnder atTop (equatorKernelApprox f)
 
 theorem equatorKernelApprox_tendsto (f : TestFn) :
-    Tendsto (equatorKernelApprox f) atTop (𝓝 (equatorKernelLimit f)) := by
-  exact (equatorKernelApprox_cauchy f).tendsto_limUnder
+    Tendsto (equatorKernelApprox f) atTop (𝓝 (equatorKernelLimit f)) := (equatorKernelApprox_cauchy f).tendsto_limUnder
 
 /-- The finite-energy extension of the annular ABK kernel map to all test functions. -/
 noncomputable def equatorKernelLimitMap :
@@ -366,4 +356,3 @@ theorem map_equatorFieldL2_eq_gaussianReal (f : TestFn) :
 
 end DOZZ
 
-end

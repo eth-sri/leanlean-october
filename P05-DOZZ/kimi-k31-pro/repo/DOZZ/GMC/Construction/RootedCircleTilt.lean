@@ -1,13 +1,11 @@
 /-
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 -/
-module
 
-public import DOZZ.GMC.Construction.GMCVertexTilt
+import DOZZ.GMC.Construction.GMCVertexTilt
 
 /-! A finite-circle root tilt with the limiting GMC as the chaos mark. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory
 open scoped Distributions ENNReal NNReal
@@ -39,13 +37,13 @@ theorem gmc_joint_single_circle_tilt
       _ = _ := integral_const_mul _ _
   have ht := equatorGFF_GMC_vertex_tilt P X hX γ hγ hγ2 M hM Xc hXc
     (fun _ : Fin 1 => γ) (fun _ => u) r H hH
-  simp only [Fin.sum_univ_one] at ht
+  simp [] at ht
   rw [hvar] at ht
   have hleft (ω : Ω) : γ * Xc ω u r -
       (γ ^ 2 * ∫ ω', Xc ω' u r ^ 2 ∂P) / 2 =
       γ * Xc ω u r - γ ^ 2 / 2 * ∫ ω', Xc ω' u r ^ 2 ∂P := by ring
   have hright (x : ℂ) : γ * (γ * ∫ v, gffKernel x v ∂circleMeasure u r) =
       γ ^ 2 * ∫ v, gffKernel x v ∂circleMeasure u r := by ring
-  simpa only [hleft, hright] using ht
+  simpa [hleft, hright] using ht
 
 end DOZZ.Proofs

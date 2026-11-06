@@ -2,18 +2,16 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.Moments.CutoffBallScale
+import DOZZ.GMC.Moments.CutoffBallScale
 
-public import DOZZ.Statements.GMC.CutoffWeightedGmcBallMass
-public import DOZZ.GMC.Annulus.CutoffScale
-public import DOZZ.GMC.Moments.CutoffSubunit
+import DOZZ.Statements.GMC.CutoffWeightedGmcBallMass
+import DOZZ.GMC.Annulus.CutoffScale
+import DOZZ.GMC.Moments.CutoffSubunit
 import Mathlib.MeasureTheory.Measure.GiryMonad
 
 /-! Subunit cutoff estimates for the nonsingular (nonpositive-charge) sector. -/
 
-@[expose] public section
 
 open MeasureTheory
 open scoped Distributions ENNReal NNReal
@@ -64,7 +62,6 @@ theorem cutoffWeightedGmcBallMass_le_outer_scale
     by_cases hx : x ∈ B
     · have hdist : ‖x - z‖ < R := by
         simpa [B, Metric.mem_ball, dist_eq_norm] using hx
-      have hbase : 0 < ‖x - z‖ + δ := by positivity
       have htop : ‖x - z‖ + δ ≤ 2 * R := by linarith
       have hpow : (‖x - z‖ + δ) ^ (-γ * α) ≤ (2 * R) ^ (-γ * α) :=
         Real.rpow_le_rpow (by positivity) htop hk

@@ -2,13 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.Tails.WilliamsPolarMassLaw
+import DOZZ.Correlations.Tails.WilliamsPolarMassLaw
 
 /-! Williams' mass as a jointly measurable function of the level and reflection input. -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal NNReal
 
@@ -30,8 +28,7 @@ theorem williamsCutMassCode_eq (γ m : ℝ)
     (B : BrownianPath × BrownianPath) (Z : Measure ℝ)
     (hfin : ∀ a b : ℝ, Z (Icc a b) < ⊤) :
     williamsCutMassCode γ (m,(B,Z)) =
-      twoSidedReflectionCutMass γ m (fun _ : Unit => B) (fun _ : Unit => Z) () := by
-  exact stoppedReflectionMassCode_eq γ (negativeLastExitTime B.2 m) B Z hfin
+      twoSidedReflectionCutMass γ m (fun _ : Unit => B) (fun _ : Unit => Z) () := stoppedReflectionMassCode_eq γ (negativeLastExitTime B.2 m) B Z hfin
 
 noncomputable def williamsInputMassCode (γ : ℝ)
     (p : ℝ × ((BrownianPath × BrownianPath) × Measure ℝ)) : ℝ≥0∞ :=

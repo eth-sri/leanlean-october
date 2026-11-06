@@ -2,13 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.Brownian.Lateral.RadialProjection
-public import DOZZ.FourPoint.Reflected.RestartPast
-public import DOZZ.FourPoint.Reflected.InnerKernelSqueeze
+import DOZZ.Brownian.Lateral.RadialProjection
+import DOZZ.FourPoint.Reflected.RestartPast
+import DOZZ.FourPoint.Reflected.InnerKernelSqueeze
 import Mathlib.Tactic
 /-! Exact polar identification of the actual inner radial comparison mass. -/
-@[expose] public section
 open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -36,11 +34,11 @@ theorem reflected_inner_radial_polar (γ α : ℝ) (A : TwoSidedPath)
     by_cases hs : (T : ℝ) < s
     · rw [indicator_of_mem (show s ∈ Ioi (T : ℝ) from hs)]
       have hsp : 0 ≤ s := T.coe_nonneg.trans hs.le
-      simp only [f, ite_eq_left hs, lateralForwardWeight, abs_of_nonneg hsp]
+      simp [f, ite_eq_left hs, lateralForwardWeight, abs_of_nonneg hsp]
       rw [← ENNReal.ofReal_mul (Real.exp_pos _).le, ← Real.exp_add]
       congr 2
       ring
-    · simp only [f, ite_eq_right hs, mul_zero, indicator_of_notMem (show s ∉ Ioi (T : ℝ) from hs)]
+    · simp [f, ite_eq_right hs, mul_zero, indicator_of_notMem (show s ∉ Ioi (T : ℝ) from hs)]
   have hright : (∫⁻ x, if x = 0 then 0 else f (-Real.log ‖x‖) ∂M) =
       ∫⁻ x in {x : ℂ | 0 < ‖x‖ ∧ ‖x‖ < Real.exp (-(T : ℝ))},
         ENNReal.ofReal (‖x‖ ^ (-(γ * α))) ∂M := by
@@ -59,13 +57,13 @@ theorem reflected_inner_radial_polar (γ α : ℝ) (A : TwoSidedPath)
       by_cases hs : (T : ℝ) < -Real.log ‖x‖
       · rw [indicator_of_mem (show x ∈ {x : ℂ | 0 < ‖x‖ ∧ ‖x‖ < Real.exp (-(T : ℝ))}
           from ⟨hxp, he.mp hs⟩)]
-        simp only [hx, ite_false, f, ite_eq_left hs]
+        simp [hx, f, ite_eq_left hs]
         rw [Real.rpow_def_of_pos hxp]
         congr 2
         ring
       · rw [indicator_of_notMem (show x ∉ {x : ℂ | 0 < ‖x‖ ∧ ‖x‖ < Real.exp (-(T : ℝ))}
           from fun hh => hs (he.mpr hh.2))]
-        simp only [hx, ite_false, f, ite_eq_right hs]
+        simp [hx, f, ite_eq_right hs]
   exact hright.symm.trans (hi.symm.trans hleft)
 
 /-- Deterministic radial restart extracts the exact scalar prefactor and translates the actual
@@ -101,12 +99,12 @@ theorem reflected_inner_polar_restart (γ ν : ℝ) (A : TwoSidedPath)
     have hval : D (Real.toNNReal (s - (T : ℝ))) = A s - A T := by
       change A ((T : ℝ) + (Real.toNNReal (s - (T : ℝ)) : ℝ)) - A T = _
       rw [htime]
-    simp only [f, ite_eq_left hu, hval]
+    simp [f, ite_eq_left hu, hval]
     rw [← ENNReal.ofReal_mul (Real.exp_pos _).le, ← Real.exp_add]
     congr 2
     ring
   · rw [indicator_of_notMem (show s ∉ Ioi (T : ℝ) from hs)]
     have hu : ¬0 < s - (T : ℝ) := fun h => hs (sub_pos.mp h)
-    simp only [f, ite_eq_right hu, mul_zero]
+    simp [f, ite_eq_right hu, mul_zero]
 
 end DOZZ.Proofs

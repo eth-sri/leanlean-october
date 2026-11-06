@@ -2,13 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.TaylorMassInterpolation
+import DOZZ.FourPoint.TaylorMassInterpolation
 
 /-! Endpoint-safe scalar reduction for the intermediate positive Taylor square. -/
 
-@[expose] public section
 open MeasureTheory
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs

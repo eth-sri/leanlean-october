@@ -2,23 +2,21 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Brownian.Lateral.GlobalIndependence
-public import DOZZ.GMC.Construction.GMCIntensityL1
-public import Mathlib.Topology.UrysohnsLemma
-public import DOZZ.Brownian.Coupling.CylindricalIntegral
+import DOZZ.Brownian.Lateral.GlobalIndependence
+import DOZZ.GMC.Construction.GMCIntensityL1
+import Mathlib.Topology.UrysohnsLemma
+import DOZZ.Brownian.Coupling.CylindricalIntegral
 
 /-! Exact expected local lateral measure, obtained from admissible cutoff L¹ convergence. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
 
 namespace DOZZ.Proofs
 
-open DOZZ.Assembly
+open Assembly
 
 /-- The mean of a nonnegative compact cutoff test is exactly its reference integral,
 once the cutoff lies in the admissible scale range. -/
@@ -92,7 +90,7 @@ theorem admissibleGMCVersion_test_intensity
   let R : ℝ := -Real.log ε₀
   have hR (r : ℝ) (hr : R ≤ r) : Real.exp (-r) ≤ ε₀ := by
     calc Real.exp (-r) ≤ Real.exp (-R) := Real.exp_le_exp.mpr (neg_le_neg hr)
-      _ = ε₀ := by simp only [R, neg_neg, Real.exp_log hY.cutoffPositive]
+      _ = ε₀ := by simp [R, neg_neg, Real.exp_log hY.cutoffPositive]
   let F : ℝ → Ω → ℝ := fun r => admissibleCutoffIntegral P U dens Y γ (max r R) f
   have htop : Tendsto (fun r : ℝ => max r R) atTop atTop :=
     tendsto_atTop_mono (fun r => le_max_left r R) tendsto_id
@@ -182,7 +180,7 @@ theorem admissibleGMCVersion_expected_compact_lt_top
     · rw [indicator_of_mem hx]
       change 1 ≤ ENNReal.ofReal (g x)
       rw [hg1 hx]
-      simp only [Pi.one_apply, ENNReal.ofReal_one, le_refl]
+      simp [Pi.one_apply, ENNReal.ofReal_one, le_refl]
     · rw [indicator_of_notMem hx]
       exact zero_le
   have href : (∫⁻ x, ENNReal.ofReal (f x) ∂logRegularizationReference U dens) < ⊤ := by
@@ -225,8 +223,8 @@ theorem admissibleGMCVersion_expected_signed_test
       gp hpc (hs.trans hgU) (fun x => le_max_right _ _)
     have heval (x : ℂ) : ENNReal.ofReal (gp x) = ENNReal.ofReal (g x) := by
       change ENNReal.ofReal (max (g x) 0) = ENNReal.ofReal (g x)
-      simp only [ENNReal.ofReal_max, ENNReal.ofReal_zero, max_eq_left (zero_le : (0 : ℝ≥0∞) ≤ ENNReal.ofReal (g x))]
-    simpa only [heval] using heq
+      simp [ENNReal.ofReal_max, ENNReal.ofReal_zero, max_eq_left (zero_le : (0 : ℝ≥0∞) ≤ ENNReal.ofReal (g x))]
+    simpa [heval] using heq
   have hi := integrable_compact_test_of_chart (P.bind N) f
     (admissibleGMCVersion_expected_compact_lt_top P U dens ε₀ Y hY γ hγ hγ2 N hN
       (tsupport (f : ℂ → ℝ)) hfc hfU)
@@ -235,10 +233,9 @@ theorem admissibleGMCVersion_expected_signed_test
       (tsupport (f : ℂ → ℝ)) hfc hfU).lt_top
   rw [integral_eq_lintegral_pos_part_sub_lintegral_neg_part hi,
     integral_eq_lintegral_pos_part_sub_lintegral_neg_part hr, hpos f hfc hfU]
-  have hnfc : HasCompactSupport ((-f : BoundedContinuousFunction ℂ ℝ) : ℂ → ℝ) := by
-    exact hfc.neg
+  have hnfc : HasCompactSupport ((-f : BoundedContinuousFunction ℂ ℝ) : ℂ → ℝ) := hfc.neg
   have hnU : tsupport ((-f : BoundedContinuousFunction ℂ ℝ) : ℂ → ℝ) ⊆ U := by
-    simpa only [BoundedContinuousFunction.coe_neg, tsupport_neg] using hfU
+    simpa [BoundedContinuousFunction.coe_neg, tsupport_neg] using hfU
   exact congrArg (fun x : ℝ≥0∞ =>
       (∫⁻ x, ENNReal.ofReal (f x) ∂logRegularizationReference U dens).toReal - x.toReal)
     (hpos (-f) hnfc hnU)
@@ -264,11 +261,11 @@ theorem admissibleGMCVersion_expected_measure
     hdense (fun n m => admissibleGMCVersion_expected_signed_test P U dens ε₀ Y hY γ
       hγ hγ2 N hN (f (n, m)) (hf n m).1 (hf n m).2.2)
   · rw [Measure.bind_apply hY.openChart.measurableSet.compl hN.1.aemeasurable]
-    simp only [hN.2.1, lintegral_zero]
+    simp [hN.2.1, lintegral_zero]
   · unfold logRegularizationReference
     apply withDensity_absolutelyContinuous
     rw [Measure.restrict_apply hY.openChart.measurableSet.compl]
-    simp only [compl_inter_self, measure_empty]
+    simp [compl_inter_self, measure_empty]
 
 /-- The expected actual removed measure on each chart is the flat-cylinder plane
 reference measure on that chart. -/
@@ -367,7 +364,7 @@ theorem lintegral_complex_norm (F : ℝ → ℝ≥0∞) (hF : Measurable F) :
     (∫⁻ z : ℂ, F ‖z‖) = ENNReal.ofReal (2 * Real.pi) *
       ∫⁻ r in Ioi (0 : ℝ), ENNReal.ofReal r * F r := by
   have heq (r : ℝ) (hr : 0 ≤ r) : cylindricalRadius 0 r = r := by
-    simp only [cylindricalRadius, zero_pow (by norm_num : (2 : ℕ) ≠ 0), zero_add,
+    simp [cylindricalRadius, zero_pow (by norm_num : (2 : ℕ) ≠ 0), zero_add,
       Real.sqrt_sq_eq_abs, abs_of_nonneg hr]
   have h := lintegral_complex_cylindricalRadius 0 F hF
   simp_rw [heq _ (norm_nonneg _)] at h
@@ -375,7 +372,7 @@ theorem lintegral_complex_norm (F : ℝ → ℝ≥0∞) (hF : Measurable F) :
   congr 1
   apply setLIntegral_congr_fun measurableSet_Ioi
   intro r hr
-  dsimp only
+  dsimp
   rw [heq r hr.le]
 
 /-- The substitution `r = exp(-s)` converts the radial density `1/r` into Lebesgue
@@ -388,9 +385,9 @@ theorem lintegral_logRadius_jacobian (F : ℝ → ℝ≥0∞) :
     · rintro ⟨s, _, rfl⟩
       exact Real.exp_pos _
     · intro hr
-      exact ⟨-Real.log r, mem_univ _, by dsimp only; rw [neg_neg, Real.exp_log hr]⟩
+      exact ⟨-Real.log r, mem_univ _, by dsimp; rw [neg_neg, Real.exp_log hr]⟩
   have hderiv (s : ℝ) : HasDerivAt (fun t : ℝ => Real.exp (-t)) (-Real.exp (-s)) s := by
-    simpa only [mul_neg_one] using (hasDerivAt_neg s).exp
+    simpa [mul_neg_one] using (hasDerivAt_neg s).exp
   have hinj : InjOn (fun s : ℝ => Real.exp (-s)) univ := by
     intro s _ t _ h
     exact neg_injective (Real.exp_injective h)
@@ -454,7 +451,7 @@ theorem flatLateralReference_logRadius :
     (f := S.indicator (1 : ℝ → ℝ≥0∞))
     ((measurable_const : Measurable (1 : ℝ → ℝ≥0∞)).indicator hS) hlog
   rw [← hmap] at h
-  simpa only [lintegral_indicator_one hS, Measure.smul_apply, smul_eq_mul] using h
+  simpa [lintegral_indicator_one hS, Measure.smul_apply, smul_eq_mul] using h
 
 /-- Exact expected measure of the actual projected chaos on the entire cylinder. -/
 theorem lateralProjectedGMC_expected_flat_measure
@@ -471,7 +468,7 @@ theorem lateralProjectedGMC_expected_flat_measure
     flatLateralReference_logRadius]
 
 /-- The actual projected chaos has the exact interval intensity required by the lateral
-predicate `DOZZ.IsLateralGMCOf`. This is proved before stationarity or any moment
+predicate `IsLateralGMCOf`. This is proved before stationarity or any moment
 theorem is used. -/
 theorem lateralProjectedGMC_interval_intensity
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)

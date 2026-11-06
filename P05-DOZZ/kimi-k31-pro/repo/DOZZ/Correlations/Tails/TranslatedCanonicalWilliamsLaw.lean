@@ -2,15 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.Tails.OriginPolarMass
-public import DOZZ.Correlations.Tails.TranslatedLateralLaw
-public import DOZZ.Correlations.Tails.WilliamsPolarMassLaw
+import DOZZ.Correlations.Tails.OriginPolarMass
+import DOZZ.Correlations.Tails.TranslatedLateralLaw
+import DOZZ.Correlations.Tails.WilliamsPolarMassLaw
 
 /-! The canonical translated singular mass has the exponential-maximum last-cut law. -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal NNReal
 
@@ -18,7 +16,7 @@ namespace DOZZ.Proofs
 
 /-- The genuine translated equator chaos has the exact `exp(γ M) J_M` law. The reference
 functional is measurable on all inputs and equals the literal last-cut mass
-`DOZZ.twoSidedReflectionCutMass` on locally finite lateral measures. The exponential level,
+`twoSidedReflectionCutMass` on locally finite lateral measures. The exponential level,
 conditioned copies and lateral law are independent. -/
 theorem translated_canonical_williams_mass_law
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)

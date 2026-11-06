@@ -1,2 +1,1 @@
-module
-public import DOZZ.Correlations.Tails.GaussianEnvelopeProducts
+import DOZZ.Correlations.Tails.GaussianEnvelopeProducts

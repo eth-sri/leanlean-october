@@ -1,10 +1,8 @@
-module
 
-public import DOZZ.GMC.WeightedCutoff.RootUniform
+import DOZZ.GMC.WeightedCutoff.RootUniform
 
 /-! # A common subcritical order cap for compact parameter families -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs

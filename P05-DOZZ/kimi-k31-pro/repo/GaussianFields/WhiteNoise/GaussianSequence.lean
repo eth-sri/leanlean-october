@@ -3,13 +3,12 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Scott Armstrong, Amélie Loher
 -/
-module
 
-public import Mathlib.Probability.Distributions.Gaussian.Real
-public import Mathlib.Probability.HasLawExists
-public import Mathlib.Probability.IdentDistrib
-public import Mathlib.Probability.Moments.Covariance
-public import Mathlib.Probability.Moments.Variance
+import Mathlib.Probability.Distributions.Gaussian.Real
+import Mathlib.Probability.HasLawExists
+import Mathlib.Probability.IdentDistrib
+import Mathlib.Probability.Moments.Covariance
+import Mathlib.Probability.Moments.Variance
 
 /-!
 # GaussianFields.WhiteNoise/GaussianSequence
@@ -17,7 +16,6 @@ public import Mathlib.Probability.Moments.Variance
 Port of the corresponding GaussianFields source module.
 -/
 
-public section
 
 open MeasureTheory ProbabilityTheory
 open scoped BigOperators ENNReal NNReal ProbabilityTheory
@@ -29,7 +27,7 @@ abbrev GaussianSequenceSpace (ι : Type*) :=
   ι → ℝ
 
 /-- The standard centered real Gaussian law. -/
-@[expose]
+
 noncomputable def standardGaussianReal : Measure ℝ :=
   ProbabilityTheory.gaussianReal 0 (1 : ℝ≥0)
 
@@ -39,7 +37,7 @@ instance instIsProbabilityMeasure_standardGaussianReal :
   infer_instance
 
 /-- The product law of independent standard centered real Gaussian coefficients. -/
-@[expose]
+
 noncomputable def gaussianSequenceMeasure (ι : Type*) :
     Measure (GaussianSequenceSpace ι) :=
   Measure.infinitePi fun _ : ι => standardGaussianReal
@@ -50,7 +48,7 @@ instance instIsProbabilityMeasure_gaussianSequenceMeasure (ι : Type*) :
   infer_instance
 
 /-- The `i`-th Gaussian coordinate. -/
-@[expose]
+
 def gaussianCoordinate {ι : Type*} (i : ι) : GaussianSequenceSpace ι → ℝ :=
   fun ω => ω i
 
@@ -167,7 +165,7 @@ theorem covariance_gaussianCoordinate {ι : Type*} [DecidableEq ι] (i j : ι) :
   · simp [hij, covariance_gaussianCoordinate_eq_zero hij]
 
 /-- A finite linear combination of Gaussian coordinates. -/
-@[expose]
+
 noncomputable def gaussianLinearCombination {ι : Type*} (s : Finset ι) (a : ι → ℝ) :
     GaussianSequenceSpace ι → ℝ :=
   fun ω => ∑ i ∈ s, a i * gaussianCoordinate i ω
@@ -223,7 +221,7 @@ theorem indepFun_gaussianCoordinate_gaussianLinearCombination {ι : Type*} [Deci
     simp
 
 /-- The finite variance parameter associated with a deterministic coefficient family. -/
-@[expose]
+
 noncomputable def gaussianLinearCombinationVariance {ι : Type*} (s : Finset ι) (a : ι → ℝ) :
     ℝ≥0 :=
   ∑ i ∈ s, Real.toNNReal ((a i) ^ (2 : Nat))
@@ -293,4 +291,3 @@ theorem coe_gaussianLinearCombinationVariance {ι : Type*} (s : Finset ι) (a : 
 
 end GaussianFields
 
-end

@@ -2,13 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.FiniteChaosLaplaceDomination
+import DOZZ.GMC.FiniteChaosLaplaceDomination
 
 /-! Endpoint comparison for the finite Laplace interpolation. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter
 open scoped Topology
@@ -99,8 +97,7 @@ theorem finiteChaosMatrixLaplaceInterpolationExpectation_endpoint_le
     rw [Real.norm_eq_abs, abs_of_nonneg (Real.exp_nonneg _)]
     apply Real.exp_le_one_iff.mpr
     nlinarith [hs, hmass]
-  have hconstInt : Integrable (fun _ : (Fin (n + 1) → ℝ) × (Fin (n + 1) → ℝ) => (1 : ℝ)) ν := by
-    exact integrable_const 1
+  have hconstInt : Integrable (fun _ : (Fin (n + 1) → ℝ) × (Fin (n + 1) → ℝ) => (1 : ℝ)) ν := integrable_const 1
   have hDCT (u : ℕ → ℝ) (hu : Tendsto u atTop (𝓝 0)) :
       Tendsto (fun k => ∫ z, g (u k) z ∂ν) atTop (𝓝 (∫ z, g 0 z ∂ν)) := by
     apply tendsto_integral_of_dominated_convergence (fun _ : (Fin (n + 1) → ℝ) ×
@@ -109,8 +106,7 @@ theorem finiteChaosMatrixLaplaceInterpolationExpectation_endpoint_le
       exact (hgz (u k)).aestronglyMeasurable
     · exact hconstInt
     · intro k
-      filter_upwards [] with z
-      exact hbound (u k) z
+      exact ae_of_all _ fun z => hbound (u k) z
     · filter_upwards [] with z
       exact (hgcont z).continuousAt.tendsto.comp hu
   have hDCTone (u : ℕ → ℝ) (hu : Tendsto u atTop (𝓝 1)) :
@@ -121,8 +117,7 @@ theorem finiteChaosMatrixLaplaceInterpolationExpectation_endpoint_le
       exact (hgz (u k)).aestronglyMeasurable
     · exact hconstInt
     · intro k
-      filter_upwards [] with z
-      exact hbound (u k) z
+      exact ae_of_all _ fun z => hbound (u k) z
     · filter_upwards [] with z
       exact (hgcont z).continuousAt.tendsto.comp hu
   let u : ℕ → ℝ := fun k => 1 / ((k : ℝ) + 1)

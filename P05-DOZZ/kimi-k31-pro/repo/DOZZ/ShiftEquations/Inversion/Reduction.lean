@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.ShiftEquations.TwoPoleWindow
-public import DOZZ.ShiftEquations.Inversion.Gluing
+import DOZZ.Statements.ShiftEquations.TwoPoleWindow
+import DOZZ.ShiftEquations.Inversion.Gluing
 import DOZZ.ShiftEquations.Inversion.Nonzero
 
 /-! The inversion `DOZZ.reflectionR_inversion_meromorphic` from the literal conclusion of
@@ -14,12 +13,11 @@ meromorphic strip; the representative construction with exterior value one
 (`exists_physical_inversion_representative`) gives the whole-plane representative with every
 supplied-space physical value. -/
 
-@[expose] public section
 open MeasureTheory Filter Topology Set
 namespace DOZZ.Proofs
 
-/-- The conclusion of `DOZZ.structureConstant_reflected_shift_and_gluing` alone implies
-`DOZZ.reflectionR_inversion_meromorphic`: its gluing equation and physical three-point values supply
+/-- The conclusion of `structureConstant_reflected_shift_and_gluing` alone implies
+`reflectionR_inversion_meromorphic`: its gluing equation and physical three-point values supply
 a nonzero germ, while its reflection germ supplies the physical values on the given probability
 space. No dual crossing is assumed. -/
 theorem reflectionR_inversion_meromorphic_of_reflected_shift_and_gluing
@@ -82,7 +80,7 @@ theorem reflectionR_inversion_meromorphic_of_reflected_shift_and_gluing
     dsimp [a]
     linarith
   have hglue' : ∀ᶠ z in codiscrete ℂ, C z = F z * C (((2 * Q γ : ℝ) : ℂ) - z) := by
-    simpa only [Complex.ofReal_mul, Complex.ofReal_ofNat] using hglue
+    simpa [Complex.ofReal_mul, Complex.ofReal_ofNat] using hglue
   have hinv := inversion_of_gluing C F (2 * Q γ) H (2 * η) (Q γ)
     hH (by linarith [hη.2]) hC hCne hglue'
   have hphysical : ∀ᶠ z in codiscreteWithin (horizontalStrip H),
@@ -100,6 +98,6 @@ theorem reflectionR_inversion_meromorphic_of_reflected_shift_and_gluing
     (fun α => (reflectionR P γ μ α (B α) Z : ℂ)) (2 * Q γ) H (H / 2)
     (γ / 2) (Q γ) (half_pos hH) (half_lt_self hH) hF hinv hphysical
   refine ⟨B, Z, hSLP, hRD, H / 2, half_pos hH, R, hRm, hRr, ?_⟩
-  simpa only [Complex.ofReal_mul, Complex.ofReal_ofNat] using hRi
+  simpa [Complex.ofReal_mul, Complex.ofReal_ofNat] using hRi
 
 end DOZZ.Proofs

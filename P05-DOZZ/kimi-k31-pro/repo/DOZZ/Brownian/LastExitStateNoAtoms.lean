@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Brownian.LastExitReferenceKernel
+import DOZZ.Brownian.LastExitReferenceKernel
 import Mathlib.MeasureTheory.Constructions.Pi
 import Mathlib.MeasureTheory.Measure.Lebesgue.Basic
 
@@ -16,7 +15,6 @@ In particular, the endpoint is almost surely not equal to any fixed barrier. Thi
 single endpoint case between the above-barrier avoidance identity and its zero lower-state branch.
 -/
 
-@[expose] public section
 
 open MeasureTheory
 open scoped ENNReal NNReal
@@ -84,8 +82,7 @@ theorem ae_conditionedPositiveStateAt_ne
     rw [hrestrict]
     simp
   have hstateNull : (P.map (conditionedPositiveStateAt t)) {a} = 0 := by
-    rw [hstate, Measure.map_apply hcoord (measurableSet_singleton a), hcoordSet]
-    exact hdensityNull
+    rwa [hstate, Measure.map_apply hcoord (measurableSet_singleton a), hcoordSet]
   have hpre : (conditionedPositiveStateAt t) ⁻¹' ({a} : Set ℝ) =
       {p : BrownianPath | conditionedPositiveStateAt t p = a} := by
     ext p
@@ -93,11 +90,10 @@ theorem ae_conditionedPositiveStateAt_ne
   have hzero : P {p : BrownianPath | conditionedPositiveStateAt t p = a} = 0 := by
     rw [← hpre, ← Measure.map_apply (measurable_conditionedPositiveStateAt t)
       (measurableSet_singleton a)]
-    exact hstateNull
+    assumption
   rw [measure_eq_zero_iff_ae_notMem] at hzero
   filter_upwards [hzero] with p hp
-  exact hp
+  assumption
 
 end DOZZ.Proofs
 
-end

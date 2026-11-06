@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.Tails.GaussianPrefactor
-public import DOZZ.Correlations.Tails.OffCenterPinLaw
+import DOZZ.Correlations.Tails.GaussianPrefactor
+import DOZZ.Correlations.Tails.OffCenterPinLaw
 
 /-! The exact critical moment of the actual independent pin prefactor. -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal NNReal
 
@@ -24,9 +22,9 @@ theorem actual_prefactor_critical_moment
         ‖z‖^(-4*α*(Q γ-α))*f^(reflectionExponent γ α) := by
   have hN := offCenter_pin_law P X Xc hX hc z hz
   have hm : (∫ ω, Xc ω z 0 ∂P) = 0 := by
-    simpa only [integral_id_gaussianReal] using hN.integral_eq
+    simpa [integral_id_gaussianReal] using hN.integral_eq
   have hv : variance (fun ω => Xc ω z 0) P = 2*Real.log ‖z‖ := by
-    simpa only [variance_id_gaussianReal,
+    simpa [variance_id_gaussianReal,
       Real.coe_toNNReal _ (offCenter_pin_variance_pos z hz).le] using hN.variance_eq
   have hp : Measurable (fun ω => Xc ω z 0) :=
     (hc.1 0).comp (measurable_id.prodMk measurable_const)
@@ -47,7 +45,7 @@ theorem actual_prefactor_critical_moment
   have hmoment := offCenter_prefactor_moment P (fun ω => Xc ω z 0)
     hN.hasGaussianLaw hm γ α f hγ hf z hzn hv
   have hvarterm : γ^2*variance (fun ω => Xc ω z 0) P/2 = γ^2*Real.log ‖z‖ := by rw [hv]; ring
-  simpa only [hvarterm] using hmoment
+  simpa [hvarterm] using hmoment
 
 
 end DOZZ.Proofs

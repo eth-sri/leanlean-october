@@ -1,10 +1,8 @@
-module
 
-public import DOZZ.GMC.MomentAnnularSummability
+import DOZZ.GMC.MomentAnnularSummability
 
 /-! Sharp-domain algebra for the dyadic weighted annulus argument. -/
 
-@[expose] public section
 
 open scoped ENNReal
 

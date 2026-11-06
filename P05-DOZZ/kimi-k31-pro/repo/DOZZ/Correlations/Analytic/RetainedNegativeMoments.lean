@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.SharpMoments.SeibergMomentBound
-public import DOZZ.Correlations.Analytic.RetainedRegions
+import DOZZ.GMC.SharpMoments.SeibergMomentBound
+import DOZZ.Correlations.Analytic.RetainedRegions
 
 /-! A fixed exterior disk supplies all negative moments of retained Coulomb masses. -/
 
-@[expose] public section
 open MeasureTheory
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -46,7 +44,7 @@ theorem retained_coulomb_mass_ge_exterior_ball
   have hl := coulombMass_ge_exterior_ball (μ.restrict O) γ α z αinf hR hz
   rw [Measure.restrict_apply Metric.isOpen_ball.measurableSet,
     Set.inter_eq_left.mpr hO, coulombMass_eq_lintegral_coulombWeight] at hl
-  exact hl
+  assumption
 
 /-- All nonpositive real moments of a retained weighted mass are finite as soon as one fixed
 exterior disk is retained. -/

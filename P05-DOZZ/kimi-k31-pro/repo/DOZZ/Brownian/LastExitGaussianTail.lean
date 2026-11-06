@@ -2,11 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Brownian.ConditionedKernelGaussianIntegrals
-public import Mathlib.MeasureTheory.Integral.IntervalIntegral.FundThmCalculus
-public import Mathlib.Analysis.SpecialFunctions.Sqrt
+import DOZZ.Brownian.ConditionedKernelGaussianIntegrals
+import Mathlib.MeasureTheory.Integral.IntervalIntegral.FundThmCalculus
+import Mathlib.Analysis.SpecialFunctions.Sqrt
 
 /-!
 # Gaussian half-line primitives for the last-exit density
@@ -15,7 +14,6 @@ The explicit heat-kernel primitive evaluates the boundary terms in the determini
 last-exit calculation. Its time derivative is the Gaussian boundary flux.
 -/
 
-@[expose] public section
 open MeasureTheory Set Filter Topology
 namespace DOZZ.Proofs
 
@@ -31,7 +29,7 @@ theorem continuous_brownianHeatDensity {t : ℝ} (ht : 0 < t) :
     Continuous (brownianHeatDensity t) := by
   change Continuous (fun x => if 0 < t then
     Real.exp (-(x ^ 2) / (2 * t)) / Real.sqrt (2 * Real.pi * t) else 0)
-  simp only [ite_eq_left ht]
+  simp [ite_eq_left ht]
   fun_prop
 
 /-- The spatial derivative of the standard Gaussian upper tail. -/
@@ -46,7 +44,6 @@ theorem hasDerivAt_brownianStandardHeatTail (z : ℝ) :
 /-- Scaling the Gaussian density by its standard deviation. -/
 theorem brownianHeatDensity_standard_scale {t : ℝ} (ht : 0 < t) (z : ℝ) :
     brownianHeatDensity 1 (z / Real.sqrt t) / Real.sqrt t = brownianHeatDensity t z := by
-  have hs : Real.sqrt t ≠ 0 := (Real.sqrt_pos.2 ht).ne'
   have he : -(z / Real.sqrt t)^2 / (2 * 1) = -z^2 / (2*t) := by
     rw [div_pow, Real.sq_sqrt ht.le]
     field_simp
@@ -63,7 +60,7 @@ theorem brownianHeatTail_eq_integral {t : ℝ} (ht : 0 < t) (z : ℝ) :
   have hhalf (u : ℝ) (hu : 0 < u) :
       (∫ y in Ioi (0 : ℝ), brownianHeatDensity u y) = (1/2 : ℝ) := by
     have h := integral_brownianHeatDensity_halfline_pair (t := u) (a := 0) hu
-    simp only [sub_zero, add_zero] at h
+    simp [sub_zero, add_zero] at h
     linarith
   have hscale : (∫ y in (0 : ℝ)..z, brownianHeatDensity t y) =
       ∫ y in (0 : ℝ)..(z / Real.sqrt t), brownianHeatDensity 1 y := by
@@ -90,7 +87,7 @@ theorem integrable_brownianHeatDensity_sub_const {t : ℝ} (ht : 0 < t) (a : ℝ
       ((volume : Measure ℝ).map (fun y : ℝ => y + -a)) := by
     rw [hm]
     exact integrable_brownianHeatDensity ht
-  simpa only [sub_eq_add_neg, Function.comp_def] using he.integrable_map_iff.mp hi
+  simpa [sub_eq_add_neg, Function.comp_def] using he.integrable_map_iff.mp hi
 
 /-- Translation of a Gaussian half-line integral is its shifted upper tail. -/
 theorem integral_brownianHeatDensity_sub_const_Ioi {t : ℝ} (ht : 0 < t) (a c : ℝ) :
@@ -107,7 +104,7 @@ theorem integral_brownianHeatDensity_sub_const_Ioi {t : ℝ} (ht : 0 < t) (a c :
     constructor <;> intro h <;> linarith
   rw [hm, hp] at h
   rw [brownianHeatTail_eq_integral ht]
-  simpa only [sub_eq_add_neg] using h.symm
+  simpa [sub_eq_add_neg] using h.symm
 
 /-- Time differentiation of a Gaussian tail with an affine moving boundary. -/
 theorem hasDerivAt_brownianHeatTail_affine (a b t : ℝ) (ht : 0 < t) :
@@ -129,4 +126,3 @@ theorem hasDerivAt_brownianHeatTail_affine (a b t : ℝ) (ht : 0 < t) :
 
 end DOZZ.Proofs
 
-end

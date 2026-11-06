@@ -2,11 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Reflected.InverseMassExpectation
-public import Mathlib.MeasureTheory.Integral.Prod
+import DOZZ.FourPoint.Reflected.InverseMassExpectation
+import Mathlib.MeasureTheory.Integral.Prod
 /-! A finite added mass converts extended-real inverse moments to signed real increments. -/
-@[expose] public section
 open MeasureTheory
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -49,7 +47,7 @@ theorem reflected_product_inverse_increment_expectation
     filter_upwards [measurePreserving_fst.quasiMeasurePreserving.ae hAf,
       measurePreserving_fst.quasiMeasurePreserving.ae hbf,
       measurePreserving_snd.quasiMeasurePreserving.ae hTf] with v hAv hbv hTv
-    simp only [← ENNReal.toReal_rpow,
+    simp [← ENNReal.toReal_rpow,
       ENNReal.toReal_add hAv (ENNReal.mul_ne_top ENNReal.ofReal_ne_top hTv),
       ENNReal.toReal_mul,ENNReal.toReal_ofReal hbv]
   refine ⟨h.1,h.2.1.congr he,?_⟩

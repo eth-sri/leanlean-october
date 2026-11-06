@@ -2,16 +2,14 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GFFStructure.MarkovAssembly
-public import DOZZ.GMC.SharpMoments.CircleField
-public import DOZZ.GMC.CirclePotential
+import DOZZ.GFFStructure.MarkovAssembly
+import DOZZ.GMC.SharpMoments.CircleField
+import DOZZ.GMC.CirclePotential
 
 /-! The finite-circle equator/Dirichlet covariance discrepancy on the unit disks of the separated
 joint-tail estimate. -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory Metric Set
 
 namespace DOZZ.Proofs
@@ -64,7 +62,7 @@ theorem separatedTail_circle_regular_bounds (c x : ℂ) (R r : ℝ)
     have hnorm : normPlus z ≤ R := max_le hR.le hz
     have hp : 0 < normPlus z := zero_lt_one.trans_le (le_max_left _ _)
     exact (Real.log_le_sub_one_of_pos hp).trans (by linarith)
-  simpa only [integral_const, probReal_univ, one_smul] using
+  simpa [integral_const, probReal_univ, one_smul] using
     integral_mono_ae hi (integrable_const R) hb
 
 /-- The literal finite-cutoff covariance difference cancels the same circle logarithmic

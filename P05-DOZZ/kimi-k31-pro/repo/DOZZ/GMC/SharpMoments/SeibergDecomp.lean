@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.SharpMoments.SeibergWeight
-public import DOZZ.Statements.GMC.WeightedGmcBallMass
+import DOZZ.GMC.SharpMoments.SeibergWeight
+import DOZZ.Statements.GMC.WeightedGmcBallMass
 
 /-! # Decomposition of the Coulomb mass
 
@@ -14,7 +13,6 @@ multiples of the weighted local masses at the roots, of the mass of a bounded di
 power weight at infinity integrated over the exterior of a large disk. A fixed exterior disk gives
 a lower bound by a positive multiple of its mass. -/
 
-@[expose] public section
 
 open MeasureTheory Filter Topology
 open scoped ENNReal NNReal
@@ -116,7 +114,7 @@ theorem coulombMass_le_pieces {N : ℕ} (μ : Measure ℂ) (γ : ℝ) (α : Fin 
             K.indicator F x := hS.add (hFm.indicator hKm)
         rw [lintegral_add_left hSK, lintegral_add_left hS,
           lintegral_finsetSum _ fun k _ => hFm.indicator (hBm k)]
-        simp only [lintegral_indicator (hBm _)]
+        simp [lintegral_indicator (hBm _)]
     _ ≤ _ := by
         gcongr with k hk
         · exact coulomb_root_piece_le μ γ α z αinf k hδ hδ1 (fun j hj => hsep j k hj) (hatom k)

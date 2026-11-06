@@ -2,15 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.Analytic.MixedRetainedKernel
-public import DOZZ.Correlations.Analytic.MixedRealVertexTilt
-public import DOZZ.Correlations.Analytic.JointVertexVariance
+import DOZZ.Correlations.Analytic.MixedRetainedKernel
+import DOZZ.Correlations.Analytic.MixedRealVertexTilt
+import DOZZ.Correlations.Analytic.JointVertexVariance
 
 /-! Exact real values of the jointly normalized mixed-frame retained observable. -/
 
-@[expose] public section
 open MeasureTheory
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -37,7 +35,7 @@ theorem normalized_real_vertex_tilt
   have hc0 : C ≠ 0 := (ENNReal.ofReal_pos.mpr (Real.exp_pos _)).ne'
   have hct : C ≠ ⊤ := ENNReal.ofReal_ne_top
   have hcancel : K * C ^ p = 1 := by
-    dsimp only [K, C]
+    dsimp [K, C]
     rw [ENNReal.ofReal_rpow_of_pos (Real.exp_pos _), ← Real.exp_mul,
       ← ENNReal.ofReal_mul (Real.exp_nonneg _), ← Real.exp_add]
     rw [show -p * A + A * p = 0 by ring, Real.exp_zero, ENNReal.ofReal_one]
@@ -46,10 +44,10 @@ theorem normalized_real_vertex_tilt
       (L ω - gaussianVariance P L / 2 - p * γ *
         ∑ i, β i.castSucc * equatorCircleMean (z i) r)) =
       K * ENNReal.ofReal (Real.exp (L ω - gaussianVariance P L / 2)) := by
-    dsimp only [K]
+    dsimp [K]
     rw [← ENNReal.ofReal_mul (Real.exp_nonneg _), ← Real.exp_add]
     congr 2
-    dsimp only [A]
+    dsimp [A]
     ring
   change (∫⁻ ω, ENNReal.ofReal (Real.exp (L ω - gaussianVariance P L / 2 -
     p * γ * ∑ i, β i.castSucc * equatorCircleMean (z i) r)) * M ω O ^ p ∂P) = _

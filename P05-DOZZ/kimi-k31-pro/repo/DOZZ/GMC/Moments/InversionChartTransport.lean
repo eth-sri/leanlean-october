@@ -2,16 +2,14 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.CircleAverage
-public import DOZZ.GMC.Moments.InversionAdmissibleVersion
-public import DOZZ.GMC.Moments.InversionAtomless
-public import DOZZ.GMC.Moments.InversionCoordinate
+import DOZZ.GMC.CircleAverage
+import DOZZ.GMC.Moments.InversionAdmissibleVersion
+import DOZZ.GMC.Moments.InversionAtomless
+import DOZZ.GMC.Moments.InversionCoordinate
 
 /-! Transport of arbitrary limiting GMC versions through the punctured inversion chart. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped Distributions ENNReal NNReal
@@ -44,10 +42,6 @@ theorem isGMCOf_inversion_chart_transport
     fun_prop
   have hY : IsAdmissibleLogRegularization P U dens 1 Y :=
     isCircleAverage_admissible P X hX Xc hXc U isOpen_compl_singleton
-  have hYinv : IsAdmissibleLogRegularization P U dens 1
-      (fun ω ε x => Y ω ε (φ x)) := by
-    simpa [Y, φ, U, dens, complexInvOpenPartialHomeomorph] using
-      isAdmissibleLogRegularization_complexInv P dens 1 Y hY
   obtain ⟨Mchart, hMchart, hMchartFinite, hMrestrict⟩ :=
     isGMCOf_restrict_admissible_version P X hX γ hγ hγ2 M hM Xc hXc U
       isOpen_compl_singleton
@@ -142,6 +136,6 @@ theorem isGMCOf_inversion_chart_transport
   refine ⟨N, ?_, ?_⟩
   · simpa [Y, φ, U, dens] using hN
   · filter_upwards [hfull] with ω hω
-    simpa [φ, complexInvOpenPartialHomeomorph] using hω
+    exact hω
 
 end DOZZ.Proofs

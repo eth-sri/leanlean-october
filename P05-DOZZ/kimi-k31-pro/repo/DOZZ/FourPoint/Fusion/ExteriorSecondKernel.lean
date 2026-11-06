@@ -2,13 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.Fusion.LocalSecondKernel
+import DOZZ.FourPoint.Fusion.LocalSecondKernel
 
 /-! # The exterior second derivative kernel has a bounded denominator -/
 
-@[expose] public section
 open MeasureTheory Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -51,7 +49,7 @@ theorem fusion_exteriorSecondKernel_integrable (γ α₁ α₂ α₃ : ℝ) (z :
       apply lintegral_mono_ae
       filter_upwards [ae_restrict_mem Metric.isOpen_ball.measurableSet.compl] with x hx
       have hx' : 1 / 2 ≤ ‖x‖ := by
-        simpa only [Set.mem_compl_iff, Metric.mem_ball, dist_zero_right, not_lt] using hx
+        simpa [Set.mem_compl_iff, Metric.mem_ball, dist_zero_right, not_lt] using hx
       exact ENNReal.ofReal_le_ofReal (fusion_exteriorSecondKernel_bound γ α₁ α₂ α₃ z x hz hx')
     _ = ENNReal.ofReal 16 * ∫⁻ x in (Metric.ball (0 : ℂ) (1 / 2))ᶜ,
         ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ z x) ∂μ := by

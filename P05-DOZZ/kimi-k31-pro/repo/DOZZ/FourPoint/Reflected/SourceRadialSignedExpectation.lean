@@ -2,12 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Reflected.SourceRadialInverseMoment
-public import DOZZ.FourPoint.Reflected.ProductInverseExpectation
-public import DOZZ.FourPoint.Reflected.SourceOuterMoments
+import DOZZ.FourPoint.Reflected.SourceRadialInverseMoment
+import DOZZ.FourPoint.Reflected.ProductInverseExpectation
+import DOZZ.FourPoint.Reflected.SourceOuterMoments
 /-! The actual copied radial inverse-moment difference is the signed Williams expectation. -/
-@[expose] public section
 open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -78,7 +76,7 @@ theorem reflected_source_copied_radial_signed_expectation
   have he := (reflected_product_inverse_increment_expectation P μ A b J hA hb hJ hAf hbf hJf p hp hInvFin).2.2
   rw [reflected_source_copied_radial_inverse_moment P X hX Xc hc hm hcont γ hγ hγ₂ M hM
     N hN hi heq hfin α₁ α₂ α₃ ξ h hα₁ B hL hData Qν hQν z hz0 T hcoord hr hz hT p]
-  simpa only [A,b,J,Z,ν,μ,ENNReal.toReal_mul,ENNReal.toReal_ofReal (Real.exp_pos _).le,
+  simpa [A,b,J,Z,ν,μ,ENNReal.toReal_mul,ENNReal.toReal_ofReal (Real.exp_pos _).le,
     mul_assoc] using he
 
 end DOZZ.Proofs

@@ -2,14 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Brownian.Reflection.MassBlocks
-public import DOZZ.Brownian.Reflection.Entrance
-public import DOZZ.Brownian.Lateral.SharpPositive
-public import DOZZ.Brownian.Coupling.GridIdentification
-public import DOZZ.Brownian.ReflectionRLimit
-public import DOZZ.Brownian.Lateral.ReflectionInverse
+import DOZZ.Brownian.Reflection.MassBlocks
+import DOZZ.Brownian.Reflection.Entrance
+import DOZZ.Brownian.Lateral.SharpPositive
+import DOZZ.Brownian.Coupling.GridIdentification
+import DOZZ.Brownian.ReflectionRLimit
+import DOZZ.Brownian.Lateral.ReflectionInverse
 
 /-!
 # Moments of the two-sided reflection mass
@@ -22,7 +21,6 @@ lateral measure, and the initial unit block has inverse moments given the latera
 moments.
 -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Set
 open scoped ENNReal NNReal Topology
@@ -179,7 +177,7 @@ theorem lateralGMC_Icc_unit_moment_le {Ω : Type*} [MeasurableSpace Ω] (P : Mea
     (∫⁻ ω, (Z ω (Icc a (a + 1))) ^ q ∂P) ≤ ∫⁻ ω, (Z ω (Ioc 0 1)) ^ q ∂P := by
   rw [lateralGMC_Icc_moment_eq_Ioc P γ Z hZ a (a + 1) q (by linarith)]
   have h := lateralGMC_interval_moment_translation_eq P γ Z hZ 0 1 q a
-  simp only [zero_add] at h
+  simp [zero_add] at h
   rw [add_comm 1 a] at h
   exact h.le
 
@@ -400,7 +398,7 @@ theorem indepFun_comp_measurePreserving {Ω Ω' β β' : Type*} [MeasurableSpace
   have h1 := hφ.measure_preimage (hfs.inter hgt)
   have h2 := hφ.measure_preimage hfs
   have h3 := hφ.measure_preimage hgt
-  simp only [Set.preimage_inter] at h1
+  simp [Set.preimage_inter] at h1
   change ν (φ ⁻¹' (f ⁻¹' s) ∩ φ ⁻¹' (g ⁻¹' t)) =
     ν (φ ⁻¹' (f ⁻¹' s)) * ν (φ ⁻¹' (g ⁻¹' t))
   rw [h1, h2, h3]
@@ -466,7 +464,7 @@ theorem twoSidedReflectionMass_rpow_tendsto_one_of_ne_zero
   exact (ENNReal.tendsto_toReal ENNReal.one_ne_top).comp hlim'
 
 /-- `ν/γ`-moments at the zero-drift endpoint, assuming the lateral measure is almost surely
-nonzero (`DOZZ.lastone_brownian_smallPower_limit` plus that input). -/
+nonzero (`lastone_brownian_smallPower_limit` plus that input). -/
 theorem lastone_brownian_smallPower_limit_of_ne_zero
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (γ : ℝ)
     (hγ : 0 < γ) (Z : Ω → Measure ℝ)
@@ -485,7 +483,7 @@ theorem lastone_brownian_smallPower_limit_of_ne_zero
     (fun ν hν => (div_pos hν hγ).le)
 
 /-- The full coefficient tends to `-1` at `Q`, assuming the lateral measure is almost surely
-nonzero (`DOZZ.reflectionR_tendsto_Q` plus that input). -/
+nonzero (`reflectionR_tendsto_Q` plus that input). -/
 theorem reflectionR_tendsto_Q_of_ne_zero
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (γ μ : ℝ)
     (hγ : 0 < γ) (hμ : 0 < μ)
@@ -511,7 +509,7 @@ theorem reflectionR_tendsto_Q_of_ne_zero
   exact reflectionR_tendsto_Q_of_zeroDriftMoment P γ μ hγ hμ B Z hMoment
 
 /-- The initial positive unit block of the reflection mass, as written in the statement
-`DOZZ.conditionedMass_zeroDrift_uniform_moments`. -/
+`conditionedMass_zeroDrift_uniform_moments`. -/
 noncomputable def initialUnitBlockMass (γ : ℝ) (p : BrownianPath) (μ : Measure ℝ) : ℝ≥0∞ :=
   ∫⁻ t, ENNReal.ofReal
     (if h : 0 ≤ t ∧ t ≤ 1 then Real.exp (γ * p ⟨t, h.1⟩) else 0) ∂μ
@@ -528,7 +526,7 @@ theorem initialUnitBlockMass_ge (γ : ℝ) (hγ : 0 ≤ γ) (p : BrownianPath) (
   by_cases ht : t ∈ Icc (0 : ℝ) 1
   · rw [indicator_of_mem ht]
     have h : 0 ≤ t ∧ t ≤ 1 := ht
-    simp only [h.1, h.2, and_self, dite_true]
+    simp [h.1, h.2, and_self, dite_true]
     apply ENNReal.ofReal_le_ofReal
     apply Real.exp_le_exp.mpr
     apply mul_le_mul_of_nonneg_left _ hγ
@@ -581,7 +579,7 @@ theorem initialUnitBlockMass_aemeasurable {Ω : Type*} [MeasurableSpace Ω] (P :
   by_cases ht : t ∈ I
   · rw [indicator_of_mem ht]
     have h : 0 ≤ t ∧ t ≤ 1 := ht
-    simp only [f, h.1, h.2, and_self, ite_true, dite_true, Real.toNNReal_of_nonneg h.1]
+    simp [f, h.1, h.2, and_self, ite_true, dite_true, Real.toNNReal_of_nonneg h.1]
     rfl
   · rw [indicator_of_notMem ht]
     have h : ¬ (0 ≤ t ∧ t ≤ 1) := ht
@@ -634,4 +632,3 @@ theorem initialUnitBlockMass_inverse_moment_le {Ω : Type*} [MeasurableSpace Ω]
 
 end DOZZ.Proofs
 
-end

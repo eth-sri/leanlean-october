@@ -2,12 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Brownian.LastExitShiftLaw
-public import DOZZ.Brownian.Lateral.UpperConditionedBlocks
-public import DOZZ.Brownian.LateralTranslation
-public import DOZZ.Statements.Brownian.TwoSidedReflectionCutMass
+import DOZZ.Brownian.LastExitShiftLaw
+import DOZZ.Brownian.Lateral.UpperConditionedBlocks
+import DOZZ.Brownian.LateralTranslation
+import DOZZ.Statements.Brownian.TwoSidedReflectionCutMass
 import Mathlib.MeasureTheory.Integral.Lebesgue.Map
 import Mathlib.Analysis.Convex.SpecificFunctions.Basic
 
@@ -19,7 +18,6 @@ the pathwise input to the last-cut moment estimate; no independence between the 
 discarded masses is used.
 -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal NNReal
@@ -93,7 +91,7 @@ theorem lastExitReflectedMeasure_law_independent
     rw [Measure.map_map (by fun_prop) (by fun_prop)]
     congr 1
     funext s
-    simp only [Function.comp_apply]
+    simp [Function.comp_apply]
     ring_nf
   have hZA : AEMeasurable Z P := hZ.2.2.2.1
   have hsymm : (P.map Z).map R = P.map Z := by
@@ -117,7 +115,7 @@ theorem lastExitReflectedMeasure_law_independent
   · have hInd' : IndepFun D (fun ω => lastExitReflectedMeasure c B Z ω) P := by
       exact hIndM.congr (Filter.Eventually.of_forall fun _ => rfl)
         (Filter.Eventually.of_forall hcomp)
-    exact hInd'
+    assumption
 
 /-- The post-last-exit negative-side path and reflected translated chaos have the same joint law
 as the original negative-side path and lateral measure. This uses path-law preservation and the
@@ -137,8 +135,7 @@ theorem postLastExit_reflectedJointLaw_eq
   let M : Ω → Measure ℝ := fun ω => lastExitReflectedMeasure c B Z ω
   let : IsProbabilityMeasure P := hZ.2.2.1
   have hD : AEMeasurable D P := hB.1
-  have hU : AEMeasurable U P := by
-    exact (measurable_negativeConditionedPostLastExitPath c).comp_aemeasurable hD
+  have hU : AEMeasurable U P := (measurable_negativeConditionedPostLastExitPath c).comp_aemeasurable hD
   have hPathShift := negativeConditioned_postLastExit_law ν c hν hc (P.map D) hB.2
   have hUlaw : P.map U = P.map D := by
     change P.map (negativeConditionedPostLastExitPath c ∘ D) = P.map D
@@ -184,7 +181,7 @@ theorem twoSidedReflectionTailMass_eq_postLastExit_entranceMass {Ω : Type*}
     fun_prop
   have hpre : g ⁻¹' Ioi (0 : ℝ) = Iio (-τ) := by
     ext s
-    simp only [mem_preimage, mem_Ioi, mem_Iio, g]
+    simp [mem_preimage, mem_Ioi, mem_Iio, g]
     constructor <;> intro h <;> linarith
   have hval (s : ℝ) (hs : s ∈ Iio (-τ)) :
       ENNReal.ofReal (Real.exp (γ * twoSidedConditionedValue B ω s)) =
@@ -251,7 +248,7 @@ theorem twoSidedReflectionTailMass_eq_postLastExit_entranceMass {Ω : Type*}
                   lintegral_const_mul _ ((hφ.comp hg).indicator measurableSet_Iio)
             _ = _ := by
               rw [lintegral_indicator measurableSet_Iio]
-              simp only [Function.comp_apply]
+              simp [Function.comp_apply]
     _ = ENNReal.ofReal (Real.exp (-γ * c)) *
         ∫⁻ u in Ioi (0 : ℝ), φ u ∂(Z ω).map g := by
           congr 1
@@ -294,7 +291,6 @@ theorem real_rpow_add_increment_le_superunit (x d p : ℝ)
   let y := x + d
   let t := d / y
   have hy : 0 < y := by dsimp [y]; linarith
-  have ht0 : 0 ≤ t := div_nonneg hd hy.le
   have htx : t ≤ 1 := by
     dsimp [t, y]
     rw [div_le_one hy]
@@ -330,4 +326,3 @@ theorem real_rpow_add_increment_le_superunit (x d p : ℝ)
 
 end DOZZ.Proofs
 
-end

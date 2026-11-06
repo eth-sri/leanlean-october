@@ -2,13 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Reflected.SourceRadialSignedExpectation
-public import DOZZ.FourPoint.Reflected.SourceKernelExpectation
-public import DOZZ.Statements.FourPoint.GammaHalfOuterMoment
-public import DOZZ.FourPoint.ReflectedOuter.Rates
+import DOZZ.FourPoint.Reflected.SourceRadialSignedExpectation
+import DOZZ.FourPoint.Reflected.SourceKernelExpectation
+import DOZZ.Statements.FourPoint.GammaHalfOuterMoment
+import DOZZ.FourPoint.ReflectedOuter.Rates
 /-! The actual source Williams expectation squeezes the literal full inverse-moment difference. -/
-@[expose] public section
 open MeasureTheory ProbabilityTheory Set Filter Topology
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -71,14 +69,14 @@ theorem reflected_source_williams_kernel_squeeze
   have hw := reflected_source_copied_radial_signed_expectation P X hX Xc hc hm hcont γ hγ hγ₂ M hM
     N hN hi heq hfin α₁ α₂ α₃ ξ h hα₁ B hL hData Qν hQν z hz0 T hcoord hz.1 hzr hTr p hp.le
     hα₂ hα₃ hz1 hzn.le hr1
-  dsimp only at hk
+  dsimp at hk
   change (∫⁻ ω : Ω × Ω, (gammaHalfOuterMass γ α₁ α₂ α₃ (M ω.1) z ξ+
     ENNReal.ofReal (‖z‖^(γ^2/2))*(∫⁻ x in reflected_innerRegion (Real.exp (-(T : ℝ))),
       ENNReal.ofReal (‖x‖^(-(γ*α₁)))*
         ENNReal.ofReal (reflected_global_reinsertionWeight γ (originRadialPath Xc ω.1) x) ∂N ω.2))^(-p) ∂P.prod P).toReal-
       (∫⁻ ω, gammaHalfOuterMass γ α₁ α₂ α₃ (M ω) z ξ^(-p) ∂P).toReal = _ at hw
   rw [hw,hη] at hk
-  dsimp only [R] at hk
+  dsimp [R] at hk
   let C := (reflected_copied_separatedMoment P Xc N γ α₁ α₂ α₃ z
     (Real.exp (-h)*‖z‖) (‖z‖^(1-ξ)) p).toReal
   let O := (∫⁻ ω, gammaHalfOuterMass γ α₁ α₂ α₃ (M ω) z ξ^(-p) ∂P).toReal

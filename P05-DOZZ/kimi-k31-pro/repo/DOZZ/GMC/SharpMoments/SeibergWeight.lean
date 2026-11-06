@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.GMC.CoulombMass
+import DOZZ.Statements.GMC.CoulombMass
 
 /-! # Deterministic bounds for the Coulomb weight
 
@@ -13,7 +12,6 @@ of the root singularity, on a bulk region away from the finite roots and from in
 bounded, and on an exterior region it is comparable to the power at infinity. Every point lies
 near a root, in the bulk, or in the exterior, which gives a covering inequality. -/
 
-@[expose] public section
 
 open MeasureTheory
 open scoped ENNReal NNReal
@@ -36,7 +34,7 @@ theorem measurable_coulombWeight {N : ℕ} (γ : ℝ) (α : Fin N → ℝ) (z : 
     unfold normPlus
     exact measurable_const.max measurable_norm
   unfold coulombWeight
-  simp only [ENNReal.rpow_eq_pow]
+  simp [ENNReal.rpow_eq_pow]
   refine Measurable.mul (Finset.measurable_prod _ fun k _ => ?_) ?_
   · exact (ENNReal.measurable_ofReal.comp
       (hn.div (measurable_id.sub_const (z k)).norm)).pow_const _

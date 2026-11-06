@@ -2,11 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.ShiftEquations.DualFirstCase.Geometry
-public import DOZZ.ShiftEquations.DualFirstCase.CoefficientIdentity
-public import DOZZ.ShiftEquations.DualFirstCase.Continuation
-public import DOZZ.Statements.ShiftEquations.TwoPoleWindow
+import DOZZ.ShiftEquations.DualFirstCase.Geometry
+import DOZZ.ShiftEquations.DualFirstCase.CoefficientIdentity
+import DOZZ.ShiftEquations.DualFirstCase.Continuation
+import DOZZ.Statements.ShiftEquations.TwoPoleWindow
 import DOZZ.Brownian.Reflection.RtheorIdentification
 import DOZZ.DOZZAlgebra.ReflectionShifts
 /-! # The first-case dual structure shift, independent of the DOZZ roots
@@ -16,7 +15,6 @@ The four explicit external inputs are the two dual crossing seeds (`DOZZ.dual_cr
 `DOZZ.structureConstant_reflected_shift_and_gluing`, and the identification of the reflection
 coefficient off its Gamma poles. Their complete statements are reproduced as conditional inputs.
 -/
-@[expose] public section
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
 universe u
@@ -224,39 +222,38 @@ theorem structureConstant_dual_shift_strip_first_case_joint
       ((Real.pi : ℂ) * dualMu γ μ) (reflectionDualShiftDenom γ z)
       (reflectionDOZZ γ μ (z + 2 / γ)) (F (2 * Q γ - (z + 2 / γ)))
       (F (z - 2 / γ)) (F (z + 2 / γ)) hd hK hc
-      (by simpa only [reflectionDualShiftDenom, Complex.ofReal_div, Complex.ofReal_ofNat] using hs) hg
+      (by simpa [reflectionDualShiftDenom, Complex.ofReal_div, Complex.ofReal_ofNat] using hs) hg
   have hfirstF : ∀ᶠ z in codiscrete ℂ,
       F (z + γ / 2) = -(1 / (Real.pi * μ)) * shiftCoeffA γ (γ / 2) z α₂ α₃ * F (z - γ / 2) := by
     filter_upwards [eventually_codiscrete_comp_add hglue ((γ / 2 : ℝ) : ℂ), _hreflected] with z hg hr
     simp only [Complex.ofReal_div, Complex.ofReal_ofNat] at hg
-    rw [hg, show 2 * (Q γ : ℂ) - (z + γ / 2) = 2 * Q γ - z - γ / 2 by ring]
-    exact hr
+    rwa [hg, show 2 * (Q γ : ℂ) - (z + γ / 2) = 2 * Q γ - z - γ / 2 by ring]
   obtain ⟨C, S, hC, hS, hCF, hCzero, hSR, hSD, hCg, hCs⟩ :=
     dualFirstCase_common_representative F R (reflectionDOZZ γ μ)
       (fun z => -(1 / (Real.pi * dualMu γ μ)) * shiftCoeffA γ (2 / γ) z α₂ α₃)
       H (2 / γ) (2 * Q γ) hH hF hR hRD
-      (by simpa only [Complex.ofReal_mul, Complex.ofReal_ofNat] using hglueW) hshiftF
+      (by simpa [Complex.ofReal_mul, Complex.ofReal_ofNat] using hglueW) hshiftF
   refine ⟨B, Z, hZ, hB, H / 2, half_pos hH, C, S, hC, hS, ?_, ?_, hSD, ?_, ?_, ?_⟩
   · intro x hx hxQ
     have hxstrip : (x : ℂ) ∈ horizontalStrip (H / 2) := by
-      simpa only [horizontalStrip, mem_ofPred_eq, Complex.ofReal_im, abs_zero] using half_pos hH
+      simpa [horizontalStrip, mem_ofPred_eq, Complex.ofReal_im, abs_zero] using half_pos hH
     rw [hCF hxstrip]
     exact hFreal x (by linarith only [heη, hx]) hxQ
   · intro x hx hxQ
     have hxstrip : (x : ℂ) ∈ horizontalStrip (H / 2) := by
-      simpa only [horizontalStrip, mem_ofPred_eq, Complex.ofReal_im, abs_zero] using half_pos hH
+      simpa [horizontalStrip, mem_ofPred_eq, Complex.ofReal_im, abs_zero] using half_pos hH
     rw [hSR hxstrip]
     exact hRreal x hx hxQ
-  · simpa only [Complex.ofReal_mul, Complex.ofReal_ofNat] using hCg
-  · simpa only [Complex.ofReal_div, Complex.ofReal_ofNat] using hCs
+  · simpa [Complex.ofReal_mul, Complex.ofReal_ofNat] using hCg
+  · simpa [Complex.ofReal_div, Complex.ofReal_ofNat] using hCs
   · have hfirstF' : ∀ᶠ z in codiscrete ℂ,
         F (z + ((γ / 2 : ℝ) : ℂ)) =
           (-(1 / (Real.pi * μ)) * shiftCoeffA γ (γ / 2) z α₂ α₃) * F (z - ((γ / 2 : ℝ) : ℂ)) := by
-      simpa only [Complex.ofReal_div, Complex.ofReal_ofNat] using hfirstF
+      simpa [Complex.ofReal_div, Complex.ofReal_ofNat] using hfirstF
     have ht := dualFirstCase_transfer_global_shift F C
       (fun z => -(1 / (Real.pi * μ)) * shiftCoeffA γ (γ / 2) z α₂ α₃)
       (H / 2) (γ / 2) hCF hCzero hfirstF'
-    simpa only [Complex.ofReal_div, Complex.ofReal_ofNat] using ht
+    simpa [Complex.ofReal_div, Complex.ofReal_ofNat] using ht
 
 /-- The dual structure shift on the first-case box, with the full physical and common-reflection
 clauses. Only the four inputs displayed below remain conditional. -/

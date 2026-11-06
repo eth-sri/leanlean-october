@@ -2,15 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Hypergeom.ODE.SquareSubdivision
-public import DOZZ.Hypergeom.ODE.UniformCompactDisks
-public import DOZZ.Hypergeom.ODE.LocalHomotopyGrid
+import DOZZ.Hypergeom.ODE.SquareSubdivision
+import DOZZ.Hypergeom.ODE.UniformCompactDisks
+import DOZZ.Hypergeom.ODE.LocalHomotopyGrid
 
 /-! Homotopy invariance of local Picard continuation on a sufficiently fine finite grid. -/
 
-@[expose] public section
 
 open Set
 
@@ -87,8 +85,6 @@ theorem exists_homotopy_picard_grid
       dist (node i (j + 1)) (node i j) < r / 4 ∧
       dist (node (i + 1) (j + 1)) (node i j) < r / 4 := by
     intro i hi j hj
-    have hiNext : i + 1 ≤ N := Nat.succ_le_iff.mpr hi
-    have hjNext : j + 1 ≤ N := Nat.succ_le_iff.mpr hj
     have hxi : (i : ℝ) < ((i + 1 : ℕ) : ℝ) := by exact_mod_cast Nat.lt_succ_self i
     have hyj : (j : ℝ) < ((j + 1 : ℕ) : ℝ) := by exact_mod_cast Nat.lt_succ_self j
     have hxi' : (i : ℝ) / (N : ℝ) < ((i + 1 : ℕ) : ℝ) / (N : ℝ) :=

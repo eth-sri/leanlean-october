@@ -2,12 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Dual.RadialLikelihood
-public import DOZZ.FourPoint.Reflected.Remainder
+import DOZZ.FourPoint.Dual.RadialLikelihood
+import DOZZ.FourPoint.Reflected.Remainder
 import Mathlib.Tactic
 /-! # The first-order restart error is negligible at the dual fusion scale -/
-public section
 open MeasureTheory Filter Topology Set
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -31,19 +29,19 @@ theorem dual_radial_first_order_bound {Ω : Type*} [MeasurableSpace Ω]
   refine ⟨D * C₀, mul_pos (Real.exp_pos _) hC₀, ?_⟩
   have hn : Tendsto (fun z : ℂ => ‖z‖)
       (nhdsWithin 0 {z : ℂ | z ≠ 0}) (nhds 0) := by
-    simpa only [norm_zero] using (continuous_norm.tendsto (0 : ℂ)).mono_left nhdsWithin_le_nhds
+    simpa [norm_zero] using (continuous_norm.tendsto (0 : ℂ)).mono_left nhdsWithin_le_nhds
   filter_upwards [hn.eventually (gt_mem_nhds zero_lt_one), self_mem_nhdsWithin] with z hz hz0
   have hp : 0 < ‖z‖ := norm_pos_iff.mpr hz0
   have hm : 0 ≤ -Real.log ‖z‖ + h := by
     have hl := Real.log_nonpos hp.le hz.le
     linarith only [hl, hh]
   have hr : ‖z‖ ≤ ‖z‖ ^ (1 - ξ) := by
-    simpa only [Real.rpow_one] using Real.rpow_le_rpow_of_exponent_ge hp hz.le
+    simpa [Real.rpow_one] using Real.rpow_le_rpow_of_exponent_ge hp hz.le
       (by linarith only [hξ] : 1 - ξ ≤ 1)
   have hout : Real.exp (-(-Real.log ‖z‖ + h)) ≤ ‖z‖ ^ (1 - ξ) := by
     apply le_trans _ hr
     have he : -(-Real.log ‖z‖ + h) ≤ Real.log ‖z‖ := by linarith only [hh]
-    simpa only [Real.exp_log hp] using Real.exp_le_exp.mpr he
+    simpa [Real.exp_log hp] using Real.exp_le_exp.mpr he
   have he (ω : Ω) : ‖z‖ ^ (2 : ℝ) * Real.exp
       (γ * (Xc ω 0 (-Real.log ‖z‖ + h) - (Q γ - α₁) * (-Real.log ‖z‖ + h))) =
       (D * ‖z‖ ^ (2 + γ * (Q γ - α₁) - γ ^ 2 / 2)) *
@@ -54,8 +52,7 @@ theorem dual_radial_first_order_bound {Ω : Type*} [MeasurableSpace Ω]
     simp only [← Real.exp_add]
     congr 1
     ring
-  have hs : 0 ≤ D * ‖z‖ ^ (2 + γ * (Q γ - α₁) - γ ^ 2 / 2) := by
-    exact mul_nonneg (Real.exp_pos _).le (Real.rpow_nonneg hp.le _)
+  have hs : 0 ≤ D * ‖z‖ ^ (2 + γ * (Q γ - α₁) - γ ^ 2 / 2) := mul_nonneg (Real.exp_pos _).le (Real.rpow_nonneg hp.le _)
   simp_rw [he, ENNReal.ofReal_mul hs, mul_assoc]
   rw [lintegral_const_mul' _ _ ENNReal.ofReal_ne_top]
   have ht := dual_outerMass_circle_tilt P X hX γ hγ hγ₂ M hM Xc hXc
@@ -64,7 +61,7 @@ theorem dual_radial_first_order_bound {Ω : Type*} [MeasurableSpace Ω]
   calc
     _ ≤ ENNReal.ofReal (D * ‖z‖ ^ (2 + γ * (Q γ - α₁) - γ ^ 2 / 2)) * ENNReal.ofReal C₀ :=
       mul_le_mul' le_rfl (hb z ξ hz.le
-        (by simpa only [Real.one_rpow] using Real.rpow_le_rpow (norm_nonneg z) hz.le (sub_nonneg.mpr hξ₁.le)))
+        (by simpa [Real.one_rpow] using Real.rpow_le_rpow (norm_nonneg z) hz.le (sub_nonneg.mpr hξ₁.le)))
     _ = _ := by
       rw [← ENNReal.ofReal_mul hs]
       congr 1

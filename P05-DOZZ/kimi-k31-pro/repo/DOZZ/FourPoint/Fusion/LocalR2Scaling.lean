@@ -2,15 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.Fusion.ScaledLocalMixedRooting
-public import DOZZ.FourPoint.Fusion.ScaledTimeConvergence
-public import DOZZ.FourPoint.Fusion.Parameters
+import DOZZ.FourPoint.Fusion.ScaledLocalMixedRooting
+import DOZZ.FourPoint.Fusion.ScaledTimeConvergence
+import DOZZ.FourPoint.Fusion.Parameters
 
 /-! # Scaling the local pure derivative contribution through the time integral -/
 
-@[expose] public section
 open MeasureTheory Set Filter Topology
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -70,12 +68,12 @@ theorem fusionLocalR2_scaled {Ω : Type*} [MeasurableSpace Ω]
       rw [norm_mul, Complex.norm_real, Real.norm_of_nonneg ht.1]
       calc
         t * ‖z‖ ≤ 1 * ‖z‖ := mul_le_mul_of_nonneg_right ht.2 (norm_nonneg _)
-        _ ≤ 1 / 4 := by simpa only [one_mul] using hz4
+        _ ≤ 1 / 4 := by simpa [one_mul] using hz4
     rw [fusion_localR2_rooting P X hX γ hγ hγ2 M hM α₁ α₂ α₃ hβ hα₁ hα₂ hα₃
       (-p - 1) (by linarith) ((t : ℂ) * z) htz htz4,
       fusion_localR2_reference_scaled P X hX γ hγ hγ2 M hM α₁ α₂ α₃ (-p - 1) ((t : ℂ) * z) htz]
     have hfac := fusion_mixed_time_scaling_factor (γ ^ 2 / 2 - γ * α₁) t htpos z hz
-    have he : γ ^ 2 / 2 - γ * α₁ + 2 = κ := by dsimp only [κ]; linarith only [hκ]
+    have he : γ ^ 2 / 2 - γ * α₁ + 2 = κ := by dsimp [κ]; linarith only [hκ]
     rw [he] at hfac
     push_cast
     calc
@@ -84,7 +82,6 @@ theorem fusionLocalR2_scaled {Ω : Type*} [MeasurableSpace Ω]
             (fusionScaledFactor P M γ α₁ α₂ α₃ (-p - 1) y ((t : ℂ) * z) : ℂ))) := by ring
       _ = _ := by rw [hfac]; ring
   unfold fusionLocalR2
-  rw [mul_assoc (((-2 * p * (γ ^ 2 / 4) ^ 2 : ℝ) : ℂ)) z (star z)]
-  rw [mul_assoc, ← integral_const_mul, integral_congr_ae hpoint, integral_const_mul, ← mul_assoc]
+  rw [mul_assoc (((-2 * p * (γ ^ 2 / 4) ^ 2 : ℝ) : ℂ)) z (star z), mul_assoc, ← integral_const_mul, integral_congr_ae hpoint, integral_const_mul, ← mul_assoc]
 
 end DOZZ.Proofs

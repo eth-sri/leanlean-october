@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.Tails.ActualPrefactorUniform
-public import DOZZ.Brownian.Reflection.Moments
+import DOZZ.Correlations.Tails.ActualPrefactorUniform
+import DOZZ.Brownian.Reflection.Moments
 
 /-! Uniform moments of the actual independent pin times reflection mass. -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal
 

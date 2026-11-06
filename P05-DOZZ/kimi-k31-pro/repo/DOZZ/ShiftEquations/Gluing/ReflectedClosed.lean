@@ -2,11 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.ShiftEquations.Gluing.ReflectedWrapper
-public import DOZZ.ShiftEquations.FirstStrip.Closed
-public import DOZZ.ShiftEquations.Shift.Wrappers
+import DOZZ.ShiftEquations.Gluing.ReflectedWrapper
+import DOZZ.ShiftEquations.FirstStrip.Closed
+import DOZZ.ShiftEquations.Shift.Wrappers
 
 /-!
 # The reflected shift and gluing from the first reflection shift alone, and from the γ/2 crossing
@@ -18,7 +17,6 @@ With `DOZZ.structureConstant_first_shift_strip` proved from the unreflected form
 crossing `DOZZ.gammaHalf_crossing`.
 -/
 
-@[expose] public section
 
 open MeasureTheory Filter Topology Set
 
@@ -114,4 +112,3 @@ theorem structureConstant_reflected_shift_and_gluing_of_crossing
 
 end DOZZ.Proofs
 
-end

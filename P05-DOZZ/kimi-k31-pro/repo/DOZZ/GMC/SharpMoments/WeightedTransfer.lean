@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.SharpMoments.WeightedLocalSufficiency
-public import DOZZ.GMC.Assembly.AdmissibleGMC
+import DOZZ.GMC.SharpMoments.WeightedLocalSufficiency
+import DOZZ.GMC.Assembly.AdmissibleGMC
 
 /-! # Location transfer of boundedly weighted small-disk moments for limiting chaos
 
@@ -14,7 +13,6 @@ weighted cutoff masses of a disk converge in probability. Their moments of every
 subcritical order are uniformly bounded beyond that order, hence converge. The finite-cutoff
 location transfer of weighted masses therefore passes to every `IsGMCOf` limit. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped ENNReal NNReal
@@ -116,7 +114,7 @@ theorem regularizedGMC_weighted_mass_tendstoInMeasure
   have hfb : ∀ x, |f x| ≤ c := by
     intro x
     by_cases hx : x ∈ Metric.ball z ρ
-    · simp only [hfdef, Set.indicator_of_mem hx, NNReal.abs_eq]
+    · simp [hfdef, Set.indicator_of_mem hx, NNReal.abs_eq]
       exact_mod_cast hwc _
     · simp [hfdef, hx]
   have hfR : ∀ x ∉ Metric.closedBall (0 : ℂ) (‖z‖ + ρ), f x = 0 := by
@@ -134,15 +132,15 @@ theorem regularizedGMC_weighted_mass_tendstoInMeasure
         (regularizedGMC_measurable P X hX Xc hXc γ n)
     refine (ENNReal.measurable_toReal.comp hm).aestronglyMeasurable.congr
       (Eventually.of_forall fun ω => ?_)
-    simp only [Function.comp_apply, lintegral_indicator hB]
+    simp [Function.comp_apply, lintegral_indicator hB]
   have hG : AEStronglyMeasurable (fun ω => (∫⁻ x in Metric.ball z ρ,
       (w (x - z) : ℝ≥0∞) ∂M ω).toReal) P :=
     (ENNReal.measurable_toReal.comp_aemeasurable
       (gmc_setLIntegral_aemeasurable P X hX γ hγ hγ2 M hM _ hwm _ hB)).aestronglyMeasurable
-  refine DOZZ.Assembly.tendstoInMeasure_of_tendsto_lintegral_ofReal_abs P _ _ hF hG ?_
+  refine Assembly.tendstoInMeasure_of_tendsto_lintegral_ofReal_abs P _ _ hF hG ?_
   have hnat := hL1.comp tendsto_natCast_atTop_atTop
   refine hnat.congr fun n => ?_
-  simp only [Function.comp_apply, weightedSetLIntegral_toReal_eq_integral _ z ρ w hw, hfdef]
+  simp [Function.comp_apply, weightedSetLIntegral_toReal_eq_integral _ z ρ w hw, hfdef]
 
 /-- Boundedly weighted masses are dominated by the bound times the mass of the disk. -/
 theorem weightedSetLIntegral_le_const_mul (μ : Measure ℂ) (z : ℂ) (ρ : ℝ) (w : ℂ → ℝ≥0)
@@ -188,7 +186,7 @@ theorem gmc_weighted_ball_moment_tendsto
       (Measure.measurable_lintegral (hwm.indicator hB)).comp
         (regularizedGMC_measurable P X hX Xc hXc γ n)
     refine hm.aemeasurable.congr (Eventually.of_forall fun ω => ?_)
-    simp only [lintegral_indicator hB]
+    simp [lintegral_indicator hB]
   · filter_upwards [regularizedGMC_finite_ae P X hX Xc hXc γ n] with ω hω
     exact ne_top_of_le_ne_top (ENNReal.mul_ne_top ENNReal.coe_ne_top (measure_ne_top _ _))
       (weightedSetLIntegral_le_const_mul _ z ρ w c hwc)

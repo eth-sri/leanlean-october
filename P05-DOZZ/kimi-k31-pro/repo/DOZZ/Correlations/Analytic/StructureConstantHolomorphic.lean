@@ -2,17 +2,15 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.Correlations.BridgeMultiplicity
-public import DOZZ.Correlations.Analytic.MixedCoulombHolomorphic
-public import DOZZ.GMC.Construction.CircleAverageJointVersion
-public import DOZZ.GMC.Moments.RhoCoulomb
+import DOZZ.Statements.Correlations.BridgeMultiplicity
+import DOZZ.Correlations.Analytic.MixedCoulombHolomorphic
+import DOZZ.GMC.Construction.CircleAverageJointVersion
+import DOZZ.GMC.Moments.RhoCoulomb
 
 /-! Proof of `DOZZ.unitVolumeStructureConstant_holomorphic_near_extended_domain` in the
 canonical three-point frame. -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory Filter Topology TopologicalSpace Set
 open scoped ENNReal NNReal Topology
 namespace DOZZ.Proofs
@@ -24,7 +22,7 @@ theorem structure_extended_moment_domain (γ : ℝ) (α : Fin 3 → ℝ)
       ∀ i, (2 * Q γ - ∑ j, α j) / γ < 2 / γ * (Q γ - α i) := by
   obtain ⟨h0, h1, h2, hp⟩ := hα
   have he : (2 * Q γ - ∑ i, α i) / γ = -sExp γ (α 0) (α 1) (α 2) := by
-    simp only [Fin.sum_univ_three, sExp]
+    simp [Fin.sum_univ_three, sExp]
     ring
   have hp' := lt_min_iff.mp hp
   refine ⟨?_, by rw [he]; exact hp'.1, ?_⟩
@@ -41,7 +39,7 @@ theorem structure_extended_moment_domain (γ : ℝ) (α : Fin 3 → ℝ)
     · exact (lt_min_iff.mp (lt_min_iff.mp hp'.2).2).2
 
 /-- Proof of the canonical-frame statement
-`DOZZ.unitVolumeStructureConstant_holomorphic_near_extended_domain`. -/
+`unitVolumeStructureConstant_holomorphic_near_extended_domain`. -/
 theorem unitVolumeStructureConstant_holomorphic_near_extended_domain
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
     (M : Ω → Measure ℂ) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
@@ -70,15 +68,15 @@ theorem unitVolumeStructureConstant_holomorphic_near_extended_domain
       ext i
       fin_cases i <;> rfl
     have hsum : (∑ i : Fin 3, α i) = (∑ i : Fin 2, (![α 0, α 1] : Fin 2 → ℝ) i) + α 2 := by
-      simp only [Fin.sum_univ_three, Fin.sum_univ_two, Matrix.cons_val_zero, Matrix.cons_val_one]
+      simp [Fin.sum_univ_three, Fin.sum_univ_two, Matrix.cons_val_zero, Matrix.cons_val_one]
     have hm := rho_moment_eq_coulomb_moment P X hX γ hγ hγ2 M hM (α 0) (α 1) (α 2)
     change (2 / γ : ℂ) * f (fun i => (α i : ℂ)) = _
     rw [he]
-    simp only [hcharges, hsum, show Fin.last 2 = (2 : Fin 3) from rfl]
+    simp [hcharges, hsum, show Fin.last 2 = (2 : Fin 3) from rfl]
     unfold unitVolumeStructureConstant
     push_cast
     congr 1
     congr 1
-    simpa only [ENNReal.rpow_eq_pow] using congrArg ENNReal.toReal hm.symm
+    simpa [ENNReal.rpow_eq_pow] using congrArg ENNReal.toReal hm.symm
 
 end DOZZ.Proofs

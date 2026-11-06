@@ -2,15 +2,14 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.ShiftEquations.DualR.SegFactors
-public import DOZZ.ShiftEquations.DualR.DualL
-public import DOZZ.Statements.Defs.IsEquatorGFF
-public import DOZZ.Statements.Defs.IsGMCOf
-public import DOZZ.Statements.Brownian.ReflectionR
-public import DOZZ.Statements.Brownian.IsSourceLateralProjection
-public import DOZZ.Statements.Brownian.IsReflectionData
+import DOZZ.ShiftEquations.DualR.SegFactors
+import DOZZ.ShiftEquations.DualR.DualL
+import DOZZ.Statements.Defs.IsEquatorGFF
+import DOZZ.Statements.Defs.IsGMCOf
+import DOZZ.Statements.Brownian.ReflectionR
+import DOZZ.Statements.Brownian.IsSourceLateralProjection
+import DOZZ.Statements.Brownian.IsReflectionData
 import DOZZ.Brownian.Reflection.WitnessIndependence
 import DOZZ.Brownian.Reflection.RtheorAnalytic
 import DOZZ.Correlations.Analytic.StructureConstantHolomorphic
@@ -30,14 +29,13 @@ all factors are analytic: the source's first continuation step in the proof of t
 equation ([KRV, §10.5]).
 -/
 
-@[expose] public section
 
 open MeasureTheory Filter Topology Set
 
 namespace DOZZ.Proofs
 
 /-- **The second dual crossing seed on the two-triple extended domain.** `hSeed` is the conclusion
-of `DOZZ.dual_crossing_seed_two` at the given field, chaos and coupling; `R` is any
+of `dual_crossing_seed_two` at the given field, chaos and coupling; `R` is any
 strip-meromorphic function with the physical reflection values. -/
 theorem seed_full {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
     (M : Ω → Measure ℂ) {γ μ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2) (hμ : 0 < μ)
@@ -108,7 +106,7 @@ theorem seed_full {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω →
       eventually_segC_mem (b := α) (N := Iio (Q γ)) isOpen_Iio (show e₀ < Q γ by linarith),
       eventually_segC_mem (b := α') (N := Iio (Q γ)) isOpen_Iio (show e₀ < Q γ by linarith),
       hsum, Ioo_mem_nhdsGT (show (0 : ℝ) < 1 by norm_num)] with t hεt hαt hα't hst ht
-    simp only [mem_Iio, mem_Ioi] at hεt hαt hα't hst
+    simp [mem_Iio, mem_Ioi] at hεt hαt hα't hst
     set εt : ℝ := e₀ + t * (ε - e₀) with hεt'
     set αt : ℝ := e₀ + t * (α - e₀) with hαt'
     set α't : ℝ := e₀ + t * (α' - e₀) with hα't'
@@ -122,7 +120,7 @@ theorem seed_full {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω →
     obtain ⟨Bε, Bα, Z, -, hBε, hBα, hseed⟩ := hSeed αt εt α't hαt hεt hα't hsum'
     have hεγ : γ / 2 < εt := by linarith
     have hαγ : γ / 2 < αt := by linarith
-    simp only [hF, hG]
+    simp [hF, hG]
     rw [segH_ofReal P M hμ hf₃eq hE₁, segH_ofReal P M hμ hf₃eq hE₂, segC_ofReal, segC_ofReal,
       segC_ofReal, dualLC_ofReal hγ.ne', hRv _ hεγ hεt, hRv _ hαγ hαt,
       reflectionR_eq_of_isReflectionData P P γ μ _ (BR _) ZR Bε Z (hBR _ hεγ hεt) hBε,
@@ -144,10 +142,7 @@ theorem seed_full {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω →
     · rw [segC_one, segC_one, segC_one]; exact g₃
     · rw [segC_one, segC_one, segC_one]; exact g₄
   have key := eq_at_one_of_segment hseg hFm hGm hstart hF1 hG1
-  simp only [hF, hG] at key
-  rw [segH_one P M hμ hf₃eq h₁, segH_one P M hμ hf₃eq h₂, segC_one, segC_one, segC_one] at key
-  exact key
-
+  simp [hF, hG] at key
+  rwa [segH_one P M hμ hf₃eq h₁, segH_one P M hμ hf₃eq h₂, segC_one, segC_one, segC_one] at key
 end DOZZ.Proofs
 
-end

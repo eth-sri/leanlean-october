@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.GFFStructure.FiniteGaussian
-public import Mathlib.Analysis.Convex.Integral
-public import Mathlib.Analysis.Convex.SpecificFunctions.Basic
+import DOZZ.GFFStructure.FiniteGaussian
+import Mathlib.Analysis.Convex.Integral
+import Mathlib.Analysis.Convex.SpecificFunctions.Basic
 /-!
 # Uniform harmonic exponential moments
 
@@ -16,7 +15,6 @@ laws. The explicit constant depends on the fixed radii and moment order, before
 any realization or center choice, and applies to the actual Poisson family.
 -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory Set Metric Filter
 open scoped Topology ENNReal NNReal
 namespace DOZZ.Proofs
@@ -38,9 +36,7 @@ theorem gaussian_centered_mgf {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
   have hl : HasLaw U (gaussianReal (∫ ω, U ω ∂P) (variance U P).toNNReal) P :=
     ⟨hU.aemeasurable,hU.map_eq_gaussianReal⟩
   have hm := mgf_gaussianReal hl l
-  rw [hmean,zero_mul,zero_add,Real.coe_toNNReal _ (variance_nonneg U P)] at hm
-  exact hm
-
+  rwa [hmean,zero_mul,zero_add,Real.coe_toNNReal _ (variance_nonneg U P)] at hm
 /-- Both signed scalar Gaussian exponential moments are integrable. -/
 theorem gaussian_integrable_exp_mul {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
     (U : Ω → ℝ) (hU : HasGaussianLaw U P) (l : ℝ) :
@@ -84,7 +80,7 @@ theorem continuousOn_innerCircle_pullback (c : ℂ) (ρ b : ℝ) (hb : 0 < b) (h
   apply hf.comp (by fun_prop)
   intro u hu
   rw [mem_ball_iff_norm,add_sub_cancel_left,norm_smul,Real.norm_eq_abs,abs_of_pos hb]
-  have hn : ‖u‖ = 1 := by simpa only [mem_sphere_iff_norm,sub_zero] using hu
+  have hn : ‖u‖ = 1 := by simpa [mem_sphere_iff_norm,sub_zero] using hu
   rw [hn,mul_one]
   exact hbρ
 
@@ -98,7 +94,7 @@ theorem integrable_innerCircle_unitPoissonMeasure (c z : ℂ) (ρ b : ℝ)
     (isCompact_sphere 0 1) _ (hfm.comp (by fun_prop))
     (continuousOn_innerCircle_pullback c ρ b hb hbρ f hfc)
   filter_upwards [ae_norm_unitPoissonMeasure c z b] with u hu
-  simpa only [mem_sphere_iff_norm,sub_zero] using hu
+  simpa [mem_sphere_iff_norm,sub_zero] using hu
 
 /-- Jensen's inequality for a literal inner-circle Poisson law. -/
 theorem exp_mul_poisson_average_le (c z : ℂ) (ρ b : ℝ)
@@ -137,7 +133,7 @@ theorem integrable_innerCircle_circleMeasure (c : ℂ) (ρ b : ℝ) (hb : 0 < b)
     (isCompact_sphere 0 1) _ (hfm.comp (by fun_prop))
     (continuousOn_innerCircle_pullback c ρ b hb hbρ f hfc)
   filter_upwards [ae_norm_sub_center_circleMeasure 0 0] with u hu
-  simpa only [mem_sphere_iff_norm,sub_zero,neg_zero,Real.exp_zero] using hu
+  simpa [mem_sphere_iff_norm,sub_zero,neg_zero,Real.exp_zero] using hu
 
 /-- A signed exponential on the boundary is bounded by the absolute exponential times the uniform weight. -/
 theorem integral_unitPoisson_exp_le_uniform (c z : ℂ) (ρ b a : ℝ)
@@ -154,11 +150,11 @@ theorem integral_unitPoisson_exp_le_uniform (c z : ℂ) (ρ b a : ℝ)
       (fun v => Real.exp (t*f v)) (by fun_prop) (by fun_prop)
     rw [unitPoissonMeasure,integrable_withDensity_iff_integrable_smul'
       (measurable_unitPoissonWeight c z b).ennreal_ofReal (ae_of_all _ (fun _ => ENNReal.ofReal_lt_top))] at hi
-    simpa only [ENNReal.toReal_ofReal (unitPoissonWeight_nonneg c z _ b hb hz'),smul_eq_mul] using hi
+    simpa [ENNReal.toReal_ofReal (unitPoissonWeight_nonneg c z _ b hb hz'),smul_eq_mul] using hi
   · exact (integrable_innerCircle_circleMeasure c ρ b hb hbρ
       (fun v => Real.exp (l*|f v|)) (by fun_prop) (by fun_prop)).const_mul _
   · filter_upwards [ae_norm_sub_center_circleMeasure 0 0] with u hu
-    have hu' : ‖u‖ = 1 := by simpa only [sub_zero,neg_zero,Real.exp_zero] using hu
+    have hu' : ‖u‖ = 1 := by simpa [sub_zero,neg_zero,Real.exp_zero] using hu
     have he : t*f (c+b • u) ≤ l*|f (c+b • u)| := calc
       _ ≤ |t*f (c+b • u)| := le_abs_self _
       _ = |t| * |f (c+b • u)| := abs_mul _ _
@@ -215,10 +211,10 @@ theorem gaussian_product_lintegral_exp_abs_le {Ω : Type*} [MeasurableSpace Ω]
     _ ≤ ∫⁻ ω, ENNReal.ofReal (Real.exp ((2*l)*|U ω|))+ENNReal.ofReal (Real.exp ((2*l)*|V ω|)) ∂P := by
       apply lintegral_mono
       intro ω
-      dsimp only
+      dsimp
       rw [← ENNReal.ofReal_mul (Real.exp_pos _).le,← ENNReal.ofReal_add (Real.exp_pos _).le (Real.exp_pos _).le]
       apply ENNReal.ofReal_le_ofReal
-      simpa only [mul_assoc] using exp_mul_exp_le_doubled_add (l*|U ω|) (l*|V ω|)
+      simpa [mul_assoc] using exp_mul_exp_le_doubled_add (l*|U ω|) (l*|V ω|)
     _ = (∫⁻ ω, ENNReal.ofReal (Real.exp ((2*l)*|U ω|)) ∂P)+
         (∫⁻ ω, ENNReal.ofReal (Real.exp ((2*l)*|V ω|)) ∂P) :=
       lintegral_add_left' ((continuous_abs.measurable.comp_aemeasurable hU.aemeasurable).const_mul (2*l) |>.exp.ennreal_ofReal) _
@@ -234,18 +230,14 @@ theorem gaussian_product_lintegral_exp_abs_le {Ω : Type*} [MeasurableSpace Ω]
 theorem measurable_ofReal_exp_mul_abs {E : Type*} [MeasurableSpace E]
     (U : E → ℝ) (hU : Measurable U) (l : ℝ) :
     Measurable (fun x => ENNReal.ofReal (Real.exp (l*|U x|))) := by
-  have ha : Measurable (fun x => |U x|) := continuous_abs.measurable.comp hU
-  have hm : Measurable (fun x => l*|U x|) := measurable_const.mul ha
-  have he : Measurable (fun x => Real.exp (l*|U x|)) := Real.continuous_exp.measurable.comp hm
-  exact he.ennreal_ofReal
+  fun_prop
 
 /-- Restriction of a jointly measurable field to translated circle parameters is jointly measurable. -/
 theorem measurable_innerCircle_field {Ω : Type*} [MeasurableSpace Ω]
     (c : ℂ) (b : ℝ) (V : Ω → ℂ → ℝ)
     (hV : Measurable (fun p : Ω × ℂ => V p.1 p.2)) :
     Measurable (fun p : Ω × ℂ => V p.1 (c+b • p.2)) := by
-  have hm : Measurable (fun p : Ω × ℂ => c+b • p.2) := by fun_prop
-  exact hV.comp (measurable_fst.prodMk hm)
+  fun_prop
 
 /-- Explicit compact harmonic moment constant from two marginal variances. -/
 noncomputable def harmonicMomentBound (b a u v l : ℝ) : ℝ :=
@@ -304,7 +296,7 @@ theorem harmonic_lintegral_exp_sup_le {Ω : Type*} [MeasurableSpace Ω]
       _ ≤ ∫⁻ _w, ENNReal.ofReal (2*(Real.exp (u*(2*l)^2/2)+Real.exp (v*(2*l)^2/2))) ∂circleMeasure 0 0 := by
         apply lintegral_mono_ae
         filter_upwards [ae_norm_sub_center_circleMeasure 0 0] with w hw
-        have hw' : ‖w‖ = 1 := by simpa only [sub_zero,neg_zero,Real.exp_zero] using hw
+        have hw' : ‖w‖ = 1 := by simpa [sub_zero,neg_zero,Real.exp_zero] using hw
         obtain ⟨hg,hm,hvar⟩ := hVboundary w hw'
         exact gaussian_product_lintegral_exp_abs_le P U (fun ω => V ω (c+b • w))
           hUg hg hUmean hm u v hUvar hvar l
@@ -381,7 +373,7 @@ theorem exteriorPinnedHarmonicMomentBound_pos (R ρ a l : ℝ) (hρ : 0 < ρ) (h
     (harmonicMomentRadius_bounds ρ a hρ haρ).2.1
 
 /-- The actual harmonic Poisson family has the all-order uniform moment bound required by
-`DOZZ.exists_exteriorPinned_markov_uniform`. -/
+`exists_exteriorPinned_markov_uniform`. -/
 theorem exteriorPinned_harmonic_uniform_moments {Ω : Type*} [MeasurableSpace Ω]
     (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)

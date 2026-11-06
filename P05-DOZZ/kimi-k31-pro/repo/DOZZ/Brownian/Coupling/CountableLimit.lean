@@ -2,16 +2,15 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Brownian.Coupling.Assembly
-public import Mathlib.MeasureTheory.Measure.Prokhorov
-public import Mathlib.MeasureTheory.Measure.Portmanteau
-public import Mathlib.MeasureTheory.Measure.LevyProkhorovMetric
-public import Mathlib.Analysis.SpecificLimits.Basic
-public import Mathlib.Topology.Sequences
-public import Mathlib.Topology.ContinuousMap.SecondCountableSpace
-public import Mathlib.Topology.Metrizable.ContinuousMap
+import DOZZ.Brownian.Coupling.Assembly
+import Mathlib.MeasureTheory.Measure.Prokhorov
+import Mathlib.MeasureTheory.Measure.Portmanteau
+import Mathlib.MeasureTheory.Measure.LevyProkhorovMetric
+import Mathlib.Analysis.SpecificLimits.Basic
+import Mathlib.Topology.Sequences
+import Mathlib.Topology.ContinuousMap.SecondCountableSpace
+import Mathlib.Topology.Metrizable.ContinuousMap
 
 /-!
 # Countable-product tightness and the ordered entrance joint limit
@@ -22,7 +21,6 @@ laws are preserved by continuous evaluation, and its support retains every close
 No independence of the drift coordinates is assumed or asserted.
 -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology TopologicalSpace Set
 open scoped ENNReal NNReal Topology
@@ -41,7 +39,7 @@ theorem couplingCompactBudget_pos {ε : ℝ≥0∞} (hε : 0 < ε) (j : ℕ) :
 /-- The coordinate error budget sums exactly to the requested error, even at `ε = ∞`. -/
 theorem tsum_couplingCompactBudget (ε : ℝ≥0∞) :
     ∑' j, couplingCompactBudget ε j = ε := by
-  simp only [couplingCompactBudget]
+  simp [couplingCompactBudget]
   rw [ENNReal.tsum_mul_left, ENNReal.tsum_two_zpow_neg_add_one,
     mul_one]
 
@@ -143,7 +141,7 @@ theorem coupling_ae_closed_of_tendsto
     simpa using this
   have hlimsup := ProbabilityMeasure.limsup_measure_closed_le_of_tendsto hμQ hS
   have hone : (1 : ℝ≥0∞) ≤ (Q : Measure E) S := by
-    simpa only [hmass, limsup_const] using hlimsup
+    simpa [hmass, limsup_const] using hlimsup
   apply (ae_mem_iff_measure_eq hS.measurableSet.nullMeasurableSet).mpr
   exact le_antisymm (measure_mono (subset_univ S)) (by simpa using hone)
 

@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.SharpMoments.WeightedLocalSufficiency
+import DOZZ.GMC.SharpMoments.WeightedLocalSufficiency
 
 /-! # Weighted local moments at the chart center, uniformly over compact parameter ranges
 
@@ -14,7 +13,6 @@ one plus the moment at a larger charge and order. A finite grid of charges, with
 proportional to the slack below the two thresholds, then reduces a bound uniform over a compact
 charge range and over orders with that slack to finitely many finite moments. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped ENNReal NNReal
@@ -37,7 +35,7 @@ theorem weightedGmcBallMass_mono_charge (μ : Measure ℂ) {γ : ℝ} (hγ : 0 �
   exact ENNReal.rpow_le_rpow_of_exponent_ge hx1 hexp
 
 /-- A positive power is at most one plus any larger power. The name carries the prefix because
-`DOZZ.Proofs.ennreal_rpow_le_one_add_rpow` is already declared in
+`ennreal_rpow_le_one_add_rpow` is already declared in
 `DOZZ/Brownian/Reflection/MassBlocks.lean`, with the weaker hypothesis `0 ≤ t`. -/
 theorem weightedGrid_ennreal_rpow_le_one_add_rpow (x : ℝ≥0∞) {t t' : ℝ} (ht : 0 < t)
     (htt' : t ≤ t') : x ^ t ≤ 1 + x ^ t' := by

@@ -1,11 +1,9 @@
-module
 
-public import DOZZ.GMC.SharpMoments.LocationTransfer
-public import DOZZ.Statements.GMC.CutoffWeightedGmcBallMass
+import DOZZ.GMC.SharpMoments.LocationTransfer
+import DOZZ.Statements.GMC.CutoffWeightedGmcBallMass
 
 /-! # Location comparison for weighted cutoff moments -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal NNReal

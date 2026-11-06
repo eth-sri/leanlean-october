@@ -2,11 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Reflected.CopiedCarrierRegroup
-public import DOZZ.FourPoint.Reflected.ReinsertedRegionCode
+import DOZZ.FourPoint.Reflected.CopiedCarrierRegroup
+import DOZZ.FourPoint.Reflected.ReinsertedRegionCode
 /-! Exact regrouping of the literal reinserted inner and exterior masses. -/
-@[expose] public section
 open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -35,10 +33,10 @@ theorem reflected_copied_reinserted_regions_regroup
     ((reflected_reinsertedRegionMassCode_measurable γ V hV K hK).comp
       (measurable_fst.prodMk (measurable_snd.comp measurable_snd))))
   have he := reflected_copied_carrier_regroup P A N hA hN hi G hG
-  dsimp only [G,CU,CV] at he
+  dsimp [G,CU,CV] at he
   simp_rw [reflected_reinsertedRegionMassCode_eq γ U hU hU0 K _ _ (hfin _),
     reflected_reinsertedRegionMassCode_eq γ V hV hV0 K _ _ (hfin _)] at he
-  exact he
+  assumption
 
 theorem reflected_copied_region_mass_aemeasurable
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) [IsProbabilityMeasure P]

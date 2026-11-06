@@ -2,11 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Dual.PastObservable
+import DOZZ.FourPoint.Dual.PastObservable
 import Mathlib.Tactic
 /-! Joint-law transport of exterior mass under independent radial reinsertion. -/
-@[expose] public section
 open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -42,6 +40,6 @@ theorem dual_copied_radial_weighted_mass_joint_law
   have hG : Measurable G := measurable_const.indicator hS
   have he := hwhole G hG
   rw [← lintegral_map' hG.aemeasurable (hA.prodMk hmass), ← lintegral_map' hG.aemeasurable hpack] at he
-  simpa only [G, lintegral_indicator hS, setLIntegral_one] using he
+  simpa [G, lintegral_indicator hS, setLIntegral_one] using he
 
 end DOZZ.Proofs

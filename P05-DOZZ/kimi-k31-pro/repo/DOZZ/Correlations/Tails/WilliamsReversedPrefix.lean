@@ -2,15 +2,14 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Brownian.Williams.Disintegration
-public import DOZZ.Brownian.BrownianFirstHitReversalLaw
+import DOZZ.Correlations.Tails.WilliamsCutProduct
+import DOZZ.Brownian.Williams.Disintegration
+import DOZZ.Brownian.BrownianFirstHitReversalLaw
 
 /-! The Williams prefix, reversed at its lifetime, is a last-exit stopped conditioned path.
 The level is retained throughout the measure identity. -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory Set
 open scoped NNReal ENNReal
 
@@ -46,19 +45,9 @@ theorem measurable_lastExitSegment_joint :
       (measurable_negativeLastExitTime_joint.prodMk measurable_snd))
 
 theorem maximumReference_positive_ae (ν : ℝ) :
-    ∀ᵐ m ∂brownianMaximumReferenceLaw ν, 0 < m := by
-  unfold brownianMaximumReferenceLaw
-  have hd : Measurable (fun m : ℝ =>
-      ENNReal.ofReal (if 0 < m then 2 * ν * Real.exp (-2 * ν * m) else 0)) :=
-    Measurable.ennreal_ofReal ((by fun_prop : Measurable
-      (fun m : ℝ => 2 * ν * Real.exp (-2 * ν * m))).ite
-        (measurableSet_lt measurable_const measurable_id) measurable_const)
-  rw [ae_withDensity_iff hd]
-  filter_upwards [] with m hm
-  by_contra hn
-  exact hm (by rw [ite_eq_right_iff.mpr (fun h => (hn h).elim), ENNReal.ofReal_zero])
+    ∀ᵐ m ∂brownianMaximumReferenceLaw ν, 0 < m := DOZZ.Proofs.williams_maximum_pos_ae ν
 
-/-- Integrating the first-hit reversal law `DOZZ.brownian_firstHit_reversal_law` over the
+/-- Integrating the first-hit reversal law `brownian_firstHit_reversal_law` over the
 independent exponential maximum identifies the entire marked Williams prefix with a last-exit
 stopped conditioned copy. -/
 theorem reversed_williams_prefix_law

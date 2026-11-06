@@ -2,22 +2,20 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.Correlations.UniformPositiveC1Family
-public import DOZZ.Correlations.Tails.PinWickBound
-public import Mathlib.Analysis.Calculus.MeanValue
+import DOZZ.Statements.Correlations.UniformPositiveC1Family
+import DOZZ.Correlations.Tails.PinWickBound
+import Mathlib.Analysis.Calculus.MeanValue
 
 /-! Quantitative local variation of the multiplier on the domain of
 `DOZZ.UniformPositiveC1Family`. -/
 
-@[expose] public section
 
 open Set
 
 namespace DOZZ.Proofs
 
-/-- The derivative bound in a `DOZZ.UniformPositiveC1Family` gives its stated linear local
+/-- The derivative bound in a `UniformPositiveC1Family` gives its stated linear local
 variation, including points on the smaller closed ball. -/
 theorem uniform_family_local_variation
     (K : Set ℂ) (Family : ℂ → Set (ℂ → ℝ))
@@ -34,11 +32,11 @@ theorem uniform_family_local_variation
     have hw' := Metric.closedBall_subset_ball (by linarith : radius < 2 * radius) hw
     exact hdiff.differentiableAt (Metric.isOpen_ball.mem_nhds hw')
   have hx' : z + x ∈ Metric.closedBall z radius := by
-    simpa only [Metric.mem_closedBall, dist_eq_norm, add_sub_cancel_left] using hx
+    simpa [Metric.mem_closedBall, dist_eq_norm, add_sub_cancel_left] using hx
   have hz' : z ∈ Metric.closedBall z radius := Metric.mem_closedBall_self hr.le
   have hb := Convex.norm_image_sub_le_of_norm_fderiv_le hdiffAt hd
     (convex_closedBall z radius) hz' hx'
-  simpa only [Real.norm_eq_abs, add_sub_cancel_left] using hb
+  simpa [Real.norm_eq_abs, add_sub_cancel_left] using hb
 
 /-- Combining a linear multiplier bound with a first-order exponential correction retains
 linear decay. This deterministic estimate is applied before the Gaussian moment bound. -/

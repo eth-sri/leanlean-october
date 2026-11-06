@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Brownian.Williams.ReversalMarkedLaw
-public import DOZZ.Brownian.Williams.StoppedPreterminalUniqueness
+import DOZZ.Brownian.Williams.ReversalMarkedLaw
+import DOZZ.Brownian.Williams.StoppedPreterminalUniqueness
 
 /-!
 # First-hit reversal as an equality of stopped continuous path laws
@@ -16,13 +15,12 @@ the reversed first-hit law. The initial and terminal values then determine the w
 continuous path measure. No Markov property at a last exit is used.
 -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory Set
 open scoped NNReal ENNReal
 namespace DOZZ.Proofs
 
 /-- Reversal at a first hit is the conditioned path stopped at its last exit, with its lifetime
-retained. This proves `DOZZ.brownian_firstHit_reversal_law`. -/
+retained. This proves `brownian_firstHit_reversal_law`. -/
 theorem brownian_firstHit_reversal_law
     (ν c : ℝ) (hν : 0 < ν) (hc : 0 < c)
     (P : Measure BrownianPath)
@@ -79,7 +77,7 @@ theorem brownian_firstHit_reversal_law
     exact brownian_firstHit_reversal_finite_marked_law ν c hν hc P hP Qν hQν n ss hss hs0
   have hfirst := brownianPath_positiveDrift_firstHit_ae P hP ν c hν hc
   let cN := Real.toNNReal c
-  have hcN : 0 < (cN : ℝ) := by simpa only [cN, Real.coe_toNNReal _ hc.le] using hc
+  have hcN : 0 < (cN : ℝ) := by simpa [cN, Real.coe_toNNReal _ hc.le] using hc
   have hgood := ae_negativeConditionedLevelHitSet_nonempty_bddAbove hQν hP hν cN hcN
   simp only [cN, Real.coe_toNNReal _ hc.le] at hgood
   have hlast : ∀ᵐ p ∂Qν, p (negativeLastExitTime p c) = -c ∧ 0 < negativeLastExitTime p c := by
@@ -157,4 +155,3 @@ theorem brownian_firstHit_reversal_law
   exact hmark.measure_eq hμpos hηpos hμzero hηzero c hμend hηend
 
 end DOZZ.Proofs
-end

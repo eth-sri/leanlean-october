@@ -2,15 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.Fusion.ScaledLocalRooting
-public import DOZZ.FourPoint.Fusion.ScaledTimeConvergence
-public import DOZZ.FourPoint.Fusion.Parameters
+import DOZZ.FourPoint.Fusion.ScaledLocalRooting
+import DOZZ.FourPoint.Fusion.ScaledTimeConvergence
+import DOZZ.FourPoint.Fusion.Parameters
 
 /-! # Scaling the local pure derivative contribution through the time integral -/
 
-@[expose] public section
 open MeasureTheory Set Filter Topology
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -68,13 +66,13 @@ theorem fusionLocalR1_scaled {Ω : Type*} [MeasurableSpace Ω]
       rw [norm_mul, Complex.norm_real, Real.norm_of_nonneg ht.1]
       calc
         t * ‖z‖ ≤ 1 * ‖z‖ := mul_le_mul_of_nonneg_right ht.2 (norm_nonneg _)
-        _ ≤ 1 / 4 := by simpa only [one_mul] using hz4
+        _ ≤ 1 / 4 := by simpa [one_mul] using hz4
     rw [fusion_localR1_rooting P X hX γ hγ hγ2 M hM α₁ α₂ α₃ hβ hα₁ hα₂ hα₃
       (-p - 1) (by linarith) ((t : ℂ) * z) htz htz4,
       fusion_localR1_reference_scaled P X hX γ hγ hγ2 M hM α₁ α₂ α₃ (-p - 1) ((t : ℂ) * z) htz,
       ← hκ]
     have hfac := fusion_time_scaling_factor κ t htpos z hz
-    have he : κ - 2 = γ ^ 2 / 2 - γ * α₁ := by dsimp only [κ]; linarith only [hκ]
+    have he : κ - 2 = γ ^ 2 / 2 - γ * α₁ := by dsimp [κ]; linarith only [hκ]
     rw [he] at hfac
     push_cast
     calc

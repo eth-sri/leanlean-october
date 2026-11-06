@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.Fusion.ScaledSpatialConvergence
-public import DOZZ.FourPoint.TaylorTimeIntegration
+import DOZZ.FourPoint.Fusion.ScaledSpatialConvergence
+import DOZZ.FourPoint.TaylorTimeIntegration
 
 /-! # Dominated time integration of the scaled rooted spatial observable -/
 
-@[expose] public section
 open MeasureTheory Filter Topology Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -48,7 +46,6 @@ theorem fusionScaledTimeIntegral_tendsto {Ω : Type*} [MeasurableSpace Ω]
           ((∫⁻ ω, fusionMovingMass γ α₁ α₂ α₃ 1 0 (M ω) ^ s ∂P).toReal : ℂ)))) := by
   obtain ⟨B, hB, hb⟩ := fusionScaledFactor_uniform_bound P X hX γ hγ hγ2 M hM α₁ α₂ α₃ s hs.le
   let D := (∫ y : ℂ, ‖K y‖) * B
-  have hD : 0 ≤ D := mul_nonneg (integral_nonneg fun _ => norm_nonneg _) hB
   have hspacebound : ∀ w : ℂ, ‖w‖ ≤ 1 →
       ‖∫ y : ℂ, K y * (fusionScaledFactor P M γ α₁ α₂ α₃ s y w : ℂ)‖ ≤ D := by
     intro w hw
@@ -85,8 +82,7 @@ theorem fusionScaledTimeIntegral_tendsto {Ω : Type*} [MeasurableSpace Ω]
         _ ≤ 1 := by simpa only [one_mul] using hz
     rw [norm_mul, Complex.norm_real, Real.norm_eq_abs,
       abs_of_nonneg (mul_nonneg (sub_nonneg.mpr ht.2) (Real.rpow_nonneg ht.1 _))]
-    have hweight : (1 - t) * t ^ e ≤ t ^ e := by
-      exact mul_le_of_le_one_left (Real.rpow_nonneg ht.1 _) (by linarith only [ht.1])
+    have hweight : (1 - t) * t ^ e ≤ t ^ e := mul_le_of_le_one_left (Real.rpow_nonneg ht.1 _) (by linarith only [ht.1])
     exact mul_le_mul hweight (hspacebound _ htz) (norm_nonneg _) (Real.rpow_nonneg ht.1 _)
   have hlim : ∀ᵐ t : ℝ ∂volume.restrict (Icc 0 1), Tendsto
       (fun z : ℂ => ((1 - t) * t ^ e : ℝ) *

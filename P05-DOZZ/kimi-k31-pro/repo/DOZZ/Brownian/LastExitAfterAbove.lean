@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Brownian.LastExitFinite
-public import DOZZ.Brownian.LastExitEntranceTail
+import DOZZ.Brownian.LastExitFinite
+import DOZZ.Brownian.LastExitEntranceTail
 import Mathlib.Topology.Basic
 
 /-!
@@ -16,7 +15,6 @@ times. Thus it cannot stay below a fixed level forever. Combined with continuity
 last-exit property, this determines the side of the barrier occupied after the last exit.
 -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Set Filter Topology
 open scoped NNReal
@@ -83,8 +81,6 @@ theorem ae_negativeConditionedPath_above_after_lastExit
     measure_eq_zero_iff_ae_notMem.mp hnotlow
   filter_upwards [hgood, hnotlowAE] with p hp hpn
   rcases hp with ⟨hnonempty, hbounded⟩
-  have hlast : p (negativeLastExitTime p (c : ℝ)) = -(c : ℝ) :=
-    negativeLastExitTime_mem_of_nonempty_bddAbove p (c : ℝ) hnonempty hbounded
   have hnohit : ∀ u : ℝ≥0, negativeLastExitTime p (c : ℝ) < u →
       p u ≠ -(c : ℝ) := by
     intro u hu hpu
@@ -92,7 +88,6 @@ theorem ae_negativeConditionedPath_above_after_lastExit
     exact (not_le_of_gt hu) huL
   intro t ht
   by_contra hnot
-  have hle : -(p t) ≤ (c : ℝ) := le_of_not_gt hnot
   have hlt : -(p t) < (c : ℝ) := by
     by_contra heq
     have hval : p t = -(c : ℝ) := by linarith
@@ -123,4 +118,3 @@ theorem ae_negativeConditionedPath_above_after_lastExit
 
 end DOZZ.Proofs
 
-end

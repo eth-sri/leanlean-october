@@ -2,14 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import Mathlib.Probability.BrownianMotion.Basic
-public import Mathlib.Probability.Distributions.Gaussian.Real
-public import Mathlib.Probability.ConditionalExpectation
-public import Mathlib.Probability.Martingale.Basic
-public import Mathlib.Probability.Martingale.OptionalStopping
-public import Mathlib.Probability.Martingale.OptionalSampling
+import Mathlib.Probability.BrownianMotion.Basic
+import Mathlib.Probability.Distributions.Gaussian.Real
+import Mathlib.Probability.ConditionalExpectation
+import Mathlib.Probability.Martingale.Basic
+import Mathlib.Probability.Martingale.OptionalStopping
+import Mathlib.Probability.Martingale.OptionalSampling
 
 /-!
 # Brownian exponential-moment foundations
@@ -17,7 +16,6 @@ public import Mathlib.Probability.Martingale.OptionalSampling
 This module starts the Brownian foundation layer from the pinned finite-dimensional law API.
 -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory
 open Filter
@@ -147,18 +145,15 @@ theorem brownian_exponential_martingale
     have hpast : mH = 𝓕 s := by
       dsimp [mH, Xh, 𝓕, brownianRawFiltration]
       exact brownianHistorySigma_eq B s
-    have hXfMeas : Measurable[mΩ] Xf := by
-      exact measurable_pi_iff.mpr fun u => (hmeas (s + u)).sub (hmeas s)
-    have hXhMeas : Measurable[mΩ] Xh := by
-      exact measurable_pi_iff.mpr fun u => hmeas u
+    have hXfMeas : Measurable[mΩ] Xf := measurable_pi_iff.mpr fun u => (hmeas (s + u)).sub (hmeas s)
+    have hXhMeas : Measurable[mΩ] Xh := measurable_pi_iff.mpr fun u => hmeas u
     have hshift := hB.toIsPreBrownianReal.indepFun_shift s
     change IndepFun Xf Xh P at hshift
     have hInd : Indep mF mH P := hshift
     have hGMeas : Measurable G := by
       dsimp [G]
       fun_prop
-    have hgMeas : Measurable[mF] g := by
-      exact hGMeas.comp (comap_measurable Xf)
+    have hgMeas : Measurable[mF] g := hGMeas.comp (comap_measurable Xf)
     have hgStrong : StronglyMeasurable[mF] g := hgMeas.stronglyMeasurable
     have hfutureLe : mF ≤ mΩ := hXfMeas.comap_le
     have hpastLe : mH ≤ mΩ := hXhMeas.comap_le
@@ -229,7 +224,7 @@ theorem brownian_exponential_martingale
         P[M t | mH] =ᵐ[P] P[fun ω => M s ω * g ω | mH] :=
           condExp_congr_ae (ae_of_all P fun ω => congrFun hfactor.symm ω)
         _ =ᵐ[P] M s := hcondProd
-    simpa only [M, hpast] using hcond
+    simpa [M, hpast] using hcond
 
 /-- Optional stopping for any bounded countable-range stopping time of the raw filtration. This
 uses Mathlib's optional-sampling theorem directly and is the approximation input for general
@@ -396,10 +391,9 @@ private lemma brownian_dyadic_ceiling_upper (x q : ℝ≥0) (hq : 0 < q) :
 private lemma brownian_dyadic_mesh_pos (n : ℕ) : 0 < brownianDyadicMesh n :=
   pow_pos (by norm_num : (0 : ℝ≥0) < 2) n
 
-private lemma brownian_dyadic_mesh_ge_one (n : ℕ) : 1 ≤ brownianDyadicMesh n := by
-  exact one_le_pow₀ (by norm_num : (1 : ℝ≥0) ≤ 2)
+private lemma brownian_dyadic_mesh_ge_one (n : ℕ) : 1 ≤ brownianDyadicMesh n := one_le_pow₀ (by norm_num : (1 : ℝ≥0) ≤ 2)
 
-private lemma brownian_dyadic_mesh_inv_tendsto_zero :
+theorem brownian_dyadic_mesh_inv_tendsto_zero :
     Tendsto (fun n : ℕ => (brownianDyadicMesh n)⁻¹) atTop (𝓝 0) := by
   have h := tendsto_pow_atTop_nhds_zero_of_lt_one
     (r := (1 / 2 : ℝ≥0)) (by norm_num) (by norm_num)
@@ -505,4 +499,3 @@ theorem brownian_exponential_bounded_optional_stopping
 
 end DOZZ.Proofs
 
-end

@@ -2,13 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.Defs.StructureConstant
-public import DOZZ.Statements.Defs.UnitVolumeStructureConstant
-public import DOZZ.Statements.Defs.SExp
-public import DOZZ.Statements.Correlations.ComplexifyNCharges
-public import Mathlib.Analysis.Meromorphic.Complex
+import DOZZ.Statements.Defs.StructureConstant
+import DOZZ.Statements.Defs.UnitVolumeStructureConstant
+import DOZZ.Statements.Defs.SExp
+import DOZZ.Statements.Correlations.ComplexifyNCharges
+import Mathlib.Analysis.Meromorphic.Complex
 import DOZZ.ShiftEquations.Residual.Calibration
 import Mathlib.Analysis.Complex.CauchyIntegral
 
@@ -22,7 +21,6 @@ staying in the domain of `f`, and equals `structureConstant` at real triples whe
 unit-volume structure constant.
 -/
 
-@[expose] public section
 
 open MeasureTheory Filter Topology Set
 
@@ -117,4 +115,3 @@ theorem analyticAt_structureConstantH_comp {f : (Fin 3 → ℂ) → ℂ} {V : Se
 
 end DOZZ.Proofs
 
-end

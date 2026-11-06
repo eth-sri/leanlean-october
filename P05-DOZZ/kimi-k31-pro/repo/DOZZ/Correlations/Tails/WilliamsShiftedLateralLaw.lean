@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.Tails.MaximumShiftLateralLaw
-public import DOZZ.Correlations.Tails.WilliamsAuxiliaryLaw
+import DOZZ.Correlations.Tails.MaximumShiftLateralLaw
+import DOZZ.Correlations.Tails.WilliamsAuxiliaryLaw
 
 /-! The full Williams product law after shifting the lateral chaos to the maximum. -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal
 

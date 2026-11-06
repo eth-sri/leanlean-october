@@ -2,12 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Dual.MassComparison
-public import DOZZ.FourPoint.ReflectedOuter.KernelPerturbation
+import DOZZ.FourPoint.Dual.MassComparison
+import DOZZ.FourPoint.ReflectedOuter.KernelPerturbation
 import Mathlib.Tactic
 /-! # Relative comparison on the full dual retained region -/
-public section
 open MeasureTheory Set
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -16,7 +14,6 @@ namespace DOZZ.Proofs
 theorem dual_kernel_distance_ratio (γ α₁ α₂ α₃ : ℝ) (z x : ℂ) (hx : 0 < ‖x‖) :
     dualFusionKernel γ α₁ α₂ α₃ z x =
       (‖x - z‖ / ‖x‖) ^ ((2 : ℝ)) * dualFusionKernel γ α₁ α₂ α₃ 0 x := by
-  have hn : ‖x‖ ^ ((2 : ℝ)) ≠ 0 := (Real.rpow_pos_of_pos hx _).ne'
   unfold dualFusionKernel
   rw [sub_zero, Real.div_rpow (norm_nonneg _) hx.le]
   field_simp
@@ -27,8 +24,8 @@ theorem dual_kernel_relative_difference (γ α₁ α₂ α₃ : ℝ) (z x : ℂ)
       (4 * (‖z‖ / ‖x‖)) * dualFusionKernel γ α₁ α₂ α₃ 0 x := by
   let b : ℝ := (2 : ℝ)
   let t : ℝ := ‖x - z‖ / ‖x‖
-  have hb : 0 ≤ b := by dsimp only [b]; positivity
-  have hb₂ : b ≤ 2 := by dsimp only [b]; norm_num
+  have hb : 0 ≤ b := by dsimp [b]; positivity
+  have hb₂ : b ≤ 2 := by dsimp [b]; norm_num
   have ht : 1 / 2 ≤ t := by
     apply (le_div_iff₀ hx).mpr
     have hh := norm_sub_norm_le x z
@@ -40,7 +37,7 @@ theorem dual_kernel_relative_difference (γ α₁ α₂ α₃ : ℝ) (z x : ℂ)
   have htd : |t - 1| ≤ ‖z‖ / ‖x‖ := by
     have hn := abs_norm_sub_norm_le (x - z) x
     rw [sub_sub_cancel_left, norm_neg] at hn
-    dsimp only [t]
+    dsimp [t]
     rw [div_sub_one hx.ne', abs_div, abs_of_pos hx]
     exact div_le_div_of_nonneg_right hn hx.le
   have hK : 0 ≤ dualFusionKernel γ α₁ α₂ α₃ 0 x := by unfold dualFusionKernel normPlus; positivity
@@ -67,7 +64,7 @@ theorem dual_kernel_relative_lower (γ α₁ α₂ α₃ : ℝ) (z x : ℂ) (hx 
       _ ≤ (1 / 2 : ℝ) ^ ((2 : ℝ)) := Real.rpow_le_rpow_of_exponent_ge (by norm_num) (by norm_num) hb₂
       _ ≤ _ := Real.rpow_le_rpow (by norm_num) hd hb
   rw [dual_kernel_distance_ratio γ α₁ α₂ α₃ z x hx]
-  simpa only [div_eq_mul_inv, mul_comm, one_mul] using mul_le_mul_of_nonneg_right hl
+  simpa [div_eq_mul_inv, mul_comm, one_mul] using mul_le_mul_of_nonneg_right hl
     (show 0 ≤ dualFusionKernel γ α₁ α₂ α₃ 0 x by unfold dualFusionKernel normPlus; positivity)
 
 end DOZZ.Proofs

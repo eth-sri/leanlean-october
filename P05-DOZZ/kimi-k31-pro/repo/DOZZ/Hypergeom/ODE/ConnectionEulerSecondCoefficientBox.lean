@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Hypergeom.ODE.ConnectionEulerCoefficient
-public import DOZZ.Hypergeom.ODE.ConnectionEulerSecondCoefficient
+import DOZZ.Hypergeom.ODE.ConnectionEulerCoefficient
+import DOZZ.Hypergeom.ODE.ConnectionEulerSecondCoefficient
 
 /-! Holomorphic continuation of the second Euler coefficient from a negative-excess real box. -/
 
-@[expose] public section
 
 namespace DOZZ.Proofs
 
@@ -18,74 +16,20 @@ open Set
 private theorem secondCoefficient_realInterval_accumulates (lo x hi : ℝ)
     (hlo : lo < x) (hhi : x < hi) :
     (x : ℂ) ∈ closure
-      ((fun y : ℝ => (y : ℂ)) '' (Ioo lo hi \ {x})) := by
-  rw [Metric.mem_closure_iff]
-  intro ε hε
-  let d : ℝ := min (ε / 2) ((hi - x) / 2)
-  have hd : 0 < d := by dsimp [d]; positivity
-  have hdε : d < ε := by
-    dsimp [d]
-    have hleft : ε / 2 < ε := by linarith
-    exact (min_le_left _ _).trans_lt hleft
-  have hdhi : d < hi - x := by
-    dsimp [d]
-    have hright : (hi - x) / 2 < hi - x := by linarith
-    exact (min_le_right _ _).trans_lt hright
-  have hy : x + d ∈ Ioo lo hi \ {x} := by
-    constructor
-    · constructor <;> linarith
-    · simp [ne_of_gt hd]
-  refine ⟨(x + d : ℝ), ?_, ?_⟩
-  · exact ⟨x + d, hy, rfl⟩
-  · have hdiff : (x : ℂ) - ((x + d : ℝ) : ℂ) = -(d : ℂ) := by push_cast; ring
-    rw [dist_eq_norm, hdiff, norm_neg, Complex.norm_real, Real.norm_eq_abs,
-      abs_of_pos hd]
-    exact hdε
+      ((fun y : ℝ => (y : ℂ)) '' (Ioo lo hi \ {x})) :=
+  realInterval_accumulates_in_complex lo x hi hlo hhi
 
 private theorem secondCoefficient_ofReal_interval_subset_ball {lo q hi r : ℝ}
     (hleft : q - r ≤ lo) (hright : hi ≤ q + r)
     {x : ℝ} (hx : x ∈ Ioo lo hi) :
-    (x : ℂ) ∈ Metric.ball (q : ℂ) r := by
-  rcases hx with ⟨hxlo, hxhi⟩
-  have hbound : |x - q| < r := by
-    apply abs_lt.mpr
-    constructor <;> linarith
-  rw [Metric.mem_ball, dist_eq_norm]
-  have hnorm : ‖(x : ℂ) - (q : ℂ)‖ = |x - q| := by
-    rw [show (x : ℂ) - (q : ℂ) = ((x - q : ℝ) : ℂ) by push_cast; ring,
-      Complex.norm_real, Real.norm_eq_abs]
-  rw [hnorm]
-  exact hbound
+    (x : ℂ) ∈ Metric.ball (q : ℂ) r :=
+  ofReal_interval_subset_ball hleft hright hx
 
 /-- A sufficiently small real-centered parameter ball avoids every integer. -/
 theorem secondCoefficient_ofReal_ball_subset_integerRange_compl
     (q r : ℝ) (hq0 : 0 < q) (hq1 : q < 1)
     (hr : r < min q (1 - q)) :
-    Metric.ball (q : ℂ) r ⊆ gaussConnectionIntegerRangeᶜ := by
-  intro z hz hzInt
-  rcases hzInt with ⟨n, hn⟩
-  subst z
-  have hdist : ‖(n : ℂ) - (q : ℂ)‖ < r := by
-    have hball := Metric.mem_ball.mp hz
-    simpa [dist_eq_norm] using hball
-  have hdistLower : min q (1 - q) ≤ ‖(n : ℂ) - (q : ℂ)‖ := by
-    have hnormEq : ‖(n : ℂ) - (q : ℂ)‖ = |(n : ℝ) - q| := by
-      calc
-        ‖(n : ℂ) - (q : ℂ)‖ = ‖(((n : ℝ) - q : ℝ) : ℂ)‖ := by
-          congr 1
-          push_cast
-          ring
-        _ = |(n : ℝ) - q| := by rw [Complex.norm_real, Real.norm_eq_abs]
-    rw [hnormEq]
-    have hn' : n ≤ 0 ∨ 1 ≤ n := by omega
-    rcases hn' with hn' | hn'
-    · have hnR : (n : ℝ) ≤ 0 := by exact_mod_cast hn'
-      rw [abs_of_nonpos (by linarith)]
-      exact (min_le_left q (1 - q)).trans (by linarith)
-    · have hnR : (1 : ℝ) ≤ n := by exact_mod_cast hn'
-      rw [abs_of_nonneg (by linarith)]
-      exact (min_le_right q (1 - q)).trans (by linarith)
-  linarith
+    Metric.ball (q : ℂ) r ⊆ gaussConnectionIntegerRangeᶜ := DOZZ.Proofs.ofReal_ball_subset_integerRange_compl q r hq0 hq1 hr
 
 /-- The radius-`1/16` ball centered at `-1/4` avoids the integer lattice. -/
 theorem secondCoefficient_negativeQuarter_ball_avoids_integers :
@@ -99,8 +43,7 @@ theorem secondCoefficient_negativeQuarter_ball_avoids_integers :
       push_cast; ring,
       Complex.norm_real, Real.norm_eq_abs]
   have hdist : |(n : ℝ) + 1 / 4| < 1 / 16 := by
-    rw [dist_eq_norm, hnorm] at hball
-    exact hball
+    rwa [dist_eq_norm, hnorm] at hball
   have hncase : n ≤ -1 ∨ 0 ≤ n := by omega
   rcases hncase with hnneg | hnnonneg
   · have hnR : (n : ℝ) ≤ -1 := by exact_mod_cast hnneg
@@ -154,8 +97,6 @@ theorem connectionMinusSecondCramer_eq_gamma_on_open_box
       f (gaussConnectionCoordinates (c : ℂ) (δ : ℂ) (a : ℂ)) =
         g (gaussConnectionCoordinates (c : ℂ) (δ : ℂ) (a : ℂ)) := by
     intro c hc δ hδ a ha
-    have hcpos : 0 < c := by rcases hc with ⟨h₁, h₂⟩; norm_num at h₁ h₂ ⊢; linarith
-    have hcLt : c < 1 := by rcases hc with ⟨h₁, h₂⟩; norm_num at h₁ h₂ ⊢; linarith
     have hδneg : δ < 0 := by rcases hδ with ⟨h₁, h₂⟩; norm_num at h₁ h₂ ⊢; linarith
     have hap : 0 < a := by rcases ha with ⟨h₁, h₂⟩; norm_num at h₁ h₂ ⊢; linarith
     have hca : 0 < c - a := by
@@ -279,7 +220,7 @@ theorem connectionMinusSecondCramer_eq_gamma_on_open_box
         · intro heq
           apply hcn
           have heqC : (c : ℂ) = (3 / 4 : ℂ) := by
-            simpa only [Set.mem_singleton_iff] using heq
+            simpa [Set.mem_singleton_iff] using heq
           exact Set.mem_singleton_iff.mpr (Complex.ofReal_injective (heqC.trans (by norm_num)))
       exact closure_mono hsub (by simpa [SR] using hacc)
     have hEq := AnalyticOnNhd.eqOn_of_preconnected_of_mem_closure
@@ -305,7 +246,7 @@ theorem connectionMinusSecondCramer_eq_gamma_on_open_box
         · intro heq
           apply hδn
           have heqC : (δ : ℂ) = -(1 / 4 : ℂ) := by
-            simpa only [Set.mem_singleton_iff] using heq
+            simpa [Set.mem_singleton_iff] using heq
           exact Set.mem_singleton_iff.mpr
             (Complex.ofReal_injective (heqC.trans (by norm_num)))
       exact closure_mono hsub (by simpa [TR] using hacc)
@@ -331,7 +272,7 @@ theorem connectionMinusSecondCramer_eq_gamma_on_open_box
         · intro heq
           apply han
           have heqC : (a : ℂ) = (1 / 2 : ℂ) := by
-            simpa only [Set.mem_singleton_iff] using heq
+            simpa [Set.mem_singleton_iff] using heq
           exact Set.mem_singleton_iff.mpr (Complex.ofReal_injective (heqC.trans (by norm_num)))
       exact closure_mono hsub (by simpa [VR] using hacc)
     have hEq := AnalyticOnNhd.eqOn_of_preconnected_of_mem_closure

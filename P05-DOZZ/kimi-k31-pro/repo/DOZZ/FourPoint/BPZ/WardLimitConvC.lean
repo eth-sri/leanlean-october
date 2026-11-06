@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.BPZ.WardLimitConvB
+import DOZZ.FourPoint.BPZ.WardLimitConvB
 
 /-! # Limit of the far-region term of the cutoff Ward identity
 
@@ -14,7 +13,6 @@ fine enough. It is therefore a random test function, equicontinuous with modulus
 far mass `∫ (1 − ρ) k₂ dM`, converging uniformly at the same scale; its integrals against the
 cutoff chaos converge in probability. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped ENNReal NNReal

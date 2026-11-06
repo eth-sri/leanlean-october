@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GFF.TorusBoxL2
+import DOZZ.GFF.TorusBoxL2
 
 /-!
 # DOZZ.GFF.TorusFourierTestPullback
@@ -13,7 +12,6 @@ The compactly supported cosine and sine modes are the real and imaginary parts o
 Fourier characters on the chosen torus box.
 -/
 
-@[expose] public section
 
 noncomputable section
 
@@ -35,10 +33,10 @@ private theorem mFourier_realBox_eq_exp (k : Fin 2 → ℤ) (x : Fin 2 → ℝ) 
       Complex.exp (2 * Real.pi * Complex.I *
         ((k 0 : ℝ) * x 0 + (k 1 : ℝ) * x 1)) := by
   rw [UnitAddTorus.mFourier]
-  simp only [ContinuousMap.coe_mk, Fin.prod_univ_two, fourier_coe_apply]
+  simp [ContinuousMap.coe_mk, Fin.prod_univ_two]
   rw [← Complex.exp_add]
   congr 1
-  push_cast
+
   ring
 
 /-- A torus character evaluated at the scaled representative point has the phase used by the
@@ -99,4 +97,3 @@ theorem localTorusSinTest_torusBoxPoint (R L : ℝ) (hR : 0 < R)
 
 end DOZZ
 
-end

@@ -1,3 +1,2 @@
-module
-public import DOZZ.Statements.GFFStructure.CircleLogPotential
+import DOZZ.Statements.GFFStructure.CircleLogPotential
 import DOZZ.GFFStructure.CircleVersion

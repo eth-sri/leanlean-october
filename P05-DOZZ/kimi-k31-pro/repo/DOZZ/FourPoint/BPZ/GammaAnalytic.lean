@@ -2,13 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.Defs.LFun
-public import DOZZ.Statements.Hypergeom.GaussCoefficientRatio
-public import DOZZ.Statements.Hypergeom.PlanarGaussConstant
-public import Mathlib.Analysis.SpecialFunctions.Gamma.Beta
-public import Mathlib.Analysis.SpecialFunctions.Gamma.Deriv
+import DOZZ.Statements.Defs.LFun
+import DOZZ.Statements.Hypergeom.GaussCoefficientRatio
+import DOZZ.Statements.Hypergeom.PlanarGaussConstant
+import Mathlib.Analysis.SpecialFunctions.Gamma.Beta
+import Mathlib.Analysis.SpecialFunctions.Gamma.Deriv
 
 /-! # Analyticity of the Gamma-function expressions in the BPZ equation
 
@@ -23,7 +22,6 @@ public import Mathlib.Analysis.SpecialFunctions.Gamma.Deriv
   `x ↦ planarGaussConstant (k x) (β x)` is real analytic at `x₀`. Every `lFun` factor is finite
   and nonzero there, so the quotient is analytic. -/
 
-@[expose] public section
 
 namespace DOZZ.Proofs
 
@@ -33,7 +31,7 @@ theorem bpz_analyticAt_complex_Gamma {s : ℂ} (hs : ∀ m : ℕ, s ≠ -(m : �
   have h1 : AnalyticAt ℂ (fun z : ℂ => (Complex.Gamma z)⁻¹) s :=
     Complex.differentiable_one_div_Gamma.analyticAt s
   have h2 : (Complex.Gamma s)⁻¹ ≠ 0 := inv_ne_zero (Complex.Gamma_ne_zero hs)
-  simpa only [inv_inv] using h1.fun_inv h2
+  simpa [inv_inv] using h1.fun_inv h2
 
 /-- The real Gamma function is real analytic away from the poles `-m`, `m : ℕ`. -/
 theorem bpz_analyticAt_real_Gamma {x : ℝ} (hx : ∀ m : ℕ, x ≠ -(m : ℝ)) :
@@ -45,10 +43,8 @@ theorem bpz_analyticAt_real_Gamma {x : ℝ} (hx : ∀ m : ℕ, x ≠ -(m : ℝ))
     (Complex.reCLM.analyticAt _).comp (h1.comp (Complex.ofRealCLM.analyticAt x))
   have e : Real.Gamma = fun y : ℝ => (Complex.Gamma (y : ℂ)).re := by
     funext y
-    simp only [Complex.Gamma_ofReal, Complex.ofReal_re]
-  rw [e]
-  exact h2
-
+    simp [Complex.Gamma_ofReal, Complex.ofReal_re]
+  rwa [e]
 /-- `Real.Gamma ∘ f` is real analytic at a point where `f` is analytic with positive value. -/
 theorem bpzGA_analyticAt_real_Gamma_comp {f : ℝ → ℝ} {x₀ : ℝ} (hf : AnalyticAt ℝ f x₀)
     (h : 0 < f x₀) : AnalyticAt ℝ (fun x => Real.Gamma (f x)) x₀ :=

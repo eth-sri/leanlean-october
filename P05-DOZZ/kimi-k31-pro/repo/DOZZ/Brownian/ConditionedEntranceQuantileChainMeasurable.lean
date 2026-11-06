@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Brownian.ConditionedKernelQuantileMeasurable
-public import DOZZ.Brownian.ConditionedEntranceGridComparison
+import DOZZ.Brownian.ConditionedKernelQuantileMeasurable
+import DOZZ.Brownian.ConditionedEntranceGridComparison
 import Mathlib.MeasureTheory.Measure.AEMeasurable
 
 /-!
@@ -15,7 +14,6 @@ Use one uniform coordinate for the entrance value and fresh later coordinates fo
 This matches the finite-grid comparison and gives a measurable sampled chain at every finite time.
 -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory
 open Topology
@@ -94,9 +92,6 @@ theorem conditionedPositiveEntranceQuantileWalkOn_initial_law
     cdfGeneralizedQuantile (ProbabilityTheory.cdf μ) u
   let : IsProbabilityMeasure μ :=
     isProbabilityMeasure_conditionedPositiveEntranceMeasure ν t₀ hν ht₀
-  have hqSubtype : Measurable (fun u : Set.Ioo (0 : ℝ) 1 => q u.1) := by
-    dsimp [q, μ]
-    exact measurable_conditionedPositiveEntranceQuantile hν ht₀
   have hqUniform : AEMeasurable q uniformOpenUnit := by
     simpa [q, μ, uniformOpenUnit] using
       (aemeasurable_cdfGeneralizedQuantile_Ioo μ)
@@ -105,8 +100,7 @@ theorem conditionedPositiveEntranceQuantileWalkOn_initial_law
     rw [MeasurableSet.map_coe_volume measurableSet_Ioo, uniformOpenUnit]
   have hqMap : AEMeasurable q
       ((volume : Measure (Set.Ioo (0 : ℝ) 1)).map Subtype.val) := by
-    rw [hcoe]
-    exact hqUniform
+    rwa [hcoe]
   have hval : AEMeasurable (Subtype.val : Set.Ioo (0 : ℝ) 1 → ℝ)
       (volume : Measure (Set.Ioo (0 : ℝ) 1)) := measurable_subtype_coe.aemeasurable
   have hsubtypeSampler :
@@ -129,4 +123,3 @@ theorem conditionedPositiveEntranceQuantileWalkOn_initial_law
 
 end DOZZ.Proofs
 
-end

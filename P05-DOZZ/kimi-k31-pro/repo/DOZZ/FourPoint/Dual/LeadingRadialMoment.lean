@@ -2,12 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Dual.SourceRadialMoments
-public import DOZZ.FourPoint.Reflected.LeadingRadialMoment
+import DOZZ.FourPoint.Dual.SourceRadialMoments
+import DOZZ.FourPoint.Reflected.LeadingRadialMoment
 import Mathlib.Tactic
 /-! The normalized leading Pareto weight has the actual reflected charge-shift limit. -/
-@[expose] public section
 open MeasureTheory Filter Topology Set
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -35,7 +33,7 @@ theorem dual_leading_radial_moment_identity
   have he (ω : Ω) : (dual_radial_scale γ ν h Xc z ω)^(2*ν/γ) =
       ‖z‖^((4/γ)*ν)*Real.exp
         (2*ν*Xc ω 0 (-Real.log ‖z‖+h)-(-Real.log ‖z‖+h)*(2*ν)^2/2) := by
-    dsimp only [dual_radial_scale]
+    dsimp [dual_radial_scale]
     rw [← Real.exp_mul, Real.rpow_def_of_pos hn, ← Real.exp_add]
     congr 1
     field_simp
@@ -87,6 +85,6 @@ theorem dual_leading_radial_moment_toReal_tendsto
   have hf := reflected_rho_inverse_expectation_lt_top P X hX γ hγ hγ₂ M hM
     (α₁+2*ν-2/γ) α₂ α₃ q hq
   have hr := (ENNReal.tendsto_toReal hf.ne).comp ht
-  simpa only [Function.comp_def, ENNReal.toReal_div, ENNReal.toReal_ofReal (Real.rpow_nonneg (norm_nonneg _) _)] using hr
+  simpa [Function.comp_def, ENNReal.toReal_div, ENNReal.toReal_ofReal (Real.rpow_nonneg (norm_nonneg _) _)] using hr
 
 end DOZZ.Proofs

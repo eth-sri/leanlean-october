@@ -2,16 +2,14 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.Assembly.KernelLimit
-public import DOZZ.GMC.AdmissibleGMCBarrierParameters
-public import DOZZ.GMC.AdmissibleGMCReferenceKernel
-public import DOZZ.GMC.AdmissibleGMCReferenceFinite
+import DOZZ.GMC.Assembly.KernelLimit
+import DOZZ.GMC.AdmissibleGMCBarrierParameters
+import DOZZ.GMC.AdmissibleGMCReferenceKernel
+import DOZZ.GMC.AdmissibleGMCReferenceFinite
 
 /-! A uniform integrable majorant of the growing-barrier two-root kernels and their uniform `L¹` Cauchy property on compact charts. -/
 
-@[expose] public section
 
 /-! ### Integrable majorant
 
@@ -26,7 +24,7 @@ open scoped ENNReal NNReal
 
 namespace DOZZ.Assembly
 
-open DOZZ.Proofs
+open Proofs
 
 /-- The Wick pair expectation of one admissible regularization is the exponential of the
 covariance of its two roots. -/
@@ -49,7 +47,7 @@ theorem admissible_wick_pair_lintegral
     · exact ⟨hδ, hδcut⟩
   have h := finite_gaussian_wick_pair_tilt P V hV 0 1 g (fun _ => (1 : ℝ≥0∞)) measurable_const
   have hP : IsProbabilityMeasure P := hV.1
-  simp only [mul_one, lintegral_const, measure_univ] at h
+  simp [mul_one, lintegral_const, measure_univ] at h
   have hV0 : (fun ω => V ω 0) = fun ω => Y ω ε x := by funext ω; simp [V, q]
   have hV1 : (fun ω => V ω 1) = fun ω => Y ω δ y := by funext ω; simp [V, q]
   have hsymm : gaussianCovariance P (fun ω => Y ω δ y) (fun ω => Y ω ε x) =
@@ -81,7 +79,7 @@ theorem growingPairKernel_le_wick_pair
   unfold growingPairKernel compatibleAdmissibleSelectedMixedGrowingBarrierPairKernel
   apply lintegral_mono
   intro ω
-  simp only [ite_self]
+  simp [ite_self]
   calc _ ≤ admissibleLogWickWeight P Y g (Real.exp (-r)) p.1 ω *
         admissibleLogWickWeight P Y g (Real.exp (-s)) p.2 ω * 1 * 1 := by
         gcongr <;> exact Set.indicator_le_self' (fun _ _ => zero_le_one) _
@@ -105,7 +103,7 @@ theorem growingPairKernel_le_one_scale
   unfold growingPairKernel compatibleAdmissibleSelectedMixedGrowingBarrierPairKernel
   apply lintegral_mono
   intro ω
-  simp only [ite_self]
+  simp [ite_self]
   have hbar : Set.indicator (admissibleGrowingBarrierSet Y a k₀ r)
       (fun _ => (1 : ℝ≥0∞)) (ω, p.1) ≤
       Set.indicator {ω | Y ω (Real.exp (-(k : ℝ))) p.1 ≤ a * (k : ℝ)}
@@ -252,7 +250,7 @@ theorem growingPairKernel_majorant
       (Real.exp_pos _) (by rw [min_self]; exact hrcut) hεk (Real.exp_pos _)
       (by rw [min_self]; exact hscut) hδk κ p.1 p.2 hp.1 hp.2 hxy hpos ρ hρdef hfloor
       η g a hη hη1 hgpos (by linarith) hkC hkη (hkoff g hg) hκ (hκexp g hg)
-    simp only [ite_self] at hbound
+    simp [ite_self] at hbound
     refine (growingPairKernel_le_one_scale P Y g a k₀ k r s hk₀k hkr p).trans
       (hbound.trans ?_)
     apply ENNReal.ofReal_le_ofReal
@@ -290,7 +288,7 @@ theorem growingPairKernel_majorant
             mul_le_mul_of_nonneg_right hg2 (le_max_right _ _)
     linarith
 
-end DOZZ.Assembly
+end Assembly
 
 /-! ### Kernel `L¹` Cauchy property
 
@@ -303,9 +301,9 @@ uniform Cauchy property controls the rest. -/
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
 
-namespace DOZZ.Assembly
+namespace Assembly
 
-open DOZZ.Proofs
+open Proofs
 
 /-- The product of the reference measure restricted to a compact chart with itself. -/
 noncomputable abbrev chartPairMeasure (U : Set ℂ) (dens : ℂ → ℝ) (K : Set ℂ) :
@@ -535,7 +533,6 @@ theorem growingPairKernel_L1_uniform_cauchy
   set s₀ : ℝ := 1 / ((n : ℝ) + 1) with hs₀def
   have hs₀ : 0 < s₀ := by positivity
   set T : ℝ := (μ univ).toReal with hTdef
-  have hT : 0 ≤ T := ENNReal.toReal_nonneg
   set η₀ : ℝ := ε / (2 * (T + 1)) with hη₀def
   have hη₀ : 0 < η₀ := by positivity
   obtain ⟨R₁, hR₁⟩ := growingPairKernel_offDiagonal_uniform_cauchy P U dens ε₀ Y hY K hK hKU
@@ -582,8 +579,7 @@ theorem growingPairKernel_L1_uniform_cauchy
   have hfarSmall : ENNReal.ofReal η₀ * μ univ < ENNReal.ofReal (ε / 2) := by
     rw [← ENNReal.ofReal_toReal hμfin, ← ENNReal.ofReal_mul hη₀.le, ← hTdef]
     apply (ENNReal.ofReal_lt_ofReal_iff (by linarith)).mpr
-    rw [hη₀def]
-    rw [div_mul_eq_mul_div, div_lt_div_iff₀ (by positivity) (by norm_num)]
+    rw [hη₀def, div_mul_eq_mul_div, div_lt_div_iff₀ (by positivity) (by norm_num)]
     linarith only [hε]
   calc _ ≤ ∫⁻ p in N n, 2 * Maj p ∂μ + ENNReal.ofReal η₀ * μ univ :=
         add_le_add hnearBound hfarBound

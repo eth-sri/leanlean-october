@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Brownian.LastExitKernelRealProjectionLimit
+import DOZZ.Brownian.LastExitKernelRealProjectionLimit
 
 /-!
 # Weighted mixture estimates for the dyadic last-exit cells
@@ -14,7 +13,6 @@ of avoiding the barrier after the cell endpoint. This file supplies the elementa
 pass that mixture to the entrance kernel.
 -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology Set Function
 open scoped ENNReal NNReal
@@ -33,11 +31,7 @@ private theorem exists_pos_radius_mem_nhdsWithin_zero
   · exact hz
 
 private theorem conditionedH_positive_for_mixture {ν x : ℝ}
-    (hν : 0 < ν) (hx : 0 < x) : 0 < conditionedH ν x := by
-  rw [conditionedH, ite_eq_right hν.ne']
-  apply sub_pos.mpr
-  apply Real.exp_lt_one_iff.mpr
-  linarith only [mul_pos hν hx]
+    (hν : 0 < ν) (hx : 0 < x) : 0 < conditionedH ν x := DOZZ.Proofs.conditionedH_pos_ref hν hx
 
 private theorem conditionedH_mono_for_mixture {ν x y : ℝ}
     (hν : 0 < ν) (hxy : x ≤ y) : conditionedH ν x ≤ conditionedH ν y := by
@@ -51,18 +45,7 @@ private theorem conditionedH_mono_for_mixture {ν x y : ℝ}
 barrier. -/
 theorem lastExitAvoidanceFactor_bounds
     {ν c x : ℝ} (hν : 0 < ν) (hc : 0 < c) :
-    0 ≤ lastExitAvoidanceFactor ν c x ∧ lastExitAvoidanceFactor ν c x ≤ 1 := by
-  by_cases hcx : c < x
-  · rw [lastExitAvoidanceFactor, ite_eq_left hcx]
-    have hx : 0 < x := lt_trans hc hcx
-    have hxc : 0 < x - c := sub_pos.mpr hcx
-    have hden := conditionedH_positive_for_mixture hν hx
-    have hnum := conditionedH_positive_for_mixture hν hxc
-    constructor
-    · exact div_nonneg hnum.le hden.le
-    · rw [div_le_iff₀ hden]
-      simpa using conditionedH_mono_for_mixture hν (sub_le_self x hc.le)
-  · simp [lastExitAvoidanceFactor, hcx]
+    0 ≤ lastExitAvoidanceFactor ν c x ∧ lastExitAvoidanceFactor ν c x ≤ 1 := DOZZ.Proofs.lastExitAvoidanceFactor_nonneg_le_one hν hc
 
 /-- The avoidance weight is measurable as a function of the endpoint state. -/
 theorem measurable_lastExitAvoidanceFactor (ν c : ℝ) :
@@ -163,11 +146,11 @@ theorem negativeConditionedDyadicLastExit_finiteProjection_tendsto_entrance
     refine ⟨?_⟩
     change (volume.withDensity (brownianEntranceFinitePDF ν ncoord ds)) Set.univ = 1
     rw [withDensity_apply _ MeasurableSet.univ]
-    simpa only [setLIntegral_univ] using
+    simpa [setLIntegral_univ] using
       lintegral_brownianEntranceFinitePDF_one Q ν hν hQ ncoord ds hds
   let := hMprob
   let q : ℝ := M.real A
-  have hq0 : 0 ≤ q := by exact measureReal_nonneg
+  have hq0 : 0 ≤ q := measureReal_nonneg
   have hq1 : q ≤ 1 := by
     calc
       q ≤ M.real Set.univ := measureReal_mono (subset_univ A)
@@ -235,8 +218,7 @@ theorem negativeConditionedDyadicLastExit_finiteProjection_tendsto_entrance
       · have hzero : weight m k p = 0 := by
           simp [weight, lastExitAvoidanceFactor, endpoint, le_of_not_gt hx]
         simp [hzero]
-    have hH : MeasurableSet (hit m k) := by
-      exact hHitMeas m k
+    have hH : MeasurableSet (hit m k) := hHitMeas m k
     have hraw : P.real (cell m k) =
         ∫ p in hit m k, weight m k p *
           (brownianUpperConditionedReferenceFutureKernel B ν hν
@@ -437,7 +419,7 @@ theorem negativeConditionedDyadicLastExit_finiteProjection_tendsto_entrance
         _ = P.real (dyadicPositiveLastExitRationalEvent m (c : ℝ)
               {y | δ ≤ y 0}) := hglobal.symm
     have htailTendsto : Tendsto (fun m => ∑' k, tail m k) atTop (𝓝 0) := by
-      simpa only [htailTsumEq] using htailLimit δ hδ
+      simpa [htailTsumEq] using htailLimit δ hδ
     have hlocal (m k : ℕ) :
         (q - ε) * w m k - tail m k ≤ r m k := by
       change (q - ε) * w m k - tail m k ≤
@@ -453,13 +435,8 @@ theorem negativeConditionedDyadicLastExit_finiteProjection_tendsto_entrance
           by_cases hzd : z < δ
           · have hval := hnear z hz hzd
             have hval' : q - ε < kernelProb z ∧ kernelProb z < q + ε := by
-              simp only [Set.mem_ofPred_eq] at hval
-              simpa only [kernelProb, hCeq] using hval
-            have hbounds := hweightBound m k p
-            have hlt : q - ε < kernelProb z := hval.1
-            have hle : 0 ≤ tailWeight m k p := by
-              dsimp [tailWeight]
-              split_ifs <;> exact mul_nonneg ha.1 (by norm_num)
+              simp [Set.mem_ofPred_eq] at hval
+              simpa [kernelProb, hCeq] using hval
             have hzero : tailWeight m k p = 0 := by
               simp [tailWeight, z, not_le_of_gt hzd]
             rw [hzero]
@@ -471,8 +448,6 @@ theorem negativeConditionedDyadicLastExit_finiteProjection_tendsto_entrance
           · have hdz : δ ≤ z := le_of_not_gt hzd
             have hg := brownianUpperConditionedReferenceFutureKernel_real_bounds
               B hB ν z hν hz C
-            have hq : 0 ≤ q := hq0
-            have hqle : q ≤ 1 := hq1
             have ht : tailWeight m k p = weight m k p := by
               simp [tailWeight, z, hdz]
             rw [ht]
@@ -484,8 +459,6 @@ theorem negativeConditionedDyadicLastExit_finiteProjection_tendsto_entrance
           have htailzero : tailWeight m k p = 0 := by
             have hnot : ¬ δ ≤ endpoint m k p - c := by
               intro hbad
-              have hnonpos : endpoint m k p - c ≤ 0 :=
-                sub_nonpos.mpr (le_of_not_gt hx)
               linarith
             simp [tailWeight, hnot]
           simp [hzero, htailzero]
@@ -520,9 +493,8 @@ theorem negativeConditionedDyadicLastExit_finiteProjection_tendsto_entrance
           by_cases hzd : z < δ
           · have hval := hnear z hz hzd
             have hval' : q - ε < kernelProb z ∧ kernelProb z < q + ε := by
-              simp only [Set.mem_ofPred_eq] at hval
-              simpa only [kernelProb, hCeq] using hval
-            have hlt : kernelProb z < q + ε := hval'.2
+              simp [Set.mem_ofPred_eq] at hval
+              simpa [kernelProb, hCeq] using hval
             have hzero : tailWeight m k p = 0 := by
               simp [tailWeight, z, not_le_of_gt hzd]
             rw [hzero]
@@ -596,7 +568,7 @@ theorem negativeConditionedDyadicLastExit_finiteProjection_tendsto_entrance
       have h := hsumLower m
       dsimp [ε] at hε hm h ⊢
       linarith only [h, hm, hε]
-    simpa only [hCeq] using heventuallyR
+    simpa [hCeq] using heventuallyR
   · intro a ha
     let ε : ℝ := (a - q) / 4
     have hε : 0 < ε := by
@@ -696,64 +668,7 @@ theorem negativeConditionedDyadicLastExit_finiteProjection_tendsto_entrance
         _ = P.real (dyadicPositiveLastExitRationalEvent m (c : ℝ)
               {y | δ ≤ y 0}) := hglobal.symm
     have htailTendsto : Tendsto (fun m => ∑' k, tail m k) atTop (𝓝 0) := by
-      simpa only [htailTsumEq] using htailLimit δ hδ
-    have hlocal (m k : ℕ) :
-        (q - ε) * w m k - tail m k ≤ r m k := by
-      change (q - ε) * w m k - tail m k ≤
-        ∫ p in hit m k, weight m k p * kernelProb (endpoint m k p - c) ∂P
-      have hpoint : ∀ p ∈ hit m k,
-          (q - ε) * weight m k p - tailWeight m k p ≤
-            weight m k p * kernelProb (endpoint m k p - c) := by
-        intro p hp
-        have ha := hweightBound m k p
-        by_cases hx : c < endpoint m k p
-        · let z := endpoint m k p - c
-          have hz : 0 < z := by dsimp [z]; exact sub_pos.mpr hx
-          by_cases hzd : z < δ
-          · have hval := hnear z hz hzd
-            have hval' : q - ε < kernelProb z ∧ kernelProb z < q + ε := by
-              simp only [Set.mem_ofPred_eq] at hval
-              simpa only [kernelProb, hCeq] using hval
-            have hzero : tailWeight m k p = 0 := by
-              simp [tailWeight, z, not_le_of_gt hzd]
-            rw [hzero]
-            have hgap : 0 ≤ kernelProb z - (q - ε) := by linarith [hval'.1]
-            have hmul : (q - ε) * weight m k p ≤
-                weight m k p * kernelProb z := by
-              linarith only [mul_nonneg ha.1 hgap]
-            simpa [z, mul_comm] using hmul
-          · have hdz : δ ≤ z := le_of_not_gt hzd
-            have hg := brownianUpperConditionedReferenceFutureKernel_real_bounds
-              B hB ν z hν hz C
-            have ht : tailWeight m k p = weight m k p := by
-              simp [tailWeight, z, hdz]
-            rw [ht]
-            dsimp [kernelProb]
-            linarith only [mul_nonneg ha.1 (by linarith only [hq1, hε] : (0 : ℝ) ≤ 1 + ε - q),
-              mul_nonneg ha.1 hg.1]
-        · have hzero : weight m k p = 0 := by
-            simp [weight, lastExitAvoidanceFactor, endpoint, le_of_not_gt hx]
-          have htailzero : tailWeight m k p = 0 := by
-            have hnot : ¬ δ ≤ endpoint m k p - c := by
-              intro hbad
-              linarith [le_of_not_gt hx, hδ]
-            simp [tailWeight, hnot]
-          simp [hzero, htailzero]
-      have hlin := setIntegral_mono_on
-        (((hwIntegrable m k).const_mul (q - ε)).sub (htailWeightInt m k)).integrableOn
-        (hrIntegrable m k).integrableOn
-        (hHitMeas m k)
-        hpoint
-      have hrewrite :
-          (∫ p in hit m k, (q - ε) * weight m k p - tailWeight m k p ∂P) =
-            (q - ε) * w m k - tail m k := by
-        rw [integral_sub (((hwIntegrable m k).const_mul (q - ε)).integrableOn)
-          (htailWeightInt m k).integrableOn]
-        rw [integral_const_mul]
-        change (q - ε) * (∫ p in hit m k, weight m k p ∂P) -
-          (∫ p in hit m k, tailWeight m k p ∂P) = _
-        rw [hweightIntegral]
-      simpa [hrewrite, r, tail] using hlin
+      simpa [htailTsumEq] using htailLimit δ hδ
     have hlocalUpper (m k : ℕ) :
         r m k ≤ (q + ε) * w m k + tail m k := by
       change ∫ p in hit m k,
@@ -770,8 +685,8 @@ theorem negativeConditionedDyadicLastExit_finiteProjection_tendsto_entrance
           by_cases hzd : z < δ
           · have hval := hnear z hz hzd
             have hval' : q - ε < kernelProb z ∧ kernelProb z < q + ε := by
-              simp only [Set.mem_ofPred_eq] at hval
-              simpa only [kernelProb, hCeq] using hval
+              simp [Set.mem_ofPred_eq] at hval
+              simpa [kernelProb, hCeq] using hval
             have hzero : tailWeight m k p = 0 := by
               simp [tailWeight, z, not_le_of_gt hzd]
             rw [hzero]
@@ -813,16 +728,6 @@ theorem negativeConditionedDyadicLastExit_finiteProjection_tendsto_entrance
           (∫ p in hit m k, tailWeight m k p ∂P) = _
         rw [hweightIntegral]
       simpa [hrewrite, r, tail] using hlin
-    have hsumLower (m : ℕ) :
-        q - ε - (∑' k, tail m k) ≤ ∑' k, r m k := by
-      have hscaled : Summable (fun k => (q - ε) * w m k) :=
-        (hwSummable m).mul_left (q - ε)
-      have hleftSummable : Summable (fun k => (q - ε) * w m k - tail m k) :=
-        hscaled.sub (htailSummable m)
-      have hsum := hleftSummable.tsum_le_tsum (hlocal m) (hrSummable m)
-      rw [hscaled.tsum_sub (htailSummable m), (hwSummable m).tsum_mul_left (q - ε),
-        hwTsum m] at hsum
-      linarith
     have hsumUpper (m : ℕ) :
         (∑' k, r m k) ≤ q + ε + (∑' k, tail m k) := by
       have hscaled : Summable (fun k => (q + ε) * w m k) :=
@@ -842,8 +747,7 @@ theorem negativeConditionedDyadicLastExit_finiteProjection_tendsto_entrance
       have h := hsumUpper m
       dsimp [ε] at hε hm h ⊢
       linarith only [h, hm, hε]
-    simpa only [hCeq] using heventuallyR
+    simpa [hCeq] using heventuallyR
 
 end DOZZ.Proofs
 
-end

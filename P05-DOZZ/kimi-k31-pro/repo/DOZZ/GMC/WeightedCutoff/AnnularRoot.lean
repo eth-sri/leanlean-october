@@ -1,10 +1,8 @@
-module
 
-public import DOZZ.GMC.Moments.WeightedCutoffBallMomentUpToTwo
+import DOZZ.GMC.Moments.WeightedCutoffBallMomentUpToTwo
 
 /-! # The weighted annulus estimate including the order one endpoint -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -225,8 +223,7 @@ theorem cutoffWeightedGmcBallMoment_positive_scale_of_root_bound_ge_one
             ENNReal.ofReal ((cutoffDyadicBallRadius R n / (1 / 8 : ℝ)) ^ (xi / p)) =
           ENNReal.ofReal shellCoefReal * ENNReal.ofReal (R ^ beta) *
             halfRatio ^ (n + 1) := by
-        rw [← ENNReal.ofReal_mul hrealNonneg, hrealEq]
-        exact hrealSplit
+        rwa [← ENNReal.ofReal_mul hrealNonneg, hrealEq]
       calc
         _ = ENNReal.ofReal
             (cutoffDyadicBallRadius R (n + 1) ^ (-γ * α)) *
@@ -287,7 +284,7 @@ theorem cutoffWeightedGmcBallMoment_positive_scale_of_root_bound_ge_one
         tsub_le_tsub_left hratio 1
       have hinv : (1 - halfRatio)⁻¹ ≤ (1 - halfRatio0)⁻¹ := by
         apply ENNReal.inv_le_inv'
-        exact hdenom
+        assumption
       calc
         _ ≤ halfRatio0 * (1 - halfRatio)⁻¹ :=
           mul_le_mul_of_nonneg_right hratio (by positivity)

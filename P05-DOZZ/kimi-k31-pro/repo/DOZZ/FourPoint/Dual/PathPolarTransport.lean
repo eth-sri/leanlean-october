@@ -2,13 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Dual.IndependentInnerTransport
-public import DOZZ.FourPoint.Dual.PathLikelihood
-public import DOZZ.FourPoint.Reflected.CopiedPolarTransport
+import DOZZ.FourPoint.Dual.IndependentInnerTransport
+import DOZZ.FourPoint.Dual.PathLikelihood
+import DOZZ.FourPoint.Reflected.CopiedPolarTransport
 import Mathlib.Tactic
 /-! The full radial-path/exterior law transports the actual independent restarted polar mass. -/
-@[expose] public section
 open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -63,7 +61,7 @@ theorem dual_path_outer_polar_integral_transport
             ∂Z ω.2).toReal)^(-p)-(O ω.1).toReal^(-p) ∂P.prod S := by
     apply integral_congr_ae
     filter_upwards [measurePreserving_snd.quasiMeasurePreserving.ae hfin] with ω hω
-    dsimp only [H]
+    dsimp [H]
     rw [reflected_inwardPolarMassCode_eq γ ν (D (A ω.1)) (Z ω.2) hω]
   have hidR : (∫ ω : Λ × Ξ, H ((A' ω.1,O' ω.1),Z ω.2) ∂R.prod S) =
       ∫ ω : Λ × Ξ,
@@ -73,11 +71,9 @@ theorem dual_path_outer_polar_integral_transport
             ∂Z ω.2).toReal)^(-p)-(O' ω.1).toReal^(-p) ∂R.prod S := by
     apply integral_congr_ae
     filter_upwards [measurePreserving_snd.quasiMeasurePreserving.ae hfin] with ω hω
-    dsimp only [H]
+    dsimp [H]
     rw [reflected_inwardPolarMassCode_eq γ ν (D (A' ω.1)) (Z ω.2) hω]
-  rw [hidP, hidR] at he
-  exact he
-
+  rwa [hidP, hidR] at he
 /-- Finiteness of the actual polar mass transfers under the full-path/exterior law,
 using the locally finite measurable polar code before taking real values. -/
 theorem dual_path_outer_polar_finite_transport
@@ -114,21 +110,21 @@ theorem dual_path_outer_polar_finite_transport
   · intro hf
     have hc : ∀ᵐ ω : Ω × Ξ ∂P.prod S, K ((A ω.1,O ω.1),Z ω.2) ≠ ⊤ := by
       filter_upwards [hf, measurePreserving_snd.quasiMeasurePreserving.ae hfin] with ω hω hloc
-      dsimp only [K]
+      dsimp [K]
       rw [reflected_inwardPolarMassCode_eq γ ν (D (A ω.1)) (Z ω.2) hloc]
       exact hω
     filter_upwards [he.mp hc, measurePreserving_snd.quasiMeasurePreserving.ae hfin] with ω hω hloc
-    dsimp only [K] at hω
+    dsimp [K] at hω
     rw [reflected_inwardPolarMassCode_eq γ ν (D (A' ω.1)) (Z ω.2) hloc] at hω
     exact hω
   · intro hf
     have hc : ∀ᵐ ω : Λ × Ξ ∂R.prod S, K ((A' ω.1,O' ω.1),Z ω.2) ≠ ⊤ := by
       filter_upwards [hf, measurePreserving_snd.quasiMeasurePreserving.ae hfin] with ω hω hloc
-      dsimp only [K]
+      dsimp [K]
       rw [reflected_inwardPolarMassCode_eq γ ν (D (A' ω.1)) (Z ω.2) hloc]
       exact hω
     filter_upwards [he.mpr hc, measurePreserving_snd.quasiMeasurePreserving.ae hfin] with ω hω hloc
-    dsimp only [K] at hω
+    dsimp [K] at hω
     rw [reflected_inwardPolarMassCode_eq γ ν (D (A ω.1)) (Z ω.2) hloc] at hω
     exact hω
 

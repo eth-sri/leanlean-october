@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.SeparatedTail.UniformCutoff
-public import DOZZ.Correlations.SeparatedTail.SingularLimit
+import DOZZ.Correlations.SeparatedTail.UniformCutoff
+import DOZZ.Correlations.SeparatedTail.SingularLimit
 
 /-! Uniform mixed moments for the actual singular masses of the separated joint-tail estimate. -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -24,7 +22,7 @@ theorem separatedTail_weighted_mass_ae_finite
     ∀ᵐ ω ∂P, weightedGmcBallMass γ (M ω) α z 1 ≠ ⊤ := by
   have hb := (equatorGFF_GMC_weighted_local_moment_range P X hX γ hγ hγ2 M hM
     α hα a ha z 1 (by norm_num)).mpr (by
-      simpa only [reflectionExponent, div_mul_eq_mul_div] using hrange)
+      simpa [reflectionExponent, div_mul_eq_mul_div] using hrange)
   have hm := gmc_weighted_mass_aemeasurable P X hX γ hγ hγ2 M hM α z 1
   have hf := ae_lt_top' (hm.pow_const a) hb.ne
   exact hf.mono fun ω hω => (ENNReal.rpow_eq_top_iff_of_pos ha).not.mp hω.ne

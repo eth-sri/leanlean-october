@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.ShiftEquations.Reflection.RbarContinuity
-public import DOZZ.Statements.Brownian.IsLateralGMCOf
+import DOZZ.ShiftEquations.Reflection.RbarContinuity
+import DOZZ.Statements.Brownian.IsLateralGMCOf
 import DOZZ.ShiftEquations.Reflection.Witness
 import DOZZ.ShiftEquations.Reflection.Endpoint
 import DOZZ.Brownian.Lateral.ReflectionJointLaw
@@ -22,7 +21,6 @@ conclusion of `DOZZ.reflectionBarR_holomorphic_representation` at the given fiel
 chaos).
 -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
@@ -96,4 +94,3 @@ theorem reflection_endpoint_and_gamma_continuity_of_representation
 
 end DOZZ.Proofs
 
-end

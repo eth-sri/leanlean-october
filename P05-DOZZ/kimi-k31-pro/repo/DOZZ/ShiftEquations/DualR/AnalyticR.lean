@@ -2,14 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.ShiftEquations.DualR.Limits
-public import DOZZ.Statements.Brownian.ReflectionR
-public import DOZZ.Statements.Brownian.ReflectionBarR
-public import DOZZ.Statements.Brownian.IsSourceLateralProjection
-public import DOZZ.Statements.Brownian.IsReflectionData
-public import DOZZ.Statements.ShiftEquations.RbarCoefficient
+import DOZZ.ShiftEquations.DualR.Limits
+import DOZZ.Statements.Brownian.ReflectionR
+import DOZZ.Statements.Brownian.ReflectionBarR
+import DOZZ.Statements.Brownian.IsSourceLateralProjection
+import DOZZ.Statements.Brownian.IsReflectionData
+import DOZZ.Statements.ShiftEquations.RbarCoefficient
 import DOZZ.Brownian.Reflection.WitnessIndependence
 import DOZZ.Brownian.Reflection.PositiveFinite
 import DOZZ.Brownian.Reflection.RtheorAnalytic
@@ -25,7 +24,6 @@ irrational); a meromorphic function with continuous real restriction is analytic
 at `γ` with value `R(γ)`. Moreover `R(γ) ≠ 0` since `R̄(γ) > 0`.
 -/
 
-@[expose] public section
 
 open MeasureTheory Filter Topology Set
 
@@ -43,13 +41,12 @@ theorem reflectionExponent_gamma_ne {γ : ℝ} (hγ : 0 < γ) (hγirr : Irration
     ring
   apply hγirr
   refine ⟨4 / ((m : ℚ) + 1), ?_⟩
-  have hm : (0 : ℝ) < (m : ℝ) + 1 := by positivity
   push_cast
   field_simp at h4 ⊢
   linarith
 
 /-- **The physical reflection coefficient is continuous at `α = γ`** (from
-`DOZZ.reflectionBarR_holomorphic_representation`). -/
+`reflectionBarR_holomorphic_representation`). -/
 theorem tendsto_reflectionR_gamma {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
     (M : Ω → Measure ℂ) {γ μ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2) (hμ : 0 < μ)
     (hγirr : Irrational (γ ^ 2))
@@ -162,4 +159,3 @@ theorem reflectionR_gamma_ne_zero {Ω : Type*} [MeasurableSpace Ω] (P : Measure
 
 end DOZZ.Proofs
 
-end

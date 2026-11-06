@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.ShiftEquations.Strip.CoulombBounds
-public import DOZZ.GMC.SharpMoments.WeightedUniformGrid
+import DOZZ.ShiftEquations.Strip.CoulombBounds
+import DOZZ.GMC.SharpMoments.WeightedUniformGrid
 
 /-! Moment control for the critical origin mass, including uniform inverse moments. -/
 
-@[expose] public section
 open MeasureTheory Filter Topology Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -17,7 +15,7 @@ namespace DOZZ.Proofs
 /-- The constant-weight singular mass is the weighted GMC ball mass. -/
 theorem lastone_origin_weighted {Ω : Type*} (M : Ω → Measure ℂ) (γ a : ℝ) (ω : Ω) :
     localSingularMass M (fun _ => 1) 0 γ a ω = weightedGmcBallMass γ (M ω) a 0 1 := by
-  simp only [localSingularMass, ENNReal.ofReal_one, one_mul, weightedGmcBallMass,
+  simp [localSingularMass, ENNReal.ofReal_one, one_mul, weightedGmcBallMass,
     ← lintegral_indicator Metric.isOpen_ball.measurableSet, Set.indicator]
 
 /-- A nonnegative insertion increases the unit ball mass. -/
@@ -26,7 +24,7 @@ theorem lastone_origin_ball_le {Ω : Type*} (M : Ω → Measure ℂ) (γ a : ℝ
     M ω (Metric.ball 0 1) ≤ localSingularMass M (fun _ => 1) 0 γ a ω := by
   rw [lastone_origin_weighted]
   have h := weightedGmcBallMass_mono_charge (M ω) hγ (0 : ℂ) (ρ := 1) le_rfl ha
-  simpa only [weightedGmcBallMass, mul_zero, ENNReal.rpow_eq_pow, ENNReal.rpow_zero, lintegral_one, Measure.restrict_apply_univ] using h
+  simpa [weightedGmcBallMass, mul_zero, ENNReal.rpow_eq_pow, ENNReal.rpow_zero, lintegral_one, Measure.restrict_apply_univ] using h
 
 /-- Every inverse moment of the critical mass is bounded by a fixed ball inverse moment. -/
 theorem lastone_origin_inverse_bound
@@ -65,7 +63,7 @@ theorem lastone_origin_moment_finite
       rw [sub_sub_cancel]
       have : 0 < ν / γ := div_pos hν0 hγ
       nlinarith [show 2 / γ * ν = 2 * (ν / γ) by ring]))
-  simpa only [weightedGmcBallMoment, lastone_origin_weighted, ENNReal.rpow_eq_pow] using hfin
+  simpa [weightedGmcBallMoment, lastone_origin_weighted, ENNReal.rpow_eq_pow] using hfin
 
 /-- Multiplying by a fixed positive finite mass factor leaves a small-power limit unchanged. -/
 theorem lastone_scale_smallPower_limit
@@ -81,14 +79,14 @@ theorem lastone_scale_smallPower_limit
     simpa [Function.comp_def] using
       Real.continuous_exp.continuousAt.tendsto.comp (he.const_mul (Real.log c.toReal))
   have h := hc.mul hlim
-  simp only [one_mul] at h
+  simp [one_mul] at h
   apply h.congr'
   filter_upwards [] with i
   have hmul : (∫⁻ ω, (c * A i ω) ^ e i ∂P) =
       c ^ e i * ∫⁻ ω, A i ω ^ e i ∂P := by
     calc
       _ = ∫⁻ ω, c ^ e i * A i ω ^ e i ∂P := lintegral_congr fun ω => by
-        simp only [ENNReal.mul_rpow_eq_ite, hc0, hcT, false_and, false_or, ite_false]
+        simp [ENNReal.mul_rpow_eq_ite, hc0, hcT, false_and, false_or, ite_false]
       _ = _ := lintegral_const_mul'' _ ((hA i).pow_const (e i))
   rw [hmul, ENNReal.toReal_mul]
 

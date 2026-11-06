@@ -2,15 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.Reflected.OuterMassLimit
-public import DOZZ.FourPoint.TaylorFixedDisk
+import DOZZ.FourPoint.Reflected.OuterMassLimit
+import DOZZ.FourPoint.TaylorFixedDisk
 import Mathlib.Tactic
 
 /-! # A fixed disk retained by the reflected outer mass -/
 
-public section
 open MeasureTheory Set
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -25,7 +23,7 @@ theorem reflected_outerMass_fixed_disk_lower (γ α₁ α₂ α₃ ξ : ℝ) (μ
   have hsub : Metric.ball (3 : ℂ) (1 / 8) ⊆ D := by
     intro x hx
     have hdist : ‖x - 3‖ < 1 / 8 := by
-      simpa only [Metric.mem_ball, dist_eq_norm] using hx
+      simpa [Metric.mem_ball, dist_eq_norm] using hx
     have hh := norm_sub_norm_le (3 : ℂ) x
     have hn3 : ‖(3 : ℂ)‖ = 3 := by norm_num
     rw [hn3, norm_sub_rev] at hh
@@ -38,9 +36,7 @@ theorem reflected_outerMass_fixed_disk_lower (γ α₁ α₂ α₃ ξ : ℝ) (μ
     · simp
   have h := coulombMass_fixed_disk_lower γ (μ.restrict D)
     (![-γ / 2, α₁, α₂] : Fin 3 → ℝ) ![z, 0, 1] α₃ hy
-  rw [Measure.restrict_apply measurableSet_ball, inter_eq_left.mpr hsub] at h
-  exact h
-
+  rwa [Measure.restrict_apply measurableSet_ball, inter_eq_left.mpr hsub] at h
 /-- Uniform inverse moments of the literal retained mass, at every nonnegative inverse order. -/
 theorem reflected_outerMass_inverse_moment_uniform
     {Ω : Type*} [MeasurableSpace Ω]
@@ -52,13 +48,13 @@ theorem reflected_outerMass_inverse_moment_uniform
         ENNReal.ofReal C := by
   let w : ℝ := (2 : ℝ) ^ (-∑ i : Fin 3, |γ * (![-γ / 2, α₁, α₂] : Fin 3 → ℝ) i|) *
     (4 : ℝ) ^ (-|γ * α₃|)
-  have hw : 0 < w := by dsimp only [w]; positivity
+  have hw : 0 < w := by dsimp [w]; positivity
   have hp : -q < 4 / γ ^ 2 := lt_of_le_of_lt (neg_nonpos.mpr hq) (by positivity)
   obtain ⟨Cb, hCb, hball⟩ := equatorGFF_GMC_ball_moment_bound P X hX γ hγ hγ₂ M hM
     (-q) hp {(3 : ℂ)} isCompact_singleton
   let e : ℝ := γ * Q γ * (-q) - γ ^ 2 * (-q) ^ 2 / 2
   let C : ℝ := w ^ (-q) * (Cb * (1 / 8 : ℝ) ^ e)
-  have hC : 0 < C := by dsimp only [C]; positivity
+  have hC : 0 < C := by dsimp [C]; positivity
   refine ⟨C, hC, ?_⟩
   intro z ξ hz hr
   have hb (ω : Ω) : gammaHalfOuterMass γ α₁ α₂ α₃ (M ω) z ξ ^ (-q) ≤

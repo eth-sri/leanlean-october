@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Brownian.Lateral.AnnularComparison
-public import DOZZ.Brownian.ReflectionMassMeasurability
+import DOZZ.Brownian.Lateral.AnnularComparison
+import DOZZ.Brownian.ReflectionMassMeasurability
 
 /-!
 # Initial-block inverse estimates for the two-sided reflection mass
@@ -16,7 +15,6 @@ no independence between its two half-lines is required. The radial exponential-s
 estimate and the lateral inverse-moment estimate remain explicit analytic inputs.
 -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal NNReal Topology
@@ -27,7 +25,7 @@ namespace DOZZ.Proofs
 theorem ennreal_rpow_antitone_nonpos (x y : ℝ≥0∞) (q : ℝ)
     (hxy : x ≤ y) (hq : q ≤ 0) : y ^ q ≤ x ^ q := by
   have h := ENNReal.inv_le_inv.mpr (ENNReal.rpow_le_rpow hxy (neg_nonneg.mpr hq))
-  simpa only [← ENNReal.rpow_neg, neg_neg] using h
+  simpa [← ENNReal.rpow_neg, neg_neg] using h
 
 /-- Local finiteness makes the actual full reflection mass AE measurable for any AE measurable
 path pair; a conditioned law is not needed for this carrier fact. -/

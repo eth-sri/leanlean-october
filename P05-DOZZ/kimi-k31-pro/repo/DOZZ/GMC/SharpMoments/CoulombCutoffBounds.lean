@@ -2,11 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.SharpMoments.CoulombCutoffDefs
-public import DOZZ.GMC.SharpMoments.SeibergWeight
-public import DOZZ.GMC.Moments.InfinityChart
+import DOZZ.GMC.SharpMoments.CoulombCutoffDefs
+import DOZZ.GMC.SharpMoments.SeibergWeight
+import DOZZ.GMC.Moments.InfinityChart
 
 /-! # Pointwise bounds for the single-chart regularized Coulomb weight
 
@@ -17,7 +16,6 @@ subinterval of `(0, ∞)`, uniformly in the parameters, except the softened root
 upper bounds in the three regions and a lower bound on a fixed exterior disk, with constants
 depending only on the size of the parameters. -/
 
-@[expose] public section
 
 open MeasureTheory Filter Topology
 open scoped ENNReal NNReal
@@ -247,7 +245,7 @@ theorem coulombCutoffBound_infty_base_mem {t m δ : ℝ} (hm1 : 1 ≤ m) (htm : 
 
 /-- Rewriting a quotient with a free common factor. -/
 theorem coulombCutoffBound_div_eq {m a b : ℝ} (hb : b ≠ 0) : m / a = m * b / a / b := by
-  rw [div_div, mul_div_mul_right _ _ hb]
+  grind
 
 /-- The numerator constant of the root factor in the inverted chart. -/
 theorem coulombCutoffBound_root_numer {m t d δ M Ri : ℝ} (hm1 : 1 ≤ m) (htm : t ≤ m)

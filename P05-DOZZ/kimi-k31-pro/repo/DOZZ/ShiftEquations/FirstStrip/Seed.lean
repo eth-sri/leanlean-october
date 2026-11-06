@@ -2,12 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.ShiftEquations.Gluing.Coefficient
-public import DOZZ.ShiftEquations.Gluing.CoefficientAlgebra
-public import DOZZ.Statements.Hypergeom.PlanarGaussConstant
-public import DOZZ.Statements.FourPoint.FourPointT
+import DOZZ.ShiftEquations.Gluing.Coefficient
+import DOZZ.ShiftEquations.Gluing.CoefficientAlgebra
+import DOZZ.Statements.Hypergeom.PlanarGaussConstant
+import DOZZ.Statements.FourPoint.FourPointT
 import DOZZ.ShiftEquations.Rbar.Multiplier
 import DOZZ.ShiftEquations.Reflection.RbarContinuity
 import DOZZ.FourPoint.Diagonal.Assembly
@@ -25,7 +24,6 @@ function on two bases; the coefficients of `|F₊|²` agree:
 first structure shift `C(α₁ + γ/2) = -𝒜(α₁) C(α₁ - γ/2)/(πμ)` ([KRV, Theorem 9.1]).
 -/
 
-@[expose] public section
 
 open MeasureTheory Filter Topology Set
 
@@ -187,4 +185,3 @@ theorem firstShift_real_of_unreflected {Ω : Type*} [MeasurableSpace Ω] (P : Me
 
 end DOZZ.Proofs
 
-end

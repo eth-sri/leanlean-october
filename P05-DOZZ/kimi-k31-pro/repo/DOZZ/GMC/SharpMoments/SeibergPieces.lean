@@ -2,11 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.SharpMoments.WeightedLocalSufficiency
-public import DOZZ.GMC.Moments.InversionLaw
-public import DOZZ.GMC.Annulus.BallCover
+import DOZZ.ShiftEquations.Mobius.InversionMoment
+import DOZZ.GMC.SharpMoments.WeightedLocalSufficiency
+import DOZZ.GMC.Moments.InversionLaw
+import DOZZ.GMC.Annulus.BallCover
 
 /-! # Probabilistic pieces of the global extended moment
 
@@ -15,7 +15,6 @@ of shrinking disks tend to zero. The power weight at infinity integrated over th
 disk is the weighted local mass of the inverted measure at the origin, so the inversion law turns
 its moments into weighted local moments at the origin. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped ENNReal NNReal
@@ -27,41 +26,7 @@ theorem gmc_singleton_mass_eq_zero_ae
     {Ω : Type*} [MeasurableSpace Ω]
     (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
     (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) (z : ℂ) :
-    ∀ᵐ ω ∂P, M ω {z} = 0 := by
-  have hγsq : γ ^ 2 < 4 := by nlinarith
-  have hp4 : (1 / 2 : ℝ) < 4 / γ ^ 2 := by
-    rw [lt_div_iff₀ (by positivity)]
-    linarith
-  obtain ⟨C, -, hCb⟩ := gmc_ball_moment_sharp_upper_center P X hX γ hγ hγ2 M hM z (1 / 2) hp4
-  set ξ : ℝ := 2 * (1 / 2) + γ ^ 2 * (1 / 2) / 2 - γ ^ 2 * (1 / 2) ^ 2 / 2 with hξ
-  have hξpos : 0 < ξ := by
-    rw [hξ]
-    nlinarith
-  have hmeas : AEMeasurable (fun ω => M ω {z}) P :=
-    gmc_set_mass_aemeasurable_of_isGMCOf P X hX γ hγ hγ2 M hM {z} (measurableSet_singleton z)
-  have hle : ∀ ρ : ℝ, 0 < ρ → ρ ≤ 1 / 8 →
-      ∫⁻ ω, M ω {z} ^ (1 / 2 : ℝ) ∂P ≤ ENNReal.ofReal (C * ρ ^ ξ) := by
-    intro ρ hρ hρ8
-    refine le_trans ?_ (hCb ρ hρ hρ8)
-    apply lintegral_mono
-    intro ω
-    exact ENNReal.rpow_le_rpow
-      (measure_mono (Set.singleton_subset_iff.mpr (Metric.mem_ball_self hρ))) (by norm_num)
-  have htend : Tendsto (fun ρ : ℝ => ENNReal.ofReal (C * ρ ^ ξ)) (𝓝[>] 0) (𝓝 0) := by
-    have h1 : Tendsto (fun ρ : ℝ => C * ρ ^ ξ) (𝓝[>] 0) (𝓝 (C * (0 : ℝ) ^ ξ)) :=
-      (((Real.continuousAt_rpow_const 0 ξ (Or.inr hξpos.le)).tendsto).const_mul C).mono_left
-        nhdsWithin_le_nhds
-    rw [Real.zero_rpow hξpos.ne', mul_zero] at h1
-    simpa using ENNReal.tendsto_ofReal h1
-  have hzero : ∫⁻ ω, M ω {z} ^ (1 / 2 : ℝ) ∂P = 0 := by
-    refine le_antisymm (ge_of_tendsto htend ?_) zero_le
-    filter_upwards [Ioo_mem_nhdsGT (show (0 : ℝ) < 1 / 8 by norm_num)] with ρ hρ
-    exact hle ρ hρ.1 hρ.2.le
-  have hae := (lintegral_eq_zero_iff' (hmeas.pow_const _)).mp hzero
-  filter_upwards [hae] with ω hω
-  rcases ENNReal.rpow_eq_zero_iff.mp hω with h | h
-  · exact h.1
-  · exact absurd h.2 (by norm_num)
+    ∀ᵐ ω ∂P, M ω {z} = 0 := DOZZ.Proofs.gmc_atomless_of_isGMCOf P X hX γ hγ hγ2 M hM z
 
 /-- Every positive power of a finite sum is bounded by the sum of the powers times a power of the
 cardinality. -/
@@ -97,8 +62,7 @@ theorem exterior_lintegral_le_inversion_weighted (μ : Measure ℂ) (γ αinf : 
     dsimp only
     rw [Set.indicator_of_mem (show x ∈ {x : ℂ | Rr < ‖x‖} from hx), hg,
       Set.indicator_of_mem hxinv, sub_zero, norm_inv, ENNReal.ofReal_inv_of_pos hxpos]
-    rw [show -γ * αinf = -(γ * αinf) by ring]
-    rw [ENNReal.rpow_eq_pow, ENNReal.rpow_eq_pow, ENNReal.rpow_neg, ENNReal.inv_rpow, inv_inv]
+    rw [show -γ * αinf = -(γ * αinf) by ring, ENNReal.rpow_eq_pow, ENNReal.rpow_eq_pow, ENNReal.rpow_neg, ENNReal.inv_rpow, inv_inv]
   · rw [Set.indicator_of_notMem (show x ∉ {x : ℂ | Rr < ‖x‖} from hx)]
     exact zero_le
 

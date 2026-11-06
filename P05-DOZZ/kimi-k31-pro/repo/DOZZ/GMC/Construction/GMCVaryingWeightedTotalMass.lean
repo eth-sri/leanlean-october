@@ -2,13 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.Construction.GMCWeightedTotalMass
+import DOZZ.GMC.Construction.GMCWeightedTotalMass
 
 /-! Uniformly varying weights give close cutoff total masses. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped Distributions ENNReal NNReal BoundedContinuousFunction
@@ -19,43 +17,7 @@ private theorem weightedTotal_eq_integral_local
     (μ : Measure ℂ) (hμ : IsFiniteMeasure μ)
     (w : BoundedContinuousFunction ℂ ℝ) (hw : ∀ z, 0 ≤ w z) :
     ((μ.withDensity (fun z => ENNReal.ofReal (w z))) Set.univ).toReal =
-      ∫ z, w z ∂μ := by
-  let W : ℂ → ℝ≥0∞ := fun z => ENNReal.ofReal (w z)
-  have hW : Measurable W := ENNReal.measurable_ofReal.comp w.continuous.measurable
-  have hWbound : ∀ z, W z ≤ ENNReal.ofReal ‖w‖ := by
-    intro z
-    apply ENNReal.ofReal_le_ofReal
-    calc
-      w z = |w z| := (abs_of_nonneg (hw z)).symm
-      _ = ‖w z‖ := (Real.norm_eq_abs _).symm
-      _ ≤ ‖w‖ := w.norm_coe_le_norm z
-  have hWint : ∫⁻ z, W z ∂μ ≠ ∞ := by
-    apply ne_of_lt
-    calc
-      ∫⁻ z, W z ∂μ ≤ ∫⁻ z, ENNReal.ofReal ‖w‖ ∂μ := lintegral_mono hWbound
-      _ < ∞ := by
-        rw [lintegral_const]
-        exact ENNReal.mul_lt_top ENNReal.ofReal_lt_top
-          (lt_top_iff_ne_top.mpr (@measure_ne_top ℂ _ μ hμ Set.univ))
-  have hWfinite : IsFiniteMeasure (μ.withDensity W) := isFiniteMeasure_withDensity hWint
-  have hconst : ∫ z, (1 : BoundedContinuousFunction ℂ ℝ) z ∂μ.withDensity W =
-      ((μ.withDensity W) Set.univ).toReal := by
-    let _ : IsFiniteMeasure (μ.withDensity W) := hWfinite
-    rw [← Measure.real_def]
-    simp [integral_const]
-  have hWlt : ∀ᵐ z ∂μ, W z < ∞ := ae_of_all _ (fun z => ENNReal.ofReal_lt_top)
-  have hInt := integral_withDensity_eq_integral_toReal_smul hW hWlt
-    (1 : BoundedContinuousFunction ℂ ℝ)
-  have hInt' : ∫ z, (1 : BoundedContinuousFunction ℂ ℝ) z ∂μ.withDensity W =
-      ∫ z, w z ∂μ := by
-    rw [hInt]
-    apply integral_congr_ae
-    filter_upwards [] with z
-    simp [W, ENNReal.toReal_ofReal (hw z), smul_eq_mul]
-  calc
-    ((μ.withDensity W) Set.univ).toReal =
-        ∫ z, (1 : BoundedContinuousFunction ℂ ℝ) z ∂μ.withDensity W := hconst.symm
-    _ = ∫ z, w z ∂μ := hInt'
+      ∫ z, w z ∂μ := DOZZ.Proofs.weightedTotal_eq_integral μ hμ w hw
 
 /-- The total masses obtained from a uniformly convergent family of nonnegative BCF weights
 become close in probability at the same GMC cutoff. -/

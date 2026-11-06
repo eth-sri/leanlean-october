@@ -2,10 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.Correlations.Continuity.MomentLimit
-public import DOZZ.Statements.Correlations.UnitVolumeNPointCorrelation
-@[expose] public section
+import DOZZ.Correlations.Continuity.MomentLimit
+import DOZZ.Statements.Correlations.UnitVolumeNPointCorrelation
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -31,15 +29,15 @@ theorem continuity_finite_prefactor {N : ℕ} (z : Fin N → ℂ)
   apply continuous_finsetProd
   intro j _
   by_cases hij : i < j
-  · simp only [ite_eq_left hij]
+  · simp [ite_eq_left hij]
     apply (Real.continuous_const_rpow (norm_ne_zero_iff.mpr
       (sub_ne_zero.mpr (hz i j (ne_of_lt hij))))).comp
     fun_prop
-  · simp only [ite_eq_right hij]
+  · simp [ite_eq_right hij]
     exact continuous_const
 
 /-- Joint continuity of the normalized unit-volume moments on the literal domain of
-`DOZZ.unitVolumeNPoint_jointly_continuous_parameters`. -/
+`unitVolumeNPoint_jointly_continuous_parameters`. -/
 theorem unitVolumeNPoint_jointly_continuous_parameters
     {Ω : Type*} [MeasurableSpace Ω] {N : ℕ} (hN : 3 ≤ N)
     (P : Measure Ω) (X : Ω → Distr) (M : ℝ → Ω → Measure ℂ)
@@ -57,7 +55,7 @@ theorem unitVolumeNPoint_jointly_continuous_parameters
     fun q => (q.1, (z, q.2, 0))
   have hJ : Continuous J := by unfold J; fun_prop
   have hp (q : ℝ × (Fin (3 + n) → ℝ)) : continuityCoulombPower (J q) = -nPointSExp q.1 q.2 := by
-    simp only [continuityCoulombPower, J, nPointSExp, add_zero]
+    simp [continuityCoulombPower, J, nPointSExp, add_zero]
     ring
   have hz' : Function.Injective z := by
     intro i j hij
@@ -74,16 +72,16 @@ theorem unitVolumeNPoint_jointly_continuous_parameters
     · change 0 < Q q.1
       unfold Q
       positivity
-    · simpa only [hp, J] using hbulk
-    · simpa only [hp, J] using hroot
-    · simpa only [hp, J] using continuity_infinity_bound hγ hbulk
+    · simpa [hp, J] using hbulk
+    · simpa [hp, J] using hroot
+    · simpa [hp, J] using continuity_infinity_bound hγ hbulk
   have hm := (continuity_coulomb_moment_on_compact P X hX Xc hXc Mfam hMf
     (J '' K) (hK.image hJ) hadm).comp hJ.continuousOn (mapsTo_image J K)
   have hm' : ContinuousOn (fun q => (∫⁻ ω,
       (coulombMass q.1 (M q.1 ω) q.2 z 0) ^ (-nPointSExp q.1 q.2) ∂P).toReal) K := by
     apply hm.congr
     intro q hq
-    simp only [Function.comp_apply, J, hp, hMeq q hq]
+    simp [Function.comp_apply, J, hp, hMeq q hq]
   have hc : ContinuousOn (fun q : ℝ × (Fin (3 + n) → ℝ) => 2 / q.1) K :=
     continuousOn_const.div continuous_fst.continuousOn (fun q hq => (hKdom q hq).1.ne')
   have hf : Continuous (fun q : ℝ × (Fin (3 + n) → ℝ) => nPointCoulombPrefactor q.2 z) :=

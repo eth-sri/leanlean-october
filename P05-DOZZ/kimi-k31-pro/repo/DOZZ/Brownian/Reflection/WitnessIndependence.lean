@@ -2,11 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Brownian.ReflectionJointInputLaw
-public import DOZZ.Brownian.ReflectionAlgebra
-public import DOZZ.Brownian.Lateral.LawUniqueness
+import DOZZ.Brownian.ReflectionJointInputLaw
+import DOZZ.Brownian.ReflectionAlgebra
+import DOZZ.Brownian.Lateral.LawUniqueness
 
 /-!
 # Witness independence of the reflection coefficients
@@ -17,7 +16,6 @@ product structure by independence. The unit-volume moment is a function of that 
 the full coefficient is a scalar function of the moment.
 -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology TopologicalSpace Set
 open scoped ENNReal NNReal Topology
@@ -49,4 +47,3 @@ theorem reflectionR_eq_of_isReflectionData
 
 end DOZZ.Proofs
 
-end

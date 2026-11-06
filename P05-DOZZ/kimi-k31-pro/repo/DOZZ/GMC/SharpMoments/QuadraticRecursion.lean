@@ -2,12 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import Mathlib.Analysis.SpecialFunctions.Pow.Continuity
-public import Mathlib.Analysis.SpecialFunctions.Pow.Real
-public import Mathlib.Order.Filter.AtTopBot.Basic
-public import Mathlib.Topology.Order.MonotoneConvergence
+import Mathlib.Analysis.SpecialFunctions.Pow.Continuity
+import Mathlib.Analysis.SpecialFunctions.Pow.Real
+import Mathlib.Order.Filter.AtTopBot.Basic
+import Mathlib.Topology.Order.MonotoneConvergence
 
 /-! # Quadratic small-deviation recursions
 
@@ -16,7 +15,6 @@ recursion `G x ≤ error x + B * G (κ * x - c₀) ^ 2`. If the error vanishes a
 small enough, then `G` tends to zero. If the error is Gaussian and the contraction ratio `κ`
 exceeds one half, then `G` decays like a stretched exponential `exp (-d * x ^ β)` with `β > 1`. -/
 
-@[expose] public section
 
 open Filter Topology
 
@@ -49,15 +47,12 @@ theorem quadRec_tendsto_zero
   have hBg : B * g < 1 := by
     have : B * g ≤ B * L := mul_le_mul_of_nonneg_left hgL hB.le
     linarith
-  have hprod : g * (1 - B * g) ≤ 0 := by nlinarith
   have hg_nonpos : g ≤ 0 := by
     by_contra hpos
     have := mul_pos (not_le.1 hpos) (sub_pos.2 hBg)
     linarith
   have hg_zero : g = 0 := le_antisymm hg_nonpos hg0
-  rw [hg_zero] at htend
-  exact htend
-
+  rwa [hg_zero] at htend
 /-- A contraction ratio above one half allows an exponent `β ∈ (1, 2)` with `2 k ^ β > 1`. -/
 theorem quadRec_exists_beta (k : ℝ) (hk : 1 / 2 < k) :
     ∃ β : ℝ, 1 < β ∧ β < 2 ∧ 1 < 2 * k ^ β := by
@@ -66,7 +61,7 @@ theorem quadRec_exists_beta (k : ℝ) (hk : 1 / 2 < k) :
     continuousAt_const.mul (Real.continuousAt_const_rpow hk0.ne')
   have h1 : ∀ᶠ β in 𝓝 (1 : ℝ), 1 < 2 * k ^ β := by
     refine hcont.eventually (lt_mem_nhds ?_)
-    simp only [Real.rpow_one]
+    simp [Real.rpow_one]
     linarith
   have h2 : ∀ᶠ β in 𝓝 (1 : ℝ), β < 2 := eventually_lt_nhds (by norm_num)
   have h3 : ∀ᶠ β in 𝓝[>] (1 : ℝ), (1 < 2 * k ^ β ∧ β < 2) ∧ 1 < β :=
@@ -160,9 +155,7 @@ theorem quadRec_gaussian_tail (A c Z : ℝ) (hc : 0 < c) (hZ : 1 ≤ Z) (hAZ : 4
     linarith
   have hE : 0 < Real.exp (c / 2 * Z ^ 2) := Real.exp_pos _
   have h5 : A ≤ 1 / 2 * Real.exp (c / 2 * Z ^ 2) := by linarith
-  rw [neg_mul, Real.exp_neg, ← div_eq_mul_inv, div_le_iff₀ hE]
-  exact h5
-
+  rwa [neg_mul, Real.exp_neg, ← div_eq_mul_inv, div_le_iff₀ hE]
 /-- The inductive core: if the bound `G x ≤ exp (-d * x ^ β)` holds on `[Y, Z]` with `Y = k * Z`,
 and the error terms are absorbed beyond `Z`, then it propagates to all `x ≥ Y`. -/
 theorem quadRec_core

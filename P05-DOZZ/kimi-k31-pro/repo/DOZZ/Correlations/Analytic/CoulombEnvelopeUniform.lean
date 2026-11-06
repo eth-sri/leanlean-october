@@ -2,17 +2,15 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.Analytic.EnvelopeMoments
-public import DOZZ.Correlations.Analytic.LowerMassMoments
-public import DOZZ.Correlations.Analytic.CoulombMassPositiveFinite
-public import DOZZ.Correlations.Analytic.RetainedMassMoments
-public import DOZZ.GMC.SharpMoments.SeibergUniform
+import DOZZ.Correlations.Analytic.EnvelopeMoments
+import DOZZ.Correlations.Analytic.LowerMassMoments
+import DOZZ.Correlations.Analytic.CoulombMassPositiveFinite
+import DOZZ.Correlations.Analytic.RetainedMassMoments
+import DOZZ.GMC.SharpMoments.SeibergUniform
 
 /-! Uniform higher moments of the common envelope in the complex increment estimate. -/
 
-@[expose] public section
 open MeasureTheory
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -41,7 +39,7 @@ theorem coulomb_envelope_uniform_moment
   let : IsProbabilityMeasure P := hX.1
   let L (ω : Ω) := c * M ω (Metric.ball center (1 / 8))
   have hLm : AEMeasurable L P := by
-    simpa only [L, Pi.mul_def] using aemeasurable_const.mul
+    simpa [L, Pi.mul_def] using aemeasurable_const.mul
       (gmc_set_mass_aemeasurable_of_isGMCOf P X hX γ hγ hγ2 M hM _
         Metric.isOpen_ball.measurableSet)
   have hLp : ∀ᵐ ω ∂P, L ω ≠ 0 ∧ L ω ≠ ⊤ := by

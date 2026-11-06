@@ -2,15 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.Dual.RelativeKernel
-public import DOZZ.FourPoint.Dual.RetainedZeroRelations
+import DOZZ.FourPoint.Dual.RelativeKernel
+import DOZZ.FourPoint.Dual.RetainedZeroRelations
 import Mathlib.Tactic
 
 /-! # Relative comparison of the actual retained masses -/
 
-@[expose] public section
 open MeasureTheory Set
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -36,7 +34,7 @@ theorem dual_outerMass_relative_comparison (γ α₁ α₂ α₃ ξ : ℝ)
   let D : Set ℂ := {x | r ≤ ‖x‖}
   let K : ℂ → ℝ≥0∞ := fun x => ENNReal.ofReal (dualFusionKernel γ α₁ α₂ α₃ z x)
   let K₀ : ℂ → ℝ≥0∞ := fun x => ENNReal.ofReal (dualFusionKernel γ α₁ α₂ α₃ 0 x)
-  have hd : 0 ≤ d := by dsimp only [d]; positivity
+  have hd : 0 ≤ d := by dsimp [d]; positivity
   have hD : MeasurableSet D := (isClosed_le continuous_const continuous_norm).measurableSet
   have hK : Measurable K := ENNReal.measurable_ofReal.comp (dual_kernel_measurable γ α₁ α₂ α₃ z)
   have hK₀ : Measurable K₀ := ENNReal.measurable_ofReal.comp (dual_kernel_measurable γ α₁ α₂ α₃ 0)
@@ -60,7 +58,7 @@ theorem dual_outerMass_relative_comparison (γ α₁ α₂ α₃ ξ : ℝ)
     have hl := dual_kernel_relative_lower γ α₁ α₂ α₃ z x hn hsep
     have hu := le_abs_self (dualFusionKernel γ α₁ α₂ α₃ z x - dualFusionKernel γ α₁ α₂ α₃ 0 x)
     have hv := neg_le_abs (dualFusionKernel γ α₁ α₂ α₃ z x - dualFusionKernel γ α₁ α₂ α₃ 0 x)
-    dsimp only [K, K₀]
+    dsimp [K, K₀]
     refine ⟨?_, ?_, ?_⟩
     · rw [← ENNReal.ofReal_mul (by norm_num : (0 : ℝ) ≤ 1 / 4)]
       exact ENNReal.ofReal_le_ofReal (by linarith only [hl])

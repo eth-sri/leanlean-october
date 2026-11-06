@@ -1,10 +1,9 @@
 /-
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 -/
-module
 
-public import DOZZ.Brownian.ReflectionMassLawTransport
-public import DOZZ.Brownian.ConditionedFDDUniqueness
+import DOZZ.Brownian.ReflectionMassLawTransport
+import DOZZ.Brownian.ConditionedFDDUniqueness
 
 /-!
 # Reflection input-law reduction to the lateral marginal
@@ -14,7 +13,6 @@ Together with independence of the lateral measure, this reduces reflection-momen
 uniqueness of the lateral-measure marginal law.
 -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal NNReal
@@ -48,11 +46,11 @@ theorem twoSidedConditionedPathPair_law_eq
   have hPair : P.map B =
       (P.map (fun ω => (B ω).1)).prod (P.map (fun ω => (B ω).2)) := by
     have h := (indepFun_iff_map_prod_eq_prod_map_map hB₁m hB₂m).1 hBInd
-    simpa only [Prod.eta] using h
+    simpa [Prod.eta] using h
   have hPair' : P'.map B' =
       (P'.map (fun ω => (B' ω).1)).prod (P'.map (fun ω => (B' ω).2)) := by
     have h := (indepFun_iff_map_prod_eq_prod_map_map hB₁'m hB₂'m).1 hB'Ind
-    simpa only [Prod.eta] using h
+    simpa [Prod.eta] using h
   calc
     P.map B = (P.map (fun ω => (B ω).1)).prod (P.map (fun ω => (B ω).2)) := hPair
     _ = (P'.map (fun ω => (B' ω).1)).prod (P'.map (fun ω => (B' ω).2)) := by rw [hMarg₁, hMarg₂]
@@ -83,10 +81,10 @@ theorem reflection_jointInputLaw_eq_of_lateralLaw_eq
   rcases hB₂' with ⟨hB₂'m, _⟩
   have hBm : AEMeasurable B P := by
     have hm := hB₁m.prodMk hB₂m
-    simpa only [Prod.eta] using hm
+    simpa [Prod.eta] using hm
   have hB'm : AEMeasurable B' P' := by
     have hm := hB₁'m.prodMk hB₂'m
-    simpa only [Prod.eta] using hm
+    simpa [Prod.eta] using hm
   have hZm : AEMeasurable Z P := hZ.2.2.2.1
   have hZ'm : AEMeasurable Z' P' := hZ'.2.2.2.1
   have hJoint : P.map (fun ω => (B ω, Z ω)) = (P.map B).prod (P.map Z) :=
@@ -115,4 +113,3 @@ theorem reflectionBarR_eq_of_lateralLaw_eq
 
 end DOZZ.Proofs
 
-end

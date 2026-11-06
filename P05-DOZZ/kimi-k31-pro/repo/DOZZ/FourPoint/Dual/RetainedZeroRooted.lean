@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.Dual.RetainedZeroMass
-public import DOZZ.FourPoint.Fusion.RootedLowerBound
+import DOZZ.FourPoint.Dual.RetainedZeroMass
+import DOZZ.FourPoint.Fusion.RootedLowerBound
 import Mathlib.Tactic
 
 /-! # Uniform rooted lower bounds for the actual dual retained mass
@@ -14,7 +13,6 @@ The source's rooted inverse moment is bounded using a fixed retained disk.
 The rooting point can be anywhere; no subcritical charge condition at it is used.
 -/
 
-public section
 
 open MeasureTheory Set
 open scoped ENNReal

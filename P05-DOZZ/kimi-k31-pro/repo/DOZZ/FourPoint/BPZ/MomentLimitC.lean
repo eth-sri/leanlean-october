@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.BPZ.MomentLimitB
+import DOZZ.FourPoint.BPZ.MomentLimitB
 
 /-! # Ingredients for the limits of the moment fields
 
@@ -15,7 +14,6 @@ public import DOZZ.FourPoint.BPZ.MomentLimitB
 * dominated convergence of the expectations of the zeroth moment and of the far parts of the
   moment fields along `(εₙ, zₙ) → (0, z₀)`. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped ENNReal NNReal
@@ -41,8 +39,7 @@ theorem bpz_moment_good_ae {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X
   refine ⟨h0, ?_, ?_⟩
   · have hI1 : Integrable (bpzSoftWeight γ χ α₁ α₂ α₃ 1 z₀) (M ω) := by
       refine ⟨(measurable_bpzSoftWeight 1 z₀).aestronglyMeasurable, ?_⟩
-      rw [hasFiniteIntegral_iff_ofReal (Eventually.of_forall (bpzSoftWeight_nonneg 1 z₀))]
-      exact h2
+      rwa [hasFiniteIntegral_iff_ofReal (Eventually.of_forall (bpzSoftWeight_nonneg 1 z₀))]
     refine hI1.mono' measurable_bpzBaseWeight.aestronglyMeasurable
       (Eventually.of_forall fun x => ?_)
     rw [Real.norm_of_nonneg (bpzBaseWeight_nonneg x)]
@@ -54,11 +51,9 @@ theorem bpz_moment_good_ae {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X
   · have e : bpzSoftWeight γ χ α₁ α₂ α₃ 0 z₀ = fun x => Complex.normSq (x - z₀) ^ (γ * χ / 2) *
         bpzBaseWeight γ χ α₁ α₂ α₃ x := by
       funext x
-      simp only [bpzSoftWeight, ne_eq, OfNat.ofNat_ne_zero, not_false_eq_true, zero_pow,
+      simp [bpzSoftWeight, ne_eq, OfNat.ofNat_ne_zero, not_false_eq_true, zero_pow,
         add_zero]
-    rw [← e]
-    exact h1
-
+    rwa [← e]
 /-- An integrable lower bound of the softened mass, uniform in bounded roots and in the
 softening. -/
 theorem bpz_farBall_lower {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
@@ -113,9 +108,7 @@ theorem bpz_farBall_lower {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X 
   · intro ω z hz ε hε0 hε1 hint
     have hb : bpzMass γ χ α₁ α₂ α₃ ε (M ω) z ≠ ⊤ := hint.lintegral_lt_top.ne
     have h := ENNReal.toReal_mono hb (hcle z hz ε hε0 hε1 (M ω))
-    rw [ENNReal.toReal_mul, ENNReal.toReal_ofReal hc.le, ← bpzSoftI_eq_toReal] at h
-    exact h
-
+    rwa [ENNReal.toReal_mul, ENNReal.toReal_ofReal hc.le, ← bpzSoftI_eq_toReal] at h
 /-- The real form of the near-root expectation bound, for roots near a regular root `z₀`. -/
 theorem bpz_near_real_bound {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
     (hX : IsEquatorGFF P X) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ)
@@ -260,9 +253,6 @@ theorem bpz_tendsto_momField2_far {Ω : Type*} [MeasurableSpace Ω] {P : Measure
   have hnear : ∀ᶠ n in atTop, ‖zs n - z₀‖ ≤ min 1 (r / 2) :=
     (tendsto_iff_norm_sub_tendsto_zero.mp hz).eventually
       (ge_mem_nhds (lt_min one_pos (half_pos hr)))
-  have hK : 0 ≤ 4 * (4 * a * (1 - a) + 2 * a) / r ^ 2 := by
-    have : 0 ≤ 1 - a := sub_nonneg.mpr ha1
-    positivity
   refine tendsto_integral_filter_of_dominated_convergence
     (fun ω => (s * (s + 1) * (4 * a / r) ^ 2 + s * (4 * (4 * a * (1 - a) + 2 * a) / r ^ 2)) *
       Y ω ^ (-s)) ?_ ?_ (hYint.const_mul _) ?_

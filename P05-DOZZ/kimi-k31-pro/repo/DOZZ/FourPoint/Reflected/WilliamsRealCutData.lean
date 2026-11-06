@@ -2,12 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Reflected.RandomCutSqueeze
-public import DOZZ.FourPoint.Reflected.ReflectionCutRealMoments
-public import DOZZ.Correlations.Tails.WilliamsInputCode
+import DOZZ.FourPoint.Reflected.RandomCutSqueeze
+import DOZZ.FourPoint.Reflected.ReflectionCutRealMoments
+import DOZZ.Correlations.Tails.WilliamsInputCode
 /-! Measurability and signed cut comparisons for the actual reflection witness. -/
-@[expose] public section
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -54,7 +52,7 @@ theorem reflected_williams_real_cut_data
     nlinarith only [hγ,hγ₂]
   have hi := (reflected_reflection_real_moment P γ α 1 B Z hα hData h4).1
   have hJi : Integrable (fun v : ℝ × Ω => (twoSidedReflectionMass γ B Z v.2).toReal) (μ.prod P) := by
-    simpa only [one_mul,Real.rpow_one] using (integrable_const (1 : ℝ)).mul_prod hi
+    simpa [one_mul,Real.rpow_one] using (integrable_const (1 : ℝ)).mul_prod hi
   refine ⟨hJmp,hKmp,hjm,hJi, ?_⟩
   have hcuts := reflected_random_reflection_cut_squeeze_ae P μ γ ν B Z hData.1 B₀ hB₀
     (sub_pos.mpr hα) H hH

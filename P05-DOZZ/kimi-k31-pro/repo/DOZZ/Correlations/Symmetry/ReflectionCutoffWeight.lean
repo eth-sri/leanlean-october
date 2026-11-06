@@ -2,10 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.Correlations.Symmetry.ReflectionCircleMean
-public import Mathlib.Topology.UniformSpace.HeineCantor
-@[expose] public section
+import DOZZ.Correlations.Symmetry.ReflectionCircleMean
+import Mathlib.Topology.UniformSpace.HeineCantor
 open Filter Set
 open scoped Topology
 namespace DOZZ.Proofs
@@ -39,7 +37,7 @@ noncomputable def symmetryReflectionLimitWeight (γ : ℝ) : BoundedContinuousFu
 theorem symmetryReflectionCutoffWeight_apply (γ r : ℝ) (x : ℂ) :
     symmetryReflectionCutoffWeight γ r x = Real.exp (γ ^ 2 * symmetryCirclePotentialMean r x +
       4 * symmetryReflectionPotential x) := by
-  simp only [symmetryReflectionCutoffWeight, symmetryExponentialBCF_apply,
+  simp [symmetryReflectionCutoffWeight, symmetryExponentialBCF_apply,
     BoundedContinuousFunction.add_apply, BoundedContinuousFunction.smul_apply, smul_eq_mul]
   rfl
 
@@ -68,7 +66,7 @@ theorem symmetryReflectionCutoffWeight_uniform (γ : ℝ) :
     rw [Metric.tendstoUniformly_iff]
     intro ε hε
     have he : Tendsto (fun r : ℝ => γ ^ 2 * (2 * Real.exp (-r))) atTop (𝓝 0) := by
-      simpa only [mul_zero, Function.comp_def] using
+      simpa [mul_zero, Function.comp_def] using
         (Real.tendsto_exp_atBot.comp tendsto_neg_atTop_atBot).const_mul 2 |>.const_mul (γ ^ 2)
     filter_upwards [he.eventually (gt_mem_nhds hε)] with r hr x
     rw [Real.dist_eq]
@@ -88,5 +86,5 @@ theorem symmetryReflectionCutoffWeight_uniform (γ : ℝ) :
   change TendstoUniformly (fun r x => Real.exp (γ ^ 2 * symmetryCirclePotentialMean r x +
     4 * symmetryReflectionPotential x))
     (fun x => Real.exp ((γ ^ 2 + 4) * symmetryReflectionPotential x)) atTop
-  exact he
+  assumption
 end DOZZ.Proofs

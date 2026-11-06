@@ -2,11 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.Brownian.Williams.ConditionedBandFinite
-public import DOZZ.Brownian.LastExitFDDMarkov
-public import DOZZ.Statements.Brownian.ConditionedPositiveEntranceDensity
-public import Mathlib.Analysis.Calculus.Deriv.Slope
+import DOZZ.Brownian.Williams.ConditionedBandFinite
+import DOZZ.Brownian.LastExitFDDMarkov
+import DOZZ.Statements.Brownian.ConditionedPositiveEntranceDensity
+import Mathlib.Analysis.Calculus.Deriv.Slope
 /-!
 # The actual Williams band future converges to the entrance law
 
@@ -22,7 +21,6 @@ including tests translated with the initial state. This gives convergence
 of the actual normalized upper-conditioned Brownian future on every finite
 continuous cylinder. No last-exit identity is used in this identification.
 -/
-@[expose] public section
 open MeasureTheory ProbabilityTheory Filter Set
 open scoped NNReal ENNReal Topology
 namespace DOZZ.Proofs
@@ -37,30 +35,30 @@ private theorem heat_start_derivative (t y : ℝ) (ht : 0 < t) :
   have hleft : HasDerivAt (fun x : ℝ => Real.exp (-((y-x)^2)/(2*t)))
       (Real.exp (-y^2/(2*t))*(y/t)) 0 := by
     convert ((hargL.pow 2).neg.div_const (2*t)).exp using 1
-    simp only [Pi.neg_apply,Pi.pow_apply,sub_zero,Nat.cast_ofNat,Nat.reduceSub,pow_one,mul_neg_one,neg_neg]
+    simp [Pi.neg_apply,Pi.pow_apply,sub_zero,Nat.cast_ofNat,Nat.reduceSub,pow_one,mul_neg_one,neg_neg]
     field_simp
   have hright : HasDerivAt (fun x : ℝ => Real.exp (-((y+x)^2)/(2*t)))
       (Real.exp (-y^2/(2*t))*(-y/t)) 0 := by
     convert ((hargR.pow 2).neg.div_const (2*t)).exp using 1
-    simp only [Pi.neg_apply,Pi.pow_apply,add_zero,Nat.cast_ofNat,Nat.reduceSub,pow_one,mul_one]
+    simp [Pi.neg_apply,Pi.pow_apply,add_zero,Nat.cast_ofNat,Nat.reduceSub,pow_one,mul_one]
     field_simp
   have hh := (hleft.div_const (Real.sqrt (2*Real.pi*t))).sub (hright.div_const (Real.sqrt (2*Real.pi*t)))
   convert hh using 1
   · funext x
-    simp only [brownianHeatDensity,ht,ite_eq_left,Pi.sub_apply]
-  · simp only [brownianHeatDensity,ht,ite_eq_left]
+    simp [brownianHeatDensity,ht,ite_eq_left,Pi.sub_apply]
+  · simp [brownianHeatDensity,ht,ite_eq_left]
     field_simp
     ring
 
 private theorem harmonic_start_derivative (ν : ℝ) (hν : 0 < ν) :
     HasDerivAt (conditionedH ν) (2*ν) 0 := by
   have harg : HasDerivAt (fun x : ℝ => Real.exp (-2*ν*x)) (-2*ν) 0 := by
-    simpa only [id_eq,mul_zero,Real.exp_zero,mul_one,one_mul] using
+    simpa [id_eq,mul_zero,Real.exp_zero,mul_one,one_mul] using
       ((hasDerivAt_id (0 : ℝ)).const_mul (-2*ν)).exp
   have hh := (hasDerivAt_const (0 : ℝ) 1).sub harg
   convert hh using 1
   · funext x
-    simp only [conditionedH,ite_eq_right hν.ne',Pi.sub_apply]
+    simp [conditionedH,ite_eq_right hν.ne',Pi.sub_apply]
   · ring
 
 /-- The positive-start Doob transition density tends to the entrance density. -/
@@ -77,7 +75,7 @@ theorem conditionedPositiveTransitionDensity_tendsto_entrance (ν t y : ℝ)
     have hexp : Tendsto (fun x : ℝ => Real.exp (ν*(y-x)-ν^2*t/2)) (𝓝[>] 0)
         (𝓝 (Real.exp (ν*y-ν^2*t/2))) := by
       have hc : Continuous (fun x : ℝ => Real.exp (ν*(y-x)-ν^2*t/2)) := by fun_prop
-      simpa only [sub_zero] using (hc.continuousAt (x := (0 : ℝ))).tendsto.mono_left nhdsWithin_le_nhds
+      simpa [sub_zero] using (hc.continuousAt (x := (0 : ℝ))).tendsto.mono_left nhdsWithin_le_nhds
     have hprod := (hexp.mul hquot).mul_const (conditionedH ν y)
     have he : (fun x : ℝ => conditionedPositiveTransitionDensity ν t x y) =ᶠ[𝓝[>] 0]
         (fun x => Real.exp (ν*(y-x)-ν^2*t/2)*
@@ -100,7 +98,7 @@ theorem conditionedPositiveTransitionDensity_tendsto_entrance (ν t y : ℝ)
       funext x
       simp [conditionedPositiveTransitionDensity,hy]
     rw [he]
-    simpa only [conditionedPositiveEntranceDensity,hy,and_false,ite_false] using
+    simpa [conditionedPositiveEntranceDensity,hy,and_false,ite_false] using
       (tendsto_const_nhds (x := (0 : ℝ)))
 
 
@@ -118,7 +116,7 @@ private theorem density_test_limit {E : Type*} [MeasurableSpace E] (μ : Measure
   have hAm (n : ℕ) : (∫⁻ x, A n x ∂μ) ≠ ∞ := ne_top_of_le_ne_top
     (hgm ▸ ENNReal.one_ne_top) (lintegral_mono (fun x => min_le_right _ _))
   have hAlim (x : E) : Tendsto (fun n => A n x) atTop (𝓝 (g x)) := by
-    simpa only [min_self] using (hfg x).min (tendsto_const_nhds (x := g x))
+    simpa [min_self] using (hfg x).min (tendsto_const_nhds (x := g x))
   have hJ : Tendsto (fun n => ∫⁻ x, A n x ∂μ) atTop (𝓝 1) := by
     rw [← hgm]
     exact tendsto_lintegral_of_dominated_convergence g hA
@@ -126,7 +124,6 @@ private theorem density_test_limit {E : Type*} [MeasurableSpace E] (μ : Measure
         (ae_of_all _ hAlim)
   have hψbound (x : E) : ψ x ≤ K := le_of_tendsto (hlim x)
     (Filter.Eventually.of_forall (fun n => hbound n x))
-  have hKg : Measurable (fun x => K*g x) := measurable_const.mul hg
   have hKgfin : (∫⁻ x, K*g x ∂μ) ≠ ∞ := by rw [lintegral_const_mul K hg,hgm,mul_one]; exact hK
   have hAP (n : ℕ) : Measurable (fun x => A n x*φ n x) := (hA n).mul (hφ n)
   have hT : Tendsto (fun n => ∫⁻ x, A n x*φ n x ∂μ) atTop (𝓝 (∫⁻ x, g x*ψ x ∂μ)) := by
@@ -140,7 +137,7 @@ private theorem density_test_limit {E : Type*} [MeasurableSpace E] (μ : Measure
     have hh := ENNReal.Tendsto.const_mul
       (ENNReal.Tendsto.sub (tendsto_const_nhds (x := (1 : ℝ≥0∞))) hJ (Or.inl ENNReal.one_ne_top))
       (Or.inr hK)
-    simpa only [tsub_self,mul_zero] using hh
+    simpa [tsub_self,mul_zero] using hh
   have hupper (n : ℕ) : (∫⁻ x, f n x*φ n x ∂μ) ≤
       (∫⁻ x, A n x*φ n x ∂μ)+K*(1-∫⁻ x, A n x ∂μ) := by
     have hdecomp : (fun x => f n x*φ n x) =
@@ -156,13 +153,9 @@ private theorem density_test_limit {E : Type*} [MeasurableSpace E] (μ : Measure
         have hm : Measurable (fun x => f n x-A n x) := (hf n).sub (hA n)
         rw [lintegral_const_mul K hm,lintegral_sub (hA n) (hAm n)
           (ae_of_all _ (fun x => min_le_left _ _)),hfm n]
-  have hI : (∫⁻ x, g x*ψ x ∂μ) ≤ K := by
-    calc
-      _ ≤ ∫⁻ x, K*g x ∂μ := lintegral_mono (fun x => (mul_le_mul' le_rfl (hψbound x)).trans_eq (mul_comm _ _))
-      _ = K := by rw [lintegral_const_mul K hg,hgm,mul_one]
   have hTop : Tendsto (fun n => (∫⁻ x, A n x*φ n x ∂μ)+K*(1-∫⁻ x, A n x ∂μ)) atTop
       (𝓝 (∫⁻ x, g x*ψ x ∂μ)) := by
-    simpa only [add_zero] using hT.add hres
+    simpa [add_zero] using hT.add hres
   exact tendsto_of_tendsto_of_tendsto_of_le_of_le hT hTop
     (fun n => lintegral_mono (fun x => mul_le_mul' (min_le_left _ _) le_rfl)) hupper
 
@@ -178,8 +171,8 @@ private theorem transition_nonneg (ν : ℝ) (t : ℝ≥0) (x y : ℝ) (hν : 0 
         rw [conditionedH,ite_eq_right hν.ne']
         exact sub_pos.mpr (Real.exp_lt_one_iff.mpr (by nlinarith))
       exact div_nonneg (mul_nonneg (brownianKilledTransitionPDF_nonneg ν t ht.ne' x y) hh.le) hhx.le
-    · simp only [brownianKilledTransitionPDF,hy,and_false,ite_false,zero_mul,zero_div,le_refl]
-  · simp only [conditionedPositiveTransitionDensity,hx,false_and,and_false,ite_false,le_refl]
+    · simp [brownianKilledTransitionPDF,hy,and_false,ite_false,zero_mul,zero_div,le_refl]
+  · simp [conditionedPositiveTransitionDensity,hx,false_and,and_false,ite_false,le_refl]
 
 private theorem entrance_nonneg (ν t y : ℝ) (hν : 0 < ν) (ht : 0 < t) :
     0 ≤ conditionedPositiveEntranceDensity ν t y := by
@@ -189,7 +182,7 @@ private theorem entrance_nonneg (ν t y : ℝ) (hν : 0 < ν) (ht : 0 < t) :
       rw [conditionedH,ite_eq_right hν.ne']
       exact sub_pos.mpr (Real.exp_lt_one_iff.mpr (by nlinarith))
     exact div_nonneg (mul_nonneg hh.le (brownianFirstHitDensity_nonneg ν y t hy.le)) hν.le
-  · simp only [conditionedPositiveEntranceDensity,hy,and_false,ite_false,le_refl]
+  · simp [conditionedPositiveEntranceDensity,hy,and_false,ite_false,le_refl]
 
 /-- The entrance factor followed by the elapsed-schedule Doob transition product. -/
 noncomputable def brownianEntranceFinitePDF (ν : ℝ) :
@@ -207,7 +200,7 @@ private theorem doob_chain_eq (ν : ℝ) (hν : 0 < ν) (n : ℕ) (ds : Fin n �
   | zero => simp [conditionedPositiveTimeChainDensity,brownianDoobFinitePDF]
   | succ n ih =>
     rw [List.ofFn_succ,List.ofFn_succ]
-    simp only [brownianFirstHitTimes,Fin.cons_zero,Fin.cons_succ,NNReal.coe_add,
+    simp [brownianFirstHitTimes,Fin.cons_zero,Fin.cons_succ,NNReal.coe_add,
       conditionedPositiveTimeChainDensity,add_sub_cancel_left]
     rw [ENNReal.ofReal_mul (transition_nonneg ν (ds 0) x (ys 0) hν (hds 0))]
     change _ * ENNReal.ofReal (conditionedPositiveTimeChainDensity ν (t+(ds 0 : ℝ)) (ys 0)
@@ -226,7 +219,7 @@ theorem brownianEntranceFinitePDF_eq_conditionedPositiveFDDDensity (ν : ℝ) (h
   | zero => simp [brownianEntranceFinitePDF,conditionedPositiveFDDDensity]
   | succ n =>
     rw [List.ofFn_succ,List.ofFn_succ]
-    simp only [brownianFirstHitTimes,Fin.cons_zero,Fin.cons_succ,NNReal.coe_add,
+    simp [brownianFirstHitTimes,Fin.cons_zero,Fin.cons_succ,NNReal.coe_add,
       conditionedPositiveFDDDensity]
     change ENNReal.ofReal (conditionedPositiveEntranceDensity ν (ds 0) (ys 0)) *
       brownianDoobFinitePDF ν n (Fin.tail ds) (ys 0) (Fin.tail ys) =
@@ -280,7 +273,7 @@ private theorem negative_pdf_eq (ν : ℝ) (hν : 0 < ν) (n : ℕ)
     rw [List.map_ofFn]
     congr 1
     funext i
-    simp only [Function.comp_apply,Pi.neg_apply,neg_neg]
+    simp [Function.comp_apply,Pi.neg_apply,neg_neg]
   rw [he,negativeConditionedFDDDensity_reflect,ENNReal.ofReal_max,ENNReal.ofReal_zero,
     max_eq_right (show (0 : ℝ≥0∞) ≤ _ from bot_le)]
 
@@ -312,7 +305,7 @@ theorem negativeConditionedLaw_finite_positive_lintegral (Q : Measure BrownianPa
     subst n
     have he (ys : Fin 0 → ℝ) : ys = Fin.elim0 := Subsingleton.elim _ _
     have hv : (volume : Measure (Fin 0 → ℝ)) univ = 1 := Measure.pi_empty_univ (fun _ : Fin 0 => (volume : Measure ℝ))
-    simp only [he,brownianEntranceFinitePDF,one_mul,lintegral_const,measure_univ,hv,mul_one]
+    simp [he,brownianEntranceFinitePDF,one_mul,lintegral_const,measure_univ,hv,mul_one]
 
 /-- The finite entrance density has mass one, as a consequence of the given path law. -/
 theorem lintegral_brownianEntranceFinitePDF_one (Q : Measure BrownianPath)
@@ -320,7 +313,7 @@ theorem lintegral_brownianEntranceFinitePDF_one (Q : Measure BrownianPath)
     (ds : Fin n → ℝ≥0) (hds : ∀ i, 0 < ds i) :
     (∫⁻ ys, brownianEntranceFinitePDF ν n ds ys) = 1 := by
   let _ := hQ.2.1
-  simpa only [mul_one,lintegral_one,measure_univ] using
+  simpa [mul_one,lintegral_one,measure_univ] using
     (negativeConditionedLaw_finite_positive_lintegral Q ν hν hQ n ds hds (fun _ => 1) measurable_const).symm
 
 /-- Actual upper conditioning tends to the given entrance law on bounded continuous cylinders. -/
@@ -347,7 +340,7 @@ theorem brownianBelowConditionedLaw_tendsto_entrance_cylinder (P : Measure Brown
     apply hF.continuousAt.tendsto.comp
     apply tendsto_pi_nhds.mpr
     intro i
-    simpa only [zero_sub,Pi.neg_apply] using hxlim.sub (tendsto_const_nhds (x := ys i))
+    simpa [zero_sub,Pi.neg_apply] using hxlim.sub (tendsto_const_nhds (x := ys i))
   have hlim := density_test_limit volume fn g
     (fun k => measurable_brownianDoobFinitePDF ν hν n ds hds (xs k) (hxs k))
     (measurable_brownianEntranceFinitePDF ν hν n ds hds)
@@ -381,7 +374,7 @@ theorem brownianBelowConditionedLaw_tendsto_entrance_cylinder (P : Measure Brown
     funext i
     exact neg_neg _
   simp_rw [hactual,hgiven] at hlim
-  exact hlim
+  assumption
 
 
 end DOZZ.Proofs

@@ -2,13 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.Moments.InversionLocalApproximation
+import DOZZ.GMC.Moments.InversionLocalApproximation
 
 /-! Removing the origin from smooth circle approximants without changing their energy limit. -/
 
-@[expose] public section
 
 open Filter Topology Set Metric MeasureTheory
 open scoped Distributions
@@ -23,14 +21,14 @@ theorem densityCircleGap_congr_ae (x : ℂ) (r : ℝ) {f g : ℂ → ℝ}
   have he : densityEnergy f f = densityEnergy g g := by
     apply integral_congr_ae
     filter_upwards [hfst, hsnd] with p hp hq
-    simp only [Function.comp_apply] at hp hq
+    simp [Function.comp_apply] at hp hq
     rw [hp, hq]
   have hc : (∫ z, f z * ∫ w, gffKernel z w ∂circleMeasure x r) =
       ∫ z, g z * ∫ w, gffKernel z w ∂circleMeasure x r := by
     apply integral_congr_ae
     filter_upwards [h] with z hz
     rw [hz]
-  simp only [densityCircleGap, he, hc]
+  simp [densityCircleGap, he, hc]
 
 /-- A smooth test can be punctured near zero with arbitrarily small circle-energy error. -/
 theorem exists_inversionChart_testFn_gap_approx (x : ℂ) (r : ℝ) (f : TestFn)
@@ -50,13 +48,13 @@ theorem exists_inversionChart_testFn_gap_approx (x : ℂ) (r : ℝ) (f : TestFn)
         (ball (0 : ℂ) (1 / ((n : ℝ) + 2)))ᶜ := by
       apply closure_minimal _ isOpen_ball.isClosed_compl
       intro z hz hzball
-      exact hz (by dsimp only; rw [(b n).one_of_mem_closedBall (ball_subset_closedBall hzball)]; simp)
+      exact hz (by dsimp; rw [(b n).one_of_mem_closedBall (ball_subset_closedBall hzball)]; simp)
     intro z hz
     have hout := hmask (tsupport_mul_subset_right hz)
     change z ≠ 0
     intro hz0
     apply hout
-    simp only [hz0, mem_ball, dist_self]; positivity
+    simp [hz0, mem_ball, dist_self]; positivity
   obtain ⟨M, hM⟩ := f.hasCompactSupport.exists_bound_of_continuous f.continuous
   have hM0 : 0 ≤ M := (norm_nonneg (f 0)).trans (hM 0)
   let g : ℂ → ℝ := fun z => if z = 0 then 0 else f z
@@ -68,7 +66,7 @@ theorem exists_inversionChart_testFn_gap_approx (x : ℂ) (r : ℝ) (f : TestFn)
         change f 0 * (1 - b n 0) = 0
         rw [(b n).one_of_mem_closedBall (by simp [mem_closedBall, b]; positivity)]
         ring
-      simpa only [hzero, g, ite_eq_left rfl] using (tendsto_const_nhds :
+      simpa [hzero, g, ite_eq_left rfl] using (tendsto_const_nhds :
         Tendsto (fun _ : ℕ => (0 : ℝ)) atTop (𝓝 0))
     · have ht : Tendsto (fun n : ℕ => 2 / ((n : ℝ) + 2)) atTop (𝓝 (0 : ℝ)) := by
         convert (tendsto_const_div_atTop_nhds_zero_nat (2 : ℝ)).comp
@@ -80,7 +78,7 @@ theorem exists_inversionChart_testFn_gap_approx (x : ℂ) (r : ℝ) (f : TestFn)
       filter_upwards [hev] with n hn
       have hb0 : b n z = 0 := image_eq_zero_of_notMem_tsupport (by
         rw [(b n).tsupport_eq]
-        simpa only [mem_closedBall, dist_zero_right, not_le, b] using hn)
+        simpa [mem_closedBall, dist_zero_right, not_le, b] using hn)
       simp [q, g, hz, hb0]
   have hg : g =ᵐ[volume] (f : ℂ → ℝ) := by
     filter_upwards [(volume : Measure ℂ).ae_ne 0] with z hz
@@ -96,7 +94,7 @@ theorem exists_inversionChart_testFn_gap_approx (x : ℂ) (r : ℝ) (f : TestFn)
   change |f z * (1 - b n z)| ≤ M
   rw [abs_mul, abs_of_nonneg (sub_nonneg.mpr (b n).le_one)]
   exact (mul_le_of_le_one_right (abs_nonneg _) (sub_le_self _ (b n).nonneg)).trans
-    (by simpa only [Real.norm_eq_abs] using hM z)
+    (by simpa [Real.norm_eq_abs] using hM z)
 
 /-- Every circle, including a circle meeting zero, admits chart-supported smooth tests
 with vanishing circle energy gap. -/
@@ -113,7 +111,7 @@ theorem exists_testFn_circleEnergyGap_punctured (x : ℂ) (r : ℝ) :
         1 / ((n : ℝ) + 2) := by
     obtain ⟨N, hN⟩ := Metric.tendsto_atTop.mp (hQg n) _
       (by positivity : 0 < 1 / ((n : ℝ) + 2))
-    exact ⟨N, by simpa only [Real.dist_eq] using hN N le_rfl⟩
+    exact ⟨N, by simpa [Real.dist_eq] using hN N le_rfl⟩
   choose m hm using hchoose
   have hε : Tendsto (fun n : ℕ => 1 / ((n : ℝ) + 2)) atTop (𝓝 (0 : ℝ)) := by
     convert (tendsto_const_div_atTop_nhds_zero_nat (1 : ℝ)).comp
@@ -125,11 +123,11 @@ theorem exists_testFn_circleEnergyGap_punctured (x : ℂ) (r : ℝ) :
     (by simpa using hFg.sub hε) (by simpa using hFg.add hε)
   · intro n
     have h := (abs_lt.mp (hm n)).1
-    simp only [one_div] at h
+    simp [one_div] at h
     linarith
   · intro n
     have h := (abs_lt.mp (hm n)).2
-    simp only [one_div] at h
+    simp [one_div] at h
     linarith
 
 end DOZZ.Proofs

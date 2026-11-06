@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Brownian.LastExitReferenceKernel
-public import DOZZ.Brownian.Williams.MaximumGeometry
+import DOZZ.Brownian.LastExitReferenceKernel
+import DOZZ.Brownian.Williams.MaximumGeometry
 
 /-!
 # No tangencies for the deterministic-time Brownian reference future
@@ -15,7 +14,6 @@ survival and avoidance at every real future time. This is the boundary input nee
 late-time rational survival limit into a last-exit bound.
 -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal NNReal
@@ -53,12 +51,12 @@ theorem measurableSet_brownianPositiveRationalTouchZero :
     simp only [mem_ofPred_eq, mem_iUnion]
     constructor
     · rintro ⟨r, hr, hy⟩
-      exact ⟨r, by simpa only [hr, dite_true, mem_ofPred_eq] using
+      exact ⟨r, by simpa [hr, dite_true, mem_ofPred_eq] using
         (show y r < 1 / ((n : ℝ) + 1) from hy)⟩
     · rintro ⟨r, hr⟩
       by_cases hq : 0 < (r : ℝ)
       · simp only [hq, dite_true, mem_ofPred_eq] at hr
-        exact ⟨r, hq, by simpa only [one_div] using hr⟩
+        exact ⟨r, hq, by simpa [one_div] using hr⟩
       · simp [hq] at hr
   have hnear : MeasurableSet
       {y : ℚ → ℝ | ∀ n : ℕ, ∃ r : ℚ,
@@ -99,8 +97,7 @@ private theorem rational_strict_upper_bound_path
     exact Subtype.ext (max_eq_left hs)
   have hopen : IsOpen (F ⁻¹' Set.Ioi a) := isOpen_Ioi.preimage hF
   have htmem : (t : ℝ) ∈ F ⁻¹' Set.Ioi a := by
-    rw [Set.mem_preimage, hF_eval (t : ℝ) t.property]
-    exact hgt
+    rwa [Set.mem_preimage, hF_eval (t : ℝ) t.property]
   by_cases htpos : 0 < (t : ℝ)
   · let U : Set ℝ := Set.Ioi 0 ∩ F ⁻¹' Set.Ioi a
     have hU : IsOpen U := isOpen_Ioi.inter hopen
@@ -153,7 +150,7 @@ theorem brownianUpperConditionedReferenceFutureKernel_measure_touchZero
   have hmaxzero : B {p | driftedBrownianMaximum ν p = a} = 0 := by
     have hsingle := congrArg (fun m : Measure ℝ => m {a}) hmap
     rw [Measure.map_apply_of_aemeasurable hmax (measurableSet_singleton a)] at hsingle
-    simpa only [Set.preimage, mem_singleton_iff, eq_comm, measure_singleton] using hsingle
+    simpa [Set.preimage, mem_singleton_iff, eq_comm, measure_singleton] using hsingle
   have hsubset : D ⁻¹' A ⊆ {p | driftedBrownianMaximum ν p = a} := by
     intro p hp
     have htouch : eval (D p) ∈ brownianPositiveRationalTouchZero := hp
@@ -197,8 +194,7 @@ theorem brownianUpperConditionedReferenceFutureKernel_measure_touchZero
       have hn1 : 0 < (n : ℝ) + 1 := by positivity
       have hinv : 1 / ((n : ℝ) + 1) < gap := by
         apply (div_lt_iff₀ hn1).2
-        have hncast : (1 / gap : ℝ) < (n : ℝ) + 1 := by
-          exact lt_trans hn (by norm_num)
+        have hncast : (1 / gap : ℝ) < (n : ℝ) + 1 := lt_trans hn (by norm_num)
         calc
           1 = (1 / gap) * gap := by field_simp [ne_of_gt hgap]
           _ < ((n : ℝ) + 1) * gap := mul_lt_mul_of_pos_right hncast hgap
@@ -230,10 +226,8 @@ theorem brownianUpperConditionedReferenceFutureKernel_measure_touchZero
       measurableSet_brownianPositiveRationalTouchZero
     rw [brownianUpperConditionedReferenceFutureKernel_apply_conditioned
       B ν a hν ha]
-    rw [Measure.map_apply hEval hC]
-    exact hlaw
-  exact hkernel
+    rwa [Measure.map_apply hEval hC]
+  assumption
 
 end DOZZ.Proofs
 
-end

@@ -2,13 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.SharpMoments.InverseLimit
-public import DOZZ.GMC.SharpMoments.LocationTransfer
-public import DOZZ.GMC.SharpMoments.ReverseJensen
-public import DOZZ.GMC.FieldChaosConvexPower
-public import Mathlib.Analysis.Complex.ExponentialBounds
+import DOZZ.GMC.SharpMoments.InverseLimit
+import DOZZ.GMC.SharpMoments.LocationTransfer
+import DOZZ.GMC.SharpMoments.ReverseJensen
+import DOZZ.GMC.FieldChaosConvexPower
+import Mathlib.Analysis.Complex.ExponentialBounds
 
 /-! # Inverse moments uniform in the coupling constant
 
@@ -18,7 +17,6 @@ comparison bounds every inverse moment at `γ` by the one at `g`. With the coars
 bound, exact scaling and the location transfer, this gives inverse moments of cutoff masses of
 nonempty open sets, uniformly in the cutoff and in `γ` on compact subsets of `(0,2)`. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped ENNReal NNReal
@@ -109,8 +107,8 @@ theorem regularizedGMC_inverse_moment_le_of_gamma_le
   have hright : ∀ ω, regularizedGMC P Xc g r ω A =
       fieldChaosMass P (fun ω x => Xc ω x r) ν (fun _ => 1) g ω :=
     fun ω => regularizedGMC_apply_eq_fieldChaosMass P X hX Xc hXc g r A hA ω
-  simp only [hleft, hright]
-  exact hk
+  simp [hleft, hright]
+  assumption
 
 /-- The circle covariance is nonnegative on the reference disk at cutoffs `r ≥ 1`. -/
 theorem circleField_covariance_nonneg_reference

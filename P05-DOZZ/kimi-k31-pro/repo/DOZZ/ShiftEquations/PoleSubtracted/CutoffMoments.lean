@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.ShiftEquations.PoleSubtracted.MomentBounds
-public import DOZZ.ShiftEquations.PoleSubtracted.Window
+import DOZZ.ShiftEquations.PoleSubtracted.MomentBounds
+import DOZZ.ShiftEquations.PoleSubtracted.Window
 import Mathlib.Analysis.MeanInequalitiesPow
 
 /-!
@@ -25,7 +24,6 @@ has turned the base mass `B_n` into the tilted mass `T_{a,n}`:
   increment is at most `e^{γ a⁺ (n+1)} M(B(0, e^{-n}))` and `E[M(B(0,e^{-n}))^r] = O(e^{-n ζ(r)})`.
 -/
 
-@[expose] public section
 
 open MeasureTheory Filter Topology Set
 open scoped ENNReal NNReal
@@ -49,10 +47,7 @@ theorem ennrpow_le_one_add_rpow_neg {x : ℝ≥0∞} {s c : ℝ} (hs : s ≤ 0) 
   · exact (ENNReal.rpow_le_rpow_of_exponent_ge hx.le hcs).trans le_add_self
 
 theorem ennrpow_le_of_le_of_nonpos {x y : ℝ≥0∞} (hxy : x ≤ y) {s : ℝ} (hs : s ≤ 0) :
-    y ^ s ≤ x ^ s := by
-  have h := ENNReal.rpow_le_rpow hxy (neg_nonneg.2 hs)
-  rw [← neg_neg s, ENNReal.rpow_neg y, ENNReal.rpow_neg x]
-  exact ENNReal.inv_le_inv.2 h
+    y ^ s ≤ x ^ s := DOZZ.Proofs.ennreal_rpow_antitone_of_nonpos hxy hs
 
 /-- `(1 + x)^q ≤ 2^q (1 + x^q)` for `q ≥ 1`. -/
 theorem one_add_rpow_le {x : ℝ≥0∞} {q : ℝ} (hq : 1 ≤ q) :
@@ -75,7 +70,6 @@ theorem holder_decay {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω} {U : ℕ
       ∫⁻ ω, U n ω * V ω ∂P ≤ ENNReal.ofReal (K * Real.exp (-(ζ / r) * n)) := by
   set q : ℝ := r / (r - 1) with hqdef
   have hr0 : 0 < r := by linarith
-  have hq0 : 0 < q := div_pos hr0 (by linarith)
   set I : ℝ := (∫⁻ ω, V ω ^ q ∂P).toReal with hI
   refine ⟨max C 0 ^ (1 / r) * I ^ (1 / q), by positivity, fun n => ?_⟩
   have hH := lintegral_mul_le_holder (hU n) hV hr
@@ -114,7 +108,6 @@ theorem lintegral_cutoffDomination_lt_top {Ω : Type*} [MeasurableSpace Ω] (P :
   have _ := hX.1
   have hη := (window_eta_pos hW).le
   have hηγ := window_eta_le_two_div hγ hγ2 hW
-  have hp := window_threshold_pos hγ hW
   have hroom := window_holder_room hγ hγ2 hW
   have hκ : 1 < 4 / γ ^ 2 := by
     rw [lt_div_iff₀ (by positivity)]
@@ -215,4 +208,3 @@ theorem lintegral_cutoffDomination_lt_top {Ω : Type*} [MeasurableSpace Ω] (P :
 
 end DOZZ.Proofs
 
-end

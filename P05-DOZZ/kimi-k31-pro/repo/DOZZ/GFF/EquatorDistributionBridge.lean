@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GFF.EquatorDistribution
-public import DOZZ.GFF.TorusFourierEvalIdentification
+import DOZZ.GFF.EquatorDistribution
+import DOZZ.GFF.TorusFourierEvalIdentification
 
 /-!
 # DOZZ.GFF.EquatorDistributionBridge
@@ -14,7 +13,6 @@ The locally defined Fourier charts assemble to a measurable random distribution 
 evaluations agree almost everywhere with the accepted G4 field.
 -/
 
-@[expose] public section
 
 open MeasureTheory Filter Set Metric TopologicalSpace
 open scoped Distributions ENNReal InnerProductSpace Topology lp
@@ -64,7 +62,7 @@ theorem sum_equatorPartitionCLM_range_eq_self_of_cutoff_eq_one
   calc
     (∑ n ∈ Finset.range (N + 1), equatorPartitionCLM n f) z =
         ∑ n ∈ Finset.range (N + 1), f z * equatorPartitionFunction n z := by
-      simp only [FunLike.coe_sum, equatorPartitionCLM_apply, Finset.sum_apply]
+      simp [equatorPartitionCLM_apply]
     _ = f z * equatorGlobalCutoff N z := by
       rw [← Finset.mul_sum, sum_equatorPartitionFunction_range]
     _ = f z := by
@@ -115,7 +113,7 @@ theorem ae_equatorDistributionEval_eq_equatorFieldL2 (f : TestFn) :
   let s : Finset ℕ := Finset.range (N + 1)
   have hsumLp : equatorFieldL2 (s.sum fun n => equatorPartitionCLM n f) =
       s.sum fun n => equatorFieldL2 (equatorPartitionCLM n f) := by
-    simp only [map_sum]
+    simp [map_sum]
   have hsumLp' : equatorFieldL2 f =
       s.sum fun n => equatorFieldL2 (equatorPartitionCLM n f) := by
     calc
@@ -129,8 +127,7 @@ theorem ae_equatorDistributionEval_eq_equatorFieldL2 (f : TestFn) :
     rw [hsumLp']
     exact Lp.coeFn_fun_finsetSum s (fun n => equatorFieldL2 (equatorPartitionCLM n f))
   filter_upwards [ae_equatorHaarCommonGood, hlocalAll, hsumAE] with ω hgood hlocalω hsumω
-  rw [equatorDistributionEval, ite_eq_left hgood]
-  rw [equatorDistributionSeriesEval_eq_partialSum_of_tail_zero ω f N htailN]
+  rw [equatorDistributionEval, ite_eq_left hgood, equatorDistributionSeriesEval_eq_partialSum_of_tail_zero ω f N htailN]
   unfold equatorDistributionPartialSum
   calc
     _ = s.sum fun n => equatorFieldL2 (equatorPartitionCLM n f) ω := by
@@ -147,4 +144,3 @@ theorem ae_equatorGFFDistribution_apply_eq_equatorFieldL2 (f : TestFn) :
 
 end DOZZ
 
-end

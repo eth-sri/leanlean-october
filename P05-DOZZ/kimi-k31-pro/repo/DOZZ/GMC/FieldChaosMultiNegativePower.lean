@@ -2,16 +2,14 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.FieldChaosNegativePower
-public import DOZZ.GMC.FiniteChaosMultiNegativePower
-public import DOZZ.GMC.FiniteMultiMellin
-public import DOZZ.Statements.GMC.FieldChaosMass
+import DOZZ.GMC.FieldChaosNegativePower
+import DOZZ.GMC.FiniteChaosMultiNegativePower
+import DOZZ.GMC.FiniteMultiMellin
+import DOZZ.Statements.GMC.FieldChaosMass
 
 /-! Multiblock negative powers for continuum field chaos. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal NNReal
@@ -23,21 +21,20 @@ pointwise. -/
 theorem fieldChaosMass_weighted_sum
     {Ω S κ : Type*} [MeasurableSpace Ω] [MeasurableSpace S] [Fintype κ]
     (P : Measure Ω) (Φ : Ω → S → ℝ)
-    (hΦ : DOZZ.IsCenteredGaussianField P Φ)
+    (hΦ : IsCenteredGaussianField P Φ)
     (ν : Measure S) (h : κ → S → ℝ≥0) (hh : ∀ k, Measurable (h k))
     (t : κ → ℝ) (γ : ℝ) (ω : Ω) :
-    DOZZ.fieldChaosMass P Φ ν
+    fieldChaosMass P Φ ν
         (fun x => ∑ k, Real.toNNReal (t k) * h k x) γ ω =
-      ∑ k, ENNReal.ofReal (t k) * DOZZ.fieldChaosMass P Φ ν (h k) γ ω := by
+      ∑ k, ENNReal.ofReal (t k) * fieldChaosMass P Φ ν (h k) γ ω := by
   classical
   let wick : S → ℝ≥0∞ := fun x => ENNReal.ofReal (Real.exp
     (γ * Φ ω x - γ ^ 2 / 2 * ∫ ω', Φ ω' x ^ 2 ∂P))
   let hsum : S → ℝ≥0 := fun x => ∑ k, Real.toNNReal (t k) * h k x
   have hvar : Measurable (fun x => ∫ ω', Φ ω' x ^ 2 ∂P) := by
-    simpa [DOZZ.gaussianVariance, DOZZ.gaussianCovariance, pow_two] using
+    simpa [gaussianVariance, gaussianCovariance, pow_two] using
       centeredGaussianField_variance_measurable P Φ hΦ
-  have hsection : Measurable (fun x => Φ ω x) := by
-    exact hΦ.1.comp (measurable_const.prodMk measurable_id)
+  have hsection : Measurable (fun x => Φ ω x) := hΦ.1.comp (measurable_const.prodMk measurable_id)
   have hwick : Measurable wick := by
     dsimp [wick]
     fun_prop
@@ -60,7 +57,7 @@ theorem fieldChaosMass_weighted_sum
         (fun x => ENNReal.ofReal ((h k x : ℝ≥0) : ℝ) * wick x) :=
       (ENNReal.measurable_ofReal.comp
         (NNReal.continuous_coe.measurable.comp (hh k))).mul hwick
-    simpa only [ENNReal.ofReal_coe_nnreal] using hmeas
+    simpa [ENNReal.ofReal_coe_nnreal] using hmeas
   have htermMeas (k : κ) : Measurable
       (fun x => ENNReal.ofReal (t k) *
         (ENNReal.ofNNReal (h k x) * wick x)) := by
@@ -69,7 +66,7 @@ theorem fieldChaosMass_weighted_sum
   calc
     _ = ∫⁻ x, ∑ k, ENNReal.ofReal (t k) *
           (ENNReal.ofNNReal (h k x) * wick x) ∂ν := by
-            unfold DOZZ.fieldChaosMass
+            unfold fieldChaosMass
             apply lintegral_congr_ae
             exact ae_of_all ν hkernel
     _ = ∑ k, ∫⁻ x, ENNReal.ofReal (t k) *
@@ -78,7 +75,7 @@ theorem fieldChaosMass_weighted_sum
             intro k hk
             exact (htermMeas k).aemeasurable
     _ = ∑ k, ENNReal.ofReal (t k) *
-          DOZZ.fieldChaosMass P Φ ν (h k) γ ω := by
+          fieldChaosMass P Φ ν (h k) γ ω := by
             apply Finset.sum_congr rfl
             intro k hk
             change ∫⁻ x, ENNReal.ofReal (t k) *
@@ -94,8 +91,8 @@ theorem kahane_field_multi_block_laplace
     [MeasurableSpace S] [Fintype κ] [Nonempty S]
     (PX : Measure ΩX) (PY : Measure ΩY)
     (Φ : ΩX → S → ℝ) (Ψ : ΩY → S → ℝ)
-    (hΦ : DOZZ.IsCenteredGaussianField PX Φ)
-    (hΨ : DOZZ.IsCenteredGaussianField PY Ψ)
+    (hΦ : IsCenteredGaussianField PX Φ)
+    (hΨ : IsCenteredGaussianField PY Ψ)
     (ν : FiniteMeasure S) (hν : ν ≠ 0)
     (h : κ → S → ℝ≥0) (hh : ∀ k, Measurable (h k))
     (hhb : ∀ k, ∃ c : ℝ≥0, ∀ x, h k x ≤ c)
@@ -103,15 +100,15 @@ theorem kahane_field_multi_block_laplace
     (hposX : ∀ k, 0 < ∫ x, (h k x : ℝ) ∂(ν.normalize : Measure S))
     (hposY : ∀ k, 0 < ∫ x, (h k x : ℝ) ∂(ν.normalize : Measure S))
     (hcov : ∀ᵐ xy ∂(ν : Measure S).prod ν,
-      DOZZ.gaussianCovariance PX (fun ω => Φ ω xy.1) (fun ω => Φ ω xy.2) ≤
-        DOZZ.gaussianCovariance PY (fun ω => Ψ ω xy.1) (fun ω => Ψ ω xy.2))
+      gaussianCovariance PX (fun ω => Φ ω xy.1) (fun ω => Φ ω xy.2) ≤
+        gaussianCovariance PY (fun ω => Ψ ω xy.1) (fun ω => Ψ ω xy.2))
     (hdiag : ∀ᵐ x ∂(ν : Measure S),
-      DOZZ.gaussianVariance PX (fun ω => Φ ω x) ≤
-        DOZZ.gaussianVariance PY (fun ω => Ψ ω x)) :
+      gaussianVariance PX (fun ω => Φ ω x) ≤
+        gaussianVariance PY (fun ω => Ψ ω x)) :
     ∫⁻ ω, ENNReal.ofReal (Real.exp (-∑ k, t k *
-      (DOZZ.fieldChaosMass PX Φ (ν : Measure S) (h k) γ ω).toReal)) ∂PX ≤
+      (fieldChaosMass PX Φ (ν : Measure S) (h k) γ ω).toReal)) ∂PX ≤
       ∫⁻ ω, ENNReal.ofReal (Real.exp (-∑ k, t k *
-        (DOZZ.fieldChaosMass PY Ψ (ν : Measure S) (h k) γ ω).toReal)) ∂PY := by
+        (fieldChaosMass PY Ψ (ν : Measure S) (h k) γ ω).toReal)) ∂PY := by
   classical
   let hsum : S → ℝ≥0 := fun x => ∑ k, Real.toNNReal (t k) * h k x
   have hsumMeas : Measurable hsum := by
@@ -128,31 +125,31 @@ theorem kahane_field_multi_block_laplace
     apply Finset.sum_le_sum
     intro k hk
     exact mul_le_mul_of_nonneg_left (hc k x) (NNReal.coe_nonneg _)
-  have hmassX ω : DOZZ.fieldChaosMass PX Φ (ν : Measure S) hsum γ ω =
+  have hmassX ω : fieldChaosMass PX Φ (ν : Measure S) hsum γ ω =
       ∑ k, ENNReal.ofReal (t k) *
-        DOZZ.fieldChaosMass PX Φ (ν : Measure S) (h k) γ ω :=
+        fieldChaosMass PX Φ (ν : Measure S) (h k) γ ω :=
     fieldChaosMass_weighted_sum PX Φ hΦ (ν : Measure S) h hh t γ ω
-  have hmassY ω : DOZZ.fieldChaosMass PY Ψ (ν : Measure S) hsum γ ω =
+  have hmassY ω : fieldChaosMass PY Ψ (ν : Measure S) hsum γ ω =
       ∑ k, ENNReal.ofReal (t k) *
-        DOZZ.fieldChaosMass PY Ψ (ν : Measure S) (h k) γ ω :=
+        fieldChaosMass PY Ψ (ν : Measure S) (h k) γ ω :=
     fieldChaosMass_weighted_sum PY Ψ hΨ (ν : Measure S) h hh t γ ω
   have hmassFiniteX (k : κ) : ∀ᵐ ω ∂PX,
-      DOZZ.fieldChaosMass PX Φ (ν : Measure S) (h k) γ ω ≠ ∞ := by
+      fieldChaosMass PX Φ (ν : Measure S) (h k) γ ω ≠ ∞ := by
     have heq := fieldChaosMass_eq_ofReal_modified_toReal_ae
       PX Φ hΦ ν hν (h k) (hh k) (hhb k) γ (hposX k)
     filter_upwards [heq] with ω hω
     rw [hω]
     exact ENNReal.ofReal_ne_top
   have hmassFiniteY (k : κ) : ∀ᵐ ω ∂PY,
-      DOZZ.fieldChaosMass PY Ψ (ν : Measure S) (h k) γ ω ≠ ∞ := by
+      fieldChaosMass PY Ψ (ν : Measure S) (h k) γ ω ≠ ∞ := by
     have heq := fieldChaosMass_eq_ofReal_modified_toReal_ae
       PY Ψ hΨ ν hν (h k) (hh k) (hhb k) γ (hposY k)
     filter_upwards [heq] with ω hω
     rw [hω]
     exact ENNReal.ofReal_ne_top
   have hmassXtoReal : ∀ᵐ ω ∂PX,
-      (DOZZ.fieldChaosMass PX Φ (ν : Measure S) hsum γ ω).toReal =
-        ∑ k, t k * (DOZZ.fieldChaosMass PX Φ (ν : Measure S) (h k) γ ω).toReal := by
+      (fieldChaosMass PX Φ (ν : Measure S) hsum γ ω).toReal =
+        ∑ k, t k * (fieldChaosMass PX Φ (ν : Measure S) (h k) γ ω).toReal := by
     filter_upwards [ae_all_iff.2 hmassFiniteX] with ω hω
     rw [hmassX ω, ENNReal.toReal_sum]
     · apply Finset.sum_congr rfl
@@ -161,8 +158,8 @@ theorem kahane_field_multi_block_laplace
     · intro k hk
       exact ENNReal.mul_ne_top ENNReal.ofReal_ne_top (hω k)
   have hmassYtoReal : ∀ᵐ ω ∂PY,
-      (DOZZ.fieldChaosMass PY Ψ (ν : Measure S) hsum γ ω).toReal =
-        ∑ k, t k * (DOZZ.fieldChaosMass PY Ψ (ν : Measure S) (h k) γ ω).toReal := by
+      (fieldChaosMass PY Ψ (ν : Measure S) hsum γ ω).toReal =
+        ∑ k, t k * (fieldChaosMass PY Ψ (ν : Measure S) (h k) γ ω).toReal := by
     filter_upwards [ae_all_iff.2 hmassFiniteY] with ω hω
     rw [hmassY ω, ENNReal.toReal_sum]
     · apply Finset.sum_congr rfl
@@ -175,12 +172,12 @@ theorem kahane_field_multi_block_laplace
     hcov hdiag
   calc
     _ = ∫⁻ ω, ENNReal.ofReal (Real.exp
-          (-(DOZZ.fieldChaosMass PX Φ (ν : Measure S) hsum γ ω).toReal)) ∂PX := by
+          (-(fieldChaosMass PX Φ (ν : Measure S) hsum γ ω).toReal)) ∂PX := by
             apply lintegral_congr_ae
             filter_upwards [hmassXtoReal] with ω hω
             rw [hω]
     _ ≤ ∫⁻ ω, ENNReal.ofReal (Real.exp
-          (-(DOZZ.fieldChaosMass PY Ψ (ν : Measure S) hsum γ ω).toReal)) ∂PY := by
+          (-(fieldChaosMass PY Ψ (ν : Measure S) hsum γ ω).toReal)) ∂PY := by
             simpa using hLap
     _ = _ := by
           apply lintegral_congr_ae
@@ -193,7 +190,7 @@ theorem kahane_field_multi_negative_power
     {ΩX ΩY S κ : Type*} [MeasurableSpace ΩX] [MeasurableSpace ΩY]
     [MeasurableSpace S] [Fintype κ]
     (PX : Measure ΩX) (PY : Measure ΩY) (Φ : ΩX → S → ℝ) (Ψ : ΩY → S → ℝ)
-    (hΦ : DOZZ.IsCenteredGaussianField PX Φ) (hΨ : DOZZ.IsCenteredGaussianField PY Ψ)
+    (hΦ : IsCenteredGaussianField PX Φ) (hΨ : IsCenteredGaussianField PY Ψ)
     (ν : Measure S) [IsFiniteMeasure ν] (h : κ → S → ℝ≥0)
     (hh : ∀ k, Measurable (h k))
     (hhb : ∀ k, ∃ c : ℝ≥0, ∀ x, h k x ≤ c)
@@ -202,15 +199,15 @@ theorem kahane_field_multi_negative_power
       ∫ ω, Φ ω xy.1 * Φ ω xy.2 ∂PX ≤ ∫ ω, Ψ ω xy.1 * Ψ ω xy.2 ∂PY)
     (hdiag : ∀ᵐ x ∂ν,
       ∫ ω, Φ ω x ^ 2 ∂PX ≤ ∫ ω, Ψ ω x ^ 2 ∂PY) :
-    ∫⁻ ω, ∏ k, ENNReal.rpow (DOZZ.fieldChaosMass PX Φ ν (h k) γ ω) (-q k) ∂PX ≤
-      ∫⁻ ω, ∏ k, ENNReal.rpow (DOZZ.fieldChaosMass PY Ψ ν (h k) γ ω) (-q k) ∂PY := by
+    ∫⁻ ω, ∏ k, ENNReal.rpow (fieldChaosMass PX Φ ν (h k) γ ω) (-q k) ∂PX ≤
+      ∫⁻ ω, ∏ k, ENNReal.rpow (fieldChaosMass PY Ψ ν (h k) γ ω) (-q k) ∂PY := by
   classical
   let p : κ → Prop := fun k => 0 < q k
   let K := {k : κ // p k}
   let zX : ΩX → κ → ℝ≥0∞ := fun ω k =>
-    ENNReal.rpow (DOZZ.fieldChaosMass PX Φ ν (h k) γ ω) (-q k)
+    ENNReal.rpow (fieldChaosMass PX Φ ν (h k) γ ω) (-q k)
   let zY : ΩY → κ → ℝ≥0∞ := fun ω k =>
-    ENNReal.rpow (DOZZ.fieldChaosMass PY Ψ ν (h k) γ ω) (-q k)
+    ENNReal.rpow (fieldChaosMass PY Ψ ν (h k) γ ω) (-q k)
   have hPXprob : IsProbabilityMeasure PX := (hΦ.2 0 (fun i : Fin 0 => Fin.elim0 i)).1
   have hPYprob : IsProbabilityMeasure PY := (hΨ.2 0 (fun i : Fin 0 => Fin.elim0 i)).1
   change ∫⁻ ω, ∏ k, zX ω k ∂PX ≤ ∫⁻ ω, ∏ k, zY ω k ∂PY
@@ -218,52 +215,32 @@ theorem kahane_field_multi_negative_power
   · by_cases hK : Nonempty K
     · obtain ⟨k₀⟩ := hK
       have hmassX (ω : ΩX) (k : κ) :
-          DOZZ.fieldChaosMass PX Φ ν (h k) γ ω = 0 := by
-        simp [DOZZ.fieldChaosMass, hνzero]
+          fieldChaosMass PX Φ ν (h k) γ ω = 0 := by
+        simp [fieldChaosMass, hνzero]
       have hmassY (ω : ΩY) (k : κ) :
-          DOZZ.fieldChaosMass PY Ψ ν (h k) γ ω = 0 := by
-        simp [DOZZ.fieldChaosMass, hνzero]
+          fieldChaosMass PY Ψ ν (h k) γ ω = 0 := by
+        simp [fieldChaosMass, hνzero]
       have hprodX (ω : ΩX) : ∏ k, zX ω k = ∞ := by
-        change (∏ k, ENNReal.rpow
-          (DOZZ.fieldChaosMass PX Φ ν (h k) γ ω) (-q k)) = ∞
         apply WithTop.prod_eq_top (Finset.mem_univ k₀.val)
-        · change ENNReal.rpow
-            (DOZZ.fieldChaosMass PX Φ ν (h k₀.val) γ ω) (-q k₀.val) = ∞
-          rw [hmassX ω k₀.val]
+        · dsimp [zX]; rw [hmassX]
           exact ENNReal.zero_rpow_of_neg (neg_lt_zero.mpr k₀.property)
         · intro k hk
           by_cases hk0 : q k = 0
-          · change ENNReal.rpow
-              (DOZZ.fieldChaosMass PX Φ ν (h k) γ ω) (-q k) ≠ 0
-            rw [hk0]
-            simp
-          · have hkpos : 0 < q k := lt_of_le_of_ne (hq k) (Ne.symm hk0)
-            change ENNReal.rpow (DOZZ.fieldChaosMass PX Φ ν (h k) γ ω) (-q k) ≠ 0
-            rw [hmassX ω k]
-            have hpow : ENNReal.rpow (0 : ℝ≥0∞) (-q k) = ∞ :=
-              ENNReal.zero_rpow_of_neg (neg_lt_zero.mpr hkpos)
-            rw [hpow]
+          · change (zX ω k : ℝ≥0∞) ≠ 0
+            dsimp [zX]; rw [hk0]; simp
+          · have hkpos := lt_of_le_of_ne (hq k) (Ne.symm hk0)
+            dsimp [zX]; rw [hmassX, ENNReal.zero_rpow_of_neg (neg_lt_zero.mpr hkpos)]
             exact ENNReal.top_ne_zero
       have hprodY (ω : ΩY) : ∏ k, zY ω k = ∞ := by
-        change (∏ k, ENNReal.rpow
-          (DOZZ.fieldChaosMass PY Ψ ν (h k) γ ω) (-q k)) = ∞
         apply WithTop.prod_eq_top (Finset.mem_univ k₀.val)
-        · change ENNReal.rpow
-            (DOZZ.fieldChaosMass PY Ψ ν (h k₀.val) γ ω) (-q k₀.val) = ∞
-          rw [hmassY ω k₀.val]
+        · dsimp [zY]; rw [hmassY]
           exact ENNReal.zero_rpow_of_neg (neg_lt_zero.mpr k₀.property)
         · intro k hk
           by_cases hk0 : q k = 0
-          · change ENNReal.rpow
-              (DOZZ.fieldChaosMass PY Ψ ν (h k) γ ω) (-q k) ≠ 0
-            rw [hk0]
-            simp
-          · have hkpos : 0 < q k := lt_of_le_of_ne (hq k) (Ne.symm hk0)
-            change ENNReal.rpow (DOZZ.fieldChaosMass PY Ψ ν (h k) γ ω) (-q k) ≠ 0
-            rw [hmassY ω k]
-            have hpow : ENNReal.rpow (0 : ℝ≥0∞) (-q k) = ∞ :=
-              ENNReal.zero_rpow_of_neg (neg_lt_zero.mpr hkpos)
-            rw [hpow]
+          · change (zY ω k : ℝ≥0∞) ≠ 0
+            dsimp [zY]; rw [hk0]; simp
+          · have hkpos := lt_of_le_of_ne (hq k) (Ne.symm hk0)
+            dsimp [zY]; rw [hmassY, ENNReal.zero_rpow_of_neg (neg_lt_zero.mpr hkpos)]
             exact ENNReal.top_ne_zero
       have hIX : ∫⁻ ω, ∏ k, zX ω k ∂PX = ∞ := by
         calc
@@ -301,21 +278,21 @@ theorem kahane_field_multi_negative_power
       dsimp [α, ρ]
       exact integral_nonneg_of_ae (ae_of_all _ fun x => NNReal.coe_nonneg (h k x))
     have hcov' : ∀ᵐ xy ∂(νf : Measure S).prod νf,
-        DOZZ.gaussianCovariance PX (fun ω => Φ ω xy.1) (fun ω => Φ ω xy.2) ≤
-          DOZZ.gaussianCovariance PY (fun ω => Ψ ω xy.1) (fun ω => Ψ ω xy.2) := by
+        gaussianCovariance PX (fun ω => Φ ω xy.1) (fun ω => Φ ω xy.2) ≤
+          gaussianCovariance PY (fun ω => Ψ ω xy.1) (fun ω => Ψ ω xy.2) := by
       filter_upwards [hcov] with xy hxy
-      simpa [DOZZ.gaussianCovariance] using hxy
+      simpa [gaussianCovariance] using hxy
     have hdiag' : ∀ᵐ x ∂(νf : Measure S),
-        DOZZ.gaussianVariance PX (fun ω => Φ ω x) ≤
-          DOZZ.gaussianVariance PY (fun ω => Ψ ω x) := by
+        gaussianVariance PX (fun ω => Φ ω x) ≤
+          gaussianVariance PY (fun ω => Ψ ω x) := by
       filter_upwards [hdiag] with x hx
-      simpa [DOZZ.gaussianVariance, DOZZ.gaussianCovariance, pow_two] using hx
+      simpa [gaussianVariance, gaussianCovariance, pow_two] using hx
     by_cases hK : Nonempty K
     · obtain ⟨kdefault⟩ := hK
       let zKX : ΩX → K → ℝ≥0∞ := fun ω k =>
-        ENNReal.rpow (DOZZ.fieldChaosMass PX Φ ν (h k.val) γ ω) (-q k.val)
+        ENNReal.rpow (fieldChaosMass PX Φ ν (h k.val) γ ω) (-q k.val)
       let zKY : ΩY → K → ℝ≥0∞ := fun ω k =>
-        ENNReal.rpow (DOZZ.fieldChaosMass PY Ψ ν (h k.val) γ ω) (-q k.val)
+        ENNReal.rpow (fieldChaosMass PY Ψ ν (h k.val) γ ω) (-q k.val)
       have hzXinactive (ω : ΩX) (k : {k : κ // ¬ p k}) : zX ω k.val = 1 := by
         have hq0 : q k.val = 0 := le_antisymm (le_of_not_gt k.property) (hq k.val)
         simp [zX, hq0]
@@ -344,9 +321,9 @@ theorem kahane_field_multi_negative_power
                 rfl
       by_cases hweights : ∀ k : K, 0 < α k.val
       · let MX : ΩX → K → ℝ≥0∞ := fun ω k =>
-          DOZZ.fieldChaosMass PX Φ ν (h k.val) γ ω
+          fieldChaosMass PX Φ ν (h k.val) γ ω
         let MY : ΩY → K → ℝ≥0∞ := fun ω k =>
-          DOZZ.fieldChaosMass PY Ψ ν (h k.val) γ ω
+          fieldChaosMass PY Ψ ν (h k.val) γ ω
         let mX : ΩX → K → ℝ := fun ω k =>
           if (MX ω k).toReal = 0 then 1 else (MX ω k).toReal
         let mY : ΩY → K → ℝ := fun ω k =>
@@ -363,16 +340,16 @@ theorem kahane_field_multi_negative_power
           · exact lt_of_le_of_ne ENNReal.toReal_nonneg (Ne.symm hz)
         have hmassEqX (k : K) : ∀ᵐ ω ∂PX, MX ω k = ENNReal.ofReal (mX ω k) := by
           change ∀ᵐ ω ∂PX,
-            DOZZ.fieldChaosMass PX Φ ν (h k.val) γ ω = ENNReal.ofReal
-              (if (DOZZ.fieldChaosMass PX Φ ν (h k.val) γ ω).toReal = 0 then 1 else
-                (DOZZ.fieldChaosMass PX Φ ν (h k.val) γ ω).toReal)
+            fieldChaosMass PX Φ ν (h k.val) γ ω = ENNReal.ofReal
+              (if (fieldChaosMass PX Φ ν (h k.val) γ ω).toReal = 0 then 1 else
+                (fieldChaosMass PX Φ ν (h k.val) γ ω).toReal)
           exact fieldChaosMass_eq_ofReal_modified_toReal_ae PX Φ hΦ νf hνf
             (h k.val) (hh k.val) (hhb k.val) γ (by simpa [α, ρ] using hweights k)
         have hmassEqY (k : K) : ∀ᵐ ω ∂PY, MY ω k = ENNReal.ofReal (mY ω k) := by
           change ∀ᵐ ω ∂PY,
-            DOZZ.fieldChaosMass PY Ψ ν (h k.val) γ ω = ENNReal.ofReal
-              (if (DOZZ.fieldChaosMass PY Ψ ν (h k.val) γ ω).toReal = 0 then 1 else
-                (DOZZ.fieldChaosMass PY Ψ ν (h k.val) γ ω).toReal)
+            fieldChaosMass PY Ψ ν (h k.val) γ ω = ENNReal.ofReal
+              (if (fieldChaosMass PY Ψ ν (h k.val) γ ω).toReal = 0 then 1 else
+                (fieldChaosMass PY Ψ ν (h k.val) γ ω).toReal)
           exact fieldChaosMass_eq_ofReal_modified_toReal_ae PY Ψ hΨ νf hνf
             (h k.val) (hh k.val) (hhb k.val) γ (by simpa [α, ρ] using hweights k)
         have htoRealX (k : K) : ∀ᵐ ω ∂PX, (MX ω k).toReal = mX ω k := by
@@ -518,8 +495,7 @@ theorem kahane_field_multi_negative_power
           rw [ae_iff]
           have hnull : nuPos (Iic (0 : ℝ)) = 0 := by
             change (volume.restrict (Ioi (0 : ℝ))) (Iic (0 : ℝ)) = 0
-            rw [Measure.restrict_apply measurableSet_Iic]
-            rw [Set.inter_comm, Ioi_inter_Iic]
+            rw [Measure.restrict_apply measurableSet_Iic, Set.inter_comm, Ioi_inter_Iic]
             simp
           simpa [Function.eval, Set.preimage, Set.mem_Iic] using
             (Measure.pi_eval_preimage_null νK hnull)
@@ -554,7 +530,7 @@ theorem kahane_field_multi_negative_power
                     rw [hω]
               _ ≤ ∫⁻ ω, ENNReal.ofReal (Real.exp
                     (-∑ k : K, t k * (MY ω k).toReal)) ∂PY := by
-                    simpa only [MX, MY, hνeq] using hLap
+                    simpa [MX, MY, hνeq] using hLap
               _ = ∫⁻ ω, ENNReal.ofReal (Real.exp
                     (-∑ k : K, t k * mY ω k)) ∂PY := by
                     apply lintegral_congr_ae
@@ -648,7 +624,7 @@ theorem kahane_field_multi_negative_power
           calc
             _ = ∫⁻ ω, C * (∫⁻ t, fX ω t ∂T) ∂PX := by
               apply lintegral_congr_ae
-              exact hpointX
+              assumption
             _ = C * ∫⁻ ω, ∫⁻ t, fX ω t ∂T ∂PX := lintegral_const_mul'' C hIX
             _ = C * ∫⁻ t, ∫⁻ ω, fX ω t ∂PX ∂T := by
               congr 1
@@ -659,7 +635,7 @@ theorem kahane_field_multi_negative_power
           calc
             _ = ∫⁻ ω, C * (∫⁻ t, fY ω t ∂T) ∂PY := by
               apply lintegral_congr_ae
-              exact hpointY
+              assumption
             _ = C * ∫⁻ ω, ∫⁻ t, fY ω t ∂T ∂PY := lintegral_const_mul'' C hIY
             _ = C * ∫⁻ t, ∫⁻ ω, fY ω t ∂PY ∂T := by
               congr 1
@@ -681,39 +657,39 @@ theorem kahane_field_multi_negative_power
       · obtain ⟨kbad, hkbad⟩ := not_forall.mp hweights
         have hzeroWeight : α kbad.val = 0 := le_antisymm (not_lt.mp hkbad) (hαnonneg kbad.val)
         have hzeroX (ω : ΩX) :
-            DOZZ.fieldChaosMass PX Φ ν (h kbad.val) γ ω = 0 := by
+            fieldChaosMass PX Φ ν (h kbad.val) γ ω = 0 := by
           have hz := centeredGaussianField_fieldChaosMass_eq_zero_of_zero_weight_integral
             PX Φ νf (h kbad.val) (hh kbad.val) (hhb kbad.val) γ
             (by simpa [α, ρ] using hzeroWeight)
           simpa [νf] using hz ω
         have hzeroY (ω : ΩY) :
-            DOZZ.fieldChaosMass PY Ψ ν (h kbad.val) γ ω = 0 := by
+            fieldChaosMass PY Ψ ν (h kbad.val) γ ω = 0 := by
           have hz := centeredGaussianField_fieldChaosMass_eq_zero_of_zero_weight_integral
             PY Ψ νf (h kbad.val) (hh kbad.val) (hhb kbad.val) γ
             (by simpa [α, ρ] using hzeroWeight)
           simpa [νf] using hz ω
         have hfactorTopX (ω : ΩX) : zKX ω kbad = ∞ := by
           change ENNReal.rpow
-            (DOZZ.fieldChaosMass PX Φ ν (h kbad.val) γ ω) (-q kbad.val) = ∞
+            (fieldChaosMass PX Φ ν (h kbad.val) γ ω) (-q kbad.val) = ∞
           rw [hzeroX ω]
           exact ENNReal.zero_rpow_of_neg (neg_lt_zero.mpr kbad.property)
         have hfactorTopY (ω : ΩY) : zKY ω kbad = ∞ := by
           change ENNReal.rpow
-            (DOZZ.fieldChaosMass PY Ψ ν (h kbad.val) γ ω) (-q kbad.val) = ∞
+            (fieldChaosMass PY Ψ ν (h kbad.val) γ ω) (-q kbad.val) = ∞
           rw [hzeroY ω]
           exact ENNReal.zero_rpow_of_neg (neg_lt_zero.mpr kbad.property)
         have hfactorNeZeroX (k : K) : ∀ᵐ ω ∂PX, zKX ω k ≠ 0 := by
           by_cases hα0 : α k.val = 0
-          · have hzero : ∀ ω, DOZZ.fieldChaosMass PX Φ ν (h k.val) γ ω = 0 :=
+          · have hzero : ∀ ω, fieldChaosMass PX Φ ν (h k.val) γ ω = 0 :=
               by
                 have hz := centeredGaussianField_fieldChaosMass_eq_zero_of_zero_weight_integral
                   PX Φ νf (h k.val) (hh k.val) (hhb k.val) γ
                   (by simpa [α, ρ] using hα0)
                 intro ω
-                simpa only [hνeq] using hz ω
+                simpa [hνeq] using hz ω
             filter_upwards with ω
             change ENNReal.rpow
-              (DOZZ.fieldChaosMass PX Φ ν (h k.val) γ ω) (-q k.val) ≠ 0
+              (fieldChaosMass PX Φ ν (h k.val) γ ω) (-q k.val) ≠ 0
             rw [hzero ω]
             have hrpow : ENNReal.rpow (0 : ℝ≥0∞) (-q k.val) = ∞ :=
               ENNReal.zero_rpow_of_neg (neg_lt_zero.mpr k.property)
@@ -727,29 +703,29 @@ theorem kahane_field_multi_negative_power
               PX Φ hΦ νf hνf (h k.val) (hh k.val) (hhb k.val) γ
               (by simpa [α, ρ] using hαpos)
             filter_upwards [hpos, hfinite] with ω hpω hfω
-            have hpω' : 0 < DOZZ.fieldChaosMass PX Φ ν (h k.val) γ ω := by
-              simpa only [hνeq] using hpω
-            have hneTop : DOZZ.fieldChaosMass PX Φ ν (h k.val) γ ω ≠ ∞ := by
-              have hfω' : DOZZ.fieldChaosMass PX Φ ν (h k.val) γ ω =
+            have hpω' : 0 < fieldChaosMass PX Φ ν (h k.val) γ ω := by
+              simpa [hνeq] using hpω
+            have hneTop : fieldChaosMass PX Φ ν (h k.val) γ ω ≠ ∞ := by
+              have hfω' : fieldChaosMass PX Φ ν (h k.val) γ ω =
                   ENNReal.ofReal
-                    (if (DOZZ.fieldChaosMass PX Φ ν (h k.val) γ ω).toReal = 0 then 1 else
-                      (DOZZ.fieldChaosMass PX Φ ν (h k.val) γ ω).toReal) := by
-                simpa only [hνeq] using hfω
+                    (if (fieldChaosMass PX Φ ν (h k.val) γ ω).toReal = 0 then 1 else
+                      (fieldChaosMass PX Φ ν (h k.val) γ ω).toReal) := by
+                simpa [hνeq] using hfω
               rw [hfω']
               exact ENNReal.ofReal_ne_top
             exact (ENNReal.rpow_pos hpω' hneTop).ne'
         have hfactorNeZeroY (k : K) : ∀ᵐ ω ∂PY, zKY ω k ≠ 0 := by
           by_cases hα0 : α k.val = 0
-          · have hzero : ∀ ω, DOZZ.fieldChaosMass PY Ψ ν (h k.val) γ ω = 0 :=
+          · have hzero : ∀ ω, fieldChaosMass PY Ψ ν (h k.val) γ ω = 0 :=
               by
                 have hz := centeredGaussianField_fieldChaosMass_eq_zero_of_zero_weight_integral
                   PY Ψ νf (h k.val) (hh k.val) (hhb k.val) γ
                   (by simpa [α, ρ] using hα0)
                 intro ω
-                simpa only [hνeq] using hz ω
+                simpa [hνeq] using hz ω
             filter_upwards with ω
             change ENNReal.rpow
-              (DOZZ.fieldChaosMass PY Ψ ν (h k.val) γ ω) (-q k.val) ≠ 0
+              (fieldChaosMass PY Ψ ν (h k.val) γ ω) (-q k.val) ≠ 0
             rw [hzero ω]
             have hrpow : ENNReal.rpow (0 : ℝ≥0∞) (-q k.val) = ∞ :=
               ENNReal.zero_rpow_of_neg (neg_lt_zero.mpr k.property)
@@ -763,14 +739,14 @@ theorem kahane_field_multi_negative_power
               PY Ψ hΨ νf hνf (h k.val) (hh k.val) (hhb k.val) γ
               (by simpa [α, ρ] using hαpos)
             filter_upwards [hpos, hfinite] with ω hpω hfω
-            have hpω' : 0 < DOZZ.fieldChaosMass PY Ψ ν (h k.val) γ ω := by
-              simpa only [hνeq] using hpω
-            have hneTop : DOZZ.fieldChaosMass PY Ψ ν (h k.val) γ ω ≠ ∞ := by
-              have hfω' : DOZZ.fieldChaosMass PY Ψ ν (h k.val) γ ω =
+            have hpω' : 0 < fieldChaosMass PY Ψ ν (h k.val) γ ω := by
+              simpa [hνeq] using hpω
+            have hneTop : fieldChaosMass PY Ψ ν (h k.val) γ ω ≠ ∞ := by
+              have hfω' : fieldChaosMass PY Ψ ν (h k.val) γ ω =
                   ENNReal.ofReal
-                    (if (DOZZ.fieldChaosMass PY Ψ ν (h k.val) γ ω).toReal = 0 then 1 else
-                      (DOZZ.fieldChaosMass PY Ψ ν (h k.val) γ ω).toReal) := by
-                simpa only [hνeq] using hfω
+                    (if (fieldChaosMass PY Ψ ν (h k.val) γ ω).toReal = 0 then 1 else
+                      (fieldChaosMass PY Ψ ν (h k.val) γ ω).toReal) := by
+                simpa [hνeq] using hfω
               rw [hfω']
               exact ENNReal.ofReal_ne_top
             exact (ENNReal.rpow_pos hpω' hneTop).ne'

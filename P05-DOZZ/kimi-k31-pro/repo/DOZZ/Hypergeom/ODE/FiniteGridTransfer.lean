@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import Mathlib.Data.Nat.Basic
+import Mathlib.Data.Nat.Basic
 
 /-! A finite grid of commuting local continuation squares has path-independent boundary transfer
 between its fixed endpoints. -/
 
-@[expose] public section
 
 namespace DOZZ.Proofs
 

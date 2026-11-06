@@ -2,11 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.BPZ.WardDefs
-public import DOZZ.FourPoint.BPZ.WirtingerMass
-public import DOZZ.FourPoint.BPZ.MomentLimitB
+import DOZZ.FourPoint.BPZ.WardDefs
+import DOZZ.FourPoint.BPZ.WirtingerMass
+import DOZZ.FourPoint.BPZ.MomentLimitB
 
 /-! # Wirtinger combinations of the moment fields
 
@@ -25,7 +24,6 @@ integrable. Their Wirtinger combinations are the meromorphic moments `E₁`, `D�
 The pathwise estimates use `|∫ k/(z − x)| ≤ ∫ w |x − z|^{2a−1}` together with the Cauchy–Schwarz
 inequality `(∫ w t^{2a−1})² ≤ (∫ w t^{2a}) (∫ w t^{2a−2})`. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped ENNReal NNReal
@@ -267,14 +265,14 @@ theorem bpzWM_normSq_eq (H : BPZWMData a w k m z) (x : ℂ) :
 theorem bpzWM_wirtL_deriv (H : BPZWMData a w k m z) :
     bpzWirtL (bpzSoftMassDeriv a 0 w m z) = (a : ℂ) * ∫ x, ((k x : ℝ) : ℂ) / (z - x) ∂m := by
   rw [bpzWirtL_softMassDeriv_zero H.ha H.ha1 H.hw H.hw0 H.hz (bpzWM_integrable_w1 H)]
-  simp only [bpzWM_normSq_eq H]
+  simp [bpzWM_normSq_eq H]
 
 /-- The second Wirtinger combination of the second derivative mass is `a (a − 1) ∫ k/(z − x)²`. -/
 theorem bpzWM_wirt2L_deriv2 (H : BPZWMData a w k m z) :
     bpzWirt2L (bpzSoftMassDeriv2 a 0 w m z) =
       ((a * (a - 1) : ℝ) : ℂ) * ∫ x, ((k x : ℝ) : ℂ) / (z - x) ^ 2 ∂m := by
   rw [bpzWirt2L_softMassDeriv2_zero H.ha H.ha1 H.hw H.hw0 H.hz (bpzWM_integrable_w2 H)]
-  simp only [bpzWM_normSq_eq H]
+  simp [bpzWM_normSq_eq H]
 
 /-- The Wirtinger combination of the first moment field. -/
 theorem bpzWM_wirtL_momField1 (H : BPZWMData a w k m z) (s : ℝ) :
@@ -282,7 +280,7 @@ theorem bpzWM_wirtL_momField1 (H : BPZWMData a w k m z) (s : ℝ) :
       ((((∫ x, k x ∂m) ^ (-s - 1) : ℝ) : ℂ) * ∫ x, ((k x : ℝ) : ℂ) / (z - x) ∂m) := by
   unfold bpzMomField1
   rw [map_smul, Complex.real_smul, bpzWM_wirtL_deriv H, bpzWM_softMassReal_eq H]
-  simp only [Complex.ofReal_mul, Complex.ofReal_neg]
+  simp [Complex.ofReal_mul, Complex.ofReal_neg]
   ring
 
 /-- The second Wirtinger combination of the second moment field. -/
@@ -295,7 +293,7 @@ theorem bpzWM_wirt2L_momField2 (H : BPZWMData a w k m z) (s : ℝ) :
   unfold bpzMomField2
   rw [map_add, map_smul, map_smul, Complex.real_smul, Complex.real_smul, bpzWirt2L_smulRight,
     bpzWM_wirtL_deriv H, bpzWM_wirt2L_deriv2 H, bpzWM_softMassReal_eq H]
-  simp only [Complex.ofReal_mul, Complex.ofReal_neg, Complex.ofReal_add, Complex.ofReal_one,
+  simp [Complex.ofReal_mul, Complex.ofReal_neg, Complex.ofReal_add, Complex.ofReal_one,
     Complex.ofReal_pow]
   ring
 

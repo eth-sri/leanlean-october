@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GFF.TorusH2CoefficientCLM
-public import DOZZ.GFF.LocalModeFunctional
+import DOZZ.GFF.TorusH2CoefficientCLM
+import DOZZ.GFF.LocalModeFunctional
 import Mathlib.MeasureTheory.Constructions.Polish.StronglyMeasurable
 import Mathlib.MeasureTheory.Constructions.BorelSpace.Real
 
@@ -17,7 +16,6 @@ linear functional. The scalar evaluation is also defined as a measurable limit o
 sums, so it remains measurable before restricting to the full-measure square-summability event.
 -/
 
-@[expose] public section
 
 open MeasureTheory Filter
 open scoped ENNReal InnerProductSpace Topology lp
@@ -121,7 +119,7 @@ theorem equatorLocalFourierPartialEval_insert (R : ℕ) (f : TestFn)
         (torusH2WeightedFourierCoeffCLM (gffLocalModeBoxSide R) f k).im *
           equatorHaarCommonEval (gffLocalSinSobolevModeTest R k) ω) +
     equatorLocalFourierPartialEval R f s ω := by
-  simp only [equatorLocalFourierPartialEval, Finset.sum_insert hk]
+  simp [equatorLocalFourierPartialEval, Finset.sum_insert hk]
 
 /-- The measurable scalar Fourier limit on a local chart, defined for every sample by a filter
 limit of finite sums. -/
@@ -217,7 +215,7 @@ theorem equatorLocalFourierEval_eq_distributionCLM_apply (R : ℕ) (f : TestFn)
   have hlim : Tendsto (fun s => equatorLocalFourierPartialEval R f s ω) atTop
       (𝓝 ((equatorLocalFourierPairingCLM R ω hcos hsin)
         (torusH2WeightedFourierCoeffCLM (gffLocalModeBoxSide R) f))) := by
-    exact hsum
+    assumption
   change limUnder atTop (equatorLocalFourierPartialEval R f · ω) = _
   rw [hlim.limUnder_eq]
   rfl
@@ -314,7 +312,7 @@ theorem equatorHaarCommonCosEval_summable_of_good (R : ℕ)
     equatorHaarCommonCosEnergyTsum R ω ≠ ∞ ∧
       equatorHaarCommonSinEnergyTsum R ω ≠ ∞ at hω
   have h := ENNReal.summable_toReal (hω R).1
-  simpa only [equatorHaarCommonCosEnergyTsum, ENNReal.toReal_ofReal (sq_nonneg _)] using h
+  simpa [equatorHaarCommonCosEnergyTsum, ENNReal.toReal_ofReal (sq_nonneg _)] using h
 
 theorem equatorHaarCommonSinEval_summable_of_good (R : ℕ)
     (ω : GaussianFields.ScaleSpaceWhiteNoiseSpace 2)
@@ -325,8 +323,7 @@ theorem equatorHaarCommonSinEval_summable_of_good (R : ℕ)
     equatorHaarCommonCosEnergyTsum R ω ≠ ∞ ∧
       equatorHaarCommonSinEnergyTsum R ω ≠ ∞ at hω
   have h := ENNReal.summable_toReal (hω R).2
-  simpa only [equatorHaarCommonSinEnergyTsum, ENNReal.toReal_ofReal (sq_nonneg _)] using h
+  simpa [equatorHaarCommonSinEnergyTsum, ENNReal.toReal_ofReal (sq_nonneg _)] using h
 
 end DOZZ
 
-end

@@ -2,15 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.Correlations.OneInsertionTailCoefficient
+import DOZZ.Statements.Correlations.OneInsertionTailCoefficient
 import DOZZ.Correlations.SeparatedTail.JointTail
 
 /-! The statement `DOZZ.separatedSingularMass_joint_tail`,
 proved by `DOZZ.Proofs.separatedSingularMass_joint_tail`. -/
 
-public section
 
 open MeasureTheory ProbabilityTheory Filter Topology TopologicalSpace Set
 open scoped ENNReal NNReal Topology
@@ -41,6 +39,6 @@ theorem separatedSingularMass_joint_tail
           (P {ω | ENNReal.ofReal u < localSingularMass M F2 z2 γ α2 ω ∧
             ENNReal.ofReal v < localSingularMass M F3 z3 γ α3 ω}).toReal ≤
             C * Real.rpow u (-reflectionExponent γ α2 + ε) *
-              Real.rpow v (-reflectionExponent γ α3 + ε) := by exact DOZZ.Proofs.separatedSingularMass_joint_tail P X M γ hγ hγ2 hX hM K2 K3 hK2 hK3 hpos2 hpos3 hsep A2 A3 hA2 hA3 hα2 hα3 F2s F3s radius supBound derivBound lowerBound hF2 hF3 ε hε hε2 hε3
+              Real.rpow v (-reflectionExponent γ α3 + ε) := DOZZ.Proofs.separatedSingularMass_joint_tail P X M γ hγ hγ2 hX hM K2 K3 hK2 hK3 hpos2 hpos3 hsep A2 A3 hA2 hA3 hα2 hα3 F2s F3s radius supBound derivBound lowerBound hF2 hF3 ε hε hε2 hε3
 
 end DOZZ

@@ -2,11 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.Moments.WeightedDyadic
-public import DOZZ.GMC.Moments.WeightedLpFiniteSum
-public import DOZZ.Statements.GMC.WeightedGmcBallMoment
+import DOZZ.GMC.Moments.WeightedDyadic
+import DOZZ.GMC.Moments.WeightedLpFiniteSum
+import DOZZ.Statements.GMC.WeightedGmcBallMoment
+import DOZZ.GMC.SharpMoments.WeightedDyadicSum
 
 /-! Subunit weighted moments used by all-root construction.
 
@@ -15,7 +15,7 @@ This construction specialization uses the dyadic shell argument of
 lemma and avoids the higher-order Minkowski passage. The coefficient proof explicitly folds
 `ENNReal.rpow` before applying the power multiplication rule.
 -/
-@[expose] public section
+section
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -26,24 +26,14 @@ private theorem rooted_subunit_shell_sum
     (f : ℕ → Ω → ℝ≥0∞) (hf : ∀ n, AEMeasurable (f n) P) {p : ℝ} (hp : 0 < p) (hp1 : p ≤ 1)
     {K q : ℝ≥0∞} (hK : K ≠ ⊤) (hq : q < 1)
     (hbound : ∀ n, ∫⁻ ω, f n ω ^ p ∂P ≤ K * q ^ n) :
-    ∫⁻ ω, (∑' n, f n ω) ^ p ∂P < ⊤ := by
-  have hfp : ∀ n, AEMeasurable (fun ω => f n ω ^ p) P := fun n =>
-    ENNReal.continuous_rpow_const.measurable.comp_aemeasurable (hf n)
-  calc
-    ∫⁻ ω, (∑' n, f n ω) ^ p ∂P ≤ ∫⁻ ω, ∑' n, f n ω ^ p ∂P :=
-      lintegral_mono fun ω => ennreal_rpow_tsum_le_tsum_rpow _ hp hp1
-    _ = ∑' n, ∫⁻ ω, f n ω ^ p ∂P := lintegral_tsum hfp
-    _ ≤ ∑' n : ℕ, K * q ^ n := ENNReal.tsum_le_tsum hbound
-    _ = K * (1 - q)⁻¹ := by rw [ENNReal.tsum_mul_left, ENNReal.tsum_geometric]
-    _ < ⊤ := ENNReal.mul_lt_top hK.lt_top (ENNReal.inv_lt_top.2 (tsub_pos_of_lt hq))
+    ∫⁻ ω, (∑' n, f n ω) ^ p ∂P < ⊤ :=
+  weightedDyadicSum_lintegral_tsum_rpow_lt_top_of_le_one f hf hp hp1 hK hq hbound
 
 /-- The `p`th power of the dyadic coefficient is an explicit real power. -/
 private theorem rooted_shell_coefficient_power (γ α p R : ℝ) (hR : 0 < R) (n : ℕ) :
     (ENNReal.rpow (ENNReal.ofReal (R / (2 : ℝ) ^ (n + 1))) (-γ * α)) ^ p =
-      ENNReal.ofReal ((R / (2 : ℝ) ^ (n + 1)) ^ (-γ * α * p)) := by
-  have hrad : 0 < R / (2 : ℝ) ^ (n + 1) := by positivity
-  change (ENNReal.ofReal (R / (2 : ℝ) ^ (n + 1)) ^ (-γ * α)) ^ p = _
-  rw [← ENNReal.rpow_mul, ENNReal.ofReal_rpow_of_pos hrad]
+      ENNReal.ofReal ((R / (2 : ℝ) ^ (n + 1)) ^ (-γ * α * p)) :=
+  weightedDyadicSum_coeff_rpow γ α p R hR n
 
 /-- The `p`th moment of the `n`th shell term is bounded by the sharp ball bound evaluated at the
 dyadic radius, times the `p`th power of the coefficient. -/
@@ -56,50 +46,14 @@ private theorem rooted_shell_moment_bound
     ∫⁻ ω, (ENNReal.rpow (ENNReal.ofReal (R / (2 : ℝ) ^ (n + 1))) (-γ * α) *
         M ω (Metric.ball z (R / (2 : ℝ) ^ n))) ^ p ∂P ≤
       ENNReal.ofReal ((R / (2 : ℝ) ^ (n + 1)) ^ (-γ * α * p) *
-        (C * (R / (2 : ℝ) ^ n) ^ ξ)) := by
-  have hrad : 0 < R / (2 : ℝ) ^ (n + 1) := by positivity
-  have hρ : 0 < R / (2 : ℝ) ^ n := by positivity
-  have hρR : R / (2 : ℝ) ^ n ≤ R := div_le_self hR.le (one_le_pow₀ (by norm_num))
-  have hmeas : AEMeasurable
-      (fun ω => ENNReal.rpow (M ω (Metric.ball z (R / (2 : ℝ) ^ n))) p) P :=
-    ENNReal.continuous_rpow_const.measurable.comp_aemeasurable
-      (hM _ Metric.isOpen_ball.measurableSet)
-  calc
-    _ = ∫⁻ ω, (ENNReal.rpow (ENNReal.ofReal (R / (2 : ℝ) ^ (n + 1))) (-γ * α)) ^ p *
-          ENNReal.rpow (M ω (Metric.ball z (R / (2 : ℝ) ^ n))) p ∂P :=
-      lintegral_congr fun ω => ENNReal.mul_rpow_of_nonneg _ _ hp.le
-    _ = (ENNReal.rpow (ENNReal.ofReal (R / (2 : ℝ) ^ (n + 1))) (-γ * α)) ^ p *
-          gmcMassMoment P M (Metric.ball z (R / (2 : ℝ) ^ n)) p :=
-      lintegral_const_mul'' _ hmeas
-    _ ≤ ENNReal.ofReal ((R / (2 : ℝ) ^ (n + 1)) ^ (-γ * α * p)) *
-          ENNReal.ofReal (C * (R / (2 : ℝ) ^ n) ^ ξ) := by
-      rw [rooted_shell_coefficient_power γ α p R hR n]
-      exact mul_le_mul' le_rfl (hball _ hρ hρR)
-    _ = _ := (ENNReal.ofReal_mul (Real.rpow_nonneg hrad.le _)).symm
+        (C * (R / (2 : ℝ) ^ n) ^ ξ)) := DOZZ.Proofs.weightedDyadicSum_shell_moment_le P M hM γ α p ξ C R z hp hR n hball
 
 /-- Real-variable identity: the dyadic coefficient times the sharp bound at the dyadic radius is a
 constant times the `n`th power of `(1/2) ^ (ξ - γ α p)`. -/
 private theorem rooted_shell_geometric_factor (γ α p ξ C R : ℝ) (hR : 0 < R) (n : ℕ) :
     (R / (2 : ℝ) ^ (n + 1)) ^ (-γ * α * p) * (C * (R / (2 : ℝ) ^ n) ^ ξ) =
-      (C * (R / 2) ^ (-γ * α * p) * R ^ ξ) * ((1 / 2 : ℝ) ^ (ξ - γ * α * p)) ^ n := by
-  have hhalf : (1 / 2 : ℝ) ^ n = ((2 : ℝ) ^ n)⁻¹ := by
-    rw [div_pow, one_pow, one_div]
-  have hpos : 0 < (1 / 2 : ℝ) ^ n := by positivity
-  have h1 : R / (2 : ℝ) ^ (n + 1) = (R / 2) * (1 / 2 : ℝ) ^ n := by
-    rw [pow_succ, hhalf]
-    field_simp
-  have h2 : R / (2 : ℝ) ^ n = R * (1 / 2 : ℝ) ^ n := by
-    rw [hhalf, div_eq_mul_inv]
-  have hmerge : ((1 / 2 : ℝ) ^ n) ^ (-γ * α * p) * ((1 / 2 : ℝ) ^ n) ^ ξ =
-      ((1 / 2 : ℝ) ^ (ξ - γ * α * p)) ^ n := by
-    rw [← Real.rpow_add hpos, Real.rpow_pow_comm (by norm_num)]
-    congr 1
-    ring
-  rw [h1, h2, Real.mul_rpow (by positivity) hpos.le, Real.mul_rpow hR.le hpos.le]
-  calc
-    _ = C * (R / 2) ^ (-γ * α * p) * R ^ ξ *
-          (((1 / 2 : ℝ) ^ n) ^ (-γ * α * p) * ((1 / 2 : ℝ) ^ n) ^ ξ) := by ring
-    _ = _ := by rw [hmerge]
+      (C * (R / 2) ^ (-γ * α * p) * R ^ ξ) * ((1 / 2 : ℝ) ^ (ξ - γ * α * p)) ^ n :=
+  weightedDyadicSum_real_term γ α p ξ C R hR n
 
 /-- Sharp ball upper bounds with positive insertion exponent give a finite subunit weighted moment. -/
 theorem rooted_local_moment_of_ball_upper

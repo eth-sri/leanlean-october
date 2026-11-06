@@ -2,12 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Reflected.AnnularLower
-public import DOZZ.FourPoint.Reflected.ChargeShift
+import DOZZ.FourPoint.Reflected.AnnularLower
+import DOZZ.FourPoint.Reflected.ChargeShift
 import Mathlib.Tactic
 /-! # Freezing controls the actual first-order shifted outer mass -/
-public section
 open MeasureTheory Set
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -50,7 +48,7 @@ theorem reflected_shifted_outer_freezing_bound
     have hn : ENNReal.ofReal c ≠ 0 := ENNReal.ofReal_ne_zero_iff.mpr hc
     simp only [hn, ENNReal.ofReal_ne_top, false_and, false_or, ite_false,
       ENNReal.ofReal_rpow_of_pos hc] at hh
-    exact hh
+    assumption
   calc
     _ ≤ ∫⁻ ω, ENNReal.ofReal (c ^ (-q)) *
         freezingAnnulusMassLocal γ (α₁ + γ / 2) (M ω) 0 (‖z‖ ^ (1 - ξ)) (1 / 2) ^ (-q) ∂P :=

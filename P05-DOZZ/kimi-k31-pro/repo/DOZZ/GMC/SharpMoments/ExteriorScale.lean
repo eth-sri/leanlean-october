@@ -2,13 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.SharpMoments.LocationTransfer
-public import DOZZ.GMC.Moments.CircleScale
-public import DOZZ.GMC.FieldGaussianCommonScalar
-public import DOZZ.GMC.FieldChaosConcavePower
-public import DOZZ.GMC.FieldChaosConvexPower
+import DOZZ.GMC.SharpMoments.LocationTransfer
+import DOZZ.GMC.Moments.CircleScale
+import DOZZ.GMC.FieldGaussianCommonScalar
+import DOZZ.GMC.FieldChaosConcavePower
+import DOZZ.GMC.FieldChaosConvexPower
 
 /-! # Exact scaling of cutoff chaos outside the unit disk
 
@@ -19,7 +18,6 @@ an independent Gaussian scalar of variance `log c`, the two covariances agree, s
 inequalities in both directions give an exact identity for every moment of exterior cutoff
 masses. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology Metric
 open scoped ENNReal NNReal
@@ -173,8 +171,7 @@ theorem cutoff_dilated_mass_eq_fieldChaosMass
     by_cases hx : x ∈ A
     · have hxS : (c : ℂ) * x ∈ S := by
         show (c : ℂ)⁻¹ * ((c : ℂ) * x) ∈ A
-        rw [hcx]
-        exact hx
+        rwa [hcx]
       have hx1 : 1 ≤ ‖x‖ := hA1 x hx
       have hn : normPlus ((c : ℂ) * x) = c * normPlus x := by
         rw [normPlus, normPlus, norm_mul, Complex.norm_real, Real.norm_eq_abs, abs_of_pos hc0,
@@ -183,8 +180,6 @@ theorem cutoff_dilated_mass_eq_fieldChaosMass
       rw [Set.indicator_of_mem hxS, Set.indicator_of_mem hx, hcx, hE]
       simp only []
       rw [hn, Real.mul_rpow hc0.le hnx, hW]
-      have he : 0 ≤ Real.exp (γ * Xc ω ((c : ℂ) * x) r -
-          γ ^ 2 / 2 * ∫ ω', Xc ω' ((c : ℂ) * x) r ^ 2 ∂P) := (Real.exp_pos _).le
       rw [show Real.exp (γ * Xc ω ((c : ℂ) * x) r -
           γ ^ 2 / 2 * ∫ ω', Xc ω' ((c : ℂ) * x) r ^ 2 ∂P) *
             (c ^ (-4 : ℝ) * normPlus x ^ (-4 : ℝ)) =
@@ -195,8 +190,7 @@ theorem cutoff_dilated_mass_eq_fieldChaosMass
       ring
     · have hxS : (c : ℂ) * x ∉ S := by
         show (c : ℂ)⁻¹ * ((c : ℂ) * x) ∉ A
-        rw [hcx]
-        exact hx
+        rwa [hcx]
       rw [Set.indicator_of_notMem hxS, Set.indicator_of_notMem hx, mul_zero]
   have hprod : Measurable (fun y => (w ((c : ℂ)⁻¹ * y) : ℝ≥0∞) * E y) := hwS.mul hEm
   have hprodA : Measurable (fun x => ENNReal.ofReal (normPlus x ^ (-4 : ℝ)) * W x) :=
@@ -248,12 +242,11 @@ theorem cutoff_exterior_scale_moment_eq
       (Real.sqrt (Real.log c)) x y
     rw [Real.sq_sqrt hlogc] at h2
     change ∫ ω, Φ ω x * Φ ω y ∂P = gaussianCovariance (P.prod G) _ _
-    rw [h2]
-    exact h
+    rwa [h2]
   have hAA : ∀ᵐ q ∂ν.prod ν, q.1 ∈ A ∧ q.2 ∈ A := by
     rw [hν, Measure.prod_restrict]
     filter_upwards [ae_restrict_mem (hA.prod hA)] with q hq
-    exact hq
+    assumption
   have hAν : ∀ᵐ x ∂ν, x ∈ A := ae_restrict_mem hA
   have hcov₁ : ∀ᵐ q ∂ν.prod ν,
       ∫ ω, Φ ω q.1 * Φ ω q.2 ∂P ≤ ∫ ω, Ψ' ω q.1 * Ψ' ω q.2 ∂(P.prod G) := by
@@ -265,10 +258,10 @@ theorem cutoff_exterior_scale_moment_eq
     exact (hcovpt q.1 hq.1 q.2 hq.2).ge
   have hdiag₁ : ∀ᵐ x ∂ν, ∫ ω, Φ ω x ^ 2 ∂P ≤ ∫ ω, Ψ' ω x ^ 2 ∂(P.prod G) := by
     filter_upwards [hAν] with x hx
-    simpa only [pow_two] using (hcovpt x hx x hx).le
+    simpa [pow_two] using (hcovpt x hx x hx).le
   have hdiag₂ : ∀ᵐ x ∂ν, ∫ ω, Ψ' ω x ^ 2 ∂(P.prod G) ≤ ∫ ω, Φ ω x ^ 2 ∂P := by
     filter_upwards [hAν] with x hx
-    simpa only [pow_two] using (hcovpt x hx x hx).ge
+    simpa [pow_two] using (hcovpt x hx x hx).ge
   -- Kahane in both directions
   have hmom : ∫⁻ ω, fieldChaosMass P Φ ν w γ ω ^ p ∂P =
       ∫⁻ ω, fieldChaosMass (P.prod G) Ψ' ν w γ ω ^ p ∂(P.prod G) := by

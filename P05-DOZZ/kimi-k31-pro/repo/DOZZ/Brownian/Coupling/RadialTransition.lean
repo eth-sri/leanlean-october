@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Brownian.Coupling.GaussianRadius
-public import Mathlib.Analysis.InnerProductSpace.Projection.Reflection
+import DOZZ.Brownian.Coupling.GaussianRadius
+import Mathlib.Analysis.InnerProductSpace.Projection.Reflection
 
 /-!
 # Rotation and the radial Gaussian transition
@@ -14,7 +13,6 @@ The Cartesian Gaussian heat law is invariant under every real linear isometry. R
 positive starting vector onto the first axis reduces its norm transition to cylindrical integration.
 -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal Topology Classical RealInnerProductSpace
@@ -67,7 +65,7 @@ theorem radialGaussianVectorMeasure_map_isometry (t : ℝ≥0) (ht : 0 < t)
         ENNReal.ofReal (Real.exp (-‖w‖ ^ 2 / (2 * (t : ℝ))))) * f w) :=
     (measurable_const.mul (by fun_prop)).mul hf
   have h := L.measurePreserving.lintegral_comp hm
-  simpa only [L.norm_map] using h
+  simpa [L.norm_map] using h
 
 /-- The nonnegative first-axis vector of a given radius. -/
 noncomputable def radialAxisVector (x : ℝ) : EuclideanSpace ℝ (Fin 3) :=
@@ -164,7 +162,7 @@ theorem radialGaussianVectorMeasure_eq_withDensity (t : ℝ≥0) (ht : 0 < t) :
 /-- The isotropic heat density is even. -/
 theorem radialGaussianVectorDensity_neg (t : ℝ≥0) (w : EuclideanSpace ℝ (Fin 3)) :
     radialGaussianVectorDensity t (-w) = radialGaussianVectorDensity t w := by
-  simp only [radialGaussianVectorDensity, norm_neg]
+  simp [radialGaussianVectorDensity, norm_neg]
 
 /-- Heat-density symmetry keeps the two actual vector operands. -/
 theorem radialGaussianVectorDensity_sub_comm (t : ℝ≥0) (z w : EuclideanSpace ℝ (Fin 3)) :
@@ -194,7 +192,7 @@ theorem radialGaussianVectorMeasure_add_map_eq_density (z : EuclideanSpace ℝ (
   have hm : Measurable (fun w => radialGaussianVectorDensity t (w - z) * f w) :=
     ((measurable_radialGaussianVectorDensity t).comp (measurable_id.sub_const z)).mul hf
   have h := (measurePreserving_add_left (volume : Measure (EuclideanSpace ℝ (Fin 3))) z).lintegral_comp hm
-  simpa only [add_sub_cancel_left, radialGaussianVectorDensity, Pi.mul_apply] using h
+  simpa [add_sub_cancel_left, radialGaussianVectorDensity, Pi.mul_apply] using h
 
 /-- Radial heat convolution depends only on the radius of the starting vector. -/
 noncomputable def radialHeatConvolution (t : ℝ≥0) (F : ℝ → ℝ≥0∞)
@@ -203,8 +201,7 @@ noncomputable def radialHeatConvolution (t : ℝ≥0) (F : ℝ → ℝ≥0∞)
 
 /-- The actual convolution is measurable in the starting vector. -/
 theorem measurable_radialHeatConvolution (t : ℝ≥0) (F : ℝ → ℝ≥0∞) (hF : Measurable F) :
-    Measurable (radialHeatConvolution t F) := by
-  exact Measurable.lintegral_prod_right (hF.comp (continuous_fst.add continuous_snd).norm.measurable)
+    Measurable (radialHeatConvolution t F) := Measurable.lintegral_prod_right (hF.comp (continuous_fst.add continuous_snd).norm.measurable)
 
 /-- Equal starting radii give exactly the same radial heat convolution. -/
 theorem radialHeatConvolution_eq_of_norm_eq (t : ℝ≥0) (ht : 0 < t)

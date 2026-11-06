@@ -1,10 +1,8 @@
-module
 
-public import DOZZ.Statements.Defs.GffKernel
+import DOZZ.Statements.Defs.GffKernel
 
 /-! Deterministic inversion identities used by the infinity chart. -/
 
-@[expose] public section
 
 namespace DOZZ.Proofs
 
@@ -28,9 +26,6 @@ theorem normPlus_inv_mul_jacobian {u : ℂ} (hu : u ≠ 0) :
   have hnpu : 0 < normPlus u := by
     unfold normPlus
     exact lt_of_lt_of_le zero_lt_one (le_max_left 1 ‖u‖)
-  have hnpinv : 0 < normPlus u⁻¹ := by
-    unfold normPlus
-    exact lt_of_lt_of_le zero_lt_one (le_max_left 1 ‖u⁻¹‖)
   have hinv : normPlus u⁻¹ = normPlus u / ‖u‖ := normPlus_inv_identity hu
   rw [hinv, Real.div_rpow hnpu.le hρ.le (-4)]
   exact div_mul_cancel₀ _ (ne_of_gt (Real.rpow_pos_of_pos hρ (-4)))

@@ -2,14 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.ShiftEquations.DualR.SegFactors
-public import DOZZ.Statements.Defs.IsEquatorGFF
-public import DOZZ.Statements.Defs.IsGMCOf
-public import DOZZ.Statements.Brownian.ReflectionR
-public import DOZZ.Statements.Brownian.IsSourceLateralProjection
-public import DOZZ.Statements.Brownian.IsReflectionData
+import DOZZ.ShiftEquations.DualR.SegFactors
+import DOZZ.Statements.Defs.IsEquatorGFF
+import DOZZ.Statements.Defs.IsGMCOf
+import DOZZ.Statements.Brownian.ReflectionR
+import DOZZ.Statements.Brownian.IsSourceLateralProjection
+import DOZZ.Statements.Brownian.IsReflectionData
 import DOZZ.ShiftEquations.Gluing.BandNear
 import DOZZ.Brownian.Reflection.RtheorAnalytic
 import DOZZ.Correlations.Analytic.StructureConstantHolomorphic
@@ -28,7 +27,6 @@ box along a segment gives the shift at every real point of that set where `Γ` i
 the spectators of the gluing lemma ([KRV, Lemma 10.5], first half).
 -/
 
-@[expose] public section
 
 open MeasureTheory Filter Topology Set
 
@@ -88,14 +86,11 @@ theorem firstShift_of_box {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (M 
       ((analyticAt_segC x₀ x 1).sub analyticAt_const) (analyticAt_segC b₀ b 1)
       (analyticAt_segC c₀ c 1) ?_)).mul
       (segH_analyticAt_one hV₃ hf₃ hμ (hV₃mem ![x - γ, b, c] h₂) hs₂)
-    rw [segC_one, segC_one, segC_one]
-    exact hA
+    rwa [segC_one, segC_one, segC_one]
   have key := eq_at_one_of_segment hseg hFm hGm hstart hF1 hG1
   simp only [hF, hG] at key
-  rw [segH_one P M hμ hf₃eq h₁, segH_one P M hμ hf₃eq h₂, segC_one, segC_one, segC_one] at key
-  exact key
-
-/-- **The first structure shift near `Q` from `DOZZ.structureConstant_reflected_shift_and_gluing`**,
+  rwa [segH_one P M hμ hf₃eq h₁, segH_one P M hμ hf₃eq h₂, segC_one, segC_one, segC_one] at key
+/-- **The first structure shift near `Q` from `structureConstant_reflected_shift_and_gluing`**,
 at every real point of the near-`Q` box. -/
 theorem firstShift_nearQ_of_reflected_shift_and_gluing {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
     (M : Ω → Measure ℂ) {γ μ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2) (hμ : 0 < μ)
@@ -144,7 +139,7 @@ theorem firstShift_nearQ_of_reflected_shift_and_gluing {Ω : Type*} [MeasurableS
     hCm hCv hCs hy₁ hy₂ hAy
 
 /-- **The first structure shift on the two-triple extended domain**, from
-`DOZZ.structureConstant_reflected_shift_and_gluing`: at every real `(x, b, c)` with `(x, b, c)` and
+`structureConstant_reflected_shift_and_gluing`: at every real `(x, b, c)` with `(x, b, c)` and
 `(x - γ, b, c)` in the extended Seiberg domain, `Γ` analytic at both `s`-parameters and the shift
 coefficient analytic. -/
 theorem firstShift_full {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
@@ -202,4 +197,3 @@ theorem firstShift_full {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : 
 
 end DOZZ.Proofs
 
-end

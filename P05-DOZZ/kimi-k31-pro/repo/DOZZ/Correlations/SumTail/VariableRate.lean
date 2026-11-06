@@ -2,15 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import Mathlib.Topology.Compactness.Compact
-public import Mathlib.Analysis.SpecialFunctions.Pow.Real
-public import Mathlib.Tactic
+import Mathlib.Topology.Compactness.Compact
+import Mathlib.Analysis.SpecialFunctions.Pow.Real
+import Mathlib.Tactic
 
 /-! Recover a point-dependent error ceiling from uniform strict-exponent estimates. -/
 
-@[expose] public section
 open Set
 namespace DOZZ.Proofs
 
@@ -56,7 +54,7 @@ theorem sumtail_uniform_variable_rate
   have hU (i : K) : IsOpen (U i) := isOpen_lt (hec.sub continuous_const).abs continuous_const
   obtain ⟨I,hI⟩ := isCompact_univ.elim_finite_subcover U hU (by
     intro a _
-    exact mem_iUnion.mpr ⟨a,by simpa only [U,sub_self,abs_zero,mem_ofPred_eq] using hδ a⟩)
+    exact mem_iUnion.mpr ⟨a,by simpa [U,sub_self,abs_zero,mem_ofPred_eq] using hδ a⟩)
   refine ⟨∑ i ∈ I, C i, Finset.sum_nonneg (fun i _ => hC i), ?_⟩
   intro a ha s x hx
   let aa : K := ⟨a,ha⟩

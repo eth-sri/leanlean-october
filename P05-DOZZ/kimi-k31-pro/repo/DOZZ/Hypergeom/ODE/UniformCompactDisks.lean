@@ -2,16 +2,14 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import Mathlib.Topology.MetricSpace.Thickening
-public import Mathlib.Topology.MetricSpace.Bounded
-public import DOZZ.Hypergeom.ODE.LocalTransfer
+import Mathlib.Topology.MetricSpace.Thickening
+import Mathlib.Topology.MetricSpace.Bounded
+import DOZZ.Hypergeom.ODE.LocalTransfer
 
 /-! Compact subsets of an open regular domain admit a uniform family of coefficient disks and a
 uniform coefficient norm bound. -/
 
-@[expose] public section
 
 open Set
 

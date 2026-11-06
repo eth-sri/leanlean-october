@@ -2,13 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.ShiftEquations.TwoPole.LocalTail
-public import DOZZ.ShiftEquations.PoleSubtracted.Window
-public import DOZZ.Statements.Correlations.OneInsertionTailCoefficient
-public import DOZZ.Statements.ShiftEquations.TwoPoleFirstResidue
-public import DOZZ.Statements.ShiftEquations.TwoPoleSecondResidue
+import DOZZ.ShiftEquations.TwoPole.LocalTail
+import DOZZ.ShiftEquations.PoleSubtracted.Window
+import DOZZ.Statements.Correlations.OneInsertionTailCoefficient
+import DOZZ.Statements.ShiftEquations.TwoPoleFirstResidue
+import DOZZ.Statements.ShiftEquations.TwoPoleSecondResidue
 
 /-!
 # The tail coefficients and the residues
@@ -19,7 +18,6 @@ The frame factor `(2/γ) 2^{4(1-z/γ)}` cancels these position factors, leaving 
 `2 p R̄ = (4/γ)(Q - α) R̄` (erratum K26, see docs/ERRATA-AND-DEVIATIONS.md).
 -/
 
-@[expose] public section
 
 namespace DOZZ.Proofs
 
@@ -90,4 +88,3 @@ theorem secondResidue_eq {γ : ℝ} (hγ : 0 < γ) (η R : ℝ) :
 
 end DOZZ.Proofs
 
-end

@@ -2,13 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.FiniteGaussianTilt
+import DOZZ.GMC.FiniteGaussianTilt
 
 /-! Equality of finite-dimensional laws for centered jointly Gaussian families. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory
 open scoped NNReal
@@ -21,9 +19,9 @@ theorem isCenteredJointlyGaussian_add_independent_scalar
     {Ω Λ ι : Type*} [MeasurableSpace Ω] [MeasurableSpace Λ]
     [Fintype ι] {P : Measure Ω} {Q : Measure Λ} [IsProbabilityMeasure Q]
     (X : Ω → ι → ℝ) (W : Λ → ℝ)
-    (hX : DOZZ.IsCenteredJointlyGaussian P X)
+    (hX : IsCenteredJointlyGaussian P X)
     {σ : ℝ≥0} (hW : HasLaw W (gaussianReal 0 σ) Q) :
-    DOZZ.IsCenteredJointlyGaussian (P.prod Q)
+    IsCenteredJointlyGaussian (P.prod Q)
       (fun p i => X p.1 i + W p.2) := by
   classical
   let : IsProbabilityMeasure P := hX.1
@@ -89,10 +87,10 @@ theorem map_eq_of_centeredJointlyGaussian_of_covariance_eq
     {Ω Ω' ι : Type*} [MeasurableSpace Ω] [MeasurableSpace Ω']
     [Fintype ι] [DecidableEq ι]
     (P : Measure Ω) (P' : Measure Ω') (X : Ω → ι → ℝ) (Y : Ω' → ι → ℝ)
-    (hX : DOZZ.IsCenteredJointlyGaussian P X)
-    (hY : DOZZ.IsCenteredJointlyGaussian P' Y)
-    (hcov : ∀ i j, DOZZ.gaussianCovariance P (fun ω => X ω i) (fun ω => X ω j) =
-      DOZZ.gaussianCovariance P' (fun ω => Y ω i) (fun ω => Y ω j)) :
+    (hX : IsCenteredJointlyGaussian P X)
+    (hY : IsCenteredJointlyGaussian P' Y)
+    (hcov : ∀ i j, gaussianCovariance P (fun ω => X ω i) (fun ω => X ω j) =
+      gaussianCovariance P' (fun ω => Y ω i) (fun ω => Y ω j)) :
     Measure.map X P = Measure.map Y P' := by
   classical
   obtain ⟨SX, hSX, hXLaw, hXEntry⟩ := represent P X hX
@@ -103,9 +101,9 @@ theorem map_eq_of_centeredJointlyGaussian_of_covariance_eq
   let Xe : Ω → EuclideanSpace ℝ ι := fun ω => WithLp.toLp 2 (X ω)
   let Ye : Ω' → EuclideanSpace ℝ ι := fun ω => WithLp.toLp 2 (Y ω)
   have hXeu : Measure.map Xe P = multivariateGaussian 0 SX := by
-    simpa only [Xe] using hXLaw
+    simpa [Xe] using hXLaw
   have hYeu : Measure.map Ye P' = multivariateGaussian 0 SY := by
-    simpa only [Ye] using hYLaw
+    simpa [Ye] using hYLaw
   have hE : Measure.map Xe P = Measure.map Ye P' := by
     rw [hXeu, hYeu, hS]
   have hXmeas : AEMeasurable Xe P := by

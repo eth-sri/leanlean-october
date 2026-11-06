@@ -2,11 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.SharpMoments.WeightedLocalBasic
-public import DOZZ.GMC.SharpMoments.WeightedDyadicSum
-public import DOZZ.GMC.SharpMoments.BallScaling
+import DOZZ.GMC.SharpMoments.WeightedLocalBasic
+import DOZZ.GMC.SharpMoments.WeightedDyadicSum
+import DOZZ.GMC.SharpMoments.BallScaling
 
 /-! # Finiteness of weighted local moments in the sharp range
 
@@ -15,7 +14,6 @@ moment is finite at every center and radius. For small radii the dyadic shell su
 the sharp ball upper bound at the center; larger radii add a bounded weight times the mass of a
 bounded disk. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped ENNReal NNReal

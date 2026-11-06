@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.FiniteChaosLaplaceBounds
-public import DOZZ.GMC.StandardGaussianBoundedStein
+import DOZZ.GMC.FiniteChaosLaplaceBounds
+import DOZZ.GMC.StandardGaussianBoundedStein
 
 /-! The Laplace score chain rule along an arbitrary finite-dimensional linear image. -/
 
-@[expose] public section
 
 namespace DOZZ.Proofs
 
@@ -109,7 +107,7 @@ theorem finiteChaos_laplace_score_hasDerivAt_linearImage_coordinate
   have hF' : ∀ z, HasDerivAt F' (F'' z) z := by
     intro z
     have hlin : HasDerivAt (fun u : ℝ => -s * u) (-s) z := by
-      simpa only [id_eq, mul_one] using (hasDerivAt_id z).const_mul (-s)
+      simpa [id_eq, mul_one] using (hasDerivAt_id z).const_mul (-s)
     have hexp : HasDerivAt (fun u : ℝ => Real.exp (-s * u))
         (Real.exp (-s * z) * (-s)) z :=
       (Real.hasDerivAt_exp (-s * z)).comp z hlin
@@ -125,7 +123,7 @@ theorem finiteChaos_laplace_score_hasDerivAt_linearImage_coordinate
         (γ * ∑ j, A j k * finiteChaosVectorWeight a v γ (T x) j)) (x k) := by
     have h := (hF' (finiteChaosVectorMass a v γ (T (Function.update x k (x k))))).comp
       (x k) hMass
-    simpa only [Function.comp_def, Function.update_eq_self] using h
+    simpa [Function.comp_def, Function.update_eq_self] using h
   have hscore := (hWeight i).mul hFmass
   have hsum :
       (∑ j, A j k * (γ * (if i = j then
@@ -182,15 +180,7 @@ theorem real_hasDerivAt_to_semiring_module
     @HasDerivAt ℝ DenselyNormedField.toNontriviallyNormedField ℝ
       Real.instAddCommGroup Semiring.toModule
       PseudoMetricSpace.toUniformSpace.toTopologicalSpace _ f f' x := by
-  have hAdd : (Real.normedAddCommGroup.toAddCommGroup : AddCommGroup ℝ) =
-      Real.instAddCommGroup := by rfl
-  have hMod : (RCLike.toInnerProductSpaceReal.toModule : Module ℝ ℝ) =
-      Semiring.toModule := by
-    ext a y
-    rfl
-  cases hAdd
-  cases hMod
-  exact h
+  simp_all
 
 /-- The bounded Laplace score satisfies covariance integration by parts under every square linear
 image of a standard Gaussian vector. The row-Gram covariance may be singular. -/
@@ -319,7 +309,7 @@ theorem finiteChaos_laplace_score_shifted_standardGaussian_ibp
           (fun l => ∑ k, A l k * x k) j =
     finiteChaosVectorWeight a v γ
           (fun l => ∑ k, A l k * x k + c l) j := by
-    simp only [finiteChaosVectorWeight, a']
+    simp [finiteChaosVectorWeight, a']
     calc
       a j * Real.exp (γ * c j) * Real.exp
           (γ * ∑ k, A j k * x k - γ ^ 2 / 2 * v j) =

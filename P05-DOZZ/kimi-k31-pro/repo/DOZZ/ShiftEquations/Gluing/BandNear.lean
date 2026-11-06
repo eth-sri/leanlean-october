@@ -2,14 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.ShiftEquations.Gluing.BandLine
-public import DOZZ.ShiftEquations.Gluing.Meromorphy
-public import DOZZ.Statements.Defs.ExtendedSeiberg3
+import DOZZ.ShiftEquations.Gluing.BandLine
+import DOZZ.ShiftEquations.Gluing.Meromorphy
+import DOZZ.Statements.Defs.ExtendedSeiberg3
 import DOZZ.ShiftEquations.Shift.ShiftGluing
 import DOZZ.ShiftEquations.Shift.Reflection
-public import DOZZ.ShiftEquations.Residual.Calibration
+import DOZZ.ShiftEquations.Residual.Calibration
 import DOZZ.Complex.Basic
 
 /-!
@@ -26,7 +25,6 @@ coefficient is analytic, continuity turns the germ identities into exact identit
 `α > Q` near `Q`.
 -/
 
-@[expose] public section
 
 open MeasureTheory Filter Topology Set
 
@@ -93,7 +91,6 @@ theorem eventuallyEq_structureConstantH_of_physical {Ω : Type*} [MeasurableSpac
     meromorphicOn_structureConstantH_comp hV₃ hf₃ hμ (differentiable_tripleFirst _ _) z hz.2
   have hCm' : MeromorphicOn C D := fun z hz => hCm z hz.1
   set W := connectedComponentIn D (x : ℂ) with hW
-  have hWo : IsOpen W := hDo.connectedComponentIn
   have hWsub : W ⊆ D := connectedComponentIn_subset D _
   have hxW : (x : ℂ) ∈ W := mem_connectedComponentIn (hDmem x hx₁ hx₂)
   have hev : ∀ᶠ t : ℝ in 𝓝[≠] x, C t = g t :=
@@ -132,7 +129,7 @@ theorem analyticAt_structureConstantH_slice {γ μ η b c : ℝ} (hγ : 0 < γ) 
     linarith
 
 /-- **The first structure shift at an exact real point** near `Q`, from a strip function of
-`DOZZ.structureConstant_first_shift_strip`. -/
+`structureConstant_first_shift_strip`. -/
 theorem firstShift_exact_of_strip {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
     (M : Ω → Measure ℂ) {γ μ η b c : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2) (hμ : 0 < μ)
     (hη : 0 < η ∧ Q γ - 2 * η > γ) (hb : Q γ - η < b ∧ b < Q γ)
@@ -184,8 +181,7 @@ theorem firstShift_exact_of_strip {Ω : Type*} [MeasurableSpace Ω] (P : Measure
             exact hg₂)
     filter_upwards [(eventually_codiscrete_iff_forall_eventually_nhdsNE.mp hCs) z₀, e₁, e₂]
       with z h0 h1 h2
-    rw [← h1, ← h2]
-    exact h0
+    rwa [← h1, ← h2]
   have hpt := eq_of_eventuallyEq_nhdsNE_of_continuousAt hrel
     (by
       have : ContinuousAt g (z₀ + γ / 2) := by
@@ -200,10 +196,10 @@ theorem firstShift_exact_of_strip {Ω : Type*} [MeasurableSpace Ω] (P : Measure
         (ContinuousAt.comp (f := fun w : ℂ => w - (γ : ℂ) / 2) hg' (by fun_prop)))
   rw [hz₀, sub_add_cancel, show (α : ℂ) - γ / 2 - γ / 2 = ((α - γ : ℝ) : ℂ) by push_cast; ring,
     hval α (by linarith) hα₂, hval (α - γ) (by linarith) (by linarith)] at hpt
-  exact hpt
+  assumption
 
 /-- **The reflected γ/2 shift at an exact real point** to the right of `Q`, from strip functions of
-`DOZZ.structureConstant_reflected_shift_and_gluing` and a reference reflection germ `R`. -/
+`structureConstant_reflected_shift_and_gluing` and a reference reflection germ `R`. -/
 theorem reflectedShift_exact_of_strip {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
     (M : Ω → Measure ℂ) {γ μ η b c : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2) (hμ : 0 < μ)
     (hη : 0 < η ∧ Q γ - 2 * η > γ) (hb : Q γ - η < b ∧ b < Q γ)
@@ -226,10 +222,6 @@ theorem reflectedShift_exact_of_strip {Ω : Type*} [MeasurableSpace Ω] (P : Mea
       -(1 / (Real.pi * μ)) * shiftCoeffA γ (γ / 2) ((α : ℂ) - γ / 2) (b : ℂ) (c : ℂ) *
         (structureConstant P M γ μ (α - γ) b c : ℂ) := by
   obtain ⟨hη0, hηγ⟩ := hη
-  have hQ : Q γ = 2 / γ + γ / 2 := rfl
-  have hγh : γ / 2 < 2 / γ := by
-    rw [div_lt_div_iff₀ (by norm_num) hγ]
-    nlinarith
   set g : ℂ → ℂ := fun z => structureConstantH f₃ γ μ (tripleFirst (b : ℂ) (c : ℂ) z) with hg
   set z₀ : ℂ := (α : ℂ) - γ / 2 with hz₀
   have hg₁ := eventuallyEq_structureConstantH_of_physical P M hγ hγ2 hμ ⟨hη0, hηγ⟩ hb hc hV₃
@@ -282,7 +274,7 @@ theorem reflectedShift_exact_of_strip {Ω : Type*} [MeasurableSpace Ω] (P : Mea
       with z h0 h1 h2 h3
     rw [← h1, show 2 * (Q γ : ℂ) - z - γ / 2 = 2 * Q γ - γ / 2 - z by ring, ← h2, ← h3,
       show 2 * (Q γ : ℂ) - γ / 2 - z = 2 * Q γ - z - γ / 2 by ring]
-    exact h0
+    assumption
   have hpt := eq_of_eventuallyEq_nhdsNE_of_continuousAt hrel
     (by
       have hRc : ContinuousAt R (z₀ + γ / 2) := by
@@ -305,8 +297,7 @@ theorem reflectedShift_exact_of_strip {Ω : Type*} [MeasurableSpace Ω] (P : Mea
     show (α : ℂ) - γ / 2 - γ / 2 = ((α - γ : ℝ) : ℂ) by push_cast; ring,
     hval (2 * Q γ - α) (by linarith) (by linarith), hval (α - γ) (by linarith) (by linarith)]
     at hpt
-  exact hpt
+  assumption
 
 end DOZZ.Proofs
 
-end

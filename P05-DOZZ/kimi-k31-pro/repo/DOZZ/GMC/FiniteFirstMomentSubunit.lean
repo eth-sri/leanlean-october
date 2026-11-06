@@ -2,15 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import Mathlib.MeasureTheory.Integral.Lebesgue.Add
-public import Mathlib.MeasureTheory.Measure.ProbabilityMeasure
-public import Mathlib.Analysis.SpecialFunctions.Pow.NNReal
+import Mathlib.MeasureTheory.Integral.Lebesgue.Add
+import Mathlib.MeasureTheory.Measure.ProbabilityMeasure
+import Mathlib.Analysis.SpecialFunctions.Pow.NNReal
 
 /-! A finite first moment controls all subunit positive moments on a probability space. -/
 
-@[expose] public section
 
 open MeasureTheory
 open scoped ENNReal

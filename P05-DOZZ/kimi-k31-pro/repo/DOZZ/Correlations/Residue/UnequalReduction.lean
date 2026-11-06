@@ -2,18 +2,16 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.Residue.LocalTailMoments
-public import DOZZ.Correlations.Residue.ExtendedAddition
-public import DOZZ.Correlations.Residue.ComplementUniform
-public import DOZZ.Correlations.Residue.MassDecomposition
-public import DOZZ.Correlations.Residue.ChartLimit
+import DOZZ.Correlations.Residue.LocalTailMoments
+import DOZZ.Correlations.Residue.ExtendedAddition
+import DOZZ.Correlations.Residue.ComplementUniform
+import DOZZ.Correlations.Residue.MassDecomposition
+import DOZZ.Correlations.Residue.ChartLimit
 
 /-! The full unequal-charge unit-volume residue (erratum K30, see docs/ERRATA-AND-DEVIATIONS.md),
 reduced solely to the exact insertion tail. -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal Classical
 namespace DOZZ.Proofs
@@ -61,7 +59,7 @@ theorem residue_unit_unequal_of_oneInsertion_estimate
     hγ hγ2 hα3 hα3Q hX hM hη hd₀ hC
     (fun ε hε hεd => htail ε hε (hεd.trans_le hdT'))
   have hq (ε : ℝ) (hε : 0 < ε) (hεd : ε < d₀) : 0 < p - ε / γ ∧ p - ε / γ < p := by
-    have hh : ε / γ < p := (div_lt_iff₀ hγ).mpr (by simpa only [mul_comm] using hεd.trans_le hdβ)
+    have hh : ε / γ < p := (div_lt_iff₀ hγ).mpr (by simpa [mul_comm] using hεd.trans_le hdβ)
     exact ⟨sub_pos.mpr hh, sub_lt_self _ (div_pos hε hγ)⟩
   have htail' (ε : ℝ) (hε : 0 < ε) (hεd : ε < d₀) := htail ε hε (hεd.trans_le hdT')
   have hAfin (ε : ℝ) (hε : 0 < ε) (hεd : ε < d₀) : ∀ᵐ ω ∂P, A ε ω ≠ ⊤ :=
@@ -95,7 +93,7 @@ theorem residue_unit_unequal_of_oneInsertion_estimate
     filter_upwards [] with ε
     congr 2
     exact lintegral_congr_ae ((hdecomp ε).mono fun ω hω => congrArg (fun v : ℝ≥0∞ => ENNReal.rpow v (p - ε / γ)) hω.symm)
-  simpa only [mul_one] using residue_unit_limit_from_chart_limit P X M γ α2 α3 1 Rbar
-    hγ hγ2 hX hM (by simpa only [one_mul] using hh)
+  simpa [mul_one] using residue_unit_limit_from_chart_limit P X M γ α2 α3 1 Rbar
+    hγ hγ2 hX hM (by simpa [one_mul] using hh)
 
 end DOZZ.Proofs

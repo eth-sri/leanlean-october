@@ -2,15 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.Tails.AnnularRemainderMoments
-public import DOZZ.Correlations.Tails.ActualPrefactorUniform
-public import DOZZ.Correlations.Tails.TranslatedSourceMass
+import DOZZ.Correlations.Tails.AnnularRemainderMoments
+import DOZZ.Correlations.Tails.ActualPrefactorUniform
+import DOZZ.Correlations.Tails.TranslatedSourceMass
 
 /-! Actual independent pin moments control the canonical annular remainder uniformly. -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal
 
@@ -34,7 +32,7 @@ theorem prefactored_annular_remainder_aemeasurable
     (equatorGFF_GMC_aemeasurable P _ hY γ hγ hγ2 N hN)
   have hmass : AEMeasurable (fun ω => ∫⁻ x in Metric.ball (0 : ℂ) 1 \ Metric.ball (0 : ℂ) ρ,
       (ENNReal.ofReal ‖x‖)^(-γ*α) ∂N ω) P := by
-    simpa only [lintegral_indicator hd,Function.comp_def] using hm
+    simpa [lintegral_indicator hd,Function.comp_def] using hm
   have hpin := (hc.1 0).comp (measurable_id.prodMk (measurable_const : Measurable (fun _ : Ω => z)))
   have hS := (((((hpin.comp (measurable_snd : Measurable (Prod.snd : Ω × Ω → Ω))).const_mul γ).sub_const (γ^2*Real.log ‖z‖)).exp).const_mul
     (f*‖z‖^(-4 : ℝ))).ennreal_ofReal
@@ -76,11 +74,11 @@ theorem prefactored_annular_remainder_moment_uniform
   have hmass : AEMeasurable mass P := by
     have h := (Measure.measurable_lintegral (hk.indicator hd)).comp_aemeasurable
       (equatorGFF_GMC_aemeasurable P _ hY γ hγ hγ2 N hN)
-    simpa only [mass,lintegral_indicator hd,Function.comp_def] using h
+    simpa [mass,lintegral_indicator hd,Function.comp_def] using h
   have hm : (∫⁻ ω, mass ω^r ∂P) ≤ D := by
     have h := hMass P _ N hY hN 0 (mem_singleton 0) α r hα hαA hr hrR
       (fun _ => 1) measurable_const (fun _ => ⟨zero_le_one,le_rfl⟩)
-    simpa only [mass,sub_zero,ENNReal.ofReal_one,one_mul] using h
+    simpa [mass,sub_zero,ENNReal.ofReal_one,one_mul] using h
   change (∫⁻ q : Ω × Ω, (S q.2*mass q.1)^r ∂P.prod P) ≤ D*L
   simp_rw [ENNReal.mul_rpow_of_nonneg _ _ hr.le,mul_comm (S _^r)]
   rw [lintegral_prod_mul (hmass.pow_const r) (hS.aemeasurable.pow_const r)]

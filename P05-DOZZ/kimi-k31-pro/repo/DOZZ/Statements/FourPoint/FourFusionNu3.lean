@@ -1,2 +1,1 @@
-module
-public import DOZZ.Statements.FourPoint.FourFusionNu2
+import DOZZ.Statements.FourPoint.FourFusionNu2

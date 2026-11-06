@@ -2,12 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Brownian.Lateral.RadialWindowUniform
-public import DOZZ.Brownian.Barrier.GaussianBounds
-public import Mathlib.Topology.Algebra.InfiniteSum.ENNReal
-public import Mathlib.Algebra.Order.Floor.Semiring
+import DOZZ.Brownian.Lateral.RadialWindowUniform
+import DOZZ.Brownian.Barrier.GaussianBounds
+import Mathlib.Topology.Algebra.InfiniteSum.ENNReal
+import Mathlib.Algebra.Order.Floor.Semiring
 
 /-!
 # Brownian window exponential moments
@@ -18,7 +17,6 @@ exponential orders. These are the Brownian unit-increment estimates in the posit
 half-cylinder block argument; no conditioned-process coupling is constructed here.
 -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Set Filter
 open scoped ENNReal NNReal Topology
@@ -138,7 +136,6 @@ theorem summable_brownianWindow_exponential_series (θ : ℝ) :
   apply Real.exp_le_exp.mpr
   have hx : 0 ≤ ((n + N : ℕ) : ℝ) := Nat.cast_nonneg _
   have hnN : (N : ℝ) ≤ ((n + N : ℕ) : ℝ) := by exact_mod_cast Nat.le_add_left N n
-  have hm := mul_le_mul_of_nonneg_right (hN.trans hnN) hx
   have hnn : (n : ℝ) ≤ ((n + N : ℕ) : ℝ) := by exact_mod_cast Nat.le_add_right n N
   nlinarith
 

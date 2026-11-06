@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.ShiftEquations.FirstStrip.Strip
-public import DOZZ.FourPoint.BPZ.GammaHalfFullUnreflectedFormula
+import DOZZ.ShiftEquations.FirstStrip.Strip
+import DOZZ.FourPoint.BPZ.GammaHalfFullUnreflectedFormula
 
 /-!
 # The first structure shift on a strip from the unreflected formula
@@ -16,14 +15,13 @@ public import DOZZ.FourPoint.BPZ.GammaHalfFullUnreflectedFormula
 statement of `DOZZ.structureConstant_first_shift_strip`, not its proof.
 -/
 
-@[expose] public section
 
 open MeasureTheory Filter Topology Set
 
 namespace DOZZ.Proofs
 
 /-- **The first structure shift on a strip with no remaining input** (the exact statement of
-`DOZZ.structureConstant_first_shift_strip`). -/
+`structureConstant_first_shift_strip`). -/
 theorem structureConstant_first_shift_strip_unconditional
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
     (M : Ω → Measure ℂ) (γ μ η : ℝ)
@@ -47,4 +45,3 @@ theorem structureConstant_first_shift_strip_unconditional
 
 end DOZZ.Proofs
 
-end

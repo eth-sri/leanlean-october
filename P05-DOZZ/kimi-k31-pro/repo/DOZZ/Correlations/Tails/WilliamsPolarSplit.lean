@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.Tails.WilliamsSplitValue
-public import DOZZ.Statements.Brownian.TwoSidedReflectionCutMass
+import DOZZ.Correlations.Tails.WilliamsSplitValue
+import DOZZ.Statements.Brownian.TwoSidedReflectionCutMass
 
 /-! Exact maximum splitting of the inward Brownian polar exponential integral. -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal NNReal
 
@@ -23,7 +21,7 @@ noncomputable def stoppedReflectionMass (γ : ℝ) (τ : ℝ≥0)
 
 /-- Stopping the negative half at its last exit leaves the retained reflection mass unchanged.
 This connects the lifetime-marked Williams law to the literal last-cut mass
-`DOZZ.twoSidedReflectionCutMass`. -/
+`twoSidedReflectionCutMass`. -/
 theorem stopped_reflection_mass_lastExit
     (γ c : ℝ) (qplus qminus : BrownianPath) (Z : Measure ℝ) :
     stoppedReflectionMass γ (negativeLastExitTime qminus c)
@@ -79,7 +77,7 @@ theorem williams_polar_split (γ ν : ℝ) (p : BrownianPath)
   apply lintegral_congr_ae
   have hne : ∀ᵐ t ∂Z, t ≠ 0 := by
     rw [ae_iff]
-    simpa only [not_not, Set.ofPred_eq_eq_singleton] using hZ0
+    simpa [not_not, Set.ofPred_eq_eq_singleton] using hZ0
   filter_upwards [hne] with t ht0
   by_cases ht : 0 < t
   · have hcut : -(σ : ℝ) ≤ t - (σ : ℝ) := by linarith only [ht]

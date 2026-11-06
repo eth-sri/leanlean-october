@@ -2,15 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.TaylorFixedDisk
-public import DOZZ.FourPoint.RootedPairIdentity
+import DOZZ.FourPoint.TaylorFixedDisk
+import DOZZ.FourPoint.RootedPairIdentity
 
 /-! The one-root annular inverse mass is uniformly controlled by the same fixed supplied-GMC
 disk. -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -22,7 +20,7 @@ theorem rooted_fixed_disk_lower (γ : ℝ) (u : ℂ) (hu : ‖u‖ ≤ 1 / 2) (�
       gmcRootedMeasure γ u μ (Metric.ball (3 : ℂ) (1 / 8)) := by
   have hw (x : ℂ) (hx : x ∈ Metric.ball (3 : ℂ) (1 / 8)) :
       (5 : ℝ) ^ (-(γ ^ 2)) ≤ Real.exp (γ ^ 2 * gffKernel u x) := by
-    have hdist : ‖x - 3‖ < 1 / 8 := by simpa only [Metric.mem_ball, dist_eq_norm] using hx
+    have hdist : ‖x - 3‖ < 1 / 8 := by simpa [Metric.mem_ball, dist_eq_norm] using hx
     have hn3 : ‖(3 : ℂ)‖ = 3 := by norm_num
     have hlow : 2 < ‖x‖ := by
       have hh := norm_sub_norm_le (3 : ℂ) x
@@ -68,7 +66,7 @@ theorem inverse_fixed_disk_uniform
     (-q) hp {(3 : ℂ)} isCompact_singleton
   let ξ : ℝ := γ * Q γ * (-q) - γ ^ 2 * (-q) ^ 2 / 2
   let C : ℝ := w ^ (-q) * (Cb * (1 / 8 : ℝ) ^ ξ)
-  refine ⟨C, by dsimp only [C]; positivity, ?_⟩
+  refine ⟨C, by dsimp [C]; positivity, ?_⟩
   intro I hI
   have hpoint (ω : Ω) : I ω ^ (-q) ≤
       ENNReal.ofReal (w ^ (-q)) * M ω (Metric.ball (3 : ℂ) (1 / 8)) ^ (-q) := by
@@ -97,7 +95,7 @@ theorem rooted_coulomb_inverse_uniform
         (∫⁻ ω, (coulombMass γ (gmcRootedMeasure γ u (M ω)) α y αinf) ^ (-q) ∂P) ≤ ENNReal.ofReal C := by
   let w₀ : ℝ := (2 : ℝ) ^ (-∑ i, |γ * α i|) * (4 : ℝ) ^ (-|γ * αinf|)
   let w : ℝ := w₀ * (5 : ℝ) ^ (-(γ ^ 2))
-  have hw : 0 < w := by dsimp only [w, w₀]; positivity
+  have hw : 0 < w := by dsimp [w, w₀]; positivity
   obtain ⟨C, hC, hbound⟩ := inverse_fixed_disk_uniform P X hX γ hγ hγ2 M hM w q hw hq
   refine ⟨C, hC, ?_⟩
   intro u hu y hy
@@ -107,7 +105,7 @@ theorem rooted_coulomb_inverse_uniform
   have hcoul := coulombMass_fixed_disk_lower γ (gmcRootedMeasure γ u (M ω)) α y αinf hy
   calc
     _ = ENNReal.ofReal w₀ * (ENNReal.ofReal ((5 : ℝ) ^ (-(γ ^ 2))) * M ω (Metric.ball (3 : ℂ) (1 / 8))) := by
-      rw [ENNReal.ofReal_mul (by dsimp only [w₀]; positivity)]
+      rw [ENNReal.ofReal_mul (by dsimp [w₀]; positivity)]
       exact mul_assoc _ _ _
     _ ≤ _ := (mul_le_mul' le_rfl hroot).trans hcoul
 

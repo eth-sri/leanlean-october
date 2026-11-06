@@ -2,16 +2,14 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.Roots.ChargeSegments
-public import DOZZ.Roots.FormulaRegularity
-public import DOZZ.Roots.MeromorphicContinuation
-public import DOZZ.Roots.Normalization
-public import DOZZ.Correlations.Analytic.StructureConstantHolomorphic
+import DOZZ.Roots.ChargeSegments
+import DOZZ.Roots.FormulaRegularity
+import DOZZ.Roots.MeromorphicContinuation
+import DOZZ.Roots.Normalization
+import DOZZ.Correlations.Analytic.StructureConstantHolomorphic
 import DOZZ.Complex.Identity
 import Mathlib.Topology.Connected.LocallyConnected
 /-! # Continuing the calibrated cube identity to the finite extended domain -/
-@[expose] public section
 open MeasureTheory Set Filter Topology
 namespace DOZZ.Proofs
 /-- A calibrated near-Q cube determines the unit-volume moment at every pole-free extended triple. -/
@@ -58,8 +56,8 @@ theorem roots_unitVolume_of_cube {Ω : Type*} [MeasurableSpace Ω]
     apply hVα
     have hd := roots_extendedSeiberg3_segment hγ hα hqα t ht
     convert hd using 1 <;> simp only [α, Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.cons_val_two, Matrix.head_cons, Matrix.tail_cons] <;> ring
-  have hW0 : (0 : ℂ) ∈ W := by simpa only [Complex.ofReal_zero] using hWpath 0 ⟨le_rfl, zero_le_one⟩
-  have hW1 : (1 : ℂ) ∈ W := by simpa only [Complex.ofReal_one] using hWpath 1 ⟨zero_le_one, le_rfl⟩
+  have hW0 : (0 : ℂ) ∈ W := by simpa [Complex.ofReal_zero] using hWpath 0 ⟨le_rfl, zero_le_one⟩
+  have hW1 : (1 : ℂ) ∈ W := by simpa [Complex.ofReal_one] using hWpath 1 ⟨zero_le_one, le_rfl⟩
   let T := connectedComponentIn W (0 : ℂ)
   have hT0 : (0 : ℂ) ∈ T := mem_connectedComponentIn hW0
   have hT1 : (1 : ℂ) ∈ T := by
@@ -85,12 +83,12 @@ theorem roots_unitVolume_of_cube {Ω : Type*} [MeasurableSpace Ω]
       rw [eventually_all]
       intro i
       have hc : ContinuousAt (fun t : ℝ => q + t * (α i - q)) 0 := by fun_prop
-      exact continuousAt_const.eventually_lt hc (by simpa only [zero_mul, add_zero] using hqlo)
+      exact continuousAt_const.eventually_lt hc (by simpa [zero_mul, add_zero] using hqlo)
     have hhi : ∀ᶠ t : ℝ in nhds 0, ∀ i : Fin 3, q + t * (α i - q) < Q γ := by
       rw [eventually_all]
       intro i
       have hc : ContinuousAt (fun t : ℝ => q + t * (α i - q)) 0 := by fun_prop
-      exact hc.tendsto.eventually_lt_const (by simpa only [zero_mul, add_zero] using hqhi)
+      exact hc.tendsto.eventually_lt_const (by simpa [zero_mul, add_zero] using hqhi)
     filter_upwards [hlo, hhi] with t htlo hthi
     let β := fun i : Fin 3 => q + t * (α i - q)
     have hβ := roots_extended_cube hγ hηQ (htlo 0) (hthi 0) (htlo 1) (hthi 1) (htlo 2) (hthi 2)
@@ -102,7 +100,7 @@ theorem roots_unitVolume_of_cube {Ω : Type*} [MeasurableSpace Ω]
     rfl
   obtain ⟨R, hR, hball⟩ := Metric.mem_nhds_iff.mp hreal
   have hfreq := frequently_eq_of_real_interval 0 R hR (fun z => f (A z)) G
-    (fun t ht => hball (by simpa only [Metric.mem_ball, Real.dist_eq] using ht))
+    (fun t ht => hball (by simpa [Metric.mem_ball, Real.dist_eq] using ht))
   have heq : (fun z => f (A z)) =ᶠ[nhds 0] G :=
     (hF0.frequently_eq_iff_eventually_eq hG0).mp hfreq
   have hG1 : AnalyticAt ℂ G 1 := roots_formula_line_analyticAt hγ hγ2 hμ hU (fun i z => A z i) 1
@@ -115,6 +113,6 @@ theorem roots_unitVolume_of_cube {Ω : Type*} [MeasurableSpace Ω]
     (hFdiff.analyticAt (hWo.mem_nhds hW1)).continuousAt hG1.continuousAt
   have hA1 : A 1 = complexifyNCharges α := by ext i; simp only [A, complexifyNCharges, one_mul]; push_cast; ring
   rw [hA1, hfv α hα] at he
-  simpa only [G, hA1, complexifyNCharges, α, Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.cons_val_two, Matrix.head_cons, Matrix.tail_cons,
+  simpa [G, hA1, complexifyNCharges, α, Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.cons_val_two, Matrix.head_cons, Matrix.tail_cons,
     sExp, Complex.ofReal_div, Complex.ofReal_sub, Complex.ofReal_add, Complex.ofReal_mul, Complex.ofReal_ofNat] using he
 end DOZZ.Proofs

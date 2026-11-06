@@ -2,11 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.GMC.Moments.InversionExhaustion
-public import DOZZ.GMC.Moments.InversionAtomless
-public import Mathlib.MeasureTheory.Measure.GiryMonad
-@[expose] public section
+import DOZZ.GMC.Moments.InversionExhaustion
+import DOZZ.GMC.Moments.InversionAtomless
+import Mathlib.MeasureTheory.Measure.GiryMonad
 open Filter MeasureTheory Set Metric
 open scoped Topology Distributions ENNReal
 namespace DOZZ.Proofs
@@ -52,7 +50,7 @@ theorem gmc_inversion_test_vector_law
     filter_upwards [hzero] with ω hω
     change (M ω).map (fun z : ℂ => z⁻¹) {0} = 0
     rw [Measure.map_apply measurable_inv (measurableSet_singleton 0)]
-    simpa only [preimage, mem_singleton_iff, inv_eq_zero, ofPred_eq_eq_singleton] using hω
+    simpa [preimage, mem_singleton_iff, inv_eq_zero, ofPred_eq_eq_singleton] using hω
   apply gmc_limit_test_vector_law
     (fun n ω j => ∫ x, q n j x ∂N ω) (fun n ω j => ∫ x, q n j x ∂M ω)
     (fun ω j => ∫ x, f j x ∂N ω) (fun ω j => ∫ x, f j x ∂M ω)

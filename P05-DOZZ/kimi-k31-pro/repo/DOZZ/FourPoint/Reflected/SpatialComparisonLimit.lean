@@ -2,10 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Reflected.CopiedGlobalGuard
+import DOZZ.FourPoint.Reflected.CopiedGlobalGuard
 /-! Passing the two-region comparison through a guarded spatial exhaustion. -/
-@[expose] public section
 open MeasureTheory ProbabilityTheory Set Filter Topology
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -22,7 +20,7 @@ theorem reflected_guarded_inverse_expectation_limit
     (fun n => (hF n).pow_const (-q)) ?_ hfinite ?_
   · intro n
     exact ae_of_all P fun ω => by
-      dsimp only
+      dsimp
       rw [ENNReal.rpow_neg, ENNReal.rpow_neg]
       exact ENNReal.inv_le_inv.mpr (ENNReal.rpow_le_rpow (hguard n ω) hq)
   · exact ae_of_all P fun ω => ENNReal.continuous_rpow_const.tendsto _ |>.comp (hlim ω)
@@ -64,9 +62,9 @@ theorem reflected_two_region_inverse_limit
         ∫⁻ ω, G (a, ω)^(-q) ∂P := by
       rw [lintegral_prod (fun p : Ω × Ω => G (a, p.2)^(-q))
         ((hG.comp (measurable_const.prodMk measurable_snd)).pow_const (-q)).aemeasurable]
-      simp only [lintegral_const, measure_univ, mul_one]
+      simp [lintegral_const, measure_univ, mul_one]
     simp_rw [he]
-    exact hfinite
+    assumption
   have ht₀ := reflected_guarded_inverse_expectation_limit (Q.prod P)
     (fun n p => I₀ n p+I₁ n p) (fun p => L₀ p+L₁ p) G q hq
     (fun n => (hI₀ n).add (hI₁ n))

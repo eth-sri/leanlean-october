@@ -1,2 +1,1 @@
-module
-public import DOZZ.FourPoint.FreezingAnnulusNegativeMomentLocal
+import DOZZ.FourPoint.FreezingAnnulusNegativeMomentLocal

@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Complex.Basic
+import DOZZ.Complex.Basic
 
 /-! Narrow-strip representatives with whole-plane codiscrete shift equations. Real translations
 preserve both the strip and its exterior. -/
 
-@[expose] public section
 open Filter Topology Set
 
 namespace DOZZ.Proofs

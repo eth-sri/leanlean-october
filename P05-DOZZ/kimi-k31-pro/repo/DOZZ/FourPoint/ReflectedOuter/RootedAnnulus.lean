@@ -2,17 +2,15 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.ReflectedOuter.ZeroMass
-public import DOZZ.FourPoint.Reflected.ChargeShift
-public import DOZZ.FourPoint.Reflected.AnnularLower
+import DOZZ.FourPoint.ReflectedOuter.ZeroMass
+import DOZZ.FourPoint.Reflected.ChargeShift
+import DOZZ.FourPoint.Reflected.AnnularLower
 import DOZZ.GMC.Construction.RootedMeasureKernel
 import Mathlib.Tactic
 
 /-! # Rooting inside the deleted disk retains a supercritical freezing annulus -/
 
-@[expose] public section
 open MeasureTheory Set
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -72,7 +70,7 @@ theorem reflected_retainedZero_rooted_freezing_lower (γ α₁ α₂ α₃ r : �
       rw [he, norm_one] at hh
       norm_num at hh
     have hbase := reflected_outer_annular_kernel_lower γ (α₁ + γ) α₂ α₃ 0 x hn hx.2
-      (by simp only [norm_zero]; positivity)
+      (by simp [norm_zero]; positivity)
     rw [show α₁ + γ - γ / 2 = α₁ + γ / 2 by ring] at hbase
     have hl : ENNReal.ofReal ((1 / 2 : ℝ) ^ (γ ^ 2 / 2) * (2 : ℝ) ^ (-|γ * α₂|)) *
         ENNReal.ofReal (‖x‖ ^ (-(γ * (α₁ + γ / 2)))) ≤
@@ -94,7 +92,7 @@ theorem reflected_retainedZero_rooted_freezing_lower (γ α₁ α₂ α₃ r : �
       _ ≤ _ := mul_le_mul' (reflected_rootDensity_charge_lower γ u x hn (hu.trans_lt hx.1)) le_rfl
   have heq : freezingAnnulusMassLocal γ (α₁ + γ / 2) μ 0 r (1 / 2) =
       ∫⁻ x in E, ENNReal.ofReal (‖x‖ ^ (-(γ * (α₁ + γ / 2)))) ∂μ := by
-    simp only [freezingAnnulusMassLocal, sub_zero, E]
+    simp [freezingAnnulusMassLocal, sub_zero, E]
   rw [heq, ← lintegral_const_mul' _ _ ENNReal.ofReal_ne_top]
   change (∫⁻ x in E, ENNReal.ofReal c * ENNReal.ofReal (‖x‖ ^ (-(γ * (α₁ + γ / 2)))) ∂μ) ≤ _
   calc

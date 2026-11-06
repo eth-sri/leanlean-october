@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.ShiftEquations.PoleSubtracted.CutoffCauchy
-public import DOZZ.Statements.GMC.WeightedGmcBallMass
+import DOZZ.ShiftEquations.PoleSubtracted.CutoffCauchy
+import DOZZ.Statements.GMC.WeightedGmcBallMass
 import DOZZ.GMC.SharpMoments.WeightedLocalRange
 import DOZZ.GMC.SharpMoments.WeightedLocalSufficiency
 
@@ -19,7 +18,6 @@ weighted mass of the unit disk plus `Z_ℂ(0)`), so the integrands converge mono
 `E[Z_ℂ(x)^{1-x/γ} - R₁^{1-x/γ}]` and proves its integrability ([KRV, §10.2]).
 -/
 
-@[expose] public section
 
 open MeasureTheory Filter Topology Set
 open scoped ENNReal NNReal
@@ -93,7 +91,7 @@ theorem integrable_integral_eq_of_antitone {Ω : Type*} [MeasurableSpace Ω] {P 
     (e := -e) (fun n => (hint n).neg)
     (by filter_upwards [hanti] with ω hω; exact fun i j hij => neg_le_neg (hω hij))
     (by filter_upwards [hlim] with ω hω; exact hω.neg)
-    (by simpa only [integral_neg] using hE.neg)
+    (by simpa [integral_neg] using hE.neg)
   refine ⟨by simpa using h.1.neg, ?_⟩
   have := h.2
   rw [integral_neg] at this
@@ -143,7 +141,7 @@ theorem ae_totalMass_lt_top_of_lt {Ω : Type*} [MeasurableSpace Ω] (P : Measure
     (gmc_weighted_mass_aemeasurable P X hX γ hγ hγ2 M hM a 0 1).pow_const _
   have hwfin : ∀ᵐ ω ∂P, weightedGmcBallMass γ (M ω) a 0 1 < ⊤ := by
     have hint : ∫⁻ ω, weightedGmcBallMass γ (M ω) a 0 1 ^ p ∂P ≠ ⊤ := by
-      simpa only [weightedGmcBallMoment, ENNReal.rpow_eq_pow] using hmom.ne
+      simpa [weightedGmcBallMoment, ENNReal.rpow_eq_pow] using hmom.ne
     filter_upwards [ae_lt_top' hmeas hint] with ω hω
     rw [lt_top_iff_ne_top]
     intro htop
@@ -227,4 +225,3 @@ theorem cutoff_real_limit_eq_observable {Ω : Type*} [MeasurableSpace Ω] (P : M
 
 end DOZZ.Proofs
 
-end

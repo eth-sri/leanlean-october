@@ -2,15 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.Tails.CountableRandomTestLimit
-public import DOZZ.Correlations.Tails.RandomTestL1Approximation
-public import Mathlib.MeasureTheory.Function.Floor
+import DOZZ.Correlations.Tails.CountableRandomTestLimit
+import DOZZ.Correlations.Tails.RandomTestL1Approximation
+import Mathlib.MeasureTheory.Function.Floor
 
 /-! Correlated real parameters in cutoff test functions. -/
 
-@[expose] public section
 open MeasureTheory Filter Topology
 open scoped ENNReal
 
@@ -27,7 +25,7 @@ theorem parameter_grid_error (k : ℕ) (t : ℝ) :
   have hhi := Int.lt_floor_add_one (((k : ℝ) + 1) * t)
   have hle : parameterGrid k t ≤ t := by
     dsimp [parameterGrid]
-    exact (div_le_iff₀ hd).mpr (by simpa only [mul_comm] using hlo)
+    exact (div_le_iff₀ hd).mpr (by simpa [mul_comm] using hlo)
   rw [abs_of_nonneg (sub_nonneg.mpr hle)]
   dsimp [parameterGrid]
   have heq : t - (Int.floor (((k : ℝ) + 1) * t) : ℝ) / ((k : ℝ) + 1) =
@@ -76,14 +74,14 @@ theorem tendstoInMeasure_random_parameter
     have h := tendstoInMeasure_countable_selection P
       (fun n ω i => f n ω (param i)) (fun ω i => g ω (param i)) choice hc
         (fun i => hcoord (param i))
-    simpa only [hp] using h
+    simpa [hp] using h
   have ht : Tendsto (fun k : ℕ => (k : ℝ) + 1) atTop atTop :=
     tendsto_natCast_atTop_atTop.atTop_add tendsto_const_nhds
   have hi : Tendsto (fun k : ℕ => 1 / ((k : ℝ) + 1)) atTop (𝓝 0) := by
-    simpa only [one_div, Function.comp_def] using tendsto_inv_atTop_zero.comp ht
+    simpa [one_div, Function.comp_def] using tendsto_inv_atTop_zero.comp ht
   have he : Tendsto (fun k : ℕ => ENNReal.ofReal (1 / ((k : ℝ) + 1)) * C)
       atTop (𝓝 0) := by
-    simpa only [ENNReal.ofReal_zero, zero_mul, Function.comp_def] using
+    simpa [ENNReal.ofReal_zero, zero_mul, Function.comp_def] using
       ENNReal.Tendsto.mul_const (ENNReal.continuous_ofReal.tendsto 0 |>.comp hi) (Or.inr hC)
   apply tendstoInMeasure_L1_approximation P _ _ a b hab _ he hmeas hmeaslim
   · intro k n

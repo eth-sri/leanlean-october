@@ -1,10 +1,8 @@
-module
 
-public import DOZZ.GMC.WeightedCutoff.SmallBound
+import DOZZ.GMC.WeightedCutoff.SmallBound
 
 /-! # Compact bounds for the deterministic weight and scale factors -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -70,7 +68,7 @@ theorem exists_compact_cutoff_scale_bounds
   refine ⟨L, U, hL, hU, ?_, ?_⟩
   · intro γ hγ t ht
     have h := hnorm (g (γ, t)) ⟨(γ, t), ⟨hγ, ht⟩, rfl⟩
-    exact (le_abs_self _).trans (by simpa only [Real.norm_eq_abs] using h)
+    exact (le_abs_self _).trans (by simpa [Real.norm_eq_abs] using h)
   · intro γ hγ t ht R hR
     exact hLower (γ, t, R) ⟨hγ, ht, hR⟩
 

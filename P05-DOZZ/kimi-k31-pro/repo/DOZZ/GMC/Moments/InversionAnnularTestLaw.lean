@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.Moments.InversionAdmissibleLaw
-public import DOZZ.GMC.Moments.ReferenceFinite
+import DOZZ.GMC.Moments.InversionAdmissibleLaw
+import DOZZ.GMC.Moments.ReferenceFinite
 
 /-! Inversion invariance of arbitrary GMC test vectors on annular charts. -/
 
-@[expose] public section
 
 open Filter MeasureTheory Set
 open scoped Topology Distributions ENNReal
@@ -42,7 +40,7 @@ theorem gmc_inversion_annular_test_vector_law
       gmcReferenceMeasure.restrict U := by
     rw [logRegularizationReference_restrict_of_subset univ U
       (fun x => normPlus x ^ (-4 : ℝ)) hUopen.measurableSet (subset_univ _)]
-    simp only [logRegularizationReference, Measure.restrict_univ, gmcReferenceMeasure]
+    simp [logRegularizationReference, Measure.restrict_univ, gmcReferenceMeasure]
   let : IsFiniteMeasure (logRegularizationReference U (fun x => normPlus x ^ (-4 : ℝ))) := by
     rw [href]
     infer_instance

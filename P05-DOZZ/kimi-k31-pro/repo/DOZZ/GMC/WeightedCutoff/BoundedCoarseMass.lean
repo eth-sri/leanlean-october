@@ -1,10 +1,8 @@
-module
 
-public import DOZZ.GMC.WeightedCutoff.CoarseMoment
+import DOZZ.GMC.WeightedCutoff.CoarseMoment
 
 /-! # Uniform bounded-disk moments at coarse physical cutoffs -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs

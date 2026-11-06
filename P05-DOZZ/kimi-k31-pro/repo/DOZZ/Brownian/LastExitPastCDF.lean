@@ -2,12 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Brownian.LastExitCDF
-public import DOZZ.Brownian.LastExitKernelCDF
-public import DOZZ.Brownian.ConditionedPastState
-public import DOZZ.Brownian.LastExitDyadicMixture
+import DOZZ.Brownian.LastExitCDF
+import DOZZ.Brownian.LastExitKernelCDF
+import DOZZ.Brownian.ConditionedPastState
+import DOZZ.Brownian.LastExitDyadicMixture
 
 /-!
 # Last-exit CDF with finite past observations
@@ -16,7 +15,6 @@ The full-history avoidance identity retains every finite past cylinder. The expl
 factorization integrates its final state against the Gaussian last-exit primitive.
 -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory Set Filter Topology
 open scoped NNReal ENNReal
 namespace DOZZ.Proofs
@@ -186,4 +184,3 @@ theorem negativeConditionedLaw_finitePast_lastExit_CDF
 
 end DOZZ.Proofs
 
-end

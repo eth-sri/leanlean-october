@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.Analytic.EquatorCorrectionBounds
-public import DOZZ.GMC.SharpMoments.SeibergWeight
+import DOZZ.Correlations.Analytic.EquatorCorrectionBounds
+import DOZZ.GMC.SharpMoments.SeibergWeight
 
 /-! Exact averaged insertion kernels outside the retained-region holes. -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -22,7 +20,7 @@ theorem coulomb_weight_exp_log {N : ℕ} (γ : ℝ) (α : Fin N → ℝ)
   have hn : 0 < normPlus x := lt_of_lt_of_le one_pos (le_max_left _ _)
   have hd (i : Fin N) : 0 < ‖x - z i‖ := norm_pos_iff.mpr (sub_ne_zero.mpr (hx i))
   unfold coulombWeight
-  simp only [mul_zero, ENNReal.rpow_eq_pow, ENNReal.rpow_zero, mul_one]
+  simp [mul_zero, ENNReal.rpow_eq_pow, ENNReal.rpow_zero, mul_one]
   simp_rw [ENNReal.ofReal_rpow_of_pos (div_pos hn (hd _)),
     Real.rpow_def_of_pos (div_pos hn (hd _))]
   rw [← ENNReal.ofReal_prod_of_nonneg (fun _ _ => Real.exp_nonneg _), ← Real.exp_sum]

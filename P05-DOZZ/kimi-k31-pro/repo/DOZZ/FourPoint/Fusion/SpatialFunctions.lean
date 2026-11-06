@@ -2,10 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Fusion.SpatialExpectationMeasurable
+import DOZZ.FourPoint.Fusion.SpatialExpectationMeasurable
 /-! # Restricted signed spatial expectations -/
-@[expose] public section
 open MeasureTheory Set
 namespace DOZZ.Proofs
 noncomputable def fusionPureSpatial {Ω : Type*} [MeasurableSpace Ω]
@@ -33,7 +31,7 @@ theorem fusionPureSpatial_measurable {Ω : Type*} [MeasurableSpace Ω]
   have h := fusion_gammaHalf_spatial_expectation_measurable P X hX γ hγ hγ2 M hM
     α₁ α₂ α₃ (-p - 1) H hH
   unfold fusionPureSpatial
-  simpa only [H, integral_indicator hB] using h
+  simpa [H, integral_indicator hB] using h
 /-- Restricting the spatial kernel to a fixed measurable region preserves parameter measurability. -/
 theorem fusionMixedSpatial_measurable {Ω : Type*} [MeasurableSpace Ω]
     (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
@@ -51,5 +49,5 @@ theorem fusionMixedSpatial_measurable {Ω : Type*} [MeasurableSpace Ω]
   have h := fusion_gammaHalf_spatial_expectation_measurable P X hX γ hγ hγ2 M hM
     α₁ α₂ α₃ (-p - 1) H hH
   unfold fusionMixedSpatial
-  simpa only [H, integral_indicator hB] using h
+  simpa [H, integral_indicator hB] using h
 end DOZZ.Proofs

@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Brownian.LastExitCellIdentity
-public import DOZZ.Brownian.LastExitKernelEntranceLimit
+import DOZZ.Brownian.LastExitCellIdentity
+import DOZZ.Brownian.LastExitKernelEntranceLimit
 
 /-!
 # The dyadic cell formula for rational-future events
@@ -15,7 +14,6 @@ endpoint. The deterministic-time avoidance identity then expresses the cell prob
 finite-dimensional reference-kernel test.
 -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Set
 open scoped NNReal
@@ -120,8 +118,7 @@ theorem negativeConditionedDyadicLastExitCell_test_measure
         lastExitAvoidanceFactor ν (c : ℝ) (conditionedPositiveStateAt b p) *
           (brownianUpperConditionedReferenceFutureKernel B ν hν
             (conditionedPositiveStateAt b p - c)).real C ∂P := by
-      simpa only [a, b, L] using hcell
+      simpa [a, b, L] using hcell
 
 end DOZZ.Proofs
 
-end

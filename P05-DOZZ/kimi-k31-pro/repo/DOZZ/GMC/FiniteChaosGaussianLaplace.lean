@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.FiniteChaosLaplaceEndpoint
-public import DOZZ.GMC.StandardGaussianProductStein
+import DOZZ.GMC.FiniteChaosLaplaceEndpoint
+import DOZZ.GMC.StandardGaussianProductStein
 
 /-! Finite Gaussian Laplace comparison via square-root standard Gaussian representations. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory
 open scoped Distributions Topology
@@ -22,13 +20,13 @@ theorem kahane_finite_laplace_lintegral
     {ΩX ΩY : Type*} [MeasurableSpace ΩX] [MeasurableSpace ΩY] {n : ℕ}
     (PX : Measure ΩX) (PY : Measure ΩY)
     (X : ΩX → Fin (n + 1) → ℝ) (Y : ΩY → Fin (n + 1) → ℝ)
-    (hX : DOZZ.IsCenteredJointlyGaussian PX X)
-    (hY : DOZZ.IsCenteredJointlyGaussian PY Y)
+    (hX : IsCenteredJointlyGaussian PX X)
+    (hY : IsCenteredJointlyGaussian PY Y)
     (a : Fin (n + 1) → ℝ) (ha : ∀ i, 0 ≤ a i) (γ s : ℝ) (hs : 0 ≤ s)
-    (hcov : ∀ i j, DOZZ.gaussianCovariance PX (fun ω => X ω i) (fun ω => X ω j) ≤
-      DOZZ.gaussianCovariance PY (fun ω => Y ω i) (fun ω => Y ω j)) :
-    ∫⁻ ω, ENNReal.ofReal (Real.exp (-s * DOZZ.finiteChaosMass PX X a γ ω)) ∂PX ≤
-      ∫⁻ ω, ENNReal.ofReal (Real.exp (-s * DOZZ.finiteChaosMass PY Y a γ ω)) ∂PY := by
+    (hcov : ∀ i j, gaussianCovariance PX (fun ω => X ω i) (fun ω => X ω j) ≤
+      gaussianCovariance PY (fun ω => Y ω i) (fun ω => Y ω j)) :
+    ∫⁻ ω, ENNReal.ofReal (Real.exp (-s * finiteChaosMass PX X a γ ω)) ∂PX ≤
+      ∫⁻ ω, ENNReal.ofReal (Real.exp (-s * finiteChaosMass PY Y a γ ω)) ∂PY := by
   classical
   have : IsProbabilityMeasure PX := hX.1
   have : IsProbabilityMeasure PY := hY.1
@@ -84,24 +82,24 @@ theorem kahane_finite_laplace_lintegral
   have hFYmap : Integrable FY (PY.map Y) :=
     (integrable_map_measure hFYcont.aestronglyMeasurable hYae).mpr hFYsrc
   have hVarX (i : Fin (n + 1)) :
-      DOZZ.gaussianVariance PX (fun ω => X ω i) = finiteChaosMatrixRowVariance A i := by
-    simpa [DOZZ.gaussianVariance, finiteChaosMatrixRowVariance,
+      gaussianVariance PX (fun ω => X ω i) = finiteChaosMatrixRowVariance A i := by
+    simpa [gaussianVariance, finiteChaosMatrixRowVariance,
       finiteChaosMatrixRowCovariance] using hXcov i i
   have hVarY (i : Fin (n + 1)) :
-      DOZZ.gaussianVariance PY (fun ω => Y ω i) = finiteChaosMatrixRowVariance B i := by
-    simpa [DOZZ.gaussianVariance, finiteChaosMatrixRowVariance,
+      gaussianVariance PY (fun ω => Y ω i) = finiteChaosMatrixRowVariance B i := by
+    simpa [gaussianVariance, finiteChaosMatrixRowVariance,
       finiteChaosMatrixRowCovariance] using hYcov i i
-  have hmassX (ω : ΩX) : DOZZ.finiteChaosMass PX X a γ ω =
+  have hmassX (ω : ΩX) : finiteChaosMass PX X a γ ω =
       finiteChaosVectorMass a (finiteChaosMatrixRowVariance A) γ (X ω) := by
-    simp [DOZZ.finiteChaosMass, finiteChaosVectorMass, finiteChaosVectorWeight, hVarX]
-  have hmassY (ω : ΩY) : DOZZ.finiteChaosMass PY Y a γ ω =
+    simp [finiteChaosMass, finiteChaosVectorMass, finiteChaosVectorWeight, hVarX]
+  have hmassY (ω : ΩY) : finiteChaosMass PY Y a γ ω =
       finiteChaosVectorMass a (finiteChaosMatrixRowVariance B) γ (Y ω) := by
-    simp [DOZZ.finiteChaosMass, finiteChaosVectorMass, finiteChaosVectorWeight, hVarY]
+    simp [finiteChaosMass, finiteChaosVectorMass, finiteChaosVectorWeight, hVarY]
   have hrealX :
-      ∫ ω, Real.exp (-s * DOZZ.finiteChaosMass PX X a γ ω) ∂PX =
+      ∫ ω, Real.exp (-s * finiteChaosMass PX X a γ ω) ∂PX =
         ∫ x, FX (TX x) ∂μ := by
     calc
-      ∫ ω, Real.exp (-s * DOZZ.finiteChaosMass PX X a γ ω) ∂PX =
+      ∫ ω, Real.exp (-s * finiteChaosMass PX X a γ ω) ∂PX =
           ∫ ω, FX (X ω) ∂PX := by
             apply integral_congr_ae
             exact ae_of_all PX fun ω => by simp [FX, hmassX]
@@ -112,10 +110,10 @@ theorem kahane_finite_laplace_lintegral
         exact integral_map (by fun_prop : AEMeasurable TX μ)
           (hFXcont.aestronglyMeasurable : AEStronglyMeasurable FX (μ.map TX))
   have hrealY :
-      ∫ ω, Real.exp (-s * DOZZ.finiteChaosMass PY Y a γ ω) ∂PY =
+      ∫ ω, Real.exp (-s * finiteChaosMass PY Y a γ ω) ∂PY =
         ∫ x, FY (TY x) ∂μ := by
     calc
-      ∫ ω, Real.exp (-s * DOZZ.finiteChaosMass PY Y a γ ω) ∂PY =
+      ∫ ω, Real.exp (-s * finiteChaosMass PY Y a γ ω) ∂PY =
           ∫ ω, FY (Y ω) ∂PY := by
             apply integral_congr_ae
             exact ae_of_all PY fun ω => by simp [FY, hmassY]
@@ -135,27 +133,26 @@ theorem kahane_finite_laplace_lintegral
   have hEndpoints := finiteChaosMatrixLaplaceInterpolationExpectation_endpoint_eq
     A B a γ s ha hs
   have hreal :
-      ∫ ω, Real.exp (-s * DOZZ.finiteChaosMass PX X a γ ω) ∂PX ≤
-        ∫ ω, Real.exp (-s * DOZZ.finiteChaosMass PY Y a γ ω) ∂PY := by
+      ∫ ω, Real.exp (-s * finiteChaosMass PX X a γ ω) ∂PX ≤
+        ∫ ω, Real.exp (-s * finiteChaosMass PY Y a γ ω) ∂PY := by
     rw [hrealX, hrealY]
     have hmatrix' := hmatrix
-    rw [hEndpoints.1, hEndpoints.2] at hmatrix'
-    exact hmatrix'
+    rwa [hEndpoints.1, hEndpoints.2] at hmatrix'
   have hExpIntX : Integrable
-      (fun ω => Real.exp (-s * DOZZ.finiteChaosMass PX X a γ ω)) PX := by
-    rw [show (fun ω => Real.exp (-s * DOZZ.finiteChaosMass PX X a γ ω)) =
+      (fun ω => Real.exp (-s * finiteChaosMass PX X a γ ω)) PX := by
+    rw [show (fun ω => Real.exp (-s * finiteChaosMass PX X a γ ω)) =
       fun ω => FX (X ω) by funext ω; simp [FX, hmassX]]
-    exact hFXsrc
+    assumption
   have hExpIntY : Integrable
-      (fun ω => Real.exp (-s * DOZZ.finiteChaosMass PY Y a γ ω)) PY := by
-    rw [show (fun ω => Real.exp (-s * DOZZ.finiteChaosMass PY Y a γ ω)) =
+      (fun ω => Real.exp (-s * finiteChaosMass PY Y a γ ω)) PY := by
+    rw [show (fun ω => Real.exp (-s * finiteChaosMass PY Y a γ ω)) =
       fun ω => FY (Y ω) by funext ω; simp [FY, hmassY]]
-    exact hFYsrc
+    assumption
   have hnonnegX : 0 ≤ᵐ[PX]
-      (fun ω => Real.exp (-s * DOZZ.finiteChaosMass PX X a γ ω)) :=
+      (fun ω => Real.exp (-s * finiteChaosMass PX X a γ ω)) :=
     ae_of_all PX fun ω => Real.exp_nonneg _
   have hnonnegY : 0 ≤ᵐ[PY]
-      (fun ω => Real.exp (-s * DOZZ.finiteChaosMass PY Y a γ ω)) :=
+      (fun ω => Real.exp (-s * finiteChaosMass PY Y a γ ω)) :=
     ae_of_all PY fun ω => Real.exp_nonneg _
   rw [← ofReal_integral_eq_lintegral_ofReal hExpIntX hnonnegX,
     ← ofReal_integral_eq_lintegral_ofReal hExpIntY hnonnegY]

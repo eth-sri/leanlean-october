@@ -2,13 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.GaussianTailBound
+import DOZZ.GMC.GaussianTailBound
 
 /-! Robust subcritical barrier parameters for the admissible mixed-root estimate. -/
 
-@[expose] public section
 
 namespace DOZZ.Proofs
 
@@ -44,19 +42,16 @@ theorem exists_fixed_charge_robust_barrier_parameters
       η * (3 * b ^ 2 / 2) ≤ (gap / (3 * b ^ 2)) * (3 * b ^ 2 / 2) :=
         mul_le_mul_of_nonneg_right hηgap (by positivity)
       _ = gap / 2 := by
-        have hb2 : b ^ 2 ≠ 0 := ne_of_gt (sq_pos_of_pos hb)
         field_simp
   have hidentity : γ ^ 2 -
       ((1 - η) ^ 2 * b ^ 2 / (2 * (1 + η))) =
         κ₀ + b ^ 2 * ((3 * η - η ^ 2) / (2 * (1 + η))) := by
-    have hden : 1 + η ≠ 0 := ne_of_gt (by positivity)
     rw [hκeq]
     dsimp [b]
     field_simp
     ring
   refine ⟨a, κ, η, hγa, ha2, hκpos, hκlt, hηpos, hηlt, ?_⟩
-  rw [show (2 * γ - a) ^ 2 = b ^ 2 by rfl]
-  rw [hidentity]
+  rw [show (2 * γ - a) ^ 2 = b ^ 2 by rfl, hidentity]
   calc
     κ₀ + b ^ 2 * ((3 * η - η ^ 2) / (2 * (1 + η))) ≤
         κ₀ + b ^ 2 * (3 * η / 2) := by
@@ -87,8 +82,7 @@ theorem exists_natural_scale_after_covariance_errors
     le_trans (le_max_left _ _) hT₃
   have hlog : Real.log (1 / cutoff) ≤ T :=
     le_trans (le_max_right _ _) (le_trans (le_max_right _ _) hT₃)
-  have hTnonneg : 0 ≤ T := by
-    exact le_trans (le_max_left _ _) (le_trans (le_max_right _ _) hT₃)
+  have hTnonneg : 0 ≤ T := le_trans (le_max_left _ _) (le_trans (le_max_right _ _) hT₃)
   have hkreal : T < (k₀ : ℝ) := hk₀
   have hkC : C < (k₀ : ℝ) := by linarith
   have hkCrate : C / η < (k₀ : ℝ) := by linarith
@@ -96,8 +90,7 @@ theorem exists_natural_scale_after_covariance_errors
   have hkcut : Real.exp (-(k₀ : ℝ)) ≤ cutoff := by
     by_cases hcutoff1 : cutoff < 1
     · have hdiv : 1 < 1 / cutoff := by
-        rw [one_lt_div₀ hcutoff]
-        exact hcutoff1
+        rwa [one_lt_div₀ hcutoff]
       have hlogpos : 0 < Real.log (1 / cutoff) := Real.log_pos hdiv
       have hklog : Real.log (1 / cutoff) < (k₀ : ℝ) := lt_of_le_of_lt hlog hkreal
       have hexp : Real.exp (-Real.log (1 / cutoff)) = cutoff := by

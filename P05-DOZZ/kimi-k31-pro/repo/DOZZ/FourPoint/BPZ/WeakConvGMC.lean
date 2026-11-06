@@ -2,11 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.BPZ.WeakConvMixed
-public import DOZZ.FourPoint.BPZ.NoAtoms
-public import DOZZ.GMC.SharpMoments.WeightedTransfer
+import DOZZ.FourPoint.BPZ.WeakConvMixed
+import DOZZ.FourPoint.BPZ.NoAtoms
+import DOZZ.GMC.SharpMoments.WeightedTransfer
 
 /-! # The cutoff chaos converges weakly in probability
 
@@ -15,7 +14,6 @@ bounded measurable test function with bounded support. Replacing the cutoff chao
 measure on the null event where its total mass is infinite gives a sequence of finite random
 measures converging weakly in probability in the sense of `BPZWeakConv`. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped ENNReal NNReal
@@ -72,7 +70,7 @@ theorem bpzWeakConv_gmc (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P
       filter_upwards [bpzCutChaos_ae_eq P X hX Xc hXc γ n] with ω hω
       rw [hω]
     refine TendstoInMeasure.congr_left (fun n => (hcongr n).symm) ?_
-    exact DOZZ.Assembly.tendstoInMeasure_of_tendsto_lintegral_ofReal_abs P _ _
+    exact Assembly.tendstoInMeasure_of_tendsto_lintegral_ofReal_abs P _ _
       (fun n => ((measurable_integral_measure hf).comp
         (regularizedGMC_measurable P X hX Xc hXc γ n)).aestronglyMeasurable)
       ((measurable_integral_measure hf).comp hMm).aestronglyMeasurable hl1n

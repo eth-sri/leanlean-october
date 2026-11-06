@@ -2,13 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.TaylorKernelMass
+import DOZZ.FourPoint.TaylorKernelMass
 
 /-! A small-region Taylor mass is controlled by the sharp one-root weighted GMC mass. -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -43,7 +41,7 @@ theorem gammaHalf_local_kernel_bound (γ α₁ α₂ α₃ : ℝ) (z x : ℂ) (�
   have htail : ‖x - 1‖ ^ (-γ * α₂) ≤ (2 : ℝ) ^ |γ * α₂| := by
     have hh := coulombWeight_rpow_le (L := 2) (y := ‖x - 1‖) (by norm_num)
       (by norm_num; exact hlow) hhigh (-γ * α₂)
-    simpa only [neg_mul, abs_neg] using hh
+    simpa [neg_mul, abs_neg] using hh
   have hW : 0 ≤ ‖x‖ ^ (-γ * α₁) := Real.rpow_nonneg (norm_nonneg _) _
   have hscale : 0 ≤ (2 : ℝ) ^ |γ * α₂| * (2 * ρ) ^ (γ ^ 2 / 2) := by positivity
   rw [ENNReal.ofReal_rpow_of_pos hxpos, ← ENNReal.ofReal_mul hscale, heq]
@@ -65,9 +63,9 @@ theorem gammaHalf_local_mass_bound (γ α₁ α₂ α₃ : ℝ) (z : ℂ) (ρ : 
   apply lintegral_mono_ae
   filter_upwards [ae_restrict_of_ae hx0, ae_restrict_mem measurableSet_ball] with x hnonzero hx
   have hn : ‖x‖ ≤ ρ := by
-    have hh : ‖x‖ < ρ := by simpa only [Metric.mem_ball, dist_zero_right] using hx
+    have hh : ‖x‖ < ρ := by simpa [Metric.mem_ball, dist_zero_right] using hx
     exact hh.le
-  simpa only [sub_zero, ENNReal.rpow_eq_pow] using
+  simpa [sub_zero, ENNReal.rpow_eq_pow] using
     gammaHalf_local_kernel_bound γ α₁ α₂ α₃ z x ρ hρ hρ2 hz hn hnonzero
 
 end DOZZ.Proofs

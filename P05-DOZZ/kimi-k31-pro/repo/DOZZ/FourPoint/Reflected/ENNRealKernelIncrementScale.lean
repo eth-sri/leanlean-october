@@ -2,11 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Reflected.KernelIncrementScale
-public import DOZZ.FourPoint.Reflected.InverseMassExpectation
+import DOZZ.FourPoint.Reflected.KernelIncrementScale
+import DOZZ.FourPoint.Reflected.InverseMassExpectation
 /-! Kernel coefficient bounds remain valid for infinite added masses. -/
-@[expose] public section
 open scoped ENNReal
 namespace DOZZ.Proofs
 
@@ -40,7 +38,7 @@ theorem reflected_ennreal_kernel_increment_squeeze (p cLo cHi : ℝ) (A J I : �
   have hl := reflected_ennreal_inverse_increment_scaled p cLo A J hp hcLo hA hAf
   have hh := reflected_ennreal_inverse_increment_scaled p cHi A J hp hcHi hA hAf
   have hfin : A^(-p) ≠ ⊤ := by
-    simp only [ne_eq,ENNReal.rpow_eq_top_iff,hA.ne',hAf,false_and,false_or,not_false_eq_true]
+    simp [ne_eq,ENNReal.rpow_eq_top_iff,hA.ne',hAf,false_and,false_or,not_false_eq_true]
   have hbound (K : ℝ≥0∞) : (A+K)^(-p) ≠ ⊤ := ne_top_of_le_ne_top hfin
     (ennreal_rpow_antitone_of_nonpos (le_add_of_nonneg_right (show 0 ≤ K from bot_le))
       (neg_nonpos.mpr hp.le))

@@ -2,11 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.BPZ.Grid
-public import DOZZ.FourPoint.BPZ.ConvProb
-public import DOZZ.FourPoint.BPZ.WardStarPrep
+import DOZZ.FourPoint.BPZ.Grid
+import DOZZ.FourPoint.BPZ.ConvProb
+import DOZZ.FourPoint.BPZ.WardStarPrep
 
 /-! # Weak convergence in probability of random measures: deterministic part
 
@@ -17,7 +16,6 @@ double integral is compared with the finite grid sums `∑ μ(Q_i) ∫ H(c_i, y)
 controlled by the kernel's modulus of continuity away from the diagonal and by the near-diagonal
 mass `∫_{|x| ≤ ρ} μ(B(x, t)) dμ(x)`, which tends to zero as `t → 0` for a measure without atoms. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped ENNReal NNReal
@@ -82,12 +80,12 @@ theorem integral_bpzNearKernel (μ : Measure ℂ) [IsFiniteMeasure μ] (ρ t : �
   · rw [ite_eq_left hx]
     have heq : (fun y => bpzNearKernel ρ t x y) = (Metric.ball x t).indicator 1 := by
       funext y
-      simp only [bpzNearKernel, hx, true_and, Set.indicator, Metric.mem_ball, Pi.one_apply]
+      simp [bpzNearKernel, hx, true_and, Set.indicator, Metric.mem_ball, Pi.one_apply]
     rw [heq, integral_indicator_one measurableSet_ball]
   · rw [ite_eq_right hx]
     have heq : (fun y => bpzNearKernel ρ t x y) = fun _ => 0 := by
       funext y
-      simp only [bpzNearKernel, hx, false_and, ite_false]
+      simp [bpzNearKernel, hx, false_and, ite_false]
     rw [heq, integral_zero]
 
 theorem bpzNearDiag_nonneg (ρ t : ℝ) (μ : Measure ℂ) : 0 ≤ bpzNearDiag ρ t μ :=
@@ -105,7 +103,7 @@ theorem bpz_inner_integral_bdd {μ : Measure ℂ} [IsFiniteMeasure μ] {g : ℂ 
   rw [← Real.norm_eq_abs]
   have := norm_integral_le_of_norm_le_const (μ := μ) (f := fun y => g x y) (C := C)
     (Eventually.of_forall fun y => by rw [Real.norm_eq_abs]; exact hC x y)
-  exact this
+  assumption
 
 theorem bpzNearDiag_mono {ρ ρ' t t' : ℝ} (hρ : ρ ≤ ρ') (ht : t ≤ t') (μ : Measure ℂ)
     [IsFiniteMeasure μ] : bpzNearDiag ρ t μ ≤ bpzNearDiag ρ' t' μ := by

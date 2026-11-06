@@ -2,13 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.Moments.WeightedCutoffPositiveSubunit
+import DOZZ.GMC.Moments.WeightedCutoffBallMomentUpToTwo
+import DOZZ.GMC.Moments.WeightedCutoffPositiveSubunit
 
 /-! Expected cutoff scaling for every insertion charge at subunit positive orders. -/
 
-@[expose] public section
 
 open MeasureTheory
 open scoped Distributions ENNReal NNReal
@@ -16,19 +15,7 @@ open scoped Distributions ENNReal NNReal
 namespace DOZZ.Proofs
 
 private theorem ennreal_ofReal_rpow_of_pos_scale {x p : ℝ} (hx : 0 < x) :
-    ENNReal.rpow (ENNReal.ofReal x) p = ENNReal.ofReal (x ^ p) := by
-  have hx0 : ENNReal.ofReal x ≠ 0 := ne_of_gt (ENNReal.ofReal_pos.mpr hx)
-  have hleft : ENNReal.rpow (ENNReal.ofReal x) p ≠ ⊤ :=
-    ENNReal.rpow_ne_top_of_ne_zero hx0 ENNReal.ofReal_ne_top
-  have hright : ENNReal.ofReal (x ^ p) ≠ ⊤ := ENNReal.ofReal_ne_top
-  apply (ENNReal.toReal_eq_toReal_iff' hleft hright).1
-  calc
-    (ENNReal.rpow (ENNReal.ofReal x) p).toReal =
-        (ENNReal.ofReal x).toReal ^ p := (ENNReal.toReal_rpow _ _).symm
-    _ = x ^ p := by rw [ENNReal.toReal_ofReal hx.le]
-    _ = (ENNReal.ofReal (x ^ p)).toReal := by
-      rw [ENNReal.toReal_ofReal (Real.rpow_nonneg hx.le p)]
-
+    ENNReal.rpow (ENNReal.ofReal x) p = ENNReal.ofReal (x ^ p) := DOZZ.Proofs.ennreal_ofReal_rpow_of_pos_upto_two hx
 
 /-- Explicit scale constant in the nonsingular sector, for use in compact parameter families. -/
 theorem cutoffWeightedGmcBallMoment_nonpos_subunit_scale_formula

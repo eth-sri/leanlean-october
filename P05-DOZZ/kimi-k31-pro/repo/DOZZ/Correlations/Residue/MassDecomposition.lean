@@ -2,19 +2,17 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.Residue.LocalWeight
-public import DOZZ.Statements.Correlations.LocalSingularMass
+import DOZZ.Correlations.Residue.LocalWeight
+import DOZZ.Statements.Correlations.LocalSingularMass
 
 /-! Exact local insertion and complement decomposition of the residue-chart GMC mass. -/
 
-@[expose] public section
 open MeasureTheory Filter Topology Set
 open scoped ENNReal NNReal Classical
 namespace DOZZ.Proofs
 
-/-- The actual Coulomb density is the local singular density of `DOZZ.localSingularMass` on the
+/-- The actual Coulomb density is the local singular density of `localSingularMass` on the
 unit ball. Only the atomless roots themselves are excluded. -/
 theorem residue_local_coulomb_integrand (γ a b c : ℝ) (z w x : ℂ)
     (hz : 2 ≤ ‖z‖) (hz8 : ‖z‖ ≤ 8) (hzw : 3 ≤ ‖z - w‖)
@@ -22,9 +20,9 @@ theorem residue_local_coulomb_integrand (γ a b c : ℝ) (z w x : ℂ)
     ENNReal.ofReal (residueLocalWeight γ (a + b + c) b w x) *
       ENNReal.rpow (ENNReal.ofReal ‖x - z‖) (-γ * a) =
         coulombWeight γ ![a, b] ![z, w] c x := by
-  have hd : ‖x - z‖ < 1 := by simpa only [Metric.mem_ball, dist_eq_norm] using hx
+  have hd : ‖x - z‖ < 1 := by simpa [Metric.mem_ball, dist_eq_norm] using hx
   have hzbound : ‖z‖ ≤ ‖x - z‖ + ‖x‖ := by
-    simpa only [norm_sub_rev, sub_add_cancel] using norm_add_le (z - x) x
+    simpa [norm_sub_rev, sub_add_cancel] using norm_add_le (z - x) x
   have hn1 : 1 ≤ ‖x‖ := by linarith only [hz, hd, hzbound]
   have hn : 0 < ‖x‖ := lt_of_lt_of_le zero_lt_one hn1
   have hnp : normPlus x = ‖x‖ := max_eq_right hn1
@@ -49,7 +47,7 @@ theorem residue_local_coulomb_integrand (γ a b c : ℝ) (z w x : ℂ)
   ring
 
 /-- Exact decomposition, including the entire noncritical root and infinity region in the
-complement. Root atomlessness makes the integrand convention of `DOZZ.coulombMass` at the roots
+complement. Root atomlessness makes the integrand convention of `coulombMass` at the roots
 irrelevant. -/
 theorem residue_mass_decomposition (γ a b c : ℝ) (z w : ℂ)
     (hz : 2 ≤ ‖z‖) (hz8 : ‖z‖ ≤ 8) (hzw : 3 ≤ ‖z - w‖)

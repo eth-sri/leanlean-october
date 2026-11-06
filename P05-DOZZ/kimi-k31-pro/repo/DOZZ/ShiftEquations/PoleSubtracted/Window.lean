@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.ShiftEquations.TwoPoleWindow
+import DOZZ.Statements.ShiftEquations.TwoPoleWindow
 
 /-!
 # The two-pole window leaves Hölder room
@@ -16,7 +15,6 @@ produced by a negative charge at the origin. The double-tail ceiling clause of t
 moments, with the full window and no shrinking of `η, δ`.
 -/
 
-@[expose] public section
 
 namespace DOZZ.Proofs
 
@@ -103,4 +101,3 @@ theorem window_holder_room {γ η δ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2)
 
 end DOZZ.Proofs
 
-end

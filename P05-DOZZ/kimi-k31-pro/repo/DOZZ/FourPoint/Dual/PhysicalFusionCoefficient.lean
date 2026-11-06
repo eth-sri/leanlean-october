@@ -2,12 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Dual.DiagonalReduction
-public import DOZZ.Statements.FourPoint.DegenerateFourPointDiagonalClassification
+import DOZZ.FourPoint.Dual.DiagonalReduction
+import DOZZ.Statements.FourPoint.DegenerateFourPointDiagonalClassification
 /-! The physical classification `DOZZ.degenerateFourPoint_diagonal_classification` identifies the
 remaining stochastic fusion coefficient. -/
-public section
 open Filter Topology Set
 namespace DOZZ.Proofs
 
@@ -34,7 +32,7 @@ theorem dual_physical_fusion_coefficient {Ω : Type*} [MeasurableSpace Ω]
         D * ‖gaussFPlus H a b c z‖ ^ 2 := by
   exact dual_physical_classification_reduction hH P M γ μ α₁ α₂ α₃ D hγ hγ₂
     hα₁ hα₂ hα₃ hs hκ
-    (DOZZ.degenerateFourPoint_diagonal_classification hH P X M γ μ (2/γ) α₁ α₂ α₃
+    (degenerateFourPoint_diagonal_classification hH P X M γ μ (2/γ) α₁ α₂ α₃
       hγ hγ₂ hμ (Or.inr rfl) hα₁ hα₂ hα₃ hs hX hM) hfusion
 
 end DOZZ.Proofs

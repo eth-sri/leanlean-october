@@ -2,15 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import Mathlib.MeasureTheory.Integral.DominatedConvergence
-public import Mathlib.MeasureTheory.Integral.BoundedContinuousFunction
-public import Mathlib.MeasureTheory.Measure.Lebesgue.Complex
+import Mathlib.MeasureTheory.Integral.DominatedConvergence
+import Mathlib.MeasureTheory.Integral.BoundedContinuousFunction
+import Mathlib.MeasureTheory.Measure.Lebesgue.Complex
 
 /-! Compactly supported continuous approximations from below to planar open balls. -/
 
-@[expose] public section
 
 open MeasureTheory Filter Topology Set
 open scoped BoundedContinuousFunction
@@ -42,8 +40,7 @@ noncomputable def openBallApprox (z : ℂ) (R : ℝ) (n : ℕ) :
       have hx := openBallApproxFun_bounds z R n x
       have hy := openBallApproxFun_bounds z R n y
       change dist (openBallApproxFun z R n x) (openBallApproxFun z R n y) ≤ 1
-      rw [Real.dist_eq]
-      rw [abs_le]
+      rw [Real.dist_eq, abs_le]
       exact ⟨by linarith, by linarith⟩)
 
 theorem openBallApproxFun_tendsto (z : ℂ) (R : ℝ) (x : ℂ) :
@@ -57,8 +54,7 @@ theorem openBallApproxFun_tendsto (z : ℂ) (R : ℝ) (x : ℂ) :
     have hEventually : (fun _ : ℕ => (1 : ℝ)) =ᶠ[atTop]
         fun n => openBallApproxFun z R n x := by
       filter_upwards [eventually_ge_atTop N] with n hn
-      have hn' : 1 / (R - ‖x - z‖) < (n : ℝ) := by
-        exact lt_of_lt_of_le hN (by exact_mod_cast hn)
+      have hn' : 1 / (R - ‖x - z‖) < (n : ℝ) := lt_of_lt_of_le hN (by exact_mod_cast hn)
       have hprod : 1 ≤ (n : ℝ) * (R - ‖x - z‖) := by
         have := (div_lt_iff₀ hgap).mp hn'
         nlinarith
@@ -123,9 +119,7 @@ theorem openBallApprox_integral_tendsto (z : ℂ) (R : ℝ) (μ : Measure ℂ)
     (fun _ : ℂ => (1 : ℝ))
     (fun n => (openBallApprox z R n).continuous.measurable.aestronglyMeasurable)
     hbound hdom hlim
-  rw [← integral_indicator_one hs]
-  exact hdomconv
-
+  rwa [← integral_indicator_one hs]
 /-- Pulling back the centered cutoff by an affine map gives a cutoff on the target disk. -/
 noncomputable def openBallAffineApprox (a : ℂ) (c R : ℝ) (n : ℕ) :
     BoundedContinuousFunction ℂ ℝ :=
@@ -227,7 +221,5 @@ theorem openBallAffineApprox_integral_tendsto {a : ℂ} {c R : ℝ} (hc : 0 < c)
     (fun _ : ℂ => (1 : ℝ))
     (fun n => (openBallAffineApprox a c R n).continuous.measurable.aestronglyMeasurable)
     hbound hdom hlim
-  rw [← integral_indicator_one hs]
-  exact hdomconv
-
+  rwa [← integral_indicator_one hs]
 end DOZZ.Proofs

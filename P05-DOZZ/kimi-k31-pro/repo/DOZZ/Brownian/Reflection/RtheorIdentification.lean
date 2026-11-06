@@ -2,13 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Brownian.Reflection.RtheorAnalytic
-public import DOZZ.Statements.Brownian.IsReflectionData
-public import DOZZ.Statements.Brownian.IsSourceLateralProjection
-public import DOZZ.Statements.Defs.UnitVolumeStructureConstant
-public import DOZZ.Statements.Defs.ExtendedSeiberg3
+import DOZZ.Brownian.Reflection.RtheorAnalytic
+import DOZZ.Statements.Brownian.IsReflectionData
+import DOZZ.Statements.Brownian.IsSourceLateralProjection
+import DOZZ.Statements.Defs.UnitVolumeStructureConstant
+import DOZZ.Statements.Defs.ExtendedSeiberg3
 import DOZZ.Brownian.Reflection.PositiveFinite
 import DOZZ.Complex.Basic
 import DOZZ.DOZZAlgebra.ReflectionShifts
@@ -44,7 +43,6 @@ GFF and its GMC family supply the probability space, and witness independence mo
 coefficient onto one witness family.
 -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology TopologicalSpace Set
 open scoped ENNReal NNReal Topology
@@ -199,7 +197,7 @@ theorem reflectionQuotient_period {γ μ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2) (
   have hcast : (((γ / 2 : ℝ)) : ℂ) = (γ : ℂ) / 2 := by push_cast; ring
   filter_upwards [eventually_nhdsNE_of_eventually_codiscrete hshifted z] with w hw
   rw [hcast]
-  simpa only [add_sub_cancel_right] using hw.symm
+  simpa [add_sub_cancel_right] using hw.symm
 
 /-- The quotient by the DOZZ coefficient of a solution of the dual shift equation with multiplier
 `c` is quasi-periodic under `2/γ`, with multiplier `c / c^DOZZ`. -/
@@ -249,7 +247,7 @@ theorem reflectionQuotient_eventually_eq_ratio {Ω : Type*} [MeasurableSpace Ω]
   exact reflectionR_div_reflectionDOZZ P γ μ y (B y) Z hγ hγ2 hμ ⟨hy.1, hy.2⟩ hpole
 
 /-- **`R = R^DOZZ` at irrational `γ²`**, from the two reflection shift equations
-(`DOZZ.reflectionR_first_shift_meromorphic`, `DOZZ.reflectionR_dual_shift_unknown_constant`) for
+(`reflectionR_first_shift_meromorphic`, `reflectionR_dual_shift_unknown_constant`) for
 interpolants of the probabilistic coefficient along one witness family, continuity of `R̄` along
 that family, and the endpoint limit `R → -1`. -/
 theorem reflectionR_eq_reflectionDOZZ_of_shifts
@@ -352,8 +350,7 @@ theorem reflectionR_eq_reflectionDOZZ_of_shifts
   have hnum : Tendsto (fun y : ℝ => (reflectionR P γ μ y (B y) Z : ℂ)) (𝓝[<] (Q γ))
       (𝓝 (-1)) := by
     have h := (Complex.continuous_ofReal.tendsto (-1 : ℝ)).comp hEnd
-    rw [Complex.ofReal_neg, Complex.ofReal_one] at h
-    exact h
+    rwa [Complex.ofReal_neg, Complex.ofReal_one] at h
   have hden : Tendsto (fun y : ℝ => RD (y : ℂ)) (𝓝[<] (Q γ)) (𝓝 (-1)) :=
     (reflectionDOZZ_tendsto_Q hγ hγ2 hμ).comp hleft
   have hratio : Tendsto (fun y : ℝ => F (y : ℂ)) (𝓝[<] (Q γ)) (𝓝 1) := by
@@ -368,7 +365,7 @@ theorem reflectionR_eq_reflectionDOZZ_of_shifts
   -- equality off the poles, by continuity of both coefficients
   have hone : ∀ᶠ y : ℝ in 𝓝[≠] α, F (y : ℂ) = 1 := by
     have h := (tendsto_ofReal_nhdsNE α).eventually (hc₀ _ (ofReal_mem_horizontalStrip hh α))
-    simpa only [hc₁] using h
+    simpa [hc₁] using h
   have heq : ∀ᶠ y : ℝ in 𝓝[≠] α, (reflectionR P γ μ y (B y) Z : ℂ) = RD (y : ℂ) := by
     filter_upwards [hone, reflectionPoleFree_eventually_nhdsNE hγ α,
       nhdsWithin_le_nhds (Ioo_mem_nhds hα.1 hα.2)] with y hy hpole hyI
@@ -510,7 +507,7 @@ theorem tendsto_sqrt_nhdsWithin_irrational {γ₀ : ℝ} (hγ₀ : 0 < γ₀) :
 
 /-- **Continuity extension in `γ`.** If the probabilistic coefficient along a witness family is
 continuous on compact pole-free physical sets of `(γ, α)`
-(`DOZZ.reflection_endpoint_and_gamma_continuity`), and equals the DOZZ coefficient whenever `γ²`
+(`reflection_endpoint_and_gamma_continuity`), and equals the DOZZ coefficient whenever `γ²`
 is irrational, then it equals the DOZZ coefficient at every pole-free physical pair. -/
 theorem reflectionR_eq_reflectionDOZZ_of_irrational_of_continuousOn
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (μ : ℝ) (hμ : 0 < μ)
@@ -559,8 +556,7 @@ theorem reflectionR_eq_reflectionDOZZ_of_irrational_of_continuousOn
         reflectionDOZZ (Real.sqrt x) μ (α₀ : ℂ) := by
     filter_upwards [hsqrt.eventually hgood, self_mem_nhdsWithin, hpos] with x hx hirrx hx0
     have hirr' : Irrational (Real.sqrt x ^ 2) := by
-      rw [Real.sq_sqrt hx0.le]
-      exact hirrx
+      rwa [Real.sq_sqrt hx0.le]
     exact hirr _ hx.1.1 hx.1.2.1 hirr' α₀ hx.1.2.2.1 hx.1.2.2.2 hx.2
   have h1 : Tendsto (fun x => (reflectionR P (Real.sqrt x) μ α₀ (B (Real.sqrt x) α₀)
       (Z (Real.sqrt x)) : ℂ)) (𝓝[{x : ℝ | Irrational x}] (γ₀ ^ 2))
@@ -597,8 +593,8 @@ theorem continuousOn_slice_of_compact_physical {f : ℝ × ℝ → ℝ} {γ : �
   exact (hslice.continuousAt (Icc_mem_nhds (by linarith only [hm]) (by linarith only [hm]))).continuousWithinAt
 
 /-- **`R = R^DOZZ` off the poles**, from the statements
-`DOZZ.reflectionR_first_shift_meromorphic`, `DOZZ.reflectionR_dual_shift_unknown_constant` and
-`DOZZ.reflection_endpoint_and_gamma_continuity` (taken verbatim, at universe `0`). -/
+`reflectionR_first_shift_meromorphic`, `reflectionR_dual_shift_unknown_constant` and
+`reflection_endpoint_and_gamma_continuity` (taken verbatim, at universe `0`). -/
 theorem reflection_Rtheor_off_poles_of_shift_equations
     (hFirst : ∀ {Ω : Type} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
         (M : Ω → Measure ℂ) (γ μ : ℝ)
@@ -719,4 +715,3 @@ theorem reflection_Rtheor_off_poles_of_shift_equations
 
 end DOZZ.Proofs
 
-end

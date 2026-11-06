@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.Tails.OffCenterRegression
+import DOZZ.Correlations.Tails.OffCenterRegression
 
 /-! The first-order bound on the smooth off-center pin potential in the one-insertion tail
 estimate. -/
 
-@[expose] public section
 
 namespace DOZZ.Proofs
 
@@ -42,9 +40,9 @@ theorem offCenter_pin_potential_bound (z u : ℂ)
   have hz1 : 1 ≤ ‖z‖ := by linarith
   have hsum : 1 ≤ ‖z + u‖ := by
     have h := norm_sub_norm_le z (z + u)
-    simp only [sub_add_cancel_left, norm_neg] at h
+    simp [sub_add_cancel_left, norm_neg] at h
     linarith
   apply (abs_log_sub_le hsum hz1).trans
-  simpa only [add_sub_cancel_left] using abs_norm_sub_norm_le (z + u) z
+  simpa [add_sub_cancel_left] using abs_norm_sub_norm_le (z + u) z
 
 end DOZZ.Proofs

@@ -2,11 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import Mathlib.MeasureTheory.Constructions.BorelSpace.Order
-public import Mathlib.MeasureTheory.Measure.Prod
-public import Mathlib.MeasureTheory.Measure.Comap
+import Mathlib.MeasureTheory.Constructions.BorelSpace.Order
+import Mathlib.MeasureTheory.Measure.Prod
+import Mathlib.MeasureTheory.Measure.Comap
 
 /-!
 # Uniqueness of lifetime-marked measures above a deterministic cutoff
@@ -15,7 +14,6 @@ Open-closed lifetime intervals strictly beyond the final observation determine t
 on that domain. Pullback to the open interval avoids adding any boundary-atom assumption.
 -/
 
-@[expose] public section
 open MeasureTheory Set
 namespace DOZZ.Proofs
 
@@ -34,7 +32,7 @@ theorem measure_eq_of_Ioc_above (μ η : Measure ℝ) [IsFiniteMeasure μ] [IsFi
       ext t
       constructor
       · rintro ⟨u, hu, rfl⟩
-        exact hu
+        assumption
       · intro ht
         exact ⟨⟨t, a.property.trans ht.1⟩, ht, rfl⟩
     rw [himage]
@@ -49,9 +47,7 @@ theorem measure_eq_of_Ioc_above (μ η : Measure ℝ) [IsFiniteMeasure μ] [IsFi
     image_preimage_eq_inter_range] at heq
   have hrange : range e = Ioi s := Subtype.range_coe
   rw [hrange] at heq
-  rw [← hrμ, ← hrη, Measure.restrict_apply hA, Measure.restrict_apply hA]
-  exact heq
-
+  rwa [← hrμ, ← hrη, Measure.restrict_apply hA, Measure.restrict_apply hA]
 /-- Past rectangles and lifetime intervals above the final observation determine a finite
 marked measure supported beyond that observation. -/
 theorem measure_eq_of_prod_Ioc_above {α : Type*} [MeasurableSpace α]
@@ -77,15 +73,12 @@ theorem measure_eq_of_prod_Ioc_above {α : Type*} [MeasurableSpace α]
       Measure.restrict_apply (hC.preimage measurable_snd)]
     congr 1
     ext z
-    simp only [mem_inter_iff, mem_preimage, mem_prod, mem_univ, true_and, and_comm]
+    simp [mem_inter_iff, mem_preimage, mem_prod, mem_univ, true_and, and_comm]
   have heq : μA = ηA := by
     apply measure_eq_of_Ioc_above μA ηA s hsμ hsη
     intro a b ha hab
     rw [hslice _ measurableSet_Ioc, hslice _ measurableSet_Ioc]
     exact h A hA a b ha hab
   have hh := congrArg (fun M : Measure ℝ => M B) heq
-  rw [hslice B hB, hslice B hB] at hh
-  exact hh
-
+  rwa [hslice B hB, hslice B hB] at hh
 end DOZZ.Proofs
-end

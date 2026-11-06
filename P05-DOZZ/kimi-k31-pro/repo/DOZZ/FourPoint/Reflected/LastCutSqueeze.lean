@@ -2,13 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.Brownian.LastExitAfterAbove
-public import DOZZ.Brownian.Reflection.LastCut
+import DOZZ.Correlations.Tails.WilliamsCutMonotonicity
+import DOZZ.Brownian.LastExitAfterAbove
+import DOZZ.Brownian.Reflection.LastCut
 import Mathlib.Topology.Order.IntermediateValue
 import Mathlib.Tactic
 /-! The retained reflection mass increases with the Williams maximum cutoff. -/
-@[expose] public section
 open MeasureTheory ProbabilityTheory Set Filter Topology
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -52,19 +51,7 @@ theorem reflected_conditioned_lastExit_mono_ae
 theorem reflected_cutMass_mono_of_lastExit {Ω : Type*} (γ H m : ℝ)
     (B : Ω → BrownianPath × BrownianPath) (Z : Ω → Measure ℝ) (ω : Ω)
     (hL : negativeLastExitTime (B ω).2 H ≤ negativeLastExitTime (B ω).2 m) :
-    twoSidedReflectionCutMass γ H B Z ω ≤ twoSidedReflectionCutMass γ m B Z ω := by
-  unfold twoSidedReflectionCutMass
-  apply lintegral_mono
-  intro s
-  have hcoe : (negativeLastExitTime (B ω).2 H : ℝ) ≤ negativeLastExitTime (B ω).2 m :=
-    by exact_mod_cast hL
-  beta_reduce
-  split_ifs with hHs hms
-  · exact le_rfl
-  · exfalso
-    exact hms (by linarith only [hHs, hcoe])
-  · exact zero_le
-  · exact le_rfl
+    twoSidedReflectionCutMass γ H B Z ω ≤ twoSidedReflectionCutMass γ m B Z ω := DOZZ.Proofs.reflection_cut_mass_le_of_last_exit_le γ H m B Z ω hL
 
 /-- The variable Williams maximum can be integrated without taking an uncountable
 intersection of the fixed-level full-measure events. -/
@@ -88,7 +75,7 @@ theorem reflected_conditioned_random_lastExit_squeeze
       (fun z : ℝ≥0 × BrownianPath => z.1))).compl.union (measurableSet_le hleft hright)
     convert hh using 1
     ext z
-    simp only [mem_union, mem_compl_iff, mem_ofPred_eq, imp_iff_not_or]
+    simp [mem_union, mem_compl_iff, mem_ofPred_eq, imp_iff_not_or]
   rw [Measure.ae_prod_iff_ae_ae hs]
   apply ae_of_all μ
   intro m

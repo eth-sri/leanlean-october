@@ -1,12 +1,10 @@
-module
 
-public import Mathlib.MeasureTheory.Function.ConvergenceInMeasure
-public import Mathlib.MeasureTheory.Integral.Lebesgue.Add
-public import Mathlib.Analysis.SpecialFunctions.Pow.Continuity
+import Mathlib.MeasureTheory.Function.ConvergenceInMeasure
+import Mathlib.MeasureTheory.Integral.Lebesgue.Add
+import Mathlib.Analysis.SpecialFunctions.Pow.Continuity
 
 /-! Fatou passage for moments of finite-cutoff test integrals. -/
 
-@[expose] public section
 
 open MeasureTheory Filter
 open scoped ENNReal

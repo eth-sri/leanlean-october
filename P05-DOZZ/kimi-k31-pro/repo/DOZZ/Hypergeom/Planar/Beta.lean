@@ -2,16 +2,14 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import Mathlib.Analysis.SpecialFunctions.Gamma.Beta
-public import Mathlib.Analysis.SpecialFunctions.Integrability.Basic
+import Mathlib.Analysis.SpecialFunctions.Gamma.Beta
+import Mathlib.Analysis.SpecialFunctions.Integrability.Basic
 import Mathlib.MeasureTheory.Function.JacobianOneDim
 
 /-! Support for the proof of the beta integral `DOZZ.beta_negative_power_integral`
 ([KRV, Lemma 12.6]). -/
 
-public section
 
 open Filter MeasureTheory Set
 open scoped Topology
@@ -31,14 +29,11 @@ theorem betaIntegral_ofReal (x y : ℝ) :
       filter_upwards [ae_restrict_mem measurableSet_Ioc] with t ht
       have ht0 : 0 ≤ t := le_of_lt ht.1
       have ht1 : 0 ≤ 1 - t := by linarith [ht.2]
-      rw [show (x : ℂ) - 1 = ((x - 1 : ℝ) : ℂ) by push_cast; ring]
-      rw [show (y : ℂ) - 1 = ((y - 1 : ℝ) : ℂ) by push_cast; ring]
-      rw [show (1 : ℂ) - (t : ℝ) = ((1 - t : ℝ) : ℂ) by push_cast; ring]
-      rw [← Complex.ofReal_cpow ht0, ← Complex.ofReal_cpow ht1]
+      rw [show (x : ℂ) - 1 = ((x - 1 : ℝ) : ℂ) by push_cast; ring, show (y : ℂ) - 1 = ((y - 1 : ℝ) : ℂ) by push_cast; ring, show (1 : ℂ) - (t : ℝ) = ((1 - t : ℝ) : ℂ) by push_cast; ring, ← Complex.ofReal_cpow ht0, ← Complex.ofReal_cpow ht1]
       exact (Complex.ofReal_mul _ _).symm
     _ = _ := integral_ofReal
 
-private theorem beta_change_variables (x y : ℝ) :
+theorem beta_change_variables (x y : ℝ) :
     (∫ v : ℝ in Ioi 0, v ^ (x - 1) * (1 + v) ^ (-(x + y))) =
       ∫ t : ℝ in Ioc 0 1, t ^ (x - 1) * (1 - t) ^ (y - 1) := by
   let f : ℝ → ℝ := fun v => v / (1 + v)
@@ -82,7 +77,7 @@ private theorem beta_change_variables (x y : ℝ) :
       · field_simp
         simp only [id_eq]
         ring
-    simpa only [f] using hfun.hasDerivWithinAt
+    simpa [f] using hfun.hasDerivWithinAt
   have hchange := MeasureTheory.integral_image_eq_integral_abs_deriv_smul
     (s := Ioi (0 : ℝ)) (f := f) (f' := fun v => ((1 + v) ^ 2)⁻¹)
     measurableSet_Ioi hderiv hInj (fun t : ℝ => t ^ (x - 1) * (1 - t) ^ (y - 1))
@@ -104,15 +99,10 @@ private theorem beta_change_variables (x y : ℝ) :
               dsimp [f]
               field_simp
               ring
-            rw [hcomp, abs_of_pos (by positivity)]
-            rw [← Real.rpow_natCast (1 + v) 2]
-            rw [Real.div_rpow hv0.le hd.le, Real.div_rpow zero_le_one hd.le]
-            rw [Real.one_rpow]
-            rw [Real.rpow_neg hd.le]
+            rw [hcomp, abs_of_pos (by positivity), ← Real.rpow_natCast (1 + v) 2, Real.div_rpow hv0.le hd.le, Real.div_rpow zero_le_one hd.le, Real.one_rpow, Real.rpow_neg hd.le]
             have hpowers : (1 + v) ^ (2 : ℝ) * (1 + v) ^ (x - 1) * (1 + v) ^ (y - 1) =
                 (1 + v) ^ (x + y) := by
-              rw [← Real.rpow_add hd]
-              rw [← Real.rpow_add hd]
+              rw [← Real.rpow_add hd, ← Real.rpow_add hd]
               congr 1
               ring
             field_simp [ne_of_gt (Real.rpow_pos_of_pos hd (x - 1)),
@@ -211,7 +201,6 @@ private theorem beta_ibp_derivative_integrable (p a : ℝ) (hp : 0 < p)
       (fun v : ℝ => (-p) * (1 + v) ^ (-p - 1) * (v ^ (1 - a) / (1 - a)))
       (Ioi 0) := by
   let c : ℝ := p / (a - 1)
-  have hc : 0 < c := div_pos hp (by linarith)
   have hnearPow : IntegrableOn (fun v : ℝ => v ^ (1 - a)) (Ioc 0 1) := by
     rw [integrableOn_congr_set_ae Ioo_ae_eq_Ioc.symm]
     exact (intervalIntegral.integrableOn_Ioo_rpow_iff zero_lt_one).2 (by linarith)
@@ -288,7 +277,7 @@ private theorem beta_ibp_derivative_integrable (p a : ℝ) (hp : 0 < p)
     rw [hnorm]
     have hnum : p * (1 + v) ^ (-p - 1) * v ^ (1 - a) ≤
         p * (v ^ (-p - 1) * v ^ (1 - a)) := by
-      simpa only [mul_assoc] using mul_le_mul_of_nonneg_right
+      simpa [mul_assoc] using mul_le_mul_of_nonneg_right
         (mul_le_mul_of_nonneg_left hpow.2 hp.le) hq.le
     have hdiv := (div_le_div_of_nonneg_right hnum (by linarith : 0 ≤ a - 1))
     have hconst :
@@ -439,7 +428,7 @@ theorem beta_negative_power_integral (p a : ℝ) (hp : 0 < p) (ha : 1 < a)
       (∫ v : ℝ in Ioi 0, v ^ (1 - a) * (1 + v) ^ (-(p + 1))) =
         ∫ t : ℝ in Ioc 0 1, t ^ ((2 - a) - 1) * (1 - t) ^ ((p + a - 1) - 1) := by
     have h := beta_change_variables (2 - a) (p + a - 1)
-    simpa only [show (2 - a) - 1 = 1 - a by ring,
+    simpa [show (2 - a) - 1 = 1 - a by ring,
       show (2 - a) + (p + a - 1) = p + 1 by ring] using h
   have hxpos : 0 < 2 - a := by linarith
   have hypos : 0 < p + a - 1 := by linarith

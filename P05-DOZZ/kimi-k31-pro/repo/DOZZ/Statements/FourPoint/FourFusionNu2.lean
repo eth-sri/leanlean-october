@@ -1,2 +1,1 @@
-module
-public import DOZZ.Statements.FourPoint.GammaHalfUnitCrossingMultiplier
+import DOZZ.Statements.FourPoint.GammaHalfUnitCrossingMultiplier

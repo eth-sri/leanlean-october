@@ -2,15 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.Complex.HorizontalStrip
+import DOZZ.Statements.Complex.HorizontalStrip
 import DOZZ.Complex.Basic
 
 /-! The statement `DOZZ.complexMoment_uniform_tail_bridge`,
 proved by `DOZZ.Proofs.complexMoment_uniform_tail_bridge`. -/
 
-public section
 
 open MeasureTheory Filter Topology Set
 open scoped ENNReal
@@ -33,6 +31,6 @@ theorem complexMoment_uniform_tail_bridge {Ω : Type*} [MeasurableSpace Ω]
       Integrable (fun ω => (Y d ω : ℂ) ^ ((β - d / γ : ℝ) : ℂ)) P) ∧
     Tendsto (fun d : ℝ => (d : ℂ) *
       (∫ ω, (Y d ω : ℂ) ^ ((β - d / γ : ℝ) : ℂ) ∂P))
-      (𝓝[>] 0) (𝓝 ((γ * β * c₀ : ℝ) : ℂ)) := by exact DOZZ.Proofs.complexMoment_uniform_tail_bridge P Y c c₀ β η γ d₀ C hβ hη hγ hd₀ hC hY hpos hc htail
+      (𝓝[>] 0) (𝓝 ((γ * β * c₀ : ℝ) : ℂ)) := Proofs.complexMoment_uniform_tail_bridge P Y c c₀ β η γ d₀ C hβ hη hγ hd₀ hC hY hpos hc htail
 
 end DOZZ

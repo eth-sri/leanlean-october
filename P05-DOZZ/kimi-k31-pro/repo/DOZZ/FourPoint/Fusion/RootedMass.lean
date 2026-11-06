@@ -2,16 +2,14 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.FourPoint.GammaHalfRootedMass
-public import DOZZ.GMC.SharpMoments.SeibergWeight
+import DOZZ.Statements.FourPoint.GammaHalfRootedMass
+import DOZZ.GMC.SharpMoments.SeibergWeight
 import DOZZ.GMC.Construction.RootedMeasureKernel
 import DOZZ.GMC.SharpMoments.SeibergPieces
 
 /-! # The charge shift in the fusion coefficient -/
 
-@[expose] public section
 
 open MeasureTheory
 open scoped ENNReal NNReal

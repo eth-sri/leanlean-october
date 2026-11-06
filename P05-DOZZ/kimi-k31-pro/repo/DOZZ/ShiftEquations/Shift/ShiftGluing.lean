@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Complex.Basic
-public import Mathlib.Analysis.Meromorphic.Order
+import DOZZ.Complex.Basic
+import Mathlib.Analysis.Meromorphic.Order
 import Mathlib.Analysis.Complex.CauchyIntegral
 import Mathlib.Analysis.Convex.PathConnected
 import Mathlib.Analysis.Meromorphic.IsolatedZeros
@@ -34,7 +33,6 @@ The proof is a gluing argument.
 All auxiliary declarations live in the namespace `DOZZ.Proofs.ShiftGluing`.
 -/
 
-@[expose] public section
 
 open Filter Topology Set
 
@@ -301,15 +299,12 @@ theorem meromorphicOn_shiftPiece {c a b h : ℝ} {m g : ℂ → ℂ} (hm : Merom
   | ofNat k =>
     have hk := meromorphicOn_shiftUp (c := c) hm hg k
     have e : (((Int.ofNat k : ℤ) : ℝ)) * c = k * c := by simp
-    rw [e]
-    exact hk
+    rwa [e]
   | negSucc k =>
     have hk := meromorphicOn_shiftDown (c := c) hm hg (k + 1)
     have e : (((Int.negSucc k : ℤ) : ℝ)) * c = -(((k + 1 : ℕ) : ℝ) * c) := by
       rw [Int.cast_negSucc]; push_cast; ring
-    rw [e]
-    exact hk
-
+    rwa [e]
 /-- Neighbouring pieces agree on punctured neighbourhoods of the overlap of their rectangles. -/
 theorem shiftPiece_adj {c a b h : ℝ} {m g : ℂ → ℂ} (hm0 : ∀ z, ∀ᶠ w in 𝓝[≠] z, m w ≠ 0)
     (hrel : ∀ y ∈ shiftRect a b h 0 ∩ shiftRect a b h c,
@@ -383,7 +378,7 @@ interval is longer than `c`. -/
 theorem iUnion_shiftRect_eq {a b c h : ℝ} (hc : 0 < c) (hlen : c < b - a) :
     (⋃ n : ℤ, shiftRect a b h (n * c)) = horizontalStrip h := by
   ext z
-  simp only [mem_iUnion]
+  simp [mem_iUnion]
   constructor
   · rintro ⟨n, hn⟩
     exact hn.2.2
@@ -420,8 +415,7 @@ theorem exists_meromorphicOn_strip_of_base_relation {c a b h : ℝ} (hc : 0 < c)
     exact hpiece 0 z hz'
   · intro z hz
     have hz' : z ∈ ⋃ n : ℤ, shiftRect a b h (n * c) := by
-      rw [iUnion_shiftRect_eq hc hlen]
-      exact hz
+      rwa [iUnion_shiftRect_eq hc hlen]
     obtain ⟨n, hn⟩ := mem_iUnion.mp hz'
     have hzc : z - (c : ℂ) ∈ shiftRect a b h (((n - 1 : ℤ) : ℝ) * c) :=
       sub_mem_shiftRect hn (by push_cast; ring)
@@ -451,9 +445,7 @@ theorem exists_shiftRect_subset {a b : ℝ} {W : Set ℂ} (hW : IsOpen W)
   have hdist : dist z (z.re : ℂ) = |z.im| := by
     rw [Complex.dist_eq_re_im]
     simp [Real.sqrt_sq_eq_abs]
-  rw [hdist]
-  exact h3
-
+  rwa [hdist]
 /-- An interval `(a, b)` longer than `c` contains a subinterval `(a', b')` of length strictly
 between `c` and `2 * c`. -/
 theorem exists_base_interval {c a b : ℝ} (hc : 0 < c) (hab : c < b - a) :
@@ -568,4 +560,3 @@ theorem exists_meromorphicOn_strip_of_shift {c a b d₁ d₂ : ℝ} (hc : 0 < c)
 
 end DOZZ.Proofs
 
-end

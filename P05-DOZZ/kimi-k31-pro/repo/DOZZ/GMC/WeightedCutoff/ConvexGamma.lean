@@ -1,11 +1,9 @@
-module
 
-public import DOZZ.GMC.SharpMoments.InverseGamma
-public import DOZZ.GMC.Annulus.HigherScales
+import DOZZ.GMC.SharpMoments.InverseGamma
+import DOZZ.GMC.Annulus.HigherScales
 
 /-! # Coupling comparison for convex cutoff moments -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal NNReal
@@ -66,8 +64,8 @@ theorem regularizedGMC_convex_moment_le_of_gamma_le
   have hright : ∀ ω, regularizedGMC P Xc g r ω A =
       fieldChaosMass P (fun ω x => Xc ω x r) ν (fun _ => 1) g ω :=
     fun ω => regularizedGMC_apply_eq_fieldChaosMass P X hX Xc hXc g r A hA ω
-  simp only [hleft, hright]
-  exact hk
+  simp [hleft, hright]
+  assumption
 
 /-- At fine cutoffs, a single reference-disk positive moment bound works for every coupling
 in a compact family below its critical moment threshold. -/

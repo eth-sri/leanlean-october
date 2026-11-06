@@ -2,13 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Brownian.LateralUnitBlock.LateralMoment
+import DOZZ.Brownian.LateralUnitBlock.LateralMoment
 
 /-! Fixed-charge inverse moments of the lateral unit interval. -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -25,4 +23,3 @@ theorem lateralGMC_unit_inverse_moment_lt_top
   lateralUnitBlock_lateral_unit_inverse_moment_lt_top P γ v hZ.1 hZ.2.1 hv Z hZ
 
 end DOZZ.Proofs
-end

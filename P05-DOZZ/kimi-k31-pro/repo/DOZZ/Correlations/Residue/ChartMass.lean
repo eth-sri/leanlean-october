@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.Residue.AffineMoment
-public import DOZZ.Correlations.Symmetry.InversionSwap
+import DOZZ.Correlations.Residue.AffineMoment
+import DOZZ.Correlations.Symmetry.InversionSwap
 
 /-! The literal canonical rho is the two-finite-root Coulomb mass in the residue chart. -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -23,7 +21,7 @@ theorem residue_rho_coulombWeight (γ a b c : ℝ) (x : ℂ) (hx0 : x ≠ 0) (hx
   have h0 : 0 < ‖x‖ := norm_pos_iff.mpr hx0
   have h1 : 0 < ‖x - 1‖ := norm_pos_iff.mpr (sub_ne_zero.mpr hx1)
   unfold coulombWeight
-  simp only [Fin.prod_univ_two, Matrix.cons_val_zero, Matrix.cons_val_one,
+  simp [Fin.prod_univ_two, Matrix.cons_val_zero, Matrix.cons_val_one,
     sub_zero, ENNReal.rpow_eq_pow]
   rw [ENNReal.ofReal_rpow_of_pos (div_pos hn h0),
     ENNReal.ofReal_rpow_of_pos (div_pos hn h1), ENNReal.ofReal_rpow_of_pos hn,
@@ -36,8 +34,8 @@ theorem residue_rho_coulombWeight (γ a b c : ℝ) (x : ℂ) (hx0 : x ≠ 0) (hx
     Real.rpow_add hn, Real.rpow_add hn]
   ring
 
-/-- Atomlessness removes the difference between the conventions of `DOZZ.rho` and
-`DOZZ.coulombMass` at 0, 1. -/
+/-- Atomlessness removes the difference between the conventions of `rho` and
+`coulombMass` at 0, 1. -/
 theorem residue_rho_eq_coulombMass (γ a b c : ℝ) (μ : Measure ℂ)
     (h0 : μ {0} = 0) (h1 : μ {1} = 0) :
     rho γ μ a b c = coulombMass γ μ ![a, b] ![0, 1] c := by
@@ -52,7 +50,7 @@ theorem residue_rho_eq_coulombMass (γ a b c : ℝ) (μ : Measure ℂ)
 theorem residueTotalSExp_two (γ a b c : ℝ) :
     residueTotalSExp γ ![a, b] c = sExp γ a b c := by
   unfold residueTotalSExp sExp
-  simp only [Fin.sum_univ_two, Matrix.cons_val_zero, Matrix.cons_val_one]
+  simp [Fin.sum_univ_two, Matrix.cons_val_zero, Matrix.cons_val_one]
 
 /-- Move the two finite insertions from 0,1 to 3,7. Both are outside the equator and their
 separation is four, so the exact local-tail domains hold. -/
@@ -84,8 +82,7 @@ theorem residue_unitVolume_finite_chart
   rw [ENNReal.toReal_mul, ENNReal.toReal_ofReal (Real.rpow_nonneg (by norm_num : (0 : ℝ) ≤ 4) _),
     ← hrho] at hr
   unfold unitVolumeStructureConstant
-  rw [hr]
-  rw [Real.rpow_neg (by norm_num : (0 : ℝ) ≤ 4)]
+  rw [hr, Real.rpow_neg (by norm_num : (0 : ℝ) ≤ 4)]
   have hfac : (4 : ℝ) ^ (γ * (a + b - c) * sExp γ a b c / 2) ≠ 0 :=
     (Real.rpow_pos_of_pos (by norm_num) _).ne'
   field_simp [hfac]

@@ -1,5 +1,4 @@
-module
-public import DOZZ.GMC.Construction.GMCBoxMassLimit
+import DOZZ.GMC.Construction.GMCBoxMassLimit
 import Mathlib.MeasureTheory.Integral.DominatedConvergence
 import DOZZ.GMC.Construction.ReferenceMeasureFinite
 
@@ -8,7 +7,7 @@ open scoped Distributions ENNReal NNReal BoundedContinuousFunction
 
 namespace DOZZ.Proofs
 
-@[expose] public section
+section
 
 /-- The reference integrand for the error between a rational lower-box indicator and its ramp,
 weighted by a nonnegative bounded continuous function. -/
@@ -119,16 +118,6 @@ theorem regularizedGMC_weightedLowerBoxRamp_gap_expectation
   let μ : Ω → Measure ℂ := fun ω => regularizedGMC P Xc γ r ω
   let ν : Ω → Measure ℂ := fun ω => (μ ω).withDensity W
   have hμ : Measurable μ := regularizedGMC_measurable P X hX Xc hXc γ r
-  have hν : Measurable ν := by
-    apply Measure.measurable_of_measurable_coe
-    intro A hA
-    have hEval : (fun ω => ν ω A) =
-        fun ω => ∫⁻ z, A.indicator W z ∂μ ω := by
-      funext ω
-      dsimp [ν]
-      rw [withDensity_apply W hA, ← lintegral_indicator hA]
-    rw [hEval]
-    exact (Measure.measurable_lintegral (Measurable.indicator hW hA)).comp hμ
   let ψ : ℂ → ℝ≥0∞ := fun z => W z * φ z
   have hψ : Measurable ψ := hW.mul hφ
   calc
@@ -250,7 +239,7 @@ theorem regularizedGMC_weightedLowerBoxApprox_error_le_reference
         constructor
         · have h0 : 0 ≤ f z := by simpa [f, gmcLowerBoxApprox] using h.1
           linarith
-        · exact (by simpa [f, gmcLowerBoxApprox] using h.2)
+        · simpa [f, gmcLowerBoxApprox] using h.2
       exact @MemLp.of_bound ℂ ℝ _ 1 κ _ hfin f
         (gmcLowerBoxApprox i n).continuous.aestronglyMeasurable 1 hbd
     have hIbInt : ∫ z, ib z ∂κ = (κ B).toReal := by
@@ -314,9 +303,7 @@ theorem regularizedGMC_withDensity_box_mass_tendstoInMeasure
   let νr : ℝ → Ω → Measure ℂ := fun r ω => (μr r ω).withDensity W
   let ν : Ω → Measure ℂ := fun ω => (M ω).withDensity W
   have hW : Measurable W := ENNReal.measurable_ofReal.comp w.continuous.measurable
-  have hWlt (μ : Measure ℂ) : ∀ᵐ z ∂μ, W z < ∞ := by
-    filter_upwards [] with z
-    exact ENNReal.ofReal_lt_top
+  have hWlt (μ : Measure ℂ) : ∀ᵐ z ∂μ, W z < ∞ := ae_of_all _ fun z => ENNReal.ofReal_lt_top
   have hWbound : ∀ z, W z ≤ ENNReal.ofReal ‖w‖ := by
     intro z
     apply ENNReal.ofReal_le_ofReal
@@ -366,10 +353,6 @@ theorem regularizedGMC_withDensity_box_mass_tendstoInMeasure
       have hq' : Measurable (g n) := (hgmeas n).mono hm0 le_rfl
       exact hq'.aemeasurable.congr hEq'.symm
     let gLim : Ω → ℝ := fun ω => limUnder atTop (fun n => g n ω)
-    have hgLim : Measurable[equatorGFFRawDistributionSigma X] gLim := by
-      let : MeasurableSpace Ω := equatorGFFRawDistributionSigma X
-      exact (StronglyMeasurable.limUnder (l := atTop)
-        (fun n => (hgmeas n).stronglyMeasurable)).measurable
     have hAEproxy : ∀ᵐ ω ∂P, ∀ n,
         (∫ z, gmcLowerBoxApprox i n z ∂ν ω) = g n ω := by
       apply ae_all_iff.mpr
@@ -378,17 +361,6 @@ theorem regularizedGMC_withDensity_box_mass_tendstoInMeasure
       change ∫ z, gmcLowerBoxApprox i n z ∂(M ω).withDensity W = g n ω
       rw [hIntEq]
       exact hω
-    have hEq : (fun ω => (ν ω B).toReal) =ᵐ[P] gLim := by
-      filter_upwards [hAEproxy] with ω hω
-      have hfin : IsFiniteMeasure (ν ω) := hWfinite (M ω) (hM.1 ω)
-      have hT : Tendsto (fun n => g n ω) atTop (𝓝 ((ν ω B).toReal)) := by
-        have h := @gmcLowerBoxApprox_integral_tendsto i (ν ω) hfin
-        exact Tendsto.congr' (Filter.Eventually.of_forall hω) h
-      change (ν ω B).toReal = limUnder atTop (fun n => g n ω)
-      exact hT.limUnder_eq.symm
-    have hGmeas : AEMeasurable (fun ω => (ν ω B).toReal) P := by
-      have hg' : Measurable gLim := hgLim.mono hm0 le_rfl
-      exact hg'.aemeasurable.congr hEq.symm
     have hpoint : ∀ᵐ ω ∂P, Tendsto
         (fun n => ∫ z, gmcLowerBoxApprox i n z ∂ν ω) atTop
         (𝓝 ((ν ω B).toReal)) := by

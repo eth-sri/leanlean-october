@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.Construction.CircleEnergyGapPositivity
+import DOZZ.GMC.Construction.CircleEnergyGapPositivity
 
 /-!
 # Bilinear estimates from the circle energy gap
@@ -14,7 +13,6 @@ smooth test. This identifies mixed energies of two circle approximations without
 witness.
 -/
 
-@[expose] public section
 
 open Filter MeasureTheory
 open scoped Topology
@@ -41,10 +39,6 @@ theorem circleEnergyGap_mixed_error_bound (x : ℂ) (r a : ℝ) (ha : 0 < a)
   have hplus := circleEnergyGap_nonneg x r (f + a • g)
   have hminus := circleEnergyGap_nonneg x r (f + (-a) • g)
   rw [circleEnergyGap_add_smul] at hplus hminus
-  have hA : 0 ≤ circleEnergyGap x r f + a ^ 2 * gffCov g g := by
-    have hgap := circleEnergyGap_nonneg x r f
-    have henergy : 0 ≤ gffCov g g := DOZZ.gffCov_self_nonneg g
-    positivity
   have hlower : -(circleEnergyGap x r f + a ^ 2 * gffCov g g) ≤
       2 * a * (gffCov f g - circleCross x r g) := by nlinarith
   have hupper : 2 * a * (gffCov f g - circleCross x r g) ≤
@@ -72,10 +66,10 @@ theorem tendsto_gffCov_test_circleCross_of_gap
     have hl' := hl.congr' (Filter.Eventually.of_forall fun n => (he n).symm)
     rw [show (0 : ℝ) + 2 * circleSelfEnergy y s - circleSelfEnergy y s =
       circleSelfEnergy y s by ring] at hl'
-    exact hl'
+    assumption
   have hself : 0 ≤ circleSelfEnergy y s :=
     le_of_tendsto_of_tendsto' tendsto_const_nhds henergy
-      (fun n => DOZZ.gffCov_self_nonneg (g n))
+      (fun n => gffCov_self_nonneg (g n))
   rw [Metric.tendsto_nhds]
   intro ε hε
   have hbounded : ∀ᶠ n in atTop, gffCov (g n) (g n) < circleSelfEnergy y s + 1 :=
@@ -88,11 +82,7 @@ theorem tendsto_gffCov_test_circleCross_of_gap
     hf.eventually (gt_mem_nhds (by positivity))
   filter_upwards [hbounded, hgapSmall] with n hnE hnq
   have hbound := circleEnergyGap_mixed_error_bound x r a ha (f n) (g n)
-  have hqnon := circleEnergyGap_nonneg x r (f n)
-  have hEnon : 0 ≤ gffCov (g n) (g n) := DOZZ.gffCov_self_nonneg (g n)
   have hD : |gffCov (f n) (g n) - circleCross x r (g n)| < ε := by
-    have hmul : 2 * a * |gffCov (f n) (g n) - circleCross x r (g n)| ≤
-        circleEnergyGap x r (f n) + a ^ 2 * gffCov (g n) (g n) := hbound
     have hnE' : gffCov (g n) (g n) ≤ A := by simpa [A] using hnE.le
     have ha2 : a ^ 2 * gffCov (g n) (g n) ≤ a ^ 2 * A :=
       mul_le_mul_of_nonneg_left hnE' (sq_nonneg a)

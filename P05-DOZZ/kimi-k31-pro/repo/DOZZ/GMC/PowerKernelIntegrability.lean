@@ -1,16 +1,14 @@
 /-
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 -/
-module
 
-public import Mathlib.Analysis.SpecialFunctions.Pow.Integral
-public import Mathlib.LinearAlgebra.Complex.FiniteDimensional
-public import Mathlib.MeasureTheory.Measure.Haar.InnerProductSpace
-public import Mathlib.MeasureTheory.Measure.Haar.NormedSpace
+import Mathlib.Analysis.SpecialFunctions.Pow.Integral
+import Mathlib.LinearAlgebra.Complex.FiniteDimensional
+import Mathlib.MeasureTheory.Measure.Haar.InnerProductSpace
+import Mathlib.MeasureTheory.Measure.Haar.NormedSpace
 
 /-! Local integrability of the planar power kernel below its dimension threshold. -/
 
-@[expose] public section
 
 open MeasureTheory
 open scoped ENNReal NNReal Pointwise
@@ -52,12 +50,8 @@ theorem complex_norm_sub_neg_rpow_lintegral_uniform_compacts
   obtain ⟨R₁, hR₁, hLnorm⟩ := hL.isBounded.exists_pos_norm_lt
   obtain ⟨R₂, hR₂, hKnorm⟩ := hK.isBounded.exists_pos_norm_lt
   let R : ℝ := R₁ + R₂
-  have hR : 0 < R := by dsimp [R]; linarith
   let B : Set ℂ := Metric.closedBall 0 R
   let f : ℂ → ℝ≥0∞ := fun z => ENNReal.ofReal (‖z‖ ^ (-α))
-  have hf : Measurable f := by
-    dsimp [f]
-    fun_prop
   have hbase := complex_norm_neg_rpow_locallyIntegrable α hαpos hα
   have hballReal : IntegrableOn (fun z : ℂ => ‖z‖ ^ (-α)) B volume :=
     hbase.integrableOn_isCompact (isCompact_closedBall 0 R)
@@ -147,7 +141,5 @@ theorem complex_norm_pair_neg_rpow_lintegral_isCompact
     dsimp [f]
     rw [Real.rpow_neg (norm_nonneg (p.1 - p.2))]
   refine ⟨C * volume K, ENNReal.mul_ne_top hC hK.measure_ne_top, ?_⟩
-  rw [hkernel, hpair]
-  exact houter
-
+  rwa [hkernel, hpair]
 end DOZZ.Proofs

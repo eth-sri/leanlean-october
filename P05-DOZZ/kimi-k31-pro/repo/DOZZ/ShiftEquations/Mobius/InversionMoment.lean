@@ -2,11 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.GMC.CoulombMass
-public import DOZZ.Statements.Defs.IsGMCOf
-public import DOZZ.Statements.Defs.IsEquatorGFF
+import DOZZ.GMC.Construction.RootedCircleMassLimit
+import DOZZ.GMC.SharpMoments.WeightedScale
+import DOZZ.Statements.GMC.CoulombMass
+import DOZZ.Statements.Defs.IsGMCOf
+import DOZZ.Statements.Defs.IsEquatorGFF
 import DOZZ.GMC.Moments.InversionLaw
 import DOZZ.GMC.Construction.GMCIntensityAdapter
 
@@ -21,7 +22,6 @@ density), so the Coulomb masses agree almost surely and every real power moment 
 corresponding power of that constant.
 -/
 
-public section
 
 open MeasureTheory Filter
 open scoped ENNReal
@@ -30,29 +30,12 @@ namespace DOZZ.Proofs
 
 /-- A positive finite factor commutes with every real power. -/
 theorem inversionMoment_mul_rpow {c : ℝ≥0∞} (hc0 : c ≠ 0) (hct : c ≠ ⊤) (t : ℝ≥0∞)
-    (q : ℝ) : (c * t) ^ q = c ^ q * t ^ q := by
-  by_cases ht : t = 0
-  · subst ht
-    rcases lt_trichotomy q 0 with hq | hq | hq
-    · rw [mul_zero, ENNReal.zero_rpow_of_neg hq, ENNReal.mul_top]
-      exact (ENNReal.rpow_pos (pos_iff_ne_zero.mpr hc0) hct).ne'
-    · subst hq; simp
-    · rw [mul_zero, ENNReal.zero_rpow_of_pos hq, mul_zero]
-  · exact ENNReal.mul_rpow_of_ne_zero hc0 ht q
+    (q : ℝ) : (c * t) ^ q = c ^ q * t ^ q := DOZZ.Proofs.weightedScale_mul_rpow hc0 hct t q
 
 /-- The equator chaos is almost surely atomless at every point. -/
 theorem gmc_atomless_of_isGMCOf {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
     (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ)
-    (hM : IsGMCOf P X γ M) (x : ℂ) : ∀ᵐ ω ∂P, M ω {x} = 0 := by
-  have hint := equatorGFF_GMC_intensity P X hX γ hγ hγ2 M hM {x} (measurableSet_singleton x)
-  have href : gmcReferenceMeasure {x} = 0 := by
-    unfold gmcReferenceMeasure
-    exact withDensity_absolutelyContinuous _ _ (measure_singleton x)
-  rw [href] at hint
-  have hmeas : AEMeasurable (fun ω => M ω {x}) P :=
-    gmc_set_mass_aemeasurable_of_isGMCOf P X hX γ hγ hγ2 M hM {x} (measurableSet_singleton x)
-  exact (lintegral_eq_zero_iff' hmeas).1 hint
+    (hM : IsGMCOf P X γ M) (x : ℂ) : ∀ᵐ ω ∂P, M ω {x} = 0 := DOZZ.Proofs.gmc_atomless_at_root_of_isGMCOf P X hX γ hγ hγ2 M hM x
 
 end DOZZ.Proofs
 
-end

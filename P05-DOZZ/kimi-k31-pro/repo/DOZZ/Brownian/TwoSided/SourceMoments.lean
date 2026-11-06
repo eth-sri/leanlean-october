@@ -2,16 +2,14 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.SharpMoments.InverseGamma
-public import DOZZ.GMC.SharpMoments.BallScaling
-public import DOZZ.Brownian.Lateral.SharpPositive
-public import DOZZ.Brownian.LateralUnitBlock.LateralInverse
+import DOZZ.GMC.SharpMoments.InverseGamma
+import DOZZ.GMC.SharpMoments.BallScaling
+import DOZZ.Brownian.Lateral.SharpPositive
+import DOZZ.Brownian.LateralUnitBlock.LateralInverse
 
 /-! Charge-uniform reference moments, independent of the chosen source witnesses. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Set Filter Topology
 open scoped ENNReal NNReal Distributions
@@ -45,7 +43,7 @@ theorem twosided_reference_cutoff_convex_comparison
         ∫ ω, Yc ω xy.1 r * Yc ω xy.2 r ∂P := by
     have hprod : ν.prod ν = (gmcReferenceMeasure.prod gmcReferenceMeasure).restrict (A ×ˢ A) := by
       have : IsFiniteMeasure gmcReferenceMeasure := ⟨gmcReferenceMeasure_univ_ne_top.lt_top⟩
-      dsimp only [ν]
+      dsimp [ν]
       rw [Measure.prod_restrict]
     rw [hprod]
     filter_upwards [ae_restrict_mem (hA.prod hA)] with xy hxy
@@ -66,7 +64,7 @@ theorem twosided_reference_cutoff_convex_comparison
       funext ω; ring
     rw [he, integral_const_mul]
     have heq : (∫ ω, Yc ω x r ^ 2 ∂P) = ∫ ω, Xc ω x r ^ 2 ∂P := by
-      simp only [pow_two]
+      simp [pow_two]
       rw [circleField_covariance_eq P Y hY Yc hYc,
         circleField_covariance_eq P X hX Xc hXc]
     rw [heq]
@@ -77,9 +75,9 @@ theorem twosided_reference_cutoff_convex_comparison
     ⟨1, fun _ => le_rfl⟩ g p hp hcov hdiag
   change (∫⁻ ω, (regularizedGMC P Xc γ r ω A) ^ p ∂P) ≤
     ∫⁻ ω, (regularizedGMC P Yc g r ω A) ^ p ∂P
-  simp only [regularizedGMC_apply_eq_fieldChaosMass_scaled P X hX Xc hXc γ g r hg.ne' A hA,
+  simp [regularizedGMC_apply_eq_fieldChaosMass_scaled P X hX Xc hXc γ g r hg.ne' A hA,
     regularizedGMC_apply_eq_fieldChaosMass P Y hY Yc hYc g r A hA]
-  exact hk
+  assumption
 
 /-- Fatou only needs the cutoff estimate after time one; no coarse-cutoff premise is added. -/
 theorem twosided_reference_moment_le_of_fine_cutoffs
@@ -110,7 +108,7 @@ theorem twosided_reference_moment_le_of_fine_cutoffs
     apply lintegral_congr_ae
     filter_upwards [regularizedGMC_finite_ae P X hX Xc hXc γ (n + 1 : ℕ)] with ω hω
     let _ := hω
-    dsimp only [f]
+    dsimp [f]
     rw [max_eq_left ENNReal.toReal_nonneg, ENNReal.ofReal_toReal (measure_ne_top _ _)]
   have hfatou := lintegral_ennreal_rpow_le_of_tendstoInMeasure P f g p C hconv hpow
     (Eventually.of_forall fun _ => ENNReal.toReal_nonneg) hfbound
@@ -141,7 +139,7 @@ theorem twosided_reference_convex_moments_uniform
       refine ⟨ENNReal.ofReal K, ENNReal.ofReal_lt_top, ?_⟩
       intro r hr
       change (∫⁻ ω, (regularizedGMC P Yc g r ω (Metric.ball 0 (1 / 8))) ^ p ∂P) ≤ _
-      simpa only [neg_neg] using hK r hr
+      simpa [neg_neg] using hK r hr
     · exact regularizedGMC_reference_moment_uniform_nonnegative P Y hY Yc hYc g p hg
         (le_trans zero_le_one hp) hcrit (by norm_num) le_rfl
   obtain ⟨C, hC, hbound⟩ := hfixed

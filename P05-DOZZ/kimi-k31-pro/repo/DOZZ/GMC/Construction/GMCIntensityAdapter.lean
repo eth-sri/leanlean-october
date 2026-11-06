@@ -1,16 +1,14 @@
 /-
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 -/
-module
 
-public import DOZZ.GMC.Assembly.UniformL1
-public import DOZZ.GMC.Assembly.CircleGMCExists
-public import DOZZ.GMC.Construction.GMCIntensityL1
-public import DOZZ.GMC.Construction.GMCUniqueAe
+import DOZZ.GMC.Assembly.UniformL1
+import DOZZ.GMC.Assembly.CircleGMCExists
+import DOZZ.GMC.Construction.GMCIntensityL1
+import DOZZ.GMC.Construction.GMCUniqueAe
 
 /-! Exact first-moment intensity from the uniform compact-test L¹ construction. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped Distributions ENNReal NNReal
@@ -57,7 +55,6 @@ theorem equatorGFF_GMC_bounded_mass_l1_of_uniform_L1
     dsimp [Mfam]
     rw [dite_eq_left hη]
     exact Classical.choose_spec (hExists η hη)
-  have hγI : γ ∈ I := by simp [I]
   have hγinterval : γ ∈ Set.Ioo (0 : ℝ) 2 := ⟨hγ, hγ2⟩
   have hUnique : ∀ᵐ ω ∂P, M ω = Mfam γ ω :=
     equatorGFF_GMC_unique_ae P X hX γ M (Mfam γ) hM (hMfam γ hγinterval)

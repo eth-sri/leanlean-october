@@ -2,14 +2,14 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.ShiftEquations.Reflection.StructureContinuity
-public import DOZZ.Statements.ShiftEquations.RbarCoefficient
-public import DOZZ.Statements.Brownian.ReflectionR
-public import DOZZ.Statements.Brownian.ReflectionPoleFree
-public import DOZZ.Statements.Brownian.IsSourceLateralProjection
-public import DOZZ.Statements.Brownian.IsReflectionData
+import DOZZ.ShiftEquations.Rbar.Representation
+import DOZZ.ShiftEquations.Reflection.StructureContinuity
+import DOZZ.Statements.ShiftEquations.RbarCoefficient
+import DOZZ.Statements.Brownian.ReflectionR
+import DOZZ.Statements.Brownian.ReflectionPoleFree
+import DOZZ.Statements.Brownian.IsSourceLateralProjection
+import DOZZ.Statements.Brownian.IsReflectionData
 import DOZZ.Brownian.Reflection.WitnessIndependence
 import Mathlib.Analysis.SpecialFunctions.Gamma.Deriv
 import Mathlib.Analysis.SpecialFunctions.Gamma.Beta
@@ -25,7 +25,6 @@ for every `γ`, the witness independence of `R̄` and the joint continuity of `C
 continuity of `R̄`, and of `R` off its Gamma poles.
 -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
@@ -52,7 +51,6 @@ theorem ofReal_ne_neg_nat_of_mem {r : ℝ} (h : (-1 < r ∧ r < 0) ∨ (0 < r �
     (1 < r ∧ r < 2)) : ∀ m : ℕ, (r : ℂ) ≠ -m := by
   intro m hm
   have hr : r = -m := by exact_mod_cast hm
-  have hm0 : (0 : ℝ) ≤ m := Nat.cast_nonneg m
   rcases h with ⟨h1, h2⟩ | ⟨h1, h2⟩ | ⟨h1, h2⟩
   · rw [hr] at h1 h2
     rcases Nat.lt_or_ge m 1 with hm1 | hm1
@@ -139,29 +137,7 @@ theorem continuousOn_rbarCoefficient :
 
 /-- The charges `(α, γ, α)` of the `R̄` representation lie in the extended domain. -/
 theorem extendedSeiberg3_reflection {γ α : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2) (hα1 : γ / 2 < α)
-    (hα2 : α < Q γ) : ExtendedSeiberg3 γ α γ α := by
-  have hQ : Q γ = 2 / γ + γ / 2 := rfl
-  have hγQ : γ < Q γ := by
-    rw [hQ]
-    have : γ / 2 < 2 / γ := by
-      rw [div_lt_div_iff₀ (by norm_num) hγ]
-      exact mul_self_lt_mul_self hγ.le hγ2
-    linarith
-  have hs : -sExp γ α γ α = (2 * Q γ - 2 * α - γ) / γ := by
-    unfold sExp
-    ring
-  refine ⟨hα2, hγQ, hα2, ?_⟩
-  rw [hs]
-  refine lt_min ?_ (lt_min ?_ (lt_min ?_ ?_))
-  · rw [div_lt_div_iff₀ hγ (by positivity), hQ]
-    field_simp
-    linarith only [mul_pos hγ (by linarith only [hα1, hγ] : (0 : ℝ) < α)]
-  · rw [div_lt_iff₀ hγ, show 2 / γ * (Q γ - α) * γ = 2 * (Q γ - α) by field_simp]
-    linarith
-  · rw [div_lt_iff₀ hγ, show 2 / γ * (Q γ - γ) * γ = 2 * (Q γ - γ) by field_simp]
-    linarith
-  · rw [div_lt_iff₀ hγ, show 2 / γ * (Q γ - α) * γ = 2 * (Q γ - α) by field_simp]
-    linarith
+    (hα2 : α < Q γ) : ExtendedSeiberg3 γ α γ α := DOZZ.Proofs.extendedSeiberg3_diag_gamma hγ hγ2 hα1 hα2
 
 /-- **The `R̄` representation gives `R̄ = Re(coefficient) · C̄(α, γ, α)`** for any reflection
 data. -/
@@ -194,7 +170,7 @@ theorem reflectionBarR_eq_coefficient_mul {Ω : Type*} [MeasurableSpace Ω] (P :
   exact reflectionBarR_eq_of_isReflectionData P P γ α B Z (B' α) Z' hData (hRD' α rfl)
 
 /-- **Joint continuity of `R̄`, and of `R` off its Gamma poles** (third conjunct of
-`DOZZ.reflection_endpoint_and_gamma_continuity`), from the `R̄` representation. -/
+`reflection_endpoint_and_gamma_continuity`), from the `R̄` representation. -/
 theorem continuousOn_reflection_of_representation {Ω : Type*} [MeasurableSpace Ω]
     (P : Measure Ω) (X : Ω → Distr) (M : ℝ → Ω → Measure ℂ) (hX : IsEquatorGFF P X)
     (hM : ∀ γ, 0 < γ → γ < 2 → IsGMCOf P X γ (M γ))
@@ -233,7 +209,7 @@ theorem continuousOn_reflection_of_representation {Ω : Type*} [MeasurableSpace 
         rintro _ ⟨q, hq, rfl⟩
         obtain ⟨hγ, hγ2, hα1, hα2⟩ := hKdom q hq
         refine ⟨hγ, hγ2, ?_⟩
-        simp only [hι, Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.cons_val_two]
+        simp [hι, Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.cons_val_two]
         exact extendedSeiberg3_reflection hγ hγ2 hα1 hα2)
     exact h.comp hιc.continuousOn (mapsTo_image ι K)
   have hR : ContinuousOn (fun q => reflectionBarR P q.1 q.2 (B q.1 q.2) (Z q.1)) K := by
@@ -262,7 +238,7 @@ theorem continuousOn_reflection_of_representation {Ω : Type*} [MeasurableSpace 
       exact div_pos (by linarith) hγ
     have hm' : reflectionExponent q.1 q.2 = m := by linarith
     rcases m with _ | n
-    · simp only [Nat.cast_zero] at hm'
+    · simp [] at hm'
       linarith
     · exact hpole q hq n (by rw [hm'])
   have hΓ : ContinuousOn (fun q : ℝ × ℝ => Real.Gamma (-reflectionExponent q.1 q.2)) K :=
@@ -274,4 +250,3 @@ theorem continuousOn_reflection_of_representation {Ω : Type*} [MeasurableSpace 
 
 end DOZZ.Proofs
 
-end

@@ -2,14 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.Defs.DozzFormula
-public import DOZZ.Statements.Defs.ShiftCoeffA
-public import DOZZ.Statements.Defs.DualMu
-public import DOZZ.Statements.Defs.IsUpsilon
-public import Mathlib.Analysis.Meromorphic.Basic
-public import Mathlib.Topology.DiscreteSubset
+import DOZZ.Statements.Defs.DozzFormula
+import DOZZ.Statements.Defs.ShiftCoeffA
+import DOZZ.Statements.Defs.DualMu
+import DOZZ.Statements.Defs.IsUpsilon
+import Mathlib.Analysis.Meromorphic.Basic
+import Mathlib.Topology.DiscreteSubset
 import DOZZ.DOZZAlgebra.GenericLocus
 import DOZZ.Brownian.Reflection.RtheorAnalytic
 import DOZZ.Upsilon.ZeroStructure
@@ -24,7 +23,6 @@ arguments. Both are meromorphic on the plane and, with Mathlib's totalized divis
 vanish only on a codiscrete exceptional set.
 -/
 
-public section
 
 open Filter Set Topology
 
@@ -143,4 +141,3 @@ theorem eventually_dozzFormula_ne_zero {γ μ : ℝ} {U : ℂ → ℂ} (hγ : 0 
 
 end DOZZ.Proofs
 
-end

@@ -2,13 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Dual.Kernel
-public import DOZZ.FourPoint.TaylorRadialBall
+import DOZZ.FourPoint.Dual.Kernel
+import DOZZ.FourPoint.TaylorRadialBall
 import DOZZ.GMC.SharpMoments.SeibergWeight
 import Mathlib.Tactic
 /-! # The deterministic deleted-disk estimate for the dual outer correction -/
-public section
 open MeasureTheory Set Filter Topology
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -30,7 +28,7 @@ theorem dual_zero_kernel_local_bound (γ α₁ α₂ α₃ : ℝ) (x : ℂ) (hx 
     rw [norm_one] at h
     linarith
   have hu := coulombWeight_rpow_le (by norm_num : (1 : ℝ) ≤ 2)
-    (by simpa only [one_div] using hdlo) hdhi (-(γ * α₂))
+    (by simpa [one_div] using hdlo) hdhi (-(γ * α₂))
   simp only [abs_neg] at hu
   have he : dualFusionKernel γ α₁ α₂ α₃ 0 x =
       ‖x‖ ^ (2 - γ * α₁) * ‖x - 1‖ ^ (-(γ * α₂)) := by
@@ -63,7 +61,7 @@ theorem dual_deleted_disk_spatial_bound (γ α₁ α₂ α₃ : ℝ) (hβ : γ *
         ENNReal.ofReal ((2 : ℝ) ^ |γ * α₂|) * ENNReal.ofReal (‖x‖ ^ (2 - γ * α₁)) := by
       apply lintegral_mono_ae
       filter_upwards [ae_restrict_mem measurableSet_ball] with x hx
-      have hn : ‖x‖ < 1 / 2 := (by simpa only [Metric.mem_ball, dist_zero_right] using hx : ‖x‖ < r).trans_le hr₁
+      have hn : ‖x‖ < 1 / 2 := (by simpa [Metric.mem_ball, dist_zero_right] using hx : ‖x‖ < r).trans_le hr₁
       have hplus : normPlus x = 1 := max_eq_left (by linarith : ‖x‖ ≤ 1)
       simp only [Pi.mul_apply, hplus, Real.one_rpow, ENNReal.ofReal_one, one_mul]
       rw [← ENNReal.ofReal_mul (by positivity)]
@@ -72,7 +70,7 @@ theorem dual_deleted_disk_spatial_bound (γ α₁ α₂ α₃ : ℝ) (hβ : γ *
         ∫⁻ x in Metric.ball (0 : ℂ) r, ENNReal.ofReal (‖x‖ ^ (2 - γ * α₁)) :=
       lintegral_const_mul' _ _ ENNReal.ofReal_ne_top
     _ ≤ ENNReal.ofReal ((2 : ℝ) ^ |γ * α₂|) * ENNReal.ofReal (C₀ * r ^ ((2 - γ * α₁) + 2)) :=
-      mul_le_mul' le_rfl (by simpa only [sub_zero] using hb 0 r hr)
+      mul_le_mul' le_rfl (by simpa [sub_zero] using hb 0 r hr)
     _ = _ := by
       rw [← ENNReal.ofReal_mul (by positivity)]
       congr 1

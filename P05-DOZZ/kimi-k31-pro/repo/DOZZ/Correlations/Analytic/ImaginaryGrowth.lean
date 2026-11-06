@@ -2,13 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.Analytic.ImaginaryPinBound
+import DOZZ.Correlations.Analytic.ImaginaryPinBound
 
 /-! Linear cutoff growth of the imaginary normalization. -/
 
-@[expose] public section
 open MeasureTheory
 namespace DOZZ.Proofs
 
@@ -30,7 +28,7 @@ theorem normalized_imaginary_growth
   obtain ⟨C, hC, hv⟩ := mixed_vertex_variance_growth P X Xc hX hc z
   let B : ℝ := 1 + ∑ i, (Real.log (normPlus (z i)) + 1)
   have hB : 0 < B := by
-    dsimp only [B]
+    dsimp [B]
     have := Finset.sum_nonneg (s := Finset.univ)
       (f := fun i : Fin N => Real.log (normPlus (z i)) + 1)
       (fun i _ => by linarith [CirclePotential.log_normPlus_nonneg (z i)])
@@ -45,7 +43,7 @@ theorem normalized_imaginary_growth
     have ha := abs_add_le (equatorCircleMean (z i) r - Real.log (normPlus (z i)))
       (Real.log (normPlus (z i)))
     rw [sub_add_cancel, abs_of_nonneg (CirclePotential.log_normPlus_nonneg (z i))] at ha
-    dsimp only [B]
+    dsimp [B]
     linarith
   refine ⟨C / 2 + B * (N + 1 : ℕ), by positivity, ?_⟩
   intro r hr β

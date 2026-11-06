@@ -3,9 +3,8 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Scott Armstrong, Amélie Loher
 -/
-module
 
-public import GaussianFields.LogCorrelated.ABK.MAlpha
+import GaussianFields.LogCorrelated.ABK.MAlpha
 
 /-!
 # GaussianFields.LogCorrelated/ABK/LogLimit
@@ -13,7 +12,6 @@ public import GaussianFields.LogCorrelated.ABK.MAlpha
 Port of the corresponding GaussianFields source module.
 -/
 
-public section
 
 open Filter MeasureTheory
 open scoped ENNReal Topology
@@ -21,7 +19,7 @@ open scoped ENNReal Topology
 namespace GaussianFields
 
 /-- The logarithmic covariance kernel appearing in Appendix A. -/
-@[expose]
+
 noncomputable def abkLogCovarianceKernel {d : Nat} (x y : Vec d) : ℝ :=
   -Real.log (euclideanNorm (x - y))
 
@@ -40,4 +38,3 @@ theorem tendsto_euclideanNorm_rpow_neg_sub_one_div_nhdsGT_zero {d : Nat}
 
 end GaussianFields
 
-end

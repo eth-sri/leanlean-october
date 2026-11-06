@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.SeparatedTail.MarkovData
-public import DOZZ.Correlations.SeparatedTail.ActualCutoffDomination
+import DOZZ.Correlations.SeparatedTail.MarkovData
+import DOZZ.Correlations.SeparatedTail.ActualCutoffDomination
 
 /-! Assemble the actual exterior-pinned cutoff domination, Kahane and Hölder estimates. -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory Filter Metric Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -76,8 +74,8 @@ theorem separatedTail_cutoff_mixed_bound_of_markov_data
     · intro x hx
       exact data.split i x r (by rw [hscale]; linarith [mem_ball_iff_norm.mp hx])
     · intro x y hx hy
-      exact data.covariance_Dc i x y r r (by simpa only [hscale] using hx)
-        (by simpa only [hscale] using hy)
+      exact data.covariance_Dc i x y r r (by simpa [hscale] using hx)
+        (by simpa [hscale] using hy)
   let Eall : Ω → ℝ≥0∞ := fun ω => d^(a 0+a 1)* (E 0 (γ*a 0) ω*E 1 (γ*a 1) ω)
   have hEall : AEMeasurable Eall P := aemeasurable_const.mul
     ((hEm 0 _).mul (hEm 1 _))
@@ -86,7 +84,7 @@ theorem separatedTail_cutoff_mixed_bound_of_markov_data
     filter_upwards [hdom 0,hdom 1] with ω h0 h1
     have h := mul_le_mul' (ENNReal.rpow_le_rpow h0 (ha 0).le)
       (ENNReal.rpow_le_rpow h1 (ha 1).le)
-    simp only [ENNReal.mul_rpow_of_nonneg _ _ (ha 0).le,
+    simp [ENNReal.mul_rpow_of_nonneg _ _ (ha 0).le,
       ENNReal.mul_rpow_of_nonneg _ _ (ha 1).le] at h
     have he0 := separatedTail_harmonicEnvelope_rpow (c 0) (data.H 0) L γ (a 0) (ha 0) ω
     have he1 := separatedTail_harmonicEnvelope_rpow (c 1) (data.H 1) L γ (a 1) (ha 1) ω
@@ -133,7 +131,7 @@ theorem separatedTail_cutoff_mixed_bound_of_markov_data
       (by
         intro x y hx hy
         exact data.covariance_Dc i x y r r
-          (by simpa only [hscale] using hx) (by simpa only [hscale] using hy))
+          (by simpa [hscale] using hx) (by simpa [hscale] using hy))
     refine h.trans (mul_le_mul' ?_ (hB i))
     apply ENNReal.ofReal_le_ofReal
     apply Real.exp_le_exp.mpr

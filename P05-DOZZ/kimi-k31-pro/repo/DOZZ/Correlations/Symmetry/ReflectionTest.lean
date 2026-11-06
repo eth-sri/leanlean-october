@@ -2,11 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.Correlations.Symmetry.ReflectionKernel
-public import DOZZ.Statements.Defs.Distr
-public import Mathlib.Analysis.Distribution.TestFunction
-@[expose] public section
+import DOZZ.Correlations.Symmetry.ReflectionKernel
+import DOZZ.Statements.Defs.Distr
+import Mathlib.Analysis.Distribution.TestFunction
 open Set TopologicalSpace
 open scoped Distributions
 namespace DOZZ.Proofs
@@ -31,12 +29,12 @@ theorem norm_iteratedFDeriv_symmetryReflection (f : ℂ → ℝ) (i : ℕ) (x : 
   have hn := (LinearIsometryEquiv.neg ℝ : ℂ ≃ₗᵢ[ℝ] ℂ).norm_iteratedFDeriv_comp_right (fun y => f (1 + y)) x i
   have ht : iteratedFDeriv ℝ i (fun y => f (1 + y)) (-x) =
       iteratedFDeriv ℝ i f (1 - x) := by
-    simp only [← iteratedFDerivWithin_univ]
-    simpa only [vadd_eq_add, image_add_left, add_univ, vadd_set_univ, sub_eq_add_neg] using
+    simp [← iteratedFDerivWithin_univ]
+    simpa [vadd_eq_add, image_add_left, add_univ, vadd_set_univ, sub_eq_add_neg] using
       iteratedFDerivWithin_comp_add_left (𝕜 := ℝ) (f := f) (s := univ) i (1 : ℂ) (-x)
-  simp only [LinearIsometryEquiv.coe_neg] at hn
+  simp [LinearIsometryEquiv.coe_neg] at hn
   rw [ht] at hn
-  simpa only [Function.comp_def, LinearIsometryEquiv.coe_neg, sub_eq_add_neg] using hn
+  simpa [Function.comp_def, LinearIsometryEquiv.coe_neg, sub_eq_add_neg] using hn
 
 /-- Pullback on a fixed compact support, with its derivative seminorm bounds. -/
 noncomputable def symmetryReflectionSupportedCLM (K : Compacts ℂ) :
@@ -53,7 +51,7 @@ noncomputable def symmetryReflectionSupportedCLM (K : Compacts ℂ) :
   · intro i _hi
     refine ⟨{i}, 1, zero_le_one, fun f x _hx => ?_⟩
     rw [norm_iteratedFDeriv_symmetryReflection]
-    simpa only [Finset.sup_singleton, one_mul] using
+    simpa [Finset.sup_singleton, one_mul] using
       ContDiffMapSupportedIn.norm_iteratedFDeriv_apply_le_seminorm_top (𝕜 := ℝ)
         (f := f) (x := 1 - x)
 

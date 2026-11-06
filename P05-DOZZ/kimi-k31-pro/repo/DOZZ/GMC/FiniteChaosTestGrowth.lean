@@ -2,13 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.FiniteChaosTestIntegrationByParts
+import DOZZ.GMC.FiniteChaosTestIntegrationByParts
 
 /-! Exponential growth envelopes for smooth finite-chaos scores. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory
 open scoped Distributions Topology
@@ -140,9 +138,9 @@ theorem finiteChaosVectorTestScore_exp_growth_bounds
                   mul_le_mul_of_nonneg_left (hExp z) (mul_nonneg hB hB₁)
         by_cases hij : i = j
         · rw [ite_eq_left hij]
-          exact hdiag'
+          assumption
         · rw [ite_eq_right hij]
-          simp only [norm_zero]
+          simp [norm_zero]
           exact mul_nonneg (mul_nonneg hB hB₁) (Real.exp_nonneg _)
       have hprod :
           ‖finiteChaosVectorWeight a v γ z i *

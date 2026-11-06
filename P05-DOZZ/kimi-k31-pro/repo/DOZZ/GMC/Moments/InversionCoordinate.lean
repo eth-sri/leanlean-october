@@ -2,15 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.AdmissibleGMCCoordinateChange
-public import DOZZ.GMC.Moments.InversionAdmissible
-public import DOZZ.GMC.Moments.InversionReference
+import DOZZ.GMC.AdmissibleGMCCoordinateChange
+import DOZZ.GMC.Moments.InversionAdmissible
+import DOZZ.GMC.Moments.InversionReference
 
 /-! Admissible GMC transport in the punctured inversion chart. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory
 open scoped Distributions ENNReal NNReal
@@ -46,8 +44,9 @@ theorem logRegularizationReference_inversionChart_map :
       (Set.subset_univ _)]
     simp [logRegularizationReference, gmcReferenceMeasure]
   rw [hRef]
-  simpa [complexInvOpenPartialHomeomorph] using
-    gmcReferenceMeasure_restrict_inversionChart_map.symm
+  change gmcReferenceMeasure.restrict inversionChart =
+    (gmcReferenceMeasure.restrict inversionChart).map (fun x : ℂ => x⁻¹)
+  exact gmcReferenceMeasure_restrict_inversionChart_map.symm
 
 /-- The finite-cutoff logarithmic chaos test mass transports exactly under inversion, with the
 target test pulled back by the inverse chart map. -/
@@ -73,9 +72,10 @@ theorem regularizedLogChaosTestMass_inversion_coordinate_change
   let Yinv : Ω → ℝ → ℂ → ℝ := fun ω ε x => Y ω ε (complexInvOpenPartialHomeomorph x)
   have hYinv : IsAdmissibleLogRegularization P inversionChart
       (fun x => normPlus x ^ (-4 : ℝ)) 1 Yinv := by
-    simpa [Yinv, complexInvOpenPartialHomeomorph] using
-      isAdmissibleLogRegularization_complexInv P
-        (fun x => normPlus x ^ (-4 : ℝ)) 1 Y hY
+    change IsAdmissibleLogRegularization P inversionChart
+      (fun x => normPlus x ^ (-4 : ℝ)) 1 (fun ω ε x => Y ω ε x⁻¹)
+    exact isAdmissibleLogRegularization_complexInv P
+      (fun x => normPlus x ^ (-4 : ℝ)) 1 Y hY
   obtain ⟨g, hgCompact, hgSupport, hgOn, hgOff, hmass⟩ :=
     regularizedLogChaosTestMass_coordinate_change P inversionChart inversionChart
       (fun x => normPlus x ^ (-4 : ℝ)) (fun x => normPlus x ^ (-4 : ℝ)) 1 1
@@ -87,9 +87,9 @@ theorem regularizedLogChaosTestMass_inversion_coordinate_change
       γ f hfCompact hfSupport
   refine ⟨g, hgCompact, hgSupport, ?_, hgOff, ?_⟩
   · intro x hx
-    simpa [complexInvOpenPartialHomeomorph] using hgOn x hx
+    exact hgOn x hx
   · intro r ω
-    simpa [Yinv, complexInvOpenPartialHomeomorph] using (hmass r ω).symm
+    exact (hmass r ω).symm
 
 
 end DOZZ.Proofs

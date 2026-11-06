@@ -2,15 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.FourPoint.GammaHalfOuterMoment
+import DOZZ.Statements.FourPoint.GammaHalfOuterMoment
 import DOZZ.FourPoint.ReflectedOuter.GammaHalfReflectedOuterLittleO
 
 /-! The statement `DOZZ.gammaHalf_reflected_outer_littleO`,
 proved by `DOZZ.Proofs.gammaHalf_reflected_outer_littleO`. -/
 
-public section
 
 open MeasureTheory ProbabilityTheory Filter Topology TopologicalSpace Set
 open scoped ENNReal NNReal Topology
@@ -34,6 +32,6 @@ theorem gammaHalf_reflected_outer_littleO {Ω : Type*} [MeasurableSpace Ω]
         ((gammaHalfOuterMoment P M γ α₁ α₂ α₃
             ((α₁ + α₂ + α₃ - γ / 2 - 2 * Q γ) / γ) z ξ -
           gammaHalfMoment P M γ α₁ α₂ α₃
-            ((α₁ + α₂ + α₃ - γ / 2 - 2 * Q γ) / γ) 0 : ℝ) : ℂ)) := by exact DOZZ.Proofs.gammaHalf_reflected_outer_littleO P X M γ α₁ α₂ α₃ ξ hγ hγ₂ hξ hξ₂ hα₂ hα₃ hs hα₁ hreflect hslack hfreeze hX hM
+            ((α₁ + α₂ + α₃ - γ / 2 - 2 * Q γ) / γ) 0 : ℝ) : ℂ)) := Proofs.gammaHalf_reflected_outer_littleO P X M γ α₁ α₂ α₃ ξ hγ hγ₂ hξ hξ₂ hα₂ hα₃ hs hα₁ hreflect hslack hfreeze hX hM
 
 end DOZZ

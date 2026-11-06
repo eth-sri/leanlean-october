@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.SharpMoments.CutoffUIBound
-public import DOZZ.GMC.SharpMoments.InverseGamma
+import DOZZ.GMC.SharpMoments.CutoffUIBound
+import DOZZ.GMC.SharpMoments.InverseGamma
 
 /-! # Uniform higher moments of regularized Coulomb masses
 
@@ -15,7 +14,6 @@ zero and controlled by the uniform positive bound; nonpositive orders use one fi
 on which the regularized weight is bounded below, together with the γ-uniform inverse moments of
 cutoff disk masses. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology Metric
 open scoped ENNReal NNReal
@@ -118,7 +116,7 @@ theorem regularizedCoulombMass_higher_moment_uniform
     (hf c hc).continuousWithinAt
   have hsfc : ContinuousOn sf S := hconton _ fun c hc => by
     have h := hne c hc
-    simp only [hsf, Q]
+    simp [hsf, Q]
     fun_prop (disch := first | exact h | exact pow_ne_zero _ h)
   -- uniform sizes
   obtain ⟨σ0, hσ0⟩ := hS.exists_bound_of_continuousOn hsfc
@@ -132,7 +130,6 @@ theorem regularizedCoulombMass_higher_moment_uniform
   set E : ℝ := max E0 0 with hEdef
   have hσ : 0 ≤ σ := le_max_right _ _
   have hZs : 0 ≤ Zs := le_max_right _ _
-  have hE : 0 ≤ E := le_max_right _ _
   have hsσ : ∀ c ∈ S, |sf c| ≤ σ := fun c hc =>
     (by simpa [Real.norm_eq_abs] using hσ0 c hc : |sf c| ≤ σ0).trans (le_max_left _ _)
   have hZc : ∀ c ∈ S, ∑ j, ‖c.2.1 j‖ ≤ Zs := fun c hc => by
@@ -155,17 +152,17 @@ theorem regularizedCoulombMass_higher_moment_uniform
   have e1 : ∀ᶠ ε in 𝓝[>] (0 : ℝ), ∀ c ∈ S, ε ≤ 4 / c.1 ^ 2 - sf c :=
     eventually_le_of_isCompact_of_pos hS (hconton _ fun c hc => by
       have h := hne c hc
-      simp only [hsf, Q]
+      simp [hsf, Q]
       fun_prop (disch := first | exact h | exact pow_ne_zero _ h)) fun c hc => sub_pos.mpr (hadm c hc).2.2.2.2.2.1
   have e2 : ∀ k, ∀ᶠ ε in 𝓝[>] (0 : ℝ), ∀ c ∈ S, ε ≤ 2 / c.1 * (Q c.1 - c.2.2.1 k) - sf c :=
     fun k => eventually_le_of_isCompact_of_pos hS (hconton _ fun c hc => by
       have h := hne c hc
-      simp only [hsf, Q]
+      simp [hsf, Q]
       fun_prop (disch := first | exact h | exact pow_ne_zero _ h)) fun c hc => sub_pos.mpr ((hadm c hc).2.2.2.2.2.2.1 k)
   have e3 : ∀ᶠ ε in 𝓝[>] (0 : ℝ), ∀ c ∈ S, ε ≤ 2 / c.1 * (Q c.1 - c.2.2.2) - sf c :=
     eventually_le_of_isCompact_of_pos hS (hconton _ fun c hc => by
       have h := hne c hc
-      simp only [hsf, Q]
+      simp [hsf, Q]
       fun_prop (disch := first | exact h | exact pow_ne_zero _ h)) fun c hc => sub_pos.mpr (hadm c hc).2.2.2.2.2.2.2
   have e4 : ∀ᶠ ε in 𝓝[>] (0 : ℝ), ∀ c ∈ S, ε ≤ 4 / c.1 ^ 2 :=
     eventually_le_of_isCompact_of_pos hS (hconton _ fun c hc => by
@@ -176,13 +173,13 @@ theorem regularizedCoulombMass_higher_moment_uniform
   have e5 : ∀ k, ∀ᶠ ε in 𝓝[>] (0 : ℝ), ∀ c ∈ S, ε ≤ 2 / c.1 * (Q c.1 - c.2.2.1 k) :=
     fun k => eventually_le_of_isCompact_of_pos hS (hconton _ fun c hc => by
       have h := hne c hc
-      simp only [Q]
+      simp [Q]
       fun_prop (disch := first | exact h | exact pow_ne_zero _ h)) fun c hc =>
         mul_pos (div_pos two_pos (hadm c hc).1) (sub_pos.mpr ((hadm c hc).2.2.2.1 k))
   have e6 : ∀ᶠ ε in 𝓝[>] (0 : ℝ), ∀ c ∈ S, ε ≤ 2 / c.1 * (Q c.1 - c.2.2.2) :=
     eventually_le_of_isCompact_of_pos hS (hconton _ fun c hc => by
       have h := hne c hc
-      simp only [Q]
+      simp [Q]
       fun_prop (disch := first | exact h | exact pow_ne_zero _ h)) fun c hc =>
         mul_pos (div_pos two_pos (hadm c hc).1) (sub_pos.mpr (hadm c hc).2.2.2.2.1)
   have e7 : ∀ j k : Fin N, ∀ᶠ ε in 𝓝[>] (0 : ℝ),
@@ -219,15 +216,10 @@ theorem regularizedCoulombMass_higher_moment_uniform
     intro c hc th hth hths
     rcases le_total ((1 + η) * sf c) tstar with h | h
     · rw [hτ]
-      simp only [max_eq_right h]
+      simp [max_eq_right h]
       linarith
     · rw [hτ]
-      simp only [max_eq_left h]
-      have hs0 : 0 < sf c := by
-        by_contra hneg
-        push Not at hneg
-        have : (1 + η) * sf c ≤ 0 := mul_nonpos_of_nonneg_of_nonpos (by linarith) hneg
-        linarith
+      simp [max_eq_left h]
       have hηs : η * sf c ≤ ε / 2 := le_trans (mul_le_mul_of_nonneg_left
         ((le_abs_self _).trans (hsσ c hc)) hη0.le) hηg
       linarith only [hths, hηs, hε0]

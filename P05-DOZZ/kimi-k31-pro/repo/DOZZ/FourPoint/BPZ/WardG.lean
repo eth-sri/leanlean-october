@@ -2,11 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.BPZ.FourPointWardExt
-public import DOZZ.FourPoint.BPZ.GCutoff
-public import DOZZ.FourPoint.BPZ.WirtingerG
+import DOZZ.FourPoint.BPZ.FourPointWardExt
+import DOZZ.FourPoint.BPZ.GCutoff
+import DOZZ.FourPoint.BPZ.WirtingerG
 
 /-! # The four-point Ward identity for the rational function `g(x) = x (x − 1)/(z − x)`
 
@@ -21,7 +20,7 @@ theorem `bpz_fourPoint_ward_extend` to the test function `φ = ℓ ∘ g`, which
 
 The truncations satisfy the same two bounds with a constant independent of `n`. -/
 
-@[expose] public section
+section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped ENNReal NNReal
@@ -127,7 +126,6 @@ theorem bpzWardG_abs_fderiv_le {z x : ℂ} (hx : x ∈ bpzRegular z) (ℓ : ℂ 
     have h2 := (fderiv ℝ F x).le_opNorm v
     rw [Real.norm_eq_abs] at h1
     exact h1.trans (mul_le_mul_of_nonneg_left h2 (norm_nonneg _))
-  have hLt : ‖L‖ ≤ t * S := hLn
   calc |ℓ (F x) * L v + t * ℓ (fderiv ℝ F x v)|
       ≤ |ℓ (F x) * L v| + |t * ℓ (fderiv ℝ F x v)| := abs_add_le _ _
     _ = |ℓ (F x)| * |L v| + t * |ℓ (fderiv ℝ F x v)| := by
@@ -202,7 +200,7 @@ theorem bpzWardG_abs_sub_mul_kern_le (ℓ : ℂ →L[ℝ] ℝ) (v : ℂ) {a b x 
   have hnn : 0 ≤ ‖ℓ‖ * ‖v‖ * B := by positivity
   rcases eq_or_ne x y with rfl | hxy
   · rw [sub_self, bpzKern_zero, mul_zero, abs_zero]
-    exact hnn
+    assumption
   · have hd : 0 < ‖x - y‖ := norm_pos_iff.2 (sub_ne_zero.2 hxy)
     have h1 : |ℓ a - ℓ b| ≤ ‖ℓ‖ * (B * ‖x - y‖) := by
       rw [← map_sub]
@@ -223,8 +221,6 @@ theorem bpzWardG_kern_bound_trunc {z : ℂ} (hz0 : z ≠ 0) (hz1 : z ≠ 1) (ℓ
         A * (1 + ‖x - z‖ ^ (-2 : ℝ) + ‖y - z‖ ^ (-2 : ℝ)) := by
   obtain ⟨A, hA0, hA⟩ := norm_bpzG_mul_cutoff_sub_le hz0 hz1
   refine ⟨‖ℓ‖ * ‖v‖ * A, by positivity, fun n x hx y hy => ?_⟩
-  have hs : 0 ≤ ‖x - z‖ ^ (-2 : ℝ) := bpz_rpow_neg_two_nonneg (norm_nonneg _)
-  have ht : 0 ≤ ‖y - z‖ ^ (-2 : ℝ) := bpz_rpow_neg_two_nonneg (norm_nonneg _)
   have h := bpzWardG_abs_sub_mul_kern_le ℓ v (x := x) (y := y)
     (B := A * (1 + ‖x - z‖ ^ (-2 : ℝ) + ‖y - z‖ ^ (-2 : ℝ)))
     (by positivity) (hA n x y hx.2.2 hy.2.2)

@@ -2,11 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.SharpMoments.LaplaceScaling
-public import DOZZ.GMC.SharpMoments.GaussianSplit
-public import DOZZ.GMC.GaussianTailBound
+import DOZZ.GMC.SharpMoments.LaplaceScaling
+import DOZZ.GMC.SharpMoments.GaussianSplit
+import DOZZ.GMC.GaussianTailBound
 
 /-! # The two-branch small-deviation recursion at finite cutoff
 
@@ -19,7 +18,6 @@ transform at the cutoff `r - log 4`, and splitting off Gaussian lower tails give
 recursion
 `L_r(x) ≤ A e^{-c x²} + (1 + ε) L_{r - log 4}(3x/4 + a)²`. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped ENNReal NNReal
@@ -76,8 +74,7 @@ theorem cutoffLaplace_invSubdisk_scaling
     have h1 : Real.exp (-(r - Real.log 4)) ≤ Real.exp (-1) := Real.exp_le_exp.mpr (by linarith)
     have h2 : Real.exp (-1) ≤ 1 / 2 := by
       have := Real.add_one_le_exp (1 : ℝ)
-      rw [Real.exp_neg]
-      rw [inv_le_comm₀ (Real.exp_pos 1) (by norm_num)]
+      rw [Real.exp_neg, inv_le_comm₀ (Real.exp_pos 1) (by norm_num)]
       linarith
     linarith
   have hexp2 : Real.exp (-r) ≤ 1 / 2 := by
@@ -104,9 +101,7 @@ theorem cutoffLaplace_invSubdisk_scaling
     (R := 1 / 8) (r := r - Real.log 4) (by norm_num) (by norm_num) (by norm_num) (by norm_num)
     (by rw [ha]; norm_num) hsource htarget y
   have hcut : r - Real.log 4 - Real.log (1 / 4) = r := by rw [hlog]; ring
-  rw [hcut] at h
-  exact h
-
+  rwa [hcut] at h
 /-- The quadratic recursion step: the two-branch inequality at cutoff `r` bounds the reference
 Laplace transform by a Gaussian error and the square of the transform at cutoff `r - log 4`. -/
 theorem cutoffLaplace_recursion_step

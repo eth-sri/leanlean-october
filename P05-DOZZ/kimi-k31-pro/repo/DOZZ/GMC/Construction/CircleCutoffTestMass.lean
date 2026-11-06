@@ -2,16 +2,14 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.Defs.RegularizedGMC
-public import DOZZ.Statements.GMC.RegularizedLogChaosTestMass
-public import DOZZ.GMC.CircleAverage
-public import Mathlib.MeasureTheory.Integral.Bochner.ContinuousLinearMap
+import DOZZ.Statements.Defs.RegularizedGMC
+import DOZZ.Statements.GMC.RegularizedLogChaosTestMass
+import DOZZ.GMC.CircleAverage
+import Mathlib.MeasureTheory.Integral.Bochner.ContinuousLinearMap
 
 /-! Identify the admissible cutoff integral with the circle GMC measure integral. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory
 open scoped Distributions ENNReal NNReal
@@ -19,7 +17,7 @@ open scoped Distributions ENNReal NNReal
 namespace DOZZ.Proofs
 
 /-- Under a circle witness, the admissible logarithmic cutoff and the circle GMC
-`DOZZ.regularizedGMC` have the same test integral at matching logarithmic scale. -/
+`regularizedGMC` have the same test integral at matching logarithmic scale. -/
 theorem circleCutoff_testMass_eq_regularizedGMC
     {Ω : Type*} [MeasurableSpace Ω]
     (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
@@ -79,8 +77,7 @@ theorem circleCutoff_testMass_eq_regularizedGMC
         (fun ω ε x => Xc ω x (Real.log (1 / ε))) γ r ω f =
         ∫ x, (e₀ x).toReal * (f x * Real.exp
           (γ * Xc ω x r - γ ^ 2 / 2 * V x)) ∂volume := by
-    rw [regularizedLogChaosTestMass, logRegularizationReference, Measure.restrict_univ]
-    rw [integral_withDensity_eq_integral_toReal_smul he₀ he₀top]
+    rw [regularizedLogChaosTestMass, logRegularizationReference, Measure.restrict_univ, integral_withDensity_eq_integral_toReal_smul he₀ he₀top]
     apply integral_congr_ae
     filter_upwards [] with x
     rw [hlog]
@@ -88,11 +85,10 @@ theorem circleCutoff_testMass_eq_regularizedGMC
   have hright :
       (∫ x, f x ∂regularizedGMC P Xc γ r ω) =
         ∫ x, (e₁ x).toReal * f x ∂volume := by
-    rw [regularizedGMC]
-    rw [integral_withDensity_eq_integral_toReal_smul he₁ he₁top]
+    rw [regularizedGMC, integral_withDensity_eq_integral_toReal_smul he₁ he₁top]
     apply integral_congr_ae
     filter_upwards [] with x
-    simp only [e₁, d₁, ENNReal.toReal_ofReal (hd₁nonneg x), smul_eq_mul]
+    simp [e₁, d₁, smul_eq_mul]
   calc
     _ = ∫ x, (e₀ x).toReal * (f x * Real.exp
           (γ * Xc ω x r - γ ^ 2 / 2 * V x)) ∂volume := hleft

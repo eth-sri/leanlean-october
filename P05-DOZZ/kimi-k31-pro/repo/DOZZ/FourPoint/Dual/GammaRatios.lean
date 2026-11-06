@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.Dual.Multipliers
+import DOZZ.FourPoint.Dual.Multipliers
 import Mathlib.Tactic
 
 /-! # Gamma recurrence in the first dual coefficient extraction
@@ -13,7 +12,6 @@ The first ratio is simplified independently of the second. All divisions are jus
 strict parameter intervals.
 -/
 
-public section
 
 namespace DOZZ.Proofs
 
@@ -53,7 +51,7 @@ theorem dual_connection_second_multiplier_base (c δ : ℝ)
       (by push_cast; linarith only [hc₁]))
   have hrecC : Real.Gamma c = (c - 1) * Real.Gamma (c - 1) := by
     have hr := Real.Gamma_add_one (by linarith only [hc₁] : c - 1 ≠ 0)
-    simpa only [sub_add_cancel] using hr
+    simpa [sub_add_cancel] using hr
   have hrecδ : Real.Gamma (1 - -δ) = δ * Real.Gamma δ := by
     rw [show 1 - -δ = δ + 1 by ring]
     exact Real.Gamma_add_one hδ.ne'
@@ -61,8 +59,7 @@ theorem dual_connection_second_multiplier_base (c δ : ℝ)
     (real_ne_neg_nat_of_frac (k := -1) (by push_cast; linarith only [hδ₁])
       (by push_cast; linarith only [hδ]))
   unfold lR
-  rw [hrecδ, show 1 - (2 - c) = c - 1 by ring]
-  rw [hrecC]
+  rw [hrecδ, show 1 - (2 - c) = c - 1 by ring, hrecC]
   have hcm : c - 1 ≠ 0 := by linarith only [hc₁]
   field_simp [hGc, hGδ, hGcm, hδ.ne', hcm, hGnegδ]
 
@@ -81,7 +78,7 @@ theorem dual_connection_second_multiplier (A B c δ : ℝ)
   rw [show 1 - c + B = 1 - (c - B) by ring,
     show 1 - c + A = 1 - (c - A) by ring,
     dual_lR_one_sub_eq_inv, dual_lR_one_sub_eq_inv]
-  simp only [div_eq_mul_inv, mul_inv, inv_inv]
+  simp [div_eq_mul_inv, inv_inv]
   ring
 
 end DOZZ.Proofs

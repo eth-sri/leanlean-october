@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.BPZ.WardStarB
+import DOZZ.FourPoint.BPZ.WardStarB
 
 /-! # The cutoff Ward identity
 
@@ -15,7 +14,6 @@ integration by parts closes the identity
 
   `E[Î^{-q} ∫ ∂_v(φ k̃) |x|₊⁴ e^{γ² q h_r} dM_r] = q E[Î^{-q-1} ∫ φ k₁ Ŷ_v dM_r]`. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped ENNReal NNReal

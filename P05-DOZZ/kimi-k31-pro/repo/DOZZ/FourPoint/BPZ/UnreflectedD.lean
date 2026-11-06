@@ -2,12 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.BPZ.UnreflectedC
-public import DOZZ.FourPoint.BPZ.StructureConstantGammaCont
-public import DOZZ.GMC.Assembly.AdmissibleGMC
-public import DOZZ.GMC.Construction.GMCUniqueAe
+import DOZZ.FourPoint.BPZ.UnreflectedC
+import DOZZ.FourPoint.BPZ.StructureConstantGammaCont
+import DOZZ.GMC.Assembly.AdmissibleGMC
+import DOZZ.GMC.Construction.GMCUniqueAe
 
 /-! # The unreflected `γ/2` formula on the whole range `0 < γ < 2`
 
@@ -21,7 +20,6 @@ The diagonal formula is the statement `DOZZ.degenerateFourPoint_diagonal_classif
 `χ = γ/2`); it enters here as a hypothesis, for all GMC measures, all `γ ∈ (0, 2)` and all first
 charges of the unreflected domain. -/
 
-@[expose] public section
 
 open MeasureTheory Filter Topology Set
 
@@ -100,7 +98,6 @@ theorem bpz_continuousAt_shift_coefficients {γ₀ α₁ α₂ α₃ : ℝ} (hγ
     fun_prop
   have hC : AnalyticAt ℝ (fun γ => gaussParameterC γ (γ / 2) α₁) γ₀ := by
     unfold gaussParameterC
-    have h := hQa
     fun_prop
   refine ⟨(bpz_analyticAt_gaussCoefficientRatio hA hB hC h1 h2 h3 h4 h5 h6 h7 h8 h9
     h10).continuousAt, ?_⟩
@@ -200,9 +197,7 @@ theorem bpz_shift_all {Ω : Type*} [MeasurableSpace Ω] {H : ℂ → ℂ → ℂ
     ((hLc.tendsto.mono_left nhdsWithin_le_nhds).congr' hev)
     (hRc.tendsto.mono_left nhdsWithin_le_nhds)
   simp only [hL, hR] at hLR
-  rw [bpz_structureConstant_congr P hMγ, bpz_structureConstant_congr P hMγ] at hLR
-  exact hLR
-
+  rwa [bpz_structureConstant_congr P hMγ, bpz_structureConstant_congr P hMγ] at hLR
 /-- **The unreflected `γ/2` formula, conditional on the diagonal formula.** -/
 theorem bpz_gammaHalf_full_unreflected_formula_of_diag {Ω : Type*} [MeasurableSpace Ω]
     {H : ℂ → ℂ → ℂ → ℂ → ℂ}

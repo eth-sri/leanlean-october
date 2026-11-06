@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.BPZ.SoftMassDeriv
-public import DOZZ.FourPoint.BPZ.Rooting
+import DOZZ.FourPoint.BPZ.SoftMassDeriv
+import DOZZ.FourPoint.BPZ.Rooting
 import Mathlib.Analysis.SpecialFunctions.Integrals.Basic
 import Mathlib.Analysis.SpecialFunctions.Integrability.Basic
 import Mathlib.Analysis.SpecialFunctions.PolarCoord
@@ -26,7 +25,6 @@ softening `ε` and in the position `z` of the degenerate root.
   Lebesgue integral `∫ f dx`. It combines the rooted bound, the uniform negative moments of the
   mass, and `σ ≤ Leb` for the reference measure `σ`. -/
 
-@[expose] public section
 
 open MeasureTheory Set
 open scoped ENNReal NNReal
@@ -53,9 +51,7 @@ theorem bpzSoft_rpow_pred_le_norm_rpow {a ε : ℝ} (ha1 : a ≤ 1) {x z : ℂ} 
     congr 1
     push_cast
     ring
-  rw [← h2]
-  exact h1
-
+  rwa [← h2]
 /-- The first derivative of the softened factor is bounded, uniformly in the softening, by
 `2a ‖x − z‖^{2a−1}`. -/
 theorem norm_bpzSoftDeriv_le_uniform {a ε : ℝ} (ha : 0 < a) (ha1 : a ≤ 1) {x z : ℂ}
@@ -104,7 +100,6 @@ theorem norm_bpzSoftDeriv_le_far {a ε r : ℝ} (ha : 0 < a) (hr : 0 < r) {x z :
   have hN0 : 0 < Complex.normSq (x - z) + ε ^ 2 := lt_of_lt_of_le (by positivity) hNu
   refine (norm_bpzSoftDeriv_le a ε x z).trans ?_
   rw [abs_of_pos ha, Real.rpow_sub_one hN0.ne']
-  have hNa : 0 ≤ (Complex.normSq (x - z) + ε ^ 2) ^ a := Real.rpow_nonneg hN0.le a
   have key : ‖x - z‖ / (Complex.normSq (x - z) + ε ^ 2) ≤ 1 / r := by
     rw [div_le_div_iff₀ hN0 hr]
     nlinarith [mul_le_mul_of_nonneg_left hxz hu0.le]
@@ -128,14 +123,8 @@ theorem norm_bpzSoftDeriv2_le_far {a ε r : ℝ} (ha : 0 < a) (ha1 : a ≤ 1) (h
     rw [abs_of_nonpos (mul_nonpos_of_nonneg_of_nonpos ha.le (by linarith))]
     ring
   rw [habs, abs_of_pos ha, Real.rpow_sub_one hN0.ne']
-  have hc : 0 ≤ 4 * (a * (1 - a)) + 2 * a := by
-    have : 0 ≤ a * (1 - a) := mul_nonneg ha.le (by linarith)
-    positivity
-  have hNa : 0 ≤ (Complex.normSq (x - z) + ε ^ 2) ^ a := Real.rpow_nonneg hN0.le a
   have hr2 : r ^ 2 ≤ Complex.normSq (x - z) + ε ^ 2 :=
     le_trans (pow_le_pow_left₀ hr.le hxz 2) hNu
-  have key : 1 / (Complex.normSq (x - z) + ε ^ 2) ≤ 1 / r ^ 2 :=
-    one_div_le_one_div_of_le (by positivity) hr2
   calc (4 * (a * (1 - a)) + 2 * a) *
         ((Complex.normSq (x - z) + ε ^ 2) ^ a / (Complex.normSq (x - z) + ε ^ 2))
       = (4 * (a * (1 - a)) + 2 * a) * (Complex.normSq (x - z) + ε ^ 2) ^ a *
@@ -179,14 +168,12 @@ theorem bpz_lintegral_ball_zero_rpow {p R : ℝ} (hp : -2 < p) (hR : 0 < R) :
       rw [Complex.norm_polarCoord_symm, abs_of_pos hq1]
     by_cases hqR : q.1 < R
     · have hmem : Complex.polarCoord.symm q ∈ Metric.ball (0 : ℂ) R := by
-        rw [mem_ball_zero_iff, hnorm]
-        exact hqR
+        rwa [mem_ball_zero_iff, hnorm]
       have hmemI : q.1 ∈ Ioo 0 R := ⟨hq1, hqR⟩
       rw [hF, indicator_of_mem hmem, hg, indicator_of_mem hmemI, hnorm, smul_eq_mul,
         ← ENNReal.ofReal_mul hq1.le, mul_comm, ← Real.rpow_add_one hq1.ne']
     · have hmem : Complex.polarCoord.symm q ∉ Metric.ball (0 : ℂ) R := by
-        rw [mem_ball_zero_iff, hnorm]
-        exact hqR
+        rwa [mem_ball_zero_iff, hnorm]
       rw [hF, indicator_of_notMem hmem, hg,
         indicator_of_notMem (fun h : q.1 ∈ Ioo 0 R => hqR h.2)]
       simp

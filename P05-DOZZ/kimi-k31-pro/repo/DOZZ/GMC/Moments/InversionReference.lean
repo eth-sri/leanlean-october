@@ -2,11 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.Moments.InfinityChart
-public import DOZZ.Statements.GMC.GmcReferenceMeasure
-public import Mathlib.Geometry.Euclidean.Inversion.Basic
+import DOZZ.GMC.Moments.InfinityChart
+import DOZZ.Statements.GMC.GmcReferenceMeasure
+import Mathlib.Geometry.Euclidean.Inversion.Basic
 import Mathlib.MeasureTheory.Function.Jacobian
 import Mathlib.Geometry.Euclidean.Inversion.Calculus
 import Mathlib.Analysis.InnerProductSpace.Projection.FiniteDimensional
@@ -15,7 +14,6 @@ import Mathlib.MeasureTheory.Measure.Lebesgue.Complex
 
 /-! The compactifying reference measure is invariant under planar inversion. -/
 
-@[expose] public section
 
 open MeasureTheory
 open scoped Topology RealInnerProductSpace ENNReal
@@ -28,7 +26,6 @@ noncomputable def euclideanInv : ℂ → ℂ := EuclideanGeometry.inversion 0 1
 theorem euclideanInv_eq_star_inv (z : ℂ) : euclideanInv z = star (z⁻¹) := by
   by_cases hz : z = 0
   · simp [euclideanInv, hz, EuclideanGeometry.inversion]
-  have hn : ‖z‖ ≠ 0 := (norm_pos_iff.mpr hz).ne'
   rw [euclideanInv, EuclideanGeometry.inversion, dist_eq_norm]
   simp only [sub_zero, vadd_eq_add, add_zero]
   rw [Complex.inv_def, Complex.normSq_eq_norm_sq]
@@ -41,9 +38,7 @@ theorem euclideanInv_measurable : Measurable euclideanInv := by
     exact euclideanInv_eq_star_inv z]
   fun_prop
 
-theorem euclideanInv_involutive : Function.Involutive euclideanInv := by
-  intro z
-  exact EuclideanGeometry.inversion_involutive 0 (by norm_num) z
+theorem euclideanInv_involutive : Function.Involutive euclideanInv := fun z => EuclideanGeometry.inversion_involutive 0 (by norm_num) z
 
 theorem euclideanInv_abs_det (x : ℂ) (hx : x ≠ 0) :
     |(fderiv ℝ euclideanInv x).det| = ‖x‖ ^ (-4 : ℝ) := by
@@ -59,8 +54,7 @@ theorem euclideanInv_abs_det (x : ℂ) (hx : x ≠ 0) :
   have hdimDouble : Module.finrank ℝ Kᗮᗮ = 1 := by omega
   have hdetR : R.det = -1 := by
     change LinearMap.det R.toLinearMap = -1
-    rw [show R.toLinearMap = Kᗮ.reflection.toLinearEquiv.toLinearMap by rfl]
-    rw [Submodule.det_reflection, hdimDouble]
+    rw [show R.toLinearMap = Kᗮ.reflection.toLinearEquiv.toLinearMap by rfl, Submodule.det_reflection, hdimDouble]
     norm_num
   have hfd : fderiv ℝ euclideanInv x = (‖x‖⁻¹) ^ 2 • R := by
     change fderiv ℝ (EuclideanGeometry.inversion (0 : ℂ) 1) x = _
@@ -96,10 +90,7 @@ theorem normPlus_euclideanInv (x : ℂ) : normPlus (euclideanInv x) = normPlus x
 theorem refWeight_jac (x : ℂ) (hx : x ≠ 0) :
     ENNReal.ofReal |(fderiv ℝ euclideanInv x).det| * refWeight (euclideanInv x) =
       refWeight x := by
-  rw [euclideanInv_abs_det x hx, refWeight, refWeight]
-  rw [normPlus_euclideanInv x]
-  rw [← ENNReal.ofReal_mul (by positivity : 0 ≤ ‖x‖ ^ (-4 : ℝ))]
-  rw [mul_comm, normPlus_inv_mul_jacobian hx]
+  rw [euclideanInv_abs_det x hx, refWeight, refWeight, normPlus_euclideanInv x, ← ENNReal.ofReal_mul (by positivity : 0 ≤ ‖x‖ ^ (-4 : ℝ)), mul_comm, normPlus_inv_mul_jacobian hx]
 
 theorem refWeight_measurable : Measurable refWeight := by
   change Measurable (fun x : ℂ => ENNReal.ofReal (normPlus x ^ (-4 : ℝ)))
@@ -119,7 +110,7 @@ theorem euclideanInv_preimage_image_away (A : Set ℂ) :
         have h := congrArg euclideanInv hy0
         rw [euclideanInv_involutive x, show euclideanInv 0 = 0 by
           simp [euclideanInv]] at h
-        exact h
+        assumption
       exact hx.2 hx0
   · intro hy
     change euclideanInv y ∈ A ∧ y ≠ 0 at hy
@@ -130,8 +121,7 @@ theorem euclideanInv_preimage_image_away (A : Set ℂ) :
       have h := congrArg euclideanInv hx0
       have hzeroI : euclideanInv 0 = 0 := by simp [euclideanInv]
       have hy0 : y = 0 := by
-        rw [euclideanInv_involutive y, hzeroI] at h
-        exact h
+        rwa [euclideanInv_involutive y, hzeroI] at h
       exact hy.2 hy0
 
 theorem euclideanInv_derivWithin_punctured (S : Set ℂ) (x : ℂ) (hx : x ≠ 0) :
@@ -239,8 +229,7 @@ theorem gmcReferenceMeasure_map_complexInv :
       (⇑Complex.conjLIE : ℂ → ℂ) ∘ euclideanInv := by
     funext x
     rfl
-  rw [hfun]
-  rw [hcomp]
+  rw [hfun, hcomp]
   rw [← AEMeasurable.map_map_of_aemeasurable
     (Complex.conjLIE.measurePreserving.measurable.aemeasurable)
     (euclideanInv_measurable.aemeasurable)]

@@ -2,11 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.Construction.GMCGeneralTiltLimit
-public import DOZZ.GMC.Construction.GMCGeneralTiltRawCutoff
-public import DOZZ.GMC.Construction.GMCUniqueAe
+import DOZZ.GMC.Construction.GMCGeneralTiltLimit
+import DOZZ.GMC.Construction.GMCGeneralTiltRawCutoff
+import DOZZ.GMC.Construction.GMCUniqueAe
 
 /-! # Cameron–Martin tilt for the field, one cutoff chaos and the limit chaos
 
@@ -15,7 +14,6 @@ field, through its countably many box coordinates. Combined with the finite-cuto
 identifies the shifted coordinates, this reduces the joint tilt of the field, one cutoff chaos
 and the limit chaos to the field/limit tilt `equatorGFF_GMC_tilt`. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped Distributions ENNReal NNReal BoundedContinuousFunction
@@ -78,8 +76,7 @@ theorem gmc_measurable_factor_finiteEval_param {α : Type*} [MeasurableSpace α]
   have hPull' : @Measurable (α × FiniteMeasure ℂ) ℝ≥0∞
       (MeasurableSpace.comap j (mA.prod mCoord)) _
       (fun p => H p.1 (p.2 : Measure ℂ)) := by
-    rw [hSigma]
-    exact hPull
+    rwa [hSigma]
   obtain ⟨G, hG, hGfactor⟩ := hPull'.exists_eq_measurable_comp
   exact ⟨G, hG, fun a μ => congrFun hGfactor (a, μ)⟩
 
@@ -206,10 +203,10 @@ theorem regularizedGMC_tilted_boxEval_field_proxy
           (Real.exp (γ * gaussianCovariance P (fun ω' => Xc ω' x r) L)))) = 1 := by
       simp [H₀, Set.indicator_of_mem (Set.mem_compl hnot)]
     have h0 := hω
-    simp only [Pi.zero_apply] at h0
+    simp [] at h0
     rw [h0] at hone
     exact zero_ne_one hone
-  exact hmem
+  assumption
 
 /-- Weighting a finite measure by the exponential of a bounded continuous function keeps it
 finite. -/

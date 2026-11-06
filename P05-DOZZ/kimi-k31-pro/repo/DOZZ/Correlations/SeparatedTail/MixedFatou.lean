@@ -2,15 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.SharpMoments.MomentConvergence
-public import DOZZ.Correlations.SeparatedTail.MixedMoment
+import DOZZ.GMC.SharpMoments.MomentConvergence
+import DOZZ.Correlations.SeparatedTail.MixedMoment
 
 /-! A common subsequence carries out the passage from cutoff mixed moments to limiting masses in
 the separated joint-tail estimate. -/
 
-@[expose] public section
 open MeasureTheory Filter Topology
 open scoped ENNReal
 
@@ -51,7 +49,7 @@ theorem separatedTail_mixed_moment_le_of_tendstoInMeasure
       rw [ENNReal.toReal_rpow, ENNReal.toReal_rpow,
         ENNReal.ofReal_toReal (ENNReal.rpow_ne_top_of_nonneg ha2 hx),
         ENNReal.ofReal_toReal (ENNReal.rpow_ne_top_of_nonneg ha3 hy)]
-    simpa only [Function.comp_def, heq _ _ (hf2ω _) (hf3ω _),
+    simpa [Function.comp_def, heq _ _ (hf2ω _) (hf3ω _),
       heq _ _ hg2ω hg3ω] using hreal
   calc
     _ = ∫⁻ ω, liminf (fun n => f2 (ns (ms n)) ω ^ a2 * f3 (ns (ms n)) ω ^ a3) atTop ∂P :=

@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Brownian.LastExitReferenceAvoidance
+import DOZZ.Brownian.LastExitReferenceAvoidance
 
 /-!
 # Recentered reference-kernel avoidance
@@ -13,7 +12,6 @@ The deterministic-time reference kernel, restricted to staying above a positive 
 recentered at that level, is the same conditioned entrance kernel started from the reduced state.
 -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal NNReal
@@ -100,7 +98,6 @@ theorem brownianUpperConditionedReferenceFutureKernel_avoidance_shift_lintegral
   let S : Set BrownianPath := brownianPathStrictlyBelow (x - c)
   have hEval : Measurable E := measurable_brownianReferenceRationalEvalMap x
   have hA : MeasurableSet A := measurableSet_brownianRationalFutureAbove c
-  have hR : MeasurableSet R := hA.preimage hEval
   have hS : MeasurableSet S := measurableSet_brownianPath_below (x - c)
   have hH : Measurable H := by
     apply hG.comp
@@ -126,8 +123,7 @@ theorem brownianUpperConditionedReferenceFutureKernel_avoidance_shift_lintegral
     measurable_brownianUpperConditionedPositiveRationalEvals.comp
       ((measurable_const (a := x - c)).prodMk measurable_id)
   let F : BrownianPath → ℝ≥0∞ := fun q => G (brownianPathRationalEvals q)
-  have hF : Measurable F := by
-    exact hG.comp measurable_brownianPathRationalEvals
+  have hF : Measurable F := hG.comp measurable_brownianPathRationalEvals
   calc
     (∫⁻ y, A.indicator H y ∂
         brownianUpperConditionedReferenceFutureKernel B ν hν x) =
@@ -165,4 +161,3 @@ theorem brownianUpperConditionedReferenceFutureKernel_avoidance_shift_lintegral
 
 end DOZZ.Proofs
 
-end

@@ -2,18 +2,16 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.Residue.LocalWeight
+import DOZZ.Correlations.Residue.LocalWeight
 
 /-! Uniform positive C1 families for the actual residue-chart insertion weights. -/
 
-@[expose] public section
 open MeasureTheory Filter Topology Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
 
-/-- All hypotheses of the local-tail weight class `DOZZ.UniformPositiveC1Family` are verified,
+/-- All hypotheses of the local-tail weight class `UniformPositiveC1Family` are verified,
 uniformly over epsilon in a compact interval. The derivative bound comes from joint smoothness on
 a neighborhood. -/
 theorem residue_localWeight_uniform_family (γ S α d₀ : ℝ) (hγ : 0 ≤ γ)
@@ -26,7 +24,7 @@ theorem residue_localWeight_uniform_family (γ S α d₀ : ℝ) (hγ : 0 ≤ γ)
   let H : ℝ × ℂ → ℝ := fun t => ‖t.2‖ ^ (γ * (S + t.1)) / ‖t.2 - w‖ ^ (γ * α)
   let U : Set (ℝ × ℂ) := univ ×ˢ Metric.ball z 1
   have hgeo (x : ℂ) (hx : x ∈ Metric.ball z 1) : x ≠ 0 ∧ x ≠ w := by
-    have hd : ‖x - z‖ < 1 := by simpa only [Metric.mem_ball, dist_eq_norm] using hx
+    have hd : ‖x - z‖ < 1 := by simpa [Metric.mem_ball, dist_eq_norm] using hx
     constructor
     · intro hh; rw [hh, zero_sub, norm_neg] at hd; linarith only [hz, hd]
     · intro hh; rw [hh, norm_sub_rev] at hd; linarith only [hzw, hd]
@@ -51,7 +49,6 @@ theorem residue_localWeight_uniform_family (γ S α d₀ : ℝ) (hγ : 0 ≤ γ)
   refine ⟨(10 : ℝ) ^ (γ * (S + d₀)), max D 0, L, by norm_num, by positivity,
     le_max_right _ _, hL, ?_⟩
   intro z' hz' F hF
-  have hzz : z' = z := hz'
   subst z'
   obtain ⟨ε, hε, rfl⟩ := hF
   have heq (x : ℂ) (hx : x ∈ Metric.ball z 1) :
@@ -85,7 +82,7 @@ theorem residue_localWeight_uniform_family (γ S α d₀ : ℝ) (hγ : 0 ≤ γ)
       (hgeo x hxball).1 (hgeo x hxball).2).differentiableAt one_ne_zero
     have hder : HasFDerivAt (fun y : ℂ => H (ε, y))
         ((fderiv ℝ H (ε, x)).comp (ContinuousLinearMap.inr ℝ ℝ ℂ)) x := by
-      simpa only [Function.comp_def] using hh.hasFDerivAt.comp x (hasFDerivAt_prodMk_right ε x)
+      simpa [Function.comp_def] using hh.hasFDerivAt.comp x (hasFDerivAt_prodMk_right ε x)
     rw [(heq x hxball).fderiv_eq, hder.fderiv]
     calc _ ≤ ‖fderiv ℝ H (ε, x)‖ * ‖ContinuousLinearMap.inr ℝ ℝ ℂ‖ :=
         ContinuousLinearMap.opNorm_comp_le _ _

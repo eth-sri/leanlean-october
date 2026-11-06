@@ -2,19 +2,17 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.Defs.IsCircleAverage
-public import DOZZ.Statements.Defs.IsEquatorGFF
-public import DOZZ.Statements.GMC.GaussianCovariance
-public import DOZZ.Statements.GMC.IsAdmissibleLogRegularization
-public import DOZZ.GMC.CircleAverageGaussian
-public import DOZZ.GMC.CirclePotential
-public import DOZZ.GFFStructure.CircleCovariance
+import DOZZ.Statements.Defs.IsCircleAverage
+import DOZZ.Statements.Defs.IsEquatorGFF
+import DOZZ.Statements.GMC.GaussianCovariance
+import DOZZ.Statements.GMC.IsAdmissibleLogRegularization
+import DOZZ.GMC.CircleAverageGaussian
+import DOZZ.GMC.CirclePotential
+import DOZZ.GFFStructure.CircleCovariance
 
 /-! Circle-average Gaussianity, covariance, and admissibility for the GMC statements. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory
 open scoped Distributions ENNReal NNReal
@@ -47,7 +45,7 @@ theorem isCircleAverage_covariance
         ∫ ω, Xc ω x r * Xc ω y s ∂P := rfl
     _ = ProbabilityTheory.covariance (fun ω => Xc ω x r) (fun ω => Xc ω y s) P := by
       symm
-      simp only [ProbabilityTheory.covariance]
+      simp [ProbabilityTheory.covariance]
       rw [hMean x r, hMean y s]
       simp
     _ = -circleLogPotential ‖x - y‖₊
@@ -59,9 +57,9 @@ theorem isCircleAverage_covariance
       circleAverage_covariance P X Xc hX hXc x y r s
     _ = ∫ u, ∫ v, gffKernel u v ∂circleMeasure y s ∂circleMeasure x r := hKernel.symm
 
-end DOZZ.Proofs
+end Proofs
 
-namespace DOZZ.Proofs
+namespace Proofs
 
 theorem log_one_div_exp_neg_eq (t : ℝ) : Real.log (1 / Real.exp (-t)) = t := by
   rw [one_div, ← Real.exp_neg, neg_neg, Real.log_exp]
@@ -143,7 +141,7 @@ theorem circleAverage_admissible_of_inputs
     have h := hD1 R hR0 x y (hR x hx) (hR y hy) (Real.log (1 / ε)) (Real.log (1 / δ))
       (log_one_div_nonneg_of_le_one hε hε1) (log_one_div_nonneg_of_le_one hδ hδ1)
     rw [exp_neg_log_one_div hε, exp_neg_log_one_div hδ] at h
-    simpa only [hCov] using h
+    simpa [hCov] using h
   · -- coarse variance
     intro K hK _
     obtain ⟨R, hR0, hR⟩ := hball K hK
@@ -155,8 +153,7 @@ theorem circleAverage_admissible_of_inputs
       max_eq_right (Real.exp_pos _).le, log_one_div_exp_neg_eq] at h
     simp only [log_one_div_exp_neg_eq]
     unfold gaussianVariance
-    rw [hCov]
-    exact h
+    rwa [hCov]
   · -- same-centre mixed coarse covariance
     intro K hK _
     obtain ⟨R, hR0, hR⟩ := hball K hK
@@ -169,8 +166,7 @@ theorem circleAverage_admissible_of_inputs
     rw [exp_neg_log_one_div hε, sub_self, norm_zero, max_eq_left hεk,
       max_eq_right (Real.exp_pos _).le, log_one_div_exp_neg_eq] at h
     simp only [log_one_div_exp_neg_eq]
-    rw [hCov]
-    exact h
+    rwa [hCov]
   · -- separated off-diagonal limit with continuous regular part
     refine ⟨fun x y => Real.log (normPlus x) + Real.log (normPlus y), ?_, ?_⟩
     · have hc : Continuous (fun x : ℂ => Real.log (normPlus x)) :=
@@ -221,7 +217,7 @@ theorem isCircleAverage_admissible
   exact circleAverage_admissible_of_inputs P X Xc hXc U hU
     (fun n p => circleAverage_finite_family_jointly_gaussian P X hX Xc hXc p)
     (fun x y r s => by
-      simpa only [circleKernel] using
+      simpa [circleKernel] using
         isCircleAverage_covariance P X hX Xc hXc x y r s)
     abs_circleKernel_sub_log_le abs_circleKernel_sub_gffKernel_le abs_circleKernel_sub_integral_gffKernel_le
 

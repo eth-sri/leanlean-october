@@ -3,10 +3,9 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Scott Armstrong, Amélie Loher
 -/
-module
 
-public import GaussianFields.LogCorrelated.ABK.Volume
-public import GaussianFields.LogCorrelated.ABK.SpatialFubini
+import GaussianFields.LogCorrelated.ABK.Volume
+import GaussianFields.LogCorrelated.ABK.SpatialFubini
 
 /-!
 # GaussianFields.LogCorrelated/ABK/Covariance
@@ -14,7 +13,6 @@ public import GaussianFields.LogCorrelated.ABK.SpatialFubini
 Port of the corresponding GaussianFields source module.
 -/
 
-public section
 
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal InnerProductSpace NNReal ProbabilityTheory Topology
@@ -29,7 +27,7 @@ theorem memLp_abkLogKernelProd_canonical {d : Nat} (hd : 0 < d)
   memLp_abkLogKernelProd_of_abk_estimates hd
 
 /-- The canonically normalized ABK log-correlated field evaluation. -/
-@[expose]
+
 noncomputable def abkLogCorrelatedFieldL2Canonical {d : Nat} (hd : 0 < d)
     (ζ : ABKCutoff d) (ψ : MeanZeroTestFunction d) :
     Lp ℝ 2 (scaleSpaceWhiteNoiseMeasure d) :=
@@ -121,4 +119,3 @@ theorem covariance_abkLogCorrelatedFieldL2Canonical_eq_scale_selfConvolution_int
 
 end GaussianFields
 
-end

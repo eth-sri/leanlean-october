@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Hypergeom.ConnectionDet
+import DOZZ.Hypergeom.ConnectionDet
 import Mathlib.Tactic
 
 /-! # The real connection determinant used in coefficient extraction -/
 
-public section
 namespace DOZZ.Proofs
 
 /-- The complex connection determinant `gauss_connection_det` specializes to real Gamma entries. -/

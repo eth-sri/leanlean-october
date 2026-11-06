@@ -2,15 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Hypergeom.ODE.NegativeCutPlaneTopology
-public import DOZZ.Hypergeom.ODE.CutPlanePathIndependence
-public import DOZZ.Hypergeom.ODE.SeriesSeed
+import DOZZ.Hypergeom.ODE.NegativeCutPlaneTopology
+import DOZZ.Hypergeom.ODE.CutPlanePathIndependence
+import DOZZ.Hypergeom.ODE.SeriesSeed
 
 /-! Path-independent Gauss-system continuation on the negative cut plane. -/
 
-@[expose] public section
 
 open Set unitInterval
 

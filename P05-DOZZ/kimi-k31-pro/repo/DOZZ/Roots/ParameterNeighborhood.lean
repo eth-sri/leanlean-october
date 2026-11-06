@@ -2,24 +2,22 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.ShiftEquations.Reflection.StructureContinuity
-public import DOZZ.Correlations.Analytic.ParameterDomain
+import DOZZ.ShiftEquations.Reflection.StructureContinuity
+import DOZZ.Correlations.Analytic.ParameterDomain
 import DOZZ.ShiftEquations.Reflection.RbarContinuity
 /-! # Strict parameter neighborhoods for the root continuity argument -/
-@[expose] public section
 open MeasureTheory Set Filter Topology
 namespace DOZZ.Proofs
 /-- The three-coordinate finite-insertion bounds recover the canonical extended triple. -/
 theorem roots_extendedSeiberg3_of_N {γ a b c : ℝ}
     (h : ExtendedSeibergN γ ![a, b, c]) : ExtendedSeiberg3 γ a b c := by
   have he : nPointSExp γ ![a, b, c] = sExp γ a b c := by
-    simp only [nPointSExp, sExp, Fin.sum_univ_three, Matrix.cons_val_zero,
+    simp [nPointSExp, sExp, Fin.sum_univ_three, Matrix.cons_val_zero,
       Matrix.cons_val_one, Matrix.cons_val_two, Matrix.head_cons, Matrix.tail_cons]
   refine ⟨h.1 0, h.1 1, h.1 2, ?_⟩
-  exact lt_min (by simpa only [he, Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.cons_val_two, Matrix.head_cons, Matrix.tail_cons] using h.2.1)
-    (lt_min (by simpa only [he, Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.cons_val_two, Matrix.head_cons, Matrix.tail_cons] using h.2.2 0)
-      (lt_min (by simpa only [he, Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.cons_val_two, Matrix.head_cons, Matrix.tail_cons] using h.2.2 1) (by simpa only [he, Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.cons_val_two, Matrix.head_cons, Matrix.tail_cons] using h.2.2 2)))
+  exact lt_min (by simpa [he, Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.cons_val_two, Matrix.head_cons, Matrix.tail_cons] using h.2.1)
+    (lt_min (by simpa [he, Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.cons_val_two, Matrix.head_cons, Matrix.tail_cons] using h.2.2 0)
+      (lt_min (by simpa [he, Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.cons_val_two, Matrix.head_cons, Matrix.tail_cons] using h.2.2 1) (by simpa [he, Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.cons_val_two, Matrix.head_cons, Matrix.tail_cons] using h.2.2 2)))
 /-- Strict extended charges persist when gamma varies near an admissible value. -/
 theorem roots_extended_parameters_nhds {γ a b c : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2)
     (hα : ExtendedSeiberg3 γ a b c) :

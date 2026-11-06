@@ -1,10 +1,9 @@
 /-
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 -/
-module
 
-public import DOZZ.Statements.Brownian.LateralProjectedGMC
-public import DOZZ.Statements.Defs.IsGMCOf
+import DOZZ.Statements.Brownian.LateralProjectedGMC
+import DOZZ.Statements.Defs.IsGMCOf
 import Mathlib.Topology.Order.Compact
 
 /-!
@@ -15,7 +14,6 @@ path is continuous. A finite plane measure therefore has finite projected mass o
 interval. This is one carrier condition needed for the lateral GMC layer.
 -/
 
-@[expose] public section
 
 open MeasureTheory Set
 open scoped ENNReal
@@ -34,10 +32,6 @@ theorem lateralProjectedGMC_Icc_ne_top
     let K : ℝ := |A s₀|
     let R : ℝ := max |a| |b|
     let C : ℝ := |γ| * K + |γ * Q γ| * R
-    have hK_nonneg : 0 ≤ K := abs_nonneg _
-    have hC_nonneg : 0 ≤ C := by
-      dsimp [C]
-      positivity
     have hweight (x : ℂ)
         (hx : -Real.log ‖x‖ ∈ Set.Icc a b) :
         ENNReal.ofReal (if ‖x‖ = 0 then 0 else
@@ -120,4 +114,3 @@ theorem ae_lateralProjectedGMC_interval_ne_top
 
 end DOZZ.Proofs
 
-end

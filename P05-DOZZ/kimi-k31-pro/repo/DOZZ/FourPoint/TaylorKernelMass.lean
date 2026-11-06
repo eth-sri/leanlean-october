@@ -2,13 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.RootedPairMoments
+import DOZZ.FourPoint.RootedPairMoments
 
 /-! Identifying the literal positive Taylor mass with the Coulomb mass. -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -36,8 +34,8 @@ theorem gammaHalfKernel_coulombWeight (γ α₁ α₂ α₃ : ℝ) (z x : ℂ)
   have hbase₁ : 0 < normPlus x / ‖x‖ := div_pos hn hb
   have hbase₂ : 0 < normPlus x / ‖x - 1‖ := div_pos hn hc
   unfold coulombWeight
-  simp only [Fin.prod_univ_succ, Matrix.cons_val_zero, Matrix.cons_val_succ,
-    Fin.prod_univ_zero, mul_one, sub_zero]
+  simp [Fin.prod_univ_succ, Matrix.cons_val_zero, Matrix.cons_val_succ,
+    sub_zero]
   change ((ENNReal.ofReal (normPlus x / ‖x - z‖)) ^ (γ * (-γ / 2)) *
       ((ENNReal.ofReal (normPlus x / ‖x‖)) ^ (γ * α₁) *
       (ENNReal.ofReal (normPlus x / ‖x - 1‖)) ^ (γ * α₂))) *

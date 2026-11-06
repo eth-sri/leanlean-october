@@ -2,12 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.ShiftEquations.Residual.Calibration
-public import DOZZ.Statements.Brownian.IsSourceLateralProjection
-public import DOZZ.Statements.Brownian.IsReflectionData
-public import DOZZ.Statements.Brownian.BrownianPath
+import DOZZ.ShiftEquations.Residual.Calibration
+import DOZZ.Statements.Brownian.IsSourceLateralProjection
+import DOZZ.Statements.Brownian.IsReflectionData
+import DOZZ.Statements.Brownian.BrownianPath
 import DOZZ.Roots.CubeContinuation
 import DOZZ.ShiftEquations.Reflection.Witness
 import DOZZ.Brownian.Lateral.ReflectionJointLaw
@@ -28,7 +27,6 @@ to every pole-free extended triple, in particular to the cube of size `η` (wher
 `3η < Q`).
 -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology TopologicalSpace Set
 open scoped ENNReal NNReal Topology
@@ -36,7 +34,7 @@ open scoped ENNReal NNReal Topology
 namespace DOZZ.Proofs
 
 /-- **The residual factor from the first structure shift and the first-case dual structure shift.**
-`hFirstStrip` is the conclusion of `DOZZ.structureConstant_first_shift_strip` at the given field, chaos and
+`hFirstStrip` is the conclusion of `structureConstant_first_shift_strip` at the given field, chaos and
 coupling; `hDualStripFirstCase` is the first case `η ≤ γ/4` of the dual structure shift
 (`structureConstant_dual_shift_strip_first_case`), restricted to its structure-constant clauses. -/
 theorem unitVolume_residual_factor_eq_one_of_shifts
@@ -122,4 +120,3 @@ theorem unitVolume_residual_factor_eq_one_of_shifts
 
 end DOZZ.Proofs
 
-end

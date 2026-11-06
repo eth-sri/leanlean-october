@@ -1,10 +1,8 @@
-module
 
-public import DOZZ.GMC.WeightedCutoff.LargeScaleUniform
+import DOZZ.GMC.WeightedCutoff.LargeScaleUniform
 
 /-! # Uniform root estimates through the whole finite chart -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal NNReal

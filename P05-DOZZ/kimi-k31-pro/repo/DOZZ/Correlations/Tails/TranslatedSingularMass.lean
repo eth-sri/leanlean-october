@@ -1,3 +1,2 @@
-module
-public import DOZZ.Correlations.Tails.UnpinnedMeasureIdentification
-public import DOZZ.Statements.Correlations.LocalSingularMass
+import DOZZ.Correlations.Tails.UnpinnedMeasureIdentification
+import DOZZ.Statements.Correlations.LocalSingularMass

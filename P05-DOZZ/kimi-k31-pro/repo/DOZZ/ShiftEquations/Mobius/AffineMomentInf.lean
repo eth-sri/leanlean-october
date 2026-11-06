@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.ShiftEquations.Mobius.AffineMoment
+import DOZZ.ShiftEquations.Mobius.AffineMoment
 import DOZZ.GMC.EquatorGFFChaosTransportLaw
 import DOZZ.GMC.Construction.GMCGeneralTiltLimit
 import DOZZ.ShiftEquations.Mobius.InversionMoment
@@ -20,7 +19,6 @@ Cameron–Martin tilt give `E[I_{ψz}^{-s}] = |a|^{γ (∑αₖ - αinf) s/2} E[
 translations preserve the moments.
 -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
@@ -37,7 +35,7 @@ private theorem coulombWeight_inf_eq {N : ℕ} (γ : ℝ) (α : Fin N → ℝ) (
     coulombWeight γ α z αinf x =
       coulombWeight γ α z 0 x * ENNReal.rpow (ENNReal.ofReal (normPlus x)) (γ * αinf) := by
   unfold coulombWeight
-  simp only [ENNReal.rpow_eq_pow, mul_zero, ENNReal.rpow_zero, mul_one]
+  simp [ENNReal.rpow_eq_pow, mul_zero, ENNReal.rpow_zero, mul_one]
 
 /-- A power of the background weight through the affine map picks up the defect. -/
 private theorem rpow_normPlus_affine (a b : ℂ) (y : ℂ) (e : ℝ) :
@@ -55,7 +53,7 @@ private theorem rpow_normPlus_affine (a b : ℂ) (y : ℂ) (e : ℝ) :
       ring
     rw [h, Real.exp_log (by positivity)]
     field_simp
-  simp only [ENNReal.rpow_eq_pow]
+  simp [ENNReal.rpow_eq_pow]
   rw [hnorm, ENNReal.ofReal_mul (Real.exp_pos _).le,
     ENNReal.mul_rpow_of_ne_top ENNReal.ofReal_ne_top ENNReal.ofReal_ne_top,
     ENNReal.ofReal_rpow_of_pos (Real.exp_pos _), ← Real.exp_mul, mul_comm e]
@@ -96,7 +94,7 @@ theorem lintegral_coulombWeight_repinChaos_inf {Ω : Type*} (M : Ω → Measure 
     ← lintegral_const_mul' _ _ ENNReal.ofReal_ne_top]
   congr 1
   funext x
-  simp only [Pi.mul_apply]
+  simp [Pi.mul_apply]
   rw [Real.exp_add, mul_assoc, ENNReal.ofReal_mul (Real.exp_pos _).le]
   ring
 
@@ -113,7 +111,6 @@ theorem coulombWeight_repin_identity_inf {N : ℕ} (γ : ℝ) (hγ : 0 < γ) (α
   have hxy : x = a * y + b := (affine_affineInv a b ha x).symm
   have hyz : ∀ k, y ≠ z k := fun k h => hx k (by rw [hxy, h])
   have hapos : 0 < ‖a‖ := norm_pos_iff.mpr ha
-  have hγne : γ ≠ 0 := hγ.ne'
   have hexp : γ ^ 2 * (1 + infSExp γ α αinf) + 4 = γ * ((∑ k, α k) + αinf) := by
     unfold infSExp Q
     field_simp
@@ -144,8 +141,6 @@ theorem coulombMass_affine_moment_inf {Ω : Type*} [MeasurableSpace Ω] (P : Mea
   set VL : ℝ := ∫ ω, L ω ^ 2 ∂P with hVLdef
   set κ := repinKappa a b with hκ
   have hapos : 0 < ‖a‖ := norm_pos_iff.mpr ha
-  have hLmeas : Measurable L :=
-    (hXc.1 (-Real.log ‖a‖)).comp (measurable_id.prodMk measurable_const)
   have hVL : VL = 2 * κ := by
     have h := isCircleAverage_covariance P X hX Xc hXc b b (-Real.log ‖a‖) (-Real.log ‖a‖)
     rw [repin_selfEnergy a b ha] at h
@@ -327,4 +322,3 @@ theorem coulombMass_affine_moment_inf {Ω : Type*} [MeasurableSpace Ω] (P : Mea
 
 end DOZZ.Proofs
 
-end

@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.ShiftEquations.Shift.RbarShift
-public import DOZZ.Statements.Brownian.ReflectionR
+import DOZZ.ShiftEquations.Shift.RbarShift
+import DOZZ.Statements.Brownian.ReflectionR
 
 /-!
 # From the unit-volume shift to the full shift
@@ -17,7 +16,6 @@ shift `R̄(z - γ/2) = m(z) R̄(z)` with `m = p π / D` becomes the full shift
 identity also holds where `D` vanishes.
 -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology Set
 
@@ -97,4 +95,3 @@ theorem reflectionRFromBar_shift {γ μ : ℝ} (hγ : 0 < γ) (hμ : 0 < μ) {G 
 
 end DOZZ.Proofs
 
-end

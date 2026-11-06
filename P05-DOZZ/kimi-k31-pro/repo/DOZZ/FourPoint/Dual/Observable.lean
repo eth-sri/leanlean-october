@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.Dual.Kernel
-public import DOZZ.FourPoint.Dual.Normalization
+import DOZZ.FourPoint.Dual.Kernel
+import DOZZ.FourPoint.Dual.Normalization
 import DOZZ.FourPoint.BPZ.Mass
 import Mathlib.Tactic
 
@@ -15,7 +14,6 @@ The source zero-mode normalization is attached to the actual dual density,
 with atomlessness supplied by the GMC rather than assumed at the roots.
 -/
 
-public section
 
 open MeasureTheory
 open scoped ENNReal
@@ -40,7 +38,7 @@ theorem fourPointT_eq_dualKernelMoment
     rw [← neg_div]
     exact fourPointSExp_dual γ α₁ α₂ α₃
   rw [hs] at ht
-  simpa only [neg_div, bpzMass, ENNReal.rpow_eq_pow,
+  simpa [neg_div, bpzMass, ENNReal.rpow_eq_pow,
     dual_kernel_eq_bpzWeight γ α₁ α₂ α₃ hγ.ne'] using ht
 
 end DOZZ.Proofs

@@ -2,17 +2,15 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.Fusion.Kernel
-public import DOZZ.FourPoint.Fusion.RootedMass
-public import DOZZ.FourPoint.Fusion.MovingRootFiniteness
+import DOZZ.FourPoint.Fusion.Kernel
+import DOZZ.FourPoint.Fusion.RootedMass
+import DOZZ.FourPoint.Fusion.MovingRootFiniteness
 import DOZZ.GMC.Construction.RootedMeasureKernel
 import Mathlib.MeasureTheory.Integral.Lebesgue.DominatedConvergence
 
 /-! # Domination away from the colliding roots -/
 
-@[expose] public section
 open MeasureTheory Filter Topology
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -73,7 +71,7 @@ theorem fusion_rootedKernel_exterior_bound (γ α₁ α₂ α₃ : ℝ) (z u x :
   have hpx : normPlus u = 1 := max_eq_left hu1
   rw [fusion_rootDensity_formula γ u x hxu, hpx, Real.one_rpow, one_mul,
     fusion_rootDensity_formula γ 0 x hx]
-  simp only [normPlus, norm_zero, max_eq_left zero_le_one, Real.one_rpow, one_mul,
+  simp [normPlus, norm_zero, Real.one_rpow, one_mul,
     gammaHalfKernel, sub_zero]
   have hpow : ‖x‖ ^ (γ ^ 2 / 2) * ‖x‖ ^ (-γ ^ 2) = ‖x‖ ^ (-(γ ^ 2 / 2)) := by
     rw [← Real.rpow_add ha]
@@ -113,10 +111,10 @@ theorem fusion_rootedKernel_exterior_tendsto (γ α₁ α₂ α₃ : ℝ) (y : �
     · exact (measurable_const.mul (measurable_pointRootPotential.comp
         (measurable_const.prodMk measurable_id))).exp
   have hzlim : Tendsto (fun z : ℂ => ‖z‖) (nhds 0) (nhds 0) := by
-    simpa only [norm_zero] using (continuous_norm.continuousAt (x := (0 : ℂ))).tendsto
+    simpa [norm_zero] using (continuous_norm.continuousAt (x := (0 : ℂ))).tendsto
   have hulim : Tendsto (fun z : ℂ => ‖y * z‖) (nhds 0) (nhds 0) := by
     have hc : Continuous (fun z : ℂ => ‖y * z‖) := by fun_prop
-    simpa only [mul_zero, norm_zero] using (hc.continuousAt (x := (0 : ℂ))).tendsto
+    simpa [mul_zero, norm_zero] using (hc.continuousAt (x := (0 : ℂ))).tendsto
   have hev : ∀ᶠ z : ℂ in nhds 0, ‖z‖ < δ ∧ ‖y * z‖ < δ / 2 ∧ ‖y * z‖ < 1 :=
     (hzlim.eventually_lt_const hδ).and
       ((hulim.eventually_lt_const (half_pos hδ)).and (hulim.eventually_lt_const zero_lt_one))
@@ -128,10 +126,10 @@ theorem fusion_rootedKernel_exterior_tendsto (γ α₁ α₂ α₃ : ℝ) (y : �
     have h := ENNReal.ofReal_le_ofReal (fusion_rootedKernel_exterior_bound γ α₁ α₂ α₃ z (y * z) x
       hx0 (hz.1.le.trans hx) (by linarith [hz.2.1]) hz.2.2.le)
     rw [ENNReal.ofReal_mul (Real.rpow_nonneg (by norm_num) _)] at h
-    simpa only [C, F, mul_zero] using h
+    simpa [C, F, mul_zero] using h
   · rw [lintegral_const_mul _ (hm 0)]
-    dsimp only [C, F]
-    simp only [mul_zero]
+    dsimp [C, F]
+    simp [mul_zero]
     exact (ENNReal.mul_lt_top ENNReal.ofReal_lt_top
       (lt_of_le_of_lt (setLIntegral_le_lintegral _ _) hfin)).ne
   · filter_upwards [ae_restrict_mem (measurableSet_le measurable_const measurable_norm)] with x hx

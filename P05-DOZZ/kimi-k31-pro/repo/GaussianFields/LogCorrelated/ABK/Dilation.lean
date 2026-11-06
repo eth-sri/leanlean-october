@@ -3,10 +3,9 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Scott Armstrong, Amélie Loher
 -/
-module
 
-public import Mathlib.MeasureTheory.Measure.Haar.NormedSpace
-public import GaussianFields.LogCorrelated.ABK.Constants
+import Mathlib.MeasureTheory.Measure.Haar.NormedSpace
+import GaussianFields.LogCorrelated.ABK.Constants
 
 /-!
 # GaussianFields.LogCorrelated/ABK/Dilation
@@ -14,7 +13,6 @@ public import GaussianFields.LogCorrelated.ABK.Constants
 Port of the corresponding GaussianFields source module.
 -/
 
-public section
 
 open MeasureTheory
 open scoped ENNReal Topology
@@ -24,7 +22,7 @@ namespace GaussianFields
 /-- The real dimension of `Vec d`. -/
 @[simp]
 theorem finrank_real_vec (d : Nat) : Module.finrank ℝ (Vec d) = d := by
-  simp [Vec]
+  simp
 
 /-- Change variables by `x ↦ r⁻¹ x` in `Vec d`. -/
 theorem integral_comp_inv_smul_vec {d : Nat} (f : Vec d → ℝ) {r : ℝ} (hr : 0 ≤ r) :
@@ -36,7 +34,7 @@ theorem integral_comp_inv_smul_vec {d : Nat} (f : Vec d → ℝ) {r : ℝ} (hr :
   simpa [finrank_real_vec, smul_eq_mul] using hraw
 
 /-- The scaled self-convolution `(ζ_r * ζ_r)(x)`. -/
-@[expose]
+
 noncomputable def abkScaledCutoffSelfConvolution {d : Nat} (ζ : ABKCutoff d)
     (r : ℝ) (x : Vec d) : ℝ :=
   ∫ y : Vec d, abkScaledCutoff ζ r y * abkScaledCutoff ζ r (x - y)
@@ -55,7 +53,7 @@ theorem abkScaledCutoffSelfConvolution_eq_pow_mul {d : Nat} (ζ : ABKCutoff d)
   filter_upwards with y
   have hsub : r⁻¹ • (x - y) = r⁻¹ • x - r⁻¹ • y := by
     ext i
-    simp only [Pi.smul_apply, Pi.sub_apply, smul_eq_mul]
+    simp [Pi.smul_apply, Pi.sub_apply, smul_eq_mul]
     ring
   simp [F, hsub]
 
@@ -120,4 +118,3 @@ theorem integral_abkScaledCutoff_mul_abkScaledCutoff_sub_eq_selfConvolution {d :
 
 end GaussianFields
 
-end

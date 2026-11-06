@@ -2,11 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.ShiftEquations.PoleSubtracted.Masses
-public import DOZZ.ShiftEquations.PoleSubtracted.PowerBounds
-public import DOZZ.Statements.Defs.IsCircleAverage
+import DOZZ.ShiftEquations.PoleSubtracted.Masses
+import DOZZ.ShiftEquations.PoleSubtracted.PowerBounds
+import DOZZ.Statements.Defs.IsCircleAverage
 
 /-!
 # The cutoff integrand
@@ -19,7 +18,6 @@ the real local mass `R₁` ([KRV, §10.2]); its expectation `G_{m,n}` is the sou
 `a ∈ [a₁, a₂]` the `a`-dependence is dominated by the two endpoints.
 -/
 
-@[expose] public section
 
 open MeasureTheory Filter Topology Set
 open scoped ENNReal NNReal
@@ -64,7 +62,7 @@ theorem re_cutoffExponent (z : ℂ) (X : ℝ) (m : ℕ) :
   ring
 
 theorem re_one_sub_div (z : ℂ) (γ : ℝ) : (1 - z / γ).re = 1 - z.re / γ := by
-  simp [Complex.div_ofReal_re]
+  simp
 
 /-- **The pointwise bound** of the cutoff integrand. -/
 theorem norm_cutoffIntegrand_le (Xc : Ω → ℂ → ℝ → ℝ) (M : Ω → Measure ℂ) {γ : ℝ} (η : ℝ)
@@ -180,4 +178,3 @@ theorem differentiable_cutoffIntegrand (Xc : Ω → ℂ → ℝ → ℝ) (M : Ω
 
 end DOZZ.Proofs
 
-end

@@ -2,11 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Brownian.Lateral.LocalWickIdentification
-public import Mathlib.Analysis.SpecificLimits.Basic
-public import DOZZ.Statements.Brownian.IsSourceLateralProjection
+import DOZZ.Brownian.Lateral.LocalWickIdentification
+import Mathlib.Analysis.SpecificLimits.Basic
+import DOZZ.Statements.Brownian.IsSourceLateralProjection
 
 /-!
 # Independence of the full lateral measure
@@ -27,7 +26,6 @@ independence of finitely many evaluations and support later parameter integratio
 The scalar cutoff construction is used only to supply the identified local versions.
 -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
@@ -90,7 +88,7 @@ theorem indepFun_measure_of_restrict_exhaustion
   apply (IndepFun_iff _ _ P).mpr
   intro S T hS hT
   have hT' : MeasurableSet[⨆ n, m n] T := hNSup.comap_le T hT
-  simpa only [inter_comm, mul_comm] using ((Indep_iff _ _ P).mp hi T S hT' hS)
+  simpa [inter_comm, mul_comm] using ((Indep_iff _ _ P).mp hi T S hT' hS)
 
 /-- Radii for a countable increasing exhaustion of the punctured plane. -/
 noncomputable def originLateralChartRadius (n : ℕ) : ℝ := 1 / ((n : ℝ) + 1)
@@ -100,9 +98,7 @@ theorem originLateralChartRadius_pos (n : ℕ) : 0 < originLateralChartRadius n 
   one_div_pos.mpr (by positivity)
 
 /-- The exhaustion radii decrease with their index. -/
-theorem originLateralChartRadius_antitone : Antitone originLateralChartRadius := by
-  intro n k hnk
-  exact one_div_le_one_div_of_le (by positivity) (by exact_mod_cast Nat.add_le_add_right hnk 1)
+theorem originLateralChartRadius_antitone : Antitone originLateralChartRadius := fun n k hnk => one_div_le_one_div_of_le (by positivity) (by exact_mod_cast Nat.add_le_add_right hnk 1)
 
 /-- The increasing charts cover exactly the punctured plane. -/
 theorem originLateralChart_exhaustion :
@@ -114,7 +110,7 @@ theorem originLateralChart_exhaustion :
   · intro hx
     have hxpos : 0 < ‖x‖ := norm_pos_iff.mpr hx
     have ht : Tendsto (fun n : ℕ => 2 * originLateralChartRadius n) atTop (𝓝 0) := by
-      simpa only [originLateralChartRadius, mul_zero] using
+      simpa [originLateralChartRadius, mul_zero] using
         tendsto_const_nhds.mul (tendsto_one_div_add_atTop_nhds_zero_nat (𝕜 := ℝ))
     obtain ⟨n, hn⟩ := ((tendsto_order.mp ht).2 _ hxpos).exists
     exact mem_iUnion.mpr ⟨n, hn⟩
@@ -186,7 +182,7 @@ theorem originRadialRemovedGMC_measurable_version {Ω : Type*} [MeasurableSpace 
     rw [ae_iff]
     have hset : {x : ℂ | x ∉ ({0} : Set ℂ)ᶜ} = {0} := by
       ext x
-      simp only [mem_ofPred_eq, mem_compl_iff, not_not]
+      simp [mem_ofPred_eq, mem_compl_iff, not_not]
     rw [hset]
     exact originRadialRemovedGMC_origin γ (A ω) (M ω)
 
@@ -270,7 +266,7 @@ theorem originRadialRemovedGMC_eq_of_chart_restrictions (μ ν : Measure ℂ)
     rw [ae_iff]
     have hset : {x : ℂ | x ∉ ({0} : Set ℂ)ᶜ} = {0} := by
       ext x
-      simp only [mem_ofPred_eq, mem_compl_iff, not_not]
+      simp [mem_ofPred_eq, mem_compl_iff, not_not]
     rw [hset]
     exact hμ
   have hν0 : ν.restrict ({0} : Set ℂ)ᶜ = ν := by
@@ -278,17 +274,15 @@ theorem originRadialRemovedGMC_eq_of_chart_restrictions (μ ν : Measure ℂ)
     rw [ae_iff]
     have hset : {x : ℂ | x ∉ ({0} : Set ℂ)ᶜ} = {0} := by
       ext x
-      simp only [mem_ofPred_eq, mem_compl_iff, not_not]
+      simp [mem_ofPred_eq, mem_compl_iff, not_not]
     rw [hset]
     exact hν
   have heq : μ.restrict (⋃ n, originLateralChart (originLateralChartRadius n)) =
       ν.restrict (⋃ n, originLateralChart (originLateralChartRadius n)) :=
     Measure.restrict_iUnion_congr.mpr hchart
-  rw [originLateralChart_exhaustion, hμ0, hν0] at heq
-  exact heq
-
+  rwa [originLateralChart_exhaustion, hμ0, hν0] at heq
 /-- Every actual field/GMC pair supplies the complete source-projection predicate
-`DOZZ.IsSourceLateralProjection`, including full radial-path independence.
+`IsSourceLateralProjection`, including full radial-path independence.
 Stationarity, reflection and intensity are additional clauses of `IsLateralGMCOf`
 and are not assumed here. -/
 theorem equatorGFF_exists_sourceLateralProjection

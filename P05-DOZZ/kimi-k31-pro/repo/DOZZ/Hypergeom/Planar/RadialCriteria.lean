@@ -1,10 +1,8 @@
-module
 
-public import Mathlib.Analysis.SpecialFunctions.PolarCoord
-public import Mathlib.Analysis.SpecialFunctions.Integrability.Basic
-public import Mathlib.Analysis.SpecialFunctions.ImproperIntegrals
+import Mathlib.Analysis.SpecialFunctions.PolarCoord
+import Mathlib.Analysis.SpecialFunctions.Integrability.Basic
+import Mathlib.Analysis.SpecialFunctions.ImproperIntegrals
 
-@[expose] public section
 
 noncomputable section
 
@@ -15,20 +13,7 @@ namespace DOZZ.Proofs
 
 private theorem measurable_norm_rpow (s : ℝ) :
     Measurable (fun w : ℂ => ‖w‖ ^ s) := by
-  have hrepr : (fun w : ℂ => ‖w‖ ^ s) =
-    fun w => if ‖w‖ = 0 then 0 ^ s else Real.exp (s * Real.log ‖w‖) := by
-    funext w
-    by_cases hw : ‖w‖ = 0
-    · simp [hw]
-    · rw [ite_eq_right hw,
-        Real.rpow_def_of_pos (lt_of_le_of_ne (norm_nonneg w) (Ne.symm hw))]
-      congr 1
-      ring
-  rw [hrepr]
-  apply Measurable.ite
-  · exact MeasurableSet.preimage (measurableSet_singleton (0 : ℝ)) (by fun_prop)
-  · exact measurable_const
-  · fun_prop
+  fun_prop
 
 private theorem integrableOn_nonneg_iff_lintegral_lt_top {α : Type*} [MeasurableSpace α]
     {μ : Measure α} {s : Set α} {f : α → ℝ}
@@ -37,7 +22,7 @@ private theorem integrableOn_nonneg_iff_lintegral_lt_top {α : Type*} [Measurabl
   change Integrable f (μ.restrict s) ↔ _
   rw [Integrable, hasFiniteIntegral_iff_ofReal (μ := μ.restrict s)
     hnonneg]
-  simp only [hf.aestronglyMeasurable, true_and]
+  simp [hf.aestronglyMeasurable, true_and]
 
 private theorem ofReal_mul_rpow (r s : ℝ) (hr : 0 < r) :
     ENNReal.ofReal r * ENNReal.ofReal (r ^ s) = ENNReal.ofReal (r ^ (s + 1)) := by
@@ -93,9 +78,7 @@ private theorem lintegral_norm_rpow_ball_eq (s R : ℝ) :
     by_cases hlt : p.1 < R
     · have hpow := ofReal_mul_rpow p.1 s hr
       dsimp [F, radialLocal]
-      rw [Set.indicator_of_mem (s := Ioo (0 : ℝ) R) (show p.1 ∈ Ioo 0 R from ⟨hr, hlt⟩)]
-      rw [Set.indicator_of_mem (hball.mpr hlt), hnorm]
-      exact hpow
+      rwa [Set.indicator_of_mem (s := Ioo (0 : ℝ) R) (show p.1 ∈ Ioo 0 R from ⟨hr, hlt⟩), Set.indicator_of_mem (hball.mpr hlt), hnorm]
     · have hnotball : Complex.polarCoord.symm p ∉ Metric.ball (0 : ℂ) R :=
         fun hm => hlt (hball.mp hm)
       have hnotradial : p.1 ∉ Ioo (0 : ℝ) R := fun hm => hlt hm.2
@@ -117,7 +100,7 @@ private theorem lintegral_norm_rpow_ball_eq (s R : ℝ) :
       simp only [mem_inter_iff, mem_Ioo, mem_Ioi]
       constructor
       · rintro ⟨hr, _⟩
-        exact hr
+        assumption
       · intro hr
         exact ⟨hr, hr.1⟩
     rw [hset]
@@ -177,9 +160,7 @@ private theorem lintegral_norm_rpow_tail_eq (s R : ℝ) (hR : 0 < R) :
       have hmemcomp : Complex.polarCoord.symm p ∈ (Metric.ball (0 : ℂ) R)ᶜ := by
         simpa using hnotball
       dsimp [F, radialTail]
-      rw [Set.indicator_of_mem (s := Ici R) (show p.1 ∈ Ici R from hle)]
-      rw [Set.indicator_of_mem hmemcomp, hnorm]
-      exact hpow
+      rwa [Set.indicator_of_mem (s := Ici R) (show p.1 ∈ Ici R from hle), Set.indicator_of_mem hmemcomp, hnorm]
     · have hlt : p.1 < R := lt_of_not_ge hle
       have hballMem : Complex.polarCoord.symm p ∈ Metric.ball (0 : ℂ) R := hball.mpr hlt
       have hnotradial : p.1 ∉ Ici R := hle
@@ -203,7 +184,7 @@ private theorem lintegral_norm_rpow_tail_eq (s R : ℝ) (hR : 0 < R) :
       simp only [mem_inter_iff, mem_Ici, mem_Ioi]
       constructor
       · rintro ⟨hrR, _⟩
-        exact hrR
+        assumption
       · intro hrR
         exact ⟨hrR, lt_of_lt_of_le hR hrR⟩
     rw [hset]

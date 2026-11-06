@@ -2,19 +2,17 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.Assembly.CircleIntensity
-public import DOZZ.GMC.Construction.GMCUniformL1FromCauchy
-public import DOZZ.GMC.Assembly.CutoffIntegral
-public import Mathlib.MeasureTheory.Integral.Lebesgue.DominatedConvergence
-public import DOZZ.GMC.Construction.ReferenceMeasureTight
+import DOZZ.GMC.Assembly.CircleIntensity
+import DOZZ.GMC.Construction.GMCUniformL1FromCauchy
+import DOZZ.GMC.Assembly.CutoffIntegral
+import Mathlib.MeasureTheory.Integral.Lebesgue.DominatedConvergence
+import DOZZ.GMC.Construction.ReferenceMeasureTight
 
 /-! Uniform `L¹` convergence of the circle cutoff chaos (proof of `DOZZ.equatorGFF_GMC_uniform_L1`)
 and `L¹` continuity of circle GMC masses in the charge (proof of
 `DOZZ.equatorGFF_GMC_L1_continuous_gamma`). -/
 
-@[expose] public section
 
 /-! ### Uniform `L¹` convergence
 
@@ -31,7 +29,7 @@ open scoped Distributions ENNReal NNReal
 
 namespace DOZZ.Proofs
 
-open DOZZ.Assembly
+open Assembly
 
 /-- Uniform `L¹` convergence of regularized GMC masses on compact charge intervals, uniformly
 over bounded Borel tests supported in a compact set. -/
@@ -81,7 +79,7 @@ theorem equatorGFF_GMC_uniform_L1
   have hγ2 := hI2 hγ
   have hM := hMfam γ hγ2
   obtain ⟨N, hNmeas, -, hMN⟩ :=
-    DOZZ.Proofs.equatorGFF_GMC_measurable_version P X hX γ hγ2.1 hγ2.2 (Mfam γ) hM
+    equatorGFF_GMC_measurable_version P X hX γ hγ2.1 hγ2.2 (Mfam γ) hM
   apply ENNReal.le_of_forall_pos_le_add
   intro δ hδ _
   have hδ2 : ((δ / 2 : ℝ≥0) : ℝ≥0∞) ≠ 0 := by
@@ -128,8 +126,7 @@ theorem equatorGFF_GMC_uniform_L1
     (Measure.measurable_lintegral hhf).comp hNmeas
   have hA : ∫⁻ ω, ∫⁻ x, ENNReal.ofReal |f x - h x| ∂regularizedGMC P Xc γ r ω ∂P ≤
       ((δ / 2 : ℝ≥0) : ℝ≥0∞) := by
-    rw [regularizedGMC_lintegral_test_eq_reference P X hX Xc hXc γ r _ hfh]
-    exact happrox
+    rwa [regularizedGMC_lintegral_test_eq_reference P X hX Xc hXc γ r _ hfh]
   have hC : ∫⁻ ω, ∫⁻ x, ENNReal.ofReal |h x - f x| ∂N ω ∂P ≤ ((δ / 2 : ℝ≥0) : ℝ≥0∞) := by
     calc ∫⁻ ω, ∫⁻ x, ENNReal.ofReal |h x - f x| ∂N ω ∂P =
           ∫⁻ ω, ∫⁻ x, ENNReal.ofReal |h x - f x| ∂Mfam γ ω ∂P := by
@@ -159,7 +156,7 @@ theorem equatorGFF_GMC_uniform_L1
     _ = (⨆ j, ∫⁻ ω, ENNReal.ofReal |F r j ω - G j ω| ∂P) + δ := by
         rw [add_comm, add_assoc, ← ENNReal.coe_add, add_halves]
 
-end DOZZ.Proofs
+end Proofs
 
 /-! ### Fixed-cutoff continuity in the charge
 
@@ -172,9 +169,9 @@ normalization; dominated convergence in the sample and then in the point gives c
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
 
-namespace DOZZ.Assembly
+namespace Assembly
 
-open DOZZ.Proofs
+open Proofs
 
 /-- The Gaussian exponential moments of one admissible coordinate are finite. -/
 theorem admissible_lintegral_exp_mul_ne_top
@@ -211,7 +208,6 @@ theorem admissible_wick_weight_L1_continuous
           Real.exp (γ₀ * Y ω ε x - γ₀ ^ 2 / 2 * ∫ ω', Y ω' ε x ^ 2 ∂P)| ∂P)
       (𝓝 γ₀) (𝓝 0) := by
   set v : ℝ := ∫ ω', Y ω' ε x ^ 2 ∂P with hvdef
-  have hv : 0 ≤ v := integral_nonneg fun ω => sq_nonneg _
   set c : ℝ := |γ₀| + 1 with hcdef
   have hZ : Measurable (fun ω => Y ω ε x) := admissible_field_measurable_sample P U dens ε₀ Y hY ε x
   let bound : Ω → ℝ≥0∞ := fun ω => 2 * (ENNReal.ofReal (Real.exp (c * Y ω ε x)) +
@@ -281,7 +277,7 @@ theorem admissible_wick_weight_L1_continuous
     have h := hcont.tendsto γ₀
     simpa using h
 
-end DOZZ.Assembly
+end Assembly
 
 /-! ### `L¹` continuity in the charge
 
@@ -295,9 +291,9 @@ continuously on the charge in `L¹`. -/
 open MeasureTheory ProbabilityTheory Filter Topology TopologicalSpace Set
 open scoped Distributions ENNReal NNReal
 
-namespace DOZZ.Assembly
+namespace Assembly
 
-open DOZZ.Proofs
+open Proofs
 
 /-- The triangle inequality for expected absolute differences of almost everywhere measurable
 real random variables. -/
@@ -318,10 +314,10 @@ theorem lintegral_ofReal_abs_sub_le_add
   calc |U ω - W ω| = |(U ω - V ω) + (V ω - W ω)| := by ring_nf
     _ ≤ |U ω - V ω| + |V ω - W ω| := abs_add_le _ _
 
-end DOZZ.Assembly
+end Assembly
 
-namespace DOZZ.Proofs
+namespace Proofs
 
-open DOZZ.Assembly
+open Assembly
 
 end DOZZ.Proofs

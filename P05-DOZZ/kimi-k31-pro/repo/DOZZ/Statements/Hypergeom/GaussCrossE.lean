@@ -1,2 +1,1 @@
-module
-public import DOZZ.Statements.Hypergeom.GaussCrossD
+import DOZZ.Statements.Hypergeom.GaussCrossD

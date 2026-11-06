@@ -2,12 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Dual.CopiedInnerPolar
-public import DOZZ.FourPoint.Dual.PathLikelihood
+import DOZZ.FourPoint.Dual.CopiedInnerPolar
+import DOZZ.FourPoint.Dual.PathLikelihood
 import Mathlib.Tactic
 /-! Literal copied inner-kernel comparison on the same removed source plane carrier. -/
-@[expose] public section
 open MeasureTheory
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -40,12 +38,10 @@ theorem dual_source_copied_inner_kernel_squeeze
       (fun (_ : Unit) (_ : ℂ) t => a t) z hz ()
     change dualPathRadialScale γ (Q γ-α₁) h z a =
       ‖z‖^(2 : ℝ)*Real.exp (γ*(a (-Real.log ‖z‖+h)-(Q γ-α₁)*(-Real.log ‖z‖+h))) at he
-    simpa only [← hT] using he
+    simpa [← hT] using he
   have hb := dual_copied_inner_mass_squeeze γ α₁ α₂ α₃ R hγ z a (N ω) hNω.1 T
     hR hR₁ (norm_pos_iff.mpr hz) hη hsep
-  dsimp only at hb ⊢
+  dsimp at hb ⊢
   rw [hNω.2, ← hZω] at hb
-  rw [heβ]
-  exact hb
-
+  rwa [heβ]
 end DOZZ.Proofs

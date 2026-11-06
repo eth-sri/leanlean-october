@@ -2,8 +2,7 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.GFFStructure.GaussianIntegration
+import DOZZ.GFFStructure.GaussianIntegration
 /-!
 # Off-center radial orthogonality and the correlated pin
 
@@ -14,7 +13,6 @@ the logarithmic lateral kernel of `DOZZ.circleAverage_offCenter_decomposition` i
 step.
 -/
 
-@[expose] public section
 
 open Filter MeasureTheory ProbabilityTheory Set Metric
 open scoped Topology ENNReal NNReal
@@ -38,7 +36,7 @@ omit [IsProbabilityMeasure P] in
 theorem offCenter_origin_variance (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc) (z : ℂ) (hz : 2 ≤ ‖z‖) :
     covariance (fun ω => Xc ω z 0) (fun ω => Xc ω z 0) P = 2 * Real.log ‖z‖ := by
-  simpa only [min_self, zero_add] using
+  simpa [min_self, zero_add] using
     circleAverage_covariance_exterior P X Xc hX hc z hz (r := 0) (s := 0) le_rfl le_rfl
 
 omit [IsProbabilityMeasure P] in

@@ -2,15 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.Analytic.CoulombIncrementExponential
-public import DOZZ.Correlations.Analytic.NormalizedObservableIncrement
-public import DOZZ.Correlations.Analytic.ImaginaryGrowth
+import DOZZ.Correlations.Analytic.CoulombIncrementExponential
+import DOZZ.Correlations.Analytic.NormalizedObservableIncrement
+import DOZZ.Correlations.Analytic.ImaginaryGrowth
 
 /-! Summable actual analytic cutoff increments on thin complex polydiscs. -/
 
-@[expose] public section
 open MeasureTheory Filter Topology
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -52,7 +50,7 @@ theorem normalized_cutoff_exponential_polydisc
   obtain ⟨E, hE, hgrowth⟩ := normalized_imaginary_growth P X Xc hX hc γ hγ.ne' z
   let d := κ / (2 * E)
   have hd : 0 < d := div_pos hκ (mul_pos (by norm_num) hE)
-  have hEd : E * d = κ / 2 := by dsimp only [d]; field_simp
+  have hEd : E * d = κ / 2 := by dsimp [d]; field_simp
   have hbulkβ : ∀ β ∈ complexPolydisc (fun i => (center i : ℂ)) radius,
       (complexMomentPower γ β).re < 4 / γ ^ 2 := by
     intro β hβ
@@ -83,9 +81,8 @@ theorem normalized_cutoff_exponential_polydisc
           (mixedVertexTimes N ((n + 1 : ℕ) : ℝ) i)) / 2 +
         (γ * ∑ i, (β i.castSucc).re * equatorCircleMean (z i) ((n + 1 : ℕ) : ℝ)) *
           (complexMomentPower γ β).re ≤ E * ((n : ℝ) + 2) * ∑ i, (β i).im ^ 2 := by
-    simpa only [Nat.cast_add, Nat.cast_one, add_assoc, one_add_one_eq_two] using hdet
-  have hthin : E * (∑ i, (β i).im ^ 2) ≤ κ / 2 := by
-    exact (mul_le_mul_of_nonneg_left him hE.le).trans_eq hEd
+    simpa [Nat.cast_add, Nat.cast_one, add_assoc, one_add_one_eq_two] using hdet
+  have hthin : E * (∑ i, (β i).im ^ 2) ≤ κ / 2 := (mul_le_mul_of_nonneg_left him hE.le).trans_eq hEd
   have he := imaginary_decay_absorption K E (∑ i, (β i).im ^ 2) κ (n : ℝ) hK hthin hr
   apply (ENNReal.ofReal_le_ofReal_iff (by positivity)).mp
   calc

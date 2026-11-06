@@ -2,15 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Hypergeom.ODE.ConnectionMidpointCramer
+import DOZZ.Hypergeom.ODE.ConnectionMidpointCramer
 import Mathlib.Analysis.SpecialFunctions.Gamma.Deriv
 import Mathlib.Analysis.SpecialFunctions.Gamma.Beta
 
 /-! Parameter regularity of the four Gamma coefficients in the connection formulas. -/
 
-@[expose] public section
 
 open scoped Topology
 
@@ -39,15 +37,11 @@ noncomputable def gaussConnectionPlusGammaCoefficient₂ (p : ℂ × ℂ × ℂ)
 
 private theorem connection_c_polefree {p : ℂ × ℂ × ℂ}
     (hp : p ∈ gaussConnectionParameterDomain) :
-    ∀ n : ℕ, p.2.2 ≠ -(n : ℂ) := by
-  intro n he
-  exact hp.1 (-(n : ℤ)) (by simpa using he)
+    ∀ n : ℕ, p.2.2 ≠ -(n : ℂ) := fun n he => hp.1 (-(n : ℤ)) (by simpa using he)
 
 private theorem connection_delta_polefree {p : ℂ × ℂ × ℂ}
     (hp : p ∈ gaussConnectionParameterDomain) :
-    ∀ n : ℕ, p.2.2 - p.1 - p.2.1 ≠ -(n : ℂ) := by
-  intro n he
-  exact hp.2 (-(n : ℤ)) (by simpa using he)
+    ∀ n : ℕ, p.2.2 - p.1 - p.2.1 ≠ -(n : ℂ) := fun n he => hp.2 (-(n : ℤ)) (by simpa using he)
 
 private theorem connection_neg_delta_polefree {p : ℂ × ℂ × ℂ}
     (hp : p ∈ gaussConnectionParameterDomain) :
@@ -65,16 +59,14 @@ private theorem connection_two_sub_c_polefree {p : ℂ × ℂ × ℂ}
   have hcast : p.2.2 = (((n : ℤ) + 2 : ℤ) : ℂ) := by
     push_cast at he ⊢
     linear_combination -he
-  exact hcast
+  assumption
 
 private theorem gamma_comp_differentiableAt
     {p : ℂ × ℂ × ℂ} (f : ℂ × ℂ × ℂ → ℂ)
     (hf : DifferentiableAt ℂ f p)
     (hfree : ∀ n : ℕ, f p ≠ -(n : ℂ)) :
     DifferentiableAt ℂ (fun q => Complex.Gamma (f q)) p := by
-  have hGamma := Complex.differentiableAt_Gamma (f p) hfree
-  change DifferentiableAt ℂ (Complex.Gamma ∘ f) p
-  exact hGamma.comp p hf
+  fun_prop
 
 private theorem invGamma_comp_differentiableAt
     {p : ℂ × ℂ × ℂ} (f : ℂ × ℂ × ℂ → ℂ)

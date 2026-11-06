@@ -2,15 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Fusion.ConvexMass
-public import DOZZ.FourPoint.Fusion.RootedMomentIdentity
-public import DOZZ.GMC.Moments.RhoCoulomb
-public import DOZZ.FourPoint.Fusion.MassPositiveFinite
-public import DOZZ.FourPoint.FourPointTZeroEqStructureConstant
-public import DOZZ.FourPoint.TaylorFixedDisk
+import DOZZ.FourPoint.Fusion.ConvexMass
+import DOZZ.FourPoint.Fusion.RootedMomentIdentity
+import DOZZ.GMC.Moments.RhoCoulomb
+import DOZZ.FourPoint.Fusion.MassPositiveFinite
+import DOZZ.FourPoint.FourPointTZeroEqStructureConstant
+import DOZZ.FourPoint.TaylorFixedDisk
 /-! # The unrooted positive KRV mass segment -/
-@[expose] public section
 open MeasureTheory Set Filter
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -44,7 +42,7 @@ theorem fusion_zeroMass_pos_finite_ae {Ω : Type*} [MeasurableSpace Ω]
     gmc_singleton_mass_eq_zero_ae P X hX γ hγ hγ2 M hM 0,
     gmc_singleton_mass_eq_zero_ae P X hX γ hγ hγ2 M hM 1] with ω hω he h0 h1
   have hmass := coulombMass_at_zero_eq_rho γ (γ / 2) α₁ α₂ α₃ (M ω) h0 h1
-  simp only [← neg_div] at hmass
+  simp [← neg_div] at hmass
   rw [hmass, he]
   exact hω
 /-- All nonpositive segment moments are uniformly bounded over the time interval and unit roots. -/

@@ -2,16 +2,14 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Hypergeom.Defs
-public import Mathlib.Analysis.Convex.Contractible
-public import Mathlib.AlgebraicTopology.FundamentalGroupoid.SimplyConnected
+import DOZZ.Hypergeom.Defs
+import Mathlib.Analysis.Convex.Contractible
+import Mathlib.AlgebraicTopology.FundamentalGroupoid.SimplyConnected
 
 /-! The complement of the nonnegative real axis is a simply connected regular domain for the
 Gauss system. -/
 
-@[expose] public section
 
 open Set
 
@@ -86,7 +84,6 @@ theorem gaussNegativeCutPlane_starConvex :
         have htneg : t ≤ 0 := le_of_not_gt hnot
         exact ht0 (le_antisymm htneg ht)
       have hsecond : t * z.re < 0 := mul_neg_of_pos_of_neg htpos hreal
-      have hfirst : -(s / 2) ≤ 0 := neg_nonpos.mpr (div_nonneg hs (by norm_num))
       linarith
 
 /-- Contractibility of the negative cut plane. -/

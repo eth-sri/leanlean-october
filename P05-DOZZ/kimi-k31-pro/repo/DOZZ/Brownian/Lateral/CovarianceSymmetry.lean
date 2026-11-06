@@ -2,15 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Brownian.Lateral.CircleRegularization
-public import DOZZ.GMC.Moments.CircleScale
-public import DOZZ.GFFStructure.PoissonEnergy
+import DOZZ.Brownian.Lateral.CircleRegularization
+import DOZZ.GMC.Moments.CircleScale
+import DOZZ.GFFStructure.PoissonEnergy
 
 /-! Covariance symmetries of the actual orthogonal lateral circle family. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
@@ -36,7 +34,7 @@ theorem originCircleRadialL2_double_covariance
   rw [covariance_comm,
     covariance_congr_ae (circleAverageL2_ae_eq hc _) (circleAverageL2_ae_eq hc _),
     clampedLogRadius_eq ρ w hw, clampedLogRadius_eq σ v hv]
-  dsimp only
+  dsimp
   rw [origin_circle_radial_covariance X Xc hX hc]
 
 /-- The scalar radial kernel is integrable on every valid circle. -/
@@ -79,7 +77,7 @@ theorem originRadialCovariance_double_circle_integrable
   rw [covariance_comm,
     covariance_congr_ae (circleAverageL2_ae_eq hc _) (circleAverageL2_ae_eq hc _),
     clampedLogRadius_eq ρ w hw, clampedLogRadius_eq σ v hv]
-  dsimp only
+  dsimp
   rw [origin_circle_radial_covariance X Xc hX hc]
 
 /-- Exact circle covariance after the radial pin terms have been removed. -/
@@ -113,7 +111,7 @@ theorem originCircleLateralL2_covariance_kernel
 theorem originCircleCutoff_dilation_lower (c : ℝ) (hc : 0 < c)
     (ρ : ℝ) (x : ℂ) (r : ℝ) (hx : ρ ≤ ‖x‖ - Real.exp (-r)) :
     c * ρ ≤ ‖(c : ℂ) * x‖ - Real.exp (-(r - Real.log c)) := by
-  have hn : ‖(c : ℂ)‖ = c := by simp only [Complex.norm_real, Real.norm_eq_abs, abs_of_pos hc]
+  have hn : ‖(c : ℂ)‖ = c := by simp [Complex.norm_real, Real.norm_eq_abs, abs_of_pos hc]
   have he : Real.exp (-(r - Real.log c)) = c * Real.exp (-r) := by
     have ha : -(r - Real.log c) = Real.log c + -r := by ring
     rw [ha, Real.exp_add, Real.exp_log hc]
@@ -189,7 +187,7 @@ theorem originCircleLateralL2_dilation_gaussianCovariance
     gaussianCovariance P (originCircleLateralL2 hc p.val.1 p.val.2.1 p.val.2.2)
       (originCircleLateralL2 hc q.val.1 q.val.2.1 q.val.2.2) := by
   have he := originCircleLateralL2_covariance_dilation P X Xc hX hc c hpos p q
-  simpa only [gaussianCovariance, covariance, originCircleLateralL2_integral_eq_zero P X Xc hX hc,
+  simpa [gaussianCovariance, covariance, originCircleLateralL2_integral_eq_zero P X Xc hX hc,
     mul_pos hpos p.property.1, mul_pos hpos q.property.1, p.property.1, q.property.1,
     sub_zero] using he
 
@@ -270,7 +268,7 @@ theorem originLateralCircleRegularization_dilation_variance
       (measurable_id.prodMk measurable_const)
   rw [integral_map hml.aemeasurable ((measurable_pi_apply 0).pow_const 2).aestronglyMeasurable,
     integral_map hmr.aemeasurable ((measurable_pi_apply 0).pow_const 2).aestronglyMeasurable] at hs
-  simpa only [gaussianVariance, gaussianCovariance, pow_two] using hs
+  simpa [gaussianVariance, gaussianCovariance, pow_two] using hs
 
 /-- Radial projection commutes with inversion as reflection of the cylinder. -/
 theorem logRadiusProjection_inversion (F : Measure ℂ) :
@@ -281,7 +279,7 @@ theorem logRadiusProjection_inversion (F : Measure ℂ) :
     Measure.map_map measurable_neg hm]
   congr 1
   funext z
-  simp only [Function.comp_apply, norm_inv, Real.log_inv]
+  simp [Function.comp_apply, norm_inv, Real.log_inv]
 
 /-- Radial projection commutes with nonzero dilation as translation of the cylinder;
 the zero atom is excluded explicitly because logarithmic radius is defined as zero there. -/
@@ -296,9 +294,9 @@ theorem logRadiusProjection_dilation (F : Measure ℂ) (hF : F {0} = 0)
   apply Measure.map_congr
   have hzero : ∀ᵐ z ∂F, z ≠ 0 := by
     rw [ae_iff]
-    simpa only [not_not, ofPred_eq_eq_singleton] using hF
+    simpa [not_not, ofPred_eq_eq_singleton] using hF
   filter_upwards [hzero] with z hz
-  dsimp only [Function.comp_apply]
+  dsimp [Function.comp_apply]
   rw [norm_mul, Complex.norm_real, Real.norm_eq_abs, abs_of_pos hc,
     Real.log_mul hc.ne' (norm_ne_zero_iff.mpr hz)]
   ring

@@ -1,6 +1,5 @@
-module
-public import DOZZ.GMC.Construction.GMCGeneralTiltBasisProxy
-public import DOZZ.GMC.Construction.RegularizedGMCExpectedMeasure
+import DOZZ.GMC.Construction.GMCGeneralTiltBasisProxy
+import DOZZ.GMC.Construction.RegularizedGMCExpectedMeasure
 import DOZZ.GMC.Construction.ReferenceMeasureFinite
 import Mathlib.MeasureTheory.Measure.Prod
 
@@ -9,7 +8,7 @@ open scoped Distributions ENNReal NNReal
 
 namespace DOZZ.Proofs
 
-public section
+section
 
 noncomputable def gmcLowerBoxApproxGapIntegrand (i : ℚ × ℚ) (n : ℕ) (z : ℂ) : ℝ≥0∞ :=
   ENNReal.ofReal |(gmcLowerBox i).indicator (fun _ => (1 : ℝ)) z - gmcLowerBoxApprox i n z|
@@ -133,7 +132,7 @@ theorem regularizedGMC_lowerBoxApprox_error_le_reference
         constructor
         · have h0 : 0 ≤ f z := by simpa [f, gmcLowerBoxApprox] using h.1
           linarith
-        · exact (by simpa [f, gmcLowerBoxApprox] using h.2)
+        · simpa [f, gmcLowerBoxApprox] using h.2
       exact @MemLp.of_bound ℂ ℝ _ 1 μ _ hfin f
         (gmcLowerBoxApprox i n).continuous.aestronglyMeasurable 1 hbd
     have hIbInt : ∫ z, ib z ∂μ = (μ B).toReal := by
@@ -155,7 +154,7 @@ theorem regularizedGMC_lowerBoxApprox_error_le_reference
       calc
         gap ω ≤ ∫⁻ z, (1 : ℝ≥0∞) ∂μ := by
           apply lintegral_mono
-          exact hphiBound
+          assumption
         _ = μ Set.univ := by simp
         _ < ∞ := lt_top_iff_ne_top.mpr (@measure_ne_top ℂ _ μ hfin Set.univ)
     have hεgap : ε ≤ (gap ω).toReal := hω.trans hdist'
@@ -193,11 +192,6 @@ theorem testIntegral_boxApprox_tendstoInMeasure
     obtain ⟨g, hg, hEq⟩ :=
       equatorGFF_GMC_testIntegral_raw_measurable_version_of_IsGMCOf
         P X hX γ M hM (gmcLowerBoxApprox i n)
-    have hg' : Measurable g := hg.mono hm0 le_rfl
-    exact hg'.aemeasurable.congr hEq.symm
-  have hGmeas : AEMeasurable (fun ω => (M ω (gmcLowerBox i)).toReal) P := by
-    obtain ⟨g, hg, hEq⟩ :=
-      equatorGFF_GMC_lowerBox_realMass_raw_version P X hX γ M hM i
     have hg' : Measurable g := hg.mono hm0 le_rfl
     exact hg'.aemeasurable.congr hEq.symm
   have hpoint : ∀ᵐ ω ∂P, Tendsto

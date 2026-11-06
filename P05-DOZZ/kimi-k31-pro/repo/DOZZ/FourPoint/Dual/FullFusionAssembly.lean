@@ -2,11 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.Dual.Observable
-public import DOZZ.FourPoint.Dual.PhysicalFusionCoefficient
-public import DOZZ.Statements.FourPoint.FourPointTZeroEqStructureConstant
+import DOZZ.FourPoint.Dual.Observable
+import DOZZ.FourPoint.Dual.PhysicalFusionCoefficient
+import DOZZ.Statements.FourPoint.FourPointTZeroEqStructureConstant
 import DOZZ.FourPoint.Reflected.Normalization
 import Mathlib.Tactic
 
@@ -17,7 +16,6 @@ zero-mode and reflection normalizations give the full complex asymptotic with th
 witness, and its positive-ray specialization is fed to the diagonal classification.
 -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory Set Filter Topology
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -102,14 +100,14 @@ let κ := (4 / γ) * (Q γ - α₁)
     fourPointT_eq_dualKernelMoment P X hX γ hγ hγ₂ M hM μ α₁ α₂ α₃ z
   have hzero : N*E₀ = C₀ := by
     have h2 : 0 < 2/γ := by positivity
-    have hz := DOZZ.fourPointT_zero_eq_structureConstant P X M γ μ (2/γ) α₁ α₂ α₃
+    have hz := fourPointT_zero_eq_structureConstant P X M γ μ (2/γ) α₁ α₂ α₃
       hγ hγ₂ hμ (by linarith only [hαhi,h2])
       hα₂ hα₃ (by linarith only [hs]) hX hM
     change N*E₀ = structureConstant P M γ μ (α₁-2/γ) α₂ α₃
     rw [← hz]
     unfold fourPointT
     rw [show fourPointSExp γ (-(2/γ)) α₁ α₂ α₃ = p from
-      by simpa only [neg_div] using fourPointSExp_dual γ α₁ α₂ α₃]
+      by simpa [neg_div] using fourPointSExp_dual γ α₁ α₂ α₃]
     simp only [N, E₀, ENNReal.rpow_eq_pow, neg_div]
   have hfull : Tendsto (fun z : ℂ =>
       (fourPointT P M γ μ (-2/γ) α₁ α₂ α₃ z-C₀)/‖z‖^κ)
@@ -141,15 +139,15 @@ let κ := (4 / γ) * (Q γ - α₁)
       apply tendsto_nhdsWithin_iff.mpr
       refine ⟨Complex.continuous_ofReal.continuousAt.tendsto.mono_left nhdsWithin_le_nhds, ?_⟩
       filter_upwards [self_mem_nhdsWithin] with t ht
-      simpa only [mem_compl_iff, mem_singleton_iff, Complex.ofReal_ne_zero] using ne_of_gt ht
+      simpa [mem_compl_iff, mem_singleton_iff, Complex.ofReal_ne_zero] using ne_of_gt ht
     have hray : Tendsto (fun t : ℝ =>
         (fourPointT P M γ μ (-(2/γ)) α₁ α₂ α₃ (t : ℂ)-C₀)/t^κ)
         (𝓝[>] (0 : ℝ)) (𝓝 D) := by
       apply (hfull.comp hcast).congr'
       filter_upwards [self_mem_nhdsWithin] with t ht
-      simp only [Function.comp_def, Complex.norm_real, Real.norm_eq_abs, abs_of_pos ht, neg_div]
+      simp only [Function.comp_def, Complex.norm_real, Real.norm_eq_abs, abs_of_pos (Set.mem_Ioi.mp ht), neg_div]
     have hclass := dual_physical_fusion_coefficient hH P X M γ μ α₁ α₂ α₃ D
       hγ hγ₂ hμ hαhi hα₂ hα₃ hs (hslack₁.trans hξ₂) hX hM hray
-    simpa only [neg_div] using hclass.2
+    simpa [neg_div] using hclass.2
 
 end DOZZ.Proofs

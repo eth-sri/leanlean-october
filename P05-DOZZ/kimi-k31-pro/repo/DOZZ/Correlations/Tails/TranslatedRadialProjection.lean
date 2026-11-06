@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.Tails.TranslatedField
-public import DOZZ.Brownian.Lateral.GlobalIndependence
+import DOZZ.Correlations.Tails.TranslatedField
+import DOZZ.Brownian.Lateral.GlobalIndependence
 
 /-! The translated source projection uses the literal off-center radial Brownian motion. -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal
 
@@ -63,7 +61,7 @@ theorem translated_radial_sourceProjection
     intro s
     exact (originRadialPath_eval_ae (Xc := Uc) hcontU).mono (fun ω hω => hω s)
   · filter_upwards [originRadialPath_eval_ae (Xc := Uc) hcontU] with ω hω s
-    simpa only [Uc, add_zero] using hω s
+    simpa [Uc, add_zero] using hω s
 
 
 end DOZZ.Proofs

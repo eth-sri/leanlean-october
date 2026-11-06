@@ -2,12 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Dual.ReflectionCutMoments
-public import DOZZ.Correlations.Tails.CanonicalSourceWilliamsLaw
-public import DOZZ.Correlations.Tails.SourceCutOrdering
+import DOZZ.FourPoint.Dual.ReflectionCutMoments
+import DOZZ.Correlations.Tails.CanonicalSourceWilliamsLaw
+import DOZZ.Correlations.Tails.SourceCutOrdering
 /-! Ordering and measurability of the actual dual Williams last-cut mass. -/
-@[expose] public section
 open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -46,7 +44,7 @@ theorem dual_williams_cut_real_bounds
   have hJm := twoSidedReflectionMass_aemeasurable_of_lateral P γ B Z
     (aemeasurable_of_twoSidedConditioned hData.1) hData.2.1
   have hmoment := reflected_reflection_mass_moment_lt_top P γ α 1 B Z hα hData h4
-  simp only [ENNReal.rpow_one] at hmoment
+  simp [ENNReal.rpow_one] at hmoment
   have hJfin := ae_lt_top' hJm hmoment.ne
   have horder := source_last_exit_mono_prod_ae P (Q γ-α) c
     (sub_pos.mpr hα) (fun ω => (B ω).2) hData.1.2.1

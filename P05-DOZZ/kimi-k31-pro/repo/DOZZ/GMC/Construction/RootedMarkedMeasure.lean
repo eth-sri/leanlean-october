@@ -1,14 +1,12 @@
 /-
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 -/
-module
 
-public import DOZZ.GMC.Construction.RootedMeasureKernel
-public import Mathlib.MeasureTheory.Measure.GiryMonad
+import DOZZ.GMC.Construction.RootedMeasureKernel
+import Mathlib.MeasureTheory.Measure.GiryMonad
 
 /-! Measurable marked random measures and their expected rectangle masses. -/
 
-@[expose] public section
 
 open MeasureTheory
 open scoped ENNReal
@@ -31,7 +29,7 @@ theorem measurable_markedMeasure_family
     funext ω
     rw [Measure.map_apply (hmap ω) hS]
     have hi := lintegral_indicator_const_comp (μ := M ω) (f := fun u : U => (u, q ω)) (hmap ω) hS 1
-    simpa only [one_mul] using hi.symm
+    simpa [one_mul] using hi.symm
   rw [heq]
   apply measurable_lintegral_finite_family M hM hfinite
     (fun p : Ω × U => S.indicator (fun _ => (1 : ℝ≥0∞)) (p.2, q p.1))
@@ -52,7 +50,7 @@ theorem isFiniteMeasure_bind_markedMeasure
     rw [Measure.map_apply (show Measurable (fun u : U => (u, q ω)) from
       measurable_id.prodMk measurable_const) MeasurableSet.univ,
       Set.preimage_univ]
-  simpa only [heq] using hmean
+  simpa [heq] using hmean
 
 /-- Rectangle masses of the expected marked measure are the marked-law masses weighted by the
 random mass of the root set. -/
@@ -75,11 +73,11 @@ theorem bind_markedMeasure_apply_prod
   · rw [Set.indicator_of_mem (show ω ∈ q ⁻¹' D from hω)]
     congr 1
     ext u
-    simp only [Set.mem_preimage, Set.mem_prod, hω, and_true]
+    simp [hω]
   · rw [Set.indicator_of_notMem (show ω ∉ q ⁻¹' D from hω)]
     have he : (fun u => (u, q ω)) ⁻¹' (A ×ˢ D) = ∅ := by
       ext u
-      simp only [Set.mem_preimage, Set.mem_prod, hω, and_false, Set.mem_empty_iff_false]
+      simp [hω, Set.mem_empty_iff_false]
     rw [he, measure_empty]
 
 end DOZZ.Proofs

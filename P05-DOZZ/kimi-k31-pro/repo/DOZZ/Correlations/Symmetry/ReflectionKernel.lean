@@ -2,11 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.Statements.Defs.GffKernel
-public import Mathlib.Analysis.SpecialFunctions.Log.Basic
-public import Mathlib.Topology.ContinuousMap.Bounded.Normed
-@[expose] public section
+import DOZZ.Statements.Defs.GffKernel
+import Mathlib.Analysis.SpecialFunctions.Log.Basic
+import Mathlib.Topology.ContinuousMap.Bounded.Normed
 namespace DOZZ.Proofs
 
 /-- The change in the equator pinning potential under the swap of zero and one. -/
@@ -16,8 +14,7 @@ noncomputable def symmetryReflectionPotential (x : ℂ) : ℝ :=
 
 /-- Reflection is involutive. -/
 theorem symmetryReflection_involutive : Function.Involutive (fun x : ℂ => 1 - x) := by
-  intro x
-  ring
+  simp
 
 /-- The potential reverses sign under reflection. -/
 theorem symmetryReflectionPotential_reflect (x : ℂ) :
@@ -64,5 +61,5 @@ theorem symmetryReflectionPotential_bound (x : ℂ) :
 noncomputable def symmetryReflectionPotentialBCF : BoundedContinuousFunction ℂ ℝ :=
   BoundedContinuousFunction.ofNormedAddCommGroup symmetryReflectionPotential
     symmetryReflectionPotential_continuous (Real.log 2) (fun x => by
-      simpa only [Real.norm_eq_abs] using symmetryReflectionPotential_bound x)
+      simpa [Real.norm_eq_abs] using symmetryReflectionPotential_bound x)
 end DOZZ.Proofs

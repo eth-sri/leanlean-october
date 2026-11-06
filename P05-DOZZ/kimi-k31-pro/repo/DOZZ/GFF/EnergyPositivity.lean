@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GFF.RadialEnergy
+import DOZZ.GFF.RadialEnergy
 
 /-!
 # DOZZ.GFF.EnergyPositivity
@@ -12,7 +11,6 @@ public import DOZZ.GFF.RadialEnergy
 Quantitative radial estimates for the finite-energy approximation to the equator measure.
 -/
 
-@[expose] public section
 
 open Filter MeasureTheory Set
 open scoped ENNReal Topology
@@ -215,8 +213,7 @@ noncomputable def annularLogPotential (n : ℕ) (z : ℂ) : ℝ :=
 
 theorem abs_annularLogPotential_sub_logPlus (n : ℕ) (z : ℂ) :
     |annularLogPotential n z - Real.log (max 1 ‖z‖)| ≤
-      2 / ((n : ℝ) + 2) := by
-  exact abs_annularLogPotential_sub_logmax n ‖z‖
+      2 / ((n : ℝ) + 2) := abs_annularLogPotential_sub_logmax n ‖z‖
 
 /-- The logarithmic potential of a DOZZ test density is its complex-plane integral against
 `log (max 1 ‖z‖)`. -/
@@ -366,7 +363,6 @@ theorem abs_annularSelfEnergy_le (n : ℕ) :
     simpa [ρ, μ] using integral_annularProbabilityDensity n
   have hD : annularSelfEnergy n = -(∫ z : ℂ, ρ z * V z ∂μ) := by
     simpa [annularSelfEnergy, ρ, V, μ, annularLogPotential] using hPair.2
-  have hc : 0 ≤ c := by dsimp [c]; positivity
   have hUpperInt : Integrable (fun z : ℂ => c * ρ z) μ := hρInt.const_mul c
   have hPointwise (z : ℂ) : |ρ z * V z| ≤ c * ρ z := by
     by_cases hzero : ρ z = 0
@@ -588,8 +584,7 @@ theorem annularCenteredPairing_eq_expansion (f : TestFn) (n : ℕ) :
   let μ : Measure (ℂ × ℂ) := (volume : Measure ℂ).prod (volume : Measure ℂ)
   have hρc := continuous_annularProbabilityDensity n
   have hρcs := hasCompactSupport_annularProbabilityDensity n
-  have hgc : Continuous g := by
-    exact f.continuous.sub (hρc.const_mul m)
+  have hgc : Continuous g := f.continuous.sub (hρc.const_mul m)
   have hgcs : HasCompactSupport g := by
     have hmρ : HasCompactSupport (fun z : ℂ => m * ρ z) := by
       have heq : (fun z : ℂ => m * ρ z) = (fun _ : ℂ => m) • ρ := by
@@ -610,14 +605,9 @@ theorem annularCenteredPairing_eq_expansion (f : TestFn) (n : ℕ) :
   have hCint : Integrable C μ := by simpa [C, μ] using hC.1
   have hDint : Integrable D μ := by simpa [D, μ] using hD.1
   have hgPair := integral_complexLogKernelPair_eq_vec g g hgc hgc hgcs hgcs
-  have hgInt : Integrable (fun q : ℂ × ℂ =>
-      g q.1 * g q.2 * (-Real.log ‖q.1 - q.2‖)) μ := by
-    simpa [μ] using hgPair.1
   have hBm : Integrable (fun q => m * B q) μ := hBint.const_mul m
   have hCm : Integrable (fun q => m * C q) μ := hCint.const_mul m
   have hDmm : Integrable (fun q => m ^ 2 * D q) μ := hDint.const_mul (m ^ 2)
-  have hExpanded : Integrable (fun q => (A q - m * B q) - (m * C q - m ^ 2 * D q)) μ :=
-    (hAint.sub hBm).sub (hCm.sub hDmm)
   have hPointwise (q : ℂ × ℂ) :
       g q.1 * g q.2 * (-Real.log ‖q.1 - q.2‖) =
         (A q - m * B q) - (m * C q - m ^ 2 * D q) := by
@@ -653,7 +643,7 @@ theorem annularCenteredPairing_eq_expansion (f : TestFn) (n : ℕ) :
       _ = (∫ q : ℂ × ℂ, A q ∂μ) - m * (∫ q : ℂ × ℂ, B q ∂μ) -
             m * (∫ q : ℂ × ℂ, C q ∂μ) + m ^ 2 * (∫ q : ℂ × ℂ, D q ∂μ) := by
             rw [integral_sub hAint hBm, integral_sub hCm hDmm]
-            simp only [integral_const_mul]
+            simp [integral_const_mul]
             ring
   rw [hgf, hExpandedIntegral, hswap]
   have hAtest : testFnLogPairing f f = ∫ q : ℂ × ℂ, A q ∂μ := by
@@ -731,12 +721,10 @@ theorem gffCov_self_nonneg (f : TestFn) : 0 ≤ gffCov f f := by
     tendsto_const_nhds
   apply le_of_tendsto_of_tendsto' hnegativeTendsto hconstant
   intro n
-  have hQnonneg : 0 ≤ Q n := by
-    exact abkLogCovariancePairing_self_nonneg (annularCenteredTestFn f n)
+  have hQnonneg : 0 ≤ Q n := abkLogCovariancePairing_self_nonneg (annularCenteredTestFn f n)
   have hupper := (abs_le.mp (hError n)).2
   dsimp [Q] at hQnonneg
   linarith
 
 end DOZZ
 
-end

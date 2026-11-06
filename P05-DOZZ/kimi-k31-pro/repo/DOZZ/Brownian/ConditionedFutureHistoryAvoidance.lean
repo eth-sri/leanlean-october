@@ -2,11 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Brownian.ConditionedFutureHistoryMarkov
-public import DOZZ.Brownian.LastExitRationalCondExp
-public import Mathlib.Probability.Kernel.Composition.CompMap
+import DOZZ.Brownian.ConditionedFutureHistoryMarkov
+import DOZZ.Brownian.LastExitRationalCondExp
+import Mathlib.Probability.Kernel.Composition.CompMap
 
 /-!
 # Full-history conditional expectation for rational future avoidance
@@ -16,7 +15,6 @@ This file records the avoidance event as a decreasing sequence of finite rationa
 passes its conditional expectations to the all-rational event in `L¹`.
 -/
 
-@[expose] public section
 
 open Filter MeasureTheory ProbabilityTheory Set
 open scoped NNReal Topology
@@ -89,7 +87,7 @@ theorem conditionedPositiveHistory_condExp_rationalFuture_avoidance
     · intro h q hq
       have := h q
       simp only [hq, dite_true] at this
-      exact this
+      assumption
     · intro h q
       by_cases hq : 0 < (q : ℝ)
       · simpa [hq] using h q hq
@@ -121,4 +119,3 @@ theorem conditionedPositiveHistory_condExp_rationalFuture_avoidance
 
 end DOZZ.Proofs
 
-end

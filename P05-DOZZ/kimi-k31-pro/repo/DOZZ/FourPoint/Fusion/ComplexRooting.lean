@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.Fusion.SignedRooting
+import DOZZ.FourPoint.Fusion.SignedRooting
 import Mathlib.MeasureTheory.Integral.Bochner.ContinuousLinearMap
 
 /-! # Complex rooting for the pure second derivative kernel -/
 
-@[expose] public section
 open MeasureTheory Filter
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -58,10 +56,10 @@ theorem fusion_rooted_complex_integral {Ω : Type*} [MeasurableSpace Ω]
   have hLint : Integrable L P := Integrable.re_im_iff.mp
     ⟨hLr.congr heLr, hLi.congr heLi⟩
   have hRre : Integrable (fun u => (R u).re) gmcReferenceMeasure := by
-    simpa only [R, Complex.mul_re, Complex.ofReal_re, Complex.ofReal_im, mul_zero, sub_zero]
+    simpa [R, Complex.mul_re, Complex.ofReal_re, Complex.ofReal_im, mul_zero, sub_zero]
       using hRr
   have hRim : Integrable (fun u => (R u).im) gmcReferenceMeasure := by
-    simpa only [R, Complex.mul_im, Complex.ofReal_re, Complex.ofReal_im, mul_zero, zero_add]
+    simpa [R, Complex.mul_im, Complex.ofReal_re, Complex.ofReal_im, mul_zero, zero_add]
       using hRi
   have hRint : Integrable R gmcReferenceMeasure := Integrable.re_im_iff.mp ⟨hRre, hRim⟩
   refine ⟨hLint, hRint, ?_⟩

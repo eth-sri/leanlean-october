@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Hypergeom.Planar.TaylorScale
-public import DOZZ.Hypergeom.Planar.TaylorTail
+import DOZZ.Hypergeom.Planar.TaylorScale
+import DOZZ.Hypergeom.Planar.TaylorTail
 
 /-! Rotation and scaling give the integral of the corrected Taylor kernel at every center. -/
 
-@[expose] public section
 
 open MeasureTheory
 
@@ -20,16 +18,16 @@ center. -/
 theorem planarTaylorRemainder_integral_scale_norm (k β : ℝ) (hk : 0 < k)
     (hβ : k < β) (hβ₂ : β < 2) :
     ∀ z : ℂ,
-      (∫ u : ℂ, DOZZ.planarTaylorRemainder k β z u) =
+      (∫ u : ℂ, planarTaylorRemainder k β z u) =
         ‖z‖ ^ (2 + k - β) *
-          (∫ u : ℂ, DOZZ.planarTaylorRemainder k β 1 u) := by
+          (∫ u : ℂ, planarTaylorRemainder k β 1 u) := by
   intro z
   have hα : 0 < 2 + k - β := by linarith
   by_cases hz : z = 0
   · subst z
-    have hzero : DOZZ.planarTaylorRemainder k β 0 = fun _ : ℂ => (0 : ℝ) := by
+    have hzero : planarTaylorRemainder k β 0 = fun _ : ℂ => (0 : ℝ) := by
       funext u
-      simp [DOZZ.planarTaylorRemainder]
+      simp [planarTaylorRemainder]
     rw [hzero]
     simp [Real.zero_rpow, hα.ne']
   · let r : ℝ := ‖z‖

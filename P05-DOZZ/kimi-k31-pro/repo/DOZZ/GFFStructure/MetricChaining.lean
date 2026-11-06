@@ -3,18 +3,17 @@ Copyright (c) 2025-2026 Rémy Degenne. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Rémy Degenne
 -/
-module
 
-public import Mathlib.Analysis.SpecialFunctions.Pow.NNReal
-public import Mathlib.Data.Finset.Max
-public import Mathlib.Data.Set.Finite.Lattice
-public import Mathlib.Order.CompletePartialOrder
-public import Mathlib.Order.ConditionallyCompletePartialOrder.Indexed
-public import Mathlib.Order.ConditionallyCompleteLattice.Finset
-public import Mathlib.MeasureTheory.Integral.MeanInequalities
-public import Mathlib.Analysis.Convex.Integral
-public import Mathlib.Analysis.SpecialFunctions.Pow.Continuity
-public import Mathlib.Topology.MetricSpace.Cover
+import Mathlib.Analysis.SpecialFunctions.Pow.NNReal
+import Mathlib.Data.Finset.Max
+import Mathlib.Data.Set.Finite.Lattice
+import Mathlib.Order.CompletePartialOrder
+import Mathlib.Order.ConditionallyCompletePartialOrder.Indexed
+import Mathlib.Order.ConditionallyCompleteLattice.Finset
+import Mathlib.MeasureTheory.Integral.MeanInequalities
+import Mathlib.Analysis.Convex.Integral
+import Mathlib.Analysis.SpecialFunctions.Pow.Continuity
+import Mathlib.Topology.MetricSpace.Cover
 
 /-!
 # Finite metric chaining
@@ -25,7 +24,6 @@ The companion finite-supremum and integral inequalities supply the quantitative 
 sample modification is assumed.
 -/
 
-@[expose] public section
 
 open scoped ENNReal NNReal
 open _root_.ENNReal _root_.Finset
@@ -60,7 +58,7 @@ lemma Set.Finite.lt_iInf_iff {α ι : Type*} [CompleteLinearOrder α]
 end
 
 section
-open MeasureTheory _root_.ENNReal DOZZ.Proofs.ENNReal
+open MeasureTheory _root_.ENNReal ENNReal
 
 namespace ENNReal
 
@@ -147,7 +145,7 @@ lemma chainingSequenceReverse_mem (hC : ∀ i, IsCover (ε i) A (C i)) (hA : A.N
   induction n with
   | zero => simp [chainingSequenceReverse_zero, hxA]
   | succ n ih =>
-    simp only [chainingSequenceReverse_add_one]
+    simp [chainingSequenceReverse_add_one]
     refine nearestPt_mem ?_
     exact (hC _).nonempty hA
 
@@ -169,7 +167,7 @@ lemma chainingSequence_of_lt (hkn : n < k) :
 lemma chainingSequence_mem (hC : ∀ i, IsCover (ε i) A (C i)) (hA : A.Nonempty) (hxA : x ∈ C k)
     (n : ℕ) (hn : n ≤ k) :
     chainingSequence C x k n ∈ C n := by
-  simp only [chainingSequence, hn, ↓reduceIte]
+  simp [chainingSequence, hn, ↓reduceIte]
   convert chainingSequenceReverse_mem hC hA hxA
   omega
 
@@ -182,7 +180,7 @@ lemma chainingSequence_chainingSequence (n : ℕ) (hn : n ≤ k) (m : ℕ) (hm :
   | succ l ih =>
     rw [chainingSequence_of_lt (by omega), chainingSequence_of_lt (n := m) (by omega)]
     congr 1
-    simp only [← ih (m + 1) (by omega)]
+    simp [← ih (m + 1) (by omega)]
     congr 1
     · congr 1
       ring
@@ -206,10 +204,10 @@ lemma edist_chainingSequence_le_sum_edist {T : Type*} [PseudoEMetricSpace T] (f 
     edist (f x) (f (chainingSequence C x k m)) ≤
       ∑ i ∈ Finset.range (k - m),
         edist (f (chainingSequence C x k (m + i))) (f (chainingSequence C x k (m + i + 1))) := by
-  simp only [Nat.add_assoc, edist_comm (f x)]
+  simp [Nat.add_assoc, edist_comm (f x)]
   have h := edist_le_range_sum_edist
     (fun i => f (chainingSequence C x k (m+i))) (k-m)
-  simpa only [Nat.add_zero, Nat.add_sub_of_le hm, chainingSequence_of_eq, Nat.add_assoc] using h
+  simpa [Nat.add_zero, Nat.add_sub_of_le hm, chainingSequence_of_eq, Nat.add_assoc] using h
 
 lemma edist_chainingSequence_le_sum_edist' {T : Type*} [PseudoEMetricSpace T] (f : E → T)
     {m : ℕ} (hm : m ≤ k) :
@@ -226,7 +224,7 @@ lemma edist_chainingSequence_le_sum (hC : ∀ i, IsCover (ε i) A (C i)) (hCA : 
   refine le_trans ?_ (Finset.sum_le_sum
     (fun i hi => edist_chainingSequence_add_one hC hCA hxA (m + i) ?_))
   · simpa using edist_chainingSequence_le_sum_edist' id hm
-  · simp only [Finset.mem_range] at hi
+  · simp [Finset.mem_range] at hi
     omega
 
 lemma edist_chainingSequence_le (hC : ∀ i, IsCover (ε i) A (C i)) (hCA : ∀ i, (C i : Set E) ⊆ A)
@@ -291,7 +289,7 @@ lemma scale_change {F : Type*} [PseudoEMetricSpace F] (m : ℕ) (X : E → F) (�
           + 2 * (⨆ (s : C k), edist (X s) (X (c s))) := ?_
   · gcongr with s t
     exact le_trans (edist_triangle _ (X (c t)) _) (by gcongr; apply edist_triangle)
-  · simp only [ENNReal.add_iSup, add_assoc]
+  · simp [ENNReal.add_iSup, add_assoc]
   · exact iSup_le (fun s => add_le_add
       (le_iSup (fun s : C k => edist (X s) (X (c s))) s)
       (le_iSup (fun s : C k => ⨆ t : Ck' s,
@@ -299,9 +297,9 @@ lemma scale_change {F : Type*} [PseudoEMetricSpace F] (m : ℕ) (X : E → F) (�
   · congr 1
     conv_lhs => congr; ext s; rw [iSup_subtype]
     rw [iSup_comm]
-    conv_lhs => congr; ext s; congr; ext t; simp only [edist_comm t s]
+    conv_lhs => congr; ext s; congr; ext t; simp [edist_comm t s]
     conv_lhs => congr; ext s; rw [iSup_subtype']
-  · simp only [ENNReal.iSup_add]
+  · simp [ENNReal.iSup_add]
   · rw [add_assoc]
     exact add_le_add le_rfl (iSup_le (fun s => add_le_add
       (le_iSup (fun s : C k => ⨆ t : Ck' s, edist (X (c t)) (X (c s))) s)
@@ -317,7 +315,7 @@ lemma scale_change_rpow {F : Type*} [PseudoEMetricSpace F] (m : ℕ) (X : E → 
         edist (X (chainingSequence C s k m)) (X (chainingSequence C t k m)) ^ p)
       + 4 ^ p * (⨆ (s : C k), edist (X s) (X (chainingSequence C s k m)) ^ p) := by
   refine hp.lt_or_eq'.elim (fun hp' => ?_) (by rintro rfl; simp)
-  simp only [← (ENNReal.monotone_rpow_of_nonneg hp).map_iSup_of_continuousAt
+  simp [← (ENNReal.monotone_rpow_of_nonneg hp).map_iSup_of_continuousAt
     ENNReal.continuous_rpow_const.continuousAt (by simp [hp'])]
   refine ((ENNReal.monotone_rpow_of_nonneg hp (scale_change m X δ))).trans ?_
   refine (ENNReal.add_rpow_le_two_rpow_mul_rpow_add_rpow _ _ hp).trans ?_

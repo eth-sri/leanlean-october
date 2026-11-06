@@ -2,15 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GFFStructure.HarmonicMoments
-public import Mathlib.MeasureTheory.Constructions.BorelSpace.Order
+import DOZZ.GFFStructure.HarmonicMoments
+import Mathlib.MeasureTheory.Constructions.BorelSpace.Order
 
 /-! Measurability of the compact harmonic envelope of the separated joint-tail estimate and its
 correlated product bound. -/
 
-@[expose] public section
 open MeasureTheory Metric Set Filter
 open scoped ENNReal
 
@@ -44,14 +42,14 @@ theorem separatedTail_harmonic_envelope_aemeasurable
     by_cases hω : ω ∈ S
     · have ht : Continuous (fun z : closedBall c 1 => H ω z) :=
         continuousOn_iff_continuous_domRestrict.mp (hgood ω hω)
-      simpa only [f, ite_eq_left hω, Function.comp_def] using
+      simpa [f, ite_eq_left hω, Function.comp_def] using
         ENNReal.continuous_ofReal.comp ((ht.abs.const_mul l).rexp)
-    · simpa only [f, ite_eq_right hω] using
+    · simpa [f, ite_eq_right hω] using
         (continuous_const : Continuous (fun _ : closedBall c 1 => (0 : ℝ≥0∞)))
   have hmeas := measurable_iSup_of_lowerSemicontinuous hf (fun ω => (hc ω).lowerSemicontinuous)
   refine hmeas.aemeasurable.congr ?_
   filter_upwards [hS] with ω hω
-  simp only [iSup_apply, f, ite_eq_left hω, iSup_subtype]
+  simp [iSup_apply, f, ite_eq_left hω, iSup_subtype]
 
 /-- Correlated positive envelopes with two doubled-order bounds have a uniform product bound.
 This elementary sum bound avoids introducing any independence hypothesis. -/
@@ -64,7 +62,7 @@ theorem separatedTail_correlated_envelope_product_le
     (∫⁻ ω, E2 ω * E3 ω ∂P) ≤ B2+B3 := by
   calc
     _ ≤ ∫⁻ ω, E2 ω ^ (2 : ℝ) + E3 ω ^ (2 : ℝ) ∂P := lintegral_mono fun ω => by
-      simp only [ENNReal.rpow_two, pow_two]
+      simp [pow_two]
       rcases le_total (E2 ω) (E3 ω) with h | h
       · exact (mul_le_mul_left h (E3 ω)).trans le_add_self
       · exact (mul_le_mul_right h (E2 ω)).trans le_self_add

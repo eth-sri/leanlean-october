@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.BPZ.WardLimitDom
+import DOZZ.FourPoint.BPZ.WardLimitDom
 
 /-! # The Ward identity in the limit
 
@@ -17,7 +16,6 @@ expectations of the limits therefore agree:
 
 with `I = ∫ ρ k dM + ∫ (1 − ρ) k dM`. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped ENNReal NNReal
@@ -143,7 +141,6 @@ theorem ward_limit (hd : BPZLimitData γ q δ ρ kt k₂ φ D) (hp : BPZWardProb
     intro I Y hY hYI
     rw [show -(q - 1) = 1 - q by ring]
     exact Real.rpow_le_rpow_of_nonpos hY hYI (by linarith [hd.q_ge])
-  have hI₂le : ∀ ω, I₂ ω ≤ A 0 ω + I₂ ω := fun ω => by linarith [hA0 0 ω]
   have hZb : ∀ n : ℕ, ∀ᵐ ω ∂P, |(A n ω + I₂ ω) ^ (-q) * Lw n ω| ≤ Bd ω := by
     intro n
     filter_upwards [hgood] with ω hω
@@ -164,7 +161,7 @@ theorem ward_limit (hd : BPZLimitData γ q δ ρ kt k₂ φ D) (hp : BPZWardProb
       _ ≤ CL * (c * (M ω D).toReal) ^ (-(q - 1)) :=
           mul_le_mul_of_nonneg_left (hpow hY hYI) hCL0
       _ ≤ Bd ω := by
-          simp only [hBd, hCd]
+          simp [hBd, hCd]
           apply mul_le_mul_of_nonneg_right _ (Real.rpow_nonneg hY.le _)
           have : 0 ≤ q * γ ^ 2 * (CS + CM) := by positivity
           linarith
@@ -199,7 +196,7 @@ theorem ward_limit (hd : BPZLimitData γ q δ ρ kt k₂ φ D) (hp : BPZWardProb
       _ ≤ q * γ ^ 2 * (CS + CM) * (c * (M ω D).toReal) ^ (-(q - 1)) :=
           mul_le_mul_of_nonneg_left (hpow hY hYI) (by positivity)
       _ ≤ Bd ω := by
-          simp only [hBd, hCd]
+          simp [hBd, hCd]
           apply mul_le_mul_of_nonneg_right _ (Real.rpow_nonneg hY.le _)
           linarith
   -- equal expectations along the sequence

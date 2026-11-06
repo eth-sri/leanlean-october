@@ -2,13 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.ShiftEquations.Shift.Reflection
-public import DOZZ.ShiftEquations.Shift.Window
-public import DOZZ.ShiftEquations.TwoPole.Expansion
-public import DOZZ.ShiftEquations.Rbar.Residue
-public import Mathlib.Analysis.Meromorphic.Complex
+import DOZZ.ShiftEquations.Shift.Reflection
+import DOZZ.ShiftEquations.Shift.Window
+import DOZZ.ShiftEquations.TwoPole.Expansion
+import DOZZ.ShiftEquations.Rbar.Residue
+import Mathlib.Analysis.Meromorphic.Complex
 import DOZZ.Brownian.Reflection.WitnessIndependence
 import DOZZ.ShiftEquations.Quotient.Divisors
 
@@ -22,7 +21,6 @@ slice `α' = Q - η`, `η/(η + γ/2) T(Q - η, -2η, 2/γ + η) = m(Q - η)`, s
 to `Q` ([KRV, §10.2], unit-volume form of [KRV, (shift1)]).
 -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology Set
 
@@ -236,9 +234,7 @@ theorem reflectionBarR_shift_of_window {Ω : Type*} [MeasurableSpace Ω] (P : Me
   have hne : (4 / γ * (η + γ / 2)) ≠ 0 := by positivity
   apply mul_left_cancel₀ hne
   rw [hres']
-  have hηγ2 : η + γ / 2 ≠ 0 := by positivity
   field_simp
 
 end DOZZ.Proofs
 
-end

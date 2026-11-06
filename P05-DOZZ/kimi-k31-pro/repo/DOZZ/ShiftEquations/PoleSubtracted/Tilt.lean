@@ -2,13 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.ShiftEquations.PoleSubtracted.Masses
-public import DOZZ.Statements.Defs.IsGMCOf
-public import DOZZ.Statements.Defs.IsCircleAverage
-public import DOZZ.Statements.Defs.IsEquatorGFF
-public import DOZZ.ShiftEquations.Mobius.RepinPotential
+import DOZZ.ShiftEquations.PoleSubtracted.Masses
+import DOZZ.Statements.Defs.IsGMCOf
+import DOZZ.Statements.Defs.IsCircleAverage
+import DOZZ.Statements.Defs.IsEquatorGFF
+import DOZZ.ShiftEquations.Mobius.RepinPotential
 import DOZZ.ShiftEquations.Mobius.AffineMoment
 import DOZZ.GMC.Construction.GMCGeneralTiltLimit
 import DOZZ.GMC.CircleAverageLimits
@@ -24,7 +23,6 @@ the chaos by `exp (γ a Cov(X(x), X_m(0)))`, and
 `circleTiltDensity γ a m`.
 -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
@@ -166,4 +164,3 @@ theorem lintegral_circleTilt {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
 
 end DOZZ.Proofs
 
-end

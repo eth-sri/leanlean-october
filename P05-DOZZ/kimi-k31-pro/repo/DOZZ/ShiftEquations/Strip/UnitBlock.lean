@@ -2,16 +2,14 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.ShiftEquations.Strip.SmallPower
-public import DOZZ.Brownian.Reflection.Moments
-public import DOZZ.Brownian.Reflection.LastCut
-public import DOZZ.Brownian.LateralMoments.UnitInverse
+import DOZZ.ShiftEquations.Strip.SmallPower
+import DOZZ.Brownian.Reflection.Moments
+import DOZZ.Brownian.Reflection.LastCut
+import DOZZ.Brownian.LateralMoments.UnitInverse
 
 /-! The lower Williams bound at the critical endpoint. -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
 

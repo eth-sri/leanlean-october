@@ -2,15 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.TaylorOneRootIdentity
-public import DOZZ.FourPoint.TaylorAnnularKernel
-public import DOZZ.FourPoint.TaylorRadialTail
+import DOZZ.FourPoint.TaylorOneRootIdentity
+import DOZZ.FourPoint.TaylorAnnularKernel
+import DOZZ.FourPoint.TaylorRadialTail
 
 /-! The supplied-GMC annular contribution with the literal κ-2 radial gain. -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -29,7 +27,7 @@ theorem twoRooted_annular_bound
   let a : ℝ := γ * (Q γ - α₁) - 4
   have ha : a < -2 := by
     have he : a = γ ^ 2 / 2 - γ * α₁ - 2 := by
-      dsimp only [a]
+      dsimp [a]
       unfold Q
       field_simp [hγ.ne']
       ring
@@ -39,19 +37,18 @@ theorem twoRooted_annular_bound
   obtain ⟨C₁, hC₁, htail⟩ := planar_radial_tail_bound a ha
   let k : ℝ := (2 : ℝ) ^ (|γ * α₂| + |γ ^ 2 / 2 - 2|)
   let C : ℝ := C₀ * k * C₁
-  refine ⟨C, by dsimp only [C, k]; positivity, ?_⟩
+  refine ⟨C, by dsimp [C, k]; positivity, ?_⟩
   intro ρ hρ hρ2 z hz
   let B : Set ℂ := Metric.ball 0 (1 / 2) \ Metric.ball 0 ρ
   have hB : MeasurableSet B := measurableSet_ball.diff measurableSet_ball
-  have hunit (x : ℂ) (hx : x ∈ B) : ‖x‖ ≤ 1 / 2 := by
-    exact (show ‖x‖ < 1 / 2 by simpa only [Metric.mem_ball, dist_zero_right] using hx.1).le
+  have hunit (x : ℂ) (hx : x ∈ B) : ‖x‖ ≤ 1 / 2 := (show ‖x‖ < 1 / 2 by simpa [Metric.mem_ball, dist_zero_right] using hx.1).le
   have hz4 : ‖z‖ ≤ 1 / 4 := by linarith only [hz, hρ2]
   have hpoint (x : ℂ) (hx : x ∈ B) :
       ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ z x / ‖x - z‖ ^ 2) ≤
         ENNReal.ofReal k * ENNReal.ofReal (‖x‖ ^ a) := by
     have hxr : ρ ≤ ‖x‖ := by
       have hh := hx.2
-      simpa only [Metric.mem_ball, dist_zero_right, not_lt] using hh
+      simpa [Metric.mem_ball, dist_zero_right, not_lt] using hh
     exact gammaHalf_annular_kernel_bound γ α₁ α₂ α₃ hγ z x (hunit x hx)
       (hρ.trans_le hxr) (by linarith only [hz, hxr])
   have hkernel : (∫⁻ x in B, ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ z x / ‖x - z‖ ^ 2)) ≤
@@ -66,9 +63,9 @@ theorem twoRooted_annular_bound
     _ ≤ ENNReal.ofReal C₀ * (ENNReal.ofReal k * ENNReal.ofReal (C₁ * ρ ^ (a + 2))) :=
       mul_le_mul' le_rfl (mul_le_mul' le_rfl (htail ρ hρ))
     _ = _ := by
-      rw [← ENNReal.ofReal_mul (by dsimp only [k]; positivity), ← ENNReal.ofReal_mul hC₀.le]
+      rw [← ENNReal.ofReal_mul (by dsimp [k]; positivity), ← ENNReal.ofReal_mul hC₀.le]
       congr 1
-      dsimp only [C, a]
+      dsimp [C, a]
       rw [show γ * (Q γ - α₁) - 4 + 2 = γ * (Q γ - α₁) - 2 by ring]
       ring
 

@@ -2,13 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.ShiftEquations.DualR.Assembly
-public import DOZZ.ShiftEquations.Shift.Wrappers
-public import DOZZ.ShiftEquations.Gluing.ReflectedWrapper
-public import DOZZ.ShiftEquations.Inversion.Reduction
-public import DOZZ.ShiftEquations.FirstStrip.Closed
+import DOZZ.ShiftEquations.DualR.Assembly
+import DOZZ.ShiftEquations.Shift.Wrappers
+import DOZZ.ShiftEquations.Gluing.ReflectedWrapper
+import DOZZ.ShiftEquations.Inversion.Reduction
+import DOZZ.ShiftEquations.FirstStrip.Closed
 
 /-!
 # The dual shift of `R` from the γ/2 crossing, the gluing, the inversion and the second dual seed
@@ -20,16 +19,15 @@ crossing `DOZZ.gammaHalf_crossing` alone (`reflectionR_first_shift_meromorphic_o
 `reflectionBarR_holomorphic_representation_of_crossing`).
 -/
 
-@[expose] public section
 
 open MeasureTheory Filter Topology Set
 
 namespace DOZZ.Proofs
 
 /-- **The dual shift of `R` from the γ/2 crossing, the gluing, the inversion and the second dual
-seed.** `hCross` is the unit-volume conjunct of `DOZZ.gammaHalf_crossing`; `hShiftGluing`, `hInversion`, `hSeed`
-are the conclusions of `DOZZ.structureConstant_reflected_shift_and_gluing`,
-`DOZZ.reflectionR_inversion_meromorphic` and `DOZZ.dual_crossing_seed_two`, at the given field,
+seed.** `hCross` is the unit-volume conjunct of `gammaHalf_crossing`; `hShiftGluing`, `hInversion`, `hSeed`
+are the conclusions of `structureConstant_reflected_shift_and_gluing`,
+`reflectionR_inversion_meromorphic` and `dual_crossing_seed_two`, at the given field,
 chaos, coupling and cosmological constant. -/
 theorem reflectionR_dual_shift_unknown_constant_of_crossing
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
@@ -100,15 +98,15 @@ theorem reflectionR_dual_shift_unknown_constant_of_crossing
     hShiftGluing hInversion hSeed
 
 /-- **The dual shift of `R` from the γ/2 crossing, the first structure shift and the second dual
-seed.** The statements `DOZZ.reflectionR_first_shift_meromorphic` and
-`DOZZ.reflectionBarR_holomorphic_representation` follow from the crossing `DOZZ.gammaHalf_crossing`;
-`DOZZ.structureConstant_reflected_shift_and_gluing` follows from
-`DOZZ.reflectionR_first_shift_meromorphic` and `DOZZ.structureConstant_first_shift_strip`
+seed.** The statements `reflectionR_first_shift_meromorphic` and
+`reflectionBarR_holomorphic_representation` follow from the crossing `gammaHalf_crossing`;
+`structureConstant_reflected_shift_and_gluing` follows from
+`reflectionR_first_shift_meromorphic` and `structureConstant_first_shift_strip`
 (`structureConstant_reflected_shift_and_gluing_of_shifts`, with
-`DOZZ.degenerateFourPoint_diagonal_classification` and `DOZZ.gammaHalf_reflected_formula` applied
-directly), and `DOZZ.reflectionR_inversion_meromorphic` follows from
-`DOZZ.structureConstant_reflected_shift_and_gluing` (`reflectionR_inversion_meromorphic_of_reflected_shift_and_gluing`).
-`hFirstStrip` is the conclusion of `DOZZ.structureConstant_first_shift_strip` at the given field, chaos,
+`degenerateFourPoint_diagonal_classification` and `gammaHalf_reflected_formula` applied
+directly), and `reflectionR_inversion_meromorphic` follows from
+`structureConstant_reflected_shift_and_gluing` (`reflectionR_inversion_meromorphic_of_reflected_shift_and_gluing`).
+`hFirstStrip` is the conclusion of `structureConstant_first_shift_strip` at the given field, chaos,
 coupling and cosmological constant. -/
 theorem reflectionR_dual_shift_unknown_constant_of_crossing_firstShift
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
@@ -162,7 +160,7 @@ theorem reflectionR_dual_shift_unknown_constant_of_crossing_firstShift
     hShiftGluing (reflectionR_inversion_meromorphic_of_reflected_shift_and_gluing P X M γ μ hγ hγ2 hμ hX hM hShiftGluing) hSeed
 
 /-- **The dual shift of `R` from the γ/2 crossing and the second dual seed**, with
-`DOZZ.structureConstant_first_shift_strip` proved from the unreflected formula
+`structureConstant_first_shift_strip` proved from the unreflected formula
 (`structureConstant_first_shift_strip_unconditional`). -/
 theorem reflectionR_dual_shift_unknown_constant_of_crossing_seed
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
@@ -205,4 +203,3 @@ theorem reflectionR_dual_shift_unknown_constant_of_crossing_seed
 
 end DOZZ.Proofs
 
-end

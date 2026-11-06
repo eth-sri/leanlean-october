@@ -2,15 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Hypergeom.BasisSpanning
-public import DOZZ.Hypergeom.ClassificationWirtingerC2
+import DOZZ.Hypergeom.BasisSpanning
+import DOZZ.Hypergeom.ClassificationWirtingerC2
 import Mathlib.Analysis.Complex.RealDeriv
 
 /-! The Cramer coefficients of a real Gauss PDE solution are antiholomorphic. -/
 
-@[expose] public section
 
 namespace DOZZ.Proofs
 
@@ -76,7 +74,7 @@ theorem realGaussCramerCoefficients_wirtingerZ_eq_zero
         ((c : ℂ) - z * ((a : ℂ) + b + 1)) / (z * (1 - z)) *
           wirtingerZ (fun w => (T w : ℂ)) z -
         (a : ℂ) * b / (z * (1 - z)) * (T z : ℂ) = 0
-    exact hPDE
+    assumption
   have ht₂ : t₂ z = pz * t₁ z + qz * t₀ z := by
     have hpz : pz = -(((c : ℂ) - z * ((a : ℂ) + b + 1)) / den) := by
       dsimp [pz]
@@ -97,7 +95,7 @@ theorem realGaussCramerCoefficients_wirtingerZ_eq_zero
       linear_combination h
     have hscaled : den * (pz * deriv f z + qz * f z) =
         (z * ((a : ℂ) + b + 1) - c) * deriv f z + (a * b) * f z := by
-      simp only [pz, qz]
+      simp [pz, qz]
       field_simp [hden]
     apply mul_left_cancel₀ hden
     calc
@@ -113,7 +111,7 @@ theorem realGaussCramerCoefficients_wirtingerZ_eq_zero
       linear_combination h
     have hscaled : den * (pz * deriv g z + qz * g z) =
         (z * ((a : ℂ) + b + 1) - c) * deriv g z + (a * b) * g z := by
-      simp only [pz, qz]
+      simp [pz, qz]
       field_simp [hden]
     apply mul_left_cancel₀ hden
     calc
@@ -150,8 +148,7 @@ theorem realGaussCramerCoefficients_wirtingerZ_eq_zero
             wirtingerZ (fun w => t₁ w * g w) z := by
         change wirtingerZ (fun w => t₀ w * deriv g w - t₁ w * g w) z = _
         rw [hA_mul₁, hA_mul₂]
-        rw [← hA_mul₁, ← hA_mul₂] at hA_sub
-        exact hA_sub
+        rwa [← hA_mul₁, ← hA_mul₂] at hA_sub
       _ = (t₀ z * deriv (deriv g) z + deriv g z * t₁ z) -
             (t₁ z * deriv g z + g z * t₂ z) := by
         rw [wirtingerZ_mul ht₀ (hg₁At.restrictScalars ℝ),
@@ -178,8 +175,7 @@ theorem realGaussCramerCoefficients_wirtingerZ_eq_zero
             wirtingerZ (fun w => deriv f w * t₀ w) z := by
         change wirtingerZ (fun w => f w * t₁ w - deriv f w * t₀ w) z = _
         rw [hB_mul₁, hB_mul₂]
-        rw [← hB_mul₁, ← hB_mul₂] at hB_sub
-        exact hB_sub
+        rwa [← hB_mul₁, ← hB_mul₂] at hB_sub
       _ = (f z * t₂ z + t₁ z * deriv f z) -
             (deriv f z * t₁ z + t₀ z * deriv (deriv f) z) := by
         rw [wirtingerZ_mul (hfAt.restrictScalars ℝ) ht₁,
@@ -196,14 +192,14 @@ theorem realGaussCramerCoefficients_wirtingerZ_eq_zero
         ((c : ℂ) - ((a : ℂ) + b + 1) * z) * W z = 0 := by
       change z * (1 - z) * deriv W z +
         ((c : ℂ) - ((a : ℂ) + b + 1) * z) * W z = 0
-      exact hWabel
+      assumption
     have hmul : den * deriv W z =
         (z * ((a : ℂ) + b + 1) - c) * W z := by
       dsimp [den] at habel ⊢
       linear_combination habel
     have hscaled : den * (pz * W z) =
         (z * ((a : ℂ) + b + 1) - c) * W z := by
-      simp only [pz]
+      simp [pz]
       field_simp [hden]
     apply mul_left_cancel₀ hden
     calc

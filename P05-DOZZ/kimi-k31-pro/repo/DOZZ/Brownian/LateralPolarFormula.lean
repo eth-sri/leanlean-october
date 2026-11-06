@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.Brownian.LateralProjectedGMC
+import DOZZ.Statements.Brownian.LateralProjectedGMC
 
 /-!
 # Polar integral formula for the lateral projection
@@ -14,7 +13,6 @@ radius. This module records its exact annular-integral formula, which is the mea
 change of variables needed before identifying a polar GMC limit.
 -/
 
-@[expose] public section
 
 open MeasureTheory
 open scoped ENNReal
@@ -45,11 +43,9 @@ theorem lateralProjectedGMC_lintegral_eq
   have hpull : Measurable (fun x : ℂ => f (ρ x)) := hf.comp hρ
   change ∫⁻ s, f s ∂((M.withDensity w).map ρ) =
     ∫⁻ x, (w x * f (ρ x)) ∂M
-  rw [lintegral_map hf hρ]
-  rw [lintegral_withDensity_eq_lintegral_mul M hw hpull]
+  rw [lintegral_map hf hρ, lintegral_withDensity_eq_lintegral_mul M hw hpull]
   rfl
 
 
 end DOZZ.Proofs
 
-end

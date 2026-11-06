@@ -3,10 +3,9 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Scott Armstrong, Amélie Loher
 -/
-module
 
-public import Mathlib.MeasureTheory.Integral.Pi
-public import GaussianFields.LogCorrelated.ABK.KernelPairing
+import Mathlib.MeasureTheory.Integral.Pi
+import GaussianFields.LogCorrelated.ABK.KernelPairing
 
 /-!
 # GaussianFields.LogCorrelated/ABK/SingularIntegrability
@@ -14,7 +13,6 @@ public import GaussianFields.LogCorrelated.ABK.KernelPairing
 Port of the corresponding GaussianFields source module.
 -/
 
-public section
 
 open Filter MeasureTheory
 open scoped ENNReal Topology
@@ -22,7 +20,7 @@ open scoped ENNReal Topology
 namespace GaussianFields
 
 /-- The one-dimensional singular exponent used for a concrete integrable majorant. -/
-@[expose]
+
 noncomputable def abkSingularMajorantExponent : ℝ := -(3 / 4 : ℝ)
 
 /-- Elementary bound used to control difference quotients of powers. -/
@@ -118,8 +116,7 @@ theorem abs_rpow_neg_sub_one_div_le_abkSingularMajorant {α ρ R : ℝ}
   · have hρ_ge_one : 1 ≤ ρ := le_of_not_ge hρ_le_one
     have hpow_le_one : ρ ^ (-α) ≤ 1 :=
       Real.rpow_le_one_of_one_le_of_nonpos hρ_ge_one (neg_nonpos.mpr hα_pos.le)
-    have hslope_nonpos : (ρ ^ (-α) - 1) / α ≤ 0 := by
-      exact div_nonpos_of_nonpos_of_nonneg (sub_nonpos.mpr hpow_le_one) hα_pos.le
+    have hslope_nonpos : (ρ ^ (-α) - 1) / α ≤ 0 := div_nonpos_of_nonpos_of_nonneg (sub_nonpos.mpr hpow_le_one) hα_pos.le
     have hslope_eq :
         |(ρ ^ (-α) - 1) / α| = (1 - ρ ^ (-α)) / α := by
       rw [abs_of_nonpos hslope_nonpos]
@@ -155,13 +152,13 @@ theorem abs_rpow_neg_sub_one_div_le_abkSingularMajorant {α ρ R : ℝ}
             exact mul_le_mul_of_nonneg_left (by linarith) hcoef_nonneg
 
 /-- The one-dimensional function `|x|^{-3/4}`, restricted to a symmetric interval. -/
-@[expose]
+
 noncomputable def abkOneDimensionalSingularMajorant (R : ℝ) (x : ℝ) : ℝ :=
   (Set.Icc (-R) R).indicator (fun t : ℝ => |t| ^ abkSingularMajorantExponent) x
 
 /-- A coordinate-box majorant with one singular coordinate and bounded indicators in all other
 coordinates. -/
-@[expose]
+
 noncomputable def abkCoordinateBoxSingularMajorant {d : Nat} (i : Fin d) (R : ℝ)
     (x : Vec d) : ℝ :=
   ∏ j : Fin d,
@@ -172,19 +169,19 @@ noncomputable def abkCoordinateBoxSingularMajorant {d : Nat} (i : Fin d) (R : �
 
 /-- Indicator of the coordinate box `[-R,R]^d`, written as a product of one-dimensional
 indicators. -/
-@[expose]
+
 noncomputable def abkBoxIndicatorVec {d : Nat} (R : ℝ) (x : Vec d) : ℝ :=
   ∏ j : Fin d, (Set.Icc (-R) R).indicator (fun _ : ℝ => (1 : ℝ)) (x j)
 
 /-- Pair-space singular majorant after the additive shear `(x,y) ↦ (x-y,y)`. -/
-@[expose]
+
 noncomputable def abkPairDifferenceBoxSingularMajorant {d : Nat} (i : Fin d) (R : ℝ)
     (p : Vec d × Vec d) : ℝ :=
   abkCoordinateBoxSingularMajorant i (2 * R) (p.1 - p.2) *
     abkBoxIndicatorVec R p.2
 
 /-- Pair-space bounded box majorant after the additive shear `(x,y) ↦ (x-y,y)`. -/
-@[expose]
+
 noncomputable def abkPairDifferenceBoxMajorant {d : Nat} (R : ℝ)
     (p : Vec d × Vec d) : ℝ :=
   abkBoxIndicatorVec (2 * R) (p.1 - p.2) *
@@ -197,8 +194,7 @@ theorem abkBoxIndicatorVec_eq_one_of_forall_abs_apply_le {d : Nat}
   unfold abkBoxIndicatorVec
   refine Finset.prod_eq_one ?_
   intro j _hj
-  have hj : x j ∈ Set.Icc (-R) R := by
-    exact (abs_le.mp (hx j))
+  have hj : x j ∈ Set.Icc (-R) R := (abs_le.mp (hx j))
   rw [Set.indicator_of_mem hj]
 
 /-- The one-dimensional singular majorant equals `|x|^{-3/4}` inside the box. -/
@@ -401,7 +397,7 @@ theorem integrable_abkCoordinateBoxSingularMajorant {d : Nat} (i : Fin d)
     Integrable.fintype_prod hf
   rw [MeasureTheory.volume_pi]
   unfold abkCoordinateBoxSingularMajorant
-  simpa only [f] using hprod
+  simpa [f] using hprod
 
 /-- The coordinate-box indicator is integrable on `Vec d`. -/
 theorem integrable_abkBoxIndicatorVec {d : Nat} (R : ℝ) (hR : 0 ≤ R) :
@@ -416,7 +412,7 @@ theorem integrable_abkBoxIndicatorVec {d : Nat} (R : ℝ) (hR : 0 ≤ R) :
     Integrable.fintype_prod hf
   rw [MeasureTheory.volume_pi]
   unfold abkBoxIndicatorVec
-  simpa only [f] using hprod
+  simpa [f] using hprod
 
 /-- The pair-space difference singular majorant is integrable. -/
 theorem integrable_abkPairDifferenceBoxSingularMajorant {d : Nat} (i : Fin d)
@@ -487,8 +483,7 @@ theorem ae_sub_apply_ne_zero_volume_prod {d : Nat} (i : Fin d) :
     simpa [MeasureTheory.volume_pi] using
       (Measure.ae_eval_ne (fun _ : Fin d => (volume : Measure ℝ)) i (0 : ℝ))
   have hprod : ∀ᵐ q : Vec d × Vec d ∂μ, q.1 i ≠ 0 := by
-    have hmeas : MeasurableSet {q : Vec d × Vec d | q.1 i ≠ 0} := by
-      exact (isClosed_eq ((continuous_apply i).comp continuous_fst) continuous_const).measurableSet.compl
+    have hmeas : MeasurableSet {q : Vec d × Vec d | q.1 i ≠ 0} := (isClosed_eq ((continuous_apply i).comp continuous_fst) continuous_const).measurableSet.compl
     rw [Measure.ae_prod_iff_ae_ae hmeas]
     filter_upwards [hcoord] with v hv
     exact Filter.Eventually.of_forall fun _ => hv
@@ -509,8 +504,7 @@ theorem aestronglyMeasurable_abkCenteredRieszSlopeKernel_integrand_of_ne
   let μ : Measure (Vec d × Vec d) :=
     (volume : Measure (Vec d)).prod (volume : Measure (Vec d))
   let s : Set (Vec d × Vec d) := {p | p.1 ≠ p.2}
-  have hs : MeasurableSet s := by
-    exact (isClosed_eq continuous_fst continuous_snd).measurableSet.compl
+  have hs : MeasurableSet s := (isClosed_eq continuous_fst continuous_snd).measurableSet.compl
   have hfull : ∀ᵐ p : Vec d × Vec d ∂μ, p ∈ s := by
     simpa [s, μ] using ae_fst_ne_snd_volume_prod hd
   have hnorm :
@@ -610,7 +604,7 @@ theorem norm_abkCenteredRieszSlopeKernel_integrand_le_pair_majorant
   have hρ_le : euclideanNorm (p.1 - p.2) ≤ 2 * R := by
     have hsub : p.1 - p.2 = p.1 + (-p.2) := by
       ext j
-      simp only [Pi.sub_apply, Pi.add_apply, Pi.neg_apply]
+      simp [Pi.sub_apply, Pi.add_apply, Pi.neg_apply]
       ring_nf
     calc
       euclideanNorm (p.1 - p.2) = euclideanNorm (p.1 + (-p.2)) := by rw [hsub]
@@ -658,10 +652,8 @@ theorem norm_abkCenteredRieszSlopeKernel_integrand_le_pair_majorant
       ‖abkCenteredRieszSlopeKernel α p.1 p.2‖ ≤
         (4 + Real.log (2 * R)) *
           (1 + (euclideanNorm (p.1 - p.2)) ^ abkSingularMajorantExponent) := by
-    rw [abkCenteredRieszSlopeKernel, Real.norm_eq_abs]
-    exact hslope_abs
-  have hψφ_norm : ‖ψ p.1‖ * ‖φ p.2‖ ≤ Mψ * Mφ := by
-    exact mul_le_mul hψ_norm hφ_norm (norm_nonneg _) hMψ_nonneg
+    rwa [abkCenteredRieszSlopeKernel, Real.norm_eq_abs]
+  have hψφ_norm : ‖ψ p.1‖ * ‖φ p.2‖ ≤ Mψ * Mφ := mul_le_mul hψ_norm hφ_norm (norm_nonneg _) hMψ_nonneg
   have htarget_nonneg :
       0 ≤ (4 + Real.log (2 * R)) *
           (1 + (euclideanNorm (p.1 - p.2)) ^ abkSingularMajorantExponent) := by
@@ -709,10 +701,8 @@ theorem exists_integrable_bound_abkCenteredRieszSlopeKernel_integrand
   let R : ℝ := max 1 (max Rψ Rφ)
   have hR : 1 ≤ R := le_max_left _ _
   have hR_nonneg : 0 ≤ R := zero_le_one.trans hR
-  have hRψ_le : Rψ ≤ R := by
-    exact (le_max_left Rψ Rφ).trans (le_max_right 1 (max Rψ Rφ))
-  have hRφ_le : Rφ ≤ R := by
-    exact (le_max_right Rψ Rφ).trans (le_max_right 1 (max Rψ Rφ))
+  have hRψ_le : Rψ ≤ R := (le_max_left Rψ Rφ).trans (le_max_right 1 (max Rψ Rφ))
+  have hRφ_le : Rφ ≤ R := (le_max_right Rψ Rφ).trans (le_max_right 1 (max Rψ Rφ))
   have hψ_support : Function.support ψ ⊆ {x : Vec d | euclideanNorm x ≤ R} := by
     intro x hx
     exact (hψ_support₀ hx).trans hRψ_le
@@ -760,10 +750,8 @@ theorem integrable_abkCenteredRieszSlopeKernel_integrand_of_pos_le_half
   let R : ℝ := max 1 (max Rψ Rφ)
   have hR : 1 ≤ R := le_max_left _ _
   have hR_nonneg : 0 ≤ R := zero_le_one.trans hR
-  have hRψ_le : Rψ ≤ R := by
-    exact (le_max_left Rψ Rφ).trans (le_max_right 1 (max Rψ Rφ))
-  have hRφ_le : Rφ ≤ R := by
-    exact (le_max_right Rψ Rφ).trans (le_max_right 1 (max Rψ Rφ))
+  have hRψ_le : Rψ ≤ R := (le_max_left Rψ Rφ).trans (le_max_right 1 (max Rψ Rφ))
+  have hRφ_le : Rφ ≤ R := (le_max_right Rψ Rφ).trans (le_max_right 1 (max Rψ Rφ))
   have hψ_support : Function.support ψ ⊆ {x : Vec d | euclideanNorm x ≤ R} := by
     intro x hx
     exact (hψ_support₀ hx).trans hRψ_le
@@ -849,4 +837,3 @@ theorem tendsto_abkMAlphaInv_mul_centeredRieszDifferencePairing
 
 end GaussianFields
 
-end

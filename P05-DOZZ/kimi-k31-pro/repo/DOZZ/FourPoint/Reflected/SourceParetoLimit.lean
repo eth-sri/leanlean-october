@@ -2,12 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Reflected.SourceParetoIncrement
-public import DOZZ.FourPoint.Reflected.FirstOrderError
+import DOZZ.FourPoint.Reflected.SourceParetoIncrement
+import DOZZ.FourPoint.Reflected.FirstOrderError
 import Mathlib.Tactic
 /-! The full independent-maximum source observable has its normalized Pareto limit. -/
-@[expose] public section
 open MeasureTheory ProbabilityTheory Set Filter Topology
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -54,23 +52,19 @@ theorem reflected_source_pareto_increment_tendsto
       (gammaHalfOuterMass γ α₁ α₂ α₃ (M v.1) z ξ).toReal ^(-p)) ∂paretoMeasure 1 a) ∂P.prod P
   have hν : 0 < ν := sub_pos.mpr hα₁
   have ha : 0 < a := div_pos (mul_pos (by norm_num) hν) hγ
-  have ha1 : a < 1 := by
-    dsimp only [a]
-    rw [div_lt_one hγ]
-    linarith only [hreflect]
   have hp : 0 < p := div_pos (by linarith only [hs]) hγ
-  have hshift : α₁+2*ν-γ/2 < Q γ := by dsimp only [ν]; linarith only [hreflect]
-  have hcharge : α₁+2*ν-γ/2 = 2*Q γ-α₁-γ/2 := by dsimp only [ν]; ring
+  have hshift : α₁+2*ν-γ/2 < Q γ := by dsimp [ν]; linarith only [hreflect]
+  have hcharge : α₁+2*ν-γ/2 = 2*Q γ-α₁-γ/2 := by dsimp [ν]; ring
   let Λ := (∫⁻ ω, rho γ (M ω) (2*Q γ-α₁-γ/2) α₂ α₃ ^(-(p+a)) ∂P).toReal
   have hL : Tendsto (fun z : ℂ => L z/‖z‖^κ) (𝓝[≠] (0 : ℂ)) (𝓝 Λ) := by
-    simpa only [L,κ,a,hcharge,Λ] using reflected_leading_radial_moment_toReal_tendsto
+    simpa [L,κ,a,hcharge,Λ] using reflected_leading_radial_moment_toReal_tendsto
       P X hX γ hγ hγ₂ M hM Xc hc ν α₁ α₂ α₃ ξ (p+a) h hh hξ hξ1
         (add_pos hp ha).le hshift hα₂ hα₃
   have hF : Tendsto (fun z : ℂ => F z/‖z‖^κ) (𝓝[≠] (0 : ℂ)) (𝓝 0) := by
     have ht := (isComplexLittleOAtZero_ofReal_iff (γ*(Q γ-α₁)) _).mp
       (reflected_first_order_radial_error_littleO P X hX γ hγ hγ₂ M hM Xc hc
         α₁ α₂ α₃ ξ h hh hξ hξ1 hα₁ hreflect hs)
-    exact ht
+    assumption
   have hsmall : ∀ᶠ z : ℂ in 𝓝[≠] (0 : ℂ), z ≠ 0 ∧ z ≠ 1 ∧ ‖z‖ ≤ 1 := by
     have hn : Tendsto (fun z : ℂ => ‖z‖) (𝓝[≠] (0 : ℂ)) (𝓝 ‖(0 : ℂ)‖) :=
       (continuous_norm.tendsto (0 : ℂ)).mono_left nhdsWithin_le_nhds
@@ -85,7 +79,7 @@ theorem reflected_source_pareto_increment_tendsto
   have herr : Tendsto (fun z : ℂ => (D z-c*L z*S)/‖z‖^κ) (𝓝[≠] (0 : ℂ)) (𝓝 0) := by
     rw [tendsto_zero_iff_norm_tendsto_zero]
     have hmajor : Tendsto (fun z : ℂ => (C*J)*(F z/‖z‖^κ)) (𝓝[≠] (0 : ℂ)) (𝓝 0) := by
-      simpa only [mul_zero] using hF.const_mul (C*J)
+      simpa [mul_zero] using hF.const_mul (C*J)
     apply squeeze_zero' (Filter.Eventually.of_forall fun z => norm_nonneg _) ?_ hmajor
     filter_upwards [hbound] with z hz
     rw [Real.norm_eq_abs, abs_div, abs_of_nonneg (Real.rpow_nonneg (norm_nonneg z) _)]
@@ -95,6 +89,6 @@ theorem reflected_source_pareto_increment_tendsto
   change Tendsto (fun z : ℂ => D z / ‖z‖^κ) (𝓝[≠] (0 : ℂ)) (𝓝 (c*Λ*S))
   have he : (fun z : ℂ => (D z-c*L z*S)/‖z‖^κ+c*(L z/‖z‖^κ)*S) =
       (fun z : ℂ => D z/‖z‖^κ) := by funext z; ring
-  simpa only [Pi.add_apply, zero_add, he] using ht
+  simpa [Pi.add_apply, zero_add, he] using ht
 
 end DOZZ.Proofs

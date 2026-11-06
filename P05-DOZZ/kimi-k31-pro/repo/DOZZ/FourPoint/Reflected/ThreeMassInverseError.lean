@@ -2,10 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.ReflectedOuter.InverseDifference
+import DOZZ.FourPoint.ReflectedOuter.InverseDifference
 /-! Removing the intermediate buffer costs its first-order retained-mass moment. -/
-@[expose] public section
 open MeasureTheory
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -50,10 +48,8 @@ theorem reflected_three_mass_inverse_error
     apply add_le_add_right
     have hpow := ennreal_rpow_antitone_of_nonpos (le_add_left le_rfl : O ω ≤ S ω)
       (by linarith only [hp] : -(p+1) ≤ 0)
-    simpa only [R,mul_assoc] using mul_le_mul_right hpow (ENNReal.ofReal p*B ω)
+    simpa [R,mul_assoc] using mul_le_mul_right hpow (ENNReal.ofReal p*B ω)
   have h := reflected_lintegral_toReal_difference_bound P (fun ω => F ω^(-p))
     (fun ω => S ω^(-p)) R (hF.pow_const (-p)) (hS.pow_const (-p)) hFinv hSinv hRfin hFG hGF
-  rw [hR,ENNReal.toReal_mul,ENNReal.toReal_ofReal hp.le] at h
-  exact h
-
+  rwa [hR,ENNReal.toReal_mul,ENNReal.toReal_ofReal hp.le] at h
 end DOZZ.Proofs

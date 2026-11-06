@@ -2,12 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Brownian.ReflectionLawTransport
-public import DOZZ.Brownian.MeasureTranslationFinite
-public import Mathlib.Probability.Kernel.MeasurableLIntegral
-public import Mathlib.Topology.Hom.ContinuousEval
+import DOZZ.Brownian.ReflectionLawTransport
+import DOZZ.Brownian.MeasureTranslationFinite
+import Mathlib.Probability.Kernel.MeasurableLIntegral
+import Mathlib.Topology.Hom.ContinuousEval
 
 /-!
 # Measurability of the reflection mass input
@@ -17,7 +16,6 @@ measure. We partition the line into the disjoint compact shells already used for
 translation, integrate over finite restrictions, and sum the measurable pieces.
 -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal NNReal
@@ -28,7 +26,7 @@ namespace DOZZ.Proofs
 noncomputable def reflectionPairValue (b : BrownianPath × BrownianPath) (s : ℝ) : ℝ :=
   if hs : 0 ≤ s then b.1 ⟨s, hs⟩ else b.2 ⟨-s, by linarith⟩
 
-private theorem measurable_reflectionPairValue :
+theorem measurable_reflectionPairValue :
     Measurable (Function.uncurry reflectionPairValue) := by
   classical
   have heval : Measurable (fun z : (ℝ≥0 × BrownianPath) => z.2 z.1) :=
@@ -103,8 +101,7 @@ theorem measurable_reflectionMassInputShell (γ : ℝ) (n : ℕ) :
   exact hInt.comp hpair
 
 theorem measurable_reflectionMassInputShellSum (γ : ℝ) :
-    Measurable (reflectionMassInputShellSum γ) := by
-  exact Measurable.tsum fun n => measurable_reflectionMassInputShell γ n
+    Measurable (reflectionMassInputShellSum γ) := Measurable.tsum fun n => measurable_reflectionMassInputShell γ n
 
 /-- On measures finite on every compact translation window, the shell sum agrees with the full
 reflection mass input. -/
@@ -113,8 +110,7 @@ theorem reflectionMassInput_eq_shellSum_of_locallyFinite
     (hlocal : LocallyFiniteOnTranslationWindows z.2) :
     twoSidedReflectionMassInput γ z = reflectionMassInputShellSum γ z := by
   let f : ℝ → ℝ≥0∞ := fun s => reflectionMassInputIntegrand γ (z.1, s)
-  have hfinite (n : ℕ) : z.2 (translationShell n) < ⊤ := by
-    exact lt_of_le_of_lt (measure_mono (translationShell_subset_window n)) (hlocal n)
+  have hfinite (n : ℕ) : z.2 (translationShell n) < ⊤ := lt_of_le_of_lt (measure_mono (translationShell_subset_window n)) (hlocal n)
   have hshellMeasure (n : ℕ) :
       finiteRestrictionOnSet (translationShell n) z.2 =
         ⟨z.2.restrict (translationShell n),
@@ -159,4 +155,3 @@ theorem aemeasurable_reflectionMassInput_map_of_locallyFinite
 
 end DOZZ.Proofs
 
-end

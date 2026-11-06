@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Brownian.Coupling.FiniteGrid
+import DOZZ.Brownian.Coupling.FiniteGrid
 
 /-!
 # Continuous interpolation of the shared entrance grids
@@ -14,7 +13,6 @@ and extend constantly beyond the last grid time. The construction uses continuou
 so measurability on the compact-open path carrier follows directly from evaluation measurability.
 -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology TopologicalSpace Set
 open scoped ENNReal NNReal Topology Classical
@@ -127,7 +125,7 @@ theorem couplingGridInterpolant_after_append {δ : ℝ} (hδ : 0 < δ) (n : ℕ)
   change couplingGridInterpolant δ n (Fin.init x) t + _ *
     couplingRamp (((n : ℝ) + 1) * δ) δ (t : ℝ) = _
   rw [couplingGridInterpolant_terminal hδ n (Fin.init x) t ht]
-  simp only [ContinuousMap.const_apply]
+  simp [ContinuousMap.const_apply]
   change (x (Fin.last n).castSucc).1 +
     ((x (Fin.last (n + 1))).1 - (x (Fin.last n).castSucc).1) *
       couplingRamp (((n : ℝ) + 1) * δ) δ (t : ℝ) = _
@@ -173,17 +171,12 @@ theorem couplingGridInterpolant_order {δ d : ℝ} (hδ : 0 < δ) (hd : 0 ≤ d)
         have hramp0 := couplingRamp_nonneg (((n : ℝ) + 1) * δ) δ (t : ℝ)
         have hramp1 := couplingRamp_le_one (((n : ℝ) + 1) * δ) δ (t : ℝ)
         have hbudget := couplingRamp_time_budget hδ ht'
-        have hlold := mul_le_mul_of_nonneg_left hold.1 (sub_nonneg.mpr hramp1)
-        have hlnew := mul_le_mul_of_nonneg_left hnew.1 hramp0
-        have huold := mul_le_mul_of_nonneg_left hold.2 (sub_nonneg.mpr hramp1)
-        have hunew := mul_le_mul_of_nonneg_left hnew.2 hramp0
-        have hbudget' := mul_le_mul_of_nonneg_left hbudget hd
         constructor <;> nlinarith
 
 /-- Uniform-grid elapsed times match the affine interpolation endpoints exactly. -/
 theorem coupledEntranceGridTime_uniform (δ : ℝ) (n : ℕ) :
     coupledEntranceGridTime δ (fun _ => δ) n = ((n : ℝ) + 1) * δ := by
-  simp only [coupledEntranceGridTime, Finset.sum_const, Finset.card_range, nsmul_eq_mul]
+  simp [coupledEntranceGridTime, Finset.sum_const, Finset.card_range, nsmul_eq_mul]
   ring
 
 /-- Reflect all finite-grid interpolants into the negative path convention. -/
@@ -207,7 +200,7 @@ theorem couplingInterpolatedFamily_mem_orderSet {J : Type*}
   have hxy : ∀ i : Fin (n + 1), (x j i).1 ≤ (x k i).1 ∧
       (x k i).1 ≤ (x j i).1 + ((v k : ℝ) - (v j : ℝ)) * (((i.val : ℝ) + 1) * δ) := by
     intro i
-    simpa only [coupledEntranceGridTime_uniform] using hx j k hjk' i
+    simpa [coupledEntranceGridTime_uniform] using hx j k hjk' i
   obtain ⟨hlo, hhi⟩ := couplingGridInterpolant_order hδ (sub_nonneg.mpr hjk) n
     (x j) (x k) hxy t
   change -couplingGridInterpolant δ n (x k) t ≤ -couplingGridInterpolant δ n (x j) t ∧

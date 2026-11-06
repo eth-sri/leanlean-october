@@ -2,13 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.Moments.InversionAnnularKernelBounds
+import DOZZ.GMC.Moments.InversionAnnularKernelBounds
 
 /-! Separated mixed and ordinary kernel comparisons for inversion compatibility. -/
 
-@[expose] public section
 
 open Set Metric Real
 open DOZZ.Proofs.CirclePotential
@@ -70,7 +68,7 @@ theorem inversion_separated_kernel_uniform {m R d η : ℝ}
   have hy : y ≠ 0 := norm_pos_iff.mp (by linarith only [hylo, hm])
   have hxy : x ≠ y := by
     intro h
-    have hz : ‖x - y‖ = 0 := by simp only [h, sub_self, norm_zero]
+    have hz : ‖x - y‖ = 0 := by simp [h, sub_self, norm_zero]
     linarith only [hdist, hd, hz]
   have hδA : 2 * δ * A ≤ d := by
     have ht := (le_div_iff₀ (by positivity : 0 < 2 * A)).mp hδd

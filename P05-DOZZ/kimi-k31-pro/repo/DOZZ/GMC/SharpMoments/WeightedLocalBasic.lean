@@ -2,12 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.SharpMoments.MomentRange
-public import DOZZ.Statements.GMC.WeightedGmcBallMoment
-public import DOZZ.GMC.Moments.WeightedLocalSubunit
-public import DOZZ.GMC.Moments.WeightedExponent
+import DOZZ.GMC.SharpMoments.MomentRange
+import DOZZ.Statements.GMC.WeightedGmcBallMoment
+import DOZZ.GMC.Moments.WeightedLocalSubunit
+import DOZZ.GMC.Moments.WeightedExponent
 
 /-! # Elementary bounds for weighted local masses
 
@@ -15,7 +14,6 @@ A weighted local mass dominates a fixed multiple of the mass of an off-center su
 inherits the divergence of unweighted moments at and above `4/γ²`. For nonpositive charges the
 weight is bounded on the disk and the unweighted moment range gives finiteness below `4/γ²`. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped ENNReal NNReal

@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.Tails.CopiedCompactChaosLaw
-public import Mathlib.MeasureTheory.Integral.Lebesgue.Add
+import DOZZ.Correlations.Tails.CopiedCompactChaosLaw
+import Mathlib.MeasureTheory.Integral.Lebesgue.Add
 
 /-! Increasing compact tests for the full extended-real insertion singularity. -/
 
-@[expose] public section
 open MeasureTheory Filter Topology Set
 open scoped ENNReal
 
@@ -58,10 +56,10 @@ theorem singular_compact_test_tendsto (f : BoundedContinuousFunction ℂ ℝ)
   have ht : Tendsto (fun n : ℕ => (n : ℝ)+1) atTop atTop :=
     tendsto_natCast_atTop_atTop.atTop_add tendsto_const_nhds
   have hδ : Tendsto (fun n : ℕ => 1 / ((n : ℝ)+1)) atTop (𝓝 0) := by
-    simpa only [one_div, Function.comp_def] using tendsto_inv_atTop_zero.comp ht
+    simpa [one_div, Function.comp_def] using tendsto_inv_atTop_zero.comp ht
   have hbase : Tendsto (fun n : ℕ => ENNReal.ofReal (max ‖x‖ (1 / ((n : ℝ)+1)))) atTop
       (𝓝 (ENNReal.ofReal ‖x‖)) := by
-    simpa only [max_eq_left (norm_nonneg x), Function.comp_def] using
+    simpa [max_eq_left (norm_nonneg x), Function.comp_def] using
       ENNReal.continuous_ofReal.tendsto _ |>.comp ((tendsto_const_nhds (x := ‖x‖)).max hδ)
   have hpow : Tendsto (fun n : ℕ =>
       (ENNReal.ofReal (max ‖x‖ (1 / ((n : ℝ)+1)))) ^ (-β)) atTop

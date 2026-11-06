@@ -2,13 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GFF.Assembly
-public import DOZZ.GMC.Construction.CircleAverageJointVersion
-public import DOZZ.GFFStructure.CircleCovariance
-public import DOZZ.Brownian.Barrier.ZeroDrift
-public import DOZZ.Brownian.RogersPitmanInput
+import DOZZ.GFF.Assembly
+import DOZZ.GMC.Construction.CircleAverageJointVersion
+import DOZZ.GFFStructure.CircleCovariance
+import DOZZ.Brownian.Barrier.ZeroDrift
+import DOZZ.Brownian.RogersPitmanInput
 
 /-!
 # A Wiener path law from the concrete equator GFF
@@ -19,7 +18,6 @@ the origin give a real Brownian motion, which is pushed onto the continuous-path
 Rogers--Pitman map.
 -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology TopologicalSpace Set
 open scoped ENNReal NNReal Topology
@@ -136,7 +134,7 @@ theorem wienerTriple_drifted_eval_hasLaw (a : ℝ) (t : ℝ≥0) :
     (fun _ => (ContinuousMap.measurable_eval t).add_const _)
   apply hindep.hasLaw_pi
   intro i
-  simpa only [zero_add, Function.comp_def] using gaussianReal_add_const
+  simpa [zero_add, Function.comp_def] using gaussianReal_add_const
     ((wienerTriple_coordinate_isBrownian i).hasLaw_eval t)
     (if i = 0 then a * (t : ℝ) else 0)
 

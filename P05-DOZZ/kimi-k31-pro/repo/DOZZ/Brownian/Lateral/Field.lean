@@ -2,11 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Brownian.Lateral.RadialProjection
-public import DOZZ.GFFStructure.GaussianIntegration
-public import DOZZ.GFFStructure.OffCenterDecomposition
+import DOZZ.Brownian.Lateral.RadialProjection
+import DOZZ.GFFStructure.GaussianIntegration
+import DOZZ.GFFStructure.OffCenterDecomposition
 
 /-!
 # The origin lateral field on the whole punctured plane
@@ -21,7 +20,6 @@ against smooth compact tests. The covariance calculation applies to tests on eit
 equator and to tests crossing it.
 -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal Topology
@@ -59,7 +57,7 @@ theorem origin_circle_radial_covariance (X : Ω → Distr) (Xc : Ω → ℂ → 
       (fun ω => Xc ω 0 (-Real.log ‖w‖)) P = originRadialCovariance s w := by
   rw [circleAverage_covariance_integral P X Xc hX hc,
     integral_integral_gffKernel_origin]
-  simp only [originRadialCovariance, neg_neg]
+  simp [originRadialCovariance, neg_neg]
 
 end
 

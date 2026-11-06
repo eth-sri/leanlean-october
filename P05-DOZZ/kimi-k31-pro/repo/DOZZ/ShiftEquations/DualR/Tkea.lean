@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.ShiftEquations.DualR.StarGSegment
-public import DOZZ.ShiftEquations.DualR.ReflectedShiftFull
+import DOZZ.ShiftEquations.DualR.StarGSegment
+import DOZZ.ShiftEquations.DualR.ReflectedShiftFull
 import DOZZ.Correlations.Analytic.StructureConstantHolomorphic
 import DOZZ.ShiftEquations.Rbar.Continuation
 import DOZZ.Brownian.Reflection.RtheorAnalytic
@@ -22,7 +21,6 @@ Seiberg domain. At `P` the reflected shift (`reflectedShift_full`) turns the shi
 `R(ε) R(2Q - ε - 2/γ) C(ε + 2/γ, γ/2 + η, Q - ε) = L R(γ/2 + η) C(ε, Q - η, Q - ε)`.
 -/
 
-@[expose] public section
 
 open MeasureTheory Filter Topology Set
 
@@ -326,9 +324,6 @@ theorem tkea {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Dist
       dualLC γ ((γ / 2 - θ : ℝ) : ℂ) ((γ / 2 + η : ℝ) : ℂ) ((2 / γ + θ : ℝ) : ℂ) *
         R ((γ / 2 + η : ℝ) : ℂ) *
           (structureConstant P M γ μ (γ / 2 - θ) (Q γ - η) (2 / γ + θ) : ℂ) := by
-  have hγh : γ / 2 < 2 / γ := by
-    rw [div_lt_div_iff₀ (by norm_num) hγ]
-    exact mul_self_lt_mul_self hγ.le hγ2
   set σ : ℝ := min (γ / 12) ((4 / γ - γ) / 16) with hσ
   have hσ₀ : 0 < σ := lt_min (by linarith) (by linarith)
   obtain ⟨es, as, hes, has, hRes, hRas, hgS1⟩ := exists_tkea_start hγ hσ₀ hhR hRm
@@ -357,4 +352,3 @@ theorem tkea {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Dist
 
 end DOZZ.Proofs
 
-end

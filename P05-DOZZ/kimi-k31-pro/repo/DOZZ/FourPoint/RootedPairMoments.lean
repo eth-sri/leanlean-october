@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.TwoRootedDomination
-public import DOZZ.GMC.SharpMoments.SeibergWeight
+import DOZZ.FourPoint.TwoRootedDomination
+import DOZZ.GMC.SharpMoments.SeibergWeight
 
 /-! The positive Taylor square as an exact two-root integral, preserving both density factors. -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs

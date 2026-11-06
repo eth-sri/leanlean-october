@@ -2,13 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.Fusion.LocalR1Limit
+import DOZZ.FourPoint.Fusion.LocalR1Limit
 
 /-! # Exact normalization of the local pure derivative coefficient -/
 
-@[expose] public section
 open MeasureTheory Filter Topology
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -37,7 +35,7 @@ theorem fusion_local_inverse_coefficient_eq {Ω : Type*} [MeasurableSpace Ω]
       ∫⁻ ω, gammaHalfRootedMass γ α₁ α₂ α₃ M ω ^ s ∂P := by
   apply lintegral_congr_ae
   filter_upwards [fusionMovingMass_eq_rooted_ae P X hX γ hγ hγ2 M hM α₁ α₂ α₃ 1 0] with ω hω
-  simpa only [mul_zero, gammaHalfRootedMass] using congrArg (fun a : ℝ≥0∞ => a ^ s) hω
+  simpa [mul_zero, gammaHalfRootedMass] using congrArg (fun a : ℝ≥0∞ => a ^ s) hω
 
 /-- The local `r₁` coefficient is the exact rooted coefficient `gammaHalfRootedCoefficient`
 times the planar ratio. -/

@@ -1,13 +1,11 @@
-module
 
-public import DOZZ.GMC.WeightedCutoff.PositiveCompact
-public import DOZZ.GMC.WeightedCutoff.NonpositiveCompact
-public import DOZZ.GMC.WeightedCutoff.OrderCap
-public import DOZZ.GMC.Moments.WeightedCutoffCompactPositive
+import DOZZ.GMC.WeightedCutoff.PositiveCompact
+import DOZZ.GMC.WeightedCutoff.NonpositiveCompact
+import DOZZ.GMC.WeightedCutoff.OrderCap
+import DOZZ.GMC.Moments.WeightedCutoffCompactPositive
 
 /-! # The compact finite-chart weighted cutoff bound for all positive orders -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs

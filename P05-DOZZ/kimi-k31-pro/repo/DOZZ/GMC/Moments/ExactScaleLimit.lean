@@ -2,16 +2,14 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.Defs.IsGMCOf
-public import DOZZ.GMC.Moments.RegularizedScale
-public import DOZZ.GMC.Moments.ChaosLawFDDLimit
-public import DOZZ.GMC.Moments.ScaleLimit
+import DOZZ.Statements.Defs.IsGMCOf
+import DOZZ.GMC.Moments.RegularizedScale
+import DOZZ.GMC.Moments.ChaosLawFDDLimit
+import DOZZ.GMC.Moments.ScaleLimit
 
 /-! Exact affine scaling of arbitrary `IsGMCOf` limits on a compact logarithmic chart. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped Distributions ENNReal NNReal
@@ -62,13 +60,13 @@ theorem gmc_affine_test_vector_law
     have hxR : ‖x‖ ≤ R := by
       have hxmem : x ∈ Metric.closedBall (0 : ℂ) R := hx
       change dist x 0 ≤ R at hxmem
-      simpa only [dist_zero_right] using hxmem
+      simpa [dist_zero_right] using hxmem
     exact hxR.trans hRsmall.le
   have htargetUnit : ∀ x ∈ Metric.closedBall a (c * R), ‖x‖ ≤ 1 := by
     intro x hx
     have hxR : ‖x - a‖ ≤ c * R := by
       change dist x a ≤ c * R at hx
-      simpa only [dist_eq_norm] using hx
+      simpa [dist_eq_norm] using hx
     calc
       ‖x‖ = ‖(x - a) + a‖ := by congr 1; abel
       _ ≤ ‖x - a‖ + ‖a‖ := norm_add_le _ _
@@ -79,7 +77,7 @@ theorem gmc_affine_test_vector_law
     have hxR : ‖x.1‖ ≤ R := by
       have hxmem : x.1 ∈ Metric.closedBall (0 : ℂ) R := x.2
       change dist x.1 0 ≤ R at hxmem
-      simpa only [dist_zero_right] using hxmem
+      simpa [dist_zero_right] using hxmem
     have hn : (N : ℝ) ≤ ((N + n : ℕ) : ℝ) := by exact_mod_cast Nat.le_add_right N n
     have hexp : Real.exp (-((N + n : ℕ) : ℝ)) ≤ Real.exp (-(N : ℝ)) :=
       Real.exp_le_exp.mpr (neg_le_neg hn)
@@ -90,7 +88,7 @@ theorem gmc_affine_test_vector_law
     have hxR : ‖x.1‖ ≤ R := by
       have hxmem : x.1 ∈ Metric.closedBall (0 : ℂ) R := x.2
       change dist x.1 0 ≤ R at hxmem
-      simpa only [dist_zero_right] using hxmem
+      simpa [dist_zero_right] using hxmem
     have hnorm : ‖a + c • x.1‖ ≤ ‖a‖ + c * R := by
       calc
         ‖a + c • x.1‖ ≤ ‖a‖ + ‖c • x.1‖ := norm_add_le _ _
@@ -132,8 +130,7 @@ theorem gmc_affine_test_vector_law
     apply htargetZero j
     intro hy
     have hy' : a + c • x ∈ (fun y : ℂ => a + c • y) '' Metric.closedBall (0 : ℂ) R := by
-      rw [himage]
-      exact hy
+      rwa [himage]
     obtain ⟨y, hyball, hyEq⟩ := hy'
     have hxy : x = y := hinj (by simpa using hyEq.symm)
     exact hx (hxy ▸ hyball)
@@ -147,7 +144,7 @@ theorem gmc_affine_test_vector_law
   let scaleSeq : ℕ → ℝ := fun n => ((N + n : ℕ) : ℝ)
   have hscaleSeq : Tendsto scaleSeq atTop atTop := by
     dsimp [scaleSeq]
-    simpa only [Nat.cast_add] using
+    simpa [Nat.cast_add] using
       (tendsto_atTop_add_const_left atTop (N : ℝ) tendsto_natCast_atTop_atTop)
   let targetSeq : ℕ → ℝ := fun n => scaleSeq n - Real.log c
   have htargetSeq : Tendsto targetSeq atTop atTop := by
@@ -195,8 +192,7 @@ theorem gmc_affine_test_vector_law
   have hcutProduct (n : ℕ) : AEMeasurable (cutoffProduct n) (P.prod G) := by
     apply aemeasurable_pi_iff.2
     intro j
-    have hfst : Measure.map (fun p : Ω × ℝ => p.1) (P.prod G) = P := by
-      exact measurePreserving_fst.map_eq
+    have hfst : Measure.map (fun p : Ω × ℝ => p.1) (P.prod G) = P := measurePreserving_fst.map_eq
     have hbase : AEMeasurable (fun p : Ω × ℝ => baseCutoff n p.1 j) (P.prod G) := by
       have hbase' : AEMeasurable (fun ω => baseCutoff n ω j)
           (Measure.map (fun p : Ω × ℝ => p.1) (P.prod G)) := by
@@ -217,13 +213,11 @@ theorem gmc_affine_test_vector_law
     intro j
     have hbaseP : AEMeasurable (fun ω => limitBase ω j) P :=
       (hconvBase j).aemeasurable (fun n => hcutBase n j)
-    have hfst : Measure.map (fun p : Ω × ℝ => p.1) (P.prod G) = P := by
-      exact measurePreserving_fst.map_eq
+    have hfst : Measure.map (fun p : Ω × ℝ => p.1) (P.prod G) = P := measurePreserving_fst.map_eq
     have hbase : AEMeasurable (fun p : Ω × ℝ => limitBase p.1 j) (P.prod G) := by
       have hbase' : AEMeasurable (fun ω => limitBase ω j)
           (Measure.map (fun p : Ω × ℝ => p.1) (P.prod G)) := by
-        rw [hfst]
-        exact hbaseP
+        rwa [hfst]
       change AEMeasurable
         ((fun ω => limitBase ω j) ∘ (fun p : Ω × ℝ => p.1)) (P.prod G)
       exact hbase'.comp_aemeasurable measurable_fst.aemeasurable

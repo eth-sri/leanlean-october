@@ -2,12 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.Brownian.IsReflectionData
-public import DOZZ.Statements.Brownian.IsSourceLateralProjection
-public import DOZZ.Statements.Brownian.BrownianPostMaximumPath
-public import Mathlib.Probability.BrownianMotion.Basic
+import DOZZ.Statements.Brownian.IsReflectionData
+import DOZZ.Statements.Brownian.IsSourceLateralProjection
+import DOZZ.Statements.Brownian.BrownianPostMaximumPath
+import Mathlib.Probability.BrownianMotion.Basic
 import DOZZ.Brownian.Lateral.RadialWindowUniform
 import DOZZ.Brownian.Williams.Disintegration
 import DOZZ.Brownian.Coupling.RadialTiltDensity
@@ -25,7 +24,6 @@ lateral measure. One pair `(B, Z)` thus carries the reflection data of every cha
 with `Z` the given projection.
 -/
 
-public section
 
 open MeasureTheory ProbabilityTheory
 open scoped NNReal ENNReal
@@ -45,7 +43,7 @@ theorem map_brownianPostMaximumPath_eq (P : Measure BrownianPath)
     (brownianPath_williams_joint_map P hB ν hν Q hQ)
   rw [AEMeasurable.map_map_of_aemeasurable measurable_snd.aemeasurable
     ((hM.prodMk hPre).prodMk hPost), Measure.map_snd_prod, measure_univ, one_smul] at hj
-  exact hj
+  assumption
 
 /-- **The reflection witness** (Williams form). A source lateral projection with its lateral law
 carries reflection data for every charge below `Q`, all with the same lateral measure. -/
@@ -109,4 +107,3 @@ theorem exists_reflectionData_family_of_isReflectionData {Ω : Type*} [Measurabl
 
 end DOZZ.Proofs
 
-end

@@ -2,15 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.Tails.GaussianRegression
-public import Mathlib.Probability.Independence.Basic
+import DOZZ.Correlations.Tails.GaussianRegression
+import Mathlib.Probability.Independence.Basic
 
 /-! Replace the correlated pin by an independent copy after Gaussian regression.
 The full coordinate law is preserved, including the pin coordinate. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory
 
@@ -63,15 +61,15 @@ theorem gaussian_pin_copy_law
     Measure.map_map hr (hN.prodMk hR)] at he
   have hsource : (restore ∘ fun ω => (Z none ω, R ω)) = fun ω j => Z j ω := by
     funext ω j
-    cases j <;> simp only [restore, Function.comp_def, Option.elim_none,
+    cases j <;> simp [restore, Option.elim_none,
       Option.elim_some, R]
-    all_goals ring
+
   have htarget : (restore ∘ fun q : Ω × Ω => (Z none q.2, R q.1)) =
       fun q j => j.elim (Z none q.2) (fun i =>
         Z (some i) q.1 + (covariance (Z (some i)) (Z none) P / v) *
           (Z none q.2 - Z none q.1)) := by
     funext q j
-    cases j <;> simp only [restore, Function.comp_def, Option.elim_none,
+    cases j <;> simp [restore, Option.elim_none,
       Option.elim_some, R, a]
     all_goals ring
   rw [hsource, htarget] at he

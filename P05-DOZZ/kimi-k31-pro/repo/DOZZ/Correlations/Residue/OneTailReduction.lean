@@ -2,16 +2,14 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.Residue.FullSourceTailReduction
-public import DOZZ.Correlations.SumTail.Reduction
+import DOZZ.Correlations.Residue.FullSourceTailReduction
+import DOZZ.Correlations.SumTail.Reduction
 
 /-! The joint-tail inequality `DOZZ.separatedSingularMass_joint_tail` and the two-insertion tail
 `DOZZ.twoInsertion_tail_sum_uniform` supply the two-insertion hypothesis in both complete
 residue-bridge reductions. -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory Filter Topology TopologicalSpace Set
 open scoped ENNReal NNReal Topology
 namespace DOZZ.Proofs

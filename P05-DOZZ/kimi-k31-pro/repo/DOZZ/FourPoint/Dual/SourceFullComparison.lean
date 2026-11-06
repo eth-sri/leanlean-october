@@ -2,11 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Dual.FullSpatialComparison
-public import DOZZ.FourPoint.Dual.CopiedGlobalGuard
+import DOZZ.FourPoint.Dual.FullSpatialComparison
+import DOZZ.FourPoint.Dual.CopiedGlobalGuard
 /-! Full conditional lateral comparison for the actual supplied ordinary GMC. -/
-@[expose] public section
 open MeasureTheory ProbabilityTheory Set Filter Topology
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -83,24 +81,22 @@ theorem dual_source_full_lateral_comparison
     (fun p => p.2^(-q)) (measurable_snd.pow_const (-q))
   have hit := reflected_global_mass_iterated P Ar hAr γ N hN hfin
     (U.indicator k) (hk.indicator hU) (-q)
-  dsimp only [W] at hcopied
-  simp only [hsource, hcopied] at hlaw hit
+  dsimp [W] at hcopied
+  simp [hsource, hcopied] at hlaw hit
   have hFm := reflected_chart_parameter_mass_measurable ({0} : Set ℂ)ᶜ
     (isClosed_singleton (x := (0 : ℂ))).isOpen_compl N hN hfin
     (fun p => U.indicator k p.2*W p)
     (((hk.indicator hU).comp measurable_snd).mul hW)
   have hp : Measurable (fun p : TwoSidedPath × Ω =>
       ((∫⁻ x in U₀, k x*W (p.1, x) ∂N p.2)+(∫⁻ x in U₁, k x*W (p.1, x) ∂N p.2))^(-q)) := by
-    simpa only [W, hcopied] using hFm.pow_const (-q)
+    simpa [W, hcopied] using hFm.pow_const (-q)
   have hprod := lintegral_prod
     (fun p : TwoSidedPath × Ω =>
       ((∫⁻ x in U₀, k x*W (p.1, x) ∂N p.2)+(∫⁻ x in U₁, k x*W (p.1, x) ∂N p.2))^(-q))
     hp.aemeasurable (μ := Qr) (ν := P)
-  dsimp only [W] at hprod
+  dsimp [W] at hprod
   have he := hlaw.trans (hit.trans hprod.symm)
   refine ⟨N, hN, hi, hfin, heq, ?_⟩
-  dsimp only at hb ⊢
-  rw [← he] at hb
-  exact hb
-
+  dsimp at hb ⊢
+  rwa [← he] at hb
 end DOZZ.Proofs

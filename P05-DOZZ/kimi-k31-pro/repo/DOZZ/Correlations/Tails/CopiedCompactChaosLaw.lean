@@ -2,15 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.Tails.CopiedTestCutoffLaw
-public import DOZZ.Correlations.Tails.CopiedWeightTestLimit
-public import DOZZ.Correlations.Symmetry.CorrelatedScalarLimit
+import DOZZ.Correlations.Tails.CopiedTestCutoffLaw
+import DOZZ.Correlations.Tails.CopiedWeightTestLimit
+import DOZZ.Correlations.Symmetry.CorrelatedScalarLimit
 
 /-! Equality in law of actual compact chaos masses after the pin copy. -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal
 
@@ -47,7 +45,7 @@ theorem copied_compact_chaos_law
     (gt_mem_nhds (show (0 : ℝ) < 1-ρ' by linarith)))
   let t : ℕ → ℕ := fun n => L+n
   have ht : Tendsto t atTop atTop := by
-    simpa only [t, Nat.add_comm] using tendsto_add_atTop_nat L
+    simpa [t, Nat.add_comm] using tendsto_add_atTop_nat L
   have hmargin (n : ℕ) : ρ' + Real.exp (-(t n : ℝ)) ≤ 1 := by
     have h := hL (L+n) (Nat.le_add_right L n)
     linarith
@@ -64,7 +62,7 @@ theorem copied_compact_chaos_law
   have hS : Measurable S :=
     (((hc.1 0).comp (measurable_snd.prodMk measurable_const)).const_mul γ).sub_const _ |>.exp
   have hA (n : ℕ) : Measurable (A n) :=
-    (DOZZ.Assembly.regularizedGMC_integral_measurable P X hX Xc hc γ (t n) G G.continuous.measurable).const_mul _
+    (Assembly.regularizedGMC_integral_measurable P X hX Xc hc γ (t n) G G.continuous.measurable).const_mul _
   have hY := translated_field_isEquatorGFF P X Xc hX hc z
   have hYc := translated_field_circleAverage P X Xc hX hc z
   have hB (n : ℕ) : Measurable (B n) := by
@@ -102,7 +100,7 @@ theorem copied_compact_chaos_law
     exact hS.mul hker.stronglyMeasurable.integral_prod_right.measurable
   have hAc : TendstoInMeasure P A atTop Alim :=
     tendstoInMeasure_mul_same_space _ _ _ measurable_const
-      ((DOZZ.Assembly.isGMCOf_tendstoInMeasure P X hX Xc hc γ M hM G).comp
+      ((Assembly.isGMCOf_tendstoInMeasure P X hX Xc hc γ M hM G).comp
         (tendsto_natCast_atTop_atTop.comp ht))
   have hgs' : tsupport (g : ℂ → ℝ) ⊆ Metric.closedBall 0 1 :=
     hgs.trans Metric.ball_subset_closedBall

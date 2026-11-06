@@ -2,15 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Hypergeom.Germs
-public import DOZZ.Hypergeom.ODE.CutPlaneTopology
+import DOZZ.Hypergeom.Germs
+import DOZZ.Hypergeom.ODE.CutPlaneTopology
 import Mathlib.Analysis.SpecialFunctions.Pow.Deriv
 
 /-! Holomorphy of the four transformed local Gauss basis functions. -/
 
-@[expose] public section
 
 namespace DOZZ.Proofs
 
@@ -156,7 +154,7 @@ theorem gaussGMinus_differentiableOn_cutPlane
     htrans.1.comp harg one_sub_gaussCutPlane_subset_gaussSlitPlane
   change DifferentiableOn ℂ
     (fun z : ℂ => H a b (1 + a + b - c) (1 - z)) gaussCutPlane
-  simpa only [Function.comp_def] using htransOn
+  simpa [Function.comp_def] using htransOn
 
 /-- The powered second local solution at one is holomorphic on the common cut plane. -/
 theorem gaussGPlus_differentiableOn_cutPlane

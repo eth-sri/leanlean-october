@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.Tails.FiniteWickCopyLaw
-public import DOZZ.Correlations.Tails.UnpinnedCutoffIdentity
+import DOZZ.Correlations.Tails.FiniteWickCopyLaw
+import DOZZ.Correlations.Tails.UnpinnedCutoffIdentity
 
 /-! Copied-pin laws for the literal local cutoff volume integrals. -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal NNReal
 
@@ -52,12 +50,12 @@ theorem copied_cutoff_volume_law
     have heq : (fun x => (p x).val) = (fun x : ℂ => if x ∈ K then (x,r) else (0,r)) := by
       funext x
       by_cases hx : x ∈ K
-      · simp only [p, dite_eq_left hx, ite_eq_left hx]
-      · simp only [p, dite_eq_right hx, ite_eq_right hx]
+      · simp [p, dite_eq_left hx, ite_eq_left hx]
+      · simp [p, dite_eq_right hx, ite_eq_right hx]
     change Measurable (fun x => (p x).val)
     rw [heq]
     exact Measurable.ite hK (measurable_id.prodMk measurable_const) measurable_const
-  have hpx (x : ℂ) (hx : x ∈ K) : (p x).val = (x,r) := by simp only [p, dite_eq_left hx]
+  have hpx (x : ℂ) (hx : x ∈ K) : (p x).val = (x,r) := by simp [p, dite_eq_left hx]
   have hweight : Integrable (f : ℂ → ℝ) (ν : Measure ℂ) := f.integrable (μ := (ν : Measure ℂ))
   have hlaw := offCenter_wick_copy_finite_law P X Xc hX hc hm z hz ν p hp γ
     (fun _ : Fin 1 => (f : ℂ → ℝ)) (fun _ => f.continuous.measurable) (fun _ => hf0)
@@ -102,7 +100,7 @@ theorem copied_cutoff_volume_law
     have hn : ‖x‖ ≤ ρ := by simpa only [K, Metric.mem_closedBall, dist_zero_right] using hx
     have hx1 : ‖x‖ ≤ 1 := by linarith [Real.exp_pos (-r)]
     have hh := norm_sub_norm_le z (z+x)
-    simp only [sub_add_cancel_left, norm_neg] at hh
+    simp [sub_add_cancel_left, norm_neg] at hh
     have hn1 : 1 ≤ ‖z+x‖ := by linarith
     have hl := Real.log_nonneg hn1
     linarith
@@ -119,7 +117,7 @@ theorem copied_cutoff_volume_law
     apply setIntegral_congr_fun hK
     intro x hx
     dsimp only
-    simp only [hpx x hx, Real.coe_toNNReal _ (hv x hx)]
+    simp [hpx x hx, Real.coe_toNNReal _ (hv x hx)]
   have htarEq (q : Ω × Ω) : (∫ x, f x * Real.exp
       (γ*copiedCircle Xc z q (p x)-γ^2/2 *
         ((p x).val.2+2*Real.log ‖z+(p x).val.1‖).toNNReal) ∂(ν : Measure ℂ)) =
@@ -134,7 +132,7 @@ theorem copied_cutoff_volume_law
     intro x hx
     unfold copiedCircle
     dsimp only
-    simp only [hpx x hx, Real.coe_toNNReal _ (hv x hx)]
+    simp [hpx x hx, Real.coe_toNNReal _ (hv x hx)]
   simpa only [Function.comp_def, hsrcEq, htarEq] using h
 
 

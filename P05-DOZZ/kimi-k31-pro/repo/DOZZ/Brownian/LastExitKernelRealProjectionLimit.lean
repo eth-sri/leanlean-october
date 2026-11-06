@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Brownian.LastExitKernelInitial
+import DOZZ.Brownian.LastExitKernelInitial
 
 /-!
 # Real-valued finite projection limit of the reference kernel
@@ -13,7 +12,6 @@ The entrance-density convergence for the reference kernel is stated in `ℝ≥0�
 records its real-measure form and the corresponding one-sided filter limit at zero.
 -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
@@ -63,7 +61,7 @@ theorem brownianUpperConditionedReferenceFutureKernel_real_projection_tendsto_en
     refine ⟨?_⟩
     change (volume.withDensity (brownianEntranceFinitePDF ν n ds)) Set.univ = 1
     rw [withDensity_apply _ MeasurableSet.univ]
-    simpa only [setLIntegral_univ] using
+    simpa [setLIntegral_univ] using
       lintegral_brownianEntranceFinitePDF_one Q ν hν hQ n ds hds
   have hMfinite : M A ≠ ∞ := measure_ne_top M A
   rw [Filter.tendsto_iff_seq_tendsto]
@@ -101,8 +99,7 @@ theorem brownianUpperConditionedReferenceFutureKernel_real_projection_tendsto_en
   change Tendsto
     (fun k => (brownianUpperConditionedReferenceFutureKernel B ν hν (xs k)).real C)
     atTop (𝓝 (M A).toReal)
-  exact hseq
+  assumption
 
 end DOZZ.Proofs
 
-end

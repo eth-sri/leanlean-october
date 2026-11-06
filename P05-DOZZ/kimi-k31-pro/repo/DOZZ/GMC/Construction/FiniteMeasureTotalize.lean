@@ -2,15 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.GMC.IsAdmissibleGMCVersion
-public import Mathlib.MeasureTheory.Measure.GiryMonad
-public import Mathlib.MeasureTheory.Function.ConvergenceInMeasure
+import DOZZ.Statements.GMC.IsAdmissibleGMCVersion
+import Mathlib.MeasureTheory.Measure.GiryMonad
+import Mathlib.MeasureTheory.Function.ConvergenceInMeasure
 
 /-! Modify a random measure on a null set so it is finite at every outcome. -/
 
-@[expose] public section
 
 open MeasureTheory
 open scoped ENNReal

@@ -1,13 +1,11 @@
-module
 
-public import DOZZ.GMC.WeightedCutoff.BoundedFineMass
-public import DOZZ.GMC.WeightedCutoff.BoundedCoarseMass
-public import DOZZ.GMC.WeightedCutoff.RadiusDecomposition
-public import DOZZ.GMC.WeightedCutoff.LowerOrder
+import DOZZ.GMC.WeightedCutoff.BoundedFineMass
+import DOZZ.GMC.WeightedCutoff.BoundedCoarseMass
+import DOZZ.GMC.WeightedCutoff.RadiusDecomposition
+import DOZZ.GMC.WeightedCutoff.LowerOrder
 
 /-! # Uniform weighted moments at radii bounded away from zero -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs

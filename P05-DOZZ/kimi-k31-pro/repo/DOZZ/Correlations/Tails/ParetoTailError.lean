@@ -2,13 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.Tails.WilliamsParetoProduct
+import DOZZ.Correlations.Tails.WilliamsParetoProduct
 
 /-! The exact Pareto identity gives a remainder controlled by a higher moment. -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory
 
 namespace DOZZ.Proofs
@@ -18,8 +16,8 @@ theorem pareto_scalar_error_le (a x p r : ℝ) (ha : 0 ≤ a)
     |(if a ≤ 0 then 0 else if a ≤ x then (a/x)^p else 1)-(a/x)^p| ≤ (a/x)^r := by
   by_cases ha0 : a ≤ 0
   · have ha' : a = 0 := le_antisymm ha0 ha
-    simp only [ha', zero_div, Real.zero_rpow hp.ne', ite_eq_left le_rfl,
-      sub_zero, abs_zero]
+    simp [ha', zero_div, Real.zero_rpow hp.ne',
+      abs_zero]
     exact Real.rpow_nonneg (by positivity) _
   · rw [ite_eq_right ha0]
     by_cases hax : a ≤ x
@@ -62,19 +60,19 @@ theorem williams_pareto_tail_error
     rw [Real.div_rpow ha hx.le, Real.rpow_neg hx.le]
     ring
   have hpi : Integrable (fun ω => (A ω/x)^p) P := by
-    simpa only [heq _ (hA0 _) p] using hAp.const_mul (x^(-p))
+    simpa [heq _ (hA0 _) p] using hAp.const_mul (x^(-p))
   rw [williams_pareto_product_tail P A hA ν γ x hν hγ hx]
   change |(∫ ω, F ω ∂P)-x^(-p)*(∫ ω, A ω^p ∂P)| ≤ _
   rw [← integral_const_mul]
   simp_rw [← heq _ (hA0 _) p]
   rw [← integral_sub hFi hpi]
   have hg : Integrable (fun ω => (A ω/x)^r) P := by
-    simpa only [heq _ (hA0 _) r] using hAr.const_mul (x^(-r))
+    simpa [heq _ (hA0 _) r] using hAr.const_mul (x^(-r))
   have hb := norm_integral_le_of_norm_le hg (ae_of_all _ fun ω => by
     rw [Real.norm_eq_abs]
     exact pareto_scalar_error_le (A ω) x p r (hA0 ω) hx hp hpr)
-  simp only [Real.norm_eq_abs] at hb
-  simpa only [heq _ (hA0 _) r, integral_const_mul] using hb
+  simp [Real.norm_eq_abs] at hb
+  simpa [heq _ (hA0 _) r, integral_const_mul] using hb
 
 
 end DOZZ.Proofs

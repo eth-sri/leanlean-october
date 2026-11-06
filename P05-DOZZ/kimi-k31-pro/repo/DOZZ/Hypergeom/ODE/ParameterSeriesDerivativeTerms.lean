@@ -2,15 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Hypergeom.ODE.ParameterSeriesDerivative
+import DOZZ.Hypergeom.ODE.ParameterSeriesDerivative
 import Mathlib.Analysis.Calculus.FDeriv.Mul
 import Mathlib.Analysis.Calculus.SmoothSeries
 
 /-! The parameter derivatives of successive Gauss-series terms obey a product recurrence. -/
 
-@[expose] public section
 
 open Nat Polynomial Filter
 open scoped RightActions Topology
@@ -37,7 +35,7 @@ theorem ordinaryHypergeometricCoefficient_gauss_recurrence_of_finite_pole_free
   have hfact : ((n + 1).factorial : ℂ) = (n + 1 : ℂ) * (n.factorial : ℂ) := by
     exact_mod_cast Nat.factorial_succ n
   have hfact0 : (n.factorial : ℂ) ≠ 0 := by exact_mod_cast Nat.factorial_ne_zero n
-  simp only [ordinaryHypergeometricCoefficient, ascPochhammer_succ_eval]
+  simp [ordinaryHypergeometricCoefficient, ascPochhammer_succ_eval]
   rw [hfact]
   field_simp [hcpn, hcn, hfact0]
   ring

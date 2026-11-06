@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.Construction.BarrierCauchyEstimates
-public import DOZZ.Statements.GMC.RegularizedLogChaosTestMass
+import DOZZ.GMC.Construction.BarrierCauchyEstimates
+import DOZZ.Statements.GMC.RegularizedLogChaosTestMass
 
 /-! Growing-barrier good masses for arbitrary compatible admissible regularizations. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Set
 open scoped ENNReal NNReal Topology
@@ -38,7 +36,7 @@ theorem admissibleGrowingBarrierSet_measurable
     else Set.univ
   have hEq : admissibleGrowingBarrierSet Y a k₀ r = ⋂ k, B k := by
     ext q
-    simp only [admissibleGrowingBarrierSet, Set.mem_iInter]
+    simp [admissibleGrowingBarrierSet, Set.mem_iInter]
     constructor
     · intro h k
       by_cases hk : k₀ ≤ k ∧ (k : ℝ) ≤ r
@@ -67,7 +65,7 @@ theorem admissibleLogRegularization_isProbabilityMeasure
   let q : Fin 1 → ℝ × ℂ := fun _ => (ε₀ / 2, 0)
   have hq : ∀ i, 0 < (q i).1 ∧ (q i).1 ≤ ε₀ := by
     intro i
-    simp only [q]
+    simp [q]
     constructor <;> linarith [hY.cutoffPositive]
   exact (hY.gaussian 1 q hq).1
 
@@ -89,7 +87,5 @@ theorem admissibleLogRegularization_variance_measurable
       fun x => ∫ ω, Y ω ε x ^ 2 ∂P := by
     funext x
     simp [gaussianVariance, gaussianCovariance, pow_two]
-  rw [heq]
-  exact hvar
-
+  rwa [heq]
 end DOZZ.Proofs

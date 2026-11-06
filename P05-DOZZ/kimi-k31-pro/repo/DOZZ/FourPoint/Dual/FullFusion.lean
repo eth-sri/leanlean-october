@@ -2,11 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Dual.FullInverseWitness
-public import DOZZ.FourPoint.Dual.FullFusionAssembly
+import DOZZ.FourPoint.Dual.FullInverseWitness
+import DOZZ.FourPoint.Dual.FullFusionAssembly
 /-! The corrected dual full fusion formula and same-source asymptotic. -/
-public section
 open MeasureTheory ProbabilityTheory Filter Topology TopologicalSpace Set
 open scoped ENNReal NNReal Topology
 namespace DOZZ.Proofs

@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.GMC.GmcReferenceMeasure
-public import DOZZ.Hypergeom.Planar.RadialCriteria
+import DOZZ.Statements.GMC.GmcReferenceMeasure
+import DOZZ.Hypergeom.Planar.RadialCriteria
 
 /-! The equator GMC reference measure has finite total mass. -/
 
-@[expose] public section
 
 open MeasureTheory Set
 open scoped ENNReal
@@ -30,7 +28,7 @@ theorem gmcReferenceMeasure_univ_ne_top :
       Metric.ball_subset_closedBall)).trans_lt
       (lt_top_iff_ne_top.mpr hclosed)
   have htailReal : IntegrableOn (fun x : ℂ => ‖x‖ ^ (-4 : ℝ)) Bᶜ volume := by
-    apply (DOZZ.Proofs.integrableOn_norm_rpow_ball_compl_iff (-4) 1 (by norm_num)).2
+    apply (integrableOn_norm_rpow_ball_compl_iff (-4) 1 (by norm_num)).2
     norm_num
   have htailNonneg : 0 ≤ᵐ[volume.restrict Bᶜ]
       (fun x : ℂ => ‖x‖ ^ (-4 : ℝ)) :=

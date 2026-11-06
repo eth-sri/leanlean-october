@@ -2,17 +2,16 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GFFStructure.Defs
-public import DOZZ.GFFStructure.AnnularWeakLimit
-public import DOZZ.GFF.Potential
-public import DOZZ.GFF.EquatorField
-public import Mathlib.Probability.Distributions.Gaussian.IsGaussianProcess.Basic
-public import Mathlib.Probability.Distributions.Gaussian.IsGaussianProcess.Independence
-public import Mathlib.Probability.Distributions.Gaussian.HasGaussianLaw.Basic
-public import Mathlib.MeasureTheory.Function.L2Space
-public import Mathlib.MeasureTheory.Function.LpSpace.Indicator
+import DOZZ.GFFStructure.Defs
+import DOZZ.GFFStructure.AnnularWeakLimit
+import DOZZ.GFF.Potential
+import DOZZ.GFF.EquatorField
+import Mathlib.Probability.Distributions.Gaussian.IsGaussianProcess.Basic
+import Mathlib.Probability.Distributions.Gaussian.IsGaussianProcess.Independence
+import Mathlib.Probability.Distributions.Gaussian.HasGaussianLaw.Basic
+import Mathlib.MeasureTheory.Function.L2Space
+import Mathlib.MeasureTheory.Function.LpSpace.Indicator
 import Mathlib.MeasureTheory.Measure.LevyConvergence
 import Mathlib.MeasureTheory.Function.ConvergenceInDistribution
 import Mathlib.MeasureTheory.Function.LpSpace.Complete
@@ -24,7 +23,6 @@ Scalar Gaussian laws are closed under L² convergence. Means, second moments and
 are continuous in L²; characteristic functions identify the limit, including zero variance.
 -/
 
-public section
 
 open MeasureTheory ProbabilityTheory Filter
 open scoped ENNReal NNReal Topology InnerProductSpace RealInnerProductSpace
@@ -130,9 +128,9 @@ theorem hasGaussianLaw_pi_of_linearCombinations {ι : Type*} [Fintype ι]
   have hform (ω : Ω) : L (fun i => Z i ω) =
       ∑ i, L (Pi.single i 1) * Z i ω := by
     rw [pi_eq_sum_univ' (fun i => Z i ω), map_sum]
-    simp only [map_smul, smul_eq_mul, mul_comm]
+    simp [map_smul, smul_eq_mul, mul_comm]
   have hg : HasGaussianLaw (L ∘ fun ω i => Z i ω) P := by
-    simpa only [Function.comp_def, hform] using hlin (fun i => L (Pi.single i 1))
+    simpa [Function.comp_def, hform] using hlin (fun i => L (Pi.single i 1))
   rw [AEMeasurable.map_map_of_aemeasurable (by fun_prop) hm]
   exact hg.isGaussian_map
 
@@ -143,7 +141,7 @@ theorem gaussianProcess_linearCombination {T : Type*}
     HasGaussianLaw (fun ω => ∑ i : I, a i * Z i ω) P := by
   let L : (I → ℝ) →L[ℝ] ℝ := ∑ i : I, a i • ContinuousLinearMap.proj i
   have hL (x : I → ℝ) : L x = ∑ i, a i * x i := by
-    simp only [L, sum_apply, smul_apply,
+    simp [L, sum_apply, smul_apply,
       ContinuousLinearMap.proj_apply, smul_eq_mul]
   have hg := (hZ.hasGaussianLaw I).map L
   convert hg using 1
@@ -160,8 +158,7 @@ theorem coeFn_L2_linearCombination {ι : Type*} [Fintype ι]
   have ht : ∀ᵐ ω ∂P, ∀ i, (a i • Z i) ω = a i * Z i ω :=
     ae_all_iff.2 fun i => Lp.coeFn_smul (a i) (Z i)
   filter_upwards [hs, ht] with ω hω hω'
-  rw [hω]
-  rw [Finset.sum_apply]
+  rw [hω, Finset.sum_apply]
   change ∑ i, (a i • Z i) ω = ∑ i, a i * Z i ω
   exact Finset.sum_congr rfl (fun i _ => hω' i)
 
@@ -216,7 +213,7 @@ theorem tendsto_integral_of_eLpNorm_sub {Z : ℕ → Ω → ℝ} {W : Ω → ℝ
     (h : Tendsto (fun n => eLpNorm (fun ω => Z n ω - W ω) 2 P) atTop (𝓝 0)) :
     Tendsto (fun n => ∫ ω, Z n ω ∂P) atTop (𝓝 (∫ ω, W ω ∂P)) := by
   have hl := tendsto_integral_of_tendsto_L2 (tendsto_toLp_of_eLpNorm_sub hZ hW h)
-  simpa only [integral_congr_ae (MemLp.coeFn_toLp _)] using hl
+  simpa [integral_congr_ae (MemLp.coeFn_toLp _)] using hl
 
 omit [IsProbabilityMeasure P] in
 /-- Covariance is unchanged by null-set changes to either representative. -/
@@ -238,7 +235,7 @@ theorem tendsto_covariance_of_eLpNorm_sub {U V : ℕ → Ω → ℝ} {U₀ V₀ 
     Tendsto (fun n => covariance (U n) (V n) P) atTop (𝓝 (covariance U₀ V₀ P)) := by
   have hl := tendsto_covariance_of_tendsto_L2
     (tendsto_toLp_of_eLpNorm_sub hU hU₀ hUl) (tendsto_toLp_of_eLpNorm_sub hV hV₀ hVl)
-  simpa only [covariance_congr_ae (MemLp.coeFn_toLp _) (MemLp.coeFn_toLp _)] using hl
+  simpa [covariance_congr_ae (MemLp.coeFn_toLp _) (MemLp.coeFn_toLp _)] using hl
 
 omit [IsProbabilityMeasure P] in
 /-- Each test evaluation of an equator GFF has its prescribed centered Gaussian law. -/
@@ -248,7 +245,7 @@ theorem equatorGFF_test_hasLaw (X : Ω → Distr) (hX : IsEquatorGFF P X) (f : T
   exact ⟨v, hv, hm.aemeasurable, hl⟩
 
 omit [IsProbabilityMeasure P] in
-/-- The scalar law in `DOZZ.IsEquatorGFF` provides Gaussianity, without choosing a new random
+/-- The scalar law in `IsEquatorGFF` provides Gaussianity, without choosing a new random
 realization. -/
 theorem equatorGFF_test_hasGaussianLaw (X : Ω → Distr) (hX : IsEquatorGFF P X)
     (f : TestFn) : HasGaussianLaw (fun ω => X ω f) P := by
@@ -268,7 +265,7 @@ theorem equatorGFF_test_integral (X : Ω → Distr) (hX : IsEquatorGFF P X) (f :
   rw [hl.integral_eq, integral_id_gaussianReal]
 
 omit [IsProbabilityMeasure P] in
-/-- Their variances are the diagonal of the covariance `DOZZ.gffCov`. -/
+/-- Their variances are the diagonal of the covariance `gffCov`. -/
 theorem equatorGFF_test_variance (X : Ω → Distr) (hX : IsEquatorGFF P X) (f : TestFn) :
     variance (fun ω => X ω f) P = gffCov f f := by
   obtain ⟨v, hv, hl⟩ := equatorGFF_test_hasLaw X hX f
@@ -279,8 +276,7 @@ omit [IsProbabilityMeasure P] [MeasurableSpace Ω] in
 theorem equatorGFF_test_linearCombination {ι : Type*} [Fintype ι]
     (X : Ω → Distr) (f : ι → TestFn) (a : ι → ℝ) (ω : Ω) :
     X ω (∑ i, a i • f i) = ∑ i, a i * X ω (f i) := by
-  rw [map_sum]
-  simp only [map_smul, smul_eq_mul]
+  simp
 
 omit [IsProbabilityMeasure P] in
 /-- Every finite real linear combination of tests is Gaussian. -/
@@ -292,7 +288,7 @@ theorem equatorGFF_tests_isGaussianProcess (X : Ω → Distr) (hX : IsEquatorGFF
   apply hasGaussianLaw_pi_of_linearCombinations (fun f : I => fun ω => X ω f.val)
     (fun f => (hX.2 f.val).1.aemeasurable)
   intro a
-  simpa only [equatorGFF_test_linearCombination] using
+  simpa [equatorGFF_test_linearCombination] using
     equatorGFF_test_hasGaussianLaw X hX (∑ i : I, a i • i.val)
 
 omit [IsProbabilityMeasure P] in
@@ -322,7 +318,7 @@ theorem circleAverage_measurable_eval (X : Ω → Distr) (Xc : Ω → ℂ → �
 omit [IsProbabilityMeasure P] in
 /-- The Gaussian closure step for any family of energy-approximated circles. The approximating tests
 are explicit inputs to this helper, not additional premises of
-`DOZZ.circleAverage_isGaussianProcess`. -/
+`circleAverage_isGaussianProcess`. -/
 theorem circleAverage_gaussian_of_energy_approx {T : Type*}
     (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
@@ -357,16 +353,16 @@ theorem circleAverage_equator_ae_eq_zero
     (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
     (hc : IsCircleAverage P X Xc) : (fun ω => Xc ω 0 0) =ᵐ[P] 0 := by
   have hgap : circleEnergyGap 0 0 (0 : TestFn) = 0 := by
-    rw [DOZZ.circleEnergyGap_zero]
+    rw [circleEnergyGap_zero]
     change (∫ x : ℂ, ∫ y : ℂ, (0 : ℝ) * gffKernel x y * 0) = 0
-    simp only [zero_mul, integral_zero]
+    simp [zero_mul, integral_zero]
   have hl := hc.2.2 0 0 (fun _ => (0 : TestFn)) (by
-    simpa only [hgap] using (tendsto_const_nhds : Tendsto (fun _ : ℕ => (0 : ℝ)) atTop (𝓝 0)))
+    simpa [hgap] using (tendsto_const_nhds : Tendsto (fun _ : ℕ => (0 : ℝ)) atTop (𝓝 0)))
   have hn : eLpNorm (fun ω => X ω (0 : TestFn) - Xc ω 0 0) 2 P = 0 :=
     tendsto_nhds_unique tendsto_const_nhds hl
   have hz := (eLpNorm_eq_zero_iff (by norm_num : (2 : ℝ≥0∞) ≠ 0)).1 hn
   filter_upwards [hz] with ω hω
-  simpa only [map_zero, zero_sub, Pi.zero_apply, neg_eq_zero] using hω
+  simpa [map_zero, zero_sub, Pi.zero_apply, neg_eq_zero] using hω
 
 omit [IsProbabilityMeasure P] in
 /-- A common energy approximant identifies two circle witnesses up to a null set. -/
@@ -382,17 +378,16 @@ theorem circleAverage_ae_eq_of_energy_approx
   exact (MemLp.toLp_eq_toLp_iff (hc.2.1 x r) (hy.2.1 x r)).1
     (tendsto_nhds_unique hcL hyL)
 
-/-- Polarization of the covariance `DOZZ.gffCov`, using the Hilbert realization
-`DOZZ.equatorKernelLimitMap`. -/
+/-- Polarization of the covariance `gffCov`, using the Hilbert realization
+`equatorKernelLimitMap`. -/
 theorem gffCov_add_self (f g : TestFn) :
     gffCov (f + g) (f + g) = gffCov f f + 2 * gffCov f g + gffCov g g := by
-  simp_rw [← DOZZ.inner_equatorKernelLimitMap_eq_gffCov]
-  rw [map_add, inner_add_left, inner_add_right, inner_add_right]
-  rw [real_inner_comm (DOZZ.equatorKernelLimitMap g) (DOZZ.equatorKernelLimitMap f)]
+  simp_rw [← inner_equatorKernelLimitMap_eq_gffCov]
+  rw [map_add, inner_add_left, inner_add_right, inner_add_right, real_inner_comm (equatorKernelLimitMap g) (equatorKernelLimitMap f)]
   ring
 
 omit [IsProbabilityMeasure P] in
-/-- The scalar law in `DOZZ.IsEquatorGFF` and samplewise linearity determine the full test
+/-- The scalar law in `IsEquatorGFF` and samplewise linearity determine the full test
 covariance. -/
 theorem equatorGFF_test_covariance (X : Ω → Distr) (hX : IsEquatorGFF P X)
     (f g : TestFn) : covariance (fun ω => X ω f) (fun ω => X ω g) P = gffCov f g := by
@@ -419,7 +414,7 @@ theorem circleAverage_covariance_limit_of_energy_approx
   have hl := tendsto_covariance_of_eLpNorm_sub
     (fun n => equatorGFF_test_memLp X hX (f n)) (fun n => equatorGFF_test_memLp X hX (g n))
     (hc.2.1 x r) (hc.2.1 y s) (hc.2.2 x r f hf) (hc.2.2 y s g hg)
-  simpa only [equatorGFF_test_covariance X hX] using hl
+  simpa [equatorGFF_test_covariance X hX] using hl
 
 omit [IsProbabilityMeasure P] in
 
@@ -457,14 +452,13 @@ theorem exteriorPinnedEvaluation_measurable
     ((circleAverage_measurable_eval X Xc hc 0 (-Real.log R)).mul_const _)
 
 omit [IsProbabilityMeasure P] in
-/-- The L² conjunct of `DOZZ.exteriorPinnedEvaluation_covariance` follows directly from the field
+/-- The L² conjunct of `exteriorPinnedEvaluation_covariance` follows directly from the field
 and witness predicates. Its explicit covariance is a separate analytic step. -/
 theorem exteriorPinnedEvaluation_memLp
     (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
     (R : ℝ) (hR : 0 < R) (f : TestFn) :
-    MemLp (fun ω => exteriorPinnedEvaluation X Xc R hR ω f) 2 P := by
-  exact (equatorGFF_test_memLp X hX f).sub ((hc.2.1 0 (-Real.log R)).mul_const _)
+    MemLp (fun ω => exteriorPinnedEvaluation X Xc R hR ω f) 2 P := (equatorGFF_test_memLp X hX f).sub ((hc.2.1 0 (-Real.log R)).mul_const _)
 
 omit [IsProbabilityMeasure P] in
 /-- The restoration scalar is measurable. -/
@@ -566,13 +560,13 @@ theorem circleAverage_tests_isGaussianProcess
     cases t with
     | inl p => exact hc.2.2 p.1 p.2 (f p) (hf p).2.2
     | inr g =>
-      simpa only [F, Sum.elim_inr, id_eq, sub_self, ← Pi.zero_def, eLpNorm_zero] using
+      simpa [F, Sum.elim_inr, id_eq, sub_self, ← Pi.zero_def, eLpNorm_zero] using
         (tendsto_const_nhds : Tendsto (fun _ : ℕ => (0 : ℝ≥0∞)) atTop (𝓝 0))
 
 omit [IsProbabilityMeasure P] in
 /-- Every witness has the exact deterministic circle self-energy as its variance. The mixed-circle
 approximation identifies the cross term; the gap then identifies the planar self-energy, so no
-variance premise is added to `DOZZ.circleAverage_isGaussianProcess`. -/
+variance premise is added to `circleAverage_isGaussianProcess`. -/
 theorem circleAverage_covariance_self (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc) (x : ℂ) (r : ℝ) :
     covariance (fun ω => Xc ω x r) (fun ω => Xc ω x r) P = circleSelfEnergy x r := by

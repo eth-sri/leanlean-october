@@ -2,13 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.FusionAllocationAlgebra
+import DOZZ.FourPoint.FusionAllocationAlgebra
 
 /-! Strict exponent margins for the corrected two-rooted Taylor domain. -/
 
-@[expose] public section
 open MeasureTheory Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -22,7 +20,7 @@ theorem twoRooted_time_exponent (γ α : ℝ) (hγ : 0 < γ) (hγsq : 2 < γ ^ 2
   have he : γ * (Q γ - α) = 2 + γ ^ 2 / 2 - γ * α := by
     unfold Q
     field_simp
-  have hm1 : γ * α < 2 := by simpa only [mul_comm] using (lt_div_iff₀ hγ).mp hα2
+  have hm1 : γ * α < 2 := by simpa [mul_comm] using (lt_div_iff₀ hγ).mp hα2
   have hm2 := mul_lt_mul_of_pos_left hα hγ
   rw [he]
   constructor

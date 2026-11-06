@@ -2,12 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.SharpMoments.InverseUniform
-public import DOZZ.GMC.SharpMoments.GluedFieldGaussian
-public import DOZZ.GMC.SharpMoments.LaplaceProduct
-public import DOZZ.GMC.FieldChaosNegativePower
+import DOZZ.GMC.SharpMoments.InverseUniform
+import DOZZ.GMC.SharpMoments.GluedFieldGaussian
+import DOZZ.GMC.SharpMoments.LaplaceProduct
+import DOZZ.GMC.FieldChaosNegativePower
 
 /-! # The two-branch inequality and cutoff-uniform inverse moments
 
@@ -18,7 +17,6 @@ the glued field (independent copies on `D₁` and `D₂` plus a common Gaussian 
 Gaussian average of the product of the two subdisk transforms. With `InverseUniform` this proves
 every inverse moment of the cutoff reference mass, uniformly in the cutoff. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped ENNReal NNReal
@@ -190,7 +188,7 @@ theorem cutoffLaplace_twoBranch
   have hmemU : ∀ᵐ xy ∂(ν : Measure ℂ).prod (ν : Measure ℂ), xy.1 ∈ U ∧ xy.2 ∈ U := by
     rw [hνprod]
     filter_upwards [ae_restrict_mem (hU.prod hU)] with xy hxy
-    exact hxy
+    assumption
   have hmemU1 : ∀ᵐ z ∂(ν : Measure ℂ), z ∈ U := by
     change ∀ᵐ z ∂νM, z ∈ U
     rw [hνM]
@@ -220,8 +218,7 @@ theorem cutoffLaplace_twoBranch
         congr 1
         funext ω
         exact mul_comm _ _
-      rw [hcomm']
-      exact h
+      rwa [hcomm']
     · rw [gluedField_covariance_of_notMem_of_notMem P Φ hΦ D₁ C hx1 hy1]
       linarith
   have hdiag : ∀ᵐ z ∂(ν : Measure ℂ),
@@ -294,7 +291,7 @@ theorem cutoffLaplace_twoBranch
       ENNReal.toReal_add (measure_ne_top _ _) (measure_ne_top _ _), ← Real.exp_add]
     congr 1
     rw [hS, hm₁, hm₂]
-    simp only
+    simp
     rw [show x + γ * q.2.2 - γ ^ 2 * (C : ℝ) / 2 = x + (γ * q.2.2 - γ ^ 2 / 2 * C) by ring,
       Real.exp_add]
     ring

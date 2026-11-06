@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GFF.LocalKernelL2
+import DOZZ.GFF.LocalKernelL2
 import Mathlib.MeasureTheory.Integral.MeanInequalities
 import Mathlib.MeasureTheory.Function.LpSeminorm.CompareExp
 
@@ -15,7 +14,6 @@ The local square-integrability estimate for the pinned kernel yields the Schur b
 covariance form on compactly supported functions.
 -/
 
-@[expose] public section
 
 open MeasureTheory Set Metric
 open scoped ENNReal InnerProductSpace Topology
@@ -59,8 +57,7 @@ theorem gffCov_eq_integral_gffKernel (f g : TestFn) :
 /-- A square-integrable real function belongs to `L²`. -/
 theorem memLp_two_of_integrable_norm_sq {α : Type*} [MeasurableSpace α]
     {μ : Measure α} {f : α → ℝ} (hf : AEStronglyMeasurable f μ)
-    (hsq : Integrable (fun x => ‖f x‖ ^ 2) μ) : MemLp f 2 μ := by
-  exact (integrable_norm_rpow_iff hf (by norm_num) (by simp)).mp (by simpa using hsq)
+    (hsq : Integrable (fun x => ‖f x‖ ^ 2) μ) : MemLp f 2 μ := (integrable_norm_rpow_iff hf (by norm_num) (by simp)).mp (by simpa using hsq)
 
 /-- Cauchy--Schwarz for a product integral, in the exact `L²` form used by the local kernel
 operator. -/
@@ -228,4 +225,3 @@ theorem abs_gffCov_self_le_localL2 (R : ℝ) (f : TestFn)
 
 end DOZZ
 
-end

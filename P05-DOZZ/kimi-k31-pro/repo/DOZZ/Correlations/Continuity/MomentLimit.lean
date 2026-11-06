@@ -2,9 +2,7 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.Correlations.Continuity.ProbabilityLimit
-@[expose] public section
+import DOZZ.Correlations.Continuity.ProbabilityLimit
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -47,7 +45,7 @@ theorem continuity_integral_varying_power
       ((hfp n).mono fun _ h => h.lt_top)).symm
   have hg' : (∫⁻ ω, g ω ^ p₀ ∂P).toReal = ∫ ω, (g ω ^ p₀).toReal ∂P :=
     (integral_toReal (hg.pow_const p₀) (hgp.mono fun _ h => h.lt_top)).symm
-  simpa only [hn, hg'] using hlim
+  simpa [hn, hg'] using hlim
 
 /-- The uniform higher cutoff moment passes to the actual singular masses.
 Each parameter keeps its own Seiberg power; the bound is common over the compact set. -/
@@ -91,7 +89,7 @@ theorem continuity_coulomb_higher_moment
 
 /-- Full joint continuity of the actual normalized Coulomb moment on compact
 strict parameter sets, uniformly dominated by the cutoff estimate
-`DOZZ.equatorGFF_extendedSeiberg_cutoff_UI`. -/
+`equatorGFF_extendedSeiberg_cutoff_UI`. -/
 theorem continuity_coulomb_moment_on_compact
     {Ω : Type*} [MeasurableSpace Ω] {N : ℕ}
     (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)

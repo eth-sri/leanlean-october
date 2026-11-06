@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Brownian.LastExitHistoryAvoidanceFactorization
-public import DOZZ.Brownian.LastExitReferenceTouch
+import DOZZ.Brownian.LastExitHistoryAvoidanceFactorization
+import DOZZ.Brownian.LastExitReferenceTouch
 
 /-!
 # Real-time future touches under rational avoidance
@@ -15,7 +14,6 @@ survival accompanied by an actual future touch. The Brownian reference kernel re
 to an atom of its global maximum law.
 -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Set Topology
 open scoped NNReal
@@ -76,8 +74,7 @@ theorem conditionedPositiveFutureAvoidance_hit_implies_touch
     · intro n
       have hF : Continuous F := hFcont
       have hFs : F (s : ℝ) = (c : ℝ) := by
-        rw [hFval (s : ℝ) s.property]
-        exact hpathHit
+        rwa [hFval (s : ℝ) s.property]
       let U : Set ℝ := Set.Ioi 0 ∩ F ⁻¹' Set.Iio ((c : ℝ) + 1 / ((n : ℝ) + 1))
       have hU : IsOpen U := isOpen_Ioi.inter (isOpen_Iio.preimage hF)
       have hsU : (s : ℝ) ∈ U := by
@@ -185,11 +182,9 @@ theorem conditionedPositiveFutureAvoidanceTouchEvent_measure_zero
       exact hmass p
     rw [hzero, integral_zero]
   have hreal : P.real E = 0 := by
-    rw [hleft, hright] at hfact
-    exact hfact
+    rwa [hleft, hright] at hfact
   change P E = 0
   exact (measureReal_eq_zero_iff (measure_ne_top _ _)).1 hreal
 
 end DOZZ.Proofs
 
-end

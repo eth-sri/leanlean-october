@@ -1,3 +1,2 @@
-module
-public import DOZZ.FourPoint.RetainedAnnuliAffineLaw
-public import DOZZ.FourPoint.RetainedAnnuliJoint
+import DOZZ.FourPoint.RetainedAnnuliAffineLaw
+import DOZZ.FourPoint.RetainedAnnuliJoint

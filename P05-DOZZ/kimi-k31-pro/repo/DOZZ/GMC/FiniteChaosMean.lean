@@ -2,15 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.GMC.FiniteChaosMoment
-public import Mathlib.Probability.Distributions.Gaussian.Real
-public import Mathlib.Probability.Distributions.Gaussian.Fernique
+import DOZZ.Statements.GMC.FiniteChaosMoment
+import Mathlib.Probability.Distributions.Gaussian.Real
+import Mathlib.Probability.Distributions.Gaussian.Fernique
 
 /-! First-moment normalization for finite Wick chaos sums. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory
 open scoped Distributions NNReal
@@ -27,7 +25,7 @@ private lemma coordinate_law {Ω ι : Type*} [MeasurableSpace Ω] [Fintype ι]
   have hsum : (fun ω => ∑ j, e j * Z ω j) = fun ω => Z ω i := by
     funext ω
     simp [e, Pi.single_apply]
-  simpa only [hsum] using hv
+  simpa [hsum] using hv
 
 /-- A coordinate of a centered jointly Gaussian vector has the centered Gaussian law whose
 variance is its covariance-form diagonal. -/
@@ -48,7 +46,7 @@ lemma coordinate_mean_variance {Ω ι : Type*} [MeasurableSpace Ω] [Fintype ι]
       ∫ ω, Zi ω ∂P = ∫ x, x ∂P.map Zi := hmeanMap.symm
       _ = 0 := by rw [hmap, integral_id_gaussianReal]
   have hvarMap : Var[id; P.map Zi] = Var[Zi; P] := by
-    simpa only [Function.comp_def, id_def] using
+    simpa [Function.comp_def, id_def] using
       (variance_map (X := id) (Y := Zi) (μ := P)
         (aemeasurable_id) hZi)
   have hvarP : Var[Zi; P] = (v : ℝ) := by
@@ -78,7 +76,7 @@ theorem wick_exponential_integrable_expectation
     rw [hmap]
     exact integrable_exp_mul_gaussianReal γ
   have hExp : Integrable (fun ω => Real.exp (γ * Zi ω)) P := by
-    simpa only [Function.comp_def] using
+    simpa [Function.comp_def] using
       (integrable_map_measure hExpMap.aestronglyMeasurable hZi).mp hExpMap
   have hWick : Integrable
       (fun ω => Real.exp (γ * Zi ω - γ ^ 2 / 2 * gaussianVariance P Zi)) P := by
@@ -143,8 +141,7 @@ theorem finiteChaosMass_integral {Ω ι : Type*} [MeasurableSpace Ω] [Fintype �
     intro i
     have h := (wick_exponential_integrable_expectation P Z hZ i γ).1
     exact h.const_mul (a i)
-  have hsumInt : Integrable (fun ω => ∑ i, term i ω) P := by
-    exact integrable_finsetSum Finset.univ fun i hi => hterm i
+  have hsumInt : Integrable (fun ω => ∑ i, term i ω) P := integrable_finsetSum Finset.univ fun i hi => hterm i
   have hmass : finiteChaosMass P Z a γ = fun ω => ∑ i, term i ω := by
     funext ω
     simp [finiteChaosMass, term]

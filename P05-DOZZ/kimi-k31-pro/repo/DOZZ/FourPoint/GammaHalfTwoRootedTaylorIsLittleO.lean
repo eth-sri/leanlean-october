@@ -2,15 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.TaylorFundamentalEstimate
-public import DOZZ.FourPoint.TwoRootedTaylorAdapter
+import DOZZ.FourPoint.TaylorFundamentalEstimate
+import DOZZ.FourPoint.TwoRootedTaylorAdapter
 
 /-! Proof of the literal two-rooted Taylor little-o statement
 `DOZZ.gammaHalf_twoRooted_Taylor_is_littleO` on the corrected strict domain. -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory Filter Topology TopologicalSpace Set
 open scoped ENNReal NNReal Topology
 namespace DOZZ.Proofs
@@ -25,7 +23,6 @@ theorem gammaHalf_twoRooted_Taylor_is_littleO {Ω : Type*} [MeasurableSpace Ω]
     IsComplexLittleOAtZero (γ * (Q γ - α₁))
       (gammaHalfTwoRootedTerm P M γ α₁ α₂ α₃
         ((α₁ + α₂ + α₃ - γ / 2 - 2 * Q γ) / γ)) := by
-  have _hsource_charges : α₂ < Q γ ∧ α₃ < Q γ := ⟨hα₂, hα₃⟩
   let p : ℝ := (α₁ + α₂ + α₃ - γ / 2 - 2 * Q γ) / γ
   have hp : 0 ≤ p := (div_pos (by linarith only [hs]) hγ).le
   obtain ⟨η, C, r, hη, hC, hr, hI⟩ := twoRooted_fundamental_estimate

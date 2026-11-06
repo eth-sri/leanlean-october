@@ -2,13 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.Assembly.KernelTail
+import DOZZ.GMC.Assembly.KernelTail
 
 /-! Finite-barrier two-root kernels as tilted Gaussian rectangle probabilities, their uniform off-diagonal convergence, and the off-diagonal uniform Cauchy property of the growing-barrier kernels. -/
 
-@[expose] public section
 
 /-! ### Finite-barrier kernels
 
@@ -23,7 +21,7 @@ open scoped ENNReal NNReal
 
 namespace DOZZ.Assembly
 
-open DOZZ.Proofs
+open Proofs
 
 /-- An admissible regularization is jointly Gaussian along any finite family of admissible
 cutoffs and points, indexed by an arbitrary finite type. -/
@@ -55,7 +53,6 @@ theorem pairCoarseScale_ge (k₀ m : ℕ) (i : Fin (pairCoarseCount k₀ m)) :
 
 theorem pairCoarseScale_le (k₀ m : ℕ) (i : Fin (pairCoarseCount k₀ m)) :
     pairCoarseScale k₀ m i ≤ m := by
-  have h := ((finProdFinEquiv.symm i).1).isLt
   unfold pairCoarseScale
   omega
 
@@ -94,13 +91,12 @@ theorem pair_barrier_iff {Ω : Type*} (Y : Ω → ℝ → ℂ → ℝ) (a : ℝ)
       have hscale : pairCoarseScale k₀ m i = k := by
         unfold pairCoarseScale
         rw [hsymm]
-        simp only
+        simp
         omega
       have hcenter : pairCoarseCenter k₀ m p i = if c = 0 then p.1 else p.2 := by
         unfold pairCoarseCenter
         rw [hsymm]
-      rw [hscale, hcenter] at hi
-      exact hi
+      rwa [hscale, hcenter] at hi
     refine ⟨fun k hk₀ hkm => ?_, fun k hk₀ hkm => ?_⟩
     · simpa using hcoord k hk₀ hkm 0
     · simpa using hcoord k hk₀ hkm 1
@@ -206,7 +202,7 @@ theorem finiteBarrierPairKernel_eq_rectangle
             fun hy => hnot ⟨hx, hy⟩
           rw [Set.indicator_of_notMem hy, mul_zero]
         · rw [Set.indicator_of_notMem hx, zero_mul]
-    simp only [ite_self]
+    simp [ite_self]
     rw [show ∀ u v w z : ℝ≥0∞, u * v * w * z = u * v * (w * z) from
       fun u v w z => by ring, hI]
     rfl
@@ -237,7 +233,7 @@ theorem finiteBarrierPairKernel_eq_rectangle
         (∀ i, Z ω i + shift i ≤ barrier i) := by
       apply forall_congr'
       intro i
-      simp only [Z, shift, hVp, hVq, hVj, add_assoc]
+      simp [Z, shift, hVp, hVq, hVj, add_assoc]
       exact Iff.rfl
     by_cases hc : ∀ i, Z ω i + shift i ≤ barrier i
     · rw [Set.indicator_of_mem (show (fun i => V ω i + g *
@@ -267,7 +263,7 @@ theorem finiteBarrierPairKernel_eq_rectangle
     congr 1
     ring
   rw [hleft]
-  simp only at htilt
+  simp at htilt
   rw [htilt, hright, hprefactor, ← ENNReal.ofReal_mul (Real.exp_pos _).le]
 
 /-- Pairs of points of `K` at distance at least `s₀`. -/
@@ -365,7 +361,7 @@ theorem finiteBarrierPairKernel_toReal_uniform_cauchy
     _ < η / 2 + η / 2 := add_lt_add h1 (by rw [abs_sub_comm]; exact h2)
     _ = η := by ring
 
-end DOZZ.Assembly
+end Assembly
 
 /-! ### Off-diagonal Cauchy property
 
@@ -378,9 +374,9 @@ interval below the barrier slope. -/
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
 
-namespace DOZZ.Assembly
+namespace Assembly
 
-open DOZZ.Proofs
+open Proofs
 
 /-- The two-root growing-barrier Wick kernel of one admissible regularization. -/
 noncomputable abbrev growingPairKernel {Ω : Type*} [MeasurableSpace Ω]
@@ -390,7 +386,6 @@ noncomputable abbrev growingPairKernel {Ω : Type*} [MeasurableSpace Ω]
 /-- A real distance bound for two extended reals squeezed by an additive error. -/
 theorem abs_toReal_sub_le_of_le_add {x y t : ℝ≥0∞} (hyx : y ≤ x) (hx : x ≤ y + t)
     (hxtop : x ≠ ⊤) (ht : t ≠ ⊤) : |x.toReal - y.toReal| ≤ t.toReal := by
-  have hytop : y ≠ ⊤ := ne_top_of_le_ne_top hxtop hyx
   rw [← ENNReal.toReal_sub_of_le hyx hxtop, abs_of_nonneg ENNReal.toReal_nonneg]
   exact ENNReal.toReal_mono ht (tsub_le_iff_left.mpr hx)
 

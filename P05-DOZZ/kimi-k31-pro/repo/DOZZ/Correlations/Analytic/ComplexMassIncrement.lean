@@ -2,16 +2,14 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Complex.Charge
-public import Mathlib.Analysis.SpecialFunctions.Pow.Deriv
-public import Mathlib.Analysis.Complex.RealDeriv
-public import Mathlib.Analysis.Calculus.MeanValue
+import DOZZ.Complex.Charge
+import Mathlib.Analysis.SpecialFunctions.Pow.Deriv
+import Mathlib.Analysis.Complex.RealDeriv
+import Mathlib.Analysis.Calculus.MeanValue
 
 /-! The small-annulus derivative estimate for complex mass powers. -/
 
-@[expose] public section
 open Set
 namespace DOZZ.Proofs
 
@@ -40,6 +38,6 @@ theorem cpow_mass_increment_le (Z Y : ℝ) (hZ : 0 < Z) (hY : 0 ≤ Y) (p : ℂ)
   have h := norm_image_sub_le_of_norm_deriv_le_segment'
     (fun x hx => (hd x hx).hasDerivWithinAt) hb (Z + Y)
     (show Z + Y ∈ Icc Z (Z + Y) from ⟨by linarith, le_rfl⟩)
-  simpa only [F, add_sub_cancel_left] using h
+  simpa [F, add_sub_cancel_left] using h
 
 end DOZZ.Proofs

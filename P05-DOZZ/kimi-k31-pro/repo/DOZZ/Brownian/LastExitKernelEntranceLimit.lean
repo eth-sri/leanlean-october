@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Brownian.LastExitEntranceDensityLimit
-public import DOZZ.Brownian.LastExitReferenceKernel
+import DOZZ.Brownian.LastExitEntranceDensityLimit
+import DOZZ.Brownian.LastExitReferenceKernel
 
 /-!
 # Finite projections of the Brownian reference kernel
@@ -15,7 +14,6 @@ density. This identifies the kernel probabilities in the last-exit cell formula 
 measurable entrance-density limit proved separately.
 -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped ENNReal NNReal
@@ -74,9 +72,6 @@ theorem brownianUpperConditionedReferenceFutureKernel_finite_projection_doob
       funext i
       simpa using congrFun htimesReal i
     rw [hleft] at hchain
-    have htargetNonneg : 0 ≤ conditionedPositiveTimeChainDensity ν t x
-        (List.ofFn fun i : Fin n => t + (offsets i : ℝ)) (List.ofFn y) :=
-      conditionedPositiveTimeChainDensity_nonneg hν.le _ _ (by simp)
     change brownianDoobFinitePDF ν n ds x y =
       ENNReal.ofReal (max 0 (conditionedPositiveTimeChainDensity ν t x
         (List.ofFn fun i : Fin n => t + (offsets i : ℝ)) (List.ofFn y)))
@@ -94,8 +89,6 @@ theorem brownianUpperConditionedReferenceFutureKernel_finite_projection_doob
             (List.ofFn fun i : Fin n => t + (offsets i : ℝ)) (List.ofFn y))) := by
         rw [← htranslate']
         simp
-  have hproject : Measurable (fun y : ℚ → ℝ => fun i => y (offsets i)) :=
-    measurable_pi_iff.mpr (fun i => measurable_pi_apply (offsets i))
   have hinput : Measurable (fun z : ℝ × (Fin n → ℝ) =>
       ((fun _ : Fin 1 => z.1), z.2)) := by
     apply Measurable.prodMk
@@ -181,9 +174,6 @@ theorem brownianUpperConditionedReferenceFutureKernel_finite_projection_tendsto_
   have hdsEq : ds = brownianFirstHitElapsed n
       (fun i => Real.toNNReal (offsets i)) := by
     rfl
-  rw [hfun, hdsEq]
-  exact hlimit
-
+  rwa [hfun, hdsEq]
 end DOZZ.Proofs
 
-end

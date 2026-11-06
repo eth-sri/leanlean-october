@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.Defs.DualMu
+import DOZZ.Statements.Defs.DualMu
 import DOZZ.Upsilon.StripIdentities
 import Mathlib.Analysis.Analytic.Order
 import Mathlib.Analysis.SpecialFunctions.Gamma.Beta
@@ -14,19 +13,18 @@ import Mathlib.Topology.MetricSpace.Basic
 # Codiscrete affine loci for the DOZZ identities
 -/
 
-@[expose] public section
 
 open Complex Filter Set Topology
 
 namespace DOZZ.Proofs
 
-private lemma closedEmbedding_affine_nat {c d : ℂ} (hc : c ≠ 0) :
+lemma closedEmbedding_affine_nat {c d : ℂ} (hc : c ≠ 0) :
     IsClosedEmbedding (fun n : ℕ => c * (n : ℂ) + d) := by
   apply Metric.isClosedEmbedding_of_pairwise_le_dist (norm_pos_iff.mpr hc)
   intro m n hmn
   have hnat : (1 : ℝ) ≤ dist m n := Nat.pairwise_one_le_dist hmn
   have hnat' : (1 : ℝ) ≤ |(m : ℝ) - n| := by
-    simpa only [Nat.dist_eq] using hnat
+    simpa [Nat.dist_eq] using hnat
   have hnorm : ‖(m : ℂ) - n‖ = |(m : ℝ) - n| := by
     have hcast : (m : ℂ) - (n : ℂ) = (((m : ℝ) - n : ℝ) : ℂ) := by
       push_cast
@@ -128,7 +126,7 @@ theorem dozzBase_pos {γ μ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2) (hμ : 0 < μ)
   have hq : 0 < γ ^ 2 / 4 := by positivity
   have hq1 : 0 < 1 - γ ^ 2 / 4 := by nlinarith
   rw [dozzBase, lFun_gammaSq_real]
-  simp only [Complex.ofReal_re]
+  simp [Complex.ofReal_re]
   exact mul_pos (mul_pos Real.pi_pos hμ)
     (div_pos (Real.Gamma_pos_of_pos hq) (Real.Gamma_pos_of_pos hq1))
 
@@ -147,4 +145,3 @@ theorem lFun_mul_neg {q : ℂ} (hq : q ≠ 0)
 
 end DOZZ.Proofs
 
-end

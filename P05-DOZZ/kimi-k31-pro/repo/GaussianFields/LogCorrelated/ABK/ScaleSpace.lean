@@ -3,15 +3,14 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Scott Armstrong, Amélie Loher
 -/
-module
 
-public import Mathlib.Analysis.Convolution
-public import Mathlib.Analysis.SpecialFunctions.ImproperIntegrals
-public import Mathlib.Analysis.SpecialFunctions.Integrability.Basic
-public import Mathlib.MeasureTheory.Constructions.Pi
-public import Mathlib.Order.Interval.Set.Disjoint
-public import GaussianFields.Ambient.Euclidean
-public import GaussianFields.WhiteNoise.Isonormal
+import Mathlib.Analysis.Convolution
+import Mathlib.Analysis.SpecialFunctions.ImproperIntegrals
+import Mathlib.Analysis.SpecialFunctions.Integrability.Basic
+import Mathlib.MeasureTheory.Constructions.Pi
+import Mathlib.Order.Interval.Set.Disjoint
+import GaussianFields.Ambient.Euclidean
+import GaussianFields.WhiteNoise.Isonormal
 
 /-!
 # GaussianFields ABK scale-space white noise
@@ -19,7 +18,6 @@ public import GaussianFields.WhiteNoise.Isonormal
 Port of the corresponding GaussianFields source module.
 -/
 
-public section
 
 open MeasureTheory ProbabilityTheory
 open scoped Convolution ENNReal InnerProductSpace NNReal ProbabilityTheory Topology
@@ -33,7 +31,7 @@ namespace GaussianFields
 abbrev ScaleSpace (d : Nat) := Vec (d + 1)
 
 /-- The product-coordinate split `R^{1+d} ≃ R × R^d`, with coordinate `0` as scale. -/
-@[expose]
+
 noncomputable def scaleSpaceMeasurableEquiv (d : Nat) :
     ScaleSpace d ≃ᵐ ℝ × Vec d :=
   MeasurableEquiv.piFinSuccAbove (fun _ : Fin (d + 1) => ℝ) 0
@@ -45,12 +43,12 @@ theorem scaleSpaceMeasurePreserving (d : Nat) :
     (volume_preserving_piFinSuccAbove (fun _ : Fin (d + 1) => ℝ) 0)
 
 /-- The scale coordinate in `R^{1+d}`. -/
-@[expose]
+
 def scaleCoord {d : Nat} (z : ScaleSpace d) : ℝ :=
   z 0
 
 /-- The spatial coordinates in `R^{1+d}`. -/
-@[expose]
+
 def spaceCoord {d : Nat} (z : ScaleSpace d) : Vec d :=
   fun i => z (Fin.succ i)
 
@@ -73,7 +71,7 @@ abbrev ScaleSpaceWhiteNoiseSpace (d : Nat) :=
   ScalarWhiteNoiseSpace (d + 1)
 
 /-- The concrete probability measure for ABK scale-space white noise. -/
-@[expose]
+
 noncomputable def scaleSpaceWhiteNoiseMeasure (d : Nat) :
     Measure (ScaleSpaceWhiteNoiseSpace d) :=
   scalarWhiteNoiseMeasure (d + 1)
@@ -84,7 +82,7 @@ instance instIsProbabilityMeasure_scaleSpaceWhiteNoiseMeasure (d : Nat) :
   infer_instance
 
 /-- White noise on `R^{1+d}`, reused from the concrete scalar white-noise construction. -/
-@[expose]
+
 noncomputable def scaleSpaceWhiteNoiseL2 (d : Nat) :
     ScaleSpaceWhiteNoiseHilbert d →ₗᵢ[ℝ] Lp ℝ 2 (scaleSpaceWhiteNoiseMeasure d) :=
   scalarWhiteNoiseL2 (d + 1)
@@ -127,7 +125,7 @@ instance {d : Nat} : CoeFun (MeanZeroTestFunction d) (fun _ => Vec d → ℝ) wh
 theorem ext {d : Nat} {ψ φ : MeanZeroTestFunction d} (h : ∀ x, ψ x = φ x) : ψ = φ := by
   cases ψ
   cases φ
-  simp only [mk.injEq]
+  simp [mk.injEq]
   exact funext h
 
 end MeanZeroTestFunction
@@ -166,4 +164,3 @@ end ABKCutoff
 
 end GaussianFields
 
-end

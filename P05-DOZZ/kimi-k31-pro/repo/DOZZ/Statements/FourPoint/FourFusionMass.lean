@@ -1,2 +1,1 @@
-module
-public import DOZZ.Statements.FourPoint.OrderedFourFusionCenters
+import DOZZ.Statements.FourPoint.OrderedFourFusionCenters

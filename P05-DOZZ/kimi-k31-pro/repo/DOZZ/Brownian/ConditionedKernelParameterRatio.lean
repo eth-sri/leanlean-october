@@ -2,12 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Brownian.ConditionedKernelScoreParameter
-public import DOZZ.Statements.Brownian.ConditionedPositiveTransitionDensity
-public import DOZZ.Statements.Brownian.ConditionedPositiveEntranceDensity
-public import Mathlib.Analysis.Calculus.Deriv.MeanValue
+import DOZZ.Brownian.ConditionedKernelScoreParameter
+import DOZZ.Statements.Brownian.ConditionedPositiveTransitionDensity
+import DOZZ.Statements.Brownian.ConditionedPositiveEntranceDensity
+import Mathlib.Analysis.Calculus.Deriv.MeanValue
 
 /-!
 # Monotone likelihood ratio in the drift parameter
@@ -16,13 +15,12 @@ The ordered coupling compares conditioned transition densities by their likeliho
 hyperbolic factor `sinh (b*y) / sinh (a*y)` is nondecreasing in the state when `0 < a ≤ b`.
 -/
 
-@[expose] public section
 
 open Filter Topology
 
 namespace DOZZ.Proofs
 
-private theorem conditionedH_pos_of_pos {ν x : ℝ} (hν : 0 < ν) (hx : 0 < x) :
+theorem conditionedH_pos_of_pos {ν x : ℝ} (hν : 0 < ν) (hx : 0 < x) :
     0 < conditionedH ν x := by
   simp only [conditionedH, hν.ne']
   apply sub_pos.mpr
@@ -32,8 +30,6 @@ private theorem conditionedH_pos_of_pos {ν x : ℝ} (hν : 0 < ν) (hx : 0 < x)
 private theorem brownianHeatDensity_sub_pos
     {t x y : ℝ} (ht : 0 < t) (hx : 0 < x) (hy : 0 < y) :
     0 < brownianHeatDensity t (y - x) - brownianHeatDensity t (y + x) := by
-  have hsq : (y - x) ^ 2 < (y + x) ^ 2 := by
-    nlinarith [mul_pos hx hy]
   have harg : -((y + x) ^ 2) / (2 * t) < -((y - x) ^ 2) / (2 * t) := by
     apply div_lt_div_of_pos_right _ (mul_pos (by norm_num) ht)
     nlinarith
@@ -42,7 +38,7 @@ private theorem brownianHeatDensity_sub_pos
   have hdiv := (div_lt_div_iff_of_pos_right hden).2 hexp
   simpa [brownianHeatDensity, ht] using hdiv
 
-private theorem one_sub_exp_neg_two_mul_eq_two_exp_neg_mul_sinh (z : ℝ) :
+theorem one_sub_exp_neg_two_mul_eq_two_exp_neg_mul_sinh (z : ℝ) :
     1 - Real.exp (-2 * z) = 2 * Real.exp (-z) * Real.sinh z := by
   calc
     1 - Real.exp (-2 * z) =
@@ -69,9 +65,9 @@ theorem hasDerivAt_conditionedKernelParameterRatio
       (conditionedKernelParameterRatio a b y *
         (conditionedKernelScore b y - conditionedKernelScore a y)) y := by
   have hAarg : HasDerivAt (fun z : ℝ => a * z) a y := by
-    simpa only [id_eq, mul_one] using (hasDerivAt_id y).const_mul a
+    simpa [id_eq, mul_one] using (hasDerivAt_id y).const_mul a
   have hBarg : HasDerivAt (fun z : ℝ => b * z) b y := by
-    simpa only [id_eq, mul_one] using (hasDerivAt_id y).const_mul b
+    simpa [id_eq, mul_one] using (hasDerivAt_id y).const_mul b
   have hA := (Real.hasDerivAt_sinh (a * y)).comp y hAarg
   have hB := (Real.hasDerivAt_sinh (b * y)).comp y hBarg
   have hApos : 0 < Real.sinh (a * y) :=
@@ -123,7 +119,7 @@ theorem conditionedKernelParameterRatio_monotoneOn_state
     have hy' : 0 < y := by simpa using hy
     rw [(hasDerivAt_conditionedKernelParameterRatio ha hb hy').deriv]
     have hratio : 0 < conditionedKernelParameterRatio a b y := by
-      simp only [conditionedKernelParameterRatio]
+      simp [conditionedKernelParameterRatio]
       exact div_pos
         (Real.sinh_pos_iff.mpr (mul_pos hb hy'))
         (Real.sinh_pos_iff.mpr (mul_pos ha hy'))
@@ -144,20 +140,20 @@ theorem conditionedPositiveTransitionDensity_eq_parameter_ratio_mul
   have hHa : 0 < conditionedH a x := conditionedH_pos_of_pos ha hx
   have hHb : 0 < conditionedH b x := conditionedH_pos_of_pos hb hx
   have hHay : conditionedH a y = 2 * Real.exp (-a * y) * Real.sinh (a * y) := by
-    simp only [conditionedH, ite_eq_right (ne_of_gt ha)]
-    simpa only [mul_assoc, neg_mul] using
+    simp [conditionedH, ite_eq_right (ne_of_gt ha)]
+    simpa [mul_assoc, neg_mul] using
       one_sub_exp_neg_two_mul_eq_two_exp_neg_mul_sinh (a * y)
   have hHby : conditionedH b y = 2 * Real.exp (-b * y) * Real.sinh (b * y) := by
-    simp only [conditionedH, ite_eq_right (ne_of_gt hb)]
-    simpa only [mul_assoc, neg_mul] using
+    simp [conditionedH, ite_eq_right (ne_of_gt hb)]
+    simpa [mul_assoc, neg_mul] using
       one_sub_exp_neg_two_mul_eq_two_exp_neg_mul_sinh (b * y)
   have hHax : conditionedH a x = 2 * Real.exp (-a * x) * Real.sinh (a * x) := by
-    simp only [conditionedH, ite_eq_right (ne_of_gt ha)]
-    simpa only [mul_assoc, neg_mul] using
+    simp [conditionedH, ite_eq_right (ne_of_gt ha)]
+    simpa [mul_assoc, neg_mul] using
       one_sub_exp_neg_two_mul_eq_two_exp_neg_mul_sinh (a * x)
   have hHbx : conditionedH b x = 2 * Real.exp (-b * x) * Real.sinh (b * x) := by
-    simp only [conditionedH, ite_eq_right (ne_of_gt hb)]
-    simpa only [mul_assoc, neg_mul] using
+    simp [conditionedH, ite_eq_right (ne_of_gt hb)]
+    simpa [mul_assoc, neg_mul] using
       one_sub_exp_neg_two_mul_eq_two_exp_neg_mul_sinh (b * x)
   have hsa : 0 < Real.sinh (a * y) := Real.sinh_pos_iff.mpr (mul_pos ha hy)
   have hsb : 0 < Real.sinh (b * y) := Real.sinh_pos_iff.mpr (mul_pos hb hy)
@@ -191,7 +187,7 @@ theorem conditionedPositiveEntranceDensity_eq_parameter_ratio_mul
 private theorem conditionedPositiveEntranceDensity_pos_of_pos
     {ν t y : ℝ} (hν : 0 < ν) (ht : 0 < t) (hy : 0 < y) :
     0 < conditionedPositiveEntranceDensity ν t y := by
-  simp only [conditionedPositiveEntranceDensity, hν.le, ht, hy, and_self, ite_true, hν.ne']
+  simp [conditionedPositiveEntranceDensity, hν.le, ht, hy, and_self, ite_true, hν.ne']
   positivity
 
 /-- The likelihood ratio of positive-drift entrance densities is nondecreasing in the terminal
@@ -226,7 +222,7 @@ theorem conditionedPositiveEntranceDensity_ratio_monotoneOn_state
 private theorem conditionedPositiveTransitionDensity_pos_of_pos
     {ν t x y : ℝ} (hν : 0 < ν) (ht : 0 < t) (hx : 0 < x) (hy : 0 < y) :
     0 < conditionedPositiveTransitionDensity ν t x y := by
-  simp only [conditionedPositiveTransitionDensity, hν.le, ht, hx, hy, and_self, ite_true]
+  simp [conditionedPositiveTransitionDensity, hν.le, ht, hx, hy, and_self, ite_true]
   exact div_pos
     (mul_pos (mul_pos (Real.exp_pos _) (brownianHeatDensity_sub_pos ht hx hy))
       (conditionedH_pos_of_pos hν hy))
@@ -319,7 +315,7 @@ private theorem hasDerivAt_conditionedKernelZeroParameterRatio
       (conditionedKernelZeroParameterRatio b y *
         (conditionedKernelScore b y - 1 / y)) y := by
   have harg : HasDerivAt (fun z : ℝ => b * z) b y := by
-    simpa only [id_eq, mul_one] using (hasDerivAt_id y).const_mul b
+    simpa [id_eq, mul_one] using (hasDerivAt_id y).const_mul b
   have hnum := (Real.hasDerivAt_sinh (b * y)).comp y harg
   have hquot := hnum.div harg (mul_ne_zero hb.ne' hy.ne')
   have hquot' : HasDerivAt (fun z : ℝ => Real.sinh (b * z) / (b * z))
@@ -357,7 +353,7 @@ theorem conditionedKernelZeroParameterRatio_monotoneOn_state
   · intro y hy
     have hy' : 0 < y := by simpa using hy
     have hratio : 0 < conditionedKernelZeroParameterRatio b y := by
-      simp only [conditionedKernelZeroParameterRatio]
+      simp [conditionedKernelZeroParameterRatio]
       exact div_pos (Real.sinh_pos_iff.mpr (mul_pos hb hy')) (mul_pos hb hy')
     rw [(hasDerivAt_conditionedKernelZeroParameterRatio hb hy').deriv]
     exact mul_nonneg (le_of_lt hratio)
@@ -476,4 +472,3 @@ theorem conditionedPositiveTransitionDensity_zero_ratio_monotoneOn_state
 
 end DOZZ.Proofs
 
-end

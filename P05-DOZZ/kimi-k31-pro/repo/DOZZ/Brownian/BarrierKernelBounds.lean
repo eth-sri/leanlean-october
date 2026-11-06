@@ -2,11 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import Mathlib.Analysis.SpecialFunctions.Exp
-public import Mathlib.MeasureTheory.Integral.Gamma
-public import Mathlib.Analysis.SpecialFunctions.Gaussian.GaussianIntegral
+import Mathlib.Analysis.SpecialFunctions.Exp
+import Mathlib.MeasureTheory.Integral.Gamma
+import Mathlib.Analysis.SpecialFunctions.Gaussian.GaussianIntegral
 
 /-!
 # Analytic bound for the drifted killed Gaussian kernel
@@ -16,7 +15,6 @@ with the killed kernel. This file proves the explicit Gaussian difference estima
 identity, with its exact dependence on the barrier height and time.
 -/
 
-@[expose] public section
 
 open Real MeasureTheory Set
 
@@ -45,4 +43,3 @@ theorem gaussianKernelDifference_nonneg
 
 end DOZZ.Proofs
 
-end

@@ -1,4 +1,3 @@
-module
-public import DOZZ.GMC.Moments.WeightedDyadic
-public import DOZZ.GMC.Moments.ExactScaleBallMoment
-public import Mathlib.MeasureTheory.Constructions.Polish.Basic
+import DOZZ.GMC.Moments.WeightedDyadic
+import DOZZ.GMC.Moments.ExactScaleBallMoment
+import Mathlib.MeasureTheory.Constructions.Polish.Basic

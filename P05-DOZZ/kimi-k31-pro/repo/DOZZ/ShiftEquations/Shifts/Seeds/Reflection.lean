@@ -2,21 +2,21 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.FourPoint.FourPointT
-public import DOZZ.Statements.Defs.StructureConstant
-public import DOZZ.Statements.Brownian.ReflectionR
-public import DOZZ.Statements.Brownian.IsReflectionData
-public import DOZZ.Statements.Brownian.IsSourceLateralProjection
-public import DOZZ.Statements.Hypergeom.GaussCoefficientRatio
-public import DOZZ.Statements.Hypergeom.GaussFMinus
-public import DOZZ.Statements.Hypergeom.GaussFPlus
-public import DOZZ.Statements.Hypergeom.GaussCutPlane
-public import DOZZ.Statements.Hypergeom.GaussParameterA
-public import DOZZ.Statements.Hypergeom.GaussParameterB
-public import DOZZ.Statements.Hypergeom.GaussParameterC
-public import DOZZ.Statements.Hypergeom.IsGaussHypergeometricFamily
+import DOZZ.ShiftEquations.Gluing.Coefficient
+import DOZZ.Statements.FourPoint.FourPointT
+import DOZZ.Statements.Defs.StructureConstant
+import DOZZ.Statements.Brownian.ReflectionR
+import DOZZ.Statements.Brownian.IsReflectionData
+import DOZZ.Statements.Brownian.IsSourceLateralProjection
+import DOZZ.Statements.Hypergeom.GaussCoefficientRatio
+import DOZZ.Statements.Hypergeom.GaussFMinus
+import DOZZ.Statements.Hypergeom.GaussFPlus
+import DOZZ.Statements.Hypergeom.GaussCutPlane
+import DOZZ.Statements.Hypergeom.GaussParameterA
+import DOZZ.Statements.Hypergeom.GaussParameterB
+import DOZZ.Statements.Hypergeom.GaussParameterC
+import DOZZ.Statements.Hypergeom.IsGaussHypergeometricFamily
 import DOZZ.ShiftEquations.Mobius.AffineMomentInf
 import DOZZ.ShiftEquations.Gluing.DiagonalUnique
 import DOZZ.FourPoint.Diagonal.Assembly
@@ -44,7 +44,6 @@ The fusion applies with `η = 2(Q - α₁)` and `ξ = 1/2` as soon as `Q - α₁
 (`dualSeedWindow`).
 -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal Topology
@@ -77,7 +76,7 @@ theorem dual_fourPoint_reflection {Ω : Type*} [MeasurableSpace Ω]
       fourPointT P M γ μ (-(2 / γ)) b a c (1 - z) := by
   have he : infSExp γ ![-(2 / γ), a, b] c = fourPointSExp γ (-(2 / γ)) a b c := by
     unfold infSExp fourPointSExp
-    simp only [Fin.sum_univ_succ, Matrix.cons_val_zero, Matrix.cons_val_succ,
+    simp [Fin.sum_univ_succ, Matrix.cons_val_zero, Matrix.cons_val_succ,
       Fin.sum_univ_zero, add_zero]
     congr 1
     ring
@@ -92,7 +91,7 @@ theorem dual_fourPoint_reflection {Ω : Type*} [MeasurableSpace Ω]
     · simp
     · simp
   rw [hz, he] at hm
-  simp only [norm_neg, norm_one, Real.one_rpow, ENNReal.ofReal_one, one_mul] at hm
+  simp [norm_neg, norm_one, Real.one_rpow, ENNReal.ofReal_one, one_mul] at hm
   simp_rw [seeds_mass_swap_last] at hm
   have hs : fourPointSExp γ (-(2 / γ)) b a c = fourPointSExp γ (-(2 / γ)) a b c := by
     unfold fourPointSExp
@@ -101,7 +100,7 @@ theorem dual_fourPoint_reflection {Ω : Type*} [MeasurableSpace Ω]
   unfold fourPointT
   rw [hs]
   congr 2
-  simpa only [ENNReal.rpow_eq_pow] using hm.symm
+  simpa [ENNReal.rpow_eq_pow] using hm.symm
 
 /-! ### The near-`Q` window of the dual fusion -/
 
@@ -120,7 +119,6 @@ theorem dualSeedWindow_slack_core {γ d : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2) (h
     4 * d < (2 - γ ^ 2 / 2 - 3 * γ * d) / 2 * γ := by
   have hγsq : γ ^ 2 < 4 := by nlinarith
   have h1 : γ ^ 2 * d < 4 * d := mul_lt_mul_of_pos_right hγsq hd
-  have h2 : 64 * d < (4 - γ ^ 2) * γ := by linarith
   have hexp : (2 - γ ^ 2 / 2 - 3 * γ * d) / 2 * γ = (4 - γ ^ 2) * γ / 4 - 3 / 2 * (γ ^ 2 * d) := by
     ring
   rw [hexp]
@@ -136,7 +134,6 @@ theorem dual_fusion_window {γ α₁ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2) (hα�
   set d := Q γ - α₁ with hd_def
   have hd : 0 < d := sub_pos.mpr hα₁
   have hdw : d < (4 - γ ^ 2) * γ / 64 := hnear
-  have hγsq : γ ^ 2 < 4 := by nlinarith
   have hd16 : d < γ / 16 := by
     have : (4 - γ ^ 2) * γ / 64 < 4 * γ / 64 := by
       have h4 : 4 - γ ^ 2 < 4 := by nlinarith
@@ -163,12 +160,7 @@ theorem dual_fusion_window {γ α₁ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2) (hα�
 
 /-- A Gauss parameter strictly between two consecutive integers is not an integer. -/
 theorem seeds_ne_int_of_mem_Ioo {c : ℝ} (h0 : 0 < c) (h1 : c < 1) :
-    ∀ n : ℤ, (c : ℂ) ≠ (n : ℂ) := by
-  intro n hn
-  have hn' : c = (n : ℝ) := by exact_mod_cast hn
-  have hn0 : (0 : ℤ) < n := by exact_mod_cast (hn' ▸ h0)
-  have hn1 : n < (1 : ℤ) := by exact_mod_cast (hn' ▸ h1)
-  omega
+    ∀ n : ℤ, (c : ℂ) ≠ (n : ℂ) := DOZZ.Proofs.complex_ne_int_of_mem_unit h0 h1
 
 /-- **The dual reflection identity near `Q`.** For `α₁` within `dualSeedWindow γ` of `Q`, the second
 diagonal coefficient of the classified dual four-point function is the reflection coefficient times
@@ -252,4 +244,3 @@ theorem dual_reflection_identity_near_Q
 
 end DOZZ.Proofs
 
-end

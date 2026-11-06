@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.ShiftEquations.Inversion.Representative
+import DOZZ.ShiftEquations.Inversion.Representative
 import DOZZ.ShiftEquations.Gluing.Meromorphy
 import DOZZ.Brownian.Reflection.RtheorAnalytic
 
@@ -12,7 +11,6 @@ import DOZZ.Brownian.Reflection.RtheorAnalytic
 literal gluing equation in `DOZZ.structureConstant_reflected_shift_and_gluing`, hence needs no
 independent dual seed. -/
 
-@[expose] public section
 open Filter Topology Set
 namespace DOZZ.Proofs
 
@@ -30,7 +28,7 @@ theorem order_ne_top_of_real_nonzero
   obtain ⟨y, hyI, hyz⟩ := (hI.and hz).exists
   exact hreal y hyI.1 hyI.2 hyz
 
-/-- Applying the gluing equation of `DOZZ.structureConstant_reflected_shift_and_gluing` twice
+/-- Applying the gluing equation of `structureConstant_reflected_shift_and_gluing` twice
 cancels the three-point germ away from its discrete zeros. The resulting inversion identity is on
 the entire strip. -/
 theorem inversion_of_gluing
@@ -41,7 +39,7 @@ theorem inversion_of_gluing
     ∀ᶠ z in codiscreteWithin (horizontalStrip H), R z * R ((q : ℂ) - z) = 1 := by
   obtain ⟨x, hxlo, hxhi⟩ := exists_between hlohi
   have hxS : (x : ℂ) ∈ horizontalStrip H := by
-    simpa only [horizontalStrip, mem_ofPred_eq, Complex.ofReal_im, abs_zero] using hH
+    simpa [horizontalStrip, mem_ofPred_eq, Complex.ofReal_im, abs_zero] using hH
   have horder := order_ne_top_of_real_nonzero C lo hi x ⟨hxlo, hxhi⟩ hreal
   have hne := MeromorphicAt.MeromorphicOn.codiscreteWithin_setOfPred_ne_zero hC
     (fun z hz => hC.meromorphicOrderAt_ne_top_of_isPreconnected

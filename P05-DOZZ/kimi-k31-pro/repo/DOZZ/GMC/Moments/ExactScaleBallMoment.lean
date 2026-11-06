@@ -2,13 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.Moments.ExactScaleBallMass
+import DOZZ.GMC.Moments.ExactScaleBallMass
 
 /-! Moment transfer through the exact affine open-ball mass law. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped Distributions ENNReal NNReal
@@ -45,7 +43,6 @@ theorem gaussianScaleFactor_rpow_integral
   let d : ℝ := c ^ (2 * p) * Real.exp (-γ ^ 2 / 2 * p * σ)
   let t : ℝ := γ * p
   let scale : ℝ → ℝ := fun w => c ^ 2 * Real.exp (γ * w - γ ^ 2 / 2 * σ)
-  have hc2 : 0 < c ^ 2 := by positivity
   have hscale (w : ℝ) : 0 < scale w := by positivity
   have hpoint (w : ℝ) : ENNReal.rpow (ENNReal.ofReal (scale w)) p =
       ENNReal.ofReal (d * Real.exp (t * w)) := by
@@ -71,8 +68,7 @@ theorem gaussianScaleFactor_rpow_integral
     simpa [ProbabilityTheory.mgf, G, mul_comm] using hmgf
   have hconst : d * Real.exp ((v : ℝ) * t ^ 2 / 2) =
       c ^ (2 * p + γ ^ 2 * p / 2 - γ ^ 2 * p ^ 2 / 2) := by
-    rw [Real.rpow_def_of_pos hc]
-    rw [show (v : ℝ) = -Real.log c by rfl]
+    rw [Real.rpow_def_of_pos hc, show (v : ℝ) = -Real.log c by rfl]
     dsimp [d, t, v, σ]
     rw [Real.rpow_def_of_pos hc (2 * p), ← Real.exp_add, ← Real.exp_add]
     congr 1
@@ -141,8 +137,7 @@ theorem gmc_affine_openBall_moment_scale
         (fun q : Ω × ℝ => (M q.1 (Metric.ball 0 R)).toReal) (P.prod G) := by
       have h' : AEMeasurable (fun ω => (M ω (Metric.ball 0 R)).toReal)
           (Measure.map (fun q : Ω × ℝ => q.1) (P.prod G)) := by
-        rw [hfst]
-        exact hbase
+        rwa [hfst]
       change AEMeasurable
         ((fun ω => (M ω (Metric.ball 0 R)).toReal) ∘ (fun q : Ω × ℝ => q.1))
         (P.prod G)
@@ -242,8 +237,7 @@ theorem gmc_affine_openBall_moment_finite_iff
   have hfactorPos : 0 < ENNReal.ofReal (c ^ ξ) :=
     ENNReal.ofReal_pos.mpr (Real.rpow_pos_of_pos hc ξ)
   have hfactorTop : ENNReal.ofReal (c ^ ξ) < ⊤ := ENNReal.ofReal_lt_top
-  rw [hscale]
-  rw [show 2 * p + γ ^ 2 * p / 2 - γ ^ 2 * p ^ 2 / 2 = ξ by rfl]
+  rw [hscale, show 2 * p + γ ^ 2 * p / 2 - γ ^ 2 * p ^ 2 / 2 = ξ by rfl]
   constructor
   · intro h
     exact ENNReal.lt_top_of_mul_ne_top_right (ne_of_lt h) (ne_of_gt hfactorPos)

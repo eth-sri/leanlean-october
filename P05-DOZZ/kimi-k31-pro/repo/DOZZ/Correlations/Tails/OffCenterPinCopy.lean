@@ -2,16 +2,14 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.Tails.OffCenterCircleLaw
-public import DOZZ.Correlations.Tails.GaussianPinCopy
-public import DOZZ.Correlations.Tails.PinPotential
+import DOZZ.Correlations.Tails.OffCenterCircleLaw
+import DOZZ.Correlations.Tails.GaussianPinCopy
+import DOZZ.Correlations.Tails.PinPotential
 
 /-! The independent pin copy for the actual translated circle field.
 The correction vanishes to first order at the insertion center. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory
 open scoped NNReal ENNReal
@@ -28,13 +26,13 @@ theorem offCenter_circle_pin_covariance
   have hp := circle_pin_exterior (z + p.val.1) p.val.2
     (localCircle_exterior z hz p)
   have hzpin := circle_pin_exterior z 0
-    (by simpa only [neg_zero, Real.exp_zero, one_add_one_eq_two] using hz)
+    (by simpa [neg_zero, Real.exp_zero, one_add_one_eq_two] using hz)
   have hp0 : circleLogPotential ‖p.val.1‖₊
       ⟨Real.exp (-p.val.2), Real.exp_pos _⟩ ⟨1, by norm_num⟩ = 0 := by
-    simpa only [Real.log_one] using circleLogPotential_of_add_le (d := ‖p.val.1‖₊)
+    simpa [Real.log_one] using circleLogPotential_of_add_le (d := ‖p.val.1‖₊)
       ⟨Real.exp (-p.val.2), Real.exp_pos _⟩ ⟨1, by norm_num⟩ p.property
   rw [circleAverage_covariance P X Xc hX hc]
-  simp only [add_sub_cancel_left, neg_zero, Real.exp_zero] at hzpin ⊢
+  simp [add_sub_cancel_left, neg_zero, Real.exp_zero] at hzpin ⊢
   rw [hp0, hp, hzpin]
   ring
 
@@ -49,7 +47,7 @@ theorem offCenter_circle_self_covariance
   rw [circleAverage_covariance P X Xc hX hc]
   have hp := circle_pin_exterior (z + p.val.1) p.val.2
     (localCircle_exterior z hz p)
-  simp only [sub_self, nnnorm_zero, circleLogPotential_zero, max_self, Real.log_exp,
+  simp [sub_self, nnnorm_zero, circleLogPotential_zero, max_self, Real.log_exp,
     neg_neg, hp]
   ring
 
@@ -105,7 +103,7 @@ theorem offCenter_circle_pin_copy_law
       covariance (fun ω => Xc ω (z + p.val.1) p.val.2) (fun ω => Xc ω z 0) P /
         (2 * Real.log ‖z‖) * (Xc q.2 z 0 - Xc q.1 z 0) = _
     rw [offCenter_circle_pin_covariance P X Xc hX hc z hz p]
-    simp only [Option.elim_some]
+    simp [Option.elim_some]
     unfold localPinCoefficient
     field_simp [(offCenter_pin_variance_pos z hz).ne',
       (Real.log_pos (by linarith : 1 < ‖z‖)).ne']

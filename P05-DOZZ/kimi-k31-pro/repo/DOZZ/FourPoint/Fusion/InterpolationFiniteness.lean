@@ -2,11 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Fusion.MovingMassPieces
-public import DOZZ.FourPoint.Fusion.RootOnlyPieces
+import DOZZ.FourPoint.Fusion.MovingMassPieces
+import DOZZ.FourPoint.Fusion.RootOnlyPieces
 /-! # Finiteness of both rooted interpolation endpoints near the collision -/
-@[expose] public section
 open MeasureTheory
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -28,7 +26,7 @@ theorem fusionMovingMass_finite_near {Ω : Type*} [MeasurableSpace Ω]
   have hgood0 : ∀ᵐ ω ∂P, fusionMovingGoodMass γ α₁ α₂ α₃ y 0 (1 / 16) (M ω) ≠ ⊤ := by
     filter_upwards [fusion_limitingRootedKernel_finite_ae P X hX γ hγ hγ2 M hM α₁ α₂ α₃ hα₁ hα₂ hα₃] with ω hω
     exact (lt_of_le_of_lt (setLIntegral_le_lintegral _ _) (by
-      simpa only [fusionMovingKernel, mul_zero] using hω)).ne
+      simpa [fusionMovingKernel, mul_zero] using hω)).ne
   filter_upwards [hbad, hgood0] with ω hωb hωg
   have hg := fusionMovingGoodMass_le γ α₁ α₂ α₃ y z (1 / 16) (by norm_num) hz
     (by convert hyz using 1; norm_num) (by linarith) (M ω)
@@ -53,7 +51,7 @@ theorem fusionRootOnlyMass_finite_near {Ω : Type*} [MeasurableSpace Ω]
   have hgood0 : ∀ᵐ ω ∂P, fusionRootOnlyGoodMass γ α₁ α₂ α₃ y 0 (1 / 16) (M ω) ≠ ⊤ := by
     filter_upwards [fusion_limitingRootedKernel_finite_ae P X hX γ hγ hγ2 M hM α₁ α₂ α₃ hα₁ hα₂ hα₃] with ω hω
     exact (lt_of_le_of_lt (setLIntegral_le_lintegral _ _) (by
-      simpa only [fusionRootOnlyKernel, mul_zero] using hω)).ne
+      simpa [fusionRootOnlyKernel, mul_zero] using hω)).ne
   filter_upwards [hbad, hgood0] with ω hωb hωg
   have hg := fusionRootOnlyGoodMass_le γ α₁ α₂ α₃ y z (1 / 16) (by norm_num) hz
     (by convert hyz using 1; norm_num) (by linarith) (M ω)

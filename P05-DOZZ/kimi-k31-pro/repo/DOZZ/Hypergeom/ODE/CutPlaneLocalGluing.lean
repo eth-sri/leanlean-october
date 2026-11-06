@@ -2,13 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Hypergeom.ODE.CutPlaneLocalPath
+import DOZZ.Hypergeom.ODE.CutPlaneLocalPath
 
 /-! The path-independent cut-plane endpoint state locally agrees with a Picard disk solution. -/
 
-@[expose] public section
 
 open Set unitInterval
 
@@ -134,12 +132,10 @@ theorem gaussCutPlaneContinuationState_locally_eq_picard
     intro u hu
     have hu' : u ∈ Metric.ball D.center R := by simpa [hDcenter] using hu
     exact (D.derivative u hu').continuousAt
-  have hFcont : ContinuousOn F (Icc (0 : ℝ) 1) := by
-    exact hDcont.comp hqcont hqball
+  have hFcont : ContinuousOn F (Icc (0 : ℝ) 1) := hDcont.comp hqcont hqball
   have hFchart : ∀ s ∈ Icc (0 : ℝ) 1,
       Nonempty (PathSolutionChart qfun (gaussSystemOperator a b c) F s) := by
     intro s hs
-    have hq_s := hqball s hs
     let C : PathSolutionChart qfun (gaussSystemOperator a b c) F s := {
       radius := R / 2
       radius_pos := by linarith

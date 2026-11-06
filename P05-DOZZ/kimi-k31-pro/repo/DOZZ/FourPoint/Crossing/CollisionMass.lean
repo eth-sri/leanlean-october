@@ -2,17 +2,15 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.Crossing.MassContinuity
-public import DOZZ.Correlations.Analytic.CoulombMassPositiveFinite
-public import DOZZ.GMC.SharpMoments.SeibergMomentBound
-public import DOZZ.GMC.SharpMoments.MomentConvergence
+import DOZZ.FourPoint.Crossing.MassContinuity
+import DOZZ.Correlations.Analytic.CoulombMassPositiveFinite
+import DOZZ.GMC.SharpMoments.SeibergMomentBound
+import DOZZ.GMC.SharpMoments.MomentConvergence
 import Mathlib.Tactic
 
 /-! # The zero-channel collision mass throughout the strict Seiberg domain -/
 
-@[expose] public section
 open MeasureTheory Filter Topology
 open scoped ENNReal
 namespace DOZZ.Proofs

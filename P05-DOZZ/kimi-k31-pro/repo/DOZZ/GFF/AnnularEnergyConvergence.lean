@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GFF.EnergyPositivity
+import DOZZ.GFF.EnergyPositivity
 
 /-!
 # DOZZ.GFF.AnnularEnergyConvergence
@@ -12,7 +11,6 @@ public import DOZZ.GFF.EnergyPositivity
 Mixed-energy estimates for the smooth annular approximations to the equator law.
 -/
 
-@[expose] public section
 
 open Filter MeasureTheory Set
 open scoped ENNReal Topology
@@ -43,14 +41,6 @@ theorem abkLogCovariancePairing_eq_complex_pair
   have hφCc : HasCompactSupport φC :=
     φ.hasCompactSupport.comp_homeomorph complexLinearEquivVecTwo.toHomeomorph
   have hpair := integral_complexLogKernelPair_eq_vec ψC φC hψC hφC hψCc hφCc
-  have hkernel (z w : ℂ) :
-      GaussianFields.abkLogCovarianceKernel (complexToVecTwo z) (complexToVecTwo w) =
-        -Real.log ‖z - w‖ := by
-    rw [GaussianFields.abkLogCovarianceKernel, ← complexToVecTwo_sub z w]
-    exact congrArg (fun t : ℝ => -Real.log t) (euclideanNorm_complexToVecTwo (z - w))
-  have hback (z : ℂ) : complexLinearEquivVecTwo.symm (complexToVecTwo z) = z := by
-    rw [← complexLinearEquivVecTwo_apply]
-    simp
   have hψmap (z : ℂ) : ψC z = ψ (complexToVecTwo z) := by
     simp [ψC, complexLinearEquivVecTwo_apply]
   have hφmap (z : ℂ) : φC z = φ (complexToVecTwo z) := by
@@ -101,43 +91,19 @@ theorem annularCenteredPairing_eq_mixedExpansion (f g : TestFn) (n k : ℕ) :
   have hρkc := continuous_annularProbabilityDensity k
   have hρncs := hasCompactSupport_annularProbabilityDensity n
   have hρkcs := hasCompactSupport_annularProbabilityDensity k
-  have hhc : Continuous h := f.continuous.sub (hρnc.const_mul m)
   have hjc : Continuous j := g.continuous.sub (hρkc.const_mul p)
-  have hhcs : HasCompactSupport h := by
-    have hmul : HasCompactSupport (fun z : ℂ => m * ρn z) := by
-      have hfun : (fun z : ℂ => m * ρn z) = (fun _ : ℂ => m) • ρn := by
-        funext z
-        simp [smul_eq_mul]
-      rw [hfun]
-      exact hρncs.smul_left (f := fun _ : ℂ => m)
-    exact f.hasCompactSupport.sub hmul
-  have hjcs : HasCompactSupport j := by
-    have hmul : HasCompactSupport (fun z : ℂ => p * ρk z) := by
-      have hfun : (fun z : ℂ => p * ρk z) = (fun _ : ℂ => p) • ρk := by
-        funext z
-        simp [smul_eq_mul]
-      rw [hfun]
-      exact hρkcs.smul_left (f := fun _ : ℂ => p)
-    exact g.hasCompactSupport.sub hmul
   have hA0 := integral_complexLogKernelPair_eq_vec f g
     f.continuous g.continuous f.hasCompactSupport g.hasCompactSupport
   have hB0 := integral_complexLogKernelPair_eq_vec f ρk
     f.continuous hρkc f.hasCompactSupport hρkcs
   have hC0 := integral_complexLogKernelPair_eq_vec ρn g
     hρnc g.continuous hρncs g.hasCompactSupport
-  have hCswap0 := integral_complexLogKernelPair_eq_vec g ρn
-    g.continuous hρnc g.hasCompactSupport hρncs
   have hD0 := integral_complexLogKernelPair_eq_vec ρn ρk
     hρnc hρkc hρncs hρkcs
   have hAint : Integrable A μ := by simpa [A, μ] using hA0.1
   have hBint : Integrable B μ := by simpa [B, μ] using hB0.1
   have hCint : Integrable C μ := by simpa [C, μ] using hC0.1
-  have hCswapInt : Integrable Cswap μ := by simpa [Cswap, μ] using hCswap0.1
   have hDint : Integrable D μ := by simpa [D, μ] using hD0.1
-  have hHJ0 := integral_complexLogKernelPair_eq_vec h j hhc hjc hhcs hjcs
-  have hHJint : Integrable
-      (fun q : ℂ × ℂ => h q.1 * j q.2 * (-Real.log ‖q.1 - q.2‖)) μ := by
-    simpa [μ] using hHJ0.1
   have hpB : Integrable (fun q => p * B q) μ := hBint.const_mul p
   have hmC : Integrable (fun q => m * C q) μ := hCint.const_mul m
   have hmpD : Integrable (fun q => m * p * D q) μ := hDint.const_mul (m * p)
@@ -193,7 +159,7 @@ theorem annularCenteredPairing_eq_mixedExpansion (f g : TestFn) (n k : ℕ) :
           integral_sub (hAint.sub hpB) (hmC.sub hmpD)
       _ = _ := by
             rw [integral_sub hAint hpB, integral_sub hmC hmpD]
-            simp only [integral_const_mul]
+            simp [integral_const_mul]
             ring
   have hAtest : testFnLogPairing f g = ∫ q : ℂ × ℂ, A q ∂μ := by
     simpa [A, μ] using testFnLogPairing_eq_complex f g
@@ -229,7 +195,6 @@ theorem abs_annularMixedEnergy_le (n k : ℕ) :
     simpa [ρ, μ] using integral_annularProbabilityDensity n
   have hD : annularMixedEnergy n k = -(∫ z : ℂ, ρ z * V z ∂μ) := by
     simpa [annularMixedEnergy, ρ, V, μ, annularLogPotential] using hPair.2
-  have hc : 0 ≤ c := by dsimp [c]; positivity
   have hUpperInt : Integrable (fun z : ℂ => c * ρ z) μ := hρInt.const_mul c
   have hPointwise (z : ℂ) : |ρ z * V z| ≤ c * ρ z := by
     by_cases hzero : ρ z = 0
@@ -455,7 +420,7 @@ theorem abs_annularCenteredPairing_sub_gffCov_le_mixed
           _ ≤ |-p * (annularCrossEnergy f k + testFnPotential f) -
                 m * (annularCrossEnergy g n + testFnPotential g)| +
                   |m * p * annularMixedEnergy n k| := by
-                simpa only [sub_eq_add_neg] using abs_add_le
+                simpa [sub_eq_add_neg] using abs_add_le
                   (-p * (annularCrossEnergy f k + testFnPotential f) -
                     m * (annularCrossEnergy g n + testFnPotential g))
                   (m * p * annularMixedEnergy n k)
@@ -535,4 +500,3 @@ theorem tendsto_annularCenteredPairing_gffCov (f g : TestFn) :
 
 end DOZZ
 
-end

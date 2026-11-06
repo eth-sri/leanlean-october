@@ -2,8 +2,7 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.Brownian.Barrier.KilledMarkov
+import DOZZ.Brownian.Barrier.KilledMarkov
 
 /-!
 # Joint pre-hit states, lifetimes and raw pasts
@@ -35,7 +34,6 @@ one. No assertion of Markov restart at a last exit is used here. Multi-time
 killed paths and the reversed lifetime-marked limit remain to be assembled.
 -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory Filter Set
 open scoped NNReal ENNReal Topology
 namespace DOZZ.Proofs
@@ -61,7 +59,7 @@ theorem brownianPath_past_event_restart_lintegral {E : Type*} [MeasurableSpace E
     (hX.prodMk (measurable_const.indicator hA)) J hJ
   have hAg : MeasurableSet A := (brownianRawFiltration _ _).le s A hA
   have he (p : BrownianPath) (q : BrownianPath) : J ((X p,I p),q) = A.indicator (fun p => F (X p,q)) p := by
-    by_cases hp : p ∈ A <;> simp only [J,I,Set.indicator_apply,hp,ite_true,ite_false,one_mul,zero_mul]
+    by_cases hp : p ∈ A <;> simp [J,I,Set.indicator_apply,hp,ite_true,ite_false,one_mul,zero_mul]
   have hl : (fun p => J ((X p,I p),brownianShiftPath s p)) = A.indicator
       (fun p => F (X p,brownianShiftPath s p)) := by
     funext p
@@ -70,11 +68,9 @@ theorem brownianPath_past_event_restart_lintegral {E : Type*} [MeasurableSpace E
       (fun p => ∫⁻ q, F (X p,q) ∂P) := by
     funext p
     by_cases hp : p ∈ A
-    · simp only [he,Set.indicator_apply,ite_eq_left hp]
-    · simp only [he,Set.indicator_apply,ite_eq_right hp,lintegral_zero]
-  rw [hl,hr,lintegral_indicator hAg,lintegral_indicator hAg] at hh
-  exact hh
-
+    · simp [he,Set.indicator_apply,ite_eq_left hp]
+    · simp [he,Set.indicator_apply,ite_eq_right hp,lintegral_zero]
+  rwa [hl,hr,lintegral_indicator hAg,lintegral_indicator hAg] at hh
 /-- A drifted upper barrier is measurable in the raw past of its finite horizon. -/
 theorem measurableSet_brownianPath_drift_barrier_raw (a c : ℝ) (s : ℝ≥0) :
     MeasurableSet[brownianRawFiltration (fun u (p : BrownianPath) => p u)

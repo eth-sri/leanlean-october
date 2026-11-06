@@ -2,13 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Brownian.Lateral.RadialProjection
-public import DOZZ.GMC.EquatorGFFChaosTransportLaw
-public import DOZZ.GMC.CircleAverageLimits
-public import DOZZ.Statements.Brownian.IsLateralGMCOf
-public import Mathlib.Topology.Order.LiminfLimsup
+import DOZZ.Brownian.Lateral.RadialProjection
+import DOZZ.GMC.EquatorGFFChaosTransportLaw
+import DOZZ.GMC.CircleAverageLimits
+import DOZZ.Statements.Brownian.IsLateralGMCOf
+import Mathlib.Topology.Order.LiminfLimsup
 
 /-!
 # Uniqueness of the lateral projection law
@@ -20,7 +19,6 @@ function of the field evaluations. The joint field/GMC law then transports the l
 polar projection. No inverse chaos moment or change of regularization is used.
 -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal Distributions
@@ -53,7 +51,7 @@ theorem circle_test_approximation_tendstoInMeasure
   change Tendsto (fun n => eLpNorm (fun ω => X ω (f n) - Xc ω x r) 2 P) atTop (𝓝 0)
   have hcomm n : eLpNorm (fun ω => X ω (f n) - Xc ω x r) 2 P =
       eLpNorm (fun ω => Xc ω x r - X ω (f n)) 2 P := eLpNorm_sub_comm _ _ _ _
-  simpa only [hcomm] using hc.2.2 x r f hf
+  simpa [hcomm] using hc.2.2 x r f hf
 
 /-- One circle coordinate is the same measurable function of field evaluations in both models.
 The reconstruction function may depend on the pair of models, but is shared between them. -/
@@ -243,7 +241,7 @@ theorem equatorGFF_radial_GMC_map_eq
     (∫⁻ ω, ((fun ω => (A' ω, M' ω)) ⁻¹' S).indicator 1 ω ∂P') at h
   rw [lintegral_indicator_one₀ (hm.nullMeasurable hS),
     lintegral_indicator_one₀ (hm'.nullMeasurable hS)] at h
-  exact h
+  assumption
 
 /-- Extend a finite plane measure to a total measurable operation on all plane measures.
 Infinite measures are replaced by zero only outside the finite carrier. -/
@@ -256,8 +254,8 @@ theorem finitePlaneMeasureValue_finite (μ : Measure ℂ) :
     IsFiniteMeasure (finitePlaneMeasureValue μ) := by
   classical
   by_cases h : μ univ < ⊤
-  · exact ⟨by simpa only [finitePlaneMeasureValue, ite_eq_left h] using h⟩
-  · simp only [finitePlaneMeasureValue, ite_eq_right h]
+  · exact ⟨by simpa [finitePlaneMeasureValue, ite_eq_left h] using h⟩
+  · simp [finitePlaneMeasureValue, ite_eq_right h]
     infer_instance
 
 /-- Pack the totalized value in the measurable finite-measure carrier. -/
@@ -276,8 +274,8 @@ theorem measurable_finitePlaneMeasureOrZero : Measurable finitePlaneMeasureOrZer
 /-- Totalization preserves every finite plane measure exactly. -/
 theorem finitePlaneMeasureOrZero_eq (μ : Measure ℂ) (hμ : IsFiniteMeasure μ) :
     (finitePlaneMeasureOrZero μ : Measure ℂ) = μ := by
-  simp only [finitePlaneMeasureOrZero, finitePlaneMeasureValue,
-    ite_eq_left hμ.measure_univ_lt_top, FiniteMeasure.toMeasure_mk]
+  simp [finitePlaneMeasureOrZero, finitePlaneMeasureValue,
+    FiniteMeasure.toMeasure_mk]
 
 /-- The actual radial projection has a measurable extension to all path/measure inputs. -/
 noncomputable def totalizedLateralProjection (γ : ℝ) (A : TwoSidedPath)
@@ -296,7 +294,7 @@ theorem measurable_totalizedLateralProjection (γ : ℝ) :
     (fun p : TwoSidedPath × Measure ℂ => ((γ, p.1), finitePlaneMeasureOrZero p.2)))
   exact Measurable.comp measurable_lateralProjectedGMC_finite hi
 
-/-- On a finite chaos, the extension is the literal projection `DOZZ.lateralProjectedGMC`. -/
+/-- On a finite chaos, the extension is the literal projection `lateralProjectedGMC`. -/
 theorem totalizedLateralProjection_eq (γ : ℝ) (A : TwoSidedPath)
     (μ : Measure ℂ) (hμ : IsFiniteMeasure μ) :
     totalizedLateralProjection γ A μ = lateralProjectedGMC γ A μ := by
@@ -336,7 +334,7 @@ theorem equatorGFF_radial_projection_map_eq
       M hM M' hM' A Xc hc hA A' Xc' hc' hA']
 
 /-- Any two source lateral projections have the same measure-valued law. The radial witness is fixed
-by its circle averages; the GMC input uses its characterization `DOZZ.IsGMCOf`. -/
+by its circle averages; the GMC input uses its characterization `IsGMCOf`. -/
 theorem sourceLateralProjection_map_eq
     {Ω Ω' : Type*} [MeasurableSpace Ω] [MeasurableSpace Ω']
     (P : Measure Ω) (P' : Measure Ω') (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)

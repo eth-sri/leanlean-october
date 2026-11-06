@@ -2,12 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Dual.SourcePolarFinite
-public import DOZZ.FourPoint.Dual.PathPolarTransport
+import DOZZ.FourPoint.Dual.SourcePolarFinite
+import DOZZ.FourPoint.Dual.PathPolarTransport
 import Mathlib.Tactic
 /-! Exact source-to-copied polar expectation transport on the common full-path carrier. -/
-@[expose] public section
 open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -68,7 +66,7 @@ theorem dual_source_copied_polar_finite_ae
     filter_upwards [hZ.2.2.2.2.1] with ω hω a b
     have he : (fun s : ℝ => s-(T : ℝ)) ⁻¹' Icc a b = Icc (a+T) (b+T) := by
       ext s
-      simp only [mem_preimage, mem_Icc, le_sub_iff_add_le, sub_le_iff_le_add]
+      simp [mem_Icc]
     change (Z ω).map (fun s : ℝ => s-(T : ℝ)) (Icc a b) < ⊤
     rw [Measure.map_apply (show Measurable (fun s : ℝ => s-(T : ℝ)) from measurable_id.sub_const _)
       measurableSet_Icc, he]

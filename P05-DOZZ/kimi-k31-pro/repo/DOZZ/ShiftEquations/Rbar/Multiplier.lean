@@ -2,12 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.FourPoint.GammaHalfUnitCrossingMultiplier
-public import DOZZ.Statements.Defs.LFun
-public import Mathlib.Analysis.SpecialFunctions.Gamma.Deriv
-public import Mathlib.Analysis.SpecialFunctions.Gamma.Beta
+import DOZZ.Hypergeom.Planar.RieszNormalization
+import DOZZ.Statements.FourPoint.GammaHalfUnitCrossingMultiplier
+import DOZZ.Statements.Defs.LFun
+import Mathlib.Analysis.SpecialFunctions.Gamma.Deriv
+import Mathlib.Analysis.SpecialFunctions.Gamma.Beta
 
 /-!
 # The analytic γ/2-crossing multiplier on the diagonal
@@ -23,7 +23,6 @@ one has `A = (γ²/4) x`, so on the crossing region `x > 0`
 value `0/0`). As `ε ↓ γ/2`, `(ε - γ/2) l(B) → 4/γ`.
 -/
 
-@[expose] public section
 
 open Filter Topology Set
 
@@ -44,12 +43,7 @@ noncomputable def crossingMultiplierDiag (γ ε : ℝ) (z : ℂ) : ℂ :=
 
 /-- `l` at a real point is the real ratio of Gamma values. -/
 theorem lFun_ofReal (r : ℝ) :
-    lFun (r : ℂ) = ((Real.Gamma r / Real.Gamma (1 - r) : ℝ) : ℂ) := by
-  unfold lFun
-  rw [show (1 : ℂ) - r = ((1 - r : ℝ) : ℂ) by push_cast; ring, Complex.Gamma_ofReal,
-    Complex.Gamma_ofReal]
-  push_cast
-  ring
+    lFun (r : ℂ) = ((Real.Gamma r / Real.Gamma (1 - r) : ℝ) : ℂ) := DOZZ.Proofs.lFun_real_argument r
 
 theorem lFun_ofReal_re (r : ℝ) : (lFun (r : ℂ)).re = Real.Gamma r / Real.Gamma (1 - r) := by
   rw [lFun_ofReal, Complex.ofReal_re]
@@ -221,7 +215,7 @@ theorem isOpen_reflectionStrip (γ : ℝ) : IsOpen (reflectionStrip γ) :=
 theorem ne_neg_nat_of_re_pos {w : ℂ} (h : 0 < w.re) : ∀ m : ℕ, w ≠ -m := by
   intro m hm
   rw [hm] at h
-  simp only [Complex.neg_re, Complex.natCast_re] at h
+  simp [Complex.neg_re, Complex.natCast_re] at h
   have : (0 : ℝ) ≤ m := Nat.cast_nonneg m
   linarith
 
@@ -285,4 +279,3 @@ theorem differentiableOn_crossingMultiplierDiag {γ ε : ℝ} (hγ : 0 < γ) (h�
 
 end DOZZ.Proofs
 
-end

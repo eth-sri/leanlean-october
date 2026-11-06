@@ -2,19 +2,18 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import Mathlib.MeasureTheory.Integral.BoundedContinuousFunction
-public import Mathlib.MeasureTheory.Integral.DominatedConvergence
-public import Mathlib.MeasureTheory.Integral.Prod
-public import Mathlib.MeasureTheory.Measure.ProbabilityMeasure
-public import Mathlib.MeasureTheory.Measure.HasOuterApproxClosed
-public import Mathlib.Probability.HasLaw
-public import Mathlib.Probability.IdentDistrib
-public import Mathlib.Probability.Independence.InfinitePi
-public import Mathlib.Probability.StrongLaw
-public import Mathlib.MeasureTheory.Constructions.Polish.Basic
-public import DOZZ.GMC.Moments.ExactScale
+import Mathlib.MeasureTheory.Integral.BoundedContinuousFunction
+import Mathlib.MeasureTheory.Integral.DominatedConvergence
+import Mathlib.MeasureTheory.Integral.Prod
+import Mathlib.MeasureTheory.Measure.ProbabilityMeasure
+import Mathlib.MeasureTheory.Measure.HasOuterApproxClosed
+import Mathlib.Probability.HasLaw
+import Mathlib.Probability.IdentDistrib
+import Mathlib.Probability.Independence.InfinitePi
+import Mathlib.Probability.StrongLaw
+import Mathlib.MeasureTheory.Constructions.Polish.Basic
+import DOZZ.GMC.Moments.ExactScale
 
 /-! Transfer of laws through empirical approximations.
 
@@ -22,7 +21,6 @@ This is the limit step: once finite sampled chaos approximants have the same law
 surely to the Wick integrals, bounded continuous tests pass to the limit by dominated
 convergence. -/
 
-@[expose] public section
 
 open MeasureTheory Filter Topology ProbabilityTheory Function
 open scoped NNReal ENNReal
@@ -39,7 +37,7 @@ theorem wickScalar_integrable_expectation_of_hasLaw
     rw [hW.map_eq]
     exact integrable_exp_mul_gaussianReal γ
   have hExp : Integrable (fun ω => Real.exp (γ * W ω)) P := by
-    simpa only [Function.comp_def] using
+    simpa [Function.comp_def] using
       (integrable_map_measure hExpMap.aestronglyMeasurable hW.aemeasurable).mp hExpMap
   have hWick : Integrable
       (fun ω => Real.exp (γ * W ω - γ ^ 2 / 2 * (v : ℝ))) P := by
@@ -170,7 +168,6 @@ private theorem ae_empirical_average_tendsto
       Tendsto (fun n : ℕ => (n : ℝ)⁻¹ * ∑ i : Fin n, f p.1 (p.2 i.val))
         atTop (𝓝 (∫ x, f p.1 x ∂ν)) := by
   let Q : Measure (ℕ → S) := Measure.infinitePi (fun _ : ℕ => ν)
-  have hQ : IsProbabilityMeasure Q := by infer_instance
   have hEvalIdent (i : ℕ) : IdentDistrib (fun q : ℕ → S => q i) id Q ν := by
     refine ⟨(measurable_pi_apply i).aemeasurable, aemeasurable_id, ?_⟩
     simpa [Q] using (Measure.infinitePi_map_eval (fun _ : ℕ => ν) i)
@@ -185,8 +182,7 @@ private theorem ae_empirical_average_tendsto
       ∀ᵐ q ∂Q,
         Tendsto (fun n : ℕ => (n : ℝ)⁻¹ * ∑ i : Fin n, f ω (q i.val))
           atTop (𝓝 (∫ x, f ω x ∂ν)) := by
-    have hfmeas : Measurable (f ω) := by
-      exact hjoint.comp (by fun_prop : Measurable fun x : S => (ω, x))
+    have hfmeas : Measurable (f ω) := hjoint.comp (by fun_prop : Measurable fun x : S => (ω, x))
     have hindep := hindepCoord.comp (fun _ => f ω) (fun _ => hfmeas)
     have hindep' : Pairwise (fun i j =>
         (fun q => f ω (q i)) ⟂ᵢ[Q] (fun q => f ω (q j))) := by
@@ -204,7 +200,7 @@ private theorem ae_empirical_average_tendsto
     have hlln := ProbabilityTheory.strong_law_ae (μ := Q)
       (fun i (q : ℕ → S) => f ω (q i)) hsampleInt hindep' hident
     filter_upwards [hlln] with q hq
-    simpa only [smul_eq_mul, ← Fin.sum_univ_eq_sum_range, hmean] using hq
+    simpa [smul_eq_mul, ← Fin.sum_univ_eq_sum_range, hmean] using hq
   have hIter : ∀ᵐ ω ∂P, ∀ᵐ q ∂Q,
       Tendsto (fun n : ℕ => (n : ℝ)⁻¹ * ∑ i : Fin n, f ω (q i.val))
         atTop (𝓝 (∫ x, f ω x ∂ν)) := by
@@ -214,8 +210,7 @@ private theorem ae_empirical_average_tendsto
       (n : ℝ)⁻¹ * ∑ i : Fin n, f p.1 (p.2 i.val)) := by
     intro n
     fun_prop
-  have hlimit : Measurable (fun p : Ω × (ℕ → S) => ∫ x, f p.1 x ∂ν) := by
-    exact (hjoint.stronglyMeasurable.integral_prod_right').measurable.comp measurable_fst
+  have hlimit : Measurable (fun p : Ω × (ℕ → S) => ∫ x, f p.1 x ∂ν) := (hjoint.stronglyMeasurable.integral_prod_right').measurable.comp measurable_fst
   have hset : MeasurableSet {p : Ω × (ℕ → S) |
       Tendsto (fun n : ℕ => (n : ℝ)⁻¹ *
         ∑ i : Fin n, f p.1 (p.2 i.val)) atTop

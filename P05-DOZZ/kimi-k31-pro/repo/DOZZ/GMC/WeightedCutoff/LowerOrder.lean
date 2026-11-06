@@ -1,8 +1,6 @@
-module
 
-public import DOZZ.GMC.WeightedCutoff.ReferenceUniform
+import DOZZ.GMC.WeightedCutoff.ReferenceUniform
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs

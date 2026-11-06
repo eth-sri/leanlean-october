@@ -2,16 +2,14 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.Fusion.Kernel
-public import DOZZ.FourPoint.Fusion.RootedMass
+import DOZZ.FourPoint.Fusion.Kernel
+import DOZZ.FourPoint.Fusion.RootedMass
 import DOZZ.GMC.Construction.RootedMeasureKernel
 import DOZZ.GMC.SharpMoments.SeibergMoment
 
 /-! # The moving mass after rooting at `y*z` -/
 
-@[expose] public section
 open MeasureTheory
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -48,7 +46,7 @@ theorem fusionRootOnlyMass_split (γ α₁ α₂ α₃ : ℝ) (y z : ℂ) (δ : 
       fusionRootOnlyBadMass γ α₁ α₂ α₃ y z δ μ + fusionRootOnlyGoodMass γ α₁ α₂ α₃ y z δ μ := by
   have hc : (Metric.ball (0 : ℂ) δ)ᶜ = {x : ℂ | δ ≤ ‖x‖} := by
     ext x
-    simp only [Set.mem_compl_iff, Metric.mem_ball, dist_zero_right, Set.mem_ofPred_eq, not_lt]
+    simp [Set.mem_compl_iff, Metric.mem_ball, dist_zero_right, Set.mem_ofPred_eq, not_lt]
   exact (lintegral_add_compl _ Metric.isOpen_ball.measurableSet).symm.trans
     (by rw [hc]; rfl)
 

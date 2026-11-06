@@ -1,2 +1,1 @@
-module
-public import DOZZ.Statements.Brownian.NegativeConditionedPostLastExitPath
+import DOZZ.Statements.Brownian.NegativeConditionedPostLastExitPath

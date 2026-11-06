@@ -1,2 +1,1 @@
-module
-public import DOZZ.Statements.Brownian.ConditionalLIntegralBound
+import DOZZ.Statements.Brownian.ConditionalLIntegralBound

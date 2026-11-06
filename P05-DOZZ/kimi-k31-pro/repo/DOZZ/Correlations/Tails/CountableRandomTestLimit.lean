@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.Tails.RandomTestApproximation
-public import Mathlib.MeasureTheory.Measure.Continuity
+import DOZZ.Correlations.Tails.RandomTestApproximation
+import Mathlib.MeasureTheory.Measure.Continuity
 
 /-! Countably many deterministic test limits permit an outcome-dependent test choice. -/
 
-@[expose] public section
 open MeasureTheory Filter Topology Set
 open scoped ENNReal
 
@@ -44,7 +42,7 @@ theorem tendstoInMeasure_countable_selection
   have he : Tendsto (fun k => P (S k)) atTop (𝓝 0) := by
     have h := tendsto_measure_iInter_atTop (fun k => (hS k).nullMeasurableSet)
       hanti ⟨0, measure_ne_top P _⟩
-    simpa only [Function.comp_def, hempty, measure_empty] using h
+    simpa [Function.comp_def, hempty, measure_empty] using h
   apply tendstoInMeasure_uniform_approximation P _ _ a b hab
   intro ε hε
   refine ⟨fun k => P (S k), he, ?_, ?_⟩

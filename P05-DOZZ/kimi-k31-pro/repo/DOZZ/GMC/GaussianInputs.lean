@@ -2,16 +2,14 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.Defs.IsEquatorGFF
-public import DOZZ.Statements.GMC.IsCenteredJointlyGaussian
-public import DOZZ.Statements.GMC.IsGaussianL2Limit
-public import DOZZ.GFFStructure.GaussianClosure
+import DOZZ.Statements.Defs.IsEquatorGFF
+import DOZZ.Statements.GMC.IsCenteredJointlyGaussian
+import DOZZ.Statements.GMC.IsGaussianL2Limit
+import DOZZ.GFFStructure.GaussianClosure
 
 /-! Finite Gaussian inputs for the proofs of the GMC tilting statements. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped Distributions ENNReal NNReal
@@ -28,13 +26,13 @@ theorem centeredJointlyGaussian_of_isGaussianProcess
   intro a
   let S : Ω → ℝ := fun ω => ∑ i, a i * Z i ω
   have hScaled : IsGaussianProcess (fun i => fun ω => a i * Z i ω) P := by
-    simpa only [smul_eq_mul] using hZ.smul a
+    simpa [smul_eq_mul] using hZ.smul a
   have hLaw : HasGaussianLaw S P := by
-    simpa only [S, smul_eq_mul] using hScaled.hasGaussianLaw_fun_sum (I := Finset.univ)
+    simpa [S, smul_eq_mul] using hScaled.hasGaussianLaw_fun_sum (I := Finset.univ)
   have hMeanS : (∫ ω, S ω ∂P) = 0 := by
     dsimp [S]
     rw [integral_finsetSum]
-    · simp only [integral_const_mul, hMean, mul_zero, Finset.sum_const_zero]
+    · simp [integral_const_mul, hMean, mul_zero, Finset.sum_const_zero]
     · intro i hi
       exact (hZ.hasGaussianLaw_eval i).integrable.const_mul (a i)
   refine ⟨hLaw.memLp_two, ⟨(Var[S; P]).toNNReal, ?_⟩⟩
@@ -94,7 +92,7 @@ theorem equatorGFF_finite_evaluations_with_L_jointly_gaussian
               eLpNorm (fun ω => L ω - X ω (fL n)) 2 P := by
           intro n
           exact eLpNorm_sub_comm _ _ _ _
-        simpa only [Z, W, hcomm] using hLapprox
+        simpa [Z, W, hcomm] using hLapprox
     | some j =>
         convert (tendsto_const_nhds :
           Tendsto (fun _ : ℕ => (0 : ℝ≥0∞)) atTop (𝓝 0)) using 1
@@ -109,11 +107,11 @@ theorem equatorGFF_finite_evaluations_with_L_jointly_gaussian
       exact eLpNorm_sub_comm _ _ _ _
     have hLapprox' : Tendsto
         (fun n => eLpNorm (fun ω => X ω (fL n) - L ω) 2 P) atTop (𝓝 0) := by
-      simpa only [hcomm] using hLapprox
+      simpa [hcomm] using hLapprox
     exact integral_eq_zero_of_eLpNorm_sub
       (fun n => equatorGFF_test_memLp X hX (fL n)) hLmem
       (fun n => equatorGFF_test_integral X hX (fL n)) hLapprox'
-  simpa only [W] using
+  simpa [W] using
     centeredJointlyGaussian_of_isGaussianProcess P W hLimit fun i => by
       cases i with
       | none => exact hMeanL

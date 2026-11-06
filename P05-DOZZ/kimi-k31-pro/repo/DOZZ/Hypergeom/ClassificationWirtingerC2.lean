@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.Hypergeom.WirtingerZ
-public import DOZZ.Hypergeom.ClassificationWirtinger
+import DOZZ.Statements.Hypergeom.WirtingerZ
+import DOZZ.Hypergeom.ClassificationWirtinger
 import Mathlib.Analysis.Complex.Conformal
 import Mathlib.Analysis.Complex.RealDeriv
 import Mathlib.Analysis.Calculus.ContDiff.FiniteDimension
@@ -14,7 +13,6 @@ import Mathlib.Analysis.Calculus.Deriv.Inv
 
 /-! First-order regularity and Cauchy--Riemann consequences for the Wirtinger operator. -/
 
-@[expose] public section
 
 namespace DOZZ.Proofs
 
@@ -35,7 +33,7 @@ theorem differentiableAt_wirtingerZ_of_contDiffAt_two
   have hquot : ContDiffAt ℝ 1
       (fun w => (fderiv ℝ f w 1 - Complex.I * fderiv ℝ f w Complex.I) / 2) z :=
     hnum.div_const 2
-  simpa only [wirtingerZ] using hquot.differentiableAt (by norm_num)
+  simpa [wirtingerZ] using hquot.differentiableAt (by norm_num)
 
 /-- If the `∂z` derivative of a real-differentiable complex-valued function vanishes,
 then its complex conjugate is complex-differentiable at that point. -/
@@ -47,7 +45,7 @@ theorem differentiableAt_star_of_wirtingerZ_eq_zero
   refine ⟨hf.star, ?_⟩
   have hzero' :
       (fderiv ℝ f z 1 - Complex.I * fderiv ℝ f z Complex.I) / 2 = 0 := by
-    simpa only [wirtingerZ] using hzero
+    simpa [wirtingerZ] using hzero
   have hrel : fderiv ℝ f z Complex.I = -Complex.I * fderiv ℝ f z 1 := by
     have hmul := congrArg (fun x : ℂ => x * 2) hzero'
     have hsub : fderiv ℝ f z 1 - Complex.I * fderiv ℝ f z Complex.I = 0 := by
@@ -60,9 +58,9 @@ theorem differentiableAt_star_of_wirtingerZ_eq_zero
       _ = -Complex.I * (Complex.I * fderiv ℝ f z Complex.I) := by ring
       _ = -Complex.I * fderiv ℝ f z 1 := by rw [← hsub']
   rw [fderiv_star]
-  simp only [ContinuousLinearMap.comp_apply]
+  simp [ContinuousLinearMap.comp_apply]
   rw [hrel]
-  simp [smul_eq_mul]
+  simp []
 
 /-- The Wirtinger derivative is additive for differences of real-differentiable maps. -/
 theorem wirtingerZ_sub {f g : ℂ → ℂ} {z : ℂ}
@@ -80,8 +78,7 @@ theorem wirtingerZ_sub {f g : ℂ → ℂ} {z : ℂ}
     simp
   have hadd := wirtingerZ_add hf hg.neg
   have hneg'' : wirtingerZ (-g) z = -wirtingerZ g z := by
-    rw [← hnegFun']
-    exact hneg'
+    rwa [← hnegFun']
   have haddFun : (fun w => f w + (-g) w) = (fun w => f w + -g w) := by
     funext w
     simp
@@ -91,10 +88,8 @@ theorem wirtingerZ_sub {f g : ℂ → ℂ} {z : ℂ}
   have hadd' : wirtingerZ (fun w => f w + -g w) z =
       wirtingerZ f z - wirtingerZ g z := by
     rw [haddFun, hneg''] at hadd
-    simpa only [sub_eq_add_neg] using hadd
-  rw [hsubFun]
-  exact hadd'
-
+    simpa [sub_eq_add_neg] using hadd
+  rwa [hsubFun]
 /-- On a complex-differentiable nonvanishing denominator, the `∂z` derivative of its
 reciprocal is the ordinary reciprocal derivative. -/
 theorem wirtingerZ_inv_of_differentiableAt

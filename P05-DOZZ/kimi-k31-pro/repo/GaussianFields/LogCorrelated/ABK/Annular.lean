@@ -3,9 +3,8 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Scott Armstrong, Amélie Loher
 -/
-module
 
-public import GaussianFields.LogCorrelated.ABK.CanonicalField
+import GaussianFields.LogCorrelated.ABK.CanonicalField
 
 /-!
 # GaussianFields ABK annular field
@@ -13,7 +12,6 @@ public import GaussianFields.LogCorrelated.ABK.CanonicalField
 Port of the corresponding GaussianFields source module.
 -/
 
-public section
 
 open MeasureTheory ProbabilityTheory
 open scoped Convolution ENNReal InnerProductSpace NNReal ProbabilityTheory Topology
@@ -24,7 +22,7 @@ namespace GaussianFields
 
 /-- The annular interval `[a,b]` in the scale variable, implemented as an indicator on the product
 kernel.  ABK uses `a = 3^{n-1}` and `b = 3^n`. -/
-@[expose]
+
 noncomputable def abkAnnularLogKernelProd {d : Nat} (normalization : ℝ)
     (ζ : ABKCutoff d) (ψ : MeanZeroTestFunction d) (a b : ℝ) :
     ℝ × Vec d → ℝ :=
@@ -47,7 +45,7 @@ theorem abkAnnularLogKernelProd_apply {d : Nat} (normalization : ℝ)
     exact Set.indicator_of_notMem hp' (abkLogKernelProd normalization ζ ψ)
 
 /-- The annular ABK kernel on concrete scale-space. -/
-@[expose]
+
 noncomputable def abkAnnularLogKernel {d : Nat} (normalization : ℝ)
     (ζ : ABKCutoff d) (ψ : MeanZeroTestFunction d) (a b : ℝ) :
     ScaleSpace d → ℝ :=
@@ -64,7 +62,7 @@ theorem memLp_abkAnnularLogKernel_of_prod {d : Nat} {normalization : ℝ}
     hprod.comp_measurePreserving (scaleSpaceMeasurePreserving d)
 
 /-- The annular `L²(R^{1+d})` vector sent into white noise. -/
-@[expose]
+
 noncomputable def abkAnnularLogKernelLp {d : Nat} (normalization : ℝ)
     (ζ : ABKCutoff d) (ψ : MeanZeroTestFunction d) (a b : ℝ)
     (hprod :
@@ -76,7 +74,7 @@ noncomputable def abkAnnularLogKernelLp {d : Nat} (normalization : ℝ)
     (abkAnnularLogKernel normalization ζ ψ a b)
 
 /-- The ABK annular shell contribution, tested against `ψ`. -/
-@[expose]
+
 noncomputable def abkAnnularLogCorrelatedFieldL2 {d : Nat} (normalization : ℝ)
     (ζ : ABKCutoff d) (ψ : MeanZeroTestFunction d) (a b : ℝ)
     (hprod :
@@ -87,4 +85,3 @@ noncomputable def abkAnnularLogCorrelatedFieldL2 {d : Nat} (normalization : ℝ)
 
 end GaussianFields
 
-end

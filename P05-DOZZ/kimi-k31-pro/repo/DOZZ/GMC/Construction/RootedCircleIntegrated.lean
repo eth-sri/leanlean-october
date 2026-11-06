@@ -1,14 +1,12 @@
 /-
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 -/
-module
 
-public import DOZZ.GMC.Construction.RootedCircleTilt
-public import DOZZ.GMC.Construction.RegularizedGMCExpectedMeasure
+import DOZZ.GMC.Construction.RootedCircleTilt
+import DOZZ.GMC.Construction.RegularizedGMCExpectedMeasure
 
 /-! Spatial integration of a circle root tilt with a fixed limiting chaos mark. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory
 open scoped Distributions ENNReal NNReal
@@ -82,7 +80,7 @@ theorem regularizedGMC_root_sample_lintegral
     _ = ∫⁻ u, b u * ∫⁻ ω, w (u, ω) * Ψ (u, ω) ∂P ∂volume := by
       apply lintegral_congr
       intro u
-      simp only [mul_assoc]
+      simp [mul_assoc]
       exact lintegral_const_mul (b u)
         ((hw.mul hΨ).comp (measurable_const.prodMk measurable_id))
     _ = ∫⁻ u, ∫⁻ ω, w (u, ω) * Ψ (u, ω) ∂P ∂gmcReferenceMeasure := by

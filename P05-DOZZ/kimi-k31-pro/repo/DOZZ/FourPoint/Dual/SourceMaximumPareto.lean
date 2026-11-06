@@ -2,12 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Dual.IncrementIntegrability
-public import DOZZ.FourPoint.Dual.ReferencePareto
-public import DOZZ.FourPoint.Dual.SourceParetoWeights
+import DOZZ.FourPoint.Dual.IncrementIntegrability
+import DOZZ.FourPoint.Dual.ReferencePareto
+import DOZZ.FourPoint.Dual.SourceParetoWeights
 /-! Exact independent-maximum transport for the actual source outer mass. -/
-@[expose] public section
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -45,7 +43,7 @@ theorem dual_source_fixed_maximum_increment_eq_pareto
   let b := dual_radial_scale γ (Q γ-α₁) h Xc z
   let V := fun v : ℝ × Ω => Real.exp (γ*v.1)*S v.2
   have hr : ‖z‖^(1-ξ) ≤ 1 := by
-    simpa only [Real.one_rpow] using Real.rpow_le_rpow (norm_nonneg z) hz
+    simpa [Real.one_rpow] using Real.rpow_le_rpow (norm_nonneg z) hz
       (sub_nonneg.mpr hξ1.le)
   have hA : ∀ᵐ ω ∂P, 0 < A ω :=
     (dual_source_outerMass_positive_finite_ae P X hX γ hγ hγ₂ M hM
@@ -56,14 +54,14 @@ theorem dual_source_fixed_maximum_increment_eq_pareto
       (equatorGFF_GMC_aemeasurable P X hX γ hγ hγ₂ M hM)).ennreal_toReal
   have hcoord := (hc.2.1 0 (-Real.log ‖z‖+h)).aemeasurable
   have hbm : AEMeasurable b P := by
-    dsimp only [b, dual_radial_scale]
+    dsimp [b, dual_radial_scale]
     exact ((hcoord.const_mul γ).sub aemeasurable_const).sub aemeasurable_const |>.exp
   have hVm : AEMeasurable V ((brownianMaximumReferenceLaw (Q γ-α₁)).prod P) := by
     convert (measurable_fst.aemeasurable.const_mul γ).exp.mul hSm.comp_snd using 1
   have hInv : Integrable (fun ω => (A ω)^(-p)) P := by
     have hi := (dual_radial_scale_real_expectation P X hX γ hγ hγ₂ M hM Xc hc
       (Q γ-α₁) h 0 α₁ α₂ α₃ ξ p hh hξ hξ1 hp.le z hz0 hz).1
-    simpa only [Real.rpow_zero, one_mul] using hi
+    simpa [Real.rpow_zero, one_mul] using hi
   have hV : ∀ᵐ v : ℝ × Ω ∂(brownianMaximumReferenceLaw (Q γ-α₁)).prod P, 0 ≤ V v :=
     (measurePreserving_snd.quasiMeasurePreserving.ae hS).mono
       (fun v hv => mul_nonneg (Real.exp_pos _).le hv)

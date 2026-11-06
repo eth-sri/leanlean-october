@@ -2,16 +2,14 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.SeparatedTail.CovarianceBound
-public import DOZZ.GMC.GaussianInputs
-public import DOZZ.GMC.FieldChaosNegativePower
-public import Mathlib.Probability.Independence.Integration
+import DOZZ.Correlations.SeparatedTail.CovarianceBound
+import DOZZ.GMC.GaussianInputs
+import DOZZ.GMC.FieldChaosNegativePower
+import Mathlib.Probability.Independence.Integration
 
 /-! Dirichlet circle cutoff masses remain measurable in their own distribution sigma algebras. -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory Metric Set
 open scoped ENNReal NNReal
 
@@ -73,7 +71,7 @@ theorem separatedTail_dirichletChaosMass_comap_measurable
     hm.comp (measurable_fst.prodMk
       ((separatedTail_diskPoint_measurable c).comp measurable_snd |>.prodMk measurable_const))
   have hvInt : Measurable (fun x => ∫ ω, Dc ω (separatedTail_diskPoint c x) r ^ 2 ∂P) := by
-    simpa only [gaussianVariance, gaussianCovariance, pow_two] using hv
+    simpa [gaussianVariance, gaussianCovariance, pow_two] using hv
   have hlog : @Measurable (Ω × ℂ) ℝ≥0∞
       ((MeasurableSpace.comap (fun ω => fun f : TestFn => D ω f) MeasurableSpace.pi).prod
         inferInstance) _ (fun q => (w q.2 : ℝ≥0∞) * ENNReal.ofReal
@@ -94,7 +92,6 @@ theorem separatedTail_indepFun_of_comap_measurable
     (hD : IndepFun D2 D3 P)
     (hW2 : Measurable[MeasurableSpace.comap D2 inferInstance] W2)
     (hW3 : Measurable[MeasurableSpace.comap D3 inferInstance] W3) :
-    IndepFun W2 W3 P := by
-  exact indep_of_indep_of_le hD (measurable_iff_comap_le.mp hW2) (measurable_iff_comap_le.mp hW3)
+    IndepFun W2 W3 P := indep_of_indep_of_le hD (measurable_iff_comap_le.mp hW2) (measurable_iff_comap_le.mp hW3)
 
 end DOZZ.Proofs

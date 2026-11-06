@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.Residue.CompetitorPower
+import DOZZ.Correlations.Residue.CompetitorPower
 
 /-! Adding the noncritical mass does not change the moment residue of the three-to-two residue
 bridge. -/
 
-@[expose] public section
 open MeasureTheory Filter Topology Set
 namespace DOZZ.Proofs
 
@@ -68,8 +66,7 @@ theorem residue_addition_preserves_limit
       apply hUi.mono' (((hA d hd hd').add (hR d hd hd')).pow_const (q d)).aestronglyMeasurable
       filter_upwards [hAnn d hd hd', hRnn d hd hd', hdom] with ω ha hr hh
       dsimp only [Pi.add_apply]
-      rw [Real.norm_eq_abs, abs_of_nonneg (Real.rpow_nonneg (add_nonneg ha hr) _)]
-      exact hh
+      rwa [Real.norm_eq_abs, abs_of_nonneg (Real.rpow_nonneg (add_nonneg ha hr) _)]
     constructor
     · apply mul_le_mul_of_nonneg_left _ hd.le
       apply integral_mono_ae (hiA d hd hd') hsumi
@@ -95,7 +92,7 @@ theorem residue_addition_preserves_limit
     have hf : Tendsto (fun δ : ℝ => (1 + δ) ^ β * L) (𝓝[>] 0) (𝓝 L) := by
       have hh : ContinuousAt (fun δ : ℝ => (1 + δ) ^ β * L) 0 :=
         ((continuousAt_const.add continuousAt_id).rpow_const (Or.inl (by norm_num))).mul continuousAt_const
-      simpa only [add_zero, Real.one_rpow, one_mul] using hh.tendsto.mono_left nhdsWithin_le_nhds
+      simpa [add_zero, Real.one_rpow, one_mul] using hh.tendsto.mono_left nhdsWithin_le_nhds
     obtain ⟨δ, hδb, hδ⟩ := ((hf.eventually (Iio_mem_nhds hb)).and self_mem_nhdsWithin).exists
     have he : Tendsto (fun d : ℝ => d) (𝓝[>] 0) (𝓝 0) := tendsto_id.mono_left nhdsWithin_le_nhds
     have hu := (hlim.const_mul ((1 + δ) ^ β)).add
@@ -105,7 +102,7 @@ theorem residue_addition_preserves_limit
       have hu' : Tendsto (fun d : ℝ =>
           (1 + δ) ^ β * (d * ∫ ω, A d ω ^ q d ∂P) + (1 + 1 / δ) ^ β * (d * C))
           (𝓝[>] 0) (𝓝 ((1 + δ) ^ β * L)) := by
-        simpa only [zero_mul, mul_zero, add_zero] using hu
+        simpa [zero_mul, mul_zero, add_zero] using hu
       exact hu'.eventually (Iio_mem_nhds hδb)
     filter_upwards [hnear, hub] with d hd hh
     exact (hbounds d hd.1 hd.2 δ hδ).2.trans_lt hh

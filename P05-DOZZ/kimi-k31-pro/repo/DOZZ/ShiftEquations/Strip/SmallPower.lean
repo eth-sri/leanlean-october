@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Brownian.ReflectionLastCutShift
+import DOZZ.Brownian.ReflectionLastCutShift
 import Mathlib.Analysis.MeanInequalitiesPow
 
 /-! Small-power estimates for the retained mass in the lastone limit. -/
 
-@[expose] public section
 
 open MeasureTheory Filter Topology Set
 open scoped ENNReal NNReal
@@ -98,7 +96,7 @@ theorem lastone_rpow_add_increment_le_moments (a b p q : ℝ)
     nlinarith
   have hcoef : 0 ≤ p / q := (div_pos hp (hp.trans_le hpq)).le
   exact (lastone_rpow_add_increment_le a b p q ha hb hp hpq hq1).trans
-    (by simpa only [mul_assoc] using mul_le_mul_of_nonneg_left hdom hcoef)
+    (by simpa [mul_assoc] using mul_le_mul_of_nonneg_left hdom hcoef)
 
 /-- Uniform positive and inverse moments force every varying small positive moment to tend
 to one. No convergence of the underlying random variables is required. -/
@@ -132,12 +130,12 @@ theorem lastone_smallPower_moment_tendsto_one
           (f i ω).toReal (e i) u hx.le hpi hpu)
         rw [hrep, ENNReal.ofReal_add (by norm_num) (by positivity),
           ENNReal.ofReal_one, ENNReal.ofReal_mul (by positivity), hrep] at h
-        exact h
+        assumption
       · have h := ENNReal.ofReal_le_ofReal (lastone_one_le_rpow_add
           (f i ω).toReal (e i) v hx hpi.le hv)
         rw [ENNReal.ofReal_one, ENNReal.ofReal_add (by positivity) (by positivity),
           ENNReal.ofReal_mul (by positivity), hrep, hrep] at h
-        exact h
+        assumption
     have hupper : (∫⁻ ω, f i ω ^ e i ∂P) ≤ 1 + ENNReal.ofReal (e i / u) * Cu := by
       calc
         _ ≤ ∫⁻ ω, 1 + ENNReal.ofReal (e i / u) * f i ω ^ u ∂P :=

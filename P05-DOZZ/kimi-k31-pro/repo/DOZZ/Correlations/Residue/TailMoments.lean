@@ -2,20 +2,18 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.Complex.ComplexMomentUniformTailBridge
-public import DOZZ.Statements.Complex.ComplexMomentTwoTailResidues
+import DOZZ.Statements.Complex.ComplexMomentUniformTailBridge
+import DOZZ.Statements.Complex.ComplexMomentTwoTailResidues
 
 /-! Real positive-moment residues from the Mellin tail statements
 `DOZZ.complexMoment_uniform_tail_bridge` and `DOZZ.complexMoment_two_tail_residues`. -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
 
-/-- The complex Abelian limit `DOZZ.complexMoment_uniform_tail_bridge` gives the real moment
+/-- The complex Abelian limit `complexMoment_uniform_tail_bridge` gives the real moment
 residue, with the same uniform family and coefficient. No limiting-variable-only tail assumption
 is substituted. -/
 theorem residue_real_uniform_tail_limit
@@ -40,7 +38,7 @@ theorem residue_real_uniform_tail_limit
   have heq : (fun ω => (Y d ω : ℂ) ^ ((β - d / γ : ℝ) : ℂ)) =ᵐ[P]
       fun ω => ((Y d ω ^ (β - d / γ) : ℝ) : ℂ) :=
     (hpos d hd.1 hd.2).mono (fun ω hω => (Complex.ofReal_cpow hω _).symm)
-  dsimp only [Function.comp_def]
+  dsimp [Function.comp_def]
   rw [integral_congr_ae heq, integral_complex_ofReal, ← Complex.ofReal_mul]
   rfl
 

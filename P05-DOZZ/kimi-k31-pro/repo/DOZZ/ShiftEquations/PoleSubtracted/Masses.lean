@@ -2,9 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.ShiftEquations.PoleSubtractedObservable
+import DOZZ.GMC.SharpMoments.LocationTransfer
+import DOZZ.Statements.ShiftEquations.PoleSubtractedObservable
 
 /-!
 # The pole-subtracted masses
@@ -20,7 +20,6 @@ and `α₃ = 2/γ - η` at `-2` give the pole weight; the insertion `a` at `0` g
   which is the zero tilt on `C_n` for `n ≤ m` and is `1` on `{|x| ≥ 1}`.
 -/
 
-@[expose] public section
 
 open MeasureTheory Filter Topology Set
 open scoped ENNReal NNReal
@@ -54,8 +53,7 @@ noncomputable def circleTiltDensity (γ a : ℝ) (m : ℕ) (x : ℂ) : ℝ≥0�
 
 /-! ### Measurability -/
 
-private theorem measurable_normPlus_aux : Measurable normPlus :=
-  measurable_const.max measurable_norm
+theorem measurable_normPlus_aux : Measurable normPlus := DOZZ.Proofs.measurable_normPlus
 
 private theorem measurable_setLIntegral_measure {s : Set ℂ} (hs : MeasurableSet s)
     {f : ℂ → ℝ≥0∞} (hf : Measurable f) :
@@ -70,13 +68,13 @@ private theorem measurable_setLIntegral_measure {s : Set ℂ} (hs : MeasurableSe
 theorem measurable_poleWeight (γ η : ℝ) : Measurable (poleWeight γ η) := by
   have h := measurable_normPlus_aux
   unfold poleWeight
-  simp only [ENNReal.rpow_eq_pow]
+  simp [ENNReal.rpow_eq_pow]
   fun_prop
 
 theorem measurable_zeroTilt (γ a : ℝ) : Measurable (zeroTilt γ a) := by
   have h := measurable_normPlus_aux
   unfold zeroTilt
-  simp only [ENNReal.rpow_eq_pow]
+  simp [ENNReal.rpow_eq_pow]
   fun_prop
 
 theorem measurable_circleTiltDensity (γ a : ℝ) (m : ℕ) :
@@ -107,7 +105,7 @@ theorem measurable_poleTotalMass (γ η a : ℝ) :
   have h := measurable_normPlus_aux
   unfold poleTotalMass
   refine Measure.measurable_lintegral ?_
-  simp only [ENNReal.rpow_eq_pow]
+  simp [ENNReal.rpow_eq_pow]
   fun_prop
 
 /-! ### Regions -/
@@ -150,8 +148,7 @@ private theorem norm_add_le_norm_sub_add (x : ℂ) : ‖x + 2‖ ≤ ‖x - 2‖
   have h4 : ‖(4 : ℂ)‖ = 4 := by simp
   rwa [e, h4] at h
 
-private theorem exp_neg_natCast_le_one (n : ℕ) : Real.exp (-(n : ℝ)) ≤ 1 := by
-  rw [Real.exp_le_one_iff]
+theorem exp_neg_natCast_le_one (n : ℕ) : Real.exp (-(n : ℝ)) ≤ 1 := by
   simp
 
 private theorem norm_pos_of_mem_cutoffRegion {n : ℕ} {x : ℂ} (hx : x ∈ cutoffRegion n) :
@@ -176,7 +173,7 @@ theorem cutoffRegion_mono : Monotone cutoffRegion := by
 
 theorem iUnion_cutoffRegion : ⋃ n, cutoffRegion n = {0}ᶜ := by
   ext x
-  simp only [Set.mem_iUnion, Set.mem_compl_iff, Set.mem_singleton_iff]
+  simp [Set.mem_iUnion, Set.mem_compl_iff, Set.mem_singleton_iff]
   constructor
   · rintro ⟨n, hn⟩ hx0
     exact (norm_pos_iff.mp (norm_pos_of_mem_cutoffRegion hn)) hx0
@@ -331,7 +328,7 @@ theorem cutoffTiltedMass_withDensity (γ η a : ℝ) {n m : ℕ} (hnm : n ≤ m)
   rw [setLIntegral_withDensity_eq_setLIntegral_mul μ (measurable_circleTiltDensity γ a m)
     hg (measurableSet_cutoffRegion n)]
   refine setLIntegral_congr_fun (measurableSet_cutoffRegion n) (fun x hx => ?_)
-  simp only [Pi.mul_apply]
+  simp [Pi.mul_apply]
   rw [circleTiltDensity_eq_zeroTilt γ a hnm hx, zeroTilt_zero, one_mul]
 
 theorem poleLocalMass_withDensity (γ η a : ℝ) (m : ℕ) (μ : Measure ℂ) :
@@ -341,7 +338,7 @@ theorem poleLocalMass_withDensity (γ η a : ℝ) (m : ℕ) (μ : Measure ℂ) :
     setLIntegral_withDensity_eq_setLIntegral_mul μ (measurable_circleTiltDensity γ a m)
       (measurable_poleWeight γ η) measurableSet_poleBalls]
   refine setLIntegral_congr_fun measurableSet_poleBalls (fun x hx => ?_)
-  simp only [Pi.mul_apply]
+  simp [Pi.mul_apply]
   rw [circleTiltDensity_of_one_le_norm γ a m (one_lt_norm_of_mem_poleBalls hx).le, one_mul]
 
 /-! ### Pointwise bounds -/
@@ -370,7 +367,7 @@ private theorem exponent_add {γ η : ℝ} (hγ : 0 < γ) : γ * (2 / γ + η) =
 private theorem exponent_sub {γ η : ℝ} (hγ : 0 < γ) : γ * (2 / γ - η) = 2 - γ * η := by
   field_simp
 
-private theorem mul_le_two {γ η : ℝ} (hγ : 0 < γ) (hηγ : η ≤ 2 / γ) : γ * η ≤ 2 := by
+theorem mul_le_two {γ η : ℝ} (hγ : 0 < γ) (hηγ : η ≤ 2 / γ) : γ * η ≤ 2 := by
   calc γ * η ≤ γ * (2 / γ) := mul_le_mul_of_nonneg_left hηγ hγ.le
     _ = 2 := by field_simp
 
@@ -471,4 +468,3 @@ theorem zeroTilt_of_norm_lt_one (γ a : ℝ) {x : ℂ} (hx : ‖x‖ < 1) :
 
 end DOZZ.Proofs
 
-end

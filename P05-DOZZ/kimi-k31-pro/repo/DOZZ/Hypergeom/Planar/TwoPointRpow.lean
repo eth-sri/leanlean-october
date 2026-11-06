@@ -2,15 +2,14 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Hypergeom.Planar.RadialCriteria
-public import Mathlib.MeasureTheory.Group.Measure
-public import Mathlib.Topology.MetricSpace.ProperSpace
+import DOZZ.Hypergeom.Planar.TaylorTail
+import DOZZ.Hypergeom.Planar.RadialCriteria
+import Mathlib.MeasureTheory.Group.Measure
+import Mathlib.Topology.MetricSpace.ProperSpace
 
 /-! Sharp integrability tests for products of two planar radial powers. -/
 
-@[expose] public section
 
 open MeasureTheory Set Metric
 open scoped Topology
@@ -19,36 +18,10 @@ namespace DOZZ.Proofs
 
 private theorem measurable_norm_rpow (s : ℝ) :
     Measurable (fun w : ℂ => ‖w‖ ^ s) := by
-  have hrepr : (fun w : ℂ => ‖w‖ ^ s) =
-      fun w => if ‖w‖ = 0 then 0 ^ s else Real.exp (s * Real.log ‖w‖) := by
-    funext w
-    by_cases hw : ‖w‖ = 0
-    · simp [hw]
-    · rw [ite_eq_right hw,
-        Real.rpow_def_of_pos (lt_of_le_of_ne (norm_nonneg w) (Ne.symm hw))]
-      congr 1
-      ring
-  rw [hrepr]
-  apply Measurable.ite
-  · exact MeasurableSet.preimage (measurableSet_singleton (0 : ℝ)) (by fun_prop)
-  · exact measurable_const
-  · fun_prop
+  fun_prop
 
-private theorem measurable_rpow_of_nonneg {f : ℂ → ℝ} (hf : Measurable f)
-    (hfn : ∀ u, 0 ≤ f u) (s : ℝ) : Measurable (fun u => f u ^ s) := by
-  have hrepr : (fun u => f u ^ s) =
-      fun u => if f u = 0 then 0 ^ s else Real.exp (s * Real.log (f u)) := by
-    funext u
-    by_cases hu : f u = 0
-    · simp [hu]
-    · rw [ite_eq_right hu, Real.rpow_def_of_pos (lt_of_le_of_ne (hfn u) (Ne.symm hu))]
-      congr 1
-      ring
-  rw [hrepr]
-  apply Measurable.ite
-  · exact MeasurableSet.preimage (measurableSet_singleton (0 : ℝ)) hf
-  · exact measurable_const
-  · fun_prop
+theorem measurable_rpow_of_nonneg {f : ℂ → ℝ} (hf : Measurable f)
+    (hfn : ∀ u, 0 ≤ f u) (s : ℝ) : Measurable (fun u => f u ^ s) := DOZZ.Proofs.measurable_nonneg_rpow hf hfn s
 
 private theorem continuousOn_norm_comp_rpow {s : Set ℂ} (f : ℂ → ℂ)
     (hf : Continuous f) (hs : ∀ u ∈ s, f u ≠ 0) (p : ℝ) :
@@ -103,14 +76,13 @@ private theorem norm_sub_bounds_on_ball_zero {z : ℂ} {R : ℝ}
   have hsum : (z - u) + u = z := by abel
   have htriangle := norm_add_le (z - u) u
   rw [hsum] at htriangle
-  have hrev : ‖z‖ - ‖u‖ ≤ ‖z - u‖ := by linarith
   have heq : ‖z - u‖ = ‖u - z‖ := by rw [← norm_neg, neg_sub]
   constructor
   · rw [← heq]
     linarith
   · calc
       ‖u - z‖ = ‖u + (-z)‖ := by rw [sub_eq_add_neg]
-      _ ≤ ‖u‖ + ‖z‖ := by simpa only [norm_neg] using norm_add_le u (-z)
+      _ ≤ ‖u‖ + ‖z‖ := by simpa [norm_neg] using norm_add_le u (-z)
       _ ≤ ‖z‖ + R := by nlinarith
 
 private theorem norm_center_bounds_on_ball {z : ℂ} {R : ℝ} {u : ℂ}
@@ -122,7 +94,6 @@ private theorem norm_center_bounds_on_ball {z : ℂ} {R : ℝ} {u : ℂ}
   have htriangle' : ‖u - (u - z)‖ ≤ ‖u‖ + ‖u - z‖ := by
     simpa only [sub_eq_add_neg, norm_neg] using htriangle
   rw [hzrep] at htriangle'
-  have hrev : ‖z‖ - ‖u - z‖ ≤ ‖u‖ := by linarith
   constructor
   · linarith
   · calc
@@ -171,7 +142,7 @@ private theorem norm_sub_ratio_bounds_on_tail {z : ℂ} {R : ℝ}
   have hadd : ‖u - z‖ ≤ ‖u‖ + ‖z‖ := by
     calc
       ‖u - z‖ = ‖u + (-z)‖ := by rw [sub_eq_add_neg]
-      _ ≤ ‖u‖ + ‖z‖ := by simpa only [norm_neg] using norm_add_le u (-z)
+      _ ≤ ‖u‖ + ‖z‖ := by simpa [norm_neg] using norm_add_le u (-z)
   constructor
   · apply (le_div_iff₀ huPos).2
     have hzHalf : ‖z‖ ≤ ‖u‖ / 2 := by nlinarith
@@ -234,7 +205,6 @@ private theorem integrableOn_two_point_rpow_tail_iff (a b : ℝ) (z : ℂ)
 theorem integrableOn_two_point_rpow_ball_zero_iff (a b : ℝ) (z : ℂ) (hz : z ≠ 0)
     (R : ℝ) (hR : 0 < R) (hRz : R < ‖z‖) :
     IntegrableOn (fun u : ℂ => ‖u‖ ^ a * ‖u - z‖ ^ b) (ball 0 R) volume ↔ -2 < a := by
-  have hzpos : 0 < ‖z‖ := norm_pos_iff.mpr hz
   have hAB : ‖z‖ - R ≤ ‖z‖ + R := by linarith
   obtain ⟨c, C, hc, hC, hbounds⟩ :=
     exists_rpow_interval_bounds (s := b) (sub_pos.mpr hRz) hAB
@@ -252,7 +222,6 @@ theorem integrableOn_two_point_rpow_ball_zero_iff (a b : ℝ) (z : ℂ) (hz : z 
 theorem integrableOn_two_point_rpow_ball_z_iff (a b : ℝ) (z : ℂ) (hz : z ≠ 0)
     (R : ℝ) (hR : 0 < R) (hRz : R < ‖z‖) :
     IntegrableOn (fun u : ℂ => ‖u‖ ^ a * ‖u - z‖ ^ b) (ball z R) volume ↔ -2 < b := by
-  have hzpos : 0 < ‖z‖ := norm_pos_iff.mpr hz
   have hAB : ‖z‖ - R ≤ ‖z‖ + R := by linarith
   obtain ⟨c, C, hc, hC, hbounds⟩ :=
     exists_rpow_interval_bounds (s := a) (sub_pos.mpr hRz) hAB
@@ -280,7 +249,6 @@ theorem integrableOn_two_point_rpow_iff (a b : ℝ) (z : ℂ) (hz : z ≠ 0) :
   let st := (ball (0 : ℂ) R)ᶜ
   have hδ : 0 < δ := by dsimp [δ]; positivity
   have hδz : δ < ‖z‖ := by dsimp [δ]; linarith
-  have hR : 0 < R := by dsimp [R]; positivity
   have h0 := integrableOn_two_point_rpow_ball_zero_iff a b z hz δ hδ hδz
   have hzLocal := integrableOn_two_point_rpow_ball_z_iff a b z hz δ hδ hδz
   have htail := integrableOn_two_point_rpow_tail_iff a b z hz
@@ -319,7 +287,7 @@ theorem integrableOn_two_point_rpow_iff (a b : ℝ) (z : ℂ) (hz : z ≠ 0) :
     (hcont₀.mul hcontz).integrableOn_compact hsmcompact
   have hcover : univ = s₀ ∪ (sz ∪ (sm ∪ st)) := by
     ext u
-    simp only [mem_univ, mem_union, true_iff]
+    simp [mem_univ, mem_union, true_iff]
     by_cases htail' : u ∈ st
     · exact Or.inr (Or.inr (Or.inr htail'))
     · have huBall : u ∈ ball (0 : ℂ) R := by

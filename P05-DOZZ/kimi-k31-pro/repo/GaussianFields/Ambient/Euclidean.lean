@@ -3,14 +3,13 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Scott Armstrong, Amélie Loher
 -/
-module
 
-public import Mathlib.Algebra.BigOperators.Ring.Finset
-public import Mathlib.Algebra.Order.BigOperators.Group.Finset
-public import Mathlib.Algebra.Order.BigOperators.Ring.Finset
-public import Mathlib.Analysis.Normed.Group.Constructions
-public import Mathlib.Analysis.Normed.Field.Basic
-public import Mathlib.Analysis.Real.Sqrt
+import Mathlib.Algebra.BigOperators.Ring.Finset
+import Mathlib.Algebra.Order.BigOperators.Group.Finset
+import Mathlib.Algebra.Order.BigOperators.Ring.Finset
+import Mathlib.Analysis.Normed.Group.Constructions
+import Mathlib.Analysis.Normed.Field.Basic
+import Mathlib.Analysis.Real.Sqrt
 import Mathlib.Tactic
 
 /-!
@@ -19,7 +18,6 @@ import Mathlib.Tactic
 Port of the corresponding GaussianFields source module.
 -/
 
-public section
 
 open scoped BigOperators
 
@@ -29,22 +27,22 @@ namespace GaussianFields
 abbrev Vec (d : Nat) := Fin d → ℝ
 
 /-- The Euclidean dot product on `Vec d`. -/
-@[expose]
+
 noncomputable def euclideanDot {d : Nat} (x y : Vec d) : ℝ :=
   ∑ i, x i * y i
 
 /-- The squared Euclidean norm on `Vec d`. -/
-@[expose]
+
 noncomputable def euclideanNormSq {d : Nat} (x : Vec d) : ℝ :=
   euclideanDot x x
 
 /-- The Euclidean norm on `Vec d`. -/
-@[expose]
+
 noncomputable def euclideanNorm {d : Nat} (x : Vec d) : ℝ :=
   Real.sqrt (euclideanNormSq x)
 
 /-- The Euclidean distance on `Vec d`. -/
-@[expose]
+
 noncomputable def euclideanDist {d : Nat} (x y : Vec d) : ℝ :=
   euclideanNorm (x - y)
 
@@ -110,7 +108,7 @@ theorem norm_le_euclideanNorm {d : Nat} (x : Vec d) :
     ‖x‖ ≤ euclideanNorm x := by
   rw [pi_norm_le_iff_of_nonneg (euclideanNorm_nonneg x)]
   intro i
-  simpa only [Real.norm_eq_abs] using abs_apply_le_euclideanNorm x i
+  simpa [Real.norm_eq_abs] using abs_apply_le_euclideanNorm x i
 
 /-- The local Euclidean norm is bounded by `d` times Mathlib's finite-product sup norm. -/
 theorem euclideanNorm_le_card_mul_norm {d : Nat} (x : Vec d) :
@@ -125,7 +123,7 @@ theorem euclideanNorm_le_card_mul_norm {d : Nat} (x : Vec d) :
           exact Pi.sum_norm_apply_le_norm (f := x)
     _ = (d : ℝ) * ‖x‖ := by
           rw [Fintype.card_fin]
-          simp only [nsmul_eq_mul]
+          simp [nsmul_eq_mul]
 
 theorem euclideanNormSq_smul {d : Nat} (c : ℝ) (x : Vec d) :
     euclideanNormSq (c • x) = c ^ 2 * euclideanNormSq x := by
@@ -134,16 +132,14 @@ theorem euclideanNormSq_smul {d : Nat} (c : ℝ) (x : Vec d) :
     (∑ i, (c • x) i * (c • x) i) = ∑ i, c ^ 2 * (x i * x i) := by
       refine Finset.sum_congr rfl ?_
       intro i _hi
-      simp only [Pi.smul_apply, smul_eq_mul]
+      simp [Pi.smul_apply, smul_eq_mul]
       ring
     _ = c ^ 2 * ∑ i, x i * x i := by
       rw [Finset.mul_sum]
 
 theorem euclideanNorm_smul {d : Nat} (c : ℝ) (x : Vec d) :
     euclideanNorm (c • x) = |c| * euclideanNorm x := by
-  rw [euclideanNorm, euclideanNorm, euclideanNormSq_smul]
-  rw [Real.sqrt_mul (sq_nonneg c)]
-  rw [Real.sqrt_sq_eq_abs]
+  rw [euclideanNorm, euclideanNorm, euclideanNormSq_smul, Real.sqrt_mul (sq_nonneg c), Real.sqrt_sq_eq_abs]
 
 theorem euclideanNormSq_neg {d : Nat} (x : Vec d) :
     euclideanNormSq (-x) = euclideanNormSq x := by
@@ -172,4 +168,3 @@ theorem euclideanNorm_inv_smul {d : Nat} (x : Vec d) (r : ℝ) :
 
 end GaussianFields
 
-end

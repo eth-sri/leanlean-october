@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.Fusion.ExteriorExpectation
-public import DOZZ.FourPoint.Fusion.RootedCoulombComplex
+import DOZZ.FourPoint.Fusion.ExteriorExpectation
+import DOZZ.FourPoint.Fusion.RootedCoulombComplex
 
 /-! # Splitting the literal signed spatial expectation -/
 
-@[expose] public section
 open MeasureTheory Set Filter
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -47,7 +45,7 @@ theorem fusion_pureSpatial_expectation_split {Ω : Type*} [MeasurableSpace Ω]
     ![-γ / 2, α₁, α₂] ![z, 0, 1] hzunit α₃ (-p - 1) (by linarith)
     (hm.mono fun _ h => h.2.lt_top) (B.indicator f) (hf.indicator Metric.isOpen_ball.measurableSet) hfi
   have hiL : Integrable (fun ω => I ω * (∫ x in B, f x ∂M ω)) P := by
-    simpa only [integral_indicator (show MeasurableSet B from Metric.isOpen_ball.measurableSet)] using hiLocal
+    simpa [integral_indicator (show MeasurableSet B from Metric.isOpen_ball.measurableSet)] using hiLocal
   obtain ⟨C, _, hb⟩ := fusion_exteriorR1_expectation_bound P X hX γ hγ hγ2 M hM α₁ α₂ α₃ hα₁ hα₂ hα₃ p hp
   have hiR : Integrable (fun ω => I ω * (∫ x in Bᶜ, f x ∂M ω)) P := (hb z hz hz4).1
   have heq : (fun ω => I ω * (∫ x, f x ∂M ω)) =ᵐ[P]
@@ -63,7 +61,7 @@ theorem fusion_pureSpatial_expectation_split {Ω : Type*} [MeasurableSpace Ω]
     have hR : IntegrableOn f Bᶜ (M ω) := fusion_exteriorSecondKernel_integrable γ α₁ α₂ α₃ z hz4 (M ω) hk
     have hfull : Integrable f (M ω) := by
       have h := hL.union hR
-      simpa only [Set.union_compl_self, integrableOn_univ] using h
+      simpa [Set.union_compl_self, integrableOn_univ] using h
     rw [← integral_add_compl (show MeasurableSet B from Metric.isOpen_ball.measurableSet) hfull, mul_add]
   calc
     _ = ∫ ω, (I ω * (∫ x in B, f x ∂M ω) + I ω * (∫ x in Bᶜ, f x ∂M ω)) ∂P := integral_congr_ae heq

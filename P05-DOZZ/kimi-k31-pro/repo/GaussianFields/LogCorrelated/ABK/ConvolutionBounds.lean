@@ -3,9 +3,8 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Scott Armstrong, Amélie Loher
 -/
-module
 
-public import GaussianFields.LogCorrelated.ABK.Convolution
+import GaussianFields.LogCorrelated.ABK.Convolution
 
 /-!
 # GaussianFields ABK convolution bounds
@@ -13,7 +12,6 @@ public import GaussianFields.LogCorrelated.ABK.Convolution
 Port of the corresponding GaussianFields source module.
 -/
 
-public section
 
 open MeasureTheory ProbabilityTheory
 open scoped Convolution ENNReal InnerProductSpace NNReal ProbabilityTheory Topology
@@ -48,10 +46,8 @@ theorem integral_norm_sq_le_measure_mul_of_abs_le_of_support_subset {d : Nat}
     filter_upwards with y
     by_cases hyS : y ∈ S
     · have hsq_nonneg : 0 ≤ (f y) ^ (2 : Nat) := sq_nonneg (f y)
-      have hsq_le : (f y) ^ (2 : Nat) ≤ M ^ (2 : Nat) := by
-        exact sq_le_sq.2 (by simpa [abs_of_nonneg hM_nonneg] using hpoint y)
-      rw [Set.indicator_of_mem hyS, Real.norm_eq_abs, abs_of_nonneg hsq_nonneg]
-      exact hsq_le
+      have hsq_le : (f y) ^ (2 : Nat) ≤ M ^ (2 : Nat) := sq_le_sq.2 (by simpa [abs_of_nonneg hM_nonneg] using hpoint y)
+      rwa [Set.indicator_of_mem hyS, Real.norm_eq_abs, abs_of_nonneg hsq_nonneg]
     · have hfy_zero : f y = 0 := by
         by_contra hne
         exact hyS (hsupport hne)
@@ -63,9 +59,7 @@ theorem integral_norm_sq_le_measure_mul_of_abs_le_of_support_subset {d : Nat}
             ∂(volume : Measure (Vec d)) :=
           integral_mono_ae hf_int.norm hconst_int hpointwise
     _ = ((volume : Measure (Vec d)) S).toReal * M ^ (2 : Nat) := by
-          rw [integral_indicator_const, MeasureTheory.measureReal_def, smul_eq_mul]
-          exact hS_meas
-
+          rwa [integral_indicator_const, MeasureTheory.measureReal_def, smul_eq_mul]
 /-- A uniformly bounded integrable function supported in a measurable finite set has integral
 bounded by `M` times the set volume. -/
 theorem abs_integral_le_measure_mul_of_abs_le_of_support_subset {d : Nat}
@@ -103,9 +97,7 @@ theorem abs_integral_le_measure_mul_of_abs_le_of_support_subset {d : Nat}
           ∂(volume : Measure (Vec d)) :=
           integral_mono_ae hf_int.norm hconst_int hpointwise
     _ = ((volume : Measure (Vec d)) S).toReal * M := by
-          rw [integral_indicator_const, MeasureTheory.measureReal_def, smul_eq_mul]
-          exact hS_meas
-
+          rwa [integral_indicator_const, MeasureTheory.measureReal_def, smul_eq_mul]
 /-- Small-scale pointwise bound: compact support and boundedness of `ψ`, together with the cutoff
 support, give `|ζ_r * ψ| = O(r^d)`. -/
 theorem abs_abkSpatialConvolution_le_small {d : Nat}
@@ -151,8 +143,7 @@ theorem abs_abkSpatialConvolution_le_small {d : Nat}
       (integrable_abkSpatialConvolution_integrand ζ ψ r y)
       hS_meas hS_finite hpoint hsupport
   have hvol_real : ((volume : Measure (Vec d)) S).toReal = (2 * r) ^ d := by
-    rw [Real.volume_pi_closedBall y hr.le, Fintype.card_fin]
-    rw [ENNReal.toReal_ofReal]
+    rw [Real.volume_pi_closedBall y hr.le, Fintype.card_fin, ENNReal.toReal_ofReal]
     exact pow_nonneg (mul_nonneg zero_le_two hr.le) d
   calc
     |abkSpatialConvolution ζ ψ r y| = |∫ x : Vec d, F x ∂(volume : Measure (Vec d))| := rfl
@@ -210,8 +201,7 @@ theorem integral_norm_sq_abkSpatialConvolution_le_small {d : Nat}
         (volume : Measure (Vec d)) {y : Vec d | euclideanNorm y ≤ A} ≤
           ENNReal.ofReal V := by
       simpa [V] using volume_euclideanClosedBall_le (d := d) hA_nonneg
-    have hV_nonneg : 0 ≤ V := by
-      exact pow_nonneg (mul_nonneg zero_le_two hA_nonneg) d
+    have hV_nonneg : 0 ≤ V := pow_nonneg (mul_nonneg zero_le_two hA_nonneg) d
     simpa [ENNReal.toReal_ofReal hV_nonneg] using
       ENNReal.toReal_mono ENNReal.ofReal_ne_top hvol_le
   have hmass_le :
@@ -275,16 +265,14 @@ theorem integral_norm_sq_abkSpatialConvolution_le_large {d : Nat}
     ⟨R, hR_nonneg, hψ_support⟩
   rcases abs_abkSpatialConvolution_le_scaled_moment ζ ψ with ⟨L, hL_nonneg, hpoint⟩
   let J : ℝ := ∫ x : Vec d, euclideanNorm x * |ψ x|
-  have hJ_nonneg : 0 ≤ J := by
-    exact integral_nonneg fun x => mul_nonneg (euclideanNorm_nonneg x) (abs_nonneg (ψ x))
+  have hJ_nonneg : 0 ≤ J := integral_nonneg fun x => mul_nonneg (euclideanNorm_nonneg x) (abs_nonneg (ψ x))
   let Cvol : ℝ := (2 * (d : ℝ) * (R + 1)) ^ d
   let C : ℝ := Cvol * (L * J) ^ (2 : Nat)
   have hCvol_nonneg : 0 ≤ Cvol := by
     exact pow_nonneg
       (mul_nonneg (mul_nonneg zero_le_two (Nat.cast_nonneg d))
         (add_nonneg hR_nonneg zero_le_one)) d
-  have hC_nonneg : 0 ≤ C := by
-    exact mul_nonneg hCvol_nonneg (sq_nonneg (L * J))
+  have hC_nonneg : 0 ≤ C := mul_nonneg hCvol_nonneg (sq_nonneg (L * J))
   refine ⟨C, hC_nonneg, ?_⟩
   intro r hr hsection_int
   have hr_nonneg : 0 ≤ r := le_trans zero_le_one hr
@@ -348,8 +336,7 @@ theorem abk_largeScale_power_identity {d : Nat} {r : ℝ} (hr : 0 < r) :
             dsimp [a]
             ring
   have hinv : (|r|⁻¹) ^ (2 : Nat) = r ^ (-2 : ℝ) := by
-    rw [abs_of_pos hr]
-    rw [← Real.rpow_neg_one r]
+    rw [abs_of_pos hr, ← Real.rpow_neg_one r]
     calc
       (r ^ (-1 : ℝ)) ^ (2 : Nat)
           = r ^ ((-1 : ℝ) * ((2 : Nat) : ℝ)) :=
@@ -360,8 +347,7 @@ theorem abk_largeScale_power_identity {d : Nat} {r : ℝ} (hr : 0 < r) :
   have hnat : r ^ d = r ^ (d : ℝ) := by
     rw [Real.rpow_natCast]
   change (r ^ a) ^ (2 : Nat) * r ^ d * (|r|⁻¹) ^ (2 : Nat) = r ^ (-3 : ℝ)
-  rw [hpref, hinv, hnat]
-  rw [← Real.rpow_add hr, ← Real.rpow_add hr]
+  rw [hpref, hinv, hnat, ← Real.rpow_add hr, ← Real.rpow_add hr]
   congr 1
   ring
 
@@ -384,12 +370,10 @@ theorem abk_smallScale_power_identity {d : Nat} {r : ℝ} (hr : 0 < r) :
   have hnat : r ^ (2 * d) = r ^ (((2 * d : Nat) : ℝ)) := by
     rw [Real.rpow_natCast]
   change (r ^ a) ^ (2 : Nat) * r ^ (2 * d) = r ^ ((d : ℝ) - 1)
-  rw [hpref, hnat]
-  rw [← Real.rpow_add hr]
+  rw [hpref, hnat, ← Real.rpow_add hr]
   congr 1
   norm_num [Nat.cast_mul]
   ring
 
 end GaussianFields
 
-end

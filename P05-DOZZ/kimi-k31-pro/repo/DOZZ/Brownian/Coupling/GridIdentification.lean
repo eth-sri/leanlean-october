@@ -2,11 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Brownian.Coupling.RadialTiltDensity
-public import DOZZ.Brownian.Coupling.GridConvergence
-public import DOZZ.Brownian.Coupling.RationalExtension
+import DOZZ.Brownian.Coupling.RadialTiltDensity
+import DOZZ.Brownian.Coupling.GridConvergence
+import DOZZ.Brownian.Coupling.RationalExtension
 
 /-!
 # Exact common-grid marginals and the ordered two-sided coupling
@@ -16,7 +15,6 @@ This discharges the finite-grid law identity needed by the existing joint compac
 The real extension retains every quantitative drift bound before two independent copies are taken.
 -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal Topology Classical
@@ -41,7 +39,7 @@ theorem couplingGridRealCoords_measurableEmbedding (n : ℕ) :
     have heq : {x : Fin (n + 1) → ℝ | ∀ i, 0 < x i} =
         ⋂ i : Fin (n + 1), {x : Fin (n + 1) → ℝ | 0 < x i} := by
       ext x
-      simp only [mem_iInter, mem_ofPred_eq]
+      simp [mem_iInter, mem_ofPred_eq]
     rw [heq]
     exact MeasurableSet.iInter hs
   exact (MeasurableEmbedding.subtype_coe hS).comp e.measurableEmbedding
@@ -119,7 +117,7 @@ theorem couplingGridSampleTimes_strictMono (δ : ℝ) (hδ : 0 < δ) (n : ℕ) :
   change ((i.val : ℝ) + 1) * δ < ((j.val : ℝ) + 1) * δ
   have hcast : (i.val : ℝ) < (j.val : ℝ) := by exact_mod_cast hij
   apply mul_lt_mul_of_pos_right _ hδ
-  simpa only [add_comm] using add_lt_add_right hcast 1
+  simpa [add_comm] using add_lt_add_right hcast 1
 
 /-- The full real-coordinate quantile grid law has the literal skeleton density. -/
 theorem coupling_scalarGrid_real_density (a : ℝ) (ha : 0 ≤ a) (δ : ℝ) (hδ : 0 < δ) : ∀ n : ℕ,
@@ -151,7 +149,7 @@ theorem coupling_scalarGrid_real_density (a : ℝ) (ha : 0 ≤ a) (δ : ℝ) (h�
       radialSkeletonDensityMeasure_last_compProd a ha n]
     have hdiff : (((Fin.last (n + 1)).val : ℝ) + 1) * δ -
         (((Fin.last n).castSucc.val : ℝ) + 1) * δ = δ := by
-      simp only [Fin.val_last, Fin.val_castSucc, Nat.cast_add, Nat.cast_one]
+      simp [Fin.val_last, Fin.val_castSucc, Nat.cast_add, Nat.cast_one]
       ring
     rw [hdiff]
     rfl
@@ -178,7 +176,7 @@ theorem rogersPitman_positive_samples_real_density (a : ℝ) (ha : 0 ≤ a)
       (couplingGridSampleTimes_strictMono δ hδ n)
   change (wienerTripleMeasure.map (rogersPitmanPath a)).map
     (fun p => fun i : Fin (n + 1) => p (couplingGridSampleTime δ hδ i.val)) = _
-  simpa only [couplingGridSampleTime_coe, rogersPitmanWienerMeasure, rogersPitmanEntranceMeasure, wienerTripleMeasure] using h
+  simpa [couplingGridSampleTime_coe, rogersPitmanWienerMeasure, rogersPitmanEntranceMeasure, wienerTripleMeasure] using h
 
 /-- The common-quantile scalar grid is exactly the sampled unconditional Rogers--Pitman path law. -/
 theorem conditionedPositiveEntranceGridMeasure_eq_radial_samples (a : ℝ) (ha : 0 ≤ a)
@@ -190,7 +188,7 @@ theorem conditionedPositiveEntranceGridMeasure_eq_radial_samples (a : ℝ) (ha :
     rogersPitman_positive_samples_real_density a ha δ hδ n]
 
 /-- The negative radial probability law is the same concrete measure for which
-`DOZZ.IsNegativeConditionedBrownianLaw` is proved. -/
+`IsNegativeConditionedBrownianLaw` is proved. -/
 theorem negativeRogersPitmanWienerProbability_isConditioned (a : ℝ) (ha : 0 ≤ a) :
     IsNegativeConditionedBrownianLaw a (negativeRogersPitmanWienerProbability a : Measure BrownianPath) := by
   change IsNegativeConditionedBrownianLaw a
@@ -229,7 +227,7 @@ theorem exists_ordered_rational_radial_family :
     have hdrift : (v (couplingRationalEnumeration q) : ℝ) = (q : ℝ) := by
       have hqR : 0 ≤ (q : ℝ) := by exact_mod_cast hq
       change couplingEnumeratedDrift (couplingRationalEnumeration q) = (q : ℝ)
-      simp only [couplingEnumeratedDrift, Equiv.symm_apply_apply, max_eq_left hqR]
+      simp [couplingEnumeratedDrift, Equiv.symm_apply_apply, max_eq_left hqR]
     exact congrArg (fun a : ℝ => (negativeRogersPitmanWienerProbability a : Measure BrownianPath)) hdrift
   · change ∀ᵐ F ∂((Q : Measure (ℕ → BrownianPath)).map couplingRationalReindex),
       F ∈ negativeEntranceOrderSet ((↑) : ℚ → ℝ)
@@ -272,7 +270,7 @@ instance isProbabilityMeasure_orderedWienerCouplingMeasure :
   infer_instance
 
 /-- The concrete all-real family satisfies every clause of the ordered characterization
-`DOZZ.IsOrderedTwoSidedConditionedCoupling`. -/
+`IsOrderedTwoSidedConditionedCoupling`. -/
 theorem orderedWienerCouplingMeasure_isOrdered :
     IsOrderedTwoSidedConditionedCoupling orderedWienerCouplingMeasure realDriftCouplingOfRationalPaths :=
   realDriftCouplingOfRationalPaths_isOrdered_of_marginals _ orderedRationalWienerProbability_real_law

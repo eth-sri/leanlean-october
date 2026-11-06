@@ -2,10 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.Correlations.Continuity.ParameterDomain
-public import Mathlib.Analysis.SpecialFunctions.Pow.Continuity
-@[expose] public section
+import DOZZ.Correlations.Continuity.ParameterDomain
+import Mathlib.Analysis.SpecialFunctions.Pow.Continuity
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -92,7 +90,7 @@ theorem continuity_compact_support_bound
   obtain ⟨L, hL⟩ := (hS.prod hK).exists_bound_of_continuousOn hF.continuousOn
   refine ⟨max L 0, le_max_right _ _, fun c hc x => ?_⟩
   by_cases hx : x ∈ K
-  · have hh : |F (c, x)| ≤ L := by simpa only [Real.norm_eq_abs] using hL (c, x) ⟨hc, hx⟩
+  · have hh : |F (c, x)| ≤ L := by simpa [Real.norm_eq_abs] using hL (c, x) ⟨hc, hx⟩
     exact hh.trans (le_max_left _ _)
   · rw [hz c x hx, abs_zero]
     exact le_max_right _ _
@@ -108,12 +106,12 @@ theorem continuityCutoffTests_uniform_bound {N : ℕ} (partition : GMCChartParti
     partition.finite_hasCompactSupport.isCompact _
     (continuityFiniteCutoffTest_continuous partition r) (fun c x hx => by
       have hz := image_eq_zero_of_notMem_tsupport hx
-      simp only [continuityFiniteCutoffTest, hz, NNReal.coe_zero, zero_mul])
+      simp [continuityFiniteCutoffTest, hz, NNReal.coe_zero, zero_mul])
   obtain ⟨Li, hLi, hi⟩ := continuity_compact_support_bound S hS _
     partition.infinity_hasCompactSupport.isCompact _
     (continuityInfinityCutoffTest_continuous partition r) (fun c x hx => by
       have hz := image_eq_zero_of_notMem_tsupport hx
-      simp only [continuityInfinityCutoffTest, hz, NNReal.coe_zero, zero_mul])
+      simp [continuityInfinityCutoffTest, hz, NNReal.coe_zero, zero_mul])
   exact ⟨Lf + Li, add_nonneg hLf hLi, fun c hc x =>
     ⟨(hf c hc x).trans (le_add_of_nonneg_right hLi),
       (hi c hc x).trans (le_add_of_nonneg_left hLf)⟩⟩
@@ -146,9 +144,9 @@ theorem coulombCutoffWeight_eq_ofReal_continuityCutoffTest {N : ℕ}
     (continuityFiniteCutoffTest_nonneg partition r c x)
     (continuityInfinityCutoffTest_nonneg partition r c x⁻¹)]
   congr 1
-  · simp only [continuityFiniteCutoffTest, mul_assoc,
+  · simp [continuityFiniteCutoffTest, mul_assoc,
       ENNReal.ofReal_mul (partition.finiteWeight x).coe_nonneg, ENNReal.ofReal_coe_nnreal]
-  · simp only [continuityInfinityCutoffTest, mul_assoc,
+  · simp [continuityInfinityCutoffTest, mul_assoc,
       ENNReal.ofReal_mul (partition.infinityWeight x⁻¹).coe_nonneg, ENNReal.ofReal_coe_nnreal]
 
 end DOZZ.Proofs

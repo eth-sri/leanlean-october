@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.Dual.RetainedZeroRooted
+import DOZZ.FourPoint.Dual.RetainedZeroRooted
 import Mathlib.Tactic
 
 /-! # Uniform inverse moments of the rooted dual exterior mass
@@ -13,7 +12,6 @@ A fixed insertion-free disk controls the source's rooted inverse moment for
 all rooting points, including exterior points and the totalized diagonal.
 -/
 
-public section
 open MeasureTheory Set
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -29,13 +27,13 @@ theorem dual_rooted_retainedZero_inverse_moment_uniform
         ENNReal.ofReal C := by
   let w : ℝ := Real.exp (-γ ^ 2 * Real.log 2) * ((2 : ℝ) ^ (-∑ i : Fin 3, |γ * (![-2 / γ, α₁, α₂] : Fin 3 → ℝ) i|) *
     (4 : ℝ) ^ (-|γ * α₃|))
-  have hw : 0 < w := by dsimp only [w]; positivity
+  have hw : 0 < w := by dsimp [w]; positivity
   have hp : -q < 4 / γ ^ 2 := lt_of_le_of_lt (neg_nonpos.mpr hq) (by positivity)
   obtain ⟨Cb, hCb, hball⟩ := equatorGFF_GMC_ball_moment_bound P X hX γ hγ hγ₂ M hM
     (-q) hp {(3 : ℂ)} isCompact_singleton
   let e : ℝ := γ * Q γ * (-q) - γ ^ 2 * (-q) ^ 2 / 2
   let C : ℝ := w ^ (-q) * (Cb * (1 / 8 : ℝ) ^ e)
-  have hC : 0 < C := by dsimp only [C]; positivity
+  have hC : 0 < C := by dsimp [C]; positivity
   refine ⟨C, hC, ?_⟩
   intro u r hr
   have hb (ω : Ω) : dualRetainedZeroMass γ α₁ α₂ α₃ r (gmcRootedMeasure γ u (M ω)) ^ (-q) ≤

@@ -2,12 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Dual.SourceRestartWilliams
-public import DOZZ.FourPoint.Dual.PolarFinitenessTransport
+import DOZZ.FourPoint.Dual.SourceRestartWilliams
+import DOZZ.FourPoint.Dual.PolarFinitenessTransport
 import Mathlib.Tactic
 /-! The actual source restarted polar integral is finite by its proved Williams joint law. -/
-@[expose] public section
 open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs

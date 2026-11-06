@@ -1,10 +1,9 @@
 /-
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 -/
-module
 
-public import DOZZ.Brownian.LastExitAvoidance
-public import Mathlib.Algebra.Order.Floor.Semiring
+import DOZZ.Brownian.LastExitAvoidance
+import Mathlib.Algebra.Order.Floor.Semiring
 
 /-!
 # Deterministic dyadic cells for the last-exit shift
@@ -15,7 +14,6 @@ and the endpoint identity needed when applying the deterministic-time avoidance 
 cell.
 -/
 
-@[expose] public section
 
 open Set
 open Function
@@ -40,17 +38,17 @@ theorem mem_dyadicLastExitCell_iff_interval (n k : ℕ) (L : ℝ≥0) :
   · rintro ⟨hlo, hhi⟩
     constructor
     · rw [div_le_iff₀ ha]
-      exact hlo
+      assumption
     · rw [lt_div_iff₀ ha]
       push_cast at hhi ⊢
-      exact hhi
+      assumption
   · rintro ⟨hlo, hhi⟩
     constructor
     · rw [div_le_iff₀ ha] at hlo
-      exact hlo
+      assumption
     · rw [lt_div_iff₀ ha] at hhi
       push_cast at hhi ⊢
-      exact hhi
+      assumption
 
 
 
@@ -62,7 +60,7 @@ theorem dyadicLastExitCeilingTime_eq_of_mem_cell
     dyadicLastExitCeilingTime n L =
       ⟨((k + 1 : ℕ) : ℝ) / (2 : ℝ) ^ n, by positivity⟩ := by
   apply Subtype.ext
-  simp only [dyadicLastExitCeilingTime, dyadicLastExitCell, Set.mem_ofPred_eq] at hL ⊢
+  simp [dyadicLastExitCeilingTime, dyadicLastExitCell, Set.mem_ofPred_eq] at hL ⊢
   rw [hL]
 
 /-- A last-exit dyadic cell is determined by deterministic-time visit information: the path
@@ -95,4 +93,3 @@ theorem negativeLastExitTime_mem_Ico_iff_deterministic_visits
 
 end DOZZ.Proofs
 
-end

@@ -2,15 +2,14 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Hypergeom.Planar.Beta
+import DOZZ.Hypergeom.Planar.RieszConvolution
+import DOZZ.Hypergeom.Planar.Beta
 import Mathlib.Analysis.SpecialFunctions.Pow.Real
 import Mathlib.MeasureTheory.Integral.DominatedConvergence
 
 /-! Real Euler-kernel endpoint estimates used to evaluate connection coefficients. -/
 
-@[expose] public section
 
 open Filter MeasureTheory Set
 open scoped Topology
@@ -100,8 +99,7 @@ theorem realGaussEulerKernelIntegral_tendsto_one (a b c : ℝ)
     have hbase : 1 - t ≤ 1 - x * t := by nlinarith
     have hpow : (1 - x * t) ^ (-a) ≤ (1 - t) ^ (-a) :=
       Real.rpow_le_rpow_of_nonpos hbase1 hbase (by linarith)
-    have hfactor : 0 < t ^ (b - 1) * (1 - t) ^ (c - b - 1) := by
-      exact mul_pos (Real.rpow_pos_of_pos ht0 _) (Real.rpow_pos_of_pos hbase1 _)
+    have hfactor : 0 < t ^ (b - 1) * (1 - t) ^ (c - b - 1) := mul_pos (Real.rpow_pos_of_pos ht0 _) (Real.rpow_pos_of_pos hbase1 _)
     have hrewrite : (1 - t) ^ (c - b - 1) * (1 - t) ^ (-a) =
         (1 - t) ^ (c - a - b - 1) := by
       rw [← Real.rpow_add hbase1]
@@ -154,16 +152,7 @@ theorem realGaussEulerKernelIntegral_tendsto_one (a b c : ℝ)
 theorem realEulerBetaIntegral_eq_gamma_ratio (p q : ℝ)
     (hp : 0 < p) (hq : 0 < q) :
     (∫ t : ℝ in Ioc 0 1, t ^ (p - 1) * (1 - t) ^ (q - 1)) =
-      Real.Gamma p * Real.Gamma q / Real.Gamma (p + q) := by
-  have hβ := Complex.betaIntegral_eq_Gamma_mul_div
-    (p : ℂ) (q : ℂ) (by simp [Complex.ofReal_re]; linarith)
-      (by simp [Complex.ofReal_re]; linarith)
-  rw [betaIntegral_ofReal] at hβ
-  apply Complex.ofReal_injective
-  have hβ' := hβ
-  rw [← Complex.ofReal_add, Complex.Gamma_ofReal, Complex.Gamma_ofReal,
-    Complex.Gamma_ofReal] at hβ'
-  simpa [Complex.ofReal_mul, Complex.ofReal_div] using hβ'
+      Real.Gamma p * Real.Gamma q / Real.Gamma (p + q) := DOZZ.Proofs.beta_integral_gamma p q hp hq
 
 /-- After division by the Euler beta normalization, the real Euler kernel has the classical Gauss
 endpoint value. This is the scalar limit needed by the first connection coefficient. -/
@@ -185,7 +174,7 @@ theorem realGaussEulerKernelIntegral_tendsto_gauss_value (a b c : ℝ)
   have hβ' :
       (∫ t : ℝ in Ioc 0 1, t ^ (b - 1) * (1 - t) ^ (c - a - b - 1)) =
         Real.Gamma b * Real.Gamma (c - a - b) / Real.Gamma (c - a) := by
-    simpa only [show b + (c - a - b) = c - a by ring] using hβ
+    simpa [show b + (c - a - b) = c - a by ring] using hβ
   have hratio :
       (Real.Gamma c / (Real.Gamma b * Real.Gamma (c - b))) *
         (∫ t : ℝ in Ioc 0 1, t ^ (b - 1) * (1 - t) ^ (c - a - b - 1)) =

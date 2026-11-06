@@ -2,14 +2,14 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.ShiftEquations.Residual.Slice
-public import DOZZ.Statements.Defs.UnitVolumeStructureConstant
-public import DOZZ.Statements.Defs.IsEquatorGFF
-public import DOZZ.Statements.Defs.IsGMCOf
-public import DOZZ.Statements.Defs.SExp
-public import DOZZ.Statements.Correlations.ComplexifyNCharges
+import DOZZ.FourPoint.BPZ.StructureConstantAnalytic
+import DOZZ.ShiftEquations.Residual.Slice
+import DOZZ.Statements.Defs.UnitVolumeStructureConstant
+import DOZZ.Statements.Defs.IsEquatorGFF
+import DOZZ.Statements.Defs.IsGMCOf
+import DOZZ.Statements.Defs.SExp
+import DOZZ.Statements.Correlations.ComplexifyNCharges
 import DOZZ.ShiftEquations.Residual.ZeroModeLimit
 import DOZZ.Correlations.Analytic.StructureConstantHolomorphic
 import DOZZ.Roots.FormulaRegularity
@@ -30,7 +30,6 @@ the real interval `(|α₂ - α₃|, Q)`. That interval contains the zero mode `
 and `C̄ = μ^s Γ(s)⁻¹ D` on the slice.
 -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology Set
 
@@ -65,9 +64,7 @@ theorem structureConstant_eq_mul_unitVolume {Ω : Type*} [MeasurableSpace Ω] (P
     (M : Ω → Measure ℂ) (γ μ α₁ α₂ α₃ : ℝ) :
     structureConstant P M γ μ α₁ α₂ α₃ =
       μ ^ (-sExp γ α₁ α₂ α₃) * Real.Gamma (sExp γ α₁ α₂ α₃) *
-        unitVolumeStructureConstant P M γ α₁ α₂ α₃ := by
-  unfold structureConstant unitVolumeStructureConstant
-  ring
+        unitVolumeStructureConstant P M γ α₁ α₂ α₃ := DOZZ.Proofs.bpz_structureConstant_eq_unitVolume P M γ μ α₁ α₂ α₃
 
 /-- For `s > 0`, `C̄ = μ^s Γ(s)⁻¹ C` as complex numbers. -/
 theorem unitVolume_eq_normalized {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
@@ -214,8 +211,7 @@ theorem slice_identity_calibrated {Ω : Type*} [MeasurableSpace Ω] (P : Measure
     have h : Tendsto (fun t : ℝ => g t) (𝓝[≠] t₀) (𝓝 (g t₀)) :=
       ((hgan (t₀ : ℂ) (hD₀mem t₀ ht₀1 ht₀2)).continuousAt.tendsto.comp
         (Complex.continuous_ofReal.tendsto t₀)).mono_left nhdsWithin_le_nhds
-    rw [hgval t₀ ht₀1 ht₀2, unitVolumeStructureConstant_zeroMode P M hs₀] at h
-    exact h
+    rwa [hgval t₀ ht₀1 ht₀2, unitVolumeStructureConstant_zeroMode P M hs₀] at h
   have hlim₂ : Tendsto (fun t : ℝ => c * N t) (𝓝[≠] t₀) (𝓝 (c * (2 / γ))) := by
     have hL1 := dozzFormula_zeroMode_limit hγ hγ2 hμ hU (α₂ := α₂) (α₃ := α₃)
       (by linarith [hα₂.1]) hα₂.2 (by linarith [hα₃.1]) hα₃.2 (by linarith [hα₂.2, hα₃.2])
@@ -250,9 +246,6 @@ theorem slice_identity_calibrated {Ω : Type*} [MeasurableSpace Ω] (P : Measure
   have hpt : g α₁ = c * N α₁ :=
     tendsto_nhds_unique (hcont₁.tendsto.mono_left nhdsWithin_le_nhds)
       ((hcont₂.tendsto.mono_left nhdsWithin_le_nhds).congr' (hEq _ (hIW α₁ hL₀α h2)).symm)
-  rw [hgval α₁ hL₀α h2, hNval, hc1, one_mul] at hpt
-  exact hpt
-
+  rwa [hgval α₁ hL₀α h2, hNval, hc1, one_mul] at hpt
 end DOZZ.Proofs
 
-end

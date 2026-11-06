@@ -2,11 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.Brownian.Barrier.FirstPassage
-public import Mathlib.MeasureTheory.Constructions.Polish.Basic
-public import Mathlib.Topology.UniformSpace.CompactConvergence
-public import Mathlib.Topology.ContinuousMap.SecondCountableSpace
+import DOZZ.Brownian.Barrier.FirstPassage
+import Mathlib.MeasureTheory.Constructions.Polish.Basic
+import Mathlib.Topology.UniformSpace.CompactConvergence
+import Mathlib.Topology.ContinuousMap.SecondCountableSpace
 
 /-!
 # Reflection and the zero-drift barrier probability
@@ -22,7 +21,6 @@ then evaluated with the centered Gaussian density, scaled by its standard
 deviation, in the literal half-normal normalization of the statement.
 -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory Filter Set TopologicalSpace
 open scoped NNReal ENNReal Topology
 namespace DOZZ.Proofs
@@ -81,7 +79,7 @@ theorem brownianContinuousPath_isBrownian {Ω : Type*} [MeasurableSpace Ω]
     (Finset.measurable_restrict I).comp
       (Measurable.of_eval (fun t => ContinuousMap.measurable_eval t))
   have hmap := AEMeasurable.map_map_of_aemeasurable (μ := P) houter.aemeasurable hm
-  simpa only [Function.comp_def] using hmap.trans ((Measure.map_congr he).trans (hB.hasLaw I).map_eq)
+  simpa [Function.comp_def] using hmap.trans ((Measure.map_congr he).trans (hB.hasLaw I).map_eq)
 /-- The running-maximum reflection principle on an arbitrary sample space. -/
 theorem brownian_runningMaximum_reflection {Ω : Type*} [MeasurableSpace Ω]
     {P : Measure Ω} {B : ℝ≥0 → Ω → ℝ} (hB : IsBrownianReal B P)
@@ -96,13 +94,13 @@ theorem brownian_runningMaximum_reflection {Ω : Type*} [MeasurableSpace Ω]
     apply measure_congr
     filter_upwards [brownianContinuousPath_eval_ae hB] with ω hω
     apply propext
-    simp only [mem_ofPred_eq,mem_preimage,X,hω]
+    simp [mem_ofPred_eq,mem_preimage,X,hω]
   have hterm : (P.map X) {p | β < p T} = P {ω | β < B T ω} := by
     rw [Measure.map_apply_of_aemeasurable hm
       (measurableSet_lt measurable_const (ContinuousMap.measurable_eval T))]
     apply measure_congr
     filter_upwards [brownianContinuousPath_eval_ae hB] with ω hω
-    simp only [mem_ofPred_eq,mem_preimage,X,hω]
+    simp [mem_ofPred_eq,mem_preimage,X,hω]
   rw [hcross,brownianPath_runningMaximum_reflection _ (brownianContinuousPath_isBrownian hB) β hβ T hT,hterm]
 /-- Positive reciprocal offsets exhaust a strict real inequality. -/
 theorem lt_iff_exists_reciprocal_offset (a b : ℝ) :
@@ -131,7 +129,7 @@ theorem brownianPath_strict_runningMaximum_reflection (P : Measure BrownianPath)
   have hcross : {p : BrownianPath | ∃ u ≤ T, β < p u} =
       ⋃ n, {p | ∃ u ≤ T, b n ≤ p u} := by
     ext p
-    simp only [mem_ofPred_eq,mem_iUnion]
+    simp [mem_ofPred_eq,mem_iUnion]
     constructor
     · rintro ⟨u,hu,hβu⟩
       obtain ⟨n,hn⟩ := (lt_iff_exists_reciprocal_offset β (p u)).mp hβu
@@ -140,7 +138,7 @@ theorem brownianPath_strict_runningMaximum_reflection (P : Measure BrownianPath)
       exact ⟨u,hu,(lt_iff_exists_reciprocal_offset β (p u)).mpr ⟨n,hn⟩⟩
   have htail : {p : BrownianPath | β < p T} = ⋃ n, {p | b n < p T} := by
     ext p
-    simp only [mem_ofPred_eq,mem_iUnion]
+    simp [mem_ofPred_eq,mem_iUnion]
     constructor
     · intro h
       obtain ⟨n,hn⟩ := exists_nat_one_div_lt (sub_pos.mpr h)
@@ -171,7 +169,7 @@ theorem brownianPath_barrier_probability_tail (P : Measure BrownianPath)
   have he : {p : BrownianPath | ∀ u : ℝ≥0, u ≤ T → p u ≤ β} =
       {p : BrownianPath | ∃ u ≤ T, β < p u}ᶜ := by
     ext p
-    simp only [mem_ofPred_eq,mem_compl_iff,not_exists,not_and,not_lt]
+    simp [mem_ofPred_eq,mem_compl_iff,not_exists,not_and,not_lt]
   rw [he,measure_compl
     ((brownianRawFiltration _ (fun t => ContinuousMap.measurable_eval t)).le T _
       (measurableSet_brownianPath_strict_crossing T β)) (measure_ne_top _ _),
@@ -183,7 +181,7 @@ theorem brownianPath_terminal_tail_symmetry (P : Measure BrownianPath)
   have hs := measurableSet_lt (ContinuousMap.measurable_eval T) (measurable_const (a := -β))
   have he := Measure.map_apply (μ := P) measurable_neg hs
   rw [brownianPath_neg_map P hB] at he
-  simpa only [preimage,mem_ofPred_eq,ContinuousMap.neg_apply,neg_lt_neg_iff] using he
+  simpa [preimage,mem_ofPred_eq,ContinuousMap.neg_apply,neg_lt_neg_iff] using he
 
 /-- The barrier probability equals the probability that the terminal normal lies in a symmetric interval. -/
 theorem brownianPath_barrier_probability_interval (P : Measure BrownianPath)
@@ -194,7 +192,7 @@ theorem brownianPath_barrier_probability_interval (P : Measure BrownianPath)
   have hc : {p : BrownianPath | p T ∈ Icc (-β) β} =
       ({p | p T < -β} ∪ {p | β < p T})ᶜ := by
     ext p
-    simp only [mem_ofPred_eq,mem_Icc,mem_compl_iff,mem_union,not_or,not_lt]
+    simp [mem_ofPred_eq,mem_Icc,mem_compl_iff,mem_union,not_or,not_lt]
   have hd : Disjoint {p : BrownianPath | p T < -β} {p | β < p T} := by
     apply disjoint_left.mpr
     intro p hl hu
@@ -222,16 +220,14 @@ theorem brownian_barrier_probability_gaussian {Ω : Type*} [MeasurableSpace Ω]
     apply measure_congr
     filter_upwards [brownianContinuousPath_eval_ae hB] with ω hω
     apply propext
-    simp only [mem_ofPred_eq,mem_preimage,X,hω]
+    simp [mem_ofPred_eq,mem_preimage,X,hω]
   rw [hcross,brownianPath_barrier_probability_interval _ (brownianContinuousPath_isBrownian hB) β hβ T hT]
   exact ((brownianContinuousPath_isBrownian hB).hasLaw_eval T).measure_eq measurableSet_Icc
 /-- The normalization from the two half-normal integrals equals the coefficient of
-`DOZZ.brownian_zeroDrift_barrier_bound`. -/
+`brownian_zeroDrift_barrier_bound`. -/
 theorem brownian_gaussian_normalization :
     2*(Real.sqrt (2*Real.pi))⁻¹ = Real.sqrt (2/Real.pi) := by
   rw [Real.sqrt_div (by norm_num : (0 : ℝ) ≤ 2),Real.sqrt_mul (by norm_num : (0 : ℝ) ≤ 2)]
-  have h2 : Real.sqrt 2 ≠ 0 := by positivity
-  have hp : Real.sqrt Real.pi ≠ 0 := by positivity
   field_simp
   nlinarith [Real.sq_sqrt (by norm_num : (0 : ℝ) ≤ 2)]
 
@@ -243,7 +239,7 @@ theorem gaussianReal_symmetric_interval (a : ℝ) (ha : 0 ≤ a) :
   have hf : Continuous f := by fun_prop
   have heven : (∫ x in (-a)..0, f x) = ∫ x in (0 : ℝ)..a, f x := by
     have he := intervalIntegral.integral_comp_neg (f := f) (a := (0 : ℝ)) (b := a)
-    simpa only [f,neg_sq,neg_zero] using he.symm
+    simpa [f,neg_sq,neg_zero] using he.symm
   have hi : (∫ x in Icc (-a) a, f x) = 2*∫ x in Icc (0 : ℝ) a, f x := by
     rw [integral_Icc_eq_integral_Ioc,← intervalIntegral.integral_of_le (by linarith : -a ≤ a),
       ← intervalIntegral.integral_add_adjacent_intervals (hf.intervalIntegrable (-a) 0)
@@ -252,7 +248,7 @@ theorem gaussianReal_symmetric_interval (a : ℝ) (ha : 0 ≤ a) :
   rw [gaussianReal_apply_eq_integral 0 (by norm_num : (1 : ℝ≥0) ≠ 0)]
   have he : gaussianPDFReal 0 1 = fun x => (Real.sqrt (2*Real.pi))⁻¹*f x := by
     funext x
-    simp only [gaussianPDFReal,NNReal.coe_one,mul_one,sub_zero,f]
+    simp [gaussianPDFReal,NNReal.coe_one,mul_one,sub_zero,f]
   rw [he,integral_const_mul,hi]
   congr 1
   rw [← mul_assoc,mul_comm _ 2,brownian_gaussian_normalization]
@@ -267,15 +263,15 @@ theorem gaussianReal_interval_scale (T : ℝ≥0) (hT : T ≠ 0) (β : ℝ) :
     apply NNReal.eq_iff.mpr
     exact Real.sq_sqrt T.coe_nonneg
   have he := gaussianReal_map_const_mul (μ := 0) (v := 1) (Real.sqrt (T : ℝ))
-  simp only [mul_zero,mul_one,hv] at he
+  simp [mul_zero,mul_one,hv] at he
   rw [← he,Measure.map_apply (show Measurable (fun x : ℝ => Real.sqrt (T : ℝ)*x) from measurable_const.mul measurable_id) measurableSet_Icc]
   congr 1
   ext x
-  simp only [mem_preimage,mem_Icc]
+  simp [mem_preimage,mem_Icc]
   rw [mul_comm (Real.sqrt (T : ℝ)) x,← div_le_iff₀ hs,← le_div_iff₀ hs,neg_div]
 
 /-- The normal interval probability in the integral normalization of
-`DOZZ.brownian_zeroDrift_barrier_bound`. -/
+`brownian_zeroDrift_barrier_bound`. -/
 theorem gaussianReal_barrier_integral (T : ℝ≥0) (hT : T ≠ 0) (β : ℝ) (hβ : 0 ≤ β) :
     gaussianReal 0 T (Icc (-β) β) =
       ENNReal.ofReal (Real.sqrt (2/Real.pi)*
@@ -320,7 +316,7 @@ theorem brownianPath_runningMaximum_atom_zero (P : Measure BrownianPath)
       brownianPath_strict_runningMaximum_reflection P hB β hβ T hT]
   have hd : {p : BrownianPath | M p = β} = {p | β ≤ M p} \ {p | β < M p} := by
     ext p
-    simp only [Set.mem_sdiff,mem_ofPred_eq,not_lt]
+    simp [Set.mem_sdiff,mem_ofPred_eq,not_lt]
     exact ⟨fun h => ⟨h.ge,h.le⟩,fun h => le_antisymm h.2 h.1⟩
   have hsub : {p : BrownianPath | β < M p} ⊆ {p | β ≤ M p} := by
     intro p h
@@ -332,7 +328,7 @@ theorem brownianPath_runningMaximum_atom_zero (P : Measure BrownianPath)
 
 
 
-/-- Proof of `DOZZ.brownian_zeroDrift_barrier_bound`. -/
+/-- Proof of `brownian_zeroDrift_barrier_bound`. -/
 theorem brownian_zeroDrift_barrier_bound
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (B : ℝ≥0 → Ω → ℝ)
     (hB : ProbabilityTheory.IsBrownianReal B P) (β t : ℝ)
@@ -351,7 +347,7 @@ theorem brownian_zeroDrift_barrier_bound
   have hevent : {ω | ∀ u : ℝ≥0, (u : ℝ) ≤ t → B u ω ≤ β} =
       {ω | ∀ u : ℝ≥0, u ≤ T → B u ω ≤ β} := by
     ext ω
-    simp only [mem_ofPred_eq,htime]
+    simp [mem_ofPred_eq,htime]
   have he : P {ω | ∀ u : ℝ≥0, (u : ℝ) ≤ t → B u ω ≤ β} =
       ENNReal.ofReal (Real.sqrt (2/Real.pi)*
         ∫ x in Icc (0 : ℝ) (β/Real.sqrt t), Real.exp (-x^2/2)) := by

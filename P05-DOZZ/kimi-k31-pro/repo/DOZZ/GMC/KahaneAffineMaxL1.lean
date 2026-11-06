@@ -2,13 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.KahaneFiniteAffineMax
+import DOZZ.GMC.KahaneFiniteAffineMax
 
 /-! Affine maxima preserve convergence in mean. -/
 
-@[expose] public section
 
 open MeasureTheory Filter Topology
 
@@ -59,7 +57,7 @@ theorem affineMax_integral_tendsto_of_L1
       norm_integral_le_integral_norm _
     _ ≤ ∫ ω, C * |f n ω - g ω| ∂P :=
       integral_mono ((hI n).sub hJ).norm (((hf n).sub hg).abs.const_mul C)
-        (fun ω => by simpa only [Real.norm_eq_abs] using hbound (f n ω) (g ω))
+        (fun ω => by simpa [Real.norm_eq_abs] using hbound (f n ω) (g ω))
     _ = C * ∫ ω, |f n ω - g ω| ∂P := integral_const_mul _ _
 
 end DOZZ.Proofs

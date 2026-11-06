@@ -2,11 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.ShiftEquations.Gluing.ReflectedAssembly
-public import DOZZ.FourPoint.Diagonal.Assembly
-public import DOZZ.FourPoint.ReflectedEnd.Formula
+import DOZZ.ShiftEquations.Gluing.ReflectedAssembly
+import DOZZ.FourPoint.Diagonal.Assembly
+import DOZZ.FourPoint.ReflectedEnd.Formula
 
 /-!
 # The reflected shift and gluing from the two first shifts
@@ -18,7 +17,6 @@ the reflected diagonal formula `DOZZ.gammaHalf_reflected_formula` in
 remaining inputs.
 -/
 
-@[expose] public section
 
 open MeasureTheory Filter Topology Set
 
@@ -84,4 +82,3 @@ theorem structureConstant_reflected_shift_and_gluing_of_shifts
 
 end DOZZ.Proofs
 
-end

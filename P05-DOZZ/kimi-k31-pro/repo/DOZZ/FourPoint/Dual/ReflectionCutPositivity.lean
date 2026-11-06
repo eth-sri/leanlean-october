@@ -2,12 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Dual.ReflectionCutMoments
-public import DOZZ.Brownian.LateralMoments.UnitInverse
+import DOZZ.FourPoint.Dual.ReflectionCutMoments
+import DOZZ.Brownian.LateralMoments.UnitInverse
 import Mathlib.Tactic
 /-! Positivity of each literal Williams last-cut mass on the same reflection data. -/
-@[expose] public section
 open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal
 namespace DOZZ.Proofs

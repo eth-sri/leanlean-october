@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.BPZ.WeakConv
+import DOZZ.FourPoint.BPZ.WeakConv
 
 /-! # Grid approximation of double integrals
 
@@ -14,7 +13,6 @@ from the diagonal is compared with the grid sum `∑ m(Q_i) ∫ H₀(c_i, y) dm(
 diagonal and by the near-diagonal mass. The near-diagonal mass is itself squeezed between grid
 sums, and it tends to zero as the width shrinks when `m` has no atoms. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped ENNReal NNReal
@@ -120,7 +118,7 @@ theorem bpzNearDiag_le_grid (μ : Measure ℂ) [IsFiniteMeasure μ] {ρ t h : �
     split_ifs
     · rw [abs_of_nonneg measureReal_nonneg]; exact measureReal_mono (Set.subset_univ _)
     · simp
-  · dsimp only
+  · dsimp
     by_cases hx : ‖x‖ ≤ ρ
     · have hS : bpzGridIdx h x ∈ bpzGridBox ⌈ρ / h⌉₊ := bpzGridIdx_mem_box hh hx
       rw [ite_eq_left hx, ite_eq_left hS]
@@ -160,7 +158,7 @@ theorem grid_le_bpzNearDiag (μ : Measure ℂ) [IsFiniteMeasure μ] {ρ t h : �
     split_ifs
     · rw [abs_of_nonneg measureReal_nonneg]; exact measureReal_mono (Set.subset_univ _)
     · simp
-  · dsimp only
+  · dsimp
     by_cases hS : bpzGridIdx h x ∈ bpzGridBox N
     · have hx : ‖x‖ ≤ ρ := (norm_le_of_bpzGridIdx_mem_box hh hS).trans hρ
       rw [ite_eq_left hS, ite_eq_left hx]

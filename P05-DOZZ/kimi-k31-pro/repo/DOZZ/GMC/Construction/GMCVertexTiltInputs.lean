@@ -2,18 +2,16 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.Defs.IsCircleAverage
-public import DOZZ.Statements.Defs.IsEquatorGFF
-public import DOZZ.Statements.GMC.IsGaussianL2Limit
-public import DOZZ.GMC.CircleAverage
-public import DOZZ.GMC.CircleAverageLimits
-public import Mathlib.MeasureTheory.Integral.BoundedContinuousFunction
+import DOZZ.Statements.Defs.IsCircleAverage
+import DOZZ.Statements.Defs.IsEquatorGFF
+import DOZZ.Statements.GMC.IsGaussianL2Limit
+import DOZZ.GMC.CircleAverage
+import DOZZ.GMC.CircleAverageLimits
+import Mathlib.MeasureTheory.Integral.BoundedContinuousFunction
 
 /-! Gaussian `L²` closure input for finite linear combinations of circle averages. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped Distributions ENNReal NNReal
@@ -32,14 +30,14 @@ private theorem finite_sum_test_error_eq
     (∑ k, α k * L k ω) - X ω (∑ k, α k • f k) =
         (∑ k, α k * L k ω) - ∑ k, α k * X ω (f k) := by
           rw [map_sum]
-          simp only [map_smul, smul_eq_mul]
+          simp [map_smul, smul_eq_mul]
     _ = ∑ k, α k * (L k ω - X ω (f k)) := by
           rw [← Finset.sum_sub_distrib]
           congr 1
           funext k
           ring
     _ = ∑ k, α k • (L k ω - X ω (f k)) := by
-          simp only [smul_eq_mul]
+          simp [smul_eq_mul]
 
 /-- A finite linear combination of `L²` limits of test evaluations is again in their closure.
 The approximating tests are the same finite linear combinations of the individual tests. -/
@@ -65,7 +63,7 @@ private theorem gaussianL2Limit_finset_sum
       funext n
       exact eLpNorm_const_smul (α k) _ _ _]
     simpa [enorm_eq_nnnorm] using ENNReal.Tendsto.const_mul (hf k) (Or.inr (by
-      simpa only [enorm_eq_nnnorm] using
+      simpa [enorm_eq_nnnorm] using
         (ENNReal.coe_ne_top : (‖α k‖₊ : ℝ≥0∞) ≠ ∞)))
   have hsum : Tendsto
       (fun n => ∑ k, eLpNorm (fun ω => α k • (L k ω - X ω (f k n))) 2 P)
@@ -80,7 +78,7 @@ private theorem gaussianL2Limit_finset_sum
           eLpNorm (fun ω => ∑ k, α k • (L k ω - X ω (f k n))) 2 P := by
             apply eLpNorm_congr_ae
             exact ae_of_all _ fun ω => by
-              simpa only [g] using finite_sum_test_error_eq X α L (fun k => f k n) ω
+              simpa [g] using finite_sum_test_error_eq X α L (fun k => f k n) ω
       _ = eLpNorm (∑ k, fun ω => α k • (L k ω - X ω (f k n))) 2 P := by
           congr 1
           funext ω
@@ -218,7 +216,7 @@ private theorem circleVertexPotential_apply {N : ℕ} (α : Fin N → ℝ)
       ∑ k, α k * ∫ v, gffKernel x v ∂circleMeasure (z k) r := by
   have hreg (k : Fin N) : regAvg (z k) r =
       ∫ w, Real.log (normPlus w) ∂circleMeasure (z k) r := by
-    rw [regAvg, ← DOZZ.Proofs.CirclePotential.integral_circleMeasure_eq_circleAverage
+    rw [regAvg, ← CirclePotential.integral_circleMeasure_eq_circleAverage
       continuous_log_normPlus.measurable (z k) r]
   simp [circleVertexPotential, boundedInnerPot,
     BoundedContinuousFunction.mkOfBound_coe, integral_gffKernel_circleMeasure,
@@ -228,7 +226,7 @@ private theorem gaussianCovariance_eq_covariance_of_mean_zero
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (Y Z : Ω → ℝ)
     (hY : (∫ ω, Y ω ∂P) = 0) (hZ : (∫ ω, Z ω ∂P) = 0) :
     gaussianCovariance P Y Z = ProbabilityTheory.covariance Y Z P := by
-  simp only [gaussianCovariance, ProbabilityTheory.covariance]
+  simp [gaussianCovariance, ProbabilityTheory.covariance]
   rw [hY, hZ]
   simp
 
@@ -249,13 +247,9 @@ private theorem gaussianCovariance_vertex_sum
   have hmeanY : (∫ ω, Y ω ∂P) = 0 := hmean x s
   have htermMem (k : Fin N) : MemLp (fun ω => α k * Xc ω (z k) r) 2 P :=
     (hXc.2.1 (z k) r).const_mul (α k)
-  have hsumMem : MemLp (fun ω => ∑ k, α k * Xc ω (z k) r) 2 P := by
-    have h := memLp_finsetSum (Finset.univ : Finset (Fin N))
-      (fun k hk => htermMem k)
-    simpa using h
   have hsumMean : (∫ ω, (∑ k, α k * Xc ω (z k) r) ∂P) = 0 := by
     rw [integral_finsetSum]
-    · simp only [integral_const_mul, hmean, mul_zero, Finset.sum_const_zero]
+    · simp [integral_const_mul, hmean, mul_zero, Finset.sum_const_zero]
     · intro k hk
       exact (htermMem k).integrable (by norm_num)
   have hcovsum := gaussianCovariance_eq_covariance_of_mean_zero P Y
@@ -298,13 +292,9 @@ theorem circleAverage_sum_test_covariance
   have hmeanY : (∫ ω, Y ω ∂P) = 0 := equatorGFF_test_integral X hX f
   have htermMem (k : Fin N) : MemLp (fun ω => α k * Xc ω (z k) r) 2 P :=
     (hXc.2.1 (z k) r).const_mul (α k)
-  have hsumMem : MemLp (fun ω => ∑ k, α k * Xc ω (z k) r) 2 P := by
-    have h := memLp_finsetSum (Finset.univ : Finset (Fin N))
-      (fun k hk => htermMem k)
-    simpa using h
   have hsumMean : (∫ ω, (∑ k, α k * Xc ω (z k) r) ∂P) = 0 := by
     rw [integral_finsetSum]
-    · simp only [integral_const_mul, hmean, mul_zero, Finset.sum_const_zero]
+    · simp [integral_const_mul, hmean, mul_zero, Finset.sum_const_zero]
     · intro k hk
       exact (htermMem k).integrable (by norm_num)
   have hcovsum := gaussianCovariance_eq_covariance_of_mean_zero P Y
@@ -348,8 +338,7 @@ theorem circleAverage_sum_covariance_uniform
   classical
   let C : ℝ := (∑ k, |α k|) * (Real.exp r + 1)
   let c : BoundedContinuousFunction ℂ ℝ := circleVertexPotential α z r
-  have hc (x : ℂ) : c x = ∑ k, α k * ∫ v, gffKernel x v ∂circleMeasure (z k) r := by
-    exact circleVertexPotential_apply α z r x
+  have hc (x : ℂ) : c x = ∑ k, α k * ∫ v, gffKernel x v ∂circleMeasure (z k) r := circleVertexPotential_apply α z r x
   have hcov (s : ℝ) (x : ℂ) :
       gaussianCovariance P (fun ω => Xc ω x s)
         (fun ω => ∑ k, α k * Xc ω (z k) r) =
@@ -388,7 +377,7 @@ theorem circleAverage_sum_covariance_uniform
             exact mul_le_mul_of_nonneg_left (abs_circleKernel_sub_integral_gffKernel_le x (z k) s r) (abs_nonneg _)
       _ = C * Real.exp (-s) := by
             rw [← Finset.sum_mul]
-            simp only [C]
+            simp [C]
             ring
   have hdecay : Tendsto (fun s : ℝ => C * Real.exp (-s)) atTop (𝓝 0) := by
     have hmul : Tendsto (fun s : ℝ => C * Real.exp (-s)) atTop (𝓝 (C * 0)) :=

@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.SharpMoments.SeibergWeight
-public import DOZZ.GMC.BallAnnulus.Ball
+import DOZZ.GMC.SharpMoments.SeibergWeight
+import DOZZ.GMC.BallAnnulus.Ball
 
 /-! A fixed retained disk controls inverse Coulomb moments even when bounded roots collide. -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -23,7 +21,7 @@ theorem coulombMass_fixed_disk_lower {N : ℕ} (γ : ℝ) (μ : Measure ℂ)
   let w : ℝ := (2 : ℝ) ^ (-∑ i, |γ * α i|) * (4 : ℝ) ^ (-|γ * αinf|)
   have hw (x : ℂ) (hx : x ∈ Metric.ball (3 : ℂ) (1 / 8)) :
       ENNReal.ofReal w ≤ coulombWeight γ α y αinf x := by
-    have hdist : ‖x - 3‖ < 1 / 8 := by simpa only [Metric.mem_ball, dist_eq_norm] using hx
+    have hdist : ‖x - 3‖ < 1 / 8 := by simpa [Metric.mem_ball, dist_eq_norm] using hx
     have hn3 : ‖(3 : ℂ)‖ = 3 := by norm_num
     have hlow : 2 < ‖x‖ := by
       have hh := norm_sub_norm_le (3 : ℂ) x
@@ -60,13 +58,13 @@ theorem coulomb_inverse_moment_uniform_roots
     ∃ C : ℝ, 0 < C ∧ ∀ y : Fin N → ℂ, (∀ i, ‖y i‖ ≤ 1) →
       (∫⁻ ω, (coulombMass γ (M ω) α y αinf) ^ (-q) ∂P) ≤ ENNReal.ofReal C := by
   let w : ℝ := (2 : ℝ) ^ (-∑ i, |γ * α i|) * (4 : ℝ) ^ (-|γ * αinf|)
-  have hw : 0 < w := by dsimp only [w]; positivity
+  have hw : 0 < w := by dsimp [w]; positivity
   have hp : -q < 4 / γ ^ 2 := lt_of_le_of_lt (neg_nonpos.mpr hq) (by positivity)
   obtain ⟨Cb, hCb, hball⟩ := equatorGFF_GMC_ball_moment_bound P X hX γ hγ hγ2 M hM
     (-q) hp {(3 : ℂ)} isCompact_singleton
   let ξ : ℝ := γ * Q γ * (-q) - γ ^ 2 * (-q) ^ 2 / 2
   let C : ℝ := w ^ (-q) * (Cb * (1 / 8 : ℝ) ^ ξ)
-  have hC : 0 < C := by dsimp only [C]; positivity
+  have hC : 0 < C := by dsimp [C]; positivity
   refine ⟨C, hC, ?_⟩
   intro y hy
   have hpoint (ω : Ω) : (coulombMass γ (M ω) α y αinf) ^ (-q) ≤

@@ -2,12 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.Correlations.Symmetry.RepinnedGaussianClosure
-public import DOZZ.Correlations.Symmetry.ReflectionCircleEnergy
-public import DOZZ.GMC.Construction.CircleAverageJointVersion
-public import DOZZ.GFFStructure.CircleVersion
-@[expose] public section
+import DOZZ.Correlations.Symmetry.RepinnedGaussianClosure
+import DOZZ.Correlations.Symmetry.ReflectionCircleEnergy
+import DOZZ.GMC.Construction.CircleAverageJointVersion
+import DOZZ.GFFStructure.CircleVersion
 open MeasureTheory Filter
 open scoped Distributions Topology ENNReal
 namespace DOZZ.Proofs
@@ -42,23 +40,23 @@ theorem isCircleAverage_symmetryRepinned
       atTop (𝓝 0) := by
     simp_rw [reflection_circle_energy_gap]
     have h := hgap.add (((hm.sub_const 1).const_mul 2).mul (hd.sub_const D))
-    simpa only [sub_self, mul_zero, zero_mul, add_zero] using h
+    simpa [sub_self, mul_zero, zero_mul, add_zero] using h
   have ha := hXc.2.2 (1 - x) r (fun n => symmetryReflectionTest (f n)) hg
   have hc : Tendsto (fun n => ‖1 - testMass (f n)‖ₑ) atTop (𝓝 (0 : ℝ≥0∞)) := by
     have h : Tendsto (fun n => 1 - testMass (f n)) atTop (𝓝 (0 : ℝ)) := by
-      simpa only [sub_self] using
+      simpa [sub_self] using
         (tendsto_const_nhds : Tendsto (fun _ : ℕ => (1 : ℝ)) atTop (𝓝 1)).sub hm
-    simpa only [enorm_zero, Function.comp_def] using
+    simpa [enorm_zero, Function.comp_def] using
       (continuous_enorm.tendsto (0 : ℝ)).comp h
   have hb : Tendsto (fun n => eLpNorm (fun ω => (1 - testMass (f n)) * L ω) 2 P)
       atTop (𝓝 0) := by
     have h := ENNReal.Tendsto.mul_const hc (Or.inr hL.eLpNorm_ne_top)
-    simp only [zero_mul] at h
+    simp [zero_mul] at h
     have he n : eLpNorm (fun ω => (1 - testMass (f n)) * L ω) 2 P =
         ‖1 - testMass (f n)‖ₑ * eLpNorm L 2 P := by
-      simpa only [Pi.smul_def, smul_eq_mul] using
+      simpa [Pi.smul_def, smul_eq_mul] using
         eLpNorm_const_smul (1 - testMass (f n)) L 2 P
-    simpa only [he] using h
+    simpa [he] using h
   have he n : (fun ω => Y ω (f n) - Z ω x r) =
       (fun ω => X ω (symmetryReflectionTest (f n)) - Xc ω (1 - x) r) +
         (fun ω => (1 - testMass (f n)) * L ω) := by
@@ -71,7 +69,7 @@ theorem isCircleAverage_symmetryRepinned
       atTop (𝓝 0) := by
     apply tendsto_of_tendsto_of_tendsto_of_le_of_le
       (tendsto_const_nhds : Tendsto (fun _ : ℕ => (0 : ℝ≥0∞)) atTop (𝓝 0))
-      (by simpa only [zero_add] using ha.add hb) (fun _ => bot_le)
+      (by simpa [zero_add] using ha.add hb) (fun _ => bot_le)
     intro n
     change eLpNorm (fun ω => Y ω (f n) - Z ω x r) 2 P ≤ _
     rw [he]
@@ -79,9 +77,9 @@ theorem isCircleAverage_symmetryRepinned
   have hcanon := hYc.2.2 x r f hgap
   have hzm : TendstoInMeasure P (fun n ω => Y ω (f n)) atTop (fun ω => Z ω x r) :=
     tendstoInMeasure_of_tendsto_eLpNorm (by norm_num : (2 : ℝ≥0∞) ≠ 0)
-      (by simpa only [Pi.sub_def] using hz)
+      (by simpa [Pi.sub_def] using hz)
   have hym : TendstoInMeasure P (fun n ω => Y ω (f n)) atTop (fun ω => Yc ω x r) :=
     tendstoInMeasure_of_tendsto_eLpNorm (by norm_num : (2 : ℝ≥0∞) ≠ 0)
-      (by simpa only [Pi.sub_def] using hcanon)
+      (by simpa [Pi.sub_def] using hcanon)
   exact tendstoInMeasure_ae_unique hzm hym
 end DOZZ.Proofs

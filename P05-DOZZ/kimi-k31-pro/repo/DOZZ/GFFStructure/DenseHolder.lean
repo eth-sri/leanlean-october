@@ -3,11 +3,10 @@ Copyright (c) 2025 Rémy Degenne. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Rémy Degenne
 -/
-module
 
-public import DOZZ.GFFStructure.KolmogorovInequality
-public import DOZZ.GFFStructure.ModificationLimits
-public import Mathlib.Topology.MetricSpace.HolderNorm
+import DOZZ.GFFStructure.KolmogorovInequality
+import DOZZ.GFFStructure.ModificationLimits
+import Mathlib.Topology.MetricSpace.HolderNorm
 
 /-!
 # Dense-set Hölder extension and measurable regularity events
@@ -17,7 +16,6 @@ Degenne and collaborators (github.com/RemyDegenne/brownian-motion). The extensio
 the event has the original moment and covering assumptions.
 -/
 
-@[expose] public section
 
 open MeasureTheory Filter Bornology _root_.ProbabilityTheory
 open scoped ENNReal NNReal Topology Asymptotics
@@ -88,7 +86,7 @@ lemma MemHolder.mono' {X Y : Type*} [PseudoEMetricSpace X] [PseudoEMetricSpace Y
   let := PseudoEMetricSpace.toPseudoMetricSpace
     fun x y ↦ ne_top_of_le_ne_top ENNReal.coe_ne_top (hX x y)
   have := PseudoEMetricSpace.boundedSpace_toPseudoMetricSpace hX
-  exact DOZZ.Proofs.MemHolder.mono hf hs
+  exact MemHolder.mono hf hs
 
 lemma HolderOnWith.mono_right {X Y : Type*} [PseudoMetricSpace X] [PseudoEMetricSpace Y]
     {f : X → Y} {C r s : ℝ≥0} {t : Set X} (hf : HolderOnWith C r f t) (hs : s ≤ r)
@@ -130,13 +128,13 @@ lemma UniformContinuousOn.exists_tendsto {α β : Type*} [UniformSpace α] [Firs
       have h_cauchy := hu.cauchySeq
       rw [cauchySeq_iff] at h_cauchy
       rw [cauchySeq_iff, uniformity_subtype]
-      simp only [mem_comap, forall_exists_index, and_imp] at h_cauchy ⊢
+      simp [mem_comap, forall_exists_index, and_imp] at h_cauchy ⊢
       intro V s hs hsV
       obtain ⟨N, hN⟩ := h_cauchy s hs
       exact ⟨N, fun k hNk l hNl ↦ hsV (hN k hNk l hNl)⟩
     · rw [tendsto_principal]
       have hut : ∀ᶠ n in atTop, (u n : α) ∈ t := hu.eventually_mem (ht.mem_nhds ha)
-      simp only [eventually_atTop, Set.mem_prod, Set.mem_ofPred_eq, Prod.forall,
+      simp [eventually_atTop, Set.mem_prod, Set.mem_ofPred_eq, Prod.forall,
         Prod.exists, Prod.mk_le_mk, and_imp] at hut ⊢
       obtain ⟨N, hN⟩ := hut
       exact ⟨N, N, fun a b hNa hNb ↦ ⟨hN a hNa, hN b hNb⟩⟩
@@ -161,10 +159,10 @@ lemma UniformContinuousOn.exists_tendsto {α β : Type*} [UniformSpace α] [Firs
   · rw [← Filter.comap_prodMap_prod, ← nhds_prod_eq, uniformity_subtype]
     refine comap_mono ?_
     exact nhds_le_uniformity a
-  · simp only [le_principal_iff]
+  · simp [le_principal_iff]
     rw [mem_prod_iff]
     simp_rw [Set.prod_subset_prod_iff]
-    simp only [mem_comap]
+    simp [mem_comap]
     refine ⟨Subtype.val ⁻¹' t, ⟨t, ?_, subset_rfl⟩, Subtype.val ⁻¹' t, ⟨t, ?_, subset_rfl⟩, ?_⟩
     · exact ht.mem_nhds ha
     · exact ht.mem_nhds ha
@@ -177,17 +175,17 @@ lemma Dense.holderOnWith_extend {X Y : Type*} [PseudoEMetricSpace X] [PseudoEMet
   intro x hx y hy
   have := neBot_comap_nhds hs
   have h_mem x (hx : x ∈ U) : ∀ᶠ z in (𝓝 x).comap ((↑) : s → X), ↑z ∈ U := by
-    simp only [eventually_comap, Subtype.forall]
+    simp [eventually_comap, Subtype.forall]
     suffices ∀ᶠ z in 𝓝 x, z ∈ U by
       filter_upwards [this] with z hz
       rintro _ h rfl
-      exact hz
+      assumption
     rw [eventually_mem_set]
     exact hU.mem_nhds hx
   have h_prod_mem : ∀ᶠ z : s × s in
       ((𝓝 x).comap ((↑) : s → X)) ×ˢ ((𝓝 y).comap ((↑) : s → X)),
       ↑z.1 ∈ U ∧ ↑z.2 ∈ U := by
-    simp only [eventually_and]
+    simp [eventually_and]
     exact ⟨(h_mem x hx).prod_inl _, (h_mem y hy).prod_inr _⟩
   have hfx : Tendsto f ((𝓝 x).comap ((↑) : s → X)) (𝓝 (hs.extend f x)) := by
     refine tendsto_nhds_limUnder ?_
@@ -217,7 +215,7 @@ lemma Dense.holderOnWith_extend {X Y : Type*} [PseudoEMetricSpace X] [PseudoEMet
     · fun_prop (disch := exact ENNReal.coe_ne_top)
     exact Tendsto.prodMk_nhds (tendsto_comap.comp tendsto_fst) (tendsto_comap.comp tendsto_snd)
   · filter_upwards [h_prod_mem] with z ⟨hz₁, hz₂⟩
-    simp only [hz₁, hz₂, and_self, ↓reduceIte, ge_iff_le, f', g']
+    simp [hz₁, hz₂, and_self, ↓reduceIte, ge_iff_le, f', g']
     exact hf z.1 hz₁ z.2 hz₂
 
 lemma exists_modification_on_of_edist_modification_on {T Ω E : Type*} {mΩ : MeasurableSpace Ω}
@@ -228,12 +226,12 @@ lemma exists_modification_on_of_edist_modification_on {T Ω E : Type*} {mΩ : Me
       ∀ t ∈ U, Z t =ᵐ[P] X t := by
   let Z t ω := if ω ∈ {ω | edist (Y t ω) (X t ω) = 0} then X t ω else Y t ω
   have h_edist_Z t ω : edist (Z t ω) (Y t ω) = 0 := by
-    simp only [Set.mem_ofPred_eq, Z]
+    simp [Set.mem_ofPred_eq, Z]
     split_ifs with hω
     · rw [edist_comm]
       simp [hω]
     · simp
-  have hZ_meas t : Measurable (Z t) := DOZZ.Proofs.Measurable.of_edist_eq_zero (hY t) (h_edist_Z t)
+  have hZ_meas t : Measurable (Z t) := Measurable.of_edist_eq_zero (hY t) (h_edist_Z t)
   refine ⟨Z, hZ_meas, h_edist_Z, fun t ht ↦ ?_⟩
   filter_upwards [h_edist t ht] with ω hω
   simp [Z, hω]
@@ -320,7 +318,7 @@ lemma holderOnWith_of_mem_holderSet (hT : HasBoundedCoveringNumber U c d)
     calc edist s t ≤ Metric.ediam U := Metric.edist_le_ediam_of_mem (x := s.val) (y := t.val) hs ht
     _ < ∞ := hT.ediam_lt_top
   have h_dist_top : edist s t ^ (β : ℝ) ≠ ∞ := by
-    simp only [ne_eq, ENNReal.rpow_eq_top_iff, NNReal.coe_pos, not_or, not_and, not_lt,
+    simp [ne_eq, ENNReal.rpow_eq_top_iff, NNReal.coe_pos, not_or, not_and, not_lt,
       NNReal.zero_le_coe, implies_true, nonpos_iff_eq_zero, true_and]
     exact fun h_eq_top ↦ absurd h_eq_top h_edist_lt_top.ne
   by_cases h_dist_zero : edist s t = 0
@@ -352,7 +350,7 @@ lemma exists_tendsto_of_mem_holderSet [CompleteSpace E]
     {T' : Set T} (hT'_dense : Dense T') {ω : Ω} (hω : ω ∈ holderSet X T' p β U)
     (t : T) (htU : t ∈ U) :
     ∃ c, Tendsto (fun t' : T' ↦ X t' ω) (comap Subtype.val (𝓝 t)) (𝓝 c) :=
-  DOZZ.Proofs.UniformContinuousOn.exists_tendsto hT'_dense hU
+  UniformContinuousOn.exists_tendsto hT'_dense hU
     (uniformContinuousOn_of_mem_holderSet hT hp_pos hβ_pos hω) t
     htU
 
@@ -371,7 +369,7 @@ lemma ae_mem_holderSet [MeasurableSpace E] [BorelSpace E]
   let C ω := ⨆ (s : (T' ∩ U : Set T)) (t : (T' ∩ U : Set T)),
     edist (X s ω) (X t ω) ^ p / edist s t ^ (β * p)
   have hC_lt_top : ∀ᵐ ω ∂P, C ω < ∞ :=
-    DOZZ.Proofs.IsKolmogorovProcess.ae_iSup_rpow_edist_div_lt_top hT hX hc hd_pos hdq_lt hβ_pos hβ_lt hT'U Set.inter_subset_right
+    IsKolmogorovProcess.ae_iSup_rpow_edist_div_lt_top hT hX hc hd_pos hdq_lt hβ_pos hβ_lt hT'U Set.inter_subset_right
   filter_upwards [hC_lt_top, h_ae_zero] with ω hω₁ hω₂ using ⟨hω₁, hω₂⟩
 
 end HolderSet

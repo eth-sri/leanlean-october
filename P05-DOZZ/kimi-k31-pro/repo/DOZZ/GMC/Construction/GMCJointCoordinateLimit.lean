@@ -2,21 +2,19 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.Construction.GMCFiniteCoordinateLimit
+import DOZZ.GMC.Construction.GMCFiniteCoordinateLimit
 import Mathlib.MeasureTheory.Measure.Map
 
 /-! The countable field-and-measure coordinate law obtained from the finite-coordinate limits. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped Distributions ENNReal NNReal BoundedContinuousFunction
 
 namespace DOZZ.Proofs
 
-private theorem exists_measurable_unweighted_fullPath_proxy
+theorem exists_measurable_unweighted_fullPath_proxy
     {Ω : Type*} [MeasurableSpace Ω]
     (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ)
     (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) :
@@ -52,7 +50,7 @@ private theorem exists_measurable_unweighted_fullPath_proxy
       exact congrArg ENNReal.toReal hcoord
   exact ⟨G, hG, hEq⟩
 
-private theorem exists_measurable_weighted_fullPath_proxy
+theorem exists_measurable_weighted_fullPath_proxy
     {Ω : Type*} [MeasurableSpace Ω]
     (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ)
     (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
@@ -161,8 +159,7 @@ theorem equatorGFF_GMC_fullCoordinate_limit_law
       dsimp [Q]
       rw [withDensity_apply density MeasurableSet.univ]
       simp
-    rw [hQmass]
-    exact hmass
+    rwa [hQmass]
   obtain ⟨leftProxy, hleftProxyMeas, hleftProxyAE⟩ :=
     exists_measurable_unweighted_fullPath_proxy P X hX γ M hM
   have hdenAEMeas : AEMeasurable density P := by
@@ -174,8 +171,7 @@ theorem equatorGFF_GMC_fullCoordinate_limit_law
   have hdenNe : ∀ᵐ ω ∂P, density ω ≠ 0 := by
     filter_upwards [] with ω
     exact (ENNReal.ofReal_pos.mpr (Real.exp_pos _)).ne'
-  have hleftProxyQ : leftPath =ᵐ[Q] leftProxy := by
-    exact (withDensity_ae_eq hdenAEMeas hdenNe).2 (by simpa [leftPath] using hleftProxyAE)
+  have hleftProxyQ : leftPath =ᵐ[Q] leftProxy := (withDensity_ae_eq hdenAEMeas hdenNe).2 (by simpa [leftPath] using hleftProxyAE)
   have hleftAEMeas : AEMeasurable leftPath Q :=
     hleftProxyMeas.aemeasurable.congr hleftProxyQ.symm
   obtain ⟨u, w, -, hw, hconv, heventual, -⟩ :=
@@ -243,11 +239,11 @@ theorem equatorGFF_GMC_fullCoordinate_limit_law
       Measure.map_apply_of_aemeasurable hrightFiniteAEMeas hS] at hmap
     have hpreLeft : leftPath ⁻¹' MeasureTheory.cylinder s S = leftFinite ⁻¹' S := by
       ext ω
-      simp only [Set.mem_preimage, MeasureTheory.mem_cylinder]
+      simp [Set.mem_preimage, MeasureTheory.mem_cylinder]
       rfl
     have hpreRight : rightPath ⁻¹' MeasureTheory.cylinder s S = rightFinite ⁻¹' S := by
       ext ω
-      simp only [Set.mem_preimage, MeasureTheory.mem_cylinder]
+      simp [Set.mem_preimage, MeasureTheory.mem_cylinder]
       rfl
     calc
       leftMeasure (MeasureTheory.cylinder s S) = Q (leftPath ⁻¹' MeasureTheory.cylinder s S) := by
@@ -259,8 +255,6 @@ theorem equatorGFF_GMC_fullCoordinate_limit_law
       _ = rightMeasure (MeasureTheory.cylinder s S) := by
         dsimp [rightMeasure]
         rw [Measure.map_apply_of_aemeasurable hrightAEMeas hS.cylinder]
-  have hUnivC : Set.univ ∈ C :=
-    MeasureTheory.univ_mem_measurableCylinders (fun _ : gmcTiltCoordinateIndex => ℝ)
   have hLeftUniv : leftMeasure Set.univ = 1 := by
     dsimp [leftMeasure]
     rw [Measure.map_apply_of_aemeasurable hleftAEMeas MeasurableSet.univ]

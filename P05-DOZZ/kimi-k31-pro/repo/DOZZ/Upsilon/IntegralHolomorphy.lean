@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.Defs.DualMu
-public import DOZZ.Upsilon.IntegralBounds
+import DOZZ.Statements.Defs.DualMu
+import DOZZ.Upsilon.IntegralBounds
 import Mathlib.Analysis.Calculus.ParametricIntegral
 import Mathlib.Analysis.Calculus.Taylor
 import Mathlib.Analysis.Complex.RealDeriv
@@ -18,7 +17,6 @@ import Mathlib.MeasureTheory.Integral.IntegrableOn
 Differentiation under the defining integral on its strip of convergence.
 -/
 
-@[expose] public section
 
 namespace DOZZ.Proofs
 
@@ -47,8 +45,7 @@ private lemma zDerivNumJoint_contDiff (γ : ℝ) :
     fun_prop [zDerivNumComplex, complexDenom]
   have hF' : ContDiff ℝ 3 (fun q : ℂ × ℂ => zDerivNumComplex γ q.1 q.2) :=
     hF.restrict_scalars ℝ
-  have hPair : ContDiff ℝ 3 (fun p : ℂ × ℝ => (p.1, (p.2 : ℂ))) := by
-    exact contDiff_fst.prodMk (Complex.ofRealCLM.contDiff.comp contDiff_snd)
+  have hPair : ContDiff ℝ 3 (fun p : ℂ × ℝ => (p.1, (p.2 : ℂ))) := contDiff_fst.prodMk (Complex.ofRealCLM.contDiff.comp contDiff_snd)
   change ContDiff ℝ 3 ((fun q : ℂ × ℂ => zDerivNumComplex γ q.1 q.2) ∘
     fun p : ℂ × ℝ => (p.1, (p.2 : ℂ)))
   exact hF'.comp hPair
@@ -57,9 +54,6 @@ private lemma zDerivNum_third_continuous (γ : ℝ) :
     Continuous (fun p : ℂ × ℝ =>
       iteratedDeriv 3 (zDerivNum γ p.1) p.2) := by
   have hJ := zDerivNumJoint_contDiff γ
-  have hF : Continuous (fun p : ℂ × ℝ =>
-      iteratedFDeriv ℝ 3 (zDerivNumJoint γ) p) :=
-    hJ.continuous_iteratedFDeriv (by norm_num)
   have hEq : (fun p : ℂ × ℝ =>
       iteratedDeriv 3 (zDerivNum γ p.1) p.2) =
     (fun p : ℂ × ℝ =>
@@ -67,22 +61,17 @@ private lemma zDerivNum_third_continuous (γ : ℝ) :
         (fun _ : Fin 3 => (0, (1 : ℝ)))) := by
     funext p
     let line : ℝ → ℂ × ℝ := fun t => (p.1, t)
-    have hline : HasDerivAt line (0, (1 : ℝ)) p.2 := by
-      simpa [line] using
-        (hasDerivAt_const p.2 p.1).prodMk (hasDerivAt_id p.2)
     have hlineD : deriv line = fun _ => (0, (1 : ℝ)) := by
       funext t
       exact ((hasDerivAt_const t p.1).prodMk (hasDerivAt_id t)).deriv
     have hline2 : iteratedDeriv 2 line p.2 = 0 := by
-      rw [iteratedDeriv_succ]
-      rw [show iteratedDeriv 1 line = deriv line by simp, hlineD]
+      rw [iteratedDeriv_succ, show iteratedDeriv 1 line = deriv line by simp, hlineD]
       simp
     have hline3 : iteratedDeriv 3 line p.2 = 0 := by
       rw [iteratedDeriv_succ]
       rw [show iteratedDeriv 2 line = fun _ => 0 by
         funext t
-        rw [iteratedDeriv_succ]
-        rw [show iteratedDeriv 1 line = deriv line by simp, hlineD]
+        rw [iteratedDeriv_succ, show iteratedDeriv 1 line = deriv line by simp, hlineD]
         simp]
       simp
     have hcomp := iteratedDeriv_vcomp_three
@@ -97,7 +86,7 @@ private lemma zDerivNum_third_continuous (γ : ℝ) :
         iteratedFDeriv ℝ 2 (zDerivNumJoint γ) p ![(0, (1 : ℝ)), 0] = 0 := by
       apply ContinuousMultilinearMap.map_coord_zero _ 1
       simp
-    simp only [line, hlineD] at hcomp
+    simp [line, hlineD] at hcomp
     rw [hcross₁, hcross₂] at hcomp
     simpa [line, Function.comp_def, zDerivNumJoint] using hcomp
   rw [hEq]
@@ -126,9 +115,7 @@ private lemma zDerivNumComplex_deriv_zero (γ : ℝ) (w : ℂ) :
 
 private lemma zDerivNumComplex_iteratedDeriv_two_zero {γ : ℝ} (hγ : 0 < γ) (w : ℂ) :
     iteratedDeriv 2 (zDerivNumComplex γ w) 0 = 0 := by
-  rw [iteratedDeriv_succ]
-  rw [show iteratedDeriv 1 (zDerivNumComplex γ w) = deriv (zDerivNumComplex γ w) by simp]
-  rw [zDerivNumComplex_deriv_eq]
+  rw [iteratedDeriv_succ, show iteratedDeriv 1 (zDerivNumComplex γ w) = deriv (zDerivNumComplex γ w) by simp, zDerivNumComplex_deriv_eq]
   simp (disch := fun_prop) [complexDenom, deriv_csinh, deriv_ccosh, deriv_cexp]
   have hγC : (γ : ℂ) ≠ 0 := by exact_mod_cast (ne_of_gt hγ)
   field_simp [hγC]
@@ -251,17 +238,14 @@ private lemma deriv_upsilonLogIntegrand {γ : ℝ} {t : ℝ}
     (hγ : 0 < γ) (ht : 0 < t) (z : ℂ) :
     deriv (fun z : ℂ => upsilonLogIntegrand γ z t) z =
       upsilonLogIntegrandDeriv γ z t := by
-  have hD : (realDenom γ t : ℂ) ≠ 0 := by
-    exact Complex.ofReal_ne_zero.mpr (realDenom_pos hγ ht).ne'
+  have hD : (realDenom γ t : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr (realDenom_pos hγ ht).ne'
   have htC : (t : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr ht.ne'
   have hγC : (γ : ℂ) ≠ 0 := by exact_mod_cast (ne_of_gt hγ)
   have hS₁ : Complex.sinh ((t : ℂ) * (γ : ℂ) / 4) ≠ 0 := by
-    rw [show (t : ℂ) * (γ : ℂ) / 4 = ((t * γ / 4 : ℝ) : ℂ) by push_cast; ring]
-    rw [← Complex.ofReal_sinh]
+    rw [show (t : ℂ) * (γ : ℂ) / 4 = ((t * γ / 4 : ℝ) : ℂ) by push_cast; ring, ← Complex.ofReal_sinh]
     exact Complex.ofReal_ne_zero.mpr (Real.sinh_pos_iff.2 (by positivity)).ne'
   have hS₂ : Complex.sinh ((t : ℂ) / (γ : ℂ)) ≠ 0 := by
-    rw [show (t : ℂ) / (γ : ℂ) = ((t / γ : ℝ) : ℂ) by push_cast; rfl]
-    rw [← Complex.ofReal_sinh]
+    rw [show (t : ℂ) / (γ : ℂ) = ((t / γ : ℝ) : ℂ) by push_cast; rfl, ← Complex.ofReal_sinh]
     exact Complex.ofReal_ne_zero.mpr (Real.sinh_pos_iff.2 (div_pos ht hγ)).ne'
   simp (disch := fun_prop) [upsilonLogIntegrand, upsilonLogIntegrandDeriv,
     zDerivNum, zDerivNumComplex, realDenom, complexDenom,
@@ -285,8 +269,7 @@ private lemma upsilonLogIntegrandDeriv_norm_le_of_taylor {γ : ℝ}
       ‖(realDenom γ t : ℂ) * (t : ℂ)‖ = realDenom γ t * t := by
     rw [norm_mul, Complex.norm_real, Real.norm_eq_abs, abs_of_pos hdenPos,
       Complex.norm_real, Real.norm_eq_abs, abs_of_pos ht]
-  rw [upsilonLogIntegrandDeriv, norm_div, hnormDen]
-  rw [div_le_iff₀ hdenT]
+  rw [upsilonLogIntegrandDeriv, norm_div, hnormDen, div_le_iff₀ hdenT]
   have h4C : 0 ≤ 4 * C := mul_nonneg (by norm_num) hC
   have hprod := mul_le_mul_of_nonneg_left hdenTLower h4C
   have hprod' : C * t ^ 3 ≤ 4 * C * (realDenom γ t * t) := by
@@ -300,11 +283,6 @@ private lemma upsilonLogIntegrandDeriv_norm_le_tail {γ : ℝ} (hγ : 0 < γ)
         (tailConst γ)⁻¹ * Real.exp (-(Q γ / 2 - |Q γ / 2 - z.re|) * t) := by
   let w : ℂ := (Q γ / 2 : ℂ) - z
   let δ : ℝ := Q γ / 2 - |w.re|
-  have hQpos : 0 < Q γ := by unfold Q; positivity
-  have hstrip : |w.re| < Q γ / 2 := by
-    apply (abs_lt).2
-    constructor <;> dsimp [w] <;> simp <;> linarith
-  have hδ : 0 < δ := by dsimp [δ]; linarith
   have hdenPos := realDenom_pos hγ (by linarith : 0 < t)
   have hdenLower := realDenom_ge_tail_exp hγ ht
   have hK : 0 < tailConst γ := tailConst_pos hγ
@@ -334,9 +312,6 @@ private lemma upsilonLogIntegrandDeriv_norm_le_tail {γ : ℝ} (hγ : 0 < γ)
           simpa using mul_le_mul_of_nonneg_left ht hdenPos.le
         rw [div_le_iff₀ (mul_pos hdenPos htpos)]
         exact mul_le_mul_of_nonneg_left hDt hcoef
-  have hnonzero : (realDenom γ t : ℂ) * (t : ℂ) ≠ 0 := by
-    exact mul_ne_zero (Complex.ofReal_ne_zero.mpr hdenPos.ne')
-      (Complex.ofReal_ne_zero.mpr (by linarith : t ≠ 0))
   have hnonlinear :
       ‖(Complex.sinh (w * (t / 2)) * Complex.cosh (w * (t / 2))) /
           (realDenom γ t : ℂ)‖ ≤
@@ -520,8 +495,7 @@ private lemma upsilonLog_hasDerivAt {γ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2)
     by_cases ht1 : t ≤ 1
     · have hTaylor' := hTaylor_local hz ⟨le_of_lt ht, ht1⟩
       have hsmall := upsilonLogIntegrandDeriv_norm_le_of_taylor hγ z C hC ht ht1 hTaylor'
-      have hexp : 1 ≤ Real.exp (1 - t) := by
-        exact Real.one_le_exp_iff.mpr (by linarith)
+      have hexp : 1 ≤ Real.exp (1 - t) := Real.one_le_exp_iff.mpr (by linarith)
       have hexpId : Real.exp (1 - t) = Real.exp 1 * Real.exp (-t) := by
         rw [← Real.exp_add]
         congr 1
@@ -603,12 +577,9 @@ private lemma upsilonLog_hasDerivAt {γ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2)
 theorem upsilonLog_differentiableOn {γ : ℝ}
     (hγ : 0 < γ) (_hγ2 : γ < 2) :
     DifferentiableOn ℂ (fun z => upsilonLog γ z)
-      {z | 0 < z.re ∧ z.re < Q γ} := by
-  intro z hz
-  exact (upsilonLog_hasDerivAt hγ _hγ2 z hz.1 hz.2).differentiableAt.differentiableWithinAt
+      {z | 0 < z.re ∧ z.re < Q γ} := fun z hz => (upsilonLog_hasDerivAt hγ _hγ2 z hz.1 hz.2).differentiableAt.differentiableWithinAt
 
 end
 
 end DOZZ.Proofs
 
-end

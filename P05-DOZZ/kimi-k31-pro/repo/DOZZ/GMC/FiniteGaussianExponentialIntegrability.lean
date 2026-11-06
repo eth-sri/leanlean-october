@@ -2,15 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.GMC.IsCenteredJointlyGaussian
-public import Mathlib.MeasureTheory.Function.L2Space
-public import Mathlib.MeasureTheory.Function.LpSeminorm.CompareExp
+import DOZZ.Statements.GMC.IsCenteredJointlyGaussian
+import Mathlib.MeasureTheory.Function.L2Space
+import Mathlib.MeasureTheory.Function.LpSeminorm.CompareExp
 
 /-! Exponential integrability for finite linear forms of a Gaussian vector. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory
 open scoped Distributions ENNReal
@@ -22,7 +20,7 @@ integrable. -/
 theorem centeredJointlyGaussian_linear_exp_integrable
     {Ω ι : Type*} [MeasurableSpace Ω] [Fintype ι]
     (P : Measure Ω) (Z : Ω → ι → ℝ)
-    (hZ : DOZZ.IsCenteredJointlyGaussian P Z) (a : ι → ℝ) (t : ℝ) :
+    (hZ : IsCenteredJointlyGaussian P Z) (a : ι → ℝ) (t : ℝ) :
     Integrable (fun ω => Real.exp (t * ∑ i, a i * Z ω i)) P := by
   obtain ⟨hLmem, ⟨v, hLmap⟩⟩ := hZ.2.2 a
   let L : Ω → ℝ := fun ω => ∑ i, a i * Z ω i
@@ -34,7 +32,7 @@ theorem centeredJointlyGaussian_linear_exp_integrable
     rw [hLmap']
     exact integrable_exp_mul_gaussianReal t
   have hExp : Integrable (fun ω => Real.exp (t * L ω)) P := by
-    simpa only [Function.comp_def] using
+    simpa [Function.comp_def] using
       (integrable_map_measure hExpMap.aestronglyMeasurable hLmeas).mp hExpMap
   simpa [L] using hExp
 
@@ -43,7 +41,7 @@ The proof dominates it by the finite sum over all sign choices of Gaussian linea
 theorem centeredJointlyGaussian_abs_linear_exp_integrable
     {Ω ι : Type*} [MeasurableSpace Ω] [Fintype ι] [DecidableEq ι]
     (P : Measure Ω) (Z : Ω → ι → ℝ)
-    (hZ : DOZZ.IsCenteredJointlyGaussian P Z) (c : ι → ℝ) :
+    (hZ : IsCenteredJointlyGaussian P Z) (c : ι → ℝ) :
     Integrable (fun ω => Real.exp (∑ i, c i * |Z ω i|)) P := by
   classical
   let G : (ι → Bool) → Ω → ℝ := fun s ω =>
@@ -51,8 +49,7 @@ theorem centeredJointlyGaussian_abs_linear_exp_integrable
   have hG (s : ι → Bool) : Integrable (G s) P := by
     simpa [G] using centeredJointlyGaussian_linear_exp_integrable P Z hZ
       (fun i => if s i then c i else -c i) 1
-  have hsum : Integrable (fun ω => ∑ s : ι → Bool, G s ω) P := by
-    exact integrable_finsetSum Finset.univ (fun s hs => hG s)
+  have hsum : Integrable (fun ω => ∑ s : ι → Bool, G s ω) P := integrable_finsetSum Finset.univ (fun s hs => hG s)
   have hpoint (ω : Ω) : Real.exp (∑ i, c i * |Z ω i|) ≤ ∑ s : ι → Bool, G s ω := by
     let sω : ι → Bool := fun i => decide (0 ≤ Z ω i)
     have hlinear : (∑ i, c i * |Z ω i|) =
@@ -77,7 +74,7 @@ theorem centeredJointlyGaussian_abs_linear_exp_integrable
       (hZ.2.1 i).aestronglyMeasurable).const_mul (c i)
   have harg : AEStronglyMeasurable
       (fun ω => ∑ i, c i * |Z ω i|) P := by
-    simpa only [Finset.sum_apply] using
+    simpa [Finset.sum_apply] using
       (Finset.univ.aestronglyMeasurable_fun_sum (fun i hi => hterm i))
   have hf : AEStronglyMeasurable
       (fun ω => Real.exp (∑ i, c i * |Z ω i|)) P := by
@@ -93,7 +90,7 @@ integrable. This is the uniform derivative envelope for smooth interpolation tes
 theorem centeredJointlyGaussian_coordinate_mul_abs_linear_exp_integrable
     {Ω ι : Type*} [MeasurableSpace Ω] [Fintype ι] [DecidableEq ι]
     (P : Measure Ω) (Z : Ω → ι → ℝ)
-    (hZ : DOZZ.IsCenteredJointlyGaussian P Z) (c : ι → ℝ) (i : ι) :
+    (hZ : IsCenteredJointlyGaussian P Z) (c : ι → ℝ) (i : ι) :
     Integrable (fun ω => Z ω i * Real.exp (∑ j, c j * |Z ω j|)) P := by
   have hArg : AEStronglyMeasurable
       (fun ω => ∑ j, c j * |Z ω j|) P := by
@@ -101,7 +98,7 @@ theorem centeredJointlyGaussian_coordinate_mul_abs_linear_exp_integrable
         (fun ω => c j * |Z ω j|) P := by
       exact (continuous_abs.comp_aestronglyMeasurable
         (hZ.2.1 j).aestronglyMeasurable).const_mul (c j)
-    simpa only [Finset.sum_apply] using
+    simpa [Finset.sum_apply] using
       (Finset.univ.aestronglyMeasurable_fun_sum (fun j hj => hterm j))
   have hExpMeas : AEStronglyMeasurable
       (fun ω => Real.exp (∑ j, c j * |Z ω j|)) P :=
@@ -132,8 +129,7 @@ theorem centeredJointlyGaussian_coordinate_mul_abs_linear_exp_integrable
         fun ω => Z ω i := by
       funext ω
       simp
-    rw [← hEq]
-    exact hmem
+    rwa [← hEq]
   have hHolder : ENNReal.HolderTriple 2 2 1 := ⟨by
     simpa using ENNReal.inv_two_add_inv_two⟩
   have hprod := hZiMem.mul hExpMem (hpqr := hHolder)

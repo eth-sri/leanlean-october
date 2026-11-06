@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.GMC.WeightedGmcBallMoment
-public import DOZZ.GMC.SharpMoments.OpenSetScale
+import DOZZ.Statements.GMC.WeightedGmcBallMoment
+import DOZZ.GMC.SharpMoments.OpenSetScale
 
 /-! # Exact scaling of singular weighted GMC masses
 
@@ -14,7 +13,6 @@ affine scaling as the plain mass. The proof approximates the extended-valued wei
 from below by bounded continuous cutoffs, applies the affine test law to each one, and passes to
 the (possibly infinite) monotone limit at the level of laws on `[0, ∞]`. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped Distributions ENNReal NNReal
@@ -468,9 +466,7 @@ theorem weightedScale_mass_law_of_test_law
     funext q
     have := hM.1 q.1
     rw [← weightedScale_iSup_test_integral γ α R (M q.1), ENNReal.mul_iSup, ENNReal.mul_iSup]
-  rw [hA, hB] at key
-  exact key
-
+  rwa [hA, hB] at key
 /-- Exact affine law of the singular weighted mass: the weighted mass of `B(0, c R)` has the law of
 the weighted mass of `B(0, R)` multiplied by `c ^ (-γ α)` and by the independent Gaussian factor
 `c ^ 2 * exp (γ w - γ ^ 2 / 2 * (-log c))`. -/

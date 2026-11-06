@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Brownian.Lateral.AnnularComparison
-public import DOZZ.GMC.Annulus.LocalScale
+import DOZZ.Brownian.Lateral.AnnularComparison
+import DOZZ.GMC.Annulus.LocalScale
 
 /-!
 # The precise reference inverse moment needed by the conditional unit-block estimate
@@ -16,7 +15,6 @@ scaling. This supplies the geometric and radial transfer, while retaining the re
 inverse-moment premise explicitly.
 -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Set Filter
 open scoped ENNReal NNReal Distributions
@@ -29,7 +27,7 @@ theorem lateralUnitBlock_retained_disk_subset_annulus :
   have he : Real.exp (-1) ≤ (1 / 2 : ℝ) := by
     have h := Real.add_one_le_exp (1 : ℝ)
     rw [Real.exp_neg]
-    simpa only [one_div] using one_div_le_one_div_of_le
+    simpa [one_div] using one_div_le_one_div_of_le
       (by norm_num : (0 : ℝ) < 2) (by linarith : 2 ≤ Real.exp 1)
   have hn : ‖((3 / 4 : ℝ) : ℂ)‖ = (3 / 4 : ℝ) := by
     rw [Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg (by norm_num)]
@@ -42,7 +40,7 @@ theorem lateralUnitBlock_retained_disk_subset_annulus :
   rw [sub_add_cancel, hn] at hhi
   constructor
   · linarith
-  · simpa only [neg_zero, Real.exp_zero] using (show ‖z‖ < 1 by linarith)
+  · simpa [neg_zero, Real.exp_zero] using (show ‖z‖ < 1 by linarith)
 
 /-- The source annulus has a finite inverse moment once the source reference disk does. -/
 theorem lateralUnitBlock_source_annulus_inverse_finite_of_reference

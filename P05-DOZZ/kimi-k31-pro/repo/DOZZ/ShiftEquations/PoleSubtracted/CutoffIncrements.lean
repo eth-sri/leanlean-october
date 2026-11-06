@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.ShiftEquations.PoleSubtracted.CutoffMoments
+import DOZZ.ShiftEquations.PoleSubtracted.CutoffMoments
 
 /-!
 # Exponential decay of the cutoff increments
@@ -17,7 +16,6 @@ Hölder with `r₂` close to `1` beats `e^{γ a₂ n}` because `γ a₂ < 1`. Bo
 uniformly on a compact range `a ∈ [a₁, a₂]`.
 -/
 
-@[expose] public section
 
 open MeasureTheory Filter Topology Set
 open scoped ENNReal NNReal
@@ -168,7 +166,7 @@ theorem exists_lintegral_cutoffIncrement_le {Ω : Type*} [MeasurableSpace Ω] (P
     have hγ4 : 1 / (4 / γ ^ 2) = γ ^ 2 / 4 := by field_simp
     rcases le_or_gt (-a₁ / γ) 0 with h | h
     · rw [hc₁, max_eq_right h]
-      exact hroom'
+      assumption
     · rw [hc₁, max_eq_left h.le, hγ4]
       refine lt_of_le_of_lt ?_ hroom
       exact div_le_div_of_nonneg_right (by linarith) hγ.le
@@ -289,4 +287,3 @@ theorem exists_lintegral_cutoffIncrement_le {Ω : Type*} [MeasurableSpace Ω] (P
 
 end DOZZ.Proofs
 
-end

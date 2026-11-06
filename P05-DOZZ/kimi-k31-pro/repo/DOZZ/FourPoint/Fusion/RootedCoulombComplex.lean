@@ -2,15 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.Fusion.RootedIntegrability
-public import DOZZ.FourPoint.Fusion.RootedLowerBound
-public import DOZZ.FourPoint.Fusion.MovingRootFiniteness
+import DOZZ.FourPoint.Fusion.RootedIntegrability
+import DOZZ.FourPoint.Fusion.RootedLowerBound
+import DOZZ.FourPoint.Fusion.MovingRootFiniteness
 
 /-! # Signed rooting of Coulomb inverse moments with an integrable spatial observable -/
 
-@[expose] public section
 open MeasureTheory Filter
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs

@@ -2,11 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Reflected.ReflectionRealMoments
-public import DOZZ.Brownian.Reflection.LastCut
+import DOZZ.FourPoint.Reflected.ReflectionRealMoments
+import DOZZ.Brownian.Reflection.LastCut
 /-! Signed real expectations of the actual supplied reflection mass. -/
-@[expose] public section
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -29,9 +27,9 @@ theorem reflected_reflection_cut_real_moment
       (twoSidedReflectionCutMass_le_mass γ H B Z ω) hq0)
       (reflected_reflection_mass_moment_lt_top P γ α q B Z hα hData hq)
   constructor
-  · simpa only [ENNReal.toReal_rpow] using
+  · simpa [ENNReal.toReal_rpow] using
       integrable_toReal_of_lintegral_ne_top (hm.pow_const q) hf.ne
-  · simpa only [ENNReal.toReal_rpow] using
+  · simpa [ENNReal.toReal_rpow] using
       integral_toReal (hm.pow_const q) (ae_lt_top' (hm.pow_const q) hf.ne)
 
 end DOZZ.Proofs

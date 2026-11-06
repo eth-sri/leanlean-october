@@ -2,11 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Complex.Identity
-public import Mathlib.MeasureTheory.Integral.TorusIntegral
-public import Mathlib.Analysis.Complex.LocallyUniformLimit
+import DOZZ.Complex.Identity
+import Mathlib.MeasureTheory.Integral.TorusIntegral
+import Mathlib.Analysis.Complex.LocallyUniformLimit
 
 /-!
 # Finite-dimensional Weierstrass theorem
@@ -16,7 +15,6 @@ integral and its joint derivative. Smaller polydiscs provide neighborhoods
 on which the resulting derivative convergence is uniform.
 -/
 
-@[expose] public section
 
 open MeasureTheory Filter Topology Set Complex
 open scoped Real
@@ -36,9 +34,7 @@ theorem torusMap_coordinate_mem_sphere {N : ℕ} (a : Fin N → ℂ) (R : Fin N 
 /-- The whole product torus lies in the closed coordinate polydisc. -/
 theorem torusMap_mem_closed_pi {N : ℕ} (a : Fin N → ℂ) (R : Fin N → ℝ)
     (hR : ∀ i, 0 ≤ R i) (θ : Fin N → ℝ) :
-    torusMap a R θ ∈ Set.pi Set.univ (fun i => Metric.closedBall (a i) (R i)) := by
-  intro i _
-  exact Metric.sphere_subset_closedBall (torusMap_coordinate_mem_sphere a R hR θ i)
+    torusMap a R θ ∈ Set.pi Set.univ (fun i => Metric.closedBall (a i) (R i)) := fun i _ => Metric.sphere_subset_closedBall (torusMap_coordinate_mem_sphere a R hR θ i)
 
 /-- The product torus parameterization is continuous. -/
 theorem continuous_torusMap {N : ℕ} (a : Fin N → ℂ) (R : Fin N → ℝ) :
@@ -104,24 +100,12 @@ theorem productCauchyKernel_cons {N : ℕ} (z : Fin (N + 1) → ℂ)
 /-- Inserting a fixed initial coordinate is complex differentiable. -/
 theorem differentiable_cons_tail {N : ℕ} (w : ℂ) :
     Differentiable ℂ (Fin.cons (α := fun _ => ℂ) w : (Fin N → ℂ) → (Fin (N + 1) → ℂ)) := by
-  apply differentiable_pi.mpr
-  intro i
-  refine Fin.cases ?_ (fun j => ?_) i
-  · simp only [Fin.cons_zero]
-    exact differentiable_const w
-  · simp only [Fin.cons_succ]
-    exact (ContinuousLinearMap.proj j : (Fin N → ℂ) →L[ℂ] ℂ).differentiable
+  fun_prop
 
 /-- Varying just the initial coordinate is complex differentiable. -/
 theorem differentiable_cons_head {N : ℕ} (v : Fin N → ℂ) :
     Differentiable ℂ (fun w => Fin.cons (α := fun _ => ℂ) w v) := by
-  apply differentiable_pi.mpr
-  intro i
-  refine Fin.cases ?_ (fun j => ?_) i
-  · simp only [Fin.cons_zero]
-    exact differentiable_id
-  · simp only [Fin.cons_succ]
-    exact differentiable_const (v j)
+  fun_prop
 
 /-- Closed polydisc membership splits into initial and tail coordinates. -/
 theorem mem_closed_pi_cons {N : ℕ} (a : Fin (N + 1) → ℂ) (R : Fin (N + 1) → ℝ)
@@ -132,13 +116,13 @@ theorem mem_closed_pi_cons {N : ℕ} (a : Fin (N + 1) → ℂ) (R : Fin (N + 1) 
   constructor
   · intro h
     refine ⟨?_, ?_⟩
-    · simpa only [Fin.cons_zero] using h 0 (mem_univ 0)
+    · simpa [Fin.cons_zero] using h 0 (mem_univ 0)
     · intro i _
-      simpa only [Fin.cons_succ] using h i.succ (mem_univ i.succ)
+      simpa [Fin.cons_succ] using h i.succ (mem_univ i.succ)
   · rintro ⟨hw, hv⟩ i _
     refine Fin.cases ?_ (fun j => ?_) i
-    · simpa only [Fin.cons_zero] using hw
-    · simpa only [Fin.cons_succ] using hv j (mem_univ j)
+    · simpa [Fin.cons_zero] using hw
+    · simpa [Fin.cons_succ] using hv j (mem_univ j)
 
 /-- Iterated scalar Cauchy gives the exact product contour representation.
 
@@ -156,7 +140,7 @@ theorem torusIntegral_productCauchyKernel {N : ℕ} (U : Set (Fin N → ℂ)) (h
       (2 * Real.pi * I : ℂ) ^ N * f z := by
   induction N with
   | zero =>
-      simp only [torusIntegral_dim0, productCauchyKernel, Fin.prod_univ_zero,
+      simp [torusIntegral_dim0, productCauchyKernel, Fin.prod_univ_zero,
         mul_one, pow_zero, one_mul]
       congr 1
       exact Subsingleton.elim a z
@@ -166,14 +150,14 @@ theorem torusIntegral_productCauchyKernel {N : ℕ} (U : Set (Fin N → ℂ)) (h
       have htail : (z ∘ Fin.succ) ∈
           Set.pi Set.univ (fun i => Metric.closedBall (a i.succ) (R i.succ)) := by
         intro i _
-        simpa only [Metric.mem_closedBall, dist_eq_norm, Function.comp_apply] using (hz i.succ).le
+        simpa [Metric.mem_closedBall, dist_eq_norm, Function.comp_apply] using (hz i.succ).le
       have hstep : EqOn
           (fun w => torusIntegral (fun v => f (Fin.cons (α := fun _ => ℂ) w v) * productCauchyKernel z (Fin.cons (α := fun _ => ℂ) w v))
             (a ∘ Fin.succ) (R ∘ Fin.succ))
           (fun w => (2 * Real.pi * I : ℂ) ^ N * ((w - z 0)⁻¹ * f (Fin.cons (α := fun _ => ℂ) w (z ∘ Fin.succ))))
           (Metric.sphere (a 0) (R 0)) := by
         intro w hw
-        dsimp only
+        dsimp
         let V := (Fin.cons (α := fun _ => ℂ) w) ⁻¹' U
         have hwclosed := Metric.sphere_subset_closedBall hw
         have hV : IsOpen V := hU.preimage (differentiable_cons_tail w).continuous
@@ -197,7 +181,7 @@ theorem torusIntegral_productCauchyKernel {N : ℕ} (U : Set (Fin N → ℂ)) (h
           (fun v => (f ∘ Fin.cons (α := fun _ => ℂ) w) v * productCauchyKernel (z ∘ Fin.succ) v)
           (a ∘ Fin.succ) (R ∘ Fin.succ) = _
         rw [hih]
-        simp only [Function.comp_apply]
+        simp [Function.comp_apply]
         ring
       rw [circleIntegral.integral_congr (hR 0).le hstep, circleIntegral.integral_const_mul]
       have hheadMap : MapsTo (fun w => Fin.cons (α := fun _ => ℂ) w (z ∘ Fin.succ))
@@ -214,8 +198,8 @@ theorem torusIntegral_productCauchyKernel {N : ℕ} (U : Set (Fin N → ℂ)) (h
           (differentiable_cons_head (z ∘ Fin.succ) w)
       have hscalar := Complex.circleIntegral_sub_inv_smul_of_differentiable_on_off_countable
         countable_empty (show z 0 ∈ Metric.ball (a 0) (R 0) by
-          simpa only [Metric.mem_ball, dist_eq_norm] using hz 0) hc hd
-      simp only [smul_eq_mul, cons_zero_tail] at hscalar
+          simpa [Metric.mem_ball, dist_eq_norm] using hz 0) hc hd
+      simp [smul_eq_mul, cons_zero_tail] at hscalar
       rw [hscalar, pow_succ]
       ring
 
@@ -232,7 +216,7 @@ theorem hasFDerivAt_inverse_coordinate {N : ℕ} (z w : Fin N → ℂ) (i : Fin 
       (((w i - z i) ^ 2)⁻¹ • (ContinuousLinearMap.proj i : (Fin N → ℂ) →L[ℂ] ℂ)) z := by
   have hproj := (ContinuousLinearMap.proj i : (Fin N → ℂ) →L[ℂ] ℂ).hasFDerivAt (x := z)
   have h := (hasDerivAt_inv hne).comp_hasFDerivAt z (hproj.const_sub (w i))
-  simpa only [Function.comp_def, ContinuousLinearMap.proj_apply,
+  simpa [Function.comp_def, ContinuousLinearMap.proj_apply,
     neg_smul, smul_neg, neg_neg] using h
 
 /-- Finite product differentiation supplies the joint kernel derivative. -/
@@ -241,14 +225,14 @@ theorem hasFDerivAt_productCauchyKernel {N : ℕ} (z w : Fin N → ℂ)
     HasFDerivAt (fun v => productCauchyKernel v w) (productCauchyKernelDeriv z w) z := by
   have h := HasFDerivAt.finsetProd (u := Finset.univ)
     (fun i _ => hasFDerivAt_inverse_coordinate z w i (hne i))
-  simpa only [productCauchyKernel, productCauchyKernelDeriv, Finset.prod_apply] using h
+  simpa [productCauchyKernel, productCauchyKernelDeriv, Finset.prod_apply] using h
 
 /-- Coordinate evaluation has operator norm at most one in the finite maximum norm. -/
 theorem norm_coordinate_proj_le_one {N : ℕ} (i : Fin N) :
     ‖(ContinuousLinearMap.proj i : (Fin N → ℂ) →L[ℂ] ℂ)‖ ≤ 1 := by
   apply ContinuousLinearMap.opNorm_le_bound _ zero_le_one
   intro z
-  simpa only [ContinuousLinearMap.proj_apply, one_mul] using norm_le_pi_norm z i
+  simpa [ContinuousLinearMap.proj_apply, one_mul] using norm_le_pi_norm z i
 
 /-- Fixed coordinate bounds give a fixed bound for the joint derivative. -/
 noncomputable def productCauchyDerivBound {N : ℕ} (b : Fin N → ℝ) : ℝ :=
@@ -280,13 +264,13 @@ theorem norm_productCauchyKernelDeriv_le {N : ℕ} (z w : Fin N → ℂ) (b : Fi
     Finset.prod_le_prod₀ (fun j _ => norm_nonneg _) (fun j _ => hbound j)
   have hsquare : (‖w i - z i‖ ^ 2)⁻¹ ≤ (b i) ^ 2 := by
     rw [← inv_pow]
-    exact pow_le_pow_left₀ (by positivity) (by simpa only [norm_inv] using hbound i) 2
+    exact pow_le_pow_left₀ (by positivity) (by simpa [norm_inv] using hbound i) 2
   have hterm : (‖w i - z i‖ ^ 2)⁻¹ *
       ‖(ContinuousLinearMap.proj i : (Fin N → ℂ) →L[ℂ] ℂ)‖ ≤ (b i) ^ 2 := by
     calc
       _ ≤ (‖w i - z i‖ ^ 2)⁻¹ * 1 :=
         mul_le_mul_of_nonneg_left (norm_coordinate_proj_le_one i) (by positivity)
-      _ ≤ (b i) ^ 2 := by simpa only [mul_one] using hsquare
+      _ ≤ (b i) ^ 2 := by simpa [mul_one] using hsquare
   exact mul_le_mul hprod hterm (by positivity) (Finset.prod_nonneg fun j _ => hb j)
 
 /-- The half-sized parameter polydisc stays a fixed distance from every contour coordinate. -/
@@ -296,7 +280,7 @@ theorem inverse_coordinate_bound_on_torus {N : ℕ} (a : Fin N → ℂ) (R : Fin
     ‖(torusMap a R θ i - z i)⁻¹‖ ≤ (R i / 2)⁻¹ := by
   have hcircle := torusMap_coordinate_mem_sphere a R (fun i => (hR i).le) θ i
   have hnorm : ‖torusMap a R θ i - a i‖ = R i := by
-    simpa only [Metric.mem_sphere, dist_eq_norm] using hcircle
+    simpa [Metric.mem_sphere, dist_eq_norm] using hcircle
   have hdiff := norm_sub_norm_le (torusMap a R θ i - a i) (z i - a i)
   have hsub : (torusMap a R θ i - a i) - (z i - a i) = torusMap a R θ i - z i := by ring
   rw [hnorm, hsub] at hdiff
@@ -360,9 +344,7 @@ noncomputable def polydiscCauchyDeriv {N : ℕ} (f : (Fin N → ℂ) → ℂ)
 /-- The half-sized polydisc is contained in the original one. -/
 theorem half_complexPolydisc_subset {N : ℕ} (a : Fin N → ℂ) (R : Fin N → ℝ)
     (hR : ∀ i, 0 < R i) :
-    complexPolydisc a (fun i => R i / 2) ⊆ complexPolydisc a R := by
-  intro z hz i
-  exact (hz i).trans (half_lt_self (hR i))
+    complexPolydisc a (fun i => R i / 2) ⊆ complexPolydisc a R := fun z hz i => (hz i).trans (half_lt_self (hR i))
 
 /-- A continuous boundary function gives a differentiable Cauchy transform. -/
 theorem hasFDerivAt_polydiscCauchy {N : ℕ} (f : (Fin N → ℂ) → ℂ)
@@ -536,7 +518,7 @@ theorem tendstoUniformlyOn_of_norm_bound {X Z E : Type*} [NormedAddCommGroup E]
   rw [dist_eq_norm, norm_sub_rev]
   refine (hbound n (ε / (C + 1)) (div_nonneg hε.le hden.le)
     (fun x hx => ?_) z hz).trans_lt ?_
-  · simpa only [dist_eq_norm, norm_sub_rev] using (hn x hx).le
+  · simpa [dist_eq_norm, norm_sub_rev] using (hn x hx).le
   · calc
       C * (ε / (C + 1)) < (C + 1) * (ε / (C + 1)) := by
         apply mul_lt_mul_of_pos_right (lt_add_one C) (div_pos hε hden)
@@ -594,8 +576,7 @@ theorem tendstoUniformlyOn_polydiscCauchyDeriv {N : ℕ} (F : ℕ → (Fin N →
 
 /-- The normalization in the product Cauchy formula is nonzero. -/
 theorem cauchyNormalization_ne_zero (N : ℕ) : (2 * Real.pi * I : ℂ) ^ N ≠ 0 := by
-  apply pow_ne_zero
-  exact mul_ne_zero (mul_ne_zero (by norm_num) (ofReal_ne_zero.mpr Real.pi_ne_zero)) I_ne_zero
+  simp
 
 /-- A normalized Cauchy representation supplies the derivative of the represented function. -/
 theorem hasFDerivAt_of_polydiscCauchy_eq {N : ℕ} (f : (Fin N → ℂ) → ℂ)
@@ -667,7 +648,7 @@ theorem weierstrass_on_polydisc {N : ℕ} (U : Set (Fin N → ℂ)) (hU : IsOpen
   exact (hscaled.congr_right (fun z hz => (hd z hz).fderiv.symm)).congr
     (Eventually.of_forall fun n z hz => (hdF n z hz).fderiv.symm)
 
-/-- Proof of `DOZZ.differentiableOn_of_tendstoLocallyUniformlyOn_fin`: the locally uniform limit is
+/-- Proof of `differentiableOn_of_tendstoLocallyUniformlyOn_fin`: the locally uniform limit is
 jointly holomorphic, with locally uniform convergence of its full complex Fréchet derivative. -/
 theorem differentiableOn_of_tendstoLocallyUniformlyOn_fin {N : ℕ}
     (U : Set (Fin N → ℂ)) (hU : IsOpen U)

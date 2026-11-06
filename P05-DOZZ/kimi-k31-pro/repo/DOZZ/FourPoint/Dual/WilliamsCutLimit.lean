@@ -2,20 +2,18 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Dual.FullMaximumLimit
-public import DOZZ.FourPoint.Dual.FixedCutMaximumLimit
-public import DOZZ.FourPoint.Dual.SourceWilliamsSandwich
-public import DOZZ.FourPoint.Dual.CutSqueezeLimit
-public import DOZZ.FourPoint.Dual.SourceParetoLimit
-public import DOZZ.FourPoint.Dual.SourceParetoIncrement
-public import DOZZ.FourPoint.Dual.SourceMaximumPareto
-public import DOZZ.Statements.Brownian.EquatorGFFLateralGMCDecomposition
-public import DOZZ.FourPoint.Reflected.RestartedWilliams
-public import DOZZ.FourPoint.Dual.RadialFirstOrder
+import DOZZ.FourPoint.Dual.FullMaximumLimit
+import DOZZ.FourPoint.Dual.FixedCutMaximumLimit
+import DOZZ.FourPoint.Dual.SourceWilliamsSandwich
+import DOZZ.FourPoint.Dual.CutSqueezeLimit
+import DOZZ.FourPoint.Dual.SourceParetoLimit
+import DOZZ.FourPoint.Dual.SourceParetoIncrement
+import DOZZ.FourPoint.Dual.SourceMaximumPareto
+import DOZZ.Statements.Brownian.EquatorGFFLateralGMCDecomposition
+import DOZZ.FourPoint.Reflected.RestartedWilliams
+import DOZZ.FourPoint.Dual.RadialFirstOrder
 import Mathlib.Tactic
 /-! The actual Williams random last cut has the full same-witness leading coefficient. -/
-@[expose] public section
 open MeasureTheory ProbabilityTheory Set Filter Topology
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -69,7 +67,7 @@ theorem dual_source_williams_cut_increment_tendsto
   have hp : 0 < p := div_pos (by linarith only [hs]) hγ
   have ha : 0 < a := div_pos (mul_pos (by norm_num) (sub_pos.mpr hα₁)) hγ
   have ha1 : a < 1 := by
-    dsimp only [a, ν]
+    dsimp [a, ν]
     rw [div_lt_one hγ]
     linarith only [hreflect]
   have h4 : 1 < 4/γ^2 := by
@@ -93,23 +91,23 @@ theorem dual_source_williams_cut_increment_tendsto
       with z hz0 hz
     have he := (dual_radial_scale_real_expectation P X hX γ hγ hγ₂ M hM Xc hc
       ν h 1 α₁ α₂ α₃ ξ (p+1) hh hξ hξ1 (by linarith only [hp]) z hz0 hz.le).2
-    simp only [Real.rpow_one, show -(p+1) = -p-1 by ring] at he
+    simp [Real.rpow_one, show -(p+1) = -p-1 by ring] at he
     change _ = F z/‖z‖^κ
-    dsimp only [F, A, b]
+    dsimp [F, A, b]
     rw [he]
     simp_rw [dual_radial_scale_eq_restart γ ν h Xc z hz0]
-    simp only [ν, show -(p+1) = -p-1 by ring]
+    simp [ν, show -(p+1) = -p-1 by ring]
   have hErr (c : ℝ) : Tendsto (fun z => Err c z/‖z‖^κ) (𝓝[≠] (0 : ℂ)) (𝓝 0) := by
     have ht := hF.const_mul (p*Real.exp (γ*c)*J₁)
-    simp only [mul_zero] at ht
+    simp [mul_zero] at ht
     apply ht.congr
     intro z
-    dsimp only [Err]
+    dsimp [Err]
     ring
   change Tendsto (fun z => D z/‖z‖^κ) (𝓝[≠] (0 : ℂ)) (𝓝 L)
   apply dual_cut_squeeze_tendsto _ _ (fun z => Dfull z/‖z‖^κ)
     (fun c z => Dc c z/‖z‖^κ) (fun c z => Err c z/‖z‖^κ) Cc L hfull
-    (fun c => by simpa only [add_zero] using (hcut c).add (hErr c)) hCoeff
+    (fun c => by simpa [add_zero] using (hcut c).add (hErr c)) hCoeff
   intro c
   filter_upwards [self_mem_nhdsWithin, hn.eventually (gt_mem_nhds (by norm_num : ‖(0 : ℂ)‖ < 1))]
     with z hz0 hz
@@ -119,6 +117,6 @@ theorem dual_source_williams_cut_increment_tendsto
   have hden : 0 ≤ ‖z‖^κ := Real.rpow_nonneg (norm_nonneg z) _
   refine ⟨div_le_div_of_nonneg_right hb.1 hden, ?_⟩
   have hu := div_le_div_of_nonneg_right hb.2 hden
-  simpa only [add_div] using hu
+  simpa [add_div] using hu
 
 end DOZZ.Proofs

@@ -2,15 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.FourPoint.ThreePointFiniteCorrelation
+import DOZZ.Statements.FourPoint.ThreePointFiniteCorrelation
 import DOZZ.FourPoint.Diagonal.Assembly
 
 /-! The statement `DOZZ.degenerateFourPoint_diagonal_classification`,
 proved by `DOZZ.Proofs.degenerateFourPoint_diagonal_classification`. -/
 
-public section
 
 open MeasureTheory ProbabilityTheory Filter Topology TopologicalSpace Set
 open scoped ENNReal NNReal Topology
@@ -19,7 +17,7 @@ namespace DOZZ
 
 /-- The normalized physical solution has the diagonal Gauss representation with its coefficient
 fixed by `T(0) = C`. The physical charge domain supplies nonresonance and nonzero `K₂` (see
-`DOZZ.gauss_physical_parameter_range` and `DOZZ.real_gauss_solution_physical_normalization`); the
+`gauss_physical_parameter_range` and `real_gauss_solution_physical_normalization`); the
 general classification retains the guard `K₂ ≠ 0` (erratum K27, see
 docs/ERRATA-AND-DEVIATIONS.md). -/
 theorem degenerateFourPoint_diagonal_classification {Ω : Type*} [MeasurableSpace Ω]
@@ -39,6 +37,6 @@ theorem degenerateFourPoint_diagonal_classification {Ω : Type*} [MeasurableSpac
         structureConstant P M γ μ (α₁ - χ) α₂ α₃ *
           (‖gaussFMinus H a b c z‖ ^ 2 +
             gaussCoefficientRatio a b c *
-              ‖gaussFPlus H a b c z‖ ^ 2) := by exact DOZZ.Proofs.degenerateFourPoint_diagonal_classification hH P X M γ μ χ α₁ α₂ α₃ hγ hγ₂ hμ hχ hα₁ hα₂ hα₃ hs hX hM
+              ‖gaussFPlus H a b c z‖ ^ 2) := Proofs.degenerateFourPoint_diagonal_classification hH P X M γ μ χ α₁ α₂ α₃ hγ hγ₂ hμ hχ hα₁ hα₂ hα₃ hs hX hM
 
 end DOZZ

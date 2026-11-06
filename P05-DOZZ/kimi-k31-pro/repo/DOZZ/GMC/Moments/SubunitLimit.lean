@@ -2,17 +2,15 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.Defs.IsGMCOf
-public import DOZZ.GMC.Moments.CutoffSubunit
-public import DOZZ.GMC.Moments.LimitFatou
-public import DOZZ.GMC.Moments.ReferenceFinite
-public import Mathlib.MeasureTheory.Constructions.BorelSpace.Real
+import DOZZ.Statements.Defs.IsGMCOf
+import DOZZ.GMC.Moments.CutoffSubunit
+import DOZZ.GMC.Moments.LimitFatou
+import DOZZ.GMC.Moments.ReferenceFinite
+import Mathlib.MeasureTheory.Constructions.BorelSpace.Real
 
 /-! Subunit total-mass moments for arbitrary `IsGMCOf` limits. -/
 
-@[expose] public section
 
 open MeasureTheory Filter
 open scoped ENNReal
@@ -43,8 +41,7 @@ theorem gmc_total_mass_subunit_moment_bound
   have hmassFinite (n : ℕ) : ∀ᵐ ω ∂P,
       regularizedGMC P Xc γ n ω Set.univ < ∞ := by
     apply ae_lt_top' (hmass n)
-    rw [hmean n]
-    exact href
+    rwa [hmean n]
   have hcutoffEq (n : ℕ) : ∀ᵐ ω ∂P,
       ENNReal.ofReal (max (cutoff n ω) 0) = regularizedGMC P Xc γ n ω Set.univ := by
     filter_upwards [hmassFinite n] with ω hω

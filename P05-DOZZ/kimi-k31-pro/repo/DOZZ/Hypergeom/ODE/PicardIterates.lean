@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Hypergeom.ODE.DiskPrimitive
+import DOZZ.Hypergeom.ODE.DiskPrimitive
 import Mathlib.Analysis.Calculus.FDeriv.CompCLM
 
 /-! Holomorphic Picard iterates for a linear system on a disk (local step). -/
 
-@[expose] public section
 
 namespace DOZZ.Proofs
 
@@ -36,9 +34,9 @@ theorem holomorphicPicardIterates_apply_center (c : ℂ) (r : ℝ)
     ∀ n : ℕ, (holomorphicPicardIterates c r H hH y n).1 c = if n = 0 then y else 0 := by
   intro n
   cases n with
-  | zero => simp only [holomorphicPicardIterates, ↓reduceIte]
+  | zero => simp [holomorphicPicardIterates, ↓reduceIte]
   | succ _ =>
-      simp only [Nat.succ_ne_zero, ↓reduceIte, holomorphicPicardIterates]
+      simp [↓reduceIte, holomorphicPicardIterates]
       exact normalizedDiskPrimitive_apply_center c r _ 0 _
 
 theorem holomorphicPicardIterates_hasDerivAt_succ (c : ℂ) (r : ℝ)
@@ -46,7 +44,7 @@ theorem holomorphicPicardIterates_hasDerivAt_succ (c : ℂ) (r : ℝ)
     (n : ℕ) {z : ℂ} (hz : z ∈ Metric.ball c r) :
     HasDerivAt (holomorphicPicardIterates c r H hH y (n + 1)).1
       (H z ((holomorphicPicardIterates c r H hH y n).1 z)) z := by
-  simp only [holomorphicPicardIterates]
+  simp [holomorphicPicardIterates]
   exact hasDerivAt_normalizedDiskPrimitive
     (hH.clm_apply (holomorphicPicardIterates c r H hH y n).2) hz
 

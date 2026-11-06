@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Brownian.LastExitConditionalAvoidanceAllStates
+import DOZZ.Brownian.LastExitConditionalAvoidanceAllStates
 
 /-!
 # Deterministic-time past/future avoidance factorization
@@ -13,7 +12,6 @@ Integrating the full-history conditional avoidance identity over any event measu
 deterministic time gives the past/future factorization needed on each dyadic last-exit cell.
 -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal NNReal
@@ -103,4 +101,3 @@ theorem conditionedPositiveHistory_avoidance_shift_setIntegral
 
 end DOZZ.Proofs
 
-end

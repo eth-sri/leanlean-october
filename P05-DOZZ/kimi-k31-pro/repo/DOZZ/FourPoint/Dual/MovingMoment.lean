@@ -2,17 +2,15 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.Dual.RelativeMass
-public import DOZZ.FourPoint.ReflectedOuter.InversePerturbation
-public import DOZZ.FourPoint.Dual.RootedIdentity
+import DOZZ.FourPoint.Dual.RelativeMass
+import DOZZ.FourPoint.ReflectedOuter.InversePerturbation
+import DOZZ.FourPoint.Dual.RootedIdentity
 
 import Mathlib.Tactic
 
 /-! # The moving inverse-moment error at the relative cutoff scale -/
 
-@[expose] public section
 open MeasureTheory Set
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -40,7 +38,7 @@ theorem dual_outer_moving_moment_bound {Ω : Type*} [MeasurableSpace Ω]
   obtain ⟨Ct, _, htb⟩ := dual_outerMass_inverse_moment_uniform
     P X hX γ hγ hγ₂ M hM α₁ α₂ α₃ p hp.le
   let A : ℝ := p * (1 / 4 : ℝ) ^ (-(p + 1))
-  have hA : 0 < A := by dsimp only [A]; positivity
+  have hA : 0 < A := by dsimp [A]; positivity
   refine ⟨A * 4 * Cs, by positivity, ?_⟩
   intro z ξ hr hr₁ hz₁ hz
   let r : ℝ := ‖z‖ ^ (1 - ξ)
@@ -48,7 +46,7 @@ theorem dual_outer_moving_moment_bound {Ω : Type*} [MeasurableSpace Ω]
   let S : Ω → ℝ≥0∞ := fun ω => dualRetainedZeroMass γ α₁ α₂ α₃ r (M ω)
   let T : Ω → ℝ≥0∞ := fun ω => dualOuterMass γ α₁ α₂ α₃ (M ω) z ξ
   let R : Ω → ℝ≥0∞ := fun ω => ENNReal.ofReal (A * d) * S ω ^ (-p)
-  have hd : 0 ≤ d := by dsimp only [d]; positivity
+  have hd : 0 ≤ d := by dsimp [d]; positivity
   have hm := gmc_measure_aemeasurable_of_isGMCOf P X hX γ hγ hγ₂ M hM
   have hSm : AEMeasurable S P :=
     (dual_retainedZero_measure_measurable γ α₁ α₂ α₃ r).comp_aemeasurable hm
@@ -57,11 +55,11 @@ theorem dual_outer_moving_moment_bound {Ω : Type*} [MeasurableSpace Ω]
   have hSt : (∫⁻ ω, S ω ^ (-p) ∂P) ≠ ⊤ := ne_top_of_le_ne_top ENNReal.ofReal_ne_top (hsb r hr₁)
   have hTt : (∫⁻ ω, T ω ^ (-p) ∂P) ≠ ⊤ := ne_top_of_le_ne_top ENNReal.ofReal_ne_top (htb z ξ hz₁ hr₁)
   have hRb : (∫⁻ ω, R ω ∂P) ≤ ENNReal.ofReal ((A * 4 * Cs) * (‖z‖ / r)) := by
-    dsimp only [R]
+    dsimp [R]
     rw [lintegral_const_mul' _ _ ENNReal.ofReal_ne_top]
     calc
       _ ≤ ENNReal.ofReal (A * d) * ENNReal.ofReal Cs := mul_le_mul' le_rfl (hsb r hr₁)
-      _ = _ := by rw [← ENNReal.ofReal_mul (mul_nonneg hA.le hd)]; congr 1; dsimp only [d]; ring
+      _ = _ := by rw [← ENNReal.ofReal_mul (mul_nonneg hA.le hd)]; congr 1; dsimp [d]; ring
   have hRt := ne_top_of_le_ne_top ENNReal.ofReal_ne_top hRb
   have hcomp : ∀ᵐ ω ∂P,
       T ω ^ (-p) ≤ S ω ^ (-p) + R ω ∧ S ω ^ (-p) ≤ T ω ^ (-p) + R ω := by
@@ -82,6 +80,6 @@ theorem dual_outer_moving_moment_bound {Ω : Type*} [MeasurableSpace Ω]
     _ ≤ (∫⁻ ω, R ω ∂P).toReal := hh
     _ ≤ (A * 4 * Cs) * (‖z‖ / r) := by
       have ht := ENNReal.toReal_mono ENNReal.ofReal_ne_top hRb
-      simpa only [ENNReal.toReal_ofReal (by positivity : 0 ≤ (A * 4 * Cs) * (‖z‖ / r))] using ht
+      simpa [ENNReal.toReal_ofReal (by positivity : 0 ≤ (A * 4 * Cs) * (‖z‖ / r))] using ht
 
 end DOZZ.Proofs

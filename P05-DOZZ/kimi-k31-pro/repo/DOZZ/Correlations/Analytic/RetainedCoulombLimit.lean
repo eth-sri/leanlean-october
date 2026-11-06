@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.Analytic.RetainedNegativeMoments
-public import DOZZ.Correlations.Analytic.RetainedMomentLimit
+import DOZZ.Correlations.Analytic.RetainedNegativeMoments
+import DOZZ.Correlations.Analytic.RetainedMomentLimit
 
 /-! Real moment identification of the retained Coulomb cutoff. -/
 
-@[expose] public section
 open MeasureTheory Filter Topology
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -46,13 +44,13 @@ theorem retained_coulomb_moment_tendsto
     constructor
     · apply lintegral_mono_set
       exact retainedRegion_mono z (Nat.cast_le.mpr
-        (by simpa only [zero_add] using Nat.le_add_left n0 n))
+        (by simpa [zero_add] using Nat.le_add_left n0 n))
     · exact setLIntegral_le_lintegral _ _
   have hatoms : ∀ᵐ ω ∂P, ∀ i, M ω {z i} = 0 := ae_all_iff.mpr
     (fun i => gmc_singleton_mass_eq_zero_ae P X hX γ hγ hγ2 M hM (z i))
   have hlim : ∀ᵐ ω ∂P, Tendsto (fun n => f n ω) atTop (𝓝 (g ω)) := by
     filter_upwards [hatoms] with ω hω
-    simpa only [f, g, Function.comp_def, coulombMass_eq_lintegral_coulombWeight] using
+    simpa [f, g, Function.comp_def, coulombMass_eq_lintegral_coulombWeight] using
       (retained_weighted_mass_tendsto (M ω) z hω
         (coulombWeight γ α z αinf)).comp (tendsto_add_atTop_nat n0)
   have hpos (hp : 0 ≤ p) : (∫⁻ ω, g ω ^ p ∂P) < ⊤ := by
@@ -62,7 +60,7 @@ theorem retained_coulomb_moment_tendsto
     · exact coulombMass_moment_lt_top_of_pos P X hX γ hγ hγ2 M hM z hz α αinf p hp0
         hpbulk hproot hpinf
   have hneg (hp : p < 0) : (∫⁻ ω, f 0 ω ^ p ∂P) < ⊤ := by
-    simpa only [f, zero_add] using
+    simpa [f, zero_add] using
       retained_coulomb_mass_nonpos_moment_finite P X hX γ hγ hγ2 M hM α z αinf
         (retainedRegion z n0) R hR hzR hB p hp.le
   have ht := retained_mass_moment_limit P f g p hf horder hlim hpos hneg

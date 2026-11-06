@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.SeparatedTail.LocalWeights
-public import DOZZ.Correlations.SumTail.Ceiling
+import DOZZ.Correlations.SeparatedTail.LocalWeights
+import DOZZ.Correlations.SumTail.Ceiling
 
 /-! Prove finiteness before translating the extended-mass sum and the joint events. -/
 
-@[expose] public section
 open MeasureTheory Set
 open scoped ENNReal
 namespace DOZZ.Proofs

@@ -2,11 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import Mathlib.MeasureTheory.Integral.Prod
+import Mathlib.MeasureTheory.Integral.Prod
 import Mathlib.Analysis.SpecialFunctions.Pow.Real
 /-! Signed inverse increments are dominated by the retained inverse moment. -/
-@[expose] public section
 open MeasureTheory
 namespace DOZZ.Proofs
 

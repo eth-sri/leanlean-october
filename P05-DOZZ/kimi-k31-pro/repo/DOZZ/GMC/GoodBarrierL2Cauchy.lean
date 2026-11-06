@@ -1,2 +1,1 @@
-module
-public import Mathlib.MeasureTheory.Integral.Bochner.Basic
+import Mathlib.MeasureTheory.Integral.Bochner.Basic

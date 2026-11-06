@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GFF.TorusModeTests
-public import DOZZ.GFF.TorusFourierSobolev
+import DOZZ.GFF.TorusModeTests
+import DOZZ.GFF.TorusFourierSobolev
 
 /-!
 # DOZZ.GFF.TorusModeHS
@@ -14,7 +13,6 @@ The concrete cutoff trigonometric modes have uniformly bounded covariance energy
 box. The reciprocal H² weights make their energy sum finite.
 -/
 
-@[expose] public section
 
 open MeasureTheory Set Metric
 open scoped InnerProductSpace Topology
@@ -116,4 +114,3 @@ theorem summable_localTorusSinHSEnergy (R L : ℝ) (hR : 0 < R) :
 
 end DOZZ
 
-end

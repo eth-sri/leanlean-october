@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.ShiftEquations.DualR.DualL
+import DOZZ.ShiftEquations.DualR.DualL
 import DOZZ.DOZZAlgebra.GenericLocus
 import DOZZ.ShiftEquations.Reflection.RbarContinuity
 
@@ -17,7 +16,6 @@ dual shift `R(ε) = -c_γ R(ε + 2/γ)/(l(-4/γ²) l(2ε/γ) l(2 + 4/γ² - 2ε/
 `c_γ = (γ²/4) μπ R(γ)` ([KRV, §10.5], last display).
 -/
 
-@[expose] public section
 
 open Filter Topology Set
 
@@ -38,7 +36,6 @@ theorem four_div_sq_ne_nat {γ : ℝ} (hγ : 0 < γ) (hγirr : Irrational (γ ^ 
     push_cast
     linear_combination -hn
   have hr' : 4 / γ ^ 2 = (n : ℝ) := by exact_mod_cast hr
-  have hγ2 : 0 < γ ^ 2 := by positivity
   have hn0 : (n : ℝ) ≠ 0 := by
     rw [← hr']
     positivity
@@ -154,4 +151,3 @@ theorem dualShift_of_product {γ μ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2) (hγir
 
 end DOZZ.Proofs
 
-end

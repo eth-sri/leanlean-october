@@ -2,18 +2,16 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Hypergeom.ODE.SeriesRecurrence
-public import DOZZ.Hypergeom.ODE.GaussSystem
-public import DOZZ.Hypergeom.Series
+import DOZZ.Hypergeom.ODE.SeriesRecurrence
+import DOZZ.Hypergeom.ODE.GaussSystem
+import DOZZ.Hypergeom.Series
 import Mathlib.Analysis.Calculus.Deriv.Add
 import Mathlib.Analysis.Calculus.Deriv.Mul
 import Mathlib.Analysis.Calculus.FDeriv.Analytic
 
 /-! The ordinary Gauss series satisfies its scalar equation on the unit disk. -/
 
-@[expose] public section
 
 open Polynomial FormalMultilinearSeries
 
@@ -56,7 +54,7 @@ private theorem gaussSeriesCoeff_eq (a b c : ℂ) (n : ℕ) :
   rw [ordinaryHypergeometricSeries_apply_eq]
   simp [ordinaryHypergeometricCoefficient]
 
-private theorem gaussFirstDerivativeSeries_coeff (a b c : ℂ) (n : ℕ) :
+theorem gaussFirstDerivativeSeries_coeff (a b c : ℂ) (n : ℕ) :
     (gaussFirstDerivativeSeries a b c).coeff n =
       (n + 1 : ℂ) * ordinaryHypergeometricCoefficient a b c (n + 1) := by
   change ((gaussSeriesAtZero a b c).derivSeries.coeff n) 1 = _
@@ -64,7 +62,7 @@ private theorem gaussFirstDerivativeSeries_coeff (a b c : ℂ) (n : ℕ) :
   have hp : (gaussSeriesAtZero a b c).coeff (n + 1) =
       ordinaryHypergeometricCoefficient a b c (n + 1) := gaussSeriesCoeff_eq a b c (n + 1)
   rw [hp]
-  simp only [nsmul_eq_mul, Nat.cast_succ]
+  simp [nsmul_eq_mul, Nat.cast_succ]
 
 private theorem gaussZFirstDerivativeSeries_coeff_zero (a b c : ℂ) :
     (gaussZFirstDerivativeSeries a b c).coeff 0 = 0 := by
@@ -80,7 +78,7 @@ private theorem gaussZFirstDerivativeSeries_coeff_succ (a b c : ℂ) (n : ℕ) :
   have hp : (gaussSeriesAtZero a b c).coeff (n + 1) =
       ordinaryHypergeometricCoefficient a b c (n + 1) := gaussSeriesCoeff_eq a b c (n + 1)
   rw [hp]
-  simp only [nsmul_eq_mul, Nat.cast_succ]
+  simp [nsmul_eq_mul, Nat.cast_succ]
 
 private theorem gaussZFirstDerivativeSeries_coeff (a b c : ℂ) (n : ℕ) :
     (gaussZFirstDerivativeSeries a b c).coeff n =
@@ -130,7 +128,7 @@ private theorem gaussEquationResidualSeries_coeff (a b c : ℂ) (n : ℕ) :
     gaussSeriesCoeff_smul', gaussZOneSubZDerivativeDerivativeSeries_coeff,
     gaussOneSubZDerivativeSeries_coeff, gaussZFirstDerivativeSeries_coeff,
     gaussFirstDerivativeSeries_coeff, gaussSeriesCoeff_eq]
-  simp only [smul_eq_mul]
+  simp [smul_eq_mul]
   ring
 
 private theorem gaussEquationResidualSeries_eq_zero (a b c : ℂ)
@@ -148,8 +146,7 @@ private theorem hasFPowerSeriesOnBall_ordinaryHypergeometric (a b c : ℂ)
   let p := gaussSeriesAtZero a b c
   have hpos : 0 < p.radius :=
     ordinaryHypergeometricSeries_radius_pos a b c hc
-  have hle : (1 : ENNReal) ≤ p.radius := by
-    exact ordinaryHypergeometricSeries_one_le_radius a b c hc
+  have hle : (1 : ENNReal) ≤ p.radius := ordinaryHypergeometricSeries_one_le_radius a b c hc
   have hsum : ordinaryHypergeometric a b c = p.sum := by
     funext z
     rw [ordinaryHypergeometric_eq_tsum]
@@ -173,10 +170,7 @@ theorem ordinaryHypergeometric_analyticOnNhd_unitDisk (a b c : ℂ)
 
 private theorem fderiv_apply_eq_mul_deriv (f : ℂ → ℂ) (z : ℂ) :
     (fderiv ℂ f z) z = z * deriv f z := by
-  calc
-    (fderiv ℂ f z) z = (fderiv ℂ f z) (z • (1 : ℂ)) := by simp
-    _ = z • (fderiv ℂ f z) 1 := by rw [ContinuousLinearMap.map_smul]
-    _ = z * deriv f z := by rw [fderiv_apply_one_eq_deriv]; simp [smul_eq_mul]
+  simp
 
 /-- On the open unit disk, the ordinary series solves the scalar Gauss equation. This is
 the origin seed for the first-order continuation system; it includes terminating numerator cases. -/
@@ -239,7 +233,6 @@ theorem ordinaryHypergeometric_gaussEquation_on_unitDisk (a b c : ℂ)
   have hres : z * deriv g z - (a + b) • (z * deriv f z) +
       c • deriv f z - (a * b) • f z = 0 := by
     simpa [FormalMultilinearSeries.sum] using hsum
-  have hfAnalytic := hf.analyticAt_of_mem hzball
   have hfprimeAnalytic := hfprime.analyticAt_of_mem hzball
   have hfprimeDiff : DifferentiableAt ℂ (deriv f) z :=
     hfprimeAnalytic.differentiableAt
@@ -249,11 +242,8 @@ theorem ordinaryHypergeometric_gaussEquation_on_unitDisk (a b c : ℂ)
     have hfun : (fun w : ℂ => w * deriv f w) = (fun w : ℂ => w) * deriv f := by
       funext w
       rfl
-    simpa only [one_mul, id_def] using
+    simpa [one_mul, id_def] using
       hprodRaw.congr_of_eventuallyEq (Filter.Eventually.of_forall fun w => congrFun hfun w)
-  have hgdiff : DifferentiableAt ℂ g z := by
-    apply DifferentiableAt.sub hfprimeDiff
-      (hprod.differentiableAt)
   have hgderiv : deriv g z =
       deriv (deriv f) z - (deriv f z + z * deriv (deriv f) z) := by
     change deriv (deriv f - fun w => w * deriv f w) z = _

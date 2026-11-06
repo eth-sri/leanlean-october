@@ -2,12 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Dual.SourceDecouplingBound
-public import DOZZ.FourPoint.Reflected.Remainder
+import DOZZ.FourPoint.Dual.SourceDecouplingBound
+import DOZZ.FourPoint.Reflected.Remainder
 import Mathlib.Tactic
 /-! Actual lateral decoupling is negligible at the prescribed dual fusion exponent. -/
-@[expose] public section
 open MeasureTheory ProbabilityTheory Set Filter Topology
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -70,18 +68,18 @@ theorem dual_source_decoupling_littleO
     · exact ⟨fun _ => 0, fun hh => (hv hh).elim⟩
   choose N hN using hex
   have hn : Tendsto (fun z : ℂ => ‖z‖) (𝓝[≠] (0 : ℂ)) (𝓝 0) := by
-    simpa only [norm_zero] using (continuous_norm.tendsto (0 : ℂ)).mono_left nhdsWithin_le_nhds
+    simpa [norm_zero] using (continuous_norm.tendsto (0 : ℂ)).mono_left nhdsWithin_le_nhds
   have hpow (v : ℝ) (hv : 0 < v) : Tendsto (fun z : ℂ => ‖z‖^v) (𝓝[≠] (0 : ℂ)) (𝓝 0) := by
-    simpa only [Function.comp_def, Real.zero_rpow hv.ne'] using
+    simpa [Function.comp_def, Real.zero_rpow hv.ne'] using
       ((Real.continuous_rpow_const hv.le).tendsto (0 : ℝ)).comp hn
   have hratio : Tendsto (fun z : ℂ => s z/r z) (𝓝[≠] (0 : ℂ)) (𝓝 0) := by
     have ht := (hpow ξ hξ).const_mul (Real.exp (-h))
-    simp only [mul_zero] at ht
+    simp [mul_zero] at ht
     apply ht.congr'
     filter_upwards [self_mem_nhdsWithin] with z hz
     exact (dual_restart_radius_ratio z hz h ξ).symm
   have hdlim := hratio.const_mul d
-  simp only [mul_zero] at hdlim
+  simp [mul_zero] at hdlim
   have hv : ∀ᶠ z : ℂ in 𝓝[≠] (0 : ℂ), valid z := by
     filter_upwards [self_mem_nhdsWithin, hn.eventually (gt_mem_nhds zero_lt_one),
       (hpow (1-ξ) (sub_pos.mpr hξ1)).eventually (gt_mem_nhds zero_lt_one),
@@ -101,7 +99,7 @@ theorem dual_source_decoupling_littleO
     rw [Complex.norm_real, Real.norm_eq_abs]
     have hh := (hN z hz).2.2.2.2
     rw [show s z/r z = Real.exp (-h)*‖z‖^ξ from dual_restart_radius_ratio z hz0 h ξ] at hh
-    simpa only [mul_assoc] using hh
+    simpa [mul_assoc] using hh
   exact (isComplexLittleOAtZero_ofReal_iff κ f).mp
     (isComplexLittleOAtZero_of_norm_le_power hκ hb)
 

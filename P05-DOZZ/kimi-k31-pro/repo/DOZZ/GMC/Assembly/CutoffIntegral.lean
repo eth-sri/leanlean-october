@@ -2,13 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.Assembly.CutoffCauchy
+import DOZZ.GMC.Assembly.CutoffCauchy
 
 /-! The cutoff `L¹` Cauchy estimate over compact charge sets for signed Borel tests in real form, and the pointwise algebra of cutoff integrals in the test. -/
 
-@[expose] public section
 
 /-! ### Uniformity over compact charge sets
 
@@ -23,7 +21,7 @@ open scoped ENNReal NNReal
 
 namespace DOZZ.Assembly
 
-open DOZZ.Proofs
+open Proofs
 
 /-- Every subcritical charge has a closed neighbourhood with common barrier parameters. -/
 theorem exists_local_barrier_parameters (γ₀ : ℝ) (hγ₀ : 0 < γ₀) (hγ₀2 : γ₀ < 2) :
@@ -95,7 +93,7 @@ theorem chartMass_L1_uniform_cauchy
     (le_abs_self _).trans (Finset.single_le_sum (fun j _ => abs_nonneg (R j)) hi)
   exact hR i r s (hRi.trans hr) (hRi.trans hs) g ⟨hgi.1.le, hgi.2.le⟩ f hf hf0 hfL
 
-end DOZZ.Assembly
+end Assembly
 
 /-! ### Real cutoff integrals of signed tests
 
@@ -108,9 +106,9 @@ almost surely because the expected chart mass is finite. -/
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
 
-namespace DOZZ.Assembly
+namespace Assembly
 
-open DOZZ.Proofs
+open Proofs
 
 /-- The real cutoff test integral of an admissible regularization against a real test. -/
 noncomputable def admissibleCutoffIntegral {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
@@ -126,7 +124,7 @@ theorem ofReal_exp_eq_admissibleLogWickWeight
     ENNReal.ofReal (Real.exp (g * Y ω ε x - g ^ 2 / 2 * ∫ ω', Y ω' ε x ^ 2 ∂P)) =
       admissibleLogWickWeight P Y g ε x ω := by
   unfold admissibleLogWickWeight gaussianVariance gaussianCovariance
-  simp only [pow_two]
+  simp [pow_two]
 
 /-- The cutoff integrand is measurable in the point. -/
 theorem admissibleCutoff_integrand_measurable
@@ -144,7 +142,7 @@ theorem admissibleCutoff_integrand_measurable
         fun x => gaussianVariance P (fun ω => Y ω (Real.exp (-r)) x) := by
       funext x
       unfold gaussianVariance gaussianCovariance
-      simp only [pow_two]
+      simp [pow_two]
     rw [heq]; exact hv
   have hfield : Measurable (fun x : ℂ => Y ω (Real.exp (-r)) x) :=
     (hY.measurableAtScale (Real.exp (-r))).comp (measurable_const.prodMk measurable_id)
@@ -196,7 +194,7 @@ theorem lintegral_admissibleLogWickWeight
     ∫⁻ ω, admissibleLogWickWeight P Y g ε x ω ∂P = 1 := by
   have h := compatibleAdmissibleSelectedWickWeight_lintegral_eq_one P U dens ε₀ ε₀ Y Y hY hY
     true ε hε (by rw [min_self]; exact hεcut) x g
-  simpa only [ite_self] using h
+  simpa [ite_self] using h
 
 /-- The expected chart mass of a test with values in `[0, L]` is at most `L` times the reference
 mass of the chart. -/
@@ -219,7 +217,7 @@ theorem lintegral_chartMass_le
       = ∫⁻ x, ENNReal.ofReal (f x) ∂(logRegularizationReference U dens).restrict K := by
         apply lintegral_congr
         intro x
-        simp only [Set.indicator_univ, mul_one]
+        simp [Set.indicator_univ, mul_one]
         rw [lintegral_const_mul _ (admissibleLogWickWeight_measurable_sample P U dens ε₀ Y hY g _
           x), lintegral_admissibleLogWickWeight P U dens ε₀ Y hY g _ (Real.exp_pos _) hr x,
           mul_one]
@@ -368,7 +366,7 @@ theorem admissibleCutoffIntegral_L1_uniform_cauchy
         congr 1
         ring
 
-end DOZZ.Assembly
+end Assembly
 
 /-! ### Algebra in the test
 
@@ -380,9 +378,9 @@ bounded Borel tests supported in that chart are integrable, linear and monotone 
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
 
-namespace DOZZ.Assembly
+namespace Assembly
 
-open DOZZ.Proofs
+open Proofs
 
 /-- The cutoff integrand of a test. -/
 noncomputable abbrev cutoffIntegrand {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
@@ -408,7 +406,6 @@ theorem cutoffIntegrand_integrable
   refine ⟨(admissibleCutoff_integrand_measurable P U dens ε₀ Y hY g r f hf ω).aestronglyMeasurable,
     ?_⟩
   unfold HasFiniteIntegral
-  have hL : 0 ≤ L := (abs_nonneg _).trans (hfL 0)
   have hnorm : (fun x => ‖cutoffIntegrand P Y g r f ω x‖ₑ) = fun x => ENNReal.ofReal (|f x| *
       Real.exp (g * Y ω (Real.exp (-r)) x - g ^ 2 / 2 *
         ∫ ω', Y ω' (Real.exp (-r)) x ^ 2 ∂P)) := by

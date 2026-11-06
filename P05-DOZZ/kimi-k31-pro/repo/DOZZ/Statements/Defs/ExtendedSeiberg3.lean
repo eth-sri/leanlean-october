@@ -2,13 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.Defs.SExp
+import DOZZ.Statements.Defs.SExp
 
 /-! The definition `DOZZ.ExtendedSeiberg3`. -/
 
-@[expose] public section
 
 open Complex MeasureTheory Set Filter Topology
 

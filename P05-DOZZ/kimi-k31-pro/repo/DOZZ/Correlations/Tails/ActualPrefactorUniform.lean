@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.Tails.CompleteEnvelopeUniform
-public import DOZZ.Correlations.Tails.OffCenterPinLaw
+import DOZZ.Correlations.Tails.CompleteEnvelopeUniform
+import DOZZ.Correlations.Tails.OffCenterPinLaw
 
 /-! Uniform positive moments of the literal independent pin prefactor. -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal
 
@@ -31,9 +29,9 @@ theorem actual_prefactor_moment_uniform
   intro z hzk f hf hfb r hr hrR
   have hN := offCenter_pin_law P X Xc hX hc z (hz z hzk)
   have hm : (∫ ω, Xc ω z 0 ∂P) = 0 := by
-    simpa only [integral_id_gaussianReal] using hN.integral_eq
+    simpa [integral_id_gaussianReal] using hN.integral_eq
   have hv : variance (fun ω => Xc ω z 0) P = 2*Real.log ‖z‖ := by
-    simpa only [variance_id_gaussianReal,
+    simpa [variance_id_gaussianReal,
       Real.coe_toNNReal _ (offCenter_pin_variance_pos z (hz z hzk)).le] using hN.variance_eq
   have h := hbound z hzk _ _ hN.hasGaussianLaw hN.hasGaussianLaw hm hm hv hv r hr hrR
   apply le_trans (lintegral_mono fun ω => ?_) h

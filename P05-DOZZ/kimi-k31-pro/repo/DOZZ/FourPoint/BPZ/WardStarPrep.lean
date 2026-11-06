@@ -2,16 +2,14 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.BPZ.WardPsi
+import DOZZ.FourPoint.BPZ.WardPsi
 
 /-! # Real mixed masses and their tilts
 
 The real mixed mass and the untilted root-derivative functional, their measurability as functions
 of the two measures, and the factorization of their tilts at a root. -/
 
-@[expose] public section
 
 open MeasureTheory Filter Topology
 open scoped ENNReal NNReal
@@ -44,7 +42,7 @@ theorem measurable_integral_measure {g : ℂ → ℝ} (hg : Measurable g) :
         refine ⟨hg.aestronglyMeasurable, ?_⟩
         rw [hasFiniteIntegral_iff_norm]
         have hm' : ∫⁻ y, ENNReal.ofReal |g y| ∂m < ⊤ := hm
-        simpa only [Real.norm_eq_abs] using hm'
+        simpa [Real.norm_eq_abs] using hm'
       exact integral_eq_lintegral_pos_part_sub_lintegral_neg_part hI
     · rw [Set.indicator_of_notMem hm]
       apply integral_undef
@@ -53,7 +51,7 @@ theorem measurable_integral_measure {g : ℂ → ℝ} (hg : Measurable g) :
       have := hI.2
       rw [hasFiniteIntegral_iff_norm] at this
       show ∫⁻ y, ENNReal.ofReal |g y| ∂m < ⊤
-      simpa only [Real.norm_eq_abs] using this
+      simpa [Real.norm_eq_abs] using this
   rw [heq]
   refine Measurable.indicator ?_ hAm
   exact ((Measure.measurable_lintegral (ENNReal.measurable_ofReal.comp hg)).ennreal_toReal).sub
@@ -92,14 +90,14 @@ theorem bpzMixedReal_tilt (γ r : ℝ) (ρ k₁ k₂ : ℂ → ℝ) (x : ℂ) (m
   congr 1
   · congr 1
     funext y
-    simp only [bpzCutRootDensity, bpzCutRootKernel, smul_eq_mul,
+    simp [bpzCutRootDensity, bpzCutRootKernel, smul_eq_mul,
       ENNReal.toReal_ofReal (Real.exp_pos _).le]
     rw [show γ ^ 2 * (bpzLam r (x - y) + bpzPin r x + bpzPin r y) =
       γ ^ 2 * bpzPin r x + γ ^ 2 * (bpzLam r (x - y) + bpzPin r y) by ring, Real.exp_add]
     ring
   · congr 1
     funext y
-    simp only [bpzLimRootDensity, bpzLimRootKernel, smul_eq_mul,
+    simp [bpzLimRootDensity, bpzLimRootKernel, smul_eq_mul,
       ENNReal.toReal_ofReal (Real.exp_pos _).le]
     rw [show γ ^ 2 * (bpzTruncLog r (x - y) + bpzPin r x + Real.log (normPlus y)) =
       γ ^ 2 * bpzPin r x + γ ^ 2 * (bpzTruncLog r (x - y) + Real.log (normPlus y)) by ring,
@@ -127,14 +125,14 @@ theorem bpzMixedDerivReal_tilt (γ r : ℝ) (ρ k₁ k₂ : ℂ → ℝ) (x v : 
   congr 1
   · congr 1
     funext y
-    simp only [bpzCutRootDensity, bpzCutRootKernel, smul_eq_mul,
+    simp [bpzCutRootDensity, bpzCutRootKernel, smul_eq_mul,
       ENNReal.toReal_ofReal (Real.exp_pos _).le]
     rw [show γ ^ 2 * (bpzLam r (x - y) + bpzPin r x + bpzPin r y) =
       γ ^ 2 * bpzPin r x + γ ^ 2 * (bpzLam r (x - y) + bpzPin r y) by ring, Real.exp_add]
     ring
   · congr 1
     funext y
-    simp only [bpzLimRootDensity, bpzLimRootKernel, smul_eq_mul,
+    simp [bpzLimRootDensity, bpzLimRootKernel, smul_eq_mul,
       ENNReal.toReal_ofReal (Real.exp_pos _).le]
     rw [show γ ^ 2 * (bpzTruncLog r (x - y) + bpzPin r x + Real.log (normPlus y)) =
       γ ^ 2 * bpzPin r x + γ ^ 2 * (bpzTruncLog r (x - y) + Real.log (normPlus y)) by ring,
@@ -186,7 +184,7 @@ theorem bpzRootedMixedDeriv_apply {γ r δ : ℝ} {ρ k₁ k₂ : ℂ → ℝ} {
   unfold bpzRootedMixedDeriv bpzRootedMixedDerivApply
   rw [add_apply, ContinuousLinearMap.integral_apply hcI,
     ContinuousLinearMap.integral_apply hlI]
-  simp only [smul_apply, smul_eq_mul]
+  simp [smul_apply, smul_eq_mul]
 
 /-- Parametric integrals against a measurable family of finite measures are jointly
 measurable. -/

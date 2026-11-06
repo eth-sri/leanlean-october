@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.SeparatedTail.HarmonicEnvelope
-public import DOZZ.Correlations.SeparatedTail.MixedMoment
+import DOZZ.Correlations.SeparatedTail.HarmonicEnvelope
+import DOZZ.Correlations.SeparatedTail.MixedMoment
 
 /-! Powers and uniform moment bounds of the actual correlated restoration/harmonic envelope. -/
 
-@[expose] public section
 open MeasureTheory Metric Set
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -28,7 +26,7 @@ theorem separatedTail_harmonicEnvelope_aemeasurable
   have hm := separatedTail_harmonic_envelope_aemeasurable P c H hH hcont l
   have hm' : AEMeasurable (fun ω => ⨆ z : closedBall c 1,
       ENNReal.ofReal (Real.exp (l*|H ω z|))) P := by
-    simpa only [iSup_subtype] using hm
+    simpa [iSup_subtype] using hm
   exact (measurable_ofReal_exp_mul_abs L hL l).aemeasurable.mul hm'
 
 /-- The envelope's power is the same envelope at the multiplied linear order. -/
@@ -101,11 +99,11 @@ theorem separatedTail_product_envelope_moment_le
     exact mul_le_mul' (separatedTail_harmonicEnvelope_mono _ _ _ hl2 _) (separatedTail_harmonicEnvelope_mono _ _ _ hl3 _)
   have h2 : (∫⁻ ω, separatedTail_harmonicEnvelope c2 H2 L T ω ^ (2 : ℝ) ∂P) ≤
       ENNReal.ofReal (C (2*T)) := by
-    simpa only [separatedTail_harmonicEnvelope_rpow _ _ _ T 2 (by norm_num), mul_comm T 2] using
+    simpa [separatedTail_harmonicEnvelope_rpow _ _ _ T 2 (by norm_num), mul_comm T 2] using
       hC2 (2*T) (by positivity)
   have h3 : (∫⁻ ω, separatedTail_harmonicEnvelope c3 H3 L T ω ^ (2 : ℝ) ∂P) ≤
       ENNReal.ofReal (C (2*T)) := by
-    simpa only [separatedTail_harmonicEnvelope_rpow _ _ _ T 2 (by norm_num), mul_comm T 2] using
+    simpa [separatedTail_harmonicEnvelope_rpow _ _ _ T 2 (by norm_num), mul_comm T 2] using
       hC3 (2*T) (by positivity)
   exact (lintegral_mono hdom).trans ((separatedTail_correlated_envelope_product_le P _ _ (hE2 T) _ _
     h2 h3).trans_eq (by exact (two_mul _).symm))

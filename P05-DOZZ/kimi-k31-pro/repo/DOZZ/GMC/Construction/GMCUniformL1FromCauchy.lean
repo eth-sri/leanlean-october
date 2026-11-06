@@ -1,13 +1,11 @@
 /-
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 -/
-module
 
-public import DOZZ.GMC.Construction.L1CauchyMeasureLimit
+import DOZZ.GMC.Construction.L1CauchyMeasureLimit
 
 /-! Uniform Fatou passage from cutoff-to-cutoff L¹ Cauchy bounds to a specified limit. -/
 
-@[expose] public section
 
 open MeasureTheory Filter Topology
 open scoped ENNReal

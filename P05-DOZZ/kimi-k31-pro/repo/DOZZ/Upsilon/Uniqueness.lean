@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.Defs.DualMu
+import DOZZ.Statements.Defs.DualMu
 import Mathlib.Analysis.Analytic.Uniqueness
 import Mathlib.Analysis.Complex.CauchyIntegral
 import DOZZ.Upsilon.StripIdentities
@@ -13,7 +12,6 @@ import DOZZ.Upsilon.StripIdentities
 # Uniqueness of the entire Upsilon continuation
 -/
 
-@[expose] public section
 
 open Filter Topology
 
@@ -75,7 +73,7 @@ theorem IsUpsilon.reflect {U : ℂ → ℂ} (hγ : 0 < γ) (hγ2 : γ < 2)
     filter_upwards [hS] with w hw
     dsimp [S] at hw
     have hw' : 0 < ((Q γ : ℂ) - w).re ∧ ((Q γ : ℂ) - w).re < Q γ := by
-      simp only [Complex.sub_re, Complex.ofReal_re]
+      simp [Complex.sub_re, Complex.ofReal_re]
       constructor <;> linarith
     calc
       U ((Q γ : ℂ) - w) = Complex.exp (upsilonLog γ ((Q γ : ℂ) - w)) :=

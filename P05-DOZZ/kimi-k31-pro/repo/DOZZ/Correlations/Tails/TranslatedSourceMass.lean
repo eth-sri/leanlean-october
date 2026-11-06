@@ -1,4 +1,3 @@
-module
-public import DOZZ.Correlations.Tails.TranslatedField
-public import DOZZ.Correlations.Tails.TranslatedSingularMass
-public import DOZZ.Brownian.Lateral.GlobalIndependence
+import DOZZ.Correlations.Tails.TranslatedField
+import DOZZ.Correlations.Tails.TranslatedSingularMass
+import DOZZ.Brownian.Lateral.GlobalIndependence

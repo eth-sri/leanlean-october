@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Brownian.Coupling.Interpolation
-public import Mathlib.Topology.UniformSpace.HeineCantor
+import DOZZ.Brownian.Coupling.Interpolation
+import Mathlib.Topology.UniformSpace.HeineCantor
 
 /-!
 # Compact-time convergence of sampled entrance-path interpolants
@@ -15,7 +14,6 @@ This is the deterministic ingredient used to identify whole-path marginal limits
 quantile grids. It requires no additional process moment estimate.
 -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology TopologicalSpace Set
 open scoped ENNReal NNReal Topology Classical
@@ -35,10 +33,6 @@ theorem coupling_convex_error {x y b r ε : ℝ} (hr0 : 0 ≤ r) (hr1 : r ≤ 1)
     |(1 - r) * x + r * y - b| ≤ ε := by
   obtain ⟨hxlo, hxhi⟩ := abs_le.mp hx
   obtain ⟨hylo, hyhi⟩ := abs_le.mp hy
-  have hlo0 := mul_le_mul_of_nonneg_left hxlo (sub_nonneg.mpr hr1)
-  have hlo1 := mul_le_mul_of_nonneg_left hylo hr0
-  have hhi0 := mul_le_mul_of_nonneg_left hxhi (sub_nonneg.mpr hr1)
-  have hhi1 := mul_le_mul_of_nonneg_left hyhi hr0
   apply abs_le.mpr
   constructor <;> nlinarith
 
@@ -63,33 +57,30 @@ theorem couplingGridInterpolant_error {δ ε : ℝ} (hδ : 0 < δ)
         constructor <;> linarith [NNReal.coe_nonneg t])
       rw [hp0] at hzero
       have hs0 := hsample 0
-      simp only [Fin.val_zero] at hs0
+      simp [] at hs0
       rw [← hs0] at hfirst
       have h := coupling_convex_error (couplingRamp_nonneg 0 δ (t : ℝ))
         (couplingRamp_le_one 0 δ (t : ℝ)) hzero hfirst
       change |(x 0).1 * couplingRamp 0 δ (t : ℝ) - p t| ≤ ε
       have heq : (x 0).1 * couplingRamp 0 δ (t : ℝ) =
           (1 - couplingRamp 0 δ (t : ℝ)) * 0 + couplingRamp 0 δ (t : ℝ) * (x 0).1 := by ring
-      rw [heq]
-      exact h
+      rwa [heq]
   | succ n ih =>
       by_cases hbefore : (t : ℝ) ≤ ((n : ℝ) + 1) * δ
       · rw [couplingGridInterpolant_before_append hδ n x t hbefore]
         exact ih (Fin.init x) (fun i => hsample i.castSucc) hbefore
       · have hafter : ((n : ℝ) + 1) * δ ≤ (t : ℝ) := le_of_not_ge hbefore
         have hold : |p (couplingGridSampleTime δ hδ n) - p t| ≤ ε := hmodulus _ (by
-          rw [couplingGridSampleTime_coe]
-          rw [abs_le]
+          rw [couplingGridSampleTime_coe, abs_le]
           push_cast at ht
           constructor <;> nlinarith)
         have hnew : |p (couplingGridSampleTime δ hδ (n + 1)) - p t| ≤ ε := hmodulus _ (by
-          rw [couplingGridSampleTime_coe]
-          rw [abs_le]
+          rw [couplingGridSampleTime_coe, abs_le]
           push_cast at ht ⊢
           constructor <;> nlinarith)
         have hsampleOld := hsample (Fin.last n).castSucc
         have hsampleNew := hsample (Fin.last (n + 1))
-        simp only [Fin.val_castSucc, Fin.val_last] at hsampleOld hsampleNew
+        simp [Fin.val_castSucc, Fin.val_last] at hsampleOld hsampleNew
         rw [← hsampleOld] at hold
         rw [← hsampleNew] at hnew
         rw [couplingGridInterpolant_after_append hδ n x t hafter]
@@ -133,7 +124,7 @@ theorem couplingGridInterpolant_tendstoUniformlyOn
       have hdist : dist s t ≤ η := by
         change |(s : ℝ) - (t : ℝ)| ≤ η
         exact hs.trans hm.le
-      simpa only [Real.dist_eq] using hη s hsB t htB hdist)
+      simpa [Real.dist_eq] using hη s hsB t htB hdist)
   rw [Real.dist_eq, abs_sub_comm]
   exact herror.trans_lt (half_lt_self hε)
 
@@ -182,11 +173,9 @@ theorem measurable_couplingPositivePathSamples {δ : ℝ} (hδ : 0 < δ) (n : �
       (fun p => (⟨f p, hpos p⟩ : ConditionedPositiveState)) := by
     funext p
     apply Subtype.ext
-    dsimp only [couplingPositivePathSamples, f]
+    dsimp [couplingPositivePathSamples, f]
     split_ifs <;> rfl
-  rw [heq]
-  exact hms
-
+  rwa [heq]
 /-- The sampled interpolant is an actual measurable whole-path random variable. -/
 theorem measurable_couplingSampledInterpolant {δ : ℝ} (hδ : 0 < δ) (n : ℕ) :
     Measurable (fun p => couplingGridInterpolant δ n (couplingPositivePathSamples δ hδ n p)) :=
@@ -227,9 +216,7 @@ theorem couplingSampledInterpolant_probability_tendsto
   have hid : Q.map id = Q := by
     apply Subtype.ext
     exact Measure.map_id
-  rw [hid] at hlim
-  exact hlim
-
+  rwa [hid] at hlim
 /-- The positive unconditional Rogers--Pitman candidate as a path probability law. -/
 noncomputable def rogersPitmanWienerProbability (a : ℝ) : ProbabilityMeasure BrownianPath :=
   ProbabilityMeasure.map (⟨wienerTripleMeasure, inferInstance⟩ : ProbabilityMeasure BrownianTriple)
@@ -245,7 +232,7 @@ theorem rogersPitmanWienerProbability_eval_positive_ae (a : ℝ) (t : ℝ≥0) (
     have hmeasure : wienerTripleMeasure {V | V (1 : Fin 3) t = 0} = 0 :=
       ((hB.hasLaw_eval t).measure_eq (measurableSet_singleton (0 : ℝ))).trans (measure_singleton 0)
     apply ae_iff.mpr
-    simpa only [not_not] using hmeasure
+    simpa [not_not] using hmeasure
   apply (ae_map_iff (measurable_rogersPitmanPath a).aemeasurable
     (measurableSet_lt measurable_const (ContinuousMap.measurable_eval t))).mpr
   filter_upwards [hnonzero] with V hV
@@ -315,7 +302,7 @@ theorem negativeRogersPitman_sampledInterpolant_probability_tendsto
     apply Subtype.ext
     exact Measure.map_map measurable_neg (measurable_couplingSampledInterpolant (hδ m) (N m))
   simp_rw [hcomp] at hlim
-  exact hlim
+  assumption
 
 /-- Once the norm path's sampled finite law is identified, the actual coupled grid marginal
 converges to the unconditional radial path law. -/
@@ -381,8 +368,7 @@ theorem couplingDyadicMesh_pos (m : ℕ) : 0 < couplingDyadicMesh m := by
   unfold couplingDyadicMesh
   positivity
 
-theorem couplingDyadicMesh_tendsto : Tendsto couplingDyadicMesh atTop (𝓝 0) := by
-  exact tendsto_pow_atTop_nhds_zero_of_lt_one (by norm_num) (by norm_num)
+theorem couplingDyadicMesh_tendsto : Tendsto couplingDyadicMesh atTop (𝓝 0) := tendsto_pow_atTop_nhds_zero_of_lt_one (by norm_num) (by norm_num)
 
 /-- The terminal sample time is exactly the growing horizon, including the initial dyadic level. -/
 theorem couplingDyadicHorizon (m : ℕ) :
@@ -390,7 +376,7 @@ theorem couplingDyadicHorizon (m : ℕ) :
   have hcount : couplingDyadicLastIndex m + 1 = (m + 1) * 2 ^ m := by
     apply Nat.sub_add_cancel
     have hpos : 0 < (m + 1) * 2 ^ m := by positivity
-    exact hpos
+    assumption
   have hcast : (couplingDyadicLastIndex m : ℝ) + 1 = ((m : ℝ) + 1) * (2 : ℝ) ^ m := by
     exact_mod_cast hcount
   rw [hcast, couplingDyadicMesh]

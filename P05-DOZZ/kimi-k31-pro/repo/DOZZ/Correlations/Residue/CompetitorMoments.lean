@@ -2,15 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.Residue.TailMargins
-public import DOZZ.GMC.SharpMoments.SeibergUniform
+import DOZZ.Correlations.Residue.TailMargins
+import DOZZ.GMC.SharpMoments.SeibergUniform
 
 /-! The uniform higher moments needed for the unequal-charge residue branch (erratum K30, see
 docs/ERRATA-AND-DEVIATIONS.md). -/
 
-@[expose] public section
 open MeasureTheory Filter Topology Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -48,16 +46,16 @@ theorem residue_unequal_competitor_coulomb_moment
     nlinarith only [hετ]
   have hp : 0 < p := (residue_critical_order_bounds γ α3 hγ hα3 hα3Q).1
   have hbulk : 4 / γ ^ 2 - p = 2 * (α3 - γ / 2) / γ := by
-    dsimp only [p]
+    dsimp [p]
     unfold reflectionExponent Q
     field_simp [hγ.ne']
     ring
   have hi : 2 / γ * (Q γ - α2) - p = 2 * (α3 - α2) / γ := by
-    dsimp only [p]
+    dsimp [p]
     unfold reflectionExponent
     ring
   have hinf : 2 / γ * (Q γ - (α3 - α2 + ε)) - p = 2 * α2 / γ - 2 * ε / γ := by
-    dsimp only [p]
+    dsimp [p]
     unfold reflectionExponent
     ring
   apply hKb ![7] ![α2] (α3 - α2 + ε) (p + τ / 8)
@@ -109,12 +107,12 @@ theorem residue_equal_background_coulomb_moment
     nlinarith only [hετ]
   have hp : 0 < p := (residue_critical_order_bounds γ α hγ hα hαQ).1
   have hbulk : 4 / γ ^ 2 - p = 2 * (α - γ / 2) / γ := by
-    dsimp only [p]
+    dsimp [p]
     unfold reflectionExponent Q
     field_simp [hγ.ne']
     ring
   have hinf : 2 / γ * (Q γ - ε) - p = 2 * α / γ - 2 * ε / γ := by
-    dsimp only [p]
+    dsimp [p]
     unfold reflectionExponent
     ring
   apply hKb ![] ![] ε (p + τ / 8)

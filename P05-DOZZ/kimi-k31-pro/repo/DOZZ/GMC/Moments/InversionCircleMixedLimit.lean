@@ -2,15 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.Moments.InversionMixedCovariance
-public import DOZZ.GMC.Moments.InversionCircleWeakApproximation
-public import DOZZ.GMC.Moments.InversionPotentialExtension
+import DOZZ.GMC.Moments.InversionMixedCovariance
+import DOZZ.GMC.Moments.InversionCircleWeakApproximation
+import DOZZ.GMC.Moments.InversionPotentialExtension
 
 /-! Mixed covariance of the actual coupled transformed circles and source circles. -/
 
-@[expose] public section
 
 open Filter MeasureTheory ProbabilityTheory
 open scoped Topology Distributions ENNReal
@@ -45,7 +43,7 @@ theorem inversionCircle_source_covariance
     hZ.coeFn_toLp.symm hgt
   have hzero : Tendsto (fun _ : ℕ => eLpNorm
       (fun ω => Xc ω y s - Xc ω y s) 2 P) atTop (𝓝 0) := by
-    simpa only [sub_self, ← Pi.zero_def, eLpNorm_zero] using
+    simpa [sub_self, ← Pi.zero_def, eLpNorm_zero] using
       (tendsto_const_nhds : Tendsto (fun _ : ℕ => (0 : ℝ≥0∞)) atTop (𝓝 0))
   have hc := tendsto_covariance_of_eLpNorm_sub
     (fun _ => hXc.2.1 y s)
@@ -66,7 +64,7 @@ theorem inversionCircle_source_covariance
   apply inversionCirclePotential_eq_innerPot
   intro hu0
   have h := hu
-  simp only [hu0, zero_sub, norm_neg] at h
+  simp [hu0, zero_sub, norm_neg] at h
   linarith [Real.exp_pos (-r)]
 
 /-- The same mixed identity in the second-moment and angular-average form used by the
@@ -94,7 +92,7 @@ theorem inversionCircle_source_gaussianCovariance
     f hf hgap hlim y s
   have he : gaussianCovariance P (fun ω => Xc ω y s) Z =
       covariance (fun ω => Xc ω y s) Z P := by
-    simp only [gaussianCovariance, covariance, hmeanZ, hmeanXc, sub_zero]
+    simp [gaussianCovariance, covariance, hmeanZ, hmeanXc, sub_zero]
   rw [he, hc, integral_circleMeasure_eq_circleAverage]
   exact (CirclePotential.continuous_innerPot y s).measurable.comp measurable_inv
 

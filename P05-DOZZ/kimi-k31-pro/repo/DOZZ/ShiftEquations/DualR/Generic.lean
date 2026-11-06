@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.ShiftEquations.DualR.Product
-public import DOZZ.ShiftEquations.DualR.Pointwise
+import DOZZ.ShiftEquations.DualR.Product
+import DOZZ.ShiftEquations.DualR.Pointwise
 import DOZZ.DOZZAlgebra.GenericLocus
 import DOZZ.ShiftEquations.Gluing.BandNear
 import DOZZ.ShiftEquations.Shift.ShiftGluing
@@ -23,7 +22,6 @@ inversion turn into the dual shift (`dualShift_of_product`) as soon as `R` is an
 of `Γ`. All of these hold for every small `u ≠ 0`.
 -/
 
-@[expose] public section
 
 open MeasureTheory Filter Topology Set
 
@@ -155,12 +153,10 @@ theorem dualShift_eventually {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) 
     eq_of_eventuallyEq_nhdsNE_of_continuousAt
       (hgerm _ (ofReal_mem_horizontalStrip hh'0 _)) a3.continuousAt a5.continuousAt
   have hinvR : R ((Q γ + θ : ℝ) : ℂ) * R ((Q γ - θ : ℝ) : ℂ) = 1 := by
-    rw [hxp, hxm, show ((Q γ - θ : ℝ) : ℂ) = 2 * Q γ - ((Q γ + θ : ℝ) : ℂ) by push_cast; ring]
-    exact a6
+    rwa [hxp, hxm, show ((Q γ - θ : ℝ) : ℂ) = 2 * Q γ - ((Q γ + θ : ℝ) : ℂ) by push_cast; ring]
   have hprod := dualShift_product P X M hγ hγ2 hμ hX hM hSeed hShiftGluing hhR hRm hBR hRv hshift hRγ
     hθ₁ hθ₂ a1 a2 (analyticAt_Gamma_of_ne a7)
   exact dualShift_of_product hγ hγ2 hγirr hθ₁ hθ₂ hprod hinvR a7
 
 end DOZZ.Proofs
 
-end

@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Hypergeom.ODE.SeriesEquation
+import DOZZ.Hypergeom.ODE.SeriesEquation
 import Mathlib.Analysis.Calculus.FDeriv.Analytic
 
 /-! Spatial differentiation of the ordinary Gauss series, with its parameter shift. -/
 
-@[expose] public section
 
 open Polynomial FormalMultilinearSeries
 
@@ -40,7 +38,7 @@ private theorem ordinaryHypergeometricCoefficient_derivative_shift (a b c : ℂ)
         (ascPochhammer ℂ n).eval (x + 1) := by
       simp
     exact congrArg (fun y : ℂ => x * y) heval
-  simp only [ordinaryHypergeometricCoefficient]
+  simp [ordinaryHypergeometricCoefficient]
   rw [hfact, hshift a, hshift b, hshift c]
   field_simp [hc0, hcp1, hfact0]
 
@@ -53,16 +51,7 @@ private theorem ordinaryHypergeometricSeries_coeff' (a b c : ℂ) (n : ℕ) :
 
 private theorem gaussFirstDerivativeSeries_coeff' (a b c : ℂ) (n : ℕ) :
     (gaussFirstDerivativeSeries a b c).coeff n =
-      (n + 1 : ℂ) * ordinaryHypergeometricCoefficient a b c (n + 1) := by
-  change ((gaussSeriesAtZero a b c).derivSeries.coeff n) 1 = _
-  rw [FormalMultilinearSeries.derivSeries_coeff_one]
-  have hcoeff : (gaussSeriesAtZero a b c).coeff (n + 1) =
-      ordinaryHypergeometricCoefficient a b c (n + 1) := by
-    change ordinaryHypergeometricSeries ℂ a b c (n + 1) (fun _ => (1 : ℂ)) = _
-    rw [ordinaryHypergeometricSeries_apply_eq]
-    simp [ordinaryHypergeometricCoefficient]
-  rw [hcoeff]
-  simp only [nsmul_eq_mul, Nat.cast_succ]
+      (n + 1 : ℂ) * ordinaryHypergeometricCoefficient a b c (n + 1) := DOZZ.Proofs.gaussFirstDerivativeSeries_coeff a b c n
 
 private theorem formalSeries_coeff_smul' (x : ℂ) (p : FormalMultilinearSeries ℂ ℂ ℂ)
     (n : ℕ) : (x • p).coeff n = x • p.coeff n := rfl
@@ -78,7 +67,7 @@ private theorem ordinaryHypergeometricSeries_derivSeries_eq (a b c : ℂ)
     ((a * b / c) • ordinaryHypergeometricSeries ℂ (a + 1) (b + 1) (c + 1)).coeff n
   rw [formalSeries_coeff_smul', gaussFirstDerivativeSeries_coeff',
     ordinaryHypergeometricSeries_coeff']
-  simp only [smul_eq_mul]
+  simp [smul_eq_mul]
   rw [ordinaryHypergeometricCoefficient_derivative_shift a b c n hc]
 
 /-- At every point of the open unit disk, the spatial derivative is the shifted Gauss series. -/

@@ -2,13 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.BPZ.TaylorSingular
-public import DOZZ.FourPoint.Fusion.FullTimeSplit
-public import DOZZ.FourPoint.TaylorOneRootIdentity
-public import DOZZ.FourPoint.TaylorRegionCover
-public import DOZZ.FourPoint.TwoRootedDomination
+import DOZZ.FourPoint.BPZ.TaylorSingular
+import DOZZ.FourPoint.Fusion.FullTimeSplit
+import DOZZ.FourPoint.TaylorOneRootIdentity
+import DOZZ.FourPoint.TaylorRegionCover
+import DOZZ.FourPoint.TwoRootedDomination
 
 /-! # The one- and two-rooted Taylor terms as a Taylor remainder
 
@@ -31,7 +30,6 @@ the four weighted time integrands `s ↦ (1 - s) F (s t)`:
   integrability needs. The measurability of the two-rooted integrands in the moving root is
   proved as in the one-rooted case (`bpzRR_pair_measurable`). -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal ComplexConjugate
@@ -44,7 +42,7 @@ namespace DOZZ.Proofs
 theorem bpzRR_integrable_star {μ : Measure ℝ} {f : ℝ → ℂ} (hf : Integrable f μ) :
     Integrable (fun x => star (f x)) μ :=
   hf.norm.mono' (continuous_star.comp_aestronglyMeasurable hf.aestronglyMeasurable)
-    (ae_of_all _ fun x => by simp only [norm_star, le_refl])
+    (ae_of_all _ fun x => by simp [norm_star, le_refl])
 
 /-- The integral commutes with complex conjugation. -/
 theorem bpzRR_integral_star {μ : Measure ℝ} (f : ℝ → ℂ) :
@@ -53,7 +51,7 @@ theorem bpzRR_integral_star {μ : Measure ℝ} (f : ℝ → ℂ) :
 /-- Conjugating a product with two real factors pulls the factors out. -/
 theorem bpzRR_star_cast_mul (c T : ℝ) (I : ℂ) :
     star ((c : ℂ) * (T : ℂ) * I) = (T : ℂ) * star ((c : ℂ) * I) := by
-  simp only [star_mul', Complex.star_def, Complex.conj_ofReal]
+  simp [star_mul', Complex.star_def, Complex.conj_ofReal]
   ring
 
 /-! ### Measurability in the moving root -/
@@ -76,16 +74,16 @@ theorem bpzRR_pair_measurable {Ω : Type*} [MeasurableSpace Ω]
     apply measurable_lintegral_finite_family (fun q : ℂ × Ω => N q.2)
       (hN.comp measurable_snd) (fun q => hfN q.2)
       (fun q : (ℂ × Ω) × ℂ => ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ q.1.1 q.2))
-    simpa only [Function.comp_def] using ENNReal.measurable_ofReal.comp
+    simpa [Function.comp_def] using ENNReal.measurable_ofReal.comp
       ((fusion_measurable_gammaHalfKernel γ α₁ α₂ α₃).comp hp)
   have hHm₁ : Measurable (fun q : ℂ × Ω => ∫ x, H₁ (q.1, x) ∂N q.2) := by
     apply fusion_measurable_integral_finite_family (fun q : ℂ × Ω => N q.2)
       (hN.comp measurable_snd) (fun q => hfN q.2) (fun q : (ℂ × Ω) × ℂ => H₁ (q.1.1, q.2))
-    simpa only [Function.comp_def] using hH₁.comp hp
+    simpa [Function.comp_def] using hH₁.comp hp
   have hHm₂ : Measurable (fun q : ℂ × Ω => ∫ x, H₂ (q.1, x) ∂N q.2) := by
     apply fusion_measurable_integral_finite_family (fun q : ℂ × Ω => N q.2)
       (hN.comp measurable_snd) (fun q => hfN q.2) (fun q : (ℂ × Ω) × ℂ => H₂ (q.1.1, q.2))
-    simpa only [Function.comp_def] using hH₂.comp hp
+    simpa [Function.comp_def] using hH₂.comp hp
   have hFn : Measurable (fun z : ℂ => ∫ ω, ((I (z, ω) ^ s).toReal : ℂ) *
       (∫ x, H₁ (z, x) ∂N ω) * (∫ x, H₂ (z, x) ∂N ω) ∂P) :=
     ((((Complex.measurable_ofReal.comp (hIm.pow_const s).ennreal_toReal).mul hHm₁).mul
@@ -100,11 +98,9 @@ theorem bpzRR_pair_measurable {Ω : Type*} [MeasurableSpace Ω]
     filter_upwards [he, gmc_singleton_mass_eq_zero_ae P X hX γ hγ hγ2 M hM z,
       gmc_singleton_mass_eq_zero_ae P X hX γ hγ hγ2 M hM 0,
       gmc_singleton_mass_eq_zero_ae P X hX γ hγ hγ2 M hM 1] with ω hω hωz hω0 hω1
-    dsimp only [I]
+    dsimp [I]
     rw [fusion_gammaHalfMass_kernel γ α₁ α₂ α₃ z (M ω) hωz hω0 hω1, hω]
-  rw [heq]
-  exact hFn
-
+  rwa [heq]
 /-- The pure two-rooted expectation (the integrand of `p₁`) is measurable in the moving root. -/
 theorem bpzRR_twoRooted_square_measurable {Ω : Type*} [MeasurableSpace Ω]
     (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
@@ -118,7 +114,7 @@ theorem bpzRR_twoRooted_square_measurable {Ω : Type*} [MeasurableSpace Ω]
     (Complex.measurable_ofReal.comp (fusion_measurable_gammaHalfKernel γ α₁ α₂ α₃)).div
       (measurable_snd.sub measurable_fst)
   have h := bpzRR_pair_measurable P X hX γ hγ hγ2 M hM α₁ α₂ α₃ (-p - 2) _ _ hH hH
-  simpa only [gammaHalfRootKernelZ, pow_two, mul_assoc, ENNReal.rpow_eq_pow] using h
+  simpa [gammaHalfRootKernelZ, pow_two, mul_assoc, ENNReal.rpow_eq_pow] using h
 
 /-- The mixed two-rooted expectation (the integrand of `p₂`) is measurable in the moving root. -/
 theorem bpzRR_twoRooted_mixed_measurable {Ω : Type*} [MeasurableSpace Ω]
@@ -137,7 +133,7 @@ theorem bpzRR_twoRooted_mixed_measurable {Ω : Type*} [MeasurableSpace Ω]
       (gammaHalfKernel γ α₁ α₂ α₃ q.1 q.2 : ℂ) / star (q.2 - q.1)) :=
     hK.div (continuous_star.measurable.comp (measurable_snd.sub measurable_fst))
   have h := bpzRR_pair_measurable P X hX γ hγ hγ2 M hM α₁ α₂ α₃ (-p - 2) _ _ hH₁ hH₂
-  simpa only [gammaHalfRootKernelZ, gammaHalfRootKernelBar, ENNReal.rpow_eq_pow] using h
+  simpa [gammaHalfRootKernelZ, gammaHalfRootKernelBar, ENNReal.rpow_eq_pow] using h
 
 /-! ### The power bound for the two-rooted majorant on the quarter disk -/
 
@@ -184,7 +180,7 @@ theorem bpzRR_planar_ball_bound (γ α₁ α₂ α₃ : ℝ) (hγ : 0 < γ) (hlo
         ae_restrict_of_ae (Measure.ae_ne volume (0 : ℂ)),
         ae_restrict_of_ae (Measure.ae_ne volume w)] with x hx hx0 hxw
       exact ENNReal.ofReal_le_ofReal (fusion_localSecondKernel_bound γ α₁ α₂ α₃ w x
-        (by simpa only [Metric.mem_ball, dist_zero_right] using hx) hx0 hxw)
+        (by simpa [Metric.mem_ball, dist_zero_right] using hx) hx0 hxw)
     _ ≤ ∫⁻ x, ENNReal.ofReal (2 ^ |γ * α₂| * planarMixedKernel (γ ^ 2 / 2) (γ * α₁) w x) :=
       setLIntegral_le_lintegral _ _
     _ = ENNReal.ofReal (∫ x, 2 ^ |γ * α₂| * planarMixedKernel (γ ^ 2 / 2) (γ * α₁) w x) :=
@@ -221,10 +217,9 @@ theorem bpzRR_majorant_bound {Ω : Type*} [MeasurableSpace Ω]
     have h := mul_lt_mul_of_pos_left hlo hγ
     linarith only [h]
   have hpow : 1 ≤ ‖w‖ ^ (γ ^ 2 / 2 - γ * α₁) := by
-    simpa only [Real.rpow_zero] using
+    simpa [Real.rpow_zero] using
       Real.rpow_le_rpow_of_exponent_ge hn (hw4.trans (by norm_num)) hexp
   let Y : ℝ := (Ce + C₀ * C₁) * ‖w‖ ^ (γ ^ 2 / 2 - γ * α₁)
-  have hY : 0 ≤ Y := by positivity
   have h0 : gammaHalfTwoRootedMajorantOn P M γ α₁ α₂ α₃ p w
       (Metric.ball (0 : ℂ) (1 / 2))ᶜ ≤ ENNReal.ofReal Y := by
     refine (hext w hw4).trans (ENNReal.ofReal_le_ofReal ?_)
@@ -234,7 +229,7 @@ theorem bpzRR_majorant_bound {Ω : Type*} [MeasurableSpace Ω]
   have h1 : gammaHalfTwoRootedMajorantOn P M γ α₁ α₂ α₃ p w
       (Metric.ball (0 : ℂ) (1 / 2)) ≤ ENNReal.ofReal Y := by
     refine (hsp w hw4 _ measurableSet_ball (fun x hx => ?_)).trans ?_
-    · exact (show ‖x‖ < 1 / 2 by simpa only [Metric.mem_ball, dist_zero_right] using hx).le
+    · exact (show ‖x‖ < 1 / 2 by simpa [Metric.mem_ball, dist_zero_right] using hx).le
     · calc
         _ ≤ ENNReal.ofReal C₀ * ENNReal.ofReal (C₁ * ‖w‖ ^ (γ ^ 2 / 2 - γ * α₁)) :=
           mul_le_mul' le_rfl (hball w hw)
@@ -357,7 +352,7 @@ theorem bpzRR_oneRooted_pure_time_integrable {Ω : Type*} [MeasurableSpace Ω]
     he hbL z hz hz4
   have hE := fusion_time_integrable_of_power_bound E hEm CE 0 (1 / 4) (by norm_num)
     (fun w hw hw4 => by
-      simpa only [E, B, fusionPureSpatial, Real.rpow_zero, mul_one] using (hbE w hw hw4).2)
+      simpa [E, B, fusionPureSpatial, Real.rpow_zero, mul_one] using (hbE w hw hw4).2)
     z hz hz4
   have hsplit : ∀ᵐ t : ℝ ∂volume.restrict (Icc 0 1),
       F ((t : ℂ) * z) = L ((t : ℂ) * z) + E ((t : ℂ) * z) := by
@@ -404,7 +399,7 @@ theorem bpzRR_oneRooted_mixed_time_integrable {Ω : Type*} [MeasurableSpace Ω]
     he hbL z hz hz4
   have hE := fusion_time_integrable_of_power_bound E hEm CE 0 (1 / 4) (by norm_num)
     (fun w hw hw4 => by
-      simpa only [E, B, fusionMixedSpatial, Real.rpow_zero, mul_one] using (hbE w hw hw4).2)
+      simpa [E, B, fusionMixedSpatial, Real.rpow_zero, mul_one] using (hbE w hw hw4).2)
     z hz hz4
   have hsplit : ∀ᵐ t : ℝ ∂volume.restrict (Icc 0 1),
       F ((t : ℂ) * z) = L ((t : ℂ) * z) + E ((t : ℂ) * z) := by
@@ -432,7 +427,7 @@ theorem bpzRR_R1_eq {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (M : Ω �
       ((-p * (γ ^ 2 / 4) * (γ ^ 2 / 4 - 1) : ℝ) : ℂ) * z ^ 2 *
         ∫ s in Icc (0 : ℝ) 1, ((1 - s : ℝ) : ℂ) *
           fusionPureSpatial P M γ α₁ α₂ α₃ p univ ((s : ℂ) * z) := by
-  simp only [gammaHalfRootedR1, fusionPureSpatial, Measure.restrict_univ,
+  simp [gammaHalfRootedR1, fusionPureSpatial, Measure.restrict_univ,
     ENNReal.rpow_eq_pow]
 
 /-- The term `r₂` as a weighted time integral of the unrestricted mixed spatial expectation. -/
@@ -442,7 +437,7 @@ theorem bpzRR_R2_eq {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (M : Ω �
       ((-2 * p * (γ ^ 2 / 4) ^ 2 : ℝ) : ℂ) * z * star z *
         ∫ s in Icc (0 : ℝ) 1, ((1 - s : ℝ) : ℂ) *
           fusionMixedSpatial P M γ α₁ α₂ α₃ p univ ((s : ℂ) * z) := by
-  simp only [gammaHalfRootedR2, fusionMixedSpatial, Measure.restrict_univ,
+  simp [gammaHalfRootedR2, fusionMixedSpatial, Measure.restrict_univ,
     ENNReal.rpow_eq_pow, Complex.ofReal_pow]
 
 /-- The four weighted time integrals combine linearly, including the conjugate terms. -/
@@ -467,7 +462,7 @@ theorem bpzRR_six_term_integral (a b c d : ℝ → ℂ) (c₁ c₂ d₁ d₂ : �
         (d₁ : ℂ) * (((1 - s : ℝ) : ℂ) * c s) + (d₂ : ℂ) * (((1 - s : ℝ) : ℂ) * d s) +
         star ((d₁ : ℂ) * (((1 - s : ℝ) : ℂ) * c s)) := by
     intro s
-    simp only [star_mul', Complex.star_def, Complex.conj_ofReal]
+    simp [star_mul', Complex.star_def, Complex.conj_ofReal]
     ring
   simp_rw [hpt]
   have hA : Integrable (fun s : ℝ => (c₁ : ℂ) * (((1 - s : ℝ) : ℂ) * a s))
@@ -506,7 +501,7 @@ theorem bpzRR_remainder_eq {t : ℝ} (ht0 : 0 < t) (g2 : ℝ → ℝ) :
       ((t ^ 2 : ℝ) : ℂ) * ∫ s in Icc (0 : ℝ) 1, ((1 - s : ℝ) : ℂ) * (g2 (s * t) : ℂ) := by
   have h := bpz_taylor_remainder_subst_complex (f := fun u => (g2 u : ℂ)) ht0
   rw [← h, ← intervalIntegral.integral_ofReal]
-  simp only [Complex.ofReal_mul]
+  simp [Complex.ofReal_mul]
 
 /-- The one-rooted and two-rooted Taylor terms at a real point `t ∈ (0, 1/4]` add up to the
 Taylor remainder `∫ u in 0..t, (t - u) * g2 u` of any function `g2` that on `(0, t]` equals the
@@ -539,8 +534,7 @@ theorem bpz_rootedTerms_eq_integral {Ω : Type*} [MeasurableSpace Ω] (P : Measu
       ((∫ u in (0 : ℝ)..t, (t - u) * g2 u : ℝ) : ℂ) := by
   have hz0 : (t : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr ht0.ne'
   have hz4 : ‖(t : ℂ)‖ ≤ 1 / 4 := by
-    rw [Complex.norm_real, Real.norm_of_nonneg ht0.le]
-    exact ht
+    rwa [Complex.norm_real, Real.norm_of_nonneg ht0.le]
   have i1 := bpzRR_oneRooted_pure_time_integrable P X hX γ hγ hγ2 M hM α₁ α₂ α₃ hlo hsq hα₁
     hα₂ hα₃ p hp (t : ℂ) hz0 hz4
   have i2 := bpzRR_oneRooted_mixed_time_integrable P X hX γ hγ hγ2 M hM α₁ α₂ α₃ hlo hsq hα₁

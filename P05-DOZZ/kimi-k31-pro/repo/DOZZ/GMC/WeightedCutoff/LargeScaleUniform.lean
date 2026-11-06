@@ -1,10 +1,8 @@
-module
 
-public import DOZZ.GMC.WeightedCutoff.SmallScaleUniform
+import DOZZ.GMC.WeightedCutoff.SmallScaleUniform
 
 /-! # Uniform moments on larger finite-chart balls -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -35,7 +33,7 @@ theorem regularizedGMC_openBall_moment_compact_gamma_large_chart
   have hSne : S.Nonempty := by
     have hzero : (0 : ℂ) ∈ K := by simp [K]; positivity
     have hc := hcover hzero
-    simp only [Set.mem_iUnion] at hc
+    simp [Set.mem_iUnion] at hc
     obtain ⟨w, hwS, _⟩ := hc
     exact ⟨w, hwS⟩
   have hr₀pos : 0 < r₀ := by norm_num [r₀]

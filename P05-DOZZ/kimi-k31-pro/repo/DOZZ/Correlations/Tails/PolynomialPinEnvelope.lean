@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.Tails.PinEnvelopeMoment
-public import Mathlib.MeasureTheory.Integral.MeanInequalities
+import DOZZ.Correlations.Tails.PinEnvelopeMoment
+import Mathlib.MeasureTheory.Integral.MeanInequalities
 
 /-! Finite moments of the complete first-order copied-multiplier envelope. -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal
 

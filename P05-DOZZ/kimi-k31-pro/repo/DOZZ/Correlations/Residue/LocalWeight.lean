@@ -2,16 +2,14 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.Residue.ComplementMass
-public import DOZZ.Statements.Correlations.UniformPositiveC1Family
-public import Mathlib.Analysis.InnerProductSpace.Calculus
-public import Mathlib.Analysis.SpecialFunctions.Pow.Deriv
+import DOZZ.Correlations.Residue.ComplementMass
+import DOZZ.Statements.Correlations.UniformPositiveC1Family
+import Mathlib.Analysis.InnerProductSpace.Calculus
+import Mathlib.Analysis.SpecialFunctions.Pow.Deriv
 
 /-! Globally bounded local weights agreeing with the Coulomb density on insertion balls. -/
 
-@[expose] public section
 open MeasureTheory Filter Topology Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -26,12 +24,12 @@ theorem residue_localWeight_eq (γ S α : ℝ) (z w x : ℂ)
     (hz : 2 ≤ ‖z‖) (hz8 : ‖z‖ ≤ 8) (hzw : 3 ≤ ‖z - w‖)
     (hx : x ∈ Metric.ball z 1) :
     residueLocalWeight γ S α w x = ‖x‖ ^ (γ * S) / ‖x - w‖ ^ (γ * α) := by
-  have hd : ‖x - z‖ < 1 := by simpa only [Metric.mem_ball, dist_eq_norm] using hx
+  have hd : ‖x - z‖ < 1 := by simpa [Metric.mem_ball, dist_eq_norm] using hx
   have hzx : ‖z‖ ≤ ‖x - z‖ + ‖x‖ := by
     have hh := norm_add_le (z - x) x
-    simpa only [norm_sub_rev, sub_add_cancel] using hh
+    simpa [norm_sub_rev, sub_add_cancel] using hh
   have hxx : ‖x‖ ≤ ‖x - z‖ + ‖z‖ := by
-    simpa only [sub_add_cancel] using norm_add_le (x - z) z
+    simpa [sub_add_cancel] using norm_add_le (x - z) z
   have hsep : ‖z - w‖ ≤ ‖x - z‖ + ‖x - w‖ := by
     have hh := norm_add_le (z - x) (x - w)
     rw [sub_add_sub_cancel] at hh

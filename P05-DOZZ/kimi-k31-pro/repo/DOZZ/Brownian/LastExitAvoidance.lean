@@ -2,11 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.Brownian.NegativeLastExitTime
-public import Mathlib.Analysis.SpecificLimits.Basic
-public import Mathlib.Topology.Order.Basic
+import DOZZ.Statements.Brownian.NegativeLastExitTime
+import Mathlib.Analysis.SpecificLimits.Basic
+import Mathlib.Topology.Order.Basic
 
 /-!
 # Deterministic-time characterization of a last exit
@@ -16,7 +15,6 @@ deterministic time. This order-theoretic lemma isolates that event identity; pro
 conditioning is then applied at the deterministic time, never at the last exit itself.
 -/
 
-@[expose] public section
 
 open Set
 open Filter Topology
@@ -59,7 +57,7 @@ theorem negativeLastExitTime_mem_of_nonempty_bddAbove
   let A : Set ℝ≥0 := {u | p u = -c}
   have hclosed : IsClosed A := isClosed_singleton.preimage p.continuous
   have hmem : sSup A ∈ A := hclosed.csSup_mem hnonempty hbounded
-  exact hmem
+  assumption
 
 /-- Right endpoint of the dyadic mesh cell strictly containing a nonnegative last-exit time.
 The strict upper endpoint convention avoids any ambiguity when the last exit itself is dyadic. -/
@@ -82,8 +80,7 @@ theorem dyadicLastExitCeilingTime_bounds (n : ℕ) (L : ℝ≥0) :
   · change (L : ℝ) <
       ((Nat.floor ((L : ℝ) * a) + 1 : ℕ) : ℝ) / a
     push_cast
-    rw [lt_div_iff₀ ha]
-    exact hlt
+    rwa [lt_div_iff₀ ha]
   · change ((Nat.floor ((L : ℝ) * a) + 1 : ℕ) : ℝ) / a ≤
       (L : ℝ) + 1 / a
     rw [div_le_iff₀ ha]
@@ -96,7 +93,7 @@ theorem dyadicLastExitCeilingTime_bounds (n : ℕ) (L : ℝ≥0) :
 theorem dyadicLastExitCeilingTime_coe_tendsto (L : ℝ≥0) :
     Tendsto (fun n : ℕ => (dyadicLastExitCeilingTime n L : ℝ)) atTop (𝓝 (L : ℝ)) := by
   have hmesh : Tendsto (fun n : ℕ => 1 / (2 : ℝ) ^ n) atTop (𝓝 0) := by
-    simpa only [one_div_pow] using
+    simpa [one_div_pow] using
       (tendsto_pow_atTop_nhds_zero_of_lt_one
         (r := (1 / 2 : ℝ)) (by norm_num) (by norm_num))
   have hupper : Tendsto (fun n : ℕ => (L : ℝ) + 1 / (2 : ℝ) ^ n)
@@ -143,4 +140,3 @@ theorem continuousPath_dyadicLastExitCeiling_eval_tendsto
 
 end DOZZ.Proofs
 
-end

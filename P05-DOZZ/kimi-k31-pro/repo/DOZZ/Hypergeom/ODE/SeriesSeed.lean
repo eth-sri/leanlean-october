@@ -2,16 +2,14 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Hypergeom.ODE.CutPlaneTopology
-public import DOZZ.Hypergeom.ODE.DiskContinuation
-public import DOZZ.Hypergeom.ODE.SeriesEquation
-public import DOZZ.Hypergeom.ODE.UniformCompactDisks
+import DOZZ.Hypergeom.ODE.CutPlaneTopology
+import DOZZ.Hypergeom.ODE.DiskContinuation
+import DOZZ.Hypergeom.ODE.SeriesEquation
+import DOZZ.Hypergeom.ODE.UniformCompactDisks
 
 /-! The ordinary Gauss series supplies initial data and a Picard seed disk at `z = 1/2`. -/
 
-@[expose] public section
 
 open Polynomial Set
 

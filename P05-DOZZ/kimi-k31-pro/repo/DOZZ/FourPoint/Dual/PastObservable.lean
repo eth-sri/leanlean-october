@@ -2,12 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Dual.OuterPast
-public import DOZZ.FourPoint.Reflected.ChartMassMeasurable
+import DOZZ.FourPoint.Dual.OuterPast
+import DOZZ.FourPoint.Reflected.ChartMassMeasurable
 import Mathlib.Tactic
 /-! Measurable exterior observables on the locally finite lateral carrier. -/
-@[expose] public section
 open MeasureTheory Set ProbabilityTheory
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -56,10 +54,7 @@ theorem dual_indepFun_subtype_lift {Ω A B : Type*}
   change Indep (MeasurableSpace.comap f _)
     (MeasurableSpace.comap (fun ω => (⟨g ω, hg ω⟩ : Subtype S))
       (MeasurableSpace.comap Subtype.val _)) P
-  rw [MeasurableSpace.comap_comp]
-  exact hi
-
-
+  rwa [MeasurableSpace.comap_comp]
 /-- Beyond the restart radius, the measurable past observable is exactly the literal
 copied exterior kernel integral. -/
 theorem dual_past_exterior_mass_eq (γ α₁ α₂ α₃ : ℝ) (z : ℂ)
@@ -74,9 +69,9 @@ theorem dual_past_exterior_mass_eq (γ α₁ α₂ α₃ : ℝ) (z : ℂ)
   apply lintegral_congr
   intro x
   by_cases hx : x ∈ reflected_outerRegion r
-  · simp only [Set.indicator_of_mem hx]
+  · simp [Set.indicator_of_mem hx]
     rw [dual_past_reinsertion_weight_eq γ A T x (hr.trans hx.1.le)]
-  · simp only [Set.indicator_of_notMem hx]
+  · simp [Set.indicator_of_notMem hx]
 
 /-- The dual restart likelihood evaluated solely at the terminal stopped-past value. -/
 noncomputable def dualPastRestartWeight (γ ν : ℝ) (T : ℝ≥0) (z : ℂ)

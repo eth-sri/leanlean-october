@@ -2,11 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.ShiftEquations.TwoPole.Frame
-public import DOZZ.ShiftEquations.PoleSubtracted.CutoffGood
-public import DOZZ.Statements.ShiftEquations.PoleSubtractedObservable
+import DOZZ.ShiftEquations.TwoPole.Frame
+import DOZZ.ShiftEquations.PoleSubtracted.CutoffGood
+import DOZZ.Statements.ShiftEquations.PoleSubtractedObservable
 import DOZZ.ShiftEquations.PoleSubtracted.RealLimit
 import DOZZ.GMC.Moments.RhoMoment
 
@@ -19,7 +18,6 @@ so the structure-constant moment is finite, and by the frame identity so is the 
 moment, which is `(γ/2) 2^{-4(1-x/γ)} C̄(x, α₂, α₃)`.
 -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
@@ -101,7 +99,7 @@ theorem lintegral_totalMass_rpow_lt_top_pole {Ω : Type*} [MeasurableSpace Ω] (
     unfold sExp Q
     field_simp
     ring
-  simp only [hs, ENNReal.rpow_eq_pow] at hrho
+  simp [hs, ENNReal.rpow_eq_pow] at hrho
   rw [lintegral_totalMass_rpow_eq_rho P X hX γ hγ hγ2 M hM η x]
   exact ENNReal.mul_lt_top ENNReal.ofReal_lt_top hrho
 
@@ -151,4 +149,3 @@ theorem observable_add_localMoment {Ω : Type*} [MeasurableSpace Ω] (P : Measur
 
 end DOZZ.Proofs
 
-end

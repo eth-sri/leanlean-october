@@ -1,10 +1,8 @@
-module
 
-public import DOZZ.GMC.WeightedCutoff.LocationTransfer
+import DOZZ.GMC.WeightedCutoff.LocationTransfer
 
 /-! # Uniform location comparison on compact parameter sets -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal NNReal
@@ -53,7 +51,7 @@ theorem cutoffWeightedGmcBallMoment_translate_compact
     dsimp [B]
     linarith
   have hzeroB : ‖(0 : ℂ)‖ + ρ ≤ B := by
-    simp only [norm_zero, zero_add]
+    simp [norm_zero, zero_add]
     dsimp [B]
     linarith [norm_nonneg zmax]
   have hcmp := cutoffWeightedGmcBallMoment_translate_le P X hX Xc hXc γ t.1 t.2

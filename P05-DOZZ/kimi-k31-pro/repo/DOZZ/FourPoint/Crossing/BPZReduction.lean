@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.Crossing.Assembly
-public import DOZZ.FourPoint.Crossing.ZeroChannel
+import DOZZ.FourPoint.Crossing.Assembly
+import DOZZ.FourPoint.Crossing.ZeroChannel
 import Mathlib.Tactic
 
 /-! # A crossing reduction with the two BPZ inputs explicit
@@ -16,11 +15,10 @@ classification `DOZZ.degenerateFourPoint_diagonal_classification` is discharged 
 classification and the full-domain probabilistic collision limit.
 -/
 
-public section
 open MeasureTheory
 namespace DOZZ.Proofs
 
-/-- Both crossing identities of `DOZZ.gammaHalf_crossing` follow from the two literal independent
+/-- Both crossing identities of `gammaHalf_crossing` follow from the two literal independent
 BPZ inputs. -/
 theorem gammaHalf_crossing_of_BPZ_and_unreflected {Ω : Type*} [MeasurableSpace Ω]
     {H : ℂ → ℂ → ℂ → ℂ → ℂ} (hH : IsGaussHypergeometricFamily H)

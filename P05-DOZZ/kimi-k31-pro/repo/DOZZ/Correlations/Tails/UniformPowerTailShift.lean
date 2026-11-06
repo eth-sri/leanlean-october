@@ -2,13 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.Tails.ShiftedPowerBound
+import DOZZ.Correlations.Tails.ShiftedPowerBound
 
 /-! Uniform control of the leading tail at the shifted thresholds in the localization sandwich. -/
 
-@[expose] public section
 open Set
 
 namespace DOZZ.Proofs
@@ -40,7 +38,7 @@ theorem uniform_power_tail_shift
   have hLeading : E*(x*y)^(-p-η) ≤ (E*2^(P+η))*x^(-p-η) := by
     rw [hpow]
     have h := mul_le_mul_of_nonneg_left hybound (mul_nonneg hE (Real.rpow_nonneg hx0.le (-p-η)))
-    simpa only [mul_assoc,mul_comm,mul_left_comm] using h
+    simpa [mul_assoc,mul_comm,mul_left_comm] using h
   have hDifference : |c*(x*y)^(-p)-c*x^(-p)| ≤
       (cmax*P*2^(P+1))*x^(-p-η) := by
     have hv := shifted_negative_power_bound p P y hp hpP hy

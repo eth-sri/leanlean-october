@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Brownian.ReflectionMassMeasurability
-public import Mathlib.Analysis.SpecialFunctions.Pow.Continuity
+import DOZZ.Brownian.ReflectionMassMeasurability
+import Mathlib.Analysis.SpecialFunctions.Pow.Continuity
 
 /-!
 # Reflection moment transport with measurable input laws
@@ -15,7 +14,6 @@ moment. Reflection data provide this through their path measurability and the la
 almost-sure local finiteness, so the measurability premise can be discharged at the data boundary.
 -/
 
-@[expose] public section
 
 open Filter MeasureTheory
 open scoped ENNReal NNReal
@@ -79,4 +77,3 @@ theorem reflectionBarR_eq_of_joint_input_law_of_reflectionData
 
 end DOZZ.Proofs
 
-end

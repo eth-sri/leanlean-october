@@ -2,15 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.Tails.StoppedMassMeasurability
-public import DOZZ.Correlations.Tails.WilliamsShiftedLateralLaw
-public import DOZZ.Brownian.Lateral.IntervalMoments
+import DOZZ.Correlations.Tails.StoppedMassMeasurability
+import DOZZ.Correlations.Tails.WilliamsShiftedLateralLaw
+import DOZZ.Brownian.Lateral.IntervalMoments
 
 /-! The exact exponential-maximum last-cut law for the canonical inward polar mass. -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal NNReal
 
@@ -30,7 +28,7 @@ theorem measurable_williamsMassFunctional (γ : ℝ) :
       (measurable_fst.snd.prodMk measurable_fst.fst.snd.snd)).prodMk measurable_snd)
 
 /-- On the conditioned-copy model the measurable functional is exactly `exp(γ m) J_m`,
-with `J_m` the last-exit truncated reflection mass `DOZZ.twoSidedReflectionCutMass`. -/
+with `J_m` the last-exit truncated reflection mass `twoSidedReflectionCutMass`. -/
 theorem williamsMassFunctional_lastExit
     (γ m : ℝ) (qplus qminus : BrownianPath) (Z : Measure ℝ)
     (hfin : ∀ a b : ℝ, Z (Icc a b) < ⊤) :

@@ -1,2 +1,1 @@
-module
-public import DOZZ.FourPoint.Reflected.SpatialGuard
+import DOZZ.FourPoint.Reflected.SpatialGuard

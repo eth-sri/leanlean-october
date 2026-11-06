@@ -2,15 +2,14 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GFFStructure.CircleVersion
-public import DOZZ.GMC.Construction.GMCMeasurableVersion
-public import DOZZ.Brownian.LateralLocalFiniteness
-public import DOZZ.Brownian.LateralPolarFormula
-public import DOZZ.Brownian.MeasureTranslationFinite
-public import Mathlib.MeasureTheory.Constructions.Polish.Basic
-public import Mathlib.Topology.ContinuousMap.SecondCountableSpace
+import DOZZ.GFFStructure.CircleVersion
+import DOZZ.GMC.Construction.GMCMeasurableVersion
+import DOZZ.Brownian.LateralLocalFiniteness
+import DOZZ.Brownian.LateralPolarFormula
+import DOZZ.Brownian.MeasureTranslationFinite
+import Mathlib.MeasureTheory.Constructions.Polish.Basic
+import Mathlib.Topology.ContinuousMap.SecondCountableSpace
 
 /-!
 # The actual two-sided radial path and its polar projection
@@ -26,7 +25,6 @@ lateral decomposition; independence of the projection requires identification wi
 the lateral field.
 -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal Topology
@@ -160,8 +158,7 @@ theorem measurable_lateralProjectedGMC_finite :
   convert hm using 1
   funext p
   unfold lateralProjectedGMC
-  rw [Measure.map_apply hρ hS, withDensity_apply _ hpre]
-  rw [← lintegral_indicator hpre]
+  rw [Measure.map_apply hρ hS, withDensity_apply _ hpre, ← lintegral_indicator hpre]
   rfl
 
 /-- An arbitrary GMC version is almost-everywhere measurable as a measure. -/
@@ -187,7 +184,7 @@ theorem lateralProjectedGMC_aemeasurable {Ω : Type*} [MeasurableSpace Ω]
   have hp : AEMeasurable (fun ω => ((γ, A ω), N ω)) P := hpair.prodMk hN
   have hr := measurable_lateralProjectedGMC_finite.comp_aemeasurable hp
   change AEMeasurable (fun ω => lateralProjectedGMC γ (A ω) (M ω)) P at hr
-  exact hr
+  assumption
 
 /-- The polar projection assigns no mass to the plane origin, before taking its pushforward. -/
 theorem lateralRadialWeight_zero (γ : ℝ) (A : TwoSidedPath) :
@@ -234,7 +231,7 @@ theorem lateralProjectedGMC_reinsert_lintegral (γ : ℝ) (A : TwoSidedPath)
   rw [← mul_assoc]
   have hforward : lateralForwardWeight γ A (-Real.log ‖x‖) =
       ENNReal.ofReal (Real.exp (γ * A (-Real.log ‖x‖) - γ * Q γ * |Real.log ‖x‖|)) := by
-    simp only [lateralForwardWeight, abs_neg]
+    simp [lateralForwardWeight, abs_neg]
   rw [hforward, lateralRadialWeight_cancel]
   split_ifs <;> simp
 

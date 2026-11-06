@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.Brownian.ReflectionR
-public import DOZZ.Brownian.ReflectionExponentBounds
+import DOZZ.Statements.Brownian.ReflectionR
+import DOZZ.Brownian.ReflectionExponentBounds
 import Mathlib.Analysis.SpecialFunctions.Gamma.Deriv
 import Mathlib.Analysis.SpecialFunctions.Pow.Continuity
 
@@ -16,7 +15,6 @@ The full zero-drift theorem supplies the small-power moment limit. This file pro
 scalar limit: that moment limit forces the Brownian reflection coefficient to tend to `-1`.
 -/
 
-@[expose] public section
 
 open MeasureTheory Filter Topology Set
 open scoped ENNReal NNReal
@@ -72,9 +70,8 @@ theorem reflectionR_tendsto_Q_of_reflectionBarR
     have hre' : Tendsto (fun α : ℝ => Complex.re
         (((-p α : ℝ) : ℂ) * Complex.Gamma ((-p α : ℝ) : ℂ)))
         (𝓝[<] (Q γ)) (𝓝 1) := by
-      exact hre
-    rw [hEq] at hre'
-    exact hre'
+      assumption
+    rwa [hEq] at hre'
   have hgammaReal : Tendsto
       (fun α : ℝ => p α * Real.Gamma (-p α))
       (𝓝[<] (Q γ)) (𝓝 (-1)) := by
@@ -96,10 +93,8 @@ theorem reflectionR_tendsto_Q_of_reflectionBarR
         reflectionBarR P γ α (B α) Z) := by
     funext α
     simp [reflectionR, p, reflectionExponent, mul_comm, mul_left_comm]
-  rw [hformula]
-  exact hprod
-
-/-- The zero-drift moment limit (`DOZZ.reflectionMoment_zeroDrift_tendsto_one`),
+  rwa [hformula]
+/-- The zero-drift moment limit (`reflectionMoment_zeroDrift_tendsto_one`),
 reparameterized by `ν = Q γ - α`, implies the endpoint limit for the full reflection
 coefficient. -/
 theorem reflectionR_tendsto_Q_of_zeroDriftMoment
@@ -133,10 +128,8 @@ theorem reflectionR_tendsto_Q_of_zeroDriftMoment
             (2 * (Q γ - α) / γ) ∂P).toReal) := by
       funext α
       simp [reflectionBarR, reflectionExponent]
-    rw [hEq]
-    exact hcomp
+    rwa [hEq]
   exact reflectionR_tendsto_Q_of_reflectionBarR P γ μ hγ hμ B Z hBar
 
 end DOZZ.Proofs
 
-end

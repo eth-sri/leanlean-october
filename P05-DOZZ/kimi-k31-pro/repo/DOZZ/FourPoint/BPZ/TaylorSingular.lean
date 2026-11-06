@@ -2,11 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import Mathlib.MeasureTheory.Integral.IntervalIntegral.FundThmCalculus
-public import Mathlib.MeasureTheory.Integral.IntervalIntegral.IntegrationByParts
-public import Mathlib.MeasureTheory.Function.LocallyIntegrable
+import Mathlib.MeasureTheory.Integral.IntervalIntegral.FundThmCalculus
+import Mathlib.MeasureTheory.Integral.IntervalIntegral.IntegrationByParts
+import Mathlib.MeasureTheory.Function.LocallyIntegrable
 
 /-! # Second-order Taylor formula with a singular endpoint
 
@@ -20,7 +19,6 @@ public import Mathlib.MeasureTheory.Function.LocallyIntegrable
   No integrability of `f` is needed, since an affine change of variables is valid for all
   Bochner integrals (non-integrable integrands have value `0` on both sides). -/
 
-@[expose] public section
 
 open MeasureTheory Filter Topology Set
 
@@ -98,6 +96,6 @@ theorem bpzTS_subst_smul {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] 
 theorem bpz_taylor_remainder_subst_complex {f : ℝ → ℂ} {t : ℝ} (ht : 0 < t) :
     ∫ u in (0 : ℝ)..t, ((t - u : ℝ) : ℂ) * f u =
       ((t ^ 2 : ℝ) : ℂ) * ∫ s in Icc (0 : ℝ) 1, ((1 - s : ℝ) : ℂ) * f (s * t) := by
-  simpa only [Complex.real_smul] using bpzTS_subst_smul (f := f) ht
+  simpa [Complex.real_smul] using bpzTS_subst_smul (f := f) ht
 
 end DOZZ.Proofs

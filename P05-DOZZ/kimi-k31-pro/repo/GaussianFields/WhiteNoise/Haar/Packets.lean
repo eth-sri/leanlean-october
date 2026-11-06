@@ -3,9 +3,8 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Scott Armstrong, Amélie Loher
 -/
-module
 
-public import GaussianFields.WhiteNoise.Haar.OneDimensional
+import GaussianFields.WhiteNoise.Haar.OneDimensional
 
 /-!
 # GaussianFields multidimensional Haar packets
@@ -13,7 +12,6 @@ public import GaussianFields.WhiteNoise.Haar.OneDimensional
 Port of the corresponding GaussianFields source module.
 -/
 
-public section
 
 open MeasureTheory
 open scoped BigOperators ENNReal InnerProductSpace
@@ -21,17 +19,17 @@ open scoped BigOperators ENNReal InnerProductSpace
 namespace GaussianFields
 
 /-- The tensor-product Haar packet on `R^d`. -/
-@[expose]
+
 noncomputable def haarPacket {d : Nat} (idx : HaarIndex d) : Vec d → ℝ :=
   fun x => ∏ r : Fin d, haar1D idx.scale (idx.cell r) (idx.signature r) (x r)
 
 /-- The child cell selected by a Boolean left/right side vector. -/
-@[expose]
+
 def haarChildCell {d : Nat} (cell : Fin d → ℤ) (side : Fin d → Bool) : Fin d → ℤ :=
   fun r => (2 : ℤ) * cell r + if side r then 1 else 0
 
 /-- The coefficient of a parent packet in the tensor expansion of a father child. -/
-@[expose]
+
 noncomputable def haarChildCoefficient {d : Nat}
     (side signature : Fin d → Bool) : ℝ :=
   ∏ r : Fin d,
@@ -54,7 +52,7 @@ theorem haarPacket_child_father_refine_pointwise {d : Nat} (j : ℤ)
   rw [← Finset.prod_mul_distrib]
 
 /-- The dyadic box in `R^d` associated with scale `j` and integer cell `cell`. -/
-@[expose]
+
 def dyadicBox {d : Nat} (j : ℤ) (cell : Fin d → ℤ) : Set (Vec d) :=
   Set.pi Set.univ fun r => dyadicInterval j (cell r)
 
@@ -100,7 +98,7 @@ theorem haarPacket_father_eq_indicator_dyadicBox {d : Nat}
             funext y
             rfl
           rw [honeReal, honeVec, dyadicBox]
-          simpa only [Finset.coe_univ] using h.symm
+          simpa [Finset.coe_univ] using h.symm
 
 @[fun_prop]
 theorem measurable_haarPacket {d : Nat} (idx : HaarIndex d) :
@@ -141,7 +139,7 @@ theorem memLp_haarPacket {d : Nat} (idx : HaarIndex d) :
   · exact (measurable_haarPacket idx).aestronglyMeasurable
 
 /-- The tensor-product Haar packet as an `L²(R^d)` vector. -/
-@[expose]
+
 noncomputable def haarPacketLp {d : Nat} (idx : HaarIndex d) :
     Lp ℝ 2 (volume : Measure (Vec d)) :=
   (memLp_haarPacket idx).toLp (haarPacket idx)
@@ -165,10 +163,7 @@ private theorem coeFn_finset_sum_lp_real {α ι : Type*} [MeasurableSpace α]
       simpa using hx
   | insert i s hi ih =>
       filter_upwards [Lp.coeFn_add (f i) (∑ j ∈ s, f j), ih] with x hadd hsum
-      rw [Finset.sum_insert hi]
-      rw [Finset.sum_insert hi]
-      rw [hadd, Pi.add_apply]
-      rw [hsum]
+      rw [Finset.sum_insert hi, Finset.sum_insert hi, hadd, Pi.add_apply, hsum]
 
 theorem haarPacketLp_child_father_refine {d : Nat} (j : ℤ)
     (cell : Fin d → ℤ) (side : Fin d → Bool) :
@@ -386,7 +381,7 @@ theorem inner_haarPacketLp_same_scale {d : Nat} (idx₁ idx₂ : HaarIndex d)
       integral_haarPacket_mul_same_scale_ite idx₁ idx₂ hscale
 
 /-- The corrected tensor-product Haar wavelet packet. -/
-@[expose]
+
 noncomputable def haarWaveletPacket {d : Nat} (idx : HaarWaveletIndex d) : Vec d → ℝ :=
   haarPacket idx.toHaarIndex
 
@@ -398,13 +393,7 @@ theorem measurable_haarWaveletPacket {d : Nat} (idx : HaarWaveletIndex d) :
 theorem exists_true_of_ne_false_signature {d : Nat} {signature : Fin d → Bool}
     (h : signature ≠ fun _ => false) :
     ∃ r : Fin d, signature r = true := by
-  by_contra hnot
-  push Not at hnot
-  apply h
-  funext r
-  cases hsig : signature r
-  · rfl
-  · exact False.elim (hnot r hsig)
+  grind
 
 theorem integral_haarWaveletPacket_mul_finer_nat_succ {d : Nat}
     (idx₁ idx₂ : HaarWaveletIndex d) (n : ℕ)
@@ -420,7 +409,7 @@ theorem memLp_haarWaveletPacket {d : Nat} (idx : HaarWaveletIndex d) :
   exact memLp_haarPacket idx.toHaarIndex
 
 /-- The corrected tensor-product Haar wavelet packet as an `L²(R^d)` vector. -/
-@[expose]
+
 noncomputable def haarWaveletPacketLp {d : Nat} (idx : HaarWaveletIndex d) :
     Lp ℝ 2 (volume : Measure (Vec d)) :=
   (memLp_haarWaveletPacket idx).toLp (haarWaveletPacket idx)
@@ -484,8 +473,7 @@ theorem inner_haarWaveletPacketLp_finer_nat_succ_symm {d : Nat}
 theorem exists_nat_succ_scale_gap {j₁ j₂ : ℤ} (h : j₁ < j₂) :
     ∃ n : ℕ, j₂ = j₁ + ((n + 1 : ℕ) : ℤ) := by
   let m : ℕ := (j₂ - j₁).toNat
-  have hm_cast : (m : ℤ) = j₂ - j₁ := by
-    exact Int.toNat_sub_of_le (show j₁ ≤ j₂ from le_of_lt h)
+  have hm_cast : (m : ℤ) = j₂ - j₁ := Int.toNat_sub_of_le (show j₁ ≤ j₂ from le_of_lt h)
   have hm_pos : 0 < m := by
     have hdiff_pos : 0 < j₂ - j₁ := sub_pos.mpr h
     have hdiff_cast_pos : 0 < (m : ℤ) := by
@@ -494,8 +482,6 @@ theorem exists_nat_succ_scale_gap {j₁ j₂ : ℤ} (h : j₁ < j₂) :
   obtain ⟨n, hn⟩ := Nat.exists_eq_succ_of_ne_zero (ne_of_gt hm_pos)
   refine ⟨n, ?_⟩
   have hm_eq : m = n + 1 := by omega
-  have hgap : (j₂ - j₁ : ℤ) = ((n + 1 : ℕ) : ℤ) := by
-    rw [← hm_cast, hm_eq]
   omega
 
 theorem inner_haarWaveletPacketLp_of_scale_lt {d : Nat}
@@ -526,4 +512,3 @@ theorem inner_haarWaveletPacketLp (d : Nat) (idx₁ idx₂ : HaarWaveletIndex d)
 
 end GaussianFields
 
-end

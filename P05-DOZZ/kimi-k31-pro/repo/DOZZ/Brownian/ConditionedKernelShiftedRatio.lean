@@ -2,12 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Brownian.ConditionedKernelScoreParameter
-public import DOZZ.Brownian.ConditionedKernelParameterRatio
-public import DOZZ.Brownian.ConditionedKernelCDFOrder
-public import Mathlib.Analysis.Calculus.Deriv.MeanValue
+import DOZZ.Brownian.ConditionedKernelScoreParameter
+import DOZZ.Brownian.ConditionedKernelParameterRatio
+import DOZZ.Brownian.ConditionedKernelCDFOrder
+import Mathlib.Analysis.Calculus.Deriv.MeanValue
 
 /-!
 # Shifted likelihood ratio for conditioned kernels
@@ -17,7 +16,6 @@ density with an unshifted one. This module proves the required antitonicity of i
 ratio for strictly positive drift parameters.
 -/
 
-@[expose] public section
 
 open MeasureTheory Topology Set
 
@@ -35,40 +33,17 @@ private theorem shiftedRatio_heatDensity_sub_factor
     {t x y : ℝ} (ht : 0 < t) :
     brownianHeatDensity t (y - x) - brownianHeatDensity t (y + x) =
       Real.exp (-(x ^ 2 + y ^ 2) / (2 * t)) *
-        (2 * Real.sinh (x * y / t) / Real.sqrt (2 * Real.pi * t)) := by
-  have he₁ : -((y - x) ^ 2) / (2 * t) =
-      -(x ^ 2 + y ^ 2) / (2 * t) + x * y / t := by
-    field_simp [ht.ne']
-    ring
-  have he₂ : -((y + x) ^ 2) / (2 * t) =
-      -(x ^ 2 + y ^ 2) / (2 * t) + -(x * y / t) := by
-    field_simp [ht.ne']
-    ring
-  have hden : Real.sqrt (2 * Real.pi * t) ≠ 0 := by positivity
-  simp only [brownianHeatDensity, ht, ite_true]
-  rw [he₁, he₂, Real.exp_add, Real.exp_add, Real.sinh_eq]
-  field_simp [hden]
+        (2 * Real.sinh (x * y / t) / Real.sqrt (2 * Real.pi * t)) := DOZZ.Proofs.brownianHeatDensity_sub_factor ht
 
 private theorem shiftedRatio_one_sub_exp_eq_sinh (z : ℝ) :
-    1 - Real.exp (-2 * z) = 2 * Real.exp (-z) * Real.sinh z := by
-  calc
-    1 - Real.exp (-2 * z) =
-        Real.exp ((-z) + z) - Real.exp ((-z) + (-z)) := by
-          rw [show (-z) + z = 0 by ring, Real.exp_zero,
-            show -2 * z = (-z) + (-z) by ring]
-    _ = Real.exp (-z) * (Real.exp z - Real.exp (-z)) := by
-          rw [Real.exp_add, Real.exp_add]
-          ring
-    _ = 2 * Real.exp (-z) * Real.sinh z := by
-          rw [Real.sinh_eq]
-          ring
+    1 - Real.exp (-2 * z) = 2 * Real.exp (-z) * Real.sinh z := DOZZ.Proofs.one_sub_exp_neg_two_mul_eq_two_exp_neg_mul_sinh z
 
 private theorem shiftedRatio_conditionedH_sinh
     {ν x : ℝ} (hν : 0 < ν) :
     conditionedH ν x = 2 * Real.exp (-ν * x) * Real.sinh (ν * x) := by
-  simp only [conditionedH, ite_eq_right (ne_of_gt hν)]
+  simp [conditionedH, ite_eq_right (ne_of_gt hν)]
   have h := shiftedRatio_one_sub_exp_eq_sinh (ν * x)
-  simpa only [mul_assoc, neg_mul] using h
+  simpa [mul_assoc, neg_mul] using h
 
 /-- For strictly positive drift, the transition density's endpoint dependence is a fixed positive
 factor times its Gaussian and two hyperbolic-sine factors. -/
@@ -81,8 +56,6 @@ theorem conditionedPositiveTransitionDensity_eq_sinh_gaussian_factor
   have hheat := shiftedRatio_heatDensity_sub_factor ht (x := x) (y := y)
   have hHνy := shiftedRatio_conditionedH_sinh (x := y) hν
   have hHνx := shiftedRatio_conditionedH_sinh (x := x) hν
-  have hsinhX : 0 < Real.sinh (x * y / t) :=
-    Real.sinh_pos_iff.mpr (div_pos (mul_pos hx hy) ht)
   have hsinhνx : 0 < Real.sinh (ν * x) :=
     Real.sinh_pos_iff.mpr (mul_pos hν hx)
   have hroot : 0 < Real.sqrt (2 * Real.pi * t) := by positivity
@@ -408,20 +381,7 @@ theorem conditionedKernelShiftedZeroDensityRatio_antitoneOn
       exact hanti (Set.mem_Ioi.mpr hy') (Set.mem_Ioi.mpr hyD) (by linarith)
     have hratio : 0 < conditionedKernelShiftedZeroDensityRatio b c t d y := by
       dsimp [conditionedKernelShiftedZeroDensityRatio]
-      have hsB : 0 < Real.sinh (b * (y + d)) :=
-        Real.sinh_pos_iff.mpr (mul_pos hb hyD)
-      have hsCy : 0 < Real.sinh (c * y) :=
-        Real.sinh_pos_iff.mpr (mul_pos hc hy')
-      have hsCyd : 0 < Real.sinh (c * (y + d)) :=
-        Real.sinh_pos_iff.mpr (mul_pos hc hyD)
       positivity
-    have hlast : conditionedKernelScore c (y + d) - conditionedKernelScore c y ≤ 0 :=
-      sub_nonpos.mpr hscoreStateC
-    have hfirst : conditionedKernelScore b (y + d) - 1 / y ≤ b := by
-      calc
-        conditionedKernelScore b (y + d) - 1 / y ≤
-            conditionedKernelScore b y - 1 / y := sub_le_sub_right hscoreStateB _
-        _ ≤ b := hscoreB.2
     have hslope : -(d / t) + (conditionedKernelScore b (y + d) - 1 / y) +
         (conditionedKernelScore c (y + d) - conditionedKernelScore c y) ≤ 0 := by
       rw [hdt]
@@ -516,8 +476,6 @@ theorem conditionedPositiveTransitionDensity_shifted_zero_ratio_antitoneOn
   have hden (y : ℝ) (hy : 0 < y) :
       0 < conditionedPositiveTransitionDensity 0 t x y := by
     rw [conditionedPositiveTransitionDensity_zero_eq_sinh_gaussian_factor ht hx hy]
-    have hsin : 0 < Real.sinh (x * y / t) :=
-      Real.sinh_pos_iff.mpr (div_pos (mul_pos hx hy) ht)
     positivity
   have hfactor (y : ℝ) (hy : 0 < y) :
       conditionedPositiveTransitionDensity b t x (y + d) /
@@ -566,18 +524,12 @@ theorem conditionedPositiveTransitionDensity_shifted_zero_cdf_ge
     intro y hy
     change 0 < conditionedPositiveTransitionDensity 0 t x y
     rw [conditionedPositiveTransitionDensity_zero_eq_sinh_gaussian_factor ht hx hy]
-    have hsin : 0 < Real.sinh (x * y / t) :=
-      Real.sinh_pos_iff.mpr (div_pos (mul_pos hx hy) ht)
     positivity
   have hgpos : ∀ y, 0 < y → 0 < g y := by
     intro y hy
     change 0 < conditionedPositiveTransitionDensity b t x (y + d)
     rw [conditionedPositiveTransitionDensity_eq_sinh_gaussian_factor hb ht hx
       (by linarith [hd])]
-    have hsin₁ : 0 < Real.sinh (b * (y + d)) :=
-      Real.sinh_pos_iff.mpr (mul_pos hb (by linarith [hy, hd]))
-    have hsin₂ : 0 < Real.sinh (x * (y + d) / t) :=
-      Real.sinh_pos_iff.mpr (div_pos (mul_pos hx (by linarith [hy, hd])) ht)
     positivity
   have hratio : AntitoneOn r (Set.Ioi 0) := by
     have hR := conditionedPositiveTransitionDensity_shifted_zero_ratio_antitoneOn
@@ -601,4 +553,3 @@ theorem conditionedPositiveTransitionDensity_shifted_zero_cdf_ge
 
 end DOZZ.Proofs
 
-end

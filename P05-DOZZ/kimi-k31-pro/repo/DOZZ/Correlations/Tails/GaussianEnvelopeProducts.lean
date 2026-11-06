@@ -1,2 +1,1 @@
-module
-public import DOZZ.Correlations.Tails.PolynomialPinEnvelope
+import DOZZ.Correlations.Tails.PolynomialPinEnvelope

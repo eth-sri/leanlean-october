@@ -2,15 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.Tails.PinWickBound
-public import DOZZ.GFFStructure.HarmonicMoments
+import DOZZ.Correlations.Tails.PinWickBound
+import DOZZ.GFFStructure.HarmonicMoments
 
 /-! Gaussian moments for the spatial correction envelope in the one-insertion tail estimate.
 The two pins may be correlated; the bound only uses their centered Gaussian marginals. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal NNReal

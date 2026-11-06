@@ -2,12 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import Mathlib.Analysis.Convex.Deriv
-public import Mathlib.Analysis.SpecialFunctions.Pow.Deriv
+import Mathlib.Analysis.Convex.Deriv
+import Mathlib.Analysis.SpecialFunctions.Pow.Deriv
 import Mathlib.Tactic
 /-! Linear coefficient bounds for the signed inverse-power kernel increment. -/
-@[expose] public section
 open Set
 namespace DOZZ.Proofs
 
@@ -33,7 +31,7 @@ theorem reflected_inverse_increment_scale_small (p A t c : ℝ)
     (A+c*t)^(-p)-A^(-p) ≤ c*((A+t)^(-p)-A^(-p)) := by
   have hj := (reflected_convex_inverse_power p hp).2 hA
     (add_pos_of_pos_of_nonneg hA ht) (sub_nonneg.mpr hc1) hc (by ring : 1-c+c=1)
-  simp only [smul_eq_mul] at hj
+  simp [smul_eq_mul] at hj
   have he : (1-c)*A+c*(A+t)=A+c*t := by ring
   rw [he] at hj
   refine ⟨sub_le_sub_right (Real.rpow_le_rpow_of_nonpos
@@ -51,17 +49,17 @@ theorem reflected_inverse_increment_scale_large (p A t c : ℝ)
   rw [inv_mul_cancel_left₀ hc0.ne'] at hb
   refine ⟨?_,hb.1⟩
   have hh := mul_le_mul_of_nonneg_left hb.2 hc0.le
-  simpa only [mul_inv_cancel_left₀ hc0.ne'] using hh
+  simpa [mul_inv_cancel_left₀ hc0.ne'] using hh
 
 theorem reflected_inverse_increment_scaled (p A t c : ℝ)
     (hp : 0 ≤ p) (hA : 0 < A) (ht : 0 ≤ t) (hc : 0 < c) :
     max 1 c*((A+t)^(-p)-A^(-p)) ≤ (A+c*t)^(-p)-A^(-p) ∧
     (A+c*t)^(-p)-A^(-p) ≤ min 1 c*((A+t)^(-p)-A^(-p)) := by
   by_cases hc1 : c ≤ 1
-  · simpa only [max_eq_left hc1,min_eq_right hc1,one_mul] using
+  · simpa [max_eq_left hc1,min_eq_right hc1,one_mul] using
       reflected_inverse_increment_scale_small p A t c hp hA ht hc.le hc1
   · have h1c := le_of_lt (lt_of_not_ge hc1)
-    simpa only [max_eq_right h1c,min_eq_left h1c,one_mul] using
+    simpa [max_eq_right h1c,min_eq_left h1c,one_mul] using
       reflected_inverse_increment_scale_large p A t c hp hA ht h1c
 
 end DOZZ.Proofs

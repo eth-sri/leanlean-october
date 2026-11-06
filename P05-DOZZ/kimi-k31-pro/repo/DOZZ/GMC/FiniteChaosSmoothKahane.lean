@@ -2,15 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.FiniteChaosTestIntegrationByParts
-public import DOZZ.GMC.FiniteGaussianProduct
-public import DOZZ.GMC.FiniteGaussianInterpolationIdentity
+import DOZZ.GMC.FiniteChaosTestIntegrationByParts
+import DOZZ.GMC.FiniteGaussianProduct
+import DOZZ.GMC.FiniteGaussianInterpolationIdentity
 
 /-! Smooth-test scores on the independent Gaussian Kahane interpolation path. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory
 open scoped Distributions Topology
@@ -74,7 +72,7 @@ theorem kahaneSumVectorScore_directional_hasDerivAt
       ∑ j, d' j * finiteChaosVectorTestScoreDerivative a v γ F' F''
         (kahaneSumVectorField t (fun k => z k + s * d k)) i j := by
     rw [Fintype.sum_sum_type]
-    simp only [kahaneSumVectorScoreDerivative, kahaneSumVectorFieldScoreDerivative]
+    simp [kahaneSumVectorScoreDerivative, kahaneSumVectorFieldScoreDerivative]
     simp_rw [d']
     calc
       _ = (∑ j, d (Sum.inl j) * (Real.sqrt t *

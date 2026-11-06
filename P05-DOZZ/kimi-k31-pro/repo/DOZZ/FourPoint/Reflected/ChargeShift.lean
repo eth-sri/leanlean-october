@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Reflected.CircleTilt
-public import DOZZ.FourPoint.Reflected.OuterInverseLimit
-public import DOZZ.FourPoint.RootedPairMoments
-public import DOZZ.GMC.SharpMoments.SeibergWeight
+import DOZZ.FourPoint.Reflected.CircleTilt
+import DOZZ.FourPoint.Reflected.OuterInverseLimit
+import DOZZ.FourPoint.RootedPairMoments
+import DOZZ.GMC.SharpMoments.SeibergWeight
 import Mathlib.Tactic
 /-! # The literal retained-region charge shift under a circle tilt -/
-@[expose] public section
 open MeasureTheory Filter Topology Set
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -65,7 +63,7 @@ theorem reflected_outerMass_circle_density_shift (γ a m α₁ α₂ α₃ ξ : 
   apply lintegral_congr_ae
   filter_upwards [ae_restrict_mem hD] with x hx
   have hn : 0 < ‖x‖ := hr.trans_le hx
-  dsimp only [Pi.mul_apply]
+  dsimp [Pi.mul_apply]
   rw [reflected_circle_density_outside γ a m x hn (hm.trans hx)]
   exact reflected_coulombWeight_charge_shift γ a α₁ α₂ α₃ z x
     (norm_pos_iff.mp hn)
@@ -121,7 +119,7 @@ theorem reflected_tilted_outer_inverse_moment_tendsto
     (α₁ + a) α₂ α₃ ξ q hξ hξ₁ hq hα₁ hα₂ hα₃
   have hn : Tendsto (fun z : ℂ => ‖z‖)
       (nhdsWithin (0 : ℂ) {z : ℂ | z ≠ 0}) (nhds 0) := by
-    simpa only [norm_zero] using (continuous_norm.tendsto (0 : ℂ)).mono_left nhdsWithin_le_nhds
+    simpa [norm_zero] using (continuous_norm.tendsto (0 : ℂ)).mono_left nhdsWithin_le_nhds
   apply ht.congr'
   filter_upwards [hn.eventually (gt_mem_nhds zero_lt_one), self_mem_nhdsWithin] with z hz hz0
   have hp : 0 < ‖z‖ := norm_pos_iff.mpr hz0
@@ -129,11 +127,11 @@ theorem reflected_tilted_outer_inverse_moment_tendsto
     have hl := Real.log_nonpos hp.le hz.le
     linarith only [hl, hh]
   have hr : ‖z‖ ≤ ‖z‖ ^ (1 - ξ) := by
-    simpa only [Real.rpow_one] using Real.rpow_le_rpow_of_exponent_ge hp hz.le
+    simpa [Real.rpow_one] using Real.rpow_le_rpow_of_exponent_ge hp hz.le
       (by linarith only [hξ] : 1 - ξ ≤ 1)
   have he : Real.exp (-(-Real.log ‖z‖ + h)) ≤ ‖z‖ := by
     have hb : -(-Real.log ‖z‖ + h) ≤ Real.log ‖z‖ := by linarith only [hh]
-    simpa only [Real.exp_log hp] using Real.exp_le_exp.mpr hb
+    simpa [Real.exp_log hp] using Real.exp_le_exp.mpr hb
   exact (reflected_outerMass_circle_tilt P X hX γ hγ hγ₂ M hM Xc hXc
     a (-Real.log ‖z‖ + h) α₁ α₂ α₃ ξ q hm z
     (Real.rpow_pos_of_pos hp _) (he.trans hr)).symm

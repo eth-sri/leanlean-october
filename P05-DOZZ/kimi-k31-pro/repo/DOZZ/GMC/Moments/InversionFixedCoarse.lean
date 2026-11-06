@@ -2,13 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.Moments.InversionPotentialExtension
+import DOZZ.GMC.Moments.InversionPotentialExtension
 
 /-! Uniform fine-circle convergence against a fixed source circle on punctured charts. -/
 
-@[expose] public section
 
 open MeasureTheory Set Metric Real
 open DOZZ.Proofs.CirclePotential
@@ -35,7 +33,7 @@ theorem inversion_innerPot_lipschitz_on_norm_lower_bound
   have hdist : ‖u⁻¹ - x⁻¹‖ ≤ ‖u - x‖ / m ^ 2 := by
     rw [complexInv_distance_of_ne_zero hu0 hx0]
     apply div_le_div_of_nonneg_left (norm_nonneg _) (sq_pos_of_pos hm)
-    simpa only [pow_two] using mul_le_mul hu hx hm.le (norm_nonneg _)
+    simpa [pow_two] using mul_le_mul hu hx hm.le (norm_nonneg _)
   rw [he]
   calc
     _ ≤ |-(Real.log (max ‖u⁻¹ - y‖ (Real.exp (-s))) -
@@ -62,7 +60,7 @@ theorem inversion_circleAverage_fixed_source_error_le
   have hnorm : ∀ u ∈ sphere x |ε|, m ≤ ‖u‖ := by
     intro u hu
     have hux : ‖u - x‖ = ε := by
-      simpa only [mem_sphere_iff_norm, abs_of_pos hε] using hu
+      simpa [mem_sphere_iff_norm, abs_of_pos hε] using hu
     have ht := norm_sub_le u (u - x)
     rw [sub_sub_cancel, hux] at ht
     linarith only [ht, hsmall]
@@ -77,8 +75,8 @@ theorem inversion_circleAverage_fixed_source_error_le
   intro u hu
   have ht := inversion_innerPot_lipschitz_on_norm_lower_bound y s hm (hnorm u hu) hx
   have hux : ‖u - x‖ = ε := by
-    simpa only [mem_sphere_iff_norm, abs_of_pos hε] using hu
-  simpa only [hux] using ht
+    simpa [mem_sphere_iff_norm, abs_of_pos hε] using hu
+  simpa [hux] using ht
 
 /-- The transformed fine-circle/source-coarse covariance and the pulled-source covariance
 have the same fixed-coarse limit, with error linear in the fine cutoff. -/

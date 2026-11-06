@@ -2,13 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.TaylorSourceMargins
+import DOZZ.FourPoint.TaylorSourceMargins
 
 /-! A single radius for all Taylor regions and their common strict power gain. -/
 
-@[expose] public section
 open MeasureTheory Filter Topology Set
 namespace DOZZ.Proofs
 
@@ -18,7 +16,7 @@ theorem taylor_small_scales (δ ε : ℝ) (hδ : 0 < δ) (hδ1 : δ < 1) (hε : 
       0 < r ^ (1 - δ) ∧ r ^ (1 - δ) ≤ 1 / 4 ∧
         r ≤ r ^ (1 - δ) / 2 ∧ 0 < r ^ (1 + ε) ∧ r ^ (1 + ε) ≤ r / 2 := by
   have hlim (a : ℝ) (ha : 0 < a) : Tendsto (fun r : ℝ => r ^ a) (nhds 0) (nhds 0) := by
-    simpa only [Real.zero_rpow ha.ne'] using (Real.continuous_rpow_const ha.le).continuousAt.tendsto (x := (0 : ℝ))
+    simpa [Real.zero_rpow ha.ne'] using (Real.continuous_rpow_const ha.le).continuousAt.tendsto (x := (0 : ℝ))
   have hs : ∀ᶠ r : ℝ in nhds 0,
       r ^ δ < 1 / 2 ∧ r ^ ε < 1 / 2 ∧ r ^ (1 - δ) < 1 / 4 := by
     filter_upwards [(hlim δ hδ).eventually (gt_mem_nhds (by norm_num : (0 : ℝ) < 1 / 2)),

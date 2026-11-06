@@ -2,16 +2,14 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.PowerKernelIntegrability
-public import DOZZ.Statements.GMC.IsAdmissibleLogRegularization
+import DOZZ.GMC.PowerKernelIntegrability
+import DOZZ.Statements.GMC.IsAdmissibleLogRegularization
 import Mathlib.MeasureTheory.Measure.WithDensity
 import Mathlib.MeasureTheory.Integral.Lebesgue.Basic
 
 /-! Compact Riesz-kernel integrability for the reference measure of an admissible chart. -/
 
-@[expose] public section
 
 open MeasureTheory Set
 open scoped ENNReal
@@ -67,31 +65,20 @@ theorem admissible_logRegularization_reference_pair_kernel_lintegrable
         simp [smul_smul]
   obtain ⟨B, hB, hpair⟩ :=
     complex_norm_pair_neg_rpow_lintegral_isCompact K hK κ hκ hκ2
-  have hbase :
-      ∫⁻ p : ℂ × ℂ,
-        ENNReal.ofReal (‖p.1 - p.2‖ ^ (-κ)) ∂(volK.prod volK) ≠ ∞ := by
-    have hrewrite : volK.prod volK =
-        (volume.prod volume).restrict (K ×ˢ K) := by
-      exact Measure.prod_restrict K K
-    rw [hrewrite]
-    change (∫⁻ p in K ×ˢ K,
-      ENNReal.ofReal (‖p.1 - p.2‖ ^ (-κ)) ∂(volume.prod volume)) ≠ ∞
-    exact ne_top_of_le_ne_top hB hpair
   have hlin :
       ∫⁻ p : ℂ × ℂ,
         ENNReal.ofReal (‖p.1 - p.2‖ ^ (-κ)) ∂(ν.prod ν) ≤
       ∫⁻ p : ℂ × ℂ,
         ENNReal.ofReal (‖p.1 - p.2‖ ^ (-κ)) ∂((c * c) • (volK.prod volK)) :=
     lintegral_mono' hprod (fun _ => le_rfl)
-  have hcctop : c * c ≠ ∞ := by
-    exact ENNReal.mul_ne_top ENNReal.ofReal_ne_top ENNReal.ofReal_ne_top
+  have hcctop : c * c ≠ ∞ := ENNReal.mul_ne_top ENNReal.ofReal_ne_top ENNReal.ofReal_ne_top
   have hlin' :
       ∫⁻ p : ℂ × ℂ,
         ENNReal.ofReal (‖p.1 - p.2‖ ^ (-κ)) ∂((c * c) • (volK.prod volK)) =
       c * c * ∫⁻ p : ℂ × ℂ,
         ENNReal.ofReal (‖p.1 - p.2‖ ^ (-κ)) ∂(volK.prod volK) := by
     rw [lintegral_smul_measure]
-    simp only [smul_eq_mul]
+    simp [smul_eq_mul]
   have hbaseLeB :
       (∫⁻ p : ℂ × ℂ,
         ENNReal.ofReal (‖p.1 - p.2‖ ^ (-κ)) ∂(volK.prod volK)) ≤ B := by
@@ -99,7 +86,7 @@ theorem admissible_logRegularization_reference_pair_kernel_lintegrable
       exact Measure.prod_restrict K K]
     change (∫⁻ p in K ×ˢ K,
       ENNReal.ofReal (‖p.1 - p.2‖ ^ (-κ)) ∂(volume.prod volume)) ≤ B
-    exact hpair
+    assumption
   have hscaled : c * c *
       (∫⁻ p : ℂ × ℂ,
         ENNReal.ofReal (‖p.1 - p.2‖ ^ (-κ)) ∂(volK.prod volK)) ≤ c * c * B := by

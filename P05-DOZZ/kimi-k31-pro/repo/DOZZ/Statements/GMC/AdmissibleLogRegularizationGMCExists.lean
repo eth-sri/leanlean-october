@@ -1,3 +1,2 @@
-module
-public import DOZZ.Statements.GMC.IsCompatibleAdmissibleRegularizations
+import DOZZ.Statements.GMC.IsCompatibleAdmissibleRegularizations
 import DOZZ.GMC.Assembly.AdmissibleGMC

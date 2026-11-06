@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.ShiftEquations.DualR.FirstShiftFull
+import DOZZ.ShiftEquations.DualR.FirstShiftFull
 import DOZZ.ShiftEquations.Gluing.BandNear
 import DOZZ.Brownian.Reflection.RtheorAnalytic
 import DOZZ.Brownian.Reflection.WitnessIndependence
@@ -24,7 +23,6 @@ every real point of that set where `R`, `Γ` at both `s`-parameters and the shif
 analytic: the second half of the gluing lemma ([KRV, Lemma 10.5]).
 -/
 
-@[expose] public section
 
 open MeasureTheory Filter Topology Set
 
@@ -99,14 +97,11 @@ theorem reflectedShift_of_box {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
       ((analyticAt_segC x₀ x 1).sub analyticAt_const) (analyticAt_segC b₀ b 1)
       (analyticAt_segC c₀ c 1) ?_)).mul
       (segH_analyticAt_one hV₃ hf₃ hμ (hV₃mem ![x - γ, b, c] h₂) hs₂)
-    rw [segC_one, segC_one, segC_one]
-    exact hA
+    rwa [segC_one, segC_one, segC_one]
   have key := eq_at_one_of_segment hseg hFm hGm hstart hF1 hG1
   simp only [hF, hG] at key
-  rw [segH_one P M hμ hf₃eq h₁, segH_one P M hμ hf₃eq h₂, segC_one, segC_one, segC_one] at key
-  exact key
-
-/-- **The reflected shift near `Q` from `DOZZ.structureConstant_reflected_shift_and_gluing`**, for a
+  rwa [segH_one P M hμ hf₃eq h₁, segH_one P M hμ hf₃eq h₂, segC_one, segC_one, segC_one] at key
+/-- **The reflected shift near `Q` from `structureConstant_reflected_shift_and_gluing`**, for a
 strip-meromorphic `R` with the physical reflection values, at every real point of the near-`Q` box
 where `R` is analytic. -/
 theorem reflectedShift_nearQ_of_reflected_shift_and_gluing {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
@@ -166,7 +161,7 @@ theorem reflectedShift_nearQ_of_reflected_shift_and_gluing {Ω : Type*} [Measura
     hy₁ hy₂ hRy hAy
 
 /-- **The reflected shift on the two-triple extended domain**, from
-`DOZZ.structureConstant_reflected_shift_and_gluing`: for a strip-meromorphic `R` with the physical
+`structureConstant_reflected_shift_and_gluing`: for a strip-meromorphic `R` with the physical
 reflection values, at every real `(x, b, c)` with `(2Q - x, b, c)` and `(x - γ, b, c)` in the
 extended Seiberg domain, `R` analytic at `x`, `Γ` analytic at both `s`-parameters and the shift
 coefficient analytic. -/
@@ -239,4 +234,3 @@ theorem reflectedShift_full {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (
 
 end DOZZ.Proofs
 
-end

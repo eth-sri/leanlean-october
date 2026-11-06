@@ -2,13 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Hypergeom.ODE.Uniqueness
+import DOZZ.Hypergeom.ODE.Uniqueness
 
 /-! Uniqueness from an arbitrary initial point in a disk, for overlap gluing. -/
 
-@[expose] public section
 
 open Set
 open scoped NNReal
@@ -33,7 +31,6 @@ theorem holomorphic_linear_system_solution_unique_of_eq_at
   let K : ℝ≥0 := ‖z - z₀‖₊ * M.toNNReal
   have hK : (K : ℝ) = ‖z - z₀‖ * M := by
     simp [K, hM, mul_comm]
-  have hr : 0 < r := lt_of_le_of_lt dist_nonneg (Metric.mem_ball.mp hz)
   have hseg : MapsTo path (Icc (0 : ℝ) 1) (Metric.ball c r) :=
     (convex_ball c r).mapsTo_lineMap hz₀ hz
   have hv : ∀ t ∈ Ico (0 : ℝ) 1, LipschitzWith K (v t) := by

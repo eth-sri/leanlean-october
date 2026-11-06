@@ -1,3 +1,2 @@
-module
-public import DOZZ.Statements.FourPoint.DualFusionRadialIntegral
-public import DOZZ.Hypergeom.Planar.AngularMean
+import DOZZ.Statements.FourPoint.DualFusionRadialIntegral
+import DOZZ.Hypergeom.Planar.AngularMean

@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.Tails.LocalizationBump
-public import Mathlib.MeasureTheory.Integral.Lebesgue.Add
+import DOZZ.Correlations.Tails.LocalizationBump
+import Mathlib.MeasureTheory.Integral.Lebesgue.Add
 
 /-! Pointwise localization comparisons retain infinite singular masses. -/
 
-@[expose] public section
 open MeasureTheory Set
 open scoped ENNReal
 
@@ -31,7 +29,7 @@ theorem localized_mass_comparison
   · rw [← lintegral_indicator hball]
     apply lintegral_mono
     intro x
-    dsimp only
+    dsimp
     by_cases hx : x ∈ Metric.ball z 1
     · rw [indicator_of_mem hx]
       exact mul_le_of_le_one_left' (ENNReal.ofReal_le_one.mpr (hχ x).2)
@@ -40,7 +38,7 @@ theorem localized_mass_comparison
     rw [← lintegral_add_right _ (hw.indicator hdiff)]
     apply lintegral_mono
     intro x
-    dsimp only
+    dsimp
     by_cases hx : x ∈ Metric.ball z 1
     · rw [indicator_of_mem hx]
       by_cases hxδ : x ∈ Metric.ball z δ
@@ -71,7 +69,7 @@ theorem copied_mass_comparison
   · rw [← lintegral_indicator hb,← lintegral_indicator hρm,← lintegral_add_left (hv.indicator hb)]
     apply lintegral_mono
     intro x
-    dsimp only
+    dsimp
     by_cases hx : x ∈ Metric.ball (0 : ℂ) ρ
     · rw [indicator_of_mem hx,indicator_of_mem (hsub hx)]
       exact (mul_le_of_le_one_left' (ENNReal.ofReal_le_one.mpr (hχ x).2)).trans (huv x hx).1
@@ -81,7 +79,7 @@ theorem copied_mass_comparison
       ← lintegral_add_right _ (he.indicator hρm),← lintegral_add_right _ (hv.indicator hd)]
     apply lintegral_mono
     intro x
-    dsimp only
+    dsimp
     by_cases hx : x ∈ Metric.ball (0 : ℂ) 1
     · rw [indicator_of_mem hx]
       by_cases hxδ : x ∈ Metric.ball (0 : ℂ) δ

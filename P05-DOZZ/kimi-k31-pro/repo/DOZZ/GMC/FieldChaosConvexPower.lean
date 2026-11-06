@@ -2,15 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.FieldChaosAffineMax
-public import DOZZ.GMC.KahaneConvexOrderClosure
-public import Mathlib.Analysis.Convex.SpecificFunctions.Basic
+import DOZZ.GMC.FieldChaosAffineMax
+import DOZZ.GMC.KahaneConvexOrderClosure
+import Mathlib.Analysis.Convex.SpecificFunctions.Basic
 
 /-! Continuum Kahane comparison for all convex real powers. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
@@ -21,17 +19,17 @@ private theorem kahane_field_power_ge_one_nonzero
     {ΩX ΩY S : Type*} [MeasurableSpace ΩX] [MeasurableSpace ΩY]
     [MeasurableSpace S] [Nonempty S]
     (PX : Measure ΩX) (PY : Measure ΩY) (Φ : ΩX → S → ℝ) (Ψ : ΩY → S → ℝ)
-    (hΦ : DOZZ.IsCenteredGaussianField PX Φ) (hΨ : DOZZ.IsCenteredGaussianField PY Ψ)
+    (hΦ : IsCenteredGaussianField PX Φ) (hΨ : IsCenteredGaussianField PY Ψ)
     (ν : FiniteMeasure S) (hν : ν ≠ 0) (h : S → ℝ≥0) (hh : Measurable h)
     (hhb : ∃ c : ℝ≥0, ∀ x, h x ≤ c) (γ p : ℝ) (hp : 1 ≤ p)
     (hcov : ∀ᵐ q ∂(ν : Measure S).prod ν,
-      DOZZ.gaussianCovariance PX (fun ω => Φ ω q.1) (fun ω => Φ ω q.2) ≤
-        DOZZ.gaussianCovariance PY (fun ω => Ψ ω q.1) (fun ω => Ψ ω q.2))
+      gaussianCovariance PX (fun ω => Φ ω q.1) (fun ω => Φ ω q.2) ≤
+        gaussianCovariance PY (fun ω => Ψ ω q.1) (fun ω => Ψ ω q.2))
     (hdiag : ∀ᵐ x ∂(ν : Measure S),
-      DOZZ.gaussianVariance PX (fun ω => Φ ω x) ≤
-        DOZZ.gaussianVariance PY (fun ω => Ψ ω x)) :
-    ∫⁻ ω, DOZZ.fieldChaosMass PX Φ (ν : Measure S) h γ ω ^ p ∂PX ≤
-      ∫⁻ ω, DOZZ.fieldChaosMass PY Ψ (ν : Measure S) h γ ω ^ p ∂PY := by
+      gaussianVariance PX (fun ω => Φ ω x) ≤
+        gaussianVariance PY (fun ω => Ψ ω x)) :
+    ∫⁻ ω, fieldChaosMass PX Φ (ν : Measure S) h γ ω ^ p ∂PX ≤
+      ∫⁻ ω, fieldChaosMass PY Ψ (ν : Measure S) h γ ω ^ p ∂PY := by
   classical
   let : IsProbabilityMeasure PX := (hΦ.2 0 (fun i : Fin 0 => Fin.elim0 i)).1
   let : IsProbabilityMeasure PY := (hΨ.2 0 (fun i : Fin 0 => Fin.elim0 i)).1
@@ -54,10 +52,10 @@ private theorem kahane_field_power_ge_one_nonzero
     mul_nonneg hc (integral_nonneg fun _ => mul_nonneg (NNReal.coe_nonneg _) (Real.exp_nonneg _))
   have hmY0 (ω : ΩY) : 0 ≤ mY ω :=
     mul_nonneg hc (integral_nonneg fun _ => mul_nonneg (NNReal.coe_nonneg _) (Real.exp_nonneg _))
-  have hrepX : ∀ᵐ ω ∂PX, DOZZ.fieldChaosMass PX Φ (ν : Measure S) h γ ω = ENNReal.ofReal (mX ω) := by
+  have hrepX : ∀ᵐ ω ∂PX, fieldChaosMass PX Φ (ν : Measure S) h γ ω = ENNReal.ofReal (mX ω) := by
     filter_upwards [centeredGaussianField_ae_integrable_weighted_wick PX Φ hΦ ν h hh hhb γ] with ω hω
     exact fieldChaosMass_eq_ofReal_normalized_integral PX Φ ν h γ ω hω
-  have hrepY : ∀ᵐ ω ∂PY, DOZZ.fieldChaosMass PY Ψ (ν : Measure S) h γ ω = ENNReal.ofReal (mY ω) := by
+  have hrepY : ∀ᵐ ω ∂PY, fieldChaosMass PY Ψ (ν : Measure S) h γ ω = ENNReal.ofReal (mY ω) := by
     filter_upwards [centeredGaussianField_ae_integrable_weighted_wick PY Ψ hΨ ν h hh hhb γ] with ω hω
     exact fieldChaosMass_eq_ofReal_normalized_integral PY Ψ ν h γ ω hω
   have hposX : ∀ᵐ ω ∂PX, 0 < mX ω := by
@@ -86,12 +84,12 @@ private theorem kahane_field_power_ge_one_nonzero
       ring
     have hcmp := kahane_field_normalized_affine_max PX PY Φ Ψ hΦ hΨ ν hν h hh hhb γ
       (fun i => a i * c) b hcov hdiag
-    simpa only [hscale] using hcmp
-  have hpowX : ∀ᵐ ω ∂PX, DOZZ.fieldChaosMass PX Φ (ν : Measure S) h γ ω ^ p =
+    simpa [hscale] using hcmp
+  have hpowX : ∀ᵐ ω ∂PX, fieldChaosMass PX Φ (ν : Measure S) h γ ω ^ p =
       ENNReal.ofReal (mX ω ^ p) := by
     filter_upwards [hrepX] with ω hω
     rw [hω, ENNReal.ofReal_rpow_of_nonneg (hmX0 ω) (by linarith)]
-  have hpowY : ∀ᵐ ω ∂PY, DOZZ.fieldChaosMass PY Ψ (ν : Measure S) h γ ω ^ p =
+  have hpowY : ∀ᵐ ω ∂PY, fieldChaosMass PY Ψ (ν : Measure S) h γ ω ^ p =
       ENNReal.ofReal (mY ω ^ p) := by
     filter_upwards [hrepY] with ω hω
     rw [hω, ENNReal.ofReal_rpow_of_nonneg (hmY0 ω) (by linarith)]
@@ -130,7 +128,7 @@ theorem kahane_field_power_convex
   · exact kahane_field_power_nonpos PX PY Φ Ψ hΦ hΨ ν h hh hhb γ p hp hcov hdiag
   classical
   by_cases hν0 : ν = 0
-  · simp [DOZZ.fieldChaosMass, hν0, ENNReal.zero_rpow_of_pos (lt_of_lt_of_le zero_lt_one hp)]
+  · simp [fieldChaosMass, hν0, ENNReal.zero_rpow_of_pos (lt_of_lt_of_le zero_lt_one hp)]
   have : Nonempty S := by
     obtain ⟨x, _⟩ := nonempty_of_measure_ne_zero (Measure.measure_univ_ne_zero.mpr hν0)
     exact ⟨x⟩
@@ -139,8 +137,8 @@ theorem kahane_field_power_convex
     intro hzero
     exact hν0 (congrArg (fun μ : FiniteMeasure S => (μ : Measure S)) hzero)
   apply kahane_field_power_ge_one_nonzero PX PY Φ Ψ hΦ hΨ νf hνf h hh hhb γ p hp
-  · simpa [νf, DOZZ.gaussianCovariance] using hcov
-  · simpa [νf, DOZZ.gaussianVariance, DOZZ.gaussianCovariance, pow_two] using hdiag
+  · simpa [νf, gaussianCovariance] using hcov
+  · simpa [νf, gaussianVariance, gaussianCovariance, pow_two] using hdiag
 
 
 

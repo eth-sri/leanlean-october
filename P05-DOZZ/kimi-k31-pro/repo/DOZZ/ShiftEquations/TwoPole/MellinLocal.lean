@@ -2,15 +2,14 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.ShiftEquations.TwoPole.LocalTail
-public import DOZZ.ShiftEquations.PoleSubtracted.CutoffGood
-public import DOZZ.Statements.Correlations.OneInsertionTailCoefficient
-public import DOZZ.Statements.Correlations.TwoInsertionTailCeiling
-public import DOZZ.Statements.Brownian.IsReflectionData
-public import DOZZ.Statements.Brownian.ReflectionBarR
-public import DOZZ.Statements.Complex.TwoTailRational
+import DOZZ.ShiftEquations.TwoPole.LocalTail
+import DOZZ.ShiftEquations.PoleSubtracted.CutoffGood
+import DOZZ.Statements.Correlations.OneInsertionTailCoefficient
+import DOZZ.Statements.Correlations.TwoInsertionTailCeiling
+import DOZZ.Statements.Brownian.IsReflectionData
+import DOZZ.Statements.Brownian.ReflectionBarR
+import DOZZ.Statements.Complex.TwoTailRational
 import DOZZ.Complex.TwoTail
 import DOZZ.Brownian.Reflection.PositiveFinite
 
@@ -25,7 +24,6 @@ at the two reflection exponents and residues `-β c` (the theorem
 moments of all orders.
 -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
@@ -106,8 +104,7 @@ theorem exists_localMass_mellin {Ω : Type*} [MeasurableSpace Ω] (P : Measure �
   have hinv : ∀ q : ℝ, 0 < q → Integrable (fun ω => Lr ω ^ (-q)) P := fun q hq =>
     integrable_localMassReal_rpow_neg P X hX γ hγ hγ2 M hM hW hq
   have hβ₁ : 0 < reflectionExponent γ (2 / γ + η) := by
-    rw [reflectionExponent_pole hγ η]
-    exact hp
+    rwa [reflectionExponent_pole hγ η]
   have hβ₁₂ : reflectionExponent γ (2 / γ + η) < reflectionExponent γ (2 / γ - η) := by
     rw [reflectionExponent_pole hγ η]
     have : reflectionExponent γ (2 / γ - η) = 1 + 2 * η / γ := by
@@ -162,4 +159,3 @@ theorem exists_localMass_mellin {Ω : Type*} [MeasurableSpace Ω] (P : Measure �
 
 end DOZZ.Proofs
 
-end

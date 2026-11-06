@@ -2,12 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Reflected.SourceBufferRate
-public import DOZZ.FourPoint.Reflected.Decorrelation
+import DOZZ.FourPoint.Reflected.SourceBufferRate
+import DOZZ.FourPoint.Reflected.Decorrelation
 /-! The actual error from the full source moment to the copied moment combines the buffer and
 decorrelation rates. -/
-@[expose] public section
 open MeasureTheory ProbabilityTheory Set Filter Topology
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -45,10 +43,10 @@ theorem reflected_source_full_copied_littleO
     α₁ α₂ α₃ p ξ (γ*(Q γ-α₁)) hp hξ hξ1 hnear
   have hb := reflected_source_buffer_inverse_littleO P X M γ α₁ α₂ α₃ ξ h
     hγ hγ₂ hα₁ hα₂ hα₃ hreflect hs hξ hξ1 hnear hfreeze hh hX hM
-  have he := DOZZ.Proofs.IsComplexLittleOAtZero.add hb (herror h hh).2
+  have he := IsComplexLittleOAtZero.add hb (herror h hh).2
   convert he using 1
   funext z
-  simp only [Complex.ofReal_sub]
+  simp [Complex.ofReal_sub]
   ring
 
 end DOZZ.Proofs

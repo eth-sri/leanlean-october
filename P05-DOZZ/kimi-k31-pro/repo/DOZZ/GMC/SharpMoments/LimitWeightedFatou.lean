@@ -2,11 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.SharpMoments.CutoffConvergence
-public import DOZZ.GMC.SharpMoments.MomentConvergence
-public import DOZZ.Statements.GMC.CutoffWeightedGmcBallMass
+import DOZZ.GMC.SharpMoments.CutoffConvergence
+import DOZZ.GMC.SharpMoments.MomentConvergence
+import DOZZ.Statements.GMC.CutoffWeightedGmcBallMass
 
 /-! # Weighted local moments of limiting chaos from cutoff weighted bounds
 
@@ -17,7 +16,6 @@ integer cutoffs and Fatou in probability transfers the bound once `exp (-n) ≤ 
 vanishes, the softened weighted masses increase to the weighted local mass, and monotone
 convergence removes the softening. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology Metric
 open scoped ENNReal NNReal
@@ -85,7 +83,7 @@ theorem limitWeightedFatou_bounded_weight_moment_le
       (Measure.measurable_lintegral (hwm.indicator hB)).comp
         (regularizedGMC_measurable P X hX Xc hXc γ _)
     refine hm.aemeasurable.congr (Eventually.of_forall fun ω => ?_)
-    simp only [lintegral_indicator hB]
+    simp [lintegral_indicator hB]
   · filter_upwards [regularizedGMC_finite_ae P X hX Xc hXc γ ((n + n₀ : ℕ) : ℝ)] with ω hω
     exact ne_top_of_le_ne_top (ENNReal.mul_ne_top ENNReal.coe_ne_top (measure_ne_top _ _))
       (weightedSetLIntegral_le_const_mul _ z ρ w c hwc)
@@ -181,14 +179,14 @@ theorem weightedGmcBallMoment_le_of_cutoff
     have h : 1 / ((m : ℝ) + 1) ≤ 1 := by
       rw [div_le_one (by positivity)]
       linarith [(Nat.cast_nonneg m : (0 : ℝ) ≤ m)]
-    simpa only [hεdef, mul_one] using mul_le_mul_of_nonneg_left h hρ.le
+    simpa [hεdef, mul_one] using mul_le_mul_of_nonneg_left h hρ.le
   have hεanti : Antitone ε := fun m m' hmm' => by
     have hcast : (m : ℝ) ≤ m' := Nat.cast_le.mpr hmm'
     have h : 1 / ((m' : ℝ) + 1) ≤ 1 / ((m : ℝ) + 1) :=
       one_div_le_one_div_of_le (by positivity) (by linarith)
     exact mul_le_mul_of_nonneg_left h hρ.le
   have hε0 : Tendsto ε atTop (𝓝 0) := by
-    simpa only [hεdef, mul_zero] using
+    simpa [hεdef, mul_zero] using
       (tendsto_one_div_add_atTop_nhds_zero_nat (𝕜 := ℝ)).const_mul ρ
   have hFatou : ∀ m : ℕ, ∫⁻ ω, (∫⁻ x in Metric.ball z ρ,
       ENNReal.ofReal ((‖x - z‖ + ε m) ^ (-γ * α)) ∂M ω) ^ t ∂P ≤ C := fun m =>

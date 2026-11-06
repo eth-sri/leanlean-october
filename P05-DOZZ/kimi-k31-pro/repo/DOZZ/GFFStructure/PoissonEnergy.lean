@@ -2,8 +2,7 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.GFFStructure.GreenKernel
+import DOZZ.GFFStructure.GreenKernel
 
 /-!
 # Uniform angular energy limits for Poisson collars
@@ -16,7 +15,6 @@ and have mass one. The conversion of literal Cartesian collars to these angular 
 is a separate step.
 -/
 
-@[expose] public section
 
 open Filter MeasureTheory ProbabilityTheory Set Metric
 open scoped Topology ENNReal NNReal InnerProductSpace
@@ -37,7 +35,7 @@ theorem circleMeasure_noAtoms (x : ℂ) (r : ℝ) : NullSingletonClass (circleMe
 theorem norm_smul_sub_sq_of_norm_one {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E]
     (u v : E) (hu : ‖u‖ = 1) (hv : ‖v‖ = 1) (r s : ℝ) :
     ‖r • u-s • v‖^2 = (r-s)^2+r*s*‖u-v‖^2 := by
-  simp only [norm_sub_sq_real, norm_smul, Real.norm_eq_abs, sq_abs,
+  simp [norm_sub_sq_real, norm_smul, Real.norm_eq_abs, sq_abs,
     real_inner_smul_left, real_inner_smul_right, hu, hv, one_pow, mul_one]
   ring
 
@@ -49,7 +47,6 @@ theorem norm_smul_sub_lower {E : Type*} [NormedAddCommGroup E] [InnerProductSpac
   have hi := norm_smul_sub_sq_of_norm_one u v hu hv r s
   have hmul : ρ^2 ≤ r*s := by nlinarith
   have hsquare : (ρ*‖u-v‖)^2 ≤ ‖r • u-s • v‖^2 := by
-    have h := mul_le_mul_of_nonneg_right hmul (sq_nonneg ‖u-v‖)
     nlinarith [sq_nonneg (r-s)]
   exact (sq_le_sq₀ (mul_nonneg hρ.le (norm_nonneg _)) (norm_nonneg _)).mp hsquare
 
@@ -63,7 +60,6 @@ theorem abs_log_norm_smul_sub_le {E : Type*} [NormedAddCommGroup E] [InnerProduc
   have hd : 0 < ‖u-v‖ := norm_pos_iff.mpr (sub_ne_zero.mpr huv)
   have hlow := norm_smul_sub_lower u v hu hv ρ r s hρ hr hs
   have hn : 0 < ‖r • u-s • v‖ := (mul_pos hρ hd).trans_le hlow
-  have hB : 0 < B := hρ.trans_le (hr.trans hrB)
   have hup : ‖r • u-s • v‖ ≤ 2*B := by
     calc
       _ ≤ ‖r • u‖+‖s • v‖ := norm_sub_le _ _
@@ -87,18 +83,16 @@ theorem integrable_unitCircle_log_distance :
   let _ := circleMeasure_isProbability (0 : ℂ) 0
   have hm : Measurable (fun p : ℂ × ℂ => Real.log ‖p.1-p.2‖) := by fun_prop
   apply (integrable_prod_iff hm.aestronglyMeasurable).mpr
-  refine ⟨ae_of_all μ (fun u => by simpa only [norm_sub_rev u] using integrable_log_norm_sub_circleMeasure 0 u 0), ?_⟩
+  refine ⟨ae_of_all μ (fun u => by simpa [norm_sub_rev u] using integrable_log_norm_sub_circleMeasure 0 u 0), ?_⟩
   have hmeas : AEStronglyMeasurable (fun u => ∫ v, ‖Real.log ‖u-v‖‖ ∂μ) μ :=
     hm.norm.aestronglyMeasurable.integral_prod_right'
   apply (integrable_const (2*Real.log 2 : ℝ)).mono' hmeas
   filter_upwards [ae_norm_sub_center_circleMeasure 0 0] with u hu
-  have hn : ‖u‖ = 1 := by simpa only [sub_zero, neg_zero, Real.exp_zero] using hu
+  have hn : ‖u‖ = 1 := by simpa [sub_zero, neg_zero, Real.exp_zero] using hu
   have h := integral_abs_log_circle_le 0 u 0 1 hn.le
-  simp only [Real.norm_eq_abs, norm_zero, neg_zero, Real.exp_zero, one_add_one_eq_two,
+  simp [Real.norm_eq_abs, norm_zero, neg_zero, Real.exp_zero, one_add_one_eq_two,
     max_eq_right (by norm_num : (1 : ℝ) ≤ 2), add_zero] at h ⊢
-  rw [abs_of_nonneg (integral_nonneg (fun v => abs_nonneg (Real.log ‖u-v‖)))]
-  exact h
-
+  rwa [abs_of_nonneg (integral_nonneg (fun v => abs_nonneg (Real.log ‖u-v‖)))]
 /-- The circle product diagonal is null. -/
 theorem ae_unitCircle_pair_ne :
     ∀ᵐ p : ℂ × ℂ ∂(circleMeasure 0 0).prod (circleMeasure 0 0), p.1 ≠ p.2 := by
@@ -117,7 +111,7 @@ theorem ae_unitCircle_pair_spec :
   let μ := circleMeasure (0 : ℂ) 0
   have hnorm : ∀ᵐ u ∂μ, ‖u‖ = 1 := by
     filter_upwards [ae_norm_sub_center_circleMeasure 0 0] with u hu
-    simpa only [sub_zero, neg_zero, Real.exp_zero] using hu
+    simpa [sub_zero, neg_zero, Real.exp_zero] using hu
   have hpair : ∀ᵐ p : ℂ × ℂ ∂μ.prod μ, ‖p.1‖ = 1 ∧ ‖p.2‖ = 1 := by
     apply (Measure.ae_prod_iff_ae_ae (((measurableSet_eq_fun measurable_fst.norm measurable_const).inter (measurableSet_eq_fun measurable_snd.norm measurable_const)) : MeasurableSet {p : ℂ × ℂ | ‖p.1‖ = 1 ∧ ‖p.2‖ = 1})).mpr
     filter_upwards [hnorm] with u hu
@@ -139,7 +133,7 @@ theorem integrable_weighted_radial_circleLog (F : ℂ × ℂ → ℝ) (hF : Meas
     ((integrable_const _).add integrable_unitCircle_log_distance.norm).const_mul M
   apply hmajor.mono' (hF.mul (by fun_prop)).aestronglyMeasurable
   filter_upwards [ae_unitCircle_pair_spec] with p hp
-  simp only [Pi.mul_apply, Real.norm_eq_abs, abs_mul]
+  simp [Pi.mul_apply, Real.norm_eq_abs, abs_mul]
   exact mul_le_mul (hbound p.1 p.2 hp.1 hp.2.1)
     (abs_log_norm_smul_sub_le p.1 p.2 hp.1 hp.2.1 hp.2.2 ρ B r s hρ hr hs hrB hsB)
     (abs_nonneg _) hM
@@ -187,9 +181,9 @@ theorem tendsto_radial_circleLog_error (ρ B : ℝ) (hρ : 0 < ρ) :
       rw [← smul_sub, norm_smul]
       exact mul_ne_zero (norm_ne_zero_iff.mpr hρ.ne')
         (norm_ne_zero_iff.mpr (sub_ne_zero.mpr hp.2.2))
-    simpa only [sub_self, abs_zero] using ((hraw.norm.log hn).sub (tendsto_const_nhds (x := Real.log ‖ρ • p.1-ρ • p.2‖))).abs
+    simpa [sub_self, abs_zero] using ((hraw.norm.log hn).sub (tendsto_const_nhds (x := Real.log ‖ρ • p.1-ρ • p.2‖))).abs
 
-  simpa only [integral_zero] using hlim hbound hmajor hpoint
+  simpa [integral_zero] using hlim hbound hmajor hpoint
 
 /-- The absolute angular log error is integrable at every pair of collar radii. -/
 theorem integrable_radial_circleLog_error (ρ B r s : ℝ) (hρ : 0 < ρ)
@@ -203,7 +197,7 @@ theorem integrable_radial_circleLog_error (ρ B r s : ℝ) (hρ : 0 < ρ)
   have hg := integrable_weighted_radial_circleLog (fun _ => (1 : ℝ)) measurable_const
     1 ρ B ρ ρ (by norm_num) hρ le_rfl le_rfl (hr.trans hrB) (hs.trans hsB)
     (by intros; norm_num)
-  simpa only [one_mul, Real.norm_eq_abs, Pi.sub_apply] using (hf.sub hg).norm
+  simpa [one_mul, Real.norm_eq_abs, Pi.sub_apply] using (hf.sub hg).norm
 
 /-- All angular weights with the same bound have the same radial error estimate. -/
 theorem abs_weighted_radial_circleLog_sub_le (F : ℂ × ℂ → ℝ) (hF : Measurable F)
@@ -224,7 +218,7 @@ theorem abs_weighted_radial_circleLog_sub_le (F : ℂ × ℂ → ℝ) (hF : Meas
   apply abs_integral_le_integral_abs.trans
   apply integral_mono_ae (hf.sub hg).norm (he.const_mul M)
   filter_upwards [ae_unitCircle_pair_spec] with p hp
-  simp only [Pi.sub_apply, Real.norm_eq_abs, ← mul_sub, abs_mul]
+  simp [Pi.sub_apply, Real.norm_eq_abs, ← mul_sub, abs_mul]
   exact mul_le_mul_of_nonneg_right (hbound p.1 p.2 hp.1 hp.2.1) (abs_nonneg _)
 
 /-- The literal Poisson angular weight written on the unit-circle carrier. -/
@@ -241,13 +235,12 @@ theorem measurable_unitPoissonWeight (c z : ℂ) (ρ : ℝ) :
 theorem unitPoissonWeight_eq_boundaryWeight (c z u : ℂ) (ρ : ℝ) (hu : ‖u‖ = 1) :
     unitPoissonWeight c ρ z u =
       (ρ^2-‖z-c‖^2)/‖c+(ρ : ℂ)*((c+u)-c)/(‖(c+u)-c‖ : ℂ)-z‖^2 := by
-  simp only [unitPoissonWeight, add_sub_cancel_left, hu, Complex.ofReal_one,
+  simp [unitPoissonWeight, add_sub_cancel_left, hu, Complex.ofReal_one,
     div_one, Complex.real_smul]
 
 /-- Unit-circle Poisson weights are nonnegative at interior parameters. -/
 theorem unitPoissonWeight_nonneg (c z u : ℂ) (ρ : ℝ) (hρ : 0 < ρ)
-    (hz : z ∈ ball c ρ) : 0 ≤ unitPoissonWeight c ρ z u := by
-  exact div_nonneg (poissonNumerator_pos c z ρ hρ hz).le (sq_nonneg _)
+    (hz : z ∈ ball c ρ) : 0 ≤ unitPoissonWeight c ρ z u := div_nonneg (poissonNumerator_pos c z ρ hρ hz).le (sq_nonneg _)
 
 /-- The same deterministic Poisson bound holds uniformly on every compact inner disk. -/
 theorem unitPoissonWeight_le (c z u : ℂ) (ρ a : ℝ) (hρ : 0 < ρ)
@@ -256,7 +249,7 @@ theorem unitPoissonWeight_le (c z u : ℂ) (ρ a : ℝ) (hρ : 0 < ρ)
   rw [unitPoissonWeight_eq_boundaryWeight c z u ρ hu]
   apply poissonBoundaryWeight_le c z (c+u) ρ a hρ haρ hz
   intro h
-  have : u = 0 := add_left_cancel (by simpa only [add_zero] using h : c+u=c+0)
+  have : u = 0 := add_left_cancel (by simpa [add_zero] using h : c+u=c+0)
   rw [this, norm_zero] at hu
   norm_num at hu
 
@@ -311,7 +304,7 @@ theorem abs_poisson_radial_circleLog_sub_le (c z w : ℂ) (ρ a B r s : ℝ) (h�
 theorem unitPoissonWeight_eq_poissonKernel (c z u : ℂ) (ρ : ℝ) (hρ : 0 < ρ)
     (hu : ‖u‖ = 1) : unitPoissonWeight c ρ z u = poissonKernel c z (c+ρ • u) := by
   rw [unitPoissonWeight, poissonKernel_def]
-  simp only [add_sub_cancel_left, norm_smul, Real.norm_eq_abs, abs_of_pos hρ, hu, mul_one]
+  simp [add_sub_cancel_left, norm_smul, Real.norm_eq_abs, abs_of_pos hρ, hu, mul_one]
   congr 2
   congr 1
   ring
@@ -323,7 +316,7 @@ theorem integrable_unitPoissonWeight (c z : ℂ) (ρ : ℝ) (hρ : 0 < ρ)
   have hbound : ∀ᵐ u ∂circleMeasure 0 0,
       ‖unitPoissonWeight c ρ z u‖ ≤ ρ^2/(ρ-‖z-c‖)^2 := by
     filter_upwards [ae_norm_sub_center_circleMeasure 0 0] with u hu
-    have hu' : ‖u‖ = 1 := by simpa only [sub_zero, neg_zero, Real.exp_zero] using hu
+    have hu' : ‖u‖ = 1 := by simpa [sub_zero, neg_zero, Real.exp_zero] using hu
     rw [Real.norm_eq_abs, abs_of_nonneg (unitPoissonWeight_nonneg c z u ρ hρ hz)]
     exact unitPoissonWeight_le c z u ρ ‖z-c‖ hρ (mem_ball_iff_norm.mp hz) le_rfl hu'
   exact (integrable_const _).mono' (measurable_unitPoissonWeight c z ρ).aestronglyMeasurable hbound
@@ -332,18 +325,18 @@ theorem integrable_unitPoissonWeight (c z : ℂ) (ρ : ℝ) (hρ : 0 < ρ)
 theorem integral_unitPoissonWeight (c z : ℂ) (ρ : ℝ) (hρ : 0 < ρ)
     (hz : z ∈ ball c ρ) : ∫ u, unitPoissonWeight c ρ z u ∂circleMeasure 0 0 = 1 := by
   rw [integral_circleMeasure_eq_circleAverage _ _ _ (measurable_unitPoissonWeight c z ρ)]
-  simp only [neg_zero, Real.exp_zero]
+  simp [neg_zero, Real.exp_zero]
   calc
     _ = Real.circleAverage (poissonKernel c z) c ρ := by
       rw [Real.circleAverage_def, Real.circleAverage_def]
       congr 1
       apply intervalIntegral.integral_congr
       intro θ _
-      dsimp only
-      have hn : ‖circleMap 0 1 θ‖ = 1 := by simp only [norm_circleMap_zero, abs_one]
+      dsimp
+      have hn : ‖circleMap 0 1 θ‖ = 1 := by simp [norm_circleMap_zero, abs_one]
       rw [unitPoissonWeight_eq_poissonKernel c z (circleMap 0 1 θ) ρ hρ hn]
       congr 1
-      simp only [circleMap, zero_add, Complex.ofReal_one, one_mul, Complex.real_smul]
+      simp [circleMap, zero_add, Complex.ofReal_one, one_mul, Complex.real_smul]
     _ = 1 := circleAverage_poissonKernel_eq_one c z ρ hz
 
 

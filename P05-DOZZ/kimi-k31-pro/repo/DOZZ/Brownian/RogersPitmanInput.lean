@@ -1,10 +1,9 @@
 /-
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 -/
-module
 
-public import DOZZ.Brownian.RogersPitman
-public import Mathlib.Probability.Independence.Basic
+import DOZZ.Brownian.RogersPitman
+import Mathlib.Probability.Independence.Basic
 
 /-!
 # Independent Brownian coordinates for the Rogers--Pitman map
@@ -14,7 +13,6 @@ coordinate paths. The radial Rogers--Pitman map itself is defined in `RogersPitm
 module verifies the probabilistic input without using an extension theorem.
 -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal NNReal
@@ -54,4 +52,3 @@ theorem brownianTriple_coordinate_isBrownian
 
 end DOZZ.Proofs
 
-end

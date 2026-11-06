@@ -2,13 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.Analytic.CommonThreshold
+import DOZZ.Correlations.Analytic.CommonThreshold
 
 /-! Converting negative lower-mass and positive upper-mass moments to envelope moments. -/
 
-@[expose] public section
 open MeasureTheory
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -39,12 +37,12 @@ theorem mass_envelope_moment_le
       apply lintegral_mono_ae
       filter_upwards [he] with ω hω
       rw [hω]
-      simpa only [← ENNReal.rpow_mul] using
+      simpa [← ENNReal.rpow_mul] using
         ENNReal.rpow_add_le_mul_rpow_add_rpow (L ω ^ lo) (U ω ^ hi) hq
     _ = (2 : ℝ≥0∞) ^ (q - 1) *
         ((∫⁻ ω, L ω ^ (lo * q) ∂P) + ∫⁻ ω, U ω ^ (hi * q) ∂P) := by
       have hsum : AEMeasurable (fun ω => L ω ^ (lo * q) + U ω ^ (hi * q)) P := by
-        simpa only [Pi.add_def] using (hL.pow_const (lo * q)).add (hU.pow_const (hi * q))
+        simpa [Pi.add_def] using (hL.pow_const (lo * q)).add (hU.pow_const (hi * q))
       rw [lintegral_const_mul'' _ hsum, lintegral_add_left' (hL.pow_const _)]
     _ ≤ _ := mul_le_mul' le_rfl (add_le_add hbL hbU)
 

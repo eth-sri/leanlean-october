@@ -2,15 +2,14 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.GMC.FieldChaosMass
-public import DOZZ.Statements.GMC.IsCenteredGaussianField
-public import DOZZ.Statements.GMC.GaussianCovariance
-public import Mathlib.Probability.Distributions.Gaussian.Real
-public import Mathlib.Probability.Independence.Basic
-public import Mathlib.MeasureTheory.Integral.Prod
-public import Mathlib.MeasureTheory.Function.LpSeminorm.Prod
+import DOZZ.Statements.GMC.FieldChaosMass
+import DOZZ.Statements.GMC.IsCenteredGaussianField
+import DOZZ.Statements.GMC.GaussianCovariance
+import Mathlib.Probability.Distributions.Gaussian.Real
+import Mathlib.Probability.Independence.Basic
+import Mathlib.MeasureTheory.Integral.Prod
+import Mathlib.MeasureTheory.Function.LpSeminorm.Prod
 
 /-! # Independent copies of a Gaussian field glued along a set
 
@@ -20,7 +19,6 @@ independent common Gaussian scalar. Its covariance is the original covariance in
 zero across the pieces, plus the variance of the scalar; its Wick mass factors as the scalar
 exponential times the sum of the two independent piece masses. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal NNReal
@@ -58,7 +56,7 @@ theorem isCenteredJointlyGaussian_prod_add {Ω₁ Ω₂ ι : Type*} [MeasurableS
     have heq : (fun q : Ω₁ × Ω₂ => ∑ i, a i * (Z₁ q.1 i + Z₂ q.2 i)) =
         fun q => U q.1 + V q.2 := by
       funext q
-      simp only [U, V, mul_add, Finset.sum_add_distrib]
+      simp [U, V, mul_add, Finset.sum_add_distrib]
     rw [heq]
     refine ⟨(hm₁.comp_fst P₂).add (hm₂.comp_snd P₁), ⟨v₁ + v₂, ?_⟩⟩
     have hind : IndepFun (fun q : Ω₁ × Ω₂ => U q.1) (fun q => V q.2) (P₁.prod P₂) :=
@@ -70,9 +68,7 @@ theorem isCenteredJointlyGaussian_prod_add {Ω₁ Ω₂ ι : Type*} [MeasurableS
       (⟨hm₂.aemeasurable, hv₂⟩ : HasLaw V (gaussianReal 0 v₂) P₂).comp
         (measurePreserving_snd (μ := P₁) (ν := P₂)).hasLaw
     have h := gaussianReal_add_gaussianReal_of_indepFun hind hU hV
-    rw [zero_add] at h
-    exact h
-
+    rwa [zero_add] at h
 /-- The mixed second moment of independent sums of square-integrable variables on a product is
 the sum of the factor mixed second moments, as soon as the first-factor variables are centered. -/
 theorem gaussianCovariance_prod_add {Ω₁ Ω₂ : Type*} [MeasurableSpace Ω₁] [MeasurableSpace Ω₂]

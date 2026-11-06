@@ -2,15 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Hypergeom.ODE.CutPlaneSeriesAgreement
-public import DOZZ.Hypergeom.ODE.NegativeCutPlaneSeriesAgreement
-public import Mathlib.Analysis.Complex.Convex
+import DOZZ.Hypergeom.ODE.CutPlaneSeriesAgreement
+import DOZZ.Hypergeom.ODE.NegativeCutPlaneSeriesAgreement
+import Mathlib.Analysis.Complex.Convex
 
 /-! The two regular branches agree on their upper and lower half-plane overlaps. -/
 
-@[expose] public section
 
 open Filter Set Topology
 

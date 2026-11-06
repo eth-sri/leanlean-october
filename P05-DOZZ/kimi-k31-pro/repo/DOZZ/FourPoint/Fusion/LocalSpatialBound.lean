@@ -2,13 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Fusion.ScaledSpatialBound
-public import DOZZ.FourPoint.Fusion.ScaledLocalRooting
-public import DOZZ.FourPoint.Fusion.ScaledLocalMixedRooting
-public import DOZZ.FourPoint.Fusion.Parameters
+import DOZZ.FourPoint.Fusion.ScaledSpatialBound
+import DOZZ.FourPoint.Fusion.ScaledLocalRooting
+import DOZZ.FourPoint.Fusion.ScaledLocalMixedRooting
+import DOZZ.FourPoint.Fusion.Parameters
 /-! # Local spatial expectation power bounds -/
-@[expose] public section
 open MeasureTheory Set
 namespace DOZZ.Proofs
 /-- The local `r₁` spatial expectation is bounded by its scaling power. -/
@@ -67,7 +65,6 @@ theorem fusion_localR2_expectation_bound {Ω : Type*} [MeasurableSpace Ω]
   rw [fusion_localR2_rooting P X hX γ hγ hγ2 M hM α₁ α₂ α₃ hβ hα₁ hα₂ hα₃
     (-p - 1) (by linarith) z hz hz4,
     fusion_localR2_reference_scaled P X hX γ hγ hγ2 M hM α₁ α₂ α₃ (-p - 1) z hz]
-  have hn : 0 < ‖z‖ := norm_pos_iff.mpr hz
   rw [norm_mul, Complex.norm_real, Real.norm_of_nonneg (Real.rpow_nonneg (norm_nonneg _) _)]
   calc
     _ ≤ ‖z‖ ^ (γ ^ 2 / 2 - γ * α₁) * C :=

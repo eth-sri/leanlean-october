@@ -3,10 +3,9 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Scott Armstrong, Amélie Loher
 -/
-module
 
-public import Mathlib.MeasureTheory.Integral.DominatedConvergence
-public import GaussianFields.LogCorrelated.ABK.LogLimit
+import Mathlib.MeasureTheory.Integral.DominatedConvergence
+import GaussianFields.LogCorrelated.ABK.LogLimit
 
 /-!
 # GaussianFields.LogCorrelated/ABK/KernelPairing
@@ -14,7 +13,6 @@ public import GaussianFields.LogCorrelated.ABK.LogLimit
 Port of the corresponding GaussianFields source module.
 -/
 
-public section
 
 open Filter MeasureTheory
 open scoped ENNReal Topology
@@ -23,7 +21,7 @@ namespace GaussianFields
 
 
 /-- Product-measure kernel pairing against two ABK test functions. -/
-@[expose]
+
 noncomputable def abkKernelPairing {d : Nat} (ψ φ : MeanZeroTestFunction d)
     (K : Vec d → Vec d → ℝ) : ℝ :=
   ∫ p : Vec d × Vec d,
@@ -72,43 +70,43 @@ theorem integrable_abkKernelPairing_const_one {d : Nat}
     Integrable
       (fun p : Vec d × Vec d => ψ p.1 * φ p.2 * (1 : ℝ))
       ((volume : Measure (Vec d)).prod (volume : Measure (Vec d))) := by
-  simpa only [mul_one] using ψ.integrable.mul_prod φ.integrable
+  simpa [mul_one] using ψ.integrable.mul_prod φ.integrable
 
 /-- The Riesz kernel `|x-y|^{-α}` used in Appendix A's Abel regularization. -/
-@[expose]
+
 noncomputable def abkRieszKernel {d : Nat} (α : ℝ) (x y : Vec d) : ℝ :=
   (euclideanNorm (x - y)) ^ (-α)
 
 /-- Product-measure pairing with the Riesz kernel. -/
-@[expose]
+
 noncomputable def abkRieszPairing {d : Nat}
     (ψ φ : MeanZeroTestFunction d) (α : ℝ) : ℝ :=
   abkKernelPairing ψ φ (abkRieszKernel α)
 
 /-- The centered Riesz slope `( |x-y|^{-α} - 1 ) / α`. -/
-@[expose]
+
 noncomputable def abkCenteredRieszSlopeKernel {d : Nat} (α : ℝ) (x y : Vec d) : ℝ :=
   ((euclideanNorm (x - y)) ^ (-α) - 1) / α
 
 /-- The centered Riesz difference `|x-y|^{-α} - 1`. -/
-@[expose]
+
 noncomputable def abkCenteredRieszDifferenceKernel {d : Nat} (α : ℝ) (x y : Vec d) : ℝ :=
   (euclideanNorm (x - y)) ^ (-α) - 1
 
 /-- Product-measure pairing with the centered Riesz slope kernel. -/
-@[expose]
+
 noncomputable def abkCenteredRieszSlopePairing {d : Nat}
     (ψ φ : MeanZeroTestFunction d) (α : ℝ) : ℝ :=
   abkKernelPairing ψ φ (abkCenteredRieszSlopeKernel α)
 
 /-- Product-measure pairing with the centered Riesz difference kernel. -/
-@[expose]
+
 noncomputable def abkCenteredRieszDifferencePairing {d : Nat}
     (ψ φ : MeanZeroTestFunction d) (α : ℝ) : ℝ :=
   abkKernelPairing ψ φ (abkCenteredRieszDifferenceKernel α)
 
 /-- Product-measure pairing with the logarithmic covariance kernel. -/
-@[expose]
+
 noncomputable def abkLogCovariancePairing {d : Nat}
     (ψ φ : MeanZeroTestFunction d) : ℝ :=
   abkKernelPairing ψ φ abkLogCovarianceKernel
@@ -156,8 +154,7 @@ theorem ae_fst_ne_snd_volume_prod {d : Nat} (hd : 0 < d) :
       p.1 ≠ p.2 := by
   have : Nonempty (Fin d) := Fin.pos_iff_nonempty.mp hd
   let μ : Measure (Vec d) := volume
-  have hmeas : MeasurableSet {p : Vec d × Vec d | p.1 ≠ p.2} := by
-    exact (isClosed_eq continuous_fst continuous_snd).measurableSet.compl
+  have hmeas : MeasurableSet {p : Vec d × Vec d | p.1 ≠ p.2} := (isClosed_eq continuous_fst continuous_snd).measurableSet.compl
   rw [Measure.ae_prod_iff_ae_ae hmeas]
   refine Filter.Eventually.of_forall ?_
   intro x
@@ -262,4 +259,3 @@ theorem abkNormalizationRadicand_mul_logCovarianceLimit {d : Nat}
 
 end GaussianFields
 
-end

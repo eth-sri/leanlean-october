@@ -3,9 +3,8 @@ Copyright (c) 2025 Rémy Degenne. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Rémy Degenne
 -/
-module
 
-public import DOZZ.GFFStructure.HolderLimit
+import DOZZ.GFFStructure.HolderLimit
 
 /-!
 # Continuous Hölder versions on open exhaustions
@@ -15,7 +14,6 @@ Degenne and collaborators (github.com/RemyDegenne/brownian-motion). Limits are t
 countable dense set; agreement with the original process is proved in measure.
 -/
 
-@[expose] public section
 
 open MeasureTheory Filter _root_.ProbabilityTheory _root_.Set _root_.Metric
 open scoped ENNReal NNReal Topology Asymptotics
@@ -81,11 +79,11 @@ lemma exists_modification_holder'' (hT : HasBoundedCoveringNumber U c d)
   classical
   refine ⟨Y, fun t ↦ Measurable.ite hA (hZ_meas 0 t) (by fun_prop), fun t htU ↦ ?_, ?_, ?_⟩
   · filter_upwards [hA_ae, hZ_ae_eq 0 t htU] with ω hω hω₂
-    simpa only [hω, ↓reduceIte, Y, indicatorProcess_apply] using hω₂
+    simpa [hω, ↓reduceIte, Y, indicatorProcess_apply] using hω₂
   · intro β₀ hβ₀_pos hβ₀_lt ω
     by_cases hω : ω ∈ A
     swap; · simp [hω, Y, HolderOnWith]
-    simp only [hω, ↓reduceIte, Y, indicatorProcess_apply]
+    simp [hω, ↓reduceIte, Y, indicatorProcess_apply]
     obtain ⟨n, hn⟩ : ∃ n, β₀ < β n := by
       obtain ⟨n, hn⟩ : ∃ n, β₀ < β' n := (Tendsto.eventually_const_lt hβ₀_lt hβ'_tendsto).exists
       exact ⟨n, mod_cast hn⟩
@@ -95,11 +93,11 @@ lemma exists_modification_holder'' (hT : HasBoundedCoveringNumber U c d)
       have h_diam : Metric.ediam U < ∞ := hT.ediam_lt_top
       rw [ENNReal.coe_toNNReal h_diam.ne]
       exact fun x hx y hy ↦ Metric.edist_le_ediam_of_mem hx hy
-    simp only [Set.mem_ofPred_eq, A] at hω
+    simp [Set.mem_ofPred_eq, A] at hω
     obtain ⟨C, hC⟩ := hZ_holder n ω
     refine ⟨C, fun s hs t ht ↦ ?_⟩
     specialize hC s hs t ht
-    simp only
+    simp
     rw [← edist_congr_left (hω n t ht), ← edist_congr_right (hω n s hs)]
     exact hC
   · exact IsLimitOfIndicator.indicatorProcess (hZ_isLimit 0) A hA hA_ae
@@ -269,13 +267,13 @@ theorem exists_continuous_modification_of_open_cover {T Ω I : Type*}
   have hAmeas : MeasurableSet A := by
     have hpair i j : MeasurableSet {ω | ∀ t ∈ U i ∩ U j,
         edist (Z i t ω) (Z j t ω) = 0} := by
-      exact DOZZ.Proofs.Measurable.measurableSet_edist_eqOn_zero_of_continuous
+      exact Measurable.measurableSet_edist_eqOn_zero_of_continuous
         ((hU i).inter (hU j)) (fun ω => (hZcont i ω).continuousOn)
         (fun ω => (hZcont j ω).continuousOn) (fun t => (hZmeas i t).edist (hZmeas j t))
     have hA : A = ⋂ i, ⋂ j, {ω | ∀ t ∈ U i ∩ U j,
         edist (Z i t ω) (Z j t ω) = 0} := by
       ext ω
-      simp only [A, mem_ofPred_eq, mem_iInter, edist_eq_zero]
+      simp [A, mem_ofPred_eq, mem_iInter, edist_eq_zero]
     rw [hA]
     exact MeasurableSet.iInter fun i => MeasurableSet.iInter (hpair i)
   have hAae : ∀ᵐ ω ∂P, ω ∈ A := by
@@ -283,15 +281,15 @@ theorem exists_continuous_modification_of_open_cover {T Ω I : Type*}
       have h := indistinguishable_of_edist_modification_on ((hU i).inter (hU j))
         (ae_of_all P (fun ω => (hZcont i ω).continuousOn))
         (ae_of_all P (fun ω => (hZcont j ω).continuousOn)) (fun t ht => ?_)
-      · simpa only [edist_eq_zero] using h
+      · simpa [edist_eq_zero] using h
       · filter_upwards [hZeq i t ht.1, hZeq j t ht.2] with ω hi hj
-        simp only [hi, hj, edist_self]
-    simpa only [A, mem_ofPred_eq, ae_all_iff] using hpair
+        simp [hi, hj, edist_self]
+    simpa [A, mem_ofPred_eq, ae_all_iff] using hpair
   let Y (t : T) (ω : Ω) := if ω ∈ A then Z (index t) t ω else 0
   have hYmeas t : Measurable (Y t) := Measurable.ite hAmeas (hZmeas (index t) t) measurable_const
   have hYeq i {ω} (hω : ω ∈ A) : EqOn (fun t => Y t ω) (fun t => Z i t ω) (U i) := by
     intro t ht
-    simp only [Y, hω, ↓reduceIte]
+    simp [Y, hω, ↓reduceIte]
     exact hω (index t) i t ⟨hindex t, ht⟩
   have hYcont ω : Continuous (fun t => Y t ω) := by
     by_cases hω : ω ∈ A
@@ -300,11 +298,11 @@ theorem exists_continuous_modification_of_open_cover {T Ω I : Type*}
       have heq : (fun s => Y s ω) =ᶠ[𝓝 t] (fun s => Z (index t) s ω) :=
         Filter.eventually_of_mem ((hU (index t)).mem_nhds (hindex t)) (hYeq (index t) hω)
       exact (hZcont (index t) ω).continuousAt.congr_of_eventuallyEq heq
-    · simpa only [Y, hω, ↓reduceIte] using (continuous_const : Continuous (fun _ : T => (0 : ℝ)))
+    · simpa [Y, hω, ↓reduceIte] using (continuous_const : Continuous (fun _ : T => (0 : ℝ)))
   refine ⟨Y, hYmeas, hYcont, ?_, ?_⟩
   · intro t
     filter_upwards [hAae, hZeq (index t) t (hindex t)] with ω hω ht
-    simpa only [Y, hω, ↓reduceIte] using ht
+    simpa [Y, hω, ↓reduceIte] using ht
   · exact (measurable_uncurry_of_continuous_of_measurable hYcont hYmeas).comp measurable_swap
 
 end DOZZ.Proofs

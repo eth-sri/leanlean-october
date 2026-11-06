@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Brownian.ConditionedQuantileMarkovStep
+import DOZZ.Brownian.ConditionedQuantileMarkovStep
 import Mathlib.MeasureTheory.Constructions.Pi
 
 /-!
@@ -15,7 +14,6 @@ time. The resulting finite path measures satisfy the deterministic-grid Markov r
 at every step; no countable product or path-space extension is used.
 -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal
@@ -27,7 +25,7 @@ abbrev ConditionedUnitInput := Set.Ioo (0 : ℝ) 1
 abbrev ConditionedPositiveState := Set.Ioi (0 : ℝ)
 abbrev ConditionedEntranceGridPath (n : ℕ) := Fin (n + 1) → ConditionedPositiveState
 
-private theorem isProbabilityMeasure_unitInput :
+theorem isProbabilityMeasure_unitInput :
     IsProbabilityMeasure (volume : Measure ConditionedUnitInput) := by
   refine ⟨?_⟩
   have hcoe :
@@ -104,7 +102,7 @@ theorem conditionedPositiveTransitionSubtypeMeasure_map_coe
   have hq' : Measurable (conditionedPositiveTransitionQuantileOnSubtype ν t hν ht x) := by
     change Measurable (fun u : ConditionedUnitInput =>
       conditionedPositiveTransitionQuantilePairOnSubtype ν t hν ht (x, u))
-    exact hq
+    assumption
   rw [conditionedPositiveTransitionSubtypeMeasure,
     Measure.map_map measurable_subtype_coe
       hq']
@@ -218,8 +216,7 @@ theorem conditionedPositiveEntranceGridMeasure_initial_law
     apply measurable_pi_iff.mpr
     intro i
     exact measurable_conditionedPositiveEntranceQuantileOnSubtype ν t₀ hν ht₀
-  have heval : Measurable (fun p : ConditionedEntranceGridPath 0 => (p 0).1) := by
-    exact measurable_subtype_coe.comp (measurable_pi_apply 0)
+  have heval : Measurable (fun p : ConditionedEntranceGridPath 0 => (p 0).1) := measurable_subtype_coe.comp (measurable_pi_apply 0)
   rw [Measure.map_map heval hbase]
   change (volume : Measure ConditionedUnitInput).map
       (fun u => (conditionedPositiveEntranceQuantileOnSubtype ν t₀ hν ht₀ u).1) = _
@@ -285,4 +282,3 @@ theorem conditionedPositiveEntranceGridMeasure_markov_rect
 
 end DOZZ.Proofs
 
-end

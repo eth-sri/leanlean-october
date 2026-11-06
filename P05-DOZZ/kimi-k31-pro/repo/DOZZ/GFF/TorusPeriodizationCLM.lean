@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GFF.TorusFourierEmbedding
+import DOZZ.GFF.TorusFourierEmbedding
 
 /-!
 # DOZZ.GFF.TorusPeriodizationCLM
@@ -13,7 +12,6 @@ The concrete torus periodization is a continuous linear map from compactly suppo
 the torus `L²` space. Its norm is controlled by the zeroth test-function seminorm.
 -/
 
-@[expose] public section
 
 open MeasureTheory
 open scoped BoundedContinuousFunction ENNReal InnerProductSpace Topology lp
@@ -40,7 +38,7 @@ theorem measurable_torusBCFFunction (L : ℝ) (f : ℂ →ᵇ ℝ) :
 theorem memLp_torusBCFFunction (L : ℝ) (f : ℂ →ᵇ ℝ) :
     MemLp (torusBCFFunction L f) 2 (volume : Measure GFFUnitTorus2) := by
   have hbound (x : GFFUnitTorus2) : ‖torusBCFFunction L f x‖ ≤ ‖f‖ := by
-    simp only [torusBCFFunction, Complex.norm_real]
+    simp [torusBCFFunction, Complex.norm_real]
     exact f.norm_coe_le_norm (torusBoxPoint L x)
   exact MemLp.of_bound (measurable_torusBCFFunction L f).aestronglyMeasurable
     ‖f‖ (Filter.Eventually.of_forall hbound)
@@ -99,7 +97,7 @@ theorem norm_torusBCFToLp_le (L : ℝ) (f : ℂ →ᵇ ℝ) :
   have hbound : ∀ᵐ x ∂(volume : Measure GFFUnitTorus2),
       ‖torusBCFFunction L f x‖ ≤ ‖f‖ :=
     Filter.Eventually.of_forall fun x => by
-      simp only [torusBCFFunction, Complex.norm_real]
+      simp [torusBCFFunction, Complex.norm_real]
       exact f.norm_coe_le_norm (torusBoxPoint L x)
   have hnorm := eLpNorm_le_of_ae_bound (p := (2 : ℝ≥0∞))
     (measurable_torusBCFFunction L f).aestronglyMeasurable hbound
@@ -146,4 +144,3 @@ theorem torusPeriodizationLpCLM_apply (L : ℝ) (f : TestFn) :
 
 end DOZZ
 
-end

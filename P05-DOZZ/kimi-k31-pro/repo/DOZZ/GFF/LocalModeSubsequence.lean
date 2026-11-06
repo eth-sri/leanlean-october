@@ -2,13 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GFF.CommonSubsequence
-public import DOZZ.GFF.AELpSquareSummability
-public import DOZZ.GFF.HaarDistributionPartial
-public import DOZZ.GFF.TorusModeHS
-public import Mathlib.Logic.Encodable.Pi
+import DOZZ.GFF.CommonSubsequence
+import DOZZ.GFF.AELpSquareSummability
+import DOZZ.GFF.HaarDistributionPartial
+import DOZZ.GFF.TorusModeHS
+import Mathlib.Logic.Encodable.Pi
 
 /-!
 # DOZZ.GFF.LocalModeSubsequence
@@ -17,7 +16,6 @@ One deterministic subsequence of finite Haar distributions converges almost ever
 mode in the countable family of local torus-box H² coordinates.
 -/
 
-@[expose] public section
 
 open MeasureTheory Filter
 open scoped InnerProductSpace Topology ENNReal NNReal
@@ -96,7 +94,7 @@ theorem ae_summable_equatorWhiteNoiseSq_of_summable_energy {ι : Type*} [Countab
       ∑' i, eLpNorm (fun ω => (W i ω) ^ 2) 1 μ ≠ ∞ := by
     rw [show (∑' i, eLpNorm (fun ω => (W i ω) ^ 2) 1 μ) =
       ∑' i, (eNN i : ℝ≥0∞) from tsum_congr hmoment]
-    exact hfiniteNN
+    assumption
   have hae := ae_summable_sq_of_tsum_eLpNorm_sq_ne_top
     (fun i ω => W i ω) hfinite
   simpa [W] using hae
@@ -166,4 +164,3 @@ theorem equatorHaarPartial_exists_common_localMode_subseq :
 
 end DOZZ
 
-end

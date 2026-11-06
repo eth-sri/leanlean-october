@@ -2,15 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.Tails.TransferredCompactTest
-public import DOZZ.GMC.Assembly.CircleIntensity
-public import DOZZ.GMC.Annulus.PositiveRoot
+import DOZZ.Correlations.Tails.TransferredCompactTest
+import DOZZ.GMC.Assembly.CircleIntensity
+import DOZZ.GMC.Annulus.PositiveRoot
 
 /-! Identify the unpinned translated cutoff with a deterministic test of the actual cutoff GMC. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal NNReal
@@ -46,7 +44,7 @@ theorem regularized_integral_volume
   filter_upwards [] with x
   rw [ENNReal.toReal_ofReal (mul_nonneg (Real.exp_nonneg _)
     (Real.rpow_nonneg (by unfold normPlus; positivity) _))]
-  simp only [smul_eq_mul]
+  simp [smul_eq_mul]
   ring
 
 /-- On every compact subchart the cutoff pin removal is an exact scalar times an actual GMC test. -/
@@ -67,7 +65,7 @@ theorem unpinned_cutoff_test_identity
       (subset_univ _)]
     simp only [logRegularizationReference, Measure.restrict_univ]
     exact gmcReferenceMeasure_restrict_unit_chart _ Metric.isOpen_ball.measurableSet
-      (fun x hx => (by simpa only [Metric.mem_ball, dist_zero_right] using hx : ‖x‖ < 1).le)
+      (fun x hx => (by simpa [Metric.mem_ball, dist_zero_right] using hx : ‖x‖ < 1).le)
   have hlog : Real.log (1 / Real.exp (-r)) = r := by
     rw [one_div, Real.log_inv, Real.log_exp, neg_neg]
   rw [regularizedLogChaosTestMass, hRef, hlog,
@@ -83,7 +81,7 @@ theorem unpinned_cutoff_test_identity
         by_contra h
         have hnorm := hf x h
         have hlt : ‖x‖ < 1 := by linarith [Real.exp_pos (-r)]
-        exact hx (by simpa only [Metric.mem_ball, dist_zero_right] using hlt)
+        exact hx (by simpa [Metric.mem_ball, dist_zero_right] using hlt)
       simp only [hf0, zero_mul])]
   apply integral_congr_ae
   filter_upwards [] with x

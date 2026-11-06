@@ -2,12 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Fusion.LocalDifferenceRooting
-public import DOZZ.FourPoint.Fusion.DifferenceExteriorExpectation
-public import DOZZ.FourPoint.Fusion.DifferenceMassIntegral
+import DOZZ.FourPoint.Fusion.LocalDifferenceRooting
+import DOZZ.FourPoint.Fusion.DifferenceExteriorExpectation
+import DOZZ.FourPoint.Fusion.DifferenceMassIntegral
 /-! # The signed local and exterior split -/
-@[expose] public section
 open MeasureTheory Set
 namespace DOZZ.Proofs
 /-- Local rooting and the exterior mass majorant justify splitting the signed expectation. -/
@@ -26,12 +24,12 @@ theorem fusion_difference_spatial_expectation_split {Ω : Type*} [MeasurableSpac
   let B := Metric.ball (0 : ℂ) (1 / 2)
   have hf : Measurable f := by
     have hm : Measurable (fun x : ℂ => (z, x)) := measurable_const.prodMk measurable_id
-    simpa only [Function.comp_def] using (fusionDifferenceKernel_measurable γ α₁ α₂ α₃).comp hm
+    simpa [Function.comp_def] using (fusionDifferenceKernel_measurable γ α₁ α₂ α₃).comp hm
   obtain ⟨hk, hβ, hβ2, _, _⟩ := fusion_difference_parameters γ α₁ hγ hlo hα₁
   have hfi := fusion_difference_local_integrable γ α₁ α₂ α₃ hk hβ hβ2 z hz
   have hl := (fusion_segment_rooting P X hX γ hγ hγ2 M hM α₁ α₂ α₃ hα₁ hα₂ hα₃ t ht
     (-p - 1) (by linarith) z hz hz4 (B.indicator f) (hf.indicator Metric.isOpen_ball.measurableSet) hfi).1
-  simp only [integral_indicator (show MeasurableSet B from Metric.isOpen_ball.measurableSet)] at hl
+  simp [integral_indicator (show MeasurableSet B from Metric.isOpen_ball.measurableSet)] at hl
   obtain ⟨C, _, hb⟩ := fusion_difference_exterior_expectation_bound P X hX γ hγ hγ2 M hM α₁ α₂ α₃ hα₁ hα₂ hα₃ p hp
   have hr := (hb t ht z hz hz4).1
   have he : (fun ω => I ω * (∫ x, f x ∂M ω)) =ᵐ[P]

@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.BPZ.WardLimitConvC
+import DOZZ.FourPoint.BPZ.WardLimitConvC
 
 /-! # The symmetrized cutoff Ward identity at integer cutoffs
 
@@ -12,7 +11,6 @@ For every integer cutoff below the separation scale, the cutoff Ward identity ho
 cutoff chaos replaced by its finite version and the right side written through the antisymmetrized
 cutoff kernel and the far-region test function. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped ENNReal NNReal

@@ -2,17 +2,17 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Brownian.ReflectionJointInputLaw
-public import DOZZ.Statements.Brownian.IsOrderedTwoSidedConditionedCoupling
-public import Mathlib.MeasureTheory.Integral.Lebesgue.DominatedConvergence
-public import Mathlib.Analysis.SpecialFunctions.Pow.Continuity
-public import DOZZ.Brownian.Lateral.RadialProjection
-public import DOZZ.Statements.Brownian.IsLateralGMCOf
-public import DOZZ.Brownian.Lateral.UpperConditionedBlocks
-public import DOZZ.GMC.MomentPositivity
-public import DOZZ.GMC.Construction.GMCIntensityAdapter
+import DOZZ.GMC.Annulus.HigherScales
+import DOZZ.Brownian.ReflectionJointInputLaw
+import DOZZ.Statements.Brownian.IsOrderedTwoSidedConditionedCoupling
+import Mathlib.MeasureTheory.Integral.Lebesgue.DominatedConvergence
+import Mathlib.Analysis.SpecialFunctions.Pow.Continuity
+import DOZZ.Brownian.Lateral.RadialProjection
+import DOZZ.Statements.Brownian.IsLateralGMCOf
+import DOZZ.Brownian.Lateral.UpperConditionedBlocks
+import DOZZ.GMC.MomentPositivity
+import DOZZ.GMC.Construction.GMCIntensityAdapter
 
 /-!
 # Reflection-mass carriers, coupling transfer and block envelopes
@@ -30,7 +30,6 @@ infinite Minkowski (orders above one) sums them. Hölder separates the envelope 
 exponential moment and a unit-increment moment. No independence between the two halves is used.
 -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Set
 open scoped ENNReal NNReal Topology
@@ -153,10 +152,10 @@ theorem measurable_twoSidedConditionedValue {Ω : Type*}
     funext s
     unfold twoSidedConditionedValue
     by_cases hs : 0 ≤ s
-    · simp only [hs, dite_true, ite_true, Real.toNNReal_of_nonneg hs]
+    · simp [hs, dite_true, ite_true, Real.toNNReal_of_nonneg hs]
       rfl
     · have hs' : 0 ≤ -s := by linarith
-      simp only [hs, dite_false, ite_false, Real.toNNReal_of_nonneg hs']
+      simp [hs, dite_false, ite_false, Real.toNNReal_of_nonneg hs']
       rfl
   rw [he]
   exact Measurable.ite (measurableSet_le measurable_const measurable_id) h1.measurable
@@ -195,9 +194,9 @@ theorem twoSidedReflectionMass_le_of_le {Ω : Type*} (γ : ℝ) (hγ : 0 ≤ γ)
   apply mul_le_mul_of_nonneg_left _ hγ
   unfold twoSidedConditionedValue
   by_cases hs : 0 ≤ s
-  · simp only [hs, dite_true]
+  · simp [hs, dite_true]
     exact h₁ _
-  · simp only [hs, dite_false]
+  · simp [hs, dite_false]
     exact h₂ _
 
 /-- A power of order `t ≤ u` is controlled by `1 + x ^ u`. -/
@@ -366,7 +365,7 @@ theorem twoSidedConditionedValue_of_pos {Ω : Type*} (B : Ω → BrownianPath ×
     (ω : Ω) {s : ℝ} (hs : 0 < s) :
     twoSidedConditionedValue B ω s = (B ω).1 (Real.toNNReal s) := by
   have h : 0 ≤ s := hs.le
-  simp only [twoSidedConditionedValue, h, dite_true, Real.toNNReal_of_nonneg h]
+  simp [twoSidedConditionedValue, h, dite_true, Real.toNNReal_of_nonneg h]
   rfl
 
 /-- On the open negative half-line the two-sided value is the second entrance path read at `-s`. -/
@@ -375,14 +374,14 @@ theorem twoSidedConditionedValue_of_neg {Ω : Type*} (B : Ω → BrownianPath ×
     twoSidedConditionedValue B ω s = (B ω).2 (Real.toNNReal (-s)) := by
   have h : ¬ 0 ≤ s := not_le.mpr hs
   have h' : 0 ≤ -s := by linarith
-  simp only [twoSidedConditionedValue, h, dite_false, Real.toNNReal_of_nonneg h']
+  simp [twoSidedConditionedValue, h, dite_false, Real.toNNReal_of_nonneg h']
   rfl
 
 /-- At the origin the two-sided value is the first entrance path at time zero. -/
 theorem twoSidedConditionedValue_zero {Ω : Type*} (B : Ω → BrownianPath × BrownianPath)
     (ω : Ω) :
     twoSidedConditionedValue B ω 0 = (B ω).1 0 := by
-  simp only [twoSidedConditionedValue, le_refl, dite_true]
+  simp [twoSidedConditionedValue, le_refl, dite_true]
   rfl
 
 /-- The exponential radial weight along the positive half-line is a measurable function. -/
@@ -431,16 +430,16 @@ theorem twoSidedReflectionMass_eq_halves {Ω : Type*} (γ : ℝ)
     rw [hpre]
     refine setLIntegral_congr_fun measurableSet_Iio ?_
     intro x hx
-    simp only [f, twoSidedConditionedValue_of_neg B ω (mem_Iio.mp hx)]
+    simp [f, twoSidedConditionedValue_of_neg B ω (mem_Iio.mp hx)]
   have hzero : ∫⁻ s in {0}, f s ∂(Z ω) =
       ENNReal.ofReal (Real.exp (γ * (B ω).1 0)) * Z ω {0} := by
     rw [lintegral_singleton]
-    simp only [f, twoSidedConditionedValue_zero]
+    simp [f, twoSidedConditionedValue_zero]
   have hpos : ∫⁻ s in Ioi 0, f s ∂(Z ω) = positiveLateralMass γ (B ω).1 (Z ω) := by
     unfold positiveLateralMass
     refine setLIntegral_congr_fun measurableSet_Ioi ?_
     intro x hx
-    simp only [f, twoSidedConditionedValue_of_pos B ω (mem_Ioi.mp hx)]
+    simp [f, twoSidedConditionedValue_of_pos B ω (mem_Ioi.mp hx)]
   calc twoSidedReflectionMass γ B Z ω = ∫⁻ s in univ, f s ∂(Z ω) := by
         rw [Measure.restrict_univ]
         rfl
@@ -496,13 +495,7 @@ theorem positiveLateralMass_aemeasurable_of_finite {Ω : Type*} [MeasurableSpace
 /-- Finite subadditivity of `x ↦ x ^ q` for `0 < q ≤ 1`. -/
 theorem ennreal_finset_sum_rpow_le {ι : Type*} (s : Finset ι) (a : ι → ℝ≥0∞) {q : ℝ}
     (hq0 : 0 < q) (hq1 : q ≤ 1) :
-    (∑ i ∈ s, a i) ^ q ≤ ∑ i ∈ s, a i ^ q := by
-  classical
-  induction s using Finset.induction_on with
-  | empty => simp [ENNReal.zero_rpow_of_pos hq0]
-  | @insert i s hi ih =>
-    rw [Finset.sum_insert hi, Finset.sum_insert hi]
-    exact (ENNReal.rpow_add_le_add_rpow _ _ hq0.le hq1).trans (add_le_add le_rfl ih)
+    (∑ i ∈ s, a i) ^ q ≤ ∑ i ∈ s, a i ^ q := DOZZ.Proofs.ennreal_rpow_finset_sum_le_tsum_rpow s a hq0 hq1
 
 /-- Countable subadditivity of `x ↦ x ^ q` for `0 < q ≤ 1`. -/
 theorem ennreal_tsum_rpow_le {ι : Type*} (a : ι → ℝ≥0∞) {q : ℝ} (hq0 : 0 < q) (hq1 : q ≤ 1) :
@@ -523,32 +516,7 @@ theorem ennreal_tsum_rpow_le {ι : Type*} (a : ι → ℝ≥0∞) {q : ℝ} (hq0
 /-- A sum of three terms raised to a nonnegative power. -/
 theorem ennreal_add3_rpow_le (a b c : ℝ≥0∞) {q : ℝ} (hq : 0 ≤ q) :
     (a + b + c) ^ q ≤ 3 ^ q * (a ^ q + b ^ q + c ^ q) := by
-  let m := max a (max b c)
-  have hsum : a + b + c ≤ 3 * m := by
-    have ha : a ≤ m := le_max_left _ _
-    have hb : b ≤ m := (le_max_left _ _).trans (le_max_right _ _)
-    have hc : c ≤ m := (le_max_right _ _).trans (le_max_right _ _)
-    calc a + b + c ≤ m + m + m := add_le_add (add_le_add ha hb) hc
-      _ = 3 * m := by ring
-  have hm : m ^ q ≤ a ^ q + b ^ q + c ^ q := by
-    rcases le_total b c with hbc | hbc
-    · rcases le_total a c with hac | hac
-      · have : m = c := by simp [m, hbc, hac]
-        rw [this]
-        exact le_add_self
-      · have : m = a := by simp [m, hbc, hac]
-        rw [this, add_assoc]
-        exact le_self_add
-    · rcases le_total a b with hab | hab
-      · have : m = b := by simp [m, hbc, hab]
-        rw [this]
-        exact (le_add_self : b ^ q ≤ a ^ q + b ^ q).trans le_self_add
-      · have : m = a := by simp [m, hbc, hab]
-        rw [this, add_assoc]
-        exact le_self_add
-  calc (a + b + c) ^ q ≤ (3 * m) ^ q := ENNReal.rpow_le_rpow hsum hq
-    _ = 3 ^ q * m ^ q := ENNReal.mul_rpow_of_nonneg _ _ hq
-    _ ≤ 3 ^ q * (a ^ q + b ^ q + c ^ q) := mul_le_mul_right hm _
+  apply DOZZ.Proofs.gmc_root_three_piece_rpow_le <;> assumption
 
 /-- Positive half-line moments of order at most one from independent block envelopes. -/
 theorem positiveLateralMass_rpow_lintegral_le_of_envelope
@@ -575,7 +543,7 @@ theorem positiveLateralMass_rpow_lintegral_le_of_envelope
         have h := positiveLateralBlock_moment_le_independent_envelope P γ q hγ hq0.le n
           B Z hB hZ hi
         refine h.trans (mul_le_mul' (hg n) ?_)
-        simpa only [NNReal.coe_natCast] using hL n
+        simpa [NNReal.coe_natCast] using hL n
     _ = L * ∑' n, g n := by rw [ENNReal.tsum_mul_right, mul_comm]
 
 /-- Positive half-line moments of order at least one from independent block envelopes, by
@@ -598,14 +566,14 @@ theorem positiveLateralMass_rpow_lintegral_le_of_envelope_of_one_le
     have h := positiveLateralBlock_moment_le_independent_envelope P γ q hγ hq0.le n
       B Z hB hZ hi
     refine h.trans (mul_le_mul' (hg n) ?_)
-    simpa only [NNReal.coe_natCast] using hL n
+    simpa [NNReal.coe_natCast] using hL n
   have hroot : (∑' n : ℕ,
       (∫⁻ ω, (positiveLateralBlock γ n (B ω) (Z ω)) ^ q ∂P) ^ (1 / q)) ≤
         ∑' n, (g n * L) ^ (1 / q) :=
     ENNReal.tsum_le_tsum fun n => ENNReal.rpow_le_rpow (hblock n) (one_div_nonneg.mpr hq0.le)
   calc (∫⁻ ω, (positiveLateralMass γ (B ω) (Z ω)) ^ q ∂P)
       = ∫⁻ ω, (∑' n : ℕ, positiveLateralBlock γ n (B ω) (Z ω)) ^ q ∂P := by
-        simp only [positiveLateralMass_eq_tsum_blocks]
+        simp [positiveLateralMass_eq_tsum_blocks]
     _ ≤ _ := hmass
     _ ≤ _ := ENNReal.rpow_le_rpow hroot hq0.le
 
@@ -729,8 +697,6 @@ theorem twoSidedReflectionMass_rpow_lintegral_le_blockBound
     (fun ω => (B ω).2) Z' hB₂ hZ'm hfin₂ hi₂ L hL₂ g hg₂
   have hH₁m : AEMeasurable (fun ω => positiveLateralMass γ (B ω).1 (Z ω)) P :=
     positiveLateralMass_aemeasurable_of_finite P γ _ Z hB₁ hZm hfin₁
-  have hH₂m : AEMeasurable (fun ω => positiveLateralMass γ (B ω).2 (Z' ω)) P :=
-    positiveLateralMass_aemeasurable_of_finite P γ _ Z' hB₂ hZ'm hfin₂
   calc (∫⁻ ω, ENNReal.rpow (twoSidedReflectionMass γ B Z ω) q ∂P)
       ≤ ∫⁻ ω, 3 ^ q * ((positiveLateralMass γ (B ω).1 (Z ω)) ^ q +
           (positiveLateralMass γ (B ω).2 (Z' ω)) ^ q) ∂P := by
@@ -757,4 +723,3 @@ theorem twoSidedReflectionMass_rpow_lintegral_le_blockBound
 
 end DOZZ.Proofs
 
-end

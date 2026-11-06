@@ -2,15 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.SumTail.JointPowers
-public import DOZZ.Correlations.Tails.TwoMassHalfThreshold
-public import Mathlib.MeasureTheory.Measure.Typeclasses.Probability
+import DOZZ.Correlations.SumTail.JointPowers
+import DOZZ.Correlations.Tails.TwoMassHalfThreshold
+import Mathlib.MeasureTheory.Measure.Typeclasses.Probability
 
 /-! The sharp sum-tail estimate from the proved event sandwiches. -/
 
-@[expose] public section
 open MeasureTheory Set
 namespace DOZZ.Proofs
 
@@ -59,14 +57,14 @@ theorem sumtail_real_sum_error
     have hjx : P.real {ω | x < A ω ∧ x < B ω} ≤ D*x^(-β+θ) := by
       have hb := hjoint x x hx hx
       calc
-        _ ≤ D*(x^(-p2+ε)*x^(-p3+ε)) := by simpa only [mul_assoc] using hb
+        _ ≤ D*(x^(-p2+ε)*x^(-p3+ε)) := by simpa [mul_assoc] using hb
         _ ≤ _ := mul_le_mul_of_nonneg_left
           (sumtail_joint_equal_power p2 p3 ε β θ x hp3.le hεθ hβj2 hx) hD
     have hεθ' : 3*ε/2 ≤ θ := by linarith only [hε,hεθ]
     have hj1 : P.real {ω | x/2 < A ω ∧ Real.sqrt x < B ω} ≤ D*2^T*x^(-β+θ) := by
       have hb := hjoint (x/2) (Real.sqrt x) hxhalf hxsqrt
       calc
-        _ ≤ D*((x/2)^(-p2+ε)*(Real.sqrt x)^(-p3+ε)) := by simpa only [mul_assoc] using hb
+        _ ≤ D*((x/2)^(-p2+ε)*(Real.sqrt x)^(-p3+ε)) := by simpa [mul_assoc] using hb
         _ ≤ D*(2^T*x^(-β+θ)) := mul_le_mul_of_nonneg_left
           (sumtail_joint_half_sqrt_power T p2 p3 ε β θ x hT hp2T hε hεθ' hβj2 hx4) hD
         _ = _ := by ring
@@ -100,11 +98,11 @@ theorem sumtail_real_sum_error
     have hcoef2 : |c2*x^(-p2)| ≤ H := by
       rw [abs_mul, abs_of_nonneg (Real.rpow_nonneg hx0.le _)]
       exact (mul_le_mul_of_nonneg_right hc2 (Real.rpow_nonneg hx0.le _)).trans
-        (by simpa only [mul_one] using mul_le_mul_of_nonneg_left hp2one hH)
+        (by simpa [mul_one] using mul_le_mul_of_nonneg_left hp2one hH)
     have hcoef3 : |c3*x^(-p3)| ≤ H := by
       rw [abs_mul, abs_of_nonneg (Real.rpow_nonneg hx0.le _)]
       exact (mul_le_mul_of_nonneg_right hc3 (Real.rpow_nonneg hx0.le _)).trans
-        (by simpa only [mul_one] using mul_le_mul_of_nonneg_left hp3one hH)
+        (by simpa [mul_one] using mul_le_mul_of_nonneg_left hp3one hH)
     calc
       _ ≤ |P.real {ω | x < A ω+B ω}|+|c2*x^(-p2)+c3*x^(-p3)| := abs_sub _ _
       _ ≤ 1+(H+H) := add_le_add

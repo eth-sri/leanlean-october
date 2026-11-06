@@ -2,8 +2,7 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.GFFStructure.DirichletCompletion
+import DOZZ.GFFStructure.DirichletCompletion
 /-!
 # Global Dirichlet covariance and independence
 
@@ -13,7 +12,6 @@ so its global complement and all exterior test evaluations are orthogonal.
 The jointly Gaussian Hilbert span turns these identities into independence.
 -/
 
-@[expose] public section
 open Filter MeasureTheory ProbabilityTheory Set Metric
 open scoped Topology ENNReal NNReal
 namespace DOZZ.Proofs
@@ -37,9 +35,9 @@ theorem abs_diskGreenCovariance_le_restriction_norms (c : ℂ) (ρ : ℝ) (hρ :
       (diskGreenCompletionConstant c ρ hρ)^2*‖diskTestRestrictionL2 c ρ f‖*‖diskTestRestrictionL2 c ρ g‖ := by
   have h := abs_diskGreenCovariance_le_diskL2 c ρ hρ f g
   have hf : (∫ z in ball c ρ, ‖f z‖^2) = ‖diskTestRestrictionL2 c ρ f‖^2 := by
-    rw [diskTestRestrictionL2_norm_sq]; simp only [Real.norm_eq_abs,sq_abs]
+    rw [diskTestRestrictionL2_norm_sq]; simp [Real.norm_eq_abs,sq_abs]
   have hg : (∫ z in ball c ρ, ‖g z‖^2) = ‖diskTestRestrictionL2 c ρ g‖^2 := by
-    rw [diskTestRestrictionL2_norm_sq]; simp only [Real.norm_eq_abs,sq_abs]
+    rw [diskTestRestrictionL2_norm_sq]; simp [Real.norm_eq_abs,sq_abs]
   rw [hf,hg,← mul_pow,← Real.sqrt_eq_rpow ((‖diskTestRestrictionL2 c ρ f‖*‖diskTestRestrictionL2 c ρ g‖)^2),Real.sqrt_sq_eq_abs,
     abs_of_nonneg (mul_nonneg (norm_nonneg _) (norm_nonneg _))] at h
   have hK : (diskGreenCompletionConstant c ρ hρ)^2 =
@@ -47,9 +45,7 @@ theorem abs_diskGreenCovariance_le_restriction_norms (c : ℂ) (ρ : ℝ) (hρ :
         ∂((volume.restrict (ball c ρ)).prod (volume.restrict (ball c ρ))))^(1/2 : ℝ) := by
     apply Real.sq_sqrt
     exact Real.rpow_nonneg (integral_nonneg (fun _ => sq_nonneg _)) _
-  rw [hK,mul_assoc]
-  exact h
-
+  rwa [hK,mul_assoc]
 /-- Literal Green pairings converge under L² convergence of one disk restriction. -/
 theorem tendsto_diskGreenCovariance_of_restriction_left (c : ℂ) (ρ : ℝ) (hρ : 0 < ρ)
     (f : ℕ → TestFn) (g h : TestFn)
@@ -61,10 +57,10 @@ theorem tendsto_diskGreenCovariance_of_restriction_left (c : ℂ) (ρ : ℝ) (h�
   have hb : Tendsto (fun n => (diskGreenCompletionConstant c ρ hρ)^2*
       ‖diskTestRestrictionL2 c ρ (f n)-diskTestRestrictionL2 c ρ g‖*
         ‖diskTestRestrictionL2 c ρ h‖) atTop (𝓝 0) := by
-    simpa only [mul_zero,zero_mul] using (tendsto_const_nhds.mul hnorm).mul tendsto_const_nhds
+    simpa [mul_zero,zero_mul] using (tendsto_const_nhds.mul hnorm).mul tendsto_const_nhds
   refine squeeze_zero (fun n => norm_nonneg _) (fun n => ?_) hb
   rw [Real.norm_eq_abs,← diskGreenCovariance_sub_left]
-  simpa only [diskTestRestrictionL2_sub] using abs_diskGreenCovariance_le_restriction_norms c ρ hρ (f n-g) h
+  simpa [diskTestRestrictionL2_sub] using abs_diskGreenCovariance_le_restriction_norms c ρ hρ (f n-g) h
 
 /-- A completed map retains every global mixed Green covariance from its dense interior tests. -/
 theorem completed_disk_map_test_covariance {Ω : Type*} [MeasurableSpace Ω]
@@ -123,7 +119,7 @@ theorem dirichletCompletedL2Map_test_covariance {Ω : Type*} [MeasurableSpace Ω
   exact dirichletResidualL2_test_covariance P X Xc hX hc c R ρ ε hR hρ hε hpin V hV hmean hU hlim a g ha
 
 /-- The actual globally restricted Dirichlet family has the literal Green covariance
-`DOZZ.diskGreenCovariance`. -/
+`diskGreenCovariance`. -/
 theorem dirichletCompletedL2Map_covariance {Ω : Type*} [MeasurableSpace Ω]
     (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)

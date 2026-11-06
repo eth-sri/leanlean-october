@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.Analytic.AnnularThresholdAE
-public import DOZZ.Correlations.Analytic.CommonPowerEnvelope
+import DOZZ.Correlations.Analytic.AnnularThresholdAE
+import DOZZ.Correlations.Analytic.CommonPowerEnvelope
 
 /-! The threshold estimate with one common envelope for both signs of the mass power. -/
 
-@[expose] public section
 open MeasureTheory
 open scoped ENNReal
 namespace DOZZ.Proofs

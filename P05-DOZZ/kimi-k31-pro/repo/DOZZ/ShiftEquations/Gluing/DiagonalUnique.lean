@@ -2,12 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.Hypergeom.GaussFMinus
-public import DOZZ.Statements.Hypergeom.GaussFPlus
-public import DOZZ.Statements.Hypergeom.GaussCutPlane
-public import DOZZ.Statements.Hypergeom.IsGaussHypergeometricFamily
+import DOZZ.Statements.Hypergeom.GaussFMinus
+import DOZZ.Statements.Hypergeom.GaussFPlus
+import DOZZ.Statements.Hypergeom.GaussCutPlane
+import DOZZ.Statements.Hypergeom.IsGaussHypergeometricFamily
 import DOZZ.Hypergeom.ClassificationHermitianMixedJet
 import DOZZ.Hypergeom.BasisWronskians
 import DOZZ.Hypergeom.BasisRegularity
@@ -30,7 +29,6 @@ midpoint `1/2`, where the explicit Wronskian of the zero basis does not vanish.
   determined by the function they represent.
 -/
 
-@[expose] public section
 
 open Filter Topology Set
 
@@ -46,7 +44,7 @@ cast of the real combination of the squared norms of the two holomorphic factors
 private theorem diagUnique_tensor_eq_ofReal (f g : ℂ → ℂ) (A D : ℝ) (z : ℂ) :
     hermitianQuadraticTensor f g (A : ℂ) 0 0 (D : ℂ) z =
       ((A * ‖f z‖ ^ 2 + D * ‖g z‖ ^ 2 : ℝ) : ℂ) := by
-  simp only [hermitianQuadraticTensor, zero_mul, add_zero]
+  simp [hermitianQuadraticTensor, zero_mul, add_zero]
   calc
     (A : ℂ) * f z * star (f z) + (D : ℂ) * g z * star (g z)
         = (A : ℂ) * (f z * star (f z)) + (D : ℂ) * (g z * star (g z)) := by ring
@@ -105,4 +103,3 @@ theorem diagonal_gauss_coefficients_unique {H : ℂ → ℂ → ℂ → ℂ → 
 
 end DOZZ.Proofs
 
-end

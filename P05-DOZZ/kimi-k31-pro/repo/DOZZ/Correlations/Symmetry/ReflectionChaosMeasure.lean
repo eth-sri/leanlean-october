@@ -2,11 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.Correlations.Symmetry.ReflectionCutoff
-public import DOZZ.Correlations.Symmetry.ReflectionCutoffWeight
-public import DOZZ.Correlations.Symmetry.ReflectionWeightedLimit
-@[expose] public section
+import DOZZ.Correlations.Symmetry.ReflectionCutoff
+import DOZZ.Correlations.Symmetry.ReflectionCutoffWeight
+import DOZZ.Correlations.Symmetry.ReflectionWeightedLimit
 open MeasureTheory
 open scoped Distributions ENNReal
 namespace DOZZ.Proofs

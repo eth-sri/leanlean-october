@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.BPZ.WeakConvGrid
+import DOZZ.FourPoint.BPZ.WeakConvGrid
 
 /-! # Double integrals under weak convergence in probability
 
@@ -15,7 +14,6 @@ probability. The proof compares both sides with finite grid sums, which converge
 integral convergence; the error is a modulus-of-continuity term plus the near-diagonal mass,
 which is small in probability because `μ₀` has no atoms. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped ENNReal NNReal
@@ -63,7 +61,7 @@ theorem bpz_indicator_one_eq_zero_of_subset {A : Set ℂ} {R : ℝ}
 theorem bpzGrid_cell_subset (h : ℝ) (hh : 0 < h) (i : ℤ × ℤ) :
     bpzGridIdx h ⁻¹' {i} ⊆ Metric.closedBall 0 (‖bpzGridCorner h i‖ + 2 * h) := by
   intro x hx
-  simp only [Set.mem_preimage, Set.mem_singleton_iff] at hx
+  simp [Set.mem_preimage, Set.mem_singleton_iff] at hx
   rw [Metric.mem_closedBall, dist_zero_right]
   have := norm_sub_bpzGridCorner_le hh x
   rw [hx] at this
@@ -95,7 +93,7 @@ theorem bpz_exists_scale_small [IsFiniteMeasure P] {W : Ω → ℝ} (hW : Measur
   have h := (ENNReal.tendsto_nhds_zero.1 (hconv s hs)) t ht
   obtain ⟨k, hk⟩ := h.exists
   refine ⟨k, le_trans (measure_mono fun ω hω => ?_) hk⟩
-  simp only [Set.mem_ofPred_eq, zero_mul, sub_zero, Real.norm_eq_abs] at hω ⊢
+  simp [Set.mem_ofPred_eq, zero_mul, sub_zero, Real.norm_eq_abs] at hω ⊢
   exact hω
 
 namespace BPZWeakConv
@@ -182,7 +180,7 @@ theorem tendstoInMeasure_double [IsProbabilityMeasure P] (hμ : BPZWeakConv P μ
         (lt_of_le_of_lt (le_max_left _ _) hx))
       (fun i x hx => hsupp₀ _ x (Or.inr (lt_of_le_of_lt (le_max_right _ _) hx)))
     simp only [integral_indicator_one (hcellm _)] at h
-    exact h
+    assumption
   -- the near-diagonal grid sums
   set G : ℕ → Ω → ℝ := fun n ω =>
     ∑ i ∈ S', (μ n ω).real (cell i) * (μ n ω).real (Metric.ball (c i) (η + 2 * h)) with hG
@@ -200,7 +198,7 @@ theorem tendstoInMeasure_double [IsProbabilityMeasure P] (hμ : BPZWeakConv P μ
       (fun i x hx => bpz_indicator_one_eq_zero_of_subset (bpz_ball_subset_closedBall _ _) x
         (lt_of_le_of_lt (le_max_right _ _) hx))
     simp only [integral_indicator_one (hcellm _), integral_indicator_one measurableSet_ball] at h
-    exact h
+    assumption
   have hmassm : ∀ (s : Set ℂ), MeasurableSet s → ∀ n, Measurable fun ω => (μ n ω).real s :=
     fun s hs n => ((Measure.measurable_coe hs).comp (hμ.meas n)).ennreal_toReal
   have hmassm₀ : ∀ (s : Set ℂ), MeasurableSet s → Measurable fun ω => (μ₀ ω).real s :=
@@ -231,7 +229,7 @@ theorem tendstoInMeasure_double [IsProbabilityMeasure P] (hμ : BPZWeakConv P μ
       have hB₂m : MeasurableSet B₂ := measurableSet_closedBall
       have hBm : MeasurableSet B := measurableSet_closedBall
       simp only [Finset.sum_singleton, integral_indicator_one hB₂m, integral_indicator_one hBm] at h
-      exact h
+      assumption
     exact bpz_tendstoInMeasure_add
       (fun n => ((hm1 n).const_mul _).aestronglyMeasurable)
       (fun n => ((hGm n).const_mul _).aestronglyMeasurable)
@@ -323,7 +321,7 @@ theorem tendstoInMeasure_double [IsProbabilityMeasure P] (hμ : BPZWeakConv P μ
         (ENNReal.ofReal_lt_ofReal_iff hε |>.2 (by linarith)))
     filter_upwards [hfin, eventually_ge_atTop n₀] with n hn hn'
     simp only [hE, ite_eq_left hn'] at hn
-    exact hn
+    assumption
   · -- the limit side
     have hle : ∀ ω, |(∫ x, ∫ y, H₀ x y ∂μ₀ ω ∂μ₀ ω) - A₀ ω| ≤
         2 * (ε₁ * (Wv ω * Wv ω)) + 2 * C * ND k₁ ω := by

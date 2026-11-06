@@ -2,10 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.Correlations.Continuity.CutoffContinuity
-public import DOZZ.GMC.SharpMoments.MomentConvergence
-@[expose] public section
+import DOZZ.Correlations.Continuity.CutoffContinuity
+import DOZZ.GMC.SharpMoments.MomentConvergence
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -73,8 +71,8 @@ theorem coulombMass_continuous_in_measure_on_compact
   let F : ℝ → S → Ω → ℝ := fun r c ω =>
     (regularizedCoulombMass P Xc c.val.1 partition c.val.2.2.1 c.val.2.1 c.val.2.2.2 r ω).toReal
   have hFm : ∀ r c, Measurable (F r c) := fun r c => by
-    simp only [F, regularizedCoulombMass_real_eq_integral_test P X hX Xc hXc]
-    exact DOZZ.Assembly.regularizedGMC_integral_measurable P X hX Xc hXc _ r _
+    simp [F, regularizedCoulombMass_real_eq_integral_test P X hX Xc hXc]
+    exact Assembly.regularizedGMC_integral_measurable P X hX Xc hXc _ r _
       (continuityCutoffTest_measurable partition r c.val)
   apply uniform_approximation_in_measure_continuous P F _ c₀
   · intro ε hε
@@ -90,7 +88,7 @@ theorem coulombMass_continuous_in_measure_on_compact
     rw [edist_dist]
     exact ENNReal.ofReal_le_ofReal hω
   · intro r hr
-    exact DOZZ.Assembly.tendstoInMeasure_of_tendsto_lintegral_ofReal_abs P (F r) (F r c₀)
+    exact Assembly.tendstoInMeasure_of_tendsto_lintegral_ofReal_abs P (F r) (F r c₀)
       (fun c => (hFm r c).aestronglyMeasurable) (hFm r c₀).aestronglyMeasurable
       (regularizedCoulombMass_L1_continuous_on_compact P X hX Xc hXc partition r hr S hS c₀)
 
@@ -117,7 +115,7 @@ theorem continuity_tendstoInMeasure_varying_rpow
   have hp' := hp.comp ((hns.comp hns').tendsto_atTop)
   have h := (Real.continuousAt_rpow ((g ω).toReal, p₀)
     (Or.inl (ENNReal.toReal_pos hpos hfin).ne')).tendsto.comp (hω.prodMk_nhds hp')
-  simpa only [Function.comp_def, ← ENNReal.toReal_rpow] using h
+  simpa [Function.comp_def, ← ENNReal.toReal_rpow] using h
 
 /-- Subcritical root charges give a strictly positive finite actual Coulomb mass
 on one probability-one event, independently of the chosen moment power. -/
@@ -144,7 +142,6 @@ theorem continuity_coulombMass_positive_finite_ae
     rw [htop, ENNReal.top_rpow_of_pos ht.1.1] at hω
     exact lt_irrefl _ hω
   obtain ⟨hR, hzR⟩ := coulomb_exterior_radius_bounds z
-  have hsum : 0 ≤ ∑ j, ‖z j‖ := Finset.sum_nonneg fun _ _ => norm_nonneg _
   have hc : 0 < ENNReal.ofReal ((2 : ℝ) ^ (-∑ j, |γ * α j|)) *
       ENNReal.ofReal ((1 + 2 * ∑ j, ‖z j‖ + 2) ^ (-|γ * αinf|)) :=
     ENNReal.mul_pos (ENNReal.ofReal_pos.mpr (Real.rpow_pos_of_pos (by norm_num) _)).ne'

@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.ShiftEquations.Mobius.InversionMoment
-public import DOZZ.GMC.SharpMoments.SeibergWeight
+import DOZZ.ShiftEquations.Mobius.InversionMoment
+import DOZZ.GMC.SharpMoments.SeibergWeight
 import DOZZ.GMC.Moments.InversionLaw
 
 /-!
@@ -18,7 +17,6 @@ and a charge `βinf` at infinity equal those with the two charges exchanged and 
 inverted, times `∏ₖ |zₖ|^{-γ αₖ q}`.
 -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
@@ -27,24 +25,17 @@ namespace DOZZ.Proofs
 
 /-- The background `|y|_+` under inversion, away from the origin. -/
 private theorem inversionZero_normPlus_inv {y : ℂ} (hy : y ≠ 0) :
-    normPlus y⁻¹ = normPlus y / ‖y‖ := by
-  have hyn : 0 < ‖y‖ := norm_pos_iff.mpr hy
-  unfold normPlus
-  rw [norm_inv, ← max_div_div_right hyn.le, div_self hyn.ne', one_div, max_comm]
+    normPlus y⁻¹ = normPlus y / ‖y‖ := DOZZ.Proofs.normPlus_inv_identity hy
 
 /-- The ratio at the root `0` becomes the background `|y|_+`. -/
 private theorem inversionZero_origin_ratio {y : ℂ} (hy : y ≠ 0) :
     normPlus y⁻¹ / ‖y⁻¹ - 0‖ = normPlus y := by
-  have hyn : 0 < ‖y‖ := norm_pos_iff.mpr hy
   rw [inversionZero_normPlus_inv hy, sub_zero, norm_inv]
   field_simp
 
 /-- The ratio at a nonzero root `w` becomes the ratio at the root `w⁻¹`, divided by `|w|`. -/
 private theorem inversionZero_root_ratio {y w : ℂ} (hy : y ≠ 0) (hw : w ≠ 0) (hyw : y ≠ w⁻¹) :
     normPlus y⁻¹ / ‖y⁻¹ - w‖ = normPlus y / (‖w‖ * ‖y - w⁻¹‖) := by
-  have hyn : 0 < ‖y‖ := norm_pos_iff.mpr hy
-  have hwn : 0 < ‖w‖ := norm_pos_iff.mpr hw
-  have hd : 0 < ‖y - w⁻¹‖ := norm_pos_iff.mpr (sub_ne_zero.mpr hyw)
   have hsub : ‖y⁻¹ - w‖ = ‖w‖ * ‖y - w⁻¹‖ / ‖y‖ := by
     rw [show y⁻¹ - w = -w * (y - w⁻¹) / y by field_simp; ring, norm_div, norm_mul, norm_neg]
   rw [inversionZero_normPlus_inv hy, hsub]
@@ -56,7 +47,7 @@ private theorem inversionZero_rpow_factor {a n d : ℝ} (ha : 0 < a) (hn : 0 < n
     ENNReal.rpow (ENNReal.ofReal (a / (n * d))) e =
       ENNReal.rpow (ENNReal.ofReal n) (-e) * ENNReal.rpow (ENNReal.ofReal (a / d)) e := by
   rw [coulombWeight_rpow_ofReal_div ha (mul_pos hn hd), coulombWeight_rpow_ofReal_div ha hd]
-  simp only [ENNReal.rpow_eq_pow]
+  simp [ENNReal.rpow_eq_pow]
   rw [ENNReal.ofReal_mul hn.le,
     ENNReal.mul_rpow_of_ne_top ENNReal.ofReal_ne_top ENNReal.ofReal_ne_top]
   ring
@@ -166,4 +157,3 @@ theorem coulombMass_inv_moment_cons {Ω : Type*} [MeasurableSpace Ω] (P : Measu
 
 end DOZZ.Proofs
 
-end

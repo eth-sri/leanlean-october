@@ -2,15 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.Fusion.ScaledLocalKernel
-public import DOZZ.FourPoint.Fusion.ScaledFactor
-public import DOZZ.FourPoint.Fusion.LocalRooting
+import DOZZ.FourPoint.Fusion.ScaledLocalKernel
+import DOZZ.FourPoint.Fusion.ScaledFactor
+import DOZZ.FourPoint.Fusion.LocalRooting
 
 /-! # The exact rescaled rooted local spatial integral -/
 
-@[expose] public section
 open MeasureTheory Set Filter
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs

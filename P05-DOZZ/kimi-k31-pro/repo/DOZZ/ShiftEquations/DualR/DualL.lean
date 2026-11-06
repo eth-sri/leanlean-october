@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.ShiftEquations.DualR.Segment
-public import DOZZ.Statements.FourPoint.DualCrossingL
+import DOZZ.ShiftEquations.DualR.Segment
+import DOZZ.Statements.FourPoint.DualCrossingL
 import DOZZ.ShiftEquations.Rbar.Multiplier
 
 /-!
@@ -19,7 +18,6 @@ meromorphic along analytic curves, and analytic where `Γ` is analytic at `c - 1
 `1 - (c - a)` and `1 - (c - b)`.
 -/
 
-@[expose] public section
 
 open Filter Topology Set
 
@@ -154,4 +152,3 @@ theorem one_sub_dualArg₄_ofReal (γ ε α α' : ℝ) :
 
 end DOZZ.Proofs
 
-end

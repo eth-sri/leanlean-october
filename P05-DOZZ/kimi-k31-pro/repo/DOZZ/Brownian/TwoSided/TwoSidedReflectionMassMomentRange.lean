@@ -2,16 +2,14 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Brownian.TwoSided.LateralMoments
-public import DOZZ.Brownian.TwoSided.PositiveMoments
-public import DOZZ.Brownian.TwoSided.InverseMoments
+import DOZZ.Brownian.TwoSided.LateralMoments
+import DOZZ.Brownian.TwoSided.PositiveMoments
+import DOZZ.Brownian.TwoSided.InverseMoments
 
 /-! Proof of `DOZZ.twoSidedReflectionMass_moment_range`, with all compact-parameter moment inputs
 discharged. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology TopologicalSpace Set
 open scoped ENNReal NNReal Topology

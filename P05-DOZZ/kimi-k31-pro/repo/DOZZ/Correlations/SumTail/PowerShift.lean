@@ -2,13 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.Dual.NegativePowerDifference
+import DOZZ.FourPoint.Dual.NegativePowerDifference
 
 /-! Uniform real-power estimates for the square-root sum-tail sandwich. -/
 
-@[expose] public section
 namespace DOZZ.Proofs
 
 /-- A half-scale change costs one uniform power of two, also for negative decay orders. -/
@@ -20,7 +18,7 @@ theorem sumtail_rpow_half_bound (T t x r : ℝ) (hT : 0 ≤ T) (hr : r ≤ T)
       _ ≤ (x/2)^(-r) := Real.rpow_le_rpow_of_nonpos (by positivity) ht (by linarith only [h])
       _ = 2^r*x^(-r) := by
         rw [Real.div_rpow hx.le (by norm_num), Real.rpow_neg (by norm_num : (0:ℝ) ≤ 2)]
-        simp only [div_eq_mul_inv, inv_inv]
+        simp [div_eq_mul_inv, inv_inv]
         ring
       _ ≤ _ := mul_le_mul_of_nonneg_right
         (Real.rpow_le_rpow_of_exponent_le (by norm_num) hr) (Real.rpow_nonneg hx.le _)
@@ -51,7 +49,7 @@ theorem sumtail_power_sqrt_shift (T p x : ℝ) (hp : 0 < p) (hpT : p ≤ T) (hx 
   have hh := sumtail_rpow_half_bound (T+1) (x/2) x (p+1)
     (by linarith only [hp,hpT]) (by linarith only [hpT]) hx0 le_rfl (by linarith only [hx0])
   have hh' : (x/2)^(-p-1) ≤ 2^(T+1)*x^(-p-1) := by
-    simpa only [neg_add_rev,sub_eq_add_neg,add_comm] using hh
+    simpa [neg_add_rev,sub_eq_add_neg,add_comm] using hh
   calc
     _ ≤ p*(x/2)^(-p-1)*Real.sqrt x := hb
     _ ≤ T*(2^(T+1)*x^(-p-1))*Real.sqrt x :=
@@ -79,7 +77,7 @@ theorem sumtail_shifted_one_error (Ptail : ℝ → ℝ) (T p e d θ β C H c x :
     (by linarith only [hp,hpT]) (by linarith only [hpT,he,hd]) hx0 ht htx
   have hh' : (x-Real.sqrt x)^(-p-e+d) ≤ 2^(T+1)*x^(-p-e+d) := by
     have hexp : -(p+e-d) = -p-e+d := by ring
-    simpa only [hexp] using hh
+    simpa [hexp] using hh
   have hr1 := Real.rpow_le_rpow_of_exponent_le hx1 (show -p-e+d ≤ -β+θ by linarith only [hβe,hdθ])
   have hr2 := Real.rpow_le_rpow_of_exponent_le hx1 (show -p-1/2 ≤ -β+θ by linarith only [hβs,hdθ,hd])
   have hT : 0 ≤ T := hp.le.trans hpT

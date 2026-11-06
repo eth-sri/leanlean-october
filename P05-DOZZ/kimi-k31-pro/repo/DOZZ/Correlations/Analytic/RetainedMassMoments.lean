@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.SharpMoments.SeibergMoment
-public import DOZZ.GMC.SharpMoments.MomentRange
+import DOZZ.GMC.SharpMoments.SeibergMoment
+import DOZZ.GMC.SharpMoments.MomentRange
 
 /-! Real moment envelopes for the charge-independent mass in finite-radius vertex observables. -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -34,7 +32,7 @@ theorem open_mass_pos_finite_ae
   · intro hz
     rw [hz, ENNReal.zero_rpow_of_neg (by norm_num : (-1 : ℝ) < 0)] at h2
     exact lt_irrefl _ h2
-  · simpa only [ENNReal.rpow_one, ne_eq] using h1.ne
+  · simpa [ENNReal.rpow_one, ne_eq] using h1.ne
 
 /-- Every real power below the bulk threshold is integrable for the real retained mass. -/
 theorem open_mass_real_power_integrable
@@ -48,7 +46,7 @@ theorem open_mass_real_power_integrable
   have hae := open_mass_pos_finite_ae P X hX γ hγ hγ2 M hM O ho hb hn
   have hi := (equatorGFF_GMC_moment_range P X hX γ hγ hγ2 M hM O ho hb hn p).mpr hp
   have hmeas : AEMeasurable (fun ω => (M ω O).toReal ^ p) P := by
-    simpa only [← ENNReal.toReal_rpow, Function.comp_def] using
+    simpa [← ENNReal.toReal_rpow, Function.comp_def] using
       ENNReal.measurable_toReal.comp_aemeasurable (hm.pow_const p)
   refine ⟨hmeas.aestronglyMeasurable, ?_⟩
   change (∫⁻ ω, ‖(M ω O).toReal ^ p‖ₑ ∂P) < ⊤

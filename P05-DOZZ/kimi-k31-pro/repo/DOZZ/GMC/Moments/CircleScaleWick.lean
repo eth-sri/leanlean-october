@@ -2,15 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.Moments.CircleScale
-public import DOZZ.GMC.Moments.ChaosLawFDDNoAux
-public import DOZZ.GMC.FiniteChaosMean
+import DOZZ.GMC.Moments.CircleScale
+import DOZZ.GMC.Moments.ChaosLawFDDNoAux
+import DOZZ.GMC.FiniteChaosMean
 
 /-! Exact affine scaling in law for finite-cutoff Wick integrals on a compact spatial chart. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory
 open scoped NNReal ENNReal
@@ -34,11 +32,9 @@ theorem circleAverage_variance_measurable
       fun x => ∫ ω, Xc ω x r ^ 2 ∂P := by
     funext x
     simp [gaussianVariance, gaussianCovariance, pow_two]
-  rw [heq]
-  exact hvar
-
+  rwa [heq]
 /-- A circle average has its centered Gaussian law with the variance computed by the second-moment
-definition `DOZZ.gaussianVariance`. The accompanying nonnegativity is useful when converting that
+definition `gaussianVariance`. The accompanying nonnegativity is useful when converting that
 variance to an `NNReal` normalization. -/
 theorem circleAverage_gaussian_law_and_variance_nonneg
     {Ω : Type*} [MeasurableSpace Ω]
@@ -62,8 +58,7 @@ theorem circleAverage_gaussian_law_and_variance_nonneg
     apply NNReal.coe_injective
     rw [Real.coe_toNNReal _ hv]
     simpa [Z] using hvar.symm
-  have hmeas : AEMeasurable (fun ω => Xc ω x r) P := by
-    exact (hXc.1 r).comp (measurable_id.prodMk measurable_const) |>.aemeasurable
+  have hmeas : AEMeasurable (fun ω => Xc ω x r) P := (hXc.1 r).comp (measurable_id.prodMk measurable_const) |>.aemeasurable
   refine ⟨⟨hmeas, ?_⟩, hv⟩
   change Measure.map (fun ω => Z ω 0) P = _
   rw [hmap, hvEq]
@@ -147,8 +142,7 @@ theorem circleAverage_affine_scaled_wick_integral_law
       (gaussianReal 0 (varianceBase x)) P' := by
     have hmap : Measure.map (fun p : Ω × ℝ => Y p x) P' =
         Measure.map (fun ω => Xc ω (z x) r) P := by
-      have hbaseMeas : Measurable (fun ω : Ω => Xc ω (z x) r) := by
-        exact (hXc.1 r).comp (measurable_id.prodMk measurable_const)
+      have hbaseMeas : Measurable (fun ω : Ω => Xc ω (z x) r) := (hXc.1 r).comp (measurable_id.prodMk measurable_const)
       rw [show (fun p : Ω × ℝ => Y p x) =
         (fun ω => Xc ω (z x) r) ∘ Prod.fst by rfl,
         ← Measure.map_map hbaseMeas measurable_fst,

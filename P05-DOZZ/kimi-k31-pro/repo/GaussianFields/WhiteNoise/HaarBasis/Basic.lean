@@ -3,14 +3,13 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Scott Armstrong, Amélie Loher
 -/
-module
 
-public import Mathlib.MeasureTheory.Function.LpSpace.Indicator
-public import Mathlib.MeasureTheory.Function.Floor
-public import Mathlib.MeasureTheory.Measure.SeparableMeasure
-public import Mathlib.Analysis.SpecificLimits.Basic
-public import Mathlib.Analysis.InnerProductSpace.l2Space
-public import GaussianFields.WhiteNoise.Haar
+import Mathlib.MeasureTheory.Function.LpSpace.Indicator
+import Mathlib.MeasureTheory.Function.Floor
+import Mathlib.MeasureTheory.Measure.SeparableMeasure
+import Mathlib.Analysis.SpecificLimits.Basic
+import Mathlib.Analysis.InnerProductSpace.l2Space
+import GaussianFields.WhiteNoise.Haar
 
 /-!
 # GaussianFields Haar basis indices and orthogonality
@@ -18,7 +17,6 @@ public import GaussianFields.WhiteNoise.Haar
 Port of the corresponding GaussianFields source module.
 -/
 
-public section
 
 open MeasureTheory
 open scoped BigOperators ENNReal InnerProductSpace Topology symmDiff
@@ -76,20 +74,20 @@ noncomputable instance instEncodable_haarBasisIndex (d : Nat) :
   Encodable.ofCountable (HaarBasisIndex d)
 
 /-- The raw all-father Haar packet index at scale zero. -/
-@[expose]
+
 def haarFatherPacketIndex {d : Nat} (cell : Fin d → ℤ) : HaarIndex d where
   scale := 0
   cell := cell
   signature := fun _ => false
 
 /-- The scale-zero father packet as an `L²(R^d)` vector. -/
-@[expose]
+
 noncomputable def haarFatherPacketLp {d : Nat} (cell : Fin d → ℤ) :
     Lp ℝ 2 (volume : Measure (Vec d)) :=
   haarPacketLp (haarFatherPacketIndex cell)
 
 /-- The inhomogeneous Haar basis vector associated to an index. -/
-@[expose]
+
 noncomputable def haarBasisLp {d : Nat} :
     HaarBasisIndex d → Lp ℝ 2 (volume : Measure (Vec d))
   | HaarBasisIndex.father cell => haarFatherPacketLp cell
@@ -169,7 +167,7 @@ theorem inner_haarBasisLp (d : Nat) (idx₁ idx₂ : HaarBasisIndex d) :
               intro hval
               exact hidx (Subtype.ext hval)
             simp [hidx, hval] at h ⊢
-            exact h
+            assumption
 
 /-- The inhomogeneous Haar system is orthonormal in `L²(R^d)`. -/
 theorem orthonormal_haarBasisLp (d : Nat) :
@@ -180,19 +178,17 @@ theorem orthonormal_haarBasisLp (d : Nat) :
   exact inner_haarBasisLp d idx₁ idx₂
 
 /-- The algebraic span of the inhomogeneous Haar basis vectors. -/
-@[expose]
+
 noncomputable def haarBasisSubmodule (d : Nat) :
     Submodule ℝ (Lp ℝ 2 (volume : Measure (Vec d))) :=
   Submodule.span ℝ
     (Set.range (haarBasisLp : HaarBasisIndex d → Lp ℝ 2 (volume : Measure (Vec d))))
 
 theorem haarBasisLp_mem_haarBasisSubmodule {d : Nat} (idx : HaarBasisIndex d) :
-    haarBasisLp idx ∈ haarBasisSubmodule d := by
-  exact Submodule.subset_span ⟨idx, rfl⟩
+    haarBasisLp idx ∈ haarBasisSubmodule d := Submodule.subset_span ⟨idx, rfl⟩
 
 theorem haarFatherPacketLp_mem_haarBasisSubmodule {d : Nat} (cell : Fin d → ℤ) :
-    haarFatherPacketLp cell ∈ haarBasisSubmodule d := by
-  exact haarBasisLp_mem_haarBasisSubmodule (HaarBasisIndex.father cell)
+    haarFatherPacketLp cell ∈ haarBasisSubmodule d := haarBasisLp_mem_haarBasisSubmodule (HaarBasisIndex.father cell)
 
 theorem haarWaveletPacketLp_mem_haarBasisSubmodule_of_nonnegative {d : Nat}
     (idx : HaarWaveletIndex d) (hscale : 0 ≤ idx.scale) :
@@ -210,7 +206,7 @@ theorem haarPacketLp_mem_haarBasisSubmodule_of_signature
       haarBasisSubmodule d := by
   by_cases hsig : signature = fun _ : Fin d => false
   · subst signature
-    exact hfather
+    assumption
   · let idx : HaarWaveletIndex d :=
       { scale := j
         cell := cell
@@ -235,12 +231,12 @@ theorem haarPacketLp_child_father_mem_haarBasisSubmodule
       (haarPacketLp_mem_haarBasisSubmodule_of_signature hj cell signature hparent)
 
 /-- The parent cell of an integer dyadic cell. -/
-@[expose]
+
 def haarParentCell {d : Nat} (cell : Fin d → ℤ) : Fin d → ℤ :=
   fun r => cell r / 2
 
 /-- The left/right side vector of an integer dyadic cell relative to its parent. -/
-@[expose]
+
 def haarCellSide {d : Nat} (cell : Fin d → ℤ) : Fin d → Bool :=
   fun r => cell r % 2 = 1
 
@@ -295,4 +291,3 @@ theorem haarPacketLp_father_mem_haarBasisSubmodule_of_nonnegative
 
 end GaussianFields
 
-end

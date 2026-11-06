@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Hypergeom.Planar.RadialCriteria
-public import Mathlib.MeasureTheory.Group.Measure
+import DOZZ.Hypergeom.Planar.RadialCriteria
+import Mathlib.MeasureTheory.Group.Measure
 
 /-! Positive planar kernels controlling the two near-diagonal fusion sectors. -/
 
-@[expose] public section
 open MeasureTheory Set Metric
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -26,13 +24,13 @@ theorem translated_ball_rpow_integral (u : ℂ) (R b : ℝ) :
     funext x
     have hsub : u - (x + u) = -x := by abel
     have hmem : x + u ∈ Metric.ball u R ↔ x ∈ Metric.ball (0 : ℂ) R := by
-      simp only [Metric.mem_ball, dist_eq_norm, add_sub_cancel_right, sub_zero]
+      simp [Metric.mem_ball, dist_eq_norm, add_sub_cancel_right, sub_zero]
     by_cases hx : x ∈ Metric.ball (0 : ℂ) R
-    · simp only [f, Set.indicator_of_mem (hmem.mpr hx), Set.indicator_of_mem hx, hsub, norm_neg]
-    · simp only [f, Set.indicator_of_notMem (hmem.not.mpr hx), Set.indicator_of_notMem hx]
+    · simp [f, Set.indicator_of_mem (hmem.mpr hx), Set.indicator_of_mem hx, hsub, norm_neg]
+    · simp [f, Set.indicator_of_notMem (hmem.not.mpr hx), Set.indicator_of_notMem hx]
   have h := (measurePreserving_add_right volume u).lintegral_comp hf
   rw [show (fun x : ℂ => f (x + u)) = _ from hcomp] at h
-  dsimp only [f] at h
+  dsimp [f] at h
   rw [lintegral_indicator measurableSet_ball, lintegral_indicator measurableSet_ball] at h
   exact h.symm
 

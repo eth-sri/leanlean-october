@@ -2,18 +2,16 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.FourPoint.GammaHalfRootedCoefficient
-public import DOZZ.Statements.Defs.StructureConstant
-public import DOZZ.FourPoint.Fusion.RootedMass
+import DOZZ.Statements.FourPoint.GammaHalfRootedCoefficient
+import DOZZ.Statements.Defs.StructureConstant
+import DOZZ.FourPoint.Fusion.RootedMass
 import DOZZ.GMC.Moments.RhoCoulomb
 import DOZZ.GMC.Moments.RhoMoment
-public import DOZZ.FourPoint.Fusion.Parameters
+import DOZZ.FourPoint.Fusion.Parameters
 
 /-! # Normalization of the rooted fusion coefficient -/
 
-@[expose] public section
 open MeasureTheory
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs

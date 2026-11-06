@@ -1,14 +1,12 @@
 /-
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 -/
-module
 
-public import DOZZ.GMC.Construction.RootedJointLaw
-public import DOZZ.GMC.Construction.RootedObservableFactor
+import DOZZ.GMC.Construction.RootedJointLaw
+import DOZZ.GMC.Construction.RootedObservableFactor
 
 /-! The arbitrary measurable rooted identity on bounded root sets. -/
 
-@[expose] public section
 
 open MeasureTheory
 open scoped Distributions ENNReal

@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.GFFStructure.PoissonFormula
-public import DOZZ.GFFStructure.GaussianIntegration
+import DOZZ.GFFStructure.PoissonFormula
+import DOZZ.GFFStructure.GaussianIntegration
 /-!
 # Harmonic Poisson limits on the original realization
 
@@ -17,7 +16,6 @@ the literal exterior collar limits and the harmonic covariance formula of
 `DOZZ.exists_exteriorPinned_markov_uniform`.
 -/
 
-@[expose] public section
 open Filter MeasureTheory ProbabilityTheory Set Metric
 open scoped Topology ENNReal NNReal InnerProductSpace
 namespace DOZZ.Proofs
@@ -79,7 +77,7 @@ theorem continuous_poisson_gaussian_toLp {Ω : Type*} [MeasurableSpace Ω]
   have hs : Tendsto (fun w => ‖(hmem w).toLp (H w)-(hmem z).toLp (H z)‖^2) (𝓝 z) (𝓝 0) := by
     simp_rw [toLp_norm_sub_sq_eq_variance P H hmem hmean,
       poisson_gaussian_increment_variance P c R ρ hρ H hmem hcov]
-    exact hlim
+    assumption
   apply tendsto_iff_norm_sub_tendsto_zero.mpr
   have hn := Real.continuous_sqrt.continuousAt.tendsto.comp hs
   simpa only [Function.comp_def, Real.sqrt_sq_eq_abs, abs_norm, Real.sqrt_zero] using hn
@@ -95,7 +93,7 @@ theorem continuousOn_poissonKernel_sphere (c z : ℂ) (b : ℝ) (_hb : 0 < b)
   apply norm_ne_zero_iff.mpr
   apply sub_ne_zero.mpr
   intro h
-  have hcz : v = z := by exact sub_left_injective h
+  have hcz : v = z := sub_left_injective h
   subst v
   exact (mem_ball_iff_norm.mp hz).ne (mem_sphere_iff_norm.mp hv)
 
@@ -251,13 +249,13 @@ theorem harmonicOnNhd_poissonExtension (c : ℂ) (b : ℝ) (hb : 0 < b)
       (fun z => Real.circleAverage (poissonKernel c z • f) c b) (ball c b) := by
   let g (u : ℂ) := f (u+c)
   have hmap θ : circleMap 0 b θ+c = circleMap c b θ := by
-    simp only [circleMap, zero_add]
+    simp [circleMap, zero_add]
     ring
   have hg : CircleIntegrable g 0 b := by
     change IntervalIntegrable (fun θ => f (circleMap 0 b θ+c)) volume 0 (2*Real.pi)
-    simpa only [hmap] using (show IntervalIntegrable (fun θ => f (circleMap c b θ)) volume 0 (2*Real.pi) from hf)
+    simpa [hmap] using (show IntervalIntegrable (fun θ => f (circleMap c b θ)) volume 0 (2*Real.pi) from hf)
   have hgC : CircleIntegrable (fun u : ℂ => (g u : ℂ)) 0 b := by
-    simp only [CircleIntegrable, intervalIntegrable_iff] at hg ⊢
+    simp [CircleIntegrable, intervalIntegrable_iff] at hg ⊢
     exact Complex.ofRealCLM.integrable_comp hg
   let F (z : ℂ) := Real.circleAverage
     (fun u => herglotzRieszKernel 0 (z-c) u • (g u : ℂ)) 0 b
@@ -273,8 +271,7 @@ theorem harmonicOnNhd_poissonExtension (c : ℂ) (b : ℝ) (hb : 0 < b)
       (show AnalyticAt ℂ (fun v : ℂ => v-c) z by fun_prop)
   have he z (hz : z ∈ ball c b) : (F z).re =
       Real.circleAverage (poissonKernel c z • f) c b := by
-    rw [re_circleAverage_herglotzRieszKernel_smul hg (hnot z hz)]
-    rw [← Real.circleAverage_map_add_const (c := c) (f := poissonKernel c z • f)]
+    rw [re_circleAverage_herglotzRieszKernel_smul hg (hnot z hz), ← Real.circleAverage_map_add_const (c := c) (f := poissonKernel c z • f)]
     apply Real.circleAverage_congr_sphere
     intro u _
     change (herglotzRieszKernel 0 (z-c) u).re*g u = poissonKernel c z (u+c)*f (u+c)
@@ -428,7 +425,7 @@ theorem exists_poisson_inner_disk_exhaustion (ρ : ℝ) (hρ : 0 < ρ) :
     have hj : 1 < (j : ℝ)+2 := by linarith [(Nat.cast_nonneg j : (0 : ℝ) ≤ (j : ℝ))]
     have hp : 0 < ρ/((j : ℝ)+2) := div_pos hρ (by positivity)
     have hq : ρ/((j : ℝ)+2) < ρ := (div_lt_self hρ hj)
-    dsimp only [d,b]
+    dsimp [d,b]
     constructor
     · linarith
     · constructor <;> linarith
@@ -436,7 +433,7 @@ theorem exists_poisson_inner_disk_exhaustion (ρ : ℝ) (hρ : 0 < ρ) :
     have hr : Tendsto (fun j : ℕ => ρ/((j : ℝ)+2)) atTop (𝓝 0) :=
       tendsto_const_nhds.div_atTop
         (tendsto_atTop_add_const_right _ 2 tendsto_natCast_atTop_atTop)
-    simpa only [d,sub_zero] using (tendsto_const_nhds.sub hr :
+    simpa [d,sub_zero] using (tendsto_const_nhds.sub hr :
       Tendsto (fun j : ℕ => ρ-ρ/((j : ℝ)+2)) atTop (𝓝 (ρ-0)))
   refine ⟨d,b,hd,fun r hr => ?_⟩
   exact (hlim.eventually (Ioi_mem_nhds hr)).exists
@@ -508,7 +505,7 @@ theorem exists_harmonic_poisson_modification
       have hzZ : Z j z =ᵐ[P] H ⟨z,hzρ⟩ := hZe j ⟨z,hzρ⟩ hz
       filter_upwards [hVe z hzρ,hzZ] with ω hv hz'
       have hzero : edist (V ω z) (Z j z ω) = 0 := by rw [hv,hz',edist_self]
-      exact hzero
+      assumption
   have hcommon : ∀ᵐ ω ∂P, ∀ j z, z ∈ ball c (d j) → V ω z = W j ω z := by
     rw [ae_all_iff]
     intro j
@@ -531,7 +528,7 @@ theorem exists_harmonic_poisson_modification
   exact ⟨fun z hz => (hpoint z hz).1,fun z hz => (hpoint z hz).2.contDiffWithinAt⟩
 
 /-- The literal exterior collars admit a jointly measurable smooth harmonic Gaussian limit with
-exactly the harmonic covariance formula of `DOZZ.exists_exteriorPinned_markov_uniform`, on the
+exactly the harmonic covariance formula of `exists_exteriorPinned_markov_uniform`, on the
 original given probability space. -/
 theorem exists_exteriorPinned_harmonic_poisson_family
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)

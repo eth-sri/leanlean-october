@@ -1,3 +1,2 @@
-module
-public import DOZZ.Brownian.LastExitCondExpLimit
-public import DOZZ.Statements.Brownian.BrownianPath
+import DOZZ.Brownian.LastExitCondExpLimit
+import DOZZ.Statements.Brownian.BrownianPath

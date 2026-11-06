@@ -3,9 +3,8 @@ Copyright (c) 2025 Rémy Degenne. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Rémy Degenne
 -/
-module
 
-public import DOZZ.GFFStructure.KolmogorovCover
+import DOZZ.GFFStructure.KolmogorovCover
 
 /-!
 # Finite-set Kolmogorov increment estimates
@@ -15,7 +14,6 @@ collaborators (github.com/RemyDegenne/brownian-motion). The bounds quantify fini
 depend only on their covering exponent and the supplied Kolmogorov moment constants.
 -/
 
-@[expose] public section
 
 open MeasureTheory _root_.ProbabilityTheory _root_.Metric _root_.Finset
 open scoped ENNReal NNReal Finset
@@ -45,7 +43,7 @@ lemma lintegral_sup_cover_eq_of_lt_iInf_dist {C : Set T} {ε : ℝ≥0}
   have hC_zero : IsCover 0 J C := by
     intro s hs
     obtain ⟨t, ht, hst⟩ := hC hs
-    simp only [ENNReal.coe_zero, nonpos_iff_eq_zero, Set.mem_ofPred_eq] at hst ⊢
+    simp [ENNReal.coe_zero, nonpos_iff_eq_zero, Set.mem_ofPred_eq] at hst ⊢
     rw [h_le_iff hs (hC_subset ht)] at hst
     exact ⟨t, ht, hst⟩
   apply le_antisymm
@@ -53,7 +51,7 @@ lemma lintegral_sup_cover_eq_of_lt_iInf_dist {C : Set T} {ε : ℝ≥0}
     refine iSup_le fun s ↦ iSup_le fun t ↦ ?_
     exact le_iSup_of_le ⟨s.1, hC_subset s.2⟩ <| le_iSup_of_le ⟨⟨t.1, hC_subset t.1.2⟩, t.2⟩ le_rfl
   · choose f' hf'C hf'_edist using hC_zero
-    simp only [ENNReal.coe_zero, nonpos_iff_eq_zero, Set.mem_ofPred_eq] at hf'_edist
+    simp [ENNReal.coe_zero, nonpos_iff_eq_zero, Set.mem_ofPred_eq] at hf'_edist
     let f : J → C := fun s ↦ ⟨f' s.2, hf'C s.2⟩
     have hf_edist (s : J) : edist s.1 (f s).1 = 0 := hf'_edist s.2
     have hfX_edist (s : J) : ∀ᵐ ω ∂P, edist (X s ω) (X (f s) ω) = 0 := hX.edist_eq_zero (hf_edist s)
@@ -115,11 +113,11 @@ lemma exists_nat_pow_lt_iInf (hJ : Metric.ediam J < ∞) (hJ_finite : J.Finite)
   -- `⊢ 0 < ⨅ s, ⨅ t, ⨅ (_ : 0 < edist s t), edist s t`, since `J` is nonempty and finite
   rw [iInf_subtype]
   change 0 < ⨅ s ∈ J, ⨅ (t : J) (_h : 0 < edist s t), edist s t
-  rw [DOZZ.Proofs.Set.Finite.lt_iInf_iff hJ_nonempty hJ_finite]
+  rw [Set.Finite.lt_iInf_iff hJ_nonempty hJ_finite]
   intro s hsJ
   rw [iInf_subtype]
   change 0 < ⨅ t ∈ J, ⨅ (_h : 0 < edist s t), edist s t
-  rw [DOZZ.Proofs.Set.Finite.lt_iInf_iff hJ_nonempty hJ_finite]
+  rw [Set.Finite.lt_iInf_iff hJ_nonempty hJ_finite]
   intro t htJ
   by_cases hst : 0 < edist s t <;> simp [hst]
 
@@ -155,7 +153,7 @@ lemma finite_set_bound_of_edist_le_of_diam_le (hJ : HasBoundedCoveringNumber J c
   · simp only [ENNReal.toNNReal_eq_zero_iff, hε'.ne, or_false, ε₀] at hε₀_eq_zero
     suffices ∫⁻ ω, ⨆ (s : J) (t : { t : J // edist s t ≤ δ }), edist (X s ω) (X t ω) ^ p ∂P = 0
       by simp [this]
-    refine DOZZ.Proofs.IsAEKolmogorovProcess.lintegral_sup_rpow_edist_eq_zero' hX hJ_finite.countable ?_
+    refine IsAEKolmogorovProcess.lintegral_sup_rpow_edist_eq_zero' hX hJ_finite.countable ?_
     refine fun s t ↦ le_antisymm ?_ zero_le
     calc edist s t
     _ ≤ Metric.ediam J := Metric.edist_le_ediam_of_mem s.2 t.1.2
@@ -165,14 +163,13 @@ lemma finite_set_bound_of_edist_le_of_diam_le (hJ : HasBoundedCoveringNumber J c
     have := exists_nat_pow_lt_iInf hε' hJ_finite hJ_nonempty
     convert this
     simp [ε₀, ENNReal.coe_toNNReal hε'.ne]
-  have hε₀_mul_pos n : 0 < ε₀ * 2⁻¹ ^ n := by positivity
   let C' : ℕ → Set T := fun n ↦ minimalCover (ε₀ * 2⁻¹ ^ n) J
   have hC'_subset n : C' n ⊆ J := minimalCover_subset
   have hC'_fin n : (C' n).Finite := finite_minimalCover
   have hC'_card n : (C' n).encard = coveringNumber (ε₀ * 2⁻¹ ^ n) J :=
-    encard_minimalCover (DOZZ.Proofs.TotallyBounded.coveringNumber_ne_top hJ_finite.totallyBounded (by positivity))
+    encard_minimalCover (TotallyBounded.coveringNumber_ne_top hJ_finite.totallyBounded (by positivity))
   have hC' n : IsCover (ε₀ * 2⁻¹ ^ n) J (C' n) :=
-    isCover_minimalCover (DOZZ.Proofs.TotallyBounded.coveringNumber_ne_top hJ_finite.totallyBounded (by positivity))
+    isCover_minimalCover (TotallyBounded.coveringNumber_ne_top hJ_finite.totallyBounded (by positivity))
   let C : ℕ → Finset T := fun n ↦ (hC'_fin n).toFinset
   have hC_subset n : (C n : Set T) ⊆ J := by simpa [C] using hC'_subset n
   have hC_card n : #(C n) = coveringNumber (ε₀ * 2⁻¹ ^ n) J := by
@@ -249,7 +246,7 @@ lemma finite_set_bound_of_edist_le_of_le_diam (hJ : HasBoundedCoveringNumber J c
   · simp only [ENNReal.toNNReal_eq_zero_iff, hε'.ne, or_false, ε₀] at hε₀_eq_zero
     suffices ∫⁻ ω, ⨆ (s : J) (t : { t : J // edist s t ≤ δ }), edist (X s ω) (X t ω) ^ p ∂P = 0
       by simp [this]
-    refine DOZZ.Proofs.IsAEKolmogorovProcess.lintegral_sup_rpow_edist_eq_zero' hX hJ_finite.countable ?_
+    refine IsAEKolmogorovProcess.lintegral_sup_rpow_edist_eq_zero' hX hJ_finite.countable ?_
     refine fun s t ↦ le_antisymm ?_ zero_le
     calc edist s t
     _ ≤ Metric.ediam J := Metric.edist_le_ediam_of_mem s.2 t.1.2
@@ -270,14 +267,13 @@ lemma finite_set_bound_of_edist_le_of_le_diam (hJ : HasBoundedCoveringNumber J c
     convert this
     simp [ε₀, ENNReal.coe_toNNReal hε'.ne]
   -- introduce covers
-  have hε₀_mul_pos n : 0 < ε₀ * 2⁻¹ ^ n := by positivity
   let C' : ℕ → Set T := fun n ↦ minimalCover (ε₀ * 2⁻¹ ^ n) J
   have hC'_subset n : C' n ⊆ J := minimalCover_subset
   have hC'_fin n : (C' n).Finite := finite_minimalCover
   have hC'_card n : (C' n).encard = coveringNumber (ε₀ * 2⁻¹ ^ n) J :=
-    encard_minimalCover (DOZZ.Proofs.TotallyBounded.coveringNumber_ne_top hJ_finite.totallyBounded (by positivity))
+    encard_minimalCover (TotallyBounded.coveringNumber_ne_top hJ_finite.totallyBounded (by positivity))
   have hC' n : IsCover (ε₀ * 2⁻¹ ^ n) J (C' n) :=
-    isCover_minimalCover (DOZZ.Proofs.TotallyBounded.coveringNumber_ne_top hJ_finite.totallyBounded (by positivity))
+    isCover_minimalCover (TotallyBounded.coveringNumber_ne_top hJ_finite.totallyBounded (by positivity))
   let C : ℕ → Finset T := fun n ↦ (hC'_fin n).toFinset
   have hC_subset n : (C n : Set T) ⊆ J := by simpa [C] using hC'_subset n
   have hC_card n : #(C n) = coveringNumber (ε₀ * 2⁻¹ ^ n) J := by
@@ -291,7 +287,7 @@ lemma finite_set_bound_of_edist_le_of_le_diam (hJ : HasBoundedCoveringNumber J c
   rcases lt_or_ge δ (ε₀ * 2⁻¹ ^ k) with hδ_lt | hδ_ge
   · suffices ∫⁻ ω, ⨆ (s : C k) (t : { t : C k // edist s t ≤ δ }), edist (X s ω) (X t ω) ^ p ∂P = 0
       by simp [this]
-    refine DOZZ.Proofs.IsAEKolmogorovProcess.lintegral_sup_rpow_edist_eq_zero' hX (J := C k) ?_ ?_
+    refine IsAEKolmogorovProcess.lintegral_sup_rpow_edist_eq_zero' hX (J := C k) ?_ ?_
     · exact (hJ_finite.subset (hC_subset k)).countable
     intro s t
     by_contra! h_pos
@@ -308,7 +304,6 @@ lemma finite_set_bound_of_edist_le_of_le_diam (hJ : HasBoundedCoveringNumber J c
   -- introduce `m` such that `ε₀ * 2⁻¹ ^ m ≤ δ ≤ ε₀ * 4 * 2⁻¹ ^ m` and `m ≤ k`
   let m := min k ⌊Real.logb 2⁻¹ (δ / (ε₀ * 4))⌋₊
   have hmk : m ≤ k := min_le_left _ _
-  have hm' : m ≤ ⌊Real.logb 2⁻¹ (δ / (ε₀ * 4))⌋₊ := min_le_right _ _
   have hδ_eq_logb : δ = ε₀ * 4 * 2⁻¹ ^ (Real.logb 2⁻¹ (δ / (ε₀ * 4))) := by
     symm
     ext -- go to ℝ
@@ -434,7 +429,7 @@ lemma finite_set_bound_of_edist_le_of_le_diam' (hJ : HasBoundedCoveringNumber J 
     have hJδ := hJ.coveringNumber_le (δ / 4) (by simpa)
     have hJ' : coveringNumber (δ / 4) J ≤ c * 4 ^ d * δ⁻¹ ^ d := by
       refine hJδ.trans_eq ?_
-      simp only [ne_eq, OfNat.ofNat_ne_zero, not_false_eq_true, ENNReal.coe_div, ENNReal.coe_ofNat]
+      simp [ne_eq, OfNat.ofNat_ne_zero, not_false_eq_true, ENNReal.coe_div, ENNReal.coe_ofNat]
       rw [ENNReal.inv_div, ENNReal.div_rpow_of_nonneg, div_eq_mul_inv, ENNReal.coe_inv hδ,
         ENNReal.inv_rpow]
       · ring
@@ -455,7 +450,7 @@ lemma finite_set_bound_of_edist_le_of_le_diam' (hJ : HasBoundedCoveringNumber J 
         gcongr
         · simp
         · by_contra h_eq
-          simp only [Nat.cast_pos, not_lt, nonpos_iff_eq_zero, ENat.toNat_eq_zero, h_ne_top,
+          simp [Nat.cast_pos, not_lt, nonpos_iff_eq_zero, ENat.toNat_eq_zero, h_ne_top,
             or_false] at h_eq
           simp [h_eq] at h0
         have h_toReal : c.toReal * 4 ^ d * δ.toReal⁻¹ ^ d

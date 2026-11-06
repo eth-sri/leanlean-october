@@ -2,11 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Reflected.SourceOuterMoments
+import DOZZ.FourPoint.Reflected.SourceOuterMoments
 import Mathlib.Tactic
 /-! Finite actual radial-weighted inverse moments and their signed real expectation interface. -/
-@[expose] public section
 open MeasureTheory Set Filter
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -30,22 +28,22 @@ theorem reflected_radial_scale_moment_finite
   have hn : 0 < ‖z‖ := norm_pos_iff.mpr hz0
   have hm : 0 ≤ m := by
     have hl := Real.log_nonpos hn.le hz
-    dsimp only [m,t]
+    dsimp [m,t]
     linarith only [hl,hh]
   have hr0 : 0 < ‖z‖^(1-ξ) := Real.rpow_pos_of_pos hn _
   have hr1 : ‖z‖^(1-ξ) ≤ 1 := by
-    simpa only [Real.one_rpow] using Real.rpow_le_rpow hn.le hz (sub_nonneg.mpr hξ1.le)
+    simpa [Real.one_rpow] using Real.rpow_le_rpow hn.le hz (sub_nonneg.mpr hξ1.le)
   have hr : ‖z‖ ≤ ‖z‖^(1-ξ) := by
-    simpa only [Real.rpow_one] using Real.rpow_le_rpow_of_exponent_ge hn hz
+    simpa [Real.rpow_one] using Real.rpow_le_rpow_of_exponent_ge hn hz
       (by linarith only [hξ] : 1-ξ ≤ 1)
   have hout : Real.exp (-m) ≤ ‖z‖^(1-ξ) := by
-    have hsmall : -m ≤ Real.log ‖z‖ := by dsimp only [m,t]; linarith only [hh]
+    have hsmall : -m ≤ Real.log ‖z‖ := by dsimp [m,t]; linarith only [hh]
     have hs : Real.exp (-m) ≤ ‖z‖ := by
-      simpa only [Real.exp_log hn] using Real.exp_le_exp.mpr hsmall
+      simpa [Real.exp_log hn] using Real.exp_le_exp.mpr hsmall
     exact hs.trans hr
   have he (ω : Ω) : (reflected_radial_scale γ ν h Xc z ω)^s =
       D*Real.exp (aTilt*Xc ω 0 m-m*aTilt^2/2) := by
-    dsimp only [reflected_radial_scale,D,m,t,aTilt]
+    dsimp [reflected_radial_scale,D,m,t,aTilt]
     rw [← Real.exp_mul, ← Real.exp_add]
     congr 1
     ring
@@ -80,7 +78,7 @@ theorem reflected_radial_scale_real_expectation
   have hcoord : AEMeasurable (fun ω => Xc ω 0 (-Real.log ‖z‖+h)) P :=
     (hc.2.1 0 (-Real.log ‖z‖+h)).aemeasurable
   have hβ : AEMeasurable (fun ω => reflected_radial_scale γ ν h Xc z ω) P := by
-    dsimp only [reflected_radial_scale]
+    dsimp [reflected_radial_scale]
     exact ((hcoord.const_mul γ).sub aemeasurable_const).sub aemeasurable_const |>.exp
   have hpow : Measurable (fun x : ℝ => ENNReal.ofReal (x^s)) := by fun_prop
   have hmass := (reflected_outerMass_measure_measurable γ α₁ α₂ α₃ ξ z).comp_aemeasurable
@@ -89,7 +87,7 @@ theorem reflected_radial_scale_real_expectation
   change AEMeasurable (fun ω => ENNReal.ofReal ((reflected_radial_scale γ ν h Xc z ω)^s)*
     gammaHalfOuterMass γ α₁ α₂ α₃ (M ω) z ξ ^(-q)) P at hm
   have hβnonneg (ω : Ω) : 0 ≤ reflected_radial_scale γ ν h Xc z ω := by
-    dsimp only [reflected_radial_scale]
+    dsimp [reflected_radial_scale]
     exact (Real.exp_pos _).le
   have hreal (ω : Ω) :
       (ENNReal.ofReal ((reflected_radial_scale γ ν h Xc z ω)^s)*
@@ -99,7 +97,7 @@ theorem reflected_radial_scale_real_expectation
     rw [ENNReal.toReal_mul, ENNReal.toReal_rpow,
       ENNReal.toReal_ofReal (Real.rpow_nonneg (hβnonneg ω) _)]
   constructor
-  · simpa only [hreal] using integrable_toReal_of_lintegral_ne_top hm hf.ne
-  · simpa only [hreal] using integral_toReal hm (ae_lt_top' hm hf.ne)
+  · simpa [hreal] using integrable_toReal_of_lintegral_ne_top hm hf.ne
+  · simpa [hreal] using integral_toReal hm (ae_lt_top' hm hf.ne)
 
 end DOZZ.Proofs

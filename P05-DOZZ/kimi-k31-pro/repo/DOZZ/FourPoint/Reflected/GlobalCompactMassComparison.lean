@@ -2,10 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Reflected.WeightedSpatialLimit
+import DOZZ.FourPoint.Reflected.WeightedSpatialLimit
 /-! Both compact comparison directions for literal extended-real global masses. -/
-@[expose] public section
 open MeasureTheory ProbabilityTheory Set Filter Topology
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -48,7 +46,7 @@ theorem reflected_global_compact_mass_comparison
     have ht := reflected_global_compact_test_ofReal γ a (N ω) K hK hK0 (hfin ω)
       (f₀+f₁) (fun x => add_nonneg (hf₀ x) (hf₁ x))
       ((tsupport_add f₀ f₁).trans (union_subset hf₀K hf₁K))
-    simp only [BoundedContinuousFunction.add_apply] at ht
+    simp [BoundedContinuousFunction.add_apply] at ht
     rw [ht]
     simp_rw [ENNReal.ofReal_add (hf₀ _) (hf₁ _), add_mul]
     exact lintegral_add_left (f₀.continuous.measurable.ennreal_ofReal.mul hW) _
@@ -62,7 +60,7 @@ theorem reflected_global_compact_mass_comparison
       (integral_nonneg fun x => mul_nonneg (hf₁ x) (reflected_global_reinsertionWeight_nonneg γ a x)),
       reflected_global_compact_test_ofReal γ a (N ω.1) K hK hK0 (hfin ω.1) f₀ hf₀ hf₀K,
       reflected_global_compact_test_ofReal γ a (N ω.2) K hK hK0 (hfin ω.2) f₁ hf₁ hf₁K]
-  simpa only [hsum, hcopy] using reflected_global_compact_chaos_comparison
+  simpa [hsum, hcopy] using reflected_global_compact_chaos_comparison
     P X Xc hX hc hm ρ γ hρ N hN K hK hKU A hA R r η hR0 hR hr hη
       hinner houter f₀ f₁ hf₀ hf₁ hf₀K hf₁K hf₀A hf₁A q hq a
 

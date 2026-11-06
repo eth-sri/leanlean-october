@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.ShiftEquations.TwoPole.FrameGeneral
-public import DOZZ.Statements.Correlations.ExtendedSeibergN
+import DOZZ.ShiftEquations.TwoPole.FrameGeneral
+import DOZZ.Statements.Correlations.ExtendedSeibergN
 import DOZZ.Correlations.Continuity.UnitVolume
 
 /-!
@@ -17,7 +16,6 @@ of the strict extended domain (`unitVolumeNPoint_jointly_continuous_parameters`)
 conjunct of `DOZZ.reflection_endpoint_and_gamma_continuity`.
 -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
@@ -80,7 +78,7 @@ theorem vec_three_eta (α : Fin 3 → ℝ) : (![α 0, α 1, α 2] : Fin 3 → �
   fin_cases i <;> rfl
 
 /-- **Joint continuity of the unit-volume structure constant** (last conjunct of
-`DOZZ.reflection_endpoint_and_gamma_continuity`). -/
+`reflection_endpoint_and_gamma_continuity`). -/
 theorem continuousOn_unitVolumeStructureConstant {Ω : Type*} [MeasurableSpace Ω]
     (P : Measure Ω) (X : Ω → Distr) (M : ℝ → Ω → Measure ℂ) (hX : IsEquatorGFF P X)
     (hM : ∀ γ, 0 < γ → γ < 2 → IsGMCOf P X γ (M γ))
@@ -117,9 +115,6 @@ theorem continuousOn_unitVolumeStructureConstant {Ω : Type*} [MeasurableSpace �
   refine (hfac.mul hcont).congr fun q hq => ?_
   have h := unitVolumeStructureConstant_eq_nPoint P X hX q.1 (hKdom q hq).1 (hKdom q hq).2.1
     (M q.1) (hM q.1 (hKdom q hq).1 (hKdom q hq).2.1) (q.2 0) (q.2 1) (q.2 2)
-  rw [vec_three_eta] at h
-  exact h
-
+  rwa [vec_three_eta] at h
 end DOZZ.Proofs
 
-end

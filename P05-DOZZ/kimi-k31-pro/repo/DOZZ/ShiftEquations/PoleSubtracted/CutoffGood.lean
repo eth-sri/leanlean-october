@@ -2,11 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.ShiftEquations.PoleSubtracted.CutoffIntegrand
-public import DOZZ.ShiftEquations.PoleSubtracted.CutoffIncrements
-public import DOZZ.ShiftEquations.PoleSubtracted.Tilt
+import DOZZ.ShiftEquations.PoleSubtracted.CutoffIntegrand
+import DOZZ.ShiftEquations.PoleSubtracted.CutoffIncrements
+import DOZZ.ShiftEquations.PoleSubtracted.Tilt
 import DOZZ.ShiftEquations.Mobius.InversionMoment
 
 /-!
@@ -19,7 +18,6 @@ masses of the cutoff integrand are those of the tilted masses. The Cameron–Mar
 `E[(T_{a,n} - R₁)(T_{a,n}^{-a/γ} + R₁^{-a/γ})]`, finite for `a > -2η - δ`.
 -/
 
-@[expose] public section
 
 open MeasureTheory Filter Topology Set
 open scoped ENNReal NNReal
@@ -196,4 +194,3 @@ theorem integrable_cutoffDomination (P : Measure Ω) (X : Ω → Distr) (hX : Is
 
 end DOZZ.Proofs
 
-end

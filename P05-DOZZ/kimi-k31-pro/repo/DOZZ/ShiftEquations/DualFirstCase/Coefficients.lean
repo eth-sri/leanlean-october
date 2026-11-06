@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.Statements.FourPoint.DualCrossingL
-public import DOZZ.Statements.Defs.DualMu
-public import DOZZ.ShiftEquations.Quotient.Divisors
+import DOZZ.Statements.FourPoint.DualCrossingL
+import DOZZ.Statements.Defs.DualMu
+import DOZZ.ShiftEquations.Quotient.Divisors
 import DOZZ.ShiftEquations.Rbar.Multiplier
 import Mathlib.Tactic
 /-! # The dual crossing product and the centered shift coefficient -/
-@[expose] public section
 open Complex Filter Topology Set
 namespace DOZZ.Proofs
 /-- Analytic parameters for the dual crossing with its first charge variable. -/

@@ -2,16 +2,14 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import Mathlib.MeasureTheory.Integral.MeanInequalities
-public import Mathlib.Probability.Independence.Integration
-public import Mathlib.Analysis.SpecialFunctions.Pow.Continuity
+import Mathlib.MeasureTheory.Integral.MeanInequalities
+import Mathlib.Probability.Independence.Integration
+import Mathlib.Analysis.SpecialFunctions.Pow.Continuity
 
 /-! The Hölder step of the separated joint-tail estimate retains every correlation of the
 harmonic and restoration envelope. Only the two Dirichlet cutoff masses are independent. -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal
 
@@ -43,7 +41,7 @@ theorem separatedTail_mixed_moment_le_of_independent_domination
   calc
     _ ≤ ∫⁻ ω, E ω * (D2 ω ^ a2 * D3 ω ^ a3) ∂P := lintegral_mono_ae hdom
     _ ≤ _ := by
-      simpa only [Pi.mul_apply, ENNReal.mul_rpow_of_nonneg _ _ hpq.symm.pos.le,
+      simpa [Pi.mul_apply, ENNReal.mul_rpow_of_nonneg _ _ hpq.symm.pos.le,
         ← ENNReal.rpow_mul, hfactor] using hh
 
 /-- Uniform finite bounds on the three moments give one finite mixed-moment constant. -/

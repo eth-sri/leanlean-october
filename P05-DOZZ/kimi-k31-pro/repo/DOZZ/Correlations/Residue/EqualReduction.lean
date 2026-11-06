@@ -2,15 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.Residue.UnequalReduction
-public import DOZZ.Correlations.Residue.EqualDecomposition
+import DOZZ.Correlations.Residue.UnequalReduction
+import DOZZ.Correlations.Residue.EqualDecomposition
 
 /-! The equal-charge unit-volume residue of the three-to-two residue bridge, reduced solely to the
 exact two-insertion tail. -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal Classical
 namespace DOZZ.Proofs
@@ -37,7 +35,7 @@ theorem residue_unit_equal_of_twoInsertion_estimate
   have hp := (residue_critical_order_bounds γ α hγ hα hαQ).1
   let θ := (twoInsertionTailCeiling γ α α - p) / 2
   have hθ : 0 < θ := div_pos (sub_pos.mpr (residue_equal_twoInsertionTailCeiling_gt γ α hγ hα hαQ)) (by norm_num)
-  have hexp : -(twoInsertionTailCeiling γ α α - θ) = -p - θ := by dsimp only [θ]; ring
+  have hexp : -(twoInsertionTailCeiling γ α α - θ) = -p - θ := by dsimp [θ]; ring
   obtain ⟨C, hC, hCb⟩ := htail θ hθ
   obtain ⟨dR, ρ, hdR, hρ, K, hK, hKb⟩ := residue_equal_complement_moment_uniform
     P X M γ α hγ hγ2 hX hM hα hαQ
@@ -64,7 +62,7 @@ theorem residue_unit_equal_of_twoInsertion_estimate
       have hs : {x : ℂ | ∀ k : Fin 2, x ∉ Metric.ball (![3, 7] k) 1} =
           (Metric.ball (3 : ℂ) 1)ᶜ ∩ (Metric.ball (7 : ℂ) 1)ᶜ := by
         ext x
-        simp only [Fin.forall_fin_two, Matrix.cons_val_zero, Matrix.cons_val_one, mem_inter_iff, mem_compl_iff, mem_ofPred_eq]
+        simp [Fin.forall_fin_two, Matrix.cons_val_zero, Matrix.cons_val_one, mem_inter_iff, mem_compl_iff, mem_ofPred_eq]
       rw [hs]
       exact Metric.isOpen_ball.measurableSet.compl.inter Metric.isOpen_ball.measurableSet.compl
     have hf : Measurable (fun x : ℂ => if ∀ k : Fin 2, x ∉ Metric.ball (![3, 7] k) 1 then
@@ -78,13 +76,12 @@ theorem residue_unit_equal_of_twoInsertion_estimate
       obtain ⟨C, hC, hh⟩ := htail θ hθ
       exact ⟨C, hC, fun ε hε hεd => hh ε hε (hεd.trans_le hdT')⟩)
   have hq (ε : ℝ) (hε : 0 < ε) (hεd : ε < d₀) : 0 < p - ε / γ ∧ p - ε / γ < p := by
-    have hh : ε / γ < p := (div_lt_iff₀ hγ).mpr (by simpa only [mul_comm] using hεd.trans_le hdβ)
+    have hh : ε / γ < p := (div_lt_iff₀ hγ).mpr (by simpa [mul_comm] using hεd.trans_le hdβ)
     exact ⟨sub_pos.mpr hh, sub_lt_self _ (div_pos hε hγ)⟩
   have htail' (ε : ℝ) (hε : 0 < ε) (hεd : ε < d₀) (t : ℝ) (ht : 1 ≤ t) :
       |(P {ω | ENNReal.ofReal t < A ε ω}).toReal - c ε * t ^ (-p)| ≤ C * t ^ (-p - θ) := by
     have hh := hCb ε hε (hεd.trans_le hdT') t ht
-    rw [hexp, ← add_mul] at hh
-    exact hh
+    rwa [hexp, ← add_mul] at hh
   have hAfin (ε : ℝ) (hε : 0 < ε) (hεd : ε < d₀) : ∀ᵐ ω ∂P, A ε ω ≠ ⊤ :=
     residue_ae_finite_of_tail P (A ε) (c ε) p θ C hp hθ (htail' ε hε hεd)
   have hiA (ε : ℝ) (hε : 0 < ε) (hεd : ε < d₀) :
@@ -110,7 +107,7 @@ theorem residue_unit_equal_of_twoInsertion_estimate
     congr 2
     exact lintegral_congr_ae ((hdecomp ε).mono fun ω hω => congrArg (fun v : ℝ≥0∞ => ENNReal.rpow v (p - ε / γ)) hω.symm)
   have hunit := residue_unit_limit_from_chart_limit P X M γ α α 2 Rbar hγ hγ2 hX hM
-    (by simpa only [sub_self, zero_add] using hh)
-  simpa only [sub_self, zero_add, show (2 : ℝ) * 2 = 4 by norm_num] using hunit
+    (by simpa [sub_self, zero_add] using hh)
+  simpa [sub_self, zero_add, show (2 : ℝ) * 2 = 4 by norm_num] using hunit
 
 end DOZZ.Proofs

@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.Fusion.LocalR2Coefficient
-public import DOZZ.FourPoint.Fusion.NormalizedLittleO
+import DOZZ.FourPoint.Fusion.LocalR2Coefficient
+import DOZZ.FourPoint.Fusion.NormalizedLittleO
 
 /-! # Summing the three local Taylor contributions -/
 
-@[expose] public section
 open MeasureTheory Filter Topology
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -40,8 +38,5 @@ theorem fusionLocalOneRooted_normalized_tendsto {Ω : Type*} [MeasurableSpace Ω
   have hc := congrArg Complex.ofReal (halg p (γ ^ 2 / 2 - γ * α₁)
     (gammaHalfRootedCoefficient P M γ α₁ α₂ α₃ p) he)
   simp only [Complex.ofReal_add] at hc
-  rw [hc] at h
-  exact h
-
-
+  rwa [hc] at h
 end DOZZ.Proofs

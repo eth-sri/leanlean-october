@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.BPZ.WardLimitClean
+import DOZZ.FourPoint.BPZ.WardLimitClean
 
 /-! # The Ward identity for the degenerate four-point weight
 
@@ -17,7 +16,6 @@ Ward identity holds for the degenerate four-point weight `k = |x − z|^{γχ} |
 The auxiliary cutoff is built from the distance to the support of `φ`, and the far set is a small
 disk far away. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped ENNReal NNReal
@@ -60,9 +58,6 @@ theorem bpzTildeWeight_pos {z x : ℂ} (hx : x ∈ bpzRegular z) :
 
 theorem bpzTildeWeight_nonneg (z x : ℂ) : 0 ≤ bpzTildeWeight γ χ α₁ α₂ z x := by
   unfold bpzTildeWeight
-  have a := Real.rpow_nonneg (norm_nonneg (x - z)) (γ * χ)
-  have b := Real.rpow_nonneg (norm_nonneg x) (-(γ * α₁))
-  have c := Real.rpow_nonneg (norm_nonneg (x - 1)) (-(γ * α₂))
   positivity
 
 theorem measurable_bpzTildeWeight (z : ℂ) : Measurable (bpzTildeWeight γ χ α₁ α₂ z) := by
@@ -301,7 +296,5 @@ theorem bpz_fourPoint_ward {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X
   have hp := bpz_fourPoint_wardProb P X hX hγ hγ2 M hM hMm Xc hXc hχ hα₁ hα₂ hα₃ hz0 hz1
     hd.ρ_meas hd.ρ_nonneg hd.ρ_le_one R
   have h := hd.ward_limit_clean hp v
-  rw [hq] at h
-  exact h
-
+  rwa [hq] at h
 end DOZZ.Proofs

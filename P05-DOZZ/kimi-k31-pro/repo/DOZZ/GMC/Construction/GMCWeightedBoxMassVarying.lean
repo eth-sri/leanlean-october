@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.Construction.GMCWeightedBoxMass
-public import DOZZ.GMC.Construction.ReferenceMeasureFinite
+import DOZZ.GMC.Construction.GMCWeightedBoxMass
+import DOZZ.GMC.Construction.ReferenceMeasureFinite
 
 /-! Comparison of cutoff chaos masses for uniformly convergent spatial weights. -/
 
-@[expose] public section
 
 open MeasureTheory Filter Topology
 open scoped Distributions ENNReal NNReal BoundedContinuousFunction
@@ -37,14 +35,6 @@ private theorem regularizedGMC_withDensity_box_mass_eq_indicator_integral
       w z ≤ |w z| := le_abs_self _
       _ = ‖w z‖ := (Real.norm_eq_abs _).symm
       _ ≤ ‖w‖ := w.norm_coe_le_norm z
-  have hWint : ∫⁻ z, W z ∂μ ≠ ∞ := by
-    apply ne_of_lt
-    calc
-      ∫⁻ z, W z ∂μ ≤ ∫⁻ z, ENNReal.ofReal ‖w‖ ∂μ := lintegral_mono hWbound
-      _ < ∞ := by
-          rw [lintegral_const]
-          exact ENNReal.mul_lt_top ENNReal.ofReal_lt_top
-            (lt_top_iff_ne_top.mpr (@measure_ne_top ℂ _ μ hfin Set.univ))
   have hs : MeasurableSet (gmcLowerBox i) := gmcLowerBox_measurableSet i
   have hIb : ∫ z, (gmcLowerBox i).indicator (fun _ => (1 : ℝ)) z
       ∂μ.withDensity W = ((μ.withDensity W) (gmcLowerBox i)).toReal := by
@@ -103,10 +93,8 @@ theorem regularizedGMC_varyingWithDensity_box_mass_diff_tendstoInMeasure
   let gap : ℝ → Ω → ℝ≥0∞ := fun r ω => ∫⁻ z,
     ENNReal.ofReal (diff r z) ∂μ r ω
   let refMass : ℝ≥0∞ := gmcReferenceMeasure Set.univ
-  have hμMeas (r : ℝ) : Measurable (μ r) := by
-    exact regularizedGMC_measurable P X hX Xc hXc γ r
-  have hgapMeas (r : ℝ) : Measurable (gap r) := by
-    exact regularizedGMC_varyingWeight_gap_measurable P X hX Xc hXc γ r (u r) v
+  have hμMeas (r : ℝ) : Measurable (μ r) := regularizedGMC_measurable P X hX Xc hXc γ r
+  have hgapMeas (r : ℝ) : Measurable (gap r) := regularizedGMC_varyingWeight_gap_measurable P X hX Xc hXc γ r (u r) v
   have hdiffBound (r : ℝ) (z : ℂ) : diff r z ≤ ‖u r - v‖ := by
     dsimp [diff]
     calc

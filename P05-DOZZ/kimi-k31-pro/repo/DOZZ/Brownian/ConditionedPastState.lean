@@ -2,12 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Brownian.ConditionedFutureKernelMarkov
-public import DOZZ.Brownian.ConditionedFDDMarkovKernel
-public import Mathlib.Probability.Kernel.Composition.Lemmas
-public import Mathlib.Probability.Kernel.Composition.IntegralCompProd
+import DOZZ.Brownian.ConditionedFutureKernelMarkov
+import DOZZ.Brownian.ConditionedFDDMarkovKernel
+import Mathlib.Probability.Kernel.Composition.Lemmas
+import Mathlib.Probability.Kernel.Composition.IntegralCompProd
 
 /-!
 # A finite conditioned past and one later state
@@ -16,7 +15,6 @@ The exact finite past/future density is transported from the one-coordinate futu
 its real coordinate. This is the deterministic-time factorization used for marked last exits.
 -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory Set
 open scoped NNReal ENNReal
 namespace DOZZ.Proofs
@@ -106,4 +104,3 @@ theorem negativeConditionedLaw_finitePast_state_compProd
 
 end DOZZ.Proofs
 
-end

@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.FiniteGaussianTiltSigned
-public import Mathlib.Analysis.Calculus.ParametricIntegral
+import DOZZ.GMC.FiniteGaussianTiltSigned
+import Mathlib.Analysis.Calculus.ParametricIntegral
 
 /-! Finite-dimensional Gaussian integration by parts from the signed Cameron--Martin identity. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter
 open scoped Distributions Topology
@@ -153,8 +151,7 @@ theorem finite_gaussian_integration_by_parts
   have heq : (fun t => ∫ ω, L t ω ∂P) = fun t => ∫ ω, R t ω ∂P := by
     funext t
     exact hTilt t
-  have hderivEq : (∫ ω, L' 0 ω ∂P) = ∫ ω, R' 0 ω ∂P := by
-    exact HasDerivAt.unique (heq ▸ hLhas) hRhas
+  have hderivEq : (∫ ω, L' 0 ω ∂P) = ∫ ω, R' 0 ω ∂P := HasDerivAt.unique (heq ▸ hLhas) hRhas
   have hLvalue : (∫ ω, L' 0 ω ∂P) = ∫ ω, Z ω i * F (Z ω) ∂P := by
     apply integral_congr_ae
     filter_upwards [] with ω
@@ -166,8 +163,7 @@ theorem finite_gaussian_integration_by_parts
         ∑ j, gaussianCovariance P (fun ω => Z ω i) (fun ω => Z ω j) * D (Z ω) j := by
       funext ω
       simp [R']
-    rw [hRzero]
-    rw [integral_finsetSum]
+    rw [hRzero, integral_finsetSum]
     · apply Finset.sum_congr rfl
       intro j hj
       rw [integral_const_mul]

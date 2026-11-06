@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.FieldChaosNegativePower
-public import DOZZ.GMC.KahaneScheffe
+import DOZZ.GMC.FieldChaosNegativePower
+import DOZZ.GMC.KahaneScheffe
 
 /-! Spatial sampling of nonnegative integrable random fields converges in mean. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 
@@ -78,7 +76,7 @@ theorem spatial_empirical_average_L1
   have hgmean : (∫ p, g p ∂μ) = ∫ p : Ω × S, f p.1 p.2 ∂(P.prod ν) := by
     change (∫ p, g p ∂(P.prod Q)) = _
     rw [integral_prod g hg]
-    simp only [g, integral_const, probReal_univ, one_smul]
+    simp [g, integral_const, probReal_univ]
     exact (integral_prod _ hf).symm
   have hmean : Tendsto (fun n => ∫ p, avg n p ∂μ) atTop (𝓝 (∫ p, g p ∂μ)) := by
     apply tendsto_const_nhds.congr'
@@ -86,8 +84,7 @@ theorem spatial_empirical_average_L1
     dsimp [avg]
     rw [integral_const_mul, integral_finsetSum _ (fun i _ => hterm i.val)]
     simp_rw [htermMean]
-    rw [Finset.sum_const, Finset.card_univ, Fintype.card_fin, nsmul_eq_mul]
-    rw [← mul_assoc, inv_mul_cancel₀ (by exact_mod_cast hn.ne'), one_mul, hgmean]
+    rw [Finset.sum_const, Finset.card_univ, Fintype.card_fin, nsmul_eq_mul, ← mul_assoc, inv_mul_cancel₀ (by exact_mod_cast hn.ne'), one_mul, hgmean]
   have hlim : ∀ᵐ p ∂μ, Tendsto (fun n => avg n p) atTop (𝓝 (g p)) := by
     apply (Measure.ae_prod_iff_ae_ae ?_).2
     · exact ae_empirical_average_tendsto P ν f hjoint hf.prod_right_ae

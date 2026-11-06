@@ -2,13 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Fusion.LocalDifferenceLimit
-public import DOZZ.FourPoint.Fusion.ExteriorDifferenceLimit
-public import DOZZ.FourPoint.Fusion.DifferenceTimeSplit
-public import DOZZ.FourPoint.Fusion.MassExpectationInterpolation
+import DOZZ.FourPoint.Fusion.LocalDifferenceLimit
+import DOZZ.FourPoint.Fusion.ExteriorDifferenceLimit
+import DOZZ.FourPoint.Fusion.DifferenceTimeSplit
+import DOZZ.FourPoint.Fusion.MassExpectationInterpolation
 /-! # The complete signed KRV inverse-moment limit -/
-@[expose] public section
 open MeasureTheory Set Filter Topology
 namespace DOZZ.Proofs
 /-- Local scaling and the negligible exterior error give the full inverse-expectation coefficient. -/
@@ -32,7 +30,7 @@ theorem fusion_massDifference_normalized_tendsto {Ω : Type*} [MeasurableSpace �
     (((continuous_norm.tendsto (0 : ℂ)).eventually_lt_const (by simp : ‖(0 : ℂ)‖ < (1 / 4 : ℝ))).filter_mono
       nhdsWithin_le_nhds).mono fun _ h => h.le
   filter_upwards [hz4, self_mem_nhdsWithin] with z hz4 hz
-  have hz0 : z ≠ 0 := by simpa only [mem_compl_iff, mem_singleton_iff] using hz
+  have hz0 : z ≠ 0 := by simpa [mem_compl_iff, mem_singleton_iff] using hz
   rw [fusion_mass_expectation_interpolation P X hX γ hγ hγ2 M hM α₁ α₂ α₃ hα₁ hα₂ hα₃ p hp z hz0 hz4,
     fusion_difference_time_split P X hX γ hγ hγ2 M hM α₁ α₂ α₃ hlo hα₁ hα₂ hα₃ p hp z hz0 hz4]
   ring

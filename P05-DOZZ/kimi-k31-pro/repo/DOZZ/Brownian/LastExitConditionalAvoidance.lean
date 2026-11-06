@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Brownian.ConditionedFutureHistoryAvoidance
-public import DOZZ.Brownian.LastExitReferenceAvoidanceShift
+import DOZZ.Brownian.ConditionedFutureHistoryAvoidance
+import DOZZ.Brownian.LastExitReferenceAvoidanceShift
 
 /-!
 # Deterministic-time full-history avoidance identity
@@ -16,7 +15,6 @@ statement is localized to endpoints strictly above the barrier, where the killed
 identity applies.
 -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal NNReal
@@ -115,7 +113,6 @@ theorem conditionedPositiveHistory_condExp_rationalFuture_avoidance_shift_on_abo
   filter_upwards [hcond, hKernelPath] with p hp hk
   intro hcx
   let x : ℝ := conditionedPositiveStateAt t p
-  have hx : 0 < x := lt_trans hc hcx
   have hcond' :
     P[(conditionedPositiveFutureRationalAvoidance t c).indicator
         (fun p => test (eval p)) |
@@ -173,7 +170,7 @@ theorem conditionedPositiveHistory_condExp_rationalFuture_avoidance_shift_on_abo
       _ = ENNReal.ofReal (lastExitAvoidanceFactor ν (c : ℝ) x) *
           ∫⁻ y, (C.indicator (fun _ : ℚ → ℝ => (1 : ℝ≥0∞))) y ∂
             brownianUpperConditionedReferenceFutureKernel B ν hν (x - c) := by
-            exact hshift
+            assumption
       _ = _ := congrArg
         (fun z : ℝ≥0∞ => ENNReal.ofReal (lastExitAvoidanceFactor ν (c : ℝ) x) * z)
         (lintegral_indicator_one hC)
@@ -214,4 +211,3 @@ theorem conditionedPositiveHistory_condExp_rationalFuture_avoidance_shift_on_abo
 
 end DOZZ.Proofs
 
-end

@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.Moments.InversionFixedCoarse
-public import DOZZ.GFFStructure.CircleCovariance
+import DOZZ.GMC.Moments.InversionFixedCoarse
+import DOZZ.GFFStructure.CircleCovariance
 
 /-! Uniform mixed logarithmic bounds on annular inversion charts. -/
 
-@[expose] public section
 
 open Set Metric Real
 open DOZZ.Proofs.CirclePotential
@@ -47,7 +45,7 @@ theorem inversion_mixed_log_bound_on_annulus
   apply inversion_circleAverage_mixed_log_bound hR hxhi hyhi hr hs hy hylog
   intro u hu
   have hux : ‖u - x‖ = Real.exp (-r) := by
-    simpa only [mem_sphere_iff_norm] using hu
+    simpa [mem_sphere_iff_norm] using hu
   have hεm := hε.trans (min_le_left _ _)
   have hε1 := hε.trans (min_le_right _ _)
   have hulo : m ≤ ‖u‖ := by
@@ -74,7 +72,7 @@ theorem inversion_mixed_coarse_center_bound_on_annulus
   have ht := inversion_mixed_log_bound_on_annulus hm hR hxlo hxlo hxhi hxhi hs hr hε
   have hlog : Real.log (1 / Real.exp (-r)) = r := by
     rw [one_div, ← Real.exp_neg, neg_neg, Real.log_exp]
-  simpa only [sub_self, norm_zero, max_eq_right hscales,
+  simpa [sub_self, norm_zero, max_eq_right hscales,
     max_eq_right (Real.exp_pos (-r)).le, hlog] using ht
 
 /-- Separated mixed circle covariances approach the invariant point kernel at the sum of
@@ -101,7 +99,7 @@ theorem inversion_mixed_offDiagonal_point_error_le
       rw [norm_sub_rev y x, max_eq_left hsepTarget]
       ring
     rw [hcircle]
-    simpa only [add_sub_cancel_left, regAvg] using
+    simpa [add_sub_cancel_left, regAvg] using
       abs_circleAverage_log_normPlus_sub_le x (Real.exp_pos (-r))
   exact (abs_sub_le _ _ _).trans (add_le_add hmixed hpoint)
 

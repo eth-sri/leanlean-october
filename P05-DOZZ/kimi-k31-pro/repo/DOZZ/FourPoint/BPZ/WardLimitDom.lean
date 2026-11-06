@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.BPZ.WardLimitId
+import DOZZ.FourPoint.BPZ.WardLimitId
 
 /-! # Uniform domination of the symmetrized cutoff Ward identity
 
@@ -14,7 +13,6 @@ cutoff part `∫ ρ k₁ dM_n ≤ Î`, the symmetric double integral at most a m
 the far-region term at most a multiple of `∫ ρ k₁ dM_n · ∫ (1 − ρ) k₂ dM ≤ Î²`. Since `Î` dominates
 a multiple of the far-set chaos mass, which has all negative moments, the bound is integrable. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped ENNReal NNReal
@@ -94,12 +92,8 @@ theorem abs_leftInt_le (hd : BPZLimitData γ q δ ρ kt k₂ φ D) (v : ℂ) :
         _ ≤ max B₁ 0 * kt x := mul_le_mul_of_nonneg_left (hck x hx) (le_max_right _ _)
     · unfold bpzWardLeftWeight
       rw [bpz_fderiv_mul_zero_of_notMem v hx]
-      simp only [zero_mul, abs_zero]
+      simp [zero_mul, abs_zero]
       exact mul_nonneg (by positivity) (mul_nonneg (hd.ρ_nonneg x) (hd.cutWeight_nonneg n x))
-  have hwm : Measurable (bpzWardLeftWeight γ q n kt φ v) := by
-    unfold bpzWardLeftWeight
-    exact (hf'c.measurable.mul (bpz_measurable_normPlus.pow_const _)).mul
-      (Real.measurable_exp.comp ((continuous_bpzPin _).measurable.const_mul _))
   have hρk : ∀ x, |ρ x * bpzWardCutWeight γ q n kt x| ≤ K := fun x => by
     rw [abs_mul, abs_of_nonneg (hd.ρ_nonneg x)]
     exact (hd.rho_abs_cutWeight_le hK hK0 n x).1
@@ -137,9 +131,9 @@ theorem abs_symInt_le (hd : BPZLimitData γ q δ ρ kt k₂ φ D) (v : ℂ) :
     intro x y
     have := hd.abs_symKer_le (k := bpzWardCutWeight γ q n kt) (L := fun w' => bpzLamDeriv n w' v)
       hB hLφ zero_le_two v (abs_bpzLamDeriv_apply_le n · v) x y
-    simp only [abs_of_nonneg (hd.cutWeight_nonneg n x), abs_of_nonneg (hd.cutWeight_nonneg n y)]
+    simp [abs_of_nonneg (hd.cutWeight_nonneg n x), abs_of_nonneg (hd.cutWeight_nonneg n y)]
       at this
-    exact this
+    assumption
   have hbd : ∀ x y, |bpzSymKer φ ρ (bpzWardCutWeight γ q n kt) (fun w' => bpzLamDeriv n w' v) x y|
       ≤ C * (K * K) := fun x y =>
     (hpt x y).trans (mul_le_mul_of_nonneg_left (mul_le_mul ((le_abs_self _).trans (hwb x))
@@ -174,8 +168,6 @@ theorem abs_mixInt_le (hd : BPZLimitData γ q δ ρ kt k₂ φ D) (v : ℂ) :
   set C : ℝ := 1 * ‖v‖ / (2 * δ) * B with hCdef
   refine ⟨C, by positivity, fun n m₁ m₂ _ hint => ?_⟩
   set I₂ : ℝ := ∫ y, (1 - ρ y) * k₂ y ∂m₂
-  have hI₂0 : 0 ≤ I₂ := integral_nonneg fun y =>
-    mul_nonneg (by linarith [hd.ρ_le_one y]) (hd.k₂_nonneg y)
   have hT : ∀ w, |bpzTruncLogDeriv n w v| ≤ 1 * ‖v‖ / ‖w‖ := fun w => by
     rw [one_mul]; exact abs_bpzTruncLogDeriv_apply_le n w v
   have hpt : ∀ x, |bpzMixTest φ ρ (bpzWardCutWeight γ q n kt) k₂

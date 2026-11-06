@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.BPZ.SoftMassDeriv
+import DOZZ.FourPoint.BPZ.SoftMassDeriv
 
 /-! # Differentiating a negative moment of the random softened mass
 
@@ -29,7 +28,6 @@ differentiable function `J` on `ℂ`; their specialization to the softened mass 
 (derivative formulas and norm bounds); measurability and integrability for the random mass; the
 two differentiation theorems; and the evaluations on vectors. -/
 
-@[expose] public section
 
 open MeasureTheory Filter Topology
 
@@ -85,12 +83,10 @@ theorem hasFDerivAt_bpzMomentField {J : ℂ → ℝ} {DJ : ℂ → ℂ →L[ℝ]
   have e : ((-s) • (((-s - 1) * J z ^ (-s - 2)) • DJ z)).smulRight (DJ z) =
       (s * (s + 1) * J z ^ (-s - 2)) • (DJ z).smulRight (DJ z) := by
     ext h
-    simp only [ContinuousLinearMap.smulRight_apply, smul_apply, smul_eq_mul, smul_smul]
-    congr 1
-    ring
-  rw [e, add_comm] at h3
-  exact h3
+    simp [ContinuousLinearMap.smulRight_apply, smul_apply, smul_eq_mul, smul_smul]
 
+    ring
+  rwa [e, add_comm] at h3
 /-- Norm bound for the first-moment vector field `(−s J^(−s−1)) • D`: if `‖D‖ ≤ A J` and
 `0 < Y ≤ J`, the norm is at most `s A Y^(−s)`. -/
 theorem norm_bpzMomentField_le {s J Y A : ℝ} {D : ℂ →L[ℝ] ℝ} (hs : 0 ≤ s) (hY : 0 < Y)

@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Brownian.ConditionedKernelScores
+import DOZZ.Brownian.ConditionedKernelScores
 
 /-!
 # Parameter derivative of the conditioned-kernel score
@@ -14,7 +13,6 @@ This file proves the derivative formula and its pointwise bounds away from the z
 limit.
 -/
 
-@[expose] public section
 
 open Filter Topology
 
@@ -30,7 +28,7 @@ theorem hasDerivAt_conditionedKernelScore_parameter
     HasDerivAt (fun x : ℝ => conditionedKernelScore x y)
       (conditionedKernelScoreParameterSlope a y) a := by
   have harg : HasDerivAt (fun x : ℝ => x * y) y a := by
-    simpa only [id_eq, one_mul] using (hasDerivAt_id a).mul_const y
+    simpa [id_eq, one_mul] using (hasDerivAt_id a).mul_const y
   have hcosh := (Real.hasDerivAt_cosh (a * y)).comp a harg
   have hsinh := (Real.hasDerivAt_sinh (a * y)).comp a harg
   have hcosh' : HasDerivAt (fun x : ℝ => Real.cosh (x * y))
@@ -196,7 +194,7 @@ theorem conditionedKernelScore_increment_bounds
     · have : 0 ≤ b - a := le_of_lt hba
       linarith
   have hdiffHi : conditionedKernelScore b y - conditionedKernelScore a y ≤ b - a :=
-    by simpa only [one_mul] using (div_le_iff₀ hba).mp hquotHi
+    by simpa [one_mul] using (div_le_iff₀ hba).mp hquotHi
   exact ⟨hdiffLo, by simpa using hdiffHi⟩
 
 /-- Combining state antitonicity with the one-Lipschitz parameter bound controls a mixed
@@ -217,4 +215,3 @@ theorem conditionedKernelScore_mixed_increment_upper
 
 end DOZZ.Proofs
 
-end

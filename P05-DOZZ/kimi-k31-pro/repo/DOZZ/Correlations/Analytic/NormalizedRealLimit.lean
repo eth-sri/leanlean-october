@@ -2,15 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.Analytic.NormalizedRealValue
-public import DOZZ.Correlations.Analytic.RetainedCoulombLimit
-public import DOZZ.Correlations.Analytic.CutoffGeometry
+import DOZZ.Correlations.Analytic.NormalizedRealValue
+import DOZZ.Correlations.Analytic.RetainedCoulombLimit
+import DOZZ.Correlations.Analytic.CutoffGeometry
 
 /-! Identification of the canonical analytic cutoff limit on real charges. -/
 
-@[expose] public section
 open MeasureTheory Filter Topology
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -30,7 +28,7 @@ theorem coulomb_moment_finite
   · obtain ⟨hR, hzR⟩ := coulomb_exterior_radius_bounds z
     have hi := retained_coulomb_mass_nonpos_moment_finite P X hX γ hγ hγ2 M hM α z αinf
       Set.univ (1 + 2 * ∑ j, ‖z j‖) hR hzR (Set.subset_univ _) p (le_of_not_gt hp)
-    simpa only [Measure.restrict_univ, ← coulombMass_eq_lintegral_coulombWeight] using hi
+    simpa [Measure.restrict_univ, ← coulombMass_eq_lintegral_coulombWeight] using hi
 
 /-- The actual complex cutoff observable converges on every strictly admissible real vector
 to the exact full Coulomb expectation. -/

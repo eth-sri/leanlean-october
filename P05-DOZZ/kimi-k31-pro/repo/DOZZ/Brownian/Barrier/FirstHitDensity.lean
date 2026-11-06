@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.Brownian.Barrier.FirstHitTilting
-public import Mathlib.Analysis.SpecialFunctions.Sqrt
-public import Mathlib.MeasureTheory.Integral.IntervalIntegral.FundThmCalculus
+import DOZZ.Brownian.Barrier.FirstHitTilting
+import Mathlib.Analysis.SpecialFunctions.Sqrt
+import Mathlib.MeasureTheory.Integral.IntervalIntegral.FundThmCalculus
 
 /-!
 # The actual Gaussian first-hit lifetime density
@@ -35,7 +34,6 @@ They do not identify any multi-time killed-path law or lifetime-marked
 reversed segment; those remain the probabilistic assembly steps.
 -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory Filter Set
 open scoped NNReal ENNReal Topology
 namespace DOZZ.Proofs
@@ -83,9 +81,9 @@ theorem measurable_brownianFirstHitDensity (a β : ℝ) : Measurable (brownianFi
 theorem brownianFirstHitDensity_nonneg (a β t : ℝ) (hβ : 0 ≤ β) : 0 ≤ brownianFirstHitDensity a β t := by
   classical
   by_cases ht : 0 < t
-  · simp only [brownianFirstHitDensity,ite_eq_left ht]
+  · simp [brownianFirstHitDensity,ite_eq_left ht]
     positivity
-  · simp only [brownianFirstHitDensity,ite_eq_right ht,le_refl]
+  · simp [brownianFirstHitDensity,ite_eq_right ht,le_refl]
 
 /-- The source's Gaussian stopped likelihood multiplies the zero-drift density into the drifted density. -/
 theorem brownianFirstHitDensity_tilt (a β t : ℝ) :
@@ -93,9 +91,9 @@ theorem brownianFirstHitDensity_tilt (a β t : ℝ) :
   classical
   by_cases ht : 0 < t
   · have he : -β^2/(2*t)+a*β-a^2*t/2 = -β^2/(2*t)+(a*β-a^2*t/2) := by ring_nf
-    simp only [brownianFirstHitDensity,ite_eq_left ht,zero_mul,zero_pow (by norm_num : 2 ≠ 0),zero_div,add_zero,sub_zero,
+    simp [brownianFirstHitDensity,ite_eq_left ht,zero_mul,zero_pow (by norm_num : 2 ≠ 0),zero_div,add_zero,sub_zero,
       he,Real.exp_add,mul_assoc]
-  · simp only [brownianFirstHitDensity,ite_eq_right ht,zero_mul]
+  · simp [brownianFirstHitDensity,ite_eq_right ht,zero_mul]
 
 /-- The first-hit density is continuous at every positive horizon. -/
 theorem continuousAt_brownianFirstHitDensity (a β t : ℝ) (ht : 0 < t) :
@@ -106,7 +104,7 @@ theorem continuousAt_brownianFirstHitDensity (a β t : ℝ) (ht : 0 < t) :
       Real.exp (-β^2/(2*u)+a*β-a^2*u/2)) := by
     filter_upwards [Ioi_mem_nhds ht] with u hu
     change 0 < u at hu
-    simp only [brownianFirstHitDensity,ite_eq_left hu]
+    simp [brownianFirstHitDensity,ite_eq_left hu]
   exact hb.congr_of_eventuallyEq he
 
 /-- The zero-drift density integrates to the survival-function drop on every positive compact time interval. -/
@@ -120,8 +118,8 @@ theorem integral_brownianFirstHitDensity_zero (β s t : ℝ) (hs : 0 < s) (hst :
   have hd : ∀ u ∈ uIcc s t,
       HasDerivAt (fun v => -brownianFirstHitSurvival β v) (brownianFirstHitDensity 0 β u) u := by
     intro u hu
-    have hu' : u ∈ Icc s t := by simpa only [uIcc_of_le hst] using hu
-    simpa only [Pi.neg_def,Pi.neg_apply,neg_neg] using (hasDerivAt_brownianFirstHitSurvival β u (hs.trans_le hu'.1)).neg
+    have hu' : u ∈ Icc s t := by simpa [uIcc_of_le hst] using hu
+    simpa [Pi.neg_def,Pi.neg_apply,neg_neg] using (hasDerivAt_brownianFirstHitSurvival β u (hs.trans_le hu'.1)).neg
   have he := intervalIntegral.integral_eq_sub_of_hasDerivAt hd hi
   rw [intervalIntegral.integral_of_le hst] at he
   exact he.trans (by ring_nf)
@@ -155,8 +153,6 @@ theorem brownianPath_zeroDrift_firstHit_density_Ioc (P : Measure BrownianPath)
       volume.withDensity (fun u => ENNReal.ofReal (brownianFirstHitDensity 0 β u)) (Ioc s t) := by
   let _ := (hB.hasLaw_eval 0).isProbabilityMeasure
   let μ := P.map (fun p => (firstPassageTime p β : ℝ))
-  have hm : Measurable (fun p : BrownianPath => (firstPassageTime p β : ℝ)) :=
-    NNReal.continuous_coe.measurable.comp (measurable_firstPassageTime β)
   have hr : μ.real (Ioc s t) = brownianFirstHitSurvival β s-brownianFirstHitSurvival β t := by
     rw [← Ioi_sdiff_Ioi,measureReal_sdiff (Ioi_subset_Ioi hst.le) measurableSet_Ioi (measure_ne_top _ _),
       brownianPath_zeroDrift_firstHit_real_tail P hB β hβ s hs,
@@ -227,7 +223,7 @@ theorem brownian_measure_eq_of_positive_Ioc (μ ν : Measure ℝ) [IsFiniteMeasu
   congr 1
   funext n
   have he := congrArg (fun π : Measure ℝ => π S) (hδ (1/((n : ℝ)+1)) (by positivity))
-  simpa only [Measure.restrict_apply hS] using he
+  simpa [Measure.restrict_apply hS] using he
 
 /-- The whole actual zero-drift first-hit lifetime law has its explicit Gaussian hitting density. -/
 theorem brownianPath_zeroDrift_firstHit_density_map (P : Measure BrownianPath)
@@ -246,7 +242,7 @@ theorem brownianPath_zeroDrift_firstHit_density_map (P : Measure BrownianPath)
   · rw [withDensity_apply _ measurableSet_Iic]
     apply (lintegral_eq_zero_iff (measurable_brownianFirstHitDensity 0 β).ennreal_ofReal).mpr
     filter_upwards [ae_restrict_mem measurableSet_Iic] with t ht
-    simp only [brownianFirstHitDensity,ite_eq_right (not_lt.mpr ht),ENNReal.ofReal_zero,Pi.zero_apply]
+    simp [brownianFirstHitDensity,ite_eq_right (not_lt.mpr (Set.mem_Iic.mp ht)),ENNReal.ofReal_zero,Pi.zero_apply]
   · intro s t hs hst
     exact brownianPath_zeroDrift_firstHit_density_Ioc P hB β hβ s t hs hst
 /-- The actual positive-drift first-hit lifetime, including its full real time law, has the source's explicit hitting density. -/
@@ -264,10 +260,10 @@ theorem brownianPath_positiveDrift_firstHit_density_map (P : Measure BrownianPat
   have hw : Measurable w := by dsimp [w]; fun_prop
   have hs : (P.map σ).map (fun t : ℝ≥0 => (t : ℝ)) = P.map (fun p => (σ p : ℝ)) := by
     rw [Measure.map_map hc hmσ]
-    simp only [Function.comp_def]
+    simp [Function.comp_def]
   have ht : (P.map τ).map (fun t : ℝ≥0 => (t : ℝ)) = P.map (fun p => (τ p : ℝ)) := by
     rw [Measure.map_map hc hmτ]
-    simp only [Function.comp_def]
+    simp [Function.comp_def]
   rw [← hs,brownianPath_firstHit_lifetime_map_tilt P hB a β ha hβ]
   have hwN : (fun t : ℝ≥0 => brownianGaussianLikelihood a t β) = fun t : ℝ≥0 => w (t : ℝ) := by
     funext t
@@ -299,7 +295,7 @@ theorem brownianPath_positiveDrift_firstHit_density_lintegral (P : Measure Brown
 theorem brownianFirstHitDensity_heat (a β t : ℝ) (ht : 0 < t) :
     brownianFirstHitDensity a β t = β/t*brownianHeatDensity t β*Real.exp (a*β-a^2*t/2) := by
   have he : -β^2/(2*t)+a*β-a^2*t/2 = -β^2/(2*t)+(a*β-a^2*t/2) := by ring_nf
-  simp only [brownianFirstHitDensity,brownianHeatDensity,ite_eq_left ht]
+  simp [brownianFirstHitDensity,brownianHeatDensity,ite_eq_left ht]
   rw [he,Real.exp_add]
   ring_nf
 

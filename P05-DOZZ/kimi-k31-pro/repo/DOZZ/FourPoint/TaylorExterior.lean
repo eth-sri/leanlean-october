@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.TaylorMassInterpolation
-public import DOZZ.FourPoint.TaylorFixedDisk
+import DOZZ.FourPoint.TaylorMassInterpolation
+import DOZZ.FourPoint.TaylorFixedDisk
 
 /-! The exterior part of the positive two-root Taylor square is uniformly bounded. -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -36,7 +34,7 @@ theorem twoRooted_exterior_numerator_bound {Ω : Type*}
       apply setLIntegral_mono' measurableSet_ball.compl
       intro x hx
       have hxnorm : 1 / 2 ≤ ‖x‖ := by
-        simpa only [Set.mem_compl_iff, Metric.mem_ball, dist_zero_right, not_lt] using hx
+        simpa [Set.mem_compl_iff, Metric.mem_ball, dist_zero_right, not_lt] using hx
       have hdist : 1 / 4 ≤ ‖x - z‖ := by
         have hh := norm_sub_norm_le x z
         linarith only [hxnorm, hz, hh]
@@ -73,7 +71,7 @@ theorem twoRooted_exterior_bound
       with ω hmass
     have hnum := twoRooted_exterior_numerator_bound M γ α₁ α₂ α₃ ω z hz
     rw [hmass] at hnum
-    simpa only [show (4 : ℝ) ^ (2 : ℕ) = 16 by norm_num] using
+    simpa [show (4 : ℝ) ^ (2 : ℕ) = 16 by norm_num] using
       square_inverse_mass_bound _ _ 4 p (by norm_num) hp hnum
   have hy : ∀ i : Fin 3, ‖(![z, 0, 1] : Fin 3 → ℂ) i‖ ≤ 1 := by
     intro i

@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.SharpMoments.OpenSetScale
-public import DOZZ.GMC.Moments.CriticalSuperadditivity
+import DOZZ.GMC.SharpMoments.OpenSetScale
+import DOZZ.GMC.Moments.CriticalSuperadditivity
 
 /-! # Divergence of the critical moment
 
@@ -15,7 +14,6 @@ open subsquares of a reference square carry together exactly the `p_c`-th moment
 that the subsquares all have positive mass would make it strictly larger than itself. Hence the
 critical moment is infinite as soon as the subsquare masses are almost surely positive. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
@@ -116,7 +114,7 @@ theorem gmcOpenSquare_subset_closedBall (s : ℝ) :
 theorem norm_gmcSubSquare_center (s : ℝ) (hs : 0 ≤ s) {σ₁ σ₂ : ℝ} (h₁ : |σ₁| = 1)
     (h₂ : |σ₂| = 1) : ‖(⟨σ₁ * s / 2, σ₂ * s / 2⟩ : ℂ)‖ ≤ s := by
   have := Complex.norm_le_abs_re_add_abs_im (⟨σ₁ * s / 2, σ₂ * s / 2⟩ : ℂ)
-  simp only at this
+  simp at this
   rw [abs_div, abs_mul, abs_div, abs_mul, h₁, h₂, abs_of_nonneg hs] at this
   norm_num at this
   linarith
@@ -141,9 +139,7 @@ theorem gmc_subSquare_critical_moment
     (by have := norm_gmcSubSquare_center s hs.le h₁ h₂; linarith)
     (gmcOpenSquare s) (isOpen_gmcOpenSquare s) (gmcOpenSquare_subset_closedBall s) (4 / γ ^ 2)
   rw [gmc_critical_exponent_eq_two γ hγ.ne'] at h
-  rw [show ((1 : ℝ) / 2) ^ (2 : ℝ) = 1 / 4 by norm_num] at h
-  exact h
-
+  rwa [show ((1 : ℝ) / 2) ^ (2 : ℝ) = 1 / 4 by norm_num] at h
 /-- If the four subsquare masses are almost surely positive, the critical moment of the square
 is infinite. -/
 theorem gmc_openSquare_critical_moment_eq_top
@@ -178,7 +174,6 @@ theorem gmc_openSquare_critical_moment_eq_top
         (Complex.continuous_im.sub continuous_const)) continuous_const)
   have hTmeas : ∀ σ₁ σ₂ : ℝ, MeasurableSet (gmcSubSquare s σ₁ σ₂) :=
     fun σ₁ σ₂ => (hTopen σ₁ σ₂).measurableSet
-  have hSmeas : MeasurableSet (gmcOpenSquare s) := (isOpen_gmcOpenSquare s).measurableSet
   -- the four subsquares are disjoint subsets of the square
   have d12 : Disjoint T₁ T₂ := gmcSubSquare_disjoint_re s 1 1
   have d13 : Disjoint T₁ T₃ := gmcSubSquare_disjoint_re s 1 (-1)

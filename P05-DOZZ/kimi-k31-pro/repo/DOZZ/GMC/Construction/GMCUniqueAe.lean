@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.Defs.IsGMCOf
+import DOZZ.Statements.Defs.IsGMCOf
 import DOZZ.GFFStructure.GaussianClosure
 import DOZZ.GMC.AdmissibleGMCCountableTests
 import DOZZ.GMC.AdmissibleGMCDetermines
@@ -12,7 +11,6 @@ import Mathlib.MeasureTheory.Measure.WithDensity
 
 /-! Almost-sure uniqueness of the circle-average GMC version. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped Distributions ENNReal NNReal
@@ -54,7 +52,7 @@ theorem regularizedGMC_ae_eq_of_circleAverage
       fun x => dY (ω, x) := by
     filter_upwards [hJoint] with ω hω
     filter_upwards [hω] with x hx
-    simp only [dX, dY]
+    simp [dX, dY]
     rw [hVariance x, hx]
   filter_upwards [hDensity] with ω hω
   change volume.withDensity (fun x => dX (ω, x)) =
@@ -97,8 +95,7 @@ theorem equatorGFF_GMC_unique_ae
     exact tendstoInMeasure_ae_unique hLeft' hRight
   have hAll : ∀ᵐ ω ∂P, ∀ nm : ℕ × ℕ,
       ∫ x, f nm x ∂M ω = ∫ x, f nm x ∂N ω := by
-    rw [ae_all_iff]
-    exact hTest
+    rwa [ae_all_iff]
   filter_upwards [hAll] with ω hω
   apply admissible_countable_tests_determine_chart_measures Set.univ isOpen_univ
     (M ω) (N ω) ?_ ?_ ?_ ?_ K hKcompact hKU hKcofinal f ?_ ?_ ?_

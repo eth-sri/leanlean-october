@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.Tails.OffCenterWickCopy
-public import DOZZ.GMC.Moments.InversionSpatialLaw
+import DOZZ.Correlations.Tails.OffCenterWickCopy
+import DOZZ.GMC.Moments.InversionSpatialLaw
 
 /-! Pin-copy Wick integral laws over the actual finite spatial reference measure. -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal NNReal
 

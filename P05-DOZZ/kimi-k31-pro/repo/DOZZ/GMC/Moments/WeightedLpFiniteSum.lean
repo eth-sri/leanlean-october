@@ -2,15 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import Mathlib.MeasureTheory.Integral.MeanInequalities
-public import Mathlib.MeasureTheory.Integral.Lebesgue.Add
-public import Mathlib.Analysis.SpecialFunctions.Pow.Continuity
+import Mathlib.MeasureTheory.Integral.MeanInequalities
+import Mathlib.MeasureTheory.Integral.Lebesgue.Add
+import Mathlib.Analysis.SpecialFunctions.Pow.Continuity
 
 /-! Finite-sum Minkowski inequality for extended nonnegative random variables. -/
 
-@[expose] public section
 
 open MeasureTheory
 open scoped ENNReal
@@ -61,10 +59,8 @@ theorem ennreal_lintegral_rpow_tsum_le_of_roots_summable
   let partialPow (N : ℕ) (ω : Ω) : ℝ≥0∞ := partialSum N ω ^ p
   let root (n : ℕ) : ℝ≥0∞ := (∫⁻ ω, f n ω ^ p ∂μ) ^ (1 / p)
   let roots : ℝ≥0∞ := ∑' n : ℕ, root n
-  have hpartialMeas (N : ℕ) : AEMeasurable (partialSum N) μ := by
-    exact Finset.aemeasurable_fun_sum _ (fun n hn => hf n)
-  have hpartialPowMeas (N : ℕ) : AEMeasurable (partialPow N) μ := by
-    exact ENNReal.continuous_rpow_const.measurable.comp_aemeasurable (hpartialMeas N)
+  have hpartialMeas (N : ℕ) : AEMeasurable (partialSum N) μ := Finset.aemeasurable_fun_sum _ (fun n hn => hf n)
+  have hpartialPowMeas (N : ℕ) : AEMeasurable (partialPow N) μ := ENNReal.continuous_rpow_const.measurable.comp_aemeasurable (hpartialMeas N)
   have hpartialMono : Monotone partialSum := by
     intro N M hNM ω
     dsimp [partialSum]
@@ -90,7 +86,7 @@ theorem ennreal_lintegral_rpow_tsum_le_of_roots_summable
     calc
       _ = ∫⁻ ω, ⨆ N, partialPow N ω ∂μ := by
         apply lintegral_congr
-        exact hpoint
+        assumption
       _ = _ := lintegral_iSup' hpartialPowMeas
         (ae_of_all μ fun ω => fun N M hNM => hmonoPow hNM ω)
   rw [htotal]
@@ -101,8 +97,7 @@ theorem ennreal_lintegral_rpow_tsum_le_of_roots_summable
   have hfiniteRoots : (∑ n ∈ Finset.range N, root n) ≤ roots := by
     dsimp [roots, root]
     exact ENNReal.sum_le_tsum _
-  have hrootBound : (∫⁻ ω, partialSum N ω ^ p ∂μ) ^ (1 / p) ≤ roots := by
-    exact hmink.trans hfiniteRoots
+  have hrootBound : (∫⁻ ω, partialSum N ω ^ p ∂μ) ^ (1 / p) ≤ roots := hmink.trans hfiniteRoots
   have hpowId : (∫⁻ ω, partialSum N ω ^ p ∂μ) =
       ((∫⁻ ω, partialSum N ω ^ p ∂μ) ^ (1 / p)) ^ p := by
     rw [← ENNReal.rpow_mul]

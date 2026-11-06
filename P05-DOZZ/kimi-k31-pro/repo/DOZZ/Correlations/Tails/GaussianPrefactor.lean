@@ -2,16 +2,14 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.Tails.OffCenterRegression
-public import DOZZ.GFFStructure.HarmonicMoments
-public import DOZZ.Statements.Correlations.OneInsertionTailCoefficient
+import DOZZ.Correlations.Tails.OffCenterRegression
+import DOZZ.GFFStructure.HarmonicMoments
+import DOZZ.Statements.Correlations.OneInsertionTailCoefficient
 
 /-! Exact lognormal prefactor moments for the one-insertion tail. The exponent after the
 off-center Gaussian integration is the position exponent of `DOZZ.oneInsertionTailCoefficient`. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal NNReal
@@ -34,8 +32,7 @@ theorem gaussian_wick_power_moment
     rw [show (γ * U ω - γ ^ 2 * variance U P / 2) * p =
       -p * γ ^ 2 * variance U P / 2 + (p * γ) * U ω by ring, Real.exp_add]
     ring
-  rw [heq, integral_const_mul, gaussian_centered_mgf P U hU hmean (p * γ)]
-  rw [mul_assoc, ← Real.exp_add]
+  rw [heq, integral_const_mul, gaussian_centered_mgf P U hU hmean (p * γ), mul_assoc, ← Real.exp_add]
   congr 2
   ring
 
@@ -68,8 +65,7 @@ theorem offCenter_prefactor_moment
   rw [gaussian_wick_power_moment P N hN hmean γ
     (Fz * ‖z‖ ^ (-4 : ℝ)) p hK, hvar,
     Real.mul_rpow hFz.le (Real.rpow_pos_of_pos hn _).le, ← Real.rpow_mul hn.le]
-  rw [Real.rpow_def_of_pos hn, Real.rpow_def_of_pos hn]
-  rw [mul_assoc, ← Real.exp_add]
+  rw [Real.rpow_def_of_pos hn, Real.rpow_def_of_pos hn, mul_assoc, ← Real.exp_add]
   have he : Real.log ‖z‖ * (-4 * p) + γ ^ 2 * (2 * Real.log ‖z‖) * (p ^ 2 - p) / 2 =
       Real.log ‖z‖ * (-4 * α * (Q γ - α)) := by
     calc

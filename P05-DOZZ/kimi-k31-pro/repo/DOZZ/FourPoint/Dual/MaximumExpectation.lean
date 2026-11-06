@@ -2,11 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Dual.IncrementIntegrability
+import DOZZ.FourPoint.Dual.IncrementIntegrability
 import Mathlib.Tactic
 /-! Integrated signed maximum sandwich with its explicit first-order error. -/
-@[expose] public section
 open MeasureTheory ProbabilityTheory
 namespace DOZZ.Proofs
 
@@ -68,8 +66,7 @@ theorem dual_williams_increment_expectation_sandwich
   have he : (∫ v, G v ∂P.prod R) =
       p*Real.exp (γ*c)*(∫ ω, b ω*(A ω)^(-p-1) ∂P)*(∫ v, J v ∂R) := by
     dsimp only [G]
-    rw [integral_const_mul]
-    rw [integral_prod_mul (fun ω => b ω*(A ω)^(-p-1)) J]
+    rw [integral_const_mul, integral_prod_mul (fun ω => b ω*(A ω)^(-p-1)) J]
     ring
   refine ⟨integral_mono_ae hJi hji (hbound.mono fun _ hv => hv.1), ?_⟩
   have hu := integral_mono_ae hji (hJci.add hGi) (hbound.mono fun _ hv => hv.2)

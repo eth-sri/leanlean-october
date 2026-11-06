@@ -2,11 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.Defs.DozzFormula
-public import DOZZ.Statements.Defs.IsUpsilon
-public import DOZZ.Statements.Defs.SExp
+import DOZZ.Statements.Defs.DozzFormula
+import DOZZ.Statements.Defs.IsUpsilon
+import DOZZ.Statements.Defs.SExp
 import DOZZ.DOZZAlgebra.GenericLocus
 import DOZZ.Upsilon.Uniqueness
 import DOZZ.Upsilon.ZeroStructure
@@ -28,7 +27,6 @@ the entire function `Υ` at its zero `0`, and the ratio of the six non-singular 
 pure-algebra rewrite of the product on the punctured neighbourhood, and the assembly.
 -/
 
-@[expose] public section
 
 open Filter Topology
 
@@ -235,4 +233,3 @@ theorem dozzFormula_zeroMode_limit {γ μ : ℝ} {U : ℂ → ℂ} (hγ : 0 < γ
 
 end DOZZ.Proofs
 
-end

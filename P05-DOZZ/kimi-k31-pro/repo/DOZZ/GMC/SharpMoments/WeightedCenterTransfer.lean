@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.SharpMoments.WeightedTransfer
+import DOZZ.GMC.SharpMoments.WeightedTransfer
 
 /-! # Weighted local moments at the chart center are controlled at every center
 
@@ -14,7 +13,6 @@ transfer of small-disk moments holds with a constant independent of `N`. Monoton
 local moment at any other center, for positive subcritical orders.
 -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped ENNReal NNReal
@@ -71,7 +69,7 @@ theorem insertionTruncWeightE_tendsto (γ α : ℝ) (y : ℂ) :
 theorem insertionTrunc_mass_tendsto (γ α : ℝ) (μ : Measure ℂ) (z : ℂ) (ρ : ℝ) :
     Tendsto (fun N : ℕ => ∫⁻ x in Metric.ball z ρ, (insertionTruncWeight γ α N (x - z) : ℝ≥0∞)
         ∂μ) atTop (𝓝 (weightedGmcBallMass γ μ α z ρ)) := by
-  simp only [coe_insertionTruncWeight]
+  simp [coe_insertionTruncWeight]
   exact lintegral_tendsto_of_tendsto_of_monotone
     (fun N => ((measurable_insertionTruncWeightE γ α N).comp
       (measurable_id.sub_const z)).aemeasurable)

@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.FiniteChaosInterpolationCalculus
-public import Mathlib.Analysis.SpecialFunctions.Exp
+import DOZZ.GMC.FiniteChaosInterpolationCalculus
+import Mathlib.Analysis.SpecialFunctions.Exp
 
 /-! Uniform bounds for the Gaussian-coordinate derivatives of finite-chaos Laplace tests. -/
 
-@[expose] public section
 
 namespace DOZZ.Proofs
 
@@ -18,9 +16,7 @@ lemma mul_exp_neg_le_one {x : ℝ} : x * Real.exp (-x) ≤ 1 := by
   have hxe : x ≤ Real.exp x := by
     linarith [Real.add_one_le_exp x]
   have hmul := mul_le_mul_of_nonneg_right hxe (le_of_lt (Real.exp_pos (-x)))
-  rw [← Real.exp_add, add_neg_cancel, Real.exp_zero] at hmul
-  exact hmul
-
+  rwa [← Real.exp_add, add_neg_cancel, Real.exp_zero] at hmul
 /-- The second scaled exponential moment is bounded uniformly as well. -/
 lemma sq_mul_exp_neg_le_four {x : ℝ} (hx : 0 ≤ x) : x ^ 2 * Real.exp (-x) ≤ 4 := by
   let y : ℝ := x / 2
@@ -43,9 +39,7 @@ lemma sq_mul_exp_neg_le_four {x : ℝ} (hx : 0 ≤ x) : x ^ 2 * Real.exp (-x) �
       _ ≤ 4 * (Real.exp y * Real.exp y) := by nlinarith [hsq]
       _ = 4 * Real.exp x := by rw [hexp]
   have hmul := mul_le_mul_of_nonneg_right hbound (le_of_lt (Real.exp_pos (-x)))
-  rw [mul_assoc, ← Real.exp_add, add_neg_cancel, Real.exp_zero, mul_one] at hmul
-  exact hmul
-
+  rwa [mul_assoc, ← Real.exp_add, add_neg_cancel, Real.exp_zero, mul_one] at hmul
 /-- Each nonnegative Wick weight is bounded by the total finite-chaos mass. -/
 lemma finiteChaosVectorWeight_le_mass
     {ι : Type*} [Fintype ι]
@@ -83,7 +77,6 @@ lemma finiteChaos_laplace_first_weight_bound
     ‖finiteChaosVectorWeight a v γ x i *
       (-s * Real.exp (-s * finiteChaosVectorMass a v γ x))‖ ≤ 1 := by
   have hmass := finiteChaosVectorWeight_le_mass a v γ ha x i
-  have hm := finiteChaosVectorMass_nonneg a v γ ha x
   have hscaled :
       s * finiteChaosVectorWeight a v γ x i ≤
         s * finiteChaosVectorMass a v γ x := mul_le_mul_of_nonneg_left hmass.2 hs
@@ -99,7 +92,7 @@ lemma finiteChaos_laplace_first_weight_bound
       _ ≤ 1 := by
         rw [show -s * finiteChaosVectorMass a v γ x =
           -(s * finiteChaosVectorMass a v γ x) by ring]
-        exact hbound
+        assumption
   simpa [Real.norm_eq_abs, abs_mul, abs_neg, abs_of_nonneg hmass.1,
     abs_of_nonneg hs, abs_of_nonneg (Real.exp_nonneg _), mul_assoc, mul_left_comm,
     mul_comm] using hmul'
@@ -131,7 +124,7 @@ lemma finiteChaos_laplace_second_weight_bound
         Real.exp (-s * finiteChaosVectorMass a v γ x) ≤ 4 := by
     rw [show -s * finiteChaosVectorMass a v γ x =
       -(s * finiteChaosVectorMass a v γ x) by ring]
-    exact hpow
+    assumption
   have hbound :
       (s * finiteChaosVectorWeight a v γ x i) *
         (s * finiteChaosVectorWeight a v γ x j) *
@@ -156,10 +149,7 @@ lemma finiteChaos_laplace_second_weight_bound
           Real.exp (-s * finiteChaosVectorMass a v γ x) := by
     rw [Real.norm_eq_abs, abs_of_nonneg hval]
     ring
-  rw [hnorm]
-  exact hbound
-
-
+  rwa [hnorm]
 /-- The coordinate derivative of a Laplace score is uniformly bounded. This is the concrete
 growth estimate needed to discharge the Gaussian Stein domination hypotheses for Laplace tests. -/
 theorem finiteChaos_laplace_score_derivative_norm_le

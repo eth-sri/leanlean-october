@@ -2,15 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.ShiftEquations.PoleSubtracted.MomentBounds
-public import Mathlib.MeasureTheory.Integral.Lebesgue.Markov
-public import DOZZ.Correlations.Analytic.ComplexMassIncrement
+import DOZZ.ShiftEquations.PoleSubtracted.MomentBounds
+import Mathlib.MeasureTheory.Integral.Lebesgue.Markov
+import DOZZ.Correlations.Analytic.ComplexMassIncrement
 
 /-! The threshold and Hölder estimate for the complex annular increments. -/
 
-@[expose] public section
 open MeasureTheory
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -36,8 +34,8 @@ theorem annular_threshold_estimate
     have he : (fun ω => I ω ^ (q / (q - 1))) = I := by
       funext ω
       by_cases hω : ω ∈ S
-      · simp only [I, Set.indicator_of_mem hω, ENNReal.one_rpow]
-      · simp only [I, Set.indicator_of_notMem hω, ENNReal.zero_rpow_of_pos hp]
+      · simp [I, Set.indicator_of_mem hω, ENNReal.one_rpow]
+      · simp [I, Set.indicator_of_notMem hω, ENNReal.zero_rpow_of_pos hp]
     rw [he, lintegral_indicator_const hS]
     exact one_mul _
   have hmark : P S ≤ (∫⁻ ω, Y ω ^ m ∂P) / u ^ m := by
@@ -49,7 +47,7 @@ theorem annular_threshold_estimate
   have hbound : ∀ᵐ ω ∂P, F ω ≤ u * D ω + B ω * I ω := by
     filter_upwards [hsmall, hlarge] with ω hs hl
     by_cases hω : ω ∈ S
-    · simpa only [I, Set.indicator_of_mem hω, mul_one] using
+    · simpa [I, Set.indicator_of_mem hω, mul_one] using
         hl.trans le_add_self
     · have hy : Y ω < u := lt_of_not_ge hω
       exact (hs hy).trans le_self_add
@@ -57,13 +55,13 @@ theorem annular_threshold_estimate
     (∫⁻ ω, F ω ∂P) ≤ ∫⁻ ω, u * D ω + B ω * I ω ∂P := lintegral_mono_ae hbound
     _ = u * (∫⁻ ω, D ω ∂P) + ∫⁻ ω, B ω * I ω ∂P := by
       have hbi : AEMeasurable (fun ω => B ω * I ω) P := by
-        simpa only [Pi.mul_def] using hB.mul hI.aemeasurable
+        simpa [Pi.mul_def] using hB.mul hI.aemeasurable
       rw [lintegral_add_right' (fun ω => u * D ω) hbi,
         lintegral_const_mul' _ _ hu']
     _ ≤ u * (∫⁻ ω, D ω ∂P) +
         (∫⁻ ω, B ω ^ q ∂P) ^ (1 / q) * (P S) ^ (1 / (q / (q - 1))) := by
       exact add_le_add_right (by
-        simpa only [hIp] using lintegral_mul_le_holder hB hI.aemeasurable hq) _
+        simpa [hIp] using lintegral_mul_le_holder hB hI.aemeasurable hq) _
     _ ≤ _ := add_le_add_right
       (mul_le_mul_right (ENNReal.rpow_le_rpow hmark
         (show 0 ≤ 1 / (q / (q - 1)) from (one_div_pos.mpr hp).le)) _) _

@@ -2,16 +2,14 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.EquatorGFFChaosTransport
-public import DOZZ.GMC.Construction.GMCMeasurableVersion
-public import DOZZ.GMC.Construction.FiniteMeasureTotalize
-public import DOZZ.GMC.Moments.ChaosLawFDD
+import DOZZ.GMC.EquatorGFFChaosTransport
+import DOZZ.GMC.Construction.GMCMeasurableVersion
+import DOZZ.GMC.Construction.FiniteMeasureTotalize
+import DOZZ.GMC.Moments.ChaosLawFDD
 
 /-! Measurable-law transport for the equator field and its GMC. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped Distributions ENNReal NNReal
@@ -136,7 +134,7 @@ theorem equatorGFF_GMC_open_mass_test_fintype_law
       · funext i
         simp [reindex, baseX]
       · funext j
-        simp only [reindex, baseX, Function.comp_apply, Equiv.apply_symm_apply]
+        simp [reindex, baseX, Function.comp_apply, Equiv.apply_symm_apply]
         exact (hmassX ω j).symm
     rw [hEq]
     exact (AEMeasurable.map_map_of_aemeasurable hpost.aemeasurable hbaseXmeas).symm
@@ -148,7 +146,7 @@ theorem equatorGFF_GMC_open_mass_test_fintype_law
       · funext i
         simp [reindex, baseY]
       · funext j
-        simp only [reindex, baseY, Function.comp_apply, Equiv.apply_symm_apply]
+        simp [reindex, baseY, Function.comp_apply, Equiv.apply_symm_apply]
         exact (hmassY ω j).symm
     rw [hEq]
     exact (AEMeasurable.map_map_of_aemeasurable hpost.aemeasurable hbaseYmeas).symm
@@ -199,10 +197,8 @@ theorem equatorGFF_GMC_law_transport
     (fun f => X ω f, ⟨N ω, hNfinite ω⟩)
   let outY : Ω' → GMCTransportOutput := fun ω =>
     (fun f => X' ω f, ⟨N' ω, hN'finite ω⟩)
-  have hCfield : MeasurableSpace.generateFrom Cfield = MeasurableSpace.pi := by
-    exact generateFrom_measurableCylinders
-  have hCmass : MeasurableSpace.generateFrom Cmass = MeasurableSpace.pi := by
-    exact generateFrom_measurableCylinders
+  have hCfield : MeasurableSpace.generateFrom Cfield = MeasurableSpace.pi := generateFrom_measurableCylinders
+  have hCmass : MeasurableSpace.generateFrom Cmass = MeasurableSpace.pi := generateFrom_measurableCylinders
   have hCfieldSpan : IsCountablySpanning Cfield := by
     refine ⟨fun _ => Set.univ, ?_, ?_⟩
     · intro n
@@ -279,21 +275,20 @@ theorem equatorGFF_GMC_law_transport
       have heval : Measurable (fun q : GMCTransportOutput =>
           (gmcOutputCode q).2 ⟨s, hs⟩) := by
         have h := (measurable_pi_iff.mp (measurable_snd.comp hcode)) ⟨s, hs⟩
-        exact h
+        assumption
       simpa [gmcOutputCode] using heval
     · have heval : Measurable (fun q : GMCTransportOutput =>
           (gmcOutputCode q).2 ⟨Set.univ, isOpen_univ⟩) := by
         have h := (measurable_pi_iff.mp (measurable_snd.comp hcode))
           ⟨Set.univ, isOpen_univ⟩
-        exact h
+        assumption
       simpa [gmcOutputCode] using heval
   have hforget : Measurable forget := by
     apply Measurable.prodMk
     · change Measurable (fun q : GMCTransportOutput => (gmcOutputCode q).1)
       exact measurable_fst.comp hcode
     · exact hforgetMeasure
-  have hHout : Measurable (fun q : GMCTransportOutput => H q.1 q.2.1) := by
-    exact hH.comp hforget
+  have hHout : Measurable (fun q : GMCTransportOutput => H q.1 q.2.1) := hH.comp hforget
   have hLaw : Measure.map outX P = Measure.map outY P' := by
     let : IsProbabilityMeasure P := hX.1
     let : IsProbabilityMeasure P' := hX'.1
@@ -329,7 +324,7 @@ theorem equatorGFF_GMC_law_transport
         have h := congrArg (fun μ : Measure ((s → ℝ) × (t → ℝ≥0∞)) => μ (As ×ˢ Bs)) hv
         rw [Measure.map_apply_of_aemeasurable hvXmeas hAB,
           Measure.map_apply_of_aemeasurable hvYmeas hAB] at h
-        exact h
+        assumption
       have hSmeas : @MeasurableSet GMCTransportOutput mOutput
           (gmcOutputCode ⁻¹' (cylinder s As ×ˢ cylinder t Bs)) := by
         have hCA : cylinder s As ∈ Cfield := by

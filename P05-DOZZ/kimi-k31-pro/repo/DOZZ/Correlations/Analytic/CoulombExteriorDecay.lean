@@ -2,19 +2,17 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.Analytic.CoulombInsertionDecay
+import DOZZ.Correlations.Analytic.CoulombInsertionDecay
 
 /-! The insertion at infinity has the same small-moment decay after inversion. -/
 
-@[expose] public section
 open MeasureTheory
 open scoped ENNReal
 namespace DOZZ.Proofs
 
 /-- Uniform polynomial decay of the Coulomb mass outside a growing disk. The inversion law
-`DOZZ.equatorGFF_GMC_inversion_law` transfers the exterior power integral to a shrinking weighted
+`equatorGFF_GMC_inversion_law` transfers the exterior power integral to a shrinking weighted
 disk. -/
 theorem coulomb_exterior_moment_decay
     {Ω : Type*} [MeasurableSpace Ω] {N : ℕ}
@@ -70,7 +68,7 @@ theorem coulomb_exterior_moment_decay
     _ ≤ B ^ m * (ENNReal.ofReal ((1 / R) ^ (γ * gap * m)) * C) := by
       apply mul_le_mul_right
       apply hdec αinf hi (1 / R) (one_div_pos.mpr hR0)
-      simpa only [min_self, div_one] using (one_div_le_one_div_of_le zero_lt_one hR)
+      simpa [min_self, div_one] using (one_div_le_one_div_of_le zero_lt_one hR)
     _ = _ := by ring
 
 end DOZZ.Proofs

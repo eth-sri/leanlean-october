@@ -2,17 +2,15 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.ShiftEquations.Strip.ModelLaw
-public import DOZZ.Correlations.Tails.OriginPolarMass
-public import DOZZ.Correlations.Tails.SingularMassMeasurability
-public import DOZZ.ShiftEquations.Reflection.Witness
-public import DOZZ.Statements.Brownian.EquatorGFFLateralGMCDecomposition
+import DOZZ.ShiftEquations.Strip.ModelLaw
+import DOZZ.Correlations.Tails.OriginPolarMass
+import DOZZ.Correlations.Tails.SingularMassMeasurability
+import DOZZ.ShiftEquations.Reflection.Witness
+import DOZZ.Statements.Brownian.EquatorGFFLateralGMCDecomposition
 
 /-! The critical small-power limit for the genuine equator singular mass at the origin. -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
 
@@ -83,14 +81,14 @@ theorem lastone_origin_smallPower_limit
       (𝓝[>] 0) (𝓝 2) := by
   let : IsProbabilityMeasure P := hX.1
   obtain ⟨A, hc, hA, hA0, hBp, hBn, hhalves, hZm, hAZ, hZ⟩ :=
-    DOZZ.equatorGFF_lateral_GMC_decomposition P X M γ hγ hγ2 hX hM
+    equatorGFF_lateral_GMC_decomposition P X M γ hγ hγ2 hX hM
   let Z : Ω → Measure ℝ := fun ω => lateralProjectedGMC γ (A ω) (M ω)
   have hsource : IsSourceLateralProjection P X γ M Z :=
     ⟨hX, hM, A, hc, hA, hA0, hBp, hBn, hhalves, hZm, hAZ, ae_of_all P (fun _ => rfl)⟩
   obtain ⟨Bc, hBc⟩ := exists_reflectionData_family P X γ M Z hsource hZ
   let B : ℝ → Ω → BrownianPath × BrownianPath := fun ν => Bc (Q γ - ν)
   have hB (ν : ℝ) (hν : 0 < ν) : IsTwoSidedConditionedBrownianProcess P (B ν) ν := by
-    simpa only [B, sub_sub_cancel] using (hBc (Q γ - ν) (by linarith)).1
+    simpa [B, sub_sub_cancel] using (hBc (Q γ - ν) (by linarith)).1
   have hInd (ν : ℝ) (hν : 0 < ν) : IndepFun (B ν) Z P :=
     (hBc (Q γ - ν) (by linarith)).2.2
   have hlim := lastone_williamsModel_smallPower_limit P γ hγ hγ2 Z B hB hZ hInd

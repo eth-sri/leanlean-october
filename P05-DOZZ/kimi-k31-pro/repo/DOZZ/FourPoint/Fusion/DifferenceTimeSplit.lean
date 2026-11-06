@@ -2,10 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Fusion.DifferenceSpatialSplit
+import DOZZ.FourPoint.Fusion.DifferenceSpatialSplit
 /-! # Signed time integrability and the full KRV split -/
-@[expose] public section
 open MeasureTheory Set
 namespace DOZZ.Proofs
 /-- The local signed expectation has an integrable time majorant after scaling. -/
@@ -24,7 +22,7 @@ theorem fusion_localDifference_time_integrable {Ω : Type*} [MeasurableSpace Ω]
   obtain ⟨B, _, hb⟩ := fusionInterpolatedFactor_uniform_bound P X hX γ hγ hγ2 M hM α₁ α₂ α₃ (-p - 1) (by linarith)
   have hf : Measurable (fusionDifferenceKernel γ α₁ α₂ α₃ z) := by
     have hm : Measurable (fun x : ℂ => (z, x)) := measurable_const.prodMk measurable_id
-    simpa only [Function.comp_def] using (fusionDifferenceKernel_measurable γ α₁ α₂ α₃).comp hm
+    simpa [Function.comp_def] using (fusionDifferenceKernel_measurable γ α₁ α₂ α₃).comp hm
   have hm := fusion_segment_time_expectation_measurable P X hX γ hγ hγ2 M hM α₁ α₂ α₃ (-p - 1) z
     ((Metric.ball (0 : ℂ) (1 / 2)).indicator (fusionDifferenceKernel γ α₁ α₂ α₃ z))
     (hf.indicator Metric.isOpen_ball.measurableSet)
@@ -37,7 +35,7 @@ theorem fusion_localDifference_time_integrable {Ω : Type*} [MeasurableSpace Ω]
   apply norm_integral_le_of_norm_le (hK.norm.mul_const B)
   exact ae_of_all _ fun y => by
     rw [norm_mul, Real.norm_eq_abs]
-    simpa only [Real.norm_eq_abs] using
+    simpa [Real.norm_eq_abs] using
       mul_le_mul_of_nonneg_left (hb t ht y z (by linarith)) (norm_nonneg (K y))
 /-- The full signed time integral splits into its local and exterior parts. -/
 theorem fusion_difference_time_split {Ω : Type*} [MeasurableSpace Ω]
@@ -54,7 +52,7 @@ theorem fusion_difference_time_split {Ω : Type*} [MeasurableSpace Ω]
   intro I f
   have hf : Measurable f := by
     have hm : Measurable (fun x : ℂ => (z, x)) := measurable_const.prodMk measurable_id
-    simpa only [Function.comp_def] using (fusionDifferenceKernel_measurable γ α₁ α₂ α₃).comp hm
+    simpa [Function.comp_def] using (fusionDifferenceKernel_measurable γ α₁ α₂ α₃).comp hm
   have hm := fusion_segment_time_expectation_measurable P X hX γ hγ hγ2 M hM α₁ α₂ α₃ (-p - 1) z
     ((Metric.ball (0 : ℂ) (1 / 2))ᶜ.indicator f) (hf.indicator Metric.isOpen_ball.measurableSet.compl)
   simp only [integral_indicator Metric.isOpen_ball.measurableSet.compl] at hm

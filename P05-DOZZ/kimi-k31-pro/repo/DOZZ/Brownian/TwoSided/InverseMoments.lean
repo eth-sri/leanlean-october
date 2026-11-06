@@ -2,13 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Brownian.Reflection.Moments
+import DOZZ.ShiftEquations.Strip.UnitBlock
+import DOZZ.Brownian.Reflection.Moments
 
 /-! Initial-block inverse bounds with a common radial constant for all subcritical charges. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Set Filter Topology
 open scoped ENNReal NNReal
@@ -19,15 +18,7 @@ namespace DOZZ.Proofs
 endpoint convention. -/
 theorem twosided_initial_block_le_mass {Ω : Type*} (γ : ℝ)
     (B : Ω → BrownianPath × BrownianPath) (Z : Ω → Measure ℝ) (ω : Ω) :
-    initialUnitBlockMass γ (B ω).1 (Z ω) ≤ twoSidedReflectionMass γ B Z ω := by
-  unfold initialUnitBlockMass twoSidedReflectionMass
-  apply lintegral_mono
-  intro t
-  by_cases ht : 0 ≤ t ∧ t ≤ 1
-  · simp only [ht, dite_true, twoSidedConditionedValue]
-    rfl
-  · simp only [ht, dite_false, ENNReal.ofReal_zero]
-    exact zero_le
+    initialUnitBlockMass γ (B ω).1 (Z ω) ≤ twoSidedReflectionMass γ B Z ω := DOZZ.Proofs.lastone_initialUnitBlockMass_le γ B Z ω
 
 /-- A bounded drift range and one uniform lateral inverse moment give a uniform inverse
 moment of the full mass. Its radial factor uses only the first half-path. -/

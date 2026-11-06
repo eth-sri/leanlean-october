@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.FourPoint.ThreePointFiniteCorrelation
-public import DOZZ.FourPoint.Diagonal.Endpoint
+import DOZZ.Statements.FourPoint.ThreePointFiniteCorrelation
+import DOZZ.FourPoint.Diagonal.Endpoint
 import DOZZ.FourPoint.FourPointTZeroEqStructureConstant
 import DOZZ.Hypergeom.ClassificationPhysicalNormalization
 
@@ -13,7 +12,6 @@ import DOZZ.Hypergeom.ClassificationPhysicalNormalization
 Continuity at the puncture and the coincident-root value are proved physical inputs, rather
 than extra hypotheses on the abstract Gauss PDE solution. -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory Filter Topology TopologicalSpace Set
 open scoped ENNReal NNReal Topology
 namespace DOZZ.Proofs
@@ -56,6 +54,6 @@ theorem degenerateFourPoint_diagonal_classification_of_BPZ {Ω : Type*} [Measura
     (fun z => fourPointT P M γ μ (-χ) α₁ α₂ α₃ z) hBPZ hcont
   rw [fourPointT_zero_eq_structureConstant P X M γ μ χ α₁ α₂ α₃ hγ hγ₂ hμ
     (by linarith) hα₂ hα₃ (by linarith) hX hM] at hnorm
-  exact hnorm
+  assumption
 
 end DOZZ.Proofs

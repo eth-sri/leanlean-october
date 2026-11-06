@@ -2,11 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.ShiftEquations.Mobius.RepinField
-public import DOZZ.ShiftEquations.Mobius.RepinChaos
-public import DOZZ.Statements.Defs.IsGMCOf
+import DOZZ.ShiftEquations.Mobius.RepinField
+import DOZZ.ShiftEquations.Mobius.RepinChaos
+import DOZZ.Statements.Defs.IsGMCOf
 import DOZZ.GMC.CircleAverage
 import DOZZ.GMC.Construction.RegularizedGMCExpectedMeasure
 import DOZZ.GMC.CompatibleAdmissibleGMCUnique
@@ -23,7 +22,6 @@ bounded expectation, and the regularized chaos of `X` converges to `M` in probab
 bounded continuous tests. Hence the repinned regularized chaos converges to the repinned chaos.
 -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
@@ -47,7 +45,7 @@ theorem tendstoInMeasure_const_mul {Ω ι : Type*} [MeasurableSpace Ω] {P : Mea
     lt_of_le_of_lt (by exact_mod_cast hnm) (show (m : ℝ) < |E ω| from hω)
   have hTinter : (⋂ n, T n) = ∅ := by
     ext ω
-    simp only [mem_iInter, mem_empty_iff_false, iff_false, not_forall]
+    simp [mem_iInter, mem_empty_iff_false, iff_false, not_forall]
     obtain ⟨n, hn⟩ := exists_nat_gt (|E ω|)
     exact ⟨n, fun h => (lt_asymm hn) h⟩
   have hTlimit : Tendsto (fun n => P (T n)) atTop (𝓝 0) := by
@@ -69,7 +67,7 @@ theorem tendstoInMeasure_const_mul {Ω ι : Type*} [MeasurableSpace Ω] {P : Mea
       {ω | K < |E ω|} ∪ {ω | ε / K ≤ ‖F i ω - G ω‖} := by
     intro ω hω
     by_contra hnot
-    simp only [mem_union, mem_ofPred_eq, not_or, not_lt, not_le] at hnot
+    simp [mem_union, mem_ofPred_eq, not_or, not_lt, not_le] at hnot
     have : ‖E ω * F i ω - E ω * G ω‖ < ε := by
       rw [← mul_sub, norm_mul, Real.norm_eq_abs]
       calc |E ω| * ‖F i ω - G ω‖ ≤ K * ‖F i ω - G ω‖ :=
@@ -140,7 +138,7 @@ theorem tendstoInMeasure_regularizedGMC_integral_sub {Ω : Type*} [MeasurableSpa
               rw [integral_const, smul_eq_mul, mul_comm, measureReal_def]
       have hm : μ ω univ ≠ ⊤ := measure_ne_top _ _
       have hω' : ε ≤ |∫ x, u r x ∂μ ω - ∫ x, v x ∂μ ω| := by
-        simpa only [mem_ofPred_eq, sub_zero, Real.norm_eq_abs] using hω
+        simpa [mem_ofPred_eq, sub_zero, Real.norm_eq_abs] using hω
       change ENNReal.ofReal (ε / η) ≤ μ ω univ
       rw [ENNReal.ofReal_le_iff_le_toReal hm, div_le_iff₀ hη]
       linarith
@@ -170,7 +168,7 @@ noncomputable def repinPotentialAvg (a b : ℂ) (s : ℝ) (x : ℂ) : ℝ :=
 theorem circleMeasure_eq_map_add (x : ℂ) (s : ℝ) :
     circleMeasure x s = (circleMeasure 0 s).map (fun u => u + x) := by
   have h := circleMeasure_map_affine 1 x one_ne_zero 0 s
-  simp only [one_mul, mul_zero, zero_add, norm_one, Real.log_one, sub_zero] at h
+  simp [one_mul, mul_zero, zero_add, norm_one, Real.log_one, sub_zero] at h
   exact h.symm
 
 theorem integrable_repinPotential_circle (a b : ℂ) (ha : a ≠ 0) (x : ℂ) (s : ℝ) :
@@ -266,12 +264,12 @@ theorem tendstoInMeasure_zero_const {Ω ι : Type*} [MeasurableSpace Ω] (P : Me
     (l : Filter ι) : TendstoInMeasure P (fun (_ : ι) (_ : Ω) => (0 : ℝ)) l (fun _ => 0) := by
   rw [tendstoInMeasure_iff_norm]
   intro ε hε
-  simp only [sub_self, norm_zero]
+  simp [sub_self, norm_zero]
   have : {x : Ω | ε ≤ 0} = ∅ := by
     ext x
-    simp only [mem_ofPred_eq, mem_empty_iff_false, iff_false, not_le]
+    simp [mem_ofPred_eq, mem_empty_iff_false, iff_false, not_le]
     exact hε
-  simp only [this, measure_empty]
+  simp [this, measure_empty]
   exact tendsto_const_nhds
 
 /-- **The repinned chaos is the GMC of the repinned field.** -/
@@ -346,7 +344,7 @@ theorem isGMCOf_repinChaos {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X
     have hx := hr x
     rw [show u r x - v x = f (affineInv a b x) * repinWeight a b x *
         (Real.exp (γ ^ 2 * repinPotentialAvg a b (r - Real.log ‖a‖) x) -
-          Real.exp (γ ^ 2 * repinPotential a b x)) by simp only [hu, hv]; ring,
+          Real.exp (γ ^ 2 * repinPotential a b x)) by simp [hu, hv]; ring,
       abs_mul, abs_mul]
     calc |f (affineInv a b x)| * |repinWeight a b x| *
           |Real.exp (γ ^ 2 * repinPotentialAvg a b (r - Real.log ‖a‖) x) -
@@ -375,4 +373,3 @@ theorem isGMCOf_repinChaos {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X
 
 end DOZZ.Proofs
 
-end

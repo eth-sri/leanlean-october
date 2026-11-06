@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import Mathlib.Probability.Distributions.Gaussian.Real
+import Mathlib.Probability.Distributions.Gaussian.Real
 
 /-! # Splitting Gaussian averages of antitone functions
 
@@ -14,7 +13,6 @@ shift `γ w` is at least `-u`, and antitonicity compares `f (y + γ w)` with `f 
 this twice, together with the elementary bound `(s + t)^2 ≤ (1 + 1/ε) s^2 + (1 + ε) t^2`, controls
 two nested Gaussian averages of `f`. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal NNReal
@@ -61,7 +59,7 @@ theorem gaussianSplit_pointwise (f : ℝ → ℝ) (hf : Antitone f) (hf0 : ∀ y
     rw [Set.indicator_of_mem hmem]
     have h1 := hf1 (y + γ * w)
     have h2 := hf0 (y - u)
-    simp only [Pi.one_apply]
+    simp [Pi.one_apply]
     linarith
   · have hnot : w ∉ {w : ℝ | γ * w < -u} := hw
     rw [Set.indicator_of_notMem hnot]

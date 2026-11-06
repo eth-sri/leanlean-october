@@ -2,16 +2,14 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.SumTail.Reduction
+import DOZZ.Correlations.SumTail.Reduction
 import DOZZ.Statements.Correlations.OneInsertionTailUniform
 
 /-! Proof of `DOZZ.twoInsertion_tail_sum_uniform` ([KRV, Lemma 7.3]), with every input supplied by
 the one-insertion theorem `DOZZ.oneInsertion_tail_uniform` and the separated joint-tail inequality
 `DOZZ.separatedSingularMass_joint_tail`. -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory Filter Topology TopologicalSpace Set
 open scoped ENNReal NNReal Topology
 namespace DOZZ.Proofs
@@ -45,6 +43,6 @@ theorem twoInsertion_tail_sum_uniform
   exact sumtail_twoInsertion_tail_sum_uniform_of_oneInsertion_tail P X M γ hγ hγ2 hX hM
     K2 K3 hK2 hK3 hpos2 hpos3 hsep A2 A3 hA2 hA3 hα2 hα3
     F2s F3s radius supBound derivBound lowerBound hF2 hF3
-    (DOZZ.oneInsertion_tail_uniform P X M γ hγ hγ2 hX hM)
+    (oneInsertion_tail_uniform P X M γ hγ hγ2 hX hM)
 
 end DOZZ.Proofs

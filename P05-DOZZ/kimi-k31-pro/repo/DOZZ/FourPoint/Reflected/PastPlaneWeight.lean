@@ -2,11 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Reflected.RestartPast
-public import DOZZ.FourPoint.Reflected.GlobalReinsertion
+import DOZZ.FourPoint.Reflected.RestartPast
+import DOZZ.FourPoint.Reflected.GlobalReinsertion
 /-! The retained exterior radial weight is a measurable function of the complete stopped past. -/
-@[expose] public section
 open MeasureTheory ProbabilityTheory
 open scoped NNReal
 namespace DOZZ.Proofs

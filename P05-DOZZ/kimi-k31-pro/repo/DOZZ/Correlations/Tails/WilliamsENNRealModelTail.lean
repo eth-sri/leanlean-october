@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.Tails.WilliamsModelTail
-public import DOZZ.Correlations.Tails.ENNRealMomentVersion
+import DOZZ.Correlations.Tails.WilliamsModelTail
+import DOZZ.Correlations.Tails.ENNRealMomentVersion
 
 /-! Apply the scalar Williams estimate to actual extended-real chaos masses. -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal
 
@@ -98,8 +96,7 @@ theorem williams_ennreal_model_tail_bound
     rw [← ENNReal.toReal_lt_toReal ENNReal.ofReal_ne_top
       (ENNReal.mul_lt_top hq.lt_top ENNReal.ofReal_lt_top).ne,
       ENNReal.toReal_ofReal hx0,ENNReal.toReal_mul,ENNReal.toReal_ofReal (Real.exp_nonneg _)]
-  rw [measure_congr hevent]
-  rw [← hfp.2]
+  rw [measure_congr hevent, ← hfp.2]
   exact hmodel x hx
 
 

@@ -2,16 +2,14 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.Moments.InversionTest
-public import DOZZ.GMC.Moments.InversionKernelLaw
-public import DOZZ.Statements.Defs.GffCov
+import DOZZ.GMC.Moments.InversionTest
+import DOZZ.GMC.Moments.InversionKernelLaw
+import DOZZ.Statements.Defs.GffCov
 import Mathlib.MeasureTheory.Integral.Bochner.ContinuousLinearMap
 
 /-! Inversion invariance of the covariance of local distribution tests. -/
 
-@[expose] public section
 
 open MeasureTheory
 open scoped Distributions ENNReal NNReal
@@ -68,12 +66,8 @@ theorem inversionTestFunction_reference_weight (f : ℂ → ℝ) {x : ℂ} (hx :
     rw [Real.rpow_neg hn.le]
     norm_num [Real.rpow_natCast, ← inv_pow, ← pow_mul]
   have hid := normPlus_inv_mul_jacobian hx
-  have hp := (referenceDensity_pos x).ne'
-  have hpi := (referenceDensity_pos x⁻¹).ne'
-  have hj := (Real.rpow_pos_of_pos hn (-4 : ℝ)).ne'
   dsimp [inversionTestFunction]
-  rw [hJ]
-  rw [← hid]
+  rw [hJ, ← hid]
   field_simp
 
 /-- The covariance form of the equator GFF is invariant on compact tests supported in the

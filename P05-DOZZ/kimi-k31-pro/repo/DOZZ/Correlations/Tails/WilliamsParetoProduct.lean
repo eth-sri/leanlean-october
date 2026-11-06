@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.Tails.WilliamsMaximumTail
-public import Mathlib.MeasureTheory.Integral.Prod
+import DOZZ.Correlations.Tails.WilliamsMaximumTail
+import Mathlib.MeasureTheory.Integral.Prod
 
 /-! Exact conditioning on the independent Pareto factor in the one-insertion tail estimate. -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory Set
 
 namespace DOZZ.Proofs

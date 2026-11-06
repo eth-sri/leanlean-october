@@ -2,13 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.ShiftEquations.FirstStrip.Seed
-public import DOZZ.ShiftEquations.DualR.Segment
-public import DOZZ.Statements.Defs.IsEquatorGFF
-public import DOZZ.Statements.Defs.IsGMCOf
-public import DOZZ.Statements.Complex.HorizontalStrip
+import DOZZ.ShiftEquations.FirstStrip.Seed
+import DOZZ.ShiftEquations.DualR.Segment
+import DOZZ.Statements.Defs.IsEquatorGFF
+import DOZZ.Statements.Defs.IsGMCOf
+import DOZZ.Statements.Complex.HorizontalStrip
 import DOZZ.ShiftEquations.Shift.ShiftGluing
 import DOZZ.ShiftEquations.Residual.Calibration
 import DOZZ.ShiftEquations.Residual.Joint
@@ -32,15 +31,14 @@ shift near every point, and the cut-off makes the first shift hold along the cod
 `ℂ` ([KRV, §11]: "Therefore `F` extends to a meromorphic function on a strip").
 -/
 
-@[expose] public section
 
 open MeasureTheory Filter Topology Set
 
 namespace DOZZ.Proofs
 
 /-- **The first structure shift on a strip from the unreflected formula.** `hUnreflectedFormula` is the conclusion
-of `DOZZ.gammaHalf_full_unreflected_formula` at the given field, chaos, coupling and cosmological
-constant; the diagonal classification `DOZZ.degenerateFourPoint_diagonal_classification` is used
+of `gammaHalf_full_unreflected_formula` at the given field, chaos, coupling and cosmological
+constant; the diagonal classification `degenerateFourPoint_diagonal_classification` is used
 directly. -/
 theorem structureConstant_first_shift_strip_of_unreflected
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
@@ -242,4 +240,3 @@ theorem structureConstant_first_shift_strip_of_unreflected
 
 end DOZZ.Proofs
 
-end

@@ -2,15 +2,15 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.BPZ.HypergeomNearZero
-public import DOZZ.FourPoint.Fusion.KRVRestrictedFusion
-public import DOZZ.Statements.Hypergeom.GaussCoefficientRatio
-public import DOZZ.Statements.Hypergeom.GaussCutPlane
-public import DOZZ.Statements.Hypergeom.GaussParameterA
-public import DOZZ.Statements.Hypergeom.GaussParameterB
-public import DOZZ.Statements.Hypergeom.GaussParameterC
+import DOZZ.ShiftEquations.FirstStrip.Seed
+import DOZZ.FourPoint.BPZ.HypergeomNearZero
+import DOZZ.FourPoint.Fusion.KRVRestrictedFusion
+import DOZZ.Statements.Hypergeom.GaussCoefficientRatio
+import DOZZ.Statements.Hypergeom.GaussCutPlane
+import DOZZ.Statements.Hypergeom.GaussParameterA
+import DOZZ.Statements.Hypergeom.GaussParameterB
+import DOZZ.Statements.Hypergeom.GaussParameterC
 
 /-! # The unreflected `γ/2` formula: reduction to the shift relation
 
@@ -24,7 +24,6 @@ comparing the diagonal formula along `t ↓ 0` with the restricted fusion expans
 `T(t) = C₋ + B t^κ + o(t^κ)`, `κ = γ(Q - α₁) < 1`: there `|F₋(t)|² = 1 + O(t)` and
 `|F₊(t)|² = t^κ |H'(t)|²` with `H'(0) = 1`. -/
 
-@[expose] public section
 
 open MeasureTheory Filter Topology
 open scoped ENNReal NNReal
@@ -40,21 +39,7 @@ theorem bpz_gaussParameterC_half (γ α₁ : ℝ) :
 /-- `0 < c < 1` at `χ = γ/2` on the unreflected interval. -/
 theorem bpz_gaussParameterC_half_mem {γ α₁ : ℝ} (hγ : 0 < γ) (hαlo : γ / 2 < α₁)
     (hαhi : α₁ < 2 / γ) :
-    0 < gaussParameterC γ (γ / 2) α₁ ∧ gaussParameterC γ (γ / 2) α₁ < 1 := by
-  have hQ : Q γ = 2 / γ + γ / 2 := rfl
-  unfold gaussParameterC
-  rw [hQ]
-  have h1 : γ / 2 * (2 / γ + γ / 2 - α₁) = 1 + γ / 2 * (γ / 2 - α₁) := by
-    field_simp
-    ring
-  have h2 : γ / 2 * (2 / γ + γ / 2 - α₁) = γ / 2 * (2 / γ - α₁) + γ ^ 2 / 4 := by ring
-  constructor
-  · have : γ / 2 * (γ / 2 - α₁) < 0 :=
-      mul_neg_of_pos_of_neg (by positivity) (by linarith)
-    linarith
-  · have h3 : 0 < γ / 2 * (2 / γ - α₁) := mul_pos (by positivity) (by linarith)
-    have h4 : 0 < γ ^ 2 / 4 := by positivity
-    linarith
+    0 < gaussParameterC γ (γ / 2) α₁ ∧ gaussParameterC γ (γ / 2) α₁ < 1 := DOZZ.Proofs.gaussParameterC_half_mem_window hγ hαlo hαhi
 
 /-- A real number `> 0` is not a nonpositive integer, as a complex number. -/
 theorem bpz_ne_neg_nat_of_pos {c : ℝ} (hc : 0 < c) : ∀ n : ℕ, (c : ℂ) ≠ -(n : ℂ) := by
@@ -110,7 +95,6 @@ theorem bpz_tendsto_sub_div_rpow {φ : ℝ → ℝ} {κ : ℝ} (hκ : κ < 1) (h
   filter_upwards [self_mem_nhdsWithin] with t (ht : 0 < t)
   have hk : t ^ (1 - κ) * t ^ κ = t := by
     rw [← Real.rpow_add ht, sub_add_cancel, Real.rpow_one]
-  have htk : 0 < t ^ κ := Real.rpow_pos_of_pos ht κ
   field_simp
   rw [mul_assoc, hk]
 
@@ -164,14 +148,14 @@ theorem bpz_shift_restricted {Ω : Type*} [MeasurableSpace Ω] {H : ℂ → ℂ 
   have hψd : ContDiffOn ℝ 2 ψ (Set.Ioo (-1) 1) := bpzHG_contDiffOn_normSq hH hcψ
   have hmem : Set.Ioo (-1 : ℝ) 1 ∈ 𝓝 (0 : ℝ) := Ioo_mem_nhds (by norm_num) (by norm_num)
   have hφ0 : φ 0 = 1 := by
-    simp only [hφ, Complex.ofReal_zero, bpzHG_eq_one_at_zero hH hcφ, map_one]
+    simp [hφ, Complex.ofReal_zero, bpzHG_eq_one_at_zero hH hcφ, map_one]
   have hψ0 : ψ 0 = 1 := by
-    simp only [hψ, Complex.ofReal_zero, bpzHG_eq_one_at_zero hH hcψ, map_one]
+    simp [hψ, Complex.ofReal_zero, bpzHG_eq_one_at_zero hH hcψ, map_one]
   have hφdiff : DifferentiableAt ℝ φ 0 :=
     (hφd.differentiableOn (by norm_num)).differentiableAt hmem
   have hψcont : ContinuousAt ψ 0 := hψd.continuousOn.continuousAt hmem
   -- the restricted fusion expansion
-  obtain ⟨r, hr, hrlim⟩ := DOZZ.Proofs.gammaHalf_KRV_restricted_fusion P X M γ μ α₁ α₂ α₃ hγ
+  obtain ⟨r, hr, hrlim⟩ := gammaHalf_KRV_restricted_fusion P X M γ μ α₁ α₂ α₃ hγ
     hγsq hμ hαlo hαhi hα₂ hα₃ hs hX hM
   -- the identity along `(0, 1)`
   have key : ∀ t : ℝ, 0 < t → t < 1 →
@@ -180,7 +164,7 @@ theorem bpz_shift_restricted {Ω : Type*} [MeasurableSpace Ω] {H : ℂ → ℂ 
     have hz : (t : ℂ) ∈ gaussCutPlane := by
       show (t : ℂ).im ≠ 0 ∨ (0 < (t : ℂ).re ∧ (t : ℂ).re < 1)
       right
-      simp only [Complex.ofReal_re]
+      simp [Complex.ofReal_re]
       exact ⟨ht0, ht1⟩
     have h1 := hdiag (t : ℂ) hz
     have h2 := hr (t : ℂ)
@@ -189,7 +173,6 @@ theorem bpz_shift_restricted {Ω : Type*} [MeasurableSpace Ω] {H : ℂ → ℂ 
     rw [bpzHG_norm_sq_eq_normSq, bpzHG_norm_sq_eq_normSq, bpzHG_normSq_gaussFMinus,
       bpzHG_normSq_gaussFPlus H a b c ht0, h2c, Complex.norm_real, Real.norm_of_nonneg ht0.le]
       at h2
-    have htk : 0 < t ^ κ := Real.rpow_pos_of_pos ht0 κ
     rw [hφ0]
     field_simp
     have e : Cm * (φ t + ρ * (t ^ κ * ψ t)) = Cm + B * t ^ κ + r t := h2
@@ -211,7 +194,7 @@ theorem bpz_shift_restricted {Ω : Type*} [MeasurableSpace Ω] {H : ℂ → ℂ 
         exact Complex.ofReal_ne_zero.mpr ht.ne'
     refine (hrlim.comp hof).congr' ?_
     filter_upwards [self_mem_nhdsWithin] with t (ht : 0 < t)
-    simp only [Function.comp, Complex.norm_real, Real.norm_of_nonneg ht.le, hκ]
+    simp [Function.comp, Complex.norm_real, Real.norm_of_nonneg ht.le, hκ]
   have hlimR : Tendsto (fun t : ℝ => B + r t / t ^ κ - Cm * ((φ t - φ 0) / t ^ κ)) (𝓝[>] 0)
       (𝓝 (B + 0 - Cm * 0)) :=
     (tendsto_const_nhds.add hr0).sub ((bpz_tendsto_sub_div_rpow hκ1 hφdiff).const_mul Cm)

@@ -2,25 +2,23 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.Assembly.CutoffIntegral
-public import DOZZ.GMC.CircleAverage
-public import DOZZ.Statements.Defs.RegularizedGMC
-public import DOZZ.Statements.GMC.GmcReferenceMeasure
-public import DOZZ.GMC.Construction.GMCUniqueAe
-public import DOZZ.GMC.Construction.GMCMeasurableVersion
-public import DOZZ.GMC.Construction.FatouInMeasure
-public import DOZZ.GMC.Construction.RegularizedGMCExpectedMeasure
-public import DOZZ.GMC.Construction.ReferenceMeasureFinite
-public import Mathlib.MeasureTheory.Function.ContinuousMapDense
-public import Mathlib.MeasureTheory.Integral.Bochner.Basic
-public import Mathlib.Analysis.Complex.Basic
-public import Mathlib.MeasureTheory.Integral.IntegrableOn
+import DOZZ.GMC.Assembly.CutoffIntegral
+import DOZZ.GMC.CircleAverage
+import DOZZ.Statements.Defs.RegularizedGMC
+import DOZZ.Statements.GMC.GmcReferenceMeasure
+import DOZZ.GMC.Construction.GMCUniqueAe
+import DOZZ.GMC.Construction.GMCMeasurableVersion
+import DOZZ.GMC.Construction.FatouInMeasure
+import DOZZ.GMC.Construction.RegularizedGMCExpectedMeasure
+import DOZZ.GMC.Construction.ReferenceMeasureFinite
+import Mathlib.MeasureTheory.Function.ContinuousMapDense
+import Mathlib.MeasureTheory.Integral.Bochner.Basic
+import Mathlib.Analysis.Complex.Basic
+import Mathlib.MeasureTheory.Integral.IntegrableOn
 
 /-! The circle cutoff chaos as an admissible cutoff integral, the intensity upper bound of every circle GMC version, and continuous `L¹` approximation of bounded Borel tests. -/
 
-@[expose] public section
 
 /-! ### The circle cutoff chaos
 
@@ -36,7 +34,7 @@ open scoped ENNReal NNReal Distributions
 
 namespace DOZZ.Assembly
 
-open DOZZ.Proofs
+open Proofs
 
 /-- The circle average as an admissible regularization in the cutoff radius `ε = e^{-r}`. -/
 noncomputable abbrev circleRegularization {Ω : Type*} (Xc : Ω → ℂ → ℝ → ℝ) :
@@ -50,7 +48,7 @@ theorem circleRegularization_admissible
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
     (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc) :
     IsAdmissibleLogRegularization P Set.univ circleDensity 1 (circleRegularization Xc) :=
-  DOZZ.Proofs.isCircleAverage_admissible P X hX Xc hXc Set.univ isOpen_univ
+  Proofs.isCircleAverage_admissible P X hX Xc hXc Set.univ isOpen_univ
 
 theorem logRegularizationReference_univ_circleDensity :
     logRegularizationReference Set.univ circleDensity = gmcReferenceMeasure := by
@@ -99,7 +97,7 @@ theorem integral_regularizedGMC_eq_admissibleCutoffIntegral
       integral_withDensity_eq_integral_toReal_smul he₀ (ae_of_all _ fun x => ENNReal.ofReal_lt_top)]
     apply integral_congr_ae
     filter_upwards [] with x
-    simp only [circleRegularization, one_div, Real.log_inv, Real.log_exp, neg_neg, smul_eq_mul, V,
+    simp [circleRegularization, one_div, Real.log_inv, Real.log_exp, neg_neg, smul_eq_mul, V,
       d₀]
   have hleft : (∫ x, f x ∂regularizedGMC P Xc γ r ω) =
       ∫ x, (ENNReal.ofReal (d₁ x)).toReal * f x ∂volume := by
@@ -107,12 +105,12 @@ theorem integral_regularizedGMC_eq_admissibleCutoffIntegral
       (ae_of_all _ fun x => ENNReal.ofReal_lt_top)]
     apply integral_congr_ae
     filter_upwards [] with x
-    simp only [smul_eq_mul, d₁, V]
+    simp [smul_eq_mul, d₁, V]
   rw [hleft, hright]
   apply integral_congr_ae
   filter_upwards [] with x
   rw [ENNReal.toReal_ofReal (hd₀nonneg x), ENNReal.toReal_ofReal (hd₁nonneg x)]
-  simp only [d₀, d₁]
+  simp [d₀, d₁]
   ring
 
 /-- The admissible cutoff integral of a Borel test is measurable in the sample. -/
@@ -130,7 +128,7 @@ theorem admissibleCutoffIntegral_measurable
         fun x => gaussianVariance P (fun ω => Y ω (Real.exp (-r)) x) := by
       funext x
       unfold gaussianVariance gaussianCovariance
-      simp only [pow_two]
+      simp [pow_two]
     rw [heq]; exact hv
   have hfield : Measurable (fun q : Ω × ℂ => Y q.1 (Real.exp (-r)) q.2) :=
     hY.measurableAtScale _
@@ -174,10 +172,10 @@ theorem regularizedGMC_integral_L1_uniform_cauchy
   obtain ⟨R, hR⟩ := admissibleCutoffIntegral_L1_uniform_cauchy P Set.univ circleDensity 1 _
     (circleRegularization_admissible P X hX Xc hXc) K hK (Set.subset_univ K) I hI hI2 L ε hε
   refine ⟨R, fun r s hr hs γ hγ f hf hfL hfK => ?_⟩
-  simp only [integral_regularizedGMC_eq_admissibleCutoffIntegral P X hX Xc hXc]
+  simp [integral_regularizedGMC_eq_admissibleCutoffIntegral P X hX Xc hXc]
   exact hR r s hr hs γ hγ f hf hfL hfK
 
-end DOZZ.Assembly
+end Assembly
 
 /-! ### Intensity upper bound
 
@@ -191,9 +189,9 @@ nonnegative Borel test. -/
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal Distributions BoundedContinuousFunction
 
-namespace DOZZ.Assembly
+namespace Assembly
 
-open DOZZ.Proofs
+open Proofs
 
 /-- A circle GMC version converges along the cutoffs of every circle-average witness. -/
 theorem isGMCOf_tendstoInMeasure
@@ -307,12 +305,12 @@ theorem lintegral_measure_isOpen_le_of_test_bound
           V.indicator (fun _ => (1 : ℝ≥0∞)) x :=
         tendsto_nhds_unique (tendsto_atTop_iSup fun n m hnm =>
           ENNReal.ofReal_le_ofReal (openRamp_mono V x hnm)) (openRamp_tendsto V hV hVc x)
-      simp only [hlim]
+      simp [hlim]
       rw [lintegral_indicator_const hV.measurableSet, one_mul]
     have hmeasω (n : ℕ) : Measurable (fun ω => ∫⁻ x, ENNReal.ofReal (openRamp V n x) ∂N ω) :=
       (Measure.measurable_lintegral (hrampMeas n)).comp hN
     calc ∫⁻ ω, N ω V ∂P = ∫⁻ ω, ⨆ n, ∫⁻ x, ENNReal.ofReal (openRamp V n x) ∂N ω ∂P := by
-          simp only [hpoint]
+          simp [hpoint]
       _ = ⨆ n, ∫⁻ ω, ∫⁻ x, ENNReal.ofReal (openRamp V n x) ∂N ω ∂P :=
           lintegral_iSup hmeasω (fun n m hnm ω => hmono ω hnm)
       _ ≤ ν V := by
@@ -353,7 +351,7 @@ theorem isGMCOf_lintegral_le
   have : IsFiniteMeasure gmcReferenceMeasure :=
     ⟨lt_top_iff_ne_top.mpr gmcReferenceMeasure_univ_ne_top⟩
   obtain ⟨N, hNmeas, hNfin, hMN⟩ :=
-    DOZZ.Proofs.equatorGFF_GMC_measurable_version P X hX γ hγ hγ2 M hM
+    Proofs.equatorGFF_GMC_measurable_version P X hX γ hγ hγ2 M hM
   have htest : ∀ f : ℂ →ᵇ ℝ, (∀ x, 0 ≤ f x) →
       ∫⁻ ω, ∫⁻ x, ENNReal.ofReal (f x) ∂N ω ∂P ≤
         ∫⁻ x, ENNReal.ofReal (f x) ∂gmcReferenceMeasure := by
@@ -377,7 +375,7 @@ theorem isGMCOf_lintegral_le
         hφ.aemeasurable).symm
     _ ≤ ∫⁻ x, φ x ∂gmcReferenceMeasure := lintegral_mono' hbind le_rfl
 
-end DOZZ.Assembly
+end Assembly
 
 /-! ### Continuous approximation of Borel tests
 
@@ -390,7 +388,7 @@ larger ball; both operations only decrease the pointwise distance to the test. -
 open MeasureTheory Filter Topology Set
 open scoped ENNReal NNReal
 
-namespace DOZZ.Assembly
+namespace Assembly
 
 /-- Clamping to `[-L, L]`. -/
 noncomputable def clampAbs (L t : ℝ) : ℝ := max (-L) (min L t)

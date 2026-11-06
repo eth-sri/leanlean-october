@@ -2,8 +2,7 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.Brownian.Barrier.GaussianBounds
+import DOZZ.Brownian.Barrier.GaussianBounds
 
 /-!
 # Measurable lifetime-marked Brownian paths
@@ -23,7 +22,6 @@ level-dependent first-hit kernel in Williams' statement. This module does not
 assert either path-law identity.
 -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory Filter Set TopologicalSpace
 open scoped NNReal ENNReal Topology
 namespace DOZZ.Proofs
@@ -50,7 +48,7 @@ theorem brownianPath_joint_hit_eq_iUnion :
     {z : ℝ × BrownianPath | ∃ u : ℝ≥0, z.1 ≤ z.2 u} =
       ⋃ n : ℕ, {z | ∃ u ≤ (n : ℝ≥0), z.1 ≤ z.2 u} := by
   ext z
-  simp only [mem_ofPred_eq,mem_iUnion]
+  simp [mem_ofPred_eq,mem_iUnion]
   constructor
   · rintro ⟨u,hu⟩
     obtain ⟨n,hn⟩ := exists_nat_ge (u : ℝ)
@@ -98,7 +96,7 @@ theorem measurable_firstPassageTime_joint :
       {z : ℝ × BrownianPath | ∃ u : ℝ≥0, z.1 ≤ z.2 u}ᶜ ∪
         {z : ℝ × BrownianPath | ∃ u ≤ s, z.1 ≤ z.2 u} := by
     ext z
-    simp only [mem_preimage,mem_Iic,firstPassageTime_le_iff,mem_union,mem_compl_iff,mem_ofPred_eq]
+    simp [mem_preimage,mem_Iic,firstPassageTime_le_iff,mem_union,mem_compl_iff,mem_ofPred_eq]
   rw [he]
   exact measurableSet_brownianPath_joint_hit.compl.union
     (measurableSet_brownianPath_joint_crossing s)
@@ -114,7 +112,7 @@ theorem continuous_stopBrownianPath :
   change Continuous (fun z : (ℝ≥0 × BrownianPath) × ℝ≥0 => z.1.2 (min z.2 z.1.1))
   exact continuous_eval.comp (continuous_fst.snd.prodMk (continuous_snd.min continuous_fst.fst))
 
-/-- The drift definition `DOZZ.driftedBrownianPath` used in the marked paths is the same literal
+/-- The drift definition `driftedBrownianPath` used in the marked paths is the same literal
 translation already constructed. -/
 theorem driftedBrownianPath_eq (ν : ℝ) (p : BrownianPath) :
     driftedBrownianPath ν p = brownianDriftPath ν p := by
@@ -122,10 +120,10 @@ theorem driftedBrownianPath_eq (ν : ℝ) (p : BrownianPath) :
   intro t
   rfl
 
-/-- The drift map `DOZZ.driftedBrownianPath` is jointly continuous. -/
+/-- The drift map `driftedBrownianPath` is jointly continuous. -/
 theorem continuous_driftedBrownianPath :
     Continuous (fun z : ℝ × BrownianPath => driftedBrownianPath z.1 z.2) := by
-  simpa only [driftedBrownianPath_eq] using continuous_brownianDriftPath
+  simpa [driftedBrownianPath_eq] using continuous_brownianDriftPath
 
 /-- The positive-drift first-hit segment is jointly measurable in its level and actual input path. -/
 theorem measurable_positiveDriftFirstHitSegment_joint (ν : ℝ) :
@@ -189,7 +187,7 @@ theorem brownianPath_compact_levelHit_iff (p : BrownianPath) (c : ℝ) (s T : �
   have hnonpos : (⨆ u : Iic T, q u) ≤ 0 := ciSup_le (fun u => neg_nonpos.mpr (abs_nonneg _))
   constructor
   · rintro ⟨u,hu,hpu⟩
-    have hut : u-s ≤ T := (tsub_le_iff_right).mpr (by simpa only [add_comm] using hu.2)
+    have hut : u-s ≤ T := (tsub_le_iff_right).mpr (by simpa [add_comm] using hu.2)
     have hqu : q (u-s) = 0 := by
       change -|p (s+(u-s))+c| = 0
       rw [add_tsub_cancel_of_le hu.1,hpu,neg_add_cancel,abs_zero,neg_zero]
@@ -271,7 +269,7 @@ theorem measurableSet_brownianPath_levelHits_bddAbove :
   have he : {z : ℝ × BrownianPath | BddAbove {u : ℝ≥0 | z.2 u = -z.1}} =
       ⋃ n : ℕ, {z : ℝ × BrownianPath | ∃ u : ℝ≥0, (n : ℝ≥0) < u ∧ z.2 u = -z.1}ᶜ := by
     ext z
-    simp only [mem_ofPred_eq,mem_iUnion,mem_compl_iff,brownianPath_levelHits_bddAbove_iff]
+    simp [mem_ofPred_eq,mem_iUnion,mem_compl_iff,brownianPath_levelHits_bddAbove_iff]
   rw [he]
   exact MeasurableSet.iUnion (fun n => (measurableSet_brownianPath_levelHit_after n).compl)
 

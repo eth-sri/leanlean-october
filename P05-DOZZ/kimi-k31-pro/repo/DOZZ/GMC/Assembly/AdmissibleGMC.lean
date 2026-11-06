@@ -2,24 +2,22 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.Assembly.RealizationMeasure
-public import DOZZ.Statements.GMC.IsAdmissibleGMCVersion
-public import DOZZ.GMC.Construction.AdmissibleCircleFiniteMass
-public import DOZZ.GMC.Construction.CircleAverageJointVersion
-public import DOZZ.Statements.GMC.IsCompatibleAdmissibleRegularizations
-public import Mathlib.Algebra.Order.Floor.Ring
-public import Mathlib.Analysis.SpecialFunctions.Log.Basic
-public import DOZZ.GMC.Assembly.CircleUniformL1
-public import DOZZ.GMC.AdmissibleGMCDetermines
-public import DOZZ.GMC.Construction.L1CauchyMeasureLimit
+import DOZZ.GMC.Assembly.RealizationMeasure
+import DOZZ.Statements.GMC.IsAdmissibleGMCVersion
+import DOZZ.GMC.Construction.AdmissibleCircleFiniteMass
+import DOZZ.GMC.Construction.CircleAverageJointVersion
+import DOZZ.Statements.GMC.IsCompatibleAdmissibleRegularizations
+import Mathlib.Algebra.Order.Floor.Ring
+import Mathlib.Analysis.SpecialFunctions.Log.Basic
+import DOZZ.GMC.Assembly.CircleUniformL1
+import DOZZ.GMC.AdmissibleGMCDetermines
+import DOZZ.GMC.Construction.L1CauchyMeasureLimit
 
 /-! Existence of admissible GMC versions (proof of `DOZZ.admissibleLogRegularization_GMC_exists`),
 existence of the circle GMC (proof of `DOZZ.equatorGFF_circle_average_GMC_exists`), and uniqueness
 for compatible regularizations (proof of `DOZZ.admissibleLogRegularization_GMC_unique_ae`). -/
 
-@[expose] public section
 
 /-! ### Admissible GMC existence
 
@@ -49,10 +47,8 @@ theorem tendstoInMeasure_of_tendsto_lintegral_ofReal_abs {Ω ι : Type*} [Measur
       fun i => ∫⁻ ω, ENNReal.ofReal |F i ω - G ω| ∂P := by
     funext i
     rw [eLpNorm_one_eq_lintegral_enorm ((hF i).sub hG)]
-    simp only [Pi.sub_apply, Real.enorm_eq_ofReal_abs]
-  rw [heq]
-  exact h
-
+    simp [Pi.sub_apply, Real.enorm_eq_ofReal_abs]
+  rwa [heq]
 section Exists
 
 variable {Ω : Type*} [MeasurableSpace Ω]
@@ -149,7 +145,7 @@ end DOZZ.Assembly
 
 namespace DOZZ.Proofs
 
-open DOZZ.Assembly
+open Assembly
 
 /-- The GMC construction from an admissible regularization gives a measurable admissible version
 carried by the chart for every `0 < γ < 2`. -/
@@ -172,7 +168,7 @@ theorem admissibleLogRegularization_GMC_exists
   exact ⟨_, realizationMeasure_isAdmissibleGMCVersion P U hU dens ε₀ Y hY T γ hγ hγ2 R hR e he
     |Real.log ε₀| (abs_nonneg _) hcut⟩
 
-end DOZZ.Proofs
+end Proofs
 
 /-! ### Circle GMC existence
 
@@ -185,9 +181,9 @@ version; modified on one null set it satisfies the `IsGMCOf` predicate. -/
 open MeasureTheory ProbabilityTheory Filter Topology TopologicalSpace Set
 open scoped Distributions ENNReal NNReal
 
-namespace DOZZ.Proofs
+namespace Proofs
 
-open DOZZ.Assembly
+open Assembly
 
 /-- For every equator GFF and every `0 < γ < 2`, there are a circle-average process and a finite
 random measure satisfying the `IsGMCOf` predicate. See [KRV, (circleav), (Meps1) and (law)]. -/
@@ -203,7 +199,7 @@ theorem equatorGFF_circle_average_GMC_exists
   obtain ⟨N, -, hN, -⟩ := admissibleCircleVersion_to_IsGMCOf P X hX γ Xc hXc M hM
   exact ⟨Xc, N, hXc, hN⟩
 
-end DOZZ.Proofs
+end Proofs
 
 /-! ### Interleaved regularizations
 
@@ -217,7 +213,7 @@ admissible. -/
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
 
-namespace DOZZ.Assembly
+namespace Assembly
 
 /-- Cutoffs at which the interleaved regularization uses the second family. -/
 def secondScale (ε : ℝ) : Prop :=
@@ -229,8 +225,7 @@ noncomputable def interleavedRegularization {Ω : Type*} (Y Z : Ω → ℝ → �
     Ω → ℝ → ℂ → ℝ :=
   fun ω ε x => if secondScale ε then Z ω ε x else Y ω ε x
 
-theorem log_one_div_exp_neg (r : ℝ) : Real.log (1 / Real.exp (-r)) = r := by
-  rw [one_div, Real.log_inv, Real.log_exp, neg_neg]
+theorem log_one_div_exp_neg (r : ℝ) : Real.log (1 / Real.exp (-r)) = r := DOZZ.Proofs.log_one_div_exp_neg_eq r
 
 theorem not_secondScale_exp_neg_nat (k : ℕ) : ¬ secondScale (Real.exp (-(k : ℝ))) := by
   rintro ⟨-, h⟩
@@ -420,7 +415,7 @@ theorem interleavedRegularization_admissible
     · simp only [W, interleavedRegularization, hs, ite_false]
       exact hYk.trans (by linarith)
 
-end DOZZ.Assembly
+end Assembly
 
 /-! ### Uniqueness for compatible regularizations
 
@@ -435,9 +430,9 @@ agree on every compact test, and a countable determining family identifies the m
 open MeasureTheory ProbabilityTheory Filter Topology TopologicalSpace Set
 open scoped Distributions ENNReal NNReal
 
-namespace DOZZ.Assembly
+namespace Assembly
 
-open DOZZ.Proofs
+open Proofs
 
 theorem admissibleCutoffIntegral_interleaved_nat {Ω : Type*} [MeasurableSpace Ω]
     (P : Measure Ω) (U : Set ℂ) (dens : ℂ → ℝ) (Y Z : Ω → ℝ → ℂ → ℝ) (γ : ℝ) (k : ℕ)
@@ -445,7 +440,7 @@ theorem admissibleCutoffIntegral_interleaved_nat {Ω : Type*} [MeasurableSpace �
     admissibleCutoffIntegral P U dens (interleavedRegularization Y Z) γ (k : ℝ) f ω =
       admissibleCutoffIntegral P U dens Y γ (k : ℝ) f ω := by
   unfold admissibleCutoffIntegral
-  simp only [interleaved_exp_neg_nat]
+  simp [interleaved_exp_neg_nat]
 
 theorem admissibleCutoffIntegral_interleaved_odd_half {Ω : Type*} [MeasurableSpace Ω]
     (P : Measure Ω) (U : Set ℂ) (dens : ℂ → ℝ) (Y Z : Ω → ℝ → ℂ → ℝ) (γ : ℝ) (j : ℕ)
@@ -480,11 +475,11 @@ theorem admissibleGMCVersion_lintegral_abs_sub_le
     (fun x => by rw [← Real.norm_eq_abs]; exact f.norm_coe_le_norm x)
     (fun x hx => image_eq_zero_of_notMem_tsupport hx)).le
 
-end DOZZ.Assembly
+end Assembly
 
-namespace DOZZ.Proofs
+namespace Proofs
 
-open DOZZ.Assembly
+open Assembly
 
 /-- Compatible admissible regularizations on one chart have the same GMC limit almost surely. -/
 theorem admissibleLogRegularization_GMC_unique_ae
@@ -555,7 +550,7 @@ theorem admissibleLogRegularization_GMC_unique_ae
         have h := (hRW r s hRWr hRWs γ rfl f f.continuous.measurable hfL hfK).le
         simp only [hrdef, admissibleCutoffIntegral_interleaved_nat, hsdef,
           admissibleCutoffIntegral_interleaved_odd_half] at h
-        exact h
+        assumption
       have hend : ∫⁻ ω, ENNReal.ofReal |admissibleCutoffIntegral P U dens Z γ s f ω -
           ∫ x, f x ∂N ω| ∂P ≤ ENNReal.ofReal ε := hRZ s hRZs
       have hstart : ∫⁻ ω, ENNReal.ofReal |∫ x, f x ∂M ω -
@@ -589,11 +584,11 @@ theorem admissibleLogRegularization_GMC_unique_ae
     exact sub_eq_zero.mp (abs_eq_zero.mp h')
   -- countable determination
   obtain ⟨K, hKc, hKU, -, -, hcof, f, hf, hdense⟩ :=
-    DOZZ.Proofs.exists_countable_dense_admissible_tests U hU
+    exists_countable_dense_admissible_tests U hU
   have hall : ∀ᵐ ω ∂P, ∀ nm : ℕ × ℕ, ∫ x, f nm x ∂M ω = ∫ x, f nm x ∂N ω :=
     ae_all_iff.mpr fun nm => htest (f nm) (hf nm.1 nm.2).1 (hf nm.1 nm.2).2.2
   filter_upwards [hall] with ω hω
-  exact DOZZ.Proofs.admissible_countable_tests_determine_chart_measures U hU (M ω) (N ω)
+  exact admissible_countable_tests_determine_chart_measures U hU (M ω) (N ω)
     (hM.2.1 ω) (hN.2.1 ω) (fun L hL hLU => hM.2.2.1 ω L hL hLU)
     (fun L hL hLU => hN.2.2.1 ω L hL hLU) K hKc hKU hcof f
     (fun n m => ⟨(hf n m).1, (hf n m).2.1⟩) hdense (fun n m => hω (n, m))

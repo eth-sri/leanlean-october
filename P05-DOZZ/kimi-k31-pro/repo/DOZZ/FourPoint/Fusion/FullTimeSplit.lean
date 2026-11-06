@@ -2,17 +2,15 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Fusion.SpatialFunctions
-public import DOZZ.FourPoint.Fusion.SpatialSplit
-public import DOZZ.FourPoint.Fusion.MixedSpatialSplit
-public import DOZZ.FourPoint.Fusion.LocalSpatialBound
-public import DOZZ.FourPoint.Fusion.TimeIntegrability
-public import DOZZ.FourPoint.Fusion.LocalR1Scaling
-public import DOZZ.FourPoint.Fusion.LocalR2Scaling
-public import DOZZ.Statements.FourPoint.GammaHalfRootedR2
+import DOZZ.FourPoint.Fusion.SpatialFunctions
+import DOZZ.FourPoint.Fusion.SpatialSplit
+import DOZZ.FourPoint.Fusion.MixedSpatialSplit
+import DOZZ.FourPoint.Fusion.LocalSpatialBound
+import DOZZ.FourPoint.Fusion.TimeIntegrability
+import DOZZ.FourPoint.Fusion.LocalR1Scaling
+import DOZZ.FourPoint.Fusion.LocalR2Scaling
+import DOZZ.Statements.FourPoint.GammaHalfRootedR2
 /-! # Splitting the literal full Taylor contributions -/
-@[expose] public section
 open MeasureTheory Set Filter
 namespace DOZZ.Proofs
 /-- The full `r₁` term splits into the local term `fusionLocalR1` and a bounded exterior time

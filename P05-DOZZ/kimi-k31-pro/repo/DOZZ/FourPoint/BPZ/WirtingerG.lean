@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.BPZ.FourPointWard
+import DOZZ.FourPoint.BPZ.FourPointWard
 
 /-! # Wirtinger derivatives of the Ward-identity weights
 
@@ -19,7 +18,6 @@ function `g(x) = x (x - 1) / (z - x)`:
 * the complex combination of the limit kernels `K_1`, `K_I`, and the difference quotient of `g`.
 -/
 
-@[expose] public section
 
 namespace DOZZ.Proofs
 
@@ -52,7 +50,7 @@ theorem bpz_hasFDerivAt_norm_sub_rpow (c : ℂ) (p : ℝ) {x : ℂ} (hx : x ≠ 
   refine h3.congr_fderiv ?_
   rw [e2]
   ext h
-  simp only [smul_apply, smul_eq_mul, nsmul_eq_mul]
+  simp [smul_apply, smul_eq_mul, nsmul_eq_mul]
   ring
 
 /-- `(Re u − i Im u) · u = ‖u‖²`, i.e. `conj u · u = ‖u‖²`. -/
@@ -90,14 +88,14 @@ noncomputable def bpzWirt (L : ℂ →L[ℝ] ℝ) : ℂ := ((L 1 : ℂ) - Comple
 /-- The Wirtinger combination is additive. -/
 theorem bpzWirt_add (L M : ℂ →L[ℝ] ℝ) : bpzWirt (L + M) = bpzWirt L + bpzWirt M := by
   unfold bpzWirt
-  simp only [add_apply]
+  simp [add_apply]
   push_cast
   ring
 
 /-- The Wirtinger combination is homogeneous for real scalars. -/
 theorem bpzWirt_smul (a : ℝ) (L : ℂ →L[ℝ] ℝ) : bpzWirt (a • L) = (a : ℂ) * bpzWirt L := by
   unfold bpzWirt
-  simp only [smul_apply, smul_eq_mul]
+  simp [smul_apply, smul_eq_mul]
   push_cast
   ring
 
@@ -268,7 +266,7 @@ theorem bpz_kern_wirtinger {w : ℂ} (hw : w ≠ 0) :
   have hn : ((‖w‖ : ℝ) : ℂ) ≠ 0 := by exact_mod_cast norm_ne_zero_iff.mpr hw
   have key := bpz_conj_mul_self w
   unfold bpzKern
-  simp only [Complex.one_re, Complex.one_im, Complex.I_re, Complex.I_im]
+  simp [Complex.one_re, Complex.one_im, Complex.I_re, Complex.I_im]
   push_cast at key ⊢
   field_simp
   linear_combination (-1 : ℂ) * key
@@ -295,9 +293,6 @@ theorem bpz_g_kern_combination {z x y : ℂ} (hxy : x ≠ y) :
 /-- The difference quotient of `g`. -/
 theorem bpz_g_diff_quot {z x y : ℂ} (hxy : x ≠ y) (hx : x ≠ z) (hy : y ≠ z) :
     (bpzGfun z x - bpzGfun z y) / (x - y) = -1 + z * (z - 1) / ((z - x) * (z - y)) := by
-  have h1 : x - y ≠ 0 := sub_ne_zero.mpr hxy
-  have h2 : z - x ≠ 0 := sub_ne_zero.mpr hx.symm
-  have h3 : z - y ≠ 0 := sub_ne_zero.mpr hy.symm
   unfold bpzGfun
   field_simp
   ring

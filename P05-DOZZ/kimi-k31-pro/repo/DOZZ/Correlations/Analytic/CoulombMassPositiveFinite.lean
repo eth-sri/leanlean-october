@@ -2,13 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.SharpMoments.SeibergMoment
+import DOZZ.GMC.SharpMoments.SeibergMoment
 
 /-! Almost sure positivity and finiteness needed for varying real exponents. -/
 
-@[expose] public section
 open MeasureTheory Filter Topology Set
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -40,7 +38,6 @@ theorem coulomb_mass_pos_finite_ae
   let c : ℝ≥0∞ := ENNReal.ofReal ((2 : ℝ) ^ (-∑ j, |γ * α j|)) *
     ENNReal.ofReal ((1 + 2 * ∑ j, ‖z j‖ + 2) ^ (-|γ * αinf|))
   have hc : c ≠ 0 := by
-    have hs : 0 ≤ ∑ j, ‖z j‖ := Finset.sum_nonneg fun j _ => norm_nonneg _
     exact mul_ne_zero
       (ENNReal.ofReal_pos.mpr (Real.rpow_pos_of_pos (by norm_num) _)).ne'
       (ENNReal.ofReal_pos.mpr (Real.rpow_pos_of_pos (by linarith) _)).ne'

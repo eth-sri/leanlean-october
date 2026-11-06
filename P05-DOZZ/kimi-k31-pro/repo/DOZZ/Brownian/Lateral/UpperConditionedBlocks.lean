@@ -2,11 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Brownian.Lateral.BrownianWindowExponential
-public import DOZZ.Brownian.Lateral.ReflectionInverse
-public import DOZZ.Brownian.Williams.ThinBand
+import DOZZ.Brownian.Lateral.BrownianWindowExponential
+import DOZZ.Brownian.Lateral.ReflectionInverse
+import DOZZ.Brownian.Williams.ThinBand
 
 /-!
 # Positive blocks under the upper-conditioned Brownian law
@@ -18,7 +17,6 @@ exponential. The endpoint bound gives summable decay. The resulting envelopes al
 of any given lateral measure, without splitting its half-lines into independent measures.
 -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Set Filter
 open scoped ENNReal NNReal Topology
@@ -81,7 +79,6 @@ theorem positiveLateralBlock_le_envelope (γ : ℝ) (hγ : 0 ≤ γ) (n : ℝ≥
   apply ENNReal.ofReal_le_ofReal
   apply Real.exp_le_exp.mpr
   rw [abs_of_nonneg hγ]
-  have h := mul_le_mul_of_nonneg_left hex hγ
   nlinarith
 
 /-- Independent radial and lateral inputs factor the arbitrary given-chaos block estimate. -/
@@ -126,7 +123,7 @@ theorem positive_unit_intervals_union :
     have he : (n : ℝ) + 1 = (Nat.ceil s : ℝ) := by exact_mod_cast hn
     apply mem_iUnion.mpr
     refine ⟨n, ?_, ?_⟩
-    · have hc := Nat.ceil_lt_add_one hs.le
+    · have hc := Nat.ceil_lt_add_one (Set.mem_Ioi.mp hs).le
       linarith
     · rw [he]
       exact Nat.le_ceil s

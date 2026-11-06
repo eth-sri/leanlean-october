@@ -2,13 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.SharpMoments.CutoffUIBadLimit
-public import DOZZ.GMC.SharpMoments.CoulombCutoffLimit
-public import DOZZ.GMC.SharpMoments.GoodPart
-public import DOZZ.GMC.SharpMoments.CutoffUIConvergenceAux
-public import DOZZ.GMC.SharpMoments.CutoffUIMoment
+import DOZZ.GMC.SharpMoments.CutoffUIBadLimit
+import DOZZ.GMC.SharpMoments.CoulombCutoffLimit
+import DOZZ.GMC.SharpMoments.GoodPart
+import DOZZ.GMC.SharpMoments.CutoffUIConvergenceAux
+import DOZZ.GMC.SharpMoments.CutoffUIMoment
 
 /-! # Convergence in probability of regularized Coulomb masses, uniformly on compact sets
 
@@ -19,7 +18,6 @@ weight converges uniformly to the Coulomb weight, and the bounded Coulomb weight
 against the cutoff chaos converges in `L¹`, uniformly in the parameters, by the uniform `L¹`
 convergence of cutoff chaos over compact couplings. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology Metric
 open scoped ENNReal NNReal
@@ -56,14 +54,14 @@ theorem cutoffUI_uniform_order
   have e2 : ∀ k, ∀ᶠ m in 𝓝[>] (0 : ℝ), ∀ c ∈ S, m ≤ 2 / c.1 * (Q c.1 - max (c.2.2.1 k) 0) :=
     fun k => eventually_le_of_isCompact_of_pos hS (hconton _ fun c hc => by
       have h := hne c hc
-      simp only [Q]
+      simp [Q]
       fun_prop (disch := first | exact h | exact pow_ne_zero _ h)) fun c hc =>
         mul_pos (div_pos two_pos (hadm c hc).1)
           (sub_pos.mpr (max_lt ((hadm c hc).2.2.2.1 k) (hQpos c hc)))
   have e3 : ∀ᶠ m in 𝓝[>] (0 : ℝ), ∀ c ∈ S, m ≤ 2 / c.1 * (Q c.1 - max c.2.2.2 0) :=
     eventually_le_of_isCompact_of_pos hS (hconton _ fun c hc => by
       have h := hne c hc
-      simp only [Q]
+      simp [Q]
       fun_prop (disch := first | exact h | exact pow_ne_zero _ h)) fun c hc =>
         mul_pos (div_pos two_pos (hadm c hc).1)
           (sub_pos.mpr (max_lt (hadm c hc).2.2.2.2 (hQpos c hc)))
@@ -171,7 +169,6 @@ theorem regularizedCoulombMass_tendstoInProbability_uniform
   have ha0 : a ≠ 0 := (ENNReal.ofReal_pos.mpr (by positivity)).ne'
   have hat : a ≠ ⊤ := ENNReal.ofReal_ne_top
   have hat0 : a ^ tst ≠ 0 := (ENNReal.rpow_pos (pos_iff_ne_zero.mpr ha0) hat).ne'
-  have hatt : a ^ tst ≠ ⊤ := ENNReal.rpow_ne_top_of_nonneg htst.le hat
   refine ENNReal.tendsto_atTop_zero.mpr fun θ hθ => ?_
   -- choose the radius of the bad region
   have hT : ∀ (A : ℝ≥0∞) (κ : ℝ), A ≠ ⊤ → 0 < κ →
@@ -244,7 +241,7 @@ theorem regularizedCoulombMass_tendstoInProbability_uniform
       (regularizedGMC_measurable P X hX Xc hXc c.1 r')
     convert h using 1
     funext ω
-    simp only [Function.comp_apply, lintegral_indicator hs]
+    simp [Function.comp_apply, lintegral_indicator hs]
   have hbadrm : AEMeasurable badr P := (hsetm Bad hBadm G hGm r).aemeasurable
   have hgoodrm : AEMeasurable goodr P := (hsetm Badᶜ hBadm.compl G hGm r).aemeasurable
   have hbadlm : AEMeasurable badl P :=
@@ -292,7 +289,7 @@ theorem regularizedCoulombMass_tendstoInProbability_uniform
     refine ne_top_of_le_ne_top (ENNReal.mul_ne_top (ENNReal.ofReal_ne_top (r := L))
       (measure_ne_top (regularizedGMC P Xc c.1 r ω) Badᶜ)) ?_
     rw [hgoodr]
-    simp only []
+    simp []
     rw [← setLIntegral_const]
     refine lintegral_mono_ae ?_
     filter_upwards [hne0, ae_restrict_mem hBadm.compl] with x hx0 hx
@@ -303,7 +300,7 @@ theorem regularizedCoulombMass_tendstoInProbability_uniform
     refine ne_top_of_le_ne_top (ENNReal.mul_ne_top (ENNReal.ofReal_ne_top (r := L2))
       (measure_ne_top (M ω) Badᶜ)) ?_
     rw [hgoodl]
-    simp only []
+    simp []
     rw [← setLIntegral_const]
     exact setLIntegral_mono' hBadm.compl fun x hx => hFbulk x hx
   -- the splitting
@@ -353,7 +350,7 @@ theorem regularizedCoulombMass_tendstoInProbability_uniform
     have hmass : ∫⁻ ω, regularizedGMC P Xc c.1 r ω Badᶜ ∂P ≤ gmcReferenceMeasure Set.univ := by
       have h1 := regularizedGMC_lintegral_test_eq_reference P X hX Xc hXc c.1 r
         (Badᶜ.indicator fun _ => 1) (measurable_const.indicator hBadm.compl)
-      simp only [lintegral_indicator_const hBadm.compl, one_mul] at h1
+      simp [lintegral_indicator_const hBadm.compl, one_mul] at h1
       rw [h1]
       exact measure_mono (Set.subset_univ _)
     have hdiff : ∫⁻ ω, ENNReal.ofReal |∫ x, h x ∂regularizedGMC P Xc c.1 r ω - ∫ x, h x ∂M ω|

@@ -3,9 +3,8 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Scott Armstrong, Amélie Loher
 -/
-module
 
-public import GaussianFields.LogCorrelated.ABK.Covariance
+import GaussianFields.LogCorrelated.ABK.Covariance
 
 /-!
 # GaussianFields.LogCorrelated/ABK/TestFunctionAlgebra
@@ -13,7 +12,6 @@ public import GaussianFields.LogCorrelated.ABK.Covariance
 Port of the corresponding GaussianFields source module.
 -/
 
-public section
 
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal InnerProductSpace NNReal ProbabilityTheory Topology
@@ -67,7 +65,7 @@ instance {d : Nat} : SMul ℝ (MeanZeroTestFunction d) where
         rw [hfun]
         exact ψ.hasCompactSupport.smul_left (f := fun _ : Vec d => c)
       integrable := by
-        simpa only [smul_eq_mul] using ψ.integrable.const_mul c
+        simpa [smul_eq_mul] using ψ.integrable.const_mul c
       memLp_two := ψ.memLp_two.const_smul c
       integral_eq_zero := by
         rw [integral_smul, ψ.integral_eq_zero, smul_zero] }
@@ -149,7 +147,7 @@ theorem abkSpatialConvolution_smul {d : Nat} (ζ : ABKCutoff d) (c : ℝ)
   rw [← integral_const_mul]
   refine integral_congr_ae ?_
   filter_upwards with x
-  simp only [MeanZeroTestFunction.smul_apply, smul_eq_mul]
+  simp [MeanZeroTestFunction.smul_apply, smul_eq_mul]
   ring
 
 /-! ## Linearity of the deterministic ABK kernels -/
@@ -169,7 +167,7 @@ theorem abkLogKernelProd_smul {d : Nat} (normalization : ℝ) (ζ : ABKCutoff d)
       c • abkLogKernelProd normalization ζ ψ := by
   funext p
   by_cases hp : 0 < p.1
-  · simp only [abkLogKernelProd, ite_eq_left hp, abkSpatialConvolution_smul,
+  · simp [abkLogKernelProd, ite_eq_left hp, abkSpatialConvolution_smul,
       Pi.smul_apply, smul_eq_mul]
     ring
   · simp [abkLogKernelProd, hp]
@@ -282,7 +280,7 @@ theorem abkLogCorrelatedFieldL2Canonical_smul {d : Nat} (hd : 0 < d)
 
 /-- The canonical ABK field evaluation, packaged as a genuine `ℝ`-linear map on the
 test-function vector space. -/
-@[expose]
+
 noncomputable def abkLogCorrelatedFieldL2CanonicalLinearMap {d : Nat} (hd : 0 < d)
     (ζ : ABKCutoff d) :
     MeanZeroTestFunction d →ₗ[ℝ] Lp ℝ 2 (scaleSpaceWhiteNoiseMeasure d) where
@@ -301,4 +299,3 @@ theorem abkLogCorrelatedFieldL2CanonicalLinearMap_apply {d : Nat} (hd : 0 < d)
 
 end GaussianFields
 
-end

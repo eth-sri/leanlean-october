@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.Defs.DualMu
+import DOZZ.Statements.Defs.DualMu
 import Mathlib.Analysis.Calculus.ParametricIntegral
 import Mathlib.Analysis.Calculus.Taylor
 import Mathlib.Analysis.Complex.RealDeriv
@@ -18,7 +17,6 @@ This module contains the integrand bounds behind the convergence and strip-regul
 for `upsilonLog`.
 -/
 
-@[expose] public section
 
 namespace DOZZ.Proofs
 
@@ -52,7 +50,7 @@ private lemma canceledNumerator_eq_source (γ : ℝ) (z : ℂ) (t : ℝ) :
       (Q γ / 2 - z) ^ 2 * Real.exp (-t) *
           (Real.sinh (t * γ / 4) * Real.sinh (t / γ) : ℂ) -
         Complex.sinh ((Q γ / 2 - z) * (t / 2)) ^ 2 := by
-  simp only [canceledNumerator, complexNumerator, complexDenom,
+  simp [canceledNumerator, complexNumerator, complexDenom,
     Complex.ofReal_sinh, Complex.ofReal_exp, Complex.ofReal_mul,
     Complex.ofReal_div, Complex.ofReal_neg, Complex.ofReal_ofNat]
 
@@ -120,12 +118,11 @@ private lemma canceledNumerator_contDiff (γ : ℝ) (z : ℂ) :
     Complex.ofRealCLM.contDiff
 
 private lemma canceledNumerator_contDiffOn (γ : ℝ) (z : ℂ) :
-    ContDiffOn ℝ 3 (canceledNumerator γ z) (Icc 0 1) := by
-  exact (canceledNumerator_contDiff γ z).contDiffOn.mono (Set.subset_univ _)
+    ContDiffOn ℝ 3 (canceledNumerator γ z) (Icc 0 1) := (canceledNumerator_contDiff γ z).contDiffOn.mono (Set.subset_univ _)
 
 private lemma canceledNumerator_zero (γ : ℝ) (z : ℂ) :
     canceledNumerator γ z 0 = 0 := by
-  simp only [canceledNumerator, complexNumerator, Complex.ofReal_zero, neg_zero,
+  simp [canceledNumerator, complexNumerator, Complex.ofReal_zero, neg_zero,
     Complex.exp_zero, mul_one, complexDenom, zero_mul, zero_div, Complex.sinh_zero, mul_zero,
     ne_eq, OfNat.ofNat_ne_zero, not_false_eq_true, zero_pow, sub_self]
 
@@ -201,8 +198,7 @@ private lemma exists_canceledNumerator_taylor_bound (γ : ℝ) (z : ℂ)
     (hγ : 0 < γ) :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ t ∈ Icc 0 1,
       ‖canceledNumerator γ z t‖ ≤ C * t ^ 3 := by
-  have hcont : ContDiffOn ℝ (2 + 1) (canceledNumerator γ z) (Icc 0 1) := by
-    exact (canceledNumerator_contDiffOn γ z).of_le (by norm_num)
+  have hcont : ContDiffOn ℝ (2 + 1) (canceledNumerator γ z) (Icc 0 1) := (canceledNumerator_contDiffOn γ z).of_le (by norm_num)
   obtain ⟨C, hC⟩ := exists_taylor_mean_remainder_bound
     (f := canceledNumerator γ z) (a := 0) (b := 1) (n := 2)
     (by norm_num) hcont
@@ -369,8 +365,7 @@ lemma realDenom_ge_tail_exp {γ t : ℝ} (hγ : 0 < γ) (ht : 1 ≤ t) :
             unfold tailConst
             have he : Real.exp (Q γ / 2 * t) =
                 Real.exp (t * γ / 4) * Real.exp (t / γ) := by
-              rw [← Real.exp_add]
-              rw [hq]
+              rw [← Real.exp_add, hq]
             rw [he]
             ring
     _ ≤ Real.sinh (t * γ / 4) * Real.sinh (t / γ) :=
@@ -418,17 +413,9 @@ lemma upsilonLogIntegrand_norm_le_tail {γ : ℝ} (hγ : 0 < γ)
         (tailConst γ)⁻¹ * Real.exp (-(Q γ / 2 - |Q γ / 2 - z.re|) * t) := by
   let w : ℂ := (Q γ / 2 : ℂ) - z
   let δ : ℝ := Q γ / 2 - |w.re|
-  have hQpos : 0 < Q γ := by
-    unfold Q
-    positivity
-  have hstrip : |w.re| < Q γ / 2 := by
-    apply (abs_lt).2
-    constructor <;> dsimp [w] <;> simp <;> linarith
-  have hδ : 0 < δ := by dsimp [δ]; linarith
   have hdenPos := realDenom_pos hγ (by linarith : 0 < t)
   have hdenLower := realDenom_ge_tail_exp hγ ht
   have hK : 0 < tailConst γ := tailConst_pos hγ
-  have hKinv : 0 ≤ (tailConst γ)⁻¹ := le_of_lt (inv_pos.mpr hK)
   have hdeltaExp :
       Real.exp (|w.re| * t) / realDenom γ t ≤
         (tailConst γ)⁻¹ * Real.exp (-δ * t) := by
@@ -462,8 +449,7 @@ lemma upsilonLogIntegrand_norm_le_tail {γ : ℝ} (hγ : 0 < γ)
       rw [hre, abs_mul, abs_of_nonneg (by positivity : 0 ≤ t / 2)]
     have hnorm := complex_sinh_norm_le_exp_abs_re (w * (t / 2))
     have hpow : (Real.exp |(w * (t / 2)).re|) ^ 2 = Real.exp (|w.re| * t) := by
-      rw [pow_two, ← Real.exp_add]
-      rw [habs]
+      rw [pow_two, ← Real.exp_add, habs]
       congr 1
       ring
     calc
@@ -537,15 +523,10 @@ private lemma upsilonLogIntegrand_integrableOn_Ioi_one {γ : ℝ} (hγ : 0 < γ)
   let δ : ℝ := Q γ / 2 - |w.re|
   let A : ℝ := ‖(Q γ / 2 : ℂ) - z‖ ^ 2
   let B : ℝ := (tailConst γ)⁻¹
-  have hQpos : 0 < Q γ := by unfold Q; positivity
   have hstrip : |w.re| < Q γ / 2 := by
     apply (abs_lt).2
     constructor <;> dsimp [w] <;> simp <;> linarith
   have hδ : 0 < δ := by dsimp [δ]; linarith
-  have hB : 0 ≤ B := by
-    dsimp [B]
-    exact le_of_lt (inv_pos.mpr (tailConst_pos hγ))
-  have hA : 0 ≤ A := by dsimp [A]; positivity
   have hmajor1 : IntegrableOn (fun t : ℝ => A * Real.exp (-t)) (Ioi 1) := by
     change Integrable (fun t : ℝ => A * Real.exp (-t)) (volume.restrict (Ioi 1))
     simpa [mul_comm] using (exp_neg_integrableOn_Ioi 1 (b := 1) (by norm_num)).const_mul A
@@ -584,4 +565,3 @@ end
 
 end DOZZ.Proofs
 
-end

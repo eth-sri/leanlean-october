@@ -2,15 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Hypergeom.ODE.PicardIterates
-public import DOZZ.Hypergeom.ODE.SegmentIntegral
+import DOZZ.Hypergeom.ODE.PicardIterates
+import DOZZ.Hypergeom.ODE.SegmentIntegral
 import Mathlib.Analysis.SpecialFunctions.Integrals.Basic
 
 /-! Factorial bounds for the local holomorphic Picard summands. -/
 
-@[expose] public section
 
 open MeasureTheory Set
 open scoped Interval

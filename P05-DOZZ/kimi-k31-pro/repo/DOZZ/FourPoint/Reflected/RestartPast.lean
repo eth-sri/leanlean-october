@@ -2,12 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Reflected.RestartedWilliams
-public import DOZZ.FourPoint.Reflected.IndependentRegroup
-public import DOZZ.Brownian.Williams.StoppedPaths
+import DOZZ.FourPoint.Reflected.RestartedWilliams
+import DOZZ.FourPoint.Reflected.IndependentRegroup
+import DOZZ.Brownian.Williams.StoppedPaths
 /-! Full stopped-past independence at the deterministic radial restart. -/
-@[expose] public section
 open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -24,7 +22,7 @@ theorem reflected_brownian_future_indep_stopped_past
     intro p q hpq
     apply ContinuousMap.ext
     exact congrFun (hSd.denseRange_val.equalizer p.continuous q.continuous hpq))
-  let r : (Iic T → ℝ) → (S → ℝ) := fun p t => p ⟨min t.1 T, min_le_right _ _⟩
+  let r : (Iic T → ℝ) → (S → ℝ) := fun p t => p ⟨min t.1 T, Set.mem_Iic.mpr (min_le_right _ _)⟩
   have hr : Measurable r := Measurable.of_eval fun t => measurable_pi_apply _
   let e : (ℝ≥0 → ℝ) → (S → ℝ) := fun p t => p t.1
   have he : Measurable e := Measurable.of_eval fun t => measurable_pi_apply t.1

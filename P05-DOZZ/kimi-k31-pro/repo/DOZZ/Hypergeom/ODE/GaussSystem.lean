@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Hypergeom.Defs
+import DOZZ.Hypergeom.Defs
 import Mathlib.Analysis.Calculus.FDeriv.Mul
 
 /-! The Gauss scalar equation as a first-order holomorphic system on its regular domain. -/
 
-@[expose] public section
 
 open Set
 
@@ -46,8 +44,7 @@ theorem gaussRegularPlane_isOpen : IsOpen gaussRegularPlane := by
 
 theorem gaussSystemCoeff₁_differentiableOn (a b : ℂ) :
     DifferentiableOn ℂ (gaussSystemCoeff₁ a b) gaussRegularPlane := by
-  have hden : DifferentiableOn ℂ (fun z : ℂ => z * (1 - z)) gaussRegularPlane := by
-    exact differentiableOn_id.mul ((differentiableOn_const 1).sub differentiableOn_id)
+  have hden : DifferentiableOn ℂ (fun z : ℂ => z * (1 - z)) gaussRegularPlane := differentiableOn_id.mul ((differentiableOn_const 1).sub differentiableOn_id)
   have hden_ne : ∀ z ∈ gaussRegularPlane, z * (1 - z) ≠ 0 := by
     intro z hz
     have hz0 : z ≠ 0 := hz.1
@@ -63,8 +60,7 @@ theorem gaussSystemCoeff₁_differentiableOn (a b : ℂ) :
 
 theorem gaussSystemCoeff₂_differentiableOn (a b c : ℂ) :
     DifferentiableOn ℂ (gaussSystemCoeff₂ a b c) gaussRegularPlane := by
-  have hden : DifferentiableOn ℂ (fun z : ℂ => z * (1 - z)) gaussRegularPlane := by
-    exact differentiableOn_id.mul ((differentiableOn_const 1).sub differentiableOn_id)
+  have hden : DifferentiableOn ℂ (fun z : ℂ => z * (1 - z)) gaussRegularPlane := differentiableOn_id.mul ((differentiableOn_const 1).sub differentiableOn_id)
   have hden_ne : ∀ z ∈ gaussRegularPlane, z * (1 - z) ≠ 0 := by
     intro z hz
     have hz0 : z ≠ 0 := hz.1
@@ -121,8 +117,7 @@ theorem gaussHolomorphicOperator_eq_mul_system_residual
     gaussHolomorphicOperator a b c f z =
       z * (1 - z) * (deriv (deriv f) z -
         (gaussSystemCoeff₁ a b z * f z + gaussSystemCoeff₂ a b c z * deriv f z)) := by
-  have hden : z * (1 - z) ≠ 0 := mul_ne_zero hz0 (sub_ne_zero.mpr (Ne.symm hz1))
-  simp only [gaussHolomorphicOperator, gaussSystemCoeff₁, gaussSystemCoeff₂]
+  simp [gaussHolomorphicOperator, gaussSystemCoeff₁, gaussSystemCoeff₂]
   field_simp
   ring
 

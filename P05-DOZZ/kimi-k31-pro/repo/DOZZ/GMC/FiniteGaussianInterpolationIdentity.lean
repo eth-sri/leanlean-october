@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import Mathlib.Analysis.SpecialFunctions.Sqrt
-public import Mathlib.Analysis.Calculus.Deriv.MeanValue
+import Mathlib.Analysis.SpecialFunctions.Sqrt
+import Mathlib.Analysis.Calculus.Deriv.MeanValue
 
 /-! Algebraic cancellation in the finite Gaussian interpolation derivative. -/
 
-@[expose] public section
 
 namespace DOZZ.Proofs
 
@@ -31,7 +29,6 @@ theorem kahaneInterpolation_diagonal_cancellation
         γ ^ 2 / 2 * ∑ i, (covX i i - covY i i) * D i =
       γ ^ 2 / 2 * ∑ i, ∑ j, (covX i j - covY i j) * K i j := by
   classical
-  have hsqrtT : Real.sqrt t ≠ 0 := ne_of_gt (Real.sqrt_pos.2 ht)
   have hsqrtOne : Real.sqrt (1 - t) ≠ 0 :=
     ne_of_gt (Real.sqrt_pos.2 (by linarith))
   have hX : (∑ i, A i) / (2 * Real.sqrt t) =
@@ -100,7 +97,7 @@ theorem kahaneInterpolation_diagonal_cancellation
                       · simp [hij]
                         ring
                 _ = _ := by
-                      simp only [Finset.sum_add_distrib]
+                      simp [Finset.sum_add_distrib]
                       simp_rw [← Finset.mul_sum]
             rw [show (1 / 2 : ℝ) * (∑ i, ∑ j, covX i j * H i j) -
                 (1 / 2 : ℝ) * (∑ i, ∑ j, covY i j * H i j) =

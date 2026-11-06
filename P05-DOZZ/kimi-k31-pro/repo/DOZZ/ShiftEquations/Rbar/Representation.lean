@@ -2,16 +2,15 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.ShiftEquations.Rbar.Residue
-public import DOZZ.ShiftEquations.Rbar.Continuation
-public import DOZZ.Statements.Correlations.BridgeMultiplicity
-public import DOZZ.Statements.Brownian.ReflectionBarR
-public import DOZZ.Statements.Brownian.IsSourceLateralProjection
-public import DOZZ.Statements.Brownian.IsReflectionData
-public import DOZZ.Statements.Defs.IsEquatorGFF
-public import DOZZ.Statements.Defs.IsGMCOf
+import DOZZ.ShiftEquations.Rbar.Residue
+import DOZZ.ShiftEquations.Rbar.Continuation
+import DOZZ.Statements.Correlations.BridgeMultiplicity
+import DOZZ.Statements.Brownian.ReflectionBarR
+import DOZZ.Statements.Brownian.IsSourceLateralProjection
+import DOZZ.Statements.Brownian.IsReflectionData
+import DOZZ.Statements.Defs.IsEquatorGFF
+import DOZZ.Statements.Defs.IsGMCOf
 import DOZZ.Correlations.Symmetry.ReflectionMomentSwap
 import DOZZ.Brownian.Reflection.WitnessIndependence
 import DOZZ.ShiftEquations.Reflection.Witness
@@ -29,7 +28,6 @@ see docs/ERRATA-AND-DEVIATIONS.md). The holomorphic representation is `f(z) = C�
 `{γ/2 < Re z < Q} ∩ {(z, γ, z) ∈ V}`, where the coefficient is holomorphic.
 -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology Set
 
@@ -96,7 +94,7 @@ theorem eq_rbarCoefficientReal_mul_of_bridge {Ω : Type*} [MeasurableSpace Ω] (
     rw [sub_self] at h
     exact tendsto_nhdsWithin_of_tendsto_nhds_of_eventually_within _
       (h.mono_left nhdsWithin_le_nhds)
-      (eventually_nhdsWithin_of_forall fun _ hε => sub_pos.mpr hε)
+      (eventually_nhdsWithin_of_forall fun _ hε => Set.mem_Ioi.mpr (sub_pos.mpr hε))
   have hLeft : Tendsto (fun ε : ℝ => (ε - γ / 2) * unitVolumeStructureConstant P M γ
       (a - γ / 2) ε a) (𝓝[>] (γ / 2))
       (𝓝 (bridgeMultiplicity (a - γ / 2) a * reflectionExponent γ a * R)) := by
@@ -155,7 +153,7 @@ theorem eq_rbarCoefficientReal_mul_of_bridge {Ω : Type*} [MeasurableSpace Ω] (
   rw [huniq]
   ring
 
-/-- **`DOZZ.reflectionBarR_holomorphic_representation` from its inputs.** The hypotheses are, at the
+/-- **`reflectionBarR_holomorphic_representation` from its inputs.** The hypotheses are, at the
 given field and chaos, the unit-volume conjunct of `gammaHalf_crossing`, the conclusion of
 `unitVolumeStructureConstant_threeToTwo_residue_bridge`, and the conclusion of
 `unitVolumeStructureConstant_holomorphic_near_extended_domain`. -/
@@ -251,4 +249,3 @@ theorem reflectionBarR_holomorphic_representation_of_deps
 
 end DOZZ.Proofs
 
-end

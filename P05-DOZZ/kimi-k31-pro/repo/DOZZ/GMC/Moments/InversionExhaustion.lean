@@ -2,13 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.Moments.InversionAnnularTestLaw
+import DOZZ.GMC.Moments.InversionAnnularTestLaw
 
 /-! Compact annular exhaustion for finite chaos measures with no atom at zero. -/
 
-@[expose] public section
 
 open Filter MeasureTheory Set Metric
 open scoped Topology Distributions
@@ -47,14 +45,14 @@ theorem gmcInversionCutoff_support_bounds (n : ℕ) :
       (ball (0 : ℂ) (1 / ((n : ℝ) + 2)))ᶜ := by
     apply closure_minimal _ isOpen_ball.isClosed_compl
     intro x hx hxball
-    exact hx (by dsimp only; rw [c.one_of_mem_closedBall (ball_subset_closedBall hxball)]; simp)
+    exact hx (by dsimp; rw [c.one_of_mem_closedBall (ball_subset_closedBall hxball)]; simp)
   intro x hx
   change x ∈ tsupport (fun x => b x * (1 - c x)) at hx
   have hlo := hmask (tsupport_mul_subset_right hx)
   have hhi := tsupport_mul_subset_left hx
   rw [b.tsupport_eq] at hhi
-  exact ⟨by simpa only [mem_compl_iff, mem_ball, dist_zero_right, not_lt] using hlo,
-    by simpa only [mem_closedBall, dist_zero_right, b] using hhi⟩
+  exact ⟨by simpa [mem_compl_iff, mem_ball, dist_zero_right, not_lt] using hlo,
+    by simpa [mem_closedBall, dist_zero_right, b] using hhi⟩
 
 /-- At each nonzero point, the annular cutoffs eventually equal one. -/
 theorem gmcInversionCutoff_tendsto (x : ℂ) (hx : x ≠ 0) :
@@ -77,10 +75,10 @@ theorem gmcInversionCutoff_tendsto (x : ℂ) (hx : x ≠ 0) :
   apply Tendsto.congr' _ tendsto_const_nhds
   filter_upwards [hb, ht.eventually (gt_mem_nhds (norm_pos_iff.mpr hx))] with n hn hm
   have hb1 : b n x = 1 := (b n).one_of_mem_closedBall (by
-    simpa only [mem_closedBall, dist_zero_right, b] using hn)
+    simpa [mem_closedBall, dist_zero_right, b] using hn)
   have hc0 : c n x = 0 := image_eq_zero_of_notMem_tsupport (by
     rw [(c n).tsupport_eq]
-    simpa only [mem_closedBall, dist_zero_right, not_le, c] using hm)
+    simpa [mem_closedBall, dist_zero_right, not_le, c] using hm)
   change 1 = b n x * (1 - c n x)
   rw [hb1, hc0]
   norm_num
@@ -90,7 +88,7 @@ theorem gmcInversionCutoff_hasCompactSupport (n : ℕ) :
     HasCompactSupport (gmcInversionCutoff n : ℂ → ℝ) := by
   apply HasCompactSupport.of_support_subset_isCompact (isCompact_closedBall (0 : ℂ) ((n : ℝ) + 2))
   intro x hx
-  simpa only [mem_closedBall, dist_zero_right] using
+  simpa [mem_closedBall, dist_zero_right] using
     (gmcInversionCutoff_support_bounds n x (subset_tsupport _ hx)).2
 
 /-- Annular truncation converges in integral for every bounded continuous test. -/
@@ -99,7 +97,7 @@ theorem inversion_cutoff_integral_tendsto (μ : Measure ℂ) [IsFiniteMeasure μ
     Tendsto (fun n => ∫ x, f x * gmcInversionCutoff n x ∂μ) atTop (𝓝 (∫ x, f x ∂μ)) := by
   have hne : ∀ᵐ x ∂μ, x ≠ 0 := by
     rw [ae_iff]
-    simpa only [not_not, ofPred_eq_eq_singleton] using hzero
+    simpa [not_not, ofPred_eq_eq_singleton] using hzero
   apply tendsto_integral_of_dominated_convergence (bound := fun _ : ℂ => ‖f‖)
   · intro n
     exact (f.continuous.mul (gmcInversionCutoff n).continuous).aestronglyMeasurable
@@ -109,7 +107,7 @@ theorem inversion_cutoff_integral_tendsto (μ : Measure ℂ) [IsFiniteMeasure μ
       rw [norm_mul, Real.norm_eq_abs (gmcInversionCutoff n x), abs_of_nonneg (gmcInversionCutoff_bounds n x).1]
       exact (mul_le_of_le_one_right (norm_nonneg _) (gmcInversionCutoff_bounds n x).2).trans (BoundedContinuousFunction.norm_coe_le_norm f x)
   · filter_upwards [hne] with x hx
-    simpa only [mul_one] using tendsto_const_nhds.mul (gmcInversionCutoff_tendsto x hx)
+    simpa [mul_one] using tendsto_const_nhds.mul (gmcInversionCutoff_tendsto x hx)
 
 /-- Multiplying a bounded test by the cutoff puts it in an open bounded annulus. -/
 theorem gmcInversionCutoff_test_annular (n : ℕ) (f : BoundedContinuousFunction ℂ ℝ) :

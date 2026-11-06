@@ -2,13 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.Roots.ChargeGeometry
-public import DOZZ.Roots.FormulaLine
+import DOZZ.Roots.ChargeGeometry
+import DOZZ.Roots.FormulaLine
 import Mathlib.Analysis.SpecialFunctions.Gamma.Deriv
 import Mathlib.Analysis.SpecialFunctions.Gamma.Beta
 /-! # Regularity at pole-free extended charges -/
-@[expose] public section
 open Complex Set
 namespace DOZZ.Proofs
 /-- Every denominator factor of the DOZZ expression is nonzero at finite extended charges. -/
@@ -43,7 +41,7 @@ theorem roots_formula_line_analyticAt {γ μ : ℝ} {U : ℂ → ℂ}
     (Complex.differentiable_one_div_Gamma.analyticAt _).comp hS
   have hnorm : AnalyticAt ℂ (fun w => (μ : ℂ) ^ ((A 0 w + A 1 w + A 2 w - 2 * Q γ) / γ) /
       Complex.Gamma ((A 0 w + A 1 w + A 2 w - 2 * Q γ) / γ)) z := by
-    simpa only [Function.comp_def, Pi.mul_apply, div_eq_mul_inv] using
+    simpa [Function.comp_def, Pi.mul_apply, div_eq_mul_inv] using
       (analyticAt_const.cpow hS (Complex.ofReal_mem_slitPlane.mpr hμ)).fun_mul hGamma
   have hUa : ∀ f : ℂ → ℂ, AnalyticAt ℂ f z → AnalyticAt ℂ (fun w => U (f w)) z :=
     fun f hf => (hU.1.analyticAt (f z)).comp hf

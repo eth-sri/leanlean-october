@@ -2,11 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.FourPoint.GammaHalfCrossingMultiplier
-public import DOZZ.Statements.Hypergeom.PlanarGaussConstant
-public import DOZZ.ShiftEquations.Rbar.Multiplier
+import DOZZ.Statements.FourPoint.GammaHalfCrossingMultiplier
+import DOZZ.Statements.Hypergeom.PlanarGaussConstant
+import DOZZ.ShiftEquations.Rbar.Multiplier
 import Mathlib.Tactic
 
 /-! # The literal half-charge crossing multiplier
@@ -17,7 +16,6 @@ the crossing multiplier `gammaHalfCrossingMultiplier`, with all Gamma arguments 
 retained.
 -/
 
-public section
 namespace DOZZ.Proofs
 
 /-- On real inputs the planar Gauss constant is a real l-ratio, including its

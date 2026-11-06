@@ -2,16 +2,14 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.Fusion.RootedMomentIdentity
-public import DOZZ.GMC.Construction.RootedMeasureKernel
-public import DOZZ.GMC.Annulus.BallCover
+import DOZZ.FourPoint.Fusion.RootedMomentIdentity
+import DOZZ.GMC.Construction.RootedMeasureKernel
+import DOZZ.GMC.Annulus.BallCover
 import Mathlib.MeasureTheory.Integral.Bochner.Basic
 
 /-! # Signed observables under the rooted identity -/
 
-@[expose] public section
 open MeasureTheory Filter
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -29,10 +27,8 @@ theorem fusion_rooted_expectation_measurable {Ω : Type*} [MeasurableSpace Ω]
   have heq : (fun u => ∫⁻ ω, G (gmcRootedMeasure γ u (M ω)) ∂P) =
       (fun u => ∫⁻ ω, G (gmcRootedMeasure γ u (N ω)) ∂P) := by
     funext u
-    exact lintegral_congr_ae (he.mono fun ω h => by dsimp only; rw [h])
-  rw [heq]
-  exact hmeas
-
+    exact lintegral_congr_ae (he.mono fun ω h => by dsimp; rw [h])
+  rwa [heq]
 /-- Finite absolute rooted integrals allow the nonnegative identity to be read as a real identity.
 Both sides are integrable; no first moment of the Coulomb mass is required. -/
 theorem fusion_rooted_nonnegative_integral {Ω : Type*} [MeasurableSpace Ω]
@@ -58,7 +54,7 @@ theorem fusion_rooted_nonnegative_integral {Ω : Type*} [MeasurableSpace Ω]
   have hR : Measurable R := (ENNReal.measurable_ofReal.comp hf).mul
     (fusion_rooted_expectation_measurable P X hX γ hγ hγ2 M hM G hG)
   have hid : (∫⁻ ω, L ω ∂P) = ∫⁻ u, R u ∂gmcReferenceMeasure := by
-    have h := DOZZ.equatorGFF_rooted_GMC_identity P X hX γ hγ hγ2 M hM
+    have h := equatorGFF_rooted_GMC_identity P X hX γ hγ hγ2 M hM
       (fun u _ μ => ENNReal.ofReal (f u) * G μ)
       ((ENNReal.measurable_ofReal.comp (hf.comp measurable_fst)).mul
         (hG.comp (measurable_snd.comp measurable_snd)))
@@ -75,13 +71,13 @@ theorem fusion_rooted_nonnegative_integral {Ω : Type*} [MeasurableSpace Ω]
   have hLb : (∫⁻ ω, L ω ∂P) < ⊤ := hid ▸ hb
   have heL : ∀ ω, (L ω).toReal = (G (M ω)).toReal * (∫ u, f u ∂M ω) := by
     intro ω
-    dsimp only [L]
+    dsimp [L]
     rw [ENNReal.toReal_mul, mul_comm,
       ← integral_eq_lintegral_of_nonneg_ae (ae_of_all _ hf0) hf.aestronglyMeasurable]
   have heR : ∀ u, (R u).toReal = f u *
       (∫⁻ ω, G (gmcRootedMeasure γ u (M ω)) ∂P).toReal := by
     intro u
-    dsimp only [R]
+    dsimp [R]
     rw [ENNReal.toReal_mul, ENNReal.toReal_ofReal (hf0 u)]
   have hLi := integrable_toReal_of_lintegral_ne_top hL hLb.ne
   have hRi := integrable_toReal_of_lintegral_ne_top hR.aemeasurable hb.ne
@@ -130,7 +126,7 @@ theorem fusion_rooted_real_integral {Ω : Type*} [MeasurableSpace Ω]
     fn hfn (fun _ => le_max_right _ _) G hG hbn
   have hsplit : ∀ u, f u = fp u - fn u := by
     intro u
-    dsimp only [fp, fn]
+    dsimp [fp, fn]
     by_cases h : 0 ≤ f u
     · rw [max_eq_left h, max_eq_right (neg_nonpos.mpr h), sub_zero]
     · have h' : f u ≤ 0 := le_of_not_ge h

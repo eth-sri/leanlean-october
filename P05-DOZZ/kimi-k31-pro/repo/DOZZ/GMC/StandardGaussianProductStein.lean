@@ -2,16 +2,14 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.GaussianIntegrationByParts
-public import DOZZ.GMC.FiniteGaussianTilt
-public import Mathlib.MeasureTheory.Integral.Pi
-public import Mathlib.Analysis.CStarAlgebra.Matrix
+import DOZZ.GMC.GaussianIntegrationByParts
+import DOZZ.GMC.FiniteGaussianTilt
+import Mathlib.MeasureTheory.Integral.Pi
+import Mathlib.Analysis.CStarAlgebra.Matrix
 
 /-! Coordinatewise Stein integration by parts for a finite product of standard Gaussians. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory
 open Matrix
@@ -188,11 +186,11 @@ including when that matrix is singular. -/
 theorem centeredJointlyGaussian_standardLinearRepresentation
     {Ω : Type*} [MeasurableSpace Ω] {n : ℕ}
     (P : Measure Ω) (Z : Ω → Fin (n + 1) → ℝ)
-    (hZ : DOZZ.IsCenteredJointlyGaussian P Z) :
+    (hZ : IsCenteredJointlyGaussian P Z) :
     ∃ A : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ,
       P.map Z = (Measure.pi fun _ : Fin (n + 1) => gaussianReal 0 1).map
         (fun x => Matrix.mulVec A x) ∧
-      ∀ i j, DOZZ.gaussianCovariance P (fun ω => Z ω i) (fun ω => Z ω j) =
+      ∀ i j, gaussianCovariance P (fun ω => Z ω i) (fun ω => Z ω j) =
         ∑ k, A i k * A j k := by
   classical
   obtain ⟨S, hS, hLaw, hEntry⟩ := represent P Z hZ
@@ -231,8 +229,7 @@ theorem centeredJointlyGaussian_standardLinearRepresentation
     apply AEMeasurable.of_eval
     intro i
     exact hZ.2.1 i
-  have hYae : AEMeasurable Y P := by
-    exact (WithLp.measurable_toLp 2 (Fin (n + 1) → ℝ)).aemeasurable.comp_aemeasurable hZae
+  have hYae : AEMeasurable Y P := (WithLp.measurable_toLp 2 (Fin (n + 1) → ℝ)).aemeasurable.comp_aemeasurable hZae
   have hOfLp : Measurable (WithLp.ofLp : E → Fin (n + 1) → ℝ) :=
     WithLp.measurable_ofLp 2 (Fin (n + 1) → ℝ)
   have hmapZ : P.map Z =
@@ -248,7 +245,7 @@ theorem centeredJointlyGaussian_standardLinearRepresentation
       _ = (multivariateGaussian 0 S).map (WithLp.ofLp) := by rw [hmapY]
       _ = ((stdGaussian E).map L).map (WithLp.ofLp) := by
         rw [multivariateGaussian]
-        simp only [zero_add]
+        simp [zero_add]
         rfl
       _ = _ := hrootmap
   have hAself : IsSelfAdjoint A := by

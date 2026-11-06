@@ -2,13 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Reflected.OuterMassLimit
-public import DOZZ.FourPoint.Reflected.FreezingInput
-public import DOZZ.FourPoint.RootedPairMoments
+import DOZZ.FourPoint.Reflected.OuterMassLimit
+import DOZZ.FourPoint.Reflected.FreezingInput
+import DOZZ.FourPoint.RootedPairMoments
 import Mathlib.Tactic
 /-! # The actual outer mass retains the freezing annulus -/
-public section
 open MeasureTheory Set
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -50,7 +48,7 @@ theorem reflected_outer_annular_kernel_lower (γ α₁ α₂ α₃ : ℝ) (z x :
     ring
   rw [hkernel, ← hp]
   have hb' : (2 : ℝ) ^ (-|γ * α₂|) ≤ ‖x - 1‖ ^ (-(γ * α₂)) := by
-    simpa only [neg_mul, abs_neg] using hb
+    simpa [neg_mul, abs_neg] using hb
   have hh := mul_le_mul_of_nonneg_right hpow (Real.rpow_nonneg hx.le (-(γ * α₁)))
   have hh' := mul_le_mul hh hb'
     (Real.rpow_nonneg (by norm_num : (0 : ℝ) ≤ 2) _) (by positivity)
@@ -96,7 +94,7 @@ theorem reflected_outerMass_freezing_lower (γ α₁ α₂ α₃ ξ : ℝ) (μ :
       (reflected_outer_annular_kernel_lower γ α₁ α₂ α₃ z x hn hx.2 hsep)
   have heq : freezingAnnulusMassLocal γ (α₁ - γ / 2) μ 0 (‖z‖ ^ (1 - ξ)) (1 / 2) =
       ∫⁻ x in E, ENNReal.ofReal (‖x‖ ^ (-(γ * (α₁ - γ / 2)))) ∂μ := by
-    simp only [freezingAnnulusMassLocal, sub_zero, E]
+    simp [freezingAnnulusMassLocal, sub_zero, E]
   rw [heq, ← lintegral_const_mul' _ _ ENNReal.ofReal_ne_top]
   calc
     _ ≤ ∫⁻ x in E, coulombWeight γ ![-γ / 2, α₁, α₂] ![z, 0, 1] α₃ x ∂μ :=

@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.Construction.CircleAverageL2Geometry
-public import DOZZ.GFFStructure.CircleVersion
+import DOZZ.GMC.Construction.CircleAverageL2Geometry
+import DOZZ.GFFStructure.CircleVersion
 
 /-!
 # Joint circle-average versions
@@ -16,7 +15,6 @@ gluing, produce the jointly measurable circle-average witness (`DOZZ.IsCircleAve
 original field space.
 -/
 
-@[expose] public section
 
 open Filter MeasureTheory ProbabilityTheory
 open scoped Topology ENNReal NNReal
@@ -43,26 +41,26 @@ theorem circleL2_increment_variance_formula
   have hdiagP : covariance (Y p) (Y p) P = r + 2 * Lp := by
     calc
       covariance (Y p) (Y p) P = circleSelfEnergy x r := by
-        simpa only [circleSelfEnergy] using hcov p p
-      _ = r + 2 * Lp := by simpa only [Lp] using circleSelfEnergy_eq x r
+        simpa [circleSelfEnergy] using hcov p p
+      _ = r + 2 * Lp := by simpa [Lp] using circleSelfEnergy_eq x r
   have hdiagQ : covariance (Y q) (Y q) P = s + 2 * Lq := by
     calc
       covariance (Y q) (Y q) P = circleSelfEnergy y s := by
-        simpa only [circleSelfEnergy] using hcov q q
-      _ = s + 2 * Lq := by simpa only [Lq] using circleSelfEnergy_eq y s
+        simpa [circleSelfEnergy] using hcov q q
+      _ = s + 2 * Lq := by simpa [Lq] using circleSelfEnergy_eq y s
   have hcrossPQ : covariance (Y p) (Y q) P = -A + Lq + Lp := by
     calc
       covariance (Y p) (Y q) P =
           ∫ z, ∫ w, gffKernel z w ∂circleMeasure x r ∂circleMeasure y s := hcov p q
       _ = -A + Lq + Lp := by
-        simpa only [A, Lp, Lq] using
+        simpa [A, Lp, Lq] using
           (integral_integral_gffKernel_eq_logmax y x s r)
   have hcrossQP : covariance (Y q) (Y p) P = -B + Lp + Lq := by
     calc
       covariance (Y q) (Y p) P =
           ∫ z, ∫ w, gffKernel z w ∂circleMeasure y s ∂circleMeasure x r := hcov q p
       _ = -B + Lp + Lq := by
-        simpa only [B, Lp, Lq] using
+        simpa [B, Lp, Lq] using
           (integral_integral_gffKernel_eq_logmax x y r s)
   have hdiff : AEMeasurable (fun ω => Y p ω - Y q ω) P :=
     (hmem p).aemeasurable.sub (hmem q).aemeasurable
@@ -93,11 +91,11 @@ theorem circleL2_increment_variance_le_center
   have hB := integral_circle_logmax_sub_le x y r r
   have hA' : A + r ≤ ‖x-y‖ / Real.exp (-r) := by
     dsimp [A] at hA ⊢
-    simpa only [Real.log_exp, sub_neg_eq_add, abs_zero, sub_self, add_zero,
+    simpa [Real.log_exp, sub_neg_eq_add, abs_zero, sub_self, add_zero,
       norm_sub_rev] using hA
   have hB' : B + r ≤ ‖x-y‖ / Real.exp (-r) := by
     dsimp [B] at hB ⊢
-    simpa only [Real.log_exp, sub_neg_eq_add, abs_zero, sub_self, add_zero,
+    simpa [Real.log_exp, sub_neg_eq_add, abs_zero, sub_self, add_zero,
       norm_sub_rev] using hB
   have hsum : r + r + A + B ≤ 2 * (‖x-y‖ / Real.exp (-r)) := by nlinarith
   have hexp : (Real.exp (-r))⁻¹ = Real.exp r := by
@@ -142,7 +140,7 @@ theorem circleL2_isKolmogorovProcess_at_radius
     change _ ≤ (C * dist x y) ^ 4 * A at hm
     exact hm.trans_eq (by dsimp [C, A]; ring)
   have hi : Integrable (fun ω => |U ω| ^ 8) P := by
-    simpa only [Real.norm_eq_abs] using
+    simpa [Real.norm_eq_abs] using
       (hG.memLp (p := (8 : ℝ≥0∞)) (by norm_num)).integrable_norm_pow'
   have hlin := ofReal_integral_eq_lintegral_ofReal hi
     (Eventually.of_forall (fun ω => pow_nonneg (abs_nonneg (U ω)) 8))
@@ -152,15 +150,13 @@ theorem circleL2_isKolmogorovProcess_at_radius
     apply lintegral_congr
     intro ω
     rw [edist_dist, Real.dist_eq]
-    simpa only [ENNReal.rpow_ofNat, U] using (ENNReal.ofReal_pow (abs_nonneg (U ω)) 8).symm
+    simpa [ENNReal.rpow_ofNat, U] using (ENNReal.ofReal_pow (abs_nonneg (U ω)) 8).symm
   rw [hconv]
   have hb := ENNReal.ofReal_le_ofReal hmoment
   rw [ENNReal.ofReal_mul (mul_nonneg (pow_nonneg hC _) hA),
     ENNReal.ofReal_pow (dist_nonneg : 0 ≤ dist x y) 4] at hb
   change _ ≤ ENNReal.ofReal (C ^ 4 * A) * ENNReal.ofReal (dist x y) ^ 4 at hb
-  rw [edist_dist, ENNReal.rpow_ofNat, ← ENNReal.ofReal_coe_nnreal (p := M)]
-  exact hb
-
+  rwa [edist_dist, ENNReal.rpow_ofNat, ← ENNReal.ofReal_coe_nnreal (p := M)]
 /-- A continuous sample modification at one fixed logarithmic radius. -/
 theorem exists_continuous_circleL2_modification_at_radius
     {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω} [IsProbabilityMeasure P]
@@ -233,8 +229,7 @@ theorem exists_equatorGFF_circle_average_witness
     have hUT : Tendsto U atTop (𝓝 (W p)) := by
       exact equatorGFF_testL2_tendsto_to_circle_limit X hX x r
         (f p) (hgap p) (W p) (hW p) g hg
-    have hTarget : (fun ω => Xc ω x r) =ᵐ[P] ⇑(W p) := by
-      exact (hXcY x r).trans (hY p).2.2.2.1
+    have hTarget : (fun ω => Xc ω x r) =ᵐ[P] ⇑(W p) := (hXcY x r).trans (hY p).2.2.2.1
     exact tendsto_eLpNorm_sub_of_L2_versions P U (W p)
       (fun n ω => X ω (g n)) (fun ω => Xc ω x r)
       (fun n => (equatorGFF_test_memLp X hX (g n)).coeFn_toLp.symm)

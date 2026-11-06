@@ -2,24 +2,19 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Hypergeom.ConnectionFormulaFromBox
-public import Mathlib.Analysis.SpecialFunctions.Pow.Real
+import DOZZ.Hypergeom.ConnectionFormulaFromBox
+import Mathlib.Analysis.SpecialFunctions.Pow.Real
 
 /-! Real endpoint limits identify the connection Cramer coefficients. -/
 
-@[expose] public section
 
 open Filter Set
 open scoped Topology
 
 namespace DOZZ.Proofs
 
-private theorem gaussSlitPlane_isOpen_for_endpointLimits : IsOpen gaussSlitPlane := by
-  change IsOpen ({z : ℂ | z.im ≠ 0} ∪ {z : ℂ | z.re < 1})
-  exact (isOpen_ne.preimage Complex.continuous_im).union
-    (isOpen_Iio.preimage Complex.continuous_re)
+private theorem gaussSlitPlane_isOpen_for_endpointLimits : IsOpen gaussSlitPlane := DOZZ.Proofs.bpzHG_isOpen_gaussSlitPlane
 
 /-- Every characterized family member tends to its normalized value `1` at the regular origin. -/
 theorem gaussFamily_tendsto_one_at_zero
@@ -57,9 +52,7 @@ private theorem tendsto_one_sub_ofReal_cpow_zero (δ : ℂ) (hδ : 0 < δ.re) :
     have hxpos : 0 < 1 - x := sub_pos.mpr hx
     have hbase : 1 - (x : ℂ) = ((1 - x : ℝ) : ℂ) := by push_cast; ring
     rw [hbase, Complex.norm_cpow_eq_rpow_re_of_pos hxpos]
-  rw [tendsto_congr' hnorm]
-  exact hrpow
-
+  rwa [tendsto_congr' hnorm]
 /-- If the zero-basis solution has a finite real-axis endpoint limit and `Re(c-a-b)>0`,
 the first midpoint Cramer coefficient is exactly that limit. The basis limits are `G₋→1` and
 `G₊→0`; the separate Euler integral supplies the endpoint value in applications. -/
@@ -123,7 +116,7 @@ theorem connectionMinusFirstCramer_eq_of_endpoint_limit
   have hcut : ∀ᶠ x : ℝ in F, (x : ℂ) ∈ gaussCutPlane := by
     have hlt : ∀ᶠ x : ℝ in F, x < 1 := by
       change ∀ᶠ x : ℝ in 𝓝[Iio (1 : ℝ)] 1, x < 1
-      simpa only [mem_Iio] using
+      simpa [mem_Iio] using
         (eventually_mem_nhdsWithin : ∀ᶠ x : ℝ in 𝓝[Iio (1 : ℝ)] 1, x ∈ Iio 1)
     have hpos : ∀ᶠ x : ℝ in F, 0 < x := by
       change ∀ᶠ x : ℝ in 𝓝[Iio (1 : ℝ)] 1, 0 < x
@@ -132,7 +125,7 @@ theorem connectionMinusFirstCramer_eq_of_endpoint_limit
     filter_upwards [hlt, hpos] with x hxlt hxpos
     change (x : ℂ).im ≠ 0 ∨ (0 < (x : ℂ).re ∧ (x : ℂ).re < 1)
     right
-    simp only [Complex.ofReal_re]
+    simp [Complex.ofReal_re]
     exact ⟨hxpos, hxlt⟩
   have hEq : (fun x : ℝ => gaussFMinus H p.1 p.2.1 p.2.2 (x : ℂ)) =ᶠ[F]
       (fun x => C₁ * gaussGMinus H p.1 p.2.1 p.2.2 (x : ℂ) +
@@ -173,7 +166,6 @@ theorem connectionMinusSecondCramer_eq_of_scaled_endpoint_limit
     exact hp.2 (n + 1) (by simpa [δ] using hδn)
   have hcPlus : ∀ n : ℕ, (1 + p.2.2 - p.1 - p.2.1) ≠ -(n : ℂ) := by
     intro n hn
-    have hcast : -((n + 1 : ℕ) : ℂ) = (-(n + 1 : ℤ) : ℂ) := by norm_cast
     have hδn : δ = -((n + 1 : ℕ) : ℂ) := by
       dsimp [δ]
       calc
@@ -205,7 +197,7 @@ theorem connectionMinusSecondCramer_eq_of_scaled_endpoint_limit
       simp [δ]
       ring
     have hδ' : 0 < p.1.re + p.2.1.re - p.2.2.re := by
-      simpa only [Complex.sub_re, Complex.add_re] using hδ
+      simpa [Complex.sub_re, Complex.add_re] using hδ
     rw [hreal]
     exact hδ'
   have hscaledMinus : Tendsto
@@ -220,7 +212,7 @@ theorem connectionMinusSecondCramer_eq_of_scaled_endpoint_limit
         (fun x => H (p.2.2 - p.2.1) (p.2.2 - p.1)
           (1 + p.2.2 - p.1 - p.2.1) (1 - (x : ℂ))) := by
       filter_upwards [eventually_mem_nhdsWithin] with x hx
-      have hxlt : x < 1 := by simpa only [mem_Iio] using hx
+      have hxlt : x < 1 := by simpa [mem_Iio] using hx
       have hxbase : (1 : ℂ) - (x : ℂ) ≠ 0 := by
         apply sub_ne_zero.mpr
         exact_mod_cast (ne_of_lt hxlt).symm
@@ -243,7 +235,7 @@ theorem connectionMinusSecondCramer_eq_of_scaled_endpoint_limit
   have hcut : ∀ᶠ x : ℝ in F, (x : ℂ) ∈ gaussCutPlane := by
     have hlt : ∀ᶠ x : ℝ in F, x < 1 := by
       change ∀ᶠ x : ℝ in 𝓝[Iio (1 : ℝ)] 1, x < 1
-      simpa only [mem_Iio] using
+      simpa [mem_Iio] using
         (eventually_mem_nhdsWithin : ∀ᶠ x : ℝ in 𝓝[Iio (1 : ℝ)] 1, x ∈ Iio 1)
     have hpos : ∀ᶠ x : ℝ in F, 0 < x := by
       change ∀ᶠ x : ℝ in 𝓝[Iio (1 : ℝ)] 1, 0 < x
@@ -252,7 +244,7 @@ theorem connectionMinusSecondCramer_eq_of_scaled_endpoint_limit
     filter_upwards [hlt, hpos] with x hxlt hxpos
     change (x : ℂ).im ≠ 0 ∨ (0 < (x : ℂ).re ∧ (x : ℂ).re < 1)
     right
-    simp only [Complex.ofReal_re]
+    simp [Complex.ofReal_re]
     exact ⟨hxpos, hxlt⟩
   have hEq : (fun x : ℝ => (1 - (x : ℂ)) ^ (-δ) *
       gaussFMinus H p.1 p.2.1 p.2.2 (x : ℂ)) =ᶠ[F]
@@ -339,7 +331,7 @@ private theorem firstCramer_eq_of_endpoint_expansion
   have hcut : ∀ᶠ x : ℝ in F, (x : ℂ) ∈ gaussCutPlane := by
     have hlt : ∀ᶠ x : ℝ in F, x < 1 := by
       change ∀ᶠ x : ℝ in 𝓝[Iio (1 : ℝ)] 1, x < 1
-      simpa only [mem_Iio] using
+      simpa [mem_Iio] using
         (eventually_mem_nhdsWithin : ∀ᶠ x : ℝ in 𝓝[Iio (1 : ℝ)] 1, x ∈ Iio 1)
     have hpos : ∀ᶠ x : ℝ in F, 0 < x := by
       change ∀ᶠ x : ℝ in 𝓝[Iio (1 : ℝ)] 1, 0 < x
@@ -348,7 +340,7 @@ private theorem firstCramer_eq_of_endpoint_expansion
     filter_upwards [hlt, hpos] with x hxlt hxpos
     change (x : ℂ).im ≠ 0 ∨ (0 < (x : ℂ).re ∧ (x : ℂ).re < 1)
     right
-    simp only [Complex.ofReal_re]
+    simp [Complex.ofReal_re]
     exact ⟨hxpos, hxlt⟩
   have hEq : (fun x : ℝ => f (x : ℂ)) =ᶠ[F]
       (fun x => C₁ * gaussGMinus H p.1 p.2.1 p.2.2 (x : ℂ) +
@@ -416,8 +408,7 @@ private theorem secondCramer_eq_of_scaled_endpoint_expansion
       (fun x : ℝ => H (p.2.2 - p.2.1) (p.2.2 - p.1)
         (1 + p.2.2 - p.1 - p.2.1) (1 - (x : ℂ))) F (𝓝 1) := by
     exact (gaussFamily_tendsto_one_at_zero hH _ _ _ hcPlus).comp harg
-  have hpower : Tendsto (fun x : ℝ => (1 - (x : ℂ)) ^ (-δ)) F (𝓝 0) := by
-    exact tendsto_one_sub_ofReal_cpow_zero (-δ) hδ
+  have hpower : Tendsto (fun x : ℝ => (1 - (x : ℂ)) ^ (-δ)) F (𝓝 0) := tendsto_one_sub_ofReal_cpow_zero (-δ) hδ
   have hscaledMinus : Tendsto
       (fun x : ℝ => (1 - (x : ℂ)) ^ (-δ) *
         gaussGMinus H p.1 p.2.1 p.2.2 (x : ℂ)) F (𝓝 0) := by
@@ -430,11 +421,11 @@ private theorem secondCramer_eq_of_scaled_endpoint_expansion
         (fun x => H (p.2.2 - p.2.1) (p.2.2 - p.1)
           (1 + p.2.2 - p.1 - p.2.1) (1 - (x : ℂ))) := by
       filter_upwards [eventually_mem_nhdsWithin] with x hx
-      have hxlt : x < 1 := by simpa only [mem_Iio] using hx
+      have hxlt : x < 1 := by simpa [mem_Iio] using hx
       have hxbase : (1 : ℂ) - (x : ℂ) ≠ 0 := by
         apply sub_ne_zero.mpr
         exact_mod_cast (ne_of_lt hxlt).symm
-      simp only [gaussGPlus]
+      simp [gaussGPlus]
       rw [← hδeq]
       rw [← mul_assoc, ← Complex.cpow_add _ _ hxbase, neg_add_cancel,
         Complex.cpow_zero, one_mul]
@@ -449,7 +440,7 @@ private theorem secondCramer_eq_of_scaled_endpoint_expansion
   have hcut : ∀ᶠ x : ℝ in F, (x : ℂ) ∈ gaussCutPlane := by
     have hlt : ∀ᶠ x : ℝ in F, x < 1 := by
       change ∀ᶠ x : ℝ in 𝓝[Iio (1 : ℝ)] 1, x < 1
-      simpa only [mem_Iio] using
+      simpa [mem_Iio] using
         (eventually_mem_nhdsWithin : ∀ᶠ x : ℝ in 𝓝[Iio (1 : ℝ)] 1, x ∈ Iio 1)
     have hpos : ∀ᶠ x : ℝ in F, 0 < x := by
       change ∀ᶠ x : ℝ in 𝓝[Iio (1 : ℝ)] 1, 0 < x
@@ -458,7 +449,7 @@ private theorem secondCramer_eq_of_scaled_endpoint_expansion
     filter_upwards [hlt, hpos] with x hxlt hxpos
     change (x : ℂ).im ≠ 0 ∨ (0 < (x : ℂ).re ∧ (x : ℂ).re < 1)
     right
-    simp only [Complex.ofReal_re]
+    simp [Complex.ofReal_re]
     exact ⟨hxpos, hxlt⟩
   have hEq : (fun x : ℝ => (1 - (x : ℂ)) ^ (-δ) * f (x : ℂ)) =ᶠ[F]
       (fun x => C₁ * ((1 - (x : ℂ)) ^ (-δ) *

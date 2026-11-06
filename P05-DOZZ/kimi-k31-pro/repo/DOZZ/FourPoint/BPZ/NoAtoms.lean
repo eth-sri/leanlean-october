@@ -2,12 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.BPZ.Grid
-public import DOZZ.FourPoint.BPZ.WardTilt
-public import DOZZ.FourPoint.BPZ.Rooting
-public import DOZZ.GMC.Construction.RootedAllRootFinite
+import DOZZ.FourPoint.BPZ.Grid
+import DOZZ.FourPoint.BPZ.WardTilt
+import DOZZ.FourPoint.BPZ.Rooting
+import DOZZ.GMC.Construction.RootedAllRootFinite
 
 /-! # The chaos measure has no atoms
 
@@ -17,7 +16,6 @@ at `u` keeps the atom at `u` zero, because the chaos has no atom at a fixed poin
 measure is finite. The rooted identity then shows that `∫ M{u} dM(u) = 0` almost surely, so the
 chaos measure has almost surely no atoms at all. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped ENNReal NNReal
@@ -42,7 +40,7 @@ theorem bpzDyadic_cell_subset_ball (k : ℕ) (x : ℂ) :
   intro y hy
   set h : ℝ := (2 ^ k)⁻¹ with hhdef
   have hh : (0 : ℝ) < h := by positivity
-  simp only [Set.mem_preimage, Set.mem_singleton_iff] at hy
+  simp [Set.mem_preimage, Set.mem_singleton_iff] at hy
   rw [Metric.mem_closedBall, dist_eq_norm]
   set c := bpzGridCorner h (bpzGridIdx h x)
   have h1 := norm_sub_bpzGridCorner_le hh y
@@ -59,7 +57,7 @@ theorem le_bpzDyadicMass (k : ℕ) (m : Measure ℂ) (x : ℂ) : m {x} ≤ bpzDy
 theorem iInter_closedBall_four_mul_inv_pow (x : ℂ) :
     ⋂ k : ℕ, Metric.closedBall x (4 * (2 ^ k)⁻¹ : ℝ) = {x} := by
   ext y
-  simp only [Set.mem_iInter, Metric.mem_closedBall, Set.mem_singleton_iff]
+  simp [Set.mem_iInter, Metric.mem_closedBall, Set.mem_singleton_iff]
   constructor
   · intro hy
     by_contra hne
@@ -131,7 +129,7 @@ theorem gmc_noAtoms_ae {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : �
       exact (hgm.comp (hroot.prodMk measurable_const)).aemeasurable
   have hlhs : ∫⁻ ω, ∫⁻ u, g (M ω) u ∂M ω ∂P = 0 := by
     have h := hid
-    simp only [hH] at h hzero
+    simp [hH] at h hzero
     rw [h]
     simp [hzero]
   have hmeas : Measurable fun ω => ∫⁻ u, g (M ω) u ∂M ω :=

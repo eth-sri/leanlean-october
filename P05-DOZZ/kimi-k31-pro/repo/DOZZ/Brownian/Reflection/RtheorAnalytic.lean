@@ -2,20 +2,20 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.Complex.HorizontalStrip
-public import Mathlib.Analysis.Meromorphic.NormalForm
-public import Mathlib.Analysis.Meromorphic.Order
-public import Mathlib.Topology.Order.Compact
-public import DOZZ.Statements.Defs.LFun
-public import Mathlib.Analysis.Meromorphic.IsolatedZeros
-public import Mathlib.Topology.DiscreteSubset
-public import DOZZ.Statements.Brownian.ReflectionPoleFree
-public import DOZZ.DOZZAlgebra.GenericLocus
-public import DOZZ.Brownian.ReflectionExponentBounds
-public import Mathlib.Analysis.Meromorphic.Basic
-public import DOZZ.Statements.Brownian.ReflectionR
+import DOZZ.ShiftEquations.Shift.Reflection
+import DOZZ.Statements.Complex.HorizontalStrip
+import Mathlib.Analysis.Meromorphic.NormalForm
+import Mathlib.Analysis.Meromorphic.Order
+import Mathlib.Topology.Order.Compact
+import DOZZ.Statements.Defs.LFun
+import Mathlib.Analysis.Meromorphic.IsolatedZeros
+import Mathlib.Topology.DiscreteSubset
+import DOZZ.Statements.Brownian.ReflectionPoleFree
+import DOZZ.DOZZAlgebra.GenericLocus
+import DOZZ.Brownian.ReflectionExponentBounds
+import Mathlib.Analysis.Meromorphic.Basic
+import DOZZ.Statements.Brownian.ReflectionR
 import Mathlib.Analysis.SpecialFunctions.Gamma.Beta
 import Mathlib.Analysis.SpecialFunctions.Gamma.Deriv
 
@@ -40,7 +40,6 @@ the probabilistic coefficient divided by it is the explicit positive continuous 
 and off them both coefficients are continuous along real charges.
 -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology TopologicalSpace Set
 open scoped ENNReal NNReal Topology
@@ -59,11 +58,7 @@ theorem add_ofReal_mem_horizontalStrip {h : ℝ} {z : ℂ} (hz : z ∈ horizonta
 
 /-- The real embedding maps punctured neighborhoods into punctured neighborhoods. -/
 theorem tendsto_ofReal_nhdsNE (x : ℝ) :
-    Tendsto (fun y : ℝ => (y : ℂ)) (𝓝[≠] x) (𝓝[≠] (x : ℂ)) := by
-  apply tendsto_nhdsWithin_of_tendsto_nhds_of_eventually_within
-  · exact (Complex.continuous_ofReal.tendsto x).mono_left nhdsWithin_le_nhds
-  · filter_upwards [self_mem_nhdsWithin] with y hy
-    exact fun h => hy (Complex.ofReal_injective h)
+    Tendsto (fun y : ℝ => (y : ℂ)) (𝓝[≠] x) (𝓝[≠] (x : ℂ)) := DOZZ.Proofs.tendsto_ofReal_nhdsNE_slice x
 
 /-- Real translations map punctured neighborhoods into punctured neighborhoods. -/
 theorem tendsto_add_const_nhdsNE (z : ℂ) (t : ℂ) :
@@ -178,7 +173,7 @@ theorem quasiPeriod_multiplier_eq_one {h : ℝ} (hh : 0 < h) {f : ℂ → ℂ}
   have hκ : κ ≠ 0 := by
     intro hκ0
     set x₀ : ℝ := (a + b) / 2
-    have hx₀ : x₀ ∈ Ioo a b := ⟨by simp only [x₀]; linarith, by simp only [x₀]; linarith⟩
+    have hx₀ : x₀ ∈ Ioo a b := ⟨by simp [x₀]; linarith, by simp [x₀]; linarith⟩
     have hzero : ∀ᶠ y : ℝ in 𝓝[≠] x₀, f (y : ℂ) = 0 := by
       filter_upwards [(tendsto_ofReal_nhdsNE x₀).eventually (hq _ (hmemR x₀))] with y hy
       rw [hy, hκ0, zero_mul]
@@ -199,8 +194,8 @@ theorem quasiPeriod_multiplier_eq_one {h : ℝ} (hh : 0 < h) {f : ℂ → ℂ}
   -- every real value of the normal form is a value of `E` on one fundamental interval
   set c₀ : ℝ := (a + b - T₁) / 2 with hc₀def
   have hK : Icc c₀ (c₀ + T₁) ⊆ Ioo a b := fun y hy =>
-    ⟨by have := hy.1; simp only [hc₀def] at this; linarith,
-     by have := hy.2; simp only [hc₀def] at this; linarith⟩
+    ⟨by have := hy.1; simp [hc₀def] at this; linarith,
+     by have := hy.2; simp [hc₀def] at this; linarith⟩
   have hreal : ∀ x : ℝ, ∃ y ∈ Icc c₀ (c₀ + T₁), g (x : ℂ) = (E y : ℂ) := by
     intro x
     set n : ℤ := ⌊(x - c₀) / T₁⌋ with hndef
@@ -212,11 +207,11 @@ theorem quasiPeriod_multiplier_eq_one {h : ℝ} (hh : 0 < h) {f : ℂ → ℂ}
       · have : (n : ℝ) * T₁ ≤ x - c₀ := by
           have := mul_le_mul_of_nonneg_right hfl hT₁.le
           rwa [div_mul_cancel₀ _ hT₁.ne'] at this
-        simp only [hydef]; linarith
+        simp [hydef]; linarith
       · have : x - c₀ < ((n : ℝ) + 1) * T₁ := by
           have := mul_lt_mul_of_pos_right hfl' hT₁
           rwa [div_mul_cancel₀ _ hT₁.ne'] at this
-        simp only [hydef]; nlinarith
+        simp [hydef]; nlinarith
     refine ⟨y, hy, ?_⟩
     have hit := eq_add_int_mul_of_periodic hper (y : ℂ) (hmemR y) n
     have hxy : (y : ℂ) + (n : ℂ) * T₁ = (x : ℂ) := by simp only [hydef]; push_cast; ring
@@ -407,7 +402,7 @@ theorem reflectionDOZZ_ofReal (γ μ α : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (h
   rw [hp, ht, ← Complex.ofReal_neg, ← Complex.ofReal_neg, Complex.Gamma_ofReal,
     Complex.Gamma_ofReal, Complex.Gamma_ofReal, Complex.Gamma_ofReal,
     ← Complex.ofReal_cpow hb]
-  simp only [Complex.ofReal_mul, Complex.ofReal_div, Complex.ofReal_neg]
+  simp [Complex.ofReal_mul, Complex.ofReal_div, Complex.ofReal_neg]
 
 /-- On the physical charge interval the Gamma argument `γ (Q - α) / 2` lies in `(0, 1)`. -/
 theorem reflectionGammaArg_mem_Ioo {γ α : ℝ} (hγ : 0 < γ) (hα : γ / 2 < α ∧ α < Q γ) :
@@ -438,7 +433,7 @@ theorem realGamma_neg_reflectionExponent_ne_zero {γ α : ℝ}
   intro m hm
   have hpm : reflectionExponent γ α = m := by linarith
   rcases m with _ | n
-  · simp only [Nat.cast_zero] at hpm
+  · simp [Nat.cast_zero] at hpm
     linarith
   · exact hPole n hpm
 
@@ -548,7 +543,7 @@ theorem continuousOn_reflectionDOZZRatio (γ μ : ℝ) (hγ : 0 < γ) (hγ2 : γ
 theorem reflectionExponent_injective {γ : ℝ} (hγ : 0 < γ) :
     Function.Injective (fun α : ℝ => reflectionExponent γ α) := by
   intro x y h
-  simp only [reflectionExponent] at h
+  simp [reflectionExponent] at h
   field_simp at h
   linarith
 
@@ -582,8 +577,7 @@ theorem reflectionPoleFree_eventually_nhdsNE {γ : ℝ} (hγ : 0 < γ) (x : ℝ)
               |reflectionExponent γ y₀ - reflectionExponent γ x| := by
             have := abs_sub_le (reflectionExponent γ y) (reflectionExponent γ x)
               (reflectionExponent γ y₀)
-            rw [abs_sub_comm (reflectionExponent γ x)] at this
-            exact this
+            rwa [abs_sub_comm (reflectionExponent γ x)] at this
         _ < 1 / 2 + 1 / 2 := add_lt_add hy hy₀near
         _ = 1 := by norm_num
     have hnn : n = n₀ := by
@@ -685,4 +679,3 @@ theorem continuousAt_reflectionDOZZ_ofReal {γ μ α : ℝ} (hγ : 0 < γ) (hγ2
 
 end DOZZ.Proofs
 
-end

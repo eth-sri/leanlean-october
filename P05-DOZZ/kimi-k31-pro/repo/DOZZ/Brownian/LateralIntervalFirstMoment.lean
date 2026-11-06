@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.Brownian.IsLateralGMCOf
+import DOZZ.Statements.Brownian.IsLateralGMCOf
 
 /-!
 # First moments of lateral GMC intervals
@@ -14,7 +13,6 @@ exact interval mean and the corresponding uniform moment bound at order one; hig
 orders require the subcritical chaos estimates.
 -/
 
-@[expose] public section
 
 open MeasureTheory
 open scoped ENNReal
@@ -33,4 +31,3 @@ theorem lateralGMC_interval_first_moment
 
 end DOZZ.Proofs
 
-end

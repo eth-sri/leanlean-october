@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.BPZ.UnreflectedD
-public import DOZZ.FourPoint.Diagonal.Assembly
+import DOZZ.FourPoint.BPZ.UnreflectedD
+import DOZZ.FourPoint.Diagonal.Assembly
 
 /-! # The unreflected `γ/2` formula
 
@@ -13,7 +12,6 @@ Proof of `DOZZ.gammaHalf_full_unreflected_formula`: the conditional theorem
 `bpz_gammaHalf_full_unreflected_formula_of_diag` applied to the diagonal classification at
 `χ = γ/2`. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology TopologicalSpace Set
 open scoped ENNReal NNReal Topology

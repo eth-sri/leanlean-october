@@ -2,15 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.SharpMoments.SeibergMoment
-public import DOZZ.GMC.SharpMoments.WeightedLocalRange
-public import DOZZ.GMC.SharpMoments.WeightedUniformGrid
+import DOZZ.GMC.SharpMoments.SeibergMoment
+import DOZZ.GMC.SharpMoments.WeightedLocalRange
+import DOZZ.GMC.SharpMoments.WeightedUniformGrid
 
 /-! Small positive moments of shrinking insertion disks from a strict charge gap. -/
 
-@[expose] public section
 open MeasureTheory Set
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -24,7 +22,7 @@ theorem weighted_mass_charge_gap (μ : Measure ℂ) (γ a δ : ℝ)
       weightedGmcBallMass γ μ (a + δ) z R := by
   have hne : ∀ᵐ x ∂μ, x ≠ z := by
     rw [ae_iff]
-    simpa only [not_not, ofPred_eq_eq_singleton] using hroot
+    simpa [not_not, ofPred_eq_eq_singleton] using hroot
   have hm : Measurable (fun x : ℂ => ENNReal.ofReal ‖x - z‖ ^ (-γ * (a + δ))) :=
     (ENNReal.measurable_ofReal.comp (measurable_id.sub_const z).norm).pow_const _
   unfold weightedGmcBallMass
@@ -34,8 +32,7 @@ theorem weighted_mass_charge_gap (μ : Measure ℂ) (γ a δ : ℝ)
       apply setLIntegral_mono_ae' Metric.isOpen_ball.measurableSet
       filter_upwards [hne] with x hx hball
       have hd : 0 < ‖x - z‖ := norm_pos_iff.mpr (sub_ne_zero.mpr hx)
-      have hr : ‖x - z‖ ≤ ρ := by
-        exact (show ‖x - z‖ < ρ by simpa only [Metric.mem_ball, dist_eq_norm] using hball).le
+      have hr : ‖x - z‖ ≤ ρ := (show ‖x - z‖ < ρ by simpa [Metric.mem_ball, dist_eq_norm] using hball).le
       rw [ENNReal.rpow_eq_pow, ENNReal.ofReal_rpow_of_pos hd,
         ENNReal.ofReal_rpow_of_pos hd, ← ENNReal.ofReal_mul (Real.rpow_nonneg hρ.le _)]
       apply ENNReal.ofReal_le_ofReal
@@ -53,7 +50,7 @@ theorem weighted_mass_charge_gap (μ : Measure ℂ) (γ a δ : ℝ)
       have hmono : (∫⁻ x in Metric.ball z ρ, ENNReal.ofReal ‖x - z‖ ^ (-γ * (a + δ)) ∂μ) ≤
           ∫⁻ x in Metric.ball z R, ENNReal.ofReal ‖x - z‖ ^ (-γ * (a + δ)) ∂μ :=
         lintegral_mono_set (Metric.ball_subset_ball hρR)
-      simpa only [ENNReal.rpow_eq_pow] using
+      simpa [ENNReal.rpow_eq_pow] using
         mul_le_mul (le_refl (ENNReal.ofReal (ρ ^ (γ * δ)))) hmono zero_le zero_le
 
 /-- A single larger-charge moment gives uniform polynomial decay for all smaller charges. -/

@@ -2,16 +2,14 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.RootedPairMoments
-public import DOZZ.FourPoint.TaylorRootedFixedDisk
-public import DOZZ.FourPoint.TaylorWeightedJensen
-public import DOZZ.GMC.Annulus.PositiveRoot
+import DOZZ.FourPoint.RootedPairMoments
+import DOZZ.FourPoint.TaylorRootedFixedDisk
+import DOZZ.FourPoint.TaylorWeightedJensen
+import DOZZ.GMC.Annulus.PositiveRoot
 
 /-! The annular Jensen observable under the one-root identity `equatorGFF_rooted_GMC_identity`. -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -75,9 +73,9 @@ theorem twoRooted_annular_spatial_bound
     _ ≤ ∫⁻ ω, (∫⁻ x in B, ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ z x / ‖x - z‖ ^ 2) ∂M ω) * G (M ω) ∂P :=
       gammaHalf_region_jensen_reduction P X hX γ hγ hγ2 M hM α₁ α₂ α₃ p hp z B
     _ = ∫⁻ x, f x * (∫⁻ ω, G (gmcRootedMeasure γ x (M ω)) ∂P) ∂gmcReferenceMeasure := by
-      simp only [← lintegral_indicator hB]
+      simp [← lintegral_indicator hB]
       exact rooted_weight_identity P X hX γ hγ hγ2 M hM f hf (fun x => by
-        dsimp only [f]
+        dsimp [f]
         by_cases hx : x ∈ B
         · rw [Set.indicator_of_mem hx]
           exact ENNReal.ofReal_ne_top
@@ -88,8 +86,8 @@ theorem twoRooted_annular_spatial_bound
       intro x
       by_cases hx : x ∈ B
       · apply mul_le_mul' le_rfl
-        simpa only [G, show -p - 1 = -(p + 1) by ring] using hbound x (hunit x hx) ![z, 0, 1] hzunit
-      · simp only [f, Set.indicator_of_notMem hx, zero_mul, le_refl]
+        simpa [G, show -p - 1 = -(p + 1) by ring] using hbound x (hunit x hx) ![z, 0, 1] hzunit
+      · simp [f, Set.indicator_of_notMem hx, zero_mul]
     _ = ENNReal.ofReal C * ∫⁻ x in B,
         ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ z x / ‖x - z‖ ^ 2) := by
       rw [lintegral_mul_const _ hf, mul_comm, lintegral_indicator hB,

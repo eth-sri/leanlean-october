@@ -1,2 +1,1 @@
-module
-public import DOZZ.Statements.Brownian.LateralUnitBlockEndpointIncrement
+import DOZZ.Statements.Brownian.LateralUnitBlockEndpointIncrement

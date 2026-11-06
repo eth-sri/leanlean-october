@@ -1,20 +1,18 @@
 /-
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 -/
-module
 
-public import Mathlib.MeasureTheory.Integral.Lebesgue.Basic
-public import Mathlib.MeasureTheory.Integral.Lebesgue.Add
-public import DOZZ.GMC.Construction.RegularizedGMCExpectedMeasure
-public import DOZZ.GMC.Moments.SetMassMeasurable
-public import DOZZ.GMC.CircleAverageCutoffIntensity
-public import DOZZ.Statements.GMC.GmcReferenceMeasure
-public import Mathlib.MeasureTheory.Measure.OpenPos
-public import Mathlib.MeasureTheory.Measure.Continuity
+import Mathlib.MeasureTheory.Integral.Lebesgue.Basic
+import Mathlib.MeasureTheory.Integral.Lebesgue.Add
+import DOZZ.GMC.Construction.RegularizedGMCExpectedMeasure
+import DOZZ.GMC.Moments.SetMassMeasurable
+import DOZZ.GMC.CircleAverageCutoffIntensity
+import DOZZ.Statements.GMC.GmcReferenceMeasure
+import Mathlib.MeasureTheory.Measure.OpenPos
+import Mathlib.MeasureTheory.Measure.Continuity
 
 /-! An L¹ approximation preserves the expected mass of nonnegative observables. -/
 
-@[expose] public section
 
 open MeasureTheory Filter Topology
 open scoped ENNReal
@@ -135,7 +133,7 @@ theorem equatorGFF_GMC_lintegral_mass_eq_reference_of_l1
       ∫⁻ ω, ENNReal.ofReal (F r ω) ∂P =
           ∫⁻ ω, regularizedGMC P Xc γ r ω A ∂P := by
             apply lintegral_congr_ae
-            exact hreal
+            assumption
       _ = gmcReferenceMeasure A :=
         regularizedGMC_lintegral_eq_reference P X hX Xc hXc γ r A hA
   have hL1' : Tendsto (fun r => ∫⁻ ω,
@@ -148,9 +146,7 @@ theorem equatorGFF_GMC_lintegral_mass_eq_reference_of_l1
     filter_upwards [] with ω
     exact ENNReal.ofReal_toReal
       (@MeasureTheory.measure_ne_top ℂ _ (M ω) (hM.1 ω) A)
-  rw [hmass] at h
-  exact h
-
+  rwa [hmass] at h
 /-- The reference measure has positive mass already on the unit disk. -/
 theorem gmcReferenceMeasure_unitBall_pos :
     0 < gmcReferenceMeasure (Metric.ball (0 : ℂ) 1) := by

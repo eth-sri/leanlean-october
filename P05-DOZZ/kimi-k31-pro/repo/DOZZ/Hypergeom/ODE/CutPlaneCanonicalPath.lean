@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Hypergeom.ODE.CutPlanePathIndependence
-public import DOZZ.Hypergeom.ODE.SeriesSeed
+import DOZZ.Hypergeom.ODE.CutPlanePathIndependence
+import DOZZ.Hypergeom.ODE.SeriesSeed
 
 /-! Canonical paths from the ordinary-series basepoint to points of the principal cut plane. -/
 
-@[expose] public section
 
 open Set unitInterval
 
@@ -44,8 +42,7 @@ noncomputable def gaussCutPlaneCanonicalPath (z : gaussCutPlane) :
 /-- The canonical path function is continuous on its real parameter interval. -/
 theorem gaussCutPlaneCanonicalPath_continuousOn (z : gaussCutPlane) :
     ContinuousOn (gaussCutPlanePathFunction (gaussCutPlaneCanonicalPath z))
-      (Icc (0 : ℝ) 1) := by
-  exact (gaussCutPlanePathFunction_continuous _).continuousOn
+      (Icc (0 : ℝ) 1) := (gaussCutPlanePathFunction_continuous _).continuousOn
 
 /-- The canonical path stays in the cut plane. -/
 theorem gaussCutPlaneCanonicalPath_mem (z : gaussCutPlane) (t : ℝ) :

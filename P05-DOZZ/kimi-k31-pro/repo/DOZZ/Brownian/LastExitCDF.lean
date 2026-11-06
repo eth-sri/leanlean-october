@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Brownian.LastExitAfterAbove
+import DOZZ.Brownian.LastExitAfterAbove
 
 /-!
 # The deterministic-time last-exit distribution identity
@@ -13,7 +12,6 @@ The last exit is at most a deterministic time precisely when the future avoids t
 The full-history avoidance identity therefore gives the conditional last-exit distribution.
 -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Set
 open scoped NNReal
@@ -37,7 +35,7 @@ theorem negativeLastExitTime_le_ae_eq_futureAvoidance
   apply propext
   constructor
   · intro hL
-    simp only [conditionedPositiveFutureRationalAvoidance, Set.mem_iInter]
+    simp [conditionedPositiveFutureRationalAvoidance, Set.mem_iInter]
     intro q
     by_cases hq : 0 < (q : ℝ)
     · rw [conditionedPositiveFutureAvoidanceCoordinate, dite_eq_left hq]
@@ -108,4 +106,3 @@ theorem conditionedPositiveHistory_lastExit_le_setIntegral
 
 end DOZZ.Proofs
 
-end

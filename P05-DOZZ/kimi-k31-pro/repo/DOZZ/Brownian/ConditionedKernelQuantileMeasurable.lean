@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Brownian.ConditionedQuantileSampler
+import DOZZ.Brownian.ConditionedQuantileSampler
 import Mathlib.MeasureTheory.Constructions.BorelSpace.Order
 
 /-!
@@ -15,7 +14,6 @@ generalized inverse has rationally generated strict sublevel sets, giving joint 
 the state and uniform input.
 -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Set
 open Topology
@@ -122,4 +120,3 @@ theorem measurable_conditionedTransitionQuantileOn
 
 end DOZZ.Proofs
 
-end

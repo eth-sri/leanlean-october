@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.SharpMoments.SeibergDecomp
-public import DOZZ.GMC.SharpMoments.SeibergPieces
+import DOZZ.GMC.SharpMoments.SeibergDecomp
+import DOZZ.GMC.SharpMoments.SeibergPieces
 
 /-! # Positive moments of the Coulomb mass
 
@@ -14,7 +13,6 @@ Coulomb mass has a finite moment of every positive order: the root pieces are we
 masses, the bulk piece is the mass of a bounded disk, and the exterior piece is a weighted local
 mass of the inverted measure, which has the law of the original one. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped ENNReal NNReal
@@ -37,7 +35,7 @@ theorem gmc_coulombMass_aemeasurable
     (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
     {N : ℕ} (α : Fin N → ℝ) (z : Fin N → ℂ) (αinf : ℝ) :
     AEMeasurable (fun ω => coulombMass γ (M ω) α z αinf) P := by
-  simp only [coulombMass_eq_lintegral_coulombWeight]
+  simp [coulombMass_eq_lintegral_coulombWeight]
   exact gmc_lintegral_aemeasurable P X hX γ hγ hγ2 M hM _ (measurable_coulombWeight γ α z αinf)
 
 /-- A constant multiple of a positive power of an a.e. measurable function with finite

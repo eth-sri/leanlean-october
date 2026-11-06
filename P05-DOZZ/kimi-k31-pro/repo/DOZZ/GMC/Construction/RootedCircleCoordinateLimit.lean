@@ -1,15 +1,13 @@
 /-
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 -/
-module
 
-public import DOZZ.GMC.Construction.RootedCircleMassLimit
-public import DOZZ.GMC.Construction.GMCFiniteCoordinateTilt
-public import DOZZ.GMC.Construction.GMCRootedMeasureFinite
+import DOZZ.GMC.Construction.RootedCircleMassLimit
+import DOZZ.GMC.Construction.GMCFiniteCoordinateTilt
+import DOZZ.GMC.Construction.GMCRootedMeasureFinite
 
 /-! Almost-sure convergence of the field and chaos coordinates under a circle root shift. -/
 
-@[expose] public section
 
 open MeasureTheory Filter Topology
 open scoped Distributions ENNReal

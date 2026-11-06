@@ -2,11 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Dual.OuterMassLimit
-public import DOZZ.FourPoint.Reflected.SpatialBoundary
+import DOZZ.FourPoint.Dual.OuterMassLimit
+import DOZZ.FourPoint.Reflected.SpatialBoundary
 /-! Removing the deterministic circle boundary from the literal retained region. -/
-@[expose] public section
 open MeasureTheory Set Filter
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -46,7 +44,7 @@ theorem dual_source_outerMass_eq_comparison_region
     reflected_gmc_sphere_null P X hX γ hγ hγ₂ M hM 1 0,
     reflected_gmc_sphere_null P X hX γ hγ hγ₂ M hM 0 (‖z‖ ^ (1 - ξ))]
       with ω h0 h1 hs
-  simp only [Metric.sphere_zero] at h0 h1
+  simp [Metric.sphere_zero] at h0 h1
   exact dual_outerMass_eq_comparison_region γ α₁ α₂ α₃ ξ hγ.ne' z (M ω) h0 h1 hz hs
 
 end DOZZ.Proofs

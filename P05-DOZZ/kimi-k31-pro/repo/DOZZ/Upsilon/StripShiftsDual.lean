@@ -2,19 +2,17 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.Defs.DualMu
-public import DOZZ.Upsilon.StripShifts
-public import DOZZ.Upsilon.IntegralBounds
-public import DOZZ.Upsilon.IntegralHolomorphy
+import DOZZ.Statements.Defs.DualMu
+import DOZZ.Upsilon.StripShifts
+import DOZZ.Upsilon.IntegralBounds
+import DOZZ.Upsilon.IntegralHolomorphy
 import Mathlib.Analysis.SpecialFunctions.Pow.Complex
 
 /-!
 # Dual strip shift from the parameter symmetry of the defining integral
 -/
 
-@[expose] public section
 
 open Complex MeasureTheory Set
 
@@ -55,9 +53,7 @@ private theorem dual_log_differentiableOn {γ : ℝ} (hγ : 0 < γ)
     exact dual_upsilonLog hγ z
   have hset : {z : ℂ | 0 < z.re ∧ z.re < Q (4 / γ)} =
       {z | 0 < z.re ∧ z.re < Q γ} := by rw [dual_Q hγ]
-  rw [hset, hfun]
-  exact hlog
-
+  rwa [hset, hfun]
 private theorem dual_integrableOn {γ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2)
     {x : ℝ} (hx0 : 0 < x) (hxQ : x < Q (4 / γ)) :
     IntegrableOn (fun t : ℝ => upsilonLogIntegrand (4 / γ) (x : ℂ) t)
@@ -73,9 +69,7 @@ private theorem dual_forward_overlap_bound {γ : ℝ} (hγ : 0 < γ) {z : ℂ}
     (hz : z.re < γ / 2) : z.re < 2 / (4 / γ) := by
   have hγne : γ ≠ 0 := hγ.ne'
   have hEq : (2 : ℝ) / (4 / γ) = γ / 2 := by field_simp [hγne]; ring
-  rw [hEq]
-  exact hz
-
+  rwa [hEq]
 /-- The second strip shift, obtained by exchanging the two hyperbolic factors in the
 defining integral and applying the first shift at parameter `4 / γ`. -/
 theorem exp_upsilonLog_shift_binv {γ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2)
@@ -129,4 +123,3 @@ theorem exp_upsilonLog_shift_binv {γ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2)
 
 end DOZZ.Proofs
 
-end

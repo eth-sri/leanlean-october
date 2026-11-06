@@ -2,15 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.ShiftEquations.Strip.MaximumMoment
-public import DOZZ.ShiftEquations.Strip.UnitBlock
-public import DOZZ.Correlations.Tails.WilliamsPolarMassLaw
+import DOZZ.ShiftEquations.Strip.MaximumMoment
+import DOZZ.ShiftEquations.Strip.UnitBlock
+import DOZZ.Correlations.Tails.WilliamsPolarMassLaw
 
 /-! Expectation bounds on the independent Williams maximum/conditioned-path model. -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
 

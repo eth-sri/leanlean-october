@@ -1,10 +1,8 @@
-module
 
-public import DOZZ.GMC.WeightedCutoff.CompactCoefficients
+import DOZZ.GMC.WeightedCutoff.CompactCoefficients
 
 /-! # Separating a bounded singular core from the outer part of a cutoff mass -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs

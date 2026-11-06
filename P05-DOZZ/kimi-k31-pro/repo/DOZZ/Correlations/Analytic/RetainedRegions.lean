@@ -2,15 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.Analytic.RetainedVertexKernel
+import DOZZ.Correlations.Analytic.RetainedVertexKernel
 import Mathlib.MeasureTheory.Measure.Continuity
 import Mathlib.Topology.MetricSpace.Bounded
 
 /-! Bounded retained regions exhausting the plane away from the fixed insertion points. -/
 
-@[expose] public section
 open MeasureTheory Filter Topology
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -24,7 +22,7 @@ theorem retainedRegion_isOpen {N : ℕ} (z : Fin N → ℂ) (r : ℝ) :
   have he : retainedRegion z r =
       {x | ‖x‖ < Real.exp r} ∩ ⋂ i, {x | Real.exp (-r) < ‖x - z i‖} := by
     ext x
-    simp only [retainedRegion, Set.mem_ofPred_eq, Set.mem_inter_iff, Set.mem_iInter]
+    simp [retainedRegion, Set.mem_ofPred_eq, Set.mem_inter_iff, Set.mem_iInter]
   rw [he]
   exact (isOpen_lt continuous_norm continuous_const).inter
     (isOpen_iInter_of_finite (fun i => isOpen_lt continuous_const
@@ -35,7 +33,7 @@ theorem retainedRegion_isBounded {N : ℕ} (z : Fin N → ℂ) (r : ℝ) :
   have hb : Bornology.IsBounded (Metric.ball (0 : ℂ) (Real.exp r)) := Metric.isBounded_ball
   apply hb.subset
   intro x hx
-  exact Metric.mem_ball.mpr (by simpa only [dist_zero_right] using hx.1)
+  exact Metric.mem_ball.mpr (by simpa [dist_zero_right] using hx.1)
 
 theorem retainedRegion_mono {N : ℕ} (z : Fin N → ℂ) :
     Monotone (retainedRegion z) := by
@@ -77,13 +75,13 @@ theorem retained_weighted_mass_tendsto {N : ℕ} (μ : Measure ℂ)
     exact propext ⟨fun _ => Set.mem_univ x, fun _ => Set.mem_iUnion.mpr hmem⟩
   have ht := tendsto_measure_iUnion_atTop (μ := ν)
     ((retainedRegion_mono z).comp (fun n m hnm => Nat.cast_le.mpr hnm))
-  simp only [Function.comp_def] at ht
+  simp [Function.comp_def] at ht
   rw [hunion] at ht
   have he (n : ℕ) : ν (retainedRegion z n) =
       ∫⁻ x in retainedRegion z n, w x ∂μ :=
     withDensity_apply w (retainedRegion_isOpen z n).measurableSet
   have he0 : ν Set.univ = ∫⁻ x, w x ∂μ := by
     rw [withDensity_apply w MeasurableSet.univ, Measure.restrict_univ]
-  simpa only [he, he0] using ht
+  simpa [he, he0] using ht
 
 end DOZZ.Proofs

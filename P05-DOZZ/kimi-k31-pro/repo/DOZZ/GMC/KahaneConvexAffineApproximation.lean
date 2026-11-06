@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import Mathlib.Analysis.Convex.Deriv
-public import Mathlib.Topology.Semicontinuity.Lindelof
+import Mathlib.Analysis.Convex.Deriv
+import Mathlib.Topology.Semicontinuity.Lindelof
 
 /-! Countable supporting affine functions on the positive half-line. -/
 
-@[expose] public section
 
 open Set Function
 
@@ -20,7 +18,7 @@ theorem convex_right_tangent_le
     (F : ℝ → ℝ) (hF : ConvexOn ℝ (Ici 0) F) (r : ℝ) (hr : 0 < r)
     (x : ℝ) (hx : 0 < x) :
     F r + derivWithin F (Ioi r) r * (x - r) ≤ F x := by
-  have hrint : r ∈ interior (Ici (0 : ℝ)) := by simpa only [interior_Ici, mem_Ioi] using hr
+  have hrint : r ∈ interior (Ici (0 : ℝ)) := by simpa [interior_Ici, mem_Ioi] using hr
   rcases lt_trichotomy r x with hlt | heq | hgt
   · have h := hF.rightDeriv_le_slope_of_mem_interior hrint hx.le hlt
     rw [slope_def_field] at h
@@ -88,6 +86,6 @@ theorem convex_positive_countable_affine_minorants
     exact hAupper (hsub (hf ▸ mem_range_self n)) ⟨x, hx⟩
   · intro x hx
     have h := congrFun hsup (⟨x, hx⟩ : S)
-    simpa only [iSup_apply, hline, G] using h
+    simpa [iSup_apply, hline, G] using h
 
 end DOZZ.Proofs

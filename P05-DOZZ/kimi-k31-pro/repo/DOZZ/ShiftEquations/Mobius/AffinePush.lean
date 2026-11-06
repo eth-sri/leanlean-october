@@ -2,11 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.Defs.TestFn
-public import Mathlib.MeasureTheory.Integral.Bochner.Basic
-public import Mathlib.MeasureTheory.Measure.Lebesgue.Complex
+import DOZZ.Statements.Defs.TestFn
+import Mathlib.MeasureTheory.Integral.Bochner.Basic
+import Mathlib.MeasureTheory.Measure.Lebesgue.Complex
 import Mathlib.MeasureTheory.Measure.Lebesgue.EqHaar
 import Mathlib.RingTheory.Complex
 
@@ -24,7 +23,6 @@ pushforward is controlled by the `i`-th derivative of `f` with the factor `‖a�
 `∫ affinePushTestFn a b f * g = ∫ f * (g ∘ (a · + b))` without integrability hypotheses.
 -/
 
-@[expose] public section
 
 open MeasureTheory TopologicalSpace
 open scoped Distributions ContDiff
@@ -52,8 +50,7 @@ theorem affinePush_map_volume (a b : ℂ) (ha : a ≠ 0) :
       ENNReal.ofReal (‖a‖ ^ 2)⁻¹ • volume := by
     have := Measure.map_linearMap_addHaar_eq_smul_addHaar (volume : Measure ℂ)
       (f := (Algebra.lmul ℝ ℂ a : ℂ →ₗ[ℝ] ℂ)) (by rw [hdet]; exact hpos.ne')
-    rw [hdet, abs_of_nonneg (inv_nonneg.mpr hpos.le)] at this
-    exact this
+    rwa [hdet, abs_of_nonneg (inv_nonneg.mpr hpos.le)] at this
   have hcomp : (fun y : ℂ => a * y + b) = (fun z : ℂ => z + b) ∘ (fun y : ℂ => a * y) := rfl
   rw [hcomp, ← Measure.map_map (measurable_add_const b) (measurable_const_mul a), hlin,
     Measure.map_smul _ (measurable_add_const b).aemeasurable,
@@ -176,4 +173,3 @@ theorem integral_affinePushTestFn_mul (a b : ℂ) (ha : a ≠ 0) (f : TestFn) (g
 
 end DOZZ.Proofs
 
-end

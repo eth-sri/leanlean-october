@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.Moments.WeightedDyadic
+import DOZZ.GMC.Moments.WeightedDyadic
 import Mathlib.MeasureTheory.Measure.GiryMonad
 
 /-! Weighted local moment finiteness on the subunit range inside the exact logarithmic chart. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory
 open scoped Distributions ENNReal NNReal
@@ -17,21 +15,10 @@ open scoped Distributions ENNReal NNReal
 namespace DOZZ.Proofs
 
 /-! The rest of this module uses the a.e. measurable version supplied by the GMC predicate
-`DOZZ.IsGMCOf`, so weighted moment integrals can be split without changing the chosen version. -/
+`IsGMCOf`, so weighted moment integrals can be split without changing the chosen version. -/
 
-private theorem ennreal_ofReal_rpow_of_pos_local {x p : ℝ} (hx : 0 < x) :
-    ENNReal.rpow (ENNReal.ofReal x) p = ENNReal.ofReal (x ^ p) := by
-  have hx0 : ENNReal.ofReal x ≠ 0 := ne_of_gt (ENNReal.ofReal_pos.mpr hx)
-  have hleft : ENNReal.rpow (ENNReal.ofReal x) p ≠ ⊤ :=
-    ENNReal.rpow_ne_top_of_ne_zero hx0 ENNReal.ofReal_ne_top
-  have hright : ENNReal.ofReal (x ^ p) ≠ ⊤ := ENNReal.ofReal_ne_top
-  apply (ENNReal.toReal_eq_toReal_iff' hleft hright).1
-  calc
-    (ENNReal.rpow (ENNReal.ofReal x) p).toReal = (ENNReal.ofReal x).toReal ^ p :=
-      (ENNReal.toReal_rpow _ _).symm
-    _ = x ^ p := by rw [ENNReal.toReal_ofReal hx.le]
-    _ = (ENNReal.ofReal (x ^ p)).toReal := by
-      rw [ENNReal.toReal_ofReal (Real.rpow_nonneg hx.le p)]
+theorem ennreal_ofReal_rpow_of_pos_local {x p : ℝ} (hx : 0 < x) :
+    ENNReal.rpow (ENNReal.ofReal x) p = ENNReal.ofReal (x ^ p) := DOZZ.Proofs.ennreal_ofReal_rpow_of_pos hx
 
 /-- Localizing a negative-power insertion to a smaller disk leaves only a bounded weight on
 the remainder. -/
@@ -50,10 +37,7 @@ theorem weightedGmcBallMass_le_inner_add_total
   have hdensity : Measurable density := by
     dsimp [density]
     fun_prop
-  have hinner : Measurable inner := by
-    exact hdensity.indicator Metric.isOpen_ball.measurableSet
-  have houter : Measurable outer := by
-    exact measurable_const.indicator Metric.isOpen_ball.measurableSet
+  have hinner : Measurable inner := hdensity.indicator Metric.isOpen_ball.measurableSet
   have hpoint (x : ℂ) : B.indicator density x ≤ inner x + outer x := by
     by_cases hx : x ∈ B
     · by_cases hxρ : x ∈ D

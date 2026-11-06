@@ -2,9 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Brownian.Lateral.CircleRegularization
+import DOZZ.GMC.SharpMoments.GluedField
+import DOZZ.Brownian.Lateral.CircleRegularization
 
 /-!
 # Transporting the local lateral cutoff law
@@ -14,7 +14,6 @@ of the independent lateral path. Gaussian finite families and admissibility pass
 the cutoff-path law without changing any local covariance or normalization.
 -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal Distributions
@@ -26,15 +25,7 @@ joint Gaussianity, including zeroed coordinates outside a local chart. -/
 theorem centeredJointlyGaussian_coordinate_mul
     {Ω ι : Type*} [MeasurableSpace Ω] [Fintype ι]
     (P : Measure Ω) (Z : Ω → ι → ℝ) (hZ : IsCenteredJointlyGaussian P Z) (b : ι → ℝ) :
-    IsCenteredJointlyGaussian P (fun ω i => b i * Z ω i) := by
-  refine ⟨hZ.1, fun i => (hZ.2.1 i).const_mul (b i), ?_⟩
-  intro a
-  have heq : (fun ω => ∑ i, a i * (b i * Z ω i)) =
-      fun ω => ∑ i, (a i * b i) * Z ω i := by
-    funext ω
-    simp only [mul_assoc]
-  rw [heq]
-  exact hZ.2.2 (fun i => a i * b i)
+    IsCenteredJointlyGaussian P (fun ω i => b i * Z ω i) := DOZZ.Proofs.isCenteredJointlyGaussian_coord_mul P Z hZ b
 
 /-- A finite centered Gaussian family can be read on the image probability space when
 its coordinates agree almost everywhere with measurable image coordinates. -/
@@ -52,7 +43,7 @@ theorem centeredJointlyGaussian_map_of_ae_eq
     Finset.measurable_sum Finset.univ (fun i _ => (hW i).const_mul (a i))
   have hsum : (fun ω => ∑ i, a i * Z ω i) =ᵐ[P] fun ω => ∑ i, a i * W (π ω) i := by
     filter_upwards [ae_all_iff.2 heq] with ω hω
-    simp only [hω]
+    simp [hω]
   obtain ⟨hmem, v, hlaw⟩ := hZ.2.2 a
   refine ⟨(memLp_map_measure_iff hm.aestronglyMeasurable hπ.aemeasurable).2
     (MemLp.ae_eq hsum hmem), v, ?_⟩
@@ -156,9 +147,9 @@ theorem isAdmissibleLogRegularization_map_of_chart_ae_eq
       (fun ξ i => F ξ (q i).1 (q i).2) (fun i => hm (q i).1 (q i).2)
     intro i
     by_cases hi : (q i).2 ∈ U
-    · simpa only [b, hi, ite_true, one_mul] using heq (q i).1 (hq i).1 (hq i).2 (q i).2 hi
+    · simpa [b, hi, ite_true, one_mul] using heq (q i).1 (hq i).1 (hq i).2 (q i).2 hi
     · exact ae_of_all P fun ω => by
-        simp only [b, hi, ite_false, zero_mul, hzero _ _ _ hi]
+        simp [b, hi, ite_false, zero_mul, hzero _ _ _ hi]
   · intro K hK hKU
     obtain ⟨C, hC, hb⟩ := hY.covarianceBound K hK hKU
     refine ⟨C, hC, ?_⟩
@@ -213,7 +204,7 @@ theorem measurable_originLateralChartCenter (ρ : ℝ) (hρ : 0 < ρ) :
   have heq : (fun x : ℂ => (originLateralChartCenter ρ hρ x).val) =
       fun x => if x ∈ originLateralChart ρ then x else (originLateralChartDefault ρ hρ).val := by
     funext x
-    by_cases hx : x ∈ originLateralChart ρ <;> simp only [originLateralChartCenter, hx,
+    by_cases hx : x ∈ originLateralChart ρ <;> simp [originLateralChartCenter, hx,
       dite_true, dite_false, ite_true, ite_false]
   have hm : Measurable (fun x : ℂ => (originLateralChartCenter ρ hρ x).val) := by
     rw [heq]
@@ -248,7 +239,7 @@ theorem originLateralUniversalRegularization_zero (ρ : ℝ) (hρ : 0 < ρ)
     (f : C(OriginLateralCutoffDomain ρ, ℝ)) (ε : ℝ) (x : ℂ)
     (hx : x ∉ originLateralChart ρ) : originLateralUniversalRegularization ρ hρ f ε x = 0 := by
   classical
-  simp only [originLateralUniversalRegularization, hx, ite_false]
+  simp [originLateralUniversalRegularization, hx, ite_false]
 
 /-- Below the base cutoff the logarithmic time used by universal evaluation is
 nonnegative, and hence is not altered by the `toNNReal` coordinate. -/
@@ -394,7 +385,7 @@ theorem tendstoInMeasure_prod_of_sections
     exact Measure.prod_apply (hB r)
   change Tendsto (fun r => (μ.prod ν) (B r)) atTop (𝓝 0)
   rw [heq]
-  simpa only [lintegral_zero] using ht
+  simpa [lintegral_zero] using ht
 
 /-- Independent random parameters can be inserted into the preceding product-space
 limit. The whole independent lateral carrier is retained in this statement. -/

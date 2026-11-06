@@ -2,13 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.Tails.ENNRealTailPerturbation
+import DOZZ.Correlations.Tails.ENNRealTailPerturbation
 
 /-! Transport a localized law while bounding the two remainders on their own probability spaces. -/
 
-@[expose] public section
 open MeasureTheory Set
 open scoped ENNReal
 
@@ -34,7 +32,7 @@ theorem two_space_localization_tail_sandwich
     have h := congrArg (fun μ : Measure ℝ≥0∞ => μ (Ioi (ENNReal.ofReal y))) hLaw
     rw [Measure.map_apply_of_aemeasurable hL measurableSet_Ioi,
       Measure.map_apply_of_aemeasurable hL' measurableSet_Ioi] at h
-    exact h
+    assumption
   constructor
   · have hb := ennreal_tail_domination P' B L' E'
       (hCopy.mono fun _ h => h.2) (x+h) h hh (by linarith only [hh,hhx])

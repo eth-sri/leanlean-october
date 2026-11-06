@@ -2,12 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.ShiftEquations.Mobius.AffinePush
-public import DOZZ.ShiftEquations.Mobius.RepinPotential
-public import DOZZ.Statements.Defs.GffCov
-public import DOZZ.Statements.Defs.CircleCross
+import DOZZ.ShiftEquations.Mobius.AffinePush
+import DOZZ.ShiftEquations.Mobius.RepinPotential
+import DOZZ.Statements.Defs.GffCov
+import DOZZ.Statements.Defs.CircleCross
 import DOZZ.GFFStructure.CircleCovariance
 import DOZZ.GFFStructure.AnnularWeakLimit
 import DOZZ.GMC.CirclePotential
@@ -24,7 +23,6 @@ of two pushed circles. The diagonal is Lebesgue-null and circle-measure-null, wh
 identity is only needed off it; circle measures carry no atoms.
 -/
 
-public section
 
 open MeasureTheory Set
 
@@ -44,7 +42,7 @@ namespace RepinCovariance
 /-- Almost every point of a circle differs from a given point. -/
 theorem ae_ne_circleMeasure (x : ℂ) (r : ℝ) (y : ℂ) : ∀ᵐ u ∂circleMeasure x r, u ≠ y := by
   rw [ae_iff]
-  simpa only [ne_eq, not_not, Set.ofPred_eq_eq_singleton] using
+  simpa [ne_eq, not_not, Set.ofPred_eq_eq_singleton] using
     circleMeasure_singleton_eq_zero x r y
 
 /-- A continuous function is integrable on every circle. -/
@@ -206,4 +204,3 @@ theorem circleEnergy_affine (a b : ℂ) (ha : a ≠ 0) (y y' : ℂ) (r r' : ℝ)
 
 end DOZZ.Proofs
 
-end

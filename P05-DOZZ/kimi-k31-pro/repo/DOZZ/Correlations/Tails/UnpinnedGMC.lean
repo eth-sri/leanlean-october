@@ -1,5 +1,4 @@
-module
-public import DOZZ.Correlations.Tails.GlobalUnpinnedCircleLaw
-public import DOZZ.GMC.Moments.InversionAdmissibleLaw
-public import DOZZ.GMC.Moments.InversionAdmissibleVersion
-public import DOZZ.Statements.GMC.AdmissibleLogRegularizationGMCExists
+import DOZZ.Correlations.Tails.GlobalUnpinnedCircleLaw
+import DOZZ.GMC.Moments.InversionAdmissibleLaw
+import DOZZ.GMC.Moments.InversionAdmissibleVersion
+import DOZZ.Statements.GMC.AdmissibleLogRegularizationGMCExists

@@ -1,2 +1,1 @@
-module
-public import DOZZ.GMC.SharpMoments.OpenSetScale
+import DOZZ.GMC.SharpMoments.OpenSetScale

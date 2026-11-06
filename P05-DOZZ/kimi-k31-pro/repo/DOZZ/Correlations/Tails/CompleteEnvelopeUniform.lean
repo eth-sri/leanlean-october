@@ -2,15 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.Tails.CompleteEnvelopeBound
-public import DOZZ.Correlations.Tails.CompactPinMoment
-public import DOZZ.GMC.SharpMoments.WeightedUniformGrid
+import DOZZ.Correlations.Tails.CompleteEnvelopeBound
+import DOZZ.Correlations.Tails.CompactPinMoment
+import DOZZ.GMC.SharpMoments.WeightedUniformGrid
 
 /-! Uniform moments of the complete copied error envelope. -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal
 
@@ -54,8 +52,7 @@ theorem complete_envelope_moment_uniform_compact
     have he' : ENNReal.ofReal (Real.exp ((R*k)*|Nb ω|+(R*k)*|N ω|)) =
         ENNReal.ofReal (Real.exp ((R*k)*|Nb ω|))*ENNReal.ofReal (Real.exp ((R*k)*|N ω|)) := by
       rw [Real.exp_add, ENNReal.ofReal_mul (Real.exp_nonneg _)]
-    rw [he'] at h
-    exact h
+    rwa [he'] at h
   have hGauss := gaussian_product_lintegral_exp_abs_le P Nb N hNb hN hmNb hmN v v
     (by rw [hvNb]; exact (hpar z hzk).1) (by rw [hvN]; exact (hpar z hzk).1) (R*k)
   calc
@@ -63,7 +60,7 @@ theorem complete_envelope_moment_uniform_compact
       weightedGrid_ennreal_rpow_le_one_add_rpow (E ω) hr hrR
     _ = 1+∫⁻ ω, E ω^R ∂P := by
       rw [lintegral_add_left measurable_const]
-      simp only [lintegral_const, measure_univ, mul_one]
+      simp [lintegral_const, measure_univ, mul_one]
     _ ≤ 1+(ENNReal.ofReal L)^R*∫⁻ ω,
         ENNReal.ofReal (Real.exp ((R*k)*|Nb ω|))*ENNReal.ofReal (Real.exp ((R*k)*|N ω|)) ∂P := by
       apply add_le_add le_rfl

@@ -2,17 +2,15 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.ReflectedOuter.DeletedDisk
-public import DOZZ.FourPoint.ReflectedOuter.ZeroMassRelations
-public import DOZZ.FourPoint.ReflectedOuter.InverseDifference
-public import DOZZ.Statements.FourPoint.GammaHalfMoment
+import DOZZ.FourPoint.ReflectedOuter.DeletedDisk
+import DOZZ.FourPoint.ReflectedOuter.ZeroMassRelations
+import DOZZ.FourPoint.ReflectedOuter.InverseDifference
+import DOZZ.Statements.FourPoint.GammaHalfMoment
 import Mathlib.Tactic
 
 /-! # The deleted-disk bound for the literal inverse moment -/
 
-@[expose] public section
 open MeasureTheory Set
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -57,7 +55,7 @@ theorem reflected_retainedZero_deleted_moment_bound {Ω : Type*} [MeasurableSpac
     exact lintegral_mono fun ω => ennreal_rpow_antitone_of_nonpos
       (reflected_retainedZero_le_full γ α₁ α₂ α₃ r (M ω)) (neg_nonpos.mpr hp.le)
   have hRb : (∫⁻ ω, R ω ∂P) ≤ ENNReal.ofReal ((p * Cd) * r ^ e) := by
-    dsimp only [R]
+    dsimp [R]
     rw [lintegral_const_mul' _ _ ENNReal.ofReal_ne_top]
     calc
       _ ≤ ENNReal.ofReal p * ENNReal.ofReal (Cd * r ^ e) := mul_le_mul' le_rfl (hdb r hr hrd)
@@ -73,7 +71,7 @@ theorem reflected_retainedZero_deleted_moment_bound {Ω : Type*} [MeasurableSpac
       (reflected_retainedZero_le_full γ α₁ α₂ α₃ r (M ω))
     have hifin : I ω ≠ ⊤ := ne_top_of_le_ne_top hpf.2.ne (le_add_self.trans_eq he.symm)
     rw [he]
-    simpa only [R, mul_assoc] using reflected_ennreal_inverse_add_bound p hp (S ω) (I ω)
+    simpa [R, mul_assoc] using reflected_ennreal_inverse_add_bound p hp (S ω) (I ω)
       hpf.1.ne' hsfin hifin
   have hFS : ∀ᵐ ω ∂P, F ω ^ (-p) ≤ S ω ^ (-p) + R ω := Filter.Eventually.of_forall fun ω =>
     (ennreal_rpow_antitone_of_nonpos (reflected_retainedZero_le_full γ α₁ α₂ α₃ r (M ω))
@@ -84,6 +82,6 @@ theorem reflected_retainedZero_deleted_moment_bound {Ω : Type*} [MeasurableSpac
     _ ≤ (∫⁻ ω, R ω ∂P).toReal := hh
     _ ≤ ((p * Cd) * r ^ e) := by
       have ht := ENNReal.toReal_mono ENNReal.ofReal_ne_top hRb
-      simpa only [ENNReal.toReal_ofReal (by positivity : 0 ≤ (p * Cd) * r ^ e)] using ht
+      simpa [ENNReal.toReal_ofReal (by positivity : 0 ≤ (p * Cd) * r ^ e)] using ht
 
 end DOZZ.Proofs

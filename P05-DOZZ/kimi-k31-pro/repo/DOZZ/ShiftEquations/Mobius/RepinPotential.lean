@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.ShiftEquations.Mobius.AffineKernel
+import DOZZ.ShiftEquations.Mobius.AffineKernel
 import DOZZ.GFFStructure.CirclePotential
 import DOZZ.GMC.CirclePotential
 
@@ -20,7 +19,6 @@ variance of `L` is `2κ`. The potential is Lipschitz and bounded, so its circle 
 it uniformly as the circles shrink.
 -/
 
-@[expose] public section
 
 open MeasureTheory Set Filter Topology Metric
 
@@ -47,12 +45,12 @@ theorem circleMeasure_zero_singleton (y : ℂ) : circleMeasure 0 0 {y} = 0 := by
     · obtain ⟨θ₀, hθ₀⟩ := hne
       refine (Set.countable_range fun n : ℤ => θ₀ + n * (2 * Real.pi)).mono ?_
       intro θ hθ
-      simp only [Set.mem_preimage, Set.mem_singleton_iff, neg_zero, Real.exp_zero,
+      simp [Set.mem_preimage, Set.mem_singleton_iff, neg_zero, Real.exp_zero,
         circleMap_zero, Complex.ofReal_one, one_mul] at hθ hθ₀
       obtain ⟨n, hn⟩ := Complex.exp_eq_exp_iff_exists_int.1 (hθ.trans hθ₀.symm)
       refine ⟨n, ?_⟩
       have := congrArg Complex.im hn
-      simp only [Complex.mul_im, Complex.ofReal_re, Complex.I_im, mul_one, Complex.ofReal_im,
+      simp [Complex.mul_im, Complex.ofReal_re, Complex.I_im, mul_one, Complex.ofReal_im,
         Complex.I_re, mul_zero, sub_zero, Complex.add_im, Complex.intCast_re,
         Complex.intCast_im, zero_mul, add_zero, Complex.mul_re, Complex.re_ofNat,
         Complex.im_ofNat] at this
@@ -65,13 +63,12 @@ theorem circleMeasure_zero_singleton (y : ℂ) : circleMeasure 0 0 {y} = 0 := by
     measure_mono_null Set.inter_subset_left (hcount.measure_zero _), smul_zero]
 
 /-- The unit circle measure is a probability measure. -/
-theorem circleMeasure_zero_zero_isProbability : IsProbabilityMeasure (circleMeasure 0 0) :=
-  circleMeasure_isProbability 0 0
+theorem circleMeasure_zero_zero_isProbability : IsProbabilityMeasure (circleMeasure 0 0) := DOZZ.circleMeasure_zero_isProbability
 
 /-- Almost every point of the unit circle differs from a given point. -/
 theorem ae_ne_circleMeasure_zero (y : ℂ) : ∀ᵐ u ∂circleMeasure 0 0, u ≠ y := by
   rw [ae_iff]
-  simpa only [ne_eq, not_not, Set.ofPred_eq_eq_singleton] using circleMeasure_zero_singleton y
+  simpa [ne_eq, not_not, Set.ofPred_eq_eq_singleton] using circleMeasure_zero_singleton y
 
 /-- The affine defect is integrable on every circle. -/
 theorem integrable_affineDefect_circleMeasure (a b : ℂ) (ha : a ≠ 0) (x : ℂ) (r : ℝ) :
@@ -254,7 +251,7 @@ theorem abs_integral_circleMeasure_sub_le {g : ℂ → ℝ} {K : ℝ}
   calc |∫ u, (g u - g x) ∂circleMeasure x r|
       ≤ ∫ u, |g u - g x| ∂circleMeasure x r := by
         rw [← Real.norm_eq_abs]
-        exact (norm_integral_le_integral_norm _).trans_eq (by simp only [Real.norm_eq_abs])
+        exact (norm_integral_le_integral_norm _).trans_eq (by simp [Real.norm_eq_abs])
     _ ≤ ∫ _u, K * Real.exp (-r) ∂circleMeasure x r := by
         refine integral_mono_ae (hint.sub (integrable_const _)).abs (integrable_const _) ?_
         filter_upwards [ae_norm_sub_center_circleMeasure x r] with u hu
@@ -292,4 +289,3 @@ theorem repin_selfEnergy (a b : ℂ) (ha : a ≠ 0) :
 
 end DOZZ.Proofs
 
-end

@@ -2,19 +2,17 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.Tails.WilliamsENNRealModelTail
-public import DOZZ.Correlations.Tails.PrefactoredSourceWilliamsLaw
-public import DOZZ.Correlations.Tails.PrefactoredReflectionUniform
-public import DOZZ.Correlations.Tails.PrefactorMomentGap
-public import DOZZ.Correlations.Tails.ActualPrefactorCriticalMoment
-public import DOZZ.Correlations.Tails.SourceCutOrdering
-public import DOZZ.Brownian.Reflection.MomentAssembly
+import DOZZ.Correlations.Tails.WilliamsENNRealModelTail
+import DOZZ.Correlations.Tails.PrefactoredSourceWilliamsLaw
+import DOZZ.Correlations.Tails.PrefactoredReflectionUniform
+import DOZZ.Correlations.Tails.PrefactorMomentGap
+import DOZZ.Correlations.Tails.ActualPrefactorCriticalMoment
+import DOZZ.Correlations.Tails.SourceCutOrdering
+import DOZZ.Brownian.Reflection.MomentAssembly
 
 /-! Uniform leading Williams tails on the original source reflection family. -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal NNReal
 
@@ -66,10 +64,10 @@ theorem source_williams_tail_uniform
       0 < ν ∧ IsTwoSidedConditionedBrownianProcess P (Bs ν) ν := by
     rcases hνk with ⟨α,hαk,rfl⟩
     refine ⟨sub_pos.mpr (hα α hαk).2,?_⟩
-    simpa only [Bs,sub_sub_cancel] using (hData α hαk).1
+    simpa [Bs,sub_sub_cancel] using (hData α hαk).1
   have hInd (ν : ℝ) (hνk : ν ∈ Kν) : IndepFun (Bs ν) Z P := by
     rcases hνk with ⟨α,hαk,rfl⟩
-    simpa only [Bs,sub_sub_cancel] using (hData α hαk).2.2
+    simpa [Bs,sub_sub_cancel] using (hData α hαk).2.2
   have hpK (p : ℝ) (hpk : p ∈ Kp) : 0 < p ∧ p < 4/γ^2 := by
     rcases hpk with ⟨α,hαk,rfl⟩
     exact residue_critical_order_bounds γ α hγ (hα α hαk).1 (hα α hαk).2
@@ -164,7 +162,7 @@ theorem source_williams_tail_uniform
     x^(-p)*(∫⁻ q, J q^p ∂P.prod P).toReal| ≤ (L.toReal*D+3*T.toReal)*x^(-p-η) at hmodel
   rw [hCoefficient] at hmodel
   rw [mul_comm (x^(-p))] at hmodel
-  simpa only [A,Jc,Jc₀,S,p,ν,C] using hmodel
+  simpa [A,Jc,Jc₀,S,p,ν,C] using hmodel
 
 
 end DOZZ.Proofs

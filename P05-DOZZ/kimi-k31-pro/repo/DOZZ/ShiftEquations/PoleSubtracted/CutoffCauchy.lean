@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.ShiftEquations.PoleSubtracted.CutoffIdentity
+import DOZZ.ShiftEquations.PoleSubtracted.CutoffIdentity
 
 /-!
 # The Cauchy estimate of the cutoff family
@@ -15,7 +14,6 @@ By the martingale identity, `F_{n+1} - F_n = G_{n+1,n+1} - G_{n+1,n}` is the exp
 `|F_{n+1}(z) - F_n(z)| ≤ e^{(n+1) b²/2} |1 - z/γ| C e^{-κ n}`, `b = Im z` ([KRV, (estF1)]).
 -/
 
-@[expose] public section
 
 open MeasureTheory Filter Topology Set Metric
 open scoped ENNReal NNReal
@@ -202,4 +200,3 @@ theorem exists_cutoff_cauchy_bound (P : Measure Ω) (X : Ω → Distr) (hX : IsE
 
 end DOZZ.Proofs
 
-end

@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.FourPoint.GammaHalfUnitCrossingMultiplier
-public import DOZZ.Correlations.Residue.FullFromUnit
+import DOZZ.Statements.FourPoint.GammaHalfUnitCrossingMultiplier
+import DOZZ.Correlations.Residue.FullFromUnit
 import Mathlib.Tactic
 
 /-! # The unit-volume normalization of half-charge crossing
@@ -14,7 +13,6 @@ The zero-mode orders differ by exactly one. Cancellation uses positive Gamma
 arguments and a positive cosmological constant, so no totalized pole is divided out.
 -/
 
-public section
 open MeasureTheory
 namespace DOZZ.Proofs
 

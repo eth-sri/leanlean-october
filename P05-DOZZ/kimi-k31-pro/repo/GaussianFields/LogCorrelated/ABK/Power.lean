@@ -3,10 +3,9 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Scott Armstrong, Amélie Loher
 -/
-module
 
-public import GaussianFields.LogCorrelated.ABK.Dilation
-public import GaussianFields.LogCorrelated.ABK.Radial
+import GaussianFields.LogCorrelated.ABK.Dilation
+import GaussianFields.LogCorrelated.ABK.Radial
 
 /-!
 # GaussianFields.LogCorrelated/ABK/Power
@@ -14,7 +13,6 @@ public import GaussianFields.LogCorrelated.ABK.Radial
 Port of the corresponding GaussianFields source module.
 -/
 
-public section
 
 open MeasureTheory
 open scoped ENNReal Topology
@@ -101,7 +99,6 @@ theorem abkMAlphaInv_radial_scale {d : Nat} (ζ : ABKCutoff d) (α : ℝ)
         G (ρ⁻¹ * r) = ρ ^ (1 + α) * H r := by
     filter_upwards [self_mem_ae_restrict measurableSet_Ioi] with r hr
     have hr : 0 < r := hr
-    have hmul_pos : 0 < ρ⁻¹ * r := mul_pos hb hr
     have hinv : (ρ⁻¹ * r)⁻¹ = ρ * r⁻¹ := by
       field_simp [hρ.ne', hr.ne']
     have hpow :
@@ -170,9 +167,7 @@ theorem abk_powerDecomposition_integral_eq {d : Nat} (hd : 0 < d)
     rw [euclideanNorm_inv_smul, abs_of_nonneg hinv_nonneg,
       euclideanNorm_abkRadialPoint_of_nonneg hd hrep_nonneg]
     ring
-  rw [abk_powerDecomposition_integrand_eq ζ hr_pos x]
-  rw [abkCutoffSelfConvolution_radial ζ hnorm]
+  rw [abk_powerDecomposition_integrand_eq ζ hr_pos x, abkCutoffSelfConvolution_radial ζ hnorm]
 
 end GaussianFields
 
-end

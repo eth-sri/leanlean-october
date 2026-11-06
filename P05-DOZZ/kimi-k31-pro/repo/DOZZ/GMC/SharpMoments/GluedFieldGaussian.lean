@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.SharpMoments.GluedField
-public import DOZZ.GMC.FiniteChaosMean
+import DOZZ.GMC.SharpMoments.GluedField
+import DOZZ.GMC.FiniteChaosMean
 
 /-! # The glued comparison field
 
@@ -16,7 +15,6 @@ its covariance is the original covariance inside each piece plus `C` and exactly
 pieces, and its Wick mass is the scalar exponential times the sum of the two independent piece
 masses. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal NNReal
@@ -41,9 +39,7 @@ theorem gluedField_scalar_mul {ι : Type*} [Fintype ι] (C : ℝ≥0) (c : ι �
   refine ⟨(memLp_id_gaussianReal 2).const_mul _,
     ⟨.mk ((∑ i, a i * c i) ^ 2) (sq_nonneg _) * C, ?_⟩⟩
   have h := gaussianReal_map_const_mul (μ := 0) (v := C) (∑ i, a i * c i)
-  rw [mul_zero] at h
-  exact h
-
+  rwa [mul_zero] at h
 /-- The second moment of a centered real Gaussian is its variance parameter. -/
 theorem gluedField_gaussianReal_second_moment (C : ℝ≥0) :
     ∫ z, z * z ∂(gaussianReal 0 C) = C := by
@@ -66,23 +62,23 @@ theorem gluedField_integral_eq_zero {Ω S : Type*} [MeasurableSpace Ω] [Measura
     ∫ ω, Φ ω x ∂P = 0 := by
   obtain ⟨_, _, hmean, _⟩ :=
     coordinate_mean_variance P (fun ω (_ : Fin 1) => Φ ω x) (hΦ.2 1 (fun _ => x)) 0
-  exact hmean
+  assumption
 
 /-- A coordinate of the field restricted to the set `B` is square-integrable. -/
 theorem gluedField_memLp_indicator {Ω S : Type*} [MeasurableSpace Ω] [MeasurableSpace S]
     {P : Measure Ω} {Φ : Ω → S → ℝ} (hΦ : IsCenteredGaussianField P Φ) (B : Set S) (x : S) :
     MemLp (fun ω => B.indicator (Φ ω) x) 2 P := by
   by_cases hx : x ∈ B
-  · simpa only [Set.indicator_of_mem hx] using gluedField_memLp hΦ x
-  · simpa only [Set.indicator_of_notMem hx] using (MemLp.zero' : MemLp (fun _ : Ω => (0 : ℝ)) 2 P)
+  · simpa [Set.indicator_of_mem hx] using gluedField_memLp hΦ x
+  · simpa [Set.indicator_of_notMem hx] using (MemLp.zero' : MemLp (fun _ : Ω => (0 : ℝ)) 2 P)
 
 /-- A coordinate of the field restricted to the set `B` has mean zero. -/
 theorem gluedField_integral_indicator {Ω S : Type*} [MeasurableSpace Ω] [MeasurableSpace S]
     {P : Measure Ω} {Φ : Ω → S → ℝ} (hΦ : IsCenteredGaussianField P Φ) (B : Set S) (x : S) :
     ∫ ω, B.indicator (Φ ω) x ∂P = 0 := by
   by_cases hx : x ∈ B
-  · simpa only [Set.indicator_of_mem hx] using gluedField_integral_eq_zero hΦ x
-  · simp only [Set.indicator_of_notMem hx, integral_zero]
+  · simpa [Set.indicator_of_mem hx] using gluedField_integral_eq_zero hΦ x
+  · simp [Set.indicator_of_notMem hx, integral_zero]
 
 /-- A set indicator is multiplication by the indicator of the constant `1`. -/
 theorem gluedField_indicator_eq_mul {S : Type*} (B : Set S) (f : S → ℝ) (x : S) :
@@ -117,7 +113,7 @@ theorem gluedField_covariance_eq {Ω S : Type*} [MeasurableSpace Ω] [Measurable
     (gluedField_memLp_indicator hΦ A x) (gluedField_memLp_indicator hΦ A y) (hmemR x) (hmemR y)
     (gluedField_integral_indicator hΦ A x) (gluedField_integral_indicator hΦ A y)
   have hscalar := gluedField_gaussianReal_second_moment C
-  simp only [gluedField_eq_add]
+  simp [gluedField_eq_add]
   refine outer.trans ?_
   rw [inner]
   unfold gaussianCovariance
@@ -131,7 +127,7 @@ theorem gluedField_covariance_of_mem_of_mem {Ω S : Type*} [MeasurableSpace Ω]
       (∫ ω, Φ ω x * Φ ω y ∂P) + C := by
   have hx' : x ∉ Aᶜ := fun h => h hx
   rw [gluedField_covariance_eq P Φ hΦ A C x y]
-  simp only [Set.indicator_of_mem hx, Set.indicator_of_mem hy, Set.indicator_of_notMem hx',
+  simp [Set.indicator_of_mem hx, Set.indicator_of_mem hy, Set.indicator_of_notMem hx',
     zero_mul, integral_zero, zero_add]
 
 /-- Outside `A`, the glued covariance is the original covariance plus the scalar variance. -/
@@ -143,7 +139,7 @@ theorem gluedField_covariance_of_notMem_of_notMem {Ω S : Type*} [MeasurableSpac
   have hx' : x ∈ Aᶜ := hx
   have hy' : y ∈ Aᶜ := hy
   rw [gluedField_covariance_eq P Φ hΦ A C x y]
-  simp only [Set.indicator_of_mem hx', Set.indicator_of_mem hy', Set.indicator_of_notMem hx,
+  simp [Set.indicator_of_mem hx', Set.indicator_of_mem hy', Set.indicator_of_notMem hx,
     zero_mul, integral_zero, zero_add]
 
 /-- Across the two pieces, the glued covariance is exactly the scalar variance. -/
@@ -153,7 +149,7 @@ theorem gluedField_covariance_of_mem_of_notMem {Ω S : Type*} [MeasurableSpace �
     ∫ q, gluedField Φ A q x * gluedField Φ A q y ∂(P.prod (P.prod (gaussianReal 0 C))) = C := by
   have hx' : x ∉ Aᶜ := fun h => h hx
   rw [gluedField_covariance_eq P Φ hΦ A C x y]
-  simp only [Set.indicator_of_notMem hy, Set.indicator_of_notMem hx', mul_zero, zero_mul,
+  simp [Set.indicator_of_notMem hy, Set.indicator_of_notMem hx', mul_zero, zero_mul,
     integral_zero, zero_add]
 
 /-- The pointwise variance of the glued field is the original variance plus the scalar variance. -/
@@ -163,8 +159,8 @@ theorem gluedField_variance {Ω S : Type*} [MeasurableSpace Ω] [MeasurableSpace
     ∫ q, gluedField Φ A q x ^ 2 ∂(P.prod (P.prod (gaussianReal 0 C))) =
       (∫ ω, Φ ω x ^ 2 ∂P) + C := by
   by_cases hx : x ∈ A
-  · simpa only [pow_two] using gluedField_covariance_of_mem_of_mem P Φ hΦ A C hx hx
-  · simpa only [pow_two] using gluedField_covariance_of_notMem_of_notMem P Φ hΦ A C hx hx
+  · simpa [pow_two] using gluedField_covariance_of_mem_of_mem P Φ hΦ A C hx hx
+  · simpa [pow_two] using gluedField_covariance_of_notMem_of_notMem P Φ hΦ A C hx hx
 
 /-- The glued field is jointly measurable in the sample point and the spatial variable. -/
 theorem gluedField_measurable {Ω S : Type*} [MeasurableSpace Ω] [MeasurableSpace S]
@@ -199,9 +195,7 @@ theorem gluedField_isCenteredGaussianField {Ω S : Type*} [MeasurableSpace Ω] [
         (Aᶜ.indicator (fun _ => (1 : ℝ)) (x i) * Φ q.2.1 (x i) + 1 * q.2.2) := by
     funext q i
     rw [gluedField_eq_add, gluedField_indicator_eq_mul A, gluedField_indicator_eq_mul Aᶜ, one_mul]
-  rw [heq]
-  exact h
-
+  rwa [heq]
 /-- The exponential of a sum splits off one factor from a weighted Wick density. -/
 theorem gluedField_wick_factor (t : ℝ≥0∞) (a b : ℝ) :
     t * ENNReal.ofReal (Real.exp (b + a)) =

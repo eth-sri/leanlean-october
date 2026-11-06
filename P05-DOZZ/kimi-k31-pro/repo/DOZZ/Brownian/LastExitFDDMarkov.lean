@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.Brownian.IsNegativeConditionedBrownianLaw
-public import DOZZ.Brownian.LastExitAvoidanceChain
+import DOZZ.Statements.Brownian.IsNegativeConditionedBrownianLaw
+import DOZZ.Brownian.LastExitAvoidanceChain
 
 /-!
 # Positive-coordinate factorization of conditioned entrance FDDs
@@ -16,7 +15,6 @@ an entrance density followed by the positive Doob transition chain. This is the 
 factorization used in deterministic-time Markov calculations.
 -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory
 open Topology
@@ -79,7 +77,7 @@ theorem negativeConditionedFDDDensity_reflect
       | nil =>
           simp [negativeConditionedFDDDensity, conditionedPositiveFDDDensity]
       | cons x xs =>
-          simp only [negativeConditionedFDDDensity, conditionedPositiveFDDDensity,
+          simp [negativeConditionedFDDDensity, conditionedPositiveFDDDensity,
             List.map_cons]
           rw [negativeConditionedTransitionChainDensity_reflect]
           simp
@@ -124,7 +122,7 @@ theorem conditionedPositiveTimeChainDensity_append
       | nil => simp at hpast
       | cons x xs =>
           have htail : ts.length = xs.length := by simpa using hpast
-          simp only [List.cons_append, conditionedPositiveTimeChainDensity,
+          simp [List.cons_append, conditionedPositiveTimeChainDensity,
             conditionedPositiveLastTime, conditionedPositiveLastState]
           rw [ih t x xs htail]
           ring
@@ -173,8 +171,7 @@ theorem continuous_path_ge_iff_rational_ge
       congr 1
       exact Subtype.ext (max_eq_left hsnonneg)
     let U : Set ℝ := {x | t < x ∧ F x < c}
-    have hUopen : IsOpen U := by
-      exact isOpen_Ioi.inter (isOpen_Iio.preimage hF)
+    have hUopen : IsOpen U := isOpen_Ioi.inter (isOpen_Iio.preimage hF)
     have hUnonempty : U.Nonempty := ⟨s, hts, by simpa [hFs] using hbad⟩
     obtain ⟨q, hqU⟩ := Rat.denseRange_cast.exists_mem_open hUopen hUnonempty
     have hqU' : t < (q : ℝ) ∧ F (q : ℝ) < c := hqU
@@ -185,9 +182,8 @@ theorem continuous_path_ge_iff_rational_ge
       exact Subtype.ext (max_eq_left hq0)
     have hqbound := h q hqU'.1
     have hqbelow : p ⟨(q : ℝ), hq0⟩ < c := by
-      simpa only [hqF] using hqU'.2
+      simpa [hqF] using hqU'.2
     exact (not_lt_of_ge hqbound) hqbelow
 
 end DOZZ.Proofs
 
-end

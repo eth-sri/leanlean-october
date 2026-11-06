@@ -2,11 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Fusion.InverseInterpolation
+import DOZZ.FourPoint.Fusion.InverseInterpolation
 import Mathlib.Analysis.Calculus.MeanValue
 /-! # First-order control of the exterior degenerate numerator -/
-@[expose] public section
 open Set
 namespace DOZZ.Proofs
 /-- A real power is Lipschitz on the positive half-unit chart, with an explicit derivative bound. -/
@@ -51,10 +49,10 @@ theorem fusion_difference_exterior_numerator (k : ℝ) (z x : ℂ)
       abs_div, abs_of_pos hx0]
     apply div_le_div_of_nonneg_right _ hx0.le
     have h := abs_norm_sub_norm_le (x - z) x
-    simpa only [sub_sub_cancel_left, norm_neg] using h
+    simpa [sub_sub_cancel_left, norm_neg] using h
   have he : ‖x - z‖ ^ k - ‖x‖ ^ k = (r ^ k - 1) * ‖x‖ ^ k := by
     rw [sub_mul, one_mul, ← Real.mul_rpow (by positivity : 0 ≤ r) hx0.le]
-    dsimp only [r]
+    dsimp [r]
     rw [div_mul_cancel₀ _ hx0.ne']
   rw [he, abs_mul, abs_of_nonneg (Real.rpow_nonneg hx0.le _)]
   have hC : 0 ≤ |k| * max ((1 / 2 : ℝ) ^ (k - 1)) ((3 / 2 : ℝ) ^ (k - 1)) := by positivity

@@ -2,15 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.Moments.InversionCircleMixedLimit
-public import DOZZ.GMC.Moments.InversionSeparatedCompatibility
-public import DOZZ.GMC.Assembly.AdmissibleGMC
+import DOZZ.GMC.Moments.InversionCircleMixedLimit
+import DOZZ.GMC.Moments.InversionSeparatedCompatibility
+import DOZZ.GMC.Assembly.AdmissibleGMC
 
 /-! Compatibility of the coupled inversion circle regularizations on bounded annular charts. -/
 
-@[expose] public section
 
 open Filter MeasureTheory ProbabilityTheory Set Real
 open scoped Topology Distributions ENNReal
@@ -53,7 +51,7 @@ theorem inversionCircle_compatible_of_coupled_limits
     unfold circleKernel
     rw [← isCircleAverage_covariance P X hX Xc hXc x y r s,
       ← isCircleAverage_covariance P X hX Xc hXc y x s r]
-    exact DOZZ.Assembly.gaussianCovariance_comm P _ _
+    exact Assembly.gaussianCovariance_comm P _ _
   have hmix {ε δ : ℝ} (hε : 0 < ε) (hδ : 0 < δ) (hδe : δ ≤ e)
       (x y : ℂ) (hy : y ∈ U) :
       gaussianCovariance P (fun ω => Xc ω x⁻¹ (Real.log (1 / ε)))
@@ -122,14 +120,13 @@ theorem inversionCircle_compatible_of_coupled_limits
     rw [hexp hδ'] at ht
     rw [hsym y⁻¹ x⁻¹ (Real.log (1 / δ')) (Real.log (1 / ε)),
       hsym y x (Real.log (1 / δ')) (Real.log (1 / ε))] at ht
-    exact ht
+    assumption
   · intro K _hK hKU k _hk η hη
     obtain ⟨δ, hδ, hb⟩ := inversion_mixed_fixed_coarse_uniform (k : ℝ) hm hη
     refine ⟨δ, hδ, ?_⟩
     intro ε hε hεb x hx y hy
     have hεe : ε ≤ e := hεb.trans ((min_le_right _ _).trans (min_le_right _ _))
-    rw [DOZZ.Assembly.gaussianCovariance_comm P (fun ω => Z ω x (Real.log (1 / ε)))]
-    rw [hmix (Real.exp_pos _) hε hεe y x (hKU hx), hsrc]
+    rw [Assembly.gaussianCovariance_comm P (fun ω => Z ω x (Real.log (1 / ε))), hmix (Real.exp_pos _) hε hεe y x (hKU hx), hsrc]
     have hlogk : Real.log (1 / Real.exp (-(k : ℝ))) = k := log_one_div_exp_neg_eq _
     rw [hlogk]
     exact hb ε hε (hεb.trans (min_le_left _ _)) x (hU x (hKU hx)).1 y⁻¹

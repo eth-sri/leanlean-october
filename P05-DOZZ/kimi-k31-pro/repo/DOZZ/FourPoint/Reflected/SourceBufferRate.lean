@@ -2,11 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Reflected.SourceBufferExpectation
-public import DOZZ.FourPoint.Reflected.BufferFinite
+import DOZZ.FourPoint.Reflected.SourceBufferExpectation
+import DOZZ.FourPoint.Reflected.BufferFinite
 /-! The literal full source and separated inverse moments differ by a proved little-o. -/
-@[expose] public section
 open MeasureTheory Set Filter Topology
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -53,6 +51,6 @@ theorem reflected_source_buffer_inverse_littleO {Ω : Type*} [MeasurableSpace Ω
     div_nonneg (abs_nonneg _) (Real.rpow_nonneg (norm_nonneg z) _))
   · filter_upwards [hb] with z hz
     exact div_le_div_of_nonneg_right hz (Real.rpow_nonneg (norm_nonneg z) _)
-  · simpa only [p,E,mul_div_assoc,mul_zero] using hE.const_mul p
+  · simpa [p,E,mul_div_assoc,mul_zero] using hE.const_mul p
 
 end DOZZ.Proofs

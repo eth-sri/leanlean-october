@@ -2,13 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.Tails.OffCenterMultiplier
+import DOZZ.Correlations.Tails.OffCenterMultiplier
 
 /-! Parameter approximation of the copied Gaussian pin weight. -/
 
-@[expose] public section
 
 namespace DOZZ.Proofs
 
@@ -41,7 +39,7 @@ theorem exp_parameter_increment (b d a t u : ℝ)
         (Real.exp_nonneg _) (mul_nonneg ha (abs_nonneg _))) (Real.exp_nonneg _)
     _ = _ := by
       rw [show a*(|t|+1)+|d| = (a*|t|+|d|)+a by ring]
-      simp only [Real.exp_add]
+      simp [Real.exp_add]
       ring
 
 end DOZZ.Proofs

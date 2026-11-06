@@ -2,13 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Dual.Kernel
-public import DOZZ.FourPoint.Dual.OuterMassLimit
-public import DOZZ.FourPoint.Dual.NegativePowerDifference
+import DOZZ.FourPoint.Dual.Kernel
+import DOZZ.FourPoint.Dual.OuterMassLimit
+import DOZZ.FourPoint.Dual.NegativePowerDifference
 import Mathlib.Tactic
 /-! # The actual retained dual mass and its zero-mass comparison -/
-public section
 open MeasureTheory Set
 namespace DOZZ.Proofs
 

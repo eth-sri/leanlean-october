@@ -2,13 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.Construction.BarrierCauchyLocalEstimates
+import DOZZ.GMC.Construction.BarrierCauchyLocalEstimates
 
 /-! Uniform finite-scale covariance and rectangle limits for mixed admissible cutoffs. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped Distributions ENNReal NNReal
@@ -87,7 +85,7 @@ theorem compatible_finite_coarse_two_root_shift_tendsto_uniformly
     have hYlim' : |gaussianCovariance P
           (fun ω => Y ω (Real.exp (-(scale i : ℝ))) (coarse a))
           (fun ω => Y ω ε (root a)) - coarseKernel (scale i) (root a) (coarse a)| < η' := by
-      simpa only [hcovComm] using hYlim
+      simpa [hcovComm] using hYlim
     cases b
     · have hZlim := hZlimit ε hε hεZ (root a) (hroot a ha) (coarse a) (hcoarse a ha)
       have hZlim' : |gaussianCovariance P
@@ -95,7 +93,7 @@ theorem compatible_finite_coarse_two_root_shift_tendsto_uniformly
             (fun ω => Z ω ε (root a)) - gaussianCovariance P
               (fun ω => Y ω (Real.exp (-(scale i : ℝ))) (coarse a))
               (fun ω => Y ω ε (root a))| < η' := by
-        simpa only [hcovComm] using hZlim
+        simpa [hcovComm] using hZlim
       calc
         |gaussianCovariance P (fun ω => Y ω (Real.exp (-(scale i : ℝ))) (coarse a))
               (fun ω => Z ω ε (root a)) - coarseKernel (scale i) (root a) (coarse a)|
@@ -204,7 +202,7 @@ theorem compatible_finite_coarse_two_root_shift_tendsto_uniformly
     · exact (hε'cut.trans (min_le_left _ _)).trans hδle
     · exact hε'cut.trans (min_le_right _ _)
   have h := hshift i ε ε' hε hεcut' hε' hε'cut' γ hγ a ha
-  exact h
+  assumption
 
 /-- The finite-barrier rectangle probabilities for any mixed pair of regularization families
 converge uniformly to one common coarse limit. This is the off-diagonal finite-scale convergence
@@ -376,7 +374,7 @@ theorem compatible_mixed_off_diagonal_covariance_tendsto_uniformly
       (by simpa [norm_sub_rev] using hxy)
     have hcomp' : |gaussianCovariance P (fun ω => Z ω ε x) (fun ω => Y ω ε' y) -
         gaussianCovariance P (fun ω => Y ω ε x) (fun ω => Y ω ε' y)| < η' := by
-      simpa only [hcovComm] using hcomp.1
+      simpa [hcovComm] using hcomp.1
     exact hcombine hcomp' hbase
   · have hcomp := hCclose ε ε' hε hεC hε' hε'C x hx y hy hxy
     have hcomp' : |gaussianCovariance P (fun ω => Y ω ε x) (fun ω => Z ω ε' y) -
@@ -430,7 +428,7 @@ theorem compatible_mixed_off_diagonal_wick_factor_tendsto_uniformly
     intro p hp
     exact Set.mem_prod.mpr ⟨hKU (hSxy p hp).1, hKU (hSxy p hp).2.1⟩
   have hH' : ContinuousOn (fun p : ℂ × ℂ => H p.1 p.2) S := hH.mono hHsub
-  have hlim : ContinuousOn lim S := by exact hlog.add hH'
+  have hlim : ContinuousOn lim S := hlog.add hH'
   have habs : ContinuousOn (fun p => |lim p|) S := hlim.abs
   obtain ⟨R₀, hR₀⟩ := hS.bddAbove_image habs
   let R : ℝ := max 0 R₀

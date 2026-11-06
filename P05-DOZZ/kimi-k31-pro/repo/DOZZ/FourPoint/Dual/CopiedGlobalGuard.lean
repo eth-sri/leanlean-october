@@ -2,11 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Reflected.GlobalCompactMass
-public import DOZZ.FourPoint.Dual.SpatialGuard
+import DOZZ.FourPoint.Reflected.GlobalCompactMass
+import DOZZ.FourPoint.Dual.SpatialGuard
 /-! The genuine radial reinsertion law transfers the actual exterior guard moments. -/
-@[expose] public section
 open MeasureTheory ProbabilityTheory Set Filter Topology
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -39,7 +37,7 @@ theorem dual_copied_global_guard_inverse_finite
   have hD : MeasurableSet D := measurableSet_closedBall
   have hD0 : D ⊆ ({0} : Set ℂ)ᶜ := by
     intro x hx
-    simp only [mem_compl_iff, mem_singleton_iff]
+    simp [mem_compl_iff, mem_singleton_iff]
     intro hx0
     subst x
     norm_num [D, Metric.mem_closedBall, dist_eq_norm] at hx
@@ -60,7 +58,7 @@ theorem dual_copied_global_guard_inverse_finite
   have hI := reflected_global_mass_iterated P (originRadialPath Xc)
     (originRadialPath_aemeasurable P X Xc hc hcont) γ N hN hfin
     (D.indicator k) (hk.indicator hD) (-q)
-  simp only [he, hw] at hL hI
+  simp [he, hw] at hL hI
   rw [← hI, ← hL]
   exact dual_spatial_guard_inverse_finite P X hX γ hγ hγ₂ M hM α₁ α₂ α₃ q hq z hz
 

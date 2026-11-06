@@ -2,15 +2,14 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.Annulus.HigherScales
-public import Mathlib.MeasureTheory.Function.UniformIntegrable
-public import Mathlib.MeasureTheory.Function.LpSeminorm.CompareExp
+import DOZZ.GMC.SharpMoments.LaplaceBase
+import DOZZ.GMC.Annulus.HigherScales
+import Mathlib.MeasureTheory.Function.UniformIntegrable
+import Mathlib.MeasureTheory.Function.LpSeminorm.CompareExp
 
 /-! Higher reference moments prevent loss of the first moment in the GMC limit. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Set Filter Topology
 open scoped ENNReal NNReal Distributions
@@ -27,7 +26,7 @@ theorem gmc_unifIntegrable_of_higher_moment
     UnifIntegrable F 1 P := by
   have hq0 : 0 < q := by linarith
   have hqE : (1 : ℝ≥0∞) ≤ ENNReal.ofReal q := by
-    simpa only [ENNReal.ofReal_one] using ENNReal.ofReal_le_ofReal (show (1 : ℝ) ≤ q by linarith)
+    simpa [ENNReal.ofReal_one] using ENNReal.ofReal_le_ofReal (show (1 : ℝ) ≤ q by linarith)
   have ha : 0 < 1 - 1 / q := by
     have h := (div_lt_one hq0).mpr hq
     linarith
@@ -73,7 +72,7 @@ theorem gmc_integral_limit_of_higher_moment
       (ENNReal.rpow_lt_top_of_nonneg (by positivity) hC.ne)
   have hmem (n : ℕ) : MemLp (F n) 1 P := by
     have hhigh : MemLp (F n) (ENNReal.ofReal q) P := hnorm n
-    exact hhigh.mono_exponent (by simpa only [ENNReal.ofReal_one] using ENNReal.ofReal_le_ofReal (show (1 : ℝ) ≤ q by linarith))
+    exact hhigh.mono_exponent (by simpa [ENNReal.ofReal_one] using ENNReal.ofReal_le_ofReal (show (1 : ℝ) ≤ q by linarith))
   have hUI : UniformIntegrable F 1 P := by
     refine ⟨hui, ?_⟩
     let B := (C ^ (1 / q)).toNNReal
@@ -86,7 +85,7 @@ theorem gmc_integral_limit_of_higher_moment
         ENNReal.ofReal_ne_top (hF n), ENNReal.toReal_ofReal hq0.le]
       exact ENNReal.rpow_le_rpow (hbound n) (by positivity)
     exact ((eLpNorm_le_eLpNorm_of_exponent_le
-      (by simpa only [ENNReal.ofReal_one] using ENNReal.ofReal_le_ofReal (show (1 : ℝ) ≤ q by linarith))).trans hhigh)
+      (by simpa [ENNReal.ofReal_one] using ENNReal.ofReal_le_ofReal (show (1 : ℝ) ≤ q by linarith))).trans hhigh)
   have hG := hUI.integrable_of_tendstoInMeasure hconv
   refine ⟨hG, ?_⟩
   apply tendsto_integral_of_L1' G (Eventually.of_forall (fun n => (hmem n).integrable le_rfl))
@@ -130,7 +129,7 @@ theorem gmc_reference_ball_approx_expected_mass
         (openBallApprox_tsupport_subset 0 R k)
     have hunit : ∀ x ∈ Metric.closedBall (0 : ℂ) R, ‖x‖ ≤ 1 := by
       intro x hx
-      have hxR : ‖x‖ ≤ R := by simpa only [Metric.mem_closedBall, dist_zero_right] using hx
+      have hxR : ‖x‖ ≤ R := by simpa [Metric.mem_closedBall, dist_zero_right] using hx
       linarith
     exact regularizedGMC_test_integral_aemeasurable P X hX Xc hXc γ n
       (Metric.closedBall 0 R) Metric.isClosed_closedBall.measurableSet hunit
@@ -177,9 +176,9 @@ theorem gmc_reference_ball_approx_expected_mass
     have h := ofReal_integral_eq_lintegral_ofReal (hFint n) (ae_of_all _ (hF0 n))
     rw [hE n] at h
     have ht := congrArg ENNReal.toReal h
-    simpa only [ENNReal.toReal_ofReal (integral_nonneg (hF0 n))] using ht
+    simpa [ENNReal.toReal_ofReal (integral_nonneg (hF0 n))] using ht
   have hGmean : (∫ ω, G ω ∂P) = a.toReal :=
-    tendsto_nhds_unique hmeans (by simpa only [hmeanEq] using
+    tendsto_nhds_unique hmeans (by simpa [hmeanEq] using
       (tendsto_const_nhds : Tendsto (fun _ : ℕ => a.toReal) atTop (𝓝 a.toReal)))
   rw [← ofReal_integral_eq_lintegral_ofReal hGint (ae_of_all _ hG0), hGmean]
   exact ENNReal.ofReal_toReal ha.ne
@@ -227,13 +226,13 @@ theorem gmc_reference_ball_expected_mass
     have h := gmc_reference_nonnegative_moment_finite P X hX γ 1 hγ
       (by norm_num) (lt_trans hq hc) M hM hR hRsmall
     change (∫⁻ ω, (M ω (Metric.ball 0 R)) ^ (1 : ℝ) ∂P) < ∞ at h
-    simpa only [ENNReal.rpow_one] using h.ne
+    simpa [ENNReal.rpow_one] using h.ne
   have hlim : ∀ᵐ ω ∂P, Tendsto (fun k => F k ω) atTop (𝓝 (M ω (Metric.ball 0 R))) := by
     filter_upwards with ω
     let _ := hM.1 ω
     have h := ENNReal.continuous_ofReal.continuousAt.tendsto.comp
       (openBallApprox_integral_tendsto 0 R (M ω))
-    simpa only [Function.comp_def, F, measureReal_def, ENNReal.ofReal_toReal (measure_ne_top _ _)] using h
+    simpa [Function.comp_def, F, measureReal_def, ENNReal.ofReal_toReal (measure_ne_top _ _)] using h
   have hleft := tendsto_lintegral_of_dominated_convergence'
     (fun ω => M ω (Metric.ball 0 R)) hmeas hdom hfin hlim
   have href : Tendsto (fun k : ℕ => ∫⁻ ω, F k ω ∂P) atTop
@@ -246,21 +245,12 @@ theorem gmc_reference_ball_expected_mass
       exact (ofReal_integral_eq_lintegral_ofReal
         ((openBallApprox 0 R k).integrable (μ := gmcReferenceMeasure))
         (ae_of_all _ (fun x => (openBallApproxFun_bounds 0 R k x).1))).symm
-    simpa only [Function.comp_def, he, measureReal_def, ENNReal.ofReal_toReal (measure_ne_top _ _)] using h
+    simpa [Function.comp_def, he, measureReal_def, ENNReal.ofReal_toReal (measure_ne_top _ _)] using h
   exact tendsto_nhds_unique hleft href
 
 /-- The reference intensity on a ball in the unit chart is strictly positive. -/
 theorem gmc_reference_ball_intensity_pos {R : ℝ} (hR : 0 < R) (hR1 : R ≤ 1) :
-    0 < gmcReferenceMeasure (Metric.ball (0 : ℂ) R) := by
-  have he := gmcReferenceMeasure_restrict_unit_chart (Metric.ball (0 : ℂ) R)
-    Metric.isOpen_ball.measurableSet (fun x hx => by
-      have h : ‖x‖ < R := by simpa only [Metric.mem_ball, dist_zero_right] using hx
-      exact h.le.trans hR1)
-  have hv := congrArg (fun μ : Measure ℂ => μ Set.univ) he
-  simp only [Measure.restrict_apply_univ] at hv
-  rw [hv, Complex.volume_ball]
-  have hr : 0 < ENNReal.ofReal R := ENNReal.ofReal_pos.mpr hR
-  exact ENNReal.mul_pos (pow_ne_zero 2 hr.ne') (ENNReal.coe_pos.mpr NNReal.pi_pos).ne'
+    0 < gmcReferenceMeasure (Metric.ball (0 : ℂ) R) := DOZZ.Proofs.laplaceBase_ball_pos hR hR1
 
 /-- Every positive power of a reference ball has positive expectation. The argument requires
 positive mean, rather than an unproved almost-sure positivity claim. -/
@@ -284,7 +274,7 @@ theorem gmc_reference_ball_positive_moment_pos
     filter_upwards [he] with ω hω
     exact (ENNReal.rpow_eq_zero_iff_of_pos hp).mp hω
   have hmean : (∫⁻ ω, M ω (Metric.ball 0 R) ∂P) = 0 := by
-    simpa only [Pi.zero_apply, lintegral_zero] using lintegral_congr_ae hzero
+    simpa [Pi.zero_apply, lintegral_zero] using lintegral_congr_ae hzero
   rw [gmc_reference_ball_expected_mass P X hX γ hγ hγ2 M hM hR hRsmall] at hmean
   exact (gmc_reference_ball_intensity_pos hR (by linarith)).ne' hmean
 
@@ -294,10 +284,7 @@ theorem gmc_reference_ball_positive_moment_pos
 mass at negative order, whose extended power is infinite. -/
 theorem gmc_finite_mass_nonpositive_power_ne_zero (μ : Measure ℂ) [IsFiniteMeasure μ]
     (A : Set ℂ) {p : ℝ} (hp : p ≤ 0) : ENNReal.rpow (μ A) p ≠ 0 := by
-  intro hzero
-  rcases ENNReal.rpow_eq_zero_iff.mp hzero with h | h
-  · exact (not_lt_of_ge hp) h.2
-  · exact (measure_ne_top μ A) h.1
+  simp_all
 
 /-- Reference moments are positive at every real order, without presupposing that any
 negative moment is finite. -/

@@ -2,13 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.Crossing.Reflection
-public import DOZZ.FourPoint.Crossing.Parameters
-public import DOZZ.Statements.Hypergeom.PlanarGaussConstant
-public import DOZZ.Statements.Hypergeom.GaussGPlus
-public import DOZZ.Hypergeom.BasisRegularity
+import DOZZ.FourPoint.Crossing.Reflection
+import DOZZ.FourPoint.Crossing.Parameters
+import DOZZ.Statements.Hypergeom.PlanarGaussConstant
+import DOZZ.Statements.Hypergeom.GaussGPlus
+import DOZZ.Hypergeom.BasisRegularity
 import Mathlib.Tactic
 
 /-! # Using the literal unreflected formula in its admissible channel
@@ -19,7 +18,6 @@ charge. The charge a is not required to lie below 2/gamma. Reflection gives a
 diagonal one-channel formula on the original cut plane.
 -/
 
-public section
 open MeasureTheory
 namespace DOZZ.Proofs
 
@@ -45,7 +43,7 @@ theorem gammaHalf_one_channel_of_full_unreflected {Ω : Type*} [MeasurableSpace 
       structureConstant P M γ μ (ε - γ / 2) a c * ‖gaussGMinus H A B C z‖ ^ 2 +
       (-μ * (planarGaussConstant (γ ^ 2 / 2) (γ * ε)).re) *
         structureConstant P M γ μ (ε + γ / 2) a c * ‖gaussGPlus H A B C z‖ ^ 2 := by
-  dsimp only at hformula ⊢
+  dsimp at hformula ⊢
   have hA : gaussParameterA γ (γ / 2) ε a c = gaussParameterA γ (γ / 2) a ε c := by
     unfold gaussParameterA
     ring

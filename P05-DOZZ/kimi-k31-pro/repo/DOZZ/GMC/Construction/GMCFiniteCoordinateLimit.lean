@@ -2,23 +2,21 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.Construction.GMCFiniteCoordinateTilt
-public import DOZZ.GMC.Construction.GMCBoxMassLimit
-public import DOZZ.GMC.Construction.GMCWeightedBoxMass
-public import DOZZ.GMC.Construction.GMCWeightedBoxMassVarying
-public import DOZZ.GMC.Construction.GMCVaryingWeightedTotalMassLimit
-public import DOZZ.GMC.Construction.GMCExpCovarianceWeight
-public import DOZZ.GMC.Construction.GMCGeneralTiltBasisProxy
-public import DOZZ.GMC.Construction.RootedSizeBiasedLimit
+import DOZZ.GMC.Construction.GMCFiniteCoordinateTilt
+import DOZZ.GMC.Construction.GMCBoxMassLimit
+import DOZZ.GMC.Construction.GMCWeightedBoxMass
+import DOZZ.GMC.Construction.GMCWeightedBoxMassVarying
+import DOZZ.GMC.Construction.GMCVaryingWeightedTotalMassLimit
+import DOZZ.GMC.Construction.GMCExpCovarianceWeight
+import DOZZ.GMC.Construction.GMCGeneralTiltBasisProxy
+import DOZZ.GMC.Construction.RootedSizeBiasedLimit
 import Mathlib.MeasureTheory.Function.ConvergenceInMeasure
 import Mathlib.MeasureTheory.Function.ConvergenceInDistribution
 import Mathlib.Topology.EMetricSpace.Pi
 
 /-! Finite-coordinate convergence for the two sides of the general GMC tilt. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped Distributions ENNReal NNReal BoundedContinuousFunction
@@ -38,8 +36,7 @@ private theorem tendstoInMeasure_pi_of_coord
   have hsub (r : ℝ) : {ω | ε ≤ edist (f r ω) (g ω)} ⊆ ⋃ i, A r i := by
     intro ω hω
     by_contra hnot
-    have hlt (i : {i // i ∈ s}) : edist (f r ω i) (g ω i) < ε := by
-      exact lt_of_not_ge (fun hi => hnot (Set.mem_iUnion.2 ⟨i, hi⟩))
+    have hlt (i : {i // i ∈ s}) : edist (f r ω i) (g ω i) < ε := lt_of_not_ge (fun hi => hnot (Set.mem_iUnion.2 ⟨i, hi⟩))
     have hsup : Finset.univ.sup (fun i : {i // i ∈ s} =>
         edist (f r ω i) (g ω i)) < ε :=
       (Finset.sup_lt_iff hε).2 (fun i _ => hlt i)
@@ -87,7 +84,7 @@ private theorem tendstoInMeasure_add_of_sub
             by_contra hnot
             have hnot' : ¬ (ω ∈ {ω | δ ≤ ‖f r ω - g r ω‖} ∨
                 ω ∈ {ω | δ ≤ ‖g r ω - y ω‖}) := by
-              simpa only [Set.mem_union] using hnot
+              simpa [Set.mem_union] using hnot
             rcases not_or.mp hnot' with ⟨h1, h2⟩
             have hsum : ‖f r ω - y ω‖ < ε := by
               calc
@@ -138,7 +135,7 @@ private theorem exists_measurable_unweighted_finitePath_proxy
       simp [gmcTiltFiniteCoordinatePath, gmcTiltCoordinatePath, G, eval, hi]
     | inr j =>
       have hcoord := congrFun hω j
-      simp only [gmcTiltFiniteCoordinatePath, gmcTiltCoordinatePath, G, hi, eval]
+      simp [gmcTiltFiniteCoordinatePath, gmcTiltCoordinatePath, G, hi, eval]
       convert congrArg ENNReal.toReal hcoord using 1
       all_goals cases j <;> rfl
   exact ⟨G, hG, hEq⟩
@@ -317,8 +314,7 @@ theorem equatorGFF_unweightedFiniteCoordinate_tendstoInMeasure_under_tilt
         (regularizedGMC P Xc γ r ω)) atTop proxy :=
     tendstoInMeasure_withDensity_of_lintegral_lt_top density
       (by rw [hmass]; norm_num) hcutoffMeas hproxyMeas hbase
-  have hproxyQ : (fun ω => gmcTiltFiniteCoordinatePath s (field ω) (M ω)) =ᵐ[Q] proxy := by
-    exact (withDensity_ae_eq hdenAEMeas hdenNe).2 (by simpa [field, Q, density] using hproxyAE)
+  have hproxyQ : (fun ω => gmcTiltFiniteCoordinatePath s (field ω) (M ω)) =ᵐ[Q] proxy := (withDensity_ae_eq hdenAEMeas hdenNe).2 (by simpa [field, Q, density] using hproxyAE)
   exact htiltedProxy.congr_right hproxyQ.symm
 
 /-- The radius-dependent exact covariance weights have the same finite-coordinate limit as
@@ -500,8 +496,7 @@ theorem equatorGFF_finiteGmcCoordinate_limit_law
       dsimp [Q]
       rw [withDensity_apply density MeasurableSet.univ]
       simp
-    rw [hQmass]
-    exact hmass
+    rwa [hQmass]
   have hleftDistAux [IsProbabilityMeasure Q] :
       TendstoInDistribution leftCutoff atTop leftLimit (fun _ : ℝ => Q) Q :=
     hleftMeasure.tendstoInDistribution (fun r => (hleftMeas r).aemeasurable)
@@ -552,7 +547,7 @@ theorem equatorGFF_finiteGmcCoordinate_limit_law
       (fun f => X ω f + gaussianCovariance P (fun ω' => X ω' f) L)
       ((M ω).withDensity (fun z => ENNReal.ofReal (Real.exp (γ * c z))))) = rightLimit := by
     funext ω
-    simp only [rightLimit, field, shift]
+    simp [rightLimit, field, shift]
     simp_rw [hweight]
   change Measure.map (fun ω => gmcTiltFiniteCoordinatePath s
       (fun f => X ω f) (M ω)) (P.withDensity density) =
@@ -561,6 +556,6 @@ theorem equatorGFF_finiteGmcCoordinate_limit_law
       ((M ω).withDensity (fun z => ENNReal.ofReal (Real.exp (γ * c z))))) P
   rw [hleftPath, hrightPath]
   change Measure.map leftLimit Q = Measure.map rightLimit P
-  exact hmapLimit
+  assumption
 
 end DOZZ.Proofs

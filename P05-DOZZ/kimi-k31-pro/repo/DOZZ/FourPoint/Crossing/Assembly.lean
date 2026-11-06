@@ -2,16 +2,15 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.Crossing.OneChannel
-public import DOZZ.FourPoint.Crossing.CoefficientExtraction
-public import DOZZ.FourPoint.Crossing.DiagonalUniqueness
-public import DOZZ.FourPoint.Crossing.Multiplier
-public import DOZZ.FourPoint.Crossing.Normalization
-public import DOZZ.Statements.Correlations.UnitVolumeStructureConstantSymmetricExtended
-public import DOZZ.Hypergeom.ClassificationDiagonalConnection
-public import DOZZ.Hypergeom.ConnectionDiagonalCoefficients
+import DOZZ.FourPoint.Crossing.OneChannel
+import DOZZ.FourPoint.Crossing.CoefficientExtraction
+import DOZZ.FourPoint.Crossing.DiagonalUniqueness
+import DOZZ.FourPoint.Crossing.Multiplier
+import DOZZ.FourPoint.Crossing.Normalization
+import DOZZ.Statements.Correlations.UnitVolumeStructureConstantSymmetricExtended
+import DOZZ.Hypergeom.ClassificationDiagonalConnection
+import DOZZ.Hypergeom.ConnectionDiagonalCoefficients
 import Mathlib.Tactic
 
 /-! # Crossing coefficient assembly with both analytic inputs visible
@@ -23,7 +22,6 @@ The two premises are literal specializations of the conclusions of
 zero-channel classification remains an additional BPZ input.
 -/
 
-public section
 open MeasureTheory
 namespace DOZZ.Proofs
 
@@ -76,7 +74,7 @@ theorem gammaHalf_crossing_of_diagonal_and_unreflected {Ω : Type*} [MeasurableS
   have hεQ : ε < Q γ := by unfold Q; linarith only [hεhi, hγ]
   have hsum : 2 * Q γ + γ / 2 < α' + ε + α := by linarith only [hs]
   obtain ⟨ha, hab, hbc, hc1, hδ, hδ1, _, hK₂⟩ :=
-    DOZZ.gauss_physical_parameter_range γ (γ / 2) α' ε α hγ hγ2 (Or.inl rfl)
+    gauss_physical_parameter_range γ (γ / 2) α' ε α hγ hγ2 (Or.inl rfl)
       hsum hα' hεQ hα
   obtain ⟨hcn, hδn, _⟩ := crossing_gammaHalf_parameter_guards γ α' ε α hγ hγ2 hεhi hα' hα hs
   have hb : 0 < b := lt_trans ha hab
@@ -135,15 +133,14 @@ theorem gammaHalf_crossing_of_diagonal_and_unreflected {Ω : Type*} [MeasurableS
         · apply lt_min
           · exact mul_pos (div_pos (by norm_num) hγ) (sub_pos.mpr hα')
           · exact mul_pos (div_pos (by norm_num) hγ) (sub_pos.mpr hα)
-    have hsym := DOZZ.unitVolumeStructureConstant_symmetric_extended
+    have hsym := unitVolumeStructureConstant_symmetric_extended
       P X M γ (ε + γ / 2) α' α hγ hγ2 hX hM hdom
     rw [heS, hsym.1]
   have hfull : structureConstant P M γ μ (α' - γ / 2) ε α =
       gammaHalfCrossingMultiplier γ μ α' ε α *
         structureConstant P M γ μ α' (ε + γ / 2) α := by
     dsimp [e₁, Bε] at hex
-    rw [hswap, ← mul_assoc, crossing_connection_times_fusion γ μ α' ε α] at hex
-    exact hex
+    rwa [hswap, ← mul_assoc, crossing_connection_times_fusion γ μ α' ε α] at hex
   exact ⟨hfull, gammaHalf_crossing_unit_of_full P M γ μ α' ε α hγ hμ hs hfull⟩
 
 end DOZZ.Proofs

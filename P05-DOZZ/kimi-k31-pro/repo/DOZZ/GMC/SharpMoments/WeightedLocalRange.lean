@@ -2,11 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.SharpMoments.WeightedCenterInsertion
-public import DOZZ.GMC.SharpMoments.WeightedCenterTransfer
-public import DOZZ.Statements.GMC.WeightedGmcBallMoment
+import DOZZ.GMC.SharpMoments.WeightedCenterInsertion
+import DOZZ.GMC.SharpMoments.WeightedCenterTransfer
+import DOZZ.Statements.GMC.WeightedGmcBallMoment
 
 /-! # The sharp weighted local moment range
 
@@ -16,7 +15,6 @@ shell bound; at and above `4/γ²` an off-center subdisk already diverges; betwe
 bulk thresholds the moment at the chart center diverges by exact scaling, and the truncated-weight
 location transfer carries the divergence to every center. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped ENNReal NNReal

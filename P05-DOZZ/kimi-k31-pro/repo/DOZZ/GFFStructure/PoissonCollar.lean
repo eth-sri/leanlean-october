@@ -2,12 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GFFStructure.CircleVersion
-public import Mathlib.Analysis.Calculus.BumpFunction.Normed
-public import Mathlib.Analysis.InnerProductSpace.Calculus
-public import Mathlib.Analysis.Complex.Harmonic.Poisson
+import DOZZ.GFFStructure.CircleVersion
+import Mathlib.Analysis.Calculus.BumpFunction.Normed
+import Mathlib.Analysis.InnerProductSpace.Calculus
+import Mathlib.Analysis.Complex.Harmonic.Poisson
 
 /-!
 # Literal smooth exterior Poisson collars
@@ -19,7 +18,6 @@ support, separated-disk exterior support, pin-circle containment, shrinking supp
 formula are proved. Boundary weights have deterministic bounds on every compact inner disk.
 -/
 
-@[expose] public section
 
 open Filter MeasureTheory ProbabilityTheory Set Metric
 open scoped Topology ENNReal NNReal Distributions
@@ -39,23 +37,19 @@ noncomputable def poissonCollarDensity (ε : ℝ) (hε : 0 < ε) (k : ℕ) : ℝ
 
 /-- The radial collar density is smooth. -/
 theorem poissonCollarDensity_contDiff (ε : ℝ) (hε : 0 < ε) (k : ℕ) :
-    ContDiff ℝ (⊤ : ℕ∞) (poissonCollarDensity ε hε k) := by
-  exact ContDiffBump.contDiff_normed _
+    ContDiff ℝ (⊤ : ℕ∞) (poissonCollarDensity ε hε k) := ContDiffBump.contDiff_normed _
 
 /-- The normalized density is nonnegative. -/
 theorem poissonCollarDensity_nonneg (ε : ℝ) (hε : 0 < ε) (k : ℕ) (t : ℝ) :
-    0 ≤ poissonCollarDensity ε hε k t := by
-  exact ContDiffBump.nonneg_normed _ _
+    0 ≤ poissonCollarDensity ε hε k t := ContDiffBump.nonneg_normed _ _
 
 /-- Normalization gives total radial mass one. -/
 theorem integral_poissonCollarDensity (ε : ℝ) (hε : 0 < ε) (k : ℕ) :
-    (∫ t : ℝ, poissonCollarDensity ε hε k t) = 1 := by
-  exact ContDiffBump.integral_normed _
+    (∫ t : ℝ, poissonCollarDensity ε hε k t) = 1 := ContDiffBump.integral_normed _
 
 /-- The normalized collar density has compact support. -/
 theorem poissonCollarDensity_hasCompactSupport (ε : ℝ) (hε : 0 < ε) (k : ℕ) :
-    HasCompactSupport (poissonCollarDensity ε hε k) := by
-  exact ContDiffBump.hasCompactSupport_normed _
+    HasCompactSupport (poissonCollarDensity ε hε k) := ContDiffBump.hasCompactSupport_normed _
 
 /-- The collar support stays strictly between zero and its prescribed width. -/
 theorem tsupport_poissonCollarDensity_subset (ε : ℝ) (hε : 0 < ε) (k : ℕ) :
@@ -64,7 +58,7 @@ theorem tsupport_poissonCollarDensity_subset (ε : ℝ) (hε : 0 < ε) (k : ℕ)
   intro t ht
   have hk : 0 < (k : ℝ)+1 := by positivity
   have hdist : |t - ε/(2*((k : ℝ)+1))| ≤ ε/(4*((k : ℝ)+1)) := by
-    simpa only [mem_closedBall, Real.dist_eq] using ht
+    simpa [mem_closedBall, Real.dist_eq] using ht
   have htlo := (abs_le.mp hdist).1
   have hthi := (abs_le.mp hdist).2
   have he : 0 < ε/((k : ℝ)+1) := div_pos hε hk
@@ -88,7 +82,7 @@ theorem poissonBoundary_ne (c z w : ℂ) (ρ : ℝ) (hρ : 0 < ρ)
   have he : (ρ : ℂ)*(w-c)/(‖w-c‖ : ℂ) = z-c := by linear_combination h
   have hn := norm_poissonBoundaryDirection c w ρ hρ hw
   rw [he] at hn
-  have hz' : ‖z-c‖ < ρ := by simpa only [mem_ball, dist_eq_norm] using hz
+  have hz' : ‖z-c‖ < ρ := by simpa [mem_ball, dist_eq_norm] using hz
   exact hz'.ne hn
 
 /-- The support of a Poisson collar lies over the support of its radial density. -/
@@ -100,8 +94,8 @@ theorem tsupport_poissonCollarValue_subset (c z : ℂ) (ρ : ℝ) (hρ : 0 < ρ)
   · intro w hw
     apply subset_closure
     contrapose! hw
-    simp only [Function.mem_support, not_ne_iff] at hw ⊢
-    simp only [poissonCollarValue, hw, zero_mul, zero_div]
+    simp [Function.mem_support, not_ne_iff] at hw ⊢
+    simp [poissonCollarValue, hw, zero_mul, zero_div]
   · exact (isClosed_tsupport q).preimage (by fun_prop)
 
 /-- The Cartesian collar is separated from the center and lies in its outer annulus. -/
@@ -120,17 +114,17 @@ theorem poissonCollarValue_hasCompactSupport (c z : ℂ) (ρ ε : ℝ) (hρ : 0 
   apply (isCompact_closedBall c (ρ+ε)).of_isClosed_subset (isClosed_tsupport _)
   intro w hw
   have h := tsupport_poissonCollarValue_annulus c z ρ ε hρ hz q hq hw
-  exact (mem_closedBall.mpr (by simpa only [dist_eq_norm] using h.2.le))
+  exact (mem_closedBall.mpr (by simpa [dist_eq_norm] using h.2.le))
 
 /-- The collar vanishes on the whole inner disk, including its apparent Cartesian pole. -/
 theorem poissonCollarValue_eq_zero_inside (c z : ℂ) (ρ ε : ℝ) (hρ : 0 < ρ)
     (hz : z ∈ ball c ρ) (q : ℝ → ℝ) (hq : tsupport q ⊆ Ioo 0 ε)
     {w : ℂ} (hw : w ∈ ball c ρ) : poissonCollarValue c z ρ hρ hz q w = 0 := by
-  have hn : ‖w-c‖ < ρ := by simpa only [mem_ball, dist_eq_norm] using hw
+  have hn : ‖w-c‖ < ρ := by simpa [mem_ball, dist_eq_norm] using hw
   have hqzero : q (‖w-c‖-ρ) = 0 := image_eq_zero_of_notMem_tsupport (fun h => by
     have hp := (hq h).1
     linarith)
-  simp only [poissonCollarValue, hqzero, zero_mul, zero_div]
+  simp [poissonCollarValue, hqzero, zero_mul, zero_div]
 
 /-- Away from the center, every denominator in the Cartesian collar is nonzero. -/
 theorem contDiffAt_poissonCollarValue_of_ne (c z : ℂ) (ρ : ℝ) (hρ : 0 < ρ)
@@ -149,7 +143,7 @@ theorem contDiffAt_poissonCollarValue_of_ne (c z : ℂ) (ρ : ℝ) (hρ : 0 < ρ
       (contDiffAt_const.add (hscalar.smul hsub)).sub contDiffAt_const
     convert h using 1
     funext v
-    simp only [Complex.real_smul, div_eq_mul_inv, Complex.ofReal_mul, Complex.ofReal_inv]
+    simp [Complex.real_smul, div_eq_mul_inv, Complex.ofReal_mul, Complex.ofReal_inv]
     ring
   have hden : ContDiffAt ℝ (⊤ : ℕ∞)
       (fun v : ℂ => 2*Real.pi*‖v-c‖*‖c+(ρ : ℂ)*(v-c)/(‖v-c‖ : ℂ)-z‖^2) w :=
@@ -176,7 +170,7 @@ theorem contDiff_poissonCollarValue (c z : ℂ) (ρ ε : ℝ) (hρ : 0 < ρ)
     exact contDiffAt_const.congr_of_eventuallyEq heq
   · exact contDiffAt_poissonCollarValue_of_ne c z ρ hρ hz q hq hw
 
-/-- The literal Cartesian density `DOZZ.poissonCollarValue` is an actual compactly supported smooth
+/-- The literal Cartesian density `poissonCollarValue` is an actual compactly supported smooth
 test. -/
 noncomputable def poissonCollarTest (c z : ℂ) (ρ ε : ℝ) (hρ : 0 < ρ)
     (hz : z ∈ ball c ρ) (q : ℝ → ℝ) (hq : ContDiff ℝ (⊤ : ℕ∞) q)
@@ -185,7 +179,7 @@ noncomputable def poissonCollarTest (c z : ℂ) (ρ ε : ℝ) (hρ : 0 < ρ)
     contDiff_poissonCollarValue c z ρ ε hρ hz q hq hqs,
     poissonCollarValue_hasCompactSupport c z ρ ε hρ hz q hqs, subset_univ _⟩
 
-/-- The test has exactly the pointwise value `DOZZ.poissonCollarValue`. -/
+/-- The test has exactly the pointwise value `poissonCollarValue`. -/
 theorem poissonCollarTest_apply (c z : ℂ) (ρ ε : ℝ) (hρ : 0 < ρ)
     (hz : z ∈ ball c ρ) (q : ℝ → ℝ) (hq : ContDiff ℝ (⊤ : ℕ∞) q)
     (hqs : tsupport q ⊆ Ioo 0 ε) (w : ℂ) :
@@ -203,21 +197,20 @@ theorem tsupport_poissonCollarTest_exterior {n : ℕ} (c : Fin n → ℂ) (ρ ε
   simp only [mem_compl_iff, mem_iUnion]
   rintro ⟨j, hj⟩
   have hjdist : dist w (c j) < ρ := hj
-  have hidist : dist w (c i) < ρ+ε := by simpa only [dist_eq_norm] using hann.2
+  have hidist : dist w (c i) < ρ+ε := by simpa [dist_eq_norm] using hann.2
   by_cases hij : i = j
   · subst j
-    have hwρ : ρ < dist w (c i) := by simpa only [dist_eq_norm] using hann.1
+    have hwρ : ρ < dist w (c i) := by simpa [dist_eq_norm] using hann.1
     exact (hwρ.trans hjdist).false
   · have hs := hsep i j hij
     have ht := dist_triangle (c i) w (c j)
     rw [dist_comm (c i) w] at ht
-    have hlo : ρ < dist w (c i) := by simpa only [dist_eq_norm] using hann.1
+    have hlo : ρ < dist w (c i) := by simpa [dist_eq_norm] using hann.1
     linarith
 
 /-- The width of every radial approximation is at most the original collar width. -/
 theorem poissonCollarWidth_le (ε : ℝ) (hε : 0 < ε) (k : ℕ) :
-    ε/((k : ℝ)+1) ≤ ε := by
-  exact div_le_self hε.le (by linarith [Nat.cast_nonneg (α := ℝ) k])
+    ε/((k : ℝ)+1) ≤ ε := div_le_self hε.le (by linarith [Nat.cast_nonneg (α := ℝ) k])
 
 /-- All collars stay strictly inside the prescribed exterior pin circle. -/
 theorem tsupport_poissonCollarTest_inside_pin (c z : ℂ) (ρ ε δ R : ℝ)
@@ -228,21 +221,21 @@ theorem tsupport_poissonCollarTest_inside_pin (c z : ℂ) (ρ ε δ R : ℝ)
   intro w hw
   have hann := tsupport_poissonCollarValue_annulus c z ρ ε hρ hz q hqs hw
   have hn : ‖w‖ ≤ ‖w-c‖+‖c‖ := by
-    simpa only [sub_add_cancel] using norm_add_le (w-c) c
+    simpa [sub_add_cancel] using norm_add_le (w-c) c
   have hwr : ‖w‖ < R := by linarith [hann.2]
-  simpa only [mem_ball, dist_zero_right] using hwr
+  simpa [mem_ball, dist_zero_right] using hwr
 
 /-- Inside the pin circle the literal exterior kernel is the uncurved logarithmic kernel. -/
 theorem exteriorPinnedKernel_eq_log_sub {R : ℝ} (hR : 0 < R) {v w : ℂ}
     (hv : ‖v‖ ≤ R) (hw : ‖w‖ ≤ R) :
     exteriorPinnedKernel R hR v w = Real.log R - Real.log ‖v-w‖ := by
-  simp only [exteriorPinnedKernel, max_eq_right hv, max_eq_right hw]
+  simp [exteriorPinnedKernel, max_eq_right hv, max_eq_right hw]
   ring
 
 /-- The Poisson numerator is positive at every point of the open disk. -/
 theorem poissonNumerator_pos (c z : ℂ) (ρ : ℝ) (hρ : 0 < ρ) (hz : z ∈ ball c ρ) :
     0 < ρ^2-‖z-c‖^2 := by
-  have hzn : ‖z-c‖ < ρ := by simpa only [mem_ball, dist_eq_norm] using hz
+  have hzn : ‖z-c‖ < ρ := by simpa [mem_ball, dist_eq_norm] using hz
   have hn := norm_nonneg (z-c)
   nlinarith
 
@@ -257,8 +250,7 @@ theorem poissonCollarValue_nonneg (c z : ℂ) (ρ : ℝ) (hρ : 0 < ρ)
 /-- A radially parametrized boundary displacement has the expected norm. -/
 theorem norm_poissonPolarPoint_sub (c : ℂ) (u θ : ℝ) (hu : 0 ≤ u) :
     ‖c+(u : ℂ)*Complex.exp ((θ : ℂ)*Complex.I)-c‖ = u := by
-  rw [add_sub_cancel_left, norm_mul, Complex.norm_real, Real.norm_eq_abs,
-    abs_of_nonneg hu, Complex.norm_exp_ofReal_mul_I, mul_one]
+  simp_all
 
 /-- Radial projection of a positive polar radius removes that radius exactly. -/
 theorem poissonBoundaryDirection_polar (c : ℂ) (ρ u θ : ℝ) (hu : 0 < u) :
@@ -286,7 +278,7 @@ theorem tendsto_poissonCollarWidth (ε : ℝ) :
     Tendsto (fun k : ℕ => ε/((k : ℝ)+1)) atTop (𝓝 0) := by
   have h := (tendsto_const_div_atTop_nhds_zero_nat (𝕜 := ℝ) ε).comp
     (tendsto_add_atTop_nat 1)
-  simpa only [Function.comp_def, Nat.cast_add, Nat.cast_one] using h
+  simpa [Function.comp_def, Nat.cast_add, Nat.cast_one] using h
 
 /-- The squared Poisson denominator is uniformly positive on compact inner disks. -/
 theorem poissonBoundary_norm_sq_lower (c z w : ℂ) (ρ a : ℝ) (hρ : 0 < ρ)
@@ -314,6 +306,6 @@ theorem circleAverage_poissonKernel_eq_one (c z : ℂ) (ρ : ℝ)
     (hz : z ∈ ball c ρ) : Real.circleAverage (poissonKernel c z) c ρ = 1 := by
   have h := (InnerProductSpace.harmonicOnNhd_const (1 : ℝ)
     (s := closedBall c ρ)).circleAverage_poissonKernel_smul hz
-  simpa only [Pi.smul_def, smul_eq_mul, Pi.mul_def, mul_one] using h
+  simpa [Pi.smul_def, smul_eq_mul, Pi.mul_def, mul_one] using h
 
 end DOZZ.Proofs

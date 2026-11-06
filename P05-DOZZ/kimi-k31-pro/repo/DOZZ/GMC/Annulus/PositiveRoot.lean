@@ -2,15 +2,14 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.Construction.RootedFiniteCutoffJoint
-public import DOZZ.GMC.Construction.RegularizedGMCExpectedMeasure
-public import DOZZ.GMC.Moments.ReferenceFinite
-public import DOZZ.GMC.Annulus.WeightedShell
-public import DOZZ.GMC.CirclePotential
-public import DOZZ.GMC.Moments.CircleScaleWick
-public import DOZZ.GMC.Moments.ExactScale
+import DOZZ.GMC.Construction.RootedFiniteCutoffJoint
+import DOZZ.GMC.Construction.RegularizedGMCExpectedMeasure
+import DOZZ.GMC.Moments.ReferenceFinite
+import DOZZ.GMC.Annulus.WeightedShell
+import DOZZ.GMC.CirclePotential
+import DOZZ.GMC.Moments.CircleScaleWick
+import DOZZ.GMC.Moments.ExactScale
 
 /-!
 # Finite-cutoff positive moment rooting
@@ -21,7 +20,6 @@ inserted masses. This is the root-positive identity used by the sharp moment ind
 no limiting rooted GMC identity or weighted moment-existence input is used.
 -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal NNReal Distributions
@@ -47,7 +45,7 @@ theorem measurable_gmcCircleWickDensity
   exact ENNReal.measurable_ofReal.comp (Real.measurable_exp.comp
     ((measurable_const.mul hfield).sub (measurable_const.mul (hV.comp measurable_snd))))
 
-/-- The actual cutoff measure `DOZZ.regularizedGMC` is the reference measure weighted by the Wick
+/-- The actual cutoff measure `regularizedGMC` is the reference measure weighted by the Wick
 density. -/
 theorem regularizedGMC_eq_reference_withDensity_PositiveRoot
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) [SFinite P] (X : Ω → Distr)
@@ -102,8 +100,7 @@ theorem regularizedGMC_positive_moment_root_identity
     have hW : Measurable (W ω) :=
       (measurable_gmcCircleWickDensity P X Xc hXc γ r).comp (f := fun x : ℂ => (ω, x))
         (measurable_const.prodMk measurable_id)
-    rw [lintegral_mul_const'' _ hW.aemeasurable]
-    rw [← regularizedGMC_mass_eq_wick_lintegral P X Xc hXc γ r O hO ω]
+    rw [lintegral_mul_const'' _ hW.aemeasurable, ← regularizedGMC_mass_eq_wick_lintegral P X Xc hXc γ r O hO ω]
     change (T ω) ^ p = T ω * (T ω) ^ (p - 1)
     calc
       _ = (T ω) ^ (1 + (p - 1)) := by congr 1; ring
@@ -134,14 +131,14 @@ theorem gmcReferenceMeasure_restrict_unit_chart (O : Set ℂ) (hO : MeasurableSe
       fun _ => (1 : ℝ≥0∞) := by
     filter_upwards [ae_restrict_mem hO] with x hx
     have hn : normPlus x = 1 := max_eq_left (hunit x hx)
-    simp only [hn, Real.one_rpow, ENNReal.ofReal_one]
+    simp [hn, Real.one_rpow, ENNReal.ofReal_one]
   rw [withDensity_congr_ae he]
   change (volume.restrict O).withDensity 1 = volume.restrict O
   exact withDensity_one
 
 
 /-- Extracting the scalar in the Gaussian covariance gives the covariance factor `gamma²`. This is
-an identity of the actual covariance `DOZZ.gaussianCovariance`, rather than a kernel assumption. -/
+an identity of the actual covariance `gaussianCovariance`, rather than a kernel assumption. -/
 theorem gmcCircle_tilt_covariance_scalar
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (Xc : Ω → ℂ → ℝ → ℝ)
     (γ r : ℝ) (x u : ℂ) :
@@ -271,7 +268,7 @@ theorem gmcCircle_variance_le_cutoff_chart
     (R r : ℝ) (hR : 0 ≤ R) (hr : 0 ≤ r) (x : ℂ) (hx : ‖x‖ ≤ R) :
     gaussianVariance P (fun ω => Xc ω x r) ≤ r + gmcCircleChartRemainder R := by
   have h := gmcCircle_tilt_covariance_upper P X hX Xc hXc 1 R r hR hr x x hx hx
-  simpa only [one_mul, one_pow, sub_self, norm_zero,
+  simpa [one_mul, one_pow, sub_self, norm_zero,
     max_eq_right (Real.exp_nonneg _), one_div, Real.log_inv, Real.log_exp,
     neg_neg, gaussianVariance] using h
 
@@ -313,7 +310,7 @@ theorem gmcCircleWickDensity_moment
   have hmgf := gaussian_exponential_moment_of_hasLaw hLaw (p * γ)
   rw [Real.coe_toNNReal _ hv] at hmgf
   have hV : (∫ ω, Xc ω x r ^ 2 ∂P) = V := by
-    simp only [V, gaussianVariance, gaussianCovariance, pow_two]
+    simp [V, gaussianVariance, gaussianCovariance, pow_two]
   calc
     _ = ∫⁻ ω, ENNReal.ofReal (Real.exp ((γ * Xc ω x r - γ ^ 2 / 2 * V) * p)) ∂P := by
       apply lintegral_congr

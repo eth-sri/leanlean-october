@@ -2,13 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Brownian.LastExitDyadicMixture
-public import DOZZ.Brownian.LastExitFinite
-public import DOZZ.Brownian.LastExitPostPathMeasurability
-public import DOZZ.Brownian.WienerExists
-public import DOZZ.Brownian.ConditionedFDDUniqueness
+import DOZZ.Brownian.Coupling.RationalExtension
+import DOZZ.Brownian.LastExitDyadicMixture
+import DOZZ.Brownian.LastExitFinite
+import DOZZ.Brownian.LastExitPostPathMeasurability
+import DOZZ.Brownian.WienerExists
+import DOZZ.Brownian.ConditionedFDDUniqueness
 import Mathlib.MeasureTheory.Measure.Portmanteau
 
 /-!
@@ -19,7 +19,6 @@ continuous paths themselves converge pointwise in path space, so the limiting po
 has the same finite rational projection law as the entrance density.
 -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
@@ -32,25 +31,7 @@ private theorem tendsto_map_of_ae_pointwise
     (hf : ∀ n, Measurable (f n)) (hg : Measurable g)
     (hlim : ∀ᵐ ω ∂(Q : Measure Ω),
       Tendsto (fun n => f n ω) atTop (𝓝 (g ω))) :
-    Tendsto (fun n => Q.map (f n)) atTop (𝓝 (Q.map g)) := by
-  apply ProbabilityMeasure.tendsto_iff_forall_integral_tendsto.mpr
-  intro test
-  have hmap (n : ℕ) :
-      (∫ x, test x ∂(Q.map (f n) : Measure E)) =
-        ∫ ω, test (f n ω) ∂(Q : Measure Ω) :=
-    integral_map (hf n).aemeasurable test.continuous.measurable.aestronglyMeasurable
-  have hmapg :
-      (∫ x, test x ∂(Q.map g : Measure E)) =
-        ∫ ω, test (g ω) ∂(Q : Measure Ω) :=
-    integral_map hg.aemeasurable test.continuous.measurable.aestronglyMeasurable
-  simp_rw [hmap, hmapg]
-  apply tendsto_integral_of_dominated_convergence (fun _ => ‖test‖)
-  · intro n
-    exact (test.continuous.measurable.comp (hf n)).aestronglyMeasurable
-  · exact integrable_const _
-  · intro n
-    exact ae_of_all _ fun ω => test.norm_coe_le_norm (f n ω)
-  · exact hlim.mono fun ω hω => test.continuous.continuousAt.tendsto.comp hω
+    Tendsto (fun n => Q.map (f n)) atTop (𝓝 (Q.map g)) := DOZZ.Proofs.coupling_probabilityMap_tendsto_of_ae Q f g hf hg hlim
 
 /-- The dyadic path approximation converges continuously to the literal recentered post-last-exit
 path, for every input continuous path. -/
@@ -111,7 +92,7 @@ theorem negativeConditionedPostLastExit_positiveRationalProjection
     refine ⟨?_⟩
     change (volume.withDensity (brownianEntranceFinitePDF ν n ds)) Set.univ = 1
     rw [withDensity_apply _ MeasurableSet.univ]
-    simpa only [setLIntegral_univ] using
+    simpa [setLIntegral_univ] using
       lintegral_brownianEntranceFinitePDF_one Q ν hν hQ n ds hds
   let μ : ProbabilityMeasure (Fin n → ℝ) := ⟨M, hMprob⟩
   let f : BrownianPath → Fin n → ℝ := fun p i =>
@@ -142,7 +123,7 @@ theorem negativeConditionedPostLastExit_positiveRationalProjection
     have heval : (fun k => fdyad k p i) =
         fun k => -(dyadicLastExitPathApproximation k c p (ts i)) := by
       funext k
-      simp only [fdyad, dyadicPositiveLastExitRationalEvals,
+      simp [fdyad, dyadicPositiveLastExitRationalEvals,
         brownianPathRationalEvals, max_eq_left (hoff i).le]
       rw [htime i]
     rw [heval]
@@ -181,7 +162,7 @@ theorem negativeConditionedPostLastExit_positiveRationalProjection
     have hnn := (ENNReal.tendsto_toNNReal_iff (measure_ne_top M A) hfinite).2 hmeasure
     change Tendsto (fun k => ((μdyad k : Measure (Fin n → ℝ)) A).toNNReal)
       atTop (𝓝 ((M A).toNNReal))
-    exact hnn
+    assumption
   have hweak : Tendsto μdyad atTop (𝓝 μ) := by
     apply IsPiSystem.tendsto_probabilityMeasure_of_tendsto_of_mem
       (S := {U : Set (Fin n → ℝ) | @IsOpen (Fin n → ℝ) inferInstance U})
@@ -237,13 +218,8 @@ theorem negativeConditionedLaw_positiveRationalProjection
       brownianEntranceFinitePDF ν n ds x =
         ENNReal.ofReal (max 0 (conditionedPositiveFDDDensity ν
           (List.ofFn fun i => (ts i : ℝ)) (List.ofFn fun i => x i))) := by
-    rw [brownianEntranceFinitePDF_eq_conditionedPositiveFDDDensity ν hν n ds hds x, htimes]
-    rw [ENNReal.ofReal_max]
-    have hnonneg := conditionedPositiveFDDDensity_nonneg hP.1
-      (List.ofFn fun i => (ts i : ℝ)) (List.ofFn fun i => x i) (by simp)
+    rw [brownianEntranceFinitePDF_eq_conditionedPositiveFDDDensity ν hν n ds hds x, htimes, ENNReal.ofReal_max]
     simp
-  have hmeas : Measurable (brownianEntranceFinitePDF ν n ds) :=
-    measurable_brownianEntranceFinitePDF ν hν n ds hds
   have hmeasure : volume.withDensity (brownianEntranceFinitePDF ν n ds) =
       volume.withDensity (fun x => ENNReal.ofReal (max 0
         (conditionedPositiveFDDDensity ν (List.ofFn fun i => (ts i : ℝ))
@@ -457,13 +433,11 @@ private theorem postLastExitRationalEvalRect_measure_eq
   have hpost' : P.map rpost =
       volume.withDensity (brownianEntranceFinitePDF ν n
         (brownianFirstHitElapsed n (fun i => Real.toNNReal (offsets i)))) := by
-    rw [← hfunpost]
-    exact hpost
+    rwa [← hfunpost]
   have horig' : P.map rorig =
       volume.withDensity (brownianEntranceFinitePDF ν n
         (brownianFirstHitElapsed n (fun i => Real.toNNReal (offsets i)))) := by
-    rw [← hfunorig]
-    exact horig
+    rwa [← hfunorig]
   have hproj : P.map rpost = P.map rorig := hpost'.trans horig'.symm
   let A : Set (Fin n → ℝ) := {x | ∀ i, x i ∈ S (qidx i)}
   have hA : MeasurableSet A := by
@@ -531,7 +505,7 @@ private theorem postLastExitRationalEvalRect_measure_eq
           rw [Measure.map_apply hrorig hA, hpreorig]
 
 /-- The post-last-exit recentering preserves the full conditioned path law. This proves
-`DOZZ.negativeConditioned_postLastExit_law` by equality on positive rational evaluation
+`negativeConditioned_postLastExit_law` by equality on positive rational evaluation
 rectangles. -/
 theorem negativeConditioned_postLastExit_law
     (ν c : ℝ) (hν : 0 < ν) (hc : 0 < c)
@@ -563,4 +537,3 @@ theorem negativeConditioned_postLastExit_law
 
 end DOZZ.Proofs
 
-end

@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.BallAnnulus.RadiusExtension
+import DOZZ.GMC.BallAnnulus.RadiusExtension
 
 /-! The two-sided ball estimate `DOZZ.equatorGFF_GMC_ball_moment_bound`, including every negative
 moment order. -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory Filter Topology TopologicalSpace Set
 open scoped Distributions ENNReal NNReal
 namespace DOZZ.Proofs
@@ -66,7 +64,7 @@ theorem equatorGFF_GMC_ball_moment_bound
     change (M ω D) ^ p ≤ (M ω A) ^ p
     have hh := ENNReal.inv_le_inv.mpr
       (ENNReal.rpow_le_rpow (show M ω A ≤ M ω D from measure_mono hAD) (neg_nonneg.mpr hp0))
-    simpa only [← ENNReal.rpow_neg, neg_neg] using hh
+    simpa [← ENNReal.rpow_neg, neg_neg] using hh
   have hcoarse : ∃ l u : ℝ, 0 < l ∧ 0 ≤ u ∧ ∀ z : K, ∀ r : ℝ,
       1/8 ≤ r → r ≤ 1 → ENNReal.ofReal l ≤ gmcMassMoment P M (Metric.ball z.val r) p ∧
         gmcMassMoment P M (Metric.ball z.val r) p ≤ ENNReal.ofReal u := by
@@ -101,4 +99,3 @@ theorem equatorGFF_GMC_ball_moment_bound
   exact ⟨C, hC, fun z hz r hr hr1 => hbound ⟨z, hz⟩ r hr hr1⟩
 
 end DOZZ.Proofs
-end

@@ -2,19 +2,17 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.GMC.GmcReferenceMeasure
-public import DOZZ.GMC.CircleAverage
-public import DOZZ.GMC.Construction.CircleAverageJointVersion
-public import Mathlib.MeasureTheory.Constructions.BorelSpace.ContinuousMap
-public import Mathlib.MeasureTheory.Measure.GiryMonad
-public import Mathlib.MeasureTheory.Measure.Prod
-public import Mathlib.Topology.CompactOpen
+import DOZZ.Statements.GMC.GmcReferenceMeasure
+import DOZZ.GMC.CircleAverage
+import DOZZ.GMC.Construction.CircleAverageJointVersion
+import Mathlib.MeasureTheory.Constructions.BorelSpace.ContinuousMap
+import Mathlib.MeasureTheory.Measure.GiryMonad
+import Mathlib.MeasureTheory.Measure.Prod
+import Mathlib.Topology.CompactOpen
 
 /-! Measurability of a cutoff chaos built from a continuous sample circle field. -/
 
-@[expose] public section
 
 open MeasureTheory
 open scoped ENNReal
@@ -44,12 +42,9 @@ theorem exists_measurable_continuousCircleProfile
   let _ : IsProbabilityMeasure P := hX.1
   let Y : ℂ × ℝ → Ω → ℝ := fun p ω => Xc ω p.1 p.2
   have hprocess := circleAverage_isGaussianProcess P X Xc hX hXc
-  have hmeas (p : ℂ × ℝ) : Measurable (Y p) := by
-    exact (hXc.1 p.2).comp (measurable_id.prodMk measurable_const)
-  have hmem (p : ℂ × ℝ) : MemLp (Y p) 2 P := by
-    exact hXc.2.1 p.1 p.2
-  have hmean (p : ℂ × ℝ) : (∫ ω, Y p ω ∂P) = 0 := by
-    exact hprocess.2 p.1 p.2
+  have hmeas (p : ℂ × ℝ) : Measurable (Y p) := (hXc.1 p.2).comp (measurable_id.prodMk measurable_const)
+  have hmem (p : ℂ × ℝ) : MemLp (Y p) 2 P := hXc.2.1 p.1 p.2
+  have hmean (p : ℂ × ℝ) : (∫ ω, Y p ω ∂P) = 0 := hprocess.2 p.1 p.2
   have hcov (p q : ℂ × ℝ) :
       ProbabilityTheory.covariance (Y p) (Y q) P =
         ∫ z, ∫ w, gffKernel z w ∂circleMeasure p.1 p.2 ∂circleMeasure q.1 q.2 := by
@@ -80,14 +75,8 @@ theorem continuousCircleCutoffMeasure_measurable
   have hnorm : Measurable (fun x : ℂ => normPlus x) := by
     unfold normPlus
     exact measurable_const.max measurable_norm
-  have heval : Measurable (fun q : C(ℂ, ℝ) × ℂ => q.1 q.2) :=
-    (continuous_eval : Continuous fun q : C(ℂ, ℝ) × ℂ => q.1 q.2).measurable
   have hdensity : Measurable density := by
     dsimp [density]
-    have hvariance : Measurable (fun q : C(ℂ, ℝ) × ℂ => V q.2) :=
-      hV.comp measurable_snd
-    have hnorm' : Measurable (fun q : C(ℂ, ℝ) × ℂ => normPlus q.2) :=
-      hnorm.comp measurable_snd
     fun_prop
   apply Measure.measurable_of_measurable_coe
   intro A hA

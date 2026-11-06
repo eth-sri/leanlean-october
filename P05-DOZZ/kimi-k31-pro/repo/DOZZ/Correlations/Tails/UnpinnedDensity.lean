@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.Tails.OffCenterWickCopy
-public import DOZZ.Correlations.Tails.RandomScalarLimit
+import DOZZ.Correlations.Tails.OffCenterWickCopy
+import DOZZ.Correlations.Tails.RandomScalarLimit
 
 /-! Samplewise pin removal, with the original equator reference density retained. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal NNReal
@@ -55,9 +53,9 @@ theorem local_circle_second_moments
   have hO := offCenter_circle_self_covariance P X Xc hX hc z hz p
   have hU := offCenter_unpinned_circle_covariance P X Xc hX hc z hz p p
   rw [local_circle_self_potential] at hU
-  simp only [covariance, hm] at hO
-  simp only [covariance, hmU] at hU
-  simp only [sub_zero, ← pow_two] at hO hU
+  simp [covariance, hm] at hO
+  simp [covariance, hmU] at hU
+  simp [← pow_two] at hO hU
   exact ⟨hO, hU⟩
 
 end DOZZ.Proofs

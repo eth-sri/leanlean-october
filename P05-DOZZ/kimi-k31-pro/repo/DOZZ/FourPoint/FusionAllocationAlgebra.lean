@@ -1,4 +1,3 @@
-module
-public import DOZZ.FourPoint.FusionKernelBounds
-public import DOZZ.FourPoint.RetainedAnnuliUniformOrders
-public import Mathlib.Analysis.Normed.Group.Bounded
+import DOZZ.FourPoint.FusionKernelBounds
+import DOZZ.FourPoint.RetainedAnnuliUniformOrders
+import Mathlib.Analysis.Normed.Group.Bounded

@@ -2,15 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.Fusion.MovingMassPieces
-public import DOZZ.FourPoint.Fusion.ProbabilitySplit
+import DOZZ.FourPoint.Fusion.MovingMassPieces
+import DOZZ.FourPoint.Fusion.ProbabilitySplit
 import Mathlib.MeasureTheory.Function.ConvergenceInMeasure
 
 /-! # Convergence in probability of the moving rooted mass -/
 
-@[expose] public section
 open MeasureTheory Filter Topology
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -32,7 +30,7 @@ theorem fusionMovingMass_tendstoInMeasure_seq {Ω : Type*} [MeasurableSpace Ω]
   obtain ⟨_, C0, hC0, hm0⟩ := fusion_rootedKernel_smallBall_moment
     P X hX γ hγ hγ2 M hM α₁ α₂ α₃ p hα hp hp1 hpRange 1 (by norm_num)
   have hf0 : ∀ᵐ ω ∂P, fusionMovingMass γ α₁ α₂ α₃ y 0 (M ω) < ⊤ := by
-    simpa only [fusionMovingMass, fusionMovingKernel, mul_zero] using
+    simpa [fusionMovingMass, fusionMovingKernel, mul_zero] using
       fusion_limitingRootedKernel_finite_ae P X hX γ hγ hγ2 M hM α₁ α₂ α₃ hα₁ hα₂ hα₃
   apply tendstoInMeasure_of_ne_top
   intro ε hε hεtop
@@ -49,12 +47,11 @@ theorem fusionMovingMass_tendstoInMeasure_seq {Ω : Type*} [MeasurableSpace Ω]
       have h : Tendsto (fun δ : ℝ => δ ^ ξ) (nhdsWithin 0 (Set.Ioi 0)) (nhds ((0 : ℝ) ^ ξ)) :=
         (Real.continuousAt_rpow_const 0 ξ (Or.inr hξ.le)).tendsto.mono_left nhdsWithin_le_nhds
       have hzpow : (0 : ℝ) ^ ξ = 0 := Real.zero_rpow (show ξ ≠ 0 from hξ.ne')
-      rw [hzpow] at h
-      exact h
+      rwa [hzpow] at h
     have h := ENNReal.continuous_ofReal.continuousAt.tendsto.comp hr
     have h' := ENNReal.Tendsto.const_mul h (Or.inr (ENNReal.add_ne_top.mpr ⟨hCy.ne, hC0.ne⟩))
     have h'' := ENNReal.Tendsto.mul_const h' (Or.inr (ENNReal.inv_ne_top.mpr hap))
-    simpa only [ENNReal.ofReal_zero, mul_zero, zero_mul, div_eq_mul_inv, Function.comp_def] using h''
+    simpa [ENNReal.ofReal_zero, mul_zero, zero_mul, div_eq_mul_inv, Function.comp_def] using h''
   apply ENNReal.tendsto_atTop_zero.mpr
   intro η hη
   by_cases hηtop : η = ⊤
@@ -68,7 +65,7 @@ theorem fusionMovingMass_tendstoInMeasure_seq {Ω : Type*} [MeasurableSpace Ω]
   let B : ℂ → Ω → ℝ≥0∞ := fun w ω => fusionMovingBadMass γ α₁ α₂ α₃ y w δ (M ω)
   let G : ℂ → Ω → ℝ≥0∞ := fun w ω => fusionMovingGoodMass γ α₁ α₂ α₃ y w δ (M ω)
   have hB0 : ∫⁻ ω, B 0 ω ^ p ∂P ≤ C0 * ENNReal.ofReal (δ ^ ξ) := by
-    simpa only [B, fusionMovingBadMass, fusionMovingKernel, mul_zero] using
+    simpa [B, fusionMovingBadMass, fusionMovingKernel, mul_zero] using
       hm0 δ hδpos hδ16.le 0 (by simp; exact hδpos.le)
   have hB0fin : ∀ᵐ ω ∂P, B 0 ω ≠ ⊤ :=
     fusion_mass_finite_of_moment (fusionMovingBadMass_aemeasurable P X hX γ hγ hγ2 M hM
@@ -79,20 +76,20 @@ theorem fusionMovingMass_tendstoInMeasure_seq {Ω : Type*} [MeasurableSpace Ω]
   have hga : ∀ᵐ ω ∂P, Tendsto (fun n => (G (z n) ω).toReal) atTop (nhds (G 0 ω).toReal) := by
     filter_upwards [fusion_movingRoot_exterior_real_tendsto_ae P X hX γ hγ hγ2 M hM
       α₁ α₂ α₃ hα₁ hα₂ hα₃ y δ hδpos] with ω hω
-    simpa only [G, fusionMovingGoodMass, fusionMovingKernel, mul_zero, Function.comp_def] using hω.comp hz
+    simpa [G, fusionMovingGoodMass, fusionMovingKernel, mul_zero, Function.comp_def] using hω.comp hz
   have hgm : ∀ n, AEStronglyMeasurable (fun ω => (G (z n) ω).toReal) P := fun n =>
     (ENNReal.measurable_toReal.comp_aemeasurable (fusionMovingGoodMass_aemeasurable
       P X hX γ hγ hγ2 M hM α₁ α₂ α₃ y (z n) δ)).aestronglyMeasurable
   have hgp := tendstoInMeasure_of_tendsto_ae hgm hga a (ENNReal.ofReal_pos.mpr (by positivity))
   have hge : ∀ᶠ n in atTop,
       P {ω | a ≤ ENNReal.ofReal |(G (z n) ω).toReal - (G 0 ω).toReal|} ≤ ENNReal.ofReal (u / 2) := by
-    simpa only [edist_dist, Real.dist_eq] using
+    simpa [edist_dist, Real.dist_eq] using
       (hgp.eventually_lt_const (ENNReal.ofReal_pos.mpr (half_pos hu))).mono fun _ h => h.le
   have hzn : Tendsto (fun n => ‖z n‖) atTop (nhds 0) := by
-    simpa only [norm_zero, Function.comp_def] using continuous_norm.continuousAt.tendsto.comp hz
+    simpa [norm_zero, Function.comp_def] using continuous_norm.continuousAt.tendsto.comp hz
   have hyn : Tendsto (fun n => ‖y * z n‖) atTop (nhds 0) := by
     have hc : Continuous (fun w : ℂ => ‖y * w‖) := by fun_prop
-    simpa only [mul_zero, norm_zero, Function.comp_def] using (hc.continuousAt (x := 0)).tendsto.comp hz
+    simpa [mul_zero, norm_zero, Function.comp_def] using (hc.continuousAt (x := 0)).tendsto.comp hz
   have hnear := (hzn.eventually_lt_const hδpos).and
     ((hyn.eventually_lt_const (half_pos hδpos)).and (hyn.eventually_lt_const zero_lt_one))
   obtain ⟨N, hN⟩ := eventually_atTop.mp (hge.and hnear)
@@ -125,7 +122,7 @@ theorem fusionMovingMass_tendstoInMeasure_seq {Ω : Type*} [MeasurableSpace Ω]
     _ ≤ (Cy * ENNReal.ofReal (δ ^ ξ) / a ^ p + C0 * ENNReal.ofReal (δ ^ ξ) / a ^ p) +
         ENNReal.ofReal (u / 2) := add_le_add (add_le_add hpn hp0) hgoodprob
     _ = ((Cy + C0) * ENNReal.ofReal (δ ^ ξ) / a ^ p) + ENNReal.ofReal (u / 2) := by
-      simp only [div_eq_mul_inv]
+      simp [div_eq_mul_inv]
       ring
     _ ≤ ENNReal.ofReal (u / 2) + ENNReal.ofReal (u / 2) := add_le_add hδsmall.le le_rfl
     _ = η := by rw [← ENNReal.ofReal_add (half_pos hu).le (half_pos hu).le, add_halves, hηu]

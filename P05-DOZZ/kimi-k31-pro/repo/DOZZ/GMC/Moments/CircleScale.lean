@@ -2,15 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.CircleAverage
-public import DOZZ.GMC.CircleAverageGaussian
-public import DOZZ.GMC.Moments.GaussianFDD
+import DOZZ.GMC.CircleAverage
+import DOZZ.GMC.CircleAverageGaussian
+import DOZZ.GMC.Moments.GaussianFDD
 
 /-! Local covariance scaling for equator circle averages. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Set
 open scoped NNReal ENNReal
@@ -69,9 +67,6 @@ theorem circleLogPotential_scale {c : ℝ} (hc : 0 < c) (x y : ℂ) (r s : ℝ) 
     have hdist : Continuous (fun w : ℂ => ‖w - y‖) := by fun_prop
     exact (continuous_const.max hdist).log
       (fun _ => ne_of_gt ((Real.exp_pos _).trans_le (le_max_left _ _)))
-  have hfint : Integrable f (circleMeasure (c * x) (r - Real.log c)) :=
-    integrable_circleMeasure_of_circleIntegrable _ _ hfcont.measurable
-      hfcont.continuousOn.circleIntegrable'
   have hgint : Integrable g (circleMeasure x r) :=
     integrable_circleMeasure_of_circleIntegrable _ _ hgcont.measurable
       hgcont.continuousOn.circleIntegrable'
@@ -120,7 +115,7 @@ theorem circleLogPotential_pin_eq_zero_of_inside {x : ℂ} {r : ℝ}
     filter_upwards [ae_norm_sub_le_center_add_circleMeasure x 0 r] with w hw
     have hinside' : ‖x - 0‖ + Real.exp (-r) ≤ 1 := by simpa using hinside
     have hn : ‖w‖ ≤ 1 := by
-      simpa only [sub_zero] using hw.trans hinside'
+      simpa [sub_zero] using hw.trans hinside'
     simp [normPlus, max_eq_left hn]
   rw [integral_congr_ae hzero, integral_zero]
 
@@ -140,8 +135,7 @@ theorem circleAverage_covariance_affine_scale
       (r - Real.log c) (s - Real.log c),
     circleAverage_covariance P X Xc hX hc x y r s]
   have hdiff : (a + c * x) - (a + c * y) = c * x - c * y := by ring
-  rw [hdiff]
-  rw [circleLogPotential_scale hscale x y r s]
+  rw [hdiff, circleLogPotential_scale hscale x y r s]
   rw [circleLogPotential_pin_eq_zero_of_inside hax,
     circleLogPotential_pin_eq_zero_of_inside hay,
     circleLogPotential_pin_eq_zero_of_inside hx,
@@ -168,8 +162,7 @@ theorem circleAverage_affine_scaled_fdd_law
   let A : ι → Ω → ℝ := fun i ω => Xc ω (z i) (r i)
   let T : Ω → ι → ℝ := fun ω i => Xc ω (a + c * z i) (r i - Real.log c)
   let B : Ω × ℝ → ι → ℝ := fun p i => A i p.1 + p.2
-  have hW : HasLaw (id : ℝ → ℝ) (gaussianReal 0 v) G := by
-    exact ⟨aemeasurable_id, Measure.map_id⟩
+  have hW : HasLaw (id : ℝ → ℝ) (gaussianReal 0 v) G := ⟨aemeasurable_id, Measure.map_id⟩
   have hA : IsCenteredJointlyGaussian P (fun ω i => A i ω) := by
     simpa [A] using circleAverage_finite_family_jointly_gaussian P X hX Xc hc
       (fun i => (z i, r i))
@@ -181,12 +174,8 @@ theorem circleAverage_affine_scaled_fdd_law
       isCenteredJointlyGaussian_add_independent_scalar (fun ω i => Xc ω (z i) (r i))
         (id : ℝ → ℝ) hA hW
   have hcircleMean := (circleAverage_isGaussianProcess P X Xc hX hc).2
-  have hTmean (i : ι) : (∫ ω, T ω i ∂P) = 0 := by
-    exact hcircleMean (a + c * z i) (r i - Real.log c)
-  have hAmean (i : ι) : (∫ ω, A i ω ∂P) = 0 := by
-    exact hcircleMean (z i) (r i)
-  have hBmean (i : ι) : (∫ p, B p i ∂(P.prod G)) = 0 := by
-    exact coord_mean (P.prod G) B hB i
+  have hTmean (i : ι) : (∫ ω, T ω i ∂P) = 0 := hcircleMean (a + c * z i) (r i - Real.log c)
+  have hBmean (i : ι) : (∫ p, B p i ∂(P.prod G)) = 0 := coord_mean (P.prod G) B hB i
   have htargetCov (i j : ι) :
       gaussianCovariance P (fun ω => T ω i) (fun ω => T ω j) =
         covariance (fun ω => T ω i) (fun ω => T ω j) P := by
@@ -195,7 +184,7 @@ theorem circleAverage_affine_scaled_fdd_law
           ∫ ω, T ω i * T ω j ∂P := rfl
       _ = covariance (fun ω => T ω i) (fun ω => T ω j) P := by
         symm
-        simp only [ProbabilityTheory.covariance]
+        simp [ProbabilityTheory.covariance]
         rw [hTmean i, hTmean j]
         simp
   have hshiftCov (i j : ι) :
@@ -206,7 +195,7 @@ theorem circleAverage_affine_scaled_fdd_law
           ∫ p, B p i * B p j ∂(P.prod G) := rfl
       _ = covariance (fun p => B p i) (fun p => B p j) (P.prod G) := by
         symm
-        simp only [ProbabilityTheory.covariance]
+        simp [ProbabilityTheory.covariance]
         rw [hBmean i, hBmean j]
         simp
   have hproductCov (i j : ι) :

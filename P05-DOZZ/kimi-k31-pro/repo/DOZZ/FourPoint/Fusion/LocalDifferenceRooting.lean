@@ -2,11 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Fusion.DifferenceScaling
-public import DOZZ.FourPoint.Fusion.Parameters
+import DOZZ.FourPoint.Fusion.DifferenceScaling
+import DOZZ.FourPoint.Fusion.Parameters
 /-! # Rooting and scaling the literal local mass difference -/
-@[expose] public section
 open MeasureTheory Set
 namespace DOZZ.Proofs
 /-- The local signed mass difference has exactly the rescaled rooted segment integral. -/
@@ -24,7 +22,7 @@ theorem fusion_localDifference_rooting_scaled {Ω : Type*} [MeasurableSpace Ω]
   let B := Metric.ball (0 : ℂ) (1 / 2)
   have hf : Measurable (fusionDifferenceKernel γ α₁ α₂ α₃ z) := by
     have hm : Measurable (fun x : ℂ => (z, x)) := measurable_const.prodMk measurable_id
-    simpa only [Function.comp_def] using (fusionDifferenceKernel_measurable γ α₁ α₂ α₃).comp hm
+    simpa [Function.comp_def] using (fusionDifferenceKernel_measurable γ α₁ α₂ α₃).comp hm
   obtain ⟨hk, hβ, hβ2, _, _⟩ := fusion_difference_parameters γ α₁ hγ hlo hα₁
   have hfi := fusion_difference_local_integrable γ α₁ α₂ α₃ hk hβ hβ2 z hz
   have h := (fusion_segment_rooting P X hX γ hγ hγ2 M hM α₁ α₂ α₃ hα₁ hα₂ hα₃
@@ -36,14 +34,14 @@ theorem fusion_localDifference_rooting_scaled {Ω : Type*} [MeasurableSpace Ω]
         (∫⁻ ω, fusionUnrootedSegment γ α₁ α₂ α₃ t z (gmcRootedMeasure γ u (M ω)) ^ (-p - 1) ∂P).toReal) := by
     funext u
     by_cases hu : u ∈ B
-    · simp only [Set.indicator_of_mem hu]
-    · simp only [Set.indicator_of_notMem hu, zero_mul]
+    · simp [Set.indicator_of_mem hu]
+    · simp [Set.indicator_of_notMem hu, zero_mul]
   rw [he, integral_indicator (show MeasurableSet B from Metric.isOpen_ball.measurableSet)] at h
   rw [gmcReferenceMeasure_restrict_unit_chart B Metric.isOpen_ball.measurableSet
     (fun x hx => by
-      have hx' : ‖x‖ < 1 / 2 := by simpa only [B, Metric.mem_ball, dist_zero_right] using hx
+      have hx' : ‖x‖ < 1 / 2 := by simpa [B, Metric.mem_ball, dist_zero_right] using hx
       linarith)] at h
-  simp only [integral_indicator (show MeasurableSet B from Metric.isOpen_ball.measurableSet)] at h
+  simp [integral_indicator (show MeasurableSet B from Metric.isOpen_ball.measurableSet)] at h
   rw [h, fusion_difference_reference_scaled P X hX γ hγ hγ2 M hM α₁ α₂ α₃ t (-p - 1) z hz,
     ← fusion_exponent_eq γ α₁ hγ.ne']
 end DOZZ.Proofs

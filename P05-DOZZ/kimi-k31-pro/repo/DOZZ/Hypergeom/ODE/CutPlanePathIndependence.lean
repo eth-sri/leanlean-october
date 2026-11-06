@@ -2,16 +2,14 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Hypergeom.ODE.CutPlanePathHomotopy
-public import DOZZ.Hypergeom.ODE.HomotopyContinuation
-public import DOZZ.Hypergeom.ODE.GaussSystem
+import DOZZ.Hypergeom.ODE.CutPlanePathHomotopy
+import DOZZ.Hypergeom.ODE.HomotopyContinuation
+import DOZZ.Hypergeom.ODE.GaussSystem
 
 /-! Finite-chain Gauss continuation endpoints are independent of paths in the principal cut
 plane. -/
 
-@[expose] public section
 
 open Set unitInterval
 
@@ -41,13 +39,11 @@ noncomputable def gaussCutPlanePathFunction {x y : gaussCutPlane} (p : Path x y)
 
 /-- A cut-plane path, viewed as a real-parameter complex-valued map, is continuous. -/
 theorem gaussCutPlanePathFunction_continuous {x y : gaussCutPlane} (p : Path x y) :
-    Continuous (gaussCutPlanePathFunction p) := by
-  exact subtypePathFunction_continuous p
+    Continuous (gaussCutPlanePathFunction p) := subtypePathFunction_continuous p
 
 /-- Every value of the endpoint-projected real path remains in the cut plane. -/
 theorem gaussCutPlanePathFunction_mem {x y : gaussCutPlane} (p : Path x y) (t : ℝ) :
-    gaussCutPlanePathFunction p t ∈ gaussCutPlane := by
-  exact subtypePathFunction_mem p t
+    gaussCutPlanePathFunction p t ∈ gaussCutPlane := subtypePathFunction_mem p t
 
 /-- Any two finite-chain lifts of the same initial Gauss state along paths with common endpoints
 in a simply connected subtype of the regular plane have the same terminal value. -/

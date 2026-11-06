@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import Mathlib.MeasureTheory.Integral.Gamma
-public import Mathlib.MeasureTheory.Integral.Prod
+import Mathlib.MeasureTheory.Integral.Gamma
+import Mathlib.MeasureTheory.Integral.Prod
 
 /-! Resolvent comparisons obtained by integrating the finite-chaos Laplace comparison. -/
 
-@[expose] public section
 
 open MeasureTheory Set
 open scoped ENNReal
@@ -31,8 +29,7 @@ theorem ofReal_inv_eq_lintegral_exp_neg_mul {u : ℝ} (hu : 0 < u) :
       (integrableOn_Ioi_comp_mul_left_iff (fun s : ℝ => Real.exp (-s)) 0 hu).2 hbase'
   have hnonneg : 0 ≤ᵐ[volume.restrict (Ioi (0 : ℝ))]
       (fun s : ℝ => Real.exp (-(u * s))) := by
-    filter_upwards [] with s
-    exact (Real.exp_nonneg _)
+    exact ae_of_all _ fun s => (Real.exp_nonneg _)
   have hlin := ofReal_integral_eq_lintegral_ofReal hscaled hnonneg
   have hint : (∫ s in Ioi (0 : ℝ), Real.exp (-(u * s)) ∂volume) = u⁻¹ := by
     have hgamma := integral_exp_neg_mul_rpow (p := 1) (b := u) zero_lt_one hu
@@ -191,8 +188,7 @@ theorem laplace_order_fraction_expectation
       (Filter.Eventually.of_forall hInvNonneg')
   have hInvOrdENN : ENNReal.ofReal (∫ ω, (t + m ω)⁻¹ ∂P) ≤
       ENNReal.ofReal (∫ ω', (t + m' ω')⁻¹ ∂P') := by
-    rw [hlin, hlin']
-    exact hres
+    rwa [hlin, hlin']
   have hInvMeanNonneg : 0 ≤ ∫ ω', (t + m' ω')⁻¹ ∂P' :=
     integral_nonneg_of_ae (Filter.Eventually.of_forall hInvNonneg')
   have hInvOrd : (∫ ω, (t + m ω)⁻¹ ∂P) ≤
@@ -207,15 +203,6 @@ theorem laplace_order_fraction_expectation
       ring
     rw [heq]
     exact (integrable_const (1 : ℝ)).sub (hinvInt.const_mul t)
-  have hfracInt' : Integrable (fun ω' => m' ω' / (t + m' ω')) P' := by
-    have heq : (fun ω' => m' ω' / (t + m' ω')) =
-        fun ω' => 1 - t * (t + m' ω')⁻¹ := by
-      funext ω'
-      have hden : t + m' ω' ≠ 0 := ne_of_gt (by linarith [ht, hm'0 ω'])
-      field_simp [hden]
-      ring
-    rw [heq]
-    exact (integrable_const (1 : ℝ)).sub (hinvInt'.const_mul t)
   have hfracMean : (∫ ω, m ω / (t + m ω) ∂P) =
       1 - t * ∫ ω, (t + m ω)⁻¹ ∂P := by
     calc

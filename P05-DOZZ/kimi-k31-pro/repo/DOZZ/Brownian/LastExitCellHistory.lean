@@ -2,11 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Brownian.LastExitHistoryAvoidanceFactorization
-public import DOZZ.Brownian.LastExitDyadicCells
-public import Mathlib.Probability.BrownianMotion.Basic
+import DOZZ.Brownian.LastExitHistoryAvoidanceFactorization
+import DOZZ.Brownian.LastExitDyadicCells
+import Mathlib.Probability.BrownianMotion.Basic
 
 /-!
 # Last-exit cell history events
@@ -16,7 +15,6 @@ with respect to the raw history at its right endpoint. This makes the determinis
 avoidance factorization applicable to dyadic last-exit cells.
 -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Set Topology
 open scoped NNReal
@@ -76,8 +74,7 @@ theorem measurableSet_conditionedPositiveHistoryHitsOnInterval
         rfl
       refine ⟨u', ?_⟩
       change conditionedPositiveStateAt (τ u') p = c
-      rw [hτu]
-      exact hval
+      rwa [hτu]
     · rintro ⟨u, hval⟩
       refine ⟨τ u, ?_, ?_, ?_⟩
       · apply NNReal.coe_le_coe.mp
@@ -85,7 +82,7 @@ theorem measurableSet_conditionedPositiveHistoryHitsOnInterval
       · apply NNReal.coe_le_coe.mp
         exact u.2.2
       · change conditionedPositiveStateAt (τ u) p = c at hval
-        exact hval
+        assumption
   rw [hpre]
   exact hHclosed.measurableSet.preimage hsegment
 
@@ -114,4 +111,3 @@ theorem conditionedPositiveHistory_intervalHit_avoidance_shift_setIntegral
 
 end DOZZ.Proofs
 
-end

@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Complex.Weierstrass
-public import Mathlib.Topology.MetricSpace.Cauchy
+import DOZZ.Complex.Weierstrass
+import Mathlib.Topology.MetricSpace.Cauchy
 
 /-! A common canonical limit for an eventually holomorphic geometric Cauchy family. -/
 
-@[expose] public section
 open Filter Topology Set
 namespace DOZZ.Proofs
 
@@ -36,7 +34,7 @@ theorem holomorphic_limit_of_eventual_geometric {N : ℕ}
     calc
       _ = ‖F ((n + n₀) + 1) x - F (n + n₀) x‖ := by
         rw [dist_comm, dist_eq_norm]
-        simp only [G, Nat.add_right_comm n 1 n₀]
+        simp [G, Nat.add_right_comm n 1 n₀]
       _ ≤ K * Real.exp (-κ * (n + n₀ : ℕ)) := hn
       _ ≤ K * Real.exp (-κ * n) := mul_le_mul_of_nonneg_left
         (Real.exp_le_exp.mpr (by nlinarith)) hK
@@ -55,7 +53,7 @@ theorem holomorphic_limit_of_eventual_geometric {N : ℕ}
   have hdist : ∀ x ∈ U, ∀ n, dist (G n x) (f x) ≤ K * r ^ n / (1 - r) :=
     fun x hx n => dist_le_of_le_geometric_of_tendsto _ _ hr (hstep x hx) (hlimG x hx) n
   have hbound : Tendsto (fun n : ℕ => K * r ^ n / (1 - r)) atTop (𝓝 0) := by
-    simpa only [mul_zero, zero_div] using
+    simpa [mul_zero, zero_div] using
       ((tendsto_pow_atTop_nhds_zero_of_lt_one hr0 hr).const_mul K).div_const (1 - r)
   have hUG : TendstoUniformlyOn G f atTop U := by
     rw [Metric.tendstoUniformlyOn_iff]
@@ -71,7 +69,7 @@ theorem holomorphic_limit_of_eventual_geometric {N : ℕ}
     have hn₀ : n₀ ≤ n := (Nat.le_add_left n₀ k).trans hn
     have hnk : k ≤ n - n₀ := (Nat.le_sub_iff_add_le hn₀).mpr hn
     have he := hk (n - n₀) hnk x hx
-    simpa only [G, Nat.sub_add_cancel hn₀] using he
+    simpa [G, Nat.sub_add_cancel hn₀] using he
   exact ⟨(differentiableOn_of_tendstoLocallyUniformlyOn_fin U hU G f hG
     hUG.tendstoLocallyUniformlyOn).1, hUF⟩
 

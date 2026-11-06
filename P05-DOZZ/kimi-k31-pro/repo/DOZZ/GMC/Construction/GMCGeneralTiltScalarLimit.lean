@@ -2,16 +2,14 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.Construction.GMCGeneralTilt
+import DOZZ.GMC.Construction.GMCGeneralTilt
 import DOZZ.GMC.Construction.RegularizedGMCExpectedMeasure
 import Mathlib.MeasureTheory.Constructions.BorelSpace.Metrizable
 import Mathlib.MeasureTheory.Measure.GiryMonad
 
 /-! Measurable factorization inputs for the general GMC Cameron--Martin identity. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped Distributions ENNReal NNReal BoundedContinuousFunction
@@ -34,14 +32,6 @@ private theorem regularized_testIntegral_raw_measurable_proxy
     ∫⁻ x, (f.nnrealPart x : ℝ≥0∞) ∂μ ω
   let neg : Ω → ℝ≥0∞ := fun ω =>
     ∫⁻ x, ((-f).nnrealPart x : ℝ≥0∞) ∂μ ω
-  have hpos : Measurable[equatorGFFRawDistributionSigma X] pos := by
-    dsimp [pos]
-    exact (Measure.measurable_lintegral
-      (BoundedContinuousFunction.measurable_coe_ennreal_comp f.nnrealPart)).comp hμ
-  have hneg : Measurable[equatorGFFRawDistributionSigma X] neg := by
-    dsimp [neg]
-    exact (Measure.measurable_lintegral
-      (BoundedContinuousFunction.measurable_coe_ennreal_comp (-f).nnrealPart)).comp hμ
   have hproxy : Measurable[equatorGFFRawDistributionSigma X]
       (fun ω => (pos ω).toReal - (neg ω).toReal) := by
     fun_prop
@@ -49,9 +39,7 @@ private theorem regularized_testIntegral_raw_measurable_proxy
       (fun ω => ∫ x, f x ∂μ ω) =ᵐ[P]
         fun ω => (pos ω).toReal - (neg ω).toReal := by
     filter_upwards [hfinite] with ω hω
-    rw [BoundedContinuousFunction.integral_eq_integral_nnrealPart_sub (μ := μ ω) f]
-    rw [← BoundedContinuousFunction.toReal_lintegral_coe_eq_integral f.nnrealPart (μ ω)]
-    rw [← BoundedContinuousFunction.toReal_lintegral_coe_eq_integral (-f).nnrealPart (μ ω)]
+    rw [BoundedContinuousFunction.integral_eq_integral_nnrealPart_sub (μ := μ ω) f, ← BoundedContinuousFunction.toReal_lintegral_coe_eq_integral f.nnrealPart (μ ω), ← BoundedContinuousFunction.toReal_lintegral_coe_eq_integral (-f).nnrealPart (μ ω)]
   exact ⟨_, hproxy, heq⟩
 
 /-- A bounded-continuous test integral of an `IsGMCOf` limit has a raw-measurable version when its

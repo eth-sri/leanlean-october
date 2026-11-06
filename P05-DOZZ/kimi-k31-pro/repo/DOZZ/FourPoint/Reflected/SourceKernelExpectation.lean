@@ -2,13 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Reflected.KernelInverseExpectation
-public import DOZZ.FourPoint.Reflected.ReinsertedInnerSqueeze
-public import DOZZ.FourPoint.Reflected.CopiedSourceMoment
-public import DOZZ.FourPoint.Reflected.SourceOuterMoments
+import DOZZ.FourPoint.Reflected.KernelInverseExpectation
+import DOZZ.FourPoint.Reflected.ReinsertedInnerSqueeze
+import DOZZ.FourPoint.Reflected.CopiedSourceMoment
+import DOZZ.FourPoint.Reflected.SourceOuterMoments
 /-! The actual copied spatial kernel has the integrated radial Williams squeeze. -/
-@[expose] public section
 open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -61,7 +59,7 @@ theorem reflected_source_copied_kernel_inverse_squeeze
     (measurableSet_lt measurable_norm measurable_const)
   have hU0 : U ⊆ ({0} : Set ℂ)ᶜ := by
     intro x hx
-    simpa only [mem_compl_iff,mem_singleton_iff] using norm_pos_iff.mp hx.1
+    simpa [mem_compl_iff,mem_singleton_iff] using norm_pos_iff.mp hx.1
   have hAr := originRadialPath_aemeasurable P X Xc hc hcont
   have hI : AEMeasurable I (P.prod P) := reflected_copied_region_mass_aemeasurable
     P (originRadialPath Xc) N hAr hN hfin γ U hU hU0 _
@@ -100,7 +98,7 @@ theorem reflected_source_copied_kernel_inverse_squeeze
   change reflected_copied_separatedMoment P Xc N γ α₁ α₂ α₃ z η (‖z‖^(1-ξ)) p =
     ∫⁻ ω : Ω × Ω, (I ω+A ω.1)^(-p) ∂P.prod P at he
   simp_rw [add_comm] at he
-  dsimp only
+  dsimp
   rw [he]
   exact hs.2.2
 

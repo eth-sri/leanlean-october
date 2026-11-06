@@ -2,17 +2,15 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Brownian.Lateral.CovarianceSymmetry
-public import DOZZ.Brownian.Lateral.LocalIntensity
-public import DOZZ.GMC.Moments.AffineVolume
-public import DOZZ.GMC.Moments.InversionSpatialLaw
-public import DOZZ.GMC.Moments.ChaosLawFDDLimit
+import DOZZ.Brownian.Lateral.CovarianceSymmetry
+import DOZZ.Brownian.Lateral.LocalIntensity
+import DOZZ.GMC.Moments.AffineVolume
+import DOZZ.GMC.Moments.InversionSpatialLaw
+import DOZZ.GMC.Moments.ChaosLawFDDLimit
 
 /-! Dilation transport for the actual radial-removed chaos. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open DOZZ.Assembly
@@ -41,7 +39,7 @@ theorem lintegral_flatLateralReference_dilation
     rw [← mul_assoc, mul_inv_cancel₀ (pow_ne_zero 2 hc.ne'), one_mul]
   have hv : (volume : Measure ℂ).map (fun x : ℂ => (c : ℂ) * x) =
       ENNReal.ofReal ((c ^ 2)⁻¹) • volume := by
-    simpa only [Complex.real_smul, abs_of_pos (inv_pos.mpr (sq_pos_of_pos hc))] using
+    simpa [Complex.real_smul, abs_of_pos (inv_pos.mpr (sq_pos_of_pos hc))] using
       complexVolume_map_smul hc.ne'
   have hfc : Measurable (fun x : ℂ => f (c * x)) := hf.comp hm
   change (∫⁻ x, f (c * x) ∂(volume : Measure ℂ).withDensity d) =
@@ -83,7 +81,7 @@ theorem flatLateralReference_dilation (c : ℝ) (hc : 0 < c) :
     (g := fun x : ℂ => (c : ℂ) * x) (f := S.indicator (1 : ℂ → ℝ≥0∞))
     ((measurable_const : Measurable (1 : ℂ → ℝ≥0∞)).indicator hS) hm
   rw [← he] at h
-  simpa only [lintegral_indicator_one hS] using h
+  simpa [lintegral_indicator_one hS] using h
 
 /-- Chart restriction commutes with dilation of the flat reference measure. -/
 theorem originLateralReference_dilation (ρ c : ℝ) (hc : 0 < c) :
@@ -193,7 +191,7 @@ theorem originLateralCutoff_dilation_integral
     (fun x => f x * Real.exp (γ * originLateralCircleRegularization Xc (c * ρ) ω
       (c * Real.exp (-r)) x - γ ^ 2 / 2 * gaussianVariance P (fun η =>
         originLateralCircleRegularization Xc (c * ρ) η (c * Real.exp (-r)) x)))).symm
-  simpa only [gaussianVariance, gaussianCovariance, pow_two] using h
+  simpa [gaussianVariance, gaussianCovariance, pow_two] using h
 
 /-- Every finite compact test vector of the actual lateral Wick cutoffs has the exact
 spatial dilation law, with the transformed cutoff radius kept explicit. -/
@@ -240,8 +238,7 @@ theorem originLateralCutoff_dilation_test_vector_law
       (min ρ 1) Y hY ε
   let W : Ω → ℂ → ℝ := fun ω x => K.indicator (fun x => Y ω ε x) x
   let W' : Ω → ℂ → ℝ := fun ω x => K.indicator (fun x => Z ω (c * ε) (c * x)) x
-  have hW : Measurable (fun p : Ω × ℂ => W p.1 p.2) := by
-    exact (hY.measurableAtScale ε).indicator (hKmeas.preimage measurable_snd)
+  have hW : Measurable (fun p : Ω × ℂ => W p.1 p.2) := (hY.measurableAtScale ε).indicator (hKmeas.preimage measurable_snd)
   have harg : Measurable (fun p : Ω × ℂ => (p.1, (c : ℂ) * p.2)) :=
     measurable_fst.prodMk (measurable_const.mul measurable_snd)
   have hZs : Measurable (fun p : Ω × ℂ => Z p.1 (c * ε) (c * p.2)) :=
@@ -256,7 +253,7 @@ theorem originLateralCutoff_dilation_test_vector_law
   have hiW j : ∀ᵐ ω ∂P, Integrable (fun x => z j x (W ω x)) ν := by
     have hi := admissibleCutoff_integrand_integrable_ae P U originLateralPlaneDensity
       (min ρ 1) Y hY K hK hKU γ r hr ‖f j‖ (fun x => f j (c * x))
-      (by fun_prop) (fun x => by simpa only [← Real.norm_eq_abs] using (f j).norm_coe_le_norm (c * x))
+      (by fun_prop) (fun x => by simpa [← Real.norm_eq_abs] using (f j).norm_coe_le_norm (c * x))
       (hzero j)
     filter_upwards [hi] with ω hω
     apply hω.restrict.congr
@@ -278,7 +275,7 @@ theorem originLateralCutoff_dilation_test_vector_law
       dsimp [scale, y]
       rw [← mul_assoc, mul_inv_cancel₀ hcn, one_mul]
     have hy : y ∉ K := fun hy => hx ⟨y, hy, hxy⟩
-    simpa only [← hxy] using hzero j y hy
+    simpa [← hxy] using hzero j y hy
   have hexp : Real.exp (-(r - Real.log c)) = c * ε := by
     have ha : -(r - Real.log c) = Real.log c + -r := by ring
     rw [ha, Real.exp_add, Real.exp_log hcpos]
@@ -286,7 +283,7 @@ theorem originLateralCutoff_dilation_test_vector_law
     have hi := admissibleCutoff_integrand_integrable_ae P V originLateralPlaneDensity
       (min (c * ρ) 1) Z hZ (scale '' K) hsK hsKU γ (r - Real.log c)
       (by rw [hexp]; exact hrc) ‖f j‖ (f j) (f j).continuous.measurable
-      (fun x => by simpa only [← Real.norm_eq_abs] using (f j).norm_coe_le_norm x)
+      (fun x => by simpa [← Real.norm_eq_abs] using (f j).norm_coe_le_norm x)
       (hzerotarget j)
     filter_upwards [hi] with ω hω
     rw [hexp] at hω
@@ -299,7 +296,7 @@ theorem originLateralCutoff_dilation_test_vector_law
       ρ c ε hρ hcpos (Real.exp_pos _) (hr.trans (min_le_left _ _)) x (hKU hx)
     have hvraw : (∫ η, Z η (c * ε) (c * x) ^ 2 ∂P) =
         gaussianVariance P (fun η => Y η ε x) := by
-      simpa only [gaussianVariance, gaussianCovariance, pow_two] using hvx
+      simpa [gaussianVariance, gaussianCovariance, pow_two] using hvx
     simp only [z, W', indicator_of_mem hx, variance]
     rw [hvraw]
   have hfdd (n : ℕ) (xs : Fin n → ℂ) : P.map (fun ω i => W ω (xs i)) =
@@ -362,7 +359,7 @@ theorem originRadialRemovedGMC_test_limit
     by_cases hx : x ∈ originLateralChart ρ
     · exact indicator_of_mem hx _
     · have hzero : f x = 0 := image_eq_zero_of_notMem_tsupport (fun hf => hx (hfU hf))
-      simp only [indicator_of_notMem hx, hzero]
+      simp [indicator_of_notMem hx, hzero]
 
 /-- The exact dilation law of every finite compact test vector passes to the actual
 radial-removed GMC on the original probability space. -/
@@ -406,7 +403,7 @@ theorem originRadialRemovedGMC_dilation_test_vector_law
   obtain ⟨L, hL⟩ := eventually_atTop.mp (heps.eventually (gt_mem_nhds hbound))
   let t : ℕ → ℝ := fun n => ((L + n : ℕ) : ℝ)
   have ht : Tendsto t atTop atTop := by
-    simpa only [t, Nat.add_comm, Function.comp_def] using
+    simpa [t, Nat.add_comm, Function.comp_def] using
       (tendsto_natCast_atTop_atTop (R := ℝ)).comp (tendsto_add_atTop_nat L)
   have htt : Tendsto (fun n => t n - Real.log c) atTop atTop :=
     (tendsto_atTop_add_const_right atTop (-Real.log c) ht).congr fun _ => by ring
@@ -427,7 +424,7 @@ theorem originRadialRemovedGMC_dilation_test_vector_law
   · intro n
     have hb := (hL (L + n) (Nat.le_add_right L n)).le
     have hbc : c * Real.exp (-t n) ≤ min (c * ρ) 1 := by
-      simpa only [t, mul_comm] using
+      simpa [t, mul_comm] using
         (le_div_iff₀ hcpos).mp (hb.trans (min_le_right _ _))
     exact originLateralCutoff_dilation_test_vector_law P X Xc hX hc hm
       ρ c hρ hcpos γ (t n) (hb.trans (min_le_left _ _)) hbc K hK hKU f hzero

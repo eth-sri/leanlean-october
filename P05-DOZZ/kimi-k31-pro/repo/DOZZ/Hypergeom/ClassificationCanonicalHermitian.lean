@@ -2,15 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Hypergeom.ClassificationHermitianRepresentation
-public import DOZZ.Hypergeom.BasisSpanning
+import DOZZ.Hypergeom.ClassificationHermitianRepresentation
+import DOZZ.Hypergeom.BasisSpanning
 import DOZZ.Hypergeom.ODE.CutPlaneTopology
 
 /-! The Cramer Hermitian representation specialized to the canonical zero basis. -/
 
-@[expose] public section
 
 namespace DOZZ.Proofs
 

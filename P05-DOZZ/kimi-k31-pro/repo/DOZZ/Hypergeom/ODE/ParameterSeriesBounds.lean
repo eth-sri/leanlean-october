@@ -2,13 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Hypergeom.ODE.ParameterSeriesTerms
+import DOZZ.Hypergeom.ODE.ParameterSeriesTerms
 
 /-! Uniform tail estimates for the parameter-dependent ordinary Gauss series. -/
 
-@[expose] public section
 
 namespace DOZZ.Proofs
 
@@ -56,8 +54,7 @@ theorem gaussParameterSeriesTerm_norm_succ_le
     rw [show (n : ℂ) - ((n : ℂ) + p.2.2) = -p.2.2 by abel,
       norm_neg, hnormN] at htriangle
     linarith
-  have hdenpos : 0 < ((n : ℝ) + 1) * ((n : ℝ) - R) := by
-    exact mul_pos (by linarith) (by linarith)
+  have hdenpos : 0 < ((n : ℝ) + 1) * ((n : ℝ) - R) := mul_pos (by linarith) (by linarith)
   have hnorm :
       ‖gaussParameterSeriesTerm p z (n + 1)‖ =
         (‖(n : ℂ) + p.1‖ * ‖(n : ℂ) + p.2.1‖ * ‖z‖ /
@@ -167,8 +164,7 @@ theorem exists_finite_prefix_uniform_gaussParameterSeriesTerm_bound
       ‖gaussParameterSeriesTerm p z n‖ ≤ B := by
     intro n
     let f : ℂ × ℂ × ℂ → ℝ := fun p => ‖gaussParameterSeriesTerm p z n‖
-    have hf : ContinuousOn f K := by
-      exact (gaussParameterSeriesTerm_differentiableOn hc z n).continuousOn.norm
+    have hf : ContinuousOn f K := (gaussParameterSeriesTerm_differentiableOn hc z n).continuousOn.norm
     obtain ⟨B, hB⟩ := bddAbove_def.mp (hK.bddAbove_image hf)
     refine ⟨max B 0, le_max_right _ _, ?_⟩
     intro p hp

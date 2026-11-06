@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Hypergeom.ODE.UniquenessEndpoints
-public import DOZZ.Hypergeom.ODE.PicardSum
+import DOZZ.Hypergeom.ODE.UniquenessEndpoints
+import DOZZ.Hypergeom.ODE.PicardSum
 
 /-! Uniform-radius local solutions and the one-step disk-chain continuation operation. -/
 
-@[expose] public section
 
 namespace DOZZ.Proofs
 
@@ -76,6 +74,6 @@ theorem extendHolomorphicDiskSolution_agrees
     (by
       change D.solution d = holomorphicPicardSolution d r H hH (D.solution d) d
       rw [holomorphicPicardSolution_apply_center])
-  exact hEq
+  assumption
 
 end DOZZ.Proofs

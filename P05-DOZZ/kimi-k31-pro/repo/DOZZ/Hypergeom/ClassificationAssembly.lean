@@ -2,15 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Hypergeom.ClassificationDiagonalConstraint
-public import DOZZ.Hypergeom.BasisRegularity
+import DOZZ.Hypergeom.ClassificationDiagonalConstraint
+import DOZZ.Hypergeom.BasisRegularity
 
 /-! Classification of the real single-valued C² solutions of the Gauss PDE, including coefficient
 uniqueness. -/
 
-@[expose] public section
 
 namespace DOZZ.Proofs
 

@@ -2,16 +2,14 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.Fusion.RootOnlyMass
-public import DOZZ.FourPoint.Fusion.RootOnlyExterior
-public import DOZZ.FourPoint.Fusion.RootOnlySmallBall
+import DOZZ.FourPoint.Fusion.RootOnlyMass
+import DOZZ.FourPoint.Fusion.RootOnlyExterior
+import DOZZ.FourPoint.Fusion.RootOnlySmallBall
 import DOZZ.GMC.SharpMoments.SeibergPieces
 
 /-! # Measurability and finiteness of the moving-mass pieces -/
 
-@[expose] public section
 open MeasureTheory Filter Topology
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -48,6 +46,6 @@ theorem fusionRootOnlyGoodMass_le (γ α₁ α₂ α₃ : ℝ) (y z : ℂ) (δ :
     (fusion_rootedKernel_exterior_bound γ α₁ α₂ α₃ 0 (y * z) x hx0 (by simp)
       (by linarith) hu1)
   rw [ENNReal.ofReal_mul (Real.rpow_nonneg (by norm_num) _)] at h
-  simpa only [fusionRootOnlyKernel, mul_zero] using h
+  simpa [fusionRootOnlyKernel, mul_zero] using h
 
 end DOZZ.Proofs

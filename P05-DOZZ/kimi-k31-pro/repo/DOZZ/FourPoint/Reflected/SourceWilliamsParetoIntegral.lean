@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Reflected.WilliamsParetoIntegral
-public import DOZZ.FourPoint.Reflected.WilliamsRealCutData
-public import DOZZ.FourPoint.Reflected.SourceParetoWeights
-public import DOZZ.FourPoint.Reflected.ReferenceParetoLaw
+import DOZZ.FourPoint.Reflected.WilliamsParetoIntegral
+import DOZZ.FourPoint.Reflected.WilliamsRealCutData
+import DOZZ.FourPoint.Reflected.SourceParetoWeights
+import DOZZ.FourPoint.Reflected.ReferenceParetoLaw
 import Mathlib.Tactic
 /-! Signed Williams expectation bounds on the supplied source and reflection carriers. -/
-@[expose] public section
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -44,13 +42,13 @@ theorem reflected_source_williams_pareto_integral
     Xc hc ν h p α₁ α₂ α₃ ξ (sub_pos.mpr hα₁) hh hp hξ hξ₁ hα₁ hα₂ hα₃ z hz0 hz1 hz
   have hInv := (reflected_radial_scale_real_expectation P X hX γ hγ hγ₂ M hM Xc hc
     ν h 0 α₁ α₂ α₃ ξ p hh hξ hξ₁ hp.le z hz0 hz).1
-  simp only [Real.rpow_zero,one_mul] at hInv
+  simp [Real.rpow_zero,one_mul] at hInv
   have hAm : AEMeasurable A P :=
     ((reflected_outerMass_measure_measurable γ α₁ α₂ α₃ ξ z).comp_aemeasurable
       (equatorGFF_GMC_aemeasurable P X hX γ hγ hγ₂ M hM)).ennreal_toReal
   have hcoord := (hc.2.1 0 (-Real.log ‖z‖+h)).aemeasurable
   have hbm : AEMeasurable b P := by
-    dsimp only [b,reflected_radial_scale]
+    dsimp [b,reflected_radial_scale]
     exact ((hcoord.const_mul γ).sub aemeasurable_const).sub aemeasurable_const |>.exp
   have hbp : ∀ᵐ ω ∂P, 0 ≤ b ω := ae_of_all P fun _ => (Real.exp_pos _).le
   exact reflected_williams_pareto_integral P P B₀ hB₀ γ ν p hγ (sub_pos.mpr hα₁) hp

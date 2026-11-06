@@ -2,13 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.Tails.WilliamsInputCode
+import DOZZ.Correlations.Tails.WilliamsInputCode
 
 /-! Regroup the Williams reference law as level times conditioned-pair/lateral input. -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal NNReal
 
@@ -35,7 +33,7 @@ theorem williams_reference_input_law
   have hMarked : (((μ.prod Qν).map mark).prod Qν).prod L = R.map H := by
     rw [← Measure.map_id (μ := Qν), Measure.map_prod_map _ _ hmark measurable_id,
       ← Measure.map_id (μ := L), Measure.map_prod_map _ _ (hmark.prodMap measurable_id) measurable_id]
-    simp only [Measure.map_id]
+    simp [Measure.map_id]
     rfl
   rw [hMarked,Measure.map_map (measurable_williamsMassFunctional γ) hH]
   let T : Raw → ℝ × ((BrownianPath × BrownianPath) × Measure ℝ) :=

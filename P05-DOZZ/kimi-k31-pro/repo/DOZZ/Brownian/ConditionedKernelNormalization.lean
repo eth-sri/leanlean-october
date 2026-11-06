@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Brownian.ConditionedKernelGaussianIntegrals
-public import DOZZ.Statements.Brownian.ConditionedPositiveTransitionDensity
+import DOZZ.Brownian.ConditionedKernelGaussianIntegrals
+import DOZZ.Statements.Brownian.ConditionedPositiveTransitionDensity
 
 /-!
 # Normalization of the explicit conditioned transition kernel
@@ -14,7 +13,6 @@ The positive-drift transition density is expanded into four translated Gaussian 
 the two terms with opposite shifts gives its total mass by the half-line Gaussian identity.
 -/
 
-@[expose] public section
 
 open MeasureTheory Set
 
@@ -24,12 +22,8 @@ namespace DOZZ.Proofs
 theorem brownianHeatDensity_tilt {t ν z : ℝ} (ht : 0 < t) :
     Real.exp (ν * z - ν ^ 2 * t / 2) * brownianHeatDensity t z =
       brownianHeatDensity t (z - ν * t) := by
-  have he : ν * z - ν ^ 2 * t / 2 - z ^ 2 / (2 * t) =
-      -(z - ν * t) ^ 2 / (2 * t) := by
-    field_simp [ht.ne']
-    ring
   have hden : Real.sqrt (2 * Real.pi * t) ≠ 0 := by positivity
-  simp only [brownianHeatDensity, ht, ite_true]
+  simp [brownianHeatDensity, ht, ite_true]
   field_simp [hden]
   rw [← Real.exp_add, Real.exp_injective.eq_iff]
   field_simp [ht.ne']
@@ -38,18 +32,14 @@ theorem brownianHeatDensity_tilt {t ν z : ℝ} (ht : 0 < t) :
 private theorem brownianHeatDensity_shift_exp {t ν z : ℝ} (ht : 0 < t) :
     Real.exp (-2 * ν * z) * brownianHeatDensity t (z - ν * t) =
       brownianHeatDensity t (z + ν * t) := by
-  have he : -2 * ν * z - (z - ν * t) ^ 2 / (2 * t) =
-      -(z + ν * t) ^ 2 / (2 * t) := by
-    field_simp [ht.ne']
-    ring
   have hden : Real.sqrt (2 * Real.pi * t) ≠ 0 := by positivity
-  simp only [brownianHeatDensity, ht, ite_true]
+  simp [brownianHeatDensity, ht, ite_true]
   field_simp [hden]
   rw [← Real.exp_add, Real.exp_injective.eq_iff]
   field_simp [ht.ne']
   ring_nf
 
-private theorem integrable_brownianHeatDensity_translate {t a : ℝ} (ht : 0 < t) :
+theorem integrable_brownianHeatDensity_translate {t a : ℝ} (ht : 0 < t) :
     Integrable (fun y : ℝ => brownianHeatDensity t (y + a)) (volume : Measure ℝ) := by
   have he : MeasurableEmbedding (fun y : ℝ => y + a) :=
     (Homeomorph.addRight a).isClosedEmbedding.measurableEmbedding
@@ -96,7 +86,7 @@ theorem conditionedPositiveTransitionDensity_integral_eq_one_pos
     have hcross₂ : Real.exp (-2 * ν * (x + y)) *
         brownianHeatDensity t (y + x - ν * t) =
           brownianHeatDensity t (y + x + ν * t) := by
-      simpa only [add_comm x y] using hshift₂
+      simpa [add_comm x y] using hshift₂
     have htilt₁' : Real.exp (ν * y - ν * x - ν ^ 2 * t / 2) *
         brownianHeatDensity t (y - x) =
           brownianHeatDensity t (y - (x + ν * t)) := by
@@ -151,8 +141,7 @@ theorem conditionedPositiveTransitionDensity_integral_eq_one_pos
           rw [show y + (x - ν * t) = y + x - ν * t by ring]
         _ = brownianHeatDensity t (y + x + ν * t) := hcross₂'
         _ = _ := by rw [show y + x + ν * t = y + (x + ν * t) by ring]
-    rw [conditionedPositiveTransitionDensity]
-    rw [ite_eq_left (show 0 ≤ ν ∧ 0 < t ∧ 0 < x ∧ 0 < y by exact ⟨hν.le, ht, hx, hy⟩)]
+    rw [conditionedPositiveTransitionDensity, ite_eq_left (show 0 ≤ ν ∧ 0 < t ∧ 0 < x ∧ 0 < y by exact ⟨hν.le, ht, hx, hy⟩)]
     have hH_y : conditionedH ν y = 1 - Real.exp (-2 * ν * y) := by
       simp [conditionedH, hν.ne']
     rw [hH, hH_y]
@@ -170,14 +159,14 @@ theorem conditionedPositiveTransitionDensity_integral_eq_one_pos
     rw [hnum]
   have hAint : Integrable (fun y : ℝ => brownianHeatDensity t (y - (x + ν * t)))
       (volume : Measure ℝ) := by
-    simpa only [sub_eq_add_neg] using
+    simpa [sub_eq_add_neg] using
       integrable_brownianHeatDensity_translate (t := t) (a := -(x + ν * t)) ht
   have hBint : Integrable (fun y : ℝ => brownianHeatDensity t (y + (x - ν * t)))
       (volume : Measure ℝ) :=
     integrable_brownianHeatDensity_translate (t := t) (a := x - ν * t) ht
   have hCint : Integrable (fun y : ℝ => brownianHeatDensity t (y - (x - ν * t)))
       (volume : Measure ℝ) := by
-    simpa only [sub_eq_add_neg] using
+    simpa [sub_eq_add_neg] using
       integrable_brownianHeatDensity_translate (t := t) (a := -(x - ν * t)) ht
   have hDint : Integrable (fun y : ℝ => brownianHeatDensity t (y + (x + ν * t)))
       (volume : Measure ℝ) :=
@@ -207,8 +196,7 @@ theorem conditionedPositiveTransitionDensity_integral_eq_one_pos
   have hsum'' :
       (∫ y in Set.Ioi 0, brownianHeatDensity t (y + (x - ν * t)) ∂(volume : Measure ℝ)) +
         ∫ y in Set.Ioi 0, brownianHeatDensity t (y - (x - ν * t)) ∂(volume : Measure ℝ) = 1 := by
-    rw [add_comm]
-    exact hsum'
+    rwa [add_comm]
   have hlin :
       (∫ y in Set.Ioi 0, (brownianHeatDensity t (y - (x + ν * t)) -
         Real.exp (-2 * ν * x) * brownianHeatDensity t (y + (x - ν * t)) -
@@ -283,4 +271,3 @@ theorem conditionedPositiveTransitionDensity_integral_eq_one_pos
 
 end DOZZ.Proofs
 
-end

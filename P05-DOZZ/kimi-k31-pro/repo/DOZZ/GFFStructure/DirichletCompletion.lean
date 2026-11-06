@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.GFFStructure.DirichletResidual
-public import Mathlib.Analysis.Normed.Lp.SmoothApprox
-public import Mathlib.Analysis.Normed.Operator.Extend
+import DOZZ.GFFStructure.DirichletResidual
+import Mathlib.Analysis.Normed.Lp.SmoothApprox
+import Mathlib.Analysis.Normed.Operator.Extend
 /-!
 # Completion of the interior Dirichlet field
 
@@ -15,7 +14,6 @@ therefore extends to a bounded map on all disk restrictions. Its values retain
 the original Gaussian Hilbert span and vanish on exterior tests.
 -/
 
-@[expose] public section
 open Filter MeasureTheory ProbabilityTheory Set Metric
 open scoped Topology ENNReal NNReal
 namespace DOZZ.Proofs
@@ -36,7 +34,7 @@ theorem diskTestRestrictionL2_norm_sq (c : ℂ) (ρ : ℝ) (f : TestFn) :
   apply integral_congr_ae
   filter_upwards [diskTestRestrictionL2_ae_eq c ρ f] with z hz
   rw [hz]
-  simp only [real_inner_self_eq_norm_sq,Real.norm_eq_abs,sq_abs]
+  simp [real_inner_self_eq_norm_sq,Real.norm_eq_abs,sq_abs]
 
 /-- Smooth compactly supported tests entirely inside a disk approximate each test restriction. -/
 theorem exists_interior_test_restriction_approx (c : ℂ) (ρ : ℝ) (hρ : 0 < ρ) (f : TestFn) :
@@ -48,7 +46,7 @@ theorem exists_interior_test_restriction_approx (c : ℂ) (ρ : ℝ) (hρ : 0 < 
     have hj : 1 < (j : ℝ)+2 := by linarith [(Nat.cast_nonneg j : (0 : ℝ) ≤ (j : ℝ))]
     have hp : 0 < ρ/((j : ℝ)+2) := div_pos hρ (by positivity)
     have hq : ρ/((j : ℝ)+2) < ρ := div_lt_self hρ hj
-    dsimp only [d,b]
+    dsimp [d,b]
     constructor
     · linarith
     · constructor <;> linarith
@@ -63,13 +61,13 @@ theorem exists_interior_test_restriction_approx (c : ℂ) (ρ : ℝ) (hρ : 0 < 
   have hlim : Tendsto d atTop (𝓝 ρ) := by
     have hr : Tendsto (fun j : ℕ => ρ/((j : ℝ)+2)) atTop (𝓝 0) := tendsto_const_nhds.div_atTop
       (tendsto_atTop_add_const_right _ 2 tendsto_natCast_atTop_atTop)
-    simpa only [d,sub_zero] using (tendsto_const_nhds.sub hr :
+    simpa [d,sub_zero] using (tendsto_const_nhds.sub hr :
       Tendsto (fun j : ℕ => ρ-ρ/((j : ℝ)+2)) atTop (𝓝 (ρ-0)))
   let μ := volume.restrict (ball c ρ)
   have hfi : MemLp (f : ℂ → ℝ) 2 μ := f.continuous.memLp_of_hasCompactSupport f.hasCompactSupport
   have hib : Integrable (fun z => (f z)^2) μ := hfi.integrable_sq
   have hv : Tendsto (fun j => ∫ z, (g j z-f z)^2 ∂μ) atTop (𝓝 0) := by
-    have heq : (∫ z, (0 : ℝ) ∂μ) = 0 := by simp only [integral_zero]
+    have heq : (∫ z, (0 : ℝ) ∂μ) = 0 := by simp [integral_zero]
     rw [← heq]
     apply tendsto_integral_of_dominated_convergence (fun z => (f z)^2)
     · intro j
@@ -98,10 +96,10 @@ theorem exists_interior_test_restriction_approx (c : ℂ) (ρ : ℝ) (hρ : 0 < 
     filter_upwards [Lp.coeFn_sub (diskTestRestrictionL2 c ρ (g j)) (diskTestRestrictionL2 c ρ f),
       diskTestRestrictionL2_ae_eq c ρ (g j),diskTestRestrictionL2_ae_eq c ρ f] with z hsub hg hf
     rw [hsub,Pi.sub_apply,hg,hf]
-    simp only [real_inner_self_eq_norm_sq,Real.norm_eq_abs,sq_abs]
+    simp [real_inner_self_eq_norm_sq,Real.norm_eq_abs,sq_abs]
   apply tendsto_iff_norm_sub_tendsto_zero.mpr
   have hh := Real.continuous_sqrt.continuousAt.tendsto.comp hn
-  simpa only [Function.comp_def,Real.sqrt_sq_eq_abs,abs_norm,Real.sqrt_zero] using hh
+  simpa [Function.comp_def,Real.sqrt_sq_eq_abs,abs_norm,Real.sqrt_zero] using hh
 
 /-- Compact interior test restrictions are dense in the full disk area L² space. -/
 theorem dense_interior_diskTestRestrictions (c : ℂ) (ρ : ℝ) (hρ : 0 < ρ) :
@@ -122,7 +120,7 @@ theorem dense_interior_diskTestRestrictions (c : ℂ) (ρ : ℝ) (hρ : 0 < ρ) 
     apply isClosed_closure.mem_of_tendsto ht
     exact Eventually.of_forall (fun n => subset_closure ⟨g n,hs n,rfl⟩)
   have hh := hglobal.mono hsub
-  simpa only [dense_iff_closure_eq,closure_closure] using hh
+  simpa [dense_iff_closure_eq,closure_closure] using hh
 
 /-- Compact tests whose entire support stays inside one disk form a real linear subspace. -/
 def diskInteriorTestSpace (c : ℂ) (ρ : ℝ) : Submodule ℝ TestFn where
@@ -154,7 +152,7 @@ noncomputable def diskTestRestrictionLinearMap (c : ℂ) (ρ : ℝ) :
     apply Lp.ext
     filter_upwards [diskTestRestrictionL2_ae_eq c ρ (a • f), diskTestRestrictionL2_ae_eq c ρ f,
       Lp.coeFn_smul a (diskTestRestrictionL2 c ρ f)] with z haf hf ha
-    simp only [RingHom.id_apply]
+    simp [RingHom.id_apply]
     rw [haf,ha,Pi.smul_apply,hf]
     rfl
 
@@ -185,7 +183,7 @@ noncomputable def exteriorPinnedTestL2LinearMap {Ω : Type*} [MeasurableSpace Ω
       exteriorPinnedTestL2_ae_eq P X Xc hX hc R hR f,exteriorPinnedTestL2_ae_eq P X Xc hX hc R hR g,
       Lp.coeFn_add (exteriorPinnedTestL2 P X Xc hX hc R hR f) (exteriorPinnedTestL2 P X Xc hX hc R hR g)] with ω hfg hf hg ha
     rw [hfg,ha,Pi.add_apply,hf,hg]
-    simp only [exteriorPinnedEvaluation, map_add,FunLike.coe_add,Pi.add_apply]
+    simp [exteriorPinnedEvaluation, map_add,FunLike.coe_add,Pi.add_apply]
     rw [integral_add (f.continuous.integrable_of_hasCompactSupport f.hasCompactSupport)
       (g.continuous.integrable_of_hasCompactSupport g.hasCompactSupport)]
     ring
@@ -193,9 +191,9 @@ noncomputable def exteriorPinnedTestL2LinearMap {Ω : Type*} [MeasurableSpace Ω
     apply Lp.ext
     filter_upwards [exteriorPinnedTestL2_ae_eq P X Xc hX hc R hR (a • f),
       exteriorPinnedTestL2_ae_eq P X Xc hX hc R hR f,Lp.coeFn_smul a (exteriorPinnedTestL2 P X Xc hX hc R hR f)] with ω haf hf ha
-    simp only [RingHom.id_apply]
+    simp [RingHom.id_apply]
     rw [haf,ha,Pi.smul_apply,smul_eq_mul,hf]
-    simp only [exteriorPinnedEvaluation,map_smul,FunLike.coe_smul,Pi.smul_apply,smul_eq_mul]
+    simp [exteriorPinnedEvaluation,map_smul,FunLike.coe_smul,Pi.smul_apply,smul_eq_mul]
     rw [integral_const_mul]
     ring
 
@@ -207,13 +205,13 @@ noncomputable def poissonInteriorTestIntegralLinearMap {Ω : Type*} [MeasurableS
     diskInteriorTestSpace c ρ →ₗ[ℝ] Lp ℝ 2 P where
   toFun := fun f => poissonTestIntegralL2 P c ρ V hV f.1
   map_add' f g := by
-    simp only [poissonTestIntegralL2,Submodule.coe_add,FunLike.coe_add,Pi.add_apply,add_smul]
+    simp [poissonTestIntegralL2,Submodule.coe_add,FunLike.coe_add,Pi.add_apply,add_smul]
     exact integral_add (integrable_testFn_smul_on_disk c ρ _ hU f.1 f.2)
       (integrable_testFn_smul_on_disk c ρ _ hU g.1 g.2)
   map_smul' a f := by
-    simp only [poissonTestIntegralL2,Submodule.coe_smul,FunLike.coe_smul,Pi.smul_apply,RingHom.id_apply,smul_eq_mul]
+    simp [poissonTestIntegralL2,Submodule.coe_smul,FunLike.coe_smul,Pi.smul_apply,RingHom.id_apply,smul_eq_mul]
     rw [← integral_smul a]
-    simp only [smul_smul]
+    simp [smul_smul]
 
 /-- The actual interior residual is a linear map, before restriction completion. -/
 noncomputable def dirichletInteriorResidualLinearMap {Ω : Type*} [MeasurableSpace Ω]
@@ -265,14 +263,12 @@ theorem dirichletInteriorResidualLinearMap_bound {Ω : Type*} [MeasurableSpace �
   have h := dirichletResidualL2_norm_sq_le P X Xc hX hc c R ρ ε hR hρ hε hpin V hV hmean hU hcov hlim f.1 f.2
   have hfNorm : (∫ z in ball c ρ, ‖f.1 z‖^2) = ‖diskTestRestrictionL2 c ρ f.1‖^2 := by
     rw [diskTestRestrictionL2_norm_sq]
-    simp only [Real.norm_eq_abs,sq_abs]
+    simp [Real.norm_eq_abs,sq_abs]
   rw [hfNorm] at h
   change ‖dirichletResidualL2 P X Xc hX hc c R ρ (by linarith) V hV f.1‖ ≤
     Real.sqrt K*‖diskTestRestrictionL2 c ρ f.1‖
   apply (sq_le_sq₀ (norm_nonneg _) (mul_nonneg (Real.sqrt_nonneg K) (norm_nonneg _))).mp
-  rw [mul_pow,Real.sq_sqrt hK]
-  exact h
-
+  rwa [mul_pow,Real.sq_sqrt hK]
 /-- The bounded completion equals the actual residual on every compact interior test. -/
 theorem dirichletCompletedL2Map_apply_interior {Ω : Type*} [MeasurableSpace Ω]
     (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)

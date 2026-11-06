@@ -2,15 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Brownian.LastExitShiftLaw
-public import DOZZ.Brownian.ConditionedPathSupport
-public import DOZZ.Brownian.Reflection.LastCut
+import DOZZ.Brownian.LastExitShiftLaw
+import DOZZ.Brownian.ConditionedPathSupport
+import DOZZ.Brownian.Reflection.LastCut
 
 /-! The last-cut ordering required by the lower Williams tail estimate. -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal NNReal
 
@@ -42,7 +40,7 @@ theorem conditioned_last_exit_mono_ae (ν c d : ℝ) (hν : 0 < ν)
     ∀ᵐ p ∂P, negativeLastExitTime p c ≤ negativeLastExitTime p d := by
   have hlaw := negativeConditioned_postLastExit_law ν d hν hd P hP
   have hclosed : IsClosed {p : BrownianPath | ∀ t : ℝ≥0, p t ≤ 0} := by
-    simp only [ofPred_forall]
+    simp [ofPred_forall]
     apply isClosed_iInter
     intro t
     exact isClosed_le (by fun_prop) continuous_const
@@ -59,8 +57,6 @@ theorem reflection_cut_mass_le_of_last_exit_le
     (Z : Ω → Measure ℝ) (ω : Ω)
     (hcd : negativeLastExitTime (B ω).2 c ≤ negativeLastExitTime (B ω).2 d) :
     twoSidedReflectionCutMass γ c B Z ω ≤ twoSidedReflectionCutMass γ d B Z ω := by
-  have ht : (negativeLastExitTime (B ω).2 c : ℝ) ≤
-      (negativeLastExitTime (B ω).2 d : ℝ) := hcd
   unfold twoSidedReflectionCutMass
   apply lintegral_mono
   intro s

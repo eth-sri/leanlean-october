@@ -2,13 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.BPZ.Weight
-public import DOZZ.GMC.SharpMoments.SeibergMoment
-public import DOZZ.GMC.SharpMoments.SeibergPieces
-public import DOZZ.GMC.SharpMoments.MomentRange
-public import DOZZ.Statements.FourPoint.FourPointT
+import DOZZ.FourPoint.BPZ.Weight
+import DOZZ.GMC.SharpMoments.SeibergMoment
+import DOZZ.GMC.SharpMoments.SeibergPieces
+import DOZZ.GMC.SharpMoments.MomentRange
+import DOZZ.Statements.FourPoint.FourPointT
 
 /-! # The degenerate four-point mass
 
@@ -18,7 +17,6 @@ reduced four-point function. The mass is bounded below, uniformly for `z` in a b
 `0 ≤ ε ≤ 1`, by a positive multiple of the chaos mass of a fixed far disk; hence every negative
 moment is finite, uniformly. It is also almost surely finite. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped ENNReal NNReal
@@ -214,7 +212,7 @@ theorem coulombWeight_two_eq_ofReal_bpzBaseWeight {x : ℂ} (hx0 : x ≠ 0) (hx1
   have h₁ : 0 < ‖x‖ := norm_pos_iff.mpr hx0
   have h₂ : 0 < ‖x - 1‖ := norm_pos_iff.mpr (sub_ne_zero.mpr hx1)
   unfold coulombWeight
-  simp only [Fin.prod_univ_succ, Matrix.cons_val_zero, Matrix.cons_val_succ,
+  simp [Fin.prod_univ_succ, Matrix.cons_val_zero, Matrix.cons_val_succ,
     Fin.prod_univ_zero, mul_one, sub_zero]
   change ((ENNReal.ofReal (normPlus x / ‖x‖)) ^ (γ * α₁) *
       (ENNReal.ofReal (normPlus x / ‖x - 1‖)) ^ (γ * α₂)) *
@@ -317,11 +315,7 @@ theorem bpz_injective_three {z : ℂ} (hz0 : z ≠ 0) (hz1 : z ≠ 1) :
     | (exfalso; revert hij; simp [hz0, hz1, eq_comm])
 
 theorem bpz_injective_two : Function.Injective ![(0 : ℂ), 1] := by
-  intro i j hij
-  fin_cases i <;> fin_cases j
-  all_goals first
-    | rfl
-    | (exfalso; revert hij; simp)
+  simp
 
 /-- A positive order below six positive bounds. -/
 theorem bpz_exists_pos_lt_six {a b c d e f : ℝ} (ha : 0 < a) (hb : 0 < b) (hc : 0 < c)
@@ -329,11 +323,11 @@ theorem bpz_exists_pos_lt_six {a b c d e f : ℝ} (ha : 0 < a) (hb : 0 < b) (hc 
     ∃ t : ℝ, 0 < t ∧ t < a ∧ t < b ∧ t < c ∧ t < d ∧ t < e ∧ t < f := by
   refine ⟨min a (min b (min c (min d (min e f)))) / 2, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
   · have : 0 < min a (min b (min c (min d (min e f)))) := by
-      simp only [lt_min_iff]; exact ⟨ha, hb, hc, hd, he, hf⟩
+      simp [lt_min_iff]; exact ⟨ha, hb, hc, hd, he, hf⟩
     linarith
   all_goals
     have h0 : 0 < min a (min b (min c (min d (min e f)))) := by
-      simp only [lt_min_iff]; exact ⟨ha, hb, hc, hd, he, hf⟩
+      simp [lt_min_iff]; exact ⟨ha, hb, hc, hd, he, hf⟩
   · have := min_le_left a (min b (min c (min d (min e f)))); linarith
   · have := (min_le_right a _).trans (min_le_left b (min c (min d (min e f)))); linarith
   · have := (min_le_right a _).trans ((min_le_right b _).trans

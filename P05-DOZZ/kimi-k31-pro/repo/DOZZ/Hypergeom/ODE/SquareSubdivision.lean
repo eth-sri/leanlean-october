@@ -2,16 +2,14 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import Mathlib.Topology.UniformSpace.HeineCantor
-public import Mathlib.Algebra.Order.Archimedean.Basic
-public import Mathlib.Analysis.Complex.Basic
+import Mathlib.Topology.UniformSpace.HeineCantor
+import Mathlib.Algebra.Order.Archimedean.Basic
+import Mathlib.Analysis.Complex.Basic
 
 /-! A continuous homotopy on the unit square admits a fine equal grid so each cell image lies
 near its lower-left vertex. -/
 
-@[expose] public section
 
 open Set
 
@@ -67,6 +65,6 @@ theorem exists_square_grid_subdivision {Γ : ℝ × ℝ → ℂ}
     exact max_lt (hsDist.trans_lt hgap) (htDist.trans_lt hgap)
   have hbase := hclose (s, t) ⟨hs01, ht01⟩
     ((i : ℝ) / (N : ℝ), (j : ℝ) / (N : ℝ)) ⟨hleft, hbottom⟩ hprod
-  exact hbase
+  assumption
 
 end DOZZ.Proofs

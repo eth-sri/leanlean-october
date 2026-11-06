@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.Dual.Domain
+import DOZZ.FourPoint.Dual.Domain
 import Mathlib.Tactic
 
 /-! # The corrected dual fusion window
@@ -12,7 +11,6 @@ import Mathlib.Tactic
 The annular power may lie on either side of the logarithmic threshold 3.
 -/
 
-public section
 
 namespace DOZZ.Proofs
 

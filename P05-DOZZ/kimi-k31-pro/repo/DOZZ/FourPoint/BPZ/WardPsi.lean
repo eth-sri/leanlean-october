@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.BPZ.WardPsiPath
+import DOZZ.FourPoint.BPZ.WardPsiPath
 
 /-! # Ratio bounds and the root derivative of the rooted moment
 
@@ -13,7 +12,6 @@ value at the center and Lipschitz with a constant proportional to that value. Th
 difference quotients of its negative powers by an integrable multiple of the negative power at
 the center, which differentiates the rooted moment `E[J_x^{-q}]` in every direction. -/
 
-@[expose] public section
 
 open MeasureTheory Filter Topology
 open scoped ENNReal NNReal
@@ -236,7 +234,6 @@ theorem bpz_abs_rpow_neg_sub_le {a b q : ℝ} (ha : 0 < a) (hb : 0 < b) (hq : 0 
     (fun t => -q * t ^ (-q - 1)) h hcont hderiv
   have hc0 : 0 < c := lt_trans ha hc.1
   have hdiff : a ^ (-q) - b ^ (-q) = q * c ^ (-q - 1) * (b - a) := by
-    have hba : b - a ≠ 0 := (sub_pos.mpr h).ne'
     field_simp at hcd
     linarith
   rw [hdiff, abs_of_nonneg (mul_nonneg (mul_nonneg hq (Real.rpow_nonneg hc0.le _))
@@ -294,7 +291,7 @@ theorem hasDerivAt_bpz_rooted_moment {Ω : Type*} [MeasurableSpace Ω] {P : Meas
     (by
       have h1 : AEStronglyMeasurable (fun ω => J x₀ ω ^ (-q - 1)) P := by
         have := hmeas 0
-        simp only [zero_smul, add_zero] at this
+        simp [zero_smul, add_zero] at this
         exact (this.aemeasurable.pow_const _).aestronglyMeasurable
       exact (h1.const_mul (-q)).mul hmeasD)
     (by

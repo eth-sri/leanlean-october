@@ -2,17 +2,15 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.Defs.UnitVolumeStructureConstant
-public import Mathlib.Probability.BrownianMotion.Basic
-public import Mathlib.Probability.Independence.Process.Basic
-public import Mathlib.Analysis.InnerProductSpace.Harmonic.Basic
-public import Mathlib.Analysis.SpecialFunctions.Trigonometric.Inverse
+import DOZZ.Statements.Defs.UnitVolumeStructureConstant
+import Mathlib.Probability.BrownianMotion.Basic
+import Mathlib.Probability.Independence.Process.Basic
+import Mathlib.Analysis.InnerProductSpace.Harmonic.Basic
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.Inverse
 
 /-! The definition `DOZZ.circleLogPotential`. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology Set Metric
 open scoped ENNReal NNReal

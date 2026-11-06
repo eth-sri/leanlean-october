@@ -2,10 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.Correlations.Symmetry.RepinnedCircle
-public import DOZZ.GMC.CirclePotential
-@[expose] public section
+import DOZZ.Correlations.Symmetry.RepinnedCircle
+import DOZZ.GMC.CirclePotential
 open MeasureTheory Filter
 open scoped Distributions Topology
 namespace DOZZ.Proofs
@@ -52,7 +50,7 @@ theorem repinned_circle_normalization_covariance
     isCircleAverage_covariance P X hX Xc hXc]
   have he (z : ℂ) : (∫ w, gffKernel z w ∂circleMeasure 1 0) =
       symmetryReflectionPotential (1 - z) + symmetryReflectionKappa := by
-    simpa only [show (1 : ℂ) - (1 - z) = z from symmetryReflection_involutive z] using
+    simpa [show (1 : ℂ) - (1 - z) = z from symmetryReflection_involutive z] using
       reflection_source_circle_potential (1 - z)
   simp_rw [he]
   have hd : Integrable (fun z => symmetryReflectionPotential (1 - z))

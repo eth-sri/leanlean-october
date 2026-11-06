@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.SharpMoments.ExteriorScale
-public import DOZZ.GMC.SharpMoments.WeightedDyadicSum
+import DOZZ.GMC.SharpMoments.ExteriorScale
+import DOZZ.GMC.SharpMoments.WeightedDyadicSum
 
 /-! # Cutoff moments of exterior power weights
 
@@ -15,7 +14,6 @@ is `2^{-n ξ(t)}` times a cutoff moment of the base annulus, so a power weight `
 `ξ(t) > β t` gives a geometric series, which is summed by subadditivity for `t ≤ 1` and by
 Minkowski's inequality for `t > 1`. The bound is explicit and uniform in the cutoff. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped ENNReal NNReal
@@ -96,7 +94,7 @@ theorem exteriorAnnulus_disjoint (R0 : ℝ) (hR0 : 0 < R0) :
 theorem iUnion_exteriorAnnulus (R0 : ℝ) (hR0 : 0 < R0) :
     (⋃ n, exteriorAnnulus R0 n) = {x : ℂ | R0 ≤ ‖x‖} := by
   ext x
-  simp only [Set.mem_iUnion, Set.mem_ofPred_eq]
+  simp [Set.mem_iUnion, Set.mem_ofPred_eq]
   constructor
   · rintro ⟨n, hn1, _⟩
     have : (1 : ℝ) ≤ 2 ^ n := one_le_pow₀ (by norm_num)
@@ -130,8 +128,7 @@ theorem exteriorMoment_coeff_eq {R0 : ℝ} (hR0 : 0 < R0) (β t γ : ℝ) (n : �
       ← Real.rpow_mul (by norm_num)]
     congr 1
     ring
-  rw [hsplit, ← Real.rpow_mul (by positivity), Real.mul_rpow h2R.le h2n.le, hexp, hhalf]
-  rw [mul_assoc, ← Real.rpow_add h2n, ← Real.rpow_add h2n]
+  rw [hsplit, ← Real.rpow_mul (by positivity), Real.mul_rpow h2R.le h2n.le, hexp, hhalf, mul_assoc, ← Real.rpow_add h2n, ← Real.rpow_add h2n]
   congr 2
   ring
 

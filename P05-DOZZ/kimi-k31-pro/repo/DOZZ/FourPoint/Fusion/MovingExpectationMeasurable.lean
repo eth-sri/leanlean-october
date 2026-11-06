@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.Fusion.InverseExpectation
-public import DOZZ.GMC.Construction.RootedMeasureKernel
+import DOZZ.FourPoint.Fusion.InverseExpectation
+import DOZZ.GMC.Construction.RootedMeasureKernel
 
 /-! # Joint measurability of the moving inverse expectation -/
 
-@[expose] public section
 open MeasureTheory
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -19,18 +17,18 @@ theorem fusionMovingKernel_joint_measurable (γ α₁ α₂ α₃ : ℝ) :
   have hp : Measurable (fun q : (ℂ × ℂ) × ℂ => (q.1.2, q.2)) :=
     (measurable_snd.comp measurable_fst).prodMk measurable_snd
   have hK : Measurable (fun q : (ℂ × ℂ) × ℂ => gammaHalfKernel γ α₁ α₂ α₃ q.1.2 q.2) :=
-    by simpa only [Function.comp_def] using (fusion_measurable_gammaHalfKernel γ α₁ α₂ α₃).comp hp
+    by simpa [Function.comp_def] using (fusion_measurable_gammaHalfKernel γ α₁ α₂ α₃).comp hp
   have hr : Measurable (fun q : (ℂ × ℂ) × ℂ => (q.1.1 * q.1.2, q.2)) :=
     ((measurable_fst.comp measurable_fst).mul (measurable_snd.comp measurable_fst)).prodMk
       measurable_snd
   have hD : Measurable (fun q : (ℂ × ℂ) × ℂ => Real.exp (γ ^ 2 * gffKernel (q.1.1 * q.1.2) q.2)) :=
-    by simpa only [Function.comp_def] using ((measurable_pointRootPotential.comp hr).const_mul (γ ^ 2)).exp
+    by simpa [Function.comp_def] using ((measurable_pointRootPotential.comp hr).const_mul (γ ^ 2)).exp
   change Measurable (fun q : (ℂ × ℂ) × ℂ => ENNReal.ofReal
     (gammaHalfKernel γ α₁ α₂ α₃ q.1.2 q.2 * Real.exp (γ ^ 2 * gffKernel (q.1.1 * q.1.2) q.2)))
   have hprod : Measurable (fun q : (ℂ × ℂ) × ℂ =>
     gammaHalfKernel γ α₁ α₂ α₃ q.1.2 q.2 * Real.exp (γ ^ 2 * gffKernel (q.1.1 * q.1.2) q.2)) :=
     hK.mul hD
-  simpa only [Function.comp_def] using ENNReal.measurable_ofReal.comp hprod
+  simpa [Function.comp_def] using ENNReal.measurable_ofReal.comp hprod
 
 /-- Measurability holds jointly in both the rescaled root and the moving insertion point. -/
 theorem fusionMovingMass_expectation_measurable {Ω : Type*} [MeasurableSpace Ω]
@@ -50,7 +48,7 @@ theorem fusionMovingMass_expectation_measurable {Ω : Type*} [MeasurableSpace Ω
     have hp : Measurable (fun q : ((ℂ × ℂ) × Ω) × ℂ => (q.1.1, q.2)) :=
       (measurable_fst.comp measurable_fst).prodMk measurable_snd
     have ht := (fusionMovingKernel_joint_measurable γ α₁ α₂ α₃).comp hp
-    simpa only [Function.comp_def] using ht
+    simpa [Function.comp_def] using ht
   have hmeas : Measurable (fun q : ℂ × ℂ => ∫⁻ ω,
       fusionMovingMass γ α₁ α₂ α₃ q.1 q.2 (N ω) ^ s ∂P) :=
     (hm.pow_const s).lintegral_prod_right'
@@ -59,8 +57,6 @@ theorem fusionMovingMass_expectation_measurable {Ω : Type*} [MeasurableSpace Ω
       (fun q : ℂ × ℂ => ∫⁻ ω,
       fusionMovingMass γ α₁ α₂ α₃ q.1 q.2 (N ω) ^ s ∂P) := by
     funext q
-    exact lintegral_congr_ae (he.mono fun ω h => by dsimp only; rw [h])
-  rw [heq]
-  exact hmeas
-
+    exact lintegral_congr_ae (he.mono fun ω h => by dsimp; rw [h])
+  rwa [heq]
 end DOZZ.Proofs

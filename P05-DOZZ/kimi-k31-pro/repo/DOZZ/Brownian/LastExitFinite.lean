@@ -2,12 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Brownian.LastExitAvoidanceTouch
-public import DOZZ.Brownian.LastExitAvoidanceProbabilityLimit
-public import DOZZ.Brownian.LastExitAvoidance
-public import DOZZ.Brownian.Williams.StoppedPaths
+import DOZZ.Brownian.LastExitAvoidanceTouch
+import DOZZ.Brownian.LastExitAvoidanceProbabilityLimit
+import DOZZ.Brownian.LastExitAvoidance
+import DOZZ.Brownian.Williams.StoppedPaths
 
 /-!
 # Finite nonempty level-hit sets for the conditioned entrance path
@@ -18,7 +17,6 @@ most the survival complement. This proves the level-hit set is bounded. The one-
 continuity from the entrance value prove it is nonempty.
 -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Set Filter Topology
 open scoped NNReal
@@ -45,11 +43,6 @@ theorem negativeLevelHitAfter_realMeasure_le_complementAvoidance
       conditionedPositiveFutureAvoidanceCoordinate t c q)
     exact MeasurableSet.iInter fun q =>
       measurableSet_conditionedPositiveFutureAvoidanceCoordinate t c q
-  have hHitMeas : MeasurableSet (negativeLevelHitAfter t (c : ℝ)) := by
-    change MeasurableSet ((fun p : BrownianPath => ((c : ℝ), p)) ⁻¹'
-      {z : ℝ × BrownianPath | ∃ u : ℝ≥0, t < u ∧ z.2 u = -z.1})
-    exact (measurableSet_brownianPath_levelHit_after t).preimage
-      (measurable_const.prodMk measurable_id)
   have hTouch := conditionedPositiveFutureAvoidanceTouchEvent_measure_zero
     hP hB hν t ht c hc
   have hTouchReal :
@@ -63,7 +56,7 @@ theorem negativeLevelHitAfter_realMeasure_le_complementAvoidance
     · right
       exact conditionedPositiveFutureAvoidance_hit_implies_touch t c p hpavoid hp
     · left
-      exact hpavoid
+      assumption
   calc
     P.real (negativeLevelHitAfter t (c : ℝ)) ≤
         P.real ((conditionedPositiveFutureRationalAvoidance t c)ᶜ ∪
@@ -218,4 +211,3 @@ theorem ae_negativeConditionedLevelHitSet_nonempty_bddAbove
 
 end DOZZ.Proofs
 
-end

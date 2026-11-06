@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.FiniteChaosScaledLaplaceIBP
-public import Mathlib.MeasureTheory.Integral.Prod
+import DOZZ.GMC.FiniteChaosScaledLaplaceIBP
+import Mathlib.MeasureTheory.Integral.Prod
 
 /-! Product-space forms of the conditional Laplace-score Gaussian IBP. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory
 
@@ -100,8 +98,7 @@ theorem finiteChaos_laplace_X_block_ibp_on_product
           ∫ y, Real.sqrt t * ∑ j, (∑ k, A i k * A j k) *
           ∫ x, D j x y ∂μ ∂μ := by
               apply integral_congr_ae
-              filter_upwards [] with y
-              exact hconditional y
+              exact ae_of_all _ fun y => hconditional y
       _ = Real.sqrt t * ∑ j, (∑ k, A i k * A j k) *
             ∫ y, ∫ x, D j x y ∂μ ∂μ := by
               rw [integral_const_mul, integral_finsetSum]
@@ -168,7 +165,7 @@ theorem finiteChaos_laplace_X_block_ibp_on_product_of_measurable_shift
       (fun z : (Fin (n + 1) → ℝ) × (Fin (n + 1) → ℝ) =>
         ∑ k, A i k * z.2 k) (μ.prod μ) := by
     have hsnd : MeasurePreserving Prod.snd (μ.prod μ) μ := measurePreserving_snd
-    simpa only [Function.comp_def] using
+    simpa [Function.comp_def] using
       hsnd.integrable_comp_of_integrable hlinear
   have hVmeas : Measurable
       (fun z : (Fin (n + 1) → ℝ) × (Fin (n + 1) → ℝ) =>
@@ -191,7 +188,7 @@ theorem finiteChaos_laplace_X_block_ibp_on_product_of_measurable_shift
       fun_prop [finiteChaosVectorWeight]
     have hmass : Continuous (fun x : Fin (n + 1) → ℝ =>
         finiteChaosVectorMass a v γ x) := by
-      simp only [finiteChaosVectorMass]
+      simp [finiteChaosVectorMass]
       exact continuous_finsetSum Finset.univ (fun j hj => hweight j)
     have hcont : Continuous scoreField := by
       dsimp [scoreField]
@@ -207,13 +204,13 @@ theorem finiteChaos_laplace_X_block_ibp_on_product_of_measurable_shift
       fun_prop [finiteChaosVectorWeight]
     have hmass : Continuous (fun x : Fin (n + 1) → ℝ =>
         finiteChaosVectorMass a v γ x) := by
-      simp only [finiteChaosVectorMass]
+      simp [finiteChaosVectorMass]
       exact continuous_finsetSum Finset.univ (fun k hk => hweight k)
     have hcont : Continuous (derivField j) := by
       by_cases hij : i = j
-      · simp only [derivField, ite_eq_left hij]
+      · simp [derivField, ite_eq_left hij]
         fun_prop
-      · simp only [derivField, ite_eq_right hij]
+      · simp [derivField, ite_eq_right hij]
         fun_prop
     change Measurable (fun z : (Fin (n + 1) → ℝ) × (Fin (n + 1) → ℝ) =>
       derivField j (V z.2 z.1))
@@ -276,7 +273,7 @@ theorem finiteChaos_laplace_X_block_ibp_on_product_first_of_measurable_shift
         finiteChaosTwoBlockLaplaceScore A c a v γ s t i z.1 z.2 ∂(μ.prod μ) =
       ∫ z, (∑ k, A i k * z.2 k) *
         finiteChaosTwoBlockLaplaceScore A c a v γ s t i z.2 z.1 ∂(μ.prod μ) := by
-    simpa only [Prod.swap] using
+    simpa [Prod.swap] using
       (integral_prod_swap (μ := μ) (ν := μ)
         (f := fun z => (∑ k, A i k * z.2 k) *
           finiteChaosTwoBlockLaplaceScore A c a v γ s t i z.2 z.1))
@@ -285,7 +282,7 @@ theorem finiteChaos_laplace_X_block_ibp_on_product_first_of_measurable_shift
           ∂(μ.prod μ) =
       ∫ z, finiteChaosTwoBlockLaplaceScoreDerivative A c a v γ s t i j z.2 z.1
           ∂(μ.prod μ) := by
-    simpa only [Prod.swap] using
+    simpa [Prod.swap] using
       (integral_prod_swap (μ := μ) (ν := μ)
         (f := fun z => finiteChaosTwoBlockLaplaceScoreDerivative A c a v γ s t i j z.2 z.1))
   calc

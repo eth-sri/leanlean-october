@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import Mathlib.MeasureTheory.Constructions.Pi
-public import Mathlib.MeasureTheory.Integral.Prod
+import Mathlib.MeasureTheory.Constructions.Pi
+import Mathlib.MeasureTheory.Integral.Prod
 
 /-! Factorization of nonnegative product integrals over finite product measures. -/
 
-@[expose] public section
 
 open MeasureTheory
 open scoped ENNReal

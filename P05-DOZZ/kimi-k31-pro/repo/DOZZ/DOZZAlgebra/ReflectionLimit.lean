@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.Defs.DualMu
+import DOZZ.Statements.Defs.DualMu
 
 import Mathlib.Analysis.SpecialFunctions.Gamma.Beta
 import Mathlib.Analysis.SpecialFunctions.Gamma.Deriv
@@ -14,7 +13,6 @@ import Mathlib.Analysis.SpecialFunctions.Pow.Continuity
 # DOZZ — punctured limit of the reflection coefficient at Q
 -/
 
-@[expose] public section
 
 open Complex Filter Set Topology
 
@@ -51,7 +49,7 @@ theorem reflectionDOZZ_tendsto_Q (hγ : 0 < γ) (hγ2 : γ < 2) {μ : ℝ} (hμ 
     exact (Complex.ofReal_div _ _).symm
   have hlpos : 0 < (lFun ((γ : ℂ) ^ 2 / 4)).re := by
     rw [hlFun]
-    simp only [Complex.ofReal_re]
+    simp [Complex.ofReal_re]
     exact div_pos hgammaNum hgammaDen
   have hbase : 0 < dozzBase γ μ := by
     rw [dozzBase]
@@ -71,7 +69,7 @@ theorem reflectionDOZZ_tendsto_Q (hγ : 0 < γ) (hγ2 : γ < 2) {μ : ℝ} (hμ 
         fun_prop
       simpa [d] using hcont.tendsto.mono_left nhdsWithin_le_nhds
     · filter_upwards [self_mem_nhdsWithin] with α hα
-      simp only [mem_compl_iff, mem_singleton_iff] at hα
+      simp [mem_compl_iff, mem_singleton_iff] at hα
       have hq : (Q γ : ℂ) ≠ α := Ne.symm hα
       change d α ≠ 0
       dsimp [d]
@@ -85,7 +83,7 @@ theorem reflectionDOZZ_tendsto_Q (hγ : 0 < γ) (hγ2 : γ < 2) {μ : ℝ} (hμ 
     · have hd₀ := tendsto_nhds_of_tendsto_nhdsWithin hd
       simpa using Tendsto.const_mul c hd₀
     · filter_upwards [self_mem_nhdsWithin] with α hα
-      simp only [mem_compl_iff, mem_singleton_iff] at hα
+      simp [mem_compl_iff, mem_singleton_iff] at hα
       have hq : (Q γ : ℂ) ≠ α := Ne.symm hα
       have hdne : d α ≠ 0 := by
         dsimp [d]
@@ -119,7 +117,7 @@ theorem reflectionDOZZ_tendsto_Q (hγ : 0 < γ) (hγ2 : γ < 2) {μ : ℝ} (hμ 
         have hcont : ContinuousAt (fun x : ℂ => 1 - x) 0 := by fun_prop
         simpa using hcont.tendsto.mono_left nhdsWithin_le_nhds
       have h := Complex.continuousAt_Gamma_one.tendsto.comp harg
-      simpa only [Complex.Gamma_one] using (show Tendsto (fun x : ℂ => Complex.Gamma (1 - x))
+      simpa [Complex.Gamma_one] using (show Tendsto (fun x : ℂ => Complex.Gamma (1 - x))
         (𝓝[≠] (0 : ℂ)) (𝓝 (Complex.Gamma 1)) from by
           convert h using 1
           ext x
@@ -130,7 +128,7 @@ theorem reflectionDOZZ_tendsto_Q (hγ : 0 < γ) (hγ2 : γ < 2) {μ : ℝ} (hμ 
         have hcont : ContinuousAt (fun x : ℂ => 1 + x) 0 := by fun_prop
         simpa using hcont.tendsto.mono_left nhdsWithin_le_nhds
       have h := Complex.continuousAt_Gamma_one.tendsto.comp harg
-      simpa only [Complex.Gamma_one] using (show Tendsto (fun x : ℂ => Complex.Gamma (1 + x))
+      simpa [Complex.Gamma_one] using (show Tendsto (fun x : ℂ => Complex.Gamma (1 + x))
         (𝓝[≠] (0 : ℂ)) (𝓝 (Complex.Gamma 1)) from by
           convert h using 1
           ext x

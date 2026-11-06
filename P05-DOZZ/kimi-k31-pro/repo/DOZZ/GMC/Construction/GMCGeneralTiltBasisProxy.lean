@@ -2,16 +2,14 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.Construction.GMCGeneralTiltRawCutoff
+import DOZZ.GMC.Construction.GMCGeneralTiltRawCutoff
 import Mathlib.MeasureTheory.Integral.BoundedContinuousFunction
 import Mathlib.MeasureTheory.Integral.DominatedConvergence
 import Mathlib.MeasureTheory.Function.FactorsThrough
 
 /-! Raw-measurable proxies for a countable determining family of GMC masses. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology Set MeasurableSpace
 open scoped Distributions ENNReal NNReal BoundedContinuousFunction
@@ -65,7 +63,7 @@ theorem gmcLowerApprox_tendsto (q : ℚ) (x : ℝ) :
     obtain ⟨N, hN⟩ := exists_nat_gt (1 / (x - (q : ℝ)))
     have heventually : (fun _ : ℕ => (0 : ℝ)) =ᶠ[atTop] fun n => gmcLowerApprox q n x := by
       filter_upwards [eventually_ge_atTop N] with n hn
-      have hNn : 1 / (x - (q : ℝ)) < (n : ℝ) := by exact lt_of_lt_of_le hN (by exact_mod_cast hn)
+      have hNn : 1 / (x - (q : ℝ)) < (n : ℝ) := lt_of_lt_of_le hN (by exact_mod_cast hn)
       have hprod : 1 ≤ (n : ℝ) * (x - (q : ℝ)) := by
         have := (div_lt_iff₀ hpos).mp hNn
         nlinarith
@@ -152,9 +150,7 @@ theorem gmcLowerBoxApprox_integral_tendsto (i : ℚ × ℚ)
     (fun _ : ℂ => (1 : ℝ))
     (fun n => (gmcLowerBoxApprox i n).continuous.measurable.aestronglyMeasurable)
     hbound hdom hlim
-  rw [← integral_indicator_one hs]
-  exact hdomconv
-
+  rwa [← integral_indicator_one hs]
 /-- The mass on a rational lower rectangle has a raw-measurable real proxy. -/
 theorem equatorGFF_GMC_lowerBox_realMass_raw_version
     {Ω : Type*} [MeasurableSpace Ω]
@@ -221,7 +217,7 @@ private theorem gmcRatLowerIntervals_spanning : IsCountablySpanning gmcRatLowerI
   · intro n
     exact Set.mem_iUnion.mpr ⟨(n : ℚ), Set.mem_singleton _⟩
   · ext x
-    simp only [Set.mem_iUnion, Set.mem_univ, iff_true]
+    simp [Set.mem_iUnion, Set.mem_univ, iff_true]
     obtain ⟨n, hn⟩ := exists_nat_gt x
     exact ⟨n, le_of_lt hn⟩
 
@@ -234,7 +230,7 @@ private theorem gmcRatLowerRectangles_generate :
     Real.borel_eq_generateFrom_Iic_rat.symm
   have hprod := generateFrom_eq_prod hreal hreal
     gmcRatLowerIntervals_spanning gmcRatLowerIntervals_spanning
-  simpa only [gmcRatLowerRectangles, BorelSpace.measurable_eq] using hprod
+  simpa [gmcRatLowerRectangles, BorelSpace.measurable_eq] using hprod
 
 private theorem gmcRatLowerRectangles_pi : IsPiSystem gmcRatLowerRectangles :=
   (Real.isPiSystem_Iic_rat).prod Real.isPiSystem_Iic_rat
@@ -249,7 +245,7 @@ private theorem gmcLowerBoxFamily_representation {s : Set ℂ} (hs : s ∈ gmcLo
   rcases Set.mem_image2.mp ht with ⟨a, ha, b, hb, rfl⟩
   rcases Set.mem_iUnion.mp ha with ⟨p, hp⟩
   rcases Set.mem_iUnion.mp hb with ⟨q, hq⟩
-  simp only [Set.mem_singleton_iff] at hp hq
+  simp [Set.mem_singleton_iff] at hp hq
   subst a
   subst b
   exact ⟨(p, q), rfl⟩
@@ -264,7 +260,7 @@ private theorem gmcLowerBoxFamily_generate : generateFrom gmcLowerBoxFamily = bo
     _ = MeasurableSpace.comap Complex.measurableEquivRealProd (borel (ℝ × ℝ)) := by
           rw [gmcRatLowerRectangles_generate]
     _ = borel ℂ := by
-          simpa only [BorelSpace.measurable_eq] using
+          simpa [BorelSpace.measurable_eq] using
             Complex.measurableEquivRealProd.measurableEmbedding.comap_eq
 
 private theorem gmcLowerBoxFamily_pi : IsPiSystem gmcLowerBoxFamily :=
@@ -325,7 +321,7 @@ theorem gmcFiniteMeasure_sigma_eq :
   have hcoe : @Measurable (FiniteMeasure ℂ) (Measure ℂ) mBasis _
       (fun μ => (μ : Measure ℂ)) := by
     apply Measurable.measure_of_isPiSystem (μ := fun μ : FiniteMeasure ℂ => (μ : Measure ℂ))
-      (hgen := by simpa only [BorelSpace.measurable_eq] using gmcBasisFamily_generate.symm)
+      (hgen := by simpa [BorelSpace.measurable_eq] using gmcBasisFamily_generate.symm)
       (hpi := gmcBasisFamily_pi)
     · intro s hs
       rcases hs with ⟨i, rfl⟩
@@ -413,8 +409,7 @@ theorem gmc_measurable_function_factors_through_finite_eval
   have hPull' : @Measurable ((TestFn → ℝ) × FiniteMeasure ℂ) ℝ≥0∞
       (MeasurableSpace.comap gmcJointFiniteEval mTarget) _
       (fun p => H p.1 (p.2 : Measure ℂ)) := by
-    rw [hSigma]
-    exact hPull
+    rwa [hSigma]
   obtain ⟨G, hG, hGfactor⟩ := hPull'.exists_eq_measurable_comp
   refine ⟨G, hG, ?_⟩
   funext p
@@ -482,7 +477,7 @@ theorem equatorGFF_GMC_finiteEval_field_proxy
           simp [integral_const]
         change (M ω Set.univ).toReal = g (eval ω)
         rw [hconst, hFactor] at hω
-        simpa only [Function.comp_apply] using hω
+        simpa [Function.comp_apply] using hω
       refine ⟨gE, hgE, ?_⟩
       filter_upwards [hMassEq] with ω hω
       have hmass : M ω Set.univ ≠ ∞ :=

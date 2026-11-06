@@ -2,12 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GFF.CovarianceAlgebra
-public import Mathlib.MeasureTheory.Integral.Gamma
-public import Mathlib.Analysis.SpecialFunctions.PolarCoord
-public import GaussianFields
+import DOZZ.GFF.CovarianceAlgebra
+import Mathlib.MeasureTheory.Integral.Gamma
+import Mathlib.Analysis.SpecialFunctions.PolarCoord
+import GaussianFields
 
 /-!
 # DOZZ.GFF.RadialEnergy
@@ -15,7 +14,6 @@ public import GaussianFields
 Polar integration tools for the radial approximations of the equator measure.
 -/
 
-public section
 
 open Real Set MeasureTheory MeasureTheory.Measure
 open scoped Interval
@@ -23,7 +21,7 @@ open scoped Interval
 namespace DOZZ
 
 /-- A triangular radial profile concentrated in a shrinking annulus about the unit circle. -/
-@[expose] noncomputable def annularProfile (n : ℕ) (r : ℝ) : ℝ :=
+noncomputable def annularProfile (n : ℕ) (r : ℝ) : ℝ :=
   max 0 (1 - ((n : ℝ) + 2) * |r - 1|)
 
 theorem continuous_annularProfile (n : ℕ) : Continuous (annularProfile n) := by
@@ -34,7 +32,7 @@ theorem annularProfile_nonneg (n : ℕ) (r : ℝ) : 0 ≤ annularProfile n r :=
   le_max_left _ _
 
 /-- The unnormalized radial annular density on the plane. -/
-@[expose] noncomputable def annularProfileOnPlane (n : ℕ) (z : ℂ) : ℝ :=
+noncomputable def annularProfileOnPlane (n : ℕ) (z : ℂ) : ℝ :=
   annularProfile n ‖z‖
 
 theorem continuous_annularProfileOnPlane (n : ℕ) :
@@ -61,8 +59,7 @@ theorem support_annularProfileOnPlane_subset (n : ℕ) :
   have hn : 2 ≤ (n : ℝ) + 2 := by
     have hn0 : (0 : ℝ) ≤ (n : ℝ) := Nat.cast_nonneg n
     linarith
-  have hfrac : 1 / ((n : ℝ) + 2) ≤ 1 / 2 := by
-    exact one_div_le_one_div_of_le (by norm_num) hn
+  have hfrac : 1 / ((n : ℝ) + 2) ≤ 1 / 2 := one_div_le_one_div_of_le (by norm_num) hn
   have hnorm : ‖z‖ ≤ 2 := by
     have habs := abs_le.mp (le_of_lt hdist)
     linarith
@@ -74,7 +71,7 @@ theorem hasCompactSupport_annularProfileOnPlane (n : ℕ) :
     (support_annularProfileOnPlane_subset n)
 
 /-- The total mass of the unnormalized annular profile. -/
-@[expose] noncomputable def annularProfileMass (n : ℕ) : ℝ :=
+noncomputable def annularProfileMass (n : ℕ) : ℝ :=
   ∫ z : ℂ, annularProfileOnPlane n z
 
 theorem integrable_annularProfileOnPlane (n : ℕ) :
@@ -93,12 +90,11 @@ theorem annularProfileMass_pos (n : ℕ) : 0 < annularProfileMass n := by
 
 /-- A continuous compactly supported probability density in a shrinking annulus about the
 unit circle. -/
-@[expose] noncomputable def annularProbabilityDensity (n : ℕ) (z : ℂ) : ℝ :=
+noncomputable def annularProbabilityDensity (n : ℕ) (z : ℂ) : ℝ :=
   (annularProfileMass n)⁻¹ * annularProfileOnPlane n z
 
 theorem continuous_annularProbabilityDensity (n : ℕ) :
-    Continuous (annularProbabilityDensity n) := by
-  exact continuous_const.mul (continuous_annularProfileOnPlane n)
+    Continuous (annularProbabilityDensity n) := continuous_const.mul (continuous_annularProfileOnPlane n)
 
 theorem hasCompactSupport_annularProbabilityDensity (n : ℕ) :
     HasCompactSupport (annularProbabilityDensity n) := by
@@ -122,7 +118,7 @@ theorem integral_annularProbabilityDensity (n : ℕ) :
   exact inv_mul_cancel₀ (ne_of_gt (annularProfileMass_pos n))
 
 /-- The normalized radial profile as a function of radius. -/
-@[expose] noncomputable def annularProbabilityRadial (n : ℕ) (r : ℝ) : ℝ :=
+noncomputable def annularProbabilityRadial (n : ℕ) (r : ℝ) : ℝ :=
   (annularProfileMass n)⁻¹ * annularProfile n r
 
 theorem annularProbabilityDensity_eq_radial (n : ℕ) (z : ℂ) :
@@ -149,7 +145,7 @@ theorem annularProbabilityDensity_radius_bound (n : ℕ) (z : ℂ)
   nlinarith
 
 /-- The annular probability density transported to GaussianFields' `Vec 2`. -/
-@[expose] noncomputable def annularProbabilityDensityVec (n : ℕ)
+noncomputable def annularProbabilityDensityVec (n : ℕ)
     (x : GaussianFields.Vec 2) : ℝ :=
   annularProbabilityDensity n (complexLinearEquivVecTwo.symm x)
 
@@ -190,7 +186,7 @@ theorem integral_annularProbabilityDensityVec (n : ℕ) :
 
 /-- Center a DOZZ test density by the smooth annular probability density, producing an ABK
 mean-zero test function. -/
-@[expose] noncomputable def annularCenteredTestFn (f : TestFn) (n : ℕ) :
+noncomputable def annularCenteredTestFn (f : TestFn) (n : ℕ) :
     GaussianFields.MeanZeroTestFunction 2 := by
   let ρ := annularProbabilityDensityVec n
   have hρc : HasCompactSupport (fun x : GaussianFields.Vec 2 => testMass f * ρ x) := by
@@ -294,7 +290,6 @@ theorem integrable_compactLogKernelPair (u v : GaussianFields.Vec 2 → ℝ)
   rcases exists_ball_of_hasCompactSupport huc with ⟨Ru, hRu, huball⟩
   rcases exists_ball_of_hasCompactSupport hvc with ⟨Rv, hRv, hvball⟩
   let R := max Ru Rv
-  have hR : 0 ≤ R := le_max_of_le_left hRu
   have hRuR : Ru ≤ R := le_max_left _ _
   have hRvR : Rv ≤ R := le_max_right _ _
   let a : GaussianFields.Vec 2 := GaussianFields.abkRadialPoint 2 (R + 2)
@@ -360,12 +355,12 @@ theorem integral_radial_function (h : ℝ → ℝ) :
               _ = ∫ p in Ioi (0 : ℝ) ×ˢ Ioo (-Real.pi) Real.pi,
                     p.1 * h ‖Complex.polarCoord.symm p‖ := by
                   rw [Complex.polarCoord_target]
-                  simp only [smul_eq_mul]
+                  simp [smul_eq_mul]
     _ = ∫ p in Ioi (0 : ℝ) ×ˢ Ioo (-Real.pi) Real.pi, p.1 * h p.1 := by
       apply setIntegral_congr_fun (Complex.polarCoord.open_target.measurableSet)
       intro p hp
       change p.1 * h ‖Complex.polarCoord.symm p‖ = p.1 * h p.1
-      simp only [Complex.norm_polarCoord_symm, abs_of_pos hp.1]
+      simp [abs_of_pos (Set.mem_Ioi.mp hp.1)]
     _ = (∫ r in Ioi (0 : ℝ), r * h r) *
           ∫ θ in Ioo (-Real.pi) Real.pi, (1 : ℝ) := by
             rw [← setIntegral_prod_mul, volume_eq_prod]
@@ -402,7 +397,7 @@ theorem integral_annularProbabilityRadial (n : ℕ) :
       ring
 
 /-- The radial density induced by the planar annular probability density. -/
-@[expose] noncomputable def annularRadiusLaw (n : ℕ) (r : ℝ) : ℝ :=
+noncomputable def annularRadiusLaw (n : ℕ) (r : ℝ) : ℝ :=
   2 * Real.pi * r * annularProbabilityRadial n r
 
 /-- The radial law of the annular probability density has total mass one. -/
@@ -414,7 +409,7 @@ theorem integral_annularRadiusLaw (n : ℕ) :
           (2 * Real.pi) * (r * annularProbabilityRadial n r) := by
             apply setIntegral_congr_fun measurableSet_Ioi
             intro r hr
-            simp only [annularRadiusLaw]
+            simp [annularRadiusLaw]
             ring
     _ = (2 * Real.pi) *
           ∫ r in Ioi (0 : ℝ), r * annularProbabilityRadial n r :=
@@ -428,8 +423,7 @@ theorem integral_annularRadiusLaw (n : ℕ) :
 theorem annularProfile_radius_bound (n : ℕ) (r : ℝ)
     (hr : annularProfile n r ≠ 0) :
     |r - 1| < 1 / ((n : ℝ) + 2) := by
-  have hpos : 0 < annularProfile n r := by
-    exact lt_of_le_of_ne (annularProfile_nonneg n r) (Ne.symm hr)
+  have hpos : 0 < annularProfile n r := lt_of_le_of_ne (annularProfile_nonneg n r) (Ne.symm hr)
   have harg : 0 < 1 - ((n : ℝ) + 2) * |r - 1| := by
     simpa [annularProfile] using hpos
   have hfactor : 0 < (n : ℝ) + 2 := by positivity
@@ -482,14 +476,12 @@ theorem integrable_annularRadiusLawOn (n : ℕ) :
 theorem circleAverage_log_distance_eq_log_max (x : ℂ) {r : ℝ} (hr : 0 < r) :
     Real.circleAverage (fun z : ℂ => Real.log ‖z - x‖) 0 r =
       Real.log (max r ‖x‖) := by
-  rw [circleAverage_log_norm_sub_const_eq_log_radius_add_posLog (ne_of_gt hr)]
-  rw [Real.posLog_eq_log_max_one (by positivity : 0 ≤ r⁻¹ * ‖(0 : ℂ) - x‖)]
+  rw [circleAverage_log_norm_sub_const_eq_log_radius_add_posLog (ne_of_gt hr), Real.posLog_eq_log_max_one (by positivity : 0 ≤ r⁻¹ * ‖(0 : ℂ) - x‖)]
   have hnorm : ‖(0 : ℂ) - x‖ = ‖x‖ := by simp
-  rw [hnorm]
-  rw [← Real.log_mul (ne_of_gt hr) (by positivity : max 1 (r⁻¹ * ‖x‖) ≠ 0)]
+  rw [hnorm, ← Real.log_mul (ne_of_gt hr) (by positivity : max 1 (r⁻¹ * ‖x‖) ≠ 0)]
   congr 1
   rw [mul_max_of_nonneg 1 (r⁻¹ * ‖x‖) hr.le]
-  simp only [mul_one]
+  simp [mul_one]
   congr 1
   rw [← mul_assoc, mul_inv_cancel₀ (ne_of_gt hr), one_mul]
 
@@ -554,7 +546,7 @@ theorem integral_polarAngle_log_distance (x : ℂ) {r : ℝ} (hr : 0 < r) :
         rw [circleAverage_log_distance_eq_log_max x hr]
 
 /-- The integrand after polar change of variables in the second coordinate. -/
-@[expose] noncomputable def polarSecondIntegrand (F : ℂ × ℂ → ℝ)
+noncomputable def polarSecondIntegrand (F : ℂ × ℂ → ℝ)
     (p : ℂ × (ℝ × ℝ)) : ℝ :=
   p.2.1 * F (p.1, Complex.polarCoord.symm p.2)
 
@@ -572,7 +564,7 @@ theorem integrable_polarSecondIntegrand (F : ℂ × ℂ → ℝ)
   have hmeas : Measurable (polarSecondIntegrand F) := by
     change Measurable (fun p : ℂ × (ℝ × ℝ) =>
       p.2.1 * F (p.1, Complex.polarCoord.symm p.2))
-    simp only [Complex.polarCoord_symm_apply]
+    simp [Complex.polarCoord_symm_apply]
     fun_prop
   have hsection (x : ℂ) :
       ∫⁻ p, ‖polarSecondIntegrand F (x, p)‖ₑ
@@ -587,7 +579,7 @@ theorem integrable_polarSecondIntegrand (F : ℂ × ℂ → ℝ)
             filter_upwards [ae_restrict_mem Complex.polarCoord.open_target.measurableSet]
               with p hp
             have hp' : 0 < p.1 := hp.1
-            simp only [polarSecondIntegrand, enorm_mul,
+            simp [polarSecondIntegrand, enorm_mul,
               Real.enorm_eq_ofReal hp'.le]
       _ = ∫⁻ y : ℂ, ‖F (x, y)‖ₑ := by
         exact Complex.lintegral_comp_polarCoord_symm
@@ -633,7 +625,7 @@ theorem integral_polarSecondIntegrand (F : ℂ × ℂ → ℝ)
           p.1 * F (x, Complex.polarCoord.symm p) = _
       convert Complex.integral_comp_polarCoord_symm
         (fun y : ℂ => F (x, y)) using 1
-      simp only [smul_eq_mul]
+      simp [smul_eq_mul]
       rfl
     _ = ∫ q : ℂ × ℂ, F q
           ∂((volume : Measure ℂ).prod (volume : Measure ℂ)) :=
@@ -661,10 +653,8 @@ theorem integral_logKernel_annular (u : ℂ → ℝ) (hu : Continuous u)
   let FVec : GaussianFields.Vec 2 × GaussianFields.Vec 2 → ℝ := fun q =>
     uVec q.1 * annularProbabilityDensityVec n q.2 *
       GaussianFields.abkLogCovarianceKernel q.1 q.2
-  have huVec : Continuous uVec := by
-    exact hu.comp complexLinearEquivVecTwo.symm.continuous
-  have hucVec : HasCompactSupport uVec := by
-    exact huc.comp_homeomorph complexLinearEquivVecTwo.symm.toHomeomorph
+  have huVec : Continuous uVec := hu.comp complexLinearEquivVecTwo.symm.continuous
+  have hucVec : HasCompactSupport uVec := huc.comp_homeomorph complexLinearEquivVecTwo.symm.toHomeomorph
   have hFVec := integrable_compactLogKernelPair uVec (annularProbabilityDensityVec n)
     huVec (continuous_annularProbabilityDensityVec n) hucVec
     (hasCompactSupport_annularProbabilityDensityVec n)
@@ -743,8 +733,8 @@ theorem integral_logKernel_annular (u : ℂ → ℝ) (hu : Continuous u)
                         Real.log ‖x - Complex.polarCoord.symm (r, θ)‖ := by
                       apply setIntegral_congr_fun measurableSet_Ioo
                       intro θ hθ
-                      simp only [polarSecondIntegrand, F, annularProbabilityDensity_eq_radial,
-                        Complex.norm_polarCoord_symm, abs_of_pos hr]
+                      simp [polarSecondIntegrand, F, annularProbabilityDensity_eq_radial,
+                        abs_of_pos (Set.mem_Ioi.mp hr)]
                       ring
                 _ = -(u x * (r * annularProbabilityRadial n r)) *
                       ∫ θ in Ioo (-Real.pi) Real.pi,
@@ -759,7 +749,7 @@ theorem integral_logKernel_annular (u : ℂ → ℝ) (hu : Continuous u)
             (-u x) * (annularRadiusLaw n r * Real.log (max r ‖x‖)) := by
             apply setIntegral_congr_fun measurableSet_Ioi
             intro r hr
-            simp only [annularRadiusLaw]
+            simp [annularRadiusLaw]
             ring
       _ = -u x * ∫ r in Ioi (0 : ℝ),
             annularRadiusLaw n r * Real.log (max r ‖x‖) := by
@@ -816,4 +806,3 @@ theorem integral_logKernel_annular (u : ℂ → ℝ) (hu : Continuous u)
 
 end DOZZ
 
-end

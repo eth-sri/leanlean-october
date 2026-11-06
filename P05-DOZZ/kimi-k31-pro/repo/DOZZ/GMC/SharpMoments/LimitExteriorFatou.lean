@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.SharpMoments.CutoffConvergence
-public import DOZZ.GMC.SharpMoments.MomentConvergence
+import DOZZ.GMC.SharpMoments.CutoffConvergence
+import DOZZ.GMC.SharpMoments.MomentConvergence
 
 /-! # Exterior power moments of limiting chaos from cutoff bounds
 
@@ -15,7 +14,6 @@ chaos passes to the limiting chaos. The exterior region is first truncated to th
 applies; the truncation is then removed by monotone convergence, first in space and then in
 probability. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology Metric
 open scoped ENNReal NNReal
@@ -69,7 +67,7 @@ theorem limitExteriorFatou_trunc_coe (R β : ℝ) (m : ℕ) (x : ℂ) :
 theorem limitExteriorFatou_lintegral_trunc_le (R β : ℝ) (m : ℕ) (μ : Measure ℂ) :
     ∫⁻ x, (limitExteriorFatou_trunc R β m x : ℝ≥0∞) ∂μ ≤
       ∫⁻ x in {x : ℂ | R ≤ ‖x‖}, ENNReal.ofReal (‖x‖ ^ β) ∂μ := by
-  simp only [limitExteriorFatou_trunc_coe]
+  simp [limitExteriorFatou_trunc_coe]
   rw [lintegral_indicator (limitExteriorFatou_measurableSet_annulus R m)]
   exact lintegral_mono_set fun x hx => hx.1
 
@@ -77,7 +75,7 @@ theorem limitExteriorFatou_lintegral_trunc_le (R β : ℝ) (m : ℕ) (μ : Measu
 theorem limitExteriorFatou_trunc_mono (R β : ℝ) (x : ℂ) :
     Monotone fun m : ℕ => (limitExteriorFatou_trunc R β m x : ℝ≥0∞) := by
   intro m n hmn
-  simp only [limitExteriorFatou_trunc_coe]
+  simp [limitExteriorFatou_trunc_coe]
   have hle : (m : ℝ) ≤ n := Nat.cast_le.mpr hmn
   have hsub : {x : ℂ | R ≤ ‖x‖ ∧ ‖x‖ ≤ R + m} ⊆ {x : ℂ | R ≤ ‖x‖ ∧ ‖x‖ ≤ R + n} :=
     fun y hy => ⟨hy.1, hy.2.trans (by linarith)⟩

@@ -2,10 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.GMC.Assembly.CircleUniformL1
-public import DOZZ.Correlations.Continuity.ChartTests
-@[expose] public section
+import DOZZ.GMC.Assembly.CircleUniformL1
+import DOZZ.Correlations.Continuity.ChartTests
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
 open DOZZ.Assembly
@@ -35,14 +33,13 @@ theorem admissibleCutoffIntegral_L1_continuous_finite_reference
         fun x => gaussianVariance P (fun ω => Y ω ε x) := by
       funext x
       unfold gaussianVariance gaussianCovariance
-      simp only [pow_two]
+      simp [pow_two]
     rw [heq]
     exact admissibleLogRegularization_variance_measurable P U dens ε₀ Y hY ε
   have hfield : Measurable (fun q : Ω × ℂ => Y q.1 ε q.2) := hY.measurableAtScale ε
   have hjoint (γ : ℝ) : Measurable (fun q : ℂ × Ω => ENNReal.ofReal
       |Real.exp (γ * Y q.2 ε q.1 - γ ^ 2 / 2 * ∫ ω', Y ω' ε q.1 ^ 2 ∂P) -
         Real.exp (γ₀ * Y q.2 ε q.1 - γ₀ ^ 2 / 2 * ∫ ω', Y ω' ε q.1 ^ 2 ∂P)|) := by
-    have h1 : Measurable (fun q : ℂ × Ω => Y q.2 ε q.1) := hfield.comp measurable_swap
     have h2 : Measurable (fun q : ℂ × Ω => ∫ ω', Y ω' ε q.1 ^ 2 ∂P) := hv.comp measurable_fst
     fun_prop
   have hDmeas (γ : ℝ) : Measurable (D γ) := (hjoint γ).lintegral_prod_right'
@@ -60,7 +57,7 @@ theorem admissibleCutoffIntegral_L1_continuous_finite_reference
             ∫ ω', Y ω' ε x ^ 2 ∂P), Real.exp_pos (γ₀ * Y ω ε x - γ₀ ^ 2 / 2 *
             ∫ ω', Y ω' ε x ^ 2 ∂P)]
       _ = 1 + 1 := by
-          simp only [ofReal_exp_eq_admissibleLogWickWeight]
+          simp [ofReal_exp_eq_admissibleLogWickWeight]
           rw [lintegral_add_left (admissibleLogWickWeight_measurable_sample P U dens ε₀ Y hY γ
             ε x), lintegral_admissibleLogWickWeight P U dens ε₀ Y hY γ ε hε hr x,
             lintegral_admissibleLogWickWeight P U dens ε₀ Y hY γ₀ ε hε hr x]
@@ -153,7 +150,7 @@ theorem regularizedGMC_testFamily_L1_continuous
   have hfixed' : Tendsto (fun q => ∫⁻ ω, ENNReal.ofReal
       |∫ x, f q₀ x ∂regularizedGMC P Xc (γ q) r ω -
         ∫ x, f q₀ x ∂regularizedGMC P Xc (γ q₀) r ω| ∂P) (𝓝 q₀) (𝓝 0) := by
-    simpa only [Function.comp_def, integral_regularizedGMC_eq_admissibleCutoffIntegral P X hX Xc hXc]
+    simpa [Function.comp_def, integral_regularizedGMC_eq_admissibleCutoffIntegral P X hX Xc hXc]
       using hfixed.comp (hγ.tendsto q₀)
   have htest : Tendsto (fun q => ∫⁻ x, ENNReal.ofReal |f q x - f q₀ x|
       ∂gmcReferenceMeasure) (𝓝 q₀) (𝓝 0) := by
@@ -168,8 +165,8 @@ theorem regularizedGMC_testFamily_L1_continuous
         exact ENNReal.mul_ne_top ENNReal.ofReal_ne_top gmcReferenceMeasure_univ_ne_top)
       (ae_of_all _ fun x => by
         have hh := ENNReal.tendsto_ofReal (((hfc x).tendsto q₀).sub_const (f q₀ x) |>.abs)
-        simpa only [Function.comp_apply, Pi.sub_apply, sub_self, abs_zero, ENNReal.ofReal_zero] using hh)
-    simpa only [Function.comp_apply, Pi.sub_apply, lintegral_zero] using h
+        simpa [Function.comp_apply, Pi.sub_apply, sub_self, abs_zero, ENNReal.ofReal_zero] using hh)
+    simpa [Function.comp_apply, Pi.sub_apply, lintegral_zero] using h
   have hvar (q : T) : ∫⁻ ω, ENNReal.ofReal
       |∫ x, f q x ∂regularizedGMC P Xc (γ q) r ω -
         ∫ x, f q₀ x ∂regularizedGMC P Xc (γ q) r ω| ∂P ≤
@@ -207,7 +204,7 @@ theorem continuityCutoffTest_measurable {N : ℕ} (partition : GMCChartPartition
     (((continuityInfinityCutoffTest_continuous partition r).comp
       (continuous_const.prodMk continuous_id)).measurable.comp measurable_inv)
 
-/-- The real part of the cutoff mass `DOZZ.regularizedCoulombMass` is exactly the integral of its
+/-- The real part of the cutoff mass `regularizedCoulombMass` is exactly the integral of its
 bounded single-chart real test. This identity also respects the integral totalizations. -/
 theorem regularizedCoulombMass_real_eq_integral_test
     {Ω : Type*} [MeasurableSpace Ω] {N : ℕ}
@@ -223,7 +220,7 @@ theorem regularizedCoulombMass_real_eq_integral_test
   have h := integral_toReal
     (ENNReal.measurable_ofReal.comp (continuityCutoffTest_measurable partition r c)).aemeasurable
     (ae_of_all (regularizedGMC P Xc c.1 r ω) (fun _ => ENNReal.ofReal_lt_top))
-  simpa only [Function.comp_apply, ENNReal.toReal_ofReal (continuityCutoffTest_nonneg partition r c _)] using h.symm
+  simpa [Function.comp_apply, ENNReal.toReal_ofReal (continuityCutoffTest_nonneg partition r c _)] using h.symm
 
 /-- At a fixed cutoff, the actual chartwise Coulomb mass is continuous in all
 couplings, roots and charges in `L¹(P)` on every compact parameter set. -/
@@ -252,7 +249,7 @@ theorem regularizedCoulombMass_L1_continuous_on_compact
     (fun c : S => c.val.1) (continuous_fst.comp continuous_subtype_val)
     (fun c : S => continuityCutoffTest partition r c.val)
     (fun c => continuityCutoffTest_measurable partition r c.val) hfc (2 * L) hb c₀
-  simpa only [regularizedCoulombMass_real_eq_integral_test P X hX Xc hXc] using h
+  simpa [regularizedCoulombMass_real_eq_integral_test P X hX Xc hXc] using h
 
 /-- The actual extended cutoff mass is measurable for every fixed parameter. -/
 theorem continuity_regularizedCoulombMass_measurable
@@ -264,7 +261,7 @@ theorem continuity_regularizedCoulombMass_measurable
   have h := (Measure.measurable_lintegral
     (measurable_coulombCutoffWeight partition c.1 c.2.2.1 c.2.1 c.2.2.2 r)).comp
       (regularizedGMC_measurable P X hX Xc hXc c.1 r)
-  simpa only [Function.comp_def, regularizedCoulombMass_eq_lintegral P X hX Xc hXc] using h
+  simpa [Function.comp_def, regularizedCoulombMass_eq_lintegral P X hX Xc hXc] using h
 
 /-- The bounded chart tests make the actual cutoff mass finite almost surely. -/
 theorem continuity_regularizedCoulombMass_finite_ae

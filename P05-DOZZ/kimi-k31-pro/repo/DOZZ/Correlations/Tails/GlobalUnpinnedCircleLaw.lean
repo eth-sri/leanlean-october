@@ -1,3 +1,2 @@
-module
-public import DOZZ.Correlations.Tails.OffCenterCircleLaw
-public import DOZZ.GMC.Moments.InversionCircleAdmissible
+import DOZZ.Correlations.Tails.OffCenterCircleLaw
+import DOZZ.GMC.Moments.InversionCircleAdmissible

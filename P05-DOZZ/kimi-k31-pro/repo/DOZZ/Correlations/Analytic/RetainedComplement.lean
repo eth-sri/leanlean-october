@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.Analytic.CoulombExteriorDecay
-public import DOZZ.Correlations.Analytic.RetainedRegions
+import DOZZ.Correlations.Analytic.CoulombExteriorDecay
+import DOZZ.Correlations.Analytic.RetainedRegions
 
 /-! Open-set bounds for the mass excluded by the retained cutoff. -/
 
-@[expose] public section
 open MeasureTheory Set
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -95,7 +93,7 @@ theorem retained_complement_moment_le
         (retained_complement_mass_le (M ω) γ α z αinf r) hm.le).trans
       apply (ENNReal.rpow_add_le_add_rpow _ _ hm.le hm1).trans
       apply add_le_add _ le_rfl
-      simpa only [tsum_fintype] using
+      simpa [tsum_fintype] using
         (ennreal_rpow_tsum_le_tsum_rpow (fun i => F i ω) hm hm1)
     _ = _ := by
       rw [lintegral_add_right' _ hE, lintegral_finsetSum' Finset.univ (fun i _ => hF i)]

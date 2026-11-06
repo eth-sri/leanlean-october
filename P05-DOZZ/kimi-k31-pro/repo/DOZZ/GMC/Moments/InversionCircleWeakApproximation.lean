@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.Moments.InversionPuncturedApproximation
-public import DOZZ.GFFStructure.AnnularWeakLimit
+import DOZZ.GMC.Moments.InversionPuncturedApproximation
+import DOZZ.GFFStructure.AnnularWeakLimit
 
 /-! Punctured circle approximants with convergence against continuous potentials. -/
 
-@[expose] public section
 
 open Filter MeasureTheory Set Metric
 open scoped Topology Distributions
@@ -33,7 +31,7 @@ theorem exists_inversionChart_circle_weak_approximation (x : ℂ) (r : ℝ)
     change z ≠ 0
     intro hz0
     have ht := Metric.mem_closedBall.mp h
-    simp only [hz0, dist_zero_left] at ht
+    simp [hz0, dist_zero_left] at ht
     linarith
   have hc n : HasCompactSupport (circleAnnularDensity x r n) :=
     (isCompact_closedBall (0 : ℂ) R).of_isClosed_subset isClosed_closure
@@ -73,7 +71,7 @@ theorem exists_inversionChart_circle_weak_approximation (x : ℂ) (r : ℝ)
     ext n
     simp [Nat.cast_add]
   have ht3 : Tendsto (fun n : ℕ => 1 / ((n : ℝ) + 2) ^ 3) atTop (𝓝 (0 : ℝ)) := by
-    simpa only [div_pow, one_pow, zero_pow (by norm_num : 3 ≠ 0)] using ht.pow 3
+    simpa [div_pow, one_pow, zero_pow (by norm_num : 3 ≠ 0)] using ht.pow 3
   exact tendsto_integral_testFn_mul_of_circleAnnular_approx x r f
     (fun n => 1 / ((n : ℝ) + 2) ^ 3) (fun n => by positivity) ht3
     (R := R + 1) (by positivity)

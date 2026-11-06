@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.Tails.TranslatedRadialProjection
-public import DOZZ.Brownian.Lateral.ReflectionJointLaw
+import DOZZ.Correlations.Tails.TranslatedRadialProjection
+import DOZZ.Brownian.Lateral.ReflectionJointLaw
 
 /-! The complete lateral GMC carrier for the actual translated source projection. -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal
 

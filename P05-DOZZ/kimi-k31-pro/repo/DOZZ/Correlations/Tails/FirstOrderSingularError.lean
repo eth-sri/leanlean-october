@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.Tails.ImprovedChargeMoment
-public import DOZZ.Correlations.Tails.OffCenterMultiplier
+import DOZZ.Correlations.Tails.ImprovedChargeMoment
+import DOZZ.Correlations.Tails.OffCenterMultiplier
 
 /-! First-order multiplier errors are dominated by a smaller insertion charge. -/
 
-@[expose] public section
 open MeasureTheory
 open scoped ENNReal
 
@@ -23,7 +21,7 @@ theorem first_order_singular_weight_le (γ α C : ℝ) (hγ : γ ≠ 0)
       ENNReal.ofReal C * (ENNReal.ofReal ‖x‖)^(-γ*(α-1/γ)) := by
   by_cases hx : x = 0
   · have he0 : |e x| = 0 := le_antisymm
-      (by simpa only [hx, norm_zero, mul_zero] using he) (abs_nonneg _)
+      (by simpa [hx, norm_zero, mul_zero] using he) (abs_nonneg _)
     rw [he0, ENNReal.ofReal_zero, zero_mul]
     exact zero_le
   · have hn : 0 < ‖x‖ := norm_pos_iff.mpr hx
@@ -53,7 +51,7 @@ theorem first_order_singular_mass_le (γ α C : ℝ) (hγ : γ ≠ 0)
       exact first_order_singular_weight_le γ α C hγ hC e x (he x hx)
     _ = _ := by
       rw [lintegral_const_mul' _ _ ENNReal.ofReal_ne_top]
-      simp only [weightedGmcBallMass, sub_zero, ENNReal.rpow_eq_pow]
+      simp [weightedGmcBallMass, sub_zero, ENNReal.rpow_eq_pow]
 
 
 end DOZZ.Proofs

@@ -2,11 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.SharpMoments.ArbitraryCenter
-public import DOZZ.GMC.SharpMoments.MomentConvergence
-public import DOZZ.GMC.Annulus.BallCover
+import DOZZ.GMC.SharpMoments.ArbitraryCenter
+import DOZZ.GMC.SharpMoments.MomentConvergence
+import DOZZ.GMC.Annulus.BallCover
 
 /-! # Location transfer of small-disk moments for limiting chaos
 
@@ -16,7 +15,6 @@ finite-cutoff location transfer therefore passes to every `IsGMCOf` limit: every
 of a small disk at one center is bounded by an explicit constant times the same moment at another
 center. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped ENNReal NNReal
@@ -158,7 +156,7 @@ theorem gmc_ball_moment_transfer
         ℝ≥0∞) ∂regularizedGMC P Xc γ n ω) = regularizedGMC P Xc γ n ω (Metric.ball c ρ) := by
       intro c ω
       simp
-    simp only [hone] at htr
+    simp [hone] at htr
     exact htr
   have h1 := gmc_ball_moment_tendsto P X hX γ hγ hγ2 M hM Xc hXc z ρ hρ hρ8 p hp
   have h2 := ENNReal.Tendsto.const_mul

@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.RetainedAnnuliComparison
-public import DOZZ.GMC.SharpMoments.GluedFieldGaussian
+import DOZZ.FourPoint.RetainedAnnuliComparison
+import DOZZ.GMC.SharpMoments.GluedFieldGaussian
 
 /-! Independent reference pieces for spatially separated retained masses. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal Distributions
@@ -45,9 +43,7 @@ theorem independent_piece_field_gaussian
       funext w i
       rw [independent_piece_field, gluedField_indicator_eq_mul A,
         gluedField_indicator_eq_mul Aᶜ]
-    rw [he]
-    exact h
-
+    rwa [he]
 /-- The within-piece covariance is unchanged and the cross-piece covariance is zero. -/
 theorem independent_piece_field_covariance
     {Ω S : Type*} [MeasurableSpace Ω] [MeasurableSpace S]
@@ -70,12 +66,12 @@ theorem independent_piece_field_variance
     (A : Set S) (x : S) :
     (∫ w, independent_piece_field Φ A w x ^ 2 ∂P.prod P) =
       ∫ ω, Φ ω x ^ 2 ∂P := by
-  simp only [pow_two]
+  simp [pow_two]
   rw [independent_piece_field_covariance P Φ hΦ A x x]
   by_cases hx : x ∈ A
-  · simp only [Set.indicator_of_mem hx,
+  · simp [Set.indicator_of_mem hx,
       Set.indicator_of_notMem (show x ∉ Aᶜ from fun h => h hx), zero_mul, integral_zero, add_zero]
-  · simp only [Set.indicator_of_notMem hx,
+  · simp [Set.indicator_of_notMem hx,
       Set.indicator_of_mem (show x ∈ Aᶜ from hx), zero_mul, integral_zero, zero_add]
 
 /-- A retained weight supported in the first piece uses precisely the first independent copy. -/
@@ -91,9 +87,9 @@ theorem piece_field_mass_first
   intro x
   rw [independent_piece_field_variance P Φ hΦ A x]
   by_cases hx : x ∈ A
-  · simp only [independent_piece_field, Set.indicator_of_mem hx,
+  · simp [independent_piece_field, Set.indicator_of_mem hx,
       Set.indicator_of_notMem (show x ∉ Aᶜ from fun h => h hx), add_zero]
-  · simp only [hs x hx, ENNReal.coe_zero, zero_mul]
+  · simp [hs x hx, ENNReal.coe_zero, zero_mul]
 
 /-- A retained weight supported in the second piece uses precisely the second independent copy. -/
 theorem piece_field_mass_second
@@ -108,8 +104,8 @@ theorem piece_field_mass_second
   intro x
   rw [independent_piece_field_variance P Φ hΦ A x]
   by_cases hx : x ∈ A
-  · simp only [hs x hx, ENNReal.coe_zero, zero_mul]
-  · simp only [independent_piece_field, Set.indicator_of_notMem hx,
+  · simp [hs x hx, ENNReal.coe_zero, zero_mul]
+  · simp [independent_piece_field, Set.indicator_of_notMem hx,
       Set.indicator_of_mem (show x ∈ Aᶜ from hx), zero_add]
 
 /-- A bounded cross-piece covariance gives an upper product bound by independent masses.
@@ -144,10 +140,10 @@ theorem two_retained_blocks_inverse_compare
         Set.indicator_of_notMem (show xy.2 ∉ Aᶜ from fun h => h hy), zero_mul, integral_zero,
         add_zero]
       exact le_add_of_nonneg_right hC
-    · simpa only [Set.indicator_of_mem hx, Set.indicator_of_notMem hy,
+    · simpa [Set.indicator_of_mem hx, Set.indicator_of_notMem hy,
         Set.indicator_of_notMem (show xy.1 ∉ Aᶜ from fun h => h hx),
         mul_zero, zero_mul, integral_zero, zero_add] using hxy ⟨fun _ => hy, fun _ => hx⟩
-    · simpa only [Set.indicator_of_notMem hx, Set.indicator_of_mem hy,
+    · simpa [Set.indicator_of_notMem hx, Set.indicator_of_mem hy,
         Set.indicator_of_notMem (show xy.2 ∉ Aᶜ from fun h => h hy),
         zero_mul, mul_zero, integral_zero, zero_add] using hxy ⟨fun h => False.elim (hx h), fun h => False.elim (h hy)⟩
     · simp only [Set.indicator_of_notMem hx, Set.indicator_of_notMem hy,
@@ -177,6 +173,6 @@ theorem two_retained_blocks_inverse_compare
       piece_field_mass_second P Φ hΦ A ν h₁ hs₁]
     exact lintegral_prod_mul hm0 hm1
   rw [hrhs] at hk
-  simpa only [mul_assoc, add_assoc] using hk
+  simpa [mul_assoc, add_assoc] using hk
 
 end DOZZ.Proofs

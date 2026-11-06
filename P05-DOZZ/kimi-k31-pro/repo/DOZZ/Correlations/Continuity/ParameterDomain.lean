@@ -2,11 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.Statements.Correlations.ExtendedSeibergN
-public import DOZZ.GMC.SharpMoments.ExtendedSeibergCutoffUI
-public import DOZZ.GMC.Assembly.AdmissibleGMC
-@[expose] public section
+import DOZZ.Statements.Correlations.ExtendedSeibergN
+import DOZZ.GMC.SharpMoments.ExtendedSeibergCutoffUI
+import DOZZ.GMC.Assembly.AdmissibleGMC
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -63,7 +61,6 @@ noncomputable def continuityChartWeightBCF : BoundedContinuousFunction ℂ ℝ�
 
 theorem continuityChartWeight_sum_one {x : ℂ} (hx : x ≠ 0) :
     continuityChartWeight x + continuityChartWeight x⁻¹ = 1 := by
-  have hn : 0 < ‖x‖ := norm_pos_iff.mpr hx
   have he : (2 - ‖x⁻¹‖) / (1 + ‖x⁻¹‖) = 1 - (2 - ‖x‖) / (1 + ‖x‖) := by
     rw [norm_inv]
     field_simp
@@ -75,7 +72,7 @@ theorem continuityChartWeight_sum_one {x : ℂ} (hx : x ≠ 0) :
   exact continuityClip_complement _
 
 /-- A concrete partition is needed only for the two-chart cutoff estimate
-`DOZZ.equatorGFF_extendedSeiberg_cutoff_UI`. -/
+`equatorGFF_extendedSeiberg_cutoff_UI`. -/
 noncomputable def continuityChartPartition : GMCChartPartition where
   finiteWeight := continuityChartWeightBCF
   infinityWeight := continuityChartWeightBCF
@@ -108,9 +105,9 @@ theorem extendGMCFamily_on_compact
   · intro γ hγ
     by_cases hgΓ : γ ∈ Γ
     · obtain ⟨q, hq, rfl⟩ := hgΓ
-      simp only [Mfam, ite_eq_left (show q.1 ∈ Γ from ⟨q, hq, rfl⟩)]
+      simp [Mfam, ite_eq_left (show q.1 ∈ Γ from ⟨q, hq, rfl⟩)]
       exact hM q hq
-    · simpa only [Mfam, ite_eq_right hgΓ] using hg γ hγ
+    · simpa [Mfam, ite_eq_right hgΓ] using hg γ hγ
   · intro q hq
     exact ite_eq_left (show q.1 ∈ Γ from ⟨q, hq, rfl⟩)
 

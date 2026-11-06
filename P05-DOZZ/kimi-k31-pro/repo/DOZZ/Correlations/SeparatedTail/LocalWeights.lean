@@ -2,15 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.SeparatedTail.SingularMoment
-public import DOZZ.Correlations.Tails.SingularMassMeasurability
+import DOZZ.Correlations.SeparatedTail.SingularMoment
+import DOZZ.Correlations.Tails.SingularMassMeasurability
 
 /-! Bounded multipliers preserve the uniform mixed moment estimate of the separated joint-tail
 argument. -/
 
-@[expose] public section
 open MeasureTheory Metric Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -26,7 +24,7 @@ theorem separatedTail_localSingularMass_le
   apply lintegral_mono
   intro x
   by_cases hx : x ∈ ball z 1
-  · simpa only [hx, ite_true, Set.indicator_of_mem] using
+  · simpa [hx, ite_true, Set.indicator_of_mem] using
       mul_le_mul_left (hF x) ((ENNReal.ofReal ‖x-z‖).rpow (-γ*α))
   · simp only [hx, ite_false]
     exact zero_le

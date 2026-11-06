@@ -2,13 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Brownian.Coupling.CylindricalIntegral
-public import DOZZ.Brownian.WienerExists
-public import DOZZ.Brownian.ConditionedEntranceProbability
-public import DOZZ.Brownian.ConditionedFDDMeasure
-public import DOZZ.GMC.FiniteGaussianTilt
+import DOZZ.Brownian.Coupling.CylindricalIntegral
+import DOZZ.Brownian.WienerExists
+import DOZZ.Brownian.ConditionedEntranceProbability
+import DOZZ.Brownian.ConditionedFDDMeasure
+import DOZZ.GMC.FiniteGaussianTilt
 
 /-!
 # Gaussian radial entrance law
@@ -18,7 +17,6 @@ The resulting measure is the literal entrance density `DOZZ.conditionedPositiveE
 including the zero-drift endpoint.
 -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal Topology Classical
@@ -31,8 +29,7 @@ theorem pi_gaussianReal_withDensity {n : ℕ} (m : Fin n → ℝ) (t : ℝ≥0) 
       (volume : Measure (Fin n → ℝ)).withDensity (fun z => ∏ i, gaussianPDF (m i) t (z i)) := by
   apply Measure.pi_eq
   intro S hS
-  rw [withDensity_apply _ (MeasurableSet.univ_pi hS)]
-  rw [← lintegral_indicator (MeasurableSet.univ_pi hS)]
+  rw [withDensity_apply _ (MeasurableSet.univ_pi hS), ← lintegral_indicator (MeasurableSet.univ_pi hS)]
   let f : Fin n → ℝ → ℝ≥0∞ := fun i => (S i).indicator (gaussianPDF (m i) t)
   have hf (i : Fin n) : Measurable (f i) := (measurable_gaussianPDF _ _).indicator (hS i)
   have hpoint (z : Fin n → ℝ) :
@@ -63,7 +60,6 @@ theorem three_gaussianPDF_product (a : ℝ) (t : ℝ≥0) (ht : t ≠ 0) (z : Fi
   have hsq := EuclideanSpace.real_norm_sq_eq (WithLp.toLp 2 z)
   have hnorm : ‖WithLp.toLp 2 z‖ ^ 2 = (z 0) ^ 2 + ((z 1) ^ 2 + (z 2) ^ 2) := by
     simpa [Fin.sum_univ_succ] using hsq
-  have htr : (t : ℝ) ≠ 0 := by exact_mod_cast ht
   simp only [Fin.prod_univ_three, Fin.isValue, Fin.reduceEq, ite_true, ite_false,
     gaussianPDF, gaussianPDFReal, sub_zero]
   rw [← ENNReal.ofReal_mul (by positivity), ← ENNReal.ofReal_mul (by positivity),
@@ -114,7 +110,7 @@ theorem entranceDensity_eq_radialGaussian {a t y : ℝ} (ha : 0 < a) (ht : 0 < t
       ((4 * Real.pi) * radialGaussianConstant t) *
         Real.exp (-y ^ 2 / (2 * t) - a ^ 2 * t / 2) * (y * Real.sinh (a * y) / a) := by
   rw [radialGaussianConstant_eq_entranceCoefficient ht, conditionedPositiveEntranceDensity]
-  simp only [ha.le, ht, hy, and_self, ite_true, ha.ne', ite_false]
+  simp [ha.le, ht, hy, and_self, ite_true, ha.ne', ite_false]
   ring
 
 /-- The same angular normalizer identifies the Maxwell endpoint. -/
@@ -122,7 +118,7 @@ theorem entranceDensity_zero_eq_radialGaussian {t y : ℝ} (ht : 0 < t) (hy : 0 
     conditionedPositiveEntranceDensity 0 t y =
       ((4 * Real.pi) * radialGaussianConstant t) * Real.exp (-y ^ 2 / (2 * t)) * y ^ 2 := by
   rw [conditionedPositiveEntranceDensity_zero_eq_heat ht hy, radialGaussianConstant_angular ht]
-  simp only [brownianHeatDensity, ht, ite_true]
+  simp [brownianHeatDensity, ht, ite_true]
   ring
 
 /-- Radial tests of the actual product Gaussian have the explicit entrance density at positive drift. -/
@@ -149,7 +145,7 @@ theorem lintegral_three_gaussian_radial_pos (F : ℝ → ℝ≥0∞) (hF : Measu
       rw [← lintegral_const_mul' _ _ ENNReal.ofReal_ne_top]
       apply lintegral_congr
       intro z
-      dsimp only [G]
+      dsimp [G]
       ring
     _ = ENNReal.ofReal (radialGaussianConstant t) * (ENNReal.ofReal (4 * Real.pi) *
         ∫⁻ y in Ioi (0 : ℝ), G y * ENNReal.ofReal (y * Real.sinh (a * y) / a)) := by
@@ -158,7 +154,7 @@ theorem lintegral_three_gaussian_radial_pos (F : ℝ → ℝ≥0∞) (hF : Measu
       rw [← mul_assoc, ← lintegral_const_mul' _ _ (ENNReal.mul_ne_top ENNReal.ofReal_ne_top ENNReal.ofReal_ne_top)]
       apply setLIntegral_congr_fun measurableSet_Ioi
       intro y hy
-      dsimp only [G]
+      dsimp [G]
       conv_rhs => rw [entranceDensity_eq_radialGaussian ha htr hy]
       conv_rhs => rw [ENNReal.ofReal_mul (by first | positivity | (unfold radialGaussianConstant; positivity)),
         ENNReal.ofReal_mul (by first | positivity | (unfold radialGaussianConstant; positivity)),
@@ -188,7 +184,7 @@ theorem lintegral_three_gaussian_radial_zero (F : ℝ → ℝ≥0∞) (hF : Meas
       rw [← lintegral_const_mul' _ _ ENNReal.ofReal_ne_top]
       apply lintegral_congr
       intro z
-      dsimp only [G]
+      dsimp [G]
       ring
     _ = ENNReal.ofReal (radialGaussianConstant t) * (ENNReal.ofReal (4 * Real.pi) *
         ∫⁻ y in Ioi (0 : ℝ), G y * ENNReal.ofReal (y ^ 2)) := by
@@ -197,7 +193,7 @@ theorem lintegral_three_gaussian_radial_zero (F : ℝ → ℝ≥0∞) (hF : Meas
       rw [← mul_assoc, ← lintegral_const_mul' _ _ (ENNReal.mul_ne_top ENNReal.ofReal_ne_top ENNReal.ofReal_ne_top)]
       apply setLIntegral_congr_fun measurableSet_Ioi
       intro y hy
-      dsimp only [G]
+      dsimp [G]
       conv_rhs => rw [entranceDensity_zero_eq_radialGaussian (t := (t : ℝ)) (show 0 < (t : ℝ) from ht) hy]
       conv_rhs => rw [ENNReal.ofReal_mul (by first | positivity | (unfold radialGaussianConstant; positivity)),
         ENNReal.ofReal_mul (by first | positivity | (unfold radialGaussianConstant; positivity)),
@@ -254,8 +250,6 @@ theorem negativeRogersPitmanWienerMeasure_eval_eq_entrance (a : ℝ) (ha : 0 ≤
     (t : ℝ≥0) (ht : 0 < t) :
     (negativeRogersPitmanWienerMeasure a).map (fun p => p t) =
       (conditionedPositiveEntranceMeasure a t).map Neg.neg := by
-  have hnorm : Measurable (fun z : Fin 3 → ℝ => ‖WithLp.toLp 2 z‖) :=
-    (PiLp.continuous_toLp 2 _).norm.measurable
   rw [← rogersPitmanWienerMeasure_eval_eq_entrance a ha t ht,
     rogersPitmanWienerMeasure, negativeRogersPitmanWienerMeasure,
     rogersPitmanEntranceMeasure, negativeRogersPitmanEntranceMeasure]

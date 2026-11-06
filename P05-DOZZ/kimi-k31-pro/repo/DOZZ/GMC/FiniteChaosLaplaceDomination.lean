@@ -2,13 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.FiniteChaosLaplaceInterpolation
+import DOZZ.GMC.FiniteChaosLaplaceInterpolation
 
 /-! Concrete Gaussian domination for the finite Laplace interpolation derivative. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter
 open scoped Topology
@@ -44,10 +42,8 @@ theorem finiteChaosMatrixLaplaceInterpolationTestDerivative_norm_le
   have hsqrtR : Real.sqrt ε ≤ Real.sqrt r := Real.sqrt_le_sqrt hrlo
   have hsqrtS : Real.sqrt ε ≤ Real.sqrt (1 - r) := Real.sqrt_le_sqrt hrhi
   have hdenE : 0 < 2 * Real.sqrt ε := by positivity
-  have hdenR : 0 < 2 * Real.sqrt r := by
-    exact mul_pos (by norm_num) (lt_of_lt_of_le (Real.sqrt_pos.2 hε) hsqrtR)
-  have hdenS : 0 < 2 * Real.sqrt (1 - r) := by
-    exact mul_pos (by norm_num) (lt_of_lt_of_le (Real.sqrt_pos.2 hε) hsqrtS)
+  have hdenR : 0 < 2 * Real.sqrt r := mul_pos (by norm_num) (lt_of_lt_of_le (Real.sqrt_pos.2 hε) hsqrtR)
+  have hdenS : 0 < 2 * Real.sqrt (1 - r) := mul_pos (by norm_num) (lt_of_lt_of_le (Real.sqrt_pos.2 hε) hsqrtS)
   let vA := finiteChaosMatrixRowVariance A
   let vB := finiteChaosMatrixRowVariance B
   let V := finiteChaosMatrixTwoBlockVariance A B r
@@ -111,12 +107,6 @@ theorem finiteChaosMatrixLaplaceInterpolationTestDerivative_norm_le
             |γ ^ 2 / 2 * (vA i - vB i)| := by
               gcongr
               exact abs_sub _ _
-    have hfactor :
-        |finiteChaosLinearImageVector A z.1 i / (2 * Real.sqrt r)| +
-            |finiteChaosLinearImageVector B z.2 i / (2 * Real.sqrt (1 - r))| ≤
-          |finiteChaosLinearImageVector A z.1 i| / (2 * Real.sqrt ε) +
-            |finiteChaosLinearImageVector B z.2 i| / (2 * Real.sqrt ε) :=
-      add_le_add hdivA hdivB
     have hvarNonneg : 0 ≤ γ ^ 2 / 2 := by positivity
     have hvarAbs : |γ ^ 2 / 2 * (vA i - vB i)| =
         (γ ^ 2 / 2) * |vA i - vB i| := by
@@ -193,11 +183,11 @@ theorem finiteChaosMatrixLaplaceInterpolationDerivativeBound_integrable
   have hcoordX (k : Fin (n + 1)) : Integrable
       (fun z : (Fin (n + 1) → ℝ) × (Fin (n + 1) → ℝ) => |z.1 k|) ν := by
     have h := (hcoordPi k).norm
-    simpa only [Real.norm_eq_abs] using h.comp_fst μ
+    simpa [Real.norm_eq_abs] using h.comp_fst μ
   have hcoordY (k : Fin (n + 1)) : Integrable
       (fun z : (Fin (n + 1) → ℝ) × (Fin (n + 1) → ℝ) => |z.2 k|) ν := by
     have h := (hcoordPi k).norm
-    simpa only [Real.norm_eq_abs] using h.comp_snd μ
+    simpa [Real.norm_eq_abs] using h.comp_snd μ
   have hArow (i : Fin (n + 1)) : Integrable
       (fun z : (Fin (n + 1) → ℝ) × (Fin (n + 1) → ℝ) =>
         ∑ k, |A i k| * |z.1 k|) ν := by
@@ -341,8 +331,7 @@ theorem finiteChaosMatrixLaplaceInterpolationExpectation_deriv_nonpos_concrete
         kahaneInterpolatedMass, finiteChaosVectorMass, finiteChaosVectorWeight]
     exact hcont.aestronglyMeasurable
   let b := finiteChaosMatrixLaplaceInterpolationDerivativeBound A B γ ε
-  have hb : Integrable b ν := by
-    exact finiteChaosMatrixLaplaceInterpolationDerivativeBound_integrable A B γ ε
+  have hb : Integrable b ν := finiteChaosMatrixLaplaceInterpolationDerivativeBound_integrable A B γ ε
   have hbound : ∀ᵐ z ∂ν, ∀ r ∈ Metric.ball t ε,
       ‖kahaneInterpolatedTestDerivative
         (finiteChaosLinearImageVector A) (finiteChaosLinearImageVector B)

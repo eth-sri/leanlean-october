@@ -2,13 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Reflected.SourceInnerAsymptotic
-public import DOZZ.FourPoint.Reflected.SourceLateralWitness
-public import DOZZ.FourPoint.Reflected.Normalization
+import DOZZ.FourPoint.Reflected.SourceInnerAsymptotic
+import DOZZ.FourPoint.Reflected.SourceLateralWitness
+import DOZZ.FourPoint.Reflected.Normalization
 /-! The reflected inner limit `DOZZ.gammaHalf_reflected_inner_limit` follows from the actual source
 Williams squeeze. -/
-@[expose] public section
 open MeasureTheory ProbabilityTheory Filter Topology TopologicalSpace Set
 open scoped ENNReal NNReal Topology
 namespace DOZZ.Proofs
@@ -70,24 +68,23 @@ theorem gammaHalf_reflected_inner_limit {Ω : Type*} [MeasurableSpace Ω]
   have hLimit : Tendsto (fun z : ℂ =>
       (gammaHalfMoment P M γ α₁ α₂ α₃ p z-gammaHalfOuterMoment P M γ α₁ α₂ α₃ p z ξ)/‖z‖^κ)
       (𝓝[≠] 0) (𝓝 C) := by
-    rw [← hcoef]
-    exact ht
+    rwa [← hcoef]
   let rReal := fun z : ℂ => gammaHalfMoment P M γ α₁ α₂ α₃ p z-
     gammaHalfOuterMoment P M γ α₁ α₂ α₃ p z ξ-C*‖z‖^κ
   have hrem : Tendsto (fun z : ℂ => rReal z/‖z‖^κ) (𝓝[≠] 0) (𝓝 0) := by
     have hs := hLimit.sub (tendsto_const_nhds (x := C))
     have hs0 : Tendsto (fun z : ℂ =>
         (gammaHalfMoment P M γ α₁ α₂ α₃ p z-gammaHalfOuterMoment P M γ α₁ α₂ α₃ p z ξ)/‖z‖^κ-C)
-        (𝓝[≠] 0) (𝓝 0) := by simpa only [sub_self] using hs
+        (𝓝[≠] 0) (𝓝 0) := by simpa [sub_self] using hs
     apply hs0.congr'
     filter_upwards [self_mem_nhdsWithin] with z hz
     have hn : ‖z‖^κ ≠ 0 := (Real.rpow_pos_of_pos (norm_pos_iff.mpr hz) κ).ne'
-    dsimp only [rReal]
-    simp only [sub_div,mul_div_cancel_right₀ C hn]
+    dsimp [rReal]
+    simp [sub_div,mul_div_cancel_right₀ C hn]
   refine ⟨B,Z,hSource,hData,fun z => (rReal z : ℂ),?_,?_⟩
   · intro z
-    dsimp only [rReal,C]
-    simp only [Complex.ofReal_sub,Complex.ofReal_mul]
+    dsimp [rReal,C]
+    simp [Complex.ofReal_sub,Complex.ofReal_mul]
     ring
   · exact (isComplexLittleOAtZero_ofReal_iff κ rReal).mpr hrem
 

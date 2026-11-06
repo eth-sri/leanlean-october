@@ -2,16 +2,14 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.ReflectedOuter.RootedFreezing
-public import DOZZ.FourPoint.TaylorOneRootIdentity
-public import DOZZ.FourPoint.TaylorRadialBall
+import DOZZ.FourPoint.ReflectedOuter.RootedFreezing
+import DOZZ.FourPoint.TaylorOneRootIdentity
+import DOZZ.FourPoint.TaylorRadialBall
 import Mathlib.Tactic
 
 /-! # The deleted-disk error at the reflected freezing power -/
 
-@[expose] public section
 open MeasureTheory Set
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -24,7 +22,7 @@ theorem reflected_zero_kernel_local_upper (γ α₁ α₂ α₃ : ℝ) (hγ : 0 
   by_cases hx0 : x = 0
   · subst x
     have hk : γ ^ 2 / 2 ≠ 0 := (div_pos (sq_pos_of_pos hγ) (by norm_num)).ne'
-    simp only [gammaHalfKernel, sub_zero, norm_zero, Real.zero_rpow hk, zero_mul, zero_div]
+    simp [gammaHalfKernel, sub_zero, norm_zero, Real.zero_rpow hk, zero_mul, zero_div]
     positivity
   have hn : 0 < ‖x‖ := norm_pos_iff.mpr hx0
   have hd1 : (2 : ℝ)⁻¹ ≤ ‖x - 1‖ := by
@@ -48,7 +46,7 @@ theorem reflected_zero_kernel_local_upper (γ α₁ α₂ α₃ : ℝ) (hγ : 0 
     div_eq_mul_inv, one_mul, mul_inv, ← Real.rpow_neg hn.le, ← Real.rpow_neg hd.le, he]
   have hb := coulombWeight_rpow_le (L := 2) (y := ‖x - 1‖) (by norm_num) hd1 hd2 (-γ * α₂)
   have hb' : ‖x - 1‖ ^ (-(γ * α₂)) ≤ (2 : ℝ) ^ |γ * α₂| := by
-    simpa only [neg_mul, abs_neg] using hb
+    simpa [neg_mul, abs_neg] using hb
   exact (mul_le_mul_of_nonneg_left hb' (Real.rpow_nonneg hn.le _)).trans_eq (mul_comm _ _)
 
 /-- Rooting and the local freezing estimate give the full deleted-disk power `κ+δ`. -/

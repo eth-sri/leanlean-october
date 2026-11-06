@@ -2,14 +2,14 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.Hypergeom.IsGaussHypergeometricFamily
-public import DOZZ.Statements.Hypergeom.GaussFMinus
-public import DOZZ.Statements.Hypergeom.GaussFPlus
-public import Mathlib.Analysis.Calculus.ContDiff.Basic
-public import Mathlib.Analysis.Complex.CauchyIntegral
-public import Mathlib.Analysis.InnerProductSpace.Calculus
+import DOZZ.Hypergeom.ODE.ConnectionMidpointDerivatives
+import DOZZ.Statements.Hypergeom.IsGaussHypergeometricFamily
+import DOZZ.Statements.Hypergeom.GaussFMinus
+import DOZZ.Statements.Hypergeom.GaussFPlus
+import Mathlib.Analysis.Calculus.ContDiff.Basic
+import Mathlib.Analysis.Complex.CauchyIntegral
+import Mathlib.Analysis.InnerProductSpace.Calculus
 
 /-! # Hypergeometric basis functions near the origin
 
@@ -24,7 +24,6 @@ on the real axis near `0`.
   real points, the former with the real power `u ^ (2 * (1 - c))` for `u > 0`.
 * `bpzHG_norm_sq_eq_normSq`: the `‖·‖ ^ 2` form of `Complex.normSq`, as used in the statements. -/
 
-@[expose] public section
 
 open Filter Topology
 
@@ -37,10 +36,7 @@ theorem bpzHG_eq_one_at_zero {H : ℂ → ℂ → ℂ → ℂ → ℂ} (hH : IsG
   exact ordinaryHypergeometric_zero a b c
 
 /-- The slit plane `ℂ \ [1, ∞)` is open. -/
-theorem bpzHG_isOpen_gaussSlitPlane : IsOpen gaussSlitPlane := by
-  change IsOpen ({z : ℂ | z.im ≠ 0} ∪ {z : ℂ | z.re < 1})
-  exact (isOpen_compl_singleton.preimage Complex.continuous_im).union
-    (isOpen_Iio.preimage Complex.continuous_re)
+theorem bpzHG_isOpen_gaussSlitPlane : IsOpen gaussSlitPlane := DOZZ.Proofs.gaussSlitPlane_isOpen_for_connection
 
 /-- The real interval `(-1, 1)` lies in the slit plane. -/
 theorem bpzHG_mapsTo_ofReal_gaussSlitPlane :
@@ -56,7 +52,7 @@ theorem bpzHG_contDiffOn_normSq {H : ℂ → ℂ → ℂ → ℂ → ℂ} (hH : 
   have hR : ContDiffOn ℝ 2 (fun u : ℝ => H a b c (u : ℂ)) (Set.Ioo (-1) 1) :=
     (hC.restrict_scalars ℝ).comp Complex.ofRealCLM.contDiff.contDiffOn
       bpzHG_mapsTo_ofReal_gaussSlitPlane
-  simpa only [Complex.normSq_eq_norm_sq] using hR.norm_sq ℂ
+  simpa [Complex.normSq_eq_norm_sq] using hR.norm_sq ℂ
 
 /-- The norm square of `F₊` at a positive real point. -/
 theorem bpzHG_normSq_gaussFPlus (H : ℂ → ℂ → ℂ → ℂ → ℂ) (a b c : ℝ) {u : ℝ} (hu : 0 < u) :

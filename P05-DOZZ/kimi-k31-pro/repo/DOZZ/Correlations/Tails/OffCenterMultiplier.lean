@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.Tails.MultiplierVariation
+import DOZZ.Correlations.Tails.MultiplierVariation
 
 /-! The copied smooth multiplier of the one-insertion tail estimate, with the exterior reference
 density included. -/
 
-@[expose] public section
 
 open Set
 
@@ -38,13 +36,13 @@ theorem copied_multiplier_exponent_bound (z x : ℂ) (γ N Nbar : ℝ)
     _ ≤ |γ * localPinCoefficient z x * (Nbar - N) -
         γ ^ 2 * (Real.log ‖z+x‖ - Real.log ‖z‖)| +
           4 * |Real.log ‖z+x‖ - Real.log ‖z‖| := by
-      simpa only [abs_mul, abs_of_pos (by norm_num : (0 : ℝ) < 4)] using abs_sub
+      simpa [abs_mul, abs_of_pos (by norm_num : (0 : ℝ) < 4)] using abs_sub
         (γ * localPinCoefficient z x * (Nbar-N) -
           γ ^ 2 * (Real.log ‖z+x‖ - Real.log ‖z‖))
         (4 * (Real.log ‖z+x‖ - Real.log ‖z‖))
     _ ≤ _ := by linarith
 
-/-- A `DOZZ.UniformPositiveC1Family` controls the complete copied multiplier by a Gaussian
+/-- A `UniformPositiveC1Family` controls the complete copied multiplier by a Gaussian
  envelope times the distance, with the norm-two endpoint included. -/
 theorem copied_multiplier_local_bound
     (K : Set ℂ) (Family : ℂ → Set (ℂ → ℝ))

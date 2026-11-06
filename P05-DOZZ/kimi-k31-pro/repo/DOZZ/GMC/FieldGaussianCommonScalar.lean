@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.FiniteGaussianCommonScalar
-public import DOZZ.GMC.FieldChaosFiniteness
+import DOZZ.GMC.FiniteGaussianCommonScalar
+import DOZZ.GMC.FieldChaosFiniteness
 
 /-! Adding a common independent Gaussian scalar to a measurable Gaussian field. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory
 open scoped Distributions ENNReal NNReal
@@ -19,8 +17,8 @@ namespace DOZZ.Proofs
 /-- A common independent Gaussian scalar preserves jointly measurable Gaussian fields. -/
 theorem independent_common_scalar_add_isCenteredGaussianField
     {Ω S : Type*} [MeasurableSpace Ω] [MeasurableSpace S]
-    (P : Measure Ω) (Φ : Ω → S → ℝ) (hΦ : DOZZ.IsCenteredGaussianField P Φ) (c : ℝ) :
-    DOZZ.IsCenteredGaussianField (P.prod (gaussianReal 0 1))
+    (P : Measure Ω) (Φ : Ω → S → ℝ) (hΦ : IsCenteredGaussianField P Φ) (c : ℝ) :
+    IsCenteredGaussianField (P.prod (gaussianReal 0 1))
       (fun ω x => Φ ω.1 x + c * ω.2) := by
   constructor
   · have hfield : Measurable (fun q : (Ω × ℝ) × S => Φ q.1.1 q.2) :=
@@ -33,11 +31,11 @@ theorem independent_common_scalar_add_isCenteredGaussianField
 /-- The common scalar adds its variance to every field covariance. -/
 theorem gaussianCovariance_field_independent_common_scalar_add
     {Ω S : Type*} [MeasurableSpace Ω] [MeasurableSpace S]
-    (P : Measure Ω) (Φ : Ω → S → ℝ) (hΦ : DOZZ.IsCenteredGaussianField P Φ)
+    (P : Measure Ω) (Φ : Ω → S → ℝ) (hΦ : IsCenteredGaussianField P Φ)
     (c : ℝ) (x y : S) :
-    DOZZ.gaussianCovariance (P.prod (gaussianReal 0 1))
+    gaussianCovariance (P.prod (gaussianReal 0 1))
       (fun ω => Φ ω.1 x + c * ω.2) (fun ω => Φ ω.1 y + c * ω.2) =
-        DOZZ.gaussianCovariance P (fun ω => Φ ω x) (fun ω => Φ ω y) + c ^ 2 := by
+        gaussianCovariance P (fun ω => Φ ω x) (fun ω => Φ ω y) + c ^ 2 := by
   let xy : Fin 2 → S := fun i => if i = 0 then x else y
   simpa [xy] using gaussianCovariance_independent_common_scalar_add
     P (fun ω i => Φ ω (xy i)) (hΦ.2 2 xy) c (0 : Fin 2) (1 : Fin 2)
@@ -45,18 +43,18 @@ theorem gaussianCovariance_field_independent_common_scalar_add
 /-- The common Gaussian scalar multiplies the continuum mass by one Wick exponential. -/
 theorem fieldChaosMass_independent_common_scalar_factor
     {Ω S : Type*} [MeasurableSpace Ω] [MeasurableSpace S]
-    (P : Measure Ω) (Φ : Ω → S → ℝ) (hΦ : DOZZ.IsCenteredGaussianField P Φ)
+    (P : Measure Ω) (Φ : Ω → S → ℝ) (hΦ : IsCenteredGaussianField P Φ)
     (ν : Measure S) (h : S → ℝ≥0) (γ c : ℝ) (ω : Ω) (z : ℝ) :
-    DOZZ.fieldChaosMass (P.prod (gaussianReal 0 1))
+    fieldChaosMass (P.prod (gaussianReal 0 1))
         (fun ω x => Φ ω.1 x + c * ω.2) ν h γ (ω, z) =
       ENNReal.ofReal (Real.exp (γ * c * z - γ ^ 2 / 2 * c ^ 2)) *
-        DOZZ.fieldChaosMass P Φ ν h γ ω := by
+        fieldChaosMass P Φ ν h γ ω := by
   have hvar (x : S) :
       (∫ u : Ω × ℝ, (Φ u.1 x + c * u.2) ^ 2 ∂P.prod (gaussianReal 0 1)) =
         (∫ u, Φ u x ^ 2 ∂P) + c ^ 2 := by
-    simpa [DOZZ.gaussianCovariance, pow_two] using
+    simpa [gaussianCovariance, pow_two] using
       gaussianCovariance_field_independent_common_scalar_add P Φ hΦ c x x
-  unfold DOZZ.fieldChaosMass
+  unfold fieldChaosMass
   have hpoint (x : S) :
       (h x : ℝ≥0∞) * ENNReal.ofReal (Real.exp (γ * (Φ ω x + c * z) - γ ^ 2 / 2 *
         ∫ u : Ω × ℝ, (Φ u.1 x + c * u.2) ^ 2 ∂P.prod (gaussianReal 0 1))) =
@@ -80,17 +78,17 @@ theorem fieldChaosMass_independent_common_scalar_factor
 /-- The common Gaussian scalar contributes the usual exponential factor to every field moment. -/
 theorem fieldChaosMoment_independent_common_scalar_factor
     {Ω S : Type*} [MeasurableSpace Ω] [MeasurableSpace S]
-    (P : Measure Ω) (Φ : Ω → S → ℝ) (hΦ : DOZZ.IsCenteredGaussianField P Φ)
+    (P : Measure Ω) (Φ : Ω → S → ℝ) (hΦ : IsCenteredGaussianField P Φ)
     (ν : Measure S) [IsFiniteMeasure ν] (h : S → ℝ≥0) (hh : Measurable h)
     (hhb : ∃ b : ℝ≥0, ∀ x, h x ≤ b) (γ c p : ℝ) :
-    (∫⁻ ω, DOZZ.fieldChaosMass (P.prod (gaussianReal 0 1))
+    (∫⁻ ω, fieldChaosMass (P.prod (gaussianReal 0 1))
         (fun ω x => Φ ω.1 x + c * ω.2) ν h γ ω ^ p ∂P.prod (gaussianReal 0 1)) =
       ENNReal.ofReal (Real.exp (γ ^ 2 * c ^ 2 / 2 * (p ^ 2 - p))) *
-        ∫⁻ ω, DOZZ.fieldChaosMass P Φ ν h γ ω ^ p ∂P := by
+        ∫⁻ ω, fieldChaosMass P Φ ν h γ ω ^ p ∂P := by
   classical
   let : IsProbabilityMeasure P := (hΦ.2 0 (fun i : Fin 0 => Fin.elim0 i)).1
   let Q : Measure ℝ := gaussianReal 0 1
-  let M : Ω → ℝ≥0∞ := fun ω => DOZZ.fieldChaosMass P Φ ν h γ ω
+  let M : Ω → ℝ≥0∞ := fun ω => fieldChaosMass P Φ ν h γ ω
   let G : ℝ → ℝ := fun z => Real.exp (γ * c * z - γ ^ 2 / 2 * c ^ 2)
   let F : Ω → ℝ≥0∞ := fun ω => M ω ^ p
   let H : ℝ → ℝ≥0∞ := fun z => ENNReal.ofReal (G z) ^ p
@@ -99,7 +97,7 @@ theorem fieldChaosMoment_independent_common_scalar_factor
       (centeredGaussianField_fieldChaosMass_measurable P Φ hΦ ν h hh γ).aemeasurable
   have hmassFinite : ∀ᵐ ω ∂P, M ω ≠ ∞ := by
     by_cases hνzero : ν = 0
-    · simp [M, DOZZ.fieldChaosMass, hνzero]
+    · simp [M, fieldChaosMass, hνzero]
     · have hS : Nonempty S := by
         obtain ⟨x, _⟩ := nonempty_of_measure_ne_zero
           (Measure.measure_univ_ne_zero.mpr hνzero)
@@ -169,7 +167,7 @@ theorem fieldChaosMoment_independent_common_scalar_factor
       exact ENNReal.ofReal_rpow_of_pos (hGpositive z)]
     rw [← ofReal_integral_eq_lintegral_ofReal hGintegrable hnonneg, hGmean]
   have hfactor : ∀ᵐ u ∂P.prod Q,
-      DOZZ.fieldChaosMass (P.prod Q) (fun ω x => Φ ω.1 x + c * ω.2) ν h γ u ^ p =
+      fieldChaosMass (P.prod Q) (fun ω x => Φ ω.1 x + c * ω.2) ν h γ u ^ p =
         F u.1 * H u.2 := by
     have hfst : MeasurePreserving Prod.fst (P.prod Q) P := measurePreserving_fst
     filter_upwards [hfst.quasiMeasurePreserving.ae hmassFinite] with u hu

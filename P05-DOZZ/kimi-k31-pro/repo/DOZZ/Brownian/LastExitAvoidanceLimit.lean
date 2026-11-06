@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Brownian.LastExitKernel
-public import Mathlib.Analysis.SpecialFunctions.Exp
+import DOZZ.Brownian.LastExitKernel
+import Mathlib.Analysis.SpecialFunctions.Exp
 
 /-!
 # Large-state limit of the last-exit avoidance probability
@@ -15,7 +14,6 @@ current time. This file records its large-state limit, a scalar ingredient for s
 terminal time to infinity after the finite-grid kernel cancellation.
 -/
 
-@[expose] public section
 
 open Filter Topology
 
@@ -58,4 +56,3 @@ theorem lastExitAvoidanceFactor_tendsto_one_atTop
 
 end DOZZ.Proofs
 
-end

@@ -2,17 +2,15 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import Mathlib.MeasureTheory.Constructions.BorelSpace.Metric
-public import Mathlib.MeasureTheory.Constructions.BorelSpace.Order
-public import Mathlib.MeasureTheory.Function.ConvergenceInMeasure
-public import Mathlib.MeasureTheory.Integral.Lebesgue.Basic
-public import Mathlib.MeasureTheory.Measure.WithDensity
+import Mathlib.MeasureTheory.Constructions.BorelSpace.Metric
+import Mathlib.MeasureTheory.Constructions.BorelSpace.Order
+import Mathlib.MeasureTheory.Function.ConvergenceInMeasure
+import Mathlib.MeasureTheory.Integral.Lebesgue.Basic
+import Mathlib.MeasureTheory.Measure.WithDensity
 
 /-! Fixed integrable changes of measure preserve convergence in measure. -/
 
-@[expose] public section
 
 open MeasureTheory Filter Topology
 open scoped ENNReal
@@ -39,7 +37,5 @@ theorem tendstoInMeasure_withDensity_of_lintegral_lt_top
       fun i => ∫⁻ x in {x | ε ≤ edist (f i x) (g x)}, ρ x ∂μ := by
     funext i
     exact withDensity_apply ρ (hset i)
-  rw [hEq]
-  exact hweighted
-
+  rwa [hEq]
 end DOZZ.Proofs

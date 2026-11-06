@@ -2,13 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Complex.Basic
-public import Mathlib.Probability.Distributions.Gaussian.HasGaussianLaw.Basic
-public import Mathlib.Probability.Distributions.Gaussian.Fernique
-public import Mathlib.Analysis.MeanInequalities
-public import DOZZ.Complex.Weierstrass
+import DOZZ.Complex.Basic
+import Mathlib.Probability.Distributions.Gaussian.HasGaussianLaw.Basic
+import Mathlib.Probability.Distributions.Gaussian.Fernique
+import Mathlib.Analysis.MeanInequalities
+import DOZZ.Complex.Weierstrass
 
 /-!
 # Holomorphic Gaussian charge moments
@@ -18,7 +17,6 @@ value and first derivative are dominated by the correlated Gaussian/mass
 logarithm envelope. The deterministic factor `exp(c z)` is then restored.
 -/
 
-@[expose] public section
 
 open MeasureTheory Filter Topology Set Complex ProbabilityTheory
 open scoped Real
@@ -33,14 +31,14 @@ theorem integrable_mass_power {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
     (t : ℝ) (ht : t < pstar) : Integrable (fun ω => A ω ^ t) P := by
   by_cases h : 0 ≤ t
   · exact hmom t h ht
-  · simpa only [neg_neg] using hinv (-t) (neg_pos.mpr (lt_of_not_ge h))
+  · simpa [neg_neg] using hinv (-t) (neg_pos.mpr (lt_of_not_ge h))
 
 /-- The strict threshold leaves room for a Hölder exponent larger than one. -/
 theorem exists_holder_mass_exponent (t pstar : ℝ) (ht : t < pstar) :
     ∃ p : ℝ, 1 < p ∧ p * t < pstar := by
   have hn : {p : ℝ | p * t < pstar} ∈ 𝓝 1 :=
     (continuous_id.mul continuous_const).continuousAt.preimage_mem_nhds
-      (isOpen_Iio.mem_nhds (show (1 : ℝ) * t ∈ Iio pstar by simpa only [Set.mem_Iio, one_mul] using ht))
+      (isOpen_Iio.mem_nhds (show (1 : ℝ) * t ∈ Iio pstar by simpa [Set.mem_Iio, one_mul] using ht))
   obtain ⟨ε, hε, hb⟩ := Metric.mem_nhds_iff.mp hn
   refine ⟨1 + ε / 2, by linarith, hb ?_⟩
   rw [Metric.mem_ball, Real.dist_eq, add_sub_cancel_left, abs_of_pos (half_pos hε)]
@@ -77,7 +75,7 @@ theorem aemeasurable_gaussian_coordinate_sum {Ω : Type*} [MeasurableSpace Ω]
     intro i
     have hi : AEMeasurable (fun ω => L ω i) P :=
       (measurable_pi_apply i).comp_aemeasurable hL.aemeasurable
-    simpa only [Real.norm_eq_abs] using hi.norm
+    simpa [Real.norm_eq_abs] using hi.norm
   exact Finset.aemeasurable_fun_sum Finset.univ (fun i _ => hcoord i)
 
 /-- All linear exponential moments of the sum of Gaussian coordinate absolute values exist. -/
@@ -92,9 +90,9 @@ theorem integrable_gaussian_exp_coordinate_sum {Ω : Type*} [MeasurableSpace Ω]
     have hs : ∑ i, |L ω i| ≤ (N : ℝ) * ‖L ω‖ := by
       calc
         _ ≤ ∑ i : Fin N, ‖L ω‖ := Finset.sum_le_sum fun i _ => by
-          simpa only [Real.norm_eq_abs] using norm_le_pi_norm (L ω) i
+          simpa [Real.norm_eq_abs] using norm_le_pi_norm (L ω) i
         _ = _ := by simp
-    simpa only [mul_assoc] using mul_le_mul_of_nonneg_left hs hK
+    simpa [mul_assoc] using mul_le_mul_of_nonneg_left hs hK
 
 /-- Young's inequality proves correlated Gaussian/mass integrability below the threshold. -/
 theorem integrable_gaussian_exp_mass_power {Ω : Type*} [MeasurableSpace Ω]
@@ -124,7 +122,7 @@ theorem integrable_gaussian_exp_mass_power {Ω : Type*} [MeasurableSpace Ω]
   have heq : (K * ∑ i, |L ω i|) * Real.conjExponent p =
       K * Real.conjExponent p * ∑ i, |L ω i| := by ring
   rw [heq, mul_comm t p] at h
-  simpa only [mul_comm (A ω ^ t) (Real.exp _)] using h
+  simpa [mul_comm (A ω ^ t) (Real.exp _)] using h
 
 /-- A logarithm is absorbed by arbitrarily small positive and negative powers. -/
 theorem abs_log_le_power_sum (x δ : ℝ) (hx : 0 < x) (hδ : 0 < δ) :
@@ -141,7 +139,7 @@ theorem abs_log_le_power_sum (x δ : ℝ) (hx : 0 < x) (hδ : 0 < δ) :
       rw [heq]
       exact le_add_of_nonneg_left (Real.exp_pos _).le
   have h := mul_le_mul_of_nonneg_left (hexp.trans hb) (inv_nonneg.mpr hδ.le)
-  simpa only [← mul_assoc, inv_mul_cancel₀ hδ.ne', one_mul] using h
+  simpa [← mul_assoc, inv_mul_cancel₀ hδ.ne', one_mul] using h
 
 /-- A Gaussian exponential times a mass power and its logarithm is integrable. -/
 theorem integrable_gaussian_exp_mass_power_log {Ω : Type*} [MeasurableSpace Ω]
@@ -163,7 +161,7 @@ theorem integrable_gaussian_exp_mass_power_log {Ω : Type*} [MeasurableSpace Ω]
   apply hint.mono' ?_ ?_
   · exact ((((aemeasurable_gaussian_coordinate_sum P L hL).const_mul K).exp.mul
       (hA.pow_const t)).mul (show AEMeasurable (fun ω => |Real.log (A ω)|) P from by
-        simpa only [Real.norm_eq_abs] using hA.log.norm)).aestronglyMeasurable
+        simpa [Real.norm_eq_abs] using hA.log.norm)).aestronglyMeasurable
   · filter_upwards [hpos] with ω hω
     change ‖Real.exp (K * ∑ i, |L ω i|) * A ω ^ t * |Real.log (A ω)|‖ ≤
       δ⁻¹ * (Real.exp (K * ∑ i, |L ω i|) * A ω ^ (t + δ) +
@@ -213,7 +211,7 @@ theorem integrable_gaussian_mass_envelope_power {Ω : Type*} [MeasurableSpace Ω
     (integrable_gaussian_exp_mass_power_log P L hL A hA hpos pstar hinv hmom K hK t ht)
   convert h using 1
   ext ω
-  simp only [Pi.add_apply]
+  simp [Pi.add_apply]
   ring
 
 /-- The correlated Gaussian/mass/logarithm envelope that dominates the random exponential and
@@ -232,7 +230,7 @@ theorem integrable_gaussian_mass_envelope {Ω : Type*} [MeasurableSpace Ω]
     (integrable_gaussian_mass_envelope_power P L hL A hA hpos pstar hinv hmom K hK v hv)
   convert h using 1
   ext ω
-  simp only [Pi.add_apply]
+  simp [Pi.add_apply]
   ring
 
 /-- The random linear form in the charge exponential. -/
@@ -244,7 +242,7 @@ noncomputable def chargeLinear {N : ℕ} (l : Fin N → ℝ) (a : ℝ)
 theorem chargeLinear_apply {N : ℕ} (l : Fin N → ℝ) (a : ℝ)
     (sL : (Fin N → ℂ) →L[ℂ] ℂ) (z : Fin N → ℂ) :
     chargeLinear l a sL z = (∑ i, z i * (l i : ℂ)) - sL z * (a : ℂ) := by
-  simp only [chargeLinear, sub_apply, sum_apply,
+  simp [chargeLinear, sub_apply, sum_apply,
     smul_apply, ContinuousLinearMap.proj_apply, smul_eq_mul]
   congr 1
   · exact Finset.sum_congr rfl (fun i _ => mul_comm _ _)
@@ -486,7 +484,7 @@ theorem integral_gaussian_charge_factor {Ω : Type*} [MeasurableSpace Ω]
       exp (c z) * chargeKernel s₀ sL (L ω) (A ω) z
     rw [chargeKernel, exp_add, mul_assoc]
 
-/-- Proof of `DOZZ.differentiableOn_gaussian_charge_moment`: the Gaussian charge moment, allowing
+/-- Proof of `differentiableOn_gaussian_charge_moment`: the Gaussian charge moment, allowing
 correlation with the positive mass. -/
 theorem differentiableOn_gaussian_charge_moment {Ω : Type*} [MeasurableSpace Ω]
     {N : ℕ} (P : Measure Ω) [IsProbabilityMeasure P]
@@ -505,7 +503,6 @@ theorem differentiableOn_gaussian_charge_moment {Ω : Type*} [MeasurableSpace Ω
       (fun z => ∫ ω, Complex.exp (c z + ∑ i, z i * (L ω i : ℂ)) *
         (A ω : ℂ) ^ (-(s₀ + sL z)) ∂P)
       {z ∈ U | -(s₀ + sL z).re < pstar} := by
-  have hzero := hmom 0 le_rfl hpstar
   have hcharge := differentiableOn_chargeIntegral P L hL A hA hpos pstar hinv hmom U hU s₀ sL
   constructor
   · intro z hz

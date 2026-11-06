@@ -2,13 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.SharpMoments.InverseRecursion
-public import DOZZ.GMC.SharpMoments.LaplaceApriori
-public import DOZZ.GMC.SharpMoments.LaplaceBase
-public import DOZZ.GMC.SharpMoments.QuadraticRecursion
-public import DOZZ.GMC.SharpMoments.StretchedTailMoment
+import DOZZ.GMC.SharpMoments.InverseRecursion
+import DOZZ.GMC.SharpMoments.LaplaceApriori
+import DOZZ.GMC.SharpMoments.LaplaceBase
+import DOZZ.GMC.SharpMoments.QuadraticRecursion
+import DOZZ.GMC.SharpMoments.StretchedTailMoment
 
 /-! # Inverse moments of the reference mass, uniformly in the cutoff
 
@@ -18,7 +17,6 @@ cutoffs and the Gaussian base bound at coarse cutoffs. Paley–Zygmund keeps it 
 tends to zero and then decays stretched-exponentially. Small-value probabilities inherit this
 decay, and every inverse moment of the cutoff reference mass is bounded uniformly in the cutoff. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped ENNReal NNReal
@@ -186,7 +184,6 @@ theorem regularizedGMC_reference_inverse_moment_uniform_of_twoBranch
     (by norm_num)
   set π : ℝ := min π₀ 1 with hπdef
   have hπ : 0 < π := lt_min hπ₀ one_pos
-  have hπ1 : π ≤ 1 := min_le_right _ _
   set h₀ : ℝ := (1 / 2) * (gmcReferenceMeasure D).toReal with hh₀
   have hD0 : gmcReferenceMeasure D ≠ 0 :=
     (gmc_reference_ball_intensity_pos (by norm_num : (0 : ℝ) < 1 / 8) (by norm_num)).ne'

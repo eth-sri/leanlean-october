@@ -2,13 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Brownian.ConditionedFDDMeasure
-public import DOZZ.Brownian.ConditionedKernelProbability
-public import DOZZ.Brownian.ConditionedEntranceProbability
-public import Mathlib.Probability.Kernel.Composition.WithDensity
-public import Mathlib.Probability.Kernel.CondDistrib
+import DOZZ.Brownian.ConditionedFDDMeasure
+import DOZZ.Brownian.ConditionedKernelProbability
+import DOZZ.Brownian.ConditionedEntranceProbability
+import Mathlib.Probability.Kernel.Composition.WithDensity
+import Mathlib.Probability.Kernel.CondDistrib
 
 /-!
 # Real-state transition kernel for the conditioned entrance process
@@ -18,7 +17,6 @@ extension below zero is chosen only to make the kernel total; the conditioned en
 supported on positive states.
 -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal
@@ -151,12 +149,10 @@ theorem negativeConditionedLaw_twoTime_compProd
             else ENNReal.ofReal (conditionedPositiveEntranceDensity ν 1 z.2))) := by
     rw [conditionedPositiveEntranceMeasure, conditionedPositiveTransitionKernelOnReal,
       hcompAux, ← Measure.volume_eq_prod ℝ ℝ]
-  rw [negativeConditionedLaw_twoTime_positiveFDD hP t₀ dt ht₀ hdt]
-  rw [hcomp]
+  rw [negativeConditionedLaw_twoTime_positiveFDD hP t₀ dt ht₀ hdt, hcomp]
   congr 1
   funext z
   exact (congrFun hdensity z).symm
 
 end DOZZ.Proofs
 
-end

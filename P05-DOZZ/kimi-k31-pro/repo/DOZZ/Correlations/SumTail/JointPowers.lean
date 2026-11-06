@@ -2,13 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.SumTail.PowerShift
+import DOZZ.Correlations.SumTail.PowerShift
 
 /-! The joint exceedance powers preserve the exact ceiling `DOZZ.twoInsertionTailCeiling`. -/
 
-@[expose] public section
 namespace DOZZ.Proofs
 
 /-- One large and one square-root threshold gives the sharp joint remainder order. -/
@@ -47,7 +45,7 @@ theorem sumtail_small_power_absorption (T β θ x : ℝ) (hT : 0 ≤ T)
     _ ≤ x^(-T) := Real.rpow_le_rpow_of_nonpos (by linarith only [hx]) hx4 (by linarith only [hT])
     _ ≤ _ := Real.rpow_le_rpow_of_exponent_le hx (by linarith only [hβ,hθ])
   calc
-    _ = (4:ℝ)^T*4^(-T) := by rw [← Real.rpow_add (by norm_num)]; simp only [add_neg_cancel,Real.rpow_zero]
+    _ = (4:ℝ)^T*4^(-T) := by rw [← Real.rpow_add (by norm_num)]; simp [add_neg_cancel,Real.rpow_zero]
     _ ≤ _ := mul_le_mul_of_nonneg_left hr h4.le
 
 end DOZZ.Proofs

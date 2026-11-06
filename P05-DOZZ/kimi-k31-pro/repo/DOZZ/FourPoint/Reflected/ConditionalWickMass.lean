@@ -1,4 +1,3 @@
-module
-public import DOZZ.FourPoint.Reflected.ConditionalLateralLaw
-public import DOZZ.GMC.FieldChaosNegativePower
+import DOZZ.FourPoint.Reflected.ConditionalLateralLaw
+import DOZZ.GMC.FieldChaosNegativePower
 import Mathlib.Tactic

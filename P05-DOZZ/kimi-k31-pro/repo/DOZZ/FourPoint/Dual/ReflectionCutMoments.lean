@@ -2,13 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Reflected.ReflectionRealMoments
-public import DOZZ.Statements.Brownian.ReflectionMassLastCutBound
-public import DOZZ.Brownian.Reflection.LastCut
+import DOZZ.FourPoint.Reflected.ReflectionRealMoments
+import DOZZ.Statements.Brownian.ReflectionMassLastCutBound
+import DOZZ.Brownian.Reflection.LastCut
 import Mathlib.Tactic
 /-! Finite signed cut moments and the last-cut gap for the same reflection witness. -/
-@[expose] public section
 open MeasureTheory ProbabilityTheory Set Filter Topology
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -31,9 +29,9 @@ theorem dual_reflection_cut_real_moment
       (twoSidedReflectionCutMass_le_mass γ c B Z ω) hq0)
       (reflected_reflection_mass_moment_lt_top P γ α q B Z hα hData hq)
   constructor
-  · simpa only [ENNReal.toReal_rpow] using
+  · simpa [ENNReal.toReal_rpow] using
       integrable_toReal_of_lintegral_ne_top (hm.pow_const q) hf.ne
-  · simpa only [ENNReal.toReal_rpow] using
+  · simpa [ENNReal.toReal_rpow] using
       integral_toReal (hm.pow_const q) (ae_lt_top' (hm.pow_const q) hf.ne)
 
 /-- The same supplied reflection witness gives the exponentially small moment gap between
@@ -49,7 +47,7 @@ theorem dual_reflection_cut_moment_gap
         (∫⁻ ω, twoSidedReflectionCutMass γ c B Z ω^q ∂P).toReal ∧
       (∫⁻ ω, twoSidedReflectionMass γ B Z ω^q ∂P).toReal-
         (∫⁻ ω, twoSidedReflectionCutMass γ c B Z ω^q ∂P).toReal ≤ C*Real.exp (-γ*c) := by
-  obtain ⟨C, hC, hb⟩ := DOZZ.reflectionMass_lastCut_bound P γ hγ hγ₂
+  obtain ⟨C, hC, hb⟩ := reflectionMass_lastCut_bound P γ hγ hγ₂
     {Q γ-α} {q} isCompact_singleton isCompact_singleton (fun _ => B)
     (by
       intro ν hν
@@ -61,7 +59,7 @@ theorem dual_reflection_cut_moment_gap
 
 /-- Sending the last-cut level to infinity recovers the finite full reflection moment of the
 same witness, with the exponential gap supplied by the Brownian estimate
-`DOZZ.reflectionMass_lastCut_bound`. -/
+`reflectionMass_lastCut_bound`. -/
 theorem dual_reflection_cut_moment_tendsto
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (γ α q : ℝ)
     (hγ : 0 < γ) (hγ₂ : γ < 2)
@@ -74,7 +72,7 @@ theorem dual_reflection_cut_moment_tendsto
   have hscale : Tendsto (fun c : ℝ => γ*c) atTop atTop :=
     (tendsto_const_mul_atTop_of_pos hγ).mpr tendsto_id
   have he : Tendsto (fun c : ℝ => C*Real.exp (-γ*c)) atTop (𝓝 0) := by
-    simpa only [Function.comp_def, neg_mul, mul_zero] using
+    simpa [Function.comp_def, neg_mul, mul_zero] using
       (Real.tendsto_exp_neg_atTop_nhds_zero.comp hscale).const_mul C
   have hgap : Tendsto (fun c : ℝ =>
       (∫⁻ ω, twoSidedReflectionMass γ B Z ω^q ∂P).toReal-
@@ -86,6 +84,6 @@ theorem dual_reflection_cut_moment_tendsto
       exact (hb c hc).2
   have ht := (tendsto_const_nhds (x :=
     (∫⁻ ω, twoSidedReflectionMass γ B Z ω^q ∂P).toReal)).sub hgap
-  simpa only [sub_sub_cancel, sub_zero] using ht
+  simpa [sub_sub_cancel, sub_zero] using ht
 
 end DOZZ.Proofs

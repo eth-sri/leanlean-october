@@ -2,15 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import Mathlib.Topology.Connected.Clopen
-public import Mathlib.Topology.Order.IntermediateValue
-public import DOZZ.Hypergeom.ODE.UniquenessEndpoints
+import Mathlib.Topology.Connected.Clopen
+import Mathlib.Topology.Order.IntermediateValue
+import DOZZ.Hypergeom.ODE.UniquenessEndpoints
 
 /-! Uniqueness of continuous lifts along a path from local holomorphic charts. -/
 
-@[expose] public section
 
 open Set
 
@@ -107,7 +105,7 @@ theorem continuous_path_solution_lifts_unique
       exact hBagree t t.2 (by simpa using hδB)
     have htval : F t = G t := by
       change u t = v t at ht
-      exact ht
+      assumption
     have hsameAt : A.solution (γ t) = B.solution (γ t) := by
       calc
         A.solution (γ t) = F t := hAat
@@ -152,7 +150,7 @@ theorem continuous_path_solution_lifts_unique
   have hnonempty : S.Nonempty := by
     refine ⟨⟨0, by simp⟩, ?_⟩
     change F 0 = G 0
-    exact hstart
+    assumption
   have huniv : S = Set.univ := by
     rcases (@isClopen_iff I _ hconn.toPreconnectedSpace S).mp ⟨hclosed, hopen⟩ with hempty | huniv
     · have hfalse : False := by
@@ -163,6 +161,6 @@ theorem continuous_path_solution_lifts_unique
     · exact huniv
   intro t ht
   have hmem : (⟨t, ht⟩ : I) ∈ S := by rw [huniv]; trivial
-  exact hmem
+  assumption
 
 end DOZZ.Proofs

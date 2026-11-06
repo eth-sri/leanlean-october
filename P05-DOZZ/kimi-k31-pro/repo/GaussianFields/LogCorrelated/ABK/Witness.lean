@@ -3,11 +3,10 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Scott Armstrong, Amélie Loher
 -/
-module
 
-public import Mathlib.MeasureTheory.Group.MeasurableEquiv
-public import Mathlib.MeasureTheory.Measure.Haar.Unique
-public import GaussianFields.LogCorrelated.ABK.Radial
+import Mathlib.MeasureTheory.Group.MeasurableEquiv
+import Mathlib.MeasureTheory.Measure.Haar.Unique
+import GaussianFields.LogCorrelated.ABK.Radial
 
 /-!
 # GaussianFields.LogCorrelated/ABK/Witness
@@ -15,7 +14,6 @@ public import GaussianFields.LogCorrelated.ABK.Radial
 Port of the corresponding GaussianFields source module.
 -/
 
-public section
 
 open MeasureTheory
 
@@ -25,7 +23,7 @@ namespace GaussianFields
 
 /-- The piecewise-linear radial profile: `1` on `[0, 1/2]`, linearly decreasing
 on `[1/2, 1]`, `0` on `[1, ∞)`. -/
-@[expose]
+
 noncomputable def abkStandardProfile (r : ℝ) : ℝ :=
   min (max (2 * (1 - r)) 0) 1
 
@@ -82,7 +80,7 @@ theorem abs_euclideanNorm_sub_euclideanNorm_le {d : Nat} (x y : Vec d) :
 /-! ## The standard cutoff -/
 
 /-- The standard piecewise-linear radial ABK cutoff witness. -/
-@[expose]
+
 noncomputable def abkStandardCutoffFun (d : Nat) : Vec d → ℝ :=
   fun x => abkStandardProfile (euclideanNorm x)
 
@@ -104,7 +102,7 @@ theorem hasCompactSupport_abkStandardCutoffFun (d : Nat) :
     (abkStandardCutoffFun_support_subset d)
 
 /-- The standard witness for `ABKCutoff d`: the structure is inhabited. -/
-@[expose]
+
 noncomputable def abkStandardCutoff (d : Nat) : ABKCutoff d where
   toFun := abkStandardCutoffFun d
   continuous := continuous_abkStandardCutoffFun d
@@ -135,11 +133,11 @@ instance (d : Nat) : Nonempty (ABKCutoff d) := ⟨abkStandardCutoff d⟩
 /-! ## The standard mean-zero test function -/
 
 /-- The translation vector used by the mean-zero witness. -/
-@[expose]
+
 def abkWitnessShift (d : Nat) : Vec d := fun _ => 3
 
 /-- The translate-difference witness function `ζ(x) - ζ(x - v)`. -/
-@[expose]
+
 noncomputable def abkStandardMeanZeroFun (d : Nat) : Vec d → ℝ :=
   fun x => abkStandardCutoffFun d x - abkStandardCutoffFun d (x - abkWitnessShift d)
 
@@ -157,12 +155,12 @@ theorem hasCompactSupport_abkStandardMeanZeroFun (d : Nat) :
       (Homeomorph.subRight (abkWitnessShift d))
     change HasCompactSupport
       (fun x => abkStandardCutoffFun d (Homeomorph.subRight (abkWitnessShift d) x)) at hcomp
-    simpa only [Homeomorph.subRight_apply] using hcomp
+    simpa [Homeomorph.subRight_apply] using hcomp
   exact (hasCompactSupport_abkStandardCutoffFun d).sub htrans
 
 /-- The standard witness for `MeanZeroTestFunction d`: the structure is
 inhabited. -/
-@[expose]
+
 noncomputable def abkStandardMeanZeroTestFunction (d : Nat) :
     MeanZeroTestFunction d where
   toFun := abkStandardMeanZeroFun d
@@ -192,7 +190,7 @@ noncomputable def abkStandardMeanZeroTestFunction (d : Nat) :
           (Homeomorph.subRight (abkWitnessShift d))
         change HasCompactSupport
           (fun x => abkStandardCutoffFun d (Homeomorph.subRight (abkWitnessShift d) x)) at hcomp
-        simpa only [Homeomorph.subRight_apply] using hcomp
+        simpa [Homeomorph.subRight_apply] using hcomp
       exact ((continuous_abkStandardCutoffFun d).comp
         (continuous_id.sub continuous_const)).integrable_of_hasCompactSupport htrans
     simp only [abkStandardMeanZeroFun]
@@ -203,4 +201,3 @@ instance (d : Nat) : Nonempty (MeanZeroTestFunction d) :=
 
 end GaussianFields
 
-end

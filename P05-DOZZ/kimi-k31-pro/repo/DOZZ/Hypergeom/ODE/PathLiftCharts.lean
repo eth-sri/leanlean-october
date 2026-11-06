@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Hypergeom.ODE.LiftUniqueness
-public import DOZZ.Hypergeom.ODE.PathLift
+import DOZZ.Hypergeom.ODE.LiftUniqueness
+import DOZZ.Hypergeom.ODE.PathLift
 
 /-! A finite Picard chain gives local holomorphic charts for its continuous path lift. -/
 
-@[expose] public section
 
 open Set
 
@@ -116,8 +114,7 @@ theorem disk_chain_lift_has_path_solution_charts
               rw [hjlo]
               exact ⟨le_of_lt hnear.1, hsle⟩
             have hprevSeg' : s ∈ Icc (τ j) (τ (j + 1)) := by
-              rw [hjSucc]
-              exact hprevSeg
+              rwa [hjSucc]
             have hprev := hformula j hjlt s (by simpa [τ] using hprevSeg')
             have hnextCenter : (D (j + 1)).center = γ lo := by
               rw [hjSucc]

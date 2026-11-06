@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.Moments.InversionTest
-public import DOZZ.GFFStructure.AnnularCircleEnergy
+import DOZZ.GMC.Moments.InversionTest
+import DOZZ.GFFStructure.AnnularCircleEnergy
 
 /-! Smooth circle-test approximation within the punctured inversion chart. -/
 
-@[expose] public section
 
 open Filter Topology Set Metric MeasureTheory
 open scoped Distributions
@@ -64,10 +62,10 @@ theorem tsupport_circleAnnularDensity_subset_centered (x : ℂ) (r : ℝ) (n : �
     tsupport (circleAnnularDensity x r n) ⊆ closedBall x (2 * Real.exp (-r)) := by
   apply closure_minimal _ isClosed_closedBall
   intro z hz
-  have hρ : DOZZ.annularProbabilityDensity n ((Real.exp (-r))⁻¹ • (z - x)) ≠ 0 := by
+  have hρ : annularProbabilityDensity n ((Real.exp (-r))⁻¹ • (z - x)) ≠ 0 := by
     intro hzero
     exact hz (by simp only [circleAnnularDensity, hzero, mul_zero])
-  have hb := DOZZ.annularProbabilityDensity_radius_bound n _ hρ
+  have hb := annularProbabilityDensity_radius_bound n _ hρ
   have hn : 1 ≤ (n : ℝ) + 2 := by linarith only [Nat.cast_nonneg (α := ℝ) n]
   have hi : 1 / ((n : ℝ) + 2) ≤ 1 :=
     (one_div_le_one_div_of_le (by norm_num : (0 : ℝ) < 1) hn).trans_eq one_div_one
@@ -76,6 +74,6 @@ theorem tsupport_circleAnnularDensity_subset_centered (x : ℂ) (r : ℝ) (n : �
   rw [norm_smul, Real.norm_eq_abs, abs_of_pos (inv_pos.mpr (Real.exp_pos _))] at hscale
   have hmul := mul_le_mul_of_nonneg_left hscale (Real.exp_pos (-r)).le
   rw [← mul_assoc, mul_inv_cancel₀ (Real.exp_ne_zero _), one_mul] at hmul
-  simpa only [mem_closedBall, dist_eq_norm, mul_comm] using hmul
+  simpa [mem_closedBall, dist_eq_norm, mul_comm] using hmul
 
 end DOZZ.Proofs

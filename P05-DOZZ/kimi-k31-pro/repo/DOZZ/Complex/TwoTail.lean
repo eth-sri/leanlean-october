@@ -2,11 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Complex.Charge
-public import Mathlib.Analysis.MellinTransform
-public import Mathlib.Probability.Moments.ComplexMGF
+import DOZZ.Complex.Charge
+import Mathlib.Analysis.MellinTransform
+import Mathlib.Probability.Moments.ComplexMGF
 
 /-!
 # Two-tail meromorphic continuation and residues
@@ -16,7 +15,6 @@ Inverse moments extend its lower-tail correction through exponent zero. The resi
 are punctured-neighborhood limits, so no values at the poles are asserted.
 -/
 
-@[expose] public section
 
 open MeasureTheory Filter Topology Set Complex Asymptotics ProbabilityTheory
 open scoped Real
@@ -94,7 +92,7 @@ theorem mellin_bounded_lower_kernel (g : ℝ → ℂ) (hg : AEStronglyMeasurable
       DifferentiableOn ℂ (mellin g) {s | 0 < s.re} := by
   apply mellin_lower_kernel g hg C 0 hC hbound hzero
   apply IsBigO.of_bound C
-  exact Eventually.of_forall fun t => by simpa only [neg_zero, Real.rpow_zero, norm_one, mul_one] using hbound t
+  exact Eventually.of_forall fun t => by simpa [neg_zero, Real.rpow_zero, norm_one, mul_one] using hbound t
 
 /-- Positive real powers are exponential moments of the logarithm. -/
 theorem integrable_exp_log_of_power {Ω : Type*} [MeasurableSpace Ω]
@@ -246,7 +244,7 @@ theorem mellin_full_tail (T : ℝ → ℝ) (hT : Measurable T)
     (b := 0)
   · apply IsBigO.of_bound 1
     exact Eventually.of_forall fun t => by
-      simpa only [neg_zero, Real.rpow_zero, norm_one, one_mul] using hbound t
+      simpa [neg_zero, Real.rpow_zero, norm_one, one_mul] using hbound t
   · exact hs.1
 
 /-- The leading upper power has its elementary rational Mellin transform. -/
@@ -264,7 +262,7 @@ theorem hasMellin_upperTailPowerKernel (c β : ℝ) (s : ℂ) (hs : s.re < β) :
       rw [mul_left_comm, ← cpow_add _ _ (ofReal_ne_zero.mpr htpos.ne')]
       rfl
     · rw [upperTailPowerKernel, indicator_of_notMem ht, indicator_of_notMem ht, smul_zero]
-  have hsub : Ioi (1 : ℝ) ⊆ Ioi 0 := fun _ ht => lt_trans zero_lt_one ht
+  have hsub : Ioi (1 : ℝ) ⊆ Ioi 0 := fun _ ht => Set.mem_Ioi.mpr (lt_trans zero_lt_one ht)
   have hint : IntegrableOn (fun t : ℝ => (c : ℂ) * (t : ℂ) ^ a) (Ioi 1) :=
     (integrableOn_Ioi_cpow_of_lt ha zero_lt_one).const_mul _
   constructor
@@ -289,7 +287,7 @@ theorem tail_kernel_decomposition (T : ℝ → ℝ) (c₁ c₂ β₁ β₂ : ℝ
   · simp only [lowerTailKernel, upperTailErrorKernel, upperTailPowerKernel,
       indicator_of_mem (show t ∈ Ioc (0 : ℝ) 1 from ⟨ht, h⟩),
       indicator_of_notMem (show t ∉ Ioi (1 : ℝ) from not_lt.mpr h)]
-    simp only [add_zero]
+    simp [add_zero]
   · have h1 : 1 < t := lt_of_not_ge h
     simp only [lowerTailKernel, upperTailErrorKernel, upperTailPowerKernel,
       indicator_of_notMem (show t ∉ Ioc (0 : ℝ) 1 from fun h => (not_le.mpr h1) h.2),
@@ -366,12 +364,12 @@ theorem differentiableOn_twoTailRational_left (c₁ c₂ β₁ β₂ : ℝ) (hβ
   have hne₁ : (β₁ : ℂ) - s ≠ 0 := by
     intro h
     have hr := congrArg Complex.re (sub_eq_zero.mp h)
-    simp only [ofReal_re] at hr
+    simp [ofReal_re] at hr
     linarith
   have hne₂ : (β₂ : ℂ) - s ≠ 0 := by
     intro h
     have hr := congrArg Complex.re (sub_eq_zero.mp h)
-    simp only [ofReal_re] at hr
+    simp [ofReal_re] at hr
     linarith
   exact (((differentiableAt_const (c := (c₁ : ℂ))).mul differentiableAt_id).div
     ((differentiableAt_const (c := (β₁ : ℂ))).sub differentiableAt_id) hne₁ |>.add
@@ -399,9 +397,9 @@ theorem lowerProbability_eq_integral_indicator {Ω : Type*} [MeasurableSpace Ω]
     1 - realUpperTail P Y hY t = ∫ ω, {ω | Y ω ≤ t}.indicator (fun _ => (1 : ℝ)) ω ∂P := by
   have hu : NullMeasurableSet {ω | t < Y ω} P := hY.nullMeasurableSet_preimage measurableSet_Ioi
   have hl : NullMeasurableSet {ω | Y ω ≤ t} P := hY.nullMeasurableSet_preimage measurableSet_Iic
-  have heq : {ω | Y ω ≤ t} = {ω | t < Y ω}ᶜ := by ext ω; simp only [mem_ofPred_eq, mem_compl_iff, not_lt]
+  have heq : {ω | Y ω ≤ t} = {ω | t < Y ω}ᶜ := by ext ω; simp [mem_ofPred_eq, mem_compl_iff, not_lt]
   rw [integral_indicator₀ hl, integral_const]
-  simp only [smul_eq_mul, mul_one, Measure.real, Measure.restrict_apply_univ]
+  simp [smul_eq_mul, mul_one, Measure.real, Measure.restrict_apply_univ]
   have h := probReal_compl_eq_one_sub₀ hu
   rw [heq]
   exact h.symm
@@ -480,7 +478,7 @@ theorem lowerTailKernel_add_complement (T : ℝ → ℝ) :
   · simp only [lowerTailKernel, indicator_of_mem ht]
     push_cast
     ring
-  · simp only [lowerTailKernel, indicator_of_notMem ht, add_zero]
+  · simp [lowerTailKernel, indicator_of_notMem ht, add_zero]
 
 /-- The positive-strip lower-tail representation agrees with its continuation through zero. -/
 theorem lowerTail_mellin_complement (T : ℝ → ℝ) (hT : Measurable T)
@@ -542,7 +540,7 @@ theorem integrable_real_power_of_two_tail_inverse {Ω : Type*} [MeasurableSpace 
       |realUpperTail P Y hY t - c₁ * t ^ (-β₁) - c₂ * t ^ (-β₂)| ≤ c₃ * t ^ (-β₃))
     (p : ℝ) (hp : p < β₁) : Integrable (fun ω => Y ω ^ p) P := by
   by_cases h : p < 0
-  · simpa only [neg_neg] using hinv (-p) (neg_pos.mpr h)
+  · simpa [neg_neg] using hinv (-p) (neg_pos.mpr h)
   · by_cases hzero : p = 0
     · simp only [hzero, Real.rpow_zero]
       exact integrable_const 1
@@ -573,9 +571,9 @@ theorem differentiableOn_inverseTailRemainder {Ω : Type*} [MeasurableSpace Ω]
 /-- The lower-tail correction has its exact value at exponent zero. -/
 theorem inverseTailRemainder_zero (T : ℝ → ℝ) (c₁ c₂ β₁ β₂ : ℝ) :
     inverseTailRemainder T c₁ c₂ β₁ β₂ 0 = 1 := by
-  simp only [inverseTailRemainder, zero_mul, sub_zero, add_zero]
+  simp [inverseTailRemainder, zero_mul, sub_zero, add_zero]
 
-/-- Proof of `DOZZ.complexMoment_two_tail_residues_of_inverse_moments`: the lower-tail extension,
+/-- Proof of `complexMoment_two_tail_residues_of_inverse_moments`: the lower-tail extension,
 with every inverse moment kept as a separate input. -/
 theorem complexMoment_two_tail_residues_of_inverse_moments
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) [IsProbabilityMeasure P]

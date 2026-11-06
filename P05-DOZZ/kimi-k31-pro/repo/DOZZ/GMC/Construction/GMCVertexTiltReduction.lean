@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.Defs.IsGMCOf
-public import DOZZ.GMC.Construction.GMCVertexTiltInputs
+import DOZZ.Statements.Defs.IsGMCOf
+import DOZZ.GMC.Construction.GMCVertexTiltInputs
 
 /-! The vertex-insertion identity reduces to the general GMC chaos-tilt identity. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped Distributions ENNReal NNReal
@@ -48,14 +46,14 @@ theorem equatorGFF_GMC_vertex_tilt_of_general_tilt
   classical
   let L : Ω → ℝ := fun ω => ∑ k, α k * Xc ω (z k) r
   have hL : IsGaussianL2Limit P X L := by
-    simpa only [L] using
+    simpa [L] using
       circleAverage_sum_isGaussianL2Limit P X hX Xc hXc α z r
   obtain ⟨c, hpotential, hcov⟩ :=
     circleAverage_sum_covariance_uniform P X hX Xc hXc α z r
   have hshift (f : TestFn) :
       gaussianCovariance P (fun ω => X ω f) L =
         ∑ k, α k * circleCross (z k) r f := by
-    simpa only [L] using
+    simpa [L] using
       circleAverage_sum_test_covariance P X hX Xc hXc α z r f
   have hfield (ω : Ω) :
       (fun f => X ω f + gaussianCovariance P (fun ω => X ω f) L) =
@@ -77,7 +75,7 @@ theorem equatorGFF_GMC_vertex_tilt_of_general_tilt
     _ = ∫⁻ ω, ENNReal.ofReal (Real.exp (L ω - gaussianVariance P L / 2)) *
         H (fun f => X ω f) (M ω) ∂P := by
       apply lintegral_congr_ae
-      exact ae_of_all _ (fun ω => by simp only [L])
+      exact ae_of_all _ (fun ω => by simp [L])
     _ = ∫⁻ ω, H (fun f => X ω f + gaussianCovariance P (fun ω => X ω f) L)
           ((M ω).withDensity (fun x => ENNReal.ofReal (Real.exp (γ * c x)))) ∂P :=
       hTilt hγ hγ2 hM hH L hL c hcov

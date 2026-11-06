@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import Mathlib.Analysis.Calculus.Deriv.MeanValue
-public import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Analysis.Calculus.Deriv.MeanValue
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
 
 /-!
 # Hyperbolic score estimates for conditioned Brownian kernels
@@ -15,7 +14,6 @@ The comparison proof for conditioned Brownian kernels uses the logarithmic deriv
 kernel ratios.
 -/
 
-@[expose] public section
 
 namespace DOZZ.Proofs
 
@@ -29,7 +27,7 @@ theorem hasDerivAt_conditionedKernelScore_state
   HasDerivAt (conditionedKernelScore a)
       (-a ^ 2 / Real.sinh (a * y) ^ 2) y := by
   have harg : HasDerivAt (fun z : ℝ => a * z) a y :=
-    by simpa only [id_eq, mul_one] using (hasDerivAt_id y).const_mul a
+    by simpa [id_eq, mul_one] using (hasDerivAt_id y).const_mul a
   have hcosh := (Real.hasDerivAt_cosh (a * y)).comp y harg
   have hsinh := (Real.hasDerivAt_sinh (a * y)).comp y harg
   have hcosh' : HasDerivAt (fun z : ℝ => Real.cosh (a * z))
@@ -93,4 +91,3 @@ theorem conditionedKernelScore_strictAntiOn_state {a : ℝ} (ha : 0 < a) :
 
 end DOZZ.Proofs
 
-end

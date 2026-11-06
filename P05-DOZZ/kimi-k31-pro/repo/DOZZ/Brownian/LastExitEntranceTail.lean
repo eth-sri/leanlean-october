@@ -2,11 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Brownian.LastExitEntranceMarginal
-public import DOZZ.Brownian.ConditionedEntranceProbability
-public import Mathlib.Analysis.SpecialFunctions.Pow.Asymptotics
+import DOZZ.Brownian.LastExitEntranceMarginal
+import DOZZ.Brownian.ConditionedEntranceProbability
+import Mathlib.Analysis.SpecialFunctions.Pow.Asymptotics
 
 /-!
 # Escape of deterministic entrance states
@@ -16,7 +15,6 @@ probability. This is the one-time estimate used with the deterministic-time avoi
 control late visits.
 -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped NNReal Topology
@@ -115,7 +113,7 @@ theorem conditionedPositiveEntranceMeasure_cdf_tendsto_zero_atTop
       (conditionedPositiveEntranceMeasure ν t) c) atTop (𝓝 0) := by
   have hzero : Tendsto (fun t : ℝ =>
       Real.sqrt (2 / Real.pi) * c ^ 3 * t ^ (-(3 / 2 : ℝ))) atTop (𝓝 0) := by
-    simpa only [mul_zero] using
+    simpa [mul_zero] using
       (tendsto_rpow_neg_atTop (by norm_num : 0 < (3 / 2 : ℝ))).const_mul
         (Real.sqrt (2 / Real.pi) * c ^ 3)
   have hupper : Tendsto (fun t : ℝ =>
@@ -171,4 +169,3 @@ theorem conditionedPositiveStateAt_measureReal_Iic_tendsto_zero_atTop
 
 end DOZZ.Proofs
 
-end

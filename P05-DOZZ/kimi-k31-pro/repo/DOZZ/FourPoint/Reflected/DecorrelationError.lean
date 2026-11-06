@@ -2,13 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Reflected.DecorrelationCarrier
-public import DOZZ.FourPoint.Reflected.ComparisonError
-public import DOZZ.FourPoint.Reflected.OuterInverseGuard
+import DOZZ.FourPoint.Reflected.DecorrelationCarrier
+import DOZZ.FourPoint.Reflected.ComparisonError
+import DOZZ.FourPoint.Reflected.OuterInverseGuard
 import Mathlib.Tactic
 /-! Signed decorrelation error for the literal separated source and copied masses. -/
-@[expose] public section
 open MeasureTheory ProbabilityTheory Set Filter Topology
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -76,7 +74,7 @@ theorem reflected_source_separated_moment_error
     hpart₀ hpart₁ (s/r) r (s/r) (div_pos hs hr).le hsep hr (div_pos hs hr)
     hn₀ hn₁ hD q hq
   have he : 2*(s/r)+s/r = 3*(s/r) := by ring
-  simp only [he] at hb
+  simp [he] at hb
   let original := reflected_source_separatedMoment P M γ α₁ α₂ α₃ z s r q
   let copied := reflected_copied_separatedMoment P Xc N γ α₁ α₂ α₃ z s r q
   let m := Real.exp (γ^2*(3*(s/r))/2*(q^2+q))
@@ -97,7 +95,7 @@ theorem reflected_source_separated_moment_error
       (add_nonneg (sq_nonneg q) hq.le))
   obtain ⟨hcFin,herr⟩ := reflected_moment_comparison_error original copied m hm1 hoFin hb.1 hb.2
   have hoReal : original.toReal ≤ C := by
-    simpa only [ENNReal.toReal_ofReal hC.le] using ENNReal.toReal_mono ENNReal.ofReal_ne_top ho
+    simpa [ENNReal.toReal_ofReal hC.le] using ENNReal.toReal_mono ENNReal.ofReal_ne_top ho
   refine ⟨hoFin,hcFin,herr.trans ?_⟩
   exact mul_le_mul_of_nonneg_left hoReal (mul_nonneg (sub_nonneg.mpr hm1) (zero_le_one.trans hm1))
 

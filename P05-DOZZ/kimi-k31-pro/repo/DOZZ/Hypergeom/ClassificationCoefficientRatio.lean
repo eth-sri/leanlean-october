@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Hypergeom.ClassificationAssembly
-public import DOZZ.Hypergeom.ConnectionDiagonalCoefficients
+import DOZZ.Hypergeom.ClassificationAssembly
+import DOZZ.Hypergeom.ConnectionDiagonalCoefficients
 
 /-! The nondegenerate scalar normalization of the real Gauss classification. -/
 
-@[expose] public section
 
 namespace DOZZ.Proofs
 

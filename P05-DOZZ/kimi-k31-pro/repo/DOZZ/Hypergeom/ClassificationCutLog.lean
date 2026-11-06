@@ -2,13 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import Mathlib.Analysis.SpecialFunctions.Pow.Complex
+import Mathlib.Analysis.SpecialFunctions.Pow.Complex
 
 /-! Explicit principal-log transitions across the negative real cut. -/
 
-@[expose] public section
 
 open scoped ComplexConjugate
 
@@ -20,8 +18,8 @@ theorem complexLog_eq_log_neg_add_pi_I {z : ℂ} (hz : 0 < z.im) :
     Complex.log z = Complex.log (-z) + (Real.pi : ℂ) * Complex.I := by
   apply Complex.ext
   · simp [Complex.log_re]
-  · simp only [Complex.log_im, Complex.add_im, Complex.mul_im, Complex.ofReal_im,
-      Complex.I_re, Complex.I_im, zero_mul, mul_one]
+  · simp [Complex.log_im, Complex.add_im, Complex.mul_im, Complex.ofReal_im,
+      Complex.I_re, Complex.I_im, mul_one]
     rw [Complex.arg_neg_eq_arg_sub_pi_of_im_pos hz]
     norm_num [Complex.ofReal_re]
 
@@ -31,8 +29,8 @@ theorem complexLog_eq_log_neg_sub_pi_I {z : ℂ} (hz : z.im < 0) :
     Complex.log z = Complex.log (-z) - (Real.pi : ℂ) * Complex.I := by
   apply Complex.ext
   · simp [Complex.log_re]
-  · simp only [Complex.log_im, Complex.sub_im, Complex.mul_im, Complex.ofReal_im,
-      Complex.I_re, Complex.I_im, zero_mul, mul_one]
+  · simp [Complex.log_im, Complex.sub_im, Complex.mul_im, Complex.ofReal_im,
+      Complex.I_re, Complex.I_im, mul_one]
     rw [Complex.arg_neg_eq_arg_add_pi_of_im_neg hz]
     norm_num [Complex.ofReal_re]
 

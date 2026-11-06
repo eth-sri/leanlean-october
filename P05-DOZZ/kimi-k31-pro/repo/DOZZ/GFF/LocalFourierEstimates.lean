@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GFF.TorusFourierEmbedding
+import DOZZ.GFF.TorusFourierEmbedding
 import Mathlib.Analysis.Fourier.FourierTransformDeriv
 import Mathlib.Analysis.Complex.Norm
 
@@ -14,7 +13,6 @@ import Mathlib.Analysis.Complex.Norm
 Fourier integration by parts estimates for the scaled compactly supported tests in a torus box.
 -/
 
-@[expose] public section
 
 open MeasureTheory
 open Set Metric
@@ -32,8 +30,7 @@ theorem gffUnitBoxFunction_contDiff (L : ℝ) (f : TestFn) :
   exact f.contDiff.comp (contDiff_const_smul L)
 
 theorem gffUnitBoxFunction_hasCompactSupport (L : ℝ) (hL : L ≠ 0) (f : TestFn) :
-    HasCompactSupport (gffUnitBoxFunction L f) := by
-  exact f.hasCompactSupport.comp_smul hL
+    HasCompactSupport (gffUnitBoxFunction L f) := f.hasCompactSupport.comp_smul hL
 
 /-- The derivative of a smooth compactly supported complex function in a fixed direction is
 compactly supported and smooth. -/
@@ -89,8 +86,7 @@ private theorem unitTorus_mFourier_neg_eq_exp (k : Fin 2 → ℤ) (x : Fin 2 →
   rw [UnitAddTorus.mFourier_neg]
   simp only [UnitAddTorus.mFourier, ContinuousMap.coe_mk, Fin.prod_univ_two,
     fourier_coe_apply]
-  rw [map_mul]
-  rw [← Complex.exp_conj, ← Complex.exp_conj]
+  rw [map_mul, ← Complex.exp_conj, ← Complex.exp_conj]
   congr 1 <;> simp [map_mul, map_ofNat]
 
 /-- A test function restricted to the unit square and scaled from a physical box of side `L`. -/
@@ -207,10 +203,8 @@ theorem gffUnitBoxComplexFunction_support_subset_centeredBox
   have hsmall : R / L < 1 / 2 := by
     apply (div_lt_iff₀ hL).2
     nlinarith [hRL]
-  have hre : |z.re| < 1 / 2 := by
-    exact (Complex.abs_re_le_norm z).trans_lt (hnormz.trans hsmall)
-  have him : |z.im| < 1 / 2 := by
-    exact (Complex.abs_im_le_norm z).trans_lt (hnormz.trans hsmall)
+  have hre : |z.re| < 1 / 2 := (Complex.abs_re_le_norm z).trans_lt (hnormz.trans hsmall)
+  have him : |z.im| < 1 / 2 := (Complex.abs_im_le_norm z).trans_lt (hnormz.trans hsmall)
   refine ⟨⟨?_, ?_⟩, ⟨?_, ?_⟩⟩
   · linarith [abs_lt.mp hre]
   · linarith [abs_lt.mp hre]
@@ -253,8 +247,7 @@ private theorem unitTorus_mFourier_neg_eq_exp_dot
     UnitAddTorus.mFourier (-k) (fun i => (x i : UnitAddCircle)) =
       Complex.exp (-2 * Real.pi * Complex.I *
         ((k 0 : ℝ) * x 0 + (k 1 : ℝ) * x 1)) := by
-  rw [unitTorus_mFourier_neg_eq_exp]
-  rw [← Complex.exp_add]
+  rw [unitTorus_mFourier_neg_eq_exp, ← Complex.exp_add]
   congr 1
   push_cast
   ring
@@ -308,7 +301,7 @@ private theorem support_unitTorusFourierIntegrand_subset_box
     apply hx
     have hzero' : gffUnitBoxComplexFunction L f
         (x 0 + x 1 * Complex.I) = 0 := by
-      simpa only [Complex.measurableEquivPi_symm_apply] using hzero
+      simpa [Complex.measurableEquivPi_symm_apply] using hzero
     simp [unitTorusFourierIntegrand, hzero']
   have hz : Complex.measurableEquivPi.symm x ∈
       Function.support (gffUnitBoxComplexFunction L f) := hscaled
@@ -444,4 +437,3 @@ theorem torusPeriodizationCoeff_unitBoxDirectionalDerivative_twice
 
 end DOZZ
 
-end

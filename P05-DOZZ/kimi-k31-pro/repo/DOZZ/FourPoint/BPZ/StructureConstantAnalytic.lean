@@ -2,13 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.Analytic.StructureConstantHolomorphic
-public import DOZZ.FourPoint.BPZ.GammaAnalytic
-public import DOZZ.Statements.Defs.StructureConstant
-public import DOZZ.Statements.Defs.UnitVolumeStructureConstant
-public import Mathlib.Analysis.Complex.CauchyIntegral
+import DOZZ.Correlations.Residue.FullFromUnit
+import DOZZ.Correlations.Analytic.StructureConstantHolomorphic
+import DOZZ.FourPoint.BPZ.GammaAnalytic
+import DOZZ.Statements.Defs.StructureConstant
+import DOZZ.Statements.Defs.UnitVolumeStructureConstant
+import Mathlib.Analysis.Complex.CauchyIntegral
 
 /-! # Real analyticity of the structure constant in the first charge
 
@@ -19,7 +19,6 @@ complex line through the first charge gives a holomorphic function of one variab
 structure constant is real-analytic in the first charge; the normalization `μ^{-s} Γ(s)` is
 real-analytic for `s > 0`. -/
 
-@[expose] public section
 
 open MeasureTheory Filter Topology
 
@@ -30,9 +29,7 @@ theorem bpz_structureConstant_eq_unitVolume {Ω : Type*} [MeasurableSpace Ω] (P
     (M : Ω → Measure ℂ) (γ μ α₁ α₂ α₃ : ℝ) :
     structureConstant P M γ μ α₁ α₂ α₃ =
       μ ^ (-sExp γ α₁ α₂ α₃) * Real.Gamma (sExp γ α₁ α₂ α₃) *
-        unitVolumeStructureConstant P M γ α₁ α₂ α₃ := by
-  unfold structureConstant unitVolumeStructureConstant
-  ring
+        unitVolumeStructureConstant P M γ α₁ α₂ α₃ := DOZZ.Proofs.residue_structureConstant_eq_unitVolume P M γ μ α₁ α₂ α₃
 
 /-- The extended Seiberg condition is open in the first charge. -/
 theorem bpz_extendedSeiberg3_eventually {γ α₁ α₂ α₃ : ℝ} (h : ExtendedSeiberg3 γ α₁ α₂ α₃) :

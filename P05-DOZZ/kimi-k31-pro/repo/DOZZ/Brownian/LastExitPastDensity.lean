@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Brownian.LastExitPastCDF
+import DOZZ.Brownian.LastExitPastCDF
 
 /-!
 # Last-exit density with finite past observations
@@ -13,7 +12,6 @@ Taking increments of the deterministic-time last-exit CDF identifies the joint l
 while retaining every measurable finite past cylinder.
 -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory Set Filter Topology
 open scoped NNReal ENNReal
 namespace DOZZ.Proofs
@@ -105,4 +103,3 @@ theorem negativeConditionedLaw_finitePast_lastExit_Ioc
 
 end DOZZ.Proofs
 
-end

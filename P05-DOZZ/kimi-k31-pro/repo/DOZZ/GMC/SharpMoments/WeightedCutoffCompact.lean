@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.WeightedCutoff.UniformGamma
+import DOZZ.GMC.WeightedCutoff.UniformGamma
 
 /-! # Weighted cutoff bounds over compact coupled parameter sets
 
@@ -13,7 +12,6 @@ The γ-uniform weighted cutoff bound is stated over product sets `Γ × T` of co
 condition, so every point of a compact admissible set of triples `(γ, α, t)` has a closed product
 box around it that is still admissible; a finite subcover gives one constant for the whole set. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology Metric
 open scoped ENNReal NNReal
@@ -28,7 +26,7 @@ noncomputable def weightedCutoffSlack (q : ℝ × ℝ × ℝ) : ℝ :=
 theorem weightedCutoffSlack_pos_iff (q : ℝ × ℝ × ℝ) :
     0 < weightedCutoffSlack q ↔ 0 < q.1 ∧ q.1 < 2 ∧ q.2.1 < Q q.1 ∧ 0 < q.2.2 ∧
       q.2.2 < min (4 / q.1 ^ 2) (2 / q.1 * (Q q.1 - q.2.1)) := by
-  simp only [weightedCutoffSlack, lt_min_iff, sub_pos]
+  simp [weightedCutoffSlack, lt_min_iff, sub_pos]
   tauto
 
 theorem continuousAt_weightedCutoffSlack {p : ℝ × ℝ × ℝ} (hp : p.1 ≠ 0) :

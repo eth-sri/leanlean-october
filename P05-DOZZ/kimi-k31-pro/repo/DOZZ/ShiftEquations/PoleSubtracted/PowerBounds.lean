@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import Mathlib.Analysis.Calculus.MeanValue
-public import Mathlib.Analysis.SpecialFunctions.Pow.Deriv
+import Mathlib.Analysis.Calculus.MeanValue
+import Mathlib.Analysis.SpecialFunctions.Pow.Deriv
 
 /-!
 # Power bounds for the pole-subtracted observable
@@ -20,7 +19,6 @@ Elementary estimates that control the powers occurring in the pole-subtracted ob
 * `abs_rpow_sub_rpow_le`: the same bound for a real exponent.
 -/
 
-@[expose] public section
 
 open Set
 
@@ -74,4 +72,3 @@ theorem norm_ofReal_cpow_sub_ofReal_cpow_le {L B : ℝ} (hL : 0 < L) (hLB : L �
 
 end DOZZ.Proofs
 
-end

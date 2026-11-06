@@ -2,11 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import Mathlib.Analysis.SpecialFunctions.Pow.Deriv
-public import Mathlib.Analysis.InnerProductSpace.Calculus
-public import Mathlib.Analysis.Complex.Basic
+import Mathlib.Analysis.SpecialFunctions.Pow.Deriv
+import Mathlib.Analysis.InnerProductSpace.Calculus
+import Mathlib.Analysis.Complex.Basic
 
 /-! # Calculus of the softened distance factor
 
@@ -18,7 +17,6 @@ formulas and the operator-norm bounds, compute the Wirtinger combinations of the
 (which at `ε = 0` become the meromorphic expressions `a |x - z|^{2a} / (z - x)` and
 `a (a - 1) |x - z|^{2a} / (z - x)²`), and prove joint continuity in `(ε, z)`. -/
 
-@[expose] public section
 
 open Complex
 open scoped ComplexConjugate
@@ -46,7 +44,7 @@ noncomputable def bpzSoftDeriv2 (a ε : ℝ) (x z : ℂ) : ℂ →L[ℝ] ℂ →
 /-- The real inner product on `ℂ` in coordinates. -/
 theorem bpzSoft_innerSL_apply (u h : ℂ) : innerSL ℝ u h = u.re * h.re + u.im * h.im := by
   rw [innerSL_apply_apply, Complex.inner]
-  simp only [Complex.mul_re, Complex.conj_re, Complex.conj_im]
+  simp [Complex.mul_re, Complex.conj_re, Complex.conj_im]
   ring
 
 /-- The bilinear form `id (innerSL ℝ)` used in `bpzSoftDeriv2`, in coordinates. -/
@@ -109,7 +107,7 @@ theorem hasFDerivAt_bpzSoft (a ε : ℝ) (x z : ℂ) (hN : 0 < Complex.normSq (x
     HasFDerivAt (fun w : ℂ => (Complex.normSq (x - w) + ε ^ 2) ^ a) (bpzSoftDeriv a ε x z) z := by
   refine ((bpzSoft_hasFDerivAt_base ε x z).rpow_const (Or.inl hN.ne')).congr_fderiv ?_
   ext h
-  simp only [bpzSoftDeriv_apply, smul_apply, smul_eq_mul,
+  simp [bpzSoftDeriv_apply, smul_apply, smul_eq_mul,
     bpzSoft_innerSL_apply]
   ring
 

@@ -2,13 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import Mathlib.Analysis.Complex.Basic
+import Mathlib.Analysis.Complex.Basic
 
 /-! Algebraic change of basis for real diagonal Hermitian forms. -/
 
-@[expose] public section
 
 namespace DOZZ.Proofs
 
@@ -48,8 +46,7 @@ theorem real_diagonal_normSq_connection_change
             push_cast
             ring
       _ = (w * x) * (f * star g).re := Complex.re_ofReal_mul _ _
-  rw [Complex.normSq_add, Complex.normSq_add]
-  rw [Complex.normSq_mul, Complex.normSq_mul, Complex.normSq_mul, Complex.normSq_mul]
+  rw [Complex.normSq_add, Complex.normSq_add, Complex.normSq_mul, Complex.normSq_mul, Complex.normSq_mul, Complex.normSq_mul]
   rw [Complex.normSq_ofReal, Complex.normSq_ofReal,
     Complex.normSq_ofReal, Complex.normSq_ofReal]
   simp only [Complex.star_def] at hcrossUV hcrossWX

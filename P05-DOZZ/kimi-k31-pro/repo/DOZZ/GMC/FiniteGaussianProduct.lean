@@ -2,15 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.GMC.IsCenteredJointlyGaussian
-public import Mathlib.Probability.Distributions.Gaussian.Real
-public import Mathlib.Probability.Independence.Basic
+import DOZZ.Statements.GMC.IsCenteredJointlyGaussian
+import Mathlib.Probability.Distributions.Gaussian.Real
+import Mathlib.Probability.Independence.Basic
 
 /-! Joint Gaussianity of independent finite families on their product probability space. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory
 open scoped Distributions NNReal
@@ -47,7 +45,7 @@ theorem independent_product_concat_isCenteredJointlyGaussian
             rw [hfst.map_eq]
             exact hX.2.1 j
           exact hm'.comp_measurable measurable_fst
-        exact hm
+        assumption
     | inr j =>
         change AEMeasurable (fun ω : ΩX × ΩY => Y ω.2 j) (PX.prod PY)
         have hm : AEMeasurable (fun ω : ΩX × ΩY => Y ω.2 j) (PX.prod PY) := by
@@ -55,7 +53,7 @@ theorem independent_product_concat_isCenteredJointlyGaussian
             rw [hsnd.map_eq]
             exact hY.2.1 j
           exact hm'.comp_measurable measurable_snd
-        exact hm
+        assumption
   · intro a
     let cX : ι → ℝ := fun i => a (Sum.inl i)
     let cY : ι → ℝ := fun i => a (Sum.inr i)

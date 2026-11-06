@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.BPZ.MomentLimitD
-public import DOZZ.FourPoint.BPZ.DerivLimit
+import DOZZ.FourPoint.BPZ.MomentLimitD
+import DOZZ.FourPoint.BPZ.DerivLimit
 
 /-! # Two derivatives of the negative moment of the four-point mass
 
@@ -15,7 +14,6 @@ differentiable, with first and second derivatives the expectations of the moment
 differentiable with the softened moment fields as derivatives; these converge locally uniformly
 bounded to the unsoftened ones, which are continuous. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped ENNReal NNReal

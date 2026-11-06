@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.Defs.DualMu
+import DOZZ.Statements.Defs.DualMu
 
 /-!
 # DOZZ — elementary strip identities for the defining Υ integral
@@ -13,7 +12,6 @@ These lemmas concern the literal integral definition on the strip. They do not
 use or assert an entire continuation.
 -/
 
-@[expose] public section
 
 open Complex MeasureTheory Set
 
@@ -31,10 +29,10 @@ theorem IsUpsilon.center {γ : ℝ} {U : ℂ → ℂ} (hγ : 0 < γ) (hU : IsUps
     unfold Q
     positivity
   have hleft : 0 < (Q γ / 2 : ℂ).re := by
-    simp only [Complex.div_ofNat_re, Complex.ofReal_re]
+    simp [Complex.div_ofNat_re, Complex.ofReal_re]
     positivity
   have hright : (Q γ / 2 : ℂ).re < Q γ := by
-    simp only [Complex.div_ofNat_re, Complex.ofReal_re]
+    simp [Complex.div_ofNat_re, Complex.ofReal_re]
     linarith
   rw [hU.2 _ hleft hright, upsilonLog_center, Complex.exp_zero]
 

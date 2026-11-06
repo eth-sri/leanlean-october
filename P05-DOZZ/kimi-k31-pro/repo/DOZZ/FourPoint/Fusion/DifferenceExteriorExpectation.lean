@@ -2,12 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Fusion.DifferenceExteriorMass
-public import DOZZ.FourPoint.Fusion.SegmentSpatialMeasurable
-public import DOZZ.FourPoint.Fusion.MassPositiveFinite
+import DOZZ.FourPoint.Fusion.DifferenceExteriorMass
+import DOZZ.FourPoint.Fusion.SegmentSpatialMeasurable
+import DOZZ.FourPoint.Fusion.MassPositiveFinite
 /-! # A uniform first-order exterior error for KRV -/
-@[expose] public section
 open MeasureTheory Set
 namespace DOZZ.Proofs
 /-- The signed exterior expectation is integrable and uniformly of order the root displacement. -/
@@ -31,7 +29,7 @@ theorem fusion_difference_exterior_expectation_bound {Ω : Type*} [MeasurableSpa
   let f := fusionDifferenceKernel γ α₁ α₂ α₃ z
   have hfm : Measurable f := by
     have hm : Measurable (fun x : ℂ => (z, x)) := measurable_const.prodMk measurable_id
-    simpa only [Function.comp_def] using (fusionDifferenceKernel_measurable γ α₁ α₂ α₃).comp hm
+    simpa [Function.comp_def] using (fusionDifferenceKernel_measurable γ α₁ α₂ α₃).comp hm
   have hIm : AEMeasurable (fun ω => I ω ^ (-p)) P :=
     ((gmc_coulombMass_aemeasurable P X hX γ hγ hγ2 M hM _ _ _).const_mul _ |>.add
       ((gmc_coulombMass_aemeasurable P X hX γ hγ hγ2 M hM _ _ _).const_mul _)).pow_const _
@@ -41,7 +39,7 @@ theorem fusion_difference_exterior_expectation_bound {Ω : Type*} [MeasurableSpa
     (integrable_toReal_of_lintegral_ne_top hIm hit).const_mul _
   have hm := fusion_segment_spatial_aestronglyMeasurable P X hX γ hγ hγ2 M hM α₁ α₂ α₃ t (-p - 1) z
     (B.indicator f) (hfm.indicator Metric.isOpen_ball.measurableSet.compl)
-  simp only [integral_indicator (show MeasurableSet B from Metric.isOpen_ball.measurableSet.compl)] at hm
+  simp [integral_indicator (show MeasurableSet B from Metric.isOpen_ball.measurableSet.compl)] at hm
   have hd : ∀ᵐ ω ∂P, ‖(I ω ^ (-p - 1)).toReal * (∫ x in B, f x ∂M ω)‖ ≤
       (D * ‖z‖) * (I ω ^ (-p)).toReal := by
     filter_upwards [fusion_gammaHalfMass_pos_finite_ae P X hX γ hγ hγ2 M hM α₁ α₂ α₃ hα₁ hα₂ hα₃ z hz hz4,
@@ -61,8 +59,8 @@ theorem fusion_difference_exterior_expectation_bound {Ω : Type*} [MeasurableSpa
       _ = (I ω ^ (-p - 1)).toReal * ‖∫ x in B, f x ∂M ω‖ := by
         rw [norm_mul, Real.norm_eq_abs, abs_of_nonneg ENNReal.toReal_nonneg]
       _ ≤ (I ω ^ (-p - 1)).toReal * (∫⁻ x in B, ENNReal.ofReal |f x| ∂M ω).toReal := by
-        exact mul_le_mul_of_nonneg_left (by simpa only [Real.norm_eq_abs] using norm_integral_le_lintegral_norm (μ := (M ω).restrict B) f) ENNReal.toReal_nonneg
-      _ ≤ _ := by simpa only [mul_comm] using hbound
+        exact mul_le_mul_of_nonneg_left (by simpa [Real.norm_eq_abs] using norm_integral_le_lintegral_norm (μ := (M ω).restrict B) f) ENNReal.toReal_nonneg
+      _ ≤ _ := by simpa [mul_comm] using hbound
   refine ⟨hmaj.mono' hm hd, ?_⟩
   calc
     _ ≤ ∫ ω, (D * ‖z‖) * (I ω ^ (-p)).toReal ∂P := norm_integral_le_of_norm_le hmaj hd

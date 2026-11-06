@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.TaylorMomentBudget
-public import DOZZ.FourPoint.TaylorPairIntegrability
+import DOZZ.FourPoint.TaylorMomentBudget
+import DOZZ.FourPoint.TaylorPairIntegrability
 
 /-! Source-level parameter choice and convergent near-diagonal kernels in the strict domain. -/
 
-@[expose] public section
 open MeasureTheory Filter Topology Set Metric
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs

@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Hypergeom.Defs
+import DOZZ.Hypergeom.Defs
 import Mathlib.Analysis.SpecialFunctions.OrdinaryHypergeometric
 
 /-! The ordinary Gauss series coefficient recurrence, needed to seed the Gauss system at zero. -/
 
-@[expose] public section
 
 open Polynomial
 
@@ -37,7 +35,7 @@ theorem ordinaryHypergeometricCoefficient_gauss_recurrence (a b c : ℂ) (n : �
   have hfact : ((n + 1).factorial : ℂ) = (n + 1 : ℂ) * (n.factorial : ℂ) := by
     exact_mod_cast Nat.factorial_succ n
   have hfact0 : (n.factorial : ℂ) ≠ 0 := by exact_mod_cast Nat.factorial_ne_zero n
-  simp only [ordinaryHypergeometricCoefficient, ascPochhammer_succ_eval]
+  simp [ordinaryHypergeometricCoefficient, ascPochhammer_succ_eval]
   rw [hfact]
   field_simp [hcpn, hcn, hfact0]
   ring

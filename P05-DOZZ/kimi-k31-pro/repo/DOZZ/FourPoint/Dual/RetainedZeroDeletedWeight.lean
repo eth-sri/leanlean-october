@@ -2,12 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Dual.RetainedZeroRootedInverse
-public import DOZZ.FourPoint.Dual.DeletedDisk
+import DOZZ.FourPoint.Dual.RetainedZeroRootedInverse
+import DOZZ.FourPoint.Dual.DeletedDisk
 import Mathlib.Tactic
 /-! # The deleted-disk bound weighted by the retained zero mass -/
-public section
 open MeasureTheory Set
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -42,7 +40,7 @@ theorem dual_retainedZero_deleted_weight_bound {Ω : Type*} [MeasurableSpace Ω]
     _ ≤ ∫⁻ u, f u * ENNReal.ofReal C₁ ∂gmcReferenceMeasure := by
       apply lintegral_mono
       intro u
-      dsimp only
+      dsimp
       rw [lintegral_const_mul' _ _ (by by_cases hu : u ∈ Metric.ball (0 : ℂ) r <;> simp [f, hu])]
       exact mul_le_mul' le_rfl (hb u r (by linarith only [hr₁]))
     _ = (∫⁻ u, f u ∂gmcReferenceMeasure) * ENNReal.ofReal C₁ := lintegral_mul_const _ hf

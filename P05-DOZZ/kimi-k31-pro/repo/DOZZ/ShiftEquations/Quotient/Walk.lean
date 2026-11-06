@@ -2,11 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import Mathlib.Algebra.Group.Subgroup.Basic
-public import Mathlib.NumberTheory.Real.Irrational
-public import Mathlib.Topology.Instances.AddCircle.DenseSubgroup
+import Mathlib.Algebra.Group.Subgroup.Basic
+import Mathlib.NumberTheory.Real.Irrational
+import Mathlib.Topology.Instances.AddCircle.DenseSubgroup
 
 /-!
 # Bounded walks in the period group
@@ -19,7 +18,6 @@ We also record that, when `a / a'` is irrational, the group has infinitely many 
 `(0, ε)`.
 -/
 
-public section
 
 namespace DOZZ.Proofs
 
@@ -59,21 +57,20 @@ theorem boundedWalk_greedy {a a' g : ℝ} (ha : 0 < a) (ha' : 0 < a') :
         rcases List.mem_cons.1 he with rfl | he
         · exact Or.inl rfl
         · exact hl e he
-      · simp only [List.length_cons, hlen]
+      · simp [List.length_cons, hlen]
         omega
-      · simp only [List.sum_cons]
+      · simp [List.sum_cons]
         linarith
       · intro k hk'
         rcases k with _ | k
         · simpa using ⟨hlo, hhi⟩
         · have := hk k (by simpa using hk')
-          simp only [List.take_succ_cons, List.sum_cons]
+          simp [List.take_succ_cons, List.sum_cons]
           constructor <;> linarith [this.1, this.2]
     · obtain ⟨j', rfl⟩ : ∃ j', j = j' + 1 := by
         refine ⟨j - 1, ?_⟩
         rcases Nat.eq_zero_or_pos j with rfl | hj
         · exfalso
-          have hi : (0 : ℝ) ≤ i := Nat.cast_nonneg i
           push_cast at hs
           nlinarith
         · omega
@@ -85,15 +82,15 @@ theorem boundedWalk_greedy {a a' g : ℝ} (ha : 0 < a) (ha' : 0 < a') :
         rcases List.mem_cons.1 he with rfl | he
         · exact Or.inr (Or.inr (Or.inr rfl))
         · exact hl e he
-      · simp only [List.length_cons, hlen]
+      · simp [List.length_cons, hlen]
         omega
-      · simp only [List.sum_cons]
+      · simp [List.sum_cons]
         linarith
       · intro k hk'
         rcases k with _ | k
         · simpa using ⟨hlo, hhi⟩
         · have := hk k (by simpa using hk')
-          simp only [List.take_succ_cons, List.sum_cons]
+          simp [List.take_succ_cons, List.sum_cons]
           constructor <;> linarith [this.1, this.2]
 
 /-- The bounded walk for `g = i a - j a'` with `i, j` natural numbers. -/
@@ -194,4 +191,3 @@ theorem infinite_closure_pair_pos_lt {a a' ε : ℝ} (hirr : Irrational (a / a')
 
 end DOZZ.Proofs
 
-end

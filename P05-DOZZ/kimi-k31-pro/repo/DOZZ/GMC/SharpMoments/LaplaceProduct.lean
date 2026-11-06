@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import Mathlib.MeasureTheory.Integral.Prod
-public import Mathlib.Analysis.SpecialFunctions.Exp
+import Mathlib.MeasureTheory.Integral.Prod
+import Mathlib.Analysis.SpecialFunctions.Exp
 
 /-! # Laplace transforms of independent sums on a triple product
 
@@ -13,7 +12,6 @@ On `Ω × Ω × ℝ` with the product law `P ⊗ (P ⊗ N)`, the Laplace transfo
 at a level depending on the scalar coordinate `q.2.2` is the `N`-average of the product of the two
 Laplace transforms. This is the independence step of the two-branch inequality. -/
 
-@[expose] public section
 
 open MeasureTheory
 
@@ -33,10 +31,8 @@ theorem integral_prod_prod_exp_mul_exp {Ω : Type*} [MeasurableSpace Ω]
     ∫ q, Real.exp (-s q.2.2 * m₁ q.1) * Real.exp (-s q.2.2 * m₂ q.2.1) ∂P.prod (P.prod N) =
       ∫ ξ, (∫ ω, Real.exp (-s ξ * m₁ ω) ∂P) * (∫ ω, Real.exp (-s ξ * m₂ ω) ∂P) ∂N := by
   -- integrability of the bounded measurable integrands on the products
-  have hf₁ : Measurable (fun p : Ω × ℝ => Real.exp (-s p.2 * m₁ p.1)) := by
-    exact Real.measurable_exp.comp (((hs.comp measurable_snd).neg).mul (hm₁.comp measurable_fst))
-  have hf₂ : Measurable (fun p : Ω × ℝ => Real.exp (-s p.2 * m₂ p.1)) := by
-    exact Real.measurable_exp.comp (((hs.comp measurable_snd).neg).mul (hm₂.comp measurable_fst))
+  have hf₁ : Measurable (fun p : Ω × ℝ => Real.exp (-s p.2 * m₁ p.1)) := Real.measurable_exp.comp (((hs.comp measurable_snd).neg).mul (hm₁.comp measurable_fst))
+  have hf₂ : Measurable (fun p : Ω × ℝ => Real.exp (-s p.2 * m₂ p.1)) := Real.measurable_exp.comp (((hs.comp measurable_snd).neg).mul (hm₂.comp measurable_fst))
   have hb₁ : ∀ p : Ω × ℝ, ‖Real.exp (-s p.2 * m₁ p.1)‖ ≤ 1 :=
     fun p => laplaceProduct_integrand_bound _ _ (hs0 _) (hm₁0 _)
   have hb₂ : ∀ p : Ω × ℝ, ‖Real.exp (-s p.2 * m₂ p.1)‖ ≤ 1 :=

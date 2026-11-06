@@ -2,17 +2,16 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.Annulus.PositiveBase
-public import DOZZ.GMC.Annulus.CutoffScale
-public import DOZZ.GMC.Annulus.BallCover
-public import DOZZ.GMC.Moments.WeightedCutoffPositiveSubunit
-public import DOZZ.GMC.Moments.WeightedLpFiniteSum
+import DOZZ.GMC.Moments.WeightedLocalSubunit
+import DOZZ.GMC.Annulus.PositiveBase
+import DOZZ.GMC.Annulus.CutoffScale
+import DOZZ.GMC.Annulus.BallCover
+import DOZZ.GMC.Moments.WeightedCutoffPositiveSubunit
+import DOZZ.GMC.Moments.WeightedLpFiniteSum
 
 /-! Local finite-cutoff ball moments through the first positive-moment induction step. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory
 open scoped Distributions ENNReal NNReal
@@ -46,19 +45,8 @@ theorem ennreal_lintegral_rpow_const_mul_root_eq
     exact ENNReal.rpow_one c
   rw [hfactor, ENNReal.mul_rpow_of_ne_top hcPow.ne hfmom.ne, hroot]
 
-private theorem ennreal_ofReal_rpow_of_pos_upto_two {x p : ℝ} (hx : 0 < x) :
-    ENNReal.rpow (ENNReal.ofReal x) p = ENNReal.ofReal (x ^ p) := by
-  have hx0 : ENNReal.ofReal x ≠ 0 := ne_of_gt (ENNReal.ofReal_pos.mpr hx)
-  have hleft : ENNReal.rpow (ENNReal.ofReal x) p ≠ ⊤ :=
-    ENNReal.rpow_ne_top_of_ne_zero hx0 ENNReal.ofReal_ne_top
-  have hright : ENNReal.ofReal (x ^ p) ≠ ⊤ := ENNReal.ofReal_ne_top
-  apply (ENNReal.toReal_eq_toReal_iff' hleft hright).1
-  calc
-    (ENNReal.rpow (ENNReal.ofReal x) p).toReal = (ENNReal.ofReal x).toReal ^ p :=
-      (ENNReal.toReal_rpow _ _).symm
-    _ = x ^ p := by rw [ENNReal.toReal_ofReal hx.le]
-    _ = (ENNReal.ofReal (x ^ p)).toReal :=
-      (ENNReal.toReal_ofReal (Real.rpow_nonneg hx.le p)).symm
+theorem ennreal_ofReal_rpow_of_pos_upto_two {x p : ℝ} (hx : 0 < x) :
+    ENNReal.rpow (ENNReal.ofReal x) p = ENNReal.ofReal (x ^ p) := DOZZ.Proofs.ennreal_ofReal_rpow_of_pos_local hx
 
 /-- Extracting a positive real scale from an `ENNReal` moment root. -/
 theorem ennreal_root_mul_ofReal_rpow_eq
@@ -94,8 +82,7 @@ theorem weighted_cutoff_core_rpow_identity
         δ ^ (weightedCutoffMomentScaleExponent γ α p / p) := by
   have hδbase : 0 ≤ δ := hδ.le
   have hrecip : 0 ≤ (1 / 8 : ℝ)⁻¹ := by positivity
-  rw [show δ / (1 / 8 : ℝ) = δ * (1 / 8 : ℝ)⁻¹ by field_simp]
-  rw [Real.mul_rpow hδbase hrecip]
+  rw [show δ / (1 / 8 : ℝ) = δ * (1 / 8 : ℝ)⁻¹ by field_simp, Real.mul_rpow hδbase hrecip]
   calc
     _ = (δ ^ (-γ * α) * δ ^
           ((2 * p + γ ^ 2 * p / 2 - γ ^ 2 * p ^ 2 / 2) / p)) *
@@ -232,8 +219,6 @@ theorem cutoffWeightedGmcBallMoment_positive_lp_shell_bound
       have hnrange : ¬ n < N + 1 := by
         intro hnlt
         exact hn (Finset.mem_range.mpr hnlt)
-      have hnlt : N < n := by
-        omega
       have hnle : ¬ n ≤ N := by omega
       simp [hnle]
   have hdecomp (ω : Ω) :

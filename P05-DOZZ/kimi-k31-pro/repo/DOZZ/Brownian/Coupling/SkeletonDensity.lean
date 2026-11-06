@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Brownian.Coupling.VectorMarkov
+import DOZZ.Brownian.Coupling.VectorMarkov
 
 /-!
 # Exact finite radial skeleton densities
@@ -14,7 +13,6 @@ is transported by the explicit last-coordinate split, so every induction step re
 time operands of the transition density.
 -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal Topology Classical
@@ -31,7 +29,7 @@ noncomputable def radialSkeletonLastSplit (n : ℕ) :
 theorem radialSkeletonLastSplit_measurePreserving (n : ℕ) :
     MeasurePreserving (radialSkeletonLastSplit n) := by
   have hswap : MeasurePreserving (Prod.swap : ℝ × (Fin n → ℝ) → (Fin n → ℝ) × ℝ) := by
-    simpa only [Measure.volume_eq_prod] using
+    simpa [Measure.volume_eq_prod] using
       (Measure.measurePreserving_swap (μ := (volume : Measure ℝ)) (ν := (volume : Measure (Fin n → ℝ))))
   exact hswap.comp (volume_preserving_piFinSuccAbove (fun _ : Fin (n + 1) => ℝ) (Fin.last n))
 
@@ -61,9 +59,7 @@ theorem conditionedPositiveFDDDensity_last_split (a : ℝ) (n : ℕ)
   simp only [List.concat_eq_append]
   change conditionedPositiveFDDDensity a ((List.ofFn (Fin.init times)) ++ [times (Fin.last (n + 1))])
     ((List.ofFn (Fin.init x)) ++ [x (Fin.last (n + 1))]) = _
-  rw [List.ofFn_succ (f := Fin.init times), List.ofFn_succ (f := Fin.init x), List.cons_append, List.cons_append]
-  rw [conditionedPositiveFDDDensity_append_split a _ _ _ _ _ _ (by simp)]
-  rw [conditionedPositiveLastTime_ofFn_tail, conditionedPositiveLastState_ofFn_tail]
+  rw [List.ofFn_succ (f := Fin.init times), List.ofFn_succ (f := Fin.init x), List.cons_append, List.cons_append, conditionedPositiveFDDDensity_append_split a _ _ _ _ _ _ (by simp), conditionedPositiveLastTime_ofFn_tail, conditionedPositiveLastState_ofFn_tail]
   simp only [conditionedPositiveTimeChainDensity, mul_one]
   rfl
 
@@ -195,7 +191,7 @@ theorem wienerRadial_samples_next_density_joint_map {n : ℕ} (times : Fin (n + 
   rw [Kernel.comap_apply, radialSkeletonTransitionDensityKernel_lintegral _ _ _ _
     (show Measurable (fun y => F (wienerRadialSamples times V, y)) from
       hF.comp (measurable_const.prodMk measurable_id))]
-  simp only [wienerRadialSamples, hlast]
+  simp [wienerRadialSamples, hlast]
 
 /-- A one-coordinate FDD is exactly the literal entrance measure. -/
 theorem radialSkeletonDensityMeasure_one_map (a : ℝ) (ha : 0 ≤ a) (times : Fin 1 → ℝ)
@@ -275,7 +271,7 @@ theorem radialSkeletonDensityMeasure_map_neg (a : ℝ) {n : ℕ} (times : Fin n 
   change ENNReal.ofReal (max 0 (conditionedPositiveFDDDensity a (List.ofFn times)
     (List.ofFn fun i => -x i))) = _
   have h := negativeConditionedFDDDensity_reflect a (List.ofFn times) (List.ofFn fun i => -x i)
-  simp only [List.map_ofFn, Function.comp_def, neg_neg] at h
+  simp [List.map_ofFn, Function.comp_def, neg_neg] at h
   rw [← h]
 
 /-- Actual nonnegative tests of every zero-drift Wiener radial skeleton use the density

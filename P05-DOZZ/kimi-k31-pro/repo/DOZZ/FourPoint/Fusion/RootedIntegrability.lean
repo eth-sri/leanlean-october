@@ -2,13 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.Fusion.ComplexRooting
+import DOZZ.FourPoint.Fusion.ComplexRooting
 
 /-! # Recovering samplewise spatial integrability from the absolute rooted bound -/
 
-@[expose] public section
 open MeasureTheory Filter
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -38,7 +36,7 @@ theorem fusion_rooted_spatial_integrable {Ω : Type*} [MeasurableSpace Ω]
         exact (lintegral_mul_const _ (ENNReal.measurable_ofReal.comp hf.norm)).symm
       _ = ∫⁻ u, ∫⁻ ω, ENNReal.ofReal ‖f u‖ * G (gmcRootedMeasure γ u (M ω)) ∂P
           ∂gmcReferenceMeasure :=
-        DOZZ.equatorGFF_rooted_GMC_identity P X hX γ hγ hγ2 M hM
+        equatorGFF_rooted_GMC_identity P X hX γ hγ hγ2 M hM
           (fun u _ μ => ENNReal.ofReal ‖f u‖ * G μ)
           ((ENNReal.measurable_ofReal.comp (hf.norm.comp measurable_fst)).mul
             (hG.comp (measurable_snd.comp measurable_snd)))
@@ -52,7 +50,7 @@ theorem fusion_rooted_spatial_integrable {Ω : Type*} [MeasurableSpace Ω]
   rw [hasFiniteIntegral_iff_norm]
   by_contra ht
   have ht' : (∫⁻ u, ENNReal.ofReal ‖f u‖ ∂M ω) = ⊤ := not_lt_top_iff.mp ht
-  dsimp only [L] at hω
+  dsimp [L] at hω
   rw [ht', ENNReal.top_mul h0] at hω
   exact lt_irrefl _ hω
 

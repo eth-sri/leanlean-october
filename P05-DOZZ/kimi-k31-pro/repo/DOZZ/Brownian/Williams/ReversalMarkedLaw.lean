@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Brownian.Williams.ReversalMarkedRectangles
-public import DOZZ.Brownian.Williams.MarkedMeasureUniqueness
+import DOZZ.Brownian.Williams.ReversalMarkedRectangles
+import DOZZ.Brownian.Williams.MarkedMeasureUniqueness
 
 /-!
 # Equality of the lifetime-marked preterminal observation laws
@@ -16,7 +15,6 @@ Thus every nonempty finite observation tuple, with its actual lifetime mark and 
 strictly before that lifetime, has the same measure under the two path laws.
 -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory Set
 open scoped NNReal ENNReal
 namespace DOZZ.Proofs
@@ -75,9 +73,9 @@ theorem brownian_firstHit_reversal_finite_marked_law
   let cN := Real.toNNReal c
   have hu : ss (Fin.last n) < u := by
     apply NNReal.coe_lt_coe.mp
-    simpa only [u, Real.coe_toNNReal _ ha0] using ha
+    simpa [u, Real.coe_toNNReal _ ha0] using ha
   have huv : u ≤ v := Real.toNNReal_mono hab.le
-  have hcN : 0 < (cN : ℝ) := by simpa only [cN, Real.coe_toNNReal _ hc.le] using hc
+  have hcN : 0 < (cN : ℝ) := by simpa [cN, Real.coe_toNNReal _ hc.le] using hc
   have htimes (i : Fin (n+1)) : 0 < (ss i : ℝ) :=
     NNReal.coe_pos.mpr (hs0.trans_le (hss.monotone (Fin.zero_le i)))
   have hηrect : η.real (A ×ˢ Ioc a b) =
@@ -111,7 +109,6 @@ theorem brownian_firstHit_reversal_finite_marked_law
     rw [brownianPath_firstHit_reversedIncreasing_rectangle P hB ν c hν hc n ss hss hs0 A hA a b,
       hηrect, hlast]
   have heq := congrArg ENNReal.ofReal hreal
-  simpa only [Measure.real, ENNReal.ofReal_toReal (measure_ne_top _ _)] using heq
+  simpa [Measure.real, ENNReal.ofReal_toReal (measure_ne_top _ _)] using heq
 
 end DOZZ.Proofs
-end

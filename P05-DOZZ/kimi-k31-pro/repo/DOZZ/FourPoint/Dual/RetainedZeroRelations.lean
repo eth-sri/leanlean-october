@@ -2,16 +2,14 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.Dual.RetainedZeroMass
-public import DOZZ.FourPoint.Dual.OuterMassLimit
-public import DOZZ.GMC.Annulus.BallCover
+import DOZZ.FourPoint.Dual.RetainedZeroMass
+import DOZZ.FourPoint.Dual.OuterMassLimit
+import DOZZ.GMC.Annulus.BallCover
 import Mathlib.Tactic
 
 /-! # Positivity, finiteness, and the literal deleted-disk splitting -/
 
-@[expose] public section
 open MeasureTheory Set
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -48,7 +46,7 @@ theorem dual_retainedZero_split (γ α₁ α₂ α₃ r : ℝ) (hγ : γ ≠ 0) 
     dual_retainedZero_kernel_integral γ α₁ α₂ α₃ r hγ μ h0 h1]
   have hc : ({x : ℂ | r ≤ ‖x‖} : Set ℂ)ᶜ = Metric.ball (0 : ℂ) r := by
     ext x
-    simp only [mem_compl_iff, mem_ofPred_eq, not_le, Metric.mem_ball, dist_zero_right]
+    simp [mem_compl_iff, mem_ofPred_eq, not_le, Metric.mem_ball, dist_zero_right]
   exact (lintegral_add_compl _ (isClosed_le continuous_const continuous_norm).measurableSet).symm.trans (by rw [hc])
 
 /-- The retained zero mass of a supplied GMC is almost surely strictly positive and finite. -/
@@ -70,6 +68,6 @@ theorem dual_retainedZero_ae_positive_finite {Ω : Type*} [MeasurableSpace Ω]
   refine ⟨(ENNReal.mul_pos hw.ne' hb.ne').trans_le hlow, ?_⟩
   rw [← dual_kernel_integral_eq_coulombMass γ α₁ α₂ α₃ hγ.ne' 0 (M ω) h0 h0 h1,
     dual_zero_kernel_integral_eq_rho γ α₁ α₂ α₃ hγ.ne' (M ω) h0 h1]
-  exact hf
+  assumption
 
 end DOZZ.Proofs

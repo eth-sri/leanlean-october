@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.Crossing.CollisionMass
+import DOZZ.FourPoint.Crossing.CollisionMass
 import Mathlib.Topology.Sequences
 import Mathlib.Tactic
 
@@ -15,7 +14,6 @@ A larger inverse order is uniformly bounded by the fixed-disk estimate
 convergence, for every first charge below Q, including charges above 2/γ.
 -/
 
-@[expose] public section
 open MeasureTheory Filter Topology
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -98,7 +96,7 @@ theorem crossing_collision_inverse_expectation {Ω : Type*} [MeasurableSpace Ω]
   intro z hz
   have hn : ∀ᶠ n in atTop, ‖z n‖ ≤ 1 := by
     have ht := continuous_norm.continuousAt.tendsto.comp hz
-    simp only [norm_zero] at ht
+    simp [norm_zero] at ht
     exact (ht.eventually_lt_const zero_lt_one).mono fun _ h => h.le
   obtain ⟨N, hN⟩ := eventually_atTop.mp hn
   apply (tendsto_add_atTop_iff_nat N).mp

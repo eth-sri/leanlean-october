@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Brownian.Reflection.RtheorIdentification
-public import DOZZ.Statements.FourPoint.DualCrossingL
+import DOZZ.Brownian.Reflection.RtheorIdentification
+import DOZZ.Statements.FourPoint.DualCrossingL
 import DOZZ.Brownian.ReflectionPoleIsolation
 import DOZZ.FourPoint.Crossing.GammaHalfCrossing
 import DOZZ.ShiftEquations.Shift.Wrappers
@@ -31,7 +30,6 @@ crossing `gammaHalf_crossing`, the reductions below discharge all three from the
 So both `R_theor` statements depend only on the second dual seed.
 -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal Topology
@@ -85,4 +83,3 @@ theorem reflection_Rtheor_off_poles_of_seedTwo
 
 end DOZZ.Proofs
 
-end

@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.Dual.GammaRatios
-public import DOZZ.FourPoint.Dual.ConnectionAlgebra
+import DOZZ.FourPoint.Dual.GammaRatios
+import DOZZ.FourPoint.Dual.ConnectionAlgebra
 import Mathlib.Tactic
 
 /-! # The coefficient ratio in ordinary crossing
@@ -14,7 +13,6 @@ The connection determinant is (c-1)/(c-a-b). Gamma recurrence is shared with
 the dual seed computation; no new independent Gamma identities are assumed.
 -/
 
-public section
 namespace DOZZ.Proofs
 
 /-- The inverse connection coefficient is exactly l(a)l(b)/(l(c)l(a+b-c)). -/

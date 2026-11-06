@@ -2,18 +2,17 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Complex.Defs
-public import Mathlib.Analysis.Calculus.ParametricIntegral
-public import Mathlib.Analysis.Convex.Function
-public import Mathlib.Analysis.Meromorphic.NormalForm
-public import Mathlib.Analysis.Meromorphic.IsolatedZeros
-public import Mathlib.Topology.Instances.AddCircle.DenseSubgroup
-public import Mathlib.Analysis.Complex.Basic
-public import Mathlib.Analysis.Convex.Topology
-public import Mathlib.Analysis.SpecialFunctions.Pow.Integral
-public import Mathlib.Analysis.SpecialFunctions.ImproperIntegrals
+import DOZZ.Complex.Defs
+import Mathlib.Analysis.Calculus.ParametricIntegral
+import Mathlib.Analysis.Convex.Function
+import Mathlib.Analysis.Meromorphic.NormalForm
+import Mathlib.Analysis.Meromorphic.IsolatedZeros
+import Mathlib.Topology.Instances.AddCircle.DenseSubgroup
+import Mathlib.Analysis.Complex.Basic
+import Mathlib.Analysis.Convex.Topology
+import Mathlib.Analysis.SpecialFunctions.Pow.Integral
+import Mathlib.Analysis.SpecialFunctions.ImproperIntegrals
 
 /-!
 # Elementary complex analysis
@@ -25,7 +24,6 @@ formulation. Quantitative real layer cake supplies the uniform-family boundary
 limit, and rational residue lemmas support the Mellin transform arguments.
 -/
 
-@[expose] public section
 
 open MeasureTheory Filter Topology Set
 open scoped ENNReal
@@ -56,7 +54,7 @@ theorem convex_complexPolydisc {N : ℕ} (a : Fin N → ℂ) (R : Fin N → ℝ)
   rw [h]
   exact convex_pi fun i _ => convex_ball (a i) (R i)
 
-/-- Proof of `DOZZ.differentiableOn_integral_polydisc`: dominated differentiation on a polydisc. -/
+/-- Proof of `differentiableOn_integral_polydisc`: dominated differentiation on a polydisc. -/
 theorem differentiableOn_integral_polydisc {Ω : Type*} [MeasurableSpace Ω]
     {N : ℕ} (P : Measure Ω) (a : Fin N → ℂ) (R : Fin N → ℝ)
     (hR : ∀ i, 0 < R i) (F : (Fin N → ℂ) → Ω → ℂ)
@@ -145,7 +143,7 @@ theorem exists_meromorphicOn_iUnion_gluing {ι : Type*}
   obtain ⟨i, hi⟩ := mem_iUnion.mp hz
   exact (MeromorphicAt.meromorphicAt_congr (hpiece i z hi)).mpr (hf i z hi)
 
-/-- Proof of `DOZZ.exists_meromorphicOn_strip_gluing`: strip gluing, including uniqueness at the
+/-- Proof of `exists_meromorphicOn_strip_gluing`: strip gluing, including uniqueness at the
 level of germs. -/
 theorem exists_meromorphicOn_strip_gluing {ι : Type*}
     (h : ℝ) (hh : 0 < h) (U : ι → Set ℂ) (hU : ∀ i, IsOpen (U i))
@@ -157,7 +155,6 @@ theorem exists_meromorphicOn_strip_gluing {ι : Type*}
       (∀ G : ℂ → ℂ, MeromorphicOn G (horizontalStrip h) →
         (∀ i z, z ∈ U i → G =ᶠ[𝓝[≠] z] f i) →
         ∀ z ∈ horizontalStrip h, F =ᶠ[𝓝[≠] z] G) := by
-  have _positive_width : 0 < h := hh
   obtain ⟨F, hF, hpiece⟩ := exists_meromorphicOn_iUnion_gluing U hU f hf hcompat
   refine ⟨F, hcover ▸ hF, hpiece, ?_⟩
   intro G _ hG z hz
@@ -247,10 +244,10 @@ theorem frequently_eq_of_dense_stripPeriods (h : ℝ) (g : ℂ → ℂ)
   obtain ⟨t, ht, htpos, htlt⟩ := hdense.exists_mem_open isOpen_Ioo
     (show (Ioo (0 : ℝ) ε).Nonempty from ⟨ε / 2, by constructor <;> linarith⟩)
   refine ⟨z + (t : ℂ), hball ⟨?_, ?_⟩, ht z hz⟩
-  · simp only [Metric.mem_ball, dist_eq_norm, add_sub_cancel_left,
+  · simp [Metric.mem_ball, dist_eq_norm, add_sub_cancel_left,
       Complex.norm_real, Real.norm_eq_abs, abs_of_pos htpos]
     exact htlt
-  · simp only [mem_compl_iff, mem_singleton_iff, add_eq_left]
+  · simp [mem_compl_iff, mem_singleton_iff, add_eq_left]
     exact_mod_cast htpos.ne'
 
 /-- A meromorphic function in normal form with dense value periods is locally constant.
@@ -270,7 +267,7 @@ theorem locally_constant_of_dense_stripPeriods (h : ℝ) (g : ℂ → ℂ)
   exact ((hg hz).eventuallyEq_nhdsNE_iff_eventuallyEq_nhds
     analyticAt_const.meromorphicNFAt).mp hne
 
-/-- Proof of `DOZZ.meromorphicOn_strip_constant_of_dense_periods`: the dense-period identity, with
+/-- Proof of `meromorphicOn_strip_constant_of_dense_periods`: the dense-period identity, with
 uniqueness of the constant germ. -/
 theorem meromorphicOn_strip_constant_of_dense_periods
     (h : ℝ) (hh : 0 < h) (f : ℂ → ℂ) (hf : MeromorphicOn f (horizontalStrip h))
@@ -281,7 +278,6 @@ theorem meromorphicOn_strip_constant_of_dense_periods
     (hp₂ : ∀ z ∈ horizontalStrip h,
       (fun w => f (w + (T₂ : ℂ))) =ᶠ[𝓝[≠] z] f) :
     ∃! c : ℂ, ∀ z ∈ horizontalStrip h, f =ᶠ[𝓝[≠] z] (fun _ => c) := by
-  have _positive_periods := And.intro hT₁ hT₂
   let g := toMeromorphicNFOn f (horizontalStrip h)
   have hn : MeromorphicNFOn g (horizontalStrip h) :=
     meromorphicNFOn_toMeromorphicNFOn f (horizontalStrip h)
@@ -292,7 +288,7 @@ theorem meromorphicOn_strip_constant_of_dense_periods
     exact hirr q hq.symm
   have hdense : Dense (stripPeriodSubgroup h g : Set ℝ) :=
     (dense_addSubgroupClosure_pair_iff.mpr hirr').mono
-      ((AddSubgroup.closure_le _).mpr (by simpa only [pair_subset_iff, SetLike.mem_coe] using And.intro h₁ h₂))
+      ((AddSubgroup.closure_le _).mpr (by simpa [pair_subset_iff, SetLike.mem_coe] using And.intro h₁ h₂))
   have hlocal := locally_constant_of_dense_stripPeriods h g hn hdense
   have hder : ∀ z ∈ horizontalStrip h, HasDerivAt g 0 z := fun z hz =>
     (hlocal z hz).hasDerivAt_iff.mpr (hasDerivAt_const z (g z))
@@ -335,7 +331,6 @@ theorem pole_product_eventuallyEq (p q c d : ℂ) (r : ℂ → ℂ) :
     (fun s => -c * s + (s - p) * (d * s / (q - s) + r s)) := by
   filter_upwards [self_mem_nhdsWithin] with s hs
   have hsp : s ≠ p := by simpa using hs
-  have hps : p - s ≠ 0 := sub_ne_zero.mpr hsp.symm
   calc
     (s - p) * (c * s / (p - s) + d * s / (q - s) + r s) =
         (s - p) * (c * s / (p - s)) +
@@ -531,7 +526,7 @@ theorem realMoment_tail_error {Ω : Type*} [MeasurableSpace Ω]
       simp only [div_neg, neg_div, neg_neg, mul_one_div]
     rwa [halg] at hb
   have hlowBound : |∫ t in Ioc 0 1, T t| ≤ 1 / p := by
-    simpa only [Real.norm_eq_abs, hpowLow] using norm_integral_le_of_norm_le hlowPow hlowDom
+    simpa [Real.norm_eq_abs, hpowLow] using norm_integral_le_of_norm_le hlowPow hlowDom
   have hsplit : (∫ t in Ioi 0, T t) =
       (∫ t in Ioc 0 1, T t) + (∫ t in Ioi 1, E t) + c / (β - p) := by
     rw [← Ioc_union_Ioi_eq_Ioi (show (0 : ℝ) ≤ 1 from zero_le_one),
@@ -602,7 +597,7 @@ theorem complexMoment_uniform_tail_bridge {Ω : Type*} [MeasurableSpace Ω]
         (div_le_div_of_nonneg_right hpd.2.le hη.le)
     have halg : d * m d - γ * p d * c d =
         d * (m d - c d * p d / (β - p d)) := by
-      dsimp only [p]
+      dsimp [p]
       field_simp [hd.1.ne', hγ.ne']
       ring
     rw [halg, Real.norm_eq_abs, abs_mul, abs_of_pos hd.1]
@@ -613,7 +608,7 @@ theorem complexMoment_uniform_tail_bridge {Ω : Type*} [MeasurableSpace Ω]
       _ ≤ d * (1 + C * β / η) := by
         apply mul_le_mul_of_nonneg_left _ hd.1.le
         have hs : C * p d / (β + η - p d) ≤ C * β / η := by
-          simpa only [mul_div_assoc] using mul_le_mul_of_nonneg_left hrat hC
+          simpa [mul_div_assoc] using mul_le_mul_of_nonneg_left hrat hC
         exact add_le_add le_rfl hs
   have hdlim : Tendsto (fun d : ℝ => d) (𝓝[>] 0) (𝓝 (0 : ℝ)) :=
     tendsto_id.mono_left nhdsWithin_le_nhds
@@ -624,7 +619,7 @@ theorem complexMoment_uniform_tail_bridge {Ω : Type*} [MeasurableSpace Ω]
   have hmain : Tendsto (fun d => γ * p d * c d) (𝓝[>] 0) (𝓝 (γ * β * c₀)) :=
     (tendsto_const_nhds.mul hplim).mul hc
   have hreal : Tendsto (fun d => d * m d) (𝓝[>] 0) (𝓝 (γ * β * c₀)) := by
-    simpa only [sub_add_cancel, zero_add] using herr.add hmain
+    simpa [sub_add_cancel, zero_add] using herr.add hmain
   refine ⟨?_, ?_⟩
   · intro d hd hd'
     exact (Complex.ofRealCLM.integrable_comp (hmoment d hd hd').1).congr

@@ -1,2 +1,1 @@
-module
-public import DOZZ.Statements.Hypergeom.PlanarDifferenceKernel
+import DOZZ.Statements.Hypergeom.PlanarDifferenceKernel

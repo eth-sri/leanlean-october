@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.Tails.WilliamsReversedPrefix
-public import DOZZ.Brownian.Lateral.RadialWindowUniform
+import DOZZ.Correlations.Tails.WilliamsReversedPrefix
+import DOZZ.Brownian.Lateral.RadialWindowUniform
 
 /-! Williams splitting retains the independent auxiliary chaos, including its complete law. -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal
 

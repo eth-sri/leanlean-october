@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GFF.TorusModeHS
-public import Mathlib.Analysis.Fourier.AddCircleMulti
+import DOZZ.GFF.TorusModeHS
+import Mathlib.Analysis.Fourier.AddCircleMulti
 import Mathlib.Analysis.Calculus.FDeriv.Const
 
 /-!
@@ -15,7 +14,6 @@ Periodize a compactly supported test on a concrete square and expose its Fourier
 Mathlib's unit-torus Hilbert basis.
 -/
 
-@[expose] public section
 
 noncomputable section
 
@@ -67,7 +65,7 @@ theorem memLp_torusPeriodizationFunction (L : ℝ) (f : TestFn) :
   have hbound : ∀ x : GFFUnitTorus2,
       ‖torusPeriodizationFunction L f x‖ ≤ ‖BCF‖ := by
     intro x
-    simp only [torusPeriodizationFunction, Complex.norm_real]
+    simp [torusPeriodizationFunction, Complex.norm_real]
     exact BCF.norm_coe_le_norm (torusBoxPoint L x)
   exact MemLp.of_bound (measurable_torusPeriodizationFunction L f).aestronglyMeasurable
     ‖BCF‖ (Filter.Eventually.of_forall hbound)
@@ -131,8 +129,7 @@ theorem torusPeriodizationFunction_rep (L : ℝ) (f : TestFn)
       _ = x := e.apply_symm_apply x
   have hpoint : Complex.equivRealProdCLM.symm
       (L * x.1 0, L * x.1 1) = ⟨L * x.1 0, L * x.1 1⟩ := by
-    rw [Complex.equivRealProdCLM_symm_apply]
-    rw [Complex.ext_iff]
+    rw [Complex.equivRealProdCLM_symm_apply, Complex.ext_iff]
     constructor <;> simp
   simp [torusPeriodizationFunction, torusBoxPoint, e, he, hpoint]
 
@@ -148,18 +145,14 @@ theorem hasSum_torusPeriodization_realFourier (L : ℝ) (f : TestFn) :
       torusFourierRealPartCLM
         (UnitAddTorus.mFourierCoeff (torusPeriodizationLp L f) k •
           UnitAddTorus.mFourierLp 2 k))
-      (torusFourierRealPartCLM (torusPeriodizationLp L f)) := by
-  exact (hasSum_torusPeriodization_fourier L f).mapL torusFourierRealPartCLM
+      (torusFourierRealPartCLM (torusPeriodizationLp L f)) := (hasSum_torusPeriodization_fourier L f).mapL torusFourierRealPartCLM
 
 /-- A directional derivative of a compactly supported test function, again as a test function. -/
 noncomputable def directionalDerivativeTest (f : TestFn) (v : ℂ) : TestFn := by
   have hfOn : ContDiffOn ℝ (↑(⊤ : ENat)) f Set.univ := f.contDiff.contDiffOn
-  have hfderivOn : ContDiffOn ℝ (↑(⊤ : ENat)) (fderiv ℝ f) Set.univ := by
-    exact hfOn.fderiv_of_isOpen isOpen_univ (by simp)
-  have hfderiv : ContDiff ℝ (↑(⊤ : ENat)) (fderiv ℝ f) := by
-    exact contDiffOn_univ.mp hfderivOn
-  have hdir : ContDiff ℝ (↑(⊤ : ENat)) (fun z : ℂ => (fderiv ℝ f z) v) := by
-    exact (ContinuousLinearMap.apply ℝ ℝ v).contDiff.comp hfderiv
+  have hfderivOn : ContDiffOn ℝ (↑(⊤ : ENat)) (fderiv ℝ f) Set.univ := hfOn.fderiv_of_isOpen isOpen_univ (by simp)
+  have hfderiv : ContDiff ℝ (↑(⊤ : ENat)) (fderiv ℝ f) := contDiffOn_univ.mp hfderivOn
+  have hdir : ContDiff ℝ (↑(⊤ : ENat)) (fun z : ℂ => (fderiv ℝ f z) v) := (ContinuousLinearMap.apply ℝ ℝ v).contDiff.comp hfderiv
   have hsupport : HasCompactSupport (fun z : ℂ => (fderiv ℝ f z) v) :=
     f.hasCompactSupport.fderiv_apply ℝ v
   exact TestFunction.mk (fun z => (fderiv ℝ f z) v) hdir hsupport (by simp)
@@ -170,4 +163,3 @@ theorem directionalDerivativeTest_apply (f : TestFn) (v z : ℂ) :
 
 end DOZZ
 
-end

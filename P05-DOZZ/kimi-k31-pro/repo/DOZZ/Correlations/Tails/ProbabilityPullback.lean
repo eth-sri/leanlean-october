@@ -2,13 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.Tails.GMCRandomExponentialTest
+import DOZZ.Correlations.Tails.GMCRandomExponentialTest
 
 /-! Retaining actual GFF and GMC witnesses on the independent pin-copy space. -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped ENNReal
 
@@ -47,7 +45,7 @@ theorem isCircleAverage_measurePreserving
       eLpNorm (fun ω => X ω (f n) - Xc ω x r) 2 P :=
     eLpNorm_comp_measurePreserving (((hX.2 (f n)).1.sub
       ((hc.1 r).comp (measurable_id.prodMk measurable_const))).aestronglyMeasurable) hT
-  simpa only [Function.comp_def, heq] using hc.2.2 x r f hf
+  simpa [Function.comp_def, heq] using hc.2.2 x r f hf
 
 theorem regularizedGMC_measurePreserving
     {Ω Ω' : Type*} [MeasurableSpace Ω] [MeasurableSpace Ω']
@@ -61,7 +59,7 @@ theorem regularizedGMC_measurePreserving
       exact (integral_map hT.aemeasurable
         (((hc.1 r).comp (measurable_id.prodMk measurable_const)).pow_const 2).aestronglyMeasurable).symm
   unfold regularizedGMC
-  simp only [Function.comp_def, hv]
+  simp [hv]
 
 theorem isGMCOf_measurePreserving
     {Ω Ω' : Type*} [MeasurableSpace Ω] [MeasurableSpace Ω']
@@ -75,7 +73,7 @@ theorem isGMCOf_measurePreserving
   have h := tendstoInMeasure_measurePreserving P P' T hT _ _ atTop (hconv f)
   change TendstoInMeasure P' (fun r ω => ∫ x, f x ∂regularizedGMC P' (Xc ∘ T) γ r ω)
     atTop (fun ω => ∫ x, f x ∂M (T ω))
-  simpa only [regularizedGMC_measurePreserving P P' T hT X Xc hc] using h
+  simpa [regularizedGMC_measurePreserving P P' T hT X Xc hc] using h
 
 
 end DOZZ.Proofs

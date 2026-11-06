@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Reflected.WilliamsExpectationSqueeze
-public import DOZZ.FourPoint.Reflected.WilliamsRealCutData
-public import DOZZ.FourPoint.Reflected.SourceParetoWeights
-public import DOZZ.FourPoint.Reflected.ReferenceParetoLaw
+import DOZZ.FourPoint.Reflected.WilliamsExpectationSqueeze
+import DOZZ.FourPoint.Reflected.WilliamsRealCutData
+import DOZZ.FourPoint.Reflected.SourceParetoWeights
+import DOZZ.FourPoint.Reflected.ReferenceParetoLaw
 import Mathlib.Tactic
 /-! Signed Williams expectation bounds on the supplied source and reflection carriers. -/
-@[expose] public section
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -56,7 +54,7 @@ theorem reflected_source_williams_expectation_squeeze
     Xc hc ν h p α₁ α₂ α₃ ξ (sub_pos.mpr hα₁) hh hp hξ hξ₁ hα₁ hα₂ hα₃ z hz0 hz1 hz
   have hInv := (reflected_radial_scale_real_expectation P X hX γ hγ hγ₂ M hM Xc hc
     ν h 0 α₁ α₂ α₃ ξ p hh hξ hξ₁ hp.le z hz0 hz).1
-  simp only [Real.rpow_zero,one_mul] at hInv
+  simp [Real.rpow_zero,one_mul] at hInv
   have hF := reflected_radial_scale_real_expectation P X hX γ hγ hγ₂ M hM Xc hc
     ν h 1 α₁ α₂ α₃ ξ (p+1) hh hξ hξ₁ (by linarith only [hp]) z hz0 hz
   have hAm : AEMeasurable A P :=
@@ -64,17 +62,17 @@ theorem reflected_source_williams_expectation_squeeze
       (equatorGFF_GMC_aemeasurable P X hX γ hγ hγ₂ M hM)).ennreal_toReal
   have hcoord := (hc.2.1 0 (-Real.log ‖z‖+h)).aemeasurable
   have hbm : AEMeasurable b P := by
-    dsimp only [b,reflected_radial_scale]
+    dsimp [b,reflected_radial_scale]
     exact ((hcoord.const_mul γ).sub aemeasurable_const).sub aemeasurable_const |>.exp
   have hbp : ∀ᵐ ω ∂P, 0 ≤ b ω := ae_of_all P fun _ => (Real.exp_pos _).le
   have hFi : Integrable (fun ω => b ω*(A ω)^(-p-1)) P := by
-    simpa only [Real.rpow_one,show -(p+1) = -p-1 by ring] using hF.1
+    simpa [Real.rpow_one,show -(p+1) = -p-1 by ring] using hF.1
   have hbnd := reflected_williams_expectation_squeeze P R p γ H hp hγ.le A b
     (fun v : ℝ × Ω => v.1) _ _ _ hAp hbp hcuts hAm hbm
       measurable_fst.aemeasurable hJm hKm hjm hInv hFi hJi
   have heF : (∫ ω, b ω*(A ω)^(-p-1) ∂P) =
       (∫⁻ ω, ENNReal.ofReal (b ω)*gammaHalfOuterMass γ α₁ α₂ α₃ (M ω) z ξ ^(-(p+1)) ∂P).toReal := by
-    simpa only [Real.rpow_one,show -(p+1) = -p-1 by ring] using hF.2
+    simpa [Real.rpow_one,show -(p+1) = -p-1 by ring] using hF.2
   have h4 : 1 < 4/γ^2 := by
     rw [lt_div_iff₀ (sq_pos_of_pos hγ)]
     nlinarith only [hγ,hγ₂]
@@ -82,11 +80,9 @@ theorem reflected_source_williams_expectation_squeeze
       (∫⁻ ω, twoSidedReflectionMass γ B Z ω ∂P).toReal := by
     have he := integral_prod_mul (fun _ : ℝ => (1 : ℝ))
       (fun ω => (twoSidedReflectionMass γ B Z ω).toReal) (μ := μ) (ν := P)
-    simp only [one_mul,integral_const,probReal_univ,smul_eq_mul] at he
+    simp [one_mul,integral_const,probReal_univ,smul_eq_mul] at he
     rw [he]
-    simpa only [Real.rpow_one,ENNReal.rpow_one] using
+    simpa [Real.rpow_one,ENNReal.rpow_one] using
       (reflected_reflection_real_moment P γ α₁ 1 B Z hα₁ hData h4).2
-  rw [heF,heJ] at hbnd
-  exact hbnd
-
+  rwa [heF,heJ] at hbnd
 end DOZZ.Proofs

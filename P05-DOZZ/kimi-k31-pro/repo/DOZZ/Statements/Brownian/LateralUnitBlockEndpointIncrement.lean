@@ -1,2 +1,1 @@
-module
-public import DOZZ.Statements.Brownian.BrownianPathValue
+import DOZZ.Statements.Brownian.BrownianPathValue

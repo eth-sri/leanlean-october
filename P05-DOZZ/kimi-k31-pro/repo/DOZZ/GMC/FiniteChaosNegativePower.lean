@@ -2,16 +2,14 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.FiniteChaosGaussianLaplaceFintype
-public import DOZZ.GMC.FiniteChaosMellin
-public import DOZZ.Statements.GMC.FiniteChaosMoment
-public import Mathlib.MeasureTheory.Function.SpecialFunctions.Basic
+import DOZZ.GMC.FiniteChaosGaussianLaplaceFintype
+import DOZZ.GMC.FiniteChaosMellin
+import DOZZ.Statements.GMC.FiniteChaosMoment
+import Mathlib.MeasureTheory.Function.SpecialFunctions.Basic
 
 /-! Negative finite-chaos powers from the finite Laplace comparison. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal Distributions
@@ -76,6 +74,6 @@ theorem finite_rpow_neg_lintegral_eq_weighted_laplace
           (∫⁻ ω, ENNReal.ofReal (Real.exp (-(m ω * t))) ∂P) ∂volume := by
           congr 1
           apply lintegral_congr_ae
-          exact hfactor
+          assumption
 
 end DOZZ.Proofs

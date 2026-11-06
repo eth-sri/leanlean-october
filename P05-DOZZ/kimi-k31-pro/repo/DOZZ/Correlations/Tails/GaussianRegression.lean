@@ -2,16 +2,14 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GFFStructure.OffCenterDecomposition
-public import DOZZ.Statements.GFFStructure.CircleAverageExteriorBrownian
+import DOZZ.GFFStructure.OffCenterDecomposition
+import DOZZ.Statements.GFFStructure.CircleAverageExteriorBrownian
 
 /-! Gaussian regression of the correlated off-center pin in the one-insertion tail argument.
 The radial Brownian motion is independent of the entire pin/lateral block;
 subtracting the regression on the pin separates that block into independent parts. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal NNReal

@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.BPZ.WardLimitConvA
+import DOZZ.FourPoint.BPZ.WardLimitConvA
 
 /-! # Limits of the double integrals of the cutoff Ward identity
 
@@ -14,7 +13,6 @@ limit chaos: the kernels are bounded uniformly, coincide with the limit kernel a
 diagonal up to the uniformly convergent pinned weights, and the limit chaos has no atoms. The
 far-region test functions converge as random test functions. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped ENNReal NNReal
@@ -42,7 +40,6 @@ theorem bpz_three_frac_mul_le_one {S K V : ℝ} (hS : 0 ≤ S) (hK : 0 ≤ K) (h
     S * K * V / ((S + 1) * (K + 1) * (V + 1)) ≤ 1 := by
   rw [div_le_one (by positivity)]
   have h1 : S * K ≤ (S + 1) * (K + 1) := by nlinarith
-  have h2 : S * K * V ≤ (S + 1) * (K + 1) * V := mul_le_mul_of_nonneg_right h1 hV
   nlinarith [mul_nonneg (mul_nonneg hS hK) hV]
 
 /-- The antisymmetrized limit kernel is uniformly continuous in the first variable away from

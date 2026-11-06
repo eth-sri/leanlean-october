@@ -2,11 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.Defs.ShiftCoeffA
-public import DOZZ.Statements.Complex.HorizontalStrip
-public import Mathlib.Analysis.Meromorphic.Complex
+import DOZZ.Statements.Defs.ShiftCoeffA
+import DOZZ.Statements.Complex.HorizontalStrip
+import Mathlib.Analysis.Meromorphic.Complex
 import DOZZ.ShiftEquations.Quotient.Divisors
 import DOZZ.Complex.Basic
 
@@ -18,7 +17,6 @@ reflection `z ↦ c - z` preserve horizontal strips and meromorphy. Identities b
 that hold frequently near one point of a strip hold near every point of it.
 -/
 
-@[expose] public section
 
 open Filter Topology Set
 
@@ -44,10 +42,7 @@ theorem meromorphic_shiftCoeffA (γ : ℝ) (χ α₂ α₃ : ℂ) :
 
 /-- Real translations preserve horizontal strips. -/
 theorem add_ofReal_mem_horizontalStrip_glue {h : ℝ} {z : ℂ} (hz : z ∈ horizontalStrip h) (t : ℝ) :
-    z + (t : ℂ) ∈ horizontalStrip h := by
-  have hz' : |z.im| < h := hz
-  change |(z + (t : ℂ)).im| < h
-  simpa using hz'
+    z + (t : ℂ) ∈ horizontalStrip h := DOZZ.Proofs.add_ofReal_mem_horizontalStrip hz t
 
 /-- Reflections across real points preserve horizontal strips. -/
 theorem ofReal_sub_mem_horizontalStrip_glue {h : ℝ} {z : ℂ} (hz : z ∈ horizontalStrip h) (t : ℝ) :
@@ -75,7 +70,7 @@ theorem isPreconnected_horizontalStrip (h : ℝ) : IsPreconnected (horizontalStr
     change |(a • x + b • y).im| < h
     have hx' : |x.im| < h := hx
     have hy' : |y.im| < h := hy
-    simp only [Complex.add_im, Complex.real_smul, Complex.mul_im, Complex.ofReal_re,
+    simp [Complex.add_im, Complex.real_smul, Complex.mul_im, Complex.ofReal_re,
       Complex.ofReal_im, zero_mul, add_zero]
     calc |a * x.im + b * y.im| ≤ |a * x.im| + |b * y.im| := abs_add_le _ _
       _ = a * |x.im| + b * |y.im| := by rw [abs_mul, abs_mul, abs_of_nonneg ha, abs_of_nonneg hb]
@@ -83,7 +78,7 @@ theorem isPreconnected_horizontalStrip (h : ℝ) : IsPreconnected (horizontalStr
           rcases ha.lt_or_eq with ha' | ha'
           · nlinarith [mul_le_mul_of_nonneg_left hy'.le hb]
           · subst ha'
-            simp only [zero_add, zero_mul] at hab ⊢
+            simp [zero_add, zero_mul] at hab ⊢
             rw [hab]
             linarith
       _ = h := by rw [← add_mul, hab, one_mul]
@@ -91,4 +86,3 @@ theorem isPreconnected_horizontalStrip (h : ℝ) : IsPreconnected (horizontalStr
 
 end DOZZ.Proofs
 
-end

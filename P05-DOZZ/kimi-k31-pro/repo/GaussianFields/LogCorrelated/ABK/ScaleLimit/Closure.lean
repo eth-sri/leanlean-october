@@ -3,9 +3,8 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Scott Armstrong, Amélie Loher
 -/
-module
 
-public import GaussianFields.LogCorrelated.ABK.ScaleLimit.PowerDecomposition
+import GaussianFields.LogCorrelated.ABK.ScaleLimit.PowerDecomposition
 
 /-!
 # GaussianFields ABK scale limit closure
@@ -13,7 +12,6 @@ public import GaussianFields.LogCorrelated.ABK.ScaleLimit.PowerDecomposition
 Port of the corresponding GaussianFields source module.
 -/
 
-public section
 
 open Filter MeasureTheory ProbabilityTheory
 open scoped ENNReal InnerProductSpace NNReal ProbabilityTheory Topology
@@ -125,7 +123,7 @@ theorem exists_abkScaleProductSection_bounds {d : Nat}
             ring_nf
 
 /-- Scale majorant for Abel regularization: an extra `r^{-1/2}` is reserved near zero. -/
-@[expose]
+
 noncomputable def abkRegularizedScaleMajorant (d : Nat) (C0 Cinf : ℝ) : ℝ → ℝ :=
   (Set.Ioc (0 : ℝ) 1).indicator (fun r : ℝ => C0 * r ^ ((d : ℝ) - 3 / 2)) +
     (Set.Ioi (1 : ℝ)).indicator (fun r : ℝ => Cinf * r ^ (-3 : ℝ))
@@ -177,8 +175,7 @@ theorem norm_abkRegularizedScaleProductSection_le_majorant {d : Nat}
     · have hsmallMem : r ∈ Set.Ioc (0 : ℝ) 1 := ⟨hrpos, hrle⟩
       have hlargeNot : r ∉ Set.Ioi (1 : ℝ) := not_lt.mpr hrle
       have hsec := hsmall r hrpos hrle
-      have hpow_le : r ^ (-α) ≤ r ^ (-(1 / 2 : ℝ)) := by
-        exact (Real.antitone_rpow_of_base_le_one hrpos hrle) (by linarith)
+      have hpow_le : r ^ (-α) ≤ r ^ (-(1 / 2 : ℝ)) := (Real.antitone_rpow_of_base_le_one hrpos hrle) (by linarith)
       calc
         ‖abkRegularizedScaleProductSection ζ ψ φ α r‖
             = r ^ (-α) * |abkScaleProductSection ζ ψ φ r| := by
@@ -324,10 +321,8 @@ theorem covariance_abkLogCorrelatedFieldL2Canonical_eq_logCovariancePairing {d :
       ring_nf
     · rw [ite_eq_right hr, abkScaleProductSection_eq_zero_of_not_pos ζ ψ φ hr]
       ring_nf
-  rw [hscale]
-  rw [integral_abkScaleProductSection_eq_m0_logCovariancePairing hd ζ ψ φ]
+  rw [hscale, integral_abkScaleProductSection_eq_m0_logCovariancePairing hd ζ ψ φ]
   exact abkNormalizationRadicand_mul_logCovarianceLimit ζ ψ φ
 
 end GaussianFields
 
-end

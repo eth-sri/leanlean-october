@@ -2,9 +2,7 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.Correlations.Symmetry.ReflectionChaosMeasure
-@[expose] public section
+import DOZZ.Correlations.Symmetry.ReflectionChaosMeasure
 open MeasureTheory Filter
 open scoped Distributions Topology ENNReal
 namespace DOZZ.Proofs
@@ -90,6 +88,6 @@ theorem isGMCOf_symmetryRepinnedChaos
     Real.measurable_exp.comp (((hXc.1 0).comp
       (measurable_id.prodMk measurable_const)).const_mul (-γ))
   have hscaled := tendstoInMeasure_mul_same_space _ _ _ hLmeas hsigned
-  simpa only [regularizedGMC_symmetryRepinned_integral P X hX Xc hXc,
+  simpa [regularizedGMC_symmetryRepinned_integral P X hX Xc hXc,
     symmetryRepinnedChaos_integral] using hscaled
 end DOZZ.Proofs

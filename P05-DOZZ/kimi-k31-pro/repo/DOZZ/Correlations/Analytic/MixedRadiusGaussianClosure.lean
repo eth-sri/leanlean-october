@@ -2,13 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.Construction.GMCVertexTiltInputs
+import DOZZ.GMC.Construction.GMCVertexTiltInputs
 
 /-! Gaussian closure for inward and outward vertices at different circle radii. -/
 
-@[expose] public section
 open MeasureTheory Filter Topology
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -20,17 +18,17 @@ theorem gaussianL2Limit_add {Ω : Type*} [MeasurableSpace Ω]
     IsGaussianL2Limit P X (fun ω => L ω + K ω) := by
   obtain ⟨hmL, f, hf⟩ := hL
   obtain ⟨hmK, g, hg⟩ := hK
-  refine ⟨by simpa only [Pi.add_def] using hmL.add hmK, (fun n => f n + g n), ?_⟩
+  refine ⟨by simpa [Pi.add_def] using hmL.add hmK, (fun n => f n + g n), ?_⟩
   have he n : (fun ω => L ω + K ω - X ω (f n + g n)) =
       (fun ω => L ω - X ω (f n)) + (fun ω => K ω - X ω (g n)) := by
     funext ω
     rw [map_add]
-    simp only [Pi.add_apply]
+    simp [Pi.add_apply]
     ring
   have hb n := eLpNorm_add_le (μ := P) (p := (2 : ℝ≥0∞))
     (f := fun ω => L ω - X ω (f n)) (g := fun ω => K ω - X ω (g n)) (by norm_num)
   have ht := hf.add hg
-  simp only [zero_add] at ht
+  simp [zero_add] at ht
   apply tendsto_of_tendsto_of_tendsto_of_le_of_le tendsto_const_nhds ht
     (fun _ => zero_le)
   intro n
@@ -56,7 +54,7 @@ theorem isGaussianL2Limit_finset_sum {Ω I : Type*} [MeasurableSpace Ω]
   | @insert i S hi ih =>
     have hiL := hL i (Finset.mem_insert_self _ _)
     have hSL := ih (fun j hj => hL j (Finset.mem_insert_of_mem hj))
-    simpa only [Finset.sum_insert hi] using
+    simpa [Finset.sum_insert hi] using
       gaussianL2Limit_add P X (L i) (fun ω => ∑ j ∈ S, L j ω) hiL hSL
 
 /-- Mixed inward/outward circle vertices supply the literal Gaussian closure premise of GMC tilt. -/

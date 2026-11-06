@@ -2,11 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Dual.FullSeparatedLimit
+import DOZZ.FourPoint.Dual.FullSeparatedLimit
 import Mathlib.Tactic
 /-! Actual lateral decoupling is negligible at the prescribed dual fusion exponent. -/
-@[expose] public section
 open MeasureTheory ProbabilityTheory Set Filter Topology
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -40,8 +38,8 @@ theorem dual_full_copied_inverse_littleO
     α₁ α₂ α₃ q ξ κ h hq hα₁ hα₂ hα₃ hβ hξ hξ1 hslack
   refine ⟨N, hN, ?_⟩
   have ht := hfull.add hcopy
-  simp only [zero_add] at ht
+  simp [] at ht
   apply ht.congr'
-  exact Eventually.of_forall fun z => by dsimp only; ring
+  exact Eventually.of_forall fun z => by dsimp; ring
 
 end DOZZ.Proofs

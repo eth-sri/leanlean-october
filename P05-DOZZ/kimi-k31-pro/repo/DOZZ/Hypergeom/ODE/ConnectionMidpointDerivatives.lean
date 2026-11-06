@@ -2,16 +2,14 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Hypergeom.ODE.ConnectionMidpointValues
-public import DOZZ.Hypergeom.ODE.ParameterSpatialDerivative
-public import DOZZ.Hypergeom.BasisRegularity
-public import DOZZ.Hypergeom.ODE.CutPlaneTopology
+import DOZZ.Hypergeom.ODE.ConnectionMidpointValues
+import DOZZ.Hypergeom.ODE.ParameterSpatialDerivative
+import DOZZ.Hypergeom.BasisRegularity
+import DOZZ.Hypergeom.ODE.CutPlaneTopology
 
 /-! Parameter regularity of the spatial derivatives in the midpoint connection matrix. -/
 
-@[expose] public section
 
 open scoped Topology
 
@@ -98,7 +96,7 @@ private theorem familyParameterDeriv_comp_differentiableAt
     ((fun q : ℂ × ℂ × ℂ => deriv (fun w => H q.1 q.2.1 q.2.2 w) z) ∘ S) p
   exact hAt.comp p hSDiff
 
-private theorem gaussSlitPlane_isOpen_for_connection : IsOpen gaussSlitPlane := by
+theorem gaussSlitPlane_isOpen_for_connection : IsOpen gaussSlitPlane := by
   change IsOpen ({z : ℂ | z.im ≠ 0} ∪ {z | z.re < 1})
   exact (isOpen_compl_singleton.preimage Complex.continuous_im).union
     (isOpen_Iio.preimage Complex.continuous_re)
@@ -130,7 +128,7 @@ private theorem gaussFPlus_deriv_midpoint_formula
     have hmidCut : (1 / 2 : ℂ) ∈ gaussCutPlane := by norm_num [gaussCutPlane]
     have h := Complex.deriv_cpow_const (c := 1 - p.2.2)
       (gaussCutPlane_subset_Complex_slitPlane hmidCut)
-    simpa only [show (1 - p.2.2) - 1 = -p.2.2 by ring] using h
+    simpa [show (1 - p.2.2) - 1 = -p.2.2 by ring] using h
   change deriv ((fun z : ℂ => z ^ (1 - p.2.2)) *
     H (p.1 - p.2.2 + 1) (p.2.1 - p.2.2 + 1) (2 - p.2.2)) (1 / 2 : ℂ) = _
   rw [hmul.deriv, hpowDeriv]
@@ -155,7 +153,7 @@ theorem gaussFMinus_midpoint_deriv_differentiableAt_params
     (1 / 2 : ℂ) (by norm_num)
   change DifferentiableAt ℂ
     (fun q : ℂ × ℂ × ℂ => deriv (fun z => H q.1 q.2.1 q.2.2 z) (1 / 2 : ℂ)) p
-  exact h
+  assumption
 
 /-- The derivative of the second zero-basis function at the midpoint varies holomorphically in
 the connection parameters. -/
@@ -242,8 +240,6 @@ theorem gaussGMinus_midpoint_deriv_differentiableAt_params
       (fun q => deriv (gaussGMinus H q.1 q.2.1 q.2.2) (1 / 2 : ℂ)) p := by
   have hSdiff : DifferentiableAt ℂ midpointGMinusParameters p := by
     fun_prop [midpointGMinusParameters]
-  have hder := familyParameterDeriv_comp_differentiableAt hH p midpointGMinusParameters
-    (midpointGMinusParameters_mem hp) hSdiff (1 / 2 : ℂ) (by norm_num)
   have hlocal : (fun q : ℂ × ℂ × ℂ =>
       deriv (gaussGMinus H q.1 q.2.1 q.2.2) (1 / 2 : ℂ)) =ᶠ[𝓝 p]
       (fun q => -deriv (H q.1 q.2.1 (1 + q.1 + q.2.1 - q.2.2)) (1 / 2 : ℂ)) := by

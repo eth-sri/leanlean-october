@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import Mathlib.MeasureTheory.Integral.IntegralEqImproper
-public import Mathlib.Probability.Distributions.Gaussian.Real
+import Mathlib.MeasureTheory.Integral.IntegralEqImproper
+import Mathlib.Probability.Distributions.Gaussian.Real
 
 /-! One-dimensional Gaussian integration by parts for the standard normal law. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter
 open scoped NNReal Topology
@@ -74,7 +72,7 @@ theorem gaussianReal_standard_stein
               fun x => x * g x * gaussianPDFReal 0 1 x by
                 funext x
                 ring]
-            exact hpdf_id'
+            assumption
     _ = - (- ∫ x, g' x * gaussianPDFReal 0 1 x ∂volume) := by rw [hibp]
     _ = ∫ x, g' x * gaussianPDFReal 0 1 x ∂volume := by ring
     _ = ∫ x, gaussianPDFReal 0 1 x * g' x ∂volume := hgauss

@@ -2,13 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.RetainedAnnuliScalar
+import DOZZ.FourPoint.RetainedAnnuliScalar
 
 /-! Multivariate Gaussian comparison with an explicit common-scalar factor. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped ENNReal NNReal Distributions
@@ -57,20 +55,18 @@ theorem retained_fields_multi_negative_compare
   have hcovc (x y : S) :
       (∫ w, Ψc w x * Ψc w y ∂PY.prod (gaussianReal 0 1)) =
         (∫ ω, Ψ ω x * Ψ ω y ∂PY) + C := by
-    simpa only [gaussianCovariance, Ψc, hc] using
+    simpa [gaussianCovariance, Ψc, hc] using
       gaussianCovariance_field_independent_common_scalar_add PY Ψ hΨ c x y
   have hcov' : ∀ᵐ xy ∂ν.prod ν,
       ∫ ω, Φ ω xy.1 * Φ ω xy.2 ∂PX ≤
         ∫ w, Ψc w xy.1 * Ψc w xy.2 ∂PY.prod (gaussianReal 0 1) := by
     filter_upwards [hcov] with xy hxy
-    rw [hcovc]
-    exact hxy
+    rwa [hcovc]
   have hdiag' : ∀ᵐ x ∂ν,
       ∫ ω, Φ ω x ^ 2 ∂PX ≤ ∫ w, Ψc w x ^ 2 ∂PY.prod (gaussianReal 0 1) := by
     filter_upwards [hdiag] with x hx
-    simp only [pow_two] at hx ⊢
-    rw [hcovc]
-    exact hx
+    simp [pow_two] at hx ⊢
+    rwa [hcovc]
   have hk := kahane_field_multi_negative_power PX (PY.prod (gaussianReal 0 1)) Φ Ψc
     hΦ hΨc ν h hh hhb γ q hq hcov' hdiag'
   change (∫⁻ ω, ∏ k, (fieldChaosMass PX Φ ν (h k) γ ω) ^ (-q k) ∂PX) ≤
@@ -89,8 +85,7 @@ theorem retained_fields_multi_negative_compare
         ∏ k, (ENNReal.ofReal (Real.exp (γ * c * w.2 - γ ^ 2 * c ^ 2 / 2)) * F k w.1) ^ (-q k) := by
     apply Finset.prod_congr rfl
     intro k _
-    rw [fieldChaosMass_independent_common_scalar_factor PY Ψ hΨ ν (h k) γ c w.1 w.2]
-    rw [show γ ^ 2 / 2 * c ^ 2 = γ ^ 2 * c ^ 2 / 2 by ring]
+    rw [fieldChaosMass_independent_common_scalar_factor PY Ψ hΨ ν (h k) γ c w.1 w.2, show γ ^ 2 / 2 * c ^ 2 = γ ^ 2 * c ^ 2 / 2 by ring]
   rw [lintegral_congr (hident), hfactor] at hk
   have hsum : (∑ k, -q k * c) = -(∑ k, q k) * c := by
     rw [← Finset.sum_mul, Finset.sum_neg_distrib]
@@ -101,7 +96,5 @@ theorem retained_fields_multi_negative_compare
       γ ^ 2 * C / 2 * ((∑ k, q k) ^ 2 + ∑ k, q k) := by
     rw [mul_pow, neg_sq, hc]
     ring
-  rw [he] at hk
-  exact hk
-
+  rwa [he] at hk
 end DOZZ.Proofs

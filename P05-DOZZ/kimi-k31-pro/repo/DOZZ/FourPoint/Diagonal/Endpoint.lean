@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.Diagonal.MassContinuity
+import DOZZ.FourPoint.Diagonal.MassContinuity
 import DOZZ.GMC.SharpMoments.SeibergMoment
 
 /-! The physical reduced four-point function is continuous at zero. -/
 
-@[expose] public section
 open MeasureTheory Filter Topology Set
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -59,7 +57,7 @@ theorem fourPointT_continuousAt_zero
     · exact Eventually.of_forall fun z => (hm z).pow_const (-s)
     · filter_upwards [Metric.ball_mem_nhds (0 : ℂ) zero_lt_one] with z hz
       have hz' : ‖z‖ ≤ 1 := (show ‖z‖ < 1 by
-        simpa only [Metric.mem_ball, dist_zero_right] using hz).le
+        simpa [Metric.mem_ball, dist_zero_right] using hz).le
       exact ae_of_all P fun ω => hbnd z hz' ω
     · exact hboundfin.ne
     · filter_upwards [hmass] with ω hω

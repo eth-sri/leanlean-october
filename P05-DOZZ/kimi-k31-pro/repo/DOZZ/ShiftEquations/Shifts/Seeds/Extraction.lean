@@ -2,13 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.ShiftEquations.Shifts.Seeds.Continuation
-public import DOZZ.Statements.FourPoint.DualCrossingL
-public import DOZZ.Statements.Hypergeom.GaussGMinus
-public import DOZZ.Statements.Hypergeom.GaussGPlus
-public import DOZZ.ShiftEquations.Rbar.Multiplier
+import DOZZ.ShiftEquations.Shifts.Seeds.Continuation
+import DOZZ.Statements.FourPoint.DualCrossingL
+import DOZZ.Statements.Hypergeom.GaussGMinus
+import DOZZ.Statements.Hypergeom.GaussGPlus
+import DOZZ.ShiftEquations.Rbar.Multiplier
 import DOZZ.FourPoint.Crossing.ConnectionDet
 import DOZZ.FourPoint.Crossing.DiagonalUniqueness
 import DOZZ.FourPoint.Dual.ConnectionAlgebra
@@ -45,7 +44,6 @@ Fix a point `(α, ε, α')` of the seed domain `α, ε, α' < Q`, `α + ε + α'
   `e₁ = R(ε) C(2Q - ε - 2/γ, α, α')` and `d₁ = R(α) C(2Q - α - 2/γ, ε, α')`.
 -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal Topology
@@ -159,14 +157,14 @@ theorem dual_two_channel_extraction {Ω : Type*} [MeasurableSpace Ω]
   -- the single-valuedness constraint and the vanishing mixed term
   have hratio := gaussCoefficientRatio_mul_K₂_add_K₁_eq_zero a b c hK₂.ne'
   have hconstraint : gaussK₁ a b c * d₀ + gaussK₂ a b c * d₁ = 0 := by
-    simp only [d₁]
+    simp [d₁]
     linear_combination d₀ * hratio
   have hcross : d₀ * dualConnU a b c * dualConnV a b c +
       d₁ * dualConnW a b c * dualConnX a b c = 0 := by
     calc
       _ = Real.Gamma (c - a - b) * Real.Gamma (a + b - c) *
           (gaussK₁ a b c * d₀ + gaussK₂ a b c * d₁) := by
-        simp only [dualConnU, dualConnV, dualConnW, dualConnX, gaussK₁, gaussK₂]
+        simp [dualConnU, dualConnV, dualConnW, dualConnX, gaussK₁, gaussK₂]
         ring
       _ = 0 := by rw [hconstraint, mul_zero]
   have htransfer := gauss_diagonal_one_basis_of_constraint hH a b c d₀ d₁ hcn hδn hconstraint
@@ -182,7 +180,7 @@ theorem dual_two_channel_extraction {Ω : Type*} [MeasurableSpace Ω]
     obtain ⟨hm, hp⟩ := dual_channel_basis H hγ.ne' α ε α' z
     rw [dual_fourPoint_reflection P X M γ μ α ε α' hγ hγ2 hX hM z,
       hclass₁ (1 - z) (one_sub_gaussCutPlane_subset_gaussCutPlane hz), hm, hp]
-    simp only [e₀, e₁]
+    simp [e₀, e₁]
     ring
   have he : ∀ z ∈ gaussCutPlane,
       (d₀ * dualConnU a b c ^ 2 + d₁ * dualConnW a b c ^ 2) * ‖gaussGMinus H a b c z‖ ^ 2 +
@@ -194,7 +192,7 @@ theorem dual_two_channel_extraction {Ω : Type*} [MeasurableSpace Ω]
         (htransfer z hz).symm
       _ = fourPointT P M γ μ (-(2 / γ)) α ε α' z := by
         rw [hclass₀ z hz]
-        simp only [d₁, d₀]
+        simp [d₁, d₀]
         ring
       _ = _ := hone z hz
   have huniq := crossing_one_channel_coefficients_unique hH a b c _ _ e₀ e₁ hδn he
@@ -284,16 +282,7 @@ theorem dual_seed_two_multiplier (γ α ε α' : ℝ) (hγ : 0 < γ) (hγ2 : γ 
   have hdet : dualConnU a b c * dualConnX a b c - dualConnV a b c * dualConnW a b c =
       (c - 1) / (c - a - b) := crossing_connection_det_real a b c hcn hδn
   -- the Gamma values in `u` and `x`
-  have hGc : Real.Gamma c ≠ 0 := (Real.Gamma_pos_of_pos hc).ne'
   have hGδ : Real.Gamma (c - a - b) ≠ 0 := (Real.Gamma_pos_of_pos hδ).ne'
-  have hGca : Real.Gamma (c - a) ≠ 0 := (Real.Gamma_pos_of_pos (by linarith)).ne'
-  have hGcb : Real.Gamma (c - b) ≠ 0 := (Real.Gamma_pos_of_pos (by linarith)).ne'
-  have hGac : Real.Gamma (a - c + 1) ≠ 0 := (Real.Gamma_pos_of_pos (by linarith)).ne'
-  have hGbc : Real.Gamma (b - c + 1) ≠ 0 := (Real.Gamma_pos_of_pos (by linarith)).ne'
-  have hG2c : Real.Gamma (2 - c) ≠ 0 := (Real.Gamma_pos_of_pos (by linarith)).ne'
-  have hu : dualConnU a b c ≠ 0 := by
-    unfold dualConnU
-    exact mul_ne_zero (mul_ne_zero (mul_ne_zero hGc hGδ) (inv_ne_zero hGca)) (inv_ne_zero hGcb)
   -- `x det / u` in the form of the Gamma recurrence
   have hxu : dualConnX a b c * ((c - 1) / (c - a - b)) / dualConnU a b c =
       ((c - 1) / (c - a - b)) * (Real.Gamma (2 - c) / Real.Gamma c) *
@@ -370,4 +359,3 @@ theorem dual_seed_two_identity {Ω : Type*} [MeasurableSpace Ω]
 
 end DOZZ.Proofs
 
-end

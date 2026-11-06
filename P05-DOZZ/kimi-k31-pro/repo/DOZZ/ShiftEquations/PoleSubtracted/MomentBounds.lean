@@ -2,11 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.ShiftEquations.PoleSubtracted.MassBounds
-public import DOZZ.Statements.Defs.IsGMCOf
-public import DOZZ.Statements.Defs.IsEquatorGFF
+import DOZZ.ShiftEquations.PoleSubtracted.MassBounds
+import DOZZ.Statements.Defs.IsGMCOf
+import DOZZ.Statements.Defs.IsEquatorGFF
 import DOZZ.GMC.SharpMoments.SeibergMoment
 import DOZZ.GMC.SharpMoments.MomentRange
 import DOZZ.GMC.BallAnnulus.Ball
@@ -25,7 +24,6 @@ The probabilistic inputs of [KRV, §10.2] for the limit chaos `M`:
 * Hölder's inequality with conjugate exponents `r`, `r/(r-1)`.
 -/
 
-@[expose] public section
 
 open MeasureTheory Filter Topology Set
 open scoped ENNReal NNReal
@@ -100,7 +98,7 @@ theorem lintegral_mass_univ_rpow_lt_top {Ω : Type*} [MeasurableSpace Ω] (P : M
   have h := coulombMass_moment_lt_top_of_pos P X hX γ hγ hγ2 M hM (![] : Fin 0 → ℂ)
     (Function.injective_of_subsingleton _) (![] : Fin 0 → ℝ) 0 t ht ht4 (fun k => k.elim0) hQ
   simp_rw [measure_univ_eq_coulombMass γ]
-  simpa only [ENNReal.rpow_eq_pow] using h
+  simpa [ENNReal.rpow_eq_pow] using h
 
 /-- The two poles are distinct. -/
 theorem injective_twoPoles : Function.Injective (![2, -2] : Fin 2 → ℂ) := by
@@ -131,7 +129,7 @@ theorem lintegral_totalMass_rpow_lt_top {Ω : Type*} [MeasurableSpace Ω] (P : M
         rw [Q]
         field_simp
         ring
-      simp only [Fin.mk_one, Matrix.cons_val_one, Matrix.cons_val_fin_one]
+      simp [Fin.mk_one, Matrix.cons_val_one, Matrix.cons_val_fin_one]
       rw [this]
       linarith
   have hinf : t < 2 / γ * (Q γ - 0) := by
@@ -147,9 +145,7 @@ theorem lintegral_totalMass_rpow_lt_top {Ω : Type*} [MeasurableSpace Ω] (P : M
     filter_upwards [gmc_atomless_of_isGMCOf P X hX γ hγ hγ2 M hM 2,
       gmc_atomless_of_isGMCOf P X hX γ hγ hγ2 M hM (-2)] with ω h2 h2'
     rw [totalMass_zero_eq_coulombMass γ η (M ω) h2 h2', ENNReal.rpow_eq_pow]
-  rw [lintegral_congr_ae hae]
-  exact h
-
+  rwa [lintegral_congr_ae hae]
 /-- The local mass has negative moments of all orders. -/
 theorem lintegral_localMass_rpow_neg_lt_top {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
     (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
@@ -247,4 +243,3 @@ theorem ae_totalMass_lt_top {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
 
 end DOZZ.Proofs
 
-end

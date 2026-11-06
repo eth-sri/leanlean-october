@@ -2,15 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Hypergeom.ODE.HomotopyGrid
-public import DOZZ.Hypergeom.ODE.PathLift
+import DOZZ.Hypergeom.ODE.HomotopyGrid
+import DOZZ.Hypergeom.ODE.PathLift
 
 /-! The finite homotopy grid supplies continuous Picard lifts on its lower and upper boundary
 paths, with equal endpoint values. -/
 
-@[expose] public section
 
 open Set
 
@@ -71,7 +69,6 @@ theorem homotopyGridRowChain_next_initial
     (homotopyGridRowChain G j hj (i + 1)).initial =
       (homotopyGridRowChain G j hj i).solution (G.node (i + 1) j) := by
   have hi' : i ≤ G.N := Nat.le_of_lt hi
-  have hi1 : i + 1 ≤ G.N := Nat.succ_le_iff.mpr hi
   simp [homotopyGridRowChain, homotopyGridRowDisk, Nat.min_eq_left hi',
     holomorphicDiskSolutionOfBound,
     finiteGridHorizontal, homotopyGridRight, localPicardTransfer, hi, hj]
@@ -120,8 +117,7 @@ theorem homotopy_grid_boundary_lifts_endpoint_eq_with_formulas
   have hN : 0 < N := G.N_pos
   have hNreal : 0 < (N : ℝ) := by exact_mod_cast hN
   have hNdiv : (N : ℝ) / (N : ℝ) = 1 := div_self hNreal.ne'
-  have hGNN : (G.N : ℝ) / (G.N : ℝ) = 1 := by
-    exact div_self (by exact_mod_cast G.N_pos.ne')
+  have hGNN : (G.N : ℝ) / (G.N : ℝ) = 1 := div_self (by exact_mod_cast G.N_pos.ne')
   have hbottomCont : ContinuousOn bottomPath (Icc (0 : ℝ) 1) := by
     apply hΓ.comp (by fun_prop)
     intro t ht
@@ -240,7 +236,7 @@ theorem homotopy_grid_boundary_lifts_endpoint_eq_with_formulas
     rw [hnode] at hinit
     have hinit' : (Db (i + 1)).initial = (Db i).solution
         (bottomPath (((i : ℝ) + 1) / (N : ℝ))) := by
-      simpa only [Db] using hinit
+      simpa [Db] using hinit
     have hstart : (Db i).solution ((Db (i + 1)).center) =
         (Db (i + 1)).solution ((Db (i + 1)).center) := by
       calc
@@ -259,10 +255,9 @@ theorem homotopy_grid_boundary_lifts_endpoint_eq_with_formulas
       rw [hbc i (Nat.le_of_lt hi)]
       have hstep : dist (bottomPath (((i : ℝ) + 1) / (N : ℝ)))
           (bottomPath ((i : ℝ) / (N : ℝ))) < G.r / 2 := by
-        have hnext := hnode
         have hcurr : G.node i 0 = bottomPath ((i : ℝ) / (N : ℝ)) := by
           simpa [bottomPath, N] using G.node_eq i (Nat.le_of_lt hi) 0 (by omega)
-        simpa only [hnode, hcurr] using hbdistance i hi
+        simpa [hnode, hcurr] using hbdistance i hi
       calc
         dist w (bottomPath ((i : ℝ) / (N : ℝ))) ≤
             dist w (bottomPath (((i : ℝ) + 1) / (N : ℝ))) +
@@ -277,7 +272,7 @@ theorem homotopy_grid_boundary_lifts_endpoint_eq_with_formulas
         ‖H w‖ ≤ G.M := by
       intro w hw
       have hw' : w ∈ Metric.ball (G.node (i + 1) 0) (G.r / 2) := by
-        simpa only [hnextCenter] using hw
+        simpa [hnextCenter] using hw
       exact (G.data (i + 1) hi1 0 (by omega)).bounded w
         (Metric.ball_subset_ball (by linarith only [G.r_pos]) hw')
     have hF : ∀ w ∈ Metric.ball (Db (i + 1)).center (G.r / 2),
@@ -307,7 +302,7 @@ theorem homotopy_grid_boundary_lifts_endpoint_eq_with_formulas
     rw [hnode] at hinit
     have hinit' : (Dt (i + 1)).initial = (Dt i).solution
         (topPath (((i : ℝ) + 1) / (N : ℝ))) := by
-      simpa only [Dt] using hinit
+      simpa [Dt] using hinit
     have hstart : (Dt i).solution ((Dt (i + 1)).center) =
         (Dt (i + 1)).solution ((Dt (i + 1)).center) := by
       calc
@@ -343,7 +338,7 @@ theorem homotopy_grid_boundary_lifts_endpoint_eq_with_formulas
         ‖H w‖ ≤ G.M := by
       intro w hw
       have hw' : w ∈ Metric.ball (G.node (i + 1) G.N) (G.r / 2) := by
-        simpa only [hnextCenter] using hw
+        simpa [hnextCenter] using hw
       exact (G.data (i + 1) hi1 G.N le_rfl).bounded w
         (Metric.ball_subset_ball (by linarith only [G.r_pos]) hw')
     have hF : ∀ w ∈ Metric.ball (Dt (i + 1)).center (G.r / 2),
@@ -382,8 +377,8 @@ theorem homotopy_grid_boundary_lifts_endpoint_eq_with_formulas
       funext i j v
       simp [right, homotopyGridRight]
     have hgridTransfer := G.transfer_eq
-    dsimp only at hgridTransfer
-    simpa only [← hright, N] using hgridTransfer
+    dsimp at hgridTransfer
+    simpa [← hright, N] using hgridTransfer
   have hbottomRoute : (Db N).initial =
       finiteGridHorizontal (homotopyGridRight G) 0 0 N y := by
     simpa [Db] using homotopyGridRowChain_initial G 0 (by omega) N le_rfl

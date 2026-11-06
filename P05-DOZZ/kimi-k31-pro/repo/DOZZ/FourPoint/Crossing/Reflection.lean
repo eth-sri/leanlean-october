@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.FourPoint.FourPointT
-public import DOZZ.ShiftEquations.Mobius.AffineMomentInf
+import DOZZ.Statements.FourPoint.FourPointT
+import DOZZ.ShiftEquations.Mobius.AffineMomentInf
 import Mathlib.Tactic
 
 /-! # Interchanging the zero and one channels
@@ -14,7 +13,6 @@ The affine GMC moment identity `coulombMass_affine_moment_inf`, including the ch
 implements the map z ↦ 1-z. All moments retain their totalized convention.
 -/
 
-public section
 open MeasureTheory
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -40,7 +38,7 @@ theorem gammaHalf_fourPoint_reflection {Ω : Type*} [MeasurableSpace Ω]
       fourPointT P M γ μ (-γ / 2) b a c (1 - z) := by
   have he : infSExp γ ![-γ / 2, a, b] c = fourPointSExp γ (-γ / 2) a b c := by
     unfold infSExp fourPointSExp
-    simp only [Fin.sum_univ_succ, Matrix.cons_val_zero, Matrix.cons_val_succ,
+    simp [Fin.sum_univ_succ, Matrix.cons_val_zero, Matrix.cons_val_succ,
       Fin.sum_univ_zero, add_zero]
     congr 1
     ring
@@ -55,7 +53,7 @@ theorem gammaHalf_fourPoint_reflection {Ω : Type*} [MeasurableSpace Ω]
     · simp
     · simp
   rw [hz, he] at hm
-  simp only [norm_neg, norm_one, Real.one_rpow, ENNReal.ofReal_one, one_mul] at hm
+  simp [norm_neg, norm_one, Real.one_rpow, ENNReal.ofReal_one, one_mul] at hm
   simp_rw [crossing_mass_swap_last] at hm
   have hs : fourPointSExp γ (-γ / 2) b a c = fourPointSExp γ (-γ / 2) a b c := by
     unfold fourPointSExp
@@ -64,6 +62,6 @@ theorem gammaHalf_fourPoint_reflection {Ω : Type*} [MeasurableSpace Ω]
   unfold fourPointT
   rw [hs]
   congr 2
-  simpa only [ENNReal.rpow_eq_pow] using hm.symm
+  simpa [ENNReal.rpow_eq_pow] using hm.symm
 
 end DOZZ.Proofs

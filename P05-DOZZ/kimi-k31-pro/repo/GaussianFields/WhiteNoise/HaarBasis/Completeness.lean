@@ -3,9 +3,8 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Scott Armstrong, Amélie Loher
 -/
-module
 
-public import GaussianFields.WhiteNoise.HaarBasis.DyadicAlgebra
+import GaussianFields.WhiteNoise.HaarBasis.DyadicAlgebra
 
 /-!
 # GaussianFields Haar basis completeness
@@ -13,7 +12,6 @@ public import GaussianFields.WhiteNoise.HaarBasis.DyadicAlgebra
 Port of the corresponding GaussianFields source module.
 -/
 
-public section
 
 open MeasureTheory
 open scoped BigOperators ENNReal InnerProductSpace Topology symmDiff
@@ -22,7 +20,7 @@ open Filter
 namespace GaussianFields
 
 /-- The finite scale-zero cell window with radius `n`. -/
-@[expose]
+
 def dyadicCellWindow (d n : Nat) : Finset (Fin d → ℤ) :=
   Fintype.piFinset fun _ : Fin d => Finset.Icc (-(n : ℤ)) (n : ℤ)
 
@@ -41,7 +39,7 @@ theorem dyadicCellWindow_mono {d m n : Nat} (hmn : m ≤ n) :
   exact ⟨le_trans (neg_le_neg hmn_int) (hcell r).1, le_trans (hcell r).2 hmn_int⟩
 
 /-- The finite union of scale-zero dyadic boxes in a coordinate radius `n`. -/
-@[expose]
+
 def dyadicBoxWindow (d n : Nat) : Set (Vec d) :=
   ⋃ cell ∈ dyadicCellWindow d n, dyadicBox 0 cell
 
@@ -50,7 +48,7 @@ theorem dyadicBoxWindow_eq_finsetUnion (d n : Nat) :
   rfl
 
 /-- The cells of a fixed scale `N` whose dyadic boxes make up the scale-zero window. -/
-@[expose]
+
 def dyadicWindowCellFinsetAtScale (d m N : Nat) : Finset (Fin d → ℤ) :=
   (dyadicCellWindow d m).biUnion (dyadicDescendantCellFinset N)
 
@@ -67,8 +65,7 @@ theorem dyadicBox_inter_dyadicBoxWindow_eq_finsetUnion {d : Nat}
     dyadicBox (j : ℤ) cell ∩ dyadicBoxWindow d m =
       dyadicBoxFinsetUnion (d := d) (j : ℤ)
         ({cell} ∩ dyadicWindowCellFinsetAtScale d m j) := by
-  rw [dyadicBoxFinsetUnion_inter]
-  rw [dyadicBoxFinsetUnion_singleton, dyadicBoxWindow_eq_finsetUnion_atScale]
+  rw [dyadicBoxFinsetUnion_inter, dyadicBoxFinsetUnion_singleton, dyadicBoxWindow_eq_finsetUnion_atScale]
 
 /-- Every dyadic-algebra set becomes a finite union of same-scale dyadic boxes after restriction to
 a finite dyadic window. -/
@@ -239,7 +236,7 @@ theorem tendsto_measure_diff_dyadicBoxWindow {d : Nat}
   simpa [Function.comp_def, htail_inter, tail, μ] using h
 
 /-- The dyadic scale-zero windows give finite spanning sets belonging to the dyadic algebra. -/
-@[expose]
+
 def finiteSpanningSetsIn_nonnegativeDyadicBoxAlgebra (d : Nat) :
     (volume : Measure (Vec d)).FiniteSpanningSetsIn (nonnegativeDyadicBoxAlgebra d) where
   set := dyadicBoxWindow d
@@ -373,8 +370,7 @@ theorem haarBasisSubmodule_topologicalClosure_eq_top_of_indicatorConstLp
       (by norm_num : (2 : ℝ≥0∞) ≠ ∞) ?_ ?_ hclosed
     · intro c s hs hμs_lt
       have hμs : (volume : Measure (Vec d)) s ≠ ∞ := ne_of_lt hμs_lt
-      rw [Lp.simpleFunc.coe_indicatorConst]
-      rw [← smul_indicatorConstLp_one hs hμs c]
+      rw [Lp.simpleFunc.coe_indicatorConst, ← smul_indicatorConstLp_one hs hμs c]
       exact M.smul_mem c (hindicator hs hμs)
     · intro f g _hf _hg _hdisjoint hf_mem hg_mem
       exact M.add_mem hf_mem hg_mem
@@ -387,7 +383,7 @@ theorem haarBasisSubmodule_topologicalClosure_eq_top (d : Nat) :
     (fun hs hμs => indicatorConstLp_mem_haarBasisSubmodule_topologicalClosure hs hμs)
 
 /-- The explicit inhomogeneous Haar system as a Hilbert basis of `L²(R^d)`. -/
-@[expose]
+
 noncomputable def haarHilbertBasis (d : Nat) :
     HilbertBasis (HaarBasisIndex d) ℝ (Lp ℝ 2 (volume : Measure (Vec d))) :=
   HilbertBasis.mk (orthonormal_haarBasisLp d) (by
@@ -401,4 +397,3 @@ theorem coe_haarHilbertBasis (d : Nat) :
 
 end GaussianFields
 
-end

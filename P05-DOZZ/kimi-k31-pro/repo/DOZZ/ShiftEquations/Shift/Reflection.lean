@@ -2,15 +2,14 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.ShiftEquations.Shift.Continuation3
-public import DOZZ.Statements.Correlations.BridgeMultiplicity
-public import DOZZ.Statements.Brownian.ReflectionBarR
-public import DOZZ.Statements.Brownian.IsSourceLateralProjection
-public import DOZZ.Statements.Brownian.IsReflectionData
-public import DOZZ.Statements.Defs.IsEquatorGFF
-public import DOZZ.Statements.Defs.IsGMCOf
+import DOZZ.ShiftEquations.Shift.Continuation3
+import DOZZ.Statements.Correlations.BridgeMultiplicity
+import DOZZ.Statements.Brownian.ReflectionBarR
+import DOZZ.Statements.Brownian.IsSourceLateralProjection
+import DOZZ.Statements.Brownian.IsReflectionData
+import DOZZ.Statements.Defs.IsEquatorGFF
+import DOZZ.Statements.Defs.IsGMCOf
 import DOZZ.Correlations.Symmetry.ReflectionMomentSwap
 import DOZZ.Correlations.Symmetry.InversionSwap
 import DOZZ.Brownian.Reflection.WitnessIndependence
@@ -28,7 +27,6 @@ the residue bridge (`α₂ = 2/γ + η < α₃ = Q - η`) gives `-4η R₂ = T̃
 `(η + γ/2) R̄(Q - η - γ/2) = η T(Q - η, -2η, 2/γ + η) R̄(Q - η)` ([KRV, §10.2]).
 -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology Set
 
@@ -92,7 +90,7 @@ theorem differentiableAt_crossingMultiplier3Reg_slice {γ η δ : ℝ} (hγ : 0 
     differentiableAt_id (differentiableAt_const _) ?_ ?_ ?_ ?_
   · rw [crossA3_add_one_re, Complex.ofReal_re, Complex.ofReal_re]
     have h1 := quarter_mul_lt (u := -(2 / γ)) (v := Q γ - η + (id z).re + (2 / γ + η) - Q γ - γ)
-      hγ (by simp only [id]; linarith)
+      hγ (by simp [id]; linarith)
     have h2' : γ / 4 * -(2 / γ) = -(1 / 2) := by field_simp; ring
     linarith
   · have hB := crossB3_slice (η := η) hγ (id z)
@@ -379,4 +377,3 @@ theorem secondResidue_eq_of_bridge {Ω : Type*} [MeasurableSpace Ω] (P : Measur
 
 end DOZZ.Proofs
 
-end

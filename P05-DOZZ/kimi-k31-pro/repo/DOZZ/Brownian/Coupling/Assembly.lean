@@ -2,12 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.Brownian.IsOrderedTwoSidedConditionedCoupling
-public import DOZZ.Brownian.ConditionedFDDUniqueness
-public import Mathlib.Probability.Independence.Basic
-public import Mathlib.Topology.UniformSpace.CompactConvergence
+import DOZZ.Statements.Brownian.IsOrderedTwoSidedConditionedCoupling
+import DOZZ.Brownian.ConditionedFDDUniqueness
+import Mathlib.Probability.Independence.Basic
+import Mathlib.Topology.UniformSpace.CompactConvergence
 
 /-!
 # Independent duplication of an ordered conditioned entrance family
@@ -18,7 +17,6 @@ zero-drift continuity clause does not require a separate probabilistic continuit
 This module assembles a supplied one-sided family; it does not assert its existence.
 -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology TopologicalSpace Set
 open scoped ENNReal NNReal Topology
@@ -116,7 +114,7 @@ theorem negativeConditionedBrownianProcess_comp_measurePreserving
   have hcomp : Q.map (fun ω => F (G ω)) = P.map F := by
     rw [← hG.map_eq]
     exact (AEMeasurable.map_map_of_aemeasurable
-      (by simpa only [hG.map_eq] using hF.1) hG.measurable.aemeasurable).symm
+      (by simpa [hG.map_eq] using hF.1) hG.measurable.aemeasurable).symm
   rw [hcomp]
   exact hF.2
 
@@ -146,7 +144,7 @@ theorem independentEntranceCopies_indep
       (fun ω => (independentEntranceCopies F a ω).2) (P.prod P) :=
   indepFun_prod₀ hF hF
 
-/-- The two-sided process characterization `DOZZ.IsTwoSidedConditionedBrownianProcess` from the
+/-- The two-sided process characterization `IsTwoSidedConditionedBrownianProcess` from the
 actual product construction. -/
 theorem independentEntranceCopies_twoSided
     {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω} [IsProbabilityMeasure P]
@@ -167,7 +165,7 @@ closed in the product of compact-open path spaces. -/
 theorem isClosed_negativeEntranceOrderSet {J : Type*} (v : J → ℝ) :
     IsClosed (negativeEntranceOrderSet v) := by
   classical
-  simp only [negativeEntranceOrderSet, ofPred_forall]
+  simp [negativeEntranceOrderSet, ofPred_forall]
   apply isClosed_iInter
   intro i
   apply isClosed_iInter

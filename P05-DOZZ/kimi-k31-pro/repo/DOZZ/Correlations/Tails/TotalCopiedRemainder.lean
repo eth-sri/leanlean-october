@@ -2,16 +2,14 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.Tails.ActualCopiedErrorUniform
-public import DOZZ.Correlations.Tails.CopiedErrorMeasurability
-public import DOZZ.Correlations.Tails.PrefactoredAnnularRemainder
-public import DOZZ.GMC.WeightedCutoff.RadiusDecomposition
+import DOZZ.Correlations.Tails.ActualCopiedErrorUniform
+import DOZZ.Correlations.Tails.CopiedErrorMeasurability
+import DOZZ.Correlations.Tails.PrefactoredAnnularRemainder
+import DOZZ.GMC.WeightedCutoff.RadiusDecomposition
 
 /-! The actual copied multiplier and localization remainders have one uniform moment bound. -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal
 
@@ -53,7 +51,7 @@ theorem total_copied_remainder_uniform
   refine ⟨(2 : ℝ≥0∞)^R*(D+L),ENNReal.mul_lt_top (lt_top_iff_ne_top.mpr htwo)
     (ENNReal.add_lt_top.mpr ⟨hD,hL⟩),?_⟩
   intro z hzk F hF N hN α r hα hαA hαmax hr hrR hbulk hins
-  dsimp only
+  dsimp
   let E₁ := fun q : Ω × Ω =>
     ENNReal.ofReal (Real.exp (γ*Xc q.2 z 0-γ^2*Real.log ‖z‖)) *
       (∫⁻ x in Metric.ball (0 : ℂ) ρ, ENNReal.ofReal

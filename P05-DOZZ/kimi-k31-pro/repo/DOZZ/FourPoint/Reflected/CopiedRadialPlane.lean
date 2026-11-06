@@ -2,11 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Reflected.GlobalReinsertion
+import DOZZ.FourPoint.Reflected.GlobalReinsertion
 import Mathlib.Tactic
 /-! # The actual limiting punctured-plane chaos with an independent radial copy -/
-public section
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -59,7 +57,7 @@ theorem reflected_copied_radial_plane_observable
       obtain ⟨n, hn⟩ := E.exists_mem ⟨x, hx⟩
       exact mem_iUnion.mpr ⟨n, ⟨⟨x, hx⟩, hn, rfl⟩⟩
   let NF : Ω → ℕ → FiniteMeasure ℂ := fun ω n =>
-    ⟨(N ω).restrict (K n), ⟨by simpa only [Measure.restrict_apply_univ] using
+    ⟨(N ω).restrict (K n), ⟨by simpa [Measure.restrict_apply_univ] using
       (hfin ω (K n) (hK n) (hKU n))⟩⟩
   have hNF : Measurable NF := Measurable.of_eval fun n => Measurable.subtype_mk
     ((measurable_measure_restrict (K n) (hK n).measurableSet).comp hNm)
@@ -97,7 +95,7 @@ theorem reflected_copied_radial_plane_observable
       ENNReal.measurable_ofReal.comp ((reflected_global_reinsertionWeight_measurable γ).comp
         (measurable_const.prodMk measurable_id))
     have hd := lintegral_withDensity_eq_lintegral_mul ((N ω).restrict ((({0} : Set ℂ)ᶜ))) hw hf
-    simp only [Pi.mul_apply, mul_comm] at hd
+    simp [Pi.mul_apply, mul_comm] at hd
     rw [← hd, ← restrict_withDensity ((isClosed_singleton (x := (0 : ℂ))).isOpen_compl).measurableSet, he,
       reflected_global_reinsertion_measure,
       Measure.restrict_restrict_of_subset (Subset.refl _)]
@@ -114,15 +112,15 @@ theorem reflected_copied_radial_plane_observable
     have hfst : (P.prod P).map (fun ω : Ω × Ω => A ω.1) = P.map A := by
       have h := AEMeasurable.map_map_of_aemeasurable
         (show AEMeasurable A ((P.prod P).map Prod.fst) by
-          simpa only [Measure.map_fst_prod, measure_univ, one_smul] using hA)
+          simpa [Measure.map_fst_prod, measure_univ, one_smul] using hA)
         measurable_fst.aemeasurable
-      simpa only [Function.comp_def, Measure.map_fst_prod, measure_univ, one_smul] using h.symm
+      simpa [Function.comp_def, Measure.map_fst_prod, measure_univ, one_smul] using h.symm
     have hsnd : (P.prod P).map (fun ω : Ω × Ω => NF ω.2) = P.map NF := by
       have h := AEMeasurable.map_map_of_aemeasurable
         (show AEMeasurable NF ((P.prod P).map Prod.snd) by
-          simpa only [Measure.map_snd_prod, measure_univ, one_smul] using hNF.aemeasurable)
+          simpa [Measure.map_snd_prod, measure_univ, one_smul] using hNF.aemeasurable)
         measurable_snd.aemeasurable
-      simpa only [Function.comp_def, Measure.map_snd_prod, measure_univ, one_smul] using h.symm
+      simpa [Function.comp_def, Measure.map_snd_prod, measure_univ, one_smul] using h.symm
     exact hi'.trans (by rw [hfst, hsnd])
   calc
     _ = ∫⁻ ω, F (A ω, NF ω) ∂P := lintegral_congr_ae hid

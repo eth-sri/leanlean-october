@@ -2,15 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.GMC.IsAdmissibleLogRegularization
-public import DOZZ.GMC.Moments.InversionReference
+import DOZZ.Statements.GMC.IsAdmissibleLogRegularization
+import DOZZ.GMC.Moments.InversionReference
 import Mathlib.Topology.OpenPartialHomeomorph.Basic
 
 /-! Covariance comparison and admissibility for the pulled-back inversion cutoff. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped Distributions ENNReal NNReal
@@ -41,8 +39,8 @@ noncomputable def complexInvOpenPartialHomeomorph : OpenPartialHomeomorph ℂ �
     simpa [inversionChart] using (continuousOn_inv₀ : ContinuousOn (fun z : ℂ => z⁻¹) {0}ᶜ)
   continuousOn_invFun := by
     simpa [inversionChart] using (continuousOn_inv₀ : ContinuousOn (fun z : ℂ => z⁻¹) {0}ᶜ)
-  open_source := by exact isOpen_compl_singleton
-  open_target := by exact isOpen_compl_singleton
+  open_source := isOpen_compl_singleton
+  open_target := isOpen_compl_singleton
 
 @[simp] theorem complexInvOpenPartialHomeomorph_source :
     complexInvOpenPartialHomeomorph.source = inversionChart := rfl
@@ -96,8 +94,7 @@ theorem inversion_logmax_div_scale_bound {q t c : ℝ} (hq : 0 ≤ q) (ht : 0 < 
       · linarith
     have harg : Real.log C - Real.log c - Real.log B =
         (Real.log C - Real.log B) - Real.log c := by ring
-    rw [harg]
-    exact hfinal
+    rwa [harg]
   · have hc1 : c ≤ 1 := le_of_not_ge h1
     have hCB : C ≤ B := max_le (le_max_left q t)
       (le_trans (mul_le_of_le_one_right ht.le hc1) (le_max_right q t))
@@ -133,9 +130,7 @@ theorem inversion_logmax_div_scale_bound {q t c : ℝ} (hq : 0 ≤ q) (ht : 0 < 
       · linarith
     have harg : Real.log C - Real.log c - Real.log B =
         (Real.log C - Real.log B) - Real.log c := by ring
-    rw [harg]
-    exact hfinal
-
+    rwa [harg]
 /-- The distance between inverted points has the exact product denominator, including the
 coincident-point case. -/
 theorem complexInv_distance_of_ne_zero {x y : ℂ} (hx : x ≠ 0) (hy : y ≠ 0) :
@@ -353,8 +348,7 @@ theorem isAdmissibleLogRegularization_complexInv
           (mul_pos (norm_pos_iff.mpr hx0) (norm_pos_iff.mpr hy0))),
           Real.log_mul hnormx hnormy]
         ring
-      rw [← hlogEq]
-      exact hsrc
+      rwa [← hlogEq]
   · obtain ⟨coarseKernel, hcoarse⟩ := hY.fixedCoarseLimit
     refine ⟨fun k x y => coarseKernel k x⁻¹ y⁻¹, ?_⟩
     intro K hK hKU k hk η hη

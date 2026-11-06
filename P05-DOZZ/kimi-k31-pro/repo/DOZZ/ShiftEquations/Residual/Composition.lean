@@ -2,11 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.ShiftEquations.Residual.Assembly
-public import DOZZ.ShiftEquations.DualFirstCase.Assembly
-public import DOZZ.ShiftEquations.Gluing.ReflectedClosed
+import DOZZ.ShiftEquations.Residual.Assembly
+import DOZZ.ShiftEquations.DualFirstCase.Assembly
+import DOZZ.ShiftEquations.Gluing.ReflectedClosed
 
 /-!
 # The residual factor from the γ/2 crossing, the two dual seeds and the off-pole identification
@@ -27,7 +26,6 @@ The four inputs are the statements of `gammaHalf_crossing`, `dual_crossing_seed_
 `dual_crossing_seed_two` and `reflection_Rtheor_off_poles`.
 -/
 
-@[expose] public section
 
 open MeasureTheory Filter Topology Set
 
@@ -126,4 +124,3 @@ theorem unitVolume_residual_factor_eq_one_of_crossing_seeds
 
 end DOZZ.Proofs
 
-end

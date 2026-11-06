@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Hypergeom.Planar.Beta
+import DOZZ.Hypergeom.Planar.Beta
 import Mathlib.Analysis.SpecialFunctions.Integrals.Basic
 import Mathlib.Tactic
 
@@ -15,7 +14,6 @@ integral (`beta_negative_power_integral`) at exponent `a + 1`, rather than a new
 calculation.
 -/
 
-public section
 
 open MeasureTheory Set
 
@@ -29,7 +27,7 @@ theorem reflected_pareto_integral (p a : ℝ) (hp : 0 < p) (ha : 0 < a)
         Real.Gamma (-a) * Real.Gamma (p + a) / Real.Gamma p := by
   have h := beta_negative_power_integral p (a + 1) hp (by linarith only [ha])
     (by linarith only [ha₁])
-  simpa only [show -(a + 1) = -a - 1 by ring,
+  simpa [show -(a + 1) = -a - 1 by ring,
     show 1 - (a + 1) = -a by ring,
     show p + (a + 1) - 1 = p + a by ring] using h
 
@@ -43,7 +41,7 @@ theorem reflected_negative_power_increment (p v : ℝ) (hp : 0 < p) (hv : 0 ≤ 
     have hx0 : 0 ≤ x := hx
     have hh := (Real.hasDerivAt_rpow_const (x := 1 + x) (p := -p)
       (Or.inl (by linarith only [hx0]))).comp x ((hasDerivAt_id x).const_add 1)
-    simpa only [Function.comp_def, mul_one] using hh
+    simpa [Function.comp_def, mul_one] using hh
   have hb : ∀ x ∈ Ici (0 : ℝ), ‖deriv (fun y : ℝ => (1 + y) ^ (-p)) x‖ ≤ p := by
     intro x hx
     have hx0 : 0 ≤ x := hx
@@ -54,8 +52,8 @@ theorem reflected_negative_power_increment (p v : ℝ) (hp : 0 < p) (hv : 0 ≤ 
         (by linarith only [hp]))
   have hm := Convex.norm_image_sub_le_of_norm_deriv_le
     (fun x hx => (hd x hx).differentiableAt) hb (convex_Ici (0 : ℝ))
-    (show (0 : ℝ) ∈ Ici 0 from le_rfl) (show v ∈ Ici 0 from hv)
-  simpa only [add_zero, Real.one_rpow, sub_zero, Real.norm_eq_abs, abs_of_nonneg hv]
+    (show (0 : ℝ) ∈ Ici 0 from Set.mem_Ici.mpr le_rfl) (show v ∈ Ici 0 from hv)
+  simpa [add_zero, Real.one_rpow, sub_zero, Real.norm_eq_abs, abs_of_nonneg hv]
     using hm
 
 /-- The lower-cutoff Pareto error is bounded by its explicit integrable power primitive. -/

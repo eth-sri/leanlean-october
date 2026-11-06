@@ -2,11 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import Mathlib.Analysis.Meromorphic.Order
-public import Mathlib.Topology.Instances.Complex
+import Mathlib.Analysis.Meromorphic.Order
+import Mathlib.Topology.Instances.Complex
 /-! # Continuing a local charge identity along a connected complex neighborhood -/
-public section
 open Filter Topology Set
 namespace DOZZ.Proofs
 /-- A local equality of meromorphic functions continues to every regular point of a connected domain. -/

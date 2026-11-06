@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Hypergeom.ODE.DiskContinuation
-public import DOZZ.Hypergeom.ODE.PathSubdivision
+import DOZZ.Hypergeom.ODE.DiskContinuation
+import DOZZ.Hypergeom.ODE.PathSubdivision
 
 /-! Iteration of the one-step disk extension along finitely many nearby centers. -/
 
-@[expose] public section
 
 open Set
 
@@ -47,7 +45,6 @@ theorem exists_finite_holomorphic_disk_chain
     | zero => simp [D, Dzero, holomorphicDiskSolutionOfBound]
     | succ i ih =>
         have hi' : i < N := by omega
-        have hi_le : i ≤ N := by omega
         simp [D, hi', extendHolomorphicDiskSolution, holomorphicDiskSolutionOfBound]
   refine ⟨D, hcenter 0 (by omega), ?_, ?_, ?_⟩
   · simp [D, Dzero, holomorphicDiskSolutionOfBound]

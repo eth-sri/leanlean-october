@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.SharpMoments.SeibergMoment
-public import DOZZ.GMC.Moments.RhoCoulomb
+import DOZZ.GMC.SharpMoments.SeibergMoment
+import DOZZ.GMC.Moments.RhoCoulomb
 import Mathlib.Tactic
 
 /-! # Finiteness of the supplied limiting Coulomb mass
@@ -14,7 +13,6 @@ A small positive moment exists when every finite and infinite charge is below
 `Q`. No total-charge condition is needed for almost-sure mass finiteness.
 -/
 
-public section
 
 open MeasureTheory Filter Topology Set
 open scoped ENNReal
@@ -64,7 +62,5 @@ theorem reflected_rho_ae_finite {Ω : Type*} [MeasurableSpace Ω]
   filter_upwards [reflected_coulombMass_ae_finite P X hX γ hγ hγ₂ M hM
     ![0, 1] hz ![α₁, α₂] α₃ hcharges hα₃,
     gmc_rho_eq_coulombMass_ae P X hX γ hγ hγ₂ M hM α₁ α₂ α₃] with ω hf he
-  rw [he]
-  exact hf
-
+  rwa [he]
 end DOZZ.Proofs

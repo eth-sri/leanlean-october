@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Brownian.Lateral.CutoffLaw
+import DOZZ.Brownian.Lateral.CutoffLaw
 
 /-!
 # Radial weights in the local lateral chaos limit
@@ -14,7 +13,6 @@ Wick weight. Independence of the whole lateral cutoff carrier permits inserting 
 random radial path into the local chaos convergence, on the original probability space.
 -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal Distributions
@@ -95,14 +93,14 @@ theorem measurable_compact_parameter_integral
     (N : E → Measure ℂ) (hN : Measurable N) (hNfin : ∀ ξ, N ξ K < ⊤) :
     Measurable (fun p : V × E => ∫ x, F p.1 x ∂N p.2) := by
   let T : E → FiniteMeasure ℂ := fun ξ =>
-    ⟨(N ξ).restrict K, ⟨by simpa only [Measure.restrict_apply_univ] using hNfin ξ⟩⟩
+    ⟨(N ξ).restrict K, ⟨by simpa [Measure.restrict_apply_univ] using hNfin ξ⟩⟩
   have hT : Measurable T := by
     apply Measurable.subtype_mk
     apply Measure.measurable_of_measurable_coe
     intro s hs
     have h := (Measure.measurable_coe (hs.inter hK.measurableSet)).comp hN
     change Measurable (fun ξ => N ξ (s ∩ K)) at h
-    simpa only [Measure.restrict_apply hs] using h
+    simpa [Measure.restrict_apply hs] using h
   have hi := measurable_integral_finiteMeasure_parameter
     (fun v x => F v x) hF (fun v μ => (F v).integrable (μ := (μ : Measure ℂ)))
   have hm := hi.comp (measurable_fst.prodMk (hT.comp measurable_snd))
@@ -111,7 +109,7 @@ theorem measurable_compact_parameter_integral
     intro x hx
     exact image_eq_zero_of_notMem_tsupport (fun h => hx (hFK v h))
   change Measurable (fun p : V × E => ∫ x, F p.1 x ∂(T p.2 : Measure ℂ)) at hm
-  simpa only [heq] using hm
+  simpa [heq] using hm
 
 /-- The limiting chaos integral with the radial weighted test is jointly measurable. -/
 theorem originRadialWeightedTest_integral_measurable
@@ -196,7 +194,7 @@ theorem originRadialReinsertionWeight_chart_eq
     linarith only [h, hρ]
   rw [originRadialReinsertionWeight, clampedLogRadius_eq ρ x hxρ, abs_neg]
 
-/-- The literal removal density in the projection `DOZZ.lateralProjectedGMC`
+/-- The literal removal density in the projection `lateralProjectedGMC`
 cancels the reinsertion density on every local chart, including in extended-real
 measure products. -/
 theorem originRadialReinsertionWeight_removal_mul

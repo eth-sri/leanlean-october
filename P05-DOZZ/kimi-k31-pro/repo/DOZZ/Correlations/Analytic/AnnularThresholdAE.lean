@@ -2,13 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.Analytic.AnnularThresholdEstimate
+import DOZZ.Correlations.Analytic.AnnularThresholdEstimate
 
 /-! The threshold estimate for the a.e. measurable masses of an arbitrary GMC version. -/
 
-@[expose] public section
 open MeasureTheory
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -27,12 +25,12 @@ theorem annular_threshold_estimate_ae
         ((∫⁻ ω, Y ω ^ m ∂P) / u ^ m) ^ (1 / (q / (q - 1))) := by
   have hs : ∀ᵐ ω ∂P, hY.mk Y ω < u → F ω ≤ u * D ω := by
     filter_upwards [hsmall, hY.ae_eq_mk] with ω hω he
-    simpa only [← he] using hω
+    simpa [← he] using hω
   have he : (∫⁻ ω, hY.mk Y ω ^ m ∂P) = ∫⁻ ω, Y ω ^ m ∂P := by
     apply lintegral_congr_ae
     filter_upwards [hY.ae_eq_mk] with ω hω
     rw [hω]
-  simpa only [he] using annular_threshold_estimate P (hY.mk Y) D B F
+  simpa [he] using annular_threshold_estimate P (hY.mk Y) D B F
     hY.measurable_mk hB u hu hu' m q hm hq hs hlarge
 
 end DOZZ.Proofs

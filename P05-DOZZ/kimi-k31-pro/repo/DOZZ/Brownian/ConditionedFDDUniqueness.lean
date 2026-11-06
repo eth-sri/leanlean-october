@@ -2,11 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.Brownian.IsNegativeConditionedBrownianLaw
-public import DOZZ.Statements.Brownian.BrownianPathMeasurableSpaceEqISupComapEval
-public import Mathlib.MeasureTheory.Measure.Typeclasses.Finite
+import DOZZ.Statements.Brownian.IsNegativeConditionedBrownianLaw
+import DOZZ.Statements.Brownian.BrownianPathMeasurableSpaceEqISupComapEval
+import Mathlib.MeasureTheory.Measure.Typeclasses.Finite
 
 /-!
 # Uniqueness of continuous path laws from entrance FDDs
@@ -16,7 +15,6 @@ at time zero is fixed almost surely. This isolates the uniqueness half of the co
 law construction from its separate process-existence problem.
 -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal NNReal Topology
@@ -62,7 +60,7 @@ private theorem conditionedEvalRect_measure_eq_of_pos
     have hf : Measurable f := measurable_pi_iff.mpr fun i => ContinuousMap.measurable_eval _
     have hpre : f ⁻¹' A = conditionedEvalRect I S := by
       ext p
-      simp only [Set.mem_preimage, A, conditionedEvalRect, f, Set.mem_ofPred_eq,
+      simp [Set.mem_preimage, A, conditionedEvalRect, f, Set.mem_ofPred_eq,
         Set.mem_iInter]
       constructor
       · intro h t ht
@@ -98,32 +96,29 @@ private theorem conditionedEvalRect_measure_eq
           conditionedEvalRect J T := by
         filter_upwards [hP.2.2.1] with p hp0
         apply propext
-        simp only [conditionedEvalRect, Set.mem_ofPred_eq]
+        simp [conditionedEvalRect, Set.mem_ofPred_eq]
         constructor
         · intro hp t ht
           exact hp t (Finset.mem_of_mem_erase ht)
         · intro hp t ht
           by_cases ht0 : t = 0
           · subst t
-            rw [hp0]
-            exact hval
+            rwa [hp0]
           · exact hp t (Finset.mem_erase.mpr ⟨ht0, ht⟩)
       have hQae : (conditionedEvalRect I S : Set BrownianPath) =ᵐ[Q]
           conditionedEvalRect J T := by
         filter_upwards [hQ.2.2.1] with p hp0
         apply propext
-        simp only [conditionedEvalRect, Set.mem_ofPred_eq]
+        simp [conditionedEvalRect, Set.mem_ofPred_eq]
         constructor
         · intro hp t ht
           exact hp t (Finset.mem_of_mem_erase ht)
         · intro hp t ht
           by_cases ht0 : t = 0
           · subst t
-            rw [hp0]
-            exact hval
+            rwa [hp0]
           · exact hp t (Finset.mem_erase.mpr ⟨ht0, ht⟩)
-      rw [measure_congr hPae, measure_congr hQae]
-      exact hJ
+      rwa [measure_congr hPae, measure_congr hQae]
     · have hPzero : P (conditionedEvalRect I S) = 0 := by
         rw [measure_eq_zero_iff_ae_notMem]
         filter_upwards [hP.2.2.1] with p hp0
@@ -224,7 +219,7 @@ theorem isNegativeConditionedBrownianLaw_eq
   · rw [hP.2.1.measure_univ, hQ.2.1.measure_univ]
 
 /-- Once a conditioned entrance law has been constructed, the FDD characterization
-`DOZZ.IsNegativeConditionedBrownianLaw` fixes it uniquely. This packages the completed
+`IsNegativeConditionedBrownianLaw` fixes it uniquely. This packages the completed
 uniqueness argument for the existence proof. -/
 theorem existsUnique_negativeConditionedBrownianLaw_of_exists
     (ν : ℝ)
@@ -237,4 +232,3 @@ theorem existsUnique_negativeConditionedBrownianLaw_of_exists
 
 end DOZZ.Proofs
 
-end

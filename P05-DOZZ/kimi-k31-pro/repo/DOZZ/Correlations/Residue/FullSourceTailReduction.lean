@@ -1,2 +1,1 @@
-module
-public import DOZZ.Correlations.Residue.SourceTailReduction
+import DOZZ.Correlations.Residue.SourceTailReduction

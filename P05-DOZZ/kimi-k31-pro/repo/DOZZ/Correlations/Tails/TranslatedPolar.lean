@@ -2,15 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.Correlations.LocalSingularMass
-public import DOZZ.GMC.Construction.RootedCircleMassLimit
+import DOZZ.Statements.Correlations.LocalSingularMass
+import DOZZ.GMC.Construction.RootedCircleMassLimit
 
 /-! Exact polar removal at a translated insertion. This is the measure-level
 substitution preceding identification of the translated lateral chaos law. -/
 
-@[expose] public section
 
 open MeasureTheory Set
 open scoped ENNReal NNReal
@@ -70,7 +68,7 @@ theorem translatedPolar_lintegral (γ N : ℝ) (A : TwoSidedPath)
 
 /-- The actual singular mass is a drifted radial exponential integral against the
 translated projected measure. The root is removed using atomlessness, rather than
-altering the infinite insertion weight of `DOZZ.localSingularMass`. -/
+altering the infinite insertion weight of `localSingularMass`. -/
 theorem localSingularMass_translatedPolar
     (γ α N : ℝ) (A : TwoSidedPath) (M : Measure ℂ)
     (F : ℂ → ℝ) (hF : Measurable F) (z : ℂ) (hMz : M {z} = 0) :
@@ -102,7 +100,7 @@ theorem localSingularMass_translatedPolar
   apply lintegral_congr_ae
   have hne : ∀ᵐ x ∂M, x ≠ z := by
     rw [ae_iff]
-    simpa only [not_not, Set.ofPred_eq_eq_singleton] using hMz
+    simpa [not_not, Set.ofPred_eq_eq_singleton] using hMz
   filter_upwards [hne] with x hx
   have hd : 0 < ‖x - z‖ := norm_pos_iff.mpr (sub_ne_zero.mpr hx)
   have ht : 0 < translatedLogRadius z x ↔ x ∈ Metric.ball z 1 := by

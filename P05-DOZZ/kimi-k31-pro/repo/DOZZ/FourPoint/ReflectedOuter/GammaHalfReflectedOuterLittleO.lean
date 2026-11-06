@@ -2,11 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.ReflectedOuter.DeletedMoment
-public import DOZZ.FourPoint.ReflectedOuter.MovingMoment
-public import DOZZ.FourPoint.ReflectedOuter.Rates
+import DOZZ.FourPoint.ReflectedOuter.DeletedMoment
+import DOZZ.FourPoint.ReflectedOuter.MovingMoment
+import DOZZ.FourPoint.ReflectedOuter.Rates
 import Mathlib.Tactic
 
 /-! # The reflected outer correction on the full buffer range
@@ -16,7 +15,6 @@ gives `‖z‖/r = ‖z‖^ξ`, with `r = ‖z‖^(1-ξ)`. The inequalities `hfr
 rates little-o of `‖z‖^κ`. No estimate requires `ξ < 1/2`.
 -/
 
-@[expose] public section
 open MeasureTheory Filter Topology Set
 open scoped ENNReal
 namespace DOZZ.Proofs

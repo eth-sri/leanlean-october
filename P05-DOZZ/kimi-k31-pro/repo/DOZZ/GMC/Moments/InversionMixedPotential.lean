@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.Moments.InversionAdmissible
-public import DOZZ.GMC.CirclePotential
+import DOZZ.GMC.Moments.InversionAdmissible
+import DOZZ.GMC.CirclePotential
 
 /-! Exact mixed circle potentials for the inverted local field. -/
 
-@[expose] public section
 
 open MeasureTheory
 open Set Metric Real
@@ -28,7 +26,7 @@ theorem inversion_logmax_mul_scale_bound {q t c : ℝ}
     simp
   · have hqpos : 0 < q := lt_of_le_of_ne hq (Ne.symm hq0)
     have h := inversion_logmax_div_scale_bound ht.le hqpos (inv_pos.mpr hc)
-    simpa only [div_inv_eq_mul, max_comm, Real.log_inv, abs_neg] using h
+    simpa [div_inv_eq_mul, max_comm, Real.log_inv, abs_neg] using h
 
 /-- Averaging the source field over an ordinary source circle, then evaluating at an inverted
 point, gives a clipped target logarithm with scale `exp (-s) * ‖x‖ * ‖y‖`. The remainder is
@@ -63,7 +61,7 @@ theorem inversion_innerPot_remainder_le {x y : ℂ} (hx : x ≠ 0) (hy : y ≠ 0
       (-Real.log (max ‖x - y‖ (Real.exp (-s) * (‖x‖ * ‖y‖))) +
         Real.log (normPlus x) + Real.log (normPlus y))| ≤ Real.exp (-s) := by
   rw [inversion_innerPot_eq hx hy s]
-  simpa only [add_sub_cancel_left, regAvg] using
+  simpa [add_sub_cancel_left, regAvg] using
     abs_circleAverage_log_normPlus_sub_le y⁻¹ (Real.exp_pos (-s))
 
 /-- The inverted mixed point/circle potential is comparable to the ordinary one at all
@@ -118,7 +116,7 @@ theorem inversion_innerPot_sub_gffKernel_le {x y : ℂ}
     (hsep : Real.exp (-s) * (‖x‖ * ‖y‖) ≤ ‖x - y‖) :
     |innerPot y⁻¹ s x⁻¹ - gffKernel x y| ≤ Real.exp (-s) := by
   have h := inversion_innerPot_remainder_le hx hy s
-  simpa only [max_eq_left hsep, gffKernel] using h
+  simpa [max_eq_left hsep, gffKernel] using h
 
 
 /-- A uniform pointwise error on a circle bounds the difference of its two averages. -/
@@ -130,8 +128,7 @@ theorem abs_circleAverage_sub_circleAverage_le {f g : ℂ → ℝ} {x : ℂ} {ε
   constructor
   · have h := circleAverage_mono (circleIntegrable_const (-C) x ε) (hf.sub hg)
       (fun u hu => (abs_le.mp (hbound u hu)).1)
-    rw [circleAverage_const] at h
-    exact h
+    rwa [circleAverage_const] at h
   · exact circleAverage_mono_on_of_le_circle (hf.sub hg)
       (fun u hu => (abs_le.mp (hbound u hu)).2)
 
@@ -145,7 +142,7 @@ theorem inversion_circleAverage_mixed_offDiagonal_le {x y : ℂ} {ε : ℝ}
   have hU : sphere x |ε| ⊆ ({0} : Set ℂ)ᶜ := by
     intro u hu
     have hux : ‖u - x‖ = ε := by
-      simpa only [mem_sphere_iff_norm, abs_of_pos hε] using hu
+      simpa [mem_sphere_iff_norm, abs_of_pos hε] using hu
     change u ≠ 0
     intro hu0
     have : ‖x‖ = ε := by simpa [hu0] using hux
@@ -162,10 +159,10 @@ theorem inversion_circleAverage_mixed_offDiagonal_le {x y : ℂ} {ε : ℝ}
   intro u hu
   have hu0 : u ≠ 0 := hU hu
   have hux : ‖u - x‖ = ε := by
-    simpa only [mem_sphere_iff_norm, abs_of_pos hε] using hu
+    simpa [mem_sphere_iff_norm, abs_of_pos hε] using hu
   have hunorm : ‖u‖ ≤ ‖x‖ + ε := by
     have h := norm_add_le x (u - x)
-    simpa only [add_sub_cancel, hux] using h
+    simpa [add_sub_cancel, hux] using h
   have hudist : ‖x - y‖ - ε ≤ ‖u - y‖ := by
     have h := norm_sub_le_norm_sub_add_norm_sub x u y
     rw [norm_sub_rev x u, hux] at h
@@ -191,7 +188,7 @@ theorem inversion_circleAverage_mixed_log_bound
       (2 * B + 2) + (Real.log 3 + 2 * Real.log (1 + R)) := by
   have hU : sphere x |Real.exp (-r)| ⊆ ({0} : Set ℂ)ᶜ := by
     intro u hu
-    exact (hcircle u (by simpa only [abs_of_pos (Real.exp_pos _)] using hu)).1
+    exact (hcircle u (by simpa [abs_of_pos (Real.exp_pos _)] using hu)).1
   have hf : CircleIntegrable (fun u => innerPot y⁻¹ s u⁻¹) x (Real.exp (-r)) :=
     ((continuous_innerPot y⁻¹ s).comp_continuousOn
       (continuousOn_inv₀.mono hU)).circleIntegrable'
@@ -201,7 +198,7 @@ theorem inversion_circleAverage_mixed_log_bound
       (continuous_innerPot y s).continuousOn.circleIntegrable'
     intro u hu
     obtain ⟨hu0, hulog⟩ := hcircle u (by
-      simpa only [abs_of_pos (Real.exp_pos _)] using hu)
+      simpa [abs_of_pos (Real.exp_pos _)] using hu)
     have hlog : |Real.log (‖u‖ * ‖y‖)| ≤ 2 * B := by
       rw [Real.log_mul (norm_ne_zero_iff.mpr hu0) (norm_ne_zero_iff.mpr hy)]
       exact (abs_add_le _ _).trans (by linarith)

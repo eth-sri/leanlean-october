@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import Mathlib.Topology.Piecewise
-public import DOZZ.Hypergeom.ODE.FiniteDiskChain
+import Mathlib.Topology.Piecewise
+import DOZZ.Hypergeom.ODE.FiniteDiskChain
 
 /-! A finite chain of local Picard solutions glues to a continuous lift of its path. -/
 
-@[expose] public section
 
 open Set
 
@@ -121,8 +119,7 @@ theorem exists_continuous_lift_from_disk_chain
           intro t ht
           have hfront : t = τ m := by
             simpa [frontier_Iic, mem_singleton_iff] using ht.2
-          rw [hfront]
-          exact hjoinm
+          rwa [hfront]
         have hprevDomain : Icc (0 : ℝ) (τ (m + 1)) ∩ closure (Iic (τ m)) ⊆
             Icc (0 : ℝ) (τ m) := by
           intro t ht
@@ -155,8 +152,7 @@ theorem exists_continuous_lift_from_disk_chain
                 (fun t => (D m).solution (γ t)) t = P m t
               exact Set.piecewise_eq_of_mem (s := Iic (τ m)) (f := P m)
                 (g := fun t => (D m).solution (γ t)) htmem
-            rw [hpiece]
-            exact hprev
+            rwa [hpiece]
           · have hiEq : i = m := by omega
             subst i
             have htLower := ht.1
@@ -167,9 +163,8 @@ theorem exists_continuous_lift_from_disk_chain
                   (fun t => (D m).solution (γ t)) (τ m) = P m (τ m)
                 exact Set.piecewise_eq_of_mem (s := Iic (τ m)) (f := P m)
                   (g := fun t => (D m).solution (γ t))
-                  (show τ m ∈ Iic (τ m) from le_rfl)
-              rw [hpiece]
-              exact hjoinm
+                  (show τ m ∈ Iic (τ m) from Set.mem_Iic.mpr le_rfl)
+              rwa [hpiece]
             · have htNot : t ∉ Iic (τ m) := by
                 simp only [mem_Iic]
                 exact not_le.mpr (lt_of_le_of_ne htLower (Ne.symm heq))
@@ -185,8 +180,7 @@ theorem exists_continuous_lift_from_disk_chain
     exact div_self (by exact_mod_cast hN.ne')
   have hτ0 : τ 0 = 0 := by simp [τ]
   have hstart : P N 0 = y := by
-    have hmem : (0 : ℝ) ∈ Icc (τ 0) (τ 1) := by
-      exact ⟨by simp [τ], by dsimp [τ]; positivity⟩
+    have hmem : (0 : ℝ) ∈ Icc (τ 0) (τ 1) := ⟨by simp [τ], by dsimp [τ]; positivity⟩
     have hval := hformula 0 (by omega) 0 hmem
     calc
       P N 0 = (D 0).solution (γ 0) := hval

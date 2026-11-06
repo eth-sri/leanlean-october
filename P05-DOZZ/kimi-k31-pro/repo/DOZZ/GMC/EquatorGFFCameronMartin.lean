@@ -1,5 +1,4 @@
-module
-public import DOZZ.Statements.GMC.IsGaussianL2Limit
-public import DOZZ.GMC.FiniteGaussianTilt
-public import DOZZ.GMC.GaussianInputs
-public import Mathlib.MeasureTheory.Constructions.Cylinders
+import DOZZ.Statements.GMC.IsGaussianL2Limit
+import DOZZ.GMC.FiniteGaussianTilt
+import DOZZ.GMC.GaussianInputs
+import Mathlib.MeasureTheory.Constructions.Cylinders

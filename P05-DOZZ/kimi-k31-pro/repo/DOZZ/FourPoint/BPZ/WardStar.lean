@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.BPZ.WardStarPrep
-public import Mathlib.Analysis.Calculus.LineDeriv.IntegrationByParts
+import DOZZ.FourPoint.BPZ.WardStarPrep
+import Mathlib.Analysis.Calculus.LineDeriv.IntegrationByParts
 
 /-! # The screening Ward identity at a circle cutoff
 
@@ -19,7 +18,6 @@ where `Ŷ_v` integrates the `v`-derivatives of the two root kernels. The proof r
 the integration point, which turns them into `∫ ∂_v(φ k̃) Ψ` and `-∫ φ k̃ ∂_v Ψ` for the rooted
 moment `Ψ = E[J^{-q}]`, and integrates by parts. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped ENNReal NNReal

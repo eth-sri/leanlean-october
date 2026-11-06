@@ -2,11 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.ShiftEquations.Gluing.Reflected
-public import DOZZ.ShiftEquations.Residual.Joint
-public import DOZZ.Statements.FourPoint.FourPointT
+import DOZZ.ShiftEquations.Gluing.Reflected
+import DOZZ.ShiftEquations.Residual.Joint
+import DOZZ.Statements.FourPoint.FourPointT
 import DOZZ.ShiftEquations.Shift.ShiftGluing
 import DOZZ.ShiftEquations.Shift.Reflection
 import DOZZ.ShiftEquations.Rbar.Multiplier
@@ -25,7 +24,6 @@ hence near every point of the common strip. With the first structure shift
 identities hold along the codiscrete filter of `ℂ`.
 -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology TopologicalSpace Set
 open scoped ENNReal NNReal Topology
@@ -33,10 +31,10 @@ open scoped ENNReal NNReal Topology
 namespace DOZZ.Proofs
 
 /-- **The reflected shift and gluing from its inputs.** `hFirstShift` and `hFirstStrip` are the conclusions of
-`DOZZ.reflectionR_first_shift_meromorphic` and `DOZZ.structureConstant_first_shift_strip` at the
+`reflectionR_first_shift_meromorphic` and `structureConstant_first_shift_strip` at the
 given field, chaos, coupling and charges; `hDiagonal` and `hReflected` are those of the classification
-`DOZZ.degenerateFourPoint_diagonal_classification` (at `χ = γ/2`) and the reflected diagonal formula
-`DOZZ.gammaHalf_reflected_formula` at the fixed `α₂, α₃`. -/
+`degenerateFourPoint_diagonal_classification` (at `χ = γ/2`) and the reflected diagonal formula
+`gammaHalf_reflected_formula` at the fixed `α₂, α₃`. -/
 theorem structureConstant_reflected_shift_and_gluing_of_deps
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
     (M : Ω → Measure ℂ) (γ μ η : ℝ)
@@ -114,9 +112,6 @@ theorem structureConstant_reflected_shift_and_gluing_of_deps
                     C (z - γ / 2)) := by
   obtain ⟨hη0, hηγ⟩ := hη
   have hQ : Q γ = 2 / γ + γ / 2 := rfl
-  have h2γ : γ / 16 < 2 / γ := by
-    rw [div_lt_div_iff₀ (by norm_num) hγ]
-    linarith only [mul_self_lt_mul_self hγ.le hγ2]
   obtain ⟨B, Z, hSLP, hRD, h₁, hh₁, R, hRm, hRval, hRshift⟩ := hFirstShift
   obtain ⟨h₂, hh₂, C, hCm, hCval, hCshift⟩ := hFirstStrip
   obtain ⟨H, hH⟩ := gauss_hypergeometric_exists
@@ -213,7 +208,7 @@ theorem structureConstant_reflected_shift_and_gluing_of_deps
     rw [show (t : ℂ) + ((γ / 2 : ℝ) : ℂ) = (t : ℂ) + γ / 2 by push_cast; ring,
       show ((2 * Q γ - γ / 2 : ℝ) : ℂ) - (t : ℂ) = 2 * Q γ - (t : ℂ) - γ / 2 by push_cast; ring,
       show (t : ℂ) + ((-(γ / 2) : ℝ) : ℂ) = (t : ℂ) - γ / 2 by push_cast; ring]
-    exact this
+    assumption
   have hfm : MeromorphicOn f (horizontalStrip h) :=
     (MeromorphicOn.comp_add_ofReal hRm' (γ / 2)).mul
       (MeromorphicOn.comp_ofReal_sub hCm' (2 * Q γ - γ / 2))
@@ -265,10 +260,8 @@ theorem structureConstant_reflected_shift_and_gluing_of_deps
     · filter_upwards [hglue x hx] with z hz
       by_cases hzk : |z.im| < h / 2
       · have hz' : |(2 * (Q γ : ℂ) - z).im| < h / 2 := by
-          rw [show (2 * (Q γ : ℂ) - z) = ((2 * Q γ : ℝ) : ℂ) - z by push_cast; ring, himsub]
-          exact hzk
-        rw [cutoffStrip_of_lt hzk, cutoffStrip_of_lt hzk, cutoffStrip_of_lt hz']
-        exact hz
+          rwa [show (2 * (Q γ : ℂ) - z) = ((2 * Q γ : ℝ) : ℂ) - z by push_cast; ring, himsub]
+        rwa [cutoffStrip_of_lt hzk, cutoffStrip_of_lt hzk, cutoffStrip_of_lt hz']
       · exact hzero z hzk
     · have hopen : IsOpen {w : ℂ | h / 2 < |w.im|} :=
         isOpen_lt continuous_const Complex.continuous_im.abs
@@ -284,31 +277,27 @@ theorem structureConstant_reflected_shift_and_gluing_of_deps
           -(1 / (Real.pi * μ)) * shiftCoeffA γ (γ / 2) z (α₂ : ℂ) (α₃ : ℂ) *
             cutoffStrip (h / 2) C (z - γ / 2) := fun z hz => by
       have e1 : ¬ |(z + γ / 2).im| < h / 2 := by
-        rw [show z + (γ : ℂ) / 2 = z + ((γ / 2 : ℝ) : ℂ) by push_cast; ring, himadd]
-        exact hz
+        rwa [show z + (γ : ℂ) / 2 = z + ((γ / 2 : ℝ) : ℂ) by push_cast; ring, himadd]
       have e3 : ¬ |(z - γ / 2).im| < h / 2 := by
-        rw [show z - (γ : ℂ) / 2 = z + ((-(γ / 2) : ℝ) : ℂ) by push_cast; ring, himadd]
-        exact hz
+        rwa [show z - (γ : ℂ) / 2 = z + ((-(γ / 2) : ℝ) : ℂ) by push_cast; ring, himadd]
       rw [cutoffStrip_of_not_lt e1, cutoffStrip_of_not_lt e3, zero_mul, mul_zero]
     by_cases hx : |x.im| < h
     · filter_upwards [hEq x hx] with z hz
       by_cases hzk : |z.im| < h / 2
       · have e1 : |(z + γ / 2).im| < h / 2 := by
-          rw [show z + (γ : ℂ) / 2 = z + ((γ / 2 : ℝ) : ℂ) by push_cast; ring, himadd]
-          exact hzk
+          rwa [show z + (γ : ℂ) / 2 = z + ((γ / 2 : ℝ) : ℂ) by push_cast; ring, himadd]
         have e2 : |(2 * (Q γ : ℂ) - z - γ / 2).im| < h / 2 := by
           rw [show 2 * (Q γ : ℂ) - z - γ / 2 = ((2 * Q γ - γ / 2 : ℝ) : ℂ) - z by push_cast; ring,
             himsub]
-          exact hzk
+          assumption
         have e3 : |(z - γ / 2).im| < h / 2 := by
-          rw [show z - (γ : ℂ) / 2 = z + ((-(γ / 2) : ℝ) : ℂ) by push_cast; ring, himadd]
-          exact hzk
+          rwa [show z - (γ : ℂ) / 2 = z + ((-(γ / 2) : ℝ) : ℂ) by push_cast; ring, himadd]
         rw [cutoffStrip_of_lt e1, cutoffStrip_of_lt e2, cutoffStrip_of_lt e3]
         simp only [hfdef, hgdef] at hz
         rw [show z + ((γ / 2 : ℝ) : ℂ) = z + γ / 2 by push_cast; ring,
           show ((2 * Q γ - γ / 2 : ℝ) : ℂ) - z = 2 * Q γ - z - γ / 2 by push_cast; ring,
           show z + ((-(γ / 2) : ℝ) : ℂ) = z - γ / 2 by push_cast; ring] at hz
-        exact hz
+        assumption
       · exact hzero z hzk
     · have hopen : IsOpen {w : ℂ | h / 2 < |w.im|} :=
         isOpen_lt continuous_const Complex.continuous_im.abs
@@ -320,4 +309,3 @@ theorem structureConstant_reflected_shift_and_gluing_of_deps
 
 end DOZZ.Proofs
 
-end

@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.BPZ.SoftLimitB
+import DOZZ.FourPoint.BPZ.SoftLimitB
 
 /-! # Pathwise bounds for the near-root parts of the derivative masses
 
@@ -13,7 +12,6 @@ derivative masses are bounded by integrals of `|x - z|^{2a-1}` and `|x - z|^{2a-
 near weight, and the square of the first is bounded, by Cauchy–Schwarz, by the product of the
 integrals of `|x - z|^{2a}` and `|x - z|^{2a-2}`. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped ENNReal NNReal
@@ -105,8 +103,6 @@ theorem bpz_near_cauchySchwarz {a : ℝ} {w : ℂ → ℝ} (hw : Measurable w) (
     integral_nonneg fun x => mul_nonneg (hw0 x) (Real.rpow_nonneg (norm_nonneg _) _)
   have hB : 0 ≤ ∫ x, w x * ‖x - z‖ ^ (2 * a - 2) ∂m :=
     integral_nonneg fun x => mul_nonneg (hw0 x) (Real.rpow_nonneg (norm_nonneg _) _)
-  have hfg0 : 0 ≤ ∫ x, f x * g x ∂m :=
-    integral_nonneg fun x => mul_nonneg (Real.sqrt_nonneg _) (Real.sqrt_nonneg _)
   calc (∫ x, f x * g x ∂m) ^ 2
       ≤ ((∫ x, w x * ‖x - z‖ ^ (2 * a) ∂m) ^ (1 / 2 : ℝ) *
           (∫ x, w x * ‖x - z‖ ^ (2 * a - 2) ∂m) ^ (1 / 2 : ℝ)) ^ 2 := by gcongr

@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Brownian.LastExitEntranceTail
-public import DOZZ.Brownian.LastExitAvoidanceLimit
+import DOZZ.Brownian.LastExitEntranceTail
+import DOZZ.Brownian.LastExitAvoidanceLimit
 
 /-!
 # Mean convergence of the deterministic-time avoidance factor
@@ -14,14 +13,13 @@ The entrance state escapes every fixed lower interval, and the avoidance factor 
 its state grows. This file combines those two facts at the level of the conditioned path law.
 -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped NNReal Topology
 
 namespace DOZZ.Proofs
 
-private theorem lastExitAvoidanceFactor_nonneg_le_one
+theorem lastExitAvoidanceFactor_nonneg_le_one
     {ν c y : ℝ} (hν : 0 < ν) (hc : 0 < c) :
     0 ≤ lastExitAvoidanceFactor ν c y ∧ lastExitAvoidanceFactor ν c y ≤ 1 := by
   by_cases hcy : c < y
@@ -73,8 +71,6 @@ theorem tendsto_integral_lastExitAvoidanceFactor_atTop
       ∫ p, lastExitAvoidanceFactor ν c (-(p t)) ∂P) atTop (𝓝 1) := by
   let : IsProbabilityMeasure P := hP.2.1
   have hfactorlim := lastExitAvoidanceFactor_tendsto_one_atTop (ν := ν) (c := c) hν
-  have hstate := conditionedPositiveStateAt_measureReal_Iic_tendsto_zero_atTop
-    hP hν
   have hmeasFactor : Measurable (lastExitAvoidanceFactor ν c) :=
     measurable_lastExitAvoidanceFactor ν c
   have hfactorBound (x : ℝ) :
@@ -125,8 +121,7 @@ theorem tendsto_integral_lastExitAvoidanceFactor_atTop
       have hconst : Integrable (fun _ : BrownianPath => (1 : ℝ)) P := integrable_const 1
       have hsub := hconst.sub (hInt t)
       exact hsub.congr (Filter.Eventually.of_forall fun p => by simp [f])
-    have hg : Integrable g P := by
-      exact ((integrable_const (1 : ℝ)).indicator hA).add (integrable_const δ)
+    have hg : Integrable g P := ((integrable_const (1 : ℝ)).indicator hA).add (integrable_const δ)
     have hfg : f ≤ g := by
       intro p
       by_cases hp : -(p t) ≤ M
@@ -136,7 +131,6 @@ theorem tendsto_integral_lastExitAvoidanceFactor_atTop
       · have hgt : M < -(p t) := lt_of_not_ge hp
         have hyM : M₀ ≤ -(p t) := le_trans (le_max_left _ _) hgt.le
         have hlarg := hM₀ (-(p t)) hyM
-        have hlt : 1 - lastExitAvoidanceFactor ν c (-(p t)) < δ := by linarith
         simp [f, g, hp]
         linarith
     have hbound : ∫ p, f p ∂P ≤ P.real {p | -(p t) ≤ M} + δ := by
@@ -186,4 +180,3 @@ theorem tendsto_integral_lastExitAvoidanceFactor_atTop
 
 end DOZZ.Proofs
 
-end

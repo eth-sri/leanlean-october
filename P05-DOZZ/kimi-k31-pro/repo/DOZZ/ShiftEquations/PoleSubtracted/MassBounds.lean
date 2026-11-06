@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.ShiftEquations.PoleSubtracted.Masses
-public import DOZZ.GMC.SharpMoments.SeibergWeight
+import DOZZ.ShiftEquations.PoleSubtracted.Masses
+import DOZZ.GMC.SharpMoments.SeibergWeight
 
 /-!
 # Pointwise bounds on the pole-subtracted masses
@@ -16,7 +15,6 @@ zero tilt is at most `e^{γ a⁺ n}` on `C_n`; the regular part and the annular 
 tilted mass are controlled by the total mass and by the mass of `B(0, e^{-n})`.
 -/
 
-@[expose] public section
 
 open MeasureTheory Filter Topology Set
 open scoped ENNReal NNReal
@@ -42,8 +40,7 @@ private theorem ofReal_div_le_one_aux {t u : ℝ} (hu : 0 < u) (h : t ≤ u) :
   rw [← ENNReal.ofReal_div_of_pos hu]
   exact ENNReal.ofReal_le_one.mpr ((div_le_one₀ hu).mpr h)
 
-private theorem exp_neg_natCast_le_one_aux (n : ℕ) : Real.exp (-(n : ℝ)) ≤ 1 :=
-  Real.exp_le_one_iff.mpr (neg_nonpos.mpr (Nat.cast_nonneg n))
+private theorem exp_neg_natCast_le_one_aux (n : ℕ) : Real.exp (-(n : ℝ)) ≤ 1 := DOZZ.Proofs.exp_neg_natCast_le_one n
 
 /-- A set integral of a product of two pointwise-bounded factors is at most the product of the
 bounds times the measure of the set. -/
@@ -112,7 +109,7 @@ theorem poleWeight_eq_coulombWeight (γ η : ℝ) {x : ℂ} (hx2 : x ≠ 2) (hx2
   have h2 : 0 < ‖x + 2‖ := norm_pos_iff.mpr fun h => hx2' (add_eq_zero_iff_eq_neg.mp h)
   unfold poleWeight coulombWeight
   rw [Fin.prod_univ_two]
-  simp only [Matrix.cons_val_zero, Matrix.cons_val_one, sub_neg_eq_add, mul_zero,
+  simp [Matrix.cons_val_zero, Matrix.cons_val_one, sub_neg_eq_add, mul_zero,
     ENNReal.rpow_eq_pow, ENNReal.rpow_zero, mul_one, ENNReal.ofReal_div_of_pos h1,
     ENNReal.ofReal_div_of_pos h2]
 
@@ -203,7 +200,7 @@ theorem annulusMass_le {γ η : ℝ} (a : ℝ) (hγ : 0 < γ) (hη : 0 ≤ η) (
     intro x hx
     have h := zeroTilt_le_exp_max (a := a) hγ hx.1
     push_cast at h
-    exact h
+    assumption
   have hg : ∀ x ∈ cutoffRegion (n + 1) \ cutoffRegion n, poleWeight γ η x ≤ 1 := by
     intro x hx
     have hx2 : ¬ Real.exp (-(n : ℝ)) ≤ ‖x‖ := hx.2
@@ -220,4 +217,3 @@ theorem annulusMass_le {γ η : ℝ} (a : ℝ) (hγ : 0 < γ) (hη : 0 ≤ η) (
 
 end DOZZ.Proofs
 
-end

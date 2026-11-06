@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Hypergeom.BasisWronskians
-public import DOZZ.Hypergeom.ODE.CutPlaneTopology
+import DOZZ.Hypergeom.BasisWronskians
+import DOZZ.Hypergeom.ODE.CutPlaneTopology
 
 /-! A nonvanishing Wronskian gives a global basis of Gauss solutions. -/
 
-@[expose] public section
 
 namespace DOZZ.Proofs
 
@@ -29,10 +27,6 @@ theorem gauss_pair_wronskian_abel
   let W : ℂ → ℂ := fun z => f z * deriv g z - deriv f z * g z
   have hf₁ : AnalyticOnNhd ℂ (deriv f) gaussCutPlane := hf.deriv
   have hg₁ : AnalyticOnNhd ℂ (deriv g) gaussCutPlane := hg.deriv
-  have hWanalytic : AnalyticOnNhd ℂ W gaussCutPlane := by
-    change AnalyticOnNhd ℂ (fun z => f z * deriv g z - deriv f z * g z)
-      gaussCutPlane
-    exact (hf.mul hg₁).sub (hf₁.mul hg)
   have hWderiv : ∀ z ∈ gaussCutPlane,
       deriv W z = f z * deriv (deriv g) z - deriv (deriv f) z * g z := by
     intro z hz
@@ -119,10 +113,8 @@ theorem gauss_two_solution_span_unique
   have hWdiff : DifferentiableOn ℂ W gaussCutPlane := hWanalytic.differentiableOn
   have hAdiff : DifferentiableOn ℂ A gaussCutPlane := hAanalytic.differentiableOn
   have hBdiff : DifferentiableOn ℂ B gaussCutPlane := hBanalytic.differentiableOn
-  have hαdiff : DifferentiableOn ℂ α gaussCutPlane := by
-    exact hAdiff.div hWdiff hWne
-  have hβdiff : DifferentiableOn ℂ β gaussCutPlane := by
-    exact hBdiff.div hWdiff hWne
+  have hαdiff : DifferentiableOn ℂ α gaussCutPlane := hAdiff.div hWdiff hWne
+  have hβdiff : DifferentiableOn ℂ β gaussCutPlane := hBdiff.div hWdiff hWne
   have hαderivZero : gaussCutPlane.EqOn (deriv α) (fun _ => 0) := by
     intro z hz
     have hAAt := (hAanalytic z hz).differentiableAt

@@ -1,15 +1,13 @@
 /-
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 -/
-module
 
-public import DOZZ.GMC.Construction.RootedCircleIntegrated
-public import DOZZ.GMC.Construction.RootedCircleObservableLimit
-public import DOZZ.GMC.Construction.RootedMarkedL1Limit
+import DOZZ.GMC.Construction.RootedCircleIntegrated
+import DOZZ.GMC.Construction.RootedCircleObservableLimit
+import DOZZ.GMC.Construction.RootedMarkedL1Limit
 
 /-! The rooted identity for bounded continuous marks of finitely many determining coordinates. -/
 
-@[expose] public section
 
 open MeasureTheory Filter Topology
 open scoped Distributions ENNReal BoundedContinuousFunction
@@ -76,8 +74,8 @@ theorem rooted_finite_coordinate_identity
       apply lintegral_congr
       intro u
       by_cases hu : u ∈ A
-      · simp only [H, Set.indicator_of_mem hu]
-      · simp only [H, Set.indicator_of_notMem hu, lintegral_zero]
+      · simp [H, Set.indicator_of_mem hu]
+      · simp [H, Set.indicator_of_notMem hu]
     exact hl.symm.trans (ht.trans hr)
   have hl := regularizedGMC_bounded_mass_mark_lintegral_tendsto
     P X hX γ hγ hγ2 M hM Xc hXc A hA R hAR mark hmark.aestronglyMeasurable
@@ -85,6 +83,6 @@ theorem rooted_finite_coordinate_identity
     (fun ω => φ.norm_coe_le_norm _)
   have hr := circleRooted_bounded_coordinate_lintegral_tendsto
     P X hX γ hγ hγ2 M hM hMmeas (gmcReferenceMeasure.restrict A) hRoot s φ
-  exact tendsto_nhds_unique hl (by simpa only [heq] using hr)
+  exact tendsto_nhds_unique hl (by simpa [heq] using hr)
 
 end DOZZ.Proofs

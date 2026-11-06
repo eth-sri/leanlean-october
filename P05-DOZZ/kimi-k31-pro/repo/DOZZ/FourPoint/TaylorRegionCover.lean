@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.TaylorExterior
-public import DOZZ.GMC.Annulus.BallCover
+import DOZZ.FourPoint.TaylorExterior
+import DOZZ.GMC.Annulus.BallCover
 
 /-! Combining a finite spatial cover of the actual positive Taylor square. -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -32,17 +30,17 @@ theorem twoRooted_region_cover
   have hA (i : Fin 4) : AEMeasurable (A i) P := by
     have hm := Measure.measurable_lintegral (hf.indicator (hB i))
     have hh := hm.comp_aemeasurable hMm
-    simpa only [lintegral_indicator (hB i), Function.comp_def, A] using hh
+    simpa [lintegral_indicator (hB i), Function.comp_def, A] using hh
   have hI : AEMeasurable I P :=
     ((coulombMass_measure_measurable γ ![-γ / 2, α₁, α₂] ![z, 0, 1] α₃).comp_aemeasurable hMm).pow_const _
   have hpoint (ω : Ω) : I ω * (∫⁻ x, f x ∂M ω) ^ 2 ≤
       16 * ∑ i : Fin 4, (A i ω) ^ 2 * I ω := by
     have hmass : (∫⁻ x, f x ∂M ω) ≤ ∑ i : Fin 4, A i ω := by
       have hh := lintegral_iUnion_le (μ := M ω) B f
-      simpa only [hcover, setLIntegral_univ, tsum_fintype] using hh
+      simpa [hcover, setLIntegral_univ, tsum_fintype] using hh
     have hpow := ennreal_finset_sum_rpow_le_card_rpow_sum Finset.univ
       (Finset.univ_nonempty : (Finset.univ : Finset (Fin 4)).Nonempty) (fun i => A i ω) 2 (by norm_num)
-    simp only [ENNReal.rpow_two, Finset.card_univ, Fintype.card_fin, Nat.cast_ofNat] at hpow
+    simp [Finset.card_univ, Fintype.card_fin, Nat.cast_ofNat] at hpow
     norm_num only [show (4 : ℝ≥0∞) ^ 2 = 16 by norm_num] at hpow
     calc
       _ ≤ I ω * (16 * ∑ i : Fin 4, (A i ω) ^ 2) :=

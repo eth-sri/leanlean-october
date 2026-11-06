@@ -3,9 +3,8 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Scott Armstrong, Amélie Loher
 -/
-module
 
-public import GaussianFields.LogCorrelated.ABK.Dilation
+import GaussianFields.LogCorrelated.ABK.Dilation
 
 /-!
 # GaussianFields.LogCorrelated/ABK/SpatialFubini
@@ -13,7 +12,6 @@ public import GaussianFields.LogCorrelated.ABK.Dilation
 Port of the corresponding GaussianFields source module.
 -/
 
-public section
 
 open MeasureTheory
 open scoped ENNReal Topology
@@ -62,8 +60,7 @@ theorem integral_abkSpatialConvolution_mul_eq_integral_integral {d : Nat}
       continuous_fst.sub continuous_snd
     have hscaled : Continuous (fun p : Vec d × Vec d => r⁻¹ • (p.1 - p.2)) :=
       (continuous_const_smul (r⁻¹)).comp hsub
-    have hcut : Continuous (fun p : Vec d × Vec d => abkScaledCutoff ζ r (p.1 - p.2)) := by
-      exact ζ.continuous.comp hscaled
+    have hcut : Continuous (fun p : Vec d × Vec d => abkScaledCutoff ζ r (p.1 - p.2)) := ζ.continuous.comp hscaled
     exact (hcut.mul (ψ.continuous.comp continuous_snd)).mul (hF_cont.comp continuous_fst)
   have hG_cs : HasCompactSupport (Function.uncurry G) := by
     simpa [G] using
@@ -205,4 +202,3 @@ theorem integral_abkSpatialConvolution_mul_abkSpatialConvolution_eq_selfConvolut
 
 end GaussianFields
 
-end

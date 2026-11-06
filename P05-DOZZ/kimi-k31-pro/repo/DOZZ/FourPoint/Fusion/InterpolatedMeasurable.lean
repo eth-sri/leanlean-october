@@ -2,12 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Fusion.InterpolatedInverseMoments
-public import DOZZ.FourPoint.Fusion.MovingExpectationMeasurable
-public import DOZZ.FourPoint.Fusion.RootOnlyKernelMeasurable
+import DOZZ.FourPoint.Fusion.InterpolatedInverseMoments
+import DOZZ.FourPoint.Fusion.MovingExpectationMeasurable
+import DOZZ.FourPoint.Fusion.RootOnlyKernelMeasurable
 /-! # Joint measurability of the interpolated inverse expectation -/
-@[expose] public section
 open MeasureTheory
 namespace DOZZ.Proofs
 /-- Measurability of a rooted mass in an arbitrary finite measurable family. -/
@@ -19,7 +17,7 @@ theorem fusionMovingMass_family_measurable {U : Type*} [MeasurableSpace U]
     (fun q : U × ℂ => fusionMovingKernel γ α₁ α₂ α₃ (y q.1) (z q.1) q.2)
   have hp : Measurable (fun q : U × ℂ => ((y q.1, z q.1), q.2)) :=
     ((hy.comp measurable_fst).prodMk (hz.comp measurable_fst)).prodMk measurable_snd
-  simpa only [Function.comp_def] using (fusionMovingKernel_joint_measurable γ α₁ α₂ α₃).comp hp
+  simpa [Function.comp_def] using (fusionMovingKernel_joint_measurable γ α₁ α₂ α₃).comp hp
 /-- Measurability of a rooted mass in an arbitrary finite measurable family. -/
 theorem fusionRootOnlyMass_family_measurable {U : Type*} [MeasurableSpace U]
     (γ α₁ α₂ α₃ : ℝ) (μ : U → Measure ℂ) (hμ : Measurable μ) (hfin : ∀ u, IsFiniteMeasure (μ u))
@@ -29,7 +27,7 @@ theorem fusionRootOnlyMass_family_measurable {U : Type*} [MeasurableSpace U]
     (fun q : U × ℂ => fusionRootOnlyKernel γ α₁ α₂ α₃ (y q.1) (z q.1) q.2)
   have hp : Measurable (fun q : U × ℂ => ((y q.1, z q.1), q.2)) :=
     ((hy.comp measurable_fst).prodMk (hz.comp measurable_fst)).prodMk measurable_snd
-  simpa only [Function.comp_def] using (fusionRootOnlyKernel_joint_measurable γ α₁ α₂ α₃).comp hp
+  simpa [Function.comp_def] using (fusionRootOnlyKernel_joint_measurable γ α₁ α₂ α₃).comp hp
 /-- The inverse expectation is jointly measurable in time, rescaled root, and insertion. -/
 theorem fusionInterpolatedMass_expectation_measurable {Ω : Type*} [MeasurableSpace Ω]
     (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
@@ -60,7 +58,6 @@ theorem fusionInterpolatedMass_expectation_measurable {Ω : Type*} [MeasurableSp
       (fun q : ℝ × (ℂ × ℂ) => ∫⁻ ω,
       fusionInterpolatedMass γ α₁ α₂ α₃ q.1 q.2.1 q.2.2 (N ω) ^ s ∂P) := by
     funext q
-    exact lintegral_congr_ae (he.mono fun ω h => by dsimp only; rw [h])
-  rw [heq]
-  exact hmeas
+    exact lintegral_congr_ae (he.mono fun ω h => by dsimp; rw [h])
+  rwa [heq]
 end DOZZ.Proofs

@@ -2,16 +2,14 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import Mathlib.Topology.UniformSpace.HeineCantor
-public import Mathlib.Algebra.Order.Archimedean.Basic
-public import Mathlib.Analysis.Complex.Basic
+import Mathlib.Topology.UniformSpace.HeineCantor
+import Mathlib.Algebra.Order.Archimedean.Basic
+import Mathlib.Analysis.Complex.Basic
 
 /-! A continuous path on a compact interval admits a finite equal subdivision with small image
 increments. This is the compactness step for disk-chain continuation. -/
 
-@[expose] public section
 
 open Set
 
@@ -52,7 +50,7 @@ theorem exists_path_subdivision {γ : ℝ → ℂ}
       ring
     rw [show (i : ℝ) / (N : ℝ) - ((i + 1 : ℕ) : ℝ) / (N : ℝ) = -(1 / (N : ℝ)) by linarith [hdiff], abs_neg,
       abs_of_pos (one_div_pos.mpr hN)]
-    exact hgap
+    assumption
   refine ⟨?_, ?_⟩
   · exact hclose _ ⟨hi0, hi1⟩ _ ⟨hiNext0, hiNext1⟩ htime
   · intro t ht

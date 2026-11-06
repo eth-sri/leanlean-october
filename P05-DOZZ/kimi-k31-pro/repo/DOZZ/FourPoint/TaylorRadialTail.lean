@@ -2,15 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Hypergeom.Planar.RadialCriteria
-public import Mathlib.MeasureTheory.Measure.Lebesgue.EqHaar
-public import Mathlib.LinearAlgebra.Complex.FiniteDimensional
+import DOZZ.Hypergeom.Planar.RadialCriteria
+import Mathlib.MeasureTheory.Measure.Lebesgue.EqHaar
+import Mathlib.LinearAlgebra.Complex.FiniteDimensional
 
 /-! The sharp planar tail power, obtained by Haar dilation. -/
 
-@[expose] public section
 open MeasureTheory Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -64,7 +62,7 @@ theorem planar_radial_tail_bound (a : ℝ) (ha : a < -2) :
   let J : ℝ≥0∞ := ∫⁻ x : ℂ in (Metric.ball 0 1)ᶜ, ENNReal.ofReal (‖x‖ ^ a)
   have hJ : J < ⊤ := by
     have h := (integrableOn_norm_rpow_ball_compl_iff a 1 zero_lt_one).mpr ha
-    simpa only [Real.norm_of_nonneg (Real.rpow_nonneg (norm_nonneg _) _)] using
+    simpa [Real.norm_of_nonneg (Real.rpow_nonneg (norm_nonneg _) _)] using
       (hasFiniteIntegral_iff_norm _).mp h.hasFiniteIntegral
   refine ⟨J.toReal + 1, by positivity, ?_⟩
   intro ρ hρ

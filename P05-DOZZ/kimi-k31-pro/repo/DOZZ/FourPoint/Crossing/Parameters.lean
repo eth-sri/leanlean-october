@@ -2,16 +2,14 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.Hypergeom.GaussPhysicalParameterRange
+import DOZZ.Statements.Hypergeom.GaussPhysicalParameterRange
 import Mathlib.Tactic
 
 /-! # Nonresonance and the `K₂ ≠ 0` guard for ordinary half-charge crossing
 
 The guard is the missing hypothesis of erratum K27, see docs/ERRATA-AND-DEVIATIONS.md. -/
 
-public section
 namespace DOZZ.Proofs
 
 /-- Exchanging the finite charges changes c into the one-channel parameter. -/
@@ -38,9 +36,9 @@ theorem crossing_gammaHalf_parameter_guards (γ a ε c : ℝ)
   have hεQ : ε < Q γ := by unfold Q; linarith only [hε, hγ]
   have hsum : 2 * Q γ + γ / 2 < a + ε + c := by linarith only [hs]
   obtain ⟨hA, hAB, hBC, hC, hδ, hδ1, _, hK₂⟩ :=
-    DOZZ.gauss_physical_parameter_range γ (γ / 2) a ε c hγ hγ2 (Or.inl rfl)
+    gauss_physical_parameter_range γ (γ / 2) a ε c hγ hγ2 (Or.inl rfl)
       hsum ha hεQ hc
-  dsimp only
+  dsimp
   refine ⟨?_, ?_, hK₂.ne'⟩
   · intro n hn
     have hpos : 0 < gaussParameterC γ (γ / 2) a := lt_trans (lt_trans hA hAB) hBC

@@ -1,2 +1,1 @@
-module
-public import DOZZ.Correlations.Residue.TailMargins
+import DOZZ.Correlations.Residue.TailMargins

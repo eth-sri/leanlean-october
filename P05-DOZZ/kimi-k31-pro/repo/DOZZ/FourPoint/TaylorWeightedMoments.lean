@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.SharpMoments.WeightedLocalRange
-public import DOZZ.GMC.SharpMoments.WeightedScale
+import DOZZ.GMC.SharpMoments.WeightedLocalRange
+import DOZZ.GMC.SharpMoments.WeightedScale
 
 /-! The sharp supplied-GMC weighted small-radius estimate used by intermediate Taylor fusion. -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -29,9 +27,9 @@ theorem weighted_ball_moment_small_radius_bound
     α hα p hp 0 (1 / 2) (by norm_num)).mpr hrange
   let E : ℝ := γ * (Q γ - α) * p - γ ^ 2 * p ^ 2 / 2
   let C : ℝ := (2 : ℝ) ^ E * (m.toReal + 1)
-  have hC : 0 < C := by dsimp only [C]; positivity
+  have hC : 0 < C := by dsimp [C]; positivity
   have he : (2 - γ * α) * p + γ ^ 2 * p / 2 - γ ^ 2 * p ^ 2 / 2 = E := by
-    dsimp only [E]
+    dsimp [E]
     unfold Q
     field_simp
     ring
@@ -53,7 +51,7 @@ theorem weighted_ball_moment_small_radius_bound
     _ = ENNReal.ofReal (C * r ^ E) := by
       rw [← ENNReal.ofReal_mul hpow, Real.mul_rpow (by norm_num : (0 : ℝ) ≤ 2) hr.le]
       congr 1
-      dsimp only [C]
+      dsimp [C]
       ring
 
 end DOZZ.Proofs

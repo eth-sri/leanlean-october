@@ -1,14 +1,12 @@
 /-
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 -/
-module
 
-public import DOZZ.GMC.Construction.RootedCoordinateLaw
-public import DOZZ.GMC.Construction.RootedMarkedMeasure
+import DOZZ.GMC.Construction.RootedCoordinateLaw
+import DOZZ.GMC.Construction.RootedMarkedMeasure
 
 /-! The law of the root together with all determining field and chaos coordinates. -/
 
-@[expose] public section
 
 open MeasureTheory Filter Topology
 open scoped Distributions ENNReal
@@ -51,7 +49,7 @@ theorem rooted_joint_coordinate_law
     let _ := hM.1 ω
     infer_instance
   have hmean : (∫⁻ ω, (M ω).restrict B Set.univ ∂P) < ⊤ := by
-    simp only [Measure.restrict_apply MeasurableSet.univ, Set.univ_inter]
+    simp [Measure.restrict_apply MeasurableSet.univ, Set.univ_inter]
     rw [equatorGFF_GMC_intensity P X hX γ hγ hγ2 M hM B hB]
     exact measure_lt_top _ _
   let _ := isFiniteMeasure_bind_markedMeasure P _ hres hfin leftPath hl hmean
@@ -78,7 +76,7 @@ theorem rooted_joint_coordinate_law
     Measure.restrict_apply (hr hD)]
   congr 1
   ext q
-  simp only [Set.mem_inter_iff, Set.mem_preimage, Set.mem_prod, Set.mem_univ, and_true]
+  simp [Set.mem_inter_iff, Set.mem_preimage, Set.mem_prod, Set.mem_univ, and_true]
   exact and_comm
 
 end DOZZ.Proofs

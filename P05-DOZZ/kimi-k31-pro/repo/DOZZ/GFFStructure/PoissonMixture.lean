@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.GFFStructure.PoissonEnergy
-public import Mathlib.MeasureTheory.Measure.HasOuterApproxClosed
+import DOZZ.GFFStructure.PoissonEnergy
+import Mathlib.MeasureTheory.Measure.HasOuterApproxClosed
 
 /-!
 # Literal collar mass, radial probability laws and mixtures
@@ -17,7 +16,6 @@ corresponding radial product errors are genuine integrable observables. This pre
 energy Fubini calculation; it does not yet construct random Poisson functionals.
 -/
 
-@[expose] public section
 open Filter MeasureTheory ProbabilityTheory Set Metric
 open scoped Topology ENNReal NNReal Distributions BoundedContinuousFunction
 namespace DOZZ.Proofs
@@ -29,11 +27,11 @@ theorem poissonCollarTest_polar_jacobian (c z : ℂ) (ρ ε : ℝ) (hρ : 0 < ρ
     u*poissonCollarTest c z ρ ε hρ hz q hq hqs (c+circleMap 0 u θ) =
       q (u-ρ)/(2*Real.pi)*unitPoissonWeight c ρ z (circleMap 0 1 θ) := by
   rw [poissonCollarTest_apply]
-  simp only [circleMap, zero_add, Complex.ofReal_one, one_mul]
+  simp [circleMap, zero_add, Complex.ofReal_one, one_mul]
   unfold poissonCollarValue unitPoissonWeight
   rw [poissonBoundaryDirection_polar c ρ u θ hu,
     norm_poissonPolarPoint_sub c u θ hu.le]
-  simp only [Complex.real_smul]
+  simp [Complex.real_smul]
   field_simp
 
 /-- Polar coordinates identify the actual collar integral with its weighted circle mixture. -/
@@ -55,7 +53,7 @@ theorem integral_poissonCollarTest_mul_polar (c z : ℂ) (ρ ε : ℝ) (hρ : 0 
   calc
     _ = ∫ w, F w := (integral_add_left_eq_self (fun w => p w*h w) c).symm
     _ = ∫ a in Complex.polarCoord.target, a.1*F (Complex.polarCoord.symm a) := by
-      simpa only [smul_eq_mul, polarCoord_target, Complex.polarCoord_target] using (Complex.integral_comp_polarCoord_symm F).symm
+      simpa [smul_eq_mul, polarCoord_target, Complex.polarCoord_target] using (Complex.integral_comp_polarCoord_symm F).symm
     _ = ∫ u in Ioi (0 : ℝ), ∫ θ in Ioo (-Real.pi) Real.pi,
         u*F (Complex.polarCoord.symm (u,θ)) := by
       rw [ht] at hp ⊢
@@ -81,7 +79,7 @@ theorem integral_poissonCollarTest_mul_polar (c z : ℂ) (ρ ε : ℝ) (hρ : 0 
           ring
         _ = (q (u-ρ)/(2*Real.pi))*(2*Real.pi*Real.circleAverage
             (fun v => unitPoissonWeight c ρ z v*h (c+u • v)) 0 1) := by
-          rw [integral_const_mul, DOZZ.integral_circleAngle_eq_twoPi_mul_circleAverage
+          rw [integral_const_mul, integral_circleAngle_eq_twoPi_mul_circleAverage
             (fun v => unitPoissonWeight c ρ z v*h (c+u • v)) 1]
         _ = q (u-ρ)*(∫ v, unitPoissonWeight c ρ z v*h (c+u • v) ∂circleMeasure 0 0) := by
           rw [integral_circleMeasure_eq_circleAverage 0 0
@@ -96,11 +94,11 @@ theorem integral_shifted_poissonDensity_mul (ρ ε : ℝ) (hρ : 0 < ρ)
     (∫ u in Ioi (0 : ℝ), q (u-ρ)*A u) = ∫ t, q t*A (ρ+t) := by
   rw [setIntegral_eq_integral_of_forall_compl_eq_zero]
   · have h := integral_add_left_eq_self (μ := volume) (fun u : ℝ => q (u-ρ)*A u) ρ
-    simpa only [add_sub_cancel_left] using h.symm
+    simpa [add_sub_cancel_left] using h.symm
   · intro u hu
     have hq : q (u-ρ) = 0 := by
       by_contra hn
-      have ht := hqs (subset_tsupport q (by simpa only [Function.mem_support] using hn))
+      have ht := hqs (subset_tsupport q (by simpa [Function.mem_support] using hn))
       have hu' : u ≤ 0 := le_of_not_gt hu
       linarith [ht.1]
     rw [hq, zero_mul]
@@ -123,8 +121,8 @@ theorem integral_poissonCollarTest (c z : ℂ) (ρ ε : ℝ) (hρ : 0 < ρ)
   have hi : Integrable (poissonCollarTest c z ρ ε hρ hz q hq hqs) := (poissonCollarTest c z ρ ε hρ hz q hq hqs).continuous.integrable_of_hasCompactSupport
     (poissonCollarTest c z ρ ε hρ hz q hq hqs).hasCompactSupport
   have hm := integral_poissonCollarTest_mul_eq_mixture c z ρ ε hρ hz q hq hqs
-    (fun _ => (1 : ℝ)) measurable_const (by simpa only [mul_one] using hi)
-  simpa only [mul_one, integral_unitPoissonWeight c z ρ hρ hz, hqone] using hm
+    (fun _ => (1 : ℝ)) measurable_const (by simpa [mul_one] using hi)
+  simpa [mul_one, integral_unitPoissonWeight c z ρ hρ hz, hqone] using hm
 
 /-- A bounded continuous potential has Poisson-weighted circle means continuous in radius. -/
 theorem continuous_poissonCircleMean_radius (c z : ℂ) (ρ : ℝ) (hρ : 0 < ρ)
@@ -174,20 +172,20 @@ theorem tendsto_integral_poissonCollarDensity_mul (ε ρ : ℝ) (hε : 0 < ε)
         (η/2)*poissonCollarDensity ε hε k t := by
       intro t
       by_cases ht : poissonCollarDensity ε hε k t = 0
-      · simp only [ht, zero_mul, sub_self, abs_zero, mul_zero, le_refl]
+      · simp [ht, zero_mul, sub_self, abs_zero, mul_zero, le_refl]
       · have hs := tsupport_poissonCollarDensity_subset ε hε k
-          (subset_tsupport _ (by simpa only [Function.mem_support] using ht))
+          (subset_tsupport _ (by simpa [Function.mem_support] using ht))
         have hdist : dist (ρ+t) ρ < d := by
           rw [Real.dist_eq, add_sub_cancel_left, abs_of_pos hs.1]
           exact hs.2.trans (hN k hk)
         have ha : |A (ρ+t)-A ρ| ≤ η/2 := by
-          simpa only [Real.dist_eq] using (hAd hdist).le
+          simpa [Real.dist_eq] using (hAd hdist).le
         rw [← mul_sub, abs_mul, abs_of_nonneg (poissonCollarDensity_nonneg ε hε k t)]
         exact (mul_le_mul_of_nonneg_left ha (poissonCollarDensity_nonneg ε hε k t)).trans_eq (mul_comm _ _)
     calc
       _ ≤ ∫ t, (η/2)*poissonCollarDensity ε hε k t :=
         integral_mono_ae (hi.sub (hq.mul_const (A ρ))).norm (hq.const_mul (η/2))
-          (ae_of_all _ (fun t => by simpa only [Pi.sub_apply, Real.norm_eq_abs] using hb t))
+          (ae_of_all _ (fun t => by simpa [Pi.sub_apply, Real.norm_eq_abs] using hb t))
       _ = η/2 := by rw [integral_const_mul, integral_poissonCollarDensity, mul_one]
   rw [Real.dist_eq]
   exact herror.trans_lt (half_lt_self hη)
@@ -246,7 +244,7 @@ theorem integral_poissonCollarRadiusMeasure (ε : ℝ) (hε : 0 < ε) (k : ℕ) 
   rw [poissonCollarRadiusMeasure, integral_withDensity_eq_integral_toReal_smul
     ((poissonCollarDensity_contDiff ε hε k).continuous.measurable.ennreal_ofReal)
     (ae_of_all _ (fun _ => ENNReal.ofReal_lt_top))]
-  simp only [ENNReal.toReal_ofReal (poissonCollarDensity_nonneg ε hε k _), smul_eq_mul]
+  simp [ENNReal.toReal_ofReal (poissonCollarDensity_nonneg ε hε k _), smul_eq_mul]
 
 /-- Two independent radial collar variables satisfy both literal support bounds. -/
 theorem ae_poissonCollarRadiusMeasure_pair_mem (ε : ℝ) (hε : 0 < ε) (k l : ℕ) :
@@ -284,9 +282,9 @@ theorem eventually_abs_integral_poissonCollarRadiusMeasure_pair_le (ε : ℝ) (h
       rw [Prod.dist_eq, Real.dist_eq, Real.dist_eq, sub_zero, sub_zero,
         abs_of_pos ht.1.1, abs_of_pos ht.2.1, max_lt_iff]
       exact ⟨ht.1.2.trans (hN k hk), ht.2.2.trans (hN l hl)⟩
-    simpa only [hAzero, dist_zero_right] using (hAd htbox hdist).le
+    simpa [hAzero, dist_zero_right] using (hAd htbox hdist).le
   have he := norm_integral_le_of_norm_le_const hsmall
-  simpa only [Real.norm_eq_abs, Measure.real, measure_univ, ENNReal.toReal_one, mul_one] using he
+  simpa [Real.norm_eq_abs, Measure.real, measure_univ, ENNReal.toReal_one, mul_one] using he
 
 /-- The radial product law is exactly the density tensor on the plane of displacements. -/
 theorem poissonCollarRadiusMeasure_pair_eq_withDensity (ε : ℝ) (hε : 0 < ε) (k l : ℕ) :
@@ -308,7 +306,7 @@ theorem integral_poissonCollarRadiusMeasure_pair (ε : ℝ) (hε : 0 < ε) (k l 
       ∂(poissonCollarRadiusMeasure ε hε k).prod (poissonCollarRadiusMeasure ε hε l)) =
       ∫ t : ℝ × ℝ, poissonCollarDensity ε hε k t.1*poissonCollarDensity ε hε l t.2*A t := by
   rw [poissonCollarRadiusMeasure_pair_eq_withDensity, integral_withDensity_eq_integral_toReal_smul]
-  · simp only [ENNReal.toReal_ofReal (mul_nonneg (poissonCollarDensity_nonneg ε hε k _)
+  · simp [ENNReal.toReal_ofReal (mul_nonneg (poissonCollarDensity_nonneg ε hε k _)
       (poissonCollarDensity_nonneg ε hε l _)), smul_eq_mul]
   · exact (((poissonCollarDensity_contDiff ε hε k).continuous.measurable.comp measurable_fst).mul
       ((poissonCollarDensity_contDiff ε hε l).continuous.measurable.comp measurable_snd)).ennreal_ofReal
@@ -323,14 +321,14 @@ theorem continuousWithinAt_poisson_radial_circleLog_error (ρ ε : ℝ) (hρ : 0
       (𝓝[Icc 0 ε ×ˢ Icc 0 ε] (0,0)) (𝓝[Icc ρ (ρ+ε) ×ˢ Icc ρ (ρ+ε)] (ρ,ρ)) := by
     apply tendsto_nhdsWithin_iff.mpr
     constructor
-    · simpa only [add_zero] using
+    · simpa [add_zero] using
         (by fun_prop : Continuous (fun t : ℝ × ℝ => (ρ+t.1,ρ+t.2))).continuousAt.tendsto.mono_left
           (nhdsWithin_le_nhds (s := Icc 0 ε ×ˢ Icc 0 ε) (a := (0,0)))
     · filter_upwards [self_mem_nhdsWithin] with t ht
       exact ⟨⟨le_add_of_nonneg_right ht.1.1, add_le_add le_rfl ht.1.2⟩,
         ⟨le_add_of_nonneg_right ht.2.1, add_le_add le_rfl ht.2.2⟩⟩
   have he := (tendsto_radial_circleLog_error ρ (ρ+ε) hρ).comp hshift
-  simpa only [ContinuousWithinAt, Function.comp_def, add_zero, sub_self, abs_zero, integral_zero] using he
+  simpa [ContinuousWithinAt, Function.comp_def, add_zero, sub_self, abs_zero, integral_zero] using he
 
 /-- Integrating the absolute angular error against two independently shrinking bump laws
 still tends to zero, uniformly once both indices are sufficiently large. -/
@@ -343,9 +341,9 @@ theorem eventually_poissonCollar_angularLog_error_le (ρ ε : ℝ) (hρ : 0 < ρ
           ∂(circleMeasure 0 0).prod (circleMeasure 0 0))| ≤ η := by
   obtain ⟨N,hN⟩ := eventually_abs_integral_poissonCollarRadiusMeasure_pair_le ε hε _
     (continuousWithinAt_poisson_radial_circleLog_error ρ ε hρ)
-    (by simp only [add_zero, sub_self, abs_zero, integral_zero]) η hη
+    (by simp [add_zero, sub_self, abs_zero, integral_zero]) η hη
   refine ⟨N, fun k l hk hl => ?_⟩
-  simpa only [integral_poissonCollarRadiusMeasure_pair] using hN k l hk hl
+  simpa [integral_poissonCollarRadiusMeasure_pair] using hN k l hk hl
 
 
 /-- The common angular log majorant gives a finite deterministic error bound on every collar square. -/
@@ -374,9 +372,9 @@ theorem integral_radial_circleLog_error_le (ρ B r s : ℝ) (hρ : 0 < ρ)
   convert hmono using 1
   have habs : Integrable (fun p : ℂ × ℂ => |Real.log ‖p.1-p.2‖|)
       ((circleMeasure 0 0).prod (circleMeasure 0 0)) := by
-    simpa only [Real.norm_eq_abs] using integrable_unitCircle_log_distance.norm
+    simpa [Real.norm_eq_abs] using integrable_unitCircle_log_distance.norm
   rw [integral_const_mul, integral_add (integrable_const (|Real.log (2*B)|+|Real.log ρ|)) habs]
-  simp only [integral_const, Measure.real, measure_univ, ENNReal.toReal_one, one_smul]
+  simp [integral_const, Measure.real, measure_univ, ENNReal.toReal_one, one_smul]
 
 /-- Actual radial collar mixtures of the angular error are integrable, including their diagonal. -/
 theorem integrable_poissonCollar_angularLog_error (ρ ε : ℝ) (hρ : 0 < ρ) (hε : 0 < ε)
@@ -450,7 +448,7 @@ theorem integral_canonicalPoissonCollarMeasure (c z : ℂ) (ρ ε : ℝ) (hρ : 
   rw [canonicalPoissonCollarMeasure, integral_withDensity_eq_integral_toReal_smul
     (canonicalPoissonCollarTest c z ρ ε hρ hε hz k).continuous.measurable.ennreal_ofReal
     (ae_of_all _ (fun _ => ENNReal.ofReal_lt_top))]
-  simp only [ENNReal.toReal_ofReal (canonicalPoissonCollarTest_nonneg c z ρ ε hρ hε hz k _),
+  simp [ENNReal.toReal_ofReal (canonicalPoissonCollarTest_nonneg c z ρ ε hρ hε hz k _),
     smul_eq_mul]
 
 /-- The unit-angle Poisson probability measure. -/
@@ -474,14 +472,14 @@ theorem integral_unitPoissonMeasure (c z : ℂ) (ρ : ℝ) (hρ : 0 < ρ)
   rw [unitPoissonMeasure, integral_withDensity_eq_integral_toReal_smul
     (measurable_unitPoissonWeight c z ρ).ennreal_ofReal
     (ae_of_all _ (fun _ => ENNReal.ofReal_lt_top))]
-  simp only [ENNReal.toReal_ofReal (unitPoissonWeight_nonneg c z _ ρ hρ hz), smul_eq_mul]
+  simp [ENNReal.toReal_ofReal (unitPoissonWeight_nonneg c z _ ρ hρ hz), smul_eq_mul]
 
 /-- The angular Poisson probability stays on the unit circle. -/
 theorem ae_norm_unitPoissonMeasure (c z : ℂ) (ρ : ℝ) :
     ∀ᵐ u ∂unitPoissonMeasure c ρ z, ‖u‖ = 1 := by
   apply (withDensity_absolutelyContinuous _ _).ae_le
   filter_upwards [ae_norm_sub_center_circleMeasure 0 0] with u hu
-  simpa only [sub_zero, neg_zero, Real.exp_zero] using hu
+  simpa [sub_zero, neg_zero, Real.exp_zero] using hu
 
 /-- The literal Cartesian collar law equals its mapped radial and angular probability mixture. -/
 theorem canonicalPoissonCollarMeasure_eq_map (c z : ℂ) (ρ ε : ℝ) (hρ : 0 < ρ)
@@ -559,7 +557,7 @@ theorem integral_unitPoissonMeasure_pair (c z w : ℂ) (ρ : ℝ) (hρ : 0 < ρ)
       ∫ p : ℂ × ℂ, unitPoissonWeight c ρ z p.1*unitPoissonWeight c ρ w p.2*F p
         ∂(circleMeasure 0 0).prod (circleMeasure 0 0) := by
   rw [unitPoissonMeasure_pair_eq_withDensity c z w ρ hρ hz, integral_withDensity_eq_integral_toReal_smul]
-  · simp only [ENNReal.toReal_ofReal (mul_nonneg (unitPoissonWeight_nonneg c z _ ρ hρ hz)
+  · simp [ENNReal.toReal_ofReal (mul_nonneg (unitPoissonWeight_nonneg c z _ ρ hρ hz)
       (unitPoissonWeight_nonneg c w _ ρ hρ hw)), smul_eq_mul]
   · exact (((measurable_unitPoissonWeight c z ρ).comp measurable_fst).mul
       ((measurable_unitPoissonWeight c w ρ).comp measurable_snd)).ennreal_ofReal

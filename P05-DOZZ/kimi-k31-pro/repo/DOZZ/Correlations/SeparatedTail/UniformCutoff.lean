@@ -2,16 +2,14 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.SeparatedTail.CutoffBound
-public import DOZZ.Correlations.SeparatedTail.ChargeSlack
-public import DOZZ.Statements.GMC.EquatorGFFGMCWeightedCutoffBound
+import DOZZ.Correlations.SeparatedTail.CutoffBound
+import DOZZ.Correlations.SeparatedTail.ChargeSlack
+import DOZZ.Statements.GMC.EquatorGFFGMCWeightedCutoffBound
 
 /-! The compact geometry and charge sets select one mixed-cutoff moment constant for the
 separated joint-tail estimate. -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory Filter Metric Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -50,7 +48,7 @@ theorem separatedTail_cutoff_mixed_moment_uniform
   let params : ℝ → ℝ × ℝ := fun α => (α, q*(reflectionExponent γ α-ε))
   have hparams : Continuous params := by unfold params reflectionExponent; fun_prop
   have hpc : IsCompact (params '' (A2 ∪ A3)) := (hA2.union hA3).image hparams
-  obtain ⟨C0,hC0,hC0b⟩ := DOZZ.equatorGFF_GMC_weighted_cutoff_bound P X hX γ hγ hγ2 Xc hc
+  obtain ⟨C0,hC0,hC0b⟩ := equatorGFF_GMC_weighted_cutoff_bound P X hX γ hγ hγ2 Xc hc
     (params '' (A2 ∪ A3)) hpc (by
       rintro _ ⟨α,hα,rfl⟩
       obtain ⟨hαlo,hαhi,hαε⟩ := hadm α hα
@@ -68,7 +66,7 @@ theorem separatedTail_cutoff_mixed_moment_uniform
   have hR : 1 < R := by dsimp [R]; linarith [le_max_right Z 0]
   have hnorm (z : ℂ) (hz : z ∈ K2 ∪ K3) : ‖z‖ ≤ max Z 0 := by
     have hn : ‖z‖ ≤ Z := by
-      simpa only [Real.norm_eq_abs, abs_of_nonneg (norm_nonneg z)] using hZ z hz
+      simpa [Real.norm_eq_abs, abs_of_nonneg (norm_nonneg z)] using hZ z hz
     exact hn.trans (le_max_left _ _)
   obtain ⟨C,hC,hdata⟩ := separatedTail_exists_markov_data R hR
   let b : ℝ≥0∞ := ENNReal.ofReal C0
@@ -119,7 +117,7 @@ theorem separatedTail_cutoff_mixed_moment_uniform
     exact hmul.trans (hqa i).le
   have hbare (i : Fin 2) : (∫⁻ ω, cutoffWeightedGmcBallMass P Xc γ (α i) (c i) 1 δ ω ^ (a i*q) ∂P) ≤ b := by
     have hb := hC0b (params (α i)) ⟨α i,hαA i,rfl⟩ (c i) (hcK i) δ 1 hδ (by linarith) le_rfl
-    simpa only [params,a,b,mul_comm,Real.rpow_eq_pow,Real.one_rpow,mul_one,ENNReal.rpow_eq_pow] using hb
+    simpa [params,a,b,mul_comm,Real.rpow_eq_pow,Real.one_rpow,mul_one,ENNReal.rpow_eq_pow] using hb
   exact separatedTail_cutoff_mixed_bound_of_markov_data P X hX Xc hc c R hR
     (fun i => by have := hpin i; linarith) C data γ hγ α a
     (fun i => by have := (hadm (α i) (hαA i)).1; linarith) p q T hpq hT ha haT

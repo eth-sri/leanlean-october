@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.TaylorJensen
-public import DOZZ.FourPoint.TaylorExterior
+import DOZZ.FourPoint.TaylorJensen
+import DOZZ.FourPoint.TaylorExterior
 
 /-! Weighted Jensen reduces each annular positive Taylor square to a one-root expectation. -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -24,7 +22,7 @@ theorem weighted_jensen_square (μ : Measure ℂ) (k f : ℂ → ℝ≥0∞)
   rw [lintegral_withDensity_eq_lintegral_mul μ hk hf,
     lintegral_withDensity_eq_lintegral_mul μ hk hsq,
     withDensity_apply _ MeasurableSet.univ, setLIntegral_univ] at h
-  exact h
+  assumption
 
 /-- Measurability includes the prescribed values at all the finite roots. -/
 theorem gammaHalfKernel_measurable (γ α₁ α₂ α₃ : ℝ) (z : ℂ) :
@@ -53,10 +51,10 @@ theorem gammaHalf_annular_jensen_bound (γ α₁ α₂ α₃ : ℝ) (z : ℂ)
     rw [← ENNReal.ofReal_pow (inv_nonneg.mpr (norm_nonneg _)),
       ← ENNReal.ofReal_mul (gammaHalfKernel_nonneg γ α₁ α₂ α₃ z x)]
     congr 1
-    simp only [inv_pow, div_eq_mul_inv]
+    simp [inv_pow, div_eq_mul_inv]
   have h := weighted_jensen_square (μ.restrict B) k f hk hf
   simp_rw [hprod, hprod₂] at h
-  exact h
+  assumption
 
 /-- Source Jensen reduction against the actual full Coulomb mass, for every spatial region. -/
 theorem gammaHalf_region_jensen_reduction

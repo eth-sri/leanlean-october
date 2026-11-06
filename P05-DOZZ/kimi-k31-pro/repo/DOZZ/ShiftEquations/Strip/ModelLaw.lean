@@ -2,15 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.ShiftEquations.Strip.WilliamsLimit
-public import DOZZ.Brownian.ReflectionJointInputLaw
+import DOZZ.ShiftEquations.Strip.WilliamsLimit
+import DOZZ.Brownian.ReflectionJointInputLaw
 import Mathlib.Dynamics.Ergodic.MeasurePreserving
 
 /-! Product-law identification for the Williams model. -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal
 
@@ -38,8 +36,7 @@ theorem lastone_williamsInput_model_map
   let R : ℝ × ((BrownianPath × BrownianPath) × Measure ℝ) →
       ((ℝ × BrownianPath) × BrownianPath) × Measure ℝ := fun z =>
     (((z.1, z.2.1.2), z.2.1.1), z.2.2)
-  have hR : MeasurePreserving R (μ.prod ((Q.prod Q).prod L)) (((μ.prod Q).prod Q).prod L) := by
-    exact hinner.comp (houter.comp hswap)
+  have hR : MeasurePreserving R (μ.prod ((Q.prod Q).prod L)) (((μ.prod Q).prod Q).prod L) := hinner.comp (houter.comp hswap)
   let F : ((ℝ × BrownianPath) × BrownianPath) × Measure ℝ →
       ((ℝ × StoppedBrownianPath) × BrownianPath) × Measure ℝ :=
     Prod.map (Prod.map T id) id
@@ -49,12 +46,10 @@ theorem lastone_williamsInput_model_map
     have h1 := Measure.map_prod_map (μ.prod Q) Q hT measurable_id
     have h2 := Measure.map_prod_map ((μ.prod Q).prod Q) L
       (hT.prodMap measurable_id) measurable_id
-    simp only [Measure.map_id] at h1 h2
+    simp [Measure.map_id] at h1 h2
     exact h2.symm.trans (congrArg (fun N => N.prod L) h1.symm)
   change (μ.prod ((Q.prod Q).prod L)).map (F ∘ R) = _
-  rw [← Measure.map_map hF hR.measurable, hR.map_eq]
-  exact hn
-
+  rwa [← Measure.map_map hF hR.measurable, hR.map_eq]
 /-- A conditioned pair independent of the supplied lateral measure realizes exactly the
 Williams model input law, on the product with the independent maximum carrier. -/
 theorem lastone_williamsInput_law_on_given_space
@@ -77,10 +72,10 @@ theorem lastone_williamsInput_law_on_given_space
     have h := (indepFun_iff_map_prod_eq_prod_map_map hB.1.1 hB.2.1.1).mp hB.2.2
     have h1 := isNegativeConditionedBrownianLaw_eq ν hB.1.2 hQ
     have h2 := isNegativeConditionedBrownianLaw_eq ν hB.2.1.2 hQ
-    simpa only [Prod.eta, h1, h2] using h
+    simpa [Prod.eta, h1, h2] using h
   have hplaw : P.map pair = (Q.prod Q).prod (P.map Z) := by
     have h := (indepFun_iff_map_prod_eq_prod_map_map hBm hZm).mp hInd
-    simpa only [pair, hBlaw] using h
+    simpa [pair, hBlaw] using h
   let g : ℝ × Ω → ℝ × ((BrownianPath × BrownianPath) × Measure ℝ) :=
     fun z => (z.1, pair z.2)
   have hg : AEMeasurable g (μ.prod P) := measurable_fst.aemeasurable.prodMk
@@ -92,7 +87,7 @@ theorem lastone_williamsInput_law_on_given_space
       exact congrArg (fun x => (z.1, x)) hz
     rw [Measure.map_congr heq]
     have hmap := Measure.map_prod_map μ P measurable_id hp.measurable_mk
-    simp only [Measure.map_id] at hmap
+    simp [Measure.map_id] at hmap
     rw [← hmap, ← Measure.map_congr hp.ae_eq_mk]
   let T : ℝ × ((BrownianPath × BrownianPath) × Measure ℝ) →
       ((ℝ × StoppedBrownianPath) × BrownianPath) × Measure ℝ := fun z =>

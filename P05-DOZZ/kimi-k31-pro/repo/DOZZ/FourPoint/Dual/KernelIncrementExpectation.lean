@@ -2,11 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Dual.RelativeIncrement
+import DOZZ.FourPoint.Dual.RelativeIncrement
 import Mathlib.Tactic
 /-! Integrated relative kernel errors are controlled by the finite signed polar increment. -/
-@[expose] public section
 open MeasureTheory
 namespace DOZZ.Proofs
 
@@ -32,7 +30,7 @@ theorem dual_negative_increment_kernel_integral
       convert hm.aestronglyMeasurable using 1
     apply hInv.mono' hm'
     filter_upwards [hA, hv] with ω hAω hvω
-    simpa only [Real.norm_eq_abs] using
+    simpa [Real.norm_eq_abs] using
       dual_negative_increment_abs_le p (A ω) (v ω) hp.le hAω hvω
   have hit := hInt t ht htm
   have hiu := hInt u hu hum
@@ -46,9 +44,9 @@ theorem dual_negative_increment_kernel_integral
     (f := fun ω => ((A ω+u ω)^(-p)-(A ω)^(-p))-((A ω+t ω)^(-p)-(A ω)^(-p)))
     (hLoss.const_mul (max |θlo-1| |θhi-1|)) (by
       filter_upwards [hA, ht, hsqueeze] with ω hAω htω hs
-      simpa only [Real.norm_eq_abs] using
+      simpa [Real.norm_eq_abs] using
         dual_negative_increment_kernel_squeeze p (A ω) (t ω) (u ω) θlo θhi
           hp hAω htω hlo hhi hs.1 hs.2)
-  simpa only [Real.norm_eq_abs, integral_const_mul] using hb
+  simpa [Real.norm_eq_abs, integral_const_mul] using hb
 
 end DOZZ.Proofs

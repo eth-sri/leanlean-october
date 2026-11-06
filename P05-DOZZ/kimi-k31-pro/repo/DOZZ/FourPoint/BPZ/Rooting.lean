@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.BPZ.Mass
-public import DOZZ.GMC.Construction.RootedIdentity
+import DOZZ.FourPoint.BPZ.Mass
+import DOZZ.GMC.Construction.RootedIdentity
 
 /-! # Rooted bounds for the degenerate four-point mass
 
@@ -14,7 +13,6 @@ The equator Green kernel satisfies `G(u,x) ≥ -log 2` for all points, so the ro
 `E[I^{-q} ∫ f dM]` by `2^{γ²q} E[I^{-q}] ∫ f dσ` for every nonnegative `f`, where `σ` is the
 reference measure. No fusion estimate is needed: rooting only increases the mass. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped ENNReal NNReal
@@ -32,7 +30,7 @@ theorem gffKernel_ge_neg_log_two (u x : ℂ) : -Real.log 2 ≤ gffKernel u x := 
   have hx0 : 0 < normPlus x := bpz_normPlus_pos x
   rcases eq_or_ne u x with h | h
   · subst h
-    simp only [sub_self, norm_zero, Real.log_zero, neg_zero, zero_add]
+    simp [sub_self, norm_zero, Real.log_zero, neg_zero, zero_add]
     have h1 := Real.log_nonneg hu
     have h2 := Real.log_pos (by norm_num : (1 : ℝ) < 2)
     linarith
@@ -65,12 +63,11 @@ theorem lintegral_le_lintegral_gmcRootedMeasure (u : ℂ) (m : Measure ℂ) (g :
     (measurable_gmcRootedDensity u) hg, ← lintegral_const_mul' _ _ ENNReal.ofReal_ne_top]
   apply lintegral_mono
   intro x
-  simp only [Pi.mul_apply]
+  simp [Pi.mul_apply]
   gcongr
   rw [Real.rpow_def_of_pos (by norm_num : (0 : ℝ) < 2)]
   apply Real.exp_le_exp.mpr
   have := gffKernel_ge_neg_log_two u x
-  have hγ2 : 0 ≤ γ ^ 2 := sq_nonneg γ
   nlinarith [Real.log_pos (by norm_num : (1 : ℝ) < 2)]
 
 /-- A lower bound by a positive multiple transfers to nonpositive powers, including the case of

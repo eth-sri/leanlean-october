@@ -2,15 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.AdmissibleGMCUniqueConcrete
-public import DOZZ.Statements.GMC.IsCompatibleAdmissibleRegularizations
+import DOZZ.GMC.AdmissibleGMCUniqueConcrete
+import DOZZ.Statements.GMC.IsCompatibleAdmissibleRegularizations
 import Mathlib.MeasureTheory.Function.ConvergenceInMeasure
 
 /-! Uniqueness transfer once mixed cutoff test integrals are Cauchy in measure. -/
 
-@[expose] public section
 
 open MeasureTheory Filter Topology ProbabilityTheory
 open scoped CompactlySupported
@@ -63,9 +61,9 @@ theorem tendstoInMeasure_sub
         intro h
         exact hnot (Or.inr h))
       have hFltNorm : ‖F i ω - Flim ω‖ < δ := by
-        simpa only [Real.norm_eq_abs] using hFlt
+        simpa [Real.norm_eq_abs] using hFlt
       have hGltNorm : ‖G i ω - Glim ω‖ < δ := by
-        simpa only [Real.norm_eq_abs] using hGlt
+        simpa [Real.norm_eq_abs] using hGlt
       have hsumlt : ‖F i ω - Flim ω‖ + ‖G i ω - Glim ω‖ < ε := by
         calc
           _ < δ + δ := add_lt_add hFltNorm hGltNorm

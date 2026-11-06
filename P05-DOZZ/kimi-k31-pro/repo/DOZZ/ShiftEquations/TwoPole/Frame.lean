@@ -2,12 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.ShiftEquations.PoleSubtracted.MassBounds
-public import DOZZ.ShiftEquations.Mobius.AffineMomentInf
-public import DOZZ.ShiftEquations.Mobius.InversionZero
-public import DOZZ.Statements.Defs.UnitVolumeStructureConstant
+import DOZZ.ShiftEquations.PoleSubtracted.MassBounds
+import DOZZ.ShiftEquations.Mobius.AffineMomentInf
+import DOZZ.ShiftEquations.Mobius.InversionZero
+import DOZZ.Statements.Defs.UnitVolumeStructureConstant
 import DOZZ.GMC.Moments.RhoCoulomb
 import DOZZ.Correlations.Symmetry.SymmetricExtended
 
@@ -22,7 +21,6 @@ the frame `(0, 2, -2)` of [KRV, (defgepsi)]. The Möbius map `ψ(y) = 2y/(y+2)` 
 `C̄(x, α₂, α₃) = (2/γ) 2^{4(1-x/γ)} E[Z_ℂ(x)^{1-x/γ}]`.
 -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
@@ -36,7 +34,7 @@ theorem coulombWeight_cons_zero {N : ℕ} (γ : ℝ) (α : Fin N → ℝ) (z₀ 
       coulombWeight γ α z αinf x := by
   unfold coulombWeight
   rw [Fin.prod_univ_succ]
-  simp only [Fin.cons_zero, Fin.cons_succ, mul_zero, ENNReal.rpow_eq_pow, ENNReal.rpow_zero,
+  simp [Fin.cons_zero, Fin.cons_succ, mul_zero, ENNReal.rpow_eq_pow, ENNReal.rpow_zero,
     one_mul]
 
 theorem coulombMass_cons_zero {N : ℕ} (γ : ℝ) (μ : Measure ℂ) (α : Fin N → ℝ) (z₀ : ℂ)
@@ -53,7 +51,7 @@ theorem coulombMass_swap (γ : ℝ) (μ : Measure ℂ) (a₁ a₂ : ℝ) (z₁ z
   refine lintegral_congr fun x => ?_
   unfold coulombWeight
   rw [Fin.prod_univ_two, Fin.prod_univ_two]
-  simp only [Matrix.cons_val_zero, Matrix.cons_val_one]
+  simp [Matrix.cons_val_zero, Matrix.cons_val_one]
   ring
 
 /-- Without atoms at the roots, the total mass at charge `x` is the three-root Coulomb mass. -/
@@ -78,7 +76,7 @@ theorem totalMass_eq_coulombMass (γ η x : ℝ) (μ : Measure ℂ) (h0 : μ {0}
   have hn : 0 < ‖y‖ := norm_pos_iff.mpr hy0
   unfold coulombWeight at hw ⊢
   rw [Fin.prod_univ_succ, hw]
-  simp only [Fin.cons_zero, Fin.cons_succ, sub_zero, zeroTilt, ENNReal.ofReal_div_of_pos hn,
+  simp [Fin.cons_zero, Fin.cons_succ, sub_zero, zeroTilt, ENNReal.ofReal_div_of_pos hn,
     mul_zero, ENNReal.rpow_eq_pow, ENNReal.rpow_zero, mul_one]
 
 /-- `α₂ + α₃ = 4/γ` turns the inversion constant into `2^{-4q}`. -/
@@ -112,7 +110,7 @@ theorem frame_infSExp {γ : ℝ} (hγ : 0 < γ) (η x : ℝ) :
     -infSExp γ (![2 / γ + η, 2 / γ - η] : Fin 2 → ℝ) x = 1 - x / γ := by
   unfold infSExp
   rw [Fin.sum_univ_two, Q]
-  simp only [Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.cons_val_fin_one]
+  simp [Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.cons_val_fin_one]
   field_simp
   ring
 
@@ -201,9 +199,7 @@ theorem extendedSeiberg3_swap12 {γ a b c : ℝ} (h : ExtendedSeiberg3 γ a b c)
   have hsym : sExp γ b a c = sExp γ a b c := by
     unfold sExp
     ring_nf
-  rw [hsym, min_left_comm (2 / γ * (Q γ - b))]
-  exact hs
-
+  rwa [hsym, min_left_comm (2 / γ * (Q γ - b))]
 theorem extendedSeiberg3_swap23 {γ a b c : ℝ} (h : ExtendedSeiberg3 γ a b c) :
     ExtendedSeiberg3 γ a c b := by
   obtain ⟨ha, hb, hc, hs⟩ := h
@@ -211,9 +207,7 @@ theorem extendedSeiberg3_swap23 {γ a b c : ℝ} (h : ExtendedSeiberg3 γ a b c)
   have hsym : sExp γ a c b = sExp γ a b c := by
     unfold sExp
     ring_nf
-  rw [hsym, min_comm (2 / γ * (Q γ - c))]
-  exact hs
-
+  rwa [hsym, min_comm (2 / γ * (Q γ - c))]
 /-- The structure constant of the two-pole expansion in the order of the pole frame. -/
 theorem unitVolumeStructureConstant_pole_order {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
     (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
@@ -233,4 +227,3 @@ theorem unitVolumeStructureConstant_pole_order {Ω : Type*} [MeasurableSpace Ω]
 
 end DOZZ.Proofs
 
-end

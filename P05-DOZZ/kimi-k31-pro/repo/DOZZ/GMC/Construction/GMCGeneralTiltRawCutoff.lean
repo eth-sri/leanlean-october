@@ -2,15 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.Construction.GMCGeneralTilt
-public import DOZZ.GMC.Construction.GMCGeneralTiltScalarLimit
+import DOZZ.GMC.Construction.GMCGeneralTilt
+import DOZZ.GMC.Construction.GMCGeneralTiltScalarLimit
 import DOZZ.GMC.Construction.RegularizedGMCExpectedMeasure
 
 /-! Raw-field measurable circle cutoffs and scalar versions of their GMC limits. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped Distributions ENNReal NNReal BoundedContinuousFunction
@@ -61,8 +59,7 @@ theorem exists_raw_equatorGFF_circle_average_witness
     have hUT : Tendsto U atTop (𝓝 (W p)) := by
       exact equatorGFF_testL2_tendsto_to_circle_limit X hX x r
         (f p) (hgap p) (W p) (hW p) g hg
-    have hTarget : (fun ω => Xc ω x r) =ᵐ[P] ⇑(W p) := by
-      exact (hXcY x r).trans (hY p).2.2.2.1
+    have hTarget : (fun ω => Xc ω x r) =ᵐ[P] ⇑(W p) := (hXcY x r).trans (hY p).2.2.2.1
     exact tendsto_eLpNorm_sub_of_L2_versions P U (W p)
       (fun n ω => X ω (g n)) (fun ω => Xc ω x r)
       (fun n => (equatorGFF_test_memLp X hX (g n)).coeFn_toLp.symm)

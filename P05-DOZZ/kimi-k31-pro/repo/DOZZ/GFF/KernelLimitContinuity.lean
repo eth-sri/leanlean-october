@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GFF.LocalEnergyBound
+import DOZZ.GFF.LocalEnergyBound
 import Mathlib.Analysis.Distribution.ContDiffMapSupportedIn
 
 /-!
@@ -14,7 +13,6 @@ The local Schur estimate makes the deterministic G4 kernel map continuous on eve
 support piece, hence continuous on the test-function inductive limit.
 -/
 
-@[expose] public section
 
 open MeasureTheory Set Metric TopologicalSpace
 open scoped BoundedContinuousFunction ENNReal InnerProductSpace Topology Distributions
@@ -107,8 +105,7 @@ noncomputable def equatorKernelLimitMapCLM :
       let C : ℝ := Real.sqrt (Q * V)
       have hC : 0 ≤ C := by positivity
       refine ⟨{0}, C, hC, fun f => ?_⟩
-      have hsupp : Function.support (TestFunction.ofSupportedIn hK f) ⊆ ball (0 : ℂ) R := by
-        exact (subset_closure.trans (f.tsupport_subset.trans hKR))
+      have hsupp : Function.support (TestFunction.ofSupportedIn hK f) ⊆ ball (0 : ℂ) R := (subset_closure.trans (f.tsupport_subset.trans hKR))
       have hsq := norm_sq_equatorKernelLimitMap_le_localL2 R
         (TestFunction.ofSupportedIn hK f) hsupp
       have hL2 := integral_sq_localTest_le_seminorm K f R
@@ -147,4 +144,3 @@ theorem equatorKernelLimitMapCLM_apply (f : TestFn) :
 
 end DOZZ
 
-end

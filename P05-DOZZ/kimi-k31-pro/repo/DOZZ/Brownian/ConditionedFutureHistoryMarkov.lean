@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Brownian.ConditionedFutureKernelMarkov
-public import Mathlib.MeasureTheory.Constructions.Cylinders
+import DOZZ.Brownian.ConditionedFutureKernelMarkov
+import Mathlib.MeasureTheory.Constructions.Cylinders
 import Mathlib.Probability.Kernel.Composition.MeasureCompProd
 
 /-!
@@ -15,7 +14,6 @@ The finite-schedule factorization extends from coordinate vectors to the complet
 and rational future by the cylinder π-system.
 -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal NNReal
@@ -29,7 +27,7 @@ theorem conditionedPositiveEndpointFutureKernel_nonpos_coordinate_ae
     (t : ℝ≥0) (q : ℚ) (hq : (q : ℝ) ≤ 0) :
     ∀ᵐ z ∂((P.map (conditionedPositiveHistory t)) ⊗ₘ
       conditionedPositiveEndpointFutureKernel t P),
-      z.2 q = z.1 ⟨t, le_rfl⟩ := by
+      z.2 q = z.1 ⟨t, Set.mem_Iic.mpr le_rfl⟩ := by
   have _ := ν
   classical
   let X : BrownianPath → ℝ := conditionedPositiveStateAt t
@@ -50,13 +48,12 @@ theorem conditionedPositiveEndpointFutureKernel_nonpos_coordinate_ae
   have hdiagSet : MeasurableSet {z : ℝ × (ℚ → ℝ) | z.2 q = z.1} :=
     measurableSet_eq_fun ((measurable_pi_apply q).comp measurable_snd) measurable_fst
   have hdiag : ∀ᵐ z ∂P.map (fun p => (X p, Y p)), z.2 q = z.1 := by
-    rw [ae_map_iff (hX.prodMk hY).aemeasurable hdiagSet]
-    exact hpathDiag
+    rwa [ae_map_iff (hX.prodMk hY).aemeasurable hdiagSet]
   have hstateDiag : ∀ᵐ x ∂P.map X, ∀ᵐ y ∂conditionedPositiveFutureKernel t P x,
       y q = x := by
     rw [← hstateJoint] at hdiag
     exact Measure.ae_ae_of_ae_compProd hdiag
-  let endpoint : (Set.Iic t → ℝ) → ℝ := fun h => h ⟨t, le_rfl⟩
+  let endpoint : (Set.Iic t → ℝ) → ℝ := fun h => h ⟨t, Set.mem_Iic.mpr le_rfl⟩
   have hendpoint : Measurable endpoint := measurable_pi_apply _
   have hstateMarg : (P.map (conditionedPositiveHistory t)).map endpoint = P.map X := by
     rw [Measure.map_map hendpoint (measurable_conditionedPositiveHistory t)]
@@ -66,7 +63,7 @@ theorem conditionedPositiveEndpointFutureKernel_nonpos_coordinate_ae
     have h := Filter.Eventually.filter_mono
       ((P.map (conditionedPositiveHistory t)).tendsto_ae_map hendpoint.aemeasurable)
       (by rw [hstateMarg]; exact hstateDiag)
-    exact h
+    assumption
   have hdiagHistory : ∀ᵐ z ∂((P.map (conditionedPositiveHistory t)) ⊗ₘ
       conditionedPositiveEndpointFutureKernel t P), z.2 q = endpoint z.1 := by
     apply Measure.ae_compProd_of_ae_ae
@@ -161,7 +158,7 @@ theorem conditionedPositiveFutureHistoryKernel_cylinder_rectangles
       apply NNReal.coe_lt_coe.mp
       rw [Real.coe_toNNReal _ (hOffsetsPos i).le,
         Real.coe_toNNReal _ (hOffsetsPos j).le]
-      exact hqReal
+      assumption
     simpa [futureTimes] using add_lt_add_left hqNN t
   have hMonoTotal : StrictMono (Fin.append pastTimes futureTimes) :=
     strictMono_finAppend_of_cross pastTimes futureTimes hPastMono hFutureMono
@@ -193,7 +190,7 @@ theorem conditionedPositiveFutureHistoryKernel_cylinder_rectangles
     fun z => (pastProject z.1, futureProject z.2)
   let readPast : (Fin (k + 1) → ℝ) → (∀ i : I, ℝ) := fun x i =>
     if h0 : (i : Set.Iic t) = ⟨0, t.property⟩ then 0
-    else if ht' : (i : Set.Iic t) = ⟨t, le_rfl⟩ then x (Fin.last k)
+    else if ht' : (i : Set.Iic t) = ⟨t, Set.mem_Iic.mpr le_rfl⟩ then x (Fin.last k)
     else
       x (((pastGrid.orderIsoOfFin rfl).symm ⟨i, by
         apply Finset.mem_filter.mpr
@@ -225,8 +222,8 @@ theorem conditionedPositiveFutureHistoryKernel_cylinder_rectangles
     intro i
     by_cases h0 : (i : Set.Iic t) = ⟨0, t.property⟩
     · simp [readPast, h0]
-    · by_cases ht' : (i : Set.Iic t) = ⟨t, le_rfl⟩
-      · have ht0 : (⟨t, le_rfl⟩ : Set.Iic t) ≠ ⟨0, t.property⟩ := by
+    · by_cases ht' : (i : Set.Iic t) = ⟨t, Set.mem_Iic.mpr le_rfl⟩
+      · have ht0 : (⟨t, Set.mem_Iic.mpr le_rfl⟩ : Set.Iic t) ≠ ⟨0, t.property⟩ := by
           intro he
           have he' := congrArg Subtype.val he
           exact (ne_of_gt ht) (by exact_mod_cast he')
@@ -284,7 +281,7 @@ theorem conditionedPositiveFutureHistoryKernel_cylinder_rectangles
       exact Measure.ae_compProd_of_ae_fst κhist
         (measurableSet_eq_fun (measurable_pi_apply _) measurable_const) hzeroAE
     have hnonposPair : ∀ᵐ z ∂μpair, ∀ q : J, (q : ℝ) ≤ 0 →
-        z.2 q = z.1 ⟨t, le_rfl⟩ := by
+        z.2 q = z.1 ⟨t, Set.mem_Iic.mpr le_rfl⟩ := by
       apply ae_all_iff.mpr
       intro q
       by_cases hq : (q : ℝ) ≤ 0
@@ -292,21 +289,21 @@ theorem conditionedPositiveFutureHistoryKernel_cylinder_rectangles
           (ν := ν) (P := P) t (q : ℚ) hq
         filter_upwards [hqae] with z hz
         intro _
-        exact hz
+        assumption
       · exact Filter.Eventually.of_forall fun z hq' => False.elim (hq hq')
     filter_upwards [hzeroPair, hnonposPair] with z hz0 hzq
     apply Prod.ext
     · funext i
       by_cases hi0 : (i : Set.Iic t) = ⟨0, t.property⟩
       · simp [readPair, readPast, hi0, hz0]
-      · by_cases hit : (i : Set.Iic t) = ⟨t, le_rfl⟩
-        · have ht0 : (⟨t, le_rfl⟩ : Set.Iic t) ≠ ⟨0, t.property⟩ := by
+      · by_cases hit : (i : Set.Iic t) = ⟨t, Set.mem_Iic.mpr le_rfl⟩
+        · have ht0 : (⟨t, Set.mem_Iic.mpr le_rfl⟩ : Set.Iic t) ≠ ⟨0, t.property⟩ := by
             intro he
             have he' := congrArg Subtype.val he
             exact (ne_of_gt ht) (by exact_mod_cast he')
           have hpoint :
               (⟨pastTimes (Fin.last k), hPastBound (Fin.last k)⟩ : Set.Iic t) =
-                ⟨t, le_rfl⟩ := by
+                ⟨t, Set.mem_Iic.mpr le_rfl⟩ := by
             apply Subtype.ext
             exact_mod_cast hLast
           simp only [readPair, readPast, dite_eq_right hi0, dite_eq_left hit, pairProject, pastProject]
@@ -336,10 +333,6 @@ theorem conditionedPositiveFutureHistoryKernel_cylinder_rectangles
           have htime : pastTimes j.castSucc = i.val.val := by
             rw [hPastCast]
             exact congrArg (fun x : ↥pastGrid => x.val.val) hj
-          have hidx :
-              (pastGrid.orderEmbOfFin rfl j : Set.Iic t) = (i : Set.Iic t) := by
-            rw [← Finset.coe_orderIsoOfFin_apply]
-            exact congrArg Subtype.val hj
           simp only [readPair, readPast, dite_eq_right hi0, dite_eq_right hit]
           simp [pairProject, pastProject, j, htime,             ]
     · funext j
@@ -367,8 +360,8 @@ theorem conditionedPositiveFutureHistoryKernel_cylinder_rectangles
       by_cases hi0 : (i : Set.Iic t) = ⟨0, t.property⟩
       · simp [readPair, readPast, pathPair, hi0, hp0, conditionedPositiveHistory,
           conditionedPositiveProcessValue]
-      · by_cases hit : (i : Set.Iic t) = ⟨t, le_rfl⟩
-        · have ht0 : (⟨t, le_rfl⟩ : Set.Iic t) ≠ ⟨0, t.property⟩ := by
+      · by_cases hit : (i : Set.Iic t) = ⟨t, Set.mem_Iic.mpr le_rfl⟩
+        · have ht0 : (⟨t, Set.mem_Iic.mpr le_rfl⟩ : Set.Iic t) ≠ ⟨0, t.property⟩ := by
             intro he
             have he' := congrArg Subtype.val he
             exact (ne_of_gt ht) (by exact_mod_cast he')
@@ -394,9 +387,6 @@ theorem conditionedPositiveFutureHistoryKernel_cylinder_rectangles
           let j : Fin k := (pastGrid.orderIsoOfFin rfl).symm ⟨i, hiGrid⟩
           have hj : (pastGrid.orderIsoOfFin rfl j) = ⟨i, hiGrid⟩ :=
             (pastGrid.orderIsoOfFin rfl).apply_symm_apply ⟨i, hiGrid⟩
-          have htime : pastTimes j.castSucc = i.val.val := by
-            simpa only [pastTimes, Fin.lastCases_castSucc] using
-              congrArg (fun x : ↥pastGrid => x.val.val) hj
           have hidxSymm :
               (pastGrid.orderEmbOfFin rfl
                 ((pastGrid.orderIsoOfFin rfl).symm ⟨i, hiGrid⟩) : Set.Iic t) = i := by
@@ -526,4 +516,3 @@ theorem conditionedPositiveHistory_condExp_rationalFuture
 
 end DOZZ.Proofs
 
-end

@@ -2,10 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Fusion.ConvexMass
+import DOZZ.FourPoint.Fusion.ConvexMass
 /-! # Absolute majorants controlled by one inverse mass -/
-@[expose] public section
 open Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -25,7 +23,7 @@ and infinite extended-mass values. -/
 theorem fusion_linear_inverse_mass_bound (A I C : ℝ≥0∞) (p : ℝ) (hp : 0 ≤ p)
     (hA : A ≤ C * I) : A * I ^ (-p - 1) ≤ C * I ^ (-p) := by
   by_cases hI0 : I = 0
-  · have hA0 : A = 0 := le_zero_iff.mp (by simpa only [hI0, mul_zero] using hA)
+  · have hA0 : A = 0 := le_zero_iff.mp (by simpa [hI0, mul_zero] using hA)
     simp only [hA0, zero_mul]
     exact zero_le
   by_cases hIt : I = ⊤

@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.SharpMoments.WeightedScale
-public import DOZZ.GMC.SharpMoments.WeightedLocalSufficiency
+import DOZZ.GMC.SharpMoments.WeightedScale
+import DOZZ.GMC.SharpMoments.WeightedLocalSufficiency
 
 /-! # Divergence of weighted moments at the insertion threshold, at the chart center
 
@@ -17,7 +16,6 @@ infinite: a small disk inside the annulus `{R / 2 < |x| < R}` has almost surely 
 the weight there is bounded below, so the weighted mass of the full disk almost surely exceeds
 that of the half-radius disk. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped ENNReal NNReal

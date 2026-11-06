@@ -2,13 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Hypergeom.ClassificationHermitianJets
+import DOZZ.Hypergeom.ClassificationHermitianJets
 
 /-! The mixed Wirtinger jet of a constant Hermitian tensor. -/
 
-@[expose] public section
 
 namespace DOZZ.Proofs
 
@@ -17,12 +15,7 @@ open scoped Topology
 
 private theorem wirtingerBar_star_at {g : ℂ → ℂ} {z : ℂ}
     (hg : DifferentiableAt ℂ g z) :
-    wirtingerBar (fun w => star (g w)) z = star (deriv g z) := by
-  unfold wirtingerBar
-  have hfun : (fun w => star (star (g w))) = g := by
-    funext w
-    simp
-  rw [hfun, wirtingerZ_eq_deriv_of_differentiableAt hg]
+    wirtingerBar (fun w => star (g w)) z = star (deriv g z) := DOZZ.Proofs.wirtingerBar_star_eq_star_deriv_at hg
 
 private theorem wirtingerBar_deriv_term
     {f g : ℂ → ℂ}

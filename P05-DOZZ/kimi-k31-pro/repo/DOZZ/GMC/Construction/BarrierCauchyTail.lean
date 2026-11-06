@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.Construction.BarrierCauchyCompatibility
-public import DOZZ.GMC.GoodBarrierL2Cauchy
+import DOZZ.GMC.Construction.BarrierCauchyCompatibility
+import DOZZ.GMC.GoodBarrierL2Cauchy
 
 /-! Growing-barrier tail bounds, their spatial integration, and the L² algebra criterion. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped Distributions ENNReal NNReal
@@ -79,7 +77,6 @@ theorem tendsto_compatible_mixed_double_root_barrier_tail_sum
         ENNReal.ofReal (Real.exp (-((a - g) ^ 2 * ((k + N : ℕ) : ℝ) / 16))))
       atTop (𝓝 0) := by
   let c : ℝ := (a - g) ^ 2 / 16
-  have hc : 0 < c := by dsimp [c]; positivity
   have hsummable : Summable (fun k : ℕ => Real.exp (-c * (k : ℝ))) := by
     have h := summable_compatible_mixed_double_root_barrier_rate g a hga
     apply h.congr
@@ -88,8 +85,7 @@ theorem tendsto_compatible_mixed_double_root_barrier_tail_sum
     dsimp [c]
     ring
   let f : ℕ → ℝ≥0∞ := fun k => ENNReal.ofReal (Real.exp (-c * (k : ℝ)))
-  have hfinite : ∑' k, f k ≠ ∞ := by
-    exact hsummable.tsum_ofReal_ne_top
+  have hfinite : ∑' k, f k ≠ ∞ := hsummable.tsum_ofReal_ne_top
   have htail := ENNReal.tendsto_sum_nat_add f hfinite
   have hfun :
       (fun N : ℕ => ∑' k : ℕ,
@@ -103,7 +99,5 @@ theorem tendsto_compatible_mixed_double_root_barrier_tail_sum
     rw [Nat.cast_add]
     dsimp [c]
     ring_nf
-  rw [hfun]
-  exact htail
-
+  rwa [hfun]
 end DOZZ.Proofs

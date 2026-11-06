@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.Tails.TailCutParameters
-public import DOZZ.Correlations.Tails.WilliamsTruncatedTailError
+import DOZZ.Correlations.Tails.TailCutParameters
+import DOZZ.Correlations.Tails.WilliamsTruncatedTailError
 
 /-! Power decay of the three scalar Williams remainder terms. -/
 
-@[expose] public section
 
 namespace DOZZ.Proofs
 
@@ -31,7 +29,7 @@ theorem log_cut_error_powers_le (γ a x p r η D K L : ℝ)
   rw [log_cut_exp γ a x hγ hx0]
   have he1 : x^(-p)*(D*x^(-a)) = D*x^(-p-a) := by
     rw [mul_left_comm, ← Real.rpow_add hx0]
-    simp only [sub_eq_add_neg]
+    simp [sub_eq_add_neg]
   have he2 : (x*x^(-a))^(-r) = x^(-(1-a)*r) := by
     nth_rw 1 [← Real.rpow_one x]
     rw [← Real.rpow_add hx0, ← Real.rpow_mul hx0.le]

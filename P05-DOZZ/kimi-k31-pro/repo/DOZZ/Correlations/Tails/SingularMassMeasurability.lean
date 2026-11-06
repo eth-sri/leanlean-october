@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.Correlations.LocalSingularMass
-public import DOZZ.Brownian.Lateral.RadialProjection
+import DOZZ.Statements.Correlations.LocalSingularMass
+import DOZZ.Brownian.Lateral.RadialProjection
 
 /-! Measurability of the literal extended-real singular insertion mass. -/
 
-@[expose] public section
 open MeasureTheory
 open scoped ENNReal
 

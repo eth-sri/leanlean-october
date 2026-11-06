@@ -2,10 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.ShiftEquations.Mobius.RepinPotential
-public import DOZZ.Statements.Defs.RegularizedGMC
+import DOZZ.FourPoint.BPZ.Weight
+import DOZZ.ShiftEquations.Mobius.RepinPotential
+import DOZZ.Statements.Defs.RegularizedGMC
 import DOZZ.ShiftEquations.Mobius.AffinePush
 
 /-!
@@ -20,7 +20,6 @@ deterministic factor `e^{γ² C_r(x)} w(x)`, where `C_r(x) = E[X_r(x) L]` and
 to the repinned chaos `ψ⁻¹_*(M e^{-γ L - γ² Var L/2 + γ² c} w)`.
 -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
@@ -45,9 +44,7 @@ noncomputable def repinWeight (a b : ℂ) (x : ℂ) : ℝ :=
 
 theorem normPlus_pos' (x : ℂ) : 0 < normPlus x := lt_of_lt_of_le one_pos (le_max_left _ _)
 
-theorem continuous_normPlus' : Continuous normPlus := by
-  unfold normPlus
-  fun_prop
+theorem continuous_normPlus' : Continuous normPlus := DOZZ.Proofs.bpz_continuous_normPlus
 
 theorem repinWeight_pos (a b : ℂ) (ha : a ≠ 0) (x : ℂ) : 0 < repinWeight a b x := by
   unfold repinWeight
@@ -72,7 +69,6 @@ theorem continuous_repinWeight (a b : ℂ) (ha : a ≠ 0) : Continuous (repinWei
 /-- The background ratio is bounded. -/
 theorem repinWeight_le (a b : ℂ) (ha : a ≠ 0) (x : ℂ) :
     repinWeight a b x ≤ (‖a‖ + ‖b‖ + 1) ^ (4 : ℝ) / ‖a‖ ^ 2 := by
-  have hapos : 0 < ‖a‖ := norm_pos_iff.mpr ha
   have hy := normPlus_pos' (affineInv a b x)
   have hx := normPlus_pos' x
   have hcmp : normPlus x ≤ (‖a‖ + ‖b‖ + 1) * normPlus (affineInv a b x) := by
@@ -105,7 +101,7 @@ theorem integral_sub_sq_eq {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω} {U
   have h2 : Integrable (fun ω => U ω * V ω) P := hU.integrable_mul hV
   have h3 := hV.integrable_sq
   have h2' : Integrable (fun ω => 2 * U ω * V ω) P :=
-    (h2.const_mul 2).congr (ae_of_all _ fun ω => by simp only; ring)
+    (h2.const_mul 2).congr (ae_of_all _ fun ω => by simp; ring)
   have hA : Integrable (fun ω => U ω ^ 2 - 2 * U ω * V ω) P := h1.sub h2'
   simp_rw [sub_sq]
   rw [integral_add hA h3, integral_sub h1 h2',
@@ -172,7 +168,6 @@ theorem integral_regularizedGMC_repinCircle {Ω : Type*} [MeasurableSpace Ω] (P
   unfold repinWeight
   rw [affineInv_affine a b ha y]
   have hp1 : 0 < normPlus (a * y + b) ^ (-4 : ℝ) := Real.rpow_pos_of_pos (normPlus_pos' _) _
-  have ha2 : 0 < ‖a‖ ^ 2 := by have := norm_pos_iff.mpr ha; positivity
   set V := ∫ ω', Xc ω' (a * y + b) (r - Real.log ‖a‖) ^ 2 ∂P
   set C := ∫ ω', Xc ω' (a * y + b) (r - Real.log ‖a‖) * L ω' ∂P
   set VL := ∫ ω', L ω' ^ 2 ∂P
@@ -229,4 +224,3 @@ theorem isFiniteMeasure_repinChaos {Ω : Type*} (M : Ω → Measure ℂ) (L : Ω
 
 end DOZZ.Proofs
 
-end

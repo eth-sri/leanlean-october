@@ -2,15 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.GMC.GffRootCovariance
+import DOZZ.Statements.GMC.GffRootCovariance
 import DOZZ.GMC.Construction.RootedIdentity
 
 /-! The statement `DOZZ.equatorGFF_rooted_GMC_identity`,
 proved by `DOZZ.Proofs.equatorGFF_rooted_GMC_identity`. -/
 
-public section
 
 open MeasureTheory ProbabilityTheory Filter Topology TopologicalSpace Set
 open scoped Distributions ENNReal NNReal
@@ -31,6 +29,6 @@ theorem equatorGFF_rooted_GMC_identity
       H q.1 q.2.1 q.2.2)) :
     (∫⁻ ω, ∫⁻ u, H u (fun f => X ω f) (M ω) ∂M ω ∂P) =
       ∫⁻ u, ∫⁻ ω, H u (fun f => X ω f + γ * gffRootCovariance u f)
-        (gmcRootedMeasure γ u (M ω)) ∂P ∂gmcReferenceMeasure := by exact DOZZ.Proofs.equatorGFF_rooted_GMC_identity P X hX γ hγ hγ2 M hM H hH
+        (gmcRootedMeasure γ u (M ω)) ∂P ∂gmcReferenceMeasure := Proofs.equatorGFF_rooted_GMC_identity P X hX γ hγ hγ2 M hM H hH
 
 end DOZZ

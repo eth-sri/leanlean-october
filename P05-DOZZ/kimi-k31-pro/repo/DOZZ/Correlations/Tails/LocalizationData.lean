@@ -2,17 +2,15 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.Tails.LocalizationMasses
-public import DOZZ.Correlations.Tails.PrefactoredCopiedComparison
-public import DOZZ.Correlations.Tails.CopiedLocalizedMeasurability
-public import DOZZ.Correlations.Tails.CopiedErrorMeasurability
-public import DOZZ.Correlations.Tails.PrefactoredAnnularRemainder
+import DOZZ.Correlations.Tails.LocalizationMasses
+import DOZZ.Correlations.Tails.PrefactoredCopiedComparison
+import DOZZ.Correlations.Tails.CopiedLocalizedMeasurability
+import DOZZ.Correlations.Tails.CopiedErrorMeasurability
+import DOZZ.Correlations.Tails.PrefactoredAnnularRemainder
 
 /-! Actual law, measurability and pointwise comparisons for the one-insertion localization. -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal
 
@@ -64,7 +62,7 @@ theorem localized_insertion_comparison_data
     have h := (Measure.measurable_lintegral hk).comp_aemeasurable
       (equatorGFF_GMC_aemeasurable P X hX γ hγ hγ2 M hM)
     change AEMeasurable (fun ω => ∫⁻ y, ENNReal.ofReal (χ (y-z)*F y)*(ENNReal.ofReal ‖y-z‖)^(-γ*α) ∂M ω) P
-    simpa only [Function.comp_def] using h
+    simpa [Function.comp_def] using h
   have hAm : AEMeasurable (originalAnnular M F z γ α (ρ/4)) P := by
     have hk : Measurable (fun y : ℂ => ENNReal.ofReal (F y)*(ENNReal.ofReal ‖y-z‖)^(-γ*α)) := by fun_prop
     have hd : MeasurableSet (Metric.ball z 1 \ Metric.ball z (ρ/4)) :=
@@ -72,7 +70,7 @@ theorem localized_insertion_comparison_data
     have h := (Measure.measurable_lintegral (hk.indicator hd)).comp_aemeasurable
       (equatorGFF_GMC_aemeasurable P X hX γ hγ hγ2 M hM)
     change AEMeasurable (fun ω => ∫⁻ y in Metric.ball z 1 \ Metric.ball z (ρ/4), ENNReal.ofReal (F y)*(ENNReal.ofReal ‖y-z‖)^(-γ*α) ∂M ω) P
-    simpa only [lintegral_indicator hd,Function.comp_def] using h
+    simpa [lintegral_indicator hd,Function.comp_def] using h
   have hCm := localized_copied_mass_aemeasurable P X Xc hX hc γ hγ hγ2 z N hN
     F χ hFm χ.continuous.measurable α
   have hE₁ := copied_error_mass_aemeasurable P X Xc hX hc γ hγ hγ2 z N hN F hFm α ρ
@@ -83,7 +81,7 @@ theorem localized_insertion_comparison_data
       (P.prod P).map (fun q => ENNReal.ofReal (Real.exp (γ*Xc q.2 z 0-γ^2*Real.log ‖z‖))*
         ∫⁻ x, ENNReal.ofReal (χ x*copiedMultiplier z γ (Xc q.1 z 0) (Xc q.2 z 0) F x)*
           (ENNReal.ofReal ‖x‖)^(-γ*α) ∂N q.1)
-    simpa only [neg_mul] using hl
+    simpa [neg_mul] using hl
   · intro ω
     exact original_localized_mass_comparison M z γ α (ρ/4) ρ hρ1 F hFm χ hχ hχzero hone ω
   · intro q
@@ -95,7 +93,7 @@ theorem localized_insertion_comparison_data
       rw [localSingularMass,← lintegral_indicator Metric.isOpen_ball.measurableSet]
       simp only [ENNReal.ofReal_one,one_mul,sub_zero,ENNReal.rpow_eq_pow]
       rfl
-    simpa only [localizedCopy,canonicalLeading,copiedRemainder,hi] using h
+    simpa [localizedCopy,canonicalLeading,copiedRemainder,hi] using h
 
 
 end DOZZ.Proofs

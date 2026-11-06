@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.Construction.RootedMeasureKernel
+import DOZZ.GMC.Construction.RootedMeasureKernel
 import Mathlib.MeasureTheory.Integral.Bochner.ContinuousLinearMap
 
 /-! # Signed integrals against measurable families of finite measures -/
 
-@[expose] public section
 open MeasureTheory Set
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -24,7 +22,7 @@ theorem fusion_measurable_real_integral_finite_family
   let L := fun u => ∫⁻ x, ENNReal.ofReal (f (u, x)) ∂μ u
   let R := fun u => ∫⁻ x, ENNReal.ofReal (-f (u, x)) ∂μ u
   have hJ : Measurable J := measurable_lintegral_finite_family μ hμ hfinite _
-    (by simpa only [Real.norm_eq_abs] using ENNReal.measurable_ofReal.comp hf.norm)
+    (by simpa [Real.norm_eq_abs] using ENNReal.measurable_ofReal.comp hf.norm)
   have hL : Measurable L := measurable_lintegral_finite_family μ hμ hfinite _
     (ENNReal.measurable_ofReal.comp hf)
   have hR : Measurable R := measurable_lintegral_finite_family μ hμ hfinite _

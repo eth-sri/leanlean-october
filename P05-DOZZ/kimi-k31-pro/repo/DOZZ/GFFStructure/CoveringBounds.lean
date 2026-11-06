@@ -3,15 +3,14 @@ Copyright (c) 2025-2026 Rémy Degenne. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Rémy Degenne
 -/
-module
 
-public import DOZZ.GFFStructure.MetricChaining
-public import Mathlib.Topology.MetricSpace.CoveringExponent
-public import Mathlib.MeasureTheory.Measure.Lebesgue.VolumeOfBalls
-public import Mathlib.Analysis.Normed.Module.Ball.Pointwise
-public import Mathlib.Topology.MetricSpace.MetricSeparated
-public import Mathlib.Algebra.Order.Floor.Extended
-public import Mathlib.Algebra.Order.Ring.Star
+import DOZZ.GFFStructure.MetricChaining
+import Mathlib.Topology.MetricSpace.CoveringExponent
+import Mathlib.MeasureTheory.Measure.Lebesgue.VolumeOfBalls
+import Mathlib.Analysis.Normed.Module.Ball.Pointwise
+import Mathlib.Topology.MetricSpace.MetricSeparated
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Ring.Star
 
 /-!
 # Quantitative finite-dimensional metric covering
@@ -23,7 +22,6 @@ volume and packing arguments supply the finite-dimensional constants required by
 modification construction.
 -/
 
-@[expose] public section
 
 open MeasureTheory _root_.Metric _root_.EMetric _root_.Set
 open scoped ENNReal NNReal
@@ -42,7 +40,7 @@ theorem volume_closedEBall_center {E : Type*} [NormedAddCommGroup E] [InnerProdu
   obtain rfl | hr := eq_top_or_lt_top r
   · simp
   · lift r to ℝ≥0 using hr.ne
-    simpa only [Metric.closedEBall_coe] using Measure.addHaar_closedBall_center volume x (r : ℝ)
+    simpa [Metric.closedEBall_coe] using Measure.addHaar_closedBall_center volume x (r : ℝ)
 
 section
 
@@ -70,7 +68,7 @@ lemma Metric.closedEBall_add_closedEBall {E : Type*} [SeminormedAddCommGroup E] 
     closedEBall x r + closedEBall y s = closedEBall (x + y) (r + s) := by
   by_cases h : r = ⊤ ∨ s = ⊤
   · obtain rfl | rfl := h <;> simp [nonempty_closedEBall]
-  simp only [not_or] at h
+  simp [not_or] at h
   lift r to ℝ≥0 using h.1
   lift s to ℝ≥0 using h.2
   norm_cast
@@ -133,7 +131,7 @@ lemma InnerProductSpace.volume_closedBall_div' {E : Type*} [NormedAddCommGroup E
 end
 section
 
-open _root_.EMetric _root_.Set _root_.Metric DOZZ.Proofs.Metric
+open _root_.EMetric _root_.Set _root_.Metric Metric
 
 section PseudoEMetricSpace
 
@@ -174,7 +172,7 @@ lemma le_volume_of_isSeparated_of_countable (hC_count : C.Countable)
   _ = volume (⋃ x ∈ C, Metric.closedEBall x (ε / 2)) := by
     rw [measure_biUnion]
     · exact hC_count
-    · exact DOZZ.Proofs.Metric.IsSeparated.disjoint_closedBall hC
+    · exact Metric.IsSeparated.disjoint_closedBall hC
     · exact fun _ _ ↦ Metric.isClosed_closedEBall.measurableSet
   _ ≤ volume (A + Metric.closedEBall (0 : E) (ε / 2)) := by
     refine measure_mono fun x hx ↦ ?_
@@ -188,14 +186,14 @@ lemma le_volume_of_isSeparated (hC : IsSeparated ε C) (h_subset : C ⊆ A) :
     C.encard * volume (Metric.closedEBall (0 : E) (ε / 2))
       ≤ volume (A + Metric.closedEBall (0 : E) (ε / 2)) := by
   obtain rfl | hε := eq_zero_or_pos ε
-  · simp only [ENNReal.coe_zero, ENNReal.zero_div, Metric.closedEBall_zero,
+  · simp [ENNReal.coe_zero, ENNReal.zero_div, Metric.closedEBall_zero,
       Measure.addHaar_singleton, add_singleton, add_zero, image_id']
     obtain _ | _ := subsingleton_or_nontrivial E
-    · simp only [singleton_nonempty, volume_of_nonempty_of_subsingleton, mul_one]
+    · simp [singleton_nonempty, volume_of_nonempty_of_subsingleton, mul_one]
       obtain rfl | hA := Set.eq_empty_or_nonempty A
-      · simp only [subset_empty_iff] at h_subset
+      · simp [subset_empty_iff] at h_subset
         simp [h_subset]
-      simp only [hA.eq_zero, Measure.addHaar_singleton, singleton_nonempty,
+      simp [hA.eq_zero, Measure.addHaar_singleton, singleton_nonempty,
         volume_of_nonempty_of_subsingleton]
       norm_cast
       refine (Set.encard_le_encard h_subset).trans ?_
@@ -213,9 +211,9 @@ lemma le_volume_of_isSeparated (hC : IsSeparated ε C) (h_subset : C ⊆ A) :
     suffices ∃ C' ⊆ C, C'.Countable ∧ C'.encard = ⊤ by
       obtain ⟨C', hC'_subset, hC'_count, hC'_encard⟩ := this
       exact ⟨C', hC'_subset, hC.mono hC'_subset, hC'_count, hC'_encard⟩
-    simp only [encard_eq_top_iff] at hC_encard ⊢
+    simp [encard_eq_top_iff] at hC_encard ⊢
     refine ⟨Set.range (fun n : ℕ ↦ hC_encard.natEmbedding C n), fun x ↦ ?_, ?_, ?_⟩
-    · simp only [mem_range, forall_exists_index]
+    · simp [mem_range, forall_exists_index]
       rintro _ ⟨n, rfl⟩
       simp
     · exact countable_range _
@@ -274,7 +272,7 @@ lemma coveringNumber_closedBall_le (ε : ℝ≥0) (x : E) (r : ℝ≥0) :
     (coveringNumber ε (Metric.closedEBall x r) : ℝ≥0∞)
       ≤ (2 * r / (ε : ℝ≥0∞) + 1) ^ (Module.finrank ℝ E) := by
   obtain _ | _ := subsingleton_or_nontrivial E
-  · simp only [Module.finrank_zero_of_subsingleton, pow_zero]
+  · simp [Module.finrank_zero_of_subsingleton, pow_zero]
     norm_cast
     grw [coveringNumber_le_encard_self, Set.encard_le_one_iff]
     exact fun a b _ _ ↦ Subsingleton.allEq a b
@@ -357,7 +355,7 @@ theorem hasCoveringExponent_closedBall {E : Type*} [NormedAddCommGroup E]
           _ ≤ 2*r/(ε : ℝ≥0∞)+2*r/(ε : ℝ≥0∞) := add_le_add le_rfl hrat
           _ = _ := by rw [← ENNReal.add_div, ← add_mul]; norm_num
       _ = _ := by
-        simp only [div_eq_mul_inv, mul_pow, ENNReal.rpow_natCast]
+        simp [div_eq_mul_inv, mul_pow, ENNReal.rpow_natCast]
 
 /-- Increasing open balls give an explicit bounded-covering exhaustion of a
 nontrivial finite-dimensional Hilbert parameter space. -/
@@ -382,13 +380,13 @@ theorem isCoverWithBoundedCoveringNumber_balls (E : Type*) [NormedAddCommGroup E
     simp only [Metric.closedEBall_coe, NNReal.coe_add, NNReal.coe_natCast, NNReal.coe_one] at hcl
     have hs := Metric.HasCoveringExponent.subset hcl (Metric.ball_subset_closedBall
       (x := (0 : E)) (ε := ((n : ℝ)+1))) (Nat.cast_nonneg (Module.finrank ℝ E))
-    simpa only [Metric.closedEBall_coe, NNReal.coe_add, NNReal.coe_natCast, NNReal.coe_one,
+    simpa [Metric.closedEBall_coe, NNReal.coe_add, NNReal.coe_natCast, NNReal.coe_one,
       ENNReal.rpow_natCast, ENNReal.coe_add, ENNReal.coe_natCast, ENNReal.coe_one] using hs
   · intro n m hnm
     exact Metric.ball_subset_ball (add_le_add_left (Nat.cast_le.mpr hnm) 1)
   · intro x _
     obtain ⟨n, hn⟩ := exists_nat_gt ‖x‖
     refine Set.mem_iUnion.mpr ⟨n, ?_⟩
-    simpa only [Metric.mem_ball, dist_zero_right] using hn.trans (lt_add_one _)
+    simpa [Metric.mem_ball, dist_zero_right] using hn.trans (lt_add_one _)
 
 end DOZZ.Proofs

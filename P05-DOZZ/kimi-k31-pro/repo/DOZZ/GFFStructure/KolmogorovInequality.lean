@@ -3,10 +3,9 @@ Copyright (c) 2025 Rémy Degenne. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Rémy Degenne
 -/
-module
 
-public import DOZZ.GFFStructure.KolmogorovFinite
-public import Mathlib.Data.Set.FiniteExhaustion
+import DOZZ.GFFStructure.KolmogorovFinite
+import Mathlib.Data.Set.FiniteExhaustion
 
 /-!
 # Countable-family Kolmogorov–Chentsov estimates
@@ -16,7 +15,6 @@ Rémy Degenne and collaborators (github.com/RemyDegenne/brownian-motion). Every 
 original moment, covering and exponent assumptions.
 -/
 
-@[expose] public section
 
 open MeasureTheory Filter _root_.ProbabilityTheory
 
@@ -65,9 +63,9 @@ lemma measure_add_ge_le_add_measure_ge_half {Ω : Type*} {_ : MeasurableSpace Ω
     {f g : Ω → ℝ≥0∞} {x : ℝ≥0∞} :
     P {ω | x ≤ f ω + g ω} ≤ P {ω | x / 2 ≤ f ω} + P {ω | x / 2 ≤ g ω} := by
   by_cases hx : x = ∞
-  · simp only [hx, top_le_iff, ENNReal.add_eq_top]
+  · simp [hx, top_le_iff, ENNReal.add_eq_top]
     rw [ENNReal.top_div_of_ne_top (by finiteness)]
-    simp only [top_le_iff]
+    simp [top_le_iff]
     exact measure_union_le {ω | f ω = ∞} {ω | g ω = ∞}
   convert measure_add_ge_le_add_measure_ge ENNReal.half_le_self using 2
   rw [ENNReal.sub_half hx]
@@ -93,7 +91,6 @@ lemma lintegral_div_edist_le_sum_integral_edist_le (hT : Metric.ediam U < ∞)
                 edist (X s ω) (X t ω) ^p ∂P := by
   let η k := 2⁻¹ ^ k * (Metric.ediam U + 1)
   have hp_pos := hX.p_pos
-  have hq_pos := hX.q_pos
   have hη_ge (k : ℕ) : 2⁻¹ ^ (k : ℝ) ≤ η k := by simp [η, mul_add]
   have hη_succ (k : ℕ) : η (k + 1) = 2⁻¹ * η k := by simp [η, pow_add, mul_comm]; grind
   have hη_lim : Filter.Tendsto η Filter.atTop (nhds 0) := by
@@ -127,7 +124,7 @@ lemma lintegral_div_edist_le_sum_integral_edist_le (hT : Metric.ediam U < ∞)
     match hk : Nat.find hη_dist with
     | 0 =>
         apply le_trans (Metric.edist_le_ediam_of_mem (hJU hs) (hJU ht))
-        simp only [pow_zero, one_mul, η]
+        simp [pow_zero, one_mul, η]
         exact le_mul_of_one_le_of_le (by norm_num) (le_add_right (le_refl _))
     | k + 1 =>
         rw [hη_succ k, ← mul_assoc, ENNReal.mul_inv_cancel (by norm_num) (by norm_num), one_mul]
@@ -176,15 +173,15 @@ lemma constL_lt_top
     simp [← lt_div_iff₀, hp_pos, hβ_lt]
   · filter_upwards with k
     apply ne_of_gt
-    simp only [ENNReal.toReal_mul, NNReal.coe_mk]
+    simp [ENNReal.toReal_mul, NNReal.coe_mk]
     apply mul_pos <;> refine ENNReal.toReal_pos_iff.mpr ⟨?_, by finiteness⟩
     · exact ENNReal.rpow_pos (by norm_num) (by norm_num)
     · positivity
-  simp only [Nat.cast_add, Nat.cast_one, ENNReal.toReal_mul, NNReal.coe_mk, norm_mul,
+  simp [Nat.cast_add, Nat.cast_one, ENNReal.toReal_mul, NNReal.coe_mk, norm_mul,
     Real.norm_eq_abs, ENNReal.abs_toReal, ← div_mul_div_comm, add_mul (b := (1 : ℝ)), one_mul]
   conv => enter [1, _, 2, 1]; rw [ENNReal.toReal_add (by finiteness) (by finiteness)]
   conv => enter [1, _, 2, 2]; rw [ENNReal.toReal_add (by finiteness) (by finiteness)]
-  simp only [← ENNReal.toReal_rpow, ENNReal.toReal_ofNat, Nat.ofNat_pos, Real.rpow_add,
+  simp [← ENNReal.toReal_rpow, ENNReal.toReal_ofNat, Nat.ofNat_pos, Real.rpow_add,
     ENNReal.toReal_mul]
   conv => enter [1, _, 1]; rw [mul_div_cancel_left₀ _ (by positivity)]
   conv => enter [3, 1]; rw [← mul_one (_ ^ _)]
@@ -227,7 +224,7 @@ lemma constL_lt_top
     repeat apply tendsto_atTop_add_const_right
     exact tendsto_natCast_atTop_iff.mpr tendsto_id
   refine Asymptotics.IsEquivalent.mul ?_ .refl
-  simp only [add_assoc]
+  simp [add_assoc]
   apply Asymptotics.IsEquivalent.add_const_of_norm_tendsto_atTop; swap
   · apply Tendsto.comp tendsto_norm_atTop_atTop
     apply tendsto_atTop_add_const_right
@@ -244,7 +241,7 @@ lemma finite_kolmogorov_chentsov
       ≤ M * constL c d p q β := by
   have h_diam : Metric.ediam U < ∞ := hT.ediam_lt_top
   have hq_pos : 0 < q := lt_trans hd_pos hdq_lt
-  simp only [constL, ← ENNReal.tsum_mul_left, ge_iff_le] at *
+  simp [constL, ← ENNReal.tsum_mul_left, ge_iff_le] at *
   by_cases h_ae : ∀ᵐ (ω : Ω) ∂P, ∀ (s t : T'), edist (X s ω) (X t ω) = 0
   · convert zero_le
     rotate_left
@@ -269,14 +266,12 @@ lemma finite_kolmogorov_chentsov
     apply hX.edist_eq_zero
     refine le_antisymm ?_ zero_le
     exact le_trans (Metric.edist_le_ediam_of_mem (hT'U s.2) (hT'U t.2)) h_ae
-  have h_diam_real : 0 < (Metric.ediam U).toReal :=
-    ENNReal.toReal_pos_iff.mpr ⟨h_diam_zero, h_diam⟩
   apply le_trans
     (lintegral_div_edist_le_sum_integral_edist_le h_diam hX hβ_pos hT'U)
   apply ENNReal.tsum_le_tsum
   intro k
   wlog hc : c ≠ ∞
-  · simp only [not_ne_iff.mp hc, ne_eq, ENNReal.rpow_eq_zero_iff, OfNat.ofNat_ne_zero, false_and,
+  · simp [not_ne_iff.mp hc, ne_eq, ENNReal.rpow_eq_zero_iff, OfNat.ofNat_ne_zero, false_and,
       ENNReal.ofNat_ne_top, or_self, not_false_eq_true, ENNReal.mul_top, ENNReal.toReal_top,
       Real.logb_zero, zero_add]
     repeat rw [ENNReal.top_mul]
@@ -322,13 +317,13 @@ lemma finite_kolmogorov_chentsov
       exact mul_le_mul' (mul_le_mul' le_rfl h_le) le_rfl
     _ = _ := by ring
   by_cases hc_zero : c.toReal = 0
-  · simp only [ENNReal.toReal_mul, hc_zero, mul_zero, zero_mul, ENNReal.toNNReal_mul,
+  · simp [ENNReal.toReal_mul, hc_zero, mul_zero, zero_mul, ENNReal.toNNReal_mul,
       ENNReal.toNNReal_pow, ENNReal.toNNReal_inv, inv_pow, NNReal.coe_mul, NNReal.coe_inv,
       NNReal.coe_pow, mul_inv_rev, inv_inv, Real.logb_zero, ENNReal.ofReal_zero, zero_add]
     gcongr
     exact zero_le
   gcongr with k
-  simp only [ENNReal.toReal_mul, ENNReal.toNNReal_mul, h_two, ENNReal.toNNReal_pow,
+  simp [ENNReal.toReal_mul, ENNReal.toNNReal_mul, h_two, ENNReal.toNNReal_pow,
     ENNReal.toNNReal_inv, inv_pow, NNReal.coe_mul, NNReal.coe_ofNat, NNReal.coe_inv, NNReal.coe_pow,
     mul_inv_rev, inv_inv, ← ENNReal.toReal_rpow, ENNReal.toReal_ofNat]
   calc Real.logb 2 (2^ d * c.toReal * 4 ^ d
@@ -342,10 +337,10 @@ lemma finite_kolmogorov_chentsov
       simp [ENNReal.toNNReal_pos_iff, h_diam]
     · conv_rhs => rw [← one_mul (2 ^ k * 2⁻¹)]
       gcongr
-      simp only [NNReal.coe_inv]
+      simp [NNReal.coe_inv]
       rw [inv_le_one_iff₀]
       right
-      simp only [NNReal.one_le_coe]
+      simp [NNReal.one_le_coe]
       rw [← ENNReal.toNNReal_one]
       gcongr
       · finiteness
@@ -376,7 +371,7 @@ theorem countable_kolmogorov_chentsov (hT : HasBoundedCoveringNumber U c d)
   simp only [← iSup_subtype'']
   rw [MeasureTheory.lintegral_iSup', iSup_le_iff]
   · exact fun n ↦ finite_kolmogorov_chentsov hT hX hd_pos hdq_lt hβ_pos (K n)
-      ((DOZZ.Proofs.Set.FiniteExhaustion.subset K n).trans hT'U)
+      ((Set.FiniteExhaustion.subset K n).trans hT'U)
   · intro n
     have h_ae s t := hX.aemeasurable_edist (s := s) (t := t)
     fun_prop

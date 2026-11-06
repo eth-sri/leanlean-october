@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.Analytic.NormalizedVertexHolomorphy
-public import DOZZ.Correlations.Analytic.OutwardVertexKernel
+import DOZZ.Correlations.Analytic.NormalizedVertexHolomorphy
+import DOZZ.Correlations.Analytic.OutwardVertexKernel
 
 /-! Exact retained Coulomb kernels for the mixed finite and infinity frame. -/
 
-@[expose] public section
 open MeasureTheory
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -25,7 +23,7 @@ theorem coulomb_weight_exp_log_infinity {N : ℕ} (γ : ℝ) (α : Fin N → ℝ
   have he : coulombWeight γ α z αinf x = coulombWeight γ α z 0 x *
       ENNReal.ofReal (normPlus x) ^ (γ * αinf) := by
     unfold coulombWeight
-    simp only [mul_zero, ENNReal.rpow_eq_pow, ENNReal.rpow_zero, mul_one]
+    simp [mul_zero, ENNReal.rpow_eq_pow, ENNReal.rpow_zero, mul_one]
   rw [he, coulomb_weight_exp_log γ α z x hx,
     ENNReal.ofReal_rpow_of_pos hn, Real.rpow_def_of_pos hn,
     ← ENNReal.ofReal_mul (Real.exp_nonneg _), ← Real.exp_add]
@@ -45,18 +43,18 @@ theorem mixed_retained_vertex_density {N : ℕ} (γ : ℝ)
   have hne (i : Fin N) : x ≠ z i := by
     intro he
     have hh := hx.2 i
-    simp only [he, sub_self, norm_zero] at hh
+    simp [he, sub_self, norm_zero] at hh
     exact (not_lt_of_ge (Real.exp_pos _).le) hh
   rw [coulomb_weight_exp_log_infinity γ (fun i => β i.castSucc) z (β (Fin.last N)) x hne,
     ← ENNReal.ofReal_mul (Real.exp_nonneg _), ← Real.exp_add]
   congr 2
   rw [Fin.sum_univ_castSucc]
-  simp only [mixedVertexCenters, mixedVertexTimes, Fin.snoc_castSucc,
+  simp [mixedVertexCenters, mixedVertexTimes, Fin.snoc_castSucc,
     Fin.snoc_last]
   rw [outward_vertex_potential x r hr hx.1.le]
   simp_rw [retained_vertex_potential x _ r (hx.2 _).le, mul_add]
   rw [Finset.sum_add_distrib]
-  simp only [mul_add, Finset.mul_sum]
+  simp [mul_add, Finset.mul_sum]
   ring_nf
 
 /-- The mixed tilted measure on a retained region is exactly the singular Coulomb mass,

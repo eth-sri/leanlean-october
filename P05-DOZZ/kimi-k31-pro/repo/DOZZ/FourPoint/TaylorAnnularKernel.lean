@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.TaylorLocalKernel
-public import DOZZ.FourPoint.TwoRootedExponents
+import DOZZ.FourPoint.TaylorLocalKernel
+import DOZZ.FourPoint.TwoRootedExponents
 
 /-! The annular absolute Jensen kernel with the corrected radial exponent. -/
 
-@[expose] public section
 open MeasureTheory Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -49,7 +47,7 @@ theorem gammaHalf_annular_kernel_bound
     (γ ^ 2 / 2 - 2) |γ ^ 2 / 2 - 2| hxpos (by norm_num) hlow hhigh
     (neg_abs_le _) (le_abs_self _)
   have htail : ‖x - 1‖ ^ (-γ * α₂) ≤ (2 : ℝ) ^ |γ * α₂| := by
-    simpa only [neg_mul, abs_neg] using coulombWeight_rpow_le (L := 2) (y := ‖x - 1‖)
+    simpa [neg_mul, abs_neg] using coulombWeight_rpow_le (L := 2) (y := ‖x - 1‖)
       (by norm_num) (by norm_num; exact hlow1) hhigh1 (-γ * α₂)
   have hprod := mul_le_mul
     (mul_le_mul_of_nonneg_right hdist (Real.rpow_nonneg (norm_nonneg x) (-γ * α₁))) htail

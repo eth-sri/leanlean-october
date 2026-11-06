@@ -2,16 +2,14 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.TaylorIntermediateScalar
-public import DOZZ.FourPoint.TaylorLocalKernel
-public import DOZZ.FourPoint.TaylorMixedMoments
-public import DOZZ.FourPoint.TaylorExterior
+import DOZZ.FourPoint.TaylorIntermediateScalar
+import DOZZ.FourPoint.TaylorLocalKernel
+import DOZZ.FourPoint.TaylorMixedMoments
+import DOZZ.FourPoint.TaylorExterior
 
 /-! The actual intermediate Taylor region: local square reduction and sharp weighted moments. -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -29,12 +27,12 @@ theorem intermediate_numerator_bound {Ω : Type*}
       apply setLIntegral_mono' (measurableSet_ball.diff measurableSet_ball)
       intro x hx
       have hdist : d ≤ ‖x - z‖ := by
-        simpa only [Metric.mem_ball, dist_eq_norm, not_lt] using hx.2
+        simpa [Metric.mem_ball, dist_eq_norm, not_lt] using hx.2
       have hk := gammaHalfKernel_nonneg γ α₁ α₂ α₃ z x
       rw [← ENNReal.ofReal_mul (inv_nonneg.mpr hd.le)]
       apply ENNReal.ofReal_le_ofReal
       have hh := div_le_div_of_nonneg_left hk hd hdist
-      simpa only [div_eq_mul_inv, mul_comm] using hh
+      simpa [div_eq_mul_inv, mul_comm] using hh
     _ = _ := lintegral_const_mul' _ _ ENNReal.ofReal_ne_top
 
 /-- The supplied-GMC intermediate square has its full Holder/radius exponent. The constant
@@ -57,7 +55,7 @@ theorem twoRooted_intermediate_physical_bound
   let E : ℝ := γ * (Q γ - α₁) * (q * s) - γ ^ 2 * (q * s) ^ 2 / 2
   let T : ℝ := (2 : ℝ) ^ (|γ * α₂| * s + (γ ^ 2 / 2) * s)
   let C : ℝ := T * Cmix
-  have hT : 0 < T := by dsimp only [T]; positivity
+  have hT : 0 < T := by dsimp [T]; positivity
   have hC : 0 < C := mul_pos hT hCmix
   refine ⟨C, hC, ?_⟩
   intro ρ hρ hρ4 z hz d hd
@@ -67,7 +65,7 @@ theorem twoRooted_intermediate_physical_bound
   let I : Ω → ℝ≥0∞ := fun ω => coulombMass γ (M ω) ![-γ / 2, α₁, α₂] ![z, 0, 1] α₃
   let W : Ω → ℝ≥0∞ := fun ω => weightedGmcBallMass γ (M ω) α₁ 0 ρ
   let w : ℝ := (2 : ℝ) ^ |γ * α₂| * (2 * ρ) ^ (γ ^ 2 / 2)
-  have hw : 0 < w := by dsimp only [w]; positivity
+  have hw : 0 < w := by dsimp [w]; positivity
   have hpoint : ∀ᵐ ω ∂P,
       (gammaHalfRootMajorantOn M γ α₁ α₂ α₃ ω z S) ^ 2 * I ω ^ (-p - 2) ≤
         ENNReal.ofReal ((d⁻¹) ^ 2 * w ^ s) * (W ω ^ s * I ω ^ (-p - s)) := by
@@ -75,7 +73,7 @@ theorem twoRooted_intermediate_physical_bound
       gmc_atomless_at_root_of_isGMCOf P X hX γ hγ hγ2 M hM 0] with ω hmass h0
     have hA := intermediate_numerator_bound M γ α₁ α₂ α₃ ω z ρ d hd
     have hLI : L ω ≤ I ω := by
-      dsimp only [I]
+      dsimp [I]
       rw [← hmass]
       exact setLIntegral_le_lintegral _ _
     have hLW : L ω ≤ ENNReal.ofReal w * W ω :=
@@ -87,7 +85,7 @@ theorem twoRooted_intermediate_physical_bound
     (lintegral_const_mul' _ _ ENNReal.ofReal_ne_top)
   have htotal := hbound.trans (mul_le_mul' le_rfl (hmixed z (hz.trans hρ4) ρ hρ hρ2))
   have hwscale : w ^ s = T * ρ ^ ((γ ^ 2 / 2) * s) := by
-    dsimp only [w, T]
+    dsimp [w, T]
     rw [Real.mul_rpow (Real.rpow_nonneg (by norm_num) _) (Real.rpow_nonneg (by positivity) _),
       ← Real.rpow_mul (by norm_num : (0 : ℝ) ≤ 2), ← Real.rpow_mul (by positivity : 0 ≤ 2 * ρ),
       Real.mul_rpow (by norm_num : (0 : ℝ) ≤ 2) hρ.le, Real.rpow_add (by norm_num : (0 : ℝ) < 2)]
@@ -98,7 +96,7 @@ theorem twoRooted_intermediate_physical_bound
       rw [← ENNReal.ofReal_mul hconst, hwscale]
       congr 1
       rw [Real.rpow_add hρ]
-      dsimp only [C]
+      dsimp [C]
       ring
 
 end DOZZ.Proofs

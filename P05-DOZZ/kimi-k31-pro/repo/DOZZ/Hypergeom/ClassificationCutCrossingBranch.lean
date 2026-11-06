@@ -2,18 +2,16 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Hypergeom.ClassificationCutLog
-public import DOZZ.Hypergeom.BasisRegularity
-public import DOZZ.Hypergeom.BasisSpanning
-public import DOZZ.Hypergeom.ClassificationHermitianCoefficients
+import DOZZ.Hypergeom.ClassificationCutLog
+import DOZZ.Hypergeom.BasisRegularity
+import DOZZ.Hypergeom.BasisSpanning
+import DOZZ.Hypergeom.ClassificationHermitianCoefficients
 import Mathlib.Analysis.SpecialFunctions.Complex.Analytic
 import Mathlib.Analysis.SpecialFunctions.ExpDeriv
 
 /-! A holomorphic second zero-basis solution across a disk centered on the negative cut. -/
 
-@[expose] public section
 
 open scoped ComplexConjugate
 open Filter
@@ -54,13 +52,10 @@ theorem neg_gaussNegativeCrossingDisk_subset_slitPlane :
   rw [Complex.mem_slitPlane_iff]
   left
   have h := (gaussNegativeCrossingDisk_real_bounds hz).2
-  simp only [Complex.neg_re]
+  simp [Complex.neg_re]
   linarith
 
-private theorem gaussSlitPlane_isOpen_cut_crossing : IsOpen gaussSlitPlane := by
-  change IsOpen ({z : ℂ | z.im ≠ 0} ∪ {z | z.re < 1})
-  exact (isOpen_compl_singleton.preimage Complex.continuous_im).union
-    (isOpen_Iio.preimage Complex.continuous_re)
+private theorem gaussSlitPlane_isOpen_cut_crossing : IsOpen gaussSlitPlane := DOZZ.Proofs.bpzHG_isOpen_gaussSlitPlane
 
 /-- The local logarithm branch used to cross the negative axis, with argument in `(0,2π)`.
 It is holomorphic on the whole crossing disk because `-z` stays in the right half-plane. -/
@@ -82,10 +77,6 @@ theorem gaussNegativeCrossingSecond_analyticOnNhd
     (a b c : ℂ) (hc : ∀ n : ℤ, c ≠ (n : ℂ)) :
     AnalyticOnNhd ℂ (gaussNegativeCrossingSecond H a b c)
       gaussNegativeCrossingDisk := by
-  have hcNat : ∀ n : ℕ, c ≠ -(n : ℂ) := by
-    intro n heq
-    apply hc (-(n : ℤ))
-    exact heq.trans (by simp)
   have hCNat : ∀ n : ℕ, (2 - c) ≠ -(n : ℂ) :=
     two_sub_parameter_ne_nat_neg hc
   have hchar := hH (a - c + 1) (b - c + 1) (2 - c) hCNat
@@ -131,7 +122,7 @@ private theorem one_sub_gaussNegativeCrossingDisk_subset_slitPlane :
   rw [Complex.mem_slitPlane_iff]
   left
   have hzre := (gaussNegativeCrossingDisk_real_bounds hz).2
-  simp only [Complex.sub_re, Complex.one_re]
+  simp [Complex.sub_re, Complex.one_re]
   linarith
 
 /-- The analytic continuation of the canonical zero-basis Wronskian is explicit and nowhere
@@ -219,13 +210,11 @@ theorem gaussNegativeCrossing_wronskian_identity
     have hw0 : 1 - z ≠ 0 := by
       intro h
       have hre := congrArg Complex.re h
-      simp only [Complex.sub_re, Complex.one_re] at hre
+      simp [Complex.sub_re, Complex.one_re] at hre
       have hre' : 1 - z.re = 0 := by simpa using hre
       have hzre := (gaussNegativeCrossingDisk_real_bounds hz.1).2
       linarith
-    rw [hWr, complexCpow_eq_exp_log_neg_phase_upper hz.2]
-    rw [Complex.cpow_def_of_ne_zero hw0 (c - a - b - 1)]
-    rw [gaussNegativeCrossingWronskianModel]
+    rw [hWr, complexCpow_eq_exp_log_neg_phase_upper hz.2, Complex.cpow_def_of_ne_zero hw0 (c - a - b - 1), gaussNegativeCrossingWronskianModel]
     ring
   have hbase : (-1 / 2 : ℂ) + (1 / 8 : ℝ) * Complex.I ∈
       gaussNegativeCrossingUpper := by

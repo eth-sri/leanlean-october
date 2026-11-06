@@ -2,15 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Hypergeom.ODE.ParameterSeriesFamily
-public import DOZZ.Hypergeom.ODE.ParameterSeriesUniformFDeriv
-public import DOZZ.Hypergeom.ODE.SeriesSpatialDerivative
+import DOZZ.Hypergeom.ODE.ParameterSeriesFamily
+import DOZZ.Hypergeom.ODE.ParameterSeriesUniformFDeriv
+import DOZZ.Hypergeom.ODE.SeriesSpatialDerivative
 
 /-! Parameter regularity of spatial derivatives on the ordinary-series disk. -/
 
-@[expose] public section
 
 open Filter
 open scoped Topology
@@ -25,7 +23,7 @@ private theorem gaussParameterPoleFreeDomain_shift_add_one
   have h' : p.2.2 = -((n + 1 : ℕ) : ℂ) := by
     push_cast at hn ⊢
     linear_combination hn
-  exact h'
+  assumption
 
 /-- The spatial derivative of any characterized family is the shifted-series value on the unit
 disk. This uses only its ordinary-series characterization and is independent of the chosen
@@ -53,7 +51,7 @@ theorem IsGaussHypergeometricFamily.hasDerivAt_unitDisk
       have h' : c = -((n + 1 : ℕ) : ℂ) := by
         push_cast at heq ⊢
         linear_combination heq
-      exact h'
+      assumption
     exact (hH (a + 1) (b + 1) (c + 1) hcShift).2 z hz
   rw [← hseriesShift] at hseries
   exact hseries.congr_of_eventuallyEq hnear
@@ -68,8 +66,7 @@ theorem IsGaussHypergeometricFamily.differentiableAt_params_deriv_unitDisk
     DifferentiableAt ℂ (fun q : ℂ × ℂ × ℂ =>
       deriv (fun w => H q.1 q.2.1 q.2.2 w) z) p := by
   let shift : ℂ × ℂ × ℂ → ℂ × ℂ × ℂ := fun q => q + ((1 : ℂ), 1, 1)
-  have hpShift : shift p ∈ gaussParameterPoleFreeDomain := by
-    exact gaussParameterPoleFreeDomain_shift_add_one hp
+  have hpShift : shift p ∈ gaussParameterPoleFreeDomain := gaussParameterPoleFreeDomain_shift_add_one hp
   have hshiftOn :=
     IsGaussHypergeometricFamily.differentiableOn_params_unitDisk hH hz
   have hshiftAt : DifferentiableAt ℂ

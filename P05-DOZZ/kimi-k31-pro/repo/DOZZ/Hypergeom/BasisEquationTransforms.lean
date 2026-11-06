@@ -2,20 +2,15 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Hypergeom.BasisEquationSource
+import DOZZ.Hypergeom.BasisEquationSource
 
 /-! The unpowered local solution at one solves the Gauss equation by reflection. -/
 
-@[expose] public section
 
 namespace DOZZ.Proofs
 
-private theorem gaussSlitPlane_isOpen_for_basis : IsOpen gaussSlitPlane := by
-  change IsOpen ({z : ℂ | z.im ≠ 0} ∪ {z | z.re < 1})
-  exact (isOpen_compl_singleton.preimage Complex.continuous_im).union
-    (isOpen_Iio.preimage Complex.continuous_re)
+private theorem gaussSlitPlane_isOpen_for_basis : IsOpen gaussSlitPlane := DOZZ.Proofs.bpzHG_isOpen_gaussSlitPlane
 
 /-- The reflected unpowered local solution at one solves the Gauss equation. -/
 theorem gaussGMinus_holomorphicOperator_eq_zero
@@ -88,8 +83,6 @@ theorem gaussFPlus_holomorphicOperator_eq_zero
     have hchar := hH A B C hCfree
     simpa [G] using hchar.1.analyticOnNhd gaussSlitPlane_isOpen_for_basis
   have hGanalytic₁ : AnalyticOnNhd ℂ (deriv G) gaussSlitPlane := hGanalytic.deriv
-  have hGanalytic₂ : AnalyticOnNhd ℂ (deriv (deriv G)) gaussSlitPlane :=
-    hGanalytic₁.deriv
   have hPdiff : DifferentiableOn ℂ P gaussCutPlane := by
     change DifferentiableOn ℂ (fun z : ℂ => z ^ δ) gaussCutPlane
     exact differentiableOn_id.cpow_const gaussCutPlane_subset_Complex_slitPlane
@@ -109,10 +102,7 @@ theorem gaussFPlus_holomorphicOperator_eq_zero
     change deriv (fun w => δ * w ^ (δ - 1)) z = δ * (δ - 1) * z ^ (δ - 2)
     rw [deriv_const_mul_field δ, hpow, hexp]
     ring
-  have hGdiff : DifferentiableOn ℂ G gaussCutPlane := by
-    exact hGanalytic.differentiableOn.mono gaussCutPlane_subset_gaussSlitPlane
-  have hG₁diff : DifferentiableOn ℂ (deriv G) gaussCutPlane := by
-    exact hGanalytic₁.differentiableOn.mono gaussCutPlane_subset_gaussSlitPlane
+  have hGdiff : DifferentiableOn ℂ G gaussCutPlane := hGanalytic.differentiableOn.mono gaussCutPlane_subset_gaussSlitPlane
   have hF₁eq : gaussCutPlane.EqOn (deriv F)
       (fun z => P₁ z * G z + P z * deriv G z) := by
     intro z hz
@@ -123,9 +113,6 @@ theorem gaussFPlus_holomorphicOperator_eq_zero
     have hprod := hPAt.hasDerivAt.mul hGAt.hasDerivAt
     change deriv (P * G) z = P₁ z * G z + P z * deriv G z
     rw [hprod.deriv, hP₁eq hz]
-  have hRhsDiff : DifferentiableOn ℂ
-      (fun z => P₁ z * G z + P z * deriv G z) gaussCutPlane := by
-    exact (hP₁diff.mul hGdiff).add (hPdiff.mul hG₁diff)
   have hF₂eq : gaussCutPlane.EqOn (deriv (deriv F))
       (fun z => deriv (fun w => P₁ w * G w + P w * deriv G w) z) :=
     hF₁eq.deriv gaussCutPlane_isOpen
@@ -149,19 +136,18 @@ theorem gaussFPlus_holomorphicOperator_eq_zero
       change P₁ w * G w + P w * deriv G w =
         P w * deriv G w + P₁ w * G w
       ring
-    rw [hfun]
-    rw [add_comm (P * deriv G) (P₁ * G), hleft']
+    rw [hfun, add_comm (P * deriv G) (P₁ * G), hleft']
     ring
   have hpow₁ : z ^ (δ - 1) = z ^ δ / z := by
     simpa using Complex.cpow_sub δ 1 hz0
   have hpow₂ : z ^ (δ - 2) = z ^ δ / z ^ 2 := by
     simpa [Complex.cpow_two] using Complex.cpow_sub δ 2 hz0
   have hP₁val : P₁ z = δ * P z / z := by
-    simp only [P₁, P]
+    simp [P₁, P]
     rw [hpow₁]
     ring
   have hP₂val : P₂ z = δ * (δ - 1) * P z / z ^ 2 := by
-    simp only [P₂, P]
+    simp [P₂, P]
     calc
       δ * (δ - 1) * z ^ (δ - 2) = δ * (δ - 1) * (z ^ δ / z ^ 2) :=
         congrArg (fun x : ℂ => δ * (δ - 1) * x) hpow₂
@@ -177,7 +163,7 @@ theorem gaussFPlus_holomorphicOperator_eq_zero
       P z * (z * (1 - z) * deriv (deriv G) z +
         (C - (A + B + 1) * z) * deriv G z - A * B * G z)
     rw [hsumDeriv, hF₁eq hz, hFval, hP₁val, hP₂val]
-    simp only [hP₁val]
+    simp [hP₁val]
     dsimp [A, B, C, δ]
     field_simp [hz0]
     ring_nf

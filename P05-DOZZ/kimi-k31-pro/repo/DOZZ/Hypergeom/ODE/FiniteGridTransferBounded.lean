@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Hypergeom.ODE.FiniteGridTransfer
+import DOZZ.Hypergeom.ODE.FiniteGridTransfer
 
 /-! The finite grid transfer theorem with square identities required only on the cells of the
 finite rectangle. -/
 
-@[expose] public section
 
 namespace DOZZ.Proofs
 
@@ -24,7 +22,7 @@ theorem finiteGridVertical_after_horizontal_edge_of_bounded_squares
   | zero => simp [finiteGridVertical]
   | succ m ih =>
       have hrow : j + m < N := by omega
-      simp only [finiteGridVertical]
+      simp [finiteGridVertical]
       rw [ih (by omega)]
       exact hsquare i hi (j + m) hrow _
 
@@ -39,7 +37,7 @@ theorem finiteGrid_rectangle_transfer_of_bounded_squares
   | zero => simp [finiteGridHorizontal]
   | succ n ih =>
       have hcol : i + n < N := by omega
-      simp only [finiteGridHorizontal]
+      simp [finiteGridHorizontal]
       have hindex : i + (n + 1) = (i + n) + 1 := by omega
       rw [hindex]
       rw [finiteGridVertical_after_horizontal_edge_of_bounded_squares
@@ -53,7 +51,7 @@ theorem finiteGridVertical_eq_self_of_bounded_edges
   induction N with
   | zero => simp [finiteGridVertical]
   | succ N ih =>
-      simp only [finiteGridVertical, Nat.zero_add]
+      simp [finiteGridVertical, Nat.zero_add]
       rw [ih (fun j hj => hedge j (by omega))]
       exact hedge N (by omega) y
 
@@ -70,8 +68,6 @@ theorem finiteGrid_boundary_transfer_eq_of_bounded_squares
   have hleftV := finiteGridVertical_eq_self_of_bounded_edges N 0 up hleft y
   have hrightV := finiteGridVertical_eq_self_of_bounded_edges N N up hright
     (finiteGridHorizontal right 0 0 N y)
-  simp only [Nat.zero_add] at hrect
-  rw [hrightV, hleftV] at hrect
-  exact hrect
-
+  simp [Nat.zero_add] at hrect
+  rwa [hrightV, hleftV] at hrect
 end DOZZ.Proofs

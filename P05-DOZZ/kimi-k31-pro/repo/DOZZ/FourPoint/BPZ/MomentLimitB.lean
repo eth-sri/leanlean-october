@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.BPZ.MomentLimitA
+import DOZZ.FourPoint.BPZ.MomentLimitA
 
 /-! # Moment fields and their near/far bounds in expectation
 
@@ -16,7 +15,6 @@ parts are dominated by `Y^{−s}`, and the differences between the fields and th
 bounded in expectation by the near-root moments `E[I^{−s−1} ∫ near |x − z|^{2a−1}]` and
 `E[I^{−s−1} ∫ near |x − z|^{2a−2}]`. -/
 
-@[expose] public section
 
 open MeasureTheory Filter Topology
 open scoped ENNReal
@@ -159,9 +157,6 @@ theorem bpz_momField2_near {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω}
           Y ω ^ (-s) := by
   set far : ℂ → ℝ := fun x => if r ≤ ‖x - z₀‖ then w x else 0 with hfar
   set K₂ : ℝ := 4 * a * (1 - a) + 2 * a with hK₂
-  have hK₂0 : 0 ≤ K₂ := by
-    have : 0 ≤ 1 - a := sub_nonneg.mpr ha1
-    positivity
   set N₁ : Ω → ℝ := fun ω => bpzSoftMassReal a ε w (M ω) z ^ (-(s + 1)) *
     ∫ x, (if ‖x - z₀‖ < r then w x else 0) * ‖x - z‖ ^ (2 * a - 1) ∂M ω with hN₁
   set N₂ : Ω → ℝ := fun ω => bpzSoftMassReal a ε w (M ω) z ^ (-(s + 1)) *
@@ -228,8 +223,6 @@ theorem bpz_momField2_near {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω}
       _ ≤ _ := norm_add_le _ _
       _ ≤ _ := add_le_add h.2 h.1
   refine ⟨hFint, hGint, ?_, hpath.mono fun ω h => h.1⟩
-  have hc1 : 0 ≤ 4 * a ^ 2 * s * (s + 1) + s * K₂ := by positivity
-  have hc2 : 0 ≤ 16 * a ^ 2 * s * (s + 1) / r := by positivity
   calc ∫ ω, ‖bpzMomField2 a s ε w w (M ω) z - bpzMomField2 a s ε w far (M ω) z‖ ∂P
       ≤ ∫ ω, ((4 * a ^ 2 * s * (s + 1) + s * K₂) * N₂ ω +
           16 * a ^ 2 * s * (s + 1) / r * N₁ ω) ∂P :=

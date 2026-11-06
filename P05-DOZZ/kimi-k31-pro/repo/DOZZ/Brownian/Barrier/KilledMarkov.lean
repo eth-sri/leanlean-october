@@ -2,8 +2,7 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.Brownian.Barrier.FirstHitDensity
+import DOZZ.Brownian.Barrier.FirstHitDensity
 
 /-!
 # Actual killed Brownian Markov laws
@@ -33,7 +32,6 @@ The ceiling-grid reversed marked-path law still requires its lifetime and
 multi-time assembly; these two-time identities alone do not prove reversal.
 -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory Filter Set
 open scoped NNReal ENNReal Topology
 namespace DOZZ.Proofs
@@ -41,8 +39,7 @@ namespace DOZZ.Proofs
 /-- A raw-history evaluation is measurable at every later deterministic horizon. -/
 theorem measurable_brownianPath_eval_raw (s t : ℝ≥0) (ht : t ≤ s) :
     Measurable[brownianRawFiltration (fun u (p : BrownianPath) => p u)
-      (fun u => ContinuousMap.measurable_eval u) s] (fun p : BrownianPath => p t) := by
-  exact Measurable.of_comap_le (le_iSup_of_le t (le_iSup_of_le ht le_rfl))
+      (fun u => ContinuousMap.measurable_eval u) s] (fun p : BrownianPath => p t) := Measurable.of_comap_le (le_iSup_of_le t (le_iSup_of_le ht le_rfl))
 
 /-- The entire path stopped at a deterministic time is measurable in the raw past. -/
 theorem measurable_stopBrownianPath_raw (s : ℝ≥0) :
@@ -64,9 +61,7 @@ theorem brownianPath_deterministic_restart_joint_map {E : Type*} [MeasurableSpac
     (isStoppingTime_const _ s) s (fun _ => le_rfl) X
   change Measurable[(isStoppingTime_const (brownianRawFiltration (fun u (p : BrownianPath) => p u)
     (fun u => ContinuousMap.measurable_eval u)) s).measurableSpace] X
-  rw [IsStoppingTime.measurableSpace_const]
-  exact hX
-
+  rwa [IsStoppingTime.measurableSpace_const]
 /-- Every jointly measurable past/future test integrates against the actual independent future law. -/
 theorem brownianPath_deterministic_restart_lintegral {E : Type*} [MeasurableSpace E]
     (P : Measure BrownianPath) (hB : IsBrownianReal (fun t p => p t) P)
@@ -161,7 +156,7 @@ theorem brownianPath_surviving_restart_lintegral (P : Measure BrownianPath)
     have he : stopBrownianPath p s s = p s := by
       change p (min s s) = p s
       rw [min_self]
-    simp only [J,Set.indicator_apply,stopBrownianPath_lowerSurvival,he]
+    simp [J,Set.indicator_apply,stopBrownianPath_lowerSurvival,he]
   have hr : (fun p => ∫⁻ q, J (stopBrownianPath p s,q) ∂P) =
       (brownianLowerSurvival a x s).indicator
         (fun p => ∫⁻ q, F (x+p s+a*(s : ℝ),q) ∂P) := by
@@ -170,11 +165,11 @@ theorem brownianPath_surviving_restart_lintegral (P : Measure BrownianPath)
     · have he : stopBrownianPath p s s = p s := by
         change p (min s s) = p s
         rw [min_self]
-      simp only [J,Set.indicator_apply,stopBrownianPath_lowerSurvival,ite_eq_left hp,he]
-    · simp only [J,Set.indicator_apply,stopBrownianPath_lowerSurvival,ite_eq_right hp,lintegral_zero]
+      simp [J,Set.indicator_apply,stopBrownianPath_lowerSurvival,ite_eq_left hp,he]
+    · simp [J,Set.indicator_apply,stopBrownianPath_lowerSurvival,ite_eq_right hp,lintegral_zero]
   rw [hl,hr,lintegral_indicator (measurableSet_brownianLowerSurvival a x s),
     lintegral_indicator (measurableSet_brownianLowerSurvival a x s)] at hh
-  exact hh
+  assumption
 
 /-- A first hit strictly after a deterministic time is the shifted future first hit plus that time. -/
 theorem firstPassageTime_eq_add_shift (p : BrownianPath) (c : ℝ) (s : ℝ≥0)
@@ -200,7 +195,7 @@ theorem firstPassageTime_eq_add_shift (p : BrownianPath) (c : ℝ) (s : ℝ≥0)
     change c-p s ≤ p (s+σ)-p s at hm
     linarith
   apply le_antisymm hτ
-  have hl : s+σ ≤ s+(τ-s) := by simpa only [add_comm] using add_le_add_right hσ s
+  have hl : s+σ ≤ s+(τ-s) := by simpa [add_comm] using add_le_add_right hσ s
   rwa [add_tsub_cancel_of_le hsτ] at hl
 
 /-- Shifting a drifted path adds the same deterministic drift to its shifted Brownian increments. -/
@@ -224,6 +219,6 @@ theorem brownianPath_positiveDrift_firstHit_shift_ae (P : Measure BrownianPath)
   rw [brownianShiftPath_drift] at he
   change firstPassageTime (driftedBrownianPath a p) c =
     s+firstPassageTime (driftedBrownianPath a (brownianShiftPath s p)) (c-(p s+a*(s : ℝ))) at he
-  exact he
+  assumption
 
 end DOZZ.Proofs

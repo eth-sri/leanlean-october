@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.Continuity.FourPoint
-public import DOZZ.Statements.Defs.StructureConstant
+import DOZZ.Correlations.Continuity.FourPoint
+import DOZZ.Statements.Defs.StructureConstant
 import DOZZ.GMC.Moments.RhoCoulomb
 import Mathlib.Analysis.SpecialFunctions.Gamma.Deriv
 
@@ -23,7 +22,6 @@ is the four-point Coulomb moment at the parameters `(γ, (0, α₁(γ), α₂, �
 The moment is therefore continuous on `K₀` by the joint continuity of the four-point moment in
 `(γ, α)`. The prefactor `2 μ^{-s} γ⁻¹ Γ(s)` is continuous at `γ₀` since `s > 0` there. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
@@ -143,7 +141,7 @@ theorem bpz_continuousAt_structureConstant_gamma {Ω : Type*} [MeasurableSpace �
     refine hat.congr ?_
     filter_upwards [hK₀nhds] with γ hγ
     obtain ⟨hγ', -⟩ := hK₀sub hγ
-    simp only [Function.comp_apply, J]
+    simp [Function.comp_apply, J]
     rw [bpzSG_moment_eq P X hX (Mfam γ) hγ'.1 hγ'.2 (hMfam γ hγ') 2 (f γ) α₂ α₃]
     rfl
   exact (bpzSG_continuousAt_prefactor hμ hf α₂ α₃ hγ₀.1.ne' hs).mul hmom

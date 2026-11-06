@@ -2,12 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import Mathlib.MeasureTheory.Function.Floor
-public import Mathlib.MeasureTheory.Integral.Bochner.Set
-public import Mathlib.MeasureTheory.Integral.IntegrableOn
-public import Mathlib.Analysis.Complex.Basic
+import Mathlib.MeasureTheory.Function.Floor
+import Mathlib.MeasureTheory.Integral.Bochner.Set
+import Mathlib.MeasureTheory.Integral.IntegrableOn
+import Mathlib.Analysis.Complex.Basic
 
 /-! # Square grids in the plane
 
@@ -15,7 +14,6 @@ The half-open squares `[a h, (a+1) h) × [b h, (b+1) h)`, `(a, b) ∈ ℤ²`, pa
 function of the square index is a finite step function on any bounded region, and its integral
 against a finite measure is the corresponding finite sum. -/
 
-@[expose] public section
 
 open MeasureTheory Filter Topology
 open scoped ENNReal
@@ -75,7 +73,6 @@ theorem norm_sub_bpzGridCorner_le {h : ℝ} (hh : 0 < h) (x : ℂ) :
 theorem bpzGrid_floor_mem_Icc {h R t : ℝ} (hh : 0 < h) (ht : |t| ≤ R) :
     ⌊t / h⌋ ∈ Finset.Icc (-(⌈R / h⌉₊ : ℤ)) ⌈R / h⌉₊ := by
   rw [Finset.mem_Icc]
-  have hR : 0 ≤ R := (abs_nonneg t).trans ht
   have hc : R / h ≤ (⌈R / h⌉₊ : ℝ) := Nat.le_ceil _
   have hlo : -(R / h) ≤ t / h := by
     rw [neg_div', div_le_div_iff_of_pos_right hh]

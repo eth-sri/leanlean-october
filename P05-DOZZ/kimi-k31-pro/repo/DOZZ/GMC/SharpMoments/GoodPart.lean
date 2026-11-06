@@ -2,12 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import Mathlib.MeasureTheory.Integral.Bochner.Basic
-public import Mathlib.MeasureTheory.Integral.Bochner.Set
-public import Mathlib.MeasureTheory.Integral.IntegrableOn
-public import Mathlib.MeasureTheory.Function.ConvergenceInMeasure
+import Mathlib.MeasureTheory.Integral.Bochner.Basic
+import Mathlib.MeasureTheory.Integral.Bochner.Set
+import Mathlib.MeasureTheory.Integral.IntegrableOn
+import Mathlib.MeasureTheory.Function.ConvergenceInMeasure
 
 /-! # Comparing two weighted masses on a region where the weights are close
 
@@ -16,7 +15,6 @@ difference of the two weighted masses, against two finite measures without an at
 is at most the uniform distance times the mass of the region plus the difference of the integrals
 of one fixed bounded function against the two measures. -/
 
-@[expose] public section
 
 open MeasureTheory Filter Topology
 open scoped ENNReal NNReal
@@ -61,8 +59,6 @@ theorem goodPart_ofReal_abs_le (μr μ : Measure ℂ) [IsFiniteMeasure μr] [IsF
           ∫ x, Good.indicator (fun x => (F x).toReal) x ∂μ| := by
   have hGr := goodPart_lintegral_toReal_eq μr Good hGood G hG L (fun x hx hx0 =>
     (hbound x hx hx0).1) h0r
-  have hFr := goodPart_lintegral_toReal_eq μr Good hGood F hF L (fun x hx hx0 =>
-    (hbound x hx hx0).2.1) h0r
   have hF0 := goodPart_lintegral_toReal_eq μ Good hGood F hF L (fun x hx hx0 =>
     (hbound x hx hx0).2.1) h0
   have hGi := goodPart_integrableOn μr Good hGood G hG L (fun x hx hx0 => (hbound x hx hx0).1) h0r

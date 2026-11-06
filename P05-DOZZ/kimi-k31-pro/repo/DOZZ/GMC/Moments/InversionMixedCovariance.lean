@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.Moments.InversionCircleJointLaw
-public import DOZZ.GMC.Moments.InversionMixedPotential
+import DOZZ.GMC.Moments.InversionCircleJointLaw
+import DOZZ.GMC.Moments.InversionMixedPotential
 
 /-! Exact mixed covariances of source circles and inverted local tests. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory
 open scoped Distributions
@@ -32,7 +30,7 @@ theorem integral_inversionTest_mul (f : TestFn)
     _ = ∫ x, (normPlus x ^ (-4 : ℝ))⁻¹ * (f x * p x⁻¹) ∂gmcReferenceMeasure := by
       have h := complexInvMeasurableEquiv_measurePreserving.integral_comp'
         (fun x => (normPlus x ^ (-4 : ℝ))⁻¹ * (f x * p x⁻¹))
-      simpa only [complexInvMeasurableEquiv, MeasurableEquiv.coe_mk,
+      simpa [complexInvMeasurableEquiv, MeasurableEquiv.coe_mk,
         Equiv.coe_fn_mk, inv_inv, mul_assoc, mul_comm, mul_left_comm] using h
 
 /-- The deterministic mixed circle/test energy is the inverse point/source-circle potential. -/

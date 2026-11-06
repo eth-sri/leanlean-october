@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.Fusion.MovingInverseMoments
+import DOZZ.FourPoint.Fusion.MovingInverseMoments
 import Mathlib.Topology.Sequences
 
 /-! # The inverse expectation appearing in the scaled fusion integrand -/
 
-@[expose] public section
 open MeasureTheory Filter Topology
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs

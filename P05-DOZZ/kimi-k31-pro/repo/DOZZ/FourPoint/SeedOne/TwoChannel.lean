@@ -2,19 +2,18 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.Crossing.CoefficientExtraction
-public import DOZZ.FourPoint.Crossing.DiagonalUniqueness
-public import DOZZ.FourPoint.Diagonal.Assembly
-public import DOZZ.ShiftEquations.Shifts.Seeds.Reflection
-public import DOZZ.Hypergeom.ClassificationDiagonalConnection
-public import DOZZ.Hypergeom.ConnectionDiagonalCoefficients
-public import DOZZ.Hypergeom.BasisRegularity
-public import DOZZ.Statements.FourPoint.DualCrossingMultiplier
-public import DOZZ.Hypergeom.PhysicalRange
-public import DOZZ.Statements.Hypergeom.GaussGPlus
-public import DOZZ.Statements.Hypergeom.GaussGMinus
+import DOZZ.FourPoint.Crossing.CoefficientExtraction
+import DOZZ.FourPoint.Crossing.DiagonalUniqueness
+import DOZZ.FourPoint.Diagonal.Assembly
+import DOZZ.ShiftEquations.Shifts.Seeds.Reflection
+import DOZZ.Hypergeom.ClassificationDiagonalConnection
+import DOZZ.Hypergeom.ConnectionDiagonalCoefficients
+import DOZZ.Hypergeom.BasisRegularity
+import DOZZ.Statements.FourPoint.DualCrossingMultiplier
+import DOZZ.Hypergeom.PhysicalRange
+import DOZZ.Statements.Hypergeom.GaussGPlus
+import DOZZ.Statements.Hypergeom.GaussGMinus
 import DOZZ.ShiftEquations.Rbar.Multiplier
 import DOZZ.Hypergeom.ODE.SlitPlaneGluing
 import Mathlib.Tactic
@@ -33,7 +32,6 @@ coefficient `C(ε - 2/γ, α, α') ρ(ε, α, α')` ([KRV, Propositions 9.9 and 
 along the same lines as [KRV, Proposition 9.8]).
 -/
 
-@[expose] public section
 
 open MeasureTheory Filter Topology Set
 
@@ -107,7 +105,7 @@ theorem dual_first_coefficient_of_classification {Ω : Type*} [MeasurableSpace �
         (structureConstant P M γ μ (ε - 2 / γ) α α' *
           gaussCoefficientRatio (gaussParameterA γ (2 / γ) ε α α')
             (gaussParameterB γ (2 / γ) ε α α') (gaussParameterC γ (2 / γ) ε)) := by
-  obtain ⟨H, hH⟩ := DOZZ.Proofs.gauss_hypergeometric_exists
+  obtain ⟨H, hH⟩ := gauss_hypergeometric_exists
   let a := gaussParameterA γ (2 / γ) α ε α'
   let b := gaussParameterB γ (2 / γ) α ε α'
   let c := gaussParameterC γ (2 / γ) α
@@ -124,7 +122,7 @@ theorem dual_first_coefficient_of_classification {Ω : Type*} [MeasurableSpace �
   let e₁ := e₀ * gaussCoefficientRatio (gaussParameterA γ (2 / γ) ε α α')
     (gaussParameterB γ (2 / γ) ε α α') (gaussParameterC γ (2 / γ) ε)
   obtain ⟨ha, hab, hbc, hc1, hδ, hδ1, _, hK₂⟩ :=
-    DOZZ.Proofs.gauss_physical_parameter_range γ (2 / γ) α ε α' hγ hγ2 (Or.inr rfl) hs hα hε hα'
+    gauss_physical_parameter_range γ (2 / γ) α ε α' hγ hγ2 (Or.inr rfl) hs hα hε hα'
   have hb : 0 < b := lt_trans ha hab
   have hc : 0 < c := lt_trans hb hbc
   have ha1 : a < 1 := lt_trans (lt_trans hab hbc) hc1
@@ -180,9 +178,6 @@ theorem dual_first_coefficient_of_classification {Ω : Type*} [MeasurableSpace �
     unfold dualCrossingMultiplier
     simp only [lFun_ofReal_re_eq_lR]
     rfl
-  rw [hM'] at hex
-  exact hex
-
+  rwa [hM'] at hex
 end DOZZ.Proofs
 
-end

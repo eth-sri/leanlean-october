@@ -2,15 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Hypergeom.ODE.ConnectionEulerTransform
-public import DOZZ.Hypergeom.ODE.ConnectionEndpointLimits
-public import DOZZ.Hypergeom.ODE.ConnectionGammaCoefficients
+import DOZZ.Hypergeom.ODE.ConnectionEulerTransform
+import DOZZ.Hypergeom.ODE.ConnectionEndpointLimits
+import DOZZ.Hypergeom.ODE.ConnectionGammaCoefficients
 
 /-! Euler endpoint evaluations for the two `F₊` connection coefficients. -/
 
-@[expose] public section
 
 namespace DOZZ.Proofs
 
@@ -71,7 +69,7 @@ theorem connectionPlusFirstCramer_eq_gamma_of_real
   have hEulerC : Tendsto (fun x : ℝ => ((N * K x : ℝ) : ℂ))
       (𝓝[Iio 1] 1) (𝓝 (L : ℂ)) := by
     have hEulerC0 := Complex.continuous_ofReal.continuousAt.tendsto.comp hEuler
-    simpa only [Function.comp_def, N, K, L] using hEulerC0
+    simpa [Function.comp_def, N, K, L] using hEulerC0
   have hpow := gaussPlus_power_tendsto_one c
   have hFvalue : Tendsto (fun x : ℝ =>
       (x : ℂ) ^ ((1 - c : ℝ) : ℂ) * ((N * K x : ℝ) : ℂ))
@@ -84,7 +82,7 @@ theorem connectionPlusFirstCramer_eq_gamma_of_real
         (eventually_gt_nhds (show (0 : ℝ) < 1 by norm_num))
     have hxlt : ∀ᶠ x : ℝ in 𝓝[Iio 1] 1, x < 1 := by
       change ∀ᶠ x : ℝ in 𝓝[Iio (1 : ℝ)] 1, x ∈ Iio 1
-      simpa only [mem_Iio] using
+      simpa [mem_Iio] using
         (eventually_mem_nhdsWithin : ∀ᶠ x : ℝ in 𝓝[Iio (1 : ℝ)] 1, x ∈ Iio 1)
     filter_upwards [hxpos, hxlt] with x hx hx1
     have hEulerFamily := realGaussEulerIntegral_eq_family hH A B C x hA hB hCBpos hx hx1
@@ -100,8 +98,7 @@ theorem connectionPlusFirstCramer_eq_gamma_of_real
           simp only [gaussFPlus]
           rw [show (1 : ℂ) - (c : ℂ) = ((1 - c : ℝ) : ℂ) by push_cast; ring,
             hAc, hBc, hCc]]
-    rw [← hEulerFamily']
-    rw [← Complex.ofReal_mul]
+    rw [← hEulerFamily', ← Complex.ofReal_mul]
   have hF := hFvalue.congr' hEulerEq.symm
   have hδre : 0 < (((c : ℂ) - (a : ℂ) - (b : ℂ)).re) := by
     rw [show (c : ℂ) - (a : ℂ) - (b : ℂ) = ((c - a - b : ℝ) : ℂ) by push_cast; ring]
@@ -144,10 +141,8 @@ theorem connectionPlusSecondCramer_eq_gamma_of_real
   let A' : ℝ := 1 - a
   let B' : ℝ := 1 - b
   let p : ℂ × ℂ × ℂ := (a, b, c)
-  have hδ' : C - A - B = c - a - b := by dsimp [A, B, C]; ring
   have hCA : C - A = A' := by dsimp [A, A', C]; ring
   have hCB : C - B = B' := by dsimp [B, B', C]; ring
-  have htransA : C - A' = A := by dsimp [A, A', C]; ring
   have htransB : C - B' = B := by dsimp [B, B', C]; ring
   have heta : 0 < a + b - c := by linarith
   have heta' : C - A' - B' = a + b - c := by dsimp [A', B', C]; ring
@@ -173,7 +168,7 @@ theorem connectionPlusSecondCramer_eq_gamma_of_real
   have hEulerC : Tendsto (fun x : ℝ => ((N * K x : ℝ) : ℂ))
       (𝓝[Iio 1] 1) (𝓝 (L : ℂ)) := by
     have hEulerC0 := Complex.continuous_ofReal.continuousAt.tendsto.comp hEuler
-    simpa only [Function.comp_def, N, K, L] using hEulerC0
+    simpa [Function.comp_def, N, K, L] using hEulerC0
   have hpow := gaussPlus_power_tendsto_one c
   have hFvalue : Tendsto (fun x : ℝ =>
       (x : ℂ) ^ ((1 - c : ℝ) : ℂ) * ((N * K x : ℝ) : ℂ))
@@ -184,11 +179,8 @@ theorem connectionPlusSecondCramer_eq_gamma_of_real
       (eventually_gt_nhds (show (0 : ℝ) < 1 by norm_num))
   have hxlt : ∀ᶠ x : ℝ in 𝓝[Iio 1] 1, x < 1 := by
     change ∀ᶠ x : ℝ in 𝓝[Iio (1 : ℝ)] 1, x ∈ Iio 1
-    simpa only [mem_Iio] using
+    simpa [mem_Iio] using
       (eventually_mem_nhdsWithin : ∀ᶠ x : ℝ in 𝓝[Iio (1 : ℝ)] 1, x ∈ Iio 1)
-  have hδcast : ((c - a - b : ℝ) : ℂ) = (c : ℂ) - (a : ℂ) - (b : ℂ) := by
-    push_cast
-    ring
   have hEulerEq : (fun x : ℝ =>
       (1 - (x : ℂ)) ^ (-((c : ℂ) - (a : ℂ) - (b : ℂ))) *
         gaussFPlus H (a : ℂ) (b : ℂ) (c : ℂ) (x : ℂ)) =ᶠ[𝓝[Iio 1] 1]
@@ -259,7 +251,7 @@ theorem connectionPlusSecondCramer_eq_gamma_of_real
       push_cast
       ring]
     simp only [Complex.ofReal_re]
-    exact heta
+    assumption
   have hcoeff := connectionPlusSecondCramer_eq_of_scaled_endpoint_limit
     hH hp hδendpoint (by simpa [p] using hscaled)
   have hGamma : (L : ℂ) = gaussConnectionPlusGammaCoefficient₂ p := by

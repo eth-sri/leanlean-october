@@ -2,13 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Dual.MovingMoment
-public import DOZZ.FourPoint.Dual.DeletedMoment
-public import DOZZ.FourPoint.Reflected.Remainder
+import DOZZ.FourPoint.Dual.MovingMoment
+import DOZZ.FourPoint.Dual.DeletedMoment
+import DOZZ.FourPoint.Reflected.Remainder
 import Mathlib.Tactic
 /-! # The actual dual outer inverse-moment correction is negligible -/
-public section
 open MeasureTheory Set Filter Topology
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -32,9 +30,9 @@ theorem dual_outer_inverse_moment_littleO {Ω : Type*} [MeasurableSpace Ω]
     P X M γ α₁ α₂ α₃ p hγ hγ₂ hp hα₁ hα₂ hα₃ hβ hX hM
   let l := nhdsWithin (0 : ℂ) {z : ℂ | z ≠ 0}
   have hn : Tendsto (fun z : ℂ => ‖z‖) l (nhds 0) := by
-    simpa only [norm_zero] using (continuous_norm.tendsto (0 : ℂ)).mono_left nhdsWithin_le_nhds
+    simpa [norm_zero] using (continuous_norm.tendsto (0 : ℂ)).mono_left nhdsWithin_le_nhds
   have hpow (s : ℝ) (hs : 0 < s) : Tendsto (fun z : ℂ => ‖z‖ ^ s) l (nhds 0) := by
-    simpa only [Function.comp_def, Real.zero_rpow hs.ne'] using
+    simpa [Function.comp_def, Real.zero_rpow hs.ne'] using
       ((Real.continuous_rpow_const hs.le).tendsto (0 : ℝ)).comp hn
   have hbound : ∀ᶠ z : ℂ in l,
       |dualOuterMoment P M γ α₁ α₂ α₃ p z ξ -
@@ -69,7 +67,7 @@ theorem dual_outer_inverse_moment_littleO {Ω : Type*} [MeasurableSpace Ω]
   apply squeeze_zero' (Eventually.of_forall fun z => norm_nonneg _) ?_
     (show Tendsto (fun z : ℂ => C₁ * (‖z‖ ^ ξ / ‖z‖ ^ κ) +
       C₂ * (‖z‖ ^ ((1 - ξ) * (4 - γ * α₁)) / ‖z‖ ^ κ)) l (nhds 0) by
-      simpa only [mul_zero, add_zero] using hu)
+      simpa [mul_zero, add_zero] using hu)
   filter_upwards [hbound] with z hz
   rw [Real.norm_eq_abs, abs_div, abs_of_nonneg (Real.rpow_nonneg (norm_nonneg z) _)]
   exact (div_le_div_of_nonneg_right hz (Real.rpow_nonneg (norm_nonneg z) _)).trans_eq (by ring)

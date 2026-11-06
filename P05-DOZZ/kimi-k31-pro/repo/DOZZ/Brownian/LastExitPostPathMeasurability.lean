@@ -1,10 +1,9 @@
 /-
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 -/
-module
 
-public import DOZZ.Brownian.Williams.StoppedPaths
-public import DOZZ.Statements.Brownian.NegativeConditionedPostLastExitPath
+import DOZZ.Brownian.Williams.StoppedPaths
+import DOZZ.Statements.Brownian.NegativeConditionedPostLastExitPath
 
 /-!
 # Measurability of the recentered post-last-exit path
@@ -13,7 +12,6 @@ The literal last-exit time is measurable on the continuous-path carrier. Joint c
 evaluation then makes the path shifted to that time measurable, with the level added back.
 -/
 
-@[expose] public section
 
 open MeasureTheory
 open scoped ENNReal NNReal
@@ -47,10 +45,8 @@ theorem measurable_negativeConditionedPostLastExitPath (c : ℝ) :
     funext p
     ext t
     rfl
-  rw [← heq]
-  exact hmap
-
-/-- In particular, the post-last-exit map `DOZZ.negativeConditionedPostLastExitPath` is
+  rwa [← heq]
+/-- In particular, the post-last-exit map `negativeConditionedPostLastExitPath` is
 almost-everywhere measurable under any path measure. -/
 theorem aemeasurable_negativeConditionedPostLastExitPath
     (c : ℝ) (P : Measure BrownianPath) :
@@ -59,4 +55,3 @@ theorem aemeasurable_negativeConditionedPostLastExitPath
 
 end DOZZ.Proofs
 
-end

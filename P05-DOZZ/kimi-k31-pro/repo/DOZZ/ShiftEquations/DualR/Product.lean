@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.ShiftEquations.DualR.Tkea
-public import DOZZ.ShiftEquations.DualR.Limits
+import DOZZ.ShiftEquations.DualR.Tkea
+import DOZZ.ShiftEquations.DualR.Limits
 import DOZZ.ShiftEquations.Strip.Lastone
 import DOZZ.Brownian.Reflection.RtheorAnalytic
 
@@ -18,7 +17,6 @@ Multiplying the crossed seed (`tkea`) by `η` and letting `η → 0⁺`: the lef
 (`DOZZ.structureConstant_lastone_limit`).
 -/
 
-@[expose] public section
 
 open MeasureTheory Filter Topology Set
 
@@ -121,8 +119,7 @@ theorem dualShift_product {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X 
     have h2' : Tendsto (fun η : ℝ => η * structureConstant P M γ μ (γ / 2 - θ) (Q γ - η)
         (2 / γ + θ)) (𝓝[>] 0) (𝓝 (-4)) := by
       have e : Q γ - (γ / 2 - θ) = 2 / γ + θ := by rw [hQ]; ring
-      rw [e] at h2
-      exact h2
+      rwa [e] at h2
     have h2c := (Complex.continuous_ofReal.tendsto _).comp h2'
     have h := (h4.mul h3).mul h2c
     simp only [Complex.ofReal_neg, Complex.ofReal_ofNat] at h
@@ -136,4 +133,3 @@ theorem dualShift_product {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X 
 
 end DOZZ.Proofs
 
-end

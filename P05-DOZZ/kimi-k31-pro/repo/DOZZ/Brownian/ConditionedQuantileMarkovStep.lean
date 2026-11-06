@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Brownian.ConditionedEntranceQuantileChainMeasurable
+import DOZZ.Brownian.ConditionedEntranceQuantileChainMeasurable
 
 /-!
 # One finite Markov step from an independent uniform input
@@ -14,7 +13,6 @@ the one-step pushforward law. It uses an ordinary two-factor product measure; no
 or extension theorem is involved.
 -/
 
-@[expose] public section
 
 open MeasureTheory
 open scoped ENNReal
@@ -36,8 +34,7 @@ theorem map_prod_graph_apply_rect
   have hF : Measurable F := measurable_fst.prodMk hf
   have hRect : MeasurableSet (A ×ˢ B) := hA.prod hB
   have hPre : MeasurableSet (F ⁻¹' (A ×ˢ B)) := hRect.preimage hF
-  rw [Measure.map_apply hF hRect, Measure.prod_apply hPre]
-  rw [← lintegral_indicator hA]
+  rw [Measure.map_apply hF hRect, Measure.prod_apply hPre, ← lintegral_indicator hA]
   apply lintegral_congr
   intro x
   by_cases hx : x ∈ A
@@ -47,8 +44,7 @@ theorem map_prod_graph_apply_rect
         (fun u => f (x, u)) ⁻¹' B := by
       ext u
       simp [F, hx]
-    rw [hset, Set.indicator_of_mem hx]
-    rw [← Measure.map_apply hfx hB, hK x]
+    rw [hset, Set.indicator_of_mem hx, ← Measure.map_apply hfx hB, hK x]
   · have hset : Prod.mk x ⁻¹' (F ⁻¹' (A ×ˢ B)) = ∅ := by
       ext u
       simp [F, hx]
@@ -75,8 +71,7 @@ theorem conditionedPositiveTransitionQuantile_map_uniformSubtype
     rw [MeasurableSet.map_coe_volume measurableSet_Ioo, uniformOpenUnit]
   have hqMap : AEMeasurable q
       ((volume : Measure (Set.Ioo (0 : ℝ) 1)).map Subtype.val) := by
-    rw [hcoe]
-    exact hqUniform
+    rwa [hcoe]
   have hval : AEMeasurable (Subtype.val : Set.Ioo (0 : ℝ) 1 → ℝ)
       (volume : Measure (Set.Ioo (0 : ℝ) 1)) := measurable_subtype_coe.aemeasurable
   calc
@@ -92,4 +87,3 @@ theorem conditionedPositiveTransitionQuantile_map_uniformSubtype
 
 end DOZZ.Proofs
 
-end

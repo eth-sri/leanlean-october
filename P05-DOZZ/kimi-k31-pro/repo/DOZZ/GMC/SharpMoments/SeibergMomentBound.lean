@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.SharpMoments.SeibergMoment
+import DOZZ.GMC.SharpMoments.SeibergMoment
 
 /-! # Explicit moment bounds for the Coulomb mass
 
@@ -14,7 +13,6 @@ the inverted measure at the origin, with constants depending only on the root se
 exterior radius, the root sizes and the charges. Nonpositive moments are bounded through a fixed
 exterior disk. These are the inputs for uniformity over compact parameter sets. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped ENNReal NNReal
@@ -99,7 +97,7 @@ theorem coulombMass_moment_le_pieces
           rw [← hcard]
           exact ennreal_finset_sum_rpow_le_card_rpow_sum_of_pos _ _ ht
       _ = _ := by
-          simp only [ENNReal.mul_rpow_of_nonneg _ _ ht.le]
+          simp [ENNReal.mul_rpow_of_nonneg _ _ ht.le]
   -- integrate the bound
   have hS : AEMeasurable (fun ω => ∑ k, cR ^ t * W k ω ^ t) P :=
     Finset.aemeasurable_fun_sum _ fun k _ => aemeasurable_const.mul ((hWm k).pow_const t)

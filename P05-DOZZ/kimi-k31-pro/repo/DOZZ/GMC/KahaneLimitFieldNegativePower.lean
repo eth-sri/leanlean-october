@@ -2,16 +2,14 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.FieldChaosNegativePower
-public import DOZZ.GMC.KahaneNegativeMellin
-public import Mathlib.MeasureTheory.Function.ConvergenceInMeasure
-public import Mathlib.MeasureTheory.Integral.Lebesgue.DominatedConvergence
+import DOZZ.GMC.FieldChaosNegativePower
+import DOZZ.GMC.KahaneNegativeMellin
+import Mathlib.MeasureTheory.Function.ConvergenceInMeasure
+import Mathlib.MeasureTheory.Integral.Lebesgue.DominatedConvergence
 
 /-! Bounded Laplace tests pass field-chaos Kahane comparisons through convergence in measure. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped ENNReal NNReal
@@ -24,8 +22,8 @@ theorem kahane_limit_field_laplace
     {ΩX ΩY S : Type*} [MeasurableSpace ΩX] [MeasurableSpace ΩY] [MeasurableSpace S]
     (PX : Measure ΩX) (PY : Measure ΩY)
     (Φ : ℝ → ΩX → S → ℝ) (Ψ : ℝ → ΩY → S → ℝ)
-    (hΦ : ∀ r, DOZZ.IsCenteredGaussianField PX (Φ r))
-    (hΨ : ∀ r, DOZZ.IsCenteredGaussianField PY (Ψ r))
+    (hΦ : ∀ r, IsCenteredGaussianField PX (Φ r))
+    (hΨ : ∀ r, IsCenteredGaussianField PY (Ψ r))
     (ν : Measure S) [IsFiniteMeasure ν] (h : S → ℝ≥0) (hh : Measurable h)
     (hhb : ∃ c : ℝ≥0, ∀ x, h x ≤ c) (γ t : ℝ) (ht : 0 ≤ t)
     (hcov : ∀ r, ∀ᵐ xy ∂ν.prod ν,
@@ -34,14 +32,14 @@ theorem kahane_limit_field_laplace
       ∫ ω, Φ r ω x ^ 2 ∂PX ≤ ∫ ω, Ψ r ω x ^ 2 ∂PY)
     (ZX : ΩX → ℝ) (ZY : ΩY → ℝ)
     (hXconv : TendstoInMeasure PX
-      (fun r ω => (DOZZ.fieldChaosMass PX (Φ r) ν h γ ω).toReal) atTop ZX)
+      (fun r ω => (fieldChaosMass PX (Φ r) ν h γ ω).toReal) atTop ZX)
     (hYconv : TendstoInMeasure PY
-      (fun r ω => (DOZZ.fieldChaosMass PY (Ψ r) ν h γ ω).toReal) atTop ZY) :
+      (fun r ω => (fieldChaosMass PY (Ψ r) ν h γ ω).toReal) atTop ZY) :
     ∫⁻ ω, ENNReal.ofReal (Real.exp (-t * ZX ω)) ∂PX ≤
       ∫⁻ ω, ENNReal.ofReal (Real.exp (-t * ZY ω)) ∂PY := by
   classical
-  let fX : ℝ → ΩX → ℝ := fun r ω => (DOZZ.fieldChaosMass PX (Φ r) ν h γ ω).toReal
-  let fY : ℝ → ΩY → ℝ := fun r ω => (DOZZ.fieldChaosMass PY (Ψ r) ν h γ ω).toReal
+  let fX : ℝ → ΩX → ℝ := fun r ω => (fieldChaosMass PX (Φ r) ν h γ ω).toReal
+  let fY : ℝ → ΩY → ℝ := fun r ω => (fieldChaosMass PY (Ψ r) ν h γ ω).toReal
   have hXnat : TendstoInMeasure PX (fun n : ℕ => fX n) atTop ZX :=
     hXconv.comp tendsto_natCast_atTop_atTop
   obtain ⟨ns, hns, hXae⟩ := hXnat.exists_seq_tendsto_ae
@@ -65,10 +63,10 @@ theorem kahane_limit_field_laplace
       ∫⁻ ω, ENNReal.ofReal (Real.exp (-t * fX r ω)) ∂PX ≤
         ∫⁻ ω, ENNReal.ofReal (Real.exp (-t * fY r ω)) ∂PY := by
     by_cases hνzero : ν = 0
-    · have hmassX (ω : ΩX) : DOZZ.fieldChaosMass PX (Φ r) ν h γ ω = 0 := by
-        simp [DOZZ.fieldChaosMass, hνzero]
-      have hmassY (ω : ΩY) : DOZZ.fieldChaosMass PY (Ψ r) ν h γ ω = 0 := by
-        simp [DOZZ.fieldChaosMass, hνzero]
+    · have hmassX (ω : ΩX) : fieldChaosMass PX (Φ r) ν h γ ω = 0 := by
+        simp [fieldChaosMass, hνzero]
+      have hmassY (ω : ΩY) : fieldChaosMass PY (Ψ r) ν h γ ω = 0 := by
+        simp [fieldChaosMass, hνzero]
       simp [fX, fY, hmassX, hmassY]
     · have hS : Nonempty S := by
         have hUniv : ν Set.univ ≠ 0 := Measure.measure_univ_ne_zero.mpr hνzero
@@ -76,15 +74,15 @@ theorem kahane_limit_field_laplace
         exact ⟨x⟩
       let : Nonempty S := hS
       have hcov' : ∀ᵐ xy ∂(νf : Measure S).prod νf,
-          DOZZ.gaussianCovariance PX (fun ω => Φ r ω xy.1) (fun ω => Φ r ω xy.2) ≤
-            DOZZ.gaussianCovariance PY (fun ω => Ψ r ω xy.1) (fun ω => Ψ r ω xy.2) := by
+          gaussianCovariance PX (fun ω => Φ r ω xy.1) (fun ω => Φ r ω xy.2) ≤
+            gaussianCovariance PY (fun ω => Ψ r ω xy.1) (fun ω => Ψ r ω xy.2) := by
         filter_upwards [hcov r] with xy hxy
-        simpa [DOZZ.gaussianCovariance] using hxy
+        simpa [gaussianCovariance] using hxy
       have hdiag' : ∀ᵐ x ∂(νf : Measure S),
-          DOZZ.gaussianVariance PX (fun ω => Φ r ω x) ≤
-            DOZZ.gaussianVariance PY (fun ω => Ψ r ω x) := by
+          gaussianVariance PX (fun ω => Φ r ω x) ≤
+            gaussianVariance PY (fun ω => Ψ r ω x) := by
         filter_upwards [hdiag r] with x hx
-        simpa [DOZZ.gaussianVariance, DOZZ.gaussianCovariance, pow_two] using hx
+        simpa [gaussianVariance, gaussianCovariance, pow_two] using hx
       simpa [fX, fY, νf] using
         kahane_field_laplace_of_nonzero_finite_measure_eq PX PY (Φ r) (Ψ r)
           (hΦ r) (hΨ r) νf (by
@@ -156,8 +154,8 @@ theorem kahane_limit_field_negative_power
     {ΩX ΩY S : Type*} [MeasurableSpace ΩX] [MeasurableSpace ΩY] [MeasurableSpace S]
     (PX : Measure ΩX) (PY : Measure ΩY)
     (Φ : ℝ → ΩX → S → ℝ) (Ψ : ℝ → ΩY → S → ℝ)
-    (hΦ : ∀ r, DOZZ.IsCenteredGaussianField PX (Φ r))
-    (hΨ : ∀ r, DOZZ.IsCenteredGaussianField PY (Ψ r))
+    (hΦ : ∀ r, IsCenteredGaussianField PX (Φ r))
+    (hΨ : ∀ r, IsCenteredGaussianField PY (Ψ r))
     (ν : Measure S) [IsFiniteMeasure ν] (h : S → ℝ≥0) (hh : Measurable h)
     (hhb : ∃ c : ℝ≥0, ∀ x, h x ≤ c) (γ q : ℝ) (hq : 0 < q)
     (hcov : ∀ r, ∀ᵐ xy ∂ν.prod ν,
@@ -166,9 +164,9 @@ theorem kahane_limit_field_negative_power
       ∫ ω, Φ r ω x ^ 2 ∂PX ≤ ∫ ω, Ψ r ω x ^ 2 ∂PY)
     (ZX : ΩX → ℝ) (ZY : ΩY → ℝ)
     (hXconv : TendstoInMeasure PX
-      (fun r ω => (DOZZ.fieldChaosMass PX (Φ r) ν h γ ω).toReal) atTop ZX)
+      (fun r ω => (fieldChaosMass PX (Φ r) ν h γ ω).toReal) atTop ZX)
     (hYconv : TendstoInMeasure PY
-      (fun r ω => (DOZZ.fieldChaosMass PY (Ψ r) ν h γ ω).toReal) atTop ZY) :
+      (fun r ω => (fieldChaosMass PY (Ψ r) ν h γ ω).toReal) atTop ZY) :
     ∫⁻ ω, ENNReal.rpow (ENNReal.ofReal (ZX ω)) (-q) ∂PX ≤
       ∫⁻ ω, ENNReal.rpow (ENNReal.ofReal (ZY ω)) (-q) ∂PY := by
   classical
@@ -179,9 +177,9 @@ theorem kahane_limit_field_negative_power
   let : IsProbabilityMeasure PX := hPXprob
   let : IsProbabilityMeasure PY := hPYprob
   let fX : ℝ → ΩX → ℝ := fun r ω =>
-    (DOZZ.fieldChaosMass PX (Φ r) ν h γ ω).toReal
+    (fieldChaosMass PX (Φ r) ν h γ ω).toReal
   let fY : ℝ → ΩY → ℝ := fun r ω =>
-    (DOZZ.fieldChaosMass PY (Ψ r) ν h γ ω).toReal
+    (fieldChaosMass PY (Ψ r) ν h γ ω).toReal
   have hfXmeas (r : ℝ) : AEMeasurable (fX r) PX :=
     (centeredGaussianField_fieldChaosMass_measurable PX (Φ r) (hΦ r) ν h hh γ)
       |>.ennreal_toReal.aemeasurable
@@ -216,10 +214,8 @@ theorem kahane_limit_field_negative_power
   let mY : ΩY → ℝ := fun ω => max (ZY ω) 0
   have hmX : ∀ ω, 0 ≤ mX ω := fun ω => le_max_right _ _
   have hmY : ∀ ω, 0 ≤ mY ω := fun ω => le_max_right _ _
-  have hmXae : AEMeasurable mX PX := by
-    exact hZXae.max measurable_const.aemeasurable
-  have hmYae : AEMeasurable mY PY := by
-    exact hZYae.max measurable_const.aemeasurable
+  have hmXae : AEMeasurable mX PX := hZXae.max measurable_const.aemeasurable
+  have hmYae : AEMeasurable mY PY := hZYae.max measurable_const.aemeasurable
   have hmXeq : mX =ᵐ[PX] ZX := by
     filter_upwards [hZXnonneg] with ω hω
     simp [mX, max_eq_left hω]

@@ -2,10 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Fusion.ScaledSpatialConvergence
+import DOZZ.FourPoint.Fusion.ScaledSpatialConvergence
 /-! # Uniform absolute bounds on scaled spatial integrals -/
-@[expose] public section
 open MeasureTheory
 namespace DOZZ.Proofs
 /-- The uniform rooted factor bounds every absolutely integrable signed planar kernel. -/

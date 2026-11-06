@@ -2,21 +2,19 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.Brownian.ReflectionExponent
-public import Mathlib.Analysis.SpecialFunctions.Pow.Real
-public import Mathlib.Topology.Order.Compact
+import DOZZ.Statements.Brownian.ReflectionExponent
+import Mathlib.Analysis.SpecialFunctions.Pow.Real
+import Mathlib.Topology.Order.Compact
 
 /-! One Hölder exponent works for every charge in the compact parameter sets of
 `DOZZ.separatedSingularMass_joint_tail`. -/
 
-@[expose] public section
 open Set
 
 namespace DOZZ.Proofs
 
-/-- The charge restriction in `DOZZ.separatedSingularMass_joint_tail` puts the reflection exponent
+/-- The charge restriction in `separatedSingularMass_joint_tail` puts the reflection exponent
 below the bulk GMC threshold. -/
 theorem separatedTail_reflectionExponent_lt_bulk {γ α : ℝ} (hγ : 0 < γ) (hα : γ/2 < α) :
     reflectionExponent γ α < 4/γ^2 := by

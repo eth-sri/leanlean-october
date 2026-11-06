@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GFF.LocalSchur
-public import Mathlib.Analysis.Fourier.AddCircleMulti
+import DOZZ.GFF.LocalSchur
+import Mathlib.Analysis.Fourier.AddCircleMulti
 import Mathlib.Analysis.PSeries
 import Mathlib.Analysis.Normed.Ring.InfiniteSum
 import Mathlib.Topology.Algebra.InfiniteSum.Real
@@ -17,7 +16,6 @@ Fourier coefficient weights for the concrete two dimensional torus Sobolev space
 inverse weights are summable, which is the numerical core of the G5 Hilbert--Schmidt estimate.
 -/
 
-@[expose] public section
 
 open MeasureTheory
 open scoped ENNReal InnerProductSpace Topology lp
@@ -107,7 +105,7 @@ private theorem summable_pair_weight_inv_sq :
       (1 + (p.1 : ℝ) ^ 2 + (p.2 : ℝ) ^ 2)⁻¹ ^ 2 ≤
           (2 * (1 + |(p.1 : ℝ)|)⁻¹ * (1 + |(p.2 : ℝ)|)⁻¹) ^ 2 := hsquare
       _ = 4 * (intOneDimWeight p.1 * intOneDimWeight p.2) := by
-        simp only [intOneDimWeight]
+        simp [intOneDimWeight]
         field_simp [ne_of_gt (show 0 < 1 + |(p.1 : ℝ)| by positivity),
           ne_of_gt (show 0 < 1 + |(p.2 : ℝ)| by positivity)]
         ring
@@ -134,4 +132,3 @@ theorem summable_torusSobolevWeight_inv_sq :
 
 end DOZZ
 
-end

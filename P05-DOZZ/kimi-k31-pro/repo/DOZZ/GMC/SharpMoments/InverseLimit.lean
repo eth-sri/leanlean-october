@@ -2,11 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.SharpMoments.InverseKahane
-public import DOZZ.GMC.Construction.GMCIntensityAdapter
-public import DOZZ.GMC.Moments.LimitFatou
+import DOZZ.GMC.SharpMoments.InverseKahane
+import DOZZ.GMC.Construction.GMCIntensityAdapter
+import DOZZ.GMC.Moments.LimitFatou
 
 /-! # Inverse moments of the limiting chaos on the logarithmic chart
 
@@ -16,7 +15,6 @@ cutoff-uniform inverse moments of the reference disk and combined with exact sca
 every inverse moment of the limiting mass of every disk in the logarithmic chart; in particular
 these masses are almost surely positive. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped ENNReal NNReal

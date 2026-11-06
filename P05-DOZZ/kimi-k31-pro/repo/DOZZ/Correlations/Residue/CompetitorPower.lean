@@ -2,13 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.Residue.TailMoments
+import DOZZ.Correlations.Residue.TailMoments
 
 /-! Deterministic power comparisons for the noncritical mass. -/
 
-@[expose] public section
 open MeasureTheory Filter Topology Set
 namespace DOZZ.Proofs
 
@@ -30,7 +28,7 @@ theorem residue_add_rpow_le (a b q δ : ℝ) (ha : 0 ≤ a) (hb : 0 ≤ b)
         Real.rpow_le_rpow (add_nonneg ha hb) (by nlinarith only [hh]) hq
       _ = (1 + δ) ^ q * a ^ q := Real.mul_rpow (by positivity) ha
       _ ≤ _ := le_add_of_nonneg_right (mul_nonneg (by positivity) (Real.rpow_nonneg hb _))
-  · have hba : a ≤ b / δ := (le_div_iff₀ hδ).mpr (by simpa only [mul_comm] using hh)
+  · have hba : a ≤ b / δ := (le_div_iff₀ hδ).mpr (by simpa [mul_comm] using hh)
     calc (a + b) ^ q ≤ ((1 + 1 / δ) * b) ^ q :=
         Real.rpow_le_rpow (add_nonneg ha hb) (by calc a + b ≤ b / δ + b := by linarith only [hba]
                  _ = (1 + 1 / δ) * b := by ring) hq

@@ -2,15 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.Construction.GMCRootedMeasureFinite
-public import DOZZ.GMC.SharpMoments.BallScaling
-public import DOZZ.GMC.Construction.RootedSmallBallMoment
+import DOZZ.GMC.Construction.GMCRootedMeasureFinite
+import DOZZ.GMC.SharpMoments.BallScaling
+import DOZZ.GMC.Construction.RootedSmallBallMoment
 
 /-! All-root finiteness from sharp small-ball bounds, including the unit-circle boundary. -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped Distributions ENNReal NNReal
 namespace DOZZ.Proofs
@@ -129,8 +127,7 @@ theorem isFiniteMeasure_rooted_of_local_mass_any_root
     (μ : Measure ℂ) (hμ : IsFiniteMeasure μ)
     (hlocal : weightedGmcBallMass γ μ γ u r < ⊤) :
     IsFiniteMeasure (gmcRootedMeasure γ u μ) := by
-  have hinsertionBase : Measurable (fun x : ℂ => ENNReal.ofReal ‖x - u‖) := by
-    exact ENNReal.measurable_ofReal.comp (by fun_prop)
+  have hinsertionBase : Measurable (fun x : ℂ => ENNReal.ofReal ‖x - u‖) := ENNReal.measurable_ofReal.comp (by fun_prop)
   have hinsertion : Measurable (fun x : ℂ =>
       ENNReal.rpow (ENNReal.ofReal ‖x - u‖) (-γ ^ 2)) :=
     ENNReal.continuous_rpow_const.measurable.comp hinsertionBase

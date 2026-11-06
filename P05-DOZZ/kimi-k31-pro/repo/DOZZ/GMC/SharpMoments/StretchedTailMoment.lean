@@ -2,14 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import Mathlib.MeasureTheory.Integral.Lebesgue.Basic
-public import Mathlib.Analysis.SpecialFunctions.Pow.NNReal
-public import Mathlib.MeasureTheory.Integral.Lebesgue.Add
-public import Mathlib.MeasureTheory.Measure.Typeclasses.Probability
-public import Mathlib.Analysis.SpecialFunctions.Exp
-public import Mathlib.Analysis.SpecialFunctions.Pow.Asymptotics
+import Mathlib.MeasureTheory.Integral.Lebesgue.Basic
+import Mathlib.Analysis.SpecialFunctions.Pow.NNReal
+import Mathlib.MeasureTheory.Integral.Lebesgue.Add
+import Mathlib.MeasureTheory.Measure.Typeclasses.Probability
+import Mathlib.Analysis.SpecialFunctions.Exp
+import Mathlib.Analysis.SpecialFunctions.Pow.Asymptotics
 
 /-! # Negative moments from stretched-exponential small-ball tails
 
@@ -19,7 +18,6 @@ only on `C, d, β, q`. The proof is a discrete layer cake: `m^(-q)` is dominated
 over `n` of `e^{q (n+1)}` times the indicator of `{m ≤ e^{-n}}`, and the resulting series
 `∑ e^{q (n+1)} exp (-d n^β)` converges because `β > 1`. -/
 
-@[expose] public section
 
 open MeasureTheory Filter Topology
 open scoped ENNReal NNReal

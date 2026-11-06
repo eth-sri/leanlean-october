@@ -2,13 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.Moments.ChaosLawFDD
+import DOZZ.GMC.Moments.ChaosLawFDD
 
 /-! Finite-reference spatial integral laws for the inversion regularization. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter
 open scoped ENNReal NNReal Topology
@@ -64,7 +62,7 @@ theorem spatialIntegral_vector_law_of_fdd_finite
     have hmY : Measurable (fun ω i => Y ω (xs i)) :=
       measurable_pi_iff.mpr (fun i => hY.comp (measurable_id.prodMk measurable_const))
     have he := congrArg (fun μ => μ.map L) (hFDD n xs)
-    simpa only [Measure.map_map hL hmX, Measure.map_map hL hmY, L, V, V', Function.comp_def] using he
+    simpa [Measure.map_map hL hmX, Measure.map_map hL hmY, L, V, V', Function.comp_def] using he
   have he := (chaosLawFDD_of_integrable (ν.normalize : Measure S) X Y V V' z'
     measurable_const measurable_const hX hY
     (fun j => measurable_const.mul (hz j)) hiX hiY hfdd
@@ -85,7 +83,7 @@ theorem spatialIntegral_vector_law_of_fdd_finite
     intro j
     exact ((hz j).comp (measurable_snd.prodMk hY)).stronglyMeasurable.integral_prod_right'.measurable
   have hsnd := congrArg (fun μ => μ.map Prod.snd) he
-  simpa only [Measure.map_map measurable_snd hmX, Measure.map_map measurable_snd hmY,
+  simpa [Measure.map_map measurable_snd hmX, Measure.map_map measurable_snd hmY,
     Function.comp_def] using hsnd
 
 end DOZZ.Proofs

@@ -2,11 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Dual.HeterogeneousCopies
-public import Mathlib.MeasureTheory.Integral.Bochner.Basic
+import DOZZ.FourPoint.Dual.HeterogeneousCopies
+import Mathlib.MeasureTheory.Integral.Bochner.Basic
 /-! Transport an independent inner input while retaining the entire exterior radial mark. -/
-@[expose] public section
 open MeasureTheory
 namespace DOZZ.Proofs
 

@@ -2,11 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Fusion.InverseInterpolation
+import DOZZ.FourPoint.Fusion.InverseInterpolation
 import Mathlib.MeasureTheory.Integral.Prod
 /-! # Fubini for signed inverse-mass interpolation -/
-@[expose] public section
 open MeasureTheory Set Filter
 namespace DOZZ.Proofs
 /-- Both the interpolation derivative and its absolute value have finite time integrals. -/
@@ -37,8 +35,7 @@ theorem fusion_inverse_interpolation_integrable (a b p : ℝ) (ha : 0 < a) (hb :
     apply integral_nonneg_of_ae
     filter_upwards [ae_restrict_mem measurableSet_Icc] with t ht
     exact Real.rpow_nonneg (hpos t ht).le _
-  rw [integral_congr_ae hn, integral_const_mul, he, abs_mul, abs_mul, abs_of_nonneg hnonneg]
-  rw [abs_mul]
+  rw [integral_congr_ae hn, integral_const_mul, he, abs_mul, abs_mul, abs_of_nonneg hnonneg, abs_mul]
 /-- Absolute time integration and the two endpoint inverse moments supply the integrability
 needed for Fubini. -/
 theorem fusion_inverse_expectation_interpolation {Ω : Type*} [MeasurableSpace Ω]

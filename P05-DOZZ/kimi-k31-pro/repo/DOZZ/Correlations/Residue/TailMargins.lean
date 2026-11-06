@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.Correlations.BridgeMultiplicity
+import DOZZ.Statements.Correlations.BridgeMultiplicity
 
 /-! Exact tail-error margins on the residue domain (erratum K30, see
 docs/ERRATA-AND-DEVIATIONS.md). -/
 
-@[expose] public section
 open MeasureTheory Filter Topology Set
 namespace DOZZ.Proofs
 
@@ -53,7 +51,6 @@ without adding the printed alpha2>gamma/2 restriction. -/
 theorem residue_unequal_threshold_gap (γ α2 α3 : ℝ) (hγ : 0 < γ)
     (hα2 : 0 < α2) (hα23 : α2 < α3) (hα3 : γ / 2 < α3) :
     0 < min (2 * (α3 - γ / 2) / γ)
-      (min (2 * α2 / γ) (2 * (α3 - α2) / γ)) := by
-  exact lt_min (by positivity) (lt_min (by positivity) (by positivity))
+      (min (2 * α2 / γ) (2 * (α3 - α2) / γ)) := lt_min (by positivity) (lt_min (by positivity) (by positivity))
 
 end DOZZ.Proofs

@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.Defs.UnitVolumeStructureConstant
-public import Mathlib.Analysis.SpecialFunctions.Integrals.PosLogEqCircleAverage
+import DOZZ.Statements.Defs.UnitVolumeStructureConstant
+import Mathlib.Analysis.SpecialFunctions.Integrals.PosLogEqCircleAverage
 
 /-! Circle potentials for the GMC admissibility estimates. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology Set Real
 open scoped ENNReal NNReal
@@ -147,7 +145,7 @@ theorem integral_gffKernel_circleMeasure (u y : ℂ) (s : ℝ) :
   have hfun : gffKernel u = ((fun _ => Real.log (normPlus u)) + fun v => Real.log (normPlus v)) -
       fun v => Real.log ‖v - u‖ := by
     funext v
-    simp only [gffKernel, Pi.add_apply, Pi.sub_apply, norm_sub_rev u v]
+    simp [gffKernel, Pi.add_apply, Pi.sub_apply, norm_sub_rev u v]
     ring
   have hI1 : CircleIntegrable ((fun _ => Real.log (normPlus u)) + fun v => Real.log (normPlus v))
       y (Real.exp (-s)) :=
@@ -173,7 +171,7 @@ theorem circleAverage_innerPot (x y : ℂ) (r s : ℝ) :
   have hfun : innerPot y s = ((fun u => Real.log (normPlus u)) + fun _ => regAvg y s) -
       fun u => Real.log (max ‖u - y‖ (Real.exp (-s))) := by
     funext u
-    simp only [innerPot, Pi.add_apply, Pi.sub_apply]
+    simp [innerPot, Pi.add_apply, Pi.sub_apply]
     ring
   have hI1 : CircleIntegrable ((fun u => Real.log (normPlus u)) + fun _ => regAvg y s)
       x (Real.exp (-r)) :=
@@ -262,14 +260,13 @@ theorem abs_circleKernel_sub_log_le : ∀ R : ℝ, 0 ≤ R → ∀ x y : ℂ, �
     have hxy_le : Real.log (max ‖x - y‖ (Real.exp (-r))) ≤
         circleAverage (fun u => Real.log (max ‖u - y‖ (Real.exp (-s)))) x (Real.exp (-r)) := by
       have h1 := circleAverage_log_norm_sub_le x y ha.ne' hb
-      rw [circleAverage_log_norm_sub ha, norm_sub_rev] at h1
-      exact h1
+      rwa [circleAverage_log_norm_sub ha, norm_sub_rev] at h1
     rw [← max_assoc]
     rcases le_total (max ‖x - y‖ (Real.exp (-r))) (Real.exp (-s)) with h | h
     · rw [max_eq_right h]
-      exact hb_le
+      assumption
     · rw [max_eq_left h]
-      exact hxy_le
+      assumption
   -- the regular parts
   have hhx := circleAverage_log_normPlus_bounds hR hx ha ha1
   have hhy := circleAverage_log_normPlus_bounds hR hy hb hb1
@@ -291,7 +288,7 @@ theorem abs_circleKernel_sub_gffKernel_le : ∀ x y : ℂ, ∀ r s : ℝ, Real.e
     rw [mem_sphere_iff_norm, abs_of_pos ha] at hu
     have := norm_sub_le_norm_sub_add_norm_sub x u y
     rw [norm_sub_rev x u, hu] at this
-    simp only [max_eq_left (show Real.exp (-s) ≤ ‖u - y‖ by linarith)]
+    simp [max_eq_left (show Real.exp (-s) ≤ ‖u - y‖ by linarith)]
   have hlog : circleAverage (fun u => Real.log (max ‖u - y‖ (Real.exp (-s)))) x
       (Real.exp (-r)) = Real.log ‖x - y‖ := by
     rw [circleAverage_congr_sphere hsphere, circleAverage_log_norm_sub ha, norm_sub_rev,

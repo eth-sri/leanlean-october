@@ -2,17 +2,15 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import Mathlib.Topology.ContinuousMap.SecondCountableSpace
-public import Mathlib.Topology.ContinuousMap.CompactlySupported
-public import Mathlib.Topology.ContinuousMap.Compact
-public import Mathlib.Topology.Compactness.SigmaCompact
-public import Mathlib.Analysis.Complex.Basic
+import Mathlib.Topology.ContinuousMap.SecondCountableSpace
+import Mathlib.Topology.ContinuousMap.CompactlySupported
+import Mathlib.Topology.ContinuousMap.Compact
+import Mathlib.Topology.Compactness.SigmaCompact
+import Mathlib.Analysis.Complex.Basic
 
 /-! Countable locally dense compactly supported test families on an open chart. -/
 
-@[expose] public section
 
 open Set TopologicalSpace
 open scoped Topology CompactlySupported
@@ -46,8 +44,7 @@ theorem exists_countable_dense_admissible_tests
   have hKU (n : ℕ) : K n ⊆ U := by
     rintro x ⟨y, hy, rfl⟩
     exact y.property
-  have hKmono (n : ℕ) : K n ⊆ K (n + 1) := by
-    exact Set.image_mono (E.subset_succ n)
+  have hKmono (n : ℕ) : K n ⊆ K (n + 1) := Set.image_mono (E.subset_succ n)
   have hKcover : (⋃ n, K n) = U := by
     ext x
     constructor
@@ -145,7 +142,7 @@ theorem exists_countable_dense_admissible_tests
         (f := target) (g := (seq n m).1) ⟨x, hx⟩
       have hdistAmbient : dist target (seq n m).1 < δ := by
         change dist target (↑(seq n m)) < δ at hdist
-        exact hdist
+        assumption
       have hdistx : dist (g x) ((seq n m).1 ⟨x, hx⟩) < δ :=
         lt_of_le_of_lt hpoint hdistAmbient
       have hsourceeq : (source n m).1.restrict (K n) = (seq n m).1 := hsource n m

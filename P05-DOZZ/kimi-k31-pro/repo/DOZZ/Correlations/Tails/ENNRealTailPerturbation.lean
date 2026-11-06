@@ -2,15 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import Mathlib.MeasureTheory.Measure.Real
-public import Mathlib.MeasureTheory.Constructions.BorelSpace.Order
-public import Mathlib.Tactic.Linarith
+import Mathlib.MeasureTheory.Measure.Real
+import Mathlib.MeasureTheory.Constructions.BorelSpace.Order
+import Mathlib.Tactic.Linarith
 
 /-! Tail comparison by a positive extended-real remainder. -/
 
-@[expose] public section
 open MeasureTheory Set
 open scoped ENNReal
 
@@ -39,7 +37,5 @@ theorem ennreal_tail_domination
       exact (hx.not_ge (hω.trans hsum)).elim
   have hm := (measure_mono_ae hsub).trans (measure_union_le _ _)
   have ht := ENNReal.toReal_mono (by finiteness) hm
-  rw [ENNReal.toReal_add (by finiteness) (by finiteness)] at ht
-  exact ht
-
+  rwa [ENNReal.toReal_add (by finiteness) (by finiteness)] at ht
 end DOZZ.Proofs

@@ -2,16 +2,14 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.Fusion.MovingMass
-public import DOZZ.FourPoint.Fusion.MovingRootExterior
-public import DOZZ.FourPoint.Fusion.MovingRootSmallBall
+import DOZZ.FourPoint.Fusion.MovingMass
+import DOZZ.FourPoint.Fusion.MovingRootExterior
+import DOZZ.FourPoint.Fusion.MovingRootSmallBall
 import DOZZ.GMC.SharpMoments.SeibergPieces
 
 /-! # Measurability and finiteness of the moving-mass pieces -/
 
-@[expose] public section
 open MeasureTheory Filter Topology
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -48,7 +46,7 @@ theorem fusionMovingGoodMass_le (γ α₁ α₂ α₃ : ℝ) (y z : ℂ) (δ : �
     (fusion_rootedKernel_exterior_bound γ α₁ α₂ α₃ z (y * z) x hx0 (hz.trans hx)
       (by linarith) hu1)
   rw [ENNReal.ofReal_mul (Real.rpow_nonneg (by norm_num) _)] at h
-  simpa only [fusionMovingKernel, mul_zero] using h
+  simpa [fusionMovingKernel, mul_zero] using h
 
 /-- A finite positive moment implies almost-sure finiteness of an extended mass. -/
 theorem fusion_mass_finite_of_moment {Ω : Type*} [MeasurableSpace Ω]

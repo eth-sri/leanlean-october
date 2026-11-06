@@ -2,21 +2,19 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Fusion.ScaledLocalKernel
-public import DOZZ.FourPoint.Fusion.RootedKernelBound
-public import DOZZ.Hypergeom.Planar.DifferenceIntegral
+import DOZZ.FourPoint.Fusion.ScaledLocalKernel
+import DOZZ.FourPoint.Fusion.RootedKernelBound
+import DOZZ.Hypergeom.Planar.DifferenceIntegral
 /-! # The literal signed KRV mass difference kernel -/
-@[expose] public section
 open MeasureTheory Set
 namespace DOZZ.Proofs
 noncomputable def fusionDifferenceKernel (γ α₁ α₂ α₃ : ℝ) (z x : ℂ) : ℝ :=
   gammaHalfKernel γ α₁ α₂ α₃ z x - gammaHalfKernel γ α₁ α₂ α₃ 0 x
 /-- The difference kernel is jointly measurable. -/
 theorem fusionDifferenceKernel_measurable (γ α₁ α₂ α₃ : ℝ) :
-    Measurable (fun q : ℂ × ℂ => fusionDifferenceKernel γ α₁ α₂ α₃ q.1 q.2) :=
-  (fusion_measurable_gammaHalfKernel γ α₁ α₂ α₃).sub
-    ((fusion_measurable_gammaHalfKernel γ α₁ α₂ α₃).comp (measurable_const.prodMk measurable_snd))
+    Measurable (fun q : ℂ × ℂ => fusionDifferenceKernel γ α₁ α₂ α₃ q.1 q.2) := by
+  unfold fusionDifferenceKernel gammaHalfKernel normPlus
+  fun_prop
 /-- In the local chart the difference has exactly the first-subtracted planar kernel. -/
 theorem fusion_difference_kernel_local (γ α₁ α₂ α₃ : ℝ) (z x : ℂ)
     (hx : ‖x‖ < 1 / 2) :
@@ -55,7 +53,7 @@ theorem fusion_difference_local_integrable (γ α₁ α₂ α₃ : ℝ)
   let B := Metric.ball (0 : ℂ) (1 / 2)
   have hf : Measurable (fusionDifferenceKernel γ α₁ α₂ α₃ z) := by
     have hp : Measurable (fun x : ℂ => (z, x)) := measurable_const.prodMk measurable_id
-    simpa only [Function.comp_def] using (fusionDifferenceKernel_measurable γ α₁ α₂ α₃).comp hp
+    simpa [Function.comp_def] using (fusionDifferenceKernel_measurable γ α₁ α₂ α₃).comp hp
   have hK := (planar_difference_integral (γ ^ 2 / 2) (γ * α₁) hk hβ hβ2 z).1
   have hdom := hK.norm.const_mul ((2 : ℝ) ^ |γ * α₂|)
   have hv : Integrable (B.indicator (fusionDifferenceKernel γ α₁ α₂ α₃ z)) volume := by
@@ -63,10 +61,10 @@ theorem fusion_difference_local_integrable (γ α₁ α₂ α₃ : ℝ)
     exact ae_of_all _ fun x => by
       by_cases hx : x ∈ B
       · rw [Set.indicator_of_mem hx, fusion_difference_kernel_local γ α₁ α₂ α₃ z x
-          (by simpa only [B, Metric.mem_ball, dist_zero_right] using hx), norm_mul,
+          (by simpa [B, Metric.mem_ball, dist_zero_right] using hx), norm_mul,
           Real.norm_of_nonneg (Real.rpow_nonneg (norm_nonneg _) _)]
         have h := fusion_oneRoot_factor_bound x (by
-          have hx' : ‖x‖ < 1 / 2 := by simpa only [B, Metric.mem_ball, dist_zero_right] using hx
+          have hx' : ‖x‖ < 1 / 2 := by simpa [B, Metric.mem_ball, dist_zero_right] using hx
           exact hx'.le) (γ * α₂)
         rw [← Real.rpow_neg (norm_nonneg _), ← neg_mul] at h
         exact (mul_le_mul_of_nonneg_left h (norm_nonneg _)).trans_eq (mul_comm _ _)
@@ -76,7 +74,7 @@ theorem fusion_difference_local_integrable (γ α₁ α₂ α₃ : ℝ)
   change Integrable _ (gmcReferenceMeasure.restrict B)
   rw [gmcReferenceMeasure_restrict_unit_chart B Metric.isOpen_ball.measurableSet
     (fun x hx => by
-      have hx' : ‖x‖ < 1 / 2 := by simpa only [B, Metric.mem_ball, dist_zero_right] using hx
+      have hx' : ‖x‖ < 1 / 2 := by simpa [B, Metric.mem_ball, dist_zero_right] using hx
       linarith)]
   exact (integrable_indicator_iff Metric.isOpen_ball.measurableSet).mp hv
 end DOZZ.Proofs

@@ -2,16 +2,14 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Reflected.CutoffTestLimit
-public import DOZZ.FourPoint.Reflected.DecouplingLimit
+import DOZZ.FourPoint.Reflected.CutoffTestLimit
+import DOZZ.FourPoint.Reflected.DecouplingLimit
 import Mathlib.Tactic
 /-! Actual compact test convergence for the independently copied lateral chaos. -/
-@[expose] public section
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
-open DOZZ.Assembly
+open Assembly
 
 /-- Disjoint compact tests in the actual admissible chaos retain their sum limit after one
 region is evaluated on an independent source copy. -/
@@ -55,7 +53,7 @@ theorem reflected_admissible_copied_test_limit
       rw [← lintegral_indicator hA]
       apply lintegral_congr
       intro x
-      dsimp only
+      dsimp
       by_cases hx : x ∈ A
       · rw [indicator_of_mem hx, h1 x hx, add_zero]
       · rw [indicator_of_notMem hx, h0 x hx, Real.toNNReal_zero, ENNReal.coe_zero, zero_mul]
@@ -63,7 +61,7 @@ theorem reflected_admissible_copied_test_limit
       rw [← lintegral_indicator hA.compl]
       apply lintegral_congr
       intro x
-      dsimp only
+      dsimp
       by_cases hx : x ∈ A
       · rw [indicator_of_notMem (show x ∉ Aᶜ from fun hh => hh hx), h1 x hx,
           Real.toNNReal_zero, ENNReal.coe_zero, zero_mul]
@@ -75,7 +73,7 @@ theorem reflected_admissible_copied_test_limit
   have hneg := tendstoInMeasure_mul_same_space _ _
     (fun _ : Ω × Ω => (-1 : ℝ)) measurable_const hm₁
   have ht := tendstoInMeasure_sub (P.prod P) _ _ _ _ hm₀ hneg
-  simp only [neg_one_mul, sub_neg_eq_add] at ht
+  simp [sub_neg_eq_add] at ht
   apply TendstoInMeasure.congr _ (Filter.EventuallyEq.refl _ _) ht
   intro r
   have hfinite (f : BoundedContinuousFunction ℂ ℝ) :
@@ -83,7 +81,7 @@ theorem reflected_admissible_copied_test_limit
     centeredGaussianField_fieldChaosMass_ne_top_ae P (Φ r) (hΦ r) ⟨ν, inferInstance⟩
       (fun x => (f x).toNNReal) f.continuous.measurable.real_toNNReal
       ⟨‖f‖.toNNReal, fun x => Real.toNNReal_mono (by
-        simpa only [Real.norm_eq_abs] using (le_abs_self (f x)).trans (f.norm_coe_le_norm x))⟩ γ
+        simpa [Real.norm_eq_abs] using (le_abs_self (f x)).trans (f.norm_coe_le_norm x))⟩ γ
   have hfin₀ : ∀ᵐ ω : Ω × Ω ∂P.prod P,
       fieldChaosMass P (Φ r) ν (fun x => (f₀ x).toNNReal) γ ω.1 ≠ ⊤ :=
     measurePreserving_fst.quasiMeasurePreserving.ae (hfinite f₀)

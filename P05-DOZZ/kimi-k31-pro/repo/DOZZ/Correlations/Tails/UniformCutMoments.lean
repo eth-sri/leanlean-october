@@ -2,15 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.Tails.TailCutParameters
-public import DOZZ.Correlations.Tails.ImprovedChargeMoment
-public import Mathlib.Topology.Order.Compact
+import DOZZ.Correlations.Tails.TailCutParameters
+import DOZZ.Correlations.Tails.ImprovedChargeMoment
+import Mathlib.Topology.Order.Compact
 
 /-! Uniform strict moment margins at the exact one-insertion error ceiling. -/
 
-@[expose] public section
 open Set
 
 namespace DOZZ.Proofs
@@ -61,7 +59,7 @@ theorem uniform_oneInsertion_cut_moments
     obtain ⟨hl0,hlβ⟩ := hlow α hαk
     have hrl : low α < r α := by dsimp [r]; linarith only [hlβ]
     refine ⟨hl0.trans hrl,by dsimp [r]; linarith only [hlβ],?_⟩
-    simpa only [mul_comm] using (div_lt_iff₀ hden).mp hrl
+    simpa [mul_comm] using (div_lt_iff₀ hden).mp hrl
   have hrc : Continuous r := (hpc.add continuous_const).div_const (1-a) |>.add hβc |>.div_const 2
   have hΔc : Continuous (fun α => β α-r α) := hβc.sub hrc
   obtain ⟨αδ,hαδ,hδmin⟩ := hK.exists_isMinOn hn hΔc.continuousOn

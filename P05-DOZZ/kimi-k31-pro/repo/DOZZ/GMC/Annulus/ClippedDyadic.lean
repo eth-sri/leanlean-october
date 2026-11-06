@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.Annulus.CutoffScale
-public import DOZZ.GMC.Moments.WeightedDyadic
+import DOZZ.GMC.Annulus.CutoffScale
+import DOZZ.GMC.Moments.WeightedDyadic
 
 /-!
 # Dyadic decomposition of the finite-cutoff root kernel
@@ -15,7 +14,6 @@ is retained as an actual disk, while only dyadic radii above the cutoff contribu
 the shell sum. No atomlessness or independence of spatial masses is used.
 -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal NNReal Distributions
@@ -74,7 +72,7 @@ theorem gmc_clipped_kernel_le_dyadic
       have hactive : δ ≤ gmcDyadicRadius R n :=
         (le_of_not_ge hdδ).trans hhi.le
       have hx : x ∈ Metric.ball u (gmcDyadicRadius R n) := by
-        simpa only [Metric.mem_ball, dist_eq_norm, gmcDyadicRadius] using hhi
+        simpa [Metric.mem_ball, dist_eq_norm, gmcDyadicRadius] using hhi
       have hcoef := Real.rpow_le_rpow_of_nonpos
         (show 0 < R / (2 : ℝ) ^ (n + 1) by positivity)
         (hlo.trans (le_max_left ‖x - u‖ δ)) hpow
@@ -131,7 +129,7 @@ theorem gmc_clipped_mass_le_dyadic
       let g : ℂ → ℝ≥0∞ := fun _ => ENNReal.ofReal (R ^ (-γ ^ 2))
       let h : ℂ → ℝ≥0∞ := fun x => ∑' n : ℕ, gmcClippedDyadicIndicator γ R δ u n x
       change (∫⁻ x, ((f + g) + h) x ∂(μ.restrict O)) = _
-      simp only [Pi.add_apply]
+      simp [Pi.add_apply]
       have hfg : AEMeasurable (fun x => f x + g x) (μ.restrict O) :=
         (hinner.add measurable_const).aemeasurable
       have hf : AEMeasurable f (μ.restrict O) := hinner.aemeasurable
@@ -351,7 +349,7 @@ theorem regularizedGMC_inner_clipped_subunit_moment_bound
       regularizedGMC P Xc γ t ω (Metric.ball u (2 * δ))) ^ q ∂P) =
       ENNReal.ofReal (δ ^ (-γ ^ 2 * q)) *
         gmcMassMoment P (regularizedGMC P Xc γ t) (Metric.ball u (2 * δ)) q := by
-    simp only [ENNReal.mul_rpow_of_nonneg _ _ hq.le, ENNReal.ofReal_rpow_of_pos hc,
+    simp [ENNReal.mul_rpow_of_nonneg _ _ hq.le, ENNReal.ofReal_rpow_of_pos hc,
       ← Real.rpow_mul hδ.le]
     rw [lintegral_const_mul' _ _ ENNReal.ofReal_ne_top]
     rfl

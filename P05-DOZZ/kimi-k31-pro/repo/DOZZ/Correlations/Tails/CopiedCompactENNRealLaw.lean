@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.Tails.CopiedCompactChaosLaw
-public import DOZZ.Correlations.Tails.ParameterMassMeasurability
+import DOZZ.Correlations.Tails.CopiedCompactChaosLaw
+import DOZZ.Correlations.Tails.ParameterMassMeasurability
 
 /-! The copied compact-chaos law in the extended-real integral representation. -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal
 
@@ -61,15 +59,15 @@ theorem copied_compact_ennreal_law
       exponentialParameterTest g (γ • boundedPinCoefficient z) t x := by
     by_cases hx : g x = 0
     · change g x * _ = g x * _
-      simp only [hx, zero_mul]
+      simp [hx, zero_mul]
     · have hs := hgs (subset_tsupport (g : ℂ → ℝ) (Function.mem_support.mpr hx))
       have hb := bounded_pin_coefficient_eq z x hz (by
-        exact (show ‖x‖ < 1 from by simpa only [Metric.mem_ball, dist_zero_right] using hs).le)
+        exact (show ‖x‖ < 1 from by simpa [Metric.mem_ball, dist_zero_right] using hs).le)
       change g x * _ = g x * Real.exp ((γ * boundedPinCoefficient z x)*t)
       rw [hb]
   have hFi (q : Ω × Ω) : Integrable (fun x => F (θ q,x)) (N q.1) := by
     let : IsFiniteMeasure (N q.1) := hN.1 q.1
-    simpa only [hFeq] using
+    simpa [hFeq] using
       (exponentialParameterTest g (γ • boundedPinCoefficient z) (θ q)).integrable (μ := N q.1)
   have hY := translated_field_isEquatorGFF P X Xc hX hc z
   have hfst := measurePreserving_fst (μ := P) (ν := P)
@@ -82,7 +80,7 @@ theorem copied_compact_ennreal_law
     (((hc.1 0).comp (measurable_snd.prodMk measurable_const)).const_mul γ).sub_const _ |>.exp
   have hA := hAm.const_mul (Real.exp (-γ^2*Real.log ‖z‖))
   have hB := hS.aemeasurable.mul hBm
-  simp only [Function.comp_def, F, θ] at hB
+  simp [F, θ] at hB
   change AEMeasurable (fun q : Ω × Ω =>
     Real.exp (γ*Xc q.2 z 0-γ^2*Real.log ‖z‖) *
       ∫ x, g x * Real.exp (γ*localPinCoefficient z x*(Xc q.2 z 0-Xc q.1 z 0)) ∂N q.1)

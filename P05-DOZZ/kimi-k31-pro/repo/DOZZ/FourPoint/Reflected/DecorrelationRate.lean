@@ -2,13 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Reflected.DecorrelationError
-public import DOZZ.FourPoint.Reflected.Remainder
-public import DOZZ.FourPoint.ReflectedOuter.Rates
+import DOZZ.FourPoint.Reflected.DecorrelationError
+import DOZZ.FourPoint.Reflected.Remainder
+import DOZZ.FourPoint.ReflectedOuter.Rates
 import Mathlib.Tactic
 /-! The actual signed decorrelation error is negligible at the reflected fusion power. -/
-@[expose] public section
 open MeasureTheory ProbabilityTheory Set Filter Topology
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -17,7 +15,7 @@ namespace DOZZ.Proofs
 theorem reflected_comparison_exponential_error_bound (t : ℝ) (ht : 0 ≤ t) (ht1 : t ≤ 1) :
     (Real.exp t-1)*Real.exp t ≤ 2*Real.exp 1*t := by
   have hs : Real.exp t-1 ≤ 2*t := (le_abs_self _).trans (by
-    simpa only [abs_of_nonneg ht] using Real.abs_exp_sub_one_le
+    simpa [abs_of_nonneg ht] using Real.abs_exp_sub_one_le
       (show |t| ≤ 1 by rwa [abs_of_nonneg ht]))
   have hh := mul_le_mul hs (Real.exp_monotone ht1)
     (Real.exp_nonneg t) (mul_nonneg (by norm_num) ht)
@@ -64,13 +62,13 @@ theorem reflected_source_decorrelation_error_on_carrier
   obtain ⟨C₀,hC₀,hbound⟩ := reflected_source_separated_moment_error
     P X Xc hX hc hm hcont γ hγ hγ₂ M hM N hN hfin hwhole hNa α₁ α₂ α₃ q hq
   let A : ℝ := γ^2*3/2*(q^2+q)
-  have hA : 0 < A := by dsimp only [A]; positivity
+  have hA : 0 < A := by dsimp [A]; positivity
   let C : ℝ := 2*Real.exp 1*A*C₀
-  have hC : 0 < C := by dsimp only [C]; positivity
+  have hC : 0 < C := by dsimp [C]; positivity
   have hn : Tendsto (fun z : ℂ => ‖z‖^ξ)
       (nhdsWithin (0 : ℂ) {z | z ≠ 0}) (𝓝 0) := by
     have ht := ((Real.continuous_rpow_const hξ.le).comp continuous_norm).tendsto (0 : ℂ)
-    simpa only [Function.comp_def,norm_zero,Real.zero_rpow hξ.ne'] using
+    simpa [Function.comp_def,norm_zero,Real.zero_rpow hξ.ne'] using
       ht.mono_left nhdsWithin_le_nhds
   have hsmall : ∀ᶠ z : ℂ in nhdsWithin (0 : ℂ) {z | z ≠ 0}, A*‖z‖^ξ ≤ 1 := by
     have ht := hn.const_mul A
@@ -95,7 +93,7 @@ theorem reflected_source_decorrelation_error_on_carrier
       apply (div_eq_iff hz.1.ne').mpr
       have hpow : ‖z‖^ξ*‖z‖^(1-ξ) = ‖z‖ := by
         rw [← Real.rpow_add hnz,add_sub_cancel,Real.rpow_one]
-      dsimp only [s,r]
+      dsimp [s,r]
       rw [mul_assoc,hpow]
     have hratio : s/r ≤ ‖z‖^ξ := by
       rw [he]
@@ -108,7 +106,7 @@ theorem reflected_source_decorrelation_error_on_carrier
     have ht : t ≤ A*‖z‖^ξ := mul_le_mul_of_nonneg_left hratio hA.le
     have ht1 : t ≤ 1 := ht.trans hsmallz
     have heq : γ^2*(3*(s/‖z‖^(1-ξ)))/2*(q^2+q) = t := by
-      dsimp only [t,A,r]
+      dsimp [t,A,r]
       ring
     rw [heq] at herr
     refine ⟨ho,hc,herr.trans ?_⟩
@@ -117,9 +115,9 @@ theorem reflected_source_decorrelation_error_on_carrier
         mul_le_mul_of_nonneg_right (reflected_comparison_exponential_error_bound t ht0 ht1) hC₀.le
       _ ≤ (2*Real.exp 1*(A*‖z‖^ξ))*C₀ :=
         mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left ht (by positivity)) hC₀.le
-      _ = C*‖z‖^ξ := by dsimp only [C]; ring
+      _ = C*‖z‖^ξ := by dsimp [C]; ring
   refine ⟨herr,isComplexLittleOAtZero_of_norm_le_power (C := C) hslack ?_⟩
   filter_upwards [herr] with z hz
-  simpa only [← Complex.ofReal_sub,Complex.norm_real,Real.norm_eq_abs] using hz.2.2
+  simpa [← Complex.ofReal_sub,Complex.norm_real,Real.norm_eq_abs] using hz.2.2
 
 end DOZZ.Proofs

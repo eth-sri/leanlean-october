@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Brownian.ConditionedKernelParameterRatio
+import DOZZ.Brownian.ConditionedKernelParameterRatio
 
 /-!
 # Monotone likelihood ratio in the start state
@@ -14,7 +13,6 @@ hyperbolic ratio `sinh((x/t)y)/sinh((x'/t)y)`. This is the start-order density c
 the explicit-kernel coupling argument.
 -/
 
-@[expose] public section
 
 namespace DOZZ.Proofs
 
@@ -28,7 +26,7 @@ private theorem conditionedH_pos_of_nonneg
     apply (Real.exp_lt_one_iff).2
     nlinarith
 
-private theorem brownianHeatDensity_sub_factor
+theorem brownianHeatDensity_sub_factor
     {t x y : ℝ} (ht : 0 < t) :
     brownianHeatDensity t (y - x) - brownianHeatDensity t (y + x) =
       Real.exp (-(x ^ 2 + y ^ 2) / (2 * t)) *
@@ -43,8 +41,7 @@ private theorem brownianHeatDensity_sub_factor
     ring
   have hden : Real.sqrt (2 * Real.pi * t) ≠ 0 := by positivity
   simp only [brownianHeatDensity, ht, ite_true]
-  rw [he₁, he₂, Real.exp_add, Real.exp_add]
-  rw [Real.sinh_eq]
+  rw [he₁, he₂, Real.exp_add, Real.exp_add, Real.sinh_eq]
   field_simp [hden]
 
 /-- The transition density from a larger positive start is a positive constant times the
@@ -67,27 +64,25 @@ theorem conditionedPositiveTransitionDensity_eq_start_ratio_mul
     Real.sinh_pos_iff.mpr (div_pos (mul_pos hx hy) ht)
   have hheatx := brownianHeatDensity_sub_factor ht (x := x) (y := y)
   have hheatx' := brownianHeatDensity_sub_factor ht (x := x') (y := y)
-  simp only [conditionedPositiveTransitionDensity, hν, ht, hx, hx', hy,
+  simp [conditionedPositiveTransitionDensity, hν, ht, hx, hx', hy,
     and_self, ite_true]
   rw [hheatx, hheatx']
-  simp only [conditionedKernelParameterRatio]
+  simp [conditionedKernelParameterRatio]
   field_simp [hHx.ne', hHx'.ne', hHy.ne', hsa.ne', hsb.ne', ht.ne']
   simp_rw [← Real.exp_add]
   apply congrArg Real.exp
   field_simp [ht.ne']
   ring_nf
 
-private theorem conditionedPositiveTransitionDensity_pos_of_nonneg
+theorem conditionedPositiveTransitionDensity_pos_of_nonneg
     {ν t x y : ℝ} (hν : 0 ≤ ν) (ht : 0 < t) (hx : 0 < x) (hy : 0 < y) :
     0 < conditionedPositiveTransitionDensity ν t x y := by
   have hHₓ := conditionedH_pos_of_nonneg hν hx
   have hHᵧ := conditionedH_pos_of_nonneg hν hy
   have hheat : 0 < brownianHeatDensity t (y - x) - brownianHeatDensity t (y + x) := by
     rw [brownianHeatDensity_sub_factor ht]
-    have hsin : 0 < Real.sinh (x * y / t) :=
-      Real.sinh_pos_iff.mpr (div_pos (mul_pos hx hy) ht)
     positivity
-  simp only [conditionedPositiveTransitionDensity, hν, ht, hx, hy,
+  simp [conditionedPositiveTransitionDensity, hν, ht, hx, hy,
     and_self, ite_true]
   exact div_pos
     (mul_pos (mul_pos (Real.exp_pos _) hheat) hHᵧ) hHₓ
@@ -128,4 +123,3 @@ theorem conditionedPositiveTransitionDensity_start_ratio_monotoneOn_state
 
 end DOZZ.Proofs
 
-end

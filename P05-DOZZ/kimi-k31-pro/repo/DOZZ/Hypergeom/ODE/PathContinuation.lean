@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Hypergeom.ODE.PathChainUniqueness
-public import DOZZ.Hypergeom.ODE.UniformPathDisks
+import DOZZ.Hypergeom.ODE.PathChainUniqueness
+import DOZZ.Hypergeom.ODE.UniformPathDisks
 
 /-! Packaged finite-chain continuation along a path, with existence and uniqueness. -/
 
-@[expose] public section
 
 open Set
 
@@ -199,8 +197,7 @@ theorem exists_path_continuation_lift [CompleteSpace E]
     intro i hi z hz
     have h := (hlocal ((i : ℝ) / (N : ℝ)) (hcoord i hi)).2
     have hz' : z ∈ Metric.ball (γ ((i : ℝ) / (N : ℝ))) r := by
-      rw [← hcenters i hi]
-      exact hz
+      rwa [← hcenters i hi]
     exact h z hz'
   have hoverlap' : ∀ i < N, ∀ z ∈ Metric.ball (D (i + 1)).center (r / 2),
       (D i).solution z = (D (i + 1)).solution z := by
@@ -223,7 +220,6 @@ theorem path_continuation_lift_value_one_eq_final_disk
   let i := A.subdivision - 1
   have hi : i < A.subdivision := by have hpos := A.subdivision_pos; dsimp [i]; omega
   have hsucc : i + 1 = A.subdivision := by
-    have hpos := A.subdivision_pos
     dsimp [i]
     omega
   have hNreal : 0 < (A.subdivision : ℝ) := by exact_mod_cast A.subdivision_pos
@@ -262,8 +258,7 @@ theorem exists_path_continuation_lift_affine_reparam [CompleteSpace E]
     ∃ B : PathContinuationLift (fun s => γ (a + c * s)) H (A.value a),
       B.value 1 = A.value (a + c) := by
   let φ : ℝ → ℝ := fun s => a + c * s
-  have hφcont : ContinuousOn φ (Icc (0 : ℝ) 1) := by
-    exact (continuous_const.add (continuous_const.mul continuous_id)).continuousOn
+  have hφcont : ContinuousOn φ (Icc (0 : ℝ) 1) := (continuous_const.add (continuous_const.mul continuous_id)).continuousOn
   have hγ' : ContinuousOn (fun s => γ (φ s)) (Icc (0 : ℝ) 1) :=
     hγ.comp hφcont (fun s hs => hparam s hs)
   have hpath' : ∀ s ∈ Icc (0 : ℝ) 1, γ (φ s) ∈ U :=

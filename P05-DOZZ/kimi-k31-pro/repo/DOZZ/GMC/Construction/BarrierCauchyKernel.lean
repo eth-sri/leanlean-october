@@ -2,13 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.Construction.BarrierCauchyMass
+import DOZZ.GMC.Construction.BarrierCauchyMass
 
 /-! The two-point kernel of growing-barrier good masses. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal
@@ -45,7 +43,7 @@ theorem finite_gaussian_wick_pair_tilt_with_coarse_rectangle
   have hEq : (⋂ i : κ, {z : ι → ℝ | z (e i) ≤ barrier i}) =
       {z | ∀ i : κ, z (e i) ≤ barrier i} := by
     ext z
-    simp only [Set.mem_iInter, Set.mem_ofPred_eq]
+    simp [Set.mem_iInter, Set.mem_ofPred_eq]
   have hset : MeasurableSet {z : ι → ℝ | ∀ i : κ, z (e i) ≤ barrier i} := by
     rw [← hEq]
     apply MeasurableSet.iInter
@@ -97,8 +95,7 @@ theorem integral_gaussianRectangleIndicator_abs_le_one
     refine ⟨?_⟩
     rw [hZ.1.measure_univ]
     exact ENNReal.one_lt_top
-  have hone : Integrable (fun _ : Ω => (1 : ℝ)) P := by
-    exact (integrable_const_iff (μ := P) (c := (1 : ℝ))).2 (Or.inr hPfinite)
+  have hone : Integrable (fun _ : Ω => (1 : ℝ)) P := (integrable_const_iff (μ := P) (c := (1 : ℝ))).2 (Or.inr hPfinite)
   have hRectIntegrable : Integrable (gaussianRectangleIndicator Z barrier shift) P :=
     hone.mono' hRect hbound
   have hnorm := norm_integral_le_integral_norm (μ := P)

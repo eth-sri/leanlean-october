@@ -3,9 +3,8 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Scott Armstrong, Amélie Loher
 -/
-module
 
-public import GaussianFields.LogCorrelated.ABK.ScaleSpace
+import GaussianFields.LogCorrelated.ABK.ScaleSpace
 
 /-!
 # GaussianFields ABK test functions and convolution
@@ -13,7 +12,6 @@ public import GaussianFields.LogCorrelated.ABK.ScaleSpace
 Port of the corresponding GaussianFields source module.
 -/
 
-public section
 
 open MeasureTheory ProbabilityTheory
 open scoped Convolution ENNReal InnerProductSpace NNReal ProbabilityTheory Topology
@@ -23,7 +21,7 @@ namespace GaussianFields
 /-! ## ABK kernels -/
 
 /-- The scaled cutoff `ζ_r(x) = ζ(x / r)`, written using scalar multiplication. -/
-@[expose]
+
 noncomputable def abkScaledCutoff {d : Nat} (ζ : ABKCutoff d) (r : ℝ)
     (x : Vec d) : ℝ :=
   ζ (r⁻¹ • x)
@@ -88,7 +86,7 @@ theorem abkScaledCutoff_lipschitz_bound {d : Nat} (ζ : ABKCutoff d) :
   intro r x y
   have hsub : r⁻¹ • x - r⁻¹ • y = r⁻¹ • (x - y) := by
     ext i
-    simp only [Pi.sub_apply, Pi.smul_apply, smul_eq_mul]
+    simp [Pi.sub_apply, Pi.smul_apply, smul_eq_mul]
     ring
   calc
     |abkScaledCutoff ζ r x - abkScaledCutoff ζ r y|
@@ -116,7 +114,7 @@ theorem euclideanNorm_le_of_abkScaledCutoff_ne_zero {d : Nat} (ζ : ABKCutoff d)
     _ = r := by ring
 
 /-- The ABK spatial convolution `(ζ_r * ψ)(y)`. -/
-@[expose]
+
 noncomputable def abkSpatialConvolution {d : Nat} (ζ : ABKCutoff d)
     (ψ : MeanZeroTestFunction d) (r : ℝ) (y : Vec d) : ℝ :=
   ∫ x : Vec d, abkScaledCutoff ζ r (y - x) * ψ x
@@ -263,8 +261,6 @@ theorem abs_abkSpatialConvolution_le_scaled_moment {d : Nat}
       Integrable (fun x : Vec d => euclideanNorm x * |ψ x|)
         (volume : Measure (Vec d)) :=
     integrable_euclideanNorm_mul_abs_meanZeroTestFunction ψ
-  have hconst_nonneg : 0 ≤ L * |r|⁻¹ :=
-    mul_nonneg hL_nonneg (inv_nonneg.mpr (abs_nonneg r))
   have hpoint :
       ∀ x : Vec d,
         ‖F x‖ ≤ L * |r|⁻¹ * (euclideanNorm x * |ψ x|) := by
@@ -423,4 +419,3 @@ theorem integrable_sq_abkSpatialConvolution {d : Nat}
 
 end GaussianFields
 
-end

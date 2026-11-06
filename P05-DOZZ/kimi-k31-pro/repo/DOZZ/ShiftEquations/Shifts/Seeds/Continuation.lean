@@ -2,11 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.ShiftEquations.Shifts.Seeds.Reflection
-public import DOZZ.ShiftEquations.DualR.Segment
-public import DOZZ.ShiftEquations.Shift.FullShift
+import DOZZ.ShiftEquations.Shifts.Seeds.Reflection
+import DOZZ.ShiftEquations.DualR.Segment
+import DOZZ.ShiftEquations.Shift.FullShift
 import DOZZ.ShiftEquations.DualR.SegFactors
 import DOZZ.ShiftEquations.Shift.Wrappers
 import DOZZ.FourPoint.Crossing.GammaHalfCrossing
@@ -31,7 +30,6 @@ and `p_α ∈ (0, 1)`, so both sides are analytic at every real point; the segme
 crossing seeds.
 -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal Topology
@@ -146,7 +144,6 @@ noncomputable def dualParamC (γ : ℝ) (z : ℂ) : ℂ :=
 
 theorem dualParamA_ofReal {γ : ℝ} (hγ : γ ≠ 0) (α₁ α₂ α₃ : ℝ) :
     dualParamA γ α₂ α₃ (α₁ : ℂ) = (gaussParameterA γ (2 / γ) α₁ α₂ α₃ : ℂ) := by
-  have hγc : (γ : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hγ
   unfold dualParamA gaussParameterA
   push_cast
   field_simp
@@ -154,7 +151,6 @@ theorem dualParamA_ofReal {γ : ℝ} (hγ : γ ≠ 0) (α₁ α₂ α₃ : ℝ) 
 
 theorem dualParamB_ofReal {γ : ℝ} (hγ : γ ≠ 0) (α₁ α₂ α₃ : ℝ) :
     dualParamB γ α₂ α₃ (α₁ : ℂ) = (gaussParameterB γ (2 / γ) α₁ α₂ α₃ : ℂ) := by
-  have hγc : (γ : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hγ
   unfold dualParamB gaussParameterB
   push_cast
   field_simp
@@ -162,7 +158,6 @@ theorem dualParamB_ofReal {γ : ℝ} (hγ : γ ≠ 0) (α₁ α₂ α₃ : ℝ) 
 
 theorem dualParamC_ofReal {γ : ℝ} (hγ : γ ≠ 0) (α₁ : ℝ) :
     dualParamC γ (α₁ : ℂ) = (gaussParameterC γ (2 / γ) α₁ : ℂ) := by
-  have hγc : (γ : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hγ
   unfold dualParamC gaussParameterC
   push_cast
   field_simp
@@ -333,7 +328,7 @@ theorem seeds_sExpC_ne_neg_nat {γ a b c : ℝ} (hs : 0 < sExp γ a b c) (n : �
   intro hn
   rw [sExpC_complexify] at hn
   have hn' : sExp γ a b c = -(n : ℝ) := by
-    simpa only [Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.cons_val_two,
+    simpa [Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.cons_val_two,
       Matrix.head_cons, Matrix.tail_cons] using (by exact_mod_cast hn : _ = -(n : ℝ))
   have : (0 : ℝ) ≤ n := Nat.cast_nonneg n
   linarith
@@ -531,7 +526,7 @@ theorem dual_reflection_identity_continuation
       (hGd.analyticAt (hVRo.mem_nhds (hVRmem _ ⟨ha₀, hα₁⟩))))
       (analyticAt_segC x₀ α₁ 1) (segC_one x₀ α₁)
   have hmain := eq_at_one_of_segment hseg hF₁ hF₂ hstart hF₁1 hF₂1
-  simp only [segC_one] at hmain
+  simp [segC_one] at hmain
   rw [dualReflLeft_ofReal P M hγ hμ hfeq hα₂ hα₃ hα₁ hs,
     dualReflRight_ofReal P M hγ hγ2 hμ hfeq hα₂ hα₃ hα₁ hs (B' α₁) Z'
       (hGval _ ⟨ha₀, hα₁⟩)] at hmain
@@ -540,4 +535,3 @@ theorem dual_reflection_identity_continuation
 
 end DOZZ.Proofs
 
-end

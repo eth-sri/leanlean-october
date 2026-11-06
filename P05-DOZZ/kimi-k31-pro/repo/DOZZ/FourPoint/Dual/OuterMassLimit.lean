@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.Dual.Kernel
-public import DOZZ.FourPoint.Reflected.MassFiniteness
+import DOZZ.FourPoint.Dual.Kernel
+import DOZZ.FourPoint.Reflected.MassFiniteness
 import DOZZ.FourPoint.RootedPairMoments
 import Mathlib.Tactic
 
@@ -15,7 +14,6 @@ The source exterior mass converges to rho with first charge α₁−2/γ.
 Root atomlessness and subcritical moment finiteness refer to the supplied GMC.
 -/
 
-@[expose] public section
 
 open MeasureTheory Filter Topology Set
 open scoped ENNReal
@@ -33,9 +31,9 @@ theorem dual_zero_kernel_integral_eq_rho (γ α₁ α₂ α₃ : ℝ) (hγ : γ 
     (∫⁻ x, ENNReal.ofReal (dualFusionKernel γ α₁ α₂ α₃ 0 x) ∂μ) =
       rho γ μ (α₁ - 2 / γ) α₂ α₃ := by
   have ha0 : ∀ᵐ x ∂μ, x ≠ 0 := by
-    rw [ae_iff]; simpa only [not_not, Set.ofPred_eq_eq_singleton] using h0
+    rw [ae_iff]; simpa [not_not, Set.ofPred_eq_eq_singleton] using h0
   have ha1 : ∀ᵐ x ∂μ, x ≠ 1 := by
-    rw [ae_iff]; simpa only [not_not, Set.ofPred_eq_eq_singleton] using h1
+    rw [ae_iff]; simpa [not_not, Set.ofPred_eq_eq_singleton] using h1
   unfold rho
   apply lintegral_congr_ae
   filter_upwards [ha0, ha1] with x hx0 hx1
@@ -77,13 +75,13 @@ theorem dual_outerMass_tendsto (γ α₁ α₂ α₃ ξ : ℝ) (hγ : γ ≠ 0) 
   rw [heq] at ht
   have hn : Tendsto (fun z : ℂ => ‖z‖)
       (nhdsWithin (0 : ℂ) {z : ℂ | z ≠ 0}) (nhds 0) := by
-    simpa only [norm_zero] using (continuous_norm.tendsto (0 : ℂ)).mono_left nhdsWithin_le_nhds
+    simpa [norm_zero] using (continuous_norm.tendsto (0 : ℂ)).mono_left nhdsWithin_le_nhds
   apply ht.congr'
   filter_upwards [hn.eventually (gt_mem_nhds zero_lt_one), self_mem_nhdsWithin] with z hz hz0
   have hr : ‖z‖ < ‖z‖ ^ (1 - ξ) := by
     have hh := Real.rpow_lt_rpow_of_exponent_gt (norm_pos_iff.mpr hz0) hz
       (by linarith only [hξ] : 1 - ξ < 1)
-    simpa only [Real.rpow_one] using hh
+    simpa [Real.rpow_one] using hh
   exact (dual_outerMass_eq_kernel_integral γ α₁ α₂ α₃ ξ hγ z μ h0 h1 hr).symm
 
 /-- Almost-sure convergence of the actual retained GMC mass in the reflected chart. -/

@@ -2,13 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Brownian.WilliamsMaximumLaw
+import DOZZ.Brownian.WilliamsMaximumLaw
 
 /-! The critical exponential moment of the Williams maximum law. -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal
 
@@ -35,17 +33,16 @@ theorem lastone_maximum_exp_moment (ν : ℝ) (hν : 0 < ν) :
       rw [show (2 : ℝ≥0∞) = ENNReal.ofReal (2 : ℝ) by norm_num,
         ← ENNReal.ofReal_mul (by norm_num)]
       congr 1
-      rw [mul_assoc, ← Real.exp_add]
-      rw [show -2 * ν * m + ν * m = -2 * (ν / 2) * m by ring]
+      rw [mul_assoc, ← Real.exp_add, show -2 * ν * m + ν * m = -2 * (ν / 2) * m by ring]
       ring
-    · simp only [d, d', ite_eq_right hm, ENNReal.ofReal_zero, zero_mul, mul_zero]
+    · simp [d, d', ite_eq_right hm, ENNReal.ofReal_zero, zero_mul, mul_zero]
   have hprob : IsProbabilityMeasure (brownianMaximumReferenceLaw (ν / 2)) :=
     isProbabilityMeasure_brownianMaximumReferenceLaw (div_pos hν (by norm_num))
   have hnorm : (∫⁻ m, d' m ∂volume) = 1 := by
     have h := hprob.measure_univ
     rw [brownianMaximumReferenceLaw, withDensity_apply _ MeasurableSet.univ,
       Measure.restrict_univ] at h
-    exact h
+    assumption
   rw [brownianMaximumReferenceLaw,
     lintegral_withDensity_eq_lintegral_mul _ hd hE]
   change (∫⁻ m, d m * ENNReal.ofReal (Real.exp (ν * m)) ∂volume) = _

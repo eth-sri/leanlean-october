@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.Tails.LocalizationMassComparison
-public import DOZZ.Correlations.Tails.CopiedErrorMassBound
+import DOZZ.Correlations.Tails.LocalizationMassComparison
+import DOZZ.Correlations.Tails.CopiedErrorMassBound
 
 /-! The copied multiplier differs from its constant leading weight by a controlled error. -/
 
-@[expose] public section
 open MeasureTheory Set
 open scoped ENNReal
 
@@ -74,8 +72,5 @@ theorem actual_copied_localization_comparison
   have hout : (∫⁻ x in Metric.ball (0 : ℂ) 1 \ Metric.ball (0 : ℂ) δ, v x ∂μ) =
       ENNReal.ofReal c*(∫⁻ x in Metric.ball (0 : ℂ) 1 \ Metric.ball (0 : ℂ) δ, k x ∂μ) :=
     lintegral_const_mul' _ _ ENNReal.ofReal_ne_top
-  rw [hlocal,hfull,hout] at h
-  exact h
-
-
+  rwa [hlocal,hfull,hout] at h
 end DOZZ.Proofs

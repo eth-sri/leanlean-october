@@ -2,11 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Brownian.Coupling.RadialTransition
-public import DOZZ.Brownian.Barrier.KilledMarkov
-public import DOZZ.Brownian.ConditionedFDDMarkovKernel
+import DOZZ.Brownian.Coupling.RadialTransition
+import DOZZ.Brownian.Barrier.KilledMarkov
+import DOZZ.Brownian.ConditionedFDDMarkovKernel
 
 /-!
 # Deterministic Markov law of the actual three-dimensional Wiener source
@@ -18,7 +17,6 @@ tests and the actual independent Euclidean Gaussian increment.
 Positive current times avoid the singular radial start; the Maxwell entrance law supplies that start.
 -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal Topology Classical
@@ -135,7 +133,7 @@ theorem wienerVector_deterministic_markov_lintegral (s dt : ℝ≥0)
     (((measurable_wienerVectorEval s).comp measurable_fst).add
       ((measurable_wienerVectorEval dt).comp measurable_snd)))
   have h := wienerTriple_deterministic_restart_lintegral s F hF
-  simp only [F, wienerVectorEval_stop, wienerVectorEval_shift_add] at h
+  simp [F, wienerVectorEval_stop, wienerVectorEval_shift_add] at h
   rw [h]
   apply lintegral_congr
   intro V
@@ -150,8 +148,8 @@ theorem wienerVectorEval_ne_zero_ae (s : ℝ≥0) (hs : 0 < s) :
   apply (ae_map_iff (measurable_wienerVectorEval s).aemeasurable
     (measurableSet_singleton (0 : EuclideanSpace ℝ (Fin 3))).compl).mp
   rw [(wienerVectorEval_hasLaw s).map_eq, ae_iff]
-  simp only [not_not, mem_singleton_iff]
-  change radialGaussianVectorMeasure s {0} = 0
+  simp [mem_singleton_iff]
+
   rw [radialGaussianVectorMeasure_eq_withDensity s hs]
   exact withDensity_absolutelyContinuous _ _ (measure_singleton _)
 
@@ -205,7 +203,7 @@ theorem wienerRadial_samples_markov_lintegral {n : ℕ} (times : Fin n → ℝ�
   have hG : Measurable (fun p : BrownianTriple × ℝ => F (wienerRadialSamples times p.1, p.2)) :=
     hF.comp (((measurable_wienerRadialSamples times).comp measurable_fst).prodMk measurable_snd)
   have h := wienerRadial_deterministic_markov_lintegral s hs dt ht _ hG
-  simpa only [wienerRadialSamples_stop times s htimes] using h
+  simpa [wienerRadialSamples_stop times s htimes] using h
 
 /-- Initial radial value has the exact Maxwell entrance measure. -/
 theorem wienerRadialEval_map (t : ℝ≥0) (ht : 0 < t) :

@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Brownian.ReflectionMassMeasurability
-public import DOZZ.Brownian.ReflectionExponentBounds
+import DOZZ.Brownian.ReflectionMassMeasurability
+import DOZZ.Brownian.ReflectionExponentBounds
 import Mathlib.MeasureTheory.Integral.Lebesgue.Basic
 import Mathlib.Topology.Order.Compact
 
@@ -18,7 +17,6 @@ and each positive power of it, is positive on a set of positive probability. Thi
 positivity of the moment without assuming that the lateral interval mass is positive almost surely.
 -/
 
-@[expose] public section
 
 open MeasureTheory Set
 open scoped ENNReal NNReal
@@ -92,10 +90,8 @@ theorem twoSidedReflectionMoment_pos_of_lateralIntensity
   have hVm : Measurable Vm := hV.measurable_mk
   have hVtoVm : V =ᵐ[P] Vm := hV.ae_eq_mk
   let S : Set Ω := {ω | 0 < Vm ω}
-  have hSmeas : MeasurableSet S := measurableSet_lt measurable_const hVm
   have hVint : 0 < ∫⁻ ω, Vm ω ∂P := by
-    rw [← lintegral_congr_ae hVtoVm]
-    exact hIntensity
+    rwa [← lintegral_congr_ae hVtoVm]
   have hsuppV : Function.support Vm = S := by
     ext ω
     simp [Function.mem_support, S, pos_iff_ne_zero]
@@ -104,8 +100,7 @@ theorem twoSidedReflectionMoment_pos_of_lateralIntensity
     exact (lintegral_pos_iff_support hVm).mp hVint
   let F : Ω → ℝ≥0∞ := fun ω =>
     ENNReal.rpow (twoSidedReflectionMass γ B Z ω) p
-  have hF : AEMeasurable F P := by
-    exact ENNReal.continuous_rpow_const.measurable.comp_aemeasurable hMassMeas
+  have hF : AEMeasurable F P := ENNReal.continuous_rpow_const.measurable.comp_aemeasurable hMassMeas
   let Fm : Ω → ℝ≥0∞ := hF.mk F
   have hFm : Measurable Fm := hF.measurable_mk
   have hFtoFm : F =ᵐ[P] Fm := hF.ae_eq_mk
@@ -177,4 +172,3 @@ theorem reflectionBarR_pos_of_reflectionData_of_moment_finite
 
 end DOZZ.Proofs
 
-end

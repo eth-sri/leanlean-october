@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.Dual.BasisAsymptotic
-public import DOZZ.FourPoint.Dual.Parameters
+import DOZZ.FourPoint.Dual.BasisAsymptotic
+import DOZZ.FourPoint.Dual.Parameters
 import Mathlib.Tactic
 
 /-! # Coefficient extraction from a diagonal Gauss conclusion
@@ -14,7 +13,6 @@ This module does not import the physical classification. It extracts
 its second coefficient from the positive-ray fusion limit.
 -/
 
-public section
 
 open Filter Topology Set
 
@@ -31,15 +29,15 @@ theorem dual_diagonal_ray_limit {H : ℂ → ℂ → ℂ → ℂ → ℂ}
   have hn : ∀ n : ℕ, (c : ℂ) ≠ -(n : ℂ) := by
     intro n h
     have he := congrArg Complex.re h
-    simp only [Complex.ofReal_re, Complex.neg_re, Complex.natCast_re] at he
+    simp [Complex.ofReal_re, Complex.neg_re, Complex.natCast_re] at he
     have : 0 ≤ (n : ℝ) := Nat.cast_nonneg n
     linarith only [_hc, he, this]
   have hn₂ : ∀ n : ℕ, (2 - (c : ℂ)) ≠ -(n : ℂ) := by
     intro n h
     have he := congrArg Complex.re h
-    simp only [Complex.sub_re, Complex.ofReal_re, Complex.neg_re,
+    simp [Complex.sub_re, Complex.ofReal_re, Complex.neg_re,
       Complex.natCast_re] at he
-    norm_num at he
+
     have : 0 ≤ (n : ℝ) := Nat.cast_nonneg n
     linarith
   have hcast : Tendsto (fun t : ℝ => (t : ℂ))
@@ -48,18 +46,18 @@ theorem dual_diagonal_ray_limit {H : ℂ → ℂ → ℂ → ℂ → ℂ}
     refine ⟨Complex.continuous_ofReal.continuousAt.tendsto.comp
       (tendsto_id.mono_left nhdsWithin_le_nhds), ?_⟩
     filter_upwards [self_mem_nhdsWithin] with t ht
-    simpa only [Complex.ofReal_ne_zero] using ne_of_gt ht
+    simpa [Complex.ofReal_ne_zero] using ne_of_gt ht
   have hm := (dual_gauss_norm_sq_littleO hH a b c hn (2 * (1 - c)) hκ).comp hcast
   have hp := dual_gauss_plus_norm_sq_ratio hH a b c hn₂
   have hsum := (hm.const_mul C).add (hp.const_mul (C * d))
-  simp only [mul_zero, mul_one, zero_add] at hsum
+  simp [mul_zero, mul_one, zero_add] at hsum
   have ht : Tendsto (fun t : ℝ =>
       C * ((‖gaussFMinus H a b c (t : ℂ)‖ ^ 2 - 1) / t ^ (2 * (1 - c))) +
       (C * d) * (‖gaussFPlus H a b c (t : ℂ)‖ ^ 2 / t ^ (2 * (1 - c))))
       (nhdsWithin 0 (Ioi 0)) (nhds (C * d)) := by
     apply hsum.congr'
     filter_upwards [self_mem_nhdsWithin] with t ht
-    simp only [Function.comp_def, Complex.norm_real, Real.norm_eq_abs, abs_of_pos ht]
+    simp [abs_of_pos (Set.mem_Ioi.mp ht)]
   apply ht.congr'
   filter_upwards [] with t
   ring
@@ -116,9 +114,9 @@ theorem dual_physical_classification_reduction {Ω : Type*} [MeasurableSpace Ω]
     ∀ z ∈ gaussCutPlane, fourPointT P M γ μ (-(2 / γ)) α₁ α₂ α₃ z =
       structureConstant P M γ μ (α₁ - 2 / γ) α₂ α₃ * ‖gaussFMinus H a b c z‖ ^ 2 +
         D * ‖gaussFPlus H a b c z‖ ^ 2 := by
-  dsimp only at hclassification ⊢
+  dsimp at hclassification ⊢
   obtain ⟨hA, hAB, hBC, hC, _, _, _, _⟩ :=
-    DOZZ.gauss_physical_parameter_range γ (2 / γ) α₁ α₂ α₃
+    gauss_physical_parameter_range γ (2 / γ) α₁ α₂ α₃
       hγ hγ₂ (Or.inr rfl) hs hα₁ hα₂ hα₃
   have hc : 0 < gaussParameterC γ (2 / γ) α₁ := hA.trans (hAB.trans hBC)
   have he : 2 * (1 - gaussParameterC γ (2 / γ) α₁) =
@@ -131,7 +129,7 @@ theorem dual_physical_classification_reduction {Ω : Type*} [MeasurableSpace Ω]
     (gaussCoefficientRatio (gaussParameterA γ (2 / γ) α₁ α₂ α₃)
       (gaussParameterB γ (2 / γ) α₁ α₂ α₃) (gaussParameterC γ (2 / γ) α₁)) D
     hc hC (he ▸ hκ) (fourPointT P M γ μ (-(2 / γ)) α₁ α₂ α₃)
-    hclassification (by simpa only [he] using hfusion)
+    hclassification (by simpa [he] using hfusion)
   refine ⟨hid, ?_⟩
   intro z hz
   rw [hclassification z hz, hid]

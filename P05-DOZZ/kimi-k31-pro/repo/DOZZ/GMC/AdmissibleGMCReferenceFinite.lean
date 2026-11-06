@@ -2,13 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.GMC.IsAdmissibleLogRegularization
+import DOZZ.Statements.GMC.IsAdmissibleLogRegularization
 
 /-! Local finiteness of the reference measure of an admissible logarithmic regularization. -/
 
-@[expose] public section
 
 open MeasureTheory Set
 open scoped ENNReal
@@ -27,7 +25,6 @@ theorem admissible_logRegularization_reference_measure_ne_top
   have hcont : ContinuousOn dens K := hY.densityContinuous.mono hKU
   obtain ⟨B, hB⟩ := hK.bddAbove_image hcont
   let B₀ : ℝ := max B 0
-  have hB₀ : 0 ≤ B₀ := le_max_right _ _
   have hpoint : ∀ x ∈ K, ENNReal.ofReal (dens x) ≤ ENNReal.ofReal B₀ := by
     intro x hx
     have hle : dens x ≤ B₀ := by

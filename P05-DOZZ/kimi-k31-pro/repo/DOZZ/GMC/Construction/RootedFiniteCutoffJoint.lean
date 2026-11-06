@@ -2,17 +2,15 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.Construction.RootedPairLawBridge
-public import DOZZ.GMC.Construction.GMCVertexTiltInputs
-public import DOZZ.GMC.Construction.CircleCovarianceL2Limit
-public import DOZZ.GMC.Construction.RegularizedGMCExpectedMeasure
+import DOZZ.GMC.Construction.RootedPairLawBridge
+import DOZZ.GMC.Construction.GMCVertexTiltInputs
+import DOZZ.GMC.Construction.CircleCovarianceL2Limit
+import DOZZ.GMC.Construction.RegularizedGMCExpectedMeasure
 import Mathlib.MeasureTheory.Measure.Prod
 
 /-! Joint finite-cutoff transport under a single regularized vertex insertion. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory
 open scoped Distributions ENNReal NNReal

@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Brownian.LateralIntervalFirstMoment
-public import Mathlib.MeasureTheory.Integral.MeanInequalities
+import DOZZ.Brownian.LateralIntervalFirstMoment
+import Mathlib.MeasureTheory.Integral.MeanInequalities
 
 /-!
 # Positive lateral moments through order one
@@ -15,7 +14,6 @@ through order one by the concave-power form of Hölder's inequality. This gives 
 the lateral interval moment theorem without invoking any higher-order chaos estimate.
 -/
 
-@[expose] public section
 
 open MeasureTheory
 open scoped ENNReal
@@ -36,4 +34,3 @@ theorem lintegral_rpow_le_mean_rpow
 
 end DOZZ.Proofs
 
-end

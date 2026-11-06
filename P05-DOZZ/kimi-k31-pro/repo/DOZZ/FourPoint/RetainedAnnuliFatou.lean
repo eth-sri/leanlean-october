@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.SharpMoments.BallScaling
-public import DOZZ.FourPoint.RetainedAnnuliSeparated
+import DOZZ.GMC.SharpMoments.BallScaling
+import DOZZ.FourPoint.RetainedAnnuliSeparated
 
 /-! Fatou passage for a product of retained masses, without assuming independence. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal Distributions
@@ -71,10 +69,10 @@ theorem fieldChaosMass_indicator
         (Real.exp (γ * Φ ω x - γ ^ 2 / 2 * ∫ ω', Φ ω' x ^ 2 ∂P))) := by
     funext x
     by_cases hx : x ∈ A
-    · simp only [Set.indicator_of_mem hx, ENNReal.coe_one, one_mul]
-    · simp only [Set.indicator_of_notMem hx, ENNReal.coe_zero, zero_mul]
+    · simp [Set.indicator_of_mem hx, ENNReal.coe_one, one_mul]
+    · simp [Set.indicator_of_notMem hx, ENNReal.coe_zero, zero_mul]
   rw [he, lintegral_indicator hA, Measure.restrict_restrict hA,
     inter_eq_left.mpr hAU]
-  simp only [ENNReal.coe_one, one_mul]
+  simp [ENNReal.coe_one, one_mul]
 
 end DOZZ.Proofs

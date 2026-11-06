@@ -2,10 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.Correlations.Symmetry.ReflectionCircleMean
-public import DOZZ.GMC.Moments.InversionCutoff
-@[expose] public section
+import DOZZ.Correlations.Symmetry.ReflectionCircleMean
+import DOZZ.GMC.Moments.InversionCutoff
 open MeasureTheory ProbabilityTheory
 open scoped Distributions ENNReal
 namespace DOZZ.Proofs
@@ -17,8 +15,8 @@ theorem reflection_circle_square_energy
     (x : ℂ) (r : ℝ) : (∫ ω, Xc ω x r ^ 2 ∂P) = circleSelfEnergy x r := by
   have hc := circleAverage_covariance_self X Xc hX hXc x r
   have hm := (circleAverage_isGaussianProcess P X Xc hX hXc).2 x r
-  simp only [ProbabilityTheory.covariance, hm, sub_zero] at hc
-  simpa only [pow_two] using hc
+  simp [ProbabilityTheory.covariance, hm, sub_zero] at hc
+  simpa [pow_two] using hc
 
 /-- The finite reflected Wick cutoff includes the scalar normalization and both deterministic
 pinning corrections. This is an equality of measures on the original probability space. -/
@@ -70,8 +68,7 @@ theorem regularizedGMC_symmetryRepinned
       (mul_nonneg (Real.exp_pos _).le
         (Real.rpow_nonneg hψ.le _))]
   congr 1
-  rw [Real.rpow_def_of_pos hx, Real.rpow_def_of_pos hψ]
-  rw [← Real.exp_add, ← Real.exp_add, ← Real.exp_add]
+  rw [Real.rpow_def_of_pos hx, Real.rpow_def_of_pos hψ, ← Real.exp_add, ← Real.exp_add, ← Real.exp_add]
   congr 1
   unfold symmetryReflectionPotential
   ring

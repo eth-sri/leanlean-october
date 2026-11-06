@@ -1,15 +1,13 @@
 /-
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 -/
-module
 
-public import Mathlib.MeasureTheory.Integral.Lebesgue.Markov
-public import Mathlib.MeasureTheory.Constructions.Polish.Basic
-public import Mathlib.Topology.Algebra.InfiniteSum.Real
+import Mathlib.MeasureTheory.Integral.Lebesgue.Markov
+import Mathlib.MeasureTheory.Constructions.Polish.Basic
+import Mathlib.Topology.Algebra.InfiniteSum.Real
 
 /-! Summable expected successive increments give an almost-sure cutoff limit. -/
 
-@[expose] public section
 
 open MeasureTheory Filter Topology
 open scoped ENNReal
@@ -29,7 +27,7 @@ theorem ae_tendsto_of_summable_lintegral_abs_increments
       (continuous_abs.measurable.comp ((hF n.succ).sub (hF n)))
   have htotal : (∫⁻ ω, ∑' n, Q n ω ∂P) ≠ ∞ := by
     rw [lintegral_tsum (fun n => (hQ n).aemeasurable)]
-    simpa only [Q] using hsum
+    simpa [Q] using hsum
   have hfinite : ∀ᵐ ω ∂P, (∑' n, Q n ω) < ∞ :=
     ae_lt_top' (AEMeasurable.tsum fun n => (hQ n).aemeasurable) htotal
   filter_upwards [hfinite] with ω hω

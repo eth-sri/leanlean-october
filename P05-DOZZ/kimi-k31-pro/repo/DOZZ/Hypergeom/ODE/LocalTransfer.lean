@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Hypergeom.ODE.UniquenessEndpoints
-public import DOZZ.Hypergeom.ODE.PicardSum
+import DOZZ.Hypergeom.ODE.UniquenessEndpoints
+import DOZZ.Hypergeom.ODE.PicardSum
 
 /-! Composition of local continuation steps and compatibility around a small homotopy square. -/
 
-@[expose] public section
 
 namespace DOZZ.Proofs
 

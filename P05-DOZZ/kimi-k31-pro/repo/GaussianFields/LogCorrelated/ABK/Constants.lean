@@ -3,10 +3,9 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Scott Armstrong, Amélie Loher
 -/
-module
 
-public import Mathlib.MeasureTheory.Integral.Gamma
-public import GaussianFields.LogCorrelated.ABK
+import Mathlib.MeasureTheory.Integral.Gamma
+import GaussianFields.LogCorrelated.ABK
 
 /-!
 # GaussianFields.LogCorrelated/ABK/Constants
@@ -14,7 +13,6 @@ public import GaussianFields.LogCorrelated.ABK
 Port of the corresponding GaussianFields source module.
 -/
 
-public section
 
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal InnerProductSpace NNReal ProbabilityTheory Topology
@@ -33,71 +31,71 @@ theorem abkEuclideanNorm_pos_of_ne_zero {d : Nat} {x : Vec d} (hx : x ≠ 0) :
   exact abs_eq_zero.mp (le_antisymm hcoord_abs (abs_nonneg (x i)))
 
 /-- A canonical radial representative: first coordinate `s`, all other coordinates zero. -/
-@[expose]
+
 def abkRadialPoint (d : Nat) (s : ℝ) : Vec d :=
   fun i => if (i : Nat) = 0 then s else 0
 
 /-- The Euclidean open ball of radius `r` centered at the origin. -/
-@[expose]
+
 def abkBall (d : Nat) (r : ℝ) : Set (Vec d) :=
   {x | euclideanNorm x < r}
 
 /-- The Euclidean unit ball used in the ABK constants. -/
-@[expose]
+
 def abkUnitBall (d : Nat) : Set (Vec d) :=
   abkBall d 1
 
 /-- The Lebesgue volume `|B_1|` of the project Euclidean unit ball. -/
-@[expose]
+
 noncomputable def abkUnitBallVolume (d : Nat) : ℝ :=
   ((volume : Measure (Vec d)) (abkUnitBall d)).toReal
 
 /-- The unscaled self-convolution `(ζ * ζ)(x)`. -/
-@[expose]
+
 noncomputable def abkCutoffSelfConvolution {d : Nat} (ζ : ABKCutoff d)
     (x : Vec d) : ℝ :=
   ∫ y : Vec d, ζ y * ζ (x - y)
 
 /-- The ABK constant `M_0 = ∫ |ζ|^2`.  Since `ζ` is nonnegative, this is `∫ ζ^2`. -/
-@[expose]
+
 noncomputable def abkM0 {d : Nat} (ζ : ABKCutoff d) : ℝ :=
   ∫ x : Vec d, (ζ x) ^ (2 : Nat)
 
 /-- The reciprocal constant `M_α^{-1}` in the ABK power decomposition. -/
-@[expose]
+
 noncomputable def abkMAlphaInv {d : Nat} (ζ : ABKCutoff d) (α : ℝ) : ℝ :=
   ∫ r in Set.Ioi (0 : ℝ),
     r ^ (-(1 + α)) * abkCutoffSelfConvolution ζ (abkRadialPoint d r⁻¹)
 
 /-- The ABK constant `M_α`. -/
-@[expose]
+
 noncomputable def abkMAlpha {d : Nat} (ζ : ABKCutoff d) (α : ℝ) : ℝ :=
   (abkMAlphaInv ζ α)⁻¹
 
 /-- The radicand in the canonical ABK normalization. -/
-@[expose]
+
 noncomputable def abkNormalizationRadicand {d : Nat} (ζ : ABKCutoff d) : ℝ :=
   (d : ℝ) * abkUnitBallVolume d / (abkM0 ζ * (2 * Real.pi) ^ d)
 
 /-- The canonical ABK normalization
 `(d |B_1| / (M_0 (2π)^d))^{1/2}`. -/
-@[expose]
+
 noncomputable def abkNormalization {d : Nat} (ζ : ABKCutoff d) : ℝ :=
   Real.sqrt (abkNormalizationRadicand ζ)
 
 /-- The covariance prefactor `d |B_1| / (2π)^d`. -/
-@[expose]
+
 noncomputable def abkLGFCovarianceConstant (d : Nat) : ℝ :=
   (d : ℝ) * abkUnitBallVolume d / (2 * Real.pi) ^ d
 
 /-- The ABK Appendix A non-degeneracy constant
 `((d-1)/d) * (d |B_1|/(2π)^d) * log 3`. -/
-@[expose]
+
 noncomputable def abkCStar (d : Nat) : ℝ :=
   ((d : ℝ) - 1) / (d : ℝ) * abkLGFCovarianceConstant d * Real.log 3
 
 /-- The Gamma-function expression for `c_*` appearing in Appendix A. -/
-@[expose]
+
 noncomputable def abkCStarGammaFormula (d : Nat) : ℝ :=
   ((d : ℝ) - 1) * 2 ^ (1 - (d : ℝ)) * Real.pi ^ (-(d : ℝ) / 2) *
     Real.log 3 / ((d : ℝ) * Real.Gamma ((d : ℝ) / 2))
@@ -105,7 +103,7 @@ noncomputable def abkCStarGammaFormula (d : Nat) : ℝ :=
 @[simp]
 theorem abkMAlpha_inv {d : Nat} (ζ : ABKCutoff d) (α : ℝ) :
     (abkMAlpha ζ α)⁻¹ = abkMAlphaInv ζ α := by
-  simp only [abkMAlpha, inv_inv]
+  simp [abkMAlpha, inv_inv]
 
 /-- The canonical normalization squared is its radicand whenever the radicand is nonnegative. -/
 theorem abkNormalization_sq {d : Nat} (ζ : ABKCutoff d)
@@ -120,7 +118,7 @@ theorem abkCutoffSelfConvolution_zero {d : Nat} (ζ : ABKCutoff d) :
   refine integral_congr_ae ?_
   filter_upwards with y
   have hneg : ζ (-y) = ζ y := ζ.radial _ _ (euclideanNorm_neg y)
-  simp only [zero_sub]
+  simp [zero_sub]
   rw [hneg]
   ring
 
@@ -158,4 +156,3 @@ theorem abkNormalizationRadicand_mul_abkM0 {d : Nat} (ζ : ABKCutoff d) :
 
 end GaussianFields
 
-end

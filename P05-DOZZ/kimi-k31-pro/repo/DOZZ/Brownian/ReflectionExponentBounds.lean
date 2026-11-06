@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.Brownian.ReflectionExponent
+import DOZZ.Statements.Brownian.ReflectionExponent
 
 /-!
 # Parameter bounds for the Brownian reflection moment
@@ -13,7 +12,6 @@ The physical charge interval is exactly the positive subcritical moment range fo
 reflection mass, with drift `ν = Q - α`.
 -/
 
-@[expose] public section
 
 open Filter Topology
 
@@ -53,4 +51,3 @@ theorem tendsto_reflectionExponent_at_Q (γ : ℝ) :
 
 end DOZZ.Proofs
 
-end

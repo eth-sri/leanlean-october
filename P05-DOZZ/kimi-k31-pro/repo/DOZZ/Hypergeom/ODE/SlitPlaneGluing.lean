@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Hypergeom.ODE.BranchOverlap
-public import DOZZ.Hypergeom.ODE.SeriesEquation
+import DOZZ.Hypergeom.ODE.BranchOverlap
+import DOZZ.Hypergeom.ODE.SeriesEquation
 
 /-! Glue the principal and negative-axis ODE branches to the ordinary germ. -/
 
-@[expose] public section
 
 open Filter Set Topology
 

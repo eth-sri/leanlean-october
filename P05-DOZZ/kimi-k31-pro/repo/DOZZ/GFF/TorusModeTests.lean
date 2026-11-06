@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GFF.LocalEnergyBound
+import DOZZ.GFF.LocalEnergyBound
 import Mathlib.Analysis.Calculus.BumpFunction.FiniteDimension
 
 /-!
@@ -13,7 +12,6 @@ import Mathlib.Analysis.Calculus.BumpFunction.FiniteDimension
 Compactly supported real sine and cosine modes for the concrete periodic boxes used in G5.
 -/
 
-@[expose] public section
 
 open MeasureTheory Set Metric
 open scoped InnerProductSpace Topology
@@ -220,4 +218,3 @@ theorem localTorusSinTest_integral_sq_le_volume (R L : ℝ) (hR : 0 < R)
 
 end DOZZ
 
-end

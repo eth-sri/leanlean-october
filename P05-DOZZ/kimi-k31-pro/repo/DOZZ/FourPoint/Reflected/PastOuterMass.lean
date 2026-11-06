@@ -2,12 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Reflected.PlaneMassCode
-public import DOZZ.FourPoint.Reflected.PastPlaneWeight
-public import DOZZ.FourPoint.Reflected.SeparatedRegions
+import DOZZ.FourPoint.Reflected.PlaneMassCode
+import DOZZ.FourPoint.Reflected.PastPlaneWeight
+import DOZZ.FourPoint.Reflected.SeparatedRegions
 /-! A measurable retained outer mass on the complete stopped-past carrier. -/
-@[expose] public section
 open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -41,9 +39,9 @@ theorem reflected_pastOuterMassCode_eq (γ α₁ α₂ α₃ r : ℝ) (z : ℂ) 
   have hU0 : reflected_outerRegion r ⊆ ({0} : Set ℂ)ᶜ := by
     intro x hx
     have hn : 0 < ‖x‖ := hr.trans hx.1
-    simpa only [mem_compl_iff,mem_singleton_iff] using norm_pos_iff.mp hn
+    simpa [mem_compl_iff,mem_singleton_iff] using norm_pos_iff.mp hn
   rw [reflectedPastOuterMassCode,reflected_puncturedMassCode_eq _ _ _ hfin]
-  dsimp only [Prod.fst,Prod.snd]
+  dsimp [Prod.fst,Prod.snd]
   rw [setLIntegral_indicator hU,inter_eq_left.mpr hU0]
   apply setLIntegral_congr_fun hU
   intro x hx

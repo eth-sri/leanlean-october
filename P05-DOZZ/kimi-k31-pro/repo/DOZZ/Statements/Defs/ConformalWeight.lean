@@ -1,2 +1,1 @@
-module
-public import DOZZ.Statements.Defs.Q
+import DOZZ.Statements.Defs.Q

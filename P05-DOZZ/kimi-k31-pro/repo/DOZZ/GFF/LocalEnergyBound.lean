@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GFF.EquatorField
-public import DOZZ.GFF.LocalSchur
+import DOZZ.GFF.EquatorField
+import DOZZ.GFF.LocalSchur
 
 /-!
 # DOZZ.GFF.LocalEnergyBound
@@ -14,7 +13,6 @@ The G4 map is bounded in local `L²` by the square-integrable covariance kernel.
 continuity estimate used when comparing Fourier approximations to a test function.
 -/
 
-@[expose] public section
 
 open MeasureTheory Set Metric
 open scoped InnerProductSpace Topology
@@ -42,4 +40,3 @@ theorem norm_sq_equatorKernelLimitMap_le_localL2 (R : ℝ) (f : TestFn)
 
 end DOZZ
 
-end

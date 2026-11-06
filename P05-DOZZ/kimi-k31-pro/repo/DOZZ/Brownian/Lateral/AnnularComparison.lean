@@ -2,12 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Brownian.Lateral.RadialProjection
-public import DOZZ.Brownian.Lateral.IntervalMoments
-public import Mathlib.Topology.ContinuousMap.Compact
-public import Mathlib.Probability.Independence.Integration
+import DOZZ.Brownian.Lateral.RadialProjection
+import DOZZ.Brownian.Lateral.IntervalMoments
+import Mathlib.Topology.ContinuousMap.Compact
+import Mathlib.Probability.Independence.Integration
 
 /-!
 # Annular comparison for a given lateral chaos
@@ -19,7 +18,6 @@ order. No change of regularization or construction of a new lateral chaos is use
 The transfer includes positive orders above one and every inverse order.
 -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal NNReal Topology
@@ -104,12 +102,12 @@ theorem lateralProjectedGMC_reinsert_interval (γ a b : ℝ) (A : TwoSidedPath)
     by_cases hx : x = 0
     · have hm : x ∉ lateralLogAnnulus a b := fun h => h.1 hx
       rw [indicator_of_notMem hm]
-      simp only [hx, ite_true]
+      simp [hx]
     · by_cases hs : -Real.log ‖x‖ ∈ Ioc a b
       · have hm : x ∈ lateralLogAnnulus a b := ⟨hx, hs⟩
-        simp only [hx, ite_false, indicator_of_mem hs, indicator_of_mem hm]
+        simp [hx, indicator_of_mem hs, indicator_of_mem hm]
       · have hm : x ∉ lateralLogAnnulus a b := fun h => hs h.2
-        simp only [hx, ite_false, indicator_of_notMem hs, indicator_of_notMem hm]
+        simp [hx, indicator_of_notMem hs, indicator_of_notMem hm]
   rw [hfun, lintegral_indicator (measurableSet_lateralLogAnnulus a b),
     setLIntegral_const, one_mul]
 
@@ -152,7 +150,7 @@ theorem ennreal_rpow_le_of_exp_sandwich (x y : ℝ≥0∞) (C q : ℝ)
       ennreal_exp_rpow] at h
     rw [abs_of_nonneg hq]
     have he : -C * q = -q * C := by ring
-    simpa only [he] using h
+    simpa [he] using h
   · have hq' : 0 ≤ -q := by linarith
     have h := ENNReal.inv_le_inv.mpr (ENNReal.rpow_le_rpow hu hq')
     rw [← ENNReal.rpow_neg, ← ENNReal.rpow_neg, neg_neg,
@@ -160,7 +158,7 @@ theorem ennreal_rpow_le_of_exp_sandwich (x y : ℝ≥0∞) (C q : ℝ)
       ennreal_exp_rpow] at h
     rw [abs_of_neg (lt_of_not_ge hq)]
     have he : C * q = -(-q) * C := by ring
-    simpa only [he] using h
+    simpa [he] using h
 
 /-- Attenuation used to factor a moment comparison without inverse radial factors. -/
 noncomputable def lateralMomentAttenuation (γ a b q : ℝ) (A : TwoSidedPath) : ℝ≥0∞ :=
@@ -285,7 +283,7 @@ theorem lateral_interval_moment_le_annular_div {Ω : Type*} [MeasurableSpace Ω]
 
 /-- Uniform plane-annulus bounds and a uniform lower radial factor give uniform lateral
 bounds. Stationarity then supplies every translate required by the conclusion of
-`DOZZ.lateralGMC_interval_moment_range`. The two quantitative analytic inputs are explicit, so
+`lateralGMC_interval_moment_range`. The two quantitative analytic inputs are explicit, so
 this theorem does not presume their closure from intensity or local finiteness. -/
 theorem lateralGMC_uniform_interval_moments_of_annular_comparison
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (Kγ Kq : Set ℝ)

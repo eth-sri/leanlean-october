@@ -2,10 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.Brownian.Lateral.WickReinsertion
+import DOZZ.Brownian.Lateral.WickReinsertion
 /-! Identifying nonnegative compact real tests with their extended-real masses. -/
-@[expose] public section
 open MeasureTheory Set
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -18,7 +16,7 @@ theorem reflected_compact_test_integral_ofReal
     (hfK : tsupport (f : ℂ → ℝ) ⊆ K) :
     ENNReal.ofReal (∫ x, f x ∂μ) = ∫⁻ x in K, ENNReal.ofReal (f x) ∂μ := by
   let _ : IsFiniteMeasure (μ.restrict K) :=
-    ⟨by simpa only [Measure.restrict_apply_univ] using hμ⟩
+    ⟨by simpa [Measure.restrict_apply_univ] using hμ⟩
   have he : (∫ x, f x ∂μ.restrict K) = ∫ x, f x ∂μ := by
     apply setIntegral_eq_integral_of_forall_compl_eq_zero
     intro x hx

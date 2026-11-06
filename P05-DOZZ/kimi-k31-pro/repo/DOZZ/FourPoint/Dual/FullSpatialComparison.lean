@@ -2,11 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Reflected.GlobalCompactMassComparison
-public import DOZZ.FourPoint.Dual.SpatialKernel
+import DOZZ.FourPoint.Reflected.GlobalCompactMassComparison
+import DOZZ.FourPoint.Dual.SpatialKernel
 /-! The compact conditional comparison extends to full separated spatial regions. -/
-@[expose] public section
 open MeasureTheory ProbabilityTheory Set Filter Topology
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -56,11 +54,11 @@ theorem dual_full_spatial_comparison
   have hW : Measurable W := (reflected_global_reinsertionWeight_measurable γ).ennreal_ofReal
   have hU₀0 : U₀ ⊆ ({0} : Set ℂ)ᶜ := fun x hx => by
     have hh := hroot₀ hx
-    simpa only [mem_compl_iff, mem_singleton_iff] using
+    simpa [mem_compl_iff, mem_singleton_iff] using
       (show x ≠ 0 from fun he => hh (by simp [he]))
   have hU₁0 : U₁ ⊆ ({0} : Set ℂ)ᶜ := fun x hx => by
     have hh := hroot₁ hx
-    simpa only [mem_compl_iff, mem_singleton_iff] using
+    simpa [mem_compl_iff, mem_singleton_iff] using
       (show x ≠ 0 from fun he => hh (by simp [he]))
   let I₀ : ℕ → TwoSidedPath × Ω → ℝ≥0∞ := fun n p =>
     ∫⁻ x in U₀, ENNReal.ofReal (g₀ n x)*W (p.1, x) ∂N p.2
@@ -88,7 +86,7 @@ theorem dual_full_spatial_comparison
         (∫⁻ x in U₁, D.indicator (fun x => ENNReal.ofReal (k x)*W (a, x)) x ∂μ) =
         ∫⁻ x in D, ENNReal.ofReal (k x)*W (a, x) ∂μ := by
       rw [setLIntegral_indicator measurableSet_closedBall, inter_eq_left.mpr hD]
-    simpa only [he] using ht
+    simpa [he] using ht
   have hl₀ (p : TwoSidedPath × Ω) : Tendsto (fun n => I₀ n p) atTop (𝓝 (L₀ p)) :=
     reflected_global_spatial_mass_limit γ p.1 (N p.2) U₀ hU₀.measurableSet k hk g₀ hgU₀ hlim₀
   have hl₁ (p : TwoSidedPath × Ω) : Tendsto (fun n => I₁ n p) atTop (𝓝 (L₁ p)) :=
@@ -98,7 +96,7 @@ theorem dual_full_spatial_comparison
         ∫⁻ x in D, ENNReal.ofReal (g₁ n x)*W (p.1, x) ∂N p.2 := by
       apply setLIntegral_congr_fun measurableSet_closedBall
       intro x hx
-      dsimp only
+      dsimp
       rw [hgD n hx]
     change (∫⁻ x in D, ENNReal.ofReal (k x)*W (p.1, x) ∂N p.2) ≤
       ∫⁻ x in U₁, ENNReal.ofReal (g₁ n x)*W (p.1, x) ∂N p.2
@@ -146,8 +144,8 @@ theorem dual_full_spatial_comparison
         (∫⁻ x in K, ENNReal.ofReal (g₁ n x)*W (a, x) ∂N ω) = I₁ n (a, ω) := by
       exact (reflected_supported_test_lintegral (N ω) K hK.measurableSet (g₁ n) hg₁K _).trans
         (reflected_supported_test_lintegral (N ω) U₁ hU₁.measurableSet (g₁ n) (hgU₁ n) _).symm
-    dsimp only at hb
-    dsimp only [W] at he₀ he₁
+    dsimp at hb
+    dsimp [W] at he₀ he₁
     simp_rw [he₀, he₁] at hb
     have hO : Measurable (fun p => (I₀ n p+I₁ n p)^(-q)) := ((hi₀ n).add (hi₁ n)).pow_const (-q)
     have hC : Measurable (fun p : TwoSidedPath × (Ω × Ω) =>

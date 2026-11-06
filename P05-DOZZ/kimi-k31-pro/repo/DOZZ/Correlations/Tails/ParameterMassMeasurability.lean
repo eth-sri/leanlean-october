@@ -2,13 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.Tails.SingularMassMeasurability
+import DOZZ.Correlations.Tails.SingularMassMeasurability
 
 /-! Jointly measurable random weights against actual GMC versions. -/
 
-@[expose] public section
 open MeasureTheory
 open scoped ENNReal
 
@@ -53,7 +51,7 @@ theorem gmc_parameter_integral_aemeasurable
     rw [← ofReal_integral_eq_lintegral_ofReal (hFi ω)
       (ae_of_all _ fun x => hF0 _ x), ENNReal.toReal_ofReal
         (integral_nonneg (fun x => hF0 _ x))]
-  simpa only [heq] using hm.ennreal_toReal
+  simpa [heq] using hm.ennreal_toReal
 
 
 

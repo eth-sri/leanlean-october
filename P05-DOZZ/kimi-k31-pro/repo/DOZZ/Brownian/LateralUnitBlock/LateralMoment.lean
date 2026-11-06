@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Brownian.LateralUnitBlock.LateralInverse
-public import DOZZ.GMC.SharpMoments.InverseLimit
+import DOZZ.Brownian.LateralUnitBlock.LateralInverse
+import DOZZ.GMC.SharpMoments.InverseLimit
 
 /-! Every inverse moment of the lateral unit interval, using the actual source witnesses. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal NNReal

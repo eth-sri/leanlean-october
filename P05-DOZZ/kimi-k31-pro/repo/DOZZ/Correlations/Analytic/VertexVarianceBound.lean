@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.Analytic.ImaginaryNormalization
-public import Mathlib.Algebra.Order.Chebyshev
+import DOZZ.Correlations.Analytic.ImaginaryNormalization
+import Mathlib.Algebra.Order.Chebyshev
 
 /-! A diagonal variance bound for the imaginary Wick factor. -/
 
-@[expose] public section
 open MeasureTheory
 namespace DOZZ.Proofs
 
@@ -26,14 +24,14 @@ theorem vertex_variance_le_card_sum
   have hs : MemLp (fun ω => ∑ i, Z i ω) 2 P :=
     memLp_finsetSum Finset.univ (fun i _ => hZ i)
   have hi (i : I) : Integrable (fun ω => Z i ω ^ 2) P := by
-    simpa only [sq, Pi.mul_def] using (hZ i).integrable_mul (hZ i)
+    simpa [sq, Pi.mul_def] using (hZ i).integrable_mul (hZ i)
   have hsi : Integrable (fun ω => (∑ i, Z i ω) ^ 2) P := by
-    simpa only [sq, Pi.mul_def] using hs.integrable_mul hs
+    simpa [sq, Pi.mul_def] using hs.integrable_mul hs
   have hsum : Integrable (fun ω => ∑ i, Z i ω ^ 2) P :=
     integrable_finsetSum Finset.univ (fun i _ => hi i)
   have hb := integral_mono_ae hsi (hsum.const_mul (Fintype.card I : ℝ))
     (Filter.Eventually.of_forall (fun ω => by
-      simpa only [Finset.card_univ] using
+      simpa [Finset.card_univ] using
         (sq_sum_le_card_mul_sum_sq (s := Finset.univ) (f := fun i => Z i ω))))
   rw [integral_const_mul, integral_finsetSum Finset.univ (fun i _ => hi i)] at hb
   have he (i : I) : (∫ ω, Z i ω ^ 2 ∂P) = a i ^ 2 * gaussianVariance P (L i) := by
@@ -41,11 +39,11 @@ theorem vertex_variance_le_card_sum
     have hpoint : (fun ω => Z i ω ^ 2) =
         (fun ω => a i ^ 2 * (L i ω * L i ω)) := by
       funext ω
-      dsimp only [Z]
+      dsimp [Z]
       ring
     rw [hpoint, integral_const_mul]
   simp_rw [he] at hb
-  simpa only [gaussianVariance, gaussianCovariance, Z, sq] using hb
+  simpa [gaussianVariance, gaussianCovariance, Z, sq] using hb
 
 /-- The actual circle coordinate's raw second moment includes both regular equator pins. -/
 theorem circle_raw_variance
@@ -56,7 +54,7 @@ theorem circle_raw_variance
   obtain ⟨_, hm⟩ := circleAverage_isGaussianProcess P X Xc hX hc
   have he : gaussianVariance P (fun ω => Xc ω z r) =
       ProbabilityTheory.covariance (fun ω => Xc ω z r) (fun ω => Xc ω z r) P := by
-    simp only [gaussianVariance, gaussianCovariance, ProbabilityTheory.covariance,
+    simp [gaussianVariance, gaussianCovariance, ProbabilityTheory.covariance,
       hm z r, sub_zero]
   rw [he, circle_covariance_concentric P X Xc hX hc, min_self]
   ring
@@ -74,7 +72,7 @@ theorem mixed_vertex_variance_growth
   classical
   let B : ℝ := 1 + ∑ i, (Real.log (normPlus (z i)) + 1)
   have hB : 1 ≤ B := by
-    dsimp only [B]
+    dsimp [B]
     exact le_add_of_nonneg_right (Finset.sum_nonneg (fun i _ => by
       linarith [CirclePotential.log_normPlus_nonneg (z i)]))
   have hpin (i : Fin N) (r : ℝ) (hr : 0 ≤ r) : equatorCircleMean (z i) r ≤ B := by
@@ -85,7 +83,7 @@ theorem mixed_vertex_variance_growth
       Finset.single_le_sum (f := fun j : Fin N => Real.log (normPlus (z j)) + 1) (fun j _ => by linarith [CirclePotential.log_normPlus_nonneg (z j)])
         (Finset.mem_univ i)
     have ha := le_abs_self (equatorCircleMean (z i) r - Real.log (normPlus (z i)))
-    dsimp only [B]
+    dsimp [B]
     linarith
   refine ⟨(N + 1 : ℕ) * (1 + 2 * B), by positivity, ?_⟩
   intro r hr a
@@ -93,10 +91,10 @@ theorem mixed_vertex_variance_growth
       gaussianVariance P (fun ω => Xc ω (mixedVertexCenters z i)
         (mixedVertexTimes N r i)) ≤ (1 + 2 * B) * (r + 1) := by
     refine Fin.lastCases ?_ (fun j => ?_) i
-    · simp only [mixedVertexCenters, mixedVertexTimes, Fin.snoc_last]
+    · simp [mixedVertexCenters, mixedVertexTimes, Fin.snoc_last]
       rw [circle_raw_variance P X Xc hX hc, outward_equator_mean r hr]
       nlinarith
-    · simp only [mixedVertexCenters, mixedVertexTimes, Fin.snoc_castSucc]
+    · simp [mixedVertexCenters, mixedVertexTimes, Fin.snoc_castSucc]
       rw [circle_raw_variance P X Xc hX hc]
       have hi := hpin j r hr
       nlinarith

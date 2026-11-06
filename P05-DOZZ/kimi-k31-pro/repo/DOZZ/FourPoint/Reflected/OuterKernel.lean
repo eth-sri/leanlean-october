@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.FourPoint.GammaHalfKernel
+import DOZZ.Statements.FourPoint.GammaHalfKernel
 import Mathlib.Tactic
 
 /-! # Deterministic outer-kernel domination and the reflected limiting density -/
 
-public section
 
 namespace DOZZ.Proofs
 
@@ -50,9 +48,6 @@ theorem reflected_zero_kernel_weight (γ α₁ α₂ α₃ : ℝ) (x : ℂ)
   unfold gammaHalfKernel
   rw [sub_zero, hprod,
     show α₁ + α₂ + α₃ - γ / 2 = (α₁ - γ / 2) + α₂ + α₃ by ring]
-  have h0 := (Real.rpow_pos_of_pos hxpos (γ ^ 2 / 2)).ne'
-  have h1 := (Real.rpow_pos_of_pos hxpos (γ * (α₁ - γ / 2))).ne'
-  have h2 := (Real.rpow_pos_of_pos hx1pos (γ * α₂)).ne'
   field_simp
 
 /-- The kernel is continuous in the moving insertion for every fixed integration point. -/

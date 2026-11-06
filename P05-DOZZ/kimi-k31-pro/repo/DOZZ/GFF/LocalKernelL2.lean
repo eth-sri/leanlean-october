@@ -2,11 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GFF.CovarianceAlgebra
-public import Mathlib.Analysis.SpecialFunctions.Pow.Integral
-public import Mathlib.LinearAlgebra.Complex.FiniteDimensional
+import DOZZ.GFF.CovarianceAlgebra
+import Mathlib.Analysis.SpecialFunctions.Pow.Integral
+import Mathlib.LinearAlgebra.Complex.FiniteDimensional
 
 /-!
 # DOZZ.GFF.LocalKernelL2
@@ -15,7 +14,6 @@ The logarithmic diagonal singularity is square integrable locally in the plane. 
 analytic input for the local L² Schur bound used by the G5 construction.
 -/
 
-@[expose] public section
 
 open MeasureTheory Set Metric
 
@@ -185,7 +183,7 @@ theorem integrable_log_norm_sub_sq_on_pair_ball (R : ℝ) :
     funext p
     rfl
   have hpre' : IntegrableOn (fun p : ℂ × ℂ => (Real.log ‖p.1 - p.2‖) ^ 2) S μ := by
-    simpa only [heq] using hpreimageInt
+    simpa [heq] using hpreimageInt
   simpa [B, S, μ] using hpre'
 
 /-- The potential part of the covariance kernel is bounded on every ball, hence square integrable
@@ -267,4 +265,3 @@ theorem integrable_gffKernel_sq_on_pair_ball (R : ℝ) :
 
 end DOZZ
 
-end

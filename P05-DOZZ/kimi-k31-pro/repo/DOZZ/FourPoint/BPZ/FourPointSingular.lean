@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.BPZ.FourPointWard
-public import DOZZ.FourPoint.BPZ.SoftUniform
+import DOZZ.FourPoint.BPZ.FourPointWard
+import DOZZ.FourPoint.BPZ.SoftUniform
 
 /-! # A singular negative moment of the four-point mass
 
@@ -14,7 +13,6 @@ integrand is a multiple of `k`, giving `E[I^{1-q}] < ∞`. Near `z` the weight i
 `|x − z|^{γχ − 2}` times a bounded factor, and the rooted bound reduces the expectation to the
 Lebesgue integral of `|x − z|^{γχ − 2}` over a disk, which is finite since `γχ > 0`. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped ENNReal NNReal
@@ -59,13 +57,7 @@ theorem bpz_base_bdd_near {z : ℂ} (hz0 : z ≠ 0) (hz1 : z ≠ 1) :
   exact (le_abs_self _).trans (this.trans (le_max_left _ _))
 
 theorem bpzSoftWeight_zero_norm (z x : ℂ) :
-    bpzSoftWeight γ χ α₁ α₂ α₃ 0 z x = ‖x - z‖ ^ (γ * χ) * bpzBaseWeight γ χ α₁ α₂ α₃ x := by
-  unfold bpzSoftWeight
-  rw [show ((0 : ℝ) ^ 2) = 0 by norm_num, add_zero, Complex.normSq_eq_norm_sq,
-    ← Real.rpow_natCast, ← Real.rpow_mul (norm_nonneg _)]
-  congr 2
-  push_cast
-  ring
+    bpzSoftWeight γ χ α₁ α₂ α₃ 0 z x = ‖x - z‖ ^ (γ * χ) * bpzBaseWeight γ χ α₁ α₂ α₃ x := DOZZ.Proofs.bpzSoftWeight_zero z x
 
 theorem bpz_rpow_neg_mul_le_rpow_sub (x : ℝ≥0∞) {q : ℝ} (hq : 1 ≤ q) :
     x ^ (-q) * x ≤ x ^ (-(q - 1)) := by
@@ -110,8 +102,7 @@ theorem bpz_singular_moment_lt_top {Ω : Type*} [MeasurableSpace Ω] (P : Measur
     by_cases hxB : x ∈ B
     · have hfx : f x = ENNReal.ofReal (CB * ‖x - z‖ ^ (γ * χ - 2)) := Set.indicator_of_mem hxB _
       have hsing : ‖x - z‖ ^ (-2 : ℝ) * k x ≤ CB * ‖x - z‖ ^ (γ * χ - 2) := by
-        rw [hk, bpzSoftWeight_zero_norm, ← mul_assoc, ← Real.rpow_add hxz']
-        rw [show (-2 : ℝ) + γ * χ = γ * χ - 2 by ring, mul_comm]
+        rw [hk, bpzSoftWeight_zero_norm, ← mul_assoc, ← Real.rpow_add hxz', show (-2 : ℝ) + γ * χ = γ * χ - 2 by ring, mul_comm]
         exact mul_le_mul_of_nonneg_right (hCB x hxB) (Real.rpow_nonneg hxz'.le _)
       rw [hfx, ← ENNReal.ofReal_mul (by positivity), ← ENNReal.ofReal_add
         (mul_nonneg (by positivity) (hk0 x)) (mul_nonneg hCB0 (Real.rpow_nonneg (norm_nonneg _) _))]

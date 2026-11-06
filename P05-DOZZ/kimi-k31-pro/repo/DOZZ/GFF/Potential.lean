@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GFF.Defs
-public import Mathlib.Analysis.SpecialFunctions.Integrals.PosLogEqCircleAverage
+import DOZZ.GFF.Defs
+import Mathlib.Analysis.SpecialFunctions.Integrals.PosLogEqCircleAverage
 
 /-!
 # DOZZ.GFF.Potential
@@ -14,7 +13,6 @@ The unit-circle potential for the equator-pinned covariance, together with the i
 needed to define its circle pairings.
 -/
 
-public section
 
 open MeasureTheory
 open Set
@@ -25,8 +23,7 @@ namespace DOZZ
 /-- The probability measure on the unit circle centered at the origin. -/
 theorem circleMeasure_zero_isProbability : IsProbabilityMeasure (circleMeasure 0 0) := by
   refine ⟨?_⟩
-  rw [circleMeasure, neg_zero, Real.exp_zero, Measure.smul_apply]
-  rw [Measure.map_apply (measurable_circleMap 0 1) MeasurableSet.univ]
+  rw [circleMeasure, neg_zero, Real.exp_zero, Measure.smul_apply, Measure.map_apply (measurable_circleMap 0 1) MeasurableSet.univ]
   simp only [preimage_univ, Measure.restrict_apply_univ]
   rw [Real.volume_Ioc]
   simp only [sub_zero]
@@ -44,10 +41,8 @@ theorem integral_circleMeasure_zero_eq_circleAverage (f : ℂ → ℝ) (hf : Mea
     ∫ z, f z ∂circleMeasure 0 0 = Real.circleAverage f 0 1 := by
   rw [circleMeasure, integral_smul_measure]
   simp only [neg_zero, Real.exp_zero]
-  rw [integral_map (measurable_circleMap 0 1).aemeasurable hf.aestronglyMeasurable]
-  rw [← intervalIntegral.integral_of_le Real.two_pi_pos.le]
-  have hcoeff : ENNReal.toReal (ENNReal.ofReal ((2 * Real.pi)⁻¹)) = (2 * Real.pi)⁻¹ := by
-    exact ENNReal.toReal_ofReal (by positivity)
+  rw [integral_map (measurable_circleMap 0 1).aemeasurable hf.aestronglyMeasurable, ← intervalIntegral.integral_of_le Real.two_pi_pos.le]
+  have hcoeff : ENNReal.toReal (ENNReal.ofReal ((2 * Real.pi)⁻¹)) = (2 * Real.pi)⁻¹ := ENNReal.toReal_ofReal (by positivity)
   rw [hcoeff, Real.circleAverage_def]
 
 /-- A circle-integrable measurable function is integrable against `circleMeasure 0 0`. -/
@@ -98,7 +93,7 @@ theorem circleIntegrable_log_normPlus :
     (f₁ := fun z : ℂ => Real.log (normPlus z)) (f₂ := fun _ : ℂ => 0) ?_).2 ?_
   · intro z hz
     have hz_norm : ‖z‖ = 1 := by
-      simpa only [abs_one, mem_sphere_iff_norm, sub_zero] using hz
+      simpa [abs_one, mem_sphere_iff_norm, sub_zero] using hz
     simp [normPlus, hz_norm]
   · exact circleIntegrable_const 0 0 1
 
@@ -118,7 +113,6 @@ theorem integral_gffKernel_circleMeasure (x : ℂ) :
   have hconst : Integrable (fun _ : ℂ => Real.log (normPlus x)) (circleMeasure 0 0) :=
     integrable_const _
   have hplus := integrable_log_normPlus_circleMeasure
-  have hprob := circleMeasure_zero_isProbability
   have hconstInt :
       ∫ z : ℂ, Real.log (normPlus x) ∂circleMeasure 0 0 = Real.log (normPlus x) := by
     rw [integral_const]
@@ -136,14 +130,14 @@ theorem integral_gffKernel_circleMeasure (x : ℂ) :
         apply Real.circleAverage_congr_sphere
         intro z hz
         have hz_norm : ‖z‖ = 1 := by
-          simpa only [abs_one, mem_sphere_iff_norm, sub_zero] using hz
+          simpa [abs_one, mem_sphere_iff_norm, sub_zero] using hz
         simp [normPlus, hz_norm]
       _ = 0 := Real.circleAverage_const 0 0 1
   have hgroup : (fun z : ℂ => gffKernel x z) =
       (fun z => -Real.log ‖x - z‖ +
         (Real.log (normPlus x) + Real.log (normPlus z))) := by
     funext z
-    simp only [gffKernel]
+    simp [gffKernel]
     ring
   have hsplit :
       ∫ z : ℂ, -Real.log ‖x - z‖ +

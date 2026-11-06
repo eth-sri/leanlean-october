@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.Tails.CopiedCompactSingularLaw
-public import DOZZ.Correlations.Tails.OffCenterMultiplier
+import DOZZ.Correlations.Tails.CopiedCompactSingularLaw
+import DOZZ.Correlations.Tails.OffCenterMultiplier
 
 /-! Compact copied tests built from the literal locally C1 multiplier family. -/
 
-@[expose] public section
 open MeasureTheory Set
 
 namespace DOZZ.Proofs
@@ -36,15 +34,15 @@ theorem localized_translated_test
   have hsu : tsupport G ⊆ Metric.ball 0 (2*radius) := by
     intro x hx
     have h := hχs (hs hx)
-    have hn : ‖x‖ < min radius 1 := by simpa only [Metric.mem_ball, dist_zero_right] using h
+    have hn : ‖x‖ < min radius 1 := by simpa [Metric.mem_ball, dist_zero_right] using h
     have hr := hFamily.1
-    simp only [Metric.mem_ball, dist_zero_right]
+    simp [Metric.mem_ball, dist_zero_right]
     exact hn.trans_le ((min_le_left _ _).trans (by linarith))
   have hFc : ContinuousOn (fun x => F (z+x)) (Metric.ball 0 (2*radius)) := by
     have hcont := (hFamily.2.2.2.2 z hzk F hF).2.2.2.1.continuousOn
     exact hcont.comp (continuous_const.add continuous_id).continuousOn (by
       intro x hx
-      simpa only [Metric.mem_ball, dist_eq_norm, add_sub_cancel_left, sub_zero] using hx)
+      simpa [Metric.mem_ball, dist_eq_norm, add_sub_cancel_left, sub_zero] using hx)
   have hGc : Continuous G :=
     (χ.continuous.continuousOn.mul (hFc.mul hV.continuousOn)).continuous_of_tsupport_subset
       Metric.isOpen_ball hsu

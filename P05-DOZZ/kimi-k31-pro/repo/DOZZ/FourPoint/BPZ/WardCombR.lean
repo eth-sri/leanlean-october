@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.BPZ.WardDefs
+import DOZZ.FourPoint.BPZ.WardDefs
 
 /-! # The right side of the Ward identity for the four-point combination
 
@@ -16,7 +15,6 @@ has no atoms, the combination of the four double integrals is
 `(I² - z (z - 1) D²) / 4` with `I = ∫ k dM` and `D = ∫ k/(z - x) dM`, and taking expectations
 yields the combination of the moments `J` and `D₂`. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped ENNReal NNReal
@@ -50,8 +48,6 @@ theorem bpzWCR_norm_div_le {z x : ℂ} (hx : x ≠ z) {t : ℝ} (ht : 0 ≤ t) :
 theorem bpzWCR_alg_bound {A r s a b : ℝ} (hA : 0 ≤ A) (ha : 0 ≤ a) (hb : 0 ≤ b) :
     A * (1 + r + s) * (a * b) / 2 ≤ A / 2 * ((1 + r) * a * b + a * ((1 + s) * b)) := by
   have h : 0 ≤ A * (a * b) := mul_nonneg hA (mul_nonneg ha hb)
-  have e : A / 2 * ((1 + r) * a * b + a * ((1 + s) * b)) - A * (1 + r + s) * (a * b) / 2 =
-      A * (a * b) / 2 := by ring
   linarith
 
 /-! ### The pointwise combination -/
@@ -88,9 +84,6 @@ theorem bpzWCR_pointwise {z x y : ℂ} (k : ℂ → ℝ) (hxy : x ≠ y) (hx : x
       -(bpzG z x - bpzG z y) / (2 * (x - y)) := bpz_g_kern_combination hxy
   have h2 : (bpzG z x - bpzG z y) / (x - y) =
       -1 + z * (z - 1) / ((z - x) * (z - y)) := bpz_g_diff_quot hxy hx hy
-  have hxy' : x - y ≠ 0 := sub_ne_zero.mpr hxy
-  have hzx : z - x ≠ 0 := sub_ne_zero.mpr hx.symm
-  have hzy : z - y ≠ 0 := sub_ne_zero.mpr hy.symm
   rw [bpzWCR_H_eq, bpzWCR_H_eq, bpzWCR_H_eq, bpzWCR_H_eq, bpzWCR_alg]
   simp only [Complex.reCLM_apply, Complex.imCLM_apply]
   rw [h1, show -(bpzG z x - bpzG z y) / (2 * (x - y)) =

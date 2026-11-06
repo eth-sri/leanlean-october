@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.RetainedAnnuliFatou
-public import DOZZ.GMC.SharpMoments.ArbitraryCenter
+import DOZZ.FourPoint.RetainedAnnuliFatou
+import DOZZ.GMC.SharpMoments.ArbitraryCenter
 
 /-! Covariance and inverse-product bounds for two geometrically separated retained disks. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal Distributions
@@ -20,8 +18,8 @@ namespace DOZZ.Proofs
 theorem retained_disk_separation (u v x y : ℂ) (ρ σ d : ℝ)
     (hsep : ρ + σ + d ≤ ‖u - v‖)
     (hx : x ∈ Metric.ball u ρ) (hy : y ∈ Metric.ball v σ) : d ≤ ‖x - y‖ := by
-  have hx' : ‖x - u‖ < ρ := by simpa only [Metric.mem_ball, dist_eq_norm] using hx
-  have hy' : ‖y - v‖ < σ := by simpa only [Metric.mem_ball, dist_eq_norm] using hy
+  have hx' : ‖x - u‖ < ρ := by simpa [Metric.mem_ball, dist_eq_norm] using hx
+  have hy' : ‖y - v‖ < σ := by simpa [Metric.mem_ball, dist_eq_norm] using hy
   have he : u - v = (u - x) + (x - y) + (y - v) := by abel
   have hn := (norm_add_le (u - x + (x - y)) (y - v)).trans
     (add_le_add (norm_add_le (u - x) (x - y)) le_rfl)
@@ -43,7 +41,7 @@ theorem circle_cross_covariance_bound
   have hl : Real.log (1 / max ‖x - y‖ (Real.exp (-r))) ≤ Real.log (1 / d) :=
     Real.log_le_log (one_div_pos.mpr hp) (one_div_le_one_div_of_le hd hmax)
   have hsum := add_le_add hl (le_refl (Real.log 3 + 2 * Real.log (1 + L)))
-  exact (hb.trans (by simpa only [gmcCircleChartRemainder] using hsum)).trans
+  exact (hb.trans (by simpa [gmcCircleChartRemainder] using hsum)).trans
     (le_max_right _ _)
 
 /-- Cutoff joint inverse moments decouple at a cost independent of either retained radius. -/
@@ -80,8 +78,8 @@ theorem joint_retained_disks_cutoff_inverse_bound
     refine ⟨1, ?_⟩
     intro x
     by_cases hx : x ∈ D
-    · simp only [Set.indicator_of_mem hx, le_refl]
-    · simp only [Set.indicator_of_notMem hx, zero_le]
+    · simp [Set.indicator_of_mem hx]
+    · simp [Set.indicator_of_notMem hx, zero_le]
   have hs₀ : ∀ x, x ∉ A → h₀ x = 0 := fun x hx => Set.indicator_of_notMem hx _
   have hs₁ : ∀ x, x ∈ A → h₁ x = 0 := by
     intro x hx
@@ -93,7 +91,7 @@ theorem joint_retained_disks_cutoff_inverse_bound
   let Φ : Ω → ℂ → ℝ := fun ω x => Xc ω x r
   have hΦ := circleAverage_isCenteredGaussianField P X hX Xc hXc r
   have hprod : ν.prod ν = (gmcReferenceMeasure.prod gmcReferenceMeasure).restrict (U ×ˢ U) := by
-    dsimp only [ν]
+    dsimp [ν]
     rw [Measure.prod_restrict]
   have hcross : ∀ᵐ xy ∂ν.prod ν, (xy.1 ∈ A ↔ xy.2 ∉ A) →
       (∫ ω, Φ ω xy.1 * Φ ω xy.2 ∂P) ≤
@@ -103,11 +101,11 @@ theorem joint_retained_disks_cutoff_inverse_bound
     intro hdifferent
     have hn (x : ℂ) (hx : x ∈ U) : ‖x‖ ≤ L := by
       rcases hx with hx | hx
-      · have hxr : ‖x - u‖ < ρ := by simpa only [A, Metric.mem_ball, dist_eq_norm] using hx
+      · have hxr : ‖x - u‖ < ρ := by simpa [A, Metric.mem_ball, dist_eq_norm] using hx
         have hnorm := norm_add_le (x - u) u
         rw [sub_add_cancel] at hnorm
         linarith only [hxr, hnorm, hu]
-      · have hxr : ‖x - v‖ < σ := by simpa only [B, Metric.mem_ball, dist_eq_norm] using hx
+      · have hxr : ‖x - v‖ < σ := by simpa [B, Metric.mem_ball, dist_eq_norm] using hx
         have hnorm := norm_add_le (x - v) v
         rw [sub_add_cancel] at hnorm
         linarith only [hxr, hnorm, hv]
@@ -131,7 +129,7 @@ theorem joint_retained_disks_cutoff_inverse_bound
     rw [fieldChaosMass_indicator P Φ gmcReferenceMeasure B U hB subset_union_right,
       ← regularizedGMC_apply_eq_fieldChaosMass P X hX Xc hXc γ r B hB ω]
   simp_rw [hm0, hm1] at hk
-  exact hk
+  assumption
 
 /-- The retained-annulus comparison on the supplied chaos: two separated retained disks
 have joint inverse moments bounded by their marginal moments and one geometric Gaussian factor.
@@ -199,7 +197,7 @@ theorem joint_retained_annuli_inverse_bound
         fun ω => (regularizedGMC P Xc γ n ω A) ^ (-a) * (regularizedGMC P Xc γ n ω B) ^ (-b) := by
       filter_upwards [regularizedGMC_finite_ae P X hX Xc hXc γ n] with ω hω
       let _ := hω
-      dsimp only [f₀, f₁]
+      dsimp [f₀, f₁]
       rw [ENNReal.ofReal_toReal (measure_ne_top _ _), ENNReal.ofReal_toReal (measure_ne_top _ _)]
     rw [lintegral_congr_ae he]
     exact joint_retained_disks_cutoff_inverse_bound P X hX Xc hXc γ n (Nat.cast_nonneg n)
@@ -210,9 +208,7 @@ theorem joint_retained_annuli_inverse_bound
       fun ω => (M ω A) ^ (-a) * (M ω B) ^ (-b) := by
     funext ω
     let _ := hM.1 ω
-    dsimp only [g₀, g₁]
+    dsimp [g₀, g₁]
     rw [ENNReal.ofReal_toReal (measure_ne_top _ _), ENNReal.ofReal_toReal (measure_ne_top _ _)]
-  rw [he] at hfatou
-  exact hfatou
-
+  rwa [he] at hfatou
 end DOZZ.Proofs

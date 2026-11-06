@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.Residue.EqualReduction
-public import DOZZ.Correlations.Residue.UniformFamilies
+import DOZZ.Correlations.Residue.EqualReduction
+import DOZZ.Correlations.Residue.UniformFamilies
 
 /-! Reduction of the complete residue bridge (erratum K30, see docs/ERRATA-AND-DEVIATIONS.md) to
 the two exact tail theorems `DOZZ.oneInsertion_tail_uniform` and
@@ -15,7 +14,6 @@ proof-binder names are prefixed by an underscore; their premises and quantifier 
 unchanged.
 -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -117,7 +115,7 @@ theorem residue_unitVolume_bridge_of_insertion_tails
         exact hCb 3 rfl 7 rfl α3 rfl α3 rfl _ ⟨ε, ⟨hε.le, hε1.le⟩, rfl⟩
           _ ⟨ε, ⟨hε.le, hε1.le⟩, rfl⟩ t ht)
     refine ⟨B, Z, hZ, hB α3 (Or.inl rfl), ?_⟩
-    simpa only [bridgeMultiplicity, ite_true, sub_self, zero_add] using hlim
+    simpa [bridgeMultiplicity, ite_true, sub_self, zero_add] using hlim
   · have hlt : α2 < α3 := lt_of_le_of_ne hα.2.1 heq
     let Fs : ℂ → Set (ℂ → ℝ) := fun _ => {F | ∃ ε ∈ Icc 0 1, F = residueLocalWeight γ (2 * α3 + ε) α2 7}
     obtain ⟨s, d, l, hF⟩ := residue_localWeight_uniform_family γ (2 * α3) α2 1 hγ.le
@@ -126,12 +124,12 @@ theorem residue_unitVolume_bridge_of_insertion_tails
       isCompact_singleton hcharge Fs (1 / 2) s d l hF
     let η := oneInsertionErrorCeiling γ α3 / 2
     have he : 0 < oneInsertionErrorCeiling γ α3 := residue_oneInsertionErrorCeiling_pos γ α3 hγ hα.2.2.1 hα.2.2.2
-    have hη : 0 < η := by dsimp only [η]; positivity
+    have hη : 0 < η := by dsimp [η]; positivity
     have hηbound : ∀ α ∈ ({α3} : Set ℝ), η < oneInsertionErrorCeiling γ α := by
       intro α hαs
       have hh : α = α3 := hαs
       rw [hh]
-      dsimp only [η]
+      dsimp [η]
       linarith only [he]
     obtain ⟨C, hC, hCb⟩ := htail η hη hηbound
     have hlim := residue_unit_unequal_of_oneInsertion_estimate P X M γ α2 α3
@@ -139,6 +137,6 @@ theorem residue_unitVolume_bridge_of_insertion_tails
         intro ε hε hε1 t ht
         exact hCb 3 rfl α3 rfl _ ⟨ε, ⟨hε.le, hε1.le⟩, rfl⟩ t ht)
     refine ⟨B, Z, hZ, hB α3 rfl, ?_⟩
-    simpa only [bridgeMultiplicity, ite_eq_right heq] using hlim
+    simpa [bridgeMultiplicity, ite_eq_right heq] using hlim
 
 end DOZZ.Proofs

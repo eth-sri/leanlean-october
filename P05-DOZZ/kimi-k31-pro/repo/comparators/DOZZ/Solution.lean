@@ -1,9 +1,8 @@
 -- Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 -- Released under Apache 2.0 license as described in the file LICENSE.
 
-module
 
-public import Mathlib
+import Mathlib
 import DOZZ.Statements.Roots.DozzMain
 import DOZZ.Statements.Roots.DozzUnitVolume
 import DOZZ.Statements.Roots.DozzExistence
@@ -60,7 +59,7 @@ covers them. `ENNReal.toReal` would send an infinite expectation to `0`, which
 `equatorGFF_extendedSeiberg_rho_moment` rules out on the extended Seiberg domain.
 -/
 
-@[expose] public section
+section
 
 noncomputable section
 
@@ -110,8 +109,7 @@ def IsUpsilon (γ : ℝ) (U : ℂ → ℂ) : Prop :=
 
 /-- `Υ_{γ/2}` is unique: two functions satisfying `IsUpsilon γ` coincide. -/
 theorem IsUpsilon.unique {γ : ℝ} {U V : ℂ → ℂ} (hγ : 0 < γ) (hU : IsUpsilon γ U)
-    (hV : IsUpsilon γ V) : U = V := by
-  exact DOZZ.IsUpsilon.unique hγ hU hV
+    (hV : IsUpsilon γ V) : U = V := DOZZ.IsUpsilon.unique hγ hU hV
 
 /-- The base `π μ l(γ²/4)` of the DOZZ formula ([KRV, §1.2]); `l(γ²/4)` is real for real `γ`. -/
 def dozzBase (γ μ : ℝ) : ℝ := Real.pi * μ * (lFun ((γ : ℂ) ^ 2 / 4)).re
@@ -218,15 +216,13 @@ theorem equatorGFF_GMC_unique_ae {Ω : Type*} [MeasurableSpace Ω]
     (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
     (γ : ℝ) (M N : Ω → Measure ℂ)
     (hM : IsGMCOf P X γ M) (hN : IsGMCOf P X γ N) :
-    ∀ᵐ ω ∂P, M ω = N ω := by
-  exact DOZZ.equatorGFF_GMC_unique_ae P X hX γ M N hM hN
+    ∀ᵐ ω ∂P, M ω = N ω := DOZZ.equatorGFF_GMC_unique_ae P X hX γ M N hM hN
 
 /-- The chaos is not trivial: for `0 < γ < 2` it is not almost surely the zero measure. -/
 theorem equatorGFF_GMC_nontrivial {Ω : Type*} [MeasurableSpace Ω]
     (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
     (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) :
-    ¬ ∀ᵐ ω ∂P, M ω = 0 := by
-  exact DOZZ.equatorGFF_GMC_nontrivial P X hX γ hγ hγ2 M hM
+    ¬ ∀ᵐ ω ∂P, M ω = 0 := DOZZ.equatorGFF_GMC_nontrivial P X hX γ hγ hγ2 M hM
 
 /-- The joint law of the field and its chaos does not depend on the model: for `0 < γ < 2` and
 two models on arbitrary probability spaces, the test evaluations and the chaos have the same
@@ -239,8 +235,7 @@ theorem equatorGFF_GMC_law_transport {Ω Ω' : Type*} [MeasurableSpace Ω] [Meas
     (M' : Ω' → Measure ℂ) (hM' : IsGMCOf P' X' γ M')
     (H : (TestFn → ℝ) → Measure ℂ → ℝ≥0∞)
     (hH : Measurable (fun q : (TestFn → ℝ) × Measure ℂ => H q.1 q.2)) :
-    ∫⁻ ω, H (fun f => X ω f) (M ω) ∂P = ∫⁻ ω', H (fun f => X' ω' f) (M' ω') ∂P' := by
-  exact DOZZ.equatorGFF_GMC_law_transport P X hX P' X' hX' γ hγ hγ2 M hM M' hM' H hH
+    ∫⁻ ω, H (fun f => X ω f) (M ω) ∂P = ∫⁻ ω', H (fun f => X' ω' f) (M' ω') ∂P' := DOZZ.equatorGFF_GMC_law_transport P X hX P' X' hX' γ hγ hγ2 M hM M' hM' H hH
 
 /-! ## Structure constants -/
 
@@ -264,8 +259,7 @@ theorem equatorGFF_extendedSeiberg_rho_moment {Ω : Type*} [MeasurableSpace Ω]
     (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
     (α₁ α₂ α₃ : ℝ) (hα : ExtendedSeiberg3 γ α₁ α₂ α₃) :
     0 < ∫⁻ ω, rho γ (M ω) α₁ α₂ α₃ ^ (-sExp γ α₁ α₂ α₃) ∂P ∧
-      ∫⁻ ω, rho γ (M ω) α₁ α₂ α₃ ^ (-sExp γ α₁ α₂ α₃) ∂P < ⊤ := by
-  exact DOZZ.equatorGFF_extendedSeiberg_rho_moment P X hX γ hγ hγ2 M hM α₁ α₂ α₃ hα
+      ∫⁻ ω, rho γ (M ω) α₁ α₂ α₃ ^ (-sExp γ α₁ α₂ α₃) ∂P < ⊤ := DOZZ.equatorGFF_extendedSeiberg_rho_moment P X hX γ hγ hγ2 M hM α₁ α₂ α₃ hα
 
 /-- The unit-volume structure constant `C̄_γ = μ^s C_γ / Γ(s) = (2/γ) E[ρ^{-s}]` ([KRV, §2.2]). -/
 def unitVolumeStructureConstant {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
@@ -283,8 +277,7 @@ theorem dozz_formula (γ μ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (hμ : 0 < μ)
     (U : ℂ → ℂ) (hU : IsUpsilon γ U)
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
     (M : Ω → Measure ℂ) (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M) :
-    (structureConstant P M γ μ α₁ α₂ α₃ : ℂ) = dozzFormula γ μ U α₁ α₂ α₃ := by
-  exact DOZZ.dozz_main γ μ hγ hγ2 hμ α₁ α₂ α₃ hα hs U hU P X M hX hM
+    (structureConstant P M γ μ α₁ α₂ α₃ : ℂ) = dozzFormula γ μ U α₁ α₂ α₃ := DOZZ.dozz_main γ μ hγ hγ2 hμ α₁ α₂ α₃ hα hs U hU P X M hX hM
 
 /-- **The DOZZ formula at every point** (unit-volume form). On the whole extended Seiberg domain,
 including the poles `s ∈ {0, -1, -2, …}` of `Γ(s)`, the unit-volume structure constant is the limit
@@ -300,15 +293,13 @@ theorem dozz_unitVolume (γ μ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (hμ : 0 < 
           dozzFormula γ μ U a.1 a.2.1 a.2.2)
       (𝓝[{a | ExtendedSeiberg3 γ a.1 a.2.1 a.2.2 ∧
               ∀ n : ℕ, sExp γ a.1 a.2.1 a.2.2 ≠ -(n : ℝ)}] (α₁, α₂, α₃))
-      (𝓝 (unitVolumeStructureConstant P M γ α₁ α₂ α₃ : ℂ)) := by
-  exact DOZZ.dozz_unitVolume γ μ hγ hγ2 hμ α₁ α₂ α₃ hα U hU P X M hX hM
+      (𝓝 (unitVolumeStructureConstant P M γ α₁ α₂ α₃ : ℂ)) := DOZZ.dozz_unitVolume γ μ hγ hγ2 hμ α₁ α₂ α₃ hα U hU P X M hX hM
 
 /-- **Existence.** For `0 < γ < 2` there are a function `Υ_{γ/2}` and a probability space carrying
 an equator-pinned Gaussian free field and its chaos. -/
 theorem dozz_existence (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) :
     (∃ U : ℂ → ℂ, IsUpsilon γ U) ∧
       ∃ (Ω : Type) (_ : MeasurableSpace Ω) (P : Measure Ω) (X : Ω → Distr) (M : Ω → Measure ℂ),
-        IsEquatorGFF P X ∧ IsGMCOf P X γ M := by
-  exact DOZZ.dozz_existence γ hγ hγ2
+        IsEquatorGFF P X ∧ IsGMCOf P X γ M := DOZZ.dozz_existence γ hγ hγ2
 
 end DOZZChallenge

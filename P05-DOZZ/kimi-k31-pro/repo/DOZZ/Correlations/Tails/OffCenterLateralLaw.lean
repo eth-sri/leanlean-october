@@ -1,4 +1,3 @@
-module
-public import DOZZ.Correlations.Tails.TranslatedTests
-public import DOZZ.GMC.Moments.GaussianFDD
-public import DOZZ.GMC.GaussianInputs
+import DOZZ.Correlations.Tails.TranslatedTests
+import DOZZ.GMC.Moments.GaussianFDD
+import DOZZ.GMC.GaussianInputs

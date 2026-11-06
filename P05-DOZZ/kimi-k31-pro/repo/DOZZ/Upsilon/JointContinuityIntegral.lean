@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.Defs.DualMu
+import DOZZ.Statements.Defs.DualMu
 import DOZZ.Upsilon.Continuation
 import DOZZ.Upsilon.FullShifts
 import DOZZ.Upsilon.Uniqueness
@@ -24,7 +23,6 @@ import Mathlib.MeasureTheory.Integral.IntegrableOn
 # Joint parameter and argument continuity of the entire Upsilon family
 -/
 
-@[expose] public section
 
 open Complex Filter MeasureTheory Set Topology
 
@@ -54,17 +52,15 @@ private theorem jointCanceledNumerator_contDiffOn :
   have hγproj : ContDiffAt ℝ 3 (fun x : (ℝ × ℂ) × ℝ => x.1.1) p := by fun_prop
   have hzproj : ContDiffAt ℝ 3 (fun x : (ℝ × ℂ) × ℝ => x.1.2) p := by fun_prop
   have htproj : ContDiffAt ℝ 3 (fun x : (ℝ × ℂ) × ℝ => x.2) p := by fun_prop
-  have hγcast : ContDiffAt ℝ 3 (fun x : (ℝ × ℂ) × ℝ => (x.1.1 : ℂ)) p := by
-    exact ContDiffAt.comp p Complex.ofRealCLM.contDiff.contDiffAt hγproj
-  have htcast : ContDiffAt ℝ 3 (fun x : (ℝ × ℂ) × ℝ => (x.2 : ℂ)) p := by
-    exact ContDiffAt.comp p Complex.ofRealCLM.contDiff.contDiffAt htproj
+  have hγcast : ContDiffAt ℝ 3 (fun x : (ℝ × ℂ) × ℝ => (x.1.1 : ℂ)) p := ContDiffAt.comp p Complex.ofRealCLM.contDiff.contDiffAt hγproj
+  have htcast : ContDiffAt ℝ 3 (fun x : (ℝ × ℂ) × ℝ => (x.2 : ℂ)) p := ContDiffAt.comp p Complex.ofRealCLM.contDiff.contDiffAt htproj
   have hmap : ContDiffAt ℝ 3 jointToComplex p := by
     change ContDiffAt ℝ 3
       (fun x : (ℝ × ℂ) × ℝ => (((x.1.1 : ℂ), x.1.2), (x.2 : ℂ))) p
     exact (hγcast.prodMk hzproj).prodMk htcast
   have hq0 : (jointToComplex p).1.1 ≠ 0 := by
     apply Complex.ofReal_ne_zero.mpr
-    exact hp0
+    assumption
   have hnumAt : ContDiffAt ℝ 3 jointComplexNumerator (jointToComplex p) :=
     (jointComplexNumerator_contDiffAt hq0).restrict_scalars ℝ
   have hAt : ContDiffAt ℝ 3 jointCanceledNumerator p := by
@@ -89,21 +85,17 @@ private theorem jointThirdDerivative_eq_iteratedDeriv
       iteratedDeriv 3 (fun t : ℝ => jointCanceledNumerator (q.1, t)) q.2 := by
   let line : ℝ → (ℝ × ℂ) × ℝ := fun t => (q.1, t)
   let v : (ℝ × ℂ) × ℝ := ((0 : ℝ × ℂ), (1 : ℝ))
-  have hline : HasDerivAt line v q.2 := by
-    simpa [line, v] using (hasDerivAt_const q.2 q.1).prodMk (hasDerivAt_id q.2)
   have hlineD : deriv line = fun _ => v := by
     funext t
     exact ((hasDerivAt_const t q.1).prodMk (hasDerivAt_id t)).deriv
   have hline2 : iteratedDeriv 2 line q.2 = 0 := by
-    rw [iteratedDeriv_succ]
-    rw [show iteratedDeriv 1 line = deriv line by simp, hlineD]
+    rw [iteratedDeriv_succ, show iteratedDeriv 1 line = deriv line by simp, hlineD]
     simp
   have hline3 : iteratedDeriv 3 line q.2 = 0 := by
     rw [iteratedDeriv_succ]
     rw [show iteratedDeriv 2 line = fun _ => 0 by
       funext t
-      rw [iteratedDeriv_succ]
-      rw [show iteratedDeriv 1 line = deriv line by simp, hlineD]
+      rw [iteratedDeriv_succ, show iteratedDeriv 1 line = deriv line by simp, hlineD]
       simp]
     simp
   have hH : ContDiffAt ℝ 3 jointCanceledNumerator (line q.2) := by
@@ -112,7 +104,7 @@ private theorem jointThirdDerivative_eq_iteratedDeriv
     (hg := hH)
     (hf := (by fun_prop : ContDiffAt ℝ 3 line q.2))
   rw [hline2, hline3] at hcomp
-  simp only [line, hlineD] at hcomp
+  simp [line, hlineD] at hcomp
   have hcross₁ :
       iteratedFDeriv ℝ 2 jointCanceledNumerator q ![0, v] = 0 := by
     apply ContinuousMultilinearMap.map_coord_zero _ 0
@@ -189,7 +181,6 @@ private theorem deriv_real_restrict (F : ℂ → ℂ) (hF : Differentiable ℂ F
 
 private theorem jointNumeratorComplexAt_contDiff {γ : ℝ} (hγ : γ ≠ 0) (z : ℂ) :
     ContDiff ℂ 3 (jointNumeratorComplexAt γ z) := by
-  have hγC : (γ : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hγ
   change ContDiff ℂ 3 (fun t : ℂ =>
     ((γ : ℂ) / 4 + (γ : ℂ)⁻¹ - z) ^ 2 * Complex.exp (-t) *
         (Complex.sinh (t * (γ : ℂ) / 4) * Complex.sinh (t / (γ : ℂ))) -
@@ -219,8 +210,7 @@ private theorem jointNumeratorComplexAt_deriv_eq (γ : ℝ) (z : ℂ) :
 
 private theorem jointNumeratorComplexAt_deriv_zero {γ : ℝ}
     (z : ℂ) : deriv (jointNumeratorComplexAt γ z) 0 = 0 := by
-  rw [jointNumeratorComplexAt_deriv_eq]
-  simp [jointNumeratorComplexAtDerivative]
+  simp [jointNumeratorComplexAt_deriv_eq, jointNumeratorComplexAtDerivative]
 
 private theorem jointNumeratorComplexAt_iteratedDeriv_two_zero {γ : ℝ}
     (hγ : γ ≠ 0) (z : ℂ) :
@@ -256,8 +246,7 @@ private theorem jointNumerator_taylorWithinEval_zero (γ : ℝ) (z : ℂ)
       (by norm_num)
   have hfderiv0 : deriv f 0 = 0 := by
     change deriv (jointNumeratorAt γ z) 0 = 0
-    rw [jointNumeratorAt_eq_complex_restrict]
-    rw [deriv_real_restrict _ hF]
+    rw [jointNumeratorAt_eq_complex_restrict, deriv_real_restrict _ hF]
     exact jointNumeratorComplexAt_deriv_zero (γ := γ) z
   have hftwo : iteratedDeriv 2 f 0 = 0 := by
     change iteratedDeriv 2 (fun t : ℝ => jointNumeratorComplexAt γ z (t : ℂ)) 0 = 0
@@ -284,7 +273,7 @@ private theorem jointNumerator_taylorWithinEval_zero (γ : ℝ) (z : ℂ)
     have hcomp := ContDiffAt.comp 0 hAt hline
     change ContDiffAt ℝ 3 (fun s : ℝ => jointCanceledNumerator ((γ, z), s)) 0 at hcomp
     change ContDiffAt ℝ 3 (fun s : ℝ => jointCanceledNumerator ((γ, z), s)) 0
-    exact hcomp
+    assumption
   have h0 : iteratedDerivWithin 0 f (Set.Icc 0 1) 0 = 0 := by
     simp [hf0]
   have h1 : iteratedDerivWithin 1 f (Set.Icc 0 1) 0 = 0 := by
@@ -296,7 +285,7 @@ private theorem jointNumerator_taylorWithinEval_zero (γ : ℝ) (z : ℂ)
     rw [iteratedDerivWithin_eq_iteratedDeriv
       (uniqueDiffOn_Icc (by norm_num : (0 : ℝ) < 1))
       (hfAt.of_le (by norm_num)) (by simp)]
-    exact hftwo
+    assumption
   rw [taylor_within_apply]
   simp [f, Finset.sum_range_succ, h0, h1, h2]
 
@@ -355,11 +344,11 @@ private theorem jointNumeratorAt_eq_source {γ : ℝ} (hγ : 0 < γ) (z : ℂ) (
       (Q γ / 2 - z) ^ 2 * Real.exp (-t) *
           (Real.sinh (t * γ / 4) * Real.sinh (t / γ) : ℂ) -
         Complex.sinh ((Q γ / 2 - z) * (t / 2)) ^ 2 := by
-  simp only [jointNumeratorAt, jointCanceledNumerator, jointToComplex,
+  simp [jointNumeratorAt, jointCanceledNumerator, jointToComplex,
     jointComplexNumerator]
   rw [jointW_eq_source hγ z]
-  simp only [Complex.ofReal_exp, Complex.ofReal_sinh, Complex.ofReal_neg,
-    Complex.ofReal_mul, Complex.ofReal_div, Complex.ofReal_ofNat]
+  simp [Complex.ofReal_exp,
+    Complex.ofReal_div, Complex.ofReal_ofNat]
 
 private theorem upsilonLogIntegrand_eq_jointNumerator_div {γ : ℝ}
     (hγ : 0 < γ) (z : ℂ) {t : ℝ} (ht : 0 < t) :
@@ -459,7 +448,6 @@ private theorem jointTailLower_le {γ₀ γ : ℝ} (hγ₀ : 0 < γ₀)
 private theorem Q_le_jointUpper {γ₀ γ : ℝ} (hγ₀ : 0 < γ₀)
     (hγ : γ ∈ Set.Icc (γ₀ / 2) (γ₀ + 1)) :
     Q γ ≤ (γ₀ + 1) / 2 + 4 / γ₀ := by
-  have hγpos : 0 < γ := lt_of_lt_of_le (by positivity) hγ.1
   have hinv₁ : 1 / γ ≤ 1 / (γ₀ / 2) :=
     one_div_le_one_div_of_le (by positivity : 0 < γ₀ / 2) hγ.1
   have hinv : 1 / γ ≤ 2 / γ₀ := by
@@ -495,11 +483,6 @@ private theorem jointMajorant_integrable {γ₀ : ℝ} {z₀ : ℂ} {C : ℝ}
   have hη : 0 < jointStripMargin γ₀ z₀ := by
     unfold jointStripMargin
     exact lt_min (by positivity) (by linarith)
-  have hA : 0 ≤ 4 * C * Real.exp 1 + jointWBound γ₀ z₀ ^ 2 := by
-    unfold jointWBound
-    positivity
-  have hB : 0 ≤ (jointTailLower γ₀)⁻¹ :=
-    le_of_lt (inv_pos.mpr (jointTailLower_pos hγ₀))
   have hmajor₁ : Integrable (fun t : ℝ =>
       (4 * C * Real.exp 1 + jointWBound γ₀ z₀ ^ 2) * Real.exp (-t))
       (volume.restrict (Set.Ioi 0)) := by
@@ -686,8 +669,7 @@ theorem upsilonLog_continuousAt_joint {γ₀ : ℝ} {z₀ : ℂ}
   obtain ⟨C, hC, hTaylor⟩ :=
     exists_jointNumerator_taylor_bound (γ₀ := γ₀) (z₀ := z₀) hγ₀
   let B : ℝ → ℝ := jointMajorant γ₀ z₀ C
-  have hBint : Integrable B (volume.restrict (Set.Ioi 0)) := by
-    exact jointMajorant_integrable hγ₀ hz₀ hzQ₀ hC
+  have hBint : Integrable B (volume.restrict (Set.Ioi 0)) := jointMajorant_integrable hγ₀ hz₀ hzQ₀ hC
   have hNear : ∀ᶠ p : ℝ × ℂ in 𝓝 (γ₀, z₀), dist p (γ₀, z₀) < ε :=
     Metric.ball_mem_nhds _ hε
   let F : ℝ × ℂ → ℝ → ℂ := fun p t => upsilonLogIntegrand p.1 p.2 t
@@ -789,4 +771,3 @@ theorem upsilonLog_continuousAt_joint {γ₀ : ℝ} {z₀ : ℂ}
 
 end DOZZ.Proofs
 
-end

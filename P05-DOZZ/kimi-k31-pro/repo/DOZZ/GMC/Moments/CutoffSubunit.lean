@@ -1,11 +1,9 @@
-module
 
-public import DOZZ.GMC.CircleAverageCutoffIntensity
-public import DOZZ.GMC.FiniteFirstMomentSubunit
+import DOZZ.GMC.CircleAverageCutoffIntensity
+import DOZZ.GMC.FiniteFirstMomentSubunit
 
 /-! Uniform subunit moments of finite-cutoff GMC masses. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory
 open scoped Distributions ENNReal NNReal
@@ -42,19 +40,14 @@ theorem regularizedGMC_mass_aemeasurable
   have hnormPlus : Measurable (fun x : ℂ => normPlus x) := by
     unfold normPlus
     exact measurable_const.max measurable_norm
-  have hVprod : Measurable (fun p : Ω × ℂ => V p.2) := hVmeas.comp measurable_snd
-  have hnormprod : Measurable (fun p : Ω × ℂ => normPlus p.2) :=
-    hnormPlus.comp measurable_snd
   have hdensity : Measurable density := by
     dsimp [density]
     fun_prop
   let G : Ω × ℂ → ℝ≥0∞ := fun p => if p.2 ∈ A then density p else 0
-  have hG : Measurable G := by
-    exact Measurable.ite (hA.preimage measurable_snd) hdensity measurable_const
+  have hG : Measurable G := Measurable.ite (hA.preimage measurable_snd) hdensity measurable_const
   have hsection (ω : Ω) : regularizedGMC P Xc γ r ω A =
       ∫⁻ x, G (ω, x) ∂volume := by
-    rw [regularizedGMC, withDensity_apply _ hA]
-    rw [← lintegral_indicator hA]
+    rw [regularizedGMC, withDensity_apply _ hA, ← lintegral_indicator hA]
     apply lintegral_congr
     intro x
     by_cases hx : x ∈ A
@@ -82,7 +75,5 @@ theorem regularizedGMC_subunit_moment_le
   have : IsProbabilityMeasure P := hX.1
   have hsub := lintegral_rpow_le_one_add_of_probability P
     (fun ω => regularizedGMC P Xc γ r ω A) hp0 hp1
-  rw [regularizedGMC_lintegral_eq_reference P X hX Xc hXc γ r A hA] at hsub
-  exact hsub
-
+  rwa [regularizedGMC_lintegral_eq_reference P X hX Xc hXc γ r A hA] at hsub
 end DOZZ.Proofs

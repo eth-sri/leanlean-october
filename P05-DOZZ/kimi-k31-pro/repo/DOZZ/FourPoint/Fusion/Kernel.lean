@@ -2,15 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.FourPoint.GammaHalfKernel
-public import DOZZ.GMC.SharpMoments.SeibergWeight
+import DOZZ.Statements.FourPoint.GammaHalfKernel
+import DOZZ.GMC.SharpMoments.SeibergWeight
 import DOZZ.GMC.SharpMoments.SeibergPieces
 
 /-! # The real fusion kernel and the Coulomb mass -/
 
-@[expose] public section
 open MeasureTheory
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -76,7 +74,7 @@ theorem fusion_rootedKernel_tendsto (γ α₁ α₂ α₃ : ℝ) (y x : ℂ) (hx
     apply ContinuousAt.rpow_const
     · fun_prop
     · left
-      simpa only [sub_zero] using norm_ne_zero_iff.mpr hx
+      simpa [sub_zero] using norm_ne_zero_iff.mpr hx
   have hg : ContinuousAt (fun z : ℂ => gffKernel (y * z) x) 0 := by
     unfold gffKernel normPlus
     apply ContinuousAt.add
@@ -84,7 +82,7 @@ theorem fusion_rootedKernel_tendsto (γ α₁ α₂ α₃ : ℝ) (y x : ℂ) (hx
       · apply ContinuousAt.neg
         apply ContinuousAt.log
         · fun_prop
-        · simpa only [mul_zero, zero_sub, norm_neg] using norm_ne_zero_iff.mpr hx
+        · simpa [mul_zero, zero_sub, norm_neg] using norm_ne_zero_iff.mpr hx
       · apply ContinuousAt.log
         · fun_prop
         · simp
@@ -92,6 +90,6 @@ theorem fusion_rootedKernel_tendsto (γ α₁ α₂ α₃ : ℝ) (y x : ℂ) (hx
   have hc : ContinuousAt (fun z : ℂ => Real.exp (γ ^ 2 * gffKernel (y * z) x)) 0 :=
     Real.continuous_exp.continuousAt.comp
       ((continuousAt_const : ContinuousAt (fun _ : ℂ => γ ^ 2) 0).mul hg)
-  simpa only [Pi.mul_apply, mul_zero] using hk.tendsto.mul hc.tendsto
+  simpa [Pi.mul_apply, mul_zero] using hk.tendsto.mul hc.tendsto
 
 end DOZZ.Proofs

@@ -1,2 +1,1 @@
-module
-public import DOZZ.Statements.GMC.FiniteChaosMass
+import DOZZ.Statements.GMC.FiniteChaosMass

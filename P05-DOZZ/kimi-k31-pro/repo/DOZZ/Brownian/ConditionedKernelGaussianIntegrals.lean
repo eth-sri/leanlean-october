@@ -2,12 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.Brownian.BrownianHeatDensity
-public import Mathlib.Analysis.SpecialFunctions.Gaussian.GaussianIntegral
-public import Mathlib.MeasureTheory.Measure.Lebesgue.EqHaar
-public import Mathlib.MeasureTheory.Measure.Lebesgue.Integral
+import DOZZ.Statements.Brownian.BrownianHeatDensity
+import Mathlib.Analysis.SpecialFunctions.Gaussian.GaussianIntegral
+import Mathlib.MeasureTheory.Measure.Lebesgue.EqHaar
+import Mathlib.MeasureTheory.Measure.Lebesgue.Integral
 
 /-!
 # Gaussian heat-kernel normalization identities
@@ -16,7 +15,6 @@ These identities reduce half-line Gaussian integrals to the full Gaussian mass b
 They are the scalar integration layer for normalizing the explicit conditioned transition kernels.
 -/
 
-@[expose] public section
 
 open MeasureTheory Set
 
@@ -51,8 +49,7 @@ theorem integral_brownianHeatDensity {t : ℝ} (ht : 0 < t) :
     rw [ite_eq_left ht, div_eq_mul_inv]
     congr 1
     field_simp [ht.ne', hsqrt.ne']
-  rw [hfun, integral_mul_const]
-  rw [integral_gaussian]
+  rw [hfun, integral_mul_const, integral_gaussian]
   have hroot : Real.sqrt (Real.pi / (1 / (2 * t))) = Real.sqrt (2 * Real.pi * t) := by
     congr 1
     field_simp [ht.ne']
@@ -121,11 +118,10 @@ theorem integral_brownianHeatDensity_halfline_pair {t a : ℝ} (ht : 0 < t) :
     _ = (∫ y in Set.Iic 0, brownianHeatDensity t (y - a) ∂(volume : Measure ℝ)) +
           ∫ y in Set.Ioi 0, brownianHeatDensity t (y - a) ∂(volume : Measure ℝ) := add_comm _ _
     _ = ∫ y : ℝ, brownianHeatDensity t (y - a) := by
-          simpa only [compl_Iic] using hsplit
+          simpa [compl_Iic] using hsplit
     _ = 1 := by
           simpa [sub_eq_add_neg] using
             integral_brownianHeatDensity_translate (t := t) (a := -a) ht
 
 end DOZZ.Proofs
 
-end

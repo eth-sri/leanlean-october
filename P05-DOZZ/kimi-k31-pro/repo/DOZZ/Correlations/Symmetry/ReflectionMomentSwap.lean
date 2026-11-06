@@ -2,11 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.Correlations.Symmetry.ReflectionRho
-public import DOZZ.Correlations.Symmetry.InversionSwap
-public import DOZZ.Statements.GMC.EquatorGFFGMCLawTransport
-@[expose] public section
+import DOZZ.Correlations.Symmetry.ReflectionRho
+import DOZZ.Correlations.Symmetry.InversionSwap
+import DOZZ.Statements.GMC.EquatorGFFGMCLawTransport
 open MeasureTheory Filter
 open scoped Distributions Topology ENNReal
 namespace DOZZ.Proofs
@@ -40,10 +38,10 @@ theorem rho_moment_swap12
     ring
   let H := fun (_ : TestFn → ℝ) (μ : Measure ℂ) => symmetryCorrectedRho γ a b c μ ^ (-s)
   have hHm : Measurable (fun q : (TestFn → ℝ) × Measure ℂ => H q.1 q.2) := by
-    simpa only [ENNReal.rpow_eq_pow, Function.comp_def] using
+    simpa [ENNReal.rpow_eq_pow, Function.comp_def] using
       (ENNReal.continuous_rpow_const.measurable.comp
         ((symmetryCorrectedRho_measurable γ a b c).comp measurable_snd))
-  have htilt := DOZZ.equatorGFF_GMC_tilt P Y hY γ hγ hγ2 N hN Z hZ
+  have htilt := equatorGFF_GMC_tilt P Y hY γ hγ hγ2 N hN Z hZ
     (fun ω => t * L ω) hL (symmetryTiltPotential t)
     (symmetryTiltPotential_uniform P X hX Xc hXc t) H hHm
   have hleft (ω : Ω) : ENNReal.ofReal
@@ -84,9 +82,9 @@ theorem rho_moment_swap12
   rw [lintegral_const_mul' _ _ hEt, lintegral_const_mul' _ _ hEt,
     ← mul_assoc, ← mul_assoc, ENNReal.inv_mul_cancel hE0 hEt, one_mul, one_mul] at hcancel
   have hRmeas : Measurable (fun μ : Measure ℂ => rho γ μ b a c ^ (-s)) := by
-    simpa only [ENNReal.rpow_eq_pow, Function.comp_def] using
+    simpa [ENNReal.rpow_eq_pow, Function.comp_def] using
       ENNReal.continuous_rpow_const.measurable.comp (rho_measure_measurable γ b a c)
-  exact hcancel.trans (DOZZ.equatorGFF_GMC_law_transport P Y hY P X hX γ hγ hγ2 N hN M hM
+  exact hcancel.trans (equatorGFF_GMC_law_transport P Y hY P X hX γ hγ hγ2 N hN M hM
     (fun _ μ => rho γ μ b a c ^ (-s)) (hRmeas.comp measurable_snd))
 
 theorem unitVolumeStructureConstant_swap12

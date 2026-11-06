@@ -2,15 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.Brownian.ReflectionR
+import DOZZ.Statements.Brownian.ReflectionR
 import DOZZ.Brownian.TwoSided.TwoSidedReflectionMassMomentRange
 
 /-! The statement `DOZZ.twoSidedReflectionMass_moment_range`,
 proved by `DOZZ.Proofs.twoSidedReflectionMass_moment_range`. -/
 
-public section
 
 open MeasureTheory ProbabilityTheory Filter Topology TopologicalSpace Set
 open scoped ENNReal NNReal Topology
@@ -33,6 +31,6 @@ theorem twoSidedReflectionMass_moment_range
     (hq : ∀ γ ∈ Kγ, ∀ q ∈ Kq, q < 4 / γ ^ 2) :
     ∃ C : ℝ≥0∞, C < ⊤ ∧
       ∀ γ ∈ Kγ, ∀ ν ∈ Kν, ∀ q ∈ Kq,
-        (∫⁻ ω, ENNReal.rpow (twoSidedReflectionMass γ (B ν) (Z γ) ω) q ∂P) ≤ C := by exact DOZZ.Proofs.twoSidedReflectionMass_moment_range P Kγ Kν Kq hKγ hKν hKq B Z hData hν hq
+        (∫⁻ ω, ENNReal.rpow (twoSidedReflectionMass γ (B ν) (Z γ) ω) q ∂P) ≤ C := Proofs.twoSidedReflectionMass_moment_range P Kγ Kν Kq hKγ hKν hKq B Z hData hν hq
 
 end DOZZ

@@ -2,8 +2,7 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.Brownian.Williams.BandAverage
+import DOZZ.Brownian.Williams.BandAverage
 /-!
 # The Williams maximum disintegration
 
@@ -36,7 +35,6 @@ This module uses the finite-density characterization of the given entrance
 law. It does not use or assume a conditioned last-exit avoidance identity. The
 latter is a separate input for first-hit reversal.
 -/
-@[expose] public section
 open MeasureTheory ProbabilityTheory Filter Set
 open scoped NNReal ENNReal Topology
 namespace DOZZ.Proofs
@@ -52,7 +50,7 @@ private theorem aemeasurable_mark (P : Measure BrownianPath)
     (aemeasurable_brownianPreMaximumSegment P hB ν hν)
 
 /-- The literal positive-drift first-hit mixture against the maximum reference law
-`DOZZ.brownianMaximumReferenceLaw`. -/
+`brownianMaximumReferenceLaw`. -/
 noncomputable def brownianWilliamsPrefixLaw (P : Measure BrownianPath) (ν : ℝ) :
     Measure (ℝ × StoppedBrownianPath) :=
   ((brownianMaximumReferenceLaw ν).prod P).map (fun z =>
@@ -268,7 +266,7 @@ private theorem weightedFuture_law (P : Measure BrownianPath)
     have hm : Measurable (fun q : BrownianPath => fun _ : Fin 1 => q 1) :=
       Measurable.of_eval (fun _ => ContinuousMap.measurable_eval _)
     have hh := congrArg (fun μ : Measure (Fin 1 → ℝ) => μ univ) he
-    simpa only [Measure.map_apply hm MeasurableSet.univ,preimage_univ,Measure.smul_apply] using hh
+    simpa [Measure.map_apply hm MeasurableSet.univ,preimage_univ,Measure.smul_apply] using hh
   apply positive_ordered_path_law_unique _ _ hp0 hq0 hmass
   intro n ts ht0 hts
   rw [Measure.map_smul _ (Measurable.of_eval (fun i => ContinuousMap.measurable_eval (ts i))).aemeasurable]
@@ -359,7 +357,7 @@ theorem isProbabilityMeasure_brownianWilliamsPrefixLaw (P : Measure BrownianPath
 
 
 
-/-- Proof of `DOZZ.brownian_williams_maximum_disintegration`, including all original
+/-- Proof of `brownian_williams_maximum_disintegration`, including all original
 AE-measurability guards. -/
 theorem brownian_williams_maximum_disintegration
     (P : Measure BrownianPath)

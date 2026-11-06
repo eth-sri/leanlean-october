@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.Analytic.NormalizedCutoffIdentity
-public import DOZZ.Correlations.Analytic.NormalizedIncrementTilt
+import DOZZ.Correlations.Analytic.NormalizedCutoffIdentity
+import DOZZ.Correlations.Analytic.NormalizedIncrementTilt
 
 /-! The analytic observable increment is controlled by the actual retained mass increment. -/
 
-@[expose] public section
 open MeasureTheory
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -55,7 +53,7 @@ theorem normalized_cutoff_increment_norm_le
   rw [← integral_sub h₁ h₀]
   calc
     _ ≤ ∫⁻ ω, ENNReal.ofReal ‖F O₁ ω - F O₀ ω‖ ∂P := by
-      simpa only [ofReal_norm] using
+      simpa [ofReal_norm] using
         enorm_integral_le_lintegral_enorm (fun ω => F O₁ ω - F O₀ ω)
     _ = _ := by
       simp only [F, ← mul_sub]

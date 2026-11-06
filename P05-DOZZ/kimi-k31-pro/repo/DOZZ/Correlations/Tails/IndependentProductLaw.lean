@@ -2,15 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import Mathlib.Probability.IdentDistribIndep
-public import Mathlib.Probability.HasLaw
-public import Mathlib.MeasureTheory.Function.SpecialFunctions.Basic
+import Mathlib.Probability.IdentDistribIndep
+import Mathlib.Probability.HasLaw
+import Mathlib.MeasureTheory.Function.SpecialFunctions.Basic
 
 /-! Attach an independent pin multiplier to equal mass laws. -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal
 

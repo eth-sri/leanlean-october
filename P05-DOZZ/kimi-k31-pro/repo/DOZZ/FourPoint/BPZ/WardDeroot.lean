@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.BPZ.WardMixed
-public import Mathlib.Probability.Kernel.MeasurableIntegral
+import DOZZ.FourPoint.BPZ.WardMixed
+import Mathlib.Probability.Kernel.MeasurableIntegral
 
 /-! # Signed cutoff rooting
 
@@ -13,7 +12,6 @@ The cutoff rooting identity for real functionals: if the functional is absolutel
 against the cutoff chaos, its expectation equals the reference-measure integral of the rooted
 expectation. The proof applies the nonnegative identity to the positive and negative parts. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped ENNReal NNReal
@@ -110,7 +108,7 @@ theorem bpz_cutoff_deroot_real (P : Measure Ω) (X : Ω → Distr) (hX : IsEquat
   have habs : ∀ ω x, ENNReal.ofReal |F x (Mr ω) (M ω)| =
       Hp x (Mr ω) (M ω) + Hn x (Mr ω) (M ω) := by
     intro ω x
-    simp only [Hp, Hn]
+    simp [Hp, Hn]
     rcases le_total 0 (F x (Mr ω) (M ω)) with h | h
     · rw [abs_of_nonneg h, ENNReal.ofReal_of_nonpos (neg_nonpos.mpr h), add_zero]
     · rw [abs_of_nonpos h, ENNReal.ofReal_of_nonpos h, zero_add]
@@ -146,7 +144,7 @@ theorem bpz_cutoff_deroot_real (P : Measure Ω) (X : Ω → Distr) (hX : IsEquat
       have hI : Integrable (fun x => F x (Mr ω) (M ω)) (Mr ω) := by
         refine ⟨hmeas.aestronglyMeasurable, ?_⟩
         rw [hasFiniteIntegral_iff_norm]
-        simpa only [Real.norm_eq_abs] using hω
+        simpa [Real.norm_eq_abs] using hω
       exact integral_eq_lintegral_pos_part_sub_lintegral_neg_part hI
     have e1 := integral_toReal hApm.aemeasurable (ae_lt_top hApm hAp.ne)
     have e2 := integral_toReal hAnm.aemeasurable (ae_lt_top hAnm hAn.ne)
@@ -211,11 +209,11 @@ theorem bpz_cutoff_deroot_real (P : Measure Ω) (X : Ω → Distr) (hX : IsEquat
       have hIω : Integrable (fun ω => F x (T₁ x ω) (T₂ x ω)) P := by
         refine ⟨hmeasω.aestronglyMeasurable, ?_⟩
         rw [hasFiniteIntegral_iff_norm]
-        simp only [Real.norm_eq_abs]
+        simp [Real.norm_eq_abs]
         have hsplit : ∀ ω, ENNReal.ofReal |F x (T₁ x ω) (T₂ x ω)| =
             Hp x (T₁ x ω) (T₂ x ω) + Hn x (T₁ x ω) (T₂ x ω) := by
           intro ω
-          simp only [Hp, Hn]
+          simp [Hp, Hn]
           rcases le_total 0 (F x (T₁ x ω) (T₂ x ω)) with h | h
           · rw [abs_of_nonneg h, ENNReal.ofReal_of_nonpos (neg_nonpos.mpr h), add_zero]
           · rw [abs_of_nonpos h, ENNReal.ofReal_of_nonpos h, zero_add]

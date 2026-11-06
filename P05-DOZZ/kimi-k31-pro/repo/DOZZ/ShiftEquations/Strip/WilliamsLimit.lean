@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.ShiftEquations.Strip.WilliamsBounds
-public import DOZZ.Statements.Brownian.LastoneBrownianSmallPowerLimit
+import DOZZ.ShiftEquations.Strip.WilliamsBounds
+import DOZZ.Statements.Brownian.LastoneBrownianSmallPowerLimit
 
 /-! The critical small-power limit of the exponential-maximum last-cut model. -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
 
@@ -40,7 +38,7 @@ theorem lastone_williamsModel_smallPower_limit
         (B ν z.2).1), Z z.2) ^ (ν / γ)
           ∂(brownianMaximumReferenceLaw ν).prod P
   have hI : Tendsto (fun ν => (I ν).toReal) (𝓝[>] 0) (𝓝 1) :=
-    DOZZ.lastone_brownian_smallPower_limit P γ hγ hγ2 Z B
+    lastone_brownian_smallPower_limit P γ hγ hγ2 Z B
       hB hZ hInd
   have he : Tendsto (fun ν : ℝ => ν / γ) (𝓝[>] 0) (𝓝 0) := by
     simpa using (tendsto_id.div_const γ :
@@ -77,7 +75,7 @@ theorem lastone_williamsModel_smallPower_limit
     have hWfin := ne_top_of_le_ne_top h2Ifin hb.2
     have hlow := ENNReal.toReal_mono hWfin hb.1
     have hupp := ENNReal.toReal_mono h2Ifin hb.2
-    simpa only [ENNReal.toReal_mul, ENNReal.toReal_ofNat] using And.intro hlow hupp
+    simpa [ENNReal.toReal_mul, ENNReal.toReal_ofNat] using And.intro hlow hupp
   apply tendsto_of_tendsto_of_tendsto_of_le_of_le'
     (g := fun ν => 2 * (J ν).toReal) (h := fun ν => 2 * (I ν).toReal)
   · simpa using hJ.const_mul 2

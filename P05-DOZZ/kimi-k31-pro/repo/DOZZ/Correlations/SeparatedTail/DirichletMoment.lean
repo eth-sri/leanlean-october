@@ -2,17 +2,15 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.SeparatedTail.DirichletCutoff
-public import DOZZ.Correlations.SeparatedTail.FieldComparison
-public import DOZZ.GMC.SharpMoments.LimitWeightedFatou
-public import Mathlib.MeasureTheory.Measure.Prod
+import DOZZ.Correlations.SeparatedTail.DirichletCutoff
+import DOZZ.Correlations.SeparatedTail.FieldComparison
+import DOZZ.GMC.SharpMoments.LimitWeightedFatou
+import Mathlib.MeasureTheory.Measure.Prod
 
 /-! The Dirichlet moments for the separated joint-tail estimate come from the equator weighted
 cutoff bound `DOZZ.equatorGFF_GMC_weighted_cutoff_bound` by finite Kahane. -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory Metric Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs

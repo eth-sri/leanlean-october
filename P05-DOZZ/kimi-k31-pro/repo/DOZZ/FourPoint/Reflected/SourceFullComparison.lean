@@ -1,2 +1,1 @@
-module
-public import DOZZ.FourPoint.Reflected.FullSpatialComparison
+import DOZZ.FourPoint.Reflected.FullSpatialComparison

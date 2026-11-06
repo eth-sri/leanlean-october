@@ -2,12 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Reflected.SpatialBoundary
-public import DOZZ.FourPoint.Reflected.SourceFullComparison
+import DOZZ.FourPoint.Reflected.SpatialBoundary
+import DOZZ.FourPoint.Reflected.SourceFullComparison
 import Mathlib.Tactic
 /-! Literal separated inner and outer regions for conditional lateral comparison. -/
-@[expose] public section
 open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -42,20 +40,20 @@ theorem reflected_separated_region_geometry (s r : ℝ) (_hs : 0 < s) (hr : 0 < 
     have hx1 : x ≠ 1 := by
       intro hh
       have h := hx.2
-      simp only [hh, norm_one] at h
+      simp [hh, norm_one] at h
       exact (not_lt_of_ge hs1.le) h
     simp [hx0, hx1]
   · intro x hx
-    simpa only [Metric.mem_ball, dist_zero_right] using hx.2.trans_le (by linarith only [hsr, hr])
+    simpa [Metric.mem_ball, dist_zero_right] using hx.2.trans_le (by linarith only [hsr, hr])
   · intro x hx hh
-    have hn : ‖x‖ < r := by simpa only [Metric.mem_ball, dist_zero_right] using hh
+    have hn : ‖x‖ < r := by simpa [Metric.mem_ball, dist_zero_right] using hh
     exact (not_lt_of_ge hx.1.le) hn
   · intro x hx
     rw [div_mul_cancel₀ s hr.ne']
     exact hx.2.le
   · exact fun x hx => hx.1.le
   · intro x hx
-    have hd : ‖x-(3 : ℂ)‖ ≤ 1/8 := by simpa only [Metric.mem_closedBall, dist_eq_norm] using hx
+    have hd : ‖x-(3 : ℂ)‖ ≤ 1/8 := by simpa [Metric.mem_closedBall, dist_eq_norm] using hx
     have hn := norm_sub_norm_le (3 : ℂ) x
     rw [norm_sub_rev] at hn
     have h3 : ‖(3 : ℂ)‖ = 3 := by norm_num

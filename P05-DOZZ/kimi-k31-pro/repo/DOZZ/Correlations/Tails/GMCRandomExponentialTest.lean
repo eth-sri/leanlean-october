@@ -2,16 +2,14 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.Tails.ExponentialParameterTest
-public import DOZZ.Correlations.Tails.CorrelatedMassEnvelope
-public import DOZZ.GMC.Assembly.AdmissibleGMC
-public import DOZZ.GMC.Construction.FiniteMeasureTotalize
+import DOZZ.Correlations.Tails.ExponentialParameterTest
+import DOZZ.Correlations.Tails.CorrelatedMassEnvelope
+import DOZZ.GMC.Assembly.AdmissibleGMC
+import DOZZ.GMC.Construction.FiniteMeasureTotalize
 
 /-! Actual GMC cutoff convergence for compact exponential tests with a correlated pin. -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal
 
@@ -85,7 +83,7 @@ theorem gmc_correlated_exponential_test_limit
   have hconv (t : ℝ) : TendstoInMeasure P
       (fun n ω => ∫ x, exponentialParameterTest f c t x ∂N n ω)
       atTop (fun ω => ∫ x, exponentialParameterTest f c t x ∂M' ω) := by
-    have h := (DOZZ.Assembly.isGMCOf_tendstoInMeasure P X hX Xc hc γ M hM
+    have h := (Assembly.isGMCOf_tendstoInMeasure P X hX Xc hc γ M hM
       (exponentialParameterTest f c t)).comp tendsto_natCast_atTop_atTop
     have hleft (n : ℕ) : (fun ω => ∫ x, exponentialParameterTest f c t x
         ∂regularizedGMC P Xc γ n ω) =ᵐ[P]
@@ -109,8 +107,7 @@ theorem gmc_correlated_exponential_test_limit
         fun ω => E ω * M ω K := by
       filter_upwards [hM'e] with ω hω
       rw [hω]
-    rw [lintegral_congr_ae heq]
-    exact hlim
+    rwa [lintegral_congr_ae heq]
   have h := tendstoInMeasure_parameter_integral P N M' hNm hM'm K hK hNmK hM'mK
     (exponentialParameterTest f c) (exponential_parameter_test_measurable f c)
       hFK θ hθ hconv Lcoef (fun t => by dsimp [Lcoef]; positivity)

@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.GMC.GmcMassMoment
-public import DOZZ.GMC.Moments.SubunitLimit
+import DOZZ.Statements.GMC.GmcMassMoment
+import DOZZ.GMC.Moments.SubunitLimit
 
 /-! Subunit moments of arbitrary GMC masses, localized by measure monotonicity. -/
 
-@[expose] public section
 
 open MeasureTheory
 open scoped Distributions ENNReal NNReal

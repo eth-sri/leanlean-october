@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.ShiftEquations.Strip.CriticalMoments
-public import DOZZ.ShiftEquations.Strip.Remainder
+import DOZZ.ShiftEquations.Strip.CriticalMoments
+import DOZZ.ShiftEquations.Strip.Remainder
 
 /-! Integrating the critical-mass comparison with a subcritical remainder. -/
 
-@[expose] public section
 open MeasureTheory Filter Topology Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -67,7 +65,7 @@ theorem lastone_mass_comparison_limit
     filter_upwards [hRi] with i hi
     have hmul : ∀ ω, A i ω ^ (-2 * q) = k₂ ^ (-2 * q) * R i ω ^ (-2 * q) := by
       intro ω
-      simp only [A, ENNReal.mul_rpow_eq_ite, hk₂0, hk₂T, false_and, false_or, ite_false]
+      simp [A, ENNReal.mul_rpow_eq_ite, hk₂0, hk₂T, false_and, false_or, ite_false]
     rw [lintegral_congr hmul, lintegral_const_mul'' _ ((hR i).pow_const _)]
     exact mul_le_mul' le_rfl hi
   have hAit : k₂ ^ (-2 * q) * D < ⊤ := ENNReal.mul_lt_top

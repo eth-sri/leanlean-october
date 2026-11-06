@@ -1,2 +1,1 @@
-module
-public import DOZZ.Statements.Brownian.BrownianPiecewiseDrift
+import DOZZ.Statements.Brownian.BrownianPiecewiseDrift

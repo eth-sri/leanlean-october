@@ -2,13 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.ShiftEquations.TwoPoleWindow
-public import DOZZ.Statements.ShiftEquations.PoleSubtractedObservable
-public import DOZZ.Statements.Defs.IsGMCOf
-public import DOZZ.Statements.Defs.IsCircleAverage
-public import DOZZ.Statements.Defs.IsEquatorGFF
+import DOZZ.Statements.ShiftEquations.TwoPoleWindow
+import DOZZ.Statements.ShiftEquations.PoleSubtractedObservable
+import DOZZ.Statements.Defs.IsGMCOf
+import DOZZ.Statements.Defs.IsCircleAverage
+import DOZZ.Statements.Defs.IsEquatorGFF
 import DOZZ.ShiftEquations.PoleSubtracted.RealLimit
 
 /-!
@@ -23,7 +22,6 @@ locally uniformly, on `V` to a holomorphic `F`, which at real points is the pole
 observable. On a compact subset of `V` finitely many rectangles give one exponential rate.
 -/
 
-@[expose] public section
 
 open MeasureTheory Filter Topology Set Metric
 open scoped ENNReal NNReal
@@ -151,7 +149,7 @@ theorem poleSubtractedObservable_holomorphic
     linarith [hlo x₀]
   have hmemR : ∀ x : ℝ, ∀ hx : -2 * η - δ < x ∧ x < 1 / γ, (x : ℂ) ∈ R ⟨x, hx⟩ :=
     fun x hx => by
-      simp only [hRdef, mem_ofPred_eq, Complex.ofReal_re, Complex.ofReal_im, sub_self,
+      simp [hRdef, mem_ofPred_eq, Complex.ofReal_re, Complex.ofReal_im, sub_self,
         abs_zero]
       exact ⟨hρ _, hhgt _⟩
   have hr1 : ∀ x₀, Real.exp (-κ x₀) < 1 := fun x₀ =>
@@ -219,4 +217,3 @@ theorem poleSubtractedObservable_holomorphic
 
 end DOZZ.Proofs
 
-end

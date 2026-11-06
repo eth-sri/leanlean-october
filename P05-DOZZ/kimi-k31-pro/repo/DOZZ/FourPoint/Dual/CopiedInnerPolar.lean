@@ -2,12 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Dual.InnerPolar
-public import DOZZ.FourPoint.Reflected.CopiedInnerPolar
+import DOZZ.FourPoint.Dual.InnerPolar
+import DOZZ.FourPoint.Reflected.CopiedInnerPolar
 import Mathlib.Tactic
 /-! The actual dual inner kernel on the independent lateral plane carrier. -/
-@[expose] public section
 open MeasureTheory Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -61,6 +59,6 @@ theorem dual_copied_inner_mass_squeeze
       (γ * (A T - (Q γ - α₁) * T))), mul_assoc]
   simp only [Pi.mul_apply] at hb
   rw [he, he] at hb
-  simpa only [W, mul_comm] using hb
+  simpa [W, mul_comm] using hb
 
 end DOZZ.Proofs

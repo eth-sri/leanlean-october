@@ -2,13 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Dual.DeletedDisk
-public import DOZZ.FourPoint.Dual.RootedIdentity
-public import DOZZ.FourPoint.Reflected.Remainder
+import DOZZ.FourPoint.Dual.DeletedDisk
+import DOZZ.FourPoint.Dual.RootedIdentity
+import DOZZ.FourPoint.Reflected.Remainder
 import Mathlib.Tactic
 /-! # The actual rooted deleted-disk expectation -/
-public section
 open MeasureTheory Set Filter Topology
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -75,11 +73,11 @@ theorem dual_deleted_disk_rooted_littleO {Ω : Type*} [MeasurableSpace Ω]
     α₁ α₂ α₃ q hq hβ
   have hn : Tendsto (fun z : ℂ => ‖z‖)
       (nhdsWithin 0 {z : ℂ | z ≠ 0}) (nhds 0) := by
-    simpa only [norm_zero] using (continuous_norm.tendsto (0 : ℂ)).mono_left nhdsWithin_le_nhds
+    simpa [norm_zero] using (continuous_norm.tendsto (0 : ℂ)).mono_left nhdsWithin_le_nhds
   have hc : Tendsto (fun z : ℂ => ‖z‖ ^ (1 - ξ))
       (nhdsWithin 0 {z : ℂ | z ≠ 0}) (nhds 0) := by
     have he := sub_pos.mpr hξ₁
-    simpa only [Function.comp_def, Real.zero_rpow he.ne'] using
+    simpa [Function.comp_def, Real.zero_rpow he.ne'] using
       ((Real.continuous_rpow_const he.le).tendsto (0 : ℝ)).comp hn
   have hh : ∀ᶠ z : ℂ in nhdsWithin 0 {z : ℂ | z ≠ 0},
       ‖(F z : ℂ)‖ ≤ C * ‖z‖ ^ ((1 - ξ) * (4 - γ * α₁)) := by

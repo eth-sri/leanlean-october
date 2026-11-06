@@ -1,11 +1,9 @@
-module
 
-public import DOZZ.GMC.WeightedCutoff.ReferenceUniform
-public import DOZZ.GMC.Moments.WeightedCutoffAllOrders
+import DOZZ.GMC.WeightedCutoff.ReferenceUniform
+import DOZZ.GMC.Moments.WeightedCutoffAllOrders
 
 /-! # Exact small-ball scale bounds uniform in the coupling and moment order -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal NNReal
@@ -73,8 +71,7 @@ theorem regularizedGMC_openBall_root_bound_compact_gamma_small_chart
       have hmul : (1 / δ) * (R / R₀) = R / (δ * R₀) := by
         field_simp [ne_of_gt hδ, ne_of_gt hR₀pos]
       rw [← hmul, Real.log_mul (by positivity) (by positivity)]
-    rw [← hlogmul]
-    exact hlog
+    rwa [← hlogmul]
   let massQ : Ω → ℝ≥0∞ := fun ω =>
     regularizedGMC P Xc γ (t + Real.log (R / R₀)) ω (Metric.ball 0 R₀)
   have hmassQ : AEMeasurable massQ P := by

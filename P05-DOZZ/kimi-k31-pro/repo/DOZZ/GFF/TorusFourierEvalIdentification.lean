@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GFF.TorusFourierTestL2
+import DOZZ.GFF.TorusFourierTestL2
 
 /-!
 # DOZZ.GFF.TorusFourierEvalIdentification
@@ -12,7 +11,6 @@ public import DOZZ.GFF.TorusFourierTestL2
 The measurable local Fourier limit agrees almost everywhere with the accepted G4 evaluation.
 -/
 
-@[expose] public section
 
 noncomputable section
 
@@ -43,7 +41,7 @@ theorem ae_tendsto_equatorLocalFourierPartialEval (r : ℕ) (f : TestFn) :
   have hlim : Tendsto (fun s : Finset (Fin 2 → ℤ) =>
       equatorLocalFourierPartialEval r f s ω) atTop
       (𝓝 (equatorLocalFourierDistributionCLM r ω hcos hsin f)) := by
-    exact hsum
+    assumption
   rw [hEval]
   simpa [equatorLocalFourierDistributionCLM] using hlim
 
@@ -117,4 +115,3 @@ theorem ae_equatorLocalFourierEval_eq_equatorFieldL2 (r : ℕ) (f : TestFn)
 
 end DOZZ
 
-end

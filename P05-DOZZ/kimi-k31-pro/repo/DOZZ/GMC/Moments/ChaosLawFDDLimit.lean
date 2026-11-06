@@ -2,15 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import Mathlib.MeasureTheory.Function.ConvergenceInMeasure
-public import Mathlib.MeasureTheory.Measure.HasOuterApproxClosed
-public import DOZZ.GMC.Moments.ChaosLawFDD
+import Mathlib.MeasureTheory.Function.ConvergenceInMeasure
+import Mathlib.MeasureTheory.Measure.HasOuterApproxClosed
+import DOZZ.GMC.Moments.ChaosLawFDD
 
 /-! Passage from cutoff chaos laws to laws of arbitrary limits in measure. -/
 
-@[expose] public section
 
 open MeasureTheory Filter Topology
 open scoped NNReal ENNReal
@@ -50,7 +48,7 @@ theorem map_eq_of_seq_map_eq_of_tendstoInMeasure
       filter_upwards [hfae] with ω hω
       have hcomp := hω.comp hms.tendsto_atTop
       change Tendsto (fun n => f (ns (ms n)) ω) atTop (𝓝 (fLimit ω)) at hcomp
-      exact hcomp
+      assumption
     have hgseq : ∀ᵐ ω ∂P', Tendsto (fun n => gs n ω) atTop (𝓝 (gLimit ω)) := by
       filter_upwards [hgae] with ω hω
       change Tendsto (fun n => g (ns (ms n)) ω) atTop (𝓝 (gLimit ω)) at hω
@@ -86,7 +84,7 @@ theorem tendstoInMeasure_pi_finite
       intro h
       exact hnot (Set.mem_iUnion.2 ⟨i, by simpa using h⟩)
     have hnorm : ‖f n ω - g ω‖ < ε :=
-      (pi_norm_lt_iff hε).2 (by simpa only [Pi.sub_apply] using hcoord)
+      (pi_norm_lt_iff hε).2 (by simpa [Pi.sub_apply] using hcoord)
     exact (not_le_of_gt hnorm) hω
   have hsum : Tendsto (fun n => ∑ i : ι, μ {ω | ε ≤ ‖f n ω i - g ω i‖})
       atTop (𝓝 0) := by

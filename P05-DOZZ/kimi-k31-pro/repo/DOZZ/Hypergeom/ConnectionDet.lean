@@ -2,15 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Hypergeom.Defs
+import DOZZ.Hypergeom.Defs
 import Mathlib.Analysis.SpecialFunctions.Gamma.Beta
 import Mathlib.Analysis.SpecialFunctions.Trigonometric.Cotangent
 
 /-! The determinant of the corrected Gauss connection matrix. -/
 
-@[expose] public section
 
 open Complex
 
@@ -59,7 +57,6 @@ private lemma invGamma_reflection_pair (z : ℂ) :
         rw [Int.toNat_of_nonneg (by omega : 0 ≤ -n)]
         omega
       · right
-        have hn1 : 1 ≤ n := by omega
         refine ⟨(n - 1).toNat, ?_⟩
         rw [Int.toNat_of_nonneg (by omega : 0 ≤ n - 1)]
         omega
@@ -222,6 +219,6 @@ theorem gauss_connection_det (a b c : ℂ)
             field_simp [hsC, hsδ, hπ, hδ0]
             ring
       _ = (c - 1) / δ := by rw [hratio, mul_one]
-  exact hfinish
+  assumption
 
 end DOZZ.Proofs

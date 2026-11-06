@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GFF.LocalModeSubsequence
+import DOZZ.GFF.LocalModeSubsequence
 import Mathlib.MeasureTheory.Constructions.Polish.StronglyMeasurable
 
 /-!
@@ -14,7 +13,6 @@ The common subsequence of finite Haar distributions has measurable coordinate li
 local torus Fourier mode. These limits represent the accepted G4 evaluations almost everywhere.
 -/
 
-@[expose] public section
 
 open MeasureTheory Filter
 open scoped InnerProductSpace Topology
@@ -52,8 +50,7 @@ noncomputable def equatorHaarCommonEval (f : TestFn)
   limUnder atTop (fun n => equatorHaarCommonPartialEval f n ω)
 
 theorem measurable_equatorHaarCommonPartialEval (f : TestFn) (n : ℕ) :
-    Measurable (equatorHaarCommonPartialEval f n) := by
-  exact measurable_equatorHaarPartialDistribution_apply _ f
+    Measurable (equatorHaarCommonPartialEval f n) := measurable_equatorHaarPartialDistribution_apply _ f
 
 theorem measurable_equatorHaarCommonEval (f : TestFn) :
     Measurable (equatorHaarCommonEval f) := by
@@ -113,4 +110,3 @@ theorem ae_summable_equatorHaarCommonSinEval (R : ℕ) :
 
 end DOZZ
 
-end

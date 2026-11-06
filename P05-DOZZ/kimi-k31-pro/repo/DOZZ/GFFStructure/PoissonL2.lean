@@ -2,8 +2,7 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.GFFStructure.PoissonMixture
+import DOZZ.GFFStructure.PoissonMixture
 
 /-!
 # Actual Poisson collar L² limits in the given realization
@@ -17,7 +16,6 @@ covariance is the genuine double Poisson boundary integral. The explicit numerat
 formula, harmonic sample modification and Dirichlet/Markov assemblies remain separate steps.
 -/
 
-@[expose] public section
 open Filter MeasureTheory ProbabilityTheory Set Metric
 open scoped Topology ENNReal NNReal Distributions
 namespace DOZZ.Proofs
@@ -45,7 +43,7 @@ theorem integral_canonicalPoissonCollarMeasure_pair (c z w : ℂ) (ρ ε : ℝ) 
     ∫ p : ℂ × ℂ, canonicalPoissonCollarTest c z ρ ε hρ hε hz k p.1*
       canonicalPoissonCollarTest c w ρ ε hρ hε hw l p.2*F p ∂((volume : Measure ℂ).prod volume) := by
   rw [canonicalPoissonCollarMeasure_pair_eq_withDensity, integral_withDensity_eq_integral_toReal_smul]
-  · simp only [ENNReal.toReal_ofReal (mul_nonneg (canonicalPoissonCollarTest_nonneg c z ρ ε hρ hε hz k _)
+  · simp [ENNReal.toReal_ofReal (mul_nonneg (canonicalPoissonCollarTest_nonneg c z ρ ε hρ hε hz k _)
       (canonicalPoissonCollarTest_nonneg c w ρ ε hρ hε hw l _)), smul_eq_mul]
   · exact (((canonicalPoissonCollarTest c z ρ ε hρ hε hz k).continuous.measurable.comp measurable_fst).mul
       ((canonicalPoissonCollarTest c w ρ ε hρ hε hw l).continuous.measurable.comp measurable_snd)).ennreal_ofReal
@@ -62,15 +60,15 @@ theorem integrable_log_canonicalPoissonCollarMeasure_pair (c z w : ℂ) (ρ ε :
       ENNReal.ofReal (canonicalPoissonCollarTest c z ρ ε hρ hε hz k p.1*
         canonicalPoissonCollarTest c w ρ ε hρ hε hw l p.2)) := by fun_prop
   apply (integrable_withDensity_iff_integrable_smul' hm (ae_of_all _ (fun _ => ENNReal.ofReal_lt_top))).mpr
-  simp only [ENNReal.toReal_ofReal (mul_nonneg (canonicalPoissonCollarTest_nonneg c z ρ ε hρ hε hz k _)
+  simp [ENNReal.toReal_ofReal (mul_nonneg (canonicalPoissonCollarTest_nonneg c z ρ ε hρ hε hz k _)
     (canonicalPoissonCollarTest_nonneg c w ρ ε hρ hε hw l _)), smul_eq_mul]
-  have h := (DOZZ.integral_complexLogKernelPair_eq_vec
+  have h := (integral_complexLogKernelPair_eq_vec
     (canonicalPoissonCollarTest c z ρ ε hρ hε hz k) (canonicalPoissonCollarTest c w ρ ε hρ hε hw l)
     (canonicalPoissonCollarTest c z ρ ε hρ hε hz k).continuous
     (canonicalPoissonCollarTest c w ρ ε hρ hε hw l).continuous
     (canonicalPoissonCollarTest c z ρ ε hρ hε hz k).hasCompactSupport
     (canonicalPoissonCollarTest c w ρ ε hρ hε hw l).hasCompactSupport).1.neg
-  simpa only [Pi.neg_def, mul_neg, neg_neg] using h
+  simpa [Pi.neg_def, mul_neg, neg_neg] using h
 
 /-- Fubini transports the genuine singular two-collar log energy to its radial/angular mixture. -/
 theorem integral_canonicalPoissonCollar_log_eq_mixture (c z w : ℂ) (ρ ε : ℝ) (hρ : 0 < ρ)
@@ -94,7 +92,7 @@ theorem integral_canonicalPoissonCollar_log_eq_mixture (c z w : ℂ) (ρ ε : �
     rw [← canonicalPoissonCollarMeasure_pair_eq_map c z w ρ ε hρ hε hz hw k l]
     exact integrable_log_canonicalPoissonCollarMeasure_pair c z w ρ ε hρ hε hz hw k l
   have hcomp := (integrable_map_measure hf.aestronglyMeasurable hΦ.aemeasurable).mp hi
-  simp only [Function.comp_def] at hcomp
+  simp [Function.comp_def] at hcomp
   calc
     _ = ∫ p : ℂ × ℂ, Real.log ‖p.1-p.2‖ ∂(canonicalPoissonCollarMeasure c z ρ ε hρ hε hz k).prod
         (canonicalPoissonCollarMeasure c w ρ ε hρ hε hw l) :=
@@ -110,7 +108,7 @@ theorem integral_canonicalPoissonCollar_log_eq_mixture (c z w : ℂ) (ρ ε : �
       congr 1
       funext p
       congr 2
-      dsimp only [Φ]
+      dsimp [Φ]
       abel
     _ = _ := by
       apply integral_congr_ae
@@ -139,7 +137,7 @@ theorem integrable_canonicalPoissonCollar_log_product (c z w : ℂ) (ρ ε : ℝ
   apply ((integrable_map_measure hf.aestronglyMeasurable hΦ.aemeasurable).mp hi).congr
   apply ae_of_all
   intro a
-  dsimp only [Function.comp_def, Φ]
+  dsimp [Function.comp_def, Φ]
   congr 2
   abel
 
@@ -237,10 +235,10 @@ theorem circleCross_exterior_origin_of_support (R : ℝ) (hR : 1 < R) (f : TestF
   apply integral_congr_ae
   filter_upwards with z
   by_cases hz : f z = 0
-  · simp only [hz, zero_mul]
+  · simp [hz, zero_mul]
   · have hn : ‖z‖ ≤ R := by
-      have hs := hf (subset_tsupport f (by simpa only [Function.mem_support] using hz))
-      exact (by simpa only [mem_ball, dist_zero_right] using hs : ‖z‖ < R).le
+      have hs := hf (subset_tsupport f (by simpa [Function.mem_support] using hz))
+      exact (by simpa [mem_ball, dist_zero_right] using hs : ‖z‖ < R).le
     rw [integral_gffKernel_exterior_origin R hR, max_eq_left hn]
     ring
 
@@ -392,7 +390,7 @@ theorem eventually_exteriorPinned_canonicalPoissonCollar_variance_le
   change variance (fun ω => F k ω-F l ω) P ≤ η
   rw [← covariance_self hm,
     covariance_fun_sub_fun_sub hkL hlL hkL hlL, covariance_comm (F l) (F k)]
-  dsimp only [F] at hkk hll hkl ⊢
+  dsimp [F] at hkk hll hkl ⊢
   linarith
 
 /-- At every interior point the literal Poisson collar test evaluations form a Cauchy
@@ -406,8 +404,8 @@ theorem cauchySeq_exteriorPinned_canonicalPoissonCollar_L2
       (canonicalPoissonCollarTest c z ρ ε hρ hε hz k)) := by
   have hz' : ‖z-c‖ < ρ := mem_ball_iff_norm.mp hz
   let a := (‖z-c‖+ρ)/2
-  have haρ : a < ρ := by dsimp only [a]; linarith
-  have hza : ‖z-c‖ ≤ a := by dsimp only [a]; linarith
+  have haρ : a < ρ := by dsimp [a]; linarith
+  have hza : ‖z-c‖ ≤ a := by dsimp [a]; linarith
   apply Metric.cauchySeq_iff.mpr
   intro η hη
   obtain ⟨N,hN⟩ := eventually_exteriorPinned_canonicalPoissonCollar_variance_le
@@ -432,7 +430,7 @@ theorem exists_exteriorPinned_canonicalPoissonCollar_L2limit
     P X Xc hX hc c z R ρ ε δ hR hρ hε hεδ hpin hz)
 
 /-- A literal collar limit has a raw measurable centered representative with the exact `eLpNorm`
-error convergence required by `DOZZ.exists_exteriorPinned_markov_uniform`. -/
+error convergence required by `exists_exteriorPinned_markov_uniform`. -/
 theorem exists_exteriorPinned_canonicalPoissonCollar_rawLimit
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
@@ -455,7 +453,7 @@ theorem exists_exteriorPinned_canonicalPoissonCollar_rawLimit
     (canonicalPoissonCollarTest c z ρ ε hρ hε hz k)
   have hZ (k : ℕ) : MemLp (Z k) 2 P := exteriorPinnedEvaluation_memLp X Xc hX hc R _ _
   have hraw : Tendsto (fun k => eLpNorm (fun ω => Z k ω-f ω) 2 P) atTop (𝓝 0) :=
-    (Lp.tendsto_Lp_iff_tendsto_eLpNorm'' Z hZ f hfL).1 (by simpa only [hto, exteriorPinnedTestL2, Z] using hH)
+    (Lp.tendsto_Lp_iff_tendsto_eLpNorm'' Z hZ f hfL).1 (by simpa [hto, exteriorPinnedTestL2, Z] using hH)
   refine ⟨f,hf,hfL,?_,hraw⟩
   have hm := tendsto_integral_of_eLpNorm_sub hZ hfL hraw
   have hzero : (fun k => ∫ ω, Z k ω ∂P) = fun _ => (0 : ℝ) := by
@@ -482,7 +480,7 @@ theorem exteriorPinnedEvaluation_isGaussianProcess {Ω : Type*} [MeasurableSpace
     (ContinuousLinearMap.proj a : (I → ℝ) →L[ℝ] ℝ)-
       (∫ z : ℂ, f z) • ContinuousLinearMap.proj b
   refine ⟨I,L,fun ω => ?_⟩
-  simp only [L, exteriorPinnedEvaluation, sub_apply,
+  simp [L, exteriorPinnedEvaluation, sub_apply,
     smul_apply, ContinuousLinearMap.proj_apply, Finset.restrict_def,
     a, b, test, pin, Sum.elim_inr, Sum.elim_inl, smul_eq_mul, mul_comm]
 
@@ -506,7 +504,7 @@ theorem exists_exteriorPinned_poisson_gaussian_family
     (fun k z ω => exteriorPinnedEvaluation X Xc R (by linarith) ω
       (canonicalPoissonCollarTest c z.1 ρ ε hρ hε z.2 k)) H
   · intro k
-    simpa only [Function.comp_def] using
+    simpa [Function.comp_def] using
       (exteriorPinnedEvaluation_isGaussianProcess P X Xc hX hc R (by linarith)).comp_right
         (fun z : {z : ℂ // z ∈ ball c ρ} => canonicalPoissonCollarTest c z.1 ρ ε hρ hε z.2 k)
   · exact hmem
@@ -534,9 +532,9 @@ theorem exteriorPinned_poisson_rawLimit_covariance
       (canonicalPoissonCollarTest c w ρ ε hρ hε hw k)) hH hJ hHl hJl
   have hzw : max ‖z-c‖ ‖w-c‖ < ρ := max_lt (mem_ball_iff_norm.mp hz) (mem_ball_iff_norm.mp hw)
   let a := (max ‖z-c‖ ‖w-c‖+ρ)/2
-  have haρ : a < ρ := by dsimp only [a]; linarith
-  have hza : ‖z-c‖ ≤ a := by dsimp only [a]; linarith [le_max_left ‖z-c‖ ‖w-c‖]
-  have hwa : ‖w-c‖ ≤ a := by dsimp only [a]; linarith [le_max_right ‖z-c‖ ‖w-c‖]
+  have haρ : a < ρ := by dsimp [a]; linarith
+  have hza : ‖z-c‖ ≤ a := by dsimp [a]; linarith [le_max_left ‖z-c‖ ‖w-c‖]
+  have hwa : ‖w-c‖ ≤ a := by dsimp [a]; linarith [le_max_right ‖z-c‖ ‖w-c‖]
   apply tendsto_nhds_unique hcov
   apply Metric.tendsto_atTop.mpr
   intro η hη

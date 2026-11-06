@@ -1,14 +1,12 @@
 /-
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 -/
-module
 
-public import DOZZ.GMC.Construction.RootedCircleKernel
-public import Mathlib.Probability.Kernel.MeasurableLIntegral
+import DOZZ.GMC.Construction.RootedCircleKernel
+import Mathlib.Probability.Kernel.MeasurableLIntegral
 
 /-! Joint measurability of inserted measures with a varying root. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped Distributions ENNReal
@@ -38,7 +36,7 @@ theorem measurable_lintegral_finite_family
   refine SimpleFunc.induction
     (motive := fun g => Measurable (fun u => ∫⁻ x, g (u, x) ∂μ u)) ?_ ?_ (F n)
   · intro c t ht
-    simp only [SimpleFunc.const_zero, SimpleFunc.coe_piecewise, SimpleFunc.coe_const,
+    simp [SimpleFunc.const_zero, SimpleFunc.coe_piecewise, SimpleFunc.coe_const,
       SimpleFunc.coe_zero, Set.piecewise_eq_indicator]
     have hind : (fun u => ∫⁻ x, t.indicator (fun _ => c) (u, x) ∂μ u) =
         fun u => c * μ u (Prod.mk u ⁻¹' t) := by
@@ -48,7 +46,7 @@ theorem measurable_lintegral_finite_family
     exact Measurable.const_mul
       (Kernel.measurable_kernel_prodMk_left_of_finite (κ := κ) ht hfinite) c
   · intro g₁ g₂ _ hm₁ hm₂
-    simp only [SimpleFunc.coe_add, Pi.add_apply]
+    simp [SimpleFunc.coe_add, Pi.add_apply]
     have hadd : (fun u => ∫⁻ x, g₁ (u, x) + g₂ (u, x) ∂μ u) =
         (fun u => ∫⁻ x, g₁ (u, x) ∂μ u) + fun u => ∫⁻ x, g₂ (u, x) ∂μ u := by
       funext u
@@ -84,7 +82,7 @@ theorem measurable_circleAverage_center
   have hint : Measurable (fun u : ℂ =>
       ∫ θ, f (circleMap u R θ) ∂volume.restrict (Set.Ioc 0 (2 * Real.pi))) :=
     hg.stronglyMeasurable.integral_prod_right.measurable
-  simp only [Real.circleAverage_def, intervalIntegral.integral_of_le
+  simp [Real.circleAverage_def, intervalIntegral.integral_of_le
     (by positivity : (0 : ℝ) ≤ 2 * Real.pi), smul_eq_mul]
   exact measurable_const.mul hint
 
@@ -95,7 +93,7 @@ theorem measurable_circleRootPotential (r : ℝ) :
       ∫ v, Real.log (normPlus v) ∂circleMeasure u r) := by
     have h := measurable_circleAverage_center (fun v => Real.log (normPlus v))
       continuous_log_normPlus.measurable (Real.exp (-r))
-    simpa only [CirclePotential.integral_circleMeasure_eq_circleAverage
+    simpa [CirclePotential.integral_circleMeasure_eq_circleAverage
       continuous_log_normPlus.measurable] using h
   have hlog : Measurable (fun q : ℂ × ℂ =>
       Real.log (max (Real.exp (-r)) ‖q.1 - q.2‖)) :=

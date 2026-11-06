@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.SharpMoments.LaplaceTail
-public import DOZZ.GMC.Annulus.CutoffScale
+import DOZZ.GMC.SharpMoments.LaplaceTail
+import DOZZ.GMC.Annulus.CutoffScale
 
 /-! # Exact scaling of cutoff Laplace transforms
 
@@ -14,7 +13,6 @@ On the exact logarithmic chart, the cutoff mass of a subdisk `B(a, cR)` has the 
 Gaussian `w` of variance `log (1/c)`. For Laplace transforms in the logarithmic level this is a
 Gaussian average of shifted reference Laplace transforms. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped ENNReal NNReal

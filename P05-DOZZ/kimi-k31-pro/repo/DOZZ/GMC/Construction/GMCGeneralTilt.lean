@@ -2,23 +2,21 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.Defs.IsCircleAverage
-public import DOZZ.Statements.Defs.IsEquatorGFF
-public import DOZZ.Statements.Defs.IsGMCOf
-public import DOZZ.Statements.GMC.IsCenteredJointlyGaussian
-public import DOZZ.Statements.GMC.IsGaussianL2Limit
-public import DOZZ.GFFStructure.GaussianClosure
-public import DOZZ.GMC.Construction.CircleAverageJointVersion
-public import DOZZ.GMC.Construction.GMCUniqueAe
-public import DOZZ.GMC.FiniteGaussianTilt
-public import DOZZ.GMC.GaussianInputs
-public import Mathlib.MeasureTheory.Constructions.Cylinders
+import DOZZ.Statements.Defs.IsCircleAverage
+import DOZZ.Statements.Defs.IsEquatorGFF
+import DOZZ.Statements.Defs.IsGMCOf
+import DOZZ.Statements.GMC.IsCenteredJointlyGaussian
+import DOZZ.Statements.GMC.IsGaussianL2Limit
+import DOZZ.GFFStructure.GaussianClosure
+import DOZZ.GMC.Construction.CircleAverageJointVersion
+import DOZZ.GMC.Construction.GMCUniqueAe
+import DOZZ.GMC.FiniteGaussianTilt
+import DOZZ.GMC.GaussianInputs
+import Mathlib.MeasureTheory.Constructions.Cylinders
 
 /-! Finite-coordinate Cameron--Martin transport for test evaluations and circle averages. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped Distributions ENNReal NNReal
@@ -91,7 +89,7 @@ private theorem testCircleFamily_with_L_isGaussianProcess
               eLpNorm (fun ω => L ω - X ω (fL n)) 2 P := by
           intro n
           exact eLpNorm_sub_comm _ _ _ _
-        simpa only [Z, W, hcomm] using hLapprox
+        simpa [Z, W, hcomm] using hLapprox
     | some t =>
         convert (tendsto_const_nhds :
           Tendsto (fun _ : ℕ => (0 : ℝ≥0∞)) atTop (𝓝 0)) using 1
@@ -137,7 +135,7 @@ theorem equatorGFF_finite_test_circle_tilt
       exact eLpNorm_sub_comm _ _ _ _
     have hLapprox' : Tendsto
         (fun n => eLpNorm (fun ω => X ω (fL n) - L ω) 2 P) atTop (𝓝 0) := by
-      simpa only [hcomm] using hLapprox
+      simpa [hcomm] using hLapprox
     exact integral_eq_zero_of_eLpNorm_sub
       (fun n => equatorGFF_test_memLp X hX (fL n)) hLmem
       (fun n => equatorGFF_test_integral X hX (fL n)) hLapprox'
@@ -243,10 +241,6 @@ theorem equatorGFF_tilted_test_circle_law
     rw [measurable_pi_iff]
     intro c
     exact (measurable_pi_iff.mp hEval c).add measurable_const
-  have hDensity : AEMeasurable density P := by
-    have hlog : AEMeasurable (fun ω => t * L ω - t ^ 2 / 2 * gaussianVariance P L) P := by
-      exact (hL.1.aemeasurable.const_mul t).sub (measurable_const.aemeasurable)
-    exact (Real.measurable_exp.comp_aemeasurable hlog).ennreal_ofReal
   have hCylinder (s : Finset (ℂ ⊕ TestFn)) (S : Set (∀ i : s, ℝ))
       (hS : MeasurableSet S) :
       μ (MeasureTheory.cylinder s S) = ν (MeasureTheory.cylinder s S) := by
@@ -281,7 +275,7 @@ theorem equatorGFF_tilted_test_circle_law
             | none => t * gaussianVariance P L
             | some j => t * gaussianCovariance P
                 (fun ω => testCircleCoordinate X Xc r (coord j) ω) L) ∂P
-      exact hTilt
+      assumption
     have hPreEval : MeasurableSet (eval ⁻¹' MeasureTheory.cylinder s S) :=
       (hS.cylinder).preimage hEval
     have hPreShift : MeasurableSet (evalShift ⁻¹' MeasureTheory.cylinder s S) :=

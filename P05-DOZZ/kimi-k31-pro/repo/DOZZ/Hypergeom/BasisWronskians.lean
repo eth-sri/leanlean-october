@@ -2,23 +2,18 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Hypergeom.BasisEquationTransforms
-public import DOZZ.Hypergeom.Germs
+import DOZZ.Hypergeom.BasisEquationTransforms
+import DOZZ.Hypergeom.Germs
 
 /-! Abel's identity and the endpoint normalization of the zero-basis Wronskian. -/
 
-@[expose] public section
 
 namespace DOZZ.Proofs
 
 open Filter
 
-private theorem gaussSlitPlane_isOpen_for_wronskians : IsOpen gaussSlitPlane := by
-  change IsOpen ({z : ℂ | z.im ≠ 0} ∪ {z | z.re < 1})
-  exact (isOpen_compl_singleton.preimage Complex.continuous_im).union
-    (isOpen_Iio.preimage Complex.continuous_re)
+private theorem gaussSlitPlane_isOpen_for_wronskians : IsOpen gaussSlitPlane := DOZZ.Proofs.bpzHG_isOpen_gaussSlitPlane
 
 private theorem gaussCutPlane_isOpen_for_wronskians : IsOpen gaussCutPlane := by
   change IsOpen ({z : ℂ | z.im ≠ 0} ∪ {z | 0 < z.re ∧ z.re < 1})
@@ -57,10 +52,8 @@ theorem gaussFPlus_wronskian_identity
     hfchar.1.analyticOnNhd gaussSlitPlane_isOpen_for_wronskians
   have hVanalyticSlit : AnalyticOnNhd ℂ v gaussSlitPlane :=
     hvchar.1.analyticOnNhd gaussSlitPlane_isOpen_for_wronskians
-  have hFanalytic : AnalyticOnNhd ℂ f gaussCutPlane := by
-    exact hFanalyticSlit.mono gaussCutPlane_subset_gaussSlitPlane
-  have hVanalytic : AnalyticOnNhd ℂ v gaussCutPlane := by
-    exact hVanalyticSlit.mono gaussCutPlane_subset_gaussSlitPlane
+  have hFanalytic : AnalyticOnNhd ℂ f gaussCutPlane := hFanalyticSlit.mono gaussCutPlane_subset_gaussSlitPlane
+  have hVanalytic : AnalyticOnNhd ℂ v gaussCutPlane := hVanalyticSlit.mono gaussCutPlane_subset_gaussSlitPlane
   have hPanalytic : AnalyticOnNhd ℂ p gaussCutPlane := by
     change AnalyticOnNhd ℂ (fun z : ℂ => z ^ (1 - c)) gaussCutPlane
     exact analyticOnNhd_id.cpow analyticOnNhd_const
@@ -125,8 +118,7 @@ theorem gaussFPlus_wronskian_identity
         f * deriv g - deriv f * g := by
       funext w
       rfl
-    rw [hfun]
-    rw [hsub.deriv]
+    rw [hfun, hsub.deriv]
     ring
   have hTderiv : ∀ z ∈ gaussCutPlane,
       deriv T z = c * z ^ (c - 1) * q z - e * z ^ c * (1 - z) ^ (e - 1) := by
@@ -140,8 +132,7 @@ theorem gaussFPlus_wronskian_identity
     have hfun : (fun w => w ^ c * q w) = (fun w => w ^ c) * q := by
       funext w
       rfl
-    rw [hfun]
-    rw [hmul.deriv, hZderiv, hQderiv hz]
+    rw [hfun, hmul.deriv, hZderiv, hQderiv hz]
     ring
   have hFop : ∀ z ∈ gaussCutPlane,
       gaussHolomorphicOperator a b c f z = 0 := by
@@ -250,8 +241,7 @@ theorem gaussFPlus_wronskian_identity
     have hRval : q 0 * ((1 - c) * f 0 * v 0 +
         0 * (f 0 * deriv v 0 - deriv f 0 * v 0)) = 1 - c := by
       simpa using hRzero
-    rw [hRval] at h
-    exact h
+    rwa [hRval] at h
   have hscaled : ∀ z ∈ gaussCutPlane,
       S z = q z * ((1 - c) * f z * v z +
         z * (f z * deriv v z - deriv f z * v z)) := by
@@ -371,7 +361,7 @@ theorem gaussGPlus_wronskian_identity
         c - a - b = 1 - c₀ := by dsimp [c₀]; ring
         _ = 1 - (n : ℂ) := by rw [heq]
         _ = ((1 - n : ℤ) : ℂ) := by push_cast; ring
-    exact hshift
+    assumption
   have hFdiff : DifferentiableOn ℂ F gaussCutPlane := by
     simpa [F] using gaussFMinus_differentiableOn_cutPlane hH a b c₀ hc₀
   have hGdiff : DifferentiableOn ℂ G gaussCutPlane := by

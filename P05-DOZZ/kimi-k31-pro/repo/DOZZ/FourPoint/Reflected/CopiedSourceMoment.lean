@@ -2,13 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Reflected.CopiedRegionRegroup
-public import DOZZ.FourPoint.Reflected.DecorrelationError
-public import DOZZ.FourPoint.Reflected.SpatialBoundary
+import DOZZ.FourPoint.Reflected.CopiedRegionRegroup
+import DOZZ.FourPoint.Reflected.DecorrelationError
+import DOZZ.FourPoint.Reflected.SpatialBoundary
 import Mathlib.Tactic
 /-! The copied separated moment retains the literal source outer mass. -/
-@[expose] public section
 open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -38,10 +36,10 @@ theorem reflected_copied_separatedMoment_source
     (measurableSet_insert.mpr (measurableSet_singleton (1 : ℂ)) : MeasurableSet ({0,1} : Set ℂ)).compl
   have hU0 : U ⊆ ({0} : Set ℂ)ᶜ := by
     intro x hx
-    simpa only [mem_compl_iff,mem_singleton_iff] using norm_pos_iff.mp hx.1
+    simpa [mem_compl_iff,mem_singleton_iff] using norm_pos_iff.mp hx.1
   have hV0 : V ⊆ ({0} : Set ℂ)ᶜ := by
     intro x hx
-    simpa only [mem_compl_iff,mem_singleton_iff] using norm_pos_iff.mp (hr.trans hx.1)
+    simpa [mem_compl_iff,mem_singleton_iff] using norm_pos_iff.mp (hr.trans hx.1)
   have hK : Measurable K := (reflected_gammaHalfKernel_measurable γ α₁ α₂ α₃ z).ennreal_ofReal
   have hF : Measurable (fun p : ℝ≥0∞ × ℝ≥0∞ => (p.1+p.2)^(-q)) := by fun_prop
   have he := reflected_copied_reinserted_regions_regroup P (originRadialPath Xc) N

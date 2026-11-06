@@ -1,14 +1,12 @@
 /-
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 -/
-module
 
-public import DOZZ.GMC.Construction.FatouInMeasure
+import DOZZ.GMC.Construction.FatouInMeasure
 import Mathlib.MeasureTheory.Function.ConvergenceInMeasure
 
 /-! Fatou transfers a uniform L¹ Cauchy bound to a limit in measure. -/
 
-@[expose] public section
 
 open MeasureTheory Filter Topology
 open scoped ENNReal

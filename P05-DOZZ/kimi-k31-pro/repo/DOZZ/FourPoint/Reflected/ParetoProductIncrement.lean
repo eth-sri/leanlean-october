@@ -2,12 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Reflected.ParetoIncrement
-public import Mathlib.MeasureTheory.Integral.Prod
+import DOZZ.FourPoint.Reflected.ParetoIncrement
+import Mathlib.MeasureTheory.Integral.Prod
 import Mathlib.Tactic
 /-! Integrating the signed Pareto coefficient against independent outer and reflection masses. -/
-@[expose] public section
 open MeasureTheory ProbabilityTheory Set Filter
 namespace DOZZ.Proofs
 
@@ -98,19 +96,18 @@ theorem reflected_pareto_product_increment_error
     change |E v-c*(A v.1)^(-p)*((b v.1/A v.1)^a*(S v.2)^a)| ≤
       C*(A v.1)^(-p)*((b v.1/A v.1)*S v.2) at hi
     have heL : c*(A v.1)^(-p)*((b v.1/A v.1)^a*(S v.2)^a) = L v := by
-      dsimp only [L,F0]
+      dsimp [L,F0]
       ring
     have heD : C*(A v.1)^(-p)*((b v.1/A v.1)*S v.2) = C*(F1 v.1*S v.2) := by
-      dsimp only [F1]
+      dsimp [F1]
       ring
-    rw [heL,heD] at hi
-    exact hi
+    rwa [heL,heD] at hi
   have hD : Integrable (fun v => E v-L v) (P.prod R) :=
     hdom.mono' (hE.sub hL.aestronglyMeasurable) hbound
   have hEi : Integrable E (P.prod R) := by
     have hh := hD.add hL
     change Integrable (fun v => (E v-L v)+L v) (P.prod R) at hh
-    simpa only [sub_add_cancel] using hh
+    simpa [sub_add_cancel] using hh
   refine ⟨hEi, ?_⟩
   have hi := norm_integral_le_of_norm_le hdom hbound
   rw [integral_sub hEi hL] at hi
@@ -118,6 +115,6 @@ theorem reflected_pareto_product_increment_error
     rw [show L = (fun v : Ω × Λ => c*(F0 v.1*(S v.2)^a)) from rfl,
       integral_const_mul, integral_prod_mul F0 (fun v => (S v)^a), mul_assoc]
   rw [hlead, integral_const_mul, integral_prod_mul] at hi
-  simpa only [Real.norm_eq_abs,E,F0,F1,c,C,mul_assoc] using hi
+  simpa [Real.norm_eq_abs,E,F0,F1,c,C,mul_assoc] using hi
 
 end DOZZ.Proofs

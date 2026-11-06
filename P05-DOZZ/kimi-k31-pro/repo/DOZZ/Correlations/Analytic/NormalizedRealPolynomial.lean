@@ -2,13 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.Analytic.NormalizedRealTilt
+import DOZZ.Correlations.Analytic.NormalizedRealTilt
 
 /-! Real restriction of the complex joint Wick and equator normalization. -/
 
-@[expose] public section
 open MeasureTheory
 namespace DOZZ.Proofs
 

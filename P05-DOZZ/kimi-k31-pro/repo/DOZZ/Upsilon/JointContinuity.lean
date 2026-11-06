@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.Defs.DualMu
-public import DOZZ.Upsilon.JointContinuityIntegral
+import DOZZ.Statements.Defs.DualMu
+import DOZZ.Upsilon.JointContinuityIntegral
 import DOZZ.Upsilon.Continuation
 import DOZZ.Upsilon.FullShifts
 import DOZZ.Upsilon.Uniqueness
@@ -17,7 +16,6 @@ import Mathlib.Analysis.SpecialFunctions.Gamma.Beta
 # Joint parameter and argument continuity of the entire Upsilon family
 -/
 
-@[expose] public section
 
 open Complex Filter MeasureTheory Set Topology
 
@@ -150,7 +148,7 @@ private theorem jointShiftFactor_continuousAt {γ₀ : ℝ} {w₀ : ℂ}
     rw [hcancel] at hmul
     exact hmul
   have harg₁re : 0 < (arg₁ (γ₀, w₀)).re := by
-    simp only [arg₁, Complex.sub_re, Complex.one_re, hbwRe]
+    simp [arg₁, Complex.sub_re, Complex.one_re, hbwRe]
     linarith
   have harg₁ : ContinuousAt arg₁ (γ₀, w₀) := by fun_prop
   have hGamma0 : ContinuousAt Complex.Gamma (arg₁ (γ₀, w₀)) :=
@@ -251,7 +249,6 @@ private theorem jointShiftChart_continuousAt {γ₀ : ℝ} {z₀ : ℂ}
     fun_prop
   have hW : ContinuousAt (fun p : ℝ × ℂ =>
       jointChartArg reflect p + jointShiftN p.1 n) (γ₀, z₀) := hArg.add hN
-  have hW0 : jointChartArg reflect (γ₀, z₀) + jointShiftN γ₀ n = v₀ := rfl
   have hstep : ∀ j : ℕ, j < n → (w₀ + jointShiftN γ₀ j).re < 2 / γ₀ := by
     intro j hj
     have hjn : (j : ℝ) + 1 ≤ (n : ℝ) := by
@@ -300,9 +297,6 @@ private theorem jointShiftChart_continuousAt {γ₀ : ℝ} {z₀ : ℂ}
     ContinuousAt.comp (f := fun p : ℝ × ℂ =>
       jointChartArg reflect p + jointShiftN p.1 n) (g := Complex.re)
       (x := (γ₀, z₀)) Complex.continuous_re.continuousAt hW
-  have hGap : ContinuousAt (fun p : ℝ × ℂ => Q p.1 -
-      (jointChartArg reflect p + jointShiftN p.1 n).re) (γ₀, z₀) :=
-    hQ.sub hWre
   have hLogOuter : ContinuousAt (Function.uncurry upsilonLog) (γ₀, v₀) :=
     upsilonLog_continuousAt_joint hγ₀ hfinal.1 hfinal.2
   have hLogMap : ContinuousAt (fun p : ℝ × ℂ =>
@@ -367,7 +361,6 @@ theorem IsUpsilon.continuousOn_uncurry {U : ℝ → ℂ → ℂ}
   have hγ₀ : 0 < γ₀ := hγlo
   have hγ₀2 : γ₀ < 2 := hγhi
   have hγ₀ne : γ₀ ≠ 0 := hγ₀.ne'
-  have hU₀ : IsUpsilon γ₀ (U γ₀) := hU γ₀ ⟨hγ₀, hγ₀2⟩
   let reflect := if z₀.re < Q γ₀ then false else true
   have hxQ : (jointChartArg reflect p).re < Q γ₀ := by
     by_cases h : z₀.re < Q γ₀
@@ -376,7 +369,7 @@ theorem IsUpsilon.continuousOn_uncurry {U : ℝ → ℂ → ℂ}
       have hQpos : 0 < Q γ₀ := by
         unfold Q
         positivity
-      simp only [reflect, h, jointChartArg, γ₀, z₀, ite_false, ite_true,
+      simp [reflect, h, jointChartArg, γ₀, z₀,
         Complex.sub_re, Complex.ofReal_re]
       linarith
   obtain ⟨n, hfinal0, hfinalQ⟩ := exists_shift_into_strip hγ₀ hxQ
@@ -407,8 +400,8 @@ theorem IsUpsilon.continuousOn_uncurry {U : ℝ → ℂ → ℂ}
       hWre.eventually (isOpen_Ioi.mem_nhds (by simpa [W, γ₀, z₀, jointShiftN_re,
         Complex.add_re] using hfinal0))
     have hWhi : ∀ᶠ q : ℝ × ℂ in 𝓝 p, 0 < Q q.1 - (W q).re :=
-      hGapcont.eventually (isOpen_Ioi.mem_nhds (sub_pos.mpr (by
-        simpa [W, γ₀, z₀, jointShiftN_re, Complex.add_re] using hfinalQ)))
+      hGapcont.eventually (isOpen_Ioi.mem_nhds (Set.mem_Ioi.mpr (sub_pos.mpr (by
+        simpa [W, γ₀, z₀, jointShiftN_re, Complex.add_re] using hfinalQ))))
     filter_upwards [hlo, hhi, hWlo, hWhi] with q hqlo hqhi hqWlo hqWhi
     exact ⟨hqlo, hqhi, hqWlo, by linarith⟩
   have hchart0 := jointShiftChart_continuousAt reflect n hγ₀ (by
@@ -422,4 +415,3 @@ theorem IsUpsilon.continuousOn_uncurry {U : ℝ → ℂ → ℂ}
 
 end DOZZ.Proofs
 
-end

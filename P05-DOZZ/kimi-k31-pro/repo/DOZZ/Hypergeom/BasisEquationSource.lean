@@ -2,25 +2,21 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Hypergeom.BasisRegularity
-public import DOZZ.Hypergeom.ODE.SeriesEquation
+import DOZZ.FourPoint.BPZ.HypergeomNearZero
+import DOZZ.Hypergeom.BasisRegularity
+import DOZZ.Hypergeom.ODE.SeriesEquation
 import Mathlib.Analysis.Analytic.Uniqueness
 import Mathlib.Analysis.Calculus.FDeriv.Analytic
 
 /-! The characterization of the principal family forces the Gauss equation on the cut plane. -/
 
-@[expose] public section
 
 open Filter Set Topology
 
 namespace DOZZ.Proofs
 
-private theorem gaussSlitPlane_isOpen : IsOpen gaussSlitPlane := by
-  change IsOpen ({z : ℂ | z.im ≠ 0} ∪ {z | z.re < 1})
-  exact (isOpen_compl_singleton.preimage Complex.continuous_im).union
-    (isOpen_Iio.preimage Complex.continuous_re)
+private theorem gaussSlitPlane_isOpen : IsOpen gaussSlitPlane := DOZZ.Proofs.bpzHG_isOpen_gaussSlitPlane
 
 private theorem gaussCutPlane_isPreconnected : IsPreconnected gaussCutPlane := by
   have hstar := gaussCutPlane_starConvex
@@ -45,8 +41,6 @@ theorem gauss_family_holomorphicOperator_eq_zero
     intro z hz
     have hzslit : z ∈ gaussSlitPlane := gaussCutPlane_subset_gaussSlitPlane hz
     have hfz := hF z hzslit
-    have hf'z := hF' z hzslit
-    have hf''z := hF'' z hzslit
     dsimp [gaussHolomorphicOperator]
     fun_prop
   have hEq : (Metric.ball (0 : ℂ) 1).EqOn f g := by
@@ -64,9 +58,6 @@ theorem gauss_family_holomorphicOperator_eq_zero
     have h := ordinaryHypergeometric_gaussEquation_on_unitDisk a b c hc z ?_
     · simpa [f, g, gaussHolomorphicOperator, hEq hz, hEq' hz, hEq'' hz] using h
     · simpa [Metric.mem_ball, dist_zero_right] using hz
-  have hzeroBase : (1 / 2 : ℂ) ∈ Metric.ball (0 : ℂ) 1 := by
-    rw [Metric.mem_ball, dist_zero_right]
-    norm_num
   have hcutBase : (1 / 2 : ℂ) ∈ gaussCutPlane := by norm_num [gaussCutPlane]
   have hzeroNear : (fun z => gaussHolomorphicOperator a b c f z) =ᶠ[𝓝 (1 / 2 : ℂ)]
       (fun _ => (0 : ℂ)) := by

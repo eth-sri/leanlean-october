@@ -1,6 +1,5 @@
-module
 
-public import DOZZ.GMC.WeightedCutoff.LargeBound
+import DOZZ.GMC.WeightedCutoff.LargeBound
 
 /-! # Weighted cutoff bounds uniform in the coupling
 
@@ -9,7 +8,6 @@ At larger radii a fixed singular core is combined with a bounded outer weight. G
 Jensen controls coarse physical cutoffs, including cutoffs larger than one.
 -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs

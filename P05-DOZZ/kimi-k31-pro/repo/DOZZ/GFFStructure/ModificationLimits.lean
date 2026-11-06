@@ -3,11 +3,10 @@ Copyright (c) 2025-2026 Rémy Degenne. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Rémy Degenne
 -/
-module
 
-public import Mathlib.MeasureTheory.Constructions.Polish.Basic
-public import Mathlib.MeasureTheory.Function.StronglyMeasurable.Basic
-public import Mathlib.Topology.Bases
+import Mathlib.MeasureTheory.Constructions.Polish.Basic
+import Mathlib.MeasureTheory.Function.StronglyMeasurable.Basic
+import Mathlib.Topology.Bases
 
 /-!
 # Measurable limits for continuous process modifications
@@ -20,7 +19,7 @@ and turn coordinatewise agreement into simultaneous agreement on open sets. The 
 bound is separate.
 -/
 
-@[expose] public section
+section
 
 open MeasureTheory Filter
 open scoped ENNReal NNReal Topology
@@ -66,7 +65,7 @@ lemma Measurable.of_edist_eq_zero {Ω E : Type*} {mΩ : MeasurableSpace Ω}
   refine measurable_of_isOpen fun U hU ↦ ?_
   suffices Y ⁻¹' U = X ⁻¹' U by rw [this]; exact hX hU.measurableSet
   ext ω
-  simp only [Set.mem_preimage, ← hU.mem_nhds_iff]
+  simp [Set.mem_preimage, ← hU.mem_nhds_iff]
   suffices 𝓝 (X ω) = 𝓝 (Y ω) by rw [this]
   symm
   refine Inseparable.nhds_eq ?_
@@ -180,7 +179,7 @@ lemma IsLimitOfIndicator.measurable [MeasurableSpace E] [BorelSpace E] {Y X : T 
       (f := fun (t' : denseCountable T) ω ↦ indicatorProcess X A t' ω) (fun ω ↦ ?_) (fun t' ↦ ?_)
     · by_cases hω : ω ∈ A
       · simpa [hω, indicatorProcess] using hY_tendsto t htU ω hω
-      · simp only [indicatorProcess, hω, ↓reduceIte]
+      · simp [indicatorProcess, hω, ↓reduceIte]
         exact ⟨hE.some, tendsto_const_nhds⟩
     · exact Measurable.ite hA (hX t') measurable_const
   · exact Measurable.of_edist_eq_zero (X := fun _ ↦ hE.some) measurable_const (hYUc t htU)
@@ -240,12 +239,12 @@ lemma measurable_pair_limUnder_indicatorProcess
   · intro ω
     by_cases hω : ω ∈ A₁
     · simpa [hω, indicatorProcess] using h_tendsto₁ ω hω
-    · simp only [indicatorProcess, hω, ↓reduceIte]
+    · simp [indicatorProcess, hω, ↓reduceIte]
       exact ⟨hE.some, tendsto_const_nhds⟩
   · intro ω
     by_cases hω : ω ∈ A₂
     · simpa [hω, indicatorProcess] using h_tendsto₂ ω hω
-    · simp only [indicatorProcess, hω, ↓reduceIte]
+    · simp [indicatorProcess, hω, ↓reduceIte]
       exact ⟨hE.some, tendsto_const_nhds⟩
 
 lemma IsLimitOfIndicator.measurable_pair
@@ -273,7 +272,7 @@ lemma IsLimitOfIndicator.measurable_pair
       simpa [Prod.edist_eq] using ⟨hYU ω, hZU ω⟩
     borelize (E × E)
     refine Measurable.of_edist_eq_zero ?_ h_eq
-    simp only [Dense.extend, IsDenseInducing.extend]
+    simp [Dense.extend, IsDenseInducing.extend]
     exact measurable_pair_limUnder_indicatorProcess hX hX' hX_pair hA₁ hA₂ s t (hY_tendsto s hsU₁)
       (hZ_tendsto t htU₂)
   · specialize hYU s hsU₁
@@ -289,12 +288,12 @@ lemma IsLimitOfIndicator.measurable_pair
         (limUnder (comap Subtype.val (𝓝 s)) fun t' : denseCountable T ↦ indicatorProcess X A₁ t' ω,
         limUnder (comap Subtype.val (𝓝 t))
           fun t' : denseCountable T ↦ indicatorProcess X' ∅ t' ω) by
-      simp only [indicatorProcess_apply, Set.mem_empty_iff_false, ↓reduceIte] at this
-      refine DOZZ.Proofs.Measurable.of_edist_eq_zero this (fun ω ↦ ?_)
+      simp [indicatorProcess_apply, Set.mem_empty_iff_false, ↓reduceIte] at this
+      refine Measurable.of_edist_eq_zero this (fun ω ↦ ?_)
       rw [Prod.edist_eq]
-      simp only [max_eq_zero]
+      simp [max_eq_zero]
       rw [edist_comm hE.some, edist_limUnder_const]
-      simp only [and_true]
+      simp [and_true]
       exact edist_self _
     exact measurable_pair_limUnder_indicatorProcess hX hX' hX_pair hA₁ MeasurableSet.empty s t
       (hY_tendsto s hsU₁) (by simp)
@@ -310,12 +309,12 @@ lemma IsLimitOfIndicator.measurable_pair
         (limUnder (comap Subtype.val (𝓝 s)) fun t' : denseCountable T ↦ indicatorProcess X ∅ t' ω,
         limUnder (comap Subtype.val (𝓝 t))
           fun t' : denseCountable T ↦ indicatorProcess X' A₂ t' ω) by
-      simp only [indicatorProcess_apply, Set.mem_empty_iff_false, ↓reduceIte] at this
-      refine DOZZ.Proofs.Measurable.of_edist_eq_zero this (fun ω ↦ ?_)
+      simp [indicatorProcess_apply, Set.mem_empty_iff_false, ↓reduceIte] at this
+      refine Measurable.of_edist_eq_zero this (fun ω ↦ ?_)
       rw [Prod.edist_eq]
-      simp only [max_eq_zero]
+      simp [max_eq_zero]
       rw [edist_comm hE.some, edist_limUnder_const]
-      simp only [true_and]
+      simp [true_and]
       exact edist_self _
     exact measurable_pair_limUnder_indicatorProcess hX hX' hX_pair MeasurableSet.empty hA₂ s t
       (by simp) (hZ_tendsto t htU₂)
@@ -351,7 +350,7 @@ lemma IsLimitOfIndicator.indicatorProcess {Y X : T → Ω → E}
   · by_cases hω : ω ∈ A
     · specialize hYU t htU ω
       simpa [indicatorProcess_apply, hω] using hYU
-    · simp only [indicatorProcess_apply, hω, ↓reduceIte, Dense.extend, IsDenseInducing.extend,
+    · simp [indicatorProcess_apply, hω, ↓reduceIte, Dense.extend, IsDenseInducing.extend,
         Set.mem_inter_iff, false_and]
       rw [edist_comm]
       have : @NeBot { x // x ∈ denseCountable T } (comap Subtype.val (𝓝 t)) := by

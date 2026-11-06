@@ -2,13 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.Analytic.ThresholdExponential
+import DOZZ.Correlations.Analytic.ThresholdExponential
 
 /-! The exponential threshold arithmetic in the ENNReal moment estimates. -/
 
-@[expose] public section
 open scoped ENNReal
 namespace DOZZ.Proofs
 
@@ -32,6 +30,6 @@ theorem threshold_ennreal_bound (D B C rate τ m h r : ℝ)
       (mul_nonneg hB (Real.rpow_nonneg
         (div_nonneg (mul_nonneg (Real.exp_nonneg _) hC) (Real.rpow_nonneg (Real.exp_nonneg _) _)) _))]
   apply ENNReal.ofReal_le_ofReal
-  simpa only [mul_comm] using threshold_exponential_bound D B C rate τ m h r hD hB hC hr
+  simpa [mul_comm] using threshold_exponential_bound D B C rate τ m h r hD hB hC hr
 
 end DOZZ.Proofs

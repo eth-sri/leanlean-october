@@ -2,17 +2,16 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.BPZ.UnreflectedB
-public import DOZZ.FourPoint.BPZ.BPZAssemblyA
-public import DOZZ.FourPoint.BPZ.ExplicitProfile
-public import DOZZ.FourPoint.BPZ.TaylorSingular
-public import DOZZ.FourPoint.BPZ.RootedHessian
-public import DOZZ.FourPoint.BPZ.RootedRemainder
-public import DOZZ.FourPoint.Fusion.OneRootedTaylor
-public import DOZZ.FourPoint.GammaHalfTwoRootedTaylorIsLittleO
-public import DOZZ.FourPoint.Fusion.Coefficient
+import DOZZ.FourPoint.BPZ.UnreflectedB
+import DOZZ.FourPoint.BPZ.BPZAssemblyA
+import DOZZ.FourPoint.BPZ.ExplicitProfile
+import DOZZ.FourPoint.BPZ.TaylorSingular
+import DOZZ.FourPoint.BPZ.RootedHessian
+import DOZZ.FourPoint.BPZ.RootedRemainder
+import DOZZ.FourPoint.Fusion.OneRootedTaylor
+import DOZZ.FourPoint.GammaHalfTwoRootedTaylorIsLittleO
+import DOZZ.FourPoint.Fusion.Coefficient
 
 /-! # The shift relation for `2 < γ² < 4`
 
@@ -25,7 +24,6 @@ with a singular endpoint therefore identifies the sum of these terms at `t ∈ (
 the asymptotics of the rooted terms (`-p A t^κ + o(t^κ)`) gives `ρ C₋ = -K p A`, which is the
 shift relation by the identification of the rooted coefficient. -/
 
-@[expose] public section
 
 open MeasureTheory Filter Topology Set
 
@@ -40,7 +38,7 @@ theorem bpz_structureConstant_congr {Ω : Type*} [MeasurableSpace Ω] (P : Measu
   unfold structureConstant
   have h : (∫⁻ ω, rho γ (M ω) α₁ α₂ α₃ ^ (-sExp γ α₁ α₂ α₃) ∂P) =
       ∫⁻ ω, rho γ (N ω) α₁ α₂ α₃ ^ (-sExp γ α₁ α₂ α₃) ∂P :=
-    lintegral_congr_ae (hMN.mono fun ω h => by dsimp only; rw [h])
+    lintegral_congr_ae (hMN.mono fun ω h => by dsimp; rw [h])
   rw [h]
 
 /-- A complex little-o at zero along the positive reals. -/
@@ -58,7 +56,7 @@ theorem bpz_littleO_along_reals {κ : ℝ} {f : ℂ → ℂ} (hf : IsComplexLitt
   rw [tendsto_zero_iff_norm_tendsto_zero]
   refine h.congr' ?_
   filter_upwards [self_mem_nhdsWithin] with t (ht : 0 < t)
-  simp only [Function.comp, norm_div, Complex.norm_real, Real.norm_of_nonneg ht.le,
+  simp [Function.comp, norm_div, Complex.norm_real, Real.norm_of_nonneg ht.le,
     Real.norm_of_nonneg (Real.rpow_nonneg ht.le κ)]
 
 /-- **The shift relation for `2 < γ² < 4`**, for a measurable GMC measure. -/
@@ -118,9 +116,9 @@ theorem bpz_shift_large_gamma_meas {Ω : Type*} [MeasurableSpace Ω] {H : ℂ �
   have hφd : ContDiffOn ℝ 2 φ (Ioo (-1) 1) := bpzHG_contDiffOn_normSq hH hcφ
   have hψd : ContDiffOn ℝ 2 ψ (Ioo (-1) 1) := bpzHG_contDiffOn_normSq hH hcψ
   have hφ0 : φ 0 = 1 := by
-    simp only [hφ, Complex.ofReal_zero, bpzHG_eq_one_at_zero hH hcφ, map_one]
+    simp [hφ, Complex.ofReal_zero, bpzHG_eq_one_at_zero hH hcφ, map_one]
   have hψ0 : ψ 0 = 1 := by
-    simp only [hψ, Complex.ofReal_zero, bpzHG_eq_one_at_zero hH hcψ, map_one]
+    simp [hψ, Complex.ofReal_zero, bpzHG_eq_one_at_zero hH hcψ, map_one]
   -- the normalization
   set K : ℝ := 2 * μ ^ (-p) / γ * Real.Gamma p with hK
   have hKpos : 0 < K := by
@@ -156,7 +154,7 @@ theorem bpz_shift_large_gamma_meas {Ω : Type*} [MeasurableSpace Ω] {H : ℂ �
     have hz : (u : ℂ) ∈ gaussCutPlane := by
       show (u : ℂ).im ≠ 0 ∨ (0 < (u : ℂ).re ∧ (u : ℂ).re < 1)
       right
-      simp only [Complex.ofReal_re]
+      simp [Complex.ofReal_re]
       exact ⟨hu0, hu1⟩
     have h1 := bpz_fourPointT_eq_moment P X hX hγ hγ2 M hM hMm hχ hα₁Q hα₂ hα₃ μ
       (hreg u hu0 hu1).1 (hreg u hu0 hu1).2
@@ -178,8 +176,8 @@ theorem bpz_shift_large_gamma_meas {Ω : Type*} [MeasurableSpace Ω] {H : ℂ �
     · exact (hd1 u (hreg u hu0 hu1)).comp_hasDerivAt u hof
     · have hc := (hd2 u (hreg u hu0 hu1)).clm_apply (hasFDerivAt_const (1 : ℂ) (u : ℂ))
       have h := hc.comp_hasDerivAt u hof
-      simp only [ContinuousLinearMap.comp_zero, zero_add, ContinuousLinearMap.flip_apply] at h
-      exact h
+      simp [ContinuousLinearMap.comp_zero, zero_add, ContinuousLinearMap.flip_apply] at h
+      assumption
   -- (f3) the derivatives are the explicit ones
   have hf3 : ∀ u : ℝ, 0 < u → u < 1 →
       F2 u 1 1 = A₀ * (deriv (deriv φ) u + ρ * (κ * (κ - 1) * u ^ (κ - 2) * ψ u +
@@ -201,9 +199,9 @@ theorem bpz_shift_large_gamma_meas {Ω : Type*} [MeasurableSpace Ω] {H : ℂ �
     exact ((hf2 u hu0 hu1).2.congr_of_eventuallyEq hev1.symm).unique
       (bpzEP_hasDerivAt_profile' hφd hψd A₀ ρ κ hu0 hu1)
   -- the asymptotics of the rooted terms
-  obtain ⟨r₁, hr₁, hr₁o⟩ := DOZZ.Proofs.gammaHalf_oneRooted_Taylor_asymptotic P X M γ α₁ α₂ α₃
+  obtain ⟨r₁, hr₁, hr₁o⟩ := gammaHalf_oneRooted_Taylor_asymptotic P X M γ α₁ α₂ α₃
     hγ hγ4 hαlo hγsq hαhi hα₂ hα₃ hs hX hM
-  have hr₂o := DOZZ.Proofs.gammaHalf_twoRooted_Taylor_is_littleO P X M γ α₁ α₂ α₃ hγ hγ2 hγsq
+  have hr₂o := gammaHalf_twoRooted_Taylor_is_littleO P X M γ α₁ α₂ α₃ hγ hγ2 hγsq
     hαlo hαhi hα₂ hα₃ hs hX hM
   set A : ℝ := gammaHalfRootedCoefficient P M γ α₁ α₂ α₃ p with hA
   -- (f4)–(f6): the identity along `(0, 1/4]`, in real parts
@@ -233,9 +231,9 @@ theorem bpz_shift_large_gamma_meas {Ω : Type*} [MeasurableSpace Ω] {H : ℂ �
           (hreg u hu0 (by linarith only [hu, ht1])).1 (hreg u hu0 (by linarith only [hu, ht1])).2)
     -- real parts
     have hRre := congrArg Complex.re hR
-    simp only [Complex.add_re, Complex.ofReal_re] at hRre
+    simp [Complex.add_re, Complex.ofReal_re] at hRre
     rw [hr₁ (t : ℂ)] at hRre
-    simp only [Complex.add_re, Complex.mul_re, Complex.neg_re, Complex.neg_im,
+    simp [Complex.add_re, Complex.mul_re, Complex.neg_re, Complex.neg_im,
       Complex.ofReal_re, Complex.ofReal_im, Complex.mul_im, mul_zero, sub_zero, zero_mul,
       add_zero, neg_zero, Complex.norm_real, Real.norm_of_nonneg ht0.le, ← hκ, ← hp_def]
       at hRre
@@ -285,9 +283,7 @@ theorem bpz_shift_large_gamma_meas {Ω : Type*} [MeasurableSpace Ω] {H : ℂ �
   rw [e1, hA₀ρ]
   have e2 : K * -(p * A) = (2 * μ ^ (-p) / γ * Real.Gamma p) * (-p * A) := by
     rw [hK]; ring
-  rw [e2]
-  exact hcoef
-
+  rwa [e2]
 /-- **The shift relation for `2 < γ² < 4`.** -/
 theorem bpz_shift_large_gamma {Ω : Type*} [MeasurableSpace Ω] {H : ℂ → ℂ → ℂ → ℂ → ℂ}
     (hH : IsGaussHypergeometricFamily H) (P : Measure Ω) (X : Ω → Distr) (M : Ω → Measure ℂ)

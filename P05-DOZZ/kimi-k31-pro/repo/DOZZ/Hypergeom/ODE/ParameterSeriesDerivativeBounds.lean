@@ -2,16 +2,14 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Hypergeom.ODE.ParameterSeriesDerivativeTerms
-public import DOZZ.Hypergeom.ODE.ParameterSeriesBounds
+import DOZZ.Hypergeom.ODE.ParameterSeriesDerivativeTerms
+import DOZZ.Hypergeom.ODE.ParameterSeriesBounds
 import Mathlib.Analysis.Calculus.ContDiff.Polynomial
 import Mathlib.Analysis.Normed.Module.Connected
 
 /-! Locally uniform summable bounds for parameter derivatives of the Gauss series. -/
 
-@[expose] public section
 
 open scoped RightActions
 open Nat Polynomial
@@ -419,8 +417,7 @@ theorem gaussParameterSeriesTerm_summable
           p.1 p.2.1 p.2.2 habc
         dsimp [S]
         rw [hEq]
-  have hzrad : (‖z‖₊ : ENNReal) < S.radius := by
-    exact (ENNReal.coe_lt_coe.mpr hz).trans_le hrad
+  have hzrad : (‖z‖₊ : ENNReal) < S.radius := (ENNReal.coe_lt_coe.mpr hz).trans_le hrad
   have hmem : z ∈ Metric.eball (0 : ℂ) S.radius := by
     rw [mem_eball_zero_iff]
     exact hzrad
@@ -446,8 +443,7 @@ theorem ordinaryHypergeometric_differentiableAt_params
   have hr : 0 < r := by dsimp [r]; linarith
   have hrε : r < ε := by dsimp [r]; linarith
   let K : Set (ℂ × ℂ × ℂ) := Metric.closedBall p r
-  have hKcompact : IsCompact K := by
-    exact isCompact_closedBall p r
+  have hKcompact : IsCompact K := isCompact_closedBall p r
   have hKpole : ∀ q ∈ K, ∀ k : ℕ, q.2.2 ≠ -(k : ℂ) := by
     intro q hq k
     have hqball : q ∈ Metric.ball p ε := Metric.closedBall_subset_ball hrε hq
@@ -456,8 +452,6 @@ theorem ordinaryHypergeometric_differentiableAt_params
   obtain ⟨u, hu, huBound⟩ :=
     exists_summable_uniform_gaussParameterSeriesTerm_fderiv_bound_of_isCompact
       hKcompact hKpole z hz
-  have hpK : p ∈ K := by
-    exact Metric.mem_closedBall_self (le_of_lt hr)
   have hsum0 := gaussParameterSeriesTerm_summable p z hc hz
   have htermsDiff : ∀ n : ℕ, ∀ q ∈ Metric.ball p r,
       HasFDerivAt (fun x => gaussParameterSeriesTerm x z n)

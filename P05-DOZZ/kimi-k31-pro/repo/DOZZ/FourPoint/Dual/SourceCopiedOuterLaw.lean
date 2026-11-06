@@ -2,12 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Dual.CopiedOuterLaw
-public import DOZZ.FourPoint.Dual.SpatialBoundary
+import DOZZ.FourPoint.Dual.CopiedOuterLaw
+import DOZZ.FourPoint.Dual.SpatialBoundary
 import Mathlib.Tactic
 /-! Exact source joint law of the retained exterior and radial path. -/
-@[expose] public section
 open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -70,6 +68,6 @@ theorem dual_source_copied_outer_joint_law
       funext x
       by_cases hx : x ∈ U <;> simp [f, hx]
     rw [hp, setLIntegral_indicator hU, inter_eq_left.mpr hU0]
-  simpa only [hcopied] using hl
+  simpa [hcopied] using hl
 
 end DOZZ.Proofs

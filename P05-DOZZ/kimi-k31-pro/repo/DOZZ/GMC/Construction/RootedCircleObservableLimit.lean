@@ -1,15 +1,13 @@
 /-
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 -/
-module
 
-public import DOZZ.GMC.Construction.RootedCircleCoordinateLimit
-public import DOZZ.GMC.Construction.RootedMeasureKernel
-public import Mathlib.MeasureTheory.Integral.DominatedConvergence
+import DOZZ.GMC.Construction.RootedCircleCoordinateLimit
+import DOZZ.GMC.Construction.RootedMeasureKernel
+import Mathlib.MeasureTheory.Integral.DominatedConvergence
 
 /-! Convergence of bounded continuous marked observables under circle-root insertion. -/
 
-@[expose] public section
 
 open MeasureTheory Filter Topology
 open scoped Distributions ENNReal BoundedContinuousFunction

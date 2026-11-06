@@ -2,17 +2,15 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.Fusion.MeasurableIntegralFamily
-public import DOZZ.FourPoint.Fusion.MovingMass
+import DOZZ.FourPoint.Fusion.MeasurableIntegralFamily
+import DOZZ.FourPoint.Fusion.MovingMass
 import Mathlib.MeasureTheory.Integral.Prod
 import DOZZ.GMC.Annulus.BallCover
 import DOZZ.GMC.SharpMoments.SeibergPieces
 
 /-! # Jointly measurable unrooted spatial expectations -/
 
-@[expose] public section
 open MeasureTheory Filter
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -36,7 +34,7 @@ theorem fusion_gammaHalf_spatial_expectation_measurable {Ω : Type*} [Measurable
       (fun q : (ℂ × Ω) × ℂ => ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ q.1.1 q.2))
     have hp : Measurable (fun q : (ℂ × Ω) × ℂ => (q.1.1, q.2)) :=
       (measurable_fst.comp measurable_fst).prodMk measurable_snd
-    simpa only [Function.comp_def] using ENNReal.measurable_ofReal.comp
+    simpa [Function.comp_def] using ENNReal.measurable_ofReal.comp
       ((fusion_measurable_gammaHalfKernel γ α₁ α₂ α₃).comp hp)
   have hHm : Measurable (fun q : ℂ × Ω => ∫ x, H (q.1, x) ∂N q.2) := by
     apply fusion_measurable_integral_finite_family (fun q : ℂ × Ω => N q.2)
@@ -44,7 +42,7 @@ theorem fusion_gammaHalf_spatial_expectation_measurable {Ω : Type*} [Measurable
       (fun q : (ℂ × Ω) × ℂ => H (q.1.1, q.2))
     have hp : Measurable (fun q : (ℂ × Ω) × ℂ => (q.1.1, q.2)) :=
       (measurable_fst.comp measurable_fst).prodMk measurable_snd
-    simpa only [Function.comp_def] using hH.comp hp
+    simpa [Function.comp_def] using hH.comp hp
   have hFn : Measurable (fun z : ℂ => ∫ ω, ((I (z, ω) ^ s).toReal : ℂ) *
       (∫ x, H (z, x) ∂N ω) ∂P) :=
     (((Complex.measurable_ofReal.comp (hIm.pow_const s).ennreal_toReal).mul hHm).stronglyMeasurable.integral_prod_right').measurable
@@ -58,9 +56,7 @@ theorem fusion_gammaHalf_spatial_expectation_measurable {Ω : Type*} [Measurable
     filter_upwards [he, gmc_singleton_mass_eq_zero_ae P X hX γ hγ hγ2 M hM z,
       gmc_singleton_mass_eq_zero_ae P X hX γ hγ hγ2 M hM 0,
       gmc_singleton_mass_eq_zero_ae P X hX γ hγ hγ2 M hM 1] with ω hω hωz hω0 hω1
-    dsimp only [I]
+    dsimp [I]
     rw [fusion_gammaHalfMass_kernel γ α₁ α₂ α₃ z (M ω) hωz hω0 hω1, hω]
-  rw [heq]
-  exact hFn
-
+  rwa [heq]
 end DOZZ.Proofs

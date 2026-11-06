@@ -2,10 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Reflected.CopiedRadialPlane
+import DOZZ.FourPoint.Reflected.CopiedRadialPlane
 /-! Limiting compact comparisons expressed on the single global lateral carrier. -/
-@[expose] public section
 open MeasureTheory ProbabilityTheory Set Filter Topology
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -27,7 +25,7 @@ theorem reflected_global_radial_test_integral (ρ γ : ℝ) (hρ : 0 < ρ)
   rw [he]
   apply integral_congr_ae
   exact ae_of_all μ fun x => by
-    dsimp only
+    dsimp
     by_cases hx : x ∈ originLateralChart ρ
     · rw [reflected_global_reinsertionWeight_chart ρ γ hρ a x hx]
     · rw [hz x hx, zero_mul, zero_mul]
@@ -63,7 +61,7 @@ theorem reflected_global_compact_chaos_comparison
     hK.of_isClosed_subset (isClosed_tsupport _) hf₀K
   have hfc₁ : HasCompactSupport (f₁ : ℂ → ℝ) :=
     hK.of_isClosed_subset (isClosed_tsupport _) hf₁K
-  dsimp only
+  dsimp
   intro a
   have hb := reflected_lateral_compact_chaos_comparison P X Xc hX hc hm ρ hρ γ
     (fun ω => (N ω).restrict (originLateralChart ρ)) hN K hK hKU A hA
@@ -76,7 +74,7 @@ theorem reflected_global_compact_chaos_comparison
     ((tsupport_originRadialWeightedTest_subset ρ γ hρ a f₁ hfc₁).trans hf₁K)
     ((tsupport_originRadialWeightedTest_subset ρ γ hρ a f₀ hfc₀).trans hf₀A)
     ((tsupport_originRadialWeightedTest_subset ρ γ hρ a f₁ hfc₁).trans hf₁A) q hq
-  simp only [originRadialWeightedTest_apply, BoundedContinuousFunction.add_apply, ← add_mul] at hb
+  simp [originRadialWeightedTest_apply, BoundedContinuousFunction.add_apply, ← add_mul] at hb
   have hfU : tsupport ((f₀+f₁ : BoundedContinuousFunction ℂ ℝ) : ℂ → ℝ) ⊆ originLateralChart ρ :=
     (tsupport_add (f := (f₀ : ℂ → ℝ)) (g := (f₁ : ℂ → ℝ))).trans
       ((union_subset hf₀K hf₁K).trans hKU)
@@ -84,9 +82,9 @@ theorem reflected_global_compact_chaos_comparison
       (∫ x, (f₀ x+f₁ x)*originRadialReinsertionWeight ρ γ a x
         ∂μ.restrict (originLateralChart ρ)) =
         ∫ x, (f₀ x+f₁ x)*reflected_global_reinsertionWeight γ a x ∂μ := by
-    simpa only [BoundedContinuousFunction.add_apply] using
+    simpa [BoundedContinuousFunction.add_apply] using
       reflected_global_radial_test_integral ρ γ hρ a (f₀+f₁) hfU μ
-  simpa only [hsum,
+  simpa [hsum,
     reflected_global_radial_test_integral ρ γ hρ a f₀ (hf₀K.trans hKU),
     reflected_global_radial_test_integral ρ γ hρ a f₁ (hf₁K.trans hKU),
     BoundedContinuousFunction.add_apply] using hb

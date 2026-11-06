@@ -2,13 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Reflected.FirstOrderFreezing
-public import DOZZ.FourPoint.Reflected.RadialTilt
-public import DOZZ.FourPoint.Reflected.Remainder
+import DOZZ.FourPoint.Reflected.FirstOrderFreezing
+import DOZZ.FourPoint.Reflected.RadialTilt
+import DOZZ.FourPoint.Reflected.Remainder
 import Mathlib.Tactic
 /-! # The actual Gaussian-weighted first-order Pareto error has a strictly higher power -/
-public section
 open MeasureTheory Filter Topology Set
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -43,9 +41,9 @@ theorem reflected_first_order_radial_error_bound
   refine ⟨C, mul_pos hD hC₀, ?_⟩
   let l := nhdsWithin (0 : ℂ) {z : ℂ | z ≠ 0}
   have hn : Tendsto (fun z : ℂ => ‖z‖) l (nhds 0) := by
-    simpa only [norm_zero] using (continuous_norm.tendsto (0 : ℂ)).mono_left nhdsWithin_le_nhds
+    simpa [norm_zero] using (continuous_norm.tendsto (0 : ℂ)).mono_left nhdsWithin_le_nhds
   have ht (s : ℝ) (hs : 0 < s) : Tendsto (fun z : ℂ => ‖z‖ ^ s) l (nhds 0) := by
-    simpa only [Function.comp_def, Real.zero_rpow hs.ne'] using
+    simpa [Function.comp_def, Real.zero_rpow hs.ne'] using
       ((Real.continuous_rpow_const hs.le).tendsto (0 : ℝ)).comp hn
   filter_upwards [hn.eventually (gt_mem_nhds zero_lt_one),
     (ht (1 - ξ) (sub_pos.mpr hξ₁)).eventually (gt_mem_nhds hε₀),
@@ -64,12 +62,12 @@ theorem reflected_first_order_radial_error_bound
     have hl := Real.log_nonpos hp.le hz.le
     linarith only [hl, hh]
   have hr : ‖z‖ ≤ ‖z‖ ^ (1 - ξ) := by
-    simpa only [Real.rpow_one] using Real.rpow_le_rpow_of_exponent_ge hp hz.le
+    simpa [Real.rpow_one] using Real.rpow_le_rpow_of_exponent_ge hp hz.le
       (by linarith only [hξ] : 1 - ξ ≤ 1)
   have hout : Real.exp (-(-Real.log ‖z‖ + h)) ≤ ‖z‖ ^ (1 - ξ) := by
     apply le_trans _ hr
     have he : -(-Real.log ‖z‖ + h) ≤ Real.log ‖z‖ := by linarith only [hh]
-    simpa only [Real.exp_log hp] using Real.exp_le_exp.mpr he
+    simpa [Real.exp_log hp] using Real.exp_le_exp.mpr he
   have heβ (ω : Ω) : Real.exp
       (γ * Xc ω 0 (-Real.log ‖z‖ + h) - γ * ν * (-Real.log ‖z‖ + h) -
         γ ^ 2 / 2 * (-Real.log ‖z‖)) =
@@ -113,7 +111,7 @@ theorem reflected_first_order_radial_error_bound
       have hpow := Real.rpow_add hp κ ((1 - ξ) * δ)
       rw [hpow]
       congr 1
-      dsimp only [C]
+      dsimp [C]
       ring
 
 /-- The actual first-order expectation is negligible at the reflected leading scale. -/
@@ -142,7 +140,5 @@ theorem reflected_first_order_radial_error_littleO
   filter_upwards [hb] with z hz
   rw [Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg ENNReal.toReal_nonneg]
   have hh := ENNReal.toReal_mono ENNReal.ofReal_ne_top hz
-  rw [ENNReal.toReal_ofReal (mul_nonneg hC.le (Real.rpow_nonneg (norm_nonneg z) _))] at hh
-  exact hh
-
+  rwa [ENNReal.toReal_ofReal (mul_nonneg hC.le (Real.rpow_nonneg (norm_nonneg z) _))] at hh
 end DOZZ.Proofs

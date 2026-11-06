@@ -2,15 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.Tails.WilliamsReferenceInputLaw
-public import DOZZ.Brownian.Reflection.MassBlocks
-public import DOZZ.Brownian.Lateral.LawUniqueness
+import DOZZ.Correlations.Tails.WilliamsReferenceInputLaw
+import DOZZ.Brownian.Reflection.MassBlocks
+import DOZZ.Brownian.Lateral.LawUniqueness
 
 /-! The Williams reference law on the given source reflection witness. -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal NNReal
 
@@ -28,7 +26,7 @@ theorem conditioned_pair_reference_law
   have hl₁ := isNegativeConditionedBrownianLaw_eq ν hB.1.2 hQν
   have hl₂ := isNegativeConditionedBrownianLaw_eq ν hB.2.1.2 hQν
   have hl := (indepFun_iff_map_prod_eq_prod_map_map hm₁ hm₂).mp hB.2.2
-  simpa only [Prod.eta,hl₁,hl₂] using hl
+  simpa [Prod.eta,hl₁,hl₂] using hl
 
 theorem lateral_law_locally_finite
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
@@ -83,7 +81,7 @@ theorem williams_source_input_law
         (fun q => (q.1,pm q.2)) := heq'.mono fun q hq => Prod.ext rfl hq
     rw [Measure.map_congr hlift,Measure.map_congr heq,
       ← Measure.map_id (μ := μ),Measure.map_prod_map _ _ measurable_id hpm]
-    simp only [Measure.map_id]
+    simp [Measure.map_id]
     rfl
   have hInp : AEMeasurable (fun q : ℝ × Ω => (q.1,pair q.2)) (μ.prod P) :=
     measurable_fst.aemeasurable.prodMk

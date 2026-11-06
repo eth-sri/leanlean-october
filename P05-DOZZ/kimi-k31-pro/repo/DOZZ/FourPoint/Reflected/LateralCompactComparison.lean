@@ -1,4 +1,3 @@
-module
-public import DOZZ.FourPoint.Reflected.LateralCutoffCovariance
-public import DOZZ.FourPoint.Reflected.DecouplingComparison
+import DOZZ.FourPoint.Reflected.LateralCutoffCovariance
+import DOZZ.FourPoint.Reflected.DecouplingComparison
 import Mathlib.Tactic

@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GFFStructure.CirclePotential
+import DOZZ.GFFStructure.CirclePotential
 import Mathlib.Analysis.PSeries
 import Mathlib.Analysis.SpecialFunctions.Complex.LogBounds
 import Mathlib.Analysis.SpecialFunctions.Integrals.Basic
@@ -20,14 +19,13 @@ including equal center distance and radius. All computations use the series coef
 `DOZZ.circleLogPotential`.
 -/
 
-@[expose] public section
 
 open MeasureTheory Filter Set
 open scoped Topology Interval
 
 namespace DOZZ.Proofs
 
-/-- Fourier coefficient in the clipped circle potential `DOZZ.circleLogPotential`. -/
+/-- Fourier coefficient in the clipped circle potential `circleLogPotential`. -/
 noncomputable def circleLogSeriesTerm (u θ : ℝ) (k : ℕ) : ℝ :=
   (-1 : ℝ)^k * u^(k+1) * Real.sin ((k+1 : ℕ)*θ) / ((k+1 : ℕ) : ℝ)^2
 
@@ -61,7 +59,7 @@ theorem continuous_circleLogSeries :
   exact norm_circleLogSeriesTerm_le p.1.property p.2 k
 
 /-- Integration of the k-th cosine yields the denominator squared in the series of
-`DOZZ.circleLogPotential`. -/
+`circleLogPotential`. -/
 theorem integral_circleLogCosine (u θ : ℝ) (k : ℕ) :
     (∫ t in 0..θ, (-1 : ℝ)^k * u^(k+1) * Real.cos ((k+1 : ℕ)*t) /
       ((k+1 : ℕ) : ℝ)) = circleLogSeriesTerm u θ k := by
@@ -102,13 +100,13 @@ theorem hasSum_circleLogCosine {u : ℝ} (hu : |u| < 1) (t : ℝ) :
       ((k+1 : ℕ) : ℝ)) (Real.log ‖1 + (u : ℂ) * Complex.exp ((t : ℂ)*Complex.I)‖) := by
   let z : ℂ := (u : ℂ) * Complex.exp ((t : ℂ)*Complex.I)
   have hz : ‖z‖ < 1 := by
-    simpa only [z, norm_mul, Complex.norm_real, Real.norm_eq_abs,
+    simpa [z, norm_mul, Complex.norm_real, Real.norm_eq_abs,
       Complex.norm_exp_ofReal_mul_I, mul_one] using hu
   have h0 := Complex.hasSum_taylorSeries_log hz
   have hshift : HasSum (fun k : ℕ => (-1 : ℂ)^(k+1+1) * z^(k+1) /
       ((k+1 : ℕ) : ℂ)) (Complex.log (1+z)) :=
     (hasSum_nat_add_iff 1 (f := fun n : ℕ => (-1 : ℂ)^(n+1) * z^n / (n : ℂ))).mpr
-      (by simpa only [Finset.sum_range_one, pow_zero,
+      (by simpa [Finset.sum_range_one, pow_zero,
       Nat.cast_zero, div_zero, add_zero] using h0)
   have h := Complex.hasSum_re hshift
   rw [Complex.log_re] at h
@@ -152,16 +150,16 @@ theorem integral_circleLog_eq_tsum {u : ℝ} (hu : u ∈ Ico 0 1) (θ : ℝ) :
 theorem circleLogSection_ne_zero {u t : ℝ} (hu : u ∈ Icc 0 1) (ht : t ∈ Ico 0 Real.pi) :
     1 + (u : ℂ) * Complex.exp ((t : ℂ)*Complex.I) ≠ 0 := by
   have hc : -1 < Real.cos t := by
-    simpa only [Real.cos_pi] using Real.cos_lt_cos_of_nonneg_of_le_pi ht.1 le_rfl ht.2
+    simpa [Real.cos_pi] using Real.cos_lt_cos_of_nonneg_of_le_pi ht.1 le_rfl ht.2
   have hp : 0 < 1 + u * Real.cos t := by
     by_cases hcos : 0 ≤ Real.cos t
     · exact add_pos_of_pos_of_nonneg zero_lt_one (mul_nonneg hu.1 hcos)
     · have hm := mul_le_mul_of_nonpos_right hu.2 (le_of_not_ge hcos)
-      simp only [one_mul] at hm
+      simp [one_mul] at hm
       linarith only [hm, hc]
   intro h
   have hr := congrArg Complex.re h
-  simp only [Complex.add_re, Complex.one_re, Complex.re_ofReal_mul,
+  simp [Complex.add_re, Complex.one_re, Complex.re_ofReal_mul,
     Complex.exp_ofReal_mul_I_re, Complex.zero_re] at hr
   linarith only [hr, hp]
 
@@ -170,8 +168,7 @@ theorem continuous_circleLogArc {θ : ℝ} (hθ : θ ∈ Ico 0 Real.pi) :
     Continuous (fun u : Icc (0 : ℝ) 1 =>
       ∫ t in 0..θ, Real.log ‖1 + (u.val : ℂ) * Complex.exp ((t : ℂ)*Complex.I)‖) := by
   let clip : ℝ → ℝ := fun t => max 0 (min θ t)
-  have hclip (t : ℝ) : clip t ∈ Ico 0 Real.pi := by
-    exact ⟨le_max_left _ _, (max_le hθ.1 (min_le_left _ _)).trans_lt hθ.2⟩
+  have hclip (t : ℝ) : clip t ∈ Ico 0 Real.pi := ⟨le_max_left _ _, (max_le hθ.1 (min_le_left _ _)).trans_lt hθ.2⟩
   have hc : Continuous (fun p : Icc (0 : ℝ) 1 × ℝ =>
       Real.log ‖1 + (p.1.val : ℂ) * Complex.exp ((clip p.2 : ℂ)*Complex.I)‖) := by
     apply Continuous.log (by unfold clip; fun_prop)
@@ -185,7 +182,7 @@ theorem continuous_circleLogArc {θ : ℝ} (hθ : θ ∈ Ico 0 Real.pi) :
   apply intervalIntegral.integral_congr
   intro t ht
   rw [uIcc_of_le hθ.1] at ht
-  dsimp only [clip]
+  dsimp [clip]
   rw [min_eq_right ht.2, max_eq_right ht.1]
 
 
@@ -212,15 +209,13 @@ theorem integral_circleLog_eq_tsum_closed {u θ : ℝ} (hu : u ∈ Icc 0 1)
     · intro hv
       exact ⟨⟨v, hv.1, hv.2.le⟩, hv.2, rfl⟩
   apply heq.closure (continuous_circleLogArc hθ) hs (x := ⟨u, hu⟩)
-  rw [closure_subtype, himage, closure_Ico (by norm_num : (0 : ℝ) ≠ 1)]
-  exact hu
-
+  rwa [closure_subtype, himage, closure_Ico (by norm_num : (0 : ℝ) ≠ 1)]
 /-- Squared geometric circle distance in cosine coordinates. -/
 theorem norm_circleLogSection_sq (d a t : ℝ) :
     ‖(d : ℂ) + (a : ℂ) * Complex.exp ((t : ℂ)*Complex.I)‖^2 =
       d^2 + a^2 + 2*d*a*Real.cos t := by
   rw [Complex.sq_norm, Complex.normSq_apply]
-  simp only [Complex.add_re, Complex.add_im, Complex.ofReal_re, Complex.ofReal_im,
+  simp [Complex.add_re, Complex.add_im, Complex.ofReal_re, Complex.ofReal_im,
     Complex.re_ofReal_mul, Complex.im_ofReal_mul, Complex.exp_ofReal_mul_I_re,
     Complex.exp_ofReal_mul_I_im, zero_add]
   linear_combination a ^ 2 * Real.sin_sq_add_cos_sq t
@@ -267,13 +262,13 @@ theorem circleLog_intersection_argument {d a b : ℝ} (hd : 0 < d) (ha : 0 < a)
   · apply (lt_div_iff₀ hden).mpr
     have hs : (d-a)^2 < b^2 := by
       have h := mul_self_lt_mul_self (abs_nonneg (d-a)) hlower
-      simpa only [sq_abs, ← sq] using h
+      simpa [sq_abs, ← sq] using h
     linarith only [hs]
   · apply (div_lt_iff₀ hden).mpr
     have hs := mul_self_lt_mul_self hb.le hupper
     linarith only [hs]
 
-/-- The angular cutoff of `DOZZ.circleLogPotential` is strictly before the antipodal singularity. -/
+/-- The angular cutoff of `circleLogPotential` is strictly before the antipodal singularity. -/
 theorem circleLog_intersection_angle {d a b : ℝ} (hd : 0 < d) (ha : 0 < a)
     (hb : 0 < b) (hupper : b < d+a) (hlower : |d-a| < b) :
     Real.arccos ((b^2-d^2-a^2)/(2*d*a)) ∈ Ioo (0 : ℝ) Real.pi := by
@@ -329,7 +324,7 @@ theorem integral_geometric_circleLog_arc {d a θ : ℝ} (hd : 0 < d) (ha : 0 < a
         ‖1+((min d a/max d a : ℝ) : ℂ)*Complex.exp ((t : ℂ)*Complex.I)‖) (uIcc 0 θ) := by
     intro t ht
     rw [uIcc_of_le hθ.1] at ht
-    dsimp only
+    dsimp
     rw [norm_circleLogSection_factor hd ha t, Real.log_mul hc.ne'
       (norm_ne_zero_iff.mpr (circleLogSection_ne_zero hu ⟨ht.1, ht.2.trans_lt hθ.2⟩))]
   rw [intervalIntegral.integral_congr heq,
@@ -337,7 +332,7 @@ theorem integral_geometric_circleLog_arc {d a θ : ℝ} (hd : 0 < d) (ha : 0 < a
     intervalIntegral.integral_const, sub_zero, smul_eq_mul, integral_circleLog_eq_tsum_closed hu hθ]
 
 /-- The clipped upper-semicircle potential has the exact intersecting-circle series of
-`DOZZ.circleLogPotential`. -/
+`circleLogPotential`. -/
 theorem clipped_circleLog_integral_intersection {d a b : ℝ} (hd : 0 < d) (ha : 0 < a)
     (hb : 0 < b) (hupper : b < d+a) (hlower : |d-a| < b) :
     (1/Real.pi) * (∫ t in 0..Real.pi,
@@ -364,9 +359,9 @@ theorem clipped_circleLog_integral_intersection {d a b : ℝ} (hd : 0 < d) (ha :
     intro t ht
     rw [uIcc_of_le hθ.1.le] at ht
     have hbound := hmono ⟨ht.1, ht.2.trans hθ.2.le⟩ ⟨hθ.1.le, hθ.2.le⟩ ht.2
-    dsimp only at hbound
+    dsimp at hbound
     rw [hcut] at hbound
-    dsimp only [f]
+    dsimp [f]
     rw [max_eq_right hbound]
   have hright : (∫ t in θ..Real.pi, f t) = (Real.pi-θ)*Real.log b := by
     calc
@@ -375,9 +370,9 @@ theorem clipped_circleLog_integral_intersection {d a b : ℝ} (hd : 0 < d) (ha :
         intro t ht
         rw [uIcc_of_le hθ.2.le] at ht
         have hbound := hmono ⟨hθ.1.le, hθ.2.le⟩ ⟨hθ.1.le.trans ht.1, ht.2⟩ ht.1
-        dsimp only at hbound
+        dsimp at hbound
         rw [hcut] at hbound
-        dsimp only [f]
+        dsimp [f]
         rw [max_eq_left hbound]
       _ = _ := by rw [intervalIntegral.integral_const, smul_eq_mul]
   change (1/Real.pi)*(∫ t in 0..Real.pi, f t) = _

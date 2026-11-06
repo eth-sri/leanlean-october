@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.Dual.Domain
+import DOZZ.FourPoint.Dual.Domain
 import Mathlib.Tactic
 
 /-! # Nonresonant parameters for the full dual seed domain
@@ -14,7 +13,6 @@ The second multiplier uses C₁ at ε. The interval bounds below establish the n
 using the physical Gauss parameter theorem `gauss_physical_parameter_range`.
 -/
 
-public section
 
 namespace DOZZ.Proofs
 
@@ -51,9 +49,9 @@ theorem dual_seed_parameter_intervals (γ α ε α' : ℝ)
       1 < C₁ - A - B + 1 ∧ C₁ - A - B + 1 < 2 ∧
       0 < C₁ - A ∧ C₁ - A < 1 ∧ 0 < C₁ - B ∧ C₁ - B < 1 ∧
       0 < gaussK₂ A B C₀ := by
-  dsimp only
+  dsimp
   obtain ⟨hA, hAB, hBC, hC, hδ, hδ₁, _, hK₂⟩ :=
-    DOZZ.gauss_physical_parameter_range γ (2 / γ) α ε α'
+    gauss_physical_parameter_range γ (2 / γ) α ε α'
       hγ hγ₂ (Or.inr rfl) hs hα hε hα'
   have hC₁ := dual_seed_channel_parameter γ α ε α' hγ.ne'
   have hAhalf : gaussParameterA γ (2 / γ) α ε α' < 1 / 2 := by

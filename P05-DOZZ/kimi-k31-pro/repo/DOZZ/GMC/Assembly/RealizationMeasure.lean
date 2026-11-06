@@ -2,15 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.Assembly.Realization
-public import Mathlib.MeasureTheory.Integral.RieszMarkovKakutani.Real
-public import DOZZ.GMC.Assembly.CircleIntensity
+import DOZZ.GMC.Assembly.Realization
+import Mathlib.MeasureTheory.Integral.RieszMarkovKakutani.Real
+import DOZZ.GMC.Assembly.CircleIntensity
 
 /-! The Riesz measure of the almost sure limit functional on an open chart, its basic properties, and its measurability. -/
 
-@[expose] public section
 
 /-! ### The Riesz limit functional
 
@@ -26,7 +24,7 @@ open scoped ENNReal NNReal CompactlySupported
 
 namespace DOZZ.Assembly
 
-open DOZZ.Proofs
+open Proofs
 
 open Classical in
 /-- Extension by zero of a compactly supported continuous test on a chart. -/
@@ -42,7 +40,7 @@ theorem extendFromChart_val (g : C_c(U, ℝ)) (y : U) : extendFromChart U g y = 
 
 theorem extendFromChart_of_notMem (g : C_c(U, ℝ)) (x : ℂ) (hx : x ∉ U) :
     extendFromChart U g x = 0 := by
-  simp only [extendFromChart, hx, dite_false]
+  simp [extendFromChart, hx, dite_false]
 
 theorem isCompact_image_tsupport (g : C_c(U, ℝ)) :
     IsCompact (Subtype.val '' tsupport (g : U → ℝ)) :=
@@ -102,7 +100,7 @@ theorem extendFromChart_smul (c : ℝ) (g : C_c(U, ℝ)) :
 theorem extendFromChart_nonneg (g : C_c(U, ℝ)) (hg : 0 ≤ g) (x : ℂ) :
     0 ≤ extendFromChart U g x := by
   by_cases hx : x ∈ U
-  · simp only [extendFromChart, hx, dite_true]; exact hg ⟨x, hx⟩
+  · simp [extendFromChart, hx, dite_true]; exact hg ⟨x, hx⟩
   · simp [extendFromChart, hx]
 
 end Extend
@@ -188,7 +186,7 @@ theorem realizationLimit_smul
     (tsupport_mul_subset_right (f := fun _ => a)).trans hfU
   have hsmul := tendsto_realizationLimit P U dens ε₀ Y hY T γ R e he c ω hω
     (fun x => a * f x) (continuous_const.mul hf) hc hU'
-  simp only [admissibleCutoffIntegral_smul] at hsmul
+  simp [admissibleCutoffIntegral_smul] at hsmul
   exact tendsto_nhds_unique hsmul (h.const_mul a)
 
 theorem realizationLimit_nonneg
@@ -248,7 +246,7 @@ theorem realizationFunctional_apply
     (hω : ω ∈ realizationGoodSet P U dens Y T γ R e c) (g : C_c(U, ℝ)) :
     realizationFunctional P U hU dens ε₀ Y hY T γ R e he c ω g =
       realizationLimit P U dens Y γ R e c ω (extendFromChart U g) := by
-  simp only [realizationFunctional, hω, dite_true]
+  simp [realizationFunctional, hω, dite_true]
   rfl
 
 /-- The realized random measure: the push-forward of the Riesz measure of the limit functional
@@ -267,7 +265,7 @@ noncomputable def realizationMeasure {Ω : Type*} [MeasurableSpace Ω]
       (RealRMK.rieszMeasure (realizationFunctional P U hU dens ε₀ Y hY T γ R e he c ω))
   else 0
 
-end DOZZ.Assembly
+end Assembly
 
 /-! ### Basic properties of the realized measure
 
@@ -278,9 +276,9 @@ support in the chart are the almost sure cutoff limits. -/
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal CompactlySupported
 
-namespace DOZZ.Assembly
+namespace Assembly
 
-open DOZZ.Proofs
+open Proofs
 
 section Props
 
@@ -296,11 +294,11 @@ theorem realizationMeasure_of_mem (ω : Ω) (hω : ω ∈ realizationGoodSet P U
     letI : LocallyCompactSpace U := hU.locallyCompactSpace
     realizationMeasure P U hU dens ε₀ Y hY T γ R e he c ω = Measure.map Subtype.val
       (RealRMK.rieszMeasure (realizationFunctional P U hU dens ε₀ Y hY T γ R e he c ω)) := by
-  simp only [realizationMeasure, hω, ite_true]
+  simp [realizationMeasure, hω, ite_true]
 
 theorem realizationMeasure_of_notMem (ω : Ω) (hω : ω ∉ realizationGoodSet P U dens Y T γ R e c) :
     realizationMeasure P U hU dens ε₀ Y hY T γ R e he c ω = 0 := by
-  simp only [realizationMeasure, hω, ite_false]
+  simp [realizationMeasure, hω, ite_false]
 
 /-- The realized measure is carried by the chart. -/
 theorem realizationMeasure_compl (ω : Ω) :
@@ -360,7 +358,7 @@ theorem integral_realizationMeasure (ω : Ω) (hω : ω ∈ realizationGoodSet P
 
 end Props
 
-end DOZZ.Assembly
+end Assembly
 
 /-! ### Measurability of the realized measure
 
@@ -373,9 +371,9 @@ restrictions to the interiors of the exhausting compacts; and these exhaust the 
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal CompactlySupported
 
-namespace DOZZ.Assembly
+namespace Assembly
 
-open DOZZ.Proofs
+open Proofs
 
 /-- Every measure of an open set with nonempty complement is the supremum of its continuous
 ramp integrals. -/
@@ -390,7 +388,7 @@ theorem measure_isOpen_eq_iSup_openRamp (μ : Measure ℂ) (V : Set ℂ) (hV : I
       V.indicator (fun _ => (1 : ℝ≥0∞)) x :=
     tendsto_nhds_unique (tendsto_atTop_iSup fun k m hkm =>
       ENNReal.ofReal_le_ofReal (openRamp_mono V x hkm)) (openRamp_tendsto V hV hVc x)
-  simp only [hlim]
+  simp [hlim]
   rw [lintegral_indicator_const hV.measurableSet, one_mul]
 
 section Measurable
@@ -445,7 +443,6 @@ theorem lintegral_realizationMeasure (ω : Ω) (hω : ω ∈ realizationGoodSet 
 theorem measurable_realizationMeasure_isOpen (n : ℕ) (V : Set ℂ) (hV : IsOpen V)
     (hVK : closure V ⊆ T.K n) :
     Measurable (fun ω => realizationMeasure P U hU dens ε₀ Y hY T γ R e he c ω V) := by
-  have hG := realizationGoodSet_measurable P U dens ε₀ Y hY T γ R e c
   have hVc : Vᶜ.Nonempty := by
     by_contra h
     rw [Set.not_nonempty_iff_eq_empty, Set.compl_empty_iff] at h

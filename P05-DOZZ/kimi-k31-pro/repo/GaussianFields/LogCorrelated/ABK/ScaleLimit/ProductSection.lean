@@ -3,11 +3,10 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Scott Armstrong, Amélie Loher
 -/
-module
 
-public import GaussianFields.LogCorrelated.ABK.Covariance
-public import GaussianFields.LogCorrelated.ABK.RegularizedCovariance
-public import GaussianFields.LogCorrelated.ABK.SingularIntegrability
+import GaussianFields.LogCorrelated.ABK.Covariance
+import GaussianFields.LogCorrelated.ABK.RegularizedCovariance
+import GaussianFields.LogCorrelated.ABK.SingularIntegrability
 
 /-!
 # GaussianFields ABK scale product section
@@ -15,7 +14,6 @@ public import GaussianFields.LogCorrelated.ABK.SingularIntegrability
 Port of the corresponding GaussianFields source module.
 -/
 
-public section
 
 open Filter MeasureTheory ProbabilityTheory
 open scoped ENNReal InnerProductSpace NNReal ProbabilityTheory Topology
@@ -35,7 +33,7 @@ theorem abs_mul_le_half_sq_add_sq (a b : ℝ) :
     nlinarith [two_mul_le_add_sq a (-b)]
 
 /-- The fixed-scale product section of two unnormalized ABK kernels. -/
-@[expose]
+
 noncomputable def abkScaleProductSection {d : Nat}
     (ζ : ABKCutoff d) (ψ φ : MeanZeroTestFunction d) (r : ℝ) : ℝ :=
   ∫ y : Vec d,
@@ -44,7 +42,7 @@ noncomputable def abkScaleProductSection {d : Nat}
     ∂(volume : Measure (Vec d))
 
 /-- Abel-regularized scale product section. -/
-@[expose]
+
 noncomputable def abkRegularizedScaleProductSection {d : Nat}
     (ζ : ABKCutoff d) (ψ φ : MeanZeroTestFunction d) (α r : ℝ) : ℝ :=
   if 0 < r then
@@ -298,13 +296,11 @@ theorem abkScaledCutoffSelfConvolution_eq_zero_of_two_mul_lt_norm {d : Nat}
     (ζ : ABKCutoff d) {r : ℝ} (hr : 0 < r) {x : Vec d}
     (hx : 2 * r < euclideanNorm x) :
     abkScaledCutoffSelfConvolution ζ r x = 0 := by
-  rw [abkScaledCutoffSelfConvolution_eq_pow_mul ζ hr x]
-  rw [abkCutoffSelfConvolution_eq_zero_of_two_lt_norm ζ]
+  rw [abkScaledCutoffSelfConvolution_eq_pow_mul ζ hr x, abkCutoffSelfConvolution_eq_zero_of_two_lt_norm ζ]
   · simp
   · have hnorm : euclideanNorm (r⁻¹ • x) = r⁻¹ * euclideanNorm x := by
       rw [euclideanNorm_smul, abs_of_pos (inv_pos.mpr hr)]
-    rw [hnorm]
-    rw [lt_inv_mul_iff₀ hr]
+    rw [hnorm, lt_inv_mul_iff₀ hr]
     simpa [mul_comm, mul_left_comm, mul_assoc] using hx
 
 /-- The scaled self-convolution is bounded by the volume of the scaled cutoff support. -/
@@ -348,7 +344,6 @@ theorem abkScaledCutoffSelfConvolution_le_volume_closedBall {d : Nat}
     by_cases hyS : y ∈ S
     · have hleft_le : abkScaledCutoff ζ r y ≤ 1 := ζ.le_one _
       have hright_le : abkScaledCutoff ζ r (x - y) ≤ 1 := ζ.le_one _
-      have hleft_nonneg : 0 ≤ abkScaledCutoff ζ r y := ζ.nonneg _
       have hright_nonneg : 0 ≤ abkScaledCutoff ζ r (x - y) := ζ.nonneg _
       rw [Set.indicator_of_mem hyS]
       calc
@@ -410,17 +405,9 @@ theorem integral_indicator_Ici_rpow_neg_one_sub {α c : ℝ}
         (Set.Ici c).indicator (fun r : ℝ => r ^ (-(1 + α))) r
         ∂(volume : Measure ℝ)) =
       c ^ (-α) / α := by
-  have htail :
-      IntegrableOn (fun r : ℝ => r ^ (-(1 + α))) (Set.Ici c)
-    (volume : Measure ℝ) :=
-    (integrableOn_Ioi_rpow_of_lt (by linarith : -(1 + α) < -1) hc).congr_set_ae
-      Ioi_ae_eq_Ici.symm
-  rw [integral_indicator measurableSet_Ici]
-  rw [integral_Ici_eq_integral_Ioi]
-  rw [integral_Ioi_rpow_of_lt (by linarith : -(1 + α) < -1) hc]
+  rw [integral_indicator measurableSet_Ici, integral_Ici_eq_integral_Ioi, integral_Ioi_rpow_of_lt (by linarith : -(1 + α) < -1) hc]
   field_simp [hα.ne']
   ring_nf
 
 end GaussianFields
 
-end

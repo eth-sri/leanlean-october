@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.Annulus.PositiveRoot
-public import Mathlib.MeasureTheory.Integral.MeanInequalities
+import DOZZ.GMC.Annulus.PositiveRoot
+import Mathlib.MeasureTheory.Integral.MeanInequalities
 
 /-! # Reverse Jensen for negative powers and bounded-cutoff inverse moments
 
@@ -16,7 +15,6 @@ regularized GMC, and combined with the exact Gaussian moments of the Wick densit
 every inverse moment of the cutoff mass of a set of positive finite reference mass.
 -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal NNReal Distributions

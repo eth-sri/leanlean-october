@@ -2,11 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Reflected.PastOuterMass
-public import DOZZ.FourPoint.Reflected.SpatialBoundary
+import DOZZ.FourPoint.Reflected.PastOuterMass
+import DOZZ.FourPoint.Reflected.SpatialBoundary
 /-! The actual retained GMC mass is a stopped-past observable, shown by radial reinsertion. -/
-@[expose] public section
 open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -33,7 +31,7 @@ theorem reflected_source_outerMass_pastCode_ae
   have hU0 : U ⊆ ({0} : Set ℂ)ᶜ := by
     intro x hx
     have hn := hr.trans hx.1
-    simpa only [mem_compl_iff,mem_singleton_iff] using norm_pos_iff.mp hn
+    simpa [mem_compl_iff,mem_singleton_iff] using norm_pos_iff.mp hn
   have hF : Measurable F := (reflected_gammaHalfKernel_measurable γ α₁ α₂ α₃ z).ennreal_ofReal
   filter_upwards [heq,reflected_source_outerMass_eq_comparison_region P X hX γ hγ hγ₂ M hM
     α₁ α₂ α₃ ξ z hz] with ω hω ho
@@ -47,8 +45,7 @@ theorem reflected_source_outerMass_pastCode_ae
     (fun x => ENNReal.ofReal (reflected_global_reinsertionWeight γ (A ω) x)*F x) from
       funext fun _ => mul_comm _ _]
   have hw := setLIntegral_withDensity_eq_setLIntegral_mul (N ω) hW hF hU
-  simp only [Pi.mul_apply] at hw
-  rw [← hw]
-  rw [hω,reflected_global_reinsertion_measure,Measure.restrict_restrict hU,inter_eq_left.mpr hU0]
+  simp [Pi.mul_apply] at hw
+  rw [← hw, hω,reflected_global_reinsertion_measure,Measure.restrict_restrict hU,inter_eq_left.mpr hU0]
 
 end DOZZ.Proofs

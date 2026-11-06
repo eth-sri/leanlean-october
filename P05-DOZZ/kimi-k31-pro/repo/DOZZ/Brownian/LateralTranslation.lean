@@ -2,11 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Brownian.MeasureTranslationFinite
-public import DOZZ.Statements.Brownian.IsLateralGMCOf
-public import DOZZ.Statements.Brownian.BrownianPath
+import DOZZ.Brownian.MeasureTranslationFinite
+import DOZZ.Statements.Brownian.IsLateralGMCOf
+import DOZZ.Statements.Brownian.BrownianPath
 
 /-!
 # Random translation of locally finite lateral measures
@@ -16,7 +15,6 @@ agrees with ordinary pushforward on locally finite measures, which is the almost
 the lateral GMC carrier.
 -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal NNReal
@@ -24,8 +22,7 @@ open scoped ENNReal NNReal
 namespace DOZZ.Proofs
 
 private theorem measurable_fixedLocallyFiniteTranslation (t : ℝ) :
-    Measurable (fun μ : Measure ℝ => locallyFiniteTranslation (t, μ)) := by
-  exact measurable_locallyFiniteTranslation.comp (measurable_const.prodMk measurable_id)
+    Measurable (fun μ : Measure ℝ => locallyFiniteTranslation (t, μ)) := measurable_locallyFiniteTranslation.comp (measurable_const.prodMk measurable_id)
 
 /-- Deterministic stationarity of the original lateral measure transfers to the measurable
 extension of translation on its locally finite carrier. -/
@@ -113,7 +110,7 @@ theorem lateralGMC_randomTranslation_aemeasurable
       exact hloc (-(n : ℝ)) (n : ℝ))).symm
   exact (aemeasurable_congr htranslate).2 hsurrogate
 
-/-- Proof of the complete random-translation statement `DOZZ.lateralGMC_random_translation`:
+/-- Proof of the complete random-translation statement `lateralGMC_random_translation`:
 independence replaces the input law by a product, while deterministic stationarity preserves the
 second marginal in every section. -/
 theorem lateralGMC_random_translation
@@ -168,10 +165,6 @@ theorem lateralGMC_random_translation
       _ = μZ := by rw [Measure.map_snd_prod, measure_univ, one_smul]
   refine ⟨hY, hYlaw, ?_⟩
   apply (indepFun_iff_map_prod_eq_prod_map_map hD hY).2
-  rw [hYlaw]
-  exact hpairLaw
-
-
+  rwa [hYlaw]
 end DOZZ.Proofs
 
-end

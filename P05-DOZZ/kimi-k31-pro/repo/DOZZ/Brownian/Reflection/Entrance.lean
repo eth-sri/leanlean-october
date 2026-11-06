@@ -2,12 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Brownian.Coupling.RadialTiltDensity
-public import DOZZ.Brownian.Coupling.GaussianRadius
-public import DOZZ.Brownian.Lateral.BrownianWindowExponential
-public import DOZZ.Brownian.WienerExists
+import DOZZ.Brownian.Coupling.RadialTiltDensity
+import DOZZ.Brownian.Coupling.GaussianRadius
+import DOZZ.Brownian.Lateral.BrownianWindowExponential
+import DOZZ.Brownian.WienerExists
 import Mathlib.Analysis.SpecialFunctions.Gamma.Basic
 import Mathlib.Analysis.SpecialFunctions.Gaussian.GaussianIntegral
 
@@ -21,7 +20,6 @@ drifts, through the Rogers–Pitman realization on the Wiener triple. These are 
 of the block arguments for the reflection-mass moments and their zero-drift limit.
 -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Set
 open scoped ENNReal NNReal Topology
@@ -105,8 +103,6 @@ theorem conditionedPositiveEntranceDensity_le_gaussian (ν t y : ℝ) (hν : 0 �
 theorem conditionedPositiveEntranceDensity_le_maxwell (ν t y : ℝ) (ht : 0 < t) :
     conditionedPositiveEntranceDensity ν t y ≤
       Real.sqrt (2 / Real.pi) * t ^ (-(3 / 2 : ℝ)) * y ^ 2 := by
-  have hK : 0 ≤ Real.sqrt (2 / Real.pi) := Real.sqrt_nonneg _
-  have hT : 0 < t ^ (-(3 / 2 : ℝ)) := Real.rpow_pos_of_pos ht _
   by_cases h : 0 ≤ ν ∧ 0 < y
   · have hg := conditionedPositiveEntranceDensity_le_gaussian ν t y h.1 ht h.2.le
     have hexp : Real.exp (-(y - ν * t) ^ 2 / (2 * t)) ≤ 1 := by
@@ -141,7 +137,7 @@ theorem entranceExp_integral_sq_mul_exp_neg {b : ℝ} (hb : 0 < b) :
   rw [hpow] at h
   rw [show 2 / b ^ 3 = 1 / b ^ 3 * 2 by ring, ← h]
   refine setIntegral_congr_fun measurableSet_Ioi (fun y _ => ?_)
-  simp only [show (3 : ℝ) - 1 = 2 by norm_num, Real.rpow_two]
+  simp [show (3 : ℝ) - 1 = 2 by norm_num, Real.rpow_two]
 
 /-- The Gamma integral `∫_0^∞ y² e^{-b y} dy = 2 / b³` as a lower integral. -/
 theorem entranceExp_lintegral_sq_mul_exp_neg {b : ℝ} (hb : 0 < b) :
@@ -182,8 +178,6 @@ theorem isNegativeConditionedBrownianLaw_exp_eval_le {ν a : ℝ} (ha : 0 < a)
     (∫⁻ p, ENNReal.ofReal (Real.exp (a * p t)) ∂Q) ≤
       ENNReal.ofReal (Real.sqrt (2 / Real.pi) * (2 / a ^ 3) * (t : ℝ) ^ (-(3 / 2 : ℝ))) := by
   have htr : (0 : ℝ) < t := ht
-  have hK : 0 ≤ Real.sqrt (2 / Real.pi) := Real.sqrt_nonneg _
-  have hT : 0 < (t : ℝ) ^ (-(3 / 2 : ℝ)) := Real.rpow_pos_of_pos htr _
   rw [entranceExp_lintegral_eq_entrance hQ t ht]
   calc _ ≤ ∫⁻ y in Ioi (0 : ℝ), ENNReal.ofReal
         (Real.sqrt (2 / Real.pi) * (t : ℝ) ^ (-(3 / 2 : ℝ)) * (y ^ 2 * Real.exp (-(a * y)))) := by
@@ -261,7 +255,6 @@ theorem entranceExp_mul_density_le_of_ge_half {ν a t y : ℝ} (ha : 0 ≤ a)
       Real.sqrt (2 / Real.pi) * Real.exp (-(a * ν * t / 4)) *
         (y ^ 2 * Real.exp (-((a / 2) * y))) := by
   have ht0 : 0 < t := by linarith
-  have hK : 0 ≤ Real.sqrt (2 / Real.pi) := Real.sqrt_nonneg _
   have h2 : t ^ (-(3 / 2 : ℝ)) ≤ 1 := Real.rpow_le_one_of_one_le_of_nonpos ht (by norm_num)
   have hM := conditionedPositiveEntranceDensity_le_maxwell ν t y ht0
   have h1 : Real.exp (-(a * y)) ≤ Real.exp (-(a * ν * t / 4)) * Real.exp (-((a / 2) * y)) := by
@@ -293,7 +286,6 @@ theorem entranceExp_exp_eval_le_split {ν a : ℝ} (hν : 0 < ν) (ha : 0 < a)
   have htpos : 0 < t := by
     have h : (0 : ℝ) < t := by linarith
     exact_mod_cast h
-  have hK : 0 ≤ Real.sqrt (2 / Real.pi) := Real.sqrt_nonneg _
   have hMpos : 0 < ν * (t : ℝ) / 2 := by positivity
   rw [entranceExp_lintegral_eq_entrance hQ t htpos,
     ← Ioc_union_Ioi_eq_Ioi hMpos.le,
@@ -425,7 +417,7 @@ theorem isNegativeConditionedBrownianLaw_exp_eval_le_exp {ν₁ ν₂ a : ℝ} (
   rcases Nat.eq_zero_or_pos n with rfl | hn
   · refine (isNegativeConditionedBrownianLaw_exp_eval_le_one ha.le hQ _).trans ?_
     rw [ENNReal.one_le_ofReal]
-    simp only [Nat.cast_zero, mul_zero, Real.exp_zero, mul_one]
+    simp [Nat.cast_zero, mul_zero, Real.exp_zero, mul_one]
     linarith
   · have hn1 : (1 : ℝ) ≤ (n : ℝ) := by exact_mod_cast hn
     have hsplit := entranceExp_exp_eval_le_split hν0 ha hQ (n : ℝ≥0) (by simpa using hn1)
@@ -451,9 +443,7 @@ theorem isNegativeConditionedBrownianLaw_exp_eval_le_exp {ν₁ ν₂ a : ℝ} (
 theorem abs_apply_le_brownianUnitNorm (p : BrownianPath) {t : ℝ≥0} (ht : t ≤ 1) :
     |p t| ≤ brownianUnitNorm p := by
   have h := (p.restrict (Icc 0 (1 : ℝ≥0))).norm_coe_le_norm ⟨t, zero_le, ht⟩
-  rw [Real.norm_eq_abs] at h
-  exact h
-
+  rwa [Real.norm_eq_abs] at h
 /-- A uniform bound on the absolute path values of the unit window bounds the window norm. -/
 theorem brownianUnitNorm_le_of_forall_abs_le (p : BrownianPath) {M : ℝ} (hM : 0 ≤ M)
     (h : ∀ t : ℝ≥0, t ≤ 1 → |p t| ≤ M) : brownianUnitNorm p ≤ M := by
@@ -466,7 +456,7 @@ theorem euclideanSpace_norm_le_sum_abs {ι : Type*} [Fintype ι] (x : EuclideanS
     ‖x‖ ≤ ∑ i, |x i| := by
   rw [EuclideanSpace.norm_eq]
   refine Real.sqrt_le_iff.mpr ⟨Finset.sum_nonneg fun _ _ => abs_nonneg _, ?_⟩
-  simpa only [Real.norm_eq_abs] using
+  simpa [Real.norm_eq_abs] using
     Finset.sum_sq_le_sq_sum_of_nonneg (s := Finset.univ) (f := fun i => |x i|)
       (fun _ _ => abs_nonneg _)
 
@@ -624,4 +614,3 @@ theorem isNegativeConditionedBrownianLaw_unitIncrement_exp_le (θ ν₀ : ℝ) (
 
 end DOZZ.Proofs
 
-end

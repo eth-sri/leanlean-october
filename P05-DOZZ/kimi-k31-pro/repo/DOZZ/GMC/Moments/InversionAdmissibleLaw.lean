@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.Moments.InversionSpatialLaw
-public import DOZZ.GMC.Moments.InversionAnnularUniqueness
+import DOZZ.GMC.Moments.InversionSpatialLaw
+import DOZZ.GMC.Moments.InversionAnnularUniqueness
 
 /-! Finite-cutoff law transport for admissible chaos test integrals. -/
 
-@[expose] public section
 
 open Filter MeasureTheory ProbabilityTheory Set
 open scoped Topology Distributions ENNReal
@@ -48,11 +46,11 @@ theorem admissibleLogChaos_cutoff_vector_law_of_fdd
       (hfdd 1 (fun _ => x))
     rw [integral_map hMY.aemeasurable ((measurable_pi_apply 0).pow_const 2).aestronglyMeasurable,
       integral_map hMZ.aemeasurable ((measurable_pi_apply 0).pow_const 2).aestronglyMeasurable] at ht
-    exact ht
+    assumption
   let variance : ℂ → ℝ := fun x => ∫ ω, Y ω ε x ^ 2 ∂P
   have hvariance : Measurable variance := by
     have ht := admissibleLogRegularization_variance_measurable P U dens ε₀ Y hY ε
-    simpa only [variance, gaussianVariance, gaussianCovariance, pow_two] using ht
+    simpa [variance, gaussianVariance, gaussianCovariance, pow_two] using ht
   let ν : FiniteMeasure ℂ := ⟨logRegularizationReference U dens, inferInstance⟩
   let z : Fin m → ℂ → ℝ → ℝ := fun j x t => f j x *
     Real.exp (γ * t - γ ^ 2 / 2 * variance x)
@@ -65,19 +63,19 @@ theorem admissibleLogChaos_cutoff_vector_law_of_fdd
     exact admissibleCutoff_integrand_integrable_ae P U dens ε₀ Y hY
       (tsupport (f j : ℂ → ℝ)) (hfc j) (hfU j) γ r hrY ‖f j‖ (f j)
       (f j).continuous.measurable
-      (fun x => by simpa only [← Real.norm_eq_abs] using (f j).norm_coe_le_norm x)
+      (fun x => by simpa [← Real.norm_eq_abs] using (f j).norm_coe_le_norm x)
       (fun x hx => image_eq_zero_of_notMem_tsupport hx)
   have hiZ j : ∀ᵐ ω ∂P', Integrable (fun x => z j x (Z ω ε x)) (ν : Measure ℂ) := by
     have ht := admissibleCutoff_integrand_integrable_ae P' U dens ε₁ Z hZ
       (tsupport (f j : ℂ → ℝ)) (hfc j) (hfU j) γ r hrZ ‖f j‖ (f j)
       (f j).continuous.measurable
-      (fun x => by simpa only [← Real.norm_eq_abs] using (f j).norm_coe_le_norm x)
+      (fun x => by simpa [← Real.norm_eq_abs] using (f j).norm_coe_le_norm x)
       (fun x hx => image_eq_zero_of_notMem_tsupport hx)
-    simpa only [z, variance, hv, ε, ν, FiniteMeasure.toMeasure_mk] using ht
+    simpa [z, variance, hv, ε, ν, FiniteMeasure.toMeasure_mk] using ht
   have ht := spatialIntegral_vector_law_of_fdd_finite ν
     (fun ω x => Y ω ε x) (fun ω x => Z ω ε x) z
     (hY.measurableAtScale ε) (hZ.measurableAtScale ε) hz hiY hiZ hfdd
-  simpa only [z, variance, ν, ε, FiniteMeasure.toMeasure_mk, regularizedLogChaosTestMass, hv] using ht
+  simpa [z, variance, ν, ε, FiniteMeasure.toMeasure_mk, regularizedLogChaosTestMass, hv] using ht
 
 /-- Equal finite-dimensional laws of admissible fields pass to finite vectors of their
 limiting chaos test integrals. -/
@@ -105,7 +103,7 @@ theorem admissibleLogChaos_limit_vector_law_of_fdd
   obtain ⟨L, hL⟩ := eventually_atTop.mp (heps.eventually (gt_mem_nhds hmin))
   let t : ℕ → ℝ := fun n => ((L + n : ℕ) : ℝ)
   have ht : Tendsto t atTop atTop := by
-    simpa only [t, Nat.add_comm, Function.comp_def] using hT.comp (tendsto_add_atTop_nat L)
+    simpa [t, Nat.add_comm, Function.comp_def] using hT.comp (tendsto_add_atTop_nat L)
   have hb n : Real.exp (-t n) ≤ min ε₀ ε₁ := (hL (L + n) (Nat.le_add_right L n)).le
   have hmY r j : Measurable (fun ω => regularizedLogChaosTestMass P U dens Y γ r ω (f j)) :=
     admissibleCutoffIntegral_measurable P U dens ε₀ Y hY γ r (f j) (f j).continuous.measurable

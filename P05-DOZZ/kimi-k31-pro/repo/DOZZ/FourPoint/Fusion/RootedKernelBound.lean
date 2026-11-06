@@ -2,16 +2,14 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.Fusion.MixedKernelBound
-public import DOZZ.FourPoint.Fusion.Kernel
+import DOZZ.FourPoint.Fusion.MixedKernelBound
+import DOZZ.FourPoint.Fusion.Kernel
 import DOZZ.GMC.SharpMoments.SeibergWeight
-public import DOZZ.Statements.GMC.WeightedGmcBallMass
+import DOZZ.Statements.GMC.WeightedGmcBallMass
 
 /-! # Fused-charge domination of the local rooted kernel -/
 
-@[expose] public section
 open MeasureTheory
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -31,7 +29,7 @@ theorem fusion_oneRoot_factor_bound (x : ℂ) (hx : ‖x‖ ≤ 1 / 2) (e : ℝ)
   rw [← Real.rpow_neg (by linarith : 0 ≤ ‖x - 1‖)]
   have h := coulombWeight_rpow_le (L := 2) (by norm_num)
     (y := ‖x - 1‖) (by norm_num; exact hd) hu (-e)
-  simpa only [abs_neg] using h
+  simpa [abs_neg] using h
 
 /-- The local rooted kernel is bounded by the sum of the two fused-charge weights. -/
 theorem fusion_rootedKernel_local_bound (γ α₁ α₂ α₃ : ℝ) (hγ : 0 < γ)

@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.BPZ.WardStarC
-public import DOZZ.FourPoint.BPZ.SoftCalculus
+import DOZZ.FourPoint.BPZ.WardStarC
+import DOZZ.FourPoint.BPZ.SoftCalculus
 
 /-! # Kernels of the cutoff Ward identity in the limit
 
@@ -15,7 +14,6 @@ The cutoff root-derivative kernels `Λ_r'` and `T_r'` coincide with the limit ke
 cutoff region to `k̃ |x|₊^{4+γ²q}`. The deterministic data of the limit is recorded in
 `BPZLimitData`, which yields the cutoff data for every large integer cutoff. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped ENNReal NNReal
@@ -28,7 +26,7 @@ noncomputable def bpzKern (v w : ℂ) : ℝ := -((w.re * v.re + w.im * v.im) / �
 theorem bpzKern_neg (v w : ℂ) : bpzKern v (-w) = -bpzKern v w := by
   unfold bpzKern
   rw [norm_neg]
-  simp only [Complex.neg_re, Complex.neg_im]
+  simp [Complex.neg_re, Complex.neg_im]
   ring
 
 theorem bpzKern_zero (v : ℂ) : bpzKern v 0 = 0 := by simp [bpzKern]
@@ -98,7 +96,7 @@ theorem abs_bpzKern_sub_le (v : ℂ) {η : ℝ} (hη : 0 < η) {w w' : ℂ} (hw 
   have hpp : |(w.re * v.re + w.im * v.im) - (w'.re * v.re + w'.im * v.im)| ≤
       ‖w - w'‖ * ‖v‖ := by
     have := bpzSoft_abs_inner_le (w - w') v
-    simp only [Complex.sub_re, Complex.sub_im] at this
+    simp [Complex.sub_re, Complex.sub_im] at this
     calc _ = |(w.re - w'.re) * v.re + (w.im - w'.im) * v.im| := by ring_nf
       _ ≤ ‖w - w'‖ * ‖v‖ := this
   have hp' := bpz_kern_alg (V := ‖v‖) hη hw hw' (norm_nonneg v) (norm_nonneg _) hpp
@@ -138,8 +136,8 @@ theorem bpzLamDeriv_neg (r : ℝ) (w : ℂ) : bpzLamDeriv r (-w) = -bpzLamDeriv 
   have huniq := h1.unique h3
   ext h
   have hh := congrArg (fun L : ℂ →L[ℝ] ℝ => L h) huniq
-  simp only [ContinuousLinearMap.coe_comp, Function.comp_apply, neg_apply,
-    ContinuousLinearMap.coe_id', id_eq, map_neg] at hh
+  simp [neg_apply,
+    ContinuousLinearMap.coe_id'] at hh
   rw [neg_apply, hh, neg_neg]
 
 theorem bpzLamDeriv_apply_eq_kern (r : ℝ) {w : ℂ} (hw : 2 * Real.exp (-r) < ‖w‖) (v : ℂ) :

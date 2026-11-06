@@ -2,14 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.Defs.ShiftCoeffA
-public import DOZZ.Statements.Defs.DualMu
-public import DOZZ.Statements.Defs.StructureConstant
-public import DOZZ.Statements.Complex.HorizontalStrip
-public import Mathlib.Analysis.Meromorphic.Basic
-public import Mathlib.Topology.DiscreteSubset
+import DOZZ.Statements.Defs.ShiftCoeffA
+import DOZZ.Statements.Defs.DualMu
+import DOZZ.Statements.Defs.StructureConstant
+import DOZZ.Statements.Complex.HorizontalStrip
+import Mathlib.Analysis.Meromorphic.Basic
+import Mathlib.Topology.DiscreteSubset
 import DOZZ.ShiftEquations.Shift.ShiftGluing
 import DOZZ.ShiftEquations.Shift.Reflection
 import DOZZ.ShiftEquations.Gluing.Meromorphy
@@ -26,7 +25,6 @@ on the thinner strip, that satisfies both shifts along the codiscrete filter of 
 (`exists_joint_representative`).
 -/
 
-@[expose] public section
 
 open MeasureTheory Filter Topology Set
 
@@ -65,7 +63,7 @@ theorem cutoff_relation_codiscrete {F m : ℂ → ℂ} {h : ℝ} (hh : 0 < h) (t
     by_cases hzk : |z.im| < h / 2
     · rw [cutoffStrip_of_lt (by rwa [abs_im_add_ofReal]),
         cutoffStrip_of_lt (by rwa [abs_im_add_ofReal])]
-      exact hz
+      assumption
     · exact hzero z hzk
   · have hopen : IsOpen {w : ℂ | h / 2 < |w.im|} :=
       isOpen_lt continuous_const Complex.continuous_im.abs
@@ -136,7 +134,7 @@ theorem exists_joint_representative {Ω : Type*} [MeasurableSpace Ω] (P : Measu
       fun z hz => by
         rw [show z + ((γ / 2 : ℝ) : ℂ) = z + γ / 2 by push_cast; ring,
           show z + ((-(γ / 2) : ℝ) : ℂ) = z - γ / 2 by push_cast; ring]
-        exact hz
+        assumption
   -- the dual shift near every point, transported from the second function
   have hdual : ∀ w ∈ horizontalStrip h, ∀ᶠ z in 𝓝[≠] w,
       C₁ (z + ((2 / γ : ℝ) : ℂ)) = (-(1 / (Real.pi * dualMu γ μ)) *
@@ -150,7 +148,7 @@ theorem exists_joint_representative {Ω : Type*} [MeasurableSpace Ω] (P : Measu
       with z h1 h2 h3
     rw [h1, h2, show z + ((2 / γ : ℝ) : ℂ) = z + 2 / γ by push_cast; ring,
       show z + ((-(2 / γ)) : ℝ) = z - 2 / γ by push_cast; ring]
-    exact h3
+    assumption
   refine ⟨h / 2, half_pos hh, cutoffStrip (h / 2) C₁,
     meromorphicOn_cutoffStrip hC₁m' (half_le_self hh.le), fun α h1 h2 => ?_, ?_, ?_⟩
   · rw [cutoffStrip_of_lt (by simpa using half_pos hh)]
@@ -158,12 +156,11 @@ theorem exists_joint_representative {Ω : Type*} [MeasurableSpace Ω] (P : Measu
   · refine (cutoff_relation_codiscrete hh (γ / 2) (-(γ / 2)) hfirst).mono fun z hz => ?_
     rw [show z + γ / 2 = z + ((γ / 2 : ℝ) : ℂ) by push_cast; ring,
       show z - γ / 2 = z + ((-(γ / 2) : ℝ) : ℂ) by push_cast; ring]
-    exact hz
+    assumption
   · refine (cutoff_relation_codiscrete hh (2 / γ) (-(2 / γ)) hdual).mono fun z hz => ?_
     rw [show z + 2 / γ = z + ((2 / γ : ℝ) : ℂ) by push_cast; ring,
       show z - 2 / γ = z + ((-(2 / γ)) : ℝ) by push_cast; ring]
-    exact hz
+    assumption
 
 end DOZZ.Proofs
 
-end

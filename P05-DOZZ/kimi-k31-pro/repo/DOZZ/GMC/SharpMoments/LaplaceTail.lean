@@ -2,12 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.SharpMoments.CircleField
-public import DOZZ.GMC.SharpMoments.PaleyZygmund
-public import DOZZ.GMC.Annulus.HigherScales
-public import DOZZ.GMC.Construction.RegularizedGMCExpectedMeasure
+import DOZZ.GMC.SharpMoments.CircleField
+import DOZZ.GMC.SharpMoments.PaleyZygmund
+import DOZZ.GMC.Annulus.HigherScales
+import DOZZ.GMC.Construction.RegularizedGMCExpectedMeasure
 
 /-! # Laplace transforms of cutoff masses and their small-value tails
 
@@ -17,7 +16,6 @@ properties, the conversion between Laplace transforms, small-value probabilities
 moments, and the a-priori bound strictly below one that Paley–Zygmund gives uniformly in the
 cutoff. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped ENNReal NNReal
@@ -156,8 +154,7 @@ theorem measure_le_exp_neg_of_negMoment
   calc P {ω | Y ω ≤ ENNReal.ofReal (Real.exp (-t))}
       ≤ P {ω | ENNReal.ofReal (Real.exp (q * t)) ≤ Y ω ^ (-q)} := measure_mono hsub
     _ ≤ (∫⁻ ω, Y ω ^ (-q) ∂P) / ENNReal.ofReal (Real.exp (q * t)) := by
-        rw [ENNReal.le_div_iff_mul_le (Or.inl hpos) (Or.inl hfin), mul_comm]
-        exact hmarkov
+        rwa [ENNReal.le_div_iff_mul_le (Or.inl hpos) (Or.inl hfin), mul_comm]
     _ ≤ ENNReal.ofReal (Real.exp (a * q + b * q ^ 2)) / ENNReal.ofReal (Real.exp (q * t)) := by
         gcongr
         exact hmom q hq

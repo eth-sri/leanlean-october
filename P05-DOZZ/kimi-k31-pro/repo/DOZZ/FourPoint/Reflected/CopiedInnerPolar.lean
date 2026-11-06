@@ -2,12 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Reflected.InnerPolar
-public import DOZZ.FourPoint.Reflected.GlobalReinsertion
+import DOZZ.FourPoint.Reflected.InnerPolar
+import DOZZ.FourPoint.Reflected.GlobalReinsertion
 import Mathlib.Tactic
 /-! The copied spatial inner mass has the actual unweighted lateral polar projection. -/
-@[expose] public section
 open MeasureTheory Set Filter
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -62,7 +60,7 @@ theorem reflected_copied_inner_radial_polar (γ α : ℝ) (A : TwoSidedPath)
     (measurableSet_lt measurable_const measurable_norm).inter
       (measurableSet_lt measurable_norm measurable_const)
   rw [setLIntegral_withDensity_eq_setLIntegral_mul N hW hf hU] at hi
-  simpa only [Pi.mul_apply, mul_comm] using hi
+  simpa [Pi.mul_apply, mul_comm] using hi
 
 /-- The actual removed plane carrier projects to the source lateral GMC on one common
 full-measure event; its plane origin has zero mass on that event. -/

@@ -1,5 +1,4 @@
-module
-public import DOZZ.Correlations.Tails.SingularMassMeasurability
-public import DOZZ.GMC.SharpMoments.WeightedLocalRange
-public import DOZZ.Statements.Brownian.ReflectionExponent
-public import Mathlib.MeasureTheory.Integral.MeanInequalities
+import DOZZ.Correlations.Tails.SingularMassMeasurability
+import DOZZ.GMC.SharpMoments.WeightedLocalRange
+import DOZZ.Statements.Brownian.ReflectionExponent
+import Mathlib.MeasureTheory.Integral.MeanInequalities

@@ -2,19 +2,17 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.GMC.IsCompatibleAdmissibleRegularizations
-public import DOZZ.GMC.AdmissibleCoarseBarrier
-public import DOZZ.GMC.AdmissibleCoarseScaleBarrier
-public import DOZZ.GMC.Construction.GMCBarrierCompactTestL1
-public import DOZZ.GMC.Construction.FiniteGaussianWickPairTilt
-public import DOZZ.GMC.GoodBarrierL2Cauchy
-public import DOZZ.GMC.PowerKernelIntegrability
+import DOZZ.Statements.GMC.IsCompatibleAdmissibleRegularizations
+import DOZZ.GMC.AdmissibleCoarseBarrier
+import DOZZ.GMC.AdmissibleCoarseScaleBarrier
+import DOZZ.GMC.Construction.GMCBarrierCompactTestL1
+import DOZZ.GMC.Construction.FiniteGaussianWickPairTilt
+import DOZZ.GMC.GoodBarrierL2Cauchy
+import DOZZ.GMC.PowerKernelIntegrability
 
 /-! Mixed-cutoff barrier estimates for compatible admissible logarithmic regularizations. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped Distributions ENNReal NNReal
@@ -137,8 +135,7 @@ theorem compatible_two_root_wick_pair_good_barrier_power_bound_BarrierCauchyLoca
           have hbound : |gaussianCovariance P (fun ω => V ω 0)
               (fun ω => V ω 2) - Real.log (1 / max ‖x - y‖ (max r δ))| ≤ Cyz := by
             simpa [V, q, r] using h
-          rw [hlog] at hbound
-          exact hbound
+          rwa [hlog] at hbound
         exact h'.trans hCyzC
     | true =>
         have h := hcovYY r δ (Real.exp_pos _) (le_trans hkcut (min_le_left _ _))
@@ -148,8 +145,7 @@ theorem compatible_two_root_wick_pair_good_barrier_power_bound_BarrierCauchyLoca
           have hbound : |gaussianCovariance P (fun ω => V ω 0)
               (fun ω => V ω 2) - Real.log (1 / max ‖x - y‖ (max r δ))| ≤ Cyy := by
             simpa [V, q, r] using h
-          rw [hlog] at hbound
-          exact hbound
+          rwa [hlog] at hbound
         exact h'.trans hCyyC
   have hcovComm (f g : Ω → ℝ) :
       gaussianCovariance P f g = gaussianCovariance P g f := by

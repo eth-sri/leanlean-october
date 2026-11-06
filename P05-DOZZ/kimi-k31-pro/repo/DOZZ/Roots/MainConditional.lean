@@ -2,19 +2,17 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.Roots.Irrational
-public import DOZZ.Roots.FormulaGammaContinuity
-public import DOZZ.Roots.GammaDensity
-public import DOZZ.Roots.ParameterFamilies
+import DOZZ.Roots.Irrational
+import DOZZ.Roots.FormulaGammaContinuity
+import DOZZ.Roots.GammaDensity
+import DOZZ.Roots.ParameterFamilies
 /-! # Conditional assembly of the finite DOZZ root -/
-@[expose] public section
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
 universe u
 namespace DOZZ.Proofs
 /-- The calibrated residual identity is the only additional input `hresidual` of the finite root
-assembly. The input below is the complete statement of `DOZZ.unitVolume_residual_factor_eq_one`; the
+assembly. The input below is the complete statement of `unitVolume_residual_factor_eq_one`; the
 full dual-shift statement is not used. -/
 theorem dozz_main_of_residual_factor (γ μ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (hμ : 0 < μ)
     (α₁ α₂ α₃ : ℝ) (hα : ExtendedSeiberg3 γ α₁ α₂ α₃)
@@ -63,5 +61,5 @@ theorem dozz_main_of_residual_factor (γ μ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2
     · exact hgα
     · exact hgs
   have he := tendsto_nhds_unique_of_frequently_eq hC.tendsto hD.tendsto heq
-  simpa only [hNγ, hVγ] using he
+  simpa [hNγ, hVγ] using he
 end DOZZ.Proofs

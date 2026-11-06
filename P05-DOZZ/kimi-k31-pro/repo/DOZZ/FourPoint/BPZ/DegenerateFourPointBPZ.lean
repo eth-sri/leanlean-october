@@ -2,17 +2,16 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.BPZ.BPZAssemblyA
-public import DOZZ.FourPoint.BPZ.WardCombL
-public import DOZZ.FourPoint.BPZ.WardCombR
-public import DOZZ.FourPoint.BPZ.WirtingerMoment
-public import DOZZ.FourPoint.BPZ.GaussAlgebra
-public import DOZZ.Statements.Hypergeom.GaussParameterA
-public import DOZZ.Statements.Hypergeom.GaussParameterB
-public import DOZZ.Statements.Hypergeom.GaussParameterC
-public import DOZZ.Statements.FourPoint.FourPointT
+import DOZZ.FourPoint.BPZ.BPZAssemblyA
+import DOZZ.FourPoint.BPZ.WardCombL
+import DOZZ.FourPoint.BPZ.WardCombR
+import DOZZ.FourPoint.BPZ.WirtingerMoment
+import DOZZ.FourPoint.BPZ.GaussAlgebra
+import DOZZ.Statements.Hypergeom.GaussParameterA
+import DOZZ.Statements.Hypergeom.GaussParameterB
+import DOZZ.Statements.Hypergeom.GaussParameterC
+import DOZZ.Statements.FourPoint.FourPointT
 
 /-! # The BPZ equation for the degenerate four-point function
 
@@ -28,7 +27,6 @@ the parameters `A`, `B`, `C` of [KRV, (defabcfirst)]. The proof combines
 
 The GMC measure is first replaced by a measurable version, which has the same reduced function. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology TopologicalSpace Set
 open scoped ENNReal NNReal Topology
@@ -95,7 +93,7 @@ theorem bpz_gauss_of_measurable {Ω : Type*} [MeasurableSpace Ω]
     push_cast
     ring
 
-/-- **The BPZ equation** (proof of `DOZZ.degenerateFourPoint_BPZ`): for either degenerate
+/-- **The BPZ equation** (proof of `degenerateFourPoint_BPZ`): for either degenerate
 insertion, the reduced function `T` satisfies the Wirtinger form of the Gauss equation with the
 parameters of [KRV, (defabcfirst)]. -/
 theorem degenerateFourPoint_BPZ {Ω : Type*} [MeasurableSpace Ω]

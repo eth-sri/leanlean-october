@@ -1,14 +1,12 @@
 /-
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 -/
-module
 
-public import DOZZ.GMC.Construction.RootedBoundedIdentity
-public import DOZZ.GMC.Construction.GMCMeasurableVersion
+import DOZZ.GMC.Construction.RootedBoundedIdentity
+import DOZZ.GMC.Construction.GMCMeasurableVersion
 
 /-! Whole-plane exhaustion of the measurable rooted identity. -/
 
-@[expose] public section
 
 open MeasureTheory Filter Topology
 open scoped Distributions ENNReal
@@ -49,14 +47,14 @@ theorem rooted_GMC_identity_of_ae_root_finite_measurable
       (hobs.indicator ((hB n).preimage measurable_snd))
   have hleft (ω : Ω) : (∫⁻ u, H u (fun f => X ω f) (M ω) ∂M ω) =
       ⨆ n, ∫⁻ u in B n, H u (fun f => X ω f) (M ω) ∂M ω := by
-    simpa only [hcover, Measure.restrict_univ] using
+    simpa [hcover, Measure.restrict_univ] using
       (setLIntegral_iUnion_of_directed (μ := M ω)
         (fun u => H u (fun f => X ω f) (M ω)) hmono.directed_le)
   have hright : (∫⁻ u, ∫⁻ ω, H u (fun f => X ω f + γ * gffRootCovariance u f)
       (gmcRootedMeasure γ u (M ω)) ∂P ∂gmcReferenceMeasure) =
       ⨆ n, ∫⁻ u in B n, ∫⁻ ω, H u (fun f => X ω f + γ * gffRootCovariance u f)
         (gmcRootedMeasure γ u (M ω)) ∂P ∂gmcReferenceMeasure := by
-    simpa only [hcover, Measure.restrict_univ] using
+    simpa [hcover, Measure.restrict_univ] using
       (setLIntegral_iUnion_of_directed (μ := gmcReferenceMeasure)
         (fun u => ∫⁻ ω, H u (fun f => X ω f + γ * gffRootCovariance u f)
           (gmcRootedMeasure γ u (M ω)) ∂P) hmono.directed_le)

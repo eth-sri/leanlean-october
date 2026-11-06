@@ -2,16 +2,14 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.Analytic.CoulombNestedThreshold
-public import DOZZ.Correlations.Analytic.NormalizedVertexHolomorphy
-public import DOZZ.Correlations.Analytic.CoulombEnvelopeUniform
-public import DOZZ.Correlations.Analytic.ThresholdFiniteConstants
+import DOZZ.Correlations.Analytic.CoulombNestedThreshold
+import DOZZ.Correlations.Analytic.NormalizedVertexHolomorphy
+import DOZZ.Correlations.Analytic.CoulombEnvelopeUniform
+import DOZZ.Correlations.Analytic.ThresholdFiniteConstants
 
 /-! Uniform exponential decay of the actual complex Coulomb mass-power increment. -/
 
-@[expose] public section
 open MeasureTheory Filter Topology
 open scoped ENNReal
 namespace DOZZ.Proofs

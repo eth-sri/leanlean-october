@@ -2,13 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.Defs.Q
+import DOZZ.Statements.Defs.Q
 
 /-! Algebra behind the weighted local-moment threshold and annular summability exponent. -/
 
-@[expose] public section
 
 namespace DOZZ.Proofs
 
@@ -28,8 +26,7 @@ theorem weightedGmcMomentExponent_pos_iff
       p < 2 * (Q γ - α) / γ := by
   rw [weightedGmcMomentExponent_factorization]
   have hscale : 0 < γ * p / 2 := by positivity
-  rw [mul_pos_iff_of_pos_left hscale]
-  rw [lt_div_iff₀ hγ]
+  rw [mul_pos_iff_of_pos_left hscale, lt_div_iff₀ hγ]
   constructor <;> intro h <;> nlinarith
 
 end DOZZ.Proofs

@@ -2,15 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.TaylorOneRootIdentity
-public import DOZZ.FourPoint.TaylorNearKernel
-public import DOZZ.FourPoint.TaylorRadialBall
+import DOZZ.FourPoint.TaylorOneRootIdentity
+import DOZZ.FourPoint.TaylorNearKernel
+import DOZZ.FourPoint.TaylorRadialBall
 
 /-! The near-root positive Taylor contribution from weighted Jensen and one insertion. -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -31,11 +29,10 @@ theorem twoRooted_near_bound
     (by nlinarith only [sq_pos_of_pos hγ])
   let k : ℝ := (2 : ℝ) ^ (|γ * α₁| + |γ * α₂|)
   let C : ℝ := C₀ * k * C₁
-  refine ⟨C, by dsimp only [C, k]; positivity, ?_⟩
+  refine ⟨C, by dsimp [C, k]; positivity, ?_⟩
   intro z hz hz4 d hd hdsmall
-  have hzpos : 0 < ‖z‖ := norm_pos_iff.mpr hz
   have hnear (x : ℂ) (hx : x ∈ Metric.ball z d) : ‖x - z‖ ≤ ‖z‖ / 2 :=
-    (show ‖x - z‖ < d by simpa only [Metric.mem_ball, dist_eq_norm] using hx).le.trans hdsmall
+    (show ‖x - z‖ < d by simpa [Metric.mem_ball, dist_eq_norm] using hx).le.trans hdsmall
   have hunit (x : ℂ) (hx : x ∈ Metric.ball z d) : ‖x‖ ≤ 1 / 2 := by
     have hh := norm_sub_norm_le x z
     have hn := hnear x hx
@@ -51,14 +48,14 @@ theorem twoRooted_near_bound
       _ = ENNReal.ofReal (k * ‖z‖ ^ (-γ * α₁)) *
           (∫⁻ x in Metric.ball z d, ENNReal.ofReal (‖x - z‖ ^ (γ ^ 2 / 2 - 2))) :=
         lintegral_const_mul' _ _ ENNReal.ofReal_ne_top
-      _ ≤ _ := mul_le_mul' le_rfl (by simpa only [he] using hball z d hd)
+      _ ≤ _ := mul_le_mul' le_rfl (by simpa [he] using hball z d hd)
   calc
     _ ≤ ENNReal.ofReal C₀ * (ENNReal.ofReal (k * ‖z‖ ^ (-γ * α₁)) * ENNReal.ofReal (C₁ * d ^ (γ ^ 2 / 2))) :=
       (hsp z hz4 (Metric.ball z d) measurableSet_ball hunit).trans (mul_le_mul' le_rfl hkernel)
     _ = _ := by
-      rw [← ENNReal.ofReal_mul (by dsimp only [k]; positivity), ← ENNReal.ofReal_mul hC₀.le]
+      rw [← ENNReal.ofReal_mul (by dsimp [k]; positivity), ← ENNReal.ofReal_mul hC₀.le]
       congr 1
-      dsimp only [C]
+      dsimp [C]
       ring
 
 end DOZZ.Proofs

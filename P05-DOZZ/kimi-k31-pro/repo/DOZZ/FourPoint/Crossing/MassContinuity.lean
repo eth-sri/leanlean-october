@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.SharpMoments.SeibergWeight
+import DOZZ.GMC.SharpMoments.SeibergWeight
 import Mathlib.MeasureTheory.Integral.Lebesgue.DominatedConvergence
 import Mathlib.Tactic
 
@@ -15,7 +14,6 @@ location stays in the unit disk. The dominating mass retains the original positi
 charge at zero; it is almost surely finite throughout the strict Seiberg domain.
 -/
 
-@[expose] public section
 open MeasureTheory Filter Topology
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -89,12 +87,12 @@ theorem crossing_coulombMass_tendsto_seq (ν : Measure ℂ) (γ a b c : ℝ)
       apply ENNReal.continuous_ofReal.continuousAt.comp
       apply ContinuousAt.div continuousAt_const
       · fun_prop
-      · simpa only [sub_zero] using norm_ne_zero_iff.mpr hx
+      · simpa [sub_zero] using norm_ne_zero_iff.mpr hx
     have ht := hf.tendsto.comp hz
     simp only [coulombWeight, Fin.prod_univ_succ, Matrix.cons_val_zero,
       Matrix.cons_val_succ, Fin.prod_univ_zero, mul_one]
     have hp : 0 < normPlus x := lt_of_lt_of_le zero_lt_one (le_max_left _ _)
-    have hx0p : 0 < ‖x - 0‖ := by simpa only [sub_zero] using norm_pos_iff.mpr hx
+    have hx0p : 0 < ‖x - 0‖ := by simpa [sub_zero] using norm_pos_iff.mpr hx
     have hx1p : 0 < ‖x - 1‖ := norm_pos_iff.mpr (sub_ne_zero.mpr hx1)
     have hr : ENNReal.rpow (ENNReal.ofReal (normPlus x / ‖x - 0‖)) (γ * a) *
         ENNReal.rpow (ENNReal.ofReal (normPlus x / ‖x - 1‖)) (γ * b) *

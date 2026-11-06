@@ -2,13 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.SharpMoments.CutoffUIConvergenceAux
+import DOZZ.GMC.SharpMoments.CutoffUIConvergenceAux
 
 /-! # Probability estimates for the mass decomposition -/
 
-@[expose] public section
 open MeasureTheory Filter Topology
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -26,16 +24,13 @@ theorem fusion_probability_split_bound {Ω : Type*} [MeasurableSpace Ω] (P : Me
       P {ω | ENNReal.ofReal (e / 3) ≤ badl ω} +
       P {ω | ENNReal.ofReal (e / 3) ≤ ENNReal.ofReal |(goodr ω).toReal - (goodl ω).toReal|} := by
   set a : ℝ≥0∞ := ENNReal.ofReal (e / 3) with ha
-  have ha0 : a ≠ 0 := (ENNReal.ofReal_pos.mpr (by positivity)).ne'
-  have hat : a ≠ ⊤ := ENNReal.ofReal_ne_top
   set B1 : Set Ω := {ω | a ≤ badr ω} with hB1
   set B2 : Set Ω := {ω | a ≤ badl ω} with hB2
   set B3 : Set Ω := {ω | a ≤ ENNReal.ofReal |(goodr ω).toReal - (goodl ω).toReal|} with hB3
   have hle : {ω | ε ≤ edist (Zr ω).toReal (Z ω).toReal} ≤ᵐ[P] (B1 ∪ B2 ∪ B3 : Set Ω) := by
     filter_upwards [hZr, hZ, hbr, hbl, hgr, hgl] with ω h1 h2 h3 h4 h5 h6 hA
     have hA' : ε ≤ ENNReal.ofReal |(Zr ω).toReal - (Z ω).toReal| := by
-      rw [edist_dist, Real.dist_eq] at hA
-      exact hA
+      rwa [edist_dist, Real.dist_eq] at hA
     have he' : e ≤ |(Zr ω).toReal - (Z ω).toReal| :=
       (ENNReal.ofReal_le_ofReal_iff (abs_nonneg _)).mp (hεe.trans hA')
     have hsplit := toReal_abs_sub_le_of_split h1 h2 h3 h5 h4 h6

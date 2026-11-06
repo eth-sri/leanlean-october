@@ -2,13 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.FourPoint.GammaHalfKernel
+import DOZZ.Statements.FourPoint.GammaHalfKernel
 
 /-! # Bounds for two colliding rooted singularities -/
 
-@[expose] public section
 namespace DOZZ.Proofs
 
 /-- Two rooted singularities with the degenerate numerator are bounded by the two fused
@@ -35,7 +33,7 @@ theorem fusion_mixed_power_bound (a b c L k β : ℝ) (ha : 0 < a) (hb : 0 < b)
       apply (div_le_iff₀ (mul_pos haβ (mul_pos hbk hbk))).mpr
       rw [inv_mul_eq_div]
       apply (le_div_iff₀ (mul_pos haβ hak)).mpr
-      simpa only [mul_assoc, mul_comm, mul_left_comm] using
+      simpa [mul_assoc, mul_comm, mul_left_comm] using
         mul_le_mul_of_nonneg_left hbk' (mul_nonneg haβ.le hbk.le)
     calc
       _ ≤ (L ^ k * b ^ k) / (a ^ β * b ^ (2 * k)) :=
@@ -62,7 +60,7 @@ theorem fusion_mixed_power_bound (a b c L k β : ℝ) (ha : 0 < a) (hb : 0 < b)
       rw [inv_mul_eq_div]
       apply (le_div_iff₀ (mul_pos (Real.rpow_pos_of_pos hb _) (Real.rpow_pos_of_pos hb _))).mpr
       rw [haβ']
-      simpa only [mul_assoc] using mul_le_mul_of_nonneg_left
+      simpa [mul_assoc] using mul_le_mul_of_nonneg_left
         (mul_le_mul_of_nonneg_right hpow (Real.rpow_nonneg hb.le _)) hak.le
     calc
       _ ≤ (L ^ k * a ^ k) / (a ^ β * b ^ (2 * k)) :=
@@ -79,7 +77,7 @@ theorem fusion_movingRoot_distance_bound (y z x : ℂ) (hy : y ≠ 0) :
   have hb : ‖x - y * z‖ ≤ max ‖x‖ ‖x - y * z‖ := le_max_right _ _
   have hu : ‖y * z‖ ≤ ‖x‖ + ‖x - y * z‖ := by
     have h := norm_sub_le x (x - y * z)
-    simpa only [sub_sub_cancel] using h
+    simpa [sub_sub_cancel] using h
   rw [norm_mul] at hu
   have hz : ‖z‖ ≤ 2 / ‖y‖ * max ‖x‖ ‖x - y * z‖ := by
     rw [div_mul_eq_mul_div]
@@ -104,6 +102,6 @@ theorem fusion_movingRoot_power_bound (γ α₁ : ℝ) (hγ : 0 < γ)
     (by positivity) (by positivity) hβ (fusion_movingRoot_distance_bound y z x hy)
   have he : 2 * (γ ^ 2 / 2) = γ ^ 2 := by ring
   have he' : -(γ * α₁ + γ ^ 2 / 2) = -γ * (α₁ + γ / 2) := by ring
-  simpa only [he, he'] using h
+  simpa [he, he'] using h
 
 end DOZZ.Proofs

@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Brownian.Lateral.AnnularComparison
-public import DOZZ.Brownian.Barrier.ZeroDrift
+import DOZZ.Brownian.Lateral.AnnularComparison
+import DOZZ.Brownian.Barrier.ZeroDrift
 
 /-!
 # Charge-uniform radial comparison factors
@@ -16,7 +15,6 @@ all source witnesses. A deterministic charge bound and a bounded exponent range 
 positive lower factor without changing any GMC cutoff or assuming a moment of lateral chaos.
 -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Set Filter
 open scoped ENNReal NNReal Topology
@@ -53,7 +51,7 @@ theorem measurableEmbedding_radialHalves :
   · have hns : 0 ≤ -s := by linarith
     have he := congrArg (fun b : BrownianPath × BrownianPath => b.2 ⟨-s, hns⟩) h
     change A (-(-s)) = A' (-(-s)) at he
-    simpa only [neg_neg] using he
+    simpa [neg_neg] using he
 
 /-- Process-coordinate independence is independence of the actual continuous half-paths. -/
 theorem radialHalves_indepFun {Ω : Type*} [MeasurableSpace Ω]

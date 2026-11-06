@@ -2,11 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.Dual.SourcePolarLimit
-public import DOZZ.FourPoint.Dual.SourceCopiedPolarExpectation
-public import DOZZ.FourPoint.Dual.FullPathCarrier
+import DOZZ.FourPoint.Dual.SourcePolarLimit
+import DOZZ.FourPoint.Dual.SourceCopiedPolarExpectation
+import DOZZ.FourPoint.Dual.FullPathCarrier
 import Mathlib.Tactic
 
 /-! # The copied exterior/path polar increment limit
@@ -15,7 +14,6 @@ The full-path joint law transports the exact source polar expectation to the cop
 Its leading coefficient retains the supplied reflection witness and the fixed radial buffer.
 -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory Set Filter Topology
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -71,7 +69,7 @@ theorem dual_source_copied_polar_increment_tendsto
   filter_upwards [self_mem_nhdsWithin,
     hn.eventually (gt_mem_nhds (by norm_num : ‖(0 : ℂ)‖ < 1))] with z hz0 hz
   have hstrict : ‖z‖ < ‖z‖^(1-ξ) := by
-    simpa only [Real.rpow_one] using Real.rpow_lt_rpow_of_exponent_gt
+    simpa [Real.rpow_one] using Real.rpow_lt_rpow_of_exponent_gt
       (norm_pos_iff.mpr hz0) hz (by linarith only [hξ] : 1-ξ < 1)
   have he := dual_source_copied_polar_increment_eq P X Xc hX hc hcont γ hγ hγ₂ M hM
     N hNm hfin Z hData.2.1 α₁ α₂ α₃ ξ h

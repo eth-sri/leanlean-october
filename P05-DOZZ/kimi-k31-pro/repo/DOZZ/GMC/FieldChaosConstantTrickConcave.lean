@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.FieldGaussianCommonScalar
-public import DOZZ.GMC.FieldChaosConcavePower
+import DOZZ.GMC.FieldGaussianCommonScalar
+import DOZZ.GMC.FieldChaosConcavePower
 
 /-! The common Gaussian scalar constant trick for concave continuum moments. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped Distributions ENNReal NNReal
@@ -48,12 +46,12 @@ theorem kahane_field_constant_trick_concave
   have hcovΦc (x y : S) :
       (∫ ω : ΩX × ℝ, Φc ω x * Φc ω y ∂PX.prod (gaussianReal 0 1)) =
         (∫ ω, Φ ω x * Φ ω y ∂PX) + C := by
-    simpa [DOZZ.gaussianCovariance, Φc, hc] using
+    simpa [gaussianCovariance, Φc, hc] using
       gaussianCovariance_field_independent_common_scalar_add PX Φ hΦ c x y
   have hcovΨc (x y : S) :
       (∫ ω : ΩY × ℝ, Ψc ω x * Ψc ω y ∂PY.prod (gaussianReal 0 1)) =
         (∫ ω, Ψ ω x * Ψ ω y ∂PY) + C := by
-    simpa [DOZZ.gaussianCovariance, Ψc, hc] using
+    simpa [gaussianCovariance, Ψc, hc] using
       gaussianCovariance_field_independent_common_scalar_add PY Ψ hΨ c x y
   have hcovXYc : ∀ᵐ xy ∂ν.prod ν,
       (∫ ω, Φ ω xy.1 * Φ ω xy.2 ∂PX) ≤
@@ -71,26 +69,26 @@ theorem kahane_field_constant_trick_concave
       (∫ ω, Φ ω x ^ 2 ∂PX) ≤
         ∫ ω, Ψc ω x ^ 2 ∂PY.prod (gaussianReal 0 1) := by
     filter_upwards [hdiag] with x hx
-    simp only [pow_two] at hx ⊢
+    simp [pow_two] at hx ⊢
     rw [hcovΨc]
     linarith [(abs_le.mp hx).2]
   have hdiagYXc : ∀ᵐ x ∂ν,
       (∫ ω, Ψ ω x ^ 2 ∂PY) ≤
         ∫ ω, Φc ω x ^ 2 ∂PX.prod (gaussianReal 0 1) := by
     filter_upwards [hdiag] with x hx
-    simp only [pow_two] at hx ⊢
+    simp [pow_two] at hx ⊢
     rw [hcovΦc]
     linarith [(abs_le.mp hx).1]
   have hXfactor : (∫⁻ ω, fieldChaosMass (PX.prod (gaussianReal 0 1)) Φc ν h γ ω ^ p
       ∂PX.prod (gaussianReal 0 1)) = L * ∫⁻ ω, fieldChaosMass PX Φ ν h γ ω ^ p ∂PX := by
     have h := fieldChaosMoment_independent_common_scalar_factor PX Φ hΦ ν h hh hhb γ c p
     have hA : γ ^ 2 * c ^ 2 / 2 * (p ^ 2 - p) = -A := by dsimp [A]; rw [hc]; ring
-    simpa only [hA] using h
+    simpa [hA] using h
   have hYfactor : (∫⁻ ω, fieldChaosMass (PY.prod (gaussianReal 0 1)) Ψc ν h γ ω ^ p
       ∂PY.prod (gaussianReal 0 1)) = L * ∫⁻ ω, fieldChaosMass PY Ψ ν h γ ω ^ p ∂PY := by
     have h := fieldChaosMoment_independent_common_scalar_factor PY Ψ hΨ ν h hh hhb γ c p
     have hA : γ ^ 2 * c ^ 2 / 2 * (p ^ 2 - p) = -A := by dsimp [A]; rw [hc]; ring
-    simpa only [hA] using h
+    simpa [hA] using h
   have hXY := kahane_field_power_concave PX (PY.prod (gaussianReal 0 1)) Φ Ψc hΦ hΨc
     ν h hh hhb γ p hp hcovXYc hdiagXYc
   have hYX := kahane_field_power_concave PY (PX.prod (gaussianReal 0 1)) Ψ Φc hΨ hΦc

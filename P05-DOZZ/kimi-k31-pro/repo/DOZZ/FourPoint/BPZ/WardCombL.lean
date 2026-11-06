@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.BPZ.MomentMeas
-public import DOZZ.FourPoint.BPZ.WardDefs
+import DOZZ.FourPoint.BPZ.MomentMeas
+import DOZZ.FourPoint.BPZ.WardDefs
 
 /-! # The complex combination of the four real Ward left sides
 
@@ -17,7 +16,6 @@ The proof is a pointwise identity (the Wirtinger derivative of `g k̃`), integra
 the chaos measure and then against the probability measure. The integrability needed to split the
 integrals comes from the dominating weight `(1 + |x - z|^{-2}) k`. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped ENNReal NNReal
@@ -120,7 +118,7 @@ theorem bpzWCL_pointwise {z x : ℂ} (hx : x ∈ bpzRegular z) :
   have hW := bpz_wirtinger_g_tildeWeight (γ := γ) (χ := χ) (α₁ := α₁) (α₂ := α₂) hx
   rw [bpz_g_coefficients hx] at hW
   unfold bpzWCL_comb bpzWCL_F
-  simp only [Complex.reCLM_apply, Complex.imCLM_apply, show bpzG = bpzGfun from rfl]
+  simp [Complex.reCLM_apply, Complex.imCLM_apply, show bpzG = bpzGfun from rfl]
   rw [bpzSoftWeight_zero_eq]
   generalize normPlus x ^ (γ * (α₁ + α₂ + α₃ - χ)) = r
   push_cast at hW ⊢
@@ -410,9 +408,7 @@ theorem bpz_wardLHS_combination {Ω : Type*} [MeasurableSpace Ω] (P : Measure �
     (bpzWardLHS P M γ χ α₁ α₂ α₃ s z Complex.imCLM 1)
     (bpzWardLHS P M γ χ α₁ α₂ α₃ s z Complex.reCLM Complex.I)
     (bpzWardLHS P M γ χ α₁ α₂ α₃ s z Complex.imCLM Complex.I) = _
-  rw [hLHS, hLHS, hLHS, hLHS, bpzWCL_integral_comb (hF _ _) (hF _ _) (hF _ _) (hF _ _)]
-  rw [integral_congr_ae (hgood.mono fun ω hω => bpzWCL_pathwise hz0 hz1 s hω)]
-  rw [bpzWCL_integral_three _ _ _ hJ hE hD, integral_complex_ofReal]
+  rw [hLHS, hLHS, hLHS, hLHS, bpzWCL_integral_comb (hF _ _) (hF _ _) (hF _ _) (hF _ _), integral_congr_ae (hgood.mono fun ω hω => bpzWCL_pathwise hz0 hz1 s hω), bpzWCL_integral_three _ _ _ hJ hE hD, integral_complex_ofReal]
   rfl
 
 end DOZZ.Proofs

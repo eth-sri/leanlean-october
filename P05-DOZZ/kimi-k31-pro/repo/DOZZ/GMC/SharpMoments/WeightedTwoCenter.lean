@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.SharpMoments.WeightedCenterTransfer
+import DOZZ.GMC.SharpMoments.WeightedCenterTransfer
 
 /-! # Location transfer of weighted local moments between two centers
 
@@ -12,7 +11,6 @@ The truncated-weight argument of `weightedGmcBallMoment_center_le_transfer` work
 centers of small disks inside a common disk about the origin: the weighted local moment at one
 center is bounded by the explicit transfer constant times the weighted local moment at the other. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped ENNReal NNReal
@@ -47,7 +45,7 @@ theorem weightedGmcBallMoment_le_transfer
     refine ENNReal.rpow_le_rpow ?_ hp.le
     apply lintegral_mono
     intro x
-    dsimp only
+    dsimp
     rw [coe_insertionTruncWeight]
     exact insertionTruncWeightE_le_weight γ α N (x - z₂)
   -- monotone convergence in the truncation height
@@ -61,7 +59,7 @@ theorem weightedGmcBallMoment_le_transfer
     refine Eventually.of_forall fun ω m n hmn => ENNReal.rpow_le_rpow ?_ hp.le
     apply lintegral_mono
     intro x
-    simp only [coe_insertionTruncWeight]
+    simp [coe_insertionTruncWeight]
     exact insertionTruncWeightE_mono γ α (x - z₁) hmn
   have hlim : ∀ᵐ ω ∂P, Tendsto (fun N : ℕ => (∫⁻ x in Metric.ball z₁ ρ,
       (insertionTruncWeight γ α N (x - z₁) : ℝ≥0∞) ∂M ω) ^ p) atTop

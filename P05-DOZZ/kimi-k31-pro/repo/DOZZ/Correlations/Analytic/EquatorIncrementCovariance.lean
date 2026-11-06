@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GFFStructure.CirclePotential
-public import DOZZ.GFFStructure.CircleCovariance
+import DOZZ.GFFStructure.CirclePotential
+import DOZZ.GFFStructure.CircleCovariance
 
 /-! The equator correction in the vertex increment argument. -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory
 namespace DOZZ.Proofs
 
@@ -25,7 +23,7 @@ theorem circle_covariance_concentric
     covariance (fun ω => Xc ω z r) (fun ω => Xc ω z s) P =
       min r s + equatorCircleMean z r + equatorCircleMean z s := by
   rw [circleAverage_covariance P X Xc hX hc]
-  simp only [sub_self, nnnorm_zero, circleLogPotential_concentric, neg_neg]
-  simp only [equatorCircleMean, integral_log_normPlus_circleMeasure_eq_closed]
+  simp [sub_self, nnnorm_zero, circleLogPotential_concentric, neg_neg]
+  simp [equatorCircleMean, integral_log_normPlus_circleMeasure_eq_closed]
 
 end DOZZ.Proofs

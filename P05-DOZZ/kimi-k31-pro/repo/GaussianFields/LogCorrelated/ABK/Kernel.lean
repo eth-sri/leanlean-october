@@ -3,9 +3,8 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Scott Armstrong, Amélie Loher
 -/
-module
 
-public import GaussianFields.LogCorrelated.ABK.ConvolutionBounds
+import GaussianFields.LogCorrelated.ABK.ConvolutionBounds
 
 /-!
 # GaussianFields ABK scale kernel
@@ -13,7 +12,6 @@ public import GaussianFields.LogCorrelated.ABK.ConvolutionBounds
 Port of the corresponding GaussianFields source module.
 -/
 
-public section
 
 open MeasureTheory ProbabilityTheory
 open scoped Convolution ENNReal InnerProductSpace NNReal ProbabilityTheory Topology
@@ -21,7 +19,7 @@ open scoped Convolution ENNReal InnerProductSpace NNReal ProbabilityTheory Topol
 namespace GaussianFields
 
 /-- The ABK deterministic product-coordinate kernel before composing with the scale-space split. -/
-@[expose]
+
 noncomputable def abkLogKernelProd {d : Nat} (normalization : ℝ)
     (ζ : ABKCutoff d) (ψ : MeanZeroTestFunction d) : ℝ × Vec d → ℝ :=
   fun p =>
@@ -79,8 +77,7 @@ theorem aestronglyMeasurable_abkLogKernelProd {d : Nat} (normalization : ℝ)
       AEStronglyMeasurable (fun p : ℝ × Vec d => p.1 ^ a) (μ.restrict S) := by
     refine ContinuousOn.aestronglyMeasurable ?_ hS
     exact continuous_fst.continuousOn.rpow_const fun p hp => Or.inl (ne_of_gt hp)
-  have hF : AEStronglyMeasurable F (μ.restrict S) := by
-    exact (aestronglyMeasurable_const.mul hpow).mul hconv.aestronglyMeasurable.restrict
+  have hF : AEStronglyMeasurable F (μ.restrict S) := (aestronglyMeasurable_const.mul hpow).mul hconv.aestronglyMeasurable.restrict
   have hzero :
       AEStronglyMeasurable (fun _ : ℝ × Vec d => (0 : ℝ)) (μ.restrict Sᶜ) :=
     aestronglyMeasurable_const
@@ -250,10 +247,9 @@ theorem integral_norm_sq_abkLogKernelProd_le_large {d : Nat} (normalization : �
                   rw [abk_largeScale_power_identity (d := d) hr_pos]
 
 /-- The scale shell `(a,b] × R^d` in product coordinates. -/
-@[expose]
+
 def abkScaleShell {d : Nat} (a b : ℝ) : Set (ℝ × Vec d) :=
   {p | p.1 ∈ Set.Ioc a b}
 
 end GaussianFields
 
-end

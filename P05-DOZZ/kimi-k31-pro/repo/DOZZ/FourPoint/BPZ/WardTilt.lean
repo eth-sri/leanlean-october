@@ -2,13 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.BPZ.WardKernel
-public import DOZZ.FourPoint.BPZ.Rooting
-public import DOZZ.GMC.SharpMoments.TiltCutoff
-public import DOZZ.GMC.Construction.GMCVertexTiltInputs
-public import DOZZ.GMC.Construction.RegularizedGMCExpectedMeasure
+import DOZZ.Correlations.Symmetry.ReflectionTiltInputs
+import DOZZ.FourPoint.BPZ.WardKernel
+import DOZZ.FourPoint.BPZ.Rooting
+import DOZZ.GMC.SharpMoments.TiltCutoff
+import DOZZ.GMC.Construction.GMCVertexTiltInputs
+import DOZZ.GMC.Construction.RegularizedGMCExpectedMeasure
 
 /-! # Rooting a joint functional of the cutoff and limit chaos
 
@@ -18,7 +18,6 @@ circle averages and `G_r(x,y) = -log max(e^{-r}, |x - y|) + h_r(x) + log |y|₊`
 average of the Green kernel. Integrating a functional against the cutoff chaos therefore roots it
 at the integration point. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped ENNReal NNReal
@@ -37,12 +36,7 @@ noncomputable def bpzLimRootDensity (γ r : ℝ) (x y : ℂ) : ℝ≥0∞ :=
     Real.log (normPlus y))))
 
 theorem bpz_gaussianCovariance_const_mul_right (P : Measure Ω) (Y Z : Ω → ℝ) (c : ℝ) :
-    gaussianCovariance P Y (fun ω => c * Z ω) = c * gaussianCovariance P Y Z := by
-  unfold gaussianCovariance
-  rw [← integral_const_mul]
-  congr 1
-  funext ω
-  ring
+    gaussianCovariance P Y (fun ω => c * Z ω) = c * gaussianCovariance P Y Z := DOZZ.Proofs.symmetry_gaussianCovariance_mul_right P Y Z c
 
 /-- The circle-average tilt of a joint functional of the cutoff and limit chaos. -/
 theorem bpz_cutoff_root_tilt (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
@@ -88,7 +82,7 @@ theorem bpz_cutoff_root_tilt (P : Measure Ω) (X : Ω → Distr) (hX : IsEquator
     ring
   · funext y
     rw [bpzLimRootDensity, hcx y]
-    simp only [Fin.sum_univ_one, Matrix.cons_val_zero]
+    simp [Fin.sum_univ_one, Matrix.cons_val_zero]
     rw [show (∫ v, gffKernel y v ∂circleMeasure x r) = ∫ v, gffKernel v y ∂circleMeasure x r by
       simp_rw [gffKernel_comm y], bpz_integral_gffKernel_circle_left x y r]
     congr 2

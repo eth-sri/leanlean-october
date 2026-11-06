@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.GMC.IsAdmissibleGMCVersion
+import DOZZ.Statements.GMC.IsAdmissibleGMCVersion
 import DOZZ.GMC.Construction.CircleCutoffTestMass
 import DOZZ.GMC.Construction.FatouInMeasure
 import DOZZ.GMC.Construction.RegularizedGMCExpectedMeasure
@@ -12,7 +11,6 @@ import Mathlib.MeasureTheory.Function.LpSpace.Basic
 
 /-! Expected test-mass bounds for admissible versions of circle cutoffs. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter
 open scoped Distributions ENNReal NNReal
@@ -98,8 +96,7 @@ theorem admissibleCircleVersion_expected_test_le
           ∫⁻ ω, ∫⁻ x, φ x ∂regularizedGMC P Xc γ r ω ∂P := by
             apply lintegral_congr_ae
             filter_upwards [hIntegral r, hOfRealIntegral r] with ω hω hlin
-            rw [hω]
-            exact hlin
+            rwa [hω]
       _ ≤ ∫⁻ x, φ x ∂gmcReferenceMeasure := by
         exact le_of_eq
           (regularizedGMC_lintegral_test_eq_reference P X hX Xc hXc γ r φ hφ)

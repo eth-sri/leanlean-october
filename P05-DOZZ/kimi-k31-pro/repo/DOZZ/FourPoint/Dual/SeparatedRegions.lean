@@ -2,12 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Reflected.SeparatedRegions
-public import DOZZ.FourPoint.Dual.SourceFullComparison
+import DOZZ.FourPoint.Reflected.SeparatedRegions
+import DOZZ.FourPoint.Dual.SourceFullComparison
 import Mathlib.Tactic
 /-! Literal separated inner and outer regions for conditional lateral comparison. -/
-@[expose] public section
 open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -44,6 +42,6 @@ theorem dual_source_separated_regions_comparison
     hU₀ hU₁ hroot₀ hroot₁ (Metric.ball 0 r) Metric.isOpen_ball.measurableSet hpart₀ hpart₁
     (s/r) r (s/r) (div_pos hs hr).le hsep hr (div_pos hs hr) hn₀ hn₁ hD q hq
   have he : 2*(s/r)+s/r = 3*(s/r) := by ring
-  simpa only [he] using hb
+  simpa [he] using hb
 
 end DOZZ.Proofs

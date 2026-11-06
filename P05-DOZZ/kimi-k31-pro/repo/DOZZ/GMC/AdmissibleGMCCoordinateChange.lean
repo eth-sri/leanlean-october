@@ -2,16 +2,14 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.AdmissibleGMCUniqueConcrete
-public import DOZZ.GMC.AdmissibleGMCRestriction
-public import Mathlib.Topology.OpenPartialHomeomorph.Basic
-public import Mathlib.Topology.ContinuousMap.CompactlySupported
+import DOZZ.GMC.AdmissibleGMCUniqueConcrete
+import DOZZ.GMC.AdmissibleGMCRestriction
+import Mathlib.Topology.OpenPartialHomeomorph.Basic
+import Mathlib.Topology.ContinuousMap.CompactlySupported
 
 /-! Coordinate transport inputs for admissible GMC versions. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped CompactlySupported
@@ -79,7 +77,7 @@ theorem exists_partialHomeomorph_pullback_test
           by_contra hne
           have hyK : y ∈ K := hsupport (Function.mem_support.mpr hne)
           exact hy hyK
-        exact hgy
+        assumption
       exact continuousAt_const.congr hzero.symm
   let gc : C_c(ℂ, ℝ) := ⟨⟨g, hgcont⟩, by
     change IsCompact (tsupport g)
@@ -138,17 +136,13 @@ theorem regularizedLogChaosTestMass_coordinate_change
   have hφae : AEMeasurable φ μU := by
     rw [hμUrestrict]
     exact hφcontU.aemeasurable hUmeas
-  have hsectionV : Measurable (fun y => YV ω ε y) := by
-    exact (hYV.measurableAtScale ε).comp (measurable_const.prodMk measurable_id)
-  have hsectionU : Measurable (fun x => YU ω ε x) := by
-    exact (hYU.measurableAtScale ε).comp (measurable_const.prodMk measurable_id)
+  have hsectionV : Measurable (fun y => YV ω ε y) := (hYV.measurableAtScale ε).comp (measurable_const.prodMk measurable_id)
+  have hsectionU : Measurable (fun x => YU ω ε x) := (hYU.measurableAtScale ε).comp (measurable_const.prodMk measurable_id)
   have hvarV : Measurable varV := by
-    have hsquare : Measurable (fun q : ℂ × Ω => YV q.2 ε q.1 ^ 2) := by
-      exact (hYV.measurableAtScale ε).comp measurable_swap |>.pow_const 2
+    have hsquare : Measurable (fun q : ℂ × Ω => YV q.2 ε q.1 ^ 2) := (hYV.measurableAtScale ε).comp measurable_swap |>.pow_const 2
     exact (hsquare.stronglyMeasurable.integral_prod_right' (ν := P)).measurable
   have hvarU : Measurable varU := by
-    have hsquare : Measurable (fun q : ℂ × Ω => YU q.2 ε q.1 ^ 2) := by
-      exact (hYU.measurableAtScale ε).comp measurable_swap |>.pow_const 2
+    have hsquare : Measurable (fun q : ℂ × Ω => YU q.2 ε q.1 ^ 2) := (hYU.measurableAtScale ε).comp measurable_swap |>.pow_const 2
     exact (hsquare.stronglyMeasurable.integral_prod_right' (ν := P)).measurable
   have htargetMeas : Measurable targetIntegrand := by
     dsimp [targetIntegrand]

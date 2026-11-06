@@ -2,13 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.Fusion.InterpolatedMeasurable
+import DOZZ.FourPoint.Fusion.InterpolatedMeasurable
 
 /-! # The bounded factor in the rescaled local rooting integrals -/
 
-@[expose] public section
 open MeasureTheory Filter Topology
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -46,7 +44,7 @@ theorem fusionInterpolatedFactor_uniform_bound {Ω : Type*} [MeasurableSpace Ω]
   have hb : 0 ≤ b := le_trans (by positivity) (le_max_left _ _)
   refine ⟨b * C.toReal, mul_nonneg hb ENNReal.toReal_nonneg, ?_⟩
   intro t ht y z hz
-  dsimp only [fusionInterpolatedFactor]
+  dsimp [fusionInterpolatedFactor]
   split_ifs with hyz
   · have hl : (1 / 2 : ℝ) ≤ ‖y * z - 1‖ := by
       have h := norm_sub_norm_le (1 : ℂ) (y * z)

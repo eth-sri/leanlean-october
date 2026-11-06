@@ -2,13 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.Fusion.MovingExpectationMeasurable
+import DOZZ.FourPoint.Fusion.MovingExpectationMeasurable
 
 /-! # The bounded factor in the rescaled local rooting integrals -/
 
-@[expose] public section
 open MeasureTheory Filter Topology
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -43,7 +41,7 @@ theorem fusionScaledFactor_uniform_bound {Ω : Type*} [MeasurableSpace Ω]
   have hb : 0 ≤ b := le_trans (by positivity) (le_max_left _ _)
   refine ⟨b * C.toReal, mul_nonneg hb ENNReal.toReal_nonneg, ?_⟩
   intro y z hz
-  dsimp only [fusionScaledFactor]
+  dsimp [fusionScaledFactor]
   split_ifs with hyz
   · have hl : (1 / 2 : ℝ) ≤ ‖y * z - 1‖ := by
       have h := norm_sub_norm_le (1 : ℂ) (y * z)
@@ -82,7 +80,7 @@ theorem fusionScaledFactor_tendsto {Ω : Type*} [MeasurableSpace Ω]
       have hc : Continuous (fun z : ℂ => y * z - (1 : ℂ)) :=
         (continuous_const.mul continuous_id).sub continuous_const
       simpa using hc.norm.tendsto (0 : ℂ)
-    simpa only [Function.comp_def, Real.one_rpow] using
+    simpa [Function.comp_def, Real.one_rpow] using
       (Real.continuousAt_rpow_const 1 (-γ * α₂) (Or.inl one_ne_zero)).tendsto.comp hn
   have hcut : ∀ᶠ z : ℂ in nhds 0, ‖y * z‖ < 1 / 2 := by
     have hn : Tendsto (fun z : ℂ => ‖y * z‖) (nhds 0) (nhds 0) := by

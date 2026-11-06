@@ -2,13 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.SeedOne.TwoChannel
-public import DOZZ.ShiftEquations.Shifts.Seeds.Continuation
-public import DOZZ.Statements.Brownian.IsSourceLateralProjection
-public import DOZZ.Statements.Brownian.IsReflectionData
-public import DOZZ.Statements.Brownian.ReflectionR
+import DOZZ.FourPoint.SeedOne.TwoChannel
+import DOZZ.ShiftEquations.Shifts.Seeds.Continuation
+import DOZZ.Statements.Brownian.IsSourceLateralProjection
+import DOZZ.Statements.Brownian.IsReflectionData
+import DOZZ.Statements.Brownian.ReflectionR
 import DOZZ.ShiftEquations.Reflection.Witness
 import DOZZ.Brownian.Lateral.ReflectionJointLaw
 import DOZZ.Correlations.Residue.FullFromUnit
@@ -33,7 +32,6 @@ This is `dual_crossing_seed_one` ([KRV, Proposition 9.9]), from the conclusion o
 `dual_full_fusion_and_asymptotic` alone.
 -/
 
-@[expose] public section
 
 open MeasureTheory Filter Topology Set
 
@@ -136,4 +134,3 @@ theorem dual_crossing_seed_one_of_fusion {Ω : Type u} [MeasurableSpace Ω]
 
 end DOZZ.Proofs
 
-end

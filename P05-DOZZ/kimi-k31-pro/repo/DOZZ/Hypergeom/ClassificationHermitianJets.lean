@@ -2,16 +2,14 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Hypergeom.ClassificationHermitianUniqueness
-public import DOZZ.Hypergeom.ClassificationWirtingerBar
-public import DOZZ.Hypergeom.ClassificationWirtingerC2
+import DOZZ.Hypergeom.ClassificationHermitianUniqueness
+import DOZZ.Hypergeom.ClassificationWirtingerBar
+import DOZZ.Hypergeom.ClassificationWirtingerC2
 import Mathlib.Analysis.Calculus.FDeriv.Star
 
 /-! First Wirtinger derivatives and real `C²` regularity of a constant Hermitian tensor. -/
 
-@[expose] public section
 
 namespace DOZZ.Proofs
 
@@ -33,7 +31,7 @@ private theorem function_add_apply (f g : ℂ → ℂ) :
   funext z
   rfl
 
-private theorem wirtingerBar_star_eq_star_deriv_at {g : ℂ → ℂ} {z : ℂ}
+theorem wirtingerBar_star_eq_star_deriv_at {g : ℂ → ℂ} {z : ℂ}
     (hg : DifferentiableAt ℂ g z) :
     wirtingerBar (fun w => star (g w)) z = star (deriv g z) := by
   apply wirtingerBar_eq_star_deriv_of_star_differentiableAt hg
@@ -48,8 +46,7 @@ private theorem wirtingerZ_const_mul_star_term (k : ℂ) {f g : ℂ → ℂ} {z 
     (differentiableAt_const k).mul hf
   have h := wirtingerZ_mul_star_of_differentiableAt hKf hg
   change wirtingerZ (fun w => (k * f w) * star (g w)) z = _
-  rw [h]
-  rw [deriv_const_mul_field]
+  rw [h, deriv_const_mul_field]
   ring
 
 private theorem wirtingerBar_const_mul_star_term (k : ℂ) {f g : ℂ → ℂ} {z : ℂ}
@@ -68,8 +65,7 @@ private theorem wirtingerBar_const_mul_star_term (k : ℂ) {f g : ℂ → ℂ} {
 private theorem hermitianTensorTermDiffAt {k : ℂ} {f g : ℂ → ℂ} {z : ℂ}
     (hf : DifferentiableAt ℂ f z) (hg : DifferentiableAt ℂ g z) :
     DifferentiableAt ℝ (fun w => k * f w * star (g w)) z := by
-  exact (((differentiableAt_const k).mul hf).restrictScalars ℝ).mul
-    ((hg.restrictScalars ℝ).star)
+  fun_prop
 
 /-- First `∂z` derivative of the constant Hermitian tensor. -/
 theorem hermitianQuadraticTensor_wirtingerZ

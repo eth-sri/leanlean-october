@@ -2,13 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.BallAnnulus.CompactSmall
+import DOZZ.GMC.BallAnnulus.CompactSmall
 
 /-! Extending a sharp small-radius estimate over a bounded radius interval. -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory
 open scoped Distributions ENNReal NNReal
 namespace DOZZ.Proofs
@@ -53,10 +51,9 @@ theorem gmc_twoSided_radius_extend
     · apply le_trans (ENNReal.ofReal_le_ofReal ?_) hlo
       have hDl : D ≤ C*l := (div_le_iff₀ hl).mp hDC
       have hh : r ^ ξ / C ≤ l := (div_le_iff₀ hC).mpr (by nlinarith only [hrD, hDl])
-      simpa only [div_eq_mul_inv, mul_comm] using hh
+      simpa [div_eq_mul_inv, mul_comm] using hh
     · apply hup.trans (ENNReal.ofReal_le_ofReal ?_)
       have huc : u ≤ C*d := (div_le_iff₀ hd).mp huC
       exact huc.trans (mul_le_mul_of_nonneg_left hrd hC.le)
 
 end DOZZ.Proofs
-end

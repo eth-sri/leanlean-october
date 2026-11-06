@@ -2,11 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.SharpMoments.InverseGamma
-public import DOZZ.GMC.SharpMoments.CriticalEndpoint
-public import DOZZ.GMC.Annulus.HigherScales
+import DOZZ.GMC.SharpMoments.InverseGamma
+import DOZZ.GMC.SharpMoments.CriticalEndpoint
+import DOZZ.GMC.Annulus.HigherScales
 
 /-! # Moments of small disks at arbitrary centers
 
@@ -16,7 +15,6 @@ inverse moments are known. Fatou passes these bounds to every `IsGMCOf` limit. I
 disk has almost surely positive mass, which discharges the positivity hypothesis of the critical
 endpoint on the logarithmic chart. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped ENNReal NNReal
@@ -55,11 +53,7 @@ theorem regularizedGMC_ball_moment_uniform_any_center
   refine ⟨T * K₀, ENNReal.mul_lt_top (lt_top_iff_ne_top.mpr hTtop) hK₀, fun r hr => ?_⟩
   have htr := cutoff_translate_moment_le P X hX Xc hXc γ r hr z 0 ρ R hR le_rfl (by simp [hRdef])
     (fun _ => 1) measurable_const 1 (fun _ => le_rfl) p
-  have hone : ∀ (c : ℂ) (ω : Ω), (∫⁻ x in Metric.ball c ρ, ((fun _ : ℂ => (1 : ℝ≥0)) (x - c) :
-      ℝ≥0∞) ∂regularizedGMC P Xc γ r ω) = regularizedGMC P Xc γ r ω (Metric.ball c ρ) := by
-    intro c ω
-    simp
-  simp only [hone] at htr
+  simp [] at htr
   calc gmcMassMoment P (regularizedGMC P Xc γ r) (Metric.ball z ρ) p
       ≤ T * gmcMassMoment P (regularizedGMC P Xc γ r) (Metric.ball 0 ρ) p := htr
     _ ≤ T * K₀ := by gcongr; exact hK₀bound r hr
@@ -125,10 +119,10 @@ theorem gmc_openSquare_critical_moment_eq_top_of_chart
     rw [Metric.mem_ball, dist_eq_norm] at hx
     constructor
     · have := Complex.abs_re_le_norm (x - ⟨σ₁ * s / 2, σ₂ * s / 2⟩)
-      simp only [Complex.sub_re] at this
+      simp [Complex.sub_re] at this
       linarith
     · have := Complex.abs_im_le_norm (x - ⟨σ₁ * s / 2, σ₂ * s / 2⟩)
-      simp only [Complex.sub_im] at this
+      simp [Complex.sub_im] at this
       linarith
   have hpos : ∀ σ₁ σ₂ : ℝ, ∀ᵐ ω ∂P, 0 < M ω (gmcSubSquare s σ₁ σ₂) := by
     intro σ₁ σ₂

@@ -2,11 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.ShiftEquations.PoleSubtracted.Masses
-public import DOZZ.Statements.Correlations.LocalSingularMass
-public import DOZZ.Statements.Correlations.UniformPositiveC1Family
+import DOZZ.ShiftEquations.PoleSubtracted.Masses
+import DOZZ.Statements.Correlations.LocalSingularMass
+import DOZZ.Statements.Correlations.UniformPositiveC1Family
 
 /-!
 # The local mass as two local singular masses
@@ -19,7 +18,6 @@ are `F₂(2) = 2^{2γη}` and `F₃(-2) = 2^{-2γη}`; these are the separated-i
 that cancel in the two residues (erratum K26, see docs/ERRATA-AND-DEVIATIONS.md).
 -/
 
-@[expose] public section
 
 open MeasureTheory Filter Topology Set Metric
 open scoped ENNReal NNReal
@@ -45,14 +43,11 @@ private theorem mul_two_div_sub {γ : ℝ} (hγ : 0 < γ) (η : ℝ) :
   field_simp
 
 private theorem mul_le_two_of_le_two_div {γ η : ℝ} (hγ : 0 < γ) (hηγ : η ≤ 2 / γ) :
-    γ * η ≤ 2 := by
-  have h := mul_le_mul_of_nonneg_left hηγ hγ.le
-  rwa [mul_div_cancel₀ _ hγ.ne'] at h
+    γ * η ≤ 2 := DOZZ.Proofs.mul_le_two hγ hηγ
 
 private theorem exponent_add_nonneg {γ η : ℝ} (hγ : 0 < γ) (hη : 0 ≤ η) :
     0 ≤ γ * (2 / γ + η) := by
-  rw [mul_two_div_add hγ]
-  linarith [mul_nonneg hγ.le hη]
+  positivity
 
 private theorem exponent_sub_nonneg {γ η : ℝ} (hγ : 0 < γ) (hηγ : η ≤ 2 / γ) :
     0 ≤ γ * (2 / γ - η) := by
@@ -213,9 +208,7 @@ private theorem exists_fderiv_bound {F : ℂ → ℝ} {z : ℂ}
 
 private theorem clamp_nonneg (a b : ℝ) (z x : ℂ) :
     0 ≤ min ‖x‖ 3 ^ a * (min ‖x‖ 3 / max ‖x + z‖ 1) ^ b := by
-  have h0 : 0 ≤ min ‖x‖ 3 := le_min (norm_nonneg x) (by norm_num)
-  have h1 : 0 < max ‖x + z‖ 1 := lt_max_of_lt_right one_pos
-  exact mul_nonneg (Real.rpow_nonneg h0 a) (Real.rpow_nonneg (div_nonneg h0 h1.le) b)
+  positivity
 
 private theorem clamp_le {a b : ℝ} (ha : 0 ≤ a) (hb : 0 ≤ b) (z x : ℂ) :
     min ‖x‖ 3 ^ a * (min ‖x‖ 3 / max ‖x + z‖ 1) ^ b ≤ 3 ^ (a + b) := by
@@ -317,4 +310,3 @@ theorem exists_uniformPositiveC1Family_poleFactors {γ η : ℝ} (hγ : 0 < γ) 
 
 end DOZZ.Proofs
 
-end

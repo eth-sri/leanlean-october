@@ -2,10 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.Correlations.Symmetry.ReflectionChaosIdentification
-public import DOZZ.Statements.GMC.EquatorGFFGMCTilt
-@[expose] public section
+import DOZZ.Correlations.Symmetry.ReflectionChaosIdentification
+import DOZZ.Statements.GMC.EquatorGFFGMCTilt
 open MeasureTheory Filter
 open scoped Distributions Topology ENNReal
 namespace DOZZ.Proofs
@@ -27,7 +25,7 @@ theorem IsGaussianL2Limit_const_mul_symmetry
       ‖t‖ₑ * eLpNorm (fun ω => L ω - X ω (f n)) 2 P := by
     rw [he, eLpNorm_const_smul]
   simp only [hnorm]
-  simpa only [mul_zero] using ENNReal.Tendsto.const_mul hf (Or.inr enorm_ne_top)
+  simpa [mul_zero] using ENNReal.Tendsto.const_mul hf (Or.inr enorm_ne_top)
 
 theorem symmetry_gaussianCovariance_mul_right
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (A L : Ω → ℝ) (t : ℝ) :
@@ -62,7 +60,7 @@ theorem symmetryTiltPotential_uniform
   rw [Metric.tendstoUniformly_iff]
   intro ε hε
   have he : Tendsto (fun r : ℝ => |t| * (2 * Real.exp (-r))) atTop (𝓝 0) := by
-    simpa only [mul_zero, Function.comp_def] using
+    simpa [mul_zero, Function.comp_def] using
       (Real.tendsto_exp_atBot.comp tendsto_neg_atTop_atBot).const_mul 2 |>.const_mul |t|
   filter_upwards [he.eventually (gt_mem_nhds hε)] with r hr x
   rw [symmetry_gaussianCovariance_mul_right, repinned_circle_normalization_covariance P X hX Xc hXc,

@@ -2,15 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Hypergeom.Planar.TaylorFiniteDifference
-public import DOZZ.Hypergeom.Planar.RieszConvolution
-public import Mathlib.MeasureTheory.Integral.DominatedConvergence
+import DOZZ.Hypergeom.Planar.TaylorFiniteDifference
+import DOZZ.Hypergeom.Planar.RieszConvolution
+import Mathlib.MeasureTheory.Integral.DominatedConvergence
 
 /-! The real second derivative is dominated by the positive Riesz kernel. -/
 
-@[expose] public section
 
 open MeasureTheory Filter
 open scoped Topology
@@ -32,23 +30,6 @@ noncomputable def planarRealSecondDifferenceLimit (k β : ℝ) (u : ℂ) : ℝ :
         (2 * (u - 1).re) ^ 2 +
       (k / 2) * (‖u - 1‖ ^ 2) ^ (k / 2 - 1) * 2)
 
-private theorem measurable_nonneg_rpow {f : ℂ → ℝ} (hf : Measurable f)
-    (hfn : ∀ u, 0 ≤ f u) (p : ℝ) : Measurable (fun u => f u ^ p) := by
-  have hrepr : (fun u => f u ^ p) =
-      fun u => if f u = 0 then 0 ^ p else Real.exp (p * Real.log (f u)) := by
-    funext u
-    by_cases hu : f u = 0
-    · simp [hu]
-    · rw [ite_eq_right hu,
-        Real.rpow_def_of_pos (lt_of_le_of_ne (hfn u) (Ne.symm hu))]
-      congr 1
-      ring
-  rw [hrepr]
-  apply Measurable.ite
-  · exact MeasurableSet.preimage (measurableSet_singleton (0 : ℝ)) hf
-  · exact measurable_const
-  · fun_prop
-
 private theorem measurable_complex_norm_rpow (p : ℝ) :
     Measurable (fun u : ℂ => ‖u‖ ^ p) :=
   measurable_nonneg_rpow (by fun_prop) (fun u => norm_nonneg u) p
@@ -56,12 +37,6 @@ private theorem measurable_complex_norm_rpow (p : ℝ) :
 private theorem measurable_normPowerRealSecondDifference (k t : ℝ) :
     Measurable (fun u : ℂ => normPowerRealSecondDifference k t (u - 1)) := by
   unfold normPowerRealSecondDifference
-  have h₁ : Measurable (fun u : ℂ => ‖u - 1 + (t : ℂ)‖ ^ k) :=
-    measurable_nonneg_rpow (by fun_prop) (fun u => norm_nonneg _) k
-  have h₂ : Measurable (fun u : ℂ => ‖u - 1 - (t : ℂ)‖ ^ k) :=
-    measurable_nonneg_rpow (by fun_prop) (fun u => norm_nonneg _) k
-  have h₃ : Measurable (fun u : ℂ => ‖u - 1‖ ^ k) :=
-    measurable_nonneg_rpow (by fun_prop) (fun u => norm_nonneg _) k
   fun_prop
 
 private theorem measurable_planarRealSecondDifferenceQuotient (k β t : ℝ) :
@@ -118,10 +93,6 @@ theorem integrable_planarRealSecondDifferenceQuotient (k β : ℝ)
   · let C : ℝ := 2 * (k * (1 + (15 / 4) * ((1 - k / 2) *
         (1 / 4 : ℝ) ^ (k / 2 - 2))) + (3 ^ k + 2 ^ k) * 2 ^ (2 - k))
     let bound : ℂ → ℝ := fun u => C * (‖u‖ ^ (-β) * ‖u - 1‖ ^ (k - 2))
-    have hC : 0 ≤ C := by
-      dsimp [C]
-      have hk₂ : 0 < 1 - k / 2 := by linarith [hβ, hβ₂]
-      positivity
     have hRiesz := positive_riesz_convolution_integrable k β hk hβ hβ₂ 1 (by norm_num)
     have hboundInt : Integrable bound volume := by
       simpa [bound, C, mul_assoc] using hRiesz.const_mul C
@@ -135,10 +106,10 @@ theorem integrable_planarRealSecondDifferenceQuotient (k β : ℝ)
         abs_of_nonneg hnorm]
       have hdiff := normPowerRealSecondDifference_le k hk hk₂ (u - 1) t hx ht
       have hmul := mul_le_mul_of_nonneg_left hdiff hnorm
-      exact hmul.trans_eq (by dsimp only [bound, C]; ring)
+      exact hmul.trans_eq (by dsimp [bound, C]; ring)
     apply hboundInt.mono'
       (measurable_planarRealSecondDifferenceQuotient k β t).aestronglyMeasurable
-    exact hpoint
+    assumption
 
 /-- Pointwise second derivative limit of the weighted radial kernel. -/
 theorem planarRealSecondDifferenceQuotient_tendsto (k β : ℝ) (u : ℂ) (hu : u ≠ 1) :
@@ -164,10 +135,6 @@ theorem planarRealSecondDifferenceQuotient_integral_tendsto (k β : ℝ)
   let C : ℝ := 2 * (k * (1 + (15 / 4) * ((1 - k / 2) *
     (1 / 4 : ℝ) ^ (k / 2 - 2))) + (3 ^ k + 2 ^ k) * 2 ^ (2 - k))
   let bound : ℂ → ℝ := fun u => C * (‖u‖ ^ (-β) * ‖u - 1‖ ^ (k - 2))
-  have hC : 0 ≤ C := by
-    dsimp [C]
-    have hk₂ : 0 < 1 - k / 2 := by linarith [hβ, hβ₂]
-    positivity
   have hRiesz := positive_riesz_convolution_integrable k β hk hβ hβ₂ 1 (by norm_num)
   have hboundInt : Integrable bound volume := by
     simpa [bound, C, mul_assoc] using hRiesz.const_mul C
@@ -187,7 +154,7 @@ theorem planarRealSecondDifferenceQuotient_integral_tendsto (k β : ℝ)
       abs_of_nonneg hnorm]
     have hdiff := normPowerRealSecondDifference_le k hk hk₂ (u - 1) t hx ht0
     have hmul := mul_le_mul_of_nonneg_left hdiff hnorm
-    exact hmul.trans_eq (by dsimp only [bound, C]; ring)
+    exact hmul.trans_eq (by dsimp [bound, C]; ring)
   have hlim : ∀ᵐ u ∂volume, Tendsto
       (fun t : ℝ => planarRealSecondDifferenceQuotient k β t u)
       (𝓝[≠] (0 : ℝ)) (𝓝 (planarRealSecondDifferenceLimit k β u)) := by

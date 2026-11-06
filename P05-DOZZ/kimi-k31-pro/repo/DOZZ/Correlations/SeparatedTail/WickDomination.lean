@@ -2,16 +2,14 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.SeparatedTail.EnvelopePower
-public import DOZZ.GMC.FieldChaosNegativePower
-public import Mathlib.MeasureTheory.Measure.Prod
+import DOZZ.Correlations.SeparatedTail.EnvelopePower
+import DOZZ.GMC.FieldChaosNegativePower
+import Mathlib.MeasureTheory.Measure.Prod
 
 /-! The exact finite-cutoff Wick-density ratio of the separated joint-tail estimate, with the
 variance discrepancy retained. -/
 
-@[expose] public section
 open MeasureTheory Filter
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -48,7 +46,7 @@ theorem separatedTail_fieldChaosMass_le_of_circle_split
       ENNReal.ofReal (Real.exp (γ^2*C/2))*E ω*fieldChaosMass P Φ ν w γ ω := by
   have hv := centeredGaussianField_variance_measurable P Φ hfield
   have hvInt : Measurable (fun x => ∫ ω, Φ ω x^2 ∂P) := by
-    simpa only [gaussianVariance, gaussianCovariance, pow_two] using hv
+    simpa [gaussianVariance, gaussianCovariance, pow_two] using hv
   filter_upwards [hsplit,hE] with ω hs he
   unfold fieldChaosMass
   -- Keep the random envelope outside the spatial integral, including extended values.

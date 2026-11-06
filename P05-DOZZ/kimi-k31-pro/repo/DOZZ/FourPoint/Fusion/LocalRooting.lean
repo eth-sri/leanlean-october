@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.Fusion.LocalSecondKernel
-public import DOZZ.FourPoint.Fusion.RootedCoulombComplex
+import DOZZ.FourPoint.Fusion.LocalSecondKernel
+import DOZZ.FourPoint.Fusion.RootedCoulombComplex
 
 /-! # Rooting the local pure second derivative contribution -/
 
-@[expose] public section
 open MeasureTheory Set Filter
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -72,8 +70,8 @@ theorem fusion_localR1_rooting {Ω : Type*} [MeasurableSpace Ω]
           ![-γ / 2, α₁, α₂] ![z, 0, 1] α₃ ^ s ∂P).toReal : ℂ)) := by
     funext x
     by_cases hx : x ∈ B
-    · simp only [Set.indicator_of_mem hx]
-    · simp only [Set.indicator_of_notMem hx, zero_mul]
+    · simp [Set.indicator_of_mem hx]
+    · simp [Set.indicator_of_notMem hx, zero_mul]
   rw [he, integral_indicator (show MeasurableSet B from Metric.isOpen_ball.measurableSet)] at h
   change _ = ∫ x, _ ∂volume.restrict B
   rw [gmcReferenceMeasure_restrict_unit_chart B Metric.isOpen_ball.measurableSet

@@ -2,11 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.Complex.HorizontalStrip
-public import Mathlib.Analysis.Meromorphic.Basic
-public import Mathlib.Topology.DiscreteSubset
+import DOZZ.Statements.Complex.HorizontalStrip
+import Mathlib.Analysis.Meromorphic.Basic
+import Mathlib.Topology.DiscreteSubset
 import DOZZ.ShiftEquations.Quotient.Walk
 import DOZZ.Complex.Basic
 import DOZZ.Brownian.Reflection.RtheorAnalytic
@@ -29,7 +28,6 @@ segment, and on such a line a discrepancy is transported along bounded walks wit
 compact segment of `S_h`.
 -/
 
-public section
 
 open Filter Set Topology Metric
 
@@ -200,8 +198,7 @@ theorem eventually_nhds_boundary_discrepancy {C D K₁ K₂ : ℂ → ℂ} {h b 
       (isClosed_le ((Complex.continuous_re.sub continuous_const).abs) continuous_const)
   have hℓS : ℓ ⊆ horizontalStrip h := fun z hz => by
     change |z.im| < h
-    rw [hz.1]
-    exact hxS'
+    rwa [hz.1]
   have hEfin : {z | z ∈ ℓ ∧ C z - c * D z ≠ 0}.Finite := by
     by_contra hinf
     obtain ⟨p, hpℓ, hp⟩ :=
@@ -232,7 +229,7 @@ theorem eventually_nhds_boundary_discrepancy {C D K₁ K₂ : ℂ → ℂ} {h b 
       linarith) hΔ
   rw [hlsum] at hwalk
   refine ⟨⟨by simp, ?_⟩, hwalk⟩
-  simp only [Complex.add_re, Complex.ofReal_re, add_sub_cancel_left]
+  simp [Complex.add_re, Complex.ofReal_re, add_sub_cancel_left]
   rw [abs_of_pos hg0]
   exact (lt_of_lt_of_le hgε (min_le_right _ _)).le
 
@@ -246,8 +243,7 @@ theorem eventually_div_add_two_mul_eq {C D K : ℂ → ℂ} {T : ℝ}
   filter_upwards [eventually_codiscrete_comp_add hlaw (T : ℂ), hD0] with w hw hDw
   obtain ⟨h1, h2, hK⟩ := hw
   have e : w + ((2 * T : ℝ) : ℂ) = w + T + T := by push_cast; ring
-  rw [e, h1, h2, add_sub_cancel_right]
-  rw [mul_div_mul_left _ _ hK]
+  rw [e, h1, h2, add_sub_cancel_right, mul_div_mul_left _ _ hK]
 
 /-- **Whole-plane factorization.** Two total functions meromorphic on a strip that obey the same two
 shift laws with incommensurable half-steps `b, b'` off a codiscrete subset of the plane are
@@ -288,4 +284,3 @@ theorem exists_eventually_eq_const_mul_of_shifts {C D K₁ K₂ : ℂ → ℂ} {
 
 end DOZZ.Proofs
 
-end

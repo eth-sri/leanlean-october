@@ -2,15 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Dual.SourceCopiedInverseBound
-public import DOZZ.FourPoint.Dual.SourceCopiedPolarLimit
-public import DOZZ.FourPoint.Dual.BufferRelativeLimit
-public import DOZZ.FourPoint.Dual.KernelFactors
-public import DOZZ.FourPoint.Dual.OuterLittleO
+import DOZZ.FourPoint.Dual.SourceCopiedInverseBound
+import DOZZ.FourPoint.Dual.SourceCopiedPolarLimit
+import DOZZ.FourPoint.Dual.BufferRelativeLimit
+import DOZZ.FourPoint.Dual.KernelFactors
+import DOZZ.FourPoint.Dual.OuterLittleO
 import Mathlib.Tactic
 /-! The actual full dual inverse expectation has the same-witness stochastic fusion coefficient. -/
-@[expose] public section
 open MeasureTheory ProbabilityTheory Set Filter Topology
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -103,7 +101,7 @@ theorem dual_source_full_inverse_increment_tendsto
   filter_upwards [self_mem_nhdsWithin, hn.eventually (gt_mem_nhds (by norm_num : (0 : ℝ) < 1))]
     with z hz0 hz
   have hzpos : 0 < ‖z‖ := norm_pos_iff.mpr hz0
-  have hz1 : z ≠ 1 := by intro he; simp only [he, norm_one, lt_self_iff_false] at hz
+  have hz1 : z ≠ 1 := by intro he; simp [he, norm_one, lt_self_iff_false] at hz
   have hstrict : ‖z‖ < ‖z‖^(1-ξ) := by
     simpa only [Real.rpow_one] using Real.rpow_lt_rpow_of_exponent_gt hzpos hz
       (by linarith only [hξ] : 1-ξ < 1)

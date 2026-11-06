@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.BPZ.FourPointSingular
+import DOZZ.FourPoint.BPZ.FourPointSingular
 
 /-! # Extension of the four-point Ward identity to limits of test functions
 
@@ -17,7 +16,6 @@ and satisfy bounds singular only at `z`,
 then the Ward identity passes to `φ` by dominated convergence, the dominating function being
 `E[I^{-q} ∫ (1 + |x − z|^{-2}) k dM] < ∞`. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped ENNReal NNReal
@@ -85,12 +83,6 @@ theorem bpz_singular_dom_integrable {Ω : Type*} [MeasurableSpace Ω] (P : Measu
   · refine lintegral_congr_ae ?_
     filter_upwards [bpz_singular_integrable_ae (α₁ := α₁) (α₂ := α₂) (α₃ := α₃) P X hX hγ hγ2 M
       hM hχ hα₁ hα₂ hα₃ hq1 hz0 hz1] with ω ⟨hg, hpos, hfin'⟩
-    have hk : Integrable (bpzSoftWeight γ χ α₁ α₂ α₃ 0 z) (M ω) :=
-      hg.mono' hkm.aestronglyMeasurable (Eventually.of_forall fun x => by
-        rw [Real.norm_eq_abs, abs_of_nonneg (bpzSoftWeight_nonneg 0 z x)]
-        have hW := bpzSoftWeight_nonneg (γ := γ) (χ := χ) (α₁ := α₁) (α₂ := α₂) (α₃ := α₃) 0 z x
-        have : 0 ≤ ‖x - z‖ ^ (-2 : ℝ) := by positivity
-        linarith only [mul_nonneg this hW])
     have hI : ∫ x, bpzSoftWeight γ χ α₁ α₂ α₃ 0 z x ∂M ω =
         (bpzMass γ χ α₁ α₂ α₃ 0 (M ω) z).toReal := by
       rw [integral_eq_lintegral_of_nonneg_ae (Eventually.of_forall fun x =>
@@ -292,9 +284,6 @@ theorem bpz_fourPoint_ward_extend {Ω : Type*} [MeasurableSpace Ω] (P : Measure
   have hkm : Measurable k := measurable_bpzSoftWeight 0 z
   have hk0 : ∀ x, 0 ≤ k x := bpzSoftWeight_nonneg 0 z
   have hkkt : ∀ x, k x = kt x * ex x := fun x => bpzSoftWeight_zero_eq z x
-  have hgm : Measurable g :=
-    (measurable_const.add ((measurable_id.sub measurable_const).norm.pow_const _)).mul hkm
-  have hg0 : ∀ x, 0 ≤ g x := fun x => mul_nonneg (by positivity) (hk0 x)
   have hA0 : 0 ≤ A := by
     have := hb3 0 (‖z‖ + 2 : ℝ) ?_ (‖z‖ + 2 : ℝ) ?_
     · simp only [sub_self, zero_mul, abs_zero] at this

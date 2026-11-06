@@ -2,16 +2,14 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Dual.SourceCopiedPolarFinite
-public import DOZZ.FourPoint.Dual.SourceCopiedKernelSqueeze
-public import DOZZ.FourPoint.Dual.KernelInverseExpectation
-public import DOZZ.FourPoint.Dual.CopiedInverseTriple
-public import DOZZ.FourPoint.Dual.OuterInverseTransport
-public import DOZZ.FourPoint.Dual.SourceRadialMoments
+import DOZZ.FourPoint.Dual.SourceCopiedPolarFinite
+import DOZZ.FourPoint.Dual.SourceCopiedKernelSqueeze
+import DOZZ.FourPoint.Dual.KernelInverseExpectation
+import DOZZ.FourPoint.Dual.CopiedInverseTriple
+import DOZZ.FourPoint.Dual.OuterInverseTransport
+import DOZZ.FourPoint.Dual.SourceRadialMoments
 import Mathlib.Tactic
 /-! The actual copied kernel inverse expectation is controlled by the same-source polar loss. -/
-@[expose] public section
 open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -93,7 +91,7 @@ theorem dual_source_copied_kernel_inverse_bound
     intro x hx hx0
     have he : x = 0 := mem_singleton_iff.mp hx0
     have hxpos : 0 < ‖x‖ := hx.1
-    simp only [he, norm_zero, lt_self_iff_false] at hxpos
+    simp [he, norm_zero, lt_self_iff_false] at hxpos
   have ho : Measurable (fun v : TwoSidedPath × Ω => J (reflected_outerRegion (‖z‖^(1-ξ))) v.1 v.2) := by
     apply hmRegion _ ((isOpen_lt continuous_const continuous_norm).inter
       (Set.toFinite ({0,1} : Set ℂ)).isClosed.isOpen_compl)
@@ -110,7 +108,7 @@ theorem dual_source_copied_kernel_inverse_bound
   have hO₀m : AEMeasurable O₀ P := (dual_outerMass_measure_measurable γ α₁ α₂ α₃ ξ z).comp_aemeasurable
     (equatorGFF_GMC_aemeasurable P X hX γ hγ hγ₂ M hM)
   have hrnorm : ‖z‖^(1-ξ) ≤ 1 := by
-    simpa only [Real.one_rpow] using Real.rpow_le_rpow (norm_nonneg z) hznorm
+    simpa [Real.one_rpow] using Real.rpow_le_rpow (norm_nonneg z) hznorm
       (sub_nonneg.mpr hξ1.le)
   have hO₀pos : ∀ᵐ ω ∂P, 0 < (O₀ ω).toReal :=
     (dual_source_outerMass_positive_finite_ae P X hX γ hγ hγ₂ M hM
@@ -119,7 +117,7 @@ theorem dual_source_copied_kernel_inverse_bound
   have hO₀int : Integrable (fun ω => (O₀ ω).toReal^(-p)) P := by
     have ht := (dual_radial_scale_real_expectation P X hX γ hγ hγ₂ M hM Xc hc
       (Q γ-α₁) h 0 α₁ α₂ α₃ ξ p hh.le hξ hξ1 hp.le z hz0 hznorm).1
-    simpa only [Real.rpow_zero, one_mul] using ht
+    simpa [Real.rpow_zero, one_mul] using ht
   have hdata := dual_joint_law_outer_inverse_data P (P.prod P) A (fun v => A v.1) O₀ O
     hA hA.comp_fst hO₀m hOm hlaw p hO₀pos hO₀int
   have hOpos : ∀ᵐ v ∂QP, 0 < (O v.1).toReal :=
@@ -132,7 +130,7 @@ theorem dual_source_copied_kernel_inverse_bound
     O₀ O hA hA.comp_fst hO₀m hOm hlaw p
   have hInv : (∫⁻ v : (Ω × Ω) × Ω, O v.1^(-p) ∂QP) ≠ ⊤ := by
     rw [lintegral_prod _ (hOm.comp_fst.pow_const (-p))]
-    simp only [lintegral_const, measure_univ, mul_one]
+    simp [lintegral_const, measure_univ, mul_one]
     rw [← hInvEq]
     exact hInv₀
   let ZT := fun ω => (Z ω).map (fun s : ℝ => s-(T : ℝ))
@@ -141,7 +139,7 @@ theorem dual_source_copied_kernel_inverse_bound
     filter_upwards [hZ.2.2.2.2.1] with ω hω a b
     have he : (fun s : ℝ => s-(T : ℝ)) ⁻¹' Icc a b = Icc (a+T) (b+T) := by
       ext s
-      simp only [mem_preimage, mem_Icc, le_sub_iff_add_le, sub_le_iff_le_add]
+      simp [mem_Icc]
     change (Z ω).map (fun s : ℝ => s-(T : ℝ)) (Icc a b) < ⊤
     rw [Measure.map_apply (show Measurable (fun s : ℝ => s-(T : ℝ)) from measurable_id.sub_const _)
       measurableSet_Icc, he]
@@ -166,7 +164,7 @@ theorem dual_source_copied_kernel_inverse_bound
   have hR0 : 0 ≤ R := (Real.exp_pos _).le
   have hR1 : R < 1 := Real.exp_lt_one_iff.mpr (neg_neg_of_pos hh)
   have hηEq : η = R*‖z‖ := by
-    dsimp only [η, R]
+    dsimp [η, R]
     rw [hT]
     have he : -(-Real.log ‖z‖+h) = -h+Real.log ‖z‖ := by ring
     rw [he, Real.exp_add, Real.exp_log (norm_pos_iff.mpr hz0)]
@@ -190,7 +188,7 @@ theorem dual_source_copied_kernel_inverse_bound
     exact congrArg (fun a : ℝ≥0∞ => a^(-p)) (add_comm _ _)
   have hInvEq' : (∫⁻ v : (Ω × Ω) × Ω, O v.1^(-p) ∂QP) = ∫⁻ ω, O₀ ω^(-p) ∂P := by
     rw [lintegral_prod _ (hOm.comp_fst.pow_const (-p))]
-    simp only [lintegral_const, measure_univ, mul_one]
+    simp [lintegral_const, measure_univ, mul_one]
     exact hInvEq.symm
   rw [← hCopy', hInvEq'] at hb
   have hLoss : (∫ v : (Ω × Ω) × Ω, (O v.1).toReal^(-p)-
@@ -200,7 +198,5 @@ theorem dual_source_copied_kernel_inverse_bound
     rw [← integral_neg]
     apply integral_congr_ae
     exact ae_of_all _ (fun v => by ring)
-  rw [hLoss] at hb
-  exact hb
-
+  rwa [hLoss] at hb
 end DOZZ.Proofs

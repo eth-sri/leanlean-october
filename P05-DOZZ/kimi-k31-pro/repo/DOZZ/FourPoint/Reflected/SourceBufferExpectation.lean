@@ -2,13 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Reflected.ThreeMassInverseError
-public import DOZZ.FourPoint.Reflected.SourceRegionPartition
-public import DOZZ.FourPoint.Reflected.SourceOuterMoments
-public import DOZZ.Statements.FourPoint.GammaHalfMoment
+import DOZZ.FourPoint.Reflected.ThreeMassInverseError
+import DOZZ.FourPoint.Reflected.SourceRegionPartition
+import DOZZ.FourPoint.Reflected.SourceOuterMoments
+import DOZZ.Statements.FourPoint.GammaHalfMoment
 /-! The literal source buffer error is bounded by its first-order retained-mass expectation. -/
-@[expose] public section
 open MeasureTheory Set
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -39,7 +37,7 @@ theorem reflected_source_buffer_inverse_error
     (measurableSet_lt measurable_const measurable_norm).inter
       (measurableSet_lt measurable_norm measurable_const)
   have hI : AEMeasurable I P := by
-    simpa only [lintegral_indicator hU] using gmc_lintegral_aemeasurable
+    simpa [lintegral_indicator hU] using gmc_lintegral_aemeasurable
       P X hX γ hγ hγ₂ M hM _ (hK.indicator hU)
   have hF : AEMeasurable F P := gmc_coulombMass_aemeasurable P X hX γ hγ hγ₂ M hM
     ![-γ/2,α₁,α₂] ![z,0,1] α₃
@@ -82,7 +80,5 @@ theorem reflected_source_buffer_inverse_error
     filter_upwards [houter] with ω hω
     change (I ω+(∫⁻ x in reflected_outerRegion (‖z‖^(1-ξ)), K x ∂M ω))^(-p) = (I ω+O ω)^(-p)
     rw [← hω]
-  rw [hsep]
-  exact he
-
+  rwa [hsep]
 end DOZZ.Proofs

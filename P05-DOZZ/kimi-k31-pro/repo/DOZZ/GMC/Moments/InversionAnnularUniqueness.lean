@@ -2,16 +2,14 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.Moments.InversionAdmissiblePair
-public import DOZZ.GMC.Moments.InversionChartTransport
-public import DOZZ.GMC.AdmissibleGMCRestriction
+import DOZZ.GMC.Moments.InversionAdmissiblePair
+import DOZZ.GMC.Moments.InversionChartTransport
+import DOZZ.GMC.AdmissibleGMCRestriction
 
 /-! Regularization uniqueness (`DOZZ.admissibleLogRegularization_GMC_unique_ae`) identifies the
 inverted chaos on annular charts. -/
 
-@[expose] public section
 
 open Filter MeasureTheory Set
 open scoped Topology Distributions ENNReal
@@ -19,7 +17,7 @@ open scoped Topology Distributions ENNReal
 namespace DOZZ.Proofs
 
 /-- The transformed-circle chaos is almost surely the inverted arbitrary GMC measure, restricted to
-the bounded annular chart. This applies `DOZZ.admissibleLogRegularization_GMC_unique_ae` to the
+the bounded annular chart. This applies `admissibleLogRegularization_GMC_unique_ae` to the
 actual compatible pair on the original probability space. -/
 theorem isGMCOf_inversion_annular_version
     {Ω : Type*} [MeasurableSpace Ω]

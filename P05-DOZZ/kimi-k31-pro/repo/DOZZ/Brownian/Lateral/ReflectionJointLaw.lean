@@ -2,11 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.Brownian.Lateral.ConcentricInversion
-public import DOZZ.Brownian.Lateral.LawUniqueness
-public import DOZZ.GMC.Moments.InversionAnnularTestLaw
-@[expose] public section
+import DOZZ.Brownian.Lateral.ConcentricInversion
+import DOZZ.Brownian.Lateral.LawUniqueness
+import DOZZ.GMC.Moments.InversionAnnularTestLaw
 open Filter MeasureTheory ProbabilityTheory Set
 open scoped Topology Distributions ENNReal NNReal
 namespace DOZZ.Proofs
@@ -38,7 +36,7 @@ theorem gmc_inversion_annular_joint_test_vector_law
       gmcReferenceMeasure.restrict U := by
     rw [logRegularizationReference_restrict_of_subset univ U
       (fun x => normPlus x ^ (-4 : ℝ)) hUopen.measurableSet (subset_univ _)]
-    simp only [logRegularizationReference, Measure.restrict_univ, gmcReferenceMeasure]
+    simp [logRegularizationReference, Measure.restrict_univ, gmcReferenceMeasure]
   let : IsFiniteMeasure (logRegularizationReference U (fun x => normPlus x ^ (-4 : ℝ))) := by
     rw [href]; infer_instance
   let V := fun ω i => Xc ω 0 (-s i)
@@ -102,7 +100,7 @@ theorem gmc_inversion_joint_test_vector_law
     filter_upwards [hzero] with ω hω
     change (M ω).map (fun z : ℂ => z⁻¹) {0} = 0
     rw [Measure.map_apply measurable_inv (measurableSet_singleton 0)]
-    simpa only [preimage, mem_singleton_iff, inv_eq_zero, ofPred_eq_eq_singleton] using hω
+    simpa [preimage, mem_singleton_iff, inv_eq_zero, ofPred_eq_eq_singleton] using hω
   have hV : AEMeasurable (fun ω i => Xc ω 0 (-s i)) P :=
     AEMeasurable.of_eval fun _ => (hc.2.1 _ _).aemeasurable
   have hV' : AEMeasurable (fun ω i => Xc ω 0 (s i)) P :=
@@ -197,7 +195,7 @@ theorem finite_random_radial_measure_law_of_open_fdd
   have hrectpi : IsPiSystem Crect := isPiSystem_measurableCylinders.prod isPiSystem_measurableCylinders
   let Cout := Set.preimage radialReflectionOutputCode '' Crect
   have hgen : mOutput = MeasurableSpace.generateFrom Cout := by
-    dsimp only [mOutput, Cout]
+    dsimp [mOutput, Cout]
     rw [← hrectgen, MeasurableSpace.comap_generateFrom]
   have hpi : IsPiSystem Cout := by
     intro S hS T hT hST
@@ -219,15 +217,15 @@ theorem finite_random_radial_measure_law_of_open_fdd
     apply Measurable.measure_of_isPiSystem hOpenGen isPiSystem_isOpen
     · intro S hS
       change IsOpen S at hS
-      simpa only [Function.comp_apply, radialReflectionOutputCode] using
+      simpa [Function.comp_apply, radialReflectionOutputCode] using
         (measurable_pi_iff.mp (measurable_snd.comp hcode)) ⟨S, hS⟩
-    · simpa only [Function.comp_apply, radialReflectionOutputCode] using
+    · simpa [Function.comp_apply, radialReflectionOutputCode] using
         (measurable_pi_iff.mp (measurable_snd.comp hcode)) ⟨univ, isOpen_univ⟩
   have hforgetA : Measurable (fun q : RadialReflectionOutput => q.1) := by
     have h := measurable_radialPathFromRationalCode.comp (measurable_fst.comp hcode)
     change Measurable (fun q : RadialReflectionOutput =>
       radialPathFromRationalCode (radialRationalCode q.1)) at h
-    simpa only [radialPathFromRationalCode_code] using h
+    simpa [radialPathFromRationalCode_code] using h
   have hforget : @Measurable RadialReflectionOutput RadialReflectionOutput mOutput mStd id :=
     hforgetA.prodMk hforgetM.subtype_mk
   have hLaw : P.map outM = P.map outN := by
@@ -252,7 +250,7 @@ theorem finite_random_radial_measure_law_of_open_fdd
         have h := congrArg (fun μ => μ (Br ×ˢ Bm)) hv
         rw [Measure.map_apply_of_aemeasurable hm (hBr.prod hBm),
           Measure.map_apply_of_aemeasurable hn (hBr.prod hBm)] at h
-        exact h
+        assumption
       have hs : MeasurableSet (radialReflectionOutputCode ⁻¹'
           (cylinder sr Br ×ˢ cylinder sm Bm)) := by
         apply hcode
@@ -261,9 +259,8 @@ theorem finite_random_radial_measure_law_of_open_fdd
         exact Set.mem_image2_of_mem
           (cylinder_mem_measurableCylinders (α := fun _ : ℚ => ℝ) sr Br hBr)
           (cylinder_mem_measurableCylinders (α := fun _ : RadialReflectionOpen => ℝ≥0∞) sm Bm hBm)
-      rw [Measure.map_apply_of_aemeasurable hom hs, Measure.map_apply_of_aemeasurable hon hs]
-      exact hp
-    · simp only [Measure.map_apply_of_aemeasurable hom MeasurableSet.univ,
+      rwa [Measure.map_apply_of_aemeasurable hom hs, Measure.map_apply_of_aemeasurable hon hs]
+    · simp [Measure.map_apply_of_aemeasurable hom MeasurableSet.univ,
         Measure.map_apply_of_aemeasurable hon MeasurableSet.univ, preimage_univ]
   have h := congrArg (fun μ => @Measure.map RadialReflectionOutput RadialReflectionOutput
     mOutput mStd id μ) hLaw
@@ -276,7 +273,7 @@ theorem finite_random_radial_measure_law_of_open_fdd
   have heN := @AEMeasurable.map_map_of_aemeasurable Ω RadialReflectionOutput
     RadialReflectionOutput _ mOutput mStd P id outN hfn hon
   rw [heM, heN] at h
-  simpa only [Function.comp_def, id, outM, outN] using h
+  simpa [Function.comp_def, id, outM, outN] using h
 
 /-- Inversion preserves finite vectors of open masses jointly with reversed radial
 coordinates, on the original probability space. -/
@@ -402,7 +399,7 @@ theorem originRadialGMC_inversion_joint_law
       · rfl
 
 /-- Reflection preserves the law of the ENTIRE actual polar projection
-`DOZZ.lateralProjectedGMC`. Its proof uses simultaneous radial/GMC inversion,
+`lateralProjectedGMC`. Its proof uses simultaneous radial/GMC inversion,
 retaining their source coupling. -/
 theorem lateralProjectedGMC_reflection_law
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
@@ -446,7 +443,7 @@ theorem lateralProjectedGMC_reflection_law
   change P.map (fun ω => lateralProjectedGMC γ (originReversedRadialPath (originRadialPath Xc ω))
     ((M ω).map (fun x : ℂ => x⁻¹))) =
     P.map (fun ω => lateralProjectedGMC γ (originRadialPath Xc ω) (M ω)) at h
-  simpa only [lateralProjectedGMC_reversed_inversion] using h
+  simpa [lateralProjectedGMC_reversed_inversion] using h
 
 /-- The actual equator GMC has its complete two-sided radial/lateral
 decomposition, including whole-measure stationarity and reflection. -/

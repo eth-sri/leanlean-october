@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.BPZ.FourPointSingular
+import DOZZ.FourPoint.BPZ.FourPointSingular
 
 /-! # Near-root contributions to the softened four-point moments
 
@@ -13,7 +12,6 @@ Near a regular root `z₀`, the base factor of the four-point weight is bounded.
 `E[I_ε(z)^{-p} ∫_{|x - z₀| < r} base(x) |x - z|^β dM(x)]` is at most a constant times
 `r^{β + 2}/(β + 2)` for every `β > -2`, uniformly in `z` and `ε`. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped ENNReal NNReal
@@ -78,7 +76,7 @@ theorem bpz_near_expect_bound {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
         rw [Metric.mem_closedBall, dist_eq_norm]; linarith
       exact mul_le_mul_of_nonneg_right (hCB x hxB) (Real.rpow_nonneg (norm_nonneg _) _)
     · have h0 : f x = 0 := by
-        simp only [hf, bpzNearWeight, hx, ↓reduceIte, zero_mul, ENNReal.ofReal_zero]
+        simp [hf, bpzNearWeight, hx, ↓reduceIte, zero_mul, ENNReal.ofReal_zero]
       rw [h0]; exact zero_le
   calc ENNReal.ofReal Cn * ∫⁻ x, f x ∂volume
       ≤ ENNReal.ofReal Cn * ∫⁻ x, (Metric.ball z (2 * r)).indicator
@@ -97,9 +95,6 @@ theorem bpz_near_expect_bound {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
         gcongr
         exact bpz_lintegral_ball_rpow_le hβ (by positivity) z
     _ = ENNReal.ofReal (Cn * CB * (2 * Real.pi * (2 * r) ^ (β + 2) / (β + 2))) := by
-        have h2 : 0 ≤ 2 * Real.pi * (2 * r) ^ (β + 2) / (β + 2) := by
-          have : 0 < β + 2 := by linarith
-          positivity
         rw [← ENNReal.ofReal_mul hCB0, ← ENNReal.ofReal_mul hCn0]
         congr 1
         ring

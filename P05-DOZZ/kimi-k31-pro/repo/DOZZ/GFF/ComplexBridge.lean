@@ -2,11 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import GaussianFields.Ambient.Euclidean
-public import GaussianFields.LogCorrelated.ABK.Volume
-public import Mathlib.MeasureTheory.Measure.Lebesgue.Complex
+import GaussianFields.Ambient.Euclidean
+import GaussianFields.LogCorrelated.ABK.Volume
+import Mathlib.MeasureTheory.Measure.Lebesgue.Complex
 
 /-!
 # DOZZ.GFF.ComplexBridge
@@ -15,7 +14,6 @@ Identify the complex plane with the GaussianFields model `Vec 2`, preserving Leb
 and the Euclidean norm. Record the two-dimensional ABK covariance normalization.
 -/
 
-@[expose] public section
 
 open MeasureTheory
 

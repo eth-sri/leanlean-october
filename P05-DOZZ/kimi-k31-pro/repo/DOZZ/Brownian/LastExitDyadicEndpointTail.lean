@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Brownian.LastExitDyadicCellSum
-public import DOZZ.Brownian.LastExitDyadicEndpoint
+import DOZZ.Brownian.LastExitDyadicCellSum
+import DOZZ.Brownian.LastExitDyadicEndpoint
 import Mathlib.MeasureTheory.Integral.DominatedConvergence
 
 /-!
@@ -16,7 +15,6 @@ excess over the barrier vanishes in probability. The dyadic cell sum uses exactl
 to pass reference-kernel tests to their entrance limit.
 -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped NNReal
@@ -126,17 +124,14 @@ theorem tendsto_measureReal_dyadicPositiveLastExitRationalEvent_zero_eval_ge
     Tendsto
       (fun n => P.real (dyadicPositiveLastExitRationalEvent n (c : ℝ)
         {y | δ ≤ y 0})) atTop (𝓝 0) := by
-  have hC : MeasurableSet {y : ℚ → ℝ | δ ≤ y 0} :=
-    measurableSet_le measurable_const (measurable_pi_apply 0)
   have hset (n : ℕ) :
       dyadicPositiveLastExitRationalEvent n (c : ℝ) {y | δ ≤ y 0} =
         {p | δ ≤ dyadicLastExitEndpointExcess n c p} := by
     ext p
-    simp only [dyadicPositiveLastExitRationalEvent, Set.mem_ofPred_eq]
+    simp [dyadicPositiveLastExitRationalEvent, Set.mem_ofPred_eq]
     rw [dyadicPositiveLastExitRationalEvent_zero_eval_eq_endpoint_excess]
-  simpa only [hset] using
+  simpa [hset] using
     tendsto_measureReal_dyadicLastExitEndpointExcess_ge hP hB hν c hc δ hδ
 
 end DOZZ.Proofs
 
-end

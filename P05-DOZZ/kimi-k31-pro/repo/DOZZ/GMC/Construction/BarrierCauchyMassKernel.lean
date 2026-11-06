@@ -2,16 +2,14 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.Construction.BarrierCauchyMass
-public import DOZZ.GMC.Construction.BarrierCauchyKernel
-public import Mathlib.MeasureTheory.Measure.Prod
-public import Mathlib.Analysis.Complex.Tietze
+import DOZZ.GMC.Construction.BarrierCauchyMass
+import DOZZ.GMC.Construction.BarrierCauchyKernel
+import Mathlib.MeasureTheory.Measure.Prod
+import Mathlib.Analysis.Complex.Tietze
 
 /-! Tonelli identities connecting growing-barrier test masses to their spatial pair kernel. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal NNReal BoundedContinuousFunction

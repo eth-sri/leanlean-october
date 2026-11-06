@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Hypergeom.ODE.ConnectionAnalyticContinuation
-public import DOZZ.Hypergeom.ODE.ConnectionGammaCoefficients
+import DOZZ.Hypergeom.ODE.ConnectionAnalyticContinuation
+import DOZZ.Hypergeom.ODE.ConnectionGammaCoefficients
 
 /-! The Euler-box coefficient evaluations imply the global connection formulas. -/
 
-@[expose] public section
 
 namespace DOZZ.Proofs
 
@@ -32,7 +30,7 @@ structure GaussConnectionOpenBox where
 
 /-- If the two midpoint Cramer coefficients agree with their Gamma values on possibly different
 nonempty open Euler boxes, successive one-variable continuation gives the zero-basis connection
-formula `DOZZ.gauss_connection_minus`. Separate boxes are necessary: the two endpoint coefficient
+formula `gauss_connection_minus`. Separate boxes are necessary: the two endpoint coefficient
 evaluations use disjoint exponent-sign regions. -/
 theorem gauss_connection_minus_of_box_coefficients
     {H : ℂ → ℂ → ℂ → ℂ → ℂ}
@@ -84,7 +82,7 @@ theorem gauss_connection_minus_of_box_coefficients
 
 /-- If the two midpoint Cramer coefficients for the powered zero-basis solution agree with their
 Gamma values on possibly different nonempty open Euler boxes, continuation gives the powered
-connection formula `DOZZ.gauss_connection_plus`. -/
+connection formula `gauss_connection_plus`. -/
 theorem gauss_connection_plus_of_box_coefficients
     {H : ℂ → ℂ → ℂ → ℂ → ℂ}
     (hH : IsGaussHypergeometricFamily H)

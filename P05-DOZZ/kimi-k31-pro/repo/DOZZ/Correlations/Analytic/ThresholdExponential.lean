@@ -2,13 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.Analytic.ComplementExponential
+import DOZZ.Correlations.Analytic.ComplementExponential
 
 /-! Choosing the shrinking threshold and absorbing the imaginary Gaussian growth. -/
 
-@[expose] public section
 namespace DOZZ.Proofs
 
 /-- The Markov/Hölder term has the precise residual exponential rate. -/

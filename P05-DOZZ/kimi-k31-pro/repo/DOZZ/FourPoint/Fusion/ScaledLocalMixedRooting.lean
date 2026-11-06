@@ -2,15 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.Fusion.ScaledLocalKernel
-public import DOZZ.FourPoint.Fusion.ScaledFactor
-public import DOZZ.FourPoint.Fusion.LocalMixedRooting
+import DOZZ.FourPoint.Fusion.ScaledLocalKernel
+import DOZZ.FourPoint.Fusion.ScaledFactor
+import DOZZ.FourPoint.Fusion.LocalMixedRooting
 
 /-! # The exact rescaled rooted local spatial integral -/
 
-@[expose] public section
 open MeasureTheory Set Filter
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -38,7 +36,7 @@ theorem fusion_localR2_reference_scaled {Ω : Type*} [MeasurableSpace Ω]
           (fusionScaledFactor P M γ α₁ α₂ α₃ s y z : ℂ)) := by
     filter_upwards [Measure.ae_ne volume (0 : ℂ), Measure.ae_ne volume 1] with y hy0 hy1
     by_cases hyz : ‖y * z‖ < 1 / 2
-    · have hyB : y * z ∈ B := by simpa only [B, Metric.mem_ball, dist_zero_right] using hyz
+    · have hyB : y * z ∈ B := by simpa [B, Metric.mem_ball, dist_zero_right] using hyz
       dsimp only [F]
       rw [Set.indicator_of_mem hyB, fusion_localR2_kernel_scaled γ α₁ α₂ α₃ y z hz hy0 hy1 hyz]
       have he : (∫⁻ ω, coulombMass γ (gmcRootedMeasure γ (y * z) (M ω))
@@ -51,7 +49,7 @@ theorem fusion_localR2_reference_scaled {Ω : Type*} [MeasurableSpace Ω]
       rw [he]
       simp only [fusionScaledFactor, ite_eq_left hyz, Complex.ofReal_mul]
       ring
-    · have hyB : y * z ∉ B := by simpa only [B, Metric.mem_ball, dist_zero_right] using hyz
+    · have hyB : y * z ∉ B := by simpa [B, Metric.mem_ball, dist_zero_right] using hyz
       simp only [F, Set.indicator_of_notMem hyB, fusionScaledFactor, ite_eq_right hyz,
         Complex.ofReal_zero, mul_zero]
   have hscale := fusion_integral_mul_complex F z hz
@@ -70,7 +68,6 @@ theorem fusion_localR2_reference_scaled {Ω : Type*} [MeasurableSpace Ω]
     _ = ∫ x : ℂ, F x := (integral_indicator (show MeasurableSet B from Metric.isOpen_ball.measurableSet)).symm
     _ = _ := hscale
     _ = _ := by
-      rw [← mul_assoc]
-      rw [← Complex.ofReal_mul, hp]
+      rw [← mul_assoc, ← Complex.ofReal_mul, hp]
 
 end DOZZ.Proofs

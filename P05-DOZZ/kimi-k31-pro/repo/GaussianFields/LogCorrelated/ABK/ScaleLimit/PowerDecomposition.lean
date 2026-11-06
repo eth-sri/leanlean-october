@@ -3,9 +3,8 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Scott Armstrong, Amélie Loher
 -/
-module
 
-public import GaussianFields.LogCorrelated.ABK.ScaleLimit.ProductSection
+import GaussianFields.LogCorrelated.ABK.ScaleLimit.ProductSection
 
 /-!
 # GaussianFields ABK power decomposition
@@ -13,7 +12,6 @@ public import GaussianFields.LogCorrelated.ABK.ScaleLimit.ProductSection
 Port of the corresponding GaussianFields source module.
 -/
 
-public section
 
 open Filter MeasureTheory ProbabilityTheory
 open scoped ENNReal InnerProductSpace NNReal ProbabilityTheory Topology
@@ -21,7 +19,7 @@ open scoped ENNReal InnerProductSpace NNReal ProbabilityTheory Topology
 namespace GaussianFields
 
 /-- Pair-space form of the ABK power-decomposition integrand. -/
-@[expose]
+
 noncomputable def abkPowerDecompositionPairIntegrand {d : Nat}
     (ζ : ABKCutoff d) (ψ φ : MeanZeroTestFunction d) (α : ℝ)
     (r : ℝ) (p : Vec d × Vec d) : ℝ :=
@@ -33,7 +31,7 @@ noncomputable def abkPowerDecompositionPairIntegrand {d : Nat}
     0
 
 /-- Tail majorant for the pair-space power-decomposition integrand. -/
-@[expose]
+
 noncomputable def abkPowerDecompositionPairMajorant {d : Nat}
     (ψ φ : MeanZeroTestFunction d) (α : ℝ)
     (r : ℝ) (p : Vec d × Vec d) : ℝ :=
@@ -56,8 +54,6 @@ theorem norm_abkPowerDecompositionPairIntegrand_le_majorant {d : Nat}
         abkScaledCutoffSelfConvolution_nonneg ζ r (p.1 - p.2)
       have hpow_nonneg :
           0 ≤ r ^ (-(1 + (d : ℝ) + α)) := Real.rpow_nonneg hr.le _
-      have htail_pow_nonneg :
-          0 ≤ (2 : ℝ) ^ d * r ^ (-(1 + α)) := by positivity
       have hself_bound :
           abkScaledCutoffSelfConvolution ζ r (p.1 - p.2) ≤ (2 * r) ^ d :=
         abkScaledCutoffSelfConvolution_le_pow ζ hr (p.1 - p.2)
@@ -227,9 +223,6 @@ theorem integrable_abkPowerDecompositionPairMajorant_of_pos_le_half {d : Nat}
           μ :=
       hF_meas.norm.integral_prod_right'
     let C : ℝ := (2 : ℝ) ^ d * (2 / α)
-    have hC_nonneg : 0 ≤ C := by
-      dsimp [C]
-      positivity
     refine (hR.norm.const_mul C).mono' hmeas_int ?_
     filter_upwards [ae_fst_ne_snd_volume_prod hd] with p hp_ne
     have hdiff : p.1 - p.2 ≠ 0 := by
@@ -238,26 +231,6 @@ theorem integrable_abkPowerDecompositionPairMajorant_of_pos_le_half {d : Nat}
     have hρ_pos : 0 < euclideanNorm (p.1 - p.2) :=
       abkEuclideanNorm_pos_of_ne_zero hdiff
     have hc : 0 < euclideanNorm (p.1 - p.2) / 2 := by positivity
-    have hsec_int :
-        Integrable (fun r : ℝ => F (p, r)) (volume : Measure ℝ) := by
-      have htail :
-          Integrable
-            ((Set.Ici (euclideanNorm (p.1 - p.2) / 2)).indicator
-              (fun r : ℝ => r ^ (-(1 + α))))
-            (volume : Measure ℝ) :=
-        integrable_indicator_Ici_rpow_neg_one_sub hα_pos hc
-      have hconst :
-          Integrable
-            ((Set.Ici (euclideanNorm (p.1 - p.2) / 2)).indicator
-              (fun r : ℝ => (2 : ℝ) ^ d * r ^ (-(1 + α))))
-            (volume : Measure ℝ) := by
-        convert htail.const_mul ((2 : ℝ) ^ d) using 1
-        funext r
-        by_cases hr : r ∈ Set.Ici (euclideanNorm (p.1 - p.2) / 2)
-        · simp [hr]
-        · simp [hr]
-      simpa [F, abkPowerDecompositionPairMajorant, mul_assoc] using
-        hconst.const_mul |ψ p.1 * φ p.2|
     have hnonneg : ∀ r : ℝ, 0 ≤ F (p, r) := by
       intro r
       unfold F abkPowerDecompositionPairMajorant
@@ -321,12 +294,10 @@ theorem integrable_abkPowerDecompositionPairMajorant_of_pos_le_half {d : Nat}
       have hmul :
           (euclideanNorm (p.1 - p.2) / 2) ^ (-α) =
             (euclideanNorm (p.1 - p.2)) ^ (-α) * (1 / 2 : ℝ) ^ (-α) := by
-        rw [div_eq_mul_inv]
-        rw [Real.mul_rpow hρ_pos.le (by norm_num : 0 ≤ (2 : ℝ)⁻¹)]
+        rw [div_eq_mul_inv, Real.mul_rpow hρ_pos.le (by norm_num : 0 ≤ (2 : ℝ)⁻¹)]
         ring_nf
       have hhalf_pow : (1 / 2 : ℝ) ^ (-α) = (2 : ℝ) ^ α := by
-        rw [Real.rpow_neg hhalf_pos.le]
-        rw [Real.div_rpow (by norm_num : 0 ≤ (1 : ℝ)) (by norm_num : 0 ≤ (2 : ℝ))]
+        rw [Real.rpow_neg hhalf_pos.le, Real.div_rpow (by norm_num : 0 ≤ (1 : ℝ)) (by norm_num : 0 ≤ (2 : ℝ))]
         simp [Real.one_rpow]
       have htwo_pow_le : (2 : ℝ) ^ α ≤ 2 := by
         have hα_le_one : α ≤ (1 : ℝ) := by linarith
@@ -343,8 +314,7 @@ theorem integrable_abkPowerDecompositionPairMajorant_of_pos_le_half {d : Nat}
     have htarget_eq :
         ‖ψ p.1 * φ p.2 * abkRieszKernel α p.1 p.2‖ =
           |ψ p.1 * φ p.2| * (euclideanNorm (p.1 - p.2)) ^ (-α) := by
-      rw [Real.norm_eq_abs, abs_mul, abkRieszKernel]
-      rw [abs_of_nonneg (Real.rpow_nonneg (euclideanNorm_nonneg _) _)]
+      rw [Real.norm_eq_abs, abs_mul, abkRieszKernel, abs_of_nonneg (Real.rpow_nonneg (euclideanNorm_nonneg _) _)]
     calc
       ‖∫ r : ℝ, ‖F (p, r)‖ ∂(volume : Measure ℝ)‖
           = ∫ r : ℝ, ‖F (p, r)‖ ∂(volume : Measure ℝ) := by
@@ -644,8 +614,7 @@ theorem integral_abkRegularizedScaleProductSection_eq_mAlphaInv_mul_centeredRies
             r ^ (-(1 + (d : ℝ) + α)) *
               abkScaledCutoffSelfConvolution ζ r (p.1 - p.2)
             ∂(volume : Measure ℝ))
-      rw [integral_indicator measurableSet_Ioi]
-      rw [integral_const_mul]
+      rw [integral_indicator measurableSet_Ioi, integral_const_mul]
     rw [hinner]
     have hpower :=
       integral_integral_abkPowerDecomposition_kernel_eq_riesz_pairing
@@ -756,4 +725,3 @@ theorem integral_abkRegularizedScaleProductSection_eq_mAlphaInv_mul_centeredRies
 
 end GaussianFields
 
-end

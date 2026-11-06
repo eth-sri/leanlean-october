@@ -2,17 +2,15 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.Residue.ExtendedTail
-public import DOZZ.Correlations.Residue.TailCoefficient
-public import DOZZ.Correlations.Residue.TailMargins
-public import DOZZ.Correlations.Tails.SingularMassMeasurability
+import DOZZ.Correlations.Residue.ExtendedTail
+import DOZZ.Correlations.Residue.TailCoefficient
+import DOZZ.Correlations.Residue.TailMargins
+import DOZZ.Correlations.Tails.SingularMassMeasurability
 
 /-! Source-specific local moment reductions for the unequal and equal branches of the
 three-to-two residue bridge. -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -47,7 +45,7 @@ theorem residue_oneInsertion_local_moment
     (residue_critical_order_bounds γ α3 hγ hα3 hα3Q).1 hη hγ hd₀ hC
     (fun ε _ _ => localSingularMass_aemeasurable P X hX γ hγ hγ2 M hM _
       (by unfold residueLocalWeight; fun_prop) _ _)
-    (by simpa only [hn] using hcoef) htail
+    (by simpa [hn] using hcoef) htail
   convert hh using 1
   congr 1
   ring
@@ -78,7 +76,7 @@ theorem residue_twoInsertion_equal_local_moment
   let θ := (twoInsertionTailCeiling γ α α - p) / 2
   have hθ : 0 < θ := div_pos (sub_pos.mpr (residue_equal_twoInsertionTailCeiling_gt γ α hγ hα hαQ)) (by norm_num)
   obtain ⟨C, hC, hCb⟩ := htail θ hθ
-  have hexp : -(twoInsertionTailCeiling γ α α - θ) = -p - θ := by dsimp only [θ]; ring
+  have hexp : -(twoInsertionTailCeiling γ α α - θ) = -p - θ := by dsimp [θ]; ring
   have hn37 : ‖(3 : ℂ) - 7‖ = 4 := by norm_num
   have hn73 : ‖(7 : ℂ) - 3‖ = 4 := by norm_num
   have hc1 := residue_chart_tail_coefficient_limit γ α α Rbar hγ.ne' 3 7 (by norm_num) (by norm_num) (by norm_num)
@@ -104,7 +102,7 @@ theorem residue_twoInsertion_equal_local_moment
       exact hh)
   convert hh using 1
   congr 1
-  dsimp only [p]
+  dsimp [p]
   ring
 
 end DOZZ.Proofs

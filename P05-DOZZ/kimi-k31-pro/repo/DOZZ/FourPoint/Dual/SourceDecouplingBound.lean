@@ -2,12 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Dual.LateralComparisonError
-public import DOZZ.FourPoint.Dual.SpatialGuard
+import DOZZ.FourPoint.Dual.LateralComparisonError
+import DOZZ.FourPoint.Dual.SpatialGuard
 import Mathlib.Tactic
 /-! A signed quantitative decoupling bound for the actual separated dual masses. -/
-@[expose] public section
 open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -53,7 +51,7 @@ theorem dual_source_decoupling_bound
   obtain ⟨C₀, hC₀, hguard⟩ := dual_spatial_guard_inverse_uniform P X hX γ hγ hγ₂ M hM
     α₁ α₂ α₃ q hq.le
   let d := 3*γ^2/2*(q^2+q)
-  have hd : 0 < d := by dsimp only [d]; positivity
+  have hd : 0 < d := by dsimp [d]; positivity
   refine ⟨(2*Real.exp 1*C₀)*d, by positivity, ?_⟩
   intro z hz s r hs hr hr1 hsep ht1
   obtain ⟨N, hN, hi, hfin, heq, hcmp⟩ := dual_source_separated_regions_comparison
@@ -70,11 +68,11 @@ theorem dual_source_decoupling_bound
         (∫⁻ x in reflected_outerRegion r,
           ENNReal.ofReal (dualFusionKernel γ α₁ α₂ α₃ z x) ∂M ω) :=
       (lintegral_mono_set hD).trans (le_add_left le_rfl)
-    dsimp only
+    dsimp
     rw [ENNReal.rpow_neg, ENNReal.rpow_neg]
     exact ENNReal.inv_le_inv.mpr (ENNReal.rpow_le_rpow hb hq.le)
-  have hex : γ^2*(3*(s/r))/2*(q^2+q) = d*(s/r) := by dsimp only [d]; ring
-  dsimp only at hcmp
+  have hex : γ^2*(3*(s/r))/2*(q^2+q) = d*(s/r) := by dsimp [d]; ring
+  dsimp at hcmp
   rw [hex] at hcmp
   have hb := dual_lateral_comparison_real_bound
     (dualSeparatedInverseMoment P M γ α₁ α₂ α₃ q z s r)

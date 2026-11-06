@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.Analytic.MixedRadiusTiltPotential
+import DOZZ.Correlations.Analytic.MixedRadiusTiltPotential
 import DOZZ.GMC.Assembly.AdmissibleGMC
 
 /-! Full covariance expansion of the real joint Wick polynomial. -/
 
-@[expose] public section
 open MeasureTheory
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -29,7 +27,7 @@ theorem vertex_variance_expansion
   rw [gaussianCovariance_finset_sum_right P _ Z Finset.univ hs (fun i _ => hm i)]
   apply Finset.sum_congr rfl
   intro i _
-  rw [DOZZ.Assembly.gaussianCovariance_comm,
+  rw [Assembly.gaussianCovariance_comm,
     gaussianCovariance_finset_sum_right P (Z i) Z Finset.univ (hm i) (fun j _ => hm j)]
   apply Finset.sum_congr rfl
   intro j _
@@ -37,7 +35,7 @@ theorem vertex_variance_expansion
   have he : (fun ω => Z i ω * Z j ω) =
       fun ω => (a i * a j) * (L i ω * L j ω) := by
     funext ω
-    dsimp only [Z]
+    dsimp [Z]
     ring
   rw [he, integral_const_mul]
 

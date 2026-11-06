@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Brownian.Williams.ReversalDensityCancellation
-public import DOZZ.Brownian.LastExitPastDensity
+import DOZZ.Brownian.Williams.ReversalDensityCancellation
+import DOZZ.Brownian.LastExitPastDensity
 
 /-!
 # Increasing-order marked reversal density
@@ -15,7 +14,6 @@ Lebesgue measure. The resulting density uses the same observation order as the c
 last-exit law.
 -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory Set Function
 open scoped NNReal ENNReal
 namespace DOZZ.Proofs
@@ -50,7 +48,7 @@ theorem measurable_conditionedPositiveTransitionDensity_time_start (ν c : ℝ) 
   have hg : MeasurableSet {z : ℝ × ℝ | 0 ≤ ν ∧ 0 < z.1 ∧ 0 < z.2 ∧ 0 < c} := by
     by_cases hν : 0 ≤ ν
     · by_cases hc : 0 < c
-      · simpa only [hν, hc, true_and, and_true, Set.ofPred_and] using
+      · simpa [hν, hc, true_and, and_true, Set.ofPred_and] using
           (measurableSet_lt measurable_const measurable_fst).inter
             (measurableSet_lt measurable_const measurable_snd)
       · simp [hc]
@@ -99,7 +97,7 @@ theorem brownianPath_firstHit_reversedIncreasing_density_map (P : Measure Browni
     apply Prod.ext
     · funext i
       change (MeasurableEquiv.piCongrLeft (fun _ : Fin (n+1) => ℝ) Fin.revPerm) z.1 i = _
-      simpa only [Fin.revPerm_apply, Fin.rev_rev] using
+      simpa [Fin.revPerm_apply, Fin.rev_rev] using
         MeasurableEquiv.piCongrLeft_apply_apply (β := fun _ : Fin (n+1) => ℝ) Fin.revPerm z.1 i.rev
     · rfl
   have he' (z : (Fin (n+1) → ℝ) × ℝ) : e.symm z = ((fun i => z.1 i.rev),z.2) := by
@@ -142,7 +140,7 @@ theorem brownianPath_firstHit_reversedIncreasing_density_map (P : Measure Browni
   apply withDensity_congr_ae
   filter_upwards [ae_restrict_mem hD] with z hz
   rw [comp_apply, brownianFirstHitReversedPDF_eq_lastExitDensity ν c hν hc n ss hss hs0
-    (e.symm z) (by simpa only [he', D, mem_ofPred_eq] using hz)]
+    (e.symm z) (by simpa [he', D, mem_ofPred_eq] using hz)]
   simp only [he', Fin.rev_rev, Fin.rev_zero]
   have hp := conditionedPositiveFDDDensity_nonneg hν.le
     (List.ofFn fun i => (ss i : ℝ)) (List.ofFn z.1) (by simp)
@@ -186,10 +184,9 @@ theorem brownianPath_firstHit_reversedIncreasing_density_map_unrestricted
   by_contra hnot
   change ¬ (ss (Fin.last n) : ℝ) < z.2 at hnot
   have ht : ¬ 0 < z.2-(ss (Fin.last n) : ℝ) := by
-    simpa only [sub_pos] using hnot
+    simpa [sub_pos] using hnot
   apply hz
-  simp only [brownianReversalBoundaryDensity, conditionedPositiveTransitionDensity,
+  simp [brownianReversalBoundaryDensity, conditionedPositiveTransitionDensity,
     ht, false_and, and_false, ite_false, zero_mul, zero_div, ENNReal.ofReal_zero]
 
 end DOZZ.Proofs
-end

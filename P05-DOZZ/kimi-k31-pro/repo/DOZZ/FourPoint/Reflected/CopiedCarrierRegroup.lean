@@ -2,11 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Reflected.IndependentRegroup
-public import Mathlib.MeasureTheory.Integral.Prod
+import DOZZ.FourPoint.Reflected.IndependentRegroup
+import Mathlib.MeasureTheory.Integral.Prod
 /-! Regrouping a common radial path and two independent lateral carriers. -/
-@[expose] public section
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -42,8 +40,7 @@ theorem reflected_copied_carrier_regroup
   have hlaw : ((P.map A).prod (P.prod P)).map H =
       (P.map A).prod ((P.map N).prod (P.map N)) := by
     change ((P.map A).prod (P.prod P)).map (Prod.map id (Prod.map N N)) = _
-    rw [← Measure.map_prod_map _ _ measurable_id (hN.prodMap hN), Measure.map_id]
-    rw [Measure.map_prod_map P P hN hN]
+    rw [← Measure.map_prod_map _ _ measurable_id (hN.prodMap hN), Measure.map_id, Measure.map_prod_map P P hN hN]
   have hbase (F : α × (β × β) → ℝ≥0∞) (hF : Measurable F) :
       (∫⁻ p : α × (Ω × Ω), F (H p) ∂(P.map A).prod (P.prod P)) =
         ∫⁻ ω : Ω × Ω, F (A ω.1,(N ω.1,N ω.2)) ∂P.prod P := by

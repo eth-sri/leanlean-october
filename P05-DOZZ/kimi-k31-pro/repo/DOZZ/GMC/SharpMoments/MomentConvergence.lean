@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.Annulus.ReferenceIntensity
-public import DOZZ.GMC.Moments.LimitFatou
+import DOZZ.GMC.Annulus.ReferenceIntensity
+import DOZZ.GMC.Moments.LimitFatou
 
 /-! # Convergence of extended moments
 
@@ -14,7 +13,6 @@ in measure, provided a moment of an order `p'` beyond `p` is uniformly bounded. 
 uniform bound also makes the variables and their limit almost surely positive, so that the power
 function is continuous at the limit. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped ENNReal NNReal
@@ -51,12 +49,11 @@ theorem momentConv_lintegral_rpow_limit_le
     (hconv : TendstoInMeasure P (fun n ω => (f n ω).toReal) atTop (fun ω => (g ω).toReal))
     (r : ℝ) (C : ℝ≥0∞) (hbound : ∀ n, ∫⁻ ω, f n ω ^ r ∂P ≤ C) :
     ∫⁻ ω, g ω ^ r ∂P ≤ C := by
-  have hmax : ∀ x : ℝ≥0∞, max x.toReal 0 = x.toReal := fun x => max_eq_left ENNReal.toReal_nonneg
   have hae : ∀ n, (fun ω => ENNReal.rpow (ENNReal.ofReal (max (f n ω).toReal 0)) r) =ᵐ[P]
       fun ω => f n ω ^ r := by
     intro n
     filter_upwards [hfin n] with ω hω
-    simp only [hmax, ENNReal.ofReal_toReal hω, ENNReal.rpow_eq_pow]
+    simp [ENNReal.ofReal_toReal hω, ENNReal.rpow_eq_pow]
   have hfmeas : ∀ n, AEMeasurable
       (fun ω => ENNReal.rpow (ENNReal.ofReal (max (f n ω).toReal 0)) r) P :=
     fun n => ((hf n).pow_const r).congr (hae n).symm
@@ -65,7 +62,7 @@ theorem momentConv_lintegral_rpow_limit_le
     (fun n => (lintegral_congr_ae (hae n)).trans_le (hbound n))
   refine le_trans (le_of_eq (lintegral_congr_ae ?_)) hlim
   filter_upwards [hgfin] with ω hω
-  simp only [ENNReal.ofReal_toReal hω, ENNReal.rpow_eq_pow]
+  simp [ENNReal.ofReal_toReal hω, ENNReal.rpow_eq_pow]
 
 /-- The real power function is continuous at the real part of any `x` such that `x` and `x ^ r`
 are finite. -/
@@ -101,7 +98,7 @@ theorem momentConv_tendstoInMeasure_rpow
   filter_upwards [hae, hgfin, hgr] with ω hω hω1 hω2
   have h : Tendsto (fun i => ((f (ns (ns' i)) ω).toReal) ^ r) atTop (𝓝 ((g ω).toReal ^ r)) :=
     (momentConv_continuousAt_rpow hω1 hω2).tendsto.comp hω
-  simpa only [← ENNReal.toReal_rpow] using h
+  simpa [← ENNReal.toReal_rpow] using h
 
 /-- Pointwise, `x ≤ 1 + x ^ q` for every exponent `q ≥ 1`. -/
 theorem momentConv_le_one_add_rpow (x : ℝ≥0∞) {q : ℝ} (hq : 1 ≤ q) : x ≤ 1 + x ^ q := by

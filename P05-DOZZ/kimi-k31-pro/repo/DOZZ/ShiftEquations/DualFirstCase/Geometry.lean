@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.Statements.Brownian.ReflectionPoleFree
-public import DOZZ.Statements.Defs.IsEquatorGFF
-public import DOZZ.Statements.Defs.IsGMCOf
+import DOZZ.Statements.Brownian.ReflectionPoleFree
+import DOZZ.Statements.Defs.IsEquatorGFF
+import DOZZ.Statements.Defs.IsGMCOf
 import DOZZ.Correlations.Symmetry.ReflectionMomentSwap
 import DOZZ.Correlations.Residue.FullFromUnit
 /-! # The strict dual fusion window inside the first-case charge box -/
-public section
 open MeasureTheory Set
 namespace DOZZ.Proofs
 /-- Shrinking around a fixed pair handles the endpoint eta = gamma/4. -/

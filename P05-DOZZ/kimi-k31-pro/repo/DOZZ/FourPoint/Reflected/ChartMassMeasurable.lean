@@ -2,10 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Reflected.CopiedRadialChart
+import DOZZ.FourPoint.Reflected.CopiedRadialChart
 /-! Joint measurability of full chart masses, including unbounded radial weights. -/
-@[expose] public section
 open MeasureTheory Set
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -35,7 +33,7 @@ theorem reflected_chart_parameter_mass_measurable
       obtain ⟨n, hn⟩ := E.exists_mem ⟨x, hx⟩
       exact mem_iUnion.mpr ⟨n, ⟨⟨x, hx⟩, hn, rfl⟩⟩
   let NF : Ω → ℕ → FiniteMeasure ℂ := fun ω n =>
-    ⟨(N ω).restrict (K n), ⟨by simpa only [Measure.restrict_apply_univ] using
+    ⟨(N ω).restrict (K n), ⟨by simpa [Measure.restrict_apply_univ] using
       (hfin ω (K n) (hK n) (hKU n))⟩⟩
   have hNF (n : ℕ) : Measurable (fun ω => NF ω n) := Measurable.subtype_mk
     ((measurable_measure_restrict (K n) (hK n).measurableSet).comp hN)

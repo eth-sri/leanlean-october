@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Hypergeom.ODE.ParameterSeriesFamily
-public import DOZZ.Hypergeom.ODE.ConnectionParameterDomain
+import DOZZ.Hypergeom.ODE.ParameterSeriesFamily
+import DOZZ.Hypergeom.ODE.ConnectionParameterDomain
 
 /-! Parameter regularity of the four connection-basis values at the common midpoint. -/
 
-@[expose] public section
 
 namespace DOZZ.Proofs
 
@@ -130,7 +128,7 @@ theorem gaussGMinus_midpoint_differentiableAt_params
   have hvalue := familyParameterValue_comp_differentiableAt hH p connectionGMinusParameters
     (connectionGMinusParameters_mem hp) hSDiff (1 / 2 : ℂ) (by norm_num)
   norm_num [gaussGMinus, connectionGMinusParameters] at ⊢
-  exact hvalue
+  assumption
 
 /-- The second one-basis value at `1/2` varies holomorphically with the parameters. -/
 theorem gaussGPlus_midpoint_differentiableAt_params
@@ -153,6 +151,6 @@ theorem gaussGPlus_midpoint_differentiableAt_params
     simpa [connectionGPlusParameters] using hvalue
   have hprod := hpower.mul hvalue'
   norm_num [gaussGPlus] at ⊢
-  exact hprod
+  assumption
 
 end DOZZ.Proofs

@@ -2,13 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.Construction.BarrierCauchy
+import DOZZ.GMC.Construction.BarrierCauchy
 
 /-! Omitted coarse barriers of two separated roots for one admissible regularization: self-compatibility, a charge-uniform double-root barrier tail, and truncation of the growing barrier at a fixed level. -/
 
-@[expose] public section
 
 /-! ### Self-compatibility
 
@@ -20,7 +18,7 @@ open scoped ENNReal NNReal
 
 namespace DOZZ.Assembly
 
-open DOZZ.Proofs
+open Proofs
 
 /-- Every admissible regularization is compatible with itself. -/
 theorem isCompatibleAdmissibleRegularizations_self
@@ -33,7 +31,7 @@ theorem isCompatibleAdmissibleRegularizations_self
   · intro n q hq
     have h := hY.gaussian n (fun i => (q i).2)
       (fun i => ⟨(hq i).1, (hq i).2.trans (min_le_left _ _)⟩)
-    simpa only [ite_self] using h
+    simpa [ite_self] using h
   · intro K hK hKU
     obtain ⟨C, hC, hcov⟩ := hY.covarianceBound K hK hKU
     exact ⟨C, hC, fun ε δ hε hεc hδ hδc x hx y hy => hcov ε δ hε hεc hδ hδc x hx y hy⟩
@@ -46,7 +44,7 @@ theorem isCompatibleAdmissibleRegularizations_self
   · intro K _ _ k _ η hη
     exact ⟨1, one_pos, fun ε _ _ x _ y _ => by simp [hη]⟩
 
-end DOZZ.Assembly
+end Assembly
 
 /-! ### Charge-uniform double-root tail
 
@@ -58,9 +56,9 @@ charge ranges over a compact interval below the barrier slope. -/
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
 
-namespace DOZZ.Assembly
+namespace Assembly
 
-open DOZZ.Proofs
+open Proofs
 
 /-- Two separated Wick roots of one admissible regularization: the first root's coarse barrier at
 scale `k` fails with exponentially small weight. The constant `C` depends only on the
@@ -197,7 +195,7 @@ theorem admissible_separated_double_root_tail_uniform
   rw [hgoal, hident]
   exact mul_le_mul' hfactor htilted
 
-end DOZZ.Assembly
+end Assembly
 
 /-! ### Truncating the growing barrier
 
@@ -209,9 +207,9 @@ threshold that is uniform for charges in a compact interval below the barrier sl
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
 
-namespace DOZZ.Assembly
+namespace Assembly
 
-open DOZZ.Proofs
+open Proofs
 
 /-- Some coarse barrier strictly above level `m` and at most `r` fails at the point `x`. -/
 def omittedBarrierEvent {Ω : Type*} (Y : Ω → ℝ → ℂ → ℝ) (a : ℝ) (m : ℕ) (r : ℝ)
@@ -433,7 +431,7 @@ theorem finiteBarrierPairKernel_le_growing_add_tail
                 (fun _ => (1 : ℝ≥0∞)) ω ∂P := by
               apply lintegral_congr
               intro ω
-              simp only [Wx, Wy]
+              simp [Wx, Wy]
               ring
           _ ≤ _ := h)
     refine hT.trans (le_of_eq ?_)
@@ -457,7 +455,7 @@ theorem finiteBarrierPairKernel_le_growing_add_tail
           Wx ω * Wy ω * Set.indicator (omittedBarrierEvent Y a m s y)
             (fun _ => (1 : ℝ≥0∞)) ω := by
     have h := barrier_indicator_pair_le Y a k₀ m r s ω x y
-    simp only [ite_self, Wx, Wy]
+    simp [Wx, Wy]
     calc
       _ = admissibleLogWickWeight P Y g (Real.exp (-r)) x ω *
             admissibleLogWickWeight P Y g (Real.exp (-s)) y ω *
@@ -524,7 +522,7 @@ theorem finiteBarrierPairKernel_le_growing_add_tail
           c * ∑' j : ℕ, f (j + (m + 1)) + c * ∑' j : ℕ, f (j + (m + 1)) := by
       gcongr
     _ = _ := by
-      simp only [c, f]
+      simp [c, f]
       ring
 
 end DOZZ.Assembly

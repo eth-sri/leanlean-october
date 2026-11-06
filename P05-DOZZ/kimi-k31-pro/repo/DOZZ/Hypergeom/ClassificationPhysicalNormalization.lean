@@ -2,15 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Hypergeom.ClassificationCoefficientRatio
-public import DOZZ.Hypergeom.PhysicalRange
-public import DOZZ.Hypergeom.ODE.ConnectionEndpointLimits
+import DOZZ.Hypergeom.ClassificationCoefficientRatio
+import DOZZ.Hypergeom.PhysicalRange
+import DOZZ.Hypergeom.ODE.ConnectionEndpointLimits
 
 /-! The physical normalization from continuity at the regular puncture. -/
 
-@[expose] public section
 
 namespace DOZZ.Proofs
 
@@ -48,9 +46,7 @@ private theorem tendsto_real_positive_cpow_zero (c : ℝ) (hc : c < 1) :
     have hbase : (x : ℂ) = (x : ℝ) := rfl
     rw [hbase, Complex.norm_cpow_eq_rpow_re_of_pos hx]
     simp [e, Complex.sub_re]
-  rw [tendsto_congr' hnorm]
-  exact hreal
-
+  rwa [tendsto_congr' hnorm]
 /-- In the strict physical range, continuity at zero fixes the coefficient in
 [KRV, (Fundrelation1)] to `T 0`. -/
 theorem real_gauss_solution_physical_normalization
@@ -79,8 +75,7 @@ theorem real_gauss_solution_physical_normalization
   have hCpos : 0 < c := by dsimp [c]; linarith [ha, hab, hbc]
   have hcn : ∀ n : ℤ, c ≠ (n : ℝ) :=
     real_open_unit_not_int hCpos hc1
-  have hδn : ∀ n : ℤ, c - a - b ≠ (n : ℝ) := by
-    exact real_open_unit_not_int hδ hδ1
+  have hδn : ∀ n : ℤ, c - a - b ≠ (n : ℝ) := real_open_unit_not_int hδ hδ1
   obtain ⟨coeff, hcoeff, _⟩ :=
     real_gauss_solution_coefficient_ratio hH a b c hcn hδn hK₂.ne' T hT
   let F : Filter ℝ := nhdsWithin 0 (Ioi 0)
@@ -143,7 +138,7 @@ theorem real_gauss_solution_physical_normalization
     filter_upwards [self_mem_nhdsWithin, hlt] with x hx hxlt
     change (x : ℂ).im ≠ 0 ∨ (0 < (x : ℂ).re ∧ (x : ℂ).re < 1)
     right
-    simp only [Complex.ofReal_re]
+    simp [Complex.ofReal_re]
     exact ⟨hx, hxlt⟩
   have hEq : (fun x : ℝ => T (x : ℂ)) =ᶠ[F]
       (fun x => coeff * (‖gaussFMinus H (a : ℂ) (b : ℂ) (c : ℂ) (x : ℂ)‖ ^ 2 +

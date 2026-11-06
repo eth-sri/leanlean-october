@@ -2,12 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Reflected.WilliamsIncrementSqueeze
-public import DOZZ.FourPoint.Reflected.InverseIncrementIntegrable
+import DOZZ.FourPoint.Reflected.WilliamsIncrementSqueeze
+import DOZZ.FourPoint.Reflected.InverseIncrementIntegrable
 import Mathlib.Tactic
 /-! Integrating the signed Williams sandwich without a moment of the maximum. -/
-@[expose] public section
 open MeasureTheory
 namespace DOZZ.Proofs
 
@@ -43,7 +41,7 @@ theorem reflected_williams_expectation_squeeze
   have hemp := ((hm.const_mul γ).exp).comp_quasiMeasurePreserving
     (measurePreserving_snd (μ := P) (ν := R)).quasiMeasurePreserving
   have hInvp : Integrable (fun v : Ω × Λ => (A v.1)^(-p)) (P.prod R) := by
-    simpa only [mul_one] using hInv.mul_prod (integrable_const (1 : ℝ))
+    simpa [mul_one] using hInv.mul_prod (integrable_const (1 : ℝ))
   have hi (S : Λ → ℝ) (hS : ∀ᵐ v ∂R, 0 ≤ S v) (hSm : AEMeasurable S R) :
       Integrable (D S) (P.prod R) := by
     have hSp := (measurePreserving_snd (μ := P) (ν := R)).quasiMeasurePreserving.ae hS
@@ -67,18 +65,16 @@ theorem reflected_williams_expectation_squeeze
         hcv.2.2.2.1 hcv.2.2.2.2
     refine ⟨hs.1, ?_⟩
     convert hs.2 using 1
-    dsimp only [D,E,F]
+    dsimp [D,E,F]
     ring
   refine ⟨hij,integral_mono_ae hiJ hij (hbnd.mono fun _ h => h.1), ?_⟩
   have hh := integral_mono_ae hij (hiK.add hiE) (hbnd.mono fun _ h => h.2)
-  simp only [Pi.add_apply] at hh
+  simp [Pi.add_apply] at hh
   rw [integral_add hiK hiE] at hh
   have he : (∫ v, E v ∂P.prod R) =
       p*Real.exp (γ*H)*(∫ ω, F ω ∂P)*(∫ v, J v ∂R) := by
     rw [show E = (fun v : Ω × Λ => (p*Real.exp (γ*H))*(F v.1*J v.2)) from rfl,
       integral_const_mul,integral_prod_mul]
     ring
-  rw [he] at hh
-  exact hh
-
+  rwa [he] at hh
 end DOZZ.Proofs

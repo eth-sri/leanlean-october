@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Brownian.ConditionedEntranceFiniteChain
-public import DOZZ.Brownian.Coupling.RationalExtension
+import DOZZ.Brownian.ConditionedEntranceFiniteChain
+import DOZZ.Brownian.Coupling.RationalExtension
 
 /-!
 # Joint entrance chains on a shared finite uniform grid
@@ -16,7 +15,6 @@ independence of the drift coordinates is introduced. The common-uniform inequali
 event for all the countably many drift coordinates and all grid times.
 -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology TopologicalSpace Set
 open scoped ENNReal NNReal Topology Classical
@@ -28,17 +26,7 @@ abbrev CoupledEntranceGridPath (J : Type*) (n : ℕ) := J → ConditionedEntranc
 
 /-- The shared scalar driving input is uniform on the open unit interval. -/
 theorem coupling_unitInput_isProbabilityMeasure :
-    IsProbabilityMeasure (volume : Measure ConditionedUnitInput) := by
-  have hcoe : (volume : Measure ConditionedUnitInput).map Subtype.val = uniformOpenUnit := by
-    rw [MeasurableSet.map_coe_volume measurableSet_Ioo, uniformOpenUnit]
-  constructor
-  calc
-    (volume : Measure ConditionedUnitInput) univ =
-        ((volume : Measure ConditionedUnitInput).map Subtype.val) univ := by
-      rw [Measure.map_apply measurable_subtype_coe MeasurableSet.univ]
-      simp
-    _ = uniformOpenUnit univ := by rw [hcoe]
-    _ = 1 := by simp [uniformOpenUnit, Real.volume_Ioo]
+    IsProbabilityMeasure (volume : Measure ConditionedUnitInput) := DOZZ.Proofs.isProbabilityMeasure_unitInput
 
 /-- The first states at all drifts, sampled with one common uniform variable. -/
 noncomputable def coupledEntranceGridInitial {J : Type*}
@@ -87,8 +75,7 @@ theorem coupling_measurable_scalarAppend (ν : ℝ) (hν : 0 ≤ ν)
           (fun z => conditionedPositiveEntranceGridStep ν dt hν hdt n z.1 z.2) := by
         funext z
         exact conditionedPositiveEntranceGridAppend_last ν dt hν hdt n z
-      rw [heq]
-      exact hstep
+      rwa [heq]
   | cast i =>
       have heq : (fun z : ConditionedEntranceGridPath n × ConditionedUnitInput =>
           conditionedPositiveEntranceGridAppend ν dt hν hdt n z i.castSucc) =
@@ -176,7 +163,7 @@ def coupledEntranceGridTime (t₀ : ℝ) (dt : ℕ → ℝ) (n : ℕ) : ℝ :=
 
 theorem coupledEntranceGridTime_succ (t₀ : ℝ) (dt : ℕ → ℝ) (n : ℕ) :
     coupledEntranceGridTime t₀ dt (n + 1) = coupledEntranceGridTime t₀ dt n + dt n := by
-  simp only [coupledEntranceGridTime, Finset.sum_range_succ]
+  simp [coupledEntranceGridTime, Finset.sum_range_succ]
   ring
 
 /-- The joint order set on the sampled positive paths. -/
@@ -190,7 +177,7 @@ def coupledEntranceGridOrderSet {J : Type*} (v : J → ℝ≥0) (t₀ : ℝ) (dt
 theorem isClosed_coupledEntranceGridOrderSet {J : Type*}
     (v : J → ℝ≥0) (t₀ : ℝ) (dt : ℕ → ℝ) (n : ℕ) :
     IsClosed (coupledEntranceGridOrderSet v t₀ dt n) := by
-  simp only [coupledEntranceGridOrderSet, ofPred_forall]
+  simp [coupledEntranceGridOrderSet, ofPred_forall]
   apply isClosed_iInter
   intro j
   apply isClosed_iInter
@@ -233,7 +220,7 @@ theorem coupledEntranceGridAppend_mem_orderSet {J : Type*}
   intro j k hjk i
   induction i using Fin.lastCases with
   | cast i =>
-      dsimp only [coupledEntranceGridAppend]
+      dsimp [coupledEntranceGridAppend]
       change (conditionedPositiveEntranceGridAppend (v j) dt (NNReal.coe_nonneg (v j)) hdt n (x j, u)
           i.castSucc).1 ≤ _ ∧ _
       rw [conditionedPositiveEntranceGridAppend_castSucc,
@@ -250,7 +237,7 @@ theorem coupledEntranceGridAppend_mem_orderSet {J : Type*}
         (x j (Fin.last n)).2 hprev.1 u.2.1 u.2.2
       have hhiDrift := conditionedTransitionQuantile_drift_add (NNReal.coe_nonneg (v j)) hij (hdt n)
         (x j (Fin.last n)).2 u.2.1 u.2.2
-      dsimp only [coupledEntranceGridAppend]
+      dsimp [coupledEntranceGridAppend]
       change (conditionedPositiveEntranceGridAppend (v j) dt (NNReal.coe_nonneg (v j)) hdt n (x j, u)
           (Fin.last (n + 1))).1 ≤ _ ∧ _
       rw [conditionedPositiveEntranceGridAppend_last, conditionedPositiveEntranceGridAppend_last]
@@ -261,7 +248,7 @@ theorem coupledEntranceGridAppend_mem_orderSet {J : Type*}
             ((v k : ℝ) - (v j : ℝ)) * coupledEntranceGridTime t₀ dt (n + 1)
       rw [coupledEntranceGridTime_succ]
       refine ⟨hloDrift.trans hloStart, ?_⟩
-      simp only [Fin.val_last] at hprev
+      simp [Fin.val_last] at hprev
       nlinarith [hprev.2]
 
 /-- One common full-probability event carries every drift pair and every finite grid coordinate. -/

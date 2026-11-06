@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.Defs.DualMu
+import DOZZ.Statements.Defs.DualMu
 import DOZZ.Upsilon.Continuation
 import DOZZ.Upsilon.FullShifts
 import DOZZ.Upsilon.Uniqueness
@@ -19,7 +18,6 @@ import Mathlib.NumberTheory.Real.Irrational
 The first reciprocal-Gamma shift gives the zero lattice and its local orders.
 -/
 
-@[expose] public section
 
 open Complex Filter Topology
 
@@ -34,8 +32,7 @@ private noncomputable def upsilonLeftFactor (γ : ℝ) : ℂ → ℂ :=
     Complex.Gamma (1 - upsilonB γ * z)) *
   (fun z => (Complex.Gamma (upsilonB γ * z))⁻¹)
 
-private theorem upsilonB_cast (γ : ℝ) : upsilonB γ = (γ / 2 : ℂ) := by
-  exact Complex.ofReal_div γ 2
+private theorem upsilonB_cast (γ : ℝ) : upsilonB γ = (γ / 2 : ℂ) := Complex.ofReal_div γ 2
 
 private noncomputable def upsilonShiftN (γ : ℝ) (n : ℕ) : ℂ :=
   (n : ℂ) * upsilonB γ
@@ -89,8 +86,7 @@ private theorem differentiableAt_upsilonLeftUnitFactor
     apply DifferentiableAt.const_cpow
     · fun_prop
     · exact Or.inl hb
-  have hGammaOne : DifferentiableAt ℂ Complex.Gamma (1 : ℂ) := by
-    exact Complex.differentiableAt_Gamma_one
+  have hGammaOne : DifferentiableAt ℂ Complex.Gamma (1 : ℂ) := Complex.differentiableAt_Gamma_one
   have harg : DifferentiableAt ℂ (fun z : ℂ => 1 - upsilonB γ * z) 0 := by
     fun_prop
   have hGammaComp : DifferentiableAt ℂ
@@ -115,7 +111,7 @@ private theorem upsilonLeftFactor_hasDerivAt_zero
     have hRecipAt : HasDerivAt (fun z : ℂ => (Complex.Gamma z)⁻¹) 1
         (upsilonB γ * (0 : ℂ)) := by
       simpa using reciprocalGamma_hasDerivAt_zero
-    simpa only [Function.comp_def, one_mul] using
+    simpa [Function.comp_def, one_mul] using
       HasDerivAt.comp (0 : ℂ) hRecipAt hlin
   have hOuterDiff := differentiableAt_upsilonLeftUnitFactor hγ
   have hA := hOuterDiff.hasDerivAt.mul hrecip
@@ -195,8 +191,7 @@ private theorem IsUpsilon.left_product {U : ℂ → ℂ} (hγ : 0 < γ) (hγ2 : 
             z + upsilonShiftN γ (j + 1) := by
           rw [upsilonShiftN_succ]
           ring
-        rw [harg]
-        exact h
+        rwa [harg]
       have htail := ih (z + upsilonB γ) hstage'
       have hend : z + upsilonB γ + upsilonShiftN γ N =
           z + upsilonShiftN γ (N + 1) := by
@@ -215,7 +210,7 @@ private theorem IsUpsilon.left_product {U : ℂ → ℂ} (hγ : 0 < γ) (hγ2 : 
           ring
         rw [harg]
       rw [← hfirst, htail, hend, hprod, Finset.prod_range_succ']
-      simp only [upsilonShiftN, Nat.cast_zero, zero_mul, add_zero]
+      simp [upsilonShiftN, Nat.cast_zero, zero_mul, add_zero]
       ring
 
 private theorem exists_upsilonShiftN_between_zero_and_B (hγ : 0 < γ) (z : ℂ)
@@ -251,7 +246,7 @@ private theorem exists_upsilonShiftN_between_zero_and_B (hγ : 0 < γ) (z : ℂ)
   · rw [Complex.add_re, upsilonShiftN_re]
     simpa using hlow
   · rw [Complex.add_re, upsilonShiftN_re]
-    exact hupp
+    assumption
 
 private theorem upsilon_arg_eq_lattice_iff (hγ : 0 < γ) (j n : ℕ) (z : ℂ) :
     upsilonB γ * (z + upsilonShiftN γ j) = -(n : ℂ) ↔
@@ -296,8 +291,7 @@ private theorem upsilon_arg_eq_lattice_iff (hγ : 0 < γ) (j n : ℕ) (z : ℂ) 
         push_cast
         ring
   · intro h
-    rw [h, hshiftCast]
-    rw [upsilonB_cast]
+    rw [h, hshiftCast, upsilonB_cast]
     push_cast
     field_simp [hγ.ne']
     ring
@@ -331,7 +325,7 @@ private theorem upsilonLeftFactor_eq_zero_iff (hγ : 0 < γ) {z : ℂ}
     · exact (houter hbad).elim
     · rw [inv_eq_zero] at hrecip
       have hzero := (Complex.Gamma_eq_zero_iff (upsilonB γ * z)).mp hrecip
-      exact hzero
+      assumption
   · rintro ⟨n, harg⟩
     right
     rw [inv_eq_zero, harg, Complex.Gamma_neg_nat_eq_zero]
@@ -384,8 +378,7 @@ private theorem IsUpsilon.zero_left_iff {U : ℂ → ℂ} (hγ : 0 < γ) (hγ2 :
     have hrep := (upsilon_arg_eq_lattice_iff hγ j n z).mp harg
     exact ⟨j, n, hrep⟩
   · rintro ⟨m, n, hrep⟩
-    have hy : 0 ≤ -z.re / (γ / 2) := by
-      exact div_nonneg (neg_nonneg.mpr hz) (by positivity)
+    have hy : 0 ≤ -z.re / (γ / 2) := div_nonneg (neg_nonneg.mpr hz) (by positivity)
     let y : ℝ := -z.re / (γ / 2)
     have hmle : (m : ℝ) ≤ y := by
       have hrepRe := congrArg Complex.re hrep
@@ -403,8 +396,7 @@ private theorem IsUpsilon.zero_left_iff {U : ℂ → ℂ} (hγ : 0 < γ) (hγ2 :
         field_simp [ne_of_gt hbpos]
       have hEnd0' : 0 < z.re + (N : ℝ) * (γ / 2) := by
         have hEnd0'' := hEnd0
-        rw [Complex.add_re, upsilonShiftN_re] at hEnd0''
-        exact hEnd0''
+        rwa [Complex.add_re, upsilonShiftN_re] at hEnd0''
       rw [hzy] at hEnd0'
       have hyltNmul : y * (γ / 2) < (N : ℝ) * (γ / 2) := by
         linarith only [hEnd0']
@@ -442,8 +434,7 @@ theorem IsUpsilon.eq_zero_iff {U : ℂ → ℂ} (hγ : 0 < γ) (hγ2 : γ < 2)
           rw [Complex.sub_re, Complex.ofReal_re]
           linarith
         have hreflect : U ((Q γ : ℂ) - z) = 0 := by
-          rw [IsUpsilon.reflect hγ hγ2 hU z]
-          exact hz
+          rwa [IsUpsilon.reflect hγ hγ2 hU z]
         obtain ⟨m, n, hrep⟩ :=
           (IsUpsilon.zero_left_iff hγ hγ2 hU ((Q γ : ℂ) - z) hreflectRe).mp hreflect
         have hright : z = (Q γ + m * (γ / 2) + n * (2 / γ) : ℝ) := by
@@ -482,4 +473,3 @@ theorem IsUpsilon.eq_zero_iff {U : ℂ → ℂ} (hγ : 0 < γ) (hγ2 : γ < 2)
 
 end DOZZ.Proofs
 
-end

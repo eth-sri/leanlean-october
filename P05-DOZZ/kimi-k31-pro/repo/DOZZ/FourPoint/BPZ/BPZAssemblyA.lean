@@ -2,12 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.BPZ.MomentReg
-public import DOZZ.FourPoint.BPZ.WirtingerMass
-public import DOZZ.GMC.Construction.GMCMeasurableVersion
-public import DOZZ.Statements.Hypergeom.IsRealGaussSolution
+import DOZZ.FourPoint.BPZ.MomentReg
+import DOZZ.FourPoint.BPZ.WirtingerMass
+import DOZZ.GMC.Construction.GMCMeasurableVersion
+import DOZZ.Statements.Hypergeom.IsRealGaussSolution
 
 /-! # The reduced four-point function: versions, moments and derivatives
 
@@ -17,7 +16,6 @@ public import DOZZ.Statements.Hypergeom.IsRealGaussSolution
 * `T` is twice continuously differentiable off `0` and `1`, and its Wirtinger derivatives are
   `K` times the Wirtinger functionals of the expectations of the moment fields. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped ENNReal NNReal
@@ -46,7 +44,7 @@ theorem bpz_fourPointT_congr {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
       (-fourPointSExp γ α₀ α₁ α₂ α₃) ∂P) =
       ∫⁻ ω, ENNReal.rpow (coulombMass γ (N ω) ![α₀, α₁, α₂] ![z, 0, 1] α₃)
         (-fourPointSExp γ α₀ α₁ α₂ α₃) ∂P :=
-    lintegral_congr_ae (hMN.mono fun ω h => by dsimp only; rw [h])
+    lintegral_congr_ae (hMN.mono fun ω h => by dsimp; rw [h])
   rw [h]
 
 /-- Off `0` and `1`, the reduced function is `K E[I^{-s}]`. -/
@@ -121,10 +119,10 @@ theorem bpz_fourPointT_contDiff_wirtinger {Ω : Type*} [MeasurableSpace Ω] (P :
     (bpz_continuousOn_momField2 P X hX hγ hγ2 M hM hMm hχ ha1 hα₁ hα₂ hα₃ hs.le).const_smul K
   refine ⟨bpz_contDiffOn_two_of hUo hTd hD hc2, fun z hz => ⟨?_, ?_⟩⟩
   · rw [bpz_wirtingerZ_ofReal (hTd z hz), bpzWirtL_apply]
-    simp only [smul_apply, smul_eq_mul, Complex.ofReal_mul]
+    simp [smul_apply, smul_eq_mul, Complex.ofReal_mul]
     ring
   · rw [bpz_wirtingerZ_wirtingerZ_ofReal hUo hz hTd (hD z hz), bpzWirt2L_apply]
-    simp only [smul_apply, smul_eq_mul, Complex.ofReal_mul]
+    simp [smul_apply, smul_eq_mul, Complex.ofReal_mul]
     ring
 
 end DOZZ.Proofs

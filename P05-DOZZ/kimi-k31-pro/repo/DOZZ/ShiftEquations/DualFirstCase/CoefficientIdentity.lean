@@ -2,13 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.ShiftEquations.DualFirstCase.Coefficients
+import DOZZ.ShiftEquations.DualFirstCase.Coefficients
 import DOZZ.DOZZAlgebra.GenericLocus
 import DOZZ.Brownian.Reflection.RtheorAnalytic
 import Mathlib.Tactic
 /-! # Cancellation of the two dual crossing coefficients -/
-@[expose] public section
 open Complex Filter Topology Set
 namespace DOZZ.Proofs
 /-- The algebraic cancellation retains the literal centered shift coefficient. -/
@@ -36,21 +34,21 @@ theorem dualFirstCase_coefficient_product (γ : ℝ) (a₂ a₃ z : ℂ) (hγ : 
   have hcoeff : shiftCoeffA γ χ z a₂ a₃ =
       lFun (-χ ^ 2) * lFun (χ * z) * lFun (dualFirstCase_C γ z) * lFun E /
         (lFun (dualFirstCase_A γ a₂ a₃ z) * lFun (dualFirstCase_B γ a₂ a₃ z) * lFun D) := by
-    have hEarg : χ / 2 * ((z + a₂ + a₃) - 2 * z - χ) = E := by dsimp only [E]; ring
+    have hEarg : χ / 2 * ((z + a₂ + a₃) - 2 * z - χ) = E := by dsimp [E]; ring
     have hBarg : χ / 2 * ((z + a₂ + a₃) - 2 * a₃ - χ) = dualFirstCase_B γ a₂ a₃ z := by
-      dsimp only [dualFirstCase_B, χ]
+      dsimp [dualFirstCase_B, χ]
       ring
-    have hDarg : χ / 2 * ((z + a₂ + a₃) - 2 * a₂ - χ) = D := by dsimp only [D]; ring
+    have hDarg : χ / 2 * ((z + a₂ + a₃) - 2 * a₂ - χ) = D := by dsimp [D]; ring
     unfold shiftCoeffA
     rw [hEarg, hBarg, hDarg]
     rfl
-  have hn : χ ^ 2 = ((4 / γ ^ 2 : ℝ) : ℂ) := by dsimp only [χ]; push_cast; field_simp; ring
-  have hz : χ * z = 2 * z / γ := by dsimp only [χ]; ring
+  have hn : χ ^ 2 = ((4 / γ ^ 2 : ℝ) : ℂ) := by dsimp [χ]; push_cast; field_simp; ring
+  have hz : χ * z = 2 * z / γ := by dsimp [χ]; ring
   have hC : 2 - dualFirstCase_C γ z = 2 + χ ^ 2 - χ * z := by unfold dualFirstCase_C χ; ring
   change dualFirstCase_crossingProduct γ a₂ a₃ z * shiftCoeffA γ χ z a₂ a₃ = _
   rw [hcoeff]
   unfold dualFirstCase_crossingProduct
-  dsimp only
+  dsimp
   rw [hda, hdb, dualFirstCase_lFun_one_sub, hC, ← hn, ← hz]
   change lFun D ≠ 0 at hD
   change lFun E ≠ 0 at hE
@@ -84,7 +82,7 @@ theorem dualFirstCase_fixed_factor_ne_zero {γ a : ℝ} (hγ : 0 < γ)
   rw [he]
   apply lFun_ne_zero_of_forall_ne_int
   intro n hn
-  have hn' : -(2 / γ) * (Q γ - a) = (n : ℝ) := Complex.ofReal_inj.mp (by simpa only [Complex.ofReal_intCast] using hn)
+  have hn' : -(2 / γ) * (Q γ - a) = (n : ℝ) := Complex.ofReal_inj.mp (by simpa [Complex.ofReal_intCast] using hn)
   have hlt : -(2 / γ) * (Q γ - a) < 0 := by
     have hpos := mul_pos (div_pos (by norm_num : (0 : ℝ) < 2) hγ) (sub_pos.mpr hhi)
     linarith only [hpos]
@@ -124,13 +122,13 @@ theorem dualFirstCase_coefficient_product_codiscrete (γ : ℝ) (a₂ a₃ : ℂ
     unfold dualFirstCase_B χ
     congr 1
     ring
-  · simpa only [dualFirstCase_C, χ, sub_eq_add_neg] using hzc
+  · simpa [dualFirstCase_C, χ, sub_eq_add_neg] using hzc
   · convert hzD using 1
-    dsimp only [χ]
+    dsimp [χ]
     congr 1
     ring
   · convert hzE using 1
-    dsimp only [χ]
+    dsimp [χ]
     congr 1
     ring
 end DOZZ.Proofs

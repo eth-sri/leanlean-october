@@ -2,12 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.GMC.FieldGaussianCommonScalar
-public import DOZZ.Correlations.Tails.ProbabilityPullback
-public import DOZZ.Correlations.Symmetry.CorrelatedScalarLimit
+import DOZZ.GMC.FieldGaussianCommonScalar
+import DOZZ.Correlations.Tails.ProbabilityPullback
+import DOZZ.Correlations.Symmetry.CorrelatedScalarLimit
 /-! Preserving the exact common-Gaussian comparison factor at the chaos limit. -/
-@[expose] public section
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -25,7 +23,7 @@ theorem reflected_common_scalar_moment
   let G : ℝ → ℝ := fun z => Real.exp (γ*c*z-γ^2/2*c^2)
   have hGp (z : ℝ) : G z ^ p =
       Real.exp (-(p*(γ^2/2*c^2))) * Real.exp ((p*γ*c)*z) := by
-    dsimp only [G]
+    dsimp [G]
     rw [Real.rpow_def_of_pos (Real.exp_pos _), Real.log_exp, ← Real.exp_add]
     congr 1
     ring
@@ -52,7 +50,7 @@ theorem reflected_common_scalar_moment
   have hF : AEMeasurable (fun ω => ENNReal.ofReal (Z ω) ^ p) P :=
     hZ.ennreal_ofReal.pow_const p
   have hGm : AEMeasurable (fun z => ENNReal.ofReal (G z) ^ p) Q := by
-    have hm : Measurable G := by dsimp only [G]; fun_prop
+    have hm : Measurable G := by dsimp [G]; fun_prop
     exact hm.ennreal_ofReal.aemeasurable.pow_const p
   have he (u : Ω × ℝ) : ENNReal.ofReal (G u.2 * Z u.1) ^ p =
       ENNReal.ofReal (Z u.1) ^ p * ENNReal.ofReal (G u.2) ^ p := by
@@ -81,7 +79,7 @@ theorem reflected_common_scalar_field_limit
   intro r
   apply ae_of_all
   rintro ⟨ω, z⟩
-  dsimp only
+  dsimp
   rw [fieldChaosMass_independent_common_scalar_factor P (Φ r) (hΦ r) ν h γ c ω z,
     ENNReal.toReal_mul, ENNReal.toReal_ofReal (Real.exp_pos _).le]
 

@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GFF.TorusFourierTestPullback
-public import DOZZ.GFF.LocalEnergyBound
+import DOZZ.GFF.TorusFourierTestPullback
+import DOZZ.GFF.LocalEnergyBound
 import Mathlib.MeasureTheory.Function.L2Space
 
 /-!
@@ -15,7 +14,6 @@ The cutoff Fourier tests converge in the local `L²` topology. The comparison us
 unit-torus Fourier partial sums and the square-integrable covariance kernel bound.
 -/
 
-@[expose] public section
 
 noncomputable section
 
@@ -178,8 +176,7 @@ theorem integral_sq_equatorLocalFourierPartialTest_sub_le (R L : ℝ)
         ‖torusRealFourierPartialSum L f s -
           torusFourierRealPartCLM (torusPeriodizationLp L f)‖ ^ 2 := by
   let g : TestFn := equatorLocalFourierPartialTest R L hR f s - f
-  have hgsupp : Function.support g ⊆ ball (0 : ℂ) (R + 2) := by
-    exact equatorLocalFourierPartialTest_sub_support_subset R L hR f s hsupp
+  have hgsupp : Function.support g ⊆ ball (0 : ℂ) (R + 2) := equatorLocalFourierPartialTest_sub_support_subset R L hR f s hsupp
   have hgsuppBox : Function.support g ⊆ ball (0 : ℂ) (L / 2) := by
     simpa [hbox] using hgsupp
   have hplane := integral_sq_eq_torusBox L hL g hgsuppBox
@@ -198,10 +195,8 @@ theorem integral_sq_equatorLocalFourierPartialTest_sub_le (R L : ℝ)
       f (torusBoxPoint L t) = _
     rw [equatorLocalFourierPartialTest_torusBoxPoint R L hR hL f s t,
       ← hsum]
-    rw [← localTorusCutoff_mul_eq_of_support R hR f hsupp (torusBoxPoint L t)]
-    rw [← htarget]
-    rw [hsub]
-    simp only [Pi.sub_apply]
+    rw [← localTorusCutoff_mul_eq_of_support R hR f hsupp (torusBoxPoint L t), ← htarget, hsub]
+    simp [Pi.sub_apply]
     ring_nf
   have hleftMeas : Measurable (fun t : GFFUnitTorus2 => g (torusBoxPoint L t)) :=
     g.continuous.measurable.comp (measurable_torusBoxPoint L)
@@ -293,8 +288,7 @@ theorem tendsto_equatorFieldL2_localFourierPartialTest (R L : ℝ)
       ‖F s‖ ≤ Real.sqrt K * ‖err s‖ := by
     intro s
     let g : TestFn := equatorLocalFourierPartialTest R L hR f s - f
-    have hgsupp : Function.support g ⊆ ball (0 : ℂ) (R + 2) := by
-      exact equatorLocalFourierPartialTest_sub_support_subset R L hR f s hsupp
+    have hgsupp : Function.support g ⊆ ball (0 : ℂ) (R + 2) := equatorLocalFourierPartialTest_sub_support_subset R L hR f s hsupp
     have hfull : (∫ z : ℂ, g z ^ 2) = ∫ z in ball (0 : ℂ) (R + 2), g z ^ 2 := by
       calc
         (∫ z : ℂ, g z ^ 2) =
@@ -358,4 +352,3 @@ theorem tendsto_equatorFieldL2_localFourierPartialTest (R L : ℝ)
 
 end DOZZ
 
-end

@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.Reflected.LateralSeparation
-public import DOZZ.Brownian.Lateral.CircleRegularization
+import DOZZ.FourPoint.Reflected.LateralSeparation
+import DOZZ.Brownian.Lateral.CircleRegularization
 import Mathlib.Tactic
 
 /-! # Actual lateral cutoff covariances on separated charts
@@ -15,7 +14,6 @@ then makes the identification uniform on compact sets. It is the finite-cutoff
 input to the conditional Kahane comparison.
 -/
 
-public section
 
 open MeasureTheory ProbabilityTheory Set
 
@@ -112,8 +110,8 @@ theorem reflected_lateral_cutoff_cross_bound
     (gaussianCovariance P (fun ω => originLateralCircleRegularization Xc ρ ω ε x)
       (fun ω => originLateralCircleRegularization Xc ρ ω ε' y))
     (gffKernel x y - originRadialCovariance (-Real.log ‖x‖) y) 0
-  simp only [sub_zero] at htri
-  simpa only [add_comm] using
+  simp [sub_zero] at htri
+  simpa [add_comm] using
     (htri.trans (add_le_add hlimit.le hkernel))
 
 end DOZZ.Proofs

@@ -2,12 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.ShiftEquations.Rbar.Multiplier
-public import DOZZ.Statements.Defs.UnitVolumeStructureConstant
-public import DOZZ.Statements.Defs.ExtendedSeiberg3
-public import DOZZ.Statements.Correlations.ComplexifyNCharges
+import DOZZ.ShiftEquations.Rbar.Multiplier
+import DOZZ.Statements.Defs.UnitVolumeStructureConstant
+import DOZZ.Statements.Defs.ExtendedSeiberg3
+import DOZZ.Statements.Correlations.ComplexifyNCharges
 import Mathlib.Analysis.Complex.CauchyIntegral
 
 /-!
@@ -22,7 +21,6 @@ containing the crossing region, so the identity theorem continues the crossing t
 interval.
 -/
 
-@[expose] public section
 
 open Filter Topology Set
 
@@ -120,7 +118,6 @@ theorem unitVolume_crossing_diag_continued {Ω : Type*} [MeasurableSpace Ω]
     unitVolumeStructureConstant P M γ (a - γ / 2) ε a =
       crossingMultiplierReal γ ε a * unitVolumeStructureConstant P M γ a (ε + γ / 2) a := by
   have hQ : Q γ = 2 / γ + γ / 2 := rfl
-  have h2γ : 0 < 2 / γ := by positivity
   set J : Set ℝ := Ioo (γ / 4 + ε / 2) (Q γ) with hJ
   -- the domain of both holomorphic sides
   set D : Set ℂ := reflectionStrip γ ∩ shiftTriple γ ε ⁻¹' V₃ ∩ raiseTriple γ ε ⁻¹' V₃ with hD
@@ -160,7 +157,7 @@ theorem unitVolume_crossing_diag_continued {Ω : Type*} [MeasurableSpace Ω]
     intro t ht1 ht2
     have htJ : t ∈ J := ⟨by rw [hQ] at ht1; linarith, ht2⟩
     have hx : 0 < (2 * t + ε - γ / 2 - 2 * Q γ) / γ := div_pos (by linarith) hγ
-    simp only [hg₁, hg₂]
+    simp [hg₁, hg₂]
     rw [hS t htJ, hR t htJ, hCross t ht2 (by linarith), Complex.ofReal_mul,
       gammaHalfUnitCrossingMultiplier_eq_diag hγ one_pos hε₁ hε₂ hx]
   -- the identity theorem on the component of `D` through a crossing point
@@ -189,10 +186,9 @@ theorem unitVolume_crossing_diag_continued {Ω : Type*} [MeasurableSpace Ω]
       ⟨a₀, ha₀J, rfl⟩ (image_subset_iff.mpr fun t ht => hJD t ht)
   have haJ : a ∈ J := ⟨ha₁, ha₂⟩
   have h := hEq (hJU ⟨a, haJ, rfl⟩)
-  simp only [hg₁, hg₂] at h
+  simp [hg₁, hg₂] at h
   rw [hS a haJ, hR a haJ, crossingMultiplierDiag_ofReal hγ] at h
   exact_mod_cast h
 
 end DOZZ.Proofs
 
-end

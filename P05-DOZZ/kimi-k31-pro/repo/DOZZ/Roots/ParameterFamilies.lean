@@ -2,11 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.GMC.Assembly.CircleGMCExists
-public import DOZZ.Upsilon.Continuation
+import DOZZ.GMC.Assembly.CircleGMCExists
+import DOZZ.Upsilon.Continuation
 /-! # Characterized parameter families through an arbitrary supplied model -/
-public section
 open MeasureTheory Set
 namespace DOZZ.Proofs
 /-- GMC existence supplies a subcritical family taking the prescribed value at the current parameter. -/
@@ -25,7 +23,7 @@ theorem roots_GMC_family_through {Ω : Type*} [MeasurableSpace Ω]
   intro g hg hg2
   by_cases he : g = γ
   · subst g
-    simpa only [ite_true] using hM
+    simpa [ite_true] using hM
   · simp only [ite_eq_right he, N, dite_eq_left (show g ∈ Ioo (0 : ℝ) 2 from ⟨hg, hg2⟩)]
     exact Classical.choose_spec (hex g ⟨hg, hg2⟩)
 /-- Upsilon existence supplies a subcritical family taking the prescribed entire function at gamma. -/
@@ -38,7 +36,7 @@ theorem roots_Upsilon_family_through (γ : ℝ) (U : ℂ → ℂ) (hU : IsUpsilo
   intro g hg
   by_cases he : g = γ
   · subst g
-    simpa only [ite_true] using hU
+    simpa [ite_true] using hU
   · simp only [ite_eq_right he, V, dite_eq_left hg]
     exact Classical.choose_spec (exists_IsUpsilon hg.1 hg.2)
 end DOZZ.Proofs

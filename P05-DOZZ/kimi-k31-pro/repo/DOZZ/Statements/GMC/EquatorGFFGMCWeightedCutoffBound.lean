@@ -2,15 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.GMC.RegularizedCoulombMass
+import DOZZ.Statements.GMC.RegularizedCoulombMass
 import DOZZ.GMC.WeightedCutoff.Bound
 
 /-! The statement `DOZZ.equatorGFF_GMC_weighted_cutoff_bound`,
 proved by `DOZZ.Proofs.equatorGFF_GMC_weighted_cutoff_bound`. -/
 
-public section
 
 open MeasureTheory ProbabilityTheory Filter Topology TopologicalSpace Set
 open scoped Distributions ENNReal NNReal
@@ -34,6 +32,6 @@ theorem equatorGFF_GMC_weighted_cutoff_bound
       (∫⁻ ω,
         ENNReal.rpow (cutoffWeightedGmcBallMass P Xc γ t.1 z R δ ω) t.2 ∂P) ≤
         ENNReal.ofReal (C * Real.rpow R
-          (γ * (Q γ - t.1) * t.2 - γ ^ 2 * t.2 ^ 2 / 2)) := by exact DOZZ.Proofs.equatorGFF_GMC_weighted_cutoff_bound P X hX γ hγ hγ2 Xc hXc T hT hTadm K hK r₀ hr₀
+          (γ * (Q γ - t.1) * t.2 - γ ^ 2 * t.2 ^ 2 / 2)) := Proofs.equatorGFF_GMC_weighted_cutoff_bound P X hX γ hγ hγ2 Xc hXc T hT hTadm K hK r₀ hr₀
 
 end DOZZ

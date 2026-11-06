@@ -2,12 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Fusion.FullDifferenceLimit
-public import DOZZ.FourPoint.Fusion.Coefficient
-public import DOZZ.FourPoint.FourPointTZeroEqStructureConstant
+import DOZZ.FourPoint.Fusion.FullDifferenceLimit
+import DOZZ.FourPoint.Fusion.Coefficient
+import DOZZ.FourPoint.FourPointTZeroEqStructureConstant
 /-! # The restricted gamma-half KRV fusion asymptotic -/
-@[expose] public section
 open MeasureTheory ProbabilityTheory Filter Topology TopologicalSpace Set
 open scoped ENNReal NNReal Topology
 namespace DOZZ.Proofs
@@ -43,7 +41,7 @@ theorem gammaHalf_KRV_restricted_fusion {Ω : Type*} [MeasurableSpace Ω]
     congr 1
     ring
   have hzero : F 0 = C₀ := by
-    simpa only [F, C₀, neg_div] using fourPointT_zero_eq_structureConstant P X M γ μ (γ / 2) α₁ α₂ α₃
+    simpa [F, C₀, neg_div] using fourPointT_zero_eq_structureConstant P X M γ μ (γ / 2) α₁ α₂ α₃
       hγ hγ2 hμ (by unfold Q; linarith) hα₂ hα₃ (by linarith) hX hM
   have hnorm := (tendsto_const_nhds (x := B)).mul
     (fusion_massDifference_normalized_tendsto P X hX γ hγ hγ2 M hM α₁ α₂ α₃ hαlo hαhi hα₂ hα₃ p hp)
@@ -56,7 +54,7 @@ theorem gammaHalf_KRV_restricted_fusion {Ω : Type*} [MeasurableSpace Ω]
     apply Eventually.of_forall
     intro z
     rw [← hzero]
-    simp only [F, fourPointT, hse, ENNReal.rpow_eq_pow]
+    simp [F, fourPointT, hse, ENNReal.rpow_eq_pow]
     change B * (_ / ‖z‖ ^ κ) = (B * _ - B * _) / ‖z‖ ^ κ
     ring
   refine ⟨fun z => F z - C₀ - C * ‖z‖ ^ κ, ?_, ?_⟩
@@ -64,11 +62,11 @@ theorem gammaHalf_KRV_restricted_fusion {Ω : Type*} [MeasurableSpace Ω]
     change F z = C₀ + C * ‖z‖ ^ κ + (F z - C₀ - C * ‖z‖ ^ κ)
     ring
   · have h := hlim.sub (tendsto_const_nhds (x := C))
-    simp only [sub_self] at h
+    simp [sub_self] at h
     have hsfilter : {z : ℂ | z ≠ 0} = {0}ᶜ := by ext z; simp
     rw [hsfilter]
     apply h.congr'
     filter_upwards [self_mem_nhdsWithin] with z hz
-    have hz0 : z ≠ 0 := by simpa only [mem_compl_iff, mem_singleton_iff] using hz
-    simp only [sub_div, mul_div_cancel_right₀ _ (Real.rpow_pos_of_pos (norm_pos_iff.mpr hz0) _).ne']
+    have hz0 : z ≠ 0 := by simpa [mem_compl_iff, mem_singleton_iff] using hz
+    simp [sub_div, mul_div_cancel_right₀ _ (Real.rpow_pos_of_pos (norm_pos_iff.mpr hz0) _).ne']
 end DOZZ.Proofs

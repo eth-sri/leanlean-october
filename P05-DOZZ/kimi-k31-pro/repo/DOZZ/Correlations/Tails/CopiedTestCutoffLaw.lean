@@ -2,16 +2,14 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.Tails.CopiedCutoffVolumeLaw
-public import DOZZ.Correlations.Tails.ExponentialParameterTest
-public import DOZZ.Correlations.Tails.BoundedPinCoefficient
-public import DOZZ.Correlations.Tails.TranslatedField
+import DOZZ.Correlations.Tails.CopiedCutoffVolumeLaw
+import DOZZ.Correlations.Tails.ExponentialParameterTest
+import DOZZ.Correlations.Tails.BoundedPinCoefficient
+import DOZZ.Correlations.Tails.TranslatedField
 
 /-! Equality in law of actual cutoff GMC tests after the pin copy. -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal NNReal
 
@@ -24,8 +22,7 @@ theorem copied_wick_weight_factor
       (γ*(Nbar+U+c*(Nbar-N))-γ^2/2*(r+2*L)) =
       Real.exp (γ*Nbar-γ^2*v) * (g * Real.exp (γ*c*(Nbar-N))) *
         Real.exp (γ*U-γ^2/2*r) := by
-  rw [mul_assoc, ← Real.exp_add]
-  rw [mul_comm (Real.exp (γ*Nbar-γ^2*v)), mul_assoc, mul_assoc, ← Real.exp_add, ← Real.exp_add]
+  rw [mul_assoc, ← Real.exp_add, mul_comm (Real.exp (γ*Nbar-γ^2*v)), mul_assoc, mul_assoc, ← Real.exp_add, ← Real.exp_add]
   congr 1
   ring_nf
 
@@ -50,10 +47,10 @@ theorem copied_test_cutoff_law
   have hw (x : ℂ) : w x = g x * Real.exp (γ^2*(Real.log (normPlus (z+x))-Real.log ‖z‖)) := by
     by_cases hx : g x = 0
     · change g x * Real.exp _ = _
-      simp only [hx, zero_mul]
+      simp [hx, zero_mul]
     · have hn : ‖x‖ ≤ 1 := by linarith [hgs x hx, Real.exp_pos (-r)]
       have hh := norm_sub_norm_le z (z+x)
-      simp only [sub_add_cancel_left, norm_neg] at hh
+      simp [sub_add_cancel_left, norm_neg] at hh
       have hnorm : 1 ≤ ‖z+x‖ := by linarith
       change g x * Real.exp (boundedPinCoefficient z x * _) = _
       rw [bounded_pin_coefficient_eq z x hz hn,
@@ -78,19 +75,18 @@ theorem copied_test_cutoff_law
   have hnorm (x : ℂ) (hx : g x ≠ 0) : normPlus (z+x) = ‖z+x‖ := by
     have hn : ‖x‖ ≤ 1 := by linarith [hgs x hx, Real.exp_pos (-r)]
     have hh := norm_sub_norm_le z (z+x)
-    simp only [sub_add_cancel_left, norm_neg] at hh
+    simp [sub_add_cancel_left, norm_neg] at hh
     unfold normPlus
     exact max_eq_right (by linarith : 1 ≤ ‖z+x‖)
   have hsrc (ω : Ω) : Real.exp (-γ^2*Real.log ‖z‖) * ∫ y, G y ∂regularizedGMC P Xc γ r ω =
       ∫ x, w x * Real.exp (γ*Xc ω (z+x) r-γ^2/2*(r+2*Real.log ‖z+x‖)) ∂volume := by
-    rw [regularized_integral_volume P X Xc hX hc γ r ω G, ← integral_const_mul]
-    rw [← integral_add_left_eq_self (μ := volume) _ z]
+    rw [regularized_integral_volume P X Xc hX hc γ r ω G, ← integral_const_mul, ← integral_add_left_eq_self (μ := volume) _ z]
     apply integral_congr_ae
     exact ae_of_all _ fun x => by
-      dsimp only
+      dsimp
       rw [hG (z+x), add_sub_cancel_left, hw]
       by_cases hx : g x = 0
-      · simp only [hx, zero_mul, mul_zero]
+      · simp [hx, zero_mul, mul_zero]
       · let p : localCircle := ⟨(x,r), hlocal x hx⟩
         obtain ⟨hO, _⟩ := local_circle_second_moments P X Xc hX hc z hz p
         change (∫ ω', Xc ω' (z+x) r ^ 2 ∂P) = r+2*Real.log ‖z+x‖ at hO
@@ -110,20 +106,20 @@ theorem copied_test_cutoff_law
     rw [regularized_integral_volume P _ _ hY hYc γ r q.1, ← integral_const_mul]
     apply integral_congr_ae
     exact ae_of_all _ fun x => by
-      dsimp only
+      dsimp
       rw [hw]
       by_cases hx : g x = 0
-      · simp only [hx, zero_mul, mul_zero]
+      · simp [hx, zero_mul, mul_zero]
       · let p : localCircle := ⟨(x,r), hlocal x hx⟩
         obtain ⟨_, hU⟩ := local_circle_second_moments P X Xc hX hc z hz p
         change (∫ ω', (Xc ω' (z+x) r-Xc ω' z 0) ^ 2 ∂P) = r at hU
         rw [hU, hnorm x hx, show normPlus x = 1 by
           unfold normPlus; exact max_eq_left (by linarith [hgs x hx, Real.exp_pos (-r)])]
-        simp only [Real.one_rpow, mul_one]
-        simpa only [mul_assoc] using (copied_wick_weight_factor (g x) γ (Real.log ‖z‖)
+        simp [mul_one]
+        simpa [mul_assoc] using (copied_wick_weight_factor (g x) γ (Real.log ‖z‖)
           (Real.log ‖z+x‖) r (Xc q.1 z 0) (Xc q.2 z 0)
             (Xc q.1 (z+x) r-Xc q.1 z 0) (localPinCoefficient z x)).symm
-  simpa only [← hsrc, ← htar] using hlaw
+  simpa [← hsrc, ← htar] using hlaw
 
 
 end DOZZ.Proofs

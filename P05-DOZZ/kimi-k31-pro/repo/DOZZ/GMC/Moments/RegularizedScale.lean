@@ -2,19 +2,17 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.Defs.RegularizedGMC
-public import DOZZ.GMC.Moments.LocalBallProbability
-public import DOZZ.GMC.Moments.CircleScaleWick
-public import DOZZ.GMC.Moments.AffineVolume
-public import DOZZ.GMC.AdmissibleGMCRestriction
-public import Mathlib.MeasureTheory.Integral.Bochner.ContinuousLinearMap
+import DOZZ.Statements.Defs.RegularizedGMC
+import DOZZ.GMC.Moments.LocalBallProbability
+import DOZZ.GMC.Moments.CircleScaleWick
+import DOZZ.GMC.Moments.AffineVolume
+import DOZZ.GMC.AdmissibleGMCRestriction
+import Mathlib.MeasureTheory.Integral.Bochner.ContinuousLinearMap
 
 /-! Local test-integral representations needed to transfer exact scaling from circle fields to the
 regularized GMC measures `DOZZ.regularizedGMC`. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory
 open scoped Distributions ENNReal NNReal
@@ -54,9 +52,7 @@ theorem regularizedGMC_test_integral_eq_local_wick
     fun_prop
   have hDω : Measurable (fun x : ℂ => D (ω, x)) := hD.comp
     (measurable_const.prodMk measurable_id)
-  have hDtop : ∀ᵐ x ∂volume, D (ω, x) < ∞ := by
-    filter_upwards [] with x
-    exact ENNReal.ofReal_lt_top
+  have hDtop : ∀ᵐ x ∂volume, D (ω, x) < ∞ := ae_of_all _ fun x => ENNReal.ofReal_lt_top
   have hraw : (∫ x, f x ∂regularizedGMC P Xc γ r ω) =
       ∫ x, (Real.exp (γ * Xc ω x r - γ ^ 2 / 2 * V x) *
         normPlus x ^ (-4 : ℝ)) * f x ∂volume := by
@@ -130,8 +126,7 @@ theorem regularizedGMC_test_integral_aemeasurable
     exact (hf.comp measurable_snd).mul <| Real.measurable_exp.comp
       ((measurable_const.mul hfield).sub (measurable_const.mul (hvar.comp measurable_snd)))
   let G : Ω × ℂ → ℝ := fun p => if p.2 ∈ K then H p else 0
-  have hG : Measurable G := by
-    exact Measurable.ite (hK.preimage measurable_snd) hH measurable_const
+  have hG : Measurable G := Measurable.ite (hK.preimage measurable_snd) hH measurable_const
   have hI : Measurable (fun ω => ∫ x, G (ω, x) ∂volume) :=
     hG.stronglyMeasurable.integral_prod_right'.measurable
   have hGsection (ω : Ω) : (fun x => G (ω, x)) =
@@ -206,7 +201,7 @@ theorem localBallProbability_integral_mul_area
     _ = (ENNReal.ofReal R ^ 2 * (NNReal.pi : ℝ≥0∞)).toReal *
           ∫ x : S, f x.1 ∂localBallProbability R := by rw [hm]
 
-/-- The regularized measures `DOZZ.regularizedGMC` obey exact affine scaling on compactly supported
+/-- The regularized measures `regularizedGMC` obey exact affine scaling on compactly supported
 chart tests at matching cutoffs. The scalar is independent and has the Gaussian law dictated by the
 kernel constant. -/
 theorem regularizedGMC_affine_cutoff_test_vector_law
@@ -345,9 +340,6 @@ theorem regularizedGMC_affine_cutoff_test_vector_law
         (γ * Xc p.1 p.2.1 r - γ ^ 2 / 2 * (varianceBase p.2 : ℝ))) := by
       exact ((hweightMeas j).comp measurable_snd).mul hwickBaseMeas
     exact hIntMeas.stronglyMeasurable.integral_prod_right'.measurable
-  have hfactorMeas : Measurable factor := by
-    dsimp [factor]
-    fun_prop
   have hAmeas : Measurable A := by
     dsimp [A]
     fun_prop
@@ -442,9 +434,6 @@ theorem regularizedGMC_affine_cutoff_test_vector_law
     have hnormed := localBallProbability_integral_mul_area hR
       (fun x => f j (a + c • x) * Real.exp
         (γ * Xc ω x r - γ ^ 2 / 2 * gaussianVariance P (fun ω' => Xc ω' x r)))
-    have hwickEq : (∫ x : S, weight j x * Real.exp
-        (γ * Xc ω x.1 r - γ ^ 2 / 2 * (varianceBase x : ℝ)) ∂ν) = baseWick ω j := by
-      rfl
     have hrawWickEq : (∫ x : S, f j (a + c • x.1) * Real.exp
         (γ * Xc ω x.1 r - γ ^ 2 / 2 *
           gaussianVariance P (fun ω' => Xc ω' x.1 r)) ∂ν) = baseWick ω j := by
@@ -487,8 +476,7 @@ theorem regularizedGMC_affine_cutoff_test_vector_law
       (P.prod G)
   rw [htargetFun]
   change Measure.map (A ∘ targetWick) P = _
-  rw [← (Measure.map_map hAmeas htargetMeas)]
-  rw [hwickRaw]
+  rw [← (Measure.map_map hAmeas htargetMeas), hwickRaw]
   change Measure.map A
       (Measure.map (fun p : Ω × ℝ => fun j => factor p * baseWick p.1 j) (P.prod G)) = _
   rw [(Measure.map_map hAmeas hshiftMeas)]

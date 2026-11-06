@@ -2,13 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.FiniteChaosSmoothConvex
+import DOZZ.GMC.FiniteChaosSmoothConvex
 
 /-! Uniform pointwise envelopes for finite-chaos interpolation. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Set
 open scoped Topology
@@ -54,7 +52,7 @@ theorem kahaneInterpolatedWick_le_absExp
     _ ≤ γ * (Real.sqrt t * x i + Real.sqrt (1 - t) * y i) :=
       sub_le_self _ (mul_nonneg (by positivity) hv)
     _ ≤ |γ| * |Real.sqrt t * x i + Real.sqrt (1 - t) * y i| := by
-      simpa only [abs_mul] using le_abs_self
+      simpa [abs_mul] using le_abs_self
         (γ * (Real.sqrt t * x i + Real.sqrt (1 - t) * y i))
     _ ≤ |γ| * (|x i| + |y i|) :=
       mul_le_mul_of_nonneg_left (kahaneInterpolatedField_abs_le _ _ _ ht) (abs_nonneg _)
@@ -173,7 +171,7 @@ theorem kahaneEndpointAbsExp_integrable
     {ΩX ΩY ι : Type*} [MeasurableSpace ΩX] [MeasurableSpace ΩY] [Fintype ι]
     (PX : Measure ΩX) (PY : Measure ΩY)
     (X : ΩX → ι → ℝ) (Y : ΩY → ι → ℝ)
-    (hX : DOZZ.IsCenteredJointlyGaussian PX X) (hY : DOZZ.IsCenteredJointlyGaussian PY Y)
+    (hX : IsCenteredJointlyGaussian PX X) (hY : IsCenteredJointlyGaussian PY Y)
     (γ : ℝ) :
     Integrable (fun ω : ΩX × ΩY =>
       Real.exp (|γ| * ∑ i, (|X ω.1 i| + |Y ω.2 i|))) (PX.prod PY) := by
@@ -191,7 +189,7 @@ theorem kahaneEndpointCoordinateAbsExp_integrable
     {ΩX ΩY ι : Type*} [MeasurableSpace ΩX] [MeasurableSpace ΩY] [Fintype ι]
     (PX : Measure ΩX) (PY : Measure ΩY)
     (X : ΩX → ι → ℝ) (Y : ΩY → ι → ℝ)
-    (hX : DOZZ.IsCenteredJointlyGaussian PX X) (hY : DOZZ.IsCenteredJointlyGaussian PY Y)
+    (hX : IsCenteredJointlyGaussian PX X) (hY : IsCenteredJointlyGaussian PY Y)
     (γ : ℝ) (i : ι) :
     Integrable (fun ω : ΩX × ΩY =>
       (|X ω.1 i| + |Y ω.2 i|) *
@@ -215,7 +213,7 @@ theorem kahaneInterpolatedDerivativeEnvelope_integrable
     {ΩX ΩY ι : Type*} [MeasurableSpace ΩX] [MeasurableSpace ΩY] [Fintype ι]
     (PX : Measure ΩX) (PY : Measure ΩY)
     (X : ΩX → ι → ℝ) (Y : ΩY → ι → ℝ)
-    (hX : DOZZ.IsCenteredJointlyGaussian PX X) (hY : DOZZ.IsCenteredJointlyGaussian PY Y)
+    (hX : IsCenteredJointlyGaussian PX X) (hY : IsCenteredJointlyGaussian PY Y)
     (vX vY a : ι → ℝ) (γ ε B : ℝ) :
     Integrable (fun ω : ΩX × ΩY =>
       B * (∑ i, a i) * Real.exp (|γ| * ∑ i, (|X ω.1 i| + |Y ω.2 i|)) *
@@ -229,7 +227,7 @@ theorem kahaneInterpolatedDerivativeEnvelope_integrable
     (hE.const_mul (γ ^ 2 / 2 * ∑ i, |vX i - vY i|))).const_mul (B * ∑ i, a i)
   apply h.congr
   filter_upwards [] with ω
-  simp only [Pi.add_apply]
+  simp [Pi.add_apply]
   rw [← Finset.sum_mul]
   ring
 

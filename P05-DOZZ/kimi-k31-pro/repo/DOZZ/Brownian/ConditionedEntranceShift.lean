@@ -2,10 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Brownian.ConditionedEntranceProbability
-public import DOZZ.Brownian.ConditionedKernelCDFOrder
+import DOZZ.Brownian.ConditionedEntranceProbability
+import DOZZ.Brownian.ConditionedKernelCDFOrder
+import DOZZ.Brownian.ConditionedKernelProbability
 import Mathlib.Analysis.Calculus.Deriv.MeanValue
 import Mathlib.MeasureTheory.Measure.Haar.NormedSpace
 
@@ -17,7 +17,6 @@ The entrance density is a Gaussian factor times `y * sinh (ν*y) / ν`, with the
 by the rational-drift coupling.
 -/
 
-@[expose] public section
 
 open MeasureTheory Filter ProbabilityTheory Set Topology
 open scoped ENNReal NNReal
@@ -38,7 +37,7 @@ private theorem conditionedEntranceShape_pos
   by_cases hν0 : ν = 0
   · simp [conditionedEntranceShape, hν0, sq_pos_of_pos hy]
   · have hνpos : 0 < ν := lt_of_le_of_ne hν (Ne.symm hν0)
-    simp only [conditionedEntranceShape, hν0, ite_false]
+    simp [conditionedEntranceShape, hν0, ite_false]
     exact div_pos (mul_pos hy (Real.sinh_pos_iff.mpr (mul_pos hνpos hy))) hνpos
 
 private theorem hasDerivAt_conditionedEntranceShape
@@ -63,7 +62,7 @@ private theorem hasDerivAt_conditionedEntranceShape
       ring_nf
   · have hνpos : 0 < ν := lt_of_le_of_ne hν (Ne.symm hν0)
     have harg : HasDerivAt (fun z : ℝ => ν * z) ν y := by
-      simpa only [id_eq, mul_one] using (hasDerivAt_id y).const_mul ν
+      simpa [id_eq, mul_one] using (hasDerivAt_id y).const_mul ν
     have hsinh := (Real.hasDerivAt_sinh (ν * y)).comp y harg
     have hprod := (hasDerivAt_id y).mul hsinh
     have hquot := hprod.div_const ν
@@ -308,7 +307,7 @@ private theorem conditionedPositiveEntranceDensity_nonneg
       rw [conditionedPositiveEntranceDensity_zero_eq_heat ht hy]
       have hheat : 0 < brownianHeatDensity t y := by
         rw [brownianHeatDensity]
-        simp only [ite_eq_left ht]
+        simp [ite_eq_left ht]
         positivity
       positivity
     · have hνpos : 0 < ν := lt_of_le_of_ne hν (Ne.symm hν0)
@@ -430,15 +429,8 @@ private theorem entranceShift_cdf_superlevel_nonempty
 private theorem entranceShift_cdf_superlevel_bddBelow
     {μ : Measure ℝ} (hμ : IsProbabilityMeasure μ) {u : ℝ} (hu : 0 < u)
     (hzero : ∀ x ≤ 0, ProbabilityTheory.cdf μ x = 0) :
-    BddBelow {x | u ≤ ProbabilityTheory.cdf μ x} := by
-  let := hμ
-  refine ⟨0, ?_⟩
-  intro x hx
-  change u ≤ ProbabilityTheory.cdf μ x at hx
-  by_contra hnot
-  have hxnonpos : x ≤ 0 := le_of_lt (lt_of_not_ge hnot)
-  rw [hzero x hxnonpos] at hx
-  linarith
+    BddBelow {x | u ≤ ProbabilityTheory.cdf μ x} :=
+  probability_cdf_superlevel_bddBelow_of_zero (hu := hu) (hzero := hzero)
 
 /-- Translating the larger-drift entrance density left by its drift increment gives a CDF that
 dominates the smaller-drift entrance CDF. -/
@@ -476,7 +468,7 @@ theorem conditionedPositiveEntranceDensity_shifted_cdf_ge
     have hsubset : Set.Ioi (0 : ℝ) ⊆ Function.support g ∩ Set.Ioi 0 := by
       intro y hy
       refine ⟨?_, hy⟩
-      simp only [Function.mem_support, ne_eq]
+      simp [Function.mem_support, ne_eq]
       exact (ne_of_gt (hpos y hy))
     have hsupport : 0 < volume (Function.support g ∩ Set.Ioi 0) :=
       lt_of_lt_of_le hIoi (measure_mono hsubset)
@@ -582,15 +574,13 @@ theorem conditionedPositiveEntranceQuantile_drift_add
         exact ⟨y, hy, by rw [OrderIso.addRight_apply]; ring⟩
       · rintro ⟨y, hy, hz⟩
         refine ⟨y, hy, ?_⟩
-        rw [OrderIso.addRight_apply] at hz
-        exact hz
+        rwa [OrderIso.addRight_apply] at hz
     have hmap := (OrderIso.addRight (-d)).map_csInf' hSnonempty hSbdd
     have hmap' : sInf ((fun z : ℝ => z - d) '' S) = sInf S - d := by
       rw [himage, ← hmap, OrderIso.addRight_apply]
       ring
     unfold cdfGeneralizedQuantile
-    rw [hset]
-    exact hmap'
+    rwa [hset]
   have hzeroShift (z : ℝ) (hz : z ≤ -d) : ProbabilityTheory.cdf μshift z = 0 := by
     rw [conditionedPositiveEntranceShiftedMeasure_cdf_eq_integral hb ht]
     have hzero : ∀ y, y ∈ Set.Iic z →
@@ -615,4 +605,3 @@ theorem conditionedPositiveEntranceQuantile_drift_add
 
 end DOZZ.Proofs
 
-end

@@ -2,13 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.ShiftEquations.DualR.ShiftGood
-public import DOZZ.Statements.Complex.HorizontalStrip
-public import DOZZ.Statements.Defs.StructureConstant
-public import DOZZ.Statements.Defs.UnitVolumeStructureConstant
-public import DOZZ.Statements.Correlations.ComplexifyNCharges
+import DOZZ.ShiftEquations.DualR.ShiftGood
+import DOZZ.Statements.Complex.HorizontalStrip
+import DOZZ.Statements.Defs.StructureConstant
+import DOZZ.Statements.Defs.UnitVolumeStructureConstant
+import DOZZ.Statements.Correlations.ComplexifyNCharges
 import DOZZ.Brownian.Reflection.RtheorAnalytic
 
 /-!
@@ -23,7 +22,6 @@ Along a real segment of charge triples `t ↦ p + t (q - p)`, complexified in `t
   strip, which contains every real parameter.
 -/
 
-@[expose] public section
 
 open MeasureTheory Filter Topology Set
 
@@ -109,9 +107,7 @@ theorem segH_analyticAt_one {f : (Fin 3 → ℂ) → ℂ} {V : Set (Fin 3 → �
     AnalyticAt ℂ (fun t => structureConstantH f γ μ (segT a₀ a₁ b₀ b₁ c₀ c₁ t)) 1 := by
   refine analyticAt_structureConstantH_comp' hV hf hμ (differentiable_segT a₀ a₁ b₀ b₁ c₀ c₁)
     (by rw [segT_one]; exact hmem) ?_
-  rw [segT_one, sExpC_complexify]
-  exact hs
-
+  rwa [segT_one, sExpC_complexify]
 /-- A strip-meromorphic function along a real segment. -/
 theorem segR_meromorphicOn {R : ℂ → ℂ} {h : ℝ} (hR : MeromorphicOn R (horizontalStrip h))
     (a₀ a₁ : ℝ) :
@@ -131,4 +127,3 @@ theorem segC_mem_horizontalStrip {h : ℝ} (hh : 0 < h) (a₀ a₁ t : ℝ) :
 
 end DOZZ.Proofs
 
-end

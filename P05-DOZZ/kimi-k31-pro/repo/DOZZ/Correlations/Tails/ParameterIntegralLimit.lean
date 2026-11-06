@@ -2,15 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.Tails.RandomParameterLimit
-public import DOZZ.Brownian.Lateral.WickReinsertion
-public import DOZZ.GMC.Assembly.CircleIntensity
+import DOZZ.Correlations.Tails.RandomParameterLimit
+import DOZZ.Brownian.Lateral.WickReinsertion
+import DOZZ.GMC.Assembly.CircleIntensity
 
 /-! Spatial cutoff limits for compact tests depending on a correlated real parameter. -/
 
-@[expose] public section
 open MeasureTheory Filter Topology Set
 open scoped ENNReal
 
@@ -28,7 +26,6 @@ theorem parameter_integral_grid_error
   have hgrid := parameter_grid_error k t
   have hstep : 1 / ((k : ℝ) + 1) ≤ 1 := by
     apply (div_le_one (by positivity : 0 < (k : ℝ) + 1)).mpr
-    have hk : 0 ≤ (k : ℝ) := Nat.cast_nonneg k
     linarith
   have hpoint (x : ℂ) : ENNReal.ofReal |F t x - F (parameterGrid k t) x| ≤
       K.indicator (fun _ => ENNReal.ofReal (Lcoef t * (1 / ((k : ℝ) + 1)))) x := by
@@ -40,10 +37,10 @@ theorem parameter_integral_grid_error
       have h1 := image_eq_zero_of_notMem_tsupport (fun h => hx (hFK t h))
       have h2 := image_eq_zero_of_notMem_tsupport
         (fun h => hx (hFK (parameterGrid k t) h))
-      simp only [h1, h2, sub_self, abs_zero, ENNReal.ofReal_zero, le_refl]
+      simp [h1, h2, sub_self, abs_zero, ENNReal.ofReal_zero]
   calc
     _ ≤ ∫⁻ x, ENNReal.ofReal |F t x - F (parameterGrid k t) x| ∂μ := by
-      simpa only [Real.norm_eq_abs] using DOZZ.Assembly.ofReal_abs_integral_sub_le_lintegral μ
+      simpa [Real.norm_eq_abs] using Assembly.ofReal_abs_integral_sub_le_lintegral μ
         (F t) (F (parameterGrid k t)) (F t).continuous.measurable
           (F (parameterGrid k t)).continuous.measurable
     _ ≤ ∫⁻ x, K.indicator (fun _ =>

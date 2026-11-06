@@ -2,16 +2,14 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.ReflectedEnd.InnerClassificationReduction
-public import DOZZ.Statements.FourPoint.GammaHalfReflectedInnerLimit
-public import DOZZ.Statements.FourPoint.DegenerateFourPointDiagonalClassification
+import DOZZ.FourPoint.ReflectedEnd.InnerClassificationReduction
+import DOZZ.Statements.FourPoint.GammaHalfReflectedInnerLimit
+import DOZZ.Statements.FourPoint.DegenerateFourPointDiagonalClassification
 
 /-! The reflected formula follows from the inner limit `DOZZ.gammaHalf_reflected_inner_limit` and
 the physical diagonal classification `DOZZ.degenerateFourPoint_diagonal_classification`. -/
 
-@[expose] public section
 open MeasureTheory Filter Topology Set
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -44,10 +42,10 @@ theorem gammaHalf_reflected_formula {Ω : Type*} [MeasurableSpace Ω]
                 structureConstant P M γ μ (2 * Q γ - α₁ - γ / 2) α₂ α₃ *
                   ‖gaussFPlus H a b c z‖ ^ 2 := by
   obtain ⟨ξ, hξ, hξ₂, hslack, hfreeze⟩ := hnear
-  have hinner := DOZZ.gammaHalf_reflected_inner_limit P M X γ μ α₁ α₂ α₃ ξ
+  have hinner := gammaHalf_reflected_inner_limit P M X γ μ α₁ α₂ α₃ ξ
     hγ hγ₂ hμ hα₁ hα₂ hα₃ hs hξ hξ₂ hreflect
     (lt_min (hslack.trans hξ₂) hslack) hfreeze hX hM
-  have hclass := DOZZ.degenerateFourPoint_diagonal_classification hH
+  have hclass := degenerateFourPoint_diagonal_classification hH
     P X M γ μ (γ / 2) α₁ α₂ α₃ hγ hγ₂ hμ
     (Or.inl rfl) hα₁ hα₂ hα₃ hs hX hM
   exact gammaHalf_reflected_formula_of_inner_limit hH

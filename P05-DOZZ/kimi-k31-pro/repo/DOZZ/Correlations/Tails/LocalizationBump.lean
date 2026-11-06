@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import Mathlib.Analysis.Calculus.BumpFunction.FiniteDimension
-public import Mathlib.Topology.ContinuousMap.Bounded.Normed
+import Mathlib.Analysis.Calculus.BumpFunction.FiniteDimension
+import Mathlib.Topology.ContinuousMap.Bounded.Normed
 
 /-! A common compact localization, equal to one on a smaller insertion ball. -/
 
-@[expose] public section
 open Set Metric
 
 namespace DOZZ.Proofs

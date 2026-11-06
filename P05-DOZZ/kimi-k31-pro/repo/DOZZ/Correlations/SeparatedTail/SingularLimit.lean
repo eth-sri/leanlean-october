@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.SeparatedTail.WeightedLimit
-public import DOZZ.Correlations.SeparatedTail.DirichletMoment
+import DOZZ.Correlations.SeparatedTail.WeightedLimit
+import DOZZ.Correlations.SeparatedTail.DirichletMoment
 
 /-! Two bounded softened weights, followed by monotone removal of the two root cutoffs. -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory Filter Topology Metric Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -50,11 +48,11 @@ theorem separatedTail_softened_mixed_moment_le_of_cutoff
       limitWeightedFatou_ofReal_rpow_le (norm_nonneg _) hδ hδs he2) ha2)
     (ENNReal.rpow_le_rpow (lintegral_mono fun x =>
       limitWeightedFatou_ofReal_rpow_le (norm_nonneg _) hδ hδs he3) ha3))
-  simpa only [cutoffWeightedGmcBallMass, hlog] using hbound _ hδ hδ4
+  simpa [cutoffWeightedGmcBallMass, hlog] using hbound _ hδ hδ4
 
 /-- Removing both root softenings preserves the mixed moment bound. The finite positive
 marginal moments come from the GMC moment range
-`DOZZ.equatorGFF_GMC_weighted_local_moment_range`; no limiting independence is asserted. -/
+`equatorGFF_GMC_weighted_local_moment_range`; no limiting independence is asserted. -/
 theorem separatedTail_singular_mixed_moment_le_of_cutoff
     {Ω : Type*} [MeasurableSpace Ω]
     (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)

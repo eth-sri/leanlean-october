@@ -2,12 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.Hypergeom.GaussParameterA
-public import DOZZ.Statements.Hypergeom.GaussParameterB
-public import DOZZ.Statements.Hypergeom.GaussParameterC
-public import DOZZ.Statements.FourPoint.FourPointSExp
+import DOZZ.Statements.Hypergeom.GaussParameterA
+import DOZZ.Statements.Hypergeom.GaussParameterB
+import DOZZ.Statements.Hypergeom.GaussParameterC
+import DOZZ.Statements.FourPoint.FourPointSExp
 
 /-! # Gauss-parameter algebra for the BPZ equation
 
@@ -20,7 +19,6 @@ identities in `γ`, `χ`, `α₁`, `α₂`, `α₃`: the relation `χ Q = χ² +
 `A + B + 1` in closed form, the vanishing of `(χ² - γ χ / 2) (1 - γ χ / 2)`, and the
 `J`-coefficient identity. -/
 
-@[expose] public section
 
 namespace DOZZ.Proofs
 

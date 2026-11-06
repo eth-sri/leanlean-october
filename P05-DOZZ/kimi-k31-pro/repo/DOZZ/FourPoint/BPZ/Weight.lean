@@ -2,9 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.SharpMoments.SeibergWeight
+import DOZZ.ShiftEquations.PoleSubtracted.Masses
+import DOZZ.GMC.SharpMoments.SeibergWeight
 
 /-! # The real weight of the degenerate four-point mass
 
@@ -14,7 +14,6 @@ real number `|x - z|^{γχ} |x|^{-γα₁} |x - 1|^{-γα₂} |x|₊^{γ(α₁+�
 together with a softened version in which `|x - z|²` is replaced by `|x - z|² + ε²`; the
 softened weight is smooth in `z` and is used to prove regularity of the four-point function. -/
 
-@[expose] public section
 
 open MeasureTheory
 open scoped ENNReal NNReal
@@ -37,9 +36,7 @@ theorem bpz_normPlus_pos (x : ℂ) : 0 < normPlus x :=
 
 theorem bpz_one_le_normPlus (x : ℂ) : 1 ≤ normPlus x := le_max_left _ _
 
-theorem bpz_measurable_normPlus : Measurable normPlus := by
-  unfold normPlus
-  exact measurable_const.max measurable_norm
+theorem bpz_measurable_normPlus : Measurable normPlus := DOZZ.Proofs.measurable_normPlus_aux
 
 theorem bpz_continuous_normPlus : Continuous normPlus := by
   unfold normPlus

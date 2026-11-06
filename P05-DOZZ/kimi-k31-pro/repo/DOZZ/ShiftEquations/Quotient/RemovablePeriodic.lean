@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.ShiftEquations.TwoPoleWindow
+import DOZZ.Statements.ShiftEquations.TwoPoleWindow
 import DOZZ.ShiftEquations.Quotient.Divisors
 import DOZZ.ShiftEquations.Quotient.StripFactor
 import DOZZ.DOZZAlgebra.FormulaShiftB
@@ -28,7 +27,6 @@ abstract factorization `exists_eventually_eq_const_mul_of_shifts` (dense periods
 bounded walks at its boundary) does the rest.
 -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology TopologicalSpace Set
 open scoped ENNReal NNReal Topology
@@ -153,10 +151,9 @@ theorem structureConstant_DOZZ_quotient_removable_periodic
       change |(z + 4 / (γ : ℂ)).im| < h
       rw [show (4 / (γ : ℂ)) = ((4 / γ : ℝ) : ℂ) by push_cast; ring, Complex.add_im,
         Complex.ofReal_im, add_zero]
-      exact hz'
+      assumption
     exact ⟨(ite_eq_left h1).trans (ite_eq_left hz).symm,
       (ite_eq_left h2).trans (ite_eq_left hz).symm⟩
 
 end DOZZ.Proofs
 
-end

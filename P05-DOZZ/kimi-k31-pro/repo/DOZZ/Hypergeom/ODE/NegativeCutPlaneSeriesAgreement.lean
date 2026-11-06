@@ -2,16 +2,14 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Hypergeom.ODE.NegativeCutPlaneHolomorphic
-public import DOZZ.Hypergeom.ODE.SeriesEquation
-public import Mathlib.Analysis.Analytic.Uniqueness
-public import Mathlib.Analysis.Convex.PathConnected
+import DOZZ.Hypergeom.ODE.NegativeCutPlaneHolomorphic
+import DOZZ.Hypergeom.ODE.SeriesEquation
+import Mathlib.Analysis.Analytic.Uniqueness
+import Mathlib.Analysis.Convex.PathConnected
 
 /-! Agreement of path-independent Gauss continuations with the ordinary series. -/
 
-@[expose] public section
 
 open Filter Set Topology
 
@@ -142,8 +140,7 @@ theorem gaussNegativeCutPlaneScalarState_eq_ordinary_eventually
     have hzcut : z ∈ gaussNegativeCutPlane :=
       hεball (Metric.ball_subset_ball hσε hz)
     let w : gaussNegativeCutPlane := ⟨z, hzcut⟩
-    have hzδ : dist (w : ℂ) (gaussNegativeCutPlaneBasepoint : ℂ) < δ := by
-      exact lt_of_lt_of_le (Metric.mem_ball.mp hz) (le_trans hσρ hρδ)
+    have hzδ : dist (w : ℂ) (gaussNegativeCutPlaneBasepoint : ℂ) < δ := lt_of_lt_of_le (Metric.mem_ball.mp hz) (le_trans hσρ hρδ)
     have hstate := hlocal w hzδ
     have hzρ : z ∈ Metric.ball (gaussNegativeCutPlaneBasepoint : ℂ) ρ :=
       Metric.ball_subset_ball hσρ hz
@@ -158,7 +155,7 @@ theorem gaussNegativeCutPlaneScalarState_eq_ordinary_eventually
       _ = (D₀.solution z).1 := congrArg Prod.fst hpatch
       _ = (ordinaryHypergeometricState a b c z).1 := congrArg Prod.fst (hD₀series z hzseed)
       _ = ordinaryHypergeometric a b c z := rfl
-  exact hnear
+  assumption
 
 /-- On the negative cut plane, the endpoint continuation recovers the ordinary series throughout the unit
 disk. -/

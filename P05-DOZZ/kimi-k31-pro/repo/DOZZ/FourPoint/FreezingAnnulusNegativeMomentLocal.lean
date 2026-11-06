@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.RetainedAnnuliGeometry
-public import DOZZ.GMC.BallAnnulus.Ball
+import DOZZ.FourPoint.RetainedAnnuliGeometry
+import DOZZ.GMC.BallAnnulus.Ball
 
 /-! Local freezing from the separated retained-mass comparison and sharp ball moments. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology TopologicalSpace Set
 open scoped ENNReal NNReal Topology
@@ -28,13 +26,12 @@ theorem freezing_annulus_negative_moment_local {Ω : Type*} [MeasurableSpace Ω]
       ∀ z ∈ K, ∀ ε : ℝ, 0 < ε → ε < ε₀ →
         (∫⁻ ω, ENNReal.rpow (freezingAnnulusMassLocal γ α (M ω) z ε R) (-p) ∂P) ≤
           ENNReal.ofReal (C * ε ^ ((α - Q γ) ^ 2 / 2)) := by
-  have _hPositiveOrder := hp
   let a : ℝ := (α - Q γ) / γ
   let b : ℝ := p - a
   have ha : 0 < a := div_pos (sub_pos.mpr hα) hγ
-  have hap : a < p := (div_lt_iff₀ hγ).mpr (by simpa only [mul_comm] using hthreshold)
+  have hap : a < p := (div_lt_iff₀ hγ).mpr (by simpa [mul_comm] using hthreshold)
   have hb : 0 < b := sub_pos.mpr hap
-  have hab : a + b = p := by dsimp only [b]; ring
+  have hab : a + b = p := by dsimp [b]; ring
   have hQ : 0 < Q γ := by
     unfold Q
     exact add_pos (div_pos (by norm_num) hγ) (div_pos hγ (by norm_num))
@@ -45,7 +42,7 @@ theorem freezing_annulus_negative_moment_local {Ω : Type*} [MeasurableSpace Ω]
   have ht8 : t ≤ 1 / 8 := min_le_right _ _
   obtain ⟨B, hB, hnorm⟩ := hK.isBounded.exists_pos_norm_le
   let L : ℝ := B + 1
-  have hL : 0 ≤ L := by dsimp only [L]; positivity
+  have hL : 0 ≤ L := by dsimp [L]; positivity
   let K' : Set ℂ := Metric.closedBall 0 L
   have hK' : IsCompact K' := isCompact_closedBall _ _
   have hbulk : 0 < 4 / γ ^ 2 := div_pos (by norm_num) (sq_pos_of_pos hγ)
@@ -60,8 +57,7 @@ theorem freezing_annulus_negative_moment_local {Ω : Type*} [MeasurableSpace Ω]
       ((a + b) ^ 2 + a + b))
   let C : ℝ := 4 ^ (γ * α * a) * (2 * t) ^ (γ * α * b) * k *
     Ca * (1 / 2 : ℝ) ^ ξa * Cb * (t / 8) ^ ξb
-  have hk : 0 < k := Real.exp_pos _
-  have hC : 0 < C := by dsimp only [C]; positivity
+  have hC : 0 < C := by dsimp [C]; positivity
   refine ⟨C, t / 32, hC, by positivity, ?_⟩
   intro z hz ε hε hεt
   let u : ℂ := z + ((3 * ε : ℝ) : ℂ)
@@ -76,8 +72,8 @@ theorem freezing_annulus_negative_moment_local {Ω : Type*} [MeasurableSpace Ω]
     have hh := norm_add_le z (t : ℂ)
     rw [Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg ht.le] at hh
     exact hh.trans (add_le_add (hnorm z hz) le_rfl)
-  have huL : ‖u‖ + ε / 2 ≤ L := by dsimp only [L]; linarith only [hun, hεt, ht8]
-  have hvL : ‖v‖ + t / 8 ≤ L := by dsimp only [L]; linarith only [hvn, ht8]
+  have huL : ‖u‖ + ε / 2 ≤ L := by dsimp [L]; linarith only [hun, hεt, ht8]
+  have hvL : ‖v‖ + t / 8 ≤ L := by dsimp [L]; linarith only [hvn, ht8]
   have huK : u ∈ K' := by
     change dist u 0 ≤ L
     rw [dist_zero_right]
@@ -129,7 +125,7 @@ theorem freezing_annulus_negative_moment_local {Ω : Type*} [MeasurableSpace Ω]
   have htotal' := htotal.trans (mul_le_mul' le_rfl
     (mul_le_mul' (mul_le_mul' le_rfl hma) hmb))
   have he : γ * α * a + ξa = (α - Q γ) ^ 2 / 2 := by
-    dsimp only [ξa, a]
+    dsimp [ξa, a]
     field_simp
     ring
   have hscale :
@@ -140,14 +136,14 @@ theorem freezing_annulus_negative_moment_local {Ω : Type*} [MeasurableSpace Ω]
       Real.mul_rpow (by norm_num : (0 : ℝ) ≤ 4) hε.le,
       Real.mul_rpow hε.le (by norm_num : (0 : ℝ) ≤ 1 / 2)]
     rw [← he, Real.rpow_add hε]
-    dsimp only [C]
+    dsimp [C]
     ring
   convert htotal' using 1
   change ENNReal.ofReal (C * ε ^ ((α - Q γ) ^ 2 / 2)) =
     ENNReal.ofReal ((4 * ε) ^ (γ * α * a) * (2 * t) ^ (γ * α * b)) *
       (ENNReal.ofReal k * ENNReal.ofReal (Ca * (ε / 2) ^ ξa) *
         ENNReal.ofReal (Cb * (t / 8) ^ ξb))
-  simp only [← mul_assoc]
+  simp [← mul_assoc]
   rw [← ENNReal.ofReal_mul (by positivity : 0 ≤ (4 * ε) ^ (γ * α * a) *
       (2 * t) ^ (γ * α * b)), ← ENNReal.ofReal_mul (by positivity),
     ← ENNReal.ofReal_mul (by positivity), hscale]

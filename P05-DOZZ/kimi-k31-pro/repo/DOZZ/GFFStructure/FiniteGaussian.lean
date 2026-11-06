@@ -2,8 +2,7 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.GFFStructure.MarkovCommonEvents
+import DOZZ.GFFStructure.MarkovCommonEvents
 /-!
 # Finite Dirichlet block Gaussianity and independence
 
@@ -13,7 +12,6 @@ harmonic integration and restriction completion. Coordinatewise distribution ver
 retain the Gaussian block independence, with the literal finite complement included.
 -/
 
-@[expose] public section
 open Filter MeasureTheory ProbabilityTheory Set Metric TopologicalSpace
 open scoped Topology ENNReal NNReal InnerProductSpace
 namespace DOZZ.Proofs
@@ -44,7 +42,7 @@ theorem exteriorPinnedTestL2_mem_original_gaussianHilbertSpan {Ω : Type*} [Meas
     change _ = Z (Sum.inr f) ω-(∫ z : ℂ, f z)*Z (Sum.inl (0,-Real.log R)) ω
     rw [hf,hp,hy]
     unfold exteriorPinnedEvaluation
-    simp only [Sum.elim_inl,Sum.elim_inr]
+    simp [Sum.elim_inl,Sum.elim_inr]
     ring
   rw [he]
   exact Submodule.sub_mem _ (mem_gaussianHilbertSpan Z (Sum.inr f))
@@ -171,7 +169,7 @@ theorem tsupport_canonicalPoissonCollarTest_exterior_other (c d z : ℂ) (ρ ε 
   have hann := tsupport_poissonCollarValue_annulus d z ρ (ε/((k : ℝ)+1)) hρ hz
     (poissonCollarDensity ε hε k) (tsupport_poissonCollarDensity_subset ε hε k) hw
   have hd : dist w d < ρ+ε := by
-    simpa only [dist_eq_norm] using hann.2.trans_le (add_le_add_right (poissonCollarWidth_le ε hε k) ρ)
+    simpa [dist_eq_norm] using hann.2.trans_le (add_le_add_right (poissonCollarWidth_le ε hε k) ρ)
   have hc' : dist w c ≤ ρ := hc
   have ht := dist_triangle c w d
   rw [dist_comm c w] at ht
@@ -228,7 +226,7 @@ theorem covariance_poissonTestIntegralL2_zero {Ω : Type*} [MeasurableSpace Ω]
     (f : TestFn) (hf : tsupport f ⊆ ball c ρ) :
     covariance W (poissonTestIntegralL2 P c ρ V hV f) P = 0 := by
   rw [covariance_comm,poissonTestIntegralL2_covariance P c ρ V hV hmean hU f hf]
-  simp only [← covariance_comm W,hzero,mul_zero,integral_zero]
+  simp [← covariance_comm W,hzero,mul_zero,integral_zero]
 
 /-- Completed Dirichlet tests on separated disks have exactly zero cross covariance. -/
 theorem dirichletCompletedL2Map_separated_covariance_zero {Ω : Type*} [MeasurableSpace Ω]
@@ -276,7 +274,7 @@ theorem dirichletCompletedL2Map_separated_covariance_zero {Ω : Type*} [Measurab
   have htsep : tsupport t ⊆ (closedBall c ρ)ᶜ := by
     intro z hz
     have hz' := ht hz
-    have h := interior_disk_subset_exterior_closed_disk d c ρ δ hδ (by simpa only [dist_comm] using hsep)
+    have h := interior_disk_subset_exterior_closed_disk d c ρ δ hδ (by simpa [dist_comm] using hsep)
     exact h hz'
   rw [hext t htsep]
   have hpoint := covariance_poissonFamilyL2_zero_of_exterior_tests P X Xc hX hc c d R ρ ε δ
@@ -332,7 +330,7 @@ theorem finiteMarkovComplement_apply_ae_eq {Ω : Type*} [MeasurableSpace Ω] {n 
     Lp.coeFn_fun_finsetSum Finset.univ (fun i => T i f),
     Lp.coeFn_sub (exteriorPinnedTestL2 P X Xc hX hc R hR f) (∑ i, T i f)] with ω hd hy hs hsub
   rw [finiteMarkovComplement_apply,hsub,Pi.sub_apply,hs]
-  simp only [hd,hy]
+  simp [hd,hy]
 
 /-- A test supported off the open union is zero on each component disk. -/
 theorem exterior_union_test_eqOn_zero {n : ℕ} (c : Fin n → ℂ) (ρ : ℝ)

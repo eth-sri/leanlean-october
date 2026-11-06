@@ -2,11 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.SharpMoments.CoulombCutoffDefs
-public import DOZZ.GMC.SharpMoments.SeibergMomentBound
-public import DOZZ.Statements.GMC.CutoffWeightedGmcBallMass
+import DOZZ.FourPoint.BPZ.WardStarB
+import DOZZ.GMC.SharpMoments.CoulombCutoffDefs
+import DOZZ.GMC.SharpMoments.SeibergMomentBound
+import DOZZ.Statements.GMC.CutoffWeightedGmcBallMass
 
 /-! # Decomposition of cutoff Coulomb masses into root, bulk and exterior pieces
 
@@ -15,7 +15,6 @@ away from the roots, and far out (by a power), the integral of the weight agains
 chaos is bounded by cutoff weighted masses at the roots, the cutoff mass of a disk, and the
 exterior power integral; positive moments are bounded accordingly. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped ENNReal NNReal
@@ -24,9 +23,7 @@ namespace DOZZ.Proofs
 
 /-- Cutoff chaos has no atom at the origin. -/
 theorem regularizedGMC_singleton_eq_zero {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (Xc : Ω → ℂ → ℝ → ℝ) (γ r : ℝ) (ω : Ω) (x : ℂ) : regularizedGMC P Xc γ r ω {x} = 0 := by
-  rw [regularizedGMC]
-  exact withDensity_absolutelyContinuous _ _ (measure_singleton x)
+    (Xc : Ω → ℂ → ℝ → ℝ) (γ r : ℝ) (ω : Ω) (x : ℂ) : regularizedGMC P Xc γ r ω {x} = 0 := DOZZ.Proofs.regularizedGMC_singleton P Xc γ r ω x
 
 /-- Every point lies near a root, in the bulk, or in the exterior. -/
 theorem weight_le_pieces {N : ℕ} (G : ℂ → ℝ≥0∞) (z : Fin N → ℂ) (ρs R0 : ℝ) (x : ℂ) :
@@ -70,7 +67,7 @@ theorem cutoff_weight_integral_le_pieces
     rw [one_div, ← Real.exp_neg, neg_neg, Real.log_exp]
   have hne : ∀ᵐ x ∂μ, x ≠ 0 := by
     rw [ae_iff]
-    simp only [ne_eq, not_not, Set.ofPred_eq_eq_singleton]
+    simp [ne_eq, Set.ofPred_eq_eq_singleton]
     exact regularizedGMC_singleton_eq_zero P Xc γ r ω 0
   set K : Set ℂ := {y : ℂ | ‖y‖ ≤ R0 ∧ ∀ k, ρs ≤ ‖y - z k‖} with hK
   set E : Set ℂ := {y : ℂ | R0 ≤ ‖y‖} with hE
@@ -90,7 +87,7 @@ theorem cutoff_weight_integral_le_pieces
         rw [lintegral_add_left hSK, lintegral_add_left hS,
           lintegral_finsetSum _ fun k _ => hG.indicator (hBm k), lintegral_indicator hKm,
           lintegral_indicator hEm]
-        simp only [lintegral_indicator (hBm _)]
+        simp [lintegral_indicator (hBm _)]
     _ ≤ _ := by
         gcongr with k hk
         · -- root pieces

@@ -1,2 +1,1 @@
-module
-public import Mathlib.MeasureTheory.Function.ConditionalExpectation.Basic
+import Mathlib.MeasureTheory.Function.ConditionalExpectation.Basic

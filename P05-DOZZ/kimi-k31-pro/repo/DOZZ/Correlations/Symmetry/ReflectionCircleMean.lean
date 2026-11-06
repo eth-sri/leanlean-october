@@ -2,10 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.Correlations.Symmetry.RepinnedCircleCovariance
-public import Mathlib.Topology.UniformSpace.UniformConvergenceTopology
-@[expose] public section
+import DOZZ.Correlations.Symmetry.RepinnedCircleCovariance
+import Mathlib.Topology.UniformSpace.UniformConvergenceTopology
 open MeasureTheory Filter Set
 open scoped Topology
 namespace DOZZ.Proofs
@@ -21,7 +19,7 @@ theorem symmetryReflection_circle_translate (f : ℂ → ℝ) (hf : Measurable f
       (c := 0) (R := Real.exp (-r))]
   congr 1
   funext z
-  simp only [add_zero]
+  simp [add_zero]
 
 /-- The bounded continuous circle mean of reflection's pinning potential. -/
 noncomputable def symmetryCirclePotentialMean (r : ℝ) : BoundedContinuousFunction ℂ ℝ := by

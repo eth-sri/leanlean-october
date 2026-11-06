@@ -2,16 +2,14 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import Mathlib.MeasureTheory.Measure.Lebesgue.EqHaar
-public import Mathlib.MeasureTheory.Measure.Lebesgue.Complex
-public import Mathlib.LinearAlgebra.Complex.FiniteDimensional
-public import Mathlib.MeasureTheory.Integral.Bochner.Basic
+import Mathlib.MeasureTheory.Measure.Lebesgue.EqHaar
+import Mathlib.MeasureTheory.Measure.Lebesgue.Complex
+import Mathlib.LinearAlgebra.Complex.FiniteDimensional
+import Mathlib.MeasureTheory.Integral.Bochner.Basic
 
 /-! Lebesgue change of variables for local affine charts in the complex plane. -/
 
-@[expose] public section
 
 open MeasureTheory
 open scoped ENNReal
@@ -135,8 +133,7 @@ theorem complex_integral_affine_restrict
       _ = J := rfl
   have hsource : J * (∫ y, g y ∂volume.restrict ((fun z : ℂ => a + c • z) '' K)) =
       ∫ x, g (a + c • x) ∂volume.restrict K := by
-    rw [hcoef, smul_eq_mul] at hint
-    exact hint
+    rwa [hcoef, smul_eq_mul] at hint
   have hJabs : J = |(c ^ 2)⁻¹| := by
     dsimp [J]
     exact (abs_of_pos (inv_pos.mpr hc2)).symm

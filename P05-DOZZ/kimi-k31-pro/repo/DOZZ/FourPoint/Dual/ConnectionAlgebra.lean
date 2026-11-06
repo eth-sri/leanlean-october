@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import Mathlib.Basic.Real.Basic
+import Mathlib.Basic.Real.Basic
 import Mathlib.Tactic
 
 /-! # The two separate dual crossing coefficient extractions
@@ -14,7 +13,6 @@ The diagonal zero-channel form has coefficients d₀,d₁; cancellation of its
 one-channel mixed term is d₀uv+d₁wx=0. These are ordinary finite matrix identities.
 -/
 
-public section
 
 namespace DOZZ.Proofs
 
@@ -39,7 +37,7 @@ theorem dual_connection_first_seed_scalar (d₀ d₁ u v w x : ℝ)
     (hw : w ≠ 0) (hv : v ≠ 0) (hdet : u * x - v * w ≠ 0) :
     d₀ = (-w / (v * (u * x - v * w))) * (d₀ * v ^ 2 + d₁ * x ^ 2) := by
   rw [dual_connection_diagonal_second_from_first d₀ d₁ u v w x hcross hw]
-  have hd : u * x - w * v ≠ 0 := by simpa only [mul_comm w v] using hdet
+  have hd : u * x - w * v ≠ 0 := by simpa [mul_comm w v] using hdet
   field_simp [hdet, hd]
 
 end DOZZ.Proofs

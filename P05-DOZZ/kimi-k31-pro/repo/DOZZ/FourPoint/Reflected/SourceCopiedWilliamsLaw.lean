@@ -2,12 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Reflected.SourceOuterPast
-public import DOZZ.FourPoint.Reflected.CopiedPolarTransport
-public import DOZZ.Correlations.Tails.WilliamsSourceInputLaw
+import DOZZ.FourPoint.Reflected.SourceOuterPast
+import DOZZ.FourPoint.Reflected.CopiedPolarTransport
+import DOZZ.Correlations.Tails.WilliamsSourceInputLaw
 /-! The copied restarted inner polar mass retains its joint law with the literal source outer mark. -/
-@[expose] public section
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -66,12 +64,9 @@ theorem reflected_source_copied_williams_joint_law
     have ho := (reflected_outerMass_measure_measurable γ α₁ α₂ α₃ ξ z).comp_aemeasurable
       (equatorGFF_GMC_aemeasurable P X hX γ hγ hγ₂ M hM)
     have ht := (hc.2.1 0 (-Real.log ‖z‖+h)).aemeasurable
-    have hb : AEMeasurable (reflected_radial_scale γ (Q γ-α₁) h Xc z) P := by
-      exact ((ht.const_mul γ).sub aemeasurable_const).sub aemeasurable_const |>.exp
+    have hb : AEMeasurable (reflected_radial_scale γ (Q γ-α₁) h Xc z) P := ((ht.const_mul γ).sub aemeasurable_const).sub aemeasurable_const |>.exp
     exact ho.prodMk hb
   have hh := reflected_copied_translated_williams_joint_law P D hD hDb γ Z hL hDZ
     Y hYm hYD (Q γ-α₁) (sub_pos.mpr hα₁) Qν hQν T
-  rw [williams_source_input_law P γ α₁ hα₁ B Z hData Qν hQν] at hh
-  exact hh
-
+  rwa [williams_source_input_law P γ α₁ hα₁ B Z hData Qν hQν] at hh
 end DOZZ.Proofs

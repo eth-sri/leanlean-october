@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.Defs.DualMu
-public import DOZZ.Upsilon.Malmsten
+import DOZZ.Statements.Defs.DualMu
+import DOZZ.Upsilon.Malmsten
 import DOZZ.Upsilon.IntegralBounds
 import DOZZ.Upsilon.IntegralHolomorphy
 import Mathlib.Analysis.SpecialFunctions.FrullaniIntegral
@@ -23,7 +22,6 @@ The strip overlap equations are proved from the defining integral, before using
 its entire continuation.
 -/
 
-@[expose] public section
 
 open Complex MeasureTheory Set Filter Topology
 
@@ -39,7 +37,7 @@ private lemma upsilonLogIntegrand_real (γ z t : ℝ) :
   simp [upsilonLogIntegrand, upsilonRealIntegrand]
 
 private lemma b_nonzero {γ : ℝ} (hγ : 0 < γ) : γ / 2 ≠ 0 := by
-  positivity
+  grind
 
 private lemma Q_eq_b_add_inv_b {γ : ℝ} (hγ : 0 < γ) :
     Q γ = γ / 2 + (γ / 2)⁻¹ := by
@@ -61,21 +59,16 @@ private lemma real_sinh_quotient_normalized {γ z t : ℝ} (hγ : 0 < γ) (ht : 
   have hQ : Q γ = b + b⁻¹ := by
     dsimp [b]
     exact Q_eq_b_add_inv_b hγ
-  have hden₁ : Real.sinh (t * γ / 4) ≠ 0 := by
-    have htγ : 0 < t * γ / 4 := by positivity
-    exact (Real.sinh_pos_iff.2 htγ).ne'
-  have hden₂ : Real.sinh (t / γ) ≠ 0 := by
-    exact (Real.sinh_pos_iff.2 (div_pos ht hγ)).ne'
   have hP₁ : 1 - Real.exp (-b * t) ≠ 0 := by
     apply ne_of_gt
     apply sub_pos.mpr
     apply Real.exp_lt_one_iff.mpr
-    simpa only [neg_mul] using neg_lt_zero.mpr (mul_pos hb ht)
+    simpa [neg_mul] using neg_lt_zero.mpr (mul_pos hb ht)
   have hP₂ : 1 - Real.exp (-t / b) ≠ 0 := by
     apply ne_of_gt
     apply sub_pos.mpr
     apply Real.exp_lt_one_iff.mpr
-    simpa only [neg_div] using neg_lt_zero.mpr (div_pos ht hb)
+    simpa [neg_div] using neg_lt_zero.mpr (div_pos ht hb)
   have hSinh1 : Real.sinh (b * t / 2) =
       Real.exp (b * t / 2) * (1 - Real.exp (-b * t)) / 2 := by
     rw [Real.sinh_eq]
@@ -115,10 +108,6 @@ private lemma real_sinh_quotient_normalized {γ z t : ℝ} (hγ : 0 < γ) (ht : 
         Real.exp (-((Q γ / 2 - z) * (t / 2))) = 1 := by
       rw [← Real.exp_add]
       simp
-    have hcross₂ : Real.exp (-((Q γ / 2 - z) * (t / 2))) *
-        Real.exp ((Q γ / 2 - z) * (t / 2)) = 1 := by
-      rw [← Real.exp_add]
-      simp
     calc
       ((Real.exp ((Q γ / 2 - z) * (t / 2)) -
           Real.exp (-((Q γ / 2 - z) * (t / 2)))) / 2) ^ 2 =
@@ -137,8 +126,6 @@ private lemma real_sinh_quotient_normalized {γ z t : ℝ} (hγ : 0 < γ) (ht : 
           Real.exp (-((Q γ / 2 - z) * (t / 2))) *
             Real.exp (-((Q γ / 2 - z) * (t / 2))) by ring,
           hmul, hmul']
-        have hab : Real.exp ((Q γ / 2 - z) * (t / 2)) *
-            Real.exp (-((Q γ / 2 - z) * (t / 2))) = 1 := hcross₁
         have hmul₂ : 2 * Real.exp ((Q γ / 2 - z) * (t / 2)) *
             Real.exp (-((Q γ / 2 - z) * (t / 2))) = 2 := by nlinarith
         rw [hmul₂]
@@ -203,8 +190,7 @@ private noncomputable def realKernel (γ z t : ℝ) : ℝ :=
 private lemma real_sinh_quotient_eq_realKernel {γ z t : ℝ}
     (hγ : 0 < γ) (ht : 0 < t) :
     Real.sinh ((Q γ / 2 - z) * (t / 2)) ^ 2 /
-        (Real.sinh (t * γ / 4) * Real.sinh (t / γ)) = realKernel γ z t := by
-  exact real_sinh_quotient_normalized hγ ht
+        (Real.sinh (t * γ / 4) * Real.sinh (t / γ)) = realKernel γ z t := real_sinh_quotient_normalized hγ ht
 
 private lemma realKernel_shift_b {γ z t : ℝ} (hγ : 0 < γ) (ht : 0 < t) :
     realKernel γ (z + γ / 2) t - realKernel γ z t =
@@ -220,14 +206,12 @@ private lemma realKernel_shift_b {γ z t : ℝ} (hγ : 0 < γ) (ht : 0 < t) :
     apply ne_of_gt
     apply sub_pos.mpr
     apply Real.exp_lt_one_iff.mpr
-    simpa only [neg_mul] using neg_lt_zero.mpr (mul_pos hb ht)
+    simpa [neg_mul] using neg_lt_zero.mpr (mul_pos hb ht)
   have hP₂ : 1 - Real.exp (-t / b) ≠ 0 := by
     apply ne_of_gt
     apply sub_pos.mpr
     apply Real.exp_lt_one_iff.mpr
-    simpa only [neg_div] using neg_lt_zero.mpr (div_pos ht hb)
-  have hP : (1 - Real.exp (-b * t)) * (1 - Real.exp (-t / b)) ≠ 0 :=
-    mul_ne_zero hP₁ hP₂
+    simpa [neg_div] using neg_lt_zero.mpr (div_pos ht hb)
   have hA : Real.exp (-(z + b) * t) = Real.exp (-z * t) * Real.exp (-b * t) := by
     rw [show -(z + b) * t = (-z * t) + (-b * t) by ring, Real.exp_add]
   have hB : Real.exp (-(Q γ - (z + b)) * t) =
@@ -252,9 +236,7 @@ private lemma realKernel_shift_b {γ z t : ℝ} (hγ : 0 < γ) (ht : 0 < t) :
         (Real.exp (-(b⁻¹ - z) * t) - Real.exp (-z * t)) := by ring
   have hExp : -(b⁻¹ - z) * t = -(t * (1 - b * z) / b) := by
     field_simp [hbne]
-  rw [div_sub_div_same, hnum]
-  rw [hExp]
-  rw [mul_div_mul_left _ _ hP₁]
+  rw [div_sub_div_same, hnum, hExp, mul_div_mul_left _ _ hP₁]
 
 private lemma upsilonRealIntegrand_eq_kernel {γ z t : ℝ}
     (hγ : 0 < γ) (ht : 0 < t) :
@@ -290,7 +272,7 @@ private lemma upsilonRealIntegrand_shift_b_pointwise {γ z t : ℝ}
     apply ne_of_gt
     apply sub_pos.mpr
     apply Real.exp_lt_one_iff.mpr
-    simpa only [neg_div] using neg_lt_zero.mpr (div_pos ht hbpos)
+    simpa [neg_div] using neg_lt_zero.mpr (div_pos ht hbpos)
   field_simp [ne_of_gt ht, hden]
   ring
 
@@ -386,8 +368,7 @@ private lemma exp_frullani_integral {b : ℝ} (hb : 0 < b) :
       ∫ u in Ioi (0 : ℝ), u⁻¹ * (Real.exp (-b * u) - Real.exp (-u)) ∂volume =
         Real.log (1 / b) := by
     simpa [smul_eq_mul, one_mul] using hfr
-  rw [hfr']
-  rw [Real.log_div (by norm_num : (1 : ℝ) ≠ 0) hb.ne', Real.log_one]
+  rw [hfr', Real.log_div (by norm_num : (1 : ℝ) ≠ 0) hb.ne', Real.log_one]
   ring
 
 private lemma upsilonScaledShiftKernel_eq_malmsten {b z u : ℝ} (hu : 0 < u) :
@@ -418,13 +399,7 @@ private lemma upsilonRealIntegral_shift_b {γ z : ℝ}
     have hrecip : 2 / γ = b⁻¹ := by
       dsimp [b]
       field_simp [hγ.ne']
-    rw [hrecip] at hzQ
-    exact hzQ
-  have hzQstrip : z < Q γ := by rw [hQ]; linarith
-  have hzShift0 : 0 < z + b := by positivity
-  have hzShiftQ : z + b < Q γ := by
-    rw [hQ]
-    linarith
+    rwa [hrecip] at hzQ
   have hx0 : 0 < b * z := mul_pos hb hz0
   have hx1 : 0 < 1 - b * z := by
     have hmul := mul_lt_mul_of_pos_left hzQb hb
@@ -553,8 +528,7 @@ private lemma exp_upsilonLog_shift_b_real {γ : ℝ} (hγ : 0 < γ)
         ((γ / 2 : ℝ) : ℂ) ^ ((1 - γ * z : ℝ) : ℂ) =
       ((Real.exp (malmstenRealH x - malmstenRealH (1 - x) +
         (1 - 2 * x) * Real.log b) : ℝ) : ℂ) := by
-    rw [hLfun, hpower]
-    rw [← Complex.ofReal_mul]
+    rw [hLfun, hpower, ← Complex.ofReal_mul]
     exact (congrArg Complex.ofReal hRealExp).symm
   calc
     Complex.exp (upsilonLog γ ((z + γ / 2 : ℝ) : ℂ)) =
@@ -759,4 +733,3 @@ theorem exp_upsilonLog_shift_b {γ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2)
 
 end DOZZ.Proofs
 
-end

@@ -2,12 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Reflected.OuterKernel
-public import DOZZ.GMC.SharpMoments.SeibergWeight
+import DOZZ.FourPoint.Reflected.OuterKernel
+import DOZZ.GMC.SharpMoments.SeibergWeight
 import Mathlib.Tactic
 /-! The literal inner kernel is squeezed between the two radial Williams weights. -/
-@[expose] public section
 open Filter Topology
 namespace DOZZ.Proofs
 
@@ -40,9 +38,9 @@ theorem reflected_inner_kernel_squeeze (γ α₁ α₂ α₃ R η : ℝ) (z x : 
     apply (le_div_iff₀ hηp).mpr
     nlinarith [sq_nonneg η]
   have hbase : 0 < ‖x - 1‖ := hηp.trans_le hd1
-  have hlo := coulombWeight_le_rpow hL (by simpa only [inv_inv] using hd1) hd2
+  have hlo := coulombWeight_le_rpow hL (by simpa [inv_inv] using hd1) hd2
     (-(γ * α₂))
-  have hup := coulombWeight_rpow_le hL (by simpa only [inv_inv] using hd1) hd2
+  have hup := coulombWeight_rpow_le hL (by simpa [inv_inv] using hd1) hd2
     (-(γ * α₂))
   simp only [abs_neg] at hlo hup
   have hdistlo : (1 - R) * ‖z‖ ≤ ‖x - z‖ := by
@@ -81,11 +79,11 @@ theorem reflected_inner_kernel_squeeze (γ α₁ α₂ α₃ R η : ℝ) (z x : 
 theorem reflected_inner_root_factor_limit (R e : ℝ) :
     Tendsto (fun z : ℂ => (1 - R * ‖z‖)⁻¹ ^ e) (𝓝 0) (𝓝 1) := by
   have hn : Tendsto (fun z : ℂ => ‖z‖) (𝓝 0) (𝓝 0) := by
-    simpa only [norm_zero] using (continuous_norm.tendsto (0 : ℂ))
+    simpa [norm_zero] using (continuous_norm.tendsto (0 : ℂ))
   have hb : Tendsto (fun z : ℂ => 1 - R * ‖z‖) (𝓝 0) (𝓝 1) := by
-    simpa only [mul_zero, sub_zero] using tendsto_const_nhds.sub (hn.const_mul R)
+    simpa [mul_zero, sub_zero] using tendsto_const_nhds.sub (hn.const_mul R)
   have hi := hb.inv₀ (by norm_num : (1 : ℝ) ≠ 0)
-  simpa only [inv_one, Real.one_rpow] using hi.rpow_const (p := e) (Or.inl (by norm_num))
+  simpa [inv_one, Real.one_rpow] using hi.rpow_const (p := e) (Or.inl (by norm_num))
 
 /-- Both scalar bounds approach one in the final large-buffer limit. -/
 theorem reflected_inner_scalar_squeeze_limit (γ : ℝ) :
@@ -93,10 +91,10 @@ theorem reflected_inner_scalar_squeeze_limit (γ : ℝ) :
       (1 + Real.exp (-h)) ^ (γ ^ 2 / 2))) atTop (𝓝 (1, 1)) := by
   have he := Real.tendsto_exp_neg_atTop_nhds_zero
   have hm : Tendsto (fun h : ℝ => 1 - Real.exp (-h)) atTop (𝓝 1) := by
-    simpa only [sub_zero] using tendsto_const_nhds.sub he
+    simpa [sub_zero] using tendsto_const_nhds.sub he
   have hp : Tendsto (fun h : ℝ => 1 + Real.exp (-h)) atTop (𝓝 1) := by
-    simpa only [add_zero] using tendsto_const_nhds.add he
-  simpa only [Real.one_rpow] using
+    simpa [add_zero] using tendsto_const_nhds.add he
+  simpa [Real.one_rpow] using
     (hm.rpow_const (p := γ ^ 2 / 2) (Or.inl (by norm_num))).prodMk_nhds
       (hp.rpow_const (p := γ ^ 2 / 2) (Or.inl (by norm_num)))
 

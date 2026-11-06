@@ -2,15 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.FieldChaosNegativePower
-public import DOZZ.GMC.FiniteChaosResolvent
-public import Mathlib.Analysis.SpecialFunctions.ContinuousFunctionalCalculus.Rpow.IntegralRepresentation
+import DOZZ.GMC.FieldChaosNegativePower
+import DOZZ.GMC.FiniteChaosResolvent
+import Mathlib.Analysis.SpecialFunctions.ContinuousFunctionalCalculus.Rpow.IntegralRepresentation
 
 /-! Positive subunit Kahane comparison for continuum field chaos. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
@@ -21,25 +19,25 @@ namespace DOZZ.Proofs
 theorem kahane_field_power_concave
     {ΩX ΩY S : Type*} [MeasurableSpace ΩX] [MeasurableSpace ΩY] [MeasurableSpace S]
     (PX : Measure ΩX) (PY : Measure ΩY) (Φ : ΩX → S → ℝ) (Ψ : ΩY → S → ℝ)
-    (hΦ : DOZZ.IsCenteredGaussianField PX Φ) (hΨ : DOZZ.IsCenteredGaussianField PY Ψ)
+    (hΦ : IsCenteredGaussianField PX Φ) (hΨ : IsCenteredGaussianField PY Ψ)
     (ν : Measure S) [IsFiniteMeasure ν] (h : S → ℝ≥0) (hh : Measurable h)
     (hhb : ∃ c : ℝ≥0, ∀ x, h x ≤ c) (γ p : ℝ) (hp : 0 < p ∧ p < 1)
     (hcov : ∀ᵐ q ∂ν.prod ν,
       ∫ ω, Φ ω q.1 * Φ ω q.2 ∂PX ≤ ∫ ω, Ψ ω q.1 * Ψ ω q.2 ∂PY)
     (hdiag : ∀ᵐ x ∂ν,
       ∫ ω, Φ ω x ^ 2 ∂PX ≤ ∫ ω, Ψ ω x ^ 2 ∂PY) :
-    ∫⁻ ω, DOZZ.fieldChaosMass PX Φ ν h γ ω ^ p ∂PX ≥
-      ∫⁻ ω, DOZZ.fieldChaosMass PY Ψ ν h γ ω ^ p ∂PY := by
+    ∫⁻ ω, fieldChaosMass PX Φ ν h γ ω ^ p ∂PX ≥
+      ∫⁻ ω, fieldChaosMass PY Ψ ν h γ ω ^ p ∂PY := by
   classical
   have hPXzero := hΦ.2 0 (fun i : Fin 0 => Fin.elim0 i)
   have hPYzero := hΨ.2 0 (fun i : Fin 0 => Fin.elim0 i)
   let : IsProbabilityMeasure PX := hPXzero.1
   let : IsProbabilityMeasure PY := hPYzero.1
   by_cases hνzero : ν = 0
-  · have hmassX (ω : ΩX) : DOZZ.fieldChaosMass PX Φ ν h γ ω = 0 := by
-      simp [DOZZ.fieldChaosMass, hνzero]
-    have hmassY (ω : ΩY) : DOZZ.fieldChaosMass PY Ψ ν h γ ω = 0 := by
-      simp [DOZZ.fieldChaosMass, hνzero]
+  · have hmassX (ω : ΩX) : fieldChaosMass PX Φ ν h γ ω = 0 := by
+      simp [fieldChaosMass, hνzero]
+    have hmassY (ω : ΩY) : fieldChaosMass PY Ψ ν h γ ω = 0 := by
+      simp [fieldChaosMass, hνzero]
     simp [hmassX, hmassY, ENNReal.zero_rpow_of_pos hp.1,
       hPXzero.1.measure_univ, hPYzero.1.measure_univ]
   let νf : FiniteMeasure S := ⟨ν, inferInstance⟩
@@ -70,17 +68,17 @@ theorem kahane_field_power_concave
       hPYzero.1.measure_univ]
   have hαpos : 0 < α := lt_of_le_of_ne hαnonneg (Ne.symm hαzero)
   have hcov' : ∀ᵐ xy ∂(νf : Measure S).prod νf,
-      DOZZ.gaussianCovariance PX (fun ω => Φ ω xy.1) (fun ω => Φ ω xy.2) ≤
-        DOZZ.gaussianCovariance PY (fun ω => Ψ ω xy.1) (fun ω => Ψ ω xy.2) := by
+      gaussianCovariance PX (fun ω => Φ ω xy.1) (fun ω => Φ ω xy.2) ≤
+        gaussianCovariance PY (fun ω => Ψ ω xy.1) (fun ω => Ψ ω xy.2) := by
     filter_upwards [hcov] with xy hxy
-    simpa [DOZZ.gaussianCovariance] using hxy
+    simpa [gaussianCovariance] using hxy
   have hdiag' : ∀ᵐ x ∂(νf : Measure S),
-      DOZZ.gaussianVariance PX (fun ω => Φ ω x) ≤
-        DOZZ.gaussianVariance PY (fun ω => Ψ ω x) := by
+      gaussianVariance PX (fun ω => Φ ω x) ≤
+        gaussianVariance PY (fun ω => Ψ ω x) := by
     filter_upwards [hdiag] with x hx
-    simpa [DOZZ.gaussianVariance, DOZZ.gaussianCovariance, pow_two] using hx
-  let MX : ΩX → ℝ≥0∞ := fun ω => DOZZ.fieldChaosMass PX Φ ν h γ ω
-  let MY : ΩY → ℝ≥0∞ := fun ω => DOZZ.fieldChaosMass PY Ψ ν h γ ω
+    simpa [gaussianVariance, gaussianCovariance, pow_two] using hx
+  let MX : ΩX → ℝ≥0∞ := fun ω => fieldChaosMass PX Φ ν h γ ω
+  let MY : ΩY → ℝ≥0∞ := fun ω => fieldChaosMass PY Ψ ν h γ ω
   let mX : ΩX → ℝ := fun ω => if (MX ω).toReal = 0 then 1 else (MX ω).toReal
   let mY : ΩY → ℝ := fun ω => if (MY ω).toReal = 0 then 1 else (MY ω).toReal
   have hmassMeasX := centeredGaussianField_fieldChaosMass_measurable PX Φ hΦ ν h hh γ
@@ -111,16 +109,16 @@ theorem kahane_field_power_concave
   have hmY0 : ∀ ω, 0 ≤ mY ω := fun ω => (hmY ω).le
   have hmassEqX : ∀ᵐ ω ∂PX, MX ω = ENNReal.ofReal (mX ω) := by
     change ∀ᵐ ω ∂PX,
-      DOZZ.fieldChaosMass PX Φ ν h γ ω = ENNReal.ofReal
-        (if (DOZZ.fieldChaosMass PX Φ ν h γ ω).toReal = 0 then 1 else
-          (DOZZ.fieldChaosMass PX Φ ν h γ ω).toReal)
+      fieldChaosMass PX Φ ν h γ ω = ENNReal.ofReal
+        (if (fieldChaosMass PX Φ ν h γ ω).toReal = 0 then 1 else
+          (fieldChaosMass PX Φ ν h γ ω).toReal)
     exact fieldChaosMass_eq_ofReal_modified_toReal_ae
       PX Φ hΦ νf hνf h hh hhb γ (by simpa [ρ, α] using hαpos)
   have hmassEqY : ∀ᵐ ω ∂PY, MY ω = ENNReal.ofReal (mY ω) := by
     change ∀ᵐ ω ∂PY,
-      DOZZ.fieldChaosMass PY Ψ ν h γ ω = ENNReal.ofReal
-        (if (DOZZ.fieldChaosMass PY Ψ ν h γ ω).toReal = 0 then 1 else
-          (DOZZ.fieldChaosMass PY Ψ ν h γ ω).toReal)
+      fieldChaosMass PY Ψ ν h γ ω = ENNReal.ofReal
+        (if (fieldChaosMass PY Ψ ν h γ ω).toReal = 0 then 1 else
+          (fieldChaosMass PY Ψ ν h γ ω).toReal)
     exact fieldChaosMass_eq_ofReal_modified_toReal_ae
       PY Ψ hΨ νf hνf h hh hhb γ (by simpa [ρ, α] using hαpos)
   have htoRealEqX : ∀ᵐ ω ∂PX, (MX ω).toReal = mX ω := by

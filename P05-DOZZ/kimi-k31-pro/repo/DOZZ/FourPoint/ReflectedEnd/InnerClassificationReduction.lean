@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.ReflectedEnd.FormulaReduction
+import DOZZ.FourPoint.ReflectedEnd.FormulaReduction
 import Mathlib.Tactic
 
 /-! # The reflected formula directly from the inner-limit and classification conclusions
@@ -13,7 +12,6 @@ The inner-limit and BPZ classification conclusions are the only inputs taken as 
 The outer estimate and every deterministic coefficient-identification step are proved.
 -/
 
-@[expose] public section
 open MeasureTheory Filter Topology Set
 open scoped ENNReal
 namespace DOZZ.Proofs

@@ -2,12 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Reflected.OuterMassLimit
-public import DOZZ.Statements.GMC.EquatorGFFGMCIntensity
-public import Mathlib.MeasureTheory.Measure.Lebesgue.EqHaar
+import DOZZ.FourPoint.Reflected.OuterMassLimit
+import DOZZ.Statements.GMC.EquatorGFFGMCIntensity
+import Mathlib.MeasureTheory.Measure.Lebesgue.EqHaar
 /-! Removing the deterministic circle boundary from the literal retained region. -/
-@[expose] public section
 open MeasureTheory Set Filter
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -34,10 +32,9 @@ theorem reflected_exterior_integral_open (μ : Measure ℂ) (r : ℝ)
     (∫⁻ x in {x : ℂ | r ≤ ‖x‖}, f x ∂μ) =
       ∫⁻ x in {x : ℂ | r < ‖x‖}, f x ∂μ := by
   have he : ({x : ℂ | r ≤ ‖x‖} : Set ℂ) =ᵐ[μ] {x : ℂ | r < ‖x‖} := by
-    have hn : ∀ᵐ x ∂μ, x ∉ Metric.sphere (0 : ℂ) r := by
-      exact measure_eq_zero_iff_ae_notMem.mp hcircle
+    have hn : ∀ᵐ x ∂μ, x ∉ Metric.sphere (0 : ℂ) r := measure_eq_zero_iff_ae_notMem.mp hcircle
     filter_upwards [hn] with x hx
-    have hne : ‖x‖ ≠ r := by simpa only [Metric.mem_sphere, dist_zero_right] using hx
+    have hne : ‖x‖ ≠ r := by simpa [Metric.mem_sphere, dist_zero_right] using hx
     exact propext ⟨fun h => lt_of_le_of_ne h hne.symm, fun h => h.le⟩
   rw [Measure.restrict_congr_set he]
 
@@ -61,13 +58,13 @@ theorem reflected_open_exterior_remove_roots (μ : Measure ℂ) (r : ℝ) (hr : 
   have he : ({x : ℂ | r < ‖x‖} : Set ℂ) =ᵐ[μ]
       {x : ℂ | r < ‖x‖} ∩ ({0, 1} : Set ℂ)ᶜ := by
     filter_upwards [hn] with x hx
-    have hx1 : x ≠ 1 := by simpa only [mem_singleton_iff] using hx
+    have hx1 : x ≠ 1 := by simpa [mem_singleton_iff] using hx
     apply propext
     constructor
     · intro h
       have hx0 : x ≠ 0 := by
         intro hh
-        simp only [hh, norm_zero, not_lt_of_ge hr.le] at h
+        simp [hh, norm_zero, not_lt_of_ge hr.le] at h
       exact ⟨h, by simp [hx0, hx1]⟩
     · exact fun h => h.1
   rw [Measure.restrict_congr_set he]
@@ -97,7 +94,7 @@ theorem reflected_source_outerMass_eq_comparison_region
     reflected_gmc_sphere_null P X hX γ hγ hγ₂ M hM 1 0,
     reflected_gmc_sphere_null P X hX γ hγ hγ₂ M hM 0 (‖z‖ ^ (1 - ξ))]
       with ω h0 h1 hs
-  simp only [Metric.sphere_zero] at h0 h1
+  simp [Metric.sphere_zero] at h0 h1
   exact reflected_outerMass_eq_comparison_region γ α₁ α₂ α₃ ξ z (M ω) h0 h1 hz hs
 
 end DOZZ.Proofs

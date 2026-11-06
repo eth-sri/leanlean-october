@@ -3,9 +3,8 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Scott Armstrong, Amélie Loher
 -/
-module
 
-public import GaussianFields.WhiteNoise.Haar.Basic
+import GaussianFields.WhiteNoise.Haar.Basic
 
 /-!
 # GaussianFields Haar one dimensional refinements
@@ -13,7 +12,6 @@ public import GaussianFields.WhiteNoise.Haar.Basic
 Port of the corresponding GaussianFields source module.
 -/
 
-public section
 
 open MeasureTheory
 open scoped BigOperators ENNReal InnerProductSpace
@@ -21,12 +19,12 @@ open scoped BigOperators ENNReal InnerProductSpace
 namespace GaussianFields
 
 /-- The normalized one-dimensional Haar packet at scale `j`, cell `k`, and signature `signature`. -/
-@[expose]
+
 noncomputable def haar1D (j : ℤ) (k : ℤ) (signature : Bool) : ℝ → ℝ :=
   fun x => haarScaleFactor j * haarAtom1D signature (dyadicPower j * x - (k : ℝ))
 
 /-- The one-dimensional dyadic interval supporting the father packet at scale `j` and cell `k`. -/
-@[expose]
+
 def dyadicInterval (j k : ℤ) : Set ℝ :=
   Set.Ico ((k : ℝ) / dyadicPower j) (((k : ℝ) + 1) / dyadicPower j)
 
@@ -108,7 +106,7 @@ theorem memLp_haar1D (j k : ℤ) (signature : Bool) :
   · exact (measurable_haar1D j k signature).aestronglyMeasurable
 
 /-- The one-dimensional Haar packet as an `L²` vector. -/
-@[expose]
+
 noncomputable def haar1DLp (j k : ℤ) (signature : Bool) :
     Lp ℝ 2 (volume : Measure ℝ) :=
   (memLp_haar1D j k signature).toLp (haar1D j k signature)
@@ -219,9 +217,7 @@ theorem haar1D_father_refine (j k : ℤ) (x : ℝ) :
           haar1D (j + 1) ((2 : ℤ) * k + 1) false x) := by
   unfold haar1D
   simp [haarAtom1D]
-  rw [haar1D_left_child_arg, haar1D_right_child_arg]
-  rw [haarFather1D_refine (dyadicPower j * x - (k : ℝ))]
-  rw [haarScaleFactor_add_one]
+  rw [haar1D_left_child_arg, haar1D_right_child_arg, haarFather1D_refine (dyadicPower j * x - (k : ℝ)), haarScaleFactor_add_one]
   have hsqrt : Real.sqrt 2 ≠ 0 := by positivity
   field_simp [hsqrt]
 
@@ -234,9 +230,7 @@ theorem haar1D_mother_refine (j k : ℤ) (x : ℝ) :
           haar1D (j + 1) ((2 : ℤ) * k + 1) false x) := by
   unfold haar1D
   simp [haarAtom1D]
-  rw [haar1D_left_child_arg, haar1D_right_child_arg]
-  rw [haarMother1D_refine (dyadicPower j * x - (k : ℝ))]
-  rw [haarScaleFactor_add_one]
+  rw [haar1D_left_child_arg, haar1D_right_child_arg, haarMother1D_refine (dyadicPower j * x - (k : ℝ)), haarScaleFactor_add_one]
   have hsqrt : Real.sqrt 2 ≠ 0 := by positivity
   field_simp [hsqrt]
 
@@ -251,8 +245,7 @@ theorem haar1D_left_child_father_refine_pointwise (j k : ℤ) (x : ℝ) :
     simpa [F, L, R] using haar1D_father_refine j k x
   have hm : M = (Real.sqrt 2)⁻¹ * (L - R) := by
     simpa [M, L, R] using haar1D_mother_refine j k x
-  rw [show haar1D j k false x = F from rfl, hf]
-  rw [show haar1D j k true x = M from rfl, hm]
+  rw [show haar1D j k false x = F from rfl, hf, show haar1D j k true x = M from rfl, hm]
   let c : ℝ := (Real.sqrt 2)⁻¹
   have hsqrt : Real.sqrt 2 ≠ 0 := by positivity
   have hc : c * (c * 2) = 1 := by
@@ -277,8 +270,7 @@ theorem haar1D_right_child_father_refine_pointwise (j k : ℤ) (x : ℝ) :
     simpa [F, L, R] using haar1D_father_refine j k x
   have hm : M = (Real.sqrt 2)⁻¹ * (L - R) := by
     simpa [M, L, R] using haar1D_mother_refine j k x
-  rw [show haar1D j k false x = F from rfl, hf]
-  rw [show haar1D j k true x = M from rfl, hm]
+  rw [show haar1D j k false x = F from rfl, hf, show haar1D j k true x = M from rfl, hm]
   let c : ℝ := (Real.sqrt 2)⁻¹
   have hsqrt : Real.sqrt 2 ≠ 0 := by positivity
   have hc : c * (c * 2) = 1 := by
@@ -516,7 +508,7 @@ theorem adjacent_child_overlap_cells {y : ℝ} {k l : ℤ}
     l = (2 : ℤ) * k ∨ l = (2 : ℤ) * k + 1 := by
   have hz' : 2 * y - ((l - (2 : ℤ) * k : ℤ) : ℝ) ∈ Set.Ico (0 : ℝ) 1 := by
     convert hz using 1
-    simp only [Int.cast_sub, Int.cast_mul, Int.cast_ofNat]
+    simp [Int.cast_sub, Int.cast_mul, Int.cast_ofNat]
     ring
   have h := int_eq_zero_or_one_of_mem_Ico hy hz'
   rcases h with h | h
@@ -574,14 +566,13 @@ theorem integral_haar1D_mul_adjacent_child_mother (j k l : ℤ)
     · exact integral_haar1D_mul_adjacent_child_mother_ne j k l signature hl0 hl1
 
 /-- The one-dimensional father space at scale `j`, spanned by all father translates. -/
-@[expose]
+
 noncomputable def haar1DFatherSubmodule (j : ℤ) :
     Submodule ℝ (Lp ℝ 2 (volume : Measure ℝ)) :=
   Submodule.span ℝ (Set.range fun k : ℤ => haar1DLp j k false)
 
 theorem haar1DLp_father_mem_fatherSubmodule (j k : ℤ) :
-    haar1DLp j k false ∈ haar1DFatherSubmodule j := by
-  exact Submodule.subset_span ⟨k, rfl⟩
+    haar1DLp j k false ∈ haar1DFatherSubmodule j := Submodule.subset_span ⟨k, rfl⟩
 
 theorem inner_haar1DLp_eq_integral (j₁ k₁ : ℤ) (signature₁ : Bool)
     (j₂ k₂ : ℤ) (signature₂ : Bool) :
@@ -647,7 +638,7 @@ theorem haar1DFatherSubmodule_le_add_nat (j : ℤ) (n : ℕ) :
       have hvnext :
           v ∈ haar1DFatherSubmodule ((j + (n : ℤ)) + 1) :=
         haar1DFatherSubmodule_le_succ (j + (n : ℤ)) hvn
-      simpa only [Int.ofNat_eq_natCast, Nat.cast_add, Nat.cast_one, add_assoc] using hvnext
+      simpa [Int.ofNat_eq_natCast, Nat.cast_add, Nat.cast_one, add_assoc] using hvnext
 
 theorem haar1DLp_mem_fatherSubmodule_add_nat_succ (j k : ℤ)
     (signature : Bool) (n : ℕ) :
@@ -657,7 +648,7 @@ theorem haar1DLp_mem_fatherSubmodule_add_nat_succ (j k : ℤ)
   have hle := haar1DFatherSubmodule_le_add_nat (j + 1) n
   have hmem : haar1DLp j k signature ∈ haar1DFatherSubmodule ((j + 1) + (n : ℤ)) :=
     hle hfirst
-  simpa only [Int.ofNat_eq_natCast, Nat.cast_add, Nat.cast_one, add_assoc,
+  simpa [Int.ofNat_eq_natCast, Nat.cast_add, Nat.cast_one, add_assoc,
     add_comm, add_left_comm] using hmem
 
 theorem inner_haar1DLp_finer_mother_nat_succ_succ (j k l : ℤ)
@@ -678,7 +669,7 @@ theorem inner_haar1DLp_finer_mother_nat_succ (j k l : ℤ)
   | succ n =>
       have h :=
         inner_haar1DLp_finer_mother_nat_succ_succ j k l signature n
-      simpa only [Int.ofNat_eq_natCast, Nat.cast_add, Nat.cast_one,
+      simpa [Int.ofNat_eq_natCast, Nat.cast_add, Nat.cast_one,
         Nat.succ_eq_add_one, add_assoc, add_comm, add_left_comm] using h
 
 theorem integral_haar1D_mul_finer_mother_nat_succ (j k l : ℤ)
@@ -691,4 +682,3 @@ theorem integral_haar1D_mul_finer_mother_nat_succ (j k l : ℤ)
 
 end GaussianFields
 
-end

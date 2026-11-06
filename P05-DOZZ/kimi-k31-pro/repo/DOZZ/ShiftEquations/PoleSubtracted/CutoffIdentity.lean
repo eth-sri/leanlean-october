@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.ShiftEquations.PoleSubtracted.CutoffHolomorphic
+import DOZZ.ShiftEquations.PoleSubtracted.CutoffHolomorphic
 import DOZZ.GMC.Annulus.BallCover
 
 /-!
@@ -18,7 +17,6 @@ the cancellation of `Z_{C_t}(0)` and `R₁` in `F_{t+1} - F_t` ([KRV, §10.2]), 
 and holomorphy instead of independence.
 -/
 
-@[expose] public section
 
 open MeasureTheory Filter Topology Set Metric
 open scoped ENNReal NNReal
@@ -55,8 +53,7 @@ theorem integrable_circleTilt (P : Measure Ω) (X : Ω → Distr) (hX : IsEquato
     (measurable_withDensity_measure (measurable_circleTiltDensity γ a m)).comp_aemeasurable
       (gmc_measure_aemeasurable_of_isGMCOf P X hX γ hγ hγ2 M hM)
   refine ⟨(hΨ.comp_aemeasurable hM').aestronglyMeasurable, ?_⟩
-  rw [hasFiniteIntegral_iff_norm]
-  rw [← lintegral_ofReal_circleTilt P X hX γ hγ hγ2 M hM Xc hXc a m hΨ.norm]
+  rw [hasFiniteIntegral_iff_norm, ← lintegral_ofReal_circleTilt P X hX γ hγ hγ2 M hM Xc hXc a m hΨ.norm]
   have h2 := hint.hasFiniteIntegral
   rw [hasFiniteIntegral_iff_norm] at h2
   refine lt_of_le_of_lt (le_of_eq ?_) h2
@@ -81,8 +78,8 @@ theorem integral_circleTilt (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorG
     integral_eq_lintegral_pos_part_sub_lintegral_neg_part hint', htilt Ψ hΨ]
   congr 2
   have h := htilt (fun μ => -Ψ μ) hΨ.neg
-  simp only [mul_neg] at h
-  exact h
+  simp [mul_neg] at h
+  assumption
 
 /-- The cutoff integrand at a real point is real. -/
 theorem cutoffIntegrand_ofReal (Xc : Ω → ℂ → ℝ → ℝ) (M : Ω → Measure ℂ) (γ η : ℝ) (m n : ℕ)
@@ -136,7 +133,7 @@ theorem integrable_cutoffReal (P : Measure Ω) (X : Ω → Distr) (hX : IsEquato
   have hc := (differentiableOn_cutoffFamily P X hX γ hγ hγ2 M hM Xc hXc hW hnm).2 (x : ℂ) hx
   have hre : Integrable (fun ω => (cutoffIntegrand Xc M γ η m n (x : ℂ) ω).re) P := hc.re
   refine hre.congr (Eventually.of_forall fun ω => ?_)
-  simp only
+  simp
   rw [cutoffIntegrand_ofReal_eq, Complex.ofReal_re]
 
 /-- **Real values of the cutoff family**: for real `x > -2η - δ` and `n ≤ m`,
@@ -206,4 +203,3 @@ theorem cutoffFamily_succ_eqOn (P : Measure Ω) (X : Ω → Distr) (hX : IsEquat
 
 end DOZZ.Proofs
 
-end

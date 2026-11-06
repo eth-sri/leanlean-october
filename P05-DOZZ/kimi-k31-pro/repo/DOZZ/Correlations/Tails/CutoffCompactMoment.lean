@@ -2,19 +2,17 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.WeightedCutoff.Bound
+import DOZZ.GMC.WeightedCutoff.Bound
 
 /-! Uniform compact-support cutoff moments used in the correlated pin-weight limit. -/
 
-@[expose] public section
 open MeasureTheory Set
 open scoped ENNReal
 
 namespace DOZZ.Proofs
 
-/-- The weighted cutoff bound `DOZZ.equatorGFF_GMC_weighted_cutoff_bound`, with zero charge,
+/-- The weighted cutoff bound `equatorGFF_GMC_weighted_cutoff_bound`, with zero charge,
 bounds every compact-support cutoff mass at every integer cutoff and every positive subcritical
 order. -/
 theorem regularized_compact_mass_moment_uniform
@@ -41,15 +39,13 @@ theorem regularized_compact_mass_moment_uniform
   have hd : Real.exp (-(n : ℝ)) ≤ R+1 := by
     have he : Real.exp (-(n : ℝ)) ≤ 1 := Real.exp_le_one_iff.mpr (by have hn : 0 ≤ (n : ℝ) := Nat.cast_nonneg n; linarith)
     linarith
-  have ht : Real.log (1 / Real.exp (-(n : ℝ))) = (n : ℝ) := by
-    rw [one_div, ← Real.exp_neg, neg_neg, Real.log_exp]
   have hb := hbound (0,q) (Set.mem_singleton _) 0 (Set.mem_singleton _)
     (Real.exp (-(n : ℝ))) (R+1) (Real.exp_pos _) hd le_rfl
   have hmass (ω : Ω) : cutoffWeightedGmcBallMass P Xc γ 0 0 (R+1)
       (Real.exp (-(n : ℝ))) ω = regularizedGMC P Xc γ n ω (Metric.ball 0 (R+1)) := by
-    simp only [cutoffWeightedGmcBallMass, ht, mul_zero, Real.rpow_zero,
-      ENNReal.ofReal_one, lintegral_one, Measure.restrict_apply_univ]
-  simp only [hmass, sub_zero] at hb
+    simp [cutoffWeightedGmcBallMass, mul_zero, Real.rpow_zero,
+      ENNReal.ofReal_one]
+  simp [hmass, sub_zero] at hb
   refine (lintegral_mono (fun ω => ENNReal.rpow_le_rpow (measure_mono ?_) hq.le)).trans hb
   exact Metric.closedBall_subset_ball (by linarith)
 

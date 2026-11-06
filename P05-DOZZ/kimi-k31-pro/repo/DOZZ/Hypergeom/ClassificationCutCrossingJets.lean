@@ -2,17 +2,16 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Hypergeom.ClassificationHermitianJets
-public import DOZZ.Hypergeom.ClassificationCanonicalHermitian
-public import DOZZ.Hypergeom.ClassificationCutCrossingBranch
-public import DOZZ.Hypergeom.ClassificationMonodromy
-public import DOZZ.Hypergeom.ODE.CutPlaneTopology
+import DOZZ.FourPoint.BPZ.HypergeomNearZero
+import DOZZ.Hypergeom.ClassificationHermitianJets
+import DOZZ.Hypergeom.ClassificationCanonicalHermitian
+import DOZZ.Hypergeom.ClassificationCutCrossingBranch
+import DOZZ.Hypergeom.ClassificationMonodromy
+import DOZZ.Hypergeom.ODE.CutPlaneTopology
 
 /-! Matching values and first Wirtinger derivatives across the negative cut. -/
 
-@[expose] public section
 
 open Filter
 open scoped Topology
@@ -28,12 +27,10 @@ private def gaussNegativeCrossingLowerSet : Set ℂ :=
   gaussNegativeCrossingDisk ∩ {z : ℂ | z.im < 0}
 
 private theorem gaussNegativeCrossingUpperSet_isOpen :
-    IsOpen gaussNegativeCrossingUpperSet := by
-  exact gaussNegativeCrossingDisk_isOpen.inter (isOpen_Ioi.preimage Complex.continuous_im)
+    IsOpen gaussNegativeCrossingUpperSet := gaussNegativeCrossingDisk_isOpen.inter (isOpen_Ioi.preimage Complex.continuous_im)
 
 private theorem gaussNegativeCrossingLowerSet_isOpen :
-    IsOpen gaussNegativeCrossingLowerSet := by
-  exact gaussNegativeCrossingDisk_isOpen.inter (isOpen_Iio.preimage Complex.continuous_im)
+    IsOpen gaussNegativeCrossingLowerSet := gaussNegativeCrossingDisk_isOpen.inter (isOpen_Iio.preimage Complex.continuous_im)
 
 private theorem gaussNegativeCrossingDisk_subset_regularPlane :
     gaussNegativeCrossingDisk ⊆ gaussRegularPlane := by
@@ -48,10 +45,7 @@ private theorem gaussNegativeCrossingDisk_subset_regularPlane :
     have hre : z.re = 1 := by rw [he]; simp
     linarith
 
-private theorem gaussNegativeCrossingSlitPlane_isOpen : IsOpen gaussSlitPlane := by
-  change IsOpen ({z : ℂ | z.im ≠ 0} ∪ {z | z.re < 1})
-  exact (isOpen_compl_singleton.preimage Complex.continuous_im).union
-    (isOpen_Iio.preimage Complex.continuous_re)
+private theorem gaussNegativeCrossingSlitPlane_isOpen : IsOpen gaussSlitPlane := DOZZ.Proofs.bpzHG_isOpen_gaussSlitPlane
 
 private theorem gaussNegativeCrossingPhase_star
     (c : ℝ) :
@@ -67,8 +61,7 @@ private theorem gaussNegativeCrossingPhase_star_mul_self
     (c : ℝ) :
     star (Complex.exp ((2 * (Real.pi : ℂ) * Complex.I) * (1 - (c : ℂ)))) *
       Complex.exp ((2 * (Real.pi : ℂ) * Complex.I) * (1 - (c : ℂ))) = 1 := by
-  rw [gaussNegativeCrossingPhase_star]
-  rw [← Complex.exp_add]
+  rw [gaussNegativeCrossingPhase_star, ← Complex.exp_add]
   rw [show -((2 * (Real.pi : ℂ) * Complex.I) * (1 - (c : ℂ))) +
       (2 * (Real.pi : ℂ) * Complex.I) * (1 - (c : ℂ)) = 0 by ring,
     Complex.exp_zero]
@@ -190,8 +183,7 @@ theorem realGaussSolution_canonical_hermitian_offDiagonal_zero
   let f : ℂ → ℂ := gaussFMinus H (a : ℂ) (b : ℂ) (c : ℂ)
   let g : ℂ → ℂ := gaussNegativeCrossingSecond H (a : ℂ) (b : ℂ) (c : ℂ)
   let F : ℂ → ℂ := fun z => (T z : ℂ)
-  have hf : AnalyticOnNhd ℂ f gaussNegativeCrossingDisk := by
-    exact hFanalyticSlit.mono (by simpa [f] using gaussNegativeCrossingDisk_subset_gaussSlitPlane)
+  have hf : AnalyticOnNhd ℂ f gaussNegativeCrossingDisk := hFanalyticSlit.mono (by simpa [f] using gaussNegativeCrossingDisk_subset_gaussSlitPlane)
   have hg : AnalyticOnNhd ℂ g gaussNegativeCrossingDisk := by
     simpa [g] using gaussNegativeCrossingSecond_analyticOnNhd hH
       (a : ℂ) (b : ℂ) (c : ℂ) hcC

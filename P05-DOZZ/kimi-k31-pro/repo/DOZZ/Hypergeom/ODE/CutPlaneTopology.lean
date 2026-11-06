@@ -2,15 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Hypergeom.Defs
-public import Mathlib.Analysis.Convex.Contractible
-public import Mathlib.AlgebraicTopology.FundamentalGroupoid.SimplyConnected
+import DOZZ.Hypergeom.Defs
+import Mathlib.Analysis.Convex.Contractible
+import Mathlib.AlgebraicTopology.FundamentalGroupoid.SimplyConnected
 
 /-! The principal Gauss cut plane is contractible, hence simply connected. -/
 
-@[expose] public section
 
 open Set
 
@@ -93,7 +91,6 @@ theorem gaussCutPlane_starConvex :
           by_contra hnot
           have htneg : t ≤ 0 := le_of_not_gt hnot
           exact ht0 (le_antisymm htneg ht)
-        have hfirst : s / 2 ≤ s := by linarith [hs]
         have hsecond : t * z.re < t := by
           have hmul := mul_lt_mul_of_pos_left hz1 htpos
           simpa using hmul

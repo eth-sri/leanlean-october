@@ -2,13 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Hypergeom.ClassificationWirtinger
+import DOZZ.Hypergeom.ClassificationWirtinger
 
 /-! The conjugate Wirtinger operator and its product rule. -/
 
-@[expose] public section
 
 namespace DOZZ.Proofs
 
@@ -40,7 +38,7 @@ theorem wirtingerBar_mul {f g : ℂ → ℂ} {z : ℂ}
     ring
   unfold wirtingerBar
   rw [hfun, hmul]
-  simp only [star_add, star_mul, star_star]
+  simp [star_add, star_mul, star_star]
   ring
 
 /-- The conjugate Wirtinger derivative is additive on real-differentiable maps. -/
@@ -61,7 +59,7 @@ theorem wirtingerBar_add {f g : ℂ → ℂ} {z : ℂ}
     rw [star_add]
   unfold wirtingerBar
   rw [hfun, wirtingerZ_add hfstar hgstar]
-  simp only [star_add]
+  simp [star_add]
 
 /-- The conjugate Wirtinger derivative is unchanged by local equality of differentiable maps. -/
 theorem wirtingerBar_congr_of_eventuallyEq {f g : ℂ → ℂ} {z : ℂ}

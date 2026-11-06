@@ -2,13 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.Residue.ExtendedMoment
+import DOZZ.Correlations.Residue.ExtendedMoment
 
 /-! Uniform higher moments justify the complete extended-real addition step. -/
 
-@[expose] public section
 open MeasureTheory Filter Topology Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -31,7 +29,7 @@ theorem residue_extended_addition_preserves_limit
       (𝓝[>] 0) (𝓝 L) := by
   have hr : 0 < r := hβ.trans hβr
   have hq (d : ℝ) (hd : 0 < d) (hd' : d < d₀) : 0 < β - d / γ ∧ β - d / γ < β := by
-    have hh : d / γ < β := (div_lt_iff₀ hγ).mpr (by simpa only [mul_comm] using hd'.trans_le hdβ)
+    have hh : d / γ < β := (div_lt_iff₀ hγ).mpr (by simpa [mul_comm] using hd'.trans_le hdβ)
     exact ⟨sub_pos.mpr hh, sub_lt_self _ (div_pos hd hγ)⟩
   have hRp (d : ℝ) (hd : 0 < d) (hd' : d < d₀) :=
     residue_real_moment_of_extended_bound P (R d) (hR d hd hd') r hr

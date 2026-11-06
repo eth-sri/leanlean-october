@@ -2,11 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.Brownian.Barrier.Restart
-public import Mathlib.Topology.Order.IsLUB
-public import Mathlib.Topology.Order.Monotone
-@[expose] public section
+import DOZZ.Brownian.Barrier.Restart
+import Mathlib.Topology.Order.IsLUB
+import Mathlib.Topology.Order.Monotone
 open MeasureTheory ProbabilityTheory Filter Set
 open scoped Topology ENNReal NNReal
 namespace DOZZ.Proofs
@@ -49,7 +47,7 @@ theorem measurable_brownianPath_runningMaximum (s : ℝ≥0) :
 /-- The maximum on a compact initial interval is actually attained. -/
 theorem brownianPath_runningMaximum_attained (p : BrownianPath) (s : ℝ≥0) :
     ∃ u : Iic s, (⨆ v : Iic s, p v) = p u := by
-  obtain ⟨u,hu,hmax⟩ := (isCompact_nnreal_Iic s).exists_isMaxOn (f := fun u : ℝ≥0 => p u) ⟨s,le_rfl⟩ p.continuous.continuousOn
+  obtain ⟨u,hu,hmax⟩ := (isCompact_nnreal_Iic s).exists_isMaxOn (f := fun u : ℝ≥0 => p u) ⟨s, Set.mem_Iic.mpr le_rfl⟩ p.continuous.continuousOn
   refine ⟨⟨u,hu⟩,le_antisymm ?_ (le_ciSup (brownianPath_Iic_bddAbove p s) ⟨u,hu⟩)⟩
   exact ciSup_le (fun v : Iic s => hmax v.2)
 
@@ -131,7 +129,7 @@ theorem cappedBrownianFirstPassage_value (β : ℝ) (T : ℝ≥0) (p : BrownianP
   have hτu : τ ≤ u := csInf_le (s := {u : ℝ≥0 | u ≤ T ∧ β ≤ p u} ∪ {T})
     (OrderBot.bddBelow _) (Or.inl ⟨hu.2.trans hτT,hpu ▸ le_rfl⟩)
   have he : u = τ := le_antisymm hu.2 hτu
-  simpa only [he] using hpu
+  simpa [he] using hpu
 
 /-- A strict terminal crossing forces the capped hit strictly before the cap. -/
 theorem cappedBrownianFirstPassage_lt_of_terminal (β : ℝ) (T : ℝ≥0)
@@ -223,10 +221,10 @@ theorem brownianPath_bounded_restart_joint_neg {E : Type*} [MeasurableSpace E]
   have hn : P.map (fun p => -brownianShiftPath (τ p) p) = P := by
     have he := (Measure.map_map (μ := P) measurable_neg hmV).symm
     rw [brownianPath_bounded_restart_map P hB τ hτ T hτT,brownianPath_neg_map P hB] at he
-    simpa only [Function.comp_def] using he
+    simpa [Function.comp_def] using he
   have he := (brownianPath_bounded_restart_indepFun P hB τ hτ T hτT X hX).neg_right.map_prod_eq_prod_map_map
     (hX.mono hτ.measurableSpace_le le_rfl).aemeasurable hmV.neg.aemeasurable
-  simp only [Pi.neg_apply,Pi.neg_def] at he
+  simp [Pi.neg_apply,Pi.neg_def] at he
   rw [hn] at he
   exact (brownianPath_bounded_restart_joint_map P hB τ hτ T hτT X hX).trans he.symm
 
@@ -251,7 +249,7 @@ theorem brownianPath_bounded_restart_remaining_sign (P : Measure BrownianPath)
       (measurable_finite_stoppingTime_stopped _ τ hτ))
   rw [Measure.map_apply (hmτ.prodMk hmV) hS,
     Measure.map_apply (show Measurable (fun p => (τ p,-brownianShiftPath (τ p) p)) from hmτ.prodMk hmV.neg) hS] at he
-  simpa only [S,preimage,mem_ofPred_eq,ContinuousMap.neg_apply,neg_pos] using he
+  simpa [S,preimage,mem_ofPred_eq,ContinuousMap.neg_apply,neg_pos] using he
 
 /-- Reflection at the first hit exchanges strict terminal positions above and below the barrier. -/
 theorem brownianPath_firstHit_terminal_reflection (P : Measure BrownianPath)
@@ -283,7 +281,7 @@ theorem brownianPath_firstHit_terminal_reflection (P : Measure BrownianPath)
       dsimp [brownianShiftPath]
       rw [add_tsub_cancel_of_le (cappedBrownianFirstPassage_le β T p),
         cappedBrownianFirstPassage_value β T p h0 hτ,sub_neg]
-    · simp only [hτ,false_and]
+    · simp [hτ,false_and]
   exact (measure_congr hupper).symm.trans (hs.trans (measure_congr hlower))
 /-- A nondegenerate Brownian time marginal has no atom at any barrier. -/
 theorem brownianPath_terminal_ne_ae (P : Measure BrownianPath)
@@ -295,7 +293,7 @@ theorem brownianPath_terminal_ne_ae (P : Measure BrownianPath)
       (show MeasurableSet {x : ℝ | x = β} from measurableSet_singleton β)
     exact he.trans (measure_singleton β)
   apply ae_iff.mpr
-  simpa only [not_not] using he
+  simpa [not_not] using he
 
 /-- The capped first-hit event has twice the upper Gaussian terminal tail. -/
 theorem brownianPath_firstHit_probability (P : Measure BrownianPath)

@@ -2,22 +2,20 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.Moments.InversionCovariance
-public import DOZZ.GMC.GaussianInputs
+import DOZZ.GMC.Moments.InversionCovariance
+import DOZZ.GMC.GaussianInputs
 
 /-! Gaussian law of the equator field transported through the punctured inversion chart. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory
 open scoped Distributions
 
 namespace DOZZ.Proofs
 
-/-- The second-moment covariance `DOZZ.gaussianCovariance` of compact field tests is
-`DOZZ.gffCov`. -/
+/-- The second-moment covariance `gaussianCovariance` of compact field tests is
+`gffCov`. -/
 theorem equatorGFF_test_gaussianCovariance
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
     (X : Ω → Distr) (hX : IsEquatorGFF P X) (f g : TestFn) :

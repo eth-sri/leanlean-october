@@ -2,12 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Dual.ConstantCarrier
-public import DOZZ.FourPoint.Reflected.RestartPast
+import DOZZ.FourPoint.Dual.ConstantCarrier
+import DOZZ.FourPoint.Reflected.RestartPast
 import Mathlib.Tactic
 /-! The copied exterior mass is an observable of the stopped inward past and outward half. -/
-@[expose] public section
 open MeasureTheory Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -33,13 +31,13 @@ theorem dual_past_radial_value_eq (A : TwoSidedPath) (T : ℝ≥0) (t : ℝ) (ht
   by_cases ht0 : 0 ≤ t
   · rw [ite_eq_left ht0]
     have hn : Real.toNNReal t ≤ T := (Real.toNNReal_le_iff_le_coe).mpr ht
-    simp only [stopBrownianPath, ContinuousMap.coe_mk, min_eq_left hn,
+    simp [stopBrownianPath, ContinuousMap.coe_mk, min_eq_left hn,
       radialPositiveHalf, ContinuousMap.comp_apply]
     change A (Real.toNNReal t : ℝ) = A t
     rw [Real.coe_toNNReal t ht0]
   · rw [ite_eq_right ht0]
     have hneg : 0 ≤ -t := neg_nonneg.mpr (le_of_not_ge ht0)
-    simp only [radialNegativeHalf, ContinuousMap.comp_apply]
+    simp [radialNegativeHalf, ContinuousMap.comp_apply]
     change A (-(Real.toNNReal (-t) : ℝ)) = A t
     rw [Real.coe_toNNReal (-t) hneg, neg_neg]
 
@@ -62,12 +60,11 @@ theorem dual_past_reinsertion_weight_eq (γ : ℝ) (A : TwoSidedPath) (T : ℝ�
     (x : ℂ) (hx : Real.exp (-(T : ℝ)) ≤ ‖x‖) :
     dualPastReinsertionWeight γ (stopBrownianPath (radialPositiveHalf A) T, radialNegativeHalf A) x =
       reflected_global_reinsertionWeight γ A x := by
-  have hn : 0 < ‖x‖ := (Real.exp_pos _).trans_le hx
   have ht : -Real.log ‖x‖ ≤ T := by
     have hh := Real.log_le_log (Real.exp_pos _) hx
     rw [Real.log_exp] at hh
     linarith only [hh]
-  simp only [dualPastReinsertionWeight, reflected_global_reinsertionWeight,
-    ite_eq_right hn.ne', dual_past_radial_value_eq A T _ ht]
+  simp [dualPastReinsertionWeight, reflected_global_reinsertionWeight,
+    dual_past_radial_value_eq A T _ ht]
 
 end DOZZ.Proofs

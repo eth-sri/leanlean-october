@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.Tails.WilliamsPolarSplit
-public import DOZZ.Brownian.Reflection.LastCut
+import DOZZ.Correlations.Tails.WilliamsPolarSplit
+import DOZZ.Brownian.Reflection.LastCut
 
 /-! A measurable code for the lifetime-marked reflection integral against locally finite chaos. -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal NNReal
 

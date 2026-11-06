@@ -2,11 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.SharpMoments.CircleField
-public import DOZZ.GMC.FieldChaosConstantTrick
-public import DOZZ.GMC.FieldChaosConstantTrickConcave
+import DOZZ.GMC.SharpMoments.CircleField
+import DOZZ.GMC.FieldChaosConstantTrick
+import DOZZ.GMC.FieldChaosConstantTrickConcave
 
 /-! # Transfer of cutoff moments between locations
 
@@ -17,7 +16,6 @@ weighted cutoff mass on `B(z, ρ)` with the same moment on `B(z₀, ρ)`, at the
 the explicit factor `exp (γ² C |p² - p| / 2) (1 + R)^{4|p|}`; the last factor accounts for the
 reference density `‖x‖₊^{-4}`. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal NNReal
@@ -237,7 +235,7 @@ theorem cutoff_translate_moment_le
   have hmz₀ : ∀ ω, (∫⁻ x in Metric.ball z₀ ρ, (w (x - z₀) : ℝ≥0∞) ∂regularizedGMC P Xc γ r ω) =
       fieldChaosMass P Ψ ν (translatedWeight w z₀) γ ω :=
     fun ω => translated_cutoff_mass_eq_fieldChaosMass P X hX Xc hXc γ r z₀ ρ w hw ω
-  simp only [hmz, hmz₀]
+  simp [hmz, hmz₀]
   have hh : Measurable (translatedWeight w z) := measurable_translatedWeight w hw z
   have hhb : ∃ c' : ℝ≥0, ∀ y, translatedWeight w z y ≤ c' :=
     ⟨c, fun y => translatedWeight_le w c hwc z y⟩
@@ -275,16 +273,14 @@ theorem cutoff_translate_moment_le
       have habs : |p ^ 2 - p| = p ^ 2 - p := by
         apply abs_of_nonneg
         rcases hp with hp | hp <;> nlinarith
-      rw [habs]
-      exact hk
+      rwa [habs]
     · push Not at hp
       have hk := (kahane_field_constant_trick_concave P P Φ Ψ hΦ hΨ ν (translatedWeight w z) hh
         hhb γ C p hC ⟨hp.1, hp.2⟩ hcov hdiag).2
       have habs : |p ^ 2 - p| = p - p ^ 2 := by
         rw [abs_of_neg (by nlinarith)]
         ring
-      rw [habs]
-      exact hk
+      rwa [habs]
   -- the weight change from `z` to `z₀`
   have hcmp1 : ∀ ω, fieldChaosMass P Ψ ν (translatedWeight w z) γ ω ≤
       ENNReal.ofReal ((1 + R) ^ 4) * fieldChaosMass P Ψ ν (translatedWeight w z₀) γ ω := by

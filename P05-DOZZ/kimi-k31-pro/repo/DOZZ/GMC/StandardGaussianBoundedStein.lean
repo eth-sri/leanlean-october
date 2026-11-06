@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.StandardGaussianProductStein
-public import Mathlib.MeasureTheory.Function.L1Space.Integrable
+import DOZZ.GMC.StandardGaussianProductStein
+import Mathlib.MeasureTheory.Function.L1Space.Integrable
 
 /-! Automatic Gaussian Stein integrability for bounded tests and bounded derivatives. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory
 open scoped Distributions NNReal
@@ -56,8 +54,7 @@ theorem gaussianReal_pi_coordinate_stein_of_bounded
   have hid : Integrable (id : ℝ → ℝ) μ := IsGaussian.integrable_id
   have hfirst : Integrable (fun p : ℝ × (Fin n → ℝ) => p.1) μprod := by
     have hmap : Integrable (id : ℝ → ℝ) (μprod.map Prod.fst) := by
-      rw [hfst.map_eq]
-      exact hid
+      rwa [hfst.map_eq]
     exact hmap.comp_measurable measurable_fst
   have hfirstAbs : Integrable (fun p : ℝ × (Fin n → ℝ) => ‖p.1‖) μprod := hfirst.norm
   have hleft : Integrable (fun p : ℝ × (Fin n → ℝ) =>
@@ -169,8 +166,7 @@ theorem gaussianLinearImage_pi_integration_by_parts_of_bounded
   let Dstd : (Fin (n + 1) → ℝ) → Fin (n + 1) → ℝ := fun x k =>
     ∑ j, A j k * D (T x) j
   have hTMeas : Measurable T := by fun_prop
-  have hGstdMeas : Measurable Gstd := by
-    exact hGMeas.comp hTMeas
+  have hGstdMeas : Measurable Gstd := hGMeas.comp hTMeas
   have hDstdMeas : Measurable Dstd := by
     fun_prop
   have hDstdBound (k : Fin (n + 1)) (x : Fin (n + 1) → ℝ) :

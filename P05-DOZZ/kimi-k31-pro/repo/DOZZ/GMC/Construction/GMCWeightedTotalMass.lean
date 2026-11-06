@@ -2,22 +2,20 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.Construction.GMCWeightedBoxMassVarying
-public import DOZZ.GMC.Construction.GMCUniqueAe
-public import DOZZ.GMC.Construction.RegularizedGMCExpectedMeasure
+import DOZZ.GMC.Construction.GMCWeightedBoxMassVarying
+import DOZZ.GMC.Construction.GMCUniqueAe
+import DOZZ.GMC.Construction.RegularizedGMCExpectedMeasure
 
 /-! Convergence of weighted cutoff total masses. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped Distributions ENNReal NNReal BoundedContinuousFunction
 
 namespace DOZZ.Proofs
 
-private theorem weightedTotal_eq_integral
+theorem weightedTotal_eq_integral
     (μ : Measure ℂ) (hμ : IsFiniteMeasure μ)
     (w : BoundedContinuousFunction ℂ ℝ) (hw : ∀ z, 0 ≤ w z) :
     ((μ.withDensity (fun z => ENNReal.ofReal (w z))) Set.univ).toReal =

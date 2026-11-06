@@ -2,11 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Reflected.MaximumBufferError
+import DOZZ.FourPoint.Reflected.MaximumBufferError
 import Mathlib.Tactic
 /-! Signed inverse-power bounds for the last-cut Williams mass. -/
-@[expose] public section
 namespace DOZZ.Proofs
 
 /-- The Williams increment lies between the full-mass increment and the fixed-cut

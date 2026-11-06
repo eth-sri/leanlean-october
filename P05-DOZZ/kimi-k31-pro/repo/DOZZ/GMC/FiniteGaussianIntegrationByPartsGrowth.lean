@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.FiniteGaussianIntegrationByParts
-public import DOZZ.GMC.FiniteGaussianExponentialIntegrability
+import DOZZ.GMC.FiniteGaussianIntegrationByParts
+import DOZZ.GMC.FiniteGaussianExponentialIntegrability
 
 /-! Gaussian integration by parts for smooth tests with exponential-linear growth. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter
 open scoped Distributions Topology
@@ -128,7 +126,7 @@ theorem finite_gaussian_integration_by_parts_of_absExp_bound
           dsimp [sf]
           exact mul_le_mul_of_nonneg_left (hshiftExpBound ω t) hM
         _ = M * sf * baseExp ω := by ring
-    exact hbound
+    assumption
   have hLmeas : ∀ᶠ t in 𝓝 0, AEStronglyMeasurable
       (fun ω => Real.exp (t * Z ω i - t ^ 2 / 2 * var) * G (Z ω)) P := by
     filter_upwards [] with t
@@ -265,8 +263,7 @@ theorem finite_gaussian_integration_by_parts_of_absExp_bound
   let bR : Ω → ℝ := fun ω =>
     (∑ j, |gaussianCovariance P (fun ω => Z ω i) (fun ω => Z ω j)|) *
       M * Real.exp shiftMass * baseExp ω
-  have hbR : Integrable bR P := by
-    exact hbaseExp.const_mul _
+  have hbR : Integrable bR P := hbaseExp.const_mul _
   have hRbound : ∀ᵐ ω ∂P, ∀ t ∈ Metric.ball 0 (1 : ℝ),
       ‖∑ j, gaussianCovariance P (fun ω' => Z ω' i) (fun ω' => Z ω' j) *
         D (fun j => Z ω j + t * gaussianCovariance P (fun ω' => Z ω' j)

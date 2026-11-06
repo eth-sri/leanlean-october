@@ -1,11 +1,9 @@
-module
 
-public import DOZZ.GMC.Annulus.CutoffScale
-public import DOZZ.GFFStructure.AnnularCircleEnergy
+import DOZZ.GMC.Annulus.CutoffScale
+import DOZZ.GFFStructure.AnnularCircleEnergy
 
 /-! # Coarse cutoff control without a sign restriction on the cutoff time -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs

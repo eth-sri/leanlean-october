@@ -2,13 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Fusion.InverseInterpolationFubini
-public import DOZZ.FourPoint.Fusion.DifferenceMassIntegral
-public import DOZZ.FourPoint.Fusion.MassSegment
-public import DOZZ.FourPoint.Fusion.MassPositiveFinite
+import DOZZ.FourPoint.Fusion.InverseInterpolationFubini
+import DOZZ.FourPoint.Fusion.DifferenceMassIntegral
+import DOZZ.FourPoint.Fusion.MassSegment
+import DOZZ.FourPoint.Fusion.MassPositiveFinite
 /-! # Signed interpolation of the actual GMC inverse expectations -/
-@[expose] public section
 open MeasureTheory Set
 namespace DOZZ.Proofs
 /-- The two finite GMC inverse expectations differ by the signed segment integral. -/
@@ -39,18 +37,18 @@ theorem fusion_mass_expectation_interpolation {Ω : Type*} [MeasurableSpace Ω]
   have hat : (∫⁻ ω, a ω ^ (-p) ∂P) ≠ ⊤ := ne_top_of_le_ne_top ENNReal.ofReal_ne_top (hbound _ hav)
   have hbt : (∫⁻ ω, b ω ^ (-p) ∂P) ≠ ⊤ := ne_top_of_le_ne_top ENNReal.ofReal_ne_top (hbound _ hbv)
   have hai : Integrable (fun ω => (a ω).toReal ^ (-p)) P := by
-    simpa only [ENNReal.toReal_rpow] using integrable_toReal_of_lintegral_ne_top (ha.pow_const _) hat
+    simpa [ENNReal.toReal_rpow] using integrable_toReal_of_lintegral_ne_top (ha.pow_const _) hat
   have hbi : Integrable (fun ω => (b ω).toReal ^ (-p)) P := by
-    simpa only [ENNReal.toReal_rpow] using integrable_toReal_of_lintegral_ne_top (hb.pow_const _) hbt
+    simpa [ENNReal.toReal_rpow] using integrable_toReal_of_lintegral_ne_top (hb.pow_const _) hbt
   have hpos : ∀ᵐ ω ∂P, 0 < (a ω).toReal ∧ 0 < (b ω).toReal := by
     filter_upwards [hap, hbp] with ω haω hbω
     exact ⟨ENNReal.toReal_pos haω.1 haω.2, ENNReal.toReal_pos hbω.1 hbω.2⟩
   have hi := fusion_inverse_expectation_interpolation P (fun ω => (a ω).toReal) (fun ω => (b ω).toReal) p
     ha.ennreal_toReal.aestronglyMeasurable hb.ennreal_toReal.aestronglyMeasurable hpos hai hbi
   have hea : (∫ ω, (a ω).toReal ^ (-p) ∂P) = (∫⁻ ω, a ω ^ (-p) ∂P).toReal := by
-    simpa only [ENNReal.toReal_rpow] using integral_toReal (ha.pow_const _) (ae_lt_top' (ha.pow_const _) hat)
+    simpa [ENNReal.toReal_rpow] using integral_toReal (ha.pow_const _) (ae_lt_top' (ha.pow_const _) hat)
   have heb : (∫ ω, (b ω).toReal ^ (-p) ∂P) = (∫⁻ ω, b ω ^ (-p) ∂P).toReal := by
-    simpa only [ENNReal.toReal_rpow] using integral_toReal (hb.pow_const _) (ae_lt_top' (hb.pow_const _) hbt)
+    simpa [ENNReal.toReal_rpow] using integral_toReal (hb.pow_const _) (ae_lt_top' (hb.pow_const _) hbt)
   rw [hea, heb] at hi
   rw [hi, ← integral_const_mul]
   apply integral_congr_ae
@@ -67,7 +65,7 @@ theorem fusion_mass_expectation_interpolation {Ω : Type*} [MeasurableSpace Ω]
     rw [fusionUnrootedSegment, ENNReal.toReal_add
       (ENNReal.mul_ne_top ENNReal.ofReal_ne_top hbω.2)
       (ENNReal.mul_ne_top ENNReal.ofReal_ne_top haω.2)]
-    simp only [ENNReal.toReal_mul, ENNReal.toReal_ofReal ht.1,
+    simp [ENNReal.toReal_mul, ENNReal.toReal_ofReal ht.1,
       ENNReal.toReal_ofReal (sub_nonneg.mpr ht.2)]
     rfl
   rw [← ENNReal.toReal_rpow, he, hd]

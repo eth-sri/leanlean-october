@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.Analytic.NormalizedRealPolynomial
-public import DOZZ.Complex.Identity
+import DOZZ.Correlations.Analytic.NormalizedRealPolynomial
+import DOZZ.Complex.Identity
 
 /-! Real charge margins persist on positive complex polydiscs. -/
 
-@[expose] public section
 open Filter Topology Set
 namespace DOZZ.Proofs
 

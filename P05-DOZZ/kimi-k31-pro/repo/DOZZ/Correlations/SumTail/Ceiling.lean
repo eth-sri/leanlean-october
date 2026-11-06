@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.Residue.TailMargins
+import DOZZ.Correlations.Residue.TailMargins
 
 /-! The literal ceiling `DOZZ.twoInsertionTailCeiling` of the two-insertion tail and its five
 available remainder exponents. -/
 
-@[expose] public section
 open Set
 namespace DOZZ.Proofs
 

@@ -2,11 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.Annulus.PositiveBase
-public import DOZZ.GMC.Annulus.BallCover
-public import DOZZ.Brownian.Lateral.UpperConditionedBlocks
+import DOZZ.GMC.Annulus.PositiveBase
+import DOZZ.GMC.Annulus.BallCover
+import DOZZ.Brownian.Lateral.UpperConditionedBlocks
 
 /-!
 # Higher-order clipped-scale moment estimates
@@ -16,7 +15,6 @@ moment input is exactly the preceding induction interval, at the same charge and
 source circle field. No spatial independence or limiting rooted identity is used.
 -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Set Filter Topology
 open scoped ENNReal NNReal Distributions
@@ -170,7 +168,7 @@ theorem regularizedGMC_root_inner_moment_uniform_of_reference
       regularizedGMC P Xc γ t ω (Metric.ball u (2 * δ))) ^ q ∂P) =
       ENNReal.ofReal (δ ^ (-γ ^ 2 * q)) *
         gmcMassMoment P (regularizedGMC P Xc γ t) (Metric.ball u (2 * δ)) q := by
-    simp only [ENNReal.mul_rpow_of_nonneg _ _ hq.le, ENNReal.ofReal_rpow_of_pos hc,
+    simp [ENNReal.mul_rpow_of_nonneg _ _ hq.le, ENNReal.ofReal_rpow_of_pos hc,
       ← Real.rpow_mul hδ.le]
     rw [lintegral_const_mul' _ _ ENNReal.ofReal_ne_top]
     rfl
@@ -244,7 +242,7 @@ theorem regularizedGMC_root_clipped_higher_moment_uniform
         (regularizedGMC_measurable P X hX Xc hXc γ t)))
   have hb : (∫⁻ ω, (O ω) ^ q ∂P) ≤ ENNReal.ofReal (R ^ (-γ ^ 2 * q)) * C := by
     have hc : 0 < R ^ (-γ ^ 2) := Real.rpow_pos_of_pos hR _
-    simp only [O, ENNReal.mul_rpow_of_nonneg _ _ hq0.le,
+    simp [O, ENNReal.mul_rpow_of_nonneg _ _ hq0.le,
       ENNReal.ofReal_rpow_of_pos hc, ← Real.rpow_mul hR.le]
     rw [lintegral_const_mul' _ _ ENNReal.ofReal_ne_top]
     exact mul_le_mul' le_rfl (hRef t ht)
@@ -280,7 +278,7 @@ theorem regularizedGMC_reference_moment_uniform_of_preceding_order
   let _ : IsFiniteMeasure gmcReferenceMeasure := ⟨gmcReferenceMeasure_univ_ne_top.lt_top⟩
   have hq : 1 ≤ p - 1 := by linarith
   have hq0 : 0 < p - 1 := by linarith
-  have hcritq : (p - 1) + 1 < 4 / γ ^ 2 := by simpa only [sub_add_cancel] using hcrit
+  have hcritq : (p - 1) + 1 < 4 / γ ^ 2 := by simpa [sub_add_cancel] using hcrit
   let T : ℝ := Real.log (2 / R)
   let F : ℝ≥0∞ := ENNReal.ofReal (Real.exp (γ ^ 2 * gmcCircleChartRemainder R * (p - 1))) *
     (gmcRootHigherClippedConstant γ (p - 1) R C * gmcReferenceMeasure (Metric.ball 0 R))
@@ -294,7 +292,7 @@ theorem regularizedGMC_reference_moment_uniform_of_preceding_order
     ENNReal.ofReal_lt_top
   have hchart : ∀ x ∈ Metric.ball (0 : ℂ) R, ‖x‖ ≤ R := by
     intro x hx
-    exact (show ‖x‖ < R by simpa only [Metric.mem_ball, dist_zero_right] using hx).le
+    exact (show ‖x‖ < R by simpa [Metric.mem_ball, dist_zero_right] using hx).le
   refine ⟨F + B, ENNReal.add_lt_top.mpr ⟨hF, hB⟩, ?_⟩
   intro t ht
   by_cases hcut : 2 * Real.exp (-t) ≤ R
@@ -342,7 +340,7 @@ theorem regularizedGMC_reference_positive_moment_uniform
     | zero =>
       intro p hp hp2 hcrit
       exact regularizedGMC_reference_positive_moment_uniform_upto_two P X hX Xc hXc γ p hγ hp
-        (by simpa only [Nat.cast_zero, zero_add] using hp2) hcrit hR hRsmall
+        (by simpa [Nat.cast_zero, zero_add] using hp2) hcrit hR hRsmall
     | succ n ih =>
       intro p hp hpn hcrit
       by_cases hsmall : p ≤ (n : ℝ) + 2
@@ -350,7 +348,7 @@ theorem regularizedGMC_reference_positive_moment_uniform
       · have hn : 0 ≤ (n : ℝ) := Nat.cast_nonneg n
         have hq : 1 < p - 1 := by linarith
         have hqn : p - 1 ≤ (n : ℝ) + 2 := by
-          simp only [Nat.cast_add, Nat.cast_one] at hpn
+          simp [Nat.cast_add, Nat.cast_one] at hpn
           linarith
         have hqcrit : p - 1 < 4 / γ ^ 2 := by linarith
         obtain ⟨C, hC, hRef⟩ := ih (p - 1) hq hqn hqcrit
@@ -399,7 +397,7 @@ theorem gmc_reference_positive_moment_finite
         (openBallApprox_tsupport_subset 0 R k)
     have hunit : ∀ x ∈ Metric.closedBall (0 : ℂ) R, ‖x‖ ≤ 1 := by
       intro x hx
-      have hxR : ‖x‖ ≤ R := by simpa only [Metric.mem_closedBall, dist_zero_right] using hx
+      have hxR : ‖x‖ ≤ R := by simpa [Metric.mem_closedBall, dist_zero_right] using hx
       linarith
     exact regularizedGMC_test_integral_aemeasurable P X hX Xc hXc γ n
       (Metric.closedBall 0 R) Metric.isClosed_closedBall.measurableSet hunit
@@ -436,7 +434,7 @@ theorem gmc_reference_positive_moment_finite
     apply tendstoInMeasure_of_tendsto_ae (fun k => (hF k).aestronglyMeasurable)
     filter_upwards with ω
     let _ := hM.1 ω
-    simpa only [F, f, G, measureReal_def] using openBallApprox_integral_tendsto 0 R (M ω)
+    simpa [F, f, G, measureReal_def] using openBallApprox_integral_tendsto 0 R (M ω)
   have hpow (k : ℕ) : AEMeasurable (fun ω => ENNReal.ofReal (max (F k ω) 0) ^ p) P :=
     ENNReal.continuous_rpow_const.measurable.comp_aemeasurable
       (ENNReal.measurable_ofReal.comp_aemeasurable ((hF k).max aemeasurable_const))

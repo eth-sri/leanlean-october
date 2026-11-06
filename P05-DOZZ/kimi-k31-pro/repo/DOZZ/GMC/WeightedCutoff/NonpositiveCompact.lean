@@ -1,11 +1,9 @@
-module
 
-public import DOZZ.GMC.WeightedCutoff.RootUniform
-public import DOZZ.GMC.Moments.WeightedCutoffSubunit
+import DOZZ.GMC.WeightedCutoff.RootUniform
+import DOZZ.GMC.Moments.WeightedCutoffSubunit
 
 /-! # Uniform weighted cutoff estimates at nonpositive charges -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -56,7 +54,7 @@ theorem cutoffWeightedGmcBallMoment_nonpos_compact_gamma_chart
     have hm : (∫⁻ ω, (regularizedGMC P Xc γ (Real.log (1 / δ)) ω (Metric.ball z R)) ^ t.2 ∂P) ≤
         (A * ENNReal.ofReal ((R / (1 / 8 : ℝ)) ^ (beta (γ, t) / t.2))) ^ t.2 := by
       apply (ENNReal.rpow_inv_le_iff hp0).mp
-      simpa only [one_div, beta] using hr
+      simpa [one_div, beta] using hr
     have hAp : A ^ t.2 ≤ B ^ q := (ENNReal.rpow_le_rpow (le_max_right 1 A) hp0.le).trans
       (ENNReal.rpow_le_rpow_of_exponent_le hBone (hordersBound t ht))
     have hratio : 0 < R / (1 / 8 : ℝ) := by positivity

@@ -2,15 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.KahaneAffineSoftMaxBounds
-public import DOZZ.GMC.FiniteChaosSmoothEndpoint
-public import DOZZ.GMC.FiniteChaosMean
+import DOZZ.GMC.KahaneAffineSoftMaxBounds
+import DOZZ.GMC.FiniteChaosSmoothEndpoint
+import DOZZ.GMC.FiniteChaosMean
 
 /-! Finite Kahane comparison for finite maxima of affine tests. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped Distributions ENNReal NNReal
@@ -60,7 +58,7 @@ theorem affineSoftMax_integral_tendsto
       · linarith only [h.1, hL, neg_le_abs (affineMax a b (m ω))]
       · linarith only [h.2, herr, le_abs_self (affineMax a b (m ω))]
     have hlinear : |affineMax a b (m ω)| ≤ C * (‖m ω‖ + 1) := by
-      simpa only [Real.norm_eq_abs] using hbound (m ω)
+      simpa [Real.norm_eq_abs] using hbound (m ω)
     exact habs.trans (add_le_add hlinear le_rfl)
   · exact ae_of_all _ fun ω => affineSoftMax_tendsto a b (m ω)
 
@@ -70,20 +68,20 @@ theorem kahane_finite_affine_max
     [Fintype ι] [Fintype κ] [Nonempty κ]
     (PX : Measure ΩX) (PY : Measure ΩY)
     (X : ΩX → ι → ℝ) (Y : ΩY → ι → ℝ)
-    (hX : DOZZ.IsCenteredJointlyGaussian PX X) (hY : DOZZ.IsCenteredJointlyGaussian PY Y)
+    (hX : IsCenteredJointlyGaussian PX X) (hY : IsCenteredJointlyGaussian PY Y)
     (a : ι → ℝ) (ha : ∀ i, 0 ≤ a i) (γ : ℝ) (c d : κ → ℝ)
     (hcov : ∀ i j,
-      DOZZ.gaussianCovariance PX (fun ω => X ω i) (fun ω => X ω j) ≤
-        DOZZ.gaussianCovariance PY (fun ω => Y ω i) (fun ω => Y ω j)) :
-    (∫ ω, affineMax c d (DOZZ.finiteChaosMass PX X a γ ω) ∂PX) ≤
-      ∫ ω, affineMax c d (DOZZ.finiteChaosMass PY Y a γ ω) ∂PY := by
+      gaussianCovariance PX (fun ω => X ω i) (fun ω => X ω j) ≤
+        gaussianCovariance PY (fun ω => Y ω i) (fun ω => Y ω j)) :
+    (∫ ω, affineMax c d (finiteChaosMass PX X a γ ω) ∂PX) ≤
+      ∫ ω, affineMax c d (finiteChaosMass PY Y a γ ω) ∂PY := by
   let : IsProbabilityMeasure PX := hX.1
   let : IsProbabilityMeasure PY := hY.1
   have hmX := (finiteChaosMass_integral PX X hX a γ).1
   have hmY := (finiteChaosMass_integral PY Y hY a γ).1
   have horder (n : ℕ) :
-      (∫ ω, affineSoftMax c d ((n : ℝ) + 1) (DOZZ.finiteChaosMass PX X a γ ω) ∂PX) ≤
-        ∫ ω, affineSoftMax c d ((n : ℝ) + 1) (DOZZ.finiteChaosMass PY Y a γ ω) ∂PY := by
+      (∫ ω, affineSoftMax c d ((n : ℝ) + 1) (finiteChaosMass PX X a γ ω) ∂PX) ≤
+        ∫ ω, affineSoftMax c d ((n : ℝ) + 1) (finiteChaosMass PY Y a γ ω) ∂PY := by
     have hβ : 0 < (n : ℝ) + 1 := by positivity
     obtain ⟨B₁, B₂, hB₁, hB₂, hnonneg⟩ := affineSoftMax_derivative_bounds c d _ hβ.le
     apply kahane_finite_smooth_convex PX PY X Y hX hY a ha γ

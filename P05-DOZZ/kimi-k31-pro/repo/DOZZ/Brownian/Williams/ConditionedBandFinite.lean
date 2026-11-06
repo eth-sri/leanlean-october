@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.Brownian.Williams.ThinBand
-public import DOZZ.Brownian.Barrier.FirstHitFiniteDensity
+import DOZZ.Brownian.Williams.ThinBand
+import DOZZ.Brownian.Barrier.FirstHitFiniteDensity
 /-!
 # Actual finite laws of the upper-conditioned Brownian future
 
@@ -21,7 +20,6 @@ finite law needed by the Williams entrance limit; no conditioned avoidance
 or last-exit premise is imported or assumed.
 -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory Filter Set
 open scoped NNReal ENNReal Topology
 namespace DOZZ.Proofs
@@ -34,7 +32,7 @@ def brownianForeverSurvival (a x : ℝ) : Set BrownianPath :=
 theorem brownianForeverSurvival_eq_iInter (a x : ℝ) :
     brownianForeverSurvival a x = ⋂ n : ℕ, brownianLowerSurvival a x (n : ℝ≥0) := by
   ext p
-  simp only [brownianForeverSurvival,brownianLowerSurvival,mem_ofPred_eq,mem_iInter]
+  simp [brownianForeverSurvival,brownianLowerSurvival,mem_ofPred_eq,mem_iInter]
   constructor
   · intro h n t ht
     exact h t
@@ -48,7 +46,7 @@ theorem measurableSet_brownianForeverSurvival_joint (a : ℝ) :
   have he : {z : ℝ × BrownianPath | z.2 ∈ brownianForeverSurvival a z.1} =
       ⋂ n : ℕ, {z : ℝ × BrownianPath | z.2 ∈ brownianLowerSurvival a z.1 (n : ℝ≥0)} := by
     ext z
-    simp only [brownianForeverSurvival_eq_iInter,mem_iInter,mem_ofPred_eq]
+    simp [brownianForeverSurvival_eq_iInter,mem_iInter,mem_ofPred_eq]
   rw [he]
   exact MeasurableSet.iInter (fun n => measurableSet_brownianLowerSurvival_joint a n)
 
@@ -115,12 +113,12 @@ theorem brownianPath_foreverSurvival_state_future_lintegral (P : Measure Brownia
       (brownianForeverSurvival a x).indicator (fun p => F (x+p s+a*(s : ℝ),brownianShiftPath s p)) := by
     funext p
     have hh := brownianForeverSurvival_restart a x s p
-    simp only [J,Set.indicator_apply,mem_ofPred_eq]
+    simp [J,Set.indicator_apply,mem_ofPred_eq]
     by_cases hp : p ∈ brownianLowerSurvival a x s
     · by_cases hq : brownianShiftPath s p ∈ brownianForeverSurvival a (x+p s+a*(s : ℝ))
-      · simp only [ite_eq_left hp,ite_eq_left hq,ite_eq_left (hh.mpr ⟨hp,hq⟩)]
-      · simp only [ite_eq_left hp,ite_eq_right hq,ite_eq_right (fun h => hq (hh.mp h).2)]
-    · simp only [ite_eq_right hp,ite_eq_right (fun h => hp (hh.mp h).1)]
+      · simp [ite_eq_left hp,ite_eq_left hq,ite_eq_left (hh.mpr ⟨hp,hq⟩)]
+      · simp [ite_eq_left hp,ite_eq_right hq,ite_eq_right (fun h => hq (hh.mp h).2)]
+    · simp [ite_eq_right hp,ite_eq_right (fun h => hp (hh.mp h).1)]
   rw [← lintegral_indicator (measurableSet_brownianLowerSurvival a x s),hl,
     lintegral_indicator (measurableSet_brownianForeverSurvival a x)] at he
   have hL : Measurable (fun y : ℝ => ∫⁻ q, J (y,q) ∂P) :=
@@ -131,7 +129,7 @@ theorem brownianPath_foreverSurvival_state_future_lintegral (P : Measure Brownia
   congr 1
   have hj : (fun q => J (y,q)) = (brownianForeverSurvival a y).indicator (fun q => F (y,q)) := by
     funext q
-    simp only [J,Set.indicator_apply,mem_ofPred_eq]
+    simp [J,Set.indicator_apply,mem_ofPred_eq]
   rw [hj,lintegral_indicator (measurableSet_brownianForeverSurvival a y)]
 
 /-- Positive coordinates sampled at the already constructed elapsed-time schedule. -/
@@ -153,8 +151,8 @@ theorem brownianPositiveSamples_cons (a : ℝ) (n : ℕ) (ds : Fin (n+1) → ℝ
       (brownianPositiveSamples a n (Fin.tail ds) (x+p (ds 0)+a*(ds 0 : ℝ)) (brownianShiftPath (ds 0) p)) := by
   funext i
   refine Fin.cases ?_ (fun j => ?_) i
-  · simp only [brownianPositiveSamples,brownianFirstHitTimes,Fin.cons_zero]
-  · simp only [brownianPositiveSamples,brownianFirstHitTimes,Fin.cons_succ]
+  · simp [brownianPositiveSamples,brownianFirstHitTimes,Fin.cons_zero]
+  · simp [brownianPositiveSamples,brownianFirstHitTimes,Fin.cons_succ]
     change x+p (ds 0+brownianFirstHitTimes n (Fin.tail ds) j)+
         a*((ds 0+brownianFirstHitTimes n (Fin.tail ds) j : ℝ≥0) : ℝ) =
       (x+p (ds 0)+a*(ds 0 : ℝ))+
@@ -209,7 +207,7 @@ theorem brownianPath_foreverSurvival_finite_lintegral (P : Measure BrownianPath)
         change ENNReal.ofReal (brownianKilledTransitionPDF ν (ds 0) x y)*
             (∫⁻ q in brownianForeverSurvival ν y, F (Fin.cons y (brownianPositiveSamples ν n (Fin.tail ds) y q)) ∂P) = _
         rw [ih (Fin.tail ds) (fun i => hds i.succ) y hy _ hFy]
-      · simp only [brownianKilledTransitionPDF,hx,hy,and_false,ite_false,
+      · simp [brownianKilledTransitionPDF,hx,hy,and_false,ite_false,
           ENNReal.ofReal_zero,zero_mul]
 
 /-- The explicit finite killed density, with its final infinite-survival harmonic factor. -/
@@ -263,7 +261,7 @@ theorem brownianForeverFiniteIntegral_eq_density (a : ℝ) (n : ℕ) (ds : Fin n
       rw [← lintegral_const_mul _ hp]
       apply lintegral_congr
       intro ys
-      simp only [brownianForeverFinitePDF,Fin.cons_zero,Fin.tail_cons]
+      simp [brownianForeverFinitePDF,Fin.cons_zero,Fin.tail_cons]
       exact (mul_assoc _ _ _).symm
 
 
@@ -274,7 +272,7 @@ theorem lintegral_brownianForeverFinitePDF (P : Measure BrownianPath)
     (∫⁻ ys, brownianForeverFinitePDF ν n ds x ys) = ENNReal.ofReal (conditionedH ν x) := by
   have he := brownianPath_foreverSurvival_finite_lintegral P hB ν hν n ds hds x hx (fun _ => 1) measurable_const
   rw [brownianForeverFiniteIntegral_eq_density ν n ds x (fun _ => 1) measurable_const] at he
-  simp only [mul_one,lintegral_one,Measure.restrict_apply MeasurableSet.univ,univ_inter] at he
+  simp [mul_one,lintegral_one,Measure.restrict_apply MeasurableSet.univ,univ_inter] at he
   exact he.symm.trans (brownianPath_foreverSurvival_measure P hB ν x hν hx.le)
 
 private theorem harmonic_positive (ν x : ℝ) (hν : 0 < ν) (hx : 0 < x) :
@@ -289,10 +287,10 @@ theorem conditionedPositiveTransitionDensity_eq_killed (ν : ℝ) (hν : 0 < ν)
       brownianKilledTransitionPDF ν T x y*conditionedH ν y/conditionedH ν x := by
   by_cases hy : 0 < y
   · have hTR : 0 < (T : ℝ) := hT
-    simp only [conditionedPositiveTransitionDensity,hν.le,hTR,hx,hy,and_self,ite_true,
+    simp [conditionedPositiveTransitionDensity,hν.le,hTR,hx,hy,and_self,ite_true,
       brownianKilledTransitionPDF,brownianHeatDensity,gaussianPDFReal,sub_zero]
     ring
-  · simp only [conditionedPositiveTransitionDensity,hy,and_false,ite_false,
+  · simp [conditionedPositiveTransitionDensity,hy,and_false,ite_false,
       brownianKilledTransitionPDF,zero_mul,zero_div]
 
 /-- The exact killed-to-Doob harmonic cancellation retains every finite transition factor. -/
@@ -332,7 +330,7 @@ theorem brownianForeverFinitePDF_eq_harmonic_mul_doob (ν : ℝ) (hν : 0 < ν)
       by_cases hy : 0 < ys 0
       · rw [ih (Fin.tail ds) (fun i => hds i.succ) (ys 0) hy (Fin.tail ys),← mul_assoc,
           brownianKilledTransitionPDF_harmonic_cancel ν hν (ds 0) (hds 0) x (ys 0) hx,mul_assoc]
-      · simp only [brownianKilledTransitionPDF,conditionedPositiveTransitionDensity,hx,hy,and_false,
+      · simp [brownianKilledTransitionPDF,conditionedPositiveTransitionDensity,hx,hy,and_false,
           ite_false,ENNReal.ofReal_zero,mul_zero,zero_mul]
 
 /-- The normalized actual finite Doob density has mass one. -/
@@ -402,13 +400,13 @@ theorem brownianPath_below_finite_reflect_lintegral (P : Measure BrownianPath)
         obtain ⟨t,ht⟩ := hp.2
         have hh := h t
         change p t+(-ν)*(t : ℝ) < x at hh
-        have hh' : p t-ν*(t : ℝ) < x := by simpa only [neg_mul,← sub_eq_add_neg] using hh
+        have hh' : p t-ν*(t : ℝ) < x := by simpa [neg_mul,← sub_eq_add_neg] using hh
         rwa [ht] at hh'
       · intro h t
         have ht := le_csSup hp.1 (mem_range_self t)
         change p t-ν*(t : ℝ) ≤ driftedBrownianMaximum ν p at ht
         change p t+(-ν)*(t : ℝ) < x
-        simpa only [neg_mul,← sub_eq_add_neg] using ht.trans_lt h
+        simpa [neg_mul,← sub_eq_add_neg] using ht.trans_lt h
     rw [hw,hs]
     exact le_iff_lt_or_eq.trans (or_iff_left hn)
   let J : BrownianPath → ℝ≥0∞ := (brownianForeverSurvival ν x).indicator
@@ -430,7 +428,7 @@ theorem brownianPath_below_finite_reflect_lintegral (P : Measure BrownianPath)
       change x+(-p (brownianFirstHitTimes n ds i))+ν*(brownianFirstHitTimes n ds i : ℝ) =
         x-(p (brownianFirstHitTimes n ds i)+(-ν)*(brownianFirstHitTimes n ds i : ℝ))
       ring
-    simp only [J,E,Set.indicator_apply,mem_ofPred_eq,hcoords,hp]
+    simp [J,E,Set.indicator_apply,mem_ofPred_eq,hcoords,hp]
   rw [lintegral_congr_ae he,lintegral_indicator hE] at ht
   have hr : (∫⁻ p, J p ∂P) =
       ∫⁻ p in brownianForeverSurvival ν x, F (brownianPositiveSamples ν n ds x p) ∂P :=

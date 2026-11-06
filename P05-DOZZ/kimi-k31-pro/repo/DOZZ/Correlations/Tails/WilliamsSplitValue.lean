@@ -2,21 +2,19 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.Tails.WilliamsAuxiliaryLaw
-public import DOZZ.Brownian.Reflection.MassBlocks
+import DOZZ.Correlations.Tails.WilliamsAuxiliaryLaw
+import DOZZ.Brownian.Reflection.MassBlocks
 
 /-! Pointwise reconstruction of the drifted Brownian path from its marked maximum split. -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal NNReal
 
 namespace DOZZ.Proofs
 
 /-- The forward conditioned candidate and reversed stopped prefix, in the half ordering of
-`DOZZ.twoSidedConditionedValue`. -/
+`twoSidedConditionedValue`. -/
 noncomputable def williamsSplitPaths (ν : ℝ) (p : BrownianPath) :
     BrownianPath × BrownianPath :=
   ((williamsReversedMark ν p).2, (williamsReversedMark ν p).1.2.2)
@@ -44,8 +42,7 @@ theorem williams_split_value (ν : ℝ) (p : BrownianPath) (t : ℝ≥0) :
   · have hts : t < σ := lt_of_not_ge hst
     have hs : ¬ 0 ≤ (t : ℝ) - (σ : ℝ) := not_le.mpr
       (sub_neg.mpr (by exact_mod_cast hts))
-    have hnn : 0 ≤ -((t : ℝ) - (σ : ℝ)) := by
-      exact neg_nonneg.mpr (le_of_lt (sub_neg.mpr (by exact_mod_cast hts)))
+    have hnn : 0 ≤ -((t : ℝ) - (σ : ℝ)) := neg_nonneg.mpr (le_of_lt (sub_neg.mpr (by exact_mod_cast hts)))
     have he : (NNReal.mk (-((t : ℝ) - (σ : ℝ))) hnn) = σ - t := by
       apply NNReal.eq
       rw [NNReal.coe_sub hts.le]

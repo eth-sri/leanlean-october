@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.SharpMoments.LaplaceTail
-public import DOZZ.GMC.Annulus.ReferenceIntensity
+import DOZZ.GMC.SharpMoments.LaplaceTail
+import DOZZ.GMC.Annulus.ReferenceIntensity
 
 /-! # A uniform a-priori bound on cutoff Laplace transforms
 
@@ -14,7 +13,6 @@ cutoff for some `1 < p < 4/γ²`. Paley–Zygmund then gives a fixed positive pr
 mass exceeds `σ(D)/2`, so its Laplace transform stays a fixed amount below one at large levels,
 uniformly in the cutoff. This is the a-priori input that starts the small-deviation recursion. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped ENNReal NNReal
@@ -27,11 +25,7 @@ theorem regularizedGMC_lintegral_apply_eq_reference
     (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
     (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc) (γ r : ℝ)
     (A : Set ℂ) (hA : MeasurableSet A) :
-    ∫⁻ ω, regularizedGMC P Xc γ r ω A ∂P = gmcReferenceMeasure A := by
-  have h := regularizedGMC_lintegral_test_eq_reference P X hX Xc hXc γ r
-    (A.indicator 1) (measurable_one.indicator hA)
-  simp only [lintegral_indicator_one hA] at h
-  exact h
+    ∫⁻ ω, regularizedGMC P Xc γ r ω A ∂P = gmcReferenceMeasure A := DOZZ.Proofs.regularizedGMC_lintegral_eq_reference P X hX Xc hXc γ r A hA
 
 /-- With a uniform `p`-th moment bound, the cutoff mass of a set exceeds half its reference mass
 with probability bounded below uniformly in the cutoff. -/
@@ -103,7 +97,7 @@ theorem cutoffLaplace_apriori
     have hne : regularizedGMC P Xc γ r ω D ≠ ⊤ := measure_ne_top _ _
     change h < (regularizedGMC P Xc γ r ω D).toReal
     have := (ENNReal.ofReal_lt_iff_lt_toReal (by positivity) hne).mp hlt
-    exact this
+    assumption
   have hPE : ENNReal.ofReal π₀ ≤ P E :=
     (hprob r (hCbound r hr)).trans (measure_mono_ae hsubset)
   have hPEreal : π₀ ≤ P.real E := by

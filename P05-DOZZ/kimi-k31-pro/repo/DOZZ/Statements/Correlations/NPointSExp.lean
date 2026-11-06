@@ -2,29 +2,27 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.Defs.Distr
-public import DOZZ.Statements.Defs.ExtendedSeiberg3
-public import DOZZ.Statements.Defs.IsEquatorGFF
-public import DOZZ.Statements.Defs.IsGMCOf
-public import DOZZ.Statements.Defs.NormPlus
-public import DOZZ.Statements.Defs.Q
-public import DOZZ.Statements.Defs.StructureConstant
-public import DOZZ.Statements.Defs.UnitVolumeStructureConstant
-public import DOZZ.Statements.GMC.CoulombMass
-public import DOZZ.Statements.Brownian.BrownianPath
-public import DOZZ.Statements.Brownian.IsReflectionData
-public import DOZZ.Statements.Brownian.IsSourceLateralProjection
-public import DOZZ.Statements.Brownian.ReflectionBarR
-public import DOZZ.Statements.Brownian.ReflectionExponent
-public import DOZZ.Statements.Brownian.ReflectionPoleFree
-public import DOZZ.Statements.Brownian.ReflectionR
-public import Mathlib.Analysis.Analytic.Basic
+import DOZZ.Statements.Defs.Distr
+import DOZZ.Statements.Defs.ExtendedSeiberg3
+import DOZZ.Statements.Defs.IsEquatorGFF
+import DOZZ.Statements.Defs.IsGMCOf
+import DOZZ.Statements.Defs.NormPlus
+import DOZZ.Statements.Defs.Q
+import DOZZ.Statements.Defs.StructureConstant
+import DOZZ.Statements.Defs.UnitVolumeStructureConstant
+import DOZZ.Statements.GMC.CoulombMass
+import DOZZ.Statements.Brownian.BrownianPath
+import DOZZ.Statements.Brownian.IsReflectionData
+import DOZZ.Statements.Brownian.IsSourceLateralProjection
+import DOZZ.Statements.Brownian.ReflectionBarR
+import DOZZ.Statements.Brownian.ReflectionExponent
+import DOZZ.Statements.Brownian.ReflectionPoleFree
+import DOZZ.Statements.Brownian.ReflectionR
+import Mathlib.Analysis.Analytic.Basic
 
 /-! The definition `DOZZ.nPointSExp`. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology TopologicalSpace Set
 open scoped ENNReal NNReal Topology

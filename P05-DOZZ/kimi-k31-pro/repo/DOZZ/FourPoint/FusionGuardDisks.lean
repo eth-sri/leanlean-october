@@ -1,3 +1,2 @@
-module
-public import DOZZ.FourPoint.RetainedAnnuliGeometry
-public import DOZZ.Statements.FourPoint.FourFusionMass
+import DOZZ.FourPoint.RetainedAnnuliGeometry
+import DOZZ.Statements.FourPoint.FourFusionMass

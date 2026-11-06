@@ -2,16 +2,14 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.FiniteChaosNegativePower
-public import Mathlib.MeasureTheory.Integral.Lebesgue.Add
-public import Mathlib.MeasureTheory.Measure.Prod
+import DOZZ.GMC.FiniteChaosNegativePower
+import Mathlib.MeasureTheory.Integral.Lebesgue.Add
+import Mathlib.MeasureTheory.Measure.Prod
 
 /-! Mellin representation of negative moments for measurable nonnegative masses, including
 possible zero values. -/
 
-@[expose] public section
 
 open MeasureTheory Filter Set Topology
 open scoped ENNReal
@@ -44,11 +42,9 @@ theorem nonneg_rpow_neg_lintegral_eq_weighted_laplace
   let mε : ℕ → Ω → ℝ := fun n ω => m ω + ε n
   have hmεpos (n : ℕ) (ω : Ω) : 0 < mε n ω :=
     lt_of_lt_of_le (hεpos n) (by dsimp [mε]; linarith [hm ω])
-  have hmεA (n : ℕ) : AEMeasurable (mε n) P := by
-    exact hmA.add_const (ε n)
+  have hmεA (n : ℕ) : AEMeasurable (mε n) P := hmA.add_const (ε n)
   let ψ : ℝ → ℝ≥0∞ := fun x => ENNReal.rpow (ENNReal.ofReal x) (-q)
-  have hψcont : Continuous ψ := by
-    exact ENNReal.continuous_rpow_const.comp ENNReal.continuous_ofReal
+  have hψcont : Continuous ψ := ENNReal.continuous_rpow_const.comp ENNReal.continuous_ofReal
   let L : ℕ → Ω → ℝ≥0∞ := fun n ω => ψ (mε n ω)
   let Llim : Ω → ℝ≥0∞ := fun ω => ψ (m ω)
   have hLmeas : ∀ n, AEMeasurable (L n) P := by
@@ -117,7 +113,7 @@ theorem nonneg_rpow_neg_lintegral_eq_weighted_laplace
     have hright : ∀ᵐ x ∂P, ∀ᵐ y ∂ν, (x, y) ∈ s := by
       filter_upwards [] with x
       filter_upwards [ae_restrict_mem measurableSet_Ioi] with y hy
-      exact hy
+      assumption
     have hleft := (Measure.ae_prod_mem_iff_ae_ae_mem hs).2 hright
     simpa [s, Set.mem_Ioi] using hleft
   have hFmono : ∀ᵐ z ∂(P.prod ν), Monotone (fun n => F n z) := by
@@ -196,8 +192,7 @@ theorem nonneg_rpow_neg_lintegral_eq_weighted_laplace
         funext z
         cases z
         rfl
-      rw [hEq]
-      exact hFlimmeas
+      rwa [hEq]
     have hfactor : ∀ᵐ t ∂ν,
         (∫⁻ ω, Flim (ω, t) ∂P) = w t *
           (∫⁻ ω, ENNReal.ofReal (Real.exp (-(m ω * t))) ∂P) := by

@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.Crossing.CollisionFourPoint
-public import DOZZ.Hypergeom.ClassificationPhysicalNormalization
+import DOZZ.FourPoint.Crossing.CollisionFourPoint
+import DOZZ.Hypergeom.ClassificationPhysicalNormalization
 import Mathlib.Tactic
 
 /-! # The normalization part of physical diagonal classification
@@ -15,7 +14,6 @@ conclusion of the BPZ theorem `DOZZ.degenerateFourPoint_BPZ`. The generic Gauss 
 and the collision limit supply the normalized physical representation.
 -/
 
-public section
 open MeasureTheory Filter Topology
 namespace DOZZ.Proofs
 
@@ -43,16 +41,13 @@ theorem gammaHalf_zero_channel_of_gauss_solution {Ω : Type*} [MeasurableSpace �
     hγ hγ2 hμ haF hb hc hs0 hX hM
   have hlim := gammaHalf_fourPoint_collision_limit P X M γ μ a b c
     hγ hγ2 hμ ha hb hc hs0 hX hM
-  have hcont : ContinuousAt (fun z => fourPointT P M γ μ (-γ / 2) a b c z) 0 := by
-    exact continuousAt_of_tendsto_nhds hlim
+  have hcont : ContinuousAt (fun z => fourPointT P M γ μ (-γ / 2) a b c z) 0 := continuousAt_of_tendsto_nhds hlim
   have hnorm := real_gauss_solution_physical_normalization hH γ (γ / 2) a b c
     hγ hγ2 (Or.inl rfl) hs ha hb hc
     (fun z => fourPointT P M γ μ (-γ / 2) a b c z) hT hcont
-  dsimp only
+  dsimp
   intro z hz
   have hzrep := hnorm z hz
-  simp only [neg_div] at hzrep ⊢
-  rw [hzero] at hzrep
-  exact hzrep
-
+  simp [neg_div] at hzrep ⊢
+  rwa [hzero] at hzrep
 end DOZZ.Proofs

@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GFF.TorusFourierTestApprox
+import DOZZ.GFF.TorusFourierTestApprox
 import Mathlib.MeasureTheory.Measure.Haar.NormedSpace
 
 /-!
@@ -14,7 +13,6 @@ The local chart identifies the compactly supported plane `L²` norm with the uni
 rescaling by the physical box side.
 -/
 
-@[expose] public section
 
 noncomputable section
 
@@ -189,4 +187,3 @@ theorem integral_sq_eq_torusBox (L : ℝ) (hL : 0 < L) (g : ℂ → ℝ)
 
 end DOZZ
 
-end

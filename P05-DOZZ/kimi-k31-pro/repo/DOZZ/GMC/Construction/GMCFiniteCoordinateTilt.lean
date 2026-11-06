@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.Construction.GMCGeneralTiltJointCutoff
-public import DOZZ.GMC.Construction.GMCGeneralTiltBasisProxy
+import DOZZ.GMC.Construction.GMCGeneralTiltJointCutoff
+import DOZZ.GMC.Construction.GMCGeneralTiltBasisProxy
 
 /-! Finite-dimensional coordinate laws for one regularized GMC cutoff. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped Distributions ENNReal NNReal BoundedContinuousFunction

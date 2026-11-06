@@ -2,12 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Complex.Basic
-public import Mathlib.Analysis.Complex.CauchyIntegral
-public import Mathlib.Analysis.Analytic.IsolatedZeros
-public import Mathlib.Analysis.Calculus.FDeriv.Pi
+import DOZZ.Complex.Basic
+import Mathlib.Analysis.Complex.CauchyIntegral
+import Mathlib.Analysis.Analytic.IsolatedZeros
+import Mathlib.Analysis.Calculus.FDeriv.Pi
 
 /-!
 # Identity from real boxes
@@ -18,7 +17,6 @@ equality across an open preconnected domain. This argument does not assume
 a several-variable power series theorem.
 -/
 
-@[expose] public section
 
 open Filter Topology Set
 
@@ -36,11 +34,11 @@ theorem frequently_eq_of_real_interval (a R : ℝ) (hR : 0 < R) (f g : ℂ → �
   have hδε : δ < ε := (half_lt_self (lt_min hε hR)).trans_le (min_le_left _ _)
   have hδR : δ < R := (half_lt_self (lt_min hε hR)).trans_le (min_le_right _ _)
   refine ⟨((a + δ : ℝ) : ℂ), hball ⟨?_, ?_⟩, heq (a + δ) ?_⟩
-  · simpa only [Metric.mem_ball, dist_eq_norm, ← Complex.ofReal_sub,
+  · simpa [Metric.mem_ball, dist_eq_norm, ← Complex.ofReal_sub,
       add_sub_cancel_left, Complex.norm_real, Real.norm_eq_abs, abs_of_pos hδ] using hδε
-  · simp only [mem_compl_iff, mem_singleton_iff, Complex.ofReal_inj, add_eq_left]
+  · simp [mem_compl_iff, mem_singleton_iff, add_eq_left]
     exact hδ.ne'
-  · simpa only [add_sub_cancel_left, abs_of_pos hδ] using hδR
+  · simpa [add_sub_cancel_left, abs_of_pos hδ] using hδR
 
 /-- Scalar holomorphic identity from the real diameter of a disk. -/
 theorem eqOn_ball_of_real_interval (a R : ℝ) (hR : 0 < R) (f g : ℂ → ℂ)
@@ -125,7 +123,7 @@ theorem eqOn_of_preconnected_of_eventuallyEq {N : ℕ} (U : Set (Fin N → ℂ))
     obtain ⟨R, hR, hRU⟩ := Metric.mem_nhds_iff.mp (hU.mem_nhds hz.2)
     obtain ⟨b, hbZ, hbdist⟩ := Metric.mem_closure_iff.mp hz.1 R hR
     have hb : b ∈ Metric.ball z R := by
-      simpa only [Metric.mem_ball, dist_comm] using hbdist
+      simpa [Metric.mem_ball, dist_comm] using hbdist
     have hid := eqOn_ball_of_eventuallyEq z R f g (hf.mono hRU) (hg.mono hRU) b hb hbZ
     exact Filter.eventually_of_mem (Metric.ball_mem_nhds z hR) fun w hw => hid hw
   have hsubset := hconn.subset_of_closure_inter_subset hZ hseed hclosed
@@ -176,8 +174,8 @@ theorem update_mem_polydisc {N : ℕ} (a : Fin N → ℂ) (R : Fin N → ℝ)
   intro j
   by_cases hj : j = i
   · subst j
-    simpa only [Function.update_self, Metric.mem_ball, dist_eq_norm] using hw
-  · simpa only [Function.update_of_ne hj] using hz j
+    simpa [Function.update_self, Metric.mem_ball, dist_eq_norm] using hw
+  · simpa [Function.update_of_ne hj] using hz j
 
 /-- Scalar identity, one coordinate at a time, fills a real-centered polydisc.
 
@@ -205,7 +203,7 @@ theorem eqOn_polydisc_of_real_box {N : ℕ} (a : Fin N → ℝ) (R : Fin N → �
         intro x hx
         have hempty : mixedCoordinates ∅ z x = fun i => (x i : ℂ) := by
           funext i
-          simp only [mixedCoordinates, Finset.notMem_empty, ite_false]
+          simp [mixedCoordinates, Finset.notMem_empty]
         rw [hempty]
         exact heq x hx
     | @insert i S hi hS =>
@@ -227,28 +225,26 @@ theorem eqOn_polydisc_of_real_box {N : ℕ} (a : Fin N → ℝ) (R : Fin N → �
             intro j
             by_cases hj : j = i
             · subst j
-              simpa only [Function.update_self] using hw
-            · simpa only [Function.update_of_ne hj] using hx j
+              simpa [Function.update_self] using hw
+            · simpa [Function.update_of_ne hj] using hx j
           have hid := hS (Function.update x i w) hx'
-          rw [mixedCoordinates_update S z x i hi w] at hid
-          exact hid
+          rwa [mixedCoordinates_update S z x i hi w] at hid
         have hid := eqOn_ball_of_real_interval (a i) (R i) (hR i)
           (f ∘ Function.update y i) (g ∘ Function.update y i) hfl hgl hreal
           (show z i ∈ Metric.ball (a i : ℂ) (R i) by
-            simpa only [Metric.mem_ball, dist_eq_norm] using hz i)
-        rw [mixedCoordinates_insert]
-        exact hid
+            simpa [Metric.mem_ball, dist_eq_norm] using hz i)
+        rwa [mixedCoordinates_insert]
   have hcenter : ∀ i, |a i - a i| < R i := by simpa using hR
   have hall : mixedCoordinates Finset.univ z a = z := by
     funext i
-    simp only [mixedCoordinates, Finset.mem_univ, ite_true]
-  simpa only [hall] using hmix Finset.univ a hcenter
+    simp [mixedCoordinates, Finset.mem_univ]
+  simpa [hall] using hmix Finset.univ a hcenter
 
 /-- The open polydisc is contained in the product of its closed coordinate disks. -/
 theorem complexPolydisc_subset_closed_pi {N : ℕ} (a : Fin N → ℂ) (R : Fin N → ℝ) :
     complexPolydisc a R ⊆ Set.pi Set.univ (fun i => Metric.closedBall (a i) (R i)) := by
   intro z hz i _
-  simpa only [Metric.mem_closedBall, dist_eq_norm] using (hz i).le
+  simpa [Metric.mem_closedBall, dist_eq_norm] using (hz i).le
 
 /-- Closed coordinate disks with strictly smaller radii fit in a norm ball. -/
 theorem closed_pi_subset_ball {N : ℕ} (a : Fin N → ℂ) (R : Fin N → ℝ)
@@ -259,7 +255,7 @@ theorem closed_pi_subset_ball {N : ℕ} (a : Fin N → ℂ) (R : Fin N → ℝ)
   intro i
   have hi := hz i (mem_univ i)
   have hnorm : ‖z i - a i‖ ≤ R i := by
-    simpa only [Metric.mem_closedBall, dist_eq_norm] using hi
+    simpa [Metric.mem_closedBall, dist_eq_norm] using hi
   exact hnorm.trans_lt (hR i)
 
 /-- The product of closed coordinate disks is compact in the finite product topology. -/

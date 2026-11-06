@@ -2,19 +2,17 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.GMC.GmcReferenceMeasure
-public import DOZZ.Statements.Defs.RegularizedGMC
-public import DOZZ.GMC.CircleAverageGaussian
-public import DOZZ.GMC.CirclePotential
-public import DOZZ.GMC.FiniteChaosMean
-public import Mathlib.MeasureTheory.Integral.Prod
-public import Mathlib.MeasureTheory.Measure.Prod
+import DOZZ.Statements.GMC.GmcReferenceMeasure
+import DOZZ.Statements.Defs.RegularizedGMC
+import DOZZ.GMC.CircleAverageGaussian
+import DOZZ.GMC.CirclePotential
+import DOZZ.GMC.FiniteChaosMean
+import Mathlib.MeasureTheory.Integral.Prod
+import Mathlib.MeasureTheory.Measure.Prod
 
 /-! The finite-cutoff circle chaos has the reference measure as its expected intensity. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory
 open scoped Distributions ENNReal NNReal
@@ -54,14 +52,10 @@ theorem regularizedGMC_lintegral_eq_reference
   have hnormPlus : Measurable (fun x : ℂ => normPlus x) := by
     unfold normPlus
     exact measurable_const.max measurable_norm
-  have hnormProduct : Measurable (fun p : Ω × ℂ => normPlus p.2) :=
-    hnormPlus.comp measurable_snd
-  have hVproduct : Measurable (fun p : Ω × ℂ => V p.2) := hVmeas.comp measurable_snd
   have hdensity : Measurable density := by
     dsimp [density]
     fun_prop
-  have hG : Measurable G := by
-    exact Measurable.ite (hA.preimage measurable_snd) hdensity measurable_const
+  have hG : Measurable G := Measurable.ite (hA.preimage measurable_snd) hdensity measurable_const
   have hV (x : ℂ) : gaussianVariance P (fun ω => Xc ω x r) = V x := by
     simp [V, gaussianVariance, gaussianCovariance, pow_two]
   have hwick (x : ℂ) :

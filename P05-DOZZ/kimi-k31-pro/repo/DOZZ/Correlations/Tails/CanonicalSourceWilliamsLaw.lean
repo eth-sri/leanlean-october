@@ -2,14 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.Tails.TranslatedCanonicalWilliamsLaw
-public import DOZZ.Correlations.Tails.WilliamsSourceInputLaw
+import DOZZ.FourPoint.Reflected.VariableCutMeasurable
+import DOZZ.Correlations.Tails.TranslatedCanonicalWilliamsLaw
+import DOZZ.Correlations.Tails.WilliamsSourceInputLaw
 
 /-! The translated canonical mass expressed using the original reflection witness. -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal NNReal
 
@@ -32,7 +31,7 @@ theorem translated_canonical_source_williams_law
   have hQν : IsNegativeConditionedBrownianLaw (Q γ-α) Qν := hData.1.1.2
   have hl := translated_canonical_williams_mass_law P X Xc hX hc hm hcont
     z γ α hγ hγ2 hα N hN Qν hQν
-  dsimp only at hl
+  dsimp at hl
   have hZt := translated_lateral_isLateralGMCOf P X Xc hX hc hm hcont
     z γ hγ hγ2 N hN
   rw [isLateralGMCOf_map_eq P P γ _ Z hZt hData.2.1] at hl
@@ -44,16 +43,6 @@ theorem actual_cut_mass_joint_aemeasurable
     (B : Ω → BrownianPath × BrownianPath) (Z : Ω → Measure ℝ)
     (hB : AEMeasurable B P) (hZ : AEMeasurable Z P)
     (hfin : ∀ᵐ ω ∂P, ∀ a b : ℝ, Z ω (Set.Icc a b) < ⊤) :
-    AEMeasurable (fun q : ℝ × Ω => twoSidedReflectionCutMass γ q.1 B Z q.2) (μ.prod P) := by
-  have hpair := hB.prodMk hZ
-  have hInp : AEMeasurable (fun q : ℝ × Ω => (q.1,(B q.2,Z q.2))) (μ.prod P) :=
-    measurable_fst.aemeasurable.prodMk
-      (hpair.comp_quasiMeasurePreserving measurePreserving_snd.quasiMeasurePreserving)
-  have hm := (measurable_williamsCutMassCode γ).comp_aemeasurable hInp
-  apply hm.congr
-  have hf := (measurePreserving_snd (μ := μ) (ν := P)).quasiMeasurePreserving.ae hfin
-  filter_upwards [hf] with q hq
-  exact williamsCutMassCode_eq γ q.1 (B q.2) (Z q.2) hq
-
+    AEMeasurable (fun q : ℝ × Ω => twoSidedReflectionCutMass γ q.1 B Z q.2) (μ.prod P) := DOZZ.Proofs.reflected_williams_variable_cut_aemeasurable P μ γ B Z hB hZ hfin
 
 end DOZZ.Proofs

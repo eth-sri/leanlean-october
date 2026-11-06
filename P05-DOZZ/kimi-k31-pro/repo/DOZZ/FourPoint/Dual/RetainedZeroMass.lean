@@ -2,16 +2,14 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.Dual.OuterInverseGuard
-public import DOZZ.Statements.GMC.EquatorGFFRootedGMCIdentity
+import DOZZ.FourPoint.Dual.OuterInverseGuard
+import DOZZ.Statements.GMC.EquatorGFFRootedGMCIdentity
 import DOZZ.GMC.SharpMoments.SeibergWeight
 import Mathlib.Tactic
 
 /-! # The zero kernel with an independent retained radius -/
 
-@[expose] public section
 open MeasureTheory Set
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -41,7 +39,7 @@ theorem dual_retainedZero_rooted_identity {Ω : Type*} [MeasurableSpace Ω]
     ∫⁻ u, ∫⁻ ω, f u *
       (dualRetainedZeroMass γ α₁ α₂ α₃ r (gmcRootedMeasure γ u (M ω))) ^ (-q)
         ∂P ∂gmcReferenceMeasure := by
-  apply DOZZ.equatorGFF_rooted_GMC_identity P X hX γ hγ hγ₂ M hM
+  apply equatorGFF_rooted_GMC_identity P X hX γ hγ hγ₂ M hM
     (fun u _ μ => f u * (dualRetainedZeroMass γ α₁ α₂ α₃ r μ) ^ (-q))
   exact (hf.comp measurable_fst).mul
     (((dual_retainedZero_measure_measurable γ α₁ α₂ α₃ r).comp
@@ -57,7 +55,7 @@ theorem dual_retainedZero_fixed_disk_lower (γ α₁ α₂ α₃ r : ℝ) (μ : 
   have hsub : Metric.ball (3 : ℂ) (1 / 8) ⊆ D := by
     intro x hx
     have hdist : ‖x - 3‖ < 1 / 8 := by
-      simpa only [Metric.mem_ball, dist_eq_norm] using hx
+      simpa [Metric.mem_ball, dist_eq_norm] using hx
     have hh := norm_sub_norm_le (3 : ℂ) x
     rw [show ‖(3 : ℂ)‖ = 3 by norm_num, norm_sub_rev] at hh
     exact hr.trans (by linarith only [hh, hdist])
@@ -66,9 +64,7 @@ theorem dual_retainedZero_fixed_disk_lower (γ α₁ α₂ α₃ r : ℝ) (μ : 
     fin_cases i <;> simp
   have h := coulombMass_fixed_disk_lower γ (μ.restrict D)
     (![-2 / γ, α₁, α₂] : Fin 3 → ℝ) ![0, 0, 1] α₃ hy
-  rw [Measure.restrict_apply measurableSet_ball, inter_eq_left.mpr hsub] at h
-  exact h
-
+  rwa [Measure.restrict_apply measurableSet_ball, inter_eq_left.mpr hsub] at h
 /-- Uniform inverse moments of the literal retained mass, at every nonnegative inverse order. -/
 theorem dual_retainedZero_inverse_moment_uniform
     {Ω : Type*} [MeasurableSpace Ω]
@@ -80,13 +76,13 @@ theorem dual_retainedZero_inverse_moment_uniform
         ENNReal.ofReal C := by
   let w : ℝ := (2 : ℝ) ^ (-∑ i : Fin 3, |γ * (![-2 / γ, α₁, α₂] : Fin 3 → ℝ) i|) *
     (4 : ℝ) ^ (-|γ * α₃|)
-  have hw : 0 < w := by dsimp only [w]; positivity
+  have hw : 0 < w := by dsimp [w]; positivity
   have hp : -q < 4 / γ ^ 2 := lt_of_le_of_lt (neg_nonpos.mpr hq) (by positivity)
   obtain ⟨Cb, hCb, hball⟩ := equatorGFF_GMC_ball_moment_bound P X hX γ hγ hγ₂ M hM
     (-q) hp {(3 : ℂ)} isCompact_singleton
   let e : ℝ := γ * Q γ * (-q) - γ ^ 2 * (-q) ^ 2 / 2
   let C : ℝ := w ^ (-q) * (Cb * (1 / 8 : ℝ) ^ e)
-  have hC : 0 < C := by dsimp only [C]; positivity
+  have hC : 0 < C := by dsimp [C]; positivity
   refine ⟨C, hC, ?_⟩
   intro r hr
   have hb (ω : Ω) : dualRetainedZeroMass γ α₁ α₂ α₃ r (M ω) ^ (-q) ≤

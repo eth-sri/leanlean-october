@@ -2,12 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.GMC.FieldChaosMass
-public import DOZZ.Statements.GMC.IsCenteredGaussianField
-public import DOZZ.GMC.CircleAverage
-public import DOZZ.GMC.Annulus.PositiveRoot
+import DOZZ.Statements.GMC.FieldChaosMass
+import DOZZ.Statements.GMC.IsCenteredGaussianField
+import DOZZ.GMC.CircleAverage
+import DOZZ.GMC.Annulus.PositiveRoot
 
 /-! # The circle-average field at a fixed radius as a Gaussian field
 
@@ -18,7 +17,6 @@ chart is `log (1 / max ‖x - y‖ e^{-r})` up to a uniform constant, and which 
 as the two circles stay within unit distance. These are the inputs for every Kahane comparison
 of cutoff chaoses. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory
 open scoped Distributions ENNReal NNReal
@@ -69,7 +67,7 @@ theorem regularizedGMC_weighted_eq_fieldChaosMass
     lintegral_withDensity_eq_lintegral_mul _ hW (by fun_prop), fieldChaosMass]
   apply lintegral_congr
   intro x
-  simp only [Pi.mul_apply, gmcCircleWickDensity]
+  simp [Pi.mul_apply, gmcCircleWickDensity]
   exact mul_comm _ _
 
 /-- The covariance of two circle averages at a common radius is the double circle average of

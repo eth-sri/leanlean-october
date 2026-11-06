@@ -2,13 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Reflected.SourceRadialJointLaw
-public import DOZZ.FourPoint.Reflected.CopiedRegionRegroup
-public import DOZZ.FourPoint.Reflected.WilliamsRealCutData
-public import DOZZ.FourPoint.Reflected.VariableCutMeasurable
+import DOZZ.FourPoint.Reflected.SourceRadialJointLaw
+import DOZZ.FourPoint.Reflected.CopiedRegionRegroup
+import DOZZ.FourPoint.Reflected.WilliamsRealCutData
+import DOZZ.FourPoint.Reflected.VariableCutMeasurable
 /-! Exact inverse-moment transport of the actual copied radial inner mass. -/
-@[expose] public section
 open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -76,14 +74,14 @@ theorem reflected_source_copied_radial_inverse_moment
     (measurableSet_lt measurable_norm measurable_const)
   have hU0 : U ⊆ ({0} : Set ℂ)ᶜ := by
     intro x hx
-    simpa only [mem_compl_iff,mem_singleton_iff] using norm_pos_iff.mp hx.1
+    simpa [mem_compl_iff,mem_singleton_iff] using norm_pos_iff.mp hx.1
   have hK : Measurable (fun x : ℂ => ENNReal.ofReal (‖x‖^(-(γ*α₁)))) := by fun_prop
   have hI := reflected_copied_region_mass_aemeasurable P (originRadialPath Xc) N
     (originRadialPath_aemeasurable P X Xc hc hcont) hN hfin γ U hU hU0 _ hK
   have hactual := (ho.comp_quasiMeasurePreserving
     (measurePreserving_fst (μ := P) (ν := P)).quasiMeasurePreserving).prodMk
     ((measurable_const : Measurable (fun _ : Ω × Ω => ENNReal.ofReal (‖z‖^(γ^2/2)))).aemeasurable.mul hI)
-  dsimp only [Function.comp_apply,Pi.mul_apply,U] at hactual
+  dsimp [Function.comp_apply,Pi.mul_apply,U] at hactual
   let G := fun v : ℝ≥0∞ × ℝ≥0∞ => (v.1+v.2)^(-p)
   have hG : Measurable G := by fun_prop
   have hiLeft := lintegral_map' hG.aemeasurable hactual

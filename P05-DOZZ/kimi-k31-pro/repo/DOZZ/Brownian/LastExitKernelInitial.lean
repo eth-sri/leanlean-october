@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Brownian.LastExitDyadicEndpointTail
+import DOZZ.Brownian.LastExitDyadicEndpointTail
 
 /-!
 # Initial coordinate of the reference entrance kernel
@@ -14,7 +13,6 @@ Its rational evaluation at zero is therefore deterministic. This identifies the 
 in the dyadic cell formula with its state-space tail.
 -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Set
 open scoped NNReal
@@ -56,4 +54,3 @@ theorem brownianUpperConditionedReferenceFutureKernel_real_initialIci
 
 end DOZZ.Proofs
 
-end

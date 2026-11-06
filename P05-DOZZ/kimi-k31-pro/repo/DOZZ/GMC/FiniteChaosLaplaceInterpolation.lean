@@ -2,16 +2,14 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.FiniteChaosTwoBlockIBP
-public import DOZZ.GMC.FiniteChaosInterpolationExpectation
-public import DOZZ.GMC.FiniteGaussianInterpolationIdentity
-public import DOZZ.GMC.FiniteChaosLaplaceLinearChain
+import DOZZ.GMC.FiniteChaosTwoBlockIBP
+import DOZZ.GMC.FiniteChaosInterpolationExpectation
+import DOZZ.GMC.FiniteGaussianInterpolationIdentity
+import DOZZ.GMC.FiniteChaosLaplaceLinearChain
 
 /-! Laplace-test interpolation for finite Gaussian vectors represented on standard coordinates. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter
 open scoped Topology
@@ -95,14 +93,14 @@ theorem kahaneInterpolatedLaplaceTestDerivative_eq_score_sum
       (finiteChaosLinearImageVector A) (finiteChaosLinearImageVector B)
       (finiteChaosMatrixRowVariance A) (finiteChaosMatrixRowVariance B) a γ t z =
       finiteChaosVectorMass a v γ (V z.1 z.2) := by
-    simp only [kahaneInterpolatedMass, finiteChaosVectorMass, finiteChaosVectorWeight,
+    simp [kahaneInterpolatedMass, finiteChaosVectorMass, finiteChaosVectorWeight,
       V, v, finiteChaosMatrixTwoBlockField, finiteChaosMatrixTwoBlockVariance,
       finiteChaosMatrixRowVariance, finiteChaosMatrixRowCovariance,
       finiteChaosLinearImageVector]
   rw [kahaneInterpolatedTestDerivative, hmass, Finset.mul_sum]
   apply Finset.sum_congr rfl
   intro i hi
-  simp only [finiteChaosMatrixLaplaceScore, V, v, finiteChaosMatrixTwoBlockField,
+  simp [finiteChaosMatrixLaplaceScore, V, v, finiteChaosMatrixTwoBlockField,
     finiteChaosMatrixTwoBlockVariance, finiteChaosMatrixRowVariance,
     finiteChaosMatrixRowCovariance, finiteChaosLinearImageVector, finiteChaosVectorWeight]
   ring
@@ -193,7 +191,7 @@ theorem finiteChaosMatrixLaplaceInterpolationExpectation_hasDerivAt
         (finiteChaosMatrixRowVariance A) (finiteChaosMatrixRowVariance B) a γ
         (fun x => -s * Real.exp (-s * x)) t z
       ∂((standardGaussianFinMeasure n).prod (standardGaussianFinMeasure n))) t
-  exact h
+  assumption
 
 /-- The product-space Laplace derivative after both block IBP substitutions. Entrywise covariance
 order makes it nonpositive; the diagonal score term cancels the derivative of the Wick variance. -/
@@ -286,14 +284,14 @@ theorem finiteChaosMatrixLaplaceInterpolation_derivative_integral_nonpos
       ∫ z, (∑ k, A i k * z.1 k) * S i z ∂ν =
         Real.sqrt t * ∑ j, finiteChaosMatrixRowCovariance A i j *
           ∫ z, G i j z ∂ν := by
-    simpa only [hscoreX, hderivX, finiteChaosMatrixRowCovariance, μ, ν] using
+    simpa [hscoreX, hderivX, finiteChaosMatrixRowCovariance, μ, ν] using
       (finiteChaos_laplace_X_block_ibp_on_product_first_of_measurable_shift
         A a v cY hcY γ s t ha hs ht i)
   have hY (i : Fin (n + 1)) :
       ∫ z, (∑ k, B i k * z.2 k) * S i z ∂ν =
         Real.sqrt (1 - t) * ∑ j, finiteChaosMatrixRowCovariance B i j *
           ∫ z, G i j z ∂ν := by
-    simpa only [hscoreY, hderivY, finiteChaosMatrixRowCovariance, μ, ν] using
+    simpa [hscoreY, hderivY, finiteChaosMatrixRowCovariance, μ, ν] using
       (finiteChaos_laplace_X_block_ibp_on_product_of_measurable_shift
         B a v cX hcX γ s (1 - t) ha hs (by linarith) i)
   have hSmeas (i : Fin (n + 1)) : Measurable (S i) := by
@@ -591,9 +589,7 @@ theorem finiteChaosMatrixLaplaceInterpolation_derivative_integral_nonpos
     γ t (finiteChaosMatrixRowCovariance A) (finiteChaosMatrixRowCovariance B)
     AX BY H Kbar Dbar ht ht1 hcov (fun i j => hKnonneg i j)
     hXibp hYibp hHessian
-  rw [hderivIntegral]
-  exact hsign
-
+  rwa [hderivIntegral]
 /-- Under the local dominated-differentiation contract, the finite Laplace expectation has a
 nonpositive derivative whenever the two covariance matrices are entrywise ordered. -/
 theorem finiteChaosMatrixLaplaceInterpolationExpectation_deriv_nonpos

@@ -2,12 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.Fusion.RootedMass
+import DOZZ.FourPoint.BPZ.Rooting
+import DOZZ.FourPoint.Fusion.RootedMass
 import DOZZ.GMC.Construction.RootedMeasureKernel
 import DOZZ.GMC.SharpMoments.SeibergDecomp
-public import DOZZ.GMC.SharpMoments.LocationTransfer
+import DOZZ.GMC.SharpMoments.LocationTransfer
 import DOZZ.GMC.SharpMoments.ArbitraryCenter
 import DOZZ.GMC.SharpMoments.SeibergMoment
 
@@ -17,36 +17,12 @@ The covariance kernel is bounded below globally. Thus rooting preserves every fi
 lower bound for the mass, uniformly in the location of the root.
 -/
 
-@[expose] public section
 open MeasureTheory
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
 
 /-- The equator covariance is bounded below even with the totalized diagonal value. -/
-theorem fusion_gffKernel_lower (u x : ℂ) : -Real.log 2 ≤ gffKernel u x := by
-  have hu : 1 ≤ normPlus u := le_max_left _ _
-  have hx : 1 ≤ normPlus x := le_max_left _ _
-  have hu0 : 0 < normPlus u := lt_of_lt_of_le zero_lt_one hu
-  have hx0 : 0 < normPlus x := lt_of_lt_of_le zero_lt_one hx
-  have hud : ‖u‖ ≤ normPlus u := le_max_right _ _
-  have hxd : ‖x‖ ≤ normPlus x := le_max_right _ _
-  have hb : ‖u - x‖ ≤ 2 * (normPlus u * normPlus x) := by
-    have h1 : normPlus u ≤ normPlus u * normPlus x := le_mul_of_one_le_right hu0.le hx
-    have h2 : normPlus x ≤ normPlus u * normPlus x := le_mul_of_one_le_left hx0.le hu
-    have hn := norm_sub_le u x
-    linarith
-  by_cases hdiag : u = x
-  · subst x
-    simp only [gffKernel, sub_self, norm_zero, Real.log_zero, neg_zero, zero_add]
-    have hlog := Real.log_nonneg hu
-    have htwo : 0 ≤ Real.log 2 := Real.log_nonneg (by norm_num)
-    linarith
-  · have hd : 0 < ‖u - x‖ := norm_pos_iff.mpr (sub_ne_zero.mpr hdiag)
-    have hlog := Real.log_le_log hd hb
-    rw [Real.log_mul (by norm_num) (mul_pos hu0 hx0).ne',
-      Real.log_mul hu0.ne' hx0.ne'] at hlog
-    unfold gffKernel
-    linarith
+theorem fusion_gffKernel_lower (u x : ℂ) : -Real.log 2 ≤ gffKernel u x := DOZZ.Proofs.gffKernel_ge_neg_log_two u x
 
 /-- A positive constant bounds every rooted density from below. -/
 theorem fusion_rootDensity_lower (γ : ℝ) (u x : ℂ) :

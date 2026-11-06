@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Brownian.LastExitDyadicShift
-public import DOZZ.Brownian.LastExitPostPathMeasurability
+import DOZZ.Brownian.LastExitDyadicShift
+import DOZZ.Brownian.LastExitPostPathMeasurability
 import Mathlib.MeasureTheory.Function.Floor
 import Mathlib.MeasureTheory.Constructions.BorelSpace.Real
 import Mathlib.MeasureTheory.Integral.DominatedConvergence
@@ -19,7 +18,6 @@ bounded continuous tests and expectation. The probabilistic last-exit cell ident
 input to the last-exit decomposition.
 -/
 
-@[expose] public section
 
 open MeasureTheory Filter
 open Topology
@@ -35,4 +33,3 @@ theorem measurable_dyadicLastExitCeilingTime (n : ℕ) :
 
 end DOZZ.Proofs
 
-end

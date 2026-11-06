@@ -2,16 +2,14 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.ShiftEquations.PoleSubtracted.Tilt
-public import DOZZ.GMC.Construction.GMCGeneralTiltLimit
-public import DOZZ.GMC.CircleAverageLimits
-public import DOZZ.GMC.CircleAverage
-public import DOZZ.GFFStructure.CirclePotential
+import DOZZ.ShiftEquations.PoleSubtracted.Tilt
+import DOZZ.GMC.Construction.GMCGeneralTiltLimit
+import DOZZ.GMC.CircleAverageLimits
+import DOZZ.GMC.CircleAverage
+import DOZZ.GFFStructure.CirclePotential
 import DOZZ.ShiftEquations.Mobius.AffineMoment
 import Mathlib.Tactic
 /-! # Circle tilt at arbitrary nonnegative real times -/
-@[expose] public section
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs

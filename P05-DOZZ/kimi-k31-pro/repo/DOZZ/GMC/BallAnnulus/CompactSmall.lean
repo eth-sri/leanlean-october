@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.SharpMoments.BallScaling
-public import DOZZ.GMC.Annulus.ReferenceIntensity
+import DOZZ.GMC.SharpMoments.BallScaling
+import DOZZ.GMC.Annulus.ReferenceIntensity
 
 /-! Sharp two-sided bounds on small balls with arbitrary compact centers. -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory
 open scoped Distributions ENNReal NNReal
 namespace DOZZ.Proofs
@@ -54,12 +52,12 @@ theorem gmc_compact_small_ball_twoSided_bound
   refine ⟨t*C, mul_pos ht hC, ?_⟩
   intro z hz r hr hr8
   have hzR : ‖z‖+r ≤ R := by dsimp [R]; linarith [hnorm z hz]
-  have hzeroR : ‖(0 : ℂ)‖+r ≤ R := by simp only [norm_zero, zero_add]; dsimp [R]; linarith
+  have hzeroR : ‖(0 : ℂ)‖+r ≤ R := by simp [norm_zero, zero_add]; dsimp [R]; linarith
   have hz0 := gmc_ball_moment_transfer P X hX γ hγ hγ2 M hM z 0 r R hr hr8 hR hzR hzeroR p hp
   have h0z := gmc_ball_moment_transfer P X hX γ hγ hγ2 M hM 0 z r R hr hr8 hR hzeroR hzR p hp
   change _ ≤ T * _ at hz0 h0z
   rw [hT] at hz0 h0z
-  have href := hlocal 0 r hr hr8 (by simp only [norm_zero, zero_add]; linarith)
+  have href := hlocal 0 r hr hr8 (by simp [norm_zero, zero_add]; linarith)
   constructor
   · have he : ENNReal.ofReal t⁻¹ * ENNReal.ofReal t = 1 := by
       rw [← ENNReal.ofReal_mul (inv_pos.mpr ht).le, inv_mul_cancel₀ ht.ne']
@@ -80,4 +78,3 @@ theorem gmc_compact_small_ball_twoSided_bound
       _ = _ := by rw [← ENNReal.ofReal_mul ht.le]; congr 1; ring
 
 end DOZZ.Proofs
-end

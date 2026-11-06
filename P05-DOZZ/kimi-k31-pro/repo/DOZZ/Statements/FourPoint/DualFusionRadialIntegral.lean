@@ -1,2 +1,1 @@
-module
-public import DOZZ.Statements.FourPoint.FreezingAnnulusMassLocal
+import DOZZ.Statements.FourPoint.FreezingAnnulusMassLocal

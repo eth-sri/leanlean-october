@@ -2,13 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.TaylorAnnularKernel
+import DOZZ.FourPoint.TaylorAnnularKernel
 
 /-! Absolute one-root Jensen kernel near the moving root. -/
 
-@[expose] public section
 open MeasureTheory Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -42,7 +40,7 @@ theorem gammaHalf_near_kernel_bound
   have hx1 : 0 < ‖x - 1‖ := lt_of_lt_of_le (by norm_num) hlow1
   by_cases hxz : x = z
   · subst x
-    simp only [sub_self, norm_zero, zero_pow (by decide : 2 ≠ 0), div_zero, ENNReal.ofReal_zero, zero_le]
+    simp [sub_self, norm_zero, zero_pow (by decide : 2 ≠ 0), div_zero, ENNReal.ofReal_zero, zero_le]
   have hdpos : 0 < ‖x - z‖ := norm_pos_iff.mpr (sub_ne_zero.mpr hxz)
   have heq : gammaHalfKernel γ α₁ α₂ α₃ z x / ‖x - z‖ ^ 2 =
       ‖x - z‖ ^ (γ ^ 2 / 2 - 2) * ‖x‖ ^ (-γ * α₁) * ‖x - 1‖ ^ (-γ * α₂) := by
@@ -51,10 +49,10 @@ theorem gammaHalf_near_kernel_bound
       neg_mul γ α₁, neg_mul γ α₂, Real.rpow_neg hxpos.le, Real.rpow_neg hx1.le]
     field_simp
   have hweight := rpow_distance_comparison ‖x‖ ‖z‖ 2 (-γ * α₁) |γ * α₁|
-    hzpos (by norm_num) hxlow hxhigh (by simpa only [neg_mul] using neg_le_neg (le_abs_self (γ * α₁)))
-    (by simpa only [neg_mul] using neg_le_abs (γ * α₁))
+    hzpos (by norm_num) hxlow hxhigh (by simpa [neg_mul] using neg_le_neg (le_abs_self (γ * α₁)))
+    (by simpa [neg_mul] using neg_le_abs (γ * α₁))
   have htail : ‖x - 1‖ ^ (-γ * α₂) ≤ (2 : ℝ) ^ |γ * α₂| := by
-    simpa only [neg_mul, abs_neg] using coulombWeight_rpow_le (L := 2) (y := ‖x - 1‖)
+    simpa [neg_mul, abs_neg] using coulombWeight_rpow_le (L := 2) (y := ‖x - 1‖)
       (by norm_num) (by norm_num; exact hlow1) hhigh1 (-γ * α₂)
   have hprod := mul_le_mul
     (mul_le_mul_of_nonneg_left hweight (Real.rpow_nonneg (norm_nonneg (x - z)) (γ ^ 2 / 2 - 2))) htail

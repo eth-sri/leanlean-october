@@ -2,13 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.TaylorTimeIntegration
+import DOZZ.FourPoint.TaylorTimeIntegration
 
 /-! The exact Taylor observable follows from the positive square estimate `fundest`. -/
 
-@[expose] public section
 open MeasureTheory Filter Topology Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -51,13 +49,13 @@ theorem twoRooted_term_power_bound {Ω : Type*} [MeasurableSpace Ω]
     exact mul_le_mul_of_nonneg_left htime₁ (mul_nonneg (norm_nonneg _) (sq_nonneg _))
   have hP₂ : ‖gammaHalfTwoRootedP2 P M γ α₁ α₂ α₃ p z‖ ≤
       2 * ‖c‖ * ‖z‖ ^ 2 * (C * ‖z‖ ^ e / (e + 1)) := by
-    have hc2 : 2 * p * (p + 1) * (γ ^ 2 / 4) ^ 2 = 2 * c := by dsimp only [c]; ring
+    have hc2 : 2 * p * (p + 1) * (γ ^ 2 / 4) ^ 2 = 2 * c := by dsimp [c]; ring
     unfold gammaHalfTwoRootedP2
     rw [hc2, norm_mul, norm_mul, norm_mul, norm_star, Complex.norm_real,
       norm_mul, Real.norm_of_nonneg (by norm_num : (0 : ℝ) ≤ 2)]
     have hcoef : 0 ≤ (2 * ‖c‖ * ‖z‖) * ‖z‖ := by positivity
     have h := mul_le_mul_of_nonneg_left htime₂ hcoef
-    simpa only [F₂, ENNReal.rpow_eq_pow, pow_two, mul_assoc] using h
+    simpa [F₂, ENNReal.rpow_eq_pow, pow_two, mul_assoc] using h
   have hP₃ : ‖gammaHalfTwoRootedP3 P M γ α₁ α₂ α₃ p z‖ =
       ‖gammaHalfTwoRootedP1 P M γ α₁ α₂ α₃ p z‖ := norm_star _
   have hsum : ‖gammaHalfTwoRootedTerm P M γ α₁ α₂ α₃ p z‖ ≤
@@ -88,6 +86,6 @@ theorem twoRooted_littleO_of_majorant {Ω : Type*} [MeasurableSpace Ω]
     (4 * ‖p * (p + 1) * (γ ^ 2 / 4) ^ 2‖ * C / (κ - 2 + η + 1)) r hη hr
   have he : -1 < κ - 2 + η := by linarith only [hκ, hη]
   have h := twoRooted_term_power_bound P M γ α₁ α₂ α₃ p C (κ - 2 + η) r hC he hr hI
-  simpa only [show κ - 2 + η + 2 = κ + η by ring] using h
+  simpa [show κ - 2 + η + 2 = κ + η by ring] using h
 
 end DOZZ.Proofs

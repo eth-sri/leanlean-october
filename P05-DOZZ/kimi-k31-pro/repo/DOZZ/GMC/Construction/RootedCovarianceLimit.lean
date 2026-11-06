@@ -2,15 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.Construction.GMCRootedIdentity
-public import DOZZ.GFFStructure.CircleCovariance
-public import DOZZ.GMC.CirclePotential
+import DOZZ.GMC.Construction.GMCRootedIdentity
+import DOZZ.GFFStructure.CircleCovariance
+import DOZZ.GMC.CirclePotential
 
 /-! Point-root covariance is the small-radius limit of the circle-root covariance. -/
 
-@[expose] public section
 
 open MeasureTheory Filter Topology
 open scoped Distributions

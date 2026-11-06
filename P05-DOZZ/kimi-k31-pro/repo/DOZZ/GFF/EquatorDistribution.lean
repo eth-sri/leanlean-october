@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GFF.TorusLocalDistribution
+import DOZZ.GFF.TorusLocalDistribution
 import Mathlib.Analysis.Distribution.TestFunction
 
 /-!
@@ -14,7 +13,6 @@ The local Fourier charts are assembled with a smooth locally finite partition in
 supported pieces. This avoids any choice of incompatible radius chart for a single test.
 -/
 
-@[expose] public section
 
 open MeasureTheory Filter Set Metric TopologicalSpace
 open scoped Distributions ENNReal InnerProductSpace Topology
@@ -95,10 +93,7 @@ theorem sum_equatorPartitionFunction_range (N : ℕ) (z : ℂ) :
   induction N with
   | zero => simp [equatorPartitionFunction_zero]
   | succ N ih =>
-      rw [Finset.sum_range_succ]
-      rw [equatorPartitionFunction_succ]
-      rw [ih]
-      rw [Pi.sub_apply]
+      rw [Finset.sum_range_succ, equatorPartitionFunction_succ, ih, Pi.sub_apply]
       ring
 
 /-- Multiplication by one member of the smooth partition, as a continuous map on tests. -/
@@ -445,7 +440,7 @@ noncomputable def equatorDistributionCLM
           equatorPartitionCLM_zero_of_supportedIn K hK f n (hcut n hn)
         have hseries := equatorDistributionSeriesEval_eq_partialSum_of_tail_zero
           ω (TestFunction.ofSupportedIn hK f) N htail
-        simp only [equatorDistributionEval, ite_eq_left hω]
+        simp [equatorDistributionEval, ite_eq_left hω]
         rw [hseries]
         unfold equatorDistributionPartialSum
         apply Finset.sum_congr rfl
@@ -493,4 +488,3 @@ theorem measurable_equatorGFFDistribution_apply (f : TestFn) :
 
 end DOZZ
 
-end

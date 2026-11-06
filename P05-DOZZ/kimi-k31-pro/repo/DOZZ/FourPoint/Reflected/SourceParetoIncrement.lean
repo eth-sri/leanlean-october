@@ -2,12 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Reflected.SourceParetoWeights
-public import DOZZ.FourPoint.Reflected.ReflectionRealMoments
+import DOZZ.FourPoint.Reflected.SourceParetoWeights
+import DOZZ.FourPoint.Reflected.ReflectionRealMoments
 import Mathlib.Tactic
 /-! The signed Pareto estimate on the supplied field, chaos and reflection data. -/
-@[expose] public section
 open MeasureTheory ProbabilityTheory Set Filter
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -50,7 +48,7 @@ theorem reflected_source_pareto_increment_error
   have hν : 0 < ν := sub_pos.mpr hα₁
   have ha : 0 < a := div_pos (mul_pos (by norm_num) hν) hγ
   have ha1 : a < 1 := by
-    dsimp only [a]
+    dsimp [a]
     rw [div_lt_one hγ]
     linarith only [hreflect]
   have h4 : 1 < 4/γ^2 := by
@@ -70,10 +68,10 @@ theorem reflected_source_pareto_increment_error
   have hcoord : AEMeasurable (fun ω => Xc ω 0 (-Real.log ‖z‖+h)) P :=
     (hc.2.1 0 (-Real.log ‖z‖+h)).aemeasurable
   have hbm : AEMeasurable b P := by
-    dsimp only [b,reflected_radial_scale]
+    dsimp [b,reflected_radial_scale]
     exact ((hcoord.const_mul γ).sub aemeasurable_const).sub aemeasurable_const |>.exp
   have hbp (ω : Ω) : 0 < b ω := by
-    dsimp only [b,reflected_radial_scale]
+    dsimp [b,reflected_radial_scale]
     exact Real.exp_pos _
   obtain ⟨hAp,hF0,hF1⟩ := reflected_source_pareto_weights_integrable P X hX γ hγ hγ₂ M hM
     Xc hc ν h p α₁ α₂ α₃ ξ hν hh hp hξ hξ1 hα₁ hα₂ hα₃ z hz0 hz1 hz
@@ -86,20 +84,18 @@ theorem reflected_source_pareto_increment_error
         gammaHalfOuterMass γ α₁ α₂ α₃ (M ω) z ξ ^(-(p+a)) ∂P).toReal := by
     rw [integral_congr_ae (hAp.mono fun ω hω =>
       (reflected_pareto_parameter_weights p a (A ω) (b ω) hω (hbp ω).le).1)]
-    simpa only [show -(p+a) = -p-a by ring] using hsource0.2
+    simpa [show -(p+a) = -p-a by ring] using hsource0.2
   have he1 : (∫ ω, (A ω)^(-p)*(b ω/A ω) ∂P) =
       (∫⁻ ω, ENNReal.ofReal (b ω)*
         gammaHalfOuterMass γ α₁ α₂ α₃ (M ω) z ξ ^(-(p+1)) ∂P).toReal := by
     rw [integral_congr_ae (hAp.mono fun ω hω =>
       (reflected_pareto_parameter_weights p a (A ω) (b ω) hω (hbp ω).le).2)]
-    simpa only [Real.rpow_one,show -(p+1) = -p-1 by ring] using hsource1.2
+    simpa [Real.rpow_one,show -(p+1) = -p-1 by ring] using hsource1.2
   have hhpareto := reflected_pareto_product_increment_error P P p a hp ha ha1 A b S
-    hAp (ae_of_all P hbp) hSp hF0 hF1 hSa.1 (by simpa only [Real.rpow_one] using hS1.1)
+    hAp (ae_of_all P hbp) hSp hF0 hF1 hSa.1 (by simpa [Real.rpow_one] using hS1.1)
     hAm hbm hSm
   rw [he0,he1,hSa.2] at hhpareto
   have hS1eq : (∫ ω, S ω ∂P) = (∫⁻ ω, twoSidedReflectionMass γ B Z ω ∂P).toReal := by
-    simpa only [Real.rpow_one,ENNReal.rpow_one] using hS1.2
-  rw [hS1eq] at hhpareto
-  exact hhpareto
-
+    simpa [Real.rpow_one,ENNReal.rpow_one] using hS1.2
+  rwa [hS1eq] at hhpareto
 end DOZZ.Proofs

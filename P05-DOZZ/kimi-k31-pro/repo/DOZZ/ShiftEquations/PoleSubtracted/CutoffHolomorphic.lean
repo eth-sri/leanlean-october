@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.ShiftEquations.PoleSubtracted.CutoffGood
-public import DOZZ.ShiftEquations.PoleSubtracted.IntegralHolomorphy
+import DOZZ.ShiftEquations.PoleSubtracted.CutoffGood
+import DOZZ.ShiftEquations.PoleSubtracted.IntegralHolomorphy
 
 /-!
 # Holomorphy of the cutoff family
@@ -16,7 +15,6 @@ is dominated by the two endpoint weights of its real parts, which are integrable
 Cameron–Martin tilt (`integrable_cutoffDomination`).
 -/
 
-@[expose] public section
 
 open MeasureTheory Filter Topology Set Metric
 open scoped ENNReal NNReal
@@ -131,4 +129,3 @@ theorem differentiableOn_cutoffFamily (P : Measure Ω) (X : Ω → Distr) (hX : 
 
 end DOZZ.Proofs
 
-end

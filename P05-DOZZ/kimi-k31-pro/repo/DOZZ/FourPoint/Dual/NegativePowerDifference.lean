@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import Mathlib.Analysis.SpecialFunctions.Pow.Deriv
+import Mathlib.Analysis.SpecialFunctions.Pow.Deriv
 import Mathlib.Analysis.Calculus.MeanValue
 import Mathlib.Tactic
 
@@ -13,7 +12,6 @@ import Mathlib.Tactic
 A common positive lower mass controls the derivative of both inverse powers.
 -/
 
-public section
 
 open Set
 
@@ -36,6 +34,6 @@ theorem dual_negative_power_lipschitz (p l a b : ℝ) (hp : 0 < p) (hl : 0 < l)
   have hm := Convex.norm_image_sub_le_of_norm_deriv_le
     (fun x hx => (hd x hx).differentiableAt) hbound (convex_Ici l)
     (show b ∈ Ici l from hb) (show a ∈ Ici l from ha)
-  simpa only [Real.norm_eq_abs] using hm
+  simpa [Real.norm_eq_abs] using hm
 
 end DOZZ.Proofs

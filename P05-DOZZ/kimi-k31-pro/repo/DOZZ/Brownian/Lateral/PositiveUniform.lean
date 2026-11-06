@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Brownian.Lateral.UpperConditionedBlocks
+import DOZZ.Brownian.Lateral.UpperConditionedBlocks
 
 /-!
 # Uniform positive half-cylinder moments
@@ -17,7 +16,7 @@ lemma keeps the full strict subcritical margin needed by the proof of the reflec
 statements.
 -/
 
-@[expose] public section
+section
 
 open MeasureTheory ProbabilityTheory Set Filter
 open scoped ENNReal NNReal Topology
@@ -56,7 +55,7 @@ theorem lateralGMC_compact_moment_endpoints_across_one
     have hs : 0 < γ ^ 2 := sq_pos_of_pos hγp
     rcases hqm with hqm | hqm
     · exact hq γ hγ q hqm
-    · have hq01 : q = 0 ∨ q = 1 := by simpa only [mem_insert_iff, mem_singleton_iff] using hqm
+    · have hq01 : q = 0 ∨ q = 1 := by simpa [mem_insert_iff, mem_singleton_iff] using hqm
       rcases hq01 with rfl | rfl
       · exact div_pos (by norm_num) hs
       · apply (lt_div_iff₀ hs).mpr

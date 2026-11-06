@@ -2,10 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.BPZ.SoftFarCont
-public import DOZZ.FourPoint.BPZ.SoftLimitC
+import DOZZ.FourPoint.BPZ.MomentLimitA
+import DOZZ.FourPoint.BPZ.SoftFarCont
+import DOZZ.FourPoint.BPZ.SoftLimitC
 
 /-! # Wirtinger combinations of the derivative masses
 
@@ -17,7 +17,6 @@ derivative masses `bpzSoftMassDeriv a 0 w m z` and `bpzSoftMassDeriv2 a 0 w m z`
 meromorphic integrals `a ∫ |x − z|^{2a} w(x) / (z − x) dm(x)` and
 `a (a − 1) ∫ |x − z|^{2a} w(x) / (z − x)² dm(x)`. -/
 
-@[expose] public section
 
 open MeasureTheory
 
@@ -65,7 +64,7 @@ theorem bpzWirt2L_apply (B : ℂ →L[ℝ] ℂ →L[ℝ] ℝ) :
 the first. -/
 theorem bpzWirt2L_smulRight (L : ℂ →L[ℝ] ℝ) : bpzWirt2L (L.smulRight L) = bpzWirtL L ^ 2 := by
   rw [bpzWirt2L_apply, bpzWirtL_apply]
-  simp only [ContinuousLinearMap.smulRight_apply, smul_apply, smul_eq_mul]
+  simp [ContinuousLinearMap.smulRight_apply, smul_apply, smul_eq_mul]
   push_cast
   linear_combination (-((L Complex.I : ℂ) ^ 2) / 4) * Complex.I_sq
 
@@ -90,16 +89,12 @@ theorem bpz_norm_div_root_pow (a : ℝ) (n : ℕ) {w : ℝ} (hw : 0 ≤ w) {x z 
 
 /-- A measure with no atom at `z` gives full mass to `{x | x ≠ z}`. -/
 theorem bpz_ae_ne_of_measure_singleton {m : Measure ℂ} {z : ℂ} (hz : m {z} = 0) :
-    ∀ᵐ x ∂m, x ≠ z := by
-  rw [ae_iff]
-  simpa using hz
+    ∀ᵐ x ∂m, x ≠ z := DOZZ.Proofs.bpz_ae_ne_of_atom hz
 
 /-- The meromorphic integrand is measurable. -/
 theorem bpz_measurable_div_root_pow (a : ℝ) {w : ℂ → ℝ} (hw : Measurable w) (z : ℂ) (n : ℕ) :
     Measurable (fun x : ℂ => ((Complex.normSq (x - z) ^ a * w x : ℝ) : ℂ) / (z - x) ^ n) := by
-  have h1 : Measurable (fun x : ℂ => Complex.normSq (x - z) ^ a * w x) :=
-    ((Complex.continuous_normSq.measurable.comp (measurable_id.sub_const z)).pow_const a).mul hw
-  exact (Complex.measurable_ofReal.comp h1).div ((measurable_const.sub measurable_id).pow_const n)
+  fun_prop
 
 /-- For a measure without an atom at the root `z`, the meromorphic integrand
 `|x − z|^{2a} w(x) / (z − x)` is integrable as soon as `w(x) |x − z|^{2a−1}` is. -/

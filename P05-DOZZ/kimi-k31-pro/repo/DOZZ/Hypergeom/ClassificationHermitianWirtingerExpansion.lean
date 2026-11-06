@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Hypergeom.ClassificationHermitianDecomposition
-public import DOZZ.Hypergeom.ClassificationWirtingerBarAnalytic
+import DOZZ.Hypergeom.ClassificationHermitianDecomposition
+import DOZZ.Hypergeom.ClassificationWirtingerBarAnalytic
 
 /-! The conjugate derivatives of a real solution are computed from its Cramer coefficients. -/
 
-@[expose] public section
 
 namespace DOZZ.Proofs
 
@@ -39,9 +37,7 @@ theorem realGaussSolution_conjugate_pde
   have hbar : wirtingerBar t z = star (wirtingerZ t z) := by
     unfold wirtingerBar
     rw [hself]
-  rw [hbar]
-  exact hconj
-
+  rwa [hbar]
 /-- The first conjugate Wirtinger derivative of a real Gauss solution is the corresponding
 combination of conjugate derivatives of its Cramer coefficients. -/
 theorem realGaussCramer_wirtingerBar_expansion

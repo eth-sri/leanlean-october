@@ -2,14 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.ShiftEquations.Residual.Composition
-public import DOZZ.FourPoint.Crossing.GammaHalfCrossing
-public import DOZZ.FourPoint.Dual.FullFusion
-public import DOZZ.FourPoint.SeedOne.Assembly
-public import DOZZ.ShiftEquations.Shifts.Seeds.SeedTwo
-public import DOZZ.ShiftEquations.Shifts.Rtheor
+import DOZZ.ShiftEquations.Residual.Composition
+import DOZZ.FourPoint.Crossing.GammaHalfCrossing
+import DOZZ.FourPoint.Dual.FullFusion
+import DOZZ.FourPoint.SeedOne.Assembly
+import DOZZ.ShiftEquations.Shifts.Seeds.SeedTwo
+import DOZZ.ShiftEquations.Shifts.Rtheor
 
 /-! Proof of `DOZZ.unitVolume_residual_factor_eq_one` (the single input of the main theorems
 `DOZZ.dozz_main` and `DOZZ.dozz_unitVolume`): a reduction to the γ/2 crossing
@@ -18,7 +17,6 @@ coefficient off its poles. Seed one is `DOZZ.dual_crossing_seed_one`; seed two a
 identification come from the dual fusion statement `DOZZ.dual_full_fusion_and_asymptotic` through
 the reductions `dual_crossing_seed_two_of_fusion` and `reflection_Rtheor_off_poles_of_seedTwo`. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology TopologicalSpace Set
 open scoped ENNReal NNReal Topology
@@ -70,4 +68,3 @@ theorem unitVolume_residual_factor_eq_one
 
 end DOZZ.Proofs
 
-end

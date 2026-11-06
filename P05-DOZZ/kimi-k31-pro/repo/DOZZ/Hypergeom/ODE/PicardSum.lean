@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Hypergeom.ODE.PicardBounds
+import DOZZ.Hypergeom.ODE.PicardBounds
 import Mathlib.Analysis.Complex.LocallyUniformLimit
 
 /-! The normally convergent local Picard series and its differential equation. -/
 
-@[expose] public section
 
 namespace DOZZ.Proofs
 
@@ -42,8 +40,6 @@ theorem holomorphicPicardTerm_norm_le (c : ℂ) (r M : ℝ)
   have hdist0 : ‖z - c‖ ≤ r := by
     simpa [dist_eq_norm] using (Metric.mem_ball.mp hz).le
   have hdist : ‖z - c‖ ≤ max r 0 := hdist0.trans (le_max_left r 0)
-  have hpow : (M * ‖z - c‖) ^ n ≤ (M * max r 0) ^ n := by
-    gcongr
   calc
     ‖holomorphicPicardTerm c r H hH y n z‖ ≤
         ‖y‖ * (M * ‖z - c‖) ^ n / (n.factorial : ℝ) := hlocal
@@ -124,7 +120,7 @@ theorem holomorphicPicardSolution_hasDerivAt (c : ℂ) (r M : ℝ)
       _ = ∑' n, g (n + 1) := hshift.symm
       _ = ∑' n, H z (holomorphicPicardTerm c r H hH y n z) := by
         apply tsum_congr
-        exact hderivSucc
+        assumption
       _ = H z (holomorphicPicardSolution c r H hH y z) := by
         change ∑' n, H z (holomorphicPicardTerm c r H hH y n z) =
           H z (∑' n, holomorphicPicardTerm c r H hH y n z)
@@ -133,8 +129,5 @@ theorem holomorphicPicardSolution_hasDerivAt (c : ℂ) (r M : ℝ)
   have hAt : DifferentiableAt ℂ (holomorphicPicardSolution c r H hH y) z :=
     (hdiff z hz).differentiableAt (Metric.isOpen_ball.mem_nhds hz)
   have hresult := hAt.hasDerivAt
-  rw [hderivEq] at hresult
-  exact hresult
-
-
+  rwa [hderivEq] at hresult
 end DOZZ.Proofs

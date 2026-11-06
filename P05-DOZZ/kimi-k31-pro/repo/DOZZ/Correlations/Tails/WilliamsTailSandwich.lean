@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.Tails.PowerTailBound
+import DOZZ.Correlations.Tails.PowerTailBound
 
 /-! Event comparison for the maximum-dependent retained amplitude in the one-insertion tail
 estimate. -/
 
-@[expose] public section
 open MeasureTheory Set
 
 namespace DOZZ.Proofs
@@ -55,7 +53,7 @@ theorem truncated_williams_tail_sandwich
     have hu := measureReal_union_le (μ := μ.prod P) E (univ ×ˢ T)
     have ht : (μ.prod P).real (univ ×ˢ T) = P.real T := by
       rw [measureReal_prod_prod]
-      simp only [Measure.real_def, measure_univ, ENNReal.toReal_one, one_mul]
+      simp [Measure.real_def, measure_univ, ENNReal.toReal_one, one_mul]
     rw [ht] at hu
     linarith
 

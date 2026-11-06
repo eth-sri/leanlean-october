@@ -2,13 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.Tails.FirstOrderSingularError
+import DOZZ.Correlations.Tails.FirstOrderSingularError
 
 /-! Deterministic domination of the copied error by the improved-charge mass. -/
 
-@[expose] public section
 open MeasureTheory Set
 open scoped ENNReal
 
@@ -36,7 +34,7 @@ theorem copied_multiplier_error_mass_le
   exact first_order_singular_mass_le γ α _ hγ (by positivity) _ ρ
     (fun x hx => copied_multiplier_local_bound K Family radius supBound derivBound lowerBound
       hFamily z hzk hz F hF γ N Nbar x
-      ((show ‖x‖ < ρ from by simpa only [Metric.mem_ball,dist_zero_right] using hx).le.trans hρ)) μ
+      ((show ‖x‖ < ρ from by simpa [Metric.mem_ball,dist_zero_right] using hx).le.trans hρ)) μ
 
 
 end DOZZ.Proofs

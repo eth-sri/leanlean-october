@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.FreezingAnnulusNegativeMomentLocal
-public import DOZZ.FourPoint.FreezingAnnulusNegativeMoment
+import DOZZ.FourPoint.FreezingAnnulusNegativeMomentLocal
+import DOZZ.FourPoint.FreezingAnnulusNegativeMoment
 import Mathlib.Tactic
 
 /-! # The freezing input at the actual reflected charge and order
@@ -15,7 +14,6 @@ and exterior versions follow from `freezing_annulus_negative_moment_local` and
 `freezing_annulus_negative_moment` with their literal thresholds.
 -/
 
-public section
 
 open MeasureTheory Set
 open scoped ENNReal

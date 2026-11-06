@@ -2,11 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Dual.SpatialKernel
-public import DOZZ.FourPoint.Dual.OuterInverseGuard
+import DOZZ.FourPoint.Dual.SpatialKernel
+import DOZZ.FourPoint.Dual.OuterInverseGuard
 /-! The compact guard used in spatial cutoff removal has actual GMC inverse moments. -/
-@[expose] public section
 open MeasureTheory Set
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -24,7 +22,7 @@ theorem dual_spatial_guard_lower (γ α₁ α₂ α₃ : ℝ) (μ : Measure ℂ)
     have hh := norm_sub_norm_le (3 : ℂ) y
     have hn3 : ‖(3 : ℂ)‖ = 3 := by norm_num
     rw [hn3, norm_sub_rev] at hh
-    have hd' : ‖y-3‖ ≤ 1/8 := by simpa only [D, Metric.mem_closedBall, dist_eq_norm] using hd
+    have hd' : ‖y-3‖ ≤ 1/8 := by simpa [D, Metric.mem_closedBall, dist_eq_norm] using hd
     linarith
   have ha (y : ℂ) (hy : ‖y‖ ≤ 1) : (μ.restrict D) {y} = 0 := by
     rw [Measure.restrict_apply (measurableSet_singleton y),
@@ -41,7 +39,7 @@ theorem dual_spatial_guard_lower (γ α₁ α₂ α₃ : ℝ) (μ : Measure ℂ)
     (![-2/γ, α₁, α₂] : Fin 3 → ℝ) ![z, 0, 1] α₃ hy
   rw [Measure.restrict_apply measurableSet_ball,
     inter_eq_left.mpr Metric.ball_subset_closedBall, ← he] at hl
-  exact hl
+  assumption
 
 /-- The compact guard inverse moment is finite for every nonnegative order, uniformly for
 moving roots in the unit disk, directly from the ball moment bound. -/
@@ -54,13 +52,13 @@ theorem dual_spatial_guard_inverse_uniform
       ENNReal.ofReal (dualFusionKernel γ α₁ α₂ α₃ z x) ∂M ω)^(-q) ∂P) ≤ ENNReal.ofReal C := by
   let w : ℝ := (2 : ℝ)^(-∑ i : Fin 3, |γ*(![-2/γ, α₁, α₂] : Fin 3 → ℝ) i|)*
     (4 : ℝ)^(-|γ*α₃|)
-  have hw : 0 < w := by dsimp only [w]; positivity
+  have hw : 0 < w := by dsimp [w]; positivity
   obtain ⟨C, hC, hb⟩ := equatorGFF_GMC_ball_moment_bound P X hX γ hγ hγ₂ M hM
     (-q) (lt_of_le_of_lt (neg_nonpos.mpr hq) (by positivity)) {(3 : ℂ)} isCompact_singleton
   have hball := (hb 3 (Set.mem_singleton _) (1/8) (by norm_num) (by norm_num)).2
   let e := γ*Q γ*(-q)-γ^2*(-q)^2/2
   let Cguard := w^(-q)*(C*(1/8 : ℝ)^e)
-  have hCg : 0 < Cguard := by dsimp only [Cguard]; positivity
+  have hCg : 0 < Cguard := by dsimp [Cguard]; positivity
   refine ⟨Cguard, hCg, ?_⟩
   intro z hz
   have hpoint (ω : Ω) :

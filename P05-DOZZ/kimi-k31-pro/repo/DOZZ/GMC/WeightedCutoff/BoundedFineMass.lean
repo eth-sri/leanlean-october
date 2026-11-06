@@ -1,10 +1,8 @@
-module
 
-public import DOZZ.GMC.WeightedCutoff.SmallBound
+import DOZZ.GMC.WeightedCutoff.SmallBound
 
 /-! # Uniform fine-cutoff moments on bounded disks -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs

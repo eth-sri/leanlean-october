@@ -1,2 +1,1 @@
-module
-public import DOZZ.GMC.FiniteChaosGaussianLaplaceFintype
+import DOZZ.GMC.FiniteChaosGaussianLaplaceFintype

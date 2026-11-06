@@ -2,12 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.Roots.ChargeGeometry
-public import DOZZ.ShiftEquations.Rbar.Continuation
+import DOZZ.Roots.ChargeGeometry
+import DOZZ.ShiftEquations.Rbar.Continuation
 import Mathlib.Analysis.Convex.Basic
 /-! # Convex charge segments for continuation -/
-@[expose] public section
 open Set
 namespace DOZZ.Proofs
 /-- The extended bounds become affine inequalities at fixed positive gamma. -/
@@ -31,7 +29,7 @@ theorem roots_extendedSeiberg3_segment {γ a b c d e f : ℝ} (hγ : 0 < γ)
     (t : ℝ) (ht : t ∈ Icc (0 : ℝ) 1) :
     ExtendedSeiberg3 γ (t * a + (1 - t) * d) (t * b + (1 - t) * e) (t * c + (1 - t) * f) := by
   have hmix (x y L : ℝ) (hx : x < L) (hy : y < L) : t * x + (1 - t) * y < L := by
-    simpa only [smul_eq_mul, mem_Iio] using (convex_Iio L) hx hy ht.1 (sub_nonneg.mpr ht.2) (by ring : t + (1 - t) = 1)
+    simpa [smul_eq_mul, mem_Iio] using (convex_Iio L) hx hy ht.1 (sub_nonneg.mpr ht.2) (by ring : t + (1 - t) = 1)
   obtain ⟨ha0, ha1, ha2, ha3⟩ := roots_extended_linear_bounds hγ ha
   obtain ⟨hb0, hb1, hb2, hb3⟩ := roots_extended_linear_bounds hγ hb
   apply extendedSeiberg3_of_lt hγ (hmix _ _ _ ha.1 hb.1) (hmix _ _ _ ha.2.1 hb.2.1)

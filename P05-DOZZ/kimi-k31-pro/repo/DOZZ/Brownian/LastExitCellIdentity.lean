@@ -2,11 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Brownian.LastExitAfterAbove
-public import DOZZ.Brownian.LastExitCellHistory
-public import DOZZ.Brownian.LastExitAvoidanceTouch
+import DOZZ.Brownian.LastExitAfterAbove
+import DOZZ.Brownian.LastExitCellHistory
+import DOZZ.Brownian.LastExitAvoidanceTouch
 
 /-!
 # Last-exit cells are deterministic-time hit-and-avoid events
@@ -16,7 +15,6 @@ interval agrees almost surely with a visit during the interval followed by stric
 avoidance after `b`. The last exit itself is used only to index a cell; all conditioning is at `b`.
 -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Set
 open scoped NNReal
@@ -76,7 +74,7 @@ theorem negativeConditionedLastExitTimeCell_ae_eq_historyAvoidance
       refine ⟨u, hau, hub.le, ?_⟩
       simpa [conditionedPositiveStateAt] using congrArg Neg.neg hpu
     have havoid : p ∈ conditionedPositiveFutureRationalAvoidance b c := by
-      simp only [conditionedPositiveFutureRationalAvoidance, Set.mem_iInter]
+      simp [conditionedPositiveFutureRationalAvoidance, Set.mem_iInter]
       intro q
       by_cases hq : 0 < (q : ℝ)
       · rw [conditionedPositiveFutureAvoidanceCoordinate, dite_eq_left hq]
@@ -87,7 +85,7 @@ theorem negativeConditionedLastExitTimeCell_ae_eq_historyAvoidance
           have hLb : negativeLastExitTime p (c : ℝ) < b := hcell.2
           have hqpos : 0 < qTime := by
             change (0 : ℝ) < (q : ℝ)
-            exact hq
+            assumption
           have hbt : b < t := lt_add_of_pos_right b hqpos
           exact hLb.trans hbt
         have hstate := hafter t hLt
@@ -122,7 +120,7 @@ theorem negativeConditionedLastExitTimeCell_ae_eq_historyAvoidance
       have h := congrArg Neg.neg hu
       simpa [conditionedPositiveStateAt] using h
     have hlastiff := hcelliff.mpr ⟨⟨u, hau, hpu⟩, hnohit⟩
-    exact hlastiff
+    assumption
   apply propext
   constructor
   · exact hcellToHitAvoid
@@ -169,4 +167,3 @@ theorem negativeConditionedLastExitCell_avoidance_shift_setIntegral
 
 end DOZZ.Proofs
 
-end

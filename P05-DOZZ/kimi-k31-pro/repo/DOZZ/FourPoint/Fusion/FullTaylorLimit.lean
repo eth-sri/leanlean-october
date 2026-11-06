@@ -2,12 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Fusion.FullTimeSplit
-public import DOZZ.FourPoint.Fusion.ExteriorTimeError
-public import DOZZ.FourPoint.Fusion.LocalTaylorSum
+import DOZZ.FourPoint.Fusion.FullTimeSplit
+import DOZZ.FourPoint.Fusion.ExteriorTimeError
+import DOZZ.FourPoint.Fusion.LocalTaylorSum
 /-! # The full signed one-rooted Taylor limit -/
-@[expose] public section
 open MeasureTheory Set Filter Topology
 namespace DOZZ.Proofs
 /-- Adding the quadratic exterior errors preserves the exact local coefficient. -/
@@ -47,7 +45,7 @@ theorem fusionFullOneRooted_normalized_tendsto {Ω : Type*} [MeasurableSpace Ω]
       (continuous_norm.tendsto (0 : ℂ)).eventually_lt_const (by simp)
     exact (h.filter_mono nhdsWithin_le_nhds).mono fun _ h => h.le
   filter_upwards [hz4, self_mem_nhdsWithin] with z hz4 hz
-  have hz0 : z ≠ 0 := by simpa only [mem_compl_iff, mem_singleton_iff] using hz
+  have hz0 : z ≠ 0 := by simpa [mem_compl_iff, mem_singleton_iff] using hz
   have hs1 := fusionRootedR1_split P X hX γ hγ hγ2 M hM α₁ α₂ α₃ hlo hsq hα₁ hα₂ hα₃ p hp z hz0 hz4
   have hs2 := fusionRootedR2_split P X hX γ hγ hγ2 M hM α₁ α₂ α₃ hlo hsq hα₁ hα₂ hα₃ p hp z hz0 hz4
   change gammaHalfRootedR1 P M γ α₁ α₂ α₃ p z = fusionLocalR1 P M γ α₁ α₂ α₃ p z + R1 z at hs1

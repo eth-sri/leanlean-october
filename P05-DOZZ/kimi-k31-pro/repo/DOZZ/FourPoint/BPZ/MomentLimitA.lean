@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.BPZ.MomentMeas
-public import DOZZ.FourPoint.BPZ.SoftFarCont
+import DOZZ.FourPoint.BPZ.MomentMeas
+import DOZZ.FourPoint.BPZ.SoftFarCont
 
 /-! # Near/far decomposition of the derivative masses
 
@@ -16,7 +15,6 @@ split into the contributions of the near weight `1_{|x − z₀| < r} w` and of 
 softened mass. We record the resulting bounds for the differences between the moment fields and
 their far parts. -/
 
-@[expose] public section
 
 open MeasureTheory Filter Topology
 open scoped ENNReal
@@ -226,7 +224,7 @@ theorem bpz_norm_smulRight_sub_le (L L' : ℂ →L[ℝ] ℝ) :
     ‖L.smulRight L - L'.smulRight L'‖ ≤ ‖L - L'‖ * (‖L‖ + ‖L'‖) := by
   have e : L.smulRight L - L'.smulRight L' = (L - L').smulRight L + L'.smulRight (L - L') := by
     ext h k
-    simp only [sub_apply, ContinuousLinearMap.smulRight_apply, smul_apply, smul_eq_mul,
+    simp [sub_apply, ContinuousLinearMap.smulRight_apply, smul_apply, smul_eq_mul,
       add_apply]
     ring
   rw [e]

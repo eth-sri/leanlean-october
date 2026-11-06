@@ -2,11 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.Moments.WeightedDyadic
-public import DOZZ.GMC.Moments.WeightedLpFiniteSum
-public import DOZZ.Statements.GMC.WeightedGmcBallMoment
+import DOZZ.GMC.Moments.WeightedDyadic
+import DOZZ.GMC.Moments.WeightedLpFiniteSum
+import DOZZ.Statements.GMC.WeightedGmcBallMoment
 
 /-! # Weighted moments from sharp ball bounds at the center
 
@@ -15,7 +14,6 @@ weighted local moment at `z` finite. The proof sums the dyadic shell estimate fo
 weight: each shell has `p`th moment bounded by a geometric sequence, and the series is controlled
 by subadditivity of `x ↦ x ^ p` for `p ≤ 1` and by Minkowski's inequality for `p > 1`. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal NNReal

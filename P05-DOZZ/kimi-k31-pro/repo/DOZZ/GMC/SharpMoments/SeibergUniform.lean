@@ -2,11 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.SharpMoments.SeibergMomentBound
-public import DOZZ.GMC.SharpMoments.WeightedTwoCenter
-public import DOZZ.GMC.SharpMoments.WeightedUniformGrid
+import DOZZ.GMC.SharpMoments.SeibergMomentBound
+import DOZZ.GMC.SharpMoments.WeightedTwoCenter
+import DOZZ.GMC.SharpMoments.WeightedUniformGrid
 
 /-! # Uniform higher moments of the Coulomb mass on compact parameter sets
 
@@ -16,7 +15,6 @@ half of the slack, and the explicit piece bounds, the location transfer of weigh
 chart center and the finite charge grid give one bound for all parameters; nonpositive orders use
 one fixed exterior disk. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped ENNReal NNReal
@@ -41,7 +39,6 @@ theorem transferConstant_le {γ R t tm : ℝ} (hR : 0 ≤ R) (ht : 0 < t) (htm :
       ENNReal.ofReal (Real.exp (γ ^ 2 * (2 * (Real.log 3 + 2 * Real.log (1 + R))) / 2 *
         (tm ^ 2 + tm))) * ENNReal.ofReal ((1 + R) ^ 4) ^ tm := by
   have hc : 0 ≤ γ ^ 2 * (2 * (Real.log 3 + 2 * Real.log (1 + R))) / 2 := by
-    have h3 : 0 ≤ Real.log 3 := Real.log_nonneg (by norm_num)
     have h1 : 0 ≤ Real.log (1 + R) := Real.log_nonneg (by linarith)
     positivity
   have habs : |t ^ 2 - t| ≤ tm ^ 2 + tm := by

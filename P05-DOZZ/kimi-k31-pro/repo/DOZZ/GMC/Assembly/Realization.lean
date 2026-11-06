@@ -2,20 +2,18 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.AdmissibleGMCCountableTests
-public import Mathlib.Topology.UrysohnsLemma
-public import Mathlib.Topology.MetricSpace.Thickening
-public import DOZZ.GMC.Assembly.CutoffIntegral
-public import DOZZ.GMC.Construction.GMCPathwiseSummableIncrements
-public import Mathlib.Analysis.SpecificLimits.Basic
-public import DOZZ.GMC.Assembly.CircleIntensity
-public import Mathlib.MeasureTheory.Constructions.Polish.StronglyMeasurable
+import DOZZ.GMC.AdmissibleGMCCountableTests
+import Mathlib.Topology.UrysohnsLemma
+import Mathlib.Topology.MetricSpace.Thickening
+import DOZZ.GMC.Assembly.CutoffIntegral
+import DOZZ.GMC.Construction.GMCPathwiseSummableIncrements
+import Mathlib.Analysis.SpecificLimits.Basic
+import DOZZ.GMC.Assembly.CircleIntensity
+import Mathlib.MeasureTheory.Constructions.Polish.StronglyMeasurable
 
 /-! Chart test systems and almost sure limits of admissible cutoff integrals along a fast cutoff sequence, for every continuous test with compact support in the chart. -/
 
-@[expose] public section
 
 /-! ### Chart test systems
 
@@ -52,7 +50,7 @@ structure ChartTestSystem (U : Set ℂ) where
 /-- Every open chart carries a countable test system. -/
 theorem exists_chartTestSystem (U : Set ℂ) (hU : IsOpen U) : Nonempty (ChartTestSystem U) := by
   obtain ⟨K, hKc, hKU, hKmono, -, hcof, f, hf, hdense⟩ :=
-    DOZZ.Proofs.exists_countable_dense_admissible_tests U hU
+    Proofs.exists_countable_dense_admissible_tests U hU
   have hmass : ∀ n, ∃ χ : C(ℂ, ℝ), EqOn χ 1 (K n) ∧ HasCompactSupport χ ∧
       (∀ x, χ x ∈ Icc (0 : ℝ) 1) ∧ tsupport χ ⊆ U := by
     intro n
@@ -88,7 +86,7 @@ theorem exists_chartTestSystem (U : Set ℂ) (hU : IsOpen U) : Nonempty (ChartTe
     mass_compact := hχc
     mass_support := hχU }⟩
 
-end DOZZ.Assembly
+end Assembly
 
 /-! ### Fast cutoff sequences
 
@@ -102,9 +100,9 @@ cutoffs then give convergence for every continuous test supported in the chart. 
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
 
-namespace DOZZ.Assembly
+namespace Assembly
 
-open DOZZ.Proofs
+open Proofs
 
 namespace ChartTestSystem
 
@@ -200,7 +198,6 @@ theorem const_le_fastCutoff (R : ChartTestSystem.Index → ℕ → ℝ)
   unfold fastCutoff
   have h1 : (0 : ℝ) ≤ ∑ k ∈ Finset.range (j + 1), ∑ i ∈ Finset.range (k + 1), |R (e i) k| :=
     Finset.sum_nonneg fun _ _ => Finset.sum_nonneg fun _ _ => abs_nonneg _
-  have hj : (0 : ℝ) ≤ j := Nat.cast_nonneg j
   linarith
 
 theorem nat_le_fastCutoff (R : ChartTestSystem.Index → ℕ → ℝ)
@@ -241,7 +238,7 @@ theorem exists_test_cauchy_thresholds
   choose R hR using h
   exact ⟨R, hR⟩
 
-end DOZZ.Assembly
+end Assembly
 
 /-! ### The good set
 
@@ -255,9 +252,9 @@ compact support in the chart. -/
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
 
-namespace DOZZ.Assembly
+namespace Assembly
 
-open DOZZ.Proofs
+open Proofs
 
 /-- Along the fast cutoff sequence, almost surely every test converges. -/
 theorem ae_tendsto_allTest_fastCutoff
@@ -296,7 +293,7 @@ theorem ae_tendsto_allTest_fastCutoff
     · refine le_trans (hR (e i) j _ _ (le_fastCutoff R e c hc i j (j + 1) hj (by omega))
         (le_fastCutoff R e c hc i j j hj le_rfl)).le le_self_add
     · rw [Set.indicator_of_mem (show j ∈ {j : ℕ | j < i} from by
-        simp only [Set.mem_ofPred_eq]; omega)]
+        simp [Set.mem_ofPred_eq]; omega)]
       refine le_trans ?_ le_add_self
       have hmeas (k : ℕ) : Measurable (admissibleCutoffIntegral P U dens Y γ
           (fastCutoff R e c k) t) :=
@@ -400,7 +397,7 @@ theorem ae_mem_realizationGoodSet
       (le_trans (Real.exp_le_exp.mpr (by linarith [const_le_fastCutoff R e c j])) hcut)
   filter_upwards [h1, h2] with ω hω₁ hω₂ using ⟨hω₁, hω₂⟩
 
-end DOZZ.Assembly
+end Assembly
 
 /-! ### Limits of all continuous tests
 
@@ -414,9 +411,9 @@ bounded. -/
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
 
-namespace DOZZ.Assembly
+namespace Assembly
 
-open DOZZ.Proofs
+open Proofs
 
 /-- On the good set, a continuous test supported in an exhausting compact differs from a nearby
 dense test by at most `δ` times the mass-control cutoff integral. -/

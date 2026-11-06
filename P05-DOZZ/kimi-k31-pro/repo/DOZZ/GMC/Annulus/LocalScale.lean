@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.Annulus.WeightedShell
-public import DOZZ.GMC.Moments.SubunitSet
+import DOZZ.GMC.Annulus.WeightedShell
+import DOZZ.GMC.Moments.SubunitSet
 
 /-!
 # Exact local ball scaling and its finite subunit bounds
@@ -16,7 +15,6 @@ replacing it by a finite constant. The proved subunit input already supplies sha
 bounds, with the true Gaussian exponent, uniformly in charge and moment order.
 -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal NNReal Distributions
@@ -38,9 +36,7 @@ theorem gmc_local_ball_moment_scale
   have h := gmc_affine_openBall_moment_scale P X hX γ hγ hγ2 M hM
     (a := z) (c := r / R) (R := R) (div_pos hr hR)
     ((div_le_one hR).mpr hrR) hR hR1 (by rw [he]; exact hzr) p
-  rw [he, ← gmcScaleExponent_eq_polynomial γ p hγ.ne'] at h
-  exact h
-
+  rwa [he, ← gmcScaleExponent_eq_polynomial γ p hγ.ne'] at h
 /-- The ratio law keeps the true radius exponent and puts reference radius dependence in a
 strictly positive finite scalar. -/
 theorem gmc_local_ball_moment_radius_factor
@@ -71,7 +67,7 @@ theorem gmc_local_ball_moment_finite_iff
     gmcMassMoment P M (Metric.ball z r) p < ⊤ ↔
       gmcMassMoment P M (Metric.ball 0 R) p < ⊤ := by
   have he : r / R * R = r := div_mul_cancel₀ _ hR.ne'
-  simpa only [he] using gmc_affine_openBall_moment_finite_iff P X hX γ hγ hγ2 M hM
+  simpa [he] using gmc_affine_openBall_moment_finite_iff P X hX γ hγ hγ2 M hM
     (a := z) (c := r / R) (R := R) (div_pos hr hR)
     ((div_le_one hR).mpr hrR) hR hR1 (by rw [he]; exact hzr) p
 
@@ -115,7 +111,7 @@ theorem gmc_local_twoSided_ball_scaling_iff
     have hCD : C⁻¹ ≤ D := by
       have hi := (inv_le_inv₀ hC (inv_pos.mpr hD)).mpr
         (show D⁻¹ ≤ C from le_max_right _ _)
-      simpa only [inv_inv] using hi
+      simpa [inv_inv] using hi
     refine ⟨C, hC, ?_⟩
     intro z r hr hrR hzr
     have he : gmcMassMoment P M (Metric.ball z r) p = ENNReal.ofReal (D * r ^ ξ) := by
@@ -134,7 +130,7 @@ theorem gmc_local_twoSided_ball_scaling_iff
       ENNReal.ofReal_le_ofReal (mul_le_mul_of_nonneg_right hDC
         (Real.rpow_nonneg hr.le ξ))⟩
   · rintro ⟨C, hC, hBound⟩
-    have hb := hBound 0 R hR le_rfl (by simpa only [norm_zero, zero_add] using hR1)
+    have hb := hBound 0 R hR le_rfl (by simpa [norm_zero, zero_add] using hR1)
     have hpref : 0 < ENNReal.ofReal (C⁻¹ * R ^ ξ) :=
       ENNReal.ofReal_pos.mpr (mul_pos (inv_pos.mpr hC) (Real.rpow_pos_of_pos hR ξ))
     exact ⟨hpref.trans_le hb.1, hb.2.trans_lt ENNReal.ofReal_lt_top⟩

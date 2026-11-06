@@ -2,12 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Fusion.LocalDifferenceRooting
-public import DOZZ.FourPoint.Fusion.InterpolatedTimeConvergence
-public import DOZZ.Statements.FourPoint.GammaHalfRootedCoefficient
+import DOZZ.FourPoint.Fusion.LocalDifferenceRooting
+import DOZZ.FourPoint.Fusion.InterpolatedTimeConvergence
+import DOZZ.Statements.FourPoint.GammaHalfRootedCoefficient
 /-! # The signed local KRV coefficient limit -/
-@[expose] public section
 open MeasureTheory Set Filter Topology
 namespace DOZZ.Proofs
 /-- Spatial and time dominated convergence yields the normalized local mass difference. -/
@@ -33,7 +31,7 @@ theorem fusion_localDifference_normalized_tendsto {Ω : Type*} [MeasurableSpace 
     hα₁ hα₂ hα₃ (-p - 1) (by linarith) (fun y => (K y : ℂ))
     (Complex.measurable_ofReal.comp hm) (hK.ofReal)
   have hi : (∫ y : ℂ, (K y : ℂ)) = planarGaussConstant (γ ^ 2 / 2) (γ * α₁) := by
-    simpa only [norm_one, Real.one_rpow, Complex.ofReal_one, one_mul] using
+    simpa [norm_one, Real.one_rpow, Complex.ofReal_one, one_mul] using
       (planar_difference_integral _ _ hk hβ hβ2 1).2
   rw [hi] at hc
   have hr := Complex.continuous_re.continuousAt.tendsto.comp hc
@@ -41,10 +39,10 @@ theorem fusion_localDifference_normalized_tendsto {Ω : Type*} [MeasurableSpace 
       ∫⁻ ω, gammaHalfRootedMass γ α₁ α₂ α₃ M ω ^ (-p - 1) ∂P := by
     apply lintegral_congr_ae
     filter_upwards [fusionMovingMass_eq_rooted_ae P X hX γ hγ hγ2 M hM α₁ α₂ α₃ 1 0] with ω h
-    simp only [mul_zero] at h
+    simp [mul_zero] at h
     rw [h]
     rfl
-  simp only [Function.comp_def, ← Complex.ofReal_mul, integral_complex_ofReal, Complex.ofReal_re,
+  simp [Function.comp_def, ← Complex.ofReal_mul, integral_complex_ofReal, Complex.ofReal_re,
     Complex.mul_re, Complex.ofReal_re, Complex.ofReal_im, mul_zero, sub_zero, he] at hr
   change Tendsto _ _ (nhds (gammaHalfRootedCoefficient P M γ α₁ α₂ α₃ p)) at hr
   apply (hr.mono_left nhdsWithin_le_nhds).congr'
@@ -52,7 +50,7 @@ theorem fusion_localDifference_normalized_tendsto {Ω : Type*} [MeasurableSpace 
     (((continuous_norm.tendsto (0 : ℂ)).eventually_lt_const (by simp : ‖(0 : ℂ)‖ < (1 / 4 : ℝ))).filter_mono
       nhdsWithin_le_nhds).mono fun _ h => h.le
   filter_upwards [hz4, self_mem_nhdsWithin] with z hz4 hz
-  have hz0 : z ≠ 0 := by simpa only [mem_compl_iff, mem_singleton_iff] using hz
+  have hz0 : z ≠ 0 := by simpa [mem_compl_iff, mem_singleton_iff] using hz
   have hi' : (∫ t in Icc (0 : ℝ) 1, ∫ ω,
       (fusionUnrootedSegment γ α₁ α₂ α₃ t z (M ω) ^ (-p - 1)).toReal *
         (∫ x in Metric.ball (0 : ℂ) (1 / 2), fusionDifferenceKernel γ α₁ α₂ α₃ z x ∂M ω) ∂P) =

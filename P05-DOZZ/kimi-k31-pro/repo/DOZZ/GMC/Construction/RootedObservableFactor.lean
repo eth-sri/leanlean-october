@@ -1,13 +1,11 @@
 /-
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 -/
-module
 
-public import DOZZ.GMC.Construction.GMCFiniteCoordinateTilt
+import DOZZ.GMC.Construction.GMCFiniteCoordinateTilt
 
 /-! Factoring root-dependent observables through determining real coordinates. -/
 
-@[expose] public section
 
 open MeasureTheory MeasurableSpace
 open scoped Distributions ENNReal
@@ -53,8 +51,7 @@ theorem rooted_observable_factors_through_coordinates
   have hPull' : @Measurable (ℂ × (Q × FiniteMeasure ℂ)) ℝ≥0∞
       (MeasurableSpace.comap lift inferInstance) inferInstance
       (fun p => H p.1 p.2.1 (p.2.2 : Measure ℂ)) := by
-    rw [hSigma]
-    exact hPull
+    rwa [hSigma]
   obtain ⟨G, hG, hGfactor⟩ := hPull'.exists_eq_measurable_comp
   let decode : (gmcTiltCoordinateIndex → ℝ) → Q × E := fun v =>
     (fun f => v (.inl f), fun j => ENNReal.ofReal (v (.inr j)))
@@ -78,7 +75,5 @@ theorem rooted_observable_factors_through_coordinates
   have hf := congrFun hGfactor (u, (q, ⟨μ, hμ⟩))
   change H u q μ = G (u, gmcJointFiniteEval (q, ⟨μ, hμ⟩)) at hf
   change H u q μ = G (u, decode (gmcTiltCoordinatePath q μ))
-  rw [heq]
-  exact hf
-
+  rwa [heq]
 end DOZZ.Proofs

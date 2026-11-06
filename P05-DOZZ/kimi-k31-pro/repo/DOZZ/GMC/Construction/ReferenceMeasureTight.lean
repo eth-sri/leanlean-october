@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.Construction.ReferenceMeasureFinite
-public import Mathlib.MeasureTheory.Measure.Continuity
+import DOZZ.GMC.Construction.ReferenceMeasureFinite
+import Mathlib.MeasureTheory.Measure.Continuity
 
 /-! Compact cutoffs exhaust the finite equator GMC reference measure. -/
 
-@[expose] public section
 
 open MeasureTheory Filter Set
 open scoped Topology ENNReal
@@ -21,8 +19,7 @@ theorem gmcReferenceMeasure_compl_closedBall_tendsto_zero :
     Tendsto (fun n : ℕ => gmcReferenceMeasure (Metric.closedBall (0 : ℂ) n)ᶜ)
       atTop (𝓝 0) := by
   let S : ℕ → Set ℂ := fun n => (Metric.closedBall (0 : ℂ) n)ᶜ
-  have hmeas (n : ℕ) : NullMeasurableSet (S n) gmcReferenceMeasure := by
-    exact ((Metric.isClosed_closedBall (x := (0 : ℂ)) (ε := (n : ℝ))).measurableSet.compl).nullMeasurableSet
+  have hmeas (n : ℕ) : NullMeasurableSet (S n) gmcReferenceMeasure := ((Metric.isClosed_closedBall (x := (0 : ℂ)) (ε := (n : ℝ))).measurableSet.compl).nullMeasurableSet
   have hanti : Antitone S := by
     intro n m hnm x hx
     have hx' : x ∉ Metric.closedBall (0 : ℂ) m := hx

@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Reflected.SourceCopiedError
-public import DOZZ.FourPoint.Reflected.SourceWilliamsKernelSqueeze
-public import DOZZ.FourPoint.Reflected.SourceWilliamsLimit
-public import DOZZ.FourPoint.Reflected.OrderedKernelSqueeze
-public import DOZZ.FourPoint.Reflected.KernelCoefficientLimits
+import DOZZ.FourPoint.Reflected.SourceCopiedError
+import DOZZ.FourPoint.Reflected.SourceWilliamsKernelSqueeze
+import DOZZ.FourPoint.Reflected.SourceWilliamsLimit
+import DOZZ.FourPoint.Reflected.OrderedKernelSqueeze
+import DOZZ.FourPoint.Reflected.KernelCoefficientLimits
 /-! The literal source reflected increment follows by the ordered Williams/kernel squeeze. -/
-@[expose] public section
 open MeasureTheory ProbabilityTheory Set Filter Topology
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs

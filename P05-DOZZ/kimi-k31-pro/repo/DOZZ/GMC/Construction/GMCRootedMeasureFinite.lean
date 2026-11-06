@@ -1,2 +1,1 @@
-module
-public import DOZZ.GMC.Construction.GMCRootedMeasureFiniteChart
+import DOZZ.GMC.Construction.GMCRootedMeasureFiniteChart

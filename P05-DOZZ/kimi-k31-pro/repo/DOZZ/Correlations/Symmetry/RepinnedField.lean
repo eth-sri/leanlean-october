@@ -2,11 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.Correlations.Symmetry.ReflectionTest
-public import DOZZ.Statements.Defs.IsEquatorGFF
-public import Mathlib.MeasureTheory.Function.LocallyIntegrable
-@[expose] public section
+import DOZZ.Correlations.Symmetry.ReflectionTest
+import DOZZ.Statements.Defs.IsEquatorGFF
+import Mathlib.MeasureTheory.Function.LocallyIntegrable
 open MeasureTheory Set
 open scoped Distributions
 namespace DOZZ.Proofs
@@ -22,7 +20,7 @@ theorem symmetryTestIntegralCLM_apply (f : TestFn) :
   rw [symmetryTestIntegralCLM,
     TestFunction.integralAgainstBilinCLM_eq_integral
       ((locallyIntegrable_const (1 : ℝ)).locallyIntegrableOn univ)]
-  simp only [ContinuousLinearMap.mul_apply', mul_one]
+  simp [ContinuousLinearMap.mul_apply', mul_one]
 
 /-- Actual correlated affine re-pinning on the original probability space. -/
 noncomputable def symmetryRepinnedField
@@ -35,7 +33,7 @@ noncomputable def symmetryRepinnedField
     map_smul' := by
       intro c f
       rw [map_smul, map_smul, map_smul]
-      simp only [smul_eq_mul, RingHom.id_apply]
+      simp [smul_eq_mul, RingHom.id_apply]
       ring
     cont := ((X ω).continuous.comp symmetryReflectionTestCLM.continuous).sub
       (continuous_const.mul symmetryTestIntegralCLM.continuous) }
@@ -53,6 +51,6 @@ theorem symmetryRepinnedField_eval_measurable
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
     (hX : IsEquatorGFF P X) (L : Ω → ℝ) (hL : Measurable L) (f : TestFn) :
     Measurable (fun ω => symmetryRepinnedField X L ω f) := by
-  simp only [symmetryRepinnedField_apply]
+  simp [symmetryRepinnedField_apply]
   exact ((hX.2 (symmetryReflectionTest f)).1).sub (hL.mul_const _)
 end DOZZ.Proofs

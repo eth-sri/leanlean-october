@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.Residue.LocalWeight
-public import DOZZ.Statements.Correlations.OneInsertionTailCoefficient
+import DOZZ.Correlations.Residue.LocalWeight
+import DOZZ.Statements.Correlations.OneInsertionTailCoefficient
 
 /-! Exact cancellation of the insertion-position factor in the residue chart. -/
 
-@[expose] public section
 open MeasureTheory Filter Topology Set
 namespace DOZZ.Proofs
 
@@ -50,7 +48,7 @@ theorem residue_chart_tail_coefficient_limit (γ α β Rbar : ℝ) (hγ : γ ≠
   have he : Tendsto (fun ε : ℝ => ε) (𝓝[>] 0) (𝓝 0) := tendsto_id.mono_left nhdsWithin_le_nhds
   have hpow := (Real.continuous_const_rpow (by linarith only [hz] : ‖z‖ ≠ 0)).continuousAt.tendsto.comp
     ((he.const_mul γ).mul_const (reflectionExponent γ α))
-  simpa only [residue_chart_tail_coefficient γ α β _ Rbar hγ z w hz hz8 hzw,
+  simpa [residue_chart_tail_coefficient γ α β _ Rbar hγ z w hz hz8 hzw,
     mul_zero, zero_mul, Real.rpow_zero, one_mul, Function.comp_def] using
     (hpow.mul_const (‖z - w‖ ^ (-(γ * β * reflectionExponent γ α)))).mul_const Rbar
 

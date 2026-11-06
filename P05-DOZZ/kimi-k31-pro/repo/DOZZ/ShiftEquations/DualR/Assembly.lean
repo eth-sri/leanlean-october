@@ -2,11 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.ShiftEquations.DualR.Generic
-public import DOZZ.ShiftEquations.DualR.AnalyticR
-public import DOZZ.Statements.FourPoint.DualCrossingL
+import DOZZ.ShiftEquations.DualR.Generic
+import DOZZ.ShiftEquations.DualR.AnalyticR
+import DOZZ.Statements.FourPoint.DualCrossingL
 import DOZZ.ShiftEquations.Residual.Joint
 import DOZZ.ShiftEquations.Gluing.Meromorphy
 import DOZZ.ShiftEquations.Shift.ShiftGluing
@@ -28,13 +27,12 @@ thinner strip makes it hold along the codiscrete filter of `ℂ`. The constant `
 is nonzero since `R(γ) ≠ 0`.
 -/
 
-@[expose] public section
 
 open MeasureTheory Filter Topology Set
 
 namespace DOZZ.Proofs
 
-/-- **`DOZZ.reflectionR_dual_shift_unknown_constant` from its inputs.** -/
+/-- **`reflectionR_dual_shift_unknown_constant` from its inputs.** -/
 theorem reflectionR_dual_shift_unknown_constant_of_deps
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
     (M : Ω → Measure ℂ) (γ μ : ℝ)
@@ -183,4 +181,3 @@ theorem reflectionR_dual_shift_unknown_constant_of_deps
 
 end DOZZ.Proofs
 
-end

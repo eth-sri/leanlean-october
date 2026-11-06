@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.Construction.GMCVaryingWeightedTotalMass
-public import DOZZ.GMC.Construction.GMCWeightedTotalMass
+import DOZZ.GMC.Construction.GMCVaryingWeightedTotalMass
+import DOZZ.GMC.Construction.GMCWeightedTotalMass
 
 /-! Convergence of total cutoff masses under uniformly varying weights. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped Distributions ENNReal NNReal BoundedContinuousFunction
@@ -43,7 +41,7 @@ private theorem tendstoInMeasure_add_of_sub
             by_contra hnot
             have hnot' : ¬ (ω ∈ {ω | δ ≤ ‖f i ω - g i ω‖} ∨
                 ω ∈ {ω | δ ≤ ‖g i ω - y ω‖}) := by
-              simpa only [Set.mem_union] using hnot
+              simpa [Set.mem_union] using hnot
             rcases not_or.mp hnot' with ⟨h1, h2⟩
             have h1' : ‖f i ω - g i ω‖ < δ := lt_of_not_ge h1
             have h2' : ‖g i ω - y ω‖ < δ := lt_of_not_ge h2

@@ -2,13 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.Tails.UniformPowerTailShift
+import DOZZ.Correlations.Tails.UniformPowerTailShift
 
 /-! The polynomial error threshold retains a fixed relative margin for every x at least one. -/
 
-@[expose] public section
 open Set
 
 namespace DOZZ.Proofs
@@ -29,7 +27,7 @@ theorem polynomial_shift_relative (x a s : ℝ) (hx : 1 ≤ x) (ha : 0 ≤ a)
     let h := x^(1-a)/4
     let y := (x+s*h)/x
     y ∈ Icc (1/2 : ℝ) (3/2 : ℝ) ∧ |y-1| ≤ x^(-a) := by
-  dsimp only
+  dsimp
   have hx0 : 0 < x := zero_lt_one.trans_le hx
   have hsize := polynomial_shift_size x a hx ha
   have hidentity : (x+s*(x^(1-a)/4))/x-1 = s*((x^(1-a)/4)/x) := by

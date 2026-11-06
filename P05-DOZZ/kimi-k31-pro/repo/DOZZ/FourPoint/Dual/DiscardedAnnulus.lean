@@ -2,12 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Dual.DeletedDiskRooted
-public import DOZZ.FourPoint.Dual.MassComparison
+import DOZZ.FourPoint.Dual.DeletedDiskRooted
+import DOZZ.FourPoint.Dual.MassComparison
 import Mathlib.Tactic
 /-! The actual intermediate annulus is dominated by the rooted deleted zero-kernel disk. -/
-@[expose] public section
 open MeasureTheory Set Filter Topology
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -28,11 +26,11 @@ theorem dual_kernel_relative_upper (γ α₁ α₂ α₃ R : ℝ) (_hR : 0 ≤ R
   let W := normPlus x^(γ*(α₁+α₂+α₃-2/γ)) /
     (‖x‖^(γ*α₁)*‖x-1‖^(γ*α₂))
   have hp : 0 ≤ normPlus x := (zero_lt_one.trans_le (le_max_left _ _)).le
-  have hW : 0 ≤ W := by dsimp only [W]; positivity
+  have hW : 0 ≤ W := by dsimp [W]; positivity
   have hm := mul_le_mul_of_nonneg_right hs hW
   unfold dualFusionKernel
-  simp only [sub_zero, Real.rpow_two]
-  convert hm using 1 <;> dsimp only [W] <;> ring
+  simp [sub_zero]
+  convert hm using 1 <;> dsimp [W] <;> ring
 
 /-- The literal intermediate annular mass is bounded by a multiple of the deleted zero disk
 for any measure, before averaging. -/
@@ -48,7 +46,7 @@ theorem dual_discarded_annulus_mass_bound (γ α₁ α₂ α₃ h r : ℝ)
       (isOpen_lt continuous_norm continuous_const).measurableSet
   have hsub : D ⊆ Metric.ball (0 : ℂ) r := by
     intro x hx
-    simpa only [Metric.mem_ball, dist_zero_right] using hx.2
+    simpa [Metric.mem_ball, dist_zero_right] using hx.2
   calc
     _ ≤ ∫⁻ x in D, ENNReal.ofReal ((1+Real.exp h)^2)*
         ENNReal.ofReal (dualFusionKernel γ α₁ α₂ α₃ 0 x) ∂μ := by
@@ -56,8 +54,7 @@ theorem dual_discarded_annulus_mass_bound (γ α₁ α₂ α₃ h r : ℝ)
       filter_upwards [ae_restrict_mem hD] with x hx
       have hsep : ‖z‖ ≤ Real.exp h*‖x‖ := by
         have hb := mul_le_mul_of_nonneg_left hx.1 (Real.exp_pos h).le
-        rw [← mul_assoc, ← Real.exp_add, add_neg_cancel, Real.exp_zero, one_mul] at hb
-        exact hb
+        rwa [← mul_assoc, ← Real.exp_add, add_neg_cancel, Real.exp_zero, one_mul] at hb
       rw [← ENNReal.ofReal_mul (by positivity)]
       exact ENNReal.ofReal_le_ofReal (dual_kernel_relative_upper γ α₁ α₂ α₃
         (Real.exp h) (Real.exp_pos _).le z x hsep)
@@ -85,15 +82,15 @@ theorem dual_discarded_annulus_rooted_littleO
   have ht := dual_deleted_disk_rooted_littleO P X hX γ hγ hγ₂ M hM
     α₁ α₂ α₃ q ξ κ hq hβ hξ1 hslack
   have hmajor := ht.const_mul C
-  simp only [mul_zero] at hmajor
+  simp [mul_zero] at hmajor
   apply squeeze_zero' (Eventually.of_forall fun z =>
     div_nonneg ENNReal.toReal_nonneg (Real.rpow_nonneg (norm_nonneg z) κ)) ?_ hmajor
   obtain ⟨C₀, _, hb⟩ := dual_deleted_disk_rooted_bound P X hX γ hγ hγ₂ M hM
     α₁ α₂ α₃ q hq hβ
   have hn : Tendsto (fun z : ℂ => ‖z‖) (𝓝[≠] (0 : ℂ)) (𝓝 0) := by
-    simpa only [norm_zero] using (continuous_norm.tendsto (0 : ℂ)).mono_left nhdsWithin_le_nhds
+    simpa [norm_zero] using (continuous_norm.tendsto (0 : ℂ)).mono_left nhdsWithin_le_nhds
   have hr : Tendsto (fun z : ℂ => ‖z‖^(1-ξ)) (𝓝[≠] (0 : ℂ)) (𝓝 0) := by
-    simpa only [Function.comp_def, Real.zero_rpow (sub_pos.mpr hξ1).ne'] using
+    simpa [Function.comp_def, Real.zero_rpow (sub_pos.mpr hξ1).ne'] using
       ((Real.continuous_rpow_const (sub_nonneg.mpr hξ1.le)).tendsto (0 : ℝ)).comp hn
   filter_upwards [self_mem_nhdsWithin, hn.eventually (gt_mem_nhds zero_lt_one),
     hr.eventually (gt_mem_nhds (by norm_num : (0 : ℝ) < 1/2))] with z hz0 hz hcut
@@ -111,8 +108,8 @@ theorem dual_discarded_annulus_rooted_littleO
           γ α₁ α₂ α₃ h (‖z‖^(1-ξ)) z (M ω)) le_rfl
       _ = _ := by simp_rw [mul_assoc]; exact lintegral_const_mul' _ _ ENNReal.ofReal_ne_top
   have hre := ENNReal.toReal_mono (ENNReal.mul_ne_top ENNReal.ofReal_ne_top hfin) he
-  rw [ENNReal.toReal_mul, ENNReal.toReal_ofReal (by dsimp only [C]; positivity)] at hre
+  rw [ENNReal.toReal_mul, ENNReal.toReal_ofReal (by dsimp [C]; positivity)] at hre
   have hdiv := div_le_div_of_nonneg_right hre (Real.rpow_nonneg (norm_nonneg z) κ)
-  simpa only [mul_div_assoc] using hdiv
+  simpa [mul_div_assoc] using hdiv
 
 end DOZZ.Proofs

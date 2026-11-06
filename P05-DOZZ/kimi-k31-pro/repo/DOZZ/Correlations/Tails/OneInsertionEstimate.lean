@@ -2,19 +2,17 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.Tails.CanonicalLeadingTail
-public import DOZZ.Correlations.Tails.UniformCutMoments
-public import DOZZ.Correlations.Tails.LocalizationData
-public import DOZZ.Correlations.Tails.TotalCopiedRemainder
-public import DOZZ.Correlations.Tails.TwoSpaceTailSandwich
-public import DOZZ.Correlations.Tails.UniformTailSandwich
-public import DOZZ.Correlations.Tails.ENNRealPowerTail
+import DOZZ.Correlations.Tails.CanonicalLeadingTail
+import DOZZ.Correlations.Tails.UniformCutMoments
+import DOZZ.Correlations.Tails.LocalizationData
+import DOZZ.Correlations.Tails.TotalCopiedRemainder
+import DOZZ.Correlations.Tails.TwoSpaceTailSandwich
+import DOZZ.Correlations.Tails.UniformTailSandwich
+import DOZZ.Correlations.Tails.ENNRealPowerTail
 
 /-! The original one-insertion estimate from its localized copied law and bounded remainders. -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal
 
@@ -41,7 +39,7 @@ theorem oneInsertion_estimate_uniform
   rcases Kα.eq_empty_or_nonempty with he | hn
   · refine ⟨0,le_rfl,?_⟩
     intro z hzk α hαk
-    simp only [he,mem_empty_iff_false] at hαk
+    simp [he,mem_empty_iff_false] at hαk
   obtain ⟨a,r,R,g,pH,qH,hηa,ha1,hR,hRbulk,hg,hpq,hcuts⟩ :=
     uniform_oneInsertion_cut_moments γ hγ Kα hKα hn hα η hη hceil
   have ha0 : 0 < a := hη.trans hηa
@@ -50,7 +48,7 @@ theorem oneInsertion_estimate_uniform
   have hA (α : ℝ) (hαk : α ∈ Kα) : α ≤ A := (le_abs_self α).trans (hAmax hαk)
   have hAmax (α : ℝ) (hαk : α ∈ Kα) : |α-1/γ| ≤ A+|1/γ| :=
     (show |α-1/γ| ≤ |α|+|1/γ| by
-      simpa only [sub_zero,zero_sub,abs_neg] using abs_sub_le α 0 (1/γ)).trans
+      simpa [sub_zero,zero_sub,abs_neg] using abs_sub_le α 0 (1/γ)).trans
         (add_le_add (hAmax hαk) le_rfl)
   let ρ := min radius 1/2
   have hρ : 0 < ρ := div_pos (lt_min hFamily.1 zero_lt_one) (by norm_num)
@@ -119,13 +117,13 @@ theorem oneInsertion_estimate_uniform
     have h1 : L 1 ≤ 1 := by
       change ((P.prod P) {q | ENNReal.ofReal 1 < canonicalLeading N Xc (F z) z γ α q}).toReal ≤ 1
       exact measureReal_le_one
-    simp only [Real.one_rpow,mul_one] at ht
+    simp [Real.one_rpow,mul_one] at ht
     linarith only [ht,h1]
   have hSand (t : ℝ) (ht : 2 ≤ t) :
       let h := t^(1-a)/4
       L (t+h)-D₂.toReal*h^(-(r α)) ≤ T t ∧
       T t ≤ L (t-2*h)+(D₁.toReal+D₂.toReal)*h^(-(r α)) := by
-    dsimp only
+    dsimp
     have ht1 : 1 ≤ t := (by norm_num : (1 : ℝ) ≤ 2).trans ht
     have hsize := polynomial_shift_size t a ht1 ha0.le
     have hh : 2*(t^(1-a)/4) ≤ t := by linarith only [hsize.2.1,ht]
@@ -140,17 +138,17 @@ theorem oneInsertion_estimate_uniform
     have h₂ := ennreal_power_tail_le_moment (P.prod P) (copiedRemainder N Xc F z γ α ρ)
       hEcm (r α) (t^(1-a)/4) hr hsize.1 D₂ hD₂ hCopyMoment.2
     constructor
-    · dsimp only [L,T] at *
+    · dsimp [L,T] at *
       linarith only [hs.1,h₂]
     · rw [add_mul]
-      dsimp only [L,T] at *
+      dsimp [L,T] at *
       linarith only [hs.2,h₁,h₂]
   have hb := uniform_tail_sandwich_bound T L (reflectionExponent γ α) R η a (r α) R c
     (1+E) E D₁.toReal D₂.toReal hp.le hpR hη hηa.le hrR hpr.le hc0 hcc hE
     ENNReal.toReal_nonneg ENNReal.toReal_nonneg
     hT hL hSand x hx
   have he : (1 : ℝ)+(1+E) = 2+E := by ring
-  simpa only [T,c,C,he] using hb
+  simpa [T,c,C,he] using hb
 
 
 end DOZZ.Proofs

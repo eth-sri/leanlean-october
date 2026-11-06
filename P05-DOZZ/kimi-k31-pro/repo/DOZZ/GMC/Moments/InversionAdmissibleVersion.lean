@@ -2,16 +2,14 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.AdmissibleGMCRestriction
-public import DOZZ.GMC.Construction.CircleCutoffTestMass
-public import DOZZ.GMC.Construction.GMCMeasurableVersion
-public import DOZZ.GMC.Construction.GMCUniqueAe
+import DOZZ.GMC.AdmissibleGMCRestriction
+import DOZZ.GMC.Construction.CircleCutoffTestMass
+import DOZZ.GMC.Construction.GMCMeasurableVersion
+import DOZZ.GMC.Construction.GMCUniqueAe
 
 /-! Chart-supported admissible versions obtained directly from arbitrary `IsGMCOf` limits. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped Distributions ENNReal NNReal
@@ -114,8 +112,7 @@ theorem isGMCOf_restrict_admissible_version
     have htarget : (fun ω => ∫ x, f x ∂M ω) =ᵐ[P]
         fun ω => ∫ x, f x ∂Nc ω := by
       filter_upwards [hMN] with ω hω
-      rw [show Nc ω = (N ω).restrict U by rfl]
-      rw [hω]
+      rw [show Nc ω = (N ω).restrict U by rfl, hω]
       exact (integral_restrict_eq_integral_of_zero_on_compl (N ω) U hU.measurableSet
         (fun x => f x) hfzero).symm
     exact TendstoInMeasure.congr hseq htarget hMconv'

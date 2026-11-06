@@ -2,22 +2,20 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Hypergeom.ODE.ConnectionEulerSeries
-public import DOZZ.Hypergeom.ODE.ConnectionEndpointLimits
-public import DOZZ.Hypergeom.ODE.ConnectionGammaCoefficients
+import DOZZ.Hypergeom.ODE.ConnectionEulerSeries
+import DOZZ.Hypergeom.ODE.ConnectionEndpointLimits
+import DOZZ.Hypergeom.ODE.ConnectionGammaCoefficients
 
 /-! Evaluation of the first zero-basis connection coefficient from the real Euler integral. -/
 
-@[expose] public section
 
 namespace DOZZ.Proofs
 
 open Filter Set
 open scoped Topology
 
-private theorem intCast_abs_sub_lower_bound (q : ℝ) (hq0 : 0 < q) (hq1 : q < 1)
+theorem intCast_abs_sub_lower_bound (q : ℝ) (hq0 : 0 < q) (hq1 : q < 1)
     (n : ℤ) :
     min q (1 - q) ≤ |(n : ℝ) - q| := by
   have hn : n ≤ 0 ∨ 1 ≤ n := by omega
@@ -29,7 +27,7 @@ private theorem intCast_abs_sub_lower_bound (q : ℝ) (hq0 : 0 < q) (hq1 : q < 1
     rw [abs_of_nonneg (by linarith)]
     exact (min_le_right q (1 - q)).trans (by linarith)
 
-private theorem realInterval_accumulates_in_complex (lo x hi : ℝ)
+theorem realInterval_accumulates_in_complex (lo x hi : ℝ)
     (hlo : lo < x) (hhi : x < hi) :
     (x : ℂ) ∈ closure
       ((fun y : ℝ => (y : ℂ)) '' (Ioo lo hi \ {x})) := by
@@ -55,7 +53,7 @@ private theorem realInterval_accumulates_in_complex (lo x hi : ℝ)
     rw [dist_eq_norm, hdiff, norm_neg, Complex.norm_real, Real.norm_eq_abs, abs_of_pos hd]
     exact hdε
 
-private theorem ofReal_interval_subset_ball {lo q hi r : ℝ}
+theorem ofReal_interval_subset_ball {lo q hi r : ℝ}
     (hleft : q - r ≤ lo) (hright : hi ≤ q + r)
     {x : ℝ} (hx : x ∈ Ioo lo hi) :
     (x : ℂ) ∈ Metric.ball (q : ℂ) r := by
@@ -67,10 +65,8 @@ private theorem ofReal_interval_subset_ball {lo q hi r : ℝ}
   have hnorm : ‖(x : ℂ) - (q : ℂ)‖ = |x - q| := by
     rw [show (x : ℂ) - (q : ℂ) = ((x - q : ℝ) : ℂ) by push_cast; ring,
       Complex.norm_real, Real.norm_eq_abs]
-  rw [hnorm]
-  exact hbound
-
-private theorem ofReal_ball_subset_integerRange_compl (q r : ℝ)
+  rwa [hnorm]
+theorem ofReal_ball_subset_integerRange_compl (q r : ℝ)
     (hq0 : 0 < q) (hq1 : q < 1) (hr : r < min q (1 - q)) :
     Metric.ball (q : ℂ) r ⊆ gaussConnectionIntegerRangeᶜ := by
   intro z hz hzInt
@@ -91,13 +87,13 @@ private theorem ofReal_ball_subset_integerRange_compl (q r : ℝ)
     exact intCast_abs_sub_lower_bound q hq0 hq1 n
   linarith
 
-private theorem ofReal_mem_integerRange_compl_of_between_zero_one {x : ℝ}
+theorem ofReal_mem_integerRange_compl_of_between_zero_one {x : ℝ}
     (hx0 : 0 < x) (hx1 : x < 1) :
     (x : ℂ) ∈ gaussConnectionIntegerRangeᶜ := by
   rw [gaussConnectionIntegerRange, Set.mem_compl_iff]
   rintro ⟨n, hn⟩
   have hnC : ((n : ℝ) : ℂ) = (x : ℂ) := by
-    simpa only [Complex.ofReal_intCast] using hn
+    simpa [Complex.ofReal_intCast] using hn
   have hnR : (n : ℝ) = x := Complex.ofReal_injective hnC
   have hnCases : n ≤ 0 ∨ 1 ≤ n := by omega
   rcases hnCases with hn | hn
@@ -152,7 +148,7 @@ theorem connectionMinusFirstCramer_eq_gamma_of_real
       (eventually_gt_nhds (show (0 : ℝ) < 1 by norm_num))
   have hxlt : ∀ᶠ x : ℝ in 𝓝[Iio 1] 1, x < 1 := by
     change ∀ᶠ x : ℝ in 𝓝[Iio (1 : ℝ)] 1, x ∈ Iio 1
-    simpa only [mem_Iio] using
+    simpa [mem_Iio] using
       (eventually_mem_nhdsWithin : ∀ᶠ x : ℝ in 𝓝[Iio (1 : ℝ)] 1, x ∈ Iio 1)
   have hEulerEq : ∀ᶠ x : ℝ in 𝓝[Iio 1] 1,
       H (a : ℂ) (b : ℂ) (c : ℂ) (x : ℂ) =
@@ -222,10 +218,6 @@ theorem connectionMinusFirstCramer_eq_gamma_on_open_box
     simpa [TC, Complex.ofReal_div] using
       (ofReal_ball_subset_integerRange_compl (1 / 4) (1 / 8) (by norm_num)
         (by norm_num) (by norm_num))
-  have hSCReal {x : ℝ} (hx : x ∈ SR) : (x : ℂ) ∈ SC := by
-    simpa [SC, Complex.ofReal_div] using
-      (ofReal_interval_subset_ball (lo := 11 / 16) (q := 3 / 4)
-        (hi := 13 / 16) (r := 1 / 8) (by norm_num) (by norm_num) hx)
   have hTCReal {x : ℝ} (hx : x ∈ TR) : (x : ℂ) ∈ TC := by
     simpa [TC, Complex.ofReal_div] using
       (ofReal_interval_subset_ball (lo := 3 / 16) (q := 1 / 4)
@@ -251,7 +243,7 @@ theorem connectionMinusFirstCramer_eq_gamma_on_open_box
       linarith
     have hcInt := ofReal_mem_integerRange_compl_of_between_zero_one hcpos hcLt
     have hδInt := ofReal_mem_integerRange_compl_of_between_zero_one hδpos hδLt
-    have hdelta : 0 < c - a - (c - δ - a) := by simpa only [show c - a - (c - δ - a) = δ by ring] using hδpos
+    have hdelta : 0 < c - a - (c - δ - a) := by simpa [show c - a - (c - δ - a) = δ by ring] using hδpos
     have hreal := connectionMinusFirstCramer_eq_gamma_of_real hH a (c - δ - a) c
       hap hb hdelta hcInt (by
         rw [show c - a - (c - δ - a) = δ by ring]
@@ -345,7 +337,7 @@ theorem connectionMinusFirstCramer_eq_gamma_on_open_box
         · intro heq
           apply hcn
           have heqC : (c : ℂ) = (3 / 4 : ℂ) := by
-            simpa only [Set.mem_singleton_iff] using heq
+            simpa [Set.mem_singleton_iff] using heq
           have heq' : c = (3 / 4 : ℝ) :=
             Complex.ofReal_injective (heqC.trans (by norm_num))
           exact Set.mem_singleton_iff.mpr heq'
@@ -373,7 +365,7 @@ theorem connectionMinusFirstCramer_eq_gamma_on_open_box
         · intro heq
           apply hδn
           have heqC : (δ : ℂ) = (1 / 4 : ℂ) := by
-            simpa only [Set.mem_singleton_iff] using heq
+            simpa [Set.mem_singleton_iff] using heq
           have heq' : δ = (1 / 4 : ℝ) :=
             Complex.ofReal_injective (heqC.trans (by norm_num))
           exact Set.mem_singleton_iff.mpr heq'
@@ -400,7 +392,7 @@ theorem connectionMinusFirstCramer_eq_gamma_on_open_box
         · intro heq
           apply han
           have heqC : (a : ℂ) = (1 / 4 : ℂ) := by
-            simpa only [Set.mem_singleton_iff] using heq
+            simpa [Set.mem_singleton_iff] using heq
           have heq' : a = (1 / 4 : ℝ) :=
             Complex.ofReal_injective (heqC.trans (by norm_num))
           exact Set.mem_singleton_iff.mpr heq'

@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.Dual.InnerKernel
-public import DOZZ.FourPoint.Reflected.InnerPolar
+import DOZZ.FourPoint.Dual.InnerKernel
+import DOZZ.FourPoint.Reflected.InnerPolar
 import Mathlib.Tactic
 
 /-! # Radial comparison of the actual dual inner mass
@@ -14,7 +13,6 @@ The source lateral projection and original chaos parameter are retained in
 both scalar bounds. This is the deterministic part of the dual inner-limit comparison.
 -/
 
-public section
 open MeasureTheory Filter Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -34,7 +32,7 @@ theorem dual_inner_kernel_mass_squeeze
     (∫⁻ x in {x : ℂ | 0 < ‖x‖ ∧ ‖x‖ < η},
         ENNReal.ofReal (dualFusionKernel γ α₁ α₂ α₃ z x) ∂M) ≤
       ENNReal.ofReal ((1+R) ^ (2 : ℝ) * (1-η)⁻¹ ^ |γ*α₂| * ‖z‖ ^ (2 : ℝ)) * V := by
-  dsimp only
+  dsimp
   rw [← reflected_inner_radial_polar γ α₁ A M T]
   let E : Set ℂ := {x : ℂ | 0 < ‖x‖ ∧ ‖x‖ < Real.exp (-(T : ℝ))}
   have hE : MeasurableSet E :=

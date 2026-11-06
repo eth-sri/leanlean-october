@@ -2,15 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.Residue.ChartMass
-public import DOZZ.Correlations.Residue.CompetitorMoments
+import DOZZ.Correlations.Residue.ChartMass
+import DOZZ.Correlations.Residue.CompetitorMoments
 import DOZZ.ShiftEquations.Mobius.InversionMoment
 
 /-! Domination of the actual GMC mass outside the critical insertion balls. -/
 
-@[expose] public section
 open MeasureTheory Filter Topology Set
 open scoped ENNReal NNReal Classical
 namespace DOZZ.Proofs
@@ -18,9 +16,9 @@ namespace DOZZ.Proofs
 /-- Outside a unit insertion ball, the corresponding Coulomb factor is bounded globally. -/
 theorem residue_normPlus_div_le (z x : ℂ) (hx : x ∉ Metric.ball z 1) :
     normPlus x / ‖x - z‖ ≤ ‖z‖ + 2 := by
-  have hd : 1 ≤ ‖x - z‖ := by simpa only [Metric.mem_ball, dist_eq_norm, not_lt] using hx
+  have hd : 1 ≤ ‖x - z‖ := by simpa [Metric.mem_ball, dist_eq_norm, not_lt] using hx
   have hn : ‖x‖ ≤ ‖x - z‖ + ‖z‖ := by
-    simpa only [sub_add_cancel] using norm_add_le (x - z) z
+    simpa [sub_add_cancel] using norm_add_le (x - z) z
   have hnp : normPlus x ≤ ‖x - z‖ + ‖z‖ + 1 := max_le (by linarith only [hd, norm_nonneg z]) (by linarith only [hn])
   apply (div_le_iff₀ (lt_of_lt_of_le zero_lt_one hd)).mpr
   nlinarith only [hnp, hd, norm_nonneg z]
@@ -31,7 +29,7 @@ theorem residue_coulomb_factor_le (γ α : ℝ) (hγα : 0 ≤ γ * α) (z x : �
     ENNReal.rpow (ENNReal.ofReal (normPlus x / ‖x - z‖)) (γ * α) ≤
       ENNReal.ofReal ((‖z‖ + 2) ^ (γ * α)) := by
   have hd : 0 < ‖x - z‖ := by
-    have hh : 1 ≤ ‖x - z‖ := by simpa only [Metric.mem_ball, dist_eq_norm, not_lt] using hx
+    have hh : 1 ≤ ‖x - z‖ := by simpa [Metric.mem_ball, dist_eq_norm, not_lt] using hx
     linarith only [hh]
   rw [ENNReal.rpow_eq_pow, ENNReal.ofReal_rpow_of_pos (div_pos (normPlus_pos' x) hd)]
   exact ENNReal.ofReal_le_ofReal (Real.rpow_le_rpow (div_pos (normPlus_pos' x) hd).le
@@ -43,7 +41,7 @@ theorem residue_coulombWeight_two_split (γ a b c : ℝ) (z w x : ℂ) :
       ENNReal.rpow (ENNReal.ofReal (normPlus x / ‖x - z‖)) (γ * a) *
         coulombWeight γ ![b] ![w] c x := by
   unfold coulombWeight
-  simp only [Fin.prod_univ_two, Fin.prod_univ_one, Matrix.cons_val_zero, Matrix.cons_val_one]
+  simp [Fin.prod_univ_two, Matrix.cons_val_zero, Matrix.cons_val_one]
   exact mul_assoc _ _ _
 
 /-- The whole complement of the critical ball is dominated by the subcritical one-root
@@ -55,7 +53,7 @@ theorem residue_complement_mass_le (γ a b c : ℝ) (hγα : 0 ≤ γ * a)
   rw [coulombMass_eq_lintegral_coulombWeight, ← lintegral_const_mul' _ _ ENNReal.ofReal_ne_top]
   apply lintegral_mono
   intro x
-  dsimp only
+  dsimp
   by_cases hx : x ∈ Metric.ball z 1
   · simp [hx]
   · rw [ite_eq_left hx, residue_coulombWeight_two_split]
@@ -96,7 +94,7 @@ theorem residue_all_complement_mass_le {N : ℕ} (γ c : ℝ)
   by_cases hx : ∀ k, x ∉ Metric.ball (z k) 1
   · rw [ite_eq_left hx]
     unfold coulombWeight
-    simp only [Fin.prod_univ_zero, one_mul]
+    simp [one_mul]
     exact mul_le_mul_left (Finset.prod_le_prod fun k _ => residue_coulomb_factor_le γ (α k) (hα k) (z k) x (hx k)) _
   · rw [ite_eq_right hx]
     exact zero_le

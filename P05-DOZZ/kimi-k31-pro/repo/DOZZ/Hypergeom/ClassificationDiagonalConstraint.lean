@@ -2,20 +2,18 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Hypergeom.ClassificationCutCrossingJets
-public import DOZZ.Hypergeom.ClassificationHermitianMixedJet
-public import DOZZ.Hypergeom.ClassificationReflection
-public import DOZZ.Hypergeom.BasisRegularity
-public import DOZZ.Hypergeom.GaussConnectionMinus
-public import DOZZ.Hypergeom.GaussConnectionPlus
-public import DOZZ.Hypergeom.ODE.CutPlaneTopology
+import DOZZ.Hypergeom.ClassificationCutCrossingJets
+import DOZZ.Hypergeom.ClassificationHermitianMixedJet
+import DOZZ.Hypergeom.ClassificationReflection
+import DOZZ.Hypergeom.BasisRegularity
+import DOZZ.Hypergeom.GaussConnectionMinus
+import DOZZ.Hypergeom.GaussConnectionPlus
+import DOZZ.Hypergeom.ODE.CutPlaneTopology
 import Mathlib.Analysis.SpecialFunctions.Gamma.Beta
 
 /-! The one-basis reflection and connection formulas force the diagonal coefficient relation. -/
 
-@[expose] public section
 
 open scoped Topology
 
@@ -37,7 +35,7 @@ private theorem gaussFPlus_reflection_eq_gaussGPlus
   have hA : a - (1 + a + b - c) + 1 = c - b := by ring
   have hB : b - (1 + a + b - c) + 1 = c - a := by ring
   have hC : 2 - (1 + a + b - c) = 1 + c - a - b := by ring
-  simp only [gaussFPlus, gaussGPlus, he, hA, hB, hC]
+  simp [gaussFPlus, gaussGPlus, he, hA, hB, hC]
 
 /-- A reflected real solution has a diagonal Hermitian representation in the one basis, and
 comparison with its zero-basis representation forces the undivided coefficient constraint. -/
@@ -162,13 +160,11 @@ theorem realGaussSolution_canonical_diagonal_constraint
     have hminus' : gaussFMinus H (a : ℂ) (b : ℂ) (c : ℂ) z =
         (u : ℂ) * gaussGMinus H (a : ℂ) (b : ℂ) (c : ℂ) z +
           (v : ℂ) * gaussGPlus H (a : ℂ) (b : ℂ) (c : ℂ) z := by
-      rw [hU, hV] at hminus
-      exact hminus
+      rwa [hU, hV] at hminus
     have hplus' : gaussFPlus H (a : ℂ) (b : ℂ) (c : ℂ) z =
         (w : ℂ) * gaussGMinus H (a : ℂ) (b : ℂ) (c : ℂ) z +
           (x : ℂ) * gaussGPlus H (a : ℂ) (b : ℂ) (c : ℂ) z := by
-      rw [hW, hX] at hplus
-      exact hplus
+      rwa [hW, hX] at hplus
     have hOrig := hrep z hz
     rw [hβ] at hOrig
     have hOrigTensor : (T z : ℂ) = hermitianQuadraticTensor

@@ -2,12 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Dual.OuterInverseGuard
+import DOZZ.FourPoint.Dual.OuterInverseGuard
 import Mathlib.Tactic
 
 /-! # Dominated convergence of the actual dual outer inverse moments -/
-public section
 open MeasureTheory Filter Topology Set
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -27,17 +25,17 @@ theorem dual_outerMass_inverse_moment_tendsto
     (4 : ℝ) ^ (-|γ * α₃|)
   let G : Ω → ℝ≥0∞ := fun ω => ENNReal.ofReal (w ^ (-q)) *
     M ω (Metric.ball (3 : ℂ) (1 / 8)) ^ (-q)
-  have hw : 0 < w := by dsimp only [w]; positivity
+  have hw : 0 < w := by dsimp [w]; positivity
   have hn : Tendsto (fun z : ℂ => ‖z‖) l (nhds 0) := by
-    simpa only [norm_zero] using (continuous_norm.tendsto (0 : ℂ)).mono_left nhdsWithin_le_nhds
+    simpa [norm_zero] using (continuous_norm.tendsto (0 : ℂ)).mono_left nhdsWithin_le_nhds
   have hsmall : ∀ᶠ z in l, ‖z‖ < 1 := hn.eventually (gt_mem_nhds zero_lt_one)
   have hgeom : ∀ᶠ z in l, ‖z‖ ≤ 1 ∧ ‖z‖ ^ (1 - ξ) ≤ 1 ∧ ‖z‖ < ‖z‖ ^ (1 - ξ) := by
     filter_upwards [hsmall, self_mem_nhdsWithin] with z hz hz0
     have hr := Real.rpow_le_rpow (norm_nonneg z) hz.le (sub_nonneg.mpr hξ₁.le)
     have hs := Real.rpow_lt_rpow_of_exponent_gt (norm_pos_iff.mpr hz0) hz
       (by linarith only [hξ] : 1 - ξ < 1)
-    exact ⟨hz.le, by simpa only [Real.one_rpow] using hr,
-      by simpa only [Real.rpow_one] using hs⟩
+    exact ⟨hz.le, by simpa [Real.one_rpow] using hr,
+      by simpa [Real.rpow_one] using hs⟩
   have hbound : ∀ᶠ z in l, ∀ᵐ ω ∂P,
       dualOuterMass γ α₁ α₂ α₃ (M ω) z ξ ^ (-q) ≤ G ω := by
     filter_upwards [hgeom] with z hz
@@ -57,7 +55,7 @@ theorem dual_outerMass_inverse_moment_tendsto
     obtain ⟨C, _, hb⟩ := equatorGFF_GMC_ball_moment_bound P X hX γ hγ hγ₂ M hM
       (-q) (lt_of_le_of_lt (neg_nonpos.mpr hq) (by positivity)) {(3 : ℂ)} isCompact_singleton
     have hb' := (hb 3 (Set.mem_singleton _) (1 / 8) (by norm_num) (by norm_num)).2
-    dsimp only [G]
+    dsimp [G]
     rw [lintegral_const_mul' _ _ ENNReal.ofReal_ne_top]
     exact ENNReal.mul_ne_top ENNReal.ofReal_ne_top
       (ne_top_of_le_ne_top ENNReal.ofReal_ne_top hb')
@@ -74,9 +72,8 @@ theorem dual_outerMass_inverse_moment_tendsto
     filter_upwards [heq,
       gmc_atomless_at_root_of_isGMCOf P X hX γ hγ hγ₂ M hM 0,
       gmc_atomless_at_root_of_isGMCOf P X hX γ hγ hγ₂ M hM 1] with ω he h0 h1
-    dsimp only [Function.comp_def]
-    rw [← he, dual_outerMass_eq_kernel_integral γ α₁ α₂ α₃ ξ hγ.ne' z (M ω) h0 h1 hz.2.2]
-    rw [lintegral_indicator (isClosed_le continuous_const continuous_norm).measurableSet]
+    dsimp [Function.comp_def]
+    rw [← he, dual_outerMass_eq_kernel_integral γ α₁ α₂ α₃ ξ hγ.ne' z (M ω) h0 h1 hz.2.2, lintegral_indicator (isClosed_le continuous_const continuous_norm).measurableSet]
   have hlimit : ∀ᵐ ω ∂P, Tendsto
       (fun z : ℂ => dualOuterMass γ α₁ α₂ α₃ (M ω) z ξ ^ (-q)) l
       (nhds (rho γ (M ω) (α₁ - 2 / γ) α₂ α₃ ^ (-q))) := by

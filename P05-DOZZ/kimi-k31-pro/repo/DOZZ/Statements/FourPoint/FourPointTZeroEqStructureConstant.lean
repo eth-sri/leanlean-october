@@ -2,15 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.FourPoint.ThreePointFiniteCorrelation
+import DOZZ.Statements.FourPoint.ThreePointFiniteCorrelation
 import DOZZ.FourPoint.FourPointTZeroEqStructureConstant
 
 /-! The statement `DOZZ.fourPointT_zero_eq_structureConstant`,
 proved by `DOZZ.Proofs.fourPointT_zero_eq_structureConstant`. -/
 
-public section
 
 open MeasureTheory ProbabilityTheory Filter Topology TopologicalSpace Set
 open scoped ENNReal NNReal Topology
@@ -26,6 +24,6 @@ theorem fourPointT_zero_eq_structureConstant {Ω : Type*} [MeasurableSpace Ω]
     (hs : 2 * Q γ < α₁ + α₂ + α₃ - χ)
     (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M) :
     fourPointT P M γ μ (-χ) α₁ α₂ α₃ 0 =
-      structureConstant P M γ μ (α₁ - χ) α₂ α₃ := by exact DOZZ.Proofs.fourPointT_zero_eq_structureConstant P X M γ μ χ α₁ α₂ α₃ hγ hγ₂ hμ hα₁ hα₂ hα₃ hs hX hM
+      structureConstant P M γ μ (α₁ - χ) α₂ α₃ := Proofs.fourPointT_zero_eq_structureConstant P X M γ μ χ α₁ α₂ α₃ hγ hγ₂ hμ hα₁ hα₂ hα₃ hs hX hM
 
 end DOZZ

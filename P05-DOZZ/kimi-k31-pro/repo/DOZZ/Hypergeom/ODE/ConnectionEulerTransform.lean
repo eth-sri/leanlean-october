@@ -2,16 +2,14 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Hypergeom.ODE.ConnectionEulerSeries
+import DOZZ.Hypergeom.ODE.ConnectionEulerSeries
 import Mathlib.MeasureTheory.Integral.IntervalIntegral.IntegrationByParts
 import Mathlib.MeasureTheory.Function.LocallyIntegrable
 import Mathlib.Analysis.SpecialFunctions.Pow.Real
 
 /-! Real-variable substitution lemmas for Euler's hypergeometric integral. -/
 
-@[expose] public section
 
 open MeasureTheory Set
 
@@ -51,7 +49,7 @@ private theorem realGaussEulerKernel_integrableOn_Icc_aux (a b c x : ℝ)
   have hprod := hweightIcc.mul_continuousOn hfactor isCompact_Icc
   change IntegrableOn (fun t : ℝ =>
     t ^ (b - 1) * (1 - t) ^ (c - b - 1) * (1 - x * t) ^ (-a)) (Icc 0 1)
-  exact hprod
+  assumption
 
 /-- The real Euler kernel is integrable on the closed beta interval whenever its two beta
 parameters are positive and `x < 1`. -/
@@ -122,8 +120,7 @@ theorem realGaussEulerMobius_kernel_identity (a b c x t : ℝ)
           r ^ (b - 1) * r ^ (-(c - a)) * r =
               r ^ (b - 1) * r ^ (-(c - a)) * r ^ (1 : ℝ) := by rw [Real.rpow_one]
           _ = r ^ (b - 1 - (c - a)) * r ^ (1 : ℝ) := by
-            rw [← Real.rpow_add hr]
-            rw [show b - 1 + -(c - a) = b - 1 - (c - a) by ring]
+            rw [← Real.rpow_add hr, show b - 1 + -(c - a) = b - 1 - (c - a) by ring]
           _ = r ^ (b - 1 - (c - a) + 1) :=
             (Real.rpow_add hr (b - 1 - (c - a)) 1).symm
       _ = r ^ (-(c - a - b)) := by
@@ -133,8 +130,7 @@ theorem realGaussEulerMobius_kernel_identity (a b c x t : ℝ)
   calc
     _ = -(r ^ (-(c - a - b))) *
         (t ^ (b - 1) * (1 - t) ^ (c - b - 1) * q ^ (-a)) := by
-      rw [mul_assoc, mul_assoc]
-      rw [← hrpow, ← hqpow]
+      rw [mul_assoc, mul_assoc, ← hrpow, ← hqpow]
       ring
     _ = -((1 - x) ^ (-(c - a - b))) *
         realGaussEulerKernel a b c x t := by
@@ -208,7 +204,7 @@ theorem realGaussEulerIntegral_eulerTransform (a b c x : ℝ)
       simpa using (hasDerivAt_id t).const_mul x
     have hden' : HasDerivAt (fun u : ℝ => 1 - x * u) (-x) t := by
       change HasDerivAt ((fun _ : ℝ => (1 : ℝ)) - (fun u => x * u)) (-x) t
-      simpa only [zero_sub] using (hasDerivAt_const t (1 : ℝ)).sub hxt
+      simpa [zero_sub] using (hasDerivAt_const t (1 : ℝ)).sub hxt
     have hquot := hnum.div hden' (ne_of_gt hdenpos)
     have hquot' : HasDerivAt (fun u : ℝ => (1 - u) / (1 - x * u)) (d t) t := by
       convert hquot using 1
@@ -236,7 +232,7 @@ theorem realGaussEulerIntegral_eulerTransform (a b c x : ℝ)
       exact Or.inl (ne_of_gt hpos)
     exact (hpow1.mul hpow2).mul hpow3
   have htransIcc : IntegrableOn g (Icc 0 1) := by
-    have hbc : 0 < c - (c - b) := by simpa only [show c - (c - b) = b by ring] using hb
+    have hbc : 0 < c - (c - b) := by simpa [show c - (c - b) = b by ring] using hb
     have h := realGaussEulerKernel_integrableOn_Icc (c - a) (c - b) c x hcb hbc hx1
     change IntegrableOn (realGaussEulerTransformedKernel a b c x) (Icc 0 1)
     change IntegrableOn (realGaussEulerKernel (c - a) (c - b) c x) (Icc 0 1) at h
@@ -269,8 +265,7 @@ theorem realGaussEulerIntegral_eulerTransform (a b c x : ℝ)
       exact realGaussEulerMobius_kernel_identity a b c x t hx hx1 hmem.1
         (lt_of_le_of_ne hmem.2 ht1)
     exact (hkernelIoc.const_mul (-((1 - x) ^ (-(c - a - b))))) |>.congr hEq.symm
-  have hcompIcc : IntegrableOn (fun t => g (φ t) * d t) (Icc 0 1) := by
-    exact (integrableOn_Icc_iff_integrableOn_Ioc).2 hcompIoc
+  have hcompIcc : IntegrableOn (fun t => g (φ t) * d t) (Icc 0 1) := (integrableOn_Icc_iff_integrableOn_Ioc).2 hcompIoc
   have hcompIcc' : IntegrableOn (fun t => (g ∘ φ) t * d t) (uIcc (0 : ℝ) 1) := by
     simpa [Function.comp_def, uIcc_of_le (by norm_num : (0 : ℝ) ≤ 1)] using hcompIcc
   have hφderiv' : ∀ t ∈ Ioo (min (0 : ℝ) 1) (max 0 1),
@@ -298,8 +293,7 @@ theorem realGaussEulerIntegral_eulerTransform (a b c x : ℝ)
       filter_upwards [volume.ae_ne (1 : ℝ)] with t ht1 hmem
       exact realGaussEulerMobius_kernel_identity a b c x t hx hx1 hmem.1
         (lt_of_le_of_ne hmem.2 ht1)
-    rw [integral_congr_ae hEq]
-    rw [integral_const_mul]
+    rw [integral_congr_ae hEq, integral_const_mul]
     rfl
   have hkernelTrans :
       (∫ u in (0 : ℝ)..1, g u) =
@@ -345,7 +339,7 @@ theorem realGaussEulerTransform_family
         H (c - a : ℝ) (c - b : ℝ) (c : ℝ) (x : ℝ) := by
   let N : ℝ := Real.Gamma c / (Real.Gamma b * Real.Gamma (c - b))
   let N' : ℝ := Real.Gamma c / (Real.Gamma (c - b) * Real.Gamma b)
-  have hbc : 0 < c - (c - b) := by simpa only [show c - (c - b) = b by ring] using hb
+  have hbc : 0 < c - (c - b) := by simpa [show c - (c - b) = b by ring] using hb
   have hOrig := realGaussEulerIntegral_eq_family hH a b c x ha hb hcb hx hx1
   have hTrans := realGaussEulerIntegral_eq_family hH (c - a) (c - b) c x
     hca hcb hbc hx hx1
@@ -370,14 +364,13 @@ theorem realGaussEulerTransform_family
   have hrawC' : (N : ℂ) * (realGaussEulerKernelIntegral a b c x : ℂ) =
       (1 - (x : ℂ)) ^ ((c : ℂ) - (a : ℂ) - (b : ℂ)) *
         ((N' : ℂ) * (realGaussEulerKernelIntegral (c - a) (c - b) c x : ℂ)) := by
-    simpa only [N, N', Complex.ofReal_mul, hpowCast] using hrawC
+    simpa [N, N', Complex.ofReal_mul, hpowCast] using hrawC
   calc
     H (a : ℂ) (b : ℂ) (c : ℂ) (x : ℂ) =
         (N : ℂ) * (realGaussEulerKernelIntegral a b c x : ℂ) := hOrig'.symm
     _ = ((1 - x) ^ (c - a - b) : ℝ) *
         ((N' : ℂ) * (realGaussEulerKernelIntegral (c - a) (c - b) c x : ℂ)) := by
-      rw [hpowCast]
-      exact hrawC'
+      rwa [hpowCast]
     _ = (1 - (x : ℂ)) ^ ((c : ℂ) - (a : ℂ) - (b : ℂ)) *
         H (c - a : ℝ) (c - b : ℝ) (c : ℝ) (x : ℝ) := by
           rw [hpowCast, hTrans']

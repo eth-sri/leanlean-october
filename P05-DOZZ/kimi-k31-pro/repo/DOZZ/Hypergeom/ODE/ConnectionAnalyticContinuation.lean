@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Hypergeom.ODE.ConnectionParameterDomain
+import DOZZ.Hypergeom.ODE.ConnectionParameterDomain
 import Mathlib.Analysis.Analytic.Uniqueness
 import Mathlib.Analysis.Complex.CauchyIntegral
 import Mathlib.Analysis.Normed.Module.Connected
@@ -12,7 +11,6 @@ import Mathlib.LinearAlgebra.Complex.FiniteDimensional
 
 /-! Successive one-variable continuation on the nonresonant Gauss parameter domain. -/
 
-@[expose] public section
 
 namespace DOZZ.Proofs
 

@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Brownian.Lateral.CircleProjection
-public import DOZZ.GMC.CircleAverage
+import DOZZ.Brownian.Lateral.CircleProjection
+import DOZZ.GMC.CircleAverage
 
 /-!
 # Local orthogonal circle regularization
@@ -16,7 +15,6 @@ radial correction is bounded on compact subsets uniformly in cutoff; subtracting
 therefore preserves the logarithmic covariance and both coarse estimates.
 -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal Distributions InnerProductSpace RealInnerProductSpace
@@ -92,9 +90,7 @@ theorem norm_originCircleRadialL2_le
          _ = ‖x‖ + Real.exp (-r) := by rw [hz, add_comm]
          _ ≤ R := hR
   have h := norm_integral_le_of_norm_le_const hb
-  rw [probReal_univ, mul_one] at h
-  exact h
-
+  rwa [probReal_univ, mul_one] at h
 /-- On each compact set, all clamped radial circle averages with radius at most `ρ`
 have one deterministic Hilbert norm bound. -/
 theorem originCircleRadialL2_uniform_bound
@@ -115,7 +111,7 @@ theorem originCircleRadialL2_uniform_bound
     exact add_le_add (hxS.trans (le_max_left _ _)) hερ
   · intro z hz
     apply (hL (mem_image_of_mem _ ?_)).trans (le_max_left _ _)
-    simpa only [Metric.mem_closedBall, dist_zero_right] using hz
+    simpa [Metric.mem_closedBall, dist_zero_right] using hz
 
 /-- Radial mixed covariances inherit the uniform Hilbert norm bound. -/
 theorem abs_originCircleRadialL2_covariance_le
@@ -158,7 +154,7 @@ theorem originLateralCircleRegularization_gaussianCovariance
       clampedCircleLateralSample Xc ρ ω y (Real.log (1 / δ)) = _
     rw [← hx, ← hy]
   rw [hi]
-  simp only [ProbabilityTheory.covariance,
+  simp [ProbabilityTheory.covariance,
     originCircleLateralL2_integral_eq_zero P X Xc hX hc ρ hρ, sub_zero]
 
 /-- The full circle second moment likewise agrees with its centered Hilbert covariance. -/
@@ -176,7 +172,7 @@ theorem gaussianCovariance_circleL2_eq
       with ω hx hy
     rw [hx, hy]
   rw [hi]
-  simp only [ProbabilityTheory.covariance, circleAverageL2_integral_eq_zero P X Xc hX hc,
+  simp [ProbabilityTheory.covariance, circleAverageL2_integral_eq_zero P X Xc hX hc,
     sub_zero]
 
 /-- The actual orthogonal regularizer satisfies the literal mixed logarithmic covariance
@@ -234,7 +230,7 @@ theorem originLateralCircleRegularization_coarseMixedBound
   refine ⟨C, hC, ?_⟩
   intro k hk ε hε hεk x hx
   have h := hcov (Real.exp (-(k : ℝ))) ε (Real.exp_pos _) hk hε (hεk.trans hk) x hx x hx
-  simpa only [sub_self, norm_zero, max_eq_left hεk,
+  simpa [sub_self, norm_zero, max_eq_left hεk,
     max_eq_right (Real.exp_pos _).le, one_div, Real.log_inv, Real.log_exp, neg_neg] using h
 
 /-- The variance coarse estimate follows from the same-center mixed bound with the two
@@ -338,9 +334,7 @@ theorem originLateralChart_cutoffPositive (ρ : ℝ) (hρ : 0 < ρ) : 0 < min ρ
 
 /-- Enlarging the excluded disk shrinks the corresponding chart. -/
 theorem originLateralChart_antitone {ρ σ : ℝ} (h : ρ ≤ σ) :
-    originLateralChart σ ⊆ originLateralChart ρ := by
-  intro x hx
-  exact (mul_le_mul_of_nonneg_left h (by norm_num : (0 : ℝ) ≤ 2)).trans_lt hx
+    originLateralChart σ ⊆ originLateralChart ρ := fun x hx => (mul_le_mul_of_nonneg_left h (by norm_num : (0 : ℝ) ≤ 2)).trans_lt hx
 
 /-- At the exponential cutoff the Euclidean-radius family agrees with the actual
 logarithmic-radius projection without a reparameterization error. -/
@@ -573,7 +567,7 @@ theorem originLateralCircleRegularization_fixedCoarseLimit
   have hybound : ‖originCircleRadialL2 hc ρ y (k : ℝ)‖ ≤ L := by
     have h := hcircle (Real.exp (-(k : ℝ))) (Real.exp_pos _)
       (hk.trans (min_le_left _ _)) y hy
-    simpa only [one_div, Real.log_inv, Real.log_exp, neg_neg] using h
+    simpa [one_div, Real.log_inv, Real.log_exp, neg_neg] using h
   have h2 := hR ε hε hεR x hx (originCircleRadialL2 hc ρ y k) hybound
   rw [originLateralCircleRegularization_gaussianCovariance P X Xc hX hc hm ρ hρ,
     originCircleLateralL2_covariance_expansion P X Xc hX hc ρ ρ hρ hρ x y _ _
@@ -581,7 +575,7 @@ theorem originLateralCircleRegularization_fixedCoarseLimit
       (originLateralChart_cutoff_lower ρ (Real.exp (-(k : ℝ))) y (hKU hy)
         (Real.exp_pos _) (hk.trans (min_le_left _ _))),
     ← gaussianCovariance_circleL2_eq P X Xc hX hc]
-  simp only [one_div, Real.log_inv, Real.log_exp, neg_neg] at h1 h2 ⊢
+  simp [one_div, Real.log_inv, Real.log_exp, neg_neg] at h1 h2 ⊢
   have halg : ∀ a b c d : ℝ, (a - b) - (c - d) = (a - c) - (b - d) := by intros; ring
   rw [halg]
   exact (abs_sub _ _).trans_lt ((add_lt_add h1 h2).trans_eq (add_halves η))
@@ -645,7 +639,7 @@ theorem originCircleRadialL2_uniform_variance_approx
     have hxU : 2 * ρ < ‖x‖ := hKU hx
     linarith only [hxU, hρ]
   rw [clampedRadialPointCovariance_self P X Xc hX hc ρ x hxρ] at h
-  simpa only [gaussianVariance, gaussianCovariance, ProbabilityTheory.covariance,
+  simpa [gaussianVariance, gaussianCovariance, ProbabilityTheory.covariance,
     originCircleRadialL2_integral_eq_zero P X Xc hX hc ρ hρ, sub_zero] using h
 
 /-- Start the local path at a scale whose Euclidean circle radius is below both the

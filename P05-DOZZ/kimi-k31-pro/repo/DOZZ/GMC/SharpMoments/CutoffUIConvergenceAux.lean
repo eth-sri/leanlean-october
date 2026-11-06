@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import Mathlib.MeasureTheory.Integral.Lebesgue.Markov
-public import Mathlib.MeasureTheory.Function.SpecialFunctions.Basic
+import Mathlib.MeasureTheory.Integral.Lebesgue.Markov
+import Mathlib.MeasureTheory.Function.SpecialFunctions.Basic
 
 /-! # Elementary tools for convergence in probability of split quantities
 
@@ -13,7 +12,6 @@ Markov's inequality for a positive power, a triangle inequality for real parts o
 split into a bad and a good part, and the three-way split of the event that such a difference is
 large. -/
 
-@[expose] public section
 
 open MeasureTheory Filter Topology
 open scoped ENNReal NNReal
@@ -77,8 +75,7 @@ theorem prob_edist_le_of_split {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω
   have hle : {ω | ε ≤ edist (Zr ω).toReal (Z ω).toReal} ≤ᵐ[P] (B1 ∪ B2 ∪ B3 : Set Ω) := by
     filter_upwards [hZr, hZ, hbr, hbl, hgr, hgl] with ω h1 h2 h3 h4 h5 h6 hA
     have hA' : ε ≤ ENNReal.ofReal |(Zr ω).toReal - (Z ω).toReal| := by
-      rw [edist_dist, Real.dist_eq] at hA
-      exact hA
+      rwa [edist_dist, Real.dist_eq] at hA
     have he' : e ≤ |(Zr ω).toReal - (Z ω).toReal| :=
       (ENNReal.ofReal_le_ofReal_iff (abs_nonneg _)).mp (hεe.trans hA')
     have hsplit := toReal_abs_sub_le_of_split h1 h2 h3 h5 h4 h6

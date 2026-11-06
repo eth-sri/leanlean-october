@@ -2,12 +2,10 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Reflected.CopiedTestLimit
-public import DOZZ.FourPoint.Reflected.LateralCompactComparison
+import DOZZ.FourPoint.Reflected.CopiedTestLimit
+import DOZZ.FourPoint.Reflected.LateralCompactComparison
 import Mathlib.Tactic
 /-! Actual limiting lateral-chaos comparison on separated compact tests. -/
-@[expose] public section
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -93,7 +91,7 @@ theorem reflected_lateral_compact_chaos_comparison
       have he : gaussianCovariance P (fun ω => Φ a ω xy.1) (fun ω => Φ a ω xy.2) =
           gaussianCovariance P (fun ω => Φ a ω xy.2) (fun ω => Φ a ω xy.1) := by
         unfold gaussianCovariance
-        simp only [mul_comm]
+        simp [mul_comm]
       rw [he]
       exact ho a xy.2 xy.1 hyK hxK hy hx
     · have hy : xy.2 ∈ A := by

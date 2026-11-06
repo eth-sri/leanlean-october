@@ -2,10 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.FourPoint.Fusion.InterpolatedSpatialConvergence
+import DOZZ.FourPoint.Fusion.InterpolatedSpatialConvergence
 /-! # Signed spatial and time dominated convergence for KRV -/
-@[expose] public section
 open MeasureTheory Set Filter Topology
 namespace DOZZ.Proofs
 /-- A single uniform majorant gives spatial and time dominated convergence over the mass
@@ -22,7 +20,6 @@ theorem fusionInterpolatedTimeIntegral_tendsto {Ω : Type*} [MeasurableSpace Ω]
         ((∫⁻ ω, fusionMovingMass γ α₁ α₂ α₃ 1 0 (M ω) ^ s ∂P).toReal : ℂ))) := by
   obtain ⟨B, hB, hb⟩ := fusionInterpolatedFactor_uniform_bound P X hX γ hγ hγ2 M hM α₁ α₂ α₃ s hs.le
   let D := (∫ y : ℂ, ‖K y‖) * B
-  have hD : 0 ≤ D := mul_nonneg (integral_nonneg fun _ => norm_nonneg _) hB
   have hm := fusionInterpolatedFactor_measurable P X hX γ hγ hγ2 M hM α₁ α₂ α₃ s
   have hmeas : ∀ᶠ z : ℂ in nhds 0, AEStronglyMeasurable
       (fun t : ℝ => ∫ y : ℂ, K y * (fusionInterpolatedFactor P M γ α₁ α₂ α₃ s t y z : ℂ))
@@ -33,7 +30,7 @@ theorem fusionInterpolatedTimeIntegral_tendsto {Ω : Type*} [MeasurableSpace Ω]
       measurable_fst.prodMk (measurable_snd.prodMk measurable_const)
     have hfactor : Measurable (fun q : ℝ × ℂ =>
         (fusionInterpolatedFactor P M γ α₁ α₂ α₃ s q.1 q.2 z : ℂ)) := by
-      simpa only [Function.comp_def] using Complex.measurable_ofReal.comp (hm.comp hp)
+      simpa [Function.comp_def] using Complex.measurable_ofReal.comp (hm.comp hp)
     have hf : Measurable (fun q : ℝ × ℂ => K q.2 *
         (fusionInterpolatedFactor P M γ α₁ α₂ α₃ s q.1 q.2 z : ℂ)) :=
       (hKm.comp measurable_snd).mul hfactor
@@ -58,6 +55,6 @@ theorem fusionInterpolatedTimeIntegral_tendsto {Ω : Type*} [MeasurableSpace Ω]
     exact fusionInterpolatedIntegral_tendsto P X hX γ hγ hγ2 M hM α₁ α₂ α₃ hα hα₁ hα₂ hα₃ s hs t ht K hK
   have h := tendsto_integral_filter_of_dominated_convergence (fun _ : ℝ => D)
     hmeas hdom (integrable_const D) hlim
-  simpa only [integral_const, Measure.real, Measure.restrict_apply_univ, Real.volume_Icc, sub_zero, ENNReal.ofReal_one,
+  simpa [integral_const, Measure.real, Measure.restrict_apply_univ, Real.volume_Icc, sub_zero, ENNReal.ofReal_one,
     ENNReal.toReal_one, one_smul] using h
 end DOZZ.Proofs

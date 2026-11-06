@@ -1,13 +1,11 @@
 /-
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 -/
-module
 
-public import DOZZ.GMC.Construction.RootedCovarianceLimit
+import DOZZ.GMC.Construction.RootedCovarianceLimit
 
 /-! Convergence and domination for a single-circle root potential. -/
 
-@[expose] public section
 
 open MeasureTheory Filter Topology
 open scoped Distributions
@@ -31,7 +29,7 @@ theorem circleRootPotential_tendsto (u x : ℂ) (hxu : x ≠ u) :
     have h : Tendsto (fun r : ℝ => Real.circleAverage k u (Real.exp (-r))) atTop
         (𝓝 (Real.circleAverage k u 0)) :=
       (Real.Continuous.circleAverage hk).continuousAt.tendsto.comp hexp
-    simpa only [← haverage, Real.circleAverage_zero] using h
+    simpa [← haverage, Real.circleAverage_zero] using h
   have hd : 0 < ‖u - x‖ := norm_pos_iff.mpr (sub_ne_zero.mpr hxu.symm)
   have hevent : ∀ᶠ r : ℝ in atTop, Real.exp (-r) ≤ ‖u - x‖ :=
     (hexp.eventually (Iio_mem_nhds hd)).mono fun _ h => h.le
@@ -44,7 +42,7 @@ theorem circleRootPotential_tendsto (u x : ℂ) (hxu : x ≠ u) :
     filter_upwards [hevent] with r hr
     rw [integral_gffKernel_circleMeasure, max_eq_right hr]
   have ht := hlim.congr' heq.symm
-  simpa only [k, gffKernel, norm_sub_rev u] using ht
+  simpa [k, gffKernel, norm_sub_rev u] using ht
 
 /-- At nonnegative logarithmic scales, a circle root potential is bounded by the singular
 point potential plus a universal pinning correction. -/
@@ -57,7 +55,7 @@ theorem circleRootPotential_le_point_add_log_two
       Real.log (normPlus v) ≤ Real.log 2 + Real.log (normPlus u) := by
     filter_upwards [ae_mem_sphere_circleMeasure u r] with v hv
     have hdist : ‖v - u‖ = Real.exp (-r) := by
-      simpa only [Metric.mem_sphere, dist_eq_norm] using hv
+      simpa [Metric.mem_sphere, dist_eq_norm] using hv
     have hnorm : ‖v‖ ≤ Real.exp (-r) + ‖u‖ := by
       calc
         ‖v‖ = ‖(v - u) + u‖ := by rw [sub_add_cancel]

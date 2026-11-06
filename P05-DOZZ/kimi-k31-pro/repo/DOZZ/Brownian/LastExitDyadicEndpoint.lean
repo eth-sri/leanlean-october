@@ -2,12 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Brownian.LastExitDyadicShift
-public import DOZZ.Brownian.LastExitFinite
-public import DOZZ.Brownian.ConditionedFutureKernel
-public import Mathlib.Probability.BrownianMotion.Basic
+import DOZZ.Brownian.LastExitDyadicShift
+import DOZZ.Brownian.LastExitFinite
+import DOZZ.Brownian.ConditionedFutureKernel
+import Mathlib.Probability.BrownianMotion.Basic
 
 /-!
 # The dyadic endpoint state converges to the barrier
@@ -17,7 +16,6 @@ attained finite last exit, continuity makes the conditioned state at those endpo
 the barrier. This is the pathwise concentration input for the entrance-kernel limit.
 -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped NNReal
@@ -40,7 +38,7 @@ theorem conditionedPositiveStateAt_dyadicLastExit_sub_tendsto_zero
       (fun n => conditionedPositiveStateAt
         (dyadicLastExitCeilingTime n (negativeLastExitTime p c)) p)
       atTop (𝓝 c) := by
-    simpa only [conditionedPositiveStateAt, neg_neg] using hpath.neg
+    simpa [conditionedPositiveStateAt, neg_neg] using hpath.neg
   have hsub := hstate.sub
     (tendsto_const_nhds : Tendsto (fun _ : ℕ => c) atTop (𝓝 c))
   simpa using hsub
@@ -64,4 +62,3 @@ theorem ae_conditionedPositiveStateAt_dyadicLastExit_sub_tendsto_zero
 
 end DOZZ.Proofs
 
-end

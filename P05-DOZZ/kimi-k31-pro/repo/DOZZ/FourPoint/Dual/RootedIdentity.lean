@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.Dual.RootedInverse
-public import DOZZ.Statements.GMC.EquatorGFFRootedGMCIdentity
+import DOZZ.FourPoint.Dual.RootedInverse
+import DOZZ.Statements.GMC.EquatorGFFRootedGMCIdentity
 import DOZZ.GMC.SharpMoments.SeibergWeight
 import Mathlib.Tactic
 
@@ -15,7 +14,6 @@ This is the nonnegative Girsanov identity used in the dual outer correction.
 Both spatial restrictions and the supplied chaos measure are retained literally.
 -/
 
-public section
 open MeasureTheory Set
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -41,7 +39,7 @@ theorem dual_outerMass_rooted_weight_identity {Ω : Type*} [MeasurableSpace Ω]
       ∫⁻ u, ∫⁻ ω, f u *
         (dualOuterMass γ α₁ α₂ α₃ (gmcRootedMeasure γ u (M ω)) z ξ) ^ (-q)
           ∂P ∂gmcReferenceMeasure := by
-  apply DOZZ.equatorGFF_rooted_GMC_identity P X hX γ hγ hγ₂ M hM
+  apply equatorGFF_rooted_GMC_identity P X hX γ hγ hγ₂ M hM
     (fun u _ μ => f u * (dualOuterMass γ α₁ α₂ α₃ μ z ξ) ^ (-q))
   exact (hf.comp measurable_fst).mul
     (((dual_outerMass_measure_measurable γ α₁ α₂ α₃ ξ z).comp
@@ -67,11 +65,11 @@ theorem dual_outerMass_rooted_weight_bound {Ω : Type*} [MeasurableSpace Ω]
     _ ≤ ∫⁻ u, ENNReal.ofReal (f u) * ENNReal.ofReal C ∂gmcReferenceMeasure := by
       apply lintegral_mono
       intro u
-      dsimp only
+      dsimp
       rw [lintegral_const_mul' _ _ ENNReal.ofReal_ne_top]
       exact mul_le_mul' le_rfl (hb z u ξ hz hr)
     _ = _ := by
       have he := lintegral_mul_const (μ := gmcReferenceMeasure) (ENNReal.ofReal C) (ENNReal.measurable_ofReal.comp hf)
-      simpa only [Function.comp_def, mul_comm] using he
+      simpa [Function.comp_def, mul_comm] using he
 
 end DOZZ.Proofs

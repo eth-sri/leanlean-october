@@ -2,17 +2,15 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.Tails.ActualCopiedErrorMoment
-public import DOZZ.Correlations.Tails.CompleteEnvelopeUniform
-public import DOZZ.Correlations.Tails.ImprovedChargeUniform
-public import DOZZ.Correlations.Tails.OffCenterPinLaw
-public import DOZZ.Correlations.Tails.CopiedErrorMassBound
+import DOZZ.Correlations.Tails.ActualCopiedErrorMoment
+import DOZZ.Correlations.Tails.CompleteEnvelopeUniform
+import DOZZ.Correlations.Tails.ImprovedChargeUniform
+import DOZZ.Correlations.Tails.OffCenterPinLaw
+import DOZZ.Correlations.Tails.CopiedErrorMassBound
 
 /-! Uniform improved moments of the actual copied insertion error. -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal
 
@@ -59,16 +57,6 @@ theorem actual_copied_multiplier_error_uniform
       Real.exp (pinCorrectionEnvelope z γ (A q) (B q)+4)
   let S : Ω × Ω → ℝ := fun q => Real.exp (γ*B q-γ^2*Real.log ‖z‖)
   let E : Ω × Ω → ℝ≥0∞ := fun q => ENNReal.ofReal (S q*C q)
-  have hd : 0 ≤ derivBound := hFamily.2.2.1
-  have hs : 0 ≤ supBound := hFamily.2.1
-  have hC (q : Ω × Ω) : 0 ≤ C q := by
-    have hD : 0 ≤ pinCorrectionEnvelope z γ (A q) (B q) := by
-      unfold pinCorrectionEnvelope
-      exact add_nonneg (mul_nonneg
-        (div_nonneg (abs_nonneg _) (offCenter_pin_variance_pos z hzn).le)
-        (abs_nonneg _)) (sq_nonneg _)
-    dsimp [C]
-    positivity
   have hpin : Measurable (fun ω => Xc ω z 0) :=
     (hc.1 0).comp (measurable_id.prodMk measurable_const)
   have hA : Measurable A := hpin.comp measurable_fst
@@ -84,14 +72,14 @@ theorem actual_copied_multiplier_error_uniform
   have hAL := hpinL.comp hfst.hasLaw
   have hBL := hpinL.comp (measurePreserving_snd (μ := P) (ν := P)).hasLaw
   have hAm : (∫ u, A u ∂P.prod P) = 0 := by
-    simpa only [A, Function.comp_def, integral_id_gaussianReal] using hAL.integral_eq
+    simpa [A, Function.comp_def, integral_id_gaussianReal] using hAL.integral_eq
   have hBm : (∫ u, B u ∂P.prod P) = 0 := by
-    simpa only [B, Function.comp_def, integral_id_gaussianReal] using hBL.integral_eq
+    simpa [B, Function.comp_def, integral_id_gaussianReal] using hBL.integral_eq
   have hAv : variance A (P.prod P) = 2*Real.log ‖z‖ := by
-    simpa only [A, Function.comp_def, variance_id_gaussianReal,
+    simpa [A, Function.comp_def, variance_id_gaussianReal,
       Real.coe_toNNReal _ (offCenter_pin_variance_pos z hzn).le] using hAL.variance_eq
   have hBv : variance B (P.prod P) = 2*Real.log ‖z‖ := by
-    simpa only [B, Function.comp_def, variance_id_gaussianReal,
+    simpa [B, Function.comp_def, variance_id_gaussianReal,
       Real.coe_toNNReal _ (offCenter_pin_variance_pos z hzn).le] using hBL.variance_eq
   have hEm : (∫⁻ u, E u^(r*p) ∂P.prod P) ≤ L :=
     hEnv z hzk A B hAL.hasGaussianLaw hBL.hasGaussianLaw hAm hBm hAv hBv
@@ -105,7 +93,7 @@ theorem actual_copied_multiplier_error_uniform
   have he := copied_multiplier_error_mass_le K Family radius supBound derivBound
     lowerBound hFamily z hzk hzn F hF γ α (A u) (B u) ρ hγ.ne' hρR (N u.1)
   have h := mul_le_mul' (le_refl (ENNReal.ofReal (S u))) he
-  simpa only [E, ENNReal.ofReal_mul (Real.exp_nonneg _), mul_assoc, S, C, A, B,
+  simpa [E, ENNReal.ofReal_mul (Real.exp_nonneg _), mul_assoc, S, C, A, B,
     Function.comp_def] using h
 
 

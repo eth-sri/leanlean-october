@@ -2,24 +2,22 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.Defs.IsGMCOf
-public import DOZZ.GMC.AdmissibleGMCRestriction
-public import DOZZ.GMC.Moments.ExactScaleLimit
-public import DOZZ.GMC.Moments.OpenBallApproximation
-public import DOZZ.GMC.Moments.SetMassMeasurable
+import DOZZ.Statements.Defs.IsGMCOf
+import DOZZ.GMC.AdmissibleGMCRestriction
+import DOZZ.GMC.Moments.ExactScaleLimit
+import DOZZ.GMC.Moments.OpenBallApproximation
+import DOZZ.GMC.Moments.SetMassMeasurable
 
 /-! Exact affine scaling of open-ball masses for arbitrary `IsGMCOf` versions. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped Distributions ENNReal NNReal BoundedContinuousFunction
 
 namespace DOZZ.Proofs
 
-private theorem gmc_test_integral_aemeasurable_of_support
+theorem gmc_test_integral_aemeasurable_of_support
     {Ω : Type*} [MeasurableSpace Ω]
     (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ)
     (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
@@ -184,16 +182,12 @@ theorem gmc_affine_openBall_mass_law
     exact tendstoInMeasure_of_tendsto_ae
       (fun n => (hsourceIntMeas n).aestronglyMeasurable)
       (ae_of_all P hpoint)
-  have htargetConv : TendstoInMeasure P targetCutoff atTop targetLimit :=
-    tendstoInMeasure_pi_finite P targetCutoff targetLimit htargetCoordConv
   have hsourceProductCoordConv (j : Fin 1) :
       TendstoInMeasure (P.prod G) (fun n p => sourceCutoff n p j) atTop
       (fun p => sourceLimit p j) := by
     exact tendstoInMeasure_mul_snd_of_tendstoInMeasure
       (fun n ω => ∫ x, g n x ∂M ω)
       (fun ω => (M ω (Metric.ball 0 R)).toReal) scaleFactor hscaleFactor hsourceConv
-  have hsourceProductConv : TendstoInMeasure (P.prod G) sourceCutoff atTop sourceLimit :=
-    tendstoInMeasure_pi_finite (P.prod G) sourceCutoff sourceLimit hsourceProductCoordConv
   have hcutoffLaw (n : ℕ) : Measure.map (targetCutoff n) P =
       Measure.map (sourceCutoff n) (P.prod G) := by
     let fvec : Fin 1 → BoundedContinuousFunction ℂ ℝ := fun _ => f n
@@ -204,8 +198,7 @@ theorem gmc_affine_openBall_mass_law
       c ^ 2 * Real.exp (γ * p.2 - γ ^ 2 / 2 * σ) *
           ∫ x, fvec j (a + c • x) ∂M p.1) = sourceCutoff n := by
       funext p j
-      have htest (x : ℂ) : f n (a + c • x) = g n x := by
-        exact openBallAffineApprox_comp_affine a c R hc.ne' n x
+      have htest (x : ℂ) : f n (a + c • x) = g n x := openBallAffineApprox_comp_affine a c R hc.ne' n x
       change c ^ 2 * Real.exp (γ * p.2 - γ ^ 2 / 2 * σ) *
         ∫ x, f n (a + c • x) ∂M p.1 =
           scaleFactor p.2 * ∫ x, g n x ∂M p.1

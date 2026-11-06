@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Brownian.Williams.ReversalMarkedDensity
-public import Mathlib.MeasureTheory.Integral.Prod
+import DOZZ.Brownian.Williams.ReversalMarkedDensity
+import Mathlib.MeasureTheory.Integral.Prod
 
 /-!
 # Rectangle integrals for the actual marked first-hit reversal law
@@ -14,7 +13,6 @@ Finiteness of the actual pushforward supplies integrability of its nonnegative d
 Fubini then gives the same past-cylinder and lifetime-interval formula as the last-exit law.
 -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory Set
 open scoped NNReal ENNReal
 namespace DOZZ.Proofs
@@ -31,7 +29,7 @@ theorem real_withDensity_prod_rectangle {α β : Type*}
   let M := (μ.prod η).withDensity (fun z => ENNReal.ofReal (f z))
   have hmass : (∫⁻ z, ENNReal.ofReal (f z) ∂μ.prod η) ≠ ⊤ := by
     have he : M univ = ∫⁻ z, ENNReal.ofReal (f z) ∂μ.prod η := by
-      dsimp only [M]
+      dsimp [M]
       rw [withDensity_apply _ MeasurableSet.univ, Measure.restrict_univ]
     rw [← he]
     exact measure_ne_top _ _
@@ -41,11 +39,11 @@ theorem real_withDensity_prod_rectangle {α β : Type*}
   calc
     _ = ∫ z in A ×ˢ B, (1 : ℝ) ∂M := by simp [integral_const, M]
     _ = ∫ z in A ×ˢ B, f z ∂μ.prod η := by
-      dsimp only [M]
+      dsimp [M]
       rw [setIntegral_withDensity_eq_setIntegral_toReal_smul₀
         hf.ennreal_ofReal.aemeasurable.restrict
         (ae_of_all _ fun _ => ENNReal.ofReal_lt_top) _ (hA.prod hB)]
-      simp only [ENNReal.toReal_ofReal (hn _), smul_eq_mul, mul_one]
+      simp [ENNReal.toReal_ofReal (hn _), smul_eq_mul, mul_one]
     _ = _ := by
       rw [← Measure.prod_restrict]
       exact integral_prod _ (by rw [Measure.prod_restrict]; exact hi.integrableOn)
@@ -81,4 +79,3 @@ theorem brownianPath_firstHit_reversedIncreasing_rectangle
     (brownianReversalBoundaryDensity_nonneg ν c hν hc n ss) A (Ioc u v) hA measurableSet_Ioc
 
 end DOZZ.Proofs
-end

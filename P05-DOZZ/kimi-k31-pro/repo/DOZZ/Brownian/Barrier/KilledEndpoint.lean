@@ -2,8 +2,7 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
-public import DOZZ.Brownian.Barrier.Maximum
+import DOZZ.Brownian.Barrier.Maximum
 
 /-!
 # Actual killed endpoint measures
@@ -27,7 +26,6 @@ The actual multi-time killed Markov factorization and lifetime-marked reversal
 are later steps; neither is inferred merely from the scalar kernel identity.
 -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory Filter Set
 open scoped NNReal ENNReal Topology
 namespace DOZZ.Proofs
@@ -55,7 +53,7 @@ theorem brownianUpperKilledPDFReal_nonneg (β : ℝ) (hβ : 0 < β) (T : ℝ≥0
     simp only [hsq,hr] at hd
     simp only [brownianUpperKilledPDFReal,Set.indicator_apply,mem_Iio,ite_eq_left hx,gaussianPDFReal,sub_zero]
     have hm := mul_nonneg (inv_nonneg.mpr (Real.sqrt_nonneg (2*Real.pi*(T : ℝ)))) hd
-    simpa only [mul_sub,neg_div] using hm
+    simpa [mul_sub,neg_div] using hm
   · simp only [brownianUpperKilledPDFReal,Set.indicator_apply,mem_Iio,ite_eq_right hx,le_refl]
 
 /-- The killed density is pointwise dominated by the original Gaussian endpoint density. -/
@@ -190,7 +188,7 @@ theorem brownianPath_drift_barrier_endpoint_map (P : Measure BrownianPath)
     brownianPath_barrier_endpoint_map P hB β hβ T hT,
     ← withDensity_mul volume (measurable_brownianUpperKilledPDFReal β T).ennreal_ofReal
       (measurable_brownianGaussianLikelihood a T)]
-  simp only [Pi.mul_def]
+  simp [Pi.mul_def]
 /-- Reflecting a scalar Lebesgue density around a level composes the density with that reflection. -/
 theorem brownian_scalar_reflection_withDensity (c : ℝ) (w : ℝ → ℝ≥0∞) (hw : Measurable w) :
     (volume.withDensity w).map (fun x => c-x) = volume.withDensity (fun y => w (c-y)) := by
@@ -201,9 +199,7 @@ theorem brownian_scalar_reflection_withDensity (c : ℝ) (w : ℝ → ℝ≥0∞
     have hx : f (f x) = x := by dsimp [f]; ring_nf
     rw [hx]
   have hmap := brownian_map_withDensity_comp volume f hf (fun y => w (f y)) (hw.comp hf)
-  rw [he,(volume.measurePreserving_sub_left c).map_eq] at hmap
-  exact hmap
-
+  rwa [he,(volume.measurePreserving_sub_left c).map_eq] at hmap
 /-- Reflecting the surviving upper endpoint measure gives the actual lower-killed drifted endpoint. -/
 theorem brownianPath_lowerKilled_endpoint_map_eq_upper (P : Measure BrownianPath)
     (hB : IsBrownianReal (fun t p => p t) P) (a x : ℝ) (T : ℝ≥0) :
@@ -275,7 +271,7 @@ theorem measurable_brownianKilledTransitionPDF (a : ℝ) (T : ℝ≥0) :
 /-- The centered Gaussian density is symmetric in its argument. -/
 theorem brownian_gaussianPDFReal_neg (T : ℝ≥0) (z : ℝ) :
     gaussianPDFReal 0 T (-z) = gaussianPDFReal 0 T z := by
-  simp only [gaussianPDFReal,sub_zero,neg_sq]
+  simp [gaussianPDFReal,sub_zero,neg_sq]
 
 /-- The scalar reflected tilted density is exactly the killed positive-half-line transition kernel. -/
 theorem brownianKilledTransitionPDF_eq_reflected (a x : ℝ) (hx : 0 < x)
@@ -366,7 +362,7 @@ theorem brownianPath_drift_barrier_ae_strict (P : Measure BrownianPath)
       {p | ∀ u : ℝ≥0, u ≤ T → p u+a*(u : ℝ) < β} := by
   have hn : ∀ᵐ p ∂P, (⨆ u : Iic T, driftedBrownianPath a p u) ≠ β := by
     rw [ae_iff]
-    simpa only [not_not] using brownianPath_drift_runningMaximum_atom_zero P hB a β hβ T hT
+    simpa [not_not] using brownianPath_drift_runningMaximum_atom_zero P hB a β hβ T hT
   filter_upwards [hn] with p hp
   apply propext
   constructor

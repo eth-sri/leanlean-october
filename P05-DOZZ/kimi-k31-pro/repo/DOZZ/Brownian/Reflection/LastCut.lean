@@ -2,14 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import Mathlib.Analysis.SpecialFunctions.Pow.NNReal
-public import DOZZ.Brownian.Reflection.Moments
-public import DOZZ.Statements.Brownian.TwoSidedReflectionCutMass
-public import DOZZ.Brownian.ReflectionMassMeasurability
-public import DOZZ.Brownian.MeasureTranslationFinite
-public import DOZZ.Brownian.ReflectionLastCutShift
+import Mathlib.Analysis.SpecialFunctions.Pow.NNReal
+import DOZZ.Brownian.Reflection.Moments
+import DOZZ.Statements.Brownian.TwoSidedReflectionCutMass
+import DOZZ.Brownian.ReflectionMassMeasurability
+import DOZZ.Brownian.MeasureTranslationFinite
+import DOZZ.Brownian.ReflectionLastCutShift
 import Mathlib.Analysis.Convex.SpecificFunctions.Basic
 import DOZZ.Brownian.Williams.StoppedPaths
 import Mathlib.Topology.Hom.ContinuousEval
@@ -27,7 +26,6 @@ then needs an inverse moment of the retained mass (through the initial unit bloc
 moment of the full mass.
 -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory Filter Set
 open scoped ENNReal NNReal Topology
@@ -111,33 +109,7 @@ theorem initialUnitBlockMass_le_cutMass {Ω : Type*} (γ c : ℝ)
 /-- The joined value of a pair of entrance paths is jointly measurable in the pair and the signed
 time. -/
 theorem measurable_uncurry_reflectionPairValue :
-    Measurable (Function.uncurry reflectionPairValue) := by
-  classical
-  have heval : Measurable (fun z : (ℝ≥0 × BrownianPath) => z.2 z.1) :=
-    by exact (continuous_eval.comp continuous_swap).measurable
-  let pos : (BrownianPath × BrownianPath) × ℝ → ℝ := fun z =>
-    z.1.1 ⟨max z.2 0, le_max_right _ _⟩
-  let neg : (BrownianPath × BrownianPath) × ℝ → ℝ := fun z =>
-    z.1.2 ⟨max (-z.2) 0, le_max_right _ _⟩
-  have hpos : Measurable pos := by
-    dsimp [pos]
-    exact heval.comp ((by fun_prop : Measurable fun z : (BrownianPath × BrownianPath) × ℝ =>
-      ((⟨max z.2 0, le_max_right _ _⟩ : ℝ≥0), z.1.1)))
-  have hneg : Measurable neg := by
-    dsimp [neg]
-    exact heval.comp ((by fun_prop : Measurable fun z : (BrownianPath × BrownianPath) × ℝ =>
-      ((⟨max (-z.2) 0, le_max_right _ _⟩ : ℝ≥0), z.1.2)))
-  have hm : Measurable (fun z : (BrownianPath × BrownianPath) × ℝ =>
-      if 0 ≤ z.2 then pos z else neg z) :=
-    Measurable.ite (measurableSet_le measurable_const measurable_snd) hpos hneg
-  convert hm using 1
-  funext z
-  change (if hs : 0 ≤ z.2 then z.1.1 ⟨z.2, hs⟩ else z.1.2 ⟨-z.2, by linarith⟩) =
-    (if 0 ≤ z.2 then pos z else neg z)
-  by_cases hs : 0 ≤ z.2
-  · simp [hs, pos]
-  · have hneg : 0 ≤ -z.2 := by linarith
-    simp [hs, neg, max_eq_left hneg]
+    Measurable (Function.uncurry reflectionPairValue) := DOZZ.Proofs.measurable_reflectionPairValue
 
 /-- The cut integrand: the exponential of the joined value, kept only to the right of `-L`, where
 `L` is the last exit time of the negative-side path from `-c`. -/
@@ -308,7 +280,7 @@ theorem lastExitReflectedMeasure_Ioc_lt_top {Ω : Type*} (c : ℝ)
   refine lt_of_le_of_lt (measure_mono ?_) (hZ (-b - (negativeLastExitTime (B ω).2 c : ℝ))
     (-a - (negativeLastExitTime (B ω).2 c : ℝ)))
   intro s hs
-  simp only [mem_preimage, mem_Ioc] at hs
+  simp [mem_preimage, mem_Ioc] at hs
   constructor <;> linarith [hs.1, hs.2]
 
 /-- The discarded mass is almost everywhere measurable for conditioned reflection inputs. -/
@@ -340,7 +312,7 @@ theorem lintegral_mul_rpow_le_holder {Ω : Type*} [MeasurableSpace Ω] (P : Meas
     apply lintegral_congr
     intro ω
     rw [← ENNReal.rpow_mul]
-  simpa only [Pi.mul_apply, heq] using h
+  simpa [Pi.mul_apply, heq] using h
 
 /-- One-step moment increment across the last cut, for a single order `p`, from three moment
 bounds: the discarded mass at order `r`, the retained mass at the negative order `(p-1) r'`
@@ -366,14 +338,14 @@ theorem lastCut_moment_le_add
     have hkd : k * D ω < ⊤ := ENNReal.mul_lt_top hk hdfin
     by_cases hp1 : p ≤ 1
     · have h := ennreal_rpow_add_le_of_le_one hpos hJcfin hkd hp hp1
-      have hGJ : G ω = Jc ω := by simp only [hG, hp1, ite_true]
+      have hGJ : G ω = Jc ω := by simp [hG, hp1, ite_true]
       calc J ω ^ p = (Jc ω + k * D ω) ^ p := by rw [hs]
         _ ≤ Jc ω ^ p + ENNReal.ofReal p * (k * D ω) * Jc ω ^ (p - 1) := h
         _ = Jc ω ^ p + ENNReal.ofReal p * k * (D ω * G ω ^ (p - 1)) := by
           rw [hGJ]
           ring
     · have h := ennreal_rpow_add_le_of_one_le hpos hJcfin hkd (le_of_lt (not_le.mp hp1))
-      have hGJ : G ω = J ω := by simp only [hG, hp1, ite_false]
+      have hGJ : G ω = J ω := by simp [hG, hp1, ite_false]
       calc J ω ^ p = (Jc ω + k * D ω) ^ p := by rw [hs]
         _ ≤ Jc ω ^ p + ENNReal.ofReal p * (k * D ω) * (Jc ω + k * D ω) ^ (p - 1) := h
         _ = Jc ω ^ p + ENNReal.ofReal p * k * (D ω * G ω ^ (p - 1)) := by
@@ -415,7 +387,7 @@ theorem ae_lt_top_of_lintegral_rpow_lt_top {Ω : Type*} [MeasurableSpace Ω] {P 
     rw [htop, ENNReal.top_rpow_of_pos hq] at hω
     exact lt_irrefl _ hω
 
-/-- The last-cut bound `DOZZ.reflectionMass_lastCut_bound`, from the lateral inverse unit
+/-- The last-cut bound `reflectionMass_lastCut_bound`, from the lateral inverse unit
 moments. -/
 theorem reflectionMass_lastCut_bound_of_inverse
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (γ : ℝ)
@@ -624,4 +596,3 @@ theorem reflectionMass_lastCut_bound_of_inverse
 
 end DOZZ.Proofs
 
-end

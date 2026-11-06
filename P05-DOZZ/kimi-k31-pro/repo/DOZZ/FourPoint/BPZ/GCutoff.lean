@@ -2,12 +2,11 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import Mathlib.Analysis.Calculus.BumpFunction.FiniteDimension
-public import Mathlib.Analysis.Calculus.MeanValue
-public import Mathlib.Analysis.Complex.RealDeriv
-public import Mathlib.Analysis.SpecialFunctions.Pow.Real
+import Mathlib.Analysis.Calculus.BumpFunction.FiniteDimension
+import Mathlib.Analysis.Calculus.MeanValue
+import Mathlib.Analysis.Complex.RealDeriv
+import Mathlib.Analysis.SpecialFunctions.Pow.Real
 
 /-! # Smooth cutoffs for the Ward rational function `g(x) = x (x − 1)/(z − x)`
 
@@ -36,7 +35,6 @@ most a constant times `1 + ‖ξ − z‖ ^ (-2)`.
 * None of the estimates needs `z ≠ 0` or `z ≠ 1`; where these hypotheses appear in a statement
   they are kept, as unused `_hz0 _hz1`, for interface uniformity. -/
 
-@[expose] public section
 
 open Filter Topology
 
@@ -51,7 +49,7 @@ def bpzReg (z : ℂ) : Set ℂ := {x | x ≠ 0 ∧ x ≠ 1 ∧ x ≠ z}
 /-! ### Elementary real inequalities -/
 
 theorem bpz_rpow_neg_two {t : ℝ} (ht : 0 ≤ t) : t ^ (-2 : ℝ) = (t ^ 2)⁻¹ := by
-  rw [Real.rpow_neg ht, Real.rpow_two]
+  simp
 
 theorem bpz_rpow_neg_two_nonneg {t : ℝ} (ht : 0 ≤ t) : 0 ≤ t ^ (-2 : ℝ) :=
   Real.rpow_nonneg ht _
@@ -73,9 +71,7 @@ theorem bpz_le_mul_one_add_rpow {t X K : ℝ} (ht : 0 < t) (h : X * t ^ 2 ≤ K 
   rw [bpz_rpow_neg_two ht.le]
   have h2 : 0 < t ^ 2 := by positivity
   have e : K * (1 + (t ^ 2)⁻¹) = K * (t ^ 2 + 1) / t ^ 2 := by field_simp
-  rw [e, le_div_iff₀ h2]
-  exact h
-
+  rwa [e, le_div_iff₀ h2]
 theorem bpz_norm_sub_ge (x y c : ℂ) : ‖x - c‖ - ‖y - x‖ ≤ ‖y - c‖ := by
   calc ‖x - c‖ - ‖y - x‖ = ‖(y - c) - (y - x)‖ - ‖y - x‖ := by congr 2; ring
     _ ≤ ‖y - c‖ := by linarith [norm_sub_le (y - c) (y - x)]
@@ -135,7 +131,6 @@ theorem bpz_mul_norm_le (z ξ : ℂ) :
     ‖ξ‖ * ‖ξ - 1‖ ≤ (1 + ‖z‖) * (1 + ‖z - 1‖) * (‖ξ - z‖ ^ 2 + 1) := by
   have hp := bpz_norm_le_add z ξ
   have hq := bpz_norm_sub_one_le_add z ξ
-  have ht : 0 ≤ ‖ξ - z‖ := norm_nonneg _
   have ha : 0 ≤ ‖z‖ := norm_nonneg _
   have hb : 0 ≤ ‖z - 1‖ := norm_nonneg _
   calc ‖ξ‖ * ‖ξ - 1‖ ≤ (‖ξ - z‖ + ‖z‖) * (‖ξ - z‖ + ‖z - 1‖) :=
@@ -154,14 +149,11 @@ theorem norm_bpzG_le {z ξ : ℂ} (hξ : ξ ≠ z) :
   have e : (1 + ‖z‖) * (1 + ‖z - 1‖) * (1 + (‖ξ - z‖ ^ 2)⁻¹) * ‖ξ - z‖ * ‖ξ - z‖ =
       (1 + ‖z‖) * (1 + ‖z - 1‖) * (‖ξ - z‖ ^ 2 + 1) := by
     field_simp
-  rw [e]
-  exact h
-
+  rwa [e]
 /-- `‖g ξ‖ / ‖ξ‖ = ‖ξ - 1‖ / ‖ξ - z‖` against the singular weight. -/
 theorem bpzG_div_norm_le (z ξ : ℂ) (hξz : ξ ≠ z) (hξ0 : ξ ≠ 0) :
     ‖bpzG z ξ‖ / ‖ξ‖ ≤ (1 + ‖z - 1‖) * (1 + ‖ξ - z‖ ^ (-2 : ℝ)) := by
   have ht : 0 < ‖ξ - z‖ := norm_pos_iff.2 (sub_ne_zero.2 hξz)
-  have hp : 0 < ‖ξ‖ := norm_pos_iff.2 hξ0
   have hb : 0 ≤ ‖z - 1‖ := norm_nonneg _
   apply bpz_le_mul_one_add_rpow ht
   rw [norm_bpzG_eq]
@@ -293,7 +285,7 @@ theorem norm_fderiv_bpzBumpAt_le {C : ℝ} (hC0 : 0 ≤ C) (hC : ∀ w, ‖fderi
   · have h0 : fderiv ℝ bpzPsi (r • (x - c)) = 0 :=
       fderiv_bpzPsi_eq_zero (by rwa [norm_smul, Real.norm_of_nonneg hr])
     rw [h0]
-    simp only [ContinuousLinearMap.zero_comp, norm_zero]
+    simp [norm_zero]
     positivity
   · have h2' : r * ‖x - c‖ ≤ 2 := not_lt.1 h2
     calc ‖(fderiv ℝ bpzPsi (r • (x - c))).comp (r • ContinuousLinearMap.id ℝ ℂ)‖
@@ -434,7 +426,7 @@ theorem bpzCut_eventuallyEq_one {z x : ℂ} (hx : x ∈ bpzReg z) :
     have := mul_le_mul_of_nonneg_left hle hmpos.le
     linarith only [this, hmd]
   · have := bpz_norm_sub_ge x y 0
-    simp only [sub_zero] at this
+    simp [sub_zero] at this
     have hle : d / 2 ≤ ‖y‖ := by linarith only [this, hyx, hd0]
     have := mul_le_mul_of_nonneg_left hle hmpos.le
     linarith only [this, hmd]
@@ -653,8 +645,7 @@ theorem bpz_norm_sub_le_near {z : ℂ} {H : ℂ → ℂ} {A : ℝ} (hA0 : 0 ≤ 
   have hconv : Convex ℝ (Metric.closedBall x (‖x - z‖ / 2)) := convex_closedBall _ _
   have hxs : x ∈ Metric.closedBall x (‖x - z‖ / 2) := Metric.mem_closedBall_self (by positivity)
   have hys : y ∈ Metric.closedBall x (‖x - z‖ / 2) := by
-    rw [Metric.mem_closedBall, dist_eq_norm, norm_sub_rev]
-    exact hxy
+    rwa [Metric.mem_closedBall, dist_eq_norm, norm_sub_rev]
   have hbound : ∀ w ∈ Metric.closedBall x (‖x - z‖ / 2),
       ‖fderiv ℝ H w‖ ≤ A * (1 + 4 * ‖x - z‖ ^ (-2 : ℝ)) := by
     intro w hw
@@ -664,14 +655,13 @@ theorem bpz_norm_sub_le_near {z : ℂ} {H : ℂ → ℂ} {A : ℝ} (hA0 : 0 ≤ 
       linarith
     have hwz0 : w ≠ z := by
       rintro rfl
-      simp only [sub_self, norm_zero] at hwz
+      simp [sub_self, norm_zero] at hwz
       linarith
     calc ‖fderiv ℝ H w‖ ≤ A * (1 + ‖w - z‖ ^ (-2 : ℝ)) := hA w hwz0
       _ ≤ A * (1 + 4 * ‖x - z‖ ^ (-2 : ℝ)) := by
           exact mul_le_mul_of_nonneg_left
             (add_le_add le_rfl (bpz_rpow_neg_two_le_four_mul ht hwz)) hA0
   have hmv := hconv.norm_image_sub_le_of_norm_fderiv_le (fun w _ => hH w) hbound hxs hys
-  have hu : 0 ≤ ‖x - z‖ ^ (-2 : ℝ) := bpz_rpow_neg_two_nonneg (norm_nonneg _)
   rw [norm_sub_rev (H x)]
   calc ‖H y - H x‖ ≤ A * (1 + 4 * ‖x - z‖ ^ (-2 : ℝ)) * ‖y - x‖ := hmv
     _ = A * (1 + 4 * ‖x - z‖ ^ (-2 : ℝ)) * ‖x - y‖ := by rw [norm_sub_rev y x]

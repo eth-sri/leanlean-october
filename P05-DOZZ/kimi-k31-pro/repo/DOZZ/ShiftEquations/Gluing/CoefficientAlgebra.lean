@@ -2,13 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.Defs.ShiftCoeffA
-public import DOZZ.Statements.Hypergeom.GaussCoefficientRatio
-public import DOZZ.Statements.Hypergeom.GaussParameterA
-public import DOZZ.Statements.Hypergeom.GaussParameterB
-public import DOZZ.Statements.Hypergeom.GaussParameterC
+import DOZZ.Statements.Defs.ShiftCoeffA
+import DOZZ.Statements.Hypergeom.GaussCoefficientRatio
+import DOZZ.Statements.Hypergeom.GaussParameterA
+import DOZZ.Statements.Hypergeom.GaussParameterB
+import DOZZ.Statements.Hypergeom.GaussParameterC
 import Mathlib.Analysis.SpecialFunctions.Gamma.Basic
 
 /-!
@@ -26,7 +25,6 @@ Consequently `shiftCoeffA` is `l(-χ²) l(χ z) l(c)` times the Gamma quotient `
 `ℝ` and cast to `ℂ` once.
 -/
 
-@[expose] public section
 
 namespace DOZZ.Proofs
 
@@ -139,7 +137,7 @@ theorem gaussRatio_real_identity {a b c : ℝ} (hc : c ≠ 1) (L₁ L₂ : ℝ) 
   unfold gaussCoefficientRatio
   generalize gaussRatio_l (2 - c) = T
   unfold gaussRatio_l
-  simp only [div_eq_mul_inv, mul_inv, inv_inv]
+  simp [div_eq_mul_inv, inv_inv]
   ring
 
 /-! ### Passage to `ℂ` -/
@@ -201,7 +199,6 @@ theorem gaussCoefficientRatio_mul_eq_shiftCoeffA_half {γ z α₂ α₃ : ℝ} (
       (lFun (-((γ / 2 : ℝ) : ℂ) ^ 2) * lFun (((γ / 2 : ℝ) : ℂ) * z) *
         lFun (2 + ((γ / 2 : ℝ) : ℂ) ^ 2 - ((γ / 2 : ℝ) : ℂ) * z)) =
       shiftCoeffA γ ((γ / 2 : ℝ) : ℂ) z α₂ α₃ := by
-  have hγ0 : γ ≠ 0 := hγ.ne'
   refine gaussCoefficientRatio_mul_eq_shiftCoeffA (by positivity) ?_ hc
   unfold Q
   field_simp
@@ -210,4 +207,3 @@ theorem gaussCoefficientRatio_mul_eq_shiftCoeffA_half {γ z α₂ α₃ : ℝ} (
 
 end DOZZ.Proofs
 
-end

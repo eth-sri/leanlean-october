@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.Analytic.RetainedComplementDecay
-public import DOZZ.Correlations.Analytic.CutoffGeometry
+import DOZZ.Correlations.Analytic.RetainedComplementDecay
+import DOZZ.Correlations.Analytic.CutoffGeometry
 
 /-! Exponential cutoff-time decay of the omitted-mass small moment. -/
 
-@[expose] public section
 open MeasureTheory Filter Topology
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -47,6 +45,6 @@ theorem complement_exponential_moment
   have he := hb α αinf hα hinf hαup hinfup (n : ℝ) hn.1 hn.2.1 hn.2.2.1
   rw [scaled_exp_radius_power,
     ENNReal.ofReal_mul (Real.rpow_nonneg (by norm_num) _)] at he
-  simpa only [mul_assoc, mul_comm, mul_left_comm] using he
+  simpa [mul_assoc, mul_comm, mul_left_comm] using he
 
 end DOZZ.Proofs

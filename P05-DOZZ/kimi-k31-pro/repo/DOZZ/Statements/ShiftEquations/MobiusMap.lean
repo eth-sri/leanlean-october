@@ -1,2 +1,1 @@
-module
-public import DOZZ.Statements.ShiftEquations.MobiusChart
+import DOZZ.Statements.ShiftEquations.MobiusChart

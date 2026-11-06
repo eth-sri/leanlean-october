@@ -2,15 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.FiniteChaosSmoothKahaneComparison
-public import DOZZ.GMC.FiniteChaosTestGrowth
-public import DOZZ.GMC.FiniteGaussianExponentialIntegrability
+import DOZZ.GMC.FiniteChaosSmoothKahaneComparison
+import DOZZ.GMC.FiniteChaosTestGrowth
+import DOZZ.GMC.FiniteGaussianExponentialIntegrability
 
 /-! Gaussian-growth integrability for the smooth Kahane interpolation derivative. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory
 open scoped Distributions Topology
@@ -74,11 +72,11 @@ theorem kahaneSmoothInterpolation_integrand_nonpos_of_bounded_derivatives
     (hF''bound : ∀ x, ‖F'' x‖ ≤ B₂)
     (hF''nonneg : ∀ x, 0 ≤ x → 0 ≤ F'' x)
     (ht : 0 < t) (ht1 : t < 1)
-    (hvX : ∀ i, vX i = DOZZ.gaussianCovariance PX (fun ω => X ω i) (fun ω => X ω i))
-    (hvY : ∀ i, vY i = DOZZ.gaussianCovariance PY (fun ω => Y ω i) (fun ω => Y ω i))
+    (hvX : ∀ i, vX i = gaussianCovariance PX (fun ω => X ω i) (fun ω => X ω i))
+    (hvY : ∀ i, vY i = gaussianCovariance PY (fun ω => Y ω i) (fun ω => Y ω i))
     (hcov : ∀ i j,
-      DOZZ.gaussianCovariance PX (fun ω => X ω i) (fun ω => X ω j) ≤
-        DOZZ.gaussianCovariance PY (fun ω => Y ω i) (fun ω => Y ω j)) :
+      gaussianCovariance PX (fun ω => X ω i) (fun ω => X ω j) ≤
+        gaussianCovariance PY (fun ω => Y ω i) (fun ω => Y ω j)) :
     ∫ ω, kahaneInterpolatedTestDerivative X Y vX vY a γ F' t ω ∂(PX.prod PY) ≤ 0 := by
   classical
   have hB₁ : 0 ≤ B₁ := by
@@ -104,8 +102,7 @@ theorem kahaneSmoothInterpolation_integrand_nonpos_of_bounded_derivatives
     independent_product_concat_isCenteredJointlyGaussian PX PY X Y hX hY
   let c : Sum ι ι → ℝ := fun _ => 2 * |γ|
   have hc : ∀ k, 0 ≤ c k := fun _ => by positivity
-  have hEnv : Integrable (fun ω => Real.exp (∑ k, c k * |Z ω k|)) μ := by
-    exact centeredJointlyGaussian_abs_linear_exp_integrable μ Z hZ c
+  have hEnv : Integrable (fun ω => Real.exp (∑ k, c k * |Z ω k|)) μ := centeredJointlyGaussian_abs_linear_exp_integrable μ Z hZ c
   have hCoordEnv (k : Sum ι ι) : Integrable
       (fun ω => Z ω k * Real.exp (∑ j, c j * |Z ω j|)) μ :=
     centeredJointlyGaussian_coordinate_mul_abs_linear_exp_integrable μ Z hZ c k
@@ -128,7 +125,7 @@ theorem kahaneSmoothInterpolation_integrand_nonpos_of_bounded_derivatives
       calc
         _ ≤ ∑ k, |z k| := kahaneSumVectorField_abs_sum_le t ht ht1 z
         _ = _ := by rw [Fintype.sum_sum_type]
-    simp only [Fintype.sum_sum_type, c]
+    simp [Fintype.sum_sum_type, c]
     calc
       2 * (|γ| * ∑ i, |kahaneSumVectorField t z i|) ≤
           2 * (|γ| * (∑ i, |z (Sum.inl i)| + ∑ i, |z (Sum.inr i)|)) := by
@@ -345,7 +342,7 @@ theorem kahaneSmoothInterpolation_integrand_nonpos_of_bounded_derivatives
       have hwj := hWeightBound (kahaneSumVectorField t z) j
       have hfield := kahaneSumVectorField_abs_sum_le t ht ht1 z
       have hexp : 2 * (|γ| * ∑ k, |z k|) = ∑ k, c2 k * |z k| := by
-        simp only [Fintype.sum_sum_type, c2]
+        simp [Fintype.sum_sum_type, c2]
         calc
           _ = 2 * |γ| * (∑ i, |z (Sum.inl i)| + ∑ i, |z (Sum.inr i)|) := by ring
           _ = _ := by
@@ -436,12 +433,12 @@ theorem kahaneSmoothInterpolationExpectation_hasDerivAt_nonpos
     (b : ΩX × ΩY → ℝ) (hb : Integrable b (PX.prod PY))
     (hbound : ∀ᵐ ω ∂(PX.prod PY), ∀ s ∈ Metric.ball t ε,
       ‖kahaneInterpolatedTestDerivative X Y vX vY a γ F' s ω‖ ≤ b ω)
-    (hvX : ∀ i, vX i = DOZZ.gaussianCovariance PX
+    (hvX : ∀ i, vX i = gaussianCovariance PX
       (fun ω => X ω i) (fun ω => X ω i))
-    (hvY : ∀ i, vY i = DOZZ.gaussianCovariance PY
+    (hvY : ∀ i, vY i = gaussianCovariance PY
       (fun ω => Y ω i) (fun ω => Y ω i))
-    (hcov : ∀ i j, DOZZ.gaussianCovariance PX
-      (fun ω => X ω i) (fun ω => X ω j) ≤ DOZZ.gaussianCovariance PY
+    (hcov : ∀ i j, gaussianCovariance PX
+      (fun ω => X ω i) (fun ω => X ω j) ≤ gaussianCovariance PY
       (fun ω => Y ω i) (fun ω => Y ω j)) :
     HasDerivAt
       (fun s => ∫ ω : ΩX × ΩY,

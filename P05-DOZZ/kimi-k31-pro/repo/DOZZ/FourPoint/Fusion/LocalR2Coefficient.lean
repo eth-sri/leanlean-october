@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.FourPoint.Fusion.LocalR2Limit
-public import DOZZ.FourPoint.Fusion.LocalR1Coefficient
+import DOZZ.FourPoint.Fusion.LocalR2Limit
+import DOZZ.FourPoint.Fusion.LocalR1Coefficient
 
 /-! # Exact normalization of the local mixed derivative coefficient -/
 
-@[expose] public section
 open MeasureTheory Filter Topology
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -51,6 +49,6 @@ theorem fusionLocalR2_coefficient_tendsto {Ω : Type*} [MeasurableSpace Ω]
     (∫ y : ℂ, planarMixedKernel (γ ^ 2 / 2) (γ * α₁) 1 y) (by linarith) _ hJ
   rw [hc, fusion_planarGauss_real _ _ hk hβ hβ2 hβlin,
     fusion_local_inverse_coefficient_eq P X hX γ hγ hγ2 M hM α₁ α₂ α₃ (-p - 1)] at h
-  simpa only [gammaHalfRootedCoefficient, ENNReal.rpow_eq_pow, Complex.ofReal_mul, mul_assoc] using h
+  simpa [gammaHalfRootedCoefficient, ENNReal.rpow_eq_pow, Complex.ofReal_mul, mul_assoc] using h
 
 end DOZZ.Proofs

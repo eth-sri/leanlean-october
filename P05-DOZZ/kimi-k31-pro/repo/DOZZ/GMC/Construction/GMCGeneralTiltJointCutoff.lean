@@ -2,15 +2,13 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.GMC.Construction.RootedPairLawBridge
-public import DOZZ.GMC.Construction.CircleCovarianceL2Limit
-public import DOZZ.GMC.Construction.RegularizedGMCExpectedMeasure
+import DOZZ.GMC.Construction.RootedPairLawBridge
+import DOZZ.GMC.Construction.CircleCovarianceL2Limit
+import DOZZ.GMC.Construction.RegularizedGMCExpectedMeasure
 
 /-! Joint finite-cutoff Cameron--Martin transport for arbitrary Gaussian L² limits. -/
 
-@[expose] public section
 
 open MeasureTheory ProbabilityTheory
 open scoped Distributions ENNReal NNReal
@@ -53,8 +51,7 @@ theorem equatorGFF_tilted_test_regularizedGMC_cutoff_lintegral
   have hProfileShiftAE := continuousCircleCutoffMeasure_shift_ae_eq_regularizedGMC_withDensity
     P X hX Xc hXc γ r 1 Z hZmeas hZae covCircle hcovCont
   have hDensity : AEMeasurable density P := by
-    have hlog : AEMeasurable (fun ω => L ω - gaussianVariance P L / 2) P := by
-      exact hL.1.aemeasurable.sub measurable_const.aemeasurable
+    have hlog : AEMeasurable (fun ω => L ω - gaussianVariance P L / 2) P := hL.1.aemeasurable.sub measurable_const.aemeasurable
     exact (Real.measurable_exp.comp_aemeasurable hlog).ennreal_ofReal
   have hfieldMeas : Measurable field := by
     rw [measurable_pi_iff]
@@ -83,7 +80,7 @@ theorem equatorGFF_tilted_test_regularizedGMC_cutoff_lintegral
     apply lintegral_congr_ae
     filter_upwards [hProfileShiftAE] with ω hω
     rw [hω]
-    simp only [mul_one]
+    simp [mul_one]
     simp [fieldShift]
   have hTiltDensityEq : (fun ω => ENNReal.ofReal (Real.exp
       (1 * L ω - 1 ^ 2 / 2 * gaussianVariance P L))) =ᵐ[P] density := by

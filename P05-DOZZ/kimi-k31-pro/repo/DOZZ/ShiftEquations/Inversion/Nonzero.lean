@@ -2,10 +2,9 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.Defs.UnitVolumeStructureConstant
-public import DOZZ.Statements.Defs.IsGMCOf
+import DOZZ.Statements.Defs.UnitVolumeStructureConstant
+import DOZZ.Statements.Defs.IsGMCOf
 import DOZZ.GMC.Moments.RhoCoulomb
 import DOZZ.GMC.SharpMoments.SeibergMoment
 import DOZZ.GMC.SharpMoments.SeibergMomentBound
@@ -16,7 +15,6 @@ import DOZZ.Correlations.Residue.FullFromUnit
 `DOZZ.structureConstant_reflected_shift_and_gluing`. Finite positive Coulomb moments and inverse
 moments justify both positivity and the `toReal` totalization in the moment definition. -/
 
-@[expose] public section
 open MeasureTheory Filter Topology Set
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -84,7 +82,7 @@ theorem unitVolume_pos_of_positive_sExp
   rw [rho_moment_eq_coulomb_moment P X hX γ hγ hγ2 M hM a b c]
   have he : (2 * Q γ - ((∑ k : Fin 2, (![a, b] : Fin 2 → ℝ) k) + c)) / γ =
       -sExp γ a b c := by
-    simp only [Fin.sum_univ_two, Matrix.cons_val_zero, Matrix.cons_val_one, sExp]
+    simp [Fin.sum_univ_two, Matrix.cons_val_zero, Matrix.cons_val_one, sExp]
     ring
   rw [he]
   exact mul_pos (by positivity) (ENNReal.toReal_pos hne hnf.ne)

@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Correlations.Tails.RandomTestApproximation
-public import Mathlib.MeasureTheory.Integral.Lebesgue.Markov
+import DOZZ.Correlations.Tails.RandomTestApproximation
+import Mathlib.MeasureTheory.Integral.Lebesgue.Markov
 
 /-! Passing correlated random tests to the chaos limit by uniform mean approximation. -/
 
-@[expose] public section
 open MeasureTheory Filter Topology
 open scoped ENNReal
 
@@ -32,7 +30,7 @@ theorem tendstoInMeasure_L1_approximation
   intro ε hε
   have hε0 : ENNReal.ofReal ε ≠ 0 := (ENNReal.ofReal_pos.mpr hε).ne'
   refine ⟨fun k => c k / ENNReal.ofReal ε, ?_, ?_, ?_⟩
-  · simpa only [ENNReal.zero_div] using ENNReal.Tendsto.div_const hc (Or.inr hε0)
+  · simpa [ENNReal.zero_div] using ENNReal.Tendsto.div_const hc (Or.inr hε0)
   · intro k n
     have heq : {ω | ε ≤ ‖f n ω - a k n ω‖} =
         {ω | ENNReal.ofReal ε ≤ ENNReal.ofReal ‖f n ω - a k n ω‖} := by

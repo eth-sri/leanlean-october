@@ -2,14 +2,12 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.FourPoint.GammaHalfTwoRootedTerm
-public import DOZZ.FourPoint.RootedPairIdentity
+import DOZZ.Statements.FourPoint.GammaHalfTwoRootedTerm
+import DOZZ.FourPoint.RootedPairIdentity
 
 /-! Absolute majorants for the actual two-rooted Taylor observables. -/
 
-@[expose] public section
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -72,7 +70,7 @@ theorem twoRooted_square_expectation_enorm_le {Ω : Type*} [MeasurableSpace Ω]
   apply (enorm_integral_le_lintegral_enorm _).trans
   apply lintegral_mono
   intro ω
-  dsimp only
+  dsimp
   rw [enorm_mul, enorm_pow]
   apply mul_le_mul'
   · exact mass_coefficient_enorm_le _
@@ -88,7 +86,7 @@ theorem twoRooted_mixed_expectation_enorm_le {Ω : Type*} [MeasurableSpace Ω]
   apply (enorm_integral_le_lintegral_enorm _).trans
   apply lintegral_mono
   intro ω
-  dsimp only
+  dsimp
   rw [enorm_mul, enorm_mul, pow_two, mul_assoc]
   exact mul_le_mul' (mass_coefficient_enorm_le _)
     (mul_le_mul' (rootKernelZ_enorm_le M γ α₁ α₂ α₃ ω z)

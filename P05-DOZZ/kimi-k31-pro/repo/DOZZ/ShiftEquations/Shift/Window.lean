@@ -2,9 +2,8 @@
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-module
 
-public import DOZZ.Statements.ShiftEquations.TwoPoleWindow
+import DOZZ.Statements.ShiftEquations.TwoPoleWindow
 
 /-!
 # Admissible two-pole windows exist for every small `η`
@@ -15,7 +14,6 @@ two-insertion tail ceiling exceeds `1 + 2η/γ` by a margin of order one. Hence 
 `0 < η < η₀` some `δ > 0` makes `TwoPoleWindow γ η δ` hold.
 -/
 
-@[expose] public section
 
 namespace DOZZ.Proofs
 
@@ -51,7 +49,6 @@ theorem oneInsertionErrorCeiling_ge {γ α : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2)
     rw [hM]
     exact min_le_min le_rfl (by linarith)
   have hk0 : 0 ≤ min (2 / γ ^ 2) (4 / γ ^ 2 - 1) := le_min h2.le (by linarith)
-  have hMpos : 0 < min (p + 2 / γ ^ 2) (4 / γ ^ 2) := lt_min (by linarith) (by linarith)
   exact div_le_div₀ (hk0.trans hk) hk (by linarith)
     (by linarith [min_le_right (p + 2 / γ ^ 2) (4 / γ ^ 2)])
 
@@ -178,4 +175,3 @@ theorem exists_twoPoleWindow {γ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2) :
 
 end DOZZ.Proofs
 
-end

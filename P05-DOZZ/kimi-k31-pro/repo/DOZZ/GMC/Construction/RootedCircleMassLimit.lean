@@ -1,15 +1,13 @@
 /-
 Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 -/
-module
 
-public import DOZZ.GMC.Construction.RootedCircleKernel
-public import DOZZ.GMC.Construction.GMCIntensityAdapter
-public import Mathlib.MeasureTheory.Integral.Lebesgue.DominatedConvergence
+import DOZZ.GMC.Construction.RootedCircleKernel
+import DOZZ.GMC.Construction.GMCIntensityAdapter
+import Mathlib.MeasureTheory.Integral.Lebesgue.DominatedConvergence
 
 /-! The single-circle inserted measure converges to the singular rooted measure. -/
 
-@[expose] public section
 
 open MeasureTheory Filter Topology
 open scoped Distributions ENNReal
@@ -67,7 +65,7 @@ theorem circleRootedMeasure_mass_tendsto
     have he : ENNReal.ofReal
         (Real.exp (γ ^ 2 * ∫ v, gffKernel x v ∂circleMeasure u (n : ℝ))) ≤ C * w x := by
       have h := ENNReal.ofReal_le_ofReal hexp
-      simpa only [ENNReal.ofReal_mul (Real.exp_nonneg _), C, w] using h
+      simpa [ENNReal.ofReal_mul (Real.exp_nonneg _), C, w] using h
     by_cases hx : x ∈ A
     · simpa [F, hx] using he
     · simp [F, hx]
@@ -75,7 +73,7 @@ theorem circleRootedMeasure_mass_tendsto
     let _ := hRoot
     have hm : (∫⁻ x, w x ∂μ) ≠ ⊤ := by
       have h := measure_ne_top (gmcRootedMeasure γ u μ) Set.univ
-      simpa only [gmcRootedMeasure, withDensity_apply _ MeasurableSet.univ,
+      simpa [gmcRootedMeasure, withDensity_apply _ MeasurableSet.univ,
         Measure.restrict_univ, w] using h
     rw [lintegral_const_mul C hw]
     exact ENNReal.mul_ne_top ENNReal.ofReal_ne_top hm
@@ -88,11 +86,11 @@ theorem circleRootedMeasure_mass_tendsto
         (𝓝 (w x)) := ENNReal.continuous_ofReal.continuousAt.tendsto.comp
       (Real.continuous_exp.continuousAt.tendsto.comp (hpot.const_mul (γ ^ 2)))
     by_cases hx : x ∈ A
-    · simpa only [F, Set.indicator_of_mem hx, w] using h
+    · simpa [F, Set.indicator_of_mem hx, w] using h
     · simp only [F, Set.indicator_of_notMem hx]
       exact tendsto_const_nhds
   have ht := tendsto_lintegral_of_dominated_convergence (fun x => C * w x) hF hbound hfin hlim
-  simpa only [F, gmcRootedMeasure, withDensity_apply _ hA,
+  simpa [F, gmcRootedMeasure, withDensity_apply _ hA,
     ← lintegral_indicator hA, w] using ht
 
 end DOZZ.Proofs
