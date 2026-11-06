@@ -48,10 +48,14 @@ theorem gridSampleField_eq_latent (d k n : ℕ) (η : ℝ) (x : Fin n → Covari
   funext ξ i
   exact (grid_latent_regression_eq d k n η x ξ i).symm
 
-theorem gridMixtureConditionalEnergy_integrable {d : ℕ} (C : ModelConstants d)
+section GridMixture
+variable {d : ℕ} (C : ModelConstants d)
     (P : LowSmoothnessTernaryConstants C) (k n : ℕ) (η t : ℝ)
     (hη : 0 ≤ η) (ht : t ∈ Icc (0 : ℝ) 1)
-    (hfield : ((2 : ℝ) ^ d + 2) * η ≤ P.ρ) (hvariance : η ^ 2 ≤ P.ρ) :
+    (hfield : ((2 : ℝ) ^ d + 2) * η ≤ P.ρ) (hvariance : η ^ 2 ≤ P.ρ)
+include C P k n η t hη ht hfield hvariance
+
+theorem gridMixtureConditionalEnergy_integrable  :
     Integrable (lowMixtureConditionalScoreEnergy (gridWindowCount d k) n P.a
       (P.v - η ^ 2 * t) η t (gridSampleField d k n η))
       (Measure.pi (fun _ : Fin n => cubeVolume d)) := by
@@ -64,19 +68,13 @@ theorem gridMixtureConditionalEnergy_integrable {d : ℕ} (C : ModelConstants d)
     LowSmoothnessTernaryConstants.variancePath, gridSampleField_eq_latent] using
     integrable_finsetSum (Finset.univ : Finset (Fin (gridWindowCount d k) → Fin 3)) (fun ξ _ => hξ ξ)
 
-theorem grid_mixture_probability {d : ℕ} (C : ModelConstants d)
-    (P : LowSmoothnessTernaryConstants C) (k n : ℕ) (η t : ℝ)
-    (hη : 0 ≤ η) (ht : t ∈ Icc (0 : ℝ) 1)
-    (hfield : ((2 : ℝ) ^ d + 2) * η ≤ P.ρ) (hvariance : η ^ 2 ≤ P.ρ) :
+theorem grid_mixture_probability  :
     IsProbabilityMeasure (gridMixtureLaw d k n P.a P.v η t) := by
   let _ := cubeVolume_isProbability d
   exact lowMixtureLaw_probability _ _ _ _ _ _ _ _ P.a_pos.ne' ht
     (fun x ξ i y => (grid_response_positive C P k n η t ξ x hη ht hfield hvariance i y).le)
 
-theorem grid_mixture_score_memLp {d : ℕ} (C : ModelConstants d)
-    (P : LowSmoothnessTernaryConstants C) (k n : ℕ) (η t : ℝ)
-    (hη : 0 ≤ η) (ht : t ∈ Icc (0 : ℝ) 1)
-    (hfield : ((2 : ℝ) ^ d + 2) * η ≤ P.ρ) (hvariance : η ^ 2 ≤ P.ρ) :
+theorem grid_mixture_score_memLp  :
     MemLp (gridMixtureScore d k n P.a P.v η t) 2
       (gridMixtureLaw d k n P.a P.v η t) := by
   let _ := cubeVolume_isProbability d
@@ -84,10 +82,7 @@ theorem grid_mixture_score_memLp {d : ℕ} (C : ModelConstants d)
     (fun x ξ i y => (grid_response_positive C P k n η t ξ x hη ht hfield hvariance i y).le)
     (gridMixtureConditionalEnergy_integrable C P k n η t hη ht hfield hvariance)
 
-theorem grid_mixture_score_centered {d : ℕ} (C : ModelConstants d)
-    (P : LowSmoothnessTernaryConstants C) (k n : ℕ) (η t : ℝ)
-    (hη : 0 ≤ η) (ht : t ∈ Icc (0 : ℝ) 1)
-    (hfield : ((2 : ℝ) ^ d + 2) * η ≤ P.ρ) (hvariance : η ^ 2 ≤ P.ρ) :
+theorem grid_mixture_score_centered  :
     (∫ z, gridMixtureScore d k n P.a P.v η t z
       ∂gridMixtureLaw d k n P.a P.v η t) = 0 := by
   let _ := cubeVolume_isProbability d
@@ -95,10 +90,7 @@ theorem grid_mixture_score_centered {d : ℕ} (C : ModelConstants d)
     (fun x ξ i y => grid_response_positive C P k n η t ξ x hη ht hfield hvariance i y)
     (gridMixtureConditionalEnergy_integrable C P k n η t hη ht hfield hvariance)
 
-theorem grid_mixture_score_energy {d : ℕ} (C : ModelConstants d)
-    (P : LowSmoothnessTernaryConstants C) (k n : ℕ) (η t : ℝ)
-    (hη : 0 ≤ η) (ht : t ∈ Icc (0 : ℝ) 1)
-    (hfield : ((2 : ℝ) ^ d + 2) * η ≤ P.ρ) (hvariance : η ^ 2 ≤ P.ρ) :
+theorem grid_mixture_score_energy  :
     (∫ z, (gridMixtureScore d k n P.a P.v η t z) ^ 2
       ∂gridMixtureLaw d k n P.a P.v η t) = gridPriorScoreEnergy d k n P.a P.v η t := by
   let _ := cubeVolume_isProbability d
@@ -115,11 +107,17 @@ theorem grid_mixture_score_energy {d : ℕ} (C : ModelConstants d)
         simp only [gridFullScoreEnergy, LowSmoothnessTernaryConstants.variancePath,
           gridSampleField_eq_latent])))
 
-theorem grid_lifted_observable_memLp {d n : ℕ} (C : ModelConstants d)
+end GridMixture
+
+section ObservableGrid
+variable {d n : ℕ} (C : ModelConstants d)
     (P : LowSmoothnessTernaryConstants C) (k : ℕ) (η t : ℝ)
     (hη : 0 ≤ η) (ht : t ∈ Icc (0 : ℝ) 1)
     (hfield : ((2 : ℝ) ^ d + 2) * η ≤ P.ρ) (hvariance : η ^ 2 ≤ P.ρ)
-    (T : BoundedEstimator C n) :
+    (T : BoundedEstimator C n)
+include C P k η t hη ht hfield hvariance T
+
+theorem grid_lifted_observable_memLp  :
     MemLp (gridLiftedObservable k P.a T.val) 2 (gridMixtureLaw d k n P.a P.v η t) := by
   let _ := grid_mixture_probability C P k n η t hη ht hfield hvariance
   apply MemLp.of_bound (gridLiftedObservable_measurable k P.a T.val).aestronglyMeasurable
@@ -130,17 +128,14 @@ theorem grid_lifted_observable_memLp {d n : ℕ} (C : ModelConstants d)
   rw [abs_of_nonneg (C.varianceLower_pos.le.trans (T.property _).1)]
   exact (T.property _).2
 
+omit C P k η t hη ht hfield hvariance T in
 def gridStateRisk {d n : ℕ} (k : ℕ) (a v η t : ℝ) (T : Estimator d n)
     (ξ : Fin (gridWindowCount d k) → Fin 3) (x : Fin n → Covariate d) : ℝ :=
   ∑ y : Fin n → Fin 3, finiteResponseLikelihood (gridWindowCount d k) n a
     (v - η ^ 2 * t) (gridSampleField d k n η x) ξ y *
       (T.val (encodeDesignResponse a (x, y)) - (v - η ^ 2 * t)) ^ 2
 
-theorem grid_state_risk_integrable {d n : ℕ} (C : ModelConstants d)
-    (P : LowSmoothnessTernaryConstants C) (k : ℕ) (η t : ℝ)
-    (hη : 0 ≤ η) (ht : t ∈ Icc (0 : ℝ) 1)
-    (hfield : ((2 : ℝ) ^ d + 2) * η ≤ P.ρ) (hvariance : η ^ 2 ≤ P.ρ)
-    (T : BoundedEstimator C n) (ξ : Fin (gridWindowCount d k) → Fin 3) :
+theorem grid_state_risk_integrable  (ξ : Fin (gridWindowCount d k) → Fin 3) :
     Integrable (gridStateRisk k P.a P.v η t T.val ξ)
       (Measure.pi (fun _ : Fin n => cubeVolume d)) := by
   let _ := cubeVolume_isProbability d
@@ -176,6 +171,7 @@ theorem grid_state_risk_integrable {d n : ℕ} (C : ModelConstants d)
     _ = B := by
       rw [← Finset.sum_mul, finite_response_normalized _ _ _ _ _ _ P.a_pos.ne', one_mul]
 
+omit C P k η t hη ht hfield hvariance T in
 theorem grid_mixture_risk_le_original_worstCase {d n : ℕ} (C : ModelConstants d)
     (P : LowSmoothnessTernaryConstants C) (k : ℕ) (η b t : ℝ)
     (hk : 1 ≤ k) (hs1 : C.smoothness ≤ 1) (hb : 0 ≤ b)
@@ -209,10 +205,12 @@ theorem grid_mixture_risk_le_original_worstCase {d n : ℕ} (C : ModelConstants 
       · exact Finset.prod_nonneg (fun j _ => activation_prior_nonnegative t ht.1 ht.2 (ξ j))
     _ = _ := by rw [← Finset.sum_mul, activation_product_prior_normalized, one_mul]
 
+omit C P k η t hη ht hfield hvariance T in
 def gridEncodedObservable {d n : ℕ} (a : ℝ) (T : Estimator d n) :
     (Fin n → Covariate d) → (Fin n → Fin 3) → ℝ :=
   fun x y => T.val (encodeDesignResponse a (x, y))
 
+omit C P k η t hη ht hfield hvariance T in
 theorem gridEncodedObservable_measurable {d n : ℕ} (a : ℝ) (T : Estimator d n) :
     Measurable (gridEncodedObservable a T) := by
   apply Measurable.of_eval
@@ -220,6 +218,7 @@ theorem gridEncodedObservable_measurable {d n : ℕ} (a : ℝ) (T : Estimator d 
   exact (T.property.comp (encodeDesignResponse_measurable a)).comp
     (measurable_id.prodMk measurable_const)
 
+omit C P k η t hη ht hfield hvariance T in
 theorem gridEncodedObservable_norm_le {d n : ℕ} (C : ModelConstants d)
     (a : ℝ) (T : BoundedEstimator C n) (x : Fin n → Covariate d) :
     ‖gridEncodedObservable a T.val x‖ ≤ effectiveVarianceUpper C := by
@@ -231,11 +230,7 @@ theorem gridEncodedObservable_norm_le {d n : ℕ} (C : ModelConstants d)
   rw [abs_of_nonneg (C.varianceLower_pos.le.trans (T.property _).1)]
   exact (T.property _).2
 
-theorem grid_mixture_mean_eq {d n : ℕ} (C : ModelConstants d)
-    (P : LowSmoothnessTernaryConstants C) (k : ℕ) (η t : ℝ)
-    (hη : 0 ≤ η) (ht : t ∈ Icc (0 : ℝ) 1)
-    (hfield : ((2 : ℝ) ^ d + 2) * η ≤ P.ρ) (hvariance : η ^ 2 ≤ P.ρ)
-    (T : BoundedEstimator C n) :
+theorem grid_mixture_mean_eq  :
     (∫ z, gridLiftedObservable k P.a T.val z ∂gridMixtureLaw d k n P.a P.v η t) =
       gridMixtureExpectation d k n P.a P.v η t (gridEncodedObservable P.a T.val) := by
   let _ := cubeVolume_isProbability d
@@ -247,11 +242,7 @@ theorem grid_mixture_mean_eq {d n : ℕ} (C : ModelConstants d)
     (gridSampleField_coordinate_measurable d k n η) P.a_pos.ne' ht
     (fun x ξ i y => (grid_response_positive C P k n η t ξ x hη ht hfield hvariance i y).le) _ hi
 
-theorem grid_mixture_score_observable_eq {d n : ℕ} (C : ModelConstants d)
-    (P : LowSmoothnessTernaryConstants C) (k : ℕ) (η t : ℝ)
-    (hη : 0 ≤ η) (ht : t ∈ Icc (0 : ℝ) 1)
-    (hfield : ((2 : ℝ) ^ d + 2) * η ≤ P.ρ) (hvariance : η ^ 2 ≤ P.ρ)
-    (T : BoundedEstimator C n) :
+theorem grid_mixture_score_observable_eq  :
     (∫ z, gridLiftedObservable k P.a T.val z * gridMixtureScore d k n P.a P.v η t z
       ∂gridMixtureLaw d k n P.a P.v η t) =
       ∫ x, gridMixtureScoreObservable d k n P.a P.v η t (gridEncodedObservable P.a T.val) x
@@ -267,15 +258,21 @@ theorem grid_mixture_score_observable_eq {d n : ℕ} (C : ModelConstants d)
       (gridSampleField_coordinate_measurable d k n η) P.a_pos.ne' ht
       (fun x ξ i y => (grid_response_positive C P k n η t ξ x hη ht hfield hvariance i y).le) _ hi
 
-/-- The complete actual-model score argument. All latent states obey the
-original Hölder/moment class and all score and risk identities are derived. -/
-theorem grid_prior_boundedEstimator_separation {d n : ℕ} (C : ModelConstants d)
+end ObservableGrid
+
+section GridSeparation
+variable {d n : ℕ} (C : ModelConstants d)
     (P : LowSmoothnessTernaryConstants C) (k : ℕ) (η b : ℝ)
     (hk : 1 ≤ k) (hs1 : C.smoothness ≤ 1) (hb : 0 ≤ b) (hη : 0 ≤ η)
     (hfield : ((2 : ℝ) ^ d + 2) * η ≤ P.ρ) (hvariance : η ^ 2 ≤ P.ρ)
     (hscale : η = b / (k : ℝ) ^ C.smoothness)
     (hholder : ((2 : ℝ) ^ d + 68 * (2 : ℝ) ^ d * (d + 1)) * b ≤ C.holderBound)
     (hmean : n * (2 / (k : ℝ)) ^ d ≤ 1) (hbudget : gridUniformScoreBudget P k n η ≤ 1)
+include C P k η b hk hs1 hb hη hfield hvariance hscale hholder hmean hbudget
+
+/-- The complete actual-model score argument. All latent states obey the
+original Hölder/moment class and all score and risk identities are derived. -/
+theorem grid_prior_boundedEstimator_separation 
     (T : BoundedEstimator C n) :
     η ^ 2 ≤ 3 * Real.sqrt ((worstCaseRisk C T.val).toReal) := by
   let r := Real.sqrt ((worstCaseRisk C T.val).toReal)
@@ -332,13 +329,7 @@ theorem grid_prior_boundedEstimator_separation {d n : ℕ} (C : ModelConstants d
   exact hsep.trans (mul_le_mul_of_nonneg_right (by linarith) hr)
 
 /-- Actual minimax RMS lower bound from the fully constructed grid prior. -/
-theorem grid_prior_minimax_lower {d n : ℕ} (C : ModelConstants d)
-    (P : LowSmoothnessTernaryConstants C) (k : ℕ) (η b : ℝ)
-    (hk : 1 ≤ k) (hs1 : C.smoothness ≤ 1) (hb : 0 ≤ b) (hη : 0 ≤ η)
-    (hfield : ((2 : ℝ) ^ d + 2) * η ≤ P.ρ) (hvariance : η ^ 2 ≤ P.ρ)
-    (hscale : η = b / (k : ℝ) ^ C.smoothness)
-    (hholder : ((2 : ℝ) ^ d + 68 * (2 : ℝ) ^ d * (d + 1)) * b ≤ C.holderBound)
-    (hmean : n * (2 / (k : ℝ)) ^ d ≤ 1) (hbudget : gridUniformScoreBudget P k n η ≤ 1) :
+theorem grid_prior_minimax_lower  :
     ENNReal.ofReal (η ^ 2 / 3) ≤ minimaxRMS C n := by
   have hnonneg : 0 ≤ η ^ 2 / 3 := by positivity
   have hlower : ENNReal.ofReal (η ^ 2 / 3) ^ 2 ≤ minimaxRisk C n := by
@@ -360,4 +351,5 @@ theorem grid_prior_minimax_lower {d n : ℕ} (C : ModelConstants d)
   rw [he] at h
   exact h
 
+end GridSeparation
 end NearlyMinimax

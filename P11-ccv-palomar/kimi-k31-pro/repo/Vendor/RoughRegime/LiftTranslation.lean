@@ -123,14 +123,7 @@ theorem monomialLift_centering {Ω : Type*} {n p q : ℕ}
 
 lemma range_embedding_of_subset_equiv {A B : Type*} [Fintype A] [Fintype B]
     (S : Finset B) (a : A ≃ ↥S) :
-    Set.range (a.toEmbedding.trans (Function.Embedding.subtype (fun i => i ∈ S))) = S := by
-  ext j
-  constructor
-  · rintro ⟨i, rfl⟩
-    exact (a i).property
-  · intro hj
-    obtain ⟨i, hi⟩ := a.surjective ⟨j, hj⟩
-    exact ⟨i, congrArg Subtype.val hi⟩
+    Set.range (a.toEmbedding.trans (Function.Embedding.subtype (fun i => i ∈ S))) = S := by simp
 
 /-- An ordered injective tuple consists of its unordered range and an ordering of that range. -/
 lemma sum_embeddings_by_range {A B : Type*} [Fintype A] [Fintype B] [DecidableEq A] [DecidableEq B]

@@ -16,7 +16,8 @@ namespace NearlyMinimax
 set_option maxHeartbeats 2000000
 set_option backward.isDefEq.respectTransparency false
 
-theorem dyadicPilotErrorField_point_second_of_variance {d : ℕ} (C : ModelConstants d)
+section PilotVariance
+variable {d : ℕ} (C : ModelConstants d)
     [Nonempty (AnchoredIndex d C.order)] (θ : RegressionParameter d) (hθ : Admissible C θ)
     (D A : ℝ) (hD : 0 < D) (hA : 0 < A)
     (hv : ∀ n j : ℕ,
@@ -29,7 +30,10 @@ theorem dyadicPilotErrorField_point_second_of_variance {d : ℕ} (C : ModelConst
             ∑ t : Fin (m + anchoredDimension d C.order + 1),
               ((t.val + 1).factorial : ℝ) *
                 (A ^ 2 * (Fintype.card (incrementVariables (anchoredDimension d C.order)) *
-                  preconditionedPilotMomentConstant C C.order * dyadicPilotScale d j) / Λ) ^ (t.val + 1)) :
+                  preconditionedPilotMomentConstant C C.order * dyadicPilotScale d j) / Λ) ^ (t.val + 1))
+include C θ hθ D A hD hA hv
+
+theorem dyadicPilotErrorField_point_second_of_variance  :
     ∀ n j L : ℕ, j ≤ L → ∀ x ∈ unitCube d, ∀ z ∈ unitCube d,
       regularGridCell ((2 : ℕ) ^ L) (by positivity) x =
         regularGridCell ((2 : ℕ) ^ L) (by positivity) z →
@@ -51,20 +55,7 @@ theorem dyadicPilotErrorField_point_second_of_variance {d : ℕ} (C : ModelConst
   exact mul_le_mul_of_nonneg_right hr hD.le
 
 
-theorem dyadicMultilevelErrorField_point_second_of_variance {d : ℕ} (C : ModelConstants d)
-    [Nonempty (AnchoredIndex d C.order)] (θ : RegressionParameter d) (hθ : Admissible C θ)
-    (D A : ℝ) (hD : 0 < D) (hA : 0 < A)
-    (hv : ∀ n j : ℕ,
-      ∀ x ∈ unitCube d, ∀ y : ℝ, |y| ≤ C.holderBound → ∀ m : ℕ,
-      ∀ row : Fin (anchoredDimension d C.order) → ℝ,
-      m + anchoredDimension d C.order + 1 ≤ n →
-      ∀ Λ : ℝ, 0 < Λ → Λ ≤ (n : ℝ) - (m + anchoredDimension d C.order + 1) + 1 →
-        variance (dyadicPolynomialPilot C n j x y m row) (sampleLaw θ n) ≤
-          ((∑ i, |row i|) * D) ^ 2 *
-            ∑ t : Fin (m + anchoredDimension d C.order + 1),
-              ((t.val + 1).factorial : ℝ) *
-                (A ^ 2 * (Fintype.card (incrementVariables (anchoredDimension d C.order)) *
-                  preconditionedPilotMomentConstant C C.order * dyadicPilotScale d j) / Λ) ^ (t.val + 1)) :
+theorem dyadicMultilevelErrorField_point_second_of_variance  :
     ∀ n J L : ℕ, J ≤ L → ∀ x ∈ unitCube d, ∀ z ∈ unitCube d,
       regularGridCell ((2 : ℕ) ^ L) (by positivity) x =
         regularGridCell ((2 : ℕ) ^ L) (by positivity) z →
@@ -101,6 +92,8 @@ theorem dyadicMultilevelErrorField_point_second_of_variance {d : ℕ} (C : Model
   dsimp [B, dyadicMultilevelBudget]
   ring
 
+
+end PilotVariance
 
 theorem dyadicMultilevelErrorField_test_second_of_variance {d : ℕ} (C : ModelConstants d)
     [Nonempty (AnchoredIndex d C.order)] (θ : RegressionParameter d) (hθ : Admissible C θ)

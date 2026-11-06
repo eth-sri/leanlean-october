@@ -40,7 +40,7 @@ theorem product_pairScoreOperator_integral {E F : Type*}
   have ha₃ := integral_add (((h₀.add h₁).add h₂).add h₃) h₄
   have ha₄ := integral_add ((((h₀.add h₁).add h₂).add h₃).add h₄) h₅
   have ha₅ := integral_sub (((((h₀.add h₁).add h₂).add h₃).add h₄).add h₅) h₆
-  simp only [Pi.add_apply, Pi.sub_apply, Pi.mul_apply] at ha₀ ha₁ ha₂ ha₃ ha₄ ha₅
+  simp only [Pi.add_apply] at ha₀ ha₁ ha₂ ha₃ ha₄ ha₅
   simp_rw [pairScoreOperator_inner_polynomial]
   rw [ha₅, ha₄, ha₃, ha₂, ha₁, ha₀]
   have hs₀ : (∫ z : E × F, Y' z.2 ^ 2 ∂μ.prod ν) = f' ^ 2 + V := by

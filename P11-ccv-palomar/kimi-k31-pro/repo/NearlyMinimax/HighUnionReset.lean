@@ -129,11 +129,11 @@ theorem highUnionRawUpdate_measurable [∀ i, StandardBorelSpace (E i)]
   · apply measurable_pi_lambda
     intro x
     by_cases hx : x ∈ highTorusPatch d k j
-    · simp only [highUnionRawUpdate, rawPatchUpdate, affinePatchUpdate, if_pos hx]
+    · simp only [affinePatchUpdate, if_pos hx]
       exact ((hs x).comp measurable_fst).mul
         ((measurable_pi_apply x).comp (measurable_fst.comp measurable_snd)) |>.add
         ((highUnionIntercept_measurable R hOffset δ).comp measurable_fst)
-    · simp only [highUnionRawUpdate, rawPatchUpdate, affinePatchUpdate, if_neg hx]
+    · simp only [affinePatchUpdate, if_neg hx]
       exact (measurable_pi_apply x).comp (measurable_fst.comp measurable_snd)
   · apply measurable_pi_lambda
     intro l
@@ -141,13 +141,13 @@ theorem highUnionRawUpdate_measurable [∀ i, StandardBorelSpace (E i)]
     intro γ
     by_cases hl : l = j
     · subst l
-      simp only [highUnionRawUpdate, rawPatchUpdate, responseCoordinateUpdate,
+      simp only [responseCoordinateUpdate,
         Function.update_self, highUnionResponseReset, coefficientReset]
       exact ((measurable_const.sub ((highUnionResponseTime_measurable R hTime).comp
           measurable_fst)).mul (by fun_prop)).add
         (((highUnionResponseTime_measurable R hTime).comp measurable_fst).mul
           ((highUnionResponseVector_measurable R hVector γ).comp measurable_fst))
-    · simp only [highUnionRawUpdate, rawPatchUpdate, responseCoordinateUpdate, Function.update_of_ne hl]
+    · simp only [responseCoordinateUpdate, Function.update_of_ne hl]
       fun_prop
 
 theorem highUnionResponseReset_ball (Cfr : ℝ) (hCfr : 0 < Cfr)

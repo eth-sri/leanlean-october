@@ -14,14 +14,18 @@ namespace NearlyMinimax
 set_option maxHeartbeats 2000000
 set_option backward.isDefEq.respectTransparency false
 
-theorem dyadicIncrementKernel_raw_budget_of_derivative {d : ℕ} (C : ModelConstants d)
+section DerivativeBudget
+variable {d : ℕ} (C : ModelConstants d)
     [Nonempty (AnchoredIndex d C.order)] (θ : RegressionParameter d) (hθ : Admissible C θ)
     (D A : ℝ) (hD : 0 < D) (hA : 0 < A)
     (hder : ∀ j : ℕ, ∀ x ∈ unitCube d, ∀ y : ℝ, |y| ≤ C.holderBound → ∀ m k : ℕ,
       ∀ row : Fin (anchoredDimension d C.order) → ℝ,
         ‖iteratedFDeriv ℝ k (incrementFinScalar (anchoredDimension d C.order)
           C.densityLower C.densityUpper (anchoredFinTransport d C.order) y m row)
-          (dyadicIncrementRawMean θ j x)‖ ≤ (∑ i, |row i|) * D * (k.factorial : ℝ) * A ^ k) :
+          (dyadicIncrementRawMean θ j x)‖ ≤ (∑ i, |row i|) * D * (k.factorial : ℝ) * A ^ k)
+include C θ hθ D A hD hA hder
+
+theorem dyadicIncrementKernel_raw_budget_of_derivative  :
     ∀ n j : ℕ,
       ∀ x ∈ unitCube d, ∀ y : ℝ, |y| ≤ C.holderBound → ∀ m k : ℕ,
       ∀ row : Fin (anchoredDimension d C.order) → ℝ, ∀ hk : k ≤ n,
@@ -64,14 +68,7 @@ theorem dyadicIncrementKernel_raw_budget_of_derivative {d : ℕ} (C : ModelConst
   exact hb
 
 
-theorem dyadicPolynomialPilot_variance_of_derivative {d : ℕ} (C : ModelConstants d)
-    [Nonempty (AnchoredIndex d C.order)] (θ : RegressionParameter d) (hθ : Admissible C θ)
-    (D A : ℝ) (hD : 0 < D) (hA : 0 < A)
-    (hder : ∀ j : ℕ, ∀ x ∈ unitCube d, ∀ y : ℝ, |y| ≤ C.holderBound → ∀ m k : ℕ,
-      ∀ row : Fin (anchoredDimension d C.order) → ℝ,
-        ‖iteratedFDeriv ℝ k (incrementFinScalar (anchoredDimension d C.order)
-          C.densityLower C.densityUpper (anchoredFinTransport d C.order) y m row)
-          (dyadicIncrementRawMean θ j x)‖ ≤ (∑ i, |row i|) * D * (k.factorial : ℝ) * A ^ k) :
+theorem dyadicPolynomialPilot_variance_of_derivative  :
     ∀ n j : ℕ,
       ∀ x ∈ unitCube d, ∀ y : ℝ, |y| ≤ C.holderBound → ∀ m : ℕ,
       ∀ row : Fin (anchoredDimension d C.order) → ℝ,
@@ -119,6 +116,8 @@ theorem dyadicPolynomialPilot_variance_of_derivative {d : ℕ} (C : ModelConstan
     (fun i => dyadicIncrementRawVector_sample_second_le C θ hθ j x hx (e i)) hd
   simpa only [E, e, mul_assoc] using hb
 
+
+end DerivativeBudget
 
 theorem dyadicPilotErrorField_test_variance_of_raw_budget {d : ℕ} (C : ModelConstants d)
     [Nonempty (AnchoredIndex d C.order)] (θ : RegressionParameter d) (hθ : Admissible C θ)

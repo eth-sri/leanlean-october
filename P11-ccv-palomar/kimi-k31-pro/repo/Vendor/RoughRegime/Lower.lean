@@ -20,22 +20,6 @@ noncomputable section
 set_option backward.isDefEq.respectTransparency false
 set_option linter.unnecessarySeqFocus false
 
-/-- A probability distribution on a finite space, with real-valued masses. -/
-structure FiniteLaw (α : Type*) [Fintype α] where
-  mass : α → ℝ
-  nonneg : ∀ x, 0 ≤ mass x
-  total : ∑ x, mass x = 1
-
-variable {α β : Type*} [Fintype α] [Fintype β]
-
-def FiniteLaw.prod (P : FiniteLaw α) (Q : FiniteLaw β) : FiniteLaw (α × β) where
-  mass x := P.mass x.1 * Q.mass x.2
-  nonneg x := mul_nonneg (P.nonneg _) (Q.nonneg _)
-  total := by
-    rw [Fintype.sum_prod_type]
-    simp_rw [← Finset.mul_sum]
-    simp [P.total, Q.total]
-
 /-- The square-root inequality used for mixture likelihoods. -/
 theorem square_root_difference_bound {f g c : ℝ} (hc : 0 < c)
     (hf : c ≤ f) (hg : c ≤ g) :

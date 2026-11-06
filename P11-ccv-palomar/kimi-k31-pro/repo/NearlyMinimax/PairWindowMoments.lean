@@ -84,8 +84,8 @@ theorem sameLabelKernel_mul_eq_sum (r : X → ℝ) (z : X × X) :
       ∑ c : B, (label ⁻¹' {c}).indicator r z.1 * (label ⁻¹' {c}).indicator r z.2 := by
   rw [Finset.sum_eq_single (label z.1)]
   · by_cases he : label z.1 = label z.2
-    · simp [sameLabelKernel, Set.indicator_apply, he]
-    · simp [sameLabelKernel, Set.indicator_apply, he, Ne.symm he]
+    · simp [sameLabelKernel, he]
+    · simp [sameLabelKernel, he, Ne.symm he]
   · intro c hc hne
     have hn : label z.1 ≠ c := Ne.symm hne
     simp [Set.indicator_apply, hn]
@@ -127,7 +127,7 @@ omit hlabel in
 theorem pairWindowScore_symmetric (r : X → ℝ) (V : ℝ) (x y : X) :
     pairWindowScore label r V (x, y) = pairWindowScore label r V (y, x) := by
   unfold pairWindowScore
-  simp only [Prod.fst, Prod.snd, eq_comm]
+  simp only [eq_comm]
   split_ifs <;> ring
 
 omit hlabel in

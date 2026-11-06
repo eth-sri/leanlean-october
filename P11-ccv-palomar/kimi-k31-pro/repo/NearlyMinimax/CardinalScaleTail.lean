@@ -92,7 +92,7 @@ theorem strict_log_scale_tail_integral_le {m : ℕ} (hcard : Fintype.card ι = m
     _ ≤ _ := log_scale_tail_integral_uniform_of_card hcard hb hA
 
 theorem spatial_scale_index_card {n : ℕ} (i : Fin n) : Fintype.card (SpatialScaleIndex i) = n - 1 := by
-  simpa [SpatialScaleIndex] using Fintype.card_subtype_compl (fun j : Fin n => j = i)
+  simp [SpatialScaleIndex]
 
 theorem spatial_scale_complement_integral_eq {n : ℕ} (i : Fin n) (b T : ℝ) :
     (∫ t : SpatialScaleVector i in Ici 0 \ spatialScaleDomain i T,

@@ -11,9 +11,4 @@ noncomputable section
 
 namespace RoughRegime.Rates
 
-def rho (lo hi : ℝ) : ℝ :=
-  (Real.sqrt hi - Real.sqrt lo) / (Real.sqrt hi + Real.sqrt lo)
-
-def tau (lo hi : ℝ) : ℝ := -Real.log (rho lo hi)
-
 end RoughRegime.Rates

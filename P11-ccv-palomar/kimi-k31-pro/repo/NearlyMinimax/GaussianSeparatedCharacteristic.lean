@@ -193,7 +193,7 @@ theorem gaussianCrossExponent_factor_prod {d : ℕ} (a b : Fin d) (w : Covariate
         simp [gaussianCrossExponent, gaussianFourierMomentFactor, hab]
       · by_cases hlb : l = b
         · subst l
-          simp [gaussianCrossExponent, gaussianFourierMomentFactor, hab, Ne.symm hab]
+          simp [gaussianCrossExponent, gaussianFourierMomentFactor, Ne.symm hab]
         · simp [gaussianCrossExponent, gaussianFourierMomentFactor, hla, hlb]
     simp_rw [he, Finset.prod_mul_distrib, Fintype.prod_ite_eq']
     rw [if_neg hab]

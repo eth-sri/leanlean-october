@@ -21,17 +21,20 @@ theorem integral_comp_measurePreserving (f : Ω → E)
   rw [← hf.map_eq]
   exact (integral_map hf.aemeasurable hg.aestronglyMeasurable).symm
 
-omit [IsProbabilityMeasure μ] in
-theorem pair_measurePreserving (X : ι → Ω → E)
+section IndependentKernels
+variable (X : ι → Ω → E)
     (hind : iIndepFun X ν) (hX : ∀ i, MeasurePreserving (X i) ν μ)
+include X hind hX
+
+omit [IsProbabilityMeasure μ] in
+theorem pair_measurePreserving 
     {i j : ι} (hij : i ≠ j) :
     MeasurePreserving (fun x => (X i x, X j x)) ν (μ.prod μ) := by
   refine ⟨(hX i).measurable.prodMk (hX j).measurable, ?_⟩
   rw [(hind.indepFun hij).map_prod_eq_prod_map_map (hX i).aemeasurable
     (hX j).aemeasurable, (hX i).map_eq, (hX j).map_eq]
 
-theorem triple_measurePreserving (X : ι → Ω → E)
-    (hind : iIndepFun X ν) (hX : ∀ i, MeasurePreserving (X i) ν μ)
+theorem triple_measurePreserving 
     {i j k : ι} (hij : i ≠ j) (hik : i ≠ k) (hjk : j ≠ k) :
     MeasurePreserving (fun x => ((X i x, X j x), X k x)) ν ((μ.prod μ).prod μ) := by
   refine ⟨((hX i).measurable.prodMk (hX j).measurable).prodMk (hX k).measurable, ?_⟩
@@ -39,17 +42,17 @@ theorem triple_measurePreserving (X : ι → Ω → E)
       ((hX i).aemeasurable.prodMk (hX j).aemeasurable) (hX k).aemeasurable,
     (pair_measurePreserving X hind hX hij).map_eq, (hX k).map_eq]
 
-theorem kernel_pair_memLp (X : ι → Ω → E)
-    (hind : iIndepFun X ν) (hX : ∀ i, MeasurePreserving (X i) ν μ)
+theorem kernel_pair_memLp 
     {K : E × E → ℝ} (hK : MemLp K 2 (μ.prod μ))
     {i j : ι} (hij : i ≠ j) : MemLp (fun x => K (X i x, X j x)) 2 ν :=
   hK.comp_measurePreserving (pair_measurePreserving X hind hX hij)
 
-theorem kernel_pair_integral (X : ι → Ω → E)
-    (hind : iIndepFun X ν) (hX : ∀ i, MeasurePreserving (X i) ν μ)
+theorem kernel_pair_integral 
     {K : E × E → ℝ} (hK : Measurable K) {i j : ι} (hij : i ≠ j) :
     (∫ x, K (X i x, X j x) ∂ν) = ∫ z, K z ∂μ.prod μ :=
   integral_comp_measurePreserving _ (pair_measurePreserving X hind hX hij) K hK
+
+end IndependentKernels
 
 theorem shared_product_integrable {K : E × E → ℝ} (hK : MemLp K 2 (μ.prod μ)) :
     Integrable (fun z : (E × E) × E => K z.1 * K (z.1.1, z.2))
@@ -84,8 +87,12 @@ theorem shared_product_integral {K : E × E → ℝ} (hK : MemLp K 2 (μ.prod μ
   rw [integral_prod _ (row_product_integrable hK)]
   simp only [integral_mul_const, rowIntegral, pow_two]
 
-theorem kernel_shared_product_integral (X : ι → Ω → E)
+section IndependentProducts
+variable (X : ι → Ω → E)
     (hind : iIndepFun X ν) (hX : ∀ i, MeasurePreserving (X i) ν μ)
+include X hind hX
+
+theorem kernel_shared_product_integral 
     {K : E × E → ℝ} (hmK : Measurable K) (hK : MemLp K 2 (μ.prod μ))
     {i j k : ι} (hij : i ≠ j) (hik : i ≠ k) (hjk : j ≠ k) :
     (∫ x, K (X i x, X j x) * K (X i x, X k x) ∂ν) =
@@ -96,8 +103,7 @@ theorem kernel_shared_product_integral (X : ι → Ω → E)
     (triple_measurePreserving X hind hX hij hik hjk) _ hg).trans
     (shared_product_integral hK)
 
-theorem kernel_disjoint_product_integral (X : ι → Ω → E)
-    (hind : iIndepFun X ν) (hX : ∀ i, MeasurePreserving (X i) ν μ)
+theorem kernel_disjoint_product_integral 
     {K : E × E → ℝ} (hmK : Measurable K)
     {i j k l : ι} (hij : i ≠ j) (hkl : k ≠ l)
     (hik : i ≠ k) (hil : i ≠ l) (hjk : j ≠ k) (hjl : j ≠ l) :
@@ -112,19 +118,19 @@ theorem kernel_disjoint_product_integral (X : ι → Ω → E)
   rw [he, kernel_pair_integral X hind hX hmK hij, kernel_pair_integral X hind hX hmK hkl,
     pow_two]
 
+omit X hind hX in
+
 /-- Ordered-pair U-statistic with its actual finite sample normalization. -/
 def pairAverage (n : ℕ) (K : E × E → ℝ) (x : Fin n → E) : ℝ :=
   ((n : ℝ) * (n - 1 : ℕ))⁻¹ * ∑ i, ∑ j with j ≠ i, K (x i, x j)
 
-theorem kernel_pair_sq_integral (X : ι → Ω → E)
-    (hind : iIndepFun X ν) (hX : ∀ i, MeasurePreserving (X i) ν μ)
+theorem kernel_pair_sq_integral 
     {K : E × E → ℝ} (hmK : Measurable K) {i j : ι} (hij : i ≠ j) :
     (∫ x, K (X i x, X j x) ^ 2 ∂ν) = ∫ z, K z ^ 2 ∂μ.prod μ :=
   kernel_pair_integral X hind hX (hmK.pow_const 2) hij
 
 /-- Exact overlap classification for a symmetric kernel. -/
-theorem kernel_pair_product_classification (X : ι → Ω → E)
-    (hind : iIndepFun X ν) (hX : ∀ i, MeasurePreserving (X i) ν μ)
+theorem kernel_pair_product_classification 
     {K : E × E → ℝ} (hmK : Measurable K) (hK : MemLp K 2 (μ.prod μ))
     (hsym : ∀ x y, K (x, y) = K (y, x))
     {i j k l : ι} (hij : i ≠ j) (hkl : k ≠ l) :
@@ -140,7 +146,7 @@ theorem kernel_pair_product_classification (X : ι → Ω → E)
       simpa only [true_and, true_or, or_true, ite_true, pow_two] using
         kernel_pair_sq_integral X hind hX hmK hij
     · have hji : j ≠ i := Ne.symm hij
-      simp only [true_and, hjl, and_false, hji, false_or, ite_false, true_or, ite_true]
+      simp only [hjl, and_false, hji, false_or, ite_false, true_or, ite_true]
       exact kernel_shared_product_integral X hind hX hmK hK hij hkl hjl
   · by_cases hil : i = l
     · subst l
@@ -185,8 +191,7 @@ theorem kernel_pair_product_classification (X : ι → Ω → E)
         · simp only [hik, hil, hjk, hjl, false_and, false_or, ite_false]
           exact kernel_disjoint_product_integral X hind hX hmK hij hkl hik hil hjk hjl
 
-theorem kernel_pair_covariance_le [DecidableEq ι] (X : ι → Ω → E)
-    (hind : iIndepFun X ν) (hX : ∀ i, MeasurePreserving (X i) ν μ)
+theorem kernel_pair_covariance_le [DecidableEq ι] 
     {K : E × E → ℝ} (hmK : Measurable K) (hK : MemLp K 2 (μ.prod μ))
     (hsym : ∀ x y, K (x, y) = K (y, x))
     {i j k l : ι} (hij : i ≠ j) (hkl : k ≠ l) :
@@ -210,6 +215,8 @@ theorem kernel_pair_covariance_le [DecidableEq ι] (X : ι → Ω → E)
     simp_all only [Prod.mk.injEq, ne_eq, eq_comm, not_true_eq_false, eq_self_iff_true,
       true_and, and_true, or_true, true_or, false_and, and_false, false_or, or_false,
       ite_true, ite_false, zero_add, add_zero, mul_zero, mul_one, sub_self] <;> nlinarith
+
+end IndependentProducts
 
 theorem pairAverage_eq_orderedPairs {n : ℕ} (K : E × E → ℝ) (x : Fin n → E) :
     pairAverage n K x =
@@ -290,7 +297,6 @@ theorem pairAverage_variance_le {n : ℕ} (hn : 2 ≤ n) (X : Fin n → Ω → E
       have hm0 : ((n - 1 : ℕ) : ℝ) ≠ 0 := by exact_mod_cast (by omega : n - 1 ≠ 0)
       dsimp [A, B]
       field_simp
-      <;> ring
 
 /-- Mean-squared fluctuation form used by the ratio estimators. -/
 theorem pairAverage_centered_sq_le {n : ℕ} (hn : 2 ≤ n) (X : Fin n → Ω → E)

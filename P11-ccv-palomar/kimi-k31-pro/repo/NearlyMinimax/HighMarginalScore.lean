@@ -61,9 +61,7 @@ theorem highMarginalRealScore_measurable {E : Type*} [MeasurableSpace E]
   (highMarginalIndexScore_measurable dependent hsymm ν π activation ham n a V η p F hp hF).comp
     (decodeDesignResponse_measurable a)
 
-/-- Actual marginal score testing has the genuine averaged derivative
-as its density; all Fubini integrability is derived from primitive bounds. -/
-theorem highMarginalIndexScore_integral {E : Type*} [MeasurableSpace E]
+variable {E : Type*} [MeasurableSpace E]
     [StandardBorelSpace E] {d : ℕ}
     (dependent : J → J → Prop) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
     (ν : Measure (HistoryMarked dependent E)) [IsProbabilityMeasure ν]
@@ -74,7 +72,13 @@ theorem highMarginalIndexScore_integral {E : Type*} [MeasurableSpace E]
     (hp : Measurable (Function.uncurry p)) (hF : Measurable (Function.uncurry F))
     (hraw : ∀ ω x, aRaw ≤ p ω x ∧ p ω x ≤ bRaw)
     (hq : ∀ ω x y, 0 < ternaryMass a (F ω x) V y)
-    (H : (Fin n → Observation d) → ℝ) (hH : Measurable H) (hHb : ∀ z, |H z| ≤ B) :
+    (H : (Fin n → Observation d) → ℝ) (hH : Measurable H) (hHb : ∀ z, |H z| ≤ B)
+include dependent hsymm ν π activation ham Ba hBa habound n a V η aRaw bRaw B ha haRaw hB
+  p F hp hF hraw hq H hH hHb
+
+/-- Actual marginal score testing has the genuine averaged derivative
+as its density; all Fubini integrability is derived from primitive bounds. -/
+theorem highMarginalIndexScore_integral  :
     (∫ z, H (encodeDesignResponse a z) *
       highMarginalIndexScore dependent hsymm ν π activation n a V η p F z
       ∂(highSampleIndexKernel n a V p F hp hF) ∘ₘ
@@ -135,18 +139,7 @@ theorem highMarginalIndexScore_integral {E : Type*} [MeasurableSpace E]
         dsimp only [highMarginalLikelihoodDerivative]
         rw [integral_const_mul]
 
-theorem highMarginalRealScore_integral {E : Type*} [MeasurableSpace E]
-    [StandardBorelSpace E] {d : ℕ}
-    (dependent : J → J → Prop) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
-    (ν : Measure (HistoryMarked dependent E)) [IsProbabilityMeasure ν]
-    (π : Measure E) [IsProbabilityMeasure π] (activation : E → ℝ) (ham : Measurable activation)
-    (Ba : ℝ) (hBa : 0 ≤ Ba) (habound : ∀ e, |activation e| ≤ Ba)
-    (n : ℕ) (a V η aRaw bRaw B : ℝ) (ha : 0 < a) (haRaw : 0 < aRaw) (hB : 0 ≤ B)
-    (p F : HistoryMarked dependent E → Covariate d → ℝ)
-    (hp : Measurable (Function.uncurry p)) (hF : Measurable (Function.uncurry F))
-    (hraw : ∀ ω x, aRaw ≤ p ω x ∧ p ω x ≤ bRaw)
-    (hq : ∀ ω x y, 0 < ternaryMass a (F ω x) V y)
-    (H : (Fin n → Observation d) → ℝ) (hH : Measurable H) (hHb : ∀ z, |H z| ≤ B) :
+theorem highMarginalRealScore_integral  :
     (∫ z, H z * highMarginalRealScore dependent hsymm ν π activation n a V η p F z
       ∂(highRealSampleKernel n a V p F hp hF) ∘ₘ
         (massPowerTilt ν (fun ω => highRawDensityMass (p ω)) n)) =

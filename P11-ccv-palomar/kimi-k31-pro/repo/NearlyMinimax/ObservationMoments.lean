@@ -34,10 +34,13 @@ theorem responseFourthBound_pos {d : ℕ} (C : ModelConstants d) :
   unfold responseFourthBound
   positivity
 
+variable {d : ℕ} (C : ModelConstants d) (θ : RegressionParameter d) (hθ : Admissible C θ)
+
+section Conditioning
+include C θ hθ
+
 /-- Single-observation Tonelli disintegration for the model's actual law. -/
-theorem observationLaw_lintegral_conditioning {d : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ)
-    (g : Observation d → ℝ≥0∞) (hg : Measurable g) :
+theorem observationLaw_lintegral_conditioning     (g : Observation d → ℝ≥0∞) (hg : Measurable g) :
     (∫⁻ z, g z ∂observationLaw θ) =
       ∫⁻ x, ∫⁻ u, g (x, θ.regression x + u) ∂θ.errors x ∂designLaw θ := by
   let := designLaw_isProbability C θ hθ
@@ -47,6 +50,8 @@ theorem observationLaw_lintegral_conditioning {d : ℕ} (C : ModelConstants d)
   unfold observationLaw
   rw [lintegral_map' hg.aemeasurable hm.aemeasurable]
   simpa only [Function.comp_def] using Measure.lintegral_compProd (hg.comp hm)
+
+end Conditioning
 
 /-- Single-observation Bochner disintegration, with integrability explicit. -/
 theorem observationLaw_integral_conditioning {d : ℕ} {E : Type*}
@@ -99,8 +104,9 @@ theorem integral_shift_fourth_le (μ : Measure ℝ) [IsProbabilityMeasure μ]
   simp at hmono
   nlinarith
 
-theorem admissible_conditional_response_fourth {d : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ) :
+include C θ hθ
+
+theorem admissible_conditional_response_fourth :
     ∀ᵐ x ∂designLaw θ,
       Integrable (fun u : ℝ => (θ.regression x + u) ^ 4) (θ.errors x) ∧
       (∫ u : ℝ, (θ.regression x + u) ^ 4 ∂θ.errors x) ≤ responseFourthBound C := by
@@ -109,8 +115,7 @@ theorem admissible_conditional_response_fourth {d : ℕ} (C : ModelConstants d)
     integral_shift_fourth_le _ _ _ _ C.holderBound_pos.le
       (admissible_regression_value_bound C θ hθ x hx) hm.2.2.1 hm.2.2.2.2.2⟩
 
-theorem admissible_conditional_response_second {d : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ) :
+theorem admissible_conditional_response_second :
     ∀ᵐ x ∂designLaw θ,
       Integrable (fun u : ℝ => (θ.regression x + u) ^ 2) (θ.errors x) ∧
       (∫ u : ℝ, (θ.regression x + u) ^ 2 ∂θ.errors x) =
@@ -130,9 +135,7 @@ theorem admissible_conditional_response_second {d : ℕ} (C : ModelConstants d)
   exact add_le_add hfsq hθ.2.2.2.2.2.2.1
 
 /-- Arbitrary nonnegative design weights may localize the response fourth moment. -/
-theorem observationLaw_weighted_fourth_le {d : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ)
-    (w : Covariate d → ℝ≥0∞) (hw : Measurable w) :
+theorem observationLaw_weighted_fourth_le     (w : Covariate d → ℝ≥0∞) (hw : Measurable w) :
     (∫⁻ z, w z.1 * ENNReal.ofReal (z.2 ^ 4) ∂observationLaw θ) ≤
       ENNReal.ofReal (responseFourthBound C) * ∫⁻ x, w x ∂designLaw θ := by
   rw [observationLaw_lintegral_conditioning C θ hθ
@@ -151,9 +154,7 @@ theorem observationLaw_weighted_fourth_le {d : ℕ} (C : ModelConstants d)
       exact ENNReal.ofReal_mono hx.2
     _ = _ := by rw [lintegral_mul_const _ hw, mul_comm]
 
-theorem observationLaw_weighted_second_le {d : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ)
-    (w : Covariate d → ℝ≥0∞) (hw : Measurable w) :
+theorem observationLaw_weighted_second_le     (w : Covariate d → ℝ≥0∞) (hw : Measurable w) :
     (∫⁻ z, w z.1 * ENNReal.ofReal (z.2 ^ 2) ∂observationLaw θ) ≤
       ENNReal.ofReal (responseSecondBound C) * ∫⁻ x, w x ∂designLaw θ := by
   rw [observationLaw_lintegral_conditioning C θ hθ
@@ -173,8 +174,7 @@ theorem observationLaw_weighted_second_le {d : ℕ} (C : ModelConstants d)
     _ = _ := by rw [lintegral_mul_const _ hw, mul_comm]
 
 /-- The observed covariate has exactly the original design marginal. -/
-theorem observationLaw_fst_measurePreserving {d : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ) :
+theorem observationLaw_fst_measurePreserving :
     MeasurePreserving (Prod.fst : Observation d → Covariate d)
       (observationLaw θ) (designLaw θ) := by
   let := designLaw_isProbability C θ hθ
@@ -186,15 +186,13 @@ theorem observationLaw_fst_measurePreserving {d : ℕ} (C : ModelConstants d)
   rw [Measure.map_map measurable_fst hm]
   exact Measure.fst_compProd (designLaw θ) θ.errors
 
-theorem observationLaw_fourth_lintegral_le {d : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ) :
+theorem observationLaw_fourth_lintegral_le :
     (∫⁻ z, ENNReal.ofReal (z.2 ^ 4) ∂observationLaw θ) ≤
       ENNReal.ofReal (responseFourthBound C) := by
   let := designLaw_isProbability C θ hθ
   simpa using observationLaw_weighted_fourth_le C θ hθ (fun _ => 1) measurable_const
 
-theorem observationLaw_response_fourth_integrable {d : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ) :
+theorem observationLaw_response_fourth_integrable :
     Integrable (fun z : Observation d => z.2 ^ 4) (observationLaw θ) := by
   refine ⟨(measurable_snd.pow_const 4).aestronglyMeasurable, ?_⟩
   rw [hasFiniteIntegral_iff_enorm]
@@ -205,8 +203,7 @@ theorem observationLaw_response_fourth_integrable {d : ℕ} (C : ModelConstants 
   rw [heq]
   exact lt_of_le_of_lt (observationLaw_fourth_lintegral_le C θ hθ) ENNReal.ofReal_lt_top
 
-theorem observationLaw_response_memLp_four {d : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ) :
+theorem observationLaw_response_memLp_four :
     MemLp (Prod.snd : Observation d → ℝ) 4 (observationLaw θ) := by
   apply (integrable_norm_rpow_iff (f := Prod.snd) (p := 4)
     measurable_snd.aestronglyMeasurable (by norm_num) (by simp)).mp
@@ -221,15 +218,15 @@ theorem observationLaw_response_memLp_four {d : ℕ} (C : ModelConstants d)
   rw [heq]
   exact observationLaw_response_fourth_integrable C θ hθ
 
-theorem observationLaw_response_memLp_two {d : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ) :
+theorem observationLaw_response_memLp_two :
     MemLp (Prod.snd : Observation d → ℝ) 2 (observationLaw θ) := by
   let := observationLaw_isProbability C θ hθ
   exact (observationLaw_response_memLp_four C θ hθ).mono_exponent (by norm_num)
 
-theorem observationLaw_localized_fourth_lintegral_le {d : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ)
-    (A : Set (Covariate d)) (hA : MeasurableSet A) :
+variable (A : Set (Covariate d)) (hA : MeasurableSet A)
+include A hA
+
+theorem observationLaw_localized_fourth_lintegral_le     :
     (∫⁻ z, ENNReal.ofReal
       ((Prod.fst ⁻¹' A).indicator (fun z : Observation d => z.2 ^ 4) z)
       ∂observationLaw θ) ≤ ENNReal.ofReal (responseFourthBound C) * designLaw θ A := by
@@ -243,9 +240,7 @@ theorem observationLaw_localized_fourth_lintegral_le {d : ℕ} (C : ModelConstan
   rw [heq, lintegral_indicator_const hA, one_mul] at hh
   exact hh
 
-theorem observationLaw_localized_second_lintegral_le {d : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ)
-    (A : Set (Covariate d)) (hA : MeasurableSet A) :
+theorem observationLaw_localized_second_lintegral_le     :
     (∫⁻ z, ENNReal.ofReal
       ((Prod.fst ⁻¹' A).indicator (fun z : Observation d => z.2 ^ 2) z)
       ∂observationLaw θ) ≤ ENNReal.ofReal (responseSecondBound C) * designLaw θ A := by
@@ -259,9 +254,7 @@ theorem observationLaw_localized_second_lintegral_le {d : ℕ} (C : ModelConstan
   rw [heq, lintegral_indicator_const hA, one_mul] at hh
   exact hh
 
-theorem observationLaw_localized_second_integral_le {d : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ)
-    (A : Set (Covariate d)) (hA : MeasurableSet A) :
+theorem observationLaw_localized_second_integral_le     :
     (∫ z, (Prod.fst ⁻¹' A).indicator (fun z : Observation d => z.2 ^ 2) z
       ∂observationLaw θ) ≤ responseSecondBound C * (designLaw θ).real A := by
   have hi := (observationLaw_response_memLp_two C θ hθ).integrable_sq.indicator
@@ -280,9 +273,7 @@ theorem observationLaw_localized_second_integral_le {d : ℕ} (C : ModelConstant
   rw [heq] at hh
   exact (ENNReal.ofReal_le_ofReal_iff (by positivity)).mp hh
 
-theorem observationLaw_localized_fourth_integral_le {d : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ)
-    (A : Set (Covariate d)) (hA : MeasurableSet A) :
+theorem observationLaw_localized_fourth_integral_le     :
     (∫ z, (Prod.fst ⁻¹' A).indicator (fun z : Observation d => z.2 ^ 4) z
       ∂observationLaw θ) ≤ responseFourthBound C * (designLaw θ).real A := by
   have hi := (observationLaw_response_fourth_integrable C θ hθ).indicator
@@ -301,9 +292,7 @@ theorem observationLaw_localized_fourth_integral_le {d : ℕ} (C : ModelConstant
   rw [heq] at hh
   exact (ENNReal.ofReal_le_ofReal_iff (by positivity)).mp hh
 
-theorem observationLaw_localized_response_energy_le {d : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ)
-    (A : Set (Covariate d)) (hA : MeasurableSet A) :
+theorem observationLaw_localized_response_energy_le     :
     (∫ z, (Prod.fst ⁻¹' A).indicator
       (fun z : Observation d => (1 + |z.2|) ^ 2) z ∂observationLaw θ) ≤
       (2 * (1 + responseSecondBound C)) * (designLaw θ).real A := by
@@ -342,9 +331,7 @@ theorem observationLaw_localized_response_energy_le {d : ℕ} (C : ModelConstant
   nlinarith
 
 /-- Exact localized first moment, with the covariate-dependent conditional law. -/
-theorem observationLaw_localized_first_integral {d : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ)
-    (A : Set (Covariate d)) (hA : MeasurableSet A) :
+theorem observationLaw_localized_first_integral     :
     (∫ z, (Prod.fst ⁻¹' A).indicator (Prod.snd : Observation d → ℝ) z
       ∂observationLaw θ) =
       ∫ x, A.indicator θ.regression x ∂designLaw θ := by
@@ -359,9 +346,7 @@ theorem observationLaw_localized_first_integral {d : ℕ} (C : ModelConstants d)
   · simp [hxa]
 
 /-- Exact localized second moment; no marginal error distribution is introduced. -/
-theorem observationLaw_localized_second_integral {d : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ)
-    (A : Set (Covariate d)) (hA : MeasurableSet A) :
+theorem observationLaw_localized_second_integral     :
     (∫ z, (Prod.fst ⁻¹' A).indicator (fun z : Observation d => z.2 ^ 2) z
       ∂observationLaw θ) =
       ∫ x, A.indicator (fun x => θ.regression x ^ 2 + θ.variance) x ∂designLaw θ := by

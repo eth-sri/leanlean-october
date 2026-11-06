@@ -202,12 +202,15 @@ def actualAllocationVarianceRatio (δ a C C₀ C_D γ β η varpi x : ℝ) : ℝ
     roundedTerminalDepth δ (Real.log x) (candidateTerminalDepth a C (C₀ * C_D) γ x)) *
       actualVarianceMaximum δ a C C₀ C_D γ β x
 
-set_option maxHeartbeats 600000 in
-/-- The actual scalar variance ratio has an explicit exponentially vanishing reserve. -/
-theorem eventually_actualAllocationVarianceRatio_bound {δ a C₀ C_D γ β η varpi : ℝ}
+variable {δ a C₀ C_D γ β η varpi : ℝ}
     (hδ : 0 < δ) (ha : 0 < a) (hC : 1 ≤ C₀) (hD1 : 1 ≤ C_D)
     (hDβ : 4 * β ≤ C_D) (hβ : 0 < β) (hγ : 0 ≤ γ) (hη : 0 ≤ η)
-    (C : ℝ) (hshift : C = 1 + 2 * (η + 2) / β) (hcoef : β * a ^ 2 / 4 = 2 * varpi) :
+    (C : ℝ) (hshift : C = 1 + 2 * (η + 2) / β) (hcoef : β * a ^ 2 / 4 = 2 * varpi)
+include hδ ha hC hD1 hDβ hβ hγ hη C hshift hcoef
+
+set_option maxHeartbeats 600000 in
+/-- The actual scalar variance ratio has an explicit exponentially vanishing reserve. -/
+theorem eventually_actualAllocationVarianceRatio_bound  :
     ∀ᶠ x : ℝ in atTop, 0 ≤ actualAllocationVarianceRatio δ a C C₀ C_D γ β η varpi x ∧
       actualAllocationVarianceRatio δ a C C₀ C_D γ β η varpi x ≤
         2 * C₀ * C_D ^ 2 * (allocationWidth a C x) ^ 2 * Real.exp (-2 * allocationWidth a C x) := by
@@ -264,10 +267,7 @@ theorem eventually_actualAllocationVarianceRatio_bound {δ a C₀ C_D γ β η v
         ring
 
 /-- Consequently `W≤1` eventually follows for this actual scalar allocation, rather than being assumed. -/
-theorem actualAllocationVarianceRatio_tends_zero {δ a C₀ C_D γ β η varpi : ℝ}
-    (hδ : 0 < δ) (ha : 0 < a) (hC : 1 ≤ C₀) (hD1 : 1 ≤ C_D)
-    (hDβ : 4 * β ≤ C_D) (hβ : 0 < β) (hγ : 0 ≤ γ) (hη : 0 ≤ η)
-    (C : ℝ) (hshift : C = 1 + 2 * (η + 2) / β) (hcoef : β * a ^ 2 / 4 = 2 * varpi) :
+theorem actualAllocationVarianceRatio_tends_zero  :
     Tendsto (actualAllocationVarianceRatio δ a C C₀ C_D γ β η varpi) atTop (𝓝 0) := by
   have hb := eventually_actualAllocationVarianceRatio_bound hδ ha hC hD1 hDβ hβ hγ hη C hshift hcoef
   apply squeeze_zero' (hb.mono fun x hx => hx.1) (hb.mono fun x hx => hx.2)

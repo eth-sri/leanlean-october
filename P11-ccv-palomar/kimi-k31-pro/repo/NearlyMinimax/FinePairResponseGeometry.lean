@@ -60,7 +60,7 @@ def finePairSquarePolynomial (d : ℕ) : MvPolynomial (Fin d) ℝ :=
 
 theorem finePairCoordinatePolynomial_degree {d : ℕ} (l : Fin d) :
     (finePairCoordinatePolynomial l).totalDegree ≤ 1 := by
-  exact (totalDegree_mul _ _).trans (by simp [finePairCoordinatePolynomial])
+  exact (totalDegree_mul _ _).trans (by simp)
 
 theorem finePairSquarePolynomial_degree (d : ℕ) :
     (finePairSquarePolynomial d).totalDegree ≤ 2 := by
@@ -153,7 +153,7 @@ theorem finePairDistanceMatrix_kernel {d n F : ℕ} (hF : 3 ≤ F)
   rw [spatial_frame_covariance_sub, spatial_frame_covariance_sub,
     spatial_frame_covariance_sum]
   simp_rw [spatial_frame_covariance_rank_one, spatial_frame_covariance_outer, hc, hl, hs]
-  simp only [mul_one, one_mul, spatialSquaredDistance, Finset.sum_neg_distrib,
+  simp only [mul_one, one_mul, spatialSquaredDistance,
     ← Finset.sum_sub_distrib]
   rw [← Finset.sum_neg_distrib]
   apply Finset.sum_congr rfl

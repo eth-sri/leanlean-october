@@ -111,7 +111,7 @@ theorem fine_pair_scalar_product_abs_le (η b L d w0 w1 p0 p1 m0 m1 : ℝ)
     _ ≤ (η^2*d) * ((1*b^2)*L^2) := hs
     _ = _ := by ring
 
-theorem finePairCountTwoRawNumerator_abs_le {d F : ℕ} [NeZero d] (hF : 3 ≤ F)
+variable {d F : ℕ} [NeZero d] (hF : 3 ≤ F)
     (ad bd T0 N : ℝ) (haD : 0 < ad) (hab : ad < bd) (hT0 : 0 ≤ T0) (hN : T0 ≤ N)
     (D M q : ℕ) (hD : 2 ≤ D) (hM : 2 ≤ M) (hq : 2 ≤ q)
     (C a V η ρ : ℝ) (hC : C ≠ 0) (ha : 0 < a) (hρ : 0 ≤ ρ)
@@ -119,6 +119,9 @@ theorem finePairCountTwoRawNumerator_abs_le {d F : ℕ} [NeZero d] (hF : 3 ≤ F
     (p g w : Fin 2 → ℝ) (hp : ∀ i, p i ∈ Icc ad bd) (hw : ∀ i, |w i| ≤ 1)
     (c : HighFrameIndex d F → ℝ)
     (hf : ∀ i, |coefficientRegression η g w (fun i => highFrameFeature (U i)) c i| ≤ ρ)
+include hF ad bd T0 N haD hab hT0 hN D M q hD hM hq C a V η ρ hC ha hρ U hU p g w hp hw c hf
+
+theorem finePairCountTwoRawNumerator_abs_le 
     (y : Fin 2 → Fin 3) :
     |finePairCountTwoRawNumerator ad bd T0 N D M q C a V η U p g w c y| ≤
       (η^2 * bd^2 * ((2*ρ+a)/a^2)^2) * finePairDistanceFactor N (U 0) (U 1) := by
@@ -133,14 +136,7 @@ theorem finePairCountTwoRawNumerator_abs_le {d F : ℕ} [NeZero d] (hF : 3 ≤ F
     (ternary_mean_derivative_abs_bound a _ ρ ha hρ (hf 0) (y 0))
     (ternary_mean_derivative_abs_bound a _ ρ ha hρ (hf 1) (y 1))
 
-theorem finePairCountTwoRawNumerator_sum_square_le {d F : ℕ} [NeZero d] (hF : 3 ≤ F)
-    (ad bd T0 N : ℝ) (haD : 0 < ad) (hab : ad < bd) (hT0 : 0 ≤ T0) (hN : T0 ≤ N)
-    (D M q : ℕ) (hD : 2 ≤ D) (hM : 2 ≤ M) (hq : 2 ≤ q)
-    (C a V η ρ : ℝ) (hC : C ≠ 0) (ha : 0 < a) (hρ : 0 ≤ ρ)
-    (U : Fin 2 → Covariate d) (hU : ∀ i, U i ∈ hyperplaneCube d)
-    (p g w : Fin 2 → ℝ) (hp : ∀ i, p i ∈ Icc ad bd) (hw : ∀ i, |w i| ≤ 1)
-    (c : HighFrameIndex d F → ℝ)
-    (hf : ∀ i, |coefficientRegression η g w (fun i => highFrameFeature (U i)) c i| ≤ ρ) :
+theorem finePairCountTwoRawNumerator_sum_square_le  :
     (∑ y : Fin 2 → Fin 3,
       (finePairCountTwoRawNumerator ad bd T0 N D M q C a V η U p g w c y)^2) ≤
       9 * (η^2 * bd^2 * ((2*ρ+a)/a^2)^2)^2 * (finePairDistanceFactor N (U 0) (U 1))^2 := by

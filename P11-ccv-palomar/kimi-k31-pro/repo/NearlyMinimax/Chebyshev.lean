@@ -76,37 +76,12 @@ theorem exp_neg_exteriorTau (a b : ℝ) (ha : 0 < a) (hab : a < b) :
 
 /-- A Chebyshev polynomial has degree at most its nonnegative index. -/
 theorem chebyshev_natDegree_le (n : ℕ) :
-    (Polynomial.Chebyshev.T ℝ (n : ℤ)).natDegree ≤ n := by
-  induction n using Nat.twoStepInduction with
-  | zero => simp
-  | one => simp
-  | more n ih0 ih1 =>
-      have he : ((n + 2 : ℕ) : ℤ) = (n : ℤ) + 2 := by omega
-      have he1 : ((n + 1 : ℕ) : ℤ) = (n : ℤ) + 1 := by omega
-      rw [he, Polynomial.Chebyshev.T_add_two]
-      apply (Polynomial.natDegree_sub_le _ _).trans
-      apply max_le
-      · have h := Polynomial.natDegree_mul_le
-          (p := (2 : ℝ[X]) * X) (q := Polynomial.Chebyshev.T ℝ ((n : ℤ) + 1))
-        have hd : ((2 : ℝ[X]) * X).natDegree ≤ 1 := by simp
-        rw [← he1] at h ⊢
-        omega
-      · omega
+    (Polynomial.Chebyshev.T ℝ (n : ℤ)).natDegree ≤ n := by simp
 
 /-- Reflection parity of the Chebyshev polynomials. -/
 theorem chebyshev_eval_neg (n : ℕ) (x : ℝ) :
     (Polynomial.Chebyshev.T ℝ (n : ℤ)).eval (-x) =
-      (-1 : ℝ) ^ n * (Polynomial.Chebyshev.T ℝ (n : ℤ)).eval x := by
-  induction n using Nat.twoStepInduction with
-  | zero => simp
-  | one => simp
-  | more n ih0 ih1 =>
-      have he : ((n + 2 : ℕ) : ℤ) = (n : ℤ) + 2 := by omega
-      have he1 : ((n + 1 : ℕ) : ℤ) = (n : ℤ) + 1 := by omega
-      rw [he, Polynomial.Chebyshev.T_add_two]
-      simp only [eval_sub, eval_mul, eval_ofNat, eval_X, ← he1, ih0, ih1]
-      rw [pow_succ, pow_succ]
-      ring
+      (-1 : ℝ) ^ n * (Polynomial.Chebyshev.T ℝ (n : ℤ)).eval x := by simp
 
 /-- The standard Chebyshev–Lobatto nodes, in decreasing order. -/
 def lobattoNode (n : ℕ) (i : Fin (n + 1)) : ℝ :=

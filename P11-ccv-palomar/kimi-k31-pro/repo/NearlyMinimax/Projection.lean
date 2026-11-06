@@ -395,11 +395,7 @@ theorem projection_quadratic_memLp_two_of_products {ι Ω : Type*} [Fintype ι]
   intro j hj
   simpa only [mul_assoc] using (hproducts i j).const_mul (A i j)
 
-/-- Combining the quadratic and linear noise terms proves the variance
-bound for the actual residual estimator from coordinate second moments
-and product covariance identities. -/
-theorem projection_estimator_variance_bound
-    {ι Ω : Type*} [Fintype ι] [DecidableEq ι] [MeasurableSpace Ω]
+variable {ι Ω : Type*} [Fintype ι] [DecidableEq ι] [MeasurableSpace Ω]
     (μ : Measure Ω) [IsProbabilityMeasure μ] (A : Matrix ι ι ℝ)
     (hsym : Aᵀ = A) (hidem : A * A = A) (hd : 0 < A.trace)
     (f : ι → ℝ) (ε : Ω → ι → ℝ) (V C : ℝ) (c : ι → ℝ)
@@ -411,7 +407,14 @@ theorem projection_estimator_variance_bound
       covariance (fun ω => ε ω i * ε ω j) (fun ω => ε ω k * ε ω l) μ =
         (if i = k ∧ j = l then (if i = j then c i else V ^ 2) else 0) +
         (if i = l ∧ j = k ∧ i ≠ j then V ^ 2 else 0))
-    (hc : ∀ i, c i ≤ C) (hV : 2 * V ^ 2 ≤ C) :
+    (hc : ∀ i, c i ≤ C) (hV : 2 * V ^ 2 ≤ C)
+include μ A hsym hidem hd f ε V C c hε hmean hsecond hproducts hcov hc hV
+
+/-- Combining the quadratic and linear noise terms proves the variance
+bound for the actual residual estimator from coordinate second moments
+and product covariance identities. -/
+theorem projection_estimator_variance_bound
+     :
     variance (fun ω => projectionEstimator A (f + ε ω)) μ ≤
       (2 * C * A.trace + 8 * V * projectionEnergy (A *ᵥ f)) / A.trace ^ 2 := by
   have hlin : MemLp (fun ω => (A *ᵥ f) ⬝ᵥ ε ω) 2 μ := by
@@ -446,13 +449,11 @@ theorem projection_estimator_variance_bound
       mul_le_mul_of_nonneg_left hcomb (sq_pos_of_pos (inv_pos.mpr hd)).le
     _ = _ := by rw [inv_pow, div_eq_mul_inv]; ring
 
+omit hidem hd V C c hmean hsecond hcov hc hV [DecidableEq ι] in
+
 /-- The response residual quadratic estimator is square integrable under
 coordinate and coordinate-product `L²` assumptions. -/
-theorem projection_estimator_memLp_two {ι Ω : Type*} [Fintype ι]
-    [MeasurableSpace Ω] (μ : Measure Ω) [IsProbabilityMeasure μ]
-    (A : Matrix ι ι ℝ) (hsym : Aᵀ = A) (f : ι → ℝ) (ε : Ω → ι → ℝ)
-    (hε : ∀ i, MemLp (fun ω => ε ω i) 2 μ)
-    (hproducts : ∀ i j, MemLp (fun ω => ε ω i * ε ω j) 2 μ) :
+theorem projection_estimator_memLp_two :
     MemLp (fun ω => projectionEstimator A (f + ε ω)) 2 μ := by
   have hlin : MemLp (fun ω => (A *ᵥ f) ⬝ᵥ ε ω) 2 μ := by
     unfold dotProduct
@@ -469,19 +470,7 @@ coordinate moments, product covariance rules, and the actual estimator.
 The deterministic approximation theorem can now bound the displayed
 residual energy uniformly over irregular designs. -/
 theorem projection_estimator_mse_bound
-    {ι Ω : Type*} [Fintype ι] [DecidableEq ι] [MeasurableSpace Ω]
-    (μ : Measure Ω) [IsProbabilityMeasure μ] (A : Matrix ι ι ℝ)
-    (hsym : Aᵀ = A) (hidem : A * A = A) (hd : 0 < A.trace)
-    (f : ι → ℝ) (ε : Ω → ι → ℝ) (V C : ℝ) (c : ι → ℝ)
-    (hε : ∀ i, MemLp (fun ω => ε ω i) 2 μ)
-    (hmean : ∀ i, (∫ ω, ε ω i ∂μ) = 0)
-    (hsecond : ∀ i j, (∫ ω, ε ω i * ε ω j ∂μ) = if i = j then V else 0)
-    (hproducts : ∀ i j, MemLp (fun ω => ε ω i * ε ω j) 2 μ)
-    (hcov : ∀ i j k l,
-      covariance (fun ω => ε ω i * ε ω j) (fun ω => ε ω k * ε ω l) μ =
-        (if i = k ∧ j = l then (if i = j then c i else V ^ 2) else 0) +
-        (if i = l ∧ j = k ∧ i ≠ j then V ^ 2 else 0))
-    (hc : ∀ i, c i ≤ C) (hV : 2 * V ^ 2 ≤ C) :
+     :
     (∫ ω, (projectionEstimator A (f + ε ω) - V) ^ 2 ∂μ) ≤
       (2 * C * A.trace + 8 * V * projectionEnergy (A *ᵥ f)) / A.trace ^ 2 +
         (projectionEnergy (A *ᵥ f) / A.trace) ^ 2 := by

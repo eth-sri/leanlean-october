@@ -69,7 +69,7 @@ attribute [local instance] Classical.propDecidable
   · simp only [if_pos hnM]
     ring
   · rw [if_neg hnM, finePairPairAliasAction_zero_selected_count ad bd ℓ N haD hab M q hn (le_of_not_gt hnM) C U p c]
-    simp only [if_neg hnM, ite_self]
+    simp only [if_neg hnM]
     ring
 
  def completeSourceHigherGeometryEnvelope {d n D : ℕ} (aD bD c0 ℓ N μ : ℝ)

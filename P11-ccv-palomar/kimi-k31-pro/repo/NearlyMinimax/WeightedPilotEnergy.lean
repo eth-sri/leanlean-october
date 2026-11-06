@@ -51,13 +51,16 @@ theorem weightedPilotKernel_section_energy_le {c : Ω → W → H}
     (product_operator_kernel_energy_le_uniform (A w) hc hc hL hE hE) hq
   nlinarith
 
-theorem weightedPilotKernel_integrable {c : Ω → W → H}
+variable {c : Ω → W → H}
     (hmc : Measurable (fun z : Ω × W => c z.1 z.2))
     {A : W → H →L[ℝ] H} (hmA : Measurable (fun z : W × H => A z.1 z.2))
     {q : W → ℝ} (hmq : Measurable q) (hq : ∀ᵐ w ∂ν, 0 ≤ q w)
     (hA : Integrable (fun w => q w * ‖A w‖ ^ 2) ν)
     (hc : ∀ᵐ w ∂ν, MemLp (fun x => c x w) 2 μ)
-    {L : ℝ} (hL : 0 ≤ L) (hE : ∀ᵐ w ∂ν, (∫ x, ‖c x w‖ ^ 2 ∂μ) ≤ L) :
+    {L : ℝ} (hL : 0 ≤ L) (hE : ∀ᵐ w ∂ν, (∫ x, ‖c x w‖ ^ 2 ∂μ) ≤ L)
+include c hmc A hmA q hmq hq hA hc L hL hE
+
+theorem weightedPilotKernel_integrable  :
     Integrable (weightedPilotKernel c A q) ((μ.prod μ).prod ν) := by
   have hm : AEStronglyMeasurable (weightedPilotKernel c A q) ((μ.prod μ).prod ν) :=
     (weightedPilotKernel_measurable hmc hmA hmq).aestronglyMeasurable
@@ -77,13 +80,7 @@ theorem weightedPilotKernel_integrable {c : Ω → W → H}
     rw [hn]
     exact weightedPilotKernel_section_energy_le hcw hL hEw hqw
 
-theorem weightedPilotKernel_energy_le {c : Ω → W → H}
-    (hmc : Measurable (fun z : Ω × W => c z.1 z.2))
-    {A : W → H →L[ℝ] H} (hmA : Measurable (fun z : W × H => A z.1 z.2))
-    {q : W → ℝ} (hmq : Measurable q) (hq : ∀ᵐ w ∂ν, 0 ≤ q w)
-    (hA : Integrable (fun w => q w * ‖A w‖ ^ 2) ν)
-    (hc : ∀ᵐ w ∂ν, MemLp (fun x => c x w) 2 μ)
-    {L : ℝ} (hL : 0 ≤ L) (hE : ∀ᵐ w ∂ν, (∫ x, ‖c x w‖ ^ 2 ∂μ) ≤ L) :
+theorem weightedPilotKernel_energy_le  :
     (∫ z, weightedPilotKernel c A q z ∂(μ.prod μ).prod ν) ≤
       L ^ 2 * ∫ w, q w * ‖A w‖ ^ 2 ∂ν := by
   have hi := weightedPilotKernel_integrable hmc hmA hmq hq hA hc hL hE

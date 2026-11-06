@@ -190,7 +190,7 @@ theorem dyadicPilotFeature_second_le {d ℓ : ℕ} (C : ModelConstants d)
       (C.densityUpper / dyadicPilotScale d j) =
       dyadicPilotMomentConstant C * dyadicPilotScale d j := by
     unfold dyadicPilotMomentConstant
-    field_simp [ne_of_gt (dyadicPilotScale_pos d j)] <;> ring
+    field_simp [ne_of_gt (dyadicPilotScale_pos d j)]
   rw [heq] at hm
   simpa only [mul_assoc] using hm
 

@@ -21,7 +21,6 @@ theorem lobattoNode_reflection (n : ℕ) (hn : 1 ≤ n) (i : Fin (n + 1)) :
       Real.pi - (i.val : ℝ) * Real.pi / n := by
     simp only [Fin.val_rev]
     rw [show n + 1 - (i.val + 1) = n - i.val by omega, Nat.cast_sub hi]
-    push_cast
     field_simp
   unfold lobattoNode
   rw [hangle, Real.cos_pi_sub]
@@ -91,7 +90,7 @@ private theorem cardinal_derivative_zero_formula {ι : Type*} [DecidableEq ι]
     (cardinal_mul_node_factor S z i hi)
   simp only [derivative_mul, derivative_sub, derivative_X, derivative_C,
     eval_add, eval_mul, eval_sub, eval_X, eval_C, zero_sub, sub_zero,
-    eval_one, mul_one, eval_zero, zero_mul, zero_add, hW, mul_zero] at h
+    mul_one, zero_mul, zero_add, hW, mul_zero] at h
   have he := Lagrange.eval_basis_not_at_node (v := z) (x := 0) hi (Ne.symm hzi)
   rw [he] at h
   simp only [zero_sub, inv_neg] at h
@@ -146,7 +145,7 @@ private theorem chebyshev_at_lobatto (n : ℕ) (hn : 1 ≤ n) (i : Fin (n + 1)) 
 private theorem chebyshev_odd_derivative_abs (m : ℕ) :
     |(Polynomial.Chebyshev.T ℝ ((2 * m + 1 : ℕ) : ℤ)).derivative.eval 0| = (2 * m + 1 : ℕ) := by
   rw [Polynomial.Chebyshev.T_derivative_eq_U]
-  simp only [eval_mul, eval_intCast, eval_natCast, Int.cast_natCast]
+  simp only [eval_mul, eval_natCast, Int.cast_natCast]
   have he : ((2 * m + 1 : ℕ) : ℤ) - 1 = 2 * (m : ℤ) := by omega
   rw [he, Polynomial.Chebyshev.U_eval_two_mul_zero, abs_mul]
   have hs : |((m : ℤ).negOnePow : ℝ)| = 1 := by
@@ -229,8 +228,8 @@ theorem lobattoDerivativeWeight_reflection (m : ℕ) (i : Fin ((2 * m + 1) + 1))
         rw [Lagrange.eval_basis_of_ne hrev (Finset.mem_univ j.rev),
           Lagrange.eval_basis_of_ne hij (Finset.mem_univ j)]
   have h := congrArg (fun p : ℝ[X] => p.derivative.eval 0) hpoly
-  simp only [derivative_comp, derivative_neg, derivative_X, eval_mul, eval_neg,
-    eval_one, eval_comp, eval_X, neg_zero, neg_one_mul] at h
+  simp only [derivative_comp, derivative_neg, derivative_X, eval_neg,
+    eval_comp, eval_X, neg_zero, neg_one_mul] at h
   change -lobattoDerivativeWeight m i.rev = lobattoDerivativeWeight m i at h
   linarith
 

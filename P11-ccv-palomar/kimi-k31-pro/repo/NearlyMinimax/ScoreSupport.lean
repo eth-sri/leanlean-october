@@ -92,9 +92,12 @@ theorem patch_score_depends_on_support (n : ℕ) (a V η z : ℝ) (g w : Fin n �
     · rw [hyy i hi]
     · simp [hw i hi]
 
-/-- The actual coordinate score agrees with its one-dimensional patch representation. -/
-theorem latent_coordinate_score_eq_patch (m n : ℕ) (a V η : ℝ)
+variable (m n : ℕ) (a V η : ℝ)
     (base : Fin n → ℝ) (w : Fin n → Fin m → ℝ) (ξ : Fin m → Fin 3)
+include m n a V η base w ξ
+
+/-- The actual coordinate score agrees with its one-dimensional patch representation. -/
+theorem latent_coordinate_score_eq_patch 
     (j : Fin m) (y : Fin n → Fin 3) :
     finiteCoordinateScore m n a V η (latentRegression m n η base w) w ξ y j =
       patchObservableScore n a V η (latentRegressionWithout m n η base w ξ j)
@@ -110,8 +113,7 @@ theorem latent_coordinate_score_eq_patch (m n : ℕ) (a V η : ℝ)
   rw [hL]
 
 /-- Exact locality of the actual full-field coordinate score. -/
-theorem latent_coordinate_score_depends_on_support (m n : ℕ) (a V η : ℝ)
-    (base : Fin n → ℝ) (w : Fin n → Fin m → ℝ) (ξ : Fin m → Fin 3)
+theorem latent_coordinate_score_depends_on_support 
     (j : Fin m) (S : Finset (Fin n)) (hw : ∀ i, i ∉ S → w i j = 0)
     (y y' : Fin n → Fin 3) (hyy : ∀ i ∈ S, y i = y' i)
     (hp : ∀ i b, 0 < ternaryMass a (latentRegression m n η base w ξ i) V b) :
@@ -123,14 +125,15 @@ theorem latent_coordinate_score_depends_on_support (m n : ℕ) (a V η : ℝ)
   intro i b
   simpa [latent_regression_decomposition m n η base w ξ j] using hp i b
 
+omit m n a V η base w ξ in
+
 /-- Extend a local response tuple by the zero response index outside its support. -/
 def extendPatchResponses (n : ℕ) (S : Finset (Fin n)) (y : S → Fin 3) : Fin n → Fin 3 :=
   fun i => if hi : i ∈ S then y ⟨i, hi⟩ else 1
 
 /-- Actual coordinate scores on disjoint supports are orthogonal under the
 actual conditional ternary response product measure. -/
-theorem latent_coordinate_scores_orthogonal (m n : ℕ) (a V η : ℝ)
-    (base : Fin n → ℝ) (w : Fin n → Fin m → ℝ) (ξ : Fin m → Fin 3)
+theorem latent_coordinate_scores_orthogonal 
     (j k : Fin m) (S T : Finset (Fin n)) (hST : Disjoint S T)
     (hwS : ∀ i, i ∉ S → w i j = 0) (hwT : ∀ i, i ∉ T → w i k = 0)
     (ha : a ≠ 0) (hp : ∀ i b, 0 < ternaryMass a (latentRegression m n η base w ξ i) V b) :
@@ -170,8 +173,7 @@ theorem latent_coordinate_scores_orthogonal (m n : ℕ) (a V η : ℝ)
 /-- Bounded-overlap aggregation for the actual full-field coordinate scores.
 No orthogonality hypothesis is assumed: it follows from their local supports
 and the actual conditional ternary response product measure. -/
-theorem latent_coordinate_score_variance_bound (m n : ℕ) (a V η : ℝ)
-    (base : Fin n → ℝ) (w : Fin n → Fin m → ℝ) (ξ : Fin m → Fin 3)
+theorem latent_coordinate_score_variance_bound 
     (S : Fin m → Finset (Fin n)) (D : ℕ)
     (hw : ∀ j i, i ∉ S j → w i j = 0)
     (hdegree : ∀ j, (Finset.univ.filter fun k => ¬Disjoint (S j) (S k)).card ≤ D)
@@ -197,8 +199,7 @@ theorem latent_coordinate_score_variance_bound (m n : ℕ) (a V η : ℝ)
       (not_not.mp hjk) (hw j) (hw k) ha hp
 
 /-- The full observable score inherits that bounded-overlap conditional energy bound. -/
-theorem latent_full_score_variance_bound (m n : ℕ) (a V η : ℝ)
-    (base : Fin n → ℝ) (w : Fin n → Fin m → ℝ) (ξ : Fin m → Fin 3)
+theorem latent_full_score_variance_bound 
     (S : Fin m → Finset (Fin n)) (D : ℕ)
     (hw : ∀ j i, i ∉ S j → w i j = 0)
     (hsquares : ∀ i, ∑ j, (w i j) ^ 2 = 1)

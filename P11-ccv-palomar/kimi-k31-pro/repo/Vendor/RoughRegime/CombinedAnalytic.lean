@@ -51,9 +51,7 @@ theorem addFactors_eq_powerSeries_coeff {R : Type*} [Semiring R]
 /-- A scalar coefficient embedded as a scalar matrix has the same operator norm. -/
 theorem scalarMatrix_coefficient_norm {n : Type*} [Fintype n] [DecidableEq n] [Nonempty n]
     (g : PowerSeries ℝ) (k : ℕ) :
-    ‖PowerSeries.coeff k (PowerSeries.map (Matrix.scalar n) g)‖ = ‖PowerSeries.coeff k g‖ := by
-  rw [PowerSeries.coeff_map]
-  exact norm_algebraMap' (Matrix n n ℝ) _
+    ‖PowerSeries.coeff k (PowerSeries.map (Matrix.scalar n) g)‖ = ‖PowerSeries.coeff k g‖ := by simp
 
 lemma mapped_scalar_prod_reverse {n : Type*} [Fintype n] [DecidableEq n]
     (gs : List (PowerSeries ℝ)) :
@@ -132,13 +130,16 @@ theorem combinedSeries_coefficient_eq_addFactors {N n0 : ℕ} {dims : Fin N → 
   rw [hg] at he
   exact he.symm
 
-/-- Full factor-count coefficient bound of Lemma 5(a), in the actual operator norm. -/
-theorem combinedSeries_coefficient_norm_le {N n0 : ℕ} [Nonempty (Fin n0)] {dims : Fin N → ℕ}
+variable {N n0 : ℕ} [Nonempty (Fin n0)] {dims : Fin N → ℕ}
     (lo hi : ℝ) (hlo : 0 < lo) (hlt : lo < hi)
     (M0 : Matrix (Fin n0) (Fin n0) ℝ) (hM0 : M0.IsHermitian)
     (hSpec0 : spectrum ℝ M0 ⊆ Set.Icc lo hi)
     (M : (i : Fin N) → Matrix (Fin (dims i)) (Fin (dims i)) ℝ)
     (hM : ∀ i, (M i).IsHermitian) (hSpec : ∀ i, spectrum ℝ (M i) ⊆ Set.Icc lo hi)
+include lo hi hlo hlt M0 hM0 hSpec0 M hM hSpec
+
+/-- Full factor-count coefficient bound of Lemma 5(a), in the actual operator norm. -/
+theorem combinedSeries_coefficient_norm_le 
     (k : ℕ) :
     ‖PowerSeries.coeff k (combinedSeries lo hi M0 M)‖ ≤
       2 ^ ((∑ i, dims i) + 1) * ((k + 1 : ℕ) : ℝ) ^ (∑ i, dims i) * intervalRho lo hi ^ k := by
@@ -162,6 +163,8 @@ theorem combinedSeries_coefficient_norm_le {N n0 : ℕ} [Nonempty (Fin n0)] {dim
   simpa only [List.length_map, eigenvalueSeriesList_length, pow_succ, mul_assoc,
     mul_left_comm, mul_comm] using hh
 
+omit lo hi hlo hlt M0 hM0 hSpec0 M hM hSpec in
+
 /-- Scalar matrices commute with coefficient summation. -/
 theorem scalarMatrix_tsum {n : Type*} [Fintype n] [DecidableEq n]
     (f : ℕ → ℝ) (hf : Summable f) :
@@ -170,6 +173,8 @@ theorem scalarMatrix_tsum {n : Type*} [Fintype n] [DecidableEq n]
     change Continuous (fun x : ℝ => Matrix.diagonal (fun _ : n => x))
     exact (continuous_pi (fun _ => continuous_id)).matrix_diagonal
   exact (hf.hasSum.map (Matrix.scalar n) hc).tsum_eq
+
+omit lo hi hlo hlt M0 hM0 hSpec0 M hM hSpec in
 
 /-- The sum of all determinant factors is the common normalization divided by the determinant product. -/
 theorem determinantProduct_tsum {N : ℕ} {dims : Fin N → ℕ}
@@ -185,12 +190,7 @@ theorem determinantProduct_tsum {N : ℕ} {dims : Fin N → ℕ}
     exact kernelSeries_det_summable_norm lo hi hlo hlt (M i) (hM i) (hSpec i)
 
 /-- The actual combined generating series sums to ḡ^(ν'+1) times the inverse/determinant target. -/
-theorem combinedSeries_tsum {N n0 : ℕ} [Nonempty (Fin n0)] {dims : Fin N → ℕ}
-    (lo hi : ℝ) (hlo : 0 < lo) (hlt : lo < hi)
-    (M0 : Matrix (Fin n0) (Fin n0) ℝ) (hM0 : M0.IsHermitian)
-    (hSpec0 : spectrum ℝ M0 ⊆ Set.Icc lo hi)
-    (M : (i : Fin N) → Matrix (Fin (dims i)) (Fin (dims i)) ℝ)
-    (hM : ∀ i, (M i).IsHermitian) (hSpec : ∀ i, spectrum ℝ (M i) ⊆ Set.Icc lo hi) :
+theorem combinedSeries_tsum  :
     (∑' k, PowerSeries.coeff k (combinedSeries lo hi M0 M)) =
       (intervalGeometricMean lo hi ^ ((∑ i, dims i) + 1) / ∏ i, (M i).det) • M0⁻¹ := by
   let D : PowerSeries ℝ := ∏ i, (kernelSeries lo hi (M i)).det
@@ -221,12 +221,16 @@ theorem combinedSeries_tsum {N n0 : ℕ} [Nonempty (Fin n0)] {dims : Fin N → �
   rw [pow_succ, div_eq_mul_inv, div_eq_mul_inv]
   ring
 
+omit lo hi hlo hlt M0 hM0 hSpec0 M hM hSpec in
+
 /-- Finite matrix polynomial with the exact combined-index truncation and normalization. -/
 def truncationMatrix {N n0 : ℕ} {dims : Fin N → ℕ}
     (lo hi : ℝ) (M0 : Matrix (Fin n0) (Fin n0) ℝ)
     (M : (i : Fin N) → Matrix (Fin (dims i)) (Fin (dims i)) ℝ) (m : ℕ) :
     Matrix (Fin n0) (Fin n0) ℝ :=
   fun a b => MvPolynomial.eval (entryValuation M0 M) (truncationEntryPolynomial n0 dims lo hi a b m)
+
+omit lo hi hlo hlt M0 hM0 hSpec0 M hM hSpec in
 
 /-- Exact identification of the concrete entry polynomials with the formal combined-index truncation. -/
 theorem truncationMatrix_eq_scaled_sum {N n0 : ℕ} {dims : Fin N → ℕ}
@@ -242,12 +246,7 @@ theorem truncationMatrix_eq_scaled_sum {N n0 : ℕ} {dims : Fin N → ℕ}
 
 /-- Full Lemma 5(a): the arbitrary determinant-product approximation error in operator norm.
 Together with `truncationEntryPolynomial_degree`, this proves the matrix polynomial assertion. -/
-theorem matrix_determinant_truncation_error {N n0 : ℕ} [Nonempty (Fin n0)] {dims : Fin N → ℕ}
-    (lo hi : ℝ) (hlo : 0 < lo) (hlt : lo < hi)
-    (M0 : Matrix (Fin n0) (Fin n0) ℝ) (hM0 : M0.IsHermitian)
-    (hSpec0 : spectrum ℝ M0 ⊆ Set.Icc lo hi)
-    (M : (i : Fin N) → Matrix (Fin (dims i)) (Fin (dims i)) ℝ)
-    (hM : ∀ i, (M i).IsHermitian) (hSpec : ∀ i, spectrum ℝ (M i) ⊆ Set.Icc lo hi) (m : ℕ) :
+theorem matrix_determinant_truncation_error  (m : ℕ) :
     ‖(∏ i, (M i).det)⁻¹ • M0⁻¹ - truncationMatrix lo hi M0 M m‖ ≤
       2 ^ ((∑ i, dims i) + 1) * (intervalGeometricMean lo hi ^ ((∑ i, dims i) + 1))⁻¹ *
         ((m + 1 : ℕ) : ℝ) ^ (∑ i, dims i) * intervalRho lo hi ^ m *

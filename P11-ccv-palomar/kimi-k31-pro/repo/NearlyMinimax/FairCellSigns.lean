@@ -20,7 +20,6 @@ def fairSignLaw : Measure (Fin 2) :=
 
 instance fairSignLaw_probability : IsProbabilityMeasure fairSignLaw := by
   constructor
-  change (fairSignLaw Set.univ) = 1
   simp only [fairSignLaw, Measure.add_apply, Measure.smul_apply,
     Measure.dirac_apply_of_mem (Set.mem_univ _), smul_eq_mul, mul_one]
   rw [← ENNReal.ofReal_add (by norm_num) (by norm_num)]
@@ -76,7 +75,7 @@ theorem cellSign_covariance {I : Type*} [Fintype I] [DecidableEq I] (i j : I) :
       if i = j then 1 else 0 := by
   by_cases hij : i = j
   · subst j
-    simp only [if_pos rfl, ← pow_two, fairSignValue_sq]
+    simp only [← pow_two, fairSignValue_sq]
     simp
   · have hi : IndepFun (fun b : I → Fin 2 => b i) (fun b : I → Fin 2 => b j)
         (cellSignLaw I) := by
@@ -103,7 +102,7 @@ theorem cellSign_product_moment {I J : Type*} [Fintype I] [Fintype J]
       ∏ i, fairSignValue (b i) ^ (Finset.univ.filter (fun j => p j = i)).card := by
     rw [← Finset.prod_fiberwise_of_maps_to' (s := Finset.univ) (t := Finset.univ)
       (g := p) (fun _ _ => Finset.mem_univ _) (fun i => fairSignValue (b i))]
-    simp only [Finset.prod_const, smul_eq_mul]
+    simp only [Finset.prod_const]
   simp_rw [he]
   rw [cellSign_product_power_moment, Fintype.prod_boole]
 

@@ -178,7 +178,7 @@ private theorem rawNumeratorPolynomial_eval {r : ℕ}
   simp only [vectorMoment, eval_X, incrementValuation, Bool.false_eq_true, ↓reduceIte,
     currentVariableMatrix, rename_X, entryValuation]
   simp only [incrementNumerator, Pi.sub_apply, Pi.smul_apply, smul_eq_mul,
-    Matrix.mulVec, dotProduct, Finset.mul_sum, Finset.sum_mul, mul_assoc]
+    Matrix.mulVec, dotProduct, Finset.mul_sum, mul_assoc]
 
 /-- Evaluating the free polynomial gives exactly the paper's cleared numerator for `β-yμ`. -/
 theorem numeratorPolynomial_eval {r : ℕ}

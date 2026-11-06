@@ -37,7 +37,7 @@ theorem pairResponseVector_norm_sq (y y' : ℝ) :
 theorem pairCoordinateVector_norm (i : Fin 3) : ‖pairCoordinateVector i‖ = 1 := by
   have hs : ‖pairCoordinateVector i‖ ^ 2 = 1 := by
     rw [EuclideanSpace.real_norm_sq_eq]
-    simp [pairCoordinateVector, Pi.single_apply, Finset.sum_ite_eq']
+    simp [pairCoordinateVector, Finset.sum_ite_eq']
   nlinarith [norm_nonneg (pairCoordinateVector i)]
 
 theorem pairNoiseOperator_norm_le : ‖pairNoiseOperator‖ ≤ 2 := by
@@ -70,7 +70,7 @@ theorem pairResponseVector_continuous :
   apply (PiLp.continuous_toLp 2 (fun _ : Fin 3 => ℝ)).comp
   apply continuous_pi
   intro i
-  fin_cases i <;> simp [pairResponseVector] <;> fun_prop
+  fin_cases i <;> simp <;> fun_prop
 
 theorem pairScoreOperator_continuous (V : ℝ) :
     Continuous (fun z : ℝ × ℝ => pairScoreOperator V z.1 z.2) := by

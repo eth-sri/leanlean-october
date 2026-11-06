@@ -122,10 +122,14 @@ theorem finePairPacket_even_subset_expansion {n : ℕ}
 
 end Generic
 
-theorem finePairFineFirstAction_even_subset_expansion {d n F : ℕ} [NeZero d]
+section FineFirst
+variable {d n F : ℕ} [NeZero d]
     (ad bd T0 N : ℝ) (ha : 0 < ad) (hab : ad < bd) (M q : ℕ) (C : ℝ)
     (U : Fin n → Covariate d) (p : Fin n → ℝ) (hp : ∀ i, p i ∈ Icc ad bd)
-    (c : HighFrameIndex d F → ℝ) (Φ : (HighFrameIndex d F → ℝ) → ℝ) :
+    (c : HighFrameIndex d F → ℝ) (Φ : (HighFrameIndex d F → ℝ) → ℝ)
+include d n F ad bd T0 N ha hab M q C U p hp c Φ
+
+theorem finePairFineFirstAction_even_subset_expansion  :
     finePairFineFirstAction ad bd T0 N M q C U p c Φ =
       ∑ W ∈ (Finset.univ : Finset (Fin n)).powerset,
         finePairCountCoefficient ad bd M n W.card * (∏ i ∈ W, p i) * finePairEvenSelector W.card *
@@ -151,6 +155,7 @@ theorem finePairFineFirstAction_even_subset_expansion {d n F : ℕ} [NeZero d]
   unfold finePairTimeSubsetMoment
   ring
 
+omit d n F ad bd T0 N ha hab M q C U p hp c Φ in
 def finePairPairAliasAction {d n F : ℕ} (ad bd T0 N : ℝ) (M q : ℕ) (C : ℝ)
     (U : Fin n → Covariate d) (p : Fin n → ℝ) (c : HighFrameIndex d F → ℝ)
     (Φ : (HighFrameIndex d F → ℝ) → ℝ) : ℝ :=
@@ -158,6 +163,7 @@ def finePairPairAliasAction {d n F : ℕ} (ad bd T0 N : ℝ) (M q : ℕ) (C : �
     finePairCountCoefficient ad bd M n W.card * (∏ i ∈ W, p i) * (if W.card = 2 then 1 else 0) *
       finePairTimeSubsetMoment T0 N U W * responseMatrixAction q C (finePairDistanceMatrix d F) c Φ
 
+omit d n F ad bd T0 N ha hab M q C U p hp c Φ in
 def finePairEvenFieldAction {d n F : ℕ} (ad bd T0 N : ℝ) (M q : ℕ) (C : ℝ)
     (U : Fin n → Covariate d) (p : Fin n → ℝ) (c : HighFrameIndex d F → ℝ)
     (Φ : (HighFrameIndex d F → ℝ) → ℝ) : ℝ :=
@@ -166,16 +172,15 @@ def finePairEvenFieldAction {d n F : ℕ} (ad bd T0 N : ℝ) (M q : ℕ) (C : �
       (if 4 ≤ W.card ∧ Even W.card then 1 else 0) *
         finePairTimeSubsetMoment T0 N U W * responseMatrixAction q C (finePairDistanceMatrix d F) c Φ
 
-theorem finePairFineFirstAction_alias_even_field {d n F : ℕ} [NeZero d]
-    (ad bd T0 N : ℝ) (ha : 0 < ad) (hab : ad < bd) (M q : ℕ) (C : ℝ)
-    (U : Fin n → Covariate d) (p : Fin n → ℝ) (hp : ∀ i, p i ∈ Icc ad bd)
-    (c : HighFrameIndex d F → ℝ) (Φ : (HighFrameIndex d F → ℝ) → ℝ) :
+theorem finePairFineFirstAction_alias_even_field  :
     finePairFineFirstAction ad bd T0 N M q C U p c Φ =
       finePairPairAliasAction ad bd T0 N M q C U p c Φ +
         finePairEvenFieldAction ad bd T0 N M q C U p c Φ := by
   rw [finePairFineFirstAction_even_subset_expansion ad bd T0 N ha hab M q C U p hp c Φ]
   simp only [finePairEvenSelector_split, finePairPairAliasAction, finePairEvenFieldAction,
     mul_add, add_mul, Finset.sum_add_distrib]
+
+end FineFirst
 
 theorem finePairPairAliasAction_zero_selected_count {d n F : ℕ}
     (ad bd T0 N : ℝ) (ha : 0 < ad) (hab : ad < bd) (M q : ℕ)

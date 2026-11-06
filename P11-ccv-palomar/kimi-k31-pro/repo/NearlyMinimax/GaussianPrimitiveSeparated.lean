@@ -38,7 +38,7 @@ theorem gaussianTrig_cos_difference {d : ℕ} (lam t : ℝ) (Z x y : Covariate d
   have he : gaussianPhase (gaussianSpatialFrequency lam t x y) Z =
       gaussianPhase (fun l => Real.sqrt (2 * lam * t) * y l) Z -
       gaussianPhase (fun l => Real.sqrt (2 * lam * t) * x l) Z := by
-    simp only [gaussianPhase, gaussianSpatialFrequency, Finset.sum_sub_distrib]
+    simp only [gaussianPhase, gaussianSpatialFrequency]
     rw [← Finset.sum_sub_distrib]
     apply Finset.sum_congr rfl
     intro l hl

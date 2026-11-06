@@ -56,8 +56,10 @@ def lowerAliasTargetScale (s d m θ C : ℝ) (τM : ℕ → ℝ) (r : ℕ) (x : 
 
 variable {s d m θ τ Cτ : ℝ} {τM : ℕ → ℝ}
 
+variable (hs : 1 < s) (hd : 4*s < d) (hm : 0 < m) (hθ : 0 < θ)
+include hs hd hm hθ
+
 theorem lowerAliasH_eventually_positive
-    (hs : 1 < s) (hd : 4*s < d) (hm : 0 < m) (hθ : 0 < θ)
     (hcontrol : LowerExponentControl τM τ Cτ) (C : ℝ) :
     ∀ᶠ x in atTop, 0 < lowerAliasH s d m θ C τM x := by
   filter_upwards [(lowerSaddleN_tendsto_atTop hs hd hm hθ hcontrol C).eventually
@@ -65,6 +67,7 @@ theorem lowerAliasH_eventually_positive
   unfold lowerAliasH
   linarith [Real.log_pos hx]
 
+omit hs hd hm hθ in
 theorem lowerAliasH_div_M_sq_limit
     (hd : 0 < d) (hm : 0 < m) (hθ : 0 < θ)
     (hcontrol : LowerExponentControl τM τ Cτ) (s C : ℝ) :
@@ -78,7 +81,6 @@ theorem lowerAliasH_div_M_sq_limit
   simp only [lowerAliasH, add_div, one_div, Pi.inv_apply, inv_pow]
 
 theorem log_lowerAliasH_div_M_tends_zero
-    (hs : 1 < s) (hd : 4*s < d) (hm : 0 < m) (hθ : 0 < θ)
     (hcontrol : LowerExponentControl τM τ Cτ) (C : ℝ) :
     Tendsto (fun x => Real.log (lowerAliasH s d m θ C τM x) / lowerSaddleM m x)
       atTop (𝓝 0) := by
@@ -88,18 +90,29 @@ theorem log_lowerAliasH_div_M_tends_zero
     (lowerAliasH_eventually_positive hs hd hm hθ hcontrol C)
   exact lowerAliasH_div_M_sq_limit hd0 hm hθ hcontrol s C
 
+omit hs hd hm hθ in
+theorem lowerSaddleD_eventually_positive (hd : 0 < d) (hm : 0 < m) :
+    ∀ᶠ x in atTop, 0 < (lowerSaddleD d m x : ℝ) := by
+  filter_upwards [(lowerSaddleM_tendsto_atTop hm).eventually (eventually_gt_atTop (0 : ℝ))] with x hx
+  exact lt_of_lt_of_le (by positivity : 0 < (d+8)/4 * (lowerSaddleM m x : ℝ)) (Nat.le_ceil _)
+
+omit hs hd hm hθ in
 theorem log_lowerSaddleD_div_M_tends_zero (hd : 0 < d) (hm : 0 < m) :
     Tendsto (fun x => Real.log (lowerSaddleD d m x) / lowerSaddleM m x)
-      atTop (𝓝 0) := by
-  have hpos : ∀ᶠ x in atTop, 0 < (lowerSaddleD d m x : ℝ) := by
-    filter_upwards [(lowerSaddleM_tendsto_atTop hm).eventually (eventually_gt_atTop (0 : ℝ))] with x hx
-    exact lt_of_lt_of_le (by positivity : 0 < (d+8)/4 * (lowerSaddleM m x : ℝ)) (Nat.le_ceil _)
-  exact log_profile_div_scale_tends_zero (lowerSaddleM_tendsto_atTop hm) 1
-    (by linarith : 0 < (d+8)/4) hpos (by simpa only [pow_one] using lowerSaddleD_div_M_limit hd hm)
+      atTop (𝓝 0) :=
+  log_profile_div_scale_tends_zero (lowerSaddleM_tendsto_atTop hm) 1
+    (by linarith : 0 < (d+8)/4) (lowerSaddleD_eventually_positive hd hm)
+    (by simpa only [pow_one] using lowerSaddleD_div_M_limit hd hm)
+
+theorem lowerAliasMuH_eventually_positive
+    (hcontrol : LowerExponentControl τM τ Cτ) (C : ℝ) :
+    ∀ᶠ x in atTop, 0 < lowerSaddleMu d m θ C x * lowerAliasH s d m θ C τM x := by
+  filter_upwards [eventually_gt_atTop (0 : ℝ), lowerAliasH_eventually_positive hs hd hm hθ hcontrol C] with x hx hH
+  rw [lowerSaddleMu_eq_exp hx]
+  positivity
 
 /-- The exact source product mu*H has strictly negative logarithmic slope. -/
 theorem lowerAliasMuH_log_div_M_limit
-    (hs : 1 < s) (hd : 4*s < d) (hm : 0 < m) (hθ : 0 < θ)
     (hcontrol : LowerExponentControl τM τ Cτ) (C : ℝ) :
     Tendsto (fun x => Real.log (lowerSaddleMu d m θ C x * lowerAliasH s d m θ C τM x) /
       lowerSaddleM m x) atTop (𝓝 (-θ)) := by
@@ -113,32 +126,14 @@ theorem lowerAliasMuH_log_div_M_limit
   ring
 
 theorem lowerAliasMuH_tends_zero
-    (hs : 1 < s) (hd : 4*s < d) (hm : 0 < m) (hθ : 0 < θ)
     (hcontrol : LowerExponentControl τM τ Cτ) (C : ℝ) :
-    Tendsto (fun x => lowerSaddleMu d m θ C x * lowerAliasH s d m θ C τM x) atTop (𝓝 0) := by
-  apply positive_profile_tends_zero_of_log_div_negative (lowerSaddleM_tendsto_atTop hm)
-    (neg_neg_of_pos hθ)
-  · filter_upwards [eventually_gt_atTop (0 : ℝ), lowerAliasH_eventually_positive hs hd hm hθ hcontrol C] with x hx hH
-    rw [lowerSaddleMu_eq_exp hx]
-    positivity
-  · exact lowerAliasMuH_log_div_M_limit hs hd hm hθ hcontrol C
-
-theorem lowerSaddleD_eventually_positive (hd : 0 < d) (hm : 0 < m) :
-    ∀ᶠ x in atTop, 0 < (lowerSaddleD d m x : ℝ) := by
-  filter_upwards [(lowerSaddleM_tendsto_atTop hm).eventually (eventually_gt_atTop (0 : ℝ))] with x hx
-  exact lt_of_lt_of_le (by positivity : 0 < (d+8)/4 * (lowerSaddleM m x : ℝ)) (Nat.le_ceil _)
-
-theorem lowerAliasMuH_eventually_positive
-    (hs : 1 < s) (hd : 4*s < d) (hm : 0 < m) (hθ : 0 < θ)
-    (hcontrol : LowerExponentControl τM τ Cτ) (C : ℝ) :
-    ∀ᶠ x in atTop, 0 < lowerSaddleMu d m θ C x * lowerAliasH s d m θ C τM x := by
-  filter_upwards [eventually_gt_atTop (0 : ℝ), lowerAliasH_eventually_positive hs hd hm hθ hcontrol C] with x hx hH
-  rw [lowerSaddleMu_eq_exp hx]
-  positivity
+    Tendsto (fun x => lowerSaddleMu d m θ C x * lowerAliasH s d m θ C τM x) atTop (𝓝 0) :=
+  positive_profile_tends_zero_of_log_div_negative (lowerSaddleM_tendsto_atTop hm)
+    (neg_neg_of_pos hθ) (lowerAliasMuH_eventually_positive hs hd hm hθ hcontrol C)
+    (lowerAliasMuH_log_div_M_limit hs hd hm hθ hcontrol C)
 
 /-- Every fixed target exponent a has the exact negative exponential slope -a*theta/d. -/
 theorem lowerAliasQ_log_div_M_limit
-    (hs : 1 < s) (hd : 4*s < d) (hm : 0 < m) (hθ : 0 < θ)
     (hcontrol : LowerExponentControl τM τ Cτ) {Cact : ℝ} (hCact : 0 < Cact) (C a : ℝ) :
     Tendsto (fun x => Real.log (lowerAliasQ s d m θ C Cact a τM x) / lowerSaddleM m x)
       atTop (𝓝 (-θ * (a/d))) := by
@@ -159,7 +154,6 @@ theorem lowerAliasQ_log_div_M_limit
   ring
 
 theorem lowerAliasQ_tends_zero
-    (hs : 1 < s) (hd : 4*s < d) (hm : 0 < m) (hθ : 0 < θ)
     (hcontrol : LowerExponentControl τM τ Cτ) {Cact a : ℝ} (hCact : 0 < Cact) (ha : 0 < a) (C : ℝ) :
     Tendsto (lowerAliasQ s d m θ C Cact a τM) atTop (𝓝 0) := by
   have hd0 : 0 < d := by linarith
@@ -173,7 +167,6 @@ theorem lowerAliasQ_tends_zero
   · exact lowerAliasQ_log_div_M_limit hs hd hm hθ hcontrol hCact C a
 
 theorem lowerAliasD_sq_Q_tends_zero
-    (hs : 1 < s) (hd : 4*s < d) (hm : 0 < m) (hθ : 0 < θ)
     (hcontrol : LowerExponentControl τM τ Cτ) {Cact a : ℝ} (hCact : 0 < Cact) (ha : 0 < a) (C : ℝ) :
     Tendsto (fun x => (lowerSaddleD d m x : ℝ)^2 * lowerAliasQ s d m θ C Cact a τM x)
       atTop (𝓝 0) := by
@@ -198,7 +191,6 @@ theorem lowerAliasD_sq_Q_tends_zero
 
 /-- All source row-ratio smallness conditions follow eventually for fixed Cact. -/
 theorem eventually_lowerAlias_row_smallness
-    (hs : 1 < s) (hd : 4*s < d) (hm : 0 < m) (hθ : 0 < θ)
     (hcontrol : LowerExponentControl τM τ Cτ) {Cact : ℝ} (hCact : 0 < Cact) (C : ℝ) :
     ∀ᶠ x in atTop,
       lowerSaddleMu d m θ C x * lowerAliasH s d m θ C τM x ≤ 1 ∧
@@ -233,10 +225,12 @@ theorem eventually_lowerAlias_row_smallness
       (Real.rpow_le_rpow_of_exponent_ge hbase0 hbase.le (by apply div_le_div_of_nonneg_right (by norm_num) hd0.le))
       (by positivity)
 
+omit hs hd hm hθ in
 theorem lowerSaddleM_sq_tendsto_atTop (hm : 0 < m) :
     Tendsto (fun x => (lowerSaddleM m x : ℝ)^2) atTop atTop := by
   simpa only [pow_two] using (lowerSaddleM_tendsto_atTop hm).atTop_mul_atTop₀ (lowerSaddleM_tendsto_atTop hm)
 
+omit hs hd hm hθ in
 theorem lowerSaddleD_div_M_sq_tends_zero (hd : 0 < d) (hm : 0 < m) :
     Tendsto (fun x => (lowerSaddleD d m x : ℝ) / (lowerSaddleM m x : ℝ)^2) atTop (𝓝 0) := by
   have hh := (lowerSaddleD_div_M_limit hd hm).mul (lowerSaddleM_tendsto_atTop hm).inv_tendsto_atTop
@@ -245,6 +239,7 @@ theorem lowerSaddleD_div_M_sq_tends_zero (hd : 0 < d) (hm : 0 < m) :
   funext x
   simp only [Pi.inv_apply, div_eq_mul_inv, pow_two, mul_inv, mul_assoc]
 
+omit hs hd hm hθ in
 theorem log_lowerSaddleD_div_M_sq_tends_zero (hd : 0 < d) (hm : 0 < m) :
     Tendsto (fun x => Real.log (lowerSaddleD d m x) / (lowerSaddleM m x : ℝ)^2) atTop (𝓝 0) := by
   have hh := (log_lowerSaddleD_div_M_tends_zero hd hm).mul (lowerSaddleM_tendsto_atTop hm).inv_tendsto_atTop
@@ -255,7 +250,6 @@ theorem log_lowerSaddleD_div_M_sq_tends_zero (hd : 0 < d) (hm : 0 < m) :
 
 /-- The exponential cutoff still tends to infinity: log N is quadratic, D only linear. -/
 theorem lowerAliasCutoff_tendsto_atTop
-    (hs : 1 < s) (hd : 4*s < d) (hm : 0 < m) (hθ : 0 < θ)
     (hcontrol : LowerExponentControl τM τ Cτ) (C c0 : ℝ) :
     Tendsto (lowerAliasCutoff s d m θ C c0 τM) atTop atTop := by
   have hd0 : 0 < d := by linarith
@@ -281,7 +275,6 @@ theorem lowerAliasCutoff_tendsto_atTop
 
 /-- Every fixed singleton representation cost is absorbed by actual N. -/
 theorem lowerAliasSingleton_ratio_tends_zero
-    (hs : 1 < s) (hd : 4*s < d) (hm : 0 < m) (hθ : 0 < θ)
     (hcontrol : LowerExponentControl τM τ Cτ) {Cs : ℝ} (hCs : 0 < Cs) (C c0 : ℝ) :
     Tendsto (fun x => Cs * (lowerSaddleD d m x : ℝ) *
       Real.exp (c0*((lowerSaddleD d m x : ℝ)+1)) / lowerSaddleN s d m θ C τM x)
@@ -306,13 +299,14 @@ theorem lowerAliasSingleton_ratio_tends_zero
     ring
 
 theorem eventually_lowerAlias_singleton_le
-    (hs : 1 < s) (hd : 4*s < d) (hm : 0 < m) (hθ : 0 < θ)
     (hcontrol : LowerExponentControl τM τ Cτ) {Cs : ℝ} (hCs : 0 < Cs) (C c0 : ℝ) :
     ∀ᶠ x in atTop, Cs * (lowerSaddleD d m x : ℝ) *
       Real.exp (c0*((lowerSaddleD d m x : ℝ)+1)) ≤ lowerSaddleN s d m θ C τM x := by
   filter_upwards [(lowerAliasSingleton_ratio_tends_zero hs hd hm hθ hcontrol hCs C c0).eventually
     (gt_mem_nhds (by norm_num : (0 : ℝ)<1))] with x hx
   simpa only [one_mul] using ((div_lt_iff₀ (lowerSaddleN_positive _ _ _ _ _ _ _)).1 hx).le
+
+omit hs hd hm hθ in
 
 /-- Exact source coarse-cutoff cancellation; no extra exponential in M is introduced. -/
 theorem lowerAlias_coarse_ratio_le {s d m θ C c0 x : ℝ} {τM : ℕ → ℝ}
@@ -332,7 +326,6 @@ theorem lowerAlias_coarse_ratio_le {s d m θ C c0 x : ℝ} {τM : ℕ → ℝ}
   exact Real.exp_le_one_iff.mpr (mul_nonpos_of_nonpos_of_nonneg (sub_nonpos.mpr hτ) (Nat.cast_nonneg _))
 
 theorem eventually_lowerAlias_cutoff_guards
-    (hs : 1 < s) (hd : 4*s < d) (hm : 0 < m) (hθ : 0 < θ)
     (hcontrol : LowerExponentControl τM τ Cτ) {c0 : ℝ} (hc0 : τ < c0) (C : ℝ) :
     ∀ᶠ x in atTop, 1 < lowerAliasCutoff s d m θ C c0 τM x ∧
       τM (lowerSaddleM m x) ≤ c0 ∧
@@ -341,6 +334,8 @@ theorem eventually_lowerAlias_cutoff_guards
   filter_upwards [(lowerAliasCutoff_tendsto_atTop hs hd hm hθ hcontrol C c0).eventually
     (eventually_gt_atTop (1 : ℝ)), (lowerSaddleTau_limit hm hcontrol).eventually (gt_mem_nhds hc0)] with x hell hτ
   exact ⟨hell, hτ.le, lowerAlias_coarse_ratio_le hτ.le⟩
+
+omit hs hd hm hθ in
 
 /-- Exact scalar fine-band count restriction, obtained by taking logarithms
 of the actual target scale above the common cutoff. -/
@@ -363,7 +358,6 @@ theorem fine_target_count_lt {N base H ω d c0 D r : ℝ}
 
 /-- The ratio controlling all fine targets has a fixed finite limit. -/
 theorem lowerAliasD_div_gap_limit
-    (hs : 1 < s) (hd : 4*s < d) (hm : 0 < m) (hθ : 0 < θ)
     (hcontrol : LowerExponentControl τM τ Cτ) (C : ℝ) :
     Tendsto (fun x => (lowerSaddleD d m x : ℝ) /
       (lowerSaddleOmega d m θ C x - Real.log (lowerAliasH s d m θ C τM x)))
@@ -382,7 +376,6 @@ def lowerAliasFineTargetBound (d θ c0 : ℝ) : ℕ :=
   Nat.ceil (3 + d*c0*(((d+8)/4)/θ + 1))
 
 theorem eventually_lowerAlias_fine_targets
-    (hs : 1 < s) (hd : 4*s < d) (hm : 0 < m) (hθ : 0 < θ)
     (hcontrol : LowerExponentControl τM τ Cτ) {c0 : ℝ} (hc0 : 0 < c0) (C : ℝ) :
     ∀ᶠ x in atTop,
       lowerAliasFineTargetBound d θ c0 ≤ lowerSaddleM m x ∧
@@ -437,7 +430,6 @@ def LowerAliasHierarchy (s d m θ C Cact Cs c0 : ℝ) (τM : ℕ → ℝ) (x : �
     r ≤ lowerAliasFineTargetBound d θ c0
 
 theorem eventually_lowerAlias_hierarchy
-    (hs : 1 < s) (hd : 4*s < d) (hm : 0 < m) (hθ : 0 < θ)
     (hcontrol : LowerExponentControl τM τ Cτ) {Cact Cs c0 : ℝ}
     (hCact : 0 < Cact) (hCs : 0 < Cs) (hc0 : 0 < c0) (hτc0 : τ < c0) (C : ℝ) :
     ∀ᶠ x in atTop, LowerAliasHierarchy s d m θ C Cact Cs c0 τM x := by
@@ -448,6 +440,8 @@ theorem eventually_lowerAlias_hierarchy
     with x hrow hcut hsingle hfine
   rcases hrow with ⟨hbase,hlog,hgap,hq21,hq1,hDq⟩
   exact ⟨hcut.1,hcut.2.1,hbase,hlog,hgap,hq21,hq1,hDq,hcut.2.2,hsingle,hfine⟩
+
+omit hs hd hm hθ in
 
 /-- The entire hierarchy holds for the paper's actual canonical M, grid,
 mu, N and shrunk density endpoints, with c0=tau+1 and fixed representation

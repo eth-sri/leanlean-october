@@ -410,6 +410,12 @@ theorem tendsto_atBot_of_div_negative {f g : ℝ → ℝ} {c : ℝ}
   filter_upwards [hg.eventually (eventually_gt_atTop (0 : ℝ))] with x hx
   exact mul_div_cancel₀ _ hx.ne'
 
+theorem tendsto_zero_of_eventually_log_le {f g : ℝ → ℝ}
+    (hf : ∀ᶠ x in atTop, 0 < f x) (h : ∀ᶠ x in atTop, Real.log (f x) ≤ g x)
+    (hg : Tendsto g atTop atBot) : Tendsto f atTop (𝓝 0) :=
+  (Real.tendsto_exp_atBot.comp (tendsto_atBot_mono' atTop h hg)).congr'
+    (hf.mono fun _ hx => Real.exp_log hx)
+
 theorem lowerSaddleM_mul_mu_tends_zero {d m θ : ℝ}
     (hd : 0 < d) (hm : 0 < m) (hθ : 0 < θ) (C : ℝ) :
     Tendsto (fun x : ℝ => (lowerSaddleM m x : ℝ) * lowerSaddleMu d m θ C x) atTop (𝓝 0) := by
@@ -570,25 +576,14 @@ theorem lowerSaddleEnergyTwo_ratio_tends_zero {s d m θ C CG τ Cτ : ℝ} {τM 
       (lowerSaddleActivity s d m θ C τM x) ^ 2) atTop (𝓝 0) := by
   have hu := tendsto_atBot_of_div_negative (lowerSaddleM_tendsto_atTop hm)
     (lowerSaddleAliasUpper_div_M_limit hd hm hθ hcontrol s C CG) (by linarith)
-  have hb := Real.tendsto_exp_atBot.comp hu
-  apply squeeze_zero' _ _ hb
-  · filter_upwards [eventually_gt_atTop (0 : ℝ)] with x hx
-    have hH := lowerSaddleH_positive d m θ C x
-    have hN := lowerSaddleN_positive s d m θ C τM x
-    have hA := lowerSaddleActivity_positive s d m θ C τM x
-    unfold lowerSaddleEnergyTwo lowerSaddleMu
-    positivity
-  · filter_upwards [eventually_gt_atTop (0 : ℝ),
-      eventually_log_energyTwo_le_aliasUpper hd hm hθ hCG hbalance] with x hx hlog
-    have hp : 0 < lowerSaddleEnergyTwo s d m θ C CG τM x /
-        (lowerSaddleActivity s d m θ C τM x) ^ 2 := by
-      have hH := lowerSaddleH_positive d m θ C x
-      have hN := lowerSaddleN_positive s d m θ C τM x
-      have hA := lowerSaddleActivity_positive s d m θ C τM x
-      unfold lowerSaddleEnergyTwo lowerSaddleMu
-      positivity
-    change _ ≤ Real.exp (lowerSaddleAliasUpper s d m θ C CG τM x)
-    exact (Real.exp_log hp).symm.trans_le (Real.exp_le_exp.2 hlog)
+  refine tendsto_zero_of_eventually_log_le ?_
+    (eventually_log_energyTwo_le_aliasUpper hd hm hθ hCG hbalance) hu
+  filter_upwards [eventually_gt_atTop (0 : ℝ)] with x hx
+  have hH := lowerSaddleH_positive d m θ C x
+  have hN := lowerSaddleN_positive s d m θ C τM x
+  have hA := lowerSaddleActivity_positive s d m θ C τM x
+  unfold lowerSaddleEnergyTwo lowerSaddleMu
+  positivity
 
 theorem lowerSaddleD_div_M_limit {d m : ℝ} (hd : 0 < d) (hm : 0 < m) :
     Tendsto (fun x : ℝ => (lowerSaddleD d m x : ℝ) / lowerSaddleM m x)
@@ -689,24 +684,14 @@ theorem lowerSaddleEnergyThree_ratio_tends_zero {s d m θ C CG : ℝ} {τM : ℕ
     linarith
   have hu := tendsto_atBot_of_div_negative Real.tendsto_log_atTop
     (lowerSaddleCountUpper_div_log_limit hd0 hm hθ s C CG) hc
-  have hb := Real.tendsto_exp_atBot.comp hu
-  apply squeeze_zero' _ _ hb
-  · filter_upwards [eventually_gt_atTop (0 : ℝ)] with x hx
-    have hH := lowerSaddleH_positive d m θ C x
-    have hA := lowerSaddleActivity_positive s d m θ C τM x
-    unfold lowerSaddleEnergyThree lowerSaddleMu
-    positivity
-  · filter_upwards [eventually_gt_atTop (0 : ℝ),
-      eventually_log_energyThree_le_countUpper (s := s) (τM := τM)
-        (by linarith) hd0 hm hθ hCG] with x hx hlog
-    have hp : 0 < lowerSaddleEnergyThree s d m θ C CG τM x /
-        (lowerSaddleActivity s d m θ C τM x) ^ 2 := by
-      have hH := lowerSaddleH_positive d m θ C x
-      have hA := lowerSaddleActivity_positive s d m θ C τM x
-      unfold lowerSaddleEnergyThree lowerSaddleMu
-      positivity
-    change _ ≤ Real.exp (lowerSaddleCountUpper s d m θ C CG x)
-    exact (Real.exp_log hp).symm.trans_le (Real.exp_le_exp.2 hlog)
+  refine tendsto_zero_of_eventually_log_le ?_
+    (eventually_log_energyThree_le_countUpper (s := s) (τM := τM)
+      (by linarith) hd0 hm hθ hCG) hu
+  filter_upwards [eventually_gt_atTop (0 : ℝ)] with x hx
+  have hH := lowerSaddleH_positive d m θ C x
+  have hA := lowerSaddleActivity_positive s d m θ C τM x
+  unfold lowerSaddleEnergyThree lowerSaddleMu
+  positivity
 
 /-- The combined explicit numerical energy envelope is at most `3 CG B²` eventually. -/
 theorem eventually_lowerSaddle_numeric_cost {s d m θ C CG τ Cτ : ℝ} {τM : ℕ → ℝ}

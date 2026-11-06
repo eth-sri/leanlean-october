@@ -62,7 +62,7 @@ theorem weightedSymmetrization_energy_le (weight : ℝ) {G : E × E → ℝ}
       nlinarith
     _ = _ := by
       have ha := integral_add h₁ h₂
-      simp only [Pi.add_apply, Function.comp_def] at ha
+      simp only [Function.comp_def] at ha
       rw [integral_const_mul, ha, integral_prod_swap (fun z => G z ^ 2)]
       ring
 

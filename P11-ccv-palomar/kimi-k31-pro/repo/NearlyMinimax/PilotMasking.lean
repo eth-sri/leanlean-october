@@ -49,25 +49,22 @@ theorem maskedPilotKernel_restrict_eq (c : Ω → W → H) (A : W → H →L[ℝ
   funext z
   by_cases hq : q z.2 = 0 <;> simp [maskedPilotKernel, restrictPilotField, hq]
 
-theorem maskedPilotKernel_memLp_of_supported_sections {c : Ω → W → H}
+variable {c : Ω → W → H}
     (hmc : Measurable (fun z : Ω × W => c z.1 z.2))
     {A : W → H →L[ℝ] H} (hmA : Measurable (fun z : W × H => A z.1 z.2))
     {q : W → ℝ} (hmq : Measurable q) (hq : ∀ w, q w ^ 2 = q w)
     (hA : Integrable (fun w => q w * ‖A w‖ ^ 2) ν)
     (hc : ∀ᵐ w ∂ν, q w ≠ 0 → MemLp (fun x => c x w) 2 μ)
-    {L : ℝ} (hL : 0 ≤ L) (hE : ∀ᵐ w ∂ν, q w ≠ 0 → (∫ x, ‖c x w‖ ^ 2 ∂μ) ≤ L) :
+    {L : ℝ} (hL : 0 ≤ L) (hE : ∀ᵐ w ∂ν, q w ≠ 0 → (∫ x, ‖c x w‖ ^ 2 ∂μ) ≤ L)
+include c hmc A hmA q hmq hq hA hc L hL hE
+
+theorem maskedPilotKernel_memLp_of_supported_sections  :
     MemLp (maskedPilotKernel c A q) 2 ((μ.prod μ).prod ν) := by
   rw [← maskedPilotKernel_restrict_eq c A q]
   exact maskedPilotKernel_memLp (restrictPilotField_measurable hmc hmq) hmA hmq hq hA
     (restrictPilotField_memLp hc) hL (restrictPilotField_energy_le hL hE)
 
-theorem maskedPilotKernel_energy_le_of_supported_sections {c : Ω → W → H}
-    (hmc : Measurable (fun z : Ω × W => c z.1 z.2))
-    {A : W → H →L[ℝ] H} (hmA : Measurable (fun z : W × H => A z.1 z.2))
-    {q : W → ℝ} (hmq : Measurable q) (hq : ∀ w, q w ^ 2 = q w)
-    (hA : Integrable (fun w => q w * ‖A w‖ ^ 2) ν)
-    (hc : ∀ᵐ w ∂ν, q w ≠ 0 → MemLp (fun x => c x w) 2 μ)
-    {L : ℝ} (hL : 0 ≤ L) (hE : ∀ᵐ w ∂ν, q w ≠ 0 → (∫ x, ‖c x w‖ ^ 2 ∂μ) ≤ L) :
+theorem maskedPilotKernel_energy_le_of_supported_sections  :
     (∫ z, maskedPilotKernel c A q z ^ 2 ∂(μ.prod μ).prod ν) ≤
       L ^ 2 * ∫ w, q w * ‖A w‖ ^ 2 ∂ν := by
   rw [← maskedPilotKernel_restrict_eq c A q]

@@ -140,8 +140,7 @@ theorem dyadicMultilevelErrorField_eq_raw_sub_population {d : ℕ} (C : ModelCon
   apply Finset.sum_congr rfl
   intro j _
   rw [incrementFinScalar, incrementFinVector_affine]
-  simp only [rowFunctional, ContinuousLinearMap.sum_apply, ContinuousLinearMap.smul_apply,
-    ContinuousLinearMap.proj_apply, dotProduct, Pi.sub_apply, Pi.smul_apply, smul_eq_mul,
+  simp only [dotProduct, Pi.sub_apply, Pi.smul_apply, smul_eq_mul,
     dyadicPopulationRawPolynomial, mul_sub, Finset.sum_sub_distrib, Finset.mul_sum]
   congr 1
   apply Finset.sum_congr rfl

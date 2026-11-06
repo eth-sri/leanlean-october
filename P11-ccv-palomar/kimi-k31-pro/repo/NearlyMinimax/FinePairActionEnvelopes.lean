@@ -49,14 +49,17 @@ theorem finePairDistance_response_bound_of_chart (q : ℕ) (hn : 1 ≤ n)
     ha hη hρ hηρ U g w c y hc hg hw
     (fun v hv i => highFrameProfile_abs_le_one C hC (U i) (hU i) v hv) hp
 
-theorem finePairPairAliasAction_abs_bound_of_chart
-    (ad bd T0 N : ℝ) (haD : 0 < ad) (hab : ad < bd) (M q : ℕ) (hn : 1 ≤ n)
+variable (ad bd T0 N : ℝ) (haD : 0 < ad) (hab : ad < bd) (M q : ℕ) (hn : 1 ≤ n)
     (C a V η ρ : ℝ) (hC : 1 ≤ C) (ha : 0 < a) (hη : 0 ≤ η) (hρ : 0 ≤ ρ)
     (hηρ : η ≤ ρ/2) (U : Fin n → Covariate d) (hU : ∀ i l, |U i l| ≤ 2)
     (p g w : Fin n → ℝ) (hpD : ∀ i, p i ∈ Icc ad bd)
     (c : HighFrameIndex d F → ℝ) (y : Fin n → Fin 3)
     (hc : ∑ γ, |c γ| ≤ C⁻¹) (hg : ∀ i, |g i| ≤ ρ/2) (hw : ∀ i, |w i| ≤ 1)
-    (hp : ∀ f : ℝ, |f| ≤ ρ → ∀ y, 0 ≤ ternaryMass a f V y) :
+    (hp : ∀ f : ℝ, |f| ≤ ρ → ∀ y, 0 ≤ ternaryMass a f V y)
+include ad bd T0 N haD hab M q hn C a V η ρ hC ha hη hρ hηρ U hU p g w hpD c y hc hg hw hp
+
+theorem finePairPairAliasAction_abs_bound_of_chart
+     :
     |finePairPairAliasAction ad bd T0 N M q C U p c
       (fun v => highResponseProduct a V η g w (fun i => highFrameFeature (U i)) v y)| ≤
       finePairDensityCoefficientBudget ad bd M n *
@@ -72,13 +75,7 @@ theorem finePairPairAliasAction_abs_bound_of_chart
     (finePairDistance_response_bound_of_chart q hn C a V η ρ hC ha hη hρ hηρ U hU g w c y hc hg hw hp)
 
 theorem finePairEvenFieldAction_abs_bound_of_chart
-    (ad bd T0 N : ℝ) (haD : 0 < ad) (hab : ad < bd) (M q : ℕ) (hn : 1 ≤ n)
-    (C a V η ρ : ℝ) (hC : 1 ≤ C) (ha : 0 < a) (hη : 0 ≤ η) (hρ : 0 ≤ ρ)
-    (hηρ : η ≤ ρ/2) (U : Fin n → Covariate d) (hU : ∀ i l, |U i l| ≤ 2)
-    (p g w : Fin n → ℝ) (hpD : ∀ i, p i ∈ Icc ad bd)
-    (c : HighFrameIndex d F → ℝ) (y : Fin n → Fin 3)
-    (hc : ∑ γ, |c γ| ≤ C⁻¹) (hg : ∀ i, |g i| ≤ ρ/2) (hw : ∀ i, |w i| ≤ 1)
-    (hp : ∀ f : ℝ, |f| ≤ ρ → ∀ y, 0 ≤ ternaryMass a f V y) :
+     :
     |finePairEvenFieldAction ad bd T0 N M q C U p c
       (fun v => highResponseProduct a V η g w (fun i => highFrameFeature (U i)) v y)| ≤
       finePairDensityCoefficientBudget ad bd M n *

@@ -96,7 +96,7 @@ theorem finePairPacketWeight_abs_reflection (a b : ℝ) (M q : ℕ) (C : ℝ)
     |finePairPacketWeight a b M q C A (ζ, finePairPacketReflection ι M q h)| =
       |finePairPacketWeight a b M q C A (ζ, h)| := by
   simp only [finePairPacketWeight, finePairDensityWeight, finePairPacketReflection,
-    Equiv.prodCongr_apply, Prod.map_apply, Prod.map_fst, Prod.map_snd,
+    Equiv.prodCongr_apply, Prod.map_fst, Prod.map_snd,
     Equiv.refl_apply, Fin.revPerm_apply, abs_mul,
     fineModulationWeight_abs_reflection]
 
@@ -105,7 +105,7 @@ theorem finePairPacketSlope_reflection (a b : ℝ) (M q : ℕ) (ψ : Z → ℝ) 
     finePairPacketSlope a b M q ψ (ζ, finePairPacketReflection ι M q h) =
       -finePairPacketSlope a b M q ψ (ζ, h) := by
   simp only [finePairPacketSlope, finePairPacketIntercept, finePairDensityAtom,
-    finePairPacketReflection, Equiv.prodCongr_apply, Prod.map_apply, Prod.map_fst, Prod.map_snd,
+    finePairPacketReflection, Equiv.prodCongr_apply, Prod.map_fst, Prod.map_snd,
     Equiv.refl_apply, Fin.revPerm_apply,
     fineModulationNode_reflection]
   ring

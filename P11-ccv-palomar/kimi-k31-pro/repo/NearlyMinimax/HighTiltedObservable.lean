@@ -22,7 +22,7 @@ def highTiltedObservableMean {Ω : Type*} [MeasurableSpace Ω] {d : ℕ}
 
 variable {J : Type*} [Fintype J] [LinearOrder J]
 
-theorem historyMarkedPrior_tiltedObservable_eq_raw (dependent : J → J → Prop)
+variable (dependent : J → J → Prop)
     (hrefl : ∀ j, dependent j j) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
     (Δ : ℕ) (hΔ : 1 ≤ Δ) (hlabels : ∀ j, (dependentLabelFinset dependent j).card ≤ Δ)
     (T Ba : ℝ) (hBa : 0 ≤ Ba)
@@ -40,7 +40,10 @@ theorem historyMarkedPrior_tiltedObservable_eq_raw (dependent : J → J → Prop
       (historyMarkedPrior dependent Δ 0 π activation).map (fun ω => highRawDensityMass (p ω)))
     (H : (Fin n → Observation d) → ℝ) (hH : Measurable H)
     (B : ℝ) (hB : 0 ≤ B) (hHb : ∀ z, |H z| ≤ B)
-    (t : ℝ) (ht : t ∈ Icc 0 T) :
+include dependent hrefl hsymm Δ hΔ hlabels T Ba hBa π activation hactivation hcenter habound hsmall
+  n a v η aRaw bRaw ha haRaw p F hp hF hraw hq hmass H hH B hB hHb
+
+theorem historyMarkedPrior_tiltedObservable_eq_raw (t : ℝ) (ht : t ∈ Icc 0 T) :
     highTiltedObservableMean (historyMarkedPrior dependent Δ t π activation)
       n a (v - η ^ 2 * t) p F hp hF H =
       (massPowerNormalizer (historyMarkedPrior dependent Δ 0 π activation)
@@ -60,25 +63,7 @@ theorem historyMarkedPrior_tiltedObservable_eq_raw (dependent : J → J → Prop
       aRaw bRaw haRaw hraw ha.ne' (hq t ht) H hH B hB hHb,
     massPowerNormalizer_eq_of_massLaw _ _ _ (highRawDensityMass_joint_measurable p hp) n (hmass t ht)]
 
-theorem historyMarkedPrior_tiltedObservable_hasDerivAt (dependent : J → J → Prop)
-    (hrefl : ∀ j, dependent j j) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
-    (Δ : ℕ) (hΔ : 1 ≤ Δ) (hlabels : ∀ j, (dependentLabelFinset dependent j).card ≤ Δ)
-    (T Ba : ℝ) (hBa : 0 ≤ Ba)
-    {E : Type*} [MeasurableSpace E] [StandardBorelSpace E]
-    (π : Measure E) [IsProbabilityMeasure π] (activation : E → ℝ) (hactivation : Measurable activation)
-    (hcenter : ∫ e, activation e ∂π = 0) (habound : ∀ e, |activation e| ≤ Ba)
-    (hsmall : T * Ba / historyReferenceRho Δ ≤ 1 / (2 + 8 * (Δ : ℝ) ^ 2))
-    {d : ℕ} (n : ℕ) (a v η aRaw bRaw : ℝ) (ha : 0 < a) (haRaw : 0 < aRaw)
-    (p F : HistoryMarked dependent E → Covariate d → ℝ)
-    (hp : Measurable (Function.uncurry p)) (hF : Measurable (Function.uncurry F))
-    (hraw : ∀ ω x, aRaw ≤ p ω x ∧ p ω x ≤ bRaw)
-    (hq : ∀ u ∈ Icc 0 T, ∀ ω x y, 0 ≤ ternaryMass a (F ω x) (v - η ^ 2 * u) y)
-    (hmass : ∀ u ∈ Icc 0 T,
-      (historyMarkedPrior dependent Δ u π activation).map (fun ω => highRawDensityMass (p ω)) =
-      (historyMarkedPrior dependent Δ 0 π activation).map (fun ω => highRawDensityMass (p ω)))
-    (H : (Fin n → Observation d) → ℝ) (hH : Measurable H)
-    (B : ℝ) (hB : 0 ≤ B) (hHb : ∀ z, |H z| ≤ B)
-    (t : ℝ) (ht : 0 < t) (htT : t < T) :
+theorem historyMarkedPrior_tiltedObservable_hasDerivAt (t : ℝ) (ht : 0 < t) (htT : t < T) :
     HasDerivAt (fun u => highTiltedObservableMean (historyMarkedPrior dependent Δ u π activation)
       n a (v - η ^ 2 * u) p F hp hF H)
       ((massPowerNormalizer (historyMarkedPrior dependent Δ 0 π activation)
@@ -101,25 +86,7 @@ theorem historyMarkedPrior_tiltedObservable_hasDerivAt (dependent : J → J → 
     π activation hactivation hcenter habound hsmall n a v η aRaw bRaw ha haRaw p F hp hF hraw hq hmass
     H hH B hB hHb u ⟨hu.1.le, hu.2.le⟩
 
-theorem historyMarkedPrior_tiltedObservable_exists_lipschitz (dependent : J → J → Prop)
-    (hrefl : ∀ j, dependent j j) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
-    (Δ : ℕ) (hΔ : 1 ≤ Δ) (hlabels : ∀ j, (dependentLabelFinset dependent j).card ≤ Δ)
-    (T Ba : ℝ) (hBa : 0 ≤ Ba)
-    {E : Type*} [MeasurableSpace E] [StandardBorelSpace E]
-    (π : Measure E) [IsProbabilityMeasure π] (activation : E → ℝ) (hactivation : Measurable activation)
-    (hcenter : ∫ e, activation e ∂π = 0) (habound : ∀ e, |activation e| ≤ Ba)
-    (hsmall : T * Ba / historyReferenceRho Δ ≤ 1 / (2 + 8 * (Δ : ℝ) ^ 2))
-    {d : ℕ} (n : ℕ) (a v η aRaw bRaw : ℝ) (ha : 0 < a) (haRaw : 0 < aRaw)
-    (p F : HistoryMarked dependent E → Covariate d → ℝ)
-    (hp : Measurable (Function.uncurry p)) (hF : Measurable (Function.uncurry F))
-    (hraw : ∀ ω x, aRaw ≤ p ω x ∧ p ω x ≤ bRaw)
-    (hq : ∀ u ∈ Icc 0 T, ∀ ω x y, 0 ≤ ternaryMass a (F ω x) (v - η ^ 2 * u) y)
-    (hmass : ∀ u ∈ Icc 0 T,
-      (historyMarkedPrior dependent Δ u π activation).map (fun ω => highRawDensityMass (p ω)) =
-      (historyMarkedPrior dependent Δ 0 π activation).map (fun ω => highRawDensityMass (p ω)))
-    (H : (Fin n → Observation d) → ℝ) (hH : Measurable H)
-    (B : ℝ) (hB : 0 ≤ B) (hHb : ∀ z, |H z| ≤ B)
-    : ∃ K : NNReal, LipschitzOnWith K
+theorem historyMarkedPrior_tiltedObservable_exists_lipschitz : ∃ K : NNReal, LipschitzOnWith K
       (fun u => highTiltedObservableMean (historyMarkedPrior dependent Δ u π activation)
         n a (v - η ^ 2 * u) p F hp hF H) (Icc 0 T) := by
   have hpb (ω : HistoryMarked dependent E) (x : Covariate d) : |p ω x| ≤ |bRaw| := by

@@ -71,10 +71,7 @@ def highFrameMarkedScore (d k D n : ℕ) [NeZero k]
     (fun i => highPeriodicTensor d k j (x i))
     (fun i => highLocalFrameFeature k j (x i)) (c j) y
 
-/-- Conditional orthogonality of the true complete signed-generator scores
-is proved from actual response normalization, conditional density zero mass,
-and the original window supports. -/
-theorem highFrameMarkedScore_orthogonal (d k D n : ℕ) [NeZero k] (hk : 4 ≤ k)
+variable (d k D n : ℕ) [NeZero k] (hk : 4 ≤ k)
     (π : HighWindowLabels d k → Measure E)
     (activation : HighWindowLabels d k → E → ℝ) (hAct : ∀ j, Integrable (activation j) (π j))
     (a V η pPlus : ℝ) (ha : a ≠ 0) (hpPlus : 0 ≤ pPlus) (p : Fin n → ℝ)
@@ -92,6 +89,13 @@ theorem highFrameMarkedScore_orthogonal (d k D n : ℕ) [NeZero k] (hk : 4 ≤ k
         (fun i => highPeriodicTensor d k j (x i))
         (fun i => highLocalFrameFeature k j (x i)) (cReset j e) i) V b)
     (hDensity : ∀ j, (∫ e, activation j e * ∏ i, pReset j e i ∂π j) = 0)
+include d k D n hk π activation hAct a V η pPlus ha hpPlus p pReset hReset hBound
+  cReset hcReset c x hpd hp hpReset hDensity
+
+/-- Conditional orthogonality of the true complete signed-generator scores
+is proved from actual response normalization, conditional density zero mass,
+and the original window supports. -/
+theorem highFrameMarkedScore_orthogonal 
     (j l : HighWindowLabels d k) (hjl : l ∉ highNeighborLabels d k j) :
     (∫ y, highFrameMarkedScore d k D n π activation a V η p pReset cReset c x j y *
       highFrameMarkedScore d k D n π activation a V η p pReset cReset c x l y
@@ -114,24 +118,7 @@ theorem highFrameMarkedScore_orthogonal (d k D n : ℕ) [NeZero k] (hk : 4 ≤ k
 /-- The exact source overlap factor is established for the complete union
 score, after the single variance correction and the genuine local field
 decomposition. No covariance or score-energy bound is a premise. -/
-theorem highFrameMarkedScore_energy_bound (d k D n : ℕ) [NeZero k] (hk : 4 ≤ k)
-    (π : HighWindowLabels d k → Measure E)
-    (activation : HighWindowLabels d k → E → ℝ) (hAct : ∀ j, Integrable (activation j) (π j))
-    (a V η pPlus : ℝ) (ha : a ≠ 0) (hpPlus : 0 ≤ pPlus) (p : Fin n → ℝ)
-    (pReset : HighWindowLabels d k → E → Fin n → ℝ)
-    (hReset : ∀ j i, Measurable (fun e => pReset j e i))
-    (hBound : ∀ j e i, |pReset j e i| ≤ pPlus)
-    (cReset : HighWindowLabels d k → E → HighFrameIndex d D → ℝ)
-    (hcReset : ∀ j γ, Measurable (fun e => cReset j e γ))
-    (c : HighWindowLabels d k → HighFrameIndex d D → ℝ) (x : Fin n → Covariate d)
-    (hpd : ∀ i, p i ≠ 0)
-    (hp : ∀ i b, 0 < ternaryMass a
-      (highFrameField d k η (fun l => highFramePolynomial (c l)) (x i)) V b)
-    (hpReset : ∀ j e i b, 0 ≤ ternaryMass a
-      (coefficientRegression η (fun i => highLocalFieldWithout d k D η c j (x i))
-        (fun i => highPeriodicTensor d k j (x i))
-        (fun i => highLocalFrameFeature k j (x i)) (cReset j e) i) V b)
-    (hDensity : ∀ j, (∫ e, activation j e * ∏ i, pReset j e i ∂π j) = 0) :
+theorem highFrameMarkedScore_energy_bound  :
     (∫ y, (∑ j, highFrameMarkedScore d k D n π activation a V η p pReset cReset c x j y)^2
       ∂Measure.pi (fun i => ternaryIndexMeasure a
         (highFrameField d k η (fun l => highFramePolynomial (c l)) (x i)) V

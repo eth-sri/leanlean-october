@@ -170,14 +170,17 @@ theorem bilinear_section_energy_le {η : Ω → W → H}
     (mul_le_mul_of_nonneg_left (operatorField_energy_le hmB hC hbound hm hy) hlam)
   simpa only [test, bilinear, mul_assoc] using hb
 
-theorem bilinear_sq_integrable {η : Ω → W → H}
+variable {η : Ω → W → H}
     (hmη : Measurable (fun z : Ω × W => η z.1 z.2))
     (hη : MemLp (fun z : Ω × W => η z.1 z.2) 2 (μ.prod M))
     {B : W → H →L[ℝ] H}
     (hmB : Measurable (fun z : W × H => B z.1 z.2))
     {C lam : ℝ} (hC : 0 ≤ C) (hlam : 0 ≤ lam) (hbound : ∀ w, ‖B w‖ ≤ C)
     (htest : ∀ v : W → H, MemLp v 2 M →
-      (∫ x, test (M := M) η v x ^ 2 ∂μ) ≤ lam * ∫ w, ‖v w‖ ^ 2 ∂M) :
+      (∫ x, test (M := M) η v x ^ 2 ∂μ) ≤ lam * ∫ w, ‖v w‖ ^ 2 ∂M)
+include η hmη hη B hmB C lam hC hlam hbound htest
+
+theorem bilinear_sq_integrable  :
     Integrable (fun z => bilinear (M := M) η B z ^ 2) (μ.prod μ) := by
   have hmZ : AEStronglyMeasurable
       (fun z : Ω × Ω => bilinear (M := M) η B z ^ 2) (μ.prod μ) :=
@@ -196,14 +199,7 @@ theorem bilinear_sq_integrable {η : Ω → W → H}
 
 /-- The integrated test estimate supplies the bilinear fluctuation bound
 for the actual product of two jointly measurable pilot fields. -/
-theorem bilinear_energy_le {η : Ω → W → H}
-    (hmη : Measurable (fun z : Ω × W => η z.1 z.2))
-    (hη : MemLp (fun z : Ω × W => η z.1 z.2) 2 (μ.prod M))
-    {B : W → H →L[ℝ] H}
-    (hmB : Measurable (fun z : W × H => B z.1 z.2))
-    {C lam : ℝ} (hC : 0 ≤ C) (hlam : 0 ≤ lam) (hbound : ∀ w, ‖B w‖ ≤ C)
-    (htest : ∀ v : W → H, MemLp v 2 M →
-      (∫ x, test (M := M) η v x ^ 2 ∂μ) ≤ lam * ∫ w, ‖v w‖ ^ 2 ∂M) :
+theorem bilinear_energy_le  :
     (∫ z, bilinear (M := M) η B z ^ 2 ∂μ.prod μ) ≤
       lam * C ^ 2 * ∫ z : Ω × W, ‖η z.1 z.2‖ ^ 2 ∂μ.prod M := by
   have hZ := bilinear_sq_integrable hmη hη hmB hC hlam hbound htest
@@ -217,19 +213,13 @@ theorem bilinear_energy_le {η : Ω → W → H}
     _ = _ := by
       rw [integral_const_mul, integral_prod _ hη.norm.integrable_sq]
 
-theorem bilinear_memLp_two {η : Ω → W → H}
-    (hmη : Measurable (fun z : Ω × W => η z.1 z.2))
-    (hη : MemLp (fun z : Ω × W => η z.1 z.2) 2 (μ.prod M))
-    {B : W → H →L[ℝ] H}
-    (hmB : Measurable (fun z : W × H => B z.1 z.2))
-    {C lam : ℝ} (hC : 0 ≤ C) (hlam : 0 ≤ lam) (hbound : ∀ w, ‖B w‖ ≤ C)
-    (htest : ∀ v : W → H, MemLp v 2 M →
-      (∫ x, test (M := M) η v x ^ 2 ∂μ) ≤ lam * ∫ w, ‖v w‖ ^ 2 ∂M) :
+theorem bilinear_memLp_two  :
     MemLp (bilinear (M := M) η B) 2 (μ.prod μ) :=
   (memLp_two_iff_integrable_sq
     (bilinear_measurable (M := M) hmη hmB).aestronglyMeasurable).2
     (bilinear_sq_integrable hmη hη hmB hC hlam hbound htest)
 
+omit η hmη hη B hmB C lam hC hlam hbound htest in
 theorem bilinear_mean_zero [CompleteSpace H] {η : Ω → W → H}
     (hmη : Measurable (fun z : Ω × W => η z.1 z.2))
     (hη : MemLp (fun z : Ω × W => η z.1 z.2) 2 (μ.prod M))
@@ -247,18 +237,12 @@ theorem bilinear_mean_zero [CompleteSpace H] {η : Ω → W → H}
   have hmy : Measurable (η y) := hmη.comp (measurable_const.prodMk measurable_id)
   exact test_mean_zero hη hcenter (operatorField_memLp hmB hbound hmy hy)
 
+omit η hmη hη B hmB C lam hC hlam hbound htest in
 def fluctuation (η : Ω → W → H) (B : W → H →L[ℝ] H)
     (v₁ v₂ : W → H) (z : Ω × Ω) : ℝ :=
   test (M := M) η v₁ z.1 + test (M := M) η v₂ z.2 + bilinear (M := M) η B z
 
-theorem fluctuation_memLp_two {η : Ω → W → H}
-    (hmη : Measurable (fun z : Ω × W => η z.1 z.2))
-    (hη : MemLp (fun z : Ω × W => η z.1 z.2) 2 (μ.prod M))
-    {B : W → H →L[ℝ] H}
-    (hmB : Measurable (fun z : W × H => B z.1 z.2))
-    {C lam : ℝ} (hC : 0 ≤ C) (hlam : 0 ≤ lam) (hbound : ∀ w, ‖B w‖ ≤ C)
-    (htest : ∀ v : W → H, MemLp v 2 M →
-      (∫ x, test (M := M) η v x ^ 2 ∂μ) ≤ lam * ∫ w, ‖v w‖ ^ 2 ∂M)
+theorem fluctuation_memLp_two 
     {v₁ v₂ : W → H} (hv₁ : MemLp v₁ 2 M) (hv₂ : MemLp v₂ 2 M) :
     MemLp (fluctuation (M := M) η B v₁ v₂) 2 (μ.prod μ) := by
   have h₁ : MemLp (fun z : Ω × Ω => test (M := M) η v₁ z.1) 2 (μ.prod μ) :=
@@ -267,14 +251,7 @@ theorem fluctuation_memLp_two {η : Ω → W → H}
     (test_memLp_two hη hv₂).comp_measurePreserving measurePreserving_snd
   exact (h₁.add h₂).add (bilinear_memLp_two hmη hη hmB hC hlam hbound htest)
 
-theorem fluctuation_energy_le {η : Ω → W → H}
-    (hmη : Measurable (fun z : Ω × W => η z.1 z.2))
-    (hη : MemLp (fun z : Ω × W => η z.1 z.2) 2 (μ.prod M))
-    {B : W → H →L[ℝ] H}
-    (hmB : Measurable (fun z : W × H => B z.1 z.2))
-    {C lam : ℝ} (hC : 0 ≤ C) (hlam : 0 ≤ lam) (hbound : ∀ w, ‖B w‖ ≤ C)
-    (htest : ∀ v : W → H, MemLp v 2 M →
-      (∫ x, test (M := M) η v x ^ 2 ∂μ) ≤ lam * ∫ w, ‖v w‖ ^ 2 ∂M)
+theorem fluctuation_energy_le 
     {v₁ v₂ : W → H} (hv₁ : MemLp v₁ 2 M) (hv₂ : MemLp v₂ 2 M) :
     (∫ z, fluctuation (M := M) η B v₁ v₂ z ^ 2 ∂μ.prod μ) ≤
       3 * lam * ((∫ w, ‖v₁ w‖ ^ 2 ∂M) + (∫ w, ‖v₂ w‖ ^ 2 ∂M) +

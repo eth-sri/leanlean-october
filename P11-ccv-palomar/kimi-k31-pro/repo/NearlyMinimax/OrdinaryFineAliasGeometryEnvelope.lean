@@ -26,12 +26,6 @@ def ordinaryFineAliasGeometryKernel {d n F : ℕ} (r : ℕ) (L T : ℝ)
     spatialMatrixL1 (globalCardinalBandMatrix (D := F) (spatialInterpolationLambda d) L T
       (spatialSubsetConfiguration S U))
 
-/-- The actual universal envelope on the full Q^n spatial domain. -/
-def ordinaryFineAliasResponseSquareEnvelope {d n F : ℕ} (M r R q : ℕ)
-    (ad bd c0 C a rho eta L T : ℝ) (U : Fin n → Covariate d) : ℝ :=
-  (3 : ℝ)^n * (ordinaryFineAliasAmplitudeFactor n M R q ad bd c0 C a rho eta)^2 *
-    (ordinaryFineAliasGeometryKernel (F := F) r L T U)^2
-
 /-- Sum the actual geometric bands before squaring. This is the genuine
 triangle/Cauchy envelope for the sum of fine signed-row actions. -/
 def ordinaryFineAliasFamilyResponseSquareEnvelope {d n F : ℕ} (I : Finset ℕ)

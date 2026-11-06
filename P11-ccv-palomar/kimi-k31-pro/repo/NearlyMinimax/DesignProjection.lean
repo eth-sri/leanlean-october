@@ -208,14 +208,7 @@ theorem empirical_design_residual_degrees {ι κ : Type*} [Fintype ι] [Decidabl
 /-- Matrix-vector evaluation is measurable entry by entry. -/
 theorem design_measurable_mulVec {X ι : Type*} [MeasurableSpace X] [Fintype ι]
     (P : X → Matrix ι ι ℝ) (v : X → ι → ℝ) (hP : Measurable P) (hv : Measurable v) :
-    Measurable (fun x => P x *ᵥ v x) := by
-  apply measurable_pi_iff.mpr
-  intro i
-  unfold mulVec dotProduct
-  apply Finset.measurable_sum
-  intro j hj
-  exact (((measurable_pi_apply j).comp ((measurable_pi_apply i).comp hP))).mul
-    ((measurable_pi_apply j).comp hv)
+    Measurable (fun x => P x *ᵥ v x) := by measurability
 
 /-- Euclidean squared length is a measurable statistic. -/
 theorem design_measurable_energy {X ι : Type*} [MeasurableSpace X] [Fintype ι]

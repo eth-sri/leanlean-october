@@ -98,8 +98,7 @@ def complexifyMatrixUnit (Q : (Matrix n n ℝ)ˣ) : (Matrix n n ℂ)ˣ :=
     (complexifyMatrixUnit Q : Matrix n n ℂ) = (Q : Matrix n n ℝ).map Complex.ofReal := rfl
 
 @[simp] theorem complexifyMatrixUnit_inv (Q : (Matrix n n ℝ)ˣ) :
-    complexifyMatrixUnit Q⁻¹ = (complexifyMatrixUnit Q)⁻¹ := by
-  rfl
+    complexifyMatrixUnit Q⁻¹ = (complexifyMatrixUnit Q)⁻¹ := rfl
 
 theorem complexifyMatrixUnit_condition (Q : (Matrix n n ℝ)ˣ) :
     ‖(complexifyMatrixUnit Q : Matrix n n ℂ)‖ * ‖(↑(complexifyMatrixUnit Q)⁻¹ : Matrix n n ℂ)‖ =
@@ -119,8 +118,13 @@ theorem complexify_matrix_similarity (Q : (Matrix n n ℝ)ˣ) (A : Matrix n n �
 
 end RealCharts
 
-section Neighborhood
 variable (r : ℕ) [NeZero r]
+    (lo hi : ℝ) (hlo : 0 < lo) (hlt : lo < hi)
+    (η : ℝ) (hρη : intervalRho lo hi < η) (hη1 : η < 1)
+    (χ : ℝ) (hχ : 0 < χ) (L Y : ℝ) (hL : 0 ≤ L) (hY : 0 ≤ Y)
+    (T : Matrix (Fin r) (Fin r) ℝ) (y : ℝ) (hy : |y| ≤ Y)
+
+section Neighborhood
 
 def similarInverseCoordinateRadius (lo hi η χ : ℝ) : ℝ :=
   min 1 ((4 * perturbationConstant η)⁻¹ /
@@ -199,10 +203,9 @@ theorem bounded_numerator_complex_bound (L Y : ℝ) (hL : 0 ≤ L) (hY : 0 ≤ Y
       exact mul_le_mul hy (polynomial_complex_coordinate_bound _ z _ (by positivity) hz)
         (norm_nonneg _) hY
 
-theorem actual_similar_increment_complex_neighborhood (lo hi : ℝ) (hlo : 0 < lo) (hlt : lo < hi)
-    (η : ℝ) (hρη : intervalRho lo hi < η) (hη1 : η < 1)
-    (χ : ℝ) (hχ : 0 < χ) (L Y : ℝ) (hL : 0 ≤ L) (hY : 0 ≤ Y)
-    (T : Matrix (Fin r) (Fin r) ℝ) (y : ℝ) (hy : |y| ≤ Y)
+include lo hi hlo hlt η hρη hη1 χ hχ L Y hL hY T y hy
+
+theorem actual_similar_increment_complex_neighborhood 
     (z₀ z : incrementVariables r → ℂ) (hz₀ : ‖z₀‖ ≤ L)
     (Q S : (Matrix (Fin r) (Fin r) ℂ)ˣ)
     (hQ : ‖(Q : Matrix (Fin r) (Fin r) ℂ)‖ * ‖(↑Q⁻¹ : Matrix (Fin r) (Fin r) ℂ)‖ ≤ χ)
@@ -277,7 +280,6 @@ end Neighborhood
 
 section Derivatives
 open RoughRegime.ComplexDerivativeBridge
-variable (r : ℕ) [NeZero r]
 
 private theorem norm_reindex_le {V W : Type*} [Fintype V] [Fintype W]
     (z : V → ℂ) (f : W → V) : ‖z ∘ f‖ ≤ ‖z‖ := by
@@ -285,13 +287,7 @@ private theorem norm_reindex_le {V W : Type*} [Fintype V] [Fintype W]
   intro j
   exact norm_le_pi_norm z (f j)
 
-/-- All positive-order real derivatives of the actual free-moment increment obey a
-single factorial bound, uniformly in truncation degree, bounded response, and center. -/
-theorem actual_similar_increment_derivative_bound (lo hi : ℝ) (hlo : 0 < lo) (hlt : lo < hi)
-    (η : ℝ) (hρη : intervalRho lo hi < η) (hη1 : η < 1)
-    (χ : ℝ) (hχ : 0 < χ) (L Y : ℝ) (hL : 0 ≤ L) (hY : 0 ≤ Y)
-    (T : Matrix (Fin r) (Fin r) ℝ) (y : ℝ) (hy : |y| ≤ Y)
-    (u : incrementVariables r → ℝ) (hu : ‖u‖ ≤ L)
+variable (u : incrementVariables r → ℝ) (hu : ‖u‖ ≤ L)
     (Q S : (Matrix (Fin r) (Fin r) ℂ)ˣ)
     (hQ : ‖(Q : Matrix (Fin r) (Fin r) ℂ)‖ * ‖(↑Q⁻¹ : Matrix (Fin r) (Fin r) ℂ)‖ ≤ χ)
     (hS : ‖(S : Matrix (Fin r) (Fin r) ℂ)‖ * ‖(↑S⁻¹ : Matrix (Fin r) (Fin r) ℂ)‖ ≤ χ)
@@ -299,6 +295,12 @@ theorem actual_similar_increment_derivative_bound (lo hi : ℝ) (hlo : 0 < lo) (
     (hC : (complexMatrixSimilarity S⁻¹ (parentCoordinateCLM r (fun j => (u j : ℂ)))).IsHermitian)
     (hASpec : spectrum ℝ (complexMatrixSimilarity Q⁻¹ (currentCoordinateCLM r (fun j => (u j : ℂ)))) ⊆ Set.Icc lo hi)
     (hCSpec : spectrum ℝ (complexMatrixSimilarity S⁻¹ (parentCoordinateCLM r (fun j => (u j : ℂ)))) ⊆ Set.Icc lo hi)
+include lo hi hlo hlt η hρη hη1 χ hχ L Y hL hY T y hy u hu Q S hQ hS hA hC hASpec hCSpec
+
+/-- All positive-order real derivatives of the actual free-moment increment obey a
+single factorial bound, uniformly in truncation degree, bounded response, and center. -/
+theorem actual_similar_increment_derivative_bound 
+    
     (m k : ℕ) (hk : 0 < k) (i : Fin r)
     (v : Fin k → Fin (Fintype.card (incrementVariables r)) → ℝ) :
     ‖iteratedFDeriv ℝ k (fun x => MvPolynomial.eval x (incrementFinPolynomial r lo hi T y m i))
@@ -327,18 +329,8 @@ theorem actual_similar_increment_derivative_bound (lo hi : ℝ) (hlo : 0 < lo) (
   exact (norm_reindex_le _ _).trans_lt hz
 
 /-- The zeroth-order endpoint uses the same envelope as every derivative order. -/
-theorem actual_similar_increment_order_zero_bound (lo hi : ℝ) (hlo : 0 < lo) (hlt : lo < hi)
-    (η : ℝ) (hρη : intervalRho lo hi < η) (hη1 : η < 1)
-    (χ : ℝ) (hχ : 0 < χ) (L Y : ℝ) (hL : 0 ≤ L) (hY : 0 ≤ Y)
-    (T : Matrix (Fin r) (Fin r) ℝ) (y : ℝ) (hy : |y| ≤ Y)
-    (u : incrementVariables r → ℝ) (hu : ‖u‖ ≤ L)
-    (Q S : (Matrix (Fin r) (Fin r) ℂ)ˣ)
-    (hQ : ‖(Q : Matrix (Fin r) (Fin r) ℂ)‖ * ‖(↑Q⁻¹ : Matrix (Fin r) (Fin r) ℂ)‖ ≤ χ)
-    (hS : ‖(S : Matrix (Fin r) (Fin r) ℂ)‖ * ‖(↑S⁻¹ : Matrix (Fin r) (Fin r) ℂ)‖ ≤ χ)
-    (hA : (complexMatrixSimilarity Q⁻¹ (currentCoordinateCLM r (fun j => (u j : ℂ)))).IsHermitian)
-    (hC : (complexMatrixSimilarity S⁻¹ (parentCoordinateCLM r (fun j => (u j : ℂ)))).IsHermitian)
-    (hASpec : spectrum ℝ (complexMatrixSimilarity Q⁻¹ (currentCoordinateCLM r (fun j => (u j : ℂ)))) ⊆ Set.Icc lo hi)
-    (hCSpec : spectrum ℝ (complexMatrixSimilarity S⁻¹ (parentCoordinateCLM r (fun j => (u j : ℂ)))) ⊆ Set.Icc lo hi)
+theorem actual_similar_increment_order_zero_bound 
+    
     (m : ℕ) (i : Fin r) :
     ‖MvPolynomial.eval u (incrementEntryPolynomial r lo hi T y m i)‖ ≤
       similarIncrementEnvelope r lo hi (intervalRho lo hi / η) χ L Y T := by
@@ -361,7 +353,6 @@ theorem actual_similar_increment_order_zero_bound (lo hi : ℝ) (hlo : 0 < lo) (
 end Derivatives
 
 section PaperEndpoint
-variable (r : ℕ) [NeZero r]
 
 /-- Primitive center conditions: real free moments, a fixed bound, and the two
 real similarity charts with the manuscript's common spectral interval. -/
@@ -395,12 +386,11 @@ theorem similarIncrementEnvelope_nonneg (lo hi q χ L Y : ℝ)
     (polynomialCoordinateBound_nonneg _ _ (by positivity))
     (mul_nonneg hY (polynomialCoordinateBound_nonneg _ _ (by positivity))))
 
+include lo hi hlo hlt η hρη hη1 χ hχ L Y hL hY T y hy
+
 /-- The complete U5 analytic input: every order, the actual complexified polynomials,
 and constants independent of truncation degree and the admissible center. -/
-theorem paper_inverse_derivative_bound (lo hi : ℝ) (hlo : 0 < lo) (hlt : lo < hi)
-    (η : ℝ) (hρη : intervalRho lo hi < η) (hη1 : η < 1)
-    (χ : ℝ) (hχ : 0 < χ) (L Y : ℝ) (hL : 0 ≤ L) (hY : 0 ≤ Y)
-    (T : Matrix (Fin r) (Fin r) ℝ) (y : ℝ) (hy : |y| ≤ Y)
+theorem paper_inverse_derivative_bound 
     (c : InverseDerivativeCenter r lo hi χ L) (m k : ℕ) (i : Fin r)
     (v : Fin k → Fin (Fintype.card (incrementVariables r)) → ℝ) :
     ‖iteratedFDeriv ℝ k (fun x => MvPolynomial.eval x (incrementFinPolynomial r lo hi T y m i))
@@ -450,19 +440,18 @@ theorem paper_inverse_derivative_bound (lo hi : ℝ) (hlo : 0 < lo) (hlt : lo < 
     exact actual_similar_increment_derivative_bound r lo hi hlo hlt η hρη hη1 χ hχ L Y hL hY
       T y hy c.moments c.normBound Q S hQ hS hA hC hASpec hCSpec m (k + 1) (by omega) i v
 
+omit lo hi hlo hlt η hρη hη1 χ hχ L Y hL hY T y hy in
 def incrementFinVector (lo hi : ℝ) (T : Matrix (Fin r) (Fin r) ℝ) (y : ℝ) (m : ℕ) :
     (Fin (Fintype.card (incrementVariables r)) → ℝ) → Fin r → ℝ :=
   fun x i => MvPolynomial.eval x (incrementFinPolynomial r lo hi T y m i)
 
+omit lo hi hlo hlt η hρη hη1 χ hχ L Y hL hY T y hy in
 theorem incrementFinVector_contDiff (lo hi : ℝ) (T : Matrix (Fin r) (Fin r) ℝ) (y : ℝ) (m : ℕ) :
     ContDiff ℝ ⊤ (incrementFinVector r lo hi T y m) :=
   contDiff_pi.mpr (fun i => RoughRegime.PolynomialDerivatives.polynomial_contDiff _)
 
 /-- Vector-valued derivative endpoint in the fixed finite-coordinate norm. -/
-theorem paper_inverse_vector_derivative_bound (lo hi : ℝ) (hlo : 0 < lo) (hlt : lo < hi)
-    (η : ℝ) (hρη : intervalRho lo hi < η) (hη1 : η < 1)
-    (χ : ℝ) (hχ : 0 < χ) (L Y : ℝ) (hL : 0 ≤ L) (hY : 0 ≤ Y)
-    (T : Matrix (Fin r) (Fin r) ℝ) (y : ℝ) (hy : |y| ≤ Y)
+theorem paper_inverse_vector_derivative_bound 
     (c : InverseDerivativeCenter r lo hi χ L) (m k : ℕ)
     (v : Fin k → Fin (Fintype.card (incrementVariables r)) → ℝ) :
     ‖iteratedFDeriv ℝ k (incrementFinVector r lo hi T y m)

@@ -117,16 +117,18 @@ def highPacketActivation (σ : Measure Z) (a b : ℝ) (m r D q : ℕ) (C : ℝ)
     (A : Z → ι → ι → ℝ) : Z × HighPacketMarkIndex ι m r D q → ℝ :=
   absoluteActivation (σ.prod Measure.count) (highPacketMarkWeight a b m r D q C A)
 
-theorem highPacketMarkMass_eq_variation (σ : Measure Z) [IsFiniteMeasure σ]
+section CenteredPacket
+variable (σ : Measure Z) [IsFiniteMeasure σ]
     (a b : ℝ) (m r D q : ℕ) (C : ℝ) (A : Z → ι → ι → ℝ)
-    (hA : ∀ i j, Measurable (fun ζ => A ζ i j)) (hcost : Integrable (separatedMatrixCost A) σ) :
+    (hA : ∀ i j, Measurable (fun ζ => A ζ i j)) (hcost : Integrable (separatedMatrixCost A) σ)
+include σ a b m r D q C A hA hcost
+
+theorem highPacketMarkMass_eq_variation  :
     highPacketMarkMass σ a b m r D q C A =
       ((highPacketSignedMeasure σ a b m r D q C A).variation univ).toReal :=
   signedMarkMass_eq_variation _ _ (highPacketMarkWeight_integrable σ a b m r D q C A hA hcost)
 
-theorem highPacketMarkWeight_integral_zero (σ : Measure Z) [IsFiniteMeasure σ]
-    (a b : ℝ) (m r D q : ℕ) (C : ℝ) (A : Z → ι → ι → ℝ)
-    (hA : ∀ i j, Measurable (fun ζ => A ζ i j)) (hcost : Integrable (separatedMatrixCost A) σ) :
+theorem highPacketMarkWeight_integral_zero  :
     (∫ e, highPacketMarkWeight a b m r D q C A e ∂σ.prod Measure.count) = 0 := by
   have h := highPacketSignedMeasure_zero_mass σ a b m r D q C A hA hcost
   rw [highPacketSignedMeasure, withDensityᵥ_apply
@@ -134,21 +136,19 @@ theorem highPacketMarkWeight_integral_zero (σ : Measure Z) [IsFiniteMeasure σ]
     Measure.restrict_univ] at h
   exact h
 
-theorem highPacketAbsoluteLaw_probability (σ : Measure Z) [IsFiniteMeasure σ]
-    (a b : ℝ) (m r D q : ℕ) (C : ℝ) (A : Z → ι → ι → ℝ)
-    (hA : ∀ i j, Measurable (fun ζ => A ζ i j)) (hcost : Integrable (separatedMatrixCost A) σ)
+theorem highPacketAbsoluteLaw_probability 
     (hpos : 0 < highPacketMarkMass σ a b m r D q C A) :
     IsProbabilityMeasure (highPacketAbsoluteLaw σ a b m r D q C A) :=
   absoluteMarkLaw_probability _ _ (highPacketMarkWeight_integrable σ a b m r D q C A hA hcost) hpos
 
-theorem highPacketActivation_centered (σ : Measure Z) [IsFiniteMeasure σ]
-    (a b : ℝ) (m r D q : ℕ) (C : ℝ) (A : Z → ι → ι → ℝ)
-    (hA : ∀ i j, Measurable (fun ζ => A ζ i j)) (hcost : Integrable (separatedMatrixCost A) σ)
+theorem highPacketActivation_centered 
     (hpos : 0 < highPacketMarkMass σ a b m r D q C A) :
     (∫ e, highPacketActivation σ a b m r D q C A e
       ∂highPacketAbsoluteLaw σ a b m r D q C A) = 0 :=
   absoluteActivation_centered _ _ (highPacketMarkWeight_measurable a b m r D q C A hA)
     hpos (highPacketMarkWeight_integral_zero σ a b m r D q C A hA hcost)
+
+end CenteredPacket
 
 theorem highPacketActivation_bound (σ : Measure Z) (a b : ℝ) (m r D q : ℕ) (C : ℝ)
     (A : Z → ι → ι → ℝ) (e : Z × HighPacketMarkIndex ι m r D q) :

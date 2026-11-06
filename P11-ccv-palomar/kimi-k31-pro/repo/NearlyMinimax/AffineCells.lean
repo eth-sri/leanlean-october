@@ -67,7 +67,7 @@ theorem gridAffine_map_volume {d : ℕ} (k : ℕ) (hk : 0 < k) (c : Fin d → Fi
     ← Measure.map_map (by fun_prop) (by fun_prop),
     Measure.map_addHaar_smul volume (inv_ne_zero hkr.ne'),
     Measure.map_smul _ (by fun_prop), map_add_left_eq_self]
-  simp [Module.finrank_pi, abs_of_nonneg (pow_nonneg hkr.le d)]
+  simp [abs_of_nonneg (pow_nonneg hkr.le d)]
 
 /-- The Jacobian is the exact number of regular-grid cells. -/
 theorem gridAffine_map_cubeVolume {d : ℕ} (k : ℕ) (hk : 0 < k) (c : Fin d → Fin k) :

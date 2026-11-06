@@ -367,7 +367,7 @@ theorem highPeriodicWindow_eventuallyEq_single (k : ℕ) [NeZero k] (hk : 4 ≤ 
   have hk0 : (0 : ℝ) < k := by linarith
   let l : ℤ := ⌊x - (j.val : ℝ) / k + 1 / 2⌋
   let z : ℤ := (j.val : ℤ) + (k : ℤ) * l
-  have hzj : (z : ZMod k) = j := by simp [z, ZMod.natCast_zmod_val]
+  have hzj : (z : ZMod k) = j := by simp [z]
   have hfloor := Int.floor_le (x - (j.val : ℝ) / k + 1 / 2)
   have hceil := Int.lt_floor_add_one (x - (j.val : ℝ) / k + 1 / 2)
   have hdiv : (k : ℝ) * ((j.val : ℝ) / k) = j.val := by field_simp
@@ -434,7 +434,7 @@ theorem smooth_affine_iteratedFDeriv_bound {E : Type*} [NormedAddCommGroup E]
   have hG : ContDiff ℝ n G := (hF.of_le (by simp)).comp
     (contDiff_id.sub contDiff_const)
   have hid := g.iteratedFDerivWithin_comp_right hG.contDiffOn uniqueDiffOn_univ
-    (by simpa using (uniqueDiffOn_univ : UniqueDiffOn ℝ (univ : Set E)))
+    (by simp)
     (x := x) (mem_univ _) (i := n) le_rfl
   simp only [preimage_univ, iteratedFDerivWithin_univ] at hid
   change ‖iteratedFDeriv ℝ n (G ∘ g) x‖ ≤ _

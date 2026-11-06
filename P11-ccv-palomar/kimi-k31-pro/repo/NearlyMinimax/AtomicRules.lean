@@ -34,7 +34,7 @@ theorem atomicSignedRule_integral (z : ι → X) (w : ι → ℝ) (f : X → ℝ
     ∫ᵛ x, f x ∂<•(atomicSignedRule z w) = ∑ i, w i * f (z i) := by
   rw [atomicSignedRule, integral_finsetSum_vectorMeasure
     (fun i hi => atomic_dirac_integrable (z i) (w i) f)]
-  simp [mul_comm]
+  simp
 
 theorem atomicSignedRule_variation_le (z : ι → X) (w : ι → ℝ) :
     (atomicSignedRule z w).variation ≤ atomicVariationBound z w := by

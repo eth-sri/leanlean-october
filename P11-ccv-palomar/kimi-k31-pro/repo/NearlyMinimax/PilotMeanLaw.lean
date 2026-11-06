@@ -23,7 +23,7 @@ theorem fluctuation_mean_zero {η : Ω → W → H}
     (hη : MemLp (fun z : Ω × W => η z.1 z.2) 2 (μ.prod M))
     (hcenter : ∀ᵐ w ∂M, (∫ x, η x w ∂μ) = 0)
     {B : W → H →L[ℝ] H} (hmB : Measurable (fun z : W × H => B z.1 z.2))
-    {C lam : ℝ} (hC : 0 ≤ C) (hlam : 0 ≤ lam) (hbound : ∀ w, ‖B w‖ ≤ C)
+        {C lam : ℝ} (hC : 0 ≤ C) (hlam : 0 ≤ lam) (hbound : ∀ w, ‖B w‖ ≤ C)
     (htest : ∀ v : W → H, MemLp v 2 M →
       (∫ x, test (M := M) η v x ^ 2 ∂μ) ≤ lam * ∫ w, ‖v w‖ ^ 2 ∂M)
     {v₁ v₂ : W → H} (hv₁ : MemLp v₁ 2 M) (hv₂ : MemLp v₂ 2 M) :
@@ -42,11 +42,14 @@ theorem fluctuation_mean_zero {η : Ω → W → H}
     bilinear_mean_zero hmη hη hcenter hmB hC hlam hbound htest]
   simp
 
-theorem pilotMean_eq_fluctuation_ae (m : W → H) (hmm : Measurable m) (hm : MemLp m 2 M)
+variable (m : W → H) (hmm : Measurable m) (hm : MemLp m 2 M)
     {η : Ω → W → H} (hmη : Measurable (fun z : Ω × W => η z.1 z.2))
     (hη : MemLp (fun z : Ω × W => η z.1 z.2) 2 (μ.prod M))
+include m hmm hm η hmη hη
+
+theorem pilotMean_eq_fluctuation_ae 
     {B : W → H →L[ℝ] H} (hmB : Measurable (fun z : W × H => B z.1 z.2))
-    {C : ℝ} (hbound : ∀ w, ‖B w‖ ≤ C)
+        {C : ℝ} (hbound : ∀ w, ‖B w‖ ≤ C)
     (hsym : ∀ w x y, ⟪x, B w y⟫ = ⟪B w x, y⟫) :
     pilotMean (M := M) m η B =ᵐ[μ.prod μ]
       (fun z => fluctuation (M := M) η B (fun w => B w (m w))
@@ -56,11 +59,9 @@ theorem pilotMean_eq_fluctuation_ae (m : W → H) (hmm : Measurable m) (hm : Mem
   have he := pilotMean_sub_eq m hmm hm hmη hmB hbound hsym hx hy
   linarith
 
-theorem pilotMean_memLp_two (m : W → H) (hmm : Measurable m) (hm : MemLp m 2 M)
-    {η : Ω → W → H} (hmη : Measurable (fun z : Ω × W => η z.1 z.2))
-    (hη : MemLp (fun z : Ω × W => η z.1 z.2) 2 (μ.prod M))
+theorem pilotMean_memLp_two 
     {B : W → H →L[ℝ] H} (hmB : Measurable (fun z : W × H => B z.1 z.2))
-    {C lam : ℝ} (hC : 0 ≤ C) (hlam : 0 ≤ lam) (hbound : ∀ w, ‖B w‖ ≤ C)
+        {C lam : ℝ} (hC : 0 ≤ C) (hlam : 0 ≤ lam) (hbound : ∀ w, ‖B w‖ ≤ C)
     (hsym : ∀ w x y, ⟪x, B w y⟫ = ⟪B w x, y⟫)
     (htest : ∀ v : W → H, MemLp v 2 M →
       (∫ x, test (M := M) η v x ^ 2 ∂μ) ≤ lam * ∫ w, ‖v w‖ ^ 2 ∂M) :
@@ -70,12 +71,10 @@ theorem pilotMean_memLp_two (m : W → H) (hmm : Measurable m) (hm : MemLp m 2 M
     (memLp_const (∫ w, ⟪m w, B w (m w)⟫ ∂M))).ae_eq
       (pilotMean_eq_fluctuation_ae m hmm hm hmη hη hmB hbound hsym).symm
 
-theorem pilotMean_mean_eq (m : W → H) (hmm : Measurable m) (hm : MemLp m 2 M)
-    {η : Ω → W → H} (hmη : Measurable (fun z : Ω × W => η z.1 z.2))
-    (hη : MemLp (fun z : Ω × W => η z.1 z.2) 2 (μ.prod M))
+theorem pilotMean_mean_eq 
     (hcenter : ∀ᵐ w ∂M, (∫ x, η x w ∂μ) = 0)
     {B : W → H →L[ℝ] H} (hmB : Measurable (fun z : W × H => B z.1 z.2))
-    {C lam : ℝ} (hC : 0 ≤ C) (hlam : 0 ≤ lam) (hbound : ∀ w, ‖B w‖ ≤ C)
+        {C lam : ℝ} (hC : 0 ≤ C) (hlam : 0 ≤ lam) (hbound : ∀ w, ‖B w‖ ≤ C)
     (hsym : ∀ w x y, ⟪x, B w y⟫ = ⟪B w x, y⟫)
     (htest : ∀ v : W → H, MemLp v 2 M →
       (∫ x, test (M := M) η v x ^ 2 ∂μ) ≤ lam * ∫ w, ‖v w‖ ^ 2 ∂M) :

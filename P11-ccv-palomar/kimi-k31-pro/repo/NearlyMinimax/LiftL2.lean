@@ -88,8 +88,7 @@ theorem coordinate_monomial_pair_integrable [IsProbabilityMeasure μ]
     Integrable (fun ω => (∏ i, X (e i) ω (σ i)) *
       (∏ i, X (f i) ω (τ i))) μ := by
   exact ((coordinate_monomial_memLp_two e σ X hind hmeas hL2).integrable_mul
-      (coordinate_monomial_memLp_two f τ X hind hmeas hL2)).congr
-    (Filter.Eventually.of_forall fun ω => rfl)
+      (coordinate_monomial_memLp_two f τ X hind hmeas hL2))
 
 /-- Group coordinate factors by their observation index before using independence. -/
 theorem coordinate_product_integral_fiberwise [IsProbabilityMeasure μ]
@@ -204,8 +203,7 @@ theorem multilinear_kernel_pair_integrable [IsProbabilityMeasure μ]
     (hL2 : ∀ j a, MemLp (fun ω => X j ω a) 2 μ) :
     Integrable (fun ω => H (fun i => X (e i) ω) * G (fun i => X (f i) ω)) μ := by
   exact ((multilinear_kernel_memLp_two H e X hind hmeas hL2).integrable_mul
-      (multilinear_kernel_memLp_two G f X hind hmeas hL2)).congr
-    (Filter.Eventually.of_forall fun ω => rfl)
+      (multilinear_kernel_memLp_two G f X hind hmeas hL2))
 
 /-- The product of two multilinear kernels expands into coordinate products. -/
 theorem multilinear_pair_coordinate_expansion {n p r t : ℕ}
@@ -378,13 +376,7 @@ lemma same_range_exists_perm {n r : ℕ} (e f : Fin r ↪ Fin n)
   exact Equiv.apply_ofInjective_symm e.injective _
 
 lemma embedding_range_comp_perm {n r : ℕ} (e : Fin r ↪ Fin n)
-    (σ : Equiv.Perm (Fin r)) : Set.range (σ.toEmbedding.trans e) = Set.range e := by
-  ext j
-  constructor
-  · rintro ⟨i, rfl⟩
-    exact ⟨σ i, rfl⟩
-  · rintro ⟨i, rfl⟩
-    exact ⟨σ.symm i, by simp⟩
+    (σ : Equiv.Perm (Fin r)) : Set.range (σ.toEmbedding.trans e) = Set.range e := by simp
 
 /-- Exactly `r!` ordered distinct tuples represent one observation set. -/
 lemma card_same_range_embeddings {n r : ℕ} (e : Fin r ↪ Fin n) :
@@ -682,27 +674,6 @@ theorem polynomialLift_centering_l2 {n p R : ℕ}
   rw [RoughRegime.LiftTranslation.polynomialLift_eq_centeredDerivativeLift F X m hdeg hRn]
   rfl
 
-/-- Original `lem:U6` exact variance identity for the actual unbiased polynomial
-lift on unbounded i.i.d. `L²` features. -/
-theorem polynomialLift_variance_l2 [IsProbabilityMeasure μ]
-    {n p R : ℕ} (F : MvPolynomial (Fin p) ℝ)
-    (X : Fin n → Ω → Fin p → ℝ) (m : Fin p → ℝ)
-    (hdeg : F.totalDegree ≤ R) (hRn : R ≤ n)
-    (hind : iIndepFun X μ) (hmeas : ∀ j, Measurable (X j))
-    (hid : ∀ i j, IdentDistrib (X i) (X j) μ μ)
-    (hL2 : ∀ j a, MemLp (fun ω => X j ω a) 2 μ)
-    (hmean : ∀ j a, ∫ ω, X j ω a ∂μ = m a) :
-    variance (RoughRegime.Upper.polynomialLift F X) μ =
-      ∑ r : Fin R, (((r.val + 1).factorial : ℝ) *
-        (n.descFactorial (r.val + 1) : ℝ))⁻¹ *
-        ∫ ω, (iteratedFDeriv ℝ (r.val + 1) (fun x => MvPolynomial.eval x F) m
-          (fun i => X (Fin.castLEEmb ((Nat.succ_le_of_lt r.isLt).trans hRn) i) ω - m)) ^ 2 ∂μ := by
-  obtain ⟨hi, hm, hid', hlp, hzero⟩ := centerObservations_l2 X m hind hmeas hid hL2 hmean
-  rw [polynomialLift_centering_l2 F X m hdeg hRn]
-  apply centeredKernelExpansion_variance _ _ ?_ _ hRn hi hm hid' hlp hzero
-  intro r σ v
-  exact (AnalyticOnNhd.eval_mvPolynomial F).analyticOn.iteratedFDeriv_comp_perm v σ
-
 /-- Coordinatewise `L²` gives an integrable vector with the coordinate means. -/
 theorem vector_integral_of_coordinate_moments [IsProbabilityMeasure μ]
     {p : ℕ} (X : Ω → Fin p → ℝ) (m : Fin p → ℝ)
@@ -759,13 +730,8 @@ lemma integral_pi_succ_l2 [IsProbabilityMeasure μ] {r : ℕ}
   rw [← (he.symm e).integral_comp' f]
   change (∫ x, (f ∘ e.symm) x ∂μ.prod (Measure.pi (fun _ : Fin r => μ))) = _
   rw [integral_prod _ hf']
-  apply integral_congr_ae
-  exact Filter.Eventually.of_forall fun x => by
-    apply integral_congr_ae
-    exact Filter.Eventually.of_forall fun y => by
-      apply congrArg f
-      funext i
-      cases i using Fin.cases <;> simp [e]
+  simp only [Function.comp_apply, e, MeasurableEquiv.piFinSuccAbove_symm_apply,
+    Fin.insertNthEquiv, Equiv.coe_fn_mk, Fin.insertNth_zero, cast_eq]
 
 lemma kernel_cons_square_integrable_l2 [IsProbabilityMeasure μ] {p r : ℕ}
     (H : ContinuousMultilinearMap ℝ (fun _ : Fin (r + 1) => Fin p → ℝ) ℝ)
@@ -911,13 +877,34 @@ theorem independent_centering_square_le_l2 {Ω : Type*} [MeasurableSpace Ω]
     exact multilinear_iid_centering_square_le_l2 μ H (X j) (hm j) (hL2 j) m (hmean j)
 
 
-/-- The actual coefficient lift is square integrable under coordinatewise `L²`. -/
-theorem polynomialLift_memLp_two_l2 [IsProbabilityMeasure μ]
+variable [IsProbabilityMeasure μ]
     {n p R : ℕ} (F : MvPolynomial (Fin p) ℝ)
     (X : Fin n → Ω → Fin p → ℝ) (m : Fin p → ℝ)
     (hdeg : F.totalDegree ≤ R) (hRn : R ≤ n)
     (hind : iIndepFun X μ) (hmeas : ∀ j, Measurable (X j))
-    (hL2 : ∀ j a, MemLp (fun ω => X j ω a) 2 μ) :
+    (hid : ∀ i j, IdentDistrib (X i) (X j) μ μ)
+    (hL2 : ∀ j a, MemLp (fun ω => X j ω a) 2 μ)
+include n p R F X m hdeg hRn hind hmeas hid hL2
+
+/-- Original `lem:U6` exact variance identity for the actual unbiased polynomial
+lift on unbounded i.i.d. `L²` features. -/
+theorem polynomialLift_variance_l2 
+    (hmean : ∀ j a, ∫ ω, X j ω a ∂μ = m a) :
+    variance (RoughRegime.Upper.polynomialLift F X) μ =
+      ∑ r : Fin R, (((r.val + 1).factorial : ℝ) *
+        (n.descFactorial (r.val + 1) : ℝ))⁻¹ *
+        ∫ ω, (iteratedFDeriv ℝ (r.val + 1) (fun x => MvPolynomial.eval x F) m
+          (fun i => X (Fin.castLEEmb ((Nat.succ_le_of_lt r.isLt).trans hRn) i) ω - m)) ^ 2 ∂μ := by
+  obtain ⟨hi, hm, hid', hlp, hzero⟩ := centerObservations_l2 X m hind hmeas hid hL2 hmean
+  rw [polynomialLift_centering_l2 F X m hdeg hRn]
+  apply centeredKernelExpansion_variance _ _ ?_ _ hRn hi hm hid' hlp hzero
+  intro r σ v
+  exact (AnalyticOnNhd.eval_mvPolynomial F).analyticOn.iteratedFDeriv_comp_perm v σ
+
+omit hid in
+
+/-- The actual coefficient lift is square integrable under coordinatewise `L²`. -/
+theorem polynomialLift_memLp_two_l2  :
     MemLp (RoughRegime.Upper.polynomialLift F X) 2 μ := by
   rw [polynomialLift_centering_l2 F X m hdeg hRn]
   exact centeredKernelExpansion_memLp_two _ _ _
@@ -927,13 +914,7 @@ theorem polynomialLift_memLp_two_l2 [IsProbabilityMeasure μ]
     (fun j a => (hL2 j a).sub (memLp_const (m a)))
 
 /-- The coefficient lift is unbiased at the actual population mean. -/
-theorem polynomialLift_expectation_l2 [IsProbabilityMeasure μ]
-    {n p R : ℕ} (F : MvPolynomial (Fin p) ℝ)
-    (X : Fin n → Ω → Fin p → ℝ) (m : Fin p → ℝ)
-    (hdeg : F.totalDegree ≤ R) (hRn : R ≤ n)
-    (hind : iIndepFun X μ) (hmeas : ∀ j, Measurable (X j))
-    (hid : ∀ i j, IdentDistrib (X i) (X j) μ μ)
-    (hL2 : ∀ j a, MemLp (fun ω => X j ω a) 2 μ)
+theorem polynomialLift_expectation_l2 
     (hmean : ∀ j a, ∫ ω, X j ω a ∂μ = m a) :
     (∫ ω, RoughRegime.Upper.polynomialLift F X ω ∂μ) = MvPolynomial.eval m F := by
   obtain ⟨hi, hm, _, hlp, hzero⟩ := centerObservations_l2 X m hind hmeas hid hL2 hmean
@@ -941,13 +922,7 @@ theorem polynomialLift_expectation_l2 [IsProbabilityMeasure μ]
   exact centeredKernelExpansion_expectation _ _ _ hi hm hlp hzero
 
 /-- Original U6 comparison with the true descending-factorial denominators. -/
-theorem polynomialLift_variance_le_raw_l2 [IsProbabilityMeasure μ]
-    {n p R : ℕ} (F : MvPolynomial (Fin p) ℝ)
-    (X : Fin n → Ω → Fin p → ℝ) (m : Fin p → ℝ)
-    (hdeg : F.totalDegree ≤ R) (hRn : R ≤ n)
-    (hind : iIndepFun X μ) (hmeas : ∀ j, Measurable (X j))
-    (hid : ∀ i j, IdentDistrib (X i) (X j) μ μ)
-    (hL2 : ∀ j a, MemLp (fun ω => X j ω a) 2 μ)
+theorem polynomialLift_variance_le_raw_l2 
     (hmean : ∀ j a, ∫ ω, X j ω a ∂μ = m a) :
     variance (RoughRegime.Upper.polynomialLift F X) μ ≤
       ∑ r : Fin R, (((r.val + 1).factorial : ℝ) *
@@ -964,6 +939,8 @@ theorem polynomialLift_variance_le_raw_l2 [IsProbabilityMeasure μ]
     (fun i j => hid (e i) (e j)) (fun i a => hL2 (e i) a) m
     (fun i a => hmean (e i) a)
 
+omit n p R F X m hdeg hRn hind hmeas hid hL2 [IsProbabilityMeasure μ] in
+
 /-- A positive lower bound on each available observation count bounds the
 whole descending factorial. -/
 theorem descFactorial_lower_bound {n R k : ℕ} (hRn : R ≤ n) (hkR : k ≤ R)
@@ -979,13 +956,7 @@ theorem descFactorial_lower_bound {n R k : ℕ} (hRn : R ≤ n) (hkR : k ≤ R)
     _ ≤ (n.descFactorial k : ℝ) := by exact_mod_cast Nat.pow_sub_le_descFactorial n k
 
 /-- The denominator comparison in U6 for every `0 < Λ ≤ n - degree + 1`. -/
-theorem polynomialLift_variance_le_raw_power_l2 [IsProbabilityMeasure μ]
-    {n p R : ℕ} (F : MvPolynomial (Fin p) ℝ)
-    (X : Fin n → Ω → Fin p → ℝ) (m : Fin p → ℝ)
-    (hdeg : F.totalDegree ≤ R) (hRn : R ≤ n)
-    (hind : iIndepFun X μ) (hmeas : ∀ j, Measurable (X j))
-    (hid : ∀ i j, IdentDistrib (X i) (X j) μ μ)
-    (hL2 : ∀ j a, MemLp (fun ω => X j ω a) 2 μ)
+theorem polynomialLift_variance_le_raw_power_l2 
     (hmean : ∀ j a, ∫ ω, X j ω a ∂μ = m a)
     (Λ : ℝ) (hΛ : 0 < Λ) (hΛn : Λ ≤ (n : ℝ) - R + 1) :
     variance (RoughRegime.Upper.polynomialLift F X) μ ≤

@@ -41,7 +41,7 @@ theorem singletonRowMass_positive (d D q : ℕ) (hq : 1 ≤ q)
   simp only [separatedMatrixCost, integral_dirac]
   rw [densityPacketWeight_variation a b ha hab D 1 D (by norm_num)]
   have hp : densityPacketPrefactor a b 1 ≠ 0 := by
-    simp only [densityPacketPrefactor, Nat.factorial_one, Nat.cast_one, one_pow, one_div, inv_one, pow_one, one_mul]
+    simp only [densityPacketPrefactor, Nat.factorial_one, Nat.cast_one, one_div, inv_one, pow_one, one_mul]
     exact div_ne_zero (ha.trans hab).ne' (densityMargin_zero_ne a b ha hab)
   have hn : 0 < (derivativeOrder D : ℝ) := by
     have he : 0 < derivativeOrder D := by unfold derivativeOrder; omega

@@ -99,7 +99,7 @@ theorem factorial_kernel_budget {p k : ℕ}
     (he.trans (mul_le_mul_of_nonneg_right hd (pow_nonneg hE k)))
     (show 0 ≤ ((k.factorial : ℝ) * Λ ^ k)⁻¹ by positivity)
   apply h.trans_eq
-  simp only [div_pow, mul_pow, pow_mul, Nat.mul_comm]
+  simp only [div_pow, mul_pow]
   field_simp [ne_of_gt hfac, ne_of_gt hΛ] <;> ring
 
 end NearlyMinimax.KernelMomentBounds

@@ -15,25 +15,6 @@ namespace NearlyMinimax
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 800000
 
-theorem spatial_cardinal_polynomial_scale_product {d n : ℕ} (i : Fin n) (U : Fin n → Covariate d) :
-    spatialCardinalPolynomial U i = ∏ j : SpatialScaleIndex i, spatialCardinalAffine (U i) (U j.val) := by
-  unfold spatialCardinalPolynomial
-  rw [Finset.prod_subtype (p := fun j : Fin n => j ≠ i) ((Finset.univ : Finset (Fin n)).erase i)
-    (fun j => by simp) (fun j : Fin n => spatialCardinalAffine (U i) (U j))]
-
-theorem spatial_cardinal_scale_product {d n : ℕ} (i : Fin n) (lam : ℝ)
-    (U : Fin n → Covariate d) (t : SpatialScaleVector i) :
-    spatialCardinalScale lam (spatialScaleExtend i t) U i =
-      ∏ j : SpatialScaleIndex i, t j * lam ^ 2 *
-        Real.exp (-(t j * lam * spatialSquaredDistance (U i) (U j.val))) := by
-  unfold spatialCardinalScale
-  rw [Finset.prod_subtype (p := fun j : Fin n => j ≠ i) ((Finset.univ : Finset (Fin n)).erase i)
-    (fun j => by simp) (fun j : Fin n => spatialScaleExtend i t j * lam ^ 2 *
-      Real.exp (-(spatialScaleExtend i t j * lam * spatialSquaredDistance (U i) (U j))))]
-  apply Finset.prod_congr rfl
-  intro j _
-  simp only [spatialScaleExtend, dite_eq_left j.property]
-
 /-- Tensorization of the actual primitive Gaussian coefficient moments. -/
 theorem gaussian_tensor_cardinal_moments {κ : Type*} [Fintype κ] {d : ℕ}
     (lam : ℝ) (hlam : 0 ≤ lam) (t : κ → ℝ) (ht : ∀ j, 0 ≤ t j)
@@ -221,16 +202,19 @@ theorem centered_cardinal_factor_product {d n : ℕ} (i : Fin n) (lam : ℝ)
   rw [hr, ← Finset.prod_mul_distrib]
   rfl
 
-theorem centered_cardinal_raw_tensor_integrable {d n D : ℕ} (i : Fin n) (lam : ℝ) (hlam : 0 ≤ lam)
-    (t : SpatialScaleVector i) (ht : t ∈ Ici 0) (U : Fin n → Covariate d) (β β' : HighFrameIndex d D) :
+section CardinalTensor
+variable {d n D : ℕ} (i : Fin n) (lam : ℝ) (hlam : 0 ≤ lam)
+    (t : SpatialScaleVector i) (ht : t ∈ Ici 0) (U : Fin n → Covariate d) (β β' : HighFrameIndex d D)
+include i lam hlam t ht U β β'
+
+theorem centered_cardinal_raw_tensor_integrable  :
     Integrable (fun e : GaussianTensorMark (SpatialScaleIndex i) d =>
       gaussianTensorObservable lam t (fun _ => U i) (fun j => U j.val) e *
         gaussianTensorFrameAmplitude lam e β β') (gaussianTensorMeasure (SpatialScaleIndex i) d) :=
   (gaussian_tensor_cardinal_moments lam hlam t (fun j => ht j)
     (fun _ => U i) (fun j => U j.val) _ _).1
 
-theorem centered_cardinal_raw_tensor_exact {d n D : ℕ} (i : Fin n) (lam : ℝ) (hlam : 0 ≤ lam)
-    (t : SpatialScaleVector i) (ht : t ∈ Ici 0) (U : Fin n → Covariate d) (β β' : HighFrameIndex d D) :
+theorem centered_cardinal_raw_tensor_exact  :
     (∫ e : GaussianTensorMark (SpatialScaleIndex i) d,
       gaussianTensorObservable lam t (fun _ => U i) (fun j => U j.val) e *
         gaussianTensorFrameAmplitude lam e β β' ∂gaussianTensorMeasure (SpatialScaleIndex i) d) =
@@ -240,8 +224,7 @@ theorem centered_cardinal_raw_tensor_exact {d n D : ℕ} (i : Fin n) (lam : ℝ)
   simpa only [gaussianTensorFrameAmplitude, gaussianTensorAmplitude, spatialCenteredCardinalMatrix, highFrameCoefficients,
     spatial_cardinal_scale_product, spatial_cardinal_polynomial_scale_product] using h
 
-theorem centered_cardinal_symmetric_tensor_exact {d n D : ℕ} (i : Fin n) (lam : ℝ) (hlam : 0 ≤ lam)
-    (t : SpatialScaleVector i) (ht : t ∈ Ici 0) (U : Fin n → Covariate d) (β β' : HighFrameIndex d D) :
+theorem centered_cardinal_symmetric_tensor_exact  :
     (∫ e : GaussianTensorMark (SpatialScaleIndex i) d,
       gaussianTensorObservable lam t (fun _ => U i) (fun j => U j.val) e *
         gaussianTensorSymmetricAmplitude lam e β β' ∂gaussianTensorMeasure (SpatialScaleIndex i) d) =
@@ -263,6 +246,8 @@ theorem centered_cardinal_symmetric_tensor_exact {d n D : ℕ} (i : Fin n) (lam 
     centered_cardinal_raw_tensor_exact i lam hlam t ht U β' β]
   unfold spatialCenteredCardinalMatrix
   ring
+
+end CardinalTensor
 
 theorem centered_cardinal_product_entry_integrable {d n D : ℕ} (i : Fin n) (lam : ℝ)
     {T : ℝ} (hT : 1 ≤ T) (U : Fin n → Covariate d) (hU : ∀ l r, |U l r| ≤ 2)

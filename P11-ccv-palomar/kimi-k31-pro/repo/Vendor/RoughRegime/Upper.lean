@@ -51,7 +51,7 @@ theorem cosineKernel_eq (q : ℂ) (t : ℝ) (hq : ‖q‖ < 1) :
   have hEF : E * F = 1 := by
     dsimp [E, F]
     rw [← Complex.exp_add]
-    have hz : (t : ℂ) * I + (-t : ℂ) * I = 0 := by push_cast; ring
+    have hz : (t : ℂ) * I + (-t : ℂ) * I = 0 := by ring
     rw [hz, Complex.exp_zero]
   have hsum : E + F = 2 * (Real.cos t : ℂ) := by
     rw [Complex.ofReal_cos, Complex.cos]
@@ -61,14 +61,14 @@ theorem cosineKernel_eq (q : ℂ) (t : ℝ) (hq : ‖q‖ < 1) :
     intro h
     have : q * E = 1 := by linear_combination -h
     have hnorm : ‖q * E‖ < 1 := by simpa [E, norm_mul] using hq
-    simpa [this] using hnorm
+    simp [this] at hnorm
   have hF : 1 - q * F ≠ 0 := by
     intro h
     have : q * F = 1 := by linear_combination -h
     have hnorm : ‖q * F‖ < 1 := by
       dsimp [F]
       simpa only [norm_mul, ← Complex.ofReal_neg, Complex.norm_exp_ofReal_mul_I, mul_one] using hq
-    simpa [this] using hnorm
+    simp [this] at hnorm
   have hden : 1 - 2 * q * (Real.cos t : ℂ) + q ^ 2 =
       (1 - q * E) * (1 - q * F) := by
     calc
@@ -191,7 +191,7 @@ lemma reciprocalSeries_eq_cosineKernel (lo hi x : ℝ) (z : ℂ) (t : ℝ)
   have heval (k : ℕ) :
       (Polynomial.Chebyshev.T ℝ (k + 1 : ℕ)).eval (Real.cos t) =
         Real.cos (((k + 1 : ℕ) : ℝ) * t) := by
-    simpa using Polynomial.Chebyshev.T_real_cos t (k + 1 : ℕ)
+    simp
   unfold reciprocalSeries cosineKernel
   rw [hrep]
   simp_rw [heval]

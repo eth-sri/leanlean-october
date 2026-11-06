@@ -55,7 +55,7 @@ theorem signedDensity_integral (w : X → ℝ) (hw : Integrable w μ) (hmw : Mea
   apply Filter.Eventually.of_forall
   intro x
   have he : max (w x) 0 - max (-w x) 0 = w x := by
-    by_cases hh : 0 ≤ w x <;> simp [max_eq_left, max_eq_right, hh, neg_nonpos.mpr, neg_nonneg.mpr]
+    by_cases hh : 0 ≤ w x <;> simp [hh, neg_nonpos.mpr]
   dsimp only
   rw [← sub_mul, he]
 
@@ -65,11 +65,7 @@ section FiniteProduct
 variable {Z I : Type*} [MeasurableSpace Z] [MeasurableSpace I]
   [Fintype I] [MeasurableSingletonClass I]
 
-theorem finite_count_integrable (f : I → ℝ) : Integrable f Measure.count := by
-  have hm : Measurable f := measurable_of_countable f
-  apply (integrable_const (∑ i, ‖f i‖)).mono' hm.aestronglyMeasurable
-  exact Filter.Eventually.of_forall (fun i =>
-    Finset.single_le_sum (fun j _ => norm_nonneg (f j)) (Finset.mem_univ i))
+theorem finite_count_integrable (f : I → ℝ) : Integrable f Measure.count := by simp
 
 theorem joint_finite_integrable (σ : Measure Z) [IsFiniteMeasure σ] (f : Z × I → ℝ)
     (hf : ∀ i, Measurable (fun ζ => f (ζ, i)))

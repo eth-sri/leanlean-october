@@ -134,7 +134,7 @@ theorem eventually_ordinaryFineAliasSaddleGeometryEnvelope_factorial_tail
       n (F n) U ∂fullSpatialPatchDesign d n)
   intro j hj
   have he := (henergy (M+1+j) (F (M+1+j))).2
-  convert he using 1 <;> simp only [A,P,L,B,m,theta,M,D,N,mu,eta,
+  convert he using 1 <;> simp only [A,P,L,B,m,theta,M,N,eta,
     ordinaryFineAliasSaddleTailPrefactor, ordinaryFineAliasSaddleTailExponent,
     ordinaryFineAliasSaddleTargetBound, ordinaryFineAliasSaddleCoefficient, ordinaryFineAliasSaddleTheta] <;> ring
 

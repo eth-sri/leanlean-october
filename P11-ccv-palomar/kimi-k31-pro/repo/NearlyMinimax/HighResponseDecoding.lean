@@ -23,7 +23,7 @@ theorem decodeTernaryResponse_value (a : ℝ) (ha : 0 < a) (y : Fin 3) :
     decodeTernaryResponse a (ternaryValue a y) = y := by
   have hna : -a ≠ 0 := neg_ne_zero.mpr ha.ne'
   have han : a ≠ -a := by linarith
-  fin_cases y <;> simp [decodeTernaryResponse, ternaryValue, hna, ha.ne', han]
+  fin_cases y <;> simp [decodeTernaryResponse, ternaryValue, ha.ne', han]
 
 def decodeDesignResponse {d n : ℕ} (a : ℝ) (z : Fin n → Observation d) :
     (Fin n → Covariate d) × (Fin n → Fin 3) :=

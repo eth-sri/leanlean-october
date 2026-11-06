@@ -53,7 +53,7 @@ variable {d k D M q n : ℕ} [NeZero d] [NeZero k] [LinearOrder (HighWindowLabel
 local notation "R" => completeSourceRows C k D M q Cfr lam ℓ N μ
 include hD hq hM hCfr hℓ hℓN
 
-theorem completeSourceResponseAction_all_count_bound (hn : 1 ≤ n)
+variable (hn : 1 ≤ n)
     (j : HighWindowLabels d k)
     (h : HistoryMarked (fun i j => j ∈ highNeighborLabels d k i)
       (HighUnionMark (SourceRowMark d D M q (C.densityLower+1/(M : ℝ))
@@ -64,7 +64,10 @@ theorem completeSourceResponseAction_all_count_bound (hn : 1 ≤ n)
     (hg : ∀ u, |g u| ≤ ρ/2) (hw : ∀ u, |w u| ≤ 1)
     (hφ : ∀ v : HighFrameIndex d D → ℝ, (∑ γ, |v γ|) ≤ Cfr⁻¹ →
       ∀ u, |∑ γ, φ u γ*v γ| ≤ 1)
-    (hp : ∀ f : ℝ, |f| ≤ ρ → ∀ y, 0 ≤ ternaryMass a f V y) (y : Fin n → Fin 3) :
+    (hp : ∀ f : ℝ, |f| ≤ ρ → ∀ y, 0 ≤ ternaryMass a f V y) (y : Fin n → Fin 3)
+include hn j h a V η ρ ha hη hρ hηρ x g w φ hg hw hφ hp y
+
+theorem completeSourceResponseAction_all_count_bound  :
     |highMarkedResponseAction (highUnionLaw R (highCenterMix C))
       (highUnionActivation R (highCenterMix C)) a V η
       (fun e u => highUnionSourceResetDensity C R j h e (x u))
@@ -151,18 +154,7 @@ theorem completeSourceResponseAction_all_count_bound (hn : 1 ≤ n)
       g w φ c hc hg hw hφ hp y)).trans_eq
   exact (Finset.mul_sum _ _ _).symm
 
-theorem completeSourceNumerator_all_count_exponential_bound (hn : 1 ≤ n)
-    (j : HighWindowLabels d k)
-    (h : HistoryMarked (fun i j => j ∈ highNeighborLabels d k i)
-      (HighUnionMark (SourceRowMark d D M q (C.densityLower+1/(M : ℝ))
-        (C.densityUpper-1/(M : ℝ)) Cfr lam ℓ N μ)))
-    (a V η ρ : ℝ) (ha : 0 < a) (hη : 0 ≤ η) (hρ : 0 ≤ ρ) (hηρ : η ≤ ρ/2)
-    (x : Fin n → Covariate d) (g w : Fin n → ℝ)
-    (φ : Fin n → HighFrameIndex d D → ℝ)
-    (hg : ∀ u, |g u| ≤ ρ/2) (hw : ∀ u, |w u| ≤ 1)
-    (hφ : ∀ v : HighFrameIndex d D → ℝ, (∑ γ, |v γ|) ≤ Cfr⁻¹ →
-      ∀ u, |∑ γ, φ u γ*v γ| ≤ 1)
-    (hp : ∀ f : ℝ, |f| ≤ ρ → ∀ y, 0 ≤ ternaryMass a f V y) (y : Fin n → Fin 3) :
+theorem completeSourceNumerator_all_count_exponential_bound  :
     |highMarkedLocalScoreNumerator (highUnionLaw R (highCenterMix C))
       (highUnionActivation R (highCenterMix C)) a V η
       (fun u => highUnionSourceDensity C R h (x u))

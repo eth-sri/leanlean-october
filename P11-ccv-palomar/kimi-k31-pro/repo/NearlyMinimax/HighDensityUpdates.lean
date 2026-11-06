@@ -24,7 +24,7 @@ def densityUnitExponent (r : ℕ) : Fin r →₀ ℕ :=
   Finsupp.onFinset Finset.univ (fun _ => 1) (by simp)
 
 @[simp] theorem densityUnitExponent_apply (r : ℕ) (i : Fin r) :
-    densityUnitExponent r i = 1 := by simp [densityUnitExponent]
+    densityUnitExponent r i = 1 := rfl
 
 @[simp] theorem densityUnitExponent_degree (r : ℕ) :
     (densityUnitExponent r).degree = r := by
@@ -407,9 +407,13 @@ def densityPacketAction (a b : ℝ) (m r D : ℕ) (f : ℝ → (Fin r → ℝ) �
     exteriorWeight a b (m + r) j *
       densityDerivativeAction r D (f (exteriorNode a b (m + r) j))
 
-theorem density_packet_product_exact {ι : Type*} [DecidableEq ι]
+section PacketProducts
+variable {ι : Type*} [DecidableEq ι]
     (S : Finset ι) (a b : ℝ) (ha : 0 < a) (hab : a < b)
     (m r D : ℕ) (hr : 1 ≤ r) (hD : 1 ≤ D) (hSD : S.card ≤ D)
+include S a b ha hab m r D hr hD hSD
+
+theorem density_packet_product_exact 
     (p : ι → ℝ) (B : ι → Fin r → ℝ) :
     densityPacketAction a b m r D (fun z ε => ∏ i ∈ S, localDensityReset a b r z ε p B i) =
       densityCountCoefficient a b m r S.card *
@@ -443,6 +447,27 @@ theorem density_packet_product_exact {ι : Type*} [DecidableEq ι]
       intro j _
       field_simp
     _ = _ := by simp only [← Finset.sum_mul, Finset.sum_div]
+
+theorem density_packet_product_zero_of_small_count 
+    (hSr : S.card < r) (p : ι → ℝ) (B : ι → Fin r → ℝ) :
+    densityPacketAction a b m r D (fun z ε => ∏ i ∈ S, localDensityReset a b r z ε p B i) = 0 := by
+  rw [density_packet_product_exact S a b ha hab m r D hr hD hSD p B,
+    Finset.powersetCard_eq_empty.mpr hSr]
+  simp
+
+/-- The full count selector identity for all counts through m. -/
+theorem density_packet_product_count_selector 
+    (hSm : S.card ≤ m) (p : ι → ℝ) (B : ι → Fin r → ℝ) :
+    densityPacketAction a b m r D (fun z ε => ∏ i ∈ S, localDensityReset a b r z ε p B i) =
+      if S.card = r then ∑ U ∈ S.powersetCard r, (∏ i ∈ U, p i) * densitySeparatedSym r B U else 0 := by
+  by_cases hSr : r ≤ S.card
+  · rw [density_packet_product_exact S a b ha hab m r D hr hD hSD p B,
+      densityCountCoefficient_exact a b ha hab m r S.card hr hSr hSm]
+    split_ifs <;> simp
+  · rw [density_packet_product_zero_of_small_count S a b ha hab m r D hr hD hSD (by omega) p B,
+      if_neg (by omega)]
+
+end PacketProducts
 
 private def densityAssignmentExponent (r : ℕ) (f : Fin r → Fin r) : Fin r →₀ ℕ :=
   ∑ i, Finsupp.single (f i) 1
@@ -508,29 +533,6 @@ theorem densitySeparatedSym_eq_permutation_average {ι : Type*} [DecidableEq ι]
     rw [← Finset.prod_coe_sort]
     exact (e.prod_comp (fun i : S => densityModulationPolynomial r B i)).symm
   rw [he, density_linear_product_permanent]
-
-theorem density_packet_product_zero_of_small_count {ι : Type*} [DecidableEq ι]
-    (S : Finset ι) (a b : ℝ) (ha : 0 < a) (hab : a < b)
-    (m r D : ℕ) (hr : 1 ≤ r) (hD : 1 ≤ D) (hSD : S.card ≤ D)
-    (hSr : S.card < r) (p : ι → ℝ) (B : ι → Fin r → ℝ) :
-    densityPacketAction a b m r D (fun z ε => ∏ i ∈ S, localDensityReset a b r z ε p B i) = 0 := by
-  rw [density_packet_product_exact S a b ha hab m r D hr hD hSD p B,
-    Finset.powersetCard_eq_empty.mpr hSr]
-  simp
-
-/-- The full count selector identity for all counts through m. -/
-theorem density_packet_product_count_selector {ι : Type*} [DecidableEq ι]
-    (S : Finset ι) (a b : ℝ) (ha : 0 < a) (hab : a < b)
-    (m r D : ℕ) (hr : 1 ≤ r) (hD : 1 ≤ D) (hSD : S.card ≤ D)
-    (hSm : S.card ≤ m) (p : ι → ℝ) (B : ι → Fin r → ℝ) :
-    densityPacketAction a b m r D (fun z ε => ∏ i ∈ S, localDensityReset a b r z ε p B i) =
-      if S.card = r then ∑ U ∈ S.powersetCard r, (∏ i ∈ U, p i) * densitySeparatedSym r B U else 0 := by
-  by_cases hSr : r ≤ S.card
-  · rw [density_packet_product_exact S a b ha hab m r D hr hD hSD p B,
-      densityCountCoefficient_exact a b ha hab m r S.card hr hSr hSm]
-    split_ifs <;> simp
-  · rw [density_packet_product_zero_of_small_count S a b ha hab m r D hr hD hSD (by omega) p B,
-      if_neg (by omega)]
 
 def densityPacketAtom (a b : ℝ) (m r D : ℕ)
     (j : Fin (m + r + 1) × (Fin r → Fin (derivativeOrder D + 1))) : ℝ × (Fin r → ℝ) :=

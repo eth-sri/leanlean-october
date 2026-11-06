@@ -70,17 +70,17 @@ theorem localizedResponseOperatorEnergy_integral_le (V B4 : ℝ)
     apply integral_mono (localizedResponseOperatorEnergy_integrable μ label hlabel r hmr V hr4)
       (((hG.const_mul 6).add (hGs.const_mul 6)).add (hq.const_mul _))
     intro z
-    simp only [Pi.add_apply, Pi.mul_apply]
+    simp only [Pi.add_apply]
     by_cases he : label z.1 = label z.2
     · have hb := pairScoreOperator_norm_sq_le V (r z.1) (r z.2)
       simp only [localizedResponseOperatorEnergy, sameLabelKernel, he, if_pos,
-        labelLocalizedKernel, G, Prod.fst_swap, Prod.snd_swap, eq_comm, one_mul]
+        labelLocalizedKernel, G, Prod.fst_swap, Prod.snd_swap, one_mul]
       nlinarith [hb]
     · simp [localizedResponseOperatorEnergy, sameLabelKernel, labelLocalizedKernel, G,
         he, Ne.symm he]
   have ha := integral_add ((hG.const_mul 6).add (hGs.const_mul 6)) (hq.const_mul (6 + 8 * V ^ 2))
   have ha' := integral_add (hG.const_mul 6) (hGs.const_mul 6)
-  simp only [Pi.add_apply, Pi.mul_apply] at ha ha'
+  simp only [Pi.add_apply] at ha ha'
   rw [ha, ha', integral_const_mul, integral_const_mul, integral_const_mul,
     integral_prod_swap G, sameLabelKernel_integral μ label hlabel] at hb
   change (∫ z, G z ∂μ.prod μ) ≤ _ at hupper

@@ -120,7 +120,7 @@ lemma pow_le_factorial_exp (n : ℕ) :
   have hf : 0 < (n.factorial : ℝ) := by exact_mod_cast Nat.factorial_pos n
   have h := (div_le_iff₀ hf).mp (Real.pow_div_factorial_le_exp (n : ℝ) (Nat.cast_nonneg n) n)
   have he : Real.exp (n : ℝ) = Real.exp 1 ^ n := by
-    simpa using Real.exp_nat_mul 1 n
+    simp
   rw [he] at h
   simpa [mul_comm] using h
 

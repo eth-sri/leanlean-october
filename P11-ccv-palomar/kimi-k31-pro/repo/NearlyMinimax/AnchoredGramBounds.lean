@@ -72,13 +72,13 @@ theorem anchoredGram_uniform_bounds {d ℓ : ℕ} [Nonempty (AnchoredIndex d ℓ
   have hSne : S.Nonempty := by
     refine ⟨(0, EuclideanSpace.single γ 1), ?_, ?_⟩
     · intro i; simp
-    · simp [Metric.mem_sphere, dist_eq_norm, EuclideanSpace.norm_single]
+    · simp [Metric.mem_sphere]
   obtain ⟨zmin, hzmin, hmin⟩ := hS.exists_isMinOn hSne anchoredQuadratic_continuous.continuousOn
   obtain ⟨zmax, hzmax, hmax⟩ := hS.exists_isMaxOn hSne anchoredQuadratic_continuous.continuousOn
   have hzminne : zmin.2 ≠ 0 := by
     intro he
     have hh := hzmin.2
-    simp [Metric.mem_sphere, he] at hh
+    simp [he] at hh
   have hcB : 0 < anchoredQuadratic zmin.1 zmin.2 := anchoredQuadratic_pos _ _ hzminne
   refine ⟨anchoredQuadratic zmin.1 zmin.2, max 1 (anchoredQuadratic zmax.1 zmax.2),
     hcB, lt_of_lt_of_le zero_lt_one (le_max_left _ _), ?_⟩
@@ -89,7 +89,7 @@ theorem anchoredGram_uniform_bounds {d ℓ : ℕ} [Nonempty (AnchoredIndex d ℓ
   have hn : 0 < ‖c‖ := norm_pos_iff.mpr hc
   let c' : AnchoredCoefficientSpace d ℓ := ‖c‖⁻¹ • c
   have hnorm : ‖c'‖ = 1 := by
-    simp [c', norm_smul, Real.norm_eq_abs, abs_of_pos hn, hn.ne', inv_mul_cancel₀]
+    simp [c', norm_smul, hn.ne']
   have huc : (u, c') ∈ S := ⟨hu, by simpa [Metric.mem_sphere, dist_eq_norm] using hnorm⟩
   have hlo : anchoredQuadratic zmin.1 zmin.2 ≤ anchoredQuadratic u c' := hmin huc
   have hup0 : anchoredQuadratic u c' ≤ anchoredQuadratic zmax.1 zmax.2 := hmax huc

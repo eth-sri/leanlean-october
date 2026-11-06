@@ -131,36 +131,13 @@ theorem gaussian_constant_spacing (c δ : ℝ) (hc : 0 < c) (hδ : 0 < δ) :
 theorem separated_translate (S : Finset ℝ) (δ a : ℝ)
     (hsep : ∀ x ∈ S, ∀ y ∈ S, x ≠ y → δ ≤ |x - y|) :
     ∀ u ∈ S.image (fun x => x - a), ∀ v ∈ S.image (fun x => x - a),
-      u ≠ v → δ ≤ |u - v| := by
-  classical
-  intro u hu v hv huv
-  obtain ⟨x, hx, rfl⟩ := Finset.mem_image.mp hu
-  obtain ⟨y, hy, rfl⟩ := Finset.mem_image.mp hv
-  have hxy : x ≠ y := by
-    intro h
-    exact huv (congrArg (fun z => z - a) h)
-  have h := hsep x hx y hy hxy
-  convert h using 1
-  congr 1
-  ring
+      u ≠ v → δ ≤ |u - v| := by simp_all
 
 /-- Reflection about a center preserves separation. -/
 theorem separated_reflect (S : Finset ℝ) (δ a : ℝ)
     (hsep : ∀ x ∈ S, ∀ y ∈ S, x ≠ y → δ ≤ |x - y|) :
     ∀ u ∈ S.image (fun x => a - x), ∀ v ∈ S.image (fun x => a - x),
-      u ≠ v → δ ≤ |u - v| := by
-  classical
-  intro u hu v hv huv
-  obtain ⟨x, hx, rfl⟩ := Finset.mem_image.mp hu
-  obtain ⟨y, hy, rfl⟩ := Finset.mem_image.mp hv
-  have hxy : x ≠ y := by
-    intro h
-    exact huv (congrArg (fun z => a - z) h)
-  have h := hsep x hx y hy hxy
-  rw [abs_sub_comm x y] at h
-  convert h using 1
-  congr 1
-  ring
+      u ≠ v → δ ≤ |u - v| := by measurability
 
 /-- A nonnegative separated Gaussian sum is bounded by the half Gaussian integral. -/
 theorem gaussian_half_sum (S : Finset ℝ) {δ c : ℝ}

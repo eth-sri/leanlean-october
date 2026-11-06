@@ -85,7 +85,7 @@ theorem pairPilotScoreMean_eq_half_pilotMean {d : ℕ} (C : ModelConstants d)
       congr 1
       apply integral_congr_ae
       filter_upwards [boundedPairRegressionOperator_eq_ae C θ hθ k hk] with w hw
-      simp only [PilotFields.pilotMean, pairPilotCoefficient, hw]
+      simp only [pairPilotCoefficient, hw]
 
 theorem pairPilotNoiseMean_eq_half_pilotMean {d : ℕ} (C : ModelConstants d)
     (θ : RegressionParameter d) (hθ : Admissible C θ) (k : ℕ) (hk : 0 < k)
@@ -117,7 +117,7 @@ variable [NormedAddCommGroup H] [InnerProductSpace ℝ H] [CompleteSpace H]
 variable [MeasurableSpace H] [BorelSpace H] [SecondCountableTopology H]
 variable {μ : Measure Ω} {M : Measure W} [IsProbabilityMeasure μ] [IsFiniteMeasure M]
 
-theorem half_pilotMean_mean_eq (bar : W → H) (hbarMeas : Measurable bar) (hbar : MemLp bar 2 M)
+variable (bar : W → H) (hbarMeas : Measurable bar) (hbar : MemLp bar 2 M)
     {η : Ω → W → H} (hmη : Measurable (fun z : Ω × W => η z.1 z.2))
     (hη : MemLp (fun z : Ω × W => η z.1 z.2) 2 (μ.prod M))
     (hcenter : ∀ᵐ w ∂M, (∫ x, η x w ∂μ) = 0)
@@ -125,21 +125,16 @@ theorem half_pilotMean_mean_eq (bar : W → H) (hbarMeas : Measurable bar) (hbar
     {cB lam : ℝ} (hcB : 0 ≤ cB) (hlam : 0 ≤ lam) (hbound : ∀ w, ‖B w‖ ≤ cB)
     (hsym : ∀ w a b, ⟪a, B w b⟫ = ⟪B w a, b⟫)
     (htest : ∀ v : W → H, MemLp v 2 M →
-      (∫ x, PilotFields.test (M := M) η v x ^ 2 ∂μ) ≤ lam * ∫ w, ‖v w‖ ^ 2 ∂M) :
+      (∫ x, PilotFields.test (M := M) η v x ^ 2 ∂μ) ≤ lam * ∫ w, ‖v w‖ ^ 2 ∂M)
+include bar hbarMeas hbar η hmη hη hcenter B hmB cB lam hcB hlam hbound hsym htest
+
+theorem half_pilotMean_mean_eq  :
     (∫ x, (1 / 2) * PilotFields.pilotMean (M := M) bar η B x ∂μ.prod μ) =
       (1 / 2) * ∫ w, ⟪bar w, B w (bar w)⟫ ∂M := by
   rw [integral_const_mul,
     PilotFields.pilotMean_mean_eq bar hbarMeas hbar hmη hη hcenter hmB hcB hlam hbound hsym htest]
 
-theorem half_pilotMean_centered_sq_le (bar : W → H) (hbarMeas : Measurable bar) (hbar : MemLp bar 2 M)
-    {η : Ω → W → H} (hmη : Measurable (fun z : Ω × W => η z.1 z.2))
-    (hη : MemLp (fun z : Ω × W => η z.1 z.2) 2 (μ.prod M))
-    (hcenter : ∀ᵐ w ∂M, (∫ x, η x w ∂μ) = 0)
-    {B : W → H →L[ℝ] H} (hmB : Measurable (fun z : W × H => B z.1 z.2))
-    {cB lam : ℝ} (hcB : 0 ≤ cB) (hlam : 0 ≤ lam) (hbound : ∀ w, ‖B w‖ ≤ cB)
-    (hsym : ∀ w a b, ⟪a, B w b⟫ = ⟪B w a, b⟫)
-    (htest : ∀ v : W → H, MemLp v 2 M →
-      (∫ x, PilotFields.test (M := M) η v x ^ 2 ∂μ) ≤ lam * ∫ w, ‖v w‖ ^ 2 ∂M) :
+theorem half_pilotMean_centered_sq_le  :
     (∫ x, ((1 / 2) * PilotFields.pilotMean (M := M) bar η B x -
       ∫ z, (1 / 2) * PilotFields.pilotMean (M := M) bar η B z ∂μ.prod μ) ^ 2 ∂μ.prod μ) ≤
       (3 / 4) * lam * cB ^ 2 * (2 * (∫ w, ‖bar w‖ ^ 2 ∂M) +
@@ -155,15 +150,7 @@ theorem half_pilotMean_centered_sq_le (bar : W → H) (hbarMeas : Measurable bar
     (by norm_num : (0 : ℝ) ≤ 1 / 4)
   convert h using 1 <;> ring
 
-theorem half_pilotMean_variance_transfer (bar : W → H) (hbarMeas : Measurable bar) (hbar : MemLp bar 2 M)
-    {η : Ω → W → H} (hmη : Measurable (fun z : Ω × W => η z.1 z.2))
-    (hη : MemLp (fun z : Ω × W => η z.1 z.2) 2 (μ.prod M))
-    (hcenter : ∀ᵐ w ∂M, (∫ x, η x w ∂μ) = 0)
-    {B : W → H →L[ℝ] H} (hmB : Measurable (fun z : W × H => B z.1 z.2))
-    {cB lam : ℝ} (hcB : 0 ≤ cB) (hlam : 0 ≤ lam) (hbound : ∀ w, ‖B w‖ ≤ cB)
-    (hsym : ∀ w a b, ⟪a, B w b⟫ = ⟪B w a, b⟫)
-    (htest : ∀ v : W → H, MemLp v 2 M →
-      (∫ x, PilotFields.test (M := M) η v x ^ 2 ∂μ) ≤ lam * ∫ w, ‖v w‖ ^ 2 ∂M)
+theorem half_pilotMean_variance_transfer 
     (G : Ω × Ω → ℝ)
     (he : G =ᵐ[μ.prod μ] fun x => (1 / 2) * PilotFields.pilotMean (M := M) bar η B x) :
     MemLp G 2 (μ.prod μ) ∧
@@ -190,10 +177,7 @@ theorem pairNoiseOperator_symmetric (a b : PairVector) :
   ring
 
 theorem pairNoiseOperator_measurable_apply {W : Type*} [MeasurableSpace W] :
-    Measurable (fun z : W × PairVector => pairNoiseOperator z.2) := by
-  have h := pairNoiseOperator.continuous.measurable.comp
-    (show Measurable (fun z : W × PairVector => z.2) from measurable_snd)
-  exact h
+    Measurable (fun z : W × PairVector => pairNoiseOperator z.2) := by measurability
 
 section ActualMean
 variable {d : ℕ} (C : ModelConstants d) (θ : RegressionParameter d) (hθ : Admissible C θ)

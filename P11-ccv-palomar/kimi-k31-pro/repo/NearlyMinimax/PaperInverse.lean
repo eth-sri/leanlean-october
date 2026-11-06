@@ -34,10 +34,6 @@ theorem inverse_ratio_pow (a b : ℝ) (ha : 0 < a) (hab : a < b) (m : ℕ) :
   congr 1
   ring
 
-/-- A positive constant independent of truncation degree. -/
-def reciprocalErrorConstant (a b : ℝ) : ℝ :=
-  2 / intervalGeometricMean a b * intervalRho a b / (1 - intervalRho a b)
-
 open RoughRegime.CombinedPolynomial RoughRegime.CombinedAnalytic
 
 /-- The entry-variable type for the current matrix and its single parent. -/
@@ -290,13 +286,16 @@ theorem spectral_det_abs_le {n : Type*} [Fintype n] [DecidableEq n]
         exact h.2
     _ = _ := by simp
 
-/-- Determinant clearing preserves the small increment with the precise spectral-size factor. -/
-theorem increment_numerator_norm_le {r : ℕ} [NeZero r]
+variable {r : ℕ} [NeZero r]
     (a b : ℝ) (ha : 0 < a) (hab : a < b)
     (A C T : Matrix (Fin r) (Fin r) ℝ) (hA : A.IsHermitian) (hC : C.IsHermitian)
     (hSpecA : spectrum ℝ A ⊆ Set.Icc a b) (hSpecC : spectrum ℝ C ⊆ Set.Icc a b)
     (Q R : (Matrix (Fin r) (Fin r) ℝ)ˣ) (χ : ℝ)
     (hχ : ‖(Q : Matrix (Fin r) (Fin r) ℝ)‖ * ‖(↑Q⁻¹ : Matrix (Fin r) (Fin r) ℝ)‖ ≤ χ)
+include a b ha hab A C T hA hC hSpecA hSpecC Q R χ hχ
+
+/-- Determinant clearing preserves the small increment with the precise spectral-size factor. -/
+theorem increment_numerator_norm_le 
     (β βminus : Fin r → ℝ) :
     let G := matrixSimilarity Q A
     let Cminus := matrixSimilarity R C
@@ -337,12 +336,7 @@ theorem increment_numerator_norm_le {r : ℕ} [NeZero r]
 
 /-- Applying any inverse/determinant approximation to the cleared numerator incurs only
 its operator error times the numerator norm. This is the analytic step behind (U5-error). -/
-theorem increment_polynomial_error {r : ℕ} [NeZero r]
-    (a b : ℝ) (ha : 0 < a) (hab : a < b)
-    (A C T : Matrix (Fin r) (Fin r) ℝ) (hA : A.IsHermitian) (hC : C.IsHermitian)
-    (hSpecA : spectrum ℝ A ⊆ Set.Icc a b) (hSpecC : spectrum ℝ C ⊆ Set.Icc a b)
-    (Q R : (Matrix (Fin r) (Fin r) ℝ)ˣ) (χ : ℝ)
-    (hχ : ‖(Q : Matrix (Fin r) (Fin r) ℝ)‖ * ‖(↑Q⁻¹ : Matrix (Fin r) (Fin r) ℝ)‖ ≤ χ)
+theorem increment_polynomial_error 
     (β βminus : Fin r → ℝ) (m : ℕ) :
     let G := matrixSimilarity Q A
     let Cminus := matrixSimilarity R C

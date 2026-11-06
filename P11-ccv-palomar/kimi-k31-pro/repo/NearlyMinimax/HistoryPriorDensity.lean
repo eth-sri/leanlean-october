@@ -171,14 +171,18 @@ def historyMarkedFiberPrior (dependent : J → J → Prop) (Δ : ℕ) (t : ℝ) 
   (Measure.pi (fun _ => π)).withDensity
     (fun marks => ENNReal.ofReal (historyMarkedDensity dependent (historyReferenceRho Δ) t a ⟨g, marks⟩))
 
-/-- Positivity is derived from the dependency heap, and normalization from centered marks. -/
-theorem historyMarkedFiberPrior_probability (dependent : J → J → Prop)
+section PriorDensity
+variable (dependent : J → J → Prop)
     (hrefl : ∀ j, dependent j j) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
     (Δ : ℕ) (hlabels : ∀ j, (dependentLabelFinset dependent j).card ≤ Δ)
     (t B : ℝ) (ht : 0 ≤ t) (hB : 0 ≤ B) {E : Type*} [MeasurableSpace E]
     (π : Measure E) [IsProbabilityMeasure π] (a : E → ℝ) (ha : Integrable a π)
     (hcenter : ∫ e, a e ∂π = 0) (habound : ∀ e, |a e| ≤ B)
     (hsmall : t * B / historyReferenceRho Δ ≤ 1 / (2 + 8 * (Δ : ℝ) ^ 2))
+include dependent hrefl hsymm Δ hlabels t B ht hB π a ha hcenter habound hsmall
+
+/-- Positivity is derived from the dependency heap, and normalization from centered marks. -/
+theorem historyMarkedFiberPrior_probability 
     (g : HistoryShape (fun i j => ¬ dependent i j)) :
     IsProbabilityMeasure (historyMarkedFiberPrior dependent Δ t π a g) := by
   have he := historyMarkedDensity_fiber_integral_one dependent (historyReferenceRho Δ) t π a ha hcenter g
@@ -205,13 +209,7 @@ def historyMarkedPrior (dependent : J → J → Prop) (Δ : ℕ) (t : ℝ) {E : 
     [MeasurableSpace E] (π : Measure E) (a : E → ℝ) : Measure (HistoryMarked dependent E) :=
   (historyMarkedReferenceRaw dependent Δ π Set.univ)⁻¹ • historyMarkedPriorRaw dependent Δ t π a
 
-theorem historyMarkedPriorRaw_univ (dependent : J → J → Prop)
-    (hrefl : ∀ j, dependent j j) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
-    (Δ : ℕ) (hlabels : ∀ j, (dependentLabelFinset dependent j).card ≤ Δ)
-    (t B : ℝ) (ht : 0 ≤ t) (hB : 0 ≤ B) {E : Type*} [MeasurableSpace E]
-    (π : Measure E) [IsProbabilityMeasure π] (a : E → ℝ) (ha : Integrable a π)
-    (hcenter : ∫ e, a e ∂π = 0) (habound : ∀ e, |a e| ≤ B)
-    (hsmall : t * B / historyReferenceRho Δ ≤ 1 / (2 + 8 * (Δ : ℝ) ^ 2)) :
+theorem historyMarkedPriorRaw_univ  :
     historyMarkedPriorRaw dependent Δ t π a Set.univ = historyMarkedReferenceRaw dependent Δ π Set.univ := by
   rw [historyMarkedReferenceRaw_univ]
   unfold historyMarkedPriorRaw
@@ -222,6 +220,8 @@ theorem historyMarkedPriorRaw_univ (dependent : J → J → Prop)
     historyMarkedFiberPrior_probability dependent hrefl hsymm Δ hlabels t B ht hB π a ha hcenter habound hsmall g
   rw [Measure.smul_apply, Measure.map_apply (historyMarked_measurable_mk dependent g) MeasurableSet.univ]
   simp
+
+end PriorDensity
 
 /-- The source path of positive prior measures is genuinely constructed for the whole interval. -/
 theorem historyMarkedPrior_probability (dependent : J → J → Prop)

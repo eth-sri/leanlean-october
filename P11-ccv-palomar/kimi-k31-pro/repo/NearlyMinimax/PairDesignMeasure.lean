@@ -36,8 +36,8 @@ theorem partitionPairMeasure_integral (hlabel : Measurable label)
       {z : X × X | label z.1 = label z.2}.indicator f := by
     funext z
     by_cases hz : label z.1 = label z.2
-    · simp [sameLabelKernel, Set.indicator_apply, hz]
-    · simp [sameLabelKernel, Set.indicator_apply, hz]
+    · simp [sameLabelKernel, hz]
+    · simp [sameLabelKernel, hz]
   rw [partitionPairMeasure, integral_smul_measure, ENNReal.toReal_ofReal hw, he,
     integral_indicator hC]
 

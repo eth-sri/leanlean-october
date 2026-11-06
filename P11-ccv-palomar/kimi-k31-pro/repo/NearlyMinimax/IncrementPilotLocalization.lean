@@ -115,6 +115,6 @@ theorem regularPairDesignMeasure_parent_block_mass {d : ℕ} (C : ModelConstants
       ENNReal.toReal_ofReal (by positivity : 0 ≤ 1 / (((2 : ℕ) ^ (j - 1) : ℕ) : ℝ))] using ht
   apply hfirst.trans
   apply (mul_le_mul_of_nonneg_left hvol (sq_nonneg _)).trans_eq
-  simp only [dyadicPilotScale, div_pow, one_pow, div_eq_mul_inv, one_mul, inv_pow]
+  simp only [dyadicPilotScale, div_eq_mul_inv, one_mul, inv_pow]
 
 end NearlyMinimax

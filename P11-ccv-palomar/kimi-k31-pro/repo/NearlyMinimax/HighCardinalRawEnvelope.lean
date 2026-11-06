@@ -105,7 +105,7 @@ def cardinalRawAliasCoefficient (n : ℕ) (bd a η : ℝ) : ℝ := η^2 * bd^n /
 def cardinalRawTaylorCoefficient (n q : ℕ) (bd C a ρ η : ℝ) : ℝ :=
   bd^n * highResponseRemainderConstant q C a ρ * (n : ℝ)^(2*q+2) * η^(2*q+2)
 
-theorem highCardinalRawNumerator_abs_bound_of_chart {d n F : ℕ}
+variable {d n F : ℕ}
     (ad bd lam : ℝ) (haD : 0 < ad) (hab : ad < bd) (hlam : 0 ≤ lam)
     {T : ℝ} (hT : 1 ≤ T) (m D q : ℕ) (hn : 1 ≤ n) (hnm : n ≤ m)
     (hnD : n ≤ D) (hnF : n ≤ F) (hq : 1 ≤ q)
@@ -114,7 +114,11 @@ theorem highCardinalRawNumerator_abs_bound_of_chart {d n F : ℕ}
     (p g w : Fin n → ℝ) (hpD : ∀ i, p i ∈ Icc ad bd)
     (hg : ∀ i, |g i| ≤ ρ/2) (hw : ∀ i, |w i| ≤ 1)
     (c : HighFrameIndex d F → ℝ) (hc : ∑ γ, |c γ| ≤ C⁻¹)
-    (hp : ∀ f : ℝ, |f| ≤ ρ → ∀ u, 0 ≤ ternaryMass a f V u) (y : Fin n → Fin 3) :
+    (hp : ∀ f : ℝ, |f| ≤ ρ → ∀ u, 0 ≤ ternaryMass a f V u) (y : Fin n → Fin 3)
+include d n F ad bd lam haD hab hlam T hT m D q hn hnm hnD hnF hq C a V η ρ hC ha hη hρ hηρ
+  U hU p g w hpD hg hw c hc hp y
+
+theorem highCardinalRawNumerator_abs_bound_of_chart  :
     |highCardinalRawNumerator ad bd lam T m D q C a V η U p g w c y| ≤
       cardinalRawAliasCoefficient n bd a η * (∑ i, cardinalWeightDefect i lam T U) +
         cardinalRawTaylorCoefficient n q bd C a ρ η * spatialMatrixL1 (integratedCardinalMatrix (D := F) lam T U) := by
@@ -141,16 +145,7 @@ theorem highCardinalRawNumerator_abs_bound_of_chart {d n F : ℕ}
     C a V η hCpos.ne' U hU p g w hpD c y]
   exact (abs_add_le _ _).trans (add_le_add hAlias hTaylor)
 
-theorem highCardinalRawNumerator_square_bound_of_chart {d n F : ℕ}
-    (ad bd lam : ℝ) (haD : 0 < ad) (hab : ad < bd) (hlam : 0 ≤ lam)
-    {T : ℝ} (hT : 1 ≤ T) (m D q : ℕ) (hn : 1 ≤ n) (hnm : n ≤ m)
-    (hnD : n ≤ D) (hnF : n ≤ F) (hq : 1 ≤ q)
-    (C a V η ρ : ℝ) (hC : 1 ≤ C) (ha : 0 < a) (hη : 0 ≤ η) (hρ : 0 ≤ ρ)
-    (hηρ : η ≤ ρ/2) (U : Fin n → Covariate d) (hU : ∀ i l, |U i l| ≤ 2)
-    (p g w : Fin n → ℝ) (hpD : ∀ i, p i ∈ Icc ad bd)
-    (hg : ∀ i, |g i| ≤ ρ/2) (hw : ∀ i, |w i| ≤ 1)
-    (c : HighFrameIndex d F → ℝ) (hc : ∑ γ, |c γ| ≤ C⁻¹)
-    (hp : ∀ f : ℝ, |f| ≤ ρ → ∀ u, 0 ≤ ternaryMass a f V u) (y : Fin n → Fin 3) :
+theorem highCardinalRawNumerator_square_bound_of_chart  :
     highCardinalRawNumerator ad bd lam T m D q C a V η U p g w c y ^ 2 ≤
       2 * cardinalRawAliasCoefficient n bd a η ^ 2 * (∑ i, cardinalWeightDefect i lam T U)^2 +
       2 * cardinalRawTaylorCoefficient n q bd C a ρ η ^ 2 *

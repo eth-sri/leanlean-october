@@ -309,7 +309,7 @@ theorem matrix_entry_norm_le_l2 (A : Matrix n n ℂ) (i j : n) : ‖A i j‖ ≤
   let T := Matrix.toEuclideanCLM (n := n) (𝕜 := ℂ) A
   have hi := PiLp.norm_apply_le (T e) i
   have hentry : (T e) i = A i j := by
-    simp [T, e, Matrix.toEuclideanCLM_toLp, EuclideanSpace.single, Matrix.mulVec, dotProduct]
+    simp [T, e, EuclideanSpace.single, Matrix.mulVec, dotProduct]
   rw [hentry] at hi
   exact hi.trans (by simpa [he, T, Matrix.l2_opNorm_toEuclideanCLM] using
     (T.le_opNorm e))
@@ -415,7 +415,7 @@ theorem matrixEntryPolynomial_eval_complex (p : ℝ[X]) (A : Matrix n n ℂ) (i 
   unfold matrixEntryPolynomial
   simp only [MvPolynomial.eval₂_sum, MvPolynomial.eval₂_mul, MvPolynomial.eval₂_C,
     variableMatrix_power_eval_complex, Matrix.sum_apply, Matrix.smul_apply]
-  simp only [Complex.real_smul, smul_eq_mul]
+  simp only [Complex.real_smul]
   rfl
 
 theorem variableKernelSeries_eval_complex (lo hi : ℝ) (A : Matrix n n ℂ) :
@@ -437,7 +437,7 @@ def ofRealMatrixStarAlgHom : Matrix n n ℝ →⋆ₐ[ℝ] Matrix n n ℂ :=
     map_star' := by
       intro A
       ext i j
-      simp [Matrix.star_eq_conjTranspose, Matrix.conjTranspose_apply] }
+      simp [Matrix.star_eq_conjTranspose] }
 
 theorem ofRealMatrixStarAlgHom_injective : Function.Injective (ofRealMatrixStarAlgHom (n := n)) := by
   intro A B h
@@ -498,7 +498,7 @@ theorem parentInverseEntryPolynomial_eval_complex (lo hi : ℝ)
   have he : PowerSeries.map (MvPolynomial.eval₂Hom Complex.ofRealHom (complexParentValuation r A C))
       (combinedVariableSeries r (fun _ : Fin 1 => r) lo hi i j) =
       complexKernelSeries lo hi A i j * (complexKernelSeries lo hi C).det := by
-    simp only [combinedVariableSeries, map_mul, map_prod, inverseVariableSeries_eval_complex,
+    simp only [combinedVariableSeries, map_mul, inverseVariableSeries_eval_complex,
       determinantVariableSeries_eval_complex, Fin.prod_univ_one]
   simp only [parentInverseEntryPolynomial, truncationEntryPolynomial, MvPolynomial.eval₂_mul,
     MvPolynomial.eval₂_C, MvPolynomial.eval₂_sum, combinedCoefficientPolynomial]

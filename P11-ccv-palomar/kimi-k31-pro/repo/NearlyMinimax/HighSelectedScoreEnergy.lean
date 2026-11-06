@@ -104,7 +104,6 @@ theorem selected_score_density_cancel {κ α : Type*} [Fintype κ]
   simp only [Finset.prod_const, Finset.card_univ]
   unfold selectedRawLikelihood
   field_simp [hpP, hqP, hm.ne']
-  <;> ring
 
 theorem selected_raw_inverse_floor {κ α : Type*} [Fintype κ]
     (m pMinus cMass : ℝ) (hpMinus : 0 < pMinus) (hcMass : 0 < cMass)

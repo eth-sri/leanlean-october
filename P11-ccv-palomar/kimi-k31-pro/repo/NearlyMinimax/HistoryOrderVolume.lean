@@ -64,8 +64,7 @@ def historyOrderCount (S : Finset α) : ℝ := historyDeletionCoefficient (fun _
 
 def historyOrderVolume (S : Finset α) : ℝ := historyOrderCount S / (S.card.factorial : ℝ)
 
-@[simp] theorem historyOrderCount_empty : historyOrderCount (∅ : Finset α) = 1 := by
-  simp [historyOrderCount]
+@[simp] theorem historyOrderCount_empty : historyOrderCount (∅ : Finset α) = 1 := rfl
 
 @[simp] theorem historyOrderVolume_empty : historyOrderVolume (∅ : Finset α) = 1 := by
   simp [historyOrderVolume]

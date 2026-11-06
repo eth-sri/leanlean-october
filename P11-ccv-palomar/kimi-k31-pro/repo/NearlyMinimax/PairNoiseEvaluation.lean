@@ -63,7 +63,7 @@ theorem rawModelPairNoise_measurable {Ω : Type*} [MeasurableSpace Ω] {d : ℕ}
     (sameLabelKernel_measurable (regularObservationLabel (d := d) k hk)
       (regularObservationLabel_measurable (d := d) k hk))
 
-theorem rawModelPairNoise_memLp {Ω : Type*} [MeasurableSpace Ω]
+variable {Ω : Type*} [MeasurableSpace Ω]
     (π : Measure Ω) [IsProbabilityMeasure π] {d : ℕ} (C : ModelConstants d)
     (θ : RegressionParameter d) (hθ : Admissible C θ) (k : ℕ) (hk : 0 < k)
     {c : Ω → Covariate d × Covariate d → PairVector}
@@ -71,7 +71,10 @@ theorem rawModelPairNoise_memLp {Ω : Type*} [MeasurableSpace Ω]
     (hc : ∀ᵐ w ∂(designLaw θ).prod (designLaw θ),
       sameLabelKernel (regularGridCell k hk) w ≠ 0 → MemLp (fun x => c x w) 2 π)
     {L : ℝ} (hL : 0 ≤ L) (hE : ∀ᵐ w ∂(designLaw θ).prod (designLaw θ),
-      sameLabelKernel (regularGridCell k hk) w ≠ 0 → (∫ x, ‖c x w‖ ^ 2 ∂π) ≤ L) :
+      sameLabelKernel (regularGridCell k hk) w ≠ 0 → (∫ x, ‖c x w‖ ^ 2 ∂π) ≤ L)
+include π C θ hθ k hk c hmc hc L hL hE
+
+theorem rawModelPairNoise_memLp  :
     MemLp (fun z : (Ω × Ω) × (Observation d × Observation d) => rawModelPairNoise k hk c z.1 z.2)
       2 ((π.prod π).prod ((observationLaw θ).prod (observationLaw θ))) := by
   let := observationLaw_isProbability C θ hθ
@@ -93,15 +96,7 @@ theorem rawModelPairNoise_memLp {Ω : Type*} [MeasurableSpace Ω]
   · exact hL
   · exact hmp.quasiMeasurePreserving.ae hE
 
-theorem rawModelPairNoise_energy_le {Ω : Type*} [MeasurableSpace Ω]
-    (π : Measure Ω) [IsProbabilityMeasure π] {d : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ) (k : ℕ) (hk : 0 < k)
-    {c : Ω → Covariate d × Covariate d → PairVector}
-    (hmc : Measurable (fun z : Ω × (Covariate d × Covariate d) => c z.1 z.2))
-    (hc : ∀ᵐ w ∂(designLaw θ).prod (designLaw θ),
-      sameLabelKernel (regularGridCell k hk) w ≠ 0 → MemLp (fun x => c x w) 2 π)
-    {L : ℝ} (hL : 0 ≤ L) (hE : ∀ᵐ w ∂(designLaw θ).prod (designLaw θ),
-      sameLabelKernel (regularGridCell k hk) w ≠ 0 → (∫ x, ‖c x w‖ ^ 2 ∂π) ≤ L) :
+theorem rawModelPairNoise_energy_le  :
     (∫ z : (Ω × Ω) × (Observation d × Observation d), rawModelPairNoise k hk c z.1 z.2 ^ 2
       ∂(π.prod π).prod ((observationLaw θ).prod (observationLaw θ))) ≤
       L ^ 2 * (4 * (C.densityUpper / (k : ℝ) ^ d)) := by

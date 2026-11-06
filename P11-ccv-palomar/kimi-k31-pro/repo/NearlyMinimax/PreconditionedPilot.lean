@@ -45,8 +45,12 @@ theorem preconditionedPilotFeature_measurable {d ℓ : ℕ} (j : ℕ)
   Finset.measurable_sum Finset.univ (fun β _ =>
     measurable_const.mul (dyadicPilotFeature_measurable j x _))
 
-theorem preconditionedPilotFeature_memLp_two {d ℓ : ℕ} (C : ModelConstants d)
+section Preconditioned
+variable {d ℓ : ℕ} (C : ModelConstants d)
     (θ : RegressionParameter d) (hθ : Admissible C θ) (j : ℕ) (x : Covariate d)
+include C θ hθ j x
+
+theorem preconditionedPilotFeature_memLp_two 
     (hx : x ∈ unitCube d) (a : LocalPilotIndex d ℓ) :
     MemLp (preconditionedPilotFeature j x a) 2 (observationLaw θ) :=
   memLp_finsetSum Finset.univ (fun β _ =>
@@ -54,8 +58,7 @@ theorem preconditionedPilotFeature_memLp_two {d ℓ : ℕ} (C : ModelConstants d
 
 /-- The exact preconditioned means are the known linear transform of the
 original-law raw means; no population equivalence is assumed. -/
-theorem preconditionedPilotPopulation_eq_sum {d ℓ : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ) (j : ℕ) (x : Covariate d)
+theorem preconditionedPilotPopulation_eq_sum 
     (hx : x ∈ unitCube d) (a : LocalPilotIndex d ℓ) :
     preconditionedPilotPopulation θ j x a =
       ∑ β : AnchoredIndex d ℓ, (dyadicKnownGram j x)⁻¹ (localPilotRow a) β *
@@ -66,8 +69,7 @@ theorem preconditionedPilotPopulation_eq_sum {d ℓ : ℕ} (C : ModelConstants d
     ((dyadicPilotFeature_memLp_two C θ hθ j x hx _).integrable (by norm_num)).const_mul _)]
   simp only [integral_const_mul, dyadicPilotPopulation]
 
-theorem preconditionedPilotPopulation_gram {d ℓ : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ) (j : ℕ) (x : Covariate d)
+theorem preconditionedPilotPopulation_gram 
     (hx : x ∈ unitCube d) (γ δ : AnchoredIndex d ℓ) :
     preconditionedPilotPopulation θ j x (Sum.inl (γ, δ)) =
       dyadicPreconditionedGram θ j x γ δ := by
@@ -75,8 +77,7 @@ theorem preconditionedPilotPopulation_gram {d ℓ : ℕ} (C : ModelConstants d)
   simp only [localPilotRow, localPilotReplaceRow, dyadicPilotPopulation_gram C θ hθ,
     dyadicPreconditionedGram, Matrix.mul_apply]
 
-theorem preconditionedPilotPopulation_response {d ℓ : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ) (j : ℕ) (x : Covariate d)
+theorem preconditionedPilotPopulation_response 
     (hx : x ∈ unitCube d) (γ : AnchoredIndex d ℓ) :
     preconditionedPilotPopulation θ j x (Sum.inr (Sum.inl γ)) =
       anchoredPreconditionedMoment (dyadicNormalizedAnchor j x) (dyadicNormalizedDensity θ j x)
@@ -86,8 +87,7 @@ theorem preconditionedPilotPopulation_response {d ℓ : ℕ} (C : ModelConstants
     dyadicKnownGram_eq_normalized, anchoredPreconditionedMoment, Matrix.mulVec, dotProduct,
     dyadicResponseMoment_eq_normalized C θ hθ]
 
-theorem preconditionedPilotPopulation_constant {d ℓ : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ) (j : ℕ) (x : Covariate d)
+theorem preconditionedPilotPopulation_constant 
     (hx : x ∈ unitCube d) (γ : AnchoredIndex d ℓ) :
     preconditionedPilotPopulation θ j x (Sum.inr (Sum.inr γ)) =
       anchoredPreconditionedMoment (dyadicNormalizedAnchor j x) (dyadicNormalizedDensity θ j x)
@@ -97,6 +97,7 @@ theorem preconditionedPilotPopulation_constant {d ℓ : ℕ} (C : ModelConstants
     dyadicKnownGram_eq_normalized, anchoredPreconditionedMoment, Matrix.mulVec, dotProduct,
     dyadicConstantMoment_eq_normalized C θ hθ]
 
+omit C θ hθ j x in
 theorem dyadicKnownGram_inverse_uniform_bound {d ℓ : ℕ} :
     ∃ L : ℝ, 0 < L ∧ ∀ j : ℕ, ∀ x ∈ unitCube d, ‖(dyadicKnownGram (ℓ := ℓ) j x)⁻¹‖ ≤ L := by
   obtain ⟨L, hL, hbound⟩ := anchoredGram_inverse_uniform_bound (d := d) (ℓ := ℓ)
@@ -107,8 +108,7 @@ theorem dyadicKnownGram_inverse_uniform_bound {d ℓ : ℕ} :
 
 /-- Known preconditioning increases the raw budget by a fixed feature-count
 and inverse-Gram factor; responses still require only a second moment. -/
-theorem preconditionedPilotFeature_second_le {d ℓ : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ) (j : ℕ) (x : Covariate d)
+theorem preconditionedPilotFeature_second_le 
     (hx : x ∈ unitCube d) (a : LocalPilotIndex d ℓ)
     (L : ℝ) (hL : 0 ≤ L) (hB : ‖(dyadicKnownGram (ℓ := ℓ) j x)⁻¹‖ ≤ L) :
     (∫ z, preconditionedPilotFeature j x a z ^ 2 ∂observationLaw θ) ≤
@@ -149,6 +149,8 @@ theorem preconditionedPilotFeature_second_le {d ℓ : ℕ} (C : ModelConstants d
   apply (mul_le_mul_of_nonneg_left (Finset.sum_le_sum (fun β _ => hcoord β))
     (Nat.cast_nonneg _)).trans_eq
   simp [pow_two, mul_assoc]
+
+end Preconditioned
 
 /-- One fixed inverse-Gram bound is selected once for the feature geometry. -/
 def pilotInverseBound (d ℓ : ℕ) : ℝ :=

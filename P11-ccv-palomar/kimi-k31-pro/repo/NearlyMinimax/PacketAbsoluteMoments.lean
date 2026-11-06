@@ -129,13 +129,16 @@ theorem absoluteMarkLaw_integral {E : Type*} [MeasurableSpace E]
     exact div_mul_eq_mul_div _ _ _
   rw [he, integral_div]
 
-theorem highPacketSlope_integrable (σ : Measure Z) [IsFiniteMeasure σ]
+variable (σ : Measure Z) [IsFiniteMeasure σ]
     (a b : ℝ) (ha : 0 < a) (hab : a < b) (m r D q : ℕ) (hr : 1 ≤ r) (C : ℝ)
     (A : Z → ι → ι → ℝ) (hA : ∀ i j, Measurable (fun ζ => A ζ i j))
     (hcost : Integrable (separatedMatrixCost A) σ)
     (hpos : 0 < highPacketMarkMass σ a b m r D q C A)
     (B : Z → Fin r → ℝ) (hmB : ∀ l, Measurable (fun ζ => B ζ l))
-    (hB : ∀ ζ l, |B ζ l| ≤ 1) :
+    (hB : ∀ ζ l, |B ζ l| ≤ 1)
+include σ a b ha hab m r D q hr C A hA hcost hpos B hmB hB
+
+theorem highPacketSlope_integrable  :
     Integrable (highPacketSlope a b m r D q B) (highPacketAbsoluteLaw σ a b m r D q C A) := by
   letI := highPacketAbsoluteLaw_probability σ a b m r D q C A hA hcost hpos
   apply (integrable_const ((b - a) / (4 * b))).mono'
@@ -145,13 +148,7 @@ theorem highPacketSlope_integrable (σ : Measure Z) [IsFiniteMeasure σ]
 
 /-- Absolute derivative-rule reflection kills the actual affine slope under
 the genuine normalized absolute packet law. No desired slope mean is supplied. -/
-theorem highPacketAbsoluteLaw_slope_integral_zero (σ : Measure Z) [IsFiniteMeasure σ]
-    (a b : ℝ) (ha : 0 < a) (hab : a < b) (m r D q : ℕ) (hr : 1 ≤ r) (C : ℝ)
-    (A : Z → ι → ι → ℝ) (hA : ∀ i j, Measurable (fun ζ => A ζ i j))
-    (hcost : Integrable (separatedMatrixCost A) σ)
-    (hpos : 0 < highPacketMarkMass σ a b m r D q C A)
-    (B : Z → Fin r → ℝ) (hmB : ∀ l, Measurable (fun ζ => B ζ l))
-    (hB : ∀ ζ l, |B ζ l| ≤ 1) :
+theorem highPacketAbsoluteLaw_slope_integral_zero  :
     (∫ e, highPacketSlope a b m r D q B e ∂highPacketAbsoluteLaw σ a b m r D q C A) = 0 := by
   have hi := (highPacketMarkWeight_integrable σ a b m r D q C A hA hcost).abs.mul_bdd
     (highPacketSlope_measurable a b m r D q B hmB).aestronglyMeasurable

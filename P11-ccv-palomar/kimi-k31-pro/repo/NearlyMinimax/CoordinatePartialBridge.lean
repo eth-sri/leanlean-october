@@ -209,9 +209,7 @@ theorem coordinate_tuple_perm_of_counts {q d : ℕ} (σ τ : Fin q → Fin d)
 theorem iteratedFDeriv_cast_order {d : ℕ} {a b : ℕ} (h : a = b)
     (F : Covariate d → ℝ) (x : Covariate d) (v : Fin b → Covariate d) :
     iteratedFDeriv ℝ a F x (fun j => v (Fin.cast h j)) =
-      iteratedFDeriv ℝ b F x v := by
-  cases h
-  rfl
+      iteratedFDeriv ℝ b F x v := by measurability
 
 theorem fin_cast_inverse {a b : ℕ} (h : a = b) (k : b = a) (j : Fin a) :
     Fin.cast k (Fin.cast h j) = j := rfl

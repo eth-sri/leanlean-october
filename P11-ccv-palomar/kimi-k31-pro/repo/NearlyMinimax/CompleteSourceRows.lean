@@ -47,7 +47,7 @@ theorem singletonRowSource_guards {d : ℕ} (C : ModelConstants d) (k D M q : �
   let A := fun _ : Unit => finePairUnitMatrix d D
   have hA : ∀ i j, Measurable (fun ζ : Unit => A ζ i j) := fun _ _ => measurable_const
   have hc : Integrable (separatedMatrixCost A) (Measure.dirac ()) := by
-    simp [A,separatedMatrixCost]
+    simp [A]
   refine {
     resolution := hM
     frame := hCfr

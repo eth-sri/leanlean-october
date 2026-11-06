@@ -20,7 +20,7 @@ theorem unary_scale_density_integrable (alpha : ℝ) (ha : 0 ≤ alpha) :
   rcases eq_or_lt_of_le ha with hzero | hpos
   · subst alpha
     change Integrable (fun t : ℝ => t * 0 ^ 2 * Real.exp (-(0 * t))) (volume.restrict (Ici 0))
-    simpa using (integrable_zero ℝ ℝ : Integrable (fun _ : ℝ => (0 : ℝ)) (volume.restrict (Ici 0)))
+    simp
   · rw [integrableOn_Ici_iff_integrableOn_Ioi]
     have h := (integrableOn_rpow_mul_exp_neg_mul_rpow (s := 1) (p := 1) (b := alpha)
       (by norm_num) (by norm_num) hpos).const_mul (alpha ^ 2)
@@ -44,7 +44,7 @@ theorem unary_scale_density_integral (alpha : ℝ) (ha : 0 ≤ alpha) :
     rw [he, integral_Ici_eq_integral_Ioi, integral_const_mul, ite_eq_right hzero]
     norm_num only [show (2 : ℝ) - 1 = 1 by norm_num, Real.rpow_one] at hGamma
     have hG2 : Real.Gamma 2 = 1 := by
-      simpa using Real.Gamma_nat_eq_factorial 1
+      simp
     rw [hGamma, hG2, mul_one]
     rw [Real.rpow_two]
     field_simp

@@ -54,10 +54,10 @@ theorem score_cost_numeric {c B I η score : ℝ} (hc : 0 < c)
     exact div_le_div_of_nonneg_left (by positivity) (by positivity) hprod
   calc
     _ = (c ^ 2 * η ^ 4) / (3 * (2 + c) ^ 2 * (1 + B ^ 2 + I ^ 2)) := by
-      field_simp <;> ring
+      field_simp
     _ ≤ (c ^ 2 * η ^ 4) / ((2 + score) ^ 2 * (1 + B + I) ^ 2) := hfrac
     _ = _ := by
       rw [localScorePathLength]
-      field_simp <;> ring
+      field_simp
 
 end NearlyMinimax

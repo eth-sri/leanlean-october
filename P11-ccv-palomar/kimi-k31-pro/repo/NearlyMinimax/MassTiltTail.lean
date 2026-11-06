@@ -15,10 +15,13 @@ namespace NearlyMinimax
 
 variable {Ω : Type*} [MeasurableSpace Ω]
 
-/-- The source mean-one power normalizer is at least one, by the actual tangent inequality. -/
-theorem massPowerNormalizer_one_le (μ : Measure Ω) [IsProbabilityMeasure μ]
+variable (μ : Measure Ω) [IsProbabilityMeasure μ]
     (m : Ω → ℝ) (hm : Measurable m) (n : ℕ) (l b : ℝ) (hl : 0 < l)
-    (hbound : ∀ ω, l ≤ m ω ∧ m ω ≤ b) (hmean : ∫ ω, m ω ∂μ = 1) :
+    (hbound : ∀ ω, l ≤ m ω ∧ m ω ≤ b) (hmean : ∫ ω, m ω ∂μ = 1)
+include μ m hm n l b hl hbound hmean
+
+/-- The source mean-one power normalizer is at least one, by the actual tangent inequality. -/
+theorem massPowerNormalizer_one_le   :
     1 ≤ massPowerNormalizer μ m n := by
   have hi := massPower_integrable μ m hm 1 l b hl hbound
   have him : Integrable m μ := by simpa only [pow_one] using hi
@@ -34,10 +37,10 @@ theorem massPowerNormalizer_one_le (μ : Measure Ω) [IsProbabilityMeasure μ]
   rw [he] at hh
   exact hh
 
+omit hmean in
+
 /-- The true mass-power tilt of a measurable event is its normalized weighted indicator integral. -/
-theorem massPowerTilt_real_apply (μ : Measure Ω) [IsProbabilityMeasure μ]
-    (m : Ω → ℝ) (hm : Measurable m) (n : ℕ) (l b : ℝ) (hl : 0 < l)
-    (hbound : ∀ ω, l ≤ m ω ∧ m ω ≤ b) (S : Set Ω) (hS : MeasurableSet S) :
+theorem massPowerTilt_real_apply  (S : Set Ω) (hS : MeasurableSet S) :
     (massPowerTilt μ m n).real S =
       ∫ ω, S.indicator (fun ω => m ω ^ n / massPowerNormalizer μ m n) ω ∂μ := by
   let := massPowerTilt_isProbability μ m hm n l b hl hbound
@@ -51,6 +54,8 @@ theorem massPowerTilt_real_apply (μ : Measure Ω) [IsProbabilityMeasure μ]
   have hp : 0 ≤ m ω ^ n / massPowerNormalizer μ m n :=
     div_nonneg (pow_nonneg (hl.le.trans (hbound ω).1) _) hG.le
   by_cases hω : ω ∈ S <;> simp [hω, ENNReal.toReal_ofReal hp, smul_eq_mul]
+
+omit μ m hm n l b hl hbound hmean [IsProbabilityMeasure μ] in
 
 /-- A positive bounded mass has an integrable exponential at every real parameter. -/
 theorem boundedMass_exp_integrable (μ : Measure Ω) [IsProbabilityMeasure μ]
@@ -74,9 +79,7 @@ theorem boundedMass_exp_integrable (μ : Measure Ω) [IsProbabilityMeasure μ]
   exact (le_abs_self _).trans (by rw [abs_mul]; exact mul_le_mul_of_nonneg_left hz (abs_nonneg u))
 
 /-- The positive-side event under a true mass-power tilt satisfies a genuine Chernoff bound. -/
-theorem massPowerTilt_right_chernoff (μ : Measure Ω) [IsProbabilityMeasure μ]
-    (m : Ω → ℝ) (hm : Measurable m) (n : ℕ) (l b : ℝ) (hl : 0 < l)
-    (hbound : ∀ ω, l ≤ m ω ∧ m ω ≤ b) (hmean : ∫ ω, m ω ∂μ = 1)
+theorem massPowerTilt_right_chernoff  
     (ε u : ℝ) (hu : 0 ≤ u) :
     (massPowerTilt μ m n).real {ω | ε < m ω - 1} ≤
       Real.exp (-u * ε) * ∫ ω, Real.exp (((n : ℝ) + u) * (m ω - 1)) ∂μ := by
@@ -111,9 +114,7 @@ theorem massPowerTilt_right_chernoff (μ : Measure Ω) [IsProbabilityMeasure μ]
     positivity
 
 /-- The negative-side Chernoff bound uses the true mass-power tilt and m^n≤1 on the lower event. -/
-theorem massPowerTilt_left_chernoff (μ : Measure Ω) [IsProbabilityMeasure μ]
-    (m : Ω → ℝ) (hm : Measurable m) (n : ℕ) (l b : ℝ) (hl : 0 < l)
-    (hbound : ∀ ω, l ≤ m ω ∧ m ω ≤ b) (hmean : ∫ ω, m ω ∂μ = 1)
+theorem massPowerTilt_left_chernoff  
     (ε u : ℝ) (hε : 0 ≤ ε) (hu : 0 ≤ u) :
     (massPowerTilt μ m n).real {ω | m ω - 1 < -ε} ≤
       Real.exp (-u * ε) * ∫ ω, Real.exp ((-u) * (m ω - 1)) ∂μ := by
@@ -140,6 +141,8 @@ theorem massPowerTilt_left_chernoff (μ : Measure Ω) [IsProbabilityMeasure μ]
   · simp only [Set.indicator_of_notMem hω]
     positivity
 
+omit μ m hm n l b hl hbound hmean [IsProbabilityMeasure μ] in
+
 /-- The exact source ε≥8an guard controls the positive-side tilted exponent. -/
 theorem massTilt_exponent_right (a ε : ℝ) (n : ℕ) (ha : 0 < a)
     (hε : 8 * a * (n : ℝ) ≤ ε) :
@@ -159,6 +162,8 @@ theorem massTilt_exponent_right (a ε : ℝ) (n : ℕ) (ha : 0 < a)
       (n : ℝ) * ε - 2 * (ε ^ 2 / (8 * a)) := by field_simp; ring
   exact ⟨hu, by rw [hid]; simp only [neg_div]; linarith⟩
 
+omit μ m hm n l b hl hbound hmean [IsProbabilityMeasure μ] in
+
 /-- The exact source lower-tail exponent before weakening its constant. -/
 theorem massTilt_exponent_left (a ε : ℝ) (ha : 0 < a) :
     -(ε / (2 * a)) * ε + a * (-(ε / (2 * a))) ^ 2 ≤ -ε ^ 2 / (8 * a) := by
@@ -171,9 +176,7 @@ theorem massTilt_exponent_left (a ε : ℝ) (ha : 0 < a) :
 
 /-- The source mass-power tilted exceptional tail follows from its actual mean-one MGF.
 This is a probability lemma; the history MGF is established independently from finite label blocks. -/
-theorem massPowerTilt_abs_tail (μ : Measure Ω) [IsProbabilityMeasure μ]
-    (m : Ω → ℝ) (hm : Measurable m) (n : ℕ) (l b : ℝ) (hl : 0 < l)
-    (hbound : ∀ ω, l ≤ m ω ∧ m ω ≤ b) (hmean : ∫ ω, m ω ∂μ = 1)
+theorem massPowerTilt_abs_tail  
     (a ε : ℝ) (ha : 0 < a)
     (hmgf : ∀ u : ℝ, (∫ ω, Real.exp (u * (m ω - 1)) ∂μ) ≤ Real.exp (a * u ^ 2))
     (hε : 8 * a * (n : ℝ) ≤ ε) :

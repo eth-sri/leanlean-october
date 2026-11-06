@@ -16,7 +16,7 @@ def rowFunctional {r : ℕ} (row : Fin r → ℝ) : (Fin r → ℝ) →L[ℝ] �
 
 @[simp] theorem rowFunctional_apply {r : ℕ} (row z : Fin r → ℝ) :
     rowFunctional row z = row ⬝ᵥ z := by
-  simp [rowFunctional, dotProduct, ContinuousLinearMap.sum_apply, smul_eq_mul]
+  simp [rowFunctional, dotProduct, smul_eq_mul]
 
 theorem rowFunctional_norm_le {r : ℕ} (row : Fin r → ℝ) :
     ‖rowFunctional row‖ ≤ ∑ i, |row i| := by

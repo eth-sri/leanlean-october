@@ -115,11 +115,15 @@ def separatedSubsetMatrix (σ : Measure Z) (r : ℕ) (B : Z → α → Fin r →
     (A : Z → ι → ι → ℝ) (S : Finset α) : ι → ι → ℝ :=
   fun i j => ∫ ζ, densitySeparatedSym r (B ζ) S * A ζ i j ∂σ
 
-theorem separated_subset_entry_integrable (σ : Measure Z) (r : ℕ)
+section SeparatedSubset
+variable (σ : Measure Z) (r : ℕ)
     (B : Z → α → Fin r → ℝ) (hB : ∀ i l, Measurable (fun ζ => B ζ i l))
     (hBbound : ∀ ζ i l, |B ζ i l| ≤ 1) (A : Z → ι → ι → ℝ)
     (hA : ∀ i j, Measurable (fun ζ => A ζ i j))
     (hcost : Integrable (separatedMatrixCost A) σ)
+include σ r B hB hBbound A hA hcost
+
+theorem separated_subset_entry_integrable 
     (S : Finset α) (hS : S.card = r) (i j : ι) :
     Integrable (fun ζ => densitySeparatedSym r (B ζ) S * A ζ i j) σ := by
   apply hcost.mono' ((densitySeparatedSym_measurable r B hB S hS).mul (hA i j)).aestronglyMeasurable
@@ -132,11 +136,7 @@ theorem separated_subset_entry_integrable (σ : Measure Z) (r : ℕ)
       (densitySeparatedSym_abs_le_one r (B ζ) S hS (fun i _ l => hBbound ζ i l)) (abs_nonneg _)
     _ ≤ separatedMatrixCost A ζ := by simpa using separatedMatrixCost_entry_le A ζ i j
 
-theorem separatedSubsetMatrix_response (σ : Measure Z) (r : ℕ)
-    (B : Z → α → Fin r → ℝ) (hB : ∀ i l, Measurable (fun ζ => B ζ i l))
-    (hBbound : ∀ ζ i l, |B ζ i l| ≤ 1) (A : Z → ι → ι → ℝ)
-    (hA : ∀ i j, Measurable (fun ζ => A ζ i j))
-    (hcost : Integrable (separatedMatrixCost A) σ) (S : Finset α) (hS : S.card = r)
+theorem separatedSubsetMatrix_response  (S : Finset α) (hS : S.card = r)
     (q : ℕ) (C : ℝ) (c : ι → ℝ) (Φ : (ι → ℝ) → ℝ) :
     responseMatrixAction q C (separatedSubsetMatrix σ r B A S) c Φ =
       ∫ ζ, densitySeparatedSym r (B ζ) S * responseMatrixAction q C (A ζ) c Φ ∂σ := by
@@ -144,6 +144,16 @@ theorem separatedSubsetMatrix_response (σ : Measure Z) (r : ℕ)
   rw [responseMatrixAction_integral σ q C _
     (separated_subset_entry_integrable σ r B hB hBbound A hA hcost S hS)]
   simp only [responseMatrixAction_scalar_matrix]
+
+theorem separated_subset_response_integrable  (S : Finset α) (hS : S.card = r)
+    (q : ℕ) (C : ℝ) (c : ι → ℝ) (Φ : (ι → ℝ) → ℝ) :
+    Integrable (fun ζ => densitySeparatedSym r (B ζ) S * responseMatrixAction q C (A ζ) c Φ) σ := by
+  have h := responseMatrixAction_integrable σ q C
+    (fun ζ i j => densitySeparatedSym r (B ζ) S * A ζ i j)
+    (separated_subset_entry_integrable σ r B hB hBbound A hA hcost S hS) c Φ
+  simpa only [responseMatrixAction_scalar_matrix] using h
+
+end SeparatedSubset
 
 theorem densityDerivativeAction_mul_right (r D : ℕ) (f : (Fin r → ℝ) → ℝ) (t : ℝ) :
     densityDerivativeAction r D (fun ε => f ε * t) = densityDerivativeAction r D f * t := by
@@ -165,18 +175,6 @@ def highSeparatedPacketAction (σ : Measure Z) (a b : ℝ) (m r D q : ℕ) (C : 
     (G : Z → ℝ → (Fin r → ℝ) → ℝ) (Φ : (ι → ℝ) → ℝ) : ℝ :=
   ∫ ζ, densityPacketAction a b m r D
     (fun z ε => G ζ z ε * responseMatrixAction q C (A ζ) c Φ) ∂σ
-
-theorem separated_subset_response_integrable (σ : Measure Z) (r : ℕ)
-    (B : Z → α → Fin r → ℝ) (hB : ∀ i l, Measurable (fun ζ => B ζ i l))
-    (hBbound : ∀ ζ i l, |B ζ i l| ≤ 1) (A : Z → ι → ι → ℝ)
-    (hA : ∀ i j, Measurable (fun ζ => A ζ i j))
-    (hcost : Integrable (separatedMatrixCost A) σ) (S : Finset α) (hS : S.card = r)
-    (q : ℕ) (C : ℝ) (c : ι → ℝ) (Φ : (ι → ℝ) → ℝ) :
-    Integrable (fun ζ => densitySeparatedSym r (B ζ) S * responseMatrixAction q C (A ζ) c Φ) σ := by
-  have h := responseMatrixAction_integrable σ q C
-    (fun ζ i j => densitySeparatedSym r (B ζ) S * A ζ i j)
-    (separated_subset_entry_integrable σ r B hB hBbound A hA hcost S hS) c Φ
-  simpa only [responseMatrixAction_scalar_matrix] using h
 
 /-- The paper's local row formula for arbitrary positive separated
 representations. All integrability needed to commute sums and integrals

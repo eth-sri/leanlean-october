@@ -87,7 +87,7 @@ set_option maxHeartbeats 800000
         (by positivity [lt_of_lt_of_le zero_lt_one hN] : 0 ≤ P*cardinalSpatialGeometricBase B (16*spatialUnaryIntegralConstant d)^(2+j)/μ^j)
       rw [show 2+j-2=j by omega]
       apply hb.trans
-      convert hm using 1 <;> dsimp [P] <;> (try simp only [mul_pow, show 2+j-2=j by omega]) <;> ring)
+      convert hm using 1 <;> dsimp [P] <;> (try simp only [mul_pow]) <;> ring)
   simpa only [show ∀ j : ℕ, 2+j-2=j from fun j => by omega] using
     h.trans_eq (by unfold cardinalInterpolationFactorialConstant; dsimp [P]; ring)
 

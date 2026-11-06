@@ -101,7 +101,7 @@ theorem higherBand_matched_coarse_fine {d n : ℕ}
     · rw [ite_eq_left hactive, higherBandFirstAction_target_count ad bd lam ell _ ha hab hlam hell0 hT
         M D q hn hD hnD (hFine hactive) C true U hU p hp c Φ]
       simp only [higherBandActualMatrix, Bool.false_eq_true, ite_false, ite_true,
-        min_eq_left hactive.le, globalCardinalBandMatrix]
+        min_eq_left hactive.le]
       rw [← mul_add, ← responseMatrixAction_matrix_add]
       congr 2
       funext i j

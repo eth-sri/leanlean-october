@@ -140,14 +140,18 @@ attribute [local instance] Classical.propDecidable
       unfold finePairAliasActionSpatialBudget
       ring)
 
-theorem finePairPairAliasAction_sum_square_le_geometry {d n F : ℕ}
+section SpatialBounds
+variable {d n F : ℕ}
     (ad bd T0 N : ℝ) (haD : 0 < ad) (hab : ad < bd) (M q : ℕ) (hn : 1 ≤ n)
     (C a V η ρ : ℝ) (hC : 1 ≤ C) (ha : 0 < a) (hη : 0 ≤ η) (hρ : 0 ≤ ρ)
     (hηρ : η ≤ ρ/2) (U : Fin n → Covariate d) (hU : ∀ i l, |U i l| ≤ 2)
     (p g w : Fin n → ℝ) (hpD : ∀ i, p i ∈ Icc ad bd)
     (c : HighFrameIndex d F → ℝ)
     (hc : ∑ γ, |c γ| ≤ C⁻¹) (hg : ∀ i, |g i| ≤ ρ/2) (hw : ∀ i, |w i| ≤ 1)
-    (hp : ∀ f : ℝ, |f| ≤ ρ → ∀ y, 0 ≤ ternaryMass a f V y) :
+    (hp : ∀ f : ℝ, |f| ≤ ρ → ∀ y, 0 ≤ ternaryMass a f V y)
+include d n F ad bd T0 N haD hab M q hn C a V η ρ hC ha hη hρ hηρ U hU p g w hpD c hc hg hw hp
+
+theorem finePairPairAliasAction_sum_square_le_geometry  :
     (∑ y : Fin n → Fin 3, finePairPairAliasAction ad bd T0 N M q C U p c
       (fun v => highResponseProduct a V η g w (fun i => highFrameFeature (U i)) v y)^2) ≤
         finePairAliasGeometryEnvelope ad bd T0 N M q C a ρ η U := by
@@ -174,14 +178,7 @@ theorem finePairPairAliasAction_sum_square_le_geometry {d n F : ℕ}
     dsimp [K, Z, s]
     ring)
 
-theorem finePairEvenFieldAction_sum_square_le_geometry {d n F : ℕ}
-    (ad bd T0 N : ℝ) (haD : 0 < ad) (hab : ad < bd) (M q : ℕ) (hn : 1 ≤ n)
-    (C a V η ρ : ℝ) (hC : 1 ≤ C) (ha : 0 < a) (hη : 0 ≤ η) (hρ : 0 ≤ ρ)
-    (hηρ : η ≤ ρ/2) (U : Fin n → Covariate d) (hU : ∀ i l, |U i l| ≤ 2)
-    (p g w : Fin n → ℝ) (hpD : ∀ i, p i ∈ Icc ad bd)
-    (c : HighFrameIndex d F → ℝ)
-    (hc : ∑ γ, |c γ| ≤ C⁻¹) (hg : ∀ i, |g i| ≤ ρ/2) (hw : ∀ i, |w i| ≤ 1)
-    (hp : ∀ f : ℝ, |f| ≤ ρ → ∀ y, 0 ≤ ternaryMass a f V y) :
+theorem finePairEvenFieldAction_sum_square_le_geometry  :
     (∑ y : Fin n → Fin 3, finePairEvenFieldAction ad bd T0 N M q C U p c
       (fun v => highResponseProduct a V η g w (fun i => highFrameFeature (U i)) v y)^2) ≤
         fineFieldGeometryEnvelope ad bd T0 N M q C a ρ η U := by
@@ -207,6 +204,8 @@ theorem finePairEvenFieldAction_sum_square_le_geometry {d n F : ℕ}
     unfold fineFieldGeometryEnvelope
     dsimp [K, Z, s]
     ring)
+
+end SpatialBounds
 
  def finePairCountTwoGeometryEnvelope {d : ℕ} (bd a ρ η N : ℝ) (U : Fin 2 → Covariate d) : ℝ :=
   9*(η^2*bd^2*((2*ρ+a)/a^2)^2)^2*finePairDistanceFactor N (U 0) (U 1)^2

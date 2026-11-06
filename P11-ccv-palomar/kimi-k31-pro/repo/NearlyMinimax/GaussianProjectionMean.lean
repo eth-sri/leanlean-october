@@ -36,12 +36,12 @@ theorem gaussianAbsoluteMean_pos : 0 < gaussianAbsoluteMean := by
 
 theorem euclideanNorm_eq_toLp_norm {d : ℕ} (v : Covariate d) :
     euclideanNorm v = ‖WithLp.toLp 2 v‖ := by
-  simp only [euclideanNorm, EuclideanSpace.norm_eq, PiLp.toLp_apply,
+  simp only [euclideanNorm, EuclideanSpace.norm_eq,
     Real.norm_eq_abs, sq_abs]
 
 theorem gaussianPhase_eq_inner {d : ℕ} (v Z : Covariate d) :
     gaussianPhase v Z = inner ℝ (WithLp.toLp 2 v) (WithLp.toLp 2 Z) := by
-  simp only [gaussianPhase, PiLp.inner_apply, WithLp.ofLp_toLp, RCLike.inner_apply,
+  simp only [gaussianPhase, PiLp.inner_apply, RCLike.inner_apply,
     conj_trivial, mul_comm]
 
 theorem gaussianPhase_map_eq_scaled_gaussian {d : ℕ} (v : Covariate d) :

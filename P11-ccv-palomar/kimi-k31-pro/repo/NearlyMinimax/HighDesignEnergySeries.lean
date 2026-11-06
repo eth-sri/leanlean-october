@@ -25,17 +25,19 @@ theorem finset_sum_cardinality {n : ℕ} (F : ℕ → ℝ) :
   rw [h]
   apply Finset.sum_congr rfl
   intro r hr
-  simpa only [Finset.sum_powersetCard, Finset.card_univ, Fintype.card_fin,
-    nsmul_eq_mul, Nat.cast_ofNat] using
-      (Finset.sum_powersetCard r (Finset.univ : Finset (Fin n)) F)
+  simp only [Finset.sum_powersetCard, Finset.card_univ, Fintype.card_fin,
+    nsmul_eq_mul, Nat.cast_ofNat]
 
-theorem iid_local_energy_le_binomial_spatial_series {α : Type*} [MeasurableSpace α]
+variable {α : Type*} [MeasurableSpace α]
     (μ : Measure α) [IsProbabilityMeasure μ] (n : ℕ) (A : Set α) (hA : MeasurableSet A)
     (E : (Fin n → α) → ℝ) (hE : Integrable E (Measure.pi (fun _ : Fin n => μ)))
     (H : (S : Finset (Fin n)) → (S → α) → ℝ)
     (hH : ∀ S, Integrable (H S) (Measure.pi (fun _ : S => μ.restrict A)))
     (hHn : ∀ S z, 0 ≤ H S z)
     (hdom : ∀ S x, x ∈ designMembershipCell n A S → E x ≤ H S (fun i : S => x i.val))
+include μ n A hA E hE H hH hHn hdom
+
+theorem iid_local_energy_le_binomial_spatial_series 
     (ψ : ℝ) (J : ℕ → ℝ)
     (hspatial : ∀ S : Finset (Fin n), (∫ z, H S z ∂Measure.pi (fun _ : S => μ.restrict A)) ≤ ψ ^ S.card * J S.card) :
     (∫ x, E x ∂Measure.pi (fun _ : Fin n => μ)) ≤
@@ -51,13 +53,7 @@ theorem iid_local_energy_le_binomial_spatial_series {α : Type*} [MeasurableSpac
       intro r hr
       ring
 
-theorem iid_local_energy_le_factorial_spatial_series {α : Type*} [MeasurableSpace α]
-    (μ : Measure α) [IsProbabilityMeasure μ] (n : ℕ) (A : Set α) (hA : MeasurableSet A)
-    (E : (Fin n → α) → ℝ) (hE : Integrable E (Measure.pi (fun _ : Fin n => μ)))
-    (H : (S : Finset (Fin n)) → (S → α) → ℝ)
-    (hH : ∀ S, Integrable (H S) (Measure.pi (fun _ : S => μ.restrict A)))
-    (hHn : ∀ S z, 0 ≤ H S z)
-    (hdom : ∀ S x, x ∈ designMembershipCell n A S → E x ≤ H S (fun i : S => x i.val))
+theorem iid_local_energy_le_factorial_spatial_series 
     (ψ : ℝ) (hψ : 0 ≤ ψ) (J : ℕ → ℝ) (hJ : ∀ r, 0 ≤ J r)
     (hspatial : ∀ S : Finset (Fin n), (∫ z, H S z ∂Measure.pi (fun _ : S => μ.restrict A)) ≤ ψ ^ S.card * J S.card) :
     (∫ x, E x ∂Measure.pi (fun _ : Fin n => μ)) ≤

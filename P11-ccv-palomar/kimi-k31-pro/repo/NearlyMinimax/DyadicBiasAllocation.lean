@@ -97,8 +97,6 @@ theorem eventually_paper_dyadic_bias_budget {d : ℕ} (C : ModelConstants d)
   refine ⟨1 + B, by positivity, ?_⟩
   filter_upwards [hb] with n hn
   rw [dyadicPopulationBiasBudget_eq_scalar, dyadicPilotScale_eq_exp C]
-  change (Real.exp (paperDyadicStep C * (paperDyadicTerminalLevel C a offset H n : ℝ))) ^ (-paperSpatialExponent C) +
-      _ ≤ (1 + B) * (Real.exp (paperDyadicStep C * (paperDyadicTerminalLevel C a offset H n : ℝ))) ^ (-paperSpatialExponent C)
   exact (add_le_add le_rfl hn).trans_eq (by unfold paperDyadicTerminalLevel; ring)
 
 end NearlyMinimax

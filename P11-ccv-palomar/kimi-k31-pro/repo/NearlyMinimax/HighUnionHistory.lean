@@ -94,8 +94,8 @@ theorem highUnionHistory_density_mean_one [∀ i, IsProbabilityMeasure (R.rowLaw
         highCenteredRowUnionIntercept_integral_one R.rowLaw R.rowMass hMass hTotal
           R.rowIntercept hOffset a b hOffsetBound δ hδ0 hδ1]
       norm_num
-    · simp only [s, o, if_neg hx, integral_const, integral_zero,
-        measureReal_def, measure_univ, ENNReal.toReal_one, smul_eq_mul, mul_one, add_zero]
+    · simp only [s, o, if_neg hx, integral_const,
+        measureReal_def, measure_univ, ENNReal.toReal_one, smul_eq_mul, mul_one]
       norm_num
   convert finiteAffineHistory_integral_one π s o hs ho hmean n labels using 1
   apply integral_congr_ae

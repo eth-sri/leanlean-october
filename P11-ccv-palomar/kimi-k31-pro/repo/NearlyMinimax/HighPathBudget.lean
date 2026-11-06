@@ -70,6 +70,6 @@ theorem score_cost_scaled_numeric {c B I eta score K E : ℝ} (hc : 0 < c)
     (by positivity : 0 < 1 + B ^ 2 + I ^ 2) hden
   have hnumeric := score_cost_numeric (η := eta) hc hB hI hscore0 hscore
   apply le_trans _ hnumeric
-  convert hh using 1 <;> field_simp <;> ring
+  convert hh using 1 <;> field_simp
 
 end NearlyMinimax

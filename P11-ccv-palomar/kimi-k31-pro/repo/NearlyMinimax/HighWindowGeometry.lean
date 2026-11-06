@@ -197,7 +197,7 @@ theorem highTorusPatch_intersects_neighbor (d k : ℕ) [NeZero k]
   · have he' : l r = j r := by rw [← hq r, he, hz r]
     simp only [he', Finset.mem_insert, Finset.mem_singleton, true_or, or_true]
   · have he' : l r = j r + 1 := by rw [← hq r, he, Int.cast_add, ← hz r]; simp
-    simp only [he', Finset.mem_insert, Finset.mem_singleton, true_or, or_true]
+    simp only [he', Finset.mem_insert, Finset.mem_singleton, or_true]
 
 theorem highTorusPatch_disjoint_of_not_neighbor (d k : ℕ) [NeZero k]
     (j l : HighWindowLabels d k) (h : l ∉ highNeighborLabels d k j) :

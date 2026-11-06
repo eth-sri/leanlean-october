@@ -80,10 +80,7 @@ def polynomialGridEstimator {d : ℕ} (C : ModelConstants d) (n k : ℕ)
 def polynomialGridBias {d : ℕ} (C : ModelConstants d) (k : ℕ) : ℝ :=
   4 * (taylorErrorFactor C * C.holderBound * (1 / k) ^ C.smoothness) ^ 4
 
-/-- The conditional full-smoothness projection MSE is proved from the
-original Hölder model, explicit features, and actual independent moments. -/
-theorem independent_polynomial_grid_projection_mse_bound
-    {d n : ℕ} {Ω : Type*} [MeasurableSpace Ω]
+variable {d n : ℕ} {Ω : Type*} [MeasurableSpace Ω]
     (C : ModelConstants d) (θ : RegressionParameter d) (hθ : Admissible C θ)
     (k : ℕ) (hk : 0 < k) (hn : 0 < n)
     (hcolumns : (k : ℝ) ^ d * (C.order + 1 : ℕ) ^ d ≤ (n : ℝ) / 2)
@@ -92,7 +89,13 @@ theorem independent_polynomial_grid_projection_mse_bound
     (hε : ∀ i, MemLp (ε i) 4 μ) (hind : iIndepFun ε μ)
     (hmean : ∀ i, (∫ ω, ε i ω ∂μ) = 0)
     (hsecond : ∀ i, (∫ ω, ε i ω ^ 2 ∂μ) = θ.variance)
-    (hfourth : ∀ i, (∫ ω, ε i ω ^ 4 ∂μ) ≤ C.fourthBound) :
+    (hfourth : ∀ i, (∫ ω, ε i ω ^ 4 ∂μ) ≤ C.fourthBound)
+include C θ hθ k hk hn hcolumns x hx μ ε hε hind hmean hsecond hfourth
+
+/-- The conditional full-smoothness projection MSE is proved from the
+original Hölder model, explicit features, and actual independent moments. -/
+theorem independent_polynomial_grid_projection_mse_bound
+     :
     (∫ ω, ((polynomialGridEstimator C n k hk).val
       (fun i => (x i, θ.regression (x i) + ε i ω)) - θ.variance) ^ 2 ∂μ) ≤
       gridProjectionConstant C / n + polynomialGridBias C k := by
@@ -121,16 +124,7 @@ theorem independent_polynomial_grid_projection_mse_bound
 /-- The full-smoothness conditional MSE bound in the extended-real loss
 of the actual statistical model, with integrability derived from fourth moments. -/
 theorem polynomial_grid_conditional_lintegral_bound
-    {d n : ℕ} {Ω : Type*} [MeasurableSpace Ω]
-    (C : ModelConstants d) (θ : RegressionParameter d) (hθ : Admissible C θ)
-    (k : ℕ) (hk : 0 < k) (hn : 0 < n)
-    (hcolumns : (k : ℝ) ^ d * (C.order + 1 : ℕ) ^ d ≤ (n : ℝ) / 2)
-    (x : Fin n → Covariate d) (hx : ∀ i, x i ∈ unitCube d)
-    (μ : Measure Ω) [IsProbabilityMeasure μ] (ε : Fin n → Ω → ℝ)
-    (hε : ∀ i, MemLp (ε i) 4 μ) (hind : iIndepFun ε μ)
-    (hmean : ∀ i, (∫ ω, ε i ω ∂μ) = 0)
-    (hsecond : ∀ i, (∫ ω, ε i ω ^ 2 ∂μ) = θ.variance)
-    (hfourth : ∀ i, (∫ ω, ε i ω ^ 4 ∂μ) ≤ C.fourthBound) :
+     :
     (∫⁻ ω, ENNReal.ofReal (((polynomialGridEstimator C n k hk).val
       (fun i => (x i, θ.regression (x i) + ε i ω)) - θ.variance) ^ 2) ∂μ) ≤
       ENNReal.ofReal (gridProjectionConstant C / n + polynomialGridBias C k) := by

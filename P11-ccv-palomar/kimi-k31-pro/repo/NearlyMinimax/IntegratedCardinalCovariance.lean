@@ -21,6 +21,25 @@ abbrev SpatialScaleVector {n : ℕ} (i : Fin n) := SpatialScaleIndex i → ℝ
 def spatialScaleExtend {n : ℕ} (i : Fin n) (t : SpatialScaleVector i) (j : Fin n) : ℝ :=
   if h : j ≠ i then t ⟨j, h⟩ else 0
 
+theorem spatial_cardinal_polynomial_scale_product {d n : ℕ} (i : Fin n) (U : Fin n → Covariate d) :
+    spatialCardinalPolynomial U i = ∏ j : SpatialScaleIndex i, spatialCardinalAffine (U i) (U j.val) := by
+  unfold spatialCardinalPolynomial
+  rw [Finset.prod_subtype (p := fun j : Fin n => j ≠ i) ((Finset.univ : Finset (Fin n)).erase i)
+    (fun j => by simp) (fun j : Fin n => spatialCardinalAffine (U i) (U j))]
+
+theorem spatial_cardinal_scale_product {d n : ℕ} (i : Fin n) (lam : ℝ)
+    (U : Fin n → Covariate d) (t : SpatialScaleVector i) :
+    spatialCardinalScale lam (spatialScaleExtend i t) U i =
+      ∏ j : SpatialScaleIndex i, t j * lam ^ 2 *
+        Real.exp (-(t j * lam * spatialSquaredDistance (U i) (U j.val))) := by
+  unfold spatialCardinalScale
+  rw [Finset.prod_subtype (p := fun j : Fin n => j ≠ i) ((Finset.univ : Finset (Fin n)).erase i)
+    (fun j => by simp) (fun j : Fin n => spatialScaleExtend i t j * lam ^ 2 *
+      Real.exp (-(spatialScaleExtend i t j * lam * spatialSquaredDistance (U i) (U j))))]
+  apply Finset.prod_congr rfl
+  intro j _
+  simp only [spatialScaleExtend, dite_eq_left j.property]
+
 def spatialScaleLogSum {n : ℕ} (i : Fin n) (t : SpatialScaleVector i) : ℝ :=
   ∑ j, Real.log (1 + max 0 (t j))
 

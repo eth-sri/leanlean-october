@@ -78,14 +78,17 @@ theorem higherBandFine_below_eq_alias_family {d n : ℕ}
   exact higherBand_alias_index_sum_eq d D n ell N mu
     (fun r => ordinaryFineAliasRawAction ad bd lam ell (higherBandTargetScale d r N mu) M r q C a V eta U p g w c y)
 
-theorem higherBandFamilyFirstAction_matched_and_alias_raw {d n : ℕ}
+variable {d n : ℕ}
     (ad bd lam ell N mu : ℝ) (ha : 0 < ad) (hab : ad < bd) (hlam : 0 ≤ lam) (hell : 1 ≤ ell)
     (D M q : ℕ) (hn : 3 ≤ n) (hnD : n ≤ D)
     (hnu : ∀ j : Fin (D-2), 0 < higherBandTargetScale d (j.val+3) N mu)
     (hFine : ∀ j : Fin (D-2), ell < higherBandTargetScale d (j.val+3) N mu → j.val+3 ≤ M)
     (C a V eta : ℝ) (U : Fin n → Covariate d) (hU : ∀ i j, |U i j| ≤ 2)
     (p g w : Fin n → ℝ) (hp : ∀ i, p i ∈ Icc ad bd)
-    (c : HighFrameIndex d D → ℝ) (y : Fin n → Fin 3) :
+    (c : HighFrameIndex d D → ℝ) (y : Fin n → Fin 3)
+include d n ad bd lam ell N mu ha hab hlam hell D M q hn hnD hnu hFine C a V eta U hU p g w hp c y
+
+theorem higherBandFamilyFirstAction_matched_and_alias_raw  :
     higherBandFamilyFirstAction ad bd lam ell N mu D M q C U p c
       (fun v => highResponseProduct a V eta g w (fun i => highFrameFeature (U i)) v y) =
       (∏ i, p i) * responseMatrixAction q C (integratedCardinalMatrix lam (higherBandTargetScale d n N mu) U) c
@@ -95,6 +98,7 @@ theorem higherBandFamilyFirstAction_matched_and_alias_raw {d n : ℕ}
   rw [higherBandFamilyFirstAction_matched_and_fine_below ad bd lam ell N mu ha hab hlam hell D M q hn hnD hnu hFine C U hU p hp c,
     higherBandFine_below_eq_alias_family ad bd lam ell N mu ha hab hlam hell D M q (by omega) hnD C a V eta U hU p g w hp c y]
 
+omit d n ad bd lam ell N mu ha hab hlam hell D M q hn hnD hnu hFine C a V eta U hU p g w hp c y in
 theorem ordinaryFineAliasFamilyRawAction_below_eq_zero {d n F : ℕ}
     (ad bd lam ell N mu : ℝ) (ha : 0 < ad) (hab : ad < bd)
     (D M q : ℕ) (hnM : n ≤ M) (C a V eta : ℝ)
@@ -112,6 +116,7 @@ theorem ordinaryFineAliasFamilyRawAction_below_eq_zero {d n F : ℕ}
   unfold ordinaryFineAliasRawAction
   rw [densityCountCoefficient_exact ad bd ha hab M r n hr1 hnr.le hnM, if_neg (by omega : n ≠ r), zero_mul]
 
+omit d n ad bd lam ell N mu ha hab hlam hell D M q hn hnD hnu hFine C a V eta U hU p g w hp c y in
 theorem ordinaryFineAliasTargetSet_below_eq (d D n M : ℕ) (ell N mu : ℝ) (hMn : M < n)
     (hFine : ∀ j : Fin (D-2), ell < higherBandTargetScale d (j.val+3) N mu → j.val+3 ≤ M) :
     (ordinaryFineAliasTargetSet d D ell N mu).filter (fun r => r<n) = ordinaryFineAliasTargetSet d D ell N mu := by
@@ -129,14 +134,7 @@ theorem ordinaryFineAliasTargetSet_below_eq (d D n M : ℕ) (ell N mu : ℝ) (hM
 /-- Before M the ordinary fine aliases cancel exactly. Beyond M every
 active fine target is strictly below the observed count, and its actual
 signed action is precisely the full alias family used by the energy theorem. -/
-theorem higherBandFamilyFirstAction_matched_and_full_fine_alias {d n : ℕ}
-    (ad bd lam ell N mu : ℝ) (ha : 0 < ad) (hab : ad < bd) (hlam : 0 ≤ lam) (hell : 1 ≤ ell)
-    (D M q : ℕ) (hn : 3 ≤ n) (hnD : n ≤ D)
-    (hnu : ∀ j : Fin (D-2), 0 < higherBandTargetScale d (j.val+3) N mu)
-    (hFine : ∀ j : Fin (D-2), ell < higherBandTargetScale d (j.val+3) N mu → j.val+3 ≤ M)
-    (C a V eta : ℝ) (U : Fin n → Covariate d) (hU : ∀ i j, |U i j| ≤ 2)
-    (p g w : Fin n → ℝ) (hp : ∀ i, p i ∈ Icc ad bd)
-    (c : HighFrameIndex d D → ℝ) (y : Fin n → Fin 3) :
+theorem higherBandFamilyFirstAction_matched_and_full_fine_alias  :
     higherBandFamilyFirstAction ad bd lam ell N mu D M q C U p c
       (fun v => highResponseProduct a V eta g w (fun i => highFrameFeature (U i)) v y) =
       (∏ i, p i) * responseMatrixAction q C (integratedCardinalMatrix lam (higherBandTargetScale d n N mu) U) c

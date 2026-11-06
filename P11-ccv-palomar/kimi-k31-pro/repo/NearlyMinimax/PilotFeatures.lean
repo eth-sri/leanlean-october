@@ -69,7 +69,7 @@ theorem pilotBasisFeature_abs_bound {q d ℓ : ℕ} (cell : Covariate d → Fin 
     simp only [mem_preimage, mem_setOf_eq, h, indicator_of_mem]
     cases a.2
     · simpa using hmono.trans (le_add_of_nonneg_right (abs_nonneg z.2))
-    · simp only [Bool.true_eq_false, ↓reduceIte]
+    · simp only [↓reduceIte]
       exact (mul_le_mul_of_nonneg_right hmono (abs_nonneg z.2)).trans (by linarith)
   · simp [pilotBasisFeature, h]
 
