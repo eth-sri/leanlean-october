@@ -1,12 +1,15 @@
 /- Unified independent native and admitted orbit-quotient statement surface. -/
 module
-public import Glennie.Compact.ExceptionalWorkingPackageR02
+public import Glennie.Compact.LocalOrbitQuotientR01
+public import Glennie.Compact.NearbyOrbitsClosed
+public import Glennie.Compact.ReadoutRobustnessR01
+public import Glennie.Diagonalization
+public import Glennie.NativeGenerationEndpointR01
 public import Mathlib.Analysis.Quaternion
 public import Mathlib.Topology.Homeomorph.Lemmas
 public import Mathlib.Topology.Maps.Basic
-public import AlbertGeometry.IntrinsicLocalGenerationCapstoneR01
 public import AlbertGeometry.BasedNormAdjointTransport
-public import AlbertGeometry.ActualU2NativeGeometry
+public import AlbertGeometry.RecognitionFromCurvature
 public import Mathlib.Analysis.Calculus.FDeriv.Basic
 public import Mathlib.Analysis.Normed.Module.Multilinear.Curry
 public import Mathlib.Analysis.Normed.Operator.Bilinear
@@ -114,18 +117,21 @@ theorem phi_nonzero_generation_stabilizer
     (∀ D : Albert →ₗ[ℝ] Albert,
       (∀ p q, D (jordan p q) = jordan (D p) q + jordan p (D q)) →
       D x = 0 → D y = 0 → D z = 0 → D = 0) := by
-  refine ⟨?_, ?_, ?_⟩
-  · intro K h1 hJ hx hy hz
-    exact Glennie.NativeGenerationEndpointR01.eq_top_of_phi_ne_zero
-      K h1 hJ x y z hx hy hz hphi
-  · intro g hx hy hz
-    have hg := Glennie.NativeGenerationStabilizersR01.automorphism_eq_refl_of_phi_ne_zero
-      g x y z hphi hx hy hz
-    rw [hg]
-    rfl
-  · intro D hD hx hy hz
-    exact Glennie.NativeGenerationStabilizersR01.derivation_eq_zero_of_phi_ne_zero
-      D hD x y z hphi hx hy hz
+  have hgen (K : Submodule ℝ Albert) (h1 : (1 : Albert) ∈ K)
+      (hJ : ∀ p ∈ K, ∀ q ∈ K, jordan p q ∈ K) (hx : x ∈ K) (hy : y ∈ K) (hz : z ∈ K) : K = ⊤ :=
+    Glennie.NativeGenerationEndpointR01.eq_top_of_phi_ne_zero K h1 hJ x y z hx hy hz hphi
+  refine ⟨hgen, fun g hx hy hz => LinearEquiv.ext fun t => ?_,
+    fun D hD hx hy hz => LinearMap.ext fun t => ?_⟩
+  · have hK := hgen (LinearMap.eqLocus g.equiv.toLinearMap LinearMap.id) g.map_unit
+      (fun p hp q hq => (g.map_jordan p q).trans (congrArg₂ jordan hp hq)) hx hy hz
+    exact (hK ▸ trivial : t ∈ LinearMap.eqLocus g.equiv.toLinearMap LinearMap.id)
+  · have h1 : D 1 = 0 := by
+      have h := hD 1 1
+      rw [jordan_unit_left, jordan_unit_right, jordan_unit_left] at h
+      exact (add_sub_cancel_left (D 1) (D 1)).symm.trans (by rw [← h, sub_self])
+    have hK := hgen (LinearMap.ker D) h1 (fun p hp q hq => by
+      change D _ = 0; rw [hD, LinearMap.mem_ker.mp hp, LinearMap.mem_ker.mp hq]; simp) hx hy hz
+    exact LinearMap.mem_ker.mp (hK ▸ trivial : t ∈ LinearMap.ker D)
 
 theorem q26_eq_iff_fullLedger_eq (T S : Triple)
     (hT : ∀ a, Frame (T a)) (hS : ∀ a, Frame (S a)) :
@@ -143,10 +149,19 @@ def q20 (T : Triple) : Fin 20 → ℝ :=
 theorem q20_eq_iff_fullLedger_eq (T S : Triple)
     (hT : ∀ a, Frame (T a)) (hS : ∀ a, Frame (S a)) :
     q20 T = q20 S ↔ fullLedger T = fullLedger S := by
-  change Glennie.Compact.NativeQ20AdapterR01.q20 T =
-      Glennie.Compact.NativeQ20AdapterR01.q20 S ↔
-      Glennie.Compact.Affine20.ledger54 T = Glennie.Compact.Affine20.ledger54 S
-  exact Glennie.Compact.NativeQ20AdapterR01.q20_eq_iff_ledger54_eq T S hT hS
+  rw [← q26_eq_iff_fullLedger_eq T S hT hS]
+  refine ⟨fun h => funext fun n => ?_, fun h => funext fun i => congrFun h _⟩
+  have hs (v : Fin 3) (s : Fin 2) : qSingle T v s = qSingle S v s := by
+    change Glennie.Compact.NativeQFamilyLedger.qSingle T v s =
+      Glennie.Compact.NativeQFamilyLedger.qSingle S v s
+    rw [Glennie.Compact.NativeQFamilyLedger.qSingle_frame T hT,
+      Glennie.Compact.NativeQFamilyLedger.qSingle_frame S hS]
+  by_cases hn : n.val < 6
+  · obtain ⟨m, rfl⟩ : ∃ m : Fin 6, n = ⟨m.val, m.2.trans (by decide)⟩ := ⟨⟨n.val, hn⟩, rfl⟩
+    fin_cases m <;> simp [q26, hs]
+  · have h6 : (⟨(⟨n.val - 6, by omega⟩ : Fin 20).val + 6,
+        Nat.add_lt_add_right (by omega) 6⟩ : Fin 26) = n := by ext; dsimp; omega
+    simpa [q20, h6] using congrFun h ⟨n.val - 6, by omega⟩
 
 private theorem q26_eq_source (T : Triple) :
     q26 T = Glennie.Compact.NativeQFamilyLedger.q26 T := by rfl
@@ -160,7 +175,7 @@ private theorem halfAmplitude_eq (x : Albert) :
 private theorem phiOf_eq (T : Triple) :
     phiOf T = Glennie.Compact.Sections.phiOf T := by
   simp only [phiOf, Glennie.Compact.Sections.phiOf, f0_eq, f1_eq, f2_eq]
-private theorem score_eq_source (T : Triple) :
+theorem score_eq_source (T : Triple) :
     score T = Glennie.Compact.LocalContrast.score T := by
   simp only [score, Glennie.Compact.LocalContrast.score,
     f0_eq, f1_eq, f2_eq, delta_eq, halfAmplitude_eq]
@@ -180,17 +195,23 @@ theorem atoms_generate_of_score
     (K : Submodule ℝ Albert)
     (hJ : ∀ p ∈ K, ∀ q ∈ K, jordan p q ∈ K)
     (hAtoms : ∀ a i, T a i ∈ K) : K = ⊤ := by
-  have hsource : Glennie.Compact.LocalContrast.score T ≠ 0 := by
-    simpa only [score_eq_source] using hs
-  exact Glennie.NativeOrderedFrameGenerationR01.ordered_frame_atoms_generate_of_score
-    T hT hsource K hJ hAtoms
+  have hphi : phiOf T ≠ 0 := fun h0 => hs (by rw [score_eq_two_phi, h0, mul_zero])
+  have hu : (1 : Albert) ∈ K := by
+    rw [← (hT 0).sum_unit]
+    exact K.add_mem (K.add_mem (hAtoms 0 0) (hAtoms 0 1)) (hAtoms 0 2)
+  exact Glennie.NativeGenerationEndpointR01.eq_top_of_phi_ne_zero K hu hJ
+    (encoder (T f0)) (encoder (T f1)) (encoder (T f2))
+    (K.sub_mem (hAtoms f0 2) (hAtoms f0 0))
+    (K.sub_mem (hAtoms f1 2) (hAtoms f1 0))
+    (K.sub_mem (hAtoms f2 2) (hAtoms f2 0)) hphi
 
-private theorem flatBase_eq_source :
-    flatBase = Glennie.Compact.FrameTopology.flatBaseTriple := by rfl
-private theorem fullLedger_eq_source (T : Triple) :
-    fullLedger T = Glennie.Compact.Affine20.ledger54 T := by rfl
-private theorem mapAtoms_eq_source (g : CompactAutomorphism) (T : Triple) :
-    mapAtoms g T = Glennie.Compact.Affine20.mapAtoms g T := by rfl
+private theorem flatBase_eq_source : flatBase = Glennie.Compact.FrameTopology.flatBaseTriple := rfl
+theorem flatBase_eq_sections : flatBase = Glennie.Compact.Sections.flatBase := rfl
+theorem fullLedger_eq_fn : fullLedger = Glennie.Compact.Affine20.ledger54 := rfl
+private theorem mapAtoms_eq_fn : mapAtoms = Glennie.Compact.Affine20.mapAtoms := rfl
+private theorem q26_eq_fn : q26 = Glennie.Compact.NativeQFamilyLedger.q26 := rfl
+private theorem phiOf_eq_fn : phiOf = Glennie.Compact.Sections.phiOf := funext phiOf_eq
+private theorem score_eq_fn : score = Glennie.Compact.LocalContrast.score := funext score_eq_source
 
 theorem nearby_sign_rigidity :
     ∃ V : Set Ledger54, IsOpen V ∧ fullLedger flatBase ∈ V ∧
@@ -199,42 +220,16 @@ theorem nearby_sign_rigidity :
         fullLedger T = fullLedger S →
         ((phiOf T < 0 ∧ phiOf S < 0) ∨ (0 < phiOf T ∧ 0 < phiOf S)) →
         ∃ k : CompactAutomorphism, mapAtoms k S = T := by
-  obtain ⟨V, hopen, hbase, hrigid⟩ :=
-    Glennie.Compact.NearbyOrbitsClosed.nearby_sign_rigidity_unconditional
-  refine ⟨V, hopen, ?_, ?_⟩
-  · rw [flatBase_eq_source, fullLedger_eq_source]
-    exact hbase
-  · intro T S hT hS hTV hTS hsign
-    have hsourceTV : Glennie.Compact.Affine20.ledger54 T ∈ V := by
-      rw [← fullLedger_eq_source]
-      exact hTV
-    have hsourceTS : Glennie.Compact.Affine20.ledger54 T =
-        Glennie.Compact.Affine20.ledger54 S := by
-      rw [← fullLedger_eq_source T, ← fullLedger_eq_source S]
-      exact hTS
-    have hsourceSign :
-        ((Glennie.Compact.Sections.phiOf T < 0 ∧
-            Glennie.Compact.Sections.phiOf S < 0) ∨
-          (0 < Glennie.Compact.Sections.phiOf T ∧
-            0 < Glennie.Compact.Sections.phiOf S)) := by
-      simpa only [← phiOf_eq T, ← phiOf_eq S] using hsign
-    obtain ⟨g, hg⟩ := hrigid T S hT hS hsourceTV hsourceTS hsourceSign
-    refine ⟨g, ?_⟩
-    rw [mapAtoms_eq_source]
-    exact hg
+  rw [flatBase_eq_source, fullLedger_eq_fn, phiOf_eq_fn, mapAtoms_eq_fn]
+  exact Glennie.Compact.NearbyOrbitsClosed.nearby_sign_rigidity_unconditional
 
 /-- A specific native near-flat full-fiber margin in a supplied open ledger neighborhood. -/
 theorem near_flat_scalar_margin :
     ∃ V : Set Ledger54, IsOpen V ∧ fullLedger flatBase ∈ V ∧
       ∀ T : Triple, (∀ a : Fin 3, Frame (T a)) → fullLedger T ∈ V →
         1 / 27 < |phiOf T| := by
-  obtain ⟨V, ho, hb, hm⟩ := Glennie.Compact.NearbyOrbits.phi_bounded_away_near_flat
-  refine ⟨V, ho, ?_, ?_⟩
-  · rw [flatBase_eq_source, fullLedger_eq_source]
-    exact hb
-  · intro T hT hV
-    rw [fullLedger_eq_source] at hV
-    simpa only [phiOf_eq] using hm T hT hV
+  rw [flatBase_eq_source, fullLedger_eq_fn, phiOf_eq_fn]
+  exact Glennie.Compact.NearbyOrbitsClosed.phi_bounded_away_near_flat
 
 /-- The fixed twenty-coordinate affine chart of complete overlap ledgers. -/
 def centred (L : Ledger54) (i j k : Fin 3) : ℝ :=
@@ -267,25 +262,14 @@ def fibre20 (b : Fin 20 → ℝ) : Set Triple :=
 def autOrbit (S : Triple) : Set Triple :=
   {T | ∃ g : CompactAutomorphism, mapAtoms g S = T}
 
-/-- Every admitted nearby full fiber is exactly two disjoint simultaneous
-    automorphism orbits, with continuous signed sections and exact chart fibers. -/
-private theorem flatBase_eq_sections :
-    flatBase = Glennie.Compact.Sections.flatBase := by rfl
-private theorem encode20_eq_source (L : Ledger54) :
-    encode20 L = Glennie.Compact.Affine20.encode20 L := by rfl
-private theorem decode20_eq_source (b : Fin 20 → ℝ) :
-    decode20 b = Glennie.Compact.Affine20.decode20 b := by rfl
-private theorem fibre54_eq_source (b : Fin 20 → ℝ) :
-    fibre54 b = Glennie.Compact.NearbyOrbits.fibre54 b := by
-  simp only [fibre54, Glennie.Compact.NearbyOrbits.fibre54,
-    fullLedger_eq_source, decode20_eq_source]
-private theorem fibre20_eq_source (b : Fin 20 → ℝ) :
-    fibre20 b = Glennie.Compact.NearbyOrbits.fibre20 b := by
-  simp only [fibre20, Glennie.Compact.NearbyOrbits.fibre20,
-    fullLedger_eq_source, encode20_eq_source]
-private theorem autOrbit_eq_source (T : Triple) :
-    autOrbit T = Glennie.Compact.FlatOrbit.autOrbit T := by
-  simp only [autOrbit, Glennie.Compact.FlatOrbit.autOrbit, mapAtoms_eq_source]
+theorem encode20_eq_fn : encode20 = Glennie.Compact.Affine20.encode20 := rfl
+private theorem decode20_eq_fn : decode20 = Glennie.Compact.Affine20.decode20 := rfl
+private theorem fibre54_eq_fn : fibre54 = Glennie.Compact.NearbyOrbits.fibre54 := by
+  ext b T; simp only [fibre54, Glennie.Compact.NearbyOrbits.fibre54, fullLedger_eq_fn, decode20_eq_fn]
+private theorem fibre20_eq_fn : fibre20 = Glennie.Compact.NearbyOrbits.fibre20 := by
+  ext b T; simp only [fibre20, Glennie.Compact.NearbyOrbits.fibre20, fullLedger_eq_fn, encode20_eq_fn]
+private theorem autOrbit_eq_fn : autOrbit = Glennie.Compact.FlatOrbit.autOrbit := by
+  ext S T; simp only [autOrbit, Glennie.Compact.FlatOrbit.autOrbit, mapAtoms_eq_fn]
 
 theorem nearby_fibres_two_orbits :
     ∃ V : Set (Fin 20 → ℝ), IsOpen V ∧ encode20 (fullLedger flatBase) ∈ V ∧
@@ -303,40 +287,17 @@ theorem nearby_fibres_two_orbits :
         (∀ b ∈ V, fibre54 b = autOrbit (secNeg b) ∪ autOrbit (secPos b)) ∧
         (∀ b ∈ V, Disjoint (autOrbit (secNeg b)) (autOrbit (secPos b))) ∧
         (∀ b ∈ V, fibre20 b = fibre54 b) := by
+  rw [flatBase_eq_sections, fullLedger_eq_fn, encode20_eq_fn, decode20_eq_fn,
+    phiOf_eq_fn, fibre54_eq_fn, fibre20_eq_fn, autOrbit_eq_fn]
   obtain ⟨V, ho, hb, p, n, hcp, hcn, hfp, hfn, hep, hen,
     hlp, hln, hpp, hnn, hcover, hdisj, heq⟩ :=
     Glennie.Compact.NearbyOrbitsClosed.nearby_fibres_two_orbits_unconditional
-  have hcoordinate : Continuous
-      (Albert.coordinateEquiv : Albert → Albert.Coordinates) :=
-    Albert.coordinateLinearEquiv.toLinearMap.continuous_of_finiteDimensional
-  have hcoord : Continuous
-      (fun T : Triple => fun a i => Albert.coordinateEquiv (T a i)) := by
-    apply continuous_pi
-    intro a
-    apply continuous_pi
-    intro i
-    exact hcoordinate.comp ((continuous_apply i).comp (continuous_apply a))
-  refine ⟨V, ho, ?_, p, n, ?_, ?_, hfp, hfn,
-    ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
-  · rw [flatBase_eq_sections, fullLedger_eq_source, encode20_eq_source]
-    exact hb
-  · exact hcoord.comp_continuousOn hcp
-  · exact hcoord.comp_continuousOn hcn
-  · intro b h; rw [fullLedger_eq_source, encode20_eq_source]; exact hep b h
-  · intro b h; rw [fullLedger_eq_source, encode20_eq_source]; exact hen b h
-  · intro b h; rw [fullLedger_eq_source, decode20_eq_source]; exact hlp b h
-  · intro b h; rw [fullLedger_eq_source, decode20_eq_source]; exact hln b h
-  · intro b h; rw [phiOf_eq]; exact hpp b h
-  · intro b h; rw [phiOf_eq]; exact hnn b h
-  · intro b h
-    rw [fibre54_eq_source, autOrbit_eq_source, autOrbit_eq_source]
-    exact hcover b h
-  · intro b h
-    rw [autOrbit_eq_source, autOrbit_eq_source]
-    exact hdisj b h
-  · intro b h
-    rw [fibre20_eq_source, fibre54_eq_source]
-    exact heq b h
+  have hcoord : Continuous (fun T : Triple => fun a i => Albert.coordinateEquiv (T a i)) :=
+    continuous_pi fun a => continuous_pi fun i =>
+      Albert.coordinateLinearEquiv.toLinearMap.continuous_of_finiteDimensional.comp
+        ((continuous_apply i).comp (continuous_apply a))
+  exact ⟨V, ho, hb, p, n, hcoord.comp_continuousOn hcp, hcoord.comp_continuousOn hcn,
+    hfp, hfn, hep, hen, hlp, hln, hpp, hnn, hcover, hdisj, heq⟩
 
 /-- On the admitted local chart, Q26 plus the nonzero score sign classifies
 all actual ordered-frame triples under one simultaneous product-and-trace action. -/
@@ -348,28 +309,8 @@ theorem local_q26_score_orbit_test :
         ((∃ k : CompactAutomorphism, mapAtoms k S = T) ↔
           q26 T = q26 S ∧
           ((score T < 0 ∧ score S < 0) ∨ (0 < score T ∧ 0 < score S))) := by
-  obtain ⟨V, ho, hb, ht⟩ :=
-    Glennie.Compact.LocalReconstruction.nearby_q26_score_complete
-  refine ⟨V, ho, ?_, ?_⟩
-  · rw [flatBase_eq_sections, fullLedger_eq_source, encode20_eq_source]
-    exact hb
-  · intro T S hT hS hTV
-    have hsourceTV : Glennie.Compact.Affine20.encode20
-        (Glennie.Compact.Affine20.ledger54 T) ∈ V := by
-      rw [← encode20_eq_source, ← fullLedger_eq_source]
-      exact hTV
-    obtain ⟨hs, hiff⟩ := ht T S hT hS hsourceTV
-    refine ⟨?_, ?_⟩
-    · simpa only [score_eq_source] using hs
-    · change (∃ k : CompactAutomorphism,
-          Glennie.Compact.Affine20.mapAtoms k S = T) ↔
-          Glennie.Compact.NativeQFamilyLedger.q26 T =
-            Glennie.Compact.NativeQFamilyLedger.q26 S ∧
-          ((Glennie.Compact.LocalContrast.score T < 0 ∧
-            Glennie.Compact.LocalContrast.score S < 0) ∨
-           (0 < Glennie.Compact.LocalContrast.score T ∧
-            0 < Glennie.Compact.LocalContrast.score S)) at hiff
-      simpa only [← mapAtoms_eq_source, ← score_eq_source, ← q26_eq_source] using hiff
+  rw [flatBase_eq_sections, fullLedger_eq_fn, encode20_eq_fn, score_eq_fn, mapAtoms_eq_fn, q26_eq_fn]
+  exact Glennie.Compact.NearbyOrbitsClosed.nearby_q26_score_complete
 
 /-- Every compact region of the established admitted chart has a positive
 uniform Phi margin for its entire actual ordered-frame fiber. -/
@@ -380,31 +321,12 @@ theorem compact_local_phi_margin :
           ∀ hb : encode20 (fullLedger T) ∈ V,
             (⟨encode20 (fullLedger T), hb⟩ : V) ∈ K →
               m ≤ |phiOf T| := by
+  rw [flatBase_eq_sections, fullLedger_eq_fn, encode20_eq_fn, phiOf_eq_fn]
   let d := Glennie.Compact.LocalOrbitQuotientR01.localData
-  refine ⟨d.V, d.openV, ?_, ?_⟩
-  · rw [flatBase_eq_sections, fullLedger_eq_source, encode20_eq_source]
-    exact d.base
-  · intro K hK
-    obtain ⟨m, hm, hbound⟩ :=
-      Glennie.Compact.NativeQ20AdapterR01.compact_response_margin d K hK
-    refine ⟨m, hm, ?_⟩
-    intro T hT hb hmem
-    have hnative : Glennie.Compact.Affine20.encode20
-        (Glennie.Compact.Affine20.ledger54 T) ∈ d.V := by
-      rw [← encode20_eq_source, ← fullLedger_eq_source]
-      exact hb
-    let Td : Glennie.Compact.LocalOrbitQuotientR01.Admitted d :=
-      ⟨T, hT, hnative⟩
-    have hchart : Glennie.Compact.LocalOrbitQuotientR01.chart d Td =
-        (⟨encode20 (fullLedger T), hb⟩ : d.V) := by
-      apply Subtype.ext
-      change Glennie.Compact.Affine20.encode20
-        (Glennie.Compact.Affine20.ledger54 T) = encode20 (fullLedger T)
-      rw [← encode20_eq_source, ← fullLedger_eq_source]
-    have hk : Glennie.Compact.LocalOrbitQuotientR01.chart d Td ∈ K := by
-      rw [hchart]
-      exact hmem
-    simpa only [phiOf_eq] using hbound Td hk
+  refine ⟨d.V, d.openV, d.base, fun K hK => ?_⟩
+  obtain ⟨m, hm, hbound⟩ :=
+    Glennie.Compact.LocalOrbitQuotientR01.compact_response_margin d K hK
+  exact ⟨m, hm, fun T hT hb hmem => hbound ⟨T, hT, hb⟩ hmem⟩
 
 /-- Six raw algebraic readings, in h+, h-, x+, x-, 1+, 1- order. -/
 structure Readouts where
@@ -434,6 +356,21 @@ def ErrorsAtMost (noisy exact : Readouts) (ε : ℝ) : Prop :=
   |noisy.onePlus - exact.onePlus| ≤ ε ∧
   |noisy.oneMinus - exact.oneMinus| ≤ ε
 
+private theorem weightedScore_exact (T : Triple) :
+    weightedScore (exactReadouts T) = score T := by
+  simp only [weightedScore, exactReadouts, score, delta, contrast,
+    inner_sub_right, rawPlus, rawMinus]
+  ring
+
+private theorem weightedScore_error (noisy exact : Readouts) (ε : ℝ)
+    (h : ErrorsAtMost noisy exact ε) :
+    |weightedScore noisy - weightedScore exact| ≤ 12 * ε := by
+  rcases h with ⟨h₀, h₁, h₂, h₃, h₄, h₅⟩
+  rcases abs_le.mp h₀ with ⟨_, _⟩; rcases abs_le.mp h₁ with ⟨_, _⟩
+  rcases abs_le.mp h₂ with ⟨_, _⟩; rcases abs_le.mp h₃ with ⟨_, _⟩
+  rcases abs_le.mp h₄ with ⟨_, _⟩; rcases abs_le.mp h₅ with ⟨_, _⟩
+  exact abs_le.mpr ⟨by dsimp [weightedScore]; linarith, by dsimp [weightedScore]; linarith⟩
+
 /-- Six absolute-error bounds and a strict observed margin certify the
     native scalar sign; no probability or measurement semantics is assumed. -/
 theorem signed_readout_margin (T : Triple) (noisy : Readouts) (ε : ℝ)
@@ -441,26 +378,22 @@ theorem signed_readout_margin (T : Triple) (noisy : Readouts) (ε : ℝ)
     (hm : 12 * ε < |weightedScore noisy|) :
     (weightedScore noisy < 0 ∧ phiOf T < 0) ∨
     (0 < weightedScore noisy ∧ 0 < phiOf T) := by
-  let toSource (r : Readouts) : Glennie.Compact.ReadoutRobustnessR01.Readouts :=
-    ⟨r.hPlus, r.hMinus, r.xPlus, r.xMinus, r.onePlus, r.oneMinus⟩
-  have hexact : toSource (exactReadouts T) =
-      Glennie.Compact.ReadoutRobustnessR01.exactReadouts T := by
-    rfl
-  have herr : Glennie.Compact.ReadoutRobustnessR01.ErrorsAtMost
-      (toSource noisy) (Glennie.Compact.ReadoutRobustnessR01.exactReadouts T) ε := by
-    rw [← hexact]
-    exact h
-  have hscore (r : Readouts) : weightedScore r =
-      Glennie.Compact.ReadoutRobustnessR01.weightedScore (toSource r) := rfl
-  have hmargin : 12 * ε <
-      |Glennie.Compact.ReadoutRobustnessR01.weightedScore (toSource noisy)| := by
-    rwa [hscore] at hm
-  have hs := Glennie.Compact.ReadoutRobustnessR01.sign_certificate
-    T (toSource noisy) ε hε herr hmargin
-  simpa only [← hscore, ← phiOf_eq] using hs
+  have hb := weightedScore_error noisy (exactReadouts T) ε h
+  rw [weightedScore_exact, score_eq_two_phi] at hb
+  rcases abs_le.mp hb with ⟨hl, hu⟩
+  rcases le_total 0 (weightedScore noisy) with hp | hn
+  · rw [abs_of_nonneg hp] at hm
+    exact Or.inr ⟨by linarith, by linarith⟩
+  · rw [abs_of_nonpos hn] at hm
+    exact Or.inl ⟨by linarith, by linarith⟩
 
 /-- The native raw trace norm, used to state perturbation radii independently. -/
 def nA (x : Albert) : ℝ := Real.sqrt (inner x x)
+
+private theorem nA_eq_norm (x : Albert) : nA x = ‖x‖ := by
+  unfold nA
+  rw [← Glennie.native_norm_sq]
+  exact Real.sqrt_sq (norm_nonneg x)
 
 /-- On a compact feasible chart region, nearby feasible coordinates recover
 an actual frame triple up to one simultaneous automorphism, atom by atom.
@@ -485,87 +418,36 @@ theorem compact_feasible_element_recovery :
                   ∃ g : CompactAutomorphism, ∀ a i : Fin 3,
                     nA (T a i - g.equiv
                       ((if 0 < phiOf T then secPos b.1 else secNeg b.1) a i)) < ζ) := by
+  rw [flatBase_eq_sections, fullLedger_eq_fn, encode20_eq_fn, phiOf_eq_fn]
   let d := Glennie.Compact.LocalOrbitQuotientR01.localData
-  have hcoordinate : Continuous
-      (Albert.coordinateEquiv : Albert → Albert.Coordinates) :=
-    Albert.coordinateLinearEquiv.toLinearMap.continuous_of_finiteDimensional
-  have hcoord : Continuous
-      (fun T : Triple => fun a i => Albert.coordinateEquiv (T a i)) := by
-    apply continuous_pi
-    intro a
-    apply continuous_pi
-    intro i
-    exact hcoordinate.comp ((continuous_apply i).comp (continuous_apply a))
-  refine ⟨d.V, d.openV, ?_, d.pos, d.neg, ?_, ?_,
-    d.framePos, d.frameNeg, ?_, ?_, ?_, ?_, ?_⟩
-  · rw [flatBase_eq_sections, fullLedger_eq_source, encode20_eq_source]
-    exact d.base
-  · exact hcoord.comp_continuousOn d.contPos
-  · exact hcoord.comp_continuousOn d.contNeg
-  · intro b hb
-    rw [fullLedger_eq_source, encode20_eq_source]
-    exact d.chartPos b hb
-  · intro b hb
-    rw [fullLedger_eq_source, encode20_eq_source]
-    exact d.chartNeg b hb
-  · intro b hb
-    rw [phiOf_eq]
-    exact d.phiPos b hb
-  · intro b hb
-    rw [phiOf_eq]
-    exact d.phiNeg b hb
-  · intro K hK ζ hζ
-    obtain ⟨η, hη, hrec⟩ :=
-      Glennie.Compact.NativeQ20AdapterR01.compact_feasible_recovery d K hK ζ hζ
-    refine ⟨η, hη, ?_⟩
-    intro T hT hb hTK b hbK hdist
-    have hnative : Glennie.Compact.Affine20.encode20
-        (Glennie.Compact.Affine20.ledger54 T) ∈ d.V := by
-      rw [← encode20_eq_source, ← fullLedger_eq_source]
-      exact hb
-    let Td : Glennie.Compact.LocalOrbitQuotientR01.Admitted d :=
-      ⟨T, hT, hnative⟩
-    have hchart : Glennie.Compact.LocalOrbitQuotientR01.chart d Td =
-        (⟨encode20 (fullLedger T), hb⟩ : d.V) := by
-      apply Subtype.ext
-      change Glennie.Compact.Affine20.encode20
-        (Glennie.Compact.Affine20.ledger54 T) = encode20 (fullLedger T)
-      rw [← encode20_eq_source, ← fullLedger_eq_source]
-    have hTK' : Glennie.Compact.LocalOrbitQuotientR01.chart d Td ∈ K := by
-      rw [hchart]
-      exact hTK
-    have hdist' : dist (Glennie.Compact.LocalOrbitQuotientR01.chart d Td) b < η := by
-      rwa [hchart]
-    obtain ⟨g, hg⟩ := hrec Td hTK' b hbK hdist'
-    refine ⟨g, ?_⟩
-    have hsection :
-        Glennie.Compact.NativeQ20AdapterR01.branchSection d b
-          (Glennie.Compact.LocalOrbitQuotientR01.sheet d Td) =
-          (if 0 < phiOf T then d.pos b.1 else d.neg b.1) := by
-      by_cases hp : 0 < phiOf T
-      · have hps : 0 < Glennie.Compact.Sections.phiOf T := by
-          rwa [← phiOf_eq]
-        simp [Glennie.Compact.NativeQ20AdapterR01.branchSection,
-          Glennie.Compact.LocalOrbitQuotientR01.sheet, hp, hps, Td]
-      · have hps : ¬ 0 < Glennie.Compact.Sections.phiOf T := by
-          rwa [← phiOf_eq]
-        simp [Glennie.Compact.NativeQ20AdapterR01.branchSection,
-          Glennie.Compact.LocalOrbitQuotientR01.sheet, hp, hps, Td]
-    rw [hsection] at hg
-    intro a i
-    have hbound :
-        ‖(T - Glennie.Compact.Affine20.mapAtoms g
-          (if 0 < phiOf T then d.pos b.1 else d.neg b.1)) a i‖ ≤
-        ‖T - Glennie.Compact.Affine20.mapAtoms g
-          (if 0 < phiOf T then d.pos b.1 else d.neg b.1)‖ :=
-      (norm_le_pi_norm _ i).trans (norm_le_pi_norm _ a)
-    have hlt := lt_of_le_of_lt hbound hg
-    have hnorm (x : Albert) : nA x = ‖x‖ := by
-      unfold nA
-      rw [← Glennie.native_norm_sq]
-      exact Real.sqrt_sq (norm_nonneg x)
-    simpa only [hnorm, Pi.sub_apply, Glennie.Compact.Affine20.mapAtoms]
-      using hlt
+  have hcoord : Continuous (fun T : Triple => fun a i => Albert.coordinateEquiv (T a i)) :=
+    continuous_pi fun a => continuous_pi fun i =>
+      Albert.coordinateLinearEquiv.toLinearMap.continuous_of_finiteDimensional.comp
+        ((continuous_apply i).comp (continuous_apply a))
+  refine ⟨d.V, d.openV, d.base, d.pos, d.neg, hcoord.comp_continuousOn d.contPos,
+    hcoord.comp_continuousOn d.contNeg, d.framePos, d.frameNeg, d.chartPos, d.chartNeg,
+    d.phiPos, d.phiNeg, fun K hK ζ hζ => ?_⟩
+  obtain ⟨η, hη, hrec⟩ :=
+    Glennie.Compact.LocalOrbitQuotientR01.compact_feasible_recovery d K hK ζ hζ
+  refine ⟨η, hη, fun T hT hb hTK b hbK hdist => ?_⟩
+  obtain ⟨g, hg⟩ := hrec ⟨T, hT, hb⟩ hTK b hbK hdist
+  refine ⟨g, fun a i => ?_⟩
+  have hsection :
+      Glennie.Compact.LocalOrbitQuotientR01.branchSection d b
+        (Glennie.Compact.LocalOrbitQuotientR01.sheet d ⟨T, hT, hb⟩) =
+        (if 0 < Glennie.Compact.Sections.phiOf T then d.pos b.1 else d.neg b.1) := by
+    by_cases hp : 0 < Glennie.Compact.Sections.phiOf T <;>
+      simp [Glennie.Compact.LocalOrbitQuotientR01.branchSection,
+        Glennie.Compact.LocalOrbitQuotientR01.sheet, hp]
+  rw [hsection] at hg
+  have hbound :
+      ‖(T - Glennie.Compact.Affine20.mapAtoms g
+        (if 0 < Glennie.Compact.Sections.phiOf T then d.pos b.1 else d.neg b.1)) a i‖ ≤
+      ‖T - Glennie.Compact.Affine20.mapAtoms g
+        (if 0 < Glennie.Compact.Sections.phiOf T then d.pos b.1 else d.neg b.1)‖ :=
+    (norm_le_pi_norm _ i).trans (norm_le_pi_norm _ a)
+  simpa only [nA_eq_norm, Pi.sub_apply, Glennie.Compact.Affine20.mapAtoms] using
+    hbound.trans_lt hg
 
 /-- A strict six-reading margin selects the correct continuous branch for
 compact feasible-coordinate recovery. The proposed chart remains feasible. -/
@@ -632,38 +514,29 @@ theorem six_readout_displaced_generation
     (∀ g : CompactAutomorphism,
       g.equiv x' = x' → g.equiv y' = y' → g.equiv z' = z' →
       g.equiv = LinearEquiv.refl ℝ Albert) := by
-  let r : Glennie.Compact.ReadoutRobustnessR01.Readouts :=
-    ⟨noisy.hPlus, noisy.hMinus, noisy.xPlus, noisy.xMinus,
-      noisy.onePlus, noisy.oneMinus⟩
-  have herr : Glennie.Compact.ReadoutRobustnessR01.ErrorsAtMost r
-      (Glennie.Compact.ReadoutRobustnessR01.exactReadouts T) ε := by
-    change ErrorsAtMost noisy (exactReadouts T) ε
-    exact hreadout
-  have hnoisy : Glennie.Compact.ReadoutRobustnessR01.noisyPhi r =
-      noisyPhi noisy := by rfl
-  have hnorm (x : Albert) : nA x = ‖x‖ := by
-    unfold nA
-    rw [← Glennie.native_norm_sq]
-    exact Real.sqrt_sq (norm_nonneg x)
-  have hsource := Glennie.Compact.MeasuredMarginR01.six_readout_same_radius_sign_and_generation
-    T r x' y' z' ε ξ R δ hξ hR herr hallowance
-    (by simpa only [hnorm, f0_eq] using hx)
-    (by simpa only [hnorm, f1_eq] using hy)
-    (by simpa only [hnorm, f2_eq] using hz)
-    (by simpa only [hnorm] using hx')
-    (by simpa only [hnorm] using hy')
-    (by simpa only [hnorm] using hz')
-    (by simpa only [hnorm, f0_eq] using hdx)
-    (by simpa only [hnorm, f1_eq] using hdy)
-    (by simpa only [hnorm, f2_eq] using hdz)
-    (by rw [hnoisy]; exact hmargin)
-  rcases hsource with ⟨hsign, hgen, hstab⟩
-  refine ⟨?_, hgen, ?_⟩
-  · rw [hnoisy] at hsign
-    exact hsign
-  · intro g hgx hgy hgz
-    rw [hstab g hgx hgy hgz]
-    rfl
+  simp only [nA_eq_norm] at hx hy hz hx' hy' hz' hdx hdy hdz
+  have hb := weightedScore_error noisy (exactReadouts T) ε hreadout
+  rw [weightedScore_exact, score_eq_two_phi, phiOf] at hb
+  rcases abs_le.mp hb with ⟨hl1, hu1⟩
+  have hdisp := Glennie.Compact.ReadoutRobustnessR01.phi_displacement_18
+    (encoder (T f0)) (encoder (T f1)) (encoder (T f2))
+    x' y' z' R δ hR hx hy hz hx' hy' hz' hdx hdy hdz
+  rcases abs_le.mp hdisp with ⟨hl2, hu2⟩
+  have hnp : noisyPhi noisy = weightedScore noisy / 2 := by
+    change weightedScore noisy / (Nat.cast 2 : ℝ) = _
+    norm_num
+  have hδ : 0 ≤ δ := (norm_nonneg _).trans hdx
+  have hR8 : 0 ≤ R ^ 8 := by positivity
+  have hsign : (noisyPhi noisy < 0 ∧ phi x' y' z' < 0) ∨
+      (0 < noisyPhi noisy ∧ 0 < phi x' y' z') := by
+    rcases le_total 0 (noisyPhi noisy) with hp | hn
+    · rw [abs_of_nonneg hp] at hmargin
+      exact Or.inr ⟨by nlinarith, by nlinarith⟩
+    · rw [abs_of_nonpos hn] at hmargin
+      exact Or.inl ⟨by nlinarith, by nlinarith⟩
+  have hnz : phi x' y' z' ≠ 0 := by rcases hsign with ⟨_, h⟩ | ⟨_, h⟩ <;> linarith
+  obtain ⟨hgen, hstab, _⟩ := phi_nonzero_generation_stabilizer x' y' z' hnz
+  exact ⟨hsign, hgen, hstab⟩
 
 /-- The coordinatewise special Jordan product in arbitrary Euclidean dimension. -/
 def diagonalNProduct {n : ℕ} (a b : EuclideanSpace ℝ (Fin n)) :
@@ -681,25 +554,41 @@ theorem diagonalN_defect_response_radius {n : ℕ}
     (x y z : Albert) (hx : nA x ≤ R) (hy : nA y ≤ R)
     (hz : nA z ≤ R) :
     |phi x y z| ≤ 38 * μ * R^9 := by
-  have hnorm (w : Albert) : nA w = ‖w‖ := by
-    unfold nA
-    rw [← Glennie.native_norm_sq]
-    exact Real.sqrt_sq (norm_nonneg w)
-  let fIso : Albert →ₗᵢ[ℝ] EuclideanSpace ℝ (Fin n) :=
-    ⟨f, fun w => (hf w).trans (hnorm w)⟩
-  have hdef' : ∀ a b : Albert,
-      ‖fIso (jordan a b) -
-        Glennie.Compact.VariableDiagonalNullTargetR01.diagonalNProduct
-          (fIso a) (fIso b)‖ ≤ μ * ‖a‖ * ‖b‖ := by
-    intro a b
-    change ‖f (jordan a b) - diagonalNProduct (f a) (f b)‖ ≤
-      μ * ‖a‖ * ‖b‖
-    simpa only [hnorm] using hdef a b
-  exact Glennie.Compact.VariableDiagonalDefectReadoutR01.native_diagonalN_defect_response
-    fIso μ R hμ hR hdef' x y z
-    (by simpa only [hnorm] using hx)
-    (by simpa only [hnorm] using hy)
-    (by simpa only [hnorm] using hz)
+  simp only [nA_eq_norm] at hf hdef hx hy hz
+  exact Glennie.Compact.ReadoutRobustnessR01.null_defect_response_radius
+    Glennie.Compact.ReadoutRobustnessR01.diagonalNProduct f hf
+    (fun a b c => by ext i; exact sub_mul (a i) (b i) (c i))
+    (fun a b c => by ext i; exact mul_sub (a i) (b i) (c i))
+    Glennie.Compact.ReadoutRobustnessR01.diagonalN_product_norm
+    Glennie.Compact.ReadoutRobustnessR01.diagonalN_quadratic_norm
+    Glennie.Compact.ReadoutRobustnessR01.diagonalN_phi_zero
+    μ R hμ hR hdef x y z hx hy hz
+
+private theorem frame_radius (p : Fin 3 → Albert) (hp : Frame p) :
+    nA (encoder p) ≤ Real.sqrt 2 := by
+  rw [nA_eq_norm]
+  have hs : ‖encoder p‖ ^ 2 = 2 := (native_norm_sq _).trans (frame_encoder_norm p hp)
+  have hr : (Real.sqrt (2 : ℝ)) ^ 2 = 2 := Real.sq_sqrt (by norm_num)
+  nlinarith [norm_nonneg (encoder p), Real.sqrt_nonneg (2 : ℝ)]
+
+private theorem frame_noisy_defect_lower_of_response
+    (T : Triple) (noisy : Readouts) (ε μ : ℝ)
+    (hreadout : ErrorsAtMost noisy (exactReadouts T) ε)
+    (hresp : |phiOf T| ≤ 38 * μ * (Real.sqrt 2) ^ 9) :
+    (|weightedScore noisy| - 12 * ε) / (1216 * Real.sqrt 2) ≤ μ := by
+  have hb := weightedScore_error noisy (exactReadouts T) ε hreadout
+  rw [weightedScore_exact, score_eq_two_phi] at hb
+  have htri : |weightedScore noisy| - 12 * ε ≤ 2 * |phiOf T| := by
+    have := (abs_sub_abs_le_abs_sub (weightedScore noisy) (2 * phiOf T)).trans hb
+    rw [abs_mul, abs_of_pos (by norm_num : (0 : ℝ) < 2)] at this
+    linarith
+  have hr9 : (Real.sqrt (2 : ℝ)) ^ 9 = 16 * Real.sqrt 2 := by
+    calc (Real.sqrt (2 : ℝ)) ^ 9 = ((Real.sqrt (2 : ℝ)) ^ 2) ^ 4 * Real.sqrt 2 := by ring
+      _ = 16 * Real.sqrt 2 := by rw [Real.sq_sqrt (by norm_num)]; norm_num
+  rw [hr9] at hresp
+  have hr : 0 < Real.sqrt (2 : ℝ) := Real.sqrt_pos.mpr (by norm_num)
+  rw [div_le_iff₀ (by positivity)]
+  nlinarith
 
 /-- An actual-frame noisy score forces a uniform multiplication defect for
 any norm-preserving linear map into a coordinatewise Euclidean target. -/
@@ -712,35 +601,11 @@ theorem frame_noisy_diagonalN_defect_lower {n : ℕ}
     (hdef : ∀ a b : Albert,
       ‖f (jordan a b) - diagonalNProduct (f a) (f b)‖ ≤
         μ * nA a * nA b) :
-    (|weightedScore noisy| - 12 * ε) / (1216 * Real.sqrt 2) ≤ μ := by
-  let r : Glennie.Compact.ReadoutRobustnessR01.Readouts :=
-    ⟨noisy.hPlus, noisy.hMinus, noisy.xPlus, noisy.xMinus,
-      noisy.onePlus, noisy.oneMinus⟩
-  have herr : Glennie.Compact.ReadoutRobustnessR01.ErrorsAtMost r
-      (Glennie.Compact.ReadoutRobustnessR01.exactReadouts T) ε := by
-    change ErrorsAtMost noisy (exactReadouts T) ε
-    exact hreadout
-  have hnorm (x : Albert) : nA x = ‖x‖ := by
-    unfold nA
-    rw [← Glennie.native_norm_sq]
-    exact Real.sqrt_sq (norm_nonneg x)
-  let fIso : Albert →ₗᵢ[ℝ] EuclideanSpace ℝ (Fin n) :=
-    ⟨f, fun x => (hf x).trans (hnorm x)⟩
-  have hdef' : ∀ a b : Albert,
-      ‖fIso (jordan a b) -
-        Glennie.Compact.VariableDiagonalNullTargetR01.diagonalNProduct
-          (fIso a) (fIso b)‖ ≤ μ * ‖a‖ * ‖b‖ := by
-    intro a b
-    change ‖f (jordan a b) - diagonalNProduct (f a) (f b)‖ ≤
-      μ * ‖a‖ * ‖b‖
-    simpa only [hnorm] using hdef a b
-  have hs :=
-    Glennie.Compact.VariableDiagonalDefectReadoutR01.frame_noisy_diagonalN_defect_lower
-      fIso T hT r ε μ hμ herr hdef'
-  have hscore : Glennie.Compact.ReadoutRobustnessR01.weightedScore r =
-      weightedScore noisy := by rfl
-  rw [hscore] at hs
-  exact hs
+    (|weightedScore noisy| - 12 * ε) / (1216 * Real.sqrt 2) ≤ μ :=
+  frame_noisy_defect_lower_of_response T noisy ε μ hreadout
+    (diagonalN_defect_response_radius f hf μ (Real.sqrt 2) hμ (Real.sqrt_nonneg 2) hdef
+      (encoder (T f0)) (encoder (T f1)) (encoder (T f2))
+      (frame_radius _ (hT f0)) (frame_radius _ (hT f1)) (frame_radius _ (hT f2)))
 
 /-- A noisy actual-frame score also forces a defect for an associative
 cyclic-trace represented target with its exact product and metric adapters. -/
@@ -760,36 +625,22 @@ theorem frame_noisy_represented_defect_lower
     (hdef : ∀ a b : Albert,
       ‖f (jordan a b) - jE (f a) (f b)‖ ≤ μ * nA a * nA b) :
     (|weightedScore noisy| - 12 * ε) / (1216 * Real.sqrt 2) ≤ μ := by
-  let r : Glennie.Compact.ReadoutRobustnessR01.Readouts :=
-    ⟨noisy.hPlus, noisy.hMinus, noisy.xPlus, noisy.xMinus,
-      noisy.onePlus, noisy.oneMinus⟩
-  have herr : Glennie.Compact.ReadoutRobustnessR01.ErrorsAtMost r
-      (Glennie.Compact.ReadoutRobustnessR01.exactReadouts T) ε := by
-    change ErrorsAtMost noisy (exactReadouts T) ε
-    exact hreadout
-  have hnorm (x : Albert) : nA x = ‖x‖ := by
-    unfold nA
-    rw [← Glennie.native_norm_sq]
-    exact Real.sqrt_sq (norm_nonneg x)
-  let fIso : Albert →ₗᵢ[ℝ] E :=
-    ⟨f, fun x => (hf x).trans (hnorm x)⟩
-  have hj' : ∀ a b : E, ρ (jE a b) =
-      Glennie.Compact.CyclicTraceNullR01.symmProd (ρ a) (ρ b) := by
-    intro a b
-    exact hj a b
-  have hdef' : ∀ a b : Albert,
-      ‖fIso (jordan a b) - jE (fIso a) (fIso b)‖ ≤
-        μ * ‖a‖ * ‖b‖ := by
-    intro a b
-    change ‖f (jordan a b) - jE (f a) (f b)‖ ≤ μ * ‖a‖ * ‖b‖
-    simpa only [hnorm] using hdef a b
-  have hs :=
-    Glennie.Compact.RepresentedDefectReadoutR01.frame_noisy_represented_defect_lower
-      jE fIso ρ τ hj' hB hcyclic T hT r ε μ hμ herr hdef'
-  have hscore : Glennie.Compact.ReadoutRobustnessR01.weightedScore r =
-      weightedScore noisy := by rfl
-  rw [hscore] at hs
-  exact hs
+  have hf' (x : Albert) : ‖f x‖ = ‖x‖ := (hf x).trans (nA_eq_norm x)
+  have hdef' (a b : Albert) : ‖f (jordan a b) - jE (f a) (f b)‖ ≤ μ * ‖a‖ * ‖b‖ := by
+    simpa only [nA_eq_norm] using hdef a b
+  exact frame_noisy_defect_lower_of_response T noisy ε μ hreadout
+    (Glennie.Compact.ReadoutRobustnessR01.null_defect_response_radius
+      (fun a b => jE a b) f hf'
+      (fun a b c => by simp) (fun a b c => by simp)
+      (Glennie.Compact.ReadoutRobustnessR01.represented_product_norm (fun a b => jE a b) ρ hj)
+      (Glennie.Compact.ReadoutRobustnessR01.represented_quadratic_norm (fun a b => jE a b) ρ hj)
+      (Glennie.Compact.ReadoutRobustnessR01.phiWith_eq_zero_of_compatible_trace
+        (fun a b => jE a b) (Inner.inner ℝ) ρ.toLinearMap τ hj hB hcyclic)
+      μ (Real.sqrt 2) hμ (Real.sqrt_nonneg 2) hdef'
+      (encoder (T f0)) (encoder (T f1)) (encoder (T f2))
+      ((nA_eq_norm _).symm.trans_le (frame_radius _ (hT f0)))
+      ((nA_eq_norm _).symm.trans_le (frame_radius _ (hT f1)))
+      ((nA_eq_norm _).symm.trans_le (frame_radius _ (hT f2))))
 
 /-- The same 27 fixed bracketed words evaluated in any marked product. -/
 def witnessX : Albert := ⟨-1,0,1,0,0,0⟩
@@ -836,38 +687,248 @@ structure Match27 {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E]
       inner (jordan (nativeWordValues i) (nativeWordValues k))
         (jordan (nativeWordValues i) (nativeWordValues k))
 
-private theorem wordValues_eq_source {E : Type*} (e : E) (a : Fin 3 → E)
-    (j : E → E → E) (i : Fin 27) :
-    wordValues e a j i =
-      Glennie.Compact.NativeWordTableR01.eval e a j
-        (Glennie.Compact.NativeWordTableR01.words i) := by
-  fin_cases i <;> rfl
+open scoped BigOperators
 
-private theorem nativeWordValue_eq_source (i : Fin 27) :
-    nativeWordValues i = Glennie.Compact.NativeWordTableR01.nativeWords i := by
-  have hmarks : nativeMarks = Glennie.Compact.NativeWordTableR01.marks := by
-    funext k
-    fin_cases k <;> rfl
-  change wordValues 1 nativeMarks jordan i =
-    Glennie.Compact.NativeWordTableR01.eval 1
-      Glennie.Compact.NativeWordTableR01.marks jordan
-      (Glennie.Compact.NativeWordTableR01.words i)
-  rw [hmarks]
-  exact wordValues_eq_source 1 _ jordan i
-private theorem candidateWordValues_eq_source
-    {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E]
-    (e : E) (a : Fin 3 → E) (j : E →ₗ[ℝ] E →ₗ[ℝ] E) :
-    candidateWordValues e a j =
-      Glennie.Compact.MarkedModelConsumerCandidate.candidateWords e a j := by
-  funext i
-  fin_cases i <;> rfl
-private theorem generated_eq_source
-    {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E]
-    (e : E) (a : Fin 3 → E) (j : E →ₗ[ℝ] E →ₗ[ℝ] E) :
-    generated e a j = Glennie.Compact.MarkedModelConsumerCandidate.generated e a j := by rfl
+private abbrev w0 : Albert := ⟨1, 1, 1, 0, 0, 0⟩
+private abbrev w1 : Albert := ⟨-1, 0, 1, 0, 0, 0⟩
+private abbrev w2 : Albert := ⟨0, 0, 0, (1, 0), (⟨0, 1, 0, 0⟩, 0), (1, 0)⟩
+private abbrev w3 : Albert := ⟨0, 0, 0, (0, ⟨0, 0, 1, 0⟩), (0, -1), (⟨0, 0, 0, -1⟩, 0)⟩
+private abbrev w4 : Albert := ⟨1, 0, 1, 0, 0, 0⟩
+private abbrev w5 : Albert := ⟨0, 0, 0, (⟨-1/2, 0, 0, 0⟩, 0), 0, (⟨1/2, 0, 0, 0⟩, 0)⟩
+private abbrev w6 : Albert := ⟨0, 0, 0, (0, ⟨0, 0, -1/2, 0⟩), 0, (⟨0, 0, 0, -1/2⟩, 0)⟩
+private abbrev w7 : Albert := ⟨2, 2, 2, (⟨0, 1, 0, 0⟩, 0), (1, 0), (⟨0, 1, 0, 0⟩, 0)⟩
+private abbrev w8 : Albert := ⟨0, 0, 0, (⟨0, 0, -1/2, 0⟩, ⟨-1/2, 0, 0, 0⟩), (⟨0, 0, 0, -1/2⟩, ⟨0, 0, 1/2, 0⟩), (0, ⟨-1/2, 0, 0, -1/2⟩)⟩
+private abbrev w9 : Albert := ⟨2, 2, 2, (0, ⟨0, 0, 0, 1⟩), (0, ⟨0, 1, 0, 0⟩), (⟨0, 0, -1, 0⟩, 0)⟩
+private abbrev w10 : Albert := ⟨0, 0, 0, (⟨1/4, 0, 0, 0⟩, 0), 0, (⟨1/4, 0, 0, 0⟩, 0)⟩
+private abbrev w11 : Albert := ⟨0, 0, 0, (0, ⟨0, 0, 1/4, 0⟩), 0, (⟨0, 0, 0, -1/4⟩, 0)⟩
+private abbrev w12 : Albert := ⟨-2, 0, 2, (⟨0, -1/2, 0, 0⟩, 0), 0, (⟨0, 1/2, 0, 0⟩, 0)⟩
+private abbrev w13 : Albert := ⟨0, 0, 0, (⟨0, 0, 1/4, 0⟩, ⟨1/4, 0, 0, 0⟩), 0, (0, ⟨-1/4, 0, 0, -1/4⟩)⟩
+private abbrev w14 : Albert := ⟨-2, 0, 2, (0, ⟨0, 0, 0, -1/2⟩), 0, (⟨0, 0, -1/2, 0⟩, 0)⟩
+private abbrev w15 : Albert := ⟨0, 0, 0, (⟨0, 0, -1/4, 0⟩, 0), (⟨0, 0, 0, -1/4⟩, ⟨0, 0, -1/4, 0⟩), (0, ⟨0, 0, 0, 1/4⟩)⟩
+private abbrev w16 : Albert := ⟨0, 0, 0, (⟨0, 0, 0, -1/4⟩, ⟨0, 1/4, 1/2, 0⟩), (⟨0, 0, -1/4, 0⟩, ⟨-1/2, 0, 0, -1/4⟩), (⟨0, 0, 0, -1/2⟩, ⟨0, -1/4, 1/4, 0⟩)⟩
+private abbrev w17 : Albert := ⟨0, 0, 0, (⟨2, 0, 0, 1/2⟩, ⟨0, 1/2, 0, 0⟩), (⟨0, 2, -1/2, 0⟩, ⟨0, 0, 0, 1/2⟩), (⟨2, 0, 0, 0⟩, ⟨0, 1/2, 1/2, 0⟩)⟩
+private abbrev w18 : Albert := ⟨2, 0, 2, (⟨0, 1/2, 0, 0⟩, 0), (1, 0), (⟨0, 1/2, 0, 0⟩, 0)⟩
+private abbrev w19 : Albert := ⟨0, 0, 0, (⟨0, 0, -1/4, 0⟩, ⟨-1/4, 0, 0, 0⟩), (⟨0, 0, 0, -1/2⟩, ⟨0, 0, 1/2, 0⟩), (0, ⟨-1/4, 0, 0, -1/4⟩)⟩
+private abbrev w20 : Albert := ⟨2, 0, 2, (0, ⟨0, 0, 0, 1/2⟩), (0, ⟨0, 1, 0, 0⟩), (⟨0, 0, -1/2, 0⟩, 0)⟩
+private abbrev w21 : Albert := ⟨0, 0, 0, (⟨0, 0, 0, -1/8⟩, ⟨0, 0, 1/8, 0⟩), (⟨0, 0, -1/8, 0⟩, ⟨0, 0, 0, 1/8⟩), (⟨0, 0, 0, 1/8⟩, ⟨0, 0, -1/8, 0⟩)⟩
+private abbrev w22 : Albert := ⟨0, 0, 0, (-1, ⟨0, 1/4, 0, 0⟩), (⟨0, 0, 1/4, 0⟩, ⟨0, 0, 0, 1/4⟩), (1, ⟨0, -1/4, 0, 0⟩)⟩
+private abbrev w23 : Albert := ⟨4, 4, 4, (⟨0, 2, 1/2, 0⟩, ⟨-1/2, 0, 0, 2⟩), (⟨2, 0, 0, -1/2⟩, ⟨0, 2, -1/2, 0⟩), (⟨0, 2, -2, 0⟩, ⟨1/2, 0, 0, -1/2⟩)⟩
+private abbrev w24 : Albert := ⟨0, 0, 0, (⟨0, 0, 1/8, 0⟩, 0), 0, (0, ⟨0, 0, 0, 1/8⟩)⟩
+private abbrev w25 : Albert := ⟨0, 0, 0, (⟨0, 0, 0, 1/8⟩, ⟨0, -1/8, -1/4, 0⟩), 0, (⟨0, 0, 0, -1/4⟩, ⟨0, -1/8, 1/8, 0⟩)⟩
+private abbrev w26 : Albert := ⟨0, 0, 0, (⟨-1, 0, 0, -1/4⟩, ⟨0, -1/4, 0, 0⟩), 0, (1, ⟨0, 1/4, 1/4, 0⟩)⟩
+private def wVal : Fin 27 → Albert := ![w0, w1, w2, w3, w4, w5, w6, w7, w8, w9, w10, w11, w12, w13, w14, w15, w16, w17, w18, w19, w20, w21, w22, w23, w24, w25, w26]
 
-/-- The native word certificate supplies a unique unit-, mark-, product- and
-metric-preserving embedding into the ambient carrier. -/
+private def wordRepr (v : Albert) : Fin 27 → ℝ :=
+  let a := v.o01.1; let b := v.o01.2; let c := v.o02.1; let d := v.o02.2; let e := v.o12.1; let f := v.o12.2
+  ![
+  (3 * v.d1 + 4 * (a.imJ + f.re - b.re - c.imK - d.imJ - f.imK) + 6 * (c.re + d.imI + e.imJ - a.imI - b.imK - e.imI)) / 3,
+  (v.d2 - v.d0 + 4 * (a.imI + b.imK + e.imJ - e.imI)) / 2,
+  (2 * (c.imJ - a.imK - b.imI - d.imK - f.imI - f.imJ) + 3 * c.imI) / 3,
+  (a.imK + c.imJ + d.imK + f.imI - b.imI - f.imJ - 3 * d.re) / 3,
+  (v.d0 + v.d2 - 2 * v.d1 + 4 * (a.imI + b.imK + e.imI - e.imJ) - 8 * (c.re + d.imI)) / 2,
+  e.re - a.re + 4 * (a.imK - c.imJ - d.imK - f.imJ),
+  b.imI + f.imI - a.imK - b.imJ - e.imK - f.imJ,
+  (2 * (b.re + c.imK + d.imJ + f.imK - a.imJ - f.re) + 3 * (a.imI + e.imI - c.re)) / 3,
+  c.imK - d.imJ - 2 * (b.re + f.re),
+  (2 * (b.re + c.imK + d.imJ + f.imK - a.imJ - f.re) + 3 * (b.imK - d.imI - e.imJ)) / 3,
+  2 * (a.re + e.re) - 4 * c.imI,
+  2 * (b.imJ - e.imK) + 4 * d.re,
+  e.imI - a.imI,
+  (2 * (a.imJ - c.imK - d.imJ - f.imK) + 4 * (b.re - f.re)) / 3,
+  -(b.imK + e.imJ),
+  (2 * (b.re + f.imK - a.imJ - f.re) - 4 * (c.imK + d.imJ)) / 3,
+  (2 * (b.imI + f.imJ - a.imK - c.imJ - d.imK - f.imI)) / 3,
+  (a.imK + b.imI + d.imK + f.imI + f.imJ - c.imJ) / 3,
+  -(a.imI + e.imI) + 2 * c.re,
+  2 * (b.re + d.imJ + f.re - c.imK),
+  e.imJ - b.imK + 2 * d.imI,
+  (-4 * (a.imK + b.imI + f.imI + f.imJ) + 8 * (d.imK - c.imJ)) / 3,
+  (2 * (b.imI + f.imJ - a.imK - f.imI) + 4 * (c.imJ + d.imK)) / 3,
+  (a.imJ + f.re - b.re - c.imK - d.imJ - f.imK) / 3,
+  4 * (a.imJ + f.imK - b.re - f.re),
+  (4 * (a.imK + d.imK + f.imJ - c.imJ) - 8 * (b.imI + f.imI)) / 3,
+  (2 * (c.imJ + d.imK + f.imI - b.imI) + 4 * (f.imJ - a.imK)) / 3
+]
+
+set_option maxHeartbeats 4000000 in
+private theorem wordRepr_sum (v : Albert) : ∑ i : Fin 27, wordRepr v i • wVal i = v := by
+  ext <;> simp [Fin.sum_univ_succ, wordRepr, wVal] <;> ring
+
+local macro "jw" : tactic => `(tactic| (ext <;> simp only [witnessX, witnessY, witnessZ, unit, octI, octK, octL, octJL, quatI, quatJ, quatK, octScalar, jordan_d0, jordan_d1, jordan_d2, jordan_o01, jordan_o02, jordan_o12, octDot_coordinates, octMul, octConj, octNormSq, Quaternion.normSq_def', Quaternion.re_mul, Quaternion.imI_mul, Quaternion.imJ_mul, Quaternion.imK_mul, QuaternionAlgebra.re_ofNat, QuaternionAlgebra.imI_ofNat, QuaternionAlgebra.imJ_ofNat, QuaternionAlgebra.imK_ofNat, Quaternion.re_add, Quaternion.imI_add, Quaternion.imJ_add, Quaternion.imK_add, Quaternion.re_sub, Quaternion.imI_sub, Quaternion.imJ_sub, Quaternion.imK_sub, Quaternion.re_neg, Quaternion.imI_neg, Quaternion.imJ_neg, Quaternion.imK_neg, Quaternion.re_smul, Quaternion.imI_smul, Quaternion.imJ_smul, Quaternion.imK_smul, Quaternion.re_star, Quaternion.imI_star, Quaternion.imJ_star, Quaternion.imK_star, Quaternion.re_zero, Quaternion.imI_zero, Quaternion.imJ_zero, Quaternion.imK_zero, Quaternion.re_one, Quaternion.imI_one, Quaternion.imJ_one, Quaternion.imK_one, Prod.fst_add, Prod.snd_add, Prod.fst_sub, Prod.snd_sub, Prod.fst_neg, Prod.snd_neg, Prod.smul_fst, Prod.smul_snd, Prod.fst_zero, Prod.snd_zero, Albert.smul_o01, Albert.smul_o02, Albert.smul_o12] <;> norm_num))
+
+private theorem h1 : nativeMarks f0 = w1 := rfl
+private theorem h2 : nativeMarks f1 = w2 := rfl
+private theorem h3 : nativeMarks f2 = w3 := by dsimp [nativeMarks, f2]; jw
+private theorem h4 : jordan w1 w1 = w4 := by jw
+private theorem h5 : jordan w1 w2 = w5 := by jw
+private theorem h6 : jordan w1 w3 = w6 := by jw
+private theorem h7 : jordan w2 w2 = w7 := by jw
+private theorem h8 : jordan w2 w3 = w8 := by jw
+private theorem h9 : jordan w3 w3 = w9 := by jw
+private theorem h10 : jordan w1 w5 = w10 := by jw
+private theorem h11 : jordan w1 w6 = w11 := by jw
+private theorem h12 : jordan w1 w7 = w12 := by jw
+private theorem h13 : jordan w1 w8 = w13 := by jw
+private theorem h14 : jordan w1 w9 = w14 := by jw
+private theorem h15 : jordan w2 w6 = w15 := by jw
+private theorem h16 : jordan w2 w8 = w16 := by jw
+private theorem h17 : jordan w2 w9 = w17 := by jw
+private theorem h18 : jordan w4 w7 = w18 := by jw
+private theorem h19 : jordan w4 w8 = w19 := by jw
+private theorem h20 : jordan w4 w9 = w20 := by jw
+private theorem h21 : jordan w5 w8 = w21 := by jw
+private theorem h22 : jordan w5 w9 = w22 := by jw
+private theorem h23 : jordan w7 w9 = w23 := by jw
+private theorem h24 : jordan w1 w15 = w24 := by jw
+private theorem h25 : jordan w1 w16 = w25 := by jw
+private theorem h26 : jordan w1 w17 = w26 := by jw
+
+private theorem nativeWordValues_eq_wVal : nativeWordValues = wVal := by
+  unfold nativeWordValues wordValues wVal
+  dsimp only
+  rw [h1, h2, h3, h4, h5, h6, h7, h8, h9, h10, h11, h12, h13, h14,
+    h15, h16, h17, h18, h19, h20, h21, h22, h23, h24, h25, h26]
+  rfl
+
+private theorem nativeWordValues_sum (v : Albert) : ∑ i : Fin 27, wordRepr v i • nativeWordValues i = v := by
+  rw [nativeWordValues_eq_wVal]
+  exact wordRepr_sum v
+
+private def wordReprLin (i : Fin 27) : Albert →ₗ[ℝ] ℝ where
+  toFun v := wordRepr v i
+  map_add' x y := by fin_cases i <;> dsimp [wordRepr] <;> ring
+  map_smul' r x := by fin_cases i <;> dsimp [wordRepr] <;> ring
+
+private theorem residual_norm_sq {F : Type*} [NormedAddCommGroup F] [InnerProductSpace ℝ F]
+    (v : Fin 27 → F) (p : F) (c : Fin 27 → ℝ) :
+    ‖p - ∑ k, c k • v k‖^2 =
+      Inner.inner ℝ p p - 2 * (∑ k, c k * Inner.inner ℝ p (v k)) +
+        ∑ k, ∑ l, c k * c l * Inner.inner ℝ (v k) (v l) := by
+  have hp : Inner.inner ℝ p (∑ k, c k • v k) = ∑ k, c k * Inner.inner ℝ p (v k) := by
+    simp only [inner_sum, real_inner_smul_right]
+  have hs : ‖∑ k, c k • v k‖^2 = ∑ k, ∑ l, c k * c l * Inner.inner ℝ (v k) (v l) := by
+    rw [← real_inner_self_eq_norm_sq]
+    simp only [sum_inner, inner_sum, real_inner_smul_left, real_inner_smul_right]
+    refine Finset.sum_congr rfl fun k _ => Finset.sum_congr rfl fun l _ => ?_
+    rw [real_inner_comm (v l) (v k)]; ring
+  rw [norm_sub_sq_real, hp, hs, ← real_inner_self_eq_norm_sq p]
+
+private theorem recognition_core
+    {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E]
+    (nw : Fin 27 → Albert)
+    (hsum : ∀ v : Albert, ∑ i : Fin 27, wordReprLin i v • nw i = v)
+    (hnw : nw = nativeWordValues)
+    (e : E) (a : Fin 3 → E) (j : E →ₗ[ℝ] E →ₗ[ℝ] E)
+    (h : Match27 e a j) :
+    ∃! L : Albert →ₗ[ℝ] E,
+      L 1 = e ∧
+      (∀ i : Fin 3, L (nativeMarks i) = a i) ∧
+      (∀ x y : Albert, L (jordan x y) = j (L x) (L y)) ∧
+      (∀ x y : Albert, Inner.inner ℝ (L x) (L y) = inner x y) ∧
+      Function.Injective L ∧ LinearMap.range L = generated e a j := by
+  let cw := candidateWordValues e a j
+  let L : Albert →ₗ[ℝ] E := ∑ i : Fin 27, (wordReprLin i).smulRight (cw i)
+  have hL (v : Albert) : L v = ∑ i : Fin 27, wordReprLin i v • cw i := by
+    simp [L, LinearMap.sum_apply]
+  have hgram (i k : Fin 27) : Inner.inner ℝ (cw i) (cw k) = inner (nw i) (nw k) := by
+    rw [hnw]; exact h.gram i k
+  have hmixed (i k l : Fin 27) : Inner.inner ℝ (j (cw i) (cw k)) (cw l) =
+      inner (jordan (nw i) (nw k)) (nw l) := by
+    rw [hnw]; exact h.mixed i k l
+  have hprod_sq (i k : Fin 27) : Inner.inner ℝ (j (cw i) (cw k)) (j (cw i) (cw k)) =
+      inner (jordan (nw i) (nw k)) (jordan (nw i) (nw k)) := by
+    rw [hnw]; exact h.product_sq i k
+  have hinner (x y : Albert) : Inner.inner ℝ x y = inner x y := rfl
+  have hmom (p : E) (u : Albert) (hpp : Inner.inner ℝ p p = inner u u)
+      (hpu : ∀ k, Inner.inner ℝ p (cw k) = inner u (nw k)) : p = L u := by
+    have h0 : ‖u - ∑ k, wordReprLin k u • nw k‖^2 = 0 := by
+      rw [hsum u, sub_self, norm_zero, sq, zero_mul]
+    rw [residual_norm_sq] at h0
+    simp only [hinner] at h0
+    have h1 : ‖p - L u‖^2 = 0 := by
+      rw [hL, residual_norm_sq]
+      simpa only [hpp, hpu, hgram] using h0
+    exact sub_eq_zero.mp (norm_eq_zero.mp (sq_eq_zero_iff.mp h1))
+  have hLw (k : Fin 27) : L (nw k) = cw k :=
+    (hmom (cw k) (nw k) (hgram k k) (hgram k)).symm
+  have hLj (k l : Fin 27) : L (jordan (nw k) (nw l)) = j (cw k) (cw l) :=
+    (hmom (j (cw k) (cw l)) (jordan (nw k) (nw l)) (hprod_sq k l) (hmixed k l)).symm
+  have hunit : L 1 = e := by
+    have h0 : nw 0 = 1 := by rw [hnw]; rfl
+    rw [← h0, hLw 0]; rfl
+  have hmarks (i : Fin 3) : L (nativeMarks i) = a i := by
+    fin_cases i <;> dsimp
+    · have h1 : nw 1 = nativeMarks 0 := by rw [hnw]; rfl
+      rw [← h1, hLw 1]; rfl
+    · have h2 : nw 2 = nativeMarks 1 := by rw [hnw]; rfl
+      rw [← h2, hLw 2]; rfl
+    · have h3 : nw 3 = nativeMarks 2 := by rw [hnw]; rfl
+      rw [← h3, hLw 3]; rfl
+  have hprod (x y : Albert) : L (jordan x y) = j (L x) (L y) := by
+    have hx := (hsum x).symm
+    have hy := (hsum y).symm
+    calc L (jordan x y)
+      _ = L (jordanLinear (∑ k, wordReprLin k x • nw k) (∑ l, wordReprLin l y • nw l)) := by
+        rw [← hx, ← hy]; rfl
+      _ = ∑ l, wordReprLin l y • ∑ k, wordReprLin k x • L (jordan (nw k) (nw l)) := by
+        simp only [map_sum, map_smul, LinearMap.sum_apply, LinearMap.smul_apply]
+        rfl
+      _ = ∑ l, wordReprLin l y • ∑ k, wordReprLin k x • j (cw k) (cw l) := by
+        simp only [hLj]
+      _ = j (L x) (L y) := by
+        rw [hL x, hL y]
+        simp only [map_sum, map_smul, LinearMap.sum_apply, LinearMap.smul_apply]
+  have hmetric (x y : Albert) : Inner.inner ℝ (L x) (L y) = inner x y := by
+    have hx := (hsum x).symm
+    have hy := (hsum y).symm
+    calc Inner.inner ℝ (L x) (L y)
+      _ = ∑ l, ∑ k, wordReprLin l y * (wordReprLin k x * Inner.inner ℝ (cw k) (cw l)) := by
+        rw [hL x, hL y]
+        simp only [sum_inner, inner_sum, real_inner_smul_left, real_inner_smul_right]
+      _ = ∑ l, ∑ k, wordReprLin l y * (wordReprLin k x * Inner.inner ℝ (nw k) (nw l)) := by
+        simp only [hgram, hinner]
+      _ = Inner.inner ℝ (∑ k, wordReprLin k x • nw k) (∑ l, wordReprLin l y • nw l) := by
+        simp only [sum_inner, inner_sum, real_inner_smul_left, real_inner_smul_right]
+      _ = inner x y := by rw [← hx, ← hy, hinner]
+  have hinj : Function.Injective L := fun x y hxy => by
+    have h0 : inner (x - y) (x - y) = 0 := by simp [← hmetric, hxy]
+    exact sub_eq_zero.mp ((inner_self_eq_zero _).mp h0)
+  have hrange : LinearMap.range L = generated e a j := by
+    apply le_antisymm
+    · rintro _ ⟨x, rfl⟩
+      rw [generated, Submodule.mem_sInf]
+      rintro K ⟨heK, haK, hjK⟩
+      have hcw (k : Fin 27) : cw k ∈ K := by
+        have hx : a f0 ∈ K := haK f0
+        have hy : a f1 ∈ K := haK f1
+        have hz : a f2 ∈ K := haK f2
+        have hxx := hjK _ hx _ hx; have hxy := hjK _ hx _ hy; have hxz := hjK _ hx _ hz
+        have hyy := hjK _ hy _ hy; have hyz := hjK _ hy _ hz; have hzz := hjK _ hz _ hz
+        have h10 := hjK _ hx _ hxy; have h11 := hjK _ hx _ hxz; have h12 := hjK _ hx _ hyy
+        have h13 := hjK _ hx _ hyz; have h14 := hjK _ hx _ hzz; have h15 := hjK _ hy _ hxz
+        have h16 := hjK _ hy _ hyz; have h17 := hjK _ hy _ hzz; have h18 := hjK _ hxx _ hyy
+        have h19 := hjK _ hxx _ hyz; have h20 := hjK _ hxx _ hzz; have h21 := hjK _ hxy _ hyz
+        have h22 := hjK _ hxy _ hzz; have h23 := hjK _ hyy _ hzz; have h24 := hjK _ hx _ h15
+        have h25 := hjK _ hx _ h16; have h26 := hjK _ hx _ h17
+        fin_cases k <;> (dsimp [cw, candidateWordValues, wordValues]; assumption)
+      rw [hL]
+      exact K.sum_mem fun k _ => K.smul_mem _ (hcw k)
+    · refine sInf_le ⟨⟨1, hunit⟩, fun i => ⟨nativeMarks i, hmarks i⟩, ?_⟩
+      rintro _ ⟨x, rfl⟩ _ ⟨y, rfl⟩
+      exact ⟨jordan x y, hprod x y⟩
+  refine ⟨L, ⟨hunit, hmarks, hprod, hmetric, hinj, hrange⟩, ?_⟩
+  rintro J ⟨hJu, hJm, hJp, _, _, _⟩
+  have hJw (k : Fin 27) : J (nw k) = cw k := by
+    rw [hnw]
+    have hx := hJm f0; have hy := hJm f1; have hz := hJm f2
+    fin_cases k <;>
+      (dsimp [cw, nativeWordValues, candidateWordValues, wordValues]
+       simp only [hJu, hx, hy, hz, hJp])
+  ext x
+  conv_lhs => rw [← hsum x]
+  rw [map_sum, hL]
+  exact Finset.sum_congr rfl fun k _ => by rw [map_smul, hJw k]
+
 theorem finite_word_marked_recognition
     {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E]
     (e : E) (a : Fin 3 → E) (j : E →ₗ[ℝ] E →ₗ[ℝ] E)
@@ -877,113 +938,8 @@ theorem finite_word_marked_recognition
       (∀ i : Fin 3, L (nativeMarks i) = a i) ∧
       (∀ x y : Albert, L (jordan x y) = j (L x) (L y)) ∧
       (∀ x y : Albert, Inner.inner ℝ (L x) (L y) = inner x y) ∧
-      Function.Injective L ∧ LinearMap.range L = generated e a j := by
-  have hsrc : Glennie.Compact.MarkedModelConsumerCandidate.Match27 e a j := by
-    refine ⟨?_, ?_, ?_⟩
-    · intro i k
-      simpa only [← candidateWordValues_eq_source,
-        ← nativeWordValue_eq_source] using h.gram i k
-    · intro i k l
-      simpa only [← candidateWordValues_eq_source,
-        ← nativeWordValue_eq_source] using h.mixed i k l
-    · intro i k
-      simpa only [← candidateWordValues_eq_source,
-        ← nativeWordValue_eq_source] using h.product_sq i k
-  obtain ⟨_, I, _⟩ :=
-    Glennie.Compact.MarkedModelConsumerCandidate.unique_generated_marked_recognition
-      e a j hsrc
-  let L : Albert →ₗ[ℝ] E :=
-    (Submodule.subtype _).comp I.A.symm.toLinearMap
-  have hunit : L 1 = e := by
-    have hI : I.A.symm (1 : Albert) =
-        Glennie.Compact.MarkedModelConsumerCandidate.spanUnit e a j := by
-      apply I.A.injective
-      rw [I.A.apply_symm_apply]
-      exact I.map_unit.symm
-    change ((I.A.symm (1 : Albert) :
-      Glennie.Compact.MarkedModelConsumerCandidate.wordSpan e a j) : E) = e
-    rw [hI]
-    rfl
-  have hmarks : ∀ i : Fin 3, L (nativeMarks i) = a i := by
-    intro i
-    have hI : I.A.symm (nativeMarks i) =
-        Glennie.Compact.MarkedModelConsumerCandidate.spanMarks e a j i := by
-      apply I.A.injective
-      rw [I.A.apply_symm_apply]
-      exact (I.map_marks i).symm
-    change ((I.A.symm (nativeMarks i) :
-      Glennie.Compact.MarkedModelConsumerCandidate.wordSpan e a j) : E) = a i
-    rw [hI]
-    rfl
-  have hprod : ∀ x y : Albert, L (jordan x y) = j (L x) (L y) := by
-    intro x y
-    have hz : I.A.symm (jordan x y) =
-        Glennie.Compact.MarkedModelConsumerCandidate.spanProduct e a j hsrc
-          (I.A.symm x) (I.A.symm y) := by
-      apply I.A.injective
-      rw [I.A.apply_symm_apply, I.map_product,
-        I.A.apply_symm_apply, I.A.apply_symm_apply]
-    change ((I.A.symm (jordan x y) :
-      Glennie.Compact.MarkedModelConsumerCandidate.wordSpan e a j) : E) =
-      j (I.A.symm x).1 (I.A.symm y).1
-    rw [hz]
-    rfl
-  have hmetric : ∀ x y : Albert, Inner.inner ℝ (L x) (L y) = inner x y := by
-    intro x y
-    change Inner.inner ℝ (I.A.symm x : E) (I.A.symm y : E) = inner x y
-    have hm := I.map_metric (I.A.symm x) (I.A.symm y)
-    simpa only [Submodule.coe_inner, I.A.apply_symm_apply] using hm
-  have hinj : Function.Injective L := by
-    intro x y hxy
-    have hsub : I.A.symm x = I.A.symm y := Subtype.ext hxy
-    exact I.A.symm.injective hsub
-  have hrange : LinearMap.range L = generated e a j := by
-    rw [generated_eq_source]
-    ext x
-    constructor
-    · rintro ⟨v, rfl⟩
-      rw [← Glennie.Compact.MarkedModelConsumerCandidate.wordSpan_eq_generated e a j hsrc]
-      exact (I.A.symm v).2
-    · intro hx
-      rw [← Glennie.Compact.MarkedModelConsumerCandidate.wordSpan_eq_generated e a j hsrc] at hx
-      refine ⟨I.A ⟨x,hx⟩, ?_⟩
-      change (I.A.symm (I.A ⟨x,hx⟩) : E) = x
-      rw [I.A.symm_apply_apply]
-  refine ⟨L, ⟨hunit, hmarks, hprod, hmetric, hinj, hrange⟩, ?_⟩
-  intro J hJ
-  rcases hJ with ⟨hJu, hJm, hJp, _, _, _⟩
-  have heval (M : Albert →ₗ[ℝ] E)
-      (hu : M 1 = e) (hm : ∀ i : Fin 3, M (nativeMarks i) = a i)
-      (hp : ∀ x y, M (jordan x y) = j (M x) (M y))
-      (w : Glennie.Compact.NativeWordTableR01.Word) :
-      M (Glennie.Compact.NativeWordTableR01.nativeEval w) =
-        Glennie.Compact.NativeWordTableR01.eval e a (fun x y => j x y) w := by
-    induction w with
-    | unit => exact hu
-    | mark i => exact hm i
-    | mul u v ihu ihv =>
-        change M (jordan (Glennie.Compact.NativeWordTableR01.nativeEval u)
-          (Glennie.Compact.NativeWordTableR01.nativeEval v)) = _
-        rw [hp, ihu, ihv]
-        rfl
-  have hwords (i : Fin 27) :
-      J (Glennie.Compact.NativeWordTableR01.nativeWords i) =
-        L (Glennie.Compact.NativeWordTableR01.nativeWords i) := by
-    exact (heval J hJu hJm hJp _).trans
-      (heval L hunit hmarks hprod _).symm
-  apply LinearMap.ext
-  intro x
-  have hx : x ∈ Submodule.span ℝ
-      (Set.range Glennie.Compact.NativeWordTableR01.nativeWords) := by
-    rw [Glennie.Compact.NativeWordTableR01.nativeWords_span]
-    trivial
-  induction hx using Submodule.span_induction with
-  | mem x hx =>
-      obtain ⟨i, rfl⟩ := hx
-      exact hwords i
-  | zero => simp
-  | add x y _ _ hx hy => simp [map_add, hx, hy]
-  | smul r x _ hx => simp [map_smul, hx]
+      Function.Injective L ∧ LinearMap.range L = generated e a j :=
+  recognition_core nativeWordValues nativeWordValues_sum rfl e a j h
 
 end
 end Glennie.SubmissionR03
@@ -1033,12 +989,10 @@ def refl : CompactAutomorphism where
   equiv := LinearEquiv.refl ℝ Albert
   map_jordan x y := by simp only [LinearEquiv.refl_apply]
   map_trace x := by simp only [LinearEquiv.refl_apply]
-
 def comp (g h : CompactAutomorphism) : CompactAutomorphism where
   equiv := h.equiv.trans g.equiv
   map_jordan x y := by simp only [LinearEquiv.trans_apply, h.map_jordan, g.map_jordan]
   map_trace x := by simp only [LinearEquiv.trans_apply, g.map_trace, h.map_trace]
-
 def symm (g : CompactAutomorphism) : CompactAutomorphism where
   equiv := g.equiv.symm
   map_jordan x y := by
@@ -1071,13 +1025,6 @@ def orbitSetoid (V : Set ChartPoint) : Setoid (Admitted V) where
 abbrev OrbitQuotient (V : Set ChartPoint) := Quotient (orbitSetoid V)
 local instance (V : Set ChartPoint) : Setoid (Admitted V) := orbitSetoid V
 
-private theorem flatBase_eq_source :
-    flatBase = Glennie.Compact.Sections.flatBase := rfl
-private theorem fullLedger_eq_source (T : Triple) :
-    fullLedger T = Glennie.Compact.Affine20.ledger54 T := rfl
-private theorem encode20_eq_source (L : Ledger54) :
-    Glennie.SubmissionR03.encode20 L = Glennie.Compact.Affine20.encode20 L := rfl
-
 private def quotientCoordinateTopology
     (d : Glennie.Compact.LocalOrbitQuotientR01.LocalData) :
     TopologicalSpace (OrbitQuotient d.V) :=
@@ -1104,34 +1051,26 @@ private theorem continuous_forward_induced
     Continuous (Glennie.Compact.LocalOrbitQuotientR01.forward d :
       OrbitQuotient d.V → d.V × Bool) := by
   let Q := Glennie.Compact.LocalOrbitQuotientR01.OrbitQuotient d
-  let τn : TopologicalSpace Q := quotientNativeTopology d
-  let τc : TopologicalSpace Q :=
-    quotientCoordinateTopology d
   let P : TopologicalSpace Q → Prop := fun τ =>
     @Continuous Q (d.V × Bool) τ inferInstance
       (Glennie.Compact.LocalOrbitQuotientR01.forward d)
-  have hs : P τn := by
+  have hs : P (quotientNativeTopology d) := by
     with_unfolding_all exact Glennie.Compact.LocalOrbitQuotientR01.continuous_forward d
-  have heq : τn = τc := (quotientTopology_eq_source d).symm
-  with_unfolding_all change P τc
-  exact heq ▸ hs
+  with_unfolding_all change P (quotientCoordinateTopology d)
+  exact (quotientTopology_eq_source d).symm ▸ hs
 
 private theorem continuous_inverse_induced
     (d : Glennie.Compact.LocalOrbitQuotientR01.LocalData) :
     Continuous (Glennie.Compact.LocalOrbitQuotientR01.inverse d :
       d.V × Bool → OrbitQuotient d.V) := by
   let Q := Glennie.Compact.LocalOrbitQuotientR01.OrbitQuotient d
-  let τn : TopologicalSpace Q := quotientNativeTopology d
-  let τc : TopologicalSpace Q :=
-    quotientCoordinateTopology d
   let P : TopologicalSpace Q → Prop := fun τ =>
     @Continuous (d.V × Bool) Q inferInstance τ
       (Glennie.Compact.LocalOrbitQuotientR01.inverse d)
-  have hs : P τn := by
+  have hs : P (quotientNativeTopology d) := by
     with_unfolding_all exact Glennie.Compact.LocalOrbitQuotientR01.continuous_inverse d
-  have heq : τn = τc := (quotientTopology_eq_source d).symm
-  with_unfolding_all change P τc
-  exact heq ▸ hs
+  with_unfolding_all change P (quotientCoordinateTopology d)
+  exact (quotientTopology_eq_source d).symm ▸ hs
 
 /-- The actual automorphism quotient of all admitted ordered frames is
 homeomorphic to the centered feasible chart and its two algebraic sign sheets. -/
@@ -1143,26 +1082,20 @@ theorem admitted_orbit_quotient_homeomorph :
         (∀ T S : Admitted V,
           (orbitSetoid V).r T S ↔ invariant V T = invariant V S) := by
   let d := Glennie.Compact.LocalOrbitQuotientR01.localData
-  refine ⟨d.V, d.openV, ?_, ?_⟩
-  · simpa only [flatBase_eq_source, fullLedger_eq_source,
-      encode20_eq_source] using d.base
-  · let H : OrbitQuotient d.V ≃ₜ d.V × Bool := {
-      toFun := Glennie.Compact.LocalOrbitQuotientR01.forward d
-      invFun := Glennie.Compact.LocalOrbitQuotientR01.inverse d
-      left_inv := Glennie.Compact.LocalOrbitQuotientR01.inverse_forward d
-      right_inv := Glennie.Compact.LocalOrbitQuotientR01.forward_inverse d
-      continuous_toFun := continuous_forward_induced d
-      continuous_invFun := continuous_inverse_induced d }
-    refine ⟨H, ?_, ?_⟩
-    · intro T
-      rfl
-    · intro T S
-      change (Glennie.Compact.LocalOrbitQuotientR01.orbitSetoid d).r T S ↔
-        Glennie.Compact.LocalOrbitQuotientR01.invariant d T =
-          Glennie.Compact.LocalOrbitQuotientR01.invariant d S
-      simpa only [Glennie.Compact.LocalOrbitQuotientR01.invariant,
-        Prod.mk.injEq] using
-        (Glennie.Compact.LocalOrbitQuotientR01.rel_iff_chart_sheet_eq d T S)
+  refine ⟨d.V, d.openV, by rw [flatBase_eq_sections, fullLedger_eq_fn, encode20_eq_fn]; exact d.base, ?_⟩
+  let H : OrbitQuotient d.V ≃ₜ d.V × Bool := {
+    toFun := Glennie.Compact.LocalOrbitQuotientR01.forward d
+    invFun := Glennie.Compact.LocalOrbitQuotientR01.inverse d
+    left_inv := Glennie.Compact.LocalOrbitQuotientR01.inverse_forward d
+    right_inv := Glennie.Compact.LocalOrbitQuotientR01.forward_inverse d
+    continuous_toFun := continuous_forward_induced d
+    continuous_invFun := continuous_inverse_induced d }
+  refine ⟨H, fun _ => rfl, fun T S => ?_⟩
+  change (Glennie.Compact.LocalOrbitQuotientR01.orbitSetoid d).r T S ↔
+    Glennie.Compact.LocalOrbitQuotientR01.invariant d T =
+      Glennie.Compact.LocalOrbitQuotientR01.invariant d S
+  simpa only [Glennie.Compact.LocalOrbitQuotientR01.invariant, Prod.mk.injEq] using
+    Glennie.Compact.LocalOrbitQuotientR01.rel_iff_chart_sheet_eq d T S
 
 end
 end Glennie.SubmissionR04Quotient
@@ -1201,41 +1134,12 @@ local instance tangentDualNormedAddCommGroup : NormedAddCommGroup (W →L[ℝ] �
 local instance tangentDualNormedSpace : NormedSpace ℝ (W →L[ℝ] ℝ) :=
   ContinuousLinearMap.toNormedSpace (𝕜 := ℝ) (𝕜₂ := ℝ) (𝕜' := ℝ)
     (E := W) (F := ℝ) (σ₁₂ := RingHom.id ℝ)
-local instance tangentBilinearNormedAddCommGroup :
-    NormedAddCommGroup (W →L[ℝ] W →L[ℝ] ℝ) :=
-  ContinuousLinearMap.toNormedAddCommGroup (𝕜 := ℝ) (𝕜₂ := ℝ)
-    (E := W) (F := W →L[ℝ] ℝ) (σ₁₂ := RingHom.id ℝ)
 local instance tangentBilinearNormedSpace : NormedSpace ℝ (W →L[ℝ] W →L[ℝ] ℝ) :=
   ContinuousLinearMap.toNormedSpace (𝕜 := ℝ) (𝕜₂ := ℝ) (𝕜' := ℝ)
     (E := W) (F := W →L[ℝ] ℝ) (σ₁₂ := RingHom.id ℝ)
-local instance tangentTrilinearNormedAddCommGroup :
-    NormedAddCommGroup (W →L[ℝ] W →L[ℝ] W →L[ℝ] ℝ) :=
-  ContinuousLinearMap.toNormedAddCommGroup (𝕜 := ℝ) (𝕜₂ := ℝ)
-    (E := W) (F := W →L[ℝ] W →L[ℝ] ℝ) (σ₁₂ := RingHom.id ℝ)
-local instance tangentTrilinearNormedSpace :
-    NormedSpace ℝ (W →L[ℝ] W →L[ℝ] W →L[ℝ] ℝ) :=
-  ContinuousLinearMap.toNormedSpace (𝕜 := ℝ) (𝕜₂ := ℝ) (𝕜' := ℝ)
-    (E := W) (F := W →L[ℝ] W →L[ℝ] ℝ) (σ₁₂ := RingHom.id ℝ)
-local instance tangentEndNormedAddCommGroup : NormedAddCommGroup (W →L[ℝ] W) :=
-  ContinuousLinearMap.toNormedAddCommGroup (𝕜 := ℝ) (𝕜₂ := ℝ)
-    (E := W) (F := W) (σ₁₂ := RingHom.id ℝ)
 local instance tangentEndNormedSpace : NormedSpace ℝ (W →L[ℝ] W) :=
   ContinuousLinearMap.toNormedSpace (𝕜 := ℝ) (𝕜₂ := ℝ) (𝕜' := ℝ)
     (E := W) (F := W) (σ₁₂ := RingHom.id ℝ)
-local instance tangentVectorBilinearNormedAddCommGroup :
-    NormedAddCommGroup (W →L[ℝ] W →L[ℝ] W) :=
-  ContinuousLinearMap.toNormedAddCommGroup (𝕜 := ℝ) (𝕜₂ := ℝ)
-    (E := W) (F := W →L[ℝ] W) (σ₁₂ := RingHom.id ℝ)
-local instance tangentVectorBilinearNormedSpace : NormedSpace ℝ (W →L[ℝ] W →L[ℝ] W) :=
-  ContinuousLinearMap.toNormedSpace (𝕜 := ℝ) (𝕜₂ := ℝ) (𝕜' := ℝ)
-    (E := W) (F := W →L[ℝ] W) (σ₁₂ := RingHom.id ℝ)
-local instance tangentInverseNormedAddCommGroup :
-    NormedAddCommGroup ((W →L[ℝ] ℝ) →L[ℝ] W) :=
-  ContinuousLinearMap.toNormedAddCommGroup (𝕜 := ℝ) (𝕜₂ := ℝ)
-    (E := W →L[ℝ] ℝ) (F := W) (σ₁₂ := RingHom.id ℝ)
-local instance tangentInverseNormedSpace : NormedSpace ℝ ((W →L[ℝ] ℝ) →L[ℝ] W) :=
-  ContinuousLinearMap.toNormedSpace (𝕜 := ℝ) (𝕜₂ := ℝ) (𝕜' := ℝ)
-    (E := W →L[ℝ] ℝ) (F := W) (σ₁₂ := RingHom.id ℝ)
 /-- The restricted derivative metric, viewed as the tangent-to-dual map. -/
 def tangentMetricDual : W →L[ℝ] W →L[ℝ] ℝ :=
   (metric P e).bilinearComp (tangent P e).subtypeL (tangent P e).subtypeL
@@ -1262,26 +1166,8 @@ local instance taskAmbientDualNorm : NormedAddCommGroup (E →L[ℝ] ℝ) :=
   ContinuousLinearMap.toNormedAddCommGroup (𝕜 := ℝ) (𝕜₂ := ℝ) (E := E) (F := ℝ) (σ₁₂ := RingHom.id ℝ)
 local instance taskAmbientDualSpace : NormedSpace ℝ (E →L[ℝ] ℝ) :=
   ContinuousLinearMap.toNormedSpace (𝕜 := ℝ) (𝕜₂ := ℝ) (𝕜' := ℝ) (E := E) (F := ℝ) (σ₁₂ := RingHom.id ℝ)
-local instance taskAmbientBilinearNorm : NormedAddCommGroup (E →L[ℝ] E →L[ℝ] ℝ) :=
-  ContinuousLinearMap.toNormedAddCommGroup (𝕜 := ℝ) (𝕜₂ := ℝ) (E := E) (F := E →L[ℝ] ℝ) (σ₁₂ := RingHom.id ℝ)
-local instance taskAmbientBilinearSpace : NormedSpace ℝ (E →L[ℝ] E →L[ℝ] ℝ) :=
-  ContinuousLinearMap.toNormedSpace (𝕜 := ℝ) (𝕜₂ := ℝ) (𝕜' := ℝ) (E := E) (F := E →L[ℝ] ℝ) (σ₁₂ := RingHom.id ℝ)
-local instance taskAmbientTrilinearNorm : NormedAddCommGroup (E →L[ℝ] E →L[ℝ] E →L[ℝ] ℝ) :=
-  ContinuousLinearMap.toNormedAddCommGroup (𝕜 := ℝ) (𝕜₂ := ℝ) (E := E) (F := E →L[ℝ] E →L[ℝ] ℝ) (σ₁₂ := RingHom.id ℝ)
-local instance taskAmbientTrilinearSpace : NormedSpace ℝ (E →L[ℝ] E →L[ℝ] E →L[ℝ] ℝ) :=
-  ContinuousLinearMap.toNormedSpace (𝕜 := ℝ) (𝕜₂ := ℝ) (𝕜' := ℝ) (E := E) (F := E →L[ℝ] E →L[ℝ] ℝ) (σ₁₂ := RingHom.id ℝ)
-local instance taskAmbientEndNorm : NormedAddCommGroup (E →L[ℝ] E) :=
-  ContinuousLinearMap.toNormedAddCommGroup (𝕜 := ℝ) (𝕜₂ := ℝ) (E := E) (F := E) (σ₁₂ := RingHom.id ℝ)
 local instance taskAmbientEndSpace : NormedSpace ℝ (E →L[ℝ] E) :=
   ContinuousLinearMap.toNormedSpace (𝕜 := ℝ) (𝕜₂ := ℝ) (𝕜' := ℝ) (E := E) (F := E) (σ₁₂ := RingHom.id ℝ)
-local instance taskAmbientVectorBilinearNorm : NormedAddCommGroup (E →L[ℝ] E →L[ℝ] E) :=
-  ContinuousLinearMap.toNormedAddCommGroup (𝕜 := ℝ) (𝕜₂ := ℝ) (E := E) (F := E →L[ℝ] E) (σ₁₂ := RingHom.id ℝ)
-local instance taskAmbientVectorBilinearSpace : NormedSpace ℝ (E →L[ℝ] E →L[ℝ] E) :=
-  ContinuousLinearMap.toNormedSpace (𝕜 := ℝ) (𝕜₂ := ℝ) (𝕜' := ℝ) (E := E) (F := E →L[ℝ] E) (σ₁₂ := RingHom.id ℝ)
-local instance taskAmbientInverseNorm : NormedAddCommGroup ((E →L[ℝ] ℝ) →L[ℝ] E) :=
-  ContinuousLinearMap.toNormedAddCommGroup (𝕜 := ℝ) (𝕜₂ := ℝ) (E := E →L[ℝ] ℝ) (F := E) (σ₁₂ := RingHom.id ℝ)
-local instance taskAmbientInverseSpace : NormedSpace ℝ ((E →L[ℝ] ℝ) →L[ℝ] E) :=
-  ContinuousLinearMap.toNormedSpace (𝕜 := ℝ) (𝕜₂ := ℝ) (𝕜' := ℝ) (E := E →L[ℝ] ℝ) (F := E) (σ₁₂ := RingHom.id ℝ)
 /-- Literal derivative of the varying normalized log-Hessian metric. -/
 def ambientMetricD1 (P : BasedCubic E) (x : E) :
     E →L[ℝ] E →L[ℝ] E →L[ℝ] ℝ := fderiv ℝ (metric P) x
@@ -1504,32 +1390,22 @@ def toSource (P : BasedCubic E) : SymmetricTrilinearForm E where
   swap12 := P.swap12
   swap23 := P.swap23
 
-theorem cubic_eq_source (P : BasedCubic E) (x : E) :
-    cubic P x = diagonalCubic (toSource P).form x := rfl
-
-theorem metric_eq_source (P : BasedCubic E) (x : E) :
-    metric P x = logHessianForm (toSource P) x := rfl
-
-/- The function and both derivatives are literal, not desired formulas. -/
 theorem traceAt_eq_source (P : BasedCubic E) (e : E) :
     traceAt P e = normTrace (toSource P) e := rfl
 
 theorem rawPair_eq_source (P : BasedCubic E) (e : E) :
     rawPair P e = rawTraceForm (toSource P) e := rfl
 
-/- The factor 3 is a theorem requiring N(e)=1; it is not definitional. -/
 theorem rawPair_eq_three_metric (P : BasedCubic E) (e : E)
     (he : cubic P e = 1) (x y : E) :
-    rawPair P e x y = 3 * metric P e x y := by
-  exact rawTraceForm_eq_three_logMetric (toSource P) e he x y
+    rawPair P e x y = 3 * metric P e x y :=
+  rawTraceForm_eq_three_logMetric (toSource P) e he x y
 
 theorem traceAt_eq_three_metric_unit (P : BasedCubic E) (e : E)
     (he : cubic P e = 1) (x : E) :
     traceAt P e x = 3 * metric P e x e := by
   have hepos : 0 < diagonalCubic (toSource P).form e := by
-    change 0 < cubic P e
-    rw [he]
-    norm_num
+    change 0 < cubic P e; rw [he]; norm_num
   change fderiv ℝ (diagonalCubic (toSource P).form) e x =
     3 * logHessianForm (toSource P) e x e
   rw [logHessianForm_symm (toSource P) hepos x e,
@@ -1538,29 +1414,14 @@ theorem traceAt_eq_three_metric_unit (P : BasedCubic E) (e : E)
 
 variable [FiniteDimensional ℝ E]
 
-/- Build the continuous raw-pairing equivalence from the EXISTING algebraic
-nondegeneracy producer. This does not build the tangent metric dual or K. -/
 theorem rawPair_isInvertible (P : BasedCubic E) (e : E)
     (he : cubic P e = 1)
     (hp : ∀ x : E, x ≠ 0 → 0 < metric P e x x) :
-    (rawPair P e).IsInvertible := by
-  let B := rawBilinearForm (toSource P) e
-  have hB : B.Nondegenerate := rawBilinearForm_nondegenerate (toSource P) e he hp
-  let d : Module.Dual ℝ E ≃ₗ[ℝ] (E →L[ℝ] ℝ) := LinearMap.toContinuousLinearMap
-  let A : E ≃L[ℝ] (E →L[ℝ] ℝ) := ((B.toDual hB).trans d).toContinuousLinearEquiv
-  refine ⟨A, ?_⟩
-  ext x y
-  rfl
+    (rawPair P e).IsInvertible :=
+  ⟨(((rawBilinearForm (toSource P) e).toDual
+    (rawBilinearForm_nondegenerate (toSource P) e he hp)).trans
+    LinearMap.toContinuousLinearMap).toContinuousLinearEquiv, by ext x y; rfl⟩
 
-/- Under the unchanged entrance hypotheses, inverse's zero fallback is excluded. -/
-theorem adjoint_pairing (P : BasedCubic E) (e : E)
-    (he : cubic P e = 1)
-    (hp : ∀ x : E, x ≠ 0 → 0 < metric P e x x) (x y : E) :
-    rawPair P e (adjoint P e x) y = fderiv ℝ (cubic P) x y := by
-  exact congrArg (fun L : E →L[ℝ] ℝ => L y)
-    ((rawPair_isInvertible P e he hp).self_apply_inverse (fderiv ℝ (cubic P) x))
-
-/- hB is any proof for the source representation: proof identity is immaterial. -/
 theorem adjoint_eq_source (P : BasedCubic E) (e : E)
     (he : cubic P e = 1)
     (hp : ∀ x : E, x ≠ 0 → 0 < metric P e x x)
@@ -1568,7 +1429,8 @@ theorem adjoint_eq_source (P : BasedCubic E) (e : E)
     adjoint P e x = intrinsicAdjoint (toSource P) e hB x := by
   apply intrinsicAdjoint_unique (toSource P) e hB x
   intro y
-  exact adjoint_pairing P e he hp x y
+  exact congrArg (fun L : E →L[ℝ] ℝ => L y)
+    ((rawPair_isInvertible P e he hp).self_apply_inverse (fderiv ℝ (cubic P) x))
 
 theorem product_eq_source (P : BasedCubic E) (e : E)
     (he : cubic P e = 1)
@@ -1577,14 +1439,6 @@ theorem product_eq_source (P : BasedCubic E) (e : E)
     product P e x y = intrinsicProduct (toSource P) e hB x y := by
   simp only [product, intrinsicProduct, intrinsicCross, intrinsicS,
     adjoint_eq_source P e he hp hB, traceAt_eq_source, rawPair_eq_source]
-
-theorem product_eq_sourceProduct (P : BasedCubic E) (e : E)
-    (he : cubic P e = 1)
-    (hp : ∀ x : E, x ≠ 0 → 0 < metric P e x x) (x y : E) :
-    product P e x y = AlbertGeometry.IntrinsicLocalTransport.sourceProduct
-      (toSource P) e he hp x y := by
-  exact product_eq_source P e he hp
-    (rawBilinearForm_nondegenerate (toSource P) e he hp) x y
 
 end
 end Glennie.SubmissionR04Intrinsic
@@ -1596,13 +1450,8 @@ set_option autoImplicit false
 open Glennie
 variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
 
-theorem nativeCubic_eq_source (x : Albert) :
-    nativeCubic x = AlbertGeometry.NativeNormAlgebra.nativeNewtonNorm x := rfl
-
 theorem nativeTraceLinear_eq_source :
-    nativeTraceLinear = AlbertRecognition.traceLinear := by
-  ext x
-  rfl
+    nativeTraceLinear = AlbertRecognition.traceLinear := by ext x; rfl
 
 theorem nativeTangent_eq_source : NativeTangent = AlbertRecognition.V := by
   change nativeTraceLinear.ker = AlbertRecognition.traceLinear.ker
@@ -1614,14 +1463,10 @@ def nativeToSource : NativeTangent ≃ₗ[ℝ] AlbertRecognition.V :=
 theorem nativeToSource_K (u v : NativeTangent) :
     nativeToSource (nativeK u v) =
       AlbertRecognition.KA (nativeToSource u) (nativeToSource v) := by
-  apply Subtype.ext
-  simp only [nativeToSource, LinearEquiv.coe_ofEq_apply]
-  rfl
+  apply Subtype.ext; rfl
 
 theorem nativeToSource_metric (u v : NativeTangent) :
-    nativeMetric u v = AlbertRecognition.gA (nativeToSource u) (nativeToSource v) := by
-  simp only [nativeToSource, nativeMetric, AlbertRecognition.gA,
-    LinearEquiv.coe_ofEq_apply]
+    nativeMetric u v = AlbertRecognition.gA (nativeToSource u) (nativeToSource v) := rfl
 
 private theorem gA_neg_left_local (x y : AlbertRecognition.V) :
     AlbertRecognition.gA (-x) y = -AlbertRecognition.gA x y := by
@@ -1632,16 +1477,15 @@ private theorem gA_neg_left_local (x y : AlbertRecognition.V) :
 private theorem gA_sub_left_local (x y z : AlbertRecognition.V) :
     AlbertRecognition.gA (x - y) z =
       AlbertRecognition.gA x z - AlbertRecognition.gA y z := by
-  rw [sub_eq_add_neg, AlbertRecognition.gA_add_left, gA_neg_left_local]
-  ring
+  rw [sub_eq_add_neg, AlbertRecognition.gA_add_left, gA_neg_left_local]; ring
 
 theorem nativeCurvature_reference (u v w : NativeTangent) :
     nativeToSource (nativeCurvature u v w) =
       -(AlbertRecognition.D (nativeToSource u) (nativeToSource v)
         (nativeToSource w)) := by
   simp only [nativeCurvature, map_add, map_sub, map_smul,
-    nativeToSource_K, nativeToSource_metric]
-  simp only [AlbertRecognition.D, AlbertRecognition.wedge,
+    nativeToSource_K, nativeToSource_metric,
+    AlbertRecognition.D, AlbertRecognition.wedge,
     AlbertRecognition.q, AlbertRecognition.operatorComm,
     AlbertRecognition.KB_referenceCubic,
     LinearMap.add_apply, LinearMap.sub_apply, LinearMap.comp_apply]
@@ -1654,492 +1498,192 @@ theorem nativeCurvature_reference (u v w : NativeTangent) :
         (AlbertRecognition.KA (nativeToSource u) (nativeToSource w))))
   module
 
-theorem referenceCurvature_eq_native_actual
-    (u v w : AlbertRecognition.V) :
-    -(AlbertRecognition.D u v w) =
-      AlbertGeometry.NativeCurvatureDictionary.nativeCurvatureValue u v w := by
-  apply AlbertRecognition.metricDual.injective
-  apply LinearMap.ext
-  intro t
-  change AlbertRecognition.gA (-(AlbertRecognition.D u v w)) t =
-    AlbertRecognition.gA
-      (AlbertGeometry.NativeCurvatureDictionary.nativeCurvatureValue u v w) t
-  rw [AlbertGeometry.NativeCurvatureDictionary.nativeCurvatureValue_pairing,
-    AlbertGeometry.NativeCurvatureDictionary.nativeScalarCurvature_eq_native_q]
-  simp only [AlbertRecognition.D, AlbertRecognition.wedge,
-    AlbertRecognition.q, AlbertRecognition.operatorComm,
-    AlbertRecognition.KB_referenceCubic,
-    LinearMap.add_apply, LinearMap.sub_apply, LinearMap.comp_apply]
-  change AlbertRecognition.gA
-    (-(AlbertRecognition.gA v w • u - AlbertRecognition.gA u w • v +
-      (AlbertRecognition.KA u (AlbertRecognition.KA v w) -
-        AlbertRecognition.KA v (AlbertRecognition.KA u w)))) t = _
-  simp only [gA_neg_left_local, AlbertRecognition.gA_add_left,
-    gA_sub_left_local, AlbertRecognition.gA_smul_left]
-  ring
-
-def nativeCurvatureOnV (u v w : AlbertRecognition.V) : AlbertRecognition.V :=
-  nativeToSource (nativeCurvature
-    (nativeToSource.symm u) (nativeToSource.symm v) (nativeToSource.symm w))
-
-theorem nativeCurvatureOnV_eq_actual (u v w : AlbertRecognition.V) :
-    nativeCurvatureOnV u v w =
-      AlbertGeometry.NativeCurvatureDictionary.nativeCurvatureValue u v w := by
-  rw [nativeCurvatureOnV, nativeCurvature_reference]
-  simp only [LinearEquiv.apply_symm_apply]
-  exact referenceCurvature_eq_native_actual u v w
-
-theorem ambientConnection_eq_source (P : BasedCubic E) (x : E) :
-    ambientConnection P x =
-      AlbertGeometry.AmbientLeviCivitaProduct.ambientGamma (toSource P) x := rfl
-variable [CompleteSpace E] [FiniteDimensional ℝ E]
-theorem ambientCurvature_eq_source (P : BasedCubic E) (x u v w : E) :
-    ambientCurvature P x u v w =
-      AlbertGeometry.AmbientCurvatureProduct.ambientCurvature (toSource P) x u v w := rfl
 end
 end Glennie.SubmissionR04Intrinsic
+
+namespace Glennie.SubmissionR04Intrinsic.Local
+noncomputable section
+open Glennie Glennie.Compact.Affine20
+variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] [FiniteDimensional ℝ E]
+variable (A : E ≃ₗ[ℝ] Albert)
+
+local notation "eA" => A.symm (1 : Albert)
+local notation "tA" => (fun x : E => trace (A x))
+local notation "jA" => (fun x y : E => A.symm (jordan (A x) (A y)))
+
+private abbrev mT (T : Triple E) : Glennie.Compact.Affine20.Triple := fun a i => A (T a i)
+private abbrev pT (T : Glennie.Compact.Affine20.Triple) : Triple E := fun a i => A.symm (T a i)
+
+omit [FiniteDimensional ℝ E] in
+private theorem pow_map (p : Fin 3 → E) (s : Fin 2) :
+    A (power jA p s) = Glennie.Compact.NativeQFamilyLedger.framePower (fun i => A (p i)) s := by
+  by_cases hs : s = 0 <;> simp [power, Glennie.Compact.NativeQFamilyLedger.framePower, hs, encoder, Glennie.encoder]
+
+omit [FiniteDimensional ℝ E] in
+private theorem quad_map (x z : E) : A (quad jA x z) = U (A x) (A z) := by
+  simp [quad, U]
+
+omit [FiniteDimensional ℝ E] in
+private theorem phi_eq (x y z : E) : phi tA jA x y z = Glennie.phi (A x) (A y) (A z) := by
+  simp [phi, Glennie.phi, pairing, Glennie.inner, quad_map A]
+
+omit [FiniteDimensional ℝ E] in
+private theorem frame_iff (p : Fin 3 → E) : Frame eA tA jA p ↔ Glennie.Frame (fun i => A (p i)) := by
+  refine ⟨fun h => ⟨h.1, fun i => by simpa using congrArg A (h.2 i),
+    fun i k hik => by simpa using congrArg A (h.3 i k hik),
+    by simpa using congrArg A h.4⟩,
+    fun h => ⟨h.1, fun i => A.injective (by simpa using h.2 i),
+    fun i k hik => A.injective (by simpa using h.3 i k hik),
+    A.injective (by simpa using h.4)⟩⟩
+
+omit [FiniteDimensional ℝ E] in
+private theorem ledger_eq (T : Triple E) : ledger tA jA T = ledger54 (mT A T) := by
+  ext <;> simp [ledger, ledger54, Glennie.ledger, pairing, Glennie.inner]
+
+omit [FiniteDimensional ℝ E] in
+private theorem q26_eq (T : Triple E) :
+    q26 tA jA T = Glennie.Compact.NativeQFamilyLedger.q26 (mT A T) := by
+  funext k; fin_cases k <;>
+    simp [q26, Glennie.Compact.NativeQFamilyLedger.q26, qSingle, qPair, qTriple,
+      Glennie.Compact.NativeQFamilyLedger.qSingle, Glennie.Compact.NativeQFamilyLedger.qPair,
+      Glennie.Compact.NativeQFamilyLedger.qTriple, pairing, Glennie.inner, pow_map A]
+
+omit [FiniteDimensional ℝ E] in
+private theorem score_eq (T : Triple E) :
+    score eA tA jA T = Glennie.Compact.LocalContrast.score (mT A T) := by
+  have henc (a : Fin 3) : A (encoder (T a)) = Glennie.encoder (mT A T a) := map_sub A _ _
+  simp only [score, Glennie.Compact.LocalContrast.score, delta, contrast,
+    Glennie.Compact.OperationalPhi.delta, Glennie.Compact.OperationalPhi.contrast,
+    half, Glennie.Compact.OperationalPhi.halfAmplitude, pairing, Glennie.inner,
+    quad_map A, henc, map_sub, map_add, map_smul, LinearEquiv.apply_symm_apply]
+
+omit [FiniteDimensional ℝ E] in
+private theorem orbit_iff (T S : Triple E) :
+    S ∈ orbit tA jA T ↔ mT A S ∈ Glennie.Compact.FlatOrbit.autOrbit (mT A T) := by
+  constructor
+  · rintro ⟨g, rfl⟩
+    refine ⟨⟨(A.symm.trans g.equiv).trans A, fun x y => ?_, fun x => ?_⟩,
+      funext fun a => funext fun i => by simp [Glennie.Compact.Affine20.mapAtoms, mapAtoms]⟩
+    · simpa using congrArg A (g.map_product (A.symm x) (A.symm y))
+    · simpa using g.map_trace (A.symm x)
+  · rintro ⟨k, hk⟩
+    refine ⟨⟨(A.trans k.equiv).trans A.symm, fun x y => ?_, fun x => ?_⟩,
+      funext fun a => funext fun i => A.injective (by
+        simpa [mapAtoms, Glennie.Compact.Affine20.mapAtoms] using congrFun (congrFun hk a) i)⟩
+    · simp [k.map_jordan]
+    · simp [k.map_trace]
+
+omit [FiniteDimensional ℝ E] in
+private theorem fibre54_iff (b : Chart) (T : Triple E) :
+    T ∈ fibre54 eA tA jA b ↔ mT A T ∈ Glennie.Compact.NearbyOrbits.fibre54 b := by
+  change ((∀ a, Frame eA tA jA (T a)) ∧ ledger tA jA T = Glennie.Compact.Affine20.decode20 b) ↔ _
+  simp only [Glennie.Compact.NearbyOrbits.fibre54, Set.mem_ofPred_eq, ledger_eq A, frame_iff A]
+
+omit [FiniteDimensional ℝ E] in
+private theorem fibre20_iff (b : Chart) (T : Triple E) :
+    T ∈ fibre20 eA tA jA b ↔ mT A T ∈ Glennie.Compact.NearbyOrbits.fibre20 b := by
+  change ((∀ a, Frame eA tA jA (T a)) ∧ Glennie.Compact.Affine20.encode20 (ledger tA jA T) = b) ↔ _
+  simp only [Glennie.Compact.NearbyOrbits.fibre20, Set.mem_ofPred_eq, ledger_eq A, frame_iff A]
+
+theorem exists_result (N : E → ℝ) (a B : E → E → ℝ)
+    (Gamma : E → E → E) (R : E → E → E → E) (nativeN : Albert → ℝ)
+    (hnorm : ∀ x, nativeN (A x) = N x)
+    (hmetric : ∀ x y, a x y = Glennie.inner (A x) (A y) / 3)
+    (hraw : ∀ x y, B x y = Glennie.inner (A x) (A y))
+    (hconn : ∀ x y, A (Gamma x y) = -jordan (A x) (A y))
+    (hcurv : ∀ u v w, A (R u v w) = -(jordan (A u) (jordan (A v) (A w)) - jordan (A v) (jordan (A u) (A w)))) :
+    Nonempty (Result eA N tA a B jA Gamma R nativeN) := by
+  obtain ⟨V1, hV1, hb1, pos, neg, hcP, hcN, hfP, hfN, _, _, hlP, hlN, hpP, hpN, hcov, hdisj, h20⟩ :=
+    Glennie.Compact.NearbyOrbitsClosed.nearby_fibres_two_orbits_unconditional
+  obtain ⟨V2, hV2, hb2, hclass⟩ := Glennie.Compact.NearbyOrbitsClosed.nearby_q26_score_complete
+  let V := V1 ∩ V2
+  have hpT_cont : Continuous (pT A) :=
+    continuous_pi fun f => continuous_pi fun i =>
+      A.symm.toLinearMap.continuous_of_finiteDimensional.comp
+        (Glennie.Compact.FrameTopology.continuous_entry f i)
+  have hmT_pT (T : Glennie.Compact.Affine20.Triple) : mT A (pT A T) = T := by
+    funext f i; exact A.apply_symm_apply _
+  have hdec (b : Chart) : Glennie.SubmissionR03.decode20 b = decode20 b := rfl
+  have henc (L : Ledger54) : Glennie.SubmissionR03.encode20 L = encode20 L := rfl
+  have htwo : TwoOrbitSections eA tA jA V := by
+    refine ⟨fun b => pT A (pos b), fun b => pT A (neg b),
+      hpT_cont.comp_continuousOn (hcP.mono Set.inter_subset_left),
+      hpT_cont.comp_continuousOn (hcN.mono Set.inter_subset_left),
+      fun b hb f => (frame_iff A _).mpr (by simpa [hmT_pT] using hfP b hb.1 f),
+      fun b hb f => (frame_iff A _).mpr (by simpa [hmT_pT] using hfN b hb.1 f),
+      fun b hb => by rw [ledger_eq A, hmT_pT, hdec]; exact hlP b hb.1,
+      fun b hb => by rw [ledger_eq A, hmT_pT, hdec]; exact hlN b hb.1,
+      fun b hb => by
+        rw [score_eq A, hmT_pT, Glennie.Compact.LocalContrast.score_eq_two_phi]
+        linarith [hpP b hb.1],
+      fun b hb => by
+        rw [score_eq A, hmT_pT, Glennie.Compact.LocalContrast.score_eq_two_phi]
+        linarith [hpN b hb.1],
+      fun b hb => Set.ext fun T => by
+        change T ∈ fibre54 eA tA jA b ↔ T ∈ orbit tA jA _ ∨ T ∈ orbit tA jA _
+        rw [fibre54_iff A, orbit_iff A, orbit_iff A, hmT_pT, hmT_pT, hcov b hb.1]; rfl,
+      fun b hb => Set.disjoint_left.mpr fun T hN hP =>
+        Set.disjoint_left.mp (hdisj b hb.1)
+          (by simpa [hmT_pT] using (orbit_iff A _ T).mp hN)
+          (by simpa [hmT_pT] using (orbit_iff A _ T).mp hP),
+      fun b hb => Set.ext fun T => by rw [fibre20_iff A, fibre54_iff A, h20 b hb.1]⟩
+  have hsc : ScoreComplete eA tA jA V := fun T S hT hS hb => by
+    rw [henc, ledger_eq A] at hb
+    obtain ⟨hnz, hiff⟩ := hclass (mT A T) (mT A S)
+      (fun f => (frame_iff A _).mp (hT f)) (fun f => (frame_iff A _).mp (hS f)) hb.2
+    refine ⟨by rwa [score_eq A], ?_⟩
+    simpa only [orbit_iff A, Glennie.Compact.FlatOrbit.autOrbit, Set.mem_ofPred_eq,
+      q26_eq A, SameSign, Glennie.Compact.NearbyOrbitsClosed.SameScoreSign, score_eq A] using hiff
+  have hgen (T : Triple E) (hT : Admitted eA tA jA V T)
+      (K : Submodule ℝ E) (hK : ∀ p ∈ K, ∀ q ∈ K, jA p q ∈ K)
+      (hAtoms : ∀ f i, T f i ∈ K) : K = ⊤ := by
+    have htop : K.map A.toLinearMap = ⊤ :=
+      Glennie.SubmissionR03.atoms_generate_of_score (mT A T)
+        (fun f => (frame_iff A _).mp (hT.1 f))
+        (by rw [Glennie.SubmissionR03.score_eq_source, ← score_eq A]; exact (hsc T T hT.1 hT.1 hT.2).1)
+        (K.map A.toLinearMap)
+        (by rintro _ ⟨p, hp, rfl⟩ _ ⟨q, hq, rfl⟩; exact ⟨jA p q, hK p hp q hq, A.apply_symm_apply _⟩)
+        (fun f i => ⟨T f i, hAtoms f i, rfl⟩)
+    rw [eq_top_iff]
+    intro x _
+    obtain ⟨y, hy, hyx⟩ := Submodule.mem_map.mp (htop.symm ▸ trivial : A x ∈ K.map A.toLinearMap)
+    exact A.injective hyx ▸ hy
+  refine ⟨⟨A, A.apply_symm_apply 1, hnorm, hmetric, hraw, fun _ => rfl,
+    fun x y => A.apply_symm_apply _, hconn, hcurv, V, hV1.inter hV2,
+    by rw [henc, ledger_eq A, show mT A (fun f i => A.symm (Glennie.SubmissionR03.flatBase f i)) =
+      Glennie.Compact.Sections.flatBase from hmT_pT _]; exact ⟨hb1, hb2⟩, htwo, hsc,
+    fun T S hT hS => by
+      rw [q26_eq A, q26_eq A, ledger_eq A, ledger_eq A]
+      exact Glennie.Compact.NativeQFamilyLedger.q26_eq_iff_ledger54_eq _ _
+        (fun f => (frame_iff A _).mp (hT f)) (fun f => (frame_iff A _).mp (hS f)),
+    fun T => by
+      rw [score_eq A, Glennie.Compact.LocalContrast.score_eq_two_phi, phi_eq A]
+      simp [Glennie.Compact.Sections.phiOf, encoder, Glennie.encoder, mT],
+    hgen,
+    fun T hT g hfix => LinearEquiv.ext fun x => by
+      have htop := hgen T hT (LinearMap.eqLocus g.equiv.toLinearMap LinearMap.id)
+        (fun p hp q hq => (g.map_product p q).trans (congrArg₂ jA hp hq))
+        (fun f i => congrFun (congrFun hfix f) i)
+      exact (htop.symm ▸ trivial : x ∈ LinearMap.eqLocus g.equiv.toLinearMap LinearMap.id),
+    fun T hT D hD hkill => LinearMap.ext fun x => by
+      have htop := hgen T hT (LinearMap.ker D)
+        (fun p hp q hq => by
+          change D _ = 0
+          rw [hD, LinearMap.mem_ker.mp hp, LinearMap.mem_ker.mp hq]
+          simp [Glennie.jordan_zero_left, Glennie.jordan_zero_right])
+        hkill
+      exact LinearMap.mem_ker.mp (htop.symm ▸ trivial : x ∈ LinearMap.ker D)⟩⟩
+
+end
+end Glennie.SubmissionR04Intrinsic.Local
 
 @[expose] public section
 namespace Glennie.SubmissionR04Intrinsic
 noncomputable section
 set_option autoImplicit false
 open Glennie
-variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
-
-variable [CompleteSpace E]
-variable [FiniteDimensional ℝ E]
-
 attribute [local instance] tangentDualNormedAddCommGroup tangentDualNormedSpace
-  tangentBilinearNormedAddCommGroup tangentBilinearNormedSpace
-  tangentTrilinearNormedAddCommGroup tangentTrilinearNormedSpace
-  tangentEndNormedAddCommGroup tangentEndNormedSpace
-  tangentVectorBilinearNormedAddCommGroup tangentVectorBilinearNormedSpace
-  tangentInverseNormedAddCommGroup tangentInverseNormedSpace
 
-theorem tangentMetricDual_apply (P : BasedCubic E) (e : E)
-    (u v : tangent P e) :
-    tangentMetricDual P e u v = metric P e (u : E) (v : E) := rfl
-
-theorem tangentMetricDual_eq_baseChartMetric (P : BasedCubic E) (e : E)
-    (he : cubic P e = 1) :
-    tangentMetricDual P e = AlbertGeometry.Cubic.baseChartMetric (toSource P) e he := by
-  ext u v
-  rw [tangentMetricDual_apply, metric_eq_source]
-  exact (AlbertGeometry.Cubic.baseChartMetric_apply (toSource P) e he u v).symm
-
-theorem tangentCubicCurried_eq_source (P : BasedCubic E) (e : E) :
-    tangentCubicCurried P e = AlbertGeometry.Cubic.fullyCurried
-      (AlbertGeometry.Cubic.tangentSymmetricCubic (toSource P) e) := rfl
-
-theorem tangentMetricRaise_eq_source (P : BasedCubic E) (e : E)
-    (he : cubic P e = 1) :
-    tangentMetricRaise P e =
-      (AlbertGeometry.Cubic.baseChartMetric (toSource P) e he).inverse := by
-  unfold tangentMetricRaise
-  rw [tangentMetricDual_eq_baseChartMetric P e he]
-  rfl
-
-theorem independentRaisedCubic_eq_source (P : BasedCubic E) (e : E)
-    (he : cubic P e = 1) :
-    independentRaisedCubic P e =
-      AlbertGeometry.Cubic.raisedTangentCubic (toSource P) e he := by
-  unfold independentRaisedCubic AlbertGeometry.Cubic.raisedTangentCubic
-  rw [tangentMetricRaise_eq_source P e he, tangentCubicCurried_eq_source P e]
-  rfl
-
-theorem tangent_metric_eq_source (P : BasedCubic E) (e : E)
-    (he : cubic P e = 1) (u v : tangent P e) :
-    metric P e (u : E) (v : E) =
-      AlbertGeometry.Cubic.baseChartMetric (toSource P) e he u v := by
-  rw [metric_eq_source]
-  exact (AlbertGeometry.Cubic.baseChartMetric_apply (toSource P) e he u v).symm
-
-def sourceK (P : BasedCubic E) (e : E) (he : cubic P e = 1)
-    (u v : tangent P e) : tangent P e :=
-  AlbertGeometry.Cubic.raisedTangentCubic (toSource P) e he u v
-
-def sourceCurvatureOnSource (P : BasedCubic E) (e : E)
-    (he : AlbertGeometry.Cubic.diagonalCubic (toSource P).form e = 1)
-    (u v w : AlbertGeometry.Cubic.tangentSpace (toSource P) e) :
-    AlbertGeometry.Cubic.tangentSpace (toSource P) e :=
-  -(AlbertGeometry.Cubic.baseChartMetric (toSource P) e he v w) • u +
-    (AlbertGeometry.Cubic.baseChartMetric (toSource P) e he u w) • v -
-    AlbertGeometry.Cubic.raisedTangentCubic (toSource P) e he u
-      (AlbertGeometry.Cubic.raisedTangentCubic (toSource P) e he v w) +
-    AlbertGeometry.Cubic.raisedTangentCubic (toSource P) e he v
-      (AlbertGeometry.Cubic.raisedTangentCubic (toSource P) e he u w)
-
-theorem sourceCurvatureOnSource_eq_actual (P : BasedCubic E) (e : E)
-    (he : AlbertGeometry.Cubic.diagonalCubic (toSource P).form e = 1)
-    (hp : ∀ u : E, u ≠ 0 → 0 < metric P e u u)
-    (u v w : AlbertGeometry.Cubic.tangentSpace (toSource P) e) :
-    sourceCurvatureOnSource P e he u v w =
-      AlbertGeometry.Cubic.chartCurvature (toSource P) e he 0 u v w := by
-  have hpos : ∀ z : E, z ≠ 0 →
-      0 < AlbertGeometry.Cubic.logHessianForm (toSource P) e z z := hp
-  rw [AlbertGeometry.Cubic.chartCurvature_zero (toSource P) e he hpos]
-  simp only [sourceCurvatureOnSource,
-    AlbertGeometry.Cubic.baseMetricWedge,
-    AlbertGeometry.Cubic.raisedCubicCommutator]
-  rw [neg_smul]
-  abel
-
-theorem curvaturePremise_iff_actual (P : BasedCubic E) (e : E)
-    (he : AlbertGeometry.Cubic.diagonalCubic (toSource P).form e = 1)
-    (hp : ∀ z : E, z ≠ 0 → 0 < metric P e z z)
-    (F : AlbertRecognition.V ≃ₗ[ℝ]
-      AlbertGeometry.Cubic.tangentSpace (toSource P) e) :
-    (∀ u v w : AlbertRecognition.V,
-      sourceCurvatureOnSource P e he (F u) (F v) (F w) =
-        F (nativeCurvatureOnV u v w)) ↔
-    (∀ u v w : AlbertRecognition.V,
-      AlbertGeometry.Cubic.chartCurvature (toSource P) e he 0
-        (F u) (F v) (F w) =
-        F (AlbertGeometry.NativeCurvatureDictionary.nativeCurvatureValue u v w)) := by
-  simp only [sourceCurvatureOnSource_eq_actual P e he hp,
-    nativeCurvatureOnV_eq_actual]
-
-open AlbertGeometry.Cubic AlbertGeometry.NativeCurvatureDictionary
-  AlbertGeometry.NativeEuclideanNormBinding
-
-set_option maxHeartbeats 800000 in
-
-def frameToActualIso (P : BasedCubic E) (e : E)
-    (he : diagonalCubic (toSource P).form e = 1)
-    (hp : ∀ z : E, z ≠ 0 → 0 < metric P e z z)
-    (F : AlbertRecognition.V ≃ₗ[ℝ] tangentSpace (toSource P) e)
-    (hmetric : ∀ x y : AlbertRecognition.V,
-      baseChartMetric (toSource P) e he (F x) (F y) = AlbertRecognition.gA x y)
-    (hcurv : ∀ x y z : AlbertRecognition.V,
-      sourceCurvatureOnSource P e he (F x) (F y) (F z) =
-        F (nativeCurvatureOnV x y z)) :
-    AlbertGeometry.RecognitionFromCurvature.TangentCurvatureIso
-      (toSource P) e he where
-  equiv := F.symm.trans nativeMetricFrame
-  map_metric := by
-    intro u v
-    change baseChartMetric _ _ _ (nativeMetricFrame (F.symm u))
-      (nativeMetricFrame (F.symm v)) = baseChartMetric (toSource P) e he u v
-    rw [nativeMetricFrame_metric,
-      ← hmetric (F.symm u) (F.symm v),
-      F.apply_symm_apply, F.apply_symm_apply]
-  map_curvature := by
-    intro u v w
-    have hactual := (curvaturePremise_iff_actual P e he hp F).mp hcurv
-      (F.symm u) (F.symm v) (F.symm w)
-    simp only [F.apply_symm_apply] at hactual
-    change nativeMetricFrame (F.symm (chartCurvature (toSource P) e he 0 u v w)) =
-      chartCurvature nativeEuclideanRepresentation nativeCoordinateUnit
-        nativeNormalization 0 (nativeMetricFrame (F.symm u))
-        (nativeMetricFrame (F.symm v)) (nativeMetricFrame (F.symm w))
-    rw [hactual, F.symm_apply_apply]
-    exact nativeMetricFrame.apply_symm_apply _
-
-set_option maxHeartbeats 800000 in
-theorem actualIso_iff_independentFrame (P : BasedCubic E) (e : E)
-    (he : diagonalCubic (toSource P).form e = 1)
-    (hp : ∀ z : E, z ≠ 0 → 0 < metric P e z z) :
-    Nonempty (AlbertGeometry.RecognitionFromCurvature.TangentCurvatureIso
-      (toSource P) e he) ↔
-    ∃ F : AlbertRecognition.V ≃ₗ[ℝ] tangentSpace (toSource P) e,
-      (∀ x y : AlbertRecognition.V,
-        metric P e (F x : E) (F y : E) = AlbertRecognition.gA x y) ∧
-      (∀ x y z : AlbertRecognition.V,
-        sourceCurvatureOnSource P e he (F x) (F y) (F z) =
-          F (nativeCurvatureOnV x y z)) := by
-  constructor
-  · rintro ⟨I⟩
-    let F := AlbertGeometry.RecognitionFromCurvature.matchingMetricFrame
-      (toSource P) e he I
-    refine ⟨F, ?_, ?_⟩
-    · intro x y
-      calc
-        metric P e (F x : E) (F y : E) =
-            baseChartMetric (toSource P) e he (F x) (F y) :=
-          tangent_metric_eq_source P e he (F x) (F y)
-        _ = AlbertRecognition.gA x y :=
-          AlbertGeometry.RecognitionFromCurvature.matchingMetricFrame_metric
-            (toSource P) e he I x y
-    · apply (curvaturePremise_iff_actual P e he hp F).mpr
-      intro x y z
-      exact AlbertGeometry.RecognitionFromCurvature.matchingMetricFrame_curvature
-        (toSource P) e he I x y z
-  · rintro ⟨F, hmetric, hcurv⟩
-    refine ⟨frameToActualIso P e he hp F ?_ hcurv⟩
-    intro x y
-    calc
-      baseChartMetric (toSource P) e he (F x) (F y) =
-          metric P e (F x : E) (F y : E) :=
-        (tangent_metric_eq_source P e he (F x) (F y)).symm
-      _ = AlbertRecognition.gA x y := hmetric x y
-
-theorem independentCurvature_eq_sourceFormula (P : BasedCubic E) (e : E)
-    (he : cubic P e = 1) (u v w : tangent P e) :
-    independentCurvature P e u v w = sourceCurvatureOnSource P e he u v w := by
-  simp only [independentCurvature, sourceCurvatureOnSource,
-    ← tangentMetricDual_eq_baseChartMetric P e he,
-    ← independentRaisedCubic_eq_source P e he]
-  rfl
-
-/-- The source formula now uses only the independently defined raised cubic. -/
-theorem actualIso_iff_independentRaisedFrame (P : BasedCubic E) (e : E)
-    (he : cubic P e = 1)
-    (hp : ∀ x : E, x ≠ 0 → 0 < metric P e x x) :
-    Nonempty (AlbertGeometry.RecognitionFromCurvature.TangentCurvatureIso
-      (toSource P) e he) ↔
-    ∃ F : AlbertRecognition.V ≃ₗ[ℝ] tangent P e,
-      (∀ x y : AlbertRecognition.V,
-        metric P e (F x : E) (F y : E) = AlbertRecognition.gA x y) ∧
-      (∀ x y z : AlbertRecognition.V,
-        independentCurvature P e (F x) (F y) (F z) =
-          F (nativeCurvatureOnV x y z)) := by
-  constructor
-  · intro h
-    obtain ⟨F, hm, hc⟩ := (actualIso_iff_independentFrame P e he hp).mp h
-    refine ⟨F, hm, ?_⟩
-    intro x y z
-    rw [independentCurvature_eq_sourceFormula P e he]
-    exact hc x y z
-  · rintro ⟨F, hm, hc⟩
-    apply (actualIso_iff_independentFrame P e he hp).mpr
-    refine ⟨F, hm, ?_⟩
-    intro x y z
-    exact (independentCurvature_eq_sourceFormula P e he (F x) (F y) (F z)).symm.trans
-      (hc x y z)
-
-end
-end Glennie.SubmissionR04Intrinsic
-
-@[expose] public section
-namespace Glennie.SubmissionR04Intrinsic.LocalBridge
-noncomputable section
-set_option autoImplicit false
-open AlbertGeometry.Cubic AlbertGeometry.IntrinsicLocalTransport
-open AlbertGeometry.RecognitionFromCurvature
-open AlbertGeometry.IntrinsicLocalGenerationCapstoneR01
-
-variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
-  [CompleteSpace E] [FiniteDimensional ℝ E]
-
-/- Native vocabulary equalities by definitional reduction. -/
-theorem encode20_binding (L : Local.Ledger54) :
-    Glennie.SubmissionR03.encode20 L = Glennie.Compact.Affine20.encode20 L := rfl
-theorem decode20_binding (b : Local.Chart) :
-    Glennie.SubmissionR03.decode20 b = Glennie.Compact.Affine20.decode20 b := rfl
-theorem flatBase_binding :
-    Glennie.SubmissionR03.flatBase = Glennie.Compact.Sections.flatBase := rfl
-
-section LocalBindings
-variable (P : SymmetricTrilinearForm E) (e : E)
-  (he : diagonalCubic P.form e = 1)
-  (hp : ∀ x : E, x ≠ 0 → 0 < logHessianForm P e x x)
-  (t : E → ℝ) (j : E → E → E)
-  (ht : t = sourceTrace P e) (hj : j = sourceProduct P e he hp)
-include ht hj
-
-theorem frame_binding (p : Fin 3 → E) :
-    Local.Frame e t j p ↔ SourceFrame P e he hp p := by
-  subst t
-  subst j
-  constructor
-  · intro h
-    exact ⟨h.trace_one, h.idempotent, h.orthogonal, h.sum_unit⟩
-  · intro h
-    exact ⟨h.trace_one, h.idempotent, h.orthogonal, h.sum_unit⟩
-
-theorem ledger_binding (T : Local.Triple E) :
-    Local.ledger t j T = sourceLedger54 P e he hp T := by
-  subst t
-  subst j
-  rfl
-theorem q26_binding (T : Local.Triple E) :
-    Local.q26 t j T = sourceQ26 P e he hp T := by
-  subst t
-  subst j
-  rfl
-theorem score_binding (T : Local.Triple E) :
-    Local.score e t j T = sourceScore P e he hp T := by
-  subst t
-  subst j
-  rfl
-theorem phi_binding (x y z : E) :
-    Local.phi t j x y z = sourcePhi P e he hp x y z := by
-  subst t
-  subst j
-  rfl
-theorem sameSign_binding (T S : Local.Triple E) :
-    Local.SameSign e t j T S ↔ SameSourceScoreSign P e he hp T S := by
-  subst t
-  subst j
-  rfl
-
-def autToSource (g : Local.Automorphism t j) : SourceAutomorphism P e he hp where
-  equiv := g.equiv
-  map_product := by
-    intro x y
-    simpa only [← hj] using g.map_product x y
-  map_trace := by
-    intro x
-    simpa only [← ht] using g.map_trace x
-def autFromSource (g : SourceAutomorphism P e he hp) : Local.Automorphism t j where
-  equiv := g.equiv
-  map_product := by
-    intro x y
-    simpa only [hj] using g.map_product x y
-  map_trace := by
-    intro x
-    simpa only [ht] using g.map_trace x
-
-/-- Both directions range over ALL product-and-trace linear automorphisms. -/
-theorem orbit_binding (T : Local.Triple E) :
-    Local.orbit t j T = sourceAutOrbit P e he hp T := by
-  ext S
-  constructor
-  · rintro ⟨g, hg⟩
-    exact ⟨autToSource P e he hp t j ht hj g, hg⟩
-  · rintro ⟨g, hg⟩
-    exact ⟨autFromSource P e he hp t j ht hj g, hg⟩
-
-theorem fibre54_binding (b : Local.Chart) :
-    Local.fibre54 e t j b = sourceFibre54 P e he hp b := by
-  ext T
-  simp only [Local.fibre54, sourceFibre54, Set.mem_setOf_eq,
-    frame_binding P e he hp t j ht hj,
-    ledger_binding P e he hp t j ht hj, decode20_binding]
-theorem fibre20_binding (b : Local.Chart) :
-    Local.fibre20 e t j b = sourceFibre20 P e he hp b := by
-  ext T
-  simp only [Local.fibre20, sourceFibre20, Set.mem_setOf_eq,
-    frame_binding P e he hp t j ht hj,
-    ledger_binding P e he hp t j ht hj, encode20_binding]
-
-theorem twoOrbitSections_binding (V : Set Local.Chart) :
-    Local.TwoOrbitSections e t j V ↔ TwoOrbitSections P e he hp V := by
-  simp only [Local.TwoOrbitSections, TwoOrbitSections,
-    frame_binding P e he hp t j ht hj,
-    ledger_binding P e he hp t j ht hj, decode20_binding,
-    score_binding P e he hp t j ht hj,
-    fibre54_binding P e he hp t j ht hj,
-    fibre20_binding P e he hp t j ht hj,
-    orbit_binding P e he hp t j ht hj]
-
-theorem scoreComplete_binding (V : Set Local.Chart) :
-    Local.ScoreComplete e t j V ↔ ScoreComplete P e he hp V := by
-  simp only [Local.ScoreComplete, ScoreComplete,
-    frame_binding P e he hp t j ht hj,
-    ledger_binding P e he hp t j ht hj, encode20_binding,
-    score_binding P e he hp t j ht hj, q26_binding P e he hp t j ht hj,
-    sameSign_binding P e he hp t j ht hj,
-    orbit_binding P e he hp t j ht hj]
-
-/-- Internal composition: every equality argument must be discharged by an
-upstream identification theorem. The public theorem exposes only the based
-cubic, normalization/positivity, and independent full-curvature matching. -/
-theorem exists_result_from_actual_entrance
-    (N : E → ℝ) (a B : E → E → ℝ)
-    (Gamma : E → E → E) (R : E → E → E → E) (nativeN : Glennie.Albert → ℝ)
-    (hN : N = diagonalCubic P.form)
-    (ha : ∀ x y : E, a x y = logHessianForm P e x y)
-    (hB : ∀ x y : E, B x y = 3 * a x y)
-    (hGamma : ∀ x y : E, Gamma x y = AlbertGeometry.AmbientLeviCivitaProduct.ambientGamma P e x y)
-    (hRdef : R = AlbertGeometry.AmbientCurvatureProduct.ambientCurvature P e)
-    (hnativeN : nativeN = AlbertGeometry.NativeCoordinateDictionary.nativeDeterminant)
-    (hEntrance : Nonempty (TangentCurvatureIso P e he)) :
-    Nonempty (Local.Result e N t a B j Gamma R nativeN) := by
-  obtain ⟨d, hgen, hstab, hder⟩ :=
-    exists_intrinsic_local_reconstruction_with_generation P e he hp hEntrance
-  refine ⟨{
-    A := d.A
-    map_unit := d.map_unit
-    map_norm := ?_
-    map_metric := ?_
-    map_raw_pairing := ?_
-    map_trace := ?_
-    map_product := ?_
-    map_connection := ?_
-    map_curvature := ?_
-    V := d.V
-    V_open := d.V_open
-    flat_mem := ?_
-    two_orbits := (twoOrbitSections_binding P e he hp t j ht hj d.V).mpr d.two_orbits
-    score_complete := (scoreComplete_binding P e he hp t j ht hj d.V).mpr
-      d.finite_observation_test
-    q26_iff_ledger := ?_
-    score_eq_two_phi := ?_
-    atoms_generate := ?_
-    atom_stabilizer := ?_
-    atom_derivation := ?_ }⟩
-  · intro x
-    rw [hnativeN, hN]
-    exact d.map_norm x
-  · intro x y
-    rw [ha x y]
-    exact d.map_metric x y
-  · intro x y
-    rw [hB x y, ha x y, d.map_metric x y]
-    change 3 * (Glennie.inner (d.A x) (d.A y) / 3) =
-      Glennie.inner (d.A x) (d.A y)
-    ring
-  · intro x
-    rw [ht]
-    exact sourceTrace_eq P e d.A d.map_unit d.map_metric x
-  · intro x y
-    rw [hj]
-    exact d.map_product x y
-  · intro x y
-    rw [hGamma x y]
-    exact d.map_connection x y
-  · intro u v w
-    rw [hRdef]
-    exact d.map_curvature u v w
-  · rw [ledger_binding P e he hp t j ht hj, encode20_binding, flatBase_binding]
-    exact d.flat_mem
-  · intro T S hT hS
-    rw [q26_binding P e he hp t j ht hj T,
-      q26_binding P e he hp t j ht hj S,
-      ledger_binding P e he hp t j ht hj T,
-      ledger_binding P e he hp t j ht hj S]
-    exact sourceQ26_eq_iff_ledger54_eq P e he hp d.A
-      d.map_unit d.map_metric d.map_product T S
-      (fun f => (frame_binding P e he hp t j ht hj (T f)).mp (hT f))
-      (fun f => (frame_binding P e he hp t j ht hj (S f)).mp (hS f))
-  · intro T
-    rw [score_binding P e he hp t j ht hj T,
-      phi_binding P e he hp t j ht hj]
-    exact sourceScore_eq_twoPhi P e he hp d.A
-      d.map_unit d.map_metric d.map_product T
-  · intro T hT K hK hAtoms
-    have hframes : ∀ f, SourceFrame P e he hp (T f) :=
-      fun f => (frame_binding P e he hp t j ht hj (T f)).mp (hT.1 f)
-    have hb : Glennie.Compact.Affine20.encode20 (sourceLedger54 P e he hp T) ∈ d.V := by
-      simpa only [ledger_binding P e he hp t j ht hj, encode20_binding] using hT.2
-    have hK' : ∀ p ∈ K, ∀ q ∈ K, sourceProduct P e he hp p q ∈ K := by
-      simpa only [hj] using hK
-    exact hgen T hframes hb K hK' hAtoms
-  · intro T hT g hfix
-    have hframes : ∀ f, SourceFrame P e he hp (T f) :=
-      fun f => (frame_binding P e he hp t j ht hj (T f)).mp (hT.1 f)
-    have hb : Glennie.Compact.Affine20.encode20 (sourceLedger54 P e he hp T) ∈ d.V := by
-      simpa only [ledger_binding P e he hp t j ht hj, encode20_binding] using hT.2
-    exact hstab T hframes hb (autToSource P e he hp t j ht hj g) hfix
-  · intro T hT D hD hkill
-    have hframes : ∀ f, SourceFrame P e he hp (T f) :=
-      fun f => (frame_binding P e he hp t j ht hj (T f)).mp (hT.1 f)
-    have hb : Glennie.Compact.Affine20.encode20 (sourceLedger54 P e he hp T) ∈ d.V := by
-      simpa only [ledger_binding P e he hp t j ht hj, encode20_binding] using hT.2
-    have hD' : ∀ p q, D (sourceProduct P e he hp p q) =
-        sourceProduct P e he hp (D p) q + sourceProduct P e he hp p (D q) := by
-      simpa only [hj] using hD
-    exact hder T hframes hb D hD' hkill
-end LocalBindings
-
-end
-end Glennie.SubmissionR04Intrinsic.LocalBridge
-
-@[expose] public section
-namespace Glennie.SubmissionR04Intrinsic
-noncomputable section
-set_option autoImplicit false
 theorem intrinsic_local_reconstruction
     {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
     [CompleteSpace E] [FiniteDimensional ℝ E]
@@ -2153,60 +1697,58 @@ theorem intrinsic_local_reconstruction
           F (nativeCurvature x y z))) :
     Nonempty (ReconstructionResult P e) := by
   obtain ⟨F, hmetric, hcurvature⟩ := hMatch
-  let FSource : AlbertRecognition.V ≃ₗ[ℝ] tangent P e :=
+  let FSource : AlbertRecognition.V ≃ₗ[ℝ]
+      AlbertGeometry.RecognitionFromCurvature.tangentSpace (toSource P) e :=
     nativeToSource.symm.trans F
-  have hmetricSource : ∀ x y : AlbertRecognition.V,
-      metric P e (FSource x : E) (FSource y : E) = AlbertRecognition.gA x y := by
-    intro x y
-    change metric P e (F (nativeToSource.symm x) : E)
-      (F (nativeToSource.symm y) : E) = AlbertRecognition.gA x y
-    rw [hmetric, nativeToSource_metric]
-    simp only [LinearEquiv.apply_symm_apply]
-  have hcurvatureSource : ∀ x y z : AlbertRecognition.V,
-      independentCurvature P e (FSource x) (FSource y) (FSource z) =
-        FSource (nativeCurvatureOnV x y z) := by
-    intro x y z
-    change independentCurvature P e (F (nativeToSource.symm x))
-      (F (nativeToSource.symm y)) (F (nativeToSource.symm z)) =
-        F (nativeToSource.symm (nativeCurvatureOnV x y z))
-    rw [hcurvature]
-    simp only [nativeCurvatureOnV, LinearEquiv.symm_apply_apply]
-  have hActual : Nonempty
-      (AlbertGeometry.RecognitionFromCurvature.TangentCurvatureIso (toSource P) e he) :=
-    (actualIso_iff_independentRaisedFrame P e he hp).mpr
-      ⟨FSource, hmetricSource, hcurvatureSource⟩
-  have ht : (fun x : E => traceAt P e x) =
-      AlbertGeometry.IntrinsicLocalTransport.sourceTrace (toSource P) e :=
-    by
-      funext x
-      exact traceAt_eq_three_metric_unit P e he x
-  have hj : product P e =
-      AlbertGeometry.IntrinsicLocalTransport.sourceProduct (toSource P) e he hp := by
-    funext x y
-    exact product_eq_sourceProduct P e he hp x y
-  have hN : cubic P = AlbertGeometry.Cubic.diagonalCubic (toSource P).form :=
-    funext (cubic_eq_source P)
-  have ha : ∀ x y : E, metric P e x y =
-      AlbertGeometry.Cubic.logHessianForm (toSource P) e x y := by
-    intro x y
-    exact congrArg (fun B => B x y) (metric_eq_source P e)
-  have hGamma : ∀ x y : E, ambientConnection P e x y =
-      AlbertGeometry.AmbientLeviCivitaProduct.ambientGamma (toSource P) e x y := by
-    intro x y
-    exact congrArg (fun G => G x y) (ambientConnection_eq_source P e)
-  have hRdef : ambientCurvature P e =
-      AlbertGeometry.AmbientCurvatureProduct.ambientCurvature (toSource P) e := by
-    funext u v w
-    exact ambientCurvature_eq_source P e u v w
-  have hn : nativeCubic = AlbertGeometry.NativeCoordinateDictionary.nativeDeterminant := by
+  have hMD : AlbertGeometry.RecognitionFromCurvature.baseChartMetric (toSource P) e =
+      tangentMetricDual P e := by ext u v; rfl
+  have hRC : AlbertGeometry.RecognitionFromCurvature.raisedTangentCubic (toSource P) e =
+      independentRaisedCubic P e := by
+    unfold AlbertGeometry.RecognitionFromCurvature.raisedTangentCubic
+      independentRaisedCubic tangentMetricRaise
+    rw [hMD]; rfl
+  obtain ⟨A, hunit, hnorm, hm, hprod, hconn, hcurv⟩ :=
+    AlbertGeometry.RecognitionFromCurvature.exists_native_norm_unit_actual_geometry
+      (toSource P) e he hp FSource
+      (fun x y => by
+        change metric P e (F (nativeToSource.symm x) : E) (F (nativeToSource.symm y) : E) = _
+        rw [hmetric, nativeToSource_metric, LinearEquiv.apply_symm_apply, LinearEquiv.apply_symm_apply])
+      (fun x y z => by
+        dsimp only [AlbertGeometry.RecognitionFromCurvature.sourceCurvature]
+        rw [hMD, hRC]
+        change independentCurvature P e (F (nativeToSource.symm x))
+          (F (nativeToSource.symm y)) (F (nativeToSource.symm z)) =
+          F (nativeToSource.symm (-(AlbertRecognition.D x y z)))
+        rw [hcurvature]
+        congr 1
+        apply nativeToSource.injective
+        rw [nativeCurvature_reference]
+        simp only [LinearEquiv.apply_symm_apply])
+  have he_eq : e = A.symm 1 := A.injective (hunit.trans (A.apply_symm_apply _).symm)
+  have ht_eq : (fun x : E => traceAt P e x) = (fun x => trace (A x)) := by
     funext x
-    exact (nativeCubic_eq_source x).trans
-      (AlbertGeometry.NativeCoordinateDictionary.nativeNewtonNorm_eq_nativeDeterminant x)
-  exact LocalBridge.exists_result_from_actual_entrance
-    (toSource P) e he hp (fun x => traceAt P e x) (product P e) ht hj
-    (cubic P) (fun x y => metric P e x y) (fun x y => rawPair P e x y)
-    (fun x y => ambientConnection P e x y) (ambientCurvature P e) nativeCubic
-    hN ha (rawPair_eq_three_metric P e he) hGamma hRdef hn hActual
+    rw [traceAt_eq_three_metric_unit P e he x]
+    change 3 * AlbertGeometry.Cubic.logHessianForm (toSource P) e x e = trace (A x)
+    rw [hm x e, hunit, jordan_unit_right]
+    ring
+  have hj_eq : product P e = (fun x y : E => A.symm (jordan (A x) (A y))) := by
+    funext x y
+    apply A.injective
+    rw [A.apply_symm_apply, product_eq_source P e he hp
+      (AlbertGeometry.BasedNormAdjointTransport.rawBilinearForm_nondegenerate (toSource P) e he hp)]
+    exact hprod x y
+  change Nonempty (Local.Result e (cubic P) (fun x => traceAt P e x)
+    (fun x y => metric P e x y) (fun x y => rawPair P e x y) (product P e)
+    (fun x y => ambientConnection P e x y) (ambientCurvature P e) nativeCubic)
+  rw [ht_eq, hj_eq]
+  exact he_eq.symm ▸ Local.exists_result A (cubic P) (fun x y => metric P e x y)
+    (fun x y => rawPair P e x y) (fun x y => ambientConnection P e x y)
+    (ambientCurvature P e) nativeCubic hnorm hm
+    (fun x y => by
+      rw [rawPair_eq_three_metric P e he x y]
+      change 3 * AlbertGeometry.Cubic.logHessianForm (toSource P) e x y = trace (jordan (A x) (A y))
+      rw [hm x y]; ring)
+    hconn hcurv
 
 end
 end Glennie.SubmissionR04Intrinsic

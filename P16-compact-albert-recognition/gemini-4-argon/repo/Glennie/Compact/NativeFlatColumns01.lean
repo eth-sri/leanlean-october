@@ -1,11 +1,7 @@
-/- Exactly original FlatBase columns0 and1, all20 rows including zeros.
-   Their native coordinate proofs precede comparison with JQ. The
-   NativeFlatColumns23 module supplies only the two original fixed-column
-   comparisons used by the final four-column conjunction. This module adds
-   no desired derivative/Jacobian hypothesis, replacement family or definition. -/
 module
 
-public import Glennie.Compact.NativeFlatColumns23
+public import Glennie.Compact.FlatBase
+public import Glennie.Compact.Rank20Reduction
 
 @[expose] public section
 
@@ -19,99 +15,57 @@ open Glennie.Compact.Rank20Certificate
 
 noncomputable section
 set_option autoImplicit false
+set_option maxHeartbeats 1000000
 
-private theorem flatFrameP_literal (i : Fin 3) :
-    flatFrameP i =
-      ![diagonalAlbert 0 0 1, diagonalAlbert 0 1 0,
-        diagonalAlbert 1 0 0] i := by
-  fin_cases i <;> ext <;>
-    norm_num [flatFrameP, projectorFrame, flatXN, diagonalAlbert,
-      jordan_d0, jordan_d1, jordan_d2, jordan_o01, jordan_o02, jordan_o12,
-      octDot_coordinates, octNormSq, Quaternion.normSq_def', octMul, octConj, octScalar,
-      Quaternion.re_mul, Quaternion.imI_mul, Quaternion.imJ_mul,
-      Quaternion.imK_mul]
-
-set_option maxHeartbeats 1000000 in
 private theorem direction_zero_flatFrameP (i : Fin 3) :
     direction 0 (flatFrameP i) =
       ![(0 : Albert),
         ⟨0, 0, 0, octScalar (1 / 2), 0, 0⟩,
         ⟨0, 0, 0, octScalar (-1 / 2), 0, 0⟩] i := by
-  have hp : partnerIndex (0 : Fin 20) = 3 := rfl
-  rw [direction, hp, extDecode_extUnit_1, extDecode_extUnit_3,
-    Glennie.Compact.innerDerLinear_apply, flatFrameP_literal i]
+  rw [direction, Glennie.Compact.innerDerLinear_apply, flatFrameP_literal i]
   fin_cases i <;> ext <;>
-    norm_num [Glennie.Compact.innerDer, diagonalAlbert, complexAlbert, complexOct,
+    norm_num [Glennie.Compact.innerDer, partnerBasis, diagonalAlbert, complexAlbert, complexOct,
       jordan_d0, jordan_d1, jordan_d2, jordan_o01, jordan_o02, jordan_o12,
       octDot_coordinates, octNormSq, Quaternion.normSq_def', octMul, octConj, octScalar,
-      Quaternion.re_mul, Quaternion.imI_mul, Quaternion.imJ_mul,
-      Quaternion.imK_mul] <;>
+      Quaternion.re_mul, Quaternion.imI_mul, Quaternion.imJ_mul, Quaternion.imK_mul] <;>
     simp only [← Quaternion.coe_inv, Quaternion.re_coe, Quaternion.imI_coe,
       Quaternion.imJ_coe, Quaternion.imK_coe] <;> norm_num
 
-set_option maxHeartbeats 1000000 in
 private theorem direction_one_flatFrameP (i : Fin 3) :
     direction 1 (flatFrameP i) =
       ![(0 : Albert),
         ⟨0, 0, 0, ((⟨0, 1 / 2, 0, 0⟩ : Quaternion ℝ), 0), 0, 0⟩,
         ⟨0, 0, 0, ((⟨0, -1 / 2, 0, 0⟩ : Quaternion ℝ), 0), 0, 0⟩] i := by
-  have hp : partnerIndex (1 : Fin 20) = 4 := rfl
-  rw [direction, hp, extDecode_extUnit_1, extDecode_extUnit_4,
-    Glennie.Compact.innerDerLinear_apply, flatFrameP_literal i]
+  rw [direction, Glennie.Compact.innerDerLinear_apply, flatFrameP_literal i]
   fin_cases i <;> ext <;>
-    norm_num [Glennie.Compact.innerDer, diagonalAlbert, complexAlbert, complexOct,
+    norm_num [Glennie.Compact.innerDer, partnerBasis, diagonalAlbert, complexAlbert, complexOct,
       jordan_d0, jordan_d1, jordan_d2, jordan_o01, jordan_o02, jordan_o12,
       octDot_coordinates, octNormSq, Quaternion.normSq_def', octMul, octConj, octScalar,
-      Quaternion.re_mul, Quaternion.imI_mul, Quaternion.imJ_mul,
-      Quaternion.imK_mul] <;>
+      Quaternion.re_mul, Quaternion.imI_mul, Quaternion.imJ_mul, Quaternion.imK_mul]
+
+private theorem direction_two_flatFrameP (i : Fin 3) :
+    direction 2 (flatFrameP i) =
+      ![(⟨0, 0, 0, 0, octScalar (1 / 4), 0⟩ : Albert),
+        0, ⟨0, 0, 0, 0, octScalar (-1 / 4), 0⟩] i := by
+  rw [direction, Glennie.Compact.innerDerLinear_apply, flatFrameP_literal i]
+  fin_cases i <;> ext <;>
+    norm_num [Glennie.Compact.innerDer, partnerBasis, diagonalAlbert, complexAlbert, complexOct,
+      jordan_d0, jordan_d1, jordan_d2, jordan_o01, jordan_o02, jordan_o12,
+      octDot_coordinates, octNormSq, Quaternion.normSq_def', octMul, octConj, octScalar,
+      Quaternion.re_mul, Quaternion.imI_mul, Quaternion.imJ_mul, Quaternion.imK_mul] <;>
     simp only [← Quaternion.coe_inv, Quaternion.re_coe, Quaternion.imI_coe,
       Quaternion.imJ_coe, Quaternion.imK_coe] <;> norm_num
 
-/- These are whole native atom equalities, derived from the projector formula.
-   They contain no certificate entry, assumed velocity or trace hypothesis. -/
-private theorem flatFrameQ_literal (j : Fin 3) :
-    flatFrameQ j =
-      ![(⟨1 / 3, 1 / 3, 1 / 3,
-          ((⟨-flatScale / 2, -1 / 6, 0, 0⟩ : Quaternion ℝ), 0),
-          ((⟨1 / 6, flatScale / 2, 0, 0⟩ : Quaternion ℝ), 0),
-          ((⟨-flatScale / 2, -1 / 6, 0, 0⟩ : Quaternion ℝ), 0)⟩ : Albert),
-        ⟨1 / 3, 1 / 3, 1 / 3,
-          ((⟨0, 1 / 3, 0, 0⟩ : Quaternion ℝ), 0),
-          ((⟨-1 / 3, 0, 0, 0⟩ : Quaternion ℝ), 0),
-          ((⟨0, 1 / 3, 0, 0⟩ : Quaternion ℝ), 0)⟩,
-        ⟨1 / 3, 1 / 3, 1 / 3,
-          ((⟨flatScale / 2, -1 / 6, 0, 0⟩ : Quaternion ℝ), 0),
-          ((⟨1 / 6, -flatScale / 2, 0, 0⟩ : Quaternion ℝ), 0),
-          ((⟨flatScale / 2, -1 / 6, 0, 0⟩ : Quaternion ℝ), 0)⟩] j := by
-  fin_cases j <;> ext <;>
-    simp [flatFrameQ, projectorFrame, flatY1, octI, quatI, octScalar,
+private theorem direction_three_flatFrameP (i : Fin 3) :
+    direction 3 (flatFrameP i) =
+      ![(⟨0, 0, 0, 0, ((⟨0, 1 / 4, 0, 0⟩ : Quaternion ℝ), 0), 0⟩ : Albert),
+        0, ⟨0, 0, 0, 0, ((⟨0, -1 / 4, 0, 0⟩ : Quaternion ℝ), 0), 0⟩] i := by
+  rw [direction, Glennie.Compact.innerDerLinear_apply, flatFrameP_literal i]
+  fin_cases i <;> ext <;>
+    norm_num [Glennie.Compact.innerDer, partnerBasis, diagonalAlbert, complexAlbert, complexOct,
       jordan_d0, jordan_d1, jordan_d2, jordan_o01, jordan_o02, jordan_o12,
-      octDot_coordinates, octNormSq, Quaternion.normSq_def', octMul, octConj,
-      Quaternion.re_mul, Quaternion.imI_mul, Quaternion.imJ_mul,
-      Quaternion.imK_mul] <;>
-    ring_nf <;> norm_num [flatScale_sq]
-
-private theorem flatFrameR_literal (k : Fin 3) :
-    flatFrameR k =
-      ![(⟨1 / 3, 1 / 3, 1 / 3,
-          (0, (⟨0, 0, -flatScale / 2, 1 / 6⟩ : Quaternion ℝ)),
-          (0, (⟨flatScale / 2, 1 / 6, 0, 0⟩ : Quaternion ℝ)),
-          ((⟨0, 0, -1 / 6, flatScale / 2⟩ : Quaternion ℝ), 0)⟩ : Albert),
-        ⟨1 / 3, 1 / 3, 1 / 3,
-          (0, (⟨0, 0, 0, -1 / 3⟩ : Quaternion ℝ)),
-          (0, (⟨0, -1 / 3, 0, 0⟩ : Quaternion ℝ)),
-          ((⟨0, 0, 1 / 3, 0⟩ : Quaternion ℝ), 0)⟩,
-        ⟨1 / 3, 1 / 3, 1 / 3,
-          (0, (⟨0, 0, flatScale / 2, 1 / 6⟩ : Quaternion ℝ)),
-          (0, (⟨-flatScale / 2, 1 / 6, 0, 0⟩ : Quaternion ℝ)),
-          ((⟨0, 0, -1 / 6, -flatScale / 2⟩ : Quaternion ℝ), 0)⟩] k := by
-  fin_cases k <;> ext <;>
-    simp [flatFrameR, projectorFrame, witnessZ, octJL, octL, octK, quatJ, quatK,
-      jordan_d0, jordan_d1, jordan_d2, jordan_o01, jordan_o02, jordan_o12,
-      octDot_coordinates, octNormSq, Quaternion.normSq_def', octMul, octConj,
-      Quaternion.re_mul, Quaternion.imI_mul, Quaternion.imJ_mul,
-      Quaternion.imK_mul] <;>
-    ring_nf <;> norm_num [flatScale_sq]
+      octDot_coordinates, octNormSq, Quaternion.normSq_def', octMul, octConj, octScalar,
+      Quaternion.re_mul, Quaternion.imI_mul, Quaternion.imJ_mul, Quaternion.imK_mul]
 
 private theorem flat_pair_o01_re (j k : Fin 3) :
     (jordan (flatFrameQ j) (flatFrameR k)).o01.1.re =
@@ -119,8 +73,7 @@ private theorem flat_pair_o01_re (j k : Fin 3) :
   rw [flatFrameQ_literal j, flatFrameR_literal k]
   fin_cases j <;> fin_cases k <;>
     norm_num [jordan_o01, octMul, octConj,
-      Quaternion.re_mul, Quaternion.imI_mul, Quaternion.imJ_mul,
-      Quaternion.imK_mul] <;> ring
+      Quaternion.re_mul, Quaternion.imI_mul, Quaternion.imJ_mul, Quaternion.imK_mul] <;> ring
 
 private theorem flat_pair_o01_imI (j k : Fin 3) :
     (jordan (flatFrameQ j) (flatFrameR k)).o01.1.imI =
@@ -128,22 +81,24 @@ private theorem flat_pair_o01_imI (j k : Fin 3) :
   rw [flatFrameQ_literal j, flatFrameR_literal k]
   fin_cases j <;> fin_cases k <;>
     norm_num [jordan_o01, octMul, octConj,
-      Quaternion.re_mul, Quaternion.imI_mul, Quaternion.imJ_mul,
-      Quaternion.imK_mul] <;> ring
+      Quaternion.re_mul, Quaternion.imI_mul, Quaternion.imJ_mul, Quaternion.imK_mul]
 
-private theorem flatScale_eq_sqrt3_div_three : flatScale = Real.sqrt 3 / 3 := by
-  have hsq : Real.sqrt (3 : ℝ) ^ 2 = 3 :=
-    Real.sq_sqrt (by norm_num : (0 : ℝ) ≤ 3)
-  have hn : Real.sqrt (3 : ℝ) ≠ 0 := by
-    intro h
-    rw [h] at hsq
-    norm_num at hsq
-  dsimp [flatScale]
-  apply (div_eq_div_iff hn (by norm_num : (3 : ℝ) ≠ 0)).2
-  nlinarith [hsq]
+private theorem flat_pair_o02_re (j k : Fin 3) :
+    (jordan (flatFrameQ j) (flatFrameR k)).o02.1.re =
+      ![(1 / 18 : ℝ), -1 / 9, 1 / 18] j := by
+  rw [flatFrameQ_literal j, flatFrameR_literal k]
+  fin_cases j <;> fin_cases k <;>
+    norm_num [jordan_o02, octMul,
+      Quaternion.re_mul, Quaternion.imI_mul, Quaternion.imJ_mul, Quaternion.imK_mul]
 
-set_option maxHeartbeats 1000000 in
-/-- All20 original raw rows in fixed column0, including its thirteen zeros. -/
+private theorem flat_pair_o02_imI (j k : Fin 3) :
+    (jordan (flatFrameQ j) (flatFrameR k)).o02.1.imI =
+      ![flatScale / 6, 0, -flatScale / 6] j := by
+  rw [flatFrameQ_literal j, flatFrameR_literal k]
+  fin_cases j <;> fin_cases k <;>
+    norm_num [jordan_o02, octMul,
+      Quaternion.re_mul, Quaternion.imI_mul, Quaternion.imJ_mul, Quaternion.imK_mul] <;> ring
+
 theorem jacobianEntry_flatBase_column_zero (r : Fin 20) :
     jacobianEntry ![flatFrameP, flatFrameQ, flatFrameR] r 0 = JQ r 0 := by
   rw [jacobianEntry_ctx0 _ r 0 (by rfl)]
@@ -156,8 +111,6 @@ theorem jacobianEntry_flatBase_column_zero (r : Fin 20) :
     simp only [← Quaternion.coe_inv, Quaternion.re_coe, Quaternion.imI_coe,
       Quaternion.imJ_coe, Quaternion.imK_coe] <;> norm_num <;> ring
 
-set_option maxHeartbeats 1000000 in
-/-- All20 original raw rows in fixed column1, including its eight zeros. -/
 theorem jacobianEntry_flatBase_column_one (r : Fin 20) :
     jacobianEntry ![flatFrameP, flatFrameQ, flatFrameR] r 1 = JQ r 1 := by
   rw [jacobianEntry_ctx0 _ r 1 (by rfl)]
@@ -165,13 +118,29 @@ theorem jacobianEntry_flatBase_column_one (r : Fin 20) :
     Matrix.head_cons, Matrix.tail_cons]
   rw [direction_one_flatFrameP]
   fin_cases r <;>
-    norm_num [rowIndex, inner_coordinates, octDot_coordinates,
-      flat_pair_o01_imI, JQ, JZ] <;>
-    simp only [← Quaternion.coe_inv, Quaternion.re_coe, Quaternion.imI_coe,
-      Quaternion.imJ_coe, Quaternion.imK_coe] <;> norm_num <;> ring
+    norm_num [rowIndex, inner_coordinates, octDot_coordinates, flat_pair_o01_imI, JQ, JZ]
 
-/- This internal chain rule adds no derivative equality hypothesis. It fixes
-   the same original triple and consumes its written strict family derivative. -/
+theorem jacobianEntry_flatBase_column_two (r : Fin 20) :
+    jacobianEntry ![flatFrameP, flatFrameQ, flatFrameR] r 2 = JQ r 2 := by
+  rw [jacobianEntry_ctx0 _ r 2 (by rfl)]
+  simp only [Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.cons_val_two,
+    Matrix.head_cons, Matrix.tail_cons]
+  rw [direction_two_flatFrameP]
+  fin_cases r <;>
+    norm_num [rowIndex, inner_coordinates, octDot_coordinates, octScalar,
+      flat_pair_o02_re, JQ, JZ] <;>
+    simp only [← Quaternion.coe_inv, Quaternion.re_coe, Quaternion.imI_coe,
+      Quaternion.imJ_coe, Quaternion.imK_coe] <;> norm_num
+
+theorem jacobianEntry_flatBase_column_three (r : Fin 20) :
+    jacobianEntry ![flatFrameP, flatFrameQ, flatFrameR] r 3 = JQ r 3 := by
+  rw [jacobianEntry_ctx0 _ r 3 (by rfl)]
+  simp only [Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.cons_val_two,
+    Matrix.head_cons, Matrix.tail_cons]
+  rw [direction_three_flatFrameP]
+  fin_cases r <;>
+    norm_num [rowIndex, inner_coordinates, octDot_coordinates,
+      flat_pair_o02_imI, flatScale_eq_sqrt3_div_three, JQ, JZ] <;> ring
 
 end
 end Glennie.Compact.NativeFlatColumns01

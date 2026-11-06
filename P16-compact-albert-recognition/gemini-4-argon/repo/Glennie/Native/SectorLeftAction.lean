@@ -1,7 +1,10 @@
 module
 
-public import Glennie.Theorems.SectorTransport
+public import Glennie.SectorModel
+public import Glennie.Automorphism
+public import Glennie.SectorFactor
 public import Glennie.Theorems.ProjectorFrame
+public import Mathlib.LinearAlgebra.UnitaryGroup
 
 @[expose] public section
 
@@ -9,6 +12,18 @@ namespace Glennie
 noncomputable section
 
 set_option autoImplicit false
+
+abbrev SectorMatrix := Matrix (Fin 3) (Fin 3) ℂ
+abbrev SectorUnitary := Matrix.unitaryGroup (Fin 3) ℂ
+
+theorem sectorAdjointAdjugate_mul (M N : SectorMatrix) :
+    sectorAdjointAdjugate (M * N) = sectorAdjointAdjugate M * sectorAdjointAdjugate N := by
+  simp only [sectorAdjointAdjugate, Matrix.adjugate_mul_distrib, Matrix.conjTranspose_mul]
+
+theorem hiddenMatrix_of_inComplex (x : Albert) (hx : InComplexSector x) : hiddenMatrix x = 0 := by
+  have h : complexAlbertLinear (complexCoordinatesLinear x) = x := complexProjection_eq_self x hx
+  rw [← h]
+  exact hiddenMatrix_complexAlbert _
 
 /-- Real left multiplication by an actual unitary matrix, with its explicit inverse.
 Exposed because it is data in the exported automorphism constructor. -/
@@ -51,23 +66,18 @@ private theorem sectorLeftEquiv_hidden (s : SectorUnitary) (x : Albert) :
 private theorem left_gram (s : SectorUnitary) (M N : SectorMatrix) :
     ((s : SectorMatrix) * M).conjTranspose * ((s : SectorMatrix) * N) =
       M.conjTranspose * N := by
-  calc
-    _ = M.conjTranspose * (((s : SectorMatrix).conjTranspose * (s : SectorMatrix)) * N) := by
-      simp only [Matrix.conjTranspose_mul, Matrix.mul_assoc]
-    _ = M.conjTranspose * N := by
-      have h : (s : SectorMatrix).conjTranspose * (s : SectorMatrix) = 1 := s.property.1
-      rw [h, Matrix.one_mul]
+  have h : (s : SectorMatrix).conjTranspose * (s : SectorMatrix) = 1 := s.property.1
+  rw [Matrix.conjTranspose_mul, Matrix.mul_assoc, ← Matrix.mul_assoc (s : SectorMatrix).conjTranspose,
+    h, Matrix.one_mul]
 
 private theorem adjointAdjugate_left_unitary (s : SectorUnitary)
     (hs : (s : SectorMatrix).det = 1) : sectorAdjointAdjugate (s : SectorMatrix) = s := by
-  have hds : ((star s : SectorUnitary) : SectorMatrix).det = 1 := by
-    change (s : SectorMatrix).conjTranspose.det = 1
-    rw [Matrix.det_conjTranspose, hs]
-    simp
-  have h := sectorAdjointAdjugate_unitary (star s) hds
-  change sectorAdjointAdjugate ((s : SectorMatrix).conjTranspose.conjTranspose) =
-    (s : SectorMatrix).conjTranspose.conjTranspose at h
-  simpa only [Matrix.conjTranspose_conjTranspose] using h
+  have h := congrArg (fun A : SectorMatrix => (s : SectorMatrix).conjTranspose * A)
+    (Matrix.mul_adjugate (s : SectorMatrix))
+  have hl : (s : SectorMatrix).conjTranspose * (s : SectorMatrix) = 1 := s.property.1
+  have ha : (s : SectorMatrix).adjugate = (s : SectorMatrix).conjTranspose := by
+    simpa only [← Matrix.mul_assoc, hl, Matrix.one_mul, hs, one_smul, Matrix.mul_one] using h
+  simp only [sectorAdjointAdjugate, ha, Matrix.conjTranspose_conjTranspose]
 
 private theorem polarAdjugate_left (s : SectorUnitary)
     (hs : (s : SectorMatrix).det = 1) (M N : SectorMatrix) :
@@ -113,9 +123,7 @@ theorem sectorLeftEquiv_trace (s : SectorUnitary) (x : Albert) :
   exact_mod_cast h
 
 /-- The actual native left SU3 action fixes the visible sector and multiplies
-the hidden matrix on the left. Unitarity and determinant one are the only caller
-restrictions; product and trace preservation are proved, including singular
-hidden matrices, with the original HALF and positive adjoint-adjugate product. -/
+the hidden matrix on the left. -/
 def sectorLeftSU3Automorphism (s : SectorUnitary)
     (hs : (s : SectorMatrix).det = 1) : CompactAutomorphism where
   equiv := sectorLeftEquiv s

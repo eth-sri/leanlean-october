@@ -35,17 +35,7 @@ theorem complexCoordinates_albert (q : ComplexCoordinates) :
 theorem complexAlbert_coordinates (x : Albert) :
     complexAlbertLinear (complexCoordinatesLinear x) = complexProjection x := rfl
 
-theorem complexAlbertLinear_injective : Function.Injective complexAlbertLinear := by
-  intro x y h
-  have h' := congrArg complexCoordinatesLinear h
-  simpa only [complexCoordinates_albert] using h'
-
 def complexSector : Submodule ℝ Albert := LinearMap.range complexAlbertLinear
-
-theorem complexSector_finrank : Module.finrank ℝ complexSector = 9 := by
-  change Module.finrank ℝ (LinearMap.range complexAlbertLinear) = 9
-  rw [← (LinearEquiv.ofInjective complexAlbertLinear complexAlbertLinear_injective).finrank_eq]
-  simp [ComplexCoordinates, Complex.finrank_real_complex]
 
 theorem complexProjection_mem (x : Albert) : complexProjection x ∈ complexSector :=
   ⟨complexCoordinatesLinear x, complexAlbert_coordinates x⟩
@@ -71,16 +61,6 @@ theorem complexSector_jordan (x y : Albert) (hx : InComplexSector x)
     jordan_o01, jordan_o02, jordan_o12, octMul, octConj,
     Quaternion.re_mul, Quaternion.imI_mul, Quaternion.imJ_mul, Quaternion.imK_mul]
 
-theorem nine_independent_span_complexSector (v : Fin 3 × Fin 3 → Albert)
-    (hv : ∀ i, InComplexSector (v i)) (hi : LinearIndependent ℝ v) :
-    Submodule.span ℝ (Set.range v) = complexSector := by
-  apply Submodule.eq_of_le_of_finrank_eq
-  · apply Submodule.span_le.mpr
-    rintro _ ⟨i, rfl⟩
-    exact (complexSector_mem_iff _).mpr (hv i)
-  · rw [finrank_span_eq_card hi, complexSector_finrank]
-    norm_num
-
 theorem complexProjection_zero_of_perp (z : Albert)
     (hz : ∀ v ∈ complexSector, inner v z = 0) : complexProjection z = 0 := by
   apply (inner_self_eq_zero (complexProjection z)).mp
@@ -93,22 +73,6 @@ theorem complexProjection_zero_of_perp (z : Albert)
             congrArg (inner (complexProjection z)) (complex_hidden_decomposition z).symm
       _ = _ := by rw [inner_add_right, complex_hidden_orthogonal, add_zero]
   exact hp.symm.trans h
-
-theorem complexProjection_zero_of_nine_perp (v : Fin 3 × Fin 3 → Albert)
-    (hv : ∀ i, InComplexSector (v i)) (hi : LinearIndependent ℝ v) (z : Albert)
-    (hz : ∀ i, inner (v i) z = 0) : complexProjection z = 0 := by
-  let f : Albert →ₗ[ℝ] ℝ :=
-    { toFun := fun x => inner x z
-      map_add' := fun x y => inner_add_left x y z
-      map_smul' := fun r x => inner_smul_left r x z }
-  have hle : Submodule.span ℝ (Set.range v) ≤ LinearMap.ker f := by
-    apply Submodule.span_le.mpr
-    rintro _ ⟨i, rfl⟩
-    exact hz i
-  apply complexProjection_zero_of_perp
-  intro x hx
-  apply hle
-  rwa [nine_independent_span_complexSector v hv hi]
 
 end
 end Glennie

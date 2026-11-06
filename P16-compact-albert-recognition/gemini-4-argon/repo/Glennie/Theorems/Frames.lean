@@ -1,8 +1,10 @@
 module
 
 public import Glennie.Native.AlgebraLaws
-public import Glennie.Theorems.ScalarEstimates
 public import Mathlib.Tactic.Module
+public import Mathlib.Tactic.Ring
+public import Mathlib.Tactic.Linarith
+public import Mathlib.Tactic.NormNum
 
 /- Native frame encoder and marginal identities, without spectral assumptions. -/
 
@@ -67,7 +69,7 @@ theorem uniformLedger_pair_overlap (p q r : Fin 3 → Albert)
     inner (p i) (q j) = 1 / 3 := by
   rw [← ledger_last_marginal p q r hr i j]
   simp only [UniformLedger] at hu
-  simp [hu, Fin.sum_univ_three]
+  simp [hu]
   norm_num
 
 theorem uniformLedger_cyclic (p q r : Fin 3 → Albert)
