@@ -1,5 +1,4 @@
-module
-public import GS.NonmanifoldClosure.PuncturedBall
-public import GS.NonmanifoldFinal.HomologyRetracts
-public import GS.Topology.EuclideanSphere
-public import GS.Topology.SingularHomotopy
+import GS.NonmanifoldClosure.PuncturedBall
+import GS.NonmanifoldFinal.HomologyRetracts
+import GS.Topology.EuclideanSphere
+import GS.Topology.SingularHomotopy

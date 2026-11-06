@@ -1,13 +1,9 @@
-module
 
-public import GS.UnitaryTopology.RegularChart
-public import GS.UnitaryTopology.ProductRetraction
-public import GS.UnitaryTopology.IndexTransport
+import GS.UnitaryTopology.RegularChart
+import GS.UnitaryTopology.ProductRetraction
+import GS.UnitaryTopology.IndexTransport
 
-@[expose] public section
 
-set_option backward.isDefEq.respectTransparency false
-set_option backward.defeqAttrib.useBackward true
 
 /-!
 # Unconditional topological obstruction at widths divisible by four
@@ -21,35 +17,31 @@ obstruction, or local GS-family model is assumed.
 The present mechanism covers positive widths divisible by four. Its transfer
 to the unitary GS matrix family requires the separate local-model theorem.
 -/
-noncomputable section
-open Matrix GS GS.NonmanifoldObstruction GS.NonmanifoldFinal GS.NonmanifoldClosure
+open GS.NonmanifoldFinal
 namespace GS.UnitaryTopology
 
-theorem rankThreeProduct_not_euclidean_blocks (e r : ℕ) (hr : 0<r) :
+variable (e r d : ℕ)
+
+theorem rankThreeProduct_not_euclidean_blocks  (hr : 0<r) :
     ¬ EuclideanAt ((0,rankThreeZero) : (Fin e → ℝ) × RankThreeCone (Fin r × Fin 4)) := by
-  apply not_euclidean_of_retract_regular_charts (quaternionProductRetract e r)
+  apply GS.NonmanifoldTopology.not_euclidean_of_sphereRetractions
+    (fun U hU hx _ => (quaternionProductRetract e r).punctured_sphere U hU hx)
     (Fintype.card (Fin e)+Fintype.card (Fin r × Fin 4)+2) (by simp)
   intro U hU h0
   let j : Fin r × Fin 4 := (⟨0,hr⟩,0)
-  obtain ⟨p,hp,hpc⟩ := exists_regular_in_open3 (ι := Fin e) j U hU h0
-  exact ⟨pivotProductChart3 (ι := Fin e) j,p,hp,hpc⟩
+  obtain ⟨p,hp,hpc⟩ := GS.Topology.exists_regular 2 (ι := Fin e) j U hU h0
+  exact ⟨GS.Topology.rankPivotChart 2 (ι := Fin e) j,p,hp,hpc⟩
 
-theorem rankThreeProduct_not_euclidean_mul_four (e r : ℕ) (hr : 0<r) :
-    ¬ EuclideanAt ((0,rankThreeZero) : (Fin e → ℝ) × RankThreeCone (Fin (r*4))) := by
+theorem rankThreeProduct_not_euclidean_of_four_dvd 
+    (hd : 0<d) (hdiv : 4∣d) :
+    ¬ EuclideanAt ((0,rankThreeZero) : (Fin e → ℝ) × RankThreeCone (Fin d)) := by
+  obtain ⟨r,rfl⟩ := hdiv
+  have hr : 0<r := by omega
+  rw [Nat.mul_comm 4]
   let h := productRankThreeReindex e (finProdFinEquiv : Fin r × Fin 4 ≃ Fin (r*4))
   intro he
   apply rankThreeProduct_not_euclidean_blocks e r hr
   apply (euclideanAt_homeomorph h (0,rankThreeZero)).mpr
-  simpa only [h,productRankThreeReindex_zero] using he
-
-theorem rankThreeProduct_not_euclidean_of_four_dvd (e d : ℕ)
-    (hd : 0<d) (hdiv : 4∣d) :
-    ¬ EuclideanAt ((0,rankThreeZero) : (Fin e → ℝ) × RankThreeCone (Fin d)) := by
-  obtain ⟨r,hr⟩ := hdiv
-  have hd' : d=r*4 := by omega
-  have hrpos : 0<r := by omega
-  rw [hd']
-  apply rankThreeProduct_not_euclidean_mul_four e r
-  exact hrpos
+  exact he
 
 end GS.UnitaryTopology

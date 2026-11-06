@@ -1,3 +1,2 @@
-module
-public import GS.NonmanifoldFinal.RetractTransport
-public import GS.NonmanifoldFinal.HomologyRetracts
+import GS.NonmanifoldFinal.RetractTransport
+import GS.NonmanifoldFinal.HomologyRetracts

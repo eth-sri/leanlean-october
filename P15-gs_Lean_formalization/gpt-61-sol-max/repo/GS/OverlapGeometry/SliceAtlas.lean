@@ -1,14 +1,10 @@
-module
 
-public import Mathlib.Geometry.Manifold.IsManifold.Basic
-public import Mathlib.Analysis.Calculus.ContDiff.Basic
-public import Mathlib.Geometry.Manifold.ContMDiff.NormedSpace
-public import Mathlib.Geometry.Manifold.MFDeriv.Basic
+import Mathlib.Geometry.Manifold.IsManifold.Basic
+import Mathlib.Analysis.Calculus.ContDiff.Basic
+import Mathlib.Geometry.Manifold.ContMDiff.NormedSpace
+import Mathlib.Geometry.Manifold.MFDeriv.Basic
 
-@[expose] public section
 
-set_option backward.isDefEq.respectTransparency false
-set_option backward.defeqAttrib.useBackward true
 
 /-!
 # An atlas from ambient smooth slices
@@ -22,8 +18,6 @@ The application to a matrix orbit must independently construct the slice data,
 including the relative openness of each slice image.
 -/
 
-noncomputable section
-open Set Filter
 open scoped Topology Manifold
 
 namespace GS.OverlapGeometry
@@ -69,15 +63,12 @@ def chart : OpenPartialHomeomorph S E where
     intro y hy
     exact ((s.coordinates_smooth y hy).continuousAt.comp
       continuous_subtype_val.continuousAt).continuousWithinAt
-  continuousOn_invFun := by
-    exact s.parametrization_smooth.continuous.subtype_mk
+  continuousOn_invFun := s.parametrization_smooth.continuous.subtype_mk
       (fun x => (s.parametrization x).property) |>.continuousOn
 
-@[simp] theorem chart_apply (y : S) :
-    s.chart y = s.coordinates y.val := rfl
 
-@[simp] theorem chart_symm_apply (x : E) :
-    s.chart.symm x = s.parametrization x := rfl
+
+
 
 /-- The transition is the composition of the ambient coordinate map of the
 second slice with the smooth parametrization of the first slice. -/
@@ -85,7 +76,7 @@ theorem transition_smooth (s t : SmoothSlice (E := E) S) :
     ContDiffOn ℝ ⊤ (s.chart.symm.trans t.chart)
       (s.chart.symm.trans t.chart).source := by
   intro x hx
-  change x ∈ s.target ∧ s.parametrization x ∈ t.source at hx
+  
   exact ((t.coordinates_smooth (s.parametrization x) hx.2).comp x
     s.parametrization_smooth.contDiffAt).contDiffWithinAt
 
@@ -128,8 +119,8 @@ theorem slice_isManifold {S : Set F} (s : S → SmoothSlice (E := E) S)
   letI := sliceChartedSpace s covers
   apply isManifold_of_contDiffOn
   intro e e' he he'
-  change e ∈ Set.range (fun x => (s x).chart) at he
-  change e' ∈ Set.range (fun x => (s x).chart) at he'
+  
+  
   obtain ⟨x, rfl⟩ := he
   obtain ⟨y, rfl⟩ := he'
   simpa only [modelWithCornersSelf_coe, modelWithCornersSelf_coe_symm,
@@ -146,8 +137,7 @@ theorem slice_val_contMDiff {S : Set F} (s : S → SmoothSlice (E := E) S)
   intro x
   rw [contMDiffAt_iff]
   refine ⟨continuous_subtype_val.continuousAt, ?_⟩
-  change ContDiffWithinAt ℝ ⊤ (fun y : E => ((s x).parametrization y).val)
-    (Set.range (id : E → E)) ((s x).coordinates x.val)
+  
   exact (s x).parametrization_smooth.contDiffAt.contDiffWithinAt
 
 /-- The actual manifold derivative of the inclusion is the derivative of the
@@ -158,7 +148,7 @@ theorem slice_val_mfderiv_eq {S : Set F} (s : S → SmoothSlice (E := E) S)
     mfderiv (𝓘(ℝ, E)) (𝓘(ℝ, F)) (fun y : S => y.val) x =
       fderiv ℝ (fun y => ((s x).parametrization y).val) ((s x).coordinates x.val) := by
   letI := sliceChartedSpace s covers
-  have hd : MDifferentiableAt (𝓘(ℝ, E)) (𝓘(ℝ, F)) (fun y : S => y.val) x :=
+  have hd :=
     (slice_val_contMDiff s covers x).mdifferentiableAt (by simp)
   unfold mfderiv
   rw [if_pos hd]

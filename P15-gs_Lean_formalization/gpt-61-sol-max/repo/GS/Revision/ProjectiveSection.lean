@@ -1,2 +1,1 @@
-module
-public import GS.Fibres
+import GS.Fibres

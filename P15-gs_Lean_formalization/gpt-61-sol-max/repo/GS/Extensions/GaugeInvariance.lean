@@ -1,2 +1,1 @@
-module
-public import GS.Extensions.TwoFactorProjection
+import GS.Extensions.TwoFactorProjection

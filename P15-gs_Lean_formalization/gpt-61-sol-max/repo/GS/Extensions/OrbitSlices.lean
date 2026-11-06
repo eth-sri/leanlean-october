@@ -1,11 +1,7 @@
-module
 
-public import GS.OverlapGeometry.SliceAtlas
+import GS.OverlapGeometry.SliceAtlas
 
-@[expose] public section
 
-set_option backward.isDefEq.respectTransparency false
-set_option backward.defeqAttrib.useBackward true
 
 /-!
 # Smooth slices from a parametrization and ambient inverse
@@ -14,9 +10,6 @@ The constructor keeps the model spaces abstract. Applications supply the
 relative openness and smooth inverse data before assembling an orbit atlas.
 -/
 
-set_option autoImplicit false
-noncomputable section
-open Set
 
 namespace GS.Extensions
 
@@ -36,18 +29,11 @@ def smoothSliceOfParametrization (p : E → S) (c : F → E) (U : Set E)
   parametrization := p
   open_source := himage
   open_target := hU
-  coordinates_smooth := by
-    rintro y ⟨x, hx, rfl⟩
-    exact hc x hx
+  coordinates_smooth := by simp_all
   parametrization_smooth := hp
-  maps_source := by
-    rintro y ⟨x, hx, rfl⟩
-    rw [hi x hx]
-    exact hx
+  maps_source := by simp_all
   maps_target := fun x hx => ⟨x, hx, rfl⟩
-  left_inverse := by
-    rintro y ⟨x, hx, rfl⟩
-    rw [hi x hx]
+  left_inverse := by simp_all
   right_inverse := hi
 
 def translateSmoothSlice (s : GS.OverlapGeometry.SmoothSlice (E := E) S)
@@ -83,7 +69,7 @@ def translateSmoothSlice (s : GS.OverlapGeometry.SmoothSlice (E := E) S)
     simpa only [hU, hTU] using hi
   right_inverse := by
     intro h hh
-    change s.coordinates (g (T (s.parametrization h)).val) = h
+    
     rw [← hU, hUT]
     exact s.right_inverse h hh
 

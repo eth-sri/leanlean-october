@@ -1,3 +1,2 @@
-module
-public import GS.Unitary.GeometryAlgebra
-public import GS.Unitary.Frobenius
+import GS.Unitary.GeometryAlgebra
+import GS.Unitary.Frobenius

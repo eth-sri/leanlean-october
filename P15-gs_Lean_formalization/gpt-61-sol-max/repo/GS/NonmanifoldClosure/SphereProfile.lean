@@ -1,3 +1,2 @@
-module
-public import GS.NonmanifoldClosure.ChartRetractions
-public import GS.NonmanifoldClosure.BallHomology
+import GS.NonmanifoldClosure.ChartRetractions
+import GS.NonmanifoldClosure.BallHomology

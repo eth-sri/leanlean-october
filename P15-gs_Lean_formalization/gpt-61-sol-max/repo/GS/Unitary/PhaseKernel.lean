@@ -1,2 +1,1 @@
-module
-public import GS.Unitary.TangentMetric
+import GS.Unitary.TangentMetric

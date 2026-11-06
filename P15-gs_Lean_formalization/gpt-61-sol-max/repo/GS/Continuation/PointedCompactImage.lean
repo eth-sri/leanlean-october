@@ -1,11 +1,7 @@
-module
 
-public import GS.Continuation.ExponentialChart
+import GS.Continuation.ExponentialChart
 
-@[expose] public section
 
-set_option backward.isDefEq.respectTransparency false
-set_option backward.defeqAttrib.useBackward true
 
 /-!
 # Pointed homeomorphism of the ORIGINAL compact images
@@ -16,8 +12,6 @@ coverage of a neighbourhood of the whole GS family and the cone obstruction are
 not claimed here.
 -/
 
-noncomputable section
-open Matrix
 namespace GS.Continuation
 open GS.Extensions
 

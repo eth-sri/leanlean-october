@@ -1,12 +1,8 @@
-module
 
-public import Mathlib.Analysis.Normed.Module.Basic
-public import Mathlib.Topology.MetricSpace.Basic
+import Mathlib.Analysis.Normed.Module.Basic
+import Mathlib.Topology.MetricSpace.Basic
 
-@[expose] public section
 
-set_option backward.isDefEq.respectTransparency false
-set_option backward.defeqAttrib.useBackward true
 
 /-! A proposition recording the closed-unit-ball formulation of Brouwer's theorem.
 An unconditional instance is constructed in `GS.Topology.BrouwerBall`. -/

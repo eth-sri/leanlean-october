@@ -1,2 +1,1 @@
-module
-public import GS.Core
+import GS.Core

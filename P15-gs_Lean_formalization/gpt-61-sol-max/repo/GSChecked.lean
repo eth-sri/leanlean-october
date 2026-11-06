@@ -1,87 +1,66 @@
-module
-
-/-
-# Complete source entry point
-
-This target collects all project modules, including unconditional proofs of
-`GS.Specifications.NonManifoldGoal`, `RestrictedNonManifoldGoal`, and
-`OddConeNonManifoldGoal`. The conditional homology reductions retain their explicit
-sphere-profile argument; the final topological proof does not use that argument.
-
-See docs/RESULTS.md for the precise scope and docs/VERIFICATION.md for checks.
--/
-public import GS
-public import GSExtensions
-public import GSContinuation
-public import GSLieAction
-public import GSCayleyCharts
-public import GSRevision
-public import GSHomologyFunctor
-public import GS.NonmanifoldClosure.PuncturedBall
-public import GS.NonmanifoldClosure.LowSphereHomology
-public import GSDifferentiableObstruction
-public import GSNonmanifoldCoverage
-public import GSNonmanifold
-public import GSNonmanifoldOpenGerms
-public import GSNonmanifoldSphereRetract
-public import GSNonmanifoldMembership
-public import GSNonmanifoldCompletion
-public import GSNonmanifoldBridge
-public import GSNonmanifoldHomology
-public import GSManifoldCompletion
-public import GS.GlobalGeometry.ExactSharing
-public import GS.GlobalGeometry.IntrinsicCayley
-public import GS.GlobalGeometry.MetricTopology
-public import GS.GlobalGeometry.ProjectedDerivative
-public import GS.RiemannianCompletion.Procrustes
-public import GS.NonmanifoldClosure.ChartRetractions
-public import GS.NonmanifoldClosure.RegularConeChart
-public import GS.RestrictedNonmanifold.Specification
-public import GS.RestrictedNonmanifold.SkewDimension
-public import GS.RestrictedNonmanifold.Basepoint
-public import GS.RestrictedNonmanifold.Differential
-public import GS.RestrictedNonmanifold.ConditionalReduction
-public import GSNonmanifoldBallHomology
-public import GSNonmanifoldClosure
-public import GSNonmanifoldTopology
-public import GSResults
-
-public import GS.SharedGeometry.Projection
-public import GS.SharedGeometry.Differential
-public import GS.UnitaryManifold.CanonicalDescent
-public import GS.SharedGeometry.FactorCoordinates
-public import GS.SharedGeometry.HorizontalModel
-public import GS.SharedGeometry.ProjectedSlice
-public import GS.SharedGeometry.LocalProduct
-public import GS.SharedGeometry.OrbitAtlas
-public import GS.SharedGeometry.HorizontalDifferential
-public import GS.SharedGeometry.TangentBridge
-public import GS.SharedGeometry.Riemannian
-public import GS.SharedGeometry.LocalSections
-public import GS.SharedGeometry.SmoothProjection
-public import GS.SharedGeometry.Gradient
-
-public import GS.SharedGeometry.MinimumNormLift
-public import GS.SharedGeometry.GeneratorAction
-public import GS.SharedGeometry.SmoothLift
-public import GS.SharedGeometry.CayleyStep
-public import GS.SharedGeometry.Retraction
-public import GS.SharedGeometry.BundleRetraction
-public import GS.SharedGeometry.Descent
-public import GS.SharedGeometry.GradientSection
-
-public import GS.SharedGeodesics.PhaseGauge
-public import GS.SharedGeometry.Connection
-public import GS.SharedGeodesics.Orthogonal
-public import GS.SharedGeodesics.FactorIndependence
-public import GS.SharedGeodesics.Shuffle
-public import GS.UnitarySharing.NormalEquations
-public import GS.UnitarySharing.GradientSection
-public import GS.UnitarySharing.Descent
-
-public import GS.UnitarySharing.PhaseKernel
-
-@[expose] public section
-
-set_option backward.isDefEq.respectTransparency false
-set_option backward.defeqAttrib.useBackward true
+import GS
+import GSExtensions
+import GSContinuation
+import GSLieAction
+import GSCayleyCharts
+import GSRevision
+import GSHomologyFunctor
+import GS.NonmanifoldClosure.PuncturedBall
+import GS.NonmanifoldClosure.LowSphereHomology
+import GSDifferentiableObstruction
+import GSNonmanifoldCoverage
+import GSNonmanifold
+import GSNonmanifoldOpenGerms
+import GSNonmanifoldSphereRetract
+import GSNonmanifoldMembership
+import GSNonmanifoldCompletion
+import GSNonmanifoldBridge
+import GSNonmanifoldHomology
+import GSManifoldCompletion
+import GS.GlobalGeometry.ExactSharing
+import GS.GlobalGeometry.IntrinsicCayley
+import GS.GlobalGeometry.MetricTopology
+import GS.GlobalGeometry.ProjectedDerivative
+import GS.RiemannianCompletion.Procrustes
+import GS.NonmanifoldClosure.ChartRetractions
+import GS.NonmanifoldClosure.RegularConeChart
+import GS.RestrictedNonmanifold.Specification
+import GS.RestrictedNonmanifold.SkewDimension
+import GS.RestrictedNonmanifold.Basepoint
+import GS.RestrictedNonmanifold.Differential
+import GS.RestrictedNonmanifold.ConditionalReduction
+import GSNonmanifoldBallHomology
+import GSNonmanifoldClosure
+import GSNonmanifoldTopology
+import GSResults
+import GS.SharedGeometry.Projection
+import GS.SharedGeometry.Differential
+import GS.UnitaryManifold.CanonicalDescent
+import GS.SharedGeometry.FactorCoordinates
+import GS.SharedGeometry.HorizontalModel
+import GS.SharedGeometry.ProjectedSlice
+import GS.SharedGeometry.LocalProduct
+import GS.SharedGeometry.OrbitAtlas
+import GS.SharedGeometry.HorizontalDifferential
+import GS.SharedGeometry.TangentBridge
+import GS.SharedGeometry.Riemannian
+import GS.SharedGeometry.LocalSections
+import GS.SharedGeometry.SmoothProjection
+import GS.SharedGeometry.Gradient
+import GS.SharedGeometry.MinimumNormLift
+import GS.SharedGeometry.GeneratorAction
+import GS.SharedGeometry.SmoothLift
+import GS.SharedGeometry.CayleyStep
+import GS.SharedGeometry.Retraction
+import GS.SharedGeometry.BundleRetraction
+import GS.SharedGeometry.Descent
+import GS.SharedGeometry.GradientSection
+import GS.SharedGeodesics.PhaseGauge
+import GS.SharedGeometry.Connection
+import GS.SharedGeodesics.Orthogonal
+import GS.SharedGeodesics.FactorIndependence
+import GS.SharedGeodesics.Shuffle
+import GS.UnitarySharing.NormalEquations
+import GS.UnitarySharing.GradientSection
+import GS.UnitarySharing.Descent
+import GS.UnitarySharing.PhaseKernel

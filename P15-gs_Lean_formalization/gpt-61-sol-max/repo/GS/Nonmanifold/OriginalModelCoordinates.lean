@@ -1,11 +1,10 @@
-module
+import Mathlib.Tactic
 
-public import GS.Nonmanifold.SkewCoordinates
+import GS.Nonmanifold.SkewCoordinates
+open GS.MatrixBase
 
-@[expose] public section
 
-set_option backward.isDefEq.respectTransparency false
-set_option backward.defeqAttrib.useBackward true
+
 
 /-!
 # The unbounded model containing the original g(K)
@@ -19,44 +18,30 @@ Two separate steps are constructed here:
 This is the g-side neighbourhood statement. It must not be confused with the
 still-open f-side coverage of a neighbourhood in the entire GS matrix family.
 -/
-noncomputable section
-open Matrix GS GS.Extensions GS.GlobalGeometry
-open scoped BigOperators
+open GS.GlobalGeometry
 namespace GS.Nonmanifold
+
+variable (r : Fin q → ℝ)
 
 abbrev NonzeroIndex (q : ℕ) := {i : Fin q // i.val ≠ 0}
 
-def packRight {q : ℕ} (r : Fin q → ℝ) : NonzeroIndex q → ℝ := fun j => r j.val
+def packRight  : NonzeroIndex q → ℝ := fun j => r j.val
 
-def unpackRight {q : ℕ} (x : NonzeroIndex q → ℝ) : Fin q → ℝ :=
-  fun j => if h : j.val = 0 then 0 else x ⟨j,h⟩
+def unpackRight (x : NonzeroIndex q → ℝ) := fun j => if h : j.val = 0 then 0 else x ⟨j,h⟩
 
-theorem unpackRight_anchored {q : ℕ} (x : NonzeroIndex q → ℝ) :
-    ∀ j : Fin q, j.val = 0 → unpackRight x j = 0 := by
-  intro j hj
-  simp [unpackRight, hj]
 
-theorem pack_unpackRight {q : ℕ} (x : NonzeroIndex q → ℝ) :
-    packRight (unpackRight x) = x := by
-  funext j
-  simp [packRight, unpackRight, j.property]
 
-theorem unpack_packRight {q : ℕ} (r : Fin q → ℝ)
-    (hr : ∀ j : Fin q, j.val = 0 → r j = 0) :
-    unpackRight (packRight r) = r := by
-  funext j
-  by_cases hj : j.val = 0
-  · simp [packRight, unpackRight, hj, hr j hj]
-  · simp [packRight, unpackRight, hj]
+theorem pack_unpackRight (x : NonzeroIndex q → ℝ) :
+    packRight (unpackRight x) = x := by grind [packRight,unpackRight]
+
+
 
 theorem continuous_unpackRight (q : ℕ) : Continuous (@unpackRight q) := by
   apply continuous_pi
   intro j
   by_cases hj : j.val = 0
-  · simp only [unpackRight, dif_pos hj]
-    exact continuous_const
-  · simp only [unpackRight, dif_neg hj]
-    exact continuous_apply _
+  · simp_all [unpackRight,continuous_const]
+  · simp_all [unpackRight,continuous_apply]
 
 /-- The original image constraints with only the radius bounds removed. -/
 def originalModelSet (q : ℕ) : Set (OriginalImageCoordinates q) :=
@@ -69,55 +54,55 @@ abbrev ModelCoordinates (q : ℕ) :=
   (Fin q → ℝ) × (NonzeroIndex q → ℝ) × (UpperIndex q → ℝ) ×
     {Z : Matrix (Fin 2) (UpperIndex q) ℝ // Z.rank ≤ 1}
 
-def encodeModel {q : ℕ} (p : OriginalModel q) : ModelCoordinates q :=
+def encodeModel (p : OriginalModel q) : ModelCoordinates q :=
   (p.val.1, packRight p.val.2.1, packSkew p.val.2.2.1,
-    ⟨packRows p.val.2.2.2, packRows_rank_le_one _ p.property.2.2.2⟩)
+    ⟨packRows p.val.2.2.2, (Matrix.rank_submatrix_le _ id Subtype.val).trans p.property.2.2.2⟩)
 
-def decodeModel {q : ℕ} (p : ModelCoordinates q) : OriginalModel q :=
+def decodeModel (p : ModelCoordinates q) : OriginalModel q :=
   ⟨(p.1, unpackRight p.2.1, unpackSkew p.2.2.1, unpackRows p.2.2.2.val),
-    unpackRight_anchored _, unpackSkew_isSkew _, unpackRows_isSkew _,
-    unpackRows_rank_le_one _ p.2.2.2.property⟩
+    (by simp_all [unpackRight]), unpackSkew_isSkew _,
+    (fun r => unpackSkew_isSkew _), by
 
-theorem decode_encodeModel {q : ℕ} (p : OriginalModel q) :
+      obtain ⟨u,hu,z,hz⟩ := GS.GlobalGeometry.exists_unit_outer_of_rank_le_one _ p.2.2.2.property
+      rw [← hz]
+      convert rank_outer_le_one u (fun ij : Fin q × Fin q => unpackSkew z ij.1 ij.2) using 1
+      congr 1
+      ext r ij
+      simp [unpackRows,outer,unpackSkew,mul_dite,mul_neg]⟩
+
+theorem decode_encodeModel (p : OriginalModel q) :
     decodeModel (encodeModel p) = p := by
   apply Subtype.ext
   rcases p with ⟨⟨ell,r,c,W⟩,hr,hc,hW,hRank⟩
   change (ell, unpackRight (packRight r), unpackSkew (packSkew c),
     unpackRows (packRows W)) = (ell,r,c,W)
-  rw [unpack_packRight r hr, unpack_packSkew hc, unpack_packRows W hW]
+  have hr' : unpackRight (packRight r) = r := by grind [packRight,unpackRight]
+  have hw' : unpackRows (packRows W) = W := by
+    ext r ij
+    exact congrFun (congrFun (unpack_packSkew (hW r)) ij.1) ij.2
+  rw [hr',unpack_packSkew hc,hw']
+  rfl
 
-theorem encode_decodeModel {q : ℕ} (p : ModelCoordinates q) :
-    encodeModel (decodeModel p) = p := by
-  rcases p with ⟨ell,r,c,W⟩
-  refine Prod.ext ?_ ?_
-  · rfl
-  apply Prod.ext
-  · exact pack_unpackRight r
-  · apply Prod.ext
-    · exact pack_unpackSkew c
-    · apply Subtype.ext
-      exact pack_unpackRows W.val
+theorem encode_decodeModel (p : ModelCoordinates q) :
+    encodeModel (decodeModel p) = p := by simp_all [decodeModel,encodeModel,pack_unpackRight,pack_unpackRows,pack_unpackSkew]
 
 theorem continuous_encodeModel (q : ℕ) : Continuous (@encodeModel q) := by
   unfold encodeModel packRight packSkew packRows
   fun_prop
 
+attribute [fun_prop] continuous_unpackRight continuous_unpackSkew continuous_unpackRows
+
 theorem continuous_decodeModel (q : ℕ) : Continuous (@decodeModel q) := by
-  apply Continuous.subtype_mk
-  apply Continuous.prodMk
-  · exact continuous_fst
-  · apply Continuous.prodMk
-    · exact (continuous_unpackRight q).comp (by fun_prop)
-    · apply Continuous.prodMk
-      · exact (continuous_unpackSkew q).comp (by fun_prop)
-      · exact (continuous_unpackRows q).comp (by fun_prop)
+  unfold decodeModel
+  fun_prop
 
 /-- A polynomial squared radius on the full ambient g-coordinate space. -/
-def modelRadiusSq {q : ℕ} (p : OriginalImageCoordinates q) : ℝ :=
-  (∑ i, p.1 i^2) + (∑ j, p.2.1 j^2) + frobSq p.2.2.1 + frobSq p.2.2.2
+noncomputable def modelRadiusSq (p : OriginalImageCoordinates q) : ℝ :=
+  (∑ i, p.1 i^2) + (∑ j, p.2.1 j^2) + cFrobSq p.2.2.1 + cFrobSq p.2.2.2
 
 theorem continuous_modelRadiusSq (q : ℕ) : Continuous (@modelRadiusSq q) := by
-  unfold modelRadiusSq frobSq frobInner
+  unfold modelRadiusSq
+  simp only [cFrobSq,cFrobInner,star_trivial,RCLike.re_to_real]
   fun_prop
 
 theorem originalG_image_subset_model (q : ℕ) (η : ℝ) :
@@ -127,28 +112,26 @@ theorem originalG_image_subset_model (q : ℕ) (η : ℝ) :
   exact ⟨hr0,hc,hW,hRank⟩
 
 /-- An explicit small relative neighbourhood lies in the original compact image. -/
-theorem small_modelRadius_mem_originalG {q : ℕ} {η : ℝ} (hη : 0 < η)
+theorem small_modelRadius_mem_originalG {η : ℝ} (hη : 0 < η)
     (p : OriginalImageCoordinates q) (hp : p ∈ originalModelSet q)
     (hn : modelRadiusSq p < η^2) : p ∈ originalG '' originalK q η := by
   rw [originalG_image_eq]
   have hL : 0 ≤ ∑ i, p.1 i^2 := Finset.sum_nonneg (fun i _ => sq_nonneg _)
   have hR : 0 ≤ ∑ j, p.2.1 j^2 := Finset.sum_nonneg (fun j _ => sq_nonneg _)
-  have hc := frobSq_nonneg p.2.2.1
-  have hW := frobSq_nonneg p.2.2.2
-  have hC : frobSq p.2.2.1 ≤ η^2 := by dsimp [modelRadiusSq] at hn; linarith
-  have hZ : frobSq p.2.2.2 ≤ η^2 := by dsimp [modelRadiusSq] at hn; linarith
+  have hc := cFrobSq_nonneg p.2.2.1
+  have hW := cFrobSq_nonneg p.2.2.2
+  have hC : cFrobSq p.2.2.1 ≤ η^2 := by grind [modelRadiusSq]
+  have hZ : cFrobSq p.2.2.2 ≤ η^2 := by grind [modelRadiusSq]
   refine ⟨?_,?_,hp.1,hp.2.1,hC,hp.2.2.1,hp.2.2.2,hZ⟩
   · intro i
     have hs : p.1 i^2 ≤ ∑ k, p.1 k^2 :=
       Finset.single_le_sum (fun k _ => sq_nonneg _) (Finset.mem_univ i)
-    have hh : p.1 i^2 < η^2 := by dsimp [modelRadiusSq] at hn; linarith
-    have ha := abs_nonneg (p.1 i)
+    have hh : p.1 i^2 < η^2 := by grind [modelRadiusSq]
     nlinarith [sq_abs (p.1 i)]
   · intro j
     have hs : p.2.1 j^2 ≤ ∑ k, p.2.1 k^2 :=
       Finset.single_le_sum (fun k _ => sq_nonneg _) (Finset.mem_univ j)
-    have hh : p.2.1 j^2 < η^2 := by dsimp [modelRadiusSq] at hn; linarith
-    have ha := abs_nonneg (p.2.1 j)
+    have hh : p.2.1 j^2 < η^2 := by grind [modelRadiusSq]
     nlinarith [sq_abs (p.2.1 j)]
 
 end GS.Nonmanifold

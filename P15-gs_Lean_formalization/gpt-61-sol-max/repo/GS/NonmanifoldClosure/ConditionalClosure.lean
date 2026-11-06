@@ -1,4 +1,3 @@
-module
-public import GS.NonmanifoldClosure.SphereProfile
-public import GS.NonmanifoldClosure.RegularConeChart
-public import GS.NonmanifoldFinal.ConditionalGS
+import GS.NonmanifoldClosure.SphereProfile
+import GS.NonmanifoldClosure.RegularConeChart
+import GS.NonmanifoldFinal.ConditionalGS

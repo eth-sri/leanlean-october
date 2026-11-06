@@ -1,3 +1,2 @@
-module
-public import GS.Specifications
-public import GS.RestrictedNonmanifold.Parity
+import GS.Specifications
+import GS.RestrictedNonmanifold.Parity

@@ -1,4 +1,3 @@
-module
-public import GS.Topology.SingularHomotopyChain
-public import GS.Topology.SingularHomotopyPrism
-public import Mathlib.AlgebraicTopology.SingularHomology.Basic
+import GS.Topology.SingularHomotopyChain
+import GS.Topology.SingularHomotopyPrism
+import Mathlib.AlgebraicTopology.SingularHomology.Basic

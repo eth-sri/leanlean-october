@@ -1,4 +1,3 @@
-module
-public import GS.UnitaryCS.Square
-public import GS.CS.Angles
-public import Mathlib.Analysis.SpecialFunctions.Trigonometric.Inverse
+import GS.UnitaryCS.Square
+import GS.CS.Angles
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.Inverse

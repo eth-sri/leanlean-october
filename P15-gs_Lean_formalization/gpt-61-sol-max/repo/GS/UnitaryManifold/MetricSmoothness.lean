@@ -1,2 +1,1 @@
-module
-public import Mathlib.Geometry.Manifold.ContMDiffMFDeriv
+import Mathlib.Geometry.Manifold.ContMDiffMFDeriv

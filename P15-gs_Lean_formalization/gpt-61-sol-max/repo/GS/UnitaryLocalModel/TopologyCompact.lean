@@ -1,14 +1,13 @@
-module
+import Mathlib.Tactic
 
-public import GS.UnitaryLocalModel.ChartFibres
-public import GS.UnitaryLocalModel.RankCone
-public import GS.CompactFibres
-public import Mathlib.Topology.Order.Compact
+import GS.UnitaryLocalModel.ChartFibres
+import GS.UnitaryLocalModel.RankCone
+import GS.CompactFibres
+import Mathlib.Topology.Order.Compact
+open GS.MatrixBase
 
-@[expose] public section
 
-set_option backward.isDefEq.respectTransparency false
-set_option backward.defeqAttrib.useBackward true
+
 
 /-!
 # Compact images in the unitary local model
@@ -24,11 +23,12 @@ normalization, and coverage of every nearby GS matrix.
 -/
 
 noncomputable section
-open Matrix GS Filter
-open scoped BigOperators Topology
+open scoped Topology
 namespace GS.UnitaryLocalModel
 
-def localEnergy {d : ℕ} (x : Fin d → ℝ) : ℝ := ∑ i, x i ^ 2
+variable (x : Fin d → ℝ)
+
+def localEnergy  : ℝ := ∑ i, x i ^ 2
 
 theorem continuous_localEnergy (d : ℕ) : Continuous (@localEnergy d) := by
   unfold localEnergy
@@ -39,7 +39,7 @@ abbrev LocalParameters (d : ℕ) := (Fin d → ℝ) × (Fin d → ℝ) × AxisVe
 def localParameterBox (d : ℕ) (r : ℝ) : Set (LocalParameters d) :=
   {p | localEnergy p.1 ≤ r^2 ∧ localEnergy p.2.1 ≤ r^2 ∧ OnSphere p.2.2}
 
-theorem localEnergy_coordinate_bound {d : ℕ} (x : Fin d → ℝ) (r : ℝ)
+theorem localEnergy_coordinate_bound  (r : ℝ)
     (hx : localEnergy x ≤ r^2) (i : Fin d) : |x i| ≤ |r| := by
   have hi : x i ^ 2 ≤ localEnergy x :=
     Finset.single_le_sum (fun j _ => sq_nonneg (x j)) (Finset.mem_univ i)
@@ -54,16 +54,11 @@ theorem onSphere_coordinate_bound {u : AxisVector} (hu : OnSphere u)
 
 theorem isClosed_localParameterBox (d : ℕ) (r : ℝ) :
     IsClosed (localParameterBox d r) := by
-  have hc : IsClosed {p : LocalParameters d | localEnergy p.1 ≤ r^2} :=
-    isClosed_le ((continuous_localEnergy d).comp continuous_fst) continuous_const
-  have hz : IsClosed {p : LocalParameters d | localEnergy p.2.1 ≤ r^2} :=
-    isClosed_le ((continuous_localEnergy d).comp (by fun_prop)) continuous_const
-  have hu : IsClosed {p : LocalParameters d | OnSphere p.2.2} := by
-    apply isClosed_eq _ continuous_const
-    change Continuous (fun p : LocalParameters d =>
-      p.2.2 0 ^ 2 + p.2.2 1 ^ 2 + p.2.2 2 ^ 2)
-    fun_prop
-  exact hc.inter (hz.inter hu)
+  simp only [localParameterBox, OnSphere, Set.setOf_and]
+  repeat' apply IsClosed.inter
+  all_goals first
+    | exact isClosed_le (by fun_prop [localEnergy]) continuous_const
+    | exact isClosed_eq (by fun_prop) continuous_const
 
 theorem isCompact_localParameterBox (d : ℕ) (r : ℝ) :
     IsCompact (localParameterBox d r) := by
@@ -81,16 +76,14 @@ theorem isCompact_localParameterBox (d : ℕ) (r : ℝ) :
 abbrev ConeCoordinates (d : ℕ) :=
   (Fin d → ℝ) × {W : Matrix (Fin 3) (Fin d) ℝ // W.rank ≤ 1}
 
-def parameterCone {d : ℕ} (p : LocalParameters d) : ConeCoordinates d :=
+def parameterCone (p : LocalParameters d) : ConeCoordinates d :=
   (p.1, ⟨sphereOuter p.2.2 p.2.1, rank_sphereOuter_le_one _ _⟩)
 
 theorem continuous_parameterCone (d : ℕ) : Continuous (@parameterCone d) := by
-  have h : Continuous (fun p : LocalParameters d => (p.2.2,p.2.1)) :=
-    continuous_snd.snd.prodMk continuous_snd.fst
-  exact continuous_fst.prodMk ((continuous_sphereOuter.comp h).subtype_mk _)
+  fun_prop [parameterCone,sphereOuter]
 
 def boundedConeCoordinates (d : ℕ) (r : ℝ) : Set (ConeCoordinates d) :=
-  {p | localEnergy p.1 ≤ r^2 ∧ frobSq p.2.val ≤ r^2}
+  {p | localEnergy p.1 ≤ r^2 ∧ cFrobSq p.2.val ≤ r^2}
 
 theorem parameterCone_image (d : ℕ) (r : ℝ) :
     parameterCone '' localParameterBox d r = boundedConeCoordinates d r := by
@@ -98,49 +91,29 @@ theorem parameterCone_image (d : ℕ) (r : ℝ) :
   constructor
   · rintro ⟨⟨c,z,u⟩,hp,rfl⟩
     refine ⟨hp.1, ?_⟩
-    change frobSq (sphereOuter u z) ≤ r^2
+    change cFrobSq (sphereOuter u z) ≤ r^2
     rw [frobSq_sphereOuter hp.2.2]
     exact hp.2.1
   · rintro ⟨hc,hW⟩
     obtain ⟨u,hu,z,hz⟩ := exists_sphereOuter_of_rank_le_one p.2.val p.2.property
-    have he : localEnergy z = frobSq p.2.val := by
-      rw [← hz, frobSq_sphereOuter hu]
-      rfl
+    have he : localEnergy z = cFrobSq p.2.val := by aesop (add norm [frobSq_sphereOuter])
     refine ⟨(p.1,z,u), ⟨hc,?_,hu⟩,?_⟩
-    · rw [he]
-      exact hW
-    · change (p.1,⟨sphereOuter u z,rank_sphereOuter_le_one u z⟩) = p
-      apply Prod.ext
-      · rfl
-      · exact Subtype.ext hz
+    · aesop
+    · aesop
 
 def coneCoordinatesZero (d : ℕ) : ConeCoordinates d :=
   (0,⟨0,by simp⟩)
 
 theorem boundedConeCoordinates_mem_nhds (d : ℕ) {r : ℝ} (hr : 0 < r) :
     boundedConeCoordinates d r ∈ 𝓝 (coneCoordinatesZero d) := by
-  have hc : Continuous (fun p : ConeCoordinates d => localEnergy p.1) :=
-    (continuous_localEnergy d).comp continuous_fst
-  have hW : Continuous (fun p : ConeCoordinates d => frobSq p.2.val) := by
-    unfold frobSq frobInner
-    have hv : Continuous (fun p : ConeCoordinates d => p.2.val) :=
-      continuous_subtype_val.comp continuous_snd
-    apply continuous_finset_sum
-    intro i hi
-    apply continuous_finset_sum
-    intro j hj
-    exact (((continuous_apply j).comp ((continuous_apply i).comp hv))).mul
-      (((continuous_apply j).comp ((continuous_apply i).comp hv)))
-  have hco : IsOpen {p : ConeCoordinates d | localEnergy p.1 < r^2} :=
-    isOpen_lt hc continuous_const
-  have hWo : IsOpen {p : ConeCoordinates d | frobSq p.2.val < r^2} :=
-    isOpen_lt hW continuous_const
-  apply Filter.mem_of_superset ((hco.inter hWo).mem_nhds ?_) ?_
-  · simp [coneCoordinatesZero, localEnergy, frobSq, frobInner, sq_pos_of_pos hr]
-  · intro p hp
-    exact ⟨hp.1.le,hp.2.le⟩
+  have hc : Continuous (fun p : ConeCoordinates d => localEnergy p.1) := by
+    fun_prop [localEnergy]
+  have hW : Continuous (fun p : ConeCoordinates d => cFrobSq p.2.val) := GS.Extensions.continuous_frobSq.comp (continuous_subtype_val.comp continuous_snd)
+  
+  exact (hc.continuousAt.eventually_le_const (by simp_all [coneCoordinatesZero,localEnergy])).and
+    (hW.continuousAt.eventually_le_const (by simp_all [cFrobInner,cFrobSq,coneCoordinatesZero]))
 
-theorem localEnergy_norm_bound {d : ℕ} (x : Fin d → ℝ) {r : ℝ}
+theorem localEnergy_norm_bound  {r : ℝ}
     (hr : 0 ≤ r) (hx : localEnergy x ≤ r^2) : ‖x‖ ≤ r := by
   apply (pi_norm_le_iff_of_nonneg hr).mpr
   intro i
@@ -148,7 +121,7 @@ theorem localEnergy_norm_bound {d : ℕ} (x : Fin d → ℝ) {r : ℝ}
     localEnergy_coordinate_bound x r hx i
 
 /-- Every open chart domain around zero contains a whole compact parameter box. -/
-theorem exists_parameterBox_in_chart {d : ℕ} (U : Set (Fin d → ℝ))
+theorem exists_parameterBox_in_chart (U : Set (Fin d → ℝ))
     (hU : IsOpen U) (h0 : 0 ∈ U) :
     ∃ r : ℝ, 0 < r ∧ ∀ p ∈ localParameterBox d r,
       p.1+p.2.1 ∈ U ∧ p.1-p.2.1 ∈ U := by
@@ -167,25 +140,7 @@ theorem exists_parameterBox_in_chart {d : ℕ} (U : Set (Fin d → ℝ))
     rw [dist_zero_right]
     exact lt_of_le_of_lt (norm_sub_le _ _) (by linarith)
 
-def parameterMiddle {d : ℕ} {κ : Type*}
-    (ψ : (Fin d → ℝ) → (κ → ℂ)) (p : LocalParameters d) : κ → CMat 2 :=
-  chartMiddle ψ p.1 p.2.1 p.2.2
-
-theorem continuous_parameterMiddle_on_box {d : ℕ} {κ : Type*}
-    (ψ : (Fin d → ℝ) → (κ → ℂ)) (U : Set (Fin d → ℝ))
-    (hψ : ContinuousOn ψ U) (r : ℝ)
-    (hargs : ∀ p ∈ localParameterBox d r, p.1+p.2.1 ∈ U ∧ p.1-p.2.1 ∈ U) :
-    Continuous (fun p : localParameterBox d r => parameterMiddle ψ p.val) := by
-  have hp : Continuous (fun p : localParameterBox d r => ψ (p.val.1+p.val.2.1)) :=
-    hψ.comp_continuous (by fun_prop) (fun p => (hargs p.val p.property).1)
-  have hm : Continuous (fun p : localParameterBox d r => ψ (p.val.1-p.val.2.1)) :=
-    hψ.comp_continuous (by fun_prop) (fun p => (hargs p.val p.property).2)
-  unfold parameterMiddle chartMiddle middleBlock
-  apply continuous_pi
-  intro j
-  exact (((continuous_apply j).comp hp).add ((continuous_apply j).comp hm)).div_const 2 |>.smul
-    continuous_const |>.add
-      (((((continuous_apply j).comp hp).sub ((continuous_apply j).comp hm)).div_const 2).smul
-        (continuous_pauli.comp (by fun_prop)))
+def parameterMiddle {κ : Type*}
+    (ψ : (Fin d → ℝ) → (κ → ℂ)) (p : LocalParameters d) := chartMiddle ψ p.1 p.2.1 p.2.2
 
 end GS.UnitaryLocalModel

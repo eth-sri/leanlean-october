@@ -1,2 +1,1 @@
-module
-public import Mathlib.Tactic.Abel
+import Mathlib.Tactic.Abel

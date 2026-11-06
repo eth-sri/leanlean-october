@@ -1,3 +1,2 @@
-module
-public import GS.UnitarySharing.Directions
-public import GS.Unitary.PhaseKernel
+import GS.UnitarySharing.Directions
+import GS.Unitary.PhaseKernel

@@ -1,15 +1,9 @@
-module
 
-public import Mathlib.Topology.OpenPartialHomeomorph.Basic
+import Mathlib.Topology.OpenPartialHomeomorph.Basic
 
-@[expose] public section
 
-set_option backward.isDefEq.respectTransparency false
-set_option backward.defeqAttrib.useBackward true
 
 /-! Restrict a product-valued partial homeomorphism to its zero level. -/
-noncomputable section
-open Set
 namespace GS.UnitaryLocalModel
 variable {X F E : Type*} [TopologicalSpace X] [TopologicalSpace F]
   [TopologicalSpace E] [Zero F]

@@ -1,6 +1,5 @@
-module
-public import GS.NonmanifoldFinal.HomologyRetracts
-public import GS.Topology.EuclideanSphere
-public import Mathlib.Topology.Connected.TotallyDisconnected
-public import Mathlib.Tactic.FinCases
-public import Mathlib.Tactic.Linarith
+import GS.NonmanifoldFinal.HomologyRetracts
+import GS.Topology.EuclideanSphere
+import Mathlib.Topology.Connected.TotallyDisconnected
+import Mathlib.Tactic.FinCases
+import Mathlib.Tactic.Linarith

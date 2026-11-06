@@ -1,4 +1,3 @@
-module
-public import GS.Specifications
-public import GS.Revision.ThreeFactorPartitions
-public import GS.Revision.M4Neighborhood
+import GS.Specifications
+import GS.Revision.ThreeFactorPartitions
+import GS.Revision.M4Neighborhood

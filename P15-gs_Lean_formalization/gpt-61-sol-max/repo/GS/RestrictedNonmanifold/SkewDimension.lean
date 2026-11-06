@@ -1,4 +1,3 @@
-module
-public import GS.Nonmanifold.SkewCoordinates
-public import GS.RestrictedNonmanifold.Parity
-public import Mathlib.Algebra.BigOperators.Intervals
+import GS.Nonmanifold.SkewCoordinates
+import GS.RestrictedNonmanifold.Parity
+import Mathlib.Algebra.BigOperators.Intervals

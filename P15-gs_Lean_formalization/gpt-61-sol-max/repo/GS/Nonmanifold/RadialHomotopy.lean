@@ -1,2 +1,1 @@
-module
-public import GS.Nonmanifold.RadialCone
+import GS.Nonmanifold.RadialCone

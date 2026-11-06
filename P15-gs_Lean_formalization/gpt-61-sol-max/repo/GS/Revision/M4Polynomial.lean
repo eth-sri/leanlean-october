@@ -1,2 +1,1 @@
-module
-public import GS.M4Necessary
+import GS.M4Necessary

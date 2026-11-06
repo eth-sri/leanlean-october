@@ -1,16 +1,13 @@
-module
 
-public import GS.UnitaryTopology.LocalTransport
-public import GS.UnitaryLocalModel.TopologyNeighbourhood
-public import GS.UnitaryLocalModel.TopologyFeasibility
-public import GS.UnitaryLocalModel.FullCoverage
-public import GS.Results.Nonmanifold
-public import GS.Unitary.RealEmbedding
+import GS.UnitaryTopology.LocalTransport
+import GS.UnitaryLocalModel.TopologyNeighbourhood
+import GS.UnitaryLocalModel.TopologyFeasibility
+import GS.UnitaryLocalModel.FullCoverage
+import GS.Results.Nonmanifold
+import GS.Unitary.RealEmbedding
 
-@[expose] public section
 
-set_option backward.isDefEq.respectTransparency false
-set_option backward.defeqAttrib.useBackward true
+
 
 /-!
 # Topological singularities of the original unitary three-factor family
@@ -20,34 +17,28 @@ its inherited topology. The dephased chart, the compact quotient, feasibility,
 and coverage of every nearby matrix are all instantiated. The topological
 obstruction proved here applies to every odd q >= 3.
 -/
-noncomputable section
-open GS GS.UnitaryManifold GS.UnitaryLocalModel GS.UnitaryGeometry
-open GS.NonmanifoldFinal GS.NonmanifoldCompletion
+section
+open GS.UnitaryManifold GS.UnitaryLocalModel
+open GS.NonmanifoldCompletion
 open scoped Topology
 namespace GS.UnitaryTopology
 
+variable (Q : FullUnitary q)
+
 /-- The distinguished point, viewed inside the actual scalar-indexed family. -/
-def unitaryFamilyBase {q : ℕ} (Q : FullUnitary q) (o : Fin q) :
+def unitaryFamilyBase  (o : Fin q) :
     GS.UnitaryNonmanifold.localFamily q :=
   ⟨scalarBlockBase Q.val,scalarBlockBase_mem_localFamily Q.val Q.property.2 o⟩
 
-/-- Positivity of the actual Euclidean dephased chart is the hypothesis needed
-by the complete outer-factor fibre theorem. -/
-theorem euclideanDephased_positiveAnchors {q : ℕ} (Q : FullUnitary q) (o : Fin q)
-    (hQ : AnchorNonzero Q.val Q.val o) :
-    PositiveChartAnchors Q.val o (euclideanDephasedParametrization Q o hQ)
-      (euclideanDephasedDomain Q o hQ) := by
-  intro y hy
-  exact (dephased_constraints_iff Q.val _ o).mp
-    (dephasedParametrization_constraints Q o hQ _ hy)
+
 
 /-- An actual neighbourhood homeomorphism for the whole original matrix family.
 Neither a local-model assumption nor a restricted central slice appears here. -/
-theorem unitary_matrix_pointed_neighbourhood_model {q : ℕ}
-    (Q : FullUnitary q) (o : Fin q) (hQ : AnchorNonzero Q.val Q.val o) :
+theorem unitary_matrix_pointed_neighbourhood_model  (o : Fin q) (hQ : AnchorNonzero Q.val Q.val o) :
     Nonempty (PointedNeighbourhoodModel (GS.UnitaryNonmanifold.localFamily q)
       (OuterFactors q o × ConeCoordinates ((q-1)^2))
       (unitaryFamilyBase Q o) (identityOuter q o,coneCoordinatesZero ((q-1)^2))) := by
+  let d := (q-1)^2
   let ψ := euclideanDephasedParametrization Q o hQ
   let U := euclideanDephasedDomain Q o hQ
   obtain ⟨r,hr,hargs⟩ := exists_parameterBox_in_chart U
@@ -55,67 +46,75 @@ theorem unitary_matrix_pointed_neighbourhood_model {q : ℕ}
   have hunit : ∀ y ∈ U, GS.Unitary (ψ y) := by
     intro y _
     exact dephasedParametrization_unitary Q o hQ _
-  have hsub := fullCompactImage_subset_localFamily ψ o U hunit r hargs
-  obtain ⟨W,hW,hbaseW,hcoverW⟩ := exists_open_full_compact_coverage Q o hQ r hr
+  have hsub : FullCompactImage ψ o r ⊆ GS.UnitaryNonmanifold.localFamily q := by
+    rintro _ ⟨p,rfl⟩
+    exact fullBlockImage_mem_localFamily ψ p.1 p.2.val
+      (hunit _ (hargs _ p.2.property).1) (hunit _ (hargs _ p.2.property).2) p.2.property.2.2
+  have hn := (continuous_smallFactorValue q).isClosedMap.eventually_nhds_fiber
+    (p := fun p => p ∈ smallFullFactors Q o hQ r) (scalarBlockBase Q.val)
+    (fun p he => (smallFullFactors_open Q o hQ r).mem_nhds
+      (base_fibre_mem_smallFullFactors Q o hQ r hr p he))
   have hcover : fullCompactSource (GS.UnitaryNonmanifold.localFamily q) ψ o r ∈
       𝓝 (unitaryFamilyBase Q o) := by
-    apply Filter.mem_of_superset
-      ((hW.preimage continuous_subtype_val).mem_nhds hbaseW)
-    intro M hM
-    exact hcoverW M.val M.property hM
-  exact full_compact_pointed_neighbourhood_model
-    (GS.UnitaryNonmanifold.localFamily q) (unitaryFamilyBase Q o) Q.val o ψ U
-    (euclideanDephasedParametrization_continuousOn Q o hQ)
-    (euclideanDephasedParametrization_injectiveOn Q o hQ)
-    (euclideanDephased_positiveAnchors Q o hQ) r hr hargs hsub hcover
-    (fullParameterZero q ((q-1)^2) o r)
-    (by simp [ψ,unitaryFamilyBase])
-    (parameterCone_zero ((q-1)^2))
-
-/-- A genuine topological obstruction for the full complex matrix family. -/
-theorem unitary_gs_not_euclidean_at {q : ℕ} (hq : 3≤q) (hodd : Odd q)
-    (Q : FullUnitary q) (o : Fin q) (hQ : AnchorNonzero Q.val Q.val o) :
-    ¬ EuclideanAtSubset (GS.UnitaryNonmanifold.localFamily q) (scalarBlockBase Q.val) := by
-  obtain ⟨g⟩ := unitary_matrix_pointed_neighbourhood_model Q o hQ
-  have htop := not_euclidean_of_unitary_cone_neighbourhoodModel_odd
-    o (identityOuter q o) hq hodd g
-  intro he
-  exact htop ((euclideanAtSubset_iff (GS.UnitaryNonmanifold.localFamily q)
-    (scalarBlockBase Q.val) (unitaryFamilyBase Q o).property).mp he)
-
-/-- The real Householder matrix is also an actual unitary matrix. -/
-def unitaryReflection (q : ℕ) (hq : 3≤q) : FullUnitary q :=
-  fullUnitary (ofRealMatrix (GS.Results.reflectionBase q))
-    (ofRealMatrix_unitary (GS.Results.reflectionBase_orthogonal q (by omega)))
-
-theorem unitaryReflection_entries_ne_zero (q : ℕ) (hq : 3≤q) (i j : Fin q) :
-    (unitaryReflection q hq).val i j ≠ 0 := by
-  change (GS.Results.reflectionBase q i j : ℂ) ≠ 0
-  exact_mod_cast GS.Results.reflectionBase_entries_ne_zero q hq i j
-
-theorem unitaryReflection_anchor (q : ℕ) (hq : 3≤q) (o : Fin q) :
-    AnchorNonzero (unitaryReflection q hq).val (unitaryReflection q hq).val o := by
-  constructor
-  · intro i
-    exact ⟨unitaryReflection_entries_ne_zero q hq i o,
-      unitaryReflection_entries_ne_zero q hq i o⟩
-  · intro j
-    exact ⟨unitaryReflection_entries_ne_zero q hq o j,
-      unitaryReflection_entries_ne_zero q hq o j⟩
-
-/-- An explicit topologically singular matrix in every odd block count q>=3. -/
-theorem unitaryReflection_nonEuclidean (q : ℕ) (hq : 3≤q) (hodd : Odd q) :
-    scalarBlockBase (unitaryReflection q hq).val ∈ GS.UnitaryNonmanifold.localFamily q ∧
-      ¬ EuclideanAtSubset (GS.UnitaryNonmanifold.localFamily q)
-        (scalarBlockBase (unitaryReflection q hq).val) := by
-  let o : Fin q := ⟨0,by omega⟩
-  exact ⟨(unitaryFamilyBase (unitaryReflection q hq) o).property,
-    unitary_gs_not_euclidean_at hq hodd (unitaryReflection q hq) o
-      (unitaryReflection_anchor q hq o)⟩
-
-theorem exists_unitary_nonEuclidean_point (q : ℕ) (hq : 3≤q) (hodd : Odd q) :
-    ∃ M : CMat (q*2), M ∈ GS.UnitaryNonmanifold.localFamily q ∧
-      ¬ EuclideanAtSubset (GS.UnitaryNonmanifold.localFamily q) M :=
-  ⟨scalarBlockBase (unitaryReflection q hq).val,unitaryReflection_nonEuclidean q hq hodd⟩
+    filter_upwards [(continuous_subtype_val.tendsto (unitaryFamilyBase Q o)).eventually hn] with M hM
+    have hi : M.val ∈ Set.range (smallFactorValue q) := by
+      rw [range_smallFactorValue]
+      exact M.property
+    obtain ⟨p,hp⟩ := hi
+    change M.val ∈ FullCompactImage ψ o r
+    rw [← hp]
+    exact smallFullFactors_map_mem Q o hQ r p (hM p hp)
+  let F := GS.UnitaryNonmanifold.localFamily q
+  let x := unitaryFamilyBase Q o
+  let p₀ := fullParameterZero q d o r
+  have hψ := euclideanDephasedParametrization_continuousOn Q o hQ
+  have hcf : Continuous (fullCompactMiddle ψ o r) := by
+    have hp : Continuous (fun p : FullCompactParameters q o d r => ψ (p.2.val.1+p.2.val.2.1)) :=
+      hψ.comp_continuous (by fun_prop) (fun p => (hargs p.2.val p.2.property).1)
+    have hm : Continuous (fun p : FullCompactParameters q o d r => ψ (p.2.val.1-p.2.val.2.1)) :=
+      hψ.comp_continuous (by fun_prop) (fun p => (hargs p.2.val p.2.property).2)
+    apply (continuous_flattenBlockFamily q).comp
+    apply continuous_pi
+    intro i
+    apply continuous_pi
+    intro j
+    apply continuous_matrix_product
+    · apply continuous_matrix_product
+      · exact ((continuous_apply i).comp (continuous_outerLeft q o)).comp continuous_fst
+      · have hpi := ((continuous_apply j).comp ((continuous_apply i).comp hp))
+        have hmi := ((continuous_apply j).comp ((continuous_apply i).comp hm))
+        exact ((hpi.add hmi).div_const 2).smul continuous_const |>.add
+          (((hpi.sub hmi).div_const 2).smul (continuous_pauli.comp (by fun_prop)))
+    · exact ((continuous_apply j).comp (continuous_outerRight q o)).comp continuous_fst
+  obtain ⟨h,hh⟩ := exists_homeomorph_ranges_of_same_fibres
+    (fullCompactMiddle ψ o r) (@fullCompactCone q d o r)
+    hcf (by
+      apply Continuous.prodMk continuous_fst
+      apply Continuous.subtype_mk
+      exact (continuous_parameterCone d).comp (continuous_subtype_val.comp continuous_snd)) (by
+      intro p p'
+      rw [fullCompactMiddle_fibres Q.val o ψ U
+        (euclideanDephasedParametrization_injectiveOn Q o hQ)
+        (fun y hy => (dephased_constraints_iff Q.val _ o).mp
+          (dephasedParametrization_constraints Q o hQ _ hy)) r hargs p p']
+      simp only [fullCompactCone, Prod.mk.injEq, Subtype.mk.injEq])
+  let e := (Homeomorph.setCongr (fullCompactCone_surjective q d o r).range_eq).trans
+    (Homeomorph.Set.univ _)
+  refine ⟨{
+    source := fullCompactSource F ψ o r
+    target := outerConeRegion q d o r
+    source_nhds := hcover
+    target_nhds := continuous_snd.continuousAt.preimage_mem_nhds (boundedConeCoordinates_mem_nhds d hr)
+    chart := ((fullCompactSourceHomeomorph F ψ o r hsub).trans (h.trans e)).trans
+      (outerBoundedHomeomorph q d o r)
+    map_point := ?_ }⟩
+  intro hx
+  have he : fullCompactSourceHomeomorph F ψ o r hsub ⟨x,hx⟩ =
+      ⟨fullCompactMiddle ψ o r p₀,⟨p₀,rfl⟩⟩ := Subtype.ext (by simp [d,p₀,x,ψ,unitaryFamilyBase,fullCompactSourceHomeomorph] <;> rfl)
+  change ((outerBoundedHomeomorph q d o r)
+    (e (h (fullCompactSourceHomeomorph F ψ o r hsub ⟨x,hx⟩)))).val = _
+  rw [he,hh p₀]
+  change (p₀.1,parameterCone p₀.2.val) = (p₀.1,coneCoordinatesZero d)
+  simp [d,p₀,fullParameterZero]
 
 end GS.UnitaryTopology

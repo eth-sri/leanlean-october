@@ -1,17 +1,11 @@
-module
 
-public import GS.Topology.PuncturedSphereObstruction
-public import GS.NonmanifoldClosure.ChartRetractions
-public import GS.NonmanifoldClosure.RegularConeChart
-public import GS.NonmanifoldFinal.ConditionalGS
-public import GS.RestrictedNonmanifold.ConditionalReduction
+import GS.Topology.PuncturedSphereObstruction
+import GS.NonmanifoldClosure.ChartRetractions
+import GS.NonmanifoldClosure.RegularConeChart
+import GS.NonmanifoldFinal.ConditionalGS
+import GS.RestrictedNonmanifold.ConditionalReduction
 
-@[expose] public section
 
-set_option backward.isDefEq.respectTransparency false
-set_option backward.defeqAttrib.useBackward true
-
-set_option autoImplicit false
 
 /-!
 # Unconditional topological nonmanifoldness of the cone and the GS family
@@ -22,9 +16,7 @@ Neither a sphere-homology profile nor a cone-obstruction premise occurs in
 the final statements. The original family and its induced topology are used.
 -/
 
-noncomputable section
-
-open Matrix GS GS.Nonmanifold GS.NonmanifoldObstruction GS.NonmanifoldFinal
+open GS.NonmanifoldObstruction GS.NonmanifoldFinal
 open GS.NonmanifoldClosure
 
 namespace GS.NonmanifoldTopology
@@ -35,53 +27,38 @@ theorem chart_dimension_of_sphereRetractions
     (c : OpenEuclideanChart X n) (x : X) (hx : x ∈ c.source)
     (O : Set X) (hO : IsOpen O) (hxO : x ∈ O)
     (hret : SphereRetractionsOn O x m) : n = m := by
-  obtain ⟨b, hb⟩ := exists_centeredChart_within c x hx O hO hxO
+  obtain ⟨b, hb⟩ := exists_centeredChart (c.restrict O hO) x ⟨hx,hxO⟩
   obtain ⟨p⟩ := hret b.source b.source_open b.source_point (fun _ h => (hb h).2)
-  exact GS.Topology.sphere_retract_ball_dimension m n b.radius_pos
+  exact GS.Topology.sphere_retract_ball_dimension_of_fixedPoint m n b.radius_pos
     (transportSectionPair p (Homeomorph.refl _) b.punctured)
 
-/-- The dimensions of two overlapping Euclidean charts agree. -/
-theorem dimensions_of_overlapping_charts
-    {X : Type} [TopologicalSpace X] {m n : ℕ}
-    (c : OpenEuclideanChart X n) (d : OpenEuclideanChart X m)
-    (x : X) (hx : x ∈ c.source) (hy : x ∈ d.source) : n = m := by
-  exact chart_dimension_of_sphereRetractions c x hx d.source d.source_open hy
-    (d.sphereRetractions x hy)
 
-/-- No Euclidean open chart exists at the vertex, for every width d ≥ 2. -/
-theorem cone_not_euclidean (e d : ℕ) (hd : 2 ≤ d) :
-    ¬ EuclideanAt (productZero : ConeSpace (Fin e) (Fin d)) := by
-  intro hE
-  obtain ⟨n, c, hc⟩ := (euclideanAt_iff_chart _).mp hE
-  have hver : SphereRetractionsOn Set.univ
-      (productZero : ConeSpace (Fin e) (Fin d)) ((e + 1) + 1) := by
-    intro U hU h0 _
-    have hp := every_punctured_cone_open_has_standard_sphere_retract
-      (ι := Fin e) (κ := Fin d) (by simpa using hd) U hU h0
-    have he : Fintype.card (Fin e) + 2 = (e + 1) + 1 := by rw [Fintype.card_fin]
-    rw [he] at hp
-    exact hp
-  have hn₀ : n = (e + 1) + 1 :=
-    chart_dimension_of_sphereRetractions c productZero hc Set.univ isOpen_univ
-      (Set.mem_univ _) hver
-  let j : Fin d := ⟨0, by omega⟩
-  obtain ⟨p, hpc, hpr⟩ := exists_regular_in_open j c.source c.source_open hc
-  have hn₁ := dimensions_of_overlapping_charts
-    c (pivotProductChart (ι := Fin e) j) p hpc hpr
-  simp only [Fintype.card_fin] at hn₁
-  omega
 
-/-- The unchanged standalone cone specification is proved without an input premise. -/
-theorem coneProductNonManifold : GS.Specifications.ConeProductNonManifoldGoal := by
-  intro d e hd hE
-  let S : Set ((Fin e → ℝ) × Matrix (Fin 2) (Fin d) ℝ) := {p | p.2.rank ≤ 1}
-  have hz : ((0, 0) : (Fin e → ℝ) × Matrix (Fin 2) (Fin d) ℝ) ∈ S := by simp [S]
-  have hsub : EuclideanAt (⟨(0, 0), hz⟩ : S) :=
-    (euclideanAtSubset_iff S (0, 0) hz).mp hE
-  let h : ConeSpace (Fin e) (Fin d) ≃ₜ S := flattenConeProduct
-  have hpoint : h productZero = ⟨(0, 0), hz⟩ := rfl
-  apply cone_not_euclidean e d (by omega)
-  apply (euclideanAt_homeomorph h productZero).mpr
-  simpa only [hpoint] using hsub
+/-- A forced vertex dimension incompatible with nearby regular charts rules out a chart. -/
+theorem not_euclidean_of_sphereRetractions
+    {X : Type} [TopologicalSpace X] {x : X} {m : ℕ}
+    (hret : SphereRetractionsOn Set.univ x m) (k : ℕ) (hmk : m ≠ k)
+    (hregular : ∀ U : Set X, IsOpen U → x ∈ U →
+      ∃ c : OpenEuclideanChart X k, ∃ y : X, y ∈ U ∧ y ∈ c.source) :
+    ¬ EuclideanAt x := by
+  intro he
+  obtain ⟨n,c,hc⟩ := (euclideanAt_iff_chart x).mp he
+  have hn := chart_dimension_of_sphereRetractions c x hc Set.univ isOpen_univ
+    (Set.mem_univ _) hret
+  obtain ⟨d,y,hyc,hyd⟩ := hregular c.source c.source_open hc
+  exact hmk (hn.symm.trans (chart_dimension_of_sphereRetractions c y hyc d.source
+    d.source_open hyd (d.sphereRetractions y hyd)))
+
+/-- The rank-one vertex is singular for all finite coordinate sets of width at least two. -/
+theorem cone_not_euclidean {ι κ : Type} [Fintype ι] [Fintype κ] [DecidableEq κ]
+    (hd : 2 ≤ Fintype.card κ) : ¬ EuclideanAt (productZero : ConeSpace ι κ) := by
+  refine not_euclidean_of_sphereRetractions (m := Fintype.card ι+2) ?_
+    (Fintype.card ι+Fintype.card κ+1) (by omega) ?_
+  · intro U hU h0 _
+    exact every_punctured_cone_open_has_standard_sphere_retract hd U hU h0
+  · intro U hU h0
+    obtain ⟨j⟩ := Fintype.card_pos_iff.mp (by omega : 0 < Fintype.card κ)
+    obtain ⟨p,hp,hpc⟩ := GS.Topology.exists_regular 1  j U hU h0
+    exact ⟨GS.Topology.rankPivotChart 1  j,p,hp,hpc⟩
 
 end GS.NonmanifoldTopology

@@ -1,3 +1,2 @@
-module
-public import GS.Extensions.StructuredRQ
-public import GS.Revision.Specifications
+import GS.Extensions.StructuredRQ
+import GS.Revision.Specifications

@@ -1,12 +1,9 @@
-module
 
-public import GS.NonmanifoldCompletion.FullFibreCoverage
-public import GS.Nonmanifold.OriginalCompactModel
+import GS.NonmanifoldCompletion.FullFibreCoverage
+import GS.Nonmanifold.OriginalCompactModel
 
-@[expose] public section
 
-set_option backward.isDefEq.respectTransparency false
-set_option backward.defeqAttrib.useBackward true
+
 
 /-!
 # A pointed homeomorphism of neighbourhoods of the FULL GS family
@@ -21,8 +18,7 @@ the pointed local topological spaces. A final EuclideanAtSubset contradiction
 still needs the topological cone obstruction and a restriction/transport lemma.
 
 -/
-noncomputable section
-open Matrix Filter GS GS.Extensions GS.Continuation GS.Nonmanifold
+open GS.Extensions GS.Continuation GS.Nonmanifold
 open scoped Topology
 namespace GS.NonmanifoldCompletion
 
@@ -36,46 +32,69 @@ structure PointedNeighbourhoodModel (X Y : Type*) [TopologicalSpace X]
   chart : ↥source ≃ₜ ↥target
   map_point : ∀ hx : x∈source, (chart ⟨x,hx⟩).val = y
 
-def familyBase {q : ℕ} (Q₀ : Mat q) (hQ₀ : Orthogonal Q₀) : ↥(localFamily q) :=
+variable (Q₀ : Mat q)
+
+def familyBase  (hQ₀ : Orthogonal Q₀) : ↥(localFamily q) :=
   ⟨basePoint Q₀,basePoint_mem_localFamily Q₀ hQ₀⟩
 
-def compactSourceInFamily {q : ℕ} (Q₀ : Mat q) (η : ℝ) : Set ↥(localFamily q) :=
+def compactSourceInFamily  (η : ℝ) : Set ↥(localFamily q) :=
   {M | M.val ∈ OriginalFImage Q₀ η}
 
 /-- The two presentations of the same F-image have the same induced topology. -/
-def compactSourceHomeomorph {q : ℕ} (Q₀ : Mat q) (hQ₀ : Orthogonal Q₀) (η : ℝ) :
+def compactSourceHomeomorph  (hQ₀ : Orthogonal Q₀) (η : ℝ) :
     ↥(compactSourceInFamily Q₀ η) ≃ₜ OriginalFImage Q₀ η where
   toFun M := ⟨M.val.val,M.property⟩
-  invFun M := ⟨⟨M.val,by
-    obtain ⟨p,he⟩ := M.property
-    rw [← he]
-    exact originalF_mem_of_mem_K Q₀ hQ₀ p.property⟩,M.property⟩
-  left_inv M := by apply Subtype.ext; rfl
-  right_inv M := by apply Subtype.ext; rfl
+  invFun M := ⟨⟨M.val,by grind [originalF_mem_of_mem_K]⟩,M.property⟩
+  left_inv M := rfl
+  right_inv M := rfl
   continuous_toFun := by fun_prop
   continuous_invFun := by fun_prop
 
 /-- The selected F-image is now a neighbourhood in the FULL family subtype. -/
-theorem compactSource_mem_nhds {q : ℕ} (hq : 0<q) (Q₀ : Mat q)
+theorem compactSource_mem_nhds (hq : 0<q) (Q₀ : Mat q)
     (hQ₀ : Orthogonal Q₀) (hentries : ∀ i j, Q₀ i j≠0) (η : ℝ) (hη : 0<η) :
     compactSourceInFamily Q₀ η ∈ 𝓝 (familyBase Q₀ hQ₀) := by
-  obtain ⟨W,hW,hbase,hcover⟩ := exists_open_original_local_coverage hq Q₀ hQ₀ hentries η hη
-  let U : Set ↥(localFamily q) := Subtype.val ⁻¹' W
-  have hU : IsOpen U := hW.preimage continuous_subtype_val
-  have hb : familyBase Q₀ hQ₀ ∈ U := hbase
-  apply Filter.mem_of_superset (hU.mem_nhds hb)
-  intro M hM
-  obtain ⟨p,hp,he⟩ := hcover M.val M.property hM
-  exact ⟨⟨p,hp⟩,he⟩
+  letI := isCompact_iff_compactSpace.mp (isCompact_smallFactorSet q)
+  have hn := ((continuous_smallFactorMap q).comp continuous_subtype_val).isClosedMap.eventually_nhds_fiber
+    (p := fun p : ↥(smallFactorSet q) => smallFactorMap p.val ∈ originalF Q₀ '' originalK q η)
+    (basePoint Q₀) (by
+      intro p hp
+      obtain ⟨N,hN,hpN,hmap⟩ := factor_neighbourhood_in_original_image hq Q₀ hQ₀ hentries η hη
+        p.val p.property hp
+      exact Filter.mem_of_superset ((hN.preimage continuous_subtype_val).mem_nhds hpN)
+        (fun p' hp' => hmap p'.val hp' p'.property))
+  filter_upwards [(continuous_subtype_val.tendsto (familyBase Q₀ hQ₀)).eventually hn] with M hM
+  have hi : M.val ∈ smallFactorMap '' smallFactorSet q := by simp_all [image_smallFactorMap]
+  obtain ⟨p,hp,he⟩ := hi
+  obtain ⟨p',hp',he'⟩ := hM ⟨p,hp⟩ he
+  exact ⟨⟨p',hp'⟩,he'.trans he⟩
 
 /-- The complete local model, with neither side's neighbourhood claim assumed.
 It is still NOT the topological nonmanifold theorem. -/
-theorem original_pointed_neighbourhood_model {q : ℕ} (hq : 0<q)
+theorem original_pointed_neighbourhood_model (hq : 0<q)
     (Q₀ : Mat q) (hQ₀ : Orthogonal Q₀) (hentries : ∀ i j, Q₀ i j≠0) :
     Nonempty (PointedNeighbourhoodModel ↥(localFamily q) (ModelCoordinates q)
       (familyBase Q₀ hQ₀) (modelCoordinatesZero q)) := by
-  obtain ⟨η,hη,h,hcomm,hpoint,U,hU,hzero,hsub⟩ :=
-    exists_original_compact_model_homeomorphism hq Q₀ hQ₀ hentries
+  obtain ⟨e,he,hzero⟩ := exists_matrixExpChart q
+  have hi : Set.InjOn (originalPsi Q₀) e.source := by
+    intro A hA B hB hab
+    apply e.injOn hA hB
+    rw [he]
+    exact (_root_.Unitary.mul_right_inj ⟨Q₀,hQ₀⟩).mp hab
+  obtain ⟨η,hη,hn⟩ := exists_uniform_normalized_original Q₀ hentries e.source e.open_source hzero
+  letI := isCompact_iff_compactSpace.mp (isCompact_originalK q η)
+  have hh : ∀ p p' : ↥(originalK q η),
+      originalF Q₀ p.val = originalF Q₀ p'.val ↔ independentG p = independentG p' := by grind [original_same_fibres_normalized,independentG_eq_iff]
+  obtain ⟨h,he⟩ := exists_homeomorph_ranges_of_same_fibres
+    (fun p : ↥(originalK q η) => originalF Q₀ p.val) (@independentG q η)
+    ((continuous_originalF Q₀).comp continuous_subtype_val)
+    ((continuous_encodeModel q).comp
+      (((continuous_originalG q).comp continuous_subtype_val).subtype_mk _)) hh
+  have hpoint  := by
+    simpa only [originalF_basePoint, originalFImageBase] using
+      (congrArg Subtype.val (he ⟨originalBaseParameters q, originalBaseParameters_mem q hη.le⟩)).trans
+        (independentG_basepoint q η hη.le)
+  obtain ⟨U,hU,hzero,hsub⟩ := independentG_contains_neighbourhood q η hη
   refine ⟨{
     source := compactSourceInFamily Q₀ η
     target := Set.range (@independentG q η)
@@ -84,12 +103,6 @@ theorem original_pointed_neighbourhood_model {q : ℕ} (hq : 0<q)
     chart := (compactSourceHomeomorph Q₀ hQ₀ η).trans h
     map_point := ?_ }⟩
   intro hx
-  have he : compactSourceHomeomorph Q₀ hQ₀ η ⟨familyBase Q₀ hQ₀,hx⟩ =
-      originalFImageBase Q₀ η hη.le := by
-    apply Subtype.ext
-    rfl
-  change (h (compactSourceHomeomorph Q₀ hQ₀ η ⟨familyBase Q₀ hQ₀,hx⟩)).val = _
-  rw [he]
   exact hpoint
 
 end GS.NonmanifoldCompletion

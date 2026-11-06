@@ -1,23 +1,14 @@
-module
-
-public import GS.Extensions.CholeskySupport
-public import GS.Extensions.FiniteTopology
-public import GS.Extensions.TransportedProjection
-public import GS.Extensions.OrdinaryQR
-public import GS.Extensions.OriginalCompact
-public import GS.Extensions.ProjectionSmooth
-public import GS.Extensions.MatrixCalculus
-public import GS.Extensions.OrbitCompact
-public import GS.Extensions.OriginalFibres
-public import GS.Extensions.StructuredRQ
-public import GS.Extensions.OriginalUniform
-public import GS.Extensions.TwoFactorProjection
-public import GS.Extensions.GaugeInvariance
-public import GS.Extensions.GeodesicNormal
-
-@[expose] public section
-
-set_option backward.isDefEq.respectTransparency false
-set_option backward.defeqAttrib.useBackward true
-
-/-! Structured factorizations, compactness, and differential identities. -/
+import GS.Extensions.CholeskySupport
+import GS.Extensions.FiniteTopology
+import GS.Extensions.TransportedProjection
+import GS.Extensions.OrdinaryQR
+import GS.Extensions.OriginalCompact
+import GS.Extensions.ProjectionSmooth
+import GS.Extensions.MatrixCalculus
+import GS.Extensions.OrbitCompact
+import GS.Extensions.OriginalFibres
+import GS.Extensions.StructuredRQ
+import GS.Extensions.OriginalUniform
+import GS.Extensions.TwoFactorProjection
+import GS.Extensions.GaugeInvariance
+import GS.Extensions.GeodesicNormal

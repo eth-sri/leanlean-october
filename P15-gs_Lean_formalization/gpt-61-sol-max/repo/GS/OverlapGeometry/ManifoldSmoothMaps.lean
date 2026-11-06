@@ -1,11 +1,8 @@
-module
+import Mathlib.Tactic
 
-public import GS.OverlapGeometry.SmoothMaps
+import GS.OverlapGeometry.SmoothMaps
 
-@[expose] public section
 
-set_option backward.isDefEq.respectTransparency false
-set_option backward.defeqAttrib.useBackward true
 
 /-!
 # Manifold-valued sources for the ambient slice criterion
@@ -15,8 +12,7 @@ bundle. Smoothness into the slice manifold is equivalent to smoothness of
 the ambient realization. The subset keeps its inherited topology.
 -/
 
-noncomputable section
-open scoped Topology Manifold
+open scoped Manifold
 
 namespace GS.OverlapGeometry
 
@@ -33,14 +29,13 @@ theorem slice_contMDiff_of_ambient {S : Set F}
     letI := sliceChartedSpace s covers
     ContMDiff I (𝓘(ℝ, E)) ⊤ f := by
   letI := sliceChartedSpace s covers
-  have hc : Continuous f := hf.continuous.subtype_mk (fun x => (f x).property)
+  have hc := hf.continuous.subtype_mk (fun x => (f x).property)
   intro x
   rw [contMDiffAt_iff_target]
   refine ⟨hc.continuousAt, ?_⟩
-  change ContMDiffAt I (𝓘(ℝ, E)) ⊤
-    (fun y => (s (f x)).coordinates (f y).val) x
+  
   exact ContDiffAt.comp_contMDiffAt
-    (I := I) (f := fun y : M => (f y).val) (g := (s (f x)).coordinates)
+     (f := fun y : M => (f y).val) (g := (s (f x)).coordinates)
     ((s (f x)).coordinates_smooth (f x) (covers (f x))) (hf x)
 
 theorem slice_contMDiff_iff_ambient {S : Set F}
@@ -53,6 +48,6 @@ theorem slice_contMDiff_iff_ambient {S : Set F}
   constructor
   · intro hf
     exact (slice_val_contMDiff s covers).comp hf
-  · exact slice_contMDiff_of_ambient s covers I f
+  · simp_all [slice_contMDiff_of_ambient]
 
 end GS.OverlapGeometry

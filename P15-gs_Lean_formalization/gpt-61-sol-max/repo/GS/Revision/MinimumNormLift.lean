@@ -1,2 +1,1 @@
-module
-public import GS.GlobalGeometry.FrobeniusProjection
+import GS.GlobalGeometry.FrobeniusProjection

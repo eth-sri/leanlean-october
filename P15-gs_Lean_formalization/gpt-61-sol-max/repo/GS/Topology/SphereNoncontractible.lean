@@ -1,17 +1,13 @@
-module
+import Mathlib.Tactic
 
-public import GS.Topology.BrouwerBall
-public import Mathlib.Topology.Homotopy.Contractible
-public import Mathlib.Topology.MetricSpace.ProperSpace
-public import Mathlib.Tactic.FunProp
-public import Mathlib.Tactic.Linarith
+import Mathlib.Tactic.Module
+import GS.Topology.BrouwerBall
+import Mathlib.Topology.Homotopy.Contractible
+import Mathlib.Topology.MetricSpace.ProperSpace
+import Mathlib.Tactic.FunProp
+import Mathlib.Tactic.Linarith
 
-@[expose] public section
 
-set_option backward.isDefEq.respectTransparency false
-set_option backward.defeqAttrib.useBackward true
-
-set_option autoImplicit false
 
 /-!
 # Sphere noncontractibility from the fixed point property of a closed ball
@@ -22,9 +18,7 @@ so it descends to a continuous retraction. The antipodal map composed with
 that retraction has no fixed point.
 -/
 
-noncomputable section
 
-open scoped Topology
 
 namespace GS.Topology
 
@@ -34,30 +28,20 @@ abbrev UnitNormSphere (E : Type*) [NormedAddCommGroup E] := Metric.sphere (0 : E
 abbrev UnitNormBall (E : Type*) [NormedAddCommGroup E] := Metric.closedBall (0 : E) 1
 
 def sphereConeMap : C(unitInterval × UnitNormSphere E, UnitNormBall E) where
-  toFun p := ⟨(p.1 : ℝ) • (p.2 : E), by
-    have hu : ‖(p.2 : E)‖ = 1 := by simpa using p.2.property
-    simpa [Metric.mem_closedBall, dist_zero_right, norm_smul, Real.norm_eq_abs,
-      abs_of_nonneg p.1.property.1, hu] using p.1.property.2⟩
+  toFun p := ⟨(p.1 : ℝ) • (p.2 : E), by aesop (add norm [abs_of_nonneg,norm_smul])⟩
   continuous_toFun := by fun_prop
 
 @[simp] theorem sphereConeMap_norm (p : unitInterval × UnitNormSphere E) :
-    ‖(sphereConeMap p : E)‖ = (p.1 : ℝ) := by
-  have hu : ‖(p.2 : E)‖ = 1 := by simpa using p.2.property
-  simp [sphereConeMap, norm_smul, Real.norm_eq_abs, abs_of_nonneg p.1.property.1, hu]
+    ‖(sphereConeMap p : E)‖ = (p.1 : ℝ) := by aesop (add norm [sphereConeMap,norm_smul])
 
 theorem sphereConeMap_surjective (u : UnitNormSphere E) :
     Function.Surjective (sphereConeMap (E := E)) := by
   intro x
   by_cases hx : (x : E) = 0
-  · refine ⟨(0, u), ?_⟩
-    apply Subtype.ext
-    simpa [sphereConeMap] using hx.symm
-  · have hn : ‖(x : E)‖ ≠ 0 := norm_ne_zero_iff.mpr hx
-    let t : unitInterval := ⟨‖(x : E)‖, norm_nonneg _, by
-      simpa only [UnitNormBall, Metric.mem_closedBall, dist_zero_right] using x.property⟩
-    let v : UnitNormSphere E := ⟨‖(x : E)‖⁻¹ • (x : E), by
-      simp [Metric.mem_sphere, dist_zero_right, norm_smul, Real.norm_eq_abs,
-        abs_of_nonneg (inv_nonneg.mpr (norm_nonneg _)), inv_mul_cancel₀ hn]⟩
+  · aesop (add norm [sphereConeMap])
+  · have hn := norm_ne_zero_iff.mpr hx
+    let t : unitInterval := ⟨‖(x : E)‖, norm_nonneg _, by aesop⟩
+    let v : UnitNormSphere E := ⟨‖(x : E)‖⁻¹ • (x : E), by simp_all [inv_mul_cancel₀,norm_smul]⟩
     refine ⟨(t, v), ?_⟩
     apply Subtype.ext
     simp [sphereConeMap, t, v, smul_smul, mul_inv_cancel₀ hn]
@@ -67,22 +51,10 @@ theorem homotopy_factors_sphereConeMap (u : UnitNormSphere E)
       (ContinuousMap.id (UnitNormSphere E))) :
     Function.FactorsThrough h.toContinuousMap (sphereConeMap (E := E)) := by
   intro a b hab
-  have ht : a.1 = b.1 := by
-    apply Subtype.ext
-    simpa only [sphereConeMap_norm] using congrArg (fun z : UnitNormBall E => ‖(z : E)‖) hab
+  have ht : a.1 = b.1 := by grind [sphereConeMap_norm]
   by_cases hz : (a.1 : ℝ) = 0
-  · have ha : a.1 = 0 := Subtype.ext hz
-    have hb : b.1 = 0 := ht.symm.trans ha
-    change h (a.1, a.2) = h (b.1, b.2)
-    rw [ha, hb]
-    exact (h.map_zero_left a.2).trans (h.map_zero_left b.2).symm
-  · have hu : a.2 = b.2 := by
-      apply Subtype.ext
-      have he : (a.1 : ℝ) • (a.2 : E) = (a.1 : ℝ) • (b.2 : E) := by
-        simpa only [sphereConeMap, ContinuousMap.coe_mk, ht] using congrArg Subtype.val hab
-      have hc := congrArg (fun w : E => (a.1 : ℝ)⁻¹ • w) he
-      simpa only [smul_smul, inv_mul_cancel₀ hz, one_smul] using hc
-    exact congrArg h (Prod.ext ht hu)
+  · aesop
+  · aesop (add norm [sphereConeMap])
 
 def sphereInclusion : C(UnitNormSphere E, UnitNormBall E) :=
   ContinuousMap.inclusion Metric.sphere_subset_closedBall
@@ -91,7 +63,7 @@ theorem exists_sphere_retraction_of_nullhomotopic [ProperSpace E]
     (hc : (ContinuousMap.id (UnitNormSphere E)).Nullhomotopic) :
     ∃ r : C(UnitNormBall E, UnitNormSphere E), r.comp sphereInclusion = ContinuousMap.id _ := by
   obtain ⟨u, ⟨h⟩⟩ := hc
-  have hq : _root_.Topology.IsQuotientMap (sphereConeMap (E := E)) :=
+  have hq :=
     sphereConeMap.continuous.isClosedMap.isQuotientMap
       sphereConeMap.continuous (sphereConeMap_surjective u)
   let r := hq.lift h.symm.toContinuousMap (homotopy_factors_sphereConeMap u h.symm)
@@ -103,7 +75,7 @@ theorem exists_sphere_retraction_of_nullhomotopic [ProperSpace E]
   change r (sphereInclusion v) = v
   have hi : sphereConeMap (1, v) = sphereInclusion v := by
     apply Subtype.ext
-    change (1 : ℝ) • (v : E) = (v : E)
+    
     exact one_smul _ _
   rw [← hi]
   exact he.trans (h.symm.map_one_left v)
@@ -114,9 +86,7 @@ theorem sphere_id_not_nullhomotopic_of_fixedPoint [ProperSpace E]
   intro hc
   obtain ⟨r, hr⟩ := exists_sphere_retraction_of_nullhomotopic hc
   let f : C(UnitNormBall E, UnitNormBall E) := {
-    toFun := fun x => ⟨-(r x : E), by
-      have he : ‖(r x : E)‖ = 1 := by simpa using (r x).property
-      simp [Metric.mem_closedBall, dist_zero_right, he]⟩,
+    toFun := fun x => ⟨-(r x : E), by aesop⟩,
     continuous_toFun := by fun_prop }
   obtain ⟨x, hx⟩ := hfp f
   have hxe : -(r x : E) = (x : E) := congrArg Subtype.val hx
@@ -128,13 +98,7 @@ theorem sphere_id_not_nullhomotopic_of_fixedPoint [ProperSpace E]
     have hh := congrArg Subtype.val (ContinuousMap.congr_fun hr v)
     simpa [sphereInclusion, v, ContinuousMap.inclusion, Set.inclusion] using hh
   have hzero : (x : E) = 0 := by
-    rw [hrx] at hxe
-    have he : (2 : ℝ) • (x : E) = 0 := by
-      rw [show (2 : ℝ) = 1 + 1 by norm_num, add_smul, one_smul]
-      exact neg_eq_iff_add_eq_zero.mp hxe
-    have hz := congrArg (fun z : E => (2 : ℝ)⁻¹ • z) he
-    simpa only [smul_smul, inv_mul_cancel₀ (by norm_num : (2 : ℝ) ≠ 0),
-      one_smul, smul_zero] using hz
+    linear_combination (norm := module) (-1/2 : ℝ) • hxe - (1/2 : ℝ) • hrx
   simpa [hzero] using hxn
 
 end GS.Topology

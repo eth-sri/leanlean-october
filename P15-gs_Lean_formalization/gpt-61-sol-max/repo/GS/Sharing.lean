@@ -1,2 +1,1 @@
-module
-public import GS.Projection
+import GS.Projection

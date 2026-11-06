@@ -1,12 +1,10 @@
-module
+import Mathlib.Tactic
 
-public import GS.UnitaryLocalModel.TopologyOuter
-public import GS.UnitaryLocalModel.NormalizedPositivity
+import GS.UnitaryLocalModel.TopologyOuter
+import GS.UnitaryLocalModel.NormalizedPositivity
 
-@[expose] public section
 
-set_option backward.isDefEq.respectTransparency false
-set_option backward.defeqAttrib.useBackward true
+
 
 /-!
 # The full compact unitary local model
@@ -15,18 +13,20 @@ The actual matrix image, including all outer factors, is homeomorphic to the
 product of the anchored outer unitary group and the bounded rank-one cone.
 The proof uses positive-anchor uniqueness and compact equal-fibre maps.
 -/
-noncomputable section
-open Matrix GS GS.UnitaryManifold
 open scoped ComplexOrder
 namespace GS.UnitaryLocalModel
 
+variable (Q : CMat q)
+
+variable (o : Fin q)
+
 /-- The positivity properties of the dephased chart needed by outer recovery. -/
-def PositiveChartAnchors {q d : ℕ} (Q : CMat q) (o : Fin q)
+def PositiveChartAnchors  
     (ψ : (Fin d → ℝ) → CMat q) (U : Set (Fin d → ℝ)) : Prop :=
   ∀ x ∈ U, (∀ i, ∃ a : ℝ, 0 < a ∧ ψ x i o / Q i o = a) ∧
     (∀ j, ∃ a : ℝ, 0 < a ∧ ψ x o j / Q o j = a)
 
-theorem chartBlockFamily_positive {q d : ℕ} (Q : CMat q) (o : Fin q)
+theorem chartBlockFamily_positive  
     (ψ : (Fin d → ℝ) → CMat q) (U : Set (Fin d → ℝ))
     (hpos : PositiveChartAnchors Q o ψ U) (p : LocalParameters d)
     (hp : p.1+p.2.1 ∈ U) (hm : p.1-p.2.1 ∈ U) (hu : OnSphere p.2.2) :
@@ -38,114 +38,112 @@ theorem chartBlockFamily_positive {q d : ℕ} (Q : CMat q) (o : Fin q)
     exact middleBlock_ratio_posDef _ _ _ _ hu ((hpos _ hp).2 j) ((hpos _ hm).2 j)
 
 /-- The full compact parametrization has precisely the outer-plus-cone fibres. -/
-theorem fullCompactMiddle_fibres {q d : ℕ} (Q : CMat q) (o : Fin q)
+theorem fullCompactMiddle_fibres  
     (ψ : (Fin d → ℝ) → CMat q) (U : Set (Fin d → ℝ))
     (hψ : Set.InjOn ψ U) (hpos : PositiveChartAnchors Q o ψ U) (r : ℝ)
     (hargs : ∀ p ∈ localParameterBox d r, p.1+p.2.1 ∈ U ∧ p.1-p.2.1 ∈ U)
     (p p' : FullCompactParameters q o d r) :
     fullCompactMiddle ψ o r p = fullCompactMiddle ψ o r p' ↔
       p.1 = p'.1 ∧ parameterCone p.2.val = parameterCone p'.2.val := by
-  have hψ' : Set.InjOn (fun x (ij : Fin q × Fin q) => ψ x ij.1 ij.2) U := by
-    intro x hx y hy he
-    apply hψ hx hy
-    funext i j
-    exact congrFun he (i,j)
-  have hh := normalized_chart_fibres_on Q o
-    (fun x (ij : Fin q × Fin q) => ψ x ij.1 ij.2) U hψ'
-    (outerLeft p.1) (outerRight p.1) (outerLeft p'.1) (outerRight p'.1)
-    p.2.val.1 p.2.val.2.1 p'.2.val.1 p'.2.val.2.1 p.2.val.2.2 p'.2.val.2.2
-    (outerLeft_unitary p.1) (outerRight_unitary p.1)
-    (outerLeft_unitary p'.1) (outerRight_unitary p'.1)
-    (outerRight_anchor p.1) (outerRight_anchor p'.1)
-    (hargs _ p.2.property).1 (hargs _ p.2.property).2
-    (hargs _ p'.2.property).1 (hargs _ p'.2.property).2
-    p.2.property.2.2 p'.2.property.2.2
-    (chartBlockFamily_positive Q o ψ U hpos _
-      (hargs _ p.2.property).1 (hargs _ p.2.property).2 p.2.property.2.2)
-    (chartBlockFamily_positive Q o ψ U hpos _
-      (hargs _ p'.2.property).1 (hargs _ p'.2.property).2 p'.2.property.2.2)
-  have hflat : fullCompactMiddle ψ o r p = fullCompactMiddle ψ o r p' ↔
-      normalizedBlockImage (outerLeft p.1) (outerRight p.1) (chartBlockFamily ψ p.2.val) =
-      normalizedBlockImage (outerLeft p'.1) (outerRight p'.1) (chartBlockFamily ψ p'.2.val) :=
-    by
-      constructor
-      · intro he
-        have he' := congrArg (@extractBlockFamily q) he
-        unfold normalizedBlockImage
-        simpa only [fullCompactMiddle, fullBlockImage, extract_flattenBlockFamily,
-          normalizedBlockImage] using he'
-      · intro he
-        exact congrArg (@flattenBlockFamily q) he
-  rw [hflat]
-  change _ ↔ _ at hh
-  rw [show normalizedBlockImage (outerLeft p.1) (outerRight p.1) (chartBlockFamily ψ p.2.val) =
-      normalizedBlockImage (outerLeft p'.1) (outerRight p'.1) (chartBlockFamily ψ p'.2.val) ↔
-      outerLeft p.1 = outerLeft p'.1 ∧ outerRight p.1 = outerRight p'.1 ∧
-      p.2.val.1 = p'.2.val.1 ∧ sphereOuter p.2.val.2.2 p.2.val.2.1 =
-        sphereOuter p'.2.val.2.2 p'.2.val.2.1 from hh]
+  rcases p with ⟨g,⟨⟨c,z,u⟩,hp⟩⟩
+  rcases p' with ⟨g',⟨⟨c',z',v⟩,hp'⟩⟩
+  let L := outerLeft g
+  let R := outerRight g
+  let L' := outerLeft g'
+  let R' := outerRight g'
+  let N := chartBlockFamily ψ (c,z,u)
+  let N' := chartBlockFamily ψ (c',z',v)
+  have hN := chartBlockFamily_positive Q o ψ U hpos (c,z,u)
+    (hargs _ hp).1 (hargs _ hp).2 hp.2.2
+  have hN' := chartBlockFamily_positive Q o ψ U hpos (c',z',v)
+    (hargs _ hp').1 (hargs _ hp').2 hp'.2.2
+  let φ := fun x (ij : Fin q × Fin q) => ψ x ij.1 ij.2
+  have hφ : Set.InjOn φ U := by
+    simpa only [φ,Set.InjOn,funext_iff,Prod.forall,← Matrix.ext_iff] using hψ
+  obtain ⟨hcp,hcm⟩ := hargs _ hp
+  obtain ⟨hcp',hcm'⟩ := hargs _ hp'
+  have hu := hp.2.2
+  have hv := hp'.2.2
+  have hm : N = N' ↔ c = c' ∧ sphereOuter u z = sphereOuter v z' := by
+    constructor
+    · intro h
+      have hs : φ (c+z)+φ (c-z) = φ (c'+z')+φ (c'-z') := by
+        funext j
+        simpa only [φ,N,N',chartBlockFamily,parameterMiddle,chartMiddle,middleBlock_trace,Pi.add_apply]
+          using congrArg Matrix.trace (congrFun (congrFun h j.1) j.2)
+      have ho : sphereOuter u (realify (φ (c+z)-φ (c-z))) =
+          sphereOuter v (realify (φ (c'+z')-φ (c'-z'))) := by
+        ext i j
+        have hh := congrFun (congrArg axisCoefficient (congrFun (congrFun h j.1.1) j.1.2)) i
+        simp only [N,N',chartBlockFamily,parameterMiddle,chartMiddle,middleBlock_axisCoefficient] at hh
+        by_cases hj : j.2 = 0
+        · simpa [φ,sphereOuter,realify,hj] using congrArg Complex.re hh
+        · simpa [φ,sphereOuter,realify,hj] using congrArg Complex.im hh
+      have hd := (sphereOuter_fibres hu hv).mp ho
+      simp only [← map_zero realify,← map_neg realify,realify_injective.eq_iff] at hd
+      have h₃ := hφ hcp hcp'
+      have h₄ := hφ hcm hcm'
+      have h₅ := hφ hcp hcm'
+      have h₆ := hφ hcm hcp'
+      rw [sphereOuter_fibres hu hv]
+      grind
+    · aesop (add norm [chartMiddle,sphereOuter_fibres,middleBlock_equal,middleBlock_simultaneous_swap,parameterMiddle,chartBlockFamily])
+  unfold fullCompactMiddle fullBlockImage
+  rw [(Function.LeftInverse.injective (@extract_flattenBlockFamily q)).eq_iff]
   simp only [parameterCone, Prod.mk.injEq, Subtype.mk.injEq]
+  change (fun i j => L i * N i j * R j) = (fun i j => L' i * N' i j * R' j) ↔
+    g = g' ∧ c = c' ∧ sphereOuter u z = sphereOuter v z'
   constructor
-  · rintro ⟨hL,hR,hc,hz⟩
-    exact ⟨outerFactors_ext hL hR,hc,hz⟩
-  · rintro ⟨hg,hc,hz⟩
-    exact ⟨congrArg outerLeft hg,congrArg outerRight hg,hc,hz⟩
+  · intro he
+    have hblocks (i j : Fin q) :=
+      congrFun (congrFun he i) j
+    have hLL : L = L' := by
+      funext i
+      have hi : L i * N i o = L' i * N' i o := by grind [outerRight_anchor]
+      have hscaled : L i * ((Q i o)⁻¹ • N i o) =
+          L' i * ((Q i o)⁻¹ • N' i o) := by simp_all
+      exact (positive_polar_unique _ _ _ _ (outerLeft_unitary g i) (outerLeft_unitary g' i) (hN.1 i) (hN'.1 i) hscaled).1
+    have hRR : R = R' := by
+      funext j
+      have hj : N o j * R j = N' o j * R' j := by
+        apply (_root_.Unitary.mul_right_inj ⟨L o,outerLeft_unitary g o⟩).mp
+        simpa only [Matrix.mul_assoc, hLL] using hblocks o j
+      have hscaled : ((Q o j)⁻¹ • N o j) * R j =
+          ((Q o j)⁻¹ • N' o j) * R' j := by simp_all
+      apply Matrix.conjTranspose_injective
+      apply (positive_polar_unique _ _ _ _ (outerRight_unitary g j).conjTranspose
+        (outerRight_unitary g' j).conjTranspose (hN.2 j) (hN'.2 j) ?_).1
+      simpa only [N,N',R,R',Matrix.conjTranspose_mul, (hN.2 j).isHermitian.eq,
+        (hN'.2 j).isHermitian.eq] using congrArg Matrix.conjTranspose hscaled
+    have hNN : N = N' := by
+      funext i j
+      apply (_root_.Unitary.mul_left_inj ⟨R j,outerRight_unitary g j⟩).mp
+      apply (_root_.Unitary.mul_right_inj ⟨L i,outerLeft_unitary g i⟩).mp
+      simpa only [Matrix.mul_assoc, hLL, hRR] using hblocks i j
+    refine ⟨?_,(hm.mp hNN).1,(hm.mp hNN).2⟩
+    apply Prod.ext
+    · funext i
+      exact Subtype.ext (congrFun hLL i)
+    · funext j
+      apply Subtype.ext
+      simpa [R,R',outerRight,j.property] using congrFun hRR j.val
+  · rintro ⟨rfl,hc,hz⟩
+    rw [hm.mpr ⟨hc,hz⟩]
 
-def fullCompactCone {q d : ℕ} {o : Fin q} {r : ℝ}
+def fullCompactCone {o : Fin q} {r : ℝ}
     (p : FullCompactParameters q o d r) : OuterFactors q o × boundedConeCoordinates d r :=
-  (p.1, ⟨parameterCone p.2.val, by
-    rw [← parameterCone_image d r]
-    exact ⟨p.2.val,p.2.property,rfl⟩⟩)
-
-theorem continuous_fullCompactCone (q d : ℕ) (o : Fin q) (r : ℝ) :
-    Continuous (@fullCompactCone q d o r) := by
-  apply Continuous.prodMk continuous_fst
-  apply Continuous.subtype_mk
-  exact (continuous_parameterCone d).comp (continuous_subtype_val.comp continuous_snd)
+  (p.1, ⟨parameterCone p.2.val, by grind [parameterCone_image]⟩)
 
 theorem fullCompactCone_surjective (q d : ℕ) (o : Fin q) (r : ℝ) :
     Function.Surjective (@fullCompactCone q d o r) := by
   rintro ⟨g,w⟩
-  have hw : w.val ∈ parameterCone '' localParameterBox d r := by
-    simpa only [parameterCone_image] using w.property
+  have hw : w.val ∈ parameterCone '' localParameterBox d r := by simp_all [parameterCone_image]
   obtain ⟨p,hp,he⟩ := hw
   refine ⟨(g,⟨p,hp⟩),?_⟩
   refine Prod.ext ?_ ?_
   · rfl
   · exact Subtype.ext he
 
-def surjectiveRangeHomeomorph {X Y : Type*} [TopologicalSpace X]
-    [TopologicalSpace Y] (f : X → Y) (hf : Function.Surjective f) : Set.range f ≃ₜ Y where
-  toFun := Subtype.val
-  invFun := fun y => ⟨y,hf y⟩
-  left_inv := by intro x; rfl
-  right_inv := by intro y; rfl
-  continuous_toFun := continuous_subtype_val
-  continuous_invFun := continuous_id.subtype_mk _
 
-/-- A homeomorphism for the full compact matrix image in the original ambient
-matrix topology, with its action on every parameter recorded explicitly. -/
-theorem exists_full_compact_homeomorphism {q d : ℕ} (Q : CMat q) (o : Fin q)
-    (ψ : (Fin d → ℝ) → CMat q) (U : Set (Fin d → ℝ))
-    (hψc : ContinuousOn ψ U) (hψi : Set.InjOn ψ U)
-    (hpos : PositiveChartAnchors Q o ψ U) (r : ℝ)
-    (hargs : ∀ p ∈ localParameterBox d r, p.1+p.2.1 ∈ U ∧ p.1-p.2.1 ∈ U) :
-    ∃ h : FullCompactImage ψ o r ≃ₜ
-        (OuterFactors q o × boundedConeCoordinates d r),
-      ∀ p : FullCompactParameters q o d r,
-        h ⟨fullCompactMiddle ψ o r p,⟨p,rfl⟩⟩ = fullCompactCone p := by
-  obtain ⟨h,hh⟩ := exists_homeomorph_ranges_of_same_fibres
-    (fullCompactMiddle ψ o r) (@fullCompactCone q d o r)
-    (continuous_fullCompactMiddle ψ U o r hψc hargs)
-    (continuous_fullCompactCone q d o r) (by
-      intro p p'
-      rw [fullCompactMiddle_fibres Q o ψ U hψi hpos r hargs p p']
-      simp only [fullCompactCone, Prod.mk.injEq, Subtype.mk.injEq])
-  let e := surjectiveRangeHomeomorph (@fullCompactCone q d o r)
-    (fullCompactCone_surjective q d o r)
-  refine ⟨h.trans e,?_⟩
-  intro p
-  change e (h _) = _
-  rw [hh p]
-  rfl
 
 end GS.UnitaryLocalModel

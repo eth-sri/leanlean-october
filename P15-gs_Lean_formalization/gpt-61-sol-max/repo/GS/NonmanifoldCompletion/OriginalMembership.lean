@@ -1,12 +1,9 @@
-module
 
-public import GS.NonmanifoldCompletion.BlockRealization
-public import GS.Continuation.PointedCompactImage
+import GS.NonmanifoldCompletion.BlockRealization
+import GS.Continuation.PointedCompactImage
 
-@[expose] public section
 
-set_option backward.isDefEq.respectTransparency false
-set_option backward.defeqAttrib.useBackward true
+
 
 /-!
 # Membership of the original exponential parametrization in the GS family
@@ -17,29 +14,30 @@ The result holds for all skew c,z, not just on a sufficiently small compact K.
 No manifold, local-coverage, or same-fibres assumption is used.
 
 -/
-noncomputable section
-open Matrix GS GS.Extensions GS.Continuation
+open Matrix GS.Extensions GS.Continuation
 namespace GS.NonmanifoldCompletion
 
-private theorem skew_add {q : ℕ} {c z : Mat q} (hc : IsSkew c) (hz : IsSkew z) :
+private theorem skew_add {c z : Mat q} (hc : IsSkew c) (hz : IsSkew z) :
     IsSkew (c+z) := by
   change (c+z)ᵀ = -(c+z)
   rw [Matrix.transpose_add,hc,hz]
   abel
 
-private theorem skew_sub {q : ℕ} {c z : Mat q} (hc : IsSkew c) (hz : IsSkew z) :
+private theorem skew_sub {c z : Mat q} (hc : IsSkew c) (hz : IsSkew z) :
     IsSkew (c-z) := by
   change (c-z)ᵀ = -(c-z)
   rw [Matrix.transpose_sub,hc,hz]
   abel
 
+variable (Q₀ H : Mat q)
+
 /-- The middle q-by-q blocks are orthogonal globally in the skew coordinates. -/
-theorem originalPsi_orthogonal {q : ℕ} (Q₀ H : Mat q)
+theorem originalPsi_orthogonal 
     (hQ₀ : Orthogonal Q₀) (hH : IsSkew H) : Orthogonal (originalPsi Q₀ H) :=
   hQ₀.mul (matrixExp_orthogonal hH)
 
 /-- Original f has a genuine three-factor GS representation without smallness. -/
-theorem originalF_mem_localFamily {q : ℕ} (Q₀ : Mat q) (hQ₀ : Orthogonal Q₀)
+theorem originalF_mem_localFamily  (hQ₀ : Orthogonal Q₀)
     (ell r : Fin q → ℝ) (c z : Mat q) (u : CircleVector)
     (hc : IsSkew c) (hz : IsSkew z) (hu : OnCircle u) :
     originalF Q₀ (ell,r,c,z,u) ∈ localFamily q := by
@@ -52,13 +50,13 @@ theorem originalF_mem_localFamily {q : ℕ} (Q₀ : Mat q) (hQ₀ : Orthogonal Q
     fun i => (rotation_orthogonal (ell i)).mul hS
   have hV : ∀ j, Orthogonal (V j) :=
     fun j => hS.transpose.mul (rotation_orthogonal (r j))
-  have hA : Orthogonal A := originalPsi_orthogonal Q₀ (c+z) hQ₀ (skew_add hc hz)
-  have hB : Orthogonal B := originalPsi_orthogonal Q₀ (c-z) hQ₀ (skew_sub hc hz)
+  have hA := originalPsi_orthogonal Q₀ (c+z) hQ₀ (skew_add hc hz)
+  have hB := originalPsi_orthogonal Q₀ (c-z) hQ₀ (skew_sub hc hz)
   have he : originalF Q₀ (ell,r,c,z,u) =
       flattenBlocks (blockMatrix U * centralPair A B * blockMatrix V) := by
     ext i j
-    let x : Fin q × Fin 2 := finProdFinEquiv.symm i
-    let y : Fin q × Fin 2 := finProdFinEquiv.symm j
+    let x := finProdFinEquiv.symm i
+    let y := finProdFinEquiv.symm j
     change (rotation (ell x.1) * middleBlock (A x.1 y.1) (B x.1 y.1) u *
       rotation (r y.1)) x.2 y.2 =
       (blockMatrix U * centralPair A B * blockMatrix V) x y
@@ -68,7 +66,7 @@ theorem originalF_mem_localFamily {q : ℕ} (Q₀ : Mat q) (hQ₀ : Orthogonal Q
   exact block_sandwich_mem_localFamily U V A B hU hV hA hB
 
 /-- Every point of every original K_eta maps into the original family. -/
-theorem originalF_mem_of_mem_K {q : ℕ} (Q₀ : Mat q) (hQ₀ : Orthogonal Q₀)
+theorem originalF_mem_of_mem_K  (hQ₀ : Orthogonal Q₀)
     {η : ℝ} {p : OriginalParameters q} (hp : p ∈ originalK q η) :
     originalF Q₀ p ∈ localFamily q := by
   rcases p with ⟨ell,r,c,z,u⟩
@@ -76,7 +74,7 @@ theorem originalF_mem_of_mem_K {q : ℕ} (Q₀ : Mat q) (hQ₀ : Orthogonal Q₀
   exact originalF_mem_localFamily Q₀ hQ₀ ell r c z u hc hz hu
 
 /-- In particular the distinguished base point belongs to the actual family. -/
-theorem basePoint_mem_localFamily {q : ℕ} (Q₀ : Mat q) (hQ₀ : Orthogonal Q₀) :
+theorem basePoint_mem_localFamily  (hQ₀ : Orthogonal Q₀) :
     basePoint Q₀ ∈ localFamily q := by
   have h := originalF_mem_of_mem_K Q₀ hQ₀ (originalBaseParameters_mem q (le_refl (0:ℝ)))
   rwa [originalF_basePoint] at h

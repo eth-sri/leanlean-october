@@ -1,5 +1,4 @@
-module
-public import GS.Topology.SectionPair
-public import Mathlib.AlgebraicTopology.SingularHomology.Basic
-public import Mathlib.Algebra.Category.ModuleCat.Abelian
-public import Mathlib.Algebra.Category.ModuleCat.Colimits
+import GS.Topology.SectionPair
+import Mathlib.AlgebraicTopology.SingularHomology.Basic
+import Mathlib.Algebra.Category.ModuleCat.Abelian
+import Mathlib.Algebra.Category.ModuleCat.Colimits

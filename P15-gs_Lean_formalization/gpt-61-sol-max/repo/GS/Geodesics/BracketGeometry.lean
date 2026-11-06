@@ -1,2 +1,1 @@
-module
-public import GS.Extensions.GeodesicNormal
+import GS.Extensions.GeodesicNormal

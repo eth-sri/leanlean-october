@@ -1,4 +1,3 @@
-module
-public import GS.Topology.SingularHomotopyCombinatorial
-public import Mathlib.AlgebraicTopology.SimplicialSet.Homology.HomotopyInvariance
-public import Mathlib.Topology.Homotopy.TopCat.ToSSet
+import GS.Topology.SingularHomotopyCombinatorial
+import Mathlib.AlgebraicTopology.SimplicialSet.Homology.HomotopyInvariance
+import Mathlib.Topology.Homotopy.TopCat.ToSSet
