@@ -37,9 +37,7 @@ theorem kernel_denominator_norm_lower (z : ℂ) {w : ℂ} (hw : w ∈ disk) :
   have hmul : ‖z * star w‖ ≤ ‖z‖ := by
     rw [norm_mul, norm_star]
     exact mul_le_of_le_one_right (norm_nonneg z) ((mem_disk_iff w).mp hw).le
-  calc
-    1 - ‖z‖ ≤ 1 - ‖z * star w‖ := sub_le_sub_left hmul 1
-    _ ≤ ‖1 - z * star w‖ := by simpa only [norm_one] using norm_sub_norm_le (1 : ℂ) _
+  linarith [norm_sub_norm_le (1 : ℂ) (z * star w), norm_one (α := ℂ)]
 
 theorem norm_kernel_le {z w : ℂ} (hz : z ∈ disk) (hw : w ∈ disk) :
     ‖kernel z w‖ ≤ (1 - ‖z‖)⁻¹ ^ 2 := by
@@ -64,9 +62,9 @@ theorem continuousOn_weightedKernel (α : ℝ) {z : ℂ} (hz : z ∈ disk) :
   exact Complex.mem_slitPlane_iff.mpr (Or.inl (kernel_denominator_re_pos hz hw))
 
 theorem continuousOn_kernel {z : ℂ} (hz : z ∈ disk) : ContinuousOn (kernel z) disk := by
-  have h := continuousOn_weightedKernel 0 hz
-  change ContinuousOn (fun w ↦ weightedKernel 0 z w) disk at h
-  simpa only [weightedKernel_zero] using h
+  convert continuousOn_weightedKernel 0 hz using 1
+  funext w
+  exact (weightedKernel_zero z w).symm
 
 theorem aestronglyMeasurable_kernel {z : ℂ} (hz : z ∈ disk) :
     AEStronglyMeasurable (kernel z) diskArea :=
@@ -89,11 +87,6 @@ theorem integrable_weightedKernel_mul {α : ℝ} (hα : -1 < α) {f : ℂ → �
     Integrable (fun w ↦ weightedKernel α z w * f w) (weightedArea α) := by
   apply hf.bdd_mul (aestronglyMeasurable_weightedKernel α hz)
   exact (ae_mem_disk_weighted α).mono fun w hw ↦ norm_weightedKernel_le hα hz hw
-
-theorem positiveProjection_lt_top {f : ℂ → ℂ} (hf : Integrable f diskArea) {z : ℂ}
-    (hz : z ∈ disk) : positiveProjection f z < ∞ := by
-  simpa only [positiveProjection, enorm_mul, ofReal_norm] using
-    (hasFiniteIntegral_iff_enorm.mp (integrable_kernel_mul hf hz).hasFiniteIntegral)
 
 theorem weightedPositiveProjection_lt_top {α : ℝ} (hα : -1 < α) {f : ℂ → ℂ}
     (hf : Integrable f (weightedArea α)) {z : ℂ} (hz : z ∈ disk) :

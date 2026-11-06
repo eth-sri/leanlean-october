@@ -5,6 +5,8 @@ Authors: Yongxi Lin
 -/
 module
 
+public import BergmanWeakType.Notation
+
 public import BergmanWeakType.Weighted.PolarCap
 public import Mathlib.Analysis.SpecialFunctions.Pow.Deriv
 
@@ -60,83 +62,66 @@ theorem quotientWeight_hasDerivAt {k r : ℝ} {J Jr : ℝ → ℝ}
     ring
 
 theorem antitoneOn_angularMean_min_quotient {F Fr Frr Ft Ftt : ℝ → ℝ → ℝ}
-    {J Jr Jrr : ℝ → ℝ} (k c : ℝ)
-    (hF : ContinuousOn (fun p : ℝ × ℝ ↦ F p.1 p.2) (Ico 0 1 ×ˢ univ))
-    (hFr : ContinuousOn (fun p : ℝ × ℝ ↦ Fr p.1 p.2) (Ico 0 1 ×ˢ univ))
-    (hFrr : ContinuousOn (fun p : ℝ × ℝ ↦ Frr p.1 p.2) (Ico 0 1 ×ˢ univ))
-    (hFt : ContinuousOn (fun p : ℝ × ℝ ↦ Ft p.1 p.2) (Ico 0 1 ×ˢ univ))
-    (hFtt : ContinuousOn (fun p : ℝ × ℝ ↦ Ftt p.1 p.2) (Ico 0 1 ×ˢ univ))
-    (hFd : ∀ r ∈ Ioo (0 : ℝ) 1, ∀ θ, HasDerivAt (fun u ↦ F u θ) (Fr r θ) r)
-    (hFrd : ∀ r ∈ Ioo (0 : ℝ) 1, ∀ θ, HasDerivAt (fun u ↦ Fr u θ) (Frr r θ) r)
-    (hFdt : ∀ r ∈ Ioo (0 : ℝ) 1, ∀ θ, HasDerivAt (F r) (Ft r θ) θ)
-    (hFtd : ∀ r ∈ Ioo (0 : ℝ) 1, ∀ θ, HasDerivAt (Ft r) (Ftt r θ) θ)
-    (hperiodF : ∀ r ∈ Ioo (0 : ℝ) 1, F r (2 * π) = F r 0)
-    (hperiodFt : ∀ r ∈ Ioo (0 : ℝ) 1, Ft r (2 * π) = Ft r 0)
-    (hJ : ContinuousOn J (Ico 0 1)) (hJr : ContinuousOn Jr (Ico 0 1))
-    (hJrr : ContinuousOn Jrr (Ico 0 1))
-    (hJd : ∀ r ∈ Ioo (0 : ℝ) 1, HasDerivAt J (Jr r) r)
-    (hJrd : ∀ r ∈ Ioo (0 : ℝ) 1, HasDerivAt Jr (Jrr r) r)
-    (hJpos : ∀ r ∈ Ico (0 : ℝ) 1, 0 < J r)
-    (hJode : ∀ r ∈ Ioo (0 : ℝ) 1,
+    {J Jr Jrr : ℝ → ℝ} (k c : ℝ) (h : PolarSmooth F Fr Frr Ft Ftt)
+    (hJ : RadialSmooth J Jr Jrr)
+    (hJode : ∀ r ∈ Ioo01,
       Jrr r + (1 / r - 2 * k * r / (1 - r ^ 2)) * Jr r -
         (k ^ 2 / (1 - r ^ 2)) * J r = 0)
-    (hFode : ∀ r ∈ Ioo (0 : ℝ) 1, ∀ θ,
+    (hFode : ∀ r ∈ Ioo01, ∀ θ,
       Frr r θ + (1 / r - 2 * k * r / (1 - r ^ 2)) * Fr r θ + Ftt r θ / r ^ 2 -
         (k ^ 2 / (1 - r ^ 2)) * F r θ ≤ 0) :
     AntitoneOn (angularMean (fun r θ ↦ min (F r θ / J r) c)) (Ico 0 1) := by
   have hJ' : ContinuousOn (fun p : ℝ × ℝ ↦ J p.1) (Ico 0 1 ×ˢ univ) :=
-    hJ.comp continuous_fst.continuousOn (fun p hp ↦ hp.1)
+    hJ.cont.comp continuous_fst.continuousOn (fun p hp ↦ hp.1)
   have hJr' : ContinuousOn (fun p : ℝ × ℝ ↦ Jr p.1) (Ico 0 1 ×ˢ univ) :=
-    hJr.comp continuous_fst.continuousOn (fun p hp ↦ hp.1)
+    hJ.contR.comp continuous_fst.continuousOn (fun p hp ↦ hp.1)
   have hJrr' : ContinuousOn (fun p : ℝ × ℝ ↦ Jrr p.1) (Ico 0 1 ×ˢ univ) :=
-    hJrr.comp continuous_fst.continuousOn (fun p hp ↦ hp.1)
-  have hn : ∀ p ∈ Ico (0 : ℝ) 1 ×ˢ (univ : Set ℝ), J p.1 ≠ 0 :=
-    fun p hp ↦ (hJpos p.1 hp.1).ne'
-  have hpow (n : ℕ) : ∀ p ∈ Ico (0 : ℝ) 1 ×ˢ (univ : Set ℝ), J p.1 ^ n ≠ 0 :=
+    hJ.contRR.comp continuous_fst.continuousOn (fun p hp ↦ hp.1)
+  have hn : ∀ p ∈ Ico01 ×ˢ (univ : Set ℝ), J p.1 ≠ 0 :=
+    fun p hp ↦ (hJ.pos p.1 hp.1).ne'
+  have hpow (n : ℕ) : ∀ p ∈ Ico01 ×ˢ (univ : Set ℝ), J p.1 ^ n ≠ 0 :=
     fun p hp ↦ pow_ne_zero n (hn p hp)
+  have hmem : ∀ r ∈ Ioo01, r ∈ Ico01 := fun r hr ↦ ⟨hr.1.le, hr.2⟩
+  have hr2 : ∀ r ∈ Ioo01, r ^ 2 < 1 := fun r hr ↦
+    (sq_lt_one_iff_abs_lt_one r).mpr (abs_lt.mpr ⟨by linarith [hr.1], hr.2⟩)
   have hbase : ContinuousOn (fun r : ℝ ↦ (1 - r ^ 2) ^ k) (Ico 0 1) := by
     apply (continuousOn_const.sub (continuousOn_id.pow 2)).rpow_const
-    intro r hr
-    left
-    apply (sub_pos.mpr ((sq_lt_one_iff_abs_lt_one r).mpr _)).ne'
-    exact abs_lt.mpr ⟨by linarith [hr.1], hr.2⟩
-  apply antitoneOn_angularMean_min_of_polar_flux c
+    rintro r ⟨h0, h1⟩
+    exact Or.inl (by nlinarith : (0 : ℝ) < 1 - r ^ 2).ne'
+  refine antitoneOn_angularMean_min_of_polar_flux c
     (Fr := quotientRadialFirst F Fr J Jr) (Frr := quotientRadialSecond F Fr Frr J Jr Jrr)
     (Ft := fun r θ ↦ Ft r θ / J r) (Ftt := fun r θ ↦ Ftt r θ / J r)
     (w := quotientWeight k J) (w' := quotientWeightDeriv k J Jr)
-  · exact hF.div hJ' hn
-  · exact ((hFr.mul hJ').sub (hF.mul hJr')).div (hJ'.pow 2) (hpow 2)
-  · exact (((hFrr.div hJ' hn).sub ((hF.mul hJrr').div (hJ'.pow 2) (hpow 2))).sub
-      (((hFr.const_mul 2).mul hJr').div (hJ'.pow 2) (hpow 2))).add
-      (((hF.const_mul 2).mul (hJr'.pow 2)).div (hJ'.pow 3) (hpow 3))
-  · exact hFt.div hJ' hn
-  · exact hFtt.div hJ' hn
+    ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ ?_ ?_ ?_ ?_
+  · exact h.cont.div hJ' hn
+  · exact ((h.contR.mul hJ').sub (h.cont.mul hJr')).div (hJ'.pow 2) (hpow 2)
+  · exact (((h.contRR.div hJ' hn).sub ((h.cont.mul hJrr').div (hJ'.pow 2) (hpow 2))).sub
+      (((h.contR.const_mul 2).mul hJr').div (hJ'.pow 2) (hpow 2))).add
+      (((h.cont.const_mul 2).mul (hJr'.pow 2)).div (hJ'.pow 3) (hpow 3))
+  · exact h.contT.div hJ' hn
+  · exact h.contTT.div hJ' hn
   · intro r hr θ
-    exact (hFd r hr θ).div (hJd r hr) (hJpos r ⟨hr.1.le, hr.2⟩).ne'
+    exact (h.deriv r hr θ).div (hJ.deriv r hr) (hJ.pos r (hmem r hr)).ne'
   · intro r hr θ
-    exact quotientRadialFirst_hasDerivAt (hFd r hr θ) (hFrd r hr θ) (hJd r hr)
-      (hJrd r hr) (hJpos r ⟨hr.1.le, hr.2⟩).ne'
+    exact quotientRadialFirst_hasDerivAt (h.deriv r hr θ) (h.derivR r hr θ) (hJ.deriv r hr)
+      (hJ.derivR r hr) (hJ.pos r (hmem r hr)).ne'
   · intro r hr θ
-    exact (hFdt r hr θ).div_const (J r)
+    exact (h.derivT r hr θ).div_const (J r)
   · intro r hr θ
-    exact (hFtd r hr θ).div_const (J r)
+    exact (h.derivTT r hr θ).div_const (J r)
   · intro r hr
-    rw [hperiodF r hr]
+    rw [h.periodF r hr]
   · intro r hr
-    rw [hperiodFt r hr]
-  · exact hbase.mul (hJ.pow 2)
+    rw [h.periodT r hr]
+  · exact hbase.mul (hJ.cont.pow 2)
   · intro r hr
-    exact quotientWeight_hasDerivAt
-      ((sq_lt_one_iff_abs_lt_one r).mpr (abs_lt.mpr ⟨by linarith [hr.1], hr.2⟩))
-      (hJpos r ⟨hr.1.le, hr.2⟩).ne' (hJd r hr)
+    exact quotientWeight_hasDerivAt (hr2 r hr) (hJ.pos r (hmem r hr)).ne' (hJ.deriv r hr)
   · intro r hr
-    apply mul_pos (Real.rpow_pos_of_pos _ _) (sq_pos_of_pos (hJpos r ⟨hr.1.le, hr.2⟩))
-    exact sub_pos.mpr ((sq_lt_one_iff_abs_lt_one r).mpr
-      (abs_lt.mpr ⟨by linarith [hr.1], hr.2⟩))
+    exact mul_pos (Real.rpow_pos_of_pos (sub_pos.mpr (hr2 r hr)) k)
+      (sq_pos_of_pos (hJ.pos r (hmem r hr)))
   · intro r hr θ
-    have hj := hJpos r ⟨hr.1.le, hr.2⟩
-    have ht : 0 < 1 - r ^ 2 := sub_pos.mpr ((sq_lt_one_iff_abs_lt_one r).mpr
-      (abs_lt.mpr ⟨by linarith [hr.1], hr.2⟩))
+    have hj := hJ.pos r (hmem r hr)
+    have ht : 0 < 1 - r ^ 2 := sub_pos.mpr (hr2 r hr)
     have h := quotient_polar_operator_nonpos hj hr.1.ne'
       (a := 1 / r - 2 * k * r / (1 - r ^ 2)) (b := -(k ^ 2 / (1 - r ^ 2)))
       (by simpa only [neg_mul, ← sub_eq_add_neg] using hJode r hr)

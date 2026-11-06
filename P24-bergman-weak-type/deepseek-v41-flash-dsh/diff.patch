@@ -1,0 +1,3747 @@
+diff --git a/BergmanWeakType/Boundary/ColumnBound.lean b/BergmanWeakType/Boundary/ColumnBound.lean
+index de87b31ba..f4e84272d 100644
+--- a/BergmanWeakType/Boundary/ColumnBound.lean
++++ b/BergmanWeakType/Boundary/ColumnBound.lean
+@@ -5,7 +5,8 @@ Authors: Yongxi Lin
+ -/
+ module
+ 
+-public import BergmanWeakType.Boundary.Concentration
++public import BergmanWeakType.Reproduction
++
+ 
+ /-! # Weak bounds for the limiting boundary kernel column -/
+ 
+diff --git a/BergmanWeakType/Boundary/Concentration.lean b/BergmanWeakType/Boundary/Concentration.lean
+deleted file mode 100644
+index 0a7df4b61..000000000
+--- a/BergmanWeakType/Boundary/Concentration.lean
++++ /dev/null
+@@ -1,163 +0,0 @@
+-/-
+-Copyright (c) 2026 Yongxi Lin. All rights reserved.
+-Released under Apache 2.0 license as described in the file LICENSE.
+-Authors: Yongxi Lin
+--/
+-module
+-
+-public import BergmanWeakType.Reproduction
+-public import Mathlib.Topology.UniformSpace.HeineCantor
+-
+-/-! # Interior kernel columns as limits of admissible inputs -/
+-
+-@[expose] public section
+-
+-noncomputable section
+-
+-open MeasureTheory
+-open scoped ENNReal Topology
+-
+-namespace BergmanWeakType
+-
+-theorem ball_subset_disk {a : ℂ} {r : ℝ} (hr : r ≤ 1 - ‖a‖) :
+-    Metric.ball a r ⊆ disk := by
+-  intro w hw
+-  apply (mem_disk_iff w).mpr
+-  have hw' : ‖w - a‖ < r := by simpa only [Metric.mem_ball, dist_eq_norm] using hw
+-  have := norm_add_le (w - a) a
+-  rw [sub_add_cancel] at this
+-  linarith
+-
+-theorem weightedArea_interior_ball_pos (α : ℝ) (hα : -1 < α) {a : ℂ} {r : ℝ}
+-    (hr : 0 < r) (hr1 : r ≤ 1 - ‖a‖) : 0 < weightedArea α (Metric.ball a r) := by
+-  apply pos_iff_ne_zero.mpr
+-  intro h
+-  have hd := diskArea_absolutelyContinuous_weightedArea α hα h
+-  rw [diskArea, Measure.restrict_eq_self _ (ball_subset_disk hr1), area_ball] at hd
+-  have hp : 0 < ENNReal.ofReal r ^ 2 := by positivity
+-  exact hp.ne' hd
+-
+-/-- Nearby interior source points produce uniformly close kernel columns on the whole disk. -/
+-theorem exists_uniform_weightedKernel_near_source (α : ℝ) {a : ℂ} (ha : a ∈ disk)
+-    {ε : ℝ} (hε : 0 < ε) :
+-    ∃ r : ℝ, 0 < r ∧ r ≤ 1 - ‖a‖ ∧ ∀ z ∈ disk, ∀ w ∈ Metric.ball a r,
+-      ‖weightedKernel α z w - weightedKernel α z a‖ < ε := by
+-  let R := (1 + ‖a‖) / 2
+-  have ha' : ‖a‖ < 1 := (mem_disk_iff a).mp ha
+-  have haR : ‖a‖ < R := by dsimp [R]; linarith
+-  have hR1 : R < 1 := by dsimp [R]; linarith
+-  have hcont : ContinuousOn (fun u : ℂ ↦ (1 - u) ^ (-(α + 2) : ℂ))
+-      (Metric.closedBall 0 R) := by
+-    apply (continuous_const.sub continuous_id).continuousOn.cpow_const
+-    intro u hu
+-    have hu' : ‖u‖ ≤ R := by simpa using hu
+-    apply Complex.mem_slitPlane_iff.mpr
+-    left
+-    change 0 < 1 - u.re
+-    linarith [Complex.re_le_norm u]
+-  obtain ⟨δ, hδ, hclose⟩ := Metric.uniformContinuousOn_iff.mp
+-    ((isCompact_closedBall (0 : ℂ) R).uniformContinuousOn_of_continuous hcont) ε hε
+-  refine ⟨min δ (R - ‖a‖), lt_min hδ (sub_pos.mpr haR), ?_, ?_⟩
+-  · exact (min_le_right _ _).trans (by linarith)
+-  intro z hz w hw
+-  have hz' : ‖z‖ ≤ 1 := ((mem_disk_iff z).mp hz).le
+-  have hw' : ‖w - a‖ < min δ (R - ‖a‖) := by
+-    simpa only [Metric.mem_ball, dist_eq_norm] using hw
+-  have hwR : ‖w‖ ≤ R := by
+-    have htri := norm_add_le (w - a) a
+-    rw [sub_add_cancel] at htri
+-    have := hw'.trans_le (min_le_right _ _)
+-    linarith
+-  have hza : z * star a ∈ Metric.closedBall 0 R := by
+-    simp only [Metric.mem_closedBall, dist_zero_right, norm_mul, norm_star]
+-    exact (mul_le_of_le_one_left (norm_nonneg a) hz').trans haR.le
+-  have hzw : z * star w ∈ Metric.closedBall 0 R := by
+-    simp only [Metric.mem_closedBall, dist_zero_right, norm_mul, norm_star]
+-    exact (mul_le_of_le_one_left (norm_nonneg w) hz').trans hwR
+-  have hdist : dist (z * star w) (z * star a) < δ := by
+-    rw [dist_eq_norm, ← mul_sub, ← star_sub, norm_mul, norm_star]
+-    exact (mul_le_of_le_one_left (norm_nonneg _) hz').trans_lt
+-      (hw'.trans_le (min_le_left _ _))
+-  simpa only [weightedKernel, dist_eq_norm] using hclose _ hzw _ hza hdist
+-
+-theorem norm_weightedProjection_indicator_sub_column_le {α : ℝ} (hα : -1 < α)
+-    {s : Set ℂ} (hs : MeasurableSet s) {z a : ℂ} (hz : z ∈ disk) {ε : ℝ}
+-    (hclose : ∀ w ∈ s, ‖weightedKernel α z w - weightedKernel α z a‖ ≤ ε) :
+-    ‖weightedProjection α (s.indicator (fun _ ↦ (1 : ℂ))) z -
+-      (weightedArea α).real s * weightedKernel α z a‖ ≤
+-        ε * (weightedArea α).real s := by
+-  let := weightedArea_isProbabilityMeasure α hα
+-  have hK : Integrable (weightedKernel α z) (weightedArea α) := by
+-    simpa only [mul_one] using
+-      integrable_weightedKernel_mul hα (integrable_const (1 : ℂ)) hz
+-  calc
+-    _ = ‖∫ w in s, weightedKernel α z w - weightedKernel α z a ∂weightedArea α‖ := by
+-      rw [integral_sub hK.integrableOn (integrable_const _), setIntegral_const,
+-        weightedProjection_indicator_eq_setIntegral α hs z]
+-      simp only [Complex.real_smul]
+-    _ ≤ ε * (weightedArea α).real s :=
+-      norm_setIntegral_le_of_norm_le_const (measure_lt_top _ _) hclose
+-
+-/-- A strict column lower bound on a target set transfers to every weak type bound. -/
+-theorem column_threshold_le_weakBound {α L ℓ : ℝ} {C : ℝ≥0∞} (hα : -1 < α)
+-    (hC : IsWeakTypeBound (weightedArea α) (fun f z ↦ ‖weightedProjection α f z‖ₑ) C)
+-    {a : ℂ} (ha : a ∈ disk) {E : Set ℂ} (hE : E ⊆ disk)
+-    (hcol : ∀ z ∈ E, L ≤ ‖weightedKernel α z a‖) (hℓ : 0 < ℓ) (hℓL : ℓ < L) :
+-    ENNReal.ofReal ℓ * weightedArea α E ≤ C := by
+-  let := weightedArea_isProbabilityMeasure α hα
+-  obtain ⟨r, hr, hr1, hclose⟩ := exists_uniform_weightedKernel_near_source α ha
+-    (show 0 < (L - ℓ) / 2 by linarith)
+-  let s := Metric.ball a r
+-  let f : ℂ → ℂ := s.indicator (fun _ ↦ 1)
+-  let m := (weightedArea α).real s
+-  have hs : MeasurableSet s := Metric.isOpen_ball.measurableSet
+-  have hspos : 0 < weightedArea α s := weightedArea_interior_ball_pos α hα hr hr1
+-  have hsfinite : weightedArea α s ≠ ∞ := measure_ne_top _ _
+-  have hm : 0 < m := ENNReal.toReal_pos hspos.ne' hsfinite
+-  have hf : Integrable f (weightedArea α) := (integrable_const (1 : ℂ)).indicator hs
+-  have hmass : (∫⁻ w, ‖f w‖ₑ ∂weightedArea α) = weightedArea α s := by
+-    simp [f, enorm_indicator_eq_indicator_enorm, hs]
+-  have hsub : E ⊆ {z | ENNReal.ofReal (ℓ * m) < ‖weightedProjection α f z‖ₑ} := by
+-    intro z hz
+-    have herr := norm_weightedProjection_indicator_sub_column_le hα hs (hE hz)
+-      (fun w hw ↦ (hclose z (hE hz) w hw).le)
+-    have hrev : m * ‖weightedKernel α z a‖ - ‖weightedProjection α f z‖ ≤
+-        ‖weightedProjection α f z - (m : ℂ) * weightedKernel α z a‖ := by
+-      simpa only [norm_mul, Complex.norm_real, Real.norm_eq_abs, abs_of_pos hm, norm_sub_rev]
+-        using norm_sub_norm_le ((m : ℂ) * weightedKernel α z a)
+-          (weightedProjection α f z)
+-    have hout : ℓ * m < ‖weightedProjection α f z‖ := by
+-      have hprod := mul_le_mul_of_nonneg_left (hcol z hz) hm.le
+-      change ‖weightedProjection α f z - (m : ℂ) * weightedKernel α z a‖ ≤
+-        (L - ℓ) / 2 * m at herr
+-      nlinarith
+-    change ENNReal.ofReal (ℓ * m) < ‖weightedProjection α f z‖ₑ
+-    rw [← ofReal_norm]
+-    exact (ENNReal.ofReal_lt_ofReal_iff ((mul_pos hℓ hm).trans hout)).mpr hout
+-  have hb : ENNReal.ofReal (ℓ * m) * weightedArea α E ≤ C * weightedArea α s := by
+-    calc
+-      _ ≤ ENNReal.ofReal (ℓ * m) *
+-          weightedArea α {z | ENNReal.ofReal (ℓ * m) < ‖weightedProjection α f z‖ₑ} :=
+-        mul_le_mul_right (measure_mono hsub) _
+-      _ ≤ _ := by simpa only [hmass] using hC f hf (ℓ * m) (mul_pos hℓ hm)
+-  have hmcoe : ENNReal.ofReal m = weightedArea α s := ENNReal.ofReal_toReal hsfinite
+-  rw [ENNReal.ofReal_mul hℓ.le, hmcoe] at hb
+-  rw [mul_assoc, mul_comm (weightedArea α s), ← mul_assoc] at hb
+-  exact (ENNReal.mul_le_mul_iff_left hspos.ne' hsfinite).mp hb
+-
+-/-- Every interior kernel column satisfies the weak bound of the complex projection. -/
+-theorem column_le_weakBound {α L : ℝ} {C : ℝ≥0∞} (hα : -1 < α)
+-    (hC : IsWeakTypeBound (weightedArea α) (fun f z ↦ ‖weightedProjection α f z‖ₑ) C)
+-    {a : ℂ} (ha : a ∈ disk) {E : Set ℂ} (hE : E ⊆ disk)
+-    (hcol : ∀ z ∈ E, L ≤ ‖weightedKernel α z a‖) (hL : 0 < L) :
+-    ENNReal.ofReal L * weightedArea α E ≤ C := by
+-  let := weightedArea_isProbabilityMeasure α hα
+-  have hlim : Filter.Tendsto (fun ℓ : ℝ ↦ ENNReal.ofReal ℓ * weightedArea α E)
+-      (𝓝[<] L) (𝓝 (ENNReal.ofReal L * weightedArea α E)) := by
+-    exact ((ENNReal.continuous_mul_const (measure_ne_top (weightedArea α) E)).comp
+-      ENNReal.continuous_ofReal).continuousAt.tendsto.mono_left nhdsWithin_le_nhds
+-  apply le_of_tendsto hlim
+-  filter_upwards [Ioo_mem_nhdsLT hL] with ℓ hℓ
+-  exact column_threshold_le_weakBound hα hC ha hE hcol hℓ.1 hℓ.2
+-
+-end BergmanWeakType
+diff --git a/BergmanWeakType/Boundary/HalfDiskIntegral.lean b/BergmanWeakType/Boundary/HalfDiskIntegral.lean
+index c49f9ec84..decf454ca 100644
+--- a/BergmanWeakType/Boundary/HalfDiskIntegral.lean
++++ b/BergmanWeakType/Boundary/HalfDiskIntegral.lean
+@@ -5,6 +5,8 @@ Authors: Yongxi Lin
+ -/
+ module
+ 
++public import BergmanWeakType.Notation
++
+ public import BergmanWeakType.Weighted.Normalizer
+ public import BergmanWeakType.Rigidity.PolarIntegral
+ 
+@@ -80,21 +82,21 @@ theorem circleAverage_halfDiskPower {α : ℝ} (hα : 0 ≤ α) {r : ℝ} (hr :
+     apply intervalIntegral.integral_congr_Ioo_of_le pi_pos.le
+     intro θ hθ
+     rw [hpoint, ite_eq_left (sin_pos_of_pos_of_lt_pi hθ.1 hθ.2)]
+-  have hright : (∫ θ in π..2 * π, H θ) = 0 := by
+-    rw [← intervalIntegral.integral_zero (a := π) (b := 2 * π)]
++  have hright : (∫ θ in π..τ, H θ) = 0 := by
++    rw [← intervalIntegral.integral_zero (a := π) (b := τ)]
+     apply intervalIntegral.integral_congr_Ioo_of_le (by linarith [pi_pos])
+     intro θ hθ
+     have hs : sin θ ≤ 0 := by
+       have hn := sin_nonpos_of_nonpos_of_neg_pi_le
+-        (show θ - 2 * π ≤ 0 by linarith [hθ.2])
+-        (show -π ≤ θ - 2 * π by linarith [hθ.1])
++        (show θ - τ ≤ 0 by linarith [hθ.2])
++        (show -π ≤ θ - τ by linarith [hθ.1])
+       simpa using hn
+     rw [hpoint, ite_eq_right (not_lt.mpr hs)]
+   rw [circleAverage_eq_integral_add (-(π / 2)), smul_eq_mul]
+-  change (2 * π)⁻¹ * (∫ θ in (0 : ℝ)..2 * π, H θ) = _
++  change (τ)⁻¹ * (∫ θ in (0 : ℝ)..τ, H θ) = _
+   rw [← intervalIntegral.integral_add_adjacent_intervals
+     (intervalIntegrable_halfDiskPower_circle hα r (-(π / 2)) 0 π pi_pos.le)
+-    (intervalIntegrable_halfDiskPower_circle hα r (-(π / 2)) π (2 * π) (by linarith [pi_pos])),
++    (intervalIntegrable_halfDiskPower_circle hα r (-(π / 2)) π (τ) (by linarith [pi_pos])),
+     hleft, hright, add_zero, integral_sin_rpow (by linarith : -1 < α),
+     Real.mul_rpow (by norm_num : (0 : ℝ) ≤ 2) hr.le,
+     gammaConstant_eq_boundaryGamma (by linarith : -1 < α)]
+@@ -107,8 +109,8 @@ theorem circleAverage_halfDiskPower {α : ℝ} (hα : 0 ≤ α) {r : ℝ} (hr :
+ theorem integral_halfDiskPower {α : ℝ} (hα : 0 ≤ α) :
+     (∫ z, halfDiskPower α z ∂diskArea) = gammaConstant α / (α + 2) := by
+   rw [integral_diskArea_eq_circleAverage (integrable_halfDiskPower hα)]
+-  have heq : (∫ r in Ioo (0 : ℝ) 1, (2 * r) • circleAverage (halfDiskPower α) 0 r) =
+-      gammaConstant α * ∫ r in Ioo (0 : ℝ) 1, r ^ (α + 1) := by
++  have heq : (∫ r in Ioo01, (2 * r) • circleAverage (halfDiskPower α) 0 r) =
++      gammaConstant α * ∫ r in Ioo01, r ^ (α + 1) := by
+     rw [← integral_const_mul]
+     apply setIntegral_congr_fun measurableSet_Ioo
+     intro r hr
+diff --git a/BergmanWeakType/Comparison.lean b/BergmanWeakType/Comparison.lean
+index 8c5960889..aa81ac3da 100644
+--- a/BergmanWeakType/Comparison.lean
++++ b/BergmanWeakType/Comparison.lean
+@@ -32,13 +32,6 @@ theorem weightedProjection_constant_le_weightedPositiveProjection_constant (α :
+   exact weakTypeConstant_mono fun f _ z ↦
+     enorm_weightedProjection_le_weightedPositiveProjection α f z
+ 
+-/-- The complex weighted weak constant specializes to the disk constant at parameter zero. -/
+-@[simp]
+-theorem weightedProjection_constant_zero :
+-    weakTypeConstant (weightedArea 0) (fun f z ↦ ‖weightedProjection 0 f z‖ₑ) =
+-      weakTypeConstant diskArea (fun f z ↦ ‖projection f z‖ₑ) := by
+-  simp
+-
+ /-- The positive weighted weak constant specializes to the disk constant at parameter zero. -/
+ @[simp]
+ theorem weightedPositiveProjection_constant_zero :
+diff --git a/BergmanWeakType/DiskSharp.lean b/BergmanWeakType/DiskSharp.lean
+index 932b5cae0..0197f9996 100644
+--- a/BergmanWeakType/DiskSharp.lean
++++ b/BergmanWeakType/DiskSharp.lean
+@@ -5,98 +5,38 @@ Authors: Yongxi Lin
+ -/
+ module
+ 
+-public import BergmanWeakType.Weighted.DiskCap
+-public import BergmanWeakType.Rigidity.PolarIntegral
++public import BergmanWeakType.WeightedSharp
+ public import BergmanWeakType.Reproduction
+ 
+-/-! # Sharp weak type constants on the unit disk -/
++/-! # Sharp weak type constants on the unit disk
++
++The unweighted results are the specializations of the sharp weighted results to exponent `α = 0`.
++-/
+ 
+ @[expose] public section
+ 
+ noncomputable section
+ 
+-open MeasureTheory Set Real
+-open scoped ENNReal
+-
+ namespace BergmanWeakType
+ 
+-open Weighted
++/-- The positive unweighted constant is the weighted constant at `α = 0`. -/
++theorem positiveProjection_constant_eq_one : weakTypeConstant diskArea positiveProjection = 1 := by
++  rw [← weightedPositiveProjection_constant_zero,
++    weightedPositiveProjection_constant_eq 0 (by norm_num)]
++  simp [gammaConstant]
+ 
+-theorem positiveProjection_level_iff {f : ℂ → ℂ} (hf : Integrable f diskArea)
+-    {t : ℝ} (ht : 0 ≤ t) {z : ℂ} (hz : z ∈ disk) :
+-    ENNReal.ofReal t < positiveProjection f z ↔
+-      t * (1 - ‖z‖ ^ 2) < diskPotential f z := by
+-  rw [diskPotential_eq hz, normalizedPotential_eq_mul_positiveProjection_toReal hf hz,
+-    ENNReal.ofReal_lt_iff_lt_toReal ht (positiveProjection_lt_top hf hz).ne]
+-  have hm : 0 < 1 - ‖z‖ ^ 2 := by
+-    have hz' := (mem_disk_iff z).mp hz
+-    nlinarith [norm_nonneg z]
+-  simpa only [mul_comm t] using (mul_lt_mul_iff_right₀ hm).symm
+-
+-/-- The angular distribution in complementary squared radius is exactly disk area. -/
+-theorem integral_levelFraction_eq_measure {f : ℂ → ℂ} (hf : Integrable f diskArea)
+-    {t : ℝ} (ht : 0 ≤ t) :
+-    (∫ y in (0 : ℝ)..1, levelFraction f t y) =
+-      diskArea.real {z | ENNReal.ofReal t < positiveProjection f z} := by
+-  let S := disk ∩ {z : ℂ | t * (1 - ‖z‖ ^ 2) < diskPotential f z}
+-  have hS : MeasurableSet S := measurableSet_disk.inter
+-    (measurableSet_lt (by fun_prop) (measurable_diskPotential hf))
+-  have hSi : Integrable (S.indicator (fun _ ↦ (1 : ℝ))) diskArea :=
+-    (integrable_const 1).indicator hS
+-  have hm : diskArea S = diskArea {z | ENNReal.ofReal t < positiveProjection f z} := by
+-    apply measure_congr
+-    filter_upwards [ae_mem_disk] with z hz
+-    simp only [S, mem_inter_iff, mem_ofPred_eq, hz, true_and]
+-    exact propext (positiveProjection_level_iff hf ht hz).symm
+-  calc
+-    _ = ∫ y in (0 : ℝ)..1,
+-        circleAverage (S.indicator (fun _ ↦ (1 : ℝ))) 0 (sqrt (1 - y)) := by
+-      rw [intervalIntegral.integral_of_le (by norm_num : (0 : ℝ) ≤ 1),
+-        intervalIntegral.integral_of_le (by norm_num : (0 : ℝ) ≤ 1)]
+-      apply setIntegral_congr_fun measurableSet_Ioc
+-      intro y hy
+-      apply circleAverage_congr_sphere
+-      intro z hz
+-      have hzNorm : ‖z‖ = sqrt (1 - y) := by
+-        simpa only [Metric.mem_sphere, dist_zero_right, abs_of_nonneg (sqrt_nonneg _)] using hz
+-      have hzSq : ‖z‖ ^ 2 = 1 - y := by
+-        rw [hzNorm, sq_sqrt (sub_nonneg.mpr hy.2)]
+-      have hzdisk : z ∈ disk := by
+-        apply (mem_disk_iff z).mpr
+-        nlinarith [norm_nonneg z, hy.1]
+-      have hpred : z ∈ S ↔ t * y < diskPotential f z := by
+-        simp only [S, mem_inter_iff, mem_ofPred_eq, hzdisk, true_and, hzSq, sub_sub_cancel]
+-      by_cases hzS : z ∈ S
+-      · simp only [indicator_of_mem hzS, ite_eq_left (hpred.mp hzS)]
+-      · simp only [indicator_of_notMem hzS, ite_eq_right (not_congr hpred |>.mp hzS)]
+-    _ = ∫ z, S.indicator (fun _ ↦ (1 : ℝ)) z ∂diskArea :=
+-      (integral_diskArea_eq_circleAverage_sqrt_one_sub hSi).symm
+-    _ = diskArea.real S := by
+-      simpa using integral_indicator_const (μ := diskArea) (1 : ℝ) hS
+-    _ = _ := congrArg ENNReal.toReal hm
+-
+-/-- The positive Bergman projection has weak type bound one on the unit disk. -/
++/-- The positive disk projection has weak type bound one. -/
+ theorem isWeakTypeBound_positiveProjection_one :
+     IsWeakTypeBound diskArea positiveProjection 1 := by
+-  intro f hf t ht
+-  rw [one_mul]
+-  have hi := integral_mul_levelFraction_le hf ht.le
+-  rw [intervalIntegral.integral_const_mul, integral_levelFraction_eq_measure hf ht.le] at hi
+-  have he := ENNReal.ofReal_le_ofReal hi
+-  rw [ENNReal.ofReal_mul ht.le, measureReal_def,
+-    ENNReal.ofReal_toReal (measure_ne_top _ _), ofReal_integral_norm_eq_lintegral_enorm hf] at he
+-  exact he
+-
+-/-- The sharp weak type constant of the positive disk Bergman projection is one. -/
+-theorem positiveProjection_constant_eq_one : weakTypeConstant diskArea positiveProjection = 1 :=
+-  le_antisymm (weakTypeConstant_le_of_bound isWeakTypeBound_positiveProjection_one)
+-    one_le_positiveProjection_constant
++  have h := isWeakTypeBound_weightedPositiveProjection (α := 0) (by norm_num)
++  rw [weightedArea_zero, show weightedPositiveProjection 0 = positiveProjection from
++    funext weightedPositiveProjection_zero] at h
++  simpa [gammaConstant] using h
+ 
+ /-- The sharp weak type constant of the complex disk Bergman projection is one. -/
+ theorem projection_constant_eq_one :
+-    weakTypeConstant diskArea (fun f z ↦ ‖projection f z‖ₑ) = 1 := by
+-  apply le_antisymm _ one_le_projection_constant
+-  exact projection_constant_le_positiveProjection_constant.trans_eq
+-    positiveProjection_constant_eq_one
++    weakTypeConstant diskArea (fun f z ↦ ‖projection f z‖ₑ) = 1 :=
++  le_antisymm (projection_constant_le_positiveProjection_constant.trans_eq
++    positiveProjection_constant_eq_one) one_le_projection_constant
+ 
+ end BergmanWeakType
+diff --git a/BergmanWeakType/Kernel.lean b/BergmanWeakType/Kernel.lean
+index 6e70f408c..3a1b92343 100644
+--- a/BergmanWeakType/Kernel.lean
++++ b/BergmanWeakType/Kernel.lean
+@@ -23,49 +23,43 @@ namespace BergmanWeakType
+ theorem mem_disk_iff (z : ℂ) : z ∈ disk ↔ ‖z‖ < 1 := by
+   simp [disk, Metric.mem_ball, dist_zero_right]
+ 
+-theorem kernel_denominator_ne_zero {z w : ℂ} (hz : z ∈ disk) (hw : w ∈ disk) :
++theorem kernel_denominator_ne_zero_closed_input {R : ℝ} (hR : R < 1) {z w : ℂ}
++    (hz : z ∈ Metric.closedBall 0 R) (hw : w ∈ Metric.closedBall 0 1) :
+     1 - z * star w ≠ 0 := by
+-  have hz' : ‖z‖ < 1 := (mem_disk_iff z).mp hz
+-  have hw' : ‖w‖ < 1 := (mem_disk_iff w).mp hw
+-  have hmul : ‖z * star w‖ < 1 := by
++  have hz' : ‖z‖ < 1 := (by simpa using hz : ‖z‖ ≤ R).trans_lt hR
++  have hw' : ‖w‖ ≤ 1 := by simpa using hw
++  have hm : ‖z * star w‖ < 1 := by
+     rw [norm_mul, norm_star]
+-    exact (mul_le_of_le_one_right (norm_nonneg z) hw'.le).trans_lt hz'
+-  intro h
+-  have hzw : z * star w = 1 := (sub_eq_zero.mp h).symm
+-  rw [hzw, norm_one] at hmul
+-  exact (lt_irrefl 1) hmul
++    exact (mul_le_of_le_one_right (norm_nonneg _) hw').trans_lt hz'
++  intro heq
++  have h2 : ‖z * star w‖ = 1 := by rw [← sub_eq_zero.mp heq, norm_one]
++  linarith
++
++theorem kernel_denominator_ne_zero {z w : ℂ} (hz : z ∈ disk) (hw : w ∈ disk) :
++    1 - z * star w ≠ 0 := by
++  have hz1 : ‖z‖ < 1 := (mem_disk_iff z).mp hz
++  have hw1 : ‖w‖ < 1 := (mem_disk_iff w).mp hw
++  refine kernel_denominator_ne_zero_closed_input (R := (‖z‖ + 1) / 2) ?_ ?_ ?_
++  · linarith
++  · simp only [Metric.mem_closedBall, dist_zero_right]; linarith
++  · simp only [Metric.mem_closedBall, dist_zero_right]; linarith
+ 
+ /-- The kernel's base lies in the right half-plane on the disk. -/
+ theorem kernel_denominator_re_pos {z w : ℂ} (hz : z ∈ disk) (hw : w ∈ disk) :
+     0 < (1 - z * star w).re := by
+   have hmul : ‖z * star w‖ < 1 := by
+     rw [norm_mul, norm_star]
+-    exact (mul_le_of_le_one_right (norm_nonneg z) ((mem_disk_iff w).mp hw).le).trans_lt
+-      ((mem_disk_iff z).mp hz)
+-  simpa only [Complex.sub_re, Complex.one_re] using
+-    sub_pos.mpr ((Complex.re_le_norm _).trans_lt hmul)
++    nlinarith [(mem_disk_iff z).mp hz, (mem_disk_iff w).mp hw, norm_nonneg z, norm_nonneg w]
++  have h1 := Complex.re_le_norm (1 - z * star w)
++  have h2 := Complex.re_le_norm (z * star w)
++  rw [Complex.sub_re, Complex.one_re] at h1
++  rw [Complex.sub_re, Complex.one_re]
++  linarith
+ 
+ @[simp]
+ theorem norm_kernel (z w : ℂ) : ‖kernel z w‖ = ‖1 - z * star w‖⁻¹ ^ 2 := by
+   simp [kernel, norm_pow, norm_inv]
+ 
+-@[simp]
+-theorem kernel_zero_left (w : ℂ) : kernel 0 w = 1 := by
+-  simp [kernel]
+-
+-@[simp]
+-theorem kernel_zero_right (z : ℂ) : kernel z 0 = 1 := by
+-  simp [kernel]
+-
+-@[simp]
+-theorem projection_at_zero (f : ℂ → ℂ) : projection f 0 = ∫ w, f w ∂diskArea := by
+-  simp [projection]
+-
+-@[simp]
+-theorem positiveProjection_at_zero (f : ℂ → ℂ) :
+-    positiveProjection f 0 = ∫⁻ w, ‖f w‖ₑ ∂diskArea := by
+-  simp [positiveProjection]
+-
+ /-- The positive extended integral bounds the complex Bochner integral pointwise. -/
+ theorem enorm_projection_le_positiveProjection (f : ℂ → ℂ) (z : ℂ) :
+     ‖projection f z‖ₑ ≤ positiveProjection f z := by
+@@ -103,13 +97,8 @@ theorem weightedPositiveProjection_zero (f : ℂ → ℂ) :
+   funext z
+   simp [weightedPositiveProjection, positiveProjection]
+ 
+-@[simp]
+-theorem gammaConstant_zero : gammaConstant 0 = 1 := by
+-  simp [gammaConstant]
+-
+-theorem gammaConstant_pos {α : ℝ} (hα : -1 < α) : 0 < gammaConstant α := by
+-  apply div_pos
+-  · exact Real.Gamma_pos_of_pos (by linarith)
+-  · exact sq_pos_of_pos (Real.Gamma_pos_of_pos (by linarith))
++theorem gammaConstant_pos {α : ℝ} (hα : -1 < α) : 0 < gammaConstant α :=
++  div_pos (Real.Gamma_pos_of_pos (by linarith))
++    (sq_pos_of_pos (Real.Gamma_pos_of_pos (by linarith)))
+ 
+ end BergmanWeakType
+diff --git a/BergmanWeakType/KernelIntegrability.lean b/BergmanWeakType/KernelIntegrability.lean
+index 9513c5768..1e4005794 100644
+--- a/BergmanWeakType/KernelIntegrability.lean
++++ b/BergmanWeakType/KernelIntegrability.lean
+@@ -37,9 +37,7 @@ theorem kernel_denominator_norm_lower (z : ℂ) {w : ℂ} (hw : w ∈ disk) :
+   have hmul : ‖z * star w‖ ≤ ‖z‖ := by
+     rw [norm_mul, norm_star]
+     exact mul_le_of_le_one_right (norm_nonneg z) ((mem_disk_iff w).mp hw).le
+-  calc
+-    1 - ‖z‖ ≤ 1 - ‖z * star w‖ := sub_le_sub_left hmul 1
+-    _ ≤ ‖1 - z * star w‖ := by simpa only [norm_one] using norm_sub_norm_le (1 : ℂ) _
++  linarith [norm_sub_norm_le (1 : ℂ) (z * star w), norm_one (α := ℂ)]
+ 
+ theorem norm_kernel_le {z w : ℂ} (hz : z ∈ disk) (hw : w ∈ disk) :
+     ‖kernel z w‖ ≤ (1 - ‖z‖)⁻¹ ^ 2 := by
+@@ -64,9 +62,9 @@ theorem continuousOn_weightedKernel (α : ℝ) {z : ℂ} (hz : z ∈ disk) :
+   exact Complex.mem_slitPlane_iff.mpr (Or.inl (kernel_denominator_re_pos hz hw))
+ 
+ theorem continuousOn_kernel {z : ℂ} (hz : z ∈ disk) : ContinuousOn (kernel z) disk := by
+-  have h := continuousOn_weightedKernel 0 hz
+-  change ContinuousOn (fun w ↦ weightedKernel 0 z w) disk at h
+-  simpa only [weightedKernel_zero] using h
++  convert continuousOn_weightedKernel 0 hz using 1
++  funext w
++  exact (weightedKernel_zero z w).symm
+ 
+ theorem aestronglyMeasurable_kernel {z : ℂ} (hz : z ∈ disk) :
+     AEStronglyMeasurable (kernel z) diskArea :=
+@@ -90,11 +88,6 @@ theorem integrable_weightedKernel_mul {α : ℝ} (hα : -1 < α) {f : ℂ → 
+   apply hf.bdd_mul (aestronglyMeasurable_weightedKernel α hz)
+   exact (ae_mem_disk_weighted α).mono fun w hw ↦ norm_weightedKernel_le hα hz hw
+ 
+-theorem positiveProjection_lt_top {f : ℂ → ℂ} (hf : Integrable f diskArea) {z : ℂ}
+-    (hz : z ∈ disk) : positiveProjection f z < ∞ := by
+-  simpa only [positiveProjection, enorm_mul, ofReal_norm] using
+-    (hasFiniteIntegral_iff_enorm.mp (integrable_kernel_mul hf hz).hasFiniteIntegral)
+-
+ theorem weightedPositiveProjection_lt_top {α : ℝ} (hα : -1 < α) {f : ℂ → ℂ}
+     (hf : Integrable f (weightedArea α)) {z : ℂ} (hz : z ∈ disk) :
+     weightedPositiveProjection α f z < ∞ := by
+diff --git a/BergmanWeakType/Measure.lean b/BergmanWeakType/Measure.lean
+index 1641039f8..5cbf6b23b 100644
+--- a/BergmanWeakType/Measure.lean
++++ b/BergmanWeakType/Measure.lean
+@@ -5,6 +5,8 @@ Authors: Yongxi Lin
+ -/
+ module
+ 
++public import BergmanWeakType.Notation
++
+ public import BergmanWeakType.Definitions
+ public import Mathlib.MeasureTheory.Measure.Lebesgue.VolumeOfBalls
+ public import Mathlib.MeasureTheory.Constructions.BorelSpace.Order
+@@ -52,7 +54,7 @@ theorem ae_mem_disk_weightedArea (α : ℝ) : ∀ᵐ z ∂weightedArea α, z ∈
+ 
+ /-- Under normalized disk area, the squared radius is uniform on the unit interval. -/
+ theorem map_norm_sq_diskArea :
+-    diskArea.map (fun z : ℂ ↦ ‖z‖ ^ 2) = volume.restrict (Set.Icc (0 : ℝ) 1) := by
++    diskArea.map (fun z : ℂ ↦ ‖z‖ ^ 2) = volume.restrict (Icc01) := by
+   apply Measure.ext_of_Iic
+   intro t
+   rw [Measure.map_apply (by fun_prop : Measurable (fun z : ℂ ↦ ‖z‖ ^ 2)) measurableSet_Iic]
+@@ -71,7 +73,7 @@ theorem map_norm_sq_diskArea :
+       rw [diskArea, Measure.restrict_eq_self _ hsub, area_closedBall,
+         ← ENNReal.ofReal_pow (Real.sqrt_nonneg t), Real.sq_sqrt ht,
+         Measure.restrict_apply measurableSet_Iic]
+-      have hset : Set.Iic t ∩ Set.Icc (0 : ℝ) 1 = Set.Icc 0 t := by
++      have hset : Set.Iic t ∩ Icc01 = Set.Icc 0 t := by
+         ext x
+         simp only [Set.mem_inter_iff, Set.mem_Iic, Set.mem_Icc]
+         constructor
+@@ -93,7 +95,7 @@ theorem map_norm_sq_diskArea :
+       simp only [Set.mem_preimage, Set.mem_Iic, Set.mem_empty_iff_false, iff_false]
+       exact not_le.mpr ((lt_of_not_ge ht).trans_le (sq_nonneg ‖z‖))
+     rw [hpre, measure_empty, Measure.restrict_apply measurableSet_Iic]
+-    have hset : Set.Iic t ∩ Set.Icc (0 : ℝ) 1 = ∅ := by
++    have hset : Set.Iic t ∩ Icc01 = ∅ := by
+       ext x
+       simp only [Set.mem_inter_iff, Set.mem_Iic, Set.mem_Icc, Set.mem_empty_iff_false,
+         iff_false, not_and]
+@@ -101,41 +103,66 @@ theorem map_norm_sq_diskArea :
+       exact ht (hx0.trans hxt)
+     simp [hset]
+ 
+-/-- The radial weight is normalized for every admissible exponent. -/
+-theorem weightedArea_univ (α : ℝ) (hα : -1 < α) : weightedArea α Set.univ = 1 := by
+-  rw [weightedArea, withDensity_apply _ MeasurableSet.univ, setLIntegral_univ]
++/-- Exact weighted mass of the exterior of a circle. -/
++theorem weightedArea_norm_gt {α r : ℝ} (hα : -1 < α) (hr : 0 ≤ r) (hr1 : r < 1) :
++    weightedArea α {z : ℂ | r < ‖z‖} = ENNReal.ofReal ((1 - r ^ 2) ^ (α + 1)) := by
++  have hr₂ : r ^ 2 < 1 := by nlinarith
++  have hpre : {z : ℂ | r < ‖z‖} =
++      (fun z : ℂ ↦ ‖z‖ ^ 2) ⁻¹' Set.Ioi (r ^ 2) := by
++    ext z
++    simp only [Set.mem_ofPred_eq, Set.mem_preimage, Set.mem_Ioi]
++    exact (sq_lt_sq₀ hr (norm_nonneg z)).symm
+   have hm : Measurable (fun u : ℝ ↦ ENNReal.ofReal ((α + 1) * (1 - u) ^ α)) := by
+     fun_prop
+-  rw [← lintegral_map hm (by fun_prop : Measurable (fun z : ℂ ↦ ‖z‖ ^ 2)),
+-    map_norm_sq_diskArea]
+-  have hf : IntervalIntegrable (fun u : ℝ ↦ (1 - u) ^ α) volume 0 1 := by
+-    simpa using
+-      ((intervalIntegral.intervalIntegrable_rpow' (a := 0) (b := 1) hα).comp_sub_left 1).symm
+-  have hfi : IntegrableOn (fun u : ℝ ↦ (α + 1) * (1 - u) ^ α) (Set.Icc 0 1) := by
+-    exact (intervalIntegrable_iff_integrableOn_Icc_of_le (by norm_num)).mp (hf.const_mul (α + 1))
+-  have hnonneg : 0 ≤ᵐ[volume.restrict (Set.Icc (0 : ℝ) 1)]
++  rw [hpre, weightedArea, withDensity_apply _ (measurableSet_Ioi.preimage (by fun_prop)),
++    ← setLIntegral_map measurableSet_Ioi hm (by fun_prop : Measurable (fun z : ℂ ↦ ‖z‖ ^ 2)),
++    map_norm_sq_diskArea, Measure.restrict_restrict measurableSet_Ioi]
++  have hset : Set.Ioi (r ^ 2) ∩ Icc01 = Set.Ioc (r ^ 2) 1 := by
++    ext x
++    simp only [Set.mem_inter_iff, Set.mem_Ioi, Set.mem_Icc, Set.mem_Ioc]
++    constructor
++    · rintro ⟨hx, _, hx1⟩
++      exact ⟨hx, hx1⟩
++    · rintro ⟨hx, hx1⟩
++      exact ⟨hx, (sq_nonneg r).trans hx.le, hx1⟩
++  rw [hset]
++  have hf : IntervalIntegrable (fun u : ℝ ↦ (1 - u) ^ α) volume (r ^ 2) 1 := by
++    convert! ((intervalIntegral.intervalIntegrable_rpow'
++      (a := 0) (b := 1 - r ^ 2) hα).comp_sub_left 1).symm using 1 <;> ring
++  have hfi : IntegrableOn (fun u : ℝ ↦ (α + 1) * (1 - u) ^ α) (Set.Ioc (r ^ 2) 1) :=
++    (hf.const_mul (α + 1)).1
++  have hnonneg : 0 ≤ᵐ[volume.restrict (Set.Ioc (r ^ 2) 1)]
+       (fun u : ℝ ↦ (α + 1) * (1 - u) ^ α) := by
+-    filter_upwards [ae_restrict_mem measurableSet_Icc] with u hu
++    filter_upwards [ae_restrict_mem measurableSet_Ioc] with u hu
+     exact mul_nonneg (by linarith) (Real.rpow_nonneg (sub_nonneg.mpr hu.2) _)
+-  rw [← ofReal_integral_eq_lintegral_ofReal hfi hnonneg, integral_Icc_eq_integral_Ioc,
+-    ← intervalIntegral.integral_of_le (by norm_num : (0 : ℝ) ≤ 1),
+-    intervalIntegral.integral_const_mul,
++  rw [← ofReal_integral_eq_lintegral_ofReal hfi hnonneg,
++    ← intervalIntegral.integral_of_le hr₂.le, intervalIntegral.integral_const_mul,
+     intervalIntegral.integral_comp_sub_left (fun x : ℝ ↦ x ^ α) 1]
+-  simp only [sub_self, sub_zero]
++  simp only [sub_self]
+   rw [integral_rpow (Or.inl hα)]
+   have hpos : 0 < α + 1 := by linarith
+-  simp [Real.zero_rpow hpos.ne', ne_of_gt hpos]
++  simp only [Real.zero_rpow hpos.ne', sub_zero]
++  rw [mul_div_cancel₀ _ hpos.ne']
++
++/-- The radial weight is normalized for every admissible exponent. -/
++theorem weightedArea_univ (α : ℝ) (hα : -1 < α) : weightedArea α Set.univ = 1 := by
++  have hsingle : weightedArea α {0} = 0 := by
++    simp [weightedArea, diskArea, area, lintegral_singleton]
++  have h : weightedArea α (Set.univ \ {0}) = 1 := by
++    have h := weightedArea_norm_gt hα le_rfl zero_lt_one
++    have hset : {z : ℂ | 0 < ‖z‖} = Set.univ \ {0} := by
++      ext z
++      simp only [Set.mem_ofPred_eq, Set.mem_univ, Set.mem_sdiff, Set.mem_singleton_iff]
++      exact ⟨fun h => ⟨trivial, fun h0 => by simp [h0] at h⟩, fun h => norm_pos_iff.mpr h.2⟩
++    rw [hset] at h
++    simpa using h
++  rw [show (Set.univ : Set ℂ) = (Set.univ \ {0}) ∪ {0} by ext z; simp,
++    measure_union (by simp [Set.disjoint_left]) (measurableSet_singleton 0), hsingle, h, add_zero]
+ 
+ theorem weightedArea_isProbabilityMeasure (α : ℝ) (hα : -1 < α) :
+     IsProbabilityMeasure (weightedArea α) :=
+   ⟨weightedArea_univ α hα⟩
+ 
+-theorem diskArea_ball_pos {r : ℝ} (hr : 0 < r) (hr1 : r ≤ 1) :
+-    0 < diskArea (Metric.ball (0 : ℂ) r) := by
+-  rw [diskArea, disk, Measure.restrict_eq_self _ (Metric.ball_subset_ball hr1), area_ball]
+-  positivity
+-
+-/-- The admissible radial weights have the same null sets as disk area. -/
+ theorem diskArea_absolutelyContinuous_weightedArea (α : ℝ) (hα : -1 < α) :
+     diskArea ≪ weightedArea α := by
+   apply withDensity_absolutelyContinuous'
+@@ -148,9 +175,4 @@ theorem diskArea_absolutelyContinuous_weightedArea (α : ℝ) (hα : -1 < α) :
+     have hz_norm : ‖z‖ < 1 := by simpa [disk] using hz
+     nlinarith [norm_nonneg z]
+ 
+-theorem weightedArea_ball_pos (α : ℝ) (hα : -1 < α) {r : ℝ}
+-    (hr : 0 < r) (hr1 : r ≤ 1) : 0 < weightedArea α (Metric.ball (0 : ℂ) r) := by
+-  exact pos_iff_ne_zero.mpr fun h ↦
+-    (diskArea_ball_pos hr hr1).ne' (diskArea_absolutelyContinuous_weightedArea α hα h)
+-
+ end BergmanWeakType
+diff --git a/BergmanWeakType/Notation.lean b/BergmanWeakType/Notation.lean
+new file mode 100644
+index 000000000..cbd1d5fbf
+--- /dev/null
++++ b/BergmanWeakType/Notation.lean
+@@ -0,0 +1,24 @@
++/-
++Copyright (c) 2026 Yongxi Lin. All rights reserved.
++Released under Apache 2.0 license as described in the file LICENSE.
++Authors: Yongxi Lin
++-/
++module
++
++public import Mathlib.Order.Interval.Set.Basic
++public import Mathlib.Data.Real.Basic
++public import Mathlib.Analysis.SpecialFunctions.Trigonometric.Basic
++
++/-! # Notation for the unit interval in the radial variable -/
++
++/-- The open unit interval in the radial variable. -/
++notation "Ioo01" => Set.Ioo (0 : ℝ) 1
++
++/-- The half-open unit interval in the radial variable. -/
++notation "Ico01" => Set.Ico (0 : ℝ) 1
++
++/-- The closed unit interval in the radial variable. -/
++notation "Icc01" => Set.Icc (0 : ℝ) 1
++
++/-- The full angle `τ = 2 * π`. -/
++notation "τ" => 2 * Real.pi
+diff --git a/BergmanWeakType/Reproduction.lean b/BergmanWeakType/Reproduction.lean
+index 004588619..09f6875fc 100644
+--- a/BergmanWeakType/Reproduction.lean
++++ b/BergmanWeakType/Reproduction.lean
+@@ -20,30 +20,51 @@ public section
+ noncomputable section
+ 
+ open MeasureTheory
+-open scoped ENNReal
++open scoped ENNReal Topology
+ 
+ namespace BergmanWeakType
+ 
+-/-- The weighted kernels tend uniformly to one as the input point tends to zero. -/
+-theorem exists_uniform_weightedKernel_near_one (α : ℝ) {ε : ℝ} (hε : 0 < ε) :
+-    ∃ r : ℝ, 0 < r ∧ r < 1 ∧ ∀ z ∈ disk, ∀ w ∈ Metric.ball (0 : ℂ) r,
+-      ‖weightedKernel α z w - 1‖ < ε := by
+-  have hc : ContinuousAt (fun u : ℂ ↦ u ^ (-(α + 2) : ℂ)) 1 :=
+-    continuousAt_cpow_const Complex.one_mem_slitPlane
+-  obtain ⟨δ, hδ, hclose⟩ := Metric.continuousAt_iff.mp hc ε hε
+-  refine ⟨min (δ / 2) (1 / 2), lt_min (half_pos hδ) (by norm_num),
+-    (min_le_right _ _).trans_lt (by norm_num), ?_⟩
++theorem exists_uniform_weightedKernel_near_source (α : ℝ) {a : ℂ} (ha : a ∈ disk)
++    {ε : ℝ} (hε : 0 < ε) :
++    ∃ r : ℝ, 0 < r ∧ r ≤ 1 - ‖a‖ ∧ ∀ z ∈ disk, ∀ w ∈ Metric.ball a r,
++      ‖weightedKernel α z w - weightedKernel α z a‖ < ε := by
++  let R := (1 + ‖a‖) / 2
++  have ha' : ‖a‖ < 1 := (mem_disk_iff a).mp ha
++  have haR : ‖a‖ < R := by dsimp [R]; linarith
++  have hR1 : R < 1 := by dsimp [R]; linarith
++  have hcont : ContinuousOn (fun u : ℂ ↦ (1 - u) ^ (-(α + 2) : ℂ))
++      (Metric.closedBall 0 R) := by
++    apply (continuous_const.sub continuous_id).continuousOn.cpow_const
++    intro u hu
++    have hu' : ‖u‖ ≤ R := by simpa using hu
++    apply Complex.mem_slitPlane_iff.mpr
++    left
++    change 0 < 1 - u.re
++    linarith [Complex.re_le_norm u]
++  obtain ⟨δ, hδ, hclose⟩ := Metric.uniformContinuousOn_iff.mp
++    ((isCompact_closedBall (0 : ℂ) R).uniformContinuousOn_of_continuous hcont) ε hε
++  refine ⟨min δ (R - ‖a‖), lt_min hδ (sub_pos.mpr haR), ?_, ?_⟩
++  · exact (min_le_right _ _).trans (by linarith)
+   intro z hz w hw
+-  have hw' : ‖w‖ < δ := by
+-    have := (Metric.mem_ball.mp hw)
+-    simp only [dist_zero_right] at this
+-    exact (this.trans_le (min_le_left _ _)).trans (half_lt_self hδ)
+-  have hmul : ‖z * star w‖ < δ := by
+-    rw [norm_mul, norm_star]
+-    exact (mul_le_of_le_one_left (norm_nonneg w) ((mem_disk_iff z).mp hz).le).trans_lt hw'
+-  have hbase : dist (1 - z * star w) 1 < δ := by
+-    simpa [dist_eq_norm] using hmul
+-  simpa [weightedKernel, dist_eq_norm] using hclose hbase
++  have hz' : ‖z‖ ≤ 1 := ((mem_disk_iff z).mp hz).le
++  have hw' : ‖w - a‖ < min δ (R - ‖a‖) := by
++    simpa only [Metric.mem_ball, dist_eq_norm] using hw
++  have hwR : ‖w‖ ≤ R := by
++    have htri := norm_add_le (w - a) a
++    rw [sub_add_cancel] at htri
++    have := hw'.trans_le (min_le_right _ _)
++    linarith
++  have hza : z * star a ∈ Metric.closedBall 0 R := by
++    simp only [Metric.mem_closedBall, dist_zero_right, norm_mul, norm_star]
++    exact (mul_le_of_le_one_left (norm_nonneg a) hz').trans haR.le
++  have hzw : z * star w ∈ Metric.closedBall 0 R := by
++    simp only [Metric.mem_closedBall, dist_zero_right, norm_mul, norm_star]
++    exact (mul_le_of_le_one_left (norm_nonneg w) hz').trans hwR
++  have hdist : dist (z * star w) (z * star a) < δ := by
++    rw [dist_eq_norm, ← mul_sub, ← star_sub, norm_mul, norm_star]
++    exact (mul_le_of_le_one_left (norm_nonneg _) hz').trans_lt
++      (hw'.trans_le (min_le_left _ _))
++  simpa only [weightedKernel, dist_eq_norm] using hclose _ hzw _ hza hdist
+ 
+ theorem weightedProjection_indicator_eq_setIntegral (α : ℝ) {s : Set ℂ}
+     (hs : MeasurableSet s) (z : ℂ) :
+@@ -54,77 +75,121 @@ theorem weightedProjection_indicator_eq_setIntegral (α : ℝ) {s : Set ℂ}
+   exact Filter.Eventually.of_forall fun w ↦ by
+     by_cases hw : w ∈ s <;> simp [hw]
+ 
+-/-- Averaging a kernel that is close to one keeps the output close to the input mass. -/
+-theorem norm_weightedProjection_indicator_sub_measure_le {α : ℝ} (hα : -1 < α)
+-    {s : Set ℂ} (hs : MeasurableSet s) {z : ℂ} (hz : z ∈ disk) {ε : ℝ}
+-    (hclose : ∀ w ∈ s, ‖weightedKernel α z w - 1‖ ≤ ε) :
++theorem norm_weightedProjection_indicator_sub_column_le {α : ℝ} (hα : -1 < α)
++    {s : Set ℂ} (hs : MeasurableSet s) {z a : ℂ} (hz : z ∈ disk) {ε : ℝ}
++    (hclose : ∀ w ∈ s, ‖weightedKernel α z w - weightedKernel α z a‖ ≤ ε) :
+     ‖weightedProjection α (s.indicator (fun _ ↦ (1 : ℂ))) z -
+-      ((weightedArea α).real s : ℂ)‖ ≤ ε * (weightedArea α).real s := by
++      (weightedArea α).real s * weightedKernel α z a‖ ≤
++        ε * (weightedArea α).real s := by
+   let := weightedArea_isProbabilityMeasure α hα
+   have hK : Integrable (weightedKernel α z) (weightedArea α) := by
+     simpa only [mul_one] using
+       integrable_weightedKernel_mul hα (integrable_const (1 : ℂ)) hz
+   calc
+-    _ = ‖∫ w in s, weightedKernel α z w - 1 ∂weightedArea α‖ := by
+-      rw [integral_sub hK.integrableOn (integrable_const (1 : ℂ)),
+-        setIntegral_const, weightedProjection_indicator_eq_setIntegral α hs z]
+-      simp
++    _ = ‖∫ w in s, weightedKernel α z w - weightedKernel α z a ∂weightedArea α‖ := by
++      rw [integral_sub hK.integrableOn (integrable_const _), setIntegral_const,
++        weightedProjection_indicator_eq_setIntegral α hs z]
++      simp only [Complex.real_smul]
+     _ ≤ ε * (weightedArea α).real s :=
+       norm_setIntegral_le_of_norm_le_const (measure_lt_top _ _) hclose
+ 
+-/-- Interior concentration gives the universal complex weighted lower bound. -/
+-theorem one_le_weightedProjection_constant (α : ℝ) (hα : -1 < α) :
+-    1 ≤ weakTypeConstant (weightedArea α) (fun f z ↦ ‖weightedProjection α f z‖ₑ) := by
++theorem ball_subset_disk {a : ℂ} {r : ℝ} (hr : r ≤ 1 - ‖a‖) :
++    Metric.ball a r ⊆ disk := by
++  intro w hw
++  apply (mem_disk_iff w).mpr
++  have hw' : ‖w - a‖ < r := by simpa only [Metric.mem_ball, dist_eq_norm] using hw
++  have := norm_add_le (w - a) a
++  rw [sub_add_cancel] at this
++  linarith
++
++theorem weightedArea_interior_ball_pos (α : ℝ) (hα : -1 < α) {a : ℂ} {r : ℝ}
++    (hr : 0 < r) (hr1 : r ≤ 1 - ‖a‖) : 0 < weightedArea α (Metric.ball a r) := by
++  apply pos_iff_ne_zero.mpr
++  intro h
++  have hd := diskArea_absolutelyContinuous_weightedArea α hα h
++  rw [diskArea, Measure.restrict_eq_self _ (ball_subset_disk hr1), area_ball] at hd
++  have hp : 0 < ENNReal.ofReal r ^ 2 := by positivity
++  exact hp.ne' hd
++
++/-- Nearby interior source points produce uniformly close kernel columns on the whole disk. -/
++theorem column_threshold_le_weakBound {α L ℓ : ℝ} {C : ℝ≥0∞} (hα : -1 < α)
++    (hC : IsWeakTypeBound (weightedArea α) (fun f z ↦ ‖weightedProjection α f z‖ₑ) C)
++    {a : ℂ} (ha : a ∈ disk) {E : Set ℂ} (hE : E ⊆ disk)
++    (hcol : ∀ z ∈ E, L ≤ ‖weightedKernel α z a‖) (hℓ : 0 < ℓ) (hℓL : ℓ < L) :
++    ENNReal.ofReal ℓ * weightedArea α E ≤ C := by
+   let := weightedArea_isProbabilityMeasure α hα
+-  apply le_sInf
+-  intro C hC
+-  apply ENNReal.le_of_forall_pos_nnreal_lt
+-  intro t ht ht1
+-  have ht' : 0 < (t : ℝ) := ht
+-  have ht1' : (t : ℝ) < 1 := by exact_mod_cast ht1
+-  have hε : 0 < (1 - (t : ℝ)) / 2 := by linarith
+-  obtain ⟨r, hr, hr1, hclose⟩ := exists_uniform_weightedKernel_near_one α hε
+-  let s := Metric.ball (0 : ℂ) r
++  obtain ⟨r, hr, hr1, hclose⟩ := exists_uniform_weightedKernel_near_source α ha
++    (show 0 < (L - ℓ) / 2 by linarith)
++  let s := Metric.ball a r
+   let f : ℂ → ℂ := s.indicator (fun _ ↦ 1)
+   let m := (weightedArea α).real s
+   have hs : MeasurableSet s := Metric.isOpen_ball.measurableSet
+-  have hspos : 0 < weightedArea α s := weightedArea_ball_pos α hα hr hr1.le
++  have hspos : 0 < weightedArea α s := weightedArea_interior_ball_pos α hα hr hr1
+   have hsfinite : weightedArea α s ≠ ∞ := measure_ne_top _ _
+   have hm : 0 < m := ENNReal.toReal_pos hspos.ne' hsfinite
+   have hf : Integrable f (weightedArea α) := (integrable_const (1 : ℂ)).indicator hs
+   have hmass : (∫⁻ w, ‖f w‖ₑ ∂weightedArea α) = weightedArea α s := by
+     simp [f, enorm_indicator_eq_indicator_enorm, hs]
+-  have hsuper : (weightedArea α) {z | ENNReal.ofReal ((t : ℝ) * m) <
+-      ‖weightedProjection α f z‖ₑ} = 1 := by
+-    rw [← measure_univ (μ := weightedArea α)]
+-    apply measure_congr
+-    filter_upwards [ae_mem_disk_weightedArea α] with z hz
+-    simp only [Set.mem_univ]
+-    have herr : ‖weightedProjection α f z - (m : ℂ)‖ ≤
+-        ((1 - (t : ℝ)) / 2) * m :=
+-      norm_weightedProjection_indicator_sub_measure_le hα hs hz
+-        (fun w hw ↦ (hclose z hz w hw).le)
+-    have hreverse : m - ‖weightedProjection α f z‖ ≤
+-        ‖weightedProjection α f z - (m : ℂ)‖ := by
+-      simpa only [Complex.norm_real, Real.norm_eq_abs, abs_of_pos hm, norm_sub_rev] using
+-        norm_sub_norm_le (m : ℂ) (weightedProjection α f z)
+-    have hout : (t : ℝ) * m < ‖weightedProjection α f z‖ := by
++  have hsub : E ⊆ {z | ENNReal.ofReal (ℓ * m) < ‖weightedProjection α f z‖ₑ} := by
++    intro z hz
++    have herr := norm_weightedProjection_indicator_sub_column_le hα hs (hE hz)
++      (fun w hw ↦ (hclose z (hE hz) w hw).le)
++    have hrev : m * ‖weightedKernel α z a‖ - ‖weightedProjection α f z‖ ≤
++        ‖weightedProjection α f z - (m : ℂ) * weightedKernel α z a‖ := by
++      simpa only [norm_mul, Complex.norm_real, Real.norm_eq_abs, abs_of_pos hm, norm_sub_rev]
++        using norm_sub_norm_le ((m : ℂ) * weightedKernel α z a)
++          (weightedProjection α f z)
++    have hout : ℓ * m < ‖weightedProjection α f z‖ := by
++      have hprod := mul_le_mul_of_nonneg_left (hcol z hz) hm.le
++      change ‖weightedProjection α f z - (m : ℂ) * weightedKernel α z a‖ ≤
++        (L - ℓ) / 2 * m at herr
+       nlinarith
++    change ENNReal.ofReal (ℓ * m) < ‖weightedProjection α f z‖ₑ
+     rw [← ofReal_norm]
+-    exact eq_true ((ENNReal.ofReal_lt_ofReal_iff ((mul_pos ht' hm).trans hout)).mpr hout)
+-  have hbound := hC f hf ((t : ℝ) * m) (mul_pos ht' hm)
+-  rw [hsuper, hmass, mul_one, ENNReal.ofReal_mul t.coe_nonneg,
+-    ENNReal.ofReal_coe_nnreal] at hbound
++    exact (ENNReal.ofReal_lt_ofReal_iff ((mul_pos hℓ hm).trans hout)).mpr hout
++  have hb : ENNReal.ofReal (ℓ * m) * weightedArea α E ≤ C * weightedArea α s := by
++    calc
++      _ ≤ ENNReal.ofReal (ℓ * m) *
++          weightedArea α {z | ENNReal.ofReal (ℓ * m) < ‖weightedProjection α f z‖ₑ} :=
++        mul_le_mul_right (measure_mono hsub) _
++      _ ≤ _ := by simpa only [hmass] using hC f hf (ℓ * m) (mul_pos hℓ hm)
+   have hmcoe : ENNReal.ofReal m = weightedArea α s := ENNReal.ofReal_toReal hsfinite
+-  rw [hmcoe] at hbound
+-  exact (ENNReal.mul_le_mul_iff_left hspos.ne' hsfinite).mp hbound
++  rw [ENNReal.ofReal_mul hℓ.le, hmcoe] at hb
++  rw [mul_assoc, mul_comm (weightedArea α s), ← mul_assoc] at hb
++  exact (ENNReal.mul_le_mul_iff_left hspos.ne' hsfinite).mp hb
++
++/-- Every interior kernel column satisfies the weak bound of the complex projection. -/
++theorem column_le_weakBound {α L : ℝ} {C : ℝ≥0∞} (hα : -1 < α)
++    (hC : IsWeakTypeBound (weightedArea α) (fun f z ↦ ‖weightedProjection α f z‖ₑ) C)
++    {a : ℂ} (ha : a ∈ disk) {E : Set ℂ} (hE : E ⊆ disk)
++    (hcol : ∀ z ∈ E, L ≤ ‖weightedKernel α z a‖) (hL : 0 < L) :
++    ENNReal.ofReal L * weightedArea α E ≤ C := by
++  let := weightedArea_isProbabilityMeasure α hα
++  have hlim : Filter.Tendsto (fun ℓ : ℝ ↦ ENNReal.ofReal ℓ * weightedArea α E)
++      (𝓝[<] L) (𝓝 (ENNReal.ofReal L * weightedArea α E)) := by
++    exact ((ENNReal.continuous_mul_const (measure_ne_top (weightedArea α) E)).comp
++      ENNReal.continuous_ofReal).continuousAt.tendsto.mono_left nhdsWithin_le_nhds
++  apply le_of_tendsto hlim
++  filter_upwards [Ioo_mem_nhdsLT hL] with ℓ hℓ
++  exact column_threshold_le_weakBound hα hC ha hE hcol hℓ.1 hℓ.2
++
++/-- Interior concentration gives the universal complex weighted lower bound. -/
++theorem one_le_weightedProjection_constant (α : ℝ) (hα : -1 < α) :
++    1 ≤ weakTypeConstant (weightedArea α) (fun f z ↦ ‖weightedProjection α f z‖ₑ) := by
++  let := weightedArea_isProbabilityMeasure α hα
++  apply le_sInf
++  intro C hC
++  have hd : weightedArea α (disk : Set ℂ) = 1 := by
++    rw [← measure_univ (μ := weightedArea α)]
++    apply measure_congr
++    filter_upwards [ae_mem_disk_weightedArea α] with z hz
++    simp [hz]
++  have h := column_le_weakBound hα hC (a := 0) (by simp [disk]) (E := disk) (fun z hz ↦ hz)
++    (fun z _ ↦ by simp) one_pos
++  rwa [hd, ENNReal.ofReal_one, one_mul] at h
+ 
+ theorem one_le_projection_constant :
+     1 ≤ weakTypeConstant diskArea (fun f z ↦ ‖projection f z‖ₑ) := by
+   simpa using one_le_weightedProjection_constant 0 (by norm_num)
+ 
+-theorem one_le_positiveProjection_constant :
+-    1 ≤ weakTypeConstant diskArea positiveProjection :=
+-  one_le_projection_constant.trans projection_constant_le_positiveProjection_constant
+-
+ end BergmanWeakType
+diff --git a/BergmanWeakType/Rigidity/DiskReproducing.lean b/BergmanWeakType/Rigidity/DiskReproducing.lean
+index 0b8f27a95..39629b587 100644
+--- a/BergmanWeakType/Rigidity/DiskReproducing.lean
++++ b/BergmanWeakType/Rigidity/DiskReproducing.lean
+@@ -5,6 +5,8 @@ Authors: Yongxi Lin
+ -/
+ module
+ 
++public import BergmanWeakType.Notation
++
+ public import BergmanWeakType.KernelIntegrability
+ public import BergmanWeakType.Domain
+ public import BergmanWeakType.Rigidity.PolarIntegral
+@@ -22,17 +24,17 @@ namespace BergmanWeakType
+ /-- Cauchy's derivative formula at any point inside the contour. -/
+ theorem circleIntegral_sub_inv_sq_mul {f : ℂ → ℂ} {c a : ℂ} {r : ℝ}
+     (hr : 0 < r) (hf : DiffContOnCl ℂ f (ball c r)) (ha : a ∈ ball c r) :
+-    (∮ w in C(c, r), (w - a) ^ (-2 : ℤ) * f w) = (2 * π * I) * deriv f a := by
++    (∮ w in C(c, r), (w - a) ^ (-2 : ℤ) * f w) = (τ * I) * deriv f a := by
+   have hc : CircleIntegrable f c r :=
+     (hf.continuousOn_ball.mono sphere_subset_closedBall).circleIntegrable hr.le
+   have has := Complex.hasDerivAt_circleIntegral_sub_inv_smul (w := a) hc (by
+     rw [abs_of_pos hr]
+     exact fun hs ↦ (ne_of_lt ha) (mem_sphere.mp hs))
+   have heq : (fun a ↦ ∮ w in C(c, r), (w - a)⁻¹ • f w) =ᶠ[𝓝 a]
+-      (fun a ↦ (2 * π * I) * f a) := by
++      (fun a ↦ (τ * I) * f a) := by
+     filter_upwards [isOpen_ball.eventually_mem ha] with b hb
+     simpa only [smul_eq_mul] using hf.circleIntegral_sub_inv_smul hb
+-  have hd := (hf.differentiableAt isOpen_ball ha).hasDerivAt.const_mul (2 * π * I)
++  have hd := (hf.differentiableAt isOpen_ball ha).hasDerivAt.const_mul (τ * I)
+   simpa only [smul_eq_mul] using (has.congr_of_eventuallyEq heq.symm).unique hd
+ 
+ /-- The angular Bergman average is the radial derivative of the holomorphic primitive. -/
+@@ -64,7 +66,7 @@ theorem circleAverage_kernel_mul {f : ℂ → ℂ} (hf : DifferentiableOn ℂ f
+     exact ((continuousOn_id.sub continuousOn_const).zpow₀ (-2) (by
+       intro w hw
+       exact Or.inl (hne w hw))).mul (hfr.continuousOn_ball.mono sphere_subset_closedBall)
+-  have hcauchy : (∮ w in C(0, r), (w - a)⁻¹ * f w) = (2 * π * I) * f a := by
++  have hcauchy : (∮ w in C(0, r), (w - a)⁻¹ * f w) = (τ * I) * f a := by
+     simpa only [smul_eq_mul] using hfr.circleIntegral_sub_inv_smul ha
+   rw [circleAverage_eq_circleIntegral hr.ne']
+   have hintegrand : ∀ w ∈ sphere (0 : ℂ) r,
+@@ -109,7 +111,7 @@ theorem integral_kernel_mul_eq {f : ℂ → ℂ} (hf : DifferentiableOn ℂ f di
+     rw [norm_mul, norm_pow, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg hr.1]
+     have hr2 : r ^ 2 ≤ 1 := by nlinarith [hr.1, hr.2]
+     exact (mul_le_of_le_one_left (norm_nonneg z) hr2).trans_lt hz1
+-  have hderiv : ∀ r ∈ Icc (0 : ℝ) 1,
++  have hderiv : ∀ r ∈ Icc01,
+       HasDerivAt (fun s : ℝ ↦ (s : ℂ) ^ 2 * f ((s : ℂ) ^ 2 * z))
+         ((2 * r) • (f ((r : ℂ) ^ 2 * z) +
+           (r : ℂ) ^ 2 * z * deriv f ((r : ℂ) ^ 2 * z))) r := by
+@@ -133,7 +135,7 @@ theorem integral_kernel_mul_eq {f : ℂ → ℂ} (hf : DifferentiableOn ℂ f di
+     rfl
+   rw [integral_diskArea_eq_circleAverage (integrable_kernel_mul hfi hz)]
+   calc
+-    _ = ∫ r in Ioo (0 : ℝ) 1, (2 * r) • (f ((r : ℂ) ^ 2 * z) +
++    _ = ∫ r in Ioo01, (2 * r) • (f ((r : ℂ) ^ 2 * z) +
+         (r : ℂ) ^ 2 * z * deriv f ((r : ℂ) ^ 2 * z)) := by
+       apply setIntegral_congr_fun measurableSet_Ioo
+       intro r hr
+diff --git a/BergmanWeakType/Rigidity/Perturbation.lean b/BergmanWeakType/Rigidity/Perturbation.lean
+index a8fecf393..7ff7829ae 100644
+--- a/BergmanWeakType/Rigidity/Perturbation.lean
++++ b/BergmanWeakType/Rigidity/Perturbation.lean
+@@ -5,6 +5,8 @@ Authors: Yongxi Lin
+ -/
+ module
+ 
++public import BergmanWeakType.Notation
++
+ public import BergmanWeakType.DomainLowerBound
+ public import Mathlib.MeasureTheory.Integral.Bochner.Set
+ 
+@@ -35,7 +37,7 @@ theorem norm_integral_add_gap_le_integral_norm {μ : Measure ℂ} {g : ℂ → 
+ def corePerturbation (E : Set ℂ) (ρ : ℝ) (w : ℂ) : ℂ :=
+   1 - E.indicator (fun _ ↦ (ρ : ℂ)) w
+ 
+-theorem norm_corePerturbation {E : Set ℂ} {ρ : ℝ} (hρ : ρ ∈ Icc (0 : ℝ) 1) (w : ℂ) :
++theorem norm_corePerturbation {E : Set ℂ} {ρ : ℝ} (hρ : ρ ∈ Icc01) (w : ℂ) :
+     ‖corePerturbation E ρ w‖ = 1 - E.indicator (fun _ ↦ ρ) w := by
+   by_cases hw : w ∈ E
+   · simp only [corePerturbation, indicator_of_mem hw]
+@@ -49,7 +51,7 @@ theorem integrable_corePerturbation {μ : Measure ℂ} [IsFiniteMeasure μ]
+   (integrable_const (1 : ℂ)).sub ((integrable_const (ρ : ℂ)).indicator hE)
+ 
+ theorem integral_norm_corePerturbation {μ : Measure ℂ} [IsFiniteMeasure μ]
+-    {E : Set ℂ} (hE : MeasurableSet E) {ρ : ℝ} (hρ : ρ ∈ Icc (0 : ℝ) 1) :
++    {E : Set ℂ} (hE : MeasurableSet E) {ρ : ℝ} (hρ : ρ ∈ Icc01) :
+     (∫ w, ‖corePerturbation E ρ w‖ ∂μ) = μ.real univ - ρ * μ.real E := by
+   simp_rw [norm_corePerturbation hρ]
+   rw [integral_sub (integrable_const 1) ((integrable_const ρ).indicator hE),
+@@ -59,7 +61,7 @@ theorem integral_norm_corePerturbation {μ : Measure ℂ} [IsFiniteMeasure μ]
+ 
+ theorem integrable_norm_mul_corePerturbation {μ : Measure ℂ} {g : ℂ → ℂ}
+     {E : Set ℂ} (hE : MeasurableSet E) (hg : Integrable g μ)
+-    {ρ : ℝ} (hρ : ρ ∈ Icc (0 : ℝ) 1) :
++    {ρ : ℝ} (hρ : ρ ∈ Icc01) :
+     Integrable (fun w ↦ ‖g w‖ * ‖corePerturbation E ρ w‖) μ := by
+   have heq : (fun w ↦ ‖g w‖ * ‖corePerturbation E ρ w‖) =
+       (fun w ↦ ‖g w‖ - E.indicator (fun w ↦ ρ * ‖g w‖) w) := by
+@@ -72,7 +74,7 @@ theorem integrable_norm_mul_corePerturbation {μ : Measure ℂ} {g : ℂ → ℂ
+ 
+ theorem integral_norm_mul_corePerturbation {μ : Measure ℂ} {g : ℂ → ℂ}
+     {E : Set ℂ} (hE : MeasurableSet E) (hg : Integrable g μ)
+-    {ρ : ℝ} (hρ : ρ ∈ Icc (0 : ℝ) 1) :
++    {ρ : ℝ} (hρ : ρ ∈ Icc01) :
+     (∫ w, ‖g w‖ * ‖corePerturbation E ρ w‖ ∂μ) =
+       (∫ w, ‖g w‖ ∂μ) - ρ * ∫ w in E, ‖g w‖ ∂μ := by
+   have heq : (fun w ↦ ‖g w‖ * ‖corePerturbation E ρ w‖) =
+diff --git a/BergmanWeakType/Rigidity/PhaseRigidity.lean b/BergmanWeakType/Rigidity/PhaseRigidity.lean
+index e51f9c776..8d63be815 100644
+--- a/BergmanWeakType/Rigidity/PhaseRigidity.lean
++++ b/BergmanWeakType/Rigidity/PhaseRigidity.lean
+@@ -20,13 +20,13 @@ namespace BergmanWeakType
+ 
+ theorem kernel_denominator_ne_zero_closed_left {ζ w : ℂ} (hζ : ‖ζ‖ ≤ 1) (hw : w ∈ disk) :
+     1 - ζ * star w ≠ 0 := by
+-  have hnorm : ‖ζ * star w‖ < 1 := by
+-    rw [norm_mul, norm_star]
+-    exact (mul_le_of_le_one_left (norm_nonneg w) hζ).trans_lt ((mem_disk_iff w).mp hw)
+-  intro h
+-  have hmul : ζ * star w = 1 := (sub_eq_zero.mp h).symm
+-  rw [hmul, norm_one] at hnorm
+-  exact (lt_irrefl 1) hnorm
++  have hw1 : ‖w‖ < 1 := (mem_disk_iff w).mp hw
++  have h := kernel_denominator_ne_zero_closed_input (z := w) (w := ζ) (R := (‖w‖ + 1) / 2)
++    (by linarith)
++    (by simp only [Metric.mem_closedBall, dist_zero_right]; linarith)
++    (by simpa only [Metric.mem_closedBall, dist_zero_right] using hζ)
++  intro hc
++  exact h (by simpa [mul_comm] using congrArg star hc)
+ 
+ /-- The compact-core integrand stays continuous even for boundary output parameters. -/
+ theorem continuousOn_coreIntegrand {q : ℂ → ℂ} (hq : ContinuousOn q disk)
+diff --git a/BergmanWeakType/Rigidity/PolarIntegral.lean b/BergmanWeakType/Rigidity/PolarIntegral.lean
+index 4a0734a42..da8a813d1 100644
+--- a/BergmanWeakType/Rigidity/PolarIntegral.lean
++++ b/BergmanWeakType/Rigidity/PolarIntegral.lean
+@@ -5,6 +5,8 @@ Authors: Yongxi Lin
+ -/
+ module
+ 
++public import BergmanWeakType.Notation
++
+ public import BergmanWeakType.Measure
+ public import Mathlib.Analysis.SpecialFunctions.PolarCoord
+ public import Mathlib.MeasureTheory.Integral.Prod
+@@ -45,7 +47,7 @@ theorem integrable_polar {f : ℂ → E} (hf : Integrable f) :
+ 
+ /-- Polar coordinates for an integrable function on the unit disk. -/
+ theorem integral_disk_eq_polar [CompleteSpace E] {f : ℂ → E} (hf : IntegrableOn f disk) :
+-    ∫ z in disk, f z = ∫ r in Ioo (0 : ℝ) 1, r •
++    ∫ z in disk, f z = ∫ r in Ioo01, r •
+       ∫ θ in Ioo (-π) π, f (Complex.polarCoord.symm (r, θ)) := by
+   have hD : MeasurableSet disk := isOpen_ball.measurableSet
+   have hfi : Integrable (disk.indicator f) := (integrable_indicator_iff hD).mpr hf
+@@ -79,11 +81,11 @@ theorem integral_disk_eq_polar [CompleteSpace E] {f : ℂ → E} (hf : Integrabl
+ 
+ theorem integral_polar_angle_eq_circleAverage [CompleteSpace E] (f : ℂ → E) (r : ℝ) :
+     (∫ θ in Ioo (-π) π, f (Complex.polarCoord.symm (r, θ))) =
+-      (2 * π) • Real.circleAverage f 0 r := by
++      (τ) • Real.circleAverage f 0 r := by
+   rw [Real.circleAverage_eq_integral_add (-π),
+     intervalIntegral.integral_comp_add_right (fun θ ↦ f (circleMap 0 r θ)) (-π), zero_add]
+-  have harg : 2 * π + -π = π := by ring
+-  rw [harg, smul_smul, mul_inv_cancel₀ (by positivity : 2 * π ≠ 0), one_smul,
++  have harg : τ + -π = π := by ring
++  rw [harg, smul_smul, mul_inv_cancel₀ (by positivity : τ ≠ 0), one_smul,
+     intervalIntegral.integral_of_le (by linarith [Real.pi_pos]), integral_Ioc_eq_integral_Ioo]
+   congr 1
+   funext θ
+@@ -99,7 +101,7 @@ theorem integrable_diskArea_iff {f : ℂ → E} :
+ /-- Disk integration is twice the radius-weighted integral of circular means. -/
+ theorem integral_diskArea_eq_circleAverage [CompleteSpace E] {f : ℂ → E}
+     (hf : Integrable f diskArea) :
+-    ∫ z, f z ∂diskArea = ∫ r in Ioo (0 : ℝ) 1, (2 * r) • Real.circleAverage f 0 r := by
++    ∫ z, f z ∂diskArea = ∫ r in Ioo01, (2 * r) • Real.circleAverage f 0 r := by
+   rw [diskArea, area, Measure.restrict_smul, integral_smul_measure,
+     ENNReal.toReal_ofReal (by positivity : (0 : ℝ) ≤ π⁻¹),
+     integral_disk_eq_polar (integrable_diskArea_iff.mp hf), ← integral_smul]
+@@ -121,7 +123,7 @@ theorem image_sq_unit_interval : (fun r : ℝ ↦ r ^ 2) '' Ioo 0 1 = Ioo 0 1 :=
+     exact (Real.sqrt_lt' (by norm_num : (0 : ℝ) < 1)).mpr (by simpa using hy.2)
+ 
+ theorem integral_unit_interval_sq [CompleteSpace E] (F : ℝ → E) :
+-    (∫ y in Ioo (0 : ℝ) 1, F y) = ∫ r in Ioo (0 : ℝ) 1, (2 * r) • F (r ^ 2) := by
++    (∫ y in Ioo01, F y) = ∫ r in Ioo01, (2 * r) • F (r ^ 2) := by
+   have hd (r : ℝ) : HasDerivWithinAt (fun r : ℝ ↦ r ^ 2) (2 * r) (Ioo 0 1) r := by
+     simpa using (hasDerivAt_pow 2 r).hasDerivWithinAt
+   have hi : InjOn (fun r : ℝ ↦ r ^ 2) (Ioo 0 1) := by
+@@ -136,7 +138,7 @@ theorem integral_unit_interval_sq [CompleteSpace E] (F : ℝ → E) :
+ /-- Squared radius is the uniform radial coordinate for normalized disk area. -/
+ theorem integral_diskArea_eq_circleAverage_sqrt [CompleteSpace E] {f : ℂ → E}
+     (hf : Integrable f diskArea) :
+-    ∫ z, f z ∂diskArea = ∫ y in Ioo (0 : ℝ) 1, Real.circleAverage f 0 (Real.sqrt y) := by
++    ∫ z, f z ∂diskArea = ∫ y in Ioo01, Real.circleAverage f 0 (Real.sqrt y) := by
+   rw [integral_diskArea_eq_circleAverage hf,
+     integral_unit_interval_sq (fun y ↦ Real.circleAverage f 0 (Real.sqrt y))]
+   apply setIntegral_congr_fun measurableSet_Ioo
+diff --git a/BergmanWeakType/Rigidity/RiemannMapping.lean b/BergmanWeakType/Rigidity/RiemannMapping.lean
+index c022d3373..c5d4a7fd5 100644
+--- a/BergmanWeakType/Rigidity/RiemannMapping.lean
++++ b/BergmanWeakType/Rigidity/RiemannMapping.lean
+@@ -9,6 +9,8 @@ Upstream source: Mathlib/Analysis/Complex/RiemannMapping.lean
+ -/
+ module
+ 
++public import Mathlib.Analysis.Complex.BranchLogRoot
++public import Mathlib.Analysis.Complex.RiemannMapping
+ public import Mathlib.Analysis.Analytic.Order
+ public import Mathlib.Analysis.CStarAlgebra.Classes
+ public import Mathlib.Analysis.Calculus.InverseFunctionTheorem.Deriv
+@@ -45,227 +47,86 @@ theorem Metric.isPreconnected_ball {E : Type*} [NormedAddCommGroup E] [NormedSpa
+     {x : E} {r : ℝ} : IsPreconnected (ball x r) :=
+   (convex_ball _ _).isPreconnected
+ 
+-theorem Metric.isPreconnected_closedBall {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
+-    {x : E} {r : ℝ} : IsPreconnected (closedBall x r) :=
+-  (convex_closedBall _ _).isPreconnected
+-
+ namespace Complex
+ 
+-theorem _root_.AnalyticOnNhd.exists_finset_eq_prod_smul_nonzero
+-    {𝕜 E : Type*} [NontriviallyNormedField 𝕜]
+-    [NormedAddCommGroup E] [NormedSpace 𝕜 E] {f : 𝕜 → E} {s : Set 𝕜}
+-    (hfs : AnalyticOnNhd 𝕜 f s) (hs_comp : IsCompact s) (hs_conn : IsPreconnected s)
+-    (hf₀ : ¬EqOn f 0 s) :
+-    ∃ (t : Finset 𝕜), (∀ x, x ∈ t ↔ x ∈ s ∧ f x = 0) ∧
+-      ∃ (g : 𝕜 → E), AnalyticOnNhd 𝕜 g s ∧
+-        (f = fun z ↦ (∏ x ∈ t, (z - x) ^ analyticOrderNatAt f x) • g z) ∧
+-        (∀ z ∈ s, g z ≠ 0) := by
+-  have hf_top : ∀ {f : 𝕜 → E}, AnalyticOnNhd 𝕜 f s → ¬EqOn f 0 s → ∀ x ∈ s,
+-      analyticOrderAt f x ≠ ⊤ := by
+-    intro f hfs hf₀ x hx hfx
+-    rw [analyticOrderAt_eq_top] at hfx
+-    exact hf₀ <| hfs.eqOn_zero_of_preconnected_of_eventuallyEq_zero hs_conn hx hfx
+-  obtain ⟨t, hts⟩ : ∃ t : Finset 𝕜, ∀ x, x ∈ t ↔ x ∈ s ∧ f x = 0 := by
+-    use hs_comp.finite_sdiff_of_mem_codiscreteWithin
+-      hfs.codiscreteWithin_setOfPred_analyticOrderAt_eq_zero_or_top |>.toFinset
+-    simp only [Finite.mem_toFinset, Set.mem_sdiff, mem_ofPred_eq, not_or, analyticOrderAt_eq_zero,
+-      and_congr_right_iff]
+-    push Not
+-    intro x hx
+-    simp [hfs _ hx, hf_top hfs hf₀ x hx]
+-  use t, hts
+-  induction t using Finset.cons_induction generalizing f with
+-  | empty =>
+-    use f, hfs
+-    simpa using hts
+-  | cons a t hat iht =>
+-    simp only [Finset.mem_cons] at hts
+-    have has : a ∈ s := (hts a).mp (.inl rfl) |>.1
+-    -- TODO: upgrade `AnalyticAt.analyticOrderAt_ne_top`
+-    obtain ⟨g, hga, hg₀, hfg⟩ : ∃ g, AnalyticOnNhd 𝕜 g s ∧ g a ≠ 0 ∧
+-        f = fun z ↦ (z - a) ^ analyticOrderNatAt f a • g z := by
+-      classical
+-      rcases hfs a has |>.analyticOrderAt_ne_top |>.mp
+-        (hf_top hfs hf₀ a has) with ⟨g, hga, hg₀, hfg⟩
+-      set g' := update (fun z ↦ (z - a) ^ (-analyticOrderNatAt f a : ℤ) • f z) a (g a)
+-      have hgg' : g =ᶠ[𝓝 a] g' := by
+-        refine hfg.mono fun z hz ↦ ?_
+-        rcases eq_or_ne z a with rfl | hza
+-        · simp [g']
+-        · simp [g', hza, hz, sub_eq_zero]
+-      refine ⟨g', ?_, ?_, ?_⟩
++theorem le_norm_of_forall_mem_sphere_le_norm {g : ℂ → ℂ} {c : ℂ} {ρ m : ℝ}
++    (hρ : 0 < ρ) (hm : 0 < m)
++    (hg : ∀ z ∈ Metric.closedBall c ρ, g z ≠ 0)
++    (hd : DifferentiableOn ℂ g (Metric.closedBall c ρ))
++    (h : ∀ z ∈ Metric.sphere c ρ, m ≤ ‖g z‖) :
++    ∀ z ∈ Metric.closedBall c ρ, m ≤ ‖g z‖ := by
++  have hcb : closure (Metric.ball c ρ) = Metric.closedBall c ρ := closure_ball c hρ.ne'
++  have hfront : frontier (Metric.ball c ρ) = Metric.sphere c ρ := frontier_ball c hρ.ne'
++  have hgdiff : DiffContOnCl ℂ (fun z => (g z)⁻¹) (Metric.ball c ρ) := by
++    refine ⟨fun z hz => ?_, ?_⟩
++    · exact (hd.differentiableAt (Metric.closedBall_mem_nhds_of_mem hz)).inv
++        (hg z (ball_subset_closedBall hz)) |>.differentiableWithinAt
++    · refine ContinuousOn.inv₀ (hd.continuousOn.mono ?_) ?_
++      · rw [hcb]
+       · intro z hz
+-        rcases eq_or_ne z a with rfl | hza
+-        · exact hga.congr hgg'
+-        · have : g' =ᶠ[𝓝 z] fun z ↦ (z - a) ^ (-analyticOrderNatAt f a : ℤ) • f z :=
+-            eventually_ne_nhds hza |>.mono fun w hw ↦ by simp [g', hw]
+-          rw [analyticAt_congr this]
+-          refine .smul (.zpow ?_ (by rwa [sub_ne_zero])) (hfs z hz)
+-          fun_prop
+-      · simp [g', hg₀]
+-      · ext z
+-        rcases eq_or_ne z a with rfl | hza
+-        · simpa [g'] using hfg.self_of_nhds
+-        · simp [g', hza, sub_eq_zero]
+-    have hgt : ∀ z, z ∈ t ↔ z ∈ s ∧ g z = 0 := by
+-      rw [hfg] at hts
+-      intro z
+-      rcases eq_or_ne z a with rfl | hza
+-      · simp [hg₀, hat]
+-      · simpa [hza, sub_eq_zero] using hts z
+-    have hgs₀ : ¬EqOn g 0 s := by
+-      intro hgs₀
+-      exact hg₀ <| hgs₀ has
+-    rcases iht hga hgs₀ hgt with ⟨g', hg's, hgg', hg'₀⟩
+-    use g', hg's, ?_, hg'₀
+-    ext z
+-    rw [congrFun hfg, congrFun hgg', Finset.prod_cons, mul_smul]
+-    congr 2
+-    refine Finset.prod_congr rfl fun x hx ↦ ?_
+-    congr 1
+-    -- TODO: avoid unfolding `analyticOrderNatAt` by adding lemmas
+-    conv_rhs => rw [hfg, analyticOrderNatAt]
+-    rw [← Pi.smul_def', analyticOrderAt_smul]
+-    · suffices analyticOrderAt (fun z ↦ (z - a) ^ analyticOrderNatAt f a) x = 0 by
+-        rw [this]; simp [analyticOrderNatAt]
+-      rw [analyticOrderAt_eq_zero]
+-      right
+-      simp [sub_eq_zero, ne_of_mem_of_not_mem hx hat]
+-    · fun_prop
+-    · exact hga _ <| ((hts _).mp <| .inr hx).1
+-
+--- TODO: replace `AnalyticOnNhd` with `AnalyticOn`?
+-theorem circleIntegral_logDeriv_eq_finsum_analyticOrderNatAdd {f : ℂ → ℂ} {c : ℂ} {R : ℝ}
+-    (hf : AnalyticOnNhd ℂ f (closedBall c R)) (hf₀ : ∀ z ∈ sphere c R, f z ≠ 0) (hR : 0 ≤ R) :
+-    ∮ z in C(c, R), logDeriv f z = (2 * π * I) * ∑ᶠ z ∈ ball c R, analyticOrderNatAt f z := by
+-  rcases hf.exists_finset_eq_prod_smul_nonzero (isCompact_closedBall _ _) isPreconnected_closedBall
+-    (fun hf₀' ↦ ((NormedSpace.sphere_nonempty (x := c)).mpr hR).elim fun x hx ↦
+-      hf₀ x hx <| hf₀' <| sphere_subset_closedBall hx)
+-    with ⟨t, htR, g, hgR, hfg, hg₀⟩
+-  have hne : ∀ z ∈ sphere c R, ∀ w ∈ t, z - w ≠ 0 := by
+-    intro z hz w hw
+-    rw [sub_ne_zero]
+-    rintro rfl
+-    rw [htR] at hw
+-    exact hf₀ _ hz hw.2
+-  have ht_sub : ↑t ⊆ ball c R := by
+-    intro w hw
+-    rw [Finset.mem_coe, htR, ← sphere_union_ball, mem_union] at hw
+-    exact hw.1.resolve_left fun hw' ↦ hf₀ w hw' hw.2
+-  have hleft : EqOn (logDeriv f)
+-      (fun z ↦ (∑ w ∈ t, analyticOrderNatAt f w / (z - w)) + logDeriv g z) (sphere c R) := by
+-    intro z hz
+-    conv_lhs => rw [hfg]
+-    simp only [smul_eq_mul]
+-    rw [logDeriv_fun_mul, logDeriv_fun_prod]
+-    · congr 1
+-      refine Finset.sum_congr rfl fun w hw ↦ ?_
+-      rw [logDeriv_fun_pow (by fun_prop), logDeriv, Pi.div_apply, deriv_sub_const, deriv_id'']
+-      simp [div_eq_mul_inv]
+-    · intro w hw
+-      apply pow_ne_zero
+-      exact hne z hz w hw
+-    · intros
+-      fun_prop
+-    · rw [Finset.prod_ne_zero_iff]
+-      exact fun w hw ↦ pow_ne_zero _ (hne z hz w hw)
+-    · exact hg₀ z (sphere_subset_closedBall hz)
+-    · fun_prop
+-    · exact hgR _ (sphere_subset_closedBall hz) |>.differentiableAt
+-  rw [finsum_mem_eq_sum_of_subset (t := t), circleIntegral.integral_congr hR hleft]
+-  · have hdg : AnalyticOnNhd ℂ (logDeriv g) (closedBall c R) :=
+-      hgR.deriv.div hgR hg₀
+-    have hi : ∀ w ∈ t, CircleIntegrable (fun z ↦ analyticOrderNatAt f w / (z - w)) c R := by
+-      intro w hw
+-      simp only [div_eq_mul_inv]
+-      refine .const_mul (circleIntegrable_sub_inv_iff.mpr <| .inr fun hw' ↦ ?_) _
+-      rw [abs_of_nonneg hR] at hw'
+-      exact hne w hw' w hw (sub_self _)
+-    rw [circleIntegral.integral_add, circleIntegral.integral_fun_sum,
+-      DiffContOnCl.circleIntegral_eq_zero hR, add_zero, Nat.cast_sum, Finset.mul_sum]
+-    · refine Finset.sum_congr rfl fun w hw ↦ ?_
+-      rw [circleIntegral_div_sub_of_differentiable_on_off_countable countable_empty]
+-      · exact ht_sub hw
+-      · fun_prop
+-      · intros; fun_prop
+-    · exact hdg.differentiableOn.diffContOnCl_ball subset_rfl
+-    · exact hi
+-    · exact .fun_sum _ hi
+-    · exact hdg.continuousOn.mono sphere_subset_closedBall |>.circleIntegrable hR
+-  · rintro z ⟨hzc, hz⟩
+-    rw [mem_support, analyticOrderNatAt, ne_eq, ENat.toNat_eq_zero, not_or,
+-      analyticOrderAt_eq_zero, not_or, not_not, ne_eq, not_not] at hz
+-    replace hz := hz.1.2
+-    rw [hfg, smul_eq_zero, Finset.prod_eq_zero_iff] at hz
+-    rcases hz.resolve_right (hg₀ z <| ball_subset_closedBall hzc) with ⟨w, hwt, hzw⟩
+-    have hzw_eq : z = w := sub_eq_zero.mp (eq_zero_of_pow_eq_zero hzw)
+-    simpa only [hzw_eq, Finset.mem_coe] using hwt
+-  · exact ht_sub
++        rw [hcb] at hz
++        exact hg z hz
++  intro z hz
++  have hle : ‖(g z)⁻¹‖ ≤ m⁻¹ := by
++    refine Complex.norm_le_of_forall_mem_frontier_norm_le (isBounded_ball (x := c) (r := ρ)) hgdiff ?_ ?_
++    · intro ζ hζ
++      rw [hfront] at hζ
++      rw [norm_inv]
++      exact (inv_le_inv₀ (norm_pos_iff.mpr (hg ζ (sphere_subset_closedBall hζ))) hm).mpr
++        (h ζ hζ)
++    · rw [hcb]
++      exact hz
++  rw [norm_inv] at hle
++  exact (inv_le_inv₀ (norm_pos_iff.mpr (hg z hz)) hm).mp hle
++
+ 
+ theorem eqOn_zero_or_forall_ne_zero_of_tendstoLocallyUniformlyOn {ι : Type*} {U : Set ℂ}
+-    {l : Filter ι} [l.NeBot] [l.IsCountablyGenerated] {F : ι → ℂ → ℂ} {f : ℂ → ℂ}
+-    (hUo : IsOpen U) (hUc : IsPreconnected U) (hF : ∀ᶠ i in l, ∀ x ∈ U, F i x ≠ 0)
++    {l : Filter ι} [l.NeBot] {F : ι → ℂ → ℂ} {f : ℂ → ℂ}
++    (hUo : IsOpen U) (hUc : IsPreconnected U) (hFN : ∀ᶠ i in l, ∀ x ∈ U, F i x ≠ 0)
+     (hFd : ∀ᶠ i in l, DifferentiableOn ℂ (F i) U) (hf : TendstoLocallyUniformlyOn F f l U) :
+     EqOn f 0 U ∨ ∀ x ∈ U, f x ≠ 0 := by
+   have hfd : DifferentiableOn ℂ f U := hf.differentiableOn hFd hUo
+   rw [or_iff_not_imp_left]
+   intro hf₀ c hc hfc
+-  rcases hfd.analyticAt (hUo.mem_nhds hc) |>.eventually_eq_zero_or_eventually_ne_zero
+-    with hfc₀ | hfc₀
+-  · exact hf₀ <| hfd.analyticOnNhd hUo |>.eqOn_zero_of_preconnected_of_eventuallyEq_zero hUc hc hfc₀
+-  · obtain ⟨R, hR₀, hRU, hfR⟩ : ∃ R > 0, closedBall c R ⊆ U ∧ ∀ w ∈ sphere c R, f w ≠ 0 := by
+-      rw [eventually_nhdsWithin_iff] at hfc₀
+-      rcases Metric.nhds_basis_closedBall.eventually_iff.mp (hfc₀.and <| hUo.eventually_mem hc)
+-        with ⟨R, hR₀, hR⟩
+-      refine ⟨R, hR₀, fun w hw ↦ (hR hw).2, fun w hw ↦ (hR <| sphere_subset_closedBall hw).1 ?_⟩
+-      exact ne_of_mem_sphere hw hR₀.ne'
+-    have hRU' : sphere c R ⊆ U := sphere_subset_closedBall.trans hRU
+-    have hlogDeriv : TendstoUniformlyOn (fun i ↦ logDeriv (F i)) (logDeriv f) l (sphere c R) := by
+-      simp only [logDeriv]
+-      have := (hf.deriv hFd hUo).mono hRU'
+-      rw [← tendstoLocallyUniformlyOn_iff_tendstoUniformlyOn_of_compact
+-        (isCompact_sphere c R)]
+-      refine this.fun_div₀ (hf.mono hRU') ?_ ?_ ?_
+-      · exact hfd.analyticOnNhd hUo |>.deriv |>.continuousOn |>.mono hRU'
+-      · exact hfd.continuousOn.mono hRU'
+-      · exact hfR
+-    have hcirc : Tendsto (fun i ↦ ∮ z in C(c, R), logDeriv (F i) z) l
+-        (𝓝 (∮ z in C(c, R), logDeriv f z)) := by
+-      apply hlogDeriv.tendsto_circleIntegral_of_continuousOn hR₀.le
+-      filter_upwards [hF, hFd] with i hi₀ hiD
+-      refine .div ?_ (hiD.continuousOn.mono hRU') ?_
+-      · exact hiD.analyticOnNhd hUo |>.deriv |>.continuousOn |>.mono hRU'
+-      · exact fun x hx ↦ hi₀ x (hRU' hx)
+-    have H₀ : ∀ᶠ i in l, ∮ (z : ℂ) in C(c, R), logDeriv (F i) z = 0 := by
+-      filter_upwards [hF, hFd] with i hi hid
+-      apply DiffContOnCl.circleIntegral_eq_zero hR₀.le
+-      exact (hid.deriv hUo).div hid hi |>.diffContOnCl_ball hRU
+-    have := hcirc.congr' H₀
+-    rw [tendsto_const_nhds_iff, eq_comm,
+-      circleIntegral_logDeriv_eq_finsum_analyticOrderNatAdd, mul_eq_zero] at this
+-    · replace this := this.resolve_left (by simp)
+-      norm_cast at this
+-      refine ne_of_gt ?_ this
+-      apply finsum_cond_pos
+-      · simp
+-      · use c
+-        suffices ∃ᶠ (x : ℂ) in 𝓝 c, f x ≠ 0 by
+-          simpa [pos_iff_ne_zero, analyticOrderNatAt, analyticOrderAt_eq_zero, hfc,
+-            analyticOrderAt_eq_top, hfd.analyticAt (hUo.mem_nhds hc), hR₀]
+-        rw [eventually_nhdsWithin_iff] at hfc₀
+-        refine Frequently.mp ?_ hfc₀
+-        rw [frequently_iff_neBot, ofPred_mem_eq, ← nhdsWithin]
+-        infer_instance
+-      · have := (isCompact_closedBall c R).finite_sdiff_of_mem_codiscreteWithin
+-          ((hfd.analyticOnNhd hUo).mono hRU).codiscreteWithin_setOfPred_analyticOrderAt_eq_zero_or_top
+-        refine this.subset ?_
+-        simp +contextual [subset_def, analyticOrderNatAt, le_of_lt]
+-    · exact hfd.analyticOnNhd hUo |>.mono hRU
+-    · exact hfR
+-    · exact hR₀.le
++  rcases (hfd.analyticAt (hUo.mem_nhds hc)).eventually_eq_zero_or_eventually_ne_zero with h0 | hne
++  · exact hf₀ (hfd.analyticOnNhd hUo |>.eqOn_zero_of_preconnected_of_eventuallyEq_zero hUc hc h0)
++  · rw [eventually_nhdsWithin_iff] at hne
++    obtain ⟨ε, hε, hεU, hεne⟩ : ∃ ε > 0, Metric.closedBall c ε ⊆ U ∧
++        ∀ z ∈ Metric.closedBall c ε, z ≠ c → f z ≠ 0 := by
++      obtain ⟨ε, hε, hε'⟩ := Metric.nhds_basis_closedBall.eventually_iff.mp
++        (hne.and (hUo.eventually_mem hc))
++      exact ⟨ε, hε, fun z hz => (hε' hz).2, fun z hz hzc => (hε' hz).1 hzc⟩
++    have hcont : ContinuousOn f (Metric.closedBall c ε) := hfd.continuousOn.mono hεU
++    have hsne : (Metric.sphere c ε).Nonempty :=
++      ⟨c + (ε : ℂ), by simp [Metric.mem_sphere, hε.le]⟩
++    obtain ⟨m, hm0, hm⟩ : ∃ m > 0, ∀ z ∈ Metric.sphere c ε, m ≤ ‖f z‖ := by
++      obtain ⟨z₀, hz₀, hmin⟩ := (isCompact_sphere c ε).exists_isMinOn hsne (hcont.norm.mono sphere_subset_closedBall)
++      exact ⟨‖f z₀‖, norm_pos_iff.mpr (hεne z₀ (sphere_subset_closedBall hz₀)
++        (ne_of_mem_sphere hz₀ hε.ne')), fun z hz => hmin hz⟩
++    have hunif : TendstoUniformlyOn F f l (Metric.sphere c ε) :=
++      (tendstoLocallyUniformlyOn_iff_tendstoUniformlyOn_of_compact (isCompact_sphere c ε)).mp
++        (hf.mono (sphere_subset_closedBall.trans hεU))
++    have hgood : ∀ᶠ i in l, ∀ z ∈ Metric.closedBall c ε, m / 2 ≤ ‖F i z‖ := by
++      filter_upwards [hFN, hFd, hunif _ (Metric.dist_mem_uniformity (by linarith : 0 < m / 2))]
++        with i hi hdi huni
++      refine le_norm_of_forall_mem_sphere_le_norm hε (by linarith)
++        (fun z hz => hi z (hεU hz)) (hdi.mono hεU) ?_
++      intro z hz
++      have h1 := huni z hz
++      have h2 := hm z hz
++      rw [dist_eq_norm] at h1
++      have h3 := norm_sub_norm_le (f z) (F i z)
++      linarith
++    have hb := hgood.mono fun i hi => hi c (mem_closedBall_self hε.le)
++    have hconst : Tendsto (fun _ : ι => m / 2) l (𝓝 (m / 2)) := tendsto_const_nhds
++    have := le_of_tendsto_of_tendsto hconst (hf.tendsto_at hc).norm hb
++    rw [hfc, norm_zero] at this
++    linarith
++
++
+ 
+ theorem eqOn_const_or_injOn_of_tendstoLocallyUniformlyOn {ι : Type*} {U : Set ℂ}
+-    {l : Filter ι} [l.NeBot] [l.IsCountablyGenerated] {F : ι → ℂ → ℂ} {f : ℂ → ℂ}
++    {l : Filter ι} [l.NeBot] {F : ι → ℂ → ℂ} {f : ℂ → ℂ}
+     (hUo : IsOpen U) (hUc : IsPreconnected U) (hF : ∀ᶠ i in l, InjOn (F i) U)
+     (hFd : ∀ᶠ i in l, DifferentiableOn ℂ (F i) U) (hf : TendstoLocallyUniformlyOn F f l U) :
+     (∃ C, ∀ x ∈ U, f x = C) ∨ InjOn f U := by
+@@ -290,64 +151,8 @@ theorem eqOn_const_or_injOn_of_tendstoLocallyUniformlyOn {ι : Type*} {U : Set 
+       |>.eqOn_of_preconnected_of_eventuallyEq analyticOnNhd_const hUc hx ?_
+     exact heq.eventuallyEq_of_mem (ball_mem_nhds _ hr₀) |>.mono fun z hz ↦ sub_eq_zero.mp hz
+ 
+-theorem exists_branch_log {X : Type*} [TopologicalSpace X] [LocallyPathConnectedSpace X] {U : Set X}
+-    (hUc : IsSimplyConnected U) (hUo : IsOpen U)
+-    {g : X → ℂ} (hgc : ContinuousOn g U) (hU₀ : 0 ∉ g '' U) :
+-    ∃ f : X → ℂ, ContinuousOn f U ∧ EqOn (exp ∘ f) g U := by
+-  classical
+-  have := hUc.simplyConnectedSpace
+-  have := hUo.locallyPathConnectedSpace
+-  rcases hUc.nonempty with ⟨x₀, hx₀U⟩
+-  have hx₀ : g x₀ ≠ 0 := ne_of_mem_of_not_mem (mem_image_of_mem g hx₀U) hU₀
+-  lift x₀ to U using hx₀U
+-  rcases isCoveringMapOn_exp.existsUnique_continuousMap_lifts
+-    ⟨U.domRestrict g, continuousOn_iff_continuous_domRestrict.mp hgc⟩ (exp_log hx₀)
+-    (fun x ↦ ne_of_mem_of_not_mem (mem_image_of_mem g x.2) hU₀) with ⟨f, ⟨-, hf⟩, -⟩
+-  obtain ⟨g, hg⟩ : ∃ g : X → ℂ, ∀ z : U, g z = f z :=
+-    ⟨fun z ↦ if hz : z ∈ U then f ⟨z, hz⟩ else 0, by simp⟩
+-  refine ⟨g, ?hg_cont, ?hg_inv⟩
+-  case hg_cont =>
+-    rw [continuousOn_iff_continuous_domRestrict]
+-    convert map_continuous f
+-    ext z
+-    exact hg z
+-  case hg_inv =>
+-    intro x hx
+-    lift x to U using hx
+-    simpa [hg, ContinuousMap.coe_mk, Set.domRestrict] using congr($hf x)
+-
+-theorem exists_branch_nthRoot {X : Type*} [TopologicalSpace X] [LocallyPathConnectedSpace X] {U : Set X}
+-    (hUc : IsSimplyConnected U) (hUo : IsOpen U) {g : X → ℂ} (hgc : ContinuousOn g U)
+-    (hU₀ : 0 ∉ g '' U) {n : ℕ} (hn : n ≠ 0) :
+-    ∃ f : X → ℂ, ContinuousOn f U ∧ ∀ x, f x ^ n = g x := by
+-  classical
+-  rcases exists_branch_log hUc hUo hgc hU₀ with ⟨f, hfc, hf⟩
+-  refine ⟨U.piecewise (exp <| f · / n) (g · ^ (1 / n : ℂ)), ?_, fun z ↦ ?_⟩
+-  · rw [continuousOn_iff_continuous_domRestrict, domRestrict_piecewise,
+-      ← continuousOn_iff_continuous_domRestrict]
+-    fun_prop
+-  · by_cases hz : z ∈ U
+-    · simp [hz, ← exp_nat_mul, mul_div_cancel₀ (b := ↑n) (f z) (mod_cast hn), ← hf hz,
+-        Function.comp_apply]
+-    · simp [hz, ← cpow_mul_nat, hn]
+-
+ namespace UnitDisc
+ 
+-protected theorem exists_branch_nthRoot {X : Type*} [TopologicalSpace X] [LocallyPathConnectedSpace X]
+-    {U : Set X} (hUc : IsSimplyConnected U) (hUo : IsOpen U) {g : X → UnitDisc}
+-    (hgc : ContinuousOn g U) (hU₀ : 0 ∉ g '' U) (n : ℕ+) :
+-    ∃ f : X → UnitDisc, ContinuousOn f U ∧ ∀ x, f x ^ n = g x := by
+-  rcases exists_branch_nthRoot hUc hUo
+-    (continuous_coe.comp_continuousOn hgc)
+-    (by simpa using hU₀) n.ne_zero with ⟨f, hfc, hf⟩
+-  suffices ∀ x, ‖f x‖ < 1 by
+-    lift f to X → 𝔻 using this
+-    refine ⟨f, isEmbedding_coe.continuousOn_iff.mpr hfc, fun x ↦ ?_⟩
+-    simpa only [← coe_pow, Function.comp_apply, coe_inj] using hf x
+-  intro x
+-  rw [← pow_lt_one_iff_of_nonneg (norm_nonneg _) n.ne_zero, ← norm_pow, hf]
+-  exact (g x).norm_lt_one
+-
+ @[fun_prop]
+ theorem continuous_shift (z : 𝔻) : Continuous z.shift := by
+   simp only [isEmbedding_coe.continuous_iff, Function.comp_def, coe_shift]
+@@ -367,7 +172,7 @@ theorem exists_mapsTo_unitBall_injOn_deriv_ne_zero_at {U : Set ℂ} (hUo : IsOpe
+     refine ⟨f ∘ (-a + ·), hf₁.comp (mapsTo_image _ _),
+       hf_inj.comp (by simp [InjOn]) (mapsTo_image _ _), fun z hz ↦ ?_⟩
+     simpa [Function.comp_def, deriv_comp_const_add] using hdf (-a + z) (mapsTo_image _ _ hz)
+-  rcases exists_branch_nthRoot hUc hUo continuousOn_id (by rwa [image_id]) two_ne_zero
++  rcases Complex.exists_continuousOn_pow_eq hUc hUo continuousOn_id (by rwa [image_id]) two_ne_zero
+     with ⟨f, hfc, hf_inv⟩
+   replace hf_inv : LeftInverse (· ^ 2) f := hf_inv
+   have hf₀ : ∀ z ∈ U, f z ≠ 0 := by
+@@ -506,7 +311,7 @@ theorem exist_map_unitDisc_injOn_norm_deriv_gt {U : Set ℂ} (hUo : IsOpen U)
+   have hcf : ContinuousOn f U := by
+     rw [UnitDisc.isEmbedding_coe.continuousOn_iff]
+     exact hdf.continuousOn
+-  rcases UnitDisc.exists_branch_nthRoot hUc hUo ((-c).continuous_shift.comp_continuousOn hcf)
++  rcases UnitDisc.exists_continuousOn_pow_eq hUc hUo ((-c).continuous_shift.comp_continuousOn hcf)
+     (by simpa) 2 with ⟨g, hgc, hgf⟩
+   have hg₀ : ∀ z ∈ U, g z ≠ 0 := by
+     intro z hz
+@@ -606,19 +411,6 @@ theorem exists_bijOn_unitBall_map_eq_zero {U : Set ℂ} (hUo : IsOpen U) (hUc :
+     (hU : U ≠ univ) {x₀ : ℂ} (hx₀ : x₀ ∈ U) :
+     ∃ f : ℂ → ℂ, DifferentiableOn ℂ f U ∧ BijOn f U (ball 0 1) ∧ f x₀ = 0 := by
+   set 𝔖 : Set (Set ℂ) := {K | K ⊆ U ∧ IsCompact K}
+-  have h𝔖K : ∀ K ∈ 𝔖, IsCompact K := fun _ ↦ And.right
+-  have hcnt : (𝓤 (ℂ →ᵤ[𝔖] ℂ)).IsCountablyGenerated := by
+-    have := hUo.locallyCompactSpace
+-    have : SigmaCompactSpace U := sigmaCompactSpace_of_locallyCompact_secondCountable
+-    set φ : CompactExhaustion U := default
+-    apply UniformOnFun.isCountablyGenerated_uniformity (t := fun n ↦ (↑) '' φ n)
+-    · intro n
+-      exact ⟨image_val_subset, φ.isCompact n |>.image continuous_subtype_val⟩
+-    · exact monotone_image.comp φ.subset
+-    · rintro K ⟨hKU, hKc⟩
+-      lift K to Set U using hKU
+-      rw [← Subtype.isCompact_iff] at hKc
+-      exact (φ.exists_superset_of_isCompact hKc).imp fun n hn ↦ by gcongr
+   set F : (ℂ →ᵤ[𝔖] ℂ) → (ℂ → ℂ) := fun f ↦ UniformOnFun.toFun _ f
+   have hF : ∀ {f : ℂ →ᵤ[𝔖] ℂ} {s}, TendstoLocallyUniformlyOn F (F f) (𝓝[s] f) U := by
+     intro f s
+@@ -639,8 +431,8 @@ theorem exists_bijOn_unitBall_map_eq_zero {U : Set ℂ} (hUo : IsOpen U) (hUc :
+       by simpa [F, InjOn] using hf_inj, fun z hz ↦
+         differentiableAt_of_deriv_ne_zero (hfd z hz) |>.differentiableWithinAt,
+       hfd x₀ hx₀, by simp [F, hf₀]⟩
+-  have hcmpct := ArzelaAscoli.isCompact_closure_of_isClosedEmbedding h𝔖K (α := ℂ) (s := s) (F := F)
+-    .id ?eqcont ?bdd
++  have hcmpct := ArzelaAscoli.isCompact_closure_of_isClosedEmbedding (fun _ ↦ And.right)
++    (α := ℂ) (s := s) (F := F) .id ?eqcont ?bdd
+   case eqcont =>
+     rintro K ⟨hKU, -⟩ z hz
+     refine equicontinuousAt_of_forall_norm_le (hUo.mem_nhds <| hKU hz) (fun i ↦ hsd _ i.2)
+diff --git a/BergmanWeakType/Rigidity/UnitDiscShift.lean b/BergmanWeakType/Rigidity/UnitDiscShift.lean
+index 09630de0c..aeb09f52f 100644
+--- a/BergmanWeakType/Rigidity/UnitDiscShift.lean
++++ b/BergmanWeakType/Rigidity/UnitDiscShift.lean
+@@ -93,15 +93,6 @@ theorem symm_shift (z : 𝔻) : (shift z).symm = shift (-z) := by
+   ext1
+   rfl
+ 
+-@[simp]
+-theorem star_shift (z w : 𝔻) : star (shift z w) = shift (star z) (star w) :=
+-  coe_injective <| by simp [coe_shift]
+-
+-@[simp]
+-theorem shift_zero : shift 0 = .refl 𝔻 := by
+-  ext z
+-  simp [coe_shift]
+-
+ @[simp]
+ theorem shift_apply_zero (z : 𝔻) : shift z 0 = z := by simp [shift_eq_iff]
+ 
+@@ -109,9 +100,6 @@ theorem shift_apply_zero (z : 𝔻) : shift z 0 = z := by simp [shift_eq_iff]
+ theorem shift_eq_zero_iff {z w : 𝔻} : shift z w = 0 ↔ w = -z := by
+   rw [← Equiv.eq_symm_apply, symm_shift, shift_apply_zero]
+ 
+-@[simp]
+-theorem shift_apply_neg_self (z : 𝔻) : shift z (-z) = 0 := by simp
+-
+ @[simp]
+ theorem shift_neg_apply_self (z : 𝔻) : shift (-z) z = 0 := by simp
+ 
+@@ -119,28 +107,6 @@ theorem shift_neg_apply_self (z : 𝔻) : shift (-z) z = 0 := by simp
+ theorem shift_neg_apply_shift (z w : 𝔻) : shift (-z) (shift z w) = w := by
+   rw [← symm_shift, Equiv.symm_apply_apply]
+ 
+-@[simp]
+-theorem shift_apply_shift_neg (z w : 𝔻) : shift z (shift (-z) w) = w := by
+-  simpa using shift_neg_apply_shift (-z) w
+-
+-/-- A shift by `0` is the identity map, and all other shifts have no fixed points. -/
+-@[simp]
+-theorem shift_eq_self_iff {z w : 𝔻} : shift z w = w ↔ z = 0 := by
+-  rcases eq_or_ne z 0 with rfl | hz
+-  · simp
+-  suffices (z : ℂ) ≠ w * conj ↑z * w by
+-    simpa [shift_eq_iff, hz, add_comm (z : ℂ)] using this
+-  refine ne_of_apply_ne norm (ne_of_gt ?_)
+-  calc
+-    _ = ‖(z : ℂ)‖ * ‖(w : ℂ)‖ ^ 2 := by simp; ring
+-    _ < ‖(z : ℂ)‖ := mul_lt_of_lt_one_right (by simpa) <| by
+-      rw [← Complex.normSq_eq_norm_sq]; exact w.normSq_lt_one
+-
+-/-- The composition of two shifts is a rotation by `shiftCompCoeff z w` composed with a shift. -/
+-@[simps! coe]
+-def shiftCompCoeff (z w : 𝔻) : Circle :=
+-  .ofConjDivSelf (1 + conj ↑z * w) (shift_den_ne_zero _ _)
+-
+ end
+ 
+ end UnitDisc
+diff --git a/BergmanWeakType/Weighted/AngularMean.lean b/BergmanWeakType/Weighted/AngularMean.lean
+index d32ebda45..7f46c4930 100644
+--- a/BergmanWeakType/Weighted/AngularMean.lean
++++ b/BergmanWeakType/Weighted/AngularMean.lean
+@@ -5,6 +5,8 @@ Authors: Yongxi Lin
+ -/
+ module
+ 
++public import BergmanWeakType.Notation
++
+ public import BergmanWeakType.Weighted.CompactIntegral
+ public import BergmanWeakType.Weighted.RadialFlux
+ public import Mathlib.MeasureTheory.Integral.CircleAverage
+@@ -21,7 +23,7 @@ open scoped Topology
+ namespace BergmanWeakType.Weighted
+ 
+ def angularMean (F : ℝ → ℝ → ℝ) (r : ℝ) : ℝ :=
+-  (2 * π)⁻¹ * ∫ θ in (0 : ℝ)..2 * π, F r θ
++  (τ)⁻¹ * ∫ θ in (0 : ℝ)..τ, F r θ
+ 
+ theorem continuousOn_angularMean {F : ℝ → ℝ → ℝ} {S : Set ℝ}
+     (hF : ContinuousOn (fun p : ℝ × ℝ ↦ F p.1 p.2) (S ×ˢ univ)) :
+@@ -32,72 +34,87 @@ theorem continuousOn_angularMean {F : ℝ → ℝ → ℝ} {S : Set ℝ}
+     exact fun p _ ↦ ⟨p.1.property, mem_univ _⟩
+   rw [continuousOn_iff_continuous_domRestrict]
+   exact (intervalIntegral.continuous_parametric_intervalIntegral_of_continuous'
+-    hc 0 (2 * π)).const_mul _
++    hc 0 (τ)).const_mul _
+ 
+-theorem hasDerivAt_angularMean {F Fr : ℝ → ℝ → ℝ} {r : ℝ} (hr : r ∈ Ioo (0 : ℝ) 1)
+-    (hF : ContinuousOn (fun p : ℝ × ℝ ↦ F p.1 p.2) (Ico 0 1 ×ˢ univ))
+-    (hFr : ContinuousOn (fun p : ℝ × ℝ ↦ Fr p.1 p.2) (Ico 0 1 ×ˢ univ))
+-    (hd : ∀ r ∈ Ioo (0 : ℝ) 1, ∀ θ, HasDerivAt (fun r ↦ F r θ) (Fr r θ) r) :
++theorem hasDerivAt_angularMean {F Fr : ℝ → ℝ → ℝ} {r : ℝ} (hr : r ∈ Ioo01)
++    (hF : OnStrip F)
++    (hFr : OnStrip Fr)
++    (hd : ∀ r ∈ Ioo01, ∀ θ, HasDerivAt (fun r ↦ F r θ) (Fr r θ) r) :
+     HasDerivAt (angularMean F) (angularMean Fr r) r := by
+   let S := Icc (r / 2) ((r + 1) / 2)
+   have hS : S ∈ nhds r := Icc_mem_nhds (by linarith [hr.1]) (by linarith [hr.2])
+-  have hsub : S ×ˢ Icc (0 : ℝ) (2 * π) ⊆ Ico 0 1 ×ˢ univ := by
++  have hsub : S ×ˢ Icc (0 : ℝ) (τ) ⊆ Ico 0 1 ×ˢ univ := by
+     rintro ⟨u, θ⟩ ⟨hu, _⟩
+     exact ⟨⟨by dsimp [S] at hu; linarith [hu.1, hr.1],
+       by dsimp [S] at hu; linarith [hu.2, hr.2]⟩, mem_univ _⟩
+   have hi := hasDerivAt_integral_mul_of_continuousOn_compact
+-    (μ := volume.restrict (Icc (0 : ℝ) (2 * π))) isCompact_Icc
++    (μ := volume.restrict (Icc (0 : ℝ) (τ))) isCompact_Icc
+     (ae_restrict_mem measurableSet_Icc) (show IsCompact S from isCompact_Icc) hS
+     (integrable_const (1 : ℝ)) (hF.mono hsub) (hFr.mono hsub) (fun θ _ u hu ↦
+       hd u ⟨by dsimp [S] at hu; linarith [hu.1, hr.1],
+         by dsimp [S] at hu; linarith [hu.2, hr.2]⟩ θ)
+   unfold angularMean
+   simpa only [mul_one, integral_Icc_eq_integral_Ioc,
+-    intervalIntegral.integral_of_le two_pi_pos.le] using hi.2.const_mul ((2 * π)⁻¹)
++    intervalIntegral.integral_of_le two_pi_pos.le] using hi.2.const_mul ((τ)⁻¹)
+ 
+ theorem intervalIntegrable_polar_slice {F : ℝ → ℝ → ℝ} {r : ℝ}
+-    (hF : ContinuousOn (fun p : ℝ × ℝ ↦ F p.1 p.2) (Ico 0 1 ×ˢ univ))
+-    (hr : r ∈ Ico (0 : ℝ) 1) : IntervalIntegrable (F r) volume 0 (2 * π) := by
++    (hF : OnStrip F)
++    (hr : r ∈ Ico01) : IntervalIntegrable (F r) volume 0 (τ) := by
+   apply Continuous.intervalIntegrable
+   apply continuousOn_univ.mp
+   apply hF.comp (continuous_const.prodMk continuous_id).continuousOn
+   exact fun θ _ ↦ ⟨hr, mem_univ θ⟩
+ 
++/-- Smoothness and periodicity data for a two-variable family on the radial strip. -/
++structure PolarSmooth (F Fr Frr Ft Ftt : ℝ → ℝ → ℝ) : Prop where
++  cont : OnStrip F
++  contR : OnStrip Fr
++  contRR : OnStrip Frr
++  contT : OnStrip Ft
++  contTT : OnStrip Ftt
++  deriv : ∀ r ∈ Ioo01, ∀ θ, HasDerivAt (fun r ↦ F r θ) (Fr r θ) r
++  derivR : ∀ r ∈ Ioo01, ∀ θ, HasDerivAt (fun r ↦ Fr r θ) (Frr r θ) r
++  derivT : ∀ r ∈ Ioo01, ∀ θ, HasDerivAt (F r) (Ft r θ) θ
++  derivTT : ∀ r ∈ Ioo01, ∀ θ, HasDerivAt (Ft r) (Ftt r θ) θ
++  periodF : ∀ r ∈ Ioo01, F r (τ) = F r 0
++  periodT : ∀ r ∈ Ioo01, Ft r (τ) = Ft r 0
++
++/-- Smoothness data for a positive radial coefficient. -/
++structure RadialSmooth (J Jr Jrr : ℝ → ℝ) : Prop where
++  cont : ContinuousOn J (Ico 0 1)
++  contR : ContinuousOn Jr (Ico 0 1)
++  contRR : ContinuousOn Jrr (Ico 0 1)
++  deriv : ∀ r ∈ Ioo01, HasDerivAt J (Jr r) r
++  derivR : ∀ r ∈ Ioo01, HasDerivAt Jr (Jrr r) r
++  pos : ∀ r ∈ Ico01, 0 < J r
++
+ /-- A polar divergence inequality with periodic angular derivative makes the angular mean
+ nonincreasing, including at the origin. -/
+ theorem antitoneOn_angularMean_of_polar_flux {F Fr Frr Ft Ftt : ℝ → ℝ → ℝ}
+-    {w w' : ℝ → ℝ}
+-    (hF : ContinuousOn (fun p : ℝ × ℝ ↦ F p.1 p.2) (Ico 0 1 ×ˢ univ))
+-    (hFr : ContinuousOn (fun p : ℝ × ℝ ↦ Fr p.1 p.2) (Ico 0 1 ×ˢ univ))
+-    (hFrr : ContinuousOn (fun p : ℝ × ℝ ↦ Frr p.1 p.2) (Ico 0 1 ×ˢ univ))
+-    (hFtt : ContinuousOn (fun p : ℝ × ℝ ↦ Ftt p.1 p.2) (Ico 0 1 ×ˢ univ))
+-    (hFd : ∀ r ∈ Ioo (0 : ℝ) 1, ∀ θ, HasDerivAt (fun r ↦ F r θ) (Fr r θ) r)
+-    (hFrd : ∀ r ∈ Ioo (0 : ℝ) 1, ∀ θ, HasDerivAt (fun r ↦ Fr r θ) (Frr r θ) r)
+-    (hFtd : ∀ r ∈ Ioo (0 : ℝ) 1, ∀ θ, HasDerivAt (Ft r) (Ftt r θ) θ)
+-    (hperiod : ∀ r ∈ Ioo (0 : ℝ) 1, Ft r (2 * π) = Ft r 0)
++    {w w' : ℝ → ℝ} (h : PolarSmooth F Fr Frr Ft Ftt)
+     (hw : ContinuousOn w (Ico 0 1))
+-    (hwd : ∀ r ∈ Ioo (0 : ℝ) 1, HasDerivAt w (w' r) r)
+-    (hwpos : ∀ r ∈ Ioo (0 : ℝ) 1, 0 < w r)
+-    (hineq : ∀ r ∈ Ioo (0 : ℝ) 1, ∀ θ,
++    (hwd : ∀ r ∈ Ioo01, HasDerivAt w (w' r) r)
++    (hwpos : ∀ r ∈ Ioo01, 0 < w r)
++    (hineq : ∀ r ∈ Ioo01, ∀ θ,
+       r * w r * Frr r θ + (w r + r * w' r) * Fr r θ + (w r / r) * Ftt r θ ≤ 0) :
+     AntitoneOn (angularMean F) (Ico 0 1) := by
+   apply antitoneOn_of_radial_flux (w := w)
+     (F := fun r ↦ r * w r * angularMean Fr r)
+     (F' := fun r ↦ (w r + r * w' r) * angularMean Fr r +
+       r * w r * angularMean Frr r)
+-    (continuousOn_angularMean hF) (fun r hr ↦ hasDerivAt_angularMean hr hF hFr hFd)
+-    hwpos ((continuousOn_id.mul hw).mul (continuousOn_angularMean hFr)) (by simp)
++    (continuousOn_angularMean h.cont) (fun r hr ↦ hasDerivAt_angularMean hr h.cont h.contR h.deriv)
++    hwpos ((continuousOn_id.mul hw).mul (continuousOn_angularMean h.contR)) (by simp)
+   · intro r hr
+     convert ((hasDerivAt_id r).mul (hwd r hr)).mul
+-      (hasDerivAt_angularMean hr hFr hFrr hFrd) using 1 <;>
++      (hasDerivAt_angularMean hr h.contR h.contRR h.derivR) using 1 <;>
+       simp only [one_mul, Pi.mul_def, id_eq]
+   · intro r hr
+-    have hr' : r ∈ Ico (0 : ℝ) 1 := ⟨hr.1.le, hr.2⟩
+-    have hir := intervalIntegrable_polar_slice hFr hr'
+-    have hirr := intervalIntegrable_polar_slice hFrr hr'
+-    have hitt := intervalIntegrable_polar_slice hFtt hr'
++    have hr' : r ∈ Ico01 := ⟨hr.1.le, hr.2⟩
++    have hir := intervalIntegrable_polar_slice h.contR hr'
++    have hirr := intervalIntegrable_polar_slice h.contRR hr'
++    have hitt := intervalIntegrable_polar_slice h.contTT hr'
+     have hz := integral_periodic_derivative_eq_zero two_pi_pos.le
+-      (fun θ _ ↦ hFtd r hr θ) hitt (hperiod r hr)
++      (fun θ _ ↦ h.derivTT r hr θ) hitt (h.periodT r hr)
+     have hn := integral_radial_term_nonpos (c := w r / r) two_pi_pos.le
+       ((hirr.const_mul (r * w r)).add (hir.const_mul (w r + r * w' r))) hitt hz
+       (fun θ _ ↦ hineq r hr θ)
+@@ -127,7 +144,7 @@ theorem angularMean_smoothCap_bounds {F : ℝ → ℝ → ℝ} {r ε c : ℝ}
+   dsimp only [Pi.add_def] at hupp
+   rw [intervalIntegral.integral_add (hmin.intervalIntegrable _ _) intervalIntegrable_const,
+     intervalIntegral.integral_const, sub_zero, smul_eq_mul] at hupp
+-  have hπ : 2 * π ≠ 0 := two_pi_pos.ne'
++  have hπ : τ ≠ 0 := two_pi_pos.ne'
+   dsimp only [angularMean]
+   constructor
+   · exact mul_le_mul_of_nonneg_left hlow (inv_nonneg.mpr two_pi_pos.le)
+@@ -136,7 +153,7 @@ theorem angularMean_smoothCap_bounds {F : ℝ → ℝ → ℝ} {r ε c : ℝ}
+     exact h
+ 
+ theorem antitoneOn_angularMean_min_of_smoothCap {F : ℝ → ℝ → ℝ} {c : ℝ}
+-    (hF : ∀ r ∈ Ico (0 : ℝ) 1, Continuous (F r))
++    (hF : ∀ r ∈ Ico01, Continuous (F r))
+     (hcap : ∀ ε, 0 < ε →
+       AntitoneOn (angularMean (fun r θ ↦ smoothCap ε c (F r θ))) (Ico 0 1)) :
+     AntitoneOn (angularMean (fun r θ ↦ min (F r θ) c)) (Ico 0 1) := by
+diff --git a/BergmanWeakType/Weighted/AnnulusMeasure.lean b/BergmanWeakType/Weighted/AnnulusMeasure.lean
+index 9eed0ff1f..dc28d71b9 100644
+--- a/BergmanWeakType/Weighted/AnnulusMeasure.lean
++++ b/BergmanWeakType/Weighted/AnnulusMeasure.lean
+@@ -18,46 +18,6 @@ open scoped ENNReal
+ 
+ namespace BergmanWeakType
+ 
+-theorem weightedArea_norm_gt {α r : ℝ} (hα : -1 < α) (hr : 0 ≤ r) (hr1 : r < 1) :
+-    weightedArea α {z : ℂ | r < ‖z‖} = ENNReal.ofReal ((1 - r ^ 2) ^ (α + 1)) := by
+-  have hr₂ : r ^ 2 < 1 := by nlinarith
+-  have hpre : {z : ℂ | r < ‖z‖} =
+-      (fun z : ℂ ↦ ‖z‖ ^ 2) ⁻¹' Set.Ioi (r ^ 2) := by
+-    ext z
+-    simp only [Set.mem_ofPred_eq, Set.mem_preimage, Set.mem_Ioi]
+-    exact (sq_lt_sq₀ hr (norm_nonneg z)).symm
+-  have hm : Measurable (fun u : ℝ ↦ ENNReal.ofReal ((α + 1) * (1 - u) ^ α)) := by
+-    fun_prop
+-  rw [hpre, weightedArea, withDensity_apply _ (measurableSet_Ioi.preimage (by fun_prop)),
+-    ← setLIntegral_map measurableSet_Ioi hm (by fun_prop : Measurable (fun z : ℂ ↦ ‖z‖ ^ 2)),
+-    map_norm_sq_diskArea, Measure.restrict_restrict measurableSet_Ioi]
+-  have hset : Set.Ioi (r ^ 2) ∩ Set.Icc (0 : ℝ) 1 = Set.Ioc (r ^ 2) 1 := by
+-    ext x
+-    simp only [Set.mem_inter_iff, Set.mem_Ioi, Set.mem_Icc, Set.mem_Ioc]
+-    constructor
+-    · rintro ⟨hx, _, hx1⟩
+-      exact ⟨hx, hx1⟩
+-    · rintro ⟨hx, hx1⟩
+-      exact ⟨hx, (sq_nonneg r).trans hx.le, hx1⟩
+-  rw [hset]
+-  have hf : IntervalIntegrable (fun u : ℝ ↦ (1 - u) ^ α) volume (r ^ 2) 1 := by
+-    convert! ((intervalIntegral.intervalIntegrable_rpow'
+-      (a := 0) (b := 1 - r ^ 2) hα).comp_sub_left 1).symm using 1 <;> ring
+-  have hfi : IntegrableOn (fun u : ℝ ↦ (α + 1) * (1 - u) ^ α) (Set.Ioc (r ^ 2) 1) :=
+-    (hf.const_mul (α + 1)).1
+-  have hnonneg : 0 ≤ᵐ[volume.restrict (Set.Ioc (r ^ 2) 1)]
+-      (fun u : ℝ ↦ (α + 1) * (1 - u) ^ α) := by
+-    filter_upwards [ae_restrict_mem measurableSet_Ioc] with u hu
+-    exact mul_nonneg (by linarith) (Real.rpow_nonneg (sub_nonneg.mpr hu.2) _)
+-  rw [← ofReal_integral_eq_lintegral_ofReal hfi hnonneg,
+-    ← intervalIntegral.integral_of_le hr₂.le, intervalIntegral.integral_const_mul,
+-    intervalIntegral.integral_comp_sub_left (fun x : ℝ ↦ x ^ α) 1]
+-  simp only [sub_self]
+-  rw [integral_rpow (Or.inl hα)]
+-  have hpos : 0 < α + 1 := by linarith
+-  simp only [Real.zero_rpow hpos.ne', sub_zero]
+-  rw [mul_div_cancel₀ _ hpos.ne']
+-
+ theorem weightedArea_outerAnnulus {α r : ℝ} (hα : -1 < α) (hr : 0 ≤ r) (hr1 : r < 1) :
+     weightedArea α {z : ℂ | r < ‖z‖ ∧ ‖z‖ < 1} =
+       ENNReal.ofReal ((1 - r ^ 2) ^ (α + 1)) := by
+diff --git a/BergmanWeakType/Weighted/DiskCap.lean b/BergmanWeakType/Weighted/DiskCap.lean
+index 5365b0f0f..750c194dd 100644
+--- a/BergmanWeakType/Weighted/DiskCap.lean
++++ b/BergmanWeakType/Weighted/DiskCap.lean
+@@ -5,12 +5,16 @@ Authors: Yongxi Lin
+ -/
+ module
+ 
+-public import BergmanWeakType.Weighted.DiskPotential
++public import BergmanWeakType.Notation
++
+ public import BergmanWeakType.Weighted.PoissonCap
+ public import BergmanWeakType.Weighted.MovingCap
+-public import Mathlib.Analysis.SpecialFunctions.Pow.Real
++public import Mathlib.MeasureTheory.Integral.IntervalIntegral.FundThmCalculus
++
++/-! # Distribution estimates from increasing truncations in a radial mass coordinate
+ 
+-/-! # Moving circular truncations of the normalized disk potential -/
++Combines the general cap/level-set machinery (for an arbitrary measurable potential and radial
++coordinate) with its specialization to the truncated Bergman potential on the unit disk. -/
+ 
+ @[expose] public section
+ 
+@@ -21,27 +25,6 @@ open scoped Topology ENNReal
+ 
+ namespace BergmanWeakType.Weighted
+ 
+-/-- A measurable extension by zero; all interior values are the actual normalized potential. -/
+-def diskPotential (f : ℂ → ℂ) : ℂ → ℝ := disk.indicator (normalizedPotential f)
+-
+-theorem diskPotential_eq {f : ℂ → ℂ} {z : ℂ} (hz : z ∈ disk) :
+-    diskPotential f z = normalizedPotential f z := Set.indicator_of_mem hz _
+-
+-theorem diskPotential_nonneg (f : ℂ → ℂ) (z : ℂ) : 0 ≤ diskPotential f z :=
+-  Set.indicator_nonneg (fun _ hz ↦ normalizedPotential_nonneg hz) z
+-
+-theorem measurable_diskPotential {f : ℂ → ℂ} (hf : Integrable f diskArea) :
+-    Measurable (diskPotential f) := by
+-  classical
+-  exact (continuousOn_normalizedPotential_disk hf).measurable_piecewise
+-    continuousOn_const measurableSet_disk
+-
+-def capMean (f : ℂ → ℂ) (y c : ℝ) : ℝ :=
+-  circleAverage (fun z ↦ min (diskPotential f z) c) 0 (sqrt (1 - y))
+-
+-def levelFraction (f : ℂ → ℂ) (t y : ℝ) : ℝ :=
+-  circleAverage (fun z ↦ if t * y < diskPotential f z then (1 : ℝ) else 0) 0 (sqrt (1 - y))
+-
+ theorem circleIntegrable_of_measurable_bounded {g : ℂ → ℝ} (hg : Measurable g)
+     {M : ℝ} (hbound : ∀ z, ‖g z‖ ≤ M) (r : ℝ) : CircleIntegrable g 0 r := by
+   rw [CircleIntegrable, intervalIntegrable_iff_integrableOn_Icc_of_le Real.two_pi_pos.le]
+@@ -49,182 +32,141 @@ theorem circleIntegrable_of_measurable_bounded {g : ℂ → ℝ} (hg : Measurabl
+     (hg.comp (continuous_circleMap 0 r).measurable).aestronglyMeasurable
+   exact Filter.Eventually.of_forall fun θ ↦ hbound _
+ 
+-theorem circleIntegrable_level {f : ℂ → ℂ} (hf : Integrable f diskArea) (t y r : ℝ) :
+-    CircleIntegrable (fun z ↦ if t * y < diskPotential f z then (1 : ℝ) else 0) 0 r := by
++def radialCapMean (U : ℂ → ℝ) (ρ : ℝ → ℝ) (y c : ℝ) : ℝ :=
++  circleAverage (fun z ↦ min (U z) c) 0 (ρ y)
++
++def radialLevelFraction (U : ℂ → ℝ) (ρ : ℝ → ℝ) (t y : ℝ) : ℝ :=
++  circleAverage (fun z ↦ if t * y < U z then (1 : ℝ) else 0) 0 (ρ y)
++
++theorem circleIntegrable_radialLevel {U : ℂ → ℝ} (hU : Measurable U) (t y r : ℝ) :
++    CircleIntegrable (fun z ↦ if t * y < U z then (1 : ℝ) else 0) 0 r := by
+   apply circleIntegrable_of_measurable_bounded
+-    (measurable_const.ite (measurableSet_lt measurable_const (measurable_diskPotential hf))
+-      measurable_const) (M := 1) _ r
++    (measurable_const.ite (measurableSet_lt measurable_const hU) measurable_const) (M := 1) _ r
+   intro z
+   split_ifs <;> norm_num
+ 
+-theorem levelFraction_nonneg (f : ℂ → ℂ) (t y : ℝ) : 0 ≤ levelFraction f t y := by
+-  apply circleAverage_nonneg_of_nonneg
+-  intro z _
+-  split_ifs <;> norm_num
+-
+-theorem levelFraction_le_one {f : ℂ → ℂ} (hf : Integrable f diskArea) (t y : ℝ) :
+-    levelFraction f t y ≤ 1 := by
+-  apply circleAverage_mono_on_of_le_circle (circleIntegrable_level hf t y _)
+-  intro z _
+-  split_ifs <;> norm_num
++theorem circleIntegrable_radialCap {U : ℂ → ℝ} (hU : Measurable U)
++    (hUpos : ∀ z, 0 ≤ U z) (c r : ℝ) :
++    CircleIntegrable (fun z ↦ min (U z) c) 0 r := by
++  apply circleIntegrable_of_measurable_bounded (hU.inf measurable_const) (M := |c|) _ r
++  intro z
++  rw [Real.norm_eq_abs, abs_le]
++  exact ⟨le_min ((neg_nonpos.mpr (abs_nonneg c)).trans (hUpos z)) (neg_abs_le c),
++    (min_le_right _ _).trans (le_abs_self c)⟩
+ 
+-theorem measurable_levelFraction {f : ℂ → ℂ} (hf : Integrable f diskArea) (t : ℝ) :
+-    Measurable (levelFraction f t) := by
+-  have hpoint : Continuous (fun p : ℝ × ℝ ↦ circleMap 0 (sqrt (1 - p.1)) p.2) :=
+-    circleMap.continuous.comp ((Real.continuous_sqrt.comp
+-      (continuous_const.sub continuous_fst)).prodMk continuous_snd)
+-  have hpred : MeasurableSet {p : ℝ × ℝ | t * p.1 <
+-      diskPotential f (circleMap 0 (sqrt (1 - p.1)) p.2)} :=
+-    measurableSet_lt (measurable_const.mul measurable_fst)
+-      ((measurable_diskPotential hf).comp hpoint.measurable)
+-  have hm : Measurable (fun p : ℝ × ℝ ↦ if t * p.1 <
+-      diskPotential f (circleMap 0 (sqrt (1 - p.1)) p.2) then (1 : ℝ) else 0) :=
+-    measurable_const.ite hpred measurable_const
+-  have hi : StronglyMeasurable (fun y ↦ ∫ θ in Set.Ioc (0 : ℝ) (2 * Real.pi),
+-      if t * y < diskPotential f (circleMap 0 (sqrt (1 - y)) θ) then (1 : ℝ) else 0) :=
+-    hm.stronglyMeasurable.integral_prod_right'
+-  change Measurable (fun y ↦ levelFraction f t y)
+-  simp only [levelFraction, circleAverage_def, smul_eq_mul,
+-    intervalIntegral.integral_of_le Real.two_pi_pos.le]
++theorem radialLevelFraction_mem_Icc {U : ℂ → ℝ} (hU : Measurable U)
++    (ρ : ℝ → ℝ) (t y : ℝ) : radialLevelFraction U ρ t y ∈ Icc01 := by
++  constructor
++  · apply circleAverage_nonneg_of_nonneg
++    intro z _
++    split_ifs <;> norm_num
++  · apply circleAverage_mono_on_of_le_circle (circleIntegrable_radialLevel hU t y _)
++    intro z _
++    split_ifs <;> norm_num
++
++theorem measurable_radialLevelFraction {U : ℂ → ℝ} (hU : Measurable U)
++    {ρ : ℝ → ℝ} (hρ : Measurable ρ) (t : ℝ) :
++    Measurable (radialLevelFraction U ρ t) := by
++  have hpoint : Measurable (fun p : ℝ × ℝ ↦ circleMap 0 (ρ p.1) p.2) :=
++    circleMap.continuous.measurable.comp ((hρ.comp measurable_fst).prodMk measurable_snd)
++  have hm : Measurable (fun p : ℝ × ℝ ↦ if t * p.1 < U (circleMap 0 (ρ p.1) p.2)
++      then (1 : ℝ) else 0) := measurable_const.ite
++    (measurableSet_lt (measurable_const.mul measurable_fst) (hU.comp hpoint)) measurable_const
++  have hi := hm.stronglyMeasurable.integral_prod_right'
++    (ν := volume.restrict (Ioc (0 : ℝ) (τ)))
++  change Measurable (fun y ↦ radialLevelFraction U ρ t y)
++  simp only [radialLevelFraction, circleAverage_def, smul_eq_mul,
++    intervalIntegral.integral_of_le two_pi_pos.le]
+   exact measurable_const.mul hi.measurable
+ 
+-theorem integrableOn_levelFraction {f : ℂ → ℂ} (hf : Integrable f diskArea) (t : ℝ) :
+-    IntegrableOn (levelFraction f t) (Icc (0 : ℝ) 1) := by
++theorem integrableOn_radialLevelFraction {U : ℂ → ℝ} (hU : Measurable U)
++    {ρ : ℝ → ℝ} (hρ : Measurable ρ) (t : ℝ) :
++    IntegrableOn (radialLevelFraction U ρ t) (Icc01) := by
+   apply Measure.integrableOn_of_bounded measure_Icc_lt_top.ne
+-    (measurable_levelFraction hf t).aestronglyMeasurable (M := 1)
++    (measurable_radialLevelFraction hU hρ t).aestronglyMeasurable (M := 1)
+   exact Filter.Eventually.of_forall fun y ↦ by
+-    rw [Real.norm_of_nonneg (levelFraction_nonneg f t y)]
+-    exact levelFraction_le_one hf t y
+-
+-theorem circleIntegrable_cap {f : ℂ → ℂ} (hf : Integrable f diskArea) (c r : ℝ) :
+-    CircleIntegrable (fun z ↦ min (diskPotential f z) c) 0 r := by
+-  apply circleIntegrable_of_measurable_bounded
+-    ((measurable_diskPotential hf).inf measurable_const) (M := |c|) _ r
+-  intro z
+-  rw [Real.norm_eq_abs, abs_le]
+-  constructor
+-  · exact le_min ((neg_nonpos.mpr (abs_nonneg c)).trans (diskPotential_nonneg f z)) (neg_abs_le c)
+-  · exact (min_le_right _ _).trans (le_abs_self c)
++    rw [Real.norm_of_nonneg (radialLevelFraction_mem_Icc hU ρ t y).1]
++    exact (radialLevelFraction_mem_Icc hU ρ t y).2
+ 
+-theorem capMean_nonneg (f : ℂ → ℂ) (y : ℝ) {c : ℝ} (hc : 0 ≤ c) :
+-    0 ≤ capMean f y c := by
++theorem radialCapMean_nonneg {U : ℂ → ℝ} (hUpos : ∀ z, 0 ≤ U z)
++    (ρ : ℝ → ℝ) (y : ℝ) {c : ℝ} (hc : 0 ≤ c) : 0 ≤ radialCapMean U ρ y c := by
+   apply circleAverage_nonneg_of_nonneg
+-  intro z _
+-  exact le_min (diskPotential_nonneg f z) hc
++  exact fun z _ ↦ le_min (hUpos z) hc
+ 
+-theorem capMean_le_level {f : ℂ → ℂ} (hf : Integrable f diskArea) (y c : ℝ) :
+-    capMean f y c ≤ c := by
+-  apply circleAverage_mono_on_of_le_circle (circleIntegrable_cap hf c _)
++theorem radialCapMean_le_level {U : ℂ → ℝ} (hU : Measurable U)
++    (hUpos : ∀ z, 0 ≤ U z) (ρ : ℝ → ℝ) (y c : ℝ) : radialCapMean U ρ y c ≤ c := by
++  apply circleAverage_mono_on_of_le_circle (circleIntegrable_radialCap hU hUpos c _)
+   exact fun _ _ ↦ min_le_right _ _
+ 
+-theorem measurable_capMean_diagonal {f : ℂ → ℂ} (hf : Integrable f diskArea) (t : ℝ) :
+-    Measurable (fun y ↦ capMean f y (t * y)) := by
+-  have hpoint : Continuous (fun p : ℝ × ℝ ↦ circleMap 0 (sqrt (1 - p.1)) p.2) :=
+-    circleMap.continuous.comp ((Real.continuous_sqrt.comp
+-      (continuous_const.sub continuous_fst)).prodMk continuous_snd)
+-  have hm : Measurable (fun p : ℝ × ℝ ↦
+-      min (diskPotential f (circleMap 0 (sqrt (1 - p.1)) p.2)) (t * p.1)) :=
+-    ((measurable_diskPotential hf).comp hpoint.measurable).inf
+-      (measurable_const.mul measurable_fst)
++theorem measurable_radialCapMean_diagonal {U : ℂ → ℝ} (hU : Measurable U)
++    {ρ : ℝ → ℝ} (hρ : Measurable ρ) (t : ℝ) :
++    Measurable (fun y ↦ radialCapMean U ρ y (t * y)) := by
++  have hpoint : Measurable (fun p : ℝ × ℝ ↦ circleMap 0 (ρ p.1) p.2) :=
++    circleMap.continuous.measurable.comp ((hρ.comp measurable_fst).prodMk measurable_snd)
++  have hm : Measurable (fun p : ℝ × ℝ ↦ min (U (circleMap 0 (ρ p.1) p.2)) (t * p.1)) :=
++    (hU.comp hpoint).inf (measurable_const.mul measurable_fst)
+   have hi := hm.stronglyMeasurable.integral_prod_right'
+-    (ν := volume.restrict (Ioc (0 : ℝ) (2 * Real.pi)))
+-  simp only [capMean, circleAverage_def, smul_eq_mul,
+-    intervalIntegral.integral_of_le Real.two_pi_pos.le]
++    (ν := volume.restrict (Ioc (0 : ℝ) (τ)))
++  simp only [radialCapMean, circleAverage_def, smul_eq_mul,
++    intervalIntegral.integral_of_le two_pi_pos.le]
+   exact measurable_const.mul hi.measurable
+ 
+-theorem integrableOn_capMean_diagonal {f : ℂ → ℂ} (hf : Integrable f diskArea)
+-    {t : ℝ} (ht : 0 ≤ t) : IntegrableOn (fun y ↦ capMean f y (t * y)) (Icc (0 : ℝ) 1) := by
++theorem integrableOn_radialCapMean_diagonal {U : ℂ → ℝ} (hU : Measurable U)
++    (hUpos : ∀ z, 0 ≤ U z) {ρ : ℝ → ℝ} (hρ : Measurable ρ)
++    {t : ℝ} (ht : 0 ≤ t) :
++    IntegrableOn (fun y ↦ radialCapMean U ρ y (t * y)) (Icc01) := by
+   apply Measure.integrableOn_of_bounded measure_Icc_lt_top.ne
+-    (measurable_capMean_diagonal hf t).aestronglyMeasurable (M := t)
++    (measurable_radialCapMean_diagonal hU hρ t).aestronglyMeasurable (M := t)
+   filter_upwards [ae_restrict_mem measurableSet_Icc] with y hy
+-  rw [Real.norm_of_nonneg (capMean_nonneg f y (mul_nonneg ht hy.1))]
+-  exact (capMean_le_level hf y _).trans (mul_le_of_le_one_right ht hy.2)
++  rw [Real.norm_of_nonneg (radialCapMean_nonneg hUpos ρ y (mul_nonneg ht hy.1))]
++  exact (radialCapMean_le_level hU hUpos ρ y _).trans (mul_le_of_le_one_right ht hy.2)
+ 
+-theorem radius_mem_unit {y : ℝ} (hy : y ∈ Ioo (0 : ℝ) 1) :
+-    sqrt (1 - y) ∈ Ioo (0 : ℝ) 1 := by
+-  constructor
+-  · exact sqrt_pos.mpr (sub_pos.mpr hy.2)
+-  · have h := sqrt_lt_sqrt (sub_nonneg.mpr hy.2.le) (show 1 - y < 1 by linarith [hy.1])
+-    simpa only [sqrt_one] using h
+-
+-theorem capMean_eq_normalized {f : ℂ → ℂ} {y : ℝ} (hy : y ∈ Ioo (0 : ℝ) 1) (c : ℝ) :
+-    capMean f y c = circleAverage (fun z ↦ min (normalizedPotential f z) c) 0 (sqrt (1 - y)) := by
+-  apply circleAverage_congr_sphere
+-  intro z hz
+-  have hz' : ‖z‖ = sqrt (1 - y) := by
+-    simpa only [Metric.mem_sphere, dist_zero_right, abs_of_nonneg (sqrt_nonneg _)] using hz
+-  dsimp only
+-  rw [diskPotential_eq (f := f) ((mem_disk_iff z).mpr (hz'.trans_lt (radius_mem_unit hy).2))]
+-
+-theorem capMean_monotone_mass {f : ℂ → ℂ} (hf : Integrable f diskArea)
+-    {y u : ℝ} (hy : y ∈ Ioo (0 : ℝ) 1) (hu : u ∈ Ioo (0 : ℝ) 1) (hyu : y ≤ u) (c : ℝ) :
+-    capMean f y c ≤ capMean f u c := by
+-  rcases hyu.eq_or_lt with rfl | hyu
+-  · exact le_rfl
+-  rw [capMean_eq_normalized hy, capMean_eq_normalized hu]
+-  apply circleAverage_min_antitone_of_poisson_supermean (sqrt_nonneg _)
+-    (sqrt_lt_sqrt (sub_nonneg.mpr hu.2.le) (by linarith))
+-    (continuousOn_normalizedPotential hf (radius_mem_unit hy).2)
+-  intro z hz
+-  exact normalizedPotential_poisson_supermean hf (radius_mem_unit hy).2 hz
+-
+-theorem capMean_le_mass {f : ℂ → ℂ} (hf : Integrable f diskArea)
+-    {y : ℝ} (hy : y ∈ Ioo (0 : ℝ) 1) (c : ℝ) :
+-    capMean f y c ≤ ∫ w, ‖f w‖ ∂diskArea := by
+-  rw [capMean_eq_normalized hy]
+-  have h := circleAverage_min_antitone_of_poisson_supermean (c := c) (le_refl 0)
+-    (radius_mem_unit hy).1 (continuousOn_normalizedPotential hf (radius_mem_unit hy).2)
+-    (fun z hz ↦ normalizedPotential_poisson_supermean hf (radius_mem_unit hy).2 hz)
+-  simp only [circleAverage_zero, normalizedPotential_zero] at h
+-  exact h.trans (min_le_left _ _)
+-
+-theorem capMean_increment {f : ℂ → ℂ} (hf : Integrable f diskArea)
+-    (t y : ℝ) {c : ℝ} (hc : c ≤ t * y) :
+-    (t * y - c) * levelFraction f t y ≤ capMean f y (t * y) - capMean f y c := by
++theorem radialCapMean_increment {U : ℂ → ℝ} (hU : Measurable U)
++    (hUpos : ∀ z, 0 ≤ U z) (ρ : ℝ → ℝ) (t y : ℝ) {c : ℝ} (hc : c ≤ t * y) :
++    (t * y - c) * radialLevelFraction U ρ t y ≤
++      radialCapMean U ρ y (t * y) - radialCapMean U ρ y c := by
+   have hiL : CircleIntegrable
+-      (fun z ↦ (t * y - c) • (if t * y < diskPotential f z then (1 : ℝ) else 0))
+-      0 (sqrt (1 - y)) := (circleIntegrable_level hf t y _).const_smul
+-  have hiR := (circleIntegrable_cap hf (t * y) (sqrt (1 - y))).sub
+-    (circleIntegrable_cap hf c (sqrt (1 - y)))
+-  have hpoint (z : ℂ) : (t * y - c) • (if t * y < diskPotential f z then (1 : ℝ) else 0) ≤
+-      min (diskPotential f z) (t * y) - min (diskPotential f z) c := by
+-    by_cases hz : t * y < diskPotential f z
++      (fun z ↦ (t * y - c) • (if t * y < U z then (1 : ℝ) else 0)) 0 (ρ y) :=
++    (circleIntegrable_radialLevel hU t y _).const_smul
++  have hiR := (circleIntegrable_radialCap hU hUpos (t * y) (ρ y)).sub
++    (circleIntegrable_radialCap hU hUpos c (ρ y))
++  have hpoint (z : ℂ) : (t * y - c) • (if t * y < U z then (1 : ℝ) else 0) ≤
++      min (U z) (t * y) - min (U z) c := by
++    by_cases hz : t * y < U z
+     · rw [ite_eq_left hz, smul_eq_mul, mul_one, min_eq_right hz.le,
+         min_eq_right (hc.trans hz.le)]
+     · rw [ite_eq_right hz, smul_eq_mul, mul_zero]
+       exact sub_nonneg.mpr (min_le_min_left _ hc)
+   have havg := circleAverage_mono hiL hiR (fun z _ ↦ hpoint z)
+   rw [circleAverage_fun_smul, circleAverage_sub
+-    (circleIntegrable_cap hf (t * y) _) (circleIntegrable_cap hf c _)] at havg
++    (circleIntegrable_radialCap hU hUpos (t * y) _) (circleIntegrable_radialCap hU hUpos c _)] at havg
+   exact havg
+ 
+-theorem capMean_finite_difference {f : ℂ → ℂ} (hf : Integrable f diskArea)
+-    {t : ℝ} (ht : 0 ≤ t) {y h : ℝ} (hy : 0 < y) (hh : 0 < h) (hyh : y + h < 1) :
+-    h * (t * levelFraction f t (y + h)) ≤
+-      capMean f (y + h) (t * (y + h)) - capMean f y (t * y) := by
+-  have hy' : y ∈ Ioo (0 : ℝ) 1 := ⟨hy, by linarith⟩
+-  have hyh' : y + h ∈ Ioo (0 : ℝ) 1 := ⟨by linarith, hyh⟩
+-  have hinc := capMean_increment hf t (y + h)
+-    (mul_le_mul_of_nonneg_left (by linarith : y ≤ y + h) ht)
+-  have hmono := capMean_monotone_mass hf hy' hyh' (by linarith) (t * y)
+-  have heq : t * (y + h) - t * y = h * t := by ring
+-  rw [heq] at hinc
+-  calc
+-    _ = (h * t) * levelFraction f t (y + h) := by ring
+-    _ ≤ _ := hinc
+-    _ ≤ _ := sub_le_sub_left hmono _
+-
+-/-- The moving-cap argument gives the sharp integrated distribution estimate. -/
+-theorem integral_mul_levelFraction_le {f : ℂ → ℂ} (hf : Integrable f diskArea)
++/-- Increasing cap means in the mass coordinate give the integrated level-set estimate. -/
++theorem integral_mul_radialLevelFraction_le {U : ℂ → ℝ} (hU : Measurable U)
++    (hUpos : ∀ z, 0 ≤ U z) {ρ : ℝ → ℝ} (hρ : Measurable ρ) {M : ℝ}
++    (hmono : ∀ c, MonotoneOn (fun y ↦ radialCapMean U ρ y c) (Ioo 0 1))
++    (hbound : ∀ y ∈ Ioo01, ∀ c, radialCapMean U ρ y c ≤ M)
+     {t : ℝ} (ht : 0 ≤ t) :
+-    (∫ y in (0 : ℝ)..1, t * levelFraction f t y) ≤ ∫ w, ‖f w‖ ∂diskArea := by
++    (∫ y in (0 : ℝ)..1, t * radialLevelFraction U ρ t y) ≤ M := by
+   apply integral_le_of_finite_difference_domination
+-    ((integrableOn_levelFraction hf t).const_mul t) (integrableOn_capMean_diagonal hf ht)
++    ((integrableOn_radialLevelFraction hU hρ t).const_mul t)
++    (integrableOn_radialCapMean_diagonal hU hUpos hρ ht)
+   · intro y hy
+-    exact capMean_nonneg f y (mul_nonneg ht hy.1.le)
++    exact radialCapMean_nonneg hUpos ρ y (mul_nonneg ht hy.1.le)
+   · intro y hy
+-    exact capMean_le_mass hf hy _
++    exact hbound y hy _
+   · intro y h hy hh hyh
+-    exact capMean_finite_difference hf ht hy hh hyh
++    have hy' : y ∈ Ioo01 := ⟨hy, by linarith⟩
++    have hyh' : y + h ∈ Ioo01 := ⟨by linarith, hyh⟩
++    have hinc := radialCapMean_increment hU hUpos ρ t (y + h)
++      (mul_le_mul_of_nonneg_left (by linarith : y ≤ y + h) ht)
++    have hm := hmono (t * y) hy' hyh' (by linarith)
++    have heq : t * (y + h) - t * y = h * t := by ring
++    rw [heq] at hinc
++    calc
++      _ = (h * t) * radialLevelFraction U ρ t (y + h) := by ring
++      _ ≤ _ := hinc
++      _ ≤ _ := sub_le_sub_left hm _
+ 
+ end BergmanWeakType.Weighted
+diff --git a/BergmanWeakType/Weighted/DiskPotential.lean b/BergmanWeakType/Weighted/DiskPotential.lean
+deleted file mode 100644
+index dbb2a660f..000000000
+--- a/BergmanWeakType/Weighted/DiskPotential.lean
++++ /dev/null
+@@ -1,174 +0,0 @@
+-/-
+-Copyright (c) 2026 Yongxi Lin. All rights reserved.
+-Released under Apache 2.0 license as described in the file LICENSE.
+-Authors: Yongxi Lin
+--/
+-module
+-
+-public import BergmanWeakType.Weighted.DiskSupermean
+-public import BergmanWeakType.Weighted.CompactIntegral
+-
+-/-! # The normalized positive Bergman potential -/
+-
+-@[expose] public section
+-
+-noncomputable section
+-
+-open MeasureTheory Complex
+-open scoped Topology ENNReal
+-
+-namespace BergmanWeakType.Weighted
+-
+-/-- Normalizing the positive Bergman potential by the radial mass. -/
+-def normalizedPotential (f : ℂ → ℂ) (z : ℂ) : ℝ :=
+-  ∫ w, normalizedKernel z w * ‖f w‖ ∂diskArea
+-
+-theorem ae_mem_closedDisk : ∀ᵐ w ∂diskArea, w ∈ Metric.closedBall 0 1 :=
+-  ae_mem_disk.mono fun _ hw ↦ Metric.ball_subset_closedBall hw
+-
+-theorem kernel_denominator_ne_zero_closed_input {R : ℝ} (hR : R < 1) {z w : ℂ}
+-    (hz : z ∈ Metric.closedBall 0 R) (hw : w ∈ Metric.closedBall 0 1) :
+-    1 - z * star w ≠ 0 := by
+-  have hz' : ‖z‖ < 1 := (by simpa using hz : ‖z‖ ≤ R).trans_lt hR
+-  have hw' : ‖w‖ ≤ 1 := by simpa using hw
+-  have hm : ‖z * star w‖ < 1 := by
+-    rw [norm_mul, norm_star]
+-    exact (mul_le_of_le_one_right (norm_nonneg _) hw').trans_lt hz'
+-  intro heq
+-  have : z * star w = 1 := (sub_eq_zero.mp heq).symm
+-  rw [this, norm_one] at hm
+-  exact (lt_irrefl _ hm)
+-
+-theorem continuousOn_normalizedKernel_cylinder {R : ℝ} (hR : R < 1) :
+-    ContinuousOn (fun p : ℂ × ℂ ↦ normalizedKernel p.1 p.2)
+-      (Metric.closedBall 0 R ×ˢ Metric.closedBall 0 1) := by
+-  have hden : ContinuousOn (fun p : ℂ × ℂ ↦ 1 - p.1 * star p.2)
+-      (Metric.closedBall 0 R ×ˢ Metric.closedBall 0 1) :=
+-    (continuous_const.sub (continuous_fst.mul (continuous_star.comp continuous_snd))).continuousOn
+-  have hinv := hden.inv₀ (fun p hp ↦ kernel_denominator_ne_zero_closed_input hR hp.1 hp.2)
+-  exact (continuous_const.sub (continuous_fst.norm.pow 2)).continuousOn.mul (hinv.pow 2).norm
+-
+-theorem integrable_normalizedKernel_mul {f : ℂ → ℂ} (hf : Integrable f diskArea)
+-    {z : ℂ} (hz : z ∈ disk) :
+-    Integrable (fun w ↦ normalizedKernel z w * ‖f w‖) diskArea := by
+-  have hi := ((integrable_kernel_mul hf hz).norm).const_mul (1 - ‖z‖ ^ 2)
+-  simpa only [normalizedKernel, norm_mul, mul_assoc] using hi
+-
+-theorem continuousOn_normalizedPotential {f : ℂ → ℂ} (hf : Integrable f diskArea)
+-    {R : ℝ} (hR : R < 1) :
+-    ContinuousOn (normalizedPotential f) (Metric.closedBall 0 R) :=
+-  continuousOn_integral_mul_of_compact (isCompact_closedBall 0 1) ae_mem_closedDisk
+-    (isCompact_closedBall 0 R) hf.norm (continuousOn_normalizedKernel_cylinder hR)
+-
+-theorem continuousOn_normalizedPotential_disk {f : ℂ → ℂ} (hf : Integrable f diskArea) :
+-    ContinuousOn (normalizedPotential f) disk := by
+-  intro z hz
+-  have hz' := (mem_disk_iff z).mp hz
+-  have hR : (‖z‖ + 1) / 2 < 1 := by linarith
+-  have hzR : z ∈ Metric.ball 0 ((‖z‖ + 1) / 2) := by
+-    simp only [Metric.mem_ball, dist_zero_right]
+-    linarith
+-  exact ((continuousOn_normalizedPotential hf hR).continuousAt
+-    (Metric.closedBall_mem_nhds_of_mem hzR)).continuousWithinAt
+-
+-theorem normalizedPotential_nonneg {f : ℂ → ℂ} {z : ℂ} (hz : z ∈ disk) :
+-    0 ≤ normalizedPotential f z := by
+-  apply integral_nonneg
+-  intro w
+-  apply mul_nonneg _ (norm_nonneg _)
+-  apply mul_nonneg _ (norm_nonneg _)
+-  have hz' := (mem_disk_iff z).mp hz
+-  nlinarith [norm_nonneg z]
+-
+-@[simp] theorem normalizedPotential_zero (f : ℂ → ℂ) :
+-    normalizedPotential f 0 = ∫ w, ‖f w‖ ∂diskArea := by
+-  simp [normalizedPotential, normalizedKernel, kernel_zero_left]
+-
+-theorem normalizedPotential_eq_mul_positiveProjection_toReal {f : ℂ → ℂ}
+-    (hf : Integrable f diskArea) {z : ℂ} (hz : z ∈ disk) :
+-    normalizedPotential f z = (1 - ‖z‖ ^ 2) * (positiveProjection f z).toReal := by
+-  have hi := (integrable_kernel_mul hf hz).norm
+-  rw [normalizedPotential]
+-  simp only [normalizedKernel, mul_assoc, integral_const_mul]
+-  congr 1
+-  rw [positiveProjection]
+-  simp only [← ofReal_norm, ← ENNReal.ofReal_mul (norm_nonneg _)]
+-  rw [integral_eq_lintegral_of_nonneg_ae
+-    (Filter.Eventually.of_forall fun w ↦ mul_nonneg (norm_nonneg _) (norm_nonneg _))]
+-  simpa only [norm_mul] using hi.aestronglyMeasurable
+-
+-set_option maxHeartbeats 2000000 in
+-theorem integrable_poisson_normalizedKernel_product {f : ℂ → ℂ}
+-    (hf : Integrable f diskArea) {R : ℝ} (hR : R < 1) {z : ℂ}
+-    (hz : z ∈ Metric.ball 0 R) :
+-    Integrable (fun p : ℝ × ℂ ↦
+-      (poissonKernel 0 z (circleMap 0 R p.1) * normalizedKernel (circleMap 0 R p.1) p.2) *
+-        ‖f p.2‖) ((volume.restrict (Set.uIoc 0 (2 * Real.pi))).prod diskArea) := by
+-  have hR0 : 0 < R := Metric.pos_of_mem_ball hz
+-  let : IsFiniteMeasure (volume.restrict (Set.uIoc (0 : ℝ) (2 * Real.pi))) :=
+-    ⟨by simp [Set.uIoc_of_le Real.two_pi_pos.le, ENNReal.mul_lt_top]⟩
+-  have hs : ∀ θ, circleMap 0 R θ ∈ Metric.closedBall (0 : ℂ) R := by
+-    intro θ
+-    exact Metric.sphere_subset_closedBall (by
+-      simpa only [abs_of_pos hR0] using circleMap_mem_sphere' 0 R θ)
+-  have hK : IsCompact (Set.Icc (0 : ℝ) (2 * Real.pi) ×ˢ Metric.closedBall (0 : ℂ) 1) :=
+-    isCompact_Icc.prod (isCompact_closedBall _ _)
+-  have hμ : ∀ᵐ p ∂(volume.restrict (Set.uIoc 0 (2 * Real.pi))).prod diskArea,
+-      p ∈ Set.Icc (0 : ℝ) (2 * Real.pi) ×ˢ Metric.closedBall (0 : ℂ) 1 := by
+-    apply (Measure.ae_prod_mem_iff_ae_ae_mem
+-      (measurableSet_Icc.prod Metric.isClosed_closedBall.measurableSet)).mpr
+-    filter_upwards [ae_restrict_mem measurableSet_uIoc] with θ hθ
+-    rw [Set.uIoc_of_le Real.two_pi_pos.le] at hθ
+-    exact ae_mem_closedDisk.mono fun w hw ↦ ⟨Set.Ioc_subset_Icc_self hθ, hw⟩
+-  apply integrable_mul_of_continuousOn_compact hK hμ
+-    (hf.norm.comp_snd (volume.restrict (Set.uIoc 0 (2 * Real.pi))))
+-  have hp : ContinuousOn (fun p : ℝ × ℂ ↦ poissonKernel 0 z (circleMap 0 R p.1))
+-      (Set.Icc 0 (2 * Real.pi) ×ˢ Metric.closedBall 0 1) :=
+-    (continuousOn_poisson_circle hz).comp
+-      ((continuous_circleMap 0 R).comp continuous_fst).continuousOn
+-      (fun p _ ↦ circleMap_mem_sphere' 0 R p.1)
+-  have hn : ContinuousOn (fun p : ℝ × ℂ ↦ normalizedKernel (circleMap 0 R p.1) p.2)
+-      (Set.Icc 0 (2 * Real.pi) ×ˢ Metric.closedBall 0 1) :=
+-    (continuousOn_normalizedKernel_cylinder hR).comp
+-      (((continuous_circleMap 0 R).comp continuous_fst).prodMk continuous_snd).continuousOn
+-      (fun p hp ↦ ⟨hs p.1, hp.2⟩)
+-  exact hp.mul hn
+-
+-theorem circleAverage_poisson_normalizedPotential {f : ℂ → ℂ}
+-    (hf : Integrable f diskArea) {R : ℝ} (hR : R < 1) {z : ℂ}
+-    (hz : z ∈ Metric.ball 0 R) :
+-    Real.circleAverage (fun ζ ↦ poissonKernel 0 z ζ * normalizedPotential f ζ) 0 R =
+-      ∫ w, Real.circleAverage (fun ζ ↦ poissonKernel 0 z ζ * normalizedKernel ζ w) 0 R *
+-        ‖f w‖ ∂diskArea := by
+-  have hi := integrable_poisson_normalizedKernel_product hf hR hz
+-  simp only [Real.circleAverage_def, normalizedPotential, smul_eq_mul]
+-  simp_rw [← integral_const_mul, ← mul_assoc]
+-  rw [intervalIntegral_integral_swap hi]
+-  simp_rw [intervalIntegral.integral_mul_const]
+-  simp only [mul_assoc]
+-  rw [integral_const_mul]
+-
+-/-- The actual normalized potential, for every admissible input, satisfies the Poisson
+-supermean inequality. -/
+-theorem normalizedPotential_poisson_supermean {f : ℂ → ℂ}
+-    (hf : Integrable f diskArea) {R : ℝ} (hR : R < 1) {z : ℂ}
+-    (hz : z ∈ Metric.ball 0 R) :
+-    Real.circleAverage (fun ζ ↦ poissonKernel 0 z ζ * normalizedPotential f ζ) 0 R ≤
+-      normalizedPotential f z := by
+-  rw [circleAverage_poisson_normalizedPotential hf hR hz, normalizedPotential]
+-  have hiprod := integrable_poisson_normalizedKernel_product hf hR hz
+-  have hiavg : Integrable (fun w ↦
+-      Real.circleAverage (fun ζ ↦ poissonKernel 0 z ζ * normalizedKernel ζ w) 0 R * ‖f w‖)
+-      diskArea := by
+-    convert hiprod.integral_prod_right.const_mul ((2 * Real.pi)⁻¹) using 1
+-    funext w
+-    simp only [Real.circleAverage_def, smul_eq_mul, integral_mul_const,
+-      intervalIntegral.integral_of_le Real.two_pi_pos.le, Set.uIoc_of_le Real.two_pi_pos.le]
+-    ring
+-  apply integral_mono_ae hiavg
+-    (integrable_normalizedKernel_mul hf ((mem_disk_iff z).mpr
+-      ((by simpa using hz : ‖z‖ < R).trans hR)))
+-  exact ae_mem_disk.mono fun w hw ↦
+-    mul_le_mul_of_nonneg_right (normalizedKernel_poisson_supermean hR hz hw) (norm_nonneg _)
+-
+-end BergmanWeakType.Weighted
+diff --git a/BergmanWeakType/Weighted/DiskSupermean.lean b/BergmanWeakType/Weighted/DiskSupermean.lean
+index 4a1a0d50b..b9f24a470 100644
+--- a/BergmanWeakType/Weighted/DiskSupermean.lean
++++ b/BergmanWeakType/Weighted/DiskSupermean.lean
+@@ -22,48 +22,6 @@ open scoped Topology
+ 
+ namespace BergmanWeakType.Weighted
+ 
+-def normalizedKernel (z w : ℂ) : ℝ := (1 - ‖z‖ ^ 2) * ‖kernel z w‖
+-
+-def kernelResolvent (w z : ℂ) : ℂ := z / (1 - z * star w)
+-
+-def kernelHerglotz (w z : ℂ) : ℂ := (1 + z * star w) / (1 - z * star w)
+-
+-theorem re_cayley (u : ℂ) :
+-    ((1 + u) / (1 - u)).re = (1 - ‖u‖ ^ 2) / ‖1 - u‖ ^ 2 := by
+-  simp only [Complex.div_re, Complex.sq_norm,
+-    Complex.add_re, Complex.one_re, Complex.sub_re, Complex.add_im,
+-    Complex.one_im, Complex.sub_im, Complex.normSq_apply]
+-  ring
+-
+-/-- A harmonic part minus a nonnegative multiple of a holomorphic square. -/
+-theorem normalizedKernel_decomposition (z w : ℂ) :
+-    normalizedKernel z w = (kernelHerglotz w z).re -
+-      (1 - ‖w‖ ^ 2) * ‖kernelResolvent w z‖ ^ 2 := by
+-  rw [normalizedKernel, kernelHerglotz, re_cayley, kernelResolvent, norm_kernel]
+-  simp only [norm_mul, norm_star, norm_div, div_pow, mul_pow, inv_pow]
+-  ring
+-
+-theorem kernel_denominator_ne_zero_closed {R : ℝ} (hR : R < 1) {z w : ℂ}
+-    (hz : z ∈ Metric.closedBall 0 R) (hw : w ∈ disk) : 1 - z * star w ≠ 0 := by
+-  apply kernel_denominator_ne_zero _ hw
+-  exact (mem_disk_iff z).mpr ((by simpa using hz : ‖z‖ ≤ R).trans_lt hR)
+-
+-theorem differentiableOn_kernelResolvent {R : ℝ} (hR : R < 1) {w : ℂ} (hw : w ∈ disk) :
+-    DifferentiableOn ℂ (kernelResolvent w) (Metric.closedBall 0 R) := by
+-  intro z hz
+-  apply DifferentiableAt.differentiableWithinAt
+-  exact differentiableAt_id.div
+-    (differentiableAt_const 1 |>.sub (differentiableAt_id.mul_const (star w)))
+-    (kernel_denominator_ne_zero_closed hR hz hw)
+-
+-theorem differentiableOn_kernelHerglotz {R : ℝ} (hR : R < 1) {w : ℂ} (hw : w ∈ disk) :
+-    DifferentiableOn ℂ (kernelHerglotz w) (Metric.closedBall 0 R) := by
+-  intro z hz
+-  apply DifferentiableAt.differentiableWithinAt
+-  exact ((differentiableAt_id.mul_const (star w)).const_add 1).div
+-    (differentiableAt_const 1 |>.sub (differentiableAt_id.mul_const (star w)))
+-    (kernel_denominator_ne_zero_closed hR hz hw)
+-
+ theorem continuousOn_poisson_circle {R : ℝ} {z : ℂ} (hz : z ∈ Metric.ball 0 R) :
+     ContinuousOn (poissonKernel 0 z) (Metric.sphere 0 |R|) := by
+   rw [poissonKernel_eq_re_herglotzRieszKernel]
+@@ -134,39 +92,4 @@ theorem norm_sq_le_circleAverage_poisson {R : ℝ} {z : ℂ} {g : ℂ → ℂ}
+   intro ζ hζ
+   exact mul_le_mul_of_nonneg_left (htangent ζ) (poisson_nonneg_on_circle hz hζ)
+ 
+-/-- Every normalized kernel column is a Poisson supersolution on concentric interior disks. -/
+-theorem normalizedKernel_poisson_supermean {R : ℝ} (hR : R < 1) {z w : ℂ}
+-    (hz : z ∈ Metric.ball 0 R) (hw : w ∈ disk) :
+-    Real.circleAverage (fun ζ ↦ poissonKernel 0 z ζ * normalizedKernel ζ w) 0 R ≤
+-      normalizedKernel z w := by
+-  have hR0 : 0 < R := Metric.pos_of_mem_ball hz
+-  have hH := (differentiableOn_kernelHerglotz hR hw).diffContOnCl_ball (Set.Subset.refl _)
+-  have hG := (differentiableOn_kernelResolvent hR hw).diffContOnCl_ball (Set.Subset.refl _)
+-  have hs : Metric.sphere (0 : ℂ) |R| ⊆ Metric.closedBall 0 R := by
+-    simpa only [abs_of_pos hR0] using Metric.sphere_subset_closedBall
+-  have hHs := (differentiableOn_kernelHerglotz hR hw).continuousOn.mono hs
+-  have hGs := (differentiableOn_kernelResolvent hR hw).continuousOn.mono hs
+-  have hiH : CircleIntegrable
+-      (fun ζ ↦ poissonKernel 0 z ζ * (kernelHerglotz w ζ).re) 0 R :=
+-    ((continuousOn_poisson_circle hz).mul
+-      (Complex.continuous_re.comp_continuousOn hHs)).circleIntegrable'
+-  have hiG : CircleIntegrable
+-      (fun ζ ↦ poissonKernel 0 z ζ * ‖kernelResolvent w ζ‖ ^ 2) 0 R :=
+-    ((continuousOn_poisson_circle hz).mul (hGs.norm.pow 2)).circleIntegrable'
+-  have hiGc : CircleIntegrable
+-      (fun ζ ↦ (1 - ‖w‖ ^ 2) • (poissonKernel 0 z ζ * ‖kernelResolvent w ζ‖ ^ 2)) 0 R :=
+-    hiG.const_smul
+-  have heq : (fun ζ ↦ poissonKernel 0 z ζ * normalizedKernel ζ w) =
+-      (fun ζ ↦ poissonKernel 0 z ζ * (kernelHerglotz w ζ).re -
+-        (1 - ‖w‖ ^ 2) • (poissonKernel 0 z ζ * ‖kernelResolvent w ζ‖ ^ 2)) := by
+-    funext ζ
+-    rw [normalizedKernel_decomposition]
+-    simp only [smul_eq_mul]
+-    ring
+-  rw [heq, Real.circleAverage_fun_sub hiH hiGc,
+-    Real.circleAverage_fun_smul, circleAverage_poisson_re hH hz,
+-    normalizedKernel_decomposition, smul_eq_mul]
+-  exact sub_le_sub_left (mul_le_mul_of_nonneg_left (norm_sq_le_circleAverage_poisson hG hz)
+-    (by nlinarith [(mem_disk_iff w).mp hw, norm_nonneg w])) _
+-
+ end BergmanWeakType.Weighted
+diff --git a/BergmanWeakType/Weighted/KernelPotential.lean b/BergmanWeakType/Weighted/KernelPotential.lean
+index 2c802c43c..206caaaf6 100644
+--- a/BergmanWeakType/Weighted/KernelPotential.lean
++++ b/BergmanWeakType/Weighted/KernelPotential.lean
+@@ -60,30 +60,4 @@ theorem exists_coordinate_interval {x y : ℝ} (hxy : x ^ 2 + y ^ 2 < 1) :
+     ((continuous_id.pow 2).add_const (y ^ 2)).continuousAt.eventually (gt_mem_nhds hxy)
+   obtain ⟨l, r, _, hmem, hsub⟩ := exists_Icc_mem_subset_of_mem_nhds hn
+   exact ⟨Icc l r, isCompact_Icc, hmem, hsub⟩
+-
+-section Cylinder
+-
+-variable {K : Set ℂ} {S : Set ℝ} {a b : ℂ → ℝ}
+-  (ha : ContinuousOn a K) (hb : ContinuousOn b K) (y : ℝ)
+-
+-include ha hb
+-
+-variable (hsource : ∀ w ∈ K, a w ^ 2 + b w ^ 2 ≤ 1)
+-  (htarget : ∀ u ∈ S, u ^ 2 + y ^ 2 < 1)
+-
+-include hsource htarget
+-
+-end Cylinder
+-
+-section Integral
+-
+-variable {K : Set ℂ} {a b : ℂ → ℝ} {μ : Measure ℂ} {f : ℂ → ℝ}
+-  (hK : IsCompact K) (hμ : ∀ᵐ w ∂μ, w ∈ K) (hf : Integrable f μ)
+-  (ha : ContinuousOn a K) (hb : ContinuousOn b K)
+-  (hsource : ∀ w ∈ K, a w ^ 2 + b w ^ 2 ≤ 1)
+-
+-include hK hμ hf ha hb hsource
+-
+-end Integral
+-
+ end BergmanWeakType.Weighted
+diff --git a/BergmanWeakType/Weighted/MassCoordinate.lean b/BergmanWeakType/Weighted/MassCoordinate.lean
+index 07e48c3e0..339bf1dac 100644
+--- a/BergmanWeakType/Weighted/MassCoordinate.lean
++++ b/BergmanWeakType/Weighted/MassCoordinate.lean
+@@ -5,6 +5,8 @@ Authors: Yongxi Lin
+ -/
+ module
+ 
++public import BergmanWeakType.Notation
++
+ public import BergmanWeakType.Weighted.PolarIntegral
+ public import Mathlib.Analysis.SpecialFunctions.Pow.Deriv
+ 
+@@ -32,8 +34,8 @@ theorem image_rpow_unit_interval {q : ℝ} (hq : 0 < q) :
+ 
+ theorem integral_unit_interval_rpow [CompleteSpace E] {q : ℝ} (hq : 0 < q)
+     (F : ℝ → E) :
+-    (∫ y in Ioo (0 : ℝ) 1, F y) =
+-      ∫ x in Ioo (0 : ℝ) 1, (q * x ^ (q - 1)) • F (x ^ q) := by
++    (∫ y in Ioo01, F y) =
++      ∫ x in Ioo01, (q * x ^ (q - 1)) • F (x ^ q) := by
+   have hi : InjOn (fun x : ℝ ↦ x ^ q) (Ioo 0 1) := by
+     intro x hx y hy hxy
+     exact (rpow_left_inj hx.1.le hy.1.le hq.ne').mp hxy
+@@ -48,8 +50,8 @@ theorem integral_unit_interval_rpow [CompleteSpace E] {q : ℝ} (hq : 0 < q)
+ /-- A radius whose exterior weighted disk has measure `y`. -/
+ def massRadius (α y : ℝ) : ℝ := sqrt (1 - y ^ (α + 1)⁻¹)
+ 
+-theorem massRadius_mem_unit {α y : ℝ} (hα : -1 < α) (hy : y ∈ Ioo (0 : ℝ) 1) :
+-    massRadius α y ∈ Ioo (0 : ℝ) 1 := by
++theorem massRadius_mem_unit {α y : ℝ} (hα : -1 < α) (hy : y ∈ Ioo01) :
++    massRadius α y ∈ Ioo01 := by
+   have hp : 0 < α + 1 := by linarith
+   have hpow := rpow_lt_one hy.1.le hy.2 (inv_pos.mpr hp)
+   constructor
+diff --git a/BergmanWeakType/Weighted/MovingCap.lean b/BergmanWeakType/Weighted/MovingCap.lean
+index 1af9883a2..6291f9fd2 100644
+--- a/BergmanWeakType/Weighted/MovingCap.lean
++++ b/BergmanWeakType/Weighted/MovingCap.lean
+@@ -5,6 +5,8 @@ Authors: Yongxi Lin
+ -/
+ module
+ 
++public import BergmanWeakType.Notation
++
+ public import Mathlib.MeasureTheory.Integral.IntervalIntegral.FundThmCalculus
+ public import Mathlib.Tactic.Linarith
+ public import Mathlib.Tactic.Ring
+@@ -26,7 +28,7 @@ theorem integral_le_of_inner_integral_le {A : ℝ → ℝ} {M : ℝ}
+     (hA : IntegrableOn A (Icc 0 1))
+     (hinner : ∀ a b : ℝ, 0 < a → a < b → b < 1 → (∫ y in a..b, A y) ≤ M) :
+     (∫ y in (0 : ℝ)..1, A y) ≤ M := by
+-  have hbnd : ∀ b ∈ Ioo (0 : ℝ) 1, (∫ y in (0 : ℝ)..b, A y) ≤ M := by
++  have hbnd : ∀ b ∈ Ioo01, (∫ y in (0 : ℝ)..b, A y) ≤ M := by
+     intro b hb
+     have hAb : IntegrableOn A (uIcc 0 b) := by
+       rw [uIcc_of_le hb.1.le]
+@@ -48,8 +50,8 @@ theorem integral_le_of_inner_integral_le {A : ℝ → ℝ} {M : ℝ}
+ theorem integral_le_of_shift_domination {A G : ℝ → ℝ} {M a b h : ℝ}
+     (ha : 0 < a) (hab : a < b) (hh : 0 < h) (hbh : b + h < 1)
+     (hA : IntegrableOn A (Icc 0 1)) (hG : IntegrableOn G (Icc 0 1))
+-    (hzero : ∀ y ∈ Ioo (0 : ℝ) 1, 0 ≤ G y)
+-    (hbound : ∀ y ∈ Ioo (0 : ℝ) 1, G y ≤ M)
++    (hzero : ∀ y ∈ Ioo01, 0 ≤ G y)
++    (hbound : ∀ y ∈ Ioo01, G y ≤ M)
+     (hshift : ∀ y ∈ Icc a b, h * A (y + h) ≤ G (y + h) - G y) :
+     (∫ y in a + h..b + h, A y) ≤ M := by
+   have hI {F : ℝ → ℝ} (hF : IntegrableOn F (Icc 0 1)) {u v : ℝ}
+@@ -85,8 +87,8 @@ theorem integral_le_of_shift_domination {A G : ℝ → ℝ} {M a b h : ℝ}
+ No differentiability of the bounding function is needed. -/
+ theorem integral_le_of_finite_difference_domination {A G : ℝ → ℝ} {M : ℝ}
+     (hA : IntegrableOn A (Icc 0 1)) (hG : IntegrableOn G (Icc 0 1))
+-    (hzero : ∀ y ∈ Ioo (0 : ℝ) 1, 0 ≤ G y)
+-    (hbound : ∀ y ∈ Ioo (0 : ℝ) 1, G y ≤ M)
++    (hzero : ∀ y ∈ Ioo01, 0 ≤ G y)
++    (hbound : ∀ y ∈ Ioo01, G y ≤ M)
+     (hshift : ∀ y h : ℝ, 0 < y → 0 < h → y + h < 1 →
+       h * A (y + h) ≤ G (y + h) - G y) :
+     (∫ y in (0 : ℝ)..1, A y) ≤ M := by
+diff --git a/BergmanWeakType/Weighted/Normalizer.lean b/BergmanWeakType/Weighted/Normalizer.lean
+index 57f02ecb8..98f9e0778 100644
+--- a/BergmanWeakType/Weighted/Normalizer.lean
++++ b/BergmanWeakType/Weighted/Normalizer.lean
+@@ -124,8 +124,8 @@ theorem gammaConstant_eq_boundaryGamma {α : ℝ} (hα : -1 < α) :
+ theorem circleAverage_boundary_power {α : ℝ} (hα : -1 < α) :
+     Real.circleAverage (fun ζ : ℂ ↦ ‖1 - ζ‖ ^ α) 0 1 = gammaConstant α := by
+   rw [Real.circleAverage_def]
+-  have heq : (∫ θ in (0 : ℝ)..2 * Real.pi, ‖1 - circleMap 0 1 θ‖ ^ α) =
+-      2 ^ α * (∫ θ in (0 : ℝ)..2 * Real.pi, Real.sin (θ / 2) ^ α) := by
++  have heq : (∫ θ in (0 : ℝ)..τ, ‖1 - circleMap 0 1 θ‖ ^ α) =
++      2 ^ α * (∫ θ in (0 : ℝ)..τ, Real.sin (θ / 2) ^ α) := by
+     rw [← intervalIntegral.integral_const_mul]
+     apply intervalIntegral.integral_congr_Ioo_of_le (by positivity)
+     intro θ hθ
+@@ -171,17 +171,17 @@ theorem circleAverage_radialKernel_eq_arcsine (p : ℝ) {r : ℝ} (hr : |r| < 1)
+     apply Continuous.rpow_const (by unfold circleDenominator; fun_prop)
+     exact fun θ ↦ Or.inl (circleDenominator_pos hr
+       ⟨Real.neg_one_le_cos θ, Real.cos_le_one θ⟩).ne'
+-  have heq : (∫ θ in Real.pi..2 * Real.pi,
++  have heq : (∫ θ in Real.pi..τ,
+       circleDenominator r (Real.cos θ) ^ (p / 2)) =
+       ∫ θ in (0 : ℝ)..Real.pi, circleDenominator r (Real.cos θ) ^ (p / 2) := by
+     conv_lhs => arg 1; intro θ; rw [← Real.cos_two_pi_sub θ]
+     rw [intervalIntegral.integral_comp_sub_left
+       (fun θ ↦ circleDenominator r (Real.cos θ) ^ (p / 2)), sub_self,
+-      show 2 * Real.pi - Real.pi = Real.pi by ring]
++      show τ - Real.pi = Real.pi by ring]
+   rw [Real.circleAverage_def]
+   simp_rw [norm_boundaryKernel_circleMap_rpow]
+   rw [← intervalIntegral.integral_add_adjacent_intervals
+-    (a := (0 : ℝ)) (b := Real.pi) (c := 2 * Real.pi)
++    (a := (0 : ℝ)) (b := Real.pi) (c := τ)
+     (hc.intervalIntegrable _ _) (hc.intervalIntegrable _ _), heq,
+     integral_cos_arcsine (fun x ↦ circleDenominator r x ^ (p / 2))]
+   simp only [smul_eq_mul]
+diff --git a/BergmanWeakType/Weighted/NormalizerEndpoint.lean b/BergmanWeakType/Weighted/NormalizerEndpoint.lean
+index 17ee70b17..5ea466027 100644
+--- a/BergmanWeakType/Weighted/NormalizerEndpoint.lean
++++ b/BergmanWeakType/Weighted/NormalizerEndpoint.lean
+@@ -26,7 +26,7 @@ theorem circleIntegrable_boundaryPower {α : ℝ} (hα : -1 < α) :
+   rw [circleAverage_boundary_power hα] at h
+   exact (gammaConstant_pos hα).ne' h
+ 
+-theorem boundary_circleDenominator_pos {θ : ℝ} (hθ : θ ∈ Set.Ioo (0 : ℝ) (2 * Real.pi)) :
++theorem boundary_circleDenominator_pos {θ : ℝ} (hθ : θ ∈ Set.Ioo (0 : ℝ) (τ)) :
+     0 < circleDenominator 1 (Real.cos θ) := by
+   have hs : 0 < Real.sin (θ / 2) :=
+     Real.sin_pos_of_pos_of_lt_pi (by linarith [hθ.1]) (by linarith [hθ.2])
+@@ -41,14 +41,20 @@ theorem tendsto_circleAverage_boundaryPower_neg {α : ℝ} (hα : -1 < α) (hα0
+     Tendsto (fun r : ℝ ↦ Real.circleAverage (fun ζ : ℂ ↦ ‖1 - (r : ℂ) * ζ‖ ^ α) 0 1)
+       (𝓝[<] 1) (𝓝 (gammaConstant α)) := by
+   let F : ℝ → ℝ → ℝ := fun r θ ↦ circleDenominator r (Real.cos θ) ^ (α / 2)
+-  have hi : IntervalIntegrable (F 1) volume 0 (2 * Real.pi) := by
++  have hi : IntervalIntegrable (F 1) volume 0 (τ) := by
+     have h := circleIntegrable_boundaryPower hα
+-    change IntervalIntegrable (fun θ ↦ ‖1 - circleMap 0 1 θ‖ ^ α) volume 0 (2 * Real.pi) at h
++    change IntervalIntegrable (fun θ ↦ ‖1 - circleMap 0 1 θ‖ ^ α) volume 0 (τ) at h
+     simpa only [F, ← norm_boundaryKernel_circleMap_rpow, Complex.ofReal_one, one_mul] using h
+   have hb : ∀ᶠ r : ℝ in 𝓝[<] 1, r ∈ Set.Ioo (1 / 2 : ℝ) 1 :=
+     Ioo_mem_nhdsLT (by norm_num)
+-  have hlim : Tendsto (fun r ↦ ∫ θ in (0 : ℝ)..2 * Real.pi, F r θ)
+-      (𝓝[<] 1) (𝓝 (∫ θ in (0 : ℝ)..2 * Real.pi, F 1 θ)) := by
++  have hae : ∀ᵐ θ : ℝ, θ ≠ τ := by rw [ae_iff]; simp
++  have hmem : ∀ θ ∈ Set.uIoc (0 : ℝ) (τ), θ ≠ τ →
++      θ ∈ Set.Ioo (0 : ℝ) (τ) := by
++    intro θ hθ hne
++    rw [Set.uIoc_of_le (by positivity : (0 : ℝ) ≤ τ)] at hθ
++    exact ⟨hθ.1, lt_of_le_of_ne hθ.2 hne⟩
++  have hlim : Tendsto (fun r ↦ ∫ θ in (0 : ℝ)..τ, F r θ)
++      (𝓝[<] 1) (𝓝 (∫ θ in (0 : ℝ)..τ, F 1 θ)) := by
+     apply intervalIntegral.tendsto_integral_filter_of_dominated_convergence
+       (fun θ ↦ (1 / 2 : ℝ) ^ (α / 2) * F 1 θ)
+     · filter_upwards [hb] with r hr
+@@ -60,11 +66,8 @@ theorem tendsto_circleAverage_boundaryPower_neg {α : ℝ} (hα : -1 < α) (hα0
+           ⟨Real.neg_one_le_cos θ, Real.cos_le_one θ⟩).ne'
+       exact hc.aestronglyMeasurable
+     · filter_upwards [hb] with r hr
+-      filter_upwards [show ∀ᵐ θ : ℝ, θ ≠ 2 * Real.pi by rw [ae_iff]; simp] with θ hθ
+-      intro hθmem
+-      have hθ' : θ ∈ Set.Ioo (0 : ℝ) (2 * Real.pi) := by
+-        simp only [Set.uIoc_of_le (by positivity : (0 : ℝ) ≤ 2 * Real.pi), Set.mem_Ioc] at hθmem
+-        exact ⟨hθmem.1, lt_of_le_of_ne hθmem.2 hθ⟩
++      filter_upwards [hae] with θ hne hθmem
++      have hθ' := hmem θ hθmem hne
+       have hd := boundary_circleDenominator_pos hθ'
+       have he : (1 / 2 : ℝ) * circleDenominator 1 (Real.cos θ) ≤
+           circleDenominator r (Real.cos θ) := by
+@@ -78,19 +81,16 @@ theorem tendsto_circleAverage_boundaryPower_neg {α : ℝ} (hα : -1 < α) (hα0
+       simpa only [Real.mul_rpow (by norm_num : (0 : ℝ) ≤ 1 / 2) hd.le] using
+         Real.rpow_le_rpow_of_nonpos (mul_pos (by norm_num) hd) he (by linarith)
+     · exact hi.const_mul _
+-    · filter_upwards [show ∀ᵐ θ : ℝ, θ ≠ 2 * Real.pi by rw [ae_iff]; simp] with θ hθ
+-      intro hθmem
+-      have hθ' : θ ∈ Set.Ioo (0 : ℝ) (2 * Real.pi) := by
+-        simp only [Set.uIoc_of_le (by positivity : (0 : ℝ) ≤ 2 * Real.pi), Set.mem_Ioc] at hθmem
+-        exact ⟨hθmem.1, lt_of_le_of_ne hθmem.2 hθ⟩
++    · filter_upwards [hae] with θ hne hθmem
++      have hθ' := hmem θ hθmem hne
+       have hc : ContinuousAt (fun r ↦ F r θ) 1 :=
+         (show ContinuousAt (fun r ↦ circleDenominator r (Real.cos θ)) 1 by
+           dsimp [circleDenominator]; fun_prop).rpow_const
+           (Or.inl (boundary_circleDenominator_pos hθ').ne')
+       exact hc.tendsto.mono_left nhdsWithin_le_nhds
+-  have havg := hlim.const_mul (2 * Real.pi)⁻¹
++  have havg := hlim.const_mul (τ)⁻¹
+   have heq : ∀ r : ℝ, Real.circleAverage (fun ζ : ℂ ↦ ‖1 - (r : ℂ) * ζ‖ ^ α) 0 1 =
+-      (2 * Real.pi)⁻¹ * (∫ θ in (0 : ℝ)..2 * Real.pi, F r θ) := by
++      (τ)⁻¹ * (∫ θ in (0 : ℝ)..τ, F r θ) := by
+     intro r
+     simp only [Real.circleAverage_def, norm_boundaryKernel_circleMap_rpow, smul_eq_mul, F]
+   simp_rw [← heq] at havg
+diff --git a/BergmanWeakType/Weighted/NormalizerRadial.lean b/BergmanWeakType/Weighted/NormalizerRadial.lean
+index 9e0ffe2c7..b54103616 100644
+--- a/BergmanWeakType/Weighted/NormalizerRadial.lean
++++ b/BergmanWeakType/Weighted/NormalizerRadial.lean
+@@ -20,7 +20,7 @@ namespace BergmanWeakType.Weighted
+ 
+ theorem polarIntegral_boundary_eq_normalizer (α r θ : ℝ) :
+     polarIntegral (polarKernel (-(α + 2) / 2)) cos sin
+-      (volume.restrict (Set.Icc 0 (2 * π))) (fun _ ↦ (2 * π)⁻¹) r θ =
++      (volume.restrict (Set.Icc 0 (τ))) (fun _ ↦ (τ)⁻¹) r θ =
+         normalizer α r := by
+   have hk (t : ℝ) : polarKernel (-(α + 2) / 2) (cos t) (sin t) r θ =
+       ‖weightedKernel α (circleMap 0 r θ) (circleMap 0 1 t)‖ := by
+@@ -35,22 +35,22 @@ theorem polarIntegral_boundary_eq_normalizer (α r θ : ℝ) :
+   rw [polarIntegral]
+   simp_rw [hk]
+   rw [integral_mul_const, integral_Icc_eq_integral_Ioc,
+-    ← intervalIntegral.integral_of_le (by positivity : (0 : ℝ) ≤ 2 * π)]
++    ← intervalIntegral.integral_of_le (by positivity : (0 : ℝ) ≤ τ)]
+   simpa only [Real.circleAverage_def, smul_eq_mul, mul_comm] using hcircle
+ 
+ def normalizerFirst (α r : ℝ) : ℝ :=
+   polarIntegral (polarKernelR (-(α + 2) / 2)) cos sin
+-    (volume.restrict (Set.Icc 0 (2 * π))) (fun _ ↦ (2 * π)⁻¹) r 0
++    (volume.restrict (Set.Icc 0 (τ))) (fun _ ↦ (τ)⁻¹) r 0
+ 
+ def normalizerSecond (α r : ℝ) : ℝ :=
+   polarIntegral (polarKernelRR (-(α + 2) / 2)) cos sin
+-    (volume.restrict (Set.Icc 0 (2 * π))) (fun _ ↦ (2 * π)⁻¹) r 0
++    (volume.restrict (Set.Icc 0 (τ))) (fun _ ↦ (τ)⁻¹) r 0
+ 
+ theorem normalizer_hasDerivAt (α : ℝ) {r : ℝ} (hr : r ^ 2 < 1) :
+     HasDerivAt (normalizer α) (normalizerFirst α r) r := by
+   have hd := polarIntegral_kernel_hasDerivAt_r isCompact_Icc
+     (ae_restrict_mem measurableSet_Icc)
+-    (integrable_const (μ := volume.restrict (Set.Icc (0 : ℝ) (2 * π))) ((2 * π)⁻¹))
++    (integrable_const (μ := volume.restrict (Set.Icc (0 : ℝ) (τ))) ((τ)⁻¹))
+     continuous_cos.continuousOn continuous_sin.continuousOn
+     (fun t _ ↦ (cos_sq_add_sin_sq t).le) (-(α + 2) / 2) hr 0
+   simpa only [polarIntegral_boundary_eq_normalizer, normalizerFirst] using hd
+@@ -59,7 +59,7 @@ theorem normalizerFirst_hasDerivAt (α : ℝ) {r : ℝ} (hr : r ^ 2 < 1) :
+     HasDerivAt (normalizerFirst α) (normalizerSecond α r) r := by
+   exact polarIntegral_kernelR_hasDerivAt_r isCompact_Icc
+     (ae_restrict_mem measurableSet_Icc)
+-    (integrable_const (μ := volume.restrict (Set.Icc (0 : ℝ) (2 * π))) ((2 * π)⁻¹))
++    (integrable_const (μ := volume.restrict (Set.Icc (0 : ℝ) (τ))) ((τ)⁻¹))
+     continuous_cos.continuousOn continuous_sin.continuousOn
+     (fun t _ ↦ (cos_sq_add_sin_sq t).le) (-(α + 2) / 2) hr 0
+ 
+@@ -67,7 +67,7 @@ theorem continuousOn_normalizerFirst (α : ℝ) :
+     ContinuousOn (normalizerFirst α) (Set.Ico 0 1) := by
+   apply (continuousOn_polarIntegral_unit isCompact_Icc
+     (ae_restrict_mem measurableSet_Icc)
+-    (integrable_const (μ := volume.restrict (Set.Icc (0 : ℝ) (2 * π))) ((2 * π)⁻¹))
++    (integrable_const (μ := volume.restrict (Set.Icc (0 : ℝ) (τ))) ((τ)⁻¹))
+     (continuousOn_polarKernelR_source continuous_cos.continuousOn
+       continuous_sin.continuousOn (fun t _ ↦ (cos_sq_add_sin_sq t).le)
+       (-(α + 2) / 2))).comp (continuous_id.prodMk continuous_const).continuousOn
+@@ -77,7 +77,7 @@ theorem continuousOn_normalizerSecond (α : ℝ) :
+     ContinuousOn (normalizerSecond α) (Set.Ico 0 1) := by
+   apply (continuousOn_polarIntegral_unit isCompact_Icc
+     (ae_restrict_mem measurableSet_Icc)
+-    (integrable_const (μ := volume.restrict (Set.Icc (0 : ℝ) (2 * π))) ((2 * π)⁻¹))
++    (integrable_const (μ := volume.restrict (Set.Icc (0 : ℝ) (τ))) ((τ)⁻¹))
+     (continuousOn_polarKernelRR_source continuous_cos.continuousOn
+       continuous_sin.continuousOn (fun t _ ↦ (cos_sq_add_sin_sq t).le)
+       (-(α + 2) / 2))).comp (continuous_id.prodMk continuous_const).continuousOn
+@@ -86,14 +86,14 @@ theorem continuousOn_normalizerSecond (α : ℝ) :
+ theorem polarIntegral_boundary_angular_eq_zero (α : ℝ) {r : ℝ} (hr : r ^ 2 < 1)
+     (θ : ℝ) :
+     polarIntegral (polarKernelT (-(α + 2) / 2)) cos sin
+-      (volume.restrict (Set.Icc 0 (2 * π))) (fun _ ↦ (2 * π)⁻¹) r θ = 0 := by
++      (volume.restrict (Set.Icc 0 (τ))) (fun _ ↦ (τ)⁻¹) r θ = 0 := by
+   have hd := polarIntegral_kernel_hasDerivAt_t isCompact_Icc
+     (ae_restrict_mem measurableSet_Icc)
+-    (integrable_const (μ := volume.restrict (Set.Icc (0 : ℝ) (2 * π))) ((2 * π)⁻¹))
++    (integrable_const (μ := volume.restrict (Set.Icc (0 : ℝ) (τ))) ((τ)⁻¹))
+     continuous_cos.continuousOn continuous_sin.continuousOn
+     (fun t _ ↦ (cos_sq_add_sin_sq t).le) (-(α + 2) / 2) hr θ
+   have heq : polarIntegral (polarKernel (-(α + 2) / 2)) cos sin
+-      (volume.restrict (Set.Icc 0 (2 * π))) (fun _ ↦ (2 * π)⁻¹) r =
++      (volume.restrict (Set.Icc 0 (τ))) (fun _ ↦ (τ)⁻¹) r =
+         fun _ ↦ normalizer α r := by
+     funext t
+     exact polarIntegral_boundary_eq_normalizer α r t
+@@ -103,14 +103,14 @@ theorem polarIntegral_boundary_angular_eq_zero (α : ℝ) {r : ℝ} (hr : r ^ 2
+ theorem polarIntegral_boundary_angular_second_eq_zero (α : ℝ) {r : ℝ}
+     (hr : r ^ 2 < 1) (θ : ℝ) :
+     polarIntegral (polarKernelTT (-(α + 2) / 2)) cos sin
+-      (volume.restrict (Set.Icc 0 (2 * π))) (fun _ ↦ (2 * π)⁻¹) r θ = 0 := by
++      (volume.restrict (Set.Icc 0 (τ))) (fun _ ↦ (τ)⁻¹) r θ = 0 := by
+   have hd := polarIntegral_kernelT_hasDerivAt_t isCompact_Icc
+     (ae_restrict_mem measurableSet_Icc)
+-    (integrable_const (μ := volume.restrict (Set.Icc (0 : ℝ) (2 * π))) ((2 * π)⁻¹))
++    (integrable_const (μ := volume.restrict (Set.Icc (0 : ℝ) (τ))) ((τ)⁻¹))
+     continuous_cos.continuousOn continuous_sin.continuousOn
+     (fun t _ ↦ (cos_sq_add_sin_sq t).le) (-(α + 2) / 2) hr θ
+   have heq : polarIntegral (polarKernelT (-(α + 2) / 2)) cos sin
+-      (volume.restrict (Set.Icc 0 (2 * π))) (fun _ ↦ (2 * π)⁻¹) r = fun _ ↦ 0 := by
++      (volume.restrict (Set.Icc 0 (τ))) (fun _ ↦ (τ)⁻¹) r = fun _ ↦ 0 := by
+     funext t
+     exact polarIntegral_boundary_angular_eq_zero α hr t
+   rw [heq] at hd
+@@ -123,12 +123,12 @@ theorem normalizer_ode (α : ℝ) {r : ℝ} (hr : r ^ 2 < 1) (hr0 : r ≠ 0) :
+       ((α + 2) ^ 2 / (1 - r ^ 2)) * normalizer α r = 0 := by
+   have heq := polarIntegral_operator_boundary isCompact_Icc
+     (ae_restrict_mem measurableSet_Icc)
+-    (integrable_const (μ := volume.restrict (Set.Icc (0 : ℝ) (2 * π))) ((2 * π)⁻¹))
++    (integrable_const (μ := volume.restrict (Set.Icc (0 : ℝ) (τ))) ((τ)⁻¹))
+     continuous_cos.continuousOn continuous_sin.continuousOn
+     (fun t _ ↦ (cos_sq_add_sin_sq t).le) (α + 2) hr hr0 0
+     (fun t _ ↦ cos_sq_add_sin_sq t)
+-  simpa only [polarIntegral_boundary_eq_normalizer,
++  simpa only [polarOperator, polarIntegral_boundary_eq_normalizer,
+     polarIntegral_boundary_angular_second_eq_zero α hr, normalizerFirst, normalizerSecond,
+-    zero_div, add_zero] using heq
++    zero_div, add_zero, mul_zero, sub_zero] using heq
+ 
+ end BergmanWeakType.Weighted
+diff --git a/BergmanWeakType/Weighted/PoissonCap.lean b/BergmanWeakType/Weighted/PoissonCap.lean
+index bba35a4dc..bf924f6ff 100644
+--- a/BergmanWeakType/Weighted/PoissonCap.lean
++++ b/BergmanWeakType/Weighted/PoissonCap.lean
+@@ -23,49 +23,6 @@ namespace BergmanWeakType
+ def poissonExtension (R : ℝ) (v : ℂ → ℝ) (z : ℂ) : ℝ :=
+   circleAverage (fun ζ ↦ poissonKernel 0 z ζ * v ζ) 0 R
+ 
+-theorem poissonKernel_nonneg_on_sphere {R : ℝ} {z ζ : ℂ}
+-    (hz : z ∈ ball 0 R) (hζ : ζ ∈ sphere 0 |R|) :
+-    0 ≤ poissonKernel 0 z ζ := by
+-  have hz' : ‖z‖ < R := by simpa using hz
+-  have hζ' : ‖ζ‖ = |R| := by simpa using hζ
+-  have hR : 0 ≤ R := (norm_nonneg z).trans hz'.le
+-  simp only [poissonKernel_def, sub_zero, hζ', abs_of_nonneg hR]
+-  exact div_nonneg (by nlinarith [norm_nonneg z]) (sq_nonneg _)
+-
+-theorem continuousOn_poissonKernel_sphere {R : ℝ} {z : ℂ}
+-    (hz : z ∈ ball 0 R) : ContinuousOn (poissonKernel 0 z) (sphere 0 |R|) := by
+-  rw [poissonKernel_eq_re_herglotzRieszKernel]
+-  apply continuous_re.comp_continuousOn
+-  apply continuousOn_herglotzRieszKernel_sphere
+-  have hz' : ‖z‖ < R := by simpa using hz
+-  have hR : 0 ≤ R := (norm_nonneg z).trans hz'.le
+-  simpa [mem_sphere, dist_zero_right, abs_of_nonneg hR] using hz'.ne
+-
+-theorem poissonExtension_const {R c : ℝ} {z : ℂ} (hz : z ∈ ball 0 R) :
+-    poissonExtension R (fun _ ↦ c) z = c := by
+-  simpa only [poissonExtension, Pi.smul_def, smul_eq_mul, Pi.mul_def] using
+-    (harmonicOnNhd_const c).circleAverage_poissonKernel_smul hz
+-
+-theorem poissonExtension_min_le {R c : ℝ} {v : ℂ → ℝ} {z : ℂ}
+-    (hv : ContinuousOn v (sphere 0 |R|)) (hz : z ∈ ball 0 R)
+-    (hsuper : poissonExtension R v z ≤ v z) :
+-    poissonExtension R (fun ζ ↦ min (v ζ) c) z ≤ min (v z) c := by
+-  have hp := continuousOn_poissonKernel_sphere hz
+-  have hm := hv.inf (continuousOn_const (c := c))
+-  apply le_min
+-  · apply le_trans _ hsuper
+-    apply circleAverage_mono (hp.mul hm).circleIntegrable' (hp.mul hv).circleIntegrable'
+-    intro ζ hζ
+-    exact mul_le_mul_of_nonneg_left (min_le_left _ _) (poissonKernel_nonneg_on_sphere hz hζ)
+-  · calc
+-      _ ≤ poissonExtension R (fun _ ↦ c) z := by
+-        apply circleAverage_mono (hp.mul hm).circleIntegrable'
+-          (hp.mul continuousOn_const).circleIntegrable'
+-        intro ζ hζ
+-        exact mul_le_mul_of_nonneg_left (min_le_right _ _)
+-          (poissonKernel_nonneg_on_sphere hz hζ)
+-      _ = c := poissonExtension_const hz
+-
+ theorem poissonExtension_eq_re {R : ℝ} {v : ℂ → ℝ} {z : ℂ}
+     (hv : CircleIntegrable v 0 R) (hz : z ∉ sphere 0 |R|) :
+     poissonExtension R v z =
+@@ -118,33 +75,4 @@ theorem circleAverage_poissonExtension {R r : ℝ} {v : ℂ → ℝ}
+       have hRn : R ≠ 0 := abs_pos.mp hR
+       simp [poissonKernel_def, hζ', hRn]
+ 
+-/-- Poisson supermean inequalities imply that the circular means of every upper truncation
+-decrease with the radius. -/
+-theorem circleAverage_min_antitone_of_poisson_supermean {R r c : ℝ} {v : ℂ → ℝ}
+-    (hr : 0 ≤ r) (hrR : r < R) (hv : ContinuousOn v (closedBall 0 R))
+-    (hsuper : ∀ z ∈ ball 0 R, poissonExtension R v z ≤ v z) :
+-    circleAverage (fun z ↦ min (v z) c) 0 R ≤
+-      circleAverage (fun z ↦ min (v z) c) 0 r := by
+-  have hR : 0 ≤ R := hr.trans hrR.le
+-  have hcap := hv.inf (continuousOn_const (c := c))
+-  have hcapR : CircleIntegrable (fun z ↦ min (v z) c) 0 R := by
+-    apply ContinuousOn.circleIntegrable'
+-    simpa only [abs_of_nonneg hR] using hcap.mono sphere_subset_closedBall
+-  have habs : |r| < |R| := by simpa only [abs_of_nonneg hr, abs_of_nonneg hR] using hrR
+-  rw [← circleAverage_poissonExtension hcapR habs]
+-  have hsub : sphere (0 : ℂ) |r| ⊆ (sphere 0 |R|)ᶜ := by
+-    intro z hz
+-    have hz' : ‖z‖ = |r| := by simpa using hz
+-    simpa [hz'] using habs.ne
+-  apply circleAverage_mono
+-    ((continuousOn_poissonExtension hcapR).mono hsub).circleIntegrable'
+-    (hcap.mono (by simpa only [abs_of_nonneg hr] using
+-      (sphere_subset_closedBall.trans (closedBall_subset_closedBall hrR.le)))).circleIntegrable'
+-  intro z hz
+-  have hzR : z ∈ ball 0 R := by
+-    have hz' : ‖z‖ = r := by simpa [abs_of_nonneg hr] using hz
+-    simpa [mem_ball, dist_zero_right, hz'] using hrR
+-  apply poissonExtension_min_le _ hzR (hsuper z hzR)
+-  simpa only [abs_of_nonneg hR] using hv.mono sphere_subset_closedBall
+-
+ end BergmanWeakType
+diff --git a/BergmanWeakType/Weighted/PolarCap.lean b/BergmanWeakType/Weighted/PolarCap.lean
+index a198d536b..1f42cdfb2 100644
+--- a/BergmanWeakType/Weighted/PolarCap.lean
++++ b/BergmanWeakType/Weighted/PolarCap.lean
+@@ -5,6 +5,8 @@ Authors: Yongxi Lin
+ -/
+ module
+ 
++public import BergmanWeakType.Notation
++
+ public import BergmanWeakType.Weighted.AngularMean
+ 
+ /-! # Truncated angular means of polar supersolutions -/
+@@ -19,28 +21,17 @@ namespace BergmanWeakType.Weighted
+ 
+ /-- Truncations of a regular periodic polar supersolution have decreasing angular means. -/
+ theorem antitoneOn_angularMean_min_of_polar_flux {F Fr Frr Ft Ftt : ℝ → ℝ → ℝ}
+-    {w w' : ℝ → ℝ} (c : ℝ)
+-    (hF : ContinuousOn (fun p : ℝ × ℝ ↦ F p.1 p.2) (Ico 0 1 ×ˢ univ))
+-    (hFr : ContinuousOn (fun p : ℝ × ℝ ↦ Fr p.1 p.2) (Ico 0 1 ×ˢ univ))
+-    (hFrr : ContinuousOn (fun p : ℝ × ℝ ↦ Frr p.1 p.2) (Ico 0 1 ×ˢ univ))
+-    (hFt : ContinuousOn (fun p : ℝ × ℝ ↦ Ft p.1 p.2) (Ico 0 1 ×ˢ univ))
+-    (hFtt : ContinuousOn (fun p : ℝ × ℝ ↦ Ftt p.1 p.2) (Ico 0 1 ×ˢ univ))
+-    (hFd : ∀ r ∈ Ioo (0 : ℝ) 1, ∀ θ, HasDerivAt (fun r ↦ F r θ) (Fr r θ) r)
+-    (hFrd : ∀ r ∈ Ioo (0 : ℝ) 1, ∀ θ, HasDerivAt (fun r ↦ Fr r θ) (Frr r θ) r)
+-    (hFdt : ∀ r ∈ Ioo (0 : ℝ) 1, ∀ θ, HasDerivAt (F r) (Ft r θ) θ)
+-    (hFtd : ∀ r ∈ Ioo (0 : ℝ) 1, ∀ θ, HasDerivAt (Ft r) (Ftt r θ) θ)
+-    (hperiodF : ∀ r ∈ Ioo (0 : ℝ) 1, F r (2 * π) = F r 0)
+-    (hperiodFt : ∀ r ∈ Ioo (0 : ℝ) 1, Ft r (2 * π) = Ft r 0)
++    {w w' : ℝ → ℝ} (c : ℝ) (h : PolarSmooth F Fr Frr Ft Ftt)
+     (hw : ContinuousOn w (Ico 0 1))
+-    (hwd : ∀ r ∈ Ioo (0 : ℝ) 1, HasDerivAt w (w' r) r)
+-    (hwpos : ∀ r ∈ Ioo (0 : ℝ) 1, 0 < w r)
+-    (hineq : ∀ r ∈ Ioo (0 : ℝ) 1, ∀ θ,
++    (hwd : ∀ r ∈ Ioo01, HasDerivAt w (w' r) r)
++    (hwpos : ∀ r ∈ Ioo01, 0 < w r)
++    (hineq : ∀ r ∈ Ioo01, ∀ θ,
+       r * w r * Frr r θ + (w r + r * w' r) * Fr r θ + (w r / r) * Ftt r θ ≤ 0) :
+     AntitoneOn (angularMean (fun r θ ↦ min (F r θ) c)) (Ico 0 1) := by
+   apply antitoneOn_angularMean_min_of_smoothCap
+   · intro r hr
+     apply continuousOn_univ.mp
+-    apply hF.comp (continuous_const.prodMk continuous_id).continuousOn
++    apply h.cont.comp (continuous_const.prodMk continuous_id).continuousOn
+     exact fun θ _ ↦ ⟨hr, mem_univ θ⟩
+   intro ε hε
+   let d₁ := smoothCapInputDeriv ε c
+@@ -55,29 +46,31 @@ theorem antitoneOn_angularMean_min_of_polar_flux {F Fr Frr Ft Ftt : ℝ → ℝ
+     exact (mul_pos (by norm_num) (pow_pos (sqrt_pos.mpr hp) _)).ne'
+   have hcap : Continuous (smoothCap ε c) := continuous_iff_continuousAt.mpr
+     (fun _ ↦ (hasDerivAt_smoothCap_input hε).continuousAt)
+-  apply antitoneOn_angularMean_of_polar_flux
++  refine antitoneOn_angularMean_of_polar_flux
+     (Fr := fun r θ ↦ d₁ (F r θ) * Fr r θ)
+     (Frr := fun r θ ↦ d₂ (F r θ) * (Fr r θ) ^ 2 + d₁ (F r θ) * Frr r θ)
+     (Ft := fun r θ ↦ d₁ (F r θ) * Ft r θ)
+     (Ftt := fun r θ ↦ d₂ (F r θ) * (Ft r θ) ^ 2 + d₁ (F r θ) * Ftt r θ)
+-    (w := w) (w' := w')
+-  · exact hcap.comp_continuousOn hF
+-  · exact (hd₁.comp_continuousOn hF).mul hFr
+-  · exact ((hd₂.comp_continuousOn hF).mul (hFr.pow 2)).add
+-      ((hd₁.comp_continuousOn hF).mul hFrr)
+-  · exact ((hd₂.comp_continuousOn hF).mul (hFt.pow 2)).add
+-      ((hd₁.comp_continuousOn hF).mul hFtt)
++    (w := w) (w' := w') ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ hw hwd hwpos ?_
++  · exact hcap.comp_continuousOn h.cont
++  · exact (hd₁.comp_continuousOn h.cont).mul h.contR
++  · exact ((hd₂.comp_continuousOn h.cont).mul (h.contR.pow 2)).add
++      ((hd₁.comp_continuousOn h.cont).mul h.contRR)
++  · exact (hd₁.comp_continuousOn h.cont).mul h.contT
++  · exact ((hd₂.comp_continuousOn h.cont).mul (h.contT.pow 2)).add
++      ((hd₁.comp_continuousOn h.cont).mul h.contTT)
++  · intro r hr θ
++    exact (hasDerivAt_smoothCap_input hε).comp r (h.deriv r hr θ)
+   · intro r hr θ
+-    exact (hasDerivAt_smoothCap_input hε).comp r (hFd r hr θ)
++    exact hasDerivAt_smoothCap_comp_first hε (h.deriv r hr θ) (h.derivR r hr θ)
+   · intro r hr θ
+-    exact hasDerivAt_smoothCap_comp_first hε (hFd r hr θ) (hFrd r hr θ)
++    exact (hasDerivAt_smoothCap_input hε).comp θ (h.derivT r hr θ)
+   · intro r hr θ
+-    exact hasDerivAt_smoothCap_comp_first hε (hFdt r hr θ) (hFtd r hr θ)
++    exact hasDerivAt_smoothCap_comp_first hε (h.derivT r hr θ) (h.derivTT r hr θ)
++  · intro r hr
++    rw [h.periodF r hr]
+   · intro r hr
+-    rw [hperiodF r hr, hperiodFt r hr]
+-  · exact hw
+-  · exact hwd
+-  · exact hwpos
++    rw [h.periodF r hr, h.periodT r hr]
+   · intro r hr θ
+     exact smoothCap_polar_flux_nonpos hε hr.1 (hwpos r hr) (hineq r hr θ)
+ 
+diff --git a/BergmanWeakType/Weighted/PolarIntegral.lean b/BergmanWeakType/Weighted/PolarIntegral.lean
+index eb068d371..1c86deccf 100644
+--- a/BergmanWeakType/Weighted/PolarIntegral.lean
++++ b/BergmanWeakType/Weighted/PolarIntegral.lean
+@@ -5,6 +5,8 @@ Authors: Yongxi Lin
+ -/
+ module
+ 
++public import BergmanWeakType.Notation
++
+ public import BergmanWeakType.Rigidity.PolarIntegral
+ 
+ /-! # Polar integration for normalized weighted disk area -/
+@@ -51,7 +53,7 @@ theorem integral_weightedArea_eq_diskArea [CompleteSpace E] {α : ℝ} (hα : -1
+ 
+ theorem integral_weightedArea_eq_circleAverage [CompleteSpace E] {α : ℝ} (hα : -1 < α)
+     {f : ℂ → E} (hf : Integrable f (weightedArea α)) :
+-    ∫ z, f z ∂weightedArea α = ∫ r in Set.Ioo (0 : ℝ) 1,
++    ∫ z, f z ∂weightedArea α = ∫ r in Ioo01,
+       (2 * r * ((α + 1) * (1 - r ^ 2) ^ α)) • Real.circleAverage f 0 r := by
+   rw [integral_weightedArea_eq_diskArea hα,
+     integral_diskArea_eq_circleAverage (integrable_weightedDensity_smul hα hf)]
+diff --git a/BergmanWeakType/Weighted/PolarKernel.lean b/BergmanWeakType/Weighted/PolarKernel.lean
+index f5281c4d6..2ac8a53b9 100644
+--- a/BergmanWeakType/Weighted/PolarKernel.lean
++++ b/BergmanWeakType/Weighted/PolarKernel.lean
+@@ -146,16 +146,19 @@ theorem polarKernel_laplacian (q a b r θ : ℝ)
+   field_simp [hr]
+   ring
+ 
++/-- The radial-angular weighted elliptic operator applied to the four kernel pieces. -/
++def polarOperator (k r xRR xR xTT xP : ℝ) : ℝ :=
++  xRR + xR / r + xTT / r ^ 2 - (2 * k * r / (1 - r ^ 2)) * xR -
++    (k ^ 2 / (1 - r ^ 2)) * xP
++
+ /-- The weighted elliptic equation in polar coordinates, with no mixed derivatives. -/
+ theorem polarKernel_equation (k a b r θ : ℝ)
+     (hd : 0 < polarDenominator a b r θ) (hr : r ≠ 0) (ht : 1 - r ^ 2 ≠ 0) :
+-    polarKernelRR (-k / 2) a b r θ + polarKernelR (-k / 2) a b r θ / r +
+-      polarKernelTT (-k / 2) a b r θ / r ^ 2 -
+-      (2 * k * r / (1 - r ^ 2)) * polarKernelR (-k / 2) a b r θ -
+-      (k ^ 2 / (1 - r ^ 2)) * polarKernel (-k / 2) a b r θ =
++    polarOperator k r (polarKernelRR (-k / 2) a b r θ) (polarKernelR (-k / 2) a b r θ)
++      (polarKernelTT (-k / 2) a b r θ) (polarKernel (-k / 2) a b r θ) =
+         -(k ^ 2 * (1 - (a ^ 2 + b ^ 2))) /
+           ((1 - r ^ 2) * polarDenominator a b r θ) * polarKernel (-k / 2) a b r θ := by
+-  rw [polarKernel_laplacian (-k / 2) a b r θ hd hr]
++  rw [polarOperator, polarKernel_laplacian (-k / 2) a b r θ hd hr]
+   unfold polarKernelR polarKernel
+   rw [Real.rpow_sub_one hd.ne']
+   field_simp [hr, ht, hd.ne']
+@@ -165,10 +168,8 @@ theorem polarKernel_equation (k a b r θ : ℝ)
+ theorem polarKernel_equation_nonpos (k a b r θ : ℝ)
+     (hd : 0 < polarDenominator a b r θ) (hr : r ≠ 0) (ht : 0 < 1 - r ^ 2)
+     (hw : a ^ 2 + b ^ 2 ≤ 1) :
+-    polarKernelRR (-k / 2) a b r θ + polarKernelR (-k / 2) a b r θ / r +
+-      polarKernelTT (-k / 2) a b r θ / r ^ 2 -
+-      (2 * k * r / (1 - r ^ 2)) * polarKernelR (-k / 2) a b r θ -
+-      (k ^ 2 / (1 - r ^ 2)) * polarKernel (-k / 2) a b r θ ≤ 0 := by
++    polarOperator k r (polarKernelRR (-k / 2) a b r θ) (polarKernelR (-k / 2) a b r θ)
++      (polarKernelTT (-k / 2) a b r θ) (polarKernel (-k / 2) a b r θ) ≤ 0 := by
+   rw [polarKernel_equation k a b r θ hd hr ht.ne']
+   exact mul_nonpos_of_nonpos_of_nonneg
+     (div_nonpos_of_nonpos_of_nonneg (neg_nonpos.mpr
+diff --git a/BergmanWeakType/Weighted/PolarPotential.lean b/BergmanWeakType/Weighted/PolarPotential.lean
+index c87b86a35..bcc80c234 100644
+--- a/BergmanWeakType/Weighted/PolarPotential.lean
++++ b/BergmanWeakType/Weighted/PolarPotential.lean
+@@ -23,6 +23,10 @@ variable {X : Type*} [TopologicalSpace X]
+ def polarSourceDomain (K : Set X) : Set ((ℝ × ℝ) × X) :=
+   {p | p.1.1 ^ 2 < 1 ∧ p.2 ∈ K}
+ 
++/-- Joint continuity of `H (a w) (b w) r θ` over the polar source domain. -/
++def PolarCont (K : Set X) (a b : X → ℝ) (H : ℝ → ℝ → ℝ → ℝ → ℝ) : Prop :=
++  ContinuousOn (fun p : (ℝ × ℝ) × X ↦ H (a p.2) (b p.2) p.1.1 p.1.2) (polarSourceDomain K)
++
+ section Continuity
+ 
+ variable {K : Set X} {a b : X → ℝ}
+@@ -34,34 +38,20 @@ include ha hb
+ theorem continuousOn_radialComponent_source :
+     ContinuousOn (fun p : (ℝ × ℝ) × X ↦ radialComponent (a p.2) (b p.2) p.1.2)
+       (polarSourceDomain K) := by
+-  have ha' : ContinuousOn (fun p : (ℝ × ℝ) × X ↦ a p.2) (polarSourceDomain K) :=
+-    ha.comp continuous_snd.continuousOn (fun p hp ↦ hp.2)
+-  have hb' : ContinuousOn (fun p : (ℝ × ℝ) × X ↦ b p.2) (polarSourceDomain K) :=
+-    hb.comp continuous_snd.continuousOn (fun p hp ↦ hp.2)
+-  exact (ha'.mul (Real.continuous_cos.comp (continuous_snd.comp continuous_fst)).continuousOn).add
+-    (hb'.mul (Real.continuous_sin.comp (continuous_snd.comp continuous_fst)).continuousOn)
++  unfold radialComponent
++  fun_prop
+ 
+ theorem continuousOn_angularComponent_source :
+     ContinuousOn (fun p : (ℝ × ℝ) × X ↦ angularComponent (a p.2) (b p.2) p.1.2)
+       (polarSourceDomain K) := by
+-  have ha' : ContinuousOn (fun p : (ℝ × ℝ) × X ↦ a p.2) (polarSourceDomain K) :=
+-    ha.comp continuous_snd.continuousOn (fun p hp ↦ hp.2)
+-  have hb' : ContinuousOn (fun p : (ℝ × ℝ) × X ↦ b p.2) (polarSourceDomain K) :=
+-    hb.comp continuous_snd.continuousOn (fun p hp ↦ hp.2)
+-  exact (hb'.mul (Real.continuous_cos.comp (continuous_snd.comp continuous_fst)).continuousOn).sub
+-    (ha'.mul (Real.continuous_sin.comp (continuous_snd.comp continuous_fst)).continuousOn)
++  unfold angularComponent
++  fun_prop
+ 
+ theorem continuousOn_polarDenominator_source :
+-    ContinuousOn (fun p : (ℝ × ℝ) × X ↦ polarDenominator (a p.2) (b p.2) p.1.1 p.1.2)
+-      (polarSourceDomain K) := by
+-  have ha' : ContinuousOn (fun p : (ℝ × ℝ) × X ↦ a p.2) (polarSourceDomain K) :=
+-    ha.comp continuous_snd.continuousOn (fun p hp ↦ hp.2)
+-  have hb' : ContinuousOn (fun p : (ℝ × ℝ) × X ↦ b p.2) (polarSourceDomain K) :=
+-    hb.comp continuous_snd.continuousOn (fun p hp ↦ hp.2)
+-  have hr : ContinuousOn (fun p : (ℝ × ℝ) × X ↦ p.1.1) (polarSourceDomain K) :=
+-    (continuous_fst.comp continuous_fst).continuousOn
+-  exact (((ha'.pow 2).add (hb'.pow 2)).mul (hr.pow 2)).sub
+-    ((hr.const_mul 2).mul (continuousOn_radialComponent_source ha hb)) |>.add_const 1
++    PolarCont K a b polarDenominator := by
++  rw [PolarCont]
++  unfold polarDenominator radialComponent
++  fun_prop
+ 
+ include hsource
+ 
+@@ -135,24 +125,21 @@ variable {K : Set X} {a b : X → ℝ} {μ : Measure X} {f : X → ℝ}
+ include hK hμ hf
+ 
+ theorem integrable_polarIntegral_kernel {H : ℝ → ℝ → ℝ → ℝ → ℝ}
+-    (hH : ContinuousOn (fun p : (ℝ × ℝ) × X ↦ H (a p.2) (b p.2) p.1.1 p.1.2)
+-      (polarSourceDomain K)) {r : ℝ} (hr : r ^ 2 < 1) (θ : ℝ) :
++    (hH : PolarCont K a b H) {r : ℝ} (hr : r ^ 2 < 1) (θ : ℝ) :
+     Integrable (fun w ↦ H (a w) (b w) r θ * f w) μ := by
+   apply integrable_mul_of_continuousOn_compact hK hμ hf
+   exact hH.comp ((continuous_const (y := (r, θ))).prodMk continuous_id).continuousOn
+     (fun w hw ↦ ⟨hr, hw⟩)
+ 
+ theorem continuousOn_polarIntegral {H : ℝ → ℝ → ℝ → ℝ → ℝ}
+-    (hH : ContinuousOn (fun p : (ℝ × ℝ) × X ↦ H (a p.2) (b p.2) p.1.1 p.1.2)
+-      (polarSourceDomain K)) {S : Set (ℝ × ℝ)} (hS : IsCompact S)
++    (hH : PolarCont K a b H) {S : Set (ℝ × ℝ)} (hS : IsCompact S)
+     (hSr : ∀ p ∈ S, p.1 ^ 2 < 1) :
+     ContinuousOn (fun p : ℝ × ℝ ↦ polarIntegral H a b μ f p.1 p.2) S := by
+   apply continuousOn_integral_mul_of_compact hK hμ hS hf
+   exact hH.mono (fun p hp ↦ ⟨hSr p.1 hp.1, hp.2⟩)
+ 
+ theorem continuousOn_polarIntegral_radius {H : ℝ → ℝ → ℝ → ℝ → ℝ}
+-    (hH : ContinuousOn (fun p : (ℝ × ℝ) × X ↦ H (a p.2) (b p.2) p.1.1 p.1.2)
+-      (polarSourceDomain K)) :
++    (hH : PolarCont K a b H) :
+     ContinuousOn (fun p : ℝ × ℝ ↦ polarIntegral H a b μ f p.1 p.2)
+       {p | p.1 ^ 2 < 1} := by
+   intro p hp
+@@ -162,8 +149,7 @@ theorem continuousOn_polarIntegral_radius {H : ℝ → ℝ → ℝ → ℝ → 
+     (mem_interior_iff_mem_nhds.mp hpS)).continuousWithinAt
+ 
+ theorem continuousOn_polarIntegral_unit {H : ℝ → ℝ → ℝ → ℝ → ℝ}
+-    (hH : ContinuousOn (fun p : (ℝ × ℝ) × X ↦ H (a p.2) (b p.2) p.1.1 p.1.2)
+-      (polarSourceDomain K)) :
++    (hH : PolarCont K a b H) :
+     ContinuousOn (fun p : ℝ × ℝ ↦ polarIntegral H a b μ f p.1 p.2)
+       (Ico 0 1 ×ˢ univ) := by
+   apply (continuousOn_polarIntegral_radius hK hμ hf hH).mono
+@@ -171,8 +157,7 @@ theorem continuousOn_polarIntegral_unit {H : ℝ → ℝ → ℝ → ℝ → ℝ
+   exact (sq_lt_one_iff_abs_lt_one r).mpr (abs_lt.mpr ⟨by linarith [hr.1], hr.2⟩)
+ 
+ theorem polarIntegral_hasDerivAt_r {H H' : ℝ → ℝ → ℝ → ℝ → ℝ}
+-    (hH : ContinuousOn (fun p : (ℝ × ℝ) × X ↦ H (a p.2) (b p.2) p.1.1 p.1.2)
+-      (polarSourceDomain K))
++    (hH : PolarCont K a b H)
+     (hH' : ContinuousOn (fun p : (ℝ × ℝ) × X ↦ H' (a p.2) (b p.2) p.1.1 p.1.2)
+       (polarSourceDomain K))
+     (hd : ∀ w ∈ K, ∀ r θ : ℝ, r ^ 2 < 1 →
+@@ -190,8 +175,7 @@ theorem polarIntegral_hasDerivAt_r {H H' : ℝ → ℝ → ℝ → ℝ → ℝ}
+     (fun w hw u hu ↦ hd w hw u θ (by simpa using htarget u hu))).2
+ 
+ theorem polarIntegral_hasDerivAt_t {H H' : ℝ → ℝ → ℝ → ℝ → ℝ}
+-    (hH : ContinuousOn (fun p : (ℝ × ℝ) × X ↦ H (a p.2) (b p.2) p.1.1 p.1.2)
+-      (polarSourceDomain K))
++    (hH : PolarCont K a b H)
+     (hH' : ContinuousOn (fun p : (ℝ × ℝ) × X ↦ H' (a p.2) (b p.2) p.1.1 p.1.2)
+       (polarSourceDomain K))
+     (hd : ∀ w ∈ K, ∀ r θ : ℝ, r ^ 2 < 1 →
+@@ -249,16 +233,13 @@ theorem polarIntegral_kernelT_hasDerivAt_t (q : ℝ) {r : ℝ} (hr : r ^ 2 < 1)
+       (polarDenominator_pos hs (hsource w hw) t)) hr θ
+ 
+ theorem polarIntegral_operator (k : ℝ) {r : ℝ} (hr : r ^ 2 < 1) (θ : ℝ) :
+-    polarIntegral (polarKernelRR (-k / 2)) a b μ f r θ +
+-      polarIntegral (polarKernelR (-k / 2)) a b μ f r θ / r +
+-      polarIntegral (polarKernelTT (-k / 2)) a b μ f r θ / r ^ 2 -
+-      (2 * k * r / (1 - r ^ 2)) * polarIntegral (polarKernelR (-k / 2)) a b μ f r θ -
+-      (k ^ 2 / (1 - r ^ 2)) * polarIntegral (polarKernel (-k / 2)) a b μ f r θ =
+-    ∫ w, (polarKernelRR (-k / 2) (a w) (b w) r θ +
+-      polarKernelR (-k / 2) (a w) (b w) r θ / r +
+-      polarKernelTT (-k / 2) (a w) (b w) r θ / r ^ 2 -
+-      (2 * k * r / (1 - r ^ 2)) * polarKernelR (-k / 2) (a w) (b w) r θ -
+-      (k ^ 2 / (1 - r ^ 2)) * polarKernel (-k / 2) (a w) (b w) r θ) * f w ∂μ := by
++    polarOperator k r (polarIntegral (polarKernelRR (-k / 2)) a b μ f r θ)
++      (polarIntegral (polarKernelR (-k / 2)) a b μ f r θ)
++      (polarIntegral (polarKernelTT (-k / 2)) a b μ f r θ)
++      (polarIntegral (polarKernel (-k / 2)) a b μ f r θ) =
++    ∫ w, polarOperator k r (polarKernelRR (-k / 2) (a w) (b w) r θ)
++      (polarKernelR (-k / 2) (a w) (b w) r θ) (polarKernelTT (-k / 2) (a w) (b w) r θ)
++      (polarKernel (-k / 2) (a w) (b w) r θ) * f w ∂μ := by
+   have h0 := integrable_polarIntegral_kernel hK hμ hf
+     (continuousOn_polarKernel_source ha hb hsource (-k / 2)) hr θ
+   have h1 := integrable_polarIntegral_kernel hK hμ hf
+@@ -267,16 +248,16 @@ theorem polarIntegral_operator (k : ℝ) {r : ℝ} (hr : r ^ 2 < 1) (θ : ℝ) :
+     (continuousOn_polarKernelRR_source ha hb hsource (-k / 2)) hr θ
+   have h3 := integrable_polarIntegral_kernel hK hμ hf
+     (continuousOn_polarKernelTT_source ha hb hsource (-k / 2)) hr θ
+-  have heq (w : X) : (polarKernelRR (-k / 2) (a w) (b w) r θ +
+-      polarKernelR (-k / 2) (a w) (b w) r θ / r +
+-      polarKernelTT (-k / 2) (a w) (b w) r θ / r ^ 2 -
+-      (2 * k * r / (1 - r ^ 2)) * polarKernelR (-k / 2) (a w) (b w) r θ -
+-      (k ^ 2 / (1 - r ^ 2)) * polarKernel (-k / 2) (a w) (b w) r θ) * f w =
++  have heq (w : X) : polarOperator k r (polarKernelRR (-k / 2) (a w) (b w) r θ)
++      (polarKernelR (-k / 2) (a w) (b w) r θ) (polarKernelTT (-k / 2) (a w) (b w) r θ)
++      (polarKernel (-k / 2) (a w) (b w) r θ) * f w =
+       polarKernelRR (-k / 2) (a w) (b w) r θ * f w +
+       (polarKernelR (-k / 2) (a w) (b w) r θ * f w) / r +
+       (polarKernelTT (-k / 2) (a w) (b w) r θ * f w) / r ^ 2 -
+       (2 * k * r / (1 - r ^ 2)) * (polarKernelR (-k / 2) (a w) (b w) r θ * f w) -
+-      (k ^ 2 / (1 - r ^ 2)) * (polarKernel (-k / 2) (a w) (b w) r θ * f w) := by ring
++      (k ^ 2 / (1 - r ^ 2)) * (polarKernel (-k / 2) (a w) (b w) r θ * f w) := by
++    simp only [polarOperator]
++    ring
+   simp_rw [heq]
+   have hs1 := integral_add h2 (h1.div_const r)
+   have hs2 := integral_add (h2.add (h1.div_const r)) (h3.div_const (r ^ 2))
+@@ -286,28 +267,26 @@ theorem polarIntegral_operator (k : ℝ) {r : ℝ} (hr : r ^ 2 < 1) (θ : ℝ) :
+     (h1.const_mul (2 * k * r / (1 - r ^ 2)))) (h0.const_mul (k ^ 2 / (1 - r ^ 2)))
+   simp only [Pi.add_apply, Pi.sub_apply] at hs1 hs2 hs3 hs4
+   rw [hs4, hs3, hs2, hs1]
+-  simp only [integral_div, integral_const_mul, polarIntegral]
++  simp only [polarOperator, polarIntegral, integral_div, integral_const_mul]
+ 
+ theorem polarIntegral_operator_nonpos (k : ℝ) {r : ℝ} (hr : r ^ 2 < 1)
+     (hr0 : r ≠ 0) (θ : ℝ) (hfn : ∀ᵐ w ∂μ, 0 ≤ f w) :
+-    polarIntegral (polarKernelRR (-k / 2)) a b μ f r θ +
+-      polarIntegral (polarKernelR (-k / 2)) a b μ f r θ / r +
+-      polarIntegral (polarKernelTT (-k / 2)) a b μ f r θ / r ^ 2 -
+-      (2 * k * r / (1 - r ^ 2)) * polarIntegral (polarKernelR (-k / 2)) a b μ f r θ -
+-      (k ^ 2 / (1 - r ^ 2)) * polarIntegral (polarKernel (-k / 2)) a b μ f r θ ≤ 0 := by
++    polarOperator k r (polarIntegral (polarKernelRR (-k / 2)) a b μ f r θ)
++      (polarIntegral (polarKernelR (-k / 2)) a b μ f r θ)
++      (polarIntegral (polarKernelTT (-k / 2)) a b μ f r θ)
++      (polarIntegral (polarKernel (-k / 2)) a b μ f r θ) ≤ 0 := by
+   rw [polarIntegral_operator hK hμ hf ha hb hsource k hr θ]
+-  apply integral_nonpos_of_ae
+-  filter_upwards [hμ, hfn] with w hw hfw
+-  exact mul_nonpos_of_nonpos_of_nonneg (polarKernel_equation_nonpos k (a w) (b w) r θ
+-    (polarDenominator_pos hr (hsource w hw) θ) hr0 (sub_pos.mpr hr) (hsource w hw)) hfw
++  exact integral_nonpos_of_ae ((hμ.and hfn).mono fun w hw ↦
++    mul_nonpos_of_nonpos_of_nonneg (polarKernel_equation_nonpos k (a w) (b w) r θ
++      (polarDenominator_pos hr (hsource w hw.1) θ) hr0 (sub_pos.mpr hr) (hsource w hw.1))
++      hw.2)
+ 
+ theorem polarIntegral_operator_boundary (k : ℝ) {r : ℝ} (hr : r ^ 2 < 1)
+     (hr0 : r ≠ 0) (θ : ℝ) (hboundary : ∀ w ∈ K, a w ^ 2 + b w ^ 2 = 1) :
+-    polarIntegral (polarKernelRR (-k / 2)) a b μ f r θ +
+-      polarIntegral (polarKernelR (-k / 2)) a b μ f r θ / r +
+-      polarIntegral (polarKernelTT (-k / 2)) a b μ f r θ / r ^ 2 -
+-      (2 * k * r / (1 - r ^ 2)) * polarIntegral (polarKernelR (-k / 2)) a b μ f r θ -
+-      (k ^ 2 / (1 - r ^ 2)) * polarIntegral (polarKernel (-k / 2)) a b μ f r θ = 0 := by
++    polarOperator k r (polarIntegral (polarKernelRR (-k / 2)) a b μ f r θ)
++      (polarIntegral (polarKernelR (-k / 2)) a b μ f r θ)
++      (polarIntegral (polarKernelTT (-k / 2)) a b μ f r θ)
++      (polarIntegral (polarKernel (-k / 2)) a b μ f r θ) = 0 := by
+   rw [polarIntegral_operator hK hμ hf ha hb hsource k hr θ]
+   apply integral_eq_zero_of_ae
+   filter_upwards [hμ] with w hw
+diff --git a/BergmanWeakType/Weighted/QuotientCap.lean b/BergmanWeakType/Weighted/QuotientCap.lean
+index 47c2cafc1..8b6ee2e5c 100644
+--- a/BergmanWeakType/Weighted/QuotientCap.lean
++++ b/BergmanWeakType/Weighted/QuotientCap.lean
+@@ -5,6 +5,8 @@ Authors: Yongxi Lin
+ -/
+ module
+ 
++public import BergmanWeakType.Notation
++
+ public import BergmanWeakType.Weighted.PolarCap
+ public import Mathlib.Analysis.SpecialFunctions.Pow.Deriv
+ 
+@@ -60,83 +62,66 @@ theorem quotientWeight_hasDerivAt {k r : ℝ} {J Jr : ℝ → ℝ}
+     ring
+ 
+ theorem antitoneOn_angularMean_min_quotient {F Fr Frr Ft Ftt : ℝ → ℝ → ℝ}
+-    {J Jr Jrr : ℝ → ℝ} (k c : ℝ)
+-    (hF : ContinuousOn (fun p : ℝ × ℝ ↦ F p.1 p.2) (Ico 0 1 ×ˢ univ))
+-    (hFr : ContinuousOn (fun p : ℝ × ℝ ↦ Fr p.1 p.2) (Ico 0 1 ×ˢ univ))
+-    (hFrr : ContinuousOn (fun p : ℝ × ℝ ↦ Frr p.1 p.2) (Ico 0 1 ×ˢ univ))
+-    (hFt : ContinuousOn (fun p : ℝ × ℝ ↦ Ft p.1 p.2) (Ico 0 1 ×ˢ univ))
+-    (hFtt : ContinuousOn (fun p : ℝ × ℝ ↦ Ftt p.1 p.2) (Ico 0 1 ×ˢ univ))
+-    (hFd : ∀ r ∈ Ioo (0 : ℝ) 1, ∀ θ, HasDerivAt (fun u ↦ F u θ) (Fr r θ) r)
+-    (hFrd : ∀ r ∈ Ioo (0 : ℝ) 1, ∀ θ, HasDerivAt (fun u ↦ Fr u θ) (Frr r θ) r)
+-    (hFdt : ∀ r ∈ Ioo (0 : ℝ) 1, ∀ θ, HasDerivAt (F r) (Ft r θ) θ)
+-    (hFtd : ∀ r ∈ Ioo (0 : ℝ) 1, ∀ θ, HasDerivAt (Ft r) (Ftt r θ) θ)
+-    (hperiodF : ∀ r ∈ Ioo (0 : ℝ) 1, F r (2 * π) = F r 0)
+-    (hperiodFt : ∀ r ∈ Ioo (0 : ℝ) 1, Ft r (2 * π) = Ft r 0)
+-    (hJ : ContinuousOn J (Ico 0 1)) (hJr : ContinuousOn Jr (Ico 0 1))
+-    (hJrr : ContinuousOn Jrr (Ico 0 1))
+-    (hJd : ∀ r ∈ Ioo (0 : ℝ) 1, HasDerivAt J (Jr r) r)
+-    (hJrd : ∀ r ∈ Ioo (0 : ℝ) 1, HasDerivAt Jr (Jrr r) r)
+-    (hJpos : ∀ r ∈ Ico (0 : ℝ) 1, 0 < J r)
+-    (hJode : ∀ r ∈ Ioo (0 : ℝ) 1,
++    {J Jr Jrr : ℝ → ℝ} (k c : ℝ) (h : PolarSmooth F Fr Frr Ft Ftt)
++    (hJ : RadialSmooth J Jr Jrr)
++    (hJode : ∀ r ∈ Ioo01,
+       Jrr r + (1 / r - 2 * k * r / (1 - r ^ 2)) * Jr r -
+         (k ^ 2 / (1 - r ^ 2)) * J r = 0)
+-    (hFode : ∀ r ∈ Ioo (0 : ℝ) 1, ∀ θ,
++    (hFode : ∀ r ∈ Ioo01, ∀ θ,
+       Frr r θ + (1 / r - 2 * k * r / (1 - r ^ 2)) * Fr r θ + Ftt r θ / r ^ 2 -
+         (k ^ 2 / (1 - r ^ 2)) * F r θ ≤ 0) :
+     AntitoneOn (angularMean (fun r θ ↦ min (F r θ / J r) c)) (Ico 0 1) := by
+   have hJ' : ContinuousOn (fun p : ℝ × ℝ ↦ J p.1) (Ico 0 1 ×ˢ univ) :=
+-    hJ.comp continuous_fst.continuousOn (fun p hp ↦ hp.1)
++    hJ.cont.comp continuous_fst.continuousOn (fun p hp ↦ hp.1)
+   have hJr' : ContinuousOn (fun p : ℝ × ℝ ↦ Jr p.1) (Ico 0 1 ×ˢ univ) :=
+-    hJr.comp continuous_fst.continuousOn (fun p hp ↦ hp.1)
++    hJ.contR.comp continuous_fst.continuousOn (fun p hp ↦ hp.1)
+   have hJrr' : ContinuousOn (fun p : ℝ × ℝ ↦ Jrr p.1) (Ico 0 1 ×ˢ univ) :=
+-    hJrr.comp continuous_fst.continuousOn (fun p hp ↦ hp.1)
+-  have hn : ∀ p ∈ Ico (0 : ℝ) 1 ×ˢ (univ : Set ℝ), J p.1 ≠ 0 :=
+-    fun p hp ↦ (hJpos p.1 hp.1).ne'
+-  have hpow (n : ℕ) : ∀ p ∈ Ico (0 : ℝ) 1 ×ˢ (univ : Set ℝ), J p.1 ^ n ≠ 0 :=
++    hJ.contRR.comp continuous_fst.continuousOn (fun p hp ↦ hp.1)
++  have hn : ∀ p ∈ Ico01 ×ˢ (univ : Set ℝ), J p.1 ≠ 0 :=
++    fun p hp ↦ (hJ.pos p.1 hp.1).ne'
++  have hpow (n : ℕ) : ∀ p ∈ Ico01 ×ˢ (univ : Set ℝ), J p.1 ^ n ≠ 0 :=
+     fun p hp ↦ pow_ne_zero n (hn p hp)
++  have hmem : ∀ r ∈ Ioo01, r ∈ Ico01 := fun r hr ↦ ⟨hr.1.le, hr.2⟩
++  have hr2 : ∀ r ∈ Ioo01, r ^ 2 < 1 := fun r hr ↦
++    (sq_lt_one_iff_abs_lt_one r).mpr (abs_lt.mpr ⟨by linarith [hr.1], hr.2⟩)
+   have hbase : ContinuousOn (fun r : ℝ ↦ (1 - r ^ 2) ^ k) (Ico 0 1) := by
+     apply (continuousOn_const.sub (continuousOn_id.pow 2)).rpow_const
+-    intro r hr
+-    left
+-    apply (sub_pos.mpr ((sq_lt_one_iff_abs_lt_one r).mpr _)).ne'
+-    exact abs_lt.mpr ⟨by linarith [hr.1], hr.2⟩
+-  apply antitoneOn_angularMean_min_of_polar_flux c
++    rintro r ⟨h0, h1⟩
++    exact Or.inl (by nlinarith : (0 : ℝ) < 1 - r ^ 2).ne'
++  refine antitoneOn_angularMean_min_of_polar_flux c
+     (Fr := quotientRadialFirst F Fr J Jr) (Frr := quotientRadialSecond F Fr Frr J Jr Jrr)
+     (Ft := fun r θ ↦ Ft r θ / J r) (Ftt := fun r θ ↦ Ftt r θ / J r)
+     (w := quotientWeight k J) (w' := quotientWeightDeriv k J Jr)
+-  · exact hF.div hJ' hn
+-  · exact ((hFr.mul hJ').sub (hF.mul hJr')).div (hJ'.pow 2) (hpow 2)
+-  · exact (((hFrr.div hJ' hn).sub ((hF.mul hJrr').div (hJ'.pow 2) (hpow 2))).sub
+-      (((hFr.const_mul 2).mul hJr').div (hJ'.pow 2) (hpow 2))).add
+-      (((hF.const_mul 2).mul (hJr'.pow 2)).div (hJ'.pow 3) (hpow 3))
+-  · exact hFt.div hJ' hn
+-  · exact hFtt.div hJ' hn
++    ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ ?_ ?_ ?_ ?_
++  · exact h.cont.div hJ' hn
++  · exact ((h.contR.mul hJ').sub (h.cont.mul hJr')).div (hJ'.pow 2) (hpow 2)
++  · exact (((h.contRR.div hJ' hn).sub ((h.cont.mul hJrr').div (hJ'.pow 2) (hpow 2))).sub
++      (((h.contR.const_mul 2).mul hJr').div (hJ'.pow 2) (hpow 2))).add
++      (((h.cont.const_mul 2).mul (hJr'.pow 2)).div (hJ'.pow 3) (hpow 3))
++  · exact h.contT.div hJ' hn
++  · exact h.contTT.div hJ' hn
+   · intro r hr θ
+-    exact (hFd r hr θ).div (hJd r hr) (hJpos r ⟨hr.1.le, hr.2⟩).ne'
++    exact (h.deriv r hr θ).div (hJ.deriv r hr) (hJ.pos r (hmem r hr)).ne'
+   · intro r hr θ
+-    exact quotientRadialFirst_hasDerivAt (hFd r hr θ) (hFrd r hr θ) (hJd r hr)
+-      (hJrd r hr) (hJpos r ⟨hr.1.le, hr.2⟩).ne'
++    exact quotientRadialFirst_hasDerivAt (h.deriv r hr θ) (h.derivR r hr θ) (hJ.deriv r hr)
++      (hJ.derivR r hr) (hJ.pos r (hmem r hr)).ne'
+   · intro r hr θ
+-    exact (hFdt r hr θ).div_const (J r)
++    exact (h.derivT r hr θ).div_const (J r)
+   · intro r hr θ
+-    exact (hFtd r hr θ).div_const (J r)
++    exact (h.derivTT r hr θ).div_const (J r)
+   · intro r hr
+-    rw [hperiodF r hr]
++    rw [h.periodF r hr]
+   · intro r hr
+-    rw [hperiodFt r hr]
+-  · exact hbase.mul (hJ.pow 2)
++    rw [h.periodT r hr]
++  · exact hbase.mul (hJ.cont.pow 2)
+   · intro r hr
+-    exact quotientWeight_hasDerivAt
+-      ((sq_lt_one_iff_abs_lt_one r).mpr (abs_lt.mpr ⟨by linarith [hr.1], hr.2⟩))
+-      (hJpos r ⟨hr.1.le, hr.2⟩).ne' (hJd r hr)
++    exact quotientWeight_hasDerivAt (hr2 r hr) (hJ.pos r (hmem r hr)).ne' (hJ.deriv r hr)
+   · intro r hr
+-    apply mul_pos (Real.rpow_pos_of_pos _ _) (sq_pos_of_pos (hJpos r ⟨hr.1.le, hr.2⟩))
+-    exact sub_pos.mpr ((sq_lt_one_iff_abs_lt_one r).mpr
+-      (abs_lt.mpr ⟨by linarith [hr.1], hr.2⟩))
++    exact mul_pos (Real.rpow_pos_of_pos (sub_pos.mpr (hr2 r hr)) k)
++      (sq_pos_of_pos (hJ.pos r (hmem r hr)))
+   · intro r hr θ
+-    have hj := hJpos r ⟨hr.1.le, hr.2⟩
+-    have ht : 0 < 1 - r ^ 2 := sub_pos.mpr ((sq_lt_one_iff_abs_lt_one r).mpr
+-      (abs_lt.mpr ⟨by linarith [hr.1], hr.2⟩))
++    have hj := hJ.pos r (hmem r hr)
++    have ht : 0 < 1 - r ^ 2 := sub_pos.mpr (hr2 r hr)
+     have h := quotient_polar_operator_nonpos hj hr.1.ne'
+       (a := 1 / r - 2 * k * r / (1 - r ^ 2)) (b := -(k ^ 2 / (1 - r ^ 2)))
+       (by simpa only [neg_mul, ← sub_eq_add_neg] using hJode r hr)
+diff --git a/BergmanWeakType/Weighted/RadialFlux.lean b/BergmanWeakType/Weighted/RadialFlux.lean
+index 57befc757..e061de5ae 100644
+--- a/BergmanWeakType/Weighted/RadialFlux.lean
++++ b/BergmanWeakType/Weighted/RadialFlux.lean
+@@ -5,6 +5,8 @@ Authors: Yongxi Lin
+ -/
+ module
+ 
++public import BergmanWeakType.Notation
++
+ public import Mathlib.Analysis.Calculus.Deriv.MeanValue
+ public import Mathlib.MeasureTheory.Integral.IntervalIntegral.FundThmCalculus
+ public import Mathlib.Tactic.Linarith
+@@ -32,12 +34,12 @@ theorem integral_periodic_derivative_eq_zero {g g' : ℝ → ℝ} {T : ℝ}
+ /-- A nonincreasing radial flux vanishing at the origin forces the mean to decrease. -/
+ theorem antitoneOn_of_radial_flux {M M' w F F' : ℝ → ℝ}
+     (hM : ContinuousOn M (Ico 0 1))
+-    (hMd : ∀ r ∈ Ioo (0 : ℝ) 1, HasDerivAt M (M' r) r)
+-    (hw : ∀ r ∈ Ioo (0 : ℝ) 1, 0 < w r)
++    (hMd : ∀ r ∈ Ioo01, HasDerivAt M (M' r) r)
++    (hw : ∀ r ∈ Ioo01, 0 < w r)
+     (hF : ContinuousOn F (Ico 0 1)) (hFzero : F 0 = 0)
+-    (hFd : ∀ r ∈ Ioo (0 : ℝ) 1, HasDerivAt F (F' r) r)
+-    (hFnonpos : ∀ r ∈ Ioo (0 : ℝ) 1, F' r ≤ 0)
+-    (hflux : ∀ r ∈ Ioo (0 : ℝ) 1, F r = r * w r * M' r) :
++    (hFd : ∀ r ∈ Ioo01, HasDerivAt F (F' r) r)
++    (hFnonpos : ∀ r ∈ Ioo01, F' r ≤ 0)
++    (hflux : ∀ r ∈ Ioo01, F r = r * w r * M' r) :
+     AntitoneOn M (Ico 0 1) := by
+   have hanti : AntitoneOn F (Ico 0 1) := by
+     apply antitoneOn_of_hasDerivWithinAt_nonpos (convex_Ico 0 1) hF
+@@ -48,7 +50,7 @@ theorem antitoneOn_of_radial_flux {M M' w F F' : ℝ → ℝ}
+   · intro r hr
+     exact (hMd r (by simpa only [interior_Ico] using hr)).hasDerivWithinAt
+   · intro r hr
+-    have hr' : r ∈ Ioo (0 : ℝ) 1 := by simpa only [interior_Ico] using hr
++    have hr' : r ∈ Ioo01 := by simpa only [interior_Ico] using hr
+     have hle := hanti (show (0 : ℝ) ∈ Ico 0 1 by norm_num)
+       ⟨hr'.1.le, hr'.2⟩ hr'.1.le
+     rw [hFzero, hflux r hr'] at hle
+diff --git a/BergmanWeakType/Weighted/RadialLevel.lean b/BergmanWeakType/Weighted/RadialLevel.lean
+deleted file mode 100644
+index 04133defc..000000000
+--- a/BergmanWeakType/Weighted/RadialLevel.lean
++++ /dev/null
+@@ -1,158 +0,0 @@
+-/-
+-Copyright (c) 2026 Yongxi Lin. All rights reserved.
+-Released under Apache 2.0 license as described in the file LICENSE.
+-Authors: Yongxi Lin
+--/
+-module
+-
+-public import BergmanWeakType.Weighted.DiskCap
+-
+-/-! # Distribution estimates from increasing truncations in a radial mass coordinate -/
+-
+-@[expose] public section
+-
+-noncomputable section
+-
+-open MeasureTheory Complex Real Set
+-open scoped Topology
+-
+-namespace BergmanWeakType.Weighted
+-
+-def radialCapMean (U : ℂ → ℝ) (ρ : ℝ → ℝ) (y c : ℝ) : ℝ :=
+-  circleAverage (fun z ↦ min (U z) c) 0 (ρ y)
+-
+-def radialLevelFraction (U : ℂ → ℝ) (ρ : ℝ → ℝ) (t y : ℝ) : ℝ :=
+-  circleAverage (fun z ↦ if t * y < U z then (1 : ℝ) else 0) 0 (ρ y)
+-
+-theorem circleIntegrable_radialLevel {U : ℂ → ℝ} (hU : Measurable U) (t y r : ℝ) :
+-    CircleIntegrable (fun z ↦ if t * y < U z then (1 : ℝ) else 0) 0 r := by
+-  apply circleIntegrable_of_measurable_bounded
+-    (measurable_const.ite (measurableSet_lt measurable_const hU) measurable_const) (M := 1) _ r
+-  intro z
+-  split_ifs <;> norm_num
+-
+-theorem circleIntegrable_radialCap {U : ℂ → ℝ} (hU : Measurable U)
+-    (hUpos : ∀ z, 0 ≤ U z) (c r : ℝ) :
+-    CircleIntegrable (fun z ↦ min (U z) c) 0 r := by
+-  apply circleIntegrable_of_measurable_bounded (hU.inf measurable_const) (M := |c|) _ r
+-  intro z
+-  rw [Real.norm_eq_abs, abs_le]
+-  exact ⟨le_min ((neg_nonpos.mpr (abs_nonneg c)).trans (hUpos z)) (neg_abs_le c),
+-    (min_le_right _ _).trans (le_abs_self c)⟩
+-
+-theorem radialLevelFraction_mem_Icc {U : ℂ → ℝ} (hU : Measurable U)
+-    (ρ : ℝ → ℝ) (t y : ℝ) : radialLevelFraction U ρ t y ∈ Icc (0 : ℝ) 1 := by
+-  constructor
+-  · apply circleAverage_nonneg_of_nonneg
+-    intro z _
+-    split_ifs <;> norm_num
+-  · apply circleAverage_mono_on_of_le_circle (circleIntegrable_radialLevel hU t y _)
+-    intro z _
+-    split_ifs <;> norm_num
+-
+-theorem measurable_radialLevelFraction {U : ℂ → ℝ} (hU : Measurable U)
+-    {ρ : ℝ → ℝ} (hρ : Measurable ρ) (t : ℝ) :
+-    Measurable (radialLevelFraction U ρ t) := by
+-  have hpoint : Measurable (fun p : ℝ × ℝ ↦ circleMap 0 (ρ p.1) p.2) :=
+-    circleMap.continuous.measurable.comp ((hρ.comp measurable_fst).prodMk measurable_snd)
+-  have hm : Measurable (fun p : ℝ × ℝ ↦ if t * p.1 < U (circleMap 0 (ρ p.1) p.2)
+-      then (1 : ℝ) else 0) := measurable_const.ite
+-    (measurableSet_lt (measurable_const.mul measurable_fst) (hU.comp hpoint)) measurable_const
+-  have hi := hm.stronglyMeasurable.integral_prod_right'
+-    (ν := volume.restrict (Ioc (0 : ℝ) (2 * π)))
+-  change Measurable (fun y ↦ radialLevelFraction U ρ t y)
+-  simp only [radialLevelFraction, circleAverage_def, smul_eq_mul,
+-    intervalIntegral.integral_of_le two_pi_pos.le]
+-  exact measurable_const.mul hi.measurable
+-
+-theorem integrableOn_radialLevelFraction {U : ℂ → ℝ} (hU : Measurable U)
+-    {ρ : ℝ → ℝ} (hρ : Measurable ρ) (t : ℝ) :
+-    IntegrableOn (radialLevelFraction U ρ t) (Icc (0 : ℝ) 1) := by
+-  apply Measure.integrableOn_of_bounded measure_Icc_lt_top.ne
+-    (measurable_radialLevelFraction hU hρ t).aestronglyMeasurable (M := 1)
+-  exact Filter.Eventually.of_forall fun y ↦ by
+-    rw [Real.norm_of_nonneg (radialLevelFraction_mem_Icc hU ρ t y).1]
+-    exact (radialLevelFraction_mem_Icc hU ρ t y).2
+-
+-theorem radialCapMean_nonneg {U : ℂ → ℝ} (hUpos : ∀ z, 0 ≤ U z)
+-    (ρ : ℝ → ℝ) (y : ℝ) {c : ℝ} (hc : 0 ≤ c) : 0 ≤ radialCapMean U ρ y c := by
+-  apply circleAverage_nonneg_of_nonneg
+-  exact fun z _ ↦ le_min (hUpos z) hc
+-
+-theorem radialCapMean_le_level {U : ℂ → ℝ} (hU : Measurable U)
+-    (hUpos : ∀ z, 0 ≤ U z) (ρ : ℝ → ℝ) (y c : ℝ) : radialCapMean U ρ y c ≤ c := by
+-  apply circleAverage_mono_on_of_le_circle (circleIntegrable_radialCap hU hUpos c _)
+-  exact fun _ _ ↦ min_le_right _ _
+-
+-theorem measurable_radialCapMean_diagonal {U : ℂ → ℝ} (hU : Measurable U)
+-    {ρ : ℝ → ℝ} (hρ : Measurable ρ) (t : ℝ) :
+-    Measurable (fun y ↦ radialCapMean U ρ y (t * y)) := by
+-  have hpoint : Measurable (fun p : ℝ × ℝ ↦ circleMap 0 (ρ p.1) p.2) :=
+-    circleMap.continuous.measurable.comp ((hρ.comp measurable_fst).prodMk measurable_snd)
+-  have hm : Measurable (fun p : ℝ × ℝ ↦ min (U (circleMap 0 (ρ p.1) p.2)) (t * p.1)) :=
+-    (hU.comp hpoint).inf (measurable_const.mul measurable_fst)
+-  have hi := hm.stronglyMeasurable.integral_prod_right'
+-    (ν := volume.restrict (Ioc (0 : ℝ) (2 * π)))
+-  simp only [radialCapMean, circleAverage_def, smul_eq_mul,
+-    intervalIntegral.integral_of_le two_pi_pos.le]
+-  exact measurable_const.mul hi.measurable
+-
+-theorem integrableOn_radialCapMean_diagonal {U : ℂ → ℝ} (hU : Measurable U)
+-    (hUpos : ∀ z, 0 ≤ U z) {ρ : ℝ → ℝ} (hρ : Measurable ρ)
+-    {t : ℝ} (ht : 0 ≤ t) :
+-    IntegrableOn (fun y ↦ radialCapMean U ρ y (t * y)) (Icc (0 : ℝ) 1) := by
+-  apply Measure.integrableOn_of_bounded measure_Icc_lt_top.ne
+-    (measurable_radialCapMean_diagonal hU hρ t).aestronglyMeasurable (M := t)
+-  filter_upwards [ae_restrict_mem measurableSet_Icc] with y hy
+-  rw [Real.norm_of_nonneg (radialCapMean_nonneg hUpos ρ y (mul_nonneg ht hy.1))]
+-  exact (radialCapMean_le_level hU hUpos ρ y _).trans (mul_le_of_le_one_right ht hy.2)
+-
+-theorem radialCapMean_increment {U : ℂ → ℝ} (hU : Measurable U)
+-    (hUpos : ∀ z, 0 ≤ U z) (ρ : ℝ → ℝ) (t y : ℝ) {c : ℝ} (hc : c ≤ t * y) :
+-    (t * y - c) * radialLevelFraction U ρ t y ≤
+-      radialCapMean U ρ y (t * y) - radialCapMean U ρ y c := by
+-  have hiL : CircleIntegrable
+-      (fun z ↦ (t * y - c) • (if t * y < U z then (1 : ℝ) else 0)) 0 (ρ y) :=
+-    (circleIntegrable_radialLevel hU t y _).const_smul
+-  have hiR := (circleIntegrable_radialCap hU hUpos (t * y) (ρ y)).sub
+-    (circleIntegrable_radialCap hU hUpos c (ρ y))
+-  have hpoint (z : ℂ) : (t * y - c) • (if t * y < U z then (1 : ℝ) else 0) ≤
+-      min (U z) (t * y) - min (U z) c := by
+-    by_cases hz : t * y < U z
+-    · rw [ite_eq_left hz, smul_eq_mul, mul_one, min_eq_right hz.le,
+-        min_eq_right (hc.trans hz.le)]
+-    · rw [ite_eq_right hz, smul_eq_mul, mul_zero]
+-      exact sub_nonneg.mpr (min_le_min_left _ hc)
+-  have havg := circleAverage_mono hiL hiR (fun z _ ↦ hpoint z)
+-  rw [circleAverage_fun_smul, circleAverage_sub
+-    (circleIntegrable_radialCap hU hUpos (t * y) _) (circleIntegrable_radialCap hU hUpos c _)] at havg
+-  exact havg
+-
+-/-- Increasing cap means in the mass coordinate give the integrated level-set estimate. -/
+-theorem integral_mul_radialLevelFraction_le {U : ℂ → ℝ} (hU : Measurable U)
+-    (hUpos : ∀ z, 0 ≤ U z) {ρ : ℝ → ℝ} (hρ : Measurable ρ) {M : ℝ}
+-    (hmono : ∀ c, MonotoneOn (fun y ↦ radialCapMean U ρ y c) (Ioo 0 1))
+-    (hbound : ∀ y ∈ Ioo (0 : ℝ) 1, ∀ c, radialCapMean U ρ y c ≤ M)
+-    {t : ℝ} (ht : 0 ≤ t) :
+-    (∫ y in (0 : ℝ)..1, t * radialLevelFraction U ρ t y) ≤ M := by
+-  apply integral_le_of_finite_difference_domination
+-    ((integrableOn_radialLevelFraction hU hρ t).const_mul t)
+-    (integrableOn_radialCapMean_diagonal hU hUpos hρ ht)
+-  · intro y hy
+-    exact radialCapMean_nonneg hUpos ρ y (mul_nonneg ht hy.1.le)
+-  · intro y hy
+-    exact hbound y hy _
+-  · intro y h hy hh hyh
+-    have hy' : y ∈ Ioo (0 : ℝ) 1 := ⟨hy, by linarith⟩
+-    have hyh' : y + h ∈ Ioo (0 : ℝ) 1 := ⟨by linarith, hyh⟩
+-    have hinc := radialCapMean_increment hU hUpos ρ t (y + h)
+-      (mul_le_mul_of_nonneg_left (by linarith : y ≤ y + h) ht)
+-    have hm := hmono (t * y) hy' hyh' (by linarith)
+-    have heq : t * (y + h) - t * y = h * t := by ring
+-    rw [heq] at hinc
+-    calc
+-      _ = (h * t) * radialLevelFraction U ρ t (y + h) := by ring
+-      _ ≤ _ := hinc
+-      _ ≤ _ := sub_le_sub_left hm _
+-
+-end BergmanWeakType.Weighted
+diff --git a/BergmanWeakType/Weighted/SmoothCap.lean b/BergmanWeakType/Weighted/SmoothCap.lean
+index 83286fc6a..0e3234de9 100644
+--- a/BergmanWeakType/Weighted/SmoothCap.lean
++++ b/BergmanWeakType/Weighted/SmoothCap.lean
+@@ -5,6 +5,8 @@ Authors: Yongxi Lin
+ -/
+ module
+ 
++public import BergmanWeakType.Notation
++
+ public import Mathlib.Analysis.SpecialFunctions.Sqrt
+ public import Mathlib.Analysis.Calculus.Deriv.Add
+ public import Mathlib.Analysis.Calculus.Deriv.Inv
+@@ -25,6 +27,10 @@ open scoped Topology
+ 
+ namespace BergmanWeakType
+ 
++/-- Continuity of a two-variable function on the radial strip `[0,1) × ℝ`. -/
++def OnStrip (G : ℝ → ℝ → ℝ) : Prop :=
++  ContinuousOn (fun p : ℝ × ℝ ↦ G p.1 p.2) (Set.Ico 0 1 ×ˢ Set.univ)
++
+ /-- A smooth approximation to `min x c`, shifted to stay nonnegative for nonnegative inputs. -/
+ def smoothCap (ε c x : ℝ) : ℝ :=
+   (x + c - Real.sqrt ((x - c) ^ 2 + ε ^ 2) + ε) / 2
+@@ -62,7 +68,7 @@ theorem min_le_smoothCap {ε c x : ℝ} (hε : 0 ≤ ε) : min x c ≤ smoothCap
+     linarith
+ 
+ theorem smoothCapLevelDeriv_mem_Icc {ε c x : ℝ} (hε : 0 < ε) :
+-    smoothCapLevelDeriv ε c x ∈ Set.Icc (0 : ℝ) 1 := by
++    smoothCapLevelDeriv ε c x ∈ Icc01 := by
+   have hp : 0 < Real.sqrt ((x - c) ^ 2 + ε ^ 2) :=
+     Real.sqrt_pos.mpr (by nlinarith [sq_nonneg (x - c)])
+   have hsq : |x - c| ≤ Real.sqrt ((x - c) ^ 2 + ε ^ 2) := by
+@@ -75,7 +81,7 @@ theorem smoothCapLevelDeriv_mem_Icc {ε c x : ℝ} (hε : 0 < ε) :
+   constructor <;> dsimp [smoothCapLevelDeriv] <;> linarith
+ 
+ theorem smoothCapInputDeriv_mem_Icc {ε c x : ℝ} (hε : 0 < ε) :
+-    smoothCapInputDeriv ε c x ∈ Set.Icc (0 : ℝ) 1 := by
++    smoothCapInputDeriv ε c x ∈ Icc01 := by
+   rcases smoothCapLevelDeriv_mem_Icc (c := c) (x := x) hε with ⟨hl, hu⟩
+   constructor <;> dsimp [smoothCapInputDeriv, smoothCapLevelDeriv] at * <;> linarith
+ 
+diff --git a/BergmanWeakType/Weighted/WeightedPotential.lean b/BergmanWeakType/Weighted/WeightedPotential.lean
+index 996ecac1d..540fc3b07 100644
+--- a/BergmanWeakType/Weighted/WeightedPotential.lean
++++ b/BergmanWeakType/Weighted/WeightedPotential.lean
+@@ -5,10 +5,11 @@ Authors: Yongxi Lin
+ -/
+ module
+ 
++public import BergmanWeakType.Notation
++
+ public import BergmanWeakType.Weighted.PolarPotential
+ public import BergmanWeakType.Weighted.QuotientCap
+ public import BergmanWeakType.Weighted.NormalizerRadial
+-public import BergmanWeakType.Weighted.DiskPotential
+ 
+ /-! # Weighted positive potentials and their normalized circular caps -/
+ 
+@@ -125,14 +126,16 @@ theorem antitoneOn_angularMean_normalized_polarIntegral
+     AntitoneOn (angularMean (fun r θ ↦
+       min (polarIntegral (polarKernel (-(α + 2) / 2)) a b μ f r θ / normalizer α r) c))
+       (Ico 0 1) := by
+-  have hr2 (r : ℝ) (hr : r ∈ Ioo (0 : ℝ) 1) : r ^ 2 < 1 :=
++  have hr2 (r : ℝ) (hr : r ∈ Ioo01) : r ^ 2 < 1 :=
+     (sq_lt_one_iff_abs_lt_one r).mpr (abs_lt.mpr ⟨by linarith [hr.1], hr.2⟩)
+-  apply antitoneOn_angularMean_min_quotient (α + 2) c
++  refine antitoneOn_angularMean_min_quotient
+     (Fr := polarIntegral (polarKernelR (-(α + 2) / 2)) a b μ f)
+     (Frr := polarIntegral (polarKernelRR (-(α + 2) / 2)) a b μ f)
+     (Ft := polarIntegral (polarKernelT (-(α + 2) / 2)) a b μ f)
+     (Ftt := polarIntegral (polarKernelTT (-(α + 2) / 2)) a b μ f)
+     (Jr := normalizerFirst α) (Jrr := normalizerSecond α)
++    (α + 2) c ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_,
++    ?_, ?_⟩ ⟨?_, ?_, ?_, ?_, ?_, ?_⟩ ?_ ?_
+   · exact continuousOn_polarIntegral_unit hK hμ hf (continuousOn_polarKernel_source ha hb hsource _)
+   · exact continuousOn_polarIntegral_unit hK hμ hf (continuousOn_polarKernelR_source ha hb hsource _)
+   · exact continuousOn_polarIntegral_unit hK hμ hf (continuousOn_polarKernelRR_source ha hb hsource _)
+@@ -166,6 +169,7 @@ theorem antitoneOn_angularMean_normalized_polarIntegral
+   · intro r hr θ
+     convert polarIntegral_operator_nonpos hK hμ hf ha hb hsource (α + 2)
+       (hr2 r hr) hr.1.ne' θ hfn using 1
++    simp only [polarOperator]
+     ring
+ 
+ theorem closedDisk_coordinates_le {w : ℂ} (hw : w ∈ Metric.closedBall 0 1) :
+@@ -201,7 +205,7 @@ theorem antitoneOn_circleAverage_min_weightedNormalizedPotential {α : ℝ} (hα
+   exact h hr hs hrs
+ 
+ theorem circleAverage_min_weightedDiskPotential_eq {α : ℝ} {f : ℂ → ℂ}
+-    {r : ℝ} (hr : r ∈ Ico (0 : ℝ) 1) (c : ℝ) :
++    {r : ℝ} (hr : r ∈ Ico01) (c : ℝ) :
+     circleAverage (fun z ↦ min (weightedDiskPotential α f z) c) 0 r =
+       circleAverage (fun z ↦ min (weightedNormalizedPotential α f z) c) 0 r := by
+   apply circleAverage_congr_sphere
+@@ -223,7 +227,7 @@ theorem antitoneOn_circleAverage_min_weightedDiskPotential {α : ℝ} (hα : -1
+ 
+ theorem circleAverage_min_weightedDiskPotential_le_mass {α : ℝ} (hα : -1 < α)
+     {f : ℂ → ℂ} (hf : Integrable f (weightedArea α)) {r : ℝ}
+-    (hr : r ∈ Ico (0 : ℝ) 1) (c : ℝ) :
++    (hr : r ∈ Ico01) (c : ℝ) :
+     circleAverage (fun z ↦ min (weightedDiskPotential α f z) c) 0 r ≤
+       ∫ w, ‖f w‖ ∂weightedArea α := by
+   rw [circleAverage_min_weightedDiskPotential_eq hr]
+diff --git a/BergmanWeakType/WeightedSharp.lean b/BergmanWeakType/WeightedSharp.lean
+index 199aae709..27d139a1c 100644
+--- a/BergmanWeakType/WeightedSharp.lean
++++ b/BergmanWeakType/WeightedSharp.lean
+@@ -6,7 +6,7 @@ Authors: Yongxi Lin
+ module
+ 
+ public import BergmanWeakType.Weighted.WeightedPotential
+-public import BergmanWeakType.Weighted.RadialLevel
++public import BergmanWeakType.Weighted.DiskCap
+ public import BergmanWeakType.Weighted.MassCoordinate
+ public import BergmanWeakType.Weighted.AnnularSharpness
+ public import BergmanWeakType.Comparison
+diff --git a/Solution.lean b/Solution.lean
+index c8fbf1dcd..03be5594c 100644
+--- a/Solution.lean
++++ b/Solution.lean
+@@ -4,22 +4,65 @@ Released under Apache 2.0 license as described in the file LICENSE.
+ Authors: Yongxi Lin
+ -/
+ module
++import BergmanWeakType.Boundary.CapMass
++import BergmanWeakType.Boundary.ColumnBound
++import BergmanWeakType.Boundary.HalfDiskIntegral
+ import BergmanWeakType.Boundary.Sharpness
++import BergmanWeakType.CompactGap
+ import BergmanWeakType.Comparison
++import BergmanWeakType.Definitions
+ import BergmanWeakType.DiskSharp
++import BergmanWeakType.Domain
++import BergmanWeakType.DomainLowerBound
+ import BergmanWeakType.Kernel
++import BergmanWeakType.KernelIntegrability
+ import BergmanWeakType.Measure
++import BergmanWeakType.Notation
+ import BergmanWeakType.Reproduction
++import BergmanWeakType.Rigidity.AnalyticInverse
+ import BergmanWeakType.Rigidity.BoundedRigidity
++import BergmanWeakType.Rigidity.ChangeOfVariables
++import BergmanWeakType.Rigidity.CoreGap
++import BergmanWeakType.Rigidity.DiskReproducing
++import BergmanWeakType.Rigidity.DiskSimilarity
++import BergmanWeakType.Rigidity.DomainGap
+ import BergmanWeakType.Rigidity.IntegralPhase
++import BergmanWeakType.Rigidity.KernelTransform
++import BergmanWeakType.Rigidity.MobiusGeometry
++import BergmanWeakType.Rigidity.Perturbation
++import BergmanWeakType.Rigidity.PhaseRigidity
++import BergmanWeakType.Rigidity.PolarIntegral
+ import BergmanWeakType.Rigidity.RiemannMapping
+ import BergmanWeakType.Rigidity.UnitDiscShift
+-import BergmanWeakType.Weighted.DiskPotential
++import BergmanWeakType.RigidityWitness
++import BergmanWeakType.WeakType
++import BergmanWeakType.Weighted.AngularMean
++import BergmanWeakType.Weighted.AnnularSharpness
++import BergmanWeakType.Weighted.AnnulusMeasure
++import BergmanWeakType.Weighted.BetaIntegral
++import BergmanWeakType.Weighted.CircleMobius
++import BergmanWeakType.Weighted.CompactIntegral
++import BergmanWeakType.Weighted.DiskCap
++import BergmanWeakType.Weighted.DiskSupermean
++import BergmanWeakType.Weighted.KernelPDE
++import BergmanWeakType.Weighted.KernelPotential
++import BergmanWeakType.Weighted.MassCoordinate
++import BergmanWeakType.Weighted.MovingCap
+ import BergmanWeakType.Weighted.Normalizer
++import BergmanWeakType.Weighted.NormalizerEndpoint
++import BergmanWeakType.Weighted.NormalizerRadial
++import BergmanWeakType.Weighted.PoissonCap
++import BergmanWeakType.Weighted.PolarCap
++import BergmanWeakType.Weighted.PolarIntegral
++import BergmanWeakType.Weighted.PolarKernel
++import BergmanWeakType.Weighted.PolarPotential
++import BergmanWeakType.Weighted.QuotientCap
++import BergmanWeakType.Weighted.RadialFlux
++import BergmanWeakType.Weighted.RadialKernel
++import BergmanWeakType.Weighted.SmoothCap
+ import BergmanWeakType.Weighted.WeightedPotential
+ import BergmanWeakType.WeightedSharp
+ 
+-
+ /-! # Completed proof development
+ 
+ All seven declarations listed in comparator.json are implemented with the exact Challenge

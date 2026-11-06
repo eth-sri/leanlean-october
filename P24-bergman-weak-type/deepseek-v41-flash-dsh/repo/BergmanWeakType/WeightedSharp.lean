@@ -6,7 +6,7 @@ Authors: Yongxi Lin
 module
 
 public import BergmanWeakType.Weighted.WeightedPotential
-public import BergmanWeakType.Weighted.RadialLevel
+public import BergmanWeakType.Weighted.DiskCap
 public import BergmanWeakType.Weighted.MassCoordinate
 public import BergmanWeakType.Weighted.AnnularSharpness
 public import BergmanWeakType.Comparison

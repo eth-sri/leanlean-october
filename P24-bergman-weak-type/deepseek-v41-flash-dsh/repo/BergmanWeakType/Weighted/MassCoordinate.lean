@@ -5,6 +5,8 @@ Authors: Yongxi Lin
 -/
 module
 
+public import BergmanWeakType.Notation
+
 public import BergmanWeakType.Weighted.PolarIntegral
 public import Mathlib.Analysis.SpecialFunctions.Pow.Deriv
 
@@ -32,8 +34,8 @@ theorem image_rpow_unit_interval {q : ℝ} (hq : 0 < q) :
 
 theorem integral_unit_interval_rpow [CompleteSpace E] {q : ℝ} (hq : 0 < q)
     (F : ℝ → E) :
-    (∫ y in Ioo (0 : ℝ) 1, F y) =
-      ∫ x in Ioo (0 : ℝ) 1, (q * x ^ (q - 1)) • F (x ^ q) := by
+    (∫ y in Ioo01, F y) =
+      ∫ x in Ioo01, (q * x ^ (q - 1)) • F (x ^ q) := by
   have hi : InjOn (fun x : ℝ ↦ x ^ q) (Ioo 0 1) := by
     intro x hx y hy hxy
     exact (rpow_left_inj hx.1.le hy.1.le hq.ne').mp hxy
@@ -48,8 +50,8 @@ theorem integral_unit_interval_rpow [CompleteSpace E] {q : ℝ} (hq : 0 < q)
 /-- A radius whose exterior weighted disk has measure `y`. -/
 def massRadius (α y : ℝ) : ℝ := sqrt (1 - y ^ (α + 1)⁻¹)
 
-theorem massRadius_mem_unit {α y : ℝ} (hα : -1 < α) (hy : y ∈ Ioo (0 : ℝ) 1) :
-    massRadius α y ∈ Ioo (0 : ℝ) 1 := by
+theorem massRadius_mem_unit {α y : ℝ} (hα : -1 < α) (hy : y ∈ Ioo01) :
+    massRadius α y ∈ Ioo01 := by
   have hp : 0 < α + 1 := by linarith
   have hpow := rpow_lt_one hy.1.le hy.2 (inv_pos.mpr hp)
   constructor

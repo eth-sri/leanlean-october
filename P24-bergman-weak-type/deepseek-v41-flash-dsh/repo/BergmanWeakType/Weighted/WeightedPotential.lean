@@ -5,10 +5,11 @@ Authors: Yongxi Lin
 -/
 module
 
+public import BergmanWeakType.Notation
+
 public import BergmanWeakType.Weighted.PolarPotential
 public import BergmanWeakType.Weighted.QuotientCap
 public import BergmanWeakType.Weighted.NormalizerRadial
-public import BergmanWeakType.Weighted.DiskPotential
 
 /-! # Weighted positive potentials and their normalized circular caps -/
 
@@ -125,14 +126,16 @@ theorem antitoneOn_angularMean_normalized_polarIntegral
     AntitoneOn (angularMean (fun r θ ↦
       min (polarIntegral (polarKernel (-(α + 2) / 2)) a b μ f r θ / normalizer α r) c))
       (Ico 0 1) := by
-  have hr2 (r : ℝ) (hr : r ∈ Ioo (0 : ℝ) 1) : r ^ 2 < 1 :=
+  have hr2 (r : ℝ) (hr : r ∈ Ioo01) : r ^ 2 < 1 :=
     (sq_lt_one_iff_abs_lt_one r).mpr (abs_lt.mpr ⟨by linarith [hr.1], hr.2⟩)
-  apply antitoneOn_angularMean_min_quotient (α + 2) c
+  refine antitoneOn_angularMean_min_quotient
     (Fr := polarIntegral (polarKernelR (-(α + 2) / 2)) a b μ f)
     (Frr := polarIntegral (polarKernelRR (-(α + 2) / 2)) a b μ f)
     (Ft := polarIntegral (polarKernelT (-(α + 2) / 2)) a b μ f)
     (Ftt := polarIntegral (polarKernelTT (-(α + 2) / 2)) a b μ f)
     (Jr := normalizerFirst α) (Jrr := normalizerSecond α)
+    (α + 2) c ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_,
+    ?_, ?_⟩ ⟨?_, ?_, ?_, ?_, ?_, ?_⟩ ?_ ?_
   · exact continuousOn_polarIntegral_unit hK hμ hf (continuousOn_polarKernel_source ha hb hsource _)
   · exact continuousOn_polarIntegral_unit hK hμ hf (continuousOn_polarKernelR_source ha hb hsource _)
   · exact continuousOn_polarIntegral_unit hK hμ hf (continuousOn_polarKernelRR_source ha hb hsource _)
@@ -166,6 +169,7 @@ theorem antitoneOn_angularMean_normalized_polarIntegral
   · intro r hr θ
     convert polarIntegral_operator_nonpos hK hμ hf ha hb hsource (α + 2)
       (hr2 r hr) hr.1.ne' θ hfn using 1
+    simp only [polarOperator]
     ring
 
 theorem closedDisk_coordinates_le {w : ℂ} (hw : w ∈ Metric.closedBall 0 1) :
@@ -201,7 +205,7 @@ theorem antitoneOn_circleAverage_min_weightedNormalizedPotential {α : ℝ} (hα
   exact h hr hs hrs
 
 theorem circleAverage_min_weightedDiskPotential_eq {α : ℝ} {f : ℂ → ℂ}
-    {r : ℝ} (hr : r ∈ Ico (0 : ℝ) 1) (c : ℝ) :
+    {r : ℝ} (hr : r ∈ Ico01) (c : ℝ) :
     circleAverage (fun z ↦ min (weightedDiskPotential α f z) c) 0 r =
       circleAverage (fun z ↦ min (weightedNormalizedPotential α f z) c) 0 r := by
   apply circleAverage_congr_sphere
@@ -223,7 +227,7 @@ theorem antitoneOn_circleAverage_min_weightedDiskPotential {α : ℝ} (hα : -1 
 
 theorem circleAverage_min_weightedDiskPotential_le_mass {α : ℝ} (hα : -1 < α)
     {f : ℂ → ℂ} (hf : Integrable f (weightedArea α)) {r : ℝ}
-    (hr : r ∈ Ico (0 : ℝ) 1) (c : ℝ) :
+    (hr : r ∈ Ico01) (c : ℝ) :
     circleAverage (fun z ↦ min (weightedDiskPotential α f z) c) 0 r ≤
       ∫ w, ‖f w‖ ∂weightedArea α := by
   rw [circleAverage_min_weightedDiskPotential_eq hr]

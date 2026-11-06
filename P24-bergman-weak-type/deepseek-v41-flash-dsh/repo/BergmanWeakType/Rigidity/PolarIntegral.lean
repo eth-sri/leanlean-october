@@ -5,6 +5,8 @@ Authors: Yongxi Lin
 -/
 module
 
+public import BergmanWeakType.Notation
+
 public import BergmanWeakType.Measure
 public import Mathlib.Analysis.SpecialFunctions.PolarCoord
 public import Mathlib.MeasureTheory.Integral.Prod
@@ -45,7 +47,7 @@ theorem integrable_polar {f : ℂ → E} (hf : Integrable f) :
 
 /-- Polar coordinates for an integrable function on the unit disk. -/
 theorem integral_disk_eq_polar [CompleteSpace E] {f : ℂ → E} (hf : IntegrableOn f disk) :
-    ∫ z in disk, f z = ∫ r in Ioo (0 : ℝ) 1, r •
+    ∫ z in disk, f z = ∫ r in Ioo01, r •
       ∫ θ in Ioo (-π) π, f (Complex.polarCoord.symm (r, θ)) := by
   have hD : MeasurableSet disk := isOpen_ball.measurableSet
   have hfi : Integrable (disk.indicator f) := (integrable_indicator_iff hD).mpr hf
@@ -79,11 +81,11 @@ theorem integral_disk_eq_polar [CompleteSpace E] {f : ℂ → E} (hf : Integrabl
 
 theorem integral_polar_angle_eq_circleAverage [CompleteSpace E] (f : ℂ → E) (r : ℝ) :
     (∫ θ in Ioo (-π) π, f (Complex.polarCoord.symm (r, θ))) =
-      (2 * π) • Real.circleAverage f 0 r := by
+      (τ) • Real.circleAverage f 0 r := by
   rw [Real.circleAverage_eq_integral_add (-π),
     intervalIntegral.integral_comp_add_right (fun θ ↦ f (circleMap 0 r θ)) (-π), zero_add]
-  have harg : 2 * π + -π = π := by ring
-  rw [harg, smul_smul, mul_inv_cancel₀ (by positivity : 2 * π ≠ 0), one_smul,
+  have harg : τ + -π = π := by ring
+  rw [harg, smul_smul, mul_inv_cancel₀ (by positivity : τ ≠ 0), one_smul,
     intervalIntegral.integral_of_le (by linarith [Real.pi_pos]), integral_Ioc_eq_integral_Ioo]
   congr 1
   funext θ
@@ -99,7 +101,7 @@ theorem integrable_diskArea_iff {f : ℂ → E} :
 /-- Disk integration is twice the radius-weighted integral of circular means. -/
 theorem integral_diskArea_eq_circleAverage [CompleteSpace E] {f : ℂ → E}
     (hf : Integrable f diskArea) :
-    ∫ z, f z ∂diskArea = ∫ r in Ioo (0 : ℝ) 1, (2 * r) • Real.circleAverage f 0 r := by
+    ∫ z, f z ∂diskArea = ∫ r in Ioo01, (2 * r) • Real.circleAverage f 0 r := by
   rw [diskArea, area, Measure.restrict_smul, integral_smul_measure,
     ENNReal.toReal_ofReal (by positivity : (0 : ℝ) ≤ π⁻¹),
     integral_disk_eq_polar (integrable_diskArea_iff.mp hf), ← integral_smul]
@@ -121,7 +123,7 @@ theorem image_sq_unit_interval : (fun r : ℝ ↦ r ^ 2) '' Ioo 0 1 = Ioo 0 1 :=
     exact (Real.sqrt_lt' (by norm_num : (0 : ℝ) < 1)).mpr (by simpa using hy.2)
 
 theorem integral_unit_interval_sq [CompleteSpace E] (F : ℝ → E) :
-    (∫ y in Ioo (0 : ℝ) 1, F y) = ∫ r in Ioo (0 : ℝ) 1, (2 * r) • F (r ^ 2) := by
+    (∫ y in Ioo01, F y) = ∫ r in Ioo01, (2 * r) • F (r ^ 2) := by
   have hd (r : ℝ) : HasDerivWithinAt (fun r : ℝ ↦ r ^ 2) (2 * r) (Ioo 0 1) r := by
     simpa using (hasDerivAt_pow 2 r).hasDerivWithinAt
   have hi : InjOn (fun r : ℝ ↦ r ^ 2) (Ioo 0 1) := by
@@ -136,7 +138,7 @@ theorem integral_unit_interval_sq [CompleteSpace E] (F : ℝ → E) :
 /-- Squared radius is the uniform radial coordinate for normalized disk area. -/
 theorem integral_diskArea_eq_circleAverage_sqrt [CompleteSpace E] {f : ℂ → E}
     (hf : Integrable f diskArea) :
-    ∫ z, f z ∂diskArea = ∫ y in Ioo (0 : ℝ) 1, Real.circleAverage f 0 (Real.sqrt y) := by
+    ∫ z, f z ∂diskArea = ∫ y in Ioo01, Real.circleAverage f 0 (Real.sqrt y) := by
   rw [integral_diskArea_eq_circleAverage hf,
     integral_unit_interval_sq (fun y ↦ Real.circleAverage f 0 (Real.sqrt y))]
   apply setIntegral_congr_fun measurableSet_Ioo

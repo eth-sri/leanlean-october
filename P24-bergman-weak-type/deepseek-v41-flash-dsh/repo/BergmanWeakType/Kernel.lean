@@ -23,48 +23,42 @@ namespace BergmanWeakType
 theorem mem_disk_iff (z : ℂ) : z ∈ disk ↔ ‖z‖ < 1 := by
   simp [disk, Metric.mem_ball, dist_zero_right]
 
+theorem kernel_denominator_ne_zero_closed_input {R : ℝ} (hR : R < 1) {z w : ℂ}
+    (hz : z ∈ Metric.closedBall 0 R) (hw : w ∈ Metric.closedBall 0 1) :
+    1 - z * star w ≠ 0 := by
+  have hz' : ‖z‖ < 1 := (by simpa using hz : ‖z‖ ≤ R).trans_lt hR
+  have hw' : ‖w‖ ≤ 1 := by simpa using hw
+  have hm : ‖z * star w‖ < 1 := by
+    rw [norm_mul, norm_star]
+    exact (mul_le_of_le_one_right (norm_nonneg _) hw').trans_lt hz'
+  intro heq
+  have h2 : ‖z * star w‖ = 1 := by rw [← sub_eq_zero.mp heq, norm_one]
+  linarith
+
 theorem kernel_denominator_ne_zero {z w : ℂ} (hz : z ∈ disk) (hw : w ∈ disk) :
     1 - z * star w ≠ 0 := by
-  have hz' : ‖z‖ < 1 := (mem_disk_iff z).mp hz
-  have hw' : ‖w‖ < 1 := (mem_disk_iff w).mp hw
-  have hmul : ‖z * star w‖ < 1 := by
-    rw [norm_mul, norm_star]
-    exact (mul_le_of_le_one_right (norm_nonneg z) hw'.le).trans_lt hz'
-  intro h
-  have hzw : z * star w = 1 := (sub_eq_zero.mp h).symm
-  rw [hzw, norm_one] at hmul
-  exact (lt_irrefl 1) hmul
+  have hz1 : ‖z‖ < 1 := (mem_disk_iff z).mp hz
+  have hw1 : ‖w‖ < 1 := (mem_disk_iff w).mp hw
+  refine kernel_denominator_ne_zero_closed_input (R := (‖z‖ + 1) / 2) ?_ ?_ ?_
+  · linarith
+  · simp only [Metric.mem_closedBall, dist_zero_right]; linarith
+  · simp only [Metric.mem_closedBall, dist_zero_right]; linarith
 
 /-- The kernel's base lies in the right half-plane on the disk. -/
 theorem kernel_denominator_re_pos {z w : ℂ} (hz : z ∈ disk) (hw : w ∈ disk) :
     0 < (1 - z * star w).re := by
   have hmul : ‖z * star w‖ < 1 := by
     rw [norm_mul, norm_star]
-    exact (mul_le_of_le_one_right (norm_nonneg z) ((mem_disk_iff w).mp hw).le).trans_lt
-      ((mem_disk_iff z).mp hz)
-  simpa only [Complex.sub_re, Complex.one_re] using
-    sub_pos.mpr ((Complex.re_le_norm _).trans_lt hmul)
+    nlinarith [(mem_disk_iff z).mp hz, (mem_disk_iff w).mp hw, norm_nonneg z, norm_nonneg w]
+  have h1 := Complex.re_le_norm (1 - z * star w)
+  have h2 := Complex.re_le_norm (z * star w)
+  rw [Complex.sub_re, Complex.one_re] at h1
+  rw [Complex.sub_re, Complex.one_re]
+  linarith
 
 @[simp]
 theorem norm_kernel (z w : ℂ) : ‖kernel z w‖ = ‖1 - z * star w‖⁻¹ ^ 2 := by
   simp [kernel, norm_pow, norm_inv]
-
-@[simp]
-theorem kernel_zero_left (w : ℂ) : kernel 0 w = 1 := by
-  simp [kernel]
-
-@[simp]
-theorem kernel_zero_right (z : ℂ) : kernel z 0 = 1 := by
-  simp [kernel]
-
-@[simp]
-theorem projection_at_zero (f : ℂ → ℂ) : projection f 0 = ∫ w, f w ∂diskArea := by
-  simp [projection]
-
-@[simp]
-theorem positiveProjection_at_zero (f : ℂ → ℂ) :
-    positiveProjection f 0 = ∫⁻ w, ‖f w‖ₑ ∂diskArea := by
-  simp [positiveProjection]
 
 /-- The positive extended integral bounds the complex Bochner integral pointwise. -/
 theorem enorm_projection_le_positiveProjection (f : ℂ → ℂ) (z : ℂ) :
@@ -103,13 +97,8 @@ theorem weightedPositiveProjection_zero (f : ℂ → ℂ) :
   funext z
   simp [weightedPositiveProjection, positiveProjection]
 
-@[simp]
-theorem gammaConstant_zero : gammaConstant 0 = 1 := by
-  simp [gammaConstant]
-
-theorem gammaConstant_pos {α : ℝ} (hα : -1 < α) : 0 < gammaConstant α := by
-  apply div_pos
-  · exact Real.Gamma_pos_of_pos (by linarith)
-  · exact sq_pos_of_pos (Real.Gamma_pos_of_pos (by linarith))
+theorem gammaConstant_pos {α : ℝ} (hα : -1 < α) : 0 < gammaConstant α :=
+  div_pos (Real.Gamma_pos_of_pos (by linarith))
+    (sq_pos_of_pos (Real.Gamma_pos_of_pos (by linarith)))
 
 end BergmanWeakType

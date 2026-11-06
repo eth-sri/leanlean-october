@@ -5,6 +5,8 @@ Authors: Yongxi Lin
 -/
 module
 
+public import BergmanWeakType.Notation
+
 public import BergmanWeakType.KernelIntegrability
 public import BergmanWeakType.Domain
 public import BergmanWeakType.Rigidity.PolarIntegral
@@ -22,17 +24,17 @@ namespace BergmanWeakType
 /-- Cauchy's derivative formula at any point inside the contour. -/
 theorem circleIntegral_sub_inv_sq_mul {f : ℂ → ℂ} {c a : ℂ} {r : ℝ}
     (hr : 0 < r) (hf : DiffContOnCl ℂ f (ball c r)) (ha : a ∈ ball c r) :
-    (∮ w in C(c, r), (w - a) ^ (-2 : ℤ) * f w) = (2 * π * I) * deriv f a := by
+    (∮ w in C(c, r), (w - a) ^ (-2 : ℤ) * f w) = (τ * I) * deriv f a := by
   have hc : CircleIntegrable f c r :=
     (hf.continuousOn_ball.mono sphere_subset_closedBall).circleIntegrable hr.le
   have has := Complex.hasDerivAt_circleIntegral_sub_inv_smul (w := a) hc (by
     rw [abs_of_pos hr]
     exact fun hs ↦ (ne_of_lt ha) (mem_sphere.mp hs))
   have heq : (fun a ↦ ∮ w in C(c, r), (w - a)⁻¹ • f w) =ᶠ[𝓝 a]
-      (fun a ↦ (2 * π * I) * f a) := by
+      (fun a ↦ (τ * I) * f a) := by
     filter_upwards [isOpen_ball.eventually_mem ha] with b hb
     simpa only [smul_eq_mul] using hf.circleIntegral_sub_inv_smul hb
-  have hd := (hf.differentiableAt isOpen_ball ha).hasDerivAt.const_mul (2 * π * I)
+  have hd := (hf.differentiableAt isOpen_ball ha).hasDerivAt.const_mul (τ * I)
   simpa only [smul_eq_mul] using (has.congr_of_eventuallyEq heq.symm).unique hd
 
 /-- The angular Bergman average is the radial derivative of the holomorphic primitive. -/
@@ -64,7 +66,7 @@ theorem circleAverage_kernel_mul {f : ℂ → ℂ} (hf : DifferentiableOn ℂ f 
     exact ((continuousOn_id.sub continuousOn_const).zpow₀ (-2) (by
       intro w hw
       exact Or.inl (hne w hw))).mul (hfr.continuousOn_ball.mono sphere_subset_closedBall)
-  have hcauchy : (∮ w in C(0, r), (w - a)⁻¹ * f w) = (2 * π * I) * f a := by
+  have hcauchy : (∮ w in C(0, r), (w - a)⁻¹ * f w) = (τ * I) * f a := by
     simpa only [smul_eq_mul] using hfr.circleIntegral_sub_inv_smul ha
   rw [circleAverage_eq_circleIntegral hr.ne']
   have hintegrand : ∀ w ∈ sphere (0 : ℂ) r,
@@ -109,7 +111,7 @@ theorem integral_kernel_mul_eq {f : ℂ → ℂ} (hf : DifferentiableOn ℂ f di
     rw [norm_mul, norm_pow, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg hr.1]
     have hr2 : r ^ 2 ≤ 1 := by nlinarith [hr.1, hr.2]
     exact (mul_le_of_le_one_left (norm_nonneg z) hr2).trans_lt hz1
-  have hderiv : ∀ r ∈ Icc (0 : ℝ) 1,
+  have hderiv : ∀ r ∈ Icc01,
       HasDerivAt (fun s : ℝ ↦ (s : ℂ) ^ 2 * f ((s : ℂ) ^ 2 * z))
         ((2 * r) • (f ((r : ℂ) ^ 2 * z) +
           (r : ℂ) ^ 2 * z * deriv f ((r : ℂ) ^ 2 * z))) r := by
@@ -133,7 +135,7 @@ theorem integral_kernel_mul_eq {f : ℂ → ℂ} (hf : DifferentiableOn ℂ f di
     rfl
   rw [integral_diskArea_eq_circleAverage (integrable_kernel_mul hfi hz)]
   calc
-    _ = ∫ r in Ioo (0 : ℝ) 1, (2 * r) • (f ((r : ℂ) ^ 2 * z) +
+    _ = ∫ r in Ioo01, (2 * r) • (f ((r : ℂ) ^ 2 * z) +
         (r : ℂ) ^ 2 * z * deriv f ((r : ℂ) ^ 2 * z)) := by
       apply setIntegral_congr_fun measurableSet_Ioo
       intro r hr

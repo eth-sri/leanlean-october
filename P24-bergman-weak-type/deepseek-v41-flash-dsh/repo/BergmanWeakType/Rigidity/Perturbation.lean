@@ -5,6 +5,8 @@ Authors: Yongxi Lin
 -/
 module
 
+public import BergmanWeakType.Notation
+
 public import BergmanWeakType.DomainLowerBound
 public import Mathlib.MeasureTheory.Integral.Bochner.Set
 
@@ -35,7 +37,7 @@ theorem norm_integral_add_gap_le_integral_norm {μ : Measure ℂ} {g : ℂ → �
 def corePerturbation (E : Set ℂ) (ρ : ℝ) (w : ℂ) : ℂ :=
   1 - E.indicator (fun _ ↦ (ρ : ℂ)) w
 
-theorem norm_corePerturbation {E : Set ℂ} {ρ : ℝ} (hρ : ρ ∈ Icc (0 : ℝ) 1) (w : ℂ) :
+theorem norm_corePerturbation {E : Set ℂ} {ρ : ℝ} (hρ : ρ ∈ Icc01) (w : ℂ) :
     ‖corePerturbation E ρ w‖ = 1 - E.indicator (fun _ ↦ ρ) w := by
   by_cases hw : w ∈ E
   · simp only [corePerturbation, indicator_of_mem hw]
@@ -49,7 +51,7 @@ theorem integrable_corePerturbation {μ : Measure ℂ} [IsFiniteMeasure μ]
   (integrable_const (1 : ℂ)).sub ((integrable_const (ρ : ℂ)).indicator hE)
 
 theorem integral_norm_corePerturbation {μ : Measure ℂ} [IsFiniteMeasure μ]
-    {E : Set ℂ} (hE : MeasurableSet E) {ρ : ℝ} (hρ : ρ ∈ Icc (0 : ℝ) 1) :
+    {E : Set ℂ} (hE : MeasurableSet E) {ρ : ℝ} (hρ : ρ ∈ Icc01) :
     (∫ w, ‖corePerturbation E ρ w‖ ∂μ) = μ.real univ - ρ * μ.real E := by
   simp_rw [norm_corePerturbation hρ]
   rw [integral_sub (integrable_const 1) ((integrable_const ρ).indicator hE),
@@ -59,7 +61,7 @@ theorem integral_norm_corePerturbation {μ : Measure ℂ} [IsFiniteMeasure μ]
 
 theorem integrable_norm_mul_corePerturbation {μ : Measure ℂ} {g : ℂ → ℂ}
     {E : Set ℂ} (hE : MeasurableSet E) (hg : Integrable g μ)
-    {ρ : ℝ} (hρ : ρ ∈ Icc (0 : ℝ) 1) :
+    {ρ : ℝ} (hρ : ρ ∈ Icc01) :
     Integrable (fun w ↦ ‖g w‖ * ‖corePerturbation E ρ w‖) μ := by
   have heq : (fun w ↦ ‖g w‖ * ‖corePerturbation E ρ w‖) =
       (fun w ↦ ‖g w‖ - E.indicator (fun w ↦ ρ * ‖g w‖) w) := by
@@ -72,7 +74,7 @@ theorem integrable_norm_mul_corePerturbation {μ : Measure ℂ} {g : ℂ → ℂ
 
 theorem integral_norm_mul_corePerturbation {μ : Measure ℂ} {g : ℂ → ℂ}
     {E : Set ℂ} (hE : MeasurableSet E) (hg : Integrable g μ)
-    {ρ : ℝ} (hρ : ρ ∈ Icc (0 : ℝ) 1) :
+    {ρ : ℝ} (hρ : ρ ∈ Icc01) :
     (∫ w, ‖g w‖ * ‖corePerturbation E ρ w‖ ∂μ) =
       (∫ w, ‖g w‖ ∂μ) - ρ * ∫ w in E, ‖g w‖ ∂μ := by
   have heq : (fun w ↦ ‖g w‖ * ‖corePerturbation E ρ w‖) =

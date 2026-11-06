@@ -5,6 +5,8 @@ Authors: Yongxi Lin
 -/
 module
 
+public import BergmanWeakType.Notation
+
 public import BergmanWeakType.Rigidity.PolarIntegral
 
 /-! # Polar integration for normalized weighted disk area -/
@@ -51,7 +53,7 @@ theorem integral_weightedArea_eq_diskArea [CompleteSpace E] {α : ℝ} (hα : -1
 
 theorem integral_weightedArea_eq_circleAverage [CompleteSpace E] {α : ℝ} (hα : -1 < α)
     {f : ℂ → E} (hf : Integrable f (weightedArea α)) :
-    ∫ z, f z ∂weightedArea α = ∫ r in Set.Ioo (0 : ℝ) 1,
+    ∫ z, f z ∂weightedArea α = ∫ r in Ioo01,
       (2 * r * ((α + 1) * (1 - r ^ 2) ^ α)) • Real.circleAverage f 0 r := by
   rw [integral_weightedArea_eq_diskArea hα,
     integral_diskArea_eq_circleAverage (integrable_weightedDensity_smul hα hf)]

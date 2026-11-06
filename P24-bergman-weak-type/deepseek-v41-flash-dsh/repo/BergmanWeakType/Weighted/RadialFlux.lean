@@ -5,6 +5,8 @@ Authors: Yongxi Lin
 -/
 module
 
+public import BergmanWeakType.Notation
+
 public import Mathlib.Analysis.Calculus.Deriv.MeanValue
 public import Mathlib.MeasureTheory.Integral.IntervalIntegral.FundThmCalculus
 public import Mathlib.Tactic.Linarith
@@ -32,12 +34,12 @@ theorem integral_periodic_derivative_eq_zero {g g' : ℝ → ℝ} {T : ℝ}
 /-- A nonincreasing radial flux vanishing at the origin forces the mean to decrease. -/
 theorem antitoneOn_of_radial_flux {M M' w F F' : ℝ → ℝ}
     (hM : ContinuousOn M (Ico 0 1))
-    (hMd : ∀ r ∈ Ioo (0 : ℝ) 1, HasDerivAt M (M' r) r)
-    (hw : ∀ r ∈ Ioo (0 : ℝ) 1, 0 < w r)
+    (hMd : ∀ r ∈ Ioo01, HasDerivAt M (M' r) r)
+    (hw : ∀ r ∈ Ioo01, 0 < w r)
     (hF : ContinuousOn F (Ico 0 1)) (hFzero : F 0 = 0)
-    (hFd : ∀ r ∈ Ioo (0 : ℝ) 1, HasDerivAt F (F' r) r)
-    (hFnonpos : ∀ r ∈ Ioo (0 : ℝ) 1, F' r ≤ 0)
-    (hflux : ∀ r ∈ Ioo (0 : ℝ) 1, F r = r * w r * M' r) :
+    (hFd : ∀ r ∈ Ioo01, HasDerivAt F (F' r) r)
+    (hFnonpos : ∀ r ∈ Ioo01, F' r ≤ 0)
+    (hflux : ∀ r ∈ Ioo01, F r = r * w r * M' r) :
     AntitoneOn M (Ico 0 1) := by
   have hanti : AntitoneOn F (Ico 0 1) := by
     apply antitoneOn_of_hasDerivWithinAt_nonpos (convex_Ico 0 1) hF
@@ -48,7 +50,7 @@ theorem antitoneOn_of_radial_flux {M M' w F F' : ℝ → ℝ}
   · intro r hr
     exact (hMd r (by simpa only [interior_Ico] using hr)).hasDerivWithinAt
   · intro r hr
-    have hr' : r ∈ Ioo (0 : ℝ) 1 := by simpa only [interior_Ico] using hr
+    have hr' : r ∈ Ioo01 := by simpa only [interior_Ico] using hr
     have hle := hanti (show (0 : ℝ) ∈ Ico 0 1 by norm_num)
       ⟨hr'.1.le, hr'.2⟩ hr'.1.le
     rw [hFzero, hflux r hr'] at hle

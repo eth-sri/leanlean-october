@@ -146,16 +146,19 @@ theorem polarKernel_laplacian (q a b r θ : ℝ)
   field_simp [hr]
   ring
 
+/-- The radial-angular weighted elliptic operator applied to the four kernel pieces. -/
+def polarOperator (k r xRR xR xTT xP : ℝ) : ℝ :=
+  xRR + xR / r + xTT / r ^ 2 - (2 * k * r / (1 - r ^ 2)) * xR -
+    (k ^ 2 / (1 - r ^ 2)) * xP
+
 /-- The weighted elliptic equation in polar coordinates, with no mixed derivatives. -/
 theorem polarKernel_equation (k a b r θ : ℝ)
     (hd : 0 < polarDenominator a b r θ) (hr : r ≠ 0) (ht : 1 - r ^ 2 ≠ 0) :
-    polarKernelRR (-k / 2) a b r θ + polarKernelR (-k / 2) a b r θ / r +
-      polarKernelTT (-k / 2) a b r θ / r ^ 2 -
-      (2 * k * r / (1 - r ^ 2)) * polarKernelR (-k / 2) a b r θ -
-      (k ^ 2 / (1 - r ^ 2)) * polarKernel (-k / 2) a b r θ =
+    polarOperator k r (polarKernelRR (-k / 2) a b r θ) (polarKernelR (-k / 2) a b r θ)
+      (polarKernelTT (-k / 2) a b r θ) (polarKernel (-k / 2) a b r θ) =
         -(k ^ 2 * (1 - (a ^ 2 + b ^ 2))) /
           ((1 - r ^ 2) * polarDenominator a b r θ) * polarKernel (-k / 2) a b r θ := by
-  rw [polarKernel_laplacian (-k / 2) a b r θ hd hr]
+  rw [polarOperator, polarKernel_laplacian (-k / 2) a b r θ hd hr]
   unfold polarKernelR polarKernel
   rw [Real.rpow_sub_one hd.ne']
   field_simp [hr, ht, hd.ne']
@@ -165,10 +168,8 @@ theorem polarKernel_equation (k a b r θ : ℝ)
 theorem polarKernel_equation_nonpos (k a b r θ : ℝ)
     (hd : 0 < polarDenominator a b r θ) (hr : r ≠ 0) (ht : 0 < 1 - r ^ 2)
     (hw : a ^ 2 + b ^ 2 ≤ 1) :
-    polarKernelRR (-k / 2) a b r θ + polarKernelR (-k / 2) a b r θ / r +
-      polarKernelTT (-k / 2) a b r θ / r ^ 2 -
-      (2 * k * r / (1 - r ^ 2)) * polarKernelR (-k / 2) a b r θ -
-      (k ^ 2 / (1 - r ^ 2)) * polarKernel (-k / 2) a b r θ ≤ 0 := by
+    polarOperator k r (polarKernelRR (-k / 2) a b r θ) (polarKernelR (-k / 2) a b r θ)
+      (polarKernelTT (-k / 2) a b r θ) (polarKernel (-k / 2) a b r θ) ≤ 0 := by
   rw [polarKernel_equation k a b r θ hd hr ht.ne']
   exact mul_nonpos_of_nonpos_of_nonneg
     (div_nonpos_of_nonpos_of_nonneg (neg_nonpos.mpr

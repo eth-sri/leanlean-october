@@ -60,30 +60,4 @@ theorem exists_coordinate_interval {x y : ℝ} (hxy : x ^ 2 + y ^ 2 < 1) :
     ((continuous_id.pow 2).add_const (y ^ 2)).continuousAt.eventually (gt_mem_nhds hxy)
   obtain ⟨l, r, _, hmem, hsub⟩ := exists_Icc_mem_subset_of_mem_nhds hn
   exact ⟨Icc l r, isCompact_Icc, hmem, hsub⟩
-
-section Cylinder
-
-variable {K : Set ℂ} {S : Set ℝ} {a b : ℂ → ℝ}
-  (ha : ContinuousOn a K) (hb : ContinuousOn b K) (y : ℝ)
-
-include ha hb
-
-variable (hsource : ∀ w ∈ K, a w ^ 2 + b w ^ 2 ≤ 1)
-  (htarget : ∀ u ∈ S, u ^ 2 + y ^ 2 < 1)
-
-include hsource htarget
-
-end Cylinder
-
-section Integral
-
-variable {K : Set ℂ} {a b : ℂ → ℝ} {μ : Measure ℂ} {f : ℂ → ℝ}
-  (hK : IsCompact K) (hμ : ∀ᵐ w ∂μ, w ∈ K) (hf : Integrable f μ)
-  (ha : ContinuousOn a K) (hb : ContinuousOn b K)
-  (hsource : ∀ w ∈ K, a w ^ 2 + b w ^ 2 ≤ 1)
-
-include hK hμ hf ha hb hsource
-
-end Integral
-
 end BergmanWeakType.Weighted

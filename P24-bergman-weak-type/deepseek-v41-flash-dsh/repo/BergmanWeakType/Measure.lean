@@ -5,6 +5,8 @@ Authors: Yongxi Lin
 -/
 module
 
+public import BergmanWeakType.Notation
+
 public import BergmanWeakType.Definitions
 public import Mathlib.MeasureTheory.Measure.Lebesgue.VolumeOfBalls
 public import Mathlib.MeasureTheory.Constructions.BorelSpace.Order
@@ -52,7 +54,7 @@ theorem ae_mem_disk_weightedArea (α : ℝ) : ∀ᵐ z ∂weightedArea α, z ∈
 
 /-- Under normalized disk area, the squared radius is uniform on the unit interval. -/
 theorem map_norm_sq_diskArea :
-    diskArea.map (fun z : ℂ ↦ ‖z‖ ^ 2) = volume.restrict (Set.Icc (0 : ℝ) 1) := by
+    diskArea.map (fun z : ℂ ↦ ‖z‖ ^ 2) = volume.restrict (Icc01) := by
   apply Measure.ext_of_Iic
   intro t
   rw [Measure.map_apply (by fun_prop : Measurable (fun z : ℂ ↦ ‖z‖ ^ 2)) measurableSet_Iic]
@@ -71,7 +73,7 @@ theorem map_norm_sq_diskArea :
       rw [diskArea, Measure.restrict_eq_self _ hsub, area_closedBall,
         ← ENNReal.ofReal_pow (Real.sqrt_nonneg t), Real.sq_sqrt ht,
         Measure.restrict_apply measurableSet_Iic]
-      have hset : Set.Iic t ∩ Set.Icc (0 : ℝ) 1 = Set.Icc 0 t := by
+      have hset : Set.Iic t ∩ Icc01 = Set.Icc 0 t := by
         ext x
         simp only [Set.mem_inter_iff, Set.mem_Iic, Set.mem_Icc]
         constructor
@@ -93,7 +95,7 @@ theorem map_norm_sq_diskArea :
       simp only [Set.mem_preimage, Set.mem_Iic, Set.mem_empty_iff_false, iff_false]
       exact not_le.mpr ((lt_of_not_ge ht).trans_le (sq_nonneg ‖z‖))
     rw [hpre, measure_empty, Measure.restrict_apply measurableSet_Iic]
-    have hset : Set.Iic t ∩ Set.Icc (0 : ℝ) 1 = ∅ := by
+    have hset : Set.Iic t ∩ Icc01 = ∅ := by
       ext x
       simp only [Set.mem_inter_iff, Set.mem_Iic, Set.mem_Icc, Set.mem_empty_iff_false,
         iff_false, not_and]
@@ -101,41 +103,66 @@ theorem map_norm_sq_diskArea :
       exact ht (hx0.trans hxt)
     simp [hset]
 
-/-- The radial weight is normalized for every admissible exponent. -/
-theorem weightedArea_univ (α : ℝ) (hα : -1 < α) : weightedArea α Set.univ = 1 := by
-  rw [weightedArea, withDensity_apply _ MeasurableSet.univ, setLIntegral_univ]
+/-- Exact weighted mass of the exterior of a circle. -/
+theorem weightedArea_norm_gt {α r : ℝ} (hα : -1 < α) (hr : 0 ≤ r) (hr1 : r < 1) :
+    weightedArea α {z : ℂ | r < ‖z‖} = ENNReal.ofReal ((1 - r ^ 2) ^ (α + 1)) := by
+  have hr₂ : r ^ 2 < 1 := by nlinarith
+  have hpre : {z : ℂ | r < ‖z‖} =
+      (fun z : ℂ ↦ ‖z‖ ^ 2) ⁻¹' Set.Ioi (r ^ 2) := by
+    ext z
+    simp only [Set.mem_ofPred_eq, Set.mem_preimage, Set.mem_Ioi]
+    exact (sq_lt_sq₀ hr (norm_nonneg z)).symm
   have hm : Measurable (fun u : ℝ ↦ ENNReal.ofReal ((α + 1) * (1 - u) ^ α)) := by
     fun_prop
-  rw [← lintegral_map hm (by fun_prop : Measurable (fun z : ℂ ↦ ‖z‖ ^ 2)),
-    map_norm_sq_diskArea]
-  have hf : IntervalIntegrable (fun u : ℝ ↦ (1 - u) ^ α) volume 0 1 := by
-    simpa using
-      ((intervalIntegral.intervalIntegrable_rpow' (a := 0) (b := 1) hα).comp_sub_left 1).symm
-  have hfi : IntegrableOn (fun u : ℝ ↦ (α + 1) * (1 - u) ^ α) (Set.Icc 0 1) := by
-    exact (intervalIntegrable_iff_integrableOn_Icc_of_le (by norm_num)).mp (hf.const_mul (α + 1))
-  have hnonneg : 0 ≤ᵐ[volume.restrict (Set.Icc (0 : ℝ) 1)]
+  rw [hpre, weightedArea, withDensity_apply _ (measurableSet_Ioi.preimage (by fun_prop)),
+    ← setLIntegral_map measurableSet_Ioi hm (by fun_prop : Measurable (fun z : ℂ ↦ ‖z‖ ^ 2)),
+    map_norm_sq_diskArea, Measure.restrict_restrict measurableSet_Ioi]
+  have hset : Set.Ioi (r ^ 2) ∩ Icc01 = Set.Ioc (r ^ 2) 1 := by
+    ext x
+    simp only [Set.mem_inter_iff, Set.mem_Ioi, Set.mem_Icc, Set.mem_Ioc]
+    constructor
+    · rintro ⟨hx, _, hx1⟩
+      exact ⟨hx, hx1⟩
+    · rintro ⟨hx, hx1⟩
+      exact ⟨hx, (sq_nonneg r).trans hx.le, hx1⟩
+  rw [hset]
+  have hf : IntervalIntegrable (fun u : ℝ ↦ (1 - u) ^ α) volume (r ^ 2) 1 := by
+    convert! ((intervalIntegral.intervalIntegrable_rpow'
+      (a := 0) (b := 1 - r ^ 2) hα).comp_sub_left 1).symm using 1 <;> ring
+  have hfi : IntegrableOn (fun u : ℝ ↦ (α + 1) * (1 - u) ^ α) (Set.Ioc (r ^ 2) 1) :=
+    (hf.const_mul (α + 1)).1
+  have hnonneg : 0 ≤ᵐ[volume.restrict (Set.Ioc (r ^ 2) 1)]
       (fun u : ℝ ↦ (α + 1) * (1 - u) ^ α) := by
-    filter_upwards [ae_restrict_mem measurableSet_Icc] with u hu
+    filter_upwards [ae_restrict_mem measurableSet_Ioc] with u hu
     exact mul_nonneg (by linarith) (Real.rpow_nonneg (sub_nonneg.mpr hu.2) _)
-  rw [← ofReal_integral_eq_lintegral_ofReal hfi hnonneg, integral_Icc_eq_integral_Ioc,
-    ← intervalIntegral.integral_of_le (by norm_num : (0 : ℝ) ≤ 1),
-    intervalIntegral.integral_const_mul,
+  rw [← ofReal_integral_eq_lintegral_ofReal hfi hnonneg,
+    ← intervalIntegral.integral_of_le hr₂.le, intervalIntegral.integral_const_mul,
     intervalIntegral.integral_comp_sub_left (fun x : ℝ ↦ x ^ α) 1]
-  simp only [sub_self, sub_zero]
+  simp only [sub_self]
   rw [integral_rpow (Or.inl hα)]
   have hpos : 0 < α + 1 := by linarith
-  simp [Real.zero_rpow hpos.ne', ne_of_gt hpos]
+  simp only [Real.zero_rpow hpos.ne', sub_zero]
+  rw [mul_div_cancel₀ _ hpos.ne']
+
+/-- The radial weight is normalized for every admissible exponent. -/
+theorem weightedArea_univ (α : ℝ) (hα : -1 < α) : weightedArea α Set.univ = 1 := by
+  have hsingle : weightedArea α {0} = 0 := by
+    simp [weightedArea, diskArea, area, lintegral_singleton]
+  have h : weightedArea α (Set.univ \ {0}) = 1 := by
+    have h := weightedArea_norm_gt hα le_rfl zero_lt_one
+    have hset : {z : ℂ | 0 < ‖z‖} = Set.univ \ {0} := by
+      ext z
+      simp only [Set.mem_ofPred_eq, Set.mem_univ, Set.mem_sdiff, Set.mem_singleton_iff]
+      exact ⟨fun h => ⟨trivial, fun h0 => by simp [h0] at h⟩, fun h => norm_pos_iff.mpr h.2⟩
+    rw [hset] at h
+    simpa using h
+  rw [show (Set.univ : Set ℂ) = (Set.univ \ {0}) ∪ {0} by ext z; simp,
+    measure_union (by simp [Set.disjoint_left]) (measurableSet_singleton 0), hsingle, h, add_zero]
 
 theorem weightedArea_isProbabilityMeasure (α : ℝ) (hα : -1 < α) :
     IsProbabilityMeasure (weightedArea α) :=
   ⟨weightedArea_univ α hα⟩
 
-theorem diskArea_ball_pos {r : ℝ} (hr : 0 < r) (hr1 : r ≤ 1) :
-    0 < diskArea (Metric.ball (0 : ℂ) r) := by
-  rw [diskArea, disk, Measure.restrict_eq_self _ (Metric.ball_subset_ball hr1), area_ball]
-  positivity
-
-/-- The admissible radial weights have the same null sets as disk area. -/
 theorem diskArea_absolutelyContinuous_weightedArea (α : ℝ) (hα : -1 < α) :
     diskArea ≪ weightedArea α := by
   apply withDensity_absolutelyContinuous'
@@ -147,10 +174,5 @@ theorem diskArea_absolutelyContinuous_weightedArea (α : ℝ) (hα : -1 < α) :
     apply Real.rpow_pos_of_pos
     have hz_norm : ‖z‖ < 1 := by simpa [disk] using hz
     nlinarith [norm_nonneg z]
-
-theorem weightedArea_ball_pos (α : ℝ) (hα : -1 < α) {r : ℝ}
-    (hr : 0 < r) (hr1 : r ≤ 1) : 0 < weightedArea α (Metric.ball (0 : ℂ) r) := by
-  exact pos_iff_ne_zero.mpr fun h ↦
-    (diskArea_ball_pos hr hr1).ne' (diskArea_absolutelyContinuous_weightedArea α hα h)
 
 end BergmanWeakType

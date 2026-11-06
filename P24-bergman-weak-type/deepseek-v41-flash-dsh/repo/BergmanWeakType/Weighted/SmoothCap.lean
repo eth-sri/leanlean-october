@@ -5,6 +5,8 @@ Authors: Yongxi Lin
 -/
 module
 
+public import BergmanWeakType.Notation
+
 public import Mathlib.Analysis.SpecialFunctions.Sqrt
 public import Mathlib.Analysis.Calculus.Deriv.Add
 public import Mathlib.Analysis.Calculus.Deriv.Inv
@@ -24,6 +26,10 @@ open Filter
 open scoped Topology
 
 namespace BergmanWeakType
+
+/-- Continuity of a two-variable function on the radial strip `[0,1) × ℝ`. -/
+def OnStrip (G : ℝ → ℝ → ℝ) : Prop :=
+  ContinuousOn (fun p : ℝ × ℝ ↦ G p.1 p.2) (Set.Ico 0 1 ×ˢ Set.univ)
 
 /-- A smooth approximation to `min x c`, shifted to stay nonnegative for nonnegative inputs. -/
 def smoothCap (ε c x : ℝ) : ℝ :=
@@ -62,7 +68,7 @@ theorem min_le_smoothCap {ε c x : ℝ} (hε : 0 ≤ ε) : min x c ≤ smoothCap
     linarith
 
 theorem smoothCapLevelDeriv_mem_Icc {ε c x : ℝ} (hε : 0 < ε) :
-    smoothCapLevelDeriv ε c x ∈ Set.Icc (0 : ℝ) 1 := by
+    smoothCapLevelDeriv ε c x ∈ Icc01 := by
   have hp : 0 < Real.sqrt ((x - c) ^ 2 + ε ^ 2) :=
     Real.sqrt_pos.mpr (by nlinarith [sq_nonneg (x - c)])
   have hsq : |x - c| ≤ Real.sqrt ((x - c) ^ 2 + ε ^ 2) := by
@@ -75,7 +81,7 @@ theorem smoothCapLevelDeriv_mem_Icc {ε c x : ℝ} (hε : 0 < ε) :
   constructor <;> dsimp [smoothCapLevelDeriv] <;> linarith
 
 theorem smoothCapInputDeriv_mem_Icc {ε c x : ℝ} (hε : 0 < ε) :
-    smoothCapInputDeriv ε c x ∈ Set.Icc (0 : ℝ) 1 := by
+    smoothCapInputDeriv ε c x ∈ Icc01 := by
   rcases smoothCapLevelDeriv_mem_Icc (c := c) (x := x) hε with ⟨hl, hu⟩
   constructor <;> dsimp [smoothCapInputDeriv, smoothCapLevelDeriv] at * <;> linarith
 

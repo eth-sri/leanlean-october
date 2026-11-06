@@ -124,8 +124,8 @@ theorem gammaConstant_eq_boundaryGamma {α : ℝ} (hα : -1 < α) :
 theorem circleAverage_boundary_power {α : ℝ} (hα : -1 < α) :
     Real.circleAverage (fun ζ : ℂ ↦ ‖1 - ζ‖ ^ α) 0 1 = gammaConstant α := by
   rw [Real.circleAverage_def]
-  have heq : (∫ θ in (0 : ℝ)..2 * Real.pi, ‖1 - circleMap 0 1 θ‖ ^ α) =
-      2 ^ α * (∫ θ in (0 : ℝ)..2 * Real.pi, Real.sin (θ / 2) ^ α) := by
+  have heq : (∫ θ in (0 : ℝ)..τ, ‖1 - circleMap 0 1 θ‖ ^ α) =
+      2 ^ α * (∫ θ in (0 : ℝ)..τ, Real.sin (θ / 2) ^ α) := by
     rw [← intervalIntegral.integral_const_mul]
     apply intervalIntegral.integral_congr_Ioo_of_le (by positivity)
     intro θ hθ
@@ -171,17 +171,17 @@ theorem circleAverage_radialKernel_eq_arcsine (p : ℝ) {r : ℝ} (hr : |r| < 1)
     apply Continuous.rpow_const (by unfold circleDenominator; fun_prop)
     exact fun θ ↦ Or.inl (circleDenominator_pos hr
       ⟨Real.neg_one_le_cos θ, Real.cos_le_one θ⟩).ne'
-  have heq : (∫ θ in Real.pi..2 * Real.pi,
+  have heq : (∫ θ in Real.pi..τ,
       circleDenominator r (Real.cos θ) ^ (p / 2)) =
       ∫ θ in (0 : ℝ)..Real.pi, circleDenominator r (Real.cos θ) ^ (p / 2) := by
     conv_lhs => arg 1; intro θ; rw [← Real.cos_two_pi_sub θ]
     rw [intervalIntegral.integral_comp_sub_left
       (fun θ ↦ circleDenominator r (Real.cos θ) ^ (p / 2)), sub_self,
-      show 2 * Real.pi - Real.pi = Real.pi by ring]
+      show τ - Real.pi = Real.pi by ring]
   rw [Real.circleAverage_def]
   simp_rw [norm_boundaryKernel_circleMap_rpow]
   rw [← intervalIntegral.integral_add_adjacent_intervals
-    (a := (0 : ℝ)) (b := Real.pi) (c := 2 * Real.pi)
+    (a := (0 : ℝ)) (b := Real.pi) (c := τ)
     (hc.intervalIntegrable _ _) (hc.intervalIntegrable _ _), heq,
     integral_cos_arcsine (fun x ↦ circleDenominator r x ^ (p / 2))]
   simp only [smul_eq_mul]

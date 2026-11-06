@@ -20,13 +20,13 @@ namespace BergmanWeakType
 
 theorem kernel_denominator_ne_zero_closed_left {ζ w : ℂ} (hζ : ‖ζ‖ ≤ 1) (hw : w ∈ disk) :
     1 - ζ * star w ≠ 0 := by
-  have hnorm : ‖ζ * star w‖ < 1 := by
-    rw [norm_mul, norm_star]
-    exact (mul_le_of_le_one_left (norm_nonneg w) hζ).trans_lt ((mem_disk_iff w).mp hw)
-  intro h
-  have hmul : ζ * star w = 1 := (sub_eq_zero.mp h).symm
-  rw [hmul, norm_one] at hnorm
-  exact (lt_irrefl 1) hnorm
+  have hw1 : ‖w‖ < 1 := (mem_disk_iff w).mp hw
+  have h := kernel_denominator_ne_zero_closed_input (z := w) (w := ζ) (R := (‖w‖ + 1) / 2)
+    (by linarith)
+    (by simp only [Metric.mem_closedBall, dist_zero_right]; linarith)
+    (by simpa only [Metric.mem_closedBall, dist_zero_right] using hζ)
+  intro hc
+  exact h (by simpa [mul_comm] using congrArg star hc)
 
 /-- The compact-core integrand stays continuous even for boundary output parameters. -/
 theorem continuousOn_coreIntegrand {q : ℂ → ℂ} (hq : ContinuousOn q disk)

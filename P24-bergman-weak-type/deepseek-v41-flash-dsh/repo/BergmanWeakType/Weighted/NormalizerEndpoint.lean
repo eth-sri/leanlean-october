@@ -26,7 +26,7 @@ theorem circleIntegrable_boundaryPower {α : ℝ} (hα : -1 < α) :
   rw [circleAverage_boundary_power hα] at h
   exact (gammaConstant_pos hα).ne' h
 
-theorem boundary_circleDenominator_pos {θ : ℝ} (hθ : θ ∈ Set.Ioo (0 : ℝ) (2 * Real.pi)) :
+theorem boundary_circleDenominator_pos {θ : ℝ} (hθ : θ ∈ Set.Ioo (0 : ℝ) (τ)) :
     0 < circleDenominator 1 (Real.cos θ) := by
   have hs : 0 < Real.sin (θ / 2) :=
     Real.sin_pos_of_pos_of_lt_pi (by linarith [hθ.1]) (by linarith [hθ.2])
@@ -41,14 +41,20 @@ theorem tendsto_circleAverage_boundaryPower_neg {α : ℝ} (hα : -1 < α) (hα0
     Tendsto (fun r : ℝ ↦ Real.circleAverage (fun ζ : ℂ ↦ ‖1 - (r : ℂ) * ζ‖ ^ α) 0 1)
       (𝓝[<] 1) (𝓝 (gammaConstant α)) := by
   let F : ℝ → ℝ → ℝ := fun r θ ↦ circleDenominator r (Real.cos θ) ^ (α / 2)
-  have hi : IntervalIntegrable (F 1) volume 0 (2 * Real.pi) := by
+  have hi : IntervalIntegrable (F 1) volume 0 (τ) := by
     have h := circleIntegrable_boundaryPower hα
-    change IntervalIntegrable (fun θ ↦ ‖1 - circleMap 0 1 θ‖ ^ α) volume 0 (2 * Real.pi) at h
+    change IntervalIntegrable (fun θ ↦ ‖1 - circleMap 0 1 θ‖ ^ α) volume 0 (τ) at h
     simpa only [F, ← norm_boundaryKernel_circleMap_rpow, Complex.ofReal_one, one_mul] using h
   have hb : ∀ᶠ r : ℝ in 𝓝[<] 1, r ∈ Set.Ioo (1 / 2 : ℝ) 1 :=
     Ioo_mem_nhdsLT (by norm_num)
-  have hlim : Tendsto (fun r ↦ ∫ θ in (0 : ℝ)..2 * Real.pi, F r θ)
-      (𝓝[<] 1) (𝓝 (∫ θ in (0 : ℝ)..2 * Real.pi, F 1 θ)) := by
+  have hae : ∀ᵐ θ : ℝ, θ ≠ τ := by rw [ae_iff]; simp
+  have hmem : ∀ θ ∈ Set.uIoc (0 : ℝ) (τ), θ ≠ τ →
+      θ ∈ Set.Ioo (0 : ℝ) (τ) := by
+    intro θ hθ hne
+    rw [Set.uIoc_of_le (by positivity : (0 : ℝ) ≤ τ)] at hθ
+    exact ⟨hθ.1, lt_of_le_of_ne hθ.2 hne⟩
+  have hlim : Tendsto (fun r ↦ ∫ θ in (0 : ℝ)..τ, F r θ)
+      (𝓝[<] 1) (𝓝 (∫ θ in (0 : ℝ)..τ, F 1 θ)) := by
     apply intervalIntegral.tendsto_integral_filter_of_dominated_convergence
       (fun θ ↦ (1 / 2 : ℝ) ^ (α / 2) * F 1 θ)
     · filter_upwards [hb] with r hr
@@ -60,11 +66,8 @@ theorem tendsto_circleAverage_boundaryPower_neg {α : ℝ} (hα : -1 < α) (hα0
           ⟨Real.neg_one_le_cos θ, Real.cos_le_one θ⟩).ne'
       exact hc.aestronglyMeasurable
     · filter_upwards [hb] with r hr
-      filter_upwards [show ∀ᵐ θ : ℝ, θ ≠ 2 * Real.pi by rw [ae_iff]; simp] with θ hθ
-      intro hθmem
-      have hθ' : θ ∈ Set.Ioo (0 : ℝ) (2 * Real.pi) := by
-        simp only [Set.uIoc_of_le (by positivity : (0 : ℝ) ≤ 2 * Real.pi), Set.mem_Ioc] at hθmem
-        exact ⟨hθmem.1, lt_of_le_of_ne hθmem.2 hθ⟩
+      filter_upwards [hae] with θ hne hθmem
+      have hθ' := hmem θ hθmem hne
       have hd := boundary_circleDenominator_pos hθ'
       have he : (1 / 2 : ℝ) * circleDenominator 1 (Real.cos θ) ≤
           circleDenominator r (Real.cos θ) := by
@@ -78,19 +81,16 @@ theorem tendsto_circleAverage_boundaryPower_neg {α : ℝ} (hα : -1 < α) (hα0
       simpa only [Real.mul_rpow (by norm_num : (0 : ℝ) ≤ 1 / 2) hd.le] using
         Real.rpow_le_rpow_of_nonpos (mul_pos (by norm_num) hd) he (by linarith)
     · exact hi.const_mul _
-    · filter_upwards [show ∀ᵐ θ : ℝ, θ ≠ 2 * Real.pi by rw [ae_iff]; simp] with θ hθ
-      intro hθmem
-      have hθ' : θ ∈ Set.Ioo (0 : ℝ) (2 * Real.pi) := by
-        simp only [Set.uIoc_of_le (by positivity : (0 : ℝ) ≤ 2 * Real.pi), Set.mem_Ioc] at hθmem
-        exact ⟨hθmem.1, lt_of_le_of_ne hθmem.2 hθ⟩
+    · filter_upwards [hae] with θ hne hθmem
+      have hθ' := hmem θ hθmem hne
       have hc : ContinuousAt (fun r ↦ F r θ) 1 :=
         (show ContinuousAt (fun r ↦ circleDenominator r (Real.cos θ)) 1 by
           dsimp [circleDenominator]; fun_prop).rpow_const
           (Or.inl (boundary_circleDenominator_pos hθ').ne')
       exact hc.tendsto.mono_left nhdsWithin_le_nhds
-  have havg := hlim.const_mul (2 * Real.pi)⁻¹
+  have havg := hlim.const_mul (τ)⁻¹
   have heq : ∀ r : ℝ, Real.circleAverage (fun ζ : ℂ ↦ ‖1 - (r : ℂ) * ζ‖ ^ α) 0 1 =
-      (2 * Real.pi)⁻¹ * (∫ θ in (0 : ℝ)..2 * Real.pi, F r θ) := by
+      (τ)⁻¹ * (∫ θ in (0 : ℝ)..τ, F r θ) := by
     intro r
     simp only [Real.circleAverage_def, norm_boundaryKernel_circleMap_rpow, smul_eq_mul, F]
   simp_rw [← heq] at havg

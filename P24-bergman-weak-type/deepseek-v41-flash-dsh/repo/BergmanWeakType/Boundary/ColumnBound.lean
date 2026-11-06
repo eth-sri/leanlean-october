@@ -5,7 +5,8 @@ Authors: Yongxi Lin
 -/
 module
 
-public import BergmanWeakType.Boundary.Concentration
+public import BergmanWeakType.Reproduction
+
 
 /-! # Weak bounds for the limiting boundary kernel column -/
 

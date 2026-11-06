@@ -5,6 +5,8 @@ Authors: Yongxi Lin
 -/
 module
 
+public import BergmanWeakType.Notation
+
 public import BergmanWeakType.Weighted.Normalizer
 public import BergmanWeakType.Rigidity.PolarIntegral
 
@@ -80,21 +82,21 @@ theorem circleAverage_halfDiskPower {α : ℝ} (hα : 0 ≤ α) {r : ℝ} (hr : 
     apply intervalIntegral.integral_congr_Ioo_of_le pi_pos.le
     intro θ hθ
     rw [hpoint, ite_eq_left (sin_pos_of_pos_of_lt_pi hθ.1 hθ.2)]
-  have hright : (∫ θ in π..2 * π, H θ) = 0 := by
-    rw [← intervalIntegral.integral_zero (a := π) (b := 2 * π)]
+  have hright : (∫ θ in π..τ, H θ) = 0 := by
+    rw [← intervalIntegral.integral_zero (a := π) (b := τ)]
     apply intervalIntegral.integral_congr_Ioo_of_le (by linarith [pi_pos])
     intro θ hθ
     have hs : sin θ ≤ 0 := by
       have hn := sin_nonpos_of_nonpos_of_neg_pi_le
-        (show θ - 2 * π ≤ 0 by linarith [hθ.2])
-        (show -π ≤ θ - 2 * π by linarith [hθ.1])
+        (show θ - τ ≤ 0 by linarith [hθ.2])
+        (show -π ≤ θ - τ by linarith [hθ.1])
       simpa using hn
     rw [hpoint, ite_eq_right (not_lt.mpr hs)]
   rw [circleAverage_eq_integral_add (-(π / 2)), smul_eq_mul]
-  change (2 * π)⁻¹ * (∫ θ in (0 : ℝ)..2 * π, H θ) = _
+  change (τ)⁻¹ * (∫ θ in (0 : ℝ)..τ, H θ) = _
   rw [← intervalIntegral.integral_add_adjacent_intervals
     (intervalIntegrable_halfDiskPower_circle hα r (-(π / 2)) 0 π pi_pos.le)
-    (intervalIntegrable_halfDiskPower_circle hα r (-(π / 2)) π (2 * π) (by linarith [pi_pos])),
+    (intervalIntegrable_halfDiskPower_circle hα r (-(π / 2)) π (τ) (by linarith [pi_pos])),
     hleft, hright, add_zero, integral_sin_rpow (by linarith : -1 < α),
     Real.mul_rpow (by norm_num : (0 : ℝ) ≤ 2) hr.le,
     gammaConstant_eq_boundaryGamma (by linarith : -1 < α)]
@@ -107,8 +109,8 @@ theorem circleAverage_halfDiskPower {α : ℝ} (hα : 0 ≤ α) {r : ℝ} (hr : 
 theorem integral_halfDiskPower {α : ℝ} (hα : 0 ≤ α) :
     (∫ z, halfDiskPower α z ∂diskArea) = gammaConstant α / (α + 2) := by
   rw [integral_diskArea_eq_circleAverage (integrable_halfDiskPower hα)]
-  have heq : (∫ r in Ioo (0 : ℝ) 1, (2 * r) • circleAverage (halfDiskPower α) 0 r) =
-      gammaConstant α * ∫ r in Ioo (0 : ℝ) 1, r ^ (α + 1) := by
+  have heq : (∫ r in Ioo01, (2 * r) • circleAverage (halfDiskPower α) 0 r) =
+      gammaConstant α * ∫ r in Ioo01, r ^ (α + 1) := by
     rw [← integral_const_mul]
     apply setIntegral_congr_fun measurableSet_Ioo
     intro r hr

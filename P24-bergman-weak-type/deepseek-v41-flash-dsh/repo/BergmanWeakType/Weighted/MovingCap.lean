@@ -5,6 +5,8 @@ Authors: Yongxi Lin
 -/
 module
 
+public import BergmanWeakType.Notation
+
 public import Mathlib.MeasureTheory.Integral.IntervalIntegral.FundThmCalculus
 public import Mathlib.Tactic.Linarith
 public import Mathlib.Tactic.Ring
@@ -26,7 +28,7 @@ theorem integral_le_of_inner_integral_le {A : ℝ → ℝ} {M : ℝ}
     (hA : IntegrableOn A (Icc 0 1))
     (hinner : ∀ a b : ℝ, 0 < a → a < b → b < 1 → (∫ y in a..b, A y) ≤ M) :
     (∫ y in (0 : ℝ)..1, A y) ≤ M := by
-  have hbnd : ∀ b ∈ Ioo (0 : ℝ) 1, (∫ y in (0 : ℝ)..b, A y) ≤ M := by
+  have hbnd : ∀ b ∈ Ioo01, (∫ y in (0 : ℝ)..b, A y) ≤ M := by
     intro b hb
     have hAb : IntegrableOn A (uIcc 0 b) := by
       rw [uIcc_of_le hb.1.le]
@@ -48,8 +50,8 @@ theorem integral_le_of_inner_integral_le {A : ℝ → ℝ} {M : ℝ}
 theorem integral_le_of_shift_domination {A G : ℝ → ℝ} {M a b h : ℝ}
     (ha : 0 < a) (hab : a < b) (hh : 0 < h) (hbh : b + h < 1)
     (hA : IntegrableOn A (Icc 0 1)) (hG : IntegrableOn G (Icc 0 1))
-    (hzero : ∀ y ∈ Ioo (0 : ℝ) 1, 0 ≤ G y)
-    (hbound : ∀ y ∈ Ioo (0 : ℝ) 1, G y ≤ M)
+    (hzero : ∀ y ∈ Ioo01, 0 ≤ G y)
+    (hbound : ∀ y ∈ Ioo01, G y ≤ M)
     (hshift : ∀ y ∈ Icc a b, h * A (y + h) ≤ G (y + h) - G y) :
     (∫ y in a + h..b + h, A y) ≤ M := by
   have hI {F : ℝ → ℝ} (hF : IntegrableOn F (Icc 0 1)) {u v : ℝ}
@@ -85,8 +87,8 @@ theorem integral_le_of_shift_domination {A G : ℝ → ℝ} {M a b h : ℝ}
 No differentiability of the bounding function is needed. -/
 theorem integral_le_of_finite_difference_domination {A G : ℝ → ℝ} {M : ℝ}
     (hA : IntegrableOn A (Icc 0 1)) (hG : IntegrableOn G (Icc 0 1))
-    (hzero : ∀ y ∈ Ioo (0 : ℝ) 1, 0 ≤ G y)
-    (hbound : ∀ y ∈ Ioo (0 : ℝ) 1, G y ≤ M)
+    (hzero : ∀ y ∈ Ioo01, 0 ≤ G y)
+    (hbound : ∀ y ∈ Ioo01, G y ≤ M)
     (hshift : ∀ y h : ℝ, 0 < y → 0 < h → y + h < 1 →
       h * A (y + h) ≤ G (y + h) - G y) :
     (∫ y in (0 : ℝ)..1, A y) ≤ M := by

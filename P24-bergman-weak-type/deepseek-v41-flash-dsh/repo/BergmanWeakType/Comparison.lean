@@ -32,13 +32,6 @@ theorem weightedProjection_constant_le_weightedPositiveProjection_constant (α :
   exact weakTypeConstant_mono fun f _ z ↦
     enorm_weightedProjection_le_weightedPositiveProjection α f z
 
-/-- The complex weighted weak constant specializes to the disk constant at parameter zero. -/
-@[simp]
-theorem weightedProjection_constant_zero :
-    weakTypeConstant (weightedArea 0) (fun f z ↦ ‖weightedProjection 0 f z‖ₑ) =
-      weakTypeConstant diskArea (fun f z ↦ ‖projection f z‖ₑ) := by
-  simp
-
 /-- The positive weighted weak constant specializes to the disk constant at parameter zero. -/
 @[simp]
 theorem weightedPositiveProjection_constant_zero :

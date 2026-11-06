@@ -94,15 +94,6 @@ theorem symm_shift (z : 𝔻) : (shift z).symm = shift (-z) := by
   rfl
 
 @[simp]
-theorem star_shift (z w : 𝔻) : star (shift z w) = shift (star z) (star w) :=
-  coe_injective <| by simp [coe_shift]
-
-@[simp]
-theorem shift_zero : shift 0 = .refl 𝔻 := by
-  ext z
-  simp [coe_shift]
-
-@[simp]
 theorem shift_apply_zero (z : 𝔻) : shift z 0 = z := by simp [shift_eq_iff]
 
 @[simp]
@@ -110,36 +101,11 @@ theorem shift_eq_zero_iff {z w : 𝔻} : shift z w = 0 ↔ w = -z := by
   rw [← Equiv.eq_symm_apply, symm_shift, shift_apply_zero]
 
 @[simp]
-theorem shift_apply_neg_self (z : 𝔻) : shift z (-z) = 0 := by simp
-
-@[simp]
 theorem shift_neg_apply_self (z : 𝔻) : shift (-z) z = 0 := by simp
 
 @[simp]
 theorem shift_neg_apply_shift (z w : 𝔻) : shift (-z) (shift z w) = w := by
   rw [← symm_shift, Equiv.symm_apply_apply]
-
-@[simp]
-theorem shift_apply_shift_neg (z w : 𝔻) : shift z (shift (-z) w) = w := by
-  simpa using shift_neg_apply_shift (-z) w
-
-/-- A shift by `0` is the identity map, and all other shifts have no fixed points. -/
-@[simp]
-theorem shift_eq_self_iff {z w : 𝔻} : shift z w = w ↔ z = 0 := by
-  rcases eq_or_ne z 0 with rfl | hz
-  · simp
-  suffices (z : ℂ) ≠ w * conj ↑z * w by
-    simpa [shift_eq_iff, hz, add_comm (z : ℂ)] using this
-  refine ne_of_apply_ne norm (ne_of_gt ?_)
-  calc
-    _ = ‖(z : ℂ)‖ * ‖(w : ℂ)‖ ^ 2 := by simp; ring
-    _ < ‖(z : ℂ)‖ := mul_lt_of_lt_one_right (by simpa) <| by
-      rw [← Complex.normSq_eq_norm_sq]; exact w.normSq_lt_one
-
-/-- The composition of two shifts is a rotation by `shiftCompCoeff z w` composed with a shift. -/
-@[simps! coe]
-def shiftCompCoeff (z w : 𝔻) : Circle :=
-  .ofConjDivSelf (1 + conj ↑z * w) (shift_den_ne_zero _ _)
 
 end
 
